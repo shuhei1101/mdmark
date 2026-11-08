@@ -110,7 +110,7 @@ elements:
     id: editor-title-open-settings
     kind: button
     position: mdmark のプレビューのエディタのタイトル
-    description: '`contributes.menus.editor/title` のボタン。アイコンは VS Code の `$(gear)`、ポインターを合わせるとコマンドの表示名を出し、アクセシブルネームもコマンドの表示名になる。キーボードで押せる（VS Code のエディタのタイトルのボタンのまま）'
+    description: '`contributes.menus.editor/title` のボタン。アイコンは VS Code の `$(gear)`、ポインターを合わせるとコマンドの表示名を出し、スクリーンリーダー向けの名前もコマンドの表示名になる。キーボードで押せる（VS Code のエディタのタイトルのボタンのまま）'
     label: 'mdmark: 設定を開く'
     visible_when: mdmark のプレビューのパネルがアクティブなとき（`activeWebviewPanelId`）
     action: VS Code の設定画面を mdmark の項目に絞って開く

@@ -22,7 +22,7 @@ flows:
         participant X as 拡張のモジュール
         P->>M: registerExtension({ name, directive, load })
         P->>M: mount(el, { markdown })
-        M->>P: マーカーの場所に読み込み中の枠を描く
+        M->>P: マーカーの場所に読み込み中のブロックを描く
         M->>X: load()
         X-->>M: モジュール
         M->>X: draw(マーカーの場所の要素, { args, keys })
@@ -81,8 +81,8 @@ flows:
       - '`load` が 1 回も呼ばれていない'
       - マーカーの前後の段落があり、`mount` が例外を投げない
     test: test_error_when_args_invalid
-  - name: 異常系（モジュールを読み込めない・通知の枠）
-    summary: 拡張のモジュールを読み込めないマーカーの場所だけを通知の枠にし、ほかは描く
+  - name: 異常系（モジュールを読み込めない・通知ブロック）
+    summary: 拡張のモジュールを読み込めないマーカーの場所だけを通知ブロックにし、ほかは描く
     setup:
       - name: 配布物を読み込んだページ
         description: 正常系と同じ
@@ -101,15 +101,15 @@ flows:
         P->>M: mount(el, { markdown })
         M->>X: load()
         X-->>M: 404
-        M->>P: マーカーの場所を通知の枠に替える
+        M->>P: マーカーの場所を通知ブロックに替える
     expected:
       - マーカーの場所の要素が class `mdmark-notice` と `role="status"` を持ち、タイトルが `この図を表示できません`
-      - 通知の枠の本文が `表示に使用する拡張（greet）を読み込めませんでした。ネットワークにつながっているかを確認して、ページを再読み込みしてください。`
+      - 通知ブロックの本文が `表示に使用する拡張（greet）を読み込めませんでした。ネットワークにつながっているかを確認して、ページを再読み込みしてください。`
       - マーカーの前後の段落があり、`mount` が例外を投げない
       - '`console.error` が呼ばれ、引数に `greet` と元のエラーを含む'
     test: test_error_when_module_not_found
-  - name: 異常系（検査が失敗する・通知の枠）
-    summary: '`schema` の `validate` が拒否されるマーカーの場所を通知の枠にし、モジュールを読み込まない'
+  - name: 異常系（検査が失敗する・通知ブロック）
+    summary: '`schema` の `validate` が拒否されるマーカーの場所を通知ブロックにし、モジュールを読み込まない'
     setup:
       - name: 配布物を読み込んだページ
         description: 正常系と同じ
@@ -128,7 +128,7 @@ flows:
         P->>M: mount(el, { markdown })
         M->>M: schema["~standard"].validate({ args, keys })
         M-->>M: 拒否
-        M->>P: マーカーの場所を通知の枠に替える
+        M->>P: マーカーの場所を通知ブロックに替える
     expected:
       - マーカーの場所の要素が class `mdmark-notice` と `role="status"` を持ち、本文に `greet` がある
       - '`load` が 1 回も呼ばれていない'
@@ -266,7 +266,7 @@ request:
     type: string
     required: true
     location: argument
-    description: 拡張の名前。通知の枠・記載の警告・`console.error` に出す
+    description: 拡張の名前。通知ブロック・記載の警告・`console.error` に出す
     constraints: 空でない
     example: greet
   - name: extension.directive
@@ -314,12 +314,12 @@ exceptions:
   - name: なし（記載の警告）
     condition: '`mount`・`update` で、マーカーの引数が `schema` に合わない、または範囲の部品の定義を JSON として読み込めない'
     notes: 例外を投げず、そのマーカーの場所だけを記載の警告に替える
-  - name: なし（通知の枠）
+  - name: なし（通知ブロック）
     condition: '`mount`・`update` で、`load` が拒否されるか `draw` が例外を投げる'
-    notes: 例外を投げず、そのマーカーの場所だけを通知の枠に替える
-  - name: なし（通知の枠・検査の失敗）
+    notes: 例外を投げず、そのマーカーの場所だけを通知ブロックに替える
+  - name: なし（通知ブロック・検査の失敗）
     condition: '`mount`・`update` で、`schema` の `validate` が例外を投げるか拒否される'
-    notes: 例外を投げず、`load` を呼ばずに、そのマーカーの場所だけを通知の枠に替える
+    notes: 例外を投げず、`load` を呼ばずに、そのマーカーの場所だけを通知ブロックに替える
   - name: TypeError
     condition: '`name` が空、`directive` がマーカーの名前の書式に合わない、`load` が関数でない、または `schema` が `~standard` を持たない'
     notes: 登録しない。メッセージに合わない項目の名前を含める
@@ -332,13 +332,13 @@ constraints:
   - item: 拡張のモジュールの構造
     constraint: '`draw(slot: HTMLElement, value: MdmarkMarkArgs): void | Promise<void>` を名前付きで export する。`slot` はマーカーの場所の要素'
   - item: 引数の検査
-    constraint: '`schema` を持つ拡張のマーカーは、`mount`・`update` が `load` の前に `schema["~standard"].validate(value)` を呼んで待つ。結果が `issues` を持つときは `load` を呼ばず、マーカーの場所を記載の警告に替える。警告の項目は issue ごとに 1 つで、`path` の要素は `{ key }` のオブジェクトなら `key` を読み込む。`path` が `args` と位置まで届く issue は `{位置+1} つ目の {値}: {message}`、`keys` とキーまで届く issue は `{キー}=: {message}`、`path` が無いか `args`・`keys` で止まる issue は `{message}` だけの項目にする。`validate` が例外を投げるか拒否されるときは、`load` を呼ばず、`load` の失敗と同じ通知の枠に替え、`name` と元のエラーを `console.error` に出す。`render` は検査しない'
+    constraint: '`schema` を持つ拡張のマーカーは、`mount`・`update` が `load` の前に `schema["~standard"].validate(value)` を呼んで待つ。結果が `issues` を持つときは `load` を呼ばず、マーカーの場所を記載の警告に替える。警告の項目は issue ごとに 1 つで、`path` の要素は `{ key }` のオブジェクトなら `key` を読み込む。`path` が `args` と位置まで届く issue は `{位置+1} つ目の {値}: {message}`、`keys` とキーまで届く issue は `{キー}=: {message}`、`path` が無いか `args`・`keys` で止まる issue は `{message}` だけの項目にする。`validate` が例外を投げるか拒否されるときは、`load` を呼ばず、`load` の失敗と同じ通知ブロックに替え、`name` と元のエラーを `console.error` に出す。`render` は検査しない'
     notes: 警告の文言は画面設計『文書』
   - item: Standard Schema の確認
     constraint: zod 4.6.7 と valibot 1.5.0 の schema の `~standard.validate` が、合わない値に `issues`（`message` と `path`）を、合う値に `value` を返却することを確認した（2026-10-14）
     notes: valibot の `tuple` は余る要素を許すため、引数の数を限るときは `strictTuple` を使用する。valibot の `strictTuple` は余る引数にも位置を持つ `path` を返却するが、zod の `z.tuple` の数の超過は `path` が `["args"]` で止まる。仕様は https://standardschema.dev/
   - item: 読み込み
-    constraint: 同じ文書の同じ拡張のマーカーは 1 回だけ `load` を呼ぶ。読み込みの間は外部ライブラリのマーカーと同じ読み込み中のマーカーの場所を配置する。通知の枠はタイトル `この図を表示できません`、本文 `表示に使用する拡張（{name}）を読み込めませんでした。ネットワークにつながっているかを確認して、ページを再読み込みしてください。` で、`name` と元のエラーを `console.error` に出す
+    constraint: 同じ文書の同じ拡張のマーカーは 1 回だけ `load` を呼ぶ。読み込みの間は外部ライブラリのマーカーと同じ読み込み中のマーカーの場所を配置する。通知ブロックはタイトル `この図を表示できません`、本文 `表示に使用する拡張（{name}）を読み込めませんでした。ネットワークにつながっているかを確認して、ページを再読み込みしてください。` で、`name` と元のエラーを `console.error` に出す
   - item: 型の配布
     constraint: '`registerExtension`・`MdmarkExtension`・`MdmarkExtensionModule`・`MdmarkMarkArgs`・`StandardSchemaV1` を `dist/index.d.ts` に書き出す。`StandardSchemaV1` は仕様の型を複製し、mdmark は検査ライブラリに依存しない'
   - item: 部品の定義の誤り

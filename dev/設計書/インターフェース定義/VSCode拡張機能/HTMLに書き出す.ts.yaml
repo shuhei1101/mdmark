@@ -122,7 +122,7 @@ flows:
     expected:
       - 書き出した HTML に埋めた `config.libraries["test-lib"]` と `config["html-scripts"].url` が `data:text/javascript` で始まり、`config.libraries` に `unused-lib` が無い
       - 書き出した HTML の `data:` の URL を復号した中に、`unused-lib` の目印の文字列が無い
-      - 開いた HTML で、`test-lib` のマーカーの場所がそのライブラリで描かれ、通知の枠（`.mdmark-notice`）が無い
+      - 開いた HTML で、`test-lib` のマーカーの場所がそのライブラリで描かれ、通知ブロック（`.mdmark-notice`）が無い
       - 開いた HTML で、範囲の `ts` が記載した結果が範囲の要素に出る
       - 開いている間に、書き出した HTML 以外の `file:` の URL への要求が記録されない
     test: test_normal_when_relative_libraries
@@ -190,7 +190,7 @@ flows:
         B-->>W: 図の枠に入った mermaid の図
     expected:
       - 書き出した HTML に埋めた `config.mermaid.url` が `data:text/javascript` で始まる
-      - Chromium で開くと、mermaid のコードブロックの場所に `figure.mdmark-diagram[data-diagram="mermaid"]` があり、通知の枠が出ない
+      - Chromium で開くと、mermaid のコードブロックの場所に `figure.mdmark-diagram[data-diagram="mermaid"]` があり、通知ブロックが出ない
     test: test_normal_when_relative_mermaid
 lead: 開いている Markdown を、jsDelivr の配布物を読み込んで `mount` で描く 1 つの HTML に書き出し、書き出したパスを通知で通知する。
 idempotent: true
@@ -233,5 +233,5 @@ constraints:
   - item: 通知
     constraint: 書き出せたら `showInformationMessage` で書き出したパスと「ブラウザで開く」のボタンを出し、押されたら `env.openExternal` で開く。文言は画面設計で決める
   - item: 埋めるライブラリ
-    constraint: 相対パスの `libraries` は、文書にマーカーがある名前のモジュールだけを、相対パスの `html-scripts.url` は、文書に `ts`・`js` の範囲があり重ねた設定と文書のマーカーで `html-scripts` がオンのときだけ変換のライブラリを、`extensions` と同じく esbuild-wasm で import する先も含めて 1 つの ES モジュールにまとめ、`data:text/javascript` の URL にして `config` のそのキーの値に配置する。文書にマーカー・範囲が無い相対パスの値は `config` から除外する。まとめられないモジュールは埋めず、出力チャネルに警告を記録して書き出しを続ける（開いたときそのマーカー・範囲に mdmark が通知の枠を出す）
+    constraint: 相対パスの `libraries` は、文書にマーカーがある名前のモジュールだけを、相対パスの `html-scripts.url` は、文書に `ts`・`js` の範囲があり重ねた設定と文書のマーカーで `html-scripts` がオンのときだけ変換のライブラリを、`extensions` と同じく esbuild-wasm で import する先も含めて 1 つの ES モジュールにまとめ、`data:text/javascript` の URL にして `config` のそのキーの値に配置する。文書にマーカー・範囲が無い相対パスの値は `config` から除外する。まとめられないモジュールは埋めず、出力チャネルに警告を記録して書き出しを続ける（開いたときそのマーカー・範囲に mdmark が通知ブロックを出す）
     notes: Chromium 系のブラウザは `file:` のページから `file:` の ES モジュールを動的 `import()` で読み込まないため。変換のライブラリは範囲を変換して埋めずにそのまま埋め、配布物の `mount` の公開の引数を変えない

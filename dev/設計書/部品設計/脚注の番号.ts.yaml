@@ -77,7 +77,7 @@ css_properties:
     default: var(--mdmark-color-link)
     description: 本文の番号と一覧の番号の色
 accessibility:
-  - 番号のリンクのアクセシブルネームは `脚注 {番号}`（`脚注 ` は `mdmark-visually-hidden` で隠して配置し、角括弧は CSS で付ける）
+  - 番号のリンクのスクリーンリーダー向けの名前は `脚注 {番号}`（`脚注 ` は `mdmark-visually-hidden` で隠して配置し、角括弧は CSS で付ける）
   - 中身がリンクを持たないときは `role="tooltip"` と番号のリンクの `aria-describedby`、持つときは `role="group"`・`aria-label="脚注 {番号}"` と `aria-details` にする（用語のツールチップと同じ分け方）
   - 用語の破線の下線と、上付き・角括弧・マーカーの色の構造で見分け、色だけに頼らない
   - フォーカスの枠をマーカーの色の 2px の線で出す

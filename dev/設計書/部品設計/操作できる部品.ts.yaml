@@ -48,7 +48,7 @@ args:
   - name: copyLabel
     type: 文字列
     default: 今の値を写す
-    description: 今の値を写すボタンの、アイコンの後ろに描く文言。ボタンのアクセシブルネームもこの文言になる。HTML の特殊文字はエスケープして描く
+    description: 今の値を写すボタンの、アイコンの後ろに描く文言。ボタンのスクリーンリーダー向けの名前もこの文言になる。HTML の特殊文字はエスケープして描く
     status: implemented
 events:
   - name: 値を変える
@@ -69,7 +69,7 @@ accessibility:
   - スライダーは `label` で名前を付け、今の値を `output` に出し、矢印キーでも動かせる
   - コピーした結果は `role="status"` に出し、色とアイコンと文言で伝える
   - 写せなかった JSON の `pre` は `tabindex="0"` と `aria-label="写す JSON"` を持つ
-  - 写すボタンは `aria-label` を付けず、ボタンの文字（`copyLabel`）をアクセシブルネームにする
+  - 写すボタンは `aria-label` を付けず、ボタンの文字（`copyLabel`）をスクリーンリーダー向けの名前にする
 status: planned
 introduced:
   pr: 42

@@ -49,7 +49,7 @@ states:
       - name: open
         value: 'true'
       - name: headings
-        value: '[{"level":2,"id":"long","text":"読み込みに失敗したときに通知の枠が出る箇所と、ほかの本文の扱い"},{"level":3,"id":"long-2","text":"社内のネットワークから jsDelivr へ出られないときに書き出した 1 枚の HTML を使用する手順"}]'
+        value: '[{"level":2,"id":"long","text":"読み込みに失敗したときに通知ブロックが出る箇所と、ほかの本文の扱い"},{"level":3,"id":"long-2","text":"社内のネットワークから jsDelivr へ出られないときに書き出した 1 枚の HTML を使用する手順"}]'
 lead: |-
   描いた文書の右側に配置し、h1〜h3 を入れ子にした目次・右端の線・目次を出すボタン・ピン止め・すべて展開とすべて折りたたむを持つ。
   出し方（hover・fixed）と、描く先の要素の幅 48rem 未満の狭い幅の帯を CSS で切り替える。

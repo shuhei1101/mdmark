@@ -115,9 +115,9 @@ css_properties:
     default: '#52525b（ダーク #b4b4bc）'
     description: 開閉のマーカーとアンカーの色
 accessibility:
-  - 開閉のボタンは見出しの文字をアクセシブルネームにし、`aria-expanded`・`aria-controls` で開閉の状態を示す
+  - 開閉のボタンは見出しの文字をスクリーンリーダー向けの名前にし、`aria-expanded`・`aria-controls` で開閉の状態を示す
   - 閉じた中身は `hidden="until-found"` で、ページ内検索から開ける
-  - アンカーは `「{見出しの文字}」へのリンク` をアクセシブルネームに持つ
+  - アンカーは `「{見出しの文字}」へのリンク` をスクリーンリーダー向けの名前に持つ
   - 開閉のボタンで Shift+Enter・Shift+Space を押すと、Shift を押しながらのクリックと同じく入れ子のセクションをまとめて開閉する
 refs:
   - dev/設計書/インターフェース定義/ライブラリ本体/文書をHTML文字列にする.ts#constraints[節]

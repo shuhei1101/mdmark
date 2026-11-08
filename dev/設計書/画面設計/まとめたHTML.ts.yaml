@@ -80,7 +80,7 @@ elements:
     id: bundle-panel-close
     kind: button
     position: 文書の一覧のパネル > タイトルの横
-    description: × のアイコンだけのボタン。アクセシブルネームは `aria-label="文書の一覧を閉じる"`
+    description: × のアイコンだけのボタン。スクリーンリーダー向けの名前は `aria-label="文書の一覧を閉じる"`
     visible_when: パネルを開いているとき
     action: パネルを閉じる
     status: planned

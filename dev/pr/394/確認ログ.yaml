@@ -5,3 +5,9 @@ confirmations:
     approver: shuhei1101
     commit:
     thread: https://github.com/shuhei1101/mdmark/pull/394#discussion_r4505583831
+  - topic: 用語集の用語と画面の文言の置き換え先
+    decision: 知らせの枠→通知ブロック（読み込み中の枠→読み込み中のブロック）・読む人→読者・読み上げの名前→スクリーンリーダー向けの名前・変更を見る→変更表示・コメントを書く→コメント追加。残り（マーカー・記載の警告・手元のバージョン・ガイド・利用側・文書の作成者）は表のとおり（推奨案 A）
+    decided_by: reply
+    approver: shuhei1101
+    commit:
+    thread: https://github.com/shuhei1101/mdmark/pull/394#discussion_r4505603696

@@ -152,7 +152,7 @@ flows:
         participant M as mdmark
         participant X as 外部ライブラリ
         P->>M: mount(el, { markdown, config })
-        M->>P: マーカーの場所に読み込み中の枠を描く
+        M->>P: マーカーの場所に読み込み中のブロックを描く
         M->>X: import(URL)
         X-->>M: モジュール
         M->>X: draw(マーカーの場所の要素, ["a", "b"])
@@ -274,8 +274,8 @@ flows:
       - '`a` の `text-decoration-line` の計算値が `none`（詳細度の低い層の外の規則が勝つ）'
       - '`a` の `color` の計算値が `rgb(4, 5, 6)`（変数の上書きが該当する）'
     test: test_normal_when_theme_overridden
-  - name: 異常系（外部ライブラリを読み込めない・通知の枠）
-    summary: 外部ライブラリを読み込めないマーカーの場所だけを通知の枠にし、ほかは描く
+  - name: 異常系（外部ライブラリを読み込めない・通知ブロック）
+    summary: 外部ライブラリを読み込めないマーカーの場所だけを通知ブロックにし、ほかは描く
     setup:
       - name: 配布物を読み込んだページ
         description: 正常系と同じ
@@ -293,11 +293,11 @@ flows:
         P->>M: mount(el, { markdown, config })
         M->>X: import(URL)
         X-->>M: 404
-        M->>P: マーカーの場所を通知の枠に替える
+        M->>P: マーカーの場所を通知ブロックに替える
     expected:
       - マーカーの場所の要素が class `mdmark-notice` と `role="status"` を持つ
-      - 通知の枠のタイトルが `この図を表示できません`
-      - 通知の枠の本文が `表示に使用するライブラリ（test-lib）を読み込めませんでした。ネットワークにつながっているかを確認して、ページを再読み込みしてください。`
+      - 通知ブロックのタイトルが `この図を表示できません`
+      - 通知ブロックの本文が `表示に使用するライブラリ（test-lib）を読み込めませんでした。ネットワークにつながっているかを確認して、ページを再読み込みしてください。`
       - マーカーの前後の段落がある
       - '`mount` が例外を投げない'
       - '`console.error` が 1 回呼ばれ、引数にマーカーの名前 `test-lib`・URL・元のエラーを含む'
@@ -626,9 +626,9 @@ flows:
         M->>P: 収まる倍率と位置に戻す
     expected:
       - 描いた直後、図の倍率が 1 未満で、倍率のボタンの文字が `100%`（全体が収まる倍率を 100% とする）で、図の幅が表示する枠の幅を超えない
-      - 右上のボタンが縮小・倍率・拡大・全画面の 4 つで、戻すのボタンは無い。縮小のボタンだけが `disabled` を持ち、どのボタンもアクセシブルネームを持つ
-      - '倍率のボタンのアクセシブルネームが `倍率 {今の倍率}。全体が収まる倍率に戻す` で、`getByRole("button", { name: "全体が収まる倍率に戻す" })` で見つかる'
-      - 拡大のボタンの後と、表示する枠にフォーカスして `+` を押した後に、それぞれ倍率が 1.25 倍になり、倍率のボタンの文字とアクセシブルネームが変わる
+      - 右上のボタンが縮小・倍率・拡大・全画面の 4 つで、戻すのボタンは無い。縮小のボタンだけが `disabled` を持ち、どのボタンもスクリーンリーダー向けの名前を持つ
+      - '倍率のボタンのスクリーンリーダー向けの名前が `倍率 {今の倍率}。全体が収まる倍率に戻す` で、`getByRole("button", { name: "全体が収まる倍率に戻す" })` で見つかる'
+      - 拡大のボタンの後と、表示する枠にフォーカスして `+` を押した後に、それぞれ倍率が 1.25 倍になり、倍率のボタンの文字とスクリーンリーダー向けの名前が変わる
       - '`wheel` の後も倍率が変わらず、イベントの `defaultPrevented` が `false`'
       - '`0` の後と、拡大してから倍率のボタンを押した後に、倍率と表示する枠のスクロールの位置が描いた直後と同じ'
     test: test_normal_when_diagram_zoomed
@@ -903,7 +903,7 @@ flows:
       - ページの中のツールチップの `id` が重ならない
     test: test_normal_when_embedded_hint
   - name: 正常系（差分を開く）
-    summary: 取り出し元を指定して描き、「変更を表示」で一番新しい 2 つのリビジョンの差分を出す
+    summary: 取り出し元を指定して描き、「変更表示」で一番新しい 2 つのリビジョンの差分を出す
     setup:
       - name: 配布物を読み込んだページ
         description: 正常系と同じ
@@ -920,24 +920,24 @@ flows:
         participant M as mdmark
         participant S as 取り出し元
         P->>M: mount(el, { markdown, docId, diffSource })
-        M->>P: 文書を描き、タイトルの後ろに「変更を表示」を配置する
-        P->>M: 「変更を表示」を押す
+        M->>P: 文書を描き、タイトルの後ろに「変更表示」を配置する
+        P->>M: 「変更表示」を押す
         M->>S: revisions(guide)
         S-->>M: r3・r2・r1
         M->>S: content を r2 と r3 で
         S-->>M: 2 つの Markdown
         M->>P: 本文を隠し、差分を出す
     expected:
-      - '`mount` の直後は `revisions` が呼ばれず、本文の列（`div.mdmark-content`）の中で `h1` とそのセクションの中身（`mdmark-section-body`）の間に `aria-expanded="false"` の「変更を表示」のボタンがある'
+      - '`mount` の直後は `revisions` が呼ばれず、本文の列（`div.mdmark-content`）の中で `h1` とそのセクションの中身（`mdmark-section-body`）の間に `aria-expanded="false"` の「変更表示」のボタンがある'
       - 押すと、ボタンが `aria-expanded="true"` になり、`h1` を残して `h1` のセクションの中身と右側の目次（`aside.mdmark-side-toc`）が隠れる
-      - 差分を開いたまま `h1` の開閉のボタンを 2 回押しても、`h1` のセクションの中身は隠れたままで、「変更を表示」と差分の場所は出たまま
+      - 差分を開いたまま `h1` の開閉のボタンを 2 回押しても、`h1` のセクションの中身は隠れたままで、「変更表示」と差分の場所は出たまま
       - '`revisions` が `guide` で 1 回、`content` が `{ docId: "guide", revisionId: "r2" }` と `{ docId: "guide", revisionId: "r3" }` で 1 回ずつ呼ばれる'
       - 前の選ぶ欄で `r2`、後の選ぶ欄で `r3` が選ばれ、前の欄の `r3` と後の欄の `r2`・`r1` を選べない
       - 削除した行が `data-kind="del"` で行頭に `-` を持ち、追加した行が `data-kind="add"` で行頭に `+` を持つ
       - 単語を書き換えた行の対で、`del` が `差分` だけ、`ins` が `変更` だけを囲む
       - '`role="status"` の要素が `削除した行 2・追加した行 2` を持つ'
       - ミニマップの帯があり、削除した行と追加した行のマーカーを持つ
-      - もう一度「変更を表示」を押すと、差分の場所が隠れ、右側の目次が戻り、`h1` のセクションの中身は 2 回押した後の状態（開いた状態）で出る
+      - もう一度「変更表示」を押すと、差分の場所が隠れ、右側の目次が戻り、`h1` のセクションの中身は 2 回押した後の状態（開いた状態）で出る
     test: test_normal_when_diff_opened
   - name: 正常系（リビジョンをもう一度選ぶ）
     summary: 前のリビジョンをもう一度選ぶと、その 2 つの差分に再描画する
@@ -974,7 +974,7 @@ flows:
         participant P as 利用側のページ
         participant M as mdmark
         participant S as 取り出し元
-        P->>M: 「変更を表示」を押す
+        P->>M: 「変更表示」を押す
         M->>S: revisions(guide)
         S-->>M: r1
         M->>P: 比較対象が無いことを出す
@@ -997,7 +997,7 @@ flows:
         participant P as 利用側のページ
         participant M as mdmark
         participant S as 取り出し元
-        P->>M: 「変更を表示」を押す
+        P->>M: 「変更表示」を押す
         M->>S: revisions と content を 2 回
         S-->>M: 同じ 2 つの Markdown
         M->>P: 変更が無いことを出す
@@ -1018,7 +1018,7 @@ flows:
         participant P as 利用側のページ
         participant M as mdmark
         participant S as 取り出し元
-        P->>M: 「変更を表示」を押す
+        P->>M: 「変更表示」を押す
         M->>S: revisions と content を 2 回
         S-->>M: 2 つの Markdown
         M->>P: 文字ごとに比べた差分を出す
@@ -1079,7 +1079,7 @@ flows:
       - 今見えている範囲の枠が、スクロールに合わせて動く
     test: test_normal_when_scrolled_by_minimap
   - name: 正常系（差分を閉じる）
-    summary: 「変更を表示」をもう一度押すと差分とミニマップを片付けて本文に戻す
+    summary: 「変更表示」をもう一度押すと差分とミニマップを片付けて本文に戻す
     setup:
       - name: 差分を開いたページ
         description: 正常系（差分を開く）で差分を出した後のページ
@@ -1089,7 +1089,7 @@ flows:
       sequenceDiagram
         participant P as 利用側のページ
         participant M as mdmark
-        P->>M: 「変更を表示」をもう一度押す
+        P->>M: 「変更表示」をもう一度押す
         M->>P: 差分とミニマップを片付け、本文を出す
     expected:
       - ボタンが `aria-expanded="false"` になり、フォーカスがボタンに残る
@@ -1109,7 +1109,7 @@ flows:
         participant P as 利用側のページ
         participant M as mdmark
         participant S as 取り出し元
-        P->>M: 「変更を表示」を押す
+        P->>M: 「変更表示」を押す
         M->>S: revisions(guide)
         P->>M: destroy()
         S-->>M: r3・r2・r1
@@ -1119,8 +1119,8 @@ flows:
       - '`destroy` の後に `revisions` が返っても、`el` の中は空のまま'
       - '`content` が呼ばれない'
     test: test_normal_when_destroyed_while_waiting
-  - name: 異常系（リビジョンの一覧を取り出せない・通知の枠）
-    summary: '`revisions` が reject すると差分の場所を通知の枠にし、本文は残す'
+  - name: 異常系（リビジョンの一覧を取り出せない・通知ブロック）
+    summary: '`revisions` が reject すると差分の場所を通知ブロックにし、本文は残す'
     setup:
       - name: 配布物を読み込んだページ
         description: 正常系と同じ
@@ -1133,19 +1133,19 @@ flows:
         participant P as 利用側のページ
         participant M as mdmark
         participant S as 取り出し元
-        P->>M: 「変更を表示」を押す
+        P->>M: 「変更表示」を押す
         M->>S: revisions(guide)
         S-->>M: reject
-        M->>P: 差分の場所を通知の枠にする
+        M->>P: 差分の場所を通知ブロックにする
     expected:
       - 差分の場所の要素が class `mdmark-notice` と `role="status"` を持つ
       - タイトルが `変更の履歴を表示できません`、本文が `リビジョンの一覧を取り出せませんでした。時間をおいて、変更をもう一度開いてください。`
       - '`content` が呼ばれず、例外が投げられない'
-      - 「変更を表示」をもう一度押すと、本文が開く前と同じに出る
+      - 「変更表示」をもう一度押すと、本文が開く前と同じに出る
       - '`console.error` が 1 回呼ばれ、引数に `revisions`・`guide`・元のエラーを含む'
     test: test_error_when_revisions_rejected
-  - name: 異常系（本文を取り出せない・通知の枠）
-    summary: '`content` が 1 つのリビジョンで reject すると、選ぶ欄を残して通知の枠を出し、もう一度選べば差分を出す'
+  - name: 異常系（本文を取り出せない・通知ブロック）
+    summary: '`content` が 1 つのリビジョンで reject すると、選ぶ欄を残して通知ブロックを出し、もう一度選べば差分を出す'
     setup:
       - name: 配布物を読み込んだページ
         description: 正常系と同じ
@@ -1161,7 +1161,7 @@ flows:
         P->>M: 前の選ぶ欄で r1 を選ぶ
         M->>S: content を r1 で
         S-->>M: reject
-        M->>P: 差分の行の場所を通知の枠にする
+        M->>P: 差分の行の場所を通知ブロックにする
         P->>M: 前の選ぶ欄で r2 をもう一度選ぶ
         M->>S: content を r2 で
         S-->>M: Markdown
@@ -1169,11 +1169,11 @@ flows:
     expected:
       - タイトルが `このリビジョンの本文を表示できません`、本文が `r1` のリビジョンの説明を `「」` で囲んだ `…の本文を取り出せませんでした。別のリビジョンを選んでください。`
       - 選ぶ欄が残り、ミニマップと `削除した行・追加した行` の数が無い
-      - '`r2` をもう一度選ぶと、通知の枠が消えて `r2` と `r3` の差分が出る'
+      - '`r2` をもう一度選ぶと、通知ブロックが消えて `r2` と `r3` の差分が出る'
       - '`console.error` が引数に `content`・`guide`・`r1`・元のエラーを含む'
     test: test_error_when_content_rejected
-  - name: 異常系（リビジョンの構造が合わない・通知の枠）
-    summary: '`revisions` が構造に合わない値を返却すると、取り出せないときと同じ通知の枠を出す'
+  - name: 異常系（リビジョンの構造が合わない・通知ブロック）
+    summary: '`revisions` が構造に合わない値を返却すると、取り出せないときと同じ通知ブロックを出す'
     setup:
       - name: 配布物を読み込んだページ
         description: 正常系と同じ
@@ -1186,12 +1186,12 @@ flows:
         participant P as 利用側のページ
         participant M as mdmark
         participant S as 取り出し元
-        P->>M: 「変更を表示」を押す
+        P->>M: 「変更表示」を押す
         M->>S: revisions(guide)
         S-->>M: at の無いリビジョン
-        M->>P: 差分の場所を通知の枠にする
+        M->>P: 差分の場所を通知ブロックにする
     expected:
-      - タイトルが `変更の履歴を表示できません` の通知の枠が出る
+      - タイトルが `変更の履歴を表示できません` の通知ブロックが出る
       - '`content` が呼ばれず、例外が投げられない'
       - '`console.error` が引数に `revisions`・`guide`・合わなかった値を含む'
     test: test_error_when_revisions_malformed
@@ -1776,7 +1776,7 @@ flows:
         M->>M: 部品のモジュールを読み込めない
         M->>P: 表と本文を描き、切り替えとコメントのボタンを配置しない
     expected:
-      - ビューのマーカーの場所に 5 行の表が残り、切り替えとボードが無く、通知の枠も無い
+      - ビューのマーカーの場所に 5 行の表が残り、切り替えとボードが無く、通知ブロックも無い
       - 文字を選んでもコメントのボタンが出ず、`load` が呼ばれない
       - '`console.error` が部品ごとに 1 回ずつ呼ばれ、引数に部品の名前（`view`・`comments`）・モジュールの URL・元のエラーを含む'
       - 例外を投げず、段落は描かれる
@@ -2065,7 +2065,7 @@ flows:
         M->>P: コードブロックをそのまま残す
     expected:
       - '`mount` が例外を投げず、本文の全ての `code` の HTML が色分けの前と同じ'
-      - 通知の枠（`mdmark-notice`）が無い
+      - 通知ブロック（`mdmark-notice`）が無い
       - '`console.error` に `/fixtures/missing/core.min.js` を含む記録が 1 件以上ある'
     test: test_error_when_highlighter_not_found
   - name: 異常系（言語のモジュールを読み込めない・その言語だけ色分けなし）
@@ -2092,7 +2092,7 @@ flows:
     expected:
       - '`ts` の `code` の中に class が `hljs-` で始まる `span` がある'
       - '`yml` の `code` の HTML が色分けの前と同じ'
-      - 通知の枠（`mdmark-notice`）が無い
+      - 通知ブロック（`mdmark-notice`）が無い
       - '`console.error` に `languages/yaml.min.js` を含む記録が 1 件以上ある'
     test: test_error_when_language_module_not_found
   - name: 正常系（表記の違う用語）
@@ -2302,7 +2302,7 @@ flows:
         M->>P: 説明の列を出し、開閉のボタンを削除する
     expected:
       - 描いた直後、説明の列の `th` と `td` が表示されておらず、名前と状態の列が表示されている
-      - 描いた直後、各行の先頭のセルに `aria-expanded="false"`・`aria-controls` を持ち、アクセシブルネームが `「{名前}」の説明` のボタンが 1 つずつある
+      - 描いた直後、各行の先頭のセルに `aria-expanded="false"`・`aria-controls` を持ち、スクリーンリーダー向けの名前が `「{名前}」の説明` のボタンが 1 つずつある
       - 2 列で短い文字の表は畳まず、開閉のボタンが無い
       - 2 行目のボタンを押した後、`aria-expanded` が `true` で、`aria-controls` の指す行が 2 行目の直後にあり、文字 `説明` と 2 行目の説明の中身を持ち、`hidden` を持たない
       - 並べ替えた後も、開いた行は 2 行目だった行の直後にある
@@ -3102,7 +3102,7 @@ flows:
         M->>P: 使用できるエイリアスだけに下線を描く
         P->>P: 危ないリンクにフォーカスする
     expected:
-      - '`mount` が例外を投げず、段落が描かれ、通知の枠が無い'
+      - '`mount` が例外を投げず、段落が描かれ、通知ブロックが無い'
       - '`レビュー` と `危ないリンク` が class `mdmark-term` の要素で、`ビルド`・`メモ`・`査定` はその要素でない'
       - '`危ないリンク` のツールチップに `javascript:alert(1)` が文字で出て、ツールチップの中に `a` 要素が無い'
     test: test_error_when_invalid_alias
@@ -3464,10 +3464,10 @@ flows:
         M->>S: revisions(guide)・content を r2 と r3 で
         M->>P: 開いたまま差分をもう一度出す
     expected:
-      - '閲覧者が押さないうちに、`revisions` が `guide` で 1 回、`content` が `{ docId: "guide", revisionId: "r2" }` と `{ docId: "guide", revisionId: "r3" }` で 1 回ずつ呼ばれる'
-      - 「変更を表示」が `aria-expanded="true"` で、`h1` のセクションの中身と右側の目次が隠れ、差分の行が出ている
-      - '`update` の後も「変更を表示」が `aria-expanded="true"` のままで、`revisions` がもう 1 回呼ばれる'
-      - 「変更を表示」を押すと、差分の場所が隠れ、本文と右側の目次が戻る
+      - '読者が押さないうちに、`revisions` が `guide` で 1 回、`content` が `{ docId: "guide", revisionId: "r2" }` と `{ docId: "guide", revisionId: "r3" }` で 1 回ずつ呼ばれる'
+      - 「変更表示」が `aria-expanded="true"` で、`h1` のセクションの中身と右側の目次が隠れ、差分の行が出ている
+      - '`update` の後も「変更表示」が `aria-expanded="true"` のままで、`revisions` がもう 1 回呼ばれる'
+      - 「変更表示」を押すと、差分の場所が隠れ、本文と右側の目次が戻る
     test: test_normal_when_diff_opened_on_mount
     refs:
       - dev/設計書/シナリオ/単一ユースケース/差分の取り出し元を渡す#scenarios[正常シナリオ（開いた状態で描く）]
@@ -3496,7 +3496,7 @@ flows:
         M->>M: 2 つを描いてブロックごとに比べる
         M->>P: ブロックを色分けした本文を再描画する
     expected:
-      - 「変更を表示」と差分の場所とミニマップの帯が無い
+      - 「変更表示」と差分の場所とミニマップの帯が無い
       - 段落 A・段落 B・段落 E が `div.mdmark-diff-block[data-kind="add"]` に包まれ、先頭にスクリーンリーダーの `追加:` と `aria-hidden` の `+` を持つ
       - 段落 C と段落 D が `r1` での位置（`h2` のセクションの最初のブロックだった段落 C はそのセクションの中身の先頭）に `div.mdmark-diff-block[data-kind="del"]` で差し込まれ、先頭に `削除:` と `−` を持つ。段落 D の削除は段落 E の追加の直前にある
       - 段落 A の削除のブロックは無い（書き換えとして追加だけを出す）
@@ -3557,8 +3557,8 @@ flows:
       - 遅れて届いた 1 回目の結果で本文が再描画されない（段落 G が残っている）
       - 正常系（描いた文書のブロックを色分けする）で色を適用したブロックが同じ `data-kind` のまま出ている
     test: test_normal_when_diff_blocks_updated
-  - name: 異常系（ブロックの色分けで本文を取り出せない・通知の枠）
-    summary: '`blocks` で `content` が reject すると、色を適用しない本文を残して先頭に通知の枠を配置する'
+  - name: 異常系（ブロックの色分けで本文を取り出せない・通知ブロック）
+    summary: '`blocks` で `content` が reject すると、色を適用しない本文を残して先頭に通知ブロックを配置する'
     setup:
       - name: 配布物を読み込んだページ
         description: 正常系（描いた文書のブロックを色分けする）と同じ
@@ -3574,7 +3574,7 @@ flows:
         P->>M: mount(el, { markdown, docId, diffSource, diffMode: "blocks" })
         M->>S: revisions・content
         S-->>M: reject
-        M->>P: 色を適用しない本文の先頭に通知の枠を配置する
+        M->>P: 色を適用しない本文の先頭に通知ブロックを配置する
     expected:
       - '`mount` が例外を投げず、本文は `opts.markdown` を描いたままで `mdmark-diff-block` を持たない'
       - 本文の先頭に class `mdmark-notice` と `role="status"` の要素があり、タイトルが `変更を表示できません`、本文が `比べるリビジョンの本文を取り出せませんでした。色分けせずに表示しています。`
@@ -3596,9 +3596,9 @@ flows:
         participant M as mdmark
         P->>M: mount(el, { markdown, docId, diffSource, diffMode: "inline" })
         M->>M: 知らない出し方を button にする
-        M->>P: 文書を描き、タイトルの後ろに「変更を表示」を配置する
+        M->>P: 文書を描き、タイトルの後ろに「変更表示」を配置する
     expected:
-      - '`mount` が例外を投げず、`aria-expanded="false"` の「変更を表示」がある'
+      - '`mount` が例外を投げず、`aria-expanded="false"` の「変更表示」がある'
       - 押すまで `revisions` が呼ばれない
     test: test_error_when_unknown_diff_mode
   - name: 正常系（ファイルツリーのフォルダを開閉する）
@@ -3735,8 +3735,8 @@ flows:
         P->>M: mount(el2, { markdown, config: { labels: { paramCopy: "" } } })
         M->>P: ボタンを既定の文言で描く
     expected:
-      - el の `button.mdmark-param-copy` の `textContent` が `コピー` で、アクセシブルネームが `コピー`
-      - '`update` の後も、el の `button.mdmark-param-copy` の `textContent` とアクセシブルネームが `コピー`'
+      - el の `button.mdmark-param-copy` の `textContent` が `コピー` で、スクリーンリーダー向けの名前が `コピー`
+      - '`update` の後も、el の `button.mdmark-param-copy` の `textContent` とスクリーンリーダー向けの名前が `コピー`'
       - el2 の `button.mdmark-param-copy` の `textContent` が `今の値をコピーする`
     test: test_normal_when_param_copy_label_configured
   - name: 正常系（画像をライトボックスで拡大する）
@@ -3768,7 +3768,7 @@ flows:
       - 右の矢印キーの後に `c.png`、前の画像のボタンを 2 回押した後に `a.png` が出ている
       - Esc の後にダイアログが閉じ、`document.activeElement` が 2 つ目の画像のボタンで、`scrollY` が押す前と同じ
       - もう一度開いてダイアログの外の背景を押した後にダイアログが閉じ、`document.activeElement` が 2 つ目の画像のボタン
-      - ダイアログの前の画像・次の画像・閉じるのボタンがアクセシブルネームを持つ
+      - ダイアログの前の画像・次の画像・閉じるのボタンがスクリーンリーダー向けの名前を持つ
     test: test_normal_when_lightbox_opened
     refs:
       - dev/設計書/シナリオ/単一ユースケース/画像をライトボックスで拡大する#scenarios[正常シナリオ]
@@ -4202,7 +4202,7 @@ flows:
     expected:
       - 段落 A と段落 D が class `mdmark-diff-block`・`data-kind="add"` の要素に包まれ、段落 C は包まれていない
       - 段落 B を包んだ `data-kind="del"` の要素が段落 A の前（本文の先頭）にある（直前の段落 A は書き換えたブロックで、変えていないブロックではないため）
-      - 「変更を表示」のボタンと差分の場所が無い
+      - 「変更表示」のボタンと差分の場所が無い
     test: test_normal_when_base_markdown
   - name: 正常系（比較元を差し替える）
     summary: '`update` の第 2 引数で比較元を差し替え、省くと前の比較元を保ち、`null` で強調を解除する'
@@ -4245,15 +4245,15 @@ flows:
         P->>M: mount(el, { markdown, baseMarkdown, docId, diffSource, diffMode: "blocks" })
         M->>P: 比較元で色を適用した本文
         P->>M: mount(el, { markdown, baseMarkdown, docId, diffSource })
-        M->>P: 比較元で色を適用した本文と「変更を表示」
-        P->>M: 「変更を表示」を押す
+        M->>P: 比較元で色を適用した本文と「変更表示」
+        P->>M: 「変更表示」を押す
         M->>D: revisions・content
         D-->>M: リビジョンと本文
         M->>P: 差分の行
     expected:
       - '`diffMode: "blocks"` で描いたとき、本文の色は正常系（比較元の Markdown で強調する）と同じで、`revisions`・`content` が 1 回も呼ばれない'
-      - '`diffMode` を省いて描いたとき、本文の色は同じで「変更を表示」のボタンがあり、押す前は `revisions` が呼ばれない'
-      - 「変更を表示」を押すと、取り出し元の 2 つのリビジョンの差分の行が出る
+      - '`diffMode` を省いて描いたとき、本文の色は同じで「変更表示」のボタンがあり、押す前は `revisions` が呼ばれない'
+      - 「変更表示」を押すと、取り出し元の 2 つのリビジョンの差分の行が出る
     test: test_normal_when_base_with_diff_source
   - name: 異常系（比較元が文字列でない・TypeError）
     summary: '`opts.baseMarkdown` か `update` の `baseMarkdown` が文字列でも `null` でもないと、描かずに投げる'
@@ -5006,8 +5006,8 @@ flows:
     test: test_error_when_range_script_invalid
     refs:
       - dev/設計書/シナリオ/単一ユースケース/コードブロックのHTMLを描く#scenarios[異常シナリオ（範囲のスクリプトを動かせない）]
-  - name: 異常系（変換のライブラリを読み込めない・通知の枠）
-    summary: 変換のライブラリを読み込めないとき、`ts`・`js` の範囲に通知の枠を配置し、範囲の `html`・`css` と本文は描く
+  - name: 異常系（変換のライブラリを読み込めない・通知ブロック）
+    summary: 変換のライブラリを読み込めないとき、`ts`・`js` の範囲に通知ブロックを配置し、範囲の `html`・`css` と本文は描く
     setup:
       - name: 配布物を読み込んだページ
         description: 正常系（範囲のスクリプトと CSS）と同じ。`opts.config.html-scripts.url` に `/fixtures/missing.js`
@@ -5023,9 +5023,9 @@ flows:
         P->>M: mount(el, { markdown, config })
         M->>X: import(html-scripts.url)
         X-->>M: 失敗
-        M->>P: ts と js の範囲に通知の枠を配置する
+        M->>P: ts と js の範囲に通知ブロックを配置する
     expected:
-      - '`ts` の範囲と `js` の範囲の前に `role="status"` の通知の枠が 1 つずつあり、`ts` の範囲の `html` は `css` の色で描かれている'
+      - '`ts` の範囲と `js` の範囲の前に `role="status"` の通知ブロックが 1 つずつあり、`ts` の範囲の `html` は `css` の色で描かれている'
       - '`js` の範囲の `html` は描かれ、範囲の関数は呼ばれていない'
       - 段落があり、`console.error` に URL が出る
     test: test_error_when_transpiler_unavailable
@@ -5054,7 +5054,7 @@ flows:
     expected:
       - '`sailboat` と 2 つの `anchor` の場所の `span.mdmark-inline-icon` の中に `svg` がある'
       - Lucide への要求が `sailboat.mjs` と `anchor.mjs` の 1 件ずつで、`flag.mjs` への要求と `HEAD` が無い
-      - 見出しのアクセシブルネームにアイコンの名前が含まれない
+      - 見出しのスクリーンリーダー向けの名前にアイコンの名前が含まれない
       - まとめていない名前の `icon:` を持たない文書では、Lucide への要求が 0 件
     test: test_normal_when_unbundled_icons
     refs:
@@ -5082,12 +5082,12 @@ flows:
     expected:
       - '`no-such-icon` の場所が `<code>icon:no-such-icon</code>` で、段落の前の `div.mdmark-syntax-warning` の本文に `no-such-icon` がある'
       - '`anchor` の場所に `svg` がある'
-      - 通知の枠が無い
+      - 通知ブロックが無い
     test: test_error_when_icon_not_in_lucide
     refs:
       - dev/設計書/シナリオ/単一ユースケース/外部ライブラリを使うときだけ読み込む#scenarios[異常シナリオ（Lucide に無いアイコンの名前）]
-  - name: 異常系（Lucide のアイコンを読み込めない・通知の枠）
-    summary: アイコンを読み込めないとき、場所を行内のコードに戻し、通知の枠を 1 つだけ配置する
+  - name: 異常系（Lucide のアイコンを読み込めない・通知ブロック）
+    summary: アイコンを読み込めないとき、場所を行内のコードに戻し、通知ブロックを 1 つだけ配置する
     setup:
       - name: 配布物を読み込んだページ
         description: 正常系と同じ
@@ -5105,7 +5105,7 @@ flows:
         J--xM: 失敗
         M->>J: HEAD
         J--xM: 失敗
-        M->>P: 行内のコードに戻し、通知の枠を 1 つ配置する
+        M->>P: 行内のコードに戻し、通知ブロックを 1 つ配置する
     expected:
       - '`sailboat`・`anchor` の場所が `<code>icon:sailboat</code>`・`<code>icon:anchor</code>`'
       - 文書に `div.mdmark-notice` が 1 つだけあり、本文に Lucide のアイコンを読み込めないことがある
@@ -5125,7 +5125,7 @@ flows:
         description: 差し替える依存は無い
     flow: |-
       sequenceDiagram
-        actor U as 閲覧者
+        actor U as 読者
         participant P as 利用側のページ
         participant M as mdmark
         P->>M: mount(el, { markdown })
@@ -5137,7 +5137,7 @@ flows:
     expected:
       - 描いた直後、1 つ目の範囲の幅が 640px より広く 1280px 以下で、直前のボタンが `aria-label="広げて表示"`・`aria-pressed="true"` で文字を持たない
       - 描いた直後、2 つ目の範囲の幅が段落の幅と等しく、ボタンが `aria-pressed="false"`
-      - 1 つ目のボタンを押した後、範囲の幅が段落の幅と等しく `aria-pressed="false"` で、ボタンの位置とアクセシブルネームが押す前と同じ
+      - 1 つ目のボタンを押した後、範囲の幅が段落の幅と等しく `aria-pressed="false"` で、ボタンの位置とスクリーンリーダー向けの名前が押す前と同じ
       - 2 つ目のボタンで Enter を押した後、範囲の幅が段落より広い
       - 画面と描く先の要素の幅を 390px にすると、ボタンが表示されず、範囲の幅が段落の幅と等しく、文書に横のスクロールが無い
     test: test_normal_when_wide_toggled
@@ -5178,7 +5178,7 @@ flows:
         description: 差し替える依存は無い
     flow: |-
       sequenceDiagram
-        actor U as 閲覧者
+        actor U as 読者
         participant P as 利用側のページ
         participant M as mdmark
         P->>M: mount(el, { markdown })
@@ -5259,7 +5259,7 @@ flows:
         description: '`commentStore.load` が、同じ段落の別の文字に付けたコメントを 1 件返す'
     flow: |-
       sequenceDiagram
-        actor U as 閲覧者
+        actor U as 読者
         participant P as 利用側のページ
         participant M as mdmark
         P->>M: mount(el, { markdown, config, docId, commentStore })
@@ -5461,7 +5461,7 @@ flows:
         P->>M: 全画面のボタンを押す
         M->>P: リサイズハンドルの無い全画面を開く
     expected:
-      - リサイズハンドルが `role="separator"`・`aria-orientation="horizontal"`・`tabindex="0"`・アクセシブルネームを持ち、`aria-valuenow` が表示する枠の高さ
+      - リサイズハンドルが `role="separator"`・`aria-orientation="horizontal"`・`tabindex="0"`・スクリーンリーダー向けの名前を持ち、`aria-valuenow` が表示する枠の高さ
       - 200px のドラッグの後、表示する枠の高さが 200 増え、幅と倍率が変わらず、`aria-valuenow` が新しい高さ
       - '`0` の後の倍率が「表示する枠の幅 ÷ 図の幅」「表示する枠の高さ ÷ 図の高さ」、1 の最小で、図の全体が表示する枠に収まる'
       - '`↑` の後に表示する枠の高さが 32 減り、`↓` の後に 32 増える。高さは図の全体が今の倍率で収まる高さを超えない'
@@ -5593,17 +5593,17 @@ flows:
         participant M as mdmark
         participant X as mermaid
         P->>M: mount(el, { markdown, config })
-        M->>P: mermaid のコードブロックを隠し、その場所に読み込み中の枠を描く
+        M->>P: mermaid のコードブロックを隠し、その場所に読み込み中のブロックを描く
         M->>X: import(mermaid.url)
         X-->>M: モジュール
         M->>M: 描く先の要素の CSS 変数から base テーマの変数を作る
         M->>X: render(ソース) をコードブロックの順に呼ぶ
         X-->>M: SVG
-        M->>P: 読み込み中の枠とコードブロックを、SVG を入れた図の枠に置き換える
+        M->>P: 読み込み中のブロックとコードブロックを、SVG を入れた図の枠に置き換える
     expected:
       - '`mermaid.url` の本体への要求が 1 件'
-      - '`import()` が終わる前は、各 mermaid のコードブロックの場所に読み込み中の枠（`div.mdmark-embed[data-mdmark-slot="mermaid"]`）があり、コードブロックが見えていない'
-      - '`figure.mdmark-diagram[data-diagram="mermaid"]` が 2 つあり、それぞれの表示する枠に SVG があり、`div.mdmark-code` と読み込み中の枠が残っていない'
+      - '`import()` が終わる前は、各 mermaid のコードブロックの場所に読み込み中のブロック（`div.mdmark-embed[data-mdmark-slot="mermaid"]`）があり、コードブロックが見えていない'
+      - '`figure.mdmark-diagram[data-diagram="mermaid"]` が 2 つあり、それぞれの表示する枠に SVG があり、`div.mdmark-code` と読み込み中のブロックが残っていない'
       - flowchart の図の枠のタイトルが front matter の `title` の文字で、sequenceDiagram の図の枠のタイトルが `シーケンス図`
       - flowchart のノードの塗り・枠線・文字の計算済みの色が、`--mdmark-color-surface`・`--mdmark-color-border`・`--mdmark-color-text` の計算済みの色と一致し、枠線の `stroke` が `url(` で始まらない
       - sequenceDiagram の `actor` の場所に、lucide の人のアイコンの `svg` がある
@@ -5694,7 +5694,7 @@ flows:
       - 機能を解除した文書の mermaid のソースが `div.mdmark-code` のコードブロックのまま出ている
     test: test_normal_when_no_mermaid_target
   - name: 異常系（mermaid を読み込めない）
-    summary: mermaid を読み込めないとき、mermaid のコードブロックの前に通知の枠を配置し、コードブロックのまま残す
+    summary: mermaid を読み込めないとき、mermaid のコードブロックの前に通知ブロックを配置し、コードブロックのまま残す
     setup:
       - name: 配布物を読み込んだページ
         description: 正常系と同じ
@@ -5710,13 +5710,13 @@ flows:
         participant M as mdmark
         participant X as mermaid
         P->>M: mount(el, { markdown, config })
-        M->>P: mermaid のコードブロックを隠し、その場所に読み込み中の枠を描く
+        M->>P: mermaid のコードブロックを隠し、その場所に読み込み中のブロックを描く
         M->>X: import(mermaid.url)
         X-->>M: 404
-        M->>P: 読み込み中の枠を通知の枠に替え、コードブロックを出す
+        M->>P: 読み込み中のブロックを通知ブロックに替え、コードブロックを出す
     expected:
       - '`mount` が例外を投げない'
-      - 2 つの `div.mdmark-code` が見えていて、その前にそれぞれ通知の枠（`mdmark-notice`）があり、読み込み中の枠が残っていない
+      - 2 つの `div.mdmark-code` が見えていて、その前にそれぞれ通知ブロック（`mdmark-notice`）があり、読み込み中のブロックが残っていない
       - '`console.error` に `/fixtures/missing/mermaid.esm.min.mjs` を含む記録が 1 件以上ある'
     test: test_error_when_mermaid_not_found
   - name: 異常系（mermaid の記法を解釈できない）
@@ -5740,7 +5740,7 @@ flows:
         X-->>M: 解釈できないエラー
         M->>X: render(2 つ目のソース)
         X-->>M: SVG
-        M->>P: 1 つ目は読み込み中の枠を記載の警告に替えてコードブロックを出し、2 つ目は図の枠
+        M->>P: 1 つ目は読み込み中のブロックを記載の警告に替えてコードブロックを出し、2 つ目は図の枠
     expected:
       - 1 つ目の `div.mdmark-code` が見えていて、その前に `mdmark-syntax-warning` があり、本文に mermaid のエラーの 1 行目がある
       - 2 つ目のコードブロックの場所に `figure.mdmark-diagram[data-diagram="mermaid"]` がある
@@ -5748,7 +5748,7 @@ flows:
     test: test_error_when_mermaid_syntax_invalid
 lead: 利用側のページが、要素と Markdown と設定を指定し、要素の中に文書を描く。戻り値で本文の差し替えと片付けができる。
 idempotent: false
-side_effects: '`el` の中身と class を書き換え、記法の操作のイベントを `el` の中に付ける。まとめていない名前の `icon:` があるとき、jsDelivr の Lucide のアイコンのモジュールを名前ごとに `import()` し、読み込めなかった名前だけ同じ URL へ `HEAD` の `fetch` を送信する。`side-toc` がオンで見出しがあるとき、`el` の中を本文の列と右側の目次に分け、見出しの位置を `IntersectionObserver` で確認する。出し方が `hover` のときは、右端の線とパネルの位置を決めるため、`window` の `scroll`・`resize` と、`el` に最も近いスクロールする祖先の要素があればその `scroll` を受け取り、`document.body` の子の追加・削除を `MutationObserver` で確認する。`back-to-top` がオンのとき、`el` の子に先頭へ戻るボタンを配置し、スクロールする場所が画面全体なら `window` の `scroll`、`el` に最も近いスクロールする祖先の要素なら `document` の `scroll`（キャプチャーフェーズ）と、`window` の `resize` を受け取り、`document.body` と `el` の子の追加・削除を `MutationObserver` で確認する。`window` の `beforeprint`・`afterprint`・`hashchange` と、絞り込みのドロワーを開いている間だけ `document` の `pointerdown`・`keydown` を受け取る。図の部品か埋め込んだ HTML があるとき、図の表示する枠と埋め込んだ HTML の大きさを `ResizeObserver` で見、ツールチップを開いている間だけ `document` の `keydown`・`pointerdown` と `window` の `scroll`・`resize` を受け取り、全画面の間だけ `el` の中に `dialog` を配置する。リンク先を持つフロー図のノードの上から図を動かしたとき、次の 1 回の `click` まで `window` の `click`（キャプチャーフェーズ）を受け取る。`diagram-resize` がオンのとき、リサイズハンドルで変えた図の高さを sessionStorage に書き込み、描くたびに読み込み、ダブルクリックで戻すと削除する。操作できる部品の写すボタン・表のコピー・行の URL のコピー・コードブロックのコピー・ファイルツリーのコピーでクリップボードに書き込む。表があるとき、表の大きさと描く先の要素の幅を `ResizeObserver` で見、`animation-timeline` を持たないブラウザでは `window` と文書の中の `scroll` と `window` の `resize` を受け取る。`data-group` を持つタブがあるとき、localStorage の `mdmark-tabs:{group}` を描くたびに読み込み、閲覧者がタブを選ぶと書き込む。そのとき、ページの中の `el` の外にある同じ `group` のタブ群の選択も書き換える。文書に外部ライブラリか拡張のマーカーがあるとき、そのモジュールを読み込む。色分けの対象のコードブロックがあるとき、`syntax.url` の先の core と、使用する言語のモジュールを読み込む。`mermaid` がオンの文書に mermaid のコードブロックがあるとき、`mermaid.url` の先のモジュールを読み込み、描く先の配色の明暗の変化を確認して再描画する。`html-scripts` がオンの文書に範囲の `ts`・`js` があるとき、`html-scripts.url` の先の変換のライブラリを読み込み、範囲ごとに `document.head` へ `script` 要素を 1 つ配置してすぐ削除し、範囲の関数を呼ぶ。`opts.diffSource` を指定したとき、閲覧者が差分を開くと（`opts.diffMode` が `open` なら描いた時点、`blocks` なら描くたびに）取り出し元の `revisions`・`content` を呼び、差分の行を出している間だけミニマップの帯を配置し、スクロール先のスクロールの `scroll` と `window` の `resize` を受け取る。文書にビューのマーカーがあるとき、ビューの部品のモジュールを読み込む。`comments` がオンで `opts.commentStore` を指定したとき、コメントの部品のモジュールを読み込み、`load` を描くたびに 1 回呼び、保存で `save`、読み込みと保存の関数が持つときは吹き出しの修正で `update`・削除で `remove`、`reloadComments` で `load` を呼ぶ。その間は `document` の `selectionchange` を受け取り、コメントのボタン・入力欄・吹き出しを `document.body` に配置する。あわせて本文の列の右に余白の列を配置し、描く先の要素の大きさを `ResizeObserver`、描く先の要素の中の開閉・切り替えを `MutationObserver` で確認する'
+side_effects: '`el` の中身と class を書き換え、記法の操作のイベントを `el` の中に付ける。まとめていない名前の `icon:` があるとき、jsDelivr の Lucide のアイコンのモジュールを名前ごとに `import()` し、読み込めなかった名前だけ同じ URL へ `HEAD` の `fetch` を送信する。`side-toc` がオンで見出しがあるとき、`el` の中を本文の列と右側の目次に分け、見出しの位置を `IntersectionObserver` で確認する。出し方が `hover` のときは、右端の線とパネルの位置を決めるため、`window` の `scroll`・`resize` と、`el` に最も近いスクロールする祖先の要素があればその `scroll` を受け取り、`document.body` の子の追加・削除を `MutationObserver` で確認する。`back-to-top` がオンのとき、`el` の子に先頭へ戻るボタンを配置し、スクロールする場所が画面全体なら `window` の `scroll`、`el` に最も近いスクロールする祖先の要素なら `document` の `scroll`（キャプチャーフェーズ）と、`window` の `resize` を受け取り、`document.body` と `el` の子の追加・削除を `MutationObserver` で確認する。`window` の `beforeprint`・`afterprint`・`hashchange` と、絞り込みのドロワーを開いている間だけ `document` の `pointerdown`・`keydown` を受け取る。図の部品か埋め込んだ HTML があるとき、図の表示する枠と埋め込んだ HTML の大きさを `ResizeObserver` で見、ツールチップを開いている間だけ `document` の `keydown`・`pointerdown` と `window` の `scroll`・`resize` を受け取り、全画面の間だけ `el` の中に `dialog` を配置する。リンク先を持つフロー図のノードの上から図を動かしたとき、次の 1 回の `click` まで `window` の `click`（キャプチャーフェーズ）を受け取る。`diagram-resize` がオンのとき、リサイズハンドルで変えた図の高さを sessionStorage に書き込み、描くたびに読み込み、ダブルクリックで戻すと削除する。操作できる部品の写すボタン・表のコピー・行の URL のコピー・コードブロックのコピー・ファイルツリーのコピーでクリップボードに書き込む。表があるとき、表の大きさと描く先の要素の幅を `ResizeObserver` で見、`animation-timeline` を持たないブラウザでは `window` と文書の中の `scroll` と `window` の `resize` を受け取る。`data-group` を持つタブがあるとき、localStorage の `mdmark-tabs:{group}` を描くたびに読み込み、読者がタブを選ぶと書き込む。そのとき、ページの中の `el` の外にある同じ `group` のタブ群の選択も書き換える。文書に外部ライブラリか拡張のマーカーがあるとき、そのモジュールを読み込む。色分けの対象のコードブロックがあるとき、`syntax.url` の先の core と、使用する言語のモジュールを読み込む。`mermaid` がオンの文書に mermaid のコードブロックがあるとき、`mermaid.url` の先のモジュールを読み込み、描く先の配色の明暗の変化を確認して再描画する。`html-scripts` がオンの文書に範囲の `ts`・`js` があるとき、`html-scripts.url` の先の変換のライブラリを読み込み、範囲ごとに `document.head` へ `script` 要素を 1 つ配置してすぐ削除し、範囲の関数を呼ぶ。`opts.diffSource` を指定したとき、読者が差分を開くと（`opts.diffMode` が `open` なら描いた時点、`blocks` なら描くたびに）取り出し元の `revisions`・`content` を呼び、差分の行を出している間だけミニマップの帯を配置し、スクロール先のスクロールの `scroll` と `window` の `resize` を受け取る。文書にビューのマーカーがあるとき、ビューの部品のモジュールを読み込む。`comments` がオンで `opts.commentStore` を指定したとき、コメントの部品のモジュールを読み込み、`load` を描くたびに 1 回呼び、保存で `save`、読み込みと保存の関数が持つときは吹き出しの修正で `update`・削除で `remove`、`reloadComments` で `load` を呼ぶ。その間は `document` の `selectionchange` を受け取り、コメントのボタン・入力欄・吹き出しを `document.body` に配置する。あわせて本文の列の右に余白の列を配置し、描く先の要素の大きさを `ResizeObserver`、描く先の要素の中の開閉・切り替えを `MutationObserver` で確認する'
 callers:
   - dev/設計書/シナリオ/単一ユースケース/文書を描く#
   - dev/設計書/シナリオ/単一ユースケース/テーマを上書きする#
@@ -5917,7 +5917,7 @@ request:
     required: false
     default: '`button`'
     location: argument
-    description: 差分の出し方。`button` は閲覧者が「変更を表示」を押してから差分の行を出し、`open` は描いた時点で押した状態にして差分の行を出す。`blocks` は「変更を表示」と差分の場所を配置せず、描いた文書のブロックを追加と削除の色で塗り分ける
+    description: 差分の出し方。`button` は読者が「変更表示」を押してから差分の行を出し、`open` は描いた時点で押した状態にして差分の行を出す。`blocks` は「変更表示」と差分の場所を配置せず、描いた文書のブロックを追加と削除の色で塗り分ける
     notes: '`opts.diffSource` を指定しないときは使用しない。他の値は無視して `button` にする（制約「差分の出し方」）'
     status: planned
   - name: opts.config.labels.paramCopy
@@ -5925,7 +5925,7 @@ request:
     required: false
     default: '`今の値をコピーする`'
     location: argument
-    description: 操作できる部品の今の値をコピーするボタンの、アイコンの後ろに描く文言。ボタンのアクセシブルネームもこの文言になる
+    description: 操作できる部品の今の値をコピーするボタンの、アイコンの後ろに描く文言。ボタンのスクリーンリーダー向けの名前もこの文言になる
     example: '"コピー"'
     notes: 空でない文字列だけを受け、省いたとき・空文字・文字列でない値は既定の文言で描く（例外を出さない）。`labels` の知らないキーは読み込まない。`update` で再描画したときも `mount` に指定した文言のまま描く
     status: implemented
@@ -6014,15 +6014,15 @@ response:
 exceptions:
   - name: なし（正常終了）
     condition: Markdown を描き、戻り値を返却する
-  - name: なし（通知の枠）
+  - name: なし（通知ブロック）
     condition: 外部ライブラリのモジュールを読み込めない、またはモジュールの `draw` が例外を投げる
-    notes: 例外を投げず、そのマーカーの場所だけを通知の枠に替える。マーカーの名前・URL・元のエラーを `console.error` に出す
+    notes: 例外を投げず、そのマーカーの場所だけを通知ブロックに替える。マーカーの名前・URL・元のエラーを `console.error` に出す
   - name: TypeError
     condition: '`opts.diffSource` を指定し、`opts.docId` を指定しない'
     notes: 何も描かずに投げる。取り出し元に指定する文書の `id` が無く、利用側の誤りのため
-  - name: なし（差分の通知の枠）
+  - name: なし（差分の通知ブロック）
     condition: 取り出し元の `revisions`・`content` が reject するか、返却した値が制約の「差分の取り出し元」の構造に合わない
-    notes: 例外を投げず、差分の場所を通知の枠に替え、文書の本文は描いたまま残す。取り出し元の関数の名前・文書の `id`・リビジョンの `id`・元のエラーか合わなかった値を `console.error` に出す
+    notes: 例外を投げず、差分の場所を通知ブロックに替え、文書の本文は描いたまま残す。取り出し元の関数の名前・文書の `id`・リビジョンの `id`・元のエラーか合わなかった値を `console.error` に出す
   - name: TypeError（コメント）
     condition: '`opts.commentStore` を指定し、`opts.docId` を指定しないか、`opts.commentStore` が `load`・`save` の関数を持たないか、`update`・`remove` を関数でない値で持つ'
     notes: 何も描かずに投げる。メッセージに `docId` か `commentStore` を含める
@@ -6049,7 +6049,7 @@ exceptions:
     notes: 例外を投げず、コメントのボタンを出さない。コメントの機能に読み込みと保存の関数が要ることを `mount` ごとに 1 回だけ `console.error` に出す
   - name: なし（ビュー・コメントの部品のモジュールを読み込めない）
     condition: ビューの部品かコメントの部品のモジュールを読み込めない
-    notes: 例外を投げない。ビューのマーカーの場所は `render` が出した表のまま残し（切り替えとボードは配置せず、表は読み込めるため通知の枠に替えない）、コメントはボタンを出さず `load` も呼ばない。読み込めなかった部品の名前（`view` か `comments`）・モジュールの URL・元のエラーを `console.error` に出す。文書の残りは描く
+    notes: 例外を投げない。ビューのマーカーの場所は `render` が出した表のまま残し（切り替えとボードは配置せず、表は読み込めるため通知ブロックに替えない）、コメントはボタンを出さず `load` も呼ばない。読み込めなかった部品の名前（`view` か `comments`）・モジュールの URL・元のエラーを `console.error` に出す。文書の残りは描く
   - name: なし（色分けなし）
     condition: 色分けのライブラリの本体か言語のモジュールを読み込めない
     notes: 例外を投げず、読み込めなかった分のコードブロックを色分けせずに残す。URL と元のエラーを `console.error` に出す
@@ -6061,25 +6061,25 @@ exceptions:
     notes: 例外を投げず、`button` として描く
   - name: なし（ブロックの色分けを出せない）
     condition: '`opts.diffMode` が `blocks` で、取り出し元の `revisions`・`content` が reject するか、返却した値が制約「差分の取り出し元」の構造に合わない'
-    notes: 例外を投げず、`opts.markdown` を色を当てずに描いた本文を残し、本文の先頭に通知の枠（タイトル `変更を表示できません`・本文 `比べるリビジョンの本文を取り出せませんでした。色分けせずに表示しています。`）を配置する。`console.error` は差分の通知の枠と同じ。文言は一覧と本文のどちらの失敗でも同じ（確認ログの決定）
+    notes: 例外を投げず、`opts.markdown` を色を当てずに描いた本文を残し、本文の先頭に通知ブロック（タイトル `変更を表示できません`・本文 `比べるリビジョンの本文を取り出せませんでした。色分けせずに表示しています。`）を配置する。`console.error` は差分の通知ブロックと同じ。文言は一覧と本文のどちらの失敗でも同じ（確認ログの決定）
   - name: なし（範囲のスクリプトを動かせない）
     condition: 範囲の `ts`・`js` の既定のエクスポートが関数でないか、評価か関数の呼び出しが例外を投げるか、構文エラー（`transform` の例外か、`script` 要素からの登録が無い）
     notes: 例外を投げず、その範囲の前に記載の警告を配置し、範囲の `html`・`css` とほかの範囲・本文は描いたまま残す。範囲の通し番号と元のエラーを `console.error` に出す
   - name: なし（変換のライブラリを読み込めない）
     condition: '`html-scripts.url` のモジュールを読み込めないか、`transform` を持たない'
-    notes: 例外を投げず、`ts`・`js` の範囲の前に通知の枠を配置し、範囲の `html`・`css` は描いたまま残す。URL と元のエラーを `console.error` に出す
+    notes: 例外を投げず、`ts`・`js` の範囲の前に通知ブロックを配置し、範囲の `html`・`css` は描いたまま残す。URL と元のエラーを `console.error` に出す
   - name: なし（mermaid を読み込めない）
     condition: '`mermaid.url` のモジュールを読み込めないか、`render` を持たない'
-    notes: 例外を投げず、mermaid のコードブロックごとに読み込み中の枠を通知の枠に替え、コードブロックを出して残す。URL と元のエラーを `console.error` に出す
+    notes: 例外を投げず、mermaid のコードブロックごとに読み込み中のブロックを通知ブロックに替え、コードブロックを出して残す。URL と元のエラーを `console.error` に出す
   - name: なし（mermaid の記法を解釈できない）
     condition: mermaid の `render` がそのソースで例外を投げる
-    notes: 例外を投げず、そのコードブロックの読み込み中の枠を記載の警告（mermaid のエラーの 1 行目）に替え、コードブロックを出して残す。mermaid が文書に出すエラーの図は削除する。ほかの mermaid のコードブロックは描く
+    notes: 例外を投げず、そのコードブロックの読み込み中のブロックを記載の警告（mermaid のエラーの 1 行目）に替え、コードブロックを出して残す。mermaid が文書に出すエラーの図は削除する。ほかの mermaid のコードブロックは描く
   - name: なし（Lucide に無いアイコンの名前）
     condition: まとめていない名前のアイコンのモジュールを読み込めず、同じ URL の `HEAD` が 404 を返却する
     notes: 例外を投げず、その名前の場所を記載したとおりの行内のコードに戻し、段落の前に記載の警告（Lucide に無い名前であること）を配置する
   - name: なし（Lucide のアイコンを読み込めない）
     condition: まとめていない名前のアイコンのモジュールを読み込めず、同じ URL の `HEAD` も失敗する（404 以外の状態を含む）
-    notes: 例外を投げず、読み込めなかった名前の場所を記載したとおりの行内のコードに戻し、文書の先頭に通知の枠を 1 つだけ配置する。URL と元のエラーを `console.error` に出す
+    notes: 例外を投げず、読み込めなかった名前の場所を記載したとおりの行内のコードに戻し、文書の先頭に通知ブロックを 1 つだけ配置する。URL と元のエラーを `console.error` に出す
 constraints:
   - item: 描く本文
     constraint: '`render(markdown, { config })` が返却する HTML 文字列と同じ'
@@ -6091,7 +6091,7 @@ constraints:
   - item: 外部ライブラリのマーカーの場所
     constraint: 読み込みの間は、class `mdmark-embed`・`role="status"`・文字 `図を読み込んでいます` の要素を配置する
     notes: 高さは本文の CSS が先に取る（モジュール構成設計）
-  - item: 通知の枠
+  - item: 通知ブロック
     constraint: class `mdmark-notice`・`role="status"` の要素に、タイトル（class `mdmark-notice-title` の `strong`）と本文（`p`）を配置する。タイトルは図のマーカーなら `この図を表示できません`、図でないマーカーなら `この箇所を表示できません`。本文は `表示に使用するライブラリ（{マーカーの名前}）を読み込めませんでした。ネットワークにつながっているかを確認して、ページを再読み込みしてください。`
     notes: マーカーの名前は `code` 要素で囲む。設定の `libraries` で追加したマーカーは図のマーカーとして扱う
   - item: テーマ
@@ -6101,15 +6101,15 @@ constraints:
     constraint: Chrome 99・Firefox 98・Safari 16.4 以上
     decided_by: dev/設計書/非機能要件/非機能要件#
   - item: 表の操作
-    constraint: '`data-features` の機能だけを付ける。並べ替えは各列の見出しをボタンにし、押すたびに降順 → 昇順 → 元の並びを繰り返す（数値だけの列は数の大きさ、それ以外は文字の順）。並べた列の `th` に `aria-sort` を付ける。ピン止めは、表が幅からはみ出すときだけ各列の見出しに `aria-pressed` を持つボタンを出し、押した列までを左端に留め、もう一度押すと解除する。描いた直後は `data-pin` の列（無ければ `th scope="row"` の行見出しの最後の列、行見出しも無ければ先頭の列）までを留め、その列のボタンの `aria-pressed` を `true` にする。留める列は表がはみ出す間だけ当て、はみ出さない間は留めない。`data-check` の列は、並べ替え・絞り込み（候補を含む）・コピー・集計でセルの `data-value`（無いセルは文字）を値にする。絞り込みは `data-filter` の列の見出しにだけ `aria-expanded`・`aria-controls` を持つボタンを出し、`hidden` で開閉するドロワー（`select` は値のチェックボックスと候補の検索欄、`text` はキーワードの欄、`date` は開始日と終了日の欄と、どれも「絞り込みを解除」）を開く。ドロワーは同時に 1 つだけ開き、開いたら最初の入力欄へフォーカスを移し、外を押すか Esc で閉じる（Esc はボタンへフォーカスを戻す）。列ごとの絞り込みは重ねて当て、一致する行が無いときは「一致する行がありません」の行を出す。並べ替え・絞り込みで行の詳細はその行に付いて動く。`count`・`columns`・`reorder`・`total`・`copy` の表は、表の上に `mdmark-table-bar` の帯を配置する。件数は `aria-live="polite"` の要素に `{表示している行の数} / {全ての行の数} 件`（スクリーンリーダーは `{全ての行の数} 件中 {表示している行の数} 件を表示`）を出し、絞り込みのたびに書き換える。列の表示と並び順は、`columns`・`reorder` のどちらかを持つ表の帯に配置するアイコンだけのボタン（`aria-label` とツールチップが `テーブル設定`。`aria-expanded`・`aria-controls` を持つ）で、`role="dialog"` のテーブル設定のパネル（絞り込みのドロワーと同じ開閉の作法）を開く。パネルは、タイトル（`columns` があれば `表示と並び順`、`reorder` だけなら `並び順`）・列名の一覧・操作の案内を持つ。一覧の各行は、`reorder` の表では並べ替えのつまみ（`aria-label` が `「{列名}」の列を並べ替える`）を、`columns` の表では表示・非表示の目のアイコン（`aria-pressed` を持ち、`aria-label` が `「{列名}」を隠す`・隠した後は `「{列名}」を表示`）を持つ。描いた直後は `data-hide` の列の見出しとセルを `hidden` にし、Markdown に記載した先頭の列の目のアイコンは並べ替えた後も `disabled` にして、案内に `先頭の列は隠せません` を出す。隠した列があるときは、ボタンに隠した列の数のバッジを出し、`aria-label` を `テーブル設定（{隠した列の数} 列を非表示）` にする。`total` の表は、`data-total` に記載した計算ごとに 1 行ずつ、`合計`（`sum`）・`平均`（`avg`）・`件数`（`count`）の順に `tfoot` の行（`data-total-kind="{計算}"`）を配置する。各行の先頭のセルに計算の名前を、その計算を持つ列のセルに表示している行で集計した値を出し、ほかのセルは空にする（先頭の列を集計する行は、名前を左、値をセルの末尾に配置する）。絞り込みのたびにもう一度計算する。`sum`・`avg` は空のセルを除いて計算し、桁区切りを付けて小数は 2 桁までに丸める（平均する値が無いときは `—`）。`count` は空でないセルの数。`sum`・`avg` の列の本文の行（絞り込みに関わらず全ての行）に数として読み込めないセル（空のセルは数えない）が 1 つでもあれば、その列のその計算のセルを空にする（警告は `render` が表の上に配置する）。帯に `aria-expanded`・`aria-controls` を持つ `集計` のボタンを配置し、`表示する集計` のメニュー（`data-total` に記載した計算の名前のチェックボックス。開閉の作法はテーブル設定のパネルと同じ）で出す行を選ばせる。描いたときは全ての計算にチェックを入れ、チェックを解除した計算の行を `hidden` にし、出したこと・隠したことをスクリーンリーダーで通知する。選択は覚えず、再描画すると全ての計算に戻す。列を隠すと、その列の `tfoot` のセルも `hidden` にする。並べ替えで `tfoot` は動かない。`copy` の帯の `表をコピー` のボタンは lucide の `copy` のアイコンだけで文字を持たず、ツールチップ（`title`）とアクセシブルネームを `表をコピー` にし、`aria-expanded`・`aria-controls` を持ち、`コピーの形式` のメニュー（`Markdown の表`・`TSV` のボタン。開閉の作法はテーブル設定のパネルと同じ）を開く。形式を押すとメニューを閉じてフォーカスを `表をコピー` に戻し、見出しの行と表示している行の、表示している列のセルの文字を、選んだ形式で `navigator.clipboard.writeText` に記載する（集計の行・行の詳細・畳んだ最終列の開閉の行は含めない）。Markdown の表は見出しの行・`| --- |` の区切りの行・本文の行を `| セル | セル |` の構造で改行で並べ、セルの中の `|` を `\|` にする。TSV はセルをタブで、行を改行で区切る。記載できたらボタンのツールチップとアクセシブルネームを `コピーしました` にして 2 秒で戻し、コピーした形式をスクリーンリーダーで通知する。記載できないとき（`navigator.clipboard` が無いか拒まれた）は、帯の直後に `role="group"` のパネル（タイトル・手動でコピーする案内・コピーする中身を入れた読み取り専用の `textarea`・閉じるボタン）を出し、`textarea` へフォーカスを移して中身を全て選択し、記載できなかったことと手動でコピーできることをスクリーンリーダーで通知する。パネルは閉じるボタンか、パネルの中にフォーカスがある間の Esc で閉じ、フォーカスを `表をコピー` に戻す。もう一度コピーするときは前のパネルを閉じてから記載する。どちらも例外を外へ出さない。`rowlink` の表は、URL の `#` の後ろ（`#` が 2 つあれば最後の `#` の後ろ）を `decodeURIComponent` したもの（読み込めないときはそのまま）が行の `id` を指すとき（描いたときと `hashchange`）、その行を囲む閉じた表・閉じたセクションを開き、行が絞り込みで隠れていればその表の絞り込みを解除してから行へ移り、その行だけに `data-target` を付けて強調する。行へのリンクのマーカーは、行を指したとき・フォーカスしたとき・`data-target` の行で出し、指せない端末では常に薄く出す。マーカーを押すと、移る動き（アドレスバーの URL を行を指す URL にする）はそのままに、マーカーの解決済みの `href`（`rewriteLinks` が書き換えた後の値をページの URL で解決した絶対 URL）を `navigator.clipboard.writeText` に記載し、描くときにマーカーの横へ配置しておいた空の `role="status"` の要素の文字を、記載できたら `リンクをコピーしました`、記載できなければ `リンクをコピーできませんでした` に書き換え、2 秒後に空に戻す（例外を外へ出さない）。印刷では表の上のボタンと行へのリンクのマーカーを出さず、件数と出している集計の行を出し、隠した列は隠したままにする。`thead` が複数の行を持つ表は、並べ替え・ピン止め・絞り込みのボタンを、列ごとにその列だけを覆う最下段の見出しのセル（上の行から縦に結合したセルを含む）に配置する。`data-merge-columns` の表は、並べ替え・絞り込みのたびにその列の結合を解き、表示している行の隣り合う同じ値のセルをもう一度結合する（始まりのセルに `rowspan`、続くセルに `hidden`）。並べ替え・絞り込み・コピー・集計は、`data-merge` のセルも値を持つセルとして扱う'
+    constraint: '`data-features` の機能だけを付ける。並べ替えは各列の見出しをボタンにし、押すたびに降順 → 昇順 → 元の並びを繰り返す（数値だけの列は数の大きさ、それ以外は文字の順）。並べた列の `th` に `aria-sort` を付ける。ピン止めは、表が幅からはみ出すときだけ各列の見出しに `aria-pressed` を持つボタンを出し、押した列までを左端に留め、もう一度押すと解除する。描いた直後は `data-pin` の列（無ければ `th scope="row"` の行見出しの最後の列、行見出しも無ければ先頭の列）までを留め、その列のボタンの `aria-pressed` を `true` にする。留める列は表がはみ出す間だけ当て、はみ出さない間は留めない。`data-check` の列は、並べ替え・絞り込み（候補を含む）・コピー・集計でセルの `data-value`（無いセルは文字）を値にする。絞り込みは `data-filter` の列の見出しにだけ `aria-expanded`・`aria-controls` を持つボタンを出し、`hidden` で開閉するドロワー（`select` は値のチェックボックスと候補の検索欄、`text` はキーワードの欄、`date` は開始日と終了日の欄と、どれも「絞り込みを解除」）を開く。ドロワーは同時に 1 つだけ開き、開いたら最初の入力欄へフォーカスを移し、外を押すか Esc で閉じる（Esc はボタンへフォーカスを戻す）。列ごとの絞り込みは重ねて当て、一致する行が無いときは「一致する行がありません」の行を出す。並べ替え・絞り込みで行の詳細はその行に付いて動く。`count`・`columns`・`reorder`・`total`・`copy` の表は、表の上に `mdmark-table-bar` の帯を配置する。件数は `aria-live="polite"` の要素に `{表示している行の数} / {全ての行の数} 件`（スクリーンリーダーは `{全ての行の数} 件中 {表示している行の数} 件を表示`）を出し、絞り込みのたびに書き換える。列の表示と並び順は、`columns`・`reorder` のどちらかを持つ表の帯に配置するアイコンだけのボタン（`aria-label` とツールチップが `テーブル設定`。`aria-expanded`・`aria-controls` を持つ）で、`role="dialog"` のテーブル設定のパネル（絞り込みのドロワーと同じ開閉の作法）を開く。パネルは、タイトル（`columns` があれば `表示と並び順`、`reorder` だけなら `並び順`）・列名の一覧・操作の案内を持つ。一覧の各行は、`reorder` の表では並べ替えのつまみ（`aria-label` が `「{列名}」の列を並べ替える`）を、`columns` の表では表示・非表示の目のアイコン（`aria-pressed` を持ち、`aria-label` が `「{列名}」を隠す`・隠した後は `「{列名}」を表示`）を持つ。描いた直後は `data-hide` の列の見出しとセルを `hidden` にし、Markdown に記載した先頭の列の目のアイコンは並べ替えた後も `disabled` にして、案内に `先頭の列は隠せません` を出す。隠した列があるときは、ボタンに隠した列の数のバッジを出し、`aria-label` を `テーブル設定（{隠した列の数} 列を非表示）` にする。`total` の表は、`data-total` に記載した計算ごとに 1 行ずつ、`合計`（`sum`）・`平均`（`avg`）・`件数`（`count`）の順に `tfoot` の行（`data-total-kind="{計算}"`）を配置する。各行の先頭のセルに計算の名前を、その計算を持つ列のセルに表示している行で集計した値を出し、ほかのセルは空にする（先頭の列を集計する行は、名前を左、値をセルの末尾に配置する）。絞り込みのたびにもう一度計算する。`sum`・`avg` は空のセルを除いて計算し、桁区切りを付けて小数は 2 桁までに丸める（平均する値が無いときは `—`）。`count` は空でないセルの数。`sum`・`avg` の列の本文の行（絞り込みに関わらず全ての行）に数として読み込めないセル（空のセルは数えない）が 1 つでもあれば、その列のその計算のセルを空にする（警告は `render` が表の上に配置する）。帯に `aria-expanded`・`aria-controls` を持つ `集計` のボタンを配置し、`表示する集計` のメニュー（`data-total` に記載した計算の名前のチェックボックス。開閉の作法はテーブル設定のパネルと同じ）で出す行を選ばせる。描いたときは全ての計算にチェックを入れ、チェックを解除した計算の行を `hidden` にし、出したこと・隠したことをスクリーンリーダーで通知する。選択は覚えず、再描画すると全ての計算に戻す。列を隠すと、その列の `tfoot` のセルも `hidden` にする。並べ替えで `tfoot` は動かない。`copy` の帯の `表をコピー` のボタンは lucide の `copy` のアイコンだけで文字を持たず、ツールチップ（`title`）とスクリーンリーダー向けの名前を `表をコピー` にし、`aria-expanded`・`aria-controls` を持ち、`コピーの形式` のメニュー（`Markdown の表`・`TSV` のボタン。開閉の作法はテーブル設定のパネルと同じ）を開く。形式を押すとメニューを閉じてフォーカスを `表をコピー` に戻し、見出しの行と表示している行の、表示している列のセルの文字を、選んだ形式で `navigator.clipboard.writeText` に記載する（集計の行・行の詳細・畳んだ最終列の開閉の行は含めない）。Markdown の表は見出しの行・`| --- |` の区切りの行・本文の行を `| セル | セル |` の構造で改行で並べ、セルの中の `|` を `\|` にする。TSV はセルをタブで、行を改行で区切る。記載できたらボタンのツールチップとスクリーンリーダー向けの名前を `コピーしました` にして 2 秒で戻し、コピーした形式をスクリーンリーダーで通知する。記載できないとき（`navigator.clipboard` が無いか拒まれた）は、帯の直後に `role="group"` のパネル（タイトル・手動でコピーする案内・コピーする中身を入れた読み取り専用の `textarea`・閉じるボタン）を出し、`textarea` へフォーカスを移して中身を全て選択し、記載できなかったことと手動でコピーできることをスクリーンリーダーで通知する。パネルは閉じるボタンか、パネルの中にフォーカスがある間の Esc で閉じ、フォーカスを `表をコピー` に戻す。もう一度コピーするときは前のパネルを閉じてから記載する。どちらも例外を外へ出さない。`rowlink` の表は、URL の `#` の後ろ（`#` が 2 つあれば最後の `#` の後ろ）を `decodeURIComponent` したもの（読み込めないときはそのまま）が行の `id` を指すとき（描いたときと `hashchange`）、その行を囲む閉じた表・閉じたセクションを開き、行が絞り込みで隠れていればその表の絞り込みを解除してから行へ移り、その行だけに `data-target` を付けて強調する。行へのリンクのマーカーは、行を指したとき・フォーカスしたとき・`data-target` の行で出し、指せない端末では常に薄く出す。マーカーを押すと、移る動き（アドレスバーの URL を行を指す URL にする）はそのままに、マーカーの解決済みの `href`（`rewriteLinks` が書き換えた後の値をページの URL で解決した絶対 URL）を `navigator.clipboard.writeText` に記載し、描くときにマーカーの横へ配置しておいた空の `role="status"` の要素の文字を、記載できたら `リンクをコピーしました`、記載できなければ `リンクをコピーできませんでした` に書き換え、2 秒後に空に戻す（例外を外へ出さない）。印刷では表の上のボタンと行へのリンクのマーカーを出さず、件数と出している集計の行を出し、隠した列は隠したままにする。`thead` が複数の行を持つ表は、並べ替え・ピン止め・絞り込みのボタンを、列ごとにその列だけを覆う最下段の見出しのセル（上の行から縦に結合したセルを含む）に配置する。`data-merge-columns` の表は、並べ替え・絞り込みのたびにその列の結合を解き、表示している行の隣り合う同じ値のセルをもう一度結合する（始まりのセルに `rowspan`、続くセルに `hidden`）。並べ替え・絞り込み・コピー・集計は、`data-merge` のセルも値を持つセルとして扱う'
   - item: タブの操作
-    constraint: '`mdmark-tabs` の頭に `role="tablist"` の並びを配置し、各 `mdmark-tab-panel` のタブ名を `role="tab"` のボタンにする。中身は `role="tabpanel"` にし、選んだタブの中身だけを出してほかは `hidden` にする。左右の矢印・Home・End でタブを移って選ぶ（WAI-ARIA のタブの作法）。描いた直後は最初のタブを選ぶ。`data-group` を持つ `mdmark-tabs` は、描いたときに localStorage のキー `mdmark-tabs:{group}` に残したタブ名のタブを選び、残していないかそのタブ名が無ければ最初のタブを選ぶ。閲覧者が押すかキーでタブを選ぶと、ページの `data-group` が同じ `mdmark-tabs` のうち同じタブ名を持つものをそのタブ名へ切り替え（フォーカスは動かさない）、選んだタブ名を `mdmark-tabs:{group}` に残す。描いたときの選択と統一して切り替わった選択は残さない。localStorage を取り出す・読み込みと保存をするときに例外が出たら、`console.warn` に出して残さず・読み込まずに統一する動きと切り替えを続ける。入れ子の `mdmark-tabs` はそれぞれ別の `tablist` にし、矢印・Home・End はフォーカスのある並びの中だけで移る。内側のタブを選んでも外側の選択は変えない。タブ名の `strong` はボタンの中に残す'
+    constraint: '`mdmark-tabs` の頭に `role="tablist"` の並びを配置し、各 `mdmark-tab-panel` のタブ名を `role="tab"` のボタンにする。中身は `role="tabpanel"` にし、選んだタブの中身だけを出してほかは `hidden` にする。左右の矢印・Home・End でタブを移って選ぶ（WAI-ARIA のタブの作法）。描いた直後は最初のタブを選ぶ。`data-group` を持つ `mdmark-tabs` は、描いたときに localStorage のキー `mdmark-tabs:{group}` に残したタブ名のタブを選び、残していないかそのタブ名が無ければ最初のタブを選ぶ。読者が押すかキーでタブを選ぶと、ページの `data-group` が同じ `mdmark-tabs` のうち同じタブ名を持つものをそのタブ名へ切り替え（フォーカスは動かさない）、選んだタブ名を `mdmark-tabs:{group}` に残す。描いたときの選択と統一して切り替わった選択は残さない。localStorage を取り出す・読み込みと保存をするときに例外が出たら、`console.warn` に出して残さず・読み込まずに統一する動きと切り替えを続ける。入れ子の `mdmark-tabs` はそれぞれ別の `tablist` にし、矢印・Home・End はフォーカスのある並びの中だけで移る。内側のタブを選んでも外側の選択は変えない。タブ名の `strong` はボタンの中に残す'
   - item: セクションと行の詳細の開閉
     constraint: セクションは見出しの文字を `aria-expanded`・`aria-controls` を持つボタンにし、閉じたセクションの `mdmark-section-body` を `hidden="until-found"` にする（`data-section="closed"` は閉じた状態で始める）。URL の `#ID` が閉じたセクションの中を指すとき（描いたときと `hashchange`）と、ページ内検索が閉じたセクションの中に該当したときは、そのセクションを開く。行の詳細は、詳細を持つ行の先頭のセルに `aria-expanded`・`aria-controls` を持つボタンを配置し、`mdmark-row-detail` の行を `hidden` で開閉する（描いた直後は閉じる）
   - item: 印刷で記法を開く
     constraint: '`print` がオンのとき、`beforeprint` で閉じた `details`（閉じた表・閉じた注意書きと入れ子の注意書きを含む）・閉じたセクション・行の詳細・閉じたツリーのフォルダ・畳んだコードの行・列を畳んだ ER 図のテーブル（全ての列を出し、関係の線をもう一度結ぶ）・閉じた脚注の一覧・畳んだ階層の表の行・隠した YAML の見本を開き、タブの全ての中身をタブ名をタイトルにして縦に並べる。`afterprint` で、開いたものだけをもう一度閉じ、印刷の前に選んでいたタブだけを出す'
   - item: 拡張のマーカー
-    constraint: 登録した拡張のマーカーの場所は、拡張の `schema` で引数を検査し、合えば `load` で読み込んだモジュールの `draw` に描かせる。合わなければ記載の警告、読み込めなければ通知の枠に替える
+    constraint: 登録した拡張のマーカーの場所は、拡張の `schema` で引数を検査し、合えば `load` で読み込んだモジュールの `draw` に描かせる。合わなければ記載の警告、読み込めなければ通知ブロックに替える
     notes: dev/設計書/インターフェース定義/ライブラリ本体/拡張を登録する.ts
   - item: 用語と文書の別名の下線
     constraint: 本文の文字を `Intl.Segmenter`（`ja`・`word`）で区切り（`Intl.Segmenter` を持たない環境では、英数字の連なりを 1 単語とし、それ以外の文字を 1 文字ずつ区切る）、始まりと終わりが区切りに一致する用語の単語・別名と文書の `aliases` を、長い単語を先に照合する。照合の前に、単語と本文の文字の両方を NFKC・英字の小文字化・前後の空白の除去で正規化し、下線は本文に記載したままの文字に付ける。図の部品の `{{単語}}` も同じ正規化で用語を参照する。用語は用語の `id`、文書の別名は文書の `id` ごとに、セクション（h2〜h4）ごとに最初に出たところだけを class `mdmark-term` の要素にし、破線の下線を付ける。コード・リンク・見出し・用語集の表の中は照合しない。正規化した後に同じになる単語が複数の用語に該当するときは、索引の `terms`・`opts.aliases`（並びの順）・描く文書の表・ほかの文書の表（索引の `docs` の順）の順で 1 つを選ぶ
@@ -6125,8 +6125,8 @@ constraints:
     constraint: 1 つのページに文書を 2 つ以上描いても重ならないよう、`mount` は用語の下線のツールチップと関連文書の一覧のタイトルの `id` を、モジュールの通し番号でページの中で一意な値にもう一度振り、それを指す `aria-describedby`・`aria-details`・`aria-labelledby` も修正する。`update` でもう一度振る。`render` の出力の `id` は文書の中で一意なまま
     notes: タブの `mdmark-tabs-{n}`（`src/interact/tabs.ts` の `tabsCounter`）と同じ作り
   - item: 図の拡大・縮小
-    constraint: 図の部品の右上に、縮小・倍率・拡大・全画面のボタンをこの順に配置する（アイコンは lucide の `minus`・`plus`・`expand`。倍率のボタンは今の倍率を `125%` の構造の文字で出す）。描いたときは図の全体が表示する枠の幅と高さに収まる倍率（100% を超えない）で出し、この倍率を下限、300% を上限にする。拡大・縮小は 1 回 1.25 倍。倍率のボタンを押すと、描いたときの倍率と位置に戻す（描いたときの倍率と位置のときも押せ、何も変わらない）。倍率のボタンのアクセシブルネームは `倍率 {今の倍率}。全体が収まる倍率に戻す` にし、倍率が変わるたびに書き換える。図の中にフォーカスがある間だけ、キーの `+`・`-`・`0` で拡大・縮小・戻すをする。下限・上限ではその向きのボタンを押せなくする。ホイールは受け取らず、文書のスクロールと Shift との横のスクロールに任せる。表示する枠の幅が変わったとき、描いたときの倍率のままなら収まる倍率をもう一度求める。埋め込んだ HTML の中の図の部品にも同じボタンと操作を付け、部品でない HTML には付けない
-    notes: 'D-43 は部品でない普通の HTML に限る（確認ログ）。戻すのボタンを倍率のボタンにまとめ、今のアクセシブルネーム `全体が収まる倍率に戻す` を残すのは #6 の確認ログの決定。ほかのボタンのアクセシブルネームは部品設計'
+    constraint: 図の部品の右上に、縮小・倍率・拡大・全画面のボタンをこの順に配置する（アイコンは lucide の `minus`・`plus`・`expand`。倍率のボタンは今の倍率を `125%` の構造の文字で出す）。描いたときは図の全体が表示する枠の幅と高さに収まる倍率（100% を超えない）で出し、この倍率を下限、300% を上限にする。拡大・縮小は 1 回 1.25 倍。倍率のボタンを押すと、描いたときの倍率と位置に戻す（描いたときの倍率と位置のときも押せ、何も変わらない）。倍率のボタンのスクリーンリーダー向けの名前は `倍率 {今の倍率}。全体が収まる倍率に戻す` にし、倍率が変わるたびに書き換える。図の中にフォーカスがある間だけ、キーの `+`・`-`・`0` で拡大・縮小・戻すをする。下限・上限ではその向きのボタンを押せなくする。ホイールは受け取らず、文書のスクロールと Shift との横のスクロールに任せる。表示する枠の幅が変わったとき、描いたときの倍率のままなら収まる倍率をもう一度求める。埋め込んだ HTML の中の図の部品にも同じボタンと操作を付け、部品でない HTML には付けない
+    notes: 'D-43 は部品でない普通の HTML に限る（確認ログ）。戻すのボタンを倍率のボタンにまとめ、今のスクリーンリーダー向けの名前 `全体が収まる倍率に戻す` を残すのは #6 の確認ログの決定。ほかのボタンのスクリーンリーダー向けの名前は部品設計'
   - item: 図の移動
     constraint: 図の文字の上ではカーソルを `text` にして文字を選ばせ、それ以外の上では `grab` にして、ドラッグした分だけ図を動かす（ドラッグの間は `grabbing` で、文字を選ばせない）。リンク先を持つノード（`a.mdmark-diagram-node-link`）の上は、名前の文字の上も含めてカーソルを `pointer` にし、文字を選ばせない。その上で押したまま 4px を超えて動かしたときは図を動かし、離した後の `click` を `window` のキャプチャで止め（`preventDefault` と `stopPropagation`）、利用側が `document` で `click` を受けてもリンク先を開かない。この `window` の受け取りは、動かした後の 1 回の `click` を止めたら解除し、`update`・`destroy` でも解除する。動かさずに押して離したときと Enter は、リンクとして開く。図の表示する枠は `tabindex="0"` を持ち、フォーカスの間は矢印キーで押した向きの先が見えるよう 80px ずつ動かす（動かせる向きがあるときだけ文書のスクロールを止める）。図が表示する枠に収まらない間だけ、右上の帯に移動のボタン（上・下・左・右）を出し、矢印キーと同じだけ動かす。ポインターを押してから動いた距離がしきい値より小さい間は図を動かさず、グラフの項目のツールチップを出したままにし、しきい値を越えたら動かし始めて出しているツールチップを閉じる。シーケンス図は相手の行を表示する枠の上端に留める。フロー図は、定義の `stickyTitles` が `false` でない限り、システムの枠（`frame`）と層（`lanes`）のうち一部が表示する枠に見えているもののタイトルを表示する枠の上端（入れ子の層は枠のタイトルの下）に留め、グループが表示する枠の上へ出たら留めない。留めたタイトルは不透明な背景を持ち、ノードと線より手前に描き、`hint` のマーカーも留めた位置で開ける
     notes: モックの「移動のボタンは全体が見えている間は出さない」（確認ログ）。動かし始めるしきい値の距離はモジュール構成設計
@@ -6140,7 +6140,7 @@ constraints:
     constraint: ER 図のテーブルの列の開閉のボタンを押すと（Enter・Space を含む）、全ての列を出しているテーブルは主キーと外部キーの列だけを出して `非表示 {数} 列` の行を配置し、畳んでいるテーブルは全ての列を出す。ボタンの `aria-expanded` とアイコン（lucide の `chevrons-down-up`・`chevrons-up-down`）を切り替え、関係の線・多重度の記号・ラベルを今の列の行の位置へもう一度結び、図の倍率を保ち、フォーカスをボタンに残す。全画面のモーダルは開いたときの開閉の状態で描く。`update` では定義の `folded` の状態で再描画する
     notes: 列の行と線の結び方は dev/設計書/インターフェース定義/ライブラリ本体/文書をHTML文字列にする.ts の制約『ER 図』。モックの「列を畳んだ」（確認ログ）
   - item: 操作できる部品の操作
-    constraint: 'スライダーの `input` のたびに、今の値を `output` に出し、定義の `table` のその値の点でグラフの今の値の系列を再描画する（タイトル・凡例・倍率は保つ）。今の値を写すボタンは、アイコンの後ろに `opts.config.labels.paramCopy` の文言（既定は `今の値をコピーする`）を描き、`aria-label` を付けずにその文字をアクセシブルネームにする。押すと `{"{key}": {"name": "{label}", "value": {今の値}}}` を 2 字下げの JSON にして `navigator.clipboard.writeText` で記載し、ボタンのそばの `role="status"` にコピーしたことを出す。書き込みが拒まれたときは、記載できなかったことを出し、写すはずだった JSON をフォーカスできる `pre` に出して選んで写せるようにする'
+    constraint: 'スライダーの `input` のたびに、今の値を `output` に出し、定義の `table` のその値の点でグラフの今の値の系列を再描画する（タイトル・凡例・倍率は保つ）。今の値を写すボタンは、アイコンの後ろに `opts.config.labels.paramCopy` の文言（既定は `今の値をコピーする`）を描き、`aria-label` を付けずにその文字をスクリーンリーダー向けの名前にする。押すと `{"{key}": {"name": "{label}", "value": {今の値}}}` を 2 字下げの JSON にして `navigator.clipboard.writeText` で記載し、ボタンのそばの `role="status"` にコピーしたことを出す。書き込みが拒まれたときは、記載できなかったことを出し、写すはずだった JSON をフォーカスできる `pre` に出して選んで写せるようにする'
     notes: 通知の文言は画面設計『文書』
   - item: 埋め込んだ HTML の操作
     constraint: '`mdmark-html` の幅が本文の列より広い間だけ、class `is-wide` と `tabindex="0"` を付け、その中で横にスクロールさせる（幅が変わるたびにもう一度判定する）。埋め込んだ HTML の中の文字にも、本文と同じ用語と文書の別名の下線・やめた言い方のマーカーとツールチップを付ける（下線は範囲ごとに単語の最初の 1 回だけで、本文のセクションとは別に数える）（図の部品の中の文字は制約の「図のツールチップ」のとおり）'
@@ -6150,9 +6150,9 @@ constraints:
     notes: マーカーだけで開くのとポインターの形状は確認ログの決定
   - item: 差分の取り出し元
     constraint: '`revisions(docId: string): Promise<DiffRevision[]>` と `content({ docId, revisionId }: { docId: string; revisionId: string }): Promise<string>` を持つ。`revisions` はリビジョンを新しい順に返却し、mdmark は並べ替えない。`DiffRevision` は `id`（空でない文字列・必須）・`at`（ISO 8601 の日時の文字列・必須）・`label`（文字列・任意）・`author`（文字列・任意）。`content` は Markdown の文字列を返却する。`revisions` が配列でない・`id` か `at` が無いか構造が合わない・`id` が重なる・`content` が文字列でないときは、reject と同じに扱う'
-    notes: '`content` は ID が 2 つ並ぶためオブジェクトで受ける（外部規約『関数とオブジェクト引数』）。構造が合わないのは利用側の開発者の誤りで、閲覧者の操作では起きない（計画書）'
+    notes: '`content` は ID が 2 つ並ぶためオブジェクトで受ける（外部規約『関数とオブジェクト引数』）。構造が合わないのは利用側の開発者の誤りで、読者の操作では起きない（計画書）'
   - item: 差分を開く UI
-    constraint: '`opts.diffSource` を指定したとき、本文（右側の目次を配置するときは本文の列、配置しないときは `el`）の直下の最初の `h1` を文書のタイトルにし、タイトルの直後（`h1` が無ければ本文の先頭）に、`aria-expanded`・`aria-controls` を持つ「変更を表示」のボタンと差分の場所を配置する。タイトルがセクションのときはタイトルとそのセクションの中身の間に配置し、H1 のセクションを閉じてもボタンは隠れない。押すと、本文の直下のうちタイトル・ボタン・差分の場所を除く要素と、右側の目次を隠し、差分の場所に差分を出す。差分を開いている間は、セクションの開閉（開閉のボタン・`hashchange`）でセクションの状態が変わっても隠した要素を出さない。もう一度押すと差分を片付け、隠した要素と右側の目次を出し（セクションは今の開閉の状態で出す）、フォーカスはボタンに残す。`update` は差分を閉じて本文を再描画し、`destroy` は差分と取り出し元の待ちを片付ける'
+    constraint: '`opts.diffSource` を指定したとき、本文（右側の目次を配置するときは本文の列、配置しないときは `el`）の直下の最初の `h1` を文書のタイトルにし、タイトルの直後（`h1` が無ければ本文の先頭）に、`aria-expanded`・`aria-controls` を持つ「変更表示」のボタンと差分の場所を配置する。タイトルがセクションのときはタイトルとそのセクションの中身の間に配置し、H1 のセクションを閉じてもボタンは隠れない。押すと、本文の直下のうちタイトル・ボタン・差分の場所を除く要素と、右側の目次を隠し、差分の場所に差分を出す。差分を開いている間は、セクションの開閉（開閉のボタン・`hashchange`）でセクションの状態が変わっても隠した要素を出さない。もう一度押すと差分を片付け、隠した要素と右側の目次を出し（セクションは今の開閉の状態で出す）、フォーカスはボタンに残す。`update` は差分を閉じて本文を再描画し、`destroy` は差分と取り出し元の待ちを片付ける'
     notes: 配置方法は確認ログのモックへの合意。外観は画面設計『文書』。差分の場所は本文の見出しを持たないため、差分を開いている間は右側の目次（項目・今いるセクション・すべて展開とすべて折りたたむ）を出さない（レビューの指摘で案 A）
   - item: 比べる 2 つのリビジョン
     constraint: 差分を開くたびに `revisions` を 1 回呼ぶ。2 つ以上あれば、前に 2 番目・後に 1 番目のリビジョンを選び、`content` を前と後に 1 回ずつ呼ぶ。前と後の選ぶ欄の項目は、日時（JST）と `label`・`author` を並べる。前の欄では一番新しいリビジョンを、後の欄では前に選んだもの以前のリビジョンを選べなくし、前をもう一度選んで後が前以前になったら、後を前の 1 つ新しいリビジョンに移す。もう一度選ぶたびに選んだ 2 つの `content` をもう一度呼ぶ。リビジョンが 1 つなら `content` を呼ばず、`この文書のリビジョンは 1 つだけのため、比較対象のリビジョンがありません。` を出す
@@ -6164,13 +6164,13 @@ constraints:
     constraint: 2 つの Markdown のソースを行ごとに比べる。変えた塊の中で、削除した行と追加した行を前から順に対にし、対の行を単語ごとに比べる。単語の区切りは `Intl.Segmenter`（`ja`・`word`）で、持たないブラウザでは 1 文字ずつ比べる
     notes: 比べるライブラリ（jsdiff）はモジュール構成設計で差分の計算の関数型の後ろに配置する
   - item: 差分の行
-    constraint: 'ソースの行を、文字のまま 1 行ずつ出す。前にだけある行は class `mdmark-diff-line`・`data-kind="del"`、後にだけある行は `data-kind="add"`、同じ行は `data-kind="same"` を持つ。削除した行・追加した行は行頭に `-`・`+` のマーカー（`aria-hidden`）と、アクセシブルネーム `削除した行: `・`追加した行: `（見えない文字）を持つ。対の行で変わった単語は、削除した側を `del`、追加した側を `ins` で囲む。選ぶ欄の下の `role="status"` に `削除した行 {数}・追加した行 {数}` を出す。2 つの本文が同じなら行を出さず、`選んだ 2 つのリビジョンの本文に、変更はありません。` を出す'
+    constraint: 'ソースの行を、文字のまま 1 行ずつ出す。前にだけある行は class `mdmark-diff-line`・`data-kind="del"`、後にだけある行は `data-kind="add"`、同じ行は `data-kind="same"` を持つ。削除した行・追加した行は行頭に `-`・`+` のマーカー（`aria-hidden`）と、スクリーンリーダー向けの名前 `削除した行: `・`追加した行: `（見えない文字）を持つ。対の行で変わった単語は、削除した側を `del`、追加した側を `ins` で囲む。選ぶ欄の下の `role="status"` に `削除した行 {数}・追加した行 {数}` を出す。2 つの本文が同じなら行を出さず、`選んだ 2 つのリビジョンの本文に、変更はありません。` を出す'
     notes: 色は `--mdmark-color-diff-*` の CSS 変数（モジュール構成設計）
   - item: 埋め込んだ HTML の差分
     constraint: 差分の中の `<!-- html -->` 〜 `<!-- /html -->` の範囲は、範囲の見出しの右端に `HTML` のラベルを配置する。前か後で変えた範囲だけ、見出しに `role="group"`・`aria-label="HTML の見方"` の中に `aria-pressed` を持つ「ソース」「プレビュー」のボタンを配置する。既定はソースの行の色分けで、「プレビュー」を押すと、範囲の前と後の HTML を今の埋め込んだ HTML の描画（スクリプトとイベントの属性を落とす）で並べる。片側にしか無い範囲は、無い側に `{前か後}のリビジョンには、この範囲がありません` を出す
     notes: D-48・確認ログの語彙
-  - item: 差分の通知の枠
-    constraint: 通知の枠と同じ要素に配置する。`revisions` を取り出せないときは、タイトル `変更の履歴を表示できません`・本文 `リビジョンの一覧を取り出せませんでした。時間をおいて、変更をもう一度開いてください。` を差分の場所に出す。`content` を取り出せないときは、選ぶ欄を残し、タイトル `このリビジョンの本文を表示できません`・本文 `「{リビジョンの説明}」の本文を取り出せませんでした。別のリビジョンを選んでください。`（2 つとも取り出せなければ `「…」と「…」`）を差分の行の場所に出し、もう一度選べば差分を再描画する
+  - item: 差分の通知ブロック
+    constraint: 通知ブロックと同じ要素に配置する。`revisions` を取り出せないときは、タイトル `変更の履歴を表示できません`・本文 `リビジョンの一覧を取り出せませんでした。時間をおいて、変更をもう一度開いてください。` を差分の場所に出す。`content` を取り出せないときは、選ぶ欄を残し、タイトル `このリビジョンの本文を表示できません`・本文 `「{リビジョンの説明}」の本文を取り出せませんでした。別のリビジョンを選んでください。`（2 つとも取り出せなければ `「…」と「…」`）を差分の行の場所に出し、もう一度選べば差分を再描画する
     notes: 文面は確認ログの決定
   - item: ミニマップ
     constraint: 差分の行を出している間、スクロール先のスクロールの右端に、その高さいっぱいの帯（`aria-hidden`）を貼り付ける。スクロール先は差分の行の一番近いスクロールする祖先で、無ければ画面。帯はスクロール先の全体を表し、削除した行は左半分の赤・追加した行は右半分の緑のマーカー（続いた同じ種類の行は 1 つのマーカーにまとめ、プレビューに切り替えた範囲は範囲ごと 1 つのマーカー）にし、今見えている範囲を枠で示す。帯を押すとその位置がスクロール先の中ほどに来るようスクロールし、押したまま上下に動かすとそれに合わせてスクロールする。差分を閉じる・もう一度選ぶ・`destroy` で帯と受け取りを解除する
@@ -6203,7 +6203,7 @@ constraints:
     notes: 強調の外観（背景を濃くし、2px の線で全周を囲む）は部品設計『コメントのマーカー』とモックの合意
   - item: 余白のマーカー
     constraint: '`comments` がオンで `opts.commentStore` を指定したとき、`el` の中を `div.mdmark-content` とその右の余白の列 `div.mdmark-comment-margin`（幅 `--mdmark-comment-margin-width`）に分け、右側の目次があるときは余白の列を `aside.mdmark-side-toc` の前に配置する。マーカーごとに、マーカーのある行の縦の中ほどへ余白のマーカー（`button.mdmark-comment-marker`）を配置する。行の上端の差が 4px 以内のマーカーは 1 つのマーカーにまとめて箇所の数を添え、押すと行の最初のマーカーへ移る。閉じたセクション・選ばれていないタブ・閉じた行の詳細の中のマーカーは、いちばん外側の閉じた要素を `aria-controls` で指す開くボタンの行に、`data-closed`（`section`・`tab`・`row`）を持つマーカーを配置する。上のマーカーと重なるときは重ならない位置まで下げる。箇所が見つからないコメントにはマーカーを配置しない。`mountComments` は余白の列を配置しない'
-    notes: 配置場所・同じ行の箇所・閉じた中の箇所はモック作成で案 A に決定（確認ログ）。アクセシブルネーム・アイコン・色は部品設計
+    notes: 配置場所・同じ行の箇所・閉じた中の箇所はモック作成で案 A に決定（確認ログ）。スクリーンリーダー向けの名前・アイコン・色は部品設計
   - item: 余白のマーカーから移る
     constraint: マーカーを押すか、フォーカスして Enter・Space を押すと、マーカーを包む閉じた要素を外側から開き、マーカーが画面の中ほどに入るまでスクロールして、そのマーカーの吹き出しを開く（マーカーの押下と同じ処理）。吹き出しを開いているマーカーのマーカーは `data-current` を持つ
   - item: 余白のマーカーの再配置
@@ -6225,18 +6225,18 @@ constraints:
     constraint: 行に分けたコードブロック（`mdmark-code-line` を持つ）は各 `mdmark-code-text` の中を、分けないものは `code` の中を、highlight.js の `highlight` が返却する HTML に置き換える。行をまたいで開いている `span` は行末で閉じ、次の行の頭でもう一度開く。`pre`・`code`・`mdmark-code-line` の属性と `code` の `textContent` は変えない。色は `hljs-*` の class に CSS 変数 `--mdmark-color-syntax-{keyword,string,number,type,name,comment}` を適用する。`diff` の `hljs-addition`・`hljs-deletion` には、差分の行と同じ `--mdmark-color-diff-add-sign`・`--mdmark-color-diff-del-sign` を適用する。`[!code ++]`・`[!code --]` の行は、行の地の色と行頭の `+`・`-` を保ったまま行の中の文字を色分けする
     notes: 色分けの HTML は sanitize を経由しない（`hljs-*` は sanitize の許可に無い）。highlight.js はコードの文字をエスケープしてから `span` を付ける。種類ごとの class の当て方はモック `dev/mock/refs/97/assets/syntax-highlight.css` のとおり
   - item: 色分けを読み込めないとき
-    constraint: 本体を読み込めないときは全てのコードブロックを、言語のモジュールを読み込めないときはその言語のコードブロックを、色分けせずに描いたまま残す。例外を投げず、通知の枠も出さない。読み込めなかった URL と元のエラーを `console.error` に出す
+    constraint: 本体を読み込めないときは全てのコードブロックを、言語のモジュールを読み込めないときはその言語のコードブロックを、色分けせずに描いたまま残す。例外を投げず、通知ブロックも出さない。読み込めなかった URL と元のエラーを `console.error` に出す
     notes: コードは色分けが無くても欠けずに読み込めるため、外部ライブラリのマーカーと違って本文を枠で置き換えない
   - item: 見出し行と集計の行を留める
     constraint: 表は縦の高さの上限を持たず、本文の幅いっぱいに広げて列を本文の幅まで広げる（列の最小幅と見出しを折り返さない指定は変えない）。中身が本文の幅に収まらないときだけ表の中で横にスクロールし、続きがある側の端に影を出す（横にスクロールさせる要素の構造はモジュール構成設計）。表が画面に残っている間、見出し行のセルを、ページのスクロールで画面の上端から `--mdmark-sticky-top` だけ下の位置まで（本文の最後の行を越えない範囲で）下げ、集計の行のセルを画面の下端まで（本文の最初の行を越えない範囲で）上げる。ずらすのは元の見出し行と集計の行のセル（`transform`）で複製を作らず、横のスクロール・列の幅・ピン止め・並べ替え・絞り込みのボタンと状態・フォーカス・スクリーンリーダーは 1 組のまま一致する。ずらしたセルは背景を持ち、本文の行より手前に描く。`animation-timeline` と `animation-range` を持つブラウザでは、ずらす量を `view-timeline` と CSS のアニメーションでスクロールの位置から決め、表の大きさが変わったとき（`ResizeObserver`）だけ動く範囲の CSS 変数をもう一度入れる。持たないブラウザでは、`window` と文書の中の `scroll`・`window` の `resize`・表の大きさの変化のたびに、ずらす量を JS でもう一度入れる。表が画面の外に出ると、見出し行と集計の行も一緒に画面の外に出る。印刷ではずらさない。`update` でもう一度付け、`destroy` で受け取りと監視を解除する
     notes: PoC 検証で `animation-timeline` を持つブラウザは案 D、持たないブラウザは案 C に決定（計画書の `## PoC 結果`・確認ログ）。動く範囲の変数の名前はモジュール構成設計
   - item: 最終列を畳む
-    constraint: 描く先の要素の中身の幅が 720px 未満で、表示している最終列（先頭の列を除く）のセルのどれかが 1 行に収まらないとき、最終列の見出しとセルを隠し、本文の各行の先頭のセルの頭に `aria-expanded`（描いた直後は `false`）・`aria-controls` を持つ開閉のボタン（アクセシブルネーム `「{先頭のセルの文字}」の{最終列の見出しの文字}`）を配置する。ボタンを押すと（Enter・Space を含む）、行の直後の行に最終列の見出しの文字とその行のセルの中身を出し、もう一度押すと閉じる。行の詳細を持つ行は、行の詳細の中身の上に最終列の見出しと中身を配置し、行の詳細の開閉のボタンだけで両方を開閉する。並べ替え・絞り込みでは開閉の行もその行に付いて動き、行が隠れると開閉の行も隠す。描く先の要素の幅の変化（`ResizeObserver`）とテーブル設定の列の表示の切り替えのたびに畳むかをもう一度決め、畳まないときは開閉のボタンと開閉の行を出さない。テーブル設定で最終列を隠しているときは畳まない。印刷では畳まずに全ての列を出し、開閉のボタンを出さない
+    constraint: 描く先の要素の中身の幅が 720px 未満で、表示している最終列（先頭の列を除く）のセルのどれかが 1 行に収まらないとき、最終列の見出しとセルを隠し、本文の各行の先頭のセルの頭に `aria-expanded`（描いた直後は `false`）・`aria-controls` を持つ開閉のボタン（スクリーンリーダー向けの名前 `「{先頭のセルの文字}」の{最終列の見出しの文字}`）を配置する。ボタンを押すと（Enter・Space を含む）、行の直後の行に最終列の見出しの文字とその行のセルの中身を出し、もう一度押すと閉じる。行の詳細を持つ行は、行の詳細の中身の上に最終列の見出しと中身を配置し、行の詳細の開閉のボタンだけで両方を開閉する。並べ替え・絞り込みでは開閉の行もその行に付いて動き、行が隠れると開閉の行も隠す。描く先の要素の幅の変化（`ResizeObserver`）とテーブル設定の列の表示の切り替えのたびに畳むかをもう一度決め、畳まないときは開閉のボタンと開閉の行を出さない。テーブル設定で最終列を隠しているときは畳まない。印刷では畳まずに全ての列を出し、開閉のボタンを出さない
     notes: 幅と開き方はモック作成で案 A に決定（確認ログ）
   - item: コードブロックのコピー
     constraint: '`render` が帯（`mdmark-code-bar`）を付けたコードブロックの帯の右端に、`コピー` のボタン（`type="button"`）と `role="status"` の要素を配置する。押すと、行に分けたコードブロックは `data-kind="del"` の行を除く各行の `mdmark-code-text` の文字を改行でつないだもの、分けないものは `code` の文字から末尾の改行を 1 つ除いたものを `navigator.clipboard.writeText` に記載する（行のマーカーとマーカーだけを持つ行コメントの頭は `render` が削除してあり、行番号と行頭の `+`・`-` は文字に入っていない）。記載できたらボタンを `コピーしました` にして 2 秒で戻し、記載できないとき（`navigator.clipboard` が無いか拒まれた）は `コピーできませんでした` にして次に押すまで残す。どちらも `role="status"` でスクリーンリーダーに伝えて通知し、例外を外へ出さない。畳んだコードの行もコピーに含める。印刷ではボタンを出さない。`update` でもう一度付ける'
   - item: コードの折りたたみ
-    constraint: '`data-fold-lines` を持つ行の行番号の右（行番号を持たないときは行の頭）に、`aria-expanded`・`aria-controls` を持つ開閉のボタン（`type="button"`）を配置する（`data-folded` の行は `false`、ほかは `true`）。押すと（Enter・Space を含む）、その行の後ろの `data-fold-lines` の数の行を `hidden` にし、行の末尾に `type="button"` の `⋯` のボタン（アクセシブルネームは開く行の数を含む）を配置する。`⋯` か開閉のボタンを押すと開き、畳む前に畳んでいた内側の行は畳んだまま残す。Shift を押しながらの開閉（制約「入れ子をまとめて開閉」と同じ受け方）は、範囲の中の畳める行も同じ状態にする。畳んだ状態は覚えず、`update` と再描画で `data-folded` のとおりに戻す。印刷では開閉のボタンと `⋯` を出さない'
+    constraint: '`data-fold-lines` を持つ行の行番号の右（行番号を持たないときは行の頭）に、`aria-expanded`・`aria-controls` を持つ開閉のボタン（`type="button"`）を配置する（`data-folded` の行は `false`、ほかは `true`）。押すと（Enter・Space を含む）、その行の後ろの `data-fold-lines` の数の行を `hidden` にし、行の末尾に `type="button"` の `⋯` のボタン（スクリーンリーダー向けの名前は開く行の数を含む）を配置する。`⋯` か開閉のボタンを押すと開き、畳む前に畳んでいた内側の行は畳んだまま残す。Shift を押しながらの開閉（制約「入れ子をまとめて開閉」と同じ受け方）は、範囲の中の畳める行も同じ状態にする。畳んだ状態は覚えず、`update` と再描画で `data-folded` のとおりに戻す。印刷では開閉のボタンと `⋯` を出さない'
   - item: インデントの縦線
     constraint: '`data-indent` の行に、レベルごとに縦線を CSS で参照する（文字に入れず、選んで写す中身に入らない）。ポインターを乗せた行を含む最も内側の畳める範囲（畳める行の後ろの `data-fold-lines` の数の行）に `data-guide-active` を付け、その範囲の深さの縦線だけを濃くする。ポインターが行の外に出ると削除する'
     notes: 帯を付けるコードブロックは dev/設計書/インターフェース定義/ライブラリ本体/文書をHTML文字列にする.ts の制約『コードブロック』
@@ -6248,7 +6248,7 @@ constraints:
     notes: '`src/interact/sections.ts` の `revealHashTarget` は、タブの中の要素の処理をタブの操作に任せる（受付判断のレビュー）'
   - item: 右側の目次
     constraint: '`side-toc` がオンで、文書に h1〜h3 の見出しが 1 つ以上あるとき、`el` の中を、本文（`render` の HTML）を入れた `div.mdmark-content` と、その右の `aside.mdmark-side-toc` に分ける。`aside` には、右端の線（見出しごとの短い線。`aria-hidden`）・目次を出すボタン・パネル（`nav`。タイトル `目次`・ピン止めのボタン・すべて展開とすべて折りたたむのボタン・項目の一覧）を配置する。項目は h1〜h3 の見出しを階層どおりに入れ子にした `ul` の、各見出しの `#{ID}` へのリンクで、閉じたセクションと選ばれていないタブの中の見出しも記載する。見出しが無いか `side-toc` がオフのときは分けず、`el` の中は本文だけにする（余白の列を配置するときを除く。制約「余白のマーカー」）。`--mdmark-content-width` は本文の列に適用する。差分を開いている間は `aside` を隠す（制約「差分を開く UI」）。印刷では `aside` を出さず、本文の列を紙の幅いっぱいに出す'
-    notes: アクセシブルネーム・ボタンの文言・アイコンは画面設計『文書』と部品設計。パネルの `nav` は `aria-label="右側の目次"` で、本文の中の目次（`<!-- toc -->`）とアクセシブルネームを分ける
+    notes: スクリーンリーダー向けの名前・ボタンの文言・アイコンは画面設計『文書』と部品設計。パネルの `nav` は `aria-label="右側の目次"` で、本文の中の目次（`<!-- toc -->`）とスクリーンリーダー向けの名前を分ける
   - item: 右側の目次の出し方
     constraint: '`side-toc.mode` が `hover` のとき、パネルは隠して配置し（透明にしてポインターを受けない。Tab では項目へ移れる）、右端の線にポインターを乗せている間と、パネルの中にフォーカスがある間だけ出す。ピン止めのボタン（`aria-pressed`）を押すと、ポインターとフォーカスが離れても出し続け、パネルを本文に重ねず右の列に配置する。もう一度押すと解除する。ポインターを乗せられない端末（`hover: none`）では、右端の線の代わりに目次を出すボタンを配置する。`fixed` のときは右端の線を配置せず、目次を出すボタン（三点リーダーのアイコン・`aria-expanded`・`aria-controls`）を押すとパネルを右の列に出し続け、もう一度押すと隠す。目次を出すボタンで出したパネルの中にフォーカスがある間の Esc は、パネルを隠してフォーカスを目次を出すボタンへ戻す。ピン止めと目次を出すボタンの状態は保存せず、`mount` のたびに解除した状態で始め、`update` では保つ。`update` で page のマーカーにより出し方（`hover`・`fixed`）が変わったときは、ピン止めと目次を出すボタンを解除した状態から始める'
     notes: ピン止めで右の列に配置するのと、ポインターを乗せられない端末のボタンは、モック作成で案 A に決定（確認ログ）
@@ -6266,7 +6266,7 @@ constraints:
     constraint: Shift を押しながらセクションの開閉のボタンを押したとき（`click` の `shiftKey`）と、ボタンにフォーカスして Shift を押しながら Enter・Space を押したとき（ボタンの `keydown` の `shiftKey`。既定の動きを止め、`click` を発生させない）、そのセクションを今と逆の状態にし、中の入れ子の全てのセクションを同じ状態にする。外側のセクションとほかのセクションは変えない
     notes: Firefox ではキーで押した `click` の `shiftKey` が立たないため、キーは `keydown` で受ける（計画書）
   - item: エイリアスの照合
-    constraint: '`glossary` がオンのとき、`opts.aliases` のエイリアスの `name` と `aliases` を、制約の「用語と文書の別名の下線」と同じ区切り・正規化・範囲で照合し、エイリアスの `id` ごとにセクション（h2〜h4）ごとに最初に出たところだけに下線を付ける（`avoid` の種類は制約の「やめた言い方のマーカー」）。`alias_type` が `env` のもの・`term`・`doc`・`command`・`url`・`skill`・`tool`・`path`・`avoid` に無いもの・種類の必須のキーが空のもの・`id` が前のエイリアスと同じものは照合せず、通知の枠も出さない。図の部品の `{{単語}}` はエイリアスを参照しない'
+    constraint: '`glossary` がオンのとき、`opts.aliases` のエイリアスの `name` と `aliases` を、制約の「用語と文書の別名の下線」と同じ区切り・正規化・範囲で照合し、エイリアスの `id` ごとにセクション（h2〜h4）ごとに最初に出たところだけに下線を付ける（`avoid` の種類は制約の「やめた言い方のマーカー」）。`alias_type` が `env` のもの・`term`・`doc`・`command`・`url`・`skill`・`tool`・`path`・`avoid` に無いもの・種類の必須のキーが空のもの・`id` が前のエイリアスと同じものは照合せず、通知ブロックも出さない。図の部品の `{{単語}}` はエイリアスを参照しない'
     notes: '`env` は値にシークレットキーを含みうるため、`buildAliases` を経由せずに指定されても照合しない。種類ごとの必須のキーは ER 図『エイリアス』の補足'
   - item: エイリアスのツールチップ
     constraint: 種類ごとの区分の見出し（`term` は「用語」、`doc` は「文書」、`command` は「コマンド」、`url` は「URL」、`skill` は「スキル」、`tool` は「ツール」、`path` は「パス」）の下に名前と `description` を出す。`command` はコマンドをコードで出してコピーのボタンを配置し、`cwd` があれば実行場所を出す。`url` は URL の文字列にリンクを埋め、長い URL は 1 行に収めて末尾を「...」で省略する。`skill`・`tool`・`path` はスキル名・ツール名・パスをコードで出す。`avoid` は「代わりの用語」に `replacement` を、`term` の `avoid` は「代わりの用語」にそのエイリアスの名前と `description` を出す。値は制約の「索引の値の出し方」と同じく文字として出す
@@ -6288,7 +6288,7 @@ constraints:
     constraint: 機能 `card-grid` がオンの文書で、`<!-- cards -->` 〜 `<!-- /cards -->` の中身がリスト 1 つのとき、`ul.mdmark-card-grid` にして項目ごとに 1 枚のカードを描く。項目の最初のリンクがカードのリンク（`a.mdmark-card-grid-item`）とタイトル、その前の行内の `icon:名前` がアイコン（`icon` の機能と同じ要素と読み込みに class `mdmark-card-grid-icon` を追加したもの）、残りの文字が説明になる。URL をそのまま記載したリンクのタイトルはスキームを除いた URL。リンクを持たない項目は `div.mdmark-card-grid-item` にする。範囲の中のリンクはリンクと添付のカード（`cards`）にしない。中身がリスト 1 つでないときは範囲の上に記載の警告を配置し、中身を記載したとおりに描く。`card-grid` がオフのときはマーカーを出さずに中身を記載したとおりに描く
     notes: class は `.mdmark-card`（リンクと添付のカード）・`.mdmark-view-cards`（ビューのボード）と別の名前。外観はモック `dev/mock/components/card-grid/`（確認ログ）
   - item: 差分の出し方
-    constraint: '`opts.diffMode` が `button` のときは制約「差分を開く UI」のとおり。`open` のときは、描いた時点で「変更を表示」を押した状態（`aria-expanded="true"`・本文を隠す）にし、制約「比べる 2 つのリビジョン」のとおり取り出し元を呼んで差分の行を出す。もう一度押すと閉じ、`update` の後は開いた状態で再描画して取り出し元をもう一度呼ぶ。`blocks` のときは「変更を表示」と差分の場所・ミニマップを配置せず、本文を描いた後に `revisions` を 1 回呼び、2 つ以上あれば 2 番目（前）と 1 番目（後）の `content` を 1 回ずつ呼び、制約「描いた文書のブロックの色分け」で本文を再描画する。取り出し元を待つ間・リビジョンが 1 つのとき・2 つの本文が同じときは、`opts.markdown` を色を当てずに描いた本文のまま出す。`update` のたびに取り出し元をもう一度呼び、制約「差分の待ち」と同じく古い結果は描かない'
+    constraint: '`opts.diffMode` が `button` のときは制約「差分を開く UI」のとおり。`open` のときは、描いた時点で「変更表示」を押した状態（`aria-expanded="true"`・本文を隠す）にし、制約「比べる 2 つのリビジョン」のとおり取り出し元を呼んで差分の行を出す。もう一度押すと閉じ、`update` の後は開いた状態で再描画して取り出し元をもう一度呼ぶ。`blocks` のときは「変更表示」と差分の場所・ミニマップを配置せず、本文を描いた後に `revisions` を 1 回呼び、2 つ以上あれば 2 番目（前）と 1 番目（後）の `content` を 1 回ずつ呼び、制約「描いた文書のブロックの色分け」で本文を再描画する。取り出し元を待つ間・リビジョンが 1 つのとき・2 つの本文が同じときは、`opts.markdown` を色を当てずに描いた本文のまま出す。`update` のたびに取り出し元をもう一度呼び、制約「差分の待ち」と同じく古い結果は描かない'
     notes: '`blocks` は確認ログのモックへの合意（差分のプレビューは文書を色分けして出し、ボタンと選ぶ欄を持たない）。VS Code 拡張機能が `blocks` で描く'
   - item: 対応する差分の出し方
     constraint: 配布物の `dist/index.js` は `diffModes`（`readonly ["button", "open", "blocks"]`）を名前付きで公開する。利用側は、読み込んだ配布物が `diffModes` を持たないか目的の出し方を含まないとき、その出し方に対応しないバージョンと見なす
@@ -6321,7 +6321,7 @@ constraints:
     constraint: '`lightbox` がオンのとき、`figure.mdmark-image` の中の `img` のうち `data-nolightbox` を持たないものを、`<button class="mdmark-image-open" type="button" aria-label="画像を拡大: {alt}">` と右上の拡大のアイコン（`aria-hidden`）で包む（リンクの中の画像と、文の中の画像は包まない）。押すと、`<dialog class="mdmark-lightbox" aria-label="画像の拡大">` を `showModal()` で開き、押した画像と title のキャプションを出す。切り替えの並びは同じ文書の包んだ画像を文書の順に並べたもの（今の配色で隠れている `mdmark-only-*` の画像を除く）で、帯の左に前の画像・枚数（`{何枚目} / {全ての枚数}`）・次の画像のボタン、続けて図の全画面と同じ縮小・倍率・拡大と移動のボタン、右端に閉じるボタンを配置する。画像が 1 枚のときは前後のボタンを出さない。左右の矢印キーで前後に切り替え（拡大中は切り替えず、制約「図の移動」と同じく動かす）、端では切り替えない。閉じるボタン・Esc・ダイアログの外の背景（`::backdrop`）を押すと閉じ（`closedby="any"`。持たないブラウザは `dialog` 自身を押したときに閉じる）、フォーカスを押した画像のボタンへ戻し、文書のスクロールの位置を開く前のままにする。ダイアログの中で Tab のフォーカスを循環させる。閉じたときに、開いている間に付けた受け取りを解除する'
     notes: 操作は図の全画面と統一する（#199 の D-36）。帯の並びは確認ログのモックへの合意。ライトボックスの本体を配布物から分けて使用するときだけ読み込むかはモジュール構成設計
   - item: ライトボックスの拡大・縮小・移動
-    constraint: 開いたときは画像の全体がダイアログに収まる倍率（100% を超えない）で出し、制約「図の拡大・縮小」と同じ刻み・上限・キー（`+`・`-`・`0`）・倍率のボタンのアクセシブルネームで拡大・縮小する。画像が収まらない間だけ移動のボタンを出し、ドラッグと矢印キーで制約「図の移動」と同じだけ動かす。前後に切り替えると、収まる倍率と位置に戻す
+    constraint: 開いたときは画像の全体がダイアログに収まる倍率（100% を超えない）で出し、制約「図の拡大・縮小」と同じ刻み・上限・キー（`+`・`-`・`0`）・倍率のボタンのスクリーンリーダー向けの名前で拡大・縮小する。画像が収まらない間だけ移動のボタンを出し、ドラッグと矢印キーで制約「図の移動」と同じだけ動かす。前後に切り替えると、収まる倍率と位置に戻す
   - item: GIF の止める・再生する
     constraint: '`gif` がオンのとき、`data-gif` を持つ `img` を `<span class="mdmark-gif">` で包み、`img.decode()` の後に最初のフレームを同じ大きさの `canvas` に描いて `img` の後ろに `hidden` で配置し、`<button class="mdmark-gif-toggle" type="button" aria-pressed="false" aria-label="GIF を停止">` を付ける。押すと、止めるときは `canvas` を出して `img` を `visibility: hidden` にし、ボタンを `aria-pressed="true"`・`aria-label="GIF を再生"` にする。再生するときは逆にする。`prefers-reduced-motion: reduce` のときは止めた状態で始める。`decode()` が失敗した GIF にはボタンを付けない。`canvas[hidden]` は `display: none` にする'
     notes: 止め方は PoC 検証の案 A（止めると最初のフレームに戻る）
@@ -6340,7 +6340,7 @@ constraints:
     constraint: '`html-scripts` がオンのとき、描いた後に `template.mdmark-html-script` を持つ範囲を文書の順に動かす。変換のライブラリの `transform` で、`ts` は preset `typescript`・plugin `transform-modules-commonjs`・`filename` `range.ts`、`js` は plugin `transform-modules-commonjs`・`filename` `range.js` で CommonJS に変える（`export`・`build` の esbuild と同じく、`import` と全ての `export` の文を変える）。変えたコードを `module`・`exports`・`require` を受け取る関数で包み、その関数を mdmark の受け取りの関数へ範囲の通し番号で登録させるコードを、ページの `script[nonce]` の `nonce`（無ければ付けない）を付けた `script` 要素で動かす。`transform` が例外を投げたときと、要素を削除した後に登録が無いときは構文エラーとして、その範囲の前に記載の警告を配置し、要素を配置している間に受けた `window` の `error` の内容か `transform` の例外を `console.error` に出す。登録された関数を呼んで得た既定のエクスポートの関数を、範囲の根の要素（`div.mdmark-html`）を引数に 1 回呼ぶ。`require` は呼ぶと例外を投げる関数にする。関数が関数を返却したときはそれを範囲の `destroy` として持ち、`update`・`destroy`・同じ要素への 2 回目の `mount` で再描画する前に 1 回呼ぶ（例外は `console.error` に出して続ける）。書き出した HTML の起動の処理が、範囲のコードの文字ごとに関数を指定したときは、変換も `script` 要素も使用せずにその関数を呼ぶ。差分の中の範囲は動かさない'
     notes: 実行の経路は PoC 検証（#306）で成立を確かめた。変換のライブラリは外部ライブラリ『@babel/standalone』
   - item: 変換のライブラリの読み込み
-    constraint: 描いた後に `ts`・`js` の範囲が 1 つ以上あるときだけ、`html-scripts.url` を `import()` で読み込み、既定のエクスポート（無ければモジュール）の `disableScriptTags` を呼んでから `transform` を使用する。同じ `mount` の中では 1 回だけ読み込む。読み込み終わる前に `update`・`destroy` したときは、前の描画の範囲を動かさない。読み込みの完了は待たずに `mount` を返却する。読み込めないときは `ts`・`js` の範囲の前に通知の枠（本文の文言は画面設計『文書』）を配置する
+    constraint: 描いた後に `ts`・`js` の範囲が 1 つ以上あるときだけ、`html-scripts.url` を `import()` で読み込み、既定のエクスポート（無ければモジュール）の `disableScriptTags` を呼んでから `transform` を使用する。同じ `mount` の中では 1 回だけ読み込む。読み込み終わる前に `update`・`destroy` したときは、前の描画の範囲を動かさない。読み込みの完了は待たずに `mount` を返却する。読み込めないときは `ts`・`js` の範囲の前に通知ブロック（本文の文言は画面設計『文書』）を配置する
     decided_by: dev/設計書/外部ライブラリ/babel-standalone#
   - item: 列の並べ替え
     constraint: '`reorder` の表は、テーブル設定の一覧のつまみのドラッグ＆ドロップと、つまみにフォーカスした↑・↓ キー（1 つずつ動かし、フォーカスをつまみに残す）で列を動かし、一覧の順に見出しと全ての本文の行・集計の行のセルをもう一度並べる。一覧は `pin=` で留めた列・結合した見出しの範囲（`data-group`）ごと・範囲の外の列に分け（`pin=` が無い表の既定の先頭の列の留めでは分けない）、同じ範囲と同じピン止めの側の中だけで動かす。範囲の外やピン止めの境をまたぐ位置にはドロップできる位置の線を出さず、どちらの向きにも動かせない列のつまみを `disabled` にする。見出しの並べ替え・ピン止め・絞り込みのボタンでは列を動かさない。行の並べ替え・絞り込み・再結合の後も動かした列の順を保ち、コピーは今の列の順で記載する。列の順は覚えず、再描画すると Markdown に記載した順に戻す'
@@ -6352,7 +6352,7 @@ constraints:
     constraint: '`render` が中を空にした `span.mdmark-inline-icon` の名前ごとに、`https://cdn.jsdelivr.net/npm/lucide@{まとめた lucide のバージョン}/dist/esm/icons/{名前}.mjs` を 1 回だけ `import()` し、`export default` の IconNode から `svg` を作って同じ名前の全ての場所に入れる（要素・属性は `render` の制約「アイコン」の許すものだけ）。`opts.icons` にある名前は読み込まない。`import()` が失敗した名前だけ同じ URL へ `fetch(url, { method: "HEAD" })` を送信し、404 なら例外「なし（Lucide に無いアイコンの名前）」、それ以外は例外「なし（Lucide のアイコンを読み込めない）」にする。まとめていない名前の `icon:` を持たない文書では読み込まない。`update` は読み込んだ名前を再読み込みしない'
     notes: URL と失敗の見分け方は確認ログとライブラリ選定の決定。動作は外部ライブラリ『lucide』の `verification` で確認した
   - item: wide の幅の切り替え
-    constraint: '`div.mdmark-wide-range` ごとに、直前に `<div class="mdmark-wide-bar">` を配置し、本文の幅の右端に `<button class="mdmark-wide-toggle" type="button" aria-label="広げて表示" aria-pressed="{広げていれば true}">` を配置する。ボタンはラベルを持たず、広げた状態では縮めるアイコン、本文の幅では広げるアイコンを出す（アクセシブルネームはどちらも `広げて表示`）。押すたびに範囲の `data-state` を `wide` と `narrow` で入れ替え、`aria-pressed` を合わせる。広げた幅と本文の幅が同じになる幅（広げられる幅が本文の幅以下）では帯を出さない。広げられる幅は、右側の目次を付けたときは描く先の要素の幅、付けないときは描く先の要素の親の幅（描く先の要素は `--mdmark-content-width` で本文の幅になるため）で、どちらも画面の幅までにし、右側の目次（`fixed`）とまとめた HTML の文書の一覧の列の内側に収め、広い幅の `hover` でピン止めしていない間は、範囲の右端を右端の線の左（スクロールする場所の右端から、制約「右側の目次の重なりと留める位置」の 1rem と線の幅と `--mdmark-space` を加算した位置）までに収め、本文の列の中央にそろえる。印刷の前は用紙の幅を越えない。切り替えた状態は `update` で再描画するとマーカーの状態に戻る'
+    constraint: '`div.mdmark-wide-range` ごとに、直前に `<div class="mdmark-wide-bar">` を配置し、本文の幅の右端に `<button class="mdmark-wide-toggle" type="button" aria-label="広げて表示" aria-pressed="{広げていれば true}">` を配置する。ボタンはラベルを持たず、広げた状態では縮めるアイコン、本文の幅では広げるアイコンを出す（スクリーンリーダー向けの名前はどちらも `広げて表示`）。押すたびに範囲の `data-state` を `wide` と `narrow` で入れ替え、`aria-pressed` を合わせる。広げた幅と本文の幅が同じになる幅（広げられる幅が本文の幅以下）では帯を出さない。広げられる幅は、右側の目次を付けたときは描く先の要素の幅、付けないときは描く先の要素の親の幅（描く先の要素は `--mdmark-content-width` で本文の幅になるため）で、どちらも画面の幅までにし、右側の目次（`fixed`）とまとめた HTML の文書の一覧の列の内側に収め、広い幅の `hover` でピン止めしていない間は、範囲の右端を右端の線の左（スクロールする場所の右端から、制約「右側の目次の重なりと留める位置」の 1rem と線の幅と `--mdmark-space` を加算した位置）までに収め、本文の列の中央にそろえる。印刷の前は用紙の幅を越えない。切り替えた状態は `update` で再描画するとマーカーの状態に戻る'
     notes: 'アイコンは両端の縦線へ向かう横向きの矢印（広げるは `|←→|`、縮めるは `→|←`。確認ログ）で、Lucide に無い構造のため部品設計とモジュール構成で配置場所を決める。`hover` で開くパネル（枠）はポインターを配置した間だけ wide の範囲に重ねて出す。右端の線の位置は #323'
   - item: CSV の表と元の CSV の切り替え
     constraint: '`data-source="csv"` を持つ表の帯の右端に、`<button class="mdmark-raw-toggle" type="button" aria-label="元の CSV を表示" aria-pressed="false">`（コードのアイコン `code-xml`）を配置する。押すと表を隠して `pre.mdmark-raw` を出し、`aria-pressed` を `true` にする。もう一度押すと表に戻す。並べ替え・絞り込み・ピン止めの状態は切り替えで変えない。元の CSV のコードブロックにはコピーのボタンを付けない。押していない状態は控えめな色、押した状態は色のプリセットの青のアイコンと薄い青の面で出す'
@@ -6362,7 +6362,7 @@ constraints:
     decided_by: dev/設計書/シナリオ/単一ユースケース/テーマを上書きする#scenarios[正常シナリオ（使う側の pre への汎用の CSS）]
     notes: 優先のさせ方は確認ログの決定（層の外に詳細度の高いセレクタ、推奨案 A）。外観はモック `dev/mock/refs/328/assets/wrap.css`
   - item: 図の高さのリサイズハンドル
-    constraint: '`diagram-resize` がオンのとき、文書の中の図の部品（埋め込んだ HTML の中のチャートを含む）の表示する枠の右下に、`role="separator"`・`aria-orientation="horizontal"`・`tabindex="0"`・アクセシブルネーム `「{図の題名}」の表示の高さ` と、`aria-valuenow`・`aria-valuemin`・`aria-valuemax`（表示する枠の高さの px）を持つリサイズハンドルを配置する。ドラッグした分だけ表示する枠の高さを変え（幅は変えない）、フォーカスの間は `↑` で 32px 低く、`↓` で 32px 高くする。高さは 120px 以上、図の全体が今の倍率で収まる高さ以下にする。高さを変えたら今の倍率と位置は保ち、全体が収まる倍率（下限と倍率のボタンの戻し先）をもう一度求める。文書の中の図のこの倍率は、高さを変える前は幅だけ、変えた後は幅と変えた高さで決める。ダブルクリックで定義と `--mdmark-diagram-max-height` から決まる高さに戻す。変えた高さを図ごとのキーで sessionStorage に記載し、描くときに読み込んでその高さで開き、戻したらキーを削除する。sessionStorage を使用できないときは例外を外へ出さず、高さを保たない。全画面のモーダルの中と印刷では出さない。`update` でもう一度付け、`destroy` で受け取りを解除する'
+    constraint: '`diagram-resize` がオンのとき、文書の中の図の部品（埋め込んだ HTML の中のチャートを含む）の表示する枠の右下に、`role="separator"`・`aria-orientation="horizontal"`・`tabindex="0"`・スクリーンリーダー向けの名前 `「{図の題名}」の表示の高さ` と、`aria-valuenow`・`aria-valuemin`・`aria-valuemax`（表示する枠の高さの px）を持つリサイズハンドルを配置する。ドラッグした分だけ表示する枠の高さを変え（幅は変えない）、フォーカスの間は `↑` で 32px 低く、`↓` で 32px 高くする。高さは 120px 以上、図の全体が今の倍率で収まる高さ以下にする。高さを変えたら今の倍率と位置は保ち、全体が収まる倍率（下限と倍率のボタンの戻し先）をもう一度求める。文書の中の図のこの倍率は、高さを変える前は幅だけ、変えた後は幅と変えた高さで決める。ダブルクリックで定義と `--mdmark-diagram-max-height` から決まる高さに戻す。変えた高さを図ごとのキーで sessionStorage に記載し、描くときに読み込んでその高さで開き、戻したらキーを削除する。sessionStorage を使用できないときは例外を外へ出さず、高さを保たない。全画面のモーダルの中と印刷では出さない。`update` でもう一度付け、`destroy` で受け取りを解除する'
     notes: '上限は #198 の修正（今の倍率の図の高さ）のまま。図ごとのキーの決め方はモジュール構成設計。1 回の量と下限はモックの値'
   - item: ブロックの間隔
     constraint: 本文の直下・セクションの中身（`.mdmark-section-body`）・タブの中身（`.mdmark-tab-panel`）のブロック同士の縦の間を `--mdmark-space`、リストの項目・引用・`details`・行の詳細（`.mdmark-row-detail > td`）の中のブロック同士の間を `calc(var(--mdmark-space) / 2)` にする。後のブロックがコードブロック（`.mdmark-code`）・ファイルツリー（`.mdmark-tree`）・記法の部品のときも同じ間を空ける。見出しは上の余白に、区切り線は上下の余白に、自分の規則の値を使用する。先頭のブロックの上には間を空けない
@@ -6371,7 +6371,7 @@ constraints:
     constraint: 機能 `mermaid` がオンの文書で、`render` が属性 `data-mdmark-mermaid` を付けた mermaid のコードブロック（文書をHTML文字列にする.ts の制約『mermaid のコードブロック』）
     notes: 文書に記載した生の HTML のこの属性は sanitize が落とす
   - item: mermaid の読み込み
-    constraint: 描いた後に mermaid の対象が 1 つ以上あるときだけ、`mermaid.url` を `import()` で読み込み、既定のエクスポートの `initialize`・`render` を使用する。同じ `mount` の中では 1 回だけ読み込む。読み込んで描き終えるまで、各対象を隠し、その場所に読み込み中の枠（部品設計『読み込み中の枠』の名前 `mermaid`）を配置する。読み込み終わる前に `update`・`destroy` したときは、前の描画の対象を図にしない。読み込みの完了は待たずに `mount` を返却する。書き出した HTML の起動の処理が、まとめた mermaid のモジュールを指定したときは URL を読み込まない
+    constraint: 描いた後に mermaid の対象が 1 つ以上あるときだけ、`mermaid.url` を `import()` で読み込み、既定のエクスポートの `initialize`・`render` を使用する。同じ `mount` の中では 1 回だけ読み込む。読み込んで描き終えるまで、各対象を隠し、その場所に読み込み中のブロック（部品設計『読み込み中のブロック』の名前 `mermaid`）を配置する。読み込み終わる前に `update`・`destroy` したときは、前の描画の対象を図にしない。読み込みの完了は待たずに `mount` を返却する。書き出した HTML の起動の処理が、まとめた mermaid のモジュールを指定したときは URL を読み込まない
     notes: 配布物 `dist/index.js` に mermaid をまとめない（非機能要件『配布ファイル 1 つのサイズ』）
   - item: mermaid の描き方
     constraint: '`initialize` には `startOnLoad: false`・`securityLevel: "strict"`・`theme`・`themeVariables` を指定し、利用側の設定でこの 2 つ（`startOnLoad`・`securityLevel`）を変えさせない。対象を文書の順に `render` し、返った SVG を図の枠（部品設計『図の枠』の種類 `mermaid`）の表示する枠に入れて、対象のコードブロックと置き換える。図の枠のタイトルは front matter の `title`、無ければ `accTitle`、どちらも無ければ図の種類の名前（`flowchart`・`graph` → フローチャート／`sequenceDiagram` → シーケンス図／`classDiagram` → クラス図／`stateDiagram`・`stateDiagram-v2` → 状態遷移図／`erDiagram` → ER 図／`gantt` → ガントチャート／`pie` → 円グラフ／ほか → 図）にし、front matter の `title` は図の中に重ねて描かない。範囲・更新日は出さない。シーケンス図の `actor` は lucide の人のアイコンに替え、本文の色の線で描く。開いたときの倍率は全体が収まる倍率で、0.75 より小さくしない（収まらない分は枠の中で動かす）。ガントチャートは描く先の幅と 720px の大きいほうの幅で描く'
@@ -6380,5 +6380,5 @@ constraints:
     constraint: '`theme` が `mdmark` のとき、描く先の要素の計算済みの CSS 変数（色は試しの要素の `color` で解決して sRGB の hex。`rgb()`・`rgba()` は値を読み込み、ほかの記載方法は canvas で変換する）から mermaid の `base` テーマの変数を作る。対応はモジュール構成で表にする。どのテーマでも `useGradient: false`・`dropShadow: "none"` にし、SVG の filter の影も削除する。描く先の配色の明暗（`colorScheme`・page のマーカー・祖先の class・OS の設定）が変わったら、変わった後の値で再描画する。印刷では明るい配色の図を出す。暗い配色で描くときは、明るい配色の CSS 変数（同じタスクの中で描く先の要素の明暗の class を一時的に `mdmark-theme-light` に替えて解決し、元に戻す。配色の値は描く先の明暗の class から `:root` に該当するため、描く先の中の要素の class では変わらない）から作ったテーマでも先に `render` し、2 つの SVG を表示する枠に並べて、画面では今の配色の SVG、`@media print` では明るい配色の SVG だけを出す。明るい配色で描くときは SVG を 1 つだけ配置する（制約「配色の切り替え」の印刷で明るい配色にするのと統一する。`render` は非同期で、`beforeprint` の中で再描画しても印刷のレイアウトに間に合わないため、印刷のきっかけを待たない）'
     notes: PoC #384 で、`color-mix()` を含む CSS 変数を hex にして `base` テーマへ指定できることを確認した。デザイン方針の「使用しないもの」（影・グラデーション）
   - item: mermaid を読み込めないとき
-    constraint: mermaid を読み込めないときは、各 mermaid の対象の読み込み中の枠を通知の枠（本文の文言は画面設計『文書』）に替え、コードブロックを出して残す。解釈できないソースは読み込み中の枠を記載の警告に替え、コードブロックを出して残す
+    constraint: mermaid を読み込めないときは、各 mermaid の対象の読み込み中のブロックを通知ブロック（本文の文言は画面設計『文書』）に替え、コードブロックを出して残す。解釈できないソースは読み込み中のブロックを記載の警告に替え、コードブロックを出して残す
 test_file: tests/integration/lib/mount.browser.test.ts

@@ -34,7 +34,7 @@ args:
     required: true
     description: 並べる文書（`{ title, href }`）。並びの順に出す。空なら空文字を返却する（一覧を配置しない）
 accessibility:
-  - 一覧は `nav` で、タイトル「関連文書」を `aria-labelledby` でアクセシブルネームにする
+  - 一覧は `nav` で、タイトル「関連文書」を `aria-labelledby` でスクリーンリーダー向けの名前にする
   - 文書は `ul` の項目のリンクで、件数をスクリーンリーダーで伝える
 refs:
   - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[関連文書と被参照の一覧]

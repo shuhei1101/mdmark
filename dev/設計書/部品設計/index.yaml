@@ -58,7 +58,7 @@ items:
   - page: ヒント.ts.yaml
     summary: 埋め込んだ HTML の `data-hint` の要素に付けるマーカーと下線とツールチップ
   - page: 差分を開くボタン.ts.yaml
-    summary: 文書のタイトルの後ろに配置し、差分を開閉する「変更を表示」のボタン
+    summary: 文書のタイトルの後ろに配置し、差分を開閉する「変更表示」のボタン
   - page: リビジョンの選択.ts.yaml
     summary: 差分で比べる前と後のリビジョンを選ぶ欄と、削除した行と追加した行の数
   - page: 差分の行.ts.yaml
@@ -112,7 +112,7 @@ items:
   - page: 文字の色.ts.yaml
     summary: 本文の文字を色のプリセットの文字の色と太字で強調する
   - page: 再生できない動画・音声の知らせ.ts.yaml
-    summary: VS Code 拡張機能のプレビューで再生できない動画・音声の場所に配置する、通知の枠と「既定のアプリで開く」
+    summary: VS Code 拡張機能のプレビューで再生できない動画・音声の場所に配置する、通知ブロックと「既定のアプリで開く」
   - page: アイコン.ts.yaml
     summary: 行内に配置する Lucide のアイコン
   - page: キー.ts.yaml

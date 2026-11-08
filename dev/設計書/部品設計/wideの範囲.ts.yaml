@@ -56,7 +56,7 @@ css_properties:
   default: 値は dev/設計書/デザイン方針.md
   description: 本文の幅。ボタンの帯の幅と `narrow` の範囲の幅
 accessibility:
-- ボタンのアクセシブルネームは状態によらず `広げて表示` で、状態は `aria-pressed` で伝える
+- ボタンのスクリーンリーダー向けの名前は状態によらず `広げて表示` で、状態は `aria-pressed` で伝える
 - ボタンは 28px 四方で、フォーカスの輪を持つ
 refs:
 - dev/設計書/インターフェース定義/ライブラリ本体/文書をHTML文字列にする.ts#constraints[wide の範囲]

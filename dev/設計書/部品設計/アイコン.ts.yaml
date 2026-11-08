@@ -41,7 +41,7 @@ css_properties:
   default: 1em
   description: 行内のアイコンの幅と高さ
 accessibility:
-- アイコンは `aria-hidden="true"` でスクリーンリーダーから除外し、見出しや段落のアクセシブルネームに名前を含めない
+- アイコンは `aria-hidden="true"` でスクリーンリーダーから除外し、見出しや段落のスクリーンリーダー向けの名前に名前を含めない
 refs:
 - dev/設計書/インターフェース定義/ライブラリ本体/文書をHTML文字列にする.ts#constraints[アイコン]
 - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[束ねていないアイコンの読み込み]

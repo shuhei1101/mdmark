@@ -49,7 +49,7 @@ args:
   - name: label
     type: 文字列
     required: true
-    description: 行の先頭のセルの文字。開閉のボタンのアクセシブルネーム `「{label}」の詳細` に使用する
+    description: 行の先頭のセルの文字。開閉のボタンのスクリーンリーダー向けの名前 `「{label}」の詳細` に使用する
   - name: open
     type: 真偽値
     required: false
@@ -78,7 +78,7 @@ css_properties:
     default: '#f4f4f5（ダーク #1b1b1f）'
     description: 詳細の行の地の色
 accessibility:
-  - 開閉のボタンは `「{label}」の詳細` をアクセシブルネームに持ち、`aria-expanded`・`aria-controls` で開閉の状態を示す
+  - 開閉のボタンは `「{label}」の詳細` をスクリーンリーダー向けの名前に持ち、`aria-expanded`・`aria-controls` で開閉の状態を示す
 refs:
   - dev/設計書/インターフェース定義/ライブラリ本体/文書をHTML文字列にする.ts#constraints[行の詳細]
   - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[節と行の詳細の開閉]

@@ -319,7 +319,7 @@ flows:
     expected:
       - パネルのタイトルが `差分プレビュー guide.md` で、`ViewColumn.Beside` に開く
       - '`render` の `markdown` が変更後の全文、`previous` がコミットした時点の全文'
-      - Webview の本文で、追加した段落が `div.mdmark-diff-block[data-kind="add"]`、削除した段落が `div.mdmark-diff-block[data-kind="del"]` にあり、「変更を表示」が無い
+      - Webview の本文で、追加した段落が `div.mdmark-diff-block[data-kind="add"]`、削除した段落が `div.mdmark-diff-block[data-kind="del"]` にあり、「変更表示」が無い
       - 同じ `guide.md` を差分でない普通のエディタから開いたプレビューとは別のパネルになる
     test: test_normal_when_opened_from_diff_view
     refs:
@@ -404,7 +404,7 @@ flows:
       - dev/設計書/シナリオ/単一ユースケース/プレビューのリンクと画像を開く#scenarios[正常シナリオ（相対パスの動画・音声）]
       - dev/設計書/シナリオ/単一ユースケース/プレビューのリンクと画像を開く#scenarios[正常シナリオ（アセットのルートの動画・音声）]
   - name: 異常系（プレビューで再生できない形式）
-    summary: 再生できない動画・音声を通知の枠に替え、既定のアプリで開くリンクを出す
+    summary: 再生できない動画・音声を通知ブロックに替え、既定のアプリで開くリンクを出す
     setup:
       - name: 再生できない形式を持つワークスペース
         description: '`docs/guide.md` が相対パスで `media/voice.m4a` と `media/clip.webm` を指し、各ファイルは実在する'
@@ -418,12 +418,12 @@ flows:
         U->>EX: mdmark.openPreviewToSide
         EX-->>PV: render と assetsResolved
         PV->>PV: 音声・動画の要素が error になる
-        PV->>PV: 要素を通知の枠と「既定のアプリで開く」に替える
+        PV->>PV: 要素を通知ブロックと「既定のアプリで開く」に替える
         U->>PV: 既定のアプリで開くを押す
         PV->>EX: openAsset（media/voice.m4a）
         EX->>EX: openExternal（docs/media/voice.m4a の file の URI）
     expected:
-      - 2 つの要素の場所に、プレビューで再生できないことを示す通知の枠があり、それぞれ「既定のアプリで開く」のリンクを持つ
+      - 2 つの要素の場所に、プレビューで再生できないことを示す通知ブロックがあり、それぞれ「既定のアプリで開く」のリンクを持つ
       - リンクを押すと、`openExternal` が `docs/media/voice.m4a` の `file:` の URI で 1 回呼ばれる
       - 他の本文は描かれている
     test: test_error_when_unsupported_media
@@ -543,7 +543,7 @@ flows:
         PV->>PV: mount で描く
         PV-->>W: 図の枠に入った mermaid の図
     expected:
-      - パネルの mermaid のコードブロックの場所に `figure.mdmark-diagram[data-diagram="mermaid"]` があり、SVG を持ち、通知の枠が無い
+      - パネルの mermaid のコードブロックの場所に `figure.mdmark-diagram[data-diagram="mermaid"]` があり、SVG を持ち、通知ブロックが無い
       - Webview の HTML の CSP の `script-src` に `mermaid.url` の origin があり、`blob:`・`'unsafe-inline'`・`'unsafe-eval'` が無い
       - CSP の違反が 0 件（テストのときに Webview が数える `securitypolicyviolation` の件数）
     test: test_normal_when_mermaid
@@ -641,7 +641,7 @@ constraints:
     constraint: '`mount` か `update` の後に、Webview は本文の `img` の `src`、`video`・`audio` の `src` と `poster` のうち相対パスのものを集め、`resolveAssets` で拡張機能に送信する。拡張機能は、Markdown のフォルダを基準にしたファイル、無ければ設定ファイルの `assets.root` を基準にしたファイルがワークスペースの中にあれば、その `asWebviewUri` の URL（クエリとフラグメントは残す）を、どちらにも無ければ `null` を返却する。Webview は URL を受け取った要素の属性を替え、`null` の要素は替えない。`localResourceRoots` に `assets.root` のフォルダを含める'
     decided_by: dev/設計書/設定/VSCode拡張機能#settings[assets.root]
   - item: 再生できない動画・音声
-    constraint: '`video`・`audio` が `error` になったとき、要素を mdmark の通知の枠の外観の枠に替え、プレビューで再生できないことと、`openAsset` を送信する「既定のアプリで開く」のリンクを出す。拡張機能は受け取ったパスを制約「動画・音声とアセットのルートの解決」と同じく解決し、ワークスペースの中のファイルだけを `vscode.env.openExternal` で開く'
+    constraint: '`video`・`audio` が `error` になったとき、要素を mdmark の通知ブロックの外観の枠に替え、プレビューで再生できないことと、`openAsset` を送信する「既定のアプリで開く」のリンクを出す。拡張機能は受け取ったパスを制約「動画・音声とアセットのルートの解決」と同じく解決し、ワークスペースの中のファイルだけを `vscode.env.openExternal` で開く'
     notes: PoC 結果で、プレビューの Webview は AAC の音声と webm を再生できない。mp4・mov は映像だけが再生される
   - item: 取り込む文書
     constraint: 開いている Markdown（差分のパネルは変更後の側）の include のマーカーの取り込み先を、インターフェース定義『文書をHTML文字列にする』の制約「取り込み」と同じパスの解き方で、Markdown のフォルダを基準に `workspace.fs` で読み込む（取り込んだ文書の中のマーカーもたどり、同じファイルは 1 回だけ読み込む）。開いているエディタの保存していない書き換えではなく、保存した中身を読み込む。設定ファイルのフォルダ（無ければ Markdown のフォルダ）の外のパス（書き出しと同じ範囲）と読み込めないファイルは表に入れず、そのマーカーの場所には mdmark が記載の警告を出す。読み込んだ表を `render` の `includes` に入れ、Webview は `mount` の `opts.includes`（`update` は `options.includes`）に指定する

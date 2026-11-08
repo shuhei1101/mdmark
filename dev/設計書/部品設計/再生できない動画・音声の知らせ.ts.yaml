@@ -30,7 +30,7 @@ states:
         value: webm
       - name: path
         value: media/screen-recording-2026-11-01-very-long-file-name.webm
-lead: VS Code 拡張機能のプレビューで再生できない動画・音声の場所に配置する、通知の枠の外観の枠と「既定のアプリで開く」のリンク。
+lead: VS Code 拡張機能のプレビューで再生できない動画・音声の場所に配置する、通知ブロックの外観の枠と「既定のアプリで開く」のリンク。
 args:
   - name: kind
     type: 列挙
@@ -61,7 +61,7 @@ css_properties:
     description: 枠の線の色
 uses:
   - component: dev/設計書/部品設計/知らせの枠.ts#
-    how: class `mdmark-notice` とタイトル・本文の並びを通知の枠と統一する
+    how: class `mdmark-notice` とタイトル・本文の並びを通知ブロックと統一する
 accessibility:
   - 枠は `role="status"` を持ち、スクリーンリーダーがタイトルと本文を伝達する
   - パスは長くても枠の中で折り返し、横スクロールを出さない

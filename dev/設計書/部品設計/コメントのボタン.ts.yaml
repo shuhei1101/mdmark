@@ -10,7 +10,7 @@ events:
     when: ボタンを押す
     description: '`mount`・`mountComments` が選んだ文字の下にコメントの入力欄を開き、ボタンを隠す'
 accessibility:
-  - '`button` で、アクセシブルネームは表示の文字 `コメント`。アイコンは `aria-hidden`'
+  - '`button` で、スクリーンリーダー向けの名前は表示の文字 `コメント`。アイコンは `aria-hidden`'
   - DOM は選んだ文字のブロックの直後に配置し、選んだ後の Tab で届く
 refs:
   - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[コメントの操作]

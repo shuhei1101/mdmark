@@ -244,7 +244,7 @@ flows:
     expected:
       - 終了コードが 0 で、標準エラーが空
       - '`README.md` で、`greet` のマーカーの場所に拡張が描いた要素があり、`ts` の `code` の中に class が `hljs-` で始まる `span` がある'
-      - リンクで移った `guide.md` で、ビューが描かれ、`test-lib` のマーカーが描かれて通知の枠が出ない
+      - リンクで移った `guide.md` で、ビューが描かれ、`test-lib` のマーカーが描かれて通知ブロックが出ない
       - 開いてから文書を移った後までに、CSP の違反（`securitypolicyviolation`）が 0 件で、`blob:`・`data:` の URL のスクリプトへの要求が 0 件
     test: test_normal_when_blob_and_dynamic_import_blocked
     refs:

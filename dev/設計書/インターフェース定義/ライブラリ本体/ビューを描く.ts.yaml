@@ -123,8 +123,8 @@ flows:
       - 2 通りとも `mountView` が同期で `TypeError` を投げ、メッセージに `items`、`group` を含む
       - '`el` の中身が `前の中身` のまま'
     test: test_error_when_arguments_invalid
-  - name: 異常系（部品のモジュールを読み込めない・通知の枠）
-    summary: ビューの部品のモジュールを読み込めないと、`el` に通知の枠を配置して reject する
+  - name: 異常系（部品のモジュールを読み込めない・通知ブロック）
+    summary: ビューの部品のモジュールを読み込めないと、`el` に通知ブロックを配置して reject する
     setup:
       - name: 配布物を読み込んだページ
         description: 正常系と同じ
@@ -139,7 +139,7 @@ flows:
         participant M as mdmark
         P->>M: mountView(el, { columns, items, group })
         M->>M: 部品のモジュールを読み込めない
-        M->>P: el に通知の枠を配置する
+        M->>P: el に通知ブロックを配置する
         M-->>P: reject
     expected:
       - '`el` の中に class `mdmark-notice`・`role="status"` の要素があり、タイトルが `この箇所を表示できません`'
@@ -225,9 +225,9 @@ exceptions:
   - name: TypeError
     condition: '`el` が HTMLElement でない、`opts.columns` が空か文字列の配列でないか重なりを持つ、`opts.items` が配列でないか要素がオブジェクトでない、`opts.group`・`opts.filter` の列名が `opts.columns` に無い、`opts.filter` の種類が `select`・`text`・`date` でない、`opts.default` が `board`・`table` でないか `opts.group` が無いのに `board`、`opts.icons` に使用できないアイコンの名前がある'
     notes: 同期で投げ、`el` を書き換えない。メッセージに誤った引数の名前を含める
-  - name: なし（通知の枠・読み込みの失敗）
+  - name: なし（通知ブロック・読み込みの失敗）
     condition: ビューの部品のモジュールを読み込めない
-    notes: '`el` の中に通知の枠を配置して、Promise を元のエラーで reject する。通知の枠の構造はインターフェース定義『文書を描く』の制約の「通知の枠」で、タイトルは `この箇所を表示できません`'
+    notes: '`el` の中に通知ブロックを配置して、Promise を元のエラーで reject する。通知ブロックの構造はインターフェース定義『文書を描く』の制約の「通知ブロック」で、タイトルは `この箇所を表示できません`'
 constraints:
   - item: 描くビュー
     constraint: インターフェース定義『文書を描く』の制約の「ビューの操作」「ボードの列の見出しのアイコン」と同じ要素と操作にする。列の絞り込みは『文書を描く』の制約の「表の操作」の絞り込みと同じ

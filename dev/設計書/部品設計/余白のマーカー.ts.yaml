@@ -47,7 +47,7 @@ args:
   - name: quote
     type: 文字列
     required: true
-    description: 行の最初の箇所の選んだ文字。アクセシブルネームに入れ、文字として出し、HTML として解釈しない
+    description: 行の最初の箇所の選んだ文字。スクリーンリーダー向けの名前に入れ、文字として出し、HTML として解釈しない
   - name: count
     type: 整数
     default: '1'
