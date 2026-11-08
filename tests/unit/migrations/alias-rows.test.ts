@@ -1,11 +1,9 @@
-import { glob } from "node:fs/promises";
-import { fileURLToPath, pathToFileURL } from "node:url";
+import { join } from "node:path";
+import { pathToFileURL } from "node:url";
 import { expect, test } from "vitest";
 import { parseDocument } from "yaml";
+import { migrationsDirOf } from "../../migrations-dir.ts";
 import { useTempDirs, writeFiles } from "../helpers/cli.ts";
-
-/** リポジトリの直下 */
-const ROOT = fileURLToPath(new URL("../../../", import.meta.url));
 
 /** 移行の手順のスクリプトの関数の型 */
 type MigrateAliasRows = (options: {
@@ -13,17 +11,12 @@ type MigrateAliasRows = (options: {
   configDir: string;
 }) => Promise<{ changed: boolean; notices: string[]; problems: string[] }>;
 
-/** `migrations/*\/alias-rows.mjs` を探して読み込む（release で `next/` を版のフォルダへ移した後も同じテストで読む） */
+/** `alias-rows.mjs` を持つ移行の手順のフォルダから読み込む */
 const loadMigrateAliasRows = async (): Promise<MigrateAliasRows> => {
-  const found: string[] = [];
-  for await (const path of glob("migrations/*/alias-rows.mjs", {
-    cwd: ROOT,
-  })) {
-    found.push(path);
-  }
-  expect(found).toHaveLength(1);
   const module = (await import(
-    /* @vite-ignore */ pathToFileURL(`${ROOT}${found[0]}`).href
+    /* @vite-ignore */ pathToFileURL(
+      join(migrationsDirOf("alias-rows.mjs"), "alias-rows.mjs"),
+    ).href
   )) as { migrateAliasRows: MigrateAliasRows };
   return module.migrateAliasRows;
 };

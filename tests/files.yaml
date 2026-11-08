@@ -2406,3 +2406,12 @@ files:
     related:
       - to: tests/git-env
         type: tests
+  - path: migrations-dir.ts
+    description: テストが参照する、移行の手順のスクリプトを持つリポジトリの移行の手順のフォルダ（`migrations/next/` か `migrations/v{バージョン}/`）を探す処理を受け持つ。テストが移行の手順を参照する場所を変えるときに読む。
+    tags: [topic:単体テスト, tool:vitest, topic:バージョン, topic:移行]
+  - path: unit/migrations-dir.test.ts
+    description: tests/migrations-dir.ts（「移行の手順のスクリプトを持つフォルダを探す」）を確かめる単体テスト。migrations-dir.ts を変えたときに、合わせて修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, topic:バージョン, topic:移行]
+    related:
+      - to: tests/migrations-dir
+        type: tests

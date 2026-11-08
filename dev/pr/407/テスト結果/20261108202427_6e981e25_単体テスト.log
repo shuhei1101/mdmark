@@ -1,0 +1,14 @@
+$ npm run test:unit
+
+> test:unit
+> vitest run --project 'unit*'
+
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/test-migrations-read-migrations-from-version-dir
+
+
+ Test Files  259 passed (259)
+      Tests  1820 passed (1820)
+   Start at  20:20:06
+   Duration  103.86s (worker 62%, tests 24%, import 12%, transform 1%)
+
