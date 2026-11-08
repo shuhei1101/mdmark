@@ -1,4 +1,4 @@
-/** コマンドが使う今のフォルダと、標準出力・標準エラーへの書き出し */
+/** コマンドが使用する今のフォルダと、標準出力・標準エラーへの書き出し */
 export type CliIo = {
   /** 今のフォルダ */
   cwd: string;
@@ -8,5 +8,5 @@ export type CliIo = {
   stderr: (line: string) => void;
 };
 
-/** 原因と直し方の 1 文を持ち、`main` が標準エラーに出して終了コード 1 にする誤り */
+/** 原因と修正方法の 1 文を持ち、`main` が標準エラーに出して終了コード 1 にする誤り */
 export class CliError extends Error {}

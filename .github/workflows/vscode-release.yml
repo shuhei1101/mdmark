@@ -21,7 +21,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 24
-      # タグの版と package.json の version が合わなければ、ここで止める
+      # タグのバージョンと package.json の version が合わなければ、ここで止める
       - name: タグと version を照合する
         run: npm --prefix vscode run release:check -- "${GITHUB_REF_NAME}"
       - name: 依存を入れる

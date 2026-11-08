@@ -8,8 +8,8 @@ const isRecord = (value) =>
   typeof value === "object" && value !== null && !Array.isArray(value);
 
 /**
- * 語彙の並びで、名前と別名から語彙の `name` を引く表と、やめたタグの `name` から振り替え先を引く表を作る。
- * 同じ語は語彙の並びで先のタグに当てる
+ * 語彙の並びで、名前と別名から語彙の `name` を参照する表と、やめたタグの `name` から振り替え先を参照する表を作る。
+ * 同じ単語は語彙の並びで先のタグに適用する
  */
 const buildReplacements = (vocabulary) => {
   const byWord = new Map();
@@ -37,7 +37,7 @@ const buildReplacements = (vocabulary) => {
   return { byWord, replacedBy };
 };
 
-/** 文書のタグの要素の節から、タグの名前と主題のタグかを読む。読めない要素は `undefined` */
+/** 文書のタグの要素のセクションから、タグの名前と主題のタグかを読み込む。読み込めない要素は `undefined` */
 const readTagNode = (node) => {
   if (isScalar(node) && typeof node.value === "string") {
     return { name: node.value, main: false };
@@ -94,7 +94,7 @@ const rewriteDocTags = ({ doc, tags, byWord, replacedBy }) => {
 
 /**
  * v0.9.0 までの索引の YAML から、文書のタグの別名・やめたタグを語彙の `name`・振り替え先に書き換え、
- * 最上位の `tags` を外して `schema` を `2` にした YAML を返す。変えるものが無ければ `undefined`
+ * 最上位の `tags` を削除して `schema` を `2` にした YAML を返却する。変えるものが無ければ `undefined`
  */
 export const dropTagVocabulary = (source) => {
   const doc = parseDocument(source);
@@ -120,12 +120,12 @@ export const dropTagVocabulary = (source) => {
   return changed ? doc.toString({ flowCollectionPadding: false }) : undefined;
 };
 
-/** `--config` の設定ファイルの `index` が指す索引を `dropTagVocabulary` で書き換えて書き戻す。`index` が無い設定では何もしない */
+/** `--config` の設定ファイルの `index` が指す索引を `dropTagVocabulary` で書き換えて書き込んで戻す。`index` が無い設定では何もしない */
 export const runDropTagVocabulary = async (argv) => {
   const position = argv.indexOf("--config");
   const configFile = position === -1 ? undefined : argv[position + 1];
   if (configFile === undefined) {
-    throw new Error("--config {設定ファイル} を渡してください");
+    throw new Error("--config {設定ファイル} を指定してください");
   }
   const config = parse(await readFile(configFile, "utf8"));
   if (!isRecord(config) || typeof config.index !== "string") {

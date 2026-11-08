@@ -14,15 +14,15 @@ const ACTIVE_CLASS = "is-active";
 // 開いているヒントの要素に付ける class
 const HINT_OPEN_CLASS = "is-hint-open";
 
-// 埋め込んだ HTML のヒントの持ち主（ブロックの要素の印・行内の要素）と、ツールチップの class
+// 埋め込んだ HTML のヒントの持ち主（ブロックの要素のマーカー・行内の要素）と、ツールチップの class
 const HINT_OWNER_SELECTOR = ".mdmark-hint-mark, .mdmark-hint-inline";
 const HINT_HOST_SELECTOR = ".mdmark-hint-block, .mdmark-hint-inline";
 const HINT_TIP_CLASS = "mdmark-hint-tip";
 
-// 埋め込んだ HTML のヒントに操作を付けた回数の通し番号。`id` を重ならせないために使う
+// 埋め込んだ HTML のヒントに操作を付けた回数の通し番号。`id` を重ならせないために使用する
 let hintCounter = 0;
 
-/** 図のツールチップ（線の詳細・箱の説明と入力・処理・出力・箱の中の用語）と、埋め込んだ HTML のヒント（`div.mdmark-html` を渡したとき）の操作を付け、開いているものを閉じる関数と、操作を外す関数を返す。ポインターとフォーカスで開き、上に乗っても消えず、Esc で閉じる。タッチは持ち主のタップで開閉を切り替え、開いている間はツールチップと持ち主の外の `pointerdown` で閉じる。箱は右上の印の上、ヒントはブロックの要素の印か行内の要素の上でだけ開く。置く側は `chooseTipSide` が決める */
+/** 図のツールチップ（線の詳細・ノードの説明と入力・処理・出力・ノードの中の用語）と、埋め込んだ HTML のヒント（`div.mdmark-html` を指定したとき）の操作を付け、開いているものを閉じる関数と、操作を削除する関数を返却する。ポインターとフォーカスで開き、上に乗っても消えず、Esc で閉じる。タッチは持ち主のタップで開閉を切り替え、開いている間はツールチップと持ち主の外の `pointerdown` で閉じる。ノードは右上のマーカーの上、ヒントはブロックの要素のマーカーか行内の要素の上でだけ開く。配置する側は `chooseTipSide` が決める */
 export function attachDiagramTips(options: {
   /** 図か、埋め込んだ HTML の `div.mdmark-html` */
   figure: HTMLElement;
@@ -38,7 +38,7 @@ export function attachDiagramTips(options: {
   const viewport = figure.querySelector<HTMLElement>(
     ".mdmark-diagram-viewport",
   );
-  // 埋め込んだ HTML を受けたときは、中の図の部品の分は図の側が扱うので、図の外のヒントだけを見る
+  // 埋め込んだ HTML を受けたときは、中の図の部品の分は図の側が扱うので、図の外のヒントだけを確認する
   const tips = new Map<string, HTMLElement>(
     embedded
       ? []
@@ -46,7 +46,7 @@ export function attachDiagramTips(options: {
           (tip) => [tip.dataset.tipFor ?? "", tip],
         ),
   );
-  // 埋め込んだ HTML のヒントの持ち主（ツールチップを置く基準にもなる）
+  // 埋め込んだ HTML のヒントの持ち主（ツールチップを配置する基準にもなる）
   const hintOwners = new Map<string, HTMLElement>();
   const controller = new AbortController();
   const { signal } = controller;
@@ -55,14 +55,14 @@ export function attachDiagramTips(options: {
   // タッチのタップで開いたか。タッチで開いている間は、持ち主のタップ・外の `pointerdown`・Esc だけで閉じる
   let touchOpened = false;
 
-  /** 持ち主の名前から、ツールチップを置く基準の要素（フォーカスできる要素）を引く */
+  /** 持ち主の名前から、ツールチップを配置する基準の要素（フォーカスできる要素）を参照する */
   const anchorOf = (owner: string): HTMLElement | null =>
     hintOwners.get(owner) ??
     figure.querySelector<HTMLElement>(
       `[data-tip-owner="${CSS.escape(owner)}"]:not(.mdmark-diagram-wire-hit)`,
     );
 
-  /** ヒントの持ち主の名前から、開いている印を付ける要素（ブロックの要素か行内の要素）を引く */
+  /** ヒントの持ち主の名前から、開いているマーカーを付ける要素（ブロックの要素か行内の要素）を参照する */
   const hintHostOf = (owner: string): Element | null | undefined =>
     hintOwners.get(owner)?.closest(HINT_HOST_SELECTOR);
 
@@ -72,7 +72,7 @@ export function attachDiagramTips(options: {
       `.mdmark-diagram-wire[data-wire="${CSS.escape(owner)}"]`,
     );
 
-  /** 持ち主の枠とツールチップの高さから、ツールチップを置く側を決める */
+  /** 持ち主の枠とツールチップの高さから、ツールチップを配置する側を決める */
   const tipSideOf = (options: { a: DOMRect; height: number }) =>
     chooseTipSide({
       anchorTop: options.a.top,
@@ -83,7 +83,7 @@ export function attachDiagramTips(options: {
       placement,
     });
 
-  /** ツールチップを持ち主の上か下（`placement` の側を先に、収まらなければ反対側）に、画面からはみ出さないよう置く */
+  /** ツールチップを持ち主の上か下（`placement` の側を先に、収まらなければ反対側）に、画面からはみ出さないよう配置する */
   const place = (tip: HTMLElement, anchor: HTMLElement): void => {
     if (tip.classList.contains(HINT_TIP_CLASS)) {
       placeHint(tip, anchor);
@@ -92,7 +92,7 @@ export function attachDiagramTips(options: {
     if (!box) {
       return;
     }
-    // 箱の印と ER 図のテーブルの説明のボタンは、印でなく箱・テーブルに付けて置く
+    // ノードのマーカーと ER 図のテーブルの説明のボタンは、マーカーでなくノード・テーブルに付けて配置する
     const target = anchor.classList.contains("mdmark-diagram-info")
       ? (anchor.closest<HTMLElement>(
           ".mdmark-diagram-node, .mdmark-diagram-er-table",
@@ -110,7 +110,7 @@ export function attachDiagramTips(options: {
     tip.style.top = `${(above ? a.top - TIP_GAP_PX - height : a.bottom + TIP_GAP_PX) - b.top}px`;
   };
 
-  /** 埋め込んだ HTML のヒントのツールチップを、画面に対して持ち主の上か下（`placement` の側を先に、収まらなければ反対側）に、画面からはみ出さないよう置く */
+  /** 埋め込んだ HTML のヒントのツールチップを、画面に対して持ち主の上か下（`placement` の側を先に、収まらなければ反対側）に、画面からはみ出さないよう配置する */
   const placeHint = (tip: HTMLElement, anchor: HTMLElement): void => {
     const a = anchor.getBoundingClientRect();
     const { width, height } = tip.getBoundingClientRect();
@@ -123,7 +123,7 @@ export function attachDiagramTips(options: {
     tip.style.top = `${above ? a.top - TIP_GAP_PX - height : a.bottom + TIP_GAP_PX}px`;
   };
 
-  /** ツールチップを閉じ、持ち主の線の強調を外す */
+  /** ツールチップを閉じ、持ち主の線の強調を解除する */
   const close = (): void => {
     clearTimeout(closeTimer);
     if (current === undefined) {
@@ -176,7 +176,7 @@ export function attachDiagramTips(options: {
     }, CLOSE_DELAY_MS);
   };
 
-  // 持ち主の要素と名前。外の `pointerdown` を見分けるために使う
+  // 持ち主の要素と名前。外の `pointerdown` を見分けるために使用する
   const ownerNames = new Map<Element, string>();
 
   /** 持ち主にポインターとフォーカスの操作を付ける。タッチは `pointerenter`・`pointerleave` で開閉せず、`pointerdown` で切り替える（iOS の Safari はタップした持ち主に `:hover` を残すため） */
@@ -219,13 +219,13 @@ export function attachDiagramTips(options: {
     owner.addEventListener("blur", closeLater, { signal });
   };
 
-  // 持ち主: 線のラベル・透明の太い線・箱の印・箱の中の用語（埋め込んだ HTML の中の図は、図の側が扱う）
+  // 持ち主: 線のラベル・透明の太い線・ノードのマーカー・ノードの中の用語（埋め込んだ HTML の中の図は、図の側が扱う）
   for (const owner of embedded
     ? []
     : figure.querySelectorAll<HTMLElement>("[data-tip-owner]")) {
     bind(owner, owner.dataset.tipOwner ?? "");
   }
-  // 埋め込んだ HTML のヒント: ツールチップの `id` を、ページの中で一意な値に振り直して持ち主と結ぶ
+  // 埋め込んだ HTML のヒント: ツールチップの `id` を、ページの中で一意な値にもう一度振って持ち主と結ぶ
   if (embedded) {
     hintCounter += 1;
     const owners = [
@@ -260,7 +260,7 @@ export function attachDiagramTips(options: {
       close();
     }
   };
-  /** 開いているツールチップと持ち主の外の `pointerdown`: 閉じる。持ち主の `pointerdown` より先に受けるため、捕捉の段で受ける */
+  /** 開いているツールチップと持ち主の外の `pointerdown`: 閉じる。持ち主の `pointerdown` より先に受けるため、キャプチャーフェーズで受ける */
   const onPointerdown = (event: PointerEvent): void => {
     if (current === undefined || !(event.target instanceof Node)) {
       return;
@@ -292,7 +292,7 @@ export function attachDiagramTips(options: {
   const watch = (): void => {
     document.addEventListener("keydown", onKeydown);
     document.addEventListener("pointerdown", onPointerdown, { capture: true });
-    // 横にスクロールする埋め込んだ HTML の中のスクロールも受けるため、捕捉の段で受ける
+    // 横にスクロールする埋め込んだ HTML の中のスクロールも受けるため、キャプチャーフェーズで受ける
     window.addEventListener("scroll", follow, { capture: true, passive: true });
     window.addEventListener("resize", follow);
     window.addEventListener("beforeprint", close);

@@ -54,7 +54,7 @@ import { EditorScrollGuard } from "./scroll-guard.ts";
 /** `inspect` の結果を待つ上限（ミリ秒） */
 const INSPECT_TIMEOUT_MS = 5000;
 
-/** 1 つの Markdown のパネル。読むバージョンと設定を決めて HTML を入れ、Webview とメッセージをやり取りし、描き直しの待ちを 1 つだけ持つ */
+/** 1 つの Markdown のパネル。読み込むバージョンと設定を決めて HTML を入れ、Webview とメッセージをやり取りし、再描画の待ちを 1 つだけ持つ */
 export class PreviewPanel {
   /** VS Code のパネル */
   private readonly webviewPanel: WebviewPanel;
@@ -66,59 +66,59 @@ export class PreviewPanel {
   private readonly fileUri: Uri;
   /** 拡張機能の共通の依存 */
   private readonly deps: ExtensionDeps;
-  /** 最後に読めた設定（`libraries` は Webview で読める URL に直した値。読めたことが無ければ `{}`） */
+  /** 最後に読み込めた設定（`libraries` は Webview で読み込める URL に修正した値。読み込めたことが無ければ `{}`） */
   private config: PreviewConfig = {};
   /** 取り込みの根のフォルダ（設定ファイルのフォルダ。無ければ Markdown のフォルダ） */
   private includeRoot: string | undefined;
-  /** 前回の `render` で読んだ取り込む文書のパス */
+  /** 前回の `render` で読み込んだ取り込む文書のパス */
   private includePaths: string[] = [];
-  /** `config` の `libraries` の URL を直す前の値（CSP に入れる origin の元） */
+  /** `config` の `libraries` の URL を修正する前の値（CSP に入れる origin の元） */
   private rawLibraries: Record<string, unknown> | undefined;
-  /** 設定ファイルに書いたままの `html-scripts`（CSP の origin に使う） */
+  /** 設定ファイルに書き込んだままの `html-scripts`（CSP の origin に使用する） */
   private rawHtmlScripts: Record<string, unknown> | undefined;
-  /** 設定ファイルに書いたままの `mermaid`（CSP の origin に使う） */
+  /** 設定ファイルに書き込んだままの `mermaid`（CSP の origin に使用する） */
   private rawMermaid: Record<string, unknown> | undefined;
-  /** 今の HTML の CSP に入れた `libraries` の origin（`load` が書く）。設定ファイルを読み直した後の origin と比べ、違えば HTML を入れ直す */
+  /** 今の HTML の CSP に入れた `libraries` の origin（`load` が記載する）。設定ファイルを再読み込みした後の origin と比べ、違えば HTML をもう一度入れる */
   private cspLibraryOrigins: string[] = [];
-  /** 設定ファイルを読めていないときの読めない行 */
+  /** 設定ファイルを読み込めていないときの読み込めない行 */
   private configProblem: ConfigProblem | undefined;
-  /** 前に使った設定があるか */
+  /** 前に使用した設定があるか */
   private configUsed = false;
   /** 最も近い設定ファイル */
   private nearest: string | undefined;
-  /** 見張るファイル（重ねた設定ファイル・`theme`・`extensions`・`aliases` の行の `paths` に当たった YAML・書いた `mdmark.configPath` のファイル・端末の設定） */
+  /** 見張るファイル（重ねた設定ファイル・`theme`・`extensions`・`aliases` の行の `paths` に該当した YAML・記載した `mdmark.configPath` のファイル・端末の設定） */
   watched: string[] = [];
-  /** 最後に使ったエイリアス。読めない設定ファイルがあるときは前に使ったエイリアスを残す */
+  /** 最後に使用したエイリアス。読み込めない設定ファイルがあるときは前に使用したエイリアスを残す */
   private aliases: MdmarkAlias[] | undefined;
-  /** 読み直した `theme`・`extensions` の絶対パス */
+  /** 再読み込みした `theme`・`extensions` の絶対パス */
   private wanted: { theme?: string | undefined; extensions: string[] } = {
     extensions: [],
   };
-  /** 今の HTML に入れた `theme` と、`extensions` の絶対パス・中身の SHA-256・束ねて書いたファイル */
+  /** 今の HTML に入れた `theme` と、`extensions` の絶対パス・中身の SHA-256・まとめて記載したファイル */
   private embedded: {
     theme?: string | undefined;
     extensions: Array<{ path: string; hash: string; file?: string }>;
   } = { extensions: [] };
-  /** `theme` の CSS を替えた回数（`link` の URL に付けて読み直させる） */
+  /** `theme` の CSS を替えた回数（`link` の URL に付けて再読み込みさせる） */
   private themeVersion = 0;
   /** 見張るファイルが変わったときに呼ぶ関数 */
   private readonly onWatchedChange: () => void;
-  /** 描き直すまでの待ち。待つ間に変更が来たら始め直す */
+  /** 再描画するまでの待ち。待つ間に変更が来たらもう一度始める */
   private timer: NodeJS.Timeout | undefined;
   /** 今の HTML の Webview から `ready` を受けたか */
   private ready = false;
   /** 読み込むたびに増やす番号。リロードが重なったとき、後の呼び出しだけが HTML を入れる */
   private loadToken = 0;
-  /** エディタを動かした直後の知らせを捨てる判定 */
+  /** エディタを動かした直後の通知を捨てる判定 */
   private readonly scrollGuard = new EditorScrollGuard();
-  /** `inspect` の `id` → 結果を渡す関数（テストのときだけ使う） */
+  /** `inspect` の `id` → 結果を指定する関数（テストのときだけ使用する） */
   private readonly pendingInspects = new Map<
     number,
     (elements: InspectedElement[]) => void
   >();
   /** 最後に HTML へ入れた配布物のバージョンと `index.js` の URL（決められなかったときは `undefined`） */
   private loaded: { version: string; distJs: string } | undefined;
-  /** `axe` の `id` → 結果を渡す関数（テストのときだけ使う） */
+  /** `axe` の `id` → 結果を指定する関数（テストのときだけ使用する） */
   private readonly pendingAudits = new Map<
     number,
     (violations: AxeViolation[]) => void
@@ -127,7 +127,7 @@ export class PreviewPanel {
   private nextInspectId = 1;
   /** 設定ファイルの `assets.root` の絶対パス（無ければ `undefined`） */
   private assetsRoot: string | undefined;
-  /** `localResourceRoots` に加えたフォルダ（入れ直すときに外す） */
+  /** `localResourceRoots` に加えたフォルダ（もう一度入れるときに削除する） */
   private addedResourceRoots: string[] = [];
 
   constructor(options: {
@@ -179,7 +179,7 @@ export class PreviewPanel {
     this.webviewPanel.reveal();
   }
 
-  /** 読むバージョンと設定を決め直し、Webview に HTML を入れる（開くときとリロードのとき） */
+  /** 読み込むバージョンと設定をもう一度決め、Webview に HTML を入れる（開くときとリロードのとき） */
   async load(): Promise<void> {
     this.loadToken += 1;
     const token = this.loadToken;
@@ -273,7 +273,7 @@ export class PreviewPanel {
         : buildPreviewHtml(common);
   }
 
-  /** 設定を重ねて読み、読めない設定ファイルが無ければ `config` を替えて（前に帯を出していたら）`configOk` を、あれば前に使った `config` を残して `configError` を送る。読めない設定ファイルが無いかを返す */
+  /** 設定を重ねて読み込み、読み込めない設定ファイルが無ければ `config` を替えて（前に帯を出していたら）`configOk` を、あれば前に使用した `config` を残して `configError` を送信する。読み込めない設定ファイルが無いかを返却する */
   async reloadConfig(): Promise<boolean> {
     const { log } = this.deps;
     const configuration = workspace.getConfiguration("mdmark", this.fileUri);
@@ -373,10 +373,10 @@ export class PreviewPanel {
     return true;
   }
 
-  /** 読めない設定ファイルを帯に出す */
+  /** 読み込めない設定ファイルを帯に出す */
   private reportProblem(problem: ConfigProblem): void {
     this.deps.log.warn(
-      "設定ファイルを読めない",
+      "設定ファイルを読み込めない",
       problem.path,
       problem.line ?? problem.settingKey ?? "",
       problem.message,
@@ -401,7 +401,7 @@ export class PreviewPanel {
       : { type: "configError", path, line: problem.line };
   }
 
-  /** `extensions` のパスの並びかその中身が今の HTML と違えば束ね直し、束ねたファイルの並びを返す（束ねられない拡張は飛ばす） */
+  /** `extensions` のパスの並びかその中身が今の HTML と違えばもう一度まとめ、まとめたファイルの並びを返却する（まとめられない拡張は飛ばす） */
   private async prepareExtensions(): Promise<string[]> {
     const { log, context } = this.deps;
     const hashed = await Promise.all(
@@ -431,7 +431,7 @@ export class PreviewPanel {
       for (const [index, result] of results.entries()) {
         const hash = hashed[index]?.hash ?? "";
         if ("error" in result) {
-          log.warn("拡張を束ねられない", result.path, result.error);
+          log.warn("拡張をまとめられない", result.path, result.error);
           extensions.push({ path: result.path, hash });
           continue;
         }
@@ -449,7 +449,7 @@ export class PreviewPanel {
     );
   }
 
-  /** 設定を読み直して変更を当てる。`libraries` の origin の集まり・`extensions`・`theme` のパスが変われば HTML を入れ直し、`theme` のファイルだけが変われば `theme` を送り、それ以外は待たずに送る。読めない設定ファイルがあれば送らない */
+  /** 設定を再読み込みして変更を適用する。`libraries` の origin の集まり・`extensions`・`theme` のパスが変われば HTML をもう一度入れ、`theme` のファイルだけが変われば `theme` を送信し、それ以外は待たずに送信する。読み込めない設定ファイルがあれば送信しない */
   async applyConfigChange(path?: string): Promise<void> {
     if (!(await this.reloadConfig())) {
       return;
@@ -484,7 +484,7 @@ export class PreviewPanel {
     this.renderNow();
   }
 
-  /** 前に帯を出していたときだけ `configOk` を送る */
+  /** 前に帯を出していたときだけ `configOk` を送信する */
   private markConfigOk(): void {
     if (this.configProblem !== undefined) {
       this.configProblem = undefined;
@@ -492,7 +492,7 @@ export class PreviewPanel {
     }
   }
 
-  /** 待ちを始め直し、`mdmark.preview.updateDelayMs` 後に送る */
+  /** 待ちをもう一度始め、`mdmark.preview.updateDelayMs` 後に送信する */
   scheduleRender(): void {
     clearTimeout(this.timer);
     const configuration = workspace.getConfiguration("mdmark", this.fileUri);
@@ -502,7 +502,7 @@ export class PreviewPanel {
     }, settings.updateDelayMs);
   }
 
-  /** 待ちを消し、パネルが見えていて `ready` を受けていれば、その時点の全文・`config` を `mdmark.colorTheme` で上書きした設定・配色で `render` を送る。見えていなければ送らない */
+  /** 待ちを削除し、パネルが見えていて `ready` を受けていれば、その時点の全文・`config` を `mdmark.colorTheme` で上書きした設定・配色で `render` を送信する。見えていなければ送信しない */
   renderNow(): void {
     clearTimeout(this.timer);
     this.timer = undefined;
@@ -512,12 +512,12 @@ export class PreviewPanel {
     void this.postRender();
   }
 
-  /** 前回の `render` で読んだ取り込む文書に `path` が入っているか */
+  /** 前回の `render` で読み込んだ取り込む文書に `path` が入っているか */
   readsInclude(path: string): boolean {
     return this.includePaths.includes(path);
   }
 
-  /** 取り込む文書を読み直し、全文・設定・配色と一緒に `render` を送る */
+  /** 取り込む文書を再読み込みし、全文・設定・配色と一緒に `render` を送信する */
   private async postRender(): Promise<void> {
     const configuration = workspace.getConfiguration("mdmark", this.fileUri);
     const settings = readSettings((key) => configuration.get(key));
@@ -626,7 +626,7 @@ export class PreviewPanel {
           return;
         }
         log.warn(
-          "配布物を読めない",
+          "配布物を読み込めない",
           message.reason,
           this.loaded?.version,
           this.loaded?.distJs,
@@ -637,7 +637,7 @@ export class PreviewPanel {
     }
   }
 
-  /** `localResourceRoots` に `assets.root` のフォルダ・`theme` のファイルのフォルダ・束ねた拡張のフォルダを加えて入れ直す（前に加えたものは外す） */
+  /** `localResourceRoots` に `assets.root` のフォルダ・`theme` のファイルのフォルダ・まとめた拡張のフォルダを加えてもう一度入れる（前に加えたものは削除する） */
   private updateResourceRoots(): void {
     const webview = this.webviewPanel.webview;
     const base = (webview.options.localResourceRoots ?? []).filter(
@@ -658,7 +658,7 @@ export class PreviewPanel {
     };
   }
 
-  /** 書いたパスを Markdown のフォルダ、次に `assets.root` で探し、ワークスペースの中にあった最初のファイルと、URL の後ろに戻すクエリとフラグメントを返す */
+  /** 記載したパスを Markdown のフォルダ、次に `assets.root` で探し、ワークスペースの中にあった最初のファイルと、URL の後ろに戻すクエリとフラグメントを返却する */
   private async findAsset(
     path: string,
   ): Promise<{ file: string; suffix: string } | undefined> {
@@ -682,7 +682,7 @@ export class PreviewPanel {
     return undefined;
   }
 
-  /** エディタが見えているときだけ、行をエディタの先頭に置く（エディタを開き直さない） */
+  /** エディタが見えているときだけ、行をエディタの先頭に配置する（エディタをもう一度開かない） */
   private revealEditorLine(line: number): void {
     const configuration = workspace.getConfiguration("mdmark", this.fileUri);
     const settings = readSettings((key) => configuration.get(key));
@@ -736,7 +736,7 @@ export class PreviewPanel {
     await commands.executeCommand("vscode.open", uri);
   }
 
-  /** エディタの見えている範囲が変わったとき、自分が動かした知らせでなければ、設定がオンのときに先頭の行を `scrollToLine` で送る */
+  /** エディタの見えている範囲が変わったとき、自分が動かした通知でなければ、設定がオンのときに先頭の行を `scrollToLine` で送信する */
   syncFromEditor(range: { start: number; end: number }): void {
     const configuration = workspace.getConfiguration("mdmark", this.fileUri);
     const settings = readSettings((key) => configuration.get(key));
@@ -749,7 +749,7 @@ export class PreviewPanel {
     void this.post({ type: "scrollToLine", line: range.start });
   }
 
-  /** 新しい `id` で `inspect` を送り、`inspected` を受けたら解決する（テストのときだけ呼ばれる）。`play` は `inspect` に渡す */
+  /** 新しい `id` で `inspect` を送信し、`inspected` を受けたら解決する（テストのときだけ呼ばれる）。`play` は `inspect` に指定する */
   inspect(selector: string, play = false): Promise<InspectedElement[]> {
     const id = this.nextInspectId;
     this.nextInspectId += 1;
@@ -766,7 +766,7 @@ export class PreviewPanel {
     });
   }
 
-  /** `inspect` と同じ番号の列の新しい `id` で `axe` を送り、`axed` を受けたら解決する（テストのときだけ呼ばれる） */
+  /** `inspect` と同じ番号の列の新しい `id` で `axe` を送信し、`axed` を受けたら解決する（テストのときだけ呼ばれる） */
   audit(): Promise<AxeViolation[]> {
     const id = this.nextInspectId;
     this.nextInspectId += 1;
@@ -783,7 +783,7 @@ export class PreviewPanel {
     });
   }
 
-  /** Webview にメッセージを送る */
+  /** Webview にメッセージを送信する */
   private post(message: HostMessage): Thenable<boolean> {
     return this.webviewPanel.webview.postMessage(message);
   }

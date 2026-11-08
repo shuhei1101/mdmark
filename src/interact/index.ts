@@ -19,19 +19,19 @@ import { attachTermTips } from "./terms.ts";
 import { attachFileTrees } from "./trees.ts";
 import { attachWideToggles } from "./wide.ts";
 
-/** 機能がオンの記法だけ（節と行の詳細・表・タブの順に）操作を付け、`table` がオンなら表の見出し行と集計の行を留める処理を、`code` がオンならコードブロックのコピーを付け、`tree` がオンならファイルツリーの開閉とコピーを付け、`footnotes` がオンなら脚注のツールチップと一覧への移動を付け、`diagrams` がオンなら図と操作できる部品の操作を付け、`glossary` か `backlinks` がオンなら用語のツールチップの操作を付け、`html` がオンなら埋め込んだ HTML の幅の操作を（`hints` もオンならヒントの操作も）付け、`lightbox` がオンなら画像の拡大を、`gif` がオンならその後に GIF の止める・再生するボタンを付け、`csv` がオンなら CSV の表と元の CSV の切り替えを、`wide` がオンなら wide の範囲の幅の切り替えを付け、まとめて外す関数を返す */
+/** 機能がオンの記法だけ（セクションと行の詳細・表・タブの順に）操作を付け、`table` がオンなら表の見出し行と集計の行を留める処理を、`code` がオンならコードブロックのコピーを付け、`tree` がオンならファイルツリーの開閉とコピーを付け、`footnotes` がオンなら脚注のツールチップと一覧への移動を付け、`diagrams` がオンなら図と操作できる部品の操作を付け、`glossary` か `backlinks` がオンなら用語のツールチップの操作を付け、`html` がオンなら埋め込んだ HTML の幅の操作を（`hints` もオンならヒントの操作も）付け、`lightbox` がオンなら画像の拡大を、`gif` がオンならその後に GIF の止める・再生するボタンを付け、`csv` がオンなら CSV の表と元の CSV の切り替えを、`wide` がオンなら wide の範囲の幅の切り替えを付け、まとめて削除する関数を返却する */
 export function attachInteractions(options: {
   /** 描いた要素 */
   root: HTMLElement;
   /** 文書で決まった機能のオン・オフ */
   features: Record<string, boolean>;
-  /** 既定を当てた設定の、本文の用語・脚注のツールチップを出す場所 */
+  /** 既定を適用した設定の、本文の用語・脚注のツールチップを出す場所 */
   placement: TooltipPlacement;
-  /** 既定を当てた設定の、図・ヒント・グラフの項目のツールチップを出す場所（既定 `bottom`） */
+  /** 既定を適用した設定の、図・ヒント・グラフの項目のツールチップを出す場所（既定 `bottom`） */
   diagramPlacement?: TooltipPlacement;
   /** 描いた操作できる部品の定義。`div.mdmark-param` の並びと同じ順（既定 `[]`） */
   paramDefinitions?: MdmarkParamDefinition[];
-  /** 列の表示を切り替えたときに知らせる */
+  /** 列の表示を切り替えたときに通知する */
   onColumnsChange?: (event: MdmarkColumnsChange) => void;
 }): () => void {
   const {
@@ -43,7 +43,7 @@ export function attachInteractions(options: {
     onColumnsChange,
   } = options;
   const detachers: Array<() => void> = [];
-  // 閉じた節の中の行へは、`attachTables` が行へ送る前に `attachSections` が節を開いておく
+  // 閉じたセクションの中の行へは、`attachTables` が行へ送信する前に `attachSections` がセクションを開いておく
   const sections = features.sections === true;
   const rowDetails = features["row-details"] === true;
   if (sections || rowDetails) {
@@ -53,7 +53,7 @@ export function attachInteractions(options: {
     detachers.push(attachTables(root, { onColumnsChange }));
     detachers.push(attachStickyRows(root));
   }
-  // RAW のボタンは、表の操作の帯ができてからその帯に足す
+  // RAW のボタンは、表の操作の帯ができてからその帯に追加する
   if (features.csv === true) {
     detachers.push(attachCsvRaw(root));
   }
@@ -82,7 +82,7 @@ export function attachInteractions(options: {
   }
   if (features.html === true) {
     detachers.push(attachEmbeddedHtml(root));
-    // ヒントの印と中身は、`hints` がオンのときだけ `render` が出す。操作もオンのときだけ付ける
+    // ヒントのマーカーと中身は、`hints` がオンのときだけ `render` が出す。操作もオンのときだけ付ける
     if (features.hints === true) {
       for (const embedded of root.querySelectorAll<HTMLElement>(
         "div.mdmark-html",

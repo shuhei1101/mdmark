@@ -1,6 +1,6 @@
 import type { ColorName } from "./colors.ts";
 
-/** 蛍光ペンの HTML を返す。色を渡したときは `data-color` を付ける */
+/** 蛍光ペンの HTML を返却する。色を指定したときは `data-color` を付ける */
 export const renderHighlight = (options: {
   /** 中身の HTML */
   html: string;

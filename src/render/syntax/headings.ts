@@ -25,11 +25,11 @@ export function slugify(text: string, used: Map<string, number>): string {
   return `${base}-${count + 1}`;
 }
 
-/** 脚注の定義の外の全ての見出しに ID を付け、`anchors` がオンなら見出しの文字の後にアンカーを足し、見出しを `env.headings` に控える */
+/** 脚注の定義の外の全ての見出しに ID を付け、`anchors` がオンなら見出しの文字の後にアンカーを追加し、見出しを `env.headings` に記録する */
 export function assignHeadingIds(state: StateCore): void {
   const env = envOf(state);
   const used = new Map<string, number>();
-  // 脚注の定義の中の見出しは、目次に載せないよう ID を振らない
+  // 脚注の定義の中の見出しは、目次に記載しないよう ID を振らない
   const tokens = outsideFootnoteDefinitions(state.tokens);
   for (let index = 0; index < tokens.length; index++) {
     const open = tokens[index];

@@ -2,7 +2,7 @@ import { escapeHtml } from "./escape.ts";
 import { iconSvg } from "./icons.ts";
 import { renderImageOpener } from "./image.ts";
 
-/** GIF の止める・再生するボタンの HTML を返す。アイコンは両方置き、出す側は CSS が `aria-pressed` で決める */
+/** GIF の止める・再生するボタンの HTML を返却する。アイコンは両方置き、出す側は CSS が `aria-pressed` で決める */
 export function renderGifToggle(options: {
   /** 止めているか */
   paused: boolean;
@@ -11,7 +11,7 @@ export function renderGifToggle(options: {
   return `<button class="mdmark-gif-toggle" type="button" aria-pressed="${options.paused}" aria-label="${label}" title="${label}"><span class="mdmark-gif-icon-pause">${iconSvg("pause")}</span><span class="mdmark-gif-icon-play">${iconSvg("play")}</span></button>`;
 }
 
-/** GIF の HTML を返す（Storybook の見た目。`mount` は描いた `img` を包んで同じ形にする） */
+/** GIF の HTML を返却する（Storybook の外観。`mount` は描いた `img` を包んで同じ構造にする） */
 export function renderGif(options: {
   /** 画像の URL */
   src: string;

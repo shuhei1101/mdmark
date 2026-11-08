@@ -11,7 +11,7 @@ export const WIDE_QUERY = "(min-width: 60rem)";
 /** 開いている文書の行に付ける属性 */
 const CURRENT_ATTRIBUTE = "aria-current";
 
-/** 埋めた画像のキーと、後ろのフラグメントを読む正規表現 */
+/** 埋めた画像のキーと、後ろのフラグメントを読み込む正規表現 */
 const ASSET_PATTERN = new RegExp(`${ASSET_SCHEME}([A-Za-z0-9_-]+)`, "g");
 
 /** 文書の Markdown の `mdmark-asset:{キー}` を `assets` の `data:` URL に替える。後ろのフラグメントは残し、`assets` に無いキーは替えない */
@@ -27,7 +27,7 @@ export function restoreAssets(
   );
 }
 
-/** 画面の骨組みの要素を引く。無ければ例外を投げる */
+/** 画面の骨組みの要素を参照する。無ければ例外を投げる */
 function requireElement<T extends Element>(
   parent: ParentNode,
   selector: string,
@@ -39,7 +39,7 @@ function requireElement<T extends Element>(
   return element;
 }
 
-/** まとめた HTML を起動する: 横の一覧とパネルに文書の一覧を置き、URL の `#` が指す文書を `mount` で描き、`hashchange` で文書を行き来する */
+/** まとめた HTML を起動する: 横の一覧とパネルに文書の一覧を配置し、URL の `#` が指す文書を `mount` で描き、`hashchange` で文書を行き来する */
 export function startBundle(
   doc: Document,
   payload: ExportPayload,
@@ -71,7 +71,7 @@ export function startBundle(
   let currentPath: string | undefined;
   let handle: MountHandle | undefined;
 
-  /** 文書を差し替え、一覧の開いている文書・帯の題・ページの題を合わせる */
+  /** 文書を差し替え、一覧の開いている文書・帯のタイトル・ページのタイトルを合わせる */
   const showDocument = (path: string): void => {
     const item = payload.docs.find((candidate) => candidate.path === path);
     if (!item) {
@@ -111,7 +111,7 @@ export function startBundle(
       paths,
       payload.entry,
     );
-    // 1 枚に無い文書を指す URL: entry の文書を出し、URL も entry に合わせる（履歴に積まない）
+    // 1 枚に無い文書を指す URL: entry の文書を出し、URL も entry に合わせる（履歴に追加しない）
     if (missing) {
       win.history.replaceState(null, "", `${DOC_HASH_PREFIX}${payload.entry}`);
     }
@@ -125,7 +125,7 @@ export function startBundle(
     } else if (switched) {
       win.scrollTo(0, 0);
     }
-    // 文書を移ったら、読み上げとキーボードの位置を文書の題へ移す（開いた直後は移さない）
+    // 文書を移ったら、スクリーンリーダーとキーボードの位置を文書のタイトルへ移す（開いた直後は移さない）
     if (switched && !initial) {
       const title = view.querySelector<HTMLElement>("h1");
       if (title) {
@@ -136,7 +136,7 @@ export function startBundle(
   };
 
   win.addEventListener("hashchange", () => route(false));
-  // 開いている文書の中の見出しへ移るリンク（見出しのアンカー・目次）は、履歴に積まず今の項目を置き換える（戻るで文書を行き来できる）
+  // 開いている文書の中の見出しへ移るリンク（見出しのアンカー・目次）は、履歴に追加せず今の項目を置き換える（戻るで文書を行き来できる）
   view.addEventListener("click", (event) => {
     const link =
       event.target instanceof Element ? event.target.closest("a") : null;
@@ -159,7 +159,7 @@ export function startBundle(
   });
   route(true);
 
-  // パネルを開き、開いている文書の行へフォーカスを置く
+  // パネルを開き、開いている文書の行へフォーカスを配置する
   openButton.addEventListener("click", () => {
     panel.showModal();
     openButton.setAttribute("aria-expanded", "true");

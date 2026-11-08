@@ -1,18 +1,18 @@
 import { useEffect, useEffectEvent } from "react";
 import { classifyLoadFailure, type Mdmark } from "../load-mdmark.ts";
 
-/** 配布物を読み始めてからこのミリ秒が経っても描けていなければ読み込み中を出す */
+/** 配布物を読み込み始めてからこのミリ秒が経っても描けていなければ読み込み中を出す */
 export const LOADING_DELAY_MS = 1000;
 
-/** `distJs` があれば配布物を読み、読めたら `onLoaded`、読めなければ理由を見分けて `onFailed`、`LOADING_DELAY_MS` 経ったら `onSlow` を呼ぶ */
+/** `distJs` があれば配布物を読み込み、読み込めたら `onLoaded`、読み込めなければ理由を見分けて `onFailed`、`LOADING_DELAY_MS` 経ったら `onSlow` を呼ぶ */
 export const useLoadMdmark = (options: {
-  /** 読む配布物の URL。無ければ読まない */
+  /** 読み込む配布物の URL。無ければ読み込まない */
   distJs: string | undefined;
-  /** 配布物を読む関数 */
+  /** 配布物を読み込む関数 */
   load: (url: string) => Promise<Mdmark>;
-  /** 読めたとき */
+  /** 読み込めたとき */
   onLoaded: (mdmark: Mdmark) => void;
-  /** 読めなかったとき */
+  /** 読み込めなかったとき */
   onFailed: (reason: "offline" | "versionMissing") => void;
   /** `LOADING_DELAY_MS` 経ったとき */
   onSlow: () => void;
@@ -26,7 +26,7 @@ export const useLoadMdmark = (options: {
     if (distJs === undefined) {
       return;
     }
-    // 外した後に届いた結果は捨てる
+    // 削除した後に届いた結果は捨てる
     let active = true;
     const timer = setTimeout(() => onSlow(), LOADING_DELAY_MS);
     load(distJs).then(

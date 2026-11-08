@@ -1,6 +1,6 @@
 import { renderCollapsible } from "./collapsible.ts";
 
-/** ステップの HTML を返す。`start` が 1 のときは属性を省く。`collapse` が `closed`・`open` なら、折り畳みに入れる */
+/** ステップの HTML を返却する。`start` が 1 のときは属性を省く。`collapse` が `closed`・`open` なら、折り畳みに入れる */
 export function renderSteps(options: {
   /** 項目の HTML */
   items: string[];

@@ -5,7 +5,7 @@ const meta = { title: "Parts/Lightbox" } satisfies Meta<
 >;
 export default meta;
 
-/** ストーリー: 描画の口（`parameters.server.id`）の部品を `args` で描く */
+/** ストーリー: 描画のインターフェース（`parameters.server.id`）の部品を `args` で描く */
 type Story = StoryObj<Record<string, unknown>>;
 
 export const Middle: Story = {
@@ -38,7 +38,7 @@ export const Single: Story = {
   args: {
     src: "step-3.svg",
     alt: "手順 3 の画面",
-    caption: "中央に置いた画面",
+    caption: "中央に配置した画面",
     index: 1,
     total: 1,
   },
@@ -76,7 +76,7 @@ export const LongCaption: Story = {
     src: "step-1.svg",
     alt: "手順 1 の画面",
     caption:
-      "設定ファイルを読めないときに文書の先頭へ帯を出し、設定ファイルを開くボタンから直せることを示す画面。帯は文書と一緒にスクロールする",
+      "設定ファイルを読み込めないときに文書の先頭へ帯を出し、設定ファイルを開くボタンから修正できることを示す画面。帯は文書と一緒にスクロールする",
     index: 2,
     total: 4,
   },

@@ -8,13 +8,13 @@ import {
 } from "../config.ts";
 import type { MdmarkMarkArgs } from "../extensions.ts";
 
-/** page の印の `toc=` に書ける右側の目次の出し方 */
+/** page のマーカーの `toc=` に記載できる右側の目次の出し方 */
 const TOC_MODES: readonly SideTocMode[] = ["hover", "fixed"];
 
-/** page の印に書けるキー */
+/** page のマーカーに記載できるキー */
 const PAGE_KEYS = ["scheme", "theme", "toc"];
 
-/** page の印の引数から、書けるキーと値だけをページの設定にし、書けるキーの知らない値と、知らないキー・`=` を持たない引数を、それぞれ書いた順に並べて返す */
+/** page のマーカーの引数から、記載できるキーと値だけをページの設定にし、記載できるキーの知らない値と、知らないキー・`=` を持たない引数を、それぞれ記載した順に並べて返却する */
 export const readPageSettings = (
   options: MdmarkMarkArgs,
 ): { settings: PageSettings; unknown: string[]; skipped: string[] } => {

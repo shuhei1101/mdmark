@@ -26,19 +26,19 @@ export type ServerRoots = {
   distDir: string;
 };
 
-/** ツールの処理が使う、呼び出しの作業のフォルダとサーバーが読む配布物の場所 */
+/** ツールの処理が使用する、呼び出しの作業のフォルダとサーバーが読み込む配布物の場所 */
 export type ToolContext = ServerRoots & {
   /** 引数の `project_dir`。相対パスの引数と設定ファイルの探索の基準 */
   projectDir: string;
 };
 
-/** ツールの処理が返す、JSON にする値 */
+/** ツールの処理が返却する、JSON にする値 */
 export type ToolOutput = {
-  /** JSON の文字列にして 1 つのテキストで返す値 */
+  /** JSON の文字列にして 1 つのテキストで返却する値 */
   json: Record<string, unknown>;
 };
 
-/** ツール 1 つの名前・説明・引数の形・処理 */
+/** ツール 1 つの名前・説明・引数の構造・処理 */
 export type ToolDefinition = {
   name:
     | "export_html"
@@ -47,11 +47,11 @@ export type ToolDefinition = {
     | "list_templates"
     | "add_template"
     | "apply_template";
-  /** ツールの説明。呼ぶ場面と、引数・戻り値を日本語で書く */
+  /** ツールの説明。呼ぶ場面と、引数・戻り値を日本語で記載する */
   description: string;
-  /** 引数の形。`tools/list` に JSON Schema として出し、引数を検査するものにも使う */
+  /** 引数の構造。`tools/list` に JSON Schema として出し、引数を検査するものにも使用する */
   inputSchema: ToolInputSchema;
-  /** 検査を通った引数で処理し、結果を返す。利用者に見せる誤りは `CliError` を投げる */
+  /** 検査を通った引数で処理し、結果を返却する。利用者に見せる誤りは `CliError` を投げる */
   run: (
     args: Record<string, unknown>,
     context: ToolContext,
@@ -69,9 +69,9 @@ export const PROJECT_DIR_ERROR_MESSAGE =
 
 /** 設定ファイルの引数の説明 */
 const CONFIG_DESCRIPTION =
-  "使う設定ファイルのパス。省くと、セッションのフォルダから上へ mdmark.config.yaml を探す";
+  "使用する設定ファイルのパス。省くと、セッションのフォルダから上へ mdmark.config.yaml を探す";
 
-/** 文書を HTML に書き出す: 作業のフォルダを基準に `mdmark export` と同じ処理で書き出し、絶対パスと警告を返す */
+/** 文書を HTML に書き出す: 作業のフォルダを基準に `mdmark export` と同じ処理で書き出し、絶対パスと警告を返却する */
 export async function runExportHtml(
   args: { file: string; out?: string; config?: string },
   context: ToolContext,
@@ -86,7 +86,7 @@ export async function runExportHtml(
   return { json: { out, warnings } };
 }
 
-/** 複数の文書を 1 枚にまとめる: 作業のフォルダを基準に `mdmark build` と同じ処理でまとめ、絶対パス・文書の数・警告を返す */
+/** 複数の文書を 1 枚にまとめる: 作業のフォルダを基準に `mdmark build` と同じ処理でまとめ、絶対パス・文書の数・警告を返却する */
 export async function runBuildSite(
   args: { config?: string },
   context: ToolContext,
@@ -99,7 +99,7 @@ export async function runBuildSite(
   return { json: { out, docs, warnings } };
 }
 
-/** 点検する: 作業のフォルダから設定ファイルを探し、`mdmark check` と同じずれの一覧を返す。`base` を渡すと `change_together` の直し忘れも返す。`text` か `file` と `key` を渡すと、`mdmark check --text`・`--file --key` と同じく渡した Markdown の記法だけを点検する */
+/** 点検する: 作業のフォルダから設定ファイルを探し、`mdmark check` と同じずれの一覧を返却する。`base` を指定すると `change_together` の修正漏れも返却する。`text` か `file` と `key` を指定すると、`mdmark check --text`・`--file --key` と同じく指定した Markdown の記法だけを点検する */
 export async function runCheckTool(
   args: {
     config?: string;
@@ -135,7 +135,7 @@ export async function runCheckTool(
 const templatesDir = (): string =>
   resolveTemplatesDir({ env: process.env, home: homedir() });
 
-/** CSS のテンプレートの一覧を返す: テンプレートのフォルダの索引の行を、CSS の絶対パスを付けて返す */
+/** CSS のテンプレートの一覧を返却する: テンプレートのフォルダの索引の行を、CSS の絶対パスを付けて返却する */
 export async function runListTemplates(
   _context: ToolContext,
 ): Promise<ToolOutput> {
@@ -187,7 +187,7 @@ export const TOOLS: ToolDefinition[] = [
   {
     name: "export_html",
     description:
-      "Markdown の文書を 1 つ、外へ要求しない 1 枚の HTML に書き出す（mdmark export と同じ処理）。引数 file は書き出す文書、out は書き出す HTML のパス（省くと文書と同じフォルダの .html）。書き出した HTML の絶対パス out と警告 warnings を JSON で返す。",
+      "Markdown の文書を 1 つ、外へ要求しない 1 枚の HTML に書き出す（mdmark export と同じ処理）。引数 file は書き出す文書、out は書き出す HTML のパス（省くと文書と同じフォルダの .html）。書き出した HTML の絶対パス out と警告 warnings を JSON で返却する。",
     inputSchema: {
       type: "object",
       properties: {
@@ -211,7 +211,7 @@ export const TOOLS: ToolDefinition[] = [
   {
     name: "build_site",
     description:
-      "設定の build で決めた文書を、行き来できる 1 枚の HTML にまとめる（mdmark build と同じ処理）。書き出した HTML の絶対パス out・入れた文書の数 docs・警告 warnings を JSON で返す。",
+      "設定の build で決めた文書を、行き来できる 1 枚の HTML にまとめる（mdmark build と同じ処理）。書き出した HTML の絶対パス out・入れた文書の数 docs・警告 warnings を JSON で返却する。",
     inputSchema: {
       type: "object",
       properties: {
@@ -225,7 +225,7 @@ export const TOOLS: ToolDefinition[] = [
   {
     name: "check",
     description:
-      "設定の形・索引と文書のずれ・build の対象の有無・知らない印・include のマーカーの取り込み先を点検する（mdmark check と同じ処理）。設定・索引・文書は書き換えない。ずれの一覧 issues（file・where・kind・message）を JSON で返し、ずれがあってもエラーにしない。base に比べる基準の git の ref（例 origin/develop）を渡すと、基準と HEAD の merge-base から変わった文書を比べ、change_together の組のうち片方だけが変わった直し忘れも返す。text に Markdown の文字列、または file に YAML のファイルと key にキーのパスを渡すと、設定と索引は点検せず、その Markdown を描いたときの書き方の警告・描くときに無視するマーカーの知らない引数・知らない印・図の配置のずれだけを返す（text は file が -、file は where が YAML のファイルの行）。",
+      "設定の構造・索引と文書のずれ・build の対象の有無・知らないマーカー・include のマーカーの取り込み先を点検する（mdmark check と同じ処理）。設定・索引・文書は書き換えない。ずれの一覧 issues（file・where・kind・message）を JSON で返却し、ずれがあってもエラーにしない。base に比べる基準の git の ref（例 origin/develop）を指定すると、基準と HEAD の merge-base から変わった文書を比べ、change_together の組のうち片方だけが変わった修正漏れも返却する。text に Markdown の文字列、または file に YAML のファイルと key にキーのパスを指定すると、設定と索引は点検せず、その Markdown を描いたときの記載の警告・描くときに無視するマーカーの知らない引数・知らないマーカー・図の配置のずれだけを返却する（text は file が -、file は where が YAML のファイルの行）。",
     inputSchema: {
       type: "object",
       properties: {
@@ -233,18 +233,18 @@ export const TOOLS: ToolDefinition[] = [
         base: {
           type: "string",
           description:
-            "直し忘れの検査に比べる基準の git の ref。省くと直し忘れを検査しない",
+            "修正漏れの検査に比べる基準の git の ref。省くと修正漏れを検査しない",
         },
         text: {
           type: "string",
           description:
-            "点検する Markdown の文字列。base・file・key と一緒に渡せない",
+            "点検する Markdown の文字列。base・file・key と一緒に指定できない",
         },
         file: {
           type: "string",
           minLength: 1,
           description:
-            "Markdown をキーの値に持つ YAML のファイルのパス（project_dir からの相対パスか絶対パス）。key と一緒に渡す",
+            "Markdown をキーの値に持つ YAML のファイルのパス（project_dir からの相対パスか絶対パス）。key と一緒に指定する",
         },
         key: {
           type: "string",
@@ -272,7 +272,7 @@ export const TOOLS: ToolDefinition[] = [
   {
     name: "list_templates",
     description:
-      "端末の設定のフォルダの templates/css/ にある CSS のテンプレートを、名前 name・説明 description・タグ tags・CSS の絶対パス path の一覧 templates で JSON にして返す。使う側の CSS を探すときに呼ぶ。テンプレートが無ければ空の一覧を返す。何も書き換えない。",
+      "端末の設定のフォルダの templates/css/ にある CSS のテンプレートを、名前 name・説明 description・タグ tags・CSS の絶対パス path の一覧 templates で JSON にして返却する。利用側の CSS を探すときに呼ぶ。テンプレートが無ければ空の一覧を返却する。何も書き換えない。",
     inputSchema: {
       type: "object",
       properties: {},
@@ -285,7 +285,7 @@ export const TOOLS: ToolDefinition[] = [
   {
     name: "add_template",
     description:
-      "作業のフォルダの CSS を、端末の設定のフォルダの CSS のテンプレートに {name}.css でコピーし、名前・説明・タグを索引 templates.yaml に記載する。作った CSS を使い回すときに呼ぶ。同じ名前があるときは overwrite が true のときだけ置き換える。登録した名前 name・CSS の絶対パス path・置き換えたか replaced を JSON で返す。",
+      "作業のフォルダの CSS を、端末の設定のフォルダの CSS のテンプレートに {name}.css でコピーし、名前・説明・タグを索引 templates.yaml に記載する。作った CSS を使い回すときに呼ぶ。同じ名前があるときは overwrite が true のときだけ置き換える。登録した名前 name・CSS の絶対パス path・置き換えたか replaced を JSON で返却する。",
     inputSchema: {
       type: "object",
       properties: {
@@ -304,12 +304,12 @@ export const TOOLS: ToolDefinition[] = [
         description: {
           type: "string",
           minLength: 1,
-          description: "どんな見た目にする CSS か・どんな文書に向くか",
+          description: "どんな外観にする CSS か・どんな文書に向くか",
         },
         tags: {
           type: "array",
           items: { type: "string" },
-          description: "探すときの語。省くと空",
+          description: "探すときの単語。省くと空",
         },
         overwrite: {
           type: "boolean",
@@ -334,7 +334,7 @@ export const TOOLS: ToolDefinition[] = [
   {
     name: "apply_template",
     description:
-      "CSS のテンプレートを配置先のフォルダへ {name}.css でコピーし、配置した絶対パス path・設定の theme に記載する値 theme・置き換えたか replaced を JSON で返す。dir を省くと、作業のフォルダから上へ探して最も近い mdmark.config.yaml のフォルダに配置する。theme は書き換えないので、返った theme の値を設定の theme に記載する。配置先に中身の違う同じ名前のファイルがあるときは overwrite が true のときだけ置き換える。",
+      "CSS のテンプレートを配置先のフォルダへ {name}.css でコピーし、配置した絶対パス path・設定の theme に記載する値 theme・置き換えたか replaced を JSON で返却する。dir を省くと、作業のフォルダから上へ探して最も近い mdmark.config.yaml のフォルダに配置する。theme は書き換えないので、返った theme の値を設定の theme に記載する。配置先に中身の違う同じ名前のファイルがあるときは overwrite が true のときだけ置き換える。",
     inputSchema: {
       type: "object",
       properties: {
@@ -378,9 +378,9 @@ function isProjectDir(value: unknown): value is string {
 export async function callTool(options: {
   /** 呼ぶツール */
   tool: ToolDefinition;
-  /** 渡された引数 */
+  /** 指定された引数 */
   args: unknown;
-  /** サーバーの読む場所 */
+  /** サーバーの読み込む場所 */
   roots: ServerRoots;
   /** 標準エラーへ 1 行書く */
   stderr: (line: string) => void;
@@ -390,7 +390,7 @@ export async function callTool(options: {
     content: [{ type: "text", text }],
     isError: true,
   });
-  // 作業のフォルダは引数から取り出して前提に入れ、ツールの引数の検査には渡さない
+  // 作業のフォルダは引数から取り出して前提に入れ、ツールの引数の検査には指定しない
   if (typeof options.args !== "object" || options.args === null) {
     return failure(PROJECT_DIR_ERROR_MESSAGE);
   }

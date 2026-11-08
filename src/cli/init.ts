@@ -2,17 +2,17 @@ import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { dirname, join } from "node:path";
 import { CliError, type CliIo } from "./errors.ts";
 
-/** 雛形 1 つ: 置く先のパスと、`templates/` の中の正本のパス */
+/** 雛形 1 つ: 配置先のパスと、`templates/` の中の原本のパス */
 type TemplateFile = {
-  /** 置く先のパス（置く先のフォルダからの相対パス） */
+  /** 配置先のパス（配置先のフォルダからの相対パス） */
   path: string;
-  /** `templates/` の中の正本のパス */
+  /** `templates/` の中の原本のパス */
   source: string;
-  /** TypeScript の雛形（`--js` のときは置かない）か、JavaScript の雛形（`--js` のときだけ置く）か。無ければ常に置く */
+  /** TypeScript の雛形（`--js` のときは配置しない）か、JavaScript の雛形（`--js` のときだけ配置する）か。無ければ常に配置する */
   language?: "ts" | "js";
 };
 
-/** `init` が置く雛形を、置く順に並べたもの */
+/** `init` が配置する雛形を、配置する順に並べたもの */
 export const TEMPLATE_FILES: readonly TemplateFile[] = [
   { path: "mdmark.config.yaml", source: "mdmark.config.yaml" },
   { path: "theme.css", source: "theme.css" },
@@ -32,7 +32,7 @@ export const TEMPLATE_FILES: readonly TemplateFile[] = [
   { path: "package.json", source: "package.json", language: "ts" },
 ];
 
-/** 置く設定の雛形のパス */
+/** 配置する設定の雛形のパス */
 const CONFIG_TEMPLATE = "mdmark.config.yaml";
 
 /** 設定の雛形の `version` の行 */
@@ -43,16 +43,16 @@ function reasonOf(error: unknown): string {
   return error instanceof Error ? error.message : String(error);
 }
 
-/** `TEMPLATE_FILES` のうち置く先に無いものを写し、置いた・置かなかった行を出す */
+/** `TEMPLATE_FILES` のうち配置先に無いものをコピーし、配置した・配置しなかった行を出す */
 export async function runInit(
   options: {
-    /** 置く先のフォルダ */
+    /** 配置先のフォルダ */
     dir: string;
-    /** 拡張の雛形を JavaScript で置くか */
+    /** 拡張の雛形を JavaScript で配置するか */
     js: boolean;
-    /** 雛形の正本のフォルダ */
+    /** 雛形の原本のフォルダ */
     templatesDir: string;
-    /** 呼んだ CLI の版（置く設定の `version` に書く） */
+    /** 呼んだ CLI のバージョン（配置する設定の `version` に記載する） */
     version: string;
   },
   io: CliIo,
@@ -73,24 +73,24 @@ export async function runInit(
       await mkdir(dirname(target), { recursive: true });
     } catch (error) {
       throw new CliError(
-        `${template.path} に書けません（${reasonOf(error)}）。置く先のフォルダを確かめてください。`,
+        `${template.path} に記載できません（${reasonOf(error)}）。配置先のフォルダを確認してください。`,
       );
     }
     try {
-      // 既にあるファイルは中身を読まずに飛ばす
+      // 既にあるファイルは中身を読み込まずに飛ばす
       await writeFile(target, content, { flag: "wx" });
-      io.stdout(`置いた: ${template.path}`);
+      io.stdout(`配置した: ${template.path}`);
     } catch (error) {
       if (
         error instanceof Error &&
         "code" in error &&
         error.code === "EEXIST"
       ) {
-        io.stdout(`置かなかった（既にある）: ${template.path}`);
+        io.stdout(`配置しなかった（既にある）: ${template.path}`);
         continue;
       }
       throw new CliError(
-        `${template.path} に書けません（${reasonOf(error)}）。置く先のフォルダを確かめてください。`,
+        `${template.path} に記載できません（${reasonOf(error)}）。配置先のフォルダを確認してください。`,
       );
     }
   }

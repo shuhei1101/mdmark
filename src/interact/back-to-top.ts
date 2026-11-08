@@ -4,10 +4,10 @@ import { findScrollContainer, type ScrollContainer } from "./scroller.ts";
 /** 差分のミニマップか余白の列と横の範囲が重なるとき、その部品の左端からボタンの右端までに空ける幅（px） */
 export const BACK_TO_TOP_AVOID_GAP_PX = 8;
 
-/** ボタンが避ける部品のうち、ページに置く差分のミニマップの帯 */
+/** ボタンが回避する部品のうち、ページに配置する差分のミニマップの帯 */
 const MINIMAP_SELECTOR = ".mdmark-diff-minimap";
 
-/** ボタンが避ける部品のうち、描く先の要素の子の余白の列 */
+/** ボタンが回避する部品のうち、描く先の要素の子の余白の列 */
 const COMMENT_MARGIN_SELECTOR = ":scope > .mdmark-comment-margin";
 
 /** 動きを減らす設定のメディアクエリ */
@@ -21,7 +21,7 @@ type AreaRect = {
   height: number;
 };
 
-/** スクロールする場所の画面の中の矩形を返す */
+/** スクロールする場所の画面の中の矩形を返却する */
 function areaRect({ target, page }: ScrollContainer): AreaRect {
   const { clientWidth, clientHeight } = document.documentElement;
   if (page) {
@@ -43,7 +43,7 @@ function areaRect({ target, page }: ScrollContainer): AreaRect {
   };
 }
 
-/** 描く先の要素の `--mdmark-sticky-top` の px を返す（指定が無ければ 0） */
+/** 描く先の要素の `--mdmark-sticky-top` の px を返却する（指定が無ければ 0） */
 function stickyTop(el: HTMLElement): number {
   const value = getComputedStyle(el)
     .getPropertyValue("--mdmark-sticky-top")
@@ -58,7 +58,7 @@ function createButton(): HTMLButtonElement {
   return template.content.firstElementChild as HTMLButtonElement;
 }
 
-/** 描く先の要素の子の末尾に先頭へ戻るボタンを置き、スクロールの量で出し分け、スクロールする場所の右下でミニマップと余白の列を避けて置き、押すと先頭へ戻す。返す関数でボタンと受け取りを外す */
+/** 描く先の要素の子の末尾に先頭へ戻るボタンを配置し、スクロールの量で出し分け、スクロールする場所の右下でミニマップと余白の列を回避して配置し、押すと先頭へ戻す。返却する関数でボタンと受け取りを解除する */
 export function attachBackToTop(options: {
   /** 描く先の要素 */
   el: HTMLElement;
@@ -71,7 +71,7 @@ export function attachBackToTop(options: {
   const container = findScrollContainer(el);
   let addedTabIndex = false;
 
-  /** 出すかを決め、出すときはスクロールする場所の右下で、避ける部品の左に置く */
+  /** 出すかを決め、出すときはスクロールする場所の右下で、回避する部品の左に配置する */
   const place = (): void => {
     const area = areaRect(container);
     const scrolled = area.top - el.getBoundingClientRect().top;
@@ -113,7 +113,7 @@ export function attachBackToTop(options: {
     }
   };
 
-  // スクロール・画面の大きさ・避ける部品の出し入れのたびに、1 フレームに 1 回だけ置き直す
+  // スクロール・画面の大きさ・回避する部品の出し入れのたびに、1 フレームに 1 回だけもう一度配置する
   let frame: number | undefined;
   const schedule = (): void => {
     if (frame !== undefined) {
@@ -150,7 +150,7 @@ export function attachBackToTop(options: {
   };
 
   button.addEventListener("click", backToTop);
-  // 画面全体なら画面のスクロール、祖先の要素なら祖先の外のスクロールでも位置が変わるため捕捉の段で受ける
+  // 画面全体なら画面のスクロール、祖先の要素なら祖先の外のスクロールでも位置が変わるためキャプチャーフェーズで受ける
   const scrollSource: Window | Document = container.page ? window : document;
   scrollSource.addEventListener("scroll", schedule, {
     capture: true,

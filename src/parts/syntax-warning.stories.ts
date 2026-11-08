@@ -5,7 +5,7 @@ const meta = { title: "Parts/SyntaxWarning" } satisfies Meta<
 >;
 export default meta;
 
-/** ストーリー: 描画の口（`parameters.server.id`）の部品を `args` で描く */
+/** ストーリー: 描画のインターフェース（`parameters.server.id`）の部品を `args` で描く */
 type Story = StoryObj<Record<string, unknown>>;
 
 export const ClosedAndOpen: Story = {
@@ -14,7 +14,7 @@ export const ClosedAndOpen: Story = {
   args: {
     mark: "<!-- table: data closed open -->",
     message:
-      "の `closed` と `open` は同時に書けません。どちらか 1 つにしてください。`closed` を当てて描いています。",
+      "の `closed` と `open` は同時に記載できません。どちらか 1 つにしてください。`closed` を適用して描いています。",
   },
 };
 
@@ -23,9 +23,9 @@ export const Items: Story = {
   parameters: { server: { id: "syntax-warning" } },
   args: {
     mark: "<!-- table: data hide=備考 total=価格:sum -->",
-    message: "の読めない指定を当てずに描いています。",
+    message: "の読み込めない指定を当てずに描いています。",
     items:
-      '[{"label":"hide=","message":"`+columns` を書いた表でだけ使えます。当てずに描いています"},{"label":"total=","message":"`+total` を書いた表でだけ使えます。当てずに描いています"}]',
+      '[{"label":"hide=","message":"`+columns` を記載した表でだけ使用できます。当てずに描いています"},{"label":"total=","message":"`+total` を記載した表でだけ使用できます。当てずに描いています"}]',
   },
 };
 
@@ -34,7 +34,7 @@ export const BrokenReference: Story = {
   parameters: { server: { id: "syntax-warning" } },
   args: {
     message:
-      "リンク先の `#fig-missing` の図表がありません。`<!-- fig: missing -->` を図か表の直前に書くか、リンク先を直してください。",
+      "リンク先の `#fig-missing` の図表がありません。`<!-- fig: missing -->` を図か表の直前に記載するか、リンク先を修正してください。",
   },
 };
 
@@ -44,7 +44,7 @@ export const ExtensionSchema: Story = {
   args: {
     mark: "<!-- greet: World 2 -->",
     message:
-      "の引数が、拡張 `greet` の決まりに合いません。直してから読み込み直してください。",
+      "の引数が、拡張 `greet` の決まりに合いません。修正してから再読み込みしてください。",
     items:
       '[{"label":"1 つ目の World","message":"Invalid format: Expected /^[a-z]+$/ but received \\"World\\""},{"label":"2 つ目の 2","message":"Invalid type: Expected never but received \\"2\\""}]',
   },
@@ -56,7 +56,7 @@ export const LongMark: Story = {
   args: {
     mark: "<!-- table: data filter=とても長い列の名前:range,もう一つの長い列の名前:text,更新日:date -->",
     message:
-      "の絞り込みの種類 `range` は使えません。使える種類は `select`・`text`・`date` です。",
+      "の絞り込みの種類 `range` は使用できません。使用できる種類は `select`・`text`・`date` です。",
   },
 };
 
@@ -66,7 +66,7 @@ export const GlossaryColumn: Story = {
   args: {
     mark: "<!-- glossary: term=用語 meaning=説明 -->",
     message:
-      "の `meaning=` の列 `説明` が表にありません。表の列は `用語`・`意味` です。列名を直してください。この表からは用語を入れずに描いています。",
+      "の `meaning=` の列 `説明` が表にありません。表の列は `用語`・`意味` です。列名を修正してください。この表からは用語を入れずに描いています。",
   },
 };
 
@@ -86,7 +86,7 @@ export const ViewGroupColumn: Story = {
   args: {
     mark: "<!-- view: group=優先度 -->",
     message:
-      "の列 `優先度` は表にありません。表の列は `題`・`状態`・`担当` です。ボードにせず、表で描いています。",
+      "の列 `優先度` は表にありません。表の列は `タイトル`・`状態`・`担当` です。ボードにせず、表で描いています。",
   },
 };
 
@@ -96,7 +96,7 @@ export const ViewNoTable: Story = {
   args: {
     mark: "<!-- view: group=状態 -->",
     message:
-      "の範囲に、項目にする表がありません。範囲の中に Markdown の表を書いてください。範囲の中身はそのまま描いています。",
+      "の範囲に、項目にする表がありません。範囲の中に Markdown の表を記載してください。範囲の中身はそのまま描いています。",
   },
 };
 
@@ -106,7 +106,7 @@ export const ViewUnknownIcon: Story = {
   args: {
     mark: "<!-- view: group=状態 icons=完了:rocket -->",
     message:
-      "のアイコン `rocket` は使えません。使えるアイコンは `circle`・`circle-dashed`・`circle-dot`・`circle-pause`・`circle-check`・`circle-x`・`inbox`・`archive`・`clock`・`flag`・`star`・`bug`・`eye`・`lock`・`zap`・`ban` です。`完了` の列には既定のアイコンを付けています。",
+      "のアイコン `rocket` は使用できません。使用できるアイコンは `circle`・`circle-dashed`・`circle-dot`・`circle-pause`・`circle-check`・`circle-x`・`inbox`・`archive`・`clock`・`flag`・`star`・`bug`・`eye`・`lock`・`zap`・`ban` です。`完了` の列には既定のアイコンを付けています。",
   },
 };
 
@@ -116,7 +116,7 @@ export const IconName: Story = {
   args: {
     mark: "icon:Rocket!",
     message:
-      "の `Rocket!` は Lucide のアイコンの名前になりません。名前は英小文字・数字・`-` で書きます（例: `rocket`）。書いた文字のまま表示しています。",
+      "の `Rocket!` は Lucide のアイコンの名前になりません。名前は英小文字・数字・`-` で記載します（例: `rocket`）。記載した文字のまま表示しています。",
   },
 };
 
@@ -126,7 +126,7 @@ export const IconNotInLucide: Story = {
   args: {
     mark: "icon:no-such-icon",
     message:
-      "の `no-such-icon` は Lucide に無いアイコンの名前です。https://lucide.dev/icons/ で名前を確かめてください。書いた文字のまま表示しています。",
+      "の `no-such-icon` は Lucide に無いアイコンの名前です。https://lucide.dev/icons/ で名前を確認してください。記載した文字のまま表示しています。",
   },
 };
 
@@ -136,7 +136,7 @@ export const ColumnsCount: Story = {
   args: {
     mark: "<!-- columns -->",
     message:
-      "の範囲が 4 列です。横に並べられるのは 2〜3 列です。`<!-- column -->` を減らしてください。中身を書いた順に表示しています。",
+      "の範囲が 4 列です。横に並べられるのは 2〜3 列です。`<!-- column -->` を減らしてください。中身を記載した順に表示しています。",
   },
 };
 

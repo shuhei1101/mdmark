@@ -8,15 +8,15 @@ export type MdmarkIndexDocTag = {
 
 /** 関係の種類。`MdmarkIndexRelated` の `type` に記載できる値 */
 export type MdmarkRelationType =
-  /** 相手を先に読まないと分からない */
+  /** 相手を先に読み込まないと分からない */
   | "requires"
-  /** 相手を必要なときに引く */
+  /** 相手を必要なときに参照する */
   | "references"
   /** 相手を置き換えた */
   | "replaces"
   /** 相手の一部をなす */
   | "part_of"
-  /** 片方を直したらもう片方も直す。両側に記載する */
+  /** 片方を修正したらもう片方も修正する。両側に記載する */
   | "change_together";
 
 /** `MdmarkRelationType` の値（記載できる順） */
@@ -28,15 +28,15 @@ export const RELATION_TYPES: readonly MdmarkRelationType[] = [
   "change_together",
 ];
 
-/** 文書の関連のうち、関係の種類といつ読むかを持つオブジェクト */
+/** 文書の関連のうち、関係の種類といつ読み込むかを持つオブジェクト */
 export type MdmarkIndexRelated = {
   /** 相手の文書の `id` */
   to: string;
   /** 関係の種類 */
   type: MdmarkRelationType;
-  /** いつ読むかの 1 文 */
+  /** いつ読み込むかの 1 文 */
   when: string;
-  /** 関連が当たるファイルの glob の並び */
+  /** 関連が該当するファイルの glob の並び */
   paths?: string[];
 };
 
@@ -46,7 +46,7 @@ export type MdmarkIndexDoc = {
   id: string;
   /** 文書のパス。索引のファイルのあるフォルダからの相対パス */
   path: string;
-  /** 文書の題 */
+  /** 文書のタイトル */
   title: string;
   /** 1 文の概要 */
   description?: string;
@@ -62,7 +62,7 @@ export type MdmarkIndexDoc = {
 export type MdmarkIndexTerm = {
   /** 用語の ID。`terms` の中で一意 */
   id: string;
-  /** 用語の語 */
+  /** 用語の単語 */
   term: string;
   /** 別名 */
   aliases?: string[];
@@ -72,9 +72,9 @@ export type MdmarkIndexTerm = {
   avoid?: string[];
 };
 
-/** 使う側が索引の YAML を読んだ値の型 */
+/** 利用側が索引の YAML を読み込んだ値の型 */
 export type MdmarkIndex = {
-  /** 索引の版 */
+  /** 索引のバージョン */
   schema: 2;
   /** 文書 */
   docs: MdmarkIndexDoc[];
@@ -142,12 +142,12 @@ const DOC_RELATED_SHAPE: Record<string, KeyShape> = {
 /** 空でなくてよい文字列のキー: 空文字を許す */
 const EMPTY_ALLOWED = new Set(["description"]);
 
-/** 今の索引の版 */
+/** 今の索引のバージョン */
 const CURRENT_SCHEMA = 2;
 
-/** 索引の形に合わない場所 */
+/** 索引の構造に合わない場所 */
 export type IndexProblem = {
-  /** 合わない場所（`docs[1].path` の形。ファイル全体は空文字） */
+  /** 合わない場所（`docs[1].path` の構造。ファイル全体は空文字） */
   where: string;
   /** 合わない内容 */
   message: string;
@@ -158,7 +158,7 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
-/** 値が型に合うか。合わなければ理由を返す */
+/** 値が型に合うか。合わなければ理由を返却する */
 function checkType(
   key: string,
   value: unknown,
@@ -187,7 +187,7 @@ function checkType(
   return ok ? undefined : `${key} は空でない文字列の並びにします`;
 }
 
-/** 文書のタグの並びを検査し、合わない場所を `problems` に足す。要素は空でない文字列か、`name`（必須）と `main` だけを持つオブジェクト。1 つでも合わなければ `false` */
+/** 文書のタグの並びを検査し、合わない場所を `problems` に追加する。要素は空でない文字列か、`name`（必須）と `main` だけを持つオブジェクト。1 つでも合わなければ `false` */
 function checkDocTags(options: {
   value: unknown;
   where: string;
@@ -229,7 +229,7 @@ function checkDocTags(options: {
   return valid;
 }
 
-/** 文書の関連の並びを検査し、合わない場所を `problems` に足す。要素は空でない文字列か、`to`・`type`・`when`（必須）と `paths` だけを持つオブジェクト。1 つでも合わなければ `false` */
+/** 文書の関連の並びを検査し、合わない場所を `problems` に追加する。要素は空でない文字列か、`to`・`type`・`when`（必須）と `paths` だけを持つオブジェクト。1 つでも合わなければ `false` */
 function checkDocRelated(options: {
   value: unknown;
   where: string;
@@ -288,7 +288,7 @@ function checkDocRelated(options: {
   return valid;
 }
 
-/** 要素 1 つをキーごとに検査し、合わない場所を `problems` に足す。1 つでも合わなければ `false` */
+/** 要素 1 つをキーごとに検査し、合わない場所を `problems` に追加する。1 つでも合わなければ `false` */
 function checkItem(options: {
   item: unknown;
   shape: Record<string, KeyShape>;
@@ -337,7 +337,7 @@ function checkItem(options: {
     if (!Object.hasOwn(shape, key)) {
       problems.push({
         where: `${where}.${key}`,
-        message: `${key} は索引に書けないキーです`,
+        message: `${key} は索引に記載できないキーです`,
       });
       valid = false;
     }
@@ -345,7 +345,7 @@ function checkItem(options: {
   return valid;
 }
 
-/** 要素の並びを検査し、合う要素だけを返す。`unique` のキーの値が先の要素と重なる要素は除く（先の 1 つを残す） */
+/** 要素の並びを検査し、合う要素だけを返却する。`unique` のキーの値が先の要素と重なる要素は除く（先の 1 つを残す） */
 function checkList<Item>(options: {
   list: unknown[];
   name: string;
@@ -364,7 +364,7 @@ function checkList<Item>(options: {
       return;
     }
     const record = item as Record<string, unknown>;
-    // 重なりは、重なったキーごとに場所を返し、要素を除く
+    // 重なりは、重なったキーごとに場所を返却し、要素を除く
     const duplicated = unique.filter((key) => seen.get(key)?.has(record[key]));
     for (const key of duplicated) {
       problems.push({
@@ -383,7 +383,7 @@ function checkList<Item>(options: {
   return items;
 }
 
-/** 値を索引の形で検査し、合う文書・用語だけの索引と、合わない場所の一覧を返す */
+/** 値を索引の構造で検査し、合う文書・用語だけの索引と、合わない場所の一覧を返却する */
 export function normalizeIndex(value: unknown): {
   index: MdmarkIndex;
   problems: IndexProblem[];
@@ -394,11 +394,11 @@ export function normalizeIndex(value: unknown): {
     problems.push({ where: "", message: "索引はオブジェクトにします" });
     return { index, problems };
   }
-  // 最上位のキー: 版・必須の欠け・知らないキー
+  // 最上位のキー: バージョン・必須の欠け・知らないキー
   if (value.schema !== CURRENT_SCHEMA && Number.isInteger(value.schema)) {
     problems.push({
       where: "schema",
-      message: `schema は ${CURRENT_SCHEMA} にします。古い版の索引は mdmark upgrade で移してください`,
+      message: `schema は ${CURRENT_SCHEMA} にします。古いバージョンの索引は mdmark upgrade で移してください`,
     });
   }
   const root: IndexProblem[] = [];
@@ -436,7 +436,7 @@ export function normalizeIndex(value: unknown): {
   return { index, problems };
 }
 
-/** 最上位の `docs`・`terms` を検査する。並びでなければ空を返し、必須の欠けと型の違いを足す */
+/** 最上位の `docs`・`terms` を検査する。並びでなければ空を返却し、必須の欠けと型の違いを追加する */
 function checkTop<Item>(options: {
   list: unknown;
   name: string;

@@ -5,7 +5,7 @@ import { outermostRanges, pairRanges } from "./blocks.ts";
 import { featureOn, markOf, tabBoundaryBlock } from "./tokens.ts";
 import { skippedArgBlocks, unclosedWarning, warningBlock } from "./warnings.ts";
 
-/** `wide` がオンなら、`<!-- wide -->`（`closed` で `narrow`）〜 `<!-- /wide -->` を wide の範囲で囲む。`closed` 以外の引数は読み飛ばした引数にする。範囲の中の wide の印は取り除く */
+/** `wide` がオンなら、`<!-- wide -->`（`closed` で `narrow`）〜 `<!-- /wide -->` を wide の範囲で囲む。`closed` 以外の引数はスキップした引数にする。範囲の中の wide のマーカーは取り除く */
 export const buildWideRanges = (state: StateCore): void => {
   if (!featureOn(state, "wide")) {
     return;

@@ -2,7 +2,7 @@ import { setCodeFoldOpen } from "./interact/code-folds.ts";
 import { setErTableFolded } from "./interact/er-folds.ts";
 import { setFolderOpen } from "./interact/trees.ts";
 
-/** 印刷の前に開いた折り畳み・節・行の詳細・ファイルツリーのフォルダ・コードブロックの畳んだ行・ER 図の畳んだテーブル・タブの中身 */
+/** 印刷の前に開いた折り畳み・セクション・行の詳細・ファイルツリーのフォルダ・コードブロックの畳んだ行・ER 図の畳んだテーブル・タブの中身 */
 type Expanded = {
   details: HTMLDetailsElement[];
   sections: HTMLElement[];
@@ -28,11 +28,11 @@ function nothingExpanded(): Expanded {
   };
 }
 
-/** 印刷の前に、要素の中の閉じた折り畳み・閉じた節・行の詳細・ファイルツリーの閉じたフォルダ・コードブロックの畳んだ行・ER 図の畳んだテーブルを開き、タブの全ての中身を出し、印刷の後に開いたものだけを戻す受け取りを `window` に付け、外す関数を返す */
+/** 印刷の前に、要素の中の閉じた折り畳み・閉じたセクション・行の詳細・ファイルツリーの閉じたフォルダ・コードブロックの畳んだ行・ER 図の畳んだテーブルを開き、タブの全ての中身を出し、印刷の後に開いたものだけを戻す受け取りを `window` に付け、削除する関数を返却する */
 export function attachPrint(options: {
   /** 描いた要素 */
   root: HTMLElement;
-  /** 印刷の機能がオンか（印刷のたびに読む） */
+  /** 印刷の機能がオンか（印刷のたびに読み込む） */
   isEnabled: () => boolean;
 }): () => void {
   const { root, isEnabled } = options;
@@ -40,7 +40,7 @@ export function attachPrint(options: {
   // 畳んだ階層の表の行と、隠した YAML の見本
   let treeRows: HTMLElement[] = [];
   let examples: HTMLElement[] = [];
-  /** 印刷の前: 閉じたものを全て開き、開いた分を控える */
+  /** 印刷の前: 閉じたものを全て開き、開いた分を記録する */
   const onBeforePrint = (): void => {
     if (!isEnabled()) {
       return;
@@ -116,7 +116,7 @@ export function attachPrint(options: {
         aside.hidden = false;
       }
     }
-    // 印刷の CSS がタブの並びを隠し、タブ名を題にして中身を縦に並べる
+    // 印刷の CSS がタブの並びを隠し、タブ名をタイトルにして中身を縦に並べる
     for (const tabs of expanded.tabs) {
       tabs.setAttribute("data-printing", "");
     }

@@ -3,12 +3,12 @@
 Markdown を mdmark で描いたプレビューを VS Code に出し、HTML への書き出しと PDF への印刷ができる拡張機能。
 
 mdmark は、表・注意書き・タブ・図などの拡張記法を、各アプリで共通に描くライブラリ。
-VS Code 組み込みのプレビューでは出ない拡張記法を、書きながら確かめられる。
+VS Code 組み込みのプレビューでは出ない拡張記法を、記載しながら確認できる。
 
 ## 機能
 
 - Markdown の横にプレビューを開く（`Shift+Alt+D`、Mac は `Shift+Option+D`）
-- 打つたびにプレビューを描き直す。保存したときだけ描き直す設定もある
+- 打つたびにプレビューを再描画する。保存したときだけ再描画する設定もある
 - エディタとプレビューのスクロールを両方向に合わせる
 - 差分ビューで開くと、変更後の文書を描き、追加・変更したブロックと削除したブロックを色分けして出す
 - VS Code のテーマの明暗に合わせて配色を切り替える。ライト・ダークに固定もできる
@@ -17,7 +17,7 @@ VS Code 組み込みのプレビューでは出ない拡張記法を、書きな
 - `mdmark.config.yaml` の `features`・`libraries` で、機能のオン・オフと外部ライブラリを決める
 - 開いている Markdown を HTML に書き出し、ブラウザで開き、PDF に印刷する
 
-## 使い方
+## 使用方法
 
 Markdown を開き、`Shift+Alt+D`（Mac は `Shift+Option+D`）か、エディタのタイトルのボタンを押す。
 コマンドパレットでは `mdmark:` から探す。
@@ -26,17 +26,17 @@ Markdown を開き、`Shift+Alt+D`（Mac は `Shift+Option+D`）か、エディ�
 | --- | --- |
 | `mdmark: プレビューを横に開く` | Markdown の横の列にプレビューを開く |
 | `mdmark: プレビューを開く` | Markdown と同じ列にプレビューを開く |
-| `mdmark: プレビューをリロード` | 設定ファイルと読むバージョンを決め直し、配布物を読み直して描く |
+| `mdmark: プレビューをリロード` | 設定ファイルと読み込むバージョンをもう一度決め、配布物を再読み込みして描く |
 | `mdmark: 設定ファイルを開く` | `mdmark.config.yaml` を開く。無ければ雛形を作るかを尋ねる |
 | `mdmark: 設定を開く` | VS Code の設定画面を、mdmark の項目に絞って開く。プレビューのタイトルの歯車のボタンも同じ |
 | `mdmark: HTML に書き出す` | 開いている Markdown を HTML に書き出す |
-| `mdmark: ブラウザで開く` | 書き出し直した HTML を既定のブラウザで開く |
-| `mdmark: PDF に印刷` | 書き出し直した HTML をブラウザで開き、印刷のダイアログを出す |
+| `mdmark: ブラウザで開く` | もう一度書き出した HTML を既定のブラウザで開く |
+| `mdmark: PDF に印刷` | もう一度書き出した HTML をブラウザで開き、印刷のダイアログを出す |
 
 差分ビュー（Source Control の変更・タイムラインの `変更を開く`・コミットの差分）で同じ操作をすると、変更後の文書を描いた差分のプレビューを開く。
 追加・変更したブロックは追加の色と左の余白の `+`、削除したブロックは変更前の位置に削除の色と `−` で出る。
-タブは `差分プレビュー {ファイル名}` で、変更後の側を書き換えると描き直す。
-読む mdmark が差分の表示に対応しないときは、理由と「リロード」のボタンが出る。
+タブは `差分プレビュー {ファイル名}` で、変更後の側を書き換えると再描画する。
+読み込む mdmark が差分の表示に対応しないときは、理由と「リロード」のボタンが出る。
 
 PDF は、印刷のダイアログの送信先で「PDF に保存」を選んで作る。
 
@@ -44,27 +44,27 @@ PDF は、印刷のダイアログの送信先で「PDF に保存」を選んで
 
 | 設定 | 既定 | 内容 |
 | --- | --- | --- |
-| `mdmark.version` | `latest` | 読む mdmark のバージョン。`latest` は最新の `v{X}.{Y}.{Z}`、`v0.6.0` のように記載するとそのバージョンに固定する |
-| `mdmark.configPath` | `mdmark.config.yaml` | `features`・`libraries`・`side-toc`・`colorTheme` を読む設定ファイルのパス |
-| `mdmark.preview.liveUpdate` | `true` | `true` は打つたびに、`false` は保存したときに描き直す |
-| `mdmark.preview.updateDelayMs` | `300` | 最後に打ってから描き直すまでのミリ秒（0〜5000） |
+| `mdmark.version` | `latest` | 読み込む mdmark のバージョン。`latest` は最新の `v{X}.{Y}.{Z}`、`v0.6.0` のように記載するとそのバージョンに固定する |
+| `mdmark.configPath` | `mdmark.config.yaml` | `features`・`libraries`・`side-toc`・`colorTheme` を読み込む設定ファイルのパス |
+| `mdmark.preview.liveUpdate` | `true` | `true` は打つたびに、`false` は保存したときに再描画する |
+| `mdmark.preview.updateDelayMs` | `300` | 最後に打ってから再描画するまでのミリ秒（0〜5000） |
 | `mdmark.preview.scrollPreviewWithEditor` | `true` | エディタに合わせてプレビューを動かす |
 | `mdmark.preview.scrollEditorWithPreview` | `true` | プレビューに合わせてエディタを動かす |
 | `mdmark.preview.theme` | `auto` | `auto` は VS Code のテーマに合わせ、`light`・`dark` は固定する |
-| `mdmark.colorTheme` | 空 | 配色のテーマ。`dev-swiss`・`theme-paper`・`theme-slate`・`theme-contrast` から選ぶ。空のときは設定ファイルの `colorTheme` に従う。書き出す HTML にも当たる |
+| `mdmark.colorTheme` | 空 | 配色のテーマ。`dev-swiss`・`theme-paper`・`theme-slate`・`theme-contrast` から選ぶ。空のときは設定ファイルの `colorTheme` に従う。書き出す HTML にも該当する |
 | `mdmark.export.outputDir` | 空 | 書き出す先のフォルダ。空のときは Markdown と同じフォルダ |
 
 ## 必要なもの
 
 - VS Code 1.141.0 以上
-- ネットワーク接続。mdmark の配布物は拡張機能に同梱せず、jsDelivr の版付きの URL から読む。バージョンを `latest` にしたときは、GitHub のタグ一覧も取る
+- ネットワーク接続。mdmark の配布物は拡張機能に同梱せず、jsDelivr の版付きの URL から読み込む。バージョンを `latest` にしたときは、GitHub のタグ一覧も取る
 - 書き出した HTML も、開くときに jsDelivr へ届く必要がある
 
-オフラインのときや配布物を読めないときは、プレビューに理由と「リロード」のボタンが出る。
+オフラインのときや配布物を読み込めないときは、プレビューに理由と「リロード」のボタンが出る。
 
 ## ドキュメント
 
-使い方と設定の一覧は、mdmark のドキュメントにある。
+使用方法と設定の一覧は、mdmark のドキュメントにある。
 
 https://shuhei1101.github.io/mdmark/
 

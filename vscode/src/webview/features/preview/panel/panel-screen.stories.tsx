@@ -9,42 +9,42 @@ import { PanelScreen } from "./panel-screen.tsx";
 
 /** このブランチの配布物（Storybook の `staticDirs` が配る） */
 const LOCAL_DIST_JS = "/mdmark-dist/index.js";
-/** 読めない配布物の URL（MSW の HEAD のハンドラが当たる） */
+/** 読み込めない配布物の URL（MSW の HEAD のハンドラが該当する） */
 const JSDELIVR_DIST_JS =
   "https://cdn.jsdelivr.net/gh/shuhei1101/mdmark@v0.7.0/dist/index.js";
 
 /** 見本の文書 */
 const SAMPLE_MARKDOWN = `# リリースの手順
 
-## 確かめる項目
+## 確認する項目
 
-| 項目 | 確かめ方 | 担当 |
+| 項目 | 確認方法 | 担当 |
 | --- | --- | --- |
-| 変更履歴 | 版ごとの節がある | 作者 |
+| 変更履歴 | バージョンごとのセクションがある | 作者 |
 | 配布物 | サイズの検査が通る | CI |
 
 > [!WARNING]
-> タグを打つ前に変更履歴を確かめる。
+> タグを打つ前に変更履歴を確認する。
 
 ## 手順
 
-1. 変更履歴を書く
+1. 変更履歴を記載する
 2. タグを打つ
 `;
 
 /** パネルのストーリーの引数 */
 type PanelStoryArgs = {
-  /** 読む配布物の URL。無ければバージョンを決められない */
+  /** 読み込む配布物の URL。無ければバージョンを決められない */
   distJs?: string;
-  /** 読むバージョン */
+  /** 読み込むバージョン */
   version?: string;
-  /** 配布物を読む関数 */
+  /** 配布物を読み込む関数 */
   load: (url: string) => Promise<Mdmark>;
-  /** `ready` を受けた後に送る拡張機能のメッセージ */
+  /** `ready` を受けた後に送信する拡張機能のメッセージ */
   messages: HostMessage[];
 };
 
-/** `#mdmark-preview` を置き、その中にプレビューの画面を描く */
+/** `#mdmark-preview` を配置し、その中にプレビューの画面を描く */
 const PanelStory = ({ distJs, version, load, messages }: PanelStoryArgs) => {
   const [root, setRoot] = useState<HTMLElement | null>(null);
   const [api] = useState(() =>

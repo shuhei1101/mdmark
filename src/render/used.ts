@@ -4,7 +4,7 @@ import { renderDocument } from "./index.ts";
 import { MARK_PATTERN } from "./marks.ts";
 import { unescapeHtml } from "./syntax/html.ts";
 
-/** 文書の Markdown から印の名前を拾い、対応表にあるものだけを返す */
+/** 文書の Markdown からマーカーの名前を取得し、対応表にあるものだけを返却する */
 export function usedLibraryMarks(
   markdowns: string[],
   libraries: Record<string, string>,
@@ -25,7 +25,7 @@ export function usedLibraryMarks(
 const RANGE_SCRIPT_TEMPLATE =
   /<template class="mdmark-html-script" data-lang="(ts|js)">([\s\S]*?)<\/template>/g;
 
-/** 文書を設定と一緒に描き、範囲のスクリプトの言語と、エスケープを戻したコードを書いた順に返す。`html-scripts` がオフの文書は `template` を出さないため空になる */
+/** 文書を設定と一緒に描き、範囲のスクリプトの言語と、エスケープを戻したコードを記載した順に返却する。`html-scripts` がオフの文書は `template` を出さないため空になる */
 export function collectRangeScripts(options: {
   /** 文書の Markdown */
   markdown: string;
@@ -43,13 +43,13 @@ export function collectRangeScripts(options: {
 /** mermaid の対象のコードブロックの一番外の要素の属性 */
 const MERMAID_PATTERN = new RegExp(`<[a-z]+\\b[^>]*\\s${MERMAID_ATTRIBUTE}\\b`);
 
-/** 文書ごとに `render` を設定と一緒に呼び、返った HTML に mermaid の対象があれば `true` を返す。`mount` と同じ mermaid の対象（機能 `mermaid` と文書の `<!-- features: -mermaid -->` を含む）を、同じ処理から得る */
+/** 文書ごとに `render` を設定と一緒に呼び、返った HTML に mermaid の対象があれば `true` を返却する。`mount` と同じ mermaid の対象（機能 `mermaid` と文書の `<!-- features: -mermaid -->` を含む）を、同じ処理から得る */
 export function usesMermaid(options: {
   /** 文書の Markdown */
   markdowns: string[];
   /** 文書ごとの取り込む文書の表（`markdowns` と同じ順） */
   includes?: Array<Record<string, string>>;
-  /** 読んだ設定 */
+  /** 読み込んだ設定 */
   config: MdmarkConfig;
 }): boolean {
   const config = resolveConfig({ config: options.config });

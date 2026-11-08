@@ -1,12 +1,12 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "mdmark.config.yaml",
-  "description": "mdmark の設定のうち、ライブラリ本体と CLI が読むキー。他のキーは拒まない。",
+  "description": "mdmark の設定のうち、ライブラリ本体と CLI が読み込むキー。他のキーは拒まない。",
   "type": "object",
   "properties": {
     "version": {
-      "title": "手元の版",
-      "description": "この設定・索引・文書が合わせてある mdmark の版。`mdmark init` が呼んだ CLI の版を書き、`mdmark upgrade` が移行の手順を当てて点検が通った後に呼んだ CLI の版へ書き換える。",
+      "title": "手元のバージョン",
+      "description": "この設定・索引・文書が合わせてある mdmark のバージョン。`mdmark init` が呼んだ CLI のバージョンを記載し、`mdmark upgrade` が移行の手順を適用して点検が通った後に呼んだ CLI のバージョンへ書き換える。",
       "type": "string",
       "pattern": "^v\\d+\\.\\d+\\.\\d+$"
     },
@@ -17,19 +17,19 @@
       "properties": {
         "print": {
           "title": "印刷の機能",
-          "description": "印刷の前に閉じた折り畳みと、タブ・閉じた節・行の詳細を開き、印刷の後に戻す。",
+          "description": "印刷の前に閉じた折り畳みと、タブ・閉じたセクション・行の詳細を開き、印刷の後に戻す。",
           "type": "boolean",
           "default": true
         },
         "table": {
           "title": "表の機能",
-          "description": "表の印と、印で囲まない表に、種類ごとの並べ替え・ピン止め・絞り込みと開閉を付ける。オフのときは表の印を取り除いて普通の表を描く。",
+          "description": "表のマーカーと、マーカーで囲まない表に、種類ごとの並べ替え・ピン止め・絞り込みと開閉を付ける。オフのときは表のマーカーを取り除いて普通の表を描く。",
           "type": "boolean",
           "default": true
         },
         "callout": {
           "title": "注意書きの機能",
-          "description": "1 行目が `[!NOTE]` などの引用を、種類ごとの題・色・アイコンを持つ枠にする。オフのときは引用のまま描く。",
+          "description": "1 行目が `[!NOTE]` などの引用を、種類ごとのタイトル・色・アイコンを持つ枠にする。オフのときは引用のまま描く。",
           "type": "boolean",
           "default": true
         },
@@ -59,25 +59,25 @@
         },
         "footnotes": {
           "title": "脚注の機能",
-          "description": "`[^ラベル]`・`[^ラベル]: 中身`・`^[中身]` を、本文の番号とツールチップと末尾の脚注の一覧にする。オフのときは書いた文字のまま描く。",
+          "description": "`[^ラベル]`・`[^ラベル]: 中身`・`^[中身]` を、本文の番号とツールチップと末尾の脚注の一覧にする。オフのときは記載した文字のまま描く。",
           "type": "boolean",
           "default": true
         },
         "code": {
           "title": "コードブロックを飾る機能",
-          "description": "コードブロックに、直前の `<!-- code: -->` の題・行番号・行の強調と、行末のコードの行の印（`[!code ++]`・`[!code --]`・`[!code highlight]`）を当てる。オフのときは題・行番号・行の強調を付けず、コードの行の印は書いた文字のまま描く。",
+          "description": "コードブロックに、直前の `<!-- code: -->` のタイトル・行番号・行の強調と、行末のコードの行のマーカー（`[!code ++]`・`[!code --]`・`[!code highlight]`）を適用する。オフのときはタイトル・行番号・行の強調を付けず、コードの行のマーカーは記載した文字のまま描く。",
           "type": "boolean",
           "default": true
         },
         "syntax": {
           "title": "コードブロックの色分けの機能",
-          "description": "情報文字列の言語が色分けの対応表にあるコードブロックを、描いた後に言語に応じて色分けする。オフのときは色分けのライブラリを読まず、コードブロックを色分けせずに描く。",
+          "description": "情報文字列の言語が色分けの対応表にあるコードブロックを、描いた後に言語に応じて色分けする。オフのときは色分けのライブラリを読み込まず、コードブロックを色分けせずに描く。",
           "type": "boolean",
           "default": true
         },
         "toc": {
           "title": "目次の機能",
-          "description": "`<!-- toc -->` の場所に h2〜h3 の目次を置く。オフのときは印を取り除く。",
+          "description": "`<!-- toc -->` の場所に h2〜h3 の目次を配置する。オフのときはマーカーを取り除く。",
           "type": "boolean",
           "default": true
         },
@@ -88,8 +88,8 @@
           "default": true
         },
         "sections": {
-          "title": "節の開閉の機能",
-          "description": "h1〜h4 の節を見出しから開閉できるようにする。オフのときは節を囲まず、`section` の印を取り除く。",
+          "title": "セクションの開閉の機能",
+          "description": "h1〜h4 のセクションを見出しから開閉できるようにする。オフのときはセクションを囲まず、`section` のマーカーを取り除く。",
           "type": "boolean",
           "default": true
         },
@@ -101,73 +101,73 @@
         },
         "figures": {
           "title": "図表の番号の機能",
-          "description": "`<!-- fig -->` の直後の図と表に番号を付け、`#fig-ID` へのリンクの文字を番号にする。オフのときは印を取り除き、リンクの文字を変えない。",
+          "description": "`<!-- fig -->` の直後の図と表に番号を付け、`#fig-ID` へのリンクの文字を番号にする。オフのときはマーカーを取り除き、リンクの文字を変えない。",
           "type": "boolean",
           "default": true
         },
         "diagrams": {
           "title": "図の部品の機能",
-          "description": "`<!-- flow -->`・`<!-- sequence -->`・`<!-- chart -->`・`<!-- param -->` の範囲の部品の定義から図と操作できる部品を描く。オフのときは印を取り除き、定義を JSON のコードブロックのまま描く。",
+          "description": "`<!-- flow -->`・`<!-- sequence -->`・`<!-- chart -->`・`<!-- param -->` の範囲の部品の定義から図と操作できる部品を描く。オフのときはマーカーを取り除き、定義を JSON のコードブロックのまま描く。",
           "type": "boolean",
           "default": true
         },
         "diagram-resize": {
           "title": "図のリサイズハンドルの機能",
-          "description": "図の部品の表示する枠の右下に、高さを変えるリサイズハンドルを置く。オフのときは置かず、表示する枠は定義から決まる高さのままにする。",
+          "description": "図の部品の表示する枠の右下に、高さを変えるリサイズハンドルを配置する。オフのときは配置せず、表示する枠は定義から決まる高さのままにする。",
           "type": "boolean",
           "default": true
         },
         "glossary": {
           "title": "用語の機能",
-          "description": "索引の `terms` と用語集の表の用語に下線と意味のツールチップを付け、`<!-- glossary -->` の表を用語集に入れる。オフのときは印を取り除き、表を普通の表として描く。",
+          "description": "索引の `terms` と用語集の表の用語に下線と意味のツールチップを付け、`<!-- glossary -->` の表を用語集に入れる。オフのときはマーカーを取り除き、表を普通の表として描く。",
           "type": "boolean",
           "default": true
         },
         "backlinks": {
           "title": "関連文書の機能",
-          "description": "文書の末尾に関連文書（被参照）の一覧を置き、索引の文書の `aliases` に一致した語のツールチップに関連文書を出す。オフの文書は参照の表で参照元にも参照先にもならない。",
+          "description": "文書の末尾に関連文書（被参照）の一覧を配置し、索引の文書の `aliases` に一致した単語のツールチップに関連文書を出す。オフの文書は参照の表で参照元にも参照先にもならない。",
           "type": "boolean",
           "default": true
         },
         "html": {
           "title": "埋め込んだ HTML の機能",
-          "description": "`<!-- html -->` の範囲の `html` のコードブロックの中身を HTML として描き、中の図の部品の custom element を図にする。オフのときは印を取り除き、コードブロックのまま描く。",
+          "description": "`<!-- html -->` の範囲の `html` のコードブロックの中身を HTML として描き、中の図の部品の custom element を図にする。オフのときはマーカーを取り除き、コードブロックのまま描く。",
           "type": "boolean",
           "default": true
         },
         "html-scripts": {
           "title": "範囲のスクリプトの機能",
-          "description": "`<!-- html -->` の範囲の `css`・`ts`・`js` を描いた HTML に当てる。オフのときは範囲の `html` だけを描き、`css`・`ts`・`js` をコードのまま描く。文書の `<!-- features: +html-scripts -->` がその文書だけ上書きする。",
+          "description": "`<!-- html -->` の範囲の `css`・`ts`・`js` を描いた HTML に適用する。オフのときは範囲の `html` だけを描き、`css`・`ts`・`js` をコードのまま描く。文書の `<!-- features: +html-scripts -->` がその文書だけ上書きする。",
           "type": "boolean",
           "default": false
         },
         "mermaid": {
           "title": "mermaid のコードブロックの機能",
-          "description": "言語 `mermaid` のコードブロックを図にする。オフのときはコードブロックのまま描き、mermaid を読まない。文書の `<!-- features: -mermaid -->` がその文書だけ上書きする。",
+          "description": "言語 `mermaid` のコードブロックを図にする。オフのときはコードブロックのまま描き、mermaid を読み込まない。文書の `<!-- features: -mermaid -->` がその文書だけ上書きする。",
           "type": "boolean",
           "default": true
         },
         "hints": {
           "title": "ヒントの機能",
-          "description": "埋め込んだ HTML の `data-hint`、図の箱の `hint`・`io`、線の `tip` のツールチップを出す。オフのときは印とツールチップの中身を出さず、線のラベルと箱の名前は出す。",
+          "description": "埋め込んだ HTML の `data-hint`、図のノードの `hint`・`io`、線の `tip` のツールチップを出す。オフのときはマーカーとツールチップの中身を出さず、線のラベルとノードの名前は出す。",
           "type": "boolean",
           "default": true
         },
         "views": {
           "title": "ビューの機能",
-          "description": "`<!-- view -->` の範囲の表を、ボード表示と表形式を切り替えるビューにする。オフのときは印を取り除き、表のまま描く。",
+          "description": "`<!-- view -->` の範囲の表を、ボード表示と表形式を切り替えるビューにする。オフのときはマーカーを取り除き、表のまま描く。",
           "type": "boolean",
           "default": true
         },
         "comments": {
           "title": "コメントの機能",
-          "description": "読む人が本文の選んだ箇所にコメントを付けられるようにする。使う側が `mount` にコメントの読み書きの関数（`commentStore`）を渡したときだけ効く。コメントは使う側の保存先が要り、使わない文書で文字を選ぶたびにボタンを出さないため、既定をオフにする。",
+          "description": "読者が本文の選んだ箇所にコメントを付けられるようにする。利用側が `mount` にコメントの読み込みと保存の関数（`commentStore`）を指定したときだけ有効になる。コメントは利用側の保存先が要り、使用しない文書で文字を選ぶたびにボタンを出さないため、既定をオフにする。",
           "type": "boolean",
           "default": false
         },
         "side-toc": {
           "title": "右側の目次の機能",
-          "description": "描いた文書の右側に h1〜h3 の目次を置く。見出しが無い文書には置かない。文書の `<!-- features: +機能 -機能 -->` でその文書だけオン・オフできる。",
+          "description": "描いた文書の右側に h1〜h3 の目次を配置する。見出しが無い文書には配置しない。文書の `<!-- features: +機能 -機能 -->` でその文書だけオン・オフできる。",
           "type": "boolean",
           "default": true
         },
@@ -179,19 +179,19 @@
         },
         "text-color": {
           "title": "本文の文字の色の機能",
-          "description": "`[文字]{color=色}` の文字に名前の色を付ける。オフのときは書いた文字のまま描く。",
+          "description": "`[文字]{color=色}` の文字に名前の色を付ける。オフのときは記載した文字のまま描く。",
           "type": "boolean",
           "default": true
         },
         "images": {
           "title": "画像の機能",
-          "description": "画像の後ろの `{…}` の属性を当て、画像だけの段落を図にし、`#only-dark`・`#only-light` の画像を配色に合わせて出す。オフのときは `{…}` を書いた文字のまま描く。",
+          "description": "画像の後ろの `{…}` の属性を当て、画像だけの段落を図にし、`#only-dark`・`#only-light` の画像を配色に合わせて出す。オフのときは `{…}` を記載した文字のまま描く。",
           "type": "boolean",
           "default": true
         },
         "gallery": {
           "title": "ギャラリーの機能",
-          "description": "`<!-- gallery -->` の範囲の画像を格子に並べる。オフのときは印を取り除き、画像を並べない。",
+          "description": "`<!-- gallery -->` の範囲の画像を格子に並べる。オフのときはマーカーを取り除き、画像を並べない。",
           "type": "boolean",
           "default": true
         },
@@ -221,7 +221,7 @@
         },
         "card-grid": {
           "title": "カードの格子の機能",
-          "description": "`<!-- cards -->` の印で囲んだリストをカードの格子にする。オフのときはリストのまま描く。",
+          "description": "`<!-- cards -->` のマーカーで囲んだリストをカードの格子にする。オフのときはリストのまま描く。",
           "type": "boolean",
           "default": true
         }
@@ -267,12 +267,12 @@
     },
     "index": {
       "title": "索引の場所",
-      "description": "索引の YAML のパス。`mdmark.config.yaml` のあるフォルダからの相対パス。`mount`・`render` はこのキーを読まず、使う側のサーバーが読んだ索引を `opts.index` に渡す。索引の文書の `path` はこの索引のファイルのあるフォルダからの相対パス。",
+      "description": "索引の YAML のパス。`mdmark.config.yaml` のあるフォルダからの相対パス。`mount`・`render` はこのキーを読み込まず、利用側のサーバーが読み込んだ索引を `opts.index` に指定する。索引の文書の `path` はこの索引のファイルのあるフォルダからの相対パス。",
       "type": "string"
     },
     "libraries": {
       "title": "外部ライブラリの対応表",
-      "description": "印の名前から外部ライブラリのモジュールの URL を引く。既定の対応表に重ね、同じ名前は URL を上書きし、無い名前は足す。相対 URL はページの `document.baseURI` を基準に解決する。",
+      "description": "マーカーの名前から外部ライブラリのモジュールの URL を参照する。既定の対応表に重ね、同じ名前は URL を上書きし、無い名前は追加する。相対 URL はページの `document.baseURI` を基準に解決する。",
       "type": "object",
       "propertyNames": {
         "pattern": "^[a-z][a-z0-9-]*$"
@@ -303,7 +303,7 @@
     },
     "side-toc": {
       "title": "右側の目次の設定",
-      "description": "描いた文書の右側に置く目次の出し方。",
+      "description": "描いた文書の右側に配置する目次の出し方。",
       "type": "object",
       "properties": {
         "mode": {
@@ -316,24 +316,24 @@
     },
     "colorScheme": {
       "title": "明暗",
-      "description": "描いた文書の明暗。`light` は明るい配色、`dark` はダークの配色に決め、`auto` は今の決め方（祖先の class・OS の設定）に任せる。文書の先頭の `<!-- page: scheme=… -->` の印がこの値に勝つ。`mount` は知らない値を無視して `auto` で描き、CLI は知らない値を `mdmark check` のずれ（`unknown_color_scheme`）にする。",
+      "description": "描いた文書の明暗。`light` は明るい配色、`dark` はダークの配色に決め、`auto` は今の決め方（祖先の class・OS の設定）に任せる。文書の先頭の `<!-- page: scheme=… -->` のマーカーがこの値に勝つ。`mount` は知らない値を無視して `auto` で描き、CLI は知らない値を `mdmark check` のずれ（`unknown_color_scheme`）にする。",
       "type": "string",
       "default": "auto"
     },
     "colorTheme": {
       "title": "選ぶテーマ",
-      "description": "描いた文書の配色を、mdmark に入れたテーマから選ぶ。`dev-swiss`・`theme-paper`・`theme-slate`・`theme-contrast` のどれか。明暗は今の決め方（OS の設定・class）のまま、選んだテーマの中で明るい配色とダークの配色を選ぶ。`mount` は知らない名前を無視して `dev-swiss` で描き、CLI は知らない名前を `mdmark check` のずれ（`unknown_color_theme`）と書き出しの警告にする。使う側の CSS の `theme` とは別のキー。",
+      "description": "描いた文書の配色を、mdmark に入れたテーマから選ぶ。`dev-swiss`・`theme-paper`・`theme-slate`・`theme-contrast` のどれか。明暗は今の決め方（OS の設定・class）のまま、選んだテーマの中で明るい配色とダークの配色を選ぶ。`mount` は知らない名前を無視して `dev-swiss` で描き、CLI は知らない名前を `mdmark check` のずれ（`unknown_color_theme`）と書き出しの警告にする。利用側の CSS の `theme` とは別のキー。",
       "type": "string",
       "default": "dev-swiss"
     },
     "labels": {
       "title": "部品の文言",
-      "description": "mdmark が描く部品の文言。知らないキーは読まない。",
+      "description": "mdmark が描く部品の文言。知らないキーは読み込まない。",
       "type": "object",
       "properties": {
         "paramCopy": {
           "title": "今の値をコピーするボタンの文言",
-          "description": "操作できる部品の今の値をコピーするボタンの、アイコンの後ろに描く文言。ボタンの読み上げの名前もこの文言になる。`mount` は空文字と文字列でない値を無視して既定の文言で描き、CLI は空でない文字列でない値を設定ファイルの誤りにする。",
+          "description": "操作できる部品の今の値をコピーするボタンの、アイコンの後ろに描く文言。ボタンのスクリーンリーダー向けの名前もこの文言になる。`mount` は空文字と文字列でない値を無視して既定の文言で描き、CLI は空でない文字列でない値を設定ファイルの誤りにする。",
           "type": "string",
           "minLength": 1,
           "default": "今の値を写す"
@@ -342,12 +342,12 @@
     },
     "syntax": {
       "title": "色分けの設定",
-      "description": "コードブロックの色分けに使うライブラリの設定。",
+      "description": "コードブロックの色分けに使用するライブラリの設定。",
       "type": "object",
       "properties": {
         "url": {
           "title": "色分けのライブラリの読み込み先",
-          "description": "色分けのライブラリ（highlight.js）の `es/` フォルダの URL。本体を `{url}core.min.js`、言語を `{url}languages/{言語}.min.js` から読む。`mount` はページの `document.baseURI`、CLI は `mdmark.config.yaml` のあるフォルダを基準に解決する。`mount` は文字列でない値を無視して既定を当て、CLI は文字列でない値を設定ファイルの誤りにする。",
+          "description": "色分けのライブラリ（highlight.js）の `es/` フォルダの URL。本体を `{url}core.min.js`、言語を `{url}languages/{言語}.min.js` から読み込む。`mount` はページの `document.baseURI`、CLI は `mdmark.config.yaml` のあるフォルダを基準に解決する。`mount` は文字列でない値を無視して既定を当て、CLI は文字列でない値を設定ファイルの誤りにする。",
           "type": "string",
           "default": "https://cdn.jsdelivr.net/npm/@highlightjs/cdn-assets@11.12.0/es/"
         }
@@ -355,12 +355,12 @@
     },
     "html-scripts": {
       "title": "範囲のスクリプトの設定",
-      "description": "`<!-- html -->` の範囲の `ts`・`js` の変換に使うライブラリの設定。",
+      "description": "`<!-- html -->` の範囲の `ts`・`js` の変換に使用するライブラリの設定。",
       "type": "object",
       "properties": {
         "url": {
           "title": "範囲のスクリプトの変換のライブラリの読み込み先",
-          "description": "範囲の `ts`・`js` を変換するライブラリ（@babel/standalone）の ES モジュールの URL。`mount` はページの `document.baseURI` を基準に解決する。文字列でない値は無視して既定を当てる。",
+          "description": "範囲の `ts`・`js` を変換するライブラリ（@babel/standalone）の ES モジュールの URL。`mount` はページの `document.baseURI` を基準に解決する。文字列でない値は無視して既定を適用する。",
           "type": "string",
           "default": "https://cdn.jsdelivr.net/npm/@babel/standalone@8.1.1/+esm"
         }
@@ -379,7 +379,7 @@
         },
         "theme": {
           "title": "mermaid の図のテーマ",
-          "description": "`mdmark`（描いた文書の配色から作る mdmark の見た目のテーマ）か、mermaid のテーマの名前（`default`・`neutral`・`dark`・`forest`・`base`）。知らない名前は `mdmark` にする。",
+          "description": "`mdmark`（描いた文書の配色から作る mdmark の外観のテーマ）か、mermaid のテーマの名前（`default`・`neutral`・`dark`・`forest`・`base`）。知らない名前は `mdmark` にする。",
           "type": "string",
           "default": "mdmark"
         },
@@ -392,13 +392,13 @@
       }
     },
     "theme": {
-      "title": "使う側の CSS",
-      "description": "CLI が書き出す HTML に、配布物の CSS の後で埋める使う側の CSS のパス。`mdmark.config.yaml` のあるフォルダからの相対パス。`mount`・`render` はこのキーを読まない。",
+      "title": "利用側の CSS",
+      "description": "CLI が書き出す HTML に、配布物の CSS の後で埋める利用側の CSS のパス。`mdmark.config.yaml` のあるフォルダからの相対パス。`mount`・`render` はこのキーを読み込まない。",
       "type": "string"
     },
     "extensions": {
       "title": "拡張のモジュール",
-      "description": "CLI が書き出す HTML に束ねて埋め、描く前に `registerExtension` で登録する拡張のモジュールのパスの並び。`mdmark.config.yaml` のあるフォルダからの相対パス。`mount`・`render` はこのキーを読まない。",
+      "description": "CLI が書き出す HTML にまとめて埋め、描く前に `registerExtension` で登録する拡張のモジュールのパスの並び。`mdmark.config.yaml` のあるフォルダからの相対パス。`mount`・`render` はこのキーを読み込まない。",
       "type": "array",
       "items": {
         "type": "string"
@@ -407,12 +407,12 @@
     },
     "build": {
       "title": "まとめる設定",
-      "description": "`mdmark build` が 1 枚の HTML にまとめる文書と書き出す先。パスと glob は `mdmark.config.yaml` のあるフォルダからの相対。`mount`・`render`・`mdmark export` はこのキーを読まない。",
+      "description": "`mdmark build` が 1 枚の HTML にまとめる文書と書き出す先。パスと glob は `mdmark.config.yaml` のあるフォルダからの相対。`mount`・`render`・`mdmark export` はこのキーを読み込まない。",
       "type": "object",
       "properties": {
         "include": {
           "title": "まとめる文書",
-          "description": "まとめる Markdown の glob の並び。`**`・`*`・`?` を使える。当たるのは拡張子 `.md` のファイルだけ。",
+          "description": "まとめる Markdown の glob の並び。`**`・`*`・`?` を使用できる。該当するのは拡張子 `.md` のファイルだけ。",
           "type": "array",
           "items": {
             "type": "string"
@@ -420,8 +420,8 @@
           "minItems": 1
         },
         "exclude": {
-          "title": "外す文書",
-          "description": "`include` に当たった文書から外す glob の並び。",
+          "title": "削除する文書",
+          "description": "`include` に該当した文書から除外する glob の並び。",
           "type": "array",
           "items": {
             "type": "string"
@@ -430,7 +430,7 @@
         },
         "glossary": {
           "title": "用語集の文書",
-          "description": "用語集の表（`<!-- glossary -->`）の用語を、まとめた全ての文書で効かせる文書のパスの並び。",
+          "description": "用語集の表（`<!-- glossary -->`）の用語を、まとめた全ての文書で有効にしる文書のパスの並び。",
           "type": "array",
           "items": {
             "type": "string"
@@ -444,7 +444,7 @@
         },
         "out": {
           "title": "書き出す先",
-          "description": "まとめた HTML を書くパス。拡張子 `.html`。既にあれば上書きする。",
+          "description": "まとめた HTML を書き込むパス。拡張子 `.html`。既にあれば上書きする。",
           "type": "string",
           "pattern": "\\.html$"
         }
@@ -453,12 +453,12 @@
     },
     "check": {
       "title": "点検の設定",
-      "description": "`mdmark check` が読む設定。`mount`・`render`・`export`・`build` はこのキーを読まない。",
+      "description": "`mdmark check` が読み込む設定。`mount`・`render`・`export`・`build` はこのキーを読み込まない。",
       "type": "object",
       "properties": {
         "ignore": {
-          "title": "知らない印から外す名前",
-          "description": "`mdmark check` が文書の本文の知らない印として知らせない、印と同じ書き方の HTML コメントの名前の並び（`prettier-ignore`・`markdownlint-disable` など他のツールへの指示）。",
+          "title": "知らないマーカーから除外する名前",
+          "description": "`mdmark check` が文書の本文の知らないマーカーとして通知しない、マーカーと同じ記載方法の HTML コメントの名前の並び（`prettier-ignore`・`markdownlint-disable` など他のツールへの指示）。",
           "type": "array",
           "items": {
             "type": "string",
@@ -470,12 +470,12 @@
     },
     "aliases": {
       "title": "エイリアスの元の行",
-      "description": "プロジェクトの YAML の列からエイリアス（用語・文書・コマンド・URL など）を作る行の並び。行の構造は alias-inject v0.3.0 の `schemas/aliases.schema.yaml` を取り込んだ Schema が決める。CLI の `export`・`build` が `paths` の YAML を読んで書き出す HTML に埋め、`mdmark check` が行とレコードのずれを返す。`mount`・`render` はこのキーを読まない。",
+      "description": "プロジェクトの YAML の列からエイリアス（用語・文書・コマンド・URL など）を作る行の並び。行の構造は alias-inject v0.3.0 の `schemas/aliases.schema.yaml` を取り込んだ Schema が決める。CLI の `export`・`build` が `paths` の YAML を読み込んで書き出す HTML に埋め、`mdmark check` が行とレコードのずれを返却する。`mount`・`render` はこのキーを読み込まない。",
       "$ref": "alias-inject/v0.3.0/aliases.schema.json"
     },
     "assets": {
       "title": "アセットの設定",
-      "description": "文書が指す画像・動画・音声・添付のファイルの探し方。CLI と VS Code 拡張機能が読み、`mount`・`render` は読まない。",
+      "description": "文書が指す画像・動画・音声・添付のファイルの探し方。CLI と VS Code 拡張機能が読み込み、`mount`・`render` は読み込まない。",
       "type": "object",
       "properties": {
         "root": {

@@ -21,7 +21,7 @@ import { readSettings } from "./settings.ts";
 import { TAGS_URL } from "./version.ts";
 import { baseDirOf } from "./workspace.ts";
 
-/** テストのときの戻り値: 結合テストが Webview の DOM を確かめる口 */
+/** テストのときの戻り値: 結合テストが Webview の DOM を確認するインターフェース */
 export type TestApi = {
   /** 最後に表に出たパネルの要素を調べる */
   inspectPreview: (
@@ -32,14 +32,14 @@ export type TestApi = {
   auditPreview: () => Promise<AxeViolation[]>;
 };
 
-/** パネルが 1 つ以上開いているかを書くコンテキストキー */
+/** パネルが 1 つ以上開いているかを記載するコンテキストキー */
 const PREVIEW_OPEN_CONTEXT = "mdmark.previewOpen";
 
-/** テストのときだけ読む、配布物の配信元とタグ一覧の取得先を差し替える環境変数 */
+/** テストのときだけ読み込む、配布物の配信元とタグ一覧の取得先を差し替える環境変数 */
 const DIST_BASE_ENV = "MDMARK_VSCODE_DIST_BASE";
 const TAGS_URL_ENV = "MDMARK_VSCODE_TAGS_URL";
 
-/** コマンドの引数の URI。エディタのタイトルのボタンからは VS Code が文書の URI を渡す */
+/** コマンドの引数の URI。エディタのタイトルのボタンからは VS Code が文書の URI を指定する */
 function uriArgument(value: unknown): Uri | undefined {
   return typeof value === "object" && value !== null && "fsPath" in value
     ? (value as Uri)
@@ -58,7 +58,7 @@ function watchConfigFiles(onChange: (path: string) => void): FileSystemWatcher {
   return watcher;
 }
 
-/** コマンドと VS Code の知らせを登録し、テストのときだけ `TestApi` を返す */
+/** コマンドと VS Code の通知を登録し、テストのときだけ `TestApi` を返却する */
 export function activate(context: ExtensionContext): TestApi | undefined {
   const test = context.extensionMode === ExtensionMode.Test;
   const output = window.createOutputChannel("mdmark", { log: true });

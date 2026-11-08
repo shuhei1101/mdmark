@@ -13,7 +13,7 @@ export function featureOn(state: StateCore, name: string): boolean {
   return envOf(state).features[name] === true;
 }
 
-/** mdmark が出した要素として印を付けた HTML を、`html_block` のトークンにする。`source` を渡すと、その `map`（元の行）を写す */
+/** mdmark が出した要素としてマーカーを付けた HTML を、`html_block` のトークンにする。`source` を指定すると、その `map`（元の行）を写す */
 export function ownBlock(
   state: StateCore,
   html: string,
@@ -46,7 +46,7 @@ export function tabBoundaryBlock(options: {
   return token;
 }
 
-/** タブの中身の境目のトークンなら、その境目を返す */
+/** タブの中身の境目のトークンなら、その境目を返却する */
 export function tabBoundaryOf(
   token: Token | undefined,
 ): TabBoundary | undefined {
@@ -56,12 +56,12 @@ export function tabBoundaryOf(
     : undefined;
 }
 
-/** 印のトークンなら、その印を返す */
+/** マーカーのトークンなら、そのマーカーを返却する */
 export function markOf(token: Token | undefined): Mark | undefined {
   return token?.type === MARK_TOKEN ? (token.meta as Mark) : undefined;
 }
 
-/** `openIndex` の印に対する閉じの印の位置を返す。無ければ `-1` */
+/** `openIndex` のマーカーに対する閉じのマーカーの位置を返却する。無ければ `-1` */
 export function findClose(
   tokens: Token[],
   openIndex: number,

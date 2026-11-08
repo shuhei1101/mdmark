@@ -47,7 +47,7 @@ export type FootnoteNote = {
   refCount: number;
 };
 
-/** 1 回の解析で読んだ脚注の定義と参照 */
+/** 1 回の解析で読み込んだ脚注の定義と参照 */
 export type FootnoteState = {
   /** 正規化したラベルごとの定義のブロックのトークン（block の工程では `null`） */
   definitions: Map<string, Token[] | null>;
@@ -63,7 +63,7 @@ type DefinitionMeta = { key: string; first: boolean; source: string };
 /** 本文の参照の `meta` */
 type ReferenceMeta = { id: number; refIndex: number; source: string };
 
-/** 解析の環境の脚注の状態を返す。無ければ作る */
+/** 解析の環境の脚注の状態を返却する。無ければ作る */
 function footnoteStateOf(env: RenderEnv): FootnoteState {
   env.mdmarkFootnotes ??= {
     definitions: new Map(),
@@ -78,7 +78,7 @@ function isWhitespace(code: number): boolean {
   return code === SPACE || code === TAB || code === NEWLINE;
 }
 
-/** `pos` の `[^` から始まるラベルの閉じの `]` の位置を返す。空・空白を含む・閉じが無いときは `-1` */
+/** `pos` の `[^` から始まるラベルの閉じの `]` の位置を返却する。空・空白を含む・閉じが無いときは `-1` */
 function labelEnd(src: string, pos: number, max: number): number {
   for (let at = pos + 2; at < max; at++) {
     const code = src.charCodeAt(at);
@@ -92,7 +92,7 @@ function labelEnd(src: string, pos: number, max: number): number {
   return -1;
 }
 
-/** 行頭の `[^ラベル]:` を脚注の定義として読み、字下げ 4 で続く行までを中身として囲む */
+/** 行頭の `[^ラベル]:` を脚注の定義として読み込み、字下げ 4 で続く行までを中身として囲む */
 export function readFootnoteDefinition(
   state: StateBlock,
   startLine: number,
@@ -173,7 +173,7 @@ export function readFootnoteDefinition(
   return true;
 }
 
-/** 本文の参照のトークンを足し、脚注の参照の数を増やす */
+/** 本文の参照のトークンを追加し、脚注の参照の数を増やす */
 function pushReference(state: StateInline, id: number, source: string): void {
   const footnotes = footnoteStateOf(state.env as RenderEnv);
   const note = footnotes.notes[id];
@@ -189,7 +189,7 @@ function pushReference(state: StateInline, id: number, source: string): void {
   note.refCount += 1;
 }
 
-/** `[^ラベル]` を、定義のあるラベルのときだけ本文の参照として読む */
+/** `[^ラベル]` を、定義のあるラベルのときだけ本文の参照として読み込む */
 export function readFootnoteReference(
   state: StateInline,
   silent: boolean,
@@ -224,7 +224,7 @@ export function readFootnoteReference(
   return true;
 }
 
-/** `^[中身]` を行内の脚注として読み、中身を行内の Markdown として解析する */
+/** `^[中身]` を行内の脚注として読み込み、中身を行内の Markdown として解析する */
 export function readInlineFootnote(
   state: StateInline,
   silent: boolean,
@@ -257,7 +257,7 @@ export function readInlineFootnote(
   return true;
 }
 
-/** `openIndex` の定義の囲みの開きに対する閉じの位置を返す */
+/** `openIndex` の定義の囲みの開きに対する閉じの位置を返却する */
 function findDefinitionClose(tokens: Token[], openIndex: number): number {
   let depth = 0;
   for (let index = openIndex; index < tokens.length; index++) {
@@ -298,7 +298,7 @@ function restoreDefinition(
   return [open, inline, close, ...inner];
 }
 
-/** 機能がオフのとき、本文の参照を書いた文字に戻す */
+/** 機能がオフのとき、本文の参照を記載した文字に戻す */
 function restoreReferences(state: StateCore, tokens: Token[]): void {
   for (const token of tokens) {
     if (token.type !== "inline" || !token.children) {
@@ -315,7 +315,7 @@ function restoreReferences(state: StateCore, tokens: Token[]): void {
   }
 }
 
-/** 脚注の機能がオンなら行内の脚注の中身を定義の囲みにして文書の末尾に足し（後のコアルールを本文と同じく通すため）、オフなら参照と定義を書いた文字のまま書いた位置に戻す */
+/** 脚注の機能がオンなら行内の脚注の中身を定義の囲みにして文書の末尾に追加し（後のコアルールを本文と同じく経由するため）、オフなら参照と定義を記載した文字のまま記載した位置に戻す */
 export function collectFootnotes(state: StateCore): void {
   const env = envOf(state);
   const footnotes = env.mdmarkFootnotes;
@@ -356,7 +356,7 @@ export function collectFootnotes(state: StateCore): void {
   delete env.mdmarkFootnotes;
 }
 
-/** 行内の脚注の中身を 1 段落の定義の囲みにし、脚注に定義のキーを当てる */
+/** 行内の脚注の中身を 1 段落の定義の囲みにし、脚注に定義のキーを適用する */
 function inlineDefinition(
   state: StateCore,
   note: FootnoteNote,
@@ -379,7 +379,7 @@ function inlineDefinition(
   return [open, paragraphOpen, inline, paragraphClose, close];
 }
 
-/** 定義の囲みの外のトークンだけを返す（用語の下線を脚注の中身に付けないため） */
+/** 定義の囲みの外のトークンだけを返却する（用語の下線を脚注の中身に付けないため） */
 export function outsideFootnoteDefinitions(tokens: Token[]): Token[] {
   const out: Token[] = [];
   for (let index = 0; index < tokens.length; index++) {
@@ -393,7 +393,7 @@ export function outsideFootnoteDefinitions(tokens: Token[]): Token[] {
   return out;
 }
 
-/** 全てのコアルールを通した定義の囲みを本文から取り除き、ラベルごとの最初の定義を控える */
+/** 全てのコアルールを経由した定義の囲みを本文から取り除き、ラベルごとの最初の定義を記録する */
 export function takeFootnoteDefinitions(state: StateCore): void {
   const footnotes = envOf(state).mdmarkFootnotes;
   if (footnotes === undefined) {
@@ -445,7 +445,7 @@ export function footnoteBodies(options: {
     if (token === undefined) {
       continue;
     }
-    // 段落は p を外した行内の HTML、それ以外のブロックは閉じまでの文字を 1 段落にする
+    // 段落は p を削除した行内の HTML、それ以外のブロックは閉じまでの文字を 1 段落にする
     if (token.type === "paragraph_open") {
       const inline = tokens[index + 1];
       bodies.push(
@@ -468,7 +468,7 @@ export function footnoteBodies(options: {
   return { bodies, html: md.renderer.render(tokens, md.options, env) };
 }
 
-/** 部品の HTML のうち、`fills` の中身（文書から描いた HTML）を除いた部分にだけ mdmark が出した要素の印を付ける。`fills` は `FOOTNOTE_BODY_OPEN` の直後に順に並ぶ */
+/** 部品の HTML のうち、`fills` の中身（文書から描いた HTML）を除いた部分にだけ mdmark が出した要素のマーカーを付ける。`fills` は `FOOTNOTE_BODY_OPEN` の直後に順に並ぶ */
 function markOwnAroundBodies(
   html: string,
   fills: string[],
@@ -497,7 +497,7 @@ function renderReference(md: MarkdownIt, token: Token, env: RenderEnv): string {
   return markOwnAroundBodies(html, bodies, env.nonce);
 }
 
-/** 脚注の一覧の HTML にする。戻るリンクを最後の段落の閉じの前に置かせるため、中身を閉じの前後の差し込み口に分けて部品に渡し、中身の外にだけ印を付ける */
+/** 脚注の一覧の HTML にする。戻るリンクを最後の段落の閉じの前に配置させるため、中身を閉じの前後の差し込みインターフェースに分けて部品に指定し、中身の外にだけマーカーを付ける */
 function renderList(md: MarkdownIt, env: RenderEnv): string {
   const fills: string[] = [];
   const items = (env.mdmarkFootnotes?.notes ?? []).map((note, index) => {
@@ -519,7 +519,7 @@ function renderList(md: MarkdownIt, env: RenderEnv): string {
     .join("");
 }
 
-/** 脚注が 1 つ以上あれば、文書の末尾に脚注の一覧のトークンを足す（中身は全てのコアルールの後に描く） */
+/** 脚注が 1 つ以上あれば、文書の末尾に脚注の一覧のトークンを追加する（中身は全てのコアルールの後に描く） */
 export function buildFootnoteList(state: StateCore): void {
   if ((envOf(state).mdmarkFootnotes?.notes.length ?? 0) === 0) {
     return;

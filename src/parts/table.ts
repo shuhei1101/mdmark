@@ -62,9 +62,9 @@ export type TableOptions = {
   kind?: TableKind;
   /** 付ける機能 */
   features: string[];
-  /** 列の見出しの HTML。`body` を渡すときは省く */
+  /** 列の見出しの HTML。`body` を指定するときは省く */
   columns?: string[];
-  /** 行ごとのセルの HTML。`body` を渡すときは省く */
+  /** 行ごとのセルの HTML。`body` を指定するときは省く */
   rows?: string[][];
   /** 絞り込みを付ける列 */
   filters?: TableFilter[];
@@ -72,7 +72,7 @@ export type TableOptions = {
   collapse?: "none" | "closed" | "open";
   /** 折り畳みの見出し（既定は `表（{本文の行の数} 行）`） */
   title?: string | undefined;
-  /** `rows` を省いたときの本文の行の数。折り畳みの見出しに使う */
+  /** `rows` を省いたときの本文の行の数。折り畳みの見出しに使用する */
   rowCount?: number;
   /** 並べ替えた列と向き */
   sort?: { column: number; direction: "ascending" | "descending" };
@@ -82,7 +82,7 @@ export type TableOptions = {
   pinned?: number;
   /** 開いた絞り込みのドロワーの列の位置 */
   openFilter?: number;
-  /** 当てている絞り込み */
+  /** 適用している絞り込み */
   filterValues?: FilterValue[];
   /** 既定で隠す列の位置（`data-hide`。先頭の列は含まない） */
   hide?: number[];
@@ -104,7 +104,7 @@ export type TableOptions = {
   openTotals?: boolean;
   /** コピーの形式のメニューを開いているか */
   openCopy?: boolean;
-  /** クリップボードに書けなかったときに手でコピーさせるパネルの中身 */
+  /** クリップボードに書き込めなかったときに手でコピーさせるパネルの中身 */
   copyFallback?: { format: CopyFormat; text: string };
   /** `targetRow` の行の URL をコピーした結果 */
   rowLinkNotice?: "copied" | "failed";
@@ -112,9 +112,9 @@ export type TableOptions = {
   folded?: boolean;
   /** 畳んだ最終列を開いている本文の行の位置 */
   unfoldedRows?: number[];
-  /** 表の代わりに置く HTML（`SLOT_MARKER` を渡せる） */
+  /** 表の代わりに配置する HTML（`SLOT_MARKER` を指定できる） */
   body?: string;
-  /** ドロワーの `id` の頭（既定 `mdmark-table`）。ビューの中の表のように、文書の中に表が 2 つ以上あるときに重ならない値を渡す */
+  /** ドロワーの `id` の頭（既定 `mdmark-table`）。ビューの中の表のように、文書の中に表が 2 つ以上あるときに重ならない値を指定する */
   id?: string;
   /** 強調する列の位置と色 */
   highlight?: Array<{ column: number; color: ColorName }>;
@@ -128,9 +128,9 @@ export type TableOptions = {
   check?: number[];
   /** 階層にするキーの列の位置（`data-tree`） */
   tree?: number | undefined;
-  /** 今の列の順（元の列の位置の並び。ストーリーで使う） */
+  /** 今の列の順（元の列の位置の並び。ストーリーで使用する） */
   order?: number[];
-  /** ドラッグしている列と、落とす先の列と向き（ストーリーで使う） */
+  /** ドラッグしている列と、落とす先の列と向き（ストーリーで使用する） */
   dragging?: { column: number; target: number; side: "before" | "after" };
   /** 階層の表の型の列の位置 */
   treeType?: number;
@@ -138,13 +138,13 @@ export type TableOptions = {
   treeRequired?: number;
   /** 階層の表の既定の列の位置 */
   treeDefault?: number;
-  /** 畳んだ行のパス（ストーリーで使う） */
+  /** 畳んだ行のパス（ストーリーで使用する） */
   collapsedPaths?: string[];
-  /** キーの列の絞り込みの単語（ストーリーで使う） */
+  /** キーの列の絞り込みの単語（ストーリーで使用する） */
   treeFilter?: string;
-  /** 選んだ行のパス（ストーリーで使う） */
+  /** 選んだ行のパス（ストーリーで使用する） */
   selectedPath?: string;
-  /** 表の下に置く YAML の見本（ストーリーで使う） */
+  /** 表の下に配置する YAML の見本（ストーリーで使用する） */
   example?: {
     heading: string;
     tabs: Array<{
@@ -154,23 +154,23 @@ export type TableOptions = {
     active?: number;
     hidden?: boolean;
   };
-  /** 見出しの段ごとのセル。渡すと `columns` の代わりに見出しの行をこの段で描く */
+  /** 見出しの行ごとのセル。指定すると `columns` の代わりに見出しの行をこの段で描く */
   headRows?: TableHeadCell[][];
   /** 本文の各行で `<th scope="row">` にする先頭の列の数（既定 0） */
   rowHeader?: number;
   /** 表示している行の隣り合う同じ値を結合する列の位置（小さい順） */
   mergeColumns?: number[];
-  /** 言語 `csv` のコードブロックから作った表の、書いたとおりの CSV */
+  /** 言語 `csv` のコードブロックから作った表の、記載したとおりの CSV */
   rawCsv?: string | undefined;
   /** 元の CSV を出しているか（既定 `false`） */
   rawShown?: boolean;
 };
 
-/** CSV の表の RAW のボタンを右端に置く帯の HTML を返す */
+/** CSV の表の RAW のボタンを右端に配置する帯の HTML を返却する */
 export const renderRawBar = (pressed: boolean): string =>
   `<div class="mdmark-table-bar mdmark-raw-bar"><div class="mdmark-table-tools">${renderRawToggle(pressed)}</div></div>`;
 
-/** CSV の表の RAW のボタンの HTML を返す */
+/** CSV の表の RAW のボタンの HTML を返却する */
 export const renderRawToggle = (pressed: boolean): string =>
   `<button class="mdmark-raw-toggle" type="button" aria-label="元の CSV を表示" aria-pressed="${pressed}">${iconSvgOf(iconNodeBody(CodeXml))}</button>`;
 
@@ -198,11 +198,11 @@ export type TableToolsOptions = {
   features: string[];
   /** 絞り込み（`select` は候補の値） */
   filter?: { kind: FilterKind; values: string[] } | undefined;
-  /** 絞り込みを当てているか */
+  /** 絞り込みを適用しているか */
   active?: boolean;
   /** ドロワーを開いているか */
   open?: boolean;
-  /** 当てている絞り込み */
+  /** 適用している絞り込み */
   value?: FilterValue | undefined;
   /** ピン止めのボタンを出すか（既定 `false`。`mount` が幅を測って決める） */
   pinVisible?: boolean;
@@ -245,7 +245,7 @@ function renderFilterFields(options: TableToolsOptions): string {
   return `<label class="mdmark-filter-field">候補を検索<input class="mdmark-filter-search" type="search"></label><ul class="mdmark-filter-options">${items}</ul><p class="mdmark-filter-none" hidden>一致する候補がありません</p>`;
 }
 
-/** 列 1 つの見出しの中身（並べ替え・絞り込み・ピン止めのボタン）と、その列の絞り込みのドロワーの HTML を返す */
+/** 列 1 つの見出しの中身（並べ替え・絞り込み・ピン止めのボタン）と、その列の絞り込みのドロワーの HTML を返却する */
 export function renderTableTools(options: TableToolsOptions): {
   header: string;
   drawer: string;
@@ -286,14 +286,14 @@ export function renderTableTools(options: TableToolsOptions): {
   };
 }
 
-/** 絞り込みを当てているか（空の絞り込みは当てていない） */
+/** 絞り込みを適用しているか（空の絞り込みは適用していない） */
 function isActive(value: FilterValue | undefined): boolean {
   return Boolean(
     value?.values?.length || value?.text || value?.from || value?.to,
   );
 }
 
-/** 行を並べ替えた順の位置を返す */
+/** 行を並べ替えた順の位置を返却する */
 function sortedIndexes(options: TableOptions): number[] {
   const rows = options.rows ?? [];
   const indexes = rows.map((_, index) => index);
@@ -319,13 +319,13 @@ export const COPY_STATES = {
   failed: { label: "コピーできませんでした", icon: "circle-alert" },
 } as const;
 
-/** コピーのボタンの中身（アイコンと読み上げの名前）の HTML */
+/** コピーのボタンの中身（アイコンとスクリーンリーダー向けの名前）の HTML */
 export function renderCopyButtonContent(state: CopyState): string {
   const { icon, label } = COPY_STATES[state];
   return `${iconSvg(icon)}<span class="mdmark-visually-hidden mdmark-copy-label">${label}</span>`;
 }
 
-/** コピーの形式の名前と使いどころ */
+/** コピーの形式の名前と用途 */
 export const COPY_FORMATS = {
   markdown: {
     name: "Markdown の表",
@@ -349,7 +349,7 @@ function copyMenuId(id: string): string {
   return `${id}-copy`;
 }
 
-/** 表の上の帯（件数・テーブル設定・集計・コピーのボタン）と、テーブル設定のパネル・集計・コピーの形式のメニューの HTML を返す。付けた機能が無ければ空 */
+/** 表の上の帯（件数・テーブル設定・集計・コピーのボタン）と、テーブル設定のパネル・集計・コピーの形式のメニューの HTML を返却する。付けた機能が無ければ空 */
 export function renderTableBar(options: {
   /** メニューの id の頭 */
   id: string;
@@ -461,12 +461,12 @@ export function renderTableBar(options: {
   };
 }
 
-/** テーブル設定のボタンの読み上げの名前 */
+/** テーブル設定のボタンのスクリーンリーダー向けの名前 */
 function settingsLabel(hidden: number): string {
   return hidden > 0 ? `テーブル設定（${hidden} 列を非表示）` : "テーブル設定";
 }
 
-/** 表の帯に置く、テーブル設定のアイコンだけのボタンの HTML を返す */
+/** 表の帯に配置する、テーブル設定のアイコンだけのボタンの HTML を返却する */
 export function renderSettingsToggle(options: {
   /** パネルの id の頭 */
   id: string;
@@ -479,7 +479,7 @@ export function renderSettingsToggle(options: {
   return `<button class="mdmark-table-tool mdmark-table-settings-toggle is-icon-only${hidden > 0 ? " is-active" : ""}" type="button" aria-expanded="${open}" aria-controls="${escapeHtml(menuId(id))}" aria-label="${settingsLabel(hidden)}" title="テーブル設定">${iconSvg("settings-2")}<span class="mdmark-table-tool-badge" aria-hidden="true"${hidden > 0 ? "" : " hidden"}>${hidden}</span></button>`;
 }
 
-/** テーブル設定のボタンの隠した列の数と読み上げの名前を書き換える */
+/** テーブル設定のボタンの隠した列の数とスクリーンリーダー向けの名前を書き換える */
 export function updateSettingsToggle(
   toggle: HTMLElement,
   hidden: number,
@@ -503,7 +503,7 @@ function placeKey(options: {
   return column < pinned ? "pinned" : (groups[column] ?? "");
 }
 
-/** テーブル設定のパネル（題・列名の一覧・案内）の HTML を返す。`hidden` は付けない */
+/** テーブル設定のパネル（タイトル・列名の一覧・案内）の HTML を返却する。`hidden` は付けない */
 export function renderTableSettings(options: {
   /** パネルの id の頭 */
   id: string;
@@ -579,7 +579,7 @@ export function renderTableSettings(options: {
   return `<div class="mdmark-table-settings" id="${escapeHtml(menuId(id))}" role="dialog" aria-label="テーブル設定"><p class="mdmark-table-settings-title">${showing ? "表示と並び順" : "並び順"}</p><ul class="mdmark-table-settings-list">${items.join("")}</ul><p class="mdmark-table-settings-note" id="${escapeHtml(noteId)}">${note}</p></div>`;
 }
 
-/** 階層の表のキーのセルの中身（深さの数の縦線・末尾の名前・配列の `[]`・必須の *）の HTML を返す */
+/** 階層の表のキーのセルの中身（深さの数の縦線・末尾の名前・配列の `[]`・必須の *）の HTML を返却する */
 export function renderTreeKeyCell(options: {
   /** `splitKeyPath` の末尾の名前 */
   name: string;
@@ -596,7 +596,7 @@ export function renderTreeKeyCell(options: {
   return `<span class="mdmark-tree-cell">${guides}<span class="mdmark-tree-name" tabindex="0">${escapeHtml(base)}</span>${array ? '<span class="mdmark-tree-array">[]</span>' : ""}${required ? '<span class="mdmark-tree-required" aria-label="必須">*</span>' : ""}</span>`;
 }
 
-/** 型のセルの文字を、`a | b` の形なら値ごとのチップ、それ以外はバッジにした HTML を返す */
+/** 型のセルの文字を、`a | b` の構造なら値ごとのチップ、それ以外はバッジにした HTML を返却する */
 export function renderTypeCell(text: string): string {
   const value = text.trim();
   if (value === "") {
@@ -616,9 +616,9 @@ export function renderTypeCell(text: string): string {
   return `<span class="mdmark-type-badge" data-type="${escapeHtml(value)}">${escapeHtml(value)}</span>`;
 }
 
-/** 階層の行の開閉・パスのコピー・見本の表示を切り替えるボタンの HTML を返す */
+/** 階層の行の開閉・パスのコピー・見本の表示を切り替えるボタンの HTML を返却する */
 export function renderTreeTools(options: {
-  /** 返すボタン */
+  /** 返却するボタン */
   kind: "toggle" | "copy" | "example";
   /** 行のパス */
   path?: string;
@@ -642,7 +642,7 @@ export function renderTreeTools(options: {
   }
 }
 
-/** 集計の行（`<tfoot>`）の HTML を返す。計算ごとに 1 行（`sum`・`avg`・`count` の順）で、列の数だけセルを持つ。先頭のセルに計算の名前、集計する列のセルに値を出し、隠している列のセルと出さない計算の行は隠す */
+/** 集計の行（`<tfoot>`）の HTML を返却する。計算ごとに 1 行（`sum`・`avg`・`count` の順）で、列の数だけセルを持つ。先頭のセルに計算の名前、集計する列のセルに値を出し、隠している列のセルと出さない計算の行は隠す */
 export function renderTotalRows(options: {
   /** 列の数 */
   columns: number;
@@ -683,9 +683,9 @@ export function renderTotalRows(options: {
 /** 手でコピーさせるパネルの形式。`tree` はファイルツリーの元の罫線のテキスト */
 export type CopyPanelFormat = CopyFormat | "tree";
 
-/** クリップボードに書けなかったときに、帯の直後へ置く手でコピーさせるパネルの HTML を返す */
+/** クリップボードに書き込めなかったときに、帯の直後へ配置する手でコピーさせるパネルの HTML を返却する */
 export function renderCopyPanel(options: {
-  /** 題の id の頭 */
+  /** タイトルの id の頭 */
   id: string;
   /** コピーの形式 */
   format: CopyPanelFormat;
@@ -702,7 +702,7 @@ export function renderCopyPanel(options: {
   return `<div class="mdmark-copy-panel" role="group" aria-labelledby="${escapeHtml(titleId)}"><div class="mdmark-copy-panel-head"><p class="mdmark-copy-panel-title" id="${escapeHtml(titleId)}">${iconSvg("circle-alert")}クリップボードにコピーできませんでした</p><button class="mdmark-copy-panel-close" type="button" aria-label="閉じる">${iconSvg("x")}</button></div><p class="mdmark-copy-panel-note" id="${escapeHtml(noteId)}">${target}を選択しています。Ctrl+C（Mac は ⌘C）でコピーしてください。</p><textarea class="mdmark-copy-panel-text" readonly rows="6" aria-labelledby="${escapeHtml(titleId)} ${escapeHtml(noteId)}">${escapeHtml(text)}</textarea></div>`;
 }
 
-/** 最終列を畳んだ表の本文の行 1 つについて、先頭のセルに置く開閉のボタンと、行の直後に置く開閉の行の HTML を返す */
+/** 最終列を畳んだ表の本文の行 1 つについて、先頭のセルに配置する開閉のボタンと、行の直後に配置する開閉の行の HTML を返却する */
 export function renderFoldedColumn(options: {
   /** 開閉の行の id（ボタンの `aria-controls` が指す） */
   id: string;
@@ -724,7 +724,7 @@ export function renderFoldedColumn(options: {
   };
 }
 
-/** 行へのリンクの印を持つ先頭のセルの HTML を返す。`content` は先頭のセルの中身（`SLOT_MARKER` を渡して前後に分けられる）。`notice` を渡すと、URL をコピーした結果を印の横の知らせに出す */
+/** 行へのリンクのマーカーを持つ先頭のセルの HTML を返却する。`content` は先頭のセルの中身（`SLOT_MARKER` を指定して前後に分けられる）。`notice` を指定すると、URL をコピーした結果をマーカーの横の通知に出す */
 export function renderRowLink(
   content: string,
   id: string,
@@ -741,7 +741,7 @@ export function renderRowLink(
   return `<span class="mdmark-row-link-cell">${content}<a class="mdmark-row-anchor" href="#${escapeHtml(id)}" aria-label="「${escapeHtml(label)}」の行へのリンク">${iconSvg("link")}</a><span class="mdmark-row-link-notice" role="status"${state}>${message}</span></span>`;
 }
 
-/** 真偽値のセルの中身の HTML を返す。`true` は ✓ のアイコン、`false` は読み上げだけの `いいえ` */
+/** 真偽値のセルの中身の HTML を返却する。`true` は ✓ のアイコン、`false` はスクリーンリーダー向けの `いいえ` */
 export function renderCheckCell(value: "true" | "false"): string {
   return value === "true"
     ? `<span class="mdmark-check" role="img" aria-label="はい">${iconSvg("check")}</span>`
@@ -753,7 +753,7 @@ export function isCheckValue(text: string): text is "true" | "false" {
   return text === "true" || text === "false";
 }
 
-/** 列と行から表の HTML を作る（Storybook 用。操作を付けた後の見た目になる） */
+/** 列と行から表の HTML を作る（Storybook 用。操作を付けた後の外観になる） */
 function renderTableBody(options: TableOptions, id: string): string {
   const columns = options.columns ?? [];
   const rows = options.rows ?? [];
@@ -974,7 +974,7 @@ function renderTableBody(options: TableOptions, id: string): string {
   return `${bar}${panel}<div class="mdmark-table-scroll">${options.order ? reorderCellsHtml(tableHtml, options.order) : tableHtml}</div>${menus}${drawers.join("")}`;
 }
 
-/** 表の HTML の各行のセルを、列の順 `order` に並べ直す（セルの数が列の数と同じ行だけ） */
+/** 表の HTML の各行のセルを、列の順 `order` にもう一度並べる（セルの数が列の数と同じ行だけ） */
 function reorderCellsHtml(html: string, order: number[]): string {
   return html.replace(
     /(<tr\b[^>]*>)([\s\S]*?)(<\/tr>)/g,
@@ -988,7 +988,7 @@ function reorderCellsHtml(html: string, order: number[]): string {
   );
 }
 
-/** 多段の見出しから、最下段の列ごとに、その列を覆う上の段の結合した見出しの `{段}:{位置}` を返す */
+/** 多段の見出しから、最下段の列ごとに、その列を覆う上の行の結合した見出しの `{行}:{位置}` を返却する */
 function headGroupsOf(headRows: TableHeadCell[][]): Array<string | undefined> {
   const bottom = headRows.length - 1;
   const columns = Math.max(
@@ -1013,7 +1013,7 @@ function headGroupsOf(headRows: TableHeadCell[][]): Array<string | undefined> {
   });
 }
 
-/** 多段の見出しの結合した見出しの `{段}:{位置}` から、見出しの文字を引く表を返す */
+/** 多段の見出しの結合した見出しの `{行}:{位置}` から、見出しの文字を参照する表を返却する */
 function headGroupLabelsOf(
   headRows: TableHeadCell[][],
 ): Record<string, string> {
@@ -1028,7 +1028,7 @@ function headGroupLabelsOf(
   return labels;
 }
 
-/** 階層の表のストーリーの HTML（表・見本の表示を切り替えるボタン・見本）を返す */
+/** 階層の表のストーリーの HTML（表・見本の表示を切り替えるボタン・見本）を返却する */
 function renderTreeTable(options: TableOptions, id: string): string {
   const columns = options.columns ?? [];
   const rows = options.rows ?? [];
@@ -1201,7 +1201,7 @@ function renderHeadRows(
           const spans = `${rowspan > 1 ? ` rowspan="${rowspan}"` : ""}${colspan > 1 ? ` colspan="${colspan}"` : ""}`;
           const scope = colspan > 1 ? "colgroup" : "col";
           if (column >= 0) {
-            // 列のボタンを持つセルに、段の結合の属性を足す
+            // 列のボタンを持つセルに、段の結合の属性を追加する
             return headCell(columns[column] ?? cell.html, column).replace(
               "<th",
               `<th${spans} scope="${scope}"`,
@@ -1221,7 +1221,7 @@ function isFolded(options: TableOptions, hidden: Set<number>): boolean {
   return options.folded === true && lastColumn > 0 && !hidden.has(lastColumn);
 }
 
-/** 表を囲む HTML を返す。`body` を渡すと囲みだけを作り、渡さなければ `columns`・`rows` から表を作る */
+/** 表を囲む HTML を返却する。`body` を指定すると囲みだけを作り、指定しなければ `columns`・`rows` から表を作る */
 export function renderTable(options: TableOptions): string {
   if (options.tree !== undefined && options.rows !== undefined) {
     return renderTreeTable(options, options.id ?? "mdmark-table");
@@ -1277,7 +1277,7 @@ export function renderTable(options: TableOptions): string {
   if (options.rawCsv === undefined) {
     return `<div class="mdmark-table${foldedClass}" data-kind="${kind}" data-features="${options.features.join(" ")}"${filterAttribute}${hideAttribute}${totalAttribute}${pinAttribute}${checkAttribute}${treeAttribute}${mergeAttribute}>${inner}</div>`;
   }
-  // CSV の表: 表の後ろに元の CSV を置く。帯の右端の RAW のボタンは、表を描いたとき（`body` を渡さないとき）だけ置き、記法の表には `mount` が付ける
+  // CSV の表: 表の後ろに元の CSV を配置する。帯の右端の RAW のボタンは、表を描いたとき（`body` を指定しないとき）だけ配置し、記法の表には `mount` が付ける
   const shown = options.rawShown ?? false;
   const bar = options.body === undefined ? renderRawBar(shown) : "";
   const raw = `<pre class="mdmark-raw"${shown ? "" : " hidden"} tabindex="0" aria-label="元の CSV"><code class="language-csv">${escapeHtml(options.rawCsv)}</code></pre>`;

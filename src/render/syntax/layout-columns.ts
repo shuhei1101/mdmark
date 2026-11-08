@@ -57,8 +57,8 @@ const countWarning = (mark: Mark, count: number): SyntaxWarning => ({
   mark: mark.raw,
   message:
     count < MIN_COLUMNS
-      ? `の範囲が ${count} 列です。横に並べられるのは ${MIN_COLUMNS}〜${MAX_COLUMNS} 列です。\`<!-- column -->\` で区切ってください。中身を書いた順に表示しています。`
-      : `の範囲が ${count} 列です。横に並べられるのは ${MIN_COLUMNS}〜${MAX_COLUMNS} 列です。\`<!-- column -->\` を減らしてください。中身を書いた順に表示しています。`,
+      ? `の範囲が ${count} 列です。横に並べられるのは ${MIN_COLUMNS}〜${MAX_COLUMNS} 列です。\`<!-- column -->\` で区切ってください。中身を記載した順に表示しています。`
+      : `の範囲が ${count} 列です。横に並べられるのは ${MIN_COLUMNS}〜${MAX_COLUMNS} 列です。\`<!-- column -->\` を減らしてください。中身を記載した順に表示しています。`,
 });
 
 /** `columns` がオンなら、`<!-- columns -->` 〜 `<!-- /columns -->` を `<!-- column -->` で区切り、2〜3 列なら段組みで囲む。列の数が合わない範囲と入れ子の内側は警告を差し込んで囲まない */
@@ -67,7 +67,7 @@ export const buildLayoutColumns = (state: StateCore): void => {
     return;
   }
   const tokens = state.tokens;
-  // 位置ごとに、印の代わりに置くトークン（空の配列は印を取り除く）
+  // 位置ごとに、マーカーの代わりに配置するトークン（空の配列はマーカーを取り除く）
   const replace = new Map<number, Token[]>();
   for (const range of collectRanges(tokens)) {
     const open = tokens[range.open] as Token;
@@ -78,7 +78,7 @@ export const buildLayoutColumns = (state: StateCore): void => {
         warningBlock(state, {
           mark: nestedMark.raw,
           message:
-            "の columns の範囲は、columns の範囲の中に入れ子にできません。内側の範囲は横に並べずに、中身を書いた順に表示しています。",
+            "の columns の範囲は、columns の範囲の中に入れ子にできません。内側の範囲は横に並べずに、中身を記載した順に表示しています。",
         }),
       ]);
     }

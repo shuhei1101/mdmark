@@ -9,7 +9,7 @@ import type { MdmarkIconNode } from "../parts/inline-icon.ts";
 /** `bundle` で埋めた画像を指す `src` の頭 */
 export const ASSET_SCHEME = "mdmark-asset:";
 
-/** 書き出した HTML に JSON で埋め、開いたときに起動の処理が読む中身 */
+/** 書き出した HTML に JSON で埋め、開いたときに起動の処理が読み込む中身 */
 export type ExportPayload = {
   /** `export` は `document`、`build` は `bundle` */
   kind: "document" | "bundle";
@@ -25,22 +25,22 @@ export type ExportPayload = {
     title: string;
     markdown: string;
     docId?: string | undefined;
-    /** 取り込む文書の表: 文書のフォルダからのパスから、`includes` のキー（設定ファイルのフォルダからのパス）を引く */
+    /** 取り込む文書の表: 文書のフォルダからのパスから、`includes` のキー（設定ファイルのフォルダからのパス）を参照する */
     includes?: Record<string, string> | undefined;
   }>;
   /** 取り込む文書の本文。キーは設定ファイルのフォルダからのパスで、同じファイルは 1 回だけ持つ */
   includes?: Record<string, string> | undefined;
-  /** 束ねていない名前のアイコンの形の表 */
+  /** まとめていない名前のアイコンの形状の表 */
   icons?: Record<string, MdmarkIconNode> | undefined;
   /** 最初に開く文書の `path` */
   entry: string;
   /** `loadAliases` が作ったエイリアス（`env` を含まない）。設定に `aliases` が無ければ持たない */
   aliases?: MdmarkAlias[] | undefined;
-  /** `bundle` で埋めた画像のキーから `data:` URL を引く表。`document` では持たない */
+  /** `bundle` で埋めた画像のキーから `data:` URL を参照する表。`document` では持たない */
   assets?: Record<string, string> | undefined;
 };
 
-/** 書き出しの中身を入れる `script` 要素の `id`（起動の処理が読む） */
+/** 書き出しの中身を入れる `script` 要素の `id`（起動の処理が読み込む） */
 const PAYLOAD_ID = "mdmark-payload";
 
 /** 三本線のアイコン（文書の一覧を開くボタン） */
@@ -72,10 +72,10 @@ const BUNDLE_BODY = [
   "</dialog>",
 ].join("");
 
-/** 1 文書の HTML の本文: 描く先の要素だけを置く */
+/** 1 文書の HTML の本文: 描く先の要素だけを配置する */
 const DOCUMENT_BODY = '<article class="mdmark"></article>';
 
-/** `style` 要素の中で閉じタグと読まれないよう、`</style` を `<\/style` に替える */
+/** `style` 要素の中で閉じタグと読み込まれないよう、`</style` を `<\/style` に替える */
 function escapeStyle(css: string): string {
   return css.replace(/<\/(style)/gi, "<\\/$1");
 }
@@ -85,15 +85,15 @@ function encodePayload(payload: ExportPayload): string {
   return JSON.stringify(payload).replaceAll("<", "\\u003c");
 }
 
-/** 配布物の CSS・使う側の CSS・書き出しの中身・束ねたスクリプトを埋めた 1 枚の HTML を返す */
+/** 配布物の CSS・利用側の CSS・書き出しの中身・まとめたスクリプトを埋めた 1 枚の HTML を返却する */
 export function assembleHtml(parts: {
   /** 埋める中身 */
   payload: ExportPayload;
   /** 配布物の CSS */
   distCss: string;
-  /** 使う側の CSS */
+  /** 利用側の CSS */
   themeCss?: string | undefined;
-  /** `bundleViewer` が起動の処理と埋めるモジュールを束ねたスクリプト（`</script` と `<!--` の並びは替えてある） */
+  /** `bundleViewer` が起動の処理と埋めるモジュールをまとめたスクリプト（`</script` と `<!--` の並びは替えてある） */
   script: string;
 }): string {
   const { payload, distCss, themeCss, script } = parts;

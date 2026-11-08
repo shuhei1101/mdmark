@@ -2,7 +2,7 @@ import type { StateCore } from "markdown-it";
 import { renderToc, type TocHeading } from "../../parts/toc.ts";
 import { envOf, featureOn, markOf, ownBlock } from "./tokens.ts";
 
-/** `toc` がオンなら、`toc` の印の場所に文書の h2・h3 の目次を置く */
+/** `toc` がオンなら、`toc` のマーカーの場所に文書の h2・h3 の目次を配置する */
 export function buildToc(state: StateCore): void {
   if (!featureOn(state, "toc")) {
     return;

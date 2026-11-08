@@ -14,7 +14,7 @@ export type AppProps = {
   savedLine?: number;
 };
 
-/** 画面を Error Boundary で包む。描画中の例外は描画の失敗と「リロード」を出す（リロードで拡張機能が HTML を入れ直す） */
+/** 画面を Error Boundary で包む。描画中の例外は描画の失敗と「リロード」を出す（リロードで拡張機能が HTML をもう一度入れる） */
 export const App = ({ boot, api, savedLine }: AppProps) => (
   <ErrorBoundary
     fallbackRender={() => (

@@ -1,4 +1,4 @@
-/** `&`・`<`・`>`・`"`・`'` を文字参照にし、要素の中身にも属性の値にも置ける文字列にする */
+/** `&`・`<`・`>`・`"`・`'` を文字参照にし、要素の中身にも属性の値にも配置できる文字列にする */
 export function escapeHtml(text: string): string {
   return text
     .replaceAll("&", "&amp;")

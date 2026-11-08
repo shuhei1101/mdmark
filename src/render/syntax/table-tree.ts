@@ -15,10 +15,10 @@ import {
 } from "./tokens.ts";
 import { warningBlock } from "./warnings.ts";
 
-/** 必須の列の文字のうち、必須と読む値 */
+/** 必須の列の文字のうち、必須と読み込む値 */
 const REQUIRED_VALUES = ["✓", "true"];
 
-/** 階層の表の `table_open` の `meta` に `decorateTables` が置く、表の指定と表の印の文字 */
+/** 階層の表の `table_open` の `meta` に `decorateTables` が配置する、表の指定と表のマーカーの文字 */
 export type TreeTableMeta = { treeSpec?: TableSpec; treeMark?: string };
 
 /** 表の 1 行のトークンの位置: `tr_open`・`tr_close` とセルごとの開きと閉じ */
@@ -116,7 +116,7 @@ export function decorateTreeTable(options: {
   if (bodyOpen < 0 || bodyClose < 0) {
     return;
   }
-  /** 印を付けた HTML の `html_inline` を作る */
+  /** マーカーを付けた HTML の `html_inline` を作る */
   const inlineHtml = (html: string): Token => {
     const token = new state.Token("html_inline", "", 0);
     token.content = markOwn(html, nonce);
@@ -222,7 +222,7 @@ export function decorateTreeTable(options: {
   }
   const bodyStart = body[0]?.open ?? bodyClose;
   const bodyEnd = body.at(-1)?.close ?? bodyClose - 1;
-  // 本文の行の後ろ（一致する行が無い知らせの行など）は残す
+  // 本文の行の後ろ（一致する行が無い通知の行など）は残す
   const rest = tokens.slice(bodyEnd + 1, bodyClose);
   const before = tokens
     .slice(start, bodyStart)
@@ -236,7 +236,7 @@ export function decorateTreeTable(options: {
   ];
 }
 
-/** 文字が `text` の見出しの位置を返す（無ければ `-1`） */
+/** 文字が `text` の見出しの位置を返却する（無ければ `-1`） */
 function findHeading(tokens: Token[], text: string): number {
   return tokens.findIndex(
     (token, index) =>
@@ -246,7 +246,7 @@ function findHeading(tokens: Token[], text: string): number {
   );
 }
 
-/** 見出しの直下のタブの範囲の `start` と `end` の境目の位置を返す（無ければ `undefined`） */
+/** 見出しの直下のタブの範囲の `start` と `end` の境目の位置を返却する（無ければ `undefined`） */
 function tabsAfterHeading(
   tokens: Token[],
   heading: number,
@@ -348,7 +348,7 @@ export function linkTreeExamples(state: StateCore): void {
     if (!tabs || wrapperOpen < 0 || wrapperClose < 0) {
       const warning = warningBlock(state, {
         mark: meta?.treeMark,
-        message: `の example= の見出し \`${example}\` が文書に無いか、直下にタブがありません。見本を置かずに描いています。`,
+        message: `の example= の見出し \`${example}\` が文書に無いか、直下にタブがありません。見本を配置せずに描いています。`,
       });
       tokens.splice(Math.max(wrapperOpen, index), 0, warning);
       index += 1;

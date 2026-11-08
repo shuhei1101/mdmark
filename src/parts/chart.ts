@@ -8,7 +8,7 @@ import { niceTicks, stackSeries } from "../diagram/geometry.ts";
 import { type DiagramPart, renderDiagramTip } from "./diagram.ts";
 import { escapeHtml } from "./escape.ts";
 
-/** グラフの点の形より広い、ツールチップを拾う透明の円の半径（px） */
+/** グラフの点の形状より広い、ツールチップを取得する透明の円の半径（px） */
 export const ITEM_HIT_RADIUS = 12;
 
 /** グラフの項目の値の文（部品設計『図のツールチップ』の `value`） */
@@ -36,9 +36,9 @@ export function chartItemText(item: {
 
 /** グラフの項目のツールチップを集める入れ物 */
 type ItemTips = {
-  /** ツールチップを積み、項目に付ける属性（先頭に空白）を返す */
+  /** ツールチップを追加し、項目に付ける属性（先頭に空白）を返却する */
   attrs: (label: string, value: string) => string;
-  /** 積んだツールチップの HTML */
+  /** 追加したツールチップの HTML */
   html: () => string;
 };
 
@@ -59,12 +59,12 @@ function createItemTips(prefix: string): ItemTips {
   };
 }
 
-/** 点の周りのツールチップを拾う透明の円 */
+/** 点の周りのツールチップを取得する透明の円 */
 function itemHit(attrs: string, x: number, y: number): string {
   return `<circle class="mdmark-diagram-item-hit" cx="${num(x)}" cy="${num(y)}" r="${ITEM_HIT_RADIUS}"${attrs}></circle>`;
 }
 
-/** 系列の点の形 */
+/** 系列の点の形状 */
 type PointShape =
   | "circle"
   | "square"
@@ -76,19 +76,19 @@ type PointShape =
 /** 系列の塗りの模様 */
 type FillShape = "solid" | "hatch" | "dot" | "grid" | "vertical" | "horizontal";
 
-/** 系列の見た目の組 */
+/** 系列の外観の組 */
 type SeriesStyle = {
   /** 色の CSS 変数 */
   color: string;
   /** 線の模様（CSS の `stroke-dasharray` と同じ値） */
   dash: string;
-  /** 点の形 */
+  /** 点の形状 */
   point: PointShape;
   /** 塗りの模様 */
   fill: FillShape;
 };
 
-/** 系列と項目の位置ごとの、色・線の模様・点の形・塗りの模様の組 */
+/** 系列と項目の位置ごとの、色・線の模様・点の形状・塗りの模様の組 */
 export const SERIES_STYLES: readonly SeriesStyle[] = [
   {
     color: "--mdmark-color-series-1",
@@ -138,17 +138,17 @@ const CHART = {
 /** 右の縦の軸（`combo` の `y2`）を持つときの右の余白（px） */
 const Y2_PAD = 56;
 
-/** 横棒の項目の名前を置く左の余白（px） */
+/** 横棒の項目の名前を配置する左の余白（px） */
 const HORIZONTAL_PAD = 112;
 
-/** 系列の点の印の大きさ（px）。散布図は点だけで読むので大きくする */
+/** 系列の点のマーカーの大きさ（px）。散布図は点だけで読み込むので大きくする */
 export const POINT_SIZE = 4.5;
 export const SCATTER_POINT_SIZE = 5.5;
 
 /** 十字の点の、腕の半分の幅の大きさに対する割合 */
 const CROSS_ARM = 0.45;
 
-/** 円の半径（px）・扇形の外に置く割合の文字までの距離（px）・ドーナツの中の半径の割合 */
+/** 円の半径（px）・扇形の外に配置する割合の文字までの距離（px）・ドーナツの中の半径の割合 */
 const PIE = { radius: 118, labelGap: 16, hole: 0.58 };
 
 /** ドーナツの中央の合計と `合計{unit}` の、中心からの縦のずれ（px） */
@@ -166,7 +166,7 @@ const RADAR = { radius: 104, labelGap: 14 };
 /** バブルの最も大きい円の半径（px） */
 const BUBBLE_MAX_RADIUS = 24;
 
-/** 扇形・軸の名前の文字を中央に寄せる、角の余弦の幅 */
+/** 扇形・軸の名前の文字を中央に配置する、角の余弦の幅 */
 const CENTER_COS = 0.2;
 
 /** 数を小数 2 桁までの文字にする */
@@ -174,17 +174,17 @@ function num(value: number): string {
   return String(Number(value.toFixed(2)));
 }
 
-/** 系列の位置（1 から）の点の形。7 つ目以降は先頭から繰り返す */
+/** 系列の位置（1 から）の点の形状。7 つ目以降は先頭から繰り返す */
 function pointShapeOf(series: number): PointShape {
   return SERIES_STYLES[(series - 1) % SERIES_STYLES.length]?.point ?? "circle";
 }
 
-/** 点の並びを閉じた `path` の点の印にする */
+/** 点の並びを閉じた `path` の点のマーカーにする */
 function polygonPoint(points: Array<[number, number]>): string {
   return `<path class="mdmark-diagram-point" d="M${points.map(([x, y]) => `${num(x)},${num(y)}`).join(" L")} z"></path>`;
 }
 
-/** 系列の点の印（`SERIES_STYLES` の点の形） */
+/** 系列の点のマーカー（`SERIES_STYLES` の点の形状） */
 export function pointSvg(
   series: number,
   x: number,
@@ -237,7 +237,7 @@ export function pointSvg(
   }
 }
 
-/** 塗りの模様ごとの `pattern` の中身（塗りつぶし以外は色の薄い地に重ねる）。色は CSS が系列の番号で当てる */
+/** 塗りの模様ごとの `pattern` の中身（塗りつぶし以外は色の薄い地に重ねる）。色は CSS が系列の番号で適用する */
 const FILL_BODIES: Readonly<Record<FillShape, string>> = {
   solid:
     '<rect class="mdmark-diagram-pattern-solid" width="8" height="8"></rect>',
@@ -300,7 +300,7 @@ function yScale(axis: AxisRange, box: ChartBox): (value: number) => number {
     ((value - axis.min) * (box.bottom - box.top)) / (axis.max - axis.min);
 }
 
-/** 縦の軸の補助線・目盛りの値・軸の名前。`side` が `right` なら右の軸にし、補助線を引かない */
+/** 縦の軸の補助線・目盛りの値・軸の名前。`side` が `right` なら右の軸にし、補助線を描かない */
 function yAxisSvg(options: {
   axis: AxisRange;
   label: string;
@@ -328,7 +328,7 @@ function yAxisSvg(options: {
   return svg;
 }
 
-/** 軸の線と、横の軸の名前（目盛りの下）。`right` が真なら右の縦の軸の線も引く */
+/** 軸の線と、横の軸の名前（目盛りの下）。`right` が真なら右の縦の軸の線も描く */
 function axisLinesSvg(label: string, box: ChartBox, right = false): string[] {
   return [
     `<line class="mdmark-diagram-axis" x1="${box.left}" y1="${box.bottom}" x2="${box.right}" y2="${box.bottom}"></line>`,
@@ -359,7 +359,7 @@ function pathOf(points: Array<[number, number]>, close = false): string {
   return `M${points.map(([x, y]) => `${num(x)},${num(y)}`).join(" L")}${close ? " Z" : ""}`;
 }
 
-/** 系列の折れ線と点の印。`hits` を渡すと、点ごとにその属性を持つ当たりの円を重ねる */
+/** 系列の折れ線と点のマーカー。`hits` を指定すると、点ごとにその属性を持つクリックを受ける円を重ねる */
 function seriesLineSvg(
   n: number,
   points: Array<[number, number]>,
@@ -420,7 +420,7 @@ function tickedAttrs(
   return input.tips.attrs(name, `${input.ticks[position] ?? ""}: ${value}`);
 }
 
-/** 目盛りの軸のグラフの読み上げ: 系列ごとに目盛りと値を並べる */
+/** 目盛りの軸のグラフのスクリーンリーダー: 系列ごとに目盛りと値を並べる */
 function tickedLabel(input: TickedChart): string {
   return input.series
     .map(
@@ -430,13 +430,13 @@ function tickedLabel(input: TickedChart): string {
     .join("。");
 }
 
-/** 目盛りを等間隔に端から端へ置く横の位置の関数 */
+/** 目盛りを等間隔に端から端へ配置する横の位置の関数 */
 function edgeScale(ticks: string[], box: ChartBox): (index: number) => number {
   return (index) =>
     box.left + (index * (box.right - box.left)) / Math.max(1, ticks.length - 1);
 }
 
-/** 目盛りを項目の幅の中央に置く横の位置の関数と、項目の幅 */
+/** 目盛りを項目の幅の中央に配置する横の位置の関数と、項目の幅 */
 function bandScale(
   count: number,
   box: ChartBox,
@@ -445,7 +445,7 @@ function bandScale(
   return { band, xAt: (index) => box.left + band * (index + 0.5) };
 }
 
-/** 折れ線と面: 系列を色と線の模様・点の印の組で引き、`area` が真なら線の下を系列の塗りの模様で塗る */
+/** 折れ線と面: 系列を色と線の模様・点のマーカーの組で引き、`area` が真なら線の下を系列の塗りの模様で塗る */
 function lineChart(
   input: TickedChart,
   box: ChartBox,
@@ -504,7 +504,7 @@ function lineChart(
   };
 }
 
-/** 積み上げの面: `stackSeries` で積み、下の系列の上端から自分の上端までを系列の塗りの模様で塗る */
+/** 積み上げの面: `stackSeries` で追加し、下の系列の上端から自分の上端までを系列の塗りの模様で塗る */
 function stackedAreaChart(
   input: TickedChart,
   box: ChartBox,
@@ -543,7 +543,7 @@ function stackedAreaChart(
       }),
     );
   });
-  // 面の上端の点に、項目のツールチップを拾う当たりの円を重ねる
+  // 面の上端の点に、項目のツールチップを取得するクリックを受ける円を重ねる
   stacked.forEach((ranges, index) => {
     const entry = series[index];
     const hits = ranges.map((range, position) =>
@@ -599,7 +599,7 @@ function barChart(input: TickedChart, box: ChartBox, id: string): ChartBody {
   return { svg, label: tickedLabel(input) };
 }
 
-/** 積み上げの棒: 項目ごとに 1 本の棒に `stackSeries` で系列を積み、棒の上に合計を置く */
+/** 積み上げの棒: 項目ごとに 1 本の棒に `stackSeries` で系列を追加し、棒の上に合計を配置する */
 function stackedBarChart(
   input: TickedChart,
   box: ChartBox,
@@ -642,7 +642,7 @@ function stackedBarChart(
   ticks.forEach((_, position) => {
     const values = series.map((entry) => entry.points[position] ?? 0);
     const total = values.reduce((sum, value) => sum + value, 0);
-    // 合計は正の値を積んだ棒の上端の上に置く
+    // 合計は正の値を追加した棒の上端の上に配置する
     const top = values
       .filter((value) => value > 0)
       .reduce((sum, value) => sum + value, 0);
@@ -654,7 +654,7 @@ function stackedBarChart(
   return { svg, label: tickedLabel(input) };
 }
 
-/** 横棒: 項目を縦に並べ、値を横の長さにする。縦の軸の定義（`y`）を横の値の軸に使う */
+/** 横棒: 項目を縦に並べ、値を横の長さにする。縦の軸の定義（`y`）を横の値の軸に使用する */
 function horizontalBarChart(
   input: TickedChart,
   box: ChartBox,
@@ -728,7 +728,7 @@ function percentsOf(values: number[]): number[] {
   return floors;
 }
 
-/** 角の向きから、角の先に置く文字の寄せ方を決める */
+/** 角の向きから、角の先に配置する文字の統一方を決める */
 function anchorOf(angle: number): "middle" | "start" | "end" {
   const cos = Math.cos(angle);
   if (Math.abs(cos) < CENTER_COS) {
@@ -757,7 +757,7 @@ function slicePath(options: {
   return `M${outer} L${at(from + sweep, inner)} A${num(inner)},${num(inner)} 0 ${large} 0 ${at(from, inner)} Z`;
 }
 
-/** 円とドーナツ: 12 時から時計回りに項目の値の割合の角度で扇形を描き、扇形の外に割合を出す。`donut` が真なら中を空け、中央に合計と `合計{unit}` を置く */
+/** 円とドーナツ: 12 時から時計回りに項目の値の割合の角度で扇形を描き、扇形の外に割合を出す。`donut` が真なら中を空け、中央に合計と `合計{unit}` を配置する */
 function pieChart(options: {
   items: Array<{ name: string; value: number }>;
   unit: string;
@@ -816,7 +816,7 @@ function pieChart(options: {
   };
 }
 
-/** レーダー: `x.ticks` の軸を 12 時から時計回りに放射状に並べ、系列を色と線の模様・点の形の多角形で引く */
+/** レーダー: `x.ticks` の軸を 12 時から時計回りに放射状に並べ、系列を色と線の模様・点の形状の多角形で描く */
 function radarChart(input: TickedChart, id: string): ChartBody {
   const { ticks, series, yAxis } = input;
   const axis = axisOf(
@@ -890,7 +890,7 @@ function xNumberAxisSvg(
   ]);
 }
 
-/** 散布図とバブル: 横と縦の両方を数値の軸にし、散布図は系列の点の印、バブルは 3 つ目の値に面積が比例する円を置く（線で結ばない） */
+/** 散布図とバブル: 横と縦の両方を数値の軸にし、散布図は系列の点のマーカー、バブルは 3 つ目の値に面積が比例する円を配置する（線で結ばない） */
 function scatterChart(
   input: {
     series: Array<{ name: string; points: number[][] }>;
@@ -965,7 +965,7 @@ function scatterChart(
   };
 }
 
-/** 折れ線と棒の組み合わせ: 系列ごとに `as` の描き方で重ね、`axis` が `y2` の系列を右の縦の軸で読む */
+/** 折れ線と棒の組み合わせ: 系列ごとに `as` の描き方で重ね、`axis` が `y2` の系列を右の縦の軸で示す */
 function comboChart(
   definition: MdmarkChartDefinition,
   box: ChartBox,
@@ -1069,7 +1069,7 @@ function comboChart(
   };
 }
 
-/** グラフを種類ごとに描く。定義は `readDefinition` が形を確かめたもの。`id` は塗りの模様の `pattern` の `id` の頭 */
+/** グラフを種類ごとに描く。定義は `readDefinition` が構造を確認したもの。`id` は塗りの模様の `pattern` の `id` の頭 */
 export function renderChart(
   definition: MdmarkChartDefinition,
   id: string,

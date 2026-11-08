@@ -3,10 +3,10 @@ import { resolveLink } from "../knowledge/paths.ts";
 /** URL の `#` のうち、文書の指定として扱う頭 */
 export const DOC_HASH_PREFIX = "#/";
 
-/** 文書のパスを書いたリンクに付ける属性 */
+/** 文書のパスを記載したリンクに付ける属性 */
 const DOC_PATH_ATTRIBUTE = "data-doc-path";
 
-/** `#` のあとの文字を、パーセント符号化を戻して返す。戻せないときはそのまま返す */
+/** `#` のあとの文字を、パーセント符号化を戻して返却する。戻せないときはそのまま返却する */
 function decode(text: string): string {
   try {
     return decodeURIComponent(text);
@@ -15,7 +15,7 @@ function decode(text: string): string {
   }
 }
 
-/** URL の `#` が指す文書と見出しを読む。`#/` で始まらないときと 1 枚に無い文書を指すときは `entry` を返す */
+/** URL の `#` が指す文書と見出しを読み込む。`#/` で始まらないときと 1 枚に無い文書を指すときは `entry` を返却する */
 export function resolveRoute(
   hash: string,
   paths: ReadonlySet<string>,
@@ -46,7 +46,7 @@ export function rewriteLinks(
 ): void {
   for (const link of root.querySelectorAll("a[href]")) {
     const href = link.getAttribute("href") ?? "";
-    // 同じ文書の中のアンカー: 描いた文書のパスを足す
+    // 同じ文書の中のアンカー: 描いた文書のパスを追加する
     if (href.startsWith("#") && href.length > 1) {
       if (!href.startsWith(DOC_HASH_PREFIX)) {
         link.setAttribute("href", `${DOC_HASH_PREFIX}${docPath}${href}`);

@@ -7,7 +7,7 @@ import { type EmbeddedModules, prepareModules } from "./modules.ts";
 /** 書き出しの中身を埋めた `script` 要素の `id` */
 const PAYLOAD_ID = "mdmark-payload";
 
-/** 書き出した HTML を起動する: 埋めた中身を読み、束ねたモジュールと拡張を用意してから、1 文書は描く先の要素に描き、まとめた HTML は画面を起動する。CLI が束ねる入口のモジュールが呼ぶ */
+/** 書き出した HTML を起動する: 埋めた中身を読み込み、まとめたモジュールと拡張を用意してから、1 文書は描く先の要素に描き、まとめた HTML は画面を起動する。CLI がまとめる入口のモジュールが呼ぶ */
 export async function startViewer(
   doc: Document,
   embedded: EmbeddedModules,

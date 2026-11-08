@@ -3,7 +3,7 @@ import { type ColumnPlace, canMoveColumn, moveColumn } from "../table-logic.ts";
 /** 落とす先の線を出す項目の class */
 const DROP_CLASSES = { before: "is-drop-before", after: "is-drop-after" };
 
-/** 一覧の項目のまとまりの鍵から、列が属する範囲とピン止めの側を返す */
+/** 一覧の項目のまとまりの鍵から、列が属する範囲とピン止めの側を返却する */
 function placeOf(item: HTMLElement): ColumnPlace {
   const key = item.dataset.place ?? "";
   return {
@@ -12,7 +12,7 @@ function placeOf(item: HTMLElement): ColumnPlace {
   };
 }
 
-/** 行のうち `data-col` を持つセルを、列の順 `order` に並べ直す（持たないセルとセルの置き場所は変えない） */
+/** 行のうち `data-col` を持つセルを、列の順 `order` にもう一度並べる（持たないセルとセルの配置場所は変えない） */
 export function reorderRowCells(
   row: HTMLTableRowElement,
   order: number[],
@@ -40,7 +40,7 @@ export function reorderRowCells(
   });
 }
 
-/** 表の帯のテーブル設定のパネルのつまみに、ドラッグ＆ドロップと ↑・↓ キーで列を動かす操作を付ける。列を動かしたら見出し・本文の行・集計の行のセルと一覧を並べ直し、`onReorder` に新しい列の順を渡す。受け取りを外す関数を返す */
+/** 表の帯のテーブル設定のパネルのつまみに、ドラッグ＆ドロップと ↑・↓ キーで列を動かす操作を付ける。列を動かしたら見出し・本文の行・集計の行のセルと一覧をもう一度並べ、`onReorder` に新しい列の順を指定する。受け取りを解除する関数を返却する */
 export function attachTableSettings(options: {
   /** `div.mdmark-table` */
   wrapper: HTMLElement;
@@ -57,7 +57,7 @@ export function attachTableSettings(options: {
   if (!panel || !list) {
     return () => {};
   }
-  /** 一覧の項目を、並んだ順に返す */
+  /** 一覧の項目を、並んだ順に返却する */
   const items = (): HTMLElement[] => [
     ...list.querySelectorAll<HTMLElement>(".mdmark-table-settings-item"),
   ];
@@ -67,7 +67,7 @@ export function attachTableSettings(options: {
     items().find((item) => Number(item.dataset.column) === column);
   let dragging: number | undefined;
 
-  /** 列 `column` を `target` の前か後ろへ動かし、表のセルと一覧を並べ直す */
+  /** 列 `column` を `target` の前か後ろへ動かし、表のセルと一覧をもう一度並べる */
   const move = (column: number, target: number, side: "before" | "after") => {
     const from = itemOf(column);
     const to = itemOf(target);
@@ -88,7 +88,7 @@ export function attachTableSettings(options: {
     }
     onReorder(order);
   };
-  /** 落とす先の線を全て消す */
+  /** 落とす先の線を全て削除する */
   const clearDropLines = (): void => {
     for (const item of items()) {
       item.classList.remove(DROP_CLASSES.before, DROP_CLASSES.after);

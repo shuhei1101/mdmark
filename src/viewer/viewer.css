@@ -1,6 +1,6 @@
 /* 書き出した HTML の画面（bundle）の規則: 配布物の CSS の後に埋める */
 
-/* mdmark の層: 使う側が層の外に書いた CSS が勝つ */
+/* mdmark の層: 利用側が層の外に記載した CSS が勝つ */
 @layer mdmark {
   /* 画面全体: 左に文書の一覧、右に開いている文書 */
   .mdmark-bundle {
@@ -10,7 +10,7 @@
     background: var(--mdmark-color-bg);
   }
 
-  /* 横の文書の一覧: 文書を読み進めても画面に留める */
+  /* 横の文書の一覧: 文書をスクロールしても画面に留める */
   .mdmark-bundle-side {
     box-sizing: border-box;
     position: sticky;
@@ -25,14 +25,14 @@
   .mdmark-bundle-main {
     min-width: 0;
 
-    /* 描いた文書: 領域の中央に寄せる */
+    /* 描いた文書: 領域の中央に配置する */
     .mdmark {
       margin-inline: auto;
       padding: var(--mdmark-padding);
     }
   }
 
-  /* 狭い幅の帯: 文書の一覧を開くボタンと、開いている文書の題 */
+  /* 狭い幅の帯: 文書の一覧を開くボタンと、開いている文書のタイトル */
   .mdmark-bundle-bar {
     position: sticky;
     inset-block-start: 0;
@@ -47,7 +47,7 @@
     font-family: var(--mdmark-font-body);
   }
 
-  /* 帯の中の開いている文書の題: 1 行に収め、収まらない分は省く */
+  /* 帯の中の開いている文書のタイトル: 1 行に収め、収まらない分は省く */
   .mdmark-bundle-bar-title {
     min-width: 0;
     overflow: hidden;
@@ -56,7 +56,7 @@
     white-space: nowrap;
   }
 
-  /* 帯とパネルのボタン: 高さを揃え、線で囲む */
+  /* 帯とパネルのボタン: 高さを統一し、線で囲む */
   .mdmark-bundle-button {
     display: inline-flex;
     flex: none;
@@ -81,7 +81,7 @@
       outline-offset: 2px;
     }
 
-    /* アイコンだけのボタン（閉じる）: 幅を高さに揃える */
+    /* アイコンだけのボタン（閉じる）: 幅を高さに統一する */
     &.is-icon {
       justify-content: center;
       width: 2.25rem;
@@ -121,7 +121,7 @@
     }
   }
 
-  /* パネルの頭: 題と閉じるボタン */
+  /* パネルの頭: タイトルと閉じるボタン */
   .mdmark-bundle-panel-head {
     display: flex;
     gap: 0.5em;
@@ -131,7 +131,7 @@
     font-family: var(--mdmark-font-body);
   }
 
-  /* パネルの題 */
+  /* パネルのタイトル */
   .mdmark-bundle-panel-title {
     margin: 0;
     color: var(--mdmark-color-heading);
@@ -139,7 +139,7 @@
     font-weight: 600;
   }
 
-  /* 狭い幅: 横の一覧を外し、帯のボタンからパネルで開く */
+  /* 狭い幅: 横の一覧を削除し、帯のボタンからパネルで開く */
   @media (width < 60rem) {
     /* 画面全体: 文書だけの 1 列にする */
     .mdmark-bundle {
@@ -169,7 +169,7 @@
 
   /* 印刷のとき: 文書の一覧・帯・パネルを出さず、開いている文書だけを出す */
   @media print {
-    /* 画面全体: 並べをやめ、文書を紙の幅に流す */
+    /* 画面全体: 並べをやめ、文書を紙の幅に収める */
     .mdmark-bundle {
       display: block;
       min-height: 0;

@@ -7,10 +7,10 @@ import {
 import { SLOT_MARKER } from "../../parts/own.ts";
 import { featureOn, findNestedClose, ownBlock } from "./tokens.ts";
 
-/** 引用の 1 行目の頭に書く `[!種類]`（末尾に `-`・`+` を許し、後ろに空白とタイトルを続けられる） */
+/** 引用の 1 行目の頭に記載する `[!種類]`（末尾に `-`・`+` を許し、後ろに空白とタイトルを続けられる） */
 const CALLOUT_PATTERN = /^\[!([A-Za-z]+)\]([-+]?)(?:\s+|$)/;
 
-/** 引用の最初の段落の 1 行目（最初の `softbreak` の手前まで）から、注意書きの種類・開閉・タイトルの HTML を読む。注意書きでなければ `undefined` */
+/** 引用の最初の段落の 1 行目（最初の `softbreak` の手前まで）から、注意書きの種類・開閉・タイトルの HTML を読み込む。注意書きでなければ `undefined` */
 export function readCallout(options: {
   state: StateCore;
   tokens: Token[];
@@ -50,12 +50,12 @@ export function readCallout(options: {
   };
 }
 
-/** 種類とタイトルの 1 行を、引用の最初の段落から外す。段落が空になれば段落ごと外す */
+/** 種類とタイトルの 1 行を、引用の最初の段落から除外する。段落が空になれば段落ごと削除する */
 function removeTitleLine(tokens: Token[], openIndex: number): Token[] {
   const inline = tokens[openIndex + 2] as Token;
   const children = inline.children ?? [];
   const lineEnd = children.findIndex((child) => child.type === "softbreak");
-  // 1 行目と、その後の改行を外す
+  // 1 行目と、その後の改行を削除する
   inline.children = lineEnd < 0 ? [] : children.slice(lineEnd + 1);
   inline.content = inline.content.replace(/^[^\n]*\n?/, "");
   if (inline.children.length > 0) {
@@ -64,7 +64,7 @@ function removeTitleLine(tokens: Token[], openIndex: number): Token[] {
   return tokens.slice(openIndex + 1, openIndex + 4);
 }
 
-/** `callout` がオンなら、1 行目が `[!種類]` の引用を注意書きの部品にし、1 行目を本文から外す。知らない種類は `note`。注意書きの本文の中の引用も注意書きにする */
+/** `callout` がオンなら、1 行目が `[!種類]` の引用を注意書きの部品にし、1 行目を本文から除外する。知らない種類は `note`。注意書きの本文の中の引用も注意書きにする */
 export function buildCallouts(state: StateCore): void {
   if (!featureOn(state, "callout")) {
     return;
@@ -72,7 +72,7 @@ export function buildCallouts(state: StateCore): void {
   state.tokens = buildCalloutsIn(state, state.tokens);
 }
 
-/** トークンの並びの中の注意書きの引用を部品にした並びを返す */
+/** トークンの並びの中の注意書きの引用を部品にした並びを返却する */
 function buildCalloutsIn(state: StateCore, tokens: Token[]): Token[] {
   const out: Token[] = [];
   for (let index = 0; index < tokens.length; index++) {

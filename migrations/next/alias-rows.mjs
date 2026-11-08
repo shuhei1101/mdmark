@@ -9,7 +9,7 @@ import { isMap, isScalar, parse, parseDocument } from "yaml";
 const isRecord = (value) =>
   typeof value === "object" && value !== null && !Array.isArray(value);
 
-/** `{type: ..., ...}` の値の取り方を YAML の Map から読む */
+/** `{type: ..., ...}` の値の取り方を YAML の Map から読み込む */
 const ruleOf = (node) => {
   if (!isMap(node)) {
     return undefined;
@@ -18,7 +18,7 @@ const ruleOf = (node) => {
   return isRecord(rule) ? rule : undefined;
 };
 
-/** 行の `paths` に当たった YAML のレコードの `field` の列の値を、重ねずに集める。YAML として読めないファイルは `unreadable` に返す */
+/** 行の `paths` に該当した YAML のレコードの `field` の列の値を、重ねずに集める。YAML として読み込めないファイルは `unreadable` に返却する */
 const collectTypes = async ({ row, field, configDir }) => {
   const paths = row.get("paths")?.toJSON() ?? [];
   const records = row.get("records");
@@ -83,7 +83,7 @@ export const migrateAliasRows = async ({ doc, configDir }) => {
       if (unreadable.length > 0) {
         for (const path of unreadable) {
           problems.push(
-            `${label}の \`${path}\` を YAML として読めません。字下げと書き方を直してください。`,
+            `${label}の \`${path}\` を YAML として読み込めません。字下げと記載方法を修正してください。`,
           );
         }
         continue;

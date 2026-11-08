@@ -15,26 +15,26 @@ import { envOf } from "./tokens.ts";
 /** 用語のツールチップの `id` の頭 */
 const TIP_ID_PREFIX = "mdmark-term-";
 
-/** 本文の文字を辞書の語で区切った 1 つ分: 文字のままの部分と、語に下線を引いてツールチップを置いた HTML */
+/** 本文の文字を辞書の単語で区切った 1 つ分: 文字のままの部分と、単語に下線を付けてツールチップを配置した HTML */
 export type TermSegment =
   | { kind: "text"; content: string }
   | { kind: "tip"; html: string };
 
-/** 用語・文書の別名に下線を、やめた言い方にマーカーを付けた場所（付けたら、同じ範囲の同じ語には付けない）。やめた言い方は用語の下線とは別に、言い方ごとに数える */
+/** 用語・文書の別名に下線を、やめた言い方にマーカーを付けた場所（付けたら、同じ範囲の同じ単語には付けない）。やめた言い方は用語の下線とは別に、言い方ごとに数える */
 export type SeenTerms = {
   terms: Set<string>;
   docs: Set<string>;
   avoided: Set<string>;
 };
 
-/** 用語・文書の別名の語の後ろに、やめた言い方の語を足した並びを返す。同じ長さなら先の語が当たる */
+/** 用語・文書の別名の単語の後ろに、やめた言い方の単語を追加した並びを返却する。同じ長さなら先の単語が該当する */
 function matchWords(dictionary: Dictionary): string[] {
   return dictionary.avoided.size === 0
     ? dictionary.words
     : [...new Set([...dictionary.words, ...dictionary.avoided.keys()])];
 }
 
-/** 文字を辞書の語で区切る。同じ用語・文書は `seen` にあれば付けず、付けたら `seen` に足す。ツールチップの `id` は `nextTipId` が決める。語が 1 つも当たらなければ文字 1 つだけを返す */
+/** 文字を辞書の単語で区切る。同じ用語・文書は `seen` にあれば付けず、付けたら `seen` に追加する。ツールチップの `id` は `nextTipId` が決める。単語が 1 つも該当しなければ文字 1 つだけを返却する */
 export function termSegments(options: {
   /** 照合する文字 */
   text: string;
@@ -46,7 +46,7 @@ export function termSegments(options: {
   seen: SeenTerms;
   /** 次のツールチップの `id` */
   nextTipId: () => string;
-  /** mdmark が出した要素の印の値 */
+  /** mdmark が出した要素のマーカーの値 */
   nonce: string;
 }): TermSegment[] {
   const { text, dictionary, ownPath, seen, nextTipId, nonce } = options;
@@ -54,7 +54,7 @@ export function termSegments(options: {
   let cursor = 0;
   for (const found of findWords(text, matchWords(dictionary))) {
     const term = dictionary.terms.get(found.word);
-    // 用語 → やめた言い方 → 文書の別名の順に引く。文書の別名と同じやめた言い方は、関連文書を出さずにやめた言い方にする
+    // 用語 → やめた言い方 → 文書の別名の順に参照する。文書の別名と同じやめた言い方は、関連文書を出さずにやめた言い方にする
     const replacement =
       term === undefined ? dictionary.avoided.get(found.word) : undefined;
     let html: string;
@@ -74,7 +74,7 @@ export function termSegments(options: {
         },
       });
     } else if (term?.alias !== undefined) {
-      // エイリアスは、文書の別名と同じ語でも関連文書を出さず、エイリアスごとに最初の 1 回だけ下線を付ける
+      // エイリアスは、文書の別名と同じ単語でも関連文書を出さず、エイリアスごとに最初の 1 回だけ下線を付ける
       if (seen.terms.has(term.id)) {
         continue;
       }
@@ -124,7 +124,7 @@ export function termSegments(options: {
   return segments;
 }
 
-/** `glossary` か `backlinks` がオンなら、本文の文字を辞書の語と照合し、当たった語を語とツールチップの組に置き換える */
+/** `glossary` か `backlinks` がオンなら、本文の文字を辞書の単語と照合し、該当した単語を単語とツールチップの組に置き換える */
 export function termsRule(state: StateCore): void {
   const env = envOf(state);
   if (env.features.glossary !== true && env.features.backlinks !== true) {
@@ -142,14 +142,14 @@ export function termsRule(state: StateCore): void {
     return;
   }
   const ownPath = env.index?.docs.find((doc) => doc.id === env.docId)?.path;
-  // 同じ用語・文書は、節ごとに最初に出たところだけに下線を付ける
+  // 同じ用語・文書は、セクションごとに最初に出たところだけに下線を付ける
   let seenSection = -1;
   let seen: SeenTerms = {
     terms: new Set(),
     docs: new Set(),
     avoided: new Set(),
   };
-  // 埋め込んだ HTML が先に使った番号の続きから振る
+  // 埋め込んだ HTML が先に使用した番号の続きから振る
   let tipNumber = env.termTipCount ?? 0;
   const nextTipId = (): string => {
     tipNumber += 1;

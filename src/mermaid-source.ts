@@ -2,13 +2,13 @@
 export type MermaidSource = {
   /** front matter の `title`、無ければ `accTitle` の値。どちらも無ければ持たない */
   title?: string | undefined;
-  /** mermaid の `render` に渡すソース */
+  /** mermaid の `render` に指定するソース */
   body: string;
-  /** 図の種類の行の最初の語。無ければ空 */
+  /** 図の種類の行の最初の単語。無ければ空 */
   kind: string;
 };
 
-/** タイトルが無いときに図の枠のタイトルにする、図の種類の行の最初の語から引く名前 */
+/** タイトルが無いときに図の枠のタイトルにする、図の種類の行の最初の単語から参照する名前 */
 export const MERMAID_KIND_NAMES: Record<string, string> = {
   flowchart: "フローチャート",
   graph: "フローチャート",
@@ -106,14 +106,14 @@ const TITLE_LINE = /^title:[ \t]*(.*)$/m;
 /** `accTitle:` の行 */
 const ACC_TITLE_LINE = /^[ \t]*accTitle[ \t]*:[ \t]*(.+)$/m;
 
-/** 前後の引用符を外す */
+/** 前後の引用符を削除する */
 const unquote = (value: string): string => {
   const trimmed = value.trim();
   const quoted = /^(["'])(.*)\1$/.exec(trimmed);
   return quoted ? (quoted[2] ?? "") : trimmed;
 };
 
-/** ソースの先頭の front matter の `title:` を取り出してその行を除き、無ければ `accTitle:` の値を取る。図の種類の行の最初の語を `kind` にする */
+/** ソースの先頭の front matter の `title:` を取り出してその行を除き、無ければ `accTitle:` の値を取る。図の種類の行の最初の単語を `kind` にする */
 export const splitMermaidTitle = (source: string): MermaidSource => {
   const front = FRONT_MATTER.exec(source);
   let title: string | undefined;
@@ -143,7 +143,7 @@ export const splitMermaidTitle = (source: string): MermaidSource => {
   return title === undefined ? { body, kind } : { title, body, kind };
 };
 
-/** 図の種類の行の最初の語から名前を引く。表に無い語は `図` */
+/** 図の種類の行の最初の単語から名前を参照する。表に無い単語は `図` */
 export const mermaidKindName = (kind: string): string =>
   Object.hasOwn(MERMAID_KIND_NAMES, kind)
     ? (MERMAID_KIND_NAMES[kind] ?? "図")

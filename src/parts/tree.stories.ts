@@ -5,7 +5,7 @@ const meta = { title: "Parts/FileTree" } satisfies Meta<
 >;
 export default meta;
 
-/** ストーリー: 描画の口（`parameters.server.id`）の部品を `args` で描く */
+/** ストーリー: 描画のインターフェース（`parameters.server.id`）の部品を `args` で描く */
 type Story = StoryObj<Record<string, unknown>>;
 
 export const Basic: Story = {
@@ -105,9 +105,9 @@ export const LongName: Story = {
   parameters: { server: { id: "tree" } },
   args: {
     nodes:
-      '[{"name":"src/","children":[{"name":"a-very-long-file-name-that-does-not-fit-in-the-width-of-the-document.ts","note":"とても長い注釈で、文書の幅を超えて何行かに折り返すときに、名前と注釈の列がずれないことを確かめる"}]}]',
+      '[{"name":"src/","children":[{"name":"a-very-long-file-name-that-does-not-fit-in-the-width-of-the-document.ts","note":"とても長い注釈で、文書の幅を超えて何行かに折り返すときに、名前と注釈の列がずれないことを確認する"}]}]',
     source:
-      "src/\n└── a-very-long-file-name-that-does-not-fit-in-the-width-of-the-document.ts # とても長い注釈で、文書の幅を超えて何行かに折り返すときに、名前と注釈の列がずれないことを確かめる",
+      "src/\n└── a-very-long-file-name-that-does-not-fit-in-the-width-of-the-document.ts # とても長い注釈で、文書の幅を超えて何行かに折り返すときに、名前と注釈の列がずれないことを確認する",
     open: "all",
     interactive: true,
   },

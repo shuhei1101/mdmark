@@ -4,23 +4,23 @@ import { renderSyntaxWarning } from "../../parts/syntax-warning.ts";
 import type { Mark } from "../marks.ts";
 import { envOf, ownBlock } from "./tokens.ts";
 
-/** 集める警告の種類。`unknown_mark_arg` は画面に出さず、点検だけが返す */
+/** 集める警告の種類。`unknown_mark_arg` は画面に出さず、点検だけが返却する */
 export type WarningKind =
   | "diagram_invalid"
   | "syntax_warning"
   | "unknown_mark_arg";
 
-/** 記法の印の知らない種類・`+機能`・`-機能`・キー・指定の単語 1 つと、その印で使えるもの */
+/** 記法のマーカーの知らない種類・`+機能`・`-機能`・キー・指定の単語 1 つと、そのマーカーで使用できるもの */
 export type SkippedArg = {
-  /** 書いた引数の文字。キーは `{キー}=` */
+  /** 記載した引数の文字。キーは `{キー}=` */
   arg: string;
-  /** その印で使える種類・機能・キー・指定を行内のコードにして `・` でつないだ文字 */
+  /** そのマーカーで使用できる種類・機能・キー・指定を行内のコードにして `・` でつないだ文字 */
   usable: string;
 };
 
-/** 書き方の警告に渡す値 */
+/** 記載の警告に指定する値 */
 export type SyntaxWarning = {
-  /** 読めない指定を書いた印の文字 */
+  /** 読み込めない指定を記載したマーカーの文字 */
   mark?: string;
   /** 本文 */
   message: string;
@@ -75,7 +75,7 @@ function makeWarningToken(
   return token;
 }
 
-/** 書き方の警告の HTML に印を掛けて `html_block` にし、`index` の位置に差し込む。`source` は警告の元になったマーカーのトークン（範囲なら開きのマーカー）で、その行を警告の場所にする */
+/** 記載の警告の HTML にマーカーを掛けて `html_block` にし、`index` の位置に差し込む。`source` は警告の元になったマーカーのトークン（範囲なら開きのマーカー）で、その行を警告の場所にする */
 export function pushWarning(
   state: StateCore,
   index: number,
@@ -85,7 +85,7 @@ export function pushWarning(
   state.tokens.splice(index, 0, makeWarningToken(state, warning, source));
 }
 
-/** 書き方の警告の `html_block` を作る（差し込む位置を呼ぶ側が決めるとき）。`source` は `pushWarning` と同じ */
+/** 記載の警告の `html_block` を作る（差し込む位置を呼ぶ側が決めるとき）。`source` は `pushWarning` と同じ */
 export function warningBlock(
   state: StateCore,
   warning: SyntaxWarning,
@@ -94,7 +94,7 @@ export function warningBlock(
   return makeWarningToken(state, warning, source);
 }
 
-/** 集めた書き方の警告 1 つ（元の行番号は 1 から） */
+/** 集めた記載の警告 1 つ（元の行番号は 1 から） */
 export type CollectedWarning = {
   line: number;
   kind: WarningKind;
@@ -143,7 +143,7 @@ export function collectWarningsRule(state: StateCore): void {
   envOf(state).warnings = warnings;
 }
 
-/** 読み飛ばした引数 1 つにつき、画面に何も出さない `html_block` を作り、`meta.warning` に `unknown_mark_arg` の文と印の行を入れて書いた順に返す（差し込む位置を呼ぶ側が決めるとき） */
+/** スキップした引数 1 つにつき、画面に何も出さない `html_block` を作り、`meta.warning` に `unknown_mark_arg` の文とマーカーの行を入れて記載した順に返却する（差し込む位置を呼ぶ側が決めるとき） */
 export function skippedArgBlocks(
   state: StateCore,
   options: { mark: string; skipped: SkippedArg[] },
@@ -155,7 +155,7 @@ export function skippedArgBlocks(
     token.block = true;
     const meta: WarningMeta = {
       kind: "unknown_mark_arg",
-      message: `${options.mark} の ${skipped.arg} はこの版の mdmark が知らない指定で、描くときは読み飛ばしています。使えるのは ${skipped.usable.replaceAll("`", "")} です。書き誤りなら名前を直し、新しい版の指定なら mdmark の版を上げてください。`,
+      message: `${options.mark} の ${skipped.arg} はこのバージョンの mdmark が知らない指定で、描くときはスキップしています。使用できるのは ${skipped.usable.replaceAll("`", "")} です。誤記なら名前を修正し、新しいバージョンの指定なら mdmark のバージョンを上げてください。`,
       ...(line === undefined ? {} : { line }),
     };
     token.meta = { warning: meta };
@@ -173,10 +173,10 @@ export function pushSkippedArgs(
   state.tokens.splice(index, 0, ...skippedArgBlocks(state, options, source));
 }
 
-/** 範囲の印に閉じの印が無いときの警告 */
+/** 範囲のマーカーに閉じのマーカーが無いときの警告 */
 export function unclosedWarning(mark: Mark): SyntaxWarning {
   return {
     mark: mark.raw,
-    message: `の閉じの印 \`<!-- /${mark.name} -->\` がありません。範囲の終わりに閉じの印を書いてください。印から文書の終わりまでを範囲にして描いています。`,
+    message: `の閉じのマーカー \`<!-- /${mark.name} -->\` がありません。範囲の終わりに閉じのマーカーを記載してください。マーカーから文書の終わりまでを範囲にして描いています。`,
   };
 }

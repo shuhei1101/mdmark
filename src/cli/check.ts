@@ -65,7 +65,7 @@ export type CheckIssue = {
     | "include_circular"
     | MdmarkAliasProblem["kind"]
     | MdmarkIndexIssue["kind"];
-  /** 内容と直し方の 1 文 */
+  /** 内容と修正方法の 1 文 */
   message: string;
 };
 
@@ -114,7 +114,7 @@ async function checkDocumentFiles(loaded: LoadedConfig): Promise<CheckIssue[]> {
   return issues;
 }
 
-/** 設定が指すファイル（`theme`・`extensions`・`assets.root`）が在るかを確かめる */
+/** 設定が指すファイル（`theme`・`extensions`・`assets.root`）が在るかを確認する */
 async function checkReferencedFiles(
   loaded: LoadedConfig,
   file: string,
@@ -129,7 +129,7 @@ async function checkReferencedFiles(
       file,
       where: "assets.root",
       kind: "schema",
-      message: `\`assets.root\` のフォルダ \`${assets.root}\` が見つかりません。パスを直すかフォルダを置いてください。`,
+      message: `\`assets.root\` のフォルダ \`${assets.root}\` が見つかりません。パスを修正するかフォルダを配置してください。`,
     });
   }
   if (theme !== undefined && !(await exists(resolve(loaded.dir, theme)))) {
@@ -137,7 +137,7 @@ async function checkReferencedFiles(
       file,
       where: "theme",
       kind: "schema",
-      message: `\`theme\` の \`${theme}\` が見つかりません。パスを直すか CSS を置いてください。`,
+      message: `\`theme\` の \`${theme}\` が見つかりません。パスを修正するか CSS を配置してください。`,
     });
   }
   for (const [position, path] of (extensions ?? []).entries()) {
@@ -146,14 +146,14 @@ async function checkReferencedFiles(
         file,
         where: `extensions[${position}]`,
         kind: "schema",
-        message: `\`extensions[${position}]\` の \`${path}\` が見つかりません。パスを直すか拡張を置いてください。`,
+        message: `\`extensions[${position}]\` の \`${path}\` が見つかりません。パスを修正するか拡張を配置してください。`,
       });
     }
   }
   return issues;
 }
 
-/** `build` の対象の文書が 0 件でないことと、`build.glossary`・`build.entry` がまとめる文書に当たることを確かめる */
+/** `build` の対象の文書が 0 件でないことと、`build.glossary`・`build.entry` がまとめる文書に該当することを確認する */
 async function checkBuild(
   loaded: LoadedConfig,
   file: string,
@@ -171,7 +171,7 @@ async function checkBuild(
         file,
         where: `build.glossary[${position}]`,
         kind: "schema",
-        message: `\`build.glossary[${position}]\` の \`${path}\` がまとめる文書に当たりません。\`build.include\` に当たる文書のパスにしてください。`,
+        message: `\`build.glossary[${position}]\` の \`${path}\` がまとめる文書に該当しません。\`build.include\` に該当する文書のパスにしてください。`,
       });
     }
   }
@@ -180,7 +180,7 @@ async function checkBuild(
       file,
       where: "build.entry",
       kind: "schema",
-      message: `\`build.entry\` の \`${build.entry}\` がまとめる文書に当たりません。\`build.include\` に当たる文書のパスにしてください。`,
+      message: `\`build.entry\` の \`${build.entry}\` がまとめる文書に該当しません。\`build.include\` に該当する文書のパスにしてください。`,
     });
   }
   const noDocuments: CheckIssue[] =
@@ -191,14 +191,14 @@ async function checkBuild(
             where: "build.include",
             kind: "no_documents",
             message:
-              "`build.include` に当たる文書がありません。`build.include` を直してください。",
+              "`build.include` に該当する文書がありません。`build.include` を修正してください。",
           },
         ]
       : [];
   return { schema, noDocuments };
 }
 
-/** 索引と文書のずれ（`checkIndex`）を、設定ファイルのフォルダからの相対パスのずれにして返す。索引を読めないときは索引を指す `schema` のずれにする */
+/** 索引と文書のずれ（`checkIndex`）を、設定ファイルのフォルダからの相対パスのずれにして返却する。索引を読み込めないときは索引を指す `schema` のずれにする */
 async function checkIndexFile(
   loaded: LoadedConfig,
   base: string | undefined,
@@ -226,7 +226,7 @@ async function checkIndexFile(
     return [];
   }
   const indexDirFromConfig = toPosix(relative(loaded.dir, read.indexDir));
-  // 比べる基準を渡したときだけ、基準から変わった文書を `change_together` の直し忘れの検査に渡す
+  // 比べる基準を指定したときだけ、基準から変わった文書を `change_together` の修正漏れの検査に指定する
   const changedPaths =
     base === undefined
       ? undefined
@@ -242,7 +242,7 @@ async function checkIndexFile(
     ...(changedPaths !== undefined && { changedPaths }),
   }).map((issue) => ({
     ...issue,
-    // 索引のずれは設定ファイルのフォルダからの相対パスで出ているので、文書のずれだけ索引のフォルダの分を足す
+    // 索引のずれは設定ファイルのフォルダからの相対パスで出ているので、文書のずれだけ索引のフォルダの分を追加する
     file:
       issue.file === read.indexFile || indexDirFromConfig === ""
         ? issue.file
@@ -250,13 +250,13 @@ async function checkIndexFile(
   }));
 }
 
-/** 束ねたコードを `data:` の URL にして `import()` し、モジュールの名前空間を返す */
+/** まとめたコードを `data:` の URL にして `import()` し、モジュールの名前空間を返却する */
 export async function importBundledCode(code: string): Promise<unknown> {
   const url = `data:text/javascript;base64,${Buffer.from(code).toString("base64")}`;
   return import(url);
 }
 
-/** 設定の `extensions` の拡張を束ねて Node で読み込み、既定の書き出しの `directive` を集める。束ねられない・読み込めない・`directive` が印の名前でない拡張は `schema` のずれにする */
+/** 設定の `extensions` の拡張をまとめて Node で読み込み、既定の書き出しの `directive` を集める。まとめられない・読み込めない・`directive` がマーカーの名前でない拡張は `schema` のずれにする */
 export async function loadExtensionDirectives(
   loaded: LoadedConfig,
   file: string,
@@ -276,7 +276,7 @@ export async function loadExtensionDirectives(
         file,
         where,
         kind: "schema",
-        message: `\`${where}\` の \`${path}\` を束ねられません（${bundled.error}）。拡張のモジュールを直してください。`,
+        message: `\`${where}\` の \`${path}\` をまとめられません（${bundled.error}）。拡張のモジュールを修正してください。`,
       });
       continue;
     }
@@ -290,7 +290,7 @@ export async function loadExtensionDirectives(
         file,
         where,
         kind: "schema",
-        message: `\`${where}\` の \`${path}\` を読み込めません（${reason}）。モジュールの読み込みの時点でブラウザの API を使う処理は、\`load\` の中へ移してください。`,
+        message: `\`${where}\` の \`${path}\` を読み込めません（${reason}）。モジュールの読み込みの時点でブラウザの API を使用する処理は、\`load\` の中へ移してください。`,
       });
       continue;
     }
@@ -304,14 +304,14 @@ export async function loadExtensionDirectives(
         file,
         where,
         kind: "schema",
-        message: `\`${where}\` の \`${path}\` の既定の書き出しに \`directive\` がありません。英小文字で始まる印の名前を \`directive\` に書いてください。`,
+        message: `\`${where}\` の \`${path}\` の既定の書き出しに \`directive\` がありません。英小文字で始まるマーカーの名前を \`directive\` に記載してください。`,
       });
     }
   }
   return { directives, issues };
 }
 
-/** 設定の `colorTheme` が選べるテーマの名前に無いときの、`unknown_color_theme` のずれを返す */
+/** 設定の `colorTheme` が選べるテーマの名前に無いときの、`unknown_color_theme` のずれを返却する */
 function checkColorTheme(config: CliConfig, file: string): CheckIssue[] {
   const name = config.colorTheme;
   if (name === undefined || COLOR_THEMES.some((theme) => theme === name)) {
@@ -327,7 +327,7 @@ function checkColorTheme(config: CliConfig, file: string): CheckIssue[] {
   ];
 }
 
-/** 設定の `colorScheme` が書ける値に無いときの、`unknown_color_scheme` のずれを返す */
+/** 設定の `colorScheme` が記載できる値に無いときの、`unknown_color_scheme` のずれを返却する */
 function checkColorScheme(config: CliConfig, file: string): CheckIssue[] {
   const value = config.colorScheme;
   if (value === undefined || COLOR_SCHEMES.some((scheme) => scheme === value)) {
@@ -343,7 +343,7 @@ function checkColorScheme(config: CliConfig, file: string): CheckIssue[] {
   ];
 }
 
-/** 索引の点検に渡す文書と `build` の対象の文書を合わせ、設定ファイルのフォルダからの相対パスの順に、重なりを除いて読む */
+/** 索引の点検に指定する文書と `build` の対象の文書を合わせ、設定ファイルのフォルダからの相対パスの順に、重なりを除いて読み込む */
 export async function collectCheckDocuments(
   loaded: LoadedConfig,
 ): Promise<Array<{ path: string; markdown: string }>> {
@@ -357,7 +357,7 @@ export async function collectCheckDocuments(
       }
     }
   } catch (error) {
-    // 索引を読めないときのずれは `checkIndexFile` が出す
+    // 索引を読み込めないときのずれは `checkIndexFile` が出す
     if (!(error instanceof CliError)) {
       throw error;
     }
@@ -375,7 +375,7 @@ export async function collectCheckDocuments(
     .sort((a, b) => (a.path < b.path ? -1 : a.path > b.path ? 1 : 0));
 }
 
-/** 文書ごとに拾った印のうち、知っている印に当たらないものを 1 つにつき 1 件の `unknown_mark` のずれにする */
+/** 文書ごとに取得したマーカーのうち、知っているマーカーに該当しないものを 1 つにつき 1 件の `unknown_mark` のずれにする */
 export function checkUnknownMarks(
   documents: Array<{ path: string; markdown: string }>,
   config: CliConfig,
@@ -396,7 +396,7 @@ export function checkUnknownMarks(
           file: document.path,
           where: String(mark.line),
           kind: "unknown_mark",
-          message: `印 \`${mark.name}\` は知らない印で、描くときに取り除かれます。名前を直すか、拡張・\`libraries\`・\`check.ignore\` に足してください。`,
+          message: `マーカー \`${mark.name}\` は知らないマーカーで、描くときに取り除かれます。名前を修正するか、拡張・\`libraries\`・\`check.ignore\` に追加してください。`,
         });
       }
     }
@@ -404,7 +404,7 @@ export function checkUnknownMarks(
   return issues;
 }
 
-/** フロー図の配置のずれ 1 件の内容（図の題・対象の `id`・修正方法の 1 文） */
+/** フロー図の配置のずれ 1 件の内容（図のタイトル・対象の `id`・修正方法の 1 文） */
 function flowLayoutMessage(title: string, issue: FlowLayoutIssue): string {
   const [first = "", second = ""] = issue.ids;
   switch (issue.kind) {
@@ -419,7 +419,7 @@ function flowLayoutMessage(title: string, issue: FlowLayoutIssue): string {
   }
 }
 
-/** 文書ごとに図の部品の範囲を読み、読めない定義を 1 件の `diagram_invalid`、読めたフロー図の定義を `checkFlowLayout` のずれにする。並びは文書の順、同じ文書の中は行の順 */
+/** 文書ごとに図の部品の範囲を読み込み、読み込めない定義を 1 件の `diagram_invalid`、読み込めたフロー図の定義を `checkFlowLayout` のずれにする。並びは文書の順、同じ文書の中は行の順 */
 export function checkDiagrams(
   documents: Array<{ path: string; markdown: string }>,
 ): CheckIssue[] {
@@ -459,7 +459,7 @@ export function checkDiagrams(
   return issues;
 }
 
-/** 点検する文書ごとに取り込み先を集め、循環を `include_circular`、それ以外を `include_target_missing` のずれにして、マーカーを書いたファイルと行の順に返す */
+/** 点検する文書ごとに取り込み先を集め、循環を `include_circular`、それ以外を `include_target_missing` のずれにして、マーカーを記載したファイルと行の順に返却する */
 export async function checkIncludes(options: {
   /** `collectCheckDocuments` の文書 */
   documents: Array<{ path: string; markdown: string }>;
@@ -501,7 +501,7 @@ export async function checkIncludes(options: {
     .map(({ line: _line, ...issue }) => issue);
 }
 
-/** 端末の設定と上のフォルダの設定ファイルを重ねて読み、重ねた設定ファイルのそれぞれと端末の設定の形・設定が指すファイル・`build` の対象・`checkIndex`・文書の本文の知らない印・取り込み先・図の部品の定義のずれをこの並びで返す。`unknownMarks` が `false` なら、拡張を読み込まず、知らない印を点検しない。`base` があり設定に `index` があれば、`change_together` の直し忘れも確かめる。`explicit` のときは `path` と端末の設定だけを重ねる */
+/** 端末の設定と上のフォルダの設定ファイルを重ねて読み込み、重ねた設定ファイルのそれぞれと端末の設定の構造・設定が指すファイル・`build` の対象・`checkIndex`・文書の本文の知らないマーカー・取り込み先・図の部品の定義のずれをこの並びで返却する。`unknownMarks` が `false` なら、拡張を読み込まず、知らないマーカーを点検しない。`base` があり設定に `index` があれば、`change_together` の修正漏れも確認する。`explicit` のときは `path` と端末の設定だけを重ねる */
 export async function collectCheckIssues(
   path: string,
   options: {
@@ -520,7 +520,7 @@ export async function collectCheckIssues(
   if (layered.unreadable) {
     const { path: target, line, message } = layered.unreadable;
     throw new CliError(
-      `${shown(target)} の ${line} 行目を YAML として読めません（${message}）。字下げと書き方を直してください。`,
+      `${shown(target)} の ${line} 行目を YAML として読み込めません（${message}）。字下げと記載方法を修正してください。`,
     );
   }
   const shapeIssues = layered.issues.map((issue) => ({
@@ -565,7 +565,7 @@ export async function collectCheckIssues(
   ];
 }
 
-/** `--text`・`--file`・`--key`・`--base` の組を確かめ、一緒に渡せない引数か足りない引数があれば `CliError` を投げる */
+/** `--text`・`--file`・`--key`・`--base` の組を確認し、一緒に指定できない引数か足りない引数があれば `CliError` を投げる */
 export function validateSourceArgs(options: {
   text?: string | undefined;
   file?: string | undefined;
@@ -581,7 +581,7 @@ export function validateSourceArgs(options: {
     ];
     if (others.length > 0) {
       throw new CliError(
-        `--text は ${others.join("・")} と一緒に渡せません。Markdown の文字列は --text だけで、YAML のキーの値は --file と --key で点検してください。`,
+        `--text は ${others.join("・")} と一緒に指定できません。Markdown の文字列は --text だけで、YAML のキーの値は --file と --key で点検してください。`,
       );
     }
     return;
@@ -591,17 +591,17 @@ export function validateSourceArgs(options: {
   }
   if (file === undefined || key === undefined) {
     throw new CliError(
-      "--file と --key は一緒に渡してください（例 --file records.yaml --key items[0].body）。",
+      "--file と --key は一緒に指定してください（例 --file records.yaml --key items[0].body）。",
     );
   }
   if (base !== undefined) {
     throw new CliError(
-      "--file は --base と一緒に渡せません。--base は設定と索引の点検だけで使えます。",
+      "--file は --base と一緒に指定できません。--base は設定と索引の点検だけで使用できます。",
     );
   }
 }
 
-/** 設定の形・設定が指すファイル・`build` の対象・`checkIndex`・文書の本文の知らない印のずれを集め、`{ファイル}:{場所}: {種類}: {内容}` の行と `ずれ {件数} 件` を出す。`text` か `file` を渡したときは、渡した Markdown の記法だけを点検する */
+/** 設定の構造・設定が指すファイル・`build` の対象・`checkIndex`・文書の本文の知らないマーカーのずれを集め、`{ファイル}:{場所}: {種類}: {内容}` の行と `ずれ {件数} 件` を出す。`text` か `file` を指定したときは、指定した Markdown の記法だけを点検する */
 export async function runCheck(
   options: {
     config?: string | undefined;

@@ -48,9 +48,9 @@ export type MdmarkDiagramNode = {
   tag?: string;
   /** 補足 */
   sub?: string;
-  /** 入力・処理・出力。持つノードに印を付ける */
+  /** 入力・処理・出力。持つノードにマーカーを付ける */
   io?: MdmarkDiagramIo;
-  /** ノードの右上の印に出す文。`io` と一緒に持つと、入力・処理・出力の後に出す */
+  /** ノードの右上のマーカーに出す文。`io` と一緒に持つと、入力・処理・出力の後に出す */
   hint?: string;
   /** リンク先。`http`・`https`・`mailto` の URL か相対パス */
   href?: string;
@@ -161,11 +161,11 @@ export type MdmarkChartSeries = {
   points: number[] | Array<[number, number]> | Array<[number, number, number]>;
   /** `combo` の系列の描き方。省くと `line` */
   as?: "line" | "bar";
-  /** `combo` の系列が使う縦の軸。省くと `y` */
+  /** `combo` の系列が使用する縦の軸。省くと `y` */
   axis?: "y" | "y2";
 };
 
-/** 縦の軸。`min`・`max`・`step` は 3 つとも書くか 3 つとも省き、省くとデータから切る */
+/** 縦の軸。`min`・`max`・`step` は 3 つとも記載するか 3 つとも省き、省くとデータから切る */
 export type MdmarkChartYAxis = {
   label: string;
   min?: number;
@@ -201,7 +201,7 @@ export type MdmarkChartDefinition = {
 
 /** 操作できる部品の定義 */
 export type MdmarkParamDefinition = {
-  /** 部品の題 */
+  /** 部品のタイトル */
   title: string;
   /** スライダー。`value` が既定の値 */
   knob: {
@@ -212,7 +212,7 @@ export type MdmarkParamDefinition = {
     step: number;
     value: number;
   };
-  /** グラフの題と軸（折れ線） */
+  /** グラフのタイトルと軸（折れ線） */
   chart: {
     title: string;
     scope: string;
@@ -308,7 +308,7 @@ export type MdmarkErDefinition = {
   relations: MdmarkErRelation[];
 };
 
-/** 読めた定義の種類 */
+/** 読み込めた定義の種類 */
 export type MdmarkDefinition =
   | MdmarkFlowDefinition
   | MdmarkSequenceDefinition
@@ -316,20 +316,20 @@ export type MdmarkDefinition =
   | MdmarkParamDefinition
   | MdmarkErDefinition;
 
-/** 定義を読んだ結果 */
+/** 定義を読み込んだ結果 */
 export type DefinitionResult = {
-  /** 読めたか */
+  /** 読み込めたか */
   ok: boolean;
-  /** 読めた定義 */
+  /** 読み込めた定義 */
   definition?: MdmarkDefinition | undefined;
-  /** 読めない箇所と直し方の文。読めたときは空 */
+  /** 読み込めない箇所と修正方法の文。読み込めたときは空 */
   problems: string[];
 };
 
-/** 図の部品の印の名前 */
+/** 図の部品のマーカーの名前 */
 export type DiagramDirective = "flow" | "sequence" | "chart" | "param" | "er";
 
-/** 図の部品の印の名前と、書き方の警告に出す図の種類の名前・呼び名 */
+/** 図の部品のマーカーの名前と、記載の警告に出す図の種類の名前・呼び名 */
 export const DIAGRAM_DIRECTIVES: Readonly<
   Record<DiagramDirective, { name: string; call: string }>
 > = {
@@ -340,7 +340,7 @@ export const DIAGRAM_DIRECTIVES: Readonly<
   er: { name: "ER 図", call: "この ER 図" },
 };
 
-/** ノードの種類の並び（書き方の警告にも出す） */
+/** ノードの種類の並び（記載の警告にも出す） */
 const NODE_KINDS: readonly MdmarkDiagramKind[] = [
   "llm",
   "dm",
@@ -354,7 +354,7 @@ const NODE_KINDS: readonly MdmarkDiagramKind[] = [
   "result",
 ];
 
-/** 層に使える種類 */
+/** 層に使用できる種類 */
 const LANE_KINDS = ["llm", "mcp", "data"];
 
 /** 線の種類の並び */
@@ -391,7 +391,7 @@ const ITEM_CHART_TYPES: readonly string[] = ["pie", "donut"];
 /** 横の軸が数値のグラフの種類 */
 const NUMERIC_X_CHART_TYPES: readonly string[] = ["scatter", "bubble"];
 
-/** 横の目盛りの数の下限（書いていない種類は 1） */
+/** 横の目盛りの数の下限（記載していない種類は 1） */
 const MIN_TICKS: Readonly<Record<string, number>> = {
   line: 2,
   area: 2,
@@ -399,11 +399,11 @@ const MIN_TICKS: Readonly<Record<string, number>> = {
   radar: 3,
 };
 
-/** 小数のスライダーの値を揃える桁 */
+/** 小数のスライダーの値を統一する桁 */
 const KNOB_DIGITS = 10;
 
-/** JSON として読めないことを書き方の警告の文に入れる頭 */
-const JSON_PROBLEM_HEAD = "JSON として読めません";
+/** JSON として読み込めないことを記載の警告の文に入れる頭 */
+const JSON_PROBLEM_HEAD = "JSON として読み込めません";
 
 /** 閉じていない括弧と文字列から、足りない記号を閉じる順に並べる */
 function missingSymbols(text: string): string {
@@ -430,14 +430,14 @@ function missingSymbols(text: string): string {
   return `${inString ? '"' : ""}${stack.reverse().join("")}`;
 }
 
-/** `JSON.parse` の例外の文から、読めなかった位置を取り出す。位置が無ければ終わりを返す */
+/** `JSON.parse` の例外の文から、読み込めなかった位置を取り出す。位置が無ければ終わりを返却する */
 function errorPosition(error: unknown, length: number): number {
   const message = error instanceof Error ? error.message : "";
   const position = /position (\d+)/.exec(message)?.[1];
   return position === undefined ? length : Math.min(Number(position), length);
 }
 
-/** 定義の JSON を読む。読めないときは、読めた最後の行・その行の文字・足りない記号を返す */
+/** 定義の JSON を読み込む。読み込めないときは、読み込めた最後の行・その行の文字・足りない記号を返却する */
 export function parseDefinitionJson(
   text: string,
 ):
@@ -447,7 +447,7 @@ export function parseDefinitionJson(
     return { ok: true, value: JSON.parse(text) as unknown };
   } catch (error) {
     const position = errorPosition(error, text.length);
-    // 読めた部分は、読めなかった位置の手前の空白を除いた終わりまで
+    // 読み込めた部分は、読み込めなかった位置の手前の空白を除いた終わりまで
     const readable = text.slice(0, position).trimEnd();
     const lines = readable.split("\n");
     const atEnd = text.slice(position).trim() === "";
@@ -481,30 +481,30 @@ function isType(value: unknown, type: ValueType): boolean {
   }
 }
 
-/** 定義を確かめる間に集める読めない箇所 */
+/** 定義を確認する間に集める読み込めない箇所 */
 class Problems {
   readonly list: string[] = [];
 
-  /** 読めない箇所を足す */
+  /** 読み込めない箇所を追加する */
   add(message: string): void {
     this.list.push(message);
   }
 
-  /** `value` が型に合うかを確かめ、合わなければ読めない箇所を足す。合うときだけ `true` */
+  /** `value` が型に合うかを確認し、合わなければ読み込めない箇所を追加する。合うときだけ `true` */
   expect(value: unknown, type: ValueType, path: string): boolean {
     if (isType(value, type)) {
       return true;
     }
     this.add(
       value === undefined
-        ? `${path} がありません。${type}で書いてください`
-        : `${path} が${type}ではありません。${type}で書いてください`,
+        ? `${path} がありません。${type}で記載してください`
+        : `${path} が${type}ではありません。${type}で記載してください`,
     );
     return false;
   }
 }
 
-/** 値をオブジェクトとして取り出す。オブジェクトでなければ読めない箇所を足して `undefined` を返す */
+/** 値をオブジェクトとして取り出す。オブジェクトでなければ読み込めない箇所を追加して `undefined` を返却する */
 function asObject(
   value: unknown,
   path: string,
@@ -515,7 +515,7 @@ function asObject(
     : undefined;
 }
 
-/** 値を配列として取り出す。配列でなければ読めない箇所を足して `undefined` を返す */
+/** 値を配列として取り出す。配列でなければ読み込めない箇所を追加して `undefined` を返却する */
 function asArray(
   value: unknown,
   path: string,
@@ -526,14 +526,14 @@ function asArray(
     : undefined;
 }
 
-/** 題名・範囲・更新日を確かめる */
+/** 題名・範囲・更新日を確認する */
 function checkHead(source: Record<string, unknown>, problems: Problems): void {
   for (const key of ["title", "scope", "updated"]) {
     problems.expect(source[key], "文字", key);
   }
 }
 
-/** 文字の項目を確かめる（省けるものは、あるときだけ） */
+/** 文字の項目を確認する（省けるものは、あるときだけ） */
 function checkOptionalText(
   value: unknown,
   path: string,
@@ -544,18 +544,18 @@ function checkOptionalText(
   }
 }
 
-/** ノードの種類を確かめる */
+/** ノードの種類を確認する */
 function checkKind(value: unknown, label: string, problems: Problems): void {
   if (typeof value !== "string") {
-    problems.add(`${label}の種類（kind）がありません。文字で書いてください`);
+    problems.add(`${label}の種類（kind）がありません。文字で記載してください`);
   } else if (!(NODE_KINDS as readonly string[]).includes(value)) {
     problems.add(
-      `${label}の種類 ${value} は使えません。使える種類は ${NODE_KINDS.join("・")} です`,
+      `${label}の種類 ${value} は使用できません。使用できる種類は ${NODE_KINDS.join("・")} です`,
     );
   }
 }
 
-/** 値の並びで重なった `id` を読めない箇所にする */
+/** 値の並びで重なった `id` を読み込めない箇所にする */
 function checkDuplicates(
   ids: string[],
   noun: string,
@@ -575,7 +575,7 @@ function checkDuplicates(
   }
 }
 
-/** ノード 1 つを確かめて、`id` を返す */
+/** ノード 1 つを確認して、`id` を返却する */
 function checkNode(
   value: unknown,
   index: number,
@@ -612,7 +612,7 @@ function checkNode(
   return id;
 }
 
-/** 線の点が縦横だけの折れ線かを確かめる */
+/** 線の点が縦横だけの折れ線かを確認する */
 function checkPoints(value: unknown, label: string, problems: Problems): void {
   const points = asArray(value, `${label}の points`, problems);
   if (!points) {
@@ -620,7 +620,7 @@ function checkPoints(value: unknown, label: string, problems: Problems): void {
   }
   if (points.length < 2) {
     problems.add(
-      `${label}の points が ${points.length} つです。2 つ以上の点で書いてください`,
+      `${label}の points が ${points.length} つです。2 つ以上の点で記載してください`,
     );
     return;
   }
@@ -635,7 +635,7 @@ function checkPoints(value: unknown, label: string, problems: Problems): void {
       valid.push([point[0] as number, point[1] as number]);
     } else {
       problems.add(
-        `${label}の points に [x, y] でない点があります。[x, y] の数 2 つで書いてください`,
+        `${label}の points に [x, y] でない点があります。[x, y] の数 2 つで記載してください`,
       );
       return;
     }
@@ -645,14 +645,14 @@ function checkPoints(value: unknown, label: string, problems: Problems): void {
     const to = valid[index];
     if (from && to && from[0] !== to[0] && from[1] !== to[1]) {
       problems.add(
-        `${label}の ${index} つ目から ${index + 1} つ目の点が斜めです。縦か横だけの折れ線で書いてください`,
+        `${label}の ${index} つ目から ${index + 1} つ目の点が斜めです。縦か横だけの折れ線で記載してください`,
       );
       return;
     }
   }
 }
 
-/** 線 1 本を確かめて、`id` を返す */
+/** 線 1 本を確認して、`id` を返却する */
 function checkWire(
   value: unknown,
   index: number,
@@ -669,21 +669,21 @@ function checkWire(
   // 英数字の id の後ろは、日本語の助詞との間を空ける
   const label = `線 ${id ?? `${index + 1} つ目`} `;
   if (typeof wire.line !== "string") {
-    problems.add(`${label}の種類（line）がありません。文字で書いてください`);
+    problems.add(`${label}の種類（line）がありません。文字で記載してください`);
   } else if (!(LINE_KINDS as readonly string[]).includes(wire.line)) {
     problems.add(
-      `${label}の種類 ${wire.line} は使えません。使える種類は ${LINE_KINDS.join("・")} です`,
+      `${label}の種類 ${wire.line} は使用できません。使用できる種類は ${LINE_KINDS.join("・")} です`,
     );
   }
   for (const key of ["from", "to"]) {
     const end = wire[key];
     if (typeof end !== "string") {
       problems.add(
-        `${label}の ${key} がありません。端のノードの id で書いてください`,
+        `${label}の ${key} がありません。端のノードの id で記載してください`,
       );
     } else if (!nodeIds.has(end)) {
       problems.add(
-        `${label}の端のノード ${end} がありません。ノードの id で書いてください`,
+        `${label}の端のノード ${end} がありません。ノードの id で記載してください`,
       );
     }
   }
@@ -701,14 +701,14 @@ function checkWire(
       !isType(at[1], "数")
     ) {
       problems.add(
-        `${label}の labelAt が [x, y] ではありません。数 2 つで書いてください`,
+        `${label}の labelAt が [x, y] ではありません。数 2 つで記載してください`,
       );
     }
   }
   return id;
 }
 
-/** フロー図の枠と層を確かめる */
+/** フロー図の枠と層を確認する */
 function checkFrame(source: Record<string, unknown>, problems: Problems): void {
   if (source.frame !== undefined) {
     const frame = asObject(source.frame, "frame", problems);
@@ -737,7 +737,7 @@ function checkFrame(source: Record<string, unknown>, problems: Problems): void {
       }
       if (typeof lane.kind !== "string" || !LANE_KINDS.includes(lane.kind)) {
         problems.add(
-          `層「${String(lane.label)}」の種類 ${String(lane.kind)} は使えません。使える種類は ${LANE_KINDS.join("・")} です`,
+          `層「${String(lane.label)}」の種類 ${String(lane.kind)} は使用できません。使用できる種類は ${LANE_KINDS.join("・")} です`,
         );
       }
     });
@@ -752,7 +752,7 @@ export const JUDGEMENT_KINDS: readonly MdmarkDiagramKind[] = [
   "result",
 ];
 
-/** フロー図の座標（図の `width`・`height`、ノードの `x`・`y`・`w`・`h`、線の `points`）を全て書いたか・全て省いたか・混ざるか */
+/** フロー図の座標（図の `width`・`height`、ノードの `x`・`y`・`w`・`h`、線の `points`）を全て記載したか・全て省いたか・混ざるか */
 function coordinateMode(
   source: Record<string, unknown>,
 ): "written" | "omitted" | "mixed" {
@@ -798,20 +798,20 @@ function nodeNotJudgement(
   return undefined;
 }
 
-/** フロー図の定義を確かめる */
+/** フロー図の定義を確認する */
 function checkFlow(source: Record<string, unknown>, problems: Problems): void {
   checkHead(source, problems);
   const mode = coordinateMode(source);
   const omitted = mode === "omitted";
   if (mode === "mixed") {
     problems.add(
-      "座標（x・y・w・h・points・width・height）を書いたものと省いたものが混ざっています。全て書くか、全て省いてください",
+      "座標（x・y・w・h・points・width・height）を記載したものと省いたものが混ざっています。全て記載するか、全て省いてください",
     );
   } else if (omitted) {
     const other = nodeNotJudgement(source);
     if (other) {
       problems.add(
-        `ノード「${other.name}」の種類 ${other.kind} では座標を省けません。座標を省けるのは、種類が ${JUDGEMENT_KINDS.join("・")} だけの判定フローチャートです。座標を書くか、種類を変えてください`,
+        `ノード「${other.name}」の種類 ${other.kind} では座標を省けません。座標を省けるのは、種類が ${JUDGEMENT_KINDS.join("・")} だけの判定フローチャートです。座標を記載するか、種類を変えてください`,
       );
     }
   } else {
@@ -843,7 +843,7 @@ function checkFlow(source: Record<string, unknown>, problems: Problems): void {
   );
 }
 
-/** シーケンス図の定義を確かめる */
+/** シーケンス図の定義を確認する */
 function checkSequence(
   source: Record<string, unknown>,
   problems: Problems,
@@ -880,11 +880,11 @@ function checkSequence(
       const end = step[key];
       if (typeof end !== "string") {
         problems.add(
-          `${label}の ${key} がありません。相手の id で書いてください`,
+          `${label}の ${key} がありません。相手の id で記載してください`,
         );
       } else if (!ids.includes(end)) {
         problems.add(
-          `${label}の相手 ${end} がありません。相手の id で書いてください`,
+          `${label}の相手 ${end} がありません。相手の id で記載してください`,
         );
       }
     }
@@ -904,7 +904,7 @@ function checkSequence(
   }
 }
 
-/** グラフの軸を確かめる。目盛りの数を返す */
+/** グラフの軸を確認する。目盛りの数を返却する */
 function checkAxes(
   source: Record<string, unknown>,
   problems: Problems,
@@ -925,7 +925,7 @@ function checkAxes(
         tickCount = ticks.length;
       } else {
         problems.add(
-          "x.ticks に文字でない目盛りがあります。目盛りは文字で書いてください",
+          "x.ticks に文字でない目盛りがあります。目盛りは文字で記載してください",
         );
       }
     }
@@ -949,7 +949,7 @@ function checkAxes(
   return tickCount;
 }
 
-/** 点の並びが数だけで、数が目盛りと合うかを確かめる */
+/** 点の並びが数だけで、数が目盛りと合うかを確認する */
 function checkPointList(
   points: unknown,
   label: string,
@@ -962,7 +962,7 @@ function checkPointList(
   }
   if (!list.every((point) => isType(point, "数"))) {
     problems.add(
-      `${label}の points に数でない点があります。点は数で書いてください`,
+      `${label}の points に数でない点があります。点は数で記載してください`,
     );
   } else if (tickCount !== undefined && list.length !== tickCount) {
     problems.add(
@@ -971,7 +971,7 @@ function checkPointList(
   }
 }
 
-/** 横の軸の名前と目盛り（折れ線・棒）を確かめる。目盛りの数を返す */
+/** 横の軸の名前と目盛り（折れ線・棒）を確認する。目盛りの数を返却する */
 function checkTickAxis(
   source: Record<string, unknown>,
   minTicks: number,
@@ -993,14 +993,14 @@ function checkTickAxis(
   }
   if (!ticks.every((tick) => typeof tick === "string")) {
     problems.add(
-      "x.ticks に文字でない目盛りがあります。目盛りは文字で書いてください",
+      "x.ticks に文字でない目盛りがあります。目盛りは文字で記載してください",
     );
     return undefined;
   }
   return ticks.length;
 }
 
-/** 散布図の横の軸（数値の軸で、目盛りを持たない）を確かめる */
+/** 散布図の横の軸（数値の軸で、目盛りを持たない）を確認する */
 function checkNumericXAxis(
   source: Record<string, unknown>,
   problems: Problems,
@@ -1012,12 +1012,12 @@ function checkNumericXAxis(
   problems.expect(x.label, "文字", "x.label");
   if (x.ticks !== undefined) {
     problems.add(
-      "散布図の x は数値の軸なので、ticks は書けません。ticks を消してください",
+      "散布図の x は数値の軸なので、ticks は記載できません。ticks を削除してください",
     );
   }
 }
 
-/** 縦の軸（`y`・`y2`）を確かめる。`min`・`max`・`step` は 3 つとも書くか 3 つとも省く */
+/** 縦の軸（`y`・`y2`）を確認する。`min`・`max`・`step` は 3 つとも記載するか 3 つとも省く */
 function checkYAxis(
   source: Record<string, unknown>,
   problems: Problems,
@@ -1034,7 +1034,7 @@ function checkYAxis(
   }
   if (given.length < 3) {
     problems.add(
-      `${key} の min・max・step は 3 つとも書くか、3 つとも省いてください。省くとデータから切ります`,
+      `${key} の min・max・step は 3 つとも記載するか、3 つとも省いてください。省くとデータから切ります`,
     );
     return;
   }
@@ -1053,7 +1053,7 @@ function checkYAxis(
   }
 }
 
-/** 散布図の点が `[x, y]`、バブルの点が `[x, y, size]` の数の組だけかを確かめる */
+/** 散布図の点が `[x, y]`、バブルの点が `[x, y, size]` の数の組だけかを確認する */
 function checkTupleList(
   points: unknown,
   label: string,
@@ -1072,12 +1072,12 @@ function checkTupleList(
     )
   ) {
     problems.add(
-      `${label}の points に ${shape} でない点があります。点は ${shape} の数の組で書いてください`,
+      `${label}の points に ${shape} でない点があります。点は ${shape} の数の組で記載してください`,
     );
   }
 }
 
-/** 組み合わせのグラフの系列の `as`・`axis` を確かめる */
+/** 組み合わせのグラフの系列の `as`・`axis` を確認する */
 function checkComboSeries(
   entry: Record<string, unknown>,
   label: string,
@@ -1086,21 +1086,21 @@ function checkComboSeries(
 ): void {
   if (entry.as !== undefined && entry.as !== "line" && entry.as !== "bar") {
     problems.add(
-      `${label}の as ${String(entry.as)} は使えません。as は line・bar のどちらかで書いてください`,
+      `${label}の as ${String(entry.as)} は使用できません。as は line・bar のどちらかで記載してください`,
     );
   }
   if (entry.axis !== undefined && entry.axis !== "y" && entry.axis !== "y2") {
     problems.add(
-      `${label}の axis ${String(entry.axis)} は使えません。axis は y・y2 のどちらかで書いてください`,
+      `${label}の axis ${String(entry.axis)} は使用できません。axis は y・y2 のどちらかで記載してください`,
     );
   } else if (entry.axis === "y2" && !hasY2) {
     problems.add(
-      `${label}の axis が y2 ですが、y2 がありません。右の縦の軸を y2 に書いてください`,
+      `${label}の axis が y2 ですが、y2 がありません。右の縦の軸を y2 に記載してください`,
     );
   }
 }
 
-/** 円の項目を確かめる */
+/** 円の項目を確認する */
 function checkPieItems(
   source: Record<string, unknown>,
   problems: Problems,
@@ -1112,7 +1112,7 @@ function checkPieItems(
   }
   if (items.length < SERIES_RANGE.min || items.length > SERIES_RANGE.max) {
     problems.add(
-      `項目が ${items.length} つです。項目は ${SERIES_RANGE.min}〜${SERIES_RANGE.max} つで書いてください`,
+      `項目が ${items.length} つです。項目は ${SERIES_RANGE.min}〜${SERIES_RANGE.max} つで記載してください`,
     );
   }
   items.forEach((value, index) => {
@@ -1134,7 +1134,7 @@ function checkPieItems(
   });
 }
 
-/** グラフの定義を確かめる */
+/** グラフの定義を確認する */
 function checkChart(source: Record<string, unknown>, problems: Problems): void {
   checkHead(source, problems);
   const type = source.type ?? "line";
@@ -1143,7 +1143,7 @@ function checkChart(source: Record<string, unknown>, problems: Problems): void {
     !(CHART_TYPES as readonly string[]).includes(type)
   ) {
     problems.add(
-      `グラフの種類 ${String(type)} は使えません。使える種類は ${CHART_TYPES.join("・")} です`,
+      `グラフの種類 ${String(type)} は使用できません。使用できる種類は ${CHART_TYPES.join("・")} です`,
     );
     return;
   }
@@ -1173,7 +1173,7 @@ function checkChart(source: Record<string, unknown>, problems: Problems): void {
   }
   if (series.length < SERIES_RANGE.min || series.length > SERIES_RANGE.max) {
     problems.add(
-      `系列が ${series.length} つです。系列は ${SERIES_RANGE.min}〜${SERIES_RANGE.max} つで書いてください`,
+      `系列が ${series.length} つです。系列は ${SERIES_RANGE.min}〜${SERIES_RANGE.max} つで記載してください`,
     );
   }
   series.forEach((value, index) => {
@@ -1219,7 +1219,7 @@ function knobValues(knob: {
   return values;
 }
 
-/** 操作できる部品の定義を確かめる */
+/** 操作できる部品の定義を確認する */
 function checkParam(source: Record<string, unknown>, problems: Problems): void {
   problems.expect(source.title, "文字", "title");
   const knob = asObject(source.knob, "knob", problems);
@@ -1262,25 +1262,25 @@ function checkParam(source: Record<string, unknown>, problems: Problems): void {
     for (const value of values) {
       if (!Object.hasOwn(table, String(value))) {
         problems.add(
-          `スライダーの値 ${value} の点が table にありません。min から max まで step ごとの全ての値を書いてください`,
+          `スライダーの値 ${value} の点が table にありません。min から max まで step ごとの全ての値を記載してください`,
         );
       }
     }
     if (!values.includes(knob.value as number)) {
       problems.add(
-        `knob.value ${String(knob.value)} が min から step ごとの値に当たりません。既定の値は step ごとの値で書いてください`,
+        `knob.value ${String(knob.value)} が min から step ごとの値に該当しません。既定の値は step ごとの値で記載してください`,
       );
     }
   }
 }
 
-/** ER 図のテーブルの種類の並び（書き方の警告にも出す） */
+/** ER 図のテーブルの種類の並び（記載の警告にも出す） */
 const ER_TABLE_KIND_LIST: readonly MdmarkErTableKind[] = [
   "master",
   "transaction",
 ];
 
-/** ER 図の多重度の並び（書き方の警告にも出す） */
+/** ER 図の多重度の並び（記載の警告にも出す） */
 const ER_CARDINALITY_LIST: readonly MdmarkErCardinality[] = [
   "1",
   "0..1",
@@ -1288,7 +1288,7 @@ const ER_CARDINALITY_LIST: readonly MdmarkErCardinality[] = [
   "0..n",
 ];
 
-/** 真偽値の項目を確かめる（省けるものは、あるときだけ） */
+/** 真偽値の項目を確認する（省けるものは、あるときだけ） */
 function checkOptionalBoolean(
   value: unknown,
   path: string,
@@ -1299,7 +1299,7 @@ function checkOptionalBoolean(
   }
 }
 
-/** ER 図のテーブル 1 つを確かめ、`id` と列の名前を返す */
+/** ER 図のテーブル 1 つを確認し、`id` と列の名前を返却する */
 function checkErTable(
   value: unknown,
   index: number,
@@ -1326,13 +1326,13 @@ function checkErTable(
       !(ER_TABLE_KIND_LIST as readonly string[]).includes(table.kind)
     ) {
       problems.add(
-        `${label}の種類 ${String(table.kind)} は使えません。使える種類は ${ER_TABLE_KIND_LIST.join("・")} です`,
+        `${label}の種類 ${String(table.kind)} は使用できません。使用できる種類は ${ER_TABLE_KIND_LIST.join("・")} です`,
       );
     }
   }
   if (table.color !== undefined && !isColorName(String(table.color))) {
     problems.add(
-      `${label}の色 ${String(table.color)} は色の名前ではありません。使える色の名前は ${COLOR_NAMES.join("・")} です`,
+      `${label}の色 ${String(table.color)} は色の名前ではありません。使用できる色の名前は ${COLOR_NAMES.join("・")} です`,
     );
   }
   const columns: string[] = [];
@@ -1368,7 +1368,7 @@ function checkErTable(
   return typeof table.id === "string" ? { id: table.id, columns } : undefined;
 }
 
-/** ER 図の関係 1 つの多重度を確かめる */
+/** ER 図の関係 1 つの多重度を確認する */
 function checkErCardinality(
   value: unknown,
   path: string,
@@ -1380,13 +1380,13 @@ function checkErCardinality(
   ) {
     problems.add(
       value === undefined
-        ? `${path} がありません。${ER_CARDINALITY_LIST.join("・")} のどれかで書いてください`
-        : `${path} の ${String(value)} は使えません。使える多重度は ${ER_CARDINALITY_LIST.join("・")} です`,
+        ? `${path} がありません。${ER_CARDINALITY_LIST.join("・")} のどれかで記載してください`
+        : `${path} の ${String(value)} は使用できません。使用できる多重度は ${ER_CARDINALITY_LIST.join("・")} です`,
     );
   }
 }
 
-/** ER 図の関係の端のテーブルと列を確かめる */
+/** ER 図の関係の端のテーブルと列を確認する */
 function checkErEnd(
   relation: Record<string, unknown>,
   side: "from" | "to",
@@ -1412,7 +1412,7 @@ function checkErEnd(
   const columns = tables.get(tableId as string);
   if (columns === undefined) {
     problems.add(
-      `${label}の${where}のテーブル ${String(tableId)} がありません。テーブルの id で書いてください`,
+      `${label}の${where}のテーブル ${String(tableId)} がありません。テーブルの id で記載してください`,
     );
   } else if (!columns.includes(column as string)) {
     problems.add(
@@ -1421,7 +1421,7 @@ function checkErEnd(
   }
 }
 
-/** ER 図の定義を確かめる */
+/** ER 図の定義を確認する */
 function checkEr(source: Record<string, unknown>, problems: Problems): void {
   checkHead(source, problems);
   problems.expect(source.width, "数", "width");
@@ -1457,7 +1457,7 @@ function checkEr(source: Record<string, unknown>, problems: Problems): void {
   });
 }
 
-/** 種類ごとの形の確かめ */
+/** 種類ごとの構造の確認 */
 const CHECKERS: Record<
   DiagramDirective,
   (source: Record<string, unknown>, problems: Problems) => void
@@ -1469,7 +1469,7 @@ const CHECKERS: Record<
   er: checkEr,
 };
 
-/** 印の範囲の `json` のコードブロックを読み、種類ごとの形を確かめる。読めない箇所は書き方の警告の文にして返す */
+/** マーカーの範囲の `json` のコードブロックを読み込み、種類ごとの構造を確認する。読み込めない箇所は記載の警告の文にして返却する */
 export function readDefinition(
   directive: DiagramDirective,
   blocks: string[],
@@ -1478,18 +1478,18 @@ export function readDefinition(
   if (blocks.length !== 1 || block === undefined) {
     return {
       ok: false,
-      problems: ["印の範囲に json のコードブロックを 1 つだけ置いてください"],
+      problems: ["マーカーの範囲に json のコードブロックを 1 つだけ配置してください"],
     };
   }
   const parsed = parseDefinitionJson(block);
   if (!parsed.ok) {
-    // 書き方の警告は逆引用符で行内のコードを囲むので、読めた文字の逆引用符は引用符に替える
+    // 記載の警告は逆引用符で行内のコードを囲むので、読み込めた文字の逆引用符は引用符に替える
     const where = `${parsed.line} 行目の ${parsed.after.replaceAll("`", "'")} の後`;
     return {
       ok: false,
       problems: [
         parsed.missing === ""
-          ? `${JSON_PROBLEM_HEAD}（${where}が読めません）`
+          ? `${JSON_PROBLEM_HEAD}（${where}が読み込めません）`
           : `${JSON_PROBLEM_HEAD}（${where}に ${parsed.missing} がありません）`,
       ],
     };
@@ -1514,7 +1514,7 @@ export function readDefinition(
   };
 }
 
-/** フロー図の定義の、本文のリンクと同じ許可に当たらないリンク先を持つノードを定義の順に返す */
+/** フロー図の定義の、本文のリンクと同じ許可に該当しないリンク先を持つノードを定義の順に返却する */
 export function nodeLinkProblems(
   definition: MdmarkFlowDefinition,
 ): Array<{ id: string; href: string }> {
@@ -1525,7 +1525,7 @@ export function nodeLinkProblems(
   );
 }
 
-/** 読めない定義の書き方の警告の本文と項目。読めない箇所が 2 つ以上あるときは、1 つ目を本文に書き、残りを項目に並べる */
+/** 読み込めない定義の記載の警告の本文と項目。読み込めない箇所が 2 つ以上あるときは、1 つ目を本文に記載し、残りを項目に並べる */
 export function definitionWarning(
   directive: DiagramDirective,
   problems: string[],
@@ -1534,7 +1534,7 @@ export function definitionWarning(
   const [first = "", ...rest] = problems;
   const head = first.startsWith(JSON_PROBLEM_HEAD)
     ? `${name}の部品の定義を ${first}。`
-    : `${name}の部品の定義を読めません。${first}。`;
+    : `${name}の部品の定義を読み込めません。${first}。`;
   return {
     message: `${head}${call}は描いていません。`,
     items: rest.map((message) => ({ label: "", message })),

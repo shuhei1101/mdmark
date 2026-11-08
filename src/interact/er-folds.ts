@@ -23,7 +23,7 @@ function isKeyRow(row: HTMLElement): boolean {
   return row.querySelector('[data-key="pk"], [data-key="fk"]') !== null;
 }
 
-/** 属性 `hidden` を、描いたときと同じ値で付け外しする */
+/** 属性 `hidden` を、描いたときと同じ値で付与・解除する */
 function setHidden(element: HTMLElement, hidden: boolean): void {
   if (hidden) {
     element.setAttribute("hidden", "hidden");
@@ -79,7 +79,7 @@ function setPx(
   }
 }
 
-/** 図の関係の線・両端の記号・ラベルを、今の列の行の位置へ結び直し、図の高さを求め直す */
+/** 図の関係の線・両端の記号・ラベルを、今の列の行の位置へもう一度結び、図の高さをもう一度求める */
 function relayout(figure: HTMLElement): void {
   const elements = [
     ...figure.querySelectorAll<HTMLElement>(".mdmark-diagram-er-table"),
@@ -125,7 +125,7 @@ function relayout(figure: HTMLElement): void {
       setPx(label, "top", route.label.y);
     }
   }
-  // 図の高さ: テーブルの下端の最大に下の余白を足す。倍率を掛けた大きさの箱も同じ割合で合わせる
+  // 図の高さ: テーブルの下端の最大に下の余白を加算する。倍率を掛けた大きさのノードも同じ割合で合わせる
   const height =
     Math.max(
       0,
@@ -151,7 +151,7 @@ function relayout(figure: HTMLElement): void {
   wires?.setAttribute("height", String(height));
 }
 
-/** ER 図のテーブルの列を畳む・開く: 主キーと外部キー以外の列の行・非表示の行・開閉のボタンを切り替え、関係の線を結び直す */
+/** ER 図のテーブルの列を畳む・開く: 主キーと外部キー以外の列の行・非表示の行・開閉のボタンを切り替え、関係の線をもう一度結ぶ */
 export function setErTableFolded(options: {
   table: HTMLElement;
   folded: boolean;
@@ -180,7 +180,7 @@ export function setErTableFolded(options: {
   }
 }
 
-/** ER 図の開閉のボタンを押したら（Enter・Space を含む）列を畳む・開く。フォーカスはボタンに残す。付けた受け取りを外す関数を返す */
+/** ER 図の開閉のボタンを押したら（Enter・Space を含む）列を畳む・開く。フォーカスはボタンに残す。付けた受け取りを解除する関数を返却する */
 export function attachErFolds(figure: HTMLElement): () => void {
   const controller = new AbortController();
   figure.addEventListener(

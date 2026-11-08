@@ -1,22 +1,22 @@
-/** 描く先を包む要素の `data-*` に置かれた、パネルの始め方 */
+/** 描く先を包む要素の `data-*` に配置された、パネルの始め方 */
 export type PreviewBoot = {
   /** 描く先を包む要素。React の木を描く場所で、配色の class を付ける */
   root: HTMLElement;
-  /** 読む配布物の `index.js` の URL。バージョンを決められないときは持たない */
+  /** 読み込む配布物の `index.js` の URL。バージョンを決められないときは持たない */
   distJs: string | undefined;
-  /** 読むバージョン（描けない理由に出す） */
+  /** 読み込むバージョン（描けない理由に出す） */
   version: string | undefined;
-  /** 配布物を読まずに出す状態 */
+  /** 配布物を読み込まずに出す状態 */
   status: "versionUndecidable" | undefined;
-  /** `mdmark.configPath` の書いたままの値（帯に出す） */
+  /** `mdmark.configPath` の記載したままの値（帯に出す） */
   configPath: string;
-  /** 束ねた `extensions` の Webview で読める URL（`data-extensions` の JSON の配列） */
+  /** まとめた `extensions` の Webview で読み込める URL（`data-extensions` の JSON の配列） */
   extensions: string[];
   /** `inspect`・`axe` を受けるか */
   test: boolean;
 };
 
-/** 描く先を包む要素の `data-*` からパネルの始め方を読む */
+/** 描く先を包む要素の `data-*` からパネルの始め方を読み込む */
 export const readBoot = (root: HTMLElement): PreviewBoot => ({
   root,
   distJs: root.dataset.distJs,
@@ -30,7 +30,7 @@ export const readBoot = (root: HTMLElement): PreviewBoot => ({
   test: root.dataset.test !== undefined,
 });
 
-/** `data-extensions` を JSON の文字列の配列として読む。無い・読めない・文字列の配列でないときは空 */
+/** `data-extensions` を JSON の文字列の配列として読み込む。無い・読み込めない・文字列の配列でないときは空 */
 const readExtensions = (value: string | undefined): string[] => {
   if (value === undefined) {
     return [];
@@ -46,7 +46,7 @@ const readExtensions = (value: string | undefined): string[] => {
   }
 };
 
-/** `getState` で読んだ値が `PreviewState` なら、その行を返す */
+/** `getState` で読み込んだ値が `PreviewState` なら、その行を返却する */
 export const savedLineFrom = (state: unknown): number | undefined => {
   if (typeof state !== "object" || state === null || !("line" in state)) {
     return undefined;

@@ -41,7 +41,7 @@ import { collectIconNodes } from "./icons.ts";
 import { collectIncludes, includeProblemMessage } from "./includes.ts";
 import { formatCheckIssue } from "./issues.ts";
 
-/** 索引に足す、用語集の文書の `id` の頭 */
+/** 索引に追加する、用語集の文書の `id` の頭 */
 const GLOSSARY_ID_PREFIX = "mdmark-glossary-";
 
 /** OS の区切りを `/` にそろえる */
@@ -57,9 +57,9 @@ function reasonOf(error: unknown): string {
   );
 }
 
-/** 画像を埋めた文書、束ねた外部ライブラリと拡張、読んだ使う側の CSS を持つ書き出しの中身を用意するための入力 */
+/** 画像を埋めた文書、まとめた外部ライブラリと拡張、読み込んだ利用側の CSS を持つ書き出しの中身を用意するための入力 */
 type EmbedOptions = {
-  /** 読んだ設定 */
+  /** 読み込んだ設定 */
   loaded: LoadedConfig;
   /** 埋める文書のパス（設定ファイルのフォルダからの相対パス）と絶対パス */
   docs: Array<{ path: string; file: string }>;
@@ -69,19 +69,19 @@ type EmbedOptions = {
   entry: string;
   /** 出力の HTML の絶対パス（動画と音声のコピー先を決める） */
   out: string;
-  /** URL を読む関数（`bundleViewer` と共有する `cacheFetchText` の関数） */
+  /** URL を読み込む関数（`bundleViewer` と共有する `cacheFetchText` の関数） */
   fetchText: FetchText;
 };
 
 /** URL の先頭 */
 const URL_PATTERN = /^https?:\/\//;
 
-/** 束ねる読み先: URL はそのまま、パスは設定ファイルのあるフォルダを基準にした絶対パス */
+/** まとめる読み込み先: URL はそのまま、パスは設定ファイルのあるフォルダを基準にした絶対パス */
 function moduleSource(path: string, baseDir: string): string {
   return URL_PATTERN.test(path) ? path : resolve(baseDir, path);
 }
 
-/** 索引と参照の表を用意する: 索引があれば読み、`bundle` では `build.glossary` の文書を足して参照の表を作る */
+/** 索引と参照の表を用意する: 索引があれば読み込み、`bundle` では `build.glossary` の文書を追加して参照の表を作る */
 async function prepareReferences(
   options: EmbedOptions & { markdowns: Map<string, string> },
 ): Promise<{
@@ -100,7 +100,7 @@ async function prepareReferences(
   const byPath = (path: string) =>
     index?.docs.find((doc) => normalizePath(doc.path) === indexPathOf(path));
 
-  // 参照の表に渡す索引と文書: 索引が無くても `build.glossary` の用語集の表を全ての文書で効かせるため、足す
+  // 参照の表に指定する索引と文書: 索引が無くても `build.glossary` の用語集の表を全ての文書で有効にしるため、追加する
   const glossaryPaths =
     kind === "bundle" ? (loaded.config.build?.glossary ?? []) : [];
   const referenceDocs = [...(index?.docs ?? [])];
@@ -137,7 +137,7 @@ async function prepareReferences(
   };
 }
 
-/** 色分けのライブラリの本体と、文書が使う言語のモジュールを `syntax.url` から束ねられるか確かめ、読み先を返す。使う言語が無い、または本体を束ねられないときは `undefined`（束ねられなければ警告に積む）。言語のモジュールだけ束ねられなければ、その言語を入れずに警告に積む */
+/** 色分けのライブラリの本体と、文書が使用する言語のモジュールを `syntax.url` からまとめられるか確認し、読み込み先を返却する。使用する言語が無い、または本体をまとめられないときは `undefined`（まとめられなければ警告に追加する）。言語のモジュールだけまとめられなければ、その言語を入れずに警告に追加する */
 async function bundleSyntax(options: {
   languages: string[];
   url: string;
@@ -161,7 +161,7 @@ async function bundleSyntax(options: {
       return moduleSource(`${folder}${path}`, loaded.dir);
     }
     warnings.push(
-      `${basename(loaded.path)}: 色分けのライブラリ \`${folder}${path}\` を束ねられません（${result.error}）。\`syntax.url\` を直してください。`,
+      `${basename(loaded.path)}: 色分けのライブラリ \`${folder}${path}\` をまとめられません（${result.error}）。\`syntax.url\` を修正してください。`,
     );
     return undefined;
   };
@@ -179,7 +179,7 @@ async function bundleSyntax(options: {
   return { core, languages: bundled };
 }
 
-/** 設定の `assets.root` を設定ファイルのフォルダから解決する。フォルダが無ければ警告にして `undefined` を返す */
+/** 設定の `assets.root` を設定ファイルのフォルダから解決する。フォルダが無ければ警告にして `undefined` を返却する */
 async function resolveAssetsRoot(
   loaded: LoadedConfig,
   warnings: string[],
@@ -202,7 +202,7 @@ async function resolveAssetsRoot(
   return undefined;
 }
 
-/** 文書の画像を埋め、印のある外部ライブラリと設定の拡張と色分けのモジュールが束ねられることを確かめて読み先を集め、`theme` を読み、索引があれば参照の表を作って、書き出しの中身と警告を返す */
+/** 文書の画像を埋め、マーカーのある外部ライブラリと設定の拡張と色分けのモジュールがまとめられることを確認して読み込み先を集め、`theme` を読み込み、索引があれば参照の表を作って、書き出しの中身と警告を返却する */
 export async function prepareEmbeds(options: EmbedOptions): Promise<{
   payload: ExportPayload;
   embeds: ViewerEmbeds;
@@ -214,7 +214,7 @@ export async function prepareEmbeds(options: EmbedOptions): Promise<{
   const configName = basename(loaded.path);
   const assetsRoot = await resolveAssetsRoot(loaded, warnings);
 
-  // 文書を読み、動画と音声をコピーしてから画像を埋める（`bundle` は同じ画像を 1 回だけ埋める）
+  // 文書を読み込み、動画と音声をコピーしてから画像を埋める（`bundle` は同じ画像を 1 回だけ埋める）
   const originals = new Map<string, string>();
   const inlined = new Map<string, string>();
   const copied = new Map<string, string>();
@@ -245,7 +245,7 @@ export async function prepareEmbeds(options: EmbedOptions): Promise<{
     );
   }
 
-  // 文書の include のマーカーの取り込み先を読む（設定ファイルのフォルダの中だけ。同じファイルの本文は 1 回だけ埋める）
+  // 文書の include のマーカーの取り込み先を読み込む（設定ファイルのフォルダの中だけ。同じファイルの本文は 1 回だけ埋める）
   const includeTexts: Record<string, string> = {};
   const includeKeys = new Map<string, Record<string, string>>();
   for (const doc of docs) {
@@ -275,18 +275,18 @@ export async function prepareEmbeds(options: EmbedOptions): Promise<{
       );
     }
   }
-  // 文書と取り込む文書の束ねていない名前のアイコンの形を、依存の lucide から取り出す
+  // 文書と取り込む文書のまとめていない名前のアイコンの形状を、依存の lucide から取り出す
   const iconResult = collectIconNodes([
     ...originals.values(),
     ...Object.values(includeTexts),
   ]);
   for (const name of iconResult.missing) {
     warnings.push(
-      `\`icon:${name}\` の \`${name}\` は Lucide に無いアイコンの名前です。https://lucide.dev/icons/ で名前を確かめてください。`,
+      `\`icon:${name}\` の \`${name}\` は Lucide に無いアイコンの名前です。https://lucide.dev/icons/ で名前を確認してください。`,
     );
   }
 
-  // 文書に印のある外部ライブラリを、URL ごとに 1 回だけ束ねてみる
+  // 文書にマーカーのある外部ライブラリを、URL ごとに 1 回だけまとめてみる
   const libraries = resolveConfig({ config: loaded.config }).libraries;
   const urls = Object.fromEntries(
     Object.entries(libraries).map(([name, library]) => [name, library.url]),
@@ -311,12 +311,12 @@ export async function prepareEmbeds(options: EmbedOptions): Promise<{
       }
     } else {
       warnings.push(
-        `${configName}: 外部ライブラリ \`${mark}\` を束ねられません（${result.error}）。URL かパスを直してください。`,
+        `${configName}: 外部ライブラリ \`${mark}\` をまとめられません（${result.error}）。URL かパスを修正してください。`,
       );
     }
   }
 
-  // 設定の拡張を 1 つずつ束ねてみる
+  // 設定の拡張を 1 つずつまとめてみる
   const extensions: string[] = [];
   for (const path of loaded.config.extensions ?? []) {
     const result = await bundleModule(path, loaded.dir, fetchText, build);
@@ -327,12 +327,12 @@ export async function prepareEmbeds(options: EmbedOptions): Promise<{
       }
     } else {
       warnings.push(
-        `${configName}: 拡張 \`${path}\` を束ねられません（${result.error}）。パスを直してください。`,
+        `${configName}: 拡張 \`${path}\` をまとめられません（${result.error}）。パスを修正してください。`,
       );
     }
   }
 
-  // 使う側の CSS を読む
+  // 利用側の CSS を読み込む
   let themeCss: string | undefined;
   const theme = loaded.config.theme;
   if (theme !== undefined) {
@@ -340,7 +340,7 @@ export async function prepareEmbeds(options: EmbedOptions): Promise<{
       themeCss = await readFile(resolve(loaded.dir, theme), "utf8");
     } catch (error) {
       warnings.push(
-        `${configName}: 使う側の CSS \`${theme}\` を読めません（${reasonOf(error)}）。パスを直してください。`,
+        `${configName}: 利用側の CSS \`${theme}\` を読み込めません（${reasonOf(error)}）。パスを修正してください。`,
       );
     }
   }
@@ -354,7 +354,7 @@ export async function prepareEmbeds(options: EmbedOptions): Promise<{
       ]),
     );
 
-  // 文書に色分けの対象があれば、色分けの本体と使う言語のモジュールを束ねてみる
+  // 文書に色分けの対象があれば、色分けの本体と使用する言語のモジュールをまとめてみる
   const syntax = await bundleSyntax({
     languages: usedSyntaxLanguages({
       markdowns: [...originals.values()],
@@ -367,7 +367,7 @@ export async function prepareEmbeds(options: EmbedOptions): Promise<{
     fetchText,
   });
 
-  // 文書に mermaid のコードブロックがあれば、mermaid を束ねてみる
+  // 文書に mermaid のコードブロックがあれば、mermaid をまとめてみる
   let mermaid: string | undefined;
   const mermaidConfig = resolveConfig({ config: loaded.config }).mermaid;
   if (
@@ -387,20 +387,20 @@ export async function prepareEmbeds(options: EmbedOptions): Promise<{
       mermaid = moduleSource(mermaidConfig.url, loaded.dir);
     } else {
       warnings.push(
-        `${configName}: mermaid \`${mermaidConfig.url}\` を束ねられません（${result.error}）。\`mermaid.url\` を直してください。`,
+        `${configName}: mermaid \`${mermaidConfig.url}\` をまとめられません（${result.error}）。\`mermaid.url\` を修正してください。`,
       );
     }
   }
   // 埋める設定には、mermaid の url を除いて写す（開いたときに外へ要求しない）
   const { url: _mermaidUrl, ...mermaidPayload } = loaded.config.mermaid ?? {};
 
-  // 設定の `aliases` の YAML を読み、使えない行・レコードを警告にする
+  // 設定の `aliases` の YAML を読み込み、使用できない行・レコードを警告にする
   const aliasResult = await loadAliases(loaded);
   for (const issue of aliasResult.issues) {
     warnings.push(formatCheckIssue(issue));
   }
 
-  // 知らないテーマの名前は埋める設定にも写し、開いたときに `mount` が既定のテーマで描く
+  // 知らないテーマの名前は埋める設定にもコピーし、開いたときに `mount` が既定のテーマで描く
   const colorTheme = loaded.config.colorTheme;
   if (colorTheme !== undefined && !COLOR_THEMES.some((t) => t === colorTheme)) {
     warnings.push(
@@ -425,7 +425,7 @@ export async function prepareEmbeds(options: EmbedOptions): Promise<{
       ...(Object.keys(mermaidPayload).length > 0
         ? { mermaid: mermaidPayload }
         : {}),
-      // 埋めたモジュールは開いたときに束ねたモジュールを渡すため、値は印の名前にする（埋められなかった印が外へ要求しない）
+      // 埋めたモジュールは開いたときにまとめたモジュールを指定するため、値はマーカーの名前にする（埋められなかったマーカーが外へ要求しない）
       libraries: Object.fromEntries(
         Object.keys(libraries).map((name) => [name, name]),
       ),
@@ -462,7 +462,7 @@ export async function prepareEmbeds(options: EmbedOptions): Promise<{
         }
       : {}),
   };
-  // `html-scripts` がオンの文書の範囲の `ts`・`js` を、開いたときに変換のライブラリを読まずに動かせるよう変えておく
+  // `html-scripts` がオンの文書の範囲の `ts`・`js` を、開いたときに変換のライブラリを読み込まずに動かせるよう変えておく
   const compiled = await compileHtmlScripts({
     documents: [...originals.entries()].map(([path, markdown]) => ({
       path,
@@ -482,12 +482,12 @@ export async function prepareEmbeds(options: EmbedOptions): Promise<{
   return { payload, embeds, themeCss, warnings };
 }
 
-/** 束ねた後も動的 `import()` が残る外部ライブラリ・拡張の警告 */
+/** まとめた後も動的 `import()` が残る外部ライブラリ・拡張の警告 */
 function dynamicImportWarning(configName: string, what: string): string {
-  return `${configName}: ${what} は束ねた後も動的 import() が残り、blob: と動的 import を許さない環境では読み込めません。読む先をリテラルの文字列にしてください。`;
+  return `${configName}: ${what} はまとめた後も動的 import() が残り、blob: と動的 import を許さない環境では読み込めません。読み込む先をリテラルの文字列にしてください。`;
 }
 
-/** 配布物の CSS を読み、起動の処理（`dist/viewer.js`）・ビューの部品のモジュール（`dist/view.js`）があることを確かめて絶対パスを返す。`bundle` では画面の規則（`viewer.css`）を CSS の後ろに足す */
+/** 配布物の CSS を読み込み、起動の処理（`dist/viewer.js`）・ビューの部品のモジュール（`dist/view.js`）があることを確認して絶対パスを返却する。`bundle` では画面の規則（`viewer.css`）を CSS の後ろに追加する */
 export async function readDistAssets(options: {
   /** `dist/` の場所 */
   distDir: string;
@@ -504,7 +504,7 @@ export async function readDistAssets(options: {
     await stat(view);
   } catch (error) {
     throw new CliError(
-      `配布物を読めません（${reasonOf(error)}）。mdmark を入れ直してください。`,
+      `配布物を読み込めません（${reasonOf(error)}）。mdmark をもう一度入れてください。`,
     );
   }
   if (kind === "bundle") {
@@ -521,11 +521,11 @@ export async function readDistAssets(options: {
   return { distCss, viewer, view };
 }
 
-/** HTML を書く。親のフォルダが無ければ作り、書けなければ書けなかったパスを示す誤りを投げる */
+/** HTML を書き込む。親のフォルダが無ければ作り、記載できなければ記載できなかったパスを示す誤りを投げる */
 export async function writeHtml(options: {
-  /** 書く先の絶対パス */
+  /** 記載する先の絶対パス */
   file: string;
-  /** 利用者に見せる書く先のパス */
+  /** 利用者に見せる記載する先のパス */
   display: string;
   /** HTML */
   html: string;
@@ -536,12 +536,12 @@ export async function writeHtml(options: {
     await writeFile(file, html);
   } catch (error) {
     throw new CliError(
-      `書けない: ${display} に書けません（${reasonOf(error)}）。出力先のフォルダを確かめてください。`,
+      `記載できない: ${display} に記載できません（${reasonOf(error)}）。出力先のフォルダを確認してください。`,
     );
   }
 }
 
-/** 文書 1 つを `kind: document` の中身にして HTML を書き、書いた絶対パス・利用者に見せるパス・警告を返す。標準出力・標準エラーには書かない */
+/** 文書 1 つを `kind: document` の中身にして HTML を書き込み、記載した絶対パス・利用者に見せるパス・警告を返却する。標準出力・標準エラーには書き込まない */
 export async function exportDocument(options: {
   /** 今のフォルダ */
   cwd: string;
@@ -549,7 +549,7 @@ export async function exportDocument(options: {
   file: string;
   /** 書き出す HTML のパス */
   out?: string | undefined;
-  /** 使う設定ファイルのパス */
+  /** 使用する設定ファイルのパス */
   config?: string | undefined;
   /** `dist/` の場所 */
   distDir: string;
@@ -561,7 +561,7 @@ export async function exportDocument(options: {
     await readFile(docFile);
   } catch {
     throw new CliError(
-      `文書が無い: ${options.file} が見つかりません。文書のパスを直してください。`,
+      `文書が無い: ${options.file} が見つかりません。文書のパスを修正してください。`,
     );
   }
   const path = normalizePath(toPosix(relative(loaded.dir, docFile)));
@@ -602,7 +602,7 @@ export async function runExport(
     file: string;
     /** 書き出す HTML のパス */
     out?: string | undefined;
-    /** 使う設定ファイルのパス */
+    /** 使用する設定ファイルのパス */
     config?: string | undefined;
     /** `dist/` の場所 */
     distDir: string;

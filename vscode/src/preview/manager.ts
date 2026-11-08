@@ -18,7 +18,7 @@ import { baseDirOf } from "../workspace.ts";
 import { panelKey, pickDiffTarget } from "./diff-target.ts";
 import { PreviewPanel } from "./panel.ts";
 
-/** `window.createWebviewPanel` に渡す viewType */
+/** `window.createWebviewPanel` に指定する viewType */
 export const VIEW_TYPE = "mdmark.preview";
 
 /** 開く列 */
@@ -52,7 +52,7 @@ export class PreviewManager {
     return this.panels.size;
   }
 
-  /** 渡された URI、無ければフォーカスのある mdmark のプレビューの Markdown、無ければアクティブなエディタの文書を返す */
+  /** 指定された URI、無ければフォーカスのある mdmark のプレビューの Markdown、無ければアクティブなエディタの文書を返却する */
   targetUri(uri: Uri | undefined): Uri | undefined {
     if (uri !== undefined) {
       return uri;
@@ -148,7 +148,7 @@ export class PreviewManager {
     await panel.load();
   }
 
-  /** 対象のパネルを読み込み直す。フォーカスのあるパネル、無ければ対象の Markdown のパネル。パネルが無ければ何もしない */
+  /** 対象のパネルを再読み込みする。フォーカスのあるパネル、無ければ対象の Markdown のパネル。パネルが無ければ何もしない */
   async refresh(uri?: Uri): Promise<void> {
     const focused = [...this.panels.values()].find((panel) => panel.active);
     const target = this.targetUri(uri);
@@ -158,19 +158,19 @@ export class PreviewManager {
     await panel?.load();
   }
 
-  /** Markdown（差分のパネルは変更後）の URI が渡した URI と同じパネルを全て返す。通常のパネルと差分のパネルの両方が当たる。変更前の文書は当たらない */
+  /** Markdown（差分のパネルは変更後）の URI が指定した URI と同じパネルを全て返却する。通常のパネルと差分のパネルの両方が該当する。変更前の文書は該当しない */
   private findPanels(uri: Uri): PreviewPanel[] {
     return [...this.panels.values()].filter(
       (panel) => panel.uri.toString() === uri.toString(),
     );
   }
 
-  /** 文書の変更を、その Markdown のパネルへ渡す。`liveUpdate` が `true` なら変更で待ちを始め、`false` なら保存で待たずに送る */
+  /** 文書の変更を、その Markdown のパネルへ指定する。`liveUpdate` が `true` なら変更で待ちを始め、`false` なら保存で待たずに送信する */
   handleDocumentChange(event: {
     document: TextDocument;
     saved: boolean;
   }): void {
-    // 取り込んでいるファイルを保存したパネルは、読み直した取り込む文書で描き直す
+    // 取り込んでいるファイルを保存したパネルは、再読み込みした取り込む文書で再描画する
     if (event.saved) {
       for (const panel of this.panels.values()) {
         if (panel.readsInclude(event.document.uri.fsPath)) {
@@ -189,7 +189,7 @@ export class PreviewManager {
     }
   }
 
-  /** 設定ファイルの作成・変更・削除と、`mdmark.configPath`・`mdmark.preview.theme`・`mdmark.colorTheme` の変更を受け、影響するパネルに設定を読み直させて待たずに送らせる。`libraries` の origin の集まりが CSP に入れたものと違うパネルは、HTML を入れ直す */
+  /** 設定ファイルの作成・変更・削除と、`mdmark.configPath`・`mdmark.preview.theme`・`mdmark.colorTheme` の変更を受け、影響するパネルに設定を再読み込みさせて待たずに送信させる。`libraries` の origin の集まりが CSP に入れたものと違うパネルは、HTML をもう一度入れる */
   handleConfigChange(change: ConfigChange): void {
     for (const panel of this.panels.values()) {
       if (!this.affects(change, panel)) {
@@ -255,7 +255,7 @@ export class PreviewManager {
     }
   }
 
-  /** エディタの見えている範囲を、その文書のパネルに渡す */
+  /** エディタの見えている範囲を、その文書のパネルに指定する */
   handleVisibleRanges(event: TextEditorVisibleRangesChangeEvent): void {
     const range = event.visibleRanges[0];
     if (range === undefined) {
@@ -266,7 +266,7 @@ export class PreviewManager {
     }
   }
 
-  /** 最後に表に出たパネルの要素を調べる（テストのときだけ `activate` が返す） */
+  /** 最後に表に出たパネルの要素を調べる（テストのときだけ `activate` が返却する） */
   async inspectPreview(
     selector: string,
     play = false,
@@ -278,7 +278,7 @@ export class PreviewManager {
     return panel.inspect(selector, play);
   }
 
-  /** 最後に表に出たパネルを axe で検査する（テストのときだけ `activate` が返す） */
+  /** 最後に表に出たパネルを axe で検査する（テストのときだけ `activate` が返却する） */
   async auditPreview(): Promise<AxeViolation[]> {
     const panel = this.lastActive;
     if (panel === undefined) {
@@ -288,7 +288,7 @@ export class PreviewManager {
   }
 }
 
-/** タブの題に出す Markdown のファイル名 */
+/** タブのタイトルに出す Markdown のファイル名 */
 function uriBaseName(document: TextDocument): string {
   return document.uri.path.split("/").at(-1) ?? document.uri.path;
 }

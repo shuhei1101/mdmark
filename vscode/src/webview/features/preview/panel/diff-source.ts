@@ -1,7 +1,7 @@
-/** 差分のパネルで `mount` に渡す `docId` */
+/** 差分のパネルで `mount` に指定する `docId` */
 export const DIFF_DOC_ID = "diff";
 
-/** 差分のパネルで取り出し元に渡す、最後に受けた `render` の全文。書き換えられる入れ物 */
+/** 差分のパネルで取り出し元に指定する、最後に受けた `render` の全文。書き換えられる入れ物 */
 export type DiffTexts = {
   /** 変更後の全文（`render` の `markdown`） */
   modified: string;
@@ -15,7 +15,7 @@ export type DiffSource = {
   content: (target: { docId: string; revisionId: string }) => Promise<string>;
 };
 
-/** `revisions` が `modified`・`original` の 2 つをこの順に返し、`content` が呼ばれた時点の全文を返す取り出し元を作る。`content` は知らない `revisionId` で reject する */
+/** `revisions` が `modified`・`original` の 2 つをこの順に返却し、`content` が呼ばれた時点の全文を返却する取り出し元を作る。`content` は知らない `revisionId` で reject する */
 export const createDiffSource = (texts: DiffTexts): DiffSource => ({
   revisions: () => {
     const at = new Date().toISOString();

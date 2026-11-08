@@ -6,14 +6,14 @@ import { CliError } from "./errors.ts";
 
 const execFileAsync = promisify(execFile);
 
-/** 比べる基準を引けないときの文。ref を直すか、履歴を取得する直し方を添える */
+/** 比べる基準を参照できないときの文。ref を修正するか、履歴を取得する修正方法を添える */
 function unresolvableBase(base: string, reason: string): CliError {
   return new CliError(
-    `比べる基準 ${base} を引けません（${reason}）。ref を直すか、履歴を取得してください（CI の checkout は fetch-depth: 0）。`,
+    `比べる基準 ${base} を参照できません（${reason}）。ref を修正するか、履歴を取得してください（CI の checkout は fetch-depth: 0）。`,
   );
 }
 
-/** フォルダで git を 1 回呼び、標準出力を返す。引数は配列で渡し、シェルを通さない。失敗したら `base` を引けない誤りにする */
+/** フォルダで git を 1 回呼び、標準出力を返却する。引数は配列で指定し、シェルを経由しない。失敗したら `base` を参照できない誤りにする */
 async function runGit(options: {
   cwd: string;
   base: string;
@@ -41,7 +41,7 @@ function splitPaths(output: string): string[] {
   return output.split("\0").filter((path) => path !== "");
 }
 
-/** git の ref と HEAD の merge-base から作業ツリーまでに変わったファイルと、git が管理していない新しいファイルを、索引のフォルダからの相対パス（区切りは `/`）で返す */
+/** git の ref と HEAD の merge-base から作業ツリーまでに変わったファイルと、git が管理していない新しいファイルを、索引のフォルダからの相対パス（区切りは `/`）で返却する */
 export async function changedPathsSince(options: {
   /** git を呼ぶフォルダ（設定ファイルのフォルダ） */
   cwd: string;
@@ -51,7 +51,7 @@ export async function changedPathsSince(options: {
   indexDir: string;
 }): Promise<string[]> {
   const { cwd, base, indexDir } = options;
-  // `-` で始まる ref は git のオプションと読まれるため、引けないものとして扱う
+  // `-` で始まる ref は git のオプションと読み込まれるため、参照できないものとして扱う
   if (base.startsWith("-")) {
     throw unresolvableBase(base, "ref が - で始まっています");
   }

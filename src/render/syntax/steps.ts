@@ -13,10 +13,10 @@ import {
   warningBlock,
 } from "./warnings.ts";
 
-/** ステップの印で読める指定を、読み飛ばした引数の案内に並べる文 */
+/** ステップのマーカーで読み込める指定を、スキップした引数の案内に並べる文 */
 const USABLE_ARGS = "`closed`・`open`・`title=見出し`";
 
-/** ステップの印の引数から折り畳みの指定を読み、読めない指定を 1 つの書き方の警告にまとめ、知らないキーと指定を読み飛ばした引数にする */
+/** ステップのマーカーの引数から折り畳みの指定を読み込み、読み込めない指定を 1 つの記載の警告にまとめ、知らないキーと指定をスキップした引数にする */
 export function readStepsOptions(mark: Mark): {
   collapse: CollapseMode;
   title?: string | undefined;
@@ -39,7 +39,7 @@ export function readStepsOptions(mark: Mark): {
       arg: `${key}=`,
       usable: USABLE_ARGS,
     })),
-    // `キー=値` の形でない指定
+    // `キー=値` の構造でない指定
     ...rest.args
       .filter((arg) => arg !== titleTail)
       .map((arg) => ({ arg, usable: USABLE_ARGS })),
@@ -53,7 +53,7 @@ export function readStepsOptions(mark: Mark): {
     skipped,
     warning: {
       mark: mark.raw,
-      message: "の読めない指定を当てずに描いています。",
+      message: "の読み込めない指定を当てずに描いています。",
       items,
     },
   };
@@ -75,7 +75,7 @@ function itemCount(tokens: Token[], listOpen: number): number {
   return count;
 }
 
-/** `steps` がオンなら、`steps` の範囲の最初の番号付きリスト（入れ子は除く）の `ol` に class `mdmark-steps` を付ける。`closed`・`open` なら折り畳みに入れる。読めない指定と、番号付きリストが無いときは警告を差し込む */
+/** `steps` がオンなら、`steps` の範囲の最初の番号付きリスト（入れ子は除く）の `ol` に class `mdmark-steps` を付ける。`closed`・`open` なら折り畳みに入れる。読み込めない指定と、番号付きリストが無いときは警告を差し込む */
 export function buildSteps(state: StateCore): void {
   if (!featureOn(state, "steps")) {
     return;
@@ -111,7 +111,7 @@ export function buildSteps(state: StateCore): void {
           state,
           {
             message:
-              "`<!-- steps -->` の範囲に、手順にする番号付きリストがありません。手順を `1.` から始まる番号付きリストで書いてください。範囲の中身はそのまま描いています。",
+              "`<!-- steps -->` の範囲に、手順にする番号付きリストがありません。手順を `1.` から始まる番号付きリストで記載してください。範囲の中身はそのまま描いています。",
           },
           token,
         ),

@@ -20,7 +20,7 @@ type TableInfo = {
   rows: TableRow[];
 };
 
-/** `table_open` から `table_close` までを読み、列の数と本文の行を集める */
+/** `table_open` から `table_close` までを読み込み、列の数と本文の行を集める */
 function readTable(
   tokens: Token[],
   openIndex: number,
@@ -54,7 +54,7 @@ export function attachRowDetails(state: StateCore): void {
     return;
   }
   const tokens = state.tokens;
-  // 取り除く位置（印と、行に移す中身）
+  // 取り除く位置（マーカーと、行に移す中身）
   const removed = new Set<number>();
   // 位置の直後に差し込むトークン（行の詳細の行）
   const after = new Map<number, Token[]>();
@@ -76,10 +76,10 @@ export function attachRowDetails(state: StateCore): void {
       tableOpen -= 1;
     }
     const table = readTable(tokens, tableOpen, tableClose);
-    // 表の直後に続く `row-detail` の範囲を順に読む
+    // 表の直後に続く `row-detail` の範囲を順に読み込む
     let position = tableClose + 1;
     for (;;) {
-      // 表の印の閉じの印を挟んでいても、表の直後として読む
+      // 表のマーカーの閉じのマーカーを挟んでいても、表の直後として読み込む
       while (
         markOf(tokens[position])?.name === "table" &&
         markOf(tokens[position])?.closing
@@ -110,7 +110,7 @@ export function attachRowDetails(state: StateCore): void {
             state,
             {
               mark: mark.raw,
-              message: `の ${mark.args.args[0] ?? ""} 行目がありません。表は ${table.rows.length} 行です。行の位置を 1〜${table.rows.length} で書いてください。詳細は表の後の本文として描いています。`,
+              message: `の ${mark.args.args[0] ?? ""} 行目がありません。表は ${table.rows.length} 行です。行の位置を 1〜${table.rows.length} で記載してください。詳細は表の後の本文として描いています。`,
             },
             tokens[position],
           ),

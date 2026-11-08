@@ -2,16 +2,16 @@ import type { DiffBlock, DiffLine } from "../diff/compute.ts";
 import { renderDiffHtml } from "./diff-html.ts";
 import { escapeHtml } from "./escape.ts";
 
-/** 行頭の印 */
+/** 行頭のマーカー */
 const SIGNS = { same: " ", del: "-", add: "+" };
 
-/** 読み上げにだけ出す、削除した行・追加した行の名前 */
+/** スクリーンリーダーにだけ出す、削除した行・追加した行の名前 */
 const KIND_NAMES = { del: "削除した行: ", add: "追加した行: " };
 
-/** 変わった語を囲む要素: 削除した側は `del`、追加した側は `ins` */
+/** 変わった単語を囲む要素: 削除した側は `del`、追加した側は `ins` */
 const WORD_TAGS = { del: "del", add: "ins" };
 
-/** 差分の 1 行の HTML。文字はエスケープし、変わった語は `del`・`ins` で囲む */
+/** 差分の 1 行の HTML。文字はエスケープし、変わった単語は `del`・`ins` で囲む */
 function renderLine(line: DiffLine): string {
   const name =
     line.kind === "same"
@@ -30,7 +30,7 @@ function renderLine(line: DiffLine): string {
   return `<div class="mdmark-diff-line" data-kind="${line.kind}"><span class="mdmark-diff-sign" aria-hidden="true">${SIGNS[line.kind]}</span><span class="mdmark-diff-text">${name}${text}</span></div>`;
 }
 
-/** 部品設計『差分の行』: 比べた行を並べた HTML を返す。埋め込んだ HTML の範囲の塊は `renderDiffHtml` で描く */
+/** 部品設計『差分の行』: 比べた行を並べた HTML を返却する。埋め込んだ HTML の範囲の塊は `renderDiffHtml` で描く */
 export function renderDiffLines(options: {
   /** 上から順の塊。埋め込んだ HTML の範囲の `before`・`after` は、スクリプトとイベントの属性を落とした HTML */
   blocks: DiffBlock[];

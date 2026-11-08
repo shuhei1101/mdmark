@@ -4,10 +4,10 @@ import { legendFor, renderLegendItems } from "../parts/diagram.ts";
 import { paramChart, paramJson, renderCopyStatus } from "../parts/param.ts";
 import { DIAGRAM_REDRAW_EVENT, renumberIds } from "./diagrams.ts";
 
-// 操作を付けた回数の通し番号。`id` を重ならせないために使う
+// 操作を付けた回数の通し番号。`id` を重ならせないために使用する
 let attachCounter = 0;
 
-/** 操作できる部品 1 つに、スライダーの値でグラフを描き直す操作と、今の値を写す操作を付け、外す関数を返す */
+/** 操作できる部品 1 つに、スライダーの値でグラフを再描画する操作と、今の値を写す操作を付け、削除する関数を返却する */
 function attachParam(
   root: HTMLElement,
   definition: MdmarkParamDefinition,
@@ -30,18 +30,18 @@ function attachParam(
   const { signal } = controller;
   let value = Number(input.value);
 
-  /** 前の知らせと選んで写す JSON を消す */
+  /** 前の通知と選んで写す JSON を削除する */
   const clearStatus = (): void => {
     status.textContent = "";
     delete status.dataset.state;
     fallback.hidden = true;
   };
 
-  // 描き直すたびの通し番号。項目のツールチップの `id` を重ならせないために使う
+  // 再描画するたびの通し番号。項目のツールチップの `id` を重ならせないために使用する
   let redraws = 0;
   const figure = root.querySelector<HTMLElement>("figure.mdmark-diagram");
 
-  /** グラフを今の値の系列で描き直す。題と倍率は保ち、項目のツールチップを入れ替える */
+  /** グラフを今の値の系列で再描画する。タイトルと倍率は保ち、項目のツールチップを入れ替える */
   const redraw = (): void => {
     const chart = paramChart(definition, value);
     redraws += 1;
@@ -72,14 +72,14 @@ function attachParam(
     () => {
       value = Number(input.value);
       output.textContent = String(value);
-      // 値を変えたら前の知らせは古くなる
+      // 値を変えたら前の通知は古くなる
       clearStatus();
       redraw();
     },
     { signal },
   );
 
-  /** 写したか・写せなかったかを知らせる。写せなかったときは、選んで写せる JSON を出す */
+  /** コピーしたか・写せなかったかを通知する。写せなかったときは、選んで写せる JSON を出す */
   const notify = (state: "copied" | "failed", json: string): void => {
     status.dataset.state = state;
     status.innerHTML = renderCopyStatus(state);
@@ -104,7 +104,7 @@ function attachParam(
   return () => controller.abort();
 }
 
-/** `root` の中の操作できる部品ごとに、スライダーの値でグラフを描き直す操作と、今の値を写す操作を付ける。`definitions` は `div.mdmark-param` の並びと同じ順。付けた操作を外す関数を返す */
+/** `root` の中の操作できる部品ごとに、スライダーの値でグラフを再描画する操作と、今の値を写す操作を付ける。`definitions` は `div.mdmark-param` の並びと同じ順。付けた操作を削除する関数を返却する */
 export function attachParams(
   root: HTMLElement,
   definitions: MdmarkParamDefinition[],
@@ -119,7 +119,7 @@ export function attachParams(
         return;
       }
       const title = param.getAttribute("aria-labelledby") ?? "";
-      // 同じページに文書を 2 つ以上描いても `id` が重ならないよう振り直す
+      // 同じページに文書を 2 つ以上描いても `id` が重ならないようもう一度振る
       renumberIds(
         param,
         title.replace(/-title$/, ""),

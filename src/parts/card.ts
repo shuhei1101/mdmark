@@ -15,7 +15,7 @@ function fileNameOf(href: string): string {
   return path.slice(path.lastIndexOf("/") + 1);
 }
 
-/** リンクと添付のカードの HTML を返す */
+/** リンクと添付のカードの HTML を返却する */
 export function renderCard(options: {
   /** リンクか添付か */
   kind: "link" | "file";

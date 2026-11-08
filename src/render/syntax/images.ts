@@ -17,7 +17,7 @@ export const MEDIA_EXTENSIONS: Readonly<
   audio: ["mp3", "m4a", "aac", "ogg", "oga", "opus", "wav", "flac"],
 };
 
-/** `{…}` に書ける属性の名前。後ろの 4 つは動画・音声だけ */
+/** `{…}` に記載できる属性の名前。後ろの 4 つは動画・音声だけ */
 export const IMAGE_ATTRIBUTE_NAMES = [
   "width",
   "align",
@@ -28,10 +28,10 @@ export const IMAGE_ATTRIBUTE_NAMES = [
   "poster",
 ] as const;
 
-/** 動画・音声だけに書ける属性 */
+/** 動画・音声だけに記載できる属性 */
 const MEDIA_ONLY_ATTRIBUTES = ["autoplay", "muted", "loop", "poster"];
 
-/** `align=` に書ける配置 */
+/** `align=` に記載できる配置 */
 const ALIGNS = ["left", "center", "right"] as const;
 
 /** 幅の % の上限 */
@@ -47,11 +47,11 @@ const ATTRIBUTE_PATTERN = /^\{([^{}]*)\}/;
 export type ImageAttributes = {
   /** `src` の拡張子で見分けた種類 */
   kind: MediaKind;
-  /** `300px` か `40%` の形の幅 */
+  /** `300px` か `40%` の構造の幅 */
   width?: string | undefined;
   /** 配置。文の中の画像には入れない */
   align?: (typeof ALIGNS)[number] | undefined;
-  /** `nolightbox` を書いたら `false` */
+  /** `nolightbox` を記載したら `false` */
   lightbox: boolean;
   /** 動画・音声だけ */
   autoplay: boolean;
@@ -59,9 +59,9 @@ export type ImageAttributes = {
   muted: boolean;
   /** 動画・音声だけ */
   loop: boolean;
-  /** 動画だけ。書いたパス */
+  /** 動画だけ。記載したパス */
   poster?: string | undefined;
-  /** 読めなかった属性 */
+  /** 読み込めなかった属性 */
   items: WarningItem[];
 };
 
@@ -80,7 +80,7 @@ export function mediaKindOf(src: string): MediaKind {
   return extension === "gif" ? "gif" : "image";
 }
 
-/** `width=` の値を `300px` か `40%` の形にする。読めなければ `undefined` */
+/** `width=` の値を `300px` か `40%` の構造にする。読み込めなければ `undefined` */
 function readWidth(value: string): string | undefined {
   const pixels = /^(\d+)(?:px)?$/.exec(value);
   if (pixels && Number(pixels[1]) >= 1) {
@@ -94,7 +94,7 @@ function readWidth(value: string): string | undefined {
   return undefined;
 }
 
-/** `{` と `}` の中の文字を空白で区切って画像の属性を読む。読めない属性は当てずに `items` に入れる */
+/** `{` と `}` の中の文字を空白で区切って画像の属性を読み込む。読み込めない属性は当てずに `items` に入れる */
 export function readImageAttributes(
   text: string,
   kind: MediaKind,
@@ -116,13 +116,13 @@ export function readImageAttributes(
     const name = equals < 0 ? part : part.slice(0, equals);
     const value = equals < 0 ? undefined : part.slice(equals + 1);
     if (MEDIA_ONLY_ATTRIBUTES.includes(name) && !media) {
-      unreadable(part, "動画と音声にだけ書ける属性です。");
+      unreadable(part, "動画と音声にだけ記載できる属性です。");
     } else if (name === "width" && value !== undefined) {
       const width = readWidth(value);
       if (width === undefined) {
         unreadable(
           part,
-          `幅は \`300\`・\`300px\` の px か、\`1%\`〜\`${MAX_WIDTH_PERCENT}%\` で書いてください。`,
+          `幅は \`300\`・\`300px\` の px か、\`1%\`〜\`${MAX_WIDTH_PERCENT}%\` で記載してください。`,
         );
       } else {
         attributes.width = width;
@@ -130,7 +130,7 @@ export function readImageAttributes(
     } else if (name === "align" && inline) {
       unreadable(
         name,
-        "文の中の画像には書けない属性です。画像だけの段落にしてください。",
+        "文の中の画像には記載できない属性です。画像だけの段落にしてください。",
       );
     } else if (
       name === "align" &&
@@ -138,7 +138,7 @@ export function readImageAttributes(
     ) {
       attributes.align = value as (typeof ALIGNS)[number];
     } else if (name === "align") {
-      unreadable(part, `配置は ${codes(ALIGNS)} で書いてください。`);
+      unreadable(part, `配置は ${codes(ALIGNS)} で記載してください。`);
     } else if (part === "nolightbox") {
       attributes.lightbox = false;
     } else if (part === "autoplay" || part === "muted" || part === "loop") {
@@ -146,24 +146,24 @@ export function readImageAttributes(
     } else if (name === "poster" && kind === "video" && value) {
       attributes.poster = value;
     } else if (name === "poster") {
-      unreadable(part, "動画にだけ、`poster=パス` の形で書ける属性です。");
+      unreadable(part, "動画にだけ、`poster=パス` の構造で記載できる属性です。");
     } else {
-      unreadable(part, "使えない属性です。");
+      unreadable(part, "使用できない属性です。");
     }
   }
-  // 音の出る自動再生はブラウザが止めるため、音を消して始める
+  // 音の出る自動再生はブラウザが止めるため、ミュートにして始める
   if (attributes.autoplay) {
     attributes.muted = true;
   }
   return attributes;
 }
 
-/** 画像のトークンの属性。`readImages` が `meta.mdmarkImage` に置く */
+/** 画像のトークンの属性。`readImages` が `meta.mdmarkImage` に配置する */
 export function imageAttributesOf(token: Token): ImageAttributes | undefined {
   return (token.meta as { mdmarkImage?: ImageAttributes } | null)?.mdmarkImage;
 }
 
-/** 段落の行内の子のうち、前後の空白の `text` を除いて画像 1 つだけなら、その画像を返す */
+/** 段落の行内の子のうち、前後の空白の `text` を除いて画像 1 つだけなら、その画像を返却する */
 export function soleImageOf(inline: Token | undefined): Token | undefined {
   const rest = (inline?.children ?? []).filter(
     (child) => !(child.type === "text" && child.content.trim() === ""),
@@ -179,10 +179,10 @@ function kindOf(state: StateCore, src: string): MediaKind {
   return media && !featureOn(state, "media") ? "image" : kind;
 }
 
-/** 書き方の警告の本文に並べる、書ける属性の一覧 */
+/** 記載の警告の本文に並べる、記載できる属性の一覧 */
 const ATTRIBUTE_LIST = codes(IMAGE_ATTRIBUTE_NAMES);
 
-/** 画像ごとに種類と、`images` がオンなら直後の `{…}` の属性を読んで `meta.mdmarkImage` に置き、`{…}` を外す。読めない属性は段落の前に 1 つの警告を置く */
+/** 画像ごとに種類と、`images` がオンなら直後の `{…}` の属性を読み込んで `meta.mdmarkImage` に配置し、`{…}` を削除する。読み込めない属性は段落の前に 1 つの警告を配置する */
 export function readImages(state: StateCore): void {
   const images = featureOn(state, "images");
   const nonce = envOf(state).nonce;
@@ -221,7 +221,7 @@ export function readImages(state: StateCore): void {
       }
       items.push(...attributes.items);
     }
-    // 属性を外して空になった文字は、画像だけの段落を見分けられるよう取り除く
+    // 属性を削除して空になった文字は、画像だけの段落を見分けられるよう取り除く
     token.children = children.filter(
       (child) => !(child.type === "text" && child.content === ""),
     );
@@ -234,7 +234,7 @@ export function readImages(state: StateCore): void {
       blockStartOf(state.tokens, index),
       0,
       warningBlock(state, {
-        message: `画像の読めない属性を当てずに描いています。書ける属性は ${ATTRIBUTE_LIST} です。`,
+        message: `画像の読み込めない属性を当てずに描いています。記載できる属性は ${ATTRIBUTE_LIST} です。`,
         items,
       }),
     );
@@ -258,7 +258,7 @@ function isSoleWithAttributes(children: Token[], position: number): boolean {
   });
 }
 
-/** `index` のトークンを含む、入れ子の深さ 0 のブロックの開きの位置を返す */
+/** `index` のトークンを含む、入れ子の深さ 0 のブロックの開きの位置を返却する */
 export function blockStartOf(tokens: Token[], index: number): number {
   let at = index;
   while (at > 0 && (tokens[at]?.level ?? 0) > 0) {
@@ -275,7 +275,7 @@ export function altOf(image: Token): string {
     : image.content;
 }
 
-/** テーマごとの画像のフラグメントから出す配色を返す */
+/** テーマごとの画像のフラグメントから出す配色を返却する */
 export function onlyOf(src: string): "dark" | "light" | undefined {
   return ONLY_PATTERN.exec(src)?.[1] as "dark" | "light" | undefined;
 }
@@ -319,13 +319,13 @@ function mediaHtml(image: Token, kind: "video" | "audio"): string {
   });
 }
 
-/** 画像の種類が動画か音声なら、その種類を返す */
+/** 画像の種類が動画か音声なら、その種類を返却する */
 function mediaKindOfToken(image: Token): "video" | "audio" | undefined {
   const kind = imageAttributesOf(image)?.kind;
   return kind === "video" || kind === "audio" ? kind : undefined;
 }
 
-/** `images` がオンなら画像 1 つだけの段落を画像の図にし、`media` がオンなら動画と音声を再生バー付きの図にする（文の中のものは段落の後ろに置く） */
+/** `images` がオンなら画像 1 つだけの段落を画像の図にし、`media` がオンなら動画と音声を再生バー付きの図にする（文の中のものは段落の後ろに配置する） */
 export function buildImageFigures(state: StateCore): void {
   const images = featureOn(state, "images");
   const media = featureOn(state, "media");
@@ -354,7 +354,7 @@ export function buildImageFigures(state: StateCore): void {
       index += 2;
       continue;
     }
-    // 文の中の動画と音声は段落から外し、段落の後ろに置く
+    // 文の中の動画と音声は段落から除外し、段落の後ろに配置する
     const after: Token[] = [];
     let linkDepth = 0;
     const children: Token[] = [];

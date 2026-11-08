@@ -1,11 +1,11 @@
 import { escapeHtml } from "./escape.ts";
 
-/** 関連文書の一覧の題 */
+/** 関連文書の一覧のタイトル */
 const BACKLINKS_TITLE = "関連文書";
 
-/** 描いた文書の末尾に置く、その文書を参照している文書の一覧の HTML を返す。文書が無ければ空文字 */
+/** 描いた文書の末尾に配置する、その文書を参照している文書の一覧の HTML を返却する。文書が無ければ空文字 */
 export function renderBacklinks(props: {
-  /** 題の要素の `id`。一覧の `aria-labelledby` が指す */
+  /** タイトルの要素の `id`。一覧の `aria-labelledby` が指す */
   id: string;
   /** 並べる文書（並びの順に出す） */
   docs: Array<{ title: string; href: string }>;

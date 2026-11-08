@@ -13,7 +13,7 @@ function applyToggleState(toggle: HTMLButtonElement, paused: boolean): void {
   }
 }
 
-/** GIF の画像を包み、最初のフレームの絵と止める・再生するボタンを付ける。外す関数を返す */
+/** GIF の画像を包み、最初のフレームの絵と止める・再生するボタンを付ける。削除する関数を返却する */
 export function attachGifs(root: HTMLElement): () => void {
   const controller = new AbortController();
   const { signal } = controller;
@@ -50,7 +50,7 @@ export function attachGifs(root: HTMLElement): () => void {
         wrapper.append(target, canvas, toggle);
         wrapped.push({ wrapper, target, img });
 
-        /** 止めるか再生するかを、絵・画像・ボタンに当てる */
+        /** 止めるか再生するかを、絵・画像・ボタンに適用する */
         const setPaused = (paused: boolean): void => {
           canvas.hidden = !paused;
           img.style.visibility = paused ? "hidden" : "";

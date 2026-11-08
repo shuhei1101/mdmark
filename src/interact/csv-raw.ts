@@ -12,7 +12,7 @@ const tableBlockOf = (table: Element): HTMLElement => {
     : (table as HTMLElement);
 };
 
-/** CSV の表の囲みの帯に RAW のボタンを置き、押すたびに表と元の CSV を入れ替える。並べ替え・絞り込み・ピン止めの状態は触らない */
+/** CSV の表の囲みの帯に RAW のボタンを配置し、押すたびに表と元の CSV を入れ替える。並べ替え・絞り込み・ピン止めの状態は触らない */
 export const attachCsvRaw = (root: HTMLElement): (() => void) => {
   const wrappers = [
     ...root.querySelectorAll<HTMLElement>(
@@ -26,7 +26,7 @@ export const attachCsvRaw = (root: HTMLElement): (() => void) => {
       continue;
     }
     const pressed = wrapper.dataset.view === "raw";
-    // 表の操作の帯があれば、その道具の並びに足し、無ければ RAW のボタンの帯を表の前に置く
+    // 表の操作の帯があれば、その道具の並びに追加し、無ければ RAW のボタンの帯を表の前に配置する
     const bar = wrapper.querySelector(":scope > .mdmark-table-bar");
     if (bar) {
       const holder = document.createElement("div");

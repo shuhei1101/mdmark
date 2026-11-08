@@ -14,11 +14,11 @@ import {
   type DiffSource,
 } from "./source.ts";
 
-/** 差分のプレビューの前と後の HTML を文書と同じ描き方で描き、置いた要素に文書と同じ操作を付ける関数を返す関数 */
+/** 差分のプレビューの前と後の HTML を文書と同じ描き方で描き、配置した要素に文書と同じ操作を付ける関数を返却する関数 */
 export type DiffHtmlRenderer = (html: string) => {
   /** 描いた範囲の中身 */
   html: string;
-  /** 置いた要素に図の拡大・ツールチップ・操作できる部品などの操作を付け、外す関数を返す */
+  /** 配置した要素に図の拡大・ツールチップ・操作できる部品などの操作を付け、削除する関数を返却する */
   attach: (root: HTMLElement) => () => void;
 };
 
@@ -42,13 +42,13 @@ const URL_REFERENCE = /url\(#([^)\s]+)\)/g;
 /** 取り出し元の待ちがこれを過ぎたら読み込み中の文を出す（ミリ秒） */
 const LOADING_DELAY_MS = 1000;
 
-/** 取り出し元の待ちがこれを過ぎたら回る表示を足す（ミリ秒） */
+/** 取り出し元の待ちがこれを過ぎたら回る表示を追加する（ミリ秒） */
 const SPINNER_DELAY_MS = 2000;
 
 /** 差分の場所の `id` と選ぶ欄の `id` の頭。ページの中で一意にする通し番号を続ける */
 const ID_PREFIX = "mdmark-diff-panel-";
 
-/** 差分の場所の `id` に使う通し番号 */
+/** 差分の場所の `id` に使用する通し番号 */
 let serial = 0;
 
 /** 差分を開いている間に隠す本文の要素と右側の目次に付ける属性。`index.css` が `display: none !important` で隠す */
@@ -61,7 +61,7 @@ function parseElement(html: string): HTMLElement {
   return template.content.firstElementChild as HTMLElement;
 }
 
-/** 語の区切り。`Intl.Segmenter` を持たないブラウザでは `undefined` */
+/** 単語の区切り。`Intl.Segmenter` を持たないブラウザでは `undefined` */
 export function createSegmenter(): Intl.Segmenter | undefined {
   if (typeof Intl.Segmenter !== "undefined") {
     return new Intl.Segmenter("ja", { granularity: "word" });
@@ -116,7 +116,7 @@ export function scopeIds(options: {
   }
 }
 
-/** 埋め込んだ HTML の範囲の塊の前と後を、今の描画で描く。描いた中身に置き換えたブロックと、範囲ごとの操作を付ける関数を返す */
+/** 埋め込んだ HTML の範囲の塊の前と後を、今の描画で描く。描いた中身に置き換えたブロックと、範囲ごとの操作を付ける関数を返却する */
 function renderBlocks(
   blocks: DiffBlock[],
   renderHtml: DiffHtmlRenderer,
@@ -141,19 +141,19 @@ function renderBlocks(
   return { blocks: rendered, ranges };
 }
 
-/** 描いた文書に「変更を見る」と差分の場所を置き、開く・選び直す・閉じるを受け取って取り出し元を呼び、差分を描く。差分を閉じ、待ちと受け取りとミニマップを片付け、置いた要素を取り除く関数を返す */
+/** 描いた文書に「変更表示」と差分の場所を配置し、開く・もう一度選ぶ・閉じるを受け取って取り出し元を呼び、差分を描く。差分を閉じ、待ちと受け取りとミニマップを片付け、配置した要素を取り除く関数を返却する */
 export function attachDiff(options: {
-  /** 描いた本文（右側の目次を置いたときは本文の列） */
+  /** 描いた本文（右側の目次を配置したときは本文の列） */
   root: HTMLElement;
-  /** 使う側の取り出し元 */
+  /** 利用側の取り出し元 */
   source: DiffSource;
-  /** 取り出し元に渡す文書の `id` */
+  /** 取り出し元に指定する文書の `id` */
   docId: string;
-  /** 埋め込んだ HTML を文書と同じ描き方で描き、操作を付ける関数を返す関数 */
+  /** 埋め込んだ HTML を文書と同じ描き方で描き、操作を付ける関数を返却する関数 */
   renderHtml: DiffHtmlRenderer;
   /** 差分を開いている間、`root` の外で一緒に隠す要素（右側の目次） */
   hideWith?: HTMLElement[];
-  /** 置いた時点で開くか（既定 `false`。`mount` の `diffMode` が `open` のとき `true`） */
+  /** 配置した時点で開くか（既定 `false`。`mount` の `diffMode` が `open` のとき `true`） */
   open?: boolean;
 }): () => void {
   const {
@@ -185,20 +185,20 @@ export function attachDiff(options: {
   // 開いている間に隠した本文の要素
   let hidden: HTMLElement[] = [];
 
-  /** 開いている間に隠した要素と `hideWith` の要素の属性を外す */
+  /** 開いている間に隠した要素と `hideWith` の要素の属性を削除する */
   const showHidden = (): void => {
     for (const element of [...hidden, ...hideWith]) {
       element.removeAttribute(DIFF_HIDDEN_ATTRIBUTE);
     }
     hidden = [];
   };
-  // 開いた世代と選び直しの世代: 進めるたびに、前の待ちの結果を捨てる
+  // 開いた世代と再選択の世代: 進めるたびに、前の待ちの結果を捨てる
   let openGeneration = 0;
   let selectGeneration = 0;
   let loadingTimer: ReturnType<typeof setTimeout> | undefined;
   let spinnerTimer: ReturnType<typeof setTimeout> | undefined;
   let detachMinimap: (() => void) | undefined;
-  // プレビューの前と後に付けた操作を外す関数
+  // プレビューの前と後に付けた操作を削除する関数
   let detachPreviews: (() => void)[] = [];
 
   /** 読み込み中の文を出す待ちのタイマーを止める */
@@ -207,7 +207,7 @@ export function attachDiff(options: {
     clearTimeout(spinnerTimer);
   };
 
-  /** 差分の行のミニマップと、プレビューに付けた操作を外す */
+  /** 差分の行のミニマップと、プレビューに付けた操作を削除する */
   const clearMinimap = (): void => {
     detachMinimap?.();
     detachMinimap = undefined;
@@ -217,7 +217,7 @@ export function attachDiff(options: {
     detachPreviews = [];
   };
 
-  /** 置いた前と後のプレビューの中身ごとに、`id` に側ごとの頭を付けてから操作を付ける */
+  /** 配置した前と後のプレビューの中身ごとに、`id` に側ごとの頭を付けてから操作を付ける */
   const attachPreviews = (
     result: HTMLElement,
     ranges: RangeAttaches[],
@@ -391,7 +391,7 @@ export function attachDiff(options: {
       throw new Error("リビジョンの選択が描かれていない");
     }
     const view = { revisions, before, after, summary, result };
-    /** 前の欄の選択に合わせて、後の欄の選べない項目を直す。後が前以前になったら、前の 1 つ新しいリビジョンに移す */
+    /** 前の欄の選択に合わせて、後の欄の選べない項目を修正する。後が前以前になったら、前の 1 つ新しいリビジョンに移す */
     const constrain = (): void => {
       const limit = before.selectedIndex;
       for (const option of after.options) {
@@ -411,7 +411,7 @@ export function attachDiff(options: {
     await refresh(view);
   };
 
-  /** 閉じる: 世代を進めて待ちを捨て、ミニマップを外し、場所を空にして隠し、隠した本文を戻す */
+  /** 閉じる: 世代を進めて待ちを捨て、ミニマップを削除し、場所を空にして隠し、隠した本文を戻す */
   const close = (): void => {
     openGeneration += 1;
     selectGeneration += 1;

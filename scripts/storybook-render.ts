@@ -102,24 +102,24 @@ import { planCellMerges } from "../src/render/syntax/table-cells.ts";
 import { warningsOf } from "../src/render/syntax/tables.ts";
 import { renderMediaError } from "../vscode/src/webview/shared/lib/media-error.ts";
 
-// 描画の口を外へ出さないための待受アドレス
+// 描画のインターフェースを外へ出さないための待受アドレス
 const RENDER_HOST = "127.0.0.1";
 // 待ち受けるポートの範囲
 const MIN_PORT = 1;
 const MAX_PORT = 65535;
 // リポジトリの直下
 const REPO_ROOT = resolve(import.meta.dirname, "..");
-// 描画の口の経路: 本文の CSS と、部品の HTML の前置き
+// 描画のインターフェースの経路: 本文の CSS と、部品の HTML の前置き
 const CSS_PATH = "/render/index.css";
 const PART_PATH_PATTERN = /^\/render\/([^/]+)$/;
-// ストーリーが読む、操作を付ける処理の経路と、その元のソース（図の拡大・縮小、表の見出し行と集計の行を留める処理、ファイルツリーの注釈の列を揃える処理）
+// ストーリーが読み込む、操作を付ける処理の経路と、その元のソース（図の拡大・縮小、表の見出し行と集計の行を留める処理、ファイルツリーの注釈の列を統一する処理）
 const SCRIPT_SOURCES: Record<string, string> = {
   "/render/diagram.js": "src/interact/diagrams.ts",
   "/render/sticky.js": "src/interact/sticky.ts",
   "/render/trees.js": "src/interact/trees.ts",
 };
 
-/** mermaid の図の見本の SVG のフォルダ（`npm run fixtures:mermaid` が書く） */
+/** mermaid の図の見本の SVG のフォルダ（`npm run fixtures:mermaid` が記載する） */
 const MERMAID_FIXTURES_DIR = join(
   REPO_ROOT,
   "tests",
@@ -133,7 +133,7 @@ const MERMAID_FIXTURE_NAME = /^[a-z0-9-]+$/;
 /** mermaid の図を開いたときの倍率の下限（`src/mermaid.ts` の `MERMAID_MIN_FIT` と同じ値） */
 const MERMAID_STORY_MIN_FIT = 0.75;
 
-/** mermaid の図の見本の SVG を読む。書式に合わない名前と無い名前は `undefined` */
+/** mermaid の図の見本の SVG を読み込む。書式に合わない名前と無い名前は `undefined` */
 function readMermaidFixture(name: string): string | undefined {
   if (!MERMAID_FIXTURE_NAME.test(name)) {
     return undefined;
@@ -142,7 +142,7 @@ function readMermaidFixture(name: string): string | undefined {
   return existsSync(file) ? readFileSync(file, "utf8").trim() : undefined;
 }
 
-/** 見本の SVG を種類 `mermaid` の図の枠に入れた HTML を返す。見本が無ければ `undefined` */
+/** 見本の SVG を種類 `mermaid` の図の枠に入れた HTML を返却する。見本が無ければ `undefined` */
 function renderMermaidStory(options: {
   svg: string;
   printSvg?: string | undefined;
@@ -175,26 +175,26 @@ function renderMermaidStory(options: {
   );
 }
 
-// 図のストーリーに足す印: Storybook の `preview.js` が見つけ、描いた直後の倍率（全体が収まる倍率）にする操作を付ける
+// 図のストーリーに追加するマーカー: Storybook の `preview.js` が見つけ、描いた直後の倍率（全体が収まる倍率）にする操作を付ける
 const DIAGRAM_FIT_MARKER = "<span hidden data-story-fit></span>";
 
-/** 使う側の枠を持つ面（線と影で本文から浮かせる）。図の枠の線を外す値を指定する */
+/** 利用側の枠を持つ面（線と影で本文から浮かせる）。図の枠の線を削除する値を指定する */
 const FRAMED_SURFACE_STYLE =
   "padding:1rem;border:1px solid var(--mdmark-color-border);border-radius:0.5rem;box-shadow:0 1px 3px rgb(0 0 0 / 0.08);--mdmark-diagram-box-shadow:none";
 
-// 中身を持つ部品に渡す、部品ごとの見本の HTML
+// 中身を持つ部品に指定する、部品ごとの見本の HTML
 const SAMPLE_BODY =
-  "<p>中身の見本です。段落が続くときの間隔も確かめられます。</p>";
+  "<p>中身の見本です。段落が続くときの間隔も確認できます。</p>";
 const SAMPLE_IMAGE =
   "<img alt=\"見本の図\" width=\"320\" height=\"120\" src=\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='320' height='120'%3E%3Crect width='320' height='120' fill='%23d1d9e0'/%3E%3C/svg%3E\">";
 const SAMPLE_TABLE =
   "<table><thead><tr><th>列A</th><th>列B</th></tr></thead><tbody><tr><td>1</td><td>2</td></tr></tbody></table>";
 
-// 図の見本の定義を書いた文書と、その中の `json` のコードブロックの並び
+// 図の見本の定義を記載した文書と、その中の `json` のコードブロックの並び
 const SAMPLE_DOCUMENT = join(
   REPO_ROOT,
   "docs",
-  "使い方",
+  "使用方法",
   "図を描く",
   "見本.md",
 );
@@ -205,16 +205,16 @@ const SAMPLE_BLOCKS: Record<string, number> = {
   strength: 3,
 };
 
-// 使い方『図を描く』（判定フローチャートの定義の例を持つ）
+// 使用方法『図を描く』（判定フローチャートの定義の例を持つ）
 const GUIDE_DOCUMENT = join(
   REPO_ROOT,
   "docs",
-  "使い方",
+  "使用方法",
   "図を描く",
   "図を描く.md",
 );
 
-// 判定フローチャートの長い題と文の見本。質問の文が長いので菱形を大きくする
+// 判定フローチャートの長いタイトルと文の見本。質問の文が長いので菱形を大きくする
 const JUDGEMENT_LONG_SAMPLE: MdmarkFlowDefinition = {
   title:
     "表の列の幅と並び順を文書ごとに指定するか、設定で全ての文書にそろえるかの判定（表を持つ文書だけ）",
@@ -230,7 +230,7 @@ const JUDGEMENT_LONG_SAMPLE: MdmarkFlowDefinition = {
       y: 16,
       w: 112,
       h: 112,
-      name: "表の見た目を揃えたい",
+      name: "表の外観を統一したい",
     },
     {
       id: "q",
@@ -330,7 +330,7 @@ const PIE_SAMPLE: MdmarkChartDefinition = {
   updated: "2026-10-17",
   unit: " 件",
   items: [
-    { name: "よくある質問で答えた", value: 186 },
+    { name: "よくある質問で回答した", value: 186 },
     { name: "担当者へ回した", value: 92 },
     { name: "返信しなかった", value: 22 },
   ],
@@ -371,20 +371,20 @@ const SCATTER_SAMPLE: MdmarkChartDefinition = {
 // ヒントのストーリーに出す文
 const HINT_TEXT = "返信の種類を 1 つ選ぶ。選べないときは担当者へ回す";
 
-// 箱の `hint` のストーリーに出す文
+// ノードの `hint` のストーリーに出す文
 const NODE_HINT_TEXT =
-  "保存と送信のツールだけを持つ MCP サーバー。メールの本文は読まず、下書きの ID で頼まれた操作をする";
+  "保存と送信のツールだけを持つ MCP サーバー。メールの本文は読み込まず、下書きの ID で頼まれた操作をする";
 
-// 箱の中の `{{語}}` に出す意味（見本の文書の用語集の表と同じ）
+// ノードの中の `{{単語}}` に出す意味（見本の文書の用語集の表と同じ）
 const SAMPLE_TERMS: Record<string, string> = {
   意思決定モデル:
-    "選択肢から選ぶ・当てはまるかに答えるだけの、速く安い判断用の AI",
-  よくある質問: "問い合わせの多い質問と、その答えをまとめた表",
+    "選択肢から選ぶ・当てはまるかに回答するだけの、速く安い判断用の AI",
+  よくある質問: "問い合わせの多い質問と、その回答をまとめた表",
 };
 
-// 長い題とノードの名前を見せるストーリーで足す文字
+// 長いタイトルとノードの名前を見せるストーリーで追加する文字
 const LONG_TITLE =
-  "問い合わせのメールを受け取ってから、分類・下書き・送信を経て、担当者のチャットへ控えを流すまでの、とても長い題名の構成";
+  "問い合わせのメールを受け取ってから、分類・下書き・送信を経て、担当者のチャットへ記録を送信するまでの、とても長い題名の構成";
 const LONG_NAME_SUFFIX = "（ノードの名前が長いときはノードの中で折り返す）";
 
 /** 見本の文書から、見本の定義の JSON の文字を取り出す */
@@ -455,7 +455,7 @@ function mockEr(name: string): MdmarkErDefinition {
   return JSON.parse(JSON.stringify(definition)) as MdmarkErDefinition;
 }
 
-// #308 の図の見本（refs/42 の見本の後に読む、モックと同じ定義）
+// #308 の図の見本（refs/42 の見本の後に読み込む、モックと同じ定義）
 const GROUP_SAMPLES_FILES = [
   join(REPO_ROOT, "dev", "mock", "refs", "42", "assets", "samples.js"),
   join(REPO_ROOT, "dev", "mock", "refs", "308", "assets", "samples.js"),
@@ -479,7 +479,7 @@ function mockFlow(name: string): MdmarkFlowDefinition {
   return JSON.parse(JSON.stringify(definition)) as MdmarkFlowDefinition;
 }
 
-/** 図のストーリーの操作の指定: 保った高さ（`height`）と、付けた後にフォーカスする要素（`focus`）を印に持たせる */
+/** 図のストーリーの操作の指定: 保った高さ（`height`）と、付けた後にフォーカスする要素（`focus`）をマーカーに持たせる */
 function storyMarker(args: PartArgs, focus?: string): string {
   const height =
     typeof args.height === "number"
@@ -489,7 +489,7 @@ function storyMarker(args: PartArgs, focus?: string): string {
   return `<span hidden data-story-fit${height}${target}></span>`;
 }
 
-/** 関係が無い列を指す ER 図の書き方の警告 */
+/** 関係が無い列を指す ER 図の記載の警告 */
 function invalidErDefinition(): string {
   const definition = mockEr("shop-er");
   definition.relations = definition.relations.map((relation) =>
@@ -504,7 +504,7 @@ function invalidErDefinition(): string {
   return renderSyntaxWarning({ message, items });
 }
 
-/** 系列が上限より多いストーリーの書き方の警告: 見本の 6 つの系列に 1 つ足して読ませる */
+/** 系列が上限より多いストーリーの記載の警告: 見本の 6 つの系列に 1 つ追加して読み込ませる */
 function tooManySeriesDefinition(): string {
   const definition = mockChart("reply-time-6");
   definition.series?.push({ name: "代理店", points: [33, 30, 28, 27, 25] });
@@ -515,12 +515,12 @@ function tooManySeriesDefinition(): string {
   return renderSyntaxWarning({ message, items });
 }
 
-/** 見本の定義を読んだ値 */
+/** 見本の定義を読み込んだ値 */
 function sampleDefinition<T>(name: string): T {
   return JSON.parse(sampleText(name)) as T;
 }
 
-/** 使い方『図を描く』の判定フローチャートの定義 */
+/** 使用方法『図を描く』の判定フローチャートの定義 */
 function judgementDefinition(): MdmarkFlowDefinition {
   const text = [
     ...readFileSync(GUIDE_DOCUMENT, "utf8").matchAll(
@@ -530,12 +530,12 @@ function judgementDefinition(): MdmarkFlowDefinition {
     .map((match) => match[1] ?? "")
     .find((block) => block.includes('"kind": "question"'));
   if (text === undefined) {
-    throw new Error("使い方『図を描く』に判定フローチャートの定義が無い");
+    throw new Error("使用方法『図を描く』に判定フローチャートの定義が無い");
   }
   return JSON.parse(text) as MdmarkFlowDefinition;
 }
 
-/** 知らない種類のノードを持つストーリーの書き方の警告: 見本の 3 つ目のノードの種類を `robot` にして読ませる */
+/** 知らない種類のノードを持つストーリーの記載の警告: 見本の 3 つ目のノードの種類を `robot` にして読み込ませる */
 function unknownKindDefinition(): string {
   const definition = sampleDefinition<MdmarkFlowDefinition>("inquiry");
   const third = definition.nodes[2];
@@ -550,7 +550,7 @@ function unknownKindDefinition(): string {
   return renderSyntaxWarning({ message, items });
 }
 
-/** 定義を読めないストーリーの書き方の警告: 見本の閉じの `}` を落として読ませる */
+/** 定義を読み込めないストーリーの記載の警告: 見本の閉じの `}` を落として読み込ませる */
 function invalidDefinition(directive: DiagramDirective, name: string): string {
   const text = sampleText(name);
   const broken = text.slice(0, text.lastIndexOf("}"));
@@ -561,7 +561,7 @@ function invalidDefinition(directive: DiagramDirective, name: string): string {
   return renderSyntaxWarning({ message, items });
 }
 
-/** `zoom` を渡さないストーリーは、描いた直後に全体が収まる倍率にする印を足す */
+/** `zoom` を指定しないストーリーは、描いた直後に全体が収まる倍率にするマーカーを追加する */
 function fitted(html: string, args: PartArgs): string {
   return typeof args.zoom === "number" ? html : html + DIAGRAM_FIT_MARKER;
 }
@@ -581,7 +581,7 @@ function diagramArgs(args: PartArgs): {
   };
 }
 
-/** カードの格子のストーリーで使う、配布物に入れない Lucide のアイコン */
+/** カードの格子のストーリーで使用する、配布物に入れない Lucide のアイコン */
 const CARD_GRID_ICONS: Record<string, MdmarkIconNode> = {
   book: [
     [
@@ -613,7 +613,7 @@ const CARD_GRID_ICONS: Record<string, MdmarkIconNode> = {
   ],
 };
 
-/** 問い合わせの引数の値を戻す: JSON として読める値（配列・オブジェクト・数・真偽値）は JSON として読み、読めなければ文字列のまま */
+/** 問い合わせの引数の値を戻す: JSON として読み込める値（配列・オブジェクト・数・真偽値）は JSON として読み込み、読み込めなければ文字列のまま */
 function decodeValue(value: string): unknown {
   try {
     return JSON.parse(value);
@@ -622,10 +622,10 @@ function decodeValue(value: string): unknown {
   }
 }
 
-/** 部品の関数に渡す引数 */
+/** 部品の関数に指定する引数 */
 type PartArgs = Record<string, unknown>;
 
-// 画像・動画・音声のストーリーが `src` に書くファイルの置き場所（モックと同じ見本）
+// 画像・動画・音声のストーリーが `src` に記載するファイルの配置場所（モックと同じ見本）
 const SAMPLE_MEDIA_DIR = join(
   REPO_ROOT,
   "dev",
@@ -645,7 +645,7 @@ const SAMPLE_MEDIA_TYPES: Record<string, string> = {
   mp3: "audio/mpeg",
 };
 
-/** ストーリーの `src` に書いた見本のファイルを data: URL にする（`#` の後ろは除く）。見本に無い名前はそのまま返す */
+/** ストーリーの `src` に記載した見本のファイルを data: URL にする（`#` の後ろは除く）。見本に無い名前はそのまま返却する */
 function sampleMedia(src: unknown): string {
   const name = String(src ?? "").split("#", 1)[0] ?? "";
   const type = SAMPLE_MEDIA_TYPES[name.slice(name.lastIndexOf(".") + 1)];
@@ -660,14 +660,14 @@ function sampleMedia(src: unknown): string {
   }
 }
 
-// 回り込みを見せるストーリーで図の後ろに置く段落
+// 回り込みを見せるストーリーで図の後ろに配置する段落
 const WRAP_PARAGRAPH =
-  "<p>図の横に回り込む本文の見本です。段落が図の高さを超えて続くときは、図の下から本文の幅いっぱいに戻ります。回り込みの幅と余白を確かめるため、何行かに折り返す長さの文を置いています。</p>";
+  "<p>図の横に回り込む本文の見本です。段落が図の高さを超えて続くときは、図の下から本文の幅いっぱいに戻ります。回り込みの幅と余白を確認するため、何行かに折り返す長さの文を配置しています。</p>";
 
 // ギャラリーの見本の列の数（部品の既定と同じ）
 const GALLERY_DEFAULT_COLS = 2;
 
-// 見本の SVG から大きさを読めないときの画像の大きさ
+// 見本の SVG から大きさを読み込めないときの画像の大きさ
 const DEFAULT_SAMPLE_SIZE = { width: 320, height: 180 };
 
 // ギャラリーのストーリーに並べる画像
@@ -684,7 +684,7 @@ const NUMBERED_GALLERY_SAMPLES = [
   { src: "screen-dark.svg", caption: "暗い配色", letter: "b" },
 ];
 
-/** 画像の図のストーリーの引数から、見本の画像を当てた画像の図を描く */
+/** 画像の図のストーリーの引数から、見本の画像を適用した画像の図を描く */
 function storyImageFigure(args: PartArgs): string {
   const align = args.align as "left" | "center" | "right" | undefined;
   const html = renderImageFigure({
@@ -725,7 +725,7 @@ function storyGallery(cols: number, numbered: boolean): string {
   return renderGallery({ cols, body });
 }
 
-/** ライトボックスのストーリー: 閉じた `dialog` を開いた状態で文書の中に置き、倍率を掛けた大きさで画像を描く */
+/** ライトボックスのストーリー: 閉じた `dialog` を開いた状態で文書の中に配置し、倍率を掛けた大きさで画像を描く */
 function storyLightbox(args: PartArgs): string {
   const zoom = typeof args.zoom === "number" ? args.zoom : undefined;
   const html = renderLightbox({
@@ -757,7 +757,7 @@ function storyLightbox(args: PartArgs): string {
     );
 }
 
-/** 見本の SVG の `width`・`height` を読む（読めなければ `DEFAULT_SAMPLE_SIZE`） */
+/** 見本の SVG の `width`・`height` を読み込む（読み込めなければ `DEFAULT_SAMPLE_SIZE`） */
 function sampleImageSize(src: unknown): { width: number; height: number } {
   const name = String(src ?? "").split("#", 1)[0] ?? "";
   try {
@@ -787,15 +787,15 @@ function bodyOf(args: PartArgs, sample: string): string {
   return typeof args.body === "string" ? args.body : sample;
 }
 
-// 差分のストーリーの見本: 行の差分に使う前と後の Markdown
+// 差分のストーリーの見本: 行の差分に使用する前と後の Markdown
 const DIFF_TEXT_BEFORE =
-  "# 問い合わせ窓口の週の報告\n\nよくある質問の差分は、担当者が週に 1 回確かめます。\n消す行\n終わり\n";
+  "# 問い合わせ窓口の週の報告\n\nよくある質問の差分は、担当者が週に 1 回確かめます。\n削除する行\n終わり\n";
 const DIFF_TEXT_AFTER =
-  "# 問い合わせ窓口の週の報告\n\nよくある質問の変更は、担当者が週に 1 回確かめます。\n終わり\n足す行\n";
+  "# 問い合わせ窓口の週の報告\n\nよくある質問の変更は、担当者が週に 1 回確かめます。\n終わり\n追加する行\n";
 const DIFF_LONG_BEFORE =
-  "返信の下書きは https://example.com/inquiry/workspace/drafts/2026/10/second-week/answers-from-faq-table に置きます。\n";
+  "返信の下書きは https://example.com/inquiry/workspace/drafts/2026/10/second-week/answers-from-faq-table に配置します。\n";
 const DIFF_LONG_AFTER =
-  "返信の下書きは https://example.com/inquiry/workspace/drafts/2026/10/second-week/answers-from-frequently-asked-questions-table に置きます。\n";
+  "返信の下書きは https://example.com/inquiry/workspace/drafts/2026/10/second-week/answers-from-frequently-asked-questions-table に配置します。\n";
 
 /** 埋め込んだ HTML の範囲を 1 つ持つ Markdown。表のメール欄の件数を引数で変える */
 function diffTable(mail: number, extra = ""): string {
@@ -805,7 +805,7 @@ function diffTable(mail: number, extra = ""): string {
 // 埋め込んだ HTML の差分の見本: 前と後の Markdown
 const DIFF_HTML_SAMPLES: Record<string, { before: string; after: string }> = {
   table: { before: diffTable(120), after: diffTable(150) },
-  added: { before: "# 題\n", after: `# 題\n${diffTable(150)}` },
+  added: { before: "# タイトル\n", after: `# タイトル\n${diffTable(150)}` },
   unchanged: {
     before: `${diffTable(120)}前の段落\n`,
     after: `${diffTable(120)}後の段落\n`,
@@ -825,10 +825,10 @@ const DIFF_HTML_SAMPLES: Record<string, { before: string; after: string }> = {
 // 差分のストーリーで前と後に出すリビジョンの説明
 const DIFF_STORY_LABELS = {
   before: "2026/10/18 09:12 初版（佐藤）",
-  after: "2026/10/19 16:40 件数を直す（鈴木）",
+  after: "2026/10/19 16:40 件数を修正する（鈴木）",
 };
 
-/** 差分の見本を比べる。語の区切りは `Intl.Segmenter`（`ja`・`word`）で、`char` の見本だけ持たないことにして 1 文字ずつ比べる */
+/** 差分の見本を比べる。単語の区切りは `Intl.Segmenter`（`ja`・`word`）で、`char` の見本だけ持たないことにして 1 文字ずつ比べる */
 function storyDiff(before: string, after: string, segmented: boolean) {
   return computeDiff({
     before,
@@ -893,17 +893,17 @@ function storyDiffHtml(args: PartArgs): string {
   });
 }
 
-// コメントのボタン・入力欄・吹き出しのストーリーに足す規則: 本物は `document.body` の直下で `position: fixed` だが、ストーリーではその場に置く
-/** 座標を省いた判定フローチャート（描く処理が配置してから部品に渡す） */
+// コメントのボタン・入力欄・吹き出しのストーリーに追加する規則: 本物は `document.body` の直下で `position: fixed` だが、ストーリーではその場に配置する
+/** 座標を省いた判定フローチャート（描く処理が配置してから部品に指定する） */
 const JUDGEMENT_AUTO_TEXT = JSON.stringify({
   title: "問い合わせの返信の判定",
   scope: "問い合わせを受け取ったとき",
   updated: "2026-11-04",
   nodes: [
     { id: "start", kind: "start", name: "問い合わせを受け取る" },
-    { id: "q1", kind: "question", name: "よくある質問で答えられるか" },
+    { id: "q1", kind: "question", name: "よくある質問で回答できるか" },
     { id: "a1", kind: "action", name: "よくある質問のリンクを添える" },
-    { id: "q2", kind: "question", name: "担当者が答えられるか" },
+    { id: "q2", kind: "question", name: "担当者が回答できるか" },
     { id: "r1", kind: "result", name: "返信を送信する" },
     { id: "r2", kind: "result", name: "開発に起票する" },
   ],
@@ -951,7 +951,7 @@ function linkedDefinition(hrefs: {
         io: {
           in: "問い合わせの本文",
           do: "種類を 1 つ選ぶ",
-          out: "種類と確度",
+          out: "種類と確信度",
         },
       },
       {
@@ -986,7 +986,7 @@ function linkedDefinition(hrefs: {
   } as MdmarkFlowDefinition;
 }
 
-/** リンク先を持つノードのホバーとフォーカスを、ポインターとキーを使わずに見せる（`recv` はホバー、`classify` はフォーカスの見た目） */
+/** リンク先を持つノードのホバーとフォーカスを、ポインターとキーを使用せずに見せる（`recv` はホバー、`classify` はフォーカスの外観） */
 const LINK_HOVER_FOCUS_STYLE =
   '<style>.mdmark-diagram-node.has-link[data-node="recv"]{background:color-mix(in oklab,var(--node-color) 8%,var(--mdmark-color-bg))}.mdmark-diagram-node.has-link[data-node="classify"] .mdmark-diagram-node-link{outline:2px solid var(--mdmark-color-link);outline-offset:2px}</style>';
 
@@ -994,11 +994,11 @@ const STATIC_POPOVER_STYLE =
   "<style>.mdmark-comment-add,.mdmark-comment-popover{position:static;max-width:100%}</style>";
 
 // 部品の id から、部品の関数を呼ぶ表
-/** 範囲のスクリプトと CSS のストーリー: 通し番号 `scope` の範囲に、根の要素の中に限った `css` の `style` と、実行しない `script` の `template` を置き、範囲の外に同じ class の箱を持つ範囲を続ける。`opened` のときは根の要素に class `is-open` を付ける */
+/** 範囲のスクリプトと CSS のストーリー: 通し番号 `scope` の範囲に、根の要素の中に限った `css` の `style` と、実行しない `script` の `template` を配置し、範囲の外に同じ class のノードを持つ範囲を続ける。`opened` のときは根の要素に class `is-open` を付ける */
 function rangeScopeStory(args: PartArgs): string {
   const scope = Number(args.scope);
   const css = typeof args.css === "string" ? args.css : "";
-  // 問い合わせの値は JSON として読んだ後に届く
+  // 問い合わせの値は JSON として読み込んだ後に届く
   const script =
     typeof args.script === "object" && args.script !== null
       ? (args.script as { lang: string; code: string })
@@ -1011,7 +1011,7 @@ function rangeScopeStory(args: PartArgs): string {
   const template = script
     ? `<template class="mdmark-html-script" data-lang="${escapeHtml(script.lang)}">${escapeHtml(script.code)}</template>`
     : "";
-  return `<div class="mdmark-html${opened}" data-html-scope="${scope}">${style}<div class="box">範囲の箱</div>${template}</div>${renderEmbeddedHtml({ html: '<div class="box">範囲の外の箱</div>' })}`;
+  return `<div class="mdmark-html${opened}" data-html-scope="${scope}">${style}<div class="box">範囲のノード</div>${template}</div>${renderEmbeddedHtml({ html: '<div class="box">範囲の外のノード</div>' })}`;
 }
 
 const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
@@ -1046,7 +1046,7 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
       unit,
       html: String(args.html ?? ""),
     });
-    // 項目と行はリスト・表の中に、ブロックは前後の段落の間に置き、変えていないブロックと文字の位置が揃うことを見せる
+    // 項目と行はリスト・表の中に、ブロックは前後の段落の間に配置し、変えていないブロックと文字の位置が一致することを見せる
     if (unit === "item") {
       return `<ol><li>前の項目</li>${html}<li>後ろの項目</li></ol>`;
     }
@@ -1079,7 +1079,7 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
       copy: args.copy as TermTipCopyState | undefined,
       below: args.below === true,
     });
-    // 開いた状態を見せるストーリーは、語の枠に `is-open` を付け、ツールチップの上と下に余白を取る
+    // 開いた状態を見せるストーリーは、単語の枠に `is-open` を付け、ツールチップの上と下に余白を取る
     const open = args.open === true;
     const wrap = open
       ? html.replace(
@@ -1088,7 +1088,7 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
         )
       : html;
     const space = open ? "22rem" : "0";
-    return `<p style="padding-block:${space}">本文の${wrap}を読む。</p>`;
+    return `<p style="padding-block:${space}">本文の${wrap}を読み込む。</p>`;
   },
   backlinks: (args) =>
     renderBacklinks({
@@ -1096,7 +1096,7 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
       docs: args.docs as Array<{ title: string; href: string }>,
     }),
   table: (args) => {
-    // 結合する相手の無い `^^`・`<<` は、記法と同じ書き方の警告を表の前に置く
+    // 結合する相手の無い `^^`・`<<` は、記法と同じ記載の警告を表の前に配置する
     const options = args as TableOptions;
     const plan = planCellMerges({
       cells: [options.columns ?? [], ...(options.rows ?? [])],
@@ -1123,7 +1123,7 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
       text: String(args.text ?? ""),
       expanded: args.expanded === true,
       focused: args.focused === true,
-    })}</span>を読む。</p>`,
+    })}</span>を読み込む。</p>`,
   "comment-bubble": (args) =>
     STATIC_POPOVER_STYLE +
     renderCommentBubble({
@@ -1139,7 +1139,7 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
         typeof args.confirmIndex === "number" ? args.confirmIndex : undefined,
       removeState: args.removeState as CommentRemoveState | undefined,
     }),
-  // 余白のマーカーは余白の列に重ねて置くため、余白の列の縦の中ほどに置く
+  // 余白のマーカーは余白の列に重ねて配置するため、余白の列の縦の中ほどに配置する
   "comment-marker": (args) =>
     `<div class="mdmark-comment-margin" style="block-size: 3rem">${renderCommentMarker(
       {
@@ -1162,7 +1162,7 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
       collapsed: args.collapsed as boolean | undefined,
       open: args.open as boolean | undefined,
       title: args.title as string | undefined,
-      // 入れ子のストーリーは、本文の段落の後ろに補足の注意書きを置く
+      // 入れ子のストーリーは、本文の段落の後ろに補足の注意書きを配置する
       body:
         args.nested === true
           ? `<p>設定を書き換える前に、今の設定のバックアップを取ってください。</p>${renderCallout(
@@ -1179,7 +1179,7 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
       id: "story",
       titles,
       panels: titles.map((title, index) =>
-        // 入れ子のストーリーは、2 つ目の中身に内側のタブを置く
+        // 入れ子のストーリーは、2 つ目の中身に内側のタブを配置する
         args.nested === true && index === 1
           ? renderTabs({
               id: "story-inner",
@@ -1231,7 +1231,7 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
       ? html.replace('class="mdmark-fn-ref', 'class="mdmark-fn-ref is-open')
       : html;
     const space = open ? "12rem" : "0";
-    return `<p style="padding-block:${space}">本文の補足${ref}を読む。</p>`;
+    return `<p style="padding-block:${space}">本文の補足${ref}を読み込む。</p>`;
   },
   footnotes: (args) =>
     renderFootnotes({
@@ -1250,7 +1250,7 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
     });
     return args.heading === true
       ? `<h2>${icon}はじめに</h2>`
-      : `<p>保存した${icon}内容を確かめる。</p>`;
+      : `<p>保存した${icon}内容を確認する。</p>`;
   },
   kbd: (args) =>
     `<p>${renderKbd({ keys: args.keys as string[] })} を押す。</p>`,
@@ -1301,7 +1301,7 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
       autoplay: args.autoplay === true,
       loop: args.loop === true,
     }),
-  // 文書と同じく画像の図の中に置く（`mount` は図の中の `img` を包む）
+  // 文書と同じく画像の図の中に配置する（`mount` は図の中の `img` を包む）
   gif: (args) =>
     `<figure class="mdmark-figure mdmark-image">${renderGif({
       src: sampleMedia(args.src),
@@ -1318,7 +1318,7 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
         ? {}
         : { fileKind: args.fileKind as AttachmentKind }),
     }),
-  // 配布物に入れないアイコンは、記法のアイコンと同じく Lucide の形を渡す
+  // 配布物に入れないアイコンは、記法のアイコンと同じく Lucide の構造を指定する
   "card-grid": (args) => {
     return renderCardGrid({
       items: args.items as CardGridItem[],
@@ -1345,7 +1345,7 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
       ...(typeof args.copyState === "string"
         ? { copyState: args.copyState as "idle" | "copied" | "failed" }
         : {}),
-      // 畳める行を持つストーリーは、`mount` が付ける開閉のボタンと `⋯` を置いた状態で出す
+      // 畳める行を持つストーリーは、`mount` が付ける開閉のボタンと `⋯` を配置した状態で出す
       foldButtons: lines.some((line) => line.foldLines !== undefined),
     });
     return args.highlight === true
@@ -1356,7 +1356,7 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
   "back-to-top": (args) =>
     renderBackToTop({ hidden: args.hidden as boolean | undefined }),
   "side-toc": (args) =>
-    // 本文の列を左に置き、右側の目次を描く先の要素の右端に寄せる（`mount` が描く並びと同じ）
+    // 本文の列を左に配置し、右側の目次を描く先の要素の右端に配置する（`mount` が描く並びと同じ）
     `<div class="mdmark-content">${SAMPLE_BODY}</div>${renderSideToc({
       headings: args.headings as SideTocHeading[],
       mode: args.mode as SideTocMode | undefined,
@@ -1426,7 +1426,7 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
     if (args.surface !== true) {
       return frame;
     }
-    // 全画面は mount と同じく面の子の mdmark-diagram-dialog に描き、画面全体に置く
+    // 全画面は mount と同じく面の子の mdmark-diagram-dialog に描き、画面全体に配置する
     const body =
       args.modal === true
         ? `<dialog class="mdmark-diagram-dialog" open="open" style="position:fixed;inset:0">${frame}</dialog>`
@@ -1449,7 +1449,7 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
       );
     }
     if (args.links === "blocked") {
-      // 描く処理と同じく、許さないリンク先を外して図の前に書き方の警告を置く
+      // 描く処理と同じく、許さないリンク先を削除して図の前に記載の警告を配置する
       const definition = linkedDefinition({
         recv: "javascript:alert(1)",
         classify: "id:spec#items",
@@ -1457,7 +1457,7 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
       const problems = nodeLinkProblems(definition);
       const warning = renderSyntaxWarning({
         message:
-          "フロー図のノードのリンク先に使えないものがあります。使えるリンク先は http・https・mailto と相対パスです。このノードはリンクにせずに描いています。",
+          "フロー図のノードのリンク先に使用できないものがあります。使用できるリンク先は http・https・mailto と相対パスです。このノードはリンクにせずに描いています。",
         items: problems.map(({ id, href }) => ({
           label: id,
           message: `\`${href}\``,
@@ -1501,7 +1501,7 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
         lookup: (word) => SAMPLE_TERMS[word],
         ...diagramArgs(args),
       });
-      // 留めたタイトル: 拡大して処理の層の途中を見せた状態を、留めた札の見た目で描く
+      // 留めたタイトル: 拡大して処理の層の途中を見せた状態を、留めた札の外観で描く
       return args.stuck === true
         ? html.replace(
             /class="(mdmark-diagram-(?:frame-title|lane-label))"/g,
@@ -1578,7 +1578,7 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
     } else {
       definition = sampleDefinition<MdmarkChartDefinition>("reply-time");
       if (args.series === 4) {
-        // 色と模様の組の全てを見せるため、見本の 2 つの系列に 2 つ足す
+        // 色と模様の組の全てを見せるため、見本の 2 つの系列に 2 つ追加する
         definition.series?.push(
           { name: "夜間", points: [20, 18, 25, 16, 22] },
           { name: "休日", points: [30, 28, 35, 26, 32] },
@@ -1612,7 +1612,7 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
       return `<div style="padding-block-start:16rem"><div class="mdmark-diagram-box" style="min-height:11rem;padding:1rem"><button class="mdmark-diagram-info" type="button" aria-label="「注文」の説明" aria-describedby="story-tip">i</button>${table}</div></div>`;
     }
     if (args.kind === "item" || args.group === true) {
-      // 折れ線の点・システムの枠のタイトルの印で開いた状態: 持ち主の下に出す
+      // 折れ線の点・システムの枠のタイトルのマーカーで開いた状態: 持ち主の下に出す
       const tip = (
         args.kind === "item"
           ? renderDiagramTip({
@@ -1658,12 +1658,12 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
             ...(kind === "hint" ? { hint: NODE_HINT_TEXT } : {}),
             io: {
               in: "問い合わせの本文",
-              do: "返信の種類（よくある質問で答える・担当者へ回す）から 1 つ選ぶ",
+              do: "返信の種類（よくある質問で回答する・担当者へ回す）から 1 つ選ぶ",
               out: "返信の種類と、その確からしさ",
             },
             open,
           });
-    // 開いた状態は、箱の上端の上に出す（画面に対する位置は操作が決める）。箱の上に余白を取る
+    // 開いた状態は、ノードの上端の上に出す（画面に対する位置は操作が決める）。ノードの上に余白を取る
     const placedTip = open
       ? tip.replace(
           'role="tooltip"',
@@ -1687,7 +1687,7 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
         ? "inline"
         : "block") satisfies HintPlacement,
       open: args.open === true,
-      // 書いた人が地の色を付けたブロックの要素: 印が地の色の上でも読める
+      // 記載した人が地の色を付けたブロックの要素: マーカーが地の色の上でも判読できる
       ...(args.colored === true
         ? {
             style:
@@ -1740,10 +1740,10 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
     }),
 };
 
-/** 色分けのライブラリ（npm の `highlight.js`）を同期で読む。描画の口は Node で動き、言語の登録を `renderPart` の同期のうちに終えるため `require` で読む */
+/** 色分けのライブラリ（npm の `highlight.js`）を同期で読み込む。描画のインターフェースは Node で動き、言語の登録を `renderPart` の同期のうちに終えるため `require` で読み込む */
 const requireModule = createRequire(import.meta.url);
 
-/** 部品の HTML の行の中身（行に分けないときは `code` の中身）を、`language` の言語で色分けした HTML に置き換える。色分けしない言語は部品の HTML のまま返す */
+/** 部品の HTML の行の中身（行に分けないときは `code` の中身）を、`language` の言語で色分けした HTML に置き換える。色分けしない言語は部品の HTML のまま返却する */
 function highlightCodeBlock(
   html: string,
   language: string,
@@ -1781,7 +1781,7 @@ function highlightCodeBlock(
   );
 }
 
-/** ストーリーの `server.id` の部品を、問い合わせの引数で描き、描く先の要素（class `mdmark`）で包んで返す。知らない部品は `undefined` */
+/** ストーリーの `server.id` の部品を、問い合わせの引数で描き、描く先の要素（class `mdmark`）で包んで返却する。知らない部品は `undefined` */
 export function renderPart(options: {
   /** 部品の id */
   component: string;
@@ -1845,7 +1845,7 @@ export function renderPart(options: {
   return `<div class="${className}">${framed}</div>`;
 }
 
-/** 操作の処理（`source`）をブラウザの ES モジュールに束ねた文字。経路ごとに、初めて求められたときに束ねる */
+/** 操作の処理（`source`）をブラウザの ES モジュールにまとめた文字。経路ごとに、初めて求められたときにまとめる */
 const scriptCodes = new Map<string, Promise<string>>();
 function bundledScript(options: {
   root: string;
@@ -1868,9 +1868,9 @@ function bundledScript(options: {
   return code;
 }
 
-/** `GET /render/index.css` に `src/index.css` を、`GET /render/diagram.js`・`GET /render/sticky.js`・`GET /render/trees.js` に操作の処理を束ねたものを、`GET /render/{部品の id}` に部品の HTML を返す HTTP サーバーを作る（待ち受けは呼び出し側） */
+/** `GET /render/index.css` に `src/index.css` を、`GET /render/diagram.js`・`GET /render/sticky.js`・`GET /render/trees.js` に操作の処理をまとめたものを、`GET /render/{部品の id}` に部品の HTML を返却する HTTP サーバーを作る（待ち受けは呼び出し側） */
 export function createRenderServer(options: {
-  /** 作業ツリーの場所（`src/index.css` を読む） */
+  /** 作業ツリーの場所（`src/index.css` を読み込む） */
   root: string;
 }): Server {
   return createServer((request, response) => {
@@ -1920,7 +1920,7 @@ export function createRenderServer(options: {
   });
 }
 
-/** 環境変数 `RENDER_PORT` のポートで、`RENDER_HOST` に描画の口を待ち受ける */
+/** 環境変数 `RENDER_PORT` のポートで、`RENDER_HOST` に描画のインターフェースを待ち受ける */
 export function main(): void {
   const port = Number(process.env.RENDER_PORT);
   if (!Number.isInteger(port) || port < MIN_PORT || port > MAX_PORT) {
@@ -1933,7 +1933,7 @@ export function main(): void {
   createRenderServer({ root: REPO_ROOT }).listen(port, RENDER_HOST);
 }
 
-// `node scripts/storybook-render.ts` で入口として実行されたときだけ流す
+// `node scripts/storybook-render.ts` で入口として実行されたときだけ実行する
 if (import.meta.main) {
   main();
 }

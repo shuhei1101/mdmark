@@ -53,7 +53,7 @@ const VIEWPORT_GUTTER = 16;
 // 表の id を文書の中で重ならせないための通し番号
 let tableCounter = 0;
 
-/** 絞り込みを付ける列と種類を、`data-filter`（`0:select 2:date`）から読む */
+/** 絞り込みを付ける列と種類を、`data-filter`（`0:select 2:date`）から読み込む */
 function readFilterKinds(value: string | undefined): Map<number, FilterKind> {
   const kinds = new Map<number, FilterKind>();
   for (const item of (value ?? "").split(/\s+/).filter(Boolean)) {
@@ -65,7 +65,7 @@ function readFilterKinds(value: string | undefined): Map<number, FilterKind> {
   return kinds;
 }
 
-/** `data-hide`（`1 3`）から隠す列の位置を読む */
+/** `data-hide`（`1 3`）から隠す列の位置を読み込む */
 function readColumnList(value: string | undefined): number[] {
   return (value ?? "")
     .split(/\s+/)
@@ -74,7 +74,7 @@ function readColumnList(value: string | undefined): number[] {
     .filter(Number.isInteger);
 }
 
-/** `data-total`（`2:sum 0:count`）から集計する列と計算を読む */
+/** `data-total`（`2:sum 0:count`）から集計する列と計算を読み込む */
 function readTotalSpecs(value: string | undefined): TableTotal[] {
   const totals: TableTotal[] = [];
   for (const item of (value ?? "").split(/\s+/).filter(Boolean)) {
@@ -86,7 +86,7 @@ function readTotalSpecs(value: string | undefined): TableTotal[] {
   return totals;
 }
 
-/** 行の直後に続く行の詳細の行を返す */
+/** 行の直後に続く行の詳細の行を返却する */
 function detailsOf(row: HTMLTableRowElement): HTMLTableRowElement[] {
   const details: HTMLTableRowElement[] = [];
   for (
@@ -117,7 +117,7 @@ function contentWidthOf(element: HTMLElement): number {
   );
 }
 
-/** 表の本文の行（行の詳細の行と一致なしの行を除く）を返す */
+/** 表の本文の行（行の詳細の行と一致なしの行を除く）を返却する */
 function bodyRows(table: HTMLTableElement): HTMLTableRowElement[] {
   return [...(table.tBodies[0]?.rows ?? [])].filter(
     (row) =>
@@ -126,7 +126,7 @@ function bodyRows(table: HTMLTableElement): HTMLTableRowElement[] {
   );
 }
 
-/** 囲みの中の要素のうち、その囲み自身の表に属するもの（中の表の囲みの要素を除く）を返す */
+/** 囲みの中の要素のうち、その囲み自身の表に属するもの（中の表の囲みの要素を除く）を返却する */
 function ownElements<T extends Element>(
   wrapper: HTMLElement,
   selector: string,
@@ -136,7 +136,7 @@ function ownElements<T extends Element>(
   );
 }
 
-/** 囲みの中の要素のうち、その囲み自身の表に属する最初のもの（無ければ `null`）を返す */
+/** 囲みの中の要素のうち、その囲み自身の表に属する最初のもの（無ければ `null`）を返却する */
 function ownElement<T extends Element>(
   wrapper: HTMLElement,
   selector: string,
@@ -169,7 +169,7 @@ function headColumnsOf(
   return columns;
 }
 
-/** 列ごとの、ボタンを置く見出しのセルを返す。見出しが多段なら `bottomHeadCells` で決めた最下段のセルで、複数の列をまたぐセルしか無い列は DOM に置かない空のセルにする */
+/** 列ごとの、ボタンを配置する見出しのセルを返却する。見出しが多段なら `bottomHeadCells` で決めた最下段のセルで、複数の列をまたぐセルしか無い列は DOM に配置しない空のセルにする */
 function columnHeadsOf(table: HTMLTableElement): HTMLTableCellElement[] {
   const rows = [...(table.tHead?.rows ?? [])];
   if (rows.length <= 1) {
@@ -206,7 +206,7 @@ function initialPinnedCount(options: {
   return Number.isNaN(pinAt) ? Math.max(1, rowHeadCount) : pinAt + 1;
 }
 
-/** 表 1 つに、並べ替え・ピン止め・絞り込みを付け、外す関数を返す */
+/** 表 1 つに、並べ替え・ピン止め・絞り込みを付け、削除する関数を返却する */
 function attachTable(
   wrapper: HTMLElement,
   table: HTMLTableElement,
@@ -226,13 +226,13 @@ function attachTable(
   const filterKinds = readFilterKinds(wrapper.dataset.filter);
   const headCells = columnHeadsOf(table);
   const headColumns = headColumnsOf(table);
-  /** 見出しのセルの列の位置（`cellIndex` は多段の見出しで列と合わないため使わない） */
+  /** 見出しのセルの列の位置（`cellIndex` は多段の見出しで列と合わないため使用しない） */
   const columnOf = (cell: HTMLTableCellElement | null | undefined): number =>
     cell ? headCells.indexOf(cell) : -1;
   const mergeColumns = readColumnList(wrapper.dataset.mergeColumns);
   const tbody = table.tBodies[0];
   const originalRows = bodyRows(table);
-  // 列を並べ替えてもセルの元の列の位置で引けるよう、各セルに描いたときの列の位置を持たせる
+  // 列を並べ替えてもセルの元の列の位置で参照できるよう、各セルに描いたときの列の位置を持たせる
   for (const row of originalRows) {
     [...row.cells].forEach((cell, column) => {
       cell.dataset.col = String(column);
@@ -241,7 +241,7 @@ function attachTable(
   for (const [cell, column] of headColumns) {
     cell.dataset.col = String(column);
   }
-  /** 行の元の列の位置のセル（並べ替えた後もセルの `data-col` で引く） */
+  /** 行の元の列の位置のセル（並べ替えた後もセルの `data-col` で参照する） */
   const cellAt = (
     row: HTMLTableRowElement,
     column: number,
@@ -265,7 +265,7 @@ function attachTable(
   const countedRows = originalRows.filter(
     (row) => !row.classList.contains("is-virtual"),
   );
-  // 見出しのボタンを置く前の列名（列の表示のメニューとコピーの見出しの行に使う）
+  // 見出しのボタンを配置する前の列名（列の表示のメニューとコピーの見出しの行に使用する）
   const labels = headCells.map((cell) => visibleText(cell));
   const hiddenColumns = new Set(
     features.includes("columns") ? readColumnList(wrapper.dataset.hide) : [],
@@ -280,7 +280,7 @@ function attachTable(
     const cell = cellAt(row, column);
     return cell ? cellValue(cell) : "";
   };
-  // 結合する列のセルの、描いたときの結合（外すときに戻す）
+  // 結合する列のセルの、描いたときの結合（削除するときに戻す）
   const originalMerges = originalRows.flatMap((row) =>
     mergeColumns.flatMap((column) => {
       const cell = cellAt(row, column);
@@ -296,7 +296,7 @@ function attachTable(
         : [];
     }),
   );
-  /** 表示している本文の行の並びで、結合する列の隣り合う同じ値を結合し直す。結合で隠したセルも値を持ったまま残す */
+  /** 表示している本文の行の並びで、結合する列の隣り合う同じ値をもう一度結合する。結合で隠したセルも値を持ったまま残す */
   function applyMerges(): void {
     if (mergeColumns.length === 0) {
       return;
@@ -383,7 +383,7 @@ function attachTable(
   }
 
   // ─── 表の上の帯とテーブル設定のパネル ───
-  // 今の列の順（元の列の位置の並び）。覚えず、描き直すと Markdown に記載した順に戻る
+  // 今の列の順（元の列の位置の並び）。覚えず、再描画すると Markdown に記載した順に戻る
   let order = labels.map((_, column) => column);
   const groups = headCells.map((cell) => cell.dataset.group);
   const groupLabels: Record<string, string> = {};
@@ -406,7 +406,7 @@ function attachTable(
     order,
     groups,
     groupLabels,
-    // 一覧を分けるのは `pin=` で留めた列だけ（既定の先頭の列の留めは、表がはみ出す間だけ当たる）
+    // 一覧を分けるのは `pin=` で留めた列だけ（既定の先頭の列の留めは、表がはみ出す間だけ該当する）
     pinned:
       wrapper.dataset.pin === undefined
         ? 0
@@ -432,7 +432,7 @@ function attachTable(
   const menu = ownElement<HTMLElement>(wrapper, ".mdmark-table-settings");
   const totalsMenu = ownElement<HTMLElement>(wrapper, ".mdmark-totals-menu");
   const copyMenu = ownElement<HTMLElement>(wrapper, ".mdmark-copy-menu");
-  /** 帯の読み上げの要素に知らせを入れる */
+  /** 帯のスクリーンリーダー向けの要素に通知を入れる */
   const announce = (message: string): void => {
     const status = ownElement(wrapper, ".mdmark-table-status");
     if (status) {
@@ -441,7 +441,7 @@ function attachTable(
   };
 
   // ─── 並べ替え ───
-  /** 見出しの並べ替えの向きを `aria-sort` に当てる */
+  /** 見出しの並べ替えの向きを `aria-sort` に適用する */
   const setSortState = (
     cell: HTMLTableCellElement,
     direction: (typeof SORT_CYCLE)[number],
@@ -481,7 +481,7 @@ function attachTable(
   };
 
   // ─── 絞り込み ───
-  /** ドロワーの入力から、当てている絞り込みを読む */
+  /** ドロワーの入力から、適用している絞り込みを読み込む */
   const readFilterValue = (
     column: number,
     kind: FilterKind,
@@ -501,7 +501,7 @@ function attachTable(
     }
     return { column, from: inputs[0]?.value ?? "", to: inputs[1]?.value ?? "" };
   };
-  /** 絞り込みを当てているか */
+  /** 絞り込みを適用しているか */
   const isActive = (value: FilterValue): boolean =>
     Boolean(value.values?.length || value.text || value.from || value.to);
   /** 全ての列の絞り込みを当て、絞り込み中の列のボタンを示し、1 行も無ければ一致なしの行を出す */
@@ -590,7 +590,7 @@ function attachTable(
     }
     narrowOptions(drawer, "");
   };
-  /** この表の全ての列の絞り込みを外す */
+  /** この表の全ての列の絞り込みを解除する */
   const clearFilters = (): void => {
     for (const drawer of drawers.values()) {
       clearDrawer(drawer);
@@ -600,10 +600,10 @@ function attachTable(
 
   // ─── ドロワーの開閉 ───
   let openState: { drawer: HTMLElement; button: HTMLElement } | undefined;
-  /** ドロワーを押したボタンの下に置き、画面の端からはみ出さないようにする */
+  /** ドロワーを押したボタンの下に配置し、画面の端からはみ出さないようにする */
   const placeDrawer = (drawer: HTMLElement, button: HTMLElement): void => {
     const rect = button.getBoundingClientRect();
-    // 帯のメニューはボタンの左端に、絞り込みのドロワーはボタンの右端に揃える
+    // 帯のメニューはボタンの左端に、絞り込みのドロワーはボタンの右端に合わせる
     const start =
       drawer.classList.contains("mdmark-table-settings") ||
       drawer.classList.contains("mdmark-table-menu")
@@ -674,7 +674,7 @@ function attachTable(
       button.focus();
     }
   }
-  /** ドロワーを開いてボタンの下に置き、最初の入力欄へフォーカスを移す。ほかのドロワーは閉じる */
+  /** ドロワーを開いてボタンの下に配置し、最初の入力欄へフォーカスを移す。ほかのドロワーは閉じる */
   const openDrawer = (drawer: HTMLElement, button: HTMLElement): void => {
     closeDrawer(false);
     drawer.hidden = false;
@@ -693,13 +693,13 @@ function attachTable(
   };
 
   // ─── ピン止め ───
-  // 留める列の数: `data-pin` の位置 + 1、無ければ行見出しの列まで（行見出しが無ければ先頭の列）。表がはみ出す間だけ当てる
+  // 留める列の数: `data-pin` の位置 + 1、無ければ行見出しの列まで（行見出しが無ければ先頭の列）。表がはみ出す間だけ適用する
   let pinned = initialPinnedCount({ wrapper, features, originalRows });
   /** 表が横にはみ出しているか */
   const isOverflowing = (): boolean =>
     scroller.scrollWidth > scroller.clientWidth ||
     (scroller === table && table.scrollWidth > wrapper.clientWidth);
-  /** 先頭から `count` 列までを、表がはみ出す間だけ表の左端に留める（0 で外す） */
+  /** 先頭から `count` 列までを、表がはみ出す間だけ表の左端に留める（0 で削除する） */
   const pinColumns = (count: number): void => {
     pinned = count;
     const applied = isOverflowing() ? count : 0;
@@ -744,7 +744,7 @@ function attachTable(
       pin.hidden = !overflow;
     }
   };
-  /** 行の詳細を持つ表に、表の見えている幅を変数で渡す（詳細の中身をその幅に収める） */
+  /** 行の詳細を持つ表に、表の見えている幅を変数で指定する（詳細の中身をその幅に収める） */
   const updateVisibleWidth = (): void => {
     if (ownElement(wrapper, ".mdmark-row-detail")) {
       table.style.setProperty(
@@ -755,7 +755,7 @@ function attachTable(
   };
 
   // ─── 件数と集計の行 ───
-  // 数として読めないセルを持つ列と計算は、絞り込んでも集計のセルを空にする
+  // 数として読み込めないセルを持つ列と計算は、絞り込んでも集計のセルを空にする
   const unreadableTotals = findUnreadableTotals({
     rows: originalRows.map((row) =>
       labels.map((_, column) => cellText(row, column)),
@@ -772,7 +772,7 @@ function attachTable(
     visible.textContent = `${shown} / ${countedRows.length} 件`;
     spoken.textContent = `${countedRows.length} 件中 ${shown} 件を表示`;
   };
-  /** 集計の行を、表示している行で計算し直して置き換える */
+  /** 集計の行を、表示している行でもう一度計算して置き換える */
   const renderTotals = (): void => {
     if (totalSpecs.length === 0) {
       return;
@@ -799,7 +799,7 @@ function attachTable(
         labels,
       }),
     );
-    // 列の揃えは、本文のセルから写す
+    // 列の配置は、本文のセルから写す
     for (const footRow of table.tFoot?.rows ?? []) {
       [...footRow.cells].forEach((cell, index) => {
         cell.dataset.col = String(index);
@@ -852,7 +852,7 @@ function attachTable(
   };
 
   // ─── 最終列を畳む ───
-  /** 畳んでいる最終列の位置（畳んでいなければ `undefined`）と、畳むために足したものを元に戻す関数 */
+  /** 畳んでいる最終列の位置（畳んでいなければ `undefined`）と、畳むために追加したものを元に戻す関数 */
   let foldedColumn: number | undefined;
   let unfoldRows: Array<() => void> = [];
   /** 表示している最終列の位置 */
@@ -882,7 +882,7 @@ function attachTable(
         (Number.parseFloat(style.paddingBottom) || 0);
       return content > lineHeight * 1.5;
     });
-  /** 最終列を畳んで、各行に開閉のボタンと開閉の行を置く */
+  /** 最終列を畳んで、各行に開閉のボタンと開閉の行を配置する */
   const foldColumn = (column: number): void => {
     foldedColumn = column;
     wrapper.classList.add("is-folded");
@@ -913,7 +913,7 @@ function attachTable(
       const part = foldRow?.querySelector(".mdmark-fold-part");
       const details = ownDetailsOf(row);
       const ownDetail = details[0]?.cells[0];
-      // 行の詳細を持つ行は、詳細の中身の上に最終列を置き、詳細のボタンだけで開閉する
+      // 行の詳細を持つ行は、詳細の中身の上に最終列を配置し、詳細のボタンだけで開閉する
       if (ownDetail && part) {
         ownDetail.prepend(part);
         unfoldRows.push(() => part.remove());
@@ -937,7 +937,7 @@ function attachTable(
       });
     });
   };
-  /** 畳むために足したものを取り除く */
+  /** 畳むために追加したものを取り除く */
   const unfoldColumn = (): void => {
     for (const restore of unfoldRows) {
       restore();
@@ -949,7 +949,7 @@ function attachTable(
     wrapper.classList.remove("is-folded");
     foldedColumn = undefined;
   };
-  /** 畳むかを、描く先の要素の幅と最終列の折り返しで決め直す */
+  /** 畳むかを、描く先の要素の幅と最終列の折り返しでもう一度決める */
   const updateFold = (): void => {
     const column = lastVisibleColumn();
     const width = contentWidthOf(root);
@@ -1045,7 +1045,7 @@ function attachTable(
   // ─── 表のコピー ───
   let copyTimer: ReturnType<typeof setTimeout> | undefined;
   const copyButton = ownElement<HTMLElement>(wrapper, ".mdmark-copy");
-  /** コピーのボタンに状態の文言とアイコンを当てる */
+  /** コピーのボタンに状態の文言とアイコンを適用する */
   const setCopyState = (state: CopyState): void => {
     if (copyButton) {
       copyButton.dataset.state = state;
@@ -1060,12 +1060,12 @@ function attachTable(
       copyButton?.focus();
     }
   };
-  /** 見出しの行と、画面の並びで表示している行の、表示している列を選んだ形式でクリップボードへ写し、結果をボタンと読み上げで知らせる。書けなければ手でコピーさせるパネルを出す */
+  /** 見出しの行と、画面の並びで表示している行の、表示している列を選んだ形式でクリップボードへコピーし、結果をボタンとスクリーンリーダーで通知する。書き込めなければ手でコピーさせるパネルを出す */
   const copyTable = async (format: CopyFormat): Promise<void> => {
     clearTimeout(copyTimer);
     closeCopyPanel(false);
     const columns = order.filter((column) => !hiddenColumns.has(column));
-    // 階層の表は、畳んで隠した行も含め、補った行を除き、キーの列を全体のパスで書く
+    // 階層の表は、畳んで隠した行も含め、補った行を除き、キーの列を全体のパスで記載する
     const copied = (row: HTMLTableRowElement): boolean =>
       treeColumn === undefined
         ? !row.hidden
@@ -1088,7 +1088,7 @@ function attachTable(
       copyTimer = setTimeout(() => setCopyState("idle"), COPIED_NOTICE_MS);
       return;
     }
-    // 書けなかったことはボタンで知らせ、中身を選択したパネルで手でコピーさせる
+    // 記載できなかったことはボタンで通知し、中身を選択したパネルで手でコピーさせる
     setCopyState("failed");
     wrapper
       .querySelector(".mdmark-table-bar")
@@ -1112,7 +1112,7 @@ function attachTable(
   });
 
   // ─── 行へのリンク ───
-  /** 行を強調して画面に出す。閉じた表を開き、絞り込みで隠れていれば外してから移り、その行だけを強調する */
+  /** 行を強調して画面に出す。閉じた表を開き、絞り込みで隠れていれば絞り込みを解除してから移り、その行だけを強調する */
   const revealTarget = (target: HTMLTableRowElement): void => {
     for (const row of originalRows) {
       if (row !== target) {
@@ -1132,7 +1132,7 @@ function attachTable(
     target.setAttribute("data-target", "");
     target.scrollIntoView({ block: "center" });
   };
-  /** URL の `#ID` がこの表の行を指すとき、その行へ移る。指さないときは強調を外す */
+  /** URL の `#ID` がこの表の行を指すとき、その行へ移る。指さないときは強調を解除する */
   const revealRow = (): void => {
     const id = rowIdFromHash(location.hash);
     const target = id ? originalRows.find((row) => row.id === id) : undefined;
@@ -1145,7 +1145,7 @@ function attachTable(
     }
   };
   const noticeTimers = new Map<Element, ReturnType<typeof setTimeout>>();
-  /** 行へのリンクの印を押したとき、行へ移る動きはそのままに、行を指す絶対 URL を写して結果を印の横に出す */
+  /** 行へのリンクのマーカーを押したとき、行へ移る動きはそのままに、行を指す絶対 URL をコピーして結果をマーカーの横に出す */
   const copyRowLink = async (anchor: HTMLAnchorElement): Promise<void> => {
     const row = anchor.closest("tr");
     if (row && originalRows.includes(row)) {
@@ -1286,7 +1286,7 @@ function attachTable(
       closeCopyPanel(true);
     }
   };
-  /** 隠している列の見出しを列の順に並べて知らせる */
+  /** 隠している列の見出しを列の順に並べて通知する */
   const notifyHidden = (): void => {
     notifyColumns?.(
       [...hiddenColumns]
@@ -1345,7 +1345,7 @@ function attachTable(
   });
   observer.observe(table);
   observer.observe(wrapper);
-  // 描く先の要素の幅が変わるたびに、最終列を畳むかを決め直す
+  // 描く先の要素の幅が変わるたびに、最終列を畳むかをもう一度決める
   const foldObserver = new ResizeObserver(updateFold);
   foldObserver.observe(root);
   updateFold();
@@ -1398,11 +1398,11 @@ function attachTable(
   };
 }
 
-/** 各 `mdmark-table` の `data-features`・`data-filter`・`data-pin` を読み、見出しにボタンとドロワーを置いて、並べ替え・ピン止め・絞り込みを付ける。`onColumnsChange` を渡したときは列の表示を切り替えるたびに知らせる。ボタン・ドロワー・受け取り・`ResizeObserver` を外す関数を返す */
+/** 各 `mdmark-table` の `data-features`・`data-filter`・`data-pin` を読み込み、見出しにボタンとドロワーを配置して、並べ替え・ピン止め・絞り込みを付ける。`onColumnsChange` を指定したときは列の表示を切り替えるたびに通知する。ボタン・ドロワー・受け取り・`ResizeObserver` を削除する関数を返却する */
 export function attachTables(
   root: HTMLElement,
   options: {
-    /** 列の表示を切り替えたときに知らせる */
+    /** 列の表示を切り替えたときに通知する */
     onColumnsChange?: ((event: MdmarkColumnsChange) => void) | undefined;
   } = {},
 ): () => void {
@@ -1429,7 +1429,7 @@ export function attachTables(
               onColumnsChange({ tableIndex, hidden });
             } catch (error) {
               console.error(
-                "[mdmark] 列の表示の知らせが例外を投げました",
+                "[mdmark] 列の表示の通知が例外を投げました",
                 "onColumnsChange",
                 error,
               );

@@ -55,13 +55,13 @@ async function isFile(path: string): Promise<boolean> {
   }
 }
 
-/** git を作業ツリーの直下で流し、標準出力を返す */
+/** git を作業ツリーの直下で実行し、標準出力を返却する */
 async function git(root: string, args: string[]): Promise<string> {
   const { stdout } = await execFileAsync("git", args, { cwd: root });
   return stdout;
 }
 
-/** `git tag --list v*` のうち版の書式に合う最も新しい版を返す。git の作業ツリーでないとき・タグが無いときは `undefined` */
+/** `git tag --list v*` のうちバージョンの書式に合う最も新しいバージョンを返却する。git の作業ツリーでないとき・タグが無いときは `undefined` */
 export async function latestVersionTag(
   root: string,
 ): Promise<string | undefined> {
@@ -79,7 +79,7 @@ export async function latestVersionTag(
     .at(-1);
 }
 
-/** `no-steps.yaml` を読み、形の誤りと行を返す。ファイルが無ければ空 */
+/** `no-steps.yaml` を読み込み、構造の誤りと行を返却する。ファイルが無ければ空 */
 async function readNoSteps(
   root: string,
 ): Promise<{ entries: NoStepsEntry[]; problems: string[] }> {
@@ -99,23 +99,23 @@ async function readNoSteps(
     const reason = error instanceof Error ? error.message.split("\n")[0] : "";
     return {
       entries: [],
-      problems: [`${label}: YAML として読めません（${reason}）`],
+      problems: [`${label}: YAML として読み込めません（${reason}）`],
     };
   }
   if (!isRecord(raw) || !Array.isArray(raw.entries)) {
-    problem("entries", "entries の並びを書いてください。");
+    problem("entries", "entries の並びを記載してください。");
     return { entries: [], problems };
   }
   for (const key of Object.keys(raw)) {
     if (key !== "entries") {
-      problem(key, "entries 以外のキーは書けません。消してください。");
+      problem(key, "entries 以外のキーは記載できません。削除してください。");
     }
   }
   const entries: NoStepsEntry[] = [];
   for (const [index, item] of raw.entries.entries()) {
     const where = `entries[${index}]`;
     if (!isRecord(item)) {
-      problem(where, "行はキーと値で書いてください。");
+      problem(where, "行はキーと値で記載してください。");
       continue;
     }
     const before = problems.length;
@@ -125,7 +125,7 @@ async function readNoSteps(
     ) {
       problem(
         `${where}.version`,
-        "version は next か v{MAJOR}.{MINOR}.{PATCH} で書いてください。",
+        "version は next か v{MAJOR}.{MINOR}.{PATCH} で記載してください。",
       );
     }
     if (
@@ -134,19 +134,19 @@ async function readNoSteps(
     ) {
       problem(
         `${where}.schema`,
-        `schema は ${CHECKED_SCHEMAS.join(" か ")} で書いてください。`,
+        `schema は ${CHECKED_SCHEMAS.join(" か ")} で記載してください。`,
       );
     }
     if (typeof item.sha256 !== "string" || !SHA256_PATTERN.test(item.sha256)) {
       problem(
         `${where}.sha256`,
-        "sha256 は 64 桁の小文字の 16 進数で書いてください。",
+        "sha256 は 64 桁の小文字の 16 進数で記載してください。",
       );
     }
     if (typeof item.reason !== "string" || item.reason === "") {
       problem(
         `${where}.reason`,
-        "reason は手順が要らない理由を空でない文字列で書いてください。",
+        "reason は手順が要らない理由を空でない文字列で記載してください。",
       );
     }
     if (problems.length === before) {
@@ -156,7 +156,7 @@ async function readNoSteps(
   return { entries, problems };
 }
 
-/** スキーマを最新の版のタグから変えたのに移行の手順も手順なしの一覧の合う行も無いこと・release のビルドで出していない版の手順が残ること・手順の形の誤りを、直し方つきの文で返す */
+/** スキーマを最新のバージョンのタグから変えたのに移行の手順も手順なしの一覧の合う行も無いこと・release のビルドで出していないバージョンの手順が残ること・手順の構造の誤りを、修正方法つきの文で返却する */
 export async function checkMigrations(options: {
   root: string;
   version: string;
@@ -164,7 +164,7 @@ export async function checkMigrations(options: {
   const { root, version } = options;
   const problems: string[] = [];
   const migrations = join(root, MIGRATIONS_DIR.root);
-  // 全ての版の手順の形を検める
+  // 全てのバージョンの手順の構造を検める
   if (await isDirectory(migrations)) {
     for (const entry of await readdir(migrations, { withFileTypes: true })) {
       if (
@@ -186,11 +186,11 @@ export async function checkMigrations(options: {
     return problems;
   }
   const order = compareVersions(version, tag);
-  // 比べる版がタグより古ければ、スキーマは比べない
+  // 比べるバージョンがタグより古ければ、スキーマは比べない
   if (order < 0) {
     return problems;
   }
-  // タグと同じ版は出していない版の手順（next）、新しい版は release のビルドなので v{版} を見る
+  // タグと同じバージョンは出していないバージョンの手順（next）、新しいバージョンは release のビルドなので v{バージョン} を確認する
   const watched = order === 0 ? MIGRATIONS_DIR.next : version;
   if (order > 0) {
     const nextLeft =
@@ -198,7 +198,7 @@ export async function checkMigrations(options: {
       noSteps.entries.some((entry) => entry.version === MIGRATIONS_DIR.next);
     if (nextLeft) {
       problems.push(
-        `${version} はタグ ${tag} より新しい版のビルドですが、出していない版の手順が残っています。${MIGRATIONS_DIR.root}/${MIGRATIONS_DIR.next}/ を ${MIGRATIONS_DIR.root}/${version}/ へ移し、${MIGRATIONS_DIR.root}/${MIGRATIONS_DIR.noSteps} の version: next を version: ${version} に書き換えてください。`,
+        `${version} はタグ ${tag} より新しいバージョンのビルドですが、出していないバージョンの手順が残っています。${MIGRATIONS_DIR.root}/${MIGRATIONS_DIR.next}/ を ${MIGRATIONS_DIR.root}/${version}/ へ移し、${MIGRATIONS_DIR.root}/${MIGRATIONS_DIR.noSteps} の version: next を version: ${version} に書き換えてください。`,
       );
     }
   }
@@ -229,7 +229,7 @@ export async function checkMigrations(options: {
     );
     if (!listed && !(await isFile(watchedSteps))) {
       problems.push(
-        `schemas/${name} をタグ ${tag} から変えましたが、移行の手順がありません。${MIGRATIONS_DIR.root}/${watched}/${MIGRATIONS_DIR.steps} に手順を置くか、広げるだけの変更なら ${MIGRATIONS_DIR.root}/${MIGRATIONS_DIR.noSteps} に version: ${watched}・schema: ${name}・sha256: ${hash}・reason の行を置いてください。`,
+        `schemas/${name} をタグ ${tag} から変えましたが、移行の手順がありません。${MIGRATIONS_DIR.root}/${watched}/${MIGRATIONS_DIR.steps} に手順を配置するか、広げるだけの変更なら ${MIGRATIONS_DIR.root}/${MIGRATIONS_DIR.noSteps} に version: ${watched}・schema: ${name}・sha256: ${hash}・reason の行を配置してください。`,
       );
     }
   }

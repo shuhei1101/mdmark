@@ -14,19 +14,19 @@ import {
   warningBlock,
 } from "./warnings.ts";
 
-/** `cols=` に書ける列の数の範囲と、省いたときの数 */
+/** `cols=` に記載できる列の数の範囲と、省いたときの数 */
 export const GALLERY_COLS = { min: 1, max: 6, default: 2 } as const;
 
 /** 番号を付けたギャラリーの画像に、範囲の中の順に付ける文字 */
 export const SUBFIGURE_LETTERS = "abcdefghijklmnopqrstuvwxyz";
 
-/** `numberFigures` が開きのマーカーに置く図の番号 */
+/** `numberFigures` が開きのマーカーに配置する図の番号 */
 type GalleryFigure = { id?: string | undefined; number: number };
 
-/** ギャラリーのマーカーで読める指定を、読み飛ばした引数の案内に並べる文 */
+/** ギャラリーのマーカーで読み込める指定を、スキップした引数の案内に並べる文 */
 const USABLE_ARGS = "`cols=`";
 
-/** ギャラリーのマーカーの `cols=` を読み、読めない値を項目にし、`cols=` 以外の指定を読み飛ばした引数にする */
+/** ギャラリーのマーカーの `cols=` を読み込み、読み込めない値を項目にし、`cols=` 以外の指定をスキップした引数にする */
 export function readGalleryOptions(mark: Mark): {
   cols: number;
   items: WarningItem[];
@@ -35,7 +35,7 @@ export function readGalleryOptions(mark: Mark): {
   const items: WarningItem[] = [];
   const skipped: SkippedArg[] = [];
   let cols: number = GALLERY_COLS.default;
-  // 書いた順に項目にするため、引数の文字を空白で区切って読む
+  // 記載した順に項目にするため、引数の文字を空白で区切って読み込む
   for (const part of (mark.rest ?? "").split(/\s+/).filter(Boolean)) {
     const equals = part.indexOf("=");
     const key = equals < 0 ? undefined : part.slice(0, equals);
@@ -54,7 +54,7 @@ export function readGalleryOptions(mark: Mark): {
     } else {
       items.push({
         label: part,
-        message: `列の数は ${GALLERY_COLS.min}〜${GALLERY_COLS.max} の整数で書いてください。${GALLERY_COLS.default} 列で描いています。`,
+        message: `列の数は ${GALLERY_COLS.min}〜${GALLERY_COLS.max} の整数で記載してください。${GALLERY_COLS.default} 列で描いています。`,
       });
     }
   }
@@ -68,7 +68,7 @@ function imagesIn(tokens: Token[]): Token[] {
   );
 }
 
-/** ギャラリーの範囲の前に置く警告を作る */
+/** ギャラリーの範囲の前に配置する警告を作る */
 function galleryWarnings(
   mark: Mark,
   options: { items: WarningItem[]; count: number; closed: boolean },
@@ -77,14 +77,14 @@ function galleryWarnings(
   const max = SUBFIGURE_LETTERS.length;
   const messages: string[] = [];
   if (options.count === 0) {
-    messages.push("の範囲に画像がありません。範囲の中に画像を書いてください。");
+    messages.push("の範囲に画像がありません。範囲の中に画像を記載してください。");
   } else if (options.count > max) {
     messages.push(
       `の範囲の画像が ${options.count} 枚あります。画像は ${max} 枚までにしてください。${max + 1} 枚目からはサブ図の番号を付けずに描いています。`,
     );
   }
   if (options.items.length) {
-    messages.push("の読めない指定を当てずに描いています。");
+    messages.push("の読み込めない指定を当てずに描いています。");
   }
   if (messages.length) {
     warnings.push({
@@ -99,7 +99,7 @@ function galleryWarnings(
   return warnings;
 }
 
-/** `gallery` がオンなら、ギャラリーのマーカーの範囲の画像を画像の図にして格子に並べ、画像以外のトークンを除く。番号を渡されていれば図表の番号で囲み、サブ図の番号を付ける */
+/** `gallery` がオンなら、ギャラリーのマーカーの範囲の画像を画像の図にして格子に並べ、画像以外のトークンを除く。番号を指定されていれば図表の番号で囲み、サブ図の番号を付ける */
 export function buildGallery(state: StateCore): void {
   if (!featureOn(state, "gallery")) {
     return;

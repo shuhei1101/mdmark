@@ -22,7 +22,7 @@ function elementFrom<T extends Element>(html: string): T {
   return template.content.firstElementChild as T;
 }
 
-/** `root` の中の拡大のボタンを文書の順に並べ、今の配色で隠れている図の中のものを除いて返す */
+/** `root` の中の拡大のボタンを文書の順に並べ、今の配色で隠れている図の中のものを除いて返却する */
 export function collectLightboxImages(root: HTMLElement): HTMLButtonElement[] {
   return [...root.querySelectorAll<HTMLButtonElement>(OPENER_SELECTOR)].filter(
     (opener) => {
@@ -32,7 +32,7 @@ export function collectLightboxImages(root: HTMLElement): HTMLButtonElement[] {
   );
 }
 
-/** 画像を拡大のボタンで包み、押すとライトボックスで開いて送り・拡大・縮小・移動を付ける。外す関数を返す */
+/** 画像を拡大のボタンで包み、押すとライトボックスで開いて切り替え・拡大・縮小・移動を付ける。削除する関数を返却する */
 export function attachLightbox(root: HTMLElement): () => void {
   const controller = new AbortController();
   const wrapped: Array<{ opener: HTMLButtonElement; img: HTMLImageElement }> =
@@ -86,11 +86,11 @@ export function attachLightbox(root: HTMLElement): () => void {
     const view = { scale: 1, fit: 1, loading: 0 };
     let zoom: ZoomControl | undefined;
 
-    /** 全体が収まる倍率で見ているか */
+    /** 全体が収まる倍率で確認しているか */
     const atFit = (): boolean =>
       zoom === undefined || view.scale <= view.fit + ZOOM_EPSILON;
 
-    /** 今の位置の画像・キャプション・枚数・送りのボタンを当て、読めたら全体が収まる倍率で拡大・縮小を付け直す */
+    /** 今の位置の画像・キャプション・枚数・切り替えのボタンを当て、読み込めたら全体が収まる倍率で拡大・縮小をもう一度付ける */
     const show = (): void => {
       zoom?.detach();
       zoom = undefined;
@@ -140,7 +140,7 @@ export function attachLightbox(root: HTMLElement): () => void {
         .catch(() => {});
     };
 
-    /** 前後の画像へ送る（端では送らない） */
+    /** 前後の画像へ送信する（端では切り替えない） */
     const go = (step: number): void => {
       const target = index + step;
       if (target < 0 || target >= items.length) {
@@ -150,7 +150,7 @@ export function attachLightbox(root: HTMLElement): () => void {
       show();
     };
 
-    /** 受け取りと拡大・縮小を外して `dialog` を消し、フォーカスとスクロールの位置を開く前に戻す */
+    /** 受け取りと拡大・縮小を削除して `dialog` を削除し、フォーカスとスクロールの位置を開く前に戻す */
     const finish = (): void => {
       if (signal.aborted) {
         return;
@@ -170,7 +170,7 @@ export function attachLightbox(root: HTMLElement): () => void {
     dialog
       .querySelector('[data-tool="close"]')
       ?.addEventListener("click", () => dialog.close(), { signal });
-    // 全体が収まる倍率のときの左右の矢印キーで送る。拡大中に動かした矢印キーは送らない
+    // 全体が収まる倍率のときの左右の矢印キーで送信する。拡大中に動かした矢印キーは送信しない
     dialog.addEventListener(
       "keydown",
       (event) => {

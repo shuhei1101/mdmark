@@ -7,20 +7,20 @@ export const CONTEXT_CHARS = 32;
 export const COMMENT_EXCLUDED =
   "input, textarea, pre, code, .mdmark-view-switch, .mdmark-view-board, .mdmark-filter-drawer, .mdmark-comment-mark, .mdmark-comment-popover, .mdmark-comment-add, .mdmark-comment-orphans";
 
-/** 箇所を探す本文の文字に数えない場所。印は本文の文字を変えないため、印の中の文字は数える */
+/** 箇所を探す本文の文字に数えない場所。マーカーは本文の文字を変えないため、マーカーの中の文字は数える */
 const TEXT_EXCLUDED = COMMENT_EXCLUDED.split(", ")
   .filter((selector) => selector !== ".mdmark-comment-mark")
   .join(", ");
 
-/** 本文の文字と、文字の節ごとの始まりの位置 */
+/** 本文の文字と、文字のセクションごとの始まりの位置 */
 export type CommentText = {
-  /** 文字の節をつないだ本文の文字 */
+  /** 文字のセクションをつないだ本文の文字 */
   text: string;
-  /** 文字の節と、`text` の中の始まりの位置 */
+  /** 文字のセクションと、`text` の中の始まりの位置 */
   nodes: Array<{ node: Text; start: number }>;
 };
 
-/** `root` の中の、`TEXT_EXCLUDED` に入らない文字の節を順に集め、つないだ文字と節ごとの始まりの位置を返す */
+/** `root` の中の、`TEXT_EXCLUDED` に入らない文字のセクションを順に集め、つないだ文字とセクションごとの始まりの位置を返却する */
 export function commentText(root: HTMLElement): CommentText {
   const nodes: CommentText["nodes"] = [];
   let text = "";
@@ -47,7 +47,7 @@ function positionOf(
   if (hit) {
     return hit.start + offset;
   }
-  // 要素の中の位置は、その位置より後ろで最初の文字の節の始まりにする
+  // 要素の中の位置は、その位置より後ろで最初の文字のセクションの始まりにする
   const point = document.createRange();
   point.setStart(container, offset);
   point.collapse(true);
@@ -95,7 +95,7 @@ export type CommentAnchor = {
   comments: MdmarkComment[];
 };
 
-/** `quote` が本文に現れる位置を全て返す */
+/** `quote` が本文に現れる位置を全て返却する */
 function occurrences(text: string, quote: string): number[] {
   const positions: number[] = [];
   for (
@@ -122,7 +122,7 @@ function findStart(text: string, comment: MdmarkComment): number | undefined {
 export function locateComments(options: {
   /** 本文の文字 */
   text: string;
-  /** 読んだコメント */
+  /** 読み込んだコメント */
   comments: MdmarkComment[];
 }): { anchors: CommentAnchor[]; orphans: MdmarkComment[] } {
   const { text, comments } = options;

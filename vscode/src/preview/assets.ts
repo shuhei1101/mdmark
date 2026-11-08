@@ -1,6 +1,6 @@
 import { isAbsolute, relative, resolve } from "node:path";
 
-/** 書いたパスからクエリとフラグメントを外し、Markdown のフォルダ、`assetsRoot` があればその後に `assetsRoot` を基準にした、ワークスペースの配下の絶対パスを探す順に返す */
+/** 記載したパスからクエリとフラグメントを削除し、Markdown のフォルダ、`assetsRoot` があればその後に `assetsRoot` を基準にした、ワークスペースの配下の絶対パスを探す順に返却する */
 export function assetCandidates(
   path: string,
   options: {
@@ -19,7 +19,7 @@ export function assetCandidates(
   try {
     decoded = decodeURI(bare);
   } catch {
-    // 戻せないときは書いたまま探す
+    // 戻せないときは記載したまま探す
   }
   const roots =
     options.assetsRoot === undefined

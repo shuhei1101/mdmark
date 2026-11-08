@@ -16,7 +16,7 @@ import {
 import { normalizePath } from "./paths.ts";
 import { linkedPaths, parseDocument } from "./references.ts";
 
-/** `checkIndex` が返すずれ 1 件 */
+/** `checkIndex` が返却するずれ 1 件 */
 export type MdmarkIndexIssue = {
   /** ずれのあるファイル */
   file: string;
@@ -34,15 +34,15 @@ export type MdmarkIndexIssue = {
     | "missed_change_together"
     | "duplicate_term"
     | "avoided_term";
-  /** ずれの内容と直し方 */
+  /** ずれの内容と修正方法 */
   message: string;
 };
 
-/** 点検が見る用語 1 つ: 語と別名、ずれに書く場所 */
+/** 点検が確認する用語 1 つ: 単語と別名、ずれに記載する場所 */
 type TermSite = {
-  /** 語と別名（語が先） */
+  /** 単語と別名（単語が先） */
   words: string[];
-  /** 語や別名ごとの、ずれの `where` */
+  /** 単語や別名ごとの、ずれの `where` */
   wheres: string[];
   /** ファイル */
   file: string;
@@ -51,18 +51,18 @@ type TermSite = {
 /** 索引のずれを点検する既定の索引のファイル名 */
 const DEFAULT_INDEX_FILE = "index.yaml";
 
-/** 正規化した語に当たる、用語の語か別名の位置 */
+/** 正規化した単語に該当する、用語の単語か別名の位置 */
 function positionOfWord(site: TermSite, word: string): number {
   return site.words.findIndex((candidate) => normalizeWord(candidate) === word);
 }
 
-/** ずれに書く用語の場所を、`{ファイル} の {場所}` の形にする。`word` は正規化した語 */
+/** ずれに記載する用語の場所を、`{ファイル} の {場所}` の構造にする。`word` は正規化した単語 */
 function describeSite(site: TermSite, word: string): string {
   const position = Math.max(positionOfWord(site, word), 0);
   return `\`${site.file}\` の \`${site.wheres[position]}\``;
 }
 
-/** 重なった用語のずれを返す。後に出た用語ごとに、語か別名が正規化した後に重なる先の用語のうち最初の 1 つとの組を 1 件にする */
+/** 重なった用語のずれを返却する。後に出た用語ごとに、単語か別名が正規化した後に重なる先の用語のうち最初の 1 つとの組を 1 件にする */
 function duplicateTerms(sites: TermSite[]): MdmarkIndexIssue[] {
   const issues: MdmarkIndexIssue[] = [];
   sites.forEach((site, position) => {
@@ -78,16 +78,16 @@ function duplicateTerms(sites: TermSite[]): MdmarkIndexIssue[] {
         file: site.file,
         where: site.wheres[wordPosition] ?? "",
         kind: "duplicate_term",
-        message: `用語 \`${word}\` が ${describeSite(earlier, key)} と重なっています。どちらかを消すか、語を変えてください。`,
+        message: `用語 \`${word}\` が ${describeSite(earlier, key)} と重なっています。どちらかを削除するか、単語を変えてください。`,
       });
-      // 1 つの用語につき、重なりは最初の 1 件だけ返す
+      // 1 つの用語につき、重なりは最初の 1 件だけ返却する
       break;
     }
   });
   return issues;
 }
 
-/** 行内のトークンごとに、表のセルなど `map` を持たないトークンの行を引くための、直前の `tr_open` の開始行（0 から）を返す */
+/** 行内のトークンごとに、表のセルなど `map` を持たないトークンの行を参照するための、直前の `tr_open` の開始行（0 から）を返却する */
 function rowStarts(tokens: Token[]): Map<Token, number | undefined> {
   const starts = new Map<Token, number | undefined>();
   let row: number | undefined;
@@ -101,7 +101,7 @@ function rowStarts(tokens: Token[]): Map<Token, number | undefined> {
   return starts;
 }
 
-/** `findAvoidedTerms` が探す用語: 語・別名・やめた言い方 */
+/** `findAvoidedTerms` が探す用語: 単語・別名・やめた言い方 */
 type AvoidableTerm = Pick<MdmarkIndexTerm, "term" | "aliases" | "avoid">;
 
 /** 1 つの文書のトークンから、用語のやめた言い方が出た行とやめた言い方の組を `avoided_term` のずれにする */
@@ -110,11 +110,11 @@ export function findAvoidedTerms(options: {
   file: string;
   /** `parseDocument` のトークン */
   tokens: Token[];
-  /** 用語（索引の用語の後に、索引の `docs` の順の文書の用語集の表の用語を続けた並び。同じやめた言い方は先の用語を使う） */
+  /** 用語（索引の用語の後に、索引の `docs` の順の文書の用語集の表の用語を続けた並び。同じやめた言い方は先の用語を使用する） */
   terms: AvoidableTerm[];
 }): MdmarkIndexIssue[] {
   const { file, tokens, terms } = options;
-  // 正規化したやめた言い方から、記載した表記と代わりに使う用語の語を引く（同じ言い方は先の用語を使う）
+  // 正規化したやめた言い方から、記載した表記と代わりに使用する用語の単語を参照する（同じ言い方は先の用語を使用する）
   const avoidedBy = new Map<string, { written: string; term: string }>();
   for (const term of terms) {
     for (const word of term.avoid ?? []) {
@@ -127,7 +127,7 @@ export function findAvoidedTerms(options: {
   if (avoidedBy.size === 0) {
     return [];
   }
-  // 用語の語・別名を先に渡し、同じ長さならそちらを当てる。やめた言い方の一部に当たる用語の語を、やめた言い方として数えないため
+  // 用語の単語・別名を先に指定し、同じ長さならそちらを適用する。やめた言い方の一部に該当する用語の単語を、やめた言い方として数えないため
   const termWords = new Set(
     terms.flatMap((term) =>
       [term.term, ...(term.aliases ?? [])].map(normalizeWord),
@@ -137,7 +137,7 @@ export function findAvoidedTerms(options: {
   const rows = rowStarts(tokens);
   const found: Array<{ line: number; word: string }> = [];
   forEachInline(tokens, (inline) => {
-    // 解析器の開始行は 0 から数えるため、1 を足して行番号にする
+    // 解析器の開始行は 0 から数えるため、1 を追加して行番号にする
     const start = (inline.map?.[0] ?? rows.get(inline) ?? 0) + 1;
     const children = inline.children ?? [];
     for (const position of matchableChildren(inline)) {
@@ -183,7 +183,7 @@ function changeTogetherTargets(doc: MdmarkIndexDoc): string[] {
     .map((related) => related.to);
 }
 
-/** 索引の関連から `untyped_related`・`one_sided_change_together`・`related_link_overlap` をこの順で返す。同じ種類の中は索引の `docs` の並び、文書の中は `related` の並び */
+/** 索引の関連から `untyped_related`・`one_sided_change_together`・`related_link_overlap` をこの順で返却する。同じ種類の中は索引の `docs` の並び、文書の中は `related` の並び */
 export function findRelatedIssues(options: {
   /** 検査で合う要素だけにした索引 */
   index: MdmarkIndex;
@@ -237,7 +237,7 @@ export function findRelatedIssues(options: {
           file: indexFile,
           where,
           kind: "related_link_overlap",
-          message: `\`${doc.id}\` の本文が \`${target.id}\`（\`${target.path}\`）をリンクしているため、\`${where}\` と重なります。\`related\` から外すか、本文のリンクを外してください。`,
+          message: `\`${doc.id}\` の本文が \`${target.id}\`（\`${target.path}\`）をリンクしているため、\`${where}\` と重なります。\`related\` から除外するか、本文のリンクを削除してください。`,
         });
       }
     });
@@ -245,7 +245,7 @@ export function findRelatedIssues(options: {
   return [...untyped, ...oneSided, ...overlap];
 }
 
-/** `change_together` の組のうち、片方の文書だけが `changedPaths` にある組を `missed_change_together` で返す。組は向きを問わず 1 回だけ確かめ、先に記載した側の文書の索引の並びで返す */
+/** `change_together` の組のうち、片方の文書だけが `changedPaths` にある組を `missed_change_together` で返却する。組は向きを問わず 1 回だけ確認し、先に記載した側の文書の索引の並びで返却する */
 export function findMissedChangeTogether(options: {
   /** 検査で合う要素だけにした索引 */
   index: MdmarkIndex;
@@ -277,22 +277,22 @@ export function findMissedChangeTogether(options: {
         file: unchangedDoc.path,
         where: "",
         kind: "missed_change_together",
-        message: `\`${changedDoc.path}\` が変わっていますが、\`change_together\` の相手の \`${unchangedDoc.path}\` は変わっていません。\`${unchangedDoc.path}\` も直すか確かめてください。`,
+        message: `\`${changedDoc.path}\` が変わっていますが、\`change_together\` の相手の \`${unchangedDoc.path}\` は変わっていません。\`${unchangedDoc.path}\` も修正するか確認してください。`,
       });
     }
   }
   return issues;
 }
 
-/** 索引と文書の本文から、`schema`・`missing_doc`・`orphan_doc`・`broken_ref`・`untyped_related`・`one_sided_change_together`・`related_link_overlap`・`missed_change_together`・`duplicate_term`・`avoided_term` のずれをこの順で返す */
+/** 索引と文書の本文から、`schema`・`missing_doc`・`orphan_doc`・`broken_ref`・`untyped_related`・`one_sided_change_together`・`related_link_overlap`・`missed_change_together`・`duplicate_term`・`avoided_term` のずれをこの順で返却する */
 export function checkIndex(input: {
-  /** 索引の値（形を確かめる前のもの） */
+  /** 索引の値（構造を確認する前のもの） */
   index: unknown;
-  /** 文書のパスから本文を引く表 */
+  /** 文書のパスから本文を参照する表 */
   documents: Record<string, string>;
   /** ずれの `file` に出す索引のファイルの名前（既定 `index.yaml`） */
   indexFile?: string;
-  /** 比べる基準から変わった文書のパス。渡したときだけ `change_together` の直し忘れを確かめる */
+  /** 比べる基準から変わった文書のパス。指定したときだけ `change_together` の修正漏れを確認する */
   changedPaths?: string[];
 }): MdmarkIndexIssue[] {
   const indexFile = input.indexFile ?? DEFAULT_INDEX_FILE;
@@ -301,14 +301,14 @@ export function checkIndex(input: {
     file: indexFile,
     where: problem.where,
     kind: "schema",
-    message: `索引の ${problem.where === "" ? "全体" : `\`${problem.where}\``} が形に合いません: ${problem.message}。直してください。`,
+    message: `索引の ${problem.where === "" ? "全体" : `\`${problem.where}\``} が構造に合いません: ${problem.message}。修正してください。`,
   }));
-  // 索引がオブジェクトでないときは、ほかのずれを確かめない
+  // 索引がオブジェクトでないときは、ほかのずれを確認しない
   if (problems.some((problem) => problem.where === "")) {
     return schema;
   }
 
-  // 検査で除かれる前の `docs` の並びでの位置を、ずれの場所に使う
+  // 検査で除かれる前の `docs` の並びでの位置を、ずれの場所に使用する
   const rawDocs = (input.index as { docs?: unknown }).docs;
   const positionOf = (doc: MdmarkIndexDoc): number =>
     Array.isArray(rawDocs) ? rawDocs.indexOf(doc) : -1;
@@ -332,7 +332,7 @@ export function checkIndex(input: {
         file: indexFile,
         where: `docs[${position}].path`,
         kind: "missing_doc",
-        message: `\`${doc.path}\` が見つかりません。文書を戻すか、索引の \`docs[${position}]\` を消してください。`,
+        message: `\`${doc.path}\` が見つかりません。文書を戻すか、索引の \`docs[${position}]\` を削除してください。`,
       });
     }
     (doc.related ?? []).forEach((item, relatedPosition) => {
@@ -344,7 +344,7 @@ export function checkIndex(input: {
           file: indexFile,
           where,
           kind: "broken_ref",
-          message: `\`related\` の \`${to}\` が索引の文書にありません。\`${where}\` を直すか消してください。`,
+          message: `\`related\` の \`${to}\` が索引の文書にありません。\`${where}\` を修正するか削除してください。`,
         });
       }
     });
@@ -357,10 +357,10 @@ export function checkIndex(input: {
       file: path,
       where: "",
       kind: "orphan_doc" as const,
-      message: `\`${path}\` が索引にありません。索引の \`docs\` に足してください。`,
+      message: `\`${path}\` が索引にありません。索引の \`docs\` に追加してください。`,
     }));
 
-  // 文書は先に全て読む（やめた言い方は、表を持たない文書の本文からも探すため）
+  // 文書は先に全て読み込む（やめた言い方は、表を持たない文書の本文からも探すため）
   const parsedDocs: Array<{
     doc: MdmarkIndexDoc;
     path: string;
@@ -396,7 +396,7 @@ export function checkIndex(input: {
     };
   });
   const avoidable: AvoidableTerm[] = [...(index.terms ?? [])];
-  // 本文のリンクが指す文書のパス（関連と重なるかの確認に使う）
+  // 本文のリンクが指す文書のパス（関連と重なるかの確認に使用する）
   const links: Record<string, string[]> = {};
   for (const { doc, path, parsed } of parsedDocs) {
     links[doc.id] = [...linkedPaths(doc, parsed.tokens)];

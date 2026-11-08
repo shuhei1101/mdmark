@@ -33,20 +33,20 @@ export type PanelScreenProps = {
   api: VsCodeApi;
   /** 保存した行。最初の `render` でその行へ戻す */
   savedLine?: number;
-  /** 配布物を読む関数（ストーリーと単体テストが代役を渡す） */
+  /** 配布物を読み込む関数（ストーリーと単体テストが代役を指定する） */
   load?: (url: string) => Promise<Mdmark>;
-  /** 拡張を読む関数（単体テストが代役を渡す） */
+  /** 拡張を読み込む関数（単体テストが代役を指定する） */
   importModule?: ImportModule;
 };
 
-/** 帯に出す読めない設定ファイル */
+/** 帯に出す読み込めない設定ファイル */
 type ConfigErrorView = { path: string; line?: number; settingKey?: string };
 
-/** 配布物を読まずに出す状態が始め方にあるか */
+/** 配布物を読み込まずに出す状態が始め方にあるか */
 const isUndecidable = (boot: PreviewBoot): boolean =>
   boot.status === "versionUndecidable" || boot.distJs === undefined;
 
-/** 始め方の版を添えた状態の表示 */
+/** 始め方のバージョンを添えた状態の表示 */
 const statusWithVersion = (
   state: PreviewStatusState,
   version: string | undefined,
@@ -65,7 +65,7 @@ const requestAssets = (
   }
 };
 
-/** テストのときだけ、調べた要素か axe の違反を同じ `id` で返す */
+/** テストのときだけ、調べた要素か axe の違反を同じ `id` で返却する */
 const answerTest = (
   view: DocumentView,
   api: VsCodeApi,
@@ -79,7 +79,7 @@ const answerTest = (
         api.postMessage({ type: "axed", id: message.id, violations });
       });
 
-/** `configError` から帯に出す読めない設定ファイルを作る */
+/** `configError` から帯に出す読み込めない設定ファイルを作る */
 const configErrorOf = (
   message: Extract<HostMessage, { type: "configError" }>,
 ): ConfigErrorView => ({
@@ -90,7 +90,7 @@ const configErrorOf = (
     : { settingKey: message.settingKey }),
 });
 
-/** `theme` の CSS の `link` の `href` を替える（描き直さない） */
+/** `theme` の CSS の `link` の `href` を替える（再描画しない） */
 const replaceThemeHref = (href: string): void => {
   document.getElementById("mdmark-theme")?.setAttribute("href", href);
 };
@@ -126,7 +126,7 @@ export const PanelScreen = ({
     isUndecidable(boot) ? { state: "versionUndecidable" } : undefined,
   );
   const [configError, setConfigError] = useState<ConfigErrorView | undefined>();
-  // メッセージの処理と読み込みの結果の処理で投げた例外。次の描画で投げて Error Boundary へ渡す
+  // メッセージの処理と読み込みの結果の処理で投げた例外。次の描画で投げて Error Boundary へ指定する
   const [failure, setFailure] = useState<{ error: unknown } | undefined>();
   if (failure !== undefined) {
     throw failure.error;
@@ -136,12 +136,12 @@ export const PanelScreen = ({
       ? { root: boot.root }
       : { root: boot.root, savedLine },
   );
-  // 最初の `rendered` を送ったか、描けない理由を出したか
+  // 最初の `rendered` を送信したか、描けない理由を出したか
   const settled = useRef(isUndecidable(boot));
-  // 最後に送った `resolveAssets` の番号
+  // 最後に送信した `resolveAssets` の番号
   const assetsId = useRef(0);
 
-  /** 処理を呼び、投げた例外を Error Boundary へ渡す */
+  /** 処理を呼び、投げた例外を Error Boundary へ指定する */
   const run = (handle: () => void): void => {
     try {
       handle();
@@ -165,7 +165,7 @@ export const PanelScreen = ({
     requestAssets(boot, api, assetsId);
   };
 
-  /** 最後に送った `resolveAssets` への答えだけを当てる */
+  /** 最後に送信した `resolveAssets` への回答だけを適用する */
   const applyResolvedAssets = (
     message: Extract<HostMessage, { type: "assetsResolved" }>,
   ): void => {
@@ -203,7 +203,7 @@ export const PanelScreen = ({
         }
         return;
       default:
-        // MSW の Service Worker など、拡張機能以外が送るメッセージは処理しない
+        // MSW の Service Worker など、拡張機能以外が送信するメッセージは処理しない
         return;
     }
   };

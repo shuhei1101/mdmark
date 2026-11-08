@@ -1,7 +1,7 @@
 /** 注意書きの種類 */
 export type CalloutKind = "note" | "tip" | "important" | "warning" | "caution";
 
-/** 注意書きの種類（引用の 1 行目に書ける。知らない種類は `note`） */
+/** 注意書きの種類（引用の 1 行目に記載できる。知らない種類は `note`） */
 export const CALLOUT_KINDS: readonly CalloutKind[] = [
   "note",
   "tip",
@@ -10,7 +10,7 @@ export const CALLOUT_KINDS: readonly CalloutKind[] = [
   "caution",
 ];
 
-/** 種類ごとの題の文言 */
+/** 種類ごとのタイトルの文言 */
 const CALLOUT_TITLES: Record<CalloutKind, string> = {
   note: "補足",
   tip: "ヒント",
@@ -19,7 +19,7 @@ const CALLOUT_TITLES: Record<CalloutKind, string> = {
   caution: "注意",
 };
 
-/** 注意書きの HTML を返す */
+/** 注意書きの HTML を返却する */
 export function renderCallout(options: {
   /** 種類 */
   kind: CalloutKind;
@@ -27,9 +27,9 @@ export function renderCallout(options: {
   collapsed?: boolean;
   /** 折り畳みが開いているか */
   open?: boolean;
-  /** タイトルの行内の HTML（エスケープ済み）。渡すと種類の名前は読み上げだけにする */
+  /** タイトルの行内の HTML（エスケープ済み）。指定すると種類の名前はスクリーンリーダーだけにする */
   title?: string | undefined;
-  /** 本文の HTML（`SLOT_MARKER` を渡せる） */
+  /** 本文の HTML（`SLOT_MARKER` を指定できる） */
   body: string;
 }): string {
   const { kind, collapsed = false, open = false, body } = options;

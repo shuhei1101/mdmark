@@ -18,7 +18,7 @@ export type CardGridItem = {
 /** 行内のアイコンの要素の class */
 const INLINE_ICON_CLASS = 'class="mdmark-inline-icon"';
 
-/** カードのアイコン: 行内のアイコンの要素に、カードのアイコンの class を足す */
+/** カードのアイコン: 行内のアイコンの要素に、カードのアイコンの class を追加する */
 const renderIcon = (
   name: string,
   icons: Record<string, MdmarkIconNode> | undefined,
@@ -49,11 +49,11 @@ const renderItem = (
     : `<div class="mdmark-card-grid-item">${inner}</div>`;
 };
 
-/** カードの格子の HTML を返す */
+/** カードの格子の HTML を返却する */
 export const renderCardGrid = (options: {
   /** 項目ごとのカードの中身 */
   items: CardGridItem[];
-  /** 束ねていない名前のアイコンの形の表 */
+  /** まとめていない名前のアイコンの形状の表 */
   icons?: Record<string, MdmarkIconNode> | undefined;
 }): string => {
   const items = options.items

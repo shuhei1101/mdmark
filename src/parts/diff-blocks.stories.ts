@@ -5,7 +5,7 @@ const meta = { title: "Parts/DiffBlocks" } satisfies Meta<
 >;
 export default meta;
 
-/** ストーリー: 描画の口（`parameters.server.id`）の部品を `args` で描く */
+/** ストーリー: 描画のインターフェース（`parameters.server.id`）の部品を `args` で描く */
 type Story = StoryObj<Record<string, unknown>>;
 
 export const AddParagraph: Story = {
@@ -51,7 +51,7 @@ export const TableRowDel: Story = {
 export const ListItemDel: Story = {
   name: "ListItemDel",
   parameters: { server: { id: "diff-blocks" } },
-  args: { kind: "del", unit: "item", html: "<li>release ブランチを消す</li>" },
+  args: { kind: "del", unit: "item", html: "<li>release ブランチを削除する</li>" },
 };
 
 export const CodeBlock: Story = {

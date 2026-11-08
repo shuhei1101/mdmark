@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "settings.yaml",
-  "description": "mdmark の端末の設定（`MDMARK_CONFIG`、無ければ `${XDG_CONFIG_HOME:-~/.config}/mdmark/settings.yaml`）。`mdmark.config.yaml` のキーに、端末の設定だけが持つ `config`・`serve` を足したもの。他のキーは拒まない。",
+  "description": "mdmark の端末の設定（`MDMARK_CONFIG`、無ければ `${XDG_CONFIG_HOME:-~/.config}/mdmark/settings.yaml`）。`mdmark.config.yaml` のキーに、端末の設定だけが持つ `config`・`serve` を追加したもの。他のキーは拒まない。",
   "allOf": [
     {
       "$ref": "mdmark.config.schema.json"
@@ -10,12 +10,12 @@
   "type": "object",
   "properties": {
     "config": {
-      "title": "設定の読み方の切り替え",
-      "description": "端末の設定だけが持つ切り替え。`mdmark.config.yaml` に書いても読まない。",
+      "title": "設定の読み込み方の切り替え",
+      "description": "端末の設定だけが持つ切り替え。`mdmark.config.yaml` に書き込んでも読み込まない。",
       "type": "object",
       "properties": {
         "cascade": {
-          "title": "重ねて読むか",
+          "title": "重ねて読み込むか",
           "description": "`true` のとき、文書のフォルダから上の `mdmark.config.yaml` を全て重ねる。`false` のときは最初に見つかった 1 つだけを端末の設定に重ねる。",
           "type": "boolean",
           "default": false
@@ -30,7 +30,7 @@
     },
     "serve": {
       "title": "常駐サーバーの起動",
-      "description": "端末の設定だけが持つ、`/mdmark:global-setup` が常駐サーバーを起動するときの値。`mdmark.config.yaml` に書いても読まない。",
+      "description": "端末の設定だけが持つ、`/mdmark:global-setup` が常駐サーバーを起動するときの値。`mdmark.config.yaml` に書き込んでも読み込まない。",
       "type": "object",
       "properties": {
         "tmuxSession": {

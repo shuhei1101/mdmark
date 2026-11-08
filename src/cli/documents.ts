@@ -21,7 +21,7 @@ function toPosix(path: string): string {
   return path.split(sep).join("/");
 }
 
-/** `cwd` の下で `pattern` に当たり `exclude` に当たらないファイルの、`cwd` からの相対パスを `/` 区切りで返す */
+/** `cwd` の下で `pattern` に該当し `exclude` に該当しないファイルの、`cwd` からの相対パスを `/` 区切りで返却する */
 export async function globFiles(options: {
   cwd: string;
   pattern: string;
@@ -42,7 +42,7 @@ export async function globFiles(options: {
   return found.sort();
 }
 
-/** `build.include` の glob に当たり `build.exclude` に当たらない `.md` のパスを、glob の並び・同じ glob の中はパスの順で、重なりを除いて返す */
+/** `build.include` の glob に該当し `build.exclude` に該当しない `.md` のパスを、glob の並び・同じ glob の中はパスの順で、重なりを除いて返却する */
 export async function collectBuildDocuments(
   dir: string,
   build: Pick<BuildConfig, "include" | "exclude">,
@@ -63,7 +63,7 @@ export async function collectBuildDocuments(
   return [...seen];
 }
 
-/** 設定の `index` の YAML と、索引のフォルダの下の `.md`（`build.exclude` に当たらないもの）を読む。設定に `index` が無ければ `undefined` */
+/** 設定の `index` の YAML と、索引のフォルダの下の `.md`（`build.exclude` に該当しないもの）を読み込む。設定に `index` が無ければ `undefined` */
 export async function readIndexWithDocuments(loaded: LoadedConfig): Promise<
   | {
       indexFile: string;
@@ -86,11 +86,11 @@ export async function readIndexWithDocuments(loaded: LoadedConfig): Promise<
     const reason =
       error instanceof Error ? error.message.split("\n")[0] : String(error);
     throw new CliError(
-      `索引 ${indexFile} を読めません（${reason}）。設定の index のパスを直すか、索引を置いてください。`,
+      `索引 ${indexFile} を読み込めません（${reason}）。設定の index のパスを修正するか、索引を配置してください。`,
     );
   }
   const indexDir = dirname(indexPath);
-  // 索引のフォルダの下の文書を、設定ファイルのフォルダからの相対パスで引いてから、索引のフォルダからの相対パスにする
+  // 索引のフォルダの下の文書を、設定ファイルのフォルダからの相対パスで参照してから、索引のフォルダからの相対パスにする
   const indexDirFromConfig = toPosix(relative(loaded.dir, indexDir));
   const files = await globFiles({
     cwd: loaded.dir,
@@ -108,7 +108,7 @@ export async function readIndexWithDocuments(loaded: LoadedConfig): Promise<
   return { indexFile, indexDir, raw, documents };
 }
 
-/** 本文の最初の h1 の文字（コードブロックの中は読まない）。無ければ `undefined` */
+/** 本文の最初の h1 の文字（コードブロックの中は読み込まない）。無ければ `undefined` */
 function firstHeading(markdown: string): string | undefined {
   let fence: string | undefined;
   for (const line of markdown.split("\n")) {
@@ -130,7 +130,7 @@ function firstHeading(markdown: string): string | undefined {
   return undefined;
 }
 
-/** 文書の題を決める: 索引の `title`、無ければ本文の最初の h1、無ければ拡張子を落としたファイル名 */
+/** 文書のタイトルを決める: 索引の `title`、無ければ本文の最初の h1、無ければ拡張子を落としたファイル名 */
 export function documentTitle(doc: {
   path: string;
   markdown: string;

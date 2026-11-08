@@ -1,7 +1,7 @@
 /** 動かす行が、見えている範囲の先頭からこの行数以内にあるときは `revealRange` を呼ばない */
 export const REVEAL_MARGIN_LINES = 6;
 
-/** `revealLine` で動かした行を覚え、次に届く見えている範囲の知らせが自分の起こしたものかを判定する。時間で捨てない */
+/** `revealLine` で動かした行を覚え、次に届く見えている範囲の通知が自分の発生させたものかを判定する。時間で捨てない */
 export class EditorScrollGuard {
   /** 動かした行 */
   private revealedLine: number | undefined;
@@ -15,7 +15,7 @@ export class EditorScrollGuard {
     return true;
   }
 
-  /** 覚えがあり、見えている範囲がその行を含むなら `false`（送らない）。どちらの場合も覚えを消す。覚えが無ければ `true` */
+  /** 覚えがあり、見えている範囲がその行を含むなら `false`（送信しない）。どちらの場合も覚えを削除する。覚えが無ければ `true` */
   takeVisibleRange(range: { start: number; end: number }): boolean {
     const line = this.revealedLine;
     this.revealedLine = undefined;

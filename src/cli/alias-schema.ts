@@ -8,7 +8,7 @@ import aliasSchema from "../../schemas/alias-inject/v0.3.0/aliases.schema.json" 
 };
 import type { CheckIssue } from "./check.ts";
 
-/** `type` の語を日本語の型の名前にする */
+/** `type` の単語を日本語の型の名前にする */
 const TYPE_NAMES: Record<string, string> = {
   string: "文字列",
   boolean: "真偽値",
@@ -16,10 +16,10 @@ const TYPE_NAMES: Record<string, string> = {
   object: "オブジェクト",
 };
 
-/** 検査の関数。初めて使うときに作り、以降は使い回す */
+/** 検査の関数。初めて使用するときに作り、以降は使い回す */
 let validator: ValidateFunction | undefined;
 
-/** 検査の関数を作る（`$data` は使わない） */
+/** 検査の関数を作る（`$data` は使用しない） */
 function getValidator(): ValidateFunction {
   validator ??= new Ajv2020({
     allErrors: true,
@@ -29,7 +29,7 @@ function getValidator(): ValidateFunction {
   return validator;
 }
 
-/** JSON Pointer の各部分を、`~1`・`~0` を戻して返す */
+/** JSON Pointer の各部分を、`~1`・`~0` を戻して返却する */
 function pointerParts(pointer: string): string[] {
   return pointer === ""
     ? []
@@ -39,7 +39,7 @@ function pointerParts(pointer: string): string[] {
         .map((part) => part.replaceAll("~1", "/").replaceAll("~0", "~"));
 }
 
-/** `/1/alias_type` を `aliases[1].alias_type` の形にする */
+/** `/1/alias_type` を `aliases[1].alias_type` の構造にする */
 function whereOf(pointer: string): string {
   return pointerParts(pointer).reduce(
     (path, part) =>
@@ -77,13 +77,13 @@ function messageOf(error: ErrorObject, where: string): string {
     case "enum":
       return `\`${where}\`${label}は ${(params.allowedValues as unknown[]).join("・")} のどれかにしてください。`;
     case "additionalProperties":
-      return `\`${where}\` の \`${String(params.additionalProperty)}\` は記載できません。消してください。`;
+      return `\`${where}\` の \`${String(params.additionalProperty)}\` は記載できません。削除してください。`;
     default:
       return `\`${where}\`${label}が Schema に合いません（${error.message ?? ""}）。`;
   }
 }
 
-/** 設定の `aliases` の配列に、取り込んだ alias-inject の Schema を当て、合わない行を `null` にした配列と、日本語の 1 文の `schema` のずれを返す */
+/** 設定の `aliases` の配列に、取り込んだ alias-inject の Schema を当て、合わない行を `null` にした配列と、日本語の 1 文の `schema` のずれを返却する */
 export function validateAliasRows(
   rows: unknown[],
   file: string,

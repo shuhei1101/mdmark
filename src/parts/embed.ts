@@ -1,15 +1,15 @@
 import { escapeHtml } from "./escape.ts";
 
-/** 読み込み中の枠に出す文字 */
+/** 読み込み中のブロックに出す文字 */
 const LOADING_TEXT = "図を読み込んでいます";
 
-/** 外部ライブラリの印の場所に置く、読み込み中の枠の HTML を返す */
+/** 外部ライブラリのマーカーの場所に配置する、読み込み中のブロックの HTML を返却する */
 export function renderEmbed(options: {
-  /** 印の名前 */
+  /** マーカーの名前 */
   name: string;
-  /** 印の引数（既定 `[]`） */
+  /** マーカーの引数（既定 `[]`） */
   args?: string[];
-  /** 印の範囲から読んだ定義の番号。範囲で書いた印だけが持つ */
+  /** マーカーの範囲から読み込んだ定義の番号。範囲で記載したマーカーだけが持つ */
   definition?: number;
 }): string {
   const { name, args = [], definition } = options;

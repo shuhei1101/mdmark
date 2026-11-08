@@ -25,7 +25,7 @@ export type PreviewSettings = {
     | "theme-contrast";
 };
 
-/** 設定が無いか型が違うときに使う値。`package.json` の `contributes.configuration` の `default` と同じ値 */
+/** 設定が無いか型が違うときに使用する値。`package.json` の `contributes.configuration` の `default` と同じ値 */
 export const SETTING_DEFAULTS: PreviewSettings = {
   version: "latest",
   configPath: "",
@@ -53,17 +53,17 @@ const COLOR_THEMES = [
   "theme-contrast",
 ] as const;
 
-/** 文字列の設定を読む。文字列でなければ既定 */
+/** 文字列の設定を読み込む。文字列でなければ既定 */
 function stringOf(value: unknown, fallback: string): string {
   return typeof value === "string" ? value : fallback;
 }
 
-/** 真偽値の設定を読む。真偽値でなければ既定 */
+/** 真偽値の設定を読み込む。真偽値でなければ既定 */
 function booleanOf(value: unknown, fallback: boolean): boolean {
   return typeof value === "boolean" ? value : fallback;
 }
 
-/** `mdmark` の設定の値を読み、型が違う値と範囲の外の値を `SETTING_DEFAULTS` に戻して返す。`get` は `mdmark.` を除いたキーの値を返す */
+/** `mdmark` の設定の値を読み込み、型が違う値と範囲の外の値を `SETTING_DEFAULTS` に戻して返却する。`get` は `mdmark.` を除いたキーの値を返却する */
 export function readSettings(get: (key: string) => unknown): PreviewSettings {
   const delay = get("preview.updateDelayMs");
   const theme = get("preview.theme");

@@ -2,7 +2,7 @@ import type { StateCore, Token } from "markdown-it";
 import { featureOn } from "./tokens.ts";
 import { warningBlock } from "./warnings.ts";
 
-/** 表にしたコードブロックの `table_open` の `meta` に持たせる、書いたとおりの CSV */
+/** 表にしたコードブロックの `table_open` の `meta` に持たせる、記載したとおりの CSV */
 export type CsvTableMeta = { rawCsv: string };
 
 /** RFC 4180 の決まりで、CSV を行と値に分ける。末尾の改行は行にしない */

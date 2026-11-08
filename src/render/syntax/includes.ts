@@ -38,7 +38,7 @@ const normalizePath = (path: string): string => {
   return parts.join("/");
 };
 
-/** マーカーを書いた文書のフォルダを基準に、書いた取り込み先を描く文書のフォルダからのパスと取り込む範囲にする */
+/** マーカーを記載した文書のフォルダを基準に、記載した取り込み先を描く文書のフォルダからのパスと取り込む範囲にする */
 export const resolveIncludePath = (
   fromPath: string,
   written: string,
@@ -61,7 +61,7 @@ export const resolveIncludePath = (
   return { key, target: { kind: "heading", id: fragment } };
 };
 
-/** 見出しの文字の ID が `id` と一致する最初の見出しから、次の同じか上の階層の見出しの前までを返す。無ければ `null` */
+/** 見出しの文字の ID が `id` と一致する最初の見出しから、次の同じか上の階層の見出しの前までを返却する。無ければ `null` */
 export const selectHeadingSection = (
   tokens: Token[],
   id: string,
@@ -84,7 +84,7 @@ export const selectHeadingSection = (
   return tokens.slice(start, end < 0 ? tokens.length : end);
 };
 
-/** 本文の `from`〜`to` 行目（1 から）を返す。範囲が行の数を越えるときは行の数を返す */
+/** 本文の `from`〜`to` 行目（1 から）を返却する。範囲が行の数を越えるときは行の数を返却する */
 export const selectLines = (
   text: string,
   from: number,
@@ -97,7 +97,7 @@ export const selectLines = (
   return { text: lines.slice(from - 1, to).join("\n") };
 };
 
-/** 取り込む Markdown を、同じパーサの block と inline のルールでトークンにし、マーカーを拾う（`features` の印は使わない） */
+/** 取り込む Markdown を、同じパーサの block と inline のルールでトークンにし、マーカーを取得する（`features` のマーカーは使用しない） */
 const tokenize = (state: StateCore, text: string): Token[] => {
   const env = envOf(state);
   const subEnv: RenderEnv = { ...env, featureArgs: [] };
@@ -160,7 +160,7 @@ const placeAt = (tokens: Token[], marker: Token): Token[] => {
   return tokens;
 };
 
-/** 1 つの include のマーカーを、取り込んだ中身か書き方の警告のトークンにする */
+/** 1 つの include のマーカーを、取り込んだ中身か記載の警告のトークンにする */
 const expandMarker = (options: {
   state: StateCore;
   marker: Token;
@@ -274,7 +274,7 @@ const expandTokens = (options: {
   });
 };
 
-/** `include` がオンなら、include のマーカーを `opts.includes` の中身に置き換える（オフの印は `dropMarks` が取り除く） */
+/** `include` がオンなら、include のマーカーを `opts.includes` の中身に置き換える（オフのマーカーは `dropMarks` が取り除く） */
 export const expandIncludes = (state: StateCore): void => {
   if (!featureOn(state, "include")) {
     return;

@@ -21,15 +21,15 @@ import {
 import type { Prompter } from "./prompt.ts";
 import { compareVersions, parseVersion } from "./versions.ts";
 
-/** 壊す手順の確かめで承諾とする答え */
+/** 壊す手順の確認で承諾とする回答し */
 const CONFIRM_ANSWER = "y";
 
-/** 手元の版を聞く問い */
+/** 手元のバージョンを聞く質問 */
 const VERSION_QUESTION =
-  "手元の版（v{MAJOR}.{MINOR}.{PATCH}）を入れてください:";
+  "手元のバージョン（v{MAJOR}.{MINOR}.{PATCH}）を入れてください:";
 
-/** 壊す手順の確かめの問い */
-const CONFIRM_QUESTION = `壊す手順を当ててよいですか（${CONFIRM_ANSWER} で当てる）:`;
+/** 壊す手順の確認の質問 */
+const CONFIRM_QUESTION = `壊す手順を適用してよいですか（${CONFIRM_ANSWER} で適用する）:`;
 
 /** 値が連想配列（`null`・配列を除くオブジェクト）か */
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -50,28 +50,28 @@ async function isFile(path: string): Promise<boolean> {
   }
 }
 
-/** 版の書式が `v{MAJOR}.{MINOR}.{PATCH}` でなければ誤りを投げる */
+/** バージョンの書式が `v{MAJOR}.{MINOR}.{PATCH}` でなければ誤りを投げる */
 function assertVersion(value: unknown): string {
   if (typeof value !== "string" || parseVersion(value) === undefined) {
     throw new CliError(
-      `手元の版 ${String(value)} の書式が違います。v{MAJOR}.{MINOR}.{PATCH} で書いてください。`,
+      `手元のバージョン ${String(value)} の書式が違います。v{MAJOR}.{MINOR}.{PATCH} で記載してください。`,
     );
   }
   return value;
 }
 
-/** 問いを出して答えを受ける。答える前に入力が終わっていれば、書き換えの前に誤りを投げる */
+/** 質問を出して回答を受ける。回答する前に入力が終わっていれば、書き換えの前に誤りを投げる */
 async function askRequired(ask: Prompter, question: string): Promise<string> {
   const answer = await ask(question);
   if (answer === undefined) {
     throw new CliError(
-      `「${question}」に答えがありません。何も書き換えていません。`,
+      `「${question}」に回答がありません。何も書き換えていません。`,
     );
   }
   return answer;
 }
 
-/** 設定ファイルの `version` を版にし、無ければ最上位の先頭に足す */
+/** 設定ファイルの `version` をバージョンにし、無ければ最上位の先頭に追加する */
 export async function writeConfigVersion(
   configPath: string,
   version: string,
@@ -80,17 +80,17 @@ export async function writeConfigVersion(
   if (doc.contents === null || doc.has("version")) {
     doc.set("version", version);
   } else if (isMap(doc.contents)) {
-    // 最上位の先頭に足すため、キーと値の組を先頭へ差し込む
+    // 最上位の先頭に追加するため、キーと値の組を先頭へ差し込む
     doc.contents.items.unshift(doc.createPair("version", version));
   } else {
     throw new CliError(
-      `${basename(configPath)} がキーと値の形ではありません。設定のキーを書いてください。`,
+      `${basename(configPath)} がキーと値の構造ではありません。設定のキーを記載してください。`,
     );
   }
   await writeFile(configPath, doc.toString({ flowCollectionPadding: false }));
 }
 
-/** 手順を当てる設定・索引・文書の場所を作る（答えは当てる前に聞くため空） */
+/** 手順を適用する設定・索引・文書の場所を作る（回答は適用する前に聞くため空） */
 async function createTarget(options: {
   configPath: string;
   raw: unknown;
@@ -98,7 +98,7 @@ async function createTarget(options: {
   const { configPath, raw } = options;
   const dir = dirname(configPath);
   const file = basename(configPath);
-  // 古い設定は新しい形に合わないことがあるため、合うところだけを読む
+  // 古い設定は新しい構造に合わないことがあるため、合うところだけを読み込む
   const { config } = validateConfig(raw, file);
   const loaded = { path: configPath, dir, config };
   const documents = new Set<string>();
@@ -113,7 +113,7 @@ async function createTarget(options: {
       documents.add(resolve(read?.indexDir ?? dir, path));
     }
   } catch (error) {
-    // 索引を読めないことは、当てた後の点検が知らせる
+    // 索引を読み込めないことは、適用した後の点検が通知する
     if (!(error instanceof CliError)) {
       throw error;
     }
@@ -141,7 +141,7 @@ async function printPlan(options: {
 }): Promise<void> {
   const { versions, packageDir, from, to, io } = options;
   for (const version of versions) {
-    // 手順のない版は行を出さない
+    // 手順のないバージョンは行を出さない
     if (version.steps.length === 0) {
       continue;
     }
@@ -156,7 +156,7 @@ async function printPlan(options: {
     text = await readFile(join(packageDir, CHANGELOG_FILE), "utf8");
   } catch (error) {
     throw new CliError(
-      `変更履歴を読めません（${error instanceof Error ? error.message : String(error)}）。mdmark を入れ直してください。`,
+      `変更履歴を読み込めません（${error instanceof Error ? error.message : String(error)}）。mdmark をもう一度入れてください。`,
     );
   }
   const rows = changelogRows({ text, from, to });
@@ -168,7 +168,7 @@ async function printPlan(options: {
   }
 }
 
-/** キーが無い `set_default` の `ask` を当てる順に聞き、答えを当て先に入れる */
+/** キーが無い `set_default` の `ask` を適用する順に聞き、回答を当て先に入れる */
 async function askValues(options: {
   versions: MigrationVersion[];
   target: MigrationTarget;
@@ -195,7 +195,7 @@ async function askValues(options: {
         parse(answer);
       } catch {
         throw new CliError(
-          `「${step.ask}」の答え ${answer} を YAML の値として読めません。何も書き換えていません。`,
+          `「${step.ask}」の回答 ${answer} を YAML の値として読み込めません。何も書き換えていません。`,
         );
       }
       target.answers.set(step, answer);
@@ -203,7 +203,7 @@ async function askValues(options: {
   }
 }
 
-/** 端末の設定を読み直し、`mdmark.config.yaml` のキーと端末の設定だけのキーの形を点検する */
+/** 端末の設定を再読み込みし、`mdmark.config.yaml` のキーと端末の設定だけのキーの構造を点検する */
 async function collectSettingsIssues(path: string) {
   const { raw } = await loadConfig(path);
   const file = basename(path);
@@ -213,7 +213,7 @@ async function collectSettingsIssues(path: string) {
   ];
 }
 
-/** 手元の版から呼んだ CLI の版までの移行の手順を当て、点検が通ったら設定の版を書き換える */
+/** 手元のバージョンから呼んだ CLI のバージョンまでの移行の手順を当て、点検が通ったら設定のバージョンを書き換える */
 export async function runUpgrade(
   options: {
     config?: string | undefined;
@@ -228,7 +228,7 @@ export async function runUpgrade(
   ask: Prompter,
 ): Promise<0 | 1> {
   if (options.settings && options.config !== undefined) {
-    throw new CliError("--config と --settings は一緒に渡せません。");
+    throw new CliError("--config と --settings は一緒に指定できません。");
   }
   const configPath = options.settings
     ? resolveSettingsPath({ env: process.env, home: homedir() })
@@ -241,16 +241,16 @@ export async function runUpgrade(
       : await askRequired(ask, VERSION_QUESTION),
   );
   const target = options.cliVersion;
-  io.stdout(`手元の版: ${local}`);
-  io.stdout(`目標の版: ${target}`);
+  io.stdout(`手元のバージョン: ${local}`);
+  io.stdout(`目標のバージョン: ${target}`);
   const order = compareVersions(local, target);
   if (order > 0) {
     throw new CliError(
-      `手元の版 ${local} はこの mdmark（${target}）より新しいです。npx github:shuhei1101/mdmark#${local} upgrade のように、手元の版以上の mdmark で呼んでください。`,
+      `手元のバージョン ${local} はこの mdmark（${target}）より新しいです。npx github:shuhei1101/mdmark#${local} upgrade のように、手元のバージョン以上の mdmark で呼んでください。`,
     );
   }
   if (order === 0) {
-    io.stdout("手元の版が目標の版と同じです。当てる手順はありません");
+    io.stdout("手元のバージョンが目標のバージョンと同じです。適用する手順はありません");
     return 0;
   }
   const loadedVersions = await loadMigrationVersions({
@@ -284,14 +284,14 @@ export async function runUpgrade(
     io.stdout("--plan のため書き換えていません");
     return 0;
   }
-  // 書き換えの前に、値を聞く手順の問いと壊す手順の確かめを聞く
+  // 書き換えの前に、値を聞く手順の質問と壊す手順の確認を聞く
   await askValues({ versions, target: migrationTarget, ask });
   const steps: MigrationStep[] = versions.flatMap((version) => version.steps);
   if (!options.yes && steps.some((step) => step.destructive === true)) {
     const answer = await askRequired(ask, CONFIRM_QUESTION);
     if (answer !== CONFIRM_ANSWER) {
       throw new CliError(
-        "何も当てていません。確かめずに当てるときは --yes を付けてください。",
+        "何も適用していません。確認せずに適用するときは --yes を付けてください。",
       );
     }
   }
@@ -327,7 +327,7 @@ export async function runUpgrade(
         io.stderr(formatCheckIssue(issue));
       }
       io.stderr(
-        `点検のずれが ${issues.length} 件あるため、写しから戻しました。版は書き換えていません。`,
+        `点検のずれが ${issues.length} 件あるため、コピーから戻しました。バージョンは書き換えていません。`,
       );
       return 1;
     }
@@ -336,7 +336,7 @@ export async function runUpgrade(
     throw error;
   }
   await writeConfigVersion(configPath, target);
-  io.stdout(`写し: ${toPosix(relative(dir, backupDir))}`);
-  io.stdout(`版を ${target} にしました`);
+  io.stdout(`コピー: ${toPosix(relative(dir, backupDir))}`);
+  io.stdout(`バージョンを ${target} にしました`);
   return 0;
 }

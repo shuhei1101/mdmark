@@ -13,7 +13,7 @@ type OpenItem = {
   id: string;
   /** 開く前の本文 */
   body: string;
-  /** 入力欄の本文の欄の知らせを指す `id` の頭 */
+  /** 入力欄の本文の欄の通知を指す `id` の頭 */
   fieldId: string;
 };
 
@@ -27,19 +27,19 @@ function elementFrom(html: string): HTMLElement {
   return template.content.firstElementChild as HTMLElement;
 }
 
-/** 開いた吹き出しのコメントごとの「編集」「削除」に、入力欄・削除の確認と `store.update`・`store.remove` の呼び出しを付け、開いている入力欄か削除の確認を閉じる関数を返す */
+/** 開いた吹き出しのコメントごとの「編集」「削除」に、入力欄・削除の確認と `store.update`・`store.remove` の呼び出しを付け、開いている入力欄か削除の確認を閉じる関数を返却する */
 export function attachCommentActions(options: {
   /** `renderCommentBubble` で開いた吹き出し */
   bubble: HTMLElement;
-  /** 読み書きの関数 */
+  /** 読み込みと保存の関数 */
   store: MdmarkCommentStore;
   /** 対象の ID */
   docId: string;
-  /** 付けたコメントがまだ外れていないか */
+  /** 付けたコメントがまだ削除されていないか */
   isActive: () => boolean;
-  /** 修正できたときに知らせる */
+  /** 修正できたときに通知する */
   onUpdated: (id: string, body: string) => void;
-  /** 削除できたときに知らせ、同じ印にコメントが残るかを受け取る */
+  /** 削除できたときに通知し、同じマーカーにコメントが残るかを受け取る */
   onRemoved: (id: string) => boolean;
 }): { cancel: () => boolean } {
   const { bubble, store, docId, isActive, onUpdated, onRemoved } = options;
@@ -49,12 +49,12 @@ export function attachCommentActions(options: {
   // 修正か削除を待っているか
   let busy = false;
 
-  /** その `id` のコメントの `li` を返す */
+  /** その `id` のコメントの `li` を返却する */
   const itemOf = (id: string): HTMLElement | null =>
     bubble.querySelector<HTMLElement>(
       `li[data-comment-id="${CSS.escape(id)}"]`,
     );
-  /** その `id` の `li` を描き直し、描いた `li` を返す */
+  /** その `id` の `li` を再描画し、描いた `li` を返却する */
   const redraw = (
     id: string,
     props: {

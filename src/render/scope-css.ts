@@ -4,13 +4,13 @@ const NESTING_AT_RULES = new Set(["media", "supports", "container", "layer"]);
 /** 中を書き換えずに残す `@` の規則 */
 const KEPT_AT_RULES = new Set(["keyframes", "font-face"]);
 
-/** 先頭にあれば根の要素に読み替えるセレクタ */
+/** 先頭にあれば根の要素として解釈するセレクタ */
 const ROOT_LIKE_SELECTOR = /^(?::root|html|body)(?![\w-])/;
 
 /** 最上位の規則 1 つ。`body` が無いものは `;` で終わる文 */
 type CssRule = { prelude: string; body: string | undefined };
 
-/** `start` の位置の文字列かコメントの終わりの次の位置を返す（文字列でもコメントでもなければ `start`） */
+/** `start` の位置の文字列かコメントの終わりの次の位置を返却する（文字列でもコメントでもなければ `start`） */
 function skipQuoted(css: string, start: number): number {
   const char = css[start];
   if (char === '"' || char === "'") {
@@ -146,7 +146,7 @@ function scopeRules(css: string, root: string): string {
       } else if (KEPT_AT_RULES.has(name) && body !== undefined) {
         parts.push(`${head} {${body}}`);
       }
-      // 他の `@` の規則（`@import`・`@scope`・`@starting-style` など）は範囲の外へ当たりうるため落とす
+      // 他の `@` の規則（`@import`・`@scope`・`@starting-style` など）は範囲の外へ該当しうるため落とす
       continue;
     }
     if (body === undefined) {
@@ -160,7 +160,7 @@ function scopeRules(css: string, root: string): string {
   return parts.join("\n");
 }
 
-/** 範囲の `css` の各規則を、範囲の根の要素 `.mdmark-html[data-html-scope="{scope}"]` の中だけに当たる CSS にする */
+/** 範囲の `css` の各規則を、範囲の根の要素 `.mdmark-html[data-html-scope="{scope}"]` の中だけに該当する CSS にする */
 export function scopeCss(options: {
   /** 範囲の `css` のコードブロックの中身 */
   css: string;

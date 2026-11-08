@@ -6,7 +6,7 @@ import { titleTailOf } from "./collapse.ts";
 import { featureOn, markOf, ownBlock } from "./tokens.ts";
 import { type SkippedArg, skippedArgBlocks, warningBlock } from "./warnings.ts";
 
-/** コードの行の印の名前から、行の種類を引く */
+/** コードの行のマーカーの名前から、行の種類を参照する */
 const LINE_MARK_KINDS: Readonly<Record<string, NonNullable<CodeLine["kind"]>>> =
   {
     "++": "add",
@@ -17,13 +17,13 @@ const LINE_MARK_KINDS: Readonly<Record<string, NonNullable<CodeLine["kind"]>>> =
     warning: "warning",
   };
 
-/** 行末の印と、印を閉じるコメントの終わり（`-->` か星とスラッシュ）。打ち消した印（`[\!code`）は当たらない */
+/** 行末のマーカーと、マーカーを閉じるコメントの終わり（`-->` か星とスラッシュ）。打ち消したマーカー（`[\!code`）は該当しない */
 const LINE_MARK_PATTERN = /\[!code\s+([^\]]*?)\s*\](?:\s*(?:-->|\*\/))?\s*$/;
 
-/** 打ち消した印の `\` */
+/** 打ち消したマーカーの `\` */
 const ESCAPED_MARK_PATTERN = /\[\\!code(?=\s)/g;
 
-/** 印だけの行コメントの頭。長いものから照らす */
+/** マーカーだけの行コメントの頭。長いものから照らす */
 export const LINE_COMMENT_HEADS: readonly string[] = [
   "<!--",
   "//",
@@ -33,27 +33,27 @@ export const LINE_COMMENT_HEADS: readonly string[] = [
   ";",
 ];
 
-/** 前の文字を問わずに外す頭。`--`・`#`・`;` は `i--` や `foo();` の一部と取り違えるため、行頭か空白の後ろだけで外す */
+/** 前の文字を問わずに削除する頭。`--`・`#`・`;` は `i--` や `foo();` の一部と取り違えるため、行頭か空白の後ろだけで削除する */
 const ANYWHERE_COMMENT_HEADS: readonly string[] = ["<!--", "//", "/*"];
 
-/** コードブロックの印に書ける指定の並び（警告に書く） */
+/** コードブロックのマーカーに記載できる指定の並び（警告に記載する） */
 const CODE_SPEC_LIST = "`title=`・`lines`・`highlight=`・`fold=`・`wrap`";
 
-/** 使えるコードの行の印の並び（警告に書く） */
+/** 使用できるコードの行のマーカーの並び（警告に記載する） */
 const LINE_MARK_LIST =
   "`[!code ++]`・`[!code --]`・`[!code highlight]`・`[!code focus]`・`[!code error]`・`[!code warning]`";
 
 /** 値を持つ `wrap=` の警告の項目の本文 */
 export const WRAP_VALUE_MESSAGE =
-  "wrap は値を持ちません。wrap=… ではなく wrap と書いてください。折り返さずに描いています";
+  "wrap は値を持ちません。wrap=… ではなく wrap と記載してください。折り返さずに描いています";
 
-/** コードブロックの印に書けるキー */
+/** コードブロックのマーカーに記載できるキー */
 const CODE_KEYS = ["title", "highlight", "fold"];
 
-/** コードブロックの印に書ける、キーの無い指定 */
+/** コードブロックのマーカーに記載できる、キーの無い指定 */
 const CODE_FLAGS = ["lines", "wrap"];
 
-/** `highlight=` の 1 つ分（`2` か `4-6`）を行の範囲に読む。読めなければ `undefined` */
+/** `highlight=` の 1 つ分（`2` か `4-6`）を行の範囲に読み込む。読み込めなければ `undefined` */
 function readRange(part: string): [number, number] | undefined {
   const single = /^(\d+)$/.exec(part);
   if (single?.[1] !== undefined) {
@@ -68,7 +68,7 @@ function readRange(part: string): [number, number] | undefined {
   return from <= to ? [from, to] : undefined;
 }
 
-/** `highlight=`・`fold=` の値（`2,4-6`）を行の番号に読む。読めない番号と、コードブロックの行の数を超える番号は、当てずに警告にする */
+/** `highlight=`・`fold=` の値（`2,4-6`）を行の番号に読み込む。読み込めない番号と、コードブロックの行の数を超える番号は、当てずに警告にする */
 function readLineNumbers(options: {
   key: string;
   value: string | undefined;
@@ -86,7 +86,7 @@ function readLineNumbers(options: {
       warnings.push({
         label: part || `${key}=`,
         message:
-          "読めない行の指定です。`2`・`4-6` のように、行の番号と範囲をコンマで並べてください。",
+          "読み込めない行の指定です。`2`・`4-6` のように、行の番号と範囲をコンマで並べてください。",
       });
       continue;
     }
@@ -94,7 +94,7 @@ function readLineNumbers(options: {
     if (from < 1 || to > lineCount) {
       warnings.push({
         label: part,
-        message: `コードブロックに無い行の番号です。コードブロックは ${lineCount} 行です。行の番号を 1〜${lineCount} で書いてください。`,
+        message: `コードブロックに無い行の番号です。コードブロックは ${lineCount} 行です。行の番号を 1〜${lineCount} で記載してください。`,
       });
     }
     for (
@@ -108,7 +108,7 @@ function readLineNumbers(options: {
   return numbers;
 }
 
-/** `code` の印の引数を、題・行番号の有無・強調する行・最初から畳む行に読む。`title=` の値の空白の後ろの単語、読めない `highlight=`・`fold=` の番号、コードブロックの行の数を超える行の番号は、当てずに警告にする。それ以外の知らないキー・指定は読み飛ばした引数にする。`text` は印の引数の文字 */
+/** `code` のマーカーの引数を、タイトル・行番号の有無・強調する行・最初から畳む行に読み込む。`title=` の値の空白の後ろの単語、読み込めない `highlight=`・`fold=` の番号、コードブロックの行の数を超える行の番号は、当てずに警告にする。それ以外の知らないキー・指定はスキップした引数にする。`text` はマーカーの引数の文字 */
 export function readCodeSpec(options: {
   args: MdmarkMarkArgs;
   text: string;
@@ -141,7 +141,7 @@ export function readCodeSpec(options: {
     if (flag === tail) {
       warnings.push({
         label: flag,
-        message: `使えない指定です。使える指定は ${CODE_SPEC_LIST} です。印の引数は空白で区切るため、題に空白は書けません。`,
+        message: `使用できない指定です。使用できる指定は ${CODE_SPEC_LIST} です。マーカーの引数は空白で区切るため、タイトルに空白は記載できません。`,
       });
     } else {
       skipped.push({ arg: flag, usable: CODE_SPEC_LIST });
@@ -151,7 +151,7 @@ export function readCodeSpec(options: {
   if (args.keys.title === "") {
     warnings.push({
       label: "title=",
-      message: "題がありません。`title=app.ts` のように書いてください。",
+      message: "タイトルがありません。`title=app.ts` のように記載してください。",
     });
   }
   const highlights = readLineNumbers({
@@ -177,12 +177,12 @@ export function readCodeSpec(options: {
   };
 }
 
-/** `[\!code …]` の `\` を外す */
+/** `[\!code …]` の `\` を削除する */
 function unescapeMarks(text: string): string {
   return text.replace(ESCAPED_MARK_PATTERN, "[!code");
 }
 
-/** 行末の印の前の文字から、印だけを持っていた行コメントの頭を外す。`//`・`/*`・`<!--` は前の文字を問わず、`#`・`--`・`;` は行頭か空白の後ろにあるときだけ頭として外す（`foo();` の `;` は残す） */
+/** 行末のマーカーの前の文字から、マーカーだけを持っていた行コメントの頭を削除する。`//`・`/*`・`<!--` は前の文字を問わず、`#`・`--`・`;` は行頭か空白の後ろにあるときだけ頭として削除する（`foo();` の `;` は残す） */
 function dropCommentHead(text: string): string {
   const trimmed = text.trimEnd();
   for (const head of LINE_COMMENT_HEADS) {
@@ -235,7 +235,7 @@ export function readFolds(options: { lines: CodeLine[]; folds: Set<number> }): {
   };
 }
 
-/** コードブロックの中身を行に分け、行末の `[!code ++]`・`[!code --]`・`[!code highlight]`・`[!code focus]`・`[!code error]`・`[!code warning]` を行の種類にして印を外す。行コメントが印だけなら印の直前の行コメントの頭も外し、外した後の行末の空白も外す。`[\!code …]` は `\` を外した文字にする。知らない印（`[!code blink]` など）はその行に当てず書いた文字のままにし、警告にする */
+/** コードブロックの中身を行に分け、行末の `[!code ++]`・`[!code --]`・`[!code highlight]`・`[!code focus]`・`[!code error]`・`[!code warning]` を行の種類にしてマーカーを削除する。行コメントがマーカーだけならマーカーの直前の行コメントの頭も削除し、削除した後の行末の空白も削除する。`[\!code …]` は `\` を削除した文字にする。知らないマーカー（`[!code blink]` など）はその行に当てず記載した文字のままにし、警告にする */
 export function readLineMarks(source: string): {
   lines: CodeLine[];
   warnings: WarningItem[];
@@ -254,7 +254,7 @@ export function readLineMarks(source: string): {
     if (kind === undefined) {
       warnings.push({
         label: "",
-        message: `コードの行の印 \`[!code ${found[1] ?? ""}]\` は使えません。使える印は ${LINE_MARK_LIST} です。${index + 1} 行目には当てず、書いた文字のまま描いています。`,
+        message: `コードの行のマーカー \`[!code ${found[1] ?? ""}]\` は使用できません。使用できるマーカーは ${LINE_MARK_LIST} です。${index + 1} 行目には当てず、記載した文字のまま描いています。`,
       });
       return { text: unescapeMarks(line) };
     }
@@ -266,7 +266,7 @@ export function readLineMarks(source: string): {
   return { lines, warnings };
 }
 
-/** 警告の項目を持つ書き方の警告を差し込む対象にまとめる */
+/** 警告の項目を持つ記載の警告を差し込む対象にまとめる */
 function pushWarnings(
   out: Token[],
   state: StateCore,
@@ -290,7 +290,7 @@ function pushWarnings(
   );
 }
 
-/** 情報文字列の最初の語を最初の `:` で分け、前を言語、後ろをファイル名にする。`:` が無ければ語の全てが言語でファイル名は空。`:` の前が空なら言語もファイル名も空にする */
+/** 情報文字列の最初の単語を最初の `:` で分け、前を言語、後ろをファイル名にする。`:` が無ければ単語の全てが言語でファイル名は空。`:` の前が空なら言語もファイル名も空にする */
 export function splitInfoString(info: string): {
   language: string;
   fileName: string;
@@ -306,13 +306,13 @@ export function splitInfoString(info: string): {
   return { language: word.slice(0, colon), fileName: word.slice(colon + 1) };
 }
 
-/** `fence` のまま描くとき、情報文字列の最初の語を言語だけにする（`ts:app.ts` は `ts`、`:a.txt` は最初の語を外す） */
+/** `fence` のまま描くとき、情報文字列の最初の単語を言語だけにする（`ts:app.ts` は `ts`、`:a.txt` は最初の単語を削除する） */
 function keepLanguageOnly(token: Token, language: string): void {
   const rest = token.info.trim().split(/\s+/).slice(1);
   token.info = [language, ...rest].filter(Boolean).join(" ");
 }
 
-/** 色分けの言語の対応表: 情報文字列の最初の語（小文字）から、highlight.js の言語のモジュール名を引く。モジュール名は `{url}languages/{モジュール名}.min.js` と npm の `highlight.js/lib/languages/{モジュール名}` の名前に当たる */
+/** 色分けの言語の対応表: 情報文字列の最初の単語（小文字）から、highlight.js の言語のモジュール名を参照する。モジュール名は `{url}languages/{モジュール名}.min.js` と npm の `highlight.js/lib/languages/{モジュール名}` の名前に該当する */
 export const SYNTAX_LANGUAGES: Readonly<Record<string, string>> = {
   typescript: "typescript",
   ts: "typescript",
@@ -343,7 +343,7 @@ export const SYNTAX_LANGUAGES: Readonly<Record<string, string>> = {
   patch: "diff",
 };
 
-/** 情報文字列の言語の語を小文字にして `SYNTAX_LANGUAGES` を引き、色分けの言語のモジュール名を返す。表に無ければ `undefined` */
+/** 情報文字列の言語の単語を小文字にして `SYNTAX_LANGUAGES` を引き、色分けの言語のモジュール名を返却する。表に無ければ `undefined` */
 export function syntaxLanguageOf(language: string): string | undefined {
   const name = language.toLowerCase();
   return Object.hasOwn(SYNTAX_LANGUAGES, name)
@@ -351,7 +351,7 @@ export function syntaxLanguageOf(language: string): string | undefined {
     : undefined;
 }
 
-/** `code` がオフのときのコードブロックの中身を、行の印を読まずに行へ分ける */
+/** `code` がオフのときのコードブロックの中身を、行のマーカーを読み込まずに行へ分ける */
 function plainLines(source: string): CodeLine[] {
   const body = source.endsWith("\n") ? source.slice(0, -1) : source;
   if (body === "" && source === "") {
@@ -360,7 +360,7 @@ function plainLines(source: string): CodeLine[] {
   return body.split("\n").map((text): CodeLine => ({ text }));
 }
 
-/** 残っている `fence` のトークンごとに、情報文字列を `splitInfoString` で言語とファイル名に分けてから次を行う。`code` がオンのときは `readLineMarks` で行を読み、直前のトークンが `code` の印なら `readCodeSpec` で指定を読み、全てのコードブロックを部品『コードブロック』（言語・ファイル名・題・行番号・行と、`syntax` がオンなら言語を `syntaxLanguageOf` で引いた色分けの言語）に置き換える。帯の右端のコピーのボタンは `mount` が付ける。`code` がオフのときは行の印を外さず中身の行をそのまま使い、`syntax` がオンで色分けの言語を持つコードブロックだけを帯を持たない部品に置き換え、それ以外は `fence` のまま情報文字列の最初の語を言語に書き換える。読めない指定は、コードブロックの前に警告を差し込む。後ろが `fence` でない `code` の印の場所にも警告を差し込む（`code` がオンのときだけ）。`mermaid` がオンで情報文字列の最初の語がちょうど `mermaid` のコードブロックは、`code` のオン・オフによらず mermaid の対象の部品に置き換え、色分けしない */
+/** 残っている `fence` のトークンごとに、情報文字列を `splitInfoString` で言語とファイル名に分けてから次を行う。`code` がオンのときは `readLineMarks` で行を読み込み、直前のトークンが `code` のマーカーなら `readCodeSpec` で指定を読み込み、全てのコードブロックを部品『コードブロック』（言語・ファイル名・タイトル・行番号・行と、`syntax` がオンなら言語を `syntaxLanguageOf` で参照した色分けの言語）に置き換える。帯の右端のコピーのボタンは `mount` が付ける。`code` がオフのときは行のマーカーを削除せず中身の行をそのまま使用し、`syntax` がオンで色分けの言語を持つコードブロックだけを帯を持たない部品に置き換え、それ以外は `fence` のまま情報文字列の最初の単語を言語に書き換える。読み込めない指定は、コードブロックの前に警告を差し込む。後ろが `fence` でない `code` のマーカーの場所にも警告を差し込む（`code` がオンのときだけ）。`mermaid` がオンで情報文字列の最初の単語がちょうど `mermaid` のコードブロックは、`code` のオン・オフによらず mermaid の対象の部品に置き換え、色分けしない */
 export function buildCodeBlocks(state: StateCore): void {
   const codeOn = featureOn(state, "code");
   const syntaxOn = featureOn(state, "syntax");
@@ -385,13 +385,13 @@ export function buildCodeBlocks(state: StateCore): void {
           mark: mark.raw,
           ...(token.map ? { line: token.map[0] } : {}),
           message:
-            "の直後にコードブロックがありません。印の次の行にコードブロックを書いてください。",
+            "の直後にコードブロックがありません。マーカーの次の行にコードブロックを記載してください。",
         }),
       );
       continue;
     }
     if (codeOn && mark?.name === "code" && !mark.closing) {
-      // 印は読んだ後に取り除く（次の `fence` が使う）
+      // マーカーは読み込んだ後に取り除く（次の `fence` が使用する）
       continue;
     }
     if (token.type !== "fence") {
@@ -423,7 +423,7 @@ export function buildCodeBlocks(state: StateCore): void {
     pushWarnings(out, state, {
       mark: code?.raw,
       line: code ? tokens[index - 1]?.map?.[0] : undefined,
-      message: "の読めない指定を当てずに描いています。",
+      message: "の読み込めない指定を当てずに描いています。",
       items: [...(options?.warnings ?? []), ...foldWarnings],
     });
     if (code && options) {
@@ -435,7 +435,7 @@ export function buildCodeBlocks(state: StateCore): void {
         ),
       );
     }
-    // 知らない印は 1 つにつき 1 つの警告にする
+    // 知らないマーカーは 1 つにつき 1 つの警告にする
     for (const warning of lineWarnings) {
       out.push(warningBlock(state, { message: warning.message }));
     }

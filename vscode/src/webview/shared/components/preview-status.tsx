@@ -22,7 +22,7 @@ export type PreviewStatusState =
 export type PreviewStatusProps = {
   /** 出す状態 */
   state: PreviewStatusState;
-  /** 読もうとした mdmark の版（`offline`・`versionMissing`・`diffUnsupported` の理由に入れる） */
+  /** 読み込もうとした mdmark のバージョン（`offline`・`versionMissing`・`diffUnsupported` の理由に入れる） */
   version?: string;
   /** 「リロード」を押したとき */
   onReload: () => void;
@@ -38,7 +38,7 @@ const reasonOf = (
       return (
         <>
           mdmark（<code>{version}</code>）を jsDelivr
-          から読み込めませんでした。ネットワークにつながっているかを確かめてから、リロードしてください。
+          から読み込めませんでした。ネットワークにつながっているかを確認してから、リロードしてください。
         </>
       );
     case "diffUnsupported":
@@ -56,11 +56,11 @@ const reasonOf = (
           設定 <code>mdmark.version</code> に指定したバージョン{" "}
           <code>{version}</code> の mdmark
           が見つかりませんでした。存在するバージョンか <code>latest</code>{" "}
-          に直してから、リロードしてください。
+          に修正してから、リロードしてください。
         </>
       );
     case "versionUndecidable":
-      return "読む mdmark のバージョンを決められませんでした。GitHub から最新のバージョンを取得できず、前回のバージョンも残っていません。ネットワークにつながっているかを確かめてから、リロードしてください。";
+      return "読み込む mdmark のバージョンを決められませんでした。GitHub から最新のバージョンを取得できず、前回のバージョンも残っていません。ネットワークにつながっているかを確認してから、リロードしてください。";
     case "unexpected":
       return "プレビューの表示中にエラーが発生しました。リロードしてください。";
     default: {

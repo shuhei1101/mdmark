@@ -5,7 +5,7 @@ const meta = { title: "Parts/CodeBlock" } satisfies Meta<
 >;
 export default meta;
 
-/** ストーリー: 描画の口（`parameters.server.id`）の部品を `args` で描く */
+/** ストーリー: 描画のインターフェース（`parameters.server.id`）の部品を `args` で描く */
 type Story = StoryObj<Record<string, unknown>>;
 
 export const TitleAndLineNumbers: Story = {
@@ -111,7 +111,7 @@ export const SyntaxPython: Story = {
     lineNumbers: "true",
     highlight: "true",
     lines:
-      '[{"text":"@dataclass"},{"text":"class Doc:"},{"text":"    # 文書の題"},{"text":"    title: str = \\"README\\""},{"text":"    lines: int = 300"},{"text":""},{"text":"print(len(Doc().title))"}]',
+      '[{"text":"@dataclass"},{"text":"class Doc:"},{"text":"    # 文書のタイトル"},{"text":"    title: str = \\"README\\""},{"text":"    lines: int = 300"},{"text":""},{"text":"print(len(Doc().title))"}]',
   },
 };
 
@@ -251,6 +251,6 @@ export const Wrap: Story = {
     lineNumbers: true,
     wrap: true,
     lines:
-      '[{"text":"import { mount } from \\"mdmark\\";"},{"text":"const url = \\"https://cdn.jsdelivr.net/gh/shuhei1101/mdmark@v0.10.0/dist/index.js\\"; // バージョンを固定した URL から配布物を読み、描く先の要素に文書を描く"},{"text":"mount(document.querySelector(\\"#doc\\"), markdown);"}]',
+      '[{"text":"import { mount } from \\"mdmark\\";"},{"text":"const url = \\"https://cdn.jsdelivr.net/gh/shuhei1101/mdmark@v0.10.0/dist/index.js\\"; // バージョンを固定した URL から配布物を読み込み、描く先の要素に文書を描く"},{"text":"mount(document.querySelector(\\"#doc\\"), markdown);"}]',
   },
 };

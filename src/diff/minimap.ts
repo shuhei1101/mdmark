@@ -4,7 +4,7 @@ import {
   renderDiffMinimap,
 } from "../parts/diff-minimap.ts";
 
-/** 帯に写す CSS 変数: 差分の行の計算値から読み、`document.body` の直下の帯の `style` に写す。使う側が `.mdmark` に書いた上書きを帯にも当てる */
+/** 帯に写す CSS 変数: 差分の行の計算値から読み込み、`document.body` の直下の帯の `style` に写す。利用側が `.mdmark` に記載した上書きを帯にも適用する */
 const MINIMAP_VARIABLES = [
   "--mdmark-color-diff-del-sign",
   "--mdmark-color-diff-add-sign",
@@ -19,22 +19,22 @@ const MINIMAP_VARIABLES = [
 /** 配色が切り替わったことを知る問い合わせ */
 const DARK_QUERY = "(prefers-color-scheme: dark)";
 
-/** 同じ印にまとめるときの、位置の割合の誤差 */
+/** 同じマーカーにまとめるときの、位置の割合の誤差 */
 const MERGE_TOLERANCE = 0.001;
 
-/** 送り先ごとの帯の控え */
+/** スクロール先ごとの帯の記録 */
 type Entry = {
   /** 帯の要素 */
   band: HTMLElement;
-  /** 印を出している差分の行の並び */
+  /** マーカーを出している差分の行の並び */
   lines: Set<HTMLElement>;
-  /** 行の並びが変わったとき、観測と印を置き直す */
+  /** 行の並びが変わったとき、観測とマーカーをもう一度配置する */
   sync: () => void;
-  /** 帯と受け取りを外す */
+  /** 帯と受け取りを解除する */
   destroy: () => void;
 };
 
-/** 送り先のスクロールの要素から、そこに置いた帯と印を出している差分の行の集まりを引く */
+/** スクロール先のスクロールの要素から、そこに配置した帯とマーカーを出している差分の行の集まりを参照する */
 const minimaps = new WeakMap<Element, Entry>();
 
 /** HTML 文字列から要素を作る */
@@ -49,7 +49,7 @@ function clamp(ratio: number): number {
   return Math.min(Math.max(ratio, 0), 1);
 }
 
-/** 送り先のスクロールの要素に、帯を 1 本だけ作る。page は送り先が画面全体か */
+/** スクロール先のスクロールの要素に、帯を 1 本だけ作る。page はスクロール先が画面全体か */
 function createEntry(target: HTMLElement, page: boolean): Entry {
   const band = parseElement(
     renderDiffMinimap({ marks: [], view: { top: 0, height: 1 } }),
@@ -57,7 +57,7 @@ function createEntry(target: HTMLElement, page: boolean): Entry {
   const lines = new Set<HTMLElement>();
   document.body.append(band);
 
-  /** 帯を送り先の右端に、送り先の高さで置く。画面のときは CSS が右端に画面の高さいっぱいで貼り付ける */
+  /** 帯をスクロール先の右端に、スクロール先の高さで配置する。画面のときは CSS が右端に画面の高さいっぱいで貼り付ける */
   const placeBand = (): void => {
     if (page) {
       return;
@@ -71,7 +71,7 @@ function createEntry(target: HTMLElement, page: boolean): Entry {
     band.style.left = `${rect.right - width}px`;
   };
 
-  /** 使う側の変数の上書きを、集まりの最初の差分の行から帯に写す */
+  /** 利用側の変数の上書きを、集まりの最初の差分の行から帯に写す */
   const copyVariables = (): void => {
     const [first] = lines;
     if (first === undefined) {
@@ -86,7 +86,7 @@ function createEntry(target: HTMLElement, page: boolean): Entry {
     }
   };
 
-  /** 送り先の中での縦の位置（px）を、送り先の全体に対する割合にする */
+  /** スクロール先の中での縦の位置（px）を、スクロール先の全体に対する割合にする */
   const ratioOf = (element: Element, edge: "top" | "bottom"): number => {
     const rect = element.getBoundingClientRect();
     const origin = page
@@ -96,7 +96,7 @@ function createEntry(target: HTMLElement, page: boolean): Entry {
     return clamp(y / target.scrollHeight);
   };
 
-  /** 今見えている範囲の枠を置き直す */
+  /** 今見えている範囲の枠をもう一度配置する */
   const placeView = (): void => {
     const view = band.querySelector<HTMLElement>(".mdmark-diff-minimap-view");
     if (view === null) {
@@ -108,7 +108,7 @@ function createEntry(target: HTMLElement, page: boolean): Entry {
     view.style.height = `${Number((height * 100).toFixed(4))}%`;
   };
 
-  /** 集まりの全ての行から印を作り直す。続いた同じ種類の行は 1 つの印にまとめる */
+  /** 集まりの全ての行からマーカーを再作成する。続いた同じ種類の行は 1 つのマーカーにまとめる */
   const placeMarks = (): void => {
     const marks: DiffMinimapMark[] = [];
     for (const group of lines) {
@@ -146,14 +146,14 @@ function createEntry(target: HTMLElement, page: boolean): Entry {
     placeView();
   };
 
-  /** 帯の位置・変数・印・枠を置き直す */
+  /** 帯の位置・変数・マーカー・枠をもう一度配置する */
   const place = (): void => {
     placeBand();
     copyVariables();
     placeMarks();
   };
 
-  /** 帯の上の位置を送り先の中ほどに置くよう、送り先を送る */
+  /** 帯の上の位置をスクロール先の中ほどに配置するよう、スクロール先を送信する */
   const sendTo = (clientY: number): void => {
     const rect = band.getBoundingClientRect();
     const ratio = clamp((clientY - rect.top) / rect.height);
@@ -192,22 +192,22 @@ function createEntry(target: HTMLElement, page: boolean): Entry {
     signal,
   });
   window.addEventListener("resize", place, { signal });
-  // 送り先が画面でないとき、送り先の外（画面や祖先の枠）のスクロールでも送り先の位置が変わるため、捕捉の段で受けて帯を置き直す
+  // スクロール先が画面でないとき、スクロール先の外（画面や祖先の枠）のスクロールでもスクロール先の位置が変わるため、キャプチャーフェーズで受けて帯をもう一度配置する
   if (!page) {
     document.addEventListener("scroll", placeBand, { capture: true, signal });
   }
   window.matchMedia(DARK_QUERY).addEventListener("change", place, { signal });
-  // 配色を決める祖先の class（`vscode-*`・`mdmark-theme-*`）が替わったら、変数を写し直す
+  // 配色を決める祖先の class（`vscode-*`・`mdmark-theme-*`）が替わったら、変数をもう一度コピーする
   const themeObserver = new MutationObserver(copyVariables);
   themeObserver.observe(document.documentElement, {
     attributes: true,
     attributeFilter: ["class"],
     subtree: true,
   });
-  // 差分の行の大きさと送り先の大きさが変わったら置き直す
+  // 差分の行の大きさとスクロール先の大きさが変わったらもう一度配置する
   const observer = new ResizeObserver(place);
   observer.observe(page ? document.documentElement : target);
-  // 差分の行の並びを足し外しするたびに、観測と印を置き直す
+  // 差分の行の並びを追加し削除しするたびに、観測とマーカーをもう一度配置する
   const sync = (): void => {
     observer.disconnect();
     observer.observe(page ? document.documentElement : target);
@@ -229,7 +229,7 @@ function createEntry(target: HTMLElement, page: boolean): Entry {
   };
 }
 
-/** 差分の行の並びの送り先（一番近いスクロールする祖先、無ければ画面）の右端に、帯を 1 本だけ置いて印と今見えている範囲の枠を並べ、押す・押したまま動かすで送る。同じ送り先の 2 つ目以降の差分は同じ帯に印を足す。返す関数でこの行を帯から外し、行が無くなったら帯と受け取りを外す */
+/** 差分の行の並びのスクロール先（一番近いスクロールする祖先、無ければ画面）の右端に、帯を 1 本だけ配置してマーカーと今見えている範囲の枠を並べ、押す・押したまま動かすで送信する。同じスクロール先の 2 つ目以降の差分は同じ帯にマーカーを追加する。返却する関数でこの行を帯から除外し、行が無くなったら帯と受け取りを解除する */
 export function attachMinimap(lines: HTMLElement): () => void {
   const { target, page } = findScrollContainer(lines);
   const entry = minimaps.get(target) ?? createEntry(target, page);

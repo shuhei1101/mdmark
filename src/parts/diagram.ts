@@ -25,7 +25,7 @@ import { erEndSvg, plainDefinitionText, renderErTable } from "./er.ts";
 import { escapeHtml } from "./escape.ts";
 import { type IconName, iconSvg } from "./icons.ts";
 
-/** 線の種類ごとの破線・太さ・矢じり・凡例の名前。色は CSS の変数で当てる */
+/** 線の種類ごとの破線・太さ・矢じり・凡例の名前。色は CSS の変数で適用する */
 export const LINE_STYLES: Readonly<
   Record<
     MdmarkDiagramLine,
@@ -33,9 +33,9 @@ export const LINE_STYLES: Readonly<
   >
 > = {
   flow: { dash: "", width: 1.5, head: "filled", label: "処理の流れ" },
-  read: { dash: "6 4", width: 1.5, head: "open", label: "読む" },
-  write: { dash: "", width: 2.5, head: "filled", label: "書く" },
-  reply: { dash: "4 3", width: 1.5, head: "open", label: "返す" },
+  read: { dash: "6 4", width: 1.5, head: "open", label: "読み込む" },
+  write: { dash: "", width: 2.5, head: "filled", label: "書き込む" },
+  reply: { dash: "4 3", width: 1.5, head: "open", label: "返却する" },
   loop: { dash: "8 4", width: 1.5, head: "open", label: "戻る（ループ）" },
 };
 
@@ -59,10 +59,10 @@ const KIND_STYLES: Readonly<
   result: { tag: "結果", legend: "結果", icon: "flag" },
 };
 
-/** 開始のノードの直径に対する、名前を置く内接の正方形の外の余白の割合（`(1 - 1/√2) / 2`） */
+/** 開始のノードの直径に対する、名前を配置する内接の正方形の外の余白の割合（`(1 - 1/√2) / 2`） */
 const CIRCLE_INSET = 0.1464;
 
-/** 凡例のノードの種類の見本の形（無い種類は角の丸い四角） */
+/** 凡例のノードの種類の見本の構造（無い種類は角の丸い四角） */
 const KIND_SAMPLES: Partial<Record<MdmarkDiagramKind, string>> = {
   data: '<path d="M1,1 H17 V9 Q17,13 13,13 H5 Q1,13 1,9 Z"></path>',
   start: '<circle cx="9" cy="7" r="6"></circle>',
@@ -71,7 +71,7 @@ const KIND_SAMPLES: Partial<Record<MdmarkDiagramKind, string>> = {
   result: '<rect x="1" y="1" width="16" height="12" rx="6"></rect>',
 };
 
-/** システムの枠を持つ図で、外部のシステムの凡例に添える置き場所 */
+/** システムの枠を持つ図で、外部のシステムの凡例に添える配置場所 */
 const OUTSIDE_FRAME = "（枠の外）";
 
 /** 矢じりの大きさ（px） */
@@ -111,9 +111,9 @@ export type DiagramFrame = {
   kind: "flow" | "sequence" | "chart" | "er" | "mermaid";
   /** 題名 */
   title: string;
-  /** 範囲（種類 `mermaid` では持たず、題に出さない） */
+  /** 範囲（種類 `mermaid` では持たず、タイトルに出さない） */
   scope?: string;
-  /** 更新日（種類 `mermaid` では持たず、題に出さない） */
+  /** 更新日（種類 `mermaid` では持たず、タイトルに出さない） */
   updated?: string;
   /** 凡例の項目 */
   legend: DiagramLegendItem[];
@@ -123,7 +123,7 @@ export type DiagramFrame = {
   fit?: number;
   /** 全画面のモーダルの中に描くか */
   modal?: boolean;
-  /** 表示する枠の右下にリサイズハンドルを置くか（既定 `true`。モーダルの中には置かない） */
+  /** 表示する枠の右下にリサイズハンドルを配置するか（既定 `true`。モーダルの中には配置しない） */
   resizable?: boolean;
   /** 拡大して動かしたときにグループのタイトルを上端に留めるか（既定 `true`） */
   stickyTitles?: boolean;
@@ -145,15 +145,15 @@ export type DiagramBody = {
   tips: string;
 };
 
-/** `renderFlow`・`renderSequence`・`renderChart` の戻り値: 図の中身と、凡例に載せる図の特徴 */
+/** `renderFlow`・`renderSequence`・`renderChart` の戻り値: 図の中身と、凡例に記載する図の特徴 */
 export type DiagramPart = DiagramBody & {
   /** 横の線が縦の線を飛び越える点があるか */
   jumps: boolean;
-  /** 用語の下線を引いたノードの文字があるか */
+  /** 用語の下線を付けたノードの文字があるか */
   terms: boolean;
 };
 
-/** 用語から意味を引く関数。意味が無い用語は `undefined` */
+/** 用語から意味を参照する関数。意味が無い用語は `undefined` */
 export type TermLookup = (word: string) => string | undefined;
 
 /** ツールチップの引数 */
@@ -162,7 +162,7 @@ export type DiagramTip = {
   id: string;
   /** 線の詳細か、ノードの入力・処理・出力か、文だけか（ノードの `hint`・埋め込んだ HTML の `data-hint`） */
   kind: "wire" | "io" | "hint" | "table" | "item";
-  /** 持ち主の名前。ツールチップの題に出す */
+  /** 持ち主の名前。ツールチップのタイトルに出す */
   label: string;
   /** グラフの項目の値の文（`item` のとき） */
   value?: string;
@@ -172,15 +172,15 @@ export type DiagramTip = {
   io?: MdmarkDiagramIo;
   /** ノードの `hint` か `data-hint` の文。`io` と一緒に持つときは入力・処理・出力の後に出す */
   hint?: string;
-  /** ER 図のテーブル。題を `{論理名}（{物理名}）` にし、概要と、`desc` を持つ列の名前と説明を並べる */
+  /** ER 図のテーブル。タイトルを `{論理名}（{物理名}）` にし、概要と、`desc` を持つ列の名前と説明を並べる */
   table?: MdmarkErTable;
-  /** 持ち主を引く名前（線の `id`・`node:{ノードの id}`・`term:{語}`）。省くと題 */
+  /** 持ち主を参照する名前（線の `id`・`node:{ノードの id}`・`term:{単語}`）。省くとタイトル */
   owner?: string;
   /** 開いているか */
   open?: boolean;
 };
 
-/** 図のツールチップを描く。文だけの `hint` は、行内の要素の後ろにも置けるよう `span` で出す */
+/** 図のツールチップを描く。文だけの `hint` は、行内の要素の後ろにも配置できるよう `span` で出す */
 export function renderDiagramTip(tip: DiagramTip): string {
   const hint =
     tip.hint === undefined || tip.hint === ""
@@ -218,9 +218,9 @@ export function renderDiagramTip(tip: DiagramTip): string {
 
 /** 図の中のツールチップを集める入れ物 */
 type TipList = {
-  /** ツールチップを足して `id` を返す */
+  /** ツールチップを追加して `id` を返却する */
   add: (tip: Omit<DiagramTip, "id">) => string;
-  /** 足したツールチップの HTML */
+  /** 追加したツールチップの HTML */
   html: () => string;
 };
 
@@ -237,7 +237,7 @@ function createTips(prefix: string): TipList {
   };
 }
 
-/** 定義の文字の `{{語}}` を、意味のある用語なら下線とツールチップの持ち主にし、それ以外は語だけにして、文字を逃がして返す */
+/** 定義の文字の `{{単語}}` を、意味のある用語なら下線とツールチップの持ち主にし、それ以外は単語だけにして、文字を逃がして返却する */
 function renderText(
   text: string,
   tips: TipList,
@@ -296,7 +296,7 @@ function markerDefs(id: string): string {
     .join("");
 }
 
-/** 線の見える線と、`tip` を持つ線のツールチップを拾う透明の太い線 */
+/** 線の見える線と、`tip` を持つ線のツールチップを取得する透明の太い線 */
 function renderWire(options: {
   id: string;
   wireId: string;
@@ -354,7 +354,7 @@ function labelPosition(points: Array<[number, number]>): [number, number] {
   return best;
 }
 
-/** 名前を形に内接する四角に置く余白の `style`。質問は菱形の中央の四角、開始は円に内接する正方形 */
+/** 名前を構造に内接する四角に配置する余白の `style`。質問は菱形の中央の四角、開始は円に内接する正方形 */
 function nodeInset(
   kind: MdmarkDiagramKind,
   box: { w: number; h: number },
@@ -376,7 +376,7 @@ function diamondSvg(box: { w: number; h: number }): string {
   return `<svg class="mdmark-diagram-node-shape" viewBox="0 0 ${w} ${h}" aria-hidden="true"><polygon points="${points}"></polygon></svg>`;
 }
 
-/** ノード 1 つ（種類の行・名前・補足と、`hint` か `io` を持つノードの右上の印）の HTML。`hints` がオフなら印を置かない */
+/** ノード 1 つ（種類の行・名前・補足と、`hint` か `io` を持つノードの右上のマーカー）の HTML。`hints` がオフならマーカーを配置しない */
 function renderNode(options: {
   node: Pick<
     MdmarkDiagramNode,
@@ -410,7 +410,7 @@ function renderNode(options: {
     const what = node.io ? "入力・処理・出力" : "説明";
     info = `<button class="mdmark-diagram-info" type="button" aria-label="「${escapeHtml(node.name)}」の${what}" aria-describedby="${id}" data-tip-owner="${escapeHtml(owner)}">${iconSvg("info")}</button>`;
   }
-  // リンク先を持つノード: ノードの全体を覆うリンクを置き、右上の印はリンクの後ろ（リンクの外）に置く
+  // リンク先を持つノード: ノードの全体を覆うリンクを配置し、右上のマーカーはリンクの後ろ（リンクの外）に配置する
   const link =
     node.href === undefined
       ? ""
@@ -625,7 +625,7 @@ export function renderSequence(
   };
 }
 
-/** ER 図を描く: テーブルを置き、関係の線と両端の多重度の記号を svg に描き、ラベルを縦の線の中ほどに置く */
+/** ER 図を描く: テーブルを配置し、関係の線と両端の多重度の記号を svg に描き、ラベルを縦の線の中ほどに配置する */
 export function renderEr(
   definition: MdmarkErDefinition,
   id: string,
@@ -779,7 +779,7 @@ const FILL_LEGEND_TYPES: readonly string[] = [
   "bubble",
 ];
 
-/** グラフの凡例の項目: 種類ごとの見本（折れ線・面・レーダーは線と点、棒・積み上げ・横棒・円・バブルは塗りの模様、散布図は点の形）に、系列か項目の名前を添える */
+/** グラフの凡例の項目: 種類ごとの見本（折れ線・面・レーダーは線と点、棒・積み上げ・横棒・円・バブルは塗りの模様、散布図は点の形状）に、系列か項目の名前を添える */
 function chartLegend(definition: MdmarkChartDefinition): DiagramLegendItem[] {
   const type = definition.type ?? "line";
   const unit = definition.unit ?? "";
@@ -825,7 +825,7 @@ function chartLegend(definition: MdmarkChartDefinition): DiagramLegendItem[] {
   return items;
 }
 
-/** 凡例の項目: フロー図とシーケンス図は、図に 2 種類以上あるノード（相手）の種類と線の種類だけを並べ、枠・層・交差・印・下線は載せない。グラフは系列（円とドーナツは項目）、ER 図はテーブルの種類・列のマーカー・多重度を並べる */
+/** 凡例の項目: フロー図とシーケンス図は、図に 2 種類以上あるノード（相手）の種類と線の種類だけを並べ、枠・層・交差・マーカー・下線は記載しない。グラフは系列（円とドーナツは項目）、ER 図はテーブルの種類・列のマーカー・多重度を並べる */
 export function legendFor(definition: LegendDefinition): DiagramLegendItem[] {
   if (isErDefinition(definition)) {
     return erLegend(definition);
@@ -872,7 +872,7 @@ export function legendFor(definition: LegendDefinition): DiagramLegendItem[] {
   return items;
 }
 
-/** 凡例の見本（ノードの種類・線・系列・枠・層・交差・印）の svg */
+/** 凡例の見本（ノードの種類・線・系列・枠・層・交差・マーカー）の svg */
 function legendSample(id: string, sample: string): string {
   if (sample === "underline") {
     return "";
@@ -937,7 +937,7 @@ function renderLegendItem(id: string, item: DiagramLegendItem): string {
   return `<li class="mdmark-diagram-legend-item">${legendSample(id, item.sample)}<span>${label}</span></li>`;
 }
 
-/** 右上のボタンの帯（移動・拡大と縮小・全画面）。モーダルの中では全画面のボタンの代わりに閉じるボタンを置く */
+/** 右上のボタンの帯（移動・拡大と縮小・全画面）。モーダルの中では全画面のボタンの代わりに閉じるボタンを配置する */
 function renderTools(frame: DiagramFrame): string {
   const zoom = frame.zoom ?? 1;
   const fit = frame.fit ?? 1;
@@ -962,7 +962,7 @@ function renderTools(frame: DiagramFrame): string {
   return `<div class="mdmark-diagram-tools" role="toolbar" aria-label="「${escapeHtml(frame.title)}」の表示"><div class="mdmark-diagram-tools-group" data-group="pan"${zoom > fit ? "" : ' hidden="hidden"'}>${pan}</div><div class="mdmark-diagram-tools-group" data-group="zoom">${tool("out", "縮小", "minus", zoom <= fit)}${zoomButton}${tool("in", "拡大", "plus", zoom >= ZOOM.max)}</div><div class="mdmark-diagram-tools-group" data-group="screen">${screen}</div></div>`;
 }
 
-/** 図の枠を描く: 題・ボタンの帯・表示する枠・ツールチップの中身・凡例を並べる */
+/** 図の枠を描く: タイトル・ボタンの帯・表示する枠・ツールチップの中身・凡例を並べる */
 export function renderDiagramFrame(
   frame: DiagramFrame,
   body: DiagramBody,
@@ -990,13 +990,13 @@ export function renderDiagramFrame(
 /** 図の種類 */
 export type DiagramKind = Exclude<DiagramFrame["kind"], "mermaid">;
 
-/** 図を描く: 種類ごとの中身を描き、凡例を決めて枠に差す。`hints` がオフ（既定はオン）なら、線の詳細・ノードの説明と入力・処理・出力のツールチップと印を置かない */
+/** 図を描く: 種類ごとの中身を描き、凡例を決めて枠に差す。`hints` がオフ（既定はオン）なら、線の詳細・ノードの説明と入力・処理・出力のツールチップとマーカーを配置しない */
 export function renderDiagram(options: {
   kind: DiagramKind;
   definition: LegendDefinition;
   /** ツールチップと矢じりの `id` の頭 */
   id: string;
-  /** 用語から意味を引く関数 */
+  /** 用語から意味を参照する関数 */
   lookup?: TermLookup;
   /** 機能 `hints` がオンか（既定 `true`） */
   hints?: boolean;

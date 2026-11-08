@@ -13,16 +13,16 @@ const OPEN_CLASS = "is-open";
 const BELOW_CLASS = "is-below";
 const DISMISSED_CLASS = "is-dismissed";
 
-// 振り直す `id` の頭（長い頭から当てる）
+// もう一度振る `id` の頭（長い頭から適用する）
 const ID_PREFIXES = ["mdmark-fn-tip-", "mdmark-fnref-", "mdmark-fn-"];
 
-// 振り直した `id` を指す属性
+// もう一度振った `id` を指す属性
 const POINTER_ATTRIBUTES = ["aria-describedby", "aria-details"];
 
 // `id` を重ならせないための、操作を付けた回数の通し番号
 let attachCounter = 0;
 
-/** 番号・ツールチップ・一覧の項目の `id` を、ページの中で一意な値に振り直し、それを指す `href`・`aria-describedby`・`aria-details` も直す */
+/** 番号・ツールチップ・一覧の項目の `id` を、ページの中で一意な値にもう一度振り、それを指す `href`・`aria-describedby`・`aria-details` も修正する */
 function renumberIds(root: HTMLElement, base: number): void {
   const renamed = new Map<string, string>();
   for (const element of root.querySelectorAll<HTMLElement>(
@@ -53,7 +53,7 @@ function renumberIds(root: HTMLElement, base: number): void {
   }
 }
 
-/** ツールチップを番号の上か下（`placement` の側を先に、収まらなければ反対側）に、画面からはみ出さないよう置く */
+/** ツールチップを番号の上か下（`placement` の側を先に、収まらなければ反対側）に、画面からはみ出さないよう配置する */
 function place(options: {
   ref: HTMLElement;
   placement: TooltipPlacement;
@@ -85,7 +85,7 @@ function place(options: {
   tip.style.left = `${Math.max(left, VIEWPORT_MARGIN_PX)}px`;
 }
 
-/** ツールチップの置いた位置を外す */
+/** ツールチップの配置した位置を削除する */
 function clearPlace(ref: HTMLElement): void {
   const tip = ref.querySelector<HTMLElement>(".mdmark-fn-tip");
   if (tip) {
@@ -96,7 +96,7 @@ function clearPlace(ref: HTMLElement): void {
   }
 }
 
-/** `root` の中から、`href` の `#` の後ろの `id` の要素を引く */
+/** `root` の中から、`href` の `#` の後ろの `id` の要素を参照する */
 function targetOf(root: HTMLElement, link: Element): HTMLElement | null {
   const href = link.getAttribute("href") ?? "";
   return href.startsWith("#")
@@ -104,7 +104,7 @@ function targetOf(root: HTMLElement, link: Element): HTMLElement | null {
     : null;
 }
 
-/** mount が描いた脚注の番号にツールチップを開閉する操作を、番号と末尾の一覧の項目に行き来する操作を付け、外す関数を返す */
+/** mount が描いた脚注の番号にツールチップを開閉する操作を、番号と末尾の一覧の項目に行き来する操作を付け、削除する関数を返却する */
 export function attachFootnotes(options: {
   /** 描いた文書の要素 */
   root: HTMLElement;
@@ -117,13 +117,13 @@ export function attachFootnotes(options: {
   const refs = [...root.querySelectorAll<HTMLElement>(".mdmark-fn-ref")];
   const timers = new Map<HTMLElement, ReturnType<typeof setTimeout>>();
 
-  /** ツールチップを閉じ、置いた位置を外す */
+  /** ツールチップを閉じ、配置した位置を削除する */
   const close = (ref: HTMLElement): void => {
     clearTimeout(timers.get(ref));
     ref.classList.remove(OPEN_CLASS, BELOW_CLASS);
     clearPlace(ref);
   };
-  /** ほかのツールチップを閉じてから開く。Esc で閉じた後と番号を押した後は、番号を離れるまで開き直さない */
+  /** ほかのツールチップを閉じてから開く。Esc で閉じた後と番号を押した後は、番号を離れるまでもう一度開かない */
   const open = (ref: HTMLElement): void => {
     clearTimeout(timers.get(ref));
     if (ref.classList.contains(DISMISSED_CLASS)) {
@@ -155,7 +155,7 @@ export function attachFootnotes(options: {
   // タッチで開いた番号。続く `click` では一覧へ移らない
   let openedByTouch: HTMLElement | null = null;
 
-  /** 番号のリンクの `pointerdown`: タッチで閉じた番号なら `is-dismissed` を外して開き、続く `click` で一覧へ移らないよう控える。開いた番号のタッチとマウス・ペンでは控えを消す */
+  /** 番号のリンクの `pointerdown`: タッチで閉じた番号なら `is-dismissed` を削除して開き、続く `click` で一覧へ移らないよう記録する。開いた番号のタッチとマウス・ペンでは記録を削除する */
   const openByTouch = (ref: HTMLElement, event: PointerEvent): void => {
     if (
       !(event.target instanceof Element) ||
@@ -222,7 +222,7 @@ export function attachFootnotes(options: {
       return;
     }
     event.preventDefault();
-    // 移った先に重ならないよう、ポインターが番号を離れるまで開き直さない
+    // 移った先に重ならないよう、ポインターが番号を離れるまでもう一度開かない
     if (ref) {
       close(ref);
       ref.classList.add(DISMISSED_CLASS);
@@ -232,7 +232,7 @@ export function attachFootnotes(options: {
       }
       target.setAttribute("tabindex", "-1");
     }
-    // 移る先を囲む閉じた節・選ばれていないタブ・閉じた行の詳細を開く
+    // 移る先を囲む閉じたセクション・選ばれていないタブ・閉じた行の詳細を開く
     openEnclosing(target);
     target.scrollIntoView({ block: "center" });
     target.focus();
@@ -258,7 +258,7 @@ export function attachFootnotes(options: {
       ref.classList.add(DISMISSED_CLASS);
     }
   };
-  /** 開いている番号（番号とツールチップ）の外の `pointerdown`: 閉じて `is-dismissed` を付ける。iOS の Safari はタップした番号に `:hover` を残し、`pointerleave`・`focusout` だけでは閉じず、番号に残る `:hover`・`:focus-within` では CSS がツールチップを出し続けるため。番号の `pointerdown` より先に受けるため、捕捉の段で受ける */
+  /** 開いている番号（番号とツールチップ）の外の `pointerdown`: 閉じて `is-dismissed` を付ける。iOS の Safari はタップした番号に `:hover` を残し、`pointerleave`・`focusout` だけでは閉じず、番号に残る `:hover`・`:focus-within` では CSS がツールチップを出し続けるため。番号の `pointerdown` より先に受けるため、キャプチャーフェーズで受ける */
   const onPointerdown = (event: PointerEvent): void => {
     if (!(event.target instanceof Node)) {
       return;

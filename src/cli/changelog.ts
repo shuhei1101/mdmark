@@ -25,7 +25,7 @@ function splitCells(line: string): string[] {
   return body.split(/(?<!\\)\|/).map((cell) => cell.trim());
 }
 
-/** 変更履歴の表から、バージョンの列が手元の版より新しく目標の版以下の行を、表の並びで返す */
+/** 変更履歴の表から、バージョンの列が手元のバージョンより新しく目標のバージョン以下の行を、表の並びで返却する */
 export function changelogRows(options: {
   text: string;
   from: string;

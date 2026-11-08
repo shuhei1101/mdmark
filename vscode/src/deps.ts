@@ -1,12 +1,12 @@
 import type { ExtensionContext } from "vscode";
 import type { Logger } from "./log.ts";
 
-/** `globalState` に前回のバージョンを書くキー */
+/** `globalState` に前回のバージョンを記載するキー */
 export const LAST_VERSION_KEY = "mdmark.lastVersion";
 
 /** 拡張機能の処理が共通で受ける依存。`activate` が `extensionMode` と環境変数から作る */
 export type ExtensionDeps = {
-  /** VS Code が渡す文脈 */
+  /** VS Code が指定する文脈 */
   context: ExtensionContext;
   /** 配布物の配信元（末尾の `/` を持たない） */
   distBase: string;

@@ -1,14 +1,14 @@
 import { useEffect, useEffectEvent } from "react";
 import type { HostMessage } from "../../../../../messages.ts";
 
-/** `data` が文字列の `type` を持つオブジェクトか（`window` の `message` には拡張機能以外が送るものも届く） */
+/** `data` が文字列の `type` を持つオブジェクトか（`window` の `message` には拡張機能以外が送信するものも届く） */
 const hasType = (data: unknown): data is HostMessage =>
   typeof data === "object" &&
   data !== null &&
   "type" in data &&
   typeof data.type === "string";
 
-/** `window` の `message` を購読し、`type` を持つ `data` だけを最新の処理に `HostMessage` として渡す。後始末で購読を外す */
+/** `window` の `message` を購読し、`type` を持つ `data` だけを最新の処理に `HostMessage` として指定する。後始末で購読を削除する */
 export const useHostMessages = (
   onMessage: (message: HostMessage) => void,
 ): void => {

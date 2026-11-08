@@ -29,7 +29,7 @@ export const INSPECT_PLAY_MS = 1000;
 /** `render` のメッセージ */
 type RenderMessage = Extract<HostMessage, { type: "render" }>;
 
-/** axe-core の `run` の結果のうち、使うもの */
+/** axe-core の `run` の結果のうち、使用するもの */
 type AxeResult = {
   violations: {
     id: string;
@@ -38,7 +38,7 @@ type AxeResult = {
   }[];
 };
 
-/** 結合テストのビルドが置く axe-core（UMD のため `window.axe` に入る） */
+/** 結合テストのビルドが配置する axe-core（UMD のため `window.axe` に入る） */
 type AxeGlobal = {
   axe?: {
     run: (context: {
@@ -52,23 +52,23 @@ type AxeGlobal = {
 export type DocumentView = {
   /** React が描いた描く先の要素を受ける */
   attach: (element: HTMLElement) => void;
-  /** 描画を destroy し、描く先の要素と描画を外す */
+  /** 描画を destroy し、描く先の要素と描画を削除する */
   detach: () => void;
-  /** 読み終えた配布物を受ける */
+  /** 読み込み終えた配布物を受ける */
   useMdmark: (mdmark: Mdmark) => void;
   /** 受けた配布物が差分の色分けに対応するか。受ける前は true */
   supportsDiff: () => boolean;
   /** `render` を受けて文書を描く */
   render: (message: RenderMessage) => void;
-  /** 元の行番号の位置を先頭に置く */
+  /** 元の行番号の位置を先頭に配置する */
   scrollToLine: (line: number) => void;
-  /** 自分が起こしたスクロールなら `undefined`、そうでなければ見えている先頭の行 */
+  /** 自分が発生させたスクロールなら `undefined`、そうでなければ見えている先頭の行 */
   takeScroll: () => number | undefined;
   /** 見えている先頭の元の行番号。描く前は `undefined` */
   currentLine: () => number | undefined;
   /** 見えている先頭の、切り捨てない元の行番号。描く前は `undefined` */
   currentPosition: () => number | undefined;
-  /** `selector` に当たる要素ごとの様子を返す（テストのときだけ） */
+  /** `selector` に該当する要素ごとの様子を返却する（テストのときだけ） */
   inspect: (selector: string, play?: boolean) => Promise<InspectedElement[]>;
   /** パネルの部品を axe で検査する（テストのときだけ） */
   audit: () => Promise<AxeViolation[]>;
@@ -78,7 +78,7 @@ export type DocumentView = {
 const scroller = (): Element =>
   document.scrollingElement ?? document.documentElement;
 
-/** `light`・`dark` のときだけ包む要素に配色の class を付け、`auto` のときは両方を外す */
+/** `light`・`dark` のときだけ包む要素に配色の class を付け、`auto` のときは両方を削除する */
 const applyTheme = (root: HTMLElement, theme: PreviewTheme): void => {
   root.classList.toggle("mdmark-theme-light", theme === "light");
   root.classList.toggle("mdmark-theme-dark", theme === "dark");
@@ -109,7 +109,7 @@ const inspectElement = (element: Element): InspectedElement => {
   return inspected;
 };
 
-/** 当たった動画・音声を `muted` で再生し、`INSPECT_PLAY_MS` 待つ（`play()` が拒まれた要素もそのまま） */
+/** 該当した動画・音声を `muted` で再生し、`INSPECT_PLAY_MS` 待つ（`play()` が拒まれた要素もそのまま） */
 const playMedia = async (selector: string): Promise<void> => {
   const media = [...document.querySelectorAll(selector)].filter(
     (element): element is HTMLMediaElement =>
@@ -122,7 +122,7 @@ const playMedia = async (selector: string): Promise<void> => {
   await new Promise((resolve) => setTimeout(resolve, INSPECT_PLAY_MS));
 };
 
-/** `preview.js` と同じ場所の `test/axe.js` を読み、`window.axe` を返す */
+/** `preview.js` と同じ場所の `test/axe.js` を読み込み、`window.axe` を返却する */
 const loadAxe = async (): Promise<NonNullable<AxeGlobal["axe"]>> => {
   const script = document.querySelector<HTMLScriptElement>(
     "script[src$='preview.js']",
@@ -135,7 +135,7 @@ const loadAxe = async (): Promise<NonNullable<AxeGlobal["axe"]>> => {
   );
   const { axe } = window as unknown as AxeGlobal;
   if (axe === undefined) {
-    throw new Error("axe を読めなかった");
+    throw new Error("axe を読み込めなかった");
   }
   return axe;
 };
@@ -144,9 +144,9 @@ const loadAxe = async (): Promise<NonNullable<AxeGlobal["axe"]>> => {
 export const createDocumentView = (options: {
   /** 描く先を包む要素（`#mdmark-preview`） */
   root: HTMLElement;
-  /** 作り直した Webview が `getState` で読んだ行 */
+  /** 再作成した Webview が `getState` で読み込んだ行 */
   savedLine?: number;
-  /** 読んだ配布物（単体テストが渡す） */
+  /** 読み込んだ配布物（単体テストが指定する） */
   mdmark?: Mdmark;
 }): DocumentView => {
   const { root } = options;
@@ -158,7 +158,7 @@ export const createDocumentView = (options: {
   let diffTexts: DiffTexts | undefined;
   let savedLine = options.savedLine;
 
-  /** 行の印と、見えている先頭の位置（上端の帯があればその下端）。描く前は `undefined` */
+  /** 行のマーカーと、見えている先頭の位置（上端の帯があればその下端）。描く前は `undefined` */
   const visibleTop = (): { anchors: Anchor[]; top: number } | undefined => {
     if (handle === undefined || element === undefined) {
       return undefined;
@@ -178,7 +178,7 @@ export const createDocumentView = (options: {
     const scrolling = scroller();
     const anchors = collectAnchors({ root: element, scroller: scrolling });
     const before = scrolling.scrollTop;
-    // 狭い幅で右側の目次が上端の帯のときは、帯の下端に置く。帯は動かした後に上端へ留まって下端が変わるため、留まった帯の下端で置き直す
+    // 狭い幅で右側の目次が上端の帯のときは、帯の下端に配置する。帯は動かした後に上端へ留まって下端が変わるため、留まった帯の下端でもう一度配置する
     for (let pass = 0; pass < 2; pass += 1) {
       scrolling.scrollTop =
         topForLine(anchors, line) -
@@ -204,7 +204,7 @@ export const createDocumentView = (options: {
     const includes =
       message.includes === undefined ? {} : { includes: message.includes };
     if (handle !== undefined && key === configKey) {
-      // 取り込む文書の表を持たないメッセージ（前のバージョンの拡張機能）は、前の表のまま描き直す
+      // 取り込む文書の表を持たないメッセージ（前のバージョンの拡張機能）は、前の表のまま再描画する
       if (message.includes === undefined) {
         handle.update(message.markdown);
       } else {
@@ -229,11 +229,11 @@ export const createDocumentView = (options: {
     configKey = key;
   };
 
-  /** 作り直した Webview は、背面に回す前に保存した行へ戻す（`pendingScrollTop` に覚えるため `revealLine` は送らない） */
+  /** 再作成した Webview は、背面に回す前に保存した行へ戻す（`pendingScrollTop` に覚えるため `revealLine` は送信しない） */
   const restoreSavedLine = (line: number): void => {
     savedLine = undefined;
     scrollToLine(line);
-    // 差分のパネルは描いた後に色分けで描き直して高さが変わるため、その間に動かされていなければ次の描画のタイミングで置き直す
+    // 差分のパネルは描いた後に色分けで再描画して高さが変わるため、その間に動かされていなければ次の描画のタイミングでもう一度配置する
     const placedTop = scroller().scrollTop;
     requestAnimationFrame(() => {
       if (scroller().scrollTop === placedTop) {
@@ -258,10 +258,10 @@ export const createDocumentView = (options: {
     supportsDiff: () => mdmark === undefined || supportsDiffBlocks(mdmark),
     render: (message) => {
       if (mdmark === undefined || element === undefined) {
-        throw new Error("mdmark の配布物を読む前に render を受けた");
+        throw new Error("mdmark の配布物を読み込む前に render を受けた");
       }
       applyTheme(root, message.theme);
-      // 描き直しでスクロールの位置が動かないよう、描く前の位置を控える
+      // 再描画でスクロールの位置が動かないよう、描く前の位置を記録する
       const scrollTop = scroller().scrollTop;
       if (message.previous !== undefined) {
         diffTexts ??= { modified: "", original: "" };

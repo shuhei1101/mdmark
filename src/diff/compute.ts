@@ -10,11 +10,11 @@ export type DiffChange = {
   removed: boolean;
 };
 
-/** 行と語の比較。既定は jsdiff を包む `jsdiffEngine`、単体テストで差し替える */
+/** 行と単語の比較。既定は jsdiff を包む `jsdiffEngine`、単体テストで差し替える */
 export type DiffEngine = {
   /** 行ごとに比べる */
   lines: (pair: { before: string; after: string }) => DiffChange[];
-  /** 語ごとに比べる。`segmenter` が無いときは 1 文字ずつ比べる */
+  /** 単語ごとに比べる。`segmenter` が無いときは 1 文字ずつ比べる */
   words: (pair: {
     before: string;
     after: string;
@@ -22,7 +22,7 @@ export type DiffEngine = {
   }) => DiffChange[];
 };
 
-/** 差分の行の切れ（語）。対の行で変わった語だけ `changed` が true */
+/** 差分の行の切れ（単語）。対の行で変わった単語だけ `changed` が true */
 export type DiffPart = { text: string; changed: boolean };
 
 /** 比べた 1 行 */
@@ -64,7 +64,7 @@ export const jsdiffEngine: DiffEngine = {
       : diffWords(before, after, { intlSegmenter: segmenter }),
 };
 
-/** 埋め込んだ HTML の範囲の始まりと終わりの印 */
+/** 埋め込んだ HTML の範囲の始まりと終わりのマーカー */
 const HTML_OPEN = "<!-- html -->";
 const HTML_CLOSE = "<!-- /html -->";
 
@@ -80,7 +80,7 @@ function splitLines(value: string): string[] {
   return lines;
 }
 
-/** 行ごとの比較の結果を、消した行を先・足した行を後に並べた行の並びにする。対の行は語ごとに比べる */
+/** 行ごとの比較の結果を、削除した行を先・追加した行を後に並べた行の並びにする。対の行は単語ごとに比べる */
 function toLines(options: {
   changes: DiffChange[];
   segmenter: Intl.Segmenter | undefined;
@@ -88,7 +88,7 @@ function toLines(options: {
 }): DiffLine[] {
   const { changes, segmenter, engine } = options;
   const out: DiffLine[] = [];
-  /** 変えた塊 1 つ分の消した行と足した行 */
+  /** 変えた塊 1 つ分の削除した行と追加した行 */
   let dels: string[] = [];
   let adds: string[] = [];
   const flush = (): void => {
@@ -137,7 +137,7 @@ function toLines(options: {
   return out;
 }
 
-/** 語ごとの比較の結果から、片側（消した側は `removed`、足した側は `added`）の切れの並びを作る */
+/** 単語ごとの比較の結果から、片側（削除した側は `removed`、追加した側は `added`）の切れの並びを作る */
 function partsOf(changes: DiffChange[], side: "removed" | "added"): DiffPart[] {
   const other = side === "removed" ? "added" : "removed";
   return changes
@@ -212,13 +212,13 @@ function toBlocks(lines: DiffLine[]): DiffBlock[] {
   return blocks;
 }
 
-/** 2 つの Markdown のソースを行ごとに比べ、対の行を語ごとに比べ、埋め込んだ HTML の範囲を塊に分ける */
+/** 2 つの Markdown のソースを行ごとに比べ、対の行を単語ごとに比べ、埋め込んだ HTML の範囲を塊に分ける */
 export function computeDiff(options: {
   /** 前の Markdown */
   before: string;
   /** 後の Markdown */
   after: string;
-  /** 語の区切り。持たないブラウザでは `undefined` */
+  /** 単語の区切り。持たないブラウザでは `undefined` */
   segmenter: Intl.Segmenter | undefined;
   /** 比較の計算。既定は `jsdiffEngine` */
   engine?: DiffEngine;

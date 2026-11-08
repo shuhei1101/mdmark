@@ -22,9 +22,9 @@ import { normalizePath } from "./paths.ts";
 import { alignText, inlineOffsets, maskEmbeddedHtml } from "./positions.ts";
 import { parseDocument } from "./references.ts";
 
-/** `collectMatches` が返す参照先 1 つ */
+/** `collectMatches` が返却する参照先 1 つ */
 export type MdmarkMatchTarget = {
-  /** 参照先の種類。`term` は索引の用語、`glossary` は用語集の表の用語、`doc` は別名が一致した文書、`alias` は渡したエイリアス */
+  /** 参照先の種類。`term` は索引の用語、`glossary` は用語集の表の用語、`doc` は別名が一致した文書、`alias` は指定したエイリアス */
   kind: "term" | "glossary" | "doc" | "alias";
   /** `term` は `terms[].id`、`glossary` は `glossary:{表を持つ文書の id}:{用語}`、`doc` は `docs[].id`、`alias` はエイリアスの `id` */
   id: string;
@@ -38,13 +38,13 @@ export type MdmarkMatchTarget = {
 
 /** 本文の 1 つの一致とその参照先 */
 export type MdmarkMatch = MdmarkMatchTarget & {
-  /** 一致した文字列（照合した辞書の語） */
+  /** 一致した文字列（照合した辞書の単語） */
   text: string;
   /** 本文の Markdown の行（1 から） */
   line: number;
   /** その行の中の始まり（0 から数える UTF-16 の位置） */
   start: number;
-  /** その行の中の終わり（含まない）。実体参照やエスケープで書いた文字は、本文に書いたままの範囲を指す */
+  /** その行の中の終わり（含まない）。実体参照やエスケープで記載した文字は、本文に記載したままの範囲を指す */
   end: number;
 };
 
@@ -66,19 +66,19 @@ export type MdmarkMatches = {
   targets: MdmarkMatchTarget[];
 };
 
-/** 本文の頭からの位置で表した、一致した語の範囲 */
+/** 本文の頭からの位置で表した、一致した単語の範囲 */
 type Found = {
   /** 辞書に記載した表記（本文の表記とは限らない） */
   word: string;
-  /** 辞書を引く正規化した語 */
+  /** 辞書を参照する正規化した単語 */
   key: string;
   offset: number;
   end: number;
-  /** 図の部品の `{{語}}` の一致か（用語だけを引き、文書の別名は引かない） */
+  /** 図の部品の `{{単語}}` の一致か（用語だけを引き、文書の別名は参照しない） */
   termOnly?: boolean;
 };
 
-/** 語の終わりの本文の位置。次の文字の位置までに飛ばした改行の `\r` は含めない */
+/** 単語の終わりの本文の位置。次の文字の位置までに飛ばした改行の `\r` は含めない */
 function wordEnd(options: {
   body: string;
   offsets: number[];
@@ -117,7 +117,7 @@ function lineIndexOf(lineStarts: number[], offset: number): number {
   return low;
 }
 
-/** 印の範囲ごとに、範囲の中のトークンを返す（範囲の見つけ方は描く処理と同じ） */
+/** マーカーの範囲ごとに、範囲の中のトークンを返却する（範囲の見つけ方は描く処理と同じ） */
 function markedRanges(
   tokens: Token[],
   accept: (name: string) => boolean,
@@ -156,7 +156,7 @@ function fenceRange(options: {
   };
 }
 
-/** 範囲に置いたコードブロックが 1 つだけならその範囲と中身を返す */
+/** 範囲に配置したコードブロックが 1 つだけならその範囲と中身を返却する */
 function singleFenceRange(options: {
   range: Token[];
   isFence: (token: Token) => boolean;
@@ -173,7 +173,7 @@ function singleFenceRange(options: {
   return span === undefined ? undefined : { ...span, fence };
 }
 
-/** `<!-- html -->` の範囲の `html` のコードブロックの文字を、描くときと同じ範囲で照合し、本文の位置を返す */
+/** `<!-- html -->` の範囲の `html` のコードブロックの文字を、描くときと同じ範囲で照合し、本文の位置を返却する */
 export function embeddedHtmlMatches(options: {
   body: string;
   tokens: Token[];
@@ -195,10 +195,10 @@ export function embeddedHtmlMatches(options: {
     if (block === undefined) {
       continue;
     }
-    // 図の部品の custom element を除いた HTML を、描くときと同じ関数に通す
+    // 図の部品の custom element を除いた HTML を、描くときと同じ関数に経由する
     const source = block.fence.content.replace(PART_PATTERN, "");
     const masked = maskEmbeddedHtml(body.slice(block.from, block.to));
-    // 受けた文字の代わりに印を返し、出力に残った印の文字だけを照合する（要素ごと落ちる文字は出力に残らない）
+    // 受けた文字の代わりにマーカーを返却し、出力に残ったマーカーの文字だけを照合する（要素ごと落ちる文字は出力に残らない）
     let open = "";
     while (source.includes(open)) {
       open += "";
@@ -237,7 +237,7 @@ export function embeddedHtmlMatches(options: {
   return found;
 }
 
-/** 定義の JSON の文字列を、戻した文字と各文字の元の位置で返す。位置は `raw` の頭からの位置 */
+/** 定義の JSON の文字列を、戻した文字と各文字の元の位置で返却する。位置は `raw` の頭からの位置 */
 function jsonStrings(raw: string): Array<{
   text: string;
   starts: number[];
@@ -299,7 +299,7 @@ function jsonStrings(raw: string): Array<{
   return strings;
 }
 
-/** 定義の JSON（`raw`。本文の `base` の位置から始まる）の `{{語}}` のうち、意味のある用語の位置を返す */
+/** 定義の JSON（`raw`。本文の `base` の位置から始まる）の `{{単語}}` のうち、意味のある用語の位置を返却する */
 function definitionTerms(options: {
   raw: string;
   base: number;
@@ -328,7 +328,7 @@ function definitionTerms(options: {
   return found;
 }
 
-/** 図の部品の範囲の定義と、埋め込んだ HTML の中の custom element の定義の `{{語}}` のうち、意味のある用語の位置を返す */
+/** 図の部品の範囲の定義と、埋め込んだ HTML の中の custom element の定義の `{{単語}}` のうち、意味のある用語の位置を返却する */
 export function diagramTermMatches(options: {
   body: string;
   tokens: Token[];
@@ -341,7 +341,7 @@ export function diagramTermMatches(options: {
   }
   const lineStarts = lineStartsOf(body);
   const found: Found[] = [];
-  // 図の部品の印の範囲の `json` のコードブロック
+  // 図の部品のマーカーの範囲の `json` のコードブロック
   const directives = (name: string): boolean =>
     Object.hasOwn(DIAGRAM_DIRECTIVES, name);
   for (const range of markedRanges(tokens, directives)) {
@@ -390,7 +390,7 @@ export function diagramTermMatches(options: {
   return found;
 }
 
-/** 地の文（コード・リンク・見出し・用語集の表の中を除く）の一致を、本文の位置で返す */
+/** 地の文（コード・リンク・見出し・用語集の表の中を除く）の一致を、本文の位置で返却する */
 function paragraphMatches(options: {
   body: string;
   tokens: Token[];
@@ -422,7 +422,7 @@ function paragraphMatches(options: {
   return found;
 }
 
-/** 本文の頭からの位置で表した一致を、行（1 から）と行の中の位置（0 から）に直す */
+/** 本文の頭からの位置で表した一致を、行（1 から）と行の中の位置（0 から）に修正する */
 function locate(options: { found: Found; lineStarts: number[] }): {
   text: string;
   line: number;
@@ -440,7 +440,7 @@ function locate(options: { found: Found; lineStarts: number[] }): {
   };
 }
 
-/** 地の文と（`html` がオンなら）埋め込んだ HTML の中の、やめた言い方の一致を本文の位置で返す。用語・文書の別名にやめた言い方の語を加えた辞書で照合し、やめた言い方の語の一致だけを残す */
+/** 地の文と（`html` がオンなら）埋め込んだ HTML の中の、やめた言い方の一致を本文の位置で返却する。用語・文書の別名にやめた言い方の単語を加えた辞書で照合し、やめた言い方の単語の一致だけを残す */
 function avoidedFound(options: {
   body: string;
   tokens: Token[];
@@ -449,7 +449,7 @@ function avoidedFound(options: {
   html: boolean;
 }): Found[] {
   const { body, tokens, dictionary, lineStarts, html } = options;
-  // 描いた文書の `matchWords` と同じ語の集まり
+  // 描いた文書の `matchWords` と同じ単語の集まり
   const withAvoided: Dictionary = {
     ...dictionary,
     words: [...new Set([...dictionary.words, ...dictionary.avoided.keys()])],
@@ -481,15 +481,15 @@ function aliasTarget(alias: MdmarkAlias): MdmarkMatchTarget {
   };
 }
 
-/** 索引と文書の本文から、文書ごとの本文の一致と、重なりを除いた参照先を返す */
+/** 索引と文書の本文から、文書ごとの本文の一致と、重なりを除いた参照先を返却する */
 export function collectMatches(input: {
   /** 索引 */
   index: MdmarkIndex;
-  /** 文書のパスから本文を引く表 */
+  /** 文書のパスから本文を参照する表 */
   documents: Record<string, string>;
   /** 設定 */
   config?: MdmarkConfig;
-  /** エイリアス。使えないもの（`env` を含む）は除いて照合する */
+  /** エイリアス。使用できないもの（`env` を含む）は除いて照合する */
   aliases?: MdmarkAlias[];
 }): MdmarkMatches {
   const { index } = normalizeIndex(input.index);
@@ -515,7 +515,7 @@ export function collectMatches(input: {
   const glossary = scanned.flatMap((item) =>
     item.parsed.glossary.map((row) => row.entry),
   );
-  // 辞書が返す用語の `id` から、参照先の種類・タイトル・説明を引く
+  // 辞書が返却する用語の `id` から、参照先の種類・タイトル・説明を参照する
   const termTargets = new Map<
     string,
     Omit<MdmarkMatchTarget, "kind" | "aliasType"> & {
@@ -603,7 +603,7 @@ export function collectMatches(input: {
       }
     }
     byDocument[doc.id] = matches;
-    // やめた言い方は参照先に混ぜず、代わりの用語を引いて `avoided` にだけ入れる
+    // やめた言い方は参照先に混ぜず、代わりの用語を参照して `avoided` にだけ入れる
     const avoidedMatches: MdmarkAvoidedMatch[] = [];
     if (dictionary.avoided.size > 0) {
       const foundAvoided = avoidedFound({

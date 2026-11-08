@@ -4,26 +4,26 @@ import { renderSyntaxWarning } from "./parts/syntax-warning.ts";
 
 declare const __MDMARK_LUCIDE_VERSION__: string;
 
-/** 束ねた lucide のバージョン（ビルドと単体テストの `define` で埋める） */
+/** まとめた lucide のバージョン（ビルドと単体テストの `define` で埋める） */
 export const LUCIDE_VERSION = __MDMARK_LUCIDE_VERSION__;
 
-/** URL のアイコンのモジュールを読む関数 */
+/** URL のアイコンのモジュールを読み込む関数 */
 export type ImportIconModule = (url: string) => Promise<unknown>;
 
-/** URL へ `HEAD` を送る関数 */
+/** URL へ `HEAD` を送信する関数 */
 export type FetchHead = (url: string) => Promise<Response>;
 
-/** 既定のモジュールの読み方: 動的 `import()` */
+/** 既定のモジュールの読み込み方: 動的 `import()` */
 const importByUrl: ImportIconModule = (url) => import(/* @vite-ignore */ url);
 
-/** 既定の `HEAD` の送り方 */
+/** 既定の `HEAD` の送信方法 */
 const fetchHeadByUrl: FetchHead = (url) => fetch(url, { method: "HEAD" });
 
-/** 束ねていない名前のアイコンを読む jsDelivr の URL を返す */
+/** まとめていない名前のアイコンを読み込む jsDelivr の URL を返却する */
 export const lucideIconUrl = (name: string): string =>
   `https://cdn.jsdelivr.net/npm/lucide@${LUCIDE_VERSION}/dist/esm/icons/${name}.mjs`;
 
-/** 読んだモジュールの既定の export が IconNode の形か */
+/** 読み込んだモジュールの既定の export が IconNode の構造か */
 const iconNodeOf = (module: unknown): MdmarkIconNode | undefined => {
   const node = (module as { default?: unknown } | null)?.default;
   return Array.isArray(node) &&
@@ -38,7 +38,7 @@ const iconNodeOf = (module: unknown): MdmarkIconNode | undefined => {
     : undefined;
 };
 
-/** 読めなかった名前の場所を、書いた文字の行内のコードに戻す */
+/** 読み込めなかった名前の場所を、記載した文字の行内のコードに戻す */
 const revertToCode = (element: HTMLElement, name: string): HTMLElement => {
   const code = document.createElement("code");
   code.textContent = `icon:${name}`;
@@ -46,7 +46,7 @@ const revertToCode = (element: HTMLElement, name: string): HTMLElement => {
   return code;
 };
 
-/** 要素を含む、描く先の要素の直下のブロックを返す */
+/** 要素を含む、描く先の要素の直下のブロックを返却する */
 const blockOf = (root: HTMLElement, element: Element): Element => {
   let block = element;
   while (block.parentElement && block.parentElement !== root) {
@@ -55,7 +55,7 @@ const blockOf = (root: HTMLElement, element: Element): Element => {
   return block;
 };
 
-/** 中が空の行内のアイコンの名前ごとに、`icons` に無ければ jsDelivr のモジュールを 1 回だけ読み、svg を同じ名前の全ての場所に入れる。読めない名前は行内のコードに戻し、404 は書き方の警告、それ以外は文書の先頭に知らせの枠を 1 つだけ置く */
+/** 中が空の行内のアイコンの名前ごとに、`icons` に無ければ jsDelivr のモジュールを 1 回だけ読み込み、svg を同じ名前の全ての場所に入れる。読み込めない名前は行内のコードに戻し、404 は記載の警告、それ以外は文書の先頭に通知ブロックを 1 つだけ配置する */
 export const loadInlineIcons = async (options: {
   /** 描く先の要素 */
   root: HTMLElement;
@@ -63,9 +63,9 @@ export const loadInlineIcons = async (options: {
   icons: Record<string, MdmarkIconNode>;
   /** 描いた文書がまだ今のものか。`import()`・`HEAD` の後に偽なら DOM に触れずに戻る */
   isCurrent: () => boolean;
-  /** モジュールを読む関数（既定 `(url) => import(url)`） */
+  /** モジュールを読み込む関数（既定 `(url) => import(url)`） */
   importModule?: ImportIconModule;
-  /** `HEAD` を送る関数（既定 `(url) => fetch(url, { method: "HEAD" })`） */
+  /** `HEAD` を送信する関数（既定 `(url) => fetch(url, { method: "HEAD" })`） */
   fetchHead?: FetchHead;
 }): Promise<void> => {
   const {
@@ -122,7 +122,7 @@ export const loadInlineIcons = async (options: {
             "beforebegin",
             renderSyntaxWarning({
               mark: `icon:${name}`,
-              message: `の \`${name}\` は Lucide に無いアイコンの名前です。https://lucide.dev/icons/ で名前を確かめてください。書いた文字のまま表示しています。`,
+              message: `の \`${name}\` は Lucide に無いアイコンの名前です。https://lucide.dev/icons/ で名前を確認してください。記載した文字のまま表示しています。`,
             }),
           );
         }

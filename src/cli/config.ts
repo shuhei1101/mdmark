@@ -21,13 +21,13 @@ export {
   validateConfig,
 } from "../config-files.ts";
 
-/** 見つけた設定ファイルの場所と、読んだ値 */
+/** 見つけた設定ファイルの場所と、読み込んだ値 */
 export type LoadedConfig = {
   /** 設定ファイルの絶対パス */
   path: string;
   /** 設定ファイルのあるフォルダ（設定のパスと glob の基準） */
   dir: string;
-  /** 読んだ値 */
+  /** 読み込んだ値 */
   config: CliConfig;
 };
 
@@ -40,7 +40,7 @@ async function isFile(path: string): Promise<boolean> {
   }
 }
 
-/** `--config` があればそのパスを、無ければ今のフォルダから上へ順に最初に見つかった設定ファイルの絶対パスを返す */
+/** `--config` があればそのパスを、無ければ今のフォルダから上へ順に最初に見つかった設定ファイルの絶対パスを返却する */
 export async function findConfigFile(
   cwd: string,
   explicit: string | undefined,
@@ -51,7 +51,7 @@ export async function findConfigFile(
       return path;
     }
     throw new CliError(
-      `${explicit} が見つかりません（--config のパス）。パスを直すか、mdmark init で置いてください。`,
+      `${explicit} が見つかりません（--config のパス）。パスを修正するか、mdmark init で配置してください。`,
     );
   }
   let dir = cwd;
@@ -63,14 +63,14 @@ export async function findConfigFile(
     const parent = dirname(dir);
     if (parent === dir) {
       throw new CliError(
-        `${CONFIG_FILE} が見つかりません（${cwd} から上を探しました）。mdmark init で置けます。`,
+        `${CONFIG_FILE} が見つかりません（${cwd} から上を探しました）。mdmark init で配置できます。`,
       );
     }
     dir = parent;
   }
 }
 
-/** 設定ファイルを YAML として読み、形を検めずに返す */
+/** 設定ファイルを YAML として読み込み、構造を検めずに返却する */
 export async function loadConfig(
   path: string,
 ): Promise<{ path: string; dir: string; raw: unknown }> {
@@ -80,7 +80,7 @@ export async function loadConfig(
     text = await readFile(path, "utf8");
   } catch (error) {
     throw new CliError(
-      `${name} を開けません（${error instanceof Error ? error.message : String(error)}）。パスを確かめてください。`,
+      `${name} を開けません（${error instanceof Error ? error.message : String(error)}）。パスを確認してください。`,
     );
   }
   try {
@@ -90,14 +90,14 @@ export async function loadConfig(
       const line = error.linePos?.[0].line;
       const reason = error.message.split("\n")[0] ?? "";
       throw new CliError(
-        `${name} の ${line ?? "?"} 行目を YAML として読めません（${reason}）。字下げと書き方を直してください。`,
+        `${name} の ${line ?? "?"} 行目を YAML として読み込めません（${reason}）。字下げと記載方法を修正してください。`,
       );
     }
     throw error;
   }
 }
 
-/** 端末の設定と、今のフォルダから上の設定ファイルを重ねて読む。`--config` のファイルが無ければ `CliError` を投げる */
+/** 端末の設定と、今のフォルダから上の設定ファイルを重ねて読み込む。`--config` のファイルが無ければ `CliError` を投げる */
 export async function readLayeredConfig(
   cwd: string,
   explicit: string | undefined,
@@ -124,7 +124,7 @@ export async function readLayeredConfig(
   }
 }
 
-/** 端末の設定と上のフォルダの設定ファイルを重ねて読み、読めない・形が合わなければ `mdmark check` で確かめられることを添えた誤りを投げる */
+/** 端末の設定と上のフォルダの設定ファイルを重ねて読み込み、読み込めない・構造が合わなければ `mdmark check` で確認できることを添えた誤りを投げる */
 export async function requireConfig(
   cwd: string,
   explicit: string | undefined,
@@ -134,20 +134,20 @@ export async function requireConfig(
     displayConfigPath({ path, base: cwd, home: homedir() });
   if (layered.nearest === undefined) {
     throw new CliError(
-      `${CONFIG_FILE} が見つかりません（${cwd} から上を探しました）。mdmark init で置けます。`,
+      `${CONFIG_FILE} が見つかりません（${cwd} から上を探しました）。mdmark init で配置できます。`,
     );
   }
   if (layered.unreadable) {
     const { path, line, message } = layered.unreadable;
     throw new CliError(
-      `${shown(path)} の ${line} 行目を YAML として読めません（${message}）。字下げと書き方を直してください。`,
+      `${shown(path)} の ${line} 行目を YAML として読み込めません（${message}）。字下げと記載方法を修正してください。`,
     );
   }
   const first = layered.issues[0];
   if (first) {
     const where = first.where === "" ? "全体" : first.where;
     throw new CliError(
-      `${shown(first.file)} の ${where} が設定の形に合いません（${first.message}）。mdmark check で合わないところを確かめられます。`,
+      `${shown(first.file)} の ${where} が設定の構造に合いません（${first.message}）。mdmark check で合わないところを確認できます。`,
     );
   }
   const dir = dirname(layered.nearest);

@@ -37,7 +37,7 @@ import { renderDocument } from "./render/index.ts";
 export type MountOptions = {
   /** 描く Markdown */
   markdown: string;
-  /** 使う側の設定。省いたキーには既定を当てる */
+  /** 利用側の設定。省いたキーには既定を適用する */
   config?: MdmarkConfig;
   /** 索引。省くと索引の用語と関連文書を出さない */
   index?: MdmarkIndex;
@@ -45,21 +45,21 @@ export type MountOptions = {
   docId?: string;
   /** `collectReferences` の戻り値。省くと、関連文書の一覧は索引の `related` だけから出し、他の文書の用語集の表の用語を照合しない */
   references?: MdmarkReferences;
-  /** `buildAliases` が作ったエイリアス。`glossary` がオンのとき、名前と別名に下線と種類ごとのツールチップを付ける。使えないエイリアス（`env` を含む）は照合せず、知らせの枠も出さない */
+  /** `buildAliases` が作ったエイリアス。`glossary` がオンのとき、名前と別名に下線と種類ごとのツールチップを付ける。使用できないエイリアス（`env` を含む）は照合せず、通知ブロックも出さない */
   aliases?: MdmarkAlias[];
-  /** 差分の取り出し元。渡すと描いた文書に差分を開く UI を付ける。渡すときは `docId` も要る */
+  /** 差分の取り出し元。指定すると描いた文書に差分を開く UI を付ける。指定するときは `docId` も要る */
   diffSource?: DiffSource;
-  /** 差分の出し方。`button`（既定）は「変更を見る」を押してから差分の行を出し、`open` は描いた時点で押した状態にし、`blocks` は描いた文書のブロックを追加と削除の色で塗り分ける。`diffSource` を渡さないときは使わない。知らない値は `button` にする */
+  /** 差分の出し方。`button`（既定）は「変更表示」を押してから差分の行を出し、`open` は描いた時点で押した状態にし、`blocks` は描いた文書のブロックを追加と削除の色で塗り分ける。`diffSource` を指定しないときは使用しない。知らない値は `button` にする */
   diffMode?: DiffMode;
-  /** コメントの読み書きの関数。`comments` の機能がオンのときだけ使う。渡すときは `docId` も要る */
+  /** コメントの読み込みと保存の関数。`comments` の機能がオンのときだけ使用する。指定するときは `docId` も要る */
   commentStore?: MdmarkCommentStore;
-  /** 比較元の Markdown。渡すと、本文の中で比較元から変えたブロックを `blocks` と同じ色で塗り分ける。`null` と省いたときは色分けしない */
+  /** 比較元の Markdown。指定すると、本文の中で比較元から変えたブロックを `blocks` と同じ色で塗り分ける。`null` と省いたときは色分けしない */
   baseMarkdown?: string | null;
   /** `+columns` の表で列の表示を切り替えるたびに呼ぶ */
   onColumnsChange?: (event: MdmarkColumnsChange) => void;
   /** 取り込む文書の表。キーは描く文書のフォルダからのパス。省くと include のマーカーを取り込み先が無い警告にする */
   includes?: Record<string, string>;
-  /** 束ねていない名前のアイコンの形の表。表に無い名前は jsDelivr から読む */
+  /** まとめていない名前のアイコンの形状の表。表に無い名前は jsDelivr から読み込む */
   icons?: Record<string, MdmarkIconNode>;
 };
 
@@ -73,7 +73,7 @@ export type MdmarkColumnsChange = {
 
 /** `mount` の戻り値 */
 export type MountHandle = {
-  /** 本文だけを描き直す。設定は `mount` に渡したものを使う。`options.baseMarkdown` を渡すと比較元を差し替え、`null` で外す。`options.includes` を渡すと取り込む文書の表を差し替える。`destroy` の後は何もしない */
+  /** 本文だけを再描画する。設定は `mount` に指定したものを使用する。`options.baseMarkdown` を指定すると比較元を差し替え、`null` で削除する。`options.includes` を指定すると取り込む文書の表を差し替える。`destroy` の後は何もしない */
   update: (
     markdown: string,
     options?: {
@@ -81,18 +81,18 @@ export type MountHandle = {
       includes?: Record<string, string>;
     },
   ) => void;
-  /** 要素の中を空にして class `mdmark` とテーマの属性を外し、印刷の受け取りを外す。2 回目以降は何もしない */
+  /** 要素の中を空にして class `mdmark` とテーマの属性を削除し、印刷の受け取りを解除する。2 回目以降は何もしない */
   destroy: () => void;
-  /** 本文を描き直さずにコメントを読み直し、印を付け直してから解決する。コメントを付けていないときと `destroy` の後は解決する */
+  /** 本文を再描画せずにコメントを再読み込みし、マーカーをもう一度付けてから解決する。コメントを付けていないときと `destroy` の後は解決する */
   reloadComments: () => Promise<void>;
-  /** その `id` のコメントの印へ移って強調する。印が無い `id` と `destroy` の後は何もしない */
+  /** その `id` のコメントのマーカーへ移って強調する。マーカーが無い `id` と `destroy` の後は何もしない */
   focusComment: (id: string) => void;
 };
 
-/** 描く先の要素に付ける class。本文の CSS はこの class の下に当たる */
+/** 描く先の要素に付ける class。本文の CSS はこの class の下に該当する */
 const ROOT_CLASS = "mdmark";
 
-/** 描く先の要素に、既定を当てた設定の `colorTheme` を値にして付ける属性。`src/index.css` は `:root:has()` でこの属性を見て、テーマの配色の値を `:root` に当てる */
+/** 描く先の要素に、既定を適用した設定の `colorTheme` を値にして付ける属性。`src/index.css` は `:root:has()` でこの属性を確認して、テーマの配色の値を `:root` に適用する */
 const COLOR_THEME_ATTRIBUTE = "data-mdmark-color-theme";
 
 /** 描く先の要素に付ける明暗の class。`src/index.css` の `mdmark-theme-light`・`mdmark-theme-dark` と同じ名前 */
@@ -104,13 +104,13 @@ const COLOR_SCHEME_CLASSES = {
 /** 印刷の機能の名前 */
 const PRINT_FEATURE = "print";
 
-/** 描いた要素から、その `MountHandle` を引く。同じ要素への `mount` が前の描画を片付けるのに使う */
+/** 描いた要素から、その `MountHandle` を参照する。同じ要素への `mount` が前の描画を片付けるのに使用する */
 const mounted = new WeakMap<HTMLElement, MountHandle>();
 
 /** `mount` の通し番号（mermaid の `render` の id を、ページの中で重ねない） */
 let mountCount = 0;
 
-/** 差分のプレビューに出す埋め込んだ HTML の範囲を、文書に描くときと同じ描き方で描く関数を作る: 範囲の HTML を `html` のコードブロックに入れ `<!-- html -->` で囲んだ Markdown を文書を描く処理に通し、得た枠の中身と、置いた要素にその描画の機能のオン・オフと操作できる部品の定義で記法の操作を付ける関数を返す。`html` の機能がオフのときは枠が無く、空の文字と何もしない関数を返す */
+/** 差分のプレビューに出す埋め込んだ HTML の範囲を、文書に描くときと同じ描き方で描く関数を作る: 範囲の HTML を `html` のコードブロックに入れ `<!-- html -->` で囲んだ Markdown を文書を描く処理に経由し、得た枠の中身と、配置した要素にその描画の機能のオン・オフと操作できる部品の定義で記法の操作を付ける関数を返却する。`html` の機能がオフのときは枠が無く、空の文字と何もしない関数を返却する */
 function createDiffHtmlRenderer(options: {
   config: ResolvedConfig;
   opts: MountOptions;
@@ -151,12 +151,12 @@ function createDiffHtmlRenderer(options: {
   };
 }
 
-/** 比較元が文字列か `null` か `undefined` かを確かめ、違えば `baseMarkdown` を含む `TypeError` を投げる */
+/** 比較元が文字列か `null` か `undefined` かを確認し、違えば `baseMarkdown` を含む `TypeError` を投げる */
 export function checkBaseMarkdown(
   value: unknown,
 ): asserts value is string | null | undefined {
   if (value !== undefined && value !== null && typeof value !== "string") {
-    throw new TypeError("baseMarkdown は文字列か null で渡してください");
+    throw new TypeError("baseMarkdown は文字列か null で指定してください");
   }
 }
 
@@ -167,7 +167,7 @@ function parseElement(html: string): HTMLElement {
   return template.content.firstElementChild as HTMLElement;
 }
 
-/** 後の文書を描いた HTML を、前の文書と比べて追加と削除の色を当てた中身にする。前の文書は `render` で同じ引数で描く */
+/** 後の文書を描いた HTML を、前の文書と比べて追加と削除の色を適用した中身にする。前の文書は `render` で同じ引数で描く */
 function drawColoredBlocks(options: {
   /** 後の文書を描いた HTML */
   rendered: string;
@@ -190,7 +190,7 @@ function drawColoredBlocks(options: {
   return afterTemplate.content;
 }
 
-/** 描く先の要素の子を本文の列（`div.mdmark-content`）に包み、本文の列を返す */
+/** 描く先の要素の子を本文の列（`div.mdmark-content`）に包み、本文の列を返却する */
 function wrapContent(el: HTMLElement): HTMLElement {
   const content = document.createElement("div");
   content.className = "mdmark-content";
@@ -199,21 +199,21 @@ function wrapContent(el: HTMLElement): HTMLElement {
   return content;
 }
 
-/** 要素の中に文書を描き、記法の操作を付け、外部ライブラリと拡張の印を描かせ、ビューとコメントの部品を付け、印刷の受け取りを付けて、描き直しと片付けの関数を返す。`diffSource` か `commentStore` を渡して `docId` が無いとき、`commentStore`・`baseMarkdown`・`onColumnsChange` が合わないときは、何も描かずに `TypeError` を投げる */
+/** 要素の中に文書を描き、記法の操作を付け、外部ライブラリと拡張のマーカーを描かせ、ビューとコメントの部品を付け、印刷の受け取りを付けて、再描画と片付けの関数を返却する。`diffSource` か `commentStore` を指定して `docId` が無いとき、`commentStore`・`baseMarkdown`・`onColumnsChange` が合わないときは、何も描かずに `TypeError` を投げる */
 export function mount(el: HTMLElement, opts: MountOptions): MountHandle {
   const { diffSource, commentStore, docId, onColumnsChange } = opts;
   if (diffSource !== undefined && docId === undefined) {
-    throw new TypeError("diffSource を渡すときは docId も渡してください");
+    throw new TypeError("diffSource を指定するときは docId も指定してください");
   }
   if (commentStore !== undefined) {
     if (docId === undefined) {
-      throw new TypeError("commentStore を渡すときは docId も渡してください");
+      throw new TypeError("commentStore を指定するときは docId も指定してください");
     }
     checkCommentStore(commentStore, "commentStore");
   }
   checkBaseMarkdown(opts.baseMarkdown);
   if (onColumnsChange !== undefined && typeof onColumnsChange !== "function") {
-    throw new TypeError("onColumnsChange は関数で渡してください");
+    throw new TypeError("onColumnsChange は関数で指定してください");
   }
   // 比較元の Markdown（無ければ色分けしない）
   let base = opts.baseMarkdown ?? undefined;
@@ -226,38 +226,38 @@ export function mount(el: HTMLElement, opts: MountOptions): MountHandle {
   const diffMode = normalizeDiffMode(opts.diffMode);
   const config = resolveConfig({ config: opts.config });
   const renderDiffHtml = createDiffHtmlRenderer({ config, opts });
-  // 描く世代: 描き直すたびに進め、古い描画の読み込みの結果を捨てるのに使う
+  // 描く世代: 再描画するたびに進め、古い描画の読み込みの結果を捨てるのに使用する
   let generation = 0;
   let destroyed = false;
   // 今の文書で決まった機能のオン・オフ
   let features = config.features;
-  // 今の文書に付けた記法の操作を外す関数
+  // 今の文書に付けた記法の操作を削除する関数
   let detachInteractions: (() => void) | undefined;
-  // 今の文書に付けた差分を外す関数
+  // 今の文書に付けた差分を削除する関数
   let detachDiff: (() => void) | undefined;
   // 今の文書に付けたビューとコメントの部品
   let parts: PartsHandle | undefined;
-  // 今の文書に付けた右側の目次を外す関数
+  // 今の文書に付けた右側の目次を削除する関数
   let detachSideToc: (() => void) | undefined;
-  // 今の文書に付けた先頭へ戻るボタンを外す関数
+  // 今の文書に付けた先頭へ戻るボタンを削除する関数
   let detachBackToTop: (() => void) | undefined;
   // 右側の目次を付けずにコメントの余白の列のために包んだ本文の列を、包む前に戻す関数
   let detachContent: (() => void) | undefined;
-  // 右側の目次の状態（`mount` ごとに 1 つ。描き直しでも保つ）
+  // 右側の目次の状態（`mount` ごとに 1 つ。再描画でも保つ）
   const sideTocState: SideTocState = { open: false, pinned: false };
   // 前の描画の右側の目次の出し方（出し方が変わったら目次の状態を戻す）
   let lastTocMode: ResolvedConfig["sideToc"]["mode"] | undefined;
-  // 色分けのライブラリのモジュールの控え（`mount` ごとに 1 つ。描き直しでは読み直さない）
+  // 色分けのライブラリのモジュールの記録（`mount` ごとに 1 つ。再描画では再読み込みしない）
   const syntaxModules = new Map<string, Promise<{ default?: unknown }>>();
-  // mermaid のモジュールの控え（`mount` ごとに 1 つ。描き直しでは読み直さない）
+  // mermaid のモジュールの記録（`mount` ごとに 1 つ。再描画では再読み込みしない）
   const mermaidModules = new Map<string, Promise<{ default?: unknown }>>();
-  // 今の文書の mermaid の図を外す関数
+  // 今の文書の mermaid の図を削除する関数
   let detachMermaid: (() => void) | undefined;
-  // 範囲のスクリプトの変換のライブラリの読み込みの控え（`mount` ごとに 1 つ）
+  // 範囲のスクリプトの変換のライブラリの読み込みの記録（`mount` ごとに 1 つ）
   const transpilers = new Map<string, Promise<Transpiler>>();
-  // 今の文書の範囲のスクリプトが返した `destroy` をまとめて呼ぶ関数
+  // 今の文書の範囲のスクリプトが返却した `destroy` をまとめて呼ぶ関数
   let destroyScripts: (() => void) | undefined;
-  // コメントの機能に読み書きの関数が要ることを出したか（`mount` ごとに 1 回だけ出す）
+  // コメントの機能に読み込みと保存の関数が要ることを出したか（`mount` ごとに 1 回だけ出す）
   const warned = { missingStore: false };
 
   /** 文書を描く。`coloredFrom` は `blocks` で色分けするときの前の Markdown（`markdown` が後） */
@@ -315,7 +315,7 @@ export function mount(el: HTMLElement, opts: MountOptions): MountHandle {
         }),
       );
     }
-    // 文書の page の印を、既定を当てた設定に重ねてこの描画の設定にする
+    // 文書の page のマーカーを、既定を適用した設定に重ねてこの描画の設定にする
     const drawn = applyPageSettings({ config, page: rendered.page });
     el.classList.add(ROOT_CLASS);
     el.setAttribute(COLOR_THEME_ATTRIBUTE, drawn.colorTheme);
@@ -343,7 +343,7 @@ export function mount(el: HTMLElement, opts: MountOptions): MountHandle {
       aside = sideToc.aside;
       detachSideToc = sideToc.detach;
     }
-    // コメントの余白の列を本文の列の右に置くため、右側の目次が包んでいなければ本文の列に包む
+    // コメントの余白の列を本文の列の右に配置するため、右側の目次が包んでいなければ本文の列に包む
     if (
       features.comments === true &&
       commentStore !== undefined &&
@@ -362,7 +362,7 @@ export function mount(el: HTMLElement, opts: MountOptions): MountHandle {
       diagramPlacement: config.tooltips.diagramPlacement,
       onColumnsChange,
     });
-    // 束ねていない名前のアイコンを読む。読み込みの完了は待たない
+    // まとめていない名前のアイコンを読み込む。読み込みの完了は待たない
     if (features.icon === true) {
       void loadInlineIcons({
         root: body,
@@ -384,14 +384,14 @@ export function mount(el: HTMLElement, opts: MountOptions): MountHandle {
       isCurrent: () => !destroyed && generation === current,
       definitions: rendered.extensionDefinitions,
     });
-    // 色分けの対象があるときだけ読む。読み込みの完了は待たない
+    // 色分けの対象があるときだけ読み込む。読み込みの完了は待たない
     void highlightCodeBlocks({
       root: body,
       url: config.syntax.url,
       isCurrent: () => !destroyed && generation === current,
       modules: syntaxModules,
     });
-    // mermaid のコードブロックがあるときだけ読む。印の場所を拾った後に読み込み中の枠を置く。描き終えるのは待たない
+    // mermaid のコードブロックがあるときだけ読み込む。マーカーの場所を取得した後に読み込み中のブロックを配置する。描き終えるのは待たない
     if (features.mermaid === true) {
       detachMermaid = attachMermaid({
         root: body,
@@ -404,7 +404,7 @@ export function mount(el: HTMLElement, opts: MountOptions): MountHandle {
       }).detach;
     }
     if (features["html-scripts"] === true) {
-      // 読み込みの完了は待たない。解決する前に描き直したときは、解決したときに片付ける
+      // 読み込みの完了は待たない。解決する前に再描画したときは、解決したときに片付ける
       void runHtmlScripts({
         root: body,
         url: config.htmlScripts.url,
@@ -454,7 +454,7 @@ export function mount(el: HTMLElement, opts: MountOptions): MountHandle {
         });
       }
     }
-    // 描くたびに付け直し、スクロールする場所を決め直す
+    // 描くたびにもう一度付け、スクロールする場所をもう一度決める
     if (features["back-to-top"] === true) {
       detachBackToTop = attachBackToTop({ el, content: body });
     }

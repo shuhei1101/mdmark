@@ -16,7 +16,7 @@ function tool(options: {
   return `<button class="mdmark-lightbox-tool" type="button" data-tool="${name}" aria-label="${label}" title="${label}"${disabled ? " disabled" : ""}>${iconSvg(icon)}</button>`;
 }
 
-/** ライトボックスの `dialog` の HTML を返す */
+/** ライトボックスの `dialog` の HTML を返却する */
 export function renderLightbox(options: {
   /** 画像の URL */
   src: string;
@@ -26,7 +26,7 @@ export function renderLightbox(options: {
   caption?: string;
   /** 何枚目か（1 から） */
   index: number;
-  /** 送りの並びの枚数 */
+  /** 切り替えの並びの枚数 */
   total: number;
   /** 今の倍率（既定は `fit`） */
   zoom?: number;
@@ -37,7 +37,7 @@ export function renderLightbox(options: {
   const zoom = options.zoom ?? fit;
   const nav =
     total > 1
-      ? `<span class="mdmark-lightbox-nav" role="group" aria-label="画像の送り">${tool({ name: "prev", label: "前の画像", icon: "chevron-left", disabled: index <= 1 })}<span class="mdmark-lightbox-count">${index} / ${total}</span>${tool({ name: "next", label: "次の画像", icon: "chevron-right", disabled: index >= total })}</span>`
+      ? `<span class="mdmark-lightbox-nav" role="group" aria-label="画像の切り替え">${tool({ name: "prev", label: "前の画像", icon: "chevron-left", disabled: index <= 1 })}<span class="mdmark-lightbox-count">${index} / ${total}</span>${tool({ name: "next", label: "次の画像", icon: "chevron-right", disabled: index >= total })}</span>`
       : "";
   const zoomed = zoom > fit + ZOOM_EPSILON;
   const pan = `<span class="mdmark-lightbox-group" data-group="pan"${zoomed ? "" : " hidden"}>${tool({ name: "left", label: "左へ動かす", icon: "chevron-left" })}${tool({ name: "up", label: "上へ動かす", icon: "chevron-up" })}${tool({ name: "down", label: "下へ動かす", icon: "chevron-down" })}${tool({ name: "right", label: "右へ動かす", icon: "chevron-right" })}</span>`;

@@ -7,11 +7,11 @@ import { BROWSER_TARGETS, bundleDefines, postcssStubPlugin } from "./bundle.ts";
 
 /** 対応ブラウザの下限に無い API の使用 1 件 */
 export type BaselineViolation = {
-  /** 照らした JS に当たる配布ファイル（`dist/index.js` など） */
+  /** 照らした JS に該当する配布ファイル（`dist/index.js` など） */
   file: string;
-  /** minify せずに束ねた JS の中の行（1 始まり） */
+  /** minify せずにまとめた JS の中の行（1 始まり） */
   line: number;
-  /** minify せずに束ねた JS の中の列（1 始まり） */
+  /** minify せずにまとめた JS の中の列（1 始まり） */
   column: number;
   /** API の名前（`Intl.Segmenter` など） */
   api: string;
@@ -19,29 +19,29 @@ export type BaselineViolation = {
   message: string;
 };
 
-/** `SourceCode` が返す構文木のノード */
+/** `SourceCode` が返却する構文木のノード */
 type AstNode = NonNullable<ReturnType<SourceCode["getNodeByRangeIndex"]>>;
 
-/** 対応ブラウザの下限と照らす、使う側のブラウザが読む JS の入口と、照らした結果に出す配布ファイルの名前 */
+/** 対応ブラウザの下限と照らす、利用側のブラウザが読み込む JS の入口と、照らした結果に出す配布ファイルの名前 */
 const BASELINE_ENTRIES = [
   { in: "src/index.ts", out: "index" },
   { in: "src/views/index.ts", out: "view" },
   { in: "src/comments/index.ts", out: "comments" },
   { in: "src/viewer/index.ts", out: "viewer" },
 ];
-// esbuild の target の書き方: 小文字の名前と、数字と `.` の版
+// esbuild の target の記載方法: 小文字の名前と、数字と `.` のバージョン
 const TARGET_PATTERN = /^([a-z]+)([0-9.]+)$/;
 // eslint-plugin-compat の報告の文の頭: API の名前（関数・コンストラクタは `()` が付く）
 const API_PATTERN = /^(\S+?)(?:\(\))? is not supported in /;
 // 報告を取る規則の名前
 const COMPAT_RULE = "compat/compat";
-// `noInlineConfig` で読まないコメントに ESLint が付ける知らせの文の一部
+// `noInlineConfig` で読み込まないコメントに ESLint が付ける通知の文の一部
 const INLINE_CONFIG_NOTICE =
   "has no effect because you have 'noInlineConfig' setting";
-// 束ねた JS を書き出す配布フォルダ（束ねはメモリに置き、書かない）
+// まとめた JS を書き出す配布フォルダ（まとめはメモリに配置し、記載しない）
 const DIST_DIR = "dist";
 
-/** esbuild の target の書き方（`chrome99`）を browserslist の書き方（`chrome 99`）に直す */
+/** esbuild の target の記載方法（`chrome99`）を browserslist の記載方法（`chrome 99`）に修正する */
 export function toBrowserslist(targets: string[]): string[] {
   return targets.map((target) => {
     const match = TARGET_PATTERN.exec(target);
@@ -52,7 +52,7 @@ export function toBrowserslist(targets: string[]): string[] {
   });
 }
 
-/** ノードの中（自分を含む）に、`api` と同じ文字列の `typeof` の単項式があるかを返す */
+/** ノードの中（自分を含む）に、`api` と同じ文字列の `typeof` の単項式があるかを返却する */
 function containsTypeofOf(options: {
   sourceCode: SourceCode;
   node: AstNode;
@@ -80,9 +80,9 @@ function containsTypeofOf(options: {
   });
 }
 
-/** 報告の位置が、同じ API の `typeof` を条件に持つ `if` の中（ブロックか条件の式）にあるかを返す */
+/** 報告の位置が、同じ API の `typeof` を条件に持つ `if` の中（ブロックか条件の式）にあるかを返却する */
 export function isGuardedByTypeof(options: {
-  /** 束ねた JS の `SourceCode` */
+  /** まとめた JS の `SourceCode` */
   sourceCode: SourceCode;
   /** 報告の行（1 始まり） */
   line: number;
@@ -105,11 +105,11 @@ export function isGuardedByTypeof(options: {
   );
 }
 
-/** 束ねた JS 1 つに eslint-plugin-compat を流し、同じ API の `typeof` の確かめの中を除いた報告を返す。照らせなかったときは例外を投げる */
+/** まとめた JS 1 つに eslint-plugin-compat を実行し、同じ API の `typeof` の確認の中を除いた報告を返却する。照らせなかったときは例外を投げる */
 export function lintBundle(options: {
-  /** 束ねた JS */
+  /** まとめた JS */
   code: string;
-  /** 照らした JS に当たる配布ファイル。ESLint に渡すファイル名を兼ねる */
+  /** 照らした JS に該当する配布ファイル。ESLint に指定するファイル名を兼ねる */
   file: string;
 }): BaselineViolation[] {
   const { code, file } = options;
@@ -121,11 +121,11 @@ export function lintBundle(options: {
         files: ["**/*.js"],
         plugins: { compat },
         languageOptions: { ecmaVersion: "latest", sourceType: "module" },
-        // 束ねた依存が持つ、他のプラグインの規則を無効にするコメントを読まない
+        // まとめた依存が持つ、他のプラグインの規則を無効にするコメントを読み込まない
         linterOptions: { noInlineConfig: true },
         settings: {
           browsers: toBrowserslist(BROWSER_TARGETS),
-          // `if` の中の使用も数え、外すのは `isGuardedByTypeof` に任せる
+          // `if` の中の使用も数え、削除するのは `isGuardedByTypeof` に任せる
           ignoreConditionalChecks: true,
         },
         rules: { [COMPAT_RULE]: "error" },
@@ -133,7 +133,7 @@ export function lintBundle(options: {
     ],
     file,
   );
-  // 構文として読めない・設定が当たらないときは何も照らさず 0 件になるため、止める
+  // 構文として読み込めない・設定が該当しないときは何も照らさず 0 件になるため、止める
   const unexpected = messages.find(
     (message) =>
       message.ruleId !== COMPAT_RULE &&
@@ -144,7 +144,7 @@ export function lintBundle(options: {
   );
   if (unexpected) {
     throw new Error(
-      `束ねた JS を下限の版と照らせない: ${file}:${unexpected.line}:${unexpected.column} ${unexpected.message}`,
+      `まとめた JS を下限のバージョンと照らせない: ${file}:${unexpected.line}:${unexpected.column} ${unexpected.message}`,
     );
   }
   const sourceCode = linter.getSourceCode();
@@ -174,11 +174,11 @@ export function lintBundle(options: {
     );
 }
 
-/** 使う側のブラウザが読む JS を minify せずに束ね、対応ブラウザの下限に無い API の使用を返す */
+/** 利用側のブラウザが読み込む JS を minify せずにまとめ、対応ブラウザの下限に無い API の使用を返却する */
 export async function findBaselineViolations(options: {
   /** 作業ツリーの場所 */
   root: string;
-  /** `define` に埋める版 */
+  /** `define` に埋めるバージョン */
   version: string;
 }): Promise<BaselineViolation[]> {
   const { root, version } = options;
@@ -208,7 +208,7 @@ export async function findBaselineViolations(options: {
         relative(root, candidate.path).split(sep).join(posix.sep) === file,
     );
     if (!output) {
-      throw new Error(`束ねた JS が無い: ${file}`);
+      throw new Error(`まとめた JS が無い: ${file}`);
     }
     return lintBundle({ code: output.text, file });
   });

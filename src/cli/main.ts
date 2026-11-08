@@ -11,13 +11,13 @@ import { createLinePrompter, type Prompter } from "./prompt.ts";
 import { runUpgrade } from "./upgrade.ts";
 import { cliVersion } from "./versions.ts";
 
-// 既存の呼び出し元のために、誤りと入出力の型を読み直して出す
+// 既存の呼び出し元のために、誤りと入出力の型を再読み込みして出す
 export { CliError, type CliIo } from "./errors.ts";
 
-/** 使えるコマンドの案内 */
+/** 使用できるコマンドの案内 */
 const USAGE = [
-  "使えるコマンド:",
-  "  init [{置く先のフォルダ}] [--js]",
+  "使用できるコマンド:",
+  "  init [{配置先のフォルダ}] [--js]",
   "  check [--config {設定ファイル}] [--base {git の ref}]",
   "  check --text {Markdown か -} [--config {設定ファイル}]",
   "  check --file {YAML のファイル} --key {キーのパス} [--config {設定ファイル}]",
@@ -27,10 +27,10 @@ const USAGE = [
   "  serve",
 ];
 
-/** `check --text` に渡すと標準入力から読む値 */
+/** `check --text` に指定すると標準入力から読み込む値 */
 const STDIN_TEXT = "-";
 
-/** 標準入力を終わりまで読む */
+/** 標準入力を終わりまで読み込む */
 async function readStdin(): Promise<string> {
   const chunks: Buffer[] = [];
   for await (const chunk of process.stdin) {
@@ -39,7 +39,7 @@ async function readStdin(): Promise<string> {
   return Buffer.concat(chunks).toString("utf8");
 }
 
-/** 雛形と配布物を置いたパッケージの直下を探す印のファイル */
+/** 雛形と配布物を配置したパッケージの直下を探すマーカーのファイル */
 const PACKAGE_FILE = "package.json";
 
 /** `parseArgs` が投げる、知らない引数・値の足りない引数の誤りか */
@@ -59,7 +59,7 @@ function findPackageRoot(from: string): string {
     const parent = dirname(dir);
     if (parent === dir) {
       throw new CliError(
-        `パッケージの場所を見つけられません（${from} から上を探しました）。mdmark を入れ直してください。`,
+        `パッケージの場所を見つけられません（${from} から上を探しました）。mdmark をもう一度入れてください。`,
       );
     }
     dir = parent;
@@ -67,7 +67,7 @@ function findPackageRoot(from: string): string {
   return dir;
 }
 
-/** 最初の引数のコマンド名で `init`・`check`・`export`・`build`・`upgrade`・`serve` を呼び分け、終了コードを返す */
+/** 最初の引数のコマンド名で `init`・`check`・`export`・`build`・`upgrade`・`serve` を呼び分け、終了コードを返却する */
 export async function main(
   argv: string[],
   io: CliIo,
@@ -179,7 +179,7 @@ export async function main(
   }
 }
 
-// `node dist/cli.js` などで入口として実行されたときだけ流す
+// `node dist/cli.js` などで入口として実行されたときだけ実行する
 if (import.meta.main) {
   process.exitCode = await main(
     process.argv.slice(2),

@@ -3,17 +3,17 @@ import { renderTreeTools } from "../parts/table.ts";
 import { filterTreeRows, type TreeRowPlan } from "../tree-logic.ts";
 import { COPIED_NOTICE_MS, copyText } from "./clipboard.ts";
 
-/** 開閉で隠した行に付ける属性（印刷の前後で開閉を戻すのに使う） */
+/** 開閉で隠した行に付ける属性（印刷の前後で開閉を戻すのに使用する） */
 export const TREE_FOLDED_ATTRIBUTE = "data-tree-folded";
 
 /** 階層の表の操作の取っ手。`attachTable` が絞り込みのたびに `refresh` を呼ぶ */
 export type TableTreeHandle = {
-  /** キーの列の絞り込みの単語と、ほかの絞り込みに合う行かを受け、行の表示と当たった単語の印を決め直す。表示した補った行でない行の数を返す */
+  /** キーの列の絞り込みの単語と、ほかの絞り込みに合う行かを受け、行の表示と該当した単語のマーカーをもう一度決める。表示した補った行でない行の数を返却する */
   refresh: (options: {
     word: string;
     matches: (row: HTMLTableRowElement) => boolean;
   }) => number;
-  /** 受け取りとボタンを外す */
+  /** 受け取りとボタンを削除する */
   detach: () => void;
 };
 
@@ -31,13 +31,13 @@ function planOf(row: HTMLTableRowElement): TreeRowPlan {
   };
 }
 
-/** 末尾の名前に配列の `[]` を付けた名前（絞り込みの照合に使う） */
+/** 末尾の名前に配列の `[]` を付けた名前（絞り込みの照合に使用する） */
 function nameOf(row: HTMLTableRowElement): string {
   const name = row.querySelector(".mdmark-tree-name")?.textContent ?? "";
   return row.querySelector(".mdmark-tree-array") ? `${name}[]` : name;
 }
 
-/** `data-tree` の表の子を持つ行に開閉のボタン、各行にパスのコピーのボタンと全体のパスのツールチップを置き、開閉・行の選択・見本との連動と見本の表示の切り替えを付ける */
+/** `data-tree` の表の子を持つ行に開閉のボタン、各行にパスのコピーのボタンと全体のパスのツールチップを配置し、開閉・行の選択・見本との連動と見本の表示の切り替えを付ける */
 export function attachTableTree(options: {
   /** `div.mdmark-table[data-tree]` */
   wrapper: HTMLElement;
@@ -156,7 +156,7 @@ export function attachTableTree(options: {
   let word = "";
   let matches: (row: HTMLTableRowElement) => boolean = () => true;
   let foldedBeforeFilter: Set<string> | undefined;
-  /** 行の表示と当たった単語の印を決め直し、表示した補った行でない行の数を返す */
+  /** 行の表示と該当した単語のマーカーをもう一度決め、表示した補った行でない行の数を返却する */
   const refresh: TableTreeHandle["refresh"] = (next) => {
     const nextWord = next.word.trim();
     if (nextWord !== "" && word === "") {
@@ -247,7 +247,7 @@ export function attachTableTree(options: {
   const example = layout?.querySelector<HTMLElement>(
     ":scope > .mdmark-tree-example",
   );
-  /** 選んだ行と同じパスの、開いているタブの見本の行に印を付ける（無ければどの行にも付けない） */
+  /** 選んだ行と同じパスの、開いているタブの見本の行にマーカーを付ける（無ければどの行にも付けない） */
   const linkExample = (path: string | undefined): void => {
     for (const line of example?.querySelectorAll<HTMLElement>(
       ".mdmark-yaml-line",
@@ -319,7 +319,7 @@ export function attachTableTree(options: {
     }
     select(row);
   };
-  /** 全体のパスをクリップボードへ写し、結果を 2 秒出す */
+  /** 全体のパスをクリップボードへコピーし、結果を 2 秒出す */
   const copyPath = async (
     row: HTMLTableRowElement,
     button: HTMLButtonElement,
@@ -352,7 +352,7 @@ export function attachTableTree(options: {
   };
   if (example && layout) {
     example.addEventListener("click", onExampleClick);
-    // タブを切り替えたら、開いたタブの見本に印を付け直す
+    // タブを切り替えたら、開いたタブの見本にマーカーをもう一度付ける
     const panels = new MutationObserver(() => {
       linkExample(selected?.dataset.path);
     });

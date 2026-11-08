@@ -4,7 +4,7 @@ import { mswLoader } from "msw-storybook-addon/csf3";
 import { withServerHtml } from "./server-html.tsx";
 import { withVsCodeTheme } from "./vscode-theme.tsx";
 
-/** ハンドラの無い要求（描画の口の配信や配布物）は Service Worker に通さずに MSW を始める */
+/** ハンドラの無い要求（描画のインターフェースの配信や配布物）は Service Worker に経由せずに MSW を始める */
 const startWorker = async () => {
   const worker = setupWorker();
   await worker.start({ quiet: true, onUnhandledFrame: "bypass" });
@@ -26,9 +26,9 @@ const preview: Preview = {
 };
 export default preview;
 
-// 図のストーリー（`data-story-fit` の印を持つもの）は、描いた直後に全体が収まる倍率にする操作を付ける
+// 図のストーリー（`data-story-fit` のマーカーを持つもの）は、描いた直後に全体が収まる倍率にする操作を付ける
 const fitted = new WeakSet<Element>();
-/** 印を持つ図に操作を付ける。描いた後に DOM が変わらないストーリーもあるため、読み込んだ時点でも 1 度呼ぶ */
+/** マーカーを持つ図に操作を付ける。描いた後に DOM が変わらないストーリーもあるため、読み込んだ時点でも 1 度呼ぶ */
 const attachStoryDiagrams = async (): Promise<void> => {
   for (const marker of document.querySelectorAll<HTMLElement>(
     "[data-story-fit]",

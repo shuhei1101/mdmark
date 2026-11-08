@@ -3,7 +3,7 @@ import { cva, type VariantProps } from "class-variance-authority";
 import type { ComponentProps } from "react";
 import { cn } from "../../lib/cn.ts";
 
-/** Alert の見た目 */
+/** Alert の外観 */
 const alertVariants = cva(
   "grid w-full grid-cols-alert items-start gap-x-3 gap-y-1 rounded-lg border px-4 py-3 text-sm",
   {
@@ -17,7 +17,7 @@ const alertVariants = cva(
   },
 );
 
-/** shadcn/ui の Alert。`warning` の variant を持つ。アイコンは 1 列目、他の子は 2 列目に置く */
+/** shadcn/ui の Alert。`warning` の variant を持つ。アイコンは 1 列目、他の子は 2 列目に配置する */
 export const Alert = ({
   className,
   variant,
@@ -32,7 +32,7 @@ export const Alert = ({
   />
 );
 
-/** Alert の 1 列目の警告のアイコンの大きさと位置（タイトルの行の高さに揃える）と、線と同じ警告の色 */
+/** Alert の 1 列目の警告のアイコンの大きさと位置（タイトルの行の高さに統一する）と、線と同じ警告の色 */
 export const ALERT_ICON_CLASS = "mt-1.5 size-4 text-warning-border";
 
 /** Alert のタイトル。`asChild` で `h1`・`h2` を受ける */

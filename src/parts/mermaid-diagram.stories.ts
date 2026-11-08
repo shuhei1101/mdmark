@@ -5,7 +5,7 @@ const meta = { title: "Parts/MermaidDiagram" } satisfies Meta<
 >;
 export default meta;
 
-/** ストーリー: 描画の口（`parameters.server.id`）の部品を `args` で描く。`svg`・`printSvg` は `tests/fixtures/mermaid-svg/` の見本の名前 */
+/** ストーリー: 描画のインターフェース（`parameters.server.id`）の部品を `args` で描く。`svg`・`printSvg` は `tests/fixtures/mermaid-svg/` の見本の名前 */
 type Story = StoryObj<Record<string, unknown>>;
 
 export const Flowchart: Story = {

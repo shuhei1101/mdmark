@@ -51,3 +51,19 @@ entries:
     schema: mdmark.config.schema.json
     sha256: fb56336a681e886c8b5e676b2cebe58c939edfa72fa349d651187dbfe5b6bf9f
     reason: features に省いてよい mermaid と、省いてよい mermaid を足しただけで、古い設定もそのまま新しい Schema に合う
+  - version: next
+    schema: mdmark.config.schema.json
+    sha256: 20ea9fcb246968439ca0f76a1b865ba1fdfd15cc4cb841d51488eeb0af0827e0
+    reason: 説明文の単語を対応表の置き換え先にしただけで、キーと型は変えないので、古い設定もそのまま新しい Schema に合う
+  - version: next
+    schema: mdmark.index.schema.json
+    sha256: bb5710b2a061fcdcdb1f6d55d0bbb20ace1a83ecf4b07e8340a0bab29f780540
+    reason: 説明文の単語を対応表の置き換え先にしただけで、キーと型は変えないので、古い索引もそのまま新しい Schema に合う
+  - version: next
+    schema: mdmark.settings.schema.json
+    sha256: 42323a16ad110eed0c2d3bf80336f393fa52a2583c0e8b039485f944573e115d
+    reason: 説明文の単語を対応表の置き換え先にしただけで、キーと型は変えないので、古い端末の設定もそのまま新しい Schema に合う
+  - version: next
+    schema: mdmark.templates.schema.json
+    sha256: c852b5d8b2c17a46a1655bdec008679555e74a6adcc94f7b5c3eb9820e7782a3
+    reason: 説明文の単語を対応表の置き換え先にしただけで、キーと型は変えないので、古い CSS のテンプレートの索引もそのまま新しい Schema に合う

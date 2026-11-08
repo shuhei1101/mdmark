@@ -1,13 +1,13 @@
 import { escapeHtml } from "./escape.ts";
 import { iconSvg } from "./icons.ts";
 
-/** `img` の HTML を、押すと拡大するボタンで包む。`icon` が `false` のとき（GIF）は右上のアイコンを置かない */
+/** `img` の HTML を、押すと拡大するボタンで包む。`icon` が `false` のとき（GIF）は右上のアイコンを配置しない */
 export function renderImageOpener(options: {
   /** 画像の代わりの文字 */
   alt: string;
   /** 包む `img` の HTML */
   img: string;
-  /** 右上に拡大のアイコンを置くか（既定 `true`） */
+  /** 右上に拡大のアイコンを配置するか（既定 `true`） */
   icon?: boolean;
 }): string {
   const { alt, img, icon = true } = options;
@@ -17,7 +17,7 @@ export function renderImageOpener(options: {
   return `<button class="mdmark-image-open" type="button" aria-label="画像を拡大: ${escapeHtml(alt)}">${img}${iconHtml}</button>`;
 }
 
-/** 画像の図の HTML を返す */
+/** 画像の図の HTML を返却する */
 export function renderImageFigure(options: {
   /** 画像の URL */
   src: string;

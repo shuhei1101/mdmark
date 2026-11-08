@@ -2,13 +2,13 @@ import { copyFile, mkdir, readdir, stat, writeFile } from "node:fs/promises";
 import { dirname, isAbsolute, join, relative } from "node:path";
 import { CliError } from "./errors.ts";
 
-/** 設定ファイルのあるフォルダからの写しの置き場 */
+/** 設定ファイルのあるフォルダからのコピーの配置し場 */
 export const BACKUP_DIR = {
   root: ".mdmark",
   backups: ".mdmark/backup",
 } as const;
 
-/** 写しの置き場に置く `.gitignore` のファイル名と中身 */
+/** コピーの配置し場に配置する `.gitignore` のファイル名と中身 */
 const IGNORE_FILE = ".gitignore";
 const IGNORE_CONTENT = "*\n";
 
@@ -41,19 +41,19 @@ async function exists(path: string): Promise<boolean> {
   }
 }
 
-/** ファイルを `.mdmark/backup/{yyyymmddHHMMSS}/` へ、設定ファイルのフォルダからの相対パスを保って写し、写しのフォルダの絶対パスを返す */
+/** ファイルを `.mdmark/backup/{yyyymmddHHMMSS}/` へ、設定ファイルのフォルダからの相対パスを保ってコピーし、コピーのフォルダの絶対パスを返却する */
 export async function takeBackup(options: {
   dir: string;
   files: string[];
   now: Date;
 }): Promise<string> {
   const { dir, files, now } = options;
-  // 何も書く前に、写すファイルが全て設定ファイルのフォルダの中にあることを確かめる
+  // 何も記載する前に、写すファイルが全て設定ファイルのフォルダの中にあることを確認する
   for (const file of files) {
     const path = relative(dir, file);
     if (path.startsWith("..") || isAbsolute(path)) {
       throw new CliError(
-        `${file} の写しを取れません（設定ファイルのフォルダの外にあります）。何も書き換えていません。`,
+        `${file} のコピーを取れません（設定ファイルのフォルダの外にあります）。何も書き換えていません。`,
       );
     }
   }
@@ -61,7 +61,7 @@ export async function takeBackup(options: {
     const backups = join(dir, BACKUP_DIR.backups);
     await mkdir(backups, { recursive: true });
     await writeFile(join(dir, BACKUP_DIR.root, IGNORE_FILE), IGNORE_CONTENT);
-    // 同じ日時の写しがあれば末尾に -2・-3 を付ける
+    // 同じ日時のコピーがあれば末尾に -2・-3 を付ける
     let backupDir = join(backups, stamp(now));
     for (let count = 2; await exists(backupDir); count += 1) {
       backupDir = join(backups, `${stamp(now)}-${count}`);
@@ -75,12 +75,12 @@ export async function takeBackup(options: {
     return backupDir;
   } catch (error) {
     throw new CliError(
-      `${dir} の写しを取れません（${reasonOf(error)}）。何も書き換えていません。`,
+      `${dir} のコピーを取れません（${reasonOf(error)}）。何も書き換えていません。`,
     );
   }
 }
 
-/** 写しの全てのファイルを元の場所へ書き戻す */
+/** コピーの全てのファイルを元の場所へ書き込んで戻す */
 export async function restoreBackup(options: {
   dir: string;
   backupDir: string;

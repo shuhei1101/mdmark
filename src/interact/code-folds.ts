@@ -8,7 +8,7 @@ import {
 /** `attachCodeFolds` が開閉のボタンごとに登録する、行を開くか畳む関数 */
 export const codeFoldSetters = new WeakMap<Element, (open: boolean) => void>();
 
-/** 開閉のボタンから `codeFoldSetters` の関数を引いて、その行を開くか畳む。登録の無いボタンは何もしない */
+/** 開閉のボタンから `codeFoldSetters` の関数を参照して、その行を開くか畳む。登録の無いボタンは何もしない */
 export function setCodeFoldOpen(toggle: Element, open: boolean): void {
   codeFoldSetters.get(toggle)?.(open);
 }
@@ -23,7 +23,7 @@ function elementOf(html: string): HTMLElement {
   return template.content.firstElementChild as HTMLElement;
 }
 
-/** コードブロック 1 つの行に開閉を付け、外す関数を返す */
+/** コードブロック 1 つの行に開閉を付け、削除する関数を返却する */
 function attachCodeBlock(code: HTMLElement): () => void {
   codeCounter += 1;
   const base = `mdmark-code-${codeCounter}`;
@@ -67,7 +67,7 @@ function attachCodeBlock(code: HTMLElement): () => void {
     from: index + 2,
     to: index + 1 + (foldLines[index] ?? 0),
   });
-  /** 行の畳んだ状態を、ボタン・`⋯`・行の `hidden` に当てる */
+  /** 行の畳んだ状態を、ボタン・`⋯`・行の `hidden` に適用する */
   const apply = (): void => {
     const hidden = hiddenLinesOf({ foldLines, folded });
     lines.forEach((line, index) => {
@@ -132,7 +132,7 @@ function attachCodeBlock(code: HTMLElement): () => void {
   });
   apply();
 
-  // Enter・Space の押下から来たクリックでも Shift を読めるよう、押している間を控える
+  // Enter・Space の押下から来たクリックでも Shift を読み込めるよう、押している間を記録する
   let shiftKeyDown = false;
   const onKeyDown = (event: KeyboardEvent): void => {
     shiftKeyDown = event.shiftKey;
@@ -222,7 +222,7 @@ function attachCodeBlock(code: HTMLElement): () => void {
   };
 }
 
-/** `data-fold-lines` の行を持つコードブロックに、行の開閉のボタン・`⋯`・縦線の範囲を付け、外す関数を返す */
+/** `data-fold-lines` の行を持つコードブロックに、行の開閉のボタン・`⋯`・縦線の範囲を付け、削除する関数を返却する */
 export function attachCodeFolds(root: HTMLElement): () => void {
   const blocks = [...root.querySelectorAll<HTMLElement>("pre > code")].filter(
     (code) =>

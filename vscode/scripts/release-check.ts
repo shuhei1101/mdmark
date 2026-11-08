@@ -1,10 +1,10 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 
-/** 拡張機能のタグの形: `vscode-v{X}.{Y}.{Z}` */
+/** 拡張機能のタグの構造: `vscode-v{X}.{Y}.{Z}` */
 export const RELEASE_TAG_PATTERN = /^vscode-v(\d+\.\d+\.\d+)$/;
 
-/** タグが `RELEASE_TAG_PATTERN` に合い、`vscode-v` の後ろが `package.json` の `version` と等しいかを返す */
+/** タグが `RELEASE_TAG_PATTERN` に合い、`vscode-v` の後ろが `package.json` の `version` と等しいかを返却する */
 export function checkReleaseTag(options: {
   /** push されたタグ */
   tag: string;
@@ -16,7 +16,7 @@ export function checkReleaseTag(options: {
   if (tagVersion === undefined) {
     return {
       ok: false,
-      message: `タグ ${tag} は vscode-v{X}.{Y}.{Z} の形ではありません`,
+      message: `タグ ${tag} は vscode-v{X}.{Y}.{Z} の構造ではありません`,
     };
   }
   if (tagVersion !== version) {
@@ -28,7 +28,7 @@ export function checkReleaseTag(options: {
   return { ok: true };
 }
 
-// `node scripts/release-check.ts {タグ}` で入口として実行されたときだけ流す
+// `node scripts/release-check.ts {タグ}` で入口として実行されたときだけ実行する
 if (import.meta.main) {
   const packagePath = join(import.meta.dirname, "..", "package.json");
   const { version } = JSON.parse(readFileSync(packagePath, "utf8")) as {

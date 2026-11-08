@@ -1,6 +1,6 @@
 import { escapeHtml } from "./escape.ts";
 
-/** タブとステップを入れる折り畳みの HTML を返す。`body` は `SLOT_MARKER` を渡せる */
+/** タブとステップを入れる折り畳みの HTML を返却する。`body` は `SLOT_MARKER` を指定できる */
 export function renderCollapsible(options: {
   /** 見出しの文字 */
   title: string;

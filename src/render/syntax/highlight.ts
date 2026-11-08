@@ -10,7 +10,7 @@ const EQUALS = 0x3d;
 /** 閉じの `==` の直後の色の属性 */
 const COLOR_PATTERN = /^\{color=([^}]*)\}/;
 
-/** 書き方の警告に並べる色の名前の一覧 */
+/** 記載の警告に並べる色の名前の一覧 */
 const COLOR_LIST = COLOR_NAMES.map((name) => `\`${name}\``).join("・");
 
 /** markdown-it の区切りの記録 1 つ（`state.delimiters` の要素） */
@@ -105,14 +105,14 @@ const postProcessHighlight = (state: StateInline): boolean => {
   return true;
 };
 
-/** 中身を渡した `text` のトークンを作る */
+/** 中身を指定した `text` のトークンを作る */
 const textToken = (state: StateCore, content: string): Token => {
   const token = new state.Token("text", "", 0);
   token.content = content;
   return token;
 };
 
-/** コアルール: `highlight` がオンなら蛍光ペンに class と色を当て、オフなら `==` を書いた文字に戻す */
+/** コアルール: `highlight` がオンなら蛍光ペンに class と色を当て、オフなら `==` を記載した文字に戻す */
 const finishHighlights = (state: StateCore): void => {
   const on = featureOn(state, "highlight");
   const nonce = envOf(state).nonce;
@@ -163,7 +163,7 @@ const finishHighlights = (state: StateCore): void => {
       warnings.push({
         index,
         warning: {
-          message: `${names} は色の名前ではありません。使える色の名前は ${COLOR_LIST} です。既定の色で描いています。`,
+          message: `${names} は色の名前ではありません。使用できる色の名前は ${COLOR_LIST} です。既定の色で描いています。`,
         },
       });
     }
@@ -171,11 +171,11 @@ const finishHighlights = (state: StateCore): void => {
   insertWarningsBeforeBlocks(state, warnings);
 };
 
-/** markdown-it に、`==` で囲んだ文字を蛍光ペンにする行内のルールと、機能と色を当てるコアルールを足す */
+/** markdown-it に、`==` で囲んだ文字を蛍光ペンにする行内のルールと、機能と色を適用するコアルールを追加する */
 export const useHighlight = (md: MarkdownIt): void => {
   md.inline.ruler.before("emphasis", "mdmark_highlight", tokenizeHighlight);
   md.inline.ruler2.before("emphasis", "mdmark_highlight", postProcessHighlight);
-  // 取り込んだ文書の蛍光ペンにも当てるため、取り込みの後に置く
+  // 取り込んだ文書の蛍光ペンにも適用するため、取り込みの後に配置する
   md.core.ruler.after(
     "mdmark_expand_includes",
     "mdmark_finish_highlights",

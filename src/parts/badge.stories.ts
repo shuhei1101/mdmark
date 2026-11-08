@@ -3,7 +3,7 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 const meta = { title: "Parts/Badge" } satisfies Meta<Record<string, unknown>>;
 export default meta;
 
-/** ストーリー: 描画の口（`parameters.server.id`）の部品を `args` で描く */
+/** ストーリー: 描画のインターフェース（`parameters.server.id`）の部品を `args` で描く */
 type Story = StoryObj<Record<string, unknown>>;
 
 export const Inline: Story = {
@@ -16,7 +16,7 @@ export const Long: Story = {
   name: "Long",
   parameters: { server: { id: "badge" } },
   args: {
-    label: "とても長い状態の名前で札の幅を超えるときの見え方を確かめる札",
+    label: "とても長い状態の名前で札の幅を超えるときの見え方を確認する札",
   },
 };
 
@@ -36,7 +36,7 @@ export const ColoredLong: Story = {
   name: "ColoredLong",
   parameters: { server: { id: "badge" } },
   args: {
-    label: "とても長い状態の名前で札の幅を超えるときの見え方を確かめる札",
+    label: "とても長い状態の名前で札の幅を超えるときの見え方を確認する札",
     color: "yellow",
   },
 };

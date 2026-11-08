@@ -1,10 +1,10 @@
 import type { IndexProblem } from "../knowledge/index-shape.ts";
 
-/** 使い方集の索引の 1 行 */
+/** ガイドの索引の 1 行 */
 export type GuideEntry = {
   /** 名前。索引の中で一意 */
   name: string;
-  /** 読むとき（どんな作業のときに読むか） */
+  /** 読み込むとき（どんな作業のときに読み込むか） */
   when: string;
   /** 1 文の概要 */
   summary: string;
@@ -12,11 +12,11 @@ export type GuideEntry = {
   page: string;
 };
 
-/** 索引の今の版 */
+/** 索引の今のバージョン */
 const GUIDE_SCHEMA = 1;
 /** 索引の行が持つキー */
 const ENTRY_KEYS = ["name", "when", "summary", "page"] as const;
-/** 本文のページが置かれる先頭のフォルダ */
+/** 本文のページが配置される先頭のフォルダ */
 const PAGE_PREFIX = "docs/";
 /** 本文のページの拡張子 */
 const PAGE_SUFFIX = ".md";
@@ -26,7 +26,7 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
-/** 値を使い方集の索引の形で検査し、合う行と合わない場所の一覧を返す */
+/** 値をガイドの索引の構造で検査し、合う行と合わない場所の一覧を返却する */
 export function parseGuideIndex(value: unknown): {
   entries: GuideEntry[];
   problems: IndexProblem[];
@@ -39,7 +39,7 @@ export function parseGuideIndex(value: unknown): {
   }
   for (const key of Object.keys(value)) {
     if (key !== "schema" && key !== "guides") {
-      problems.push({ where: key, message: `\`${key}\` は書けません` });
+      problems.push({ where: key, message: `\`${key}\` は記載できません` });
     }
   }
   if (value.schema !== GUIDE_SCHEMA) {
@@ -67,7 +67,7 @@ export function parseGuideIndex(value: unknown): {
       if (!(ENTRY_KEYS as readonly string[]).includes(key)) {
         problems.push({
           where: `${where}.${key}`,
-          message: `\`${key}\` は書けません`,
+          message: `\`${key}\` は記載できません`,
         });
       }
     }

@@ -1,14 +1,14 @@
 import { createInterface, type Interface } from "node:readline";
 
-/** 問いの文を出し、答えの 1 行を返す。答える前に入力が終わったら `undefined` を返す */
+/** 質問の文を出し、回答の 1 行を返却する。回答する前に入力が終わったら `undefined` を返却する */
 export type Prompter = (question: string) => Promise<string | undefined>;
 
-/** 問いの文を書き出し、入力の次の 1 行を答えにする `Prompter` を返す */
+/** 質問の文を書き出し、入力の次の 1 行を回答にする `Prompter` を返却する */
 export function createLinePrompter(options: {
   input: NodeJS.ReadableStream;
   write: (line: string) => void;
 }): Prompter {
-  // 問いが無いまま終わるときは入力を読まないよう、最初の問いで入力を読み始める
+  // 質問が無いまま終わるときは入力を読み込まないよう、最初の質問で入力を読み込み始める
   let reader: Interface | undefined;
   let lines: AsyncIterator<string> | undefined;
   let closed = false;
@@ -25,7 +25,7 @@ export function createLinePrompter(options: {
       reader.resume();
     }
     const next = await lines.next();
-    // 答えを受けたら入力を止め、プロセスが終われるようにする
+    // 回答を受けたら入力を止め、プロセスが終われるようにする
     if (!closed) {
       reader.pause();
     }

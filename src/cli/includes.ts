@@ -21,11 +21,11 @@ import {
 export type IncludeProblem = {
   /** 無いファイル・無い見出し・行の数を越える範囲・根の外・循環 */
   kind: "missing" | "heading" | "lines" | "outside" | "circular";
-  /** マーカーを書いた文書の、文書のフォルダからのパス（文書そのものは空文字） */
+  /** マーカーを記載した文書の、文書のフォルダからのパス（文書そのものは空文字） */
   file: string;
   /** マーカーの行（1 から） */
   line: number;
-  /** マーカーに書いた取り込み先 */
+  /** マーカーに記載した取り込み先 */
   target: string;
   /** `lines` のときのファイルの行の数 */
   lineCount?: number;
@@ -33,10 +33,10 @@ export type IncludeProblem = {
   chain?: string[];
 };
 
-/** マーカーを拾う解析器（記法のコアルールを持たない） */
+/** マーカーを取得する解析器（記法のコアルールを持たない） */
 const markParser = new MarkdownIt({ html: true });
 
-/** 本文の include のマーカー（コードブロックとインラインコードの中を除く）を、書いた取り込み先と行（1 から）で返す */
+/** 本文の include のマーカー（コードブロックとインラインコードの中を除く）を、記載した取り込み先と行（1 から）で返却する */
 export const findIncludeMarkers = (
   markdown: string,
 ): Array<{ written: string; line: number }> => {
@@ -59,7 +59,7 @@ export const findIncludeMarkers = (
   return found;
 };
 
-/** 文書が `<!-- features: -include -->` で取り込みを外しているか */
+/** 文書が `<!-- features: -include -->` で取り込みを削除しているか */
 const includeDisabled = (markdown: string): boolean => {
   let disabled = false;
   for (const match of markdown.matchAll(MARK_PATTERN)) {
@@ -85,7 +85,7 @@ const isInside = (root: string, inner: string): boolean => {
   );
 };
 
-/** 取り込む Markdown の、見出しの範囲の行（0 から）を返す。見出しが無ければ `null` */
+/** 取り込む Markdown の、見出しの範囲の行（0 から）を返却する。見出しが無ければ `null` */
 const headingLines = (
   markdown: string,
   id: string,
@@ -101,7 +101,7 @@ const headingLines = (
   return { start, end };
 };
 
-/** 文書の include のマーカーを解き、根のフォルダの中のファイルだけを読んで、キーを文書のフォルダからのパスにした取り込む文書の表を作る。取り込めないマーカーを問題として返す */
+/** 文書の include のマーカーを解き、根のフォルダの中のファイルだけを読み込んで、キーを文書のフォルダからのパスにした取り込む文書の表を作る。取り込めないマーカーを問題として返却する */
 export const collectIncludes = async (options: {
   /** 文書の絶対パス */
   docPath: string;
@@ -196,7 +196,7 @@ export const collectIncludes = async (options: {
   return { includes, problems };
 };
 
-/** 取り込めないマーカーの内容と直し方の 1 文 */
+/** 取り込めないマーカーの内容と修正方法の 1 文 */
 export const includeProblemMessage = (problem: IncludeProblem): string => {
   const { target } = problem;
   switch (problem.kind) {

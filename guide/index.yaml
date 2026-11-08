@@ -22,19 +22,19 @@ guides:
     page: docs/使用方法/記載する/図と表に番号を付ける.md
   - name: colors
     when: 表の列と行・バッジ・本文の文字に色を付けるとき
-    summary: 色の名前の一覧と、決め手の 1 文だけに色を付ける色の使い方のガイド
+    summary: 色の名前の一覧と、決め手の 1 文だけに色を付ける色の使用方法のガイド
     page: docs/使用方法/記載する/色で強調する.md
   - name: media
-    when: 画像・動画・GIF・音声を文書に置くとき
-    summary: 画像の属性・キャプション・ライトボックス・ギャラリー・配色ごとの出し分け・動画・GIF・音声・アセットの置き場所
+    when: 画像・動画・GIF・音声を文書に配置するとき
+    summary: 画像の属性・キャプション・ライトボックス・ギャラリー・配色ごとの出し分け・動画・GIF・音声・アセットの配置場所
     page: docs/使用方法/記載する/画像と動画を配置する.md
   - name: view-comments
-    when: ビュー（ボード表示と表形式）やコメントを使うとき
+    when: ビュー（ボード表示と表形式）やコメントを使用するとき
     summary: ビューのマーカー、列の絞り込み、コメントを付ける手順
     page: docs/使用方法/記載する/ビューとコメントを使用する.md
   - name: diagrams
     when: フロー図・シーケンス図・グラフを描くとき
-    summary: HTML の使いどころと、文書に部品の定義を記載して図を描く手順
+    summary: HTML の用途と、文書に部品の定義を記載して図を描く手順
     page: docs/使用方法/図を描く/図を描く.md
   - name: interactive-parts
     when: スライダーや今の値をコピーするボタンなど、操作できる部品を付けるとき
@@ -53,34 +53,34 @@ guides:
     summary: HTML の記載の決まり
     page: docs/リファレンス/HTMLの記載方法.md
   - name: diagram-check
-    when: 描いた図を確かめるとき
-    summary: 置いた部品を Playwright で動かし、スクリーンショットを撮って見る手順
+    when: 描いた図を確認するとき
+    summary: 配置した部品を Playwright で動かし、スクリーンショットを撮って確認する手順
     page: docs/使用方法/図を描く/描いた図を確認する.md
   - name: diagram-sample
-    when: 図や操作できる部品の記載の見本を見たいとき
+    when: 図や操作できる部品の記載の見本を確認したいとき
     summary: フロー図・シーケンス図・グラフ・操作できる部品を組み合わせた見本の文書
     page: docs/使用方法/図を描く/見本.md
   - name: custom-parts
-    when: 使う側に固有の部品や CSS を、その場所の文書にだけ当てるとき
-    summary: registerExtension と CSS で固有の部品と見た目を追加する手順
+    when: 利用側に固有の部品や CSS を、その場所の文書にだけ適用するとき
+    summary: registerExtension と CSS で固有の部品と外観を追加する手順
     page: docs/使用方法/図を描く/固有の部品とCSSを適用する.md
   - name: architecture-style
     when: 構成図を描くとき
-    summary: 枠・3 レイヤー・タイトルと凡例・線・交差・ツールチップ・操作の見た目の決まり
+    summary: 枠・3 レイヤー・タイトルと凡例・線・交差・ツールチップ・操作の外観の決まり
     page: docs/リファレンス/構成図の決まり.md
   - name: flowchart-style
     when: 処理の順番を描くフローチャートを描くとき
-    summary: 時系列・ループの帯・分岐の見た目の決まり
+    summary: 時系列・ループの帯・分岐の外観の決まり
     page: docs/リファレンス/フローチャートの決まり.md
   - name: extension
     when: registerExtension で自分のマーカーを追加するとき
-    summary: 拡張の登録手順。TypeScript を推奨し、配る前に JavaScript へ変換し、linter（Biome を推奨）を使う
+    summary: 拡張の登録手順。TypeScript を推奨し、配る前に JavaScript へ変換し、linter（Biome を推奨）を使用する
     page: docs/使用方法/カスタマイズ/拡張を登録する.md
   - name: index-schema
-    when: 索引のキーや点検が返すずれの種類を確かめるとき
+    when: 索引のキーや点検が返却するずれの種類を確認するとき
     summary: 索引のキー・型・必須・既定と、点検のずれの種類の一覧
     page: docs/リファレンス/索引.md
   - name: writing
-    when: 人が読む資料を mdmark で書くとき
-    summary: 表し方の優先順位・見れば分かることを書かない・裏返しを書かない・参考は末尾にまとめる、の決まり
+    when: 人が読み込む資料を mdmark で記載するとき
+    summary: 表し方の優先順位・確認すれば分かることを記載しない・裏返しを記載しない・参考は末尾にまとめる、の決まり
     page: docs/使用方法/記載する/文書の記載方法.md

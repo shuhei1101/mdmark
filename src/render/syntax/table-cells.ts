@@ -38,11 +38,11 @@ function mergeWarning(options: {
   const { label, row, column, reason } = options;
   return {
     label,
-    message: `${row + 1} 行目の ${column + 1} 列目は、${reason}。書いた文字のまま描いています。`,
+    message: `${row + 1} 行目の ${column + 1} 列目は、${reason}。記載した文字のまま描いています。`,
   };
 }
 
-/** 結合したセルなら始まりのセルの位置、そうでなければ自分の位置を返す */
+/** 結合したセルなら始まりのセルの位置、そうでなければ自分の位置を返却する */
 function sourceOf(
   cells: PlannedCell[][],
   row: number,
@@ -86,7 +86,7 @@ export function planCellMerges(options: {
   };
 }
 
-/** `^^` のセルを上のセルの始まりのセルに結合する。結合できないときは理由を返す */
+/** `^^` のセルを上のセルの始まりのセルに結合する。結合できないときは理由を返却する */
 function planUp(options: {
   cells: PlannedCell[][];
   row: number;
@@ -120,7 +120,7 @@ function planUp(options: {
   return undefined;
 }
 
-/** `<<` のセルを左のセルの始まりのセルに結合する。結合できないときは理由を返す */
+/** `<<` のセルを左のセルの始まりのセルに結合する。結合できないときは理由を返却する */
 function planLeft(options: {
   cells: PlannedCell[][];
   row: number;
@@ -150,7 +150,7 @@ function planLeft(options: {
   return undefined;
 }
 
-/** 見出しの結合の計画から、最下段の列ごとに、その列を覆う上の段の `colspan` を持つ見出しの `{段}:{位置}` を返す（無ければ `undefined`） */
+/** 見出しの結合の計画から、最下段の列ごとに、その列を覆う上の行の `colspan` を持つ見出しの `{行}:{位置}` を返却する（無ければ `undefined`） */
 export function headerGroupsOf(options: {
   /** 見出しの行のセルの文字 */
   head: string[][];
