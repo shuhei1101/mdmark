@@ -59,7 +59,7 @@ tasks:
     updated_at: '2026-11-08T17:50:29.706352+00:00'
   - process: モジュール構成設計
     status: todo
-    note: 画面での確認で追従しない問題が見つかったときだけ、モジュール構成『VS Code 拡張機能 / Webview』の scroll.ts の関数を直す。問題が無ければ skipped にする
+    note: モジュール構成『VS Code 拡張機能 / Webview』の scroll.ts の関数に、閉じたセクションの中の要素を目印から外し、その中の行を見出しへ配置する振る舞いを追加する
   - process: ドキュメント修正
     status: skipped
     reason: 利用者の操作・設定は変わらず、公開ドキュメントに直す記述が無いため対象外
@@ -67,10 +67,10 @@ tasks:
     updated_at: '2026-11-08T17:50:29.706352+00:00'
   - process: 単体テスト作成
     status: todo
-    note: モジュール構成設計で scroll.ts を直したときだけ scroll.browser.test.ts にケースを追加する。直さなければ skipped にする
+    note: scroll.browser.test.ts に、閉じたセクションのケースを追加する
   - process: 実装
     status: todo
-    note: 問題が見つかったときだけ scroll.ts を直す。問題が無ければ skipped にする
+    note: scroll.ts を修正する
   - process: 結合テスト作成
     status: todo
     note: vscode/tests/integration/scroll-sync.test.ts に、折りたたんだセクションの中の行へ合わせるケースを追加する
