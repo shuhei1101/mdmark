@@ -39,8 +39,10 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-08T21:42:03.178708+00:00'
   - process: モック作成
-    status: todo
+    status: done
     note: 表の部品のモックに、右端に留めた列と境の線、複数の列を留めた状態を追加する
+    updated_by: planner
+    updated_at: '2026-11-08T22:52:21.403108+00:00'
   - process: インターフェース定義設計
     status: todo
   - process: 部品設計
