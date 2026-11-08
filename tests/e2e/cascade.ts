@@ -56,7 +56,7 @@ export const cascadeFolderFiles = (): Record<string, string> => ({
 export const cascadeSettings = (options: {
   cascade: boolean;
   applyToExport?: boolean;
-  /** 3 行目を YAML として読めない行にする */
+  /** `config` の後の行（`applyToExport` を指定すると 4 行目、指定しないと 3 行目）を YAML として読めない行にする */
   broken?: boolean;
 }): string =>
   [

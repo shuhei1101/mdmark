@@ -157,7 +157,7 @@ test("test_error_when_settings_unreadable", async ({
   // 検証
   expect(failed.code).toBe(1);
   expect(failed.stderr).toContain("settings.yaml");
-  expect(failed.stderr).toContain("3 行目");
+  expect(failed.stderr).toContain("4 行目");
   expect(failed.stderr).toContain("字下げと書き方を直してください");
   expect(existsSync(html)).toBe(false);
   expect(await opened.configs()).toEqual(opened.before);

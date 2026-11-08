@@ -127,7 +127,10 @@ test("test_normal_when_warnings", async ({ builtRoot, tempDir }) => {
   const html = await renderInNode(builtRoot, WARNINGS_MARKDOWN);
   const rendered = html
     .replace(/<[^>]+>/g, "")
-    .replace(/&[a-z]+;/g, "")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&quot;/g, '"')
+    .replace(/&amp;/g, "&")
     .replace(/\s+/g, "");
   for (const line of [lines[0], lines[2]]) {
     const message = (line ?? "").replace(/^-:\d+: \w+: /, "");

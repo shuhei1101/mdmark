@@ -646,7 +646,9 @@ test("test_normal_when_cascaded_config_drift", async ({
   expect(callout).toHaveLength(1);
   expect(callout[0]).toContain("settings.yaml");
   expect(sideToc).toHaveLength(1);
-  expect(sideToc[0]).toMatch(/^\.\.\/mdmark\.config\.yaml:/);
+  expect(sideToc[0]?.startsWith(`${join(dir, "mdmark.config.yaml")}:`)).toBe(
+    true,
+  );
   const after = await Promise.all(
     [settings, ...Object.keys(files).map((file) => join(dir, file))].map(
       (path) => readFile(path, "utf8"),
