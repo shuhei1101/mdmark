@@ -64,7 +64,7 @@ css_properties:
   - name: --mdmark-color-diagram-dm
     syntax: <color>
     default: '#1d4ed8（ダーク #7aa2ff）'
-    description: 意思決定モデルのノードの色
+    description: 判断（AI）のノードの色
   - name: --mdmark-color-diagram-script
     syntax: <color>
     default: '#52525b（ダーク #b4b4bc）'
