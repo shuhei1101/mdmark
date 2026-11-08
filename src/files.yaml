@@ -1721,6 +1721,12 @@ files:
     related:
       - to: dev/設計書/モジュール構成/ライブラリ本体/書き出したHTMLの起動.ts
         type: implements
+  - path: viewer/view-state.ts
+    description: 'モジュール構成『ライブラリ本体 / 書き出したHTML の起動』のうち「まとめた HTML の履歴の項目ごとの表示の状態（位置・開閉・タブ）の取り出し・保存・復元」を受け持つ。書き出した HTML を開いたときの振る舞いを変えるときに参照する。'
+    tags: [topic:ナビゲーション, tool:html]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/書き出したHTMLの起動.ts
+        type: implements
   - path: viewer/viewer.css
     description: 'モジュール構成『ライブラリ本体 / 書き出したHTML の起動』のうち「まとめた HTML の画面と印刷の規則（層 mdmark）。60rem 未満では開いている文書に --mdmark-sticky-top: calc(3.25rem + 1px) を指定し、右側の目次の帯と表の見出し行を上の帯の下に留める」を受け持つ。書き出した HTML を開いたときの振る舞いを変えるときに参照する。'
     tags: [topic:ナビゲーション, tool:html]

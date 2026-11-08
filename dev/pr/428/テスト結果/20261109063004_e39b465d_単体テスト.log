@@ -1,0 +1,18 @@
+$ npm run test:unit
+# 結果: 作業 PR が変えていない CLI のテスト 2 件（test_take_backup_when_outside・test_run_build）が 30 秒の時間切れで fail
+   × test_take_backup_when_outside 30004ms
+   × test_run_build 30005ms
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+ Test Files  2 failed | 258 passed (260)
+      Tests  2 failed | 1833 passed (1835)
+
+$ npx vitest run --project 'unit*' --maxWorkers=4
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/fix-viewer-restore-scroll-on-back
+
+
+ Test Files  260 passed (260)
+      Tests  1835 passed (1835)
+   Start at  06:24:52
+   Duration  153.75s (worker 73%, tests 18%, import 8%, transform 1%)
+

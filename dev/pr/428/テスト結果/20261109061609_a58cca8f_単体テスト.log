@@ -1,0 +1,24 @@
+# 全件の実行（テスト実行方法の全件実行のコマンド）
+$ npm run test:unit
+# 結果: tests/unit/src/cli/backup.test.ts の test_take_backup_when_outside と tests/unit/src/cli/export.test.ts の test_prepare_embeds が 30 秒の時間切れで fail（どちらも作業 PR が変えていない CLI のテスト）
+   × test_take_backup_when_outside 30004ms
+   × test_prepare_embeds 30006ms
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+ Test Files  2 failed | 258 passed (260)
+      Tests  2 failed | 1832 passed (1834)
+
+# 時間切れした 2 ファイルだけの実行
+$ npx vitest run --project 'unit*' tests/unit/src/cli/backup.test.ts tests/unit/src/cli/export.test.ts
+Tests  27 passed (27)
+
+# 並列数を 4 に絞った全件の実行
+$ npx vitest run --project 'unit*' --maxWorkers=4
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/fix-viewer-restore-scroll-on-back
+
+
+ Test Files  260 passed (260)
+      Tests  1834 passed (1834)
+   Start at  06:12:42
+   Duration  204.62s (worker 73%, tests 19%, import 8%, transform 1%)
+
