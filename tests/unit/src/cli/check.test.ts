@@ -789,12 +789,11 @@ test("test_run_check_when_arguments_conflict", async () => {
   const { CliError } = await import("../../../../src/cli/errors.ts");
   const dir = await createCleanDir();
   const { io, stdout } = createIo(dir);
-  // 実行
+  // 実行・検証
   const withBase = runCheck({ text: "a", base: "main" }, io);
-  const withoutKey = runCheck({ file: "records.yaml" }, io);
-  // 検証
   await expect(withBase).rejects.toBeInstanceOf(CliError);
   await expect(withBase).rejects.toThrow(/--text[\s\S]*--base/);
+  const withoutKey = runCheck({ file: "records.yaml" }, io);
   await expect(withoutKey).rejects.toBeInstanceOf(CliError);
   await expect(withoutKey).rejects.toThrow(/--key/);
   expect(stdout).toEqual([]);
