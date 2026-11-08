@@ -1,0 +1,15 @@
+$ npm run test:unit
+
+> test:unit
+> vitest run --project 'unit*'
+
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/test-cli-read-yaml-key-unhandled-rejection
+
+
+ Test Files  258 passed (258)
+      Tests  1816 passed (1816)
+   Start at  03:31:34
+   Duration  136.45s (worker 61%, tests 24%, import 14%, transform 1%)
+
+exit_code=0
