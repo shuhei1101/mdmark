@@ -914,5 +914,17 @@ settings:
       - dev/設計書/インターフェース定義/ClaudeCodeプラグイン/常駐サーバーを起動する.ts#
     introduced:
       pr: 354
+  - key: features.frontmatter
+    title: フロントマターの表示の機能
+    file: mdmark.config.yaml
+    type: boolean
+    required: false
+    default: 'false'
+    description: 文書の先頭の YAML のフロントマターを、本文の先頭の閉じた折りたたみ（見出し `フロントマター`）に言語 `yaml` のコードブロックで出す。オフのときもフロントマターは本文から除外し、本文・見出しに出さない
+    reason: フロントマターは文書を扱う道具のためのメタデータで、読者に向けた本文ではないため、既定をオフにする
+    reload: reload
+    status: planned
+    refs:
+      - dev/設計書/インターフェース定義/ライブラリ本体/文書をHTML文字列にする.ts#constraints[フロントマター]
 refs:
   - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#
