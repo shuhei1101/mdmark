@@ -1,0 +1,1 @@
+# src/cli/embed.ts の使用していない定数 HTTP_PATTERN を削除する
