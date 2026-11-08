@@ -58,12 +58,12 @@ const CODE_MARKDOWN = [
 ].join("\n");
 
 afterEach(() => {
+  vi.restoreAllMocks();
   document.body.innerHTML = "";
   sessionStorage.clear();
   localStorage.clear();
   history.replaceState(null, "", `${location.pathname}${location.search}`);
   window.scrollTo(0, 0);
-  vi.restoreAllMocks();
 });
 
 /** 文書を新しい要素に描き、その要素を返す */

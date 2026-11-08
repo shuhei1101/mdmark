@@ -43,12 +43,12 @@ const LONG_PAYLOAD = {
 };
 
 afterEach(() => {
+  vi.restoreAllMocks();
   document.body.innerHTML = "";
   history.replaceState(null, "", ORIGINAL_URL);
   history.scrollRestoration = "auto";
   sessionStorage.clear();
   window.scrollTo(0, 0);
-  vi.restoreAllMocks();
 });
 
 /** 次の `hashchange` を待つ */
