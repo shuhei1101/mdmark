@@ -1,0 +1,88 @@
+tasks:
+  - process: 初期構築
+    status: skipped
+    reason: 既存リポジトリのため対象外
+    updated_by: planner
+    updated_at: '2026-11-08T22:48:06.266316+00:00'
+  - process: リバースエンジニアリング
+    status: skipped
+    reason: 設計書は揃っており棚卸しは要らない
+    updated_by: planner
+    updated_at: '2026-11-08T22:48:06.266316+00:00'
+  - process: 方針決め
+    status: skipped
+    reason: 方針決めを依頼する Issue ではない
+    updated_by: planner
+    updated_at: '2026-11-08T22:48:06.266316+00:00'
+  - process: PoC 検証
+    status: skipped
+    reason: 未検証の技術機構に依存しない
+    updated_by: planner
+    updated_at: '2026-11-08T22:48:06.266316+00:00'
+  - process: 複合ユースケース設計
+    status: skipped
+    reason: 結合テスト 1 件の前処理の修正で、シナリオは変わらない
+    updated_by: planner
+    updated_at: '2026-11-08T22:48:06.266316+00:00'
+  - process: デザインスタイル選定
+    status: skipped
+    reason: 画面を変えない
+    updated_by: planner
+    updated_at: '2026-11-08T22:48:06.266316+00:00'
+  - process: 画面一覧・画面遷移
+    status: skipped
+    reason: 画面を変えない
+    updated_by: planner
+    updated_at: '2026-11-08T22:48:06.266316+00:00'
+  - process: 単一ユースケース設計
+    status: skipped
+    reason: 結合テスト 1 件の前処理の修正で、シナリオは変わらない
+    updated_by: planner
+    updated_at: '2026-11-08T22:48:06.266316+00:00'
+  - process: モック作成
+    status: skipped
+    reason: 画面を変えない
+    updated_by: planner
+    updated_at: '2026-11-08T22:48:06.266316+00:00'
+  - process: インターフェース定義設計
+    status: skipped
+    reason: mount の入出力と処理の流れは変わらない
+    updated_by: planner
+    updated_at: '2026-11-08T22:48:06.266316+00:00'
+  - process: 部品設計
+    status: skipped
+    reason: 部品を変えない
+    updated_by: planner
+    updated_at: '2026-11-08T22:48:06.266316+00:00'
+  - process: 画面設計
+    status: skipped
+    reason: 画面を変えない
+    updated_by: planner
+    updated_at: '2026-11-08T22:48:06.266316+00:00'
+  - process: モジュール構成設計
+    status: skipped
+    reason: ソースのモジュールを変えない
+    updated_by: planner
+    updated_at: '2026-11-08T22:48:06.266316+00:00'
+  - process: ドキュメント修正
+    status: skipped
+    reason: リソースのタイミングの記録の扱いは設計書・公開ドキュメントに無く、直すページが無い
+    updated_by: planner
+    updated_at: '2026-11-08T22:48:06.266316+00:00'
+  - process: 単体テスト作成
+    status: skipped
+    reason: ソースを変えない
+    updated_by: planner
+    updated_at: '2026-11-08T22:48:06.266316+00:00'
+  - process: 実装
+    status: skipped
+    reason: ソースを変えない。修正はテストコードだけ
+    updated_by: planner
+    updated_at: '2026-11-08T22:48:06.266316+00:00'
+  - process: 結合テスト作成
+    status: todo
+  - process: E2E テスト作成
+    status: skipped
+    reason: E2E のテストは変えない
+    updated_by: planner
+    updated_at: '2026-11-08T22:48:06.266316+00:00'
