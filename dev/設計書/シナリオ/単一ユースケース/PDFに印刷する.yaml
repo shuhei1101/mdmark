@@ -34,7 +34,7 @@ scenarios:
         actor W as 文書の作成者
         participant EX as 拡張機能
         W->>EX: mdmark: PDF に印刷
-        EX->>EX: 書き出し先に記載できない
+        EX->>EX: 書き出し先に書き込めない
         EX-->>W: 書き出せない理由の通知
     expected:
       - 通知に、書き出し先のパスと書き込めない理由が出る

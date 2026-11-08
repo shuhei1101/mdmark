@@ -43,7 +43,7 @@ flows:
       - 終了コードが 0
     test: test_normal_when_project_dir_unknown
 lead: 作業のフォルダを使用する mdmark のツールの呼び出しの前に、引数へ `project_dir` として `CLAUDE_PROJECT_DIR` の値を入れて Claude Code へ返却する。許可の判定には関わらない。
-side_effects: なし（標準出力へ記載するだけ）
+side_effects: なし（標準出力へ書き込むだけ）
 request:
   - name: tool_name
     type: string

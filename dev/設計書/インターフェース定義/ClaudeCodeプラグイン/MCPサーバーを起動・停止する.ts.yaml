@@ -131,7 +131,7 @@ constraints:
     decided_by: dev/設計書/外部ライブラリ/ClaudeCode#limitations[MCP の instructions の文字数]
     notes: 4,096 文字以下。ガイドの選び方（最初に『文書の記載方法』を参照する等）は配信元の説明書（`dev-docs.yaml` の `instructions`）に配置し、同じ文を instructions に配置しない
   - item: ツールのログ
-    constraint: ツールの処理が想定しない例外で止まったときは、標準エラーにツール名と例外のメッセージとスタックを記載し、その呼び出しを `isError` にして例外のメッセージを返却する。サーバーは止めない
+    constraint: ツールの処理が想定しない例外で止まったときは、標準エラーにツール名と例外のメッセージとスタックを書き込み、その呼び出しを `isError` にして例外のメッセージを返却する。サーバーは止めない
   - item: ログ
     constraint: 起動したときに待ち受ける URL を標準出力に 1 行出す
 refs:

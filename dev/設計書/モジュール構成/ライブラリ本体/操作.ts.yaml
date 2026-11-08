@@ -980,7 +980,7 @@ functions:
   - name: copyText
     title: クリップボードへ書き込む
     container: src/interact/clipboard.ts
-    summary: '`navigator.clipboard.writeText` で文字を記載し、記載できたかを返却する。`navigator.clipboard` が無いときと拒まれたときは `false` を返却し、例外を投げない'
+    summary: '`navigator.clipboard.writeText` で文字を書き込み、書き込めたかを返却する。`navigator.clipboard` が無いときと拒まれたときは `false` を返却し、例外を投げない'
     kind: 関数
     scope: internal
     is_async: true

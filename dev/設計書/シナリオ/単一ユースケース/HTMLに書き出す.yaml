@@ -56,7 +56,7 @@ scenarios:
         actor W as 文書の作成者
         participant EX as 拡張機能
         W->>EX: mdmark: HTML に書き出す
-        EX->>EX: 書き出し先に記載できない
+        EX->>EX: 書き出し先に書き込めない
         EX-->>W: 書き出せない理由の通知
     expected:
       - 通知に、書き出し先のパスと書き込めない理由が出る
@@ -154,6 +154,6 @@ trigger: '文書の作成者がコマンドパレットから「mdmark: HTML に
 preconditions:
   - Markdown のファイルをエディタで開いている
   - 既定のブラウザから jsDelivr に届く
-success_guarantee: 書き出し先に HTML が 1 つ記載され、ブラウザで開くとプレビューと同じ文書が描かれる。
+success_guarantee: 書き出し先に HTML が 1 つ書き込まれ、ブラウザで開くとプレビューと同じ文書が描かれる。
 minimal_guarantee: 書き出せないときは理由を通知に出し、書き込みかけのファイルを残さない。Markdown は書き換えない。
 test_file: tests/e2e/単一ユースケース/HTMLに書き出す.spec.ts

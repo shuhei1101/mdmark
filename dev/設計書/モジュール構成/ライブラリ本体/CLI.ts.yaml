@@ -1685,7 +1685,7 @@ functions:
     container: src/cli/export.ts
     usecase: 文書をHTMLに書き出す
     summary: '文書 1 つを `kind: document` の中身にして HTML を書き込み、記載したパスと警告を返却する。動画と音声は HTML を書き込む前に `_files/` へコピーする（埋めるものを用意する）'
-    description: '`runExport`（CLI）と MCP の `export_html` が同じ処理を呼ぶ。標準出力・標準エラーには記載しない'
+    description: '`runExport`（CLI）と MCP の `export_html` が同じ処理を呼ぶ。標準出力・標準エラーには書き込まない'
     scope: public
     is_async: true
     side_effects: 出力のパスに HTML を書き込む
@@ -1749,7 +1749,7 @@ functions:
     container: src/cli/build.ts
     usecase: 複数の文書を1枚のHTMLにまとめる
     summary: '`build` の対象の文書を `kind: bundle` の中身にして `build.out` に HTML を書き込み、記載したパス・文書の数・警告を返却する。動画と音声は HTML を書き込む前に `_files/` へコピーする（埋めるものを用意する）'
-    description: '`runBuild`（CLI）と MCP の `build_site` が同じ処理を呼ぶ。警告の中身と並びは `runBuild` が標準エラーに出していたものと同じ。標準出力・標準エラーには記載しない'
+    description: '`runBuild`（CLI）と MCP の `build_site` が同じ処理を呼ぶ。警告の中身と並びは `runBuild` が標準エラーに出していたものと同じ。標準出力・標準エラーには書き込まない'
     scope: public
     is_async: true
     side_effects: '`build.out` に HTML を書き込む'

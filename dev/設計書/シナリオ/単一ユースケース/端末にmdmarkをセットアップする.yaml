@@ -9,7 +9,7 @@ scenarios:
         description: '`TMUX_TMPDIR` を空の一時フォルダにして手元と別の tmux サーバーを先に起動しておき、`MDMARK_PORT` に待ち受けるプロセスの無いポートを指定する'
         notes: 手元の常駐サーバーが使用する 8782 と手元の tmux のセッションを回避する。tmux サーバーを先に起動しておくと、`MDMARK_PORT` がセッションへ渡る経路を確認できる
       - name: Mock
-        description: スキルを読み込むモデルの代わりに、スキルの手順が呼ぶスクリプトを手順の順に実行し、利用者への確認には決めた回答を返却する。端末の設定のパスは `MDMARK_CONFIG` のパスを、キーは `features.table` だけ `false` を、ほかは既定のままを回答し、記載してよいかには認める回答を返却する
+        description: スキルを読み込むモデルの代わりに、スキルの手順が呼ぶスクリプトを手順の順に実行し、利用者への確認には決めた回答を返却する。端末の設定のパスは `MDMARK_CONFIG` のパスを、キーは `features.table` だけ `false` を、ほかは既定のままを回答し、書き込んでよいかには認める回答を返却する
     flow: |-
       sequenceDiagram
         actor W as 文書の作成者
@@ -25,7 +25,7 @@ scenarios:
         end
         C-->>W: 記載する内容
         W->>C: 記載してよい
-        C->>F: 端末の設定を記載し、settings.json の env に MDMARK_CONFIG を記載する
+        C->>F: 端末の設定を記載し、settings.json の env に MDMARK_CONFIG を書き込む
         C->>T: セッションが無いので、新しいセッションで mdmark serve を起動する
         T->>S: 起動
         C->>S: tools/list
@@ -176,7 +176,7 @@ scenarios:
         C->>C: tmux が見つからない
         C-->>W: 端末で mdmark serve を開いたまま動かすコマンド
     expected:
-      - 端末の設定と `settings.json` は正常シナリオと同じに記載される
+      - 端末の設定と `settings.json` は正常シナリオと同じに書き込まれる
       - '`MDMARK_PORT` のポートで待ち受けるプロセスが無い'
       - 最後の報告に、tmux が見つからないことと、端末で `mdmark serve` を開いたまま動かすコマンド（`MDMARK_PORT` を含む）が出る
     test: test_error_when_tmux_missing

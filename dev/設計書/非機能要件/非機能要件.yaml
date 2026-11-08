@@ -117,7 +117,7 @@ requirements:
     value: 300（既定。設定 `mdmark.preview.updateDelayMs` で 0〜5000 に変えられる）
     unit: ミリ秒
     rationale: '打つたびに再描画すると、図と外部ライブラリのマーカーを持つ文書でちらつく。続けて打つ間は再描画せず、手を止めてから待ちが目立たない長さにする。上限の 5000 は、保存したときだけ再描画する設定（`mdmark.preview.liveUpdate: false`）が別にあるため、それより長い待ちを許さない'
-    overflow: 範囲の外の値は VS Code の設定の画面が受け付けない（`package.json` の `minimum`・`maximum`）。`settings.json` に直に記載した範囲の外の値は既定の 300 として扱う
+    overflow: 範囲の外の値は VS Code の設定の画面が受け付けない（`package.json` の `minimum`・`maximum`）。`settings.json` に直に書き込んだ範囲の外の値は既定の 300 として扱う
     status: planned
     introduced:
       pr: 69

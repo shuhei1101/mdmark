@@ -73,7 +73,7 @@ scenarios:
       - name: mdmark を読み込むページ
         description: 正常シナリオと同じ
       - name: 動画と音声の Markdown
-        description: '`![操作の様子](demo.mp4 "保存までの操作"){autoplay loop poster=demo.png}` と `![スクリーンリーダー](voice.mp3)` を持つ文書'
+        description: '`![操作の様子](demo.mp4 "保存までの操作"){autoplay loop poster=demo.png}` と `![読み上げ](voice.mp3)` を持つ文書'
       - name: Mock
         description: 正常シナリオと同じ。動画・音声・ポスターの画像は手元の応答で返却する
     flow: |-

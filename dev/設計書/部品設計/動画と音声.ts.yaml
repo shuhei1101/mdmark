@@ -52,9 +52,9 @@ states:
       - name: src
         value: voice.mp3
       - name: alt
-        value: スクリーンリーダーの見本
+        value: 読み上げの見本
       - name: caption
-        value: スクリーンリーダーの見本（3 秒）
+        value: 読み上げの見本（3 秒）
   - name: VideoPrint
     description: '`poster` を持つ動画の印刷。再生バーを出さず、`poster` の画像とキャプションを出す'
     args:

@@ -26,7 +26,7 @@ scenarios:
     setup:
       - name: mdmark を読み込むページ
         description: 正常シナリオと同じ
-      - name: 打ち削除したバッジを持つ Markdown
+      - name: 打ち消したバッジを持つ Markdown
         description: 行内のコード `` `badge\:v0.1.0` `` を持つ文書
       - name: Mock
         description: 正常シナリオと同じ
@@ -36,7 +36,7 @@ scenarios:
         participant P as 利用側のページ
         participant M as mdmark
         P->>M: 設定と Markdown を指定して描かせる
-        M-->>P: 打ち削除しの \ を削除した行内のコードを描く
+        M-->>P: 打ち消しの \ を削除した行内のコードを描く
         P-->>U: 文書を表示
     expected:
       - 行内のコードが `badge:v0.1.0` の文字のまま出ていて、札になっていない
@@ -323,7 +323,7 @@ scenarios:
     setup:
       - name: mdmark を読み込むページ
         description: 正常シナリオと同じ
-      - name: 打ち削除したアイコンとキーを持つ Markdown
+      - name: 打ち消したアイコンとキーを持つ Markdown
         description: 行内のコード `` `icon\:check` `` と `` `kbd\:Ctrl+C` `` を持つ文書
       - name: Mock
         description: 正常シナリオと同じ
@@ -333,7 +333,7 @@ scenarios:
         participant P as 利用側のページ
         participant M as mdmark
         P->>M: 設定と Markdown を指定して描かせる
-        M-->>P: 打ち削除しの \ を削除した行内のコードを描く
+        M-->>P: 打ち消しの \ を削除した行内のコードを描く
         P-->>U: 文書を表示
     expected:
       - 行内のコードが `icon:check`・`kbd:Ctrl+C` の文字のまま出ていて、アイコンとキーの外観になっていない

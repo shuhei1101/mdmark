@@ -18,7 +18,7 @@ items:
   - page: 設定のキーの一覧を返却する.ts.yaml
     summary: 設定の Schema のキーごとに今の値・既定・説明を返却する（setup.js keys）
   - page: 端末の設定を記載する.ts.yaml
-    summary: 回答した値で端末の設定を作る・書き換え、既定のパスでなければ settings.json の env に MDMARK_CONFIG を記載する（setup.js write-settings）
+    summary: 回答した値で端末の設定を作る・書き換え、既定のパスでなければ settings.json の env に MDMARK_CONFIG を書き込む（setup.js write-settings）
   - page: 常駐サーバーを起動する.ts.yaml
     summary: tmux のセッションで mdmark serve を起動し、待ち受けと tools/list を確認する（setup.js start-server）
   - page: 文書のフォルダの設定を記載する.ts.yaml

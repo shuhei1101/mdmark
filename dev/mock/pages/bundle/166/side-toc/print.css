@@ -2,7 +2,7 @@
 
 /* mdmark の層: 画面の規則と同じ層に配置する */
 @layer mdmark {
-  /* 画面全体: 並べをやめ、文書を紙の幅に実行する */
+  /* 画面全体: 並べをやめ、文書を紙の幅に収める */
   .mdmark-bundle {
     display: block;
     min-height: 0;

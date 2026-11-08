@@ -103,7 +103,7 @@ exceptions:
   - name: ツールのエラー（作業のフォルダが無い）
     condition: '`project_dir` が無い、絶対パスでない、またはそのフォルダが無い'
     notes: 内容の文に、`project_dir` が無いか違うことと、プラグインを入れたセッションから呼ぶことを記載する
-error_format: 'ツールの結果を `isError: true` にし、内容のテキストに `mdmark build` が標準エラーに出すのと同じ文を記載する。'
+error_format: 'ツールの結果を `isError: true` にし、内容のテキストに `mdmark build` が標準エラーに出すのと同じ文を書き込む。'
 constraints:
   - item: CLI との一致
     constraint: 同じ設定・索引・文書では、`mdmark build` と同じ中身の HTML を書き込む

@@ -1353,7 +1353,7 @@ functions:
     container: src/interact/params.ts
     kind: 関数
     scope: internal
-    summary: スライダーの `input` で今の値とグラフの系列を再描画し、写すボタンで `paramJson` を `navigator.clipboard.writeText` で記載し、結果を `role="status"` に出す。拒まれたら `pre` を出す。点の表は、`mount` が Markdown から読み込んだ `param` の定義を文書の中の並びの順で受け取る（出力の HTML に定義を残さない）
+    summary: スライダーの `input` で今の値とグラフの系列を再描画し、写すボタンで `paramJson` を `navigator.clipboard.writeText` で書き込み、結果を `role="status"` に出す。拒まれたら `pre` を出す。点の表は、`mount` が Markdown から読み込んだ `param` の定義を文書の中の並びの順で受け取る（出力の HTML に定義を残さない）
     args:
       - name: root
         type: HTMLElement

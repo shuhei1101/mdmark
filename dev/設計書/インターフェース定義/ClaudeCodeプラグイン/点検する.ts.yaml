@@ -220,14 +220,14 @@ exceptions:
     notes: 探した場所と `mdmark init` で配置できることを記載する。設定ファイルを YAML として読み込めないときも同じくエラーにし、読み込めない行を記載する
   - name: ツールのエラー（比べる基準を参照できない）
     condition: '`base` を指定し、`mdmark check --base` が比べる基準を参照できないときと同じ条件'
-    notes: '`mdmark check` が標準エラーに出すのと同じ文を記載する'
+    notes: '`mdmark check` が標準エラーに出すのと同じ文を書き込む'
   - name: ツールのエラー（作業のフォルダが無い）
     condition: '`project_dir` が無い、絶対パスでない、またはそのフォルダが無い'
     notes: 内容の文に、`project_dir` が無いか違うことと、プラグインを入れたセッションから呼ぶことを記載する
   - name: ツールのエラー（引数の組が誤り・ファイルを読み込めない・キーが無い）
     condition: '`mdmark check` が引数の組の誤り・点検するファイルを読み込めない・キーが無いで終わるときと同じ条件'
-    notes: '`mdmark check` が標準エラーに出すのと同じ文を記載する'
-error_format: 'ツールの結果を `isError: true` にし、内容のテキストに `mdmark check` が標準エラーに出すのと同じ文を記載する。'
+    notes: '`mdmark check` が標準エラーに出すのと同じ文を書き込む'
+error_format: 'ツールの結果を `isError: true` にし、内容のテキストに `mdmark check` が標準エラーに出すのと同じ文を書き込む。'
 constraints:
   - item: CLI との一致
     constraint: 同じ設定・索引・文書では、`issues` が `mdmark check` の出力の行と 1 対 1 に一致する

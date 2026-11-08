@@ -52,7 +52,7 @@ scenarios:
     setup:
       - name: mdmark を読み込むページ
         description: 正常シナリオと同じ
-      - name: 打ち削除したマーカーを持つ Markdown
+      - name: 打ち消したマーカーを持つ Markdown
         description: 行末に `// [\!code ++]` を付けた行を持つ言語 `ts` のコードブロックの文書
       - name: Mock
         description: 正常シナリオと同じ
@@ -62,7 +62,7 @@ scenarios:
         participant P as 利用側のページ
         participant M as mdmark
         P->>M: 設定と Markdown を指定して描かせる
-        M-->>P: 打ち削除しの \ を削除した行を描く
+        M-->>P: 打ち消しの \ を削除した行を描く
         P-->>U: 文書を表示
     expected:
       - 行が `// [!code ++]` の文字のまま出ている

@@ -96,7 +96,7 @@ data_models:
     title: 手順の当て先
     container: src/cli/migrations.ts
     usecase: バージョンを上げる
-    summary: 手順を適用する設定・索引・文書の場所と、適用する前に聞いた回答し
+    summary: 手順を適用する設定・索引・文書の場所と、適用する前に聞いた回答
     properties:
       - name: configPath
         type: string
@@ -559,7 +559,7 @@ functions:
       - name: test_apply_step_when_asked
         case: 正常
         summary: ask の回答を YAML の値として追加する
-        condition: '`ask` を持つ `set_default`（`key: count`）、回答し `3`'
+        condition: '`ask` を持つ `set_default`（`key: count`）、回答 `3`'
         mock: 一時フォルダの設定
         expected: '`count` が数 `3`'
       - name: test_apply_step_when_index_missing
@@ -583,13 +583,13 @@ functions:
       - name: test_apply_step_when_script_prints
         case: 正常
         summary: call のスクリプトの標準出力の行を返却する
-        condition: 標準出力に `a`・空行・`b` を記載して 0 で終わる `.mjs` を実行する `call`
+        condition: 標準出力に `a`・空行・`b` を書き込んで 0 で終わる `.mjs` を実行する `call`
         mock: 一時フォルダのスクリプト
         expected: '`["a", "b"]` を返却する'
       - name: test_apply_step_when_script_fails_with_stderr
         case: 異常
         summary: call のスクリプトの標準エラーの行を CliError のメッセージに続ける
-        condition: 標準エラーに `行を分けてください` を記載して 1 で終わる `.mjs` を実行する `call`
+        condition: 標準エラーに `行を分けてください` を書き込んで 1 で終わる `.mjs` を実行する `call`
         mock: 一時フォルダのスクリプト
         expected: '`CliError` を投げ、メッセージの 2 行目が `行を分けてください`'
     refs:
@@ -881,7 +881,7 @@ functions:
       - name: test_run_upgrade_when_script_prints
         case: 正常
         summary: call のスクリプトが標準出力に書き込んだ行を、手順の行に続けて出す
-        condition: '`v0.5.0` が標準出力に `除外しました` を記載して 0 で終わる `call`'
+        condition: '`v0.5.0` が標準出力に `除外しました` を書き込んで 0 で終わる `call`'
         mock: 一時フォルダ・差し替えた移行の手順のフォルダ
         expected: 0 を返却し、標準出力に `v0.5.0 の手順「` で始まる行と、その次の行に `  除外しました` がある
       - name: test_run_upgrade_when_settings
@@ -938,7 +938,7 @@ functions:
     kind: 関数
     scope: public
     summary: 設定の `aliases` の v0.2.0 の構造の行を、alias-inject v0.3.0 の構造へ書き換える移行の手順のスクリプトの処理
-    description: '`steps.yaml` の `call`（`destructive: true`・`files: [config]`。`description` は ``設定の `aliases` の行を alias-inject v0.3.0 の構造へ書き換える（値を失うのは `metadata` に固定値を記載した行だけ）``）が実行する。スクリプトとして呼ばれると、`--config` の設定ファイルを `yaml` の `parseDocument` で読み込み、この関数を呼ぶ。`problems` があれば記載し戻さずに標準エラーへ 1 行ずつ記載して 1 で終わり、無ければ `changed` のときだけ `doc.toString({ flowCollectionPadding: false })` で書き込んで戻し、`notices` を標準出力へ 1 行ずつ記載して 0 で終わる。行ごとに、`metadata.alias_type` を持つ行だけを書き換える（行の `alias_type` を持つ行と、`metadata.alias_type` を持たない行は触らない）。`{type: custom, value}` は `value` を行の `alias_type` にする。`{type: ref, field}` は、行の `paths` を設定ファイルのフォルダから `node:fs/promises` の `glob` で参照した YAML のレコード（`records` を持つ行はそのキーの配列の要素、持たない行はファイルの値）の `field` の列の値を重ねずに集め（YAML として読み込めないファイルがあれば `problems` に ``aliases[{行}]（{id}）の `{パス}` を YAML として読み込めません。字下げと記載方法を修正してください。`` を追加してその行を書き換えない）、1 つだけならその値を行の `alias_type` にする。0 個なら `problems` に ``aliases[{行}]（{id}）はレコードが無く、種類を決められません。行に `alias_type` を記載してください。`` を追加し、2 個以上なら `problems` に ``aliases[{行}]（{id}）はレコードの `{field}` から種類を 1 つに決められません（{集めた値を `・` で並べた}）。種類ごとに行を分け、行に `alias_type` を記載してください。`` を追加する。`metadata` のほかのキーは、`{type: ref, field}` を `field` の文字列にし、`{type: custom, value}` はキーを除いて `notices` に ``aliases[{行}]（{id}）の `metadata.{キー}` の固定値 `{value}` を除外しました。必要なら YAML の列に記載してください。`` を追加する。`metadata.alias_type` を除き、空になった `metadata` も除く。もう一度適用しても結果が変わらない。単体テストは `migrations/*/alias-rows.mjs` を探して import し、release で `next/` をバージョンのフォルダへ移した後も同じテストで読み込む'
+    description: '`steps.yaml` の `call`（`destructive: true`・`files: [config]`。`description` は ``設定の `aliases` の行を alias-inject v0.3.0 の構造へ書き換える（値を失うのは `metadata` に固定値を記載した行だけ）``）が実行する。スクリプトとして呼ばれると、`--config` の設定ファイルを `yaml` の `parseDocument` で読み込み、この関数を呼ぶ。`problems` があれば記載し戻さずに標準エラーへ 1 行ずつ書き込んで 1 で終わり、無ければ `changed` のときだけ `doc.toString({ flowCollectionPadding: false })` で書き込んで戻し、`notices` を標準出力へ 1 行ずつ書き込んで 0 で終わる。行ごとに、`metadata.alias_type` を持つ行だけを書き換える（行の `alias_type` を持つ行と、`metadata.alias_type` を持たない行は触らない）。`{type: custom, value}` は `value` を行の `alias_type` にする。`{type: ref, field}` は、行の `paths` を設定ファイルのフォルダから `node:fs/promises` の `glob` で参照した YAML のレコード（`records` を持つ行はそのキーの配列の要素、持たない行はファイルの値）の `field` の列の値を重ねずに集め（YAML として読み込めないファイルがあれば `problems` に ``aliases[{行}]（{id}）の `{パス}` を YAML として読み込めません。字下げと記載方法を修正してください。`` を追加してその行を書き換えない）、1 つだけならその値を行の `alias_type` にする。0 個なら `problems` に ``aliases[{行}]（{id}）はレコードが無く、種類を決められません。行に `alias_type` を記載してください。`` を追加し、2 個以上なら `problems` に ``aliases[{行}]（{id}）はレコードの `{field}` から種類を 1 つに決められません（{集めた値を `・` で並べた}）。種類ごとに行を分け、行に `alias_type` を記載してください。`` を追加する。`metadata` のほかのキーは、`{type: ref, field}` を `field` の文字列にし、`{type: custom, value}` はキーを除いて `notices` に ``aliases[{行}]（{id}）の `metadata.{キー}` の固定値 `{value}` を除外しました。必要なら YAML の列に記載してください。`` を追加する。`metadata.alias_type` を除き、空になった `metadata` も除く。もう一度適用しても結果が変わらない。単体テストは `migrations/*/alias-rows.mjs` を探して import し、release で `next/` をバージョンのフォルダへ移した後も同じテストで読み込む'
     is_async: true
     args:
       - name: options

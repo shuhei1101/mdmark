@@ -29,7 +29,7 @@ items:
   - page: バージョンを上げる.ts.yaml
     summary: mdmark upgrade のバージョンの比較・移行の手順の読み取りと適用・コピーと戻し・変更履歴・質問
   - page: 図.ts.yaml
-    summary: 図の部品の定義の型と確認し・線の形状・部品の HTML・記法のコアルール・拡大と縮小・全画面・ツールチップ・写す操作
+    summary: 図の部品の定義の型と確認・線の形状・部品の HTML・記法のコアルール・拡大と縮小・全画面・ツールチップ・写す操作
   - page: mermaid.ts.yaml
     summary: mermaid のコードブロックを読み込み中のブロックから図の枠に置き換える処理と、テーマの変数の対応表・ソースのタイトルの取り出し・部品の HTML
   - page: 差分.ts.yaml

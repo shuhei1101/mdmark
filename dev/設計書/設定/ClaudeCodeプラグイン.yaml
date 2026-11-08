@@ -69,7 +69,7 @@ settings:
     file: 環境変数
     type: string
     default: ${XDG_CONFIG_HOME:-~/.config}/mdmark/settings.yaml
-    description: '`setup.js` が読み込みと保存をする端末の設定のパス。既定と違うパスにしたときは、`global-setup` が `~/.claude/settings.json` の `env` に記載する'
+    description: '`setup.js` が読み込みと保存をする端末の設定のパス。既定と違うパスにしたときは、`global-setup` が `~/.claude/settings.json` の `env` に書き込む'
     env_var: MDMARK_CONFIG
     reload: restart
     status: planned
@@ -83,7 +83,7 @@ settings:
     file: 環境変数
     type: string
     default: ~/.claude
-    description: '`setup.js write-settings` が `env.MDMARK_CONFIG` を記載する `settings.json` のフォルダ'
+    description: '`setup.js write-settings` が `env.MDMARK_CONFIG` を書き込む `settings.json` のフォルダ'
     env_var: CLAUDE_CONFIG_DIR
     reload: restart
     status: planned

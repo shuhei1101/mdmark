@@ -4,7 +4,7 @@ entry:
   value: '`node ${CLAUDE_PLUGIN_ROOT}/bin/setup.js write-settings [--set {キー}={値}]...`（スキルが Bash で呼ぶ）'
 flows:
   - name: 正常系
-    summary: 端末の設定を雛形から作り、`settings.json` の `env` に `MDMARK_CONFIG` を記載する
+    summary: 端末の設定を雛形から作り、`settings.json` の `env` に `MDMARK_CONFIG` を書き込む
     setup:
       - name: 一時の端末
         description: '`MDMARK_CONFIG`・`MDMARK_STATE_DIR`・`CLAUDE_CONFIG_DIR`・`TMUX_TMPDIR` を、それぞれ空の一時フォルダの下にする'
@@ -17,7 +17,7 @@ flows:
         participant F as 端末の設定と settings.json
         K->>P: write-settings --set features.table=false
         P->>P: Schema で検める
-        P->>F: 雛形に値と version を入れて記載し、env に MDMARK_CONFIG を記載する
+        P->>F: 雛形に値と version を入れて記載し、env に MDMARK_CONFIG を書き込む
         P-->>K: 記載したパスとキー・終了コード 0
     expected:
       - 終了コードが 0
@@ -82,7 +82,7 @@ flows:
       - 標準エラーに `config.cascade` と真偽値を記載することが出る
       - 端末の設定と `settings.json` が作られていない
     test: test_error_when_value_invalid
-lead: '`global-setup` が利用者の回答した値で端末の設定を作る・書き換え、端末の設定が既定のパスでなければ `settings.json` の `env` に `MDMARK_CONFIG` を記載する。'
+lead: '`global-setup` が利用者の回答した値で端末の設定を作る・書き換え、端末の設定が既定のパスでなければ `settings.json` の `env` に `MDMARK_CONFIG` を書き込む。'
 test_file: tests/integration/ClaudeCodeプラグイン/setup-write-settings.test.ts
 idempotent: true
 side_effects: 端末の設定と `${CLAUDE_CONFIG_DIR:-~/.claude}/settings.json` を書き換える
@@ -131,7 +131,7 @@ constraints:
   - item: version
     constraint: 端末の設定を新しく作るときだけ `version` をプラグインのバージョンにする。既にある `version` は書き換えない（移行は `mdmark upgrade --settings`）
   - item: settings.json
-    constraint: '`env.MDMARK_CONFIG` だけを記載し、ほかのキーと記載方法を残す。端末の設定が既定のパスなら記載しない'
+    constraint: '`env.MDMARK_CONFIG` だけを書き込み、ほかのキーと書き込み方法を残す。端末の設定が既定のパスなら記載しない'
   - item: 出力
     constraint: 結果は標準出力に JSON の 1 行で出す。誤りは標準エラーに理由と修正方法を出す
   - item: 動く Node のバージョン

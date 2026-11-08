@@ -1051,7 +1051,7 @@ flows:
       - name: 配布物を読み込んだ Node の処理
         description: 正常系と同じ
       - name: 動画・音声・GIF の Markdown
-        description: '`![操作の様子](demo.mp4 "保存までの操作"){autoplay loop poster=demo.png width=480}`・`![スクリーンリーダー](voice.mp3)`・`![ビルド](build.gif)` をそれぞれ画像だけの段落に持つ文書'
+        description: '`![操作の様子](demo.mp4 "保存までの操作"){autoplay loop poster=demo.png width=480}`・`![読み上げ](voice.mp3)`・`![ビルド](build.gif)` をそれぞれ画像だけの段落に持つ文書'
       - name: Mock
         description: 差し替える依存は無い
     flow: |-

@@ -958,7 +958,7 @@ functions:
     unit_tests:
       - name: test_build_badges
         case: 正常
-        summary: 札にし、打ち削除しはコードに戻す
+        summary: 札にし、打ち消しはコードに戻す
         condition: '`` `badge:v0.1.0` `` と `` `badge\:v0.1.0` ``'
         mock: なし
         expected: '`<span class="mdmark-badge">v0.1.0</span>` と `<code>badge:v0.1.0</code>`'
@@ -1392,7 +1392,7 @@ functions:
         expected: '`{ text: "a();", kind: "focus" }`・`{ text: "b();", kind: "error" }`・`{ text: "c();", kind: "warning" }`'
       - name: test_read_line_marks_when_escaped
         case: 正常
-        summary: 打ち削除したマーカーは `\` を削除した文字にして適用しない
+        summary: 打ち消したマーカーは `\` を削除した文字にして適用しない
         condition: '`let count = 1; // [\!code ++]`'
         mock: なし
         expected: '`{ text: "let count = 1; // [!code ++]" }`（`kind` を持たない）'
@@ -1443,7 +1443,7 @@ functions:
         expected: '`mdmark-tree` が無く、`mdmark-code-lang-name` が `tree`・`mdmark-code-file` が `src` の部品'
       - name: test_build_code_blocks_when_escaped
         case: 正常
-        summary: 打ち削除したマーカーは `\` を削除した文字の行にする
+        summary: 打ち消したマーカーは `\` を削除した文字の行にする
         condition: '`let count = 1; // [\!code ++]` だけのコードブロック'
         mock: なし
         expected: 部品の中身が `let count = 1; // [!code ++]` を持ち `\` が無く、`mdmark-code-line` に分けていない
@@ -2019,7 +2019,7 @@ functions:
       - name: test_build_image_figures_when_media
         case: 正常
         summary: 動画と音声を再生バー付きの図にする
-        condition: '`![操作の様子](demo.mp4 "保存までの操作"){autoplay poster=demo.png}` だけの段落と、`スクリーンリーダーは ![スクリーンリーダー](voice.mp3) で聞く。` の段落'
+        condition: '`![操作の様子](demo.mp4 "保存までの操作"){autoplay poster=demo.png}` だけの段落と、`読み上げは ![読み上げ](voice.mp3) で聞く。` の段落'
         mock: なし
         expected: 1 つ目が `figure.mdmark-media` の `video`（`controls`・`autoplay`・`muted`・`playsinline`・`preload="metadata"`・`poster`）と `img.mdmark-media-print`。2 つ目の段落の後ろに `audio` の `figure.mdmark-media` があり、段落の中に `img` が無い
       - name: test_build_image_figures_when_link
@@ -2736,7 +2736,7 @@ functions:
         condition: '`` `icon:flag` ``（まとめた名前）・`` `icon:sailboat` ``（まとめていない名前）・`` `icon\:check` ``・`` `icon:` ``'
         expected: '`flag` は中に `svg` を持つ `span.mdmark-inline-icon`、`sailboat` は中が空の `span.mdmark-inline-icon`、`<code>icon:check</code>`、`<code>icon:</code>`'
         mock: なし
-        summary: まとめた名前だけ構造を入れ、打ち削除しと空はコードに残す
+        summary: まとめた名前だけ構造を入れ、打ち消しと空はコードに残す
       - name: test_build_inline_icons_when_invalid_name
         case: 異常
         condition: '`` `icon:Rocket!` ``'
@@ -2770,7 +2770,7 @@ functions:
         condition: '`` `kbd:Ctrl+C` ``・`` `kbd\:Ctrl+C` ``・`` `kbd:` ``'
         expected: '`span.mdmark-kbd-group` の中に `Ctrl`・`C` の `kbd`、`<code>kbd:Ctrl+C</code>`、`<code>kbd:</code>`'
         mock: なし
-        summary: キーにし、打ち削除しと空はコードに残す
+        summary: キーにし、打ち消しと空はコードに残す
   - name: splitKeys
     title: キーに区切る
     container: src/render/syntax/kbd.ts
@@ -2812,7 +2812,7 @@ functions:
         condition: '`==決め手==`・`==例外=={color=green}`・`== a ==`・`\=\=x\=\=`'
         expected: '`<mark class="mdmark-highlight">決め手</mark>`・`<mark class="mdmark-highlight" data-color="green">例外</mark>`・`== a ==` の文字・`==x==` の文字'
         mock: なし
-        summary: 空白で接する `==` と打ち削除しは蛍光ペンにしない
+        summary: 空白で接する `==` と打ち消しは蛍光ペンにしない
       - name: test_use_highlight_when_unknown_color
         case: 異常
         condition: '`==決め手=={color=pink}`'
