@@ -76,6 +76,21 @@ test("test_read_table_spec_when_title_has_space", async () => {
   expect(spec.skipped).toEqual([]);
 });
 
+// title= の直後の知っている種類・機能は当て、警告にしない（正常系）
+test("test_read_table_spec_when_title_followed_by_known", async () => {
+  // 準備
+  const { readTableSpec } = await loadTables();
+  const text = "closed title=一覧 data +count";
+  // 実行
+  const spec = readTableSpec(parseMarkArgs(text), ["名前"], 3, text);
+  // 検証
+  expect(spec.kind).toBe("data");
+  expect(spec.features).toContain("count");
+  expect(spec.title).toBe("一覧");
+  expect(spec.warnings).toEqual([]);
+  expect(spec.skipped).toEqual([]);
+});
+
 // 5 つの機能と hide=・total= を読む（正常系）
 test("test_read_table_spec_when_features", async () => {
   // 準備

@@ -173,3 +173,16 @@ test("test_read_steps_options_when_title_has_space", async () => {
   ]);
   expect(options.skipped).toEqual([]);
 });
+
+// title= の直後の open は当て、警告にしない（正常系）
+test("test_read_steps_options_when_title_followed_by_open", async () => {
+  // 準備
+  const { readStepsOptions } = await loadSteps();
+  // 実行
+  const options = readStepsOptions(stepsMark("title=準備 open"));
+  // 検証
+  expect(options.collapse).toBe("open");
+  expect(options.title).toBe("準備");
+  expect(options.warning).toBeUndefined();
+  expect(options.skipped).toEqual([]);
+});
