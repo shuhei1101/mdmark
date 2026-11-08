@@ -114,7 +114,7 @@ styles:
         notes: 色分けの HTML は `mount` が描いた後に入れるため、規則は描いた文書の class `.mdmark` の下で当てる
       - class_name: .mdmark .mdmark-mermaid と .mdmark-mermaid-print・.mdmark-mermaid-actor
         target: mermaid の図
-        value: '部品設計『mermaid の図』の HTML に当てる規則。`dev/mock/refs/382/assets/mermaid.css` から取る。SVG の `[filter]` と `.actor` の `filter` を `none` にする（テーマの変数の `dropShadow` では外れない影を外す）。`.mdmark-mermaid-actor` は `fill: none`・`stroke: var(--mdmark-color-text)`・`stroke-width: 1.5`・丸い端と角。状態遷移図の終了の印（`g.node[id*="_end"]`）の線と内側の塗りを `--mdmark-color-text` にする。`.mdmark-mermaid-print` は画面では `display: none`、`@media print` では `.mdmark-mermaid-has-print > svg` を `display: none` にして `.mdmark-mermaid-print` を出す'
+        value: '部品設計『mermaid の図』の HTML に当てる規則。`dev/mock/refs/382/assets/mermaid.css` から取る。SVG の `[filter]` と `.actor` の `filter` を `none` にする（テーマの変数の `dropShadow` では外れない影を外す）。`.mdmark-mermaid-actor` は `fill: none`・`stroke: var(--mdmark-color-text)`・`stroke-width: 1.5`・丸い端と角。状態遷移図の終了の印（`svg[aria-roledescription="stateDiagram"] g.node.default[id*="_end-"]`。状態は class `statediagram-state` を持ち、`default` だけを持つのは開始と終了の印）の線と内側の塗りを `--mdmark-color-text` にする。表示する枠より小さい図は、`figure.mdmark-diagram[data-diagram="mermaid"] .mdmark-diagram-sizer` の `margin-inline: auto` で枠の中で横の中央に置く（モックの `place-items: center` と同じ見え方。大きい図は左端から動かす）。`.mdmark-mermaid-print` は画面では `display: none`、`@media print` では `.mdmark-mermaid-has-print > svg` を `display: none` にして `.mdmark-mermaid-print` を出す'
         notes: 印刷用の SVG は暗い配色で描いたときだけ置く（インターフェース定義『文書を描く』の制約「mermaid のテーマ」）
       - class_name: .mdmark:has(> .mdmark-side-toc) と .mdmark-content・.mdmark-side-toc-*・.mdmark-fold-all
         target: 右側の目次と本文の列

@@ -339,6 +339,12 @@ functions:
         condition: 描いた後に `detach()` を呼び、`document.body` へ `mdmark-theme-dark` を付ける
         mock: mermaid のモジュール。`render` の回数を数える
         expected: '`render` の回数が増えず、倍率のボタンを押しても倍率が変わらない'
+      - name: test_attach_mermaid_when_small
+        case: 正常
+        summary: 表示する枠より小さい図を、枠の中で横の中央に置く
+        condition: 幅 1000px の描く先に、ノード 2 つの flowchart の mermaid のコードブロック
+        mock: mermaid のモジュール
+        expected: '`.mdmark-diagram-sizer` の幅が表示する枠より狭く、表示する枠の左端からの空きと右端までの空きの差が 2px 以内'
   - name: drawMermaidDiagram
     title: mermaid の図を描く
     container: src/mermaid.ts
@@ -405,6 +411,12 @@ functions:
         condition: 幅 400px の描く先と gantt のソース
         mock: mermaid のモジュールの `initialize` を見張る
         expected: '`initialize` の `gantt.useWidth` が `720`、図の枠の `figure` が `data-fit-min="0.75"`'
+      - name: test_draw_mermaid_diagram_when_end_in_name
+        case: 正常
+        summary: 名前に _end を含むノードと状態に終了の印の規則を当てず、状態遷移図の終了の印だけを本文の色にする
+        condition: '`flowchart LR` の円柱のノード `job_end[(記録)]` と、状態 `受付_end` を持つ `stateDiagram-v2` を `src/index.css` を当てた描く先に描く'
+        mock: mermaid のモジュール
+        expected: 'ページの CSS のセレクタに `_end` を含む規則（入れ子の親のセレクタを重ねた形）が、`job_end` のノードと `受付_end` の状態の形に当たらず、それらの塗りが本文の色でない。状態遷移図の終了の印の内側の塗りが `--mdmark-color-text` の計算済みの色'
   - name: mermaidThemeVariables
     title: テーマの変数を作る
     container: src/mermaid.ts
