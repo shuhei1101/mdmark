@@ -461,13 +461,13 @@ test("test_normal_when_syntax_errors", async () => {
   // 検証
   expect(
     html.match(/<div class="mdmark-syntax-warning" role="note">/g),
-  ).toHaveLength(5);
+  ).toHaveLength(4);
   expect(
     html.match(/<p class="mdmark-syntax-warning-title">書き方の警告<\/p>/g),
-  ).toHaveLength(5);
+  ).toHaveLength(4);
+  // 知らない種類 unknown は読み飛ばす
   expect(html).toContain('data-kind="default" data-features="pin sort"');
-  expect(html).toContain("<code>unknown</code>");
-  expect(html).toContain("<code>data</code>・<code>plain</code>");
+  expect(html).not.toContain("<code>unknown</code>");
   expect(html).toContain("<p>見出しの無い範囲</p>");
   // 見出しの無い範囲はタブにせず、読めない指定の範囲だけが組を持たないタブになる
   expect(html.match(/<div class="mdmark-tabs"/g)).toHaveLength(1);
@@ -480,9 +480,10 @@ test("test_normal_when_syntax_errors", async () => {
     ),
     html.indexOf('<div class="mdmark-tabs">'),
   );
-  for (const label of ["group=", "grop=", "fold"]) {
-    expect(tabsWarning).toContain(`<code>${label}</code>`);
-  }
+  expect(tabsWarning).toContain("<code>group=</code>");
+  // 知らないキー grop= と知らない指定 fold は読み飛ばす
+  expect(tabsWarning).not.toContain("<code>grop=</code>");
+  expect(tabsWarning).not.toContain("<code>fold</code>");
   expect(html).toContain('<a href="#fig-missing">図</a>');
   expect(html).toContain("<code>#fig-missing</code>");
   expect(html).toContain('data-kind="data"');
@@ -1480,28 +1481,22 @@ test("test_normal_when_code_block_syntax_invalid", async () => {
   const html = render(markdown);
   // 検証
   const boxes = warnings(html);
-  expect(boxes).toHaveLength(5);
+  expect(boxes).toHaveLength(4);
   for (const box of boxes) {
     expect(box).toContain('role="note"');
     expect(box).toContain("書き方の警告");
   }
-  const [
-    keyBox = "",
-    lineBox = "",
-    markBox = "",
-    fenceBox = "",
-    spaceBox = "",
-  ] = boxes.map(plainText);
-  expect(keyBox).toContain("color=");
-  for (const key of ["title=", "lines", "highlight=", "fold="]) {
-    expect(keyBox).toContain(key);
-  }
+  const [lineBox = "", markBox = "", fenceBox = "", spaceBox = ""] =
+    boxes.map(plainText);
+  // 知らないキー color= は読み飛ばす
+  expect(boxes.map(plainText).join("\n")).not.toContain("color=");
   expect(lineBox).toContain("5");
   expect(lineBox).toContain("3 行");
   expect(markBox).toContain("[!code blink]");
   expect(markBox).toContain("[!code ++]");
   expect(fenceBox).toContain("直後にコードブロックがありません");
   expect(spaceBox).toContain("App.ts");
+  expect(spaceBox).toContain("題に空白は書けません");
   expect(codeTitles(html)).toEqual(["app.ts", "My"]);
   expect(matches(html, /<figure/g)).toHaveLength(2);
   const [, highlighted = "", focused = ""] = codeBlocks(html);
@@ -1881,9 +1876,8 @@ test("test_normal_when_fold_and_tree_errors", async () => {
   const html = stripSourceLine(render(markdown));
   // 検証
   const warnings = warningBodies(html);
-  expect(warnings).toHaveLength(5);
-  const [tabs = "", closedOpen = "", fold = "", titleAlone = "", open = ""] =
-    warnings;
+  expect(warnings).toHaveLength(4);
+  const [tabs = "", closedOpen = "", titleAlone = "", open = ""] = warnings;
   expect(tabs).toContain("closed");
   expect(tabs).toContain("open");
   expect(html).toContain(
@@ -1894,7 +1888,8 @@ test("test_normal_when_fold_and_tree_errors", async () => {
   expect(html).toContain(
     '<details class="mdmark-collapsible"><summary>手順（2 ステップ）</summary><ol class="mdmark-steps">',
   );
-  expect(fold).toContain("fold");
+  // 知らない指定 fold は読み飛ばす
+  expect(warnings.join("\n")).not.toContain("fold");
   expect(titleAlone).toContain("title=");
   expect(titleAlone).toContain("closed");
   expect(titleAlone).toContain("open");

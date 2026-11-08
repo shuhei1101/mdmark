@@ -146,11 +146,11 @@ scenarios:
         participant P as 使う側のページ
         participant M as mdmark
         P->>M: 設定と Markdown を渡して描かせる
-        M->>M: 知らない値とキーを外し、残りを設定に重ねる
+        M->>M: 知らない値を警告にし、知らないキーを読み飛ばして、残りを設定に重ねる
         M-->>P: 書き方の警告と、設定の明暗と toc を当てた文書
         P-->>U: 書き方の警告と本文を表示
     expected:
-      - 文書の先頭に、`scheme=sepia`・`theme=theme-unknown`・`size=wide` を挙げ、書けるキーと値を書いた書き方の警告が 1 つある
+      - 文書の先頭に、`scheme=sepia`・`theme=theme-unknown` を挙げ、書けるキーと値を書いた書き方の警告が 1 つあり、知らないキー `size=wide` は挙げていない
       - 描く先の要素の地の色の計算値が、設定の明暗と既定のテーマ（dev-swiss）の暗い配色の `--mdmark-color-bg` の値
       - 目次を出すボタンがあり `aria-expanded` が `false` で、右端にポインターを置いても右側の目次が表示されていない（`side-toc.mode` の `fixed` と同じ）
     test: test_error_when_unknown_key_or_value
@@ -188,7 +188,7 @@ trigger: 使う側のページが、先頭に page のマーカーを持つ文�
 preconditions:
   - ページが版を固定した URL で mdmark の JavaScript と CSS を読んでいる
 success_guarantee: 文書のマーカー → 設定（近いフォルダ → 上のフォルダ → 端末の設定）→ 描く先の祖先の class → OS の設定の順に、先にあるものの値で配色の明暗・テーマ・右側の目次の出し方が決まる。GitHub など mdmark の無い所ではマーカーが見えない。
-minimal_guarantee: 知らないキー・値と、文書の先頭に無いマーカーは書き方の警告にして使わず、残りのキーと設定の値で描く。印刷では、マーカーでダークにした文書も明るい配色で出す。
+minimal_guarantee: 書けるキーの知らない値と、文書の先頭に無いマーカーは書き方の警告にして使わず、知らないキーは警告を出さずに読み飛ばし、残りのキーと設定の値で描く。印刷では、マーカーでダークにした文書も明るい配色で出す。
 test_file: tests/e2e/単一ユースケース/ページの設定を文書で指定する.spec.ts
 notes:
   文書の先頭: '最初の見出し・段落・表・リスト・コードブロックより前。空の行と、ほかのマーカー（`<!-- features: … -->` など）は前にあってよい'

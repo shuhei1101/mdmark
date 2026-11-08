@@ -238,7 +238,7 @@ test("test_normal_when_steps_folded", async ({ page }) => {
   expect(markers).toEqual(["counter(mdmark-step)", "counter(mdmark-step)"]);
 });
 
-// closed と open の両方・知らない指定・closed も open も無い title= は書き方の警告を出し、読めた指定だけを当てる（異常シナリオ（ステップの読めない指定））
+// closed と open の両方・closed も open も無い title= は書き方の警告を出し、知らない指定は読み飛ばして、読めた指定だけを当てる（異常シナリオ（ステップの読めない指定））
 test("test_error_when_steps_option_invalid", async ({ page }) => {
   // 準備
   await openPage(page, builtRoot);
@@ -261,12 +261,14 @@ test("test_error_when_steps_option_invalid", async ({ page }) => {
   });
   // 検証
   const warnings = page.locator("#doc .mdmark-syntax-warning");
-  await expect(warnings).toHaveCount(3);
+  await expect(warnings).toHaveCount(2);
   await expect(warnings.nth(0)).toContainText("closed");
   await expect(warnings.nth(0)).toContainText("open");
-  await expect(warnings.nth(1)).toContainText("fold");
-  await expect(warnings.nth(2)).toContainText("title=");
-  await expect(warnings.nth(2)).toContainText("closed");
+  // 知らない指定 fold は読み飛ばす
+  await expect(warnings.nth(0)).not.toContainText("fold");
+  await expect(warnings.nth(1)).not.toContainText("fold");
+  await expect(warnings.nth(1)).toContainText("title=");
+  await expect(warnings.nth(1)).toContainText("closed");
   const lists = page.locator("#doc ol.mdmark-steps");
   await expect(lists).toHaveCount(3);
   await expect(lists.nth(0).locator("xpath=ancestor::details")).toHaveCount(1);

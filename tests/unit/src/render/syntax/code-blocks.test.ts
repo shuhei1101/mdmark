@@ -23,7 +23,7 @@ test("test_read_code_spec", async () => {
   const { readCodeSpec } = await loadCodeBlocks();
   const args = parseMarkArgs("title=app.ts lines highlight=2,4-6");
   // 実行
-  const spec = readCodeSpec({ args, lineCount: 6 });
+  const spec = readCodeSpec({ args, text: "", lineCount: 6 });
   // 検証
   expect(spec.title).toBe("app.ts");
   expect(spec.lineNumbers).toBe(true);
@@ -31,18 +31,19 @@ test("test_read_code_spec", async () => {
   expect(spec.warnings).toEqual([]);
 });
 
-// 知らないキーと空白の後ろの指定を警告にし、読めた題を当てる（異常系）
+// 空白の後ろの指定を警告にし、知らないキーを読み飛ばして、読めた題を当てる（異常系）
 test("test_read_code_spec_when_unknown_key", async () => {
   // 準備
   const { readCodeSpec } = await loadCodeBlocks();
-  const args = parseMarkArgs("title=My App.ts color=red");
+  const text = "title=My App.ts color=red debug";
   // 実行
-  const spec = readCodeSpec({ args, lineCount: 3 });
+  const spec = readCodeSpec({ args: parseMarkArgs(text), text, lineCount: 3 });
   // 検証
   expect(spec.title).toBe("My");
-  const text = warningText(spec.warnings);
-  expect(text).toContain("App.ts");
-  expect(text).toContain("color=");
+  expect(spec.warnings.map((item) => item.label)).toEqual(["App.ts"]);
+  expect(spec.skipped.map((skipped) => skipped.arg).sort()).toEqual(
+    ["color=", "debug"].sort(),
+  );
 });
 
 // 行の数を超える番号と読めない番号を外して警告にする（異常系）
@@ -51,7 +52,7 @@ test("test_read_code_spec_when_line_missing", async () => {
   const { readCodeSpec } = await loadCodeBlocks();
   const args = parseMarkArgs("highlight=2,5,x,3-1");
   // 実行
-  const spec = readCodeSpec({ args, lineCount: 3 });
+  const spec = readCodeSpec({ args, text: "", lineCount: 3 });
   // 検証
   expect([...spec.highlights]).toEqual([2]);
   const text = warningText(spec.warnings);
@@ -443,7 +444,7 @@ test("test_read_code_spec_when_fold", async () => {
   const { readCodeSpec } = await loadCodeBlocks();
   const args = parseMarkArgs("fold=2,4-5,99");
   // 実行
-  const spec = readCodeSpec({ args, lineCount: 6 });
+  const spec = readCodeSpec({ args, text: "", lineCount: 6 });
   // 検証
   expect([...spec.folds]).toEqual([2, 4, 5]);
   expect(warningText(spec.warnings)).toContain("99");
@@ -641,10 +642,12 @@ test("test_read_code_spec_when_wrap", async () => {
   // 実行
   const wrapped = readCodeSpec({
     args: parseMarkArgs("lines wrap"),
+    text: "lines wrap",
     lineCount: 3,
   });
   const valued = readCodeSpec({
     args: parseMarkArgs("wrap=yes"),
+    text: "wrap=yes",
     lineCount: 3,
   });
   // 検証

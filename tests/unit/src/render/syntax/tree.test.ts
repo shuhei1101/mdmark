@@ -202,7 +202,7 @@ test("test_read_tree_options", async () => {
   expect(levels.warning).toBeUndefined();
 });
 
-// 読めない値・キー・指定を 1 つの警告にまとめる（異常系）
+// 読めない値を警告にし、知らないキーと指定を読み飛ばす（異常系）
 test("test_read_tree_options_when_unreadable", async () => {
   // 準備
   const { readTreeOptions } = await loadTree();
@@ -212,12 +212,12 @@ test("test_read_tree_options_when_unreadable", async () => {
   // 検証
   expect(mixed.open).toBeUndefined();
   const items = mixed.warning?.items ?? [];
-  expect(items.map((item) => item.label).sort()).toEqual(
-    ["closed", "depth=", "open=deep"].sort(),
+  expect(items.map((item) => item.label)).toEqual(["open=deep"]);
+  expect(items[0]?.message).toContain("all");
+  expect(items[0]?.message).toContain("階層の数");
+  expect(mixed.skipped.map((skipped) => skipped.arg).sort()).toEqual(
+    ["closed", "depth="].sort(),
   );
-  const deep = items.find((item) => item.label === "open=deep")?.message ?? "";
-  expect(deep).toContain("all");
-  expect(deep).toContain("階層の数");
   expect(zero.open).toBeUndefined();
   expect((zero.warning?.items ?? []).map((item) => item.label)).toEqual([
     "open=0",

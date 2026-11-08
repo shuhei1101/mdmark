@@ -25,7 +25,7 @@ import {
   type TotalCalc,
 } from "../../table-logic.ts";
 import type { Mark } from "../marks.ts";
-import { readCollapse } from "./collapse.ts";
+import { readCollapse, titleTailItem } from "./collapse.ts";
 import type { CsvTableMeta } from "./csv.ts";
 import { slugBase } from "./headings.ts";
 import {
@@ -45,7 +45,9 @@ import {
   textOf,
 } from "./tokens.ts";
 import {
+  type SkippedArg,
   type SyntaxWarning,
+  skippedArgBlocks,
   unclosedWarning,
   warningBlock,
 } from "./warnings.ts";
@@ -90,6 +92,8 @@ export type TableSpec = {
   title?: string | undefined;
   /** 読めなかった指定 */
   warnings: WarningItem[];
+  /** 読み飛ばした知らない種類・`+機能`・`-機能`・キー */
+  skipped: SkippedArg[];
   /** `hide=` で既定で隠す列の位置。`columns` の無い表・先頭の列・表に無い列名は入れない */
   hide: number[];
   /** `total=` で集計する列。`total` の無い表・表に無い列名・知らない計算は入れない */
@@ -283,31 +287,35 @@ function readHeaderCount(options: {
   return fallback;
 }
 
-/** 表の印の引数と表の見出しから `TableSpec` を作る。印が無い表は `default` */
+/** 表の印の引数と表の見出しから `TableSpec` を作る。印が無い表は `default`。知らない種類・`+機能`・`-機能`・キーは `skipped` に入れる。`text` は印の引数の文字 */
 export function readTableSpec(
   args: MdmarkMarkArgs | undefined,
   headers: string[],
   rowCount: number,
+  text = "",
 ): TableSpec {
   const warnings: WarningItem[] = [];
+  const skipped: SkippedArg[] = [];
   let kind: TableKind = "default";
   const featureArgs: string[] = [];
   const unknownKinds: string[] = [];
-  const { collapse, title, items, rest } = readCollapse(
+  const { collapse, title, items, titleTail, rest } = readCollapse(
     args ?? { args: [], keys: {} },
+    text,
   );
   for (const arg of rest.args) {
     if (arg.startsWith("+") || arg.startsWith("-")) {
       featureArgs.push(arg);
     } else if (WRITABLE_KINDS.includes(arg) && kind === "default") {
       kind = arg as TableKind;
+    } else if (arg === titleTail) {
+      warnings.push(titleTailItem(arg));
     } else {
       unknownKinds.push(arg);
     }
   }
   // 種類の機能に、`+機能`・`-機能` を書いた順に当てる
   const features: TableFeature[] = [...TABLE_KINDS[kind]];
-  const applied: string[] = [];
   const unknownFeatures: string[] = [];
   for (const arg of featureArgs) {
     const name = arg.slice(1) as TableFeature;
@@ -315,7 +323,6 @@ export function readTableSpec(
       unknownFeatures.push(arg);
       continue;
     }
-    applied.push(arg);
     const position = features.indexOf(name);
     if (arg.startsWith("+") && position < 0) {
       features.push(name);
@@ -323,20 +330,11 @@ export function readTableSpec(
       features.splice(position, 1);
     }
   }
-  const appliedText = applied.length
-    ? `既定の種類に ${codes(applied)} を当てて描いています。`
-    : "既定の種類で描いています。";
   for (const unknown of unknownKinds) {
-    warnings.push({
-      label: unknown,
-      message: `の種類 \`${unknown}\` は使えません。使える種類は ${codes(WRITABLE_KINDS)} です。${appliedText}`,
-    });
+    skipped.push({ arg: unknown, usable: codes(WRITABLE_KINDS) });
   }
   for (const arg of unknownFeatures) {
-    warnings.push({
-      label: arg,
-      message: `使えない機能です。使える機能は ${codes(TABLE_FEATURES)} です`,
-    });
+    skipped.push({ arg, usable: codes(TABLE_FEATURES) });
   }
   let filters: TableFilter[] = [];
   let hide: number[] = [];
@@ -400,9 +398,21 @@ export function readTableSpec(
     } else if (key === "tree" || TREE_KEYS.includes(key)) {
       treeValues[key] = value.trim();
     } else {
-      warnings.push({
-        label: `${key}=`,
-        message: `使えないキーです。使えるキーは ${codes(["filter=", "hide=", "total=", "pin=", "wide=", "check=", "header-rows=", "row-header=", "tree=", ...TREE_KEYS.map((name) => `${name}=`), ...COLOR_KEYS.map((name) => `${name}=`)])} です`,
+      skipped.push({
+        arg: `${key}=`,
+        usable: codes([
+          "filter=",
+          "hide=",
+          "total=",
+          "pin=",
+          "wide=",
+          "check=",
+          "header-rows=",
+          "row-header=",
+          "tree=",
+          ...TREE_KEYS.map((name) => `${name}=`),
+          ...COLOR_KEYS.map((name) => `${name}=`),
+        ]),
       });
     }
   }
@@ -423,6 +433,7 @@ export function readTableSpec(
     collapse,
     title,
     warnings,
+    skipped,
     hide,
     totals,
     headRows,
@@ -1228,7 +1239,12 @@ export function decorateTables(state: StateCore): void {
     const rowCount = bodyRowCount(tokens, index) + 1;
     let spec =
       viewSpec ??
-      readTableSpec(range?.mark.args, headersOf(tokens, index), rowCount);
+      readTableSpec(
+        range?.mark.args,
+        headersOf(tokens, index),
+        rowCount,
+        range?.mark.rest,
+      );
     let mergeColumns: number[] = [];
     if (range && !viewSpec) {
       if (spec.headRows > 1) {
@@ -1237,7 +1253,12 @@ export function decorateTables(state: StateCore): void {
           headersOf(tokens, index),
           ...bodyCellsOf(tokens, index).slice(0, spec.headRows - 1),
         ];
-        spec = readTableSpec(range.mark.args, headLabelsOf(head), rowCount);
+        spec = readTableSpec(
+          range.mark.args,
+          headLabelsOf(head),
+          rowCount,
+          range.mark.rest,
+        );
       }
       const merged = mergeTableCells({
         state,
@@ -1311,6 +1332,15 @@ export function decorateTables(state: StateCore): void {
     for (const warning of warnings) {
       out.push(
         warningBlock(state, warning, range ? tokens[range.open] : undefined),
+      );
+    }
+    if (range) {
+      out.push(
+        ...skippedArgBlocks(
+          state,
+          { mark: range.mark.raw, skipped: spec.skipped },
+          tokens[range.open],
+        ),
       );
     }
     out.push(ownBlock(state, head.slice(divEnd)));

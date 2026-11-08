@@ -25,26 +25,26 @@ async function expectFrame(
   ).resolves.toBe("dashed");
 }
 
-// 表の印に知らない種類を書いたときは、印と本文だけを出す（UnknownKind）
-test("test_unknown_kind", async () => {
+// 表の印に closed と open を両方書いたときは、印と本文だけを出す（ClosedAndOpen）
+test("test_closed_and_open", async () => {
   // 準備・実行
-  const { warning } = await open("unknown-kind");
+  const { warning } = await open("closed-and-open");
   // 検証
   await expectFrame(warning);
   await expect(warning.locator("p code").first().innerText()).resolves.toBe(
-    "<!-- table: unknown +sort -->",
+    "<!-- table: data closed open -->",
   );
   await expect(warning.locator("ul").count()).resolves.toBe(0);
 });
 
-// 知らない機能とキーを書いたときは、本文の後に項目を並べる（Items）
+// 機能を足していない表でだけ使えないキーを書いたときは、本文の後に項目を並べる（Items）
 test("test_items", async () => {
   // 準備・実行
   const { warning } = await open("items");
   // 検証
   await expectFrame(warning);
   const labels = await warning.locator("li > code:first-child").allInnerTexts();
-  expect(labels).toEqual(["+unknown", "size="]);
+  expect(labels).toEqual(["hide=", "total="]);
 });
 
 // 切れた図表の参照は、印を持たず本文だけを出す（BrokenReference）

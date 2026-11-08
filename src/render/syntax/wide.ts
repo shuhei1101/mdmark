@@ -3,9 +3,9 @@ import { SLOT_MARKER, splitSlots } from "../../parts/own.ts";
 import { renderWide } from "../../parts/wide.ts";
 import { outermostRanges, pairRanges } from "./blocks.ts";
 import { featureOn, markOf, tabBoundaryBlock } from "./tokens.ts";
-import { unclosedWarning, warningBlock } from "./warnings.ts";
+import { skippedArgBlocks, unclosedWarning, warningBlock } from "./warnings.ts";
 
-/** `wide` がオンなら、`<!-- wide -->`（`closed` で `narrow`）〜 `<!-- /wide -->` を wide の範囲で囲む。範囲の中の wide の印は取り除く */
+/** `wide` がオンなら、`<!-- wide -->`（`closed` で `narrow`）〜 `<!-- /wide -->` を wide の範囲で囲む。`closed` 以外の引数は読み飛ばした引数にする。範囲の中の wide の印は取り除く */
 export const buildWideRanges = (state: StateCore): void => {
   if (!featureOn(state, "wide")) {
     return;
@@ -43,18 +43,11 @@ export const buildWideRanges = (state: StateCore): void => {
       continue;
     }
     const args = mark.args.args;
-    const unknown = [
+    const skipped = [
       ...args.filter((arg) => arg !== "closed"),
       ...Object.keys(mark.args.keys).map((key) => `${key}=`),
-    ];
-    if (unknown.length) {
-      out.push(
-        warningBlock(state, {
-          mark: mark.raw,
-          message: `の ${unknown.map((arg) => `\`${arg}\``).join("・")} は使えない指定です。使える指定は \`closed\` です。広げた幅で描いています。`,
-        }),
-      );
-    }
+    ].map((arg) => ({ arg, usable: "`closed`" }));
+    out.push(...skippedArgBlocks(state, { mark: mark.raw, skipped }, token));
     const rangeState = args.includes("closed") ? "narrow" : "wide";
     const [head = ""] = splitSlots(
       renderWide({ body: SLOT_MARKER, state: rangeState, toggle: false }),

@@ -255,8 +255,8 @@ test("test_error_when_empty_group", async ({ page }) => {
   await expectSelected(tabGroup(page, 1), "macOS", ["Windows"]);
 });
 
-// 知らないキーと指定は、書き方の警告を出して読めた指定だけで描く（異常シナリオ（知らないタブの指定））
-test("test_error_when_unknown_option", async ({ page }) => {
+// 知らないキーと指定は読み飛ばし、書き方の警告を出さずに読めた指定だけで描く（正常シナリオ（知らないタブの指定））
+test("test_normal_when_unknown_option", async ({ page }) => {
   // 準備
   await openPage(page, builtRoot);
   // 実行
@@ -268,15 +268,7 @@ test("test_error_when_unknown_option", async ({ page }) => {
   });
   await tabGroup(page, 0).getByRole("tab", { name: "Windows" }).click();
   // 検証
-  const warnings = page.locator("#doc .mdmark-syntax-warning");
-  await expect(warnings).toHaveCount(2);
-  await expect(warnings.nth(0)).toContainText("grop=");
-  await expect(warnings.nth(0)).toContainText("使えないキーです");
-  await expect(warnings.nth(1)).toContainText("fold");
-  await expect(warnings.nth(1)).toContainText("使えない指定です");
-  await expectBefore(warnings.nth(0), tabGroup(page, 0));
-  await expectBefore(tabGroup(page, 0), warnings.nth(1));
-  await expectBefore(warnings.nth(1), tabGroup(page, 1));
+  await expect(page.locator("#doc .mdmark-syntax-warning")).toHaveCount(0);
   await expect(page.locator("#doc [role=tablist]")).toHaveCount(2);
   await expectSelected(tabGroup(page, 0), "Windows", ["macOS"]);
   await expectSelected(tabGroup(page, 1), "macOS", ["Windows"]);

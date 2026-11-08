@@ -34,12 +34,14 @@ const KEY_PART_PATTERN = /([^.[\]]+)|\[(\d+)\]/g;
 /** 読めるキーのパス（`items[0].body`） */
 const KEY_PATH_PATTERN = /^[^.[\]]+(?:\[\d+\])*(?:\.[^.[\]]+(?:\[\d+\])*)*$/;
 
-/** 同じ行のずれを並べる順（警告・知らない印・配置のずれ） */
+/** 同じ行のずれを並べる順（警告・知らない印と読み飛ばした引数・配置のずれ） */
 function issueRank(issue: CheckIssue): number {
   if (issue.kind === "diagram_invalid" || issue.kind === "syntax_warning") {
     return 0;
   }
-  return issue.kind === "unknown_mark" ? 1 : 2;
+  return issue.kind === "unknown_mark" || issue.kind === "unknown_mark_arg"
+    ? 1
+    : 2;
 }
 
 /** キーのパスを、マップのキーの文字と配列の位置の並びに分ける */
@@ -181,7 +183,7 @@ async function readConfigIfAny(
   return { path, dir: read.dir, config: validated };
 }
 
-/** Markdown の文字列か、YAML のファイルのキーの値を、描いたときの書き方の警告・知らない印・図の配置のずれにして返す */
+/** Markdown の文字列か、YAML のファイルのキーの値を、描いたときの書き方の警告・読み飛ばした記法の印の引数・知らない印・図の配置のずれにして返す */
 export async function checkMarkdownSource(options: {
   cwd: string;
   config?: string | undefined;

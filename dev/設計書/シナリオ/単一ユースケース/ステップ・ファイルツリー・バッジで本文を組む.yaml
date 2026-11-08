@@ -140,11 +140,12 @@ scenarios:
         participant P as 使う側のページ
         participant M as mdmark
         P->>M: 設定と Markdown を渡して描かせる
-        M->>M: closed と open の両方・知らない指定・closed も open も無い title= がある
+        M->>M: closed と open の両方・closed も open も無い title= があり、知らない指定を読み飛ばす
         M-->>P: 書き方の警告と、読めた指定だけを当てた手順を描く
         P-->>U: 書き方の警告と手順を表示
     expected:
-      - 1 つ目の範囲の上に `closed` と `open` を同時に書けないこと、2 つ目の範囲の上に `fold` が使えない指定であること、3 つ目の範囲の上に `title=` は `closed` か `open` と一緒に書くことを書いた書き方の警告がある
+      - 1 つ目の範囲の上に `closed` と `open` を同時に書けないこと、3 つ目の範囲の上に `title=` は `closed` か `open` と一緒に書くことを書いた書き方の警告がある
+      - 2 つ目の範囲の上に書き方の警告が無い（知らない指定 `fold` は読み飛ばす）
       - 1 つ目の手順は `closed` を当てた閉じた折りたたみに入り、2 つ目と 3 つ目の手順は折りたたみに入らずに描かれている
     test: test_error_when_steps_option_invalid
   - name: 正常シナリオ（ファイルツリーに注釈を書く）
