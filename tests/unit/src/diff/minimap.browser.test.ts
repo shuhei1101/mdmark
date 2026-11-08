@@ -159,7 +159,7 @@ test("test_attach_minimap_when_two_diffs", async () => {
   expect(findBands()).toHaveLength(0);
 });
 
-// スクロールする枠の中の差分は、枠の右端に配置し枠を送信する（正常系）
+// スクロールする枠の中の差分は、枠の右端に配置し、枠をスクロールする（正常系）
 test("test_attach_minimap_when_scroll_container", async () => {
   // 準備
   const container = place(document.createElement("div"));

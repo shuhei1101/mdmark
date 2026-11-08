@@ -17,7 +17,7 @@ const loadPartModules = () =>
 /** 代役のビューの部品のモジュールが呼ばれたことを記録する場所 */
 type Recorder = { attached: Element[]; detached: number };
 
-/** 代役のモジュールが書き込む記録の配置し場（グローバル） */
+/** 代役のモジュールが書き込む記録の配置場所（グローバル） */
 declare global {
   var __mdmarkMountTest: Recorder | undefined;
 }

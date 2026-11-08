@@ -7,7 +7,7 @@ const loadMain = () => import("../../../../../src/plugin/setup/main.ts");
 
 const createTempDir = useTempDirs();
 
-// status の結果を JSON の 1 行で記載する（正常系）
+// status の結果を JSON の 1 行で標準出力に書き込む（正常系）
 test("test_run_setup", async () => {
   // 準備
   const { runSetup } = await loadMain();

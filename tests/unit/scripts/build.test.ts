@@ -662,7 +662,7 @@ const CONSUMER = [
   "",
 ].join("\n");
 
-// 公開関数と拡張の型を持つ dist/index.d.ts を記載し、利用側の型検査が通る（正常系）
+// 公開関数と拡張の型を持つ dist/index.d.ts を書き込み、利用側の型検査が通る（正常系）
 test("test_emit_declarations", async () => {
   // 準備
   const { emitDeclarations } = await loadBuild();

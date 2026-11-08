@@ -32,7 +32,7 @@ type Recorder = {
   commentsGate?: Promise<void>;
 };
 
-/** 代役の部品のモジュールが書き込む記録の配置し場（グローバル） */
+/** 代役の部品のモジュールが書き込む記録の配置場所（グローバル） */
 declare global {
   var __mdmarkPartTest: Recorder | undefined;
 }
