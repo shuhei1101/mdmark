@@ -146,7 +146,10 @@ export function readImageAttributes(
     } else if (name === "poster" && kind === "video" && value) {
       attributes.poster = value;
     } else if (name === "poster") {
-      unreadable(part, "動画にだけ、`poster=パス` の構造で記載できる属性です。");
+      unreadable(
+        part,
+        "動画にだけ、`poster=パス` の構造で記載できる属性です。",
+      );
     } else {
       unreadable(part, "使用できない属性です。");
     }

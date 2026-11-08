@@ -77,7 +77,9 @@ function galleryWarnings(
   const max = SUBFIGURE_LETTERS.length;
   const messages: string[] = [];
   if (options.count === 0) {
-    messages.push("の範囲に画像がありません。範囲の中に画像を記載してください。");
+    messages.push(
+      "の範囲に画像がありません。範囲の中に画像を記載してください。",
+    );
   } else if (options.count > max) {
     messages.push(
       `の範囲の画像が ${options.count} 枚あります。画像は ${max} 枚までにしてください。${max + 1} 枚目からはサブ図の番号を付けずに描いています。`,

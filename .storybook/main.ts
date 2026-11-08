@@ -7,7 +7,9 @@ const allowedHosts = process.env.STORYBOOK_ALLOWED_HOSTS?.split(",");
 /** 部品の HTML を返却する描画のインターフェース（scripts/storybook-render.ts）の origin */
 const renderOrigin = process.env.RENDER_ORIGIN;
 if (renderOrigin === undefined) {
-  throw new Error("RENDER_ORIGIN が無い（描画のインターフェースの origin を指定する）");
+  throw new Error(
+    "RENDER_ORIGIN が無い（描画のインターフェースの origin を指定する）",
+  );
 }
 
 /** vscode/ の部品が vscode/node_modules を参照しないよう、直下の 1 つにする依存 */

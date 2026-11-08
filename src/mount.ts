@@ -207,7 +207,9 @@ export function mount(el: HTMLElement, opts: MountOptions): MountHandle {
   }
   if (commentStore !== undefined) {
     if (docId === undefined) {
-      throw new TypeError("commentStore を指定するときは docId も指定してください");
+      throw new TypeError(
+        "commentStore を指定するときは docId も指定してください",
+      );
     }
     checkCommentStore(commentStore, "commentStore");
   }

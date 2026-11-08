@@ -13,7 +13,8 @@ export type CopyState = "none" | "copied" | "failed";
 /** コピーした結果の通知の文言 */
 const COPY_MESSAGES = {
   copied: "クリップボードにコピーしました",
-  failed: "クリップボードへ書き込めませんでした。下の JSON を選んでコピーしてください",
+  failed:
+    "クリップボードへ書き込めませんでした。下の JSON を選んでコピーしてください",
 };
 
 /** スライダーの値を表の見出しの文字にする。小数の誤差は落とす */

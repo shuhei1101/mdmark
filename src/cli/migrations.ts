@@ -185,7 +185,10 @@ function validateStep(
   const allowed: string[] = [...COMMON_KEYS, ...STEP_KEYS[kind]];
   for (const key of Object.keys(item)) {
     if (!allowed.includes(key)) {
-      problem(`${where}.${key}`, `${op} が持たないキーです。削除してください。`);
+      problem(
+        `${where}.${key}`,
+        `${op} が持たないキーです。削除してください。`,
+      );
     }
   }
   /** 空でない文字列の必須のプロパティを検める */
@@ -545,7 +548,9 @@ async function editYaml(
   const doc = parseDocument(await readFile(path, "utf8"));
   const [first] = doc.errors;
   if (first) {
-    throw new Error(`${path} を YAML として読み込めません（${reasonOf(first)}）`);
+    throw new Error(
+      `${path} を YAML として読み込めません（${reasonOf(first)}）`,
+    );
   }
   if (edit(doc)) {
     await writeFile(path, doc.toString({ flowCollectionPadding: false }));

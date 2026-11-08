@@ -118,7 +118,9 @@ export function checkViewOptions(
     group !== undefined &&
     (typeof group !== "string" || !names.includes(group))
   ) {
-    throw new TypeError("opts.group は opts.columns のどれかで指定してください");
+    throw new TypeError(
+      "opts.group は opts.columns のどれかで指定してください",
+    );
   }
   if (filter !== undefined) {
     if (

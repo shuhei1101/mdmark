@@ -250,7 +250,9 @@ export async function runUpgrade(
     );
   }
   if (order === 0) {
-    io.stdout("手元のバージョンが目標のバージョンと同じです。適用する手順はありません");
+    io.stdout(
+      "手元のバージョンが目標のバージョンと同じです。適用する手順はありません",
+    );
     return 0;
   }
   const loadedVersions = await loadMigrationVersions({

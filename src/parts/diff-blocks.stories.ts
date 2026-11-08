@@ -51,7 +51,11 @@ export const TableRowDel: Story = {
 export const ListItemDel: Story = {
   name: "ListItemDel",
   parameters: { server: { id: "diff-blocks" } },
-  args: { kind: "del", unit: "item", html: "<li>release ブランチを削除する</li>" },
+  args: {
+    kind: "del",
+    unit: "item",
+    html: "<li>release ブランチを削除する</li>",
+  },
 };
 
 export const CodeBlock: Story = {

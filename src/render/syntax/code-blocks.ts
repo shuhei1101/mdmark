@@ -151,7 +151,8 @@ export function readCodeSpec(options: {
   if (args.keys.title === "") {
     warnings.push({
       label: "title=",
-      message: "タイトルがありません。`title=app.ts` のように記載してください。",
+      message:
+        "タイトルがありません。`title=app.ts` のように記載してください。",
     });
   }
   const highlights = readLineNumbers({

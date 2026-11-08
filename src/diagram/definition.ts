@@ -1478,7 +1478,9 @@ export function readDefinition(
   if (blocks.length !== 1 || block === undefined) {
     return {
       ok: false,
-      problems: ["マーカーの範囲に json のコードブロックを 1 つだけ配置してください"],
+      problems: [
+        "マーカーの範囲に json のコードブロックを 1 つだけ配置してください",
+      ],
     };
   }
   const parsed = parseDefinitionJson(block);

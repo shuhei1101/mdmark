@@ -615,7 +615,9 @@ export async function attachComments(options: {
     }
     if (!Array.isArray(loaded) || !loaded.every(isComment)) {
       console.error("[mdmark] コメントを読み込めません", "load", docId, loaded);
-      throw new TypeError("load が返却した値がコメントの配列の構造に合いません");
+      throw new TypeError(
+        "load が返却した値がコメントの配列の構造に合いません",
+      );
     }
     comments = loaded;
     closeBubble(false);
