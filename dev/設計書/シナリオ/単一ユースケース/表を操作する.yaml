@@ -668,7 +668,7 @@ scenarios:
       - name: mdmark を読むページ
         description: 正常シナリオと同じ
       - name: セルを結合した表を持つ Markdown
-        description: '`<!-- table: data header-rows=2 row-header=1 -->` 〜 `<!-- /table -->` で囲んだ表と、マーカーで囲まない表を 1 つずつ持つ文書'
+        description: '`<!-- table: data header-rows=2 row-header=1 filter=分類,件数,時間,メモ -->` 〜 `<!-- /table -->` で囲んだ表と、マーカーで囲まない表を 1 つずつ持つ文書'
         notes: 囲んだ表は、見出しの 1 段目の 3 列目に `<<`、データの 2 行目と 3 行目の 1 列目に `^^` を持つ。囲まない表は、データのセルに `^^` と `<<` を持つ
       - name: Mock
         description: 正常シナリオと同じ
@@ -693,7 +693,7 @@ scenarios:
       - name: mdmark を読むページ
         description: 正常シナリオと同じ
       - name: 分類の列を結合した表を持つ Markdown
-        description: '`<!-- table: data -->` で囲み、1 列目の分類が `A`・`^^`・`B`・`^^` で、2 列目の数値が `3`・`1`・`4`・`2` の 4 行の表を持つ文書'
+        description: '`<!-- table: data filter=分類 -->` で囲み、1 列目の分類が `A`・`^^`・`B`・`^^` で、2 列目の数値が `3`・`1`・`4`・`2` の 4 行の表を持つ文書'
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
@@ -718,7 +718,7 @@ scenarios:
       - name: mdmark を読むページ
         description: 正常シナリオと同じ
       - name: 読めない結合を持つ Markdown
-        description: '`<!-- table: data header-rows=5 -->` で 3 行の表を囲み、データの 1 行目の 2 列目に `^^`、見出しの 1 列目に `<<` を持つ文書'
+        description: '`<!-- table: data header-rows=5 filter=列B -->` で 3 行の表を囲み、データの 1 行目の 2 列目に `^^`、見出しの 1 列目に `<<` を持つ文書'
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
@@ -733,7 +733,7 @@ scenarios:
     expected:
       - 表の上に書き方の警告があり、表の行数を超える `header-rows=5`、上に結合するセルの無い `^^`、左に結合するセルの無い `<<` が記載されている
       - 表は描かれ、読めなかった `^^` と `<<` は書いたとおりの文字で出ている
-      - 並べ替えと絞り込みのボタンが見出しにある
+      - 並べ替えのボタンが見出しの各列にあり、絞り込みのボタンが `filter=` で指定した `列B` の見出しにある
     test: test_error_when_merge_invalid
   - name: 正常シナリオ（はみ出す表で先頭の列を留める）
     setup:
@@ -852,7 +852,7 @@ scenarios:
       - name: mdmark を読むページ
         description: 正常シナリオと同じ
       - name: 列の並べ替えを付けた表を持つ Markdown
-        description: '`<!-- table: data +reorder +columns -->` 〜 `<!-- /table -->` で囲んだ 4 列 3 行の表と、`+reorder` だけを付けた表と、`+reorder` も `+columns` も付けない `<!-- table: data -->` の表を 1 つずつ持つ文書'
+        description: '`<!-- table: data +reorder +columns filter=名前:text -->` 〜 `<!-- /table -->` で囲んだ 4 列 3 行の表と、`+reorder` だけを付けた表と、`+reorder` も `+columns` も付けない `<!-- table: data -->` の表を 1 つずつ持つ文書'
         notes: 列は左から `名前`・`型`・`既定`・`説明`
       - name: Mock
         description: 正常シナリオと同じ
@@ -875,7 +875,7 @@ scenarios:
         U->>P: 名前の列の見出しの並べ替えのボタンを押す
         P-->>U: 行を並べ替えた表（列の順は変わらない）
     expected:
-      - 見出しには行の並べ替えのボタンだけがあり、列を動かすつまみと列のメニューが無い
+      - 見出しには行の並べ替えのボタンと、`filter=` で指定した `名前` の絞り込みのボタンだけがあり、列を動かすつまみと列のメニューが無い
       - 表の上の帯に、アイコンだけで `aria-label` とツールチップが「テーブル設定」のボタンがあり、押すと列の一覧が開き、`aria-expanded` が `true` になる
       - 一覧の各行に、並べ替えのつまみと、表示・非表示の目のアイコンがある。Markdown に記載した先頭の列（`名前`）の目のアイコンは、並べ替えて先頭でなくなった後も `disabled` で、一覧の下の案内に「先頭の列は隠せません」の理由を出す
       - ドラッグの後、表の列が `説明`・`名前`・`型`・`既定` の順で、全ての行のセルが見出しと同じ順に動き、一覧も同じ順になっている
