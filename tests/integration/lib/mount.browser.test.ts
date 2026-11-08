@@ -12717,3 +12717,217 @@ test("test_normal_when_card_grid_not_list", async () => {
     ),
   );
 });
+
+// 正常系（ブロックの間隔）で並べるブロック。同じ種類のリストが 1 つにつながらないよう、後に置くときの書き方を分ける
+const SPACING_BLOCKS: { name: string; before: string; after?: string }[] = [
+  { name: "段落", before: "段落の文。" },
+  { name: "見出し", before: "## 見出し" },
+  { name: "表", before: "| 列 |\n| --- |\n| 値 |" },
+  { name: "コードブロック", before: "```ts\nconst a = 1;\n```" },
+  { name: "ファイルツリー", before: "```tree\napp/\n└── a.ts\n```" },
+  { name: "箇条書き", before: "- 項目", after: "* 項目" },
+  { name: "番号付きリスト", before: "1. 項目", after: "1) 項目" },
+  { name: "引用", before: "> 引用の文" },
+  { name: "注意書き", before: "> [!NOTE]\n> 注意の文" },
+  { name: "区切り線", before: "---" },
+  {
+    name: "タブ",
+    before:
+      "<!-- tabs -->\n\n### タブ A\n\nA の本文\n\n### タブ B\n\nB の本文\n\n<!-- /tabs -->",
+  },
+  {
+    name: "ステップ",
+    before: "<!-- steps -->\n\n1. 一つ目\n2. 二つ目\n\n<!-- /steps -->",
+  },
+  {
+    name: "埋め込んだ HTML",
+    before:
+      "<!-- html -->\n\n```html\n<div>埋め込み</div>\n```\n\n<!-- /html -->",
+  },
+];
+const SPACING_CODE = "```ts\nconst a = 1;\n```";
+const SPACING_TREE = "```tree\napp/\n└── a.ts\n```";
+// 本文の直下・節の中身・タブの中身のブロックの間（`--mdmark-space` の既定）と、リストの項目・引用・details・行の詳細の中の間
+const BLOCK_SPACE = 14;
+const NESTED_SPACE = 7;
+
+/** 描く先の要素の中のブロックを読む順に返す（節の中身は中のブロックに分ける） */
+const spacingBlocks = (parent: Element): HTMLElement[] =>
+  [...parent.children].flatMap((child) => {
+    if (!(child instanceof HTMLElement)) {
+      return [];
+    }
+    if (child.classList.contains("mdmark-section-body")) {
+      return spacingBlocks(child);
+    }
+    return child.hasAttribute("data-source-line") ||
+      child.matches(
+        ".mdmark-tree, .mdmark-heading, .mdmark-table, .mdmark-html",
+      )
+      ? [child]
+      : [];
+  });
+
+/** 前のブロックの下端から後のブロックの上端までの間 */
+const gapBetween = (before: Element, after: Element): number =>
+  after.getBoundingClientRect().top - before.getBoundingClientRect().bottom;
+
+/** 要素の上か下の余白の計算値（px） */
+const marginOf = (element: Element, side: "start" | "end"): number => {
+  const style = getComputedStyle(element);
+  return Number.parseFloat(
+    side === "start" ? style.marginBlockStart : style.marginBlockEnd,
+  );
+};
+
+/** 入れ物の中で、段落からコードブロック、コードブロックからファイルツリーまでの間が期待値と同じか確かめる */
+const expectContainerGaps = ({
+  container,
+  expected,
+  label,
+}: {
+  container: Element;
+  expected: number;
+  label: string;
+}): void => {
+  const paragraph = find(container, "p:not(.mdmark-tab-title)");
+  const code = find(container, ".mdmark-code");
+  const tree = find(container, ".mdmark-tree");
+  expect(
+    Math.abs(gapBetween(paragraph, code) - expected),
+    `${label}の中のコードブロック`,
+  ).toBeLessThanOrEqual(1);
+  expect(
+    Math.abs(gapBetween(code, tree) - expected),
+    `${label}の中のファイルツリー`,
+  ).toBeLessThanOrEqual(1);
+};
+
+test("test_normal_when_block_spacing", async () => {
+  const config = { features: { "side-toc": false } };
+  // 本文の直下: 2 つずつの全ての組み合わせ
+  for (const before of SPACING_BLOCKS) {
+    for (const after of SPACING_BLOCKS) {
+      // 準備
+      const el = createElement();
+      // 実行
+      await mountTracked(el, {
+        markdown: `${before.before}\n\n${after.after ?? after.before}\n`,
+        config,
+      });
+      // 検証
+      const blocks = spacingBlocks(el);
+      const pair = `${before.name} → ${after.name}`;
+      expect(blocks, pair).toHaveLength(2);
+      const [first, second] = blocks as [HTMLElement, HTMLElement];
+      const gap = gapBetween(first, second);
+      const label = `${pair}: ${gap}px`;
+      if (before.name === "区切り線" || after.name === "区切り線") {
+        const expected = Math.max(
+          marginOf(first, "end"),
+          marginOf(second, "start"),
+        );
+        expect(expected, label).toBeGreaterThan(0);
+        expect(Math.abs(gap - expected), label).toBeLessThanOrEqual(1);
+      } else if (after.name === "見出し") {
+        const expected = marginOf(second, "start");
+        expect(expected, label).toBeGreaterThan(0);
+        expect(Math.abs(gap - expected), label).toBeLessThanOrEqual(1);
+      } else {
+        expect(Math.abs(gap - BLOCK_SPACE), label).toBeLessThanOrEqual(1);
+      }
+    }
+  }
+
+  // 見出しの節の中とタブの中
+  const sectionEl = createElement();
+  await mountTracked(sectionEl, {
+    markdown: `## 見出し\n\n段落の文。\n\n${SPACING_CODE}\n\n${SPACING_TREE}\n`,
+    config,
+  });
+  expectContainerGaps({
+    container: find(sectionEl, ".mdmark-section-body"),
+    expected: BLOCK_SPACE,
+    label: "見出しの節",
+  });
+  const tabEl = createElement();
+  await mountTracked(tabEl, {
+    markdown: `<!-- tabs -->\n\n### タブ A\n\n段落の文。\n\n${SPACING_CODE}\n\n${SPACING_TREE}\n\n### タブ B\n\nB の本文\n\n<!-- /tabs -->\n`,
+    config,
+  });
+  expectContainerGaps({
+    container: find(tabEl, ".mdmark-tab-panel"),
+    expected: BLOCK_SPACE,
+    label: "タブ",
+  });
+
+  // 箇条書きの項目・引用・details・行の詳細の中
+  const indent = (text: string, prefix: string) =>
+    text
+      .split("\n")
+      .map((line) => `${prefix}${line}`)
+      .join("\n");
+  const nested = [
+    {
+      label: "箇条書きの項目",
+      markdown: `- 段落の文。\n\n${indent(SPACING_CODE, "  ")}\n\n${indent(SPACING_TREE, "  ")}\n`,
+      container: "li",
+    },
+    {
+      label: "引用",
+      markdown: `> 段落の文。\n>\n${indent(SPACING_CODE, "> ")}\n>\n${indent(SPACING_TREE, "> ")}\n`,
+      container: "blockquote",
+    },
+    {
+      label: "details",
+      markdown: `<details open>\n<summary>概要</summary>\n\n段落の文。\n\n${SPACING_CODE}\n\n${SPACING_TREE}\n\n</details>\n`,
+      container: "details",
+    },
+  ];
+  for (const { label, markdown, container } of nested) {
+    const el = createElement();
+    await mountTracked(el, { markdown, config });
+    expectContainerGaps({
+      container: find(el, container),
+      expected: NESTED_SPACE,
+      label,
+    });
+  }
+  const detailEl = createElement();
+  await mountTracked(detailEl, {
+    markdown: `| 名前 | 値 |\n| --- | --- |\n| りんご | 10 |\n\n<!-- row-detail: 1 -->\n\n段落の文。\n\n${SPACING_CODE}\n\n${SPACING_TREE}\n\n<!-- /row-detail -->\n`,
+    config,
+  });
+  find<HTMLButtonElement>(detailEl, "button.mdmark-row-toggle").click();
+  const detail = find<HTMLElement>(detailEl, ".mdmark-row-detail > td");
+  await vi.waitFor(() => {
+    expect(detail.getBoundingClientRect().height).toBeGreaterThan(0);
+  });
+  expectContainerGaps({
+    container: detail,
+    expected: NESTED_SPACE,
+    label: "行の詳細",
+  });
+
+  // 先頭: 内側の余白の内側の上端と同じ
+  for (const [label, markdown] of [
+    ["題を持つコードブロック", `<!-- code: title=a.ts -->\n${SPACING_CODE}\n`],
+    ["題を持たないコードブロック", `${SPACING_CODE}\n`],
+    ["ファイルツリー", `${SPACING_TREE}\n`],
+  ] as const) {
+    const el = createElement();
+    await mountTracked(el, { markdown, config });
+    const first = find<HTMLElement>(el, ".mdmark-code, .mdmark-tree");
+    if (label === "題を持つコードブロック") {
+      expect(first.tagName).toBe("FIGURE");
+    }
+    const contentTop =
+      el.getBoundingClientRect().top +
+      el.clientTop +
+      Number.parseFloat(getComputedStyle(el).paddingTop);
+    expect(
+      Math.abs(first.getBoundingClientRect().top - contentTop),
+      `先頭の${label}`,
+    ).toBeLessThanOrEqual(1);
+  }
+});
