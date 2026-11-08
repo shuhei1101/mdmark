@@ -186,9 +186,9 @@ scenarios:
   - name: 正常シナリオ（mermaid のコードブロック）
     setup:
       - name: 見本のワークスペース
-        description: 言語 `mermaid` の flowchart のコードブロックを 1 つ持つ Markdown を置いたフォルダ。設定ファイルは置かない
+        description: 言語 `mermaid` の flowchart のコードブロックを 1 つ持つ Markdown と、`mermaid.url` に手元の配信の URL を書いた設定ファイルを置いたフォルダ
       - name: Mock
-        description: 正常シナリオと同じ。加えて、mermaid の本体と chunk を、配布物と同じ手元のサーバーから jsDelivr と同じパスで配る
+        description: 正常シナリオと同じ。加えて、mermaid の本体と chunk を、手元の配信が jsDelivr と同じパス（`/npm/mermaid@12.3.0/dist/`）で配る（既定の URL は jsDelivr の origin のため、手元の代役に差し替えられない）
     flow: |-
       sequenceDiagram
         actor W as 文書を書く人
