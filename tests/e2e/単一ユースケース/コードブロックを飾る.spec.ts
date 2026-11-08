@@ -254,17 +254,17 @@ test("test_error_when_unknown_line_mark", async ({ page }) => {
   await openPage(page, builtRoot);
   // 実行
   await mountDocument(page, {
-    markdown: ["```ts", "foo(); // [!code focus]", "```", ""].join("\n"),
+    markdown: ["```ts", "foo(); // [!code blink]", "```", ""].join("\n"),
   });
   // 検証
   const doc = page.locator("#doc");
   const warning = doc.locator(".mdmark-syntax-warning");
   await expect(warning).toHaveCount(1);
-  await expect(warning).toContainText("[!code focus]");
+  await expect(warning).toContainText("[!code blink]");
   for (const mark of ["[!code ++]", "[!code --]", "[!code highlight]"]) {
     await expect(warning).toContainText(mark);
   }
-  await expect(doc.locator("pre")).toContainText("foo(); // [!code focus]");
+  await expect(doc.locator("pre")).toContainText("foo(); // [!code blink]");
   await expect(doc.locator(".mdmark-code-line")).toHaveCount(0);
 });
 

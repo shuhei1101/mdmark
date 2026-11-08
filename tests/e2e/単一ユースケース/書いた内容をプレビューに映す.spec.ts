@@ -438,6 +438,10 @@ test("test_normal_when_aliases_yaml_saved", async () => {
       return frame.locator('[role="tooltip"]:visible').innerText();
     })
     .toContain("書き換えた意味");
-  expect(await frame.locator(".mdmark").first().innerText()).toBe(text);
+  // ツールチップは本文の中の要素なので、閉じてから本文の文字を比べる
+  await session.win.mouse.move(0, 0);
+  await expect
+    .poll(() => frame.locator(".mdmark").first().innerText())
+    .toBe(text);
   expect(await scrollTop(frame)).toBe(top);
 });
