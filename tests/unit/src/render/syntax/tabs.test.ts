@@ -163,9 +163,7 @@ test("test_read_tabs_options_when_title_has_space", async () => {
   // 準備
   const { readTabsOptions } = await loadTabs();
   // 実行
-  const options = readTabsOptions(
-    tabsMark("closed title=インストールの 手順"),
-  );
+  const options = readTabsOptions(tabsMark("closed title=インストールの 手順"));
   // 検証
   expect(options.title).toBe("インストールの");
   expect((options.warning?.items ?? []).map((item) => item.label)).toEqual([
