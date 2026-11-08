@@ -74,7 +74,9 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-08T14:33:00.698854+00:00'
   - process: 実装
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-08T14:57:55.602027+00:00'
   - process: 結合テスト作成
     status: skipped
     reason: fail は E2E のケースで、結合テストの期待値は変わらない（既存の結合テストは実装で回帰を確かめる）
