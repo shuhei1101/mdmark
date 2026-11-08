@@ -530,3 +530,9 @@ scope_out:
   - item: '`src/parts/lightbox.stories.ts` のストーリー `Narrow` が 390x844 で横にスクロールする（`scrollWidth 430 > clientWidth 390`）'
     reason: 画面の検査（横スクロール）から外れているが、この PR の変更は文言だけで幅に関わらず、今回の要望に含まれない
     plan: '#367'
+  - item: schemas/alias-inject/v0.3.0/ の Schema
+    reason: alias-inject の配布物を取り込んだファイル（#360）で、このリポジトリで修正すると次の取り込みで上書きされる。修正は配布元の alias-inject で行う
+    plan: none
+  - item: migrations/no-steps.yaml の公開済みのバージョンの行
+    reason: '判断が分かれる: 公開済みのバージョンで変えた Schema の記録で、変更履歴と同じく当時の文言のまま維持する判断（レビューで確定する）'
+    plan: none
