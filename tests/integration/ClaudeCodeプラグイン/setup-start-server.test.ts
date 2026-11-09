@@ -1,5 +1,5 @@
-import { execFile } from "node:child_process";
-import { mkdir, readFile, stat, writeFile } from "node:fs/promises";
+import { execFile, execFileSync } from "node:child_process";
+import { mkdir, readFile, stat, symlink, writeFile } from "node:fs/promises";
 import { createServer, type Server } from "node:net";
 import { dirname, join } from "node:path";
 import { afterEach, expect, test } from "vitest";
@@ -50,14 +50,21 @@ const createSystemdTerminal = async (extra: Record<string, string> = {}) => {
   return { terminal, unit };
 };
 
-/** tmux に固定した端末。手元の unit に触れないよう、unit の名前もテスト専用にする */
-const createTmuxTerminal = async (extra: Record<string, string> = {}) => {
-  const unit = createUnitName();
-  const terminal = await createTerminal(extra);
-  await writeSettings(
-    terminal,
-    `serve:\n  launcher: tmux\n  systemdUnit: ${unit}\n`,
-  );
+/** systemd --user が使えない端末で使用するコマンド。`systemctl` は含めない */
+const COMMANDS_WITHOUT_SYSTEMD = ["node", "npx", "tmux", "sh", "tee", "sleep"];
+
+/** systemd --user が使えない端末。`systemctl` を含まない `PATH` にし、端末の設定は書かない（`auto`） */
+const createTerminalWithoutSystemd = async () => {
+  const terminal = await createTerminal();
+  const bin = join(terminal.home, "bin-without-systemctl");
+  await mkdir(bin);
+  for (const name of COMMANDS_WITHOUT_SYSTEMD) {
+    const target = execFileSync("sh", ["-c", `command -v ${name}`], {
+      encoding: "utf8",
+    }).trim();
+    await symlink(target, join(bin, name));
+  }
+  terminal.env.PATH = bin;
   return terminal;
 };
 
@@ -262,7 +269,7 @@ test.skipIf(!HAS_TMUX)(
   "test_normal_when_tmux",
   async () => {
     // 準備
-    const terminal = await createTmuxTerminal();
+    const terminal = await createTerminalWithoutSystemd();
     await startOtherSession(terminal);
     // 実行
     const result = await runSetupScript({
@@ -292,7 +299,7 @@ test.skipIf(!HAS_TMUX)(
   "test_normal_when_tmux_already_running",
   async () => {
     // 準備
-    const terminal = await createTmuxTerminal();
+    const terminal = await createTerminalWithoutSystemd();
     expect(
       (await runSetupScript({ args: ["start-server"], env: terminal.env }))
         .code,
@@ -317,7 +324,7 @@ test.skipIf(!HAS_TMUX)(
   "test_normal_when_session_stale",
   async () => {
     // 準備
-    const terminal = await createTmuxTerminal();
+    const terminal = await createTerminalWithoutSystemd();
     expect(
       (
         await tmux(terminal, [
