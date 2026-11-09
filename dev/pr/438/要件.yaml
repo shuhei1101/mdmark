@@ -23,15 +23,21 @@ docs:
   - page: docs/リファレンス/記法.md
     new: false
     change: 表の機能のピン止めと `pin=` の説明を、選んだ列だけを留める動き・左端と右端に留める位置・設定で選べる動きに合わせる
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-09T00:15:12.678520+00:00'
   - page: docs/使用方法/記載する/表に機能を付ける.md
     new: false
     change: 「ピン止めする列を決める」「ピン止めが働く」を、選んだ列だけを留める動きと設定での切り替えに合わせる
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-09T00:15:12.678520+00:00'
   - page: docs/リファレンス/設定.md
     new: false
     change: 表のピン止めの動きを選ぶキーと既定を追加する
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-09T00:15:12.678520+00:00'
 scope_out:
   - item: 見出しの右端のドラッグで列の幅を変え、幅を変えた列が留めた列のときに留める位置を計算し直す
     reason: 別の Issue の要望。留める位置を幅の合計で決めるこの PR の方式を前提にする
