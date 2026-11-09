@@ -5828,6 +5828,143 @@ flows:
     test: test_normal_when_pinned_under_merged_header
     refs:
       - dev/設計書/シナリオ/単一ユースケース/表を操作する#scenarios[正常シナリオ（結合した見出しの下の列を留める）]
+  - name: 正常系（列の幅を変える）
+    summary: '`resize` の表の見出しの右端につまみを付け、ドラッグでその列の幅だけを変え、列の最小幅で止め、ダブルクリックで描いた直後の幅に戻す'
+    setup:
+      - name: 配布物を読み込んだページ
+        description: 正常系と同じ
+      - name: 幅を変える表を持つ Markdown
+        description: '`<!-- table: data wide=説明 -->` の表、`<!-- table: data -resize -->` の表、`<!-- table: plain -->` の表を持ち、どれも名前・説明・更新日の 3 列 3 行の文書'
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        participant P as 利用側のページ
+        participant M as mdmark
+        P->>M: mount(el, { markdown })
+        P->>M: 名前の列のつまみを右へ 80px ドラッグする
+        M->>P: 名前の列の幅だけを 80px 広げる
+        P->>M: 説明の列のつまみを、列の最小幅より狭くなるまで左へドラッグする
+        M->>P: 説明の列を列の最小幅で止める
+        P->>M: 名前の列と説明の列のつまみをダブルクリックする
+        M->>P: 2 つの列を描いた直後の幅に戻す
+    expected:
+      - '1 つ目の表の最下段の各 `th` に `span.mdmark-col-resize` があり、`role="separator"`・`aria-orientation="vertical"`・`tabindex="0"`・`aria-label="「名前」の列の幅"` を持ち、`cursor` の計算値が `col-resize`'
+      - 名前の列のつまみを右へ 80px ドラッグした後、名前の列の `th` の `offsetWidth` がドラッグの前より 80 大きく、説明・更新日の列の `th` の `offsetWidth` はドラッグの前と同じ
+      - ドラッグの後も、名前の列の `th` の `aria-sort` が変わらず、行の並びが変わらない
+      - '説明の列を列の最小幅より狭くなるまでドラッグした後、説明の列の `th` の `offsetWidth` がつまみの `aria-valuemin` と同じで、説明の列のセルの `white-space` の計算値が `nowrap` でない'
+      - ダブルクリックした後、名前の列と説明の列の `th` の `offsetWidth` が描いた直後と同じ
+      - '`-resize` の表と `plain` の表に `span.mdmark-col-resize` が無い'
+    test: test_normal_when_column_resized
+    refs:
+      - dev/設計書/シナリオ/単一ユースケース/表を操作する#scenarios[正常シナリオ（列の幅を変える）]
+  - name: 正常系（キーボードで列の幅を変える）
+    summary: つまみにフォーカスした ←・→ キーで 16px ずつ幅を変え、Enter で描いた直後の幅に戻し、つまみの値を今の幅にする
+    setup:
+      - name: 配布物を読み込んだページ
+        description: 正常系と同じ
+      - name: 幅を変える表を持つ Markdown
+        description: '`<!-- table: data -->` で、名前・説明・更新日の 3 列 3 行の表を囲んだ文書'
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        participant P as 利用側のページ
+        participant M as mdmark
+        P->>M: mount(el, { markdown })
+        P->>M: 名前の列のつまみにフォーカスし、→ キーを 2 回、← キーを 1 回押す
+        M->>P: 名前の列の幅を 16px 広げる
+        P->>M: Enter を押す
+        M->>P: 名前の列を描いた直後の幅に戻す
+    expected:
+      - 'つまみの `aria-valuenow` が名前の列の `th` の `offsetWidth`、`aria-valuetext` が `{幅}px`、`aria-valuemin` が列の最小幅、`aria-valuemax` が表の見えている幅（px の整数）'
+      - → キーを 2 回押した後、名前の列の `th` の `offsetWidth` が押す前より 32 大きく、`aria-valuenow` が同じ値
+      - ← キーを 1 回押した後、名前の列の `th` の `offsetWidth` が押す前より 16 大きい
+      - Enter を押した後、名前の列の `th` の `offsetWidth` が描いた直後と同じで、`document.activeElement` がつまみ
+      - →・← キーで表の `scrollLeft` と `window.scrollX` が変わらない
+    test: test_normal_when_column_resized_by_keyboard
+    refs:
+      - dev/設計書/シナリオ/単一ユースケース/表を操作する#scenarios[正常シナリオ（キーボードで列の幅を変える）]
+  - name: 正常系（留めた列の幅を変える）
+    summary: 留めた列の幅を変えるたびに留める位置を計算し直し、留めた列の幅の合計が見えている幅に収まる幅で止める
+    setup:
+      - name: 配布物を読み込んだページ
+        description: 正常系と同じ。描く先の `div` の幅は表がはみ出す幅
+      - name: 幅を変える表を持つ Markdown
+        description: 10 列 30 行の表を持ち、表のマーカーで囲まない文書（既定の種類）
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        participant P as 利用側のページ
+        participant M as mdmark
+        P->>M: mount(el, { markdown })
+        P->>M: 3 列目と 9 列目のピン止めを押す
+        P->>M: 1 列目のつまみを右へ 60px ドラッグし、表を右端までスクロールする
+        M->>P: 3 列目を広げた 1 列目の右に留める
+        P->>M: 1 列目のつまみを、表の見えている幅を超えるまで右へドラッグする
+        M->>P: 1 列目を上限の幅で止める
+        P->>M: 1 列目のつまみをダブルクリックし、表を左端までスクロールして、9 列目のつまみを右へ 40px ドラッグする
+        M->>P: 9 列目を広げて右端に留める
+    expected:
+      - 1 列目を 60px 広げて右端までスクロールした後、3 列目の `th` と `td` の `left` が 1 列目の `th` の `offsetWidth`（px）
+      - '見えている幅を超えるまでドラッグした後、1 列目の `th` の `offsetWidth` が、表の `clientWidth` から 3 列目と 9 列目の `th` の `offsetWidth` を引いた値以下で、つまみの `aria-valuenow` が `aria-valuemax` と同じ'
+      - 9 列目を 40px 広げた後、9 列目の `th` の `offsetWidth` がドラッグの前より 40 大きく、`right` が `0px`
+      - 1 列目・3 列目・9 列目のピン止めのボタンの `aria-pressed` が `true` のまま
+    test: test_normal_when_pinned_column_resized
+    refs:
+      - dev/設計書/シナリオ/単一ユースケース/表を操作する#scenarios[正常シナリオ（留めた列の幅を変える）]
+  - name: 正常系（タッチで列の幅を変える）
+    summary: タッチのドラッグで幅を変え、ダブルタップで描いた直後の幅に戻し、ポインターが粗い画面ではつまみを常に出す
+    setup:
+      - name: 配布物を読み込んだページ
+        description: '正常系と同じ。画面の幅は 390px で、ポインターが粗い画面（`(pointer: coarse)`）'
+      - name: 幅を変える表を持つ Markdown
+        description: '`<!-- table: data -->` で、名前・説明・更新日の 3 列 3 行の表を囲んだ文書'
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        participant P as 利用側のページ
+        participant M as mdmark
+        P->>M: mount(el, { markdown })
+        P->>M: 名前の列のつまみに `pointerType` が `touch` のポインターで触れて右へ 60px 動かす
+        M->>P: 名前の列の幅だけを 60px 広げる
+        P->>M: つまみを 300ms 以内に 2 回タップする
+        M->>P: 名前の列を描いた直後の幅に戻す
+    expected:
+      - 描いた直後から、つまみの線（`::after`）の `opacity` の計算値が 0 より大きく、つまみの `offsetWidth` が 24
+      - 動かした後、名前の列の `th` の `offsetWidth` が動かす前より 60 大きく、説明・更新日の列の幅は変わらない
+      - つまみの `touch-action` の計算値が `none` で、動かしている間に表の `scrollLeft` が変わらない
+      - 2 回タップした後、名前の列の `th` の `offsetWidth` が描いた直後と同じ
+    test: test_normal_when_column_resized_by_touch
+    refs:
+      - dev/設計書/シナリオ/単一ユースケース/表を操作する#scenarios[正常シナリオ（タッチで列の幅を変える）]
+  - name: 正常系（狭い幅で列の幅を変える）
+    summary: 列の幅を変えても、最終列を畳むかは決め直さない
+    setup:
+      - name: 配布物を読み込んだページ
+        description: 正常系と同じ。描く先の `div` の幅は 600px（最終列を畳む幅）
+      - name: 幅を変える表を持つ Markdown
+        description: '`<!-- table: data -->` で、名前・状態・説明の 3 列 3 行の表を囲み、説明はどの行も 600px の幅で 1 行に収まる文書'
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        participant P as 利用側のページ
+        participant M as mdmark
+        P->>M: mount(el, { markdown })
+        P->>M: 名前の列のつまみを、表がはみ出すまで右へドラッグする
+        M->>P: 名前の列だけを広げ、最終列は畳まない
+        P->>M: 説明の列のつまみを、説明のセルが折り返すまで左へドラッグする
+        M->>P: 説明の列を狭め、最終列は畳まない
+    expected:
+      - 名前の列を広げた後、説明の列の `th` の `offsetWidth` は広げる前と同じで、`hidden` でなく、行に開閉のボタンが無い
+      - 名前の列を広げた後、表の `scrollWidth` が `clientWidth` より大きい
+      - 説明の列を狭めた後も、説明の列の `th` が `hidden` でなく、行に開閉のボタンが無い
+    test: test_normal_when_column_resized_in_narrow_width
+    refs:
+      - dev/設計書/シナリオ/単一ユースケース/表を操作する#scenarios[正常シナリオ（狭い幅で列の幅を変える）]
 lead: 利用側のページが、要素と Markdown と設定を指定し、要素の中に文書を描く。戻り値で本文の差し替えと片付けができる。
 idempotent: false
 side_effects: '`el` の中身と class を書き換え、記法の操作のイベントを `el` の中に付ける。まとめていない名前の `icon:` があるとき、jsDelivr の Lucide のアイコンのモジュールを名前ごとに `import()` し、読み込めなかった名前だけ同じ URL へ `HEAD` の `fetch` を送信する。`side-toc` がオンで見出しがあるとき、`el` の中を本文の列と右側の目次に分け、見出しの位置を `IntersectionObserver` で確認する。出し方が `hover` のときは、右端の線とパネルの位置を決めるため、`window` の `scroll`・`resize` と、`el` に最も近いスクロールする祖先の要素があればその `scroll` を受け取り、`document.body` の子の追加・削除を `MutationObserver` で確認する。`back-to-top` がオンのとき、`el` の子に先頭へ戻るボタンを配置し、スクロールする場所が画面全体なら `window` の `scroll`、`el` に最も近いスクロールする祖先の要素なら `document` の `scroll`（キャプチャーフェーズ）と、`window` の `resize` を受け取り、`document.body` と `el` の子の追加・削除を `MutationObserver` で確認する。`window` の `beforeprint`・`afterprint`・`hashchange` と、絞り込みのドロワーを開いている間だけ `document` の `pointerdown`・`keydown` を受け取る。図の部品か埋め込んだ HTML があるとき、図の表示する枠と埋め込んだ HTML の大きさを `ResizeObserver` で見、ツールチップを開いている間だけ `document` の `keydown`・`pointerdown` と `window` の `scroll`・`resize` を受け取り、全画面の間だけ `el` の中に `dialog` を配置する。リンク先を持つフロー図のノードの上から図を動かしたとき、次の 1 回の `click` まで `window` の `click`（キャプチャーフェーズ）を受け取る。`diagram-resize` がオンのとき、リサイズハンドルで変えた図の高さを sessionStorage に書き込み、描くたびに読み込み、ダブルクリックで戻すと削除する。操作できる部品の写すボタン・表のコピー・行の URL のコピー・コードブロックのコピー・ファイルツリーのコピーでクリップボードに書き込む。表があるとき、表の大きさと描く先の要素の幅を `ResizeObserver` で見、`animation-timeline` を持たないブラウザでは `window` と文書の中の `scroll` と `window` の `resize` を受け取る。`data-group` を持つタブがあるとき、localStorage の `mdmark-tabs:{group}` を描くたびに読み込み、読者がタブを選ぶと書き込む。そのとき、ページの中の `el` の外にある同じ `group` のタブ群の選択も書き換える。文書に外部ライブラリか拡張のマーカーがあるとき、そのモジュールを読み込む。色分けの対象のコードブロックがあるとき、`syntax.url` の先の core と、使用する言語のモジュールを読み込む。`mermaid` がオンの文書に mermaid のコードブロックがあるとき、`mermaid.url` の先のモジュールを読み込み、描く先の配色の明暗の変化を確認して再描画する。`html-scripts` がオンの文書に範囲の `ts`・`js` があるとき、`html-scripts.url` の先の変換のライブラリを読み込み、範囲ごとに `document.head` へ `script` 要素を 1 つ配置してすぐ削除し、範囲の関数を呼ぶ。`opts.diffSource` を指定したとき、読者が差分を開くと（`opts.diffMode` が `open` なら描いた時点、`blocks` なら描くたびに）取り出し元の `revisions`・`content` を呼び、差分の行を出している間だけミニマップの帯を配置し、スクロール先のスクロールの `scroll` と `window` の `resize` を受け取る。文書にビューのマーカーがあるとき、ビューの部品のモジュールを読み込む。`comments` がオンで `opts.commentStore` を指定したとき、コメントの部品のモジュールを読み込み、`load` を描くたびに 1 回呼び、保存で `save`、読み込みと保存の関数が持つときは吹き出しの修正で `update`・削除で `remove`、`reloadComments` で `load` を呼ぶ。その間は `document` の `selectionchange` を受け取り、コメントのボタン・入力欄・吹き出しを `document.body` に配置する。あわせて本文の列の右に余白の列を配置し、描く先の要素の大きさを `ResizeObserver`、描く先の要素の中の開閉・切り替えを `MutationObserver` で確認する'
@@ -6434,6 +6571,8 @@ constraints:
     decided_by: dev/設計書/外部ライブラリ/babel-standalone#
   - item: 列の並べ替え
     constraint: '`reorder` の表は、テーブル設定の一覧のつまみのドラッグ＆ドロップと、つまみにフォーカスした↑・↓ キー（1 つずつ動かし、フォーカスをつまみに残す）で列を動かし、一覧の順に見出しと全ての本文の行・集計の行のセルをもう一度並べる。一覧は結合した見出しの範囲（`data-group`）ごと・範囲の外の列に分け、同じ範囲の中だけで動かす。`table.pin` が `each` のときは、留めているかを列が持ったまま動かし、一覧を留めた列で分けない。`through` のときは、一覧の先頭に `pin=` で留めた列を分け（`pin=` が無い表の既定の先頭の列の留めでは分けない）、同じピン止めの側の中だけで動かす。範囲の外や `through` のピン止めの境をまたぐ位置にはドロップできる位置の線を出さず、どちらの向きにも動かせない列のつまみを `disabled` にする。見出しの並べ替え・ピン止め・絞り込みのボタンでは列を動かさない。行の並べ替え・絞り込み・再結合の後も動かした列の順を保ち、コピーは今の列の順で記載する。列の順は覚えず、再描画すると Markdown に記載した順に戻す'
+  - item: 列の幅
+    constraint: '`resize` の表は、最下段の各列の見出しのセルの右端に、列の幅を変えるつまみ（`span.mdmark-col-resize`。`role="separator"`・`aria-orientation="vertical"`・`tabindex="0"`、`aria-label` が `「{列名}」の列の幅`）を配置する。つまみは、ポインターを乗せたとき・フォーカスしたとき・ドラッグ中に見出しのセルの右端に線を出し、ポインターが粗い画面（`(pointer: coarse)`）では線を常に薄く出して押せる幅を 24px にし、見出しのセルの右の余白を 24px 広げて見出しのボタンと重ねない。つまみで始めたポインターのドラッグ（マウス・タッチ。`pointerdown` で既定の動作を止めてポインターを捕まえ、並べ替え・ピン止め・絞り込みのボタンの操作にしない）と、つまみにフォーカスした ←・→ キー（1 回 16px）で、つまみの左の列の幅だけを変え、ほかの列の幅は保つ。幅は列の見出しのセルに入れ、入れた後に測った外側の幅が指定した幅と違えば差を足して入れ直す。幅は、列の最小幅から、表の見えている幅からほかに留めている列の幅の合計を引いた幅（表がはみ出さない間は表の見えている幅）までに収める。つまみの `aria-valuenow` と `aria-valuetext`（`{幅}px`）を今の幅、`aria-valuemin` を列の最小幅、`aria-valuemax` を上限にする（px の整数。最小と上限は切り捨て）。つまみのダブルクリック・ダブルタップ（`pointerType` が `touch` の 2 回のタップが 300ms 以内）・Enter で列の幅の指定を解除し、描いた直後の幅（`mdmark-wide` の列は `wide=` の幅）に戻す。幅を指定した `mdmark-wide` の列は折り返す。幅を変えるたびに留めた列の `left`・`right` と境の線を計算し直す。最終列を畳むかは、列の幅を変えても決め直さない。幅は覚えず、再描画すると Markdown に記載したとおりに戻す'
   - item: 階層の表の操作
     constraint: '`data-tree` の表は、`has-children` の行のキーのすぐ左（縦線の後ろ）に開閉のボタン（lucide の `chevron-down`。`aria-expanded`、`aria-label` が `{パス} を畳む` / `{パス} を開く`）を配置し、描いた直後は全て開く。畳むと子孫の行を `hidden` にし、開くと子だけを出して子の開閉の状態を保つ。Shift を押しながら押すと子孫の開閉も同じにする（制約「コードの折りたたみ」と同じ作法）。`mdmark-tree-name` に `tabindex="0"` を付け、ポインターを乗せるかフォーカスすると全体のパスのツールチップを出す（制約「ツールチップの操作」の作法）。名前の後ろに全体のパスを `navigator.clipboard.writeText` に書き込むコピーのボタン（`aria-label` が `全体のパスをコピー`）を配置し、書き込めたら `コピーしました`、書き込めなければ `コピーできませんでした` を 2 秒出してスクリーンリーダーで通知する（例外を外へ出さない）。行を押すとその行を `aria-selected="true"` にし、同じ親を持つ行とその子孫の、その行の階層の `mdmark-tree-guide` に class `is-active` を付ける。別の行を押すと前の選択を解き、同じ行をもう一度押すと解く。開閉・コピーのボタンでは選ばない。`data-filter` のキーの列の絞り込みは、各行の末尾の名前で照合し、該当した行とその祖先の行を残し、該当した単語の部分を `mark.mdmark-tree-hit` で囲む。件数は `is-virtual` の行を数えない。絞り込みを解くと絞り込む前の開閉の状態に戻す。畳んだ行も表のコピーと集計に含める。表のコピーはキーの列を全体のパスで記載し、補った行（`is-virtual`）を含めない'
   - item: YAML の見本の操作
