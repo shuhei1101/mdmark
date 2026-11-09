@@ -2,7 +2,7 @@
 // URL の ?scene= で場面（overview・group・collapsed・walkthrough・play・warnings）、?scheme= で明暗を選ぶ
 
 import { mount } from "../../../../../dist/index.js";
-import { createMap, createSequence } from "./map-mock.js";
+import { createMap, createSequence, MAP_MIN_SCALE } from "./map-mock.js";
 import { DATA, FLOW, SEQUENCE } from "./samples.js";
 
 /** 場面と、操作列に出す名前 */
@@ -23,37 +23,34 @@ const scheme = params.get("scheme") ?? DEFAULT_SCHEME;
 /** 開いたときの倍率の案（論点 1）: wide は図の枠を wide の範囲で広げてから倍率を決める案 C、fit は本文の幅のまま倍率を決める案 A */
 const DEFAULT_FIT = "wide";
 const fit = params.get("fit") ?? DEFAULT_FIT;
+/** 狭い幅で図を縮める下限の案（論点 1）: fit は今のフロー図と同じく枠の幅に合わせて縮める案 A、min は等倍より縮めない案 B */
+const DEFAULT_SHRINK = "min";
+const shrink = params.get("shrink") ?? DEFAULT_SHRINK;
+
+/** 今の選択のうち 1 つだけを変えた URL（既定の値は書かない） */
+const linkTo = (change) => {
+  const current = { scene, scheme, fit, shrink, ...change };
+  const defaults = { scene: DEFAULT_SCENE, scheme: DEFAULT_SCHEME, fit: DEFAULT_FIT, shrink: DEFAULT_SHRINK };
+  const query = new URLSearchParams();
+  for (const [key, value] of Object.entries(current)) if (value !== defaults[key]) query.set(key, value);
+  return query.size ? `?${query}` : "index.html";
+};
 
 const sceneGroup = document.querySelector("[data-scene-list]");
 for (const [value, label] of Object.entries(SCENES)) {
-  const query = new URLSearchParams();
-  if (value !== DEFAULT_SCENE) query.set("scene", value);
-  if (scheme !== DEFAULT_SCHEME) query.set("scheme", scheme);
-  if (fit !== DEFAULT_FIT) query.set("fit", fit);
   const link = document.createElement("a");
   link.className = "mock-bar-item";
-  link.href = query.size ? `?${query}` : "index.html";
+  link.href = linkTo({ scene: value });
   link.textContent = label;
   if (value === scene) link.setAttribute("aria-current", "page");
   sceneGroup.append(link);
 }
-for (const link of document.querySelectorAll("[data-scene-scheme]")) {
-  const value = link.dataset.sceneScheme;
-  const query = new URLSearchParams();
-  if (scene !== DEFAULT_SCENE) query.set("scene", scene);
-  if (value !== DEFAULT_SCHEME) query.set("scheme", value);
-  if (fit !== DEFAULT_FIT) query.set("fit", fit);
-  link.href = query.size ? `?${query}` : "index.html";
-  if (value === scheme) link.setAttribute("aria-current", "page");
-}
-for (const link of document.querySelectorAll("[data-scene-fit]")) {
-  const value = link.dataset.sceneFit;
-  const query = new URLSearchParams();
-  if (scene !== DEFAULT_SCENE) query.set("scene", scene);
-  if (scheme !== DEFAULT_SCHEME) query.set("scheme", scheme);
-  if (value !== DEFAULT_FIT) query.set("fit", value);
-  link.href = query.size ? `?${query}` : "index.html";
-  if (value === fit) link.setAttribute("aria-current", "page");
+for (const [attr, key, current] of [["sceneScheme", "scheme", scheme], ["sceneFit", "fit", fit], ["sceneShrink", "shrink", shrink]]) {
+  for (const link of document.querySelectorAll(`[data-${attr.replace(/[A-Z]/g, (c) => `-${c.toLowerCase()}`)}]`)) {
+    const value = link.dataset[attr];
+    link.href = linkTo({ [key]: value });
+    if (value === current) link.setAttribute("aria-current", "page");
+  }
 }
 
 const markdown = `# 文書を描く仕組み
@@ -85,7 +82,7 @@ const initial = {
 const flowHost = document.createElement("div");
 slot("MAP-SLOT-FLOW").replaceWith(flowHost);
 // 開閉と中へ入った状態は場面ごとに sessionStorage へ保つ
-const map = createMap(flowHost, { id: scene, title: "全体の構成", flow: FLOW, data: DATA, sequence: SEQUENCE }, initial);
+const map = createMap(flowHost, { id: scene, title: "全体の構成", flow: FLOW, data: DATA, sequence: SEQUENCE }, initial, shrink === "min" ? { minScale: MAP_MIN_SCALE() } : {});
 
 const sequenceHost = document.createElement("div");
 slot("MAP-SLOT-SEQUENCE").replaceWith(sequenceHost);

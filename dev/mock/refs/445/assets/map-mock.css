@@ -42,6 +42,10 @@
   border-style: double;
   border-width: 3px;
 }
+/* 閉じたグループは処理のノードと見分けるため、種類のアイコンを出さない */
+.map-closed-group .mdmark-diagram-node-kind svg {
+  display: none;
+}
 :is(.map-group-title, .map-group-toggle):focus-visible {
   outline: 2px solid var(--mdmark-color-link);
   outline-offset: 2px;

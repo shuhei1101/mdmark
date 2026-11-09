@@ -26,7 +26,7 @@
   </nav>
   <main class="map-catalog" id="catalog"><h1>map-diagram</h1></main>
   <script type="module">
-    import { createMap } from "../../refs/445/assets/map-mock.js";
+    import { createMap, MAP_MIN_SCALE } from "../../refs/445/assets/map-mock.js";
     import { DATA, FLOW, SEQUENCE } from "../../refs/445/assets/samples.js";
 
     /** 状態の見出し・補足・初期状態 */
@@ -45,7 +45,7 @@
       const host = document.createElement("div");
       if (narrow) host.className = "narrow";
       catalog.append(host);
-      createMap(host, { id: `catalog-${index}`, title: `全体の構成（${title}）`, flow: FLOW, data: DATA, sequence: SEQUENCE }, initial);
+      createMap(host, { id: `catalog-${index}`, title: `全体の構成（${title}）`, flow: FLOW, data: DATA, sequence: SEQUENCE }, initial, { minScale: MAP_MIN_SCALE() });
     };
     STATES.forEach(([title, note, initial], index) => add(index, title, note, initial));
     add(STATES.length, "狭い幅（390px）", "帯は折り返し、図は表示する枠の中で横にスクロールする", { enter: "lib" }, true);

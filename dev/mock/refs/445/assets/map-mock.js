@@ -5,10 +5,13 @@ import { mount } from "../../../../../dist/index.js";
 import { layoutMap, parseFlowchart, parseSequence } from "./map-layout.js";
 
 /** 自動の再生でメッセージを進める間隔の選択肢（秒）と既定 */
+export const MAP_MIN_SCALE = () => MIN_SCALE;
 const AUTOPLAY_SECONDS = [1, 2, 3, 5];
 const DEFAULT_AUTOPLAY_SECONDS = 2;
 /** 1 通のメッセージの印が線を 1 往復する時間（秒） */
 const PLAY_LOOP_SECONDS = 1.2;
+/** 論点 1 の案 B: 全体が収まる倍率の下限。24px のボタンを 24px 未満に縮めない */
+const MIN_SCALE = 1;
 /** 開閉と中へ入った状態をタブの中で保つ sessionStorage のキーの頭 */
 const STORAGE_PREFIX = "mdmark-map:";
 
@@ -55,8 +58,9 @@ const colorStyle = (color) =>
  * map の構成図を 1 つ作る。host の中に描き、操作のたびに描き直す（描き直しても文書と図の中のスクロールを保つ）。
  * spec: { id, title, flow, data: { notes, walkthroughs, layout, colors }, sequence?: { title, source } }
  * initial: { enter, collapsed, step, play, paused }
+ * options: { minScale }（論点 1 の案 B で、図を縮める下限を当てる）
  */
-export const createMap = (host, spec, initial = {}) => {
+export const createMap = (host, spec, initial = {}, options = {}) => {
   const chart = parseFlowchart(spec.flow);
   const sequence = spec.sequence ? parseSequence(spec.sequence.source) : undefined;
   const nodeById = new Map(chart.nodes.map((node) => [node.id, node]));
@@ -169,10 +173,36 @@ export const createMap = (host, spec, initial = {}) => {
     decorateTools(figure);
     renderBand(figure);
     renderPlayDot(stage, layout);
+    if (options.minScale) clampScale(figure, layout);
     const viewport = figure.querySelector(".mdmark-diagram-viewport");
     viewport.scrollLeft = scroll[0];
     viewport.scrollTop = scroll[1];
     window.scrollTo({ top: pageY });
+  };
+
+  /** 論点 1 の案 B の再現: 今の部品の倍率が下限より小さくなったら、下限まで戻して枠の中で横にスクロールさせる（実装では zoom の fitMin に渡す） */
+  const clampScale = (figure, layout) => {
+    const stage = figure.querySelector(".mdmark-diagram-stage");
+    const sizer = figure.querySelector(".mdmark-diagram-sizer");
+    const viewport = figure.querySelector(".mdmark-diagram-viewport");
+    const clamp = () => {
+      const scale = Number(/scale\(([\d.]+)\)/.exec(stage.style.transform)?.[1] ?? 1);
+      if (scale < options.minScale) {
+        stage.style.transform = `scale(${options.minScale})`;
+        sizer.style.width = `${layout.width * options.minScale}px`;
+        sizer.style.height = `${layout.height * options.minScale}px`;
+      }
+      // 表示する枠の高さも、縮めない倍率の図の高さに合わせる（横のスクロールバーの分を足す）
+      const height = `${Math.max(scale, options.minScale) * layout.height + 16}px`;
+      if (viewport.style.height !== height) {
+        viewport.style.height = height;
+        viewport.style.maxHeight = height;
+      }
+    };
+    const observer = new MutationObserver(clamp);
+    observer.observe(stage, { attributes: true, attributeFilter: ["style"] });
+    observer.observe(viewport, { attributes: true, attributeFilter: ["style"] });
+    clamp();
   };
 
   /** 入れ子のグループ: 図の線とノードの下に、色の面とタイトルと開閉のボタンを置く */
