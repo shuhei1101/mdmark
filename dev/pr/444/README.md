@@ -1,0 +1,1 @@
+# プラグインの global-setup で MCP の常駐サーバーを systemd --user の unit で起動できるようにする
