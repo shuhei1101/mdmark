@@ -49,6 +49,11 @@ use_cases:
     impact: run_only
     detail: 図の文書の描き方と操作を map と共通にするため壊しうる
     depends_on: []
+  - kind: composite
+    scenario: dev/設計書/シナリオ/複合ユースケース/Mermaidと補足で書いた図を辿って読む.yaml
+    impact: new
+    detail: 文書の作成者が Mermaid と補足で図を記載して点検し、読者が描いた図をグループの中へ入る・開閉・ノードのページ・視点・巡回・シーケンスの再生で辿る
+    depends_on: []
 docs:
   - page: docs/使用方法/図を描く/Mermaidと補足で図を描く.md
     new: true

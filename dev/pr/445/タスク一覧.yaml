@@ -20,7 +20,9 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-09T01:34:13.208519+00:00'
   - process: 複合ユースケース設計
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-09T01:52:04.396700+00:00'
   - process: デザインスタイル選定
     status: skipped
     reason: デザイン方針があり、Issue は文書全体の見た目の方向を変えない。map の見た目はモック作成で決める
