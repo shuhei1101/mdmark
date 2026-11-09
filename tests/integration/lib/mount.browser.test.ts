@@ -12421,6 +12421,9 @@ function rangeBox(el: Element, index: number): HTMLElement {
   return box;
 }
 
+/** 変換のライブラリ（約 2.3MB）を読み込んで範囲のスクリプトを動かすまでの待ちの上限。負荷の無いときは 200ms 以内、ほかのテストと重なると 1 秒を超える。テストの上限（5 秒）から待ちの後の処理の分を残す */
+const BABEL_WAIT_MS = 4000;
+
 /** `html-scripts` をオンにし、変換のライブラリをテストごとに別の URL で読み込む設定 */
 function rangeScriptConfig(name: string) {
   return {
@@ -12439,11 +12442,14 @@ test("test_normal_when_range_scripts", async () => {
     config: rangeScriptConfig("normal"),
   });
   const scope = find<HTMLElement>(el, "div.mdmark-html");
-  await vi.waitFor(() => {
-    expect(countRequests("/fixtures/babel.mjs?normal")).toBe(1);
-    rangeBox(el, 0).click();
-    expect(scope.classList.contains("is-open")).toBe(true);
-  });
+  await vi.waitFor(
+    () => {
+      expect(countRequests("/fixtures/babel.mjs?normal")).toBe(1);
+      rangeBox(el, 0).click();
+      expect(scope.classList.contains("is-open")).toBe(true);
+    },
+    { timeout: BABEL_WAIT_MS },
+  );
   // 検証
   expect(getComputedStyle(rangeBox(el, 0)).backgroundColor).toBe(
     "rgb(255, 0, 0)",
