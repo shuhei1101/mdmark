@@ -38,6 +38,12 @@ docs:
     status: done
     updated_by: planner
     updated_at: '2026-11-09T00:15:12.678520+00:00'
+  - page: docs/リファレンス/VSCode拡張機能.md
+    new: false
+    change: 拡張機能が参照する `mdmark.config.yaml` のキーの表に `table` の行を追加する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-09T00:19:47.236556+00:00'
 scope_out:
   - item: 見出しの右端のドラッグで列の幅を変え、幅を変えた列が留めた列のときに留める位置を計算し直す
     reason: 別の Issue の要望。留める位置を幅の合計で決めるこの PR の方式を前提にする
