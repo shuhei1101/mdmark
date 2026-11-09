@@ -137,7 +137,7 @@ functions:
     process: |-
       1. `[Unit]` に `Description=mdmark MCP server` を記載する
       2. `[Service]` に `Environment="MDMARK_PORT=…"`・`MDMARK_CONFIG`・`MDMARK_STATE_DIR`・`MDMARK_LAUNCHER=systemd`・`PATH` を 1 行ずつ、値を `escapeUnitValue` で打ち消して記載する
-      3. `ExecStart=/bin/sh -c '{command}'`（コマンドは一重引用符を `'\''` にし、`%` を `%%` にする）と `Restart=on-failure` を記載する
+      3. `ExecStart=/bin/sh -c '{command}'`（コマンドは一重引用符を `'\''` にし、`%` を `%%`、`$` を `$$` にする）と `Restart=on-failure` を記載する
       4. `[Install]` に `WantedBy=default.target` を記載する
     callees:
       - '#functions[escapeUnitValue]'
@@ -145,9 +145,9 @@ functions:
       - name: test_build_unit_file
         case: 正常
         summary: 環境変数と起動のコマンドを記載する
-        condition: ポート 18782・`PATH` が `/a b:/c`・コマンド `npx -y x serve --v 100%`
+        condition: ポート 18782・`PATH` が `/a b:/c`・コマンド `npx -y x serve --v 100% $HOME`
         mock: なし
-        expected: '`Environment="MDMARK_PORT=18782"`・`Environment="MDMARK_LAUNCHER=systemd"`・`Environment="PATH=/a b:/c"`・`ExecStart=/bin/sh -c ''npx -y x serve --v 100%%''`・`Restart=on-failure`・`WantedBy=default.target` の行がある'
+        expected: '`Environment="MDMARK_PORT=18782"`・`Environment="MDMARK_LAUNCHER=systemd"`・`Environment="PATH=/a b:/c"`・`ExecStart=/bin/sh -c ''npx -y x serve --v 100%% $$HOME''`・`Restart=on-failure`・`WantedBy=default.target` の行がある'
     refs:
       - dev/設計書/インターフェース定義/ClaudeCodeプラグイン/常駐サーバーを起動する.ts#constraints[unit のファイル]
       - dev/設計書/外部ライブラリ/systemd#limitations

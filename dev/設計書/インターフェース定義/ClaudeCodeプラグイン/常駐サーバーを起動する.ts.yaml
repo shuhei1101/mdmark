@@ -442,7 +442,7 @@ constraints:
     notes: '`Restart=on-failure` の unit は、起動の上限（既定 10 秒に 5 回）を超えるまで `failed` にならず `activating (auto-restart)` と `active` を繰り返す。`NRestarts` は `start`・`restart` で 0 に戻る'
     decided_by: dev/設計書/外部ライブラリ/systemd#limitations
   - item: unit の値の書き方
-    constraint: '`Environment=` の値は `"` で囲み、`\`・`"` を `\` で、`%` を `%%` で打ち消す。`ExecStart` のコマンドの `%` も `%%` にする'
+    constraint: '`Environment=` の値は `"` で囲み、`\`・`"` を `\` で、`%` を `%%` で打ち消す。`ExecStart` のコマンドの `%` も `%%` に、`$` を `$$` にする（systemd が `${名前}`・`$名前` を環境変数で置き換えるため）'
     decided_by: dev/設計書/外部ライブラリ/systemd#limitations
   - item: unit の書き換え
     constraint: 記載する内容が今のファイルと同じなら記載しない。記載したら `daemon-reload` し、active なら `restart`、active でなければ `enable --now` する。内容が同じで enabled でなければ `enable` する
