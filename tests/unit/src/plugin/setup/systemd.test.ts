@@ -44,7 +44,7 @@ test("test_build_unit_file", async () => {
     settingsPath: "/c/settings.yaml",
     stateDir: "/s",
     path: "/a b:/c",
-    command: "npx -y x serve --v 100%",
+    command: "npx -y x serve --v 100% $HOME",
   });
   // 検証
   const lines = unit.split("\n");
@@ -53,7 +53,9 @@ test("test_build_unit_file", async () => {
   expect(lines).toContain('Environment="MDMARK_STATE_DIR=/s"');
   expect(lines).toContain('Environment="MDMARK_LAUNCHER=systemd"');
   expect(lines).toContain('Environment="PATH=/a b:/c"');
-  expect(lines).toContain("ExecStart=/bin/sh -c 'npx -y x serve --v 100%%'");
+  expect(lines).toContain(
+    "ExecStart=/bin/sh -c 'npx -y x serve --v 100%% $$HOME'",
+  );
   expect(lines).toContain("Restart=on-failure");
   expect(lines).toContain("WantedBy=default.target");
   expect(unit.endsWith("\n")).toBe(true);
