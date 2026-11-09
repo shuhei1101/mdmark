@@ -5,3 +5,21 @@ confirmations:
     approver: shuhei1101
     commit: b430b160a
     thread: https://github.com/shuhei1101/mdmark/pull/445#discussion_r4508885347
+  - topic: map の図の中の段の履歴（論点 1）
+    decision: 図の中の段はブラウザの履歴にもパンくずにも積まない。戻るのは図の右上の戻るボタンと Esc。開閉と中へ入った状態は sessionStorage に保つ
+    decided_by: reply
+    approver: shuhei1101
+    commit: 4ec4b2ad4
+    thread: https://github.com/shuhei1101/mdmark/pull/445#discussion_r4512815823
+  - topic: map のノードのページ（論点 2）
+    decision: ノードのページは作らない（A-35 の No 6 を範囲から外す）。ノードの説明はツールチップに出す
+    decided_by: reply
+    approver: shuhei1101
+    commit: 4ec4b2ad4
+    thread: https://github.com/shuhei1101/mdmark/pull/445#discussion_r4512921772
+  - topic: map の視点（論点 3）
+    decision: 視点の切り替えは作らない（A-35 の No 7 と補足の relations を範囲から外す）
+    decided_by: reply
+    approver: shuhei1101
+    commit: 4ec4b2ad4
+    thread: https://github.com/shuhei1101/mdmark/pull/445#discussion_r4512932653
