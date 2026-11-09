@@ -17,6 +17,7 @@ import {
 } from "../parts/table.ts";
 import {
   bottomHeadCells,
+  columnWidthLimit,
   compareCells,
   computeTotal,
   FILTER_KINDS,
@@ -38,6 +39,7 @@ import {
   togglePinnedColumn,
 } from "../table-logic.ts";
 import { COPIED_NOTICE_MS, copyText } from "./clipboard.ts";
+import { attachColumnResize } from "./table-resize.ts";
 import { attachTableSettings, reorderRowCells } from "./table-settings.ts";
 import { attachTableTree, TREE_FOLDED_ATTRIBUTE } from "./table-tree.ts";
 import { cellValue, visibleText } from "./text.ts";
@@ -341,7 +343,7 @@ function attachTable(
   // ─── 見出しのボタンとドロワー ───
   const drawers = new Map<number, HTMLElement>();
   const tools = features.some((feature) =>
-    ["sort", "filter", "pin"].includes(feature),
+    ["sort", "filter", "pin", "resize"].includes(feature),
   );
   if (tools) {
     headCells.forEach((cell, column) => {
@@ -1051,11 +1053,14 @@ function attachTable(
     // 畳んでいる間は最終列が隠れているため、一度出して測る
     const wasFolded = wrapper.classList.contains("is-folded");
     wrapper.classList.remove("is-folded");
-    const next = shouldFold({
-      width,
-      lastColumn: column,
-      wraps: width < FOLD_MAX_WIDTH && column > 0 && lastColumnWraps(column),
-    });
+    // 幅を指定した最終列は畳まない
+    const next =
+      !headCells[column]?.classList.contains("is-resized") &&
+      shouldFold({
+        width,
+        lastColumn: column,
+        wraps: width < FOLD_MAX_WIDTH && column > 0 && lastColumnWraps(column),
+      });
     if (wasFolded) {
       wrapper.classList.add("is-folded");
     }
@@ -1442,8 +1447,16 @@ function attachTable(
   });
   observer.observe(table);
   observer.observe(wrapper);
-  // 描く先の要素の幅が変わるたびに、最終列を畳むかをもう一度決める
-  const foldObserver = new ResizeObserver(updateFold);
+  // 描く先の要素の幅が変わるたびに、最終列を畳むかをもう一度決める（高さだけの変化では決め直さない）
+  let rootWidth: number | undefined;
+  const foldObserver = new ResizeObserver((entries) => {
+    const width = entries.at(-1)?.contentRect.width;
+    if (width === undefined || width === rootWidth) {
+      return;
+    }
+    rootWidth = width;
+    updateFold();
+  });
   foldObserver.observe(root);
   updateFold();
   updatePinVisibility();
@@ -1451,6 +1464,29 @@ function attachTable(
     pinColumns(pinned);
   }
   updateVisibleWidth();
+  if (features.includes("resize")) {
+    cleanups.push(
+      attachColumnResize(table, {
+        headCells,
+        maxWidth: (column) =>
+          columnWidthLimit({
+            visibleWidth: scroller.clientWidth,
+            overflowing: isOverflowing(),
+            widths: headCells.map((cell) =>
+              cell.hidden ? 0 : cell.offsetWidth,
+            ),
+            pinned,
+            column,
+          }),
+        // 幅を変えたら、留める位置と境の線を今の列の幅で決め直す（最終列を畳むかは決め直さない）
+        onResize: () => {
+          if (pinned.length > 0) {
+            pinColumns(pinned);
+          }
+        },
+      }),
+    );
+  }
   if (features.includes("rowlink")) {
     revealRow();
   }
