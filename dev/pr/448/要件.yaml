@@ -13,7 +13,9 @@ docs:
   - page: dev/設計書/ER図/移行の手順.yaml
     new: false
     change: '`migrations/no-steps.yaml` の `schema` 列の `enum_values` に `mdmark.settings.schema.json`・`mdmark.templates.schema.json` を追加し、`scripts/migrations.ts` の `CHECKED_SCHEMAS` と統一する（#368）'
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-09T03:14:38.178557+00:00'
 scope_out:
   - item: '`scripts/migrations.ts` の `CHECKED_SCHEMAS` と、モジュール構成『ビルド』の記述の修正'
     reason: '#354（squash commit e86a6cb0）で 4 つの Schema に統一済みで、#368 の事象の点検の誤りは develop で解消しているため'
