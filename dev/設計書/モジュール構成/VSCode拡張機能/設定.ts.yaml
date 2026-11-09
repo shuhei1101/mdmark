@@ -382,10 +382,10 @@ functions:
         expected: '`aliases` が無く、`aliasIssues`・`aliasFiles` が空'
       - name: test_load_config_when_table
         case: 正常
-        summary: 設定の `table` を `mount` に指定する設定に入れる
-        condition: '端末の設定に `table: { pin: each }`、`/w/mdmark.config.yaml` に `table: { pin: through }`、`cwd` が `/w`。別に `/w/b/mdmark.config.yaml` に `table: through` だけを記載し、`cwd` が `/w/b`'
-        mock: '`readFile`・`isFile` を差し替える'
-        expected: '1 つ目の `config.table` が `{ pin: "through" }`。2 つ目は `table` がマップでないので `/w/b` の値を入れず、`config.table` が `/w` の `{ pin: "through" }`'
+        summary: 設定の `table` を `mount` に指定する設定に入れ、マップでない `table` は入れない
+        condition: '`/w/mdmark.config.yaml` に `table: { pin: through }`、`/w/b/mdmark.config.yaml` に `table: through`。`cwd` が `/w` と `/w/b` のそれぞれ'
+        mock: '`readFile`・`isFile` を差し替える（`test_load_config_when_labels` と同じ）'
+        expected: '`/w` の `config` が `{ table: { pin: "through" } }`。`/w/b` の `config` が `table` を持たず、`problem.settingKey` が `table`'
     callees:
       - '#functions[resolveConfigPath]'
       - dev/設計書/モジュール構成/ライブラリ本体/設定を重ねて読み込む.ts#functions[loadLayeredConfig]

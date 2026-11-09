@@ -457,3 +457,20 @@ test("test_load_config_when_labels", async () => {
   expect(text.config).not.toHaveProperty("labels");
   expect(text.problem?.settingKey).toBe("labels");
 });
+
+// 設定の table を mount に指定する設定に入れ、マップでない table は入れない（正常系）
+test("test_load_config_when_table", async () => {
+  // 準備
+  const { loadConfig: load } = await loadModule();
+  const files = {
+    "/w/mdmark.config.yaml": "table:\n  pin: through\n",
+    "/w/b/mdmark.config.yaml": "table: through\n",
+  };
+  // 実行
+  const map = await load(loadOptions(files, { cwd: "/w" }));
+  const text = await load(loadOptions(files, { cwd: "/w/b" }));
+  // 検証
+  expect(map.config).toEqual({ table: { pin: "through" } });
+  expect(text.config).not.toHaveProperty("table");
+  expect(text.problem?.settingKey).toBe("table");
+});
