@@ -1134,7 +1134,7 @@ test("test_render_table_when_resized", async () => {
     resizing: 0,
   });
   // 検証
-  const [firstHead] = findTags(html, "<th");
+  const [firstHead] = findTags(html, "<th ");
   if (firstHead === undefined) {
     throw new Error("見出しのセルが無い");
   }
