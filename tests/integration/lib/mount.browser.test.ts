@@ -13953,6 +13953,19 @@ test("test_normal_when_column_resized_in_narrow_width", async () => {
   // 実行: 説明の列のつまみを、説明のセルが折り返すまで左へドラッグする
   dragResizeHandle(handles[2] as HTMLElement, -2000);
   await nextFrames();
+  // 検証の前提: 最終列のセルが、畳む判定の折り返し（行の高さの 1.5 倍を超える）になっている
+  expect(
+    [...table.querySelectorAll<HTMLElement>("tbody td:last-child")].some(
+      (cell) => {
+        const style = getComputedStyle(cell);
+        const content =
+          cell.scrollHeight -
+          Number.parseFloat(style.paddingTop) -
+          Number.parseFloat(style.paddingBottom);
+        return content > Number.parseFloat(style.lineHeight) * 1.5;
+      },
+    ),
+  ).toBe(true);
   // 検証: 最終列は畳まない
   expect(note.hidden).toBe(false);
   expect(table.querySelector(".mdmark-fold-toggle")).toBeNull();
