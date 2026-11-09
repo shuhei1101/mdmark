@@ -27,21 +27,23 @@ export const FLOW = `flowchart LR
   user -->|設定と Markdown| mount
   mount --> marker
   doc -.-> marker
-  marker --> mermaid
-  marker --> data
+  marker -->|mermaid のブロック| mermaid
+  marker -->|補足の YAML| data
   index -.-> data
-  mermaid --> layout
-  data --> layout
+  mermaid -->|ノードと線| layout
+  data -->|layout の上書き| layout
   layout --> route
   route --> frame
   data --> frame
-  frame -->|描いた図| user
+  frame -->|HTML| user
 `;
 
 export const DATA = {
   notes: {
     layout: "内側のグループから配置し、グループの大きさを決めてから外側を配置する",
     data: "version と機能ごとのキーをスキーマで検査する",
+    L2: "文書の map の範囲の Markdown",
+    L5: "用語集の用語と別名",
   },
   /** 色の名前（グループ・ノード・線の id ごと） */
   colors: {

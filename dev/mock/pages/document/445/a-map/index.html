@@ -14,7 +14,7 @@
   <!-- 配布物の mount で本文を描き、map の範囲の場所にモックの map の図を置く -->
   <script type="module" src="../../../../refs/445/assets/scene.js"></script>
   <style>
-    /* 描く先の要素を画面の幅まで広げ、wide の範囲が本文の幅より広げられるようにする（論点 1 の案 C） */
+    /* 描く先の要素を画面の幅まで広げ、map の図を wide の範囲で本文の幅より広げられるようにする */
     .host { max-width: none; }
     #doc { --mdmark-content-width: 60rem; }
   </style>
@@ -24,16 +24,6 @@
   <div class="mock-bar" data-mock-bar>
     <div class="mock-bar-group" role="group" aria-label="場面" data-scene-list>
       <span class="mock-bar-label">場面</span>
-    </div>
-    <div class="mock-bar-group" role="group" aria-label="図の枠の幅">
-      <span class="mock-bar-label">図の枠の幅</span>
-      <a class="mock-bar-item" data-scene-fit="wide">C: 広げてから合わせる</a>
-      <a class="mock-bar-item" data-scene-fit="fit">A: 本文の幅で合わせる</a>
-    </div>
-    <div class="mock-bar-group" role="group" aria-label="狭い幅で縮める下限">
-      <span class="mock-bar-label">縮める下限（論点 1）</span>
-      <a class="mock-bar-item" data-scene-shrink="fit">A: 枠の幅に合わせる</a>
-      <a class="mock-bar-item" data-scene-shrink="min">B: 等倍より縮めない</a>
     </div>
     <div class="mock-bar-group" role="group" aria-label="明暗">
       <span class="mock-bar-label">明暗</span>

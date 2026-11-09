@@ -2,7 +2,7 @@
 // URL の ?scene= で場面（overview・group・collapsed・walkthrough・play・warnings）、?scheme= で明暗を選ぶ
 
 import { mount } from "../../../../../dist/index.js";
-import { createMap, createSequence, MAP_MIN_SCALE } from "./map-mock.js";
+import { createMap, createSequence } from "./map-mock.js";
 import { DATA, FLOW, SEQUENCE } from "./samples.js";
 
 /** 場面と、操作列に出す名前 */
@@ -10,7 +10,7 @@ const SCENES = {
   overview: "全体",
   group: "グループの中",
   collapsed: "グループを閉じる",
-  walkthrough: "案内",
+  walkthrough: "案内の手順",
   play: "再生",
   warnings: "書き方の警告",
 };
@@ -20,17 +20,11 @@ const DEFAULT_SCHEME = "light";
 const params = new URLSearchParams(location.search);
 const scene = params.get("scene") ?? DEFAULT_SCENE;
 const scheme = params.get("scheme") ?? DEFAULT_SCHEME;
-/** 開いたときの倍率の案（論点 1）: wide は図の枠を wide の範囲で広げてから倍率を決める案 C、fit は本文の幅のまま倍率を決める案 A */
-const DEFAULT_FIT = "wide";
-const fit = params.get("fit") ?? DEFAULT_FIT;
-/** 狭い幅で図を縮める下限の案（論点 1）: fit は今のフロー図と同じく枠の幅に合わせて縮める案 A、min は等倍より縮めない案 B */
-const DEFAULT_SHRINK = "min";
-const shrink = params.get("shrink") ?? DEFAULT_SHRINK;
 
 /** 今の選択のうち 1 つだけを変えた URL（既定の値は書かない） */
 const linkTo = (change) => {
-  const current = { scene, scheme, fit, shrink, ...change };
-  const defaults = { scene: DEFAULT_SCENE, scheme: DEFAULT_SCHEME, fit: DEFAULT_FIT, shrink: DEFAULT_SHRINK };
+  const current = { scene, scheme, ...change };
+  const defaults = { scene: DEFAULT_SCENE, scheme: DEFAULT_SCHEME };
   const query = new URLSearchParams();
   for (const [key, value] of Object.entries(current)) if (value !== defaults[key]) query.set(key, value);
   return query.size ? `?${query}` : "index.html";
@@ -45,7 +39,7 @@ for (const [value, label] of Object.entries(SCENES)) {
   if (value === scene) link.setAttribute("aria-current", "page");
   sceneGroup.append(link);
 }
-for (const [attr, key, current] of [["sceneScheme", "scheme", scheme], ["sceneFit", "fit", fit], ["sceneShrink", "shrink", shrink]]) {
+for (const [attr, key, current] of [["sceneScheme", "scheme", scheme]]) {
   for (const link of document.querySelectorAll(`[data-${attr.replace(/[A-Z]/g, (c) => `-${c.toLowerCase()}`)}]`)) {
     const value = link.dataset[attr];
     link.href = linkTo({ [key]: value });
@@ -57,7 +51,11 @@ const markdown = `# 文書を描く仕組み
 
 mdmark が map の範囲を図にするまでの構成。
 
-${fit === "wide" ? "<!-- wide -->\n\nMAP-SLOT-FLOW\n\n<!-- /wide -->" : "MAP-SLOT-FLOW"}
+<!-- wide -->
+
+MAP-SLOT-FLOW
+
+<!-- /wide -->
 
 ## 描くまでの流れ
 
@@ -76,14 +74,17 @@ const initial = {
   group: { enter: "lib" },
   collapsed: { collapsed: ["read"] },
   walkthrough: { step: 2, enter: "place" },
-  play: { play: 2, paused: true },
+  play: { play: 2 },
 }[scene] ?? {};
 
 const flowHost = document.createElement("div");
 flowHost.className = "map-host";
-slot("MAP-SLOT-FLOW").replaceWith(flowHost);
+const flowSlot = slot("MAP-SLOT-FLOW");
+// map の図は常に置き場所の幅いっぱいに広げる（wide の範囲の切り替えのボタンを出さない）
+flowSlot.closest(".mdmark-wide-range")?.parentElement.classList.add("map-wide");
+flowSlot.replaceWith(flowHost);
 // 開閉と中へ入った状態は場面ごとに sessionStorage へ保つ
-const map = createMap(flowHost, { id: scene, title: "全体の構成", flow: FLOW, data: DATA, sequence: SEQUENCE }, initial, shrink === "min" ? { minScale: MAP_MIN_SCALE() } : {});
+const map = createMap(flowHost, { id: scene, title: "全体の構成", flow: FLOW, data: DATA, sequence: SEQUENCE }, initial);
 
 const sequenceHost = document.createElement("div");
 slot("MAP-SLOT-SEQUENCE").replaceWith(sequenceHost);

@@ -1,5 +1,10 @@
 /* map の図のモックの規則: 今のフロー図の部品の上に、入れ子のグループ・色・強調・案内と再生の帯を足す */
 
+/* map の図は常に置き場所の幅いっぱいに広げるため、wide の範囲の本文の幅との切り替えのボタンを出さない */
+.map-wide .mdmark-wide-bar {
+  display: none;
+}
+
 /* モックでは図を別の mount で描くため、描いた文書の本文の幅の上限を外し、置き場所（wide の範囲）の幅まで広げる */
 .map-host.mdmark {
   max-width: none;
@@ -13,10 +18,16 @@
   border-radius: calc(var(--mdmark-radius) * 2);
   background: var(--map-fill, color-mix(in srgb, var(--mdmark-color-surface) 50%, transparent));
 }
-.map-group-title {
+/* グループの見出し: 左上に、開閉の山形とタイトルを並べる */
+.map-group-head {
   position: absolute;
   top: 6px;
-  left: 8px;
+  left: 6px;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+.map-group-title {
   min-height: 24px;
   padding: 0 4px;
   border: 0;
@@ -28,20 +39,30 @@
   font-weight: 700;
   cursor: zoom-in;
 }
-/* 開閉のボタン: グループの右上と閉じたグループのノードの右上に置く小さなアイコン */
-.map-figure .map-group-toggle {
-  position: absolute;
-  top: 6px;
-  right: 6px;
+/* 開閉の山形: 枠と面を持たず、グループの文字の色のアイコンだけを出す。押せる範囲は 24px */
+.map-disclosure {
+  display: inline-grid;
+  place-items: center;
   width: 24px;
   height: 24px;
-  min-width: 24px;
-  min-height: 24px;
   padding: 0;
+  border: 0;
+  border-radius: var(--mdmark-radius);
+  background: none;
+  color: var(--map-ink, var(--mdmark-color-muted));
+  cursor: pointer;
 }
-.map-figure .map-group-toggle .mdmark-diagram-icon {
-  width: 14px;
-  height: 14px;
+.map-disclosure:hover {
+  background: color-mix(in srgb, currentColor 12%, transparent);
+}
+.map-disclosure .mdmark-diagram-icon {
+  width: 16px;
+  height: 16px;
+}
+.map-closed-group > .map-disclosure {
+  position: absolute;
+  top: 4px;
+  right: 4px;
 }
 .map-closed-group {
   border-style: double;
@@ -51,9 +72,40 @@
 .map-closed-group .mdmark-diagram-node-kind svg {
   display: none;
 }
-:is(.map-group-title, .map-group-toggle):focus-visible {
+:is(.map-group-title, .map-disclosure):focus-visible {
   outline: 2px solid var(--mdmark-color-link);
   outline-offset: 2px;
+}
+
+/* 線: 色の名前の線と、ポインターを当てた線を太くする */
+.map-figure .map-colored-wire,
+.map-figure .map-colored-wire path {
+  stroke: var(--map-wire);
+}
+.map-figure .map-wire-hover,
+.map-figure .map-wire-hover path {
+  stroke-width: 3.5;
+}
+.map-wire-hit {
+  fill: none;
+  stroke: transparent;
+  stroke-width: 14;
+  pointer-events: stroke;
+  cursor: help;
+}
+.map-wire-tip {
+  position: absolute;
+  z-index: 3;
+  width: max-content;
+  max-width: 320px;
+  padding: 6px 10px;
+  border: 1px solid var(--mdmark-color-border);
+  border-radius: var(--mdmark-radius);
+  background: var(--mdmark-color-bg-opaque, var(--mdmark-color-bg));
+  box-shadow: 0 4px 12px rgb(0 0 0 / 12%);
+  font-size: 13px;
+  white-space: pre-line;
+  pointer-events: none;
 }
 
 /* 色を指定したノード */
