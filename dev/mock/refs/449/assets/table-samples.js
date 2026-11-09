@@ -1,7 +1,7 @@
 // #449 の表の見本の定義（table-resize.js が描く）。head・body はマーカーの中の Markdown の表のセルの文字のまま。
 // resize は列の幅のつまみを付けるか（-resize・plain は false）、pin は描いた後に留める列（0 始まり）、wide は wide= の列名、
 // widths は描いた後に幅を変えておく列と増やす幅（px）、scroll は描いた後のスクロールの位置（start・end）、
-// focus はつまみにフォーカスしておく列、state は見本で固定して見せるつまみの状態（hover・drag）、coarse はつまみを常に出す見本
+// focus はつまみにフォーカスしておく列、state は見本で固定して見せるつまみの状態（hover・drag・open は「狭める」「広げる」のボタンを出した状態）、coarse はつまみを常に出す見本
 
 window.mdmarkMockTables449 = {};
 {
@@ -17,6 +17,7 @@ window.mdmarkMockTables449 = {};
   T.drag = { label: "名前の列のつまみを右へ 80px ドラッグしている表", head: shortHead, body: shortBody, resize: true, wide: "説明", widths: { 0: 80 }, state: { 0: "drag" } };
   T.min = { label: "説明の列を列の最小幅まで狭めた表", head: shortHead, body: shortBody, resize: true, wide: "説明", widths: { 1: -2000 } };
   T.keyboard = { label: "名前の列のつまみにフォーカスし、→ キーで広げた表", head: shortHead, body: shortBody, resize: true, widths: { 0: 32 }, focus: 0 };
+  T.buttons = { label: "名前の列のつまみを押して「狭める」「広げる」のボタンを出した表", head: shortHead, body: shortBody, resize: true, state: { 0: "open" } };
   T.coarse = { label: "ポインターが粗い画面でつまみを常に出した表", head: shortHead, body: shortBody, resize: true, coarse: true };
   T.off = { label: "-resize の表", head: shortHead, body: shortBody, resize: false };
 
@@ -36,13 +37,22 @@ window.mdmarkMockTables449 = {};
     widths: { 0: 60 },
     scroll: "end",
   };
+  T["pinned-max"] = {
+    label: "留めた 1 列目を、表の見える幅を超えるまで広げようとした表",
+    head: wideHead,
+    body: wideBody,
+    resize: true,
+    pin: [0, 2],
+    widths: { 0: 2000 },
+    scroll: "end",
+  };
   T["pinned-right"] = {
-    label: "9 列目を 40px 狭め、右端に留めた表",
+    label: "右端に留めた 9 列目を 40px 広げた表",
     head: wideHead,
     body: wideBody,
     resize: true,
     pin: [0, 2, 8],
-    widths: { 8: -40 },
+    widths: { 8: 40 },
     scroll: "start",
   };
 }

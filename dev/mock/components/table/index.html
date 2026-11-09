@@ -1326,10 +1326,19 @@
 
       <!-- #449 つまみは role=separator で、aria-valuenow に今の幅を持つ -->
       <section aria-labelledby="state-449-keyboard">
-        <h2 class="catalog-label" id="state-449-keyboard">キーボードで幅を変える（つまみに Tab でフォーカスし、→ キーを 2 回押した。Enter で元の幅に戻る）</h2>
+        <h2 class="catalog-label" id="state-449-keyboard">キーボードで幅を変える（つまみに Tab でフォーカスし、→ キーを 2 回押した。Enter で元の幅に戻る。aria-valuenow・aria-valuemax・aria-valuetext に幅を持つ）</h2>
         <article class="mdmark">
           <!-- [data-mock-table449]: table-resize.js が table-samples.js の同じ名前の定義から表を描く -->
           <div data-mock-table449="keyboard"></div>
+        </article>
+      </section>
+
+      <!-- #449 ドラッグの代わりに、つまみを押すと「狭める」「広げる」のボタンを出す -->
+      <section aria-labelledby="state-449-buttons">
+        <h2 class="catalog-label" id="state-449-buttons">つまみを押して出す「狭める」「広げる」のボタン（ドラッグせずに、1 回で 16px 変える。Esc とつまみの外へのフォーカスで閉じる）</h2>
+        <article class="mdmark">
+          <!-- [data-mock-table449]: table-resize.js が table-samples.js の同じ名前の定義から表を描く -->
+          <div data-mock-table449="buttons"></div>
         </article>
       </section>
 
@@ -1344,16 +1353,25 @@
 
       <!-- #449 幅を変えるたびに、留めた列の left・right を再計算する -->
       <section aria-labelledby="state-449-pinned-left">
-        <h2 class="catalog-label" id="state-449-pinned-left">留めた 1 列目を 60px 広げて右へスクロールした（3 列目は広げた 1 列目の右に重ならずに並ぶ）</h2>
+        <h2 class="catalog-label" id="state-449-pinned-left">留めた 1 列目を 60px 広げて右へスクロールした（3 列目は広げた 1 列目の右に重ならずに並ぶ。390px の画面幅では留めた 3 つの列で見える幅が埋まり、上限のため広がらない）</h2>
         <article class="mdmark">
           <!-- [data-mock-table449]: table-resize.js が table-samples.js の同じ名前の定義から表を描く -->
           <div data-mock-table449="pinned-left"></div>
         </article>
       </section>
 
+      <!-- #449 留めた列は、留めた列の幅の合計が表の見える幅に収まる幅までしか広げない -->
+      <section aria-labelledby="state-449-pinned-max">
+        <h2 class="catalog-label" id="state-449-pinned-max">留めた 1 列目を、表の見える幅を超えるまで広げようとした（ほかの留めた列が見える幅で止まる）</h2>
+        <article class="mdmark">
+          <!-- [data-mock-table449]: table-resize.js が table-samples.js の同じ名前の定義から表を描く -->
+          <div data-mock-table449="pinned-max"></div>
+        </article>
+      </section>
+
       <!-- #449 右端に留めた列も、今の幅で right を再計算する -->
       <section aria-labelledby="state-449-pinned-right">
-        <h2 class="catalog-label" id="state-449-pinned-right">右端に留めた 9 列目を 40px 狭めた（9 列目は右端に重ならずに留まる）</h2>
+        <h2 class="catalog-label" id="state-449-pinned-right">右端に留めた 9 列目を 40px 広げた（9 列目は右端に重ならずに留まる）</h2>
         <article class="mdmark">
           <!-- [data-mock-table449]: table-resize.js が table-samples.js の同じ名前の定義から表を描く -->
           <div data-mock-table449="pinned-right"></div>
