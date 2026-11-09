@@ -43,8 +43,13 @@ states:
 accessibility:
 - '`details` と `summary` の既定の開閉の操作（Enter・Space）と開閉の状態のスクリーンリーダーを使用する'
 - 見出しの文字は本文の見出しではないため、`h1`〜`h6` を使用せず、右側の目次・目次に出さない
+uses:
+- component: dev/設計書/部品設計/detailsの範囲.ts#
+  how: 見出し `フロントマター` と中身のコードブロックの HTML を `renderCollapsible` で閉じた折りたたみにし、class に `mdmark-frontmatter` を加える
+- component: dev/設計書/部品設計/コードブロック.ts#
+  how: フロントマターの中身を言語 `yaml` のコードブロック（言語のラベルとコピーボタンを持つ）として描き、`codeHtml` にする
 refs:
 - dev/設計書/インターフェース定義/ライブラリ本体/文書をHTML文字列にする.ts#constraints[フロントマター]
 status: planned
 notes:
-  HTML: '`<details class="mdmark-frontmatter" data-source-line="0"><summary>フロントマター</summary>{codeHtml}</details>`。コードブロックは部品『コードブロック』と同じ描き方（言語のラベルとコピーボタンを持つ）。見出しの文字は控えめな文字の色（`--mdmark-color-muted`）。モックは `dev/mock/components/frontmatter/` と `dev/mock/pages/document/422/b-yaml-code/`（採用）'
+  HTML: '`<details class="mdmark-collapsible mdmark-frontmatter" data-source-line="0"><summary>フロントマター</summary>{codeHtml}</details>`。折りたたみの外観と振る舞い（描く先の幅に収める・開いたときの余白・印刷）は部品『details の範囲』の `mdmark-collapsible` に従い、`mdmark-frontmatter` は見出しの文字を控えめな文字の色（`--mdmark-color-muted`）にする規則だけに使用する。モックは `dev/mock/components/frontmatter/` と `dev/mock/pages/document/422/b-yaml-code/`（採用）'
