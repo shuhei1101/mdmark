@@ -1,4 +1,4 @@
-// モックの自動配置と記法の読み取り: PoC（#446、commit 3e4d731e8 の poc/map/layout.ts・parse.ts）を束ね、中へ入ったときの外の要素の選び方を修正したもの。手で修正しない
+// モックの自動配置と記法の読み取り: PoC（#446、commit 3e4d731e8 の poc/map/layout.ts・parse.ts）を束ね、中へ入ったときの外の要素の選び方とグループのタイトルの高さ（36px）を修正したもの。手で修正しない
 
 // check.ts
 var LABEL_METRICS = {
@@ -17,7 +17,7 @@ var MAP_LAYOUT = {
   gapItem: 48,
   gapRank: 64,
   boxPad: 24,
-  boxTitle: 28,
+  boxTitle: 36,
   margin: 24,
   /** 線を引く通り道の、矩形からの離れ */
   clearance: 12,

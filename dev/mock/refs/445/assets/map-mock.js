@@ -6,6 +6,8 @@ import { layoutMap, parseFlowchart, parseSequence } from "./map-layout.js";
 /** 線の矢じりと、再生の印の大きさ（px） */
 const ARROW = 8;
 const PLAY_DOT = 6;
+/** 全体が収まる倍率の下限。押す部品の 32px が 24px を下回らない */
+const MIN_FIT_SCALE = 0.75;
 /** 再生で 1 通のメッセージを動かす時間（ms） */
 const PLAY_STEP_MS = 900;
 
@@ -61,8 +63,8 @@ export const createMap = (spec, initial = {}) => {
   const frame = el("figure", { class: "map-frame" });
   const bar = el("div", { class: "map-bar" });
   const crumbs = el("nav", { class: "map-crumbs", "aria-label": "図の現在地" });
-  const view = el("div", { class: "map-view" });
-  const band = el("div", { class: "map-band", hidden: true, role: "region" });
+  const view = el("div", { class: "map-view", tabindex: "0", role: "group", "aria-label": `${spec.title}の図` });
+  const band = el("div", { class: "map-band", hidden: true });
   const legend = el("div", { class: "map-legend" });
   frame.append(bar, crumbs, view, band, legend);
 
@@ -208,7 +210,8 @@ export const createMap = (spec, initial = {}) => {
       const cls = ["map-line", `map-line-${source?.line ?? "solid"}`];
       if (hot && !(hot.has(edge.from) && hot.has(edge.to))) cls.push("is-dim");
       lines.append(svg("polyline", { points: edge.points.map((point) => point.join(",")).join(" "), class: cls.join(" "), "marker-end": `url(#map-arrow-${frame.dataset.mapId})`, "data-edge": edge.id, "data-from": edge.from, "data-to": edge.to }));
-      const mid = edge.points[Math.floor(edge.points.length / 2)];
+      // ラベルと件数は、いちばん長い区間の中点に置く（角に置くとノードに重なる）
+      const mid = longestMid(edge.points);
       if (edge.count > 1) {
         stage.append(
           el("button", {
@@ -271,7 +274,7 @@ export const createMap = (spec, initial = {}) => {
         // まとめた線の元の線: 端を閉じたグループへ読み替えると、この線の両端になる線
         const visible = (id) => [...state.collapsed].find((closed) => isUnder(id, closed)) ?? id;
         const members = chart.edges.filter((item) => visible(item.from) === edge.from && visible(item.to) === edge.to);
-        const mid = edge.points[Math.floor(edge.points.length / 2)];
+        const mid = longestMid(edge.points);
         const list = el("ul");
         for (const member of members) {
           list.append(
@@ -303,6 +306,19 @@ export const createMap = (spec, initial = {}) => {
       }
     }
     return stage;
+  };
+
+  const longestMid = (points) => {
+    let best = [points[0], points[0]];
+    let bestLength = -1;
+    points.slice(1).forEach((point, index) => {
+      const length = Math.hypot(point[0] - points[index][0], point[1] - points[index][1]);
+      if (length > bestLength) {
+        bestLength = length;
+        best = [points[index], point];
+      }
+    });
+    return [(best[0][0] + best[1][0]) / 2, (best[0][1] + best[1][1]) / 2];
   };
 
   const isUnder = (id, ancestor) => {
@@ -362,12 +378,12 @@ export const createMap = (spec, initial = {}) => {
       ]);
     const section = (title, items, empty) =>
       el("section", { class: "map-page-section" }, [
-        el("h4", { text: title }),
+        el("p", { class: "map-page-heading", text: title }),
         items.length ? el("ul", {}, items) : el("p", { class: "map-page-empty", text: empty }),
       ]);
     const note = spec.data.notes?.[id];
-    return el("article", { class: "map-page", "aria-labelledby": "map-page-title" }, [
-      el("h3", { id: "map-page-title", class: "map-page-title", text: labelOf(id) }),
+    return el("article", { class: "map-page", "aria-labelledby": `map-page-title-${frame.dataset.mapId}` }, [
+      el("p", { id: `map-page-title-${frame.dataset.mapId}`, class: "map-page-title", text: labelOf(id) }),
       note ? el("p", { class: "map-page-note", text: note }) : undefined,
       el("div", { class: "map-page-grid" }, [
         section("入る線", incoming.map((edge) => partner(edge, edge.from)), "入る線はありません"),
@@ -406,6 +422,7 @@ export const createMap = (spec, initial = {}) => {
       const steps = spec.data.walkthroughs;
       const step = steps[state.step];
       band.hidden = false;
+      band.setAttribute("role", "region");
       band.setAttribute("aria-label", "案内");
       band.onkeydown = (event) => {
         if (event.key === "ArrowRight" && state.step < steps.length - 1) applyStep(state.step + 1);
@@ -428,6 +445,7 @@ export const createMap = (spec, initial = {}) => {
       const total = sequence.messages.length;
       const paused = frame.dataset.paused === "true";
       band.hidden = false;
+      band.setAttribute("role", "region");
       band.setAttribute("aria-label", "シーケンスの再生");
       band.append(
         el("p", { class: "map-band-count", text: `${state.play + 1} / ${total}` }),
@@ -450,6 +468,7 @@ export const createMap = (spec, initial = {}) => {
       return;
     }
     band.hidden = true;
+    band.removeAttribute("role");
   };
 
   const enterGroup = (id) => {
@@ -526,7 +545,7 @@ export const createMap = (spec, initial = {}) => {
     if (!stage || view.clientWidth === 0) return;
     const width = parseFloat(stage.style.width);
     const height = parseFloat(stage.style.height);
-    const scale = Math.min(1, view.clientWidth / width);
+    const scale = Math.max(MIN_FIT_SCALE, Math.min(1, view.clientWidth / width));
     stage.style.transform = `scale(${scale})`;
     stage.style.transformOrigin = "0 0";
     fit.style.width = `${width * scale}px`;
@@ -568,6 +587,6 @@ export const createSequence = (spec, onPlay) => {
     stage.append(el("span", { class: "map-edge-label", style: `left:${(x(message.from) + x(message.to)) / 2}px;top:${y - 12}px`, text: message.text }));
   });
   stage.prepend(lines);
-  frame.append(el("div", { class: "map-view" }, [stage]));
+  frame.append(el("div", { class: "map-view", tabindex: "0", role: "group", "aria-label": `${spec.title}の図` }, [stage]));
   return frame;
 };

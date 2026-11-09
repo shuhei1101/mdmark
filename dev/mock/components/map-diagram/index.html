@@ -13,9 +13,9 @@
   <link rel="stylesheet" href="../../refs/445/assets/map-mock.css">
   <style>
     /* カタログの並び: 状態ごとに見出しと図を縦に並べる */
-    .catalog { max-width: 1100px; margin: 0 auto; padding: 16px; }
-    .catalog h2 { font-size: 15px; margin: 32px 0 4px; }
-    .catalog p.state-note { margin: 0; color: var(--mdmark-color-muted); font-size: 13px; }
+    .map-catalog { box-sizing: border-box; max-width: 1100px; margin: 0 auto; padding: 16px; }
+    .map-catalog h2 { font-size: 20px; margin: 32px 0 4px; }
+    .map-catalog p.state-note { margin: 0; color: var(--mdmark-color-muted); font-size: 13px; }
     .narrow { width: 390px; max-width: 100%; }
   </style>
 </head>
@@ -24,7 +24,7 @@
   <nav class="crumbs" aria-label="パンくずリスト">
     <a href="../index.md">components</a> / map-diagram
   </nav>
-  <main class="catalog mdmark" id="catalog"></main>
+  <main class="map-catalog" id="catalog"></main>
   <script type="module">
     import { createMap } from "../../refs/445/assets/map-mock.js";
     import { DATA, FLOW, SEQUENCE } from "../../refs/445/assets/samples.js";
