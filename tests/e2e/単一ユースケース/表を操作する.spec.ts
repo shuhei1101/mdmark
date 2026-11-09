@@ -2731,21 +2731,32 @@ function resizeHandle(page: Page, column: number, index = 0) {
     .locator(":scope > .mdmark-col-resize");
 }
 
-/** つまみの中心をマウスで押し、横に `dx` px 動かして離す */
+/** つまみを画面に入れてから中心をマウスで押し、横に `dx` px（画面の中に収まる位置まで）動かして離す */
 async function dragHandle(
   page: Page,
   handle: ReturnType<typeof resizeHandle>,
   dx: number,
 ): Promise<void> {
-  const box = await handle.boundingBox();
-  if (!box) {
-    throw new Error("つまみが無い");
+  await handle.scrollIntoViewIfNeeded();
+  // 滑らかなスクロールが止まり、つまみの位置が変わらなくなるまで待つ
+  let box = await handle.boundingBox();
+  await expect
+    .poll(async () => {
+      const previous = box;
+      box = await handle.boundingBox();
+      return previous?.x === box?.x && previous?.y === box?.y;
+    })
+    .toBe(true);
+  const viewport = page.viewportSize();
+  if (!box || !viewport) {
+    throw new Error("つまみか画面の大きさが無い");
   }
   const x = box.x + box.width / 2;
   const y = box.y + box.height / 2;
+  const to = Math.min(Math.max(x + dx, 1), viewport.width - 1);
   await page.mouse.move(x, y);
   await page.mouse.down();
-  await page.mouse.move(x + dx, y, { steps: 5 });
+  await page.mouse.move(to, y, { steps: 5 });
   await page.mouse.up();
 }
 
@@ -2989,7 +3000,7 @@ test("test_normal_when_column_resized_by_keyboard", async ({ page }) => {
 test("test_normal_when_column_resized_in_narrow_width", async ({ page }) => {
   // 準備
   await page.setViewportSize({ width: 600, height: 800 });
-  await openPage(page, builtRoot, { hostCss: "#doc { width: 600px; }" });
+  await openPage(page, builtRoot, { hostCss: "body { margin: 0 }" });
   await mountDocument(page, {
     markdown: [
       "<!-- table: data -->",
@@ -3006,9 +3017,17 @@ test("test_normal_when_column_resized_in_narrow_width", async ({ page }) => {
   });
   const note = page.locator("#doc thead th").nth(2);
   await expect(note).toBeVisible();
+  // 検証の前提: 描いた直後はページが横にスクロールしない
+  expect(
+    await page.evaluate(
+      () =>
+        document.documentElement.scrollWidth >
+        document.documentElement.clientWidth,
+    ),
+  ).toBe(false);
   const noteWidth = (await headWidthsOf(page))[2];
-  // 実行: 名前の列のつまみを、表がはみ出すまで右へドラッグして離す
-  await dragHandle(page, resizeHandle(page, 0), 600);
+  // 実行: 名前の列のつまみを、表がはみ出すまで右へドラッグして離す（留めた名前の列が説明の列のつまみを覆わない幅にする）
+  await dragHandle(page, resizeHandle(page, 0), 250);
   // 検証: 説明の列は畳まず、表が横にスクロールし、ページは横にスクロールしない
   expect((await headWidthsOf(page))[2]).toBe(noteWidth);
   await expect(note).toBeVisible();
@@ -3035,6 +3054,11 @@ test("test_normal_when_column_resized_in_narrow_width", async ({ page }) => {
 
 test.describe("タッチの端末", () => {
   test.use({ hasTouch: true });
+  // タッチの指を動かす操作は CDP の `Input.dispatchTouchEvent` でだけ送れる
+  test.skip(
+    ({ browserName }) => browserName !== "chromium",
+    "タッチの指を動かす操作を chromium でだけ送れる",
+  );
 
   // タッチで動かして幅を変え、ダブルタップで元の幅に戻す（正常シナリオ（タッチで列の幅を変える））
   test("test_normal_when_column_resized_by_touch", async ({ page }) => {
