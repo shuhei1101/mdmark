@@ -33,3 +33,6 @@ scope_out:
   - item: モジュール構成『ライブラリ本体 / 操作』を物理ファイルごとの設計書に分ける
     reason: テンプレート『モジュール構成』の「1 ファイル = 物理ファイル 1 つ」から外れているが、この PR より前からの作りで今回の要望に含まれない。新しい src/interact/table-resize.ts は今の置き方にそろえた
     plan: '#455'
+  - item: 表の操作の E2E の test_normal_when_columns_reordered と test_normal_when_pinned_under_merged_header が develop で失敗する
+    reason: develop（097ad7fc）でも同じく失敗し、列の幅の変更によらない。今回の要望に含まれない
+    plan: '#457'
