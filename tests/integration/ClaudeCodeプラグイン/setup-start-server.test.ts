@@ -117,7 +117,9 @@ test.skipIf(!HAS_SYSTEMD)(
     );
     expect(file).toContain('Environment="MDMARK_LAUNCHER=systemd"');
     expect(file).toMatch(/^Environment="PATH=/m);
-    expect(file).toContain(terminal.env.MDMARK_SERVE_COMMAND);
+    expect(file).toContain(
+      `ExecStart=/bin/sh -c '${terminal.env.MDMARK_SERVE_COMMAND.replaceAll("'", "'\\''")}'`,
+    );
     expect((await systemctl(["is-enabled", unit])).stdout.trim()).toBe(
       "enabled",
     );
