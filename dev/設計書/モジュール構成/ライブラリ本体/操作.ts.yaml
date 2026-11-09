@@ -2608,6 +2608,7 @@ functions:
 test_files:
   - tests/unit/src/interact/index.browser.test.ts
   - tests/unit/src/interact/tables.browser.test.ts
+  - tests/unit/src/interact/table-resize.browser.test.ts
   - tests/unit/src/interact/tabs.browser.test.ts
   - tests/unit/src/interact/sections.browser.test.ts
   - tests/unit/src/interact/side-toc.browser.test.ts
