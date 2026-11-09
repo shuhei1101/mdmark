@@ -1,0 +1,5 @@
+$ npm run test:unit
+ Test Files  261 passed (261)
+      Tests  1870 passed (1870)
+   Duration  106.65s (worker 67%, tests 20%, import 12%, transform 1%)
+exit=0

@@ -62,3 +62,20 @@
 ### ドキュメント修正
 
 関係する単体・結合テストは無い。変えたのは公開ドキュメント（`docs/`）の Markdown だけで、規約『V字モデル』の対応表で対応するテストを持たない。書き方は `mdmark check --text`（v0.10.0）で点検し、どのページもずれ 0 件だった。
+
+### 単体
+
+<!-- table: data -->
+
+| ファイル | メソッド | 変更種別 | 結果 | 補足 |
+| --- | --- | --- | --- | --- |
+| `tests/unit/src/plugin/setup/systemd.test.ts` | 全実行 | 新規 | ✅ | 8 テスト pass<br>`テスト結果/20261109120835_6a2b60830_単体テスト.log` |
+| `tests/unit/src/plugin/setup/server.test.ts` | 全実行 | 変更 | ✅ | 17 テスト pass。tmux の起動のテストを `test_start_with_tmux_*` に改名し、systemd・起動の方法の決定・待ちのテストを追加 |
+| `tests/unit/src/plugin/setup/paths.test.ts` | 全実行 | 変更 | ✅ | `test_read_unit_name`・`test_read_launcher_setting`・`test_resolve_unit_path` を追加 |
+| `tests/unit/src/plugin/setup/status.test.ts` | 全実行 | 変更 | ✅ | `test_read_terminal_status_when_systemd_available` を追加 |
+| `tests/unit/src/plugin/mcp.test.ts` | 全実行 | 変更 | ✅ | `test_describe_server_location` を追加し、`test_create_mcp_server` を `serverLocation` に合わせた |
+| `npm run test:unit` | 全実行 | 実行のみ | ✅ | 261 ファイル・1,870 テスト pass |
+
+<!-- /table -->
+
+lint は `テスト結果/20261109120835_6a2b60830_lint.log`（終了コード 0。警告は今回触っていない `plugin/bin/setup.js` のファイルの大きさの 1 件だけ）。
