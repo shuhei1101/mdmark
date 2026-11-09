@@ -13653,3 +13653,303 @@ test(
   },
   MERMAID_WAIT_MS + 30_000,
 );
+
+/** 名前・説明・更新日の 3 列 3 行の表の Markdown（`mark` は表のマーカーの中身。省くと囲まない） */
+function resizeTable(mark?: string): string {
+  const table = [
+    "| 名前 | 説明 | 更新日 |",
+    "| --- | --- | --- |",
+    "| りんご | 描画を速くする | 2026-10-01 |",
+    "| みかん | 印刷を修正する | 2026-10-10 |",
+    "| りんご飴 | 描画の崩れを修正する | 2026-10-20 |",
+    "",
+  ];
+  return (
+    mark === undefined
+      ? table
+      : [`<!-- table: ${mark} -->`, "", ...table, "<!-- /table -->", ""]
+  ).join("\n");
+}
+
+/** 列の幅のつまみに `pointerdown` から `pointerup` までを送信する（`dx` は横の移動量の px） */
+function dragResizeHandle(
+  handle: HTMLElement,
+  dx: number,
+  pointerType: "mouse" | "touch" = "mouse",
+): void {
+  const rect = handle.getBoundingClientRect();
+  const x = rect.left + rect.width / 2;
+  const y = rect.top + rect.height / 2;
+  const init = { bubbles: true, cancelable: true, pointerId: 1, pointerType };
+  handle.dispatchEvent(
+    new PointerEvent("pointerdown", { ...init, clientX: x, clientY: y }),
+  );
+  handle.dispatchEvent(
+    new PointerEvent("pointermove", { ...init, clientX: x + dx, clientY: y }),
+  );
+  handle.dispatchEvent(
+    new PointerEvent("pointerup", { ...init, clientX: x + dx, clientY: y }),
+  );
+}
+
+/** 表の最下段の見出しのセルと、そのつまみ */
+function resizeParts(table: Element): {
+  heads: HTMLTableCellElement[];
+  handles: HTMLElement[];
+} {
+  const heads = [...table.querySelectorAll<HTMLTableCellElement>("thead th")];
+  const handles = heads.map((head) =>
+    find<HTMLElement>(head, ":scope > .mdmark-col-resize"),
+  );
+  return { heads, handles };
+}
+
+/** 見出しのセルの `offsetWidth` の並び */
+function headWidths(heads: HTMLTableCellElement[]): number[] {
+  return heads.map((head) => head.offsetWidth);
+}
+
+// resize の表の見出しの右端につまみを付け、ドラッグでその列の幅だけを変え、列の最小幅で止め、ダブルクリックで描いた直後の幅に戻す（正常系（列の幅を変える））
+test("test_normal_when_column_resized", async () => {
+  // 準備
+  vi.spyOn(Element.prototype, "setPointerCapture").mockImplementation(() => {});
+  const el = createElement();
+  const markdown = [
+    resizeTable("data wide=説明"),
+    resizeTable("data -resize"),
+    resizeTable("plain"),
+  ].join("\n");
+  await mountTracked(el, { markdown });
+  const [first, off, plain] = [
+    ...el.querySelectorAll<HTMLElement>(".mdmark-table"),
+  ] as [HTMLElement, HTMLElement, HTMLElement];
+  const { heads, handles } = resizeParts(first);
+  const [nameHandle, noteHandle] = handles as [HTMLElement, HTMLElement];
+  // 検証: つまみの属性
+  for (const handle of handles) {
+    expect(handle.getAttribute("role")).toBe("separator");
+    expect(handle.getAttribute("aria-orientation")).toBe("vertical");
+    expect(handle.getAttribute("tabindex")).toBe("0");
+    expect(getComputedStyle(handle).cursor).toBe("col-resize");
+  }
+  expect(nameHandle.getAttribute("aria-label")).toBe("「名前」の列の幅");
+  const opened = headWidths(heads);
+  const names = () =>
+    [...first.querySelectorAll("tbody tr")].map(
+      (row) => row.querySelector("td")?.textContent,
+    );
+  const order = names();
+  const sort = heads[0]?.getAttribute("aria-sort");
+  // 実行: 名前の列のつまみを右へ 80px ドラッグする
+  dragResizeHandle(nameHandle, 80);
+  // 検証: 名前の列の幅だけが 80px 広がり、並べ替えない
+  const dragged = headWidths(heads);
+  expect(dragged[0]).toBe((opened[0] ?? 0) + 80);
+  expect(dragged.slice(1)).toEqual(opened.slice(1));
+  expect(heads[0]?.getAttribute("aria-sort")).toBe(sort);
+  expect(names()).toEqual(order);
+  // 実行: 説明の列のつまみを、列の最小幅より狭くなるまで左へドラッグする
+  dragResizeHandle(noteHandle, -2000);
+  // 検証: 列の最小幅で止まり、wide= の列も折り返す
+  expect(String(heads[1]?.offsetWidth)).toBe(
+    noteHandle.getAttribute("aria-valuemin"),
+  );
+  const noteCell = first.querySelector<HTMLElement>("tbody td:nth-child(2)");
+  expect(noteCell && getComputedStyle(noteCell).whiteSpace).not.toBe("nowrap");
+  // 実行: 名前の列と説明の列のつまみをダブルクリックする
+  for (const handle of [nameHandle, noteHandle]) {
+    handle.dispatchEvent(new MouseEvent("dblclick", { bubbles: true }));
+  }
+  // 検証: 描いた直後の幅に戻る
+  expect(headWidths(heads).slice(0, 2)).toEqual(opened.slice(0, 2));
+  // 検証: -resize の表と plain の表につまみが無い
+  expect(off.querySelector(".mdmark-col-resize")).toBeNull();
+  expect(plain.querySelector(".mdmark-col-resize")).toBeNull();
+});
+
+// つまみにフォーカスした ←・→ キーで 16px ずつ幅を変え、Enter で描いた直後の幅に戻し、つまみの値を今の幅にする（正常系（キーボードで列の幅を変える））
+test("test_normal_when_column_resized_by_keyboard", async () => {
+  // 準備
+  const el = createElement();
+  await mountTracked(el, { markdown: resizeTable("data") });
+  const table = find<HTMLElement>(el, ".mdmark-table");
+  const scroller = find<HTMLElement>(table, ".mdmark-table-scroll");
+  const { heads, handles } = resizeParts(table);
+  const head = heads[0] as HTMLTableCellElement;
+  const handle = handles[0] as HTMLElement;
+  const opened = head.offsetWidth;
+  // 検証: つまみの値
+  expect(handle.getAttribute("aria-valuenow")).toBe(String(opened));
+  expect(handle.getAttribute("aria-valuetext")).toBe(`${opened}px`);
+  const min = Number(handle.getAttribute("aria-valuemin"));
+  expect(min).toBeGreaterThan(0);
+  expect(min).toBeLessThanOrEqual(opened);
+  expect(handle.getAttribute("aria-valuemax")).toBe(
+    String(Math.floor(scroller.clientWidth)),
+  );
+  const scrollLeft = scroller.scrollLeft;
+  const scrollX = window.scrollX;
+  // 実行: つまみにフォーカスし、→ キーを 2 回押す
+  handle.focus();
+  await userEvent.keyboard("{ArrowRight}{ArrowRight}");
+  // 検証
+  expect(head.offsetWidth).toBe(opened + 32);
+  expect(handle.getAttribute("aria-valuenow")).toBe(String(opened + 32));
+  // 実行・検証: ← キーを 1 回押す
+  await userEvent.keyboard("{ArrowLeft}");
+  expect(head.offsetWidth).toBe(opened + 16);
+  // 実行・検証: Enter で描いた直後の幅に戻り、フォーカスはつまみに残る
+  await userEvent.keyboard("{Enter}");
+  expect(head.offsetWidth).toBe(opened);
+  expect(document.activeElement).toBe(handle);
+  // 検証: キーで表とページがスクロールしない
+  expect(scroller.scrollLeft).toBe(scrollLeft);
+  expect(window.scrollX).toBe(scrollX);
+});
+
+// 留めた列の幅を変えるたびに留める位置を計算し直し、留めた列の幅の合計が見えている幅に収まる幅で止める（正常系（留めた列の幅を変える））
+test("test_normal_when_pinned_column_resized", async () => {
+  // 準備: 表がはみ出す幅に、10 列 30 行の既定の種類の表を描く
+  vi.spyOn(Element.prototype, "setPointerCapture").mockImplementation(() => {});
+  const el = createElement();
+  el.style.width = "800px";
+  const headers = Array.from({ length: 10 }, (_, i) => `列${i + 1}`);
+  const markdown = [
+    `| ${headers.join(" | ")} |`,
+    `| ${headers.map(() => "---").join(" | ")} |`,
+    ...Array.from(
+      { length: 30 },
+      (_, row) =>
+        `| ${headers.map((_h, i) => `値${row + 1}-${i + 1}`).join(" | ")} |`,
+    ),
+    "",
+  ].join("\n");
+  await mountTracked(el, { markdown });
+  const table = find<HTMLElement>(el, ".mdmark-table");
+  const scroller = find<HTMLElement>(table, ".mdmark-table-scroll");
+  const pins = [
+    ...table.querySelectorAll<HTMLButtonElement>("button.mdmark-pin"),
+  ];
+  await vi.waitFor(() => expect(pins[2]?.hidden).toBe(false));
+  const { heads, handles } = resizeParts(table);
+  const firstRow = find<HTMLTableRowElement>(table, "tbody tr");
+  // 実行: 3 列目と 9 列目を留め、1 列目のつまみを右へ 60px ドラッグして、右端までスクロールする
+  pins[2]?.click();
+  pins[8]?.click();
+  dragResizeHandle(handles[0] as HTMLElement, 60);
+  scroller.scrollLeft = scroller.scrollWidth;
+  await nextFrames();
+  // 検証: 3 列目は広げた 1 列目の右に留まる
+  const firstWidth = `${heads[0]?.offsetWidth}px`;
+  expect(heads[2]?.style.left).toBe(firstWidth);
+  expect(firstRow.cells[2]?.style.left).toBe(firstWidth);
+  // 実行: 1 列目のつまみを、表の見えている幅を超えるまで右へドラッグする
+  dragResizeHandle(handles[0] as HTMLElement, 5000);
+  // 検証: 上限の幅で止まる
+  expect(heads[0]?.offsetWidth).toBeLessThanOrEqual(
+    scroller.clientWidth -
+      (heads[2]?.offsetWidth ?? 0) -
+      (heads[8]?.offsetWidth ?? 0),
+  );
+  expect(handles[0]?.getAttribute("aria-valuenow")).toBe(
+    handles[0]?.getAttribute("aria-valuemax"),
+  );
+  // 実行: 1 列目のつまみをダブルクリックし、左端までスクロールして、9 列目のつまみを右へ 40px ドラッグする
+  handles[0]?.dispatchEvent(new MouseEvent("dblclick", { bubbles: true }));
+  scroller.scrollLeft = 0;
+  await nextFrames();
+  const ninth = heads[8]?.offsetWidth ?? 0;
+  dragResizeHandle(handles[8] as HTMLElement, 40);
+  // 検証: 9 列目を広げて右端に留める
+  expect(heads[8]?.offsetWidth).toBe(ninth + 40);
+  expect(heads[8]?.style.right).toBe("0px");
+  for (const index of [0, 2, 8]) {
+    expect(pins[index]?.getAttribute("aria-pressed")).toBe("true");
+  }
+});
+
+// タッチのドラッグで幅を変え、ダブルタップで描いた直後の幅に戻し、ポインターが粗い画面ではつまみを常に出す（正常系（タッチで列の幅を変える））
+test("test_normal_when_column_resized_by_touch", async () => {
+  // 準備: 幅 390px のポインターが粗い画面
+  vi.spyOn(Element.prototype, "setPointerCapture").mockImplementation(() => {});
+  const original = { width: window.innerWidth, height: window.innerHeight };
+  await page.viewport(390, 844);
+  await cdp().send("Emulation.setTouchEmulationEnabled", {
+    enabled: true,
+    maxTouchPoints: 1,
+  });
+  try {
+    expect(matchMedia("(pointer: coarse)").matches).toBe(true);
+    const el = createElement();
+    await mountTracked(el, { markdown: resizeTable("data") });
+    const table = find<HTMLElement>(el, ".mdmark-table");
+    const scroller = find<HTMLElement>(table, ".mdmark-table-scroll");
+    const { heads, handles } = resizeParts(table);
+    const handle = handles[0] as HTMLElement;
+    // 検証: つまみを常に出し、押せる幅を 24px にする
+    expect(Number(getComputedStyle(handle, "::after").opacity)).toBeGreaterThan(
+      0,
+    );
+    expect(handle.offsetWidth).toBe(24);
+    expect(getComputedStyle(handle).touchAction).toBe("none");
+    const opened = headWidths(heads);
+    const scrollLeft = scroller.scrollLeft;
+    // 実行: タッチで右へ 60px 動かす
+    dragResizeHandle(handle, 60, "touch");
+    // 検証
+    const dragged = headWidths(heads);
+    expect(dragged[0]).toBe((opened[0] ?? 0) + 60);
+    expect(dragged.slice(1)).toEqual(opened.slice(1));
+    expect(scroller.scrollLeft).toBe(scrollLeft);
+    // 実行: 2 回タップする
+    dragResizeHandle(handle, 0, "touch");
+    dragResizeHandle(handle, 0, "touch");
+    // 検証
+    expect(heads[0]?.offsetWidth).toBe(opened[0]);
+  } finally {
+    await cdp().send("Emulation.setTouchEmulationEnabled", { enabled: false });
+    await page.viewport(original.width, original.height);
+  }
+});
+
+// 列の幅を変えても、最終列を畳むかは決め直さない（正常系（狭い幅で列の幅を変える））
+test("test_normal_when_column_resized_in_narrow_width", async () => {
+  // 準備: 最終列を畳む幅に、説明が 1 行に収まる表を描く
+  vi.spyOn(Element.prototype, "setPointerCapture").mockImplementation(() => {});
+  const el = createElement();
+  el.style.width = "600px";
+  const markdown = [
+    "<!-- table: data -->",
+    "",
+    "| 名前 | 状態 | 説明 |",
+    "| --- | --- | --- |",
+    "| りんご | 新規 | 描画を速くするための改善 |",
+    "| みかん | 進行 | 印刷で崩れる表の修正 |",
+    "| ぶどう | 完了 | 目次の位置を合わせる変更 |",
+    "",
+    "<!-- /table -->",
+    "",
+  ].join("\n");
+  await mountTracked(el, { markdown });
+  const table = find<HTMLElement>(el, ".mdmark-table");
+  const scroller = find<HTMLElement>(table, ".mdmark-table-scroll");
+  const { heads, handles } = resizeParts(table);
+  const note = heads[2] as HTMLTableCellElement;
+  await nextFrames();
+  expect(note.hidden).toBe(false);
+  const noteWidth = note.offsetWidth;
+  // 実行: 名前の列のつまみを、表がはみ出すまで右へドラッグする
+  dragResizeHandle(handles[0] as HTMLElement, 600);
+  await nextFrames();
+  // 検証: 最終列は畳まず、幅も変わらない
+  expect(note.offsetWidth).toBe(noteWidth);
+  expect(note.hidden).toBe(false);
+  expect(table.querySelector(".mdmark-fold-toggle")).toBeNull();
+  expect(scroller.scrollWidth).toBeGreaterThan(scroller.clientWidth);
+  // 実行: 説明の列のつまみを、説明のセルが折り返すまで左へドラッグする
+  dragResizeHandle(handles[2] as HTMLElement, -2000);
+  await nextFrames();
+  // 検証: 最終列は畳まない
+  expect(note.hidden).toBe(false);
+  expect(table.querySelector(".mdmark-fold-toggle")).toBeNull();
+});
