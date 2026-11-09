@@ -1,0 +1,7 @@
+confirmations:
+  - topic: 結合テストの実行に要るメモリが空くのを待つか
+    decision: メモリの空きをシェルで監視して待ち、空いたら実行する（推奨案 A を、返信を待たず自分で監視する形に変える）
+    decided_by: reply
+    approver: shuhei1101
+    commit:
+    thread: https://github.com/shuhei1101/mdmark/pull/442#discussion_r4508728432

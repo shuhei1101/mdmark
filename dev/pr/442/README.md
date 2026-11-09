@@ -8,7 +8,7 @@
 
 [Issue #364](https://github.com/shuhei1101/mdmark/issues/364) の要望。
 ファイルを通しで実行すると `countRequests("/fixtures/babel.mjs?normal")` が 0 件になって落ち、`-t test_normal_when_range_scripts` で単独に実行すると合格する。
-`countRequests` は `performance.getEntriesByType("resource")` の件数で数えており、前のテストの読み込みでリソースのタイミングの記録の上限（既定 250 件）に達すると、後の読み込みが記録されない。
+Issue では、前のテストの読み込みでリソースのタイミングの記録が上限（既定 250 件）に達することを原因の見込みとしていた。切り分けの結果は [ライブラリ本体](./ライブラリ本体.md) の `## 原因の切り分け`。
 このテストは [PR #303](https://github.com/shuhei1101/mdmark/pull/303) で追加した。
 
 ## 計画書
