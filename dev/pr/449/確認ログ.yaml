@@ -1,0 +1,13 @@
+confirmations:
+  - topic: キーボードで列の幅を変える操作を付けるか
+    decision: つまみを Tab で選べるようにし、←・→ キーで幅を変え、Enter で元の幅に戻す（推奨案 A）
+    decided_by: thumbs_up
+    approver: shuhei1101
+    commit: 900061157e7e230436b54a96fd566305d9940ad6
+    thread: https://github.com/shuhei1101/mdmark/pull/449#discussion_r4509340956
+  - topic: 列の幅を変える機能をどの表に付けるか
+    decision: 機能 `resize` を追加し、既定の種類と `data` の種類に入れる。`-resize` で解除でき、`plain` には付かない（推奨案 A）
+    decided_by: thumbs_up
+    approver: shuhei1101
+    commit:
+    thread: https://github.com/shuhei1101/mdmark/pull/449#discussion_r4509341293
