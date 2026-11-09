@@ -15,7 +15,7 @@ const OPEN_LINE = /^---[ \t]*$/;
 const CLOSE_LINE = /^(?:---|\.\.\.)[ \t]*$/;
 
 /** 先頭の BOM */
-const BOM = "﻿";
+const BOM = "\uFEFF";
 
 /** 改行以外の文字を空白にする（行番号と文字の位置を変えない） */
 const blankOut = (text: string): string => text.replace(/[^\r\n]/g, " ");
