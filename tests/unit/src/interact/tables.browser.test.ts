@@ -2283,6 +2283,10 @@ test("test_attach_tables_when_column_resized", async () => {
   );
   expect(handles[0].getAttribute("aria-valuenow")).toBe(
     handles[0].getAttribute("aria-valuemax"),
+  ); // 実行・検証: 3 列目のつまみにフォーカスすると、広げた 1 列目の幅を引いた上限になる
+  handles[2].focus();
+  expect(handles[2].getAttribute("aria-valuemax")).toBe(
+    String(Math.floor(scroll.clientWidth - heads[0].offsetWidth)),
   );
 });
 
@@ -2318,6 +2322,17 @@ test("test_attach_tables_when_resized_column_not_folded", async () => {
     pressResizeKey(handles[2], "ArrowLeft");
   }
   await new Promise((resolve) => requestAnimationFrame(resolve));
+  // 検証の前提: 最終列のセルが、畳む判定の折り返し（行の高さの 1.5 倍を超える）になっている
+  expect(
+    [...lastCells()].some((cell) => {
+      const style = getComputedStyle(cell);
+      const content =
+        cell.scrollHeight -
+        Number.parseFloat(style.paddingTop) -
+        Number.parseFloat(style.paddingBottom);
+      return content > Number.parseFloat(style.lineHeight) * 1.5;
+    }),
+  ).toBe(true);
   // 検証
   expect(
     [...lastCells()].some((cell) => cell.classList.contains("mdmark-fold-col")),
