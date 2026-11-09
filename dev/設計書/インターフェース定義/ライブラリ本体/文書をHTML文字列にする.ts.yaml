@@ -117,7 +117,7 @@ flows:
         M-->>C: HTML 文字列
     expected:
       - '`<nav class="mdmark-toc" aria-label="目次">` の中に `#補足` へのリンクがある'
-      - 表が `<div class="mdmark-table" data-kind="data" data-features="sort pin filter" data-filter="0:select">` の中の `<details class="mdmark-table-details">` に入り、`details` が `open` を持たず、`<summary>表（3 行）</summary>` を持つ
+      - 表が `<div class="mdmark-table" data-kind="data" data-features="sort pin filter resize" data-filter="0:select">` の中の `<details class="mdmark-table-details">` に入り、`details` が `open` を持たず、`<summary>表（3 行）</summary>` を持つ
       - タブの範囲が `<div class="mdmark-tabs" data-group="os">` になり、`macOS`・`Windows` の `<p class="mdmark-tab-title">` を持つ `<div class="mdmark-tab-panel">` が 2 つあり、どちらも `hidden` を持たない。`<h3` の `macOS` が無い
       - '`[!WARNING]` の引用が `<div class="markdown-alert markdown-alert-warning">` とタイトル `警告` になり、文字列に `[!WARNING]` が無い'
       - '`[!NOTE]-` の引用が `<details class="markdown-alert markdown-alert-note">` と `<summary class="markdown-alert-title">補足</summary>` になる'
@@ -1167,7 +1167,7 @@ flows:
     expected:
       - 表の前に記載の警告があり、本文に `header-rows=5` と表の行の数、見出しの行と本文の行をまたぐ `^^`、左に結合するセルの無い `<<` がある
       - '`thead` の `tr` が 1 つで、`^^` と `<<` のセルが記載した文字のまま出ていて、`rowspan`・`colspan` を持たない'
-      - 表が `data-features="sort pin filter"` を持つ
+      - 表が `data-features="sort pin filter resize"` を持つ
     test: test_normal_when_table_merge_invalid
     refs:
       - dev/設計書/シナリオ/単一ユースケース/表を操作する#scenarios[異常シナリオ（読み込めないセルの結合）]
@@ -1808,7 +1808,7 @@ flows:
         M->>M: 表にし、元の CSV を隠して添える
         M-->>C: HTML 文字列
     expected:
-      - 1 つ目が `<div class="mdmark-table" data-kind="data" data-features="sort pin filter" data-source="csv">` の中の `名前`・`拠点`・`金額` の `th` と 3 行の表になる
+      - 1 つ目が `<div class="mdmark-table" data-kind="data" data-features="sort pin filter resize" data-source="csv">` の中の `名前`・`拠点`・`金額` の `th` と 3 行の表になる
       - '`東京, 本社` が 1 つの `td` で引用符を持たず、改行を持つ値が 1 つの `td` にあり、`""` が `"` になる'
       - 表の後ろに `<pre class="mdmark-raw" hidden>` があり、中の `code.language-csv` が記載したとおりの CSV
       - 2 つ目が `data-kind="default"` と `data-source="csv"` を持つ
