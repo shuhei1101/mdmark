@@ -1,4 +1,4 @@
-// モックの自動配置と記法の読み取り: PoC（#446、commit 3e4d731e8 の poc/map/layout.ts・parse.ts）を束ね、中へ入ったときの外の要素の選び方とグループのタイトルの高さ（36px）を修正したもの。手で修正しない
+// モックの自動配置と記法の読み取り: PoC（#446、commit 3e4d731e8 の poc/map/layout.ts・parse.ts）をまとめ、中へ入ったときの外の要素の選び方・グループのタイトルの高さ（36px）・ノードの大きさ（今のフロー図のノードの外観に合わせる）を修正したもの。手で修正しない
 
 // check.ts
 var LABEL_METRICS = {
@@ -13,7 +13,7 @@ var LABEL_METRICS = {
 // layout.ts
 var MAP_LAYOUT = {
   maxWidth: 220,
-  minWidth: 80,
+  minWidth: 120,
   gapItem: 48,
   gapRank: 64,
   boxPad: 24,
@@ -54,7 +54,7 @@ var sizeLeaf = (label, width) => {
   const w = width ?? Math.min(MAP_LAYOUT.maxWidth, Math.max(MAP_LAYOUT.minWidth, Math.ceil(textWidth(label, nameSize)) + padX * 2));
   const lines = splitLines(label, nameSize, w - padX * 2);
   const count = lines.length;
-  const h = Math.ceil((kindSize + count * nameSize) * lineHeight) + padY * 2;
+  const h = Math.ceil((kindSize + count * nameSize) * lineHeight) + padY * 2 + 16;
   return { w, h, lines };
 };
 var buildView = (chart, options, overrides) => {

@@ -43,29 +43,19 @@ export const DATA = {
     layout: "内側のグループから配置し、グループの大きさを決めてから外側を配置する",
     data: "version と機能ごとのキーをスキーマで検査する",
   },
-  relations: {
-    呼び出し: [
-      { from: "user", to: "mount" },
-      { from: "mount", to: "marker" },
-      { from: "marker", to: "mermaid" },
-      { from: "mermaid", to: "layout" },
-      { from: "layout", to: "route" },
-      { from: "route", to: "frame" },
-      { from: "frame", to: "user" },
-    ],
-    データの流れ: [
-      { from: "doc", to: "marker" },
-      { from: "index", to: "data" },
-      { from: "data", to: "layout" },
-      { from: "data", to: "frame" },
-    ],
+  /** 色の名前（グループ・ノード・線の id ごと） */
+  colors: {
+    read: "blue",
+    place: "green",
+    store: "orange",
+    L2: "orange",
+    L5: "orange",
   },
   walkthroughs: [
     { text: "利用側のページが、設定と Markdown を mount に渡します。", highlight: ["user", "mount"] },
-    { text: "文書と索引は、補足の検査と map のマーカーの読み取りに読まれます。", view: "データの流れ", highlight: ["doc", "index", "data"] },
+    { text: "文書と索引は、補足の検査と map のマーカーの読み取りに読まれます。", highlight: ["doc", "index", "data"] },
     { text: "配置のグループの中で、自動配置の後に線の経路を決めます。", enter: "place", highlight: ["layout", "route"] },
   ],
-  links: { frame: ["図の枠の部品"] },
 };
 
 export const SEQUENCE = {

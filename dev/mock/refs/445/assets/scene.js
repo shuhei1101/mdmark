@@ -1,5 +1,5 @@
 // map の図を含む文書を見る場面: 配布物の mount で本文を描き、map の範囲の場所にモックの map の図を置く。
-// URL の ?scene= で場面（overview・group・collapsed・edge-list・node・view・walkthrough・play・warnings）、?scheme= で明暗を選ぶ
+// URL の ?scene= で場面（overview・group・collapsed・walkthrough・play・warnings）、?scheme= で明暗を選ぶ
 
 import { mount } from "../../../../../dist/index.js";
 import { createMap, createSequence } from "./map-mock.js";
@@ -10,10 +10,7 @@ const SCENES = {
   overview: "全体",
   group: "グループの中",
   collapsed: "グループを閉じる",
-  "edge-list": "まとめた線の一覧",
-  node: "ノードのページ",
-  view: "視点",
-  walkthrough: "巡回",
+  walkthrough: "案内",
   play: "再生",
   warnings: "書き方の警告",
 };
@@ -81,24 +78,21 @@ const slot = (text) => [...doc.querySelectorAll("p")].find((p) => p.textContent.
 const initial = {
   group: { enter: "lib" },
   collapsed: { collapsed: ["read"] },
-  "edge-list": { collapsed: ["read"], edgeList: "L6" },
-  node: { node: "layout" },
-  view: { view: "データの流れ" },
   walkthrough: { step: 2, enter: "place" },
   play: { play: 2, paused: true },
 }[scene] ?? {};
 
-const map = createMap({ title: "全体の構成", flow: FLOW, data: DATA, sequence: SEQUENCE }, initial);
-const flowSlot = slot("MAP-SLOT-FLOW");
-flowSlot.replaceWith(map.frame);
+const flowHost = document.createElement("div");
+slot("MAP-SLOT-FLOW").replaceWith(flowHost);
+// 開閉と中へ入った状態は場面ごとに sessionStorage へ保つ
+const map = createMap(flowHost, { id: scene, title: "全体の構成", flow: FLOW, data: DATA, sequence: SEQUENCE }, initial);
 
-const sequenceSlot = slot("MAP-SLOT-SEQUENCE");
-sequenceSlot.replaceWith(
-  createSequence(SEQUENCE, () => {
-    map.startPlay();
-    map.frame.scrollIntoView({ block: "nearest" });
-  }),
-);
+const sequenceHost = document.createElement("div");
+slot("MAP-SLOT-SEQUENCE").replaceWith(sequenceHost);
+createSequence(sequenceHost, SEQUENCE, { user: "external" }, () => {
+  map.startPlay();
+  flowHost.scrollIntoView({ block: "nearest" });
+});
 
 if (scene === "warnings") {
   // 書き方の警告: 図の枠の上に、読めない行・知らないキー・知らない引数を並べる
@@ -107,8 +101,8 @@ if (scene === "warnings") {
   warning.setAttribute("role", "note");
   warning.innerHTML = `<p>map の書き方の警告</p><ul>
 <li>mermaid の 14 行目 <code>gw -&gt; api</code> を読めません。矢印は <code>--&gt;</code> で記載してください</li>
-<li>補足の知らないキー <code>layuot</code> を無視しました。使用できるキーは version・notes・relations・walkthroughs・layout・plays_over・links です</li>
-<li>マーカーの知らない引数 <code>mdoe=boxes</code> を無視しました。使用できる引数は view・focus・play・title・open・closed です</li>
+<li>補足の知らないキー <code>layuot</code> を無視しました。使用できるキーは version・notes・colors・walkthroughs・layout・plays_over です</li>
+<li>マーカーの知らない引数 <code>mdoe=boxes</code> を無視しました。使用できる引数は focus・play・title・open・closed です</li>
 </ul>`;
-  map.frame.before(warning);
+  flowHost.before(warning);
 }

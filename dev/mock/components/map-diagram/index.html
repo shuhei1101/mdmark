@@ -16,7 +16,7 @@
     .map-catalog { box-sizing: border-box; max-width: 1100px; margin: 0 auto; padding: 16px; }
     .map-catalog h2 { font-size: 20px; margin: 32px 0 4px; }
     .map-catalog p.state-note { margin: 0; color: var(--mdmark-color-muted); font-size: 13px; }
-    .narrow { width: 390px; max-width: 100%; }
+    .narrow { max-width: 390px; }
   </style>
 </head>
 <body class="mdmark-theme-light">
@@ -24,37 +24,31 @@
   <nav class="crumbs" aria-label="パンくずリスト">
     <a href="../index.md">components</a> / map-diagram
   </nav>
-  <main class="map-catalog" id="catalog"></main>
+  <main class="map-catalog" id="catalog"><h1>map-diagram</h1></main>
   <script type="module">
     import { createMap } from "../../refs/445/assets/map-mock.js";
     import { DATA, FLOW, SEQUENCE } from "../../refs/445/assets/samples.js";
 
     /** 状態の見出し・補足・初期状態 */
     const STATES = [
-      ["通常", "入れ子のグループを自動配置した全体の図。凡例は図に 2 種類以上ある種類だけ", {}],
-      ["グループの中", "入ったグループの中だけを配置し直し、外を薄く残す。上端のパンくずで戻る", { enter: "lib" }],
-      ["閉じたグループとまとめた線", "閉じたグループは二重の枠のノード。同じ相手への線は 1 本にまとめて件数を出す", { collapsed: ["read"] }],
-      ["まとめた線の一覧", "件数を押すと、線の近くに元の線の一覧を重ねる", { collapsed: ["read"], edgeList: "L6" }],
-      ["ノードのページ", "図の枠の中を置き換える。項目の無い欄は、無い旨を出す", { node: "layout" }],
-      ["ノードのページ（欄が空）", "入る線・視点・シーケンス・リンク先の図を持たないノード", { node: "index" }],
-      ["視点", "選んだ視点の線が使用するノードだけで配置し直す", { view: "呼び出し" }],
-      ["巡回（最初の手順）", "前へは押せない状態。強調しないノードは薄くする", { step: 0 }],
-      ["巡回（最後の手順）", "グループの中に入り、次へは押せない状態", { step: 2, enter: "place" }],
-      ["再生（一時停止）", "送り手と受け手を強調し、帯に今の番号とメッセージの文を出す", { play: 1, paused: true }],
+      ["通常", "今のフロー図の部品で描き、入れ子のグループを色の面で重ねる", {}],
+      ["グループの中", "入ったグループの中だけを配置し直し、外を薄く残す。右上の戻るボタンか Esc で外へ戻る", { enter: "lib" }],
+      ["閉じたグループとまとめた線", "閉じたグループは二重の枠のノード。同じ相手への線は 1 本にまとめ、件数のツールチップに元の線を出す", { collapsed: ["read"] }],
+      ["案内（最初の手順）", "前へは押せない状態。強調しないノードは薄くする", { step: 0 }],
+      ["案内（最後の手順）", "グループの中に入り、次へは押せない状態", { step: 2, enter: "place" }],
+      ["再生（一時停止）", "送り手と受け手を強調し、線の上の印は再生している間ずっと繰り返す", { play: 1, paused: true }],
     ];
     const catalog = document.getElementById("catalog");
-    const add = (title, note, initial, narrow = false) => {
+    const add = (index, title, note, initial, narrow = false) => {
       catalog.append(Object.assign(document.createElement("h2"), { textContent: title }));
       catalog.append(Object.assign(document.createElement("p"), { className: "state-note", textContent: note }));
-      const map = createMap({ title: "全体の構成", flow: FLOW, data: DATA, sequence: SEQUENCE }, initial);
-      if (initial.paused) map.frame.dataset.paused = "true";
-      const wrap = document.createElement("div");
-      if (narrow) wrap.className = "narrow";
-      wrap.append(map.frame);
-      catalog.append(wrap);
+      const host = document.createElement("div");
+      if (narrow) host.className = "narrow";
+      catalog.append(host);
+      createMap(host, { id: `catalog-${index}`, title: `全体の構成（${title}）`, flow: FLOW, data: DATA, sequence: SEQUENCE }, initial);
     };
-    for (const [title, note, initial] of STATES) add(title, note, initial);
-    add("狭い幅（390px）", "帯とパンくずは折り返し、図は表示する枠の中で横にスクロールする", { enter: "lib" }, true);
+    STATES.forEach(([title, note, initial], index) => add(index, title, note, initial));
+    add(STATES.length, "狭い幅（390px）", "帯は折り返し、図は表示する枠の中で横にスクロールする", { enter: "lib" }, true);
   </script>
 </body>
 </html>
