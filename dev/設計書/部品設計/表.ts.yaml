@@ -1412,10 +1412,6 @@ css_properties:
     syntax: <length>
     default: 4px
     description: 表の外枠の角丸は、この値の 2 倍にする。外枠・見出しの下・行の間・集計の上の線はどれも 1px の `--mdmark-color-border`。文書全体の角丸を変えると表の角丸も変わる
-  - name: --mdmark-column-min-width
-    syntax: <length>
-    default: 6em
-    description: 列の最小幅。つまみで列を狭めるときも、この幅より狭くしない
   - name: --mdmark-sticky-top
     syntax: <length>
     default: 0px
