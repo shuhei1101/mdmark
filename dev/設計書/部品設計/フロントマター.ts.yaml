@@ -1,0 +1,50 @@
+title: フロントマター
+lead: 機能 `frontmatter` がオンのとき、文書の先頭の YAML のフロントマターを、本文の先頭の閉じた折りたたみに言語 `yaml` のコードブロックで出す。
+implementation: src/parts/frontmatter.ts#renderFrontmatter
+story: Parts/Frontmatter
+test_file: tests/integration/lib/frontmatter.story.test.ts
+args:
+- name: codeHtml
+  type: 文字列
+  required: true
+  description: フロントマターの中身（開く行と閉じる行を除いた行）を言語 `yaml` のコードブロックとして描いた HTML
+- name: open
+  type: 真偽値
+  required: false
+  default: 'false'
+  description: 開いた状態から始めるか。描く処理は指定せず、閉じた状態で配置する
+states:
+- name: Closed
+  description: 閉じた状態（描いた直後）
+  args:
+  - name: codeHtml
+    value: '`title: 問い合わせの受付` と `tags: [サポート, 手順]` の 2 行の yaml のコードブロック'
+- name: Open
+  description: 読者が見出しを押して開いた状態
+  args:
+  - name: codeHtml
+    value: Closed と同じ
+  - name: open
+    value: 'true'
+- name: Nested
+  description: 入れ子のオブジェクトとリストを持つフロントマターを開いた状態
+  args:
+  - name: codeHtml
+    value: '`owner` の下に `name`・`team`、`steps` の下に 2 項目のリストを持つ yaml のコードブロック'
+  - name: open
+    value: 'true'
+- name: LongValue
+  description: 区切りの無い長い値を持つフロントマターを開いた状態
+  args:
+  - name: codeHtml
+    value: '`source` に区切りの無い長い URL を持つ yaml のコードブロック'
+  - name: open
+    value: 'true'
+accessibility:
+- '`details` と `summary` の既定の開閉の操作（Enter・Space）と開閉の状態のスクリーンリーダーを使用する'
+- 見出しの文字は本文の見出しではないため、`h1`〜`h6` を使用せず、右側の目次・目次に出さない
+refs:
+- dev/設計書/インターフェース定義/ライブラリ本体/文書をHTML文字列にする.ts#constraints[フロントマター]
+status: planned
+notes:
+  HTML: '`<details class="mdmark-frontmatter" data-source-line="0"><summary>フロントマター</summary>{codeHtml}</details>`。コードブロックは部品『コードブロック』と同じ描き方（言語のラベルとコピーボタンを持つ）。見出しの文字は控えめな文字の色（`--mdmark-color-muted`）。モックは `dev/mock/components/frontmatter/` と `dev/mock/pages/document/422/b-yaml-code/`（採用）'
