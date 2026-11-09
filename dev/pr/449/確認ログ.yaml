@@ -11,3 +11,21 @@ confirmations:
     approver: shuhei1101
     commit:
     thread: https://github.com/shuhei1101/mdmark/pull/449#discussion_r4509341293
+  - topic: ドラッグの代わりの「狭める」「広げる」のボタン
+    decision: ボタンは付けず、ドラッグだけにする。キーボードの操作は先の確認のとおり残す（別案。WCAG 2.2 の 2.5.7 の代わりの手段は付けない）
+    decided_by: reply
+    approver: shuhei1101
+    commit:
+    thread: https://github.com/shuhei1101/mdmark/pull/449#discussion_r4512622794
+  - topic: 列の幅の上限
+    decision: 留めた列の幅の合計が表の見える幅に収まる幅までしか広げない（推奨案 A）
+    decided_by: thumbs_up
+    approver: shuhei1101
+    commit:
+    thread: https://github.com/shuhei1101/mdmark/pull/449#discussion_r4509593279
+  - topic: モックへの合意
+    decision: 「狭める」「広げる」のボタンを外したモックで進める（案 B。変える点はボタンの確認事項の返信）
+    decided_by: reply
+    approver: shuhei1101
+    commit:
+    thread: https://github.com/shuhei1101/mdmark/pull/449#discussion_r4512626460
