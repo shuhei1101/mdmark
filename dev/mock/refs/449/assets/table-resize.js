@@ -1,15 +1,13 @@
 // #449 の表の見本: 列の見出しの右端のつまみで列の幅を変える。
 // [data-mock-table449] に、window.mdmarkMockTables449 の同じ名前の定義から表を描き、ピン止め（table.pin: each）とつまみを付ける。
-// つまみはドラッグ・タッチ・←→ キー・押すと出る「狭める」「広げる」のボタンで幅を変え、ダブルクリック・ダブルタップ・Enter で描いた直後の幅に戻す。
+// つまみはドラッグ・タッチ・←→ キーで幅を変え、ダブルクリック・ダブルタップ・Enter で描いた直後の幅に戻す。
 // 列の幅は列の最小幅から、表の見える幅からほかの留めた列の幅を引いた幅までにする。幅を変えるたびに、留めた列の left・right を今の列の幅で再計算する
 
 {
   const ICON = {
     pin: '<path d="M12 17v5"/><path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"/>',
-    narrow: '<path d="m15 18-6-6 6-6"/>',
-    widen: '<path d="m9 18 6-6-6-6"/>',
   };
-  /** ←・→ キーと「狭める」「広げる」のボタン 1 回で変える幅（px） */
+  /** ←・→ キー 1 回で変える幅（px） */
   const KEY_STEP = 16;
   /** 2 回のタップをダブルタップとみなす間隔（ms） */
   const DOUBLE_TAP_MS = 300;
@@ -29,13 +27,8 @@
     const headHtml = `<tr>${names
       .map((name, c) => {
         const label = `「${esc(name)}」の列をピン止め`;
-        // つまみを押すと、つまみの下に「狭める」「広げる」のボタンを出す（ドラッグの代わりの操作）
         const resize = def.resize
-          ? `<span class="mdmark-col-resize" role="separator" aria-orientation="vertical" tabindex="0" aria-label="「${esc(name)}」の列の幅" data-col="${c}"></span>` +
-            `<span class="mdmark-col-resize-bar" data-col="${c}">` +
-            `<button class="mdmark-col-resize-step" type="button" data-step="-1" aria-label="「${esc(name)}」の列を狭める" title="狭める">${svg("narrow")}</button>` +
-            `<button class="mdmark-col-resize-step" type="button" data-step="1" aria-label="「${esc(name)}」の列を広げる" title="広げる">${svg("widen")}</button>` +
-            "</span>"
+          ? `<span class="mdmark-col-resize" role="separator" aria-orientation="vertical" tabindex="0" aria-label="「${esc(name)}」の列の幅" data-col="${c}"></span>`
           : "";
         return `<th scope="col" data-col="${c}"${c === wideCol ? ' class="mdmark-wide"' : ""}><span class="mdmark-th"><span>${esc(name)}</span><span class="mdmark-th-tools"><button class="mdmark-pin" type="button" aria-pressed="false" aria-label="${label}" title="${label}">${svg("pin")}</button></span></span>${resize}</th>`;
       })
@@ -186,7 +179,6 @@
 
     for (const handle of root.querySelectorAll(".mdmark-col-resize")) {
       const c = Number(handle.dataset.col);
-      const th = headCells[c];
       let drag = null;
       let lastTap = 0;
       handle.addEventListener("pointerdown", (event) => {
@@ -195,23 +187,18 @@
         event.stopPropagation();
         handle.focus();
         handle.setPointerCapture(event.pointerId);
-        drag = { x: event.clientX, width: widthOf(c), moved: false };
+        drag = { x: event.clientX, width: widthOf(c) };
         handle.classList.add("is-dragging");
       });
       handle.addEventListener("pointermove", (event) => {
         if (!drag) return;
-        if (Math.abs(event.clientX - drag.x) > 2) drag.moved = true;
         setWidth(c, drag.width + (event.clientX - drag.x));
       });
       const endDrag = (event) => {
         if (!drag) return;
-        const { moved } = drag;
         drag = null;
         handle.classList.remove("is-dragging");
-        if (event.type !== "pointerup") return;
-        // 動かさずに離したら、ドラッグの代わりの「狭める」「広げる」のボタンを出す
-        if (!moved) th.classList.add("is-resize-open");
-        if (event.pointerType !== "touch") return;
+        if (event.type !== "pointerup" || event.pointerType !== "touch") return;
         // タッチは dblclick が来ないので、2 回のタップの間隔でダブルタップを見分ける
         if (event.timeStamp - lastTap < DOUBLE_TAP_MS) {
           setWidth(c, null);
@@ -233,24 +220,6 @@
           setWidth(c, null);
         }
       });
-      for (const step of th.querySelectorAll(".mdmark-col-resize-step")) {
-        step.addEventListener("click", (event) => {
-          event.stopPropagation();
-          setWidth(c, widthOf(c) + Number(step.dataset.step) * KEY_STEP);
-        });
-      }
-      // つまみとボタンの外へフォーカスが移るか、Esc を押したらボタンを閉じる
-      th.addEventListener("focusout", (event) => {
-        if (!event.relatedTarget?.closest?.(`.mdmark-col-resize-bar[data-col="${c}"], .mdmark-col-resize[data-col="${c}"]`)) {
-          th.classList.remove("is-resize-open");
-        }
-      });
-      th.addEventListener("keydown", (event) => {
-        if (event.key === "Escape" && th.classList.contains("is-resize-open")) {
-          th.classList.remove("is-resize-open");
-          handle.focus();
-        }
-      });
     }
 
     table.addEventListener("scroll", markEdges, { passive: true });
@@ -262,8 +231,7 @@
       setWidth(Number(c), widthOf(Number(c)) + delta);
     }
     for (const [c, state] of Object.entries(def.state ?? {})) {
-      if (state === "open") headCells[Number(c)].classList.add("is-resize-open");
-      else root.querySelector(`.mdmark-col-resize[data-col="${c}"]`).classList.add(`is-${state === "drag" ? "dragging" : "hover"}`);
+      root.querySelector(`.mdmark-col-resize[data-col="${c}"]`).classList.add(`is-${state === "drag" ? "dragging" : "hover"}`);
     }
     if (def.scroll === "end") table.scrollLeft = table.scrollWidth;
     markEdges();
