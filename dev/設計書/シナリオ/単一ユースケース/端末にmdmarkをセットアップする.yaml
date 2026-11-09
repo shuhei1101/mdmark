@@ -349,5 +349,5 @@ preconditions:
   - Claude Code に mdmark のプラグインを入れている
   - 文書の作成者の手元に Node 24 以降と、systemd --user か tmux 3.4 以降のどちらかがある
 success_guarantee: 端末の設定が文書の作成者の回答した値で今のバージョンの記載方法になり、常駐サーバーが、systemd --user が使える端末では unit で、使えない端末か端末の設定で tmux に固定した端末では tmux のセッションの中で、1 つだけ待ち受け、`tools/list` がツールの一覧を返却する。
-minimal_guarantee: 文書の作成者が書き込むことを認めなかったときは、端末の設定と `settings.json` を書き換えず、unit のファイルも記載せずに tmux のセッションで起動する。ほかのプロセスが待ち受けているポートは、そのプロセスのまま変わらない。unit と tmux のセッションの両方で常駐サーバーを動かさない。
+minimal_guarantee: 文書の作成者が書き込むことを認めなかったときは、端末の設定と `settings.json` を書き換えない。端末の設定が無いまま書き込むことを認めなかったときは、unit のファイルも記載せずに tmux のセッションで起動する。ほかのプロセスが待ち受けているポートは、そのプロセスのまま変わらない。unit と tmux のセッションの両方で常駐サーバーを動かさない。
 test_file: tests/e2e/単一ユースケース/端末にmdmarkをセットアップする.spec.ts

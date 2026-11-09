@@ -319,7 +319,7 @@ functions:
       description: 結果・行った変更・動かしている方法
     process: |-
       1. `systemdAvailable` が真なら `readUnitState` で unit の状態を読む。`migrate` が真で unit が `active` か enabled なら `disable --now` し、`changes` に `unit_disabled` を足して、ポートが解放されるまで待つ（`PORT_RELEASE_TIMEOUT_SEC`）
-      2. `migrate` が偽で unit が `active` で、ポートが待ち受けていれば、`launcher` を `systemd` にして `already_running` を返す（書き込みを断られた端末で既定の unit が動いているとき）
+      2. `migrate` が偽で unit が `active` で、ポートが待ち受けていれば、`launcher` を `systemd` にして `already_running` を返す（端末の設定が無いまま書き込みを断られた端末で既定の unit が動いているとき）
       3. セッションがあり待ち受けていれば `already_running`。セッションがあり待ち受けていなければ `kill-session -t ={名前}` して `restarted` にする。起動する前にポートが待ち受けていれば、`MDMARK_PORT` の修正方法を添えて `SetupError`（1）で起動しない
       4. 状態の配置場所を作り、`buildTmuxArgs` の引数で `run("tmux", …)` する
       5. `waitForListening` で待つ。終わったことの判定は `has-session` が偽。終わったら `serve.log` の末尾 20 行を添えて `SetupError`（1）、上限を超えたら `kill-session` して `serve.log` の末尾を添えて `SetupError`（3）

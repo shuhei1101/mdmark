@@ -234,7 +234,7 @@ flows:
       - そのセッション名の tmux のセッションがあり、`MDMARK_PORT` のポートで待ち受けるプロセスが 1 つだけ
     test: test_normal_when_fixed_to_tmux
   - name: 正常系（引数で tmux を指定する）
-    summary: '`--launcher tmux` で呼ぶと、unit に触れずに tmux で起動する（書き込みを断られたときの呼び方）'
+    summary: '`--launcher tmux` で呼ぶと、unit に触れずに tmux で起動する（端末の設定が無いまま書き込みを断られたときの呼び方）'
     setup:
       - name: 起動した unit
         description: 正常系を実行した後の状態。unit は `MDMARK_PORT` のポートで待ち受けている
@@ -355,7 +355,7 @@ request:
     required: false
     default: なし（端末の設定の `serve.launcher`）
     location: argument
-    description: 起動の方法をこの呼び出しだけ固定する。指定したときは、起動しないほうの方法で動いている常駐サーバーを止めない（制約『移し替え』は行わない）。`global-setup` は書き込みを断られたときに `tmux` を指定する
+    description: 起動の方法をこの呼び出しだけ固定する。指定したときは、起動しないほうの方法で動いている常駐サーバーを止めない（制約『移し替え』は行わない）。`global-setup` は端末の設定が無いまま書き込みを断られたときに `tmux` を指定する
   - name: MDMARK_PORT
     type: string
     required: false
@@ -448,7 +448,7 @@ constraints:
     constraint: 記載する内容が今のファイルと同じなら記載しない。記載したら `daemon-reload` し、active なら `restart`、active でなければ `enable --now` する。内容が同じで enabled でなければ `enable` する
   - item: 移し替え
     constraint: 起動の方法を `--launcher` ではなく端末の設定（`auto` を含む）で決めたときだけ行う。systemd で起動するときは、端末の設定のセッション名の tmux のセッションを `kill-session` してから起動する。tmux で起動するのは端末の設定の `serve.launcher` が `tmux` のときと `auto` で systemd --user が使えないときで、前者で unit が active か enabled なら `disable --now` してから起動する。どちらもポートが解放されるまで 1 秒ごとに確かめ、上限は 10 秒
-    notes: 同じポートに 2 つの常駐サーバーを立てない。unit のファイルは削除しない。`--launcher tmux`（書き込みを断られたとき）は unit に触れず、unit が active でポートが待ち受けていれば `already_running`（`launcher` は `systemd`）を返却する
+    notes: 同じポートに 2 つの常駐サーバーを立てない。unit のファイルは削除しない。`--launcher tmux`（端末の設定が無いまま書き込みを断られたとき）は unit に触れず、unit が active でポートが待ち受けていれば `already_running`（`launcher` は `systemd`）を返却する
   - item: tmux の起動のコマンド
     constraint: "`tmux new-session -d -s {セッション名} -e MDMARK_PORT={ポート} -e MDMARK_CONFIG={パス} -e MDMARK_STATE_DIR={パス} -e MDMARK_LAUNCHER=tmux sh -c '{起動するコマンド} 2>&1 | tee -a {serve.log}'`。環境変数は `-e` で明示して指定し、コマンドは `sh -c` の引数として指定して POSIX の記載方法だけを使用する"
     notes: tmux サーバーが既に動いていると呼んだ側の環境変数は渡らず、1 つの文字列のコマンドは `default-shell` で実行される
