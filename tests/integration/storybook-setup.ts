@@ -1,7 +1,6 @@
 import { type ChildProcess, spawn } from "node:child_process";
 import { createServer } from "node:net";
 import { resolve } from "node:path";
-import { type BrowserServer, chromium } from "playwright";
 import type { TestProject } from "vitest/node";
 
 declare module "vitest" {
@@ -24,13 +23,23 @@ const POLL_INTERVAL_MS = 1_000;
 const START_ATTEMPTS = 3;
 /** 共有の Chromium への接続を待つ上限（ミリ秒。結合テストの全件の実行で測った接続 62 回の p99.9 の 33 ミリ秒に、その 50% の余裕を足した） */
 export const CONNECT_TIMEOUT_MS = 50;
+/** Chromium の起動を待つ上限（ミリ秒。測った起動 12 回（結合テストの全件の実行の中の 2 回を含む）の p99.9 の 46 ミリ秒に、その 50% の余裕を足した） */
+export const LAUNCH_TIMEOUT_MS = 69;
 /** 最初のストーリーを開いて、Vite が依存をまとめ終えるまで待つ上限（ミリ秒。測った起動の直後の読み込み 56 秒の約 5 倍） */
-const WARM_UP_TIMEOUT_MS = 300_000;
-// 温めに開くストーリー（React の部品と、部品の HTML の描画のインターフェースの両方を経由する）
-const WARM_UP_STORIES = [
+export const WARM_UP_TIMEOUT_MS = 300_000;
+/** 温めに開くストーリー（React の部品と、部品の HTML の描画のインターフェースの両方を経由する） */
+export const WARM_UP_STORIES = [
   "vscode-previewstatus--offline",
   "parts-notice--block",
 ];
+/** browser-server.ts が温めを終えて標準出力へ出す、接続先の行の先頭 */
+export const BROWSER_READY_PREFIX = "browser-ws-endpoint:";
+// browser-server.ts が接続先を出すまで待つ上限（起動・接続と、温めのストーリーごとの読み込みと描画の待ちの合計に、その 50% の余裕を足した）
+const BROWSER_READY_TIMEOUT_MS =
+  (LAUNCH_TIMEOUT_MS +
+    CONNECT_TIMEOUT_MS +
+    WARM_UP_STORIES.length * 2 * WARM_UP_TIMEOUT_MS) *
+  1.5;
 
 /** 空いているポートを、互いに違うものとして count 個返す */
 async function findFreePorts(count: number): Promise<number[]> {
@@ -152,46 +161,48 @@ async function startStorybook(): Promise<{ url: string; stopAll: () => void }> {
   }
 }
 
-/** 共有する Chromium でストーリーを開き、Vite が依存をまとめ終えるまで待つ */
-async function warmUp(server: BrowserServer, url: string): Promise<void> {
-  const browser = await chromium.connect(server.wsEndpoint(), {
-    timeout: CONNECT_TIMEOUT_MS,
-  });
-  try {
-    const page = await browser.newPage();
-    for (const id of WARM_UP_STORIES) {
-      await page.goto(`${url}/iframe.html?id=${id}&viewMode=story`, {
-        timeout: WARM_UP_TIMEOUT_MS,
-      });
-      await page.waitForFunction(
-        () => document.body.classList.contains("sb-show-main"),
-        undefined,
-        { timeout: WARM_UP_TIMEOUT_MS },
-      );
+/** Chromium を 1 つ起動して温める子プロセスを起動し、接続先と止める関数を返却する。子プロセスが先に終わったら出力を添えて失敗する */
+async function startBrowserServer(
+  storybookUrl: string,
+): Promise<{ wsEndpoint: string; stop: () => void }> {
+  // Vitest が読み込んだ globalSetup の中で Playwright を呼ぶと、Playwright が取るスタックトレースを vite の module runner が読めずに失敗するため、別のプロセスで起動する
+  const server = start(
+    process.execPath,
+    ["tests/integration/browser-server.ts", storybookUrl],
+    {},
+  );
+  const deadline = Date.now() + BROWSER_READY_TIMEOUT_MS;
+  while (Date.now() < deadline) {
+    const line = server
+      .output()
+      .split("\n")
+      .find((text) => text.startsWith(BROWSER_READY_PREFIX));
+    if (line !== undefined) {
+      return {
+        wsEndpoint: line.slice(BROWSER_READY_PREFIX.length),
+        stop: () => stop(server.child),
+      };
     }
-  } finally {
-    await browser.close();
+    if (server.child.exitCode !== null) {
+      throw new Error(`Chromium の起動が終了した:\n${server.output()}`);
+    }
+    await new Promise((done) => setTimeout(done, POLL_INTERVAL_MS));
   }
+  stop(server.child);
+  throw new Error(`Chromium が時間内に立たなかった:\n${server.output()}`);
 }
 
 /** Storybook と、各ファイルが接続する Chromium を 1 つ起動して温め、閲覧 URL と接続先をテストへ指定する */
 export default async function setup(project: TestProject) {
   const { url, stopAll } = await startStorybook();
-  const server = await chromium.launchServer().catch((error: unknown) => {
+  const browser = await startBrowserServer(url).catch((error: unknown) => {
     stopAll();
     throw error;
   });
-  try {
-    await warmUp(server, url);
-  } catch (error) {
-    await server.close();
-    stopAll();
-    throw error;
-  }
   project.provide("storybookUrl", url);
-  project.provide("browserWsEndpoint", server.wsEndpoint());
-  return async () => {
-    await server.close();
+  project.provide("browserWsEndpoint", browser.wsEndpoint);
+  return () => {
+    browser.stop();
     stopAll();
   };
 }
