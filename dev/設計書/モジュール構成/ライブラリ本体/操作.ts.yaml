@@ -439,11 +439,11 @@ functions:
         summary: '`resize` の表は、留めた列の幅を変えると留める位置を計算し直し、上限で止める'
         condition: 幅 320px の要素に `data-features="pin resize"` の、列名が短く留めた 1 列目と 3 列目の幅の合計が見えている幅に収まる 10 列の表を付け、3 列目のピン止めを押し、1 列目のつまみで → キーを押し、続けて 1 列目のつまみを 2000px 右へドラッグする
         mock: なし
-        expected: → キーの後、3 列目のセルの `left` が 1 列目の `th` の `offsetWidth`。ドラッグの後、1 列目の `th` の `offsetWidth` が表を包む要素の `clientWidth` から 3 列目の `th` の `offsetWidth` を引いた値以下で、つまみの `aria-valuenow` と `aria-valuemax` が同じ
+        expected: → キーの後、3 列目のセルの `left` が 1 列目の `th` の `offsetWidth`。ドラッグの後、1 列目の `th` の `offsetWidth` が表を包む要素の `clientWidth` から 3 列目の `th` の `offsetWidth` を引いた値以下で、つまみの `aria-valuenow` と `aria-valuemax` が同じ。続けて 3 列目のつまみにフォーカスすると、その `aria-valuemax` が表を包む要素の `clientWidth` から 1 列目の `th` の `offsetWidth` を引いた値（切り捨て）
       - name: test_attach_tables_when_resized_column_not_folded
         case: 正常
         summary: 最終列を畳む判定は描く先の要素の幅の変化でだけやり直し、幅を指定した最終列は畳まない
-        condition: 幅 600px の要素に、最終列が 1 行に収まる 3 列の表を付け、最終列のつまみで ← キーを押して折り返させ、続けて要素の幅を 590px にする
+        condition: 幅 600px の要素に、最終列が 1 行に収まる 3 列の表を付け、最終列のつまみで ← キーを押して折り返させ（最終列のセルの中身の高さが `line-height` の 1.5 倍を超えることを前提として確かめる）、続けて要素の幅を 590px にする
         mock: なし
         expected: ← キーの後も、要素の幅を変えた後も、最終列のセルが `mdmark-fold-col` を持たず、囲みが `is-folded` を持たない
       - name: test_attach_tables_when_resize_off
@@ -2505,7 +2505,7 @@ functions:
     description: |-
       つまみの `pointerdown` で既定の動作を止めて伝わりを止め、`setPointerCapture` でポインターを捕まえ、つまみに `is-dragging` を付ける。`pointermove` では押した位置からの横の移動量を押したときの幅に足し、`setColumnWidth` で入れる。`pointerup`・`pointercancel` で `is-dragging` を外す。`pointerType` が `touch` で、`pointerdown` からの移動が `TAP_MOVE_TOLERANCE_PX` 以内の `pointerup` だけをタップとして数え、タップが前のタップから `DOUBLE_TAP_MS` 以内なら幅を戻す（動かしたドラッグの終わりはタップに数えず、前のタップの記録も消す）。`dblclick` でも幅を戻す。`keydown` の → は `COLUMN_RESIZE_STEP_PX` 広げ、← は狭め、Enter は幅を戻す（どれも既定の動作を止める）。
 
-      `setColumnWidth` は、`clampColumnWidth` で列の最小幅（見出しのセルのインラインの `--mdmark-column-min-width` を外して測った `min-width` に左右の余白と罫線を足した外側の幅）から `maxWidth(column)` までに収めた外側の幅を、見出しのセルの内側の幅に換算して `width`・`min-width`・`--mdmark-column-min-width` に入れる。入れた後に測った外側の幅が指定した幅と違えば、差を足して入れ直す。列の全てのセルに `is-resized` を付ける。幅を戻すときは、`width`・`min-width` を外し、`--mdmark-column-min-width` を付けたときの値に戻し、`is-resized` を外す。入れた後と戻した後に `onResize(column)` を呼ぶ。付けたときと、入れた後と戻した後に、つまみの `aria-valuenow`・`aria-valuetext`（`{幅}px`）・`aria-valuemin`・`aria-valuemax` を書き換える（最小は切り上げ、上限は切り捨て）
+      `setColumnWidth` は、`clampColumnWidth` で列の最小幅（見出しのセルのインラインの `--mdmark-column-min-width` を外して測った `min-width` に左右の余白と罫線を足した外側の幅）から `maxWidth(column)` までに収めた外側の幅を、見出しのセルの内側の幅に換算して `width`・`min-width`・`--mdmark-column-min-width` に入れる。入れた後に測った外側の幅が指定した幅と違えば、差を足して入れ直す。列の全てのセルに `is-resized` を付ける。幅を戻すときは、`width`・`min-width` を外し、`--mdmark-column-min-width` を付けたときの値に戻し、`is-resized` を外す。入れた後と戻した後に `onResize(column)` を呼ぶ。付けたとき・つまみにフォーカスしたとき・入れた後と戻した後に、つまみの `aria-valuenow`・`aria-valuetext`（`{幅}px`）・`aria-valuemin`・`aria-valuemax` を書き換える（最小は切り上げ、上限は切り捨て）
     args:
       - name: table
         type: HTMLTableElement
@@ -2518,7 +2518,7 @@ functions:
     returns:
       type: () => void
       description: 受け取りを削除し、幅の指定を全て戻す関数
-    side_effects: 見出しのセルの `style` とセルの class、つまみの `aria-*` を書き換え、つまみに `pointerdown`・`pointermove`・`pointerup`・`pointercancel`・`dblclick`・`keydown` を付ける
+    side_effects: 見出しのセルの `style` とセルの class、つまみの `aria-*` を書き換え、つまみに `pointerdown`・`pointermove`・`pointerup`・`pointercancel`・`dblclick`・`keydown`・`focus` を付ける
     callees:
       - '#functions[clampColumnWidth]'
     unit_tests:
