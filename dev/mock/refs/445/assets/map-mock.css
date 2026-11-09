@@ -1,0 +1,417 @@
+/* map の図のモックの規則: 今の図の枠と同じ線と面で、帯・パンくず・グループ・ノード・線・ノードのページ・案内と再生の帯を描く */
+
+.map-frame {
+  margin: 1.5em 0;
+  box-shadow: inset 0 0 0 1px var(--mdmark-color-border);
+  border-radius: calc(var(--mdmark-radius) * 2);
+  background: var(--mdmark-color-bg);
+  font-size: 14px;
+  container-type: inline-size;
+}
+
+/* 図の上の帯: タイトル・視点の選択・操作のボタン。狭い幅では折り返す */
+.map-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 16px;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--mdmark-color-border);
+}
+.map-title {
+  font-weight: 700;
+  margin-right: auto;
+}
+.map-tools {
+  display: flex;
+  gap: 4px;
+}
+
+/* 押す部品の高さは 32px に揃える */
+.map-button,
+.map-icon-button,
+.map-segment-item {
+  min-height: 32px;
+  padding: 0 10px;
+  border: 1px solid var(--mdmark-color-border);
+  border-radius: var(--mdmark-radius);
+  background: var(--mdmark-color-bg);
+  color: var(--mdmark-color-text);
+  font: inherit;
+  cursor: pointer;
+}
+.map-icon-button {
+  min-width: 32px;
+  padding: 0 6px;
+}
+.map-button:disabled {
+  color: var(--mdmark-color-muted);
+  cursor: not-allowed;
+}
+.map-button.is-primary,
+.map-button[aria-pressed="true"] {
+  background: var(--mdmark-color-text);
+  border-color: var(--mdmark-color-text);
+  color: var(--mdmark-color-bg);
+}
+.map-button.is-primary:disabled {
+  background: var(--mdmark-color-surface);
+  border-color: var(--mdmark-color-border);
+  color: var(--mdmark-color-muted);
+}
+:is(.map-button, .map-icon-button, .map-segment-item, .map-node, .map-group-title, .map-crumb, .map-link, .map-edge-count):focus-visible {
+  outline: 2px solid var(--mdmark-color-link);
+  outline-offset: 2px;
+}
+
+/* 視点の選択: 1 つの枠の中に並べ、選んだ項目を面の反転で示す */
+.map-segment {
+  display: inline-flex;
+}
+.map-segment-item {
+  border-radius: 0;
+  margin-left: -1px;
+}
+.map-segment-item:first-child {
+  border-radius: var(--mdmark-radius) 0 0 var(--mdmark-radius);
+  margin-left: 0;
+}
+.map-segment-item:last-child {
+  border-radius: 0 var(--mdmark-radius) var(--mdmark-radius) 0;
+}
+.map-segment-item[aria-checked="true"] {
+  background: var(--mdmark-color-text);
+  border-color: var(--mdmark-color-text);
+  color: var(--mdmark-color-bg);
+}
+
+/* パンくず: 図の上端。今の段は押せない文字で出す */
+.map-crumbs {
+  padding: 6px 12px;
+  border-bottom: 1px solid var(--mdmark-color-border);
+  background: var(--mdmark-color-surface);
+}
+.map-crumbs ol {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.map-crumbs li + li::before {
+  content: "/";
+  margin-right: 4px;
+  color: var(--mdmark-color-muted);
+}
+.map-crumb,
+.map-link {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--mdmark-color-link);
+  font: inherit;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+/* 表示する枠: 図が幅より広いときは中で横にスクロールする */
+.map-view {
+  overflow: auto;
+  max-height: 640px;
+}
+.map-stage {
+  position: relative;
+}
+.map-lines {
+  position: absolute;
+  inset: 0;
+}
+.map-line {
+  fill: none;
+  stroke: var(--mdmark-color-diagram-line);
+  stroke-width: 1.5;
+}
+.map-line-dotted {
+  stroke-dasharray: 5 4;
+}
+.map-line-thick {
+  stroke-width: 3;
+}
+.map-arrowhead {
+  fill: var(--mdmark-color-diagram-line);
+}
+.map-lifeline {
+  stroke: var(--mdmark-color-border);
+  stroke-dasharray: 3 3;
+}
+.is-dim {
+  opacity: 0.25;
+}
+
+/* グループ: 1px の線の枠。左上にタイトル、右上に開閉のボタン */
+.map-group {
+  position: absolute;
+  box-sizing: border-box;
+  border: 1px solid var(--mdmark-color-border);
+  border-radius: calc(var(--mdmark-radius) * 2);
+  background: color-mix(in srgb, var(--mdmark-color-surface) 40%, transparent);
+}
+.map-group-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: 28px;
+  padding: 0 4px 0 8px;
+}
+.map-group-title {
+  padding: 0 4px;
+  border: 0;
+  background: none;
+  color: var(--mdmark-color-text);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: zoom-in;
+}
+.map-toggle {
+  min-width: 24px;
+  min-height: 24px;
+  padding: 0;
+  line-height: 1;
+}
+
+/* ノード: 種類の色の枠と、種類の名前の行。説明を持つノードは右上にマーカー */
+.map-node {
+  position: absolute;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 2px;
+  padding: 6px 10px;
+  border: 1.5px solid var(--map-kind, var(--mdmark-color-border));
+  border-radius: var(--mdmark-radius);
+  background: var(--mdmark-color-bg);
+  color: var(--mdmark-color-text);
+  font: inherit;
+  text-align: center;
+  cursor: pointer;
+}
+.map-node-kind {
+  color: var(--map-kind, var(--mdmark-color-muted));
+  font-size: 11px;
+  line-height: 1.2;
+}
+.map-node-name {
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+.map-node-hint {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  width: 16px;
+  height: 16px;
+  border: 1px solid var(--mdmark-color-border);
+  border-radius: 50%;
+  background: var(--mdmark-color-bg);
+  color: var(--mdmark-color-muted);
+  font-size: 11px;
+  line-height: 14px;
+}
+.map-kind-llm { --map-kind: var(--mdmark-color-diagram-llm); }
+.map-kind-script { --map-kind: var(--mdmark-color-diagram-script); }
+.map-kind-data { --map-kind: var(--mdmark-color-diagram-data); }
+.map-kind-external { --map-kind: var(--mdmark-color-diagram-external); }
+.map-kind-mcp { --map-kind: var(--mdmark-color-diagram-mcp); }
+.map-node.is-faded {
+  opacity: 0.4;
+  border-style: dashed;
+  cursor: default;
+}
+.map-node.is-collapsed {
+  border-style: double;
+  border-width: 3px;
+  background: var(--mdmark-color-surface);
+}
+.map-node.is-hot {
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--mdmark-color-link) 35%, transparent);
+  border-color: var(--mdmark-color-link);
+}
+
+/* 線のラベルと、まとめた線の件数 */
+.map-edge-label,
+.map-edge-count {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  padding: 0 4px;
+  background: var(--mdmark-color-bg);
+  color: var(--mdmark-color-muted);
+  font-size: 12px;
+  white-space: nowrap;
+}
+.map-edge-count {
+  min-width: 24px;
+  min-height: 24px;
+  border: 1px solid var(--mdmark-color-diagram-line);
+  border-radius: 12px;
+  color: var(--mdmark-color-text);
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+/* まとめた線の一覧: 件数の近くに重ねる。閉じるのは Esc と件数のボタン */
+.map-edge-list {
+  position: absolute;
+  z-index: 2;
+  min-width: 220px;
+  padding: 8px 12px;
+  border: 1px solid var(--mdmark-color-border);
+  border-radius: var(--mdmark-radius);
+  background: var(--mdmark-color-bg-opaque);
+  box-shadow: 0 4px 12px rgb(0 0 0 / 12%);
+}
+.map-edge-list-title {
+  margin: 0 0 4px;
+  font-weight: 700;
+}
+.map-edge-list ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.map-edge-list button {
+  width: 100%;
+  min-height: 28px;
+  padding: 0 4px;
+  border: 0;
+  background: none;
+  color: var(--mdmark-color-text);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.map-edge-list button:hover {
+  background: var(--mdmark-color-surface);
+}
+
+/* 再生の印 */
+.map-play-dot {
+  fill: var(--mdmark-color-link);
+}
+
+/* ノードのページ: 図の枠の中を置き換える。欄は幅に応じて 1〜3 列 */
+.map-page {
+  padding: 12px 16px 16px;
+}
+.map-page-title {
+  margin: 0 0 4px;
+  font-size: 16px;
+}
+.map-page-note {
+  margin: 0 0 12px;
+  color: var(--mdmark-color-muted);
+}
+.map-page-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 12px 24px;
+}
+.map-page-section h4 {
+  margin: 0 0 4px;
+  font-size: 13px;
+}
+.map-page-section ul {
+  margin: 0;
+  padding-left: 1.2em;
+}
+.map-page-sub {
+  margin-left: 6px;
+  color: var(--mdmark-color-muted);
+  font-size: 12px;
+}
+.map-page-empty {
+  margin: 0;
+  color: var(--mdmark-color-muted);
+}
+
+/* 案内と再生の帯: 図の枠の下。番号・文・操作を並べ、狭い幅では折り返す */
+.map-band {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 16px;
+  padding: 8px 12px;
+  border-top: 1px solid var(--mdmark-color-border);
+  background: var(--mdmark-color-surface);
+}
+.map-band-count {
+  margin: 0;
+  font-variant-numeric: tabular-nums;
+  color: var(--mdmark-color-muted);
+}
+.map-band-text {
+  flex: 1 1 240px;
+  margin: 0;
+}
+.map-band-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+/* 凡例: 図に 2 種類以上ある種類だけ */
+.map-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 16px;
+  padding: 6px 12px;
+  border-top: 1px solid var(--mdmark-color-border);
+  color: var(--mdmark-color-muted);
+  font-size: 12px;
+}
+.map-legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.map-legend-swatch {
+  width: 12px;
+  height: 12px;
+  border: 1.5px solid var(--map-kind);
+  border-radius: 2px;
+}
+.map-legend-line {
+  width: 20px;
+  border-top: 1.5px solid var(--mdmark-color-diagram-line);
+}
+.map-line-dotted .map-legend-line {
+  border-top-style: dashed;
+}
+.map-line-thick .map-legend-line {
+  border-top-width: 3px;
+}
+
+/* 書き方の警告: 今の記載の警告と同じ破線の枠 */
+.map-warning {
+  margin: 1em 0 0;
+  padding: 8px 12px;
+  border: 1px dashed var(--mdmark-color-notice-border);
+  border-radius: var(--mdmark-radius);
+}
+.map-warning p {
+  margin: 0 0 4px;
+  font-weight: 700;
+}
+.map-warning ul {
+  margin: 0;
+  padding-left: 1.2em;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .map-play-dot {
+    display: none;
+  }
+}
