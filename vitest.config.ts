@@ -1,4 +1,4 @@
-import { tmpdir } from "node:os";
+import { availableParallelism, tmpdir } from "node:os";
 import { playwright } from "@vitest/browser-playwright";
 import { defineConfig } from "vitest/config";
 import manifest from "./package.json" with { type: "json" };
@@ -17,6 +17,14 @@ const WEBVIEW_DEPENDENCIES = [
   "tailwind-merge",
   "class-variance-authority",
 ];
+
+/** 結合テストが同時に実行するファイルの数（CPU 数の半分。ほかの作業と重なってもメモリを使い切らない）。Vitest は同じ groupOrder のプロジェクトに同じ maxWorkers を求め、Node のプール（integration-node・integration-storybook）とブラウザのプール（integration-browser）のそれぞれの上限にする */
+const INTEGRATION_MAX_WORKERS = Math.max(
+  1,
+  Math.floor(availableParallelism() / 2),
+);
+// 結合テストのプロジェクトを unit・unit-browser と別のグループにする（maxWorkers が違うプロジェクトは同じグループに置けない）
+const INTEGRATION_GROUP_ORDER = 1;
 
 // Git のフックなど GIT_DIR を持つ環境から呼んでも、一時のフォルダで git を呼ぶテストが作業中のリポジトリへ書き込まないようにする
 clearGitLocalEnv();
@@ -77,6 +85,8 @@ export default defineConfig({
             "tests/integration/**/*.story.test.ts",
           ],
           globalSetup: ["tests/integration/global-setup.ts"],
+          maxWorkers: INTEGRATION_MAX_WORKERS,
+          sequence: { groupOrder: INTEGRATION_GROUP_ORDER },
         },
       },
       {
@@ -87,8 +97,10 @@ export default defineConfig({
           include: ["tests/integration/**/*.story.test.ts"],
           globalSetup: ["tests/integration/storybook-setup.ts"],
           testTimeout: 60_000,
-          // 各ファイルの beforeAll がストーリーを開いて Vite の依存の事前バンドルを待つ（tests/integration/story.ts の WARM_UP_TIMEOUT_MS）
-          hookTimeout: 300_000,
+          // 各ファイルの beforeAll が共有の Chromium に接続する。接続の上限（tests/integration/storybook-setup.ts の CONNECT_TIMEOUT_MS の 50 ミリ秒）に、その 50% の余裕を足した
+          hookTimeout: 75,
+          maxWorkers: INTEGRATION_MAX_WORKERS,
+          sequence: { groupOrder: INTEGRATION_GROUP_ORDER },
         },
       },
       {
@@ -100,6 +112,8 @@ export default defineConfig({
           name: "integration-browser",
           include: ["tests/integration/**/*.browser.test.ts"],
           globalSetup: ["tests/integration/global-setup.ts"],
+          maxWorkers: INTEGRATION_MAX_WORKERS,
+          sequence: { groupOrder: INTEGRATION_GROUP_ORDER },
           browser: {
             enabled: true,
             headless: true,

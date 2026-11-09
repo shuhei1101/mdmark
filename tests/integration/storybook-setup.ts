@@ -1,12 +1,15 @@
 import { type ChildProcess, spawn } from "node:child_process";
 import { createServer } from "node:net";
 import { resolve } from "node:path";
+import { type BrowserServer, chromium } from "playwright";
 import type { TestProject } from "vitest/node";
 
 declare module "vitest" {
   interface ProvidedContext {
     /** 部品のストーリーを配る Storybook の開発サーバーの URL */
     storybookUrl: string;
+    /** 各ファイルが接続する、プロジェクトで 1 つ起動した Chromium の WebSocket の URL */
+    browserWsEndpoint: string;
   }
 }
 
@@ -19,6 +22,15 @@ const READY_TIMEOUT_MS = 180_000;
 const POLL_INTERVAL_MS = 1_000;
 // 起動する試行の上限
 const START_ATTEMPTS = 3;
+/** 共有の Chromium への接続を待つ上限（ミリ秒。結合テストの全件の実行で測った接続 62 回の p99.9 の 33 ミリ秒に、その 50% の余裕を足した） */
+export const CONNECT_TIMEOUT_MS = 50;
+/** 最初のストーリーを開いて、Vite が依存をまとめ終えるまで待つ上限（ミリ秒。測った起動の直後の読み込み 56 秒の約 5 倍） */
+const WARM_UP_TIMEOUT_MS = 300_000;
+// 温めに開くストーリー（React の部品と、部品の HTML の描画のインターフェースの両方を経由する）
+const WARM_UP_STORIES = [
+  "vscode-previewstatus--offline",
+  "parts-notice--block",
+];
 
 /** 空いているポートを、互いに違うものとして count 個返す */
 async function findFreePorts(count: number): Promise<number[]> {
@@ -126,18 +138,60 @@ async function startOnce(): Promise<{ url: string; stopAll: () => void }> {
   return { url, stopAll };
 }
 
-/** 部品の描画のインターフェースと Storybook の開発サーバーを起動し、閲覧 URL をテストへ指定する */
-export default async function setup(project: TestProject) {
+/** 部品の描画のインターフェースと Storybook の開発サーバーを起動し、閲覧 URL と止める関数を返却する */
+async function startStorybook(): Promise<{ url: string; stopAll: () => void }> {
   // 起動に時間がかかる間に他のプロセスがポートを取ることがあるため、立たなければポートをもう一度選ぶ
   for (let attempt = 1; ; attempt++) {
     try {
-      const { url, stopAll } = await startOnce();
-      project.provide("storybookUrl", url);
-      return stopAll;
+      return await startOnce();
     } catch (error) {
       if (attempt >= START_ATTEMPTS) {
         throw error;
       }
     }
   }
+}
+
+/** 共有する Chromium でストーリーを開き、Vite が依存をまとめ終えるまで待つ */
+async function warmUp(server: BrowserServer, url: string): Promise<void> {
+  const browser = await chromium.connect(server.wsEndpoint(), {
+    timeout: CONNECT_TIMEOUT_MS,
+  });
+  try {
+    const page = await browser.newPage();
+    for (const id of WARM_UP_STORIES) {
+      await page.goto(`${url}/iframe.html?id=${id}&viewMode=story`, {
+        timeout: WARM_UP_TIMEOUT_MS,
+      });
+      await page.waitForFunction(
+        () => document.body.classList.contains("sb-show-main"),
+        undefined,
+        { timeout: WARM_UP_TIMEOUT_MS },
+      );
+    }
+  } finally {
+    await browser.close();
+  }
+}
+
+/** Storybook と、各ファイルが接続する Chromium を 1 つ起動して温め、閲覧 URL と接続先をテストへ指定する */
+export default async function setup(project: TestProject) {
+  const { url, stopAll } = await startStorybook();
+  const server = await chromium.launchServer().catch((error: unknown) => {
+    stopAll();
+    throw error;
+  });
+  try {
+    await warmUp(server, url);
+  } catch (error) {
+    await server.close();
+    stopAll();
+    throw error;
+  }
+  project.provide("storybookUrl", url);
+  project.provide("browserWsEndpoint", server.wsEndpoint());
+  return async () => {
+    await server.close();
+    stopAll();
+  };
 }
