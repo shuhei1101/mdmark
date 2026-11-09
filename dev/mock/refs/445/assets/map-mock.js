@@ -235,7 +235,7 @@ export const createMap = (spec, initial = {}) => {
       const cls = ["map-node"];
       if (kind) cls.push(`map-kind-${kind}`);
       if (leaf.faded) cls.push("is-faded");
-      if (box) cls.push("is-collapsed");
+      if (box && !leaf.faded) cls.push("is-collapsed");
       if (hot?.has(leaf.id)) cls.push("is-hot");
       else if (hot) cls.push("is-dim");
       const note = spec.data.notes?.[leaf.id];
@@ -256,12 +256,12 @@ export const createMap = (spec, initial = {}) => {
           },
         },
         [
-          el("span", { class: "map-node-kind", text: box ? "閉じたグループ" : kind ? KIND_LABELS[kind] : "" }),
-          el("span", { class: "map-node-name", text: leaf.lines.join("") }),
+          el("span", { class: "map-node-kind", text: box && !leaf.faded ? "閉じたグループ" : kind ? KIND_LABELS[kind] : "" }),
+          el("span", { class: "map-node-name", text: leaf.lines.join("\n") }),
           note ? el("span", { class: "map-node-hint", "aria-label": `説明: ${note}`, title: note, text: "i" }) : undefined,
         ],
       );
-      if (box) button.setAttribute("aria-label", `${box.title}（${leaf.lines.join("")}）を開く`);
+      if (box && !leaf.faded) button.setAttribute("aria-label", `${box.title}（${leaf.lines.join("")}）を開く`);
       stage.append(button);
     }
     stage.prepend(lines);
@@ -288,7 +288,8 @@ export const createMap = (spec, initial = {}) => {
             ]),
           );
         }
-        stage.append(el("div", { class: "map-edge-list", role: "dialog", "aria-label": "まとめた線の一覧", style: `left:${mid[0] + 16}px;top:${mid[1] + 12}px` }, [el("p", { class: "map-edge-list-title", text: `まとめた線 ${members.length} 本` }), list]));
+        const listLeft = Math.max(8, Math.min(mid[0] - 120, layout.width - 288));
+        stage.append(el("div", { class: "map-edge-list", role: "dialog", "aria-label": "まとめた線の一覧", style: `left:${listLeft}px;top:${mid[1] + 18}px` }, [el("p", { class: "map-edge-list-title", text: `まとめた線 ${members.length} 本` }), list]));
       }
     }
     if (state.play !== undefined && sequence) {
@@ -505,13 +506,36 @@ export const createMap = (spec, initial = {}) => {
   const render = () => {
     renderBar();
     renderCrumbs();
-    view.replaceChildren(state.node ? renderNodePage() : renderDiagram());
+    if (state.node) {
+      view.replaceChildren(renderNodePage());
+    } else {
+      const stage = renderDiagram();
+      const fit = el("div", { class: "map-fit" }, [stage]);
+      view.replaceChildren(fit);
+      applyFit();
+    }
     renderBand();
     legend.replaceChildren(...legendItems());
     legend.hidden = legend.childElementCount === 0;
   };
 
+  // 全体が収まる倍率で開く（拡大はしない）。表示する枠の幅が変わるたびに倍率を決め直す
+  const applyFit = () => {
+    const fit = view.querySelector(".map-fit");
+    const stage = fit?.firstElementChild;
+    if (!stage || view.clientWidth === 0) return;
+    const width = parseFloat(stage.style.width);
+    const height = parseFloat(stage.style.height);
+    const scale = Math.min(1, view.clientWidth / width);
+    stage.style.transform = `scale(${scale})`;
+    stage.style.transformOrigin = "0 0";
+    fit.style.width = `${width * scale}px`;
+    fit.style.height = `${height * scale}px`;
+  };
+  new ResizeObserver(applyFit).observe(view);
+
   frame.dataset.mapId = Math.random().toString(36).slice(2, 8);
+  if (initial.paused) frame.dataset.paused = "true";
   render();
   return { frame, startPlay };
 };

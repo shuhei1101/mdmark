@@ -71,13 +71,12 @@ const initial = {
   node: { node: "layout" },
   view: { view: "データの流れ" },
   walkthrough: { step: 2, enter: "place" },
-  play: { play: 2 },
+  play: { play: 2, paused: true },
 }[scene] ?? {};
 
 const map = createMap({ title: "全体の構成", flow: FLOW, data: DATA, sequence: SEQUENCE }, initial);
 const flowSlot = slot("MAP-SLOT-FLOW");
 flowSlot.replaceWith(map.frame);
-if (scene === "play") map.frame.dataset.paused = "true";
 
 const sequenceSlot = slot("MAP-SLOT-SEQUENCE");
 sequenceSlot.replaceWith(

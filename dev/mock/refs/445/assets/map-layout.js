@@ -1,4 +1,4 @@
-// モックの自動配置と記法の読み取り: PoC（#446、commit 3e4d731e8 の poc/map/layout.ts・parse.ts）を束ねたもの。手で修正しない
+// モックの自動配置と記法の読み取り: PoC（#446、commit 3e4d731e8 の poc/map/layout.ts・parse.ts）を束ね、中へ入ったときの外の要素の選び方を修正したもの。手で修正しない
 
 // check.ts
 var LABEL_METRICS = {
@@ -72,7 +72,9 @@ var buildView = (chart, options, overrides) => {
   const visibleOf = (nodeId) => {
     const ancestors = chain(nodeId).reverse();
     if (!inEntered(nodeId)) {
-      return { id: ancestors[0] ?? nodeId, faded: true };
+      const enterChain = chain(options.enter);
+      const outer = ancestors.find((box) => box !== options.enter && !enterChain.includes(box));
+      return { id: outer ?? nodeId, faded: true };
     }
     const closed = ancestors.find((box) => collapsed.has(box));
     return { id: closed ?? nodeId, faded: false };

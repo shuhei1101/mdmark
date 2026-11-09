@@ -74,10 +74,11 @@ export const SEQUENCE = {
   participant user as 利用側のページ
   participant mount as mount
   participant marker as map のマーカーの読み取り
+  participant mermaid as Mermaid の記法の読み取り
   participant layout as 自動配置
   user->>mount: 設定と Markdown
   mount->>marker: map の範囲
-  marker->>layout: ノードと線
-  layout-->>user: 描いた図
+  marker->>mermaid: mermaid のブロック
+  mermaid->>layout: ノードと線
 `,
 };
