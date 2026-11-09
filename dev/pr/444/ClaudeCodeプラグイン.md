@@ -35,7 +35,7 @@
 
 | 対象 | 方針 | 補足 |
 | --- | --- | --- |
-| 起動の方法の選び方 | [要件](./要件.md) の推奨の案 A で、systemd --user が使える端末では unit、使えない端末では tmux で起動する | `未確定`（決める段: 単一ユースケース設計） |
+| 起動の方法の選び方 | systemd --user が使える端末では unit、使えない端末では tmux で起動する。端末の設定のキーでどちらかに固定できる | [確認ログ](./確認ログ.yaml) |
 | unit の起動 | `~/.config/systemd/user/{サービス名}.service` に `mdmark serve` の unit を書き、`systemctl --user daemon-reload` の後に `enable --now` で起動する。環境変数は unit の `Environment=` に書く | サービス名と、unit を書き換えたときの再起動の仕方は設計で決める |
 | 待ち受けの確かめ | 今の `startServer` と同じく、1 秒ごとにポートへつなぎ直し、上限 120 秒で待つ。待ち受けた後に `tools/list` を確かめる | - |
 | 既にあるとき | unit が active で待ち受けていれば起動しない。待ち受けていなければ `restart` する。tmux のセッションで動いている常駐サーバーは閉じてから unit を起動する | - |
