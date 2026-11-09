@@ -1,0 +1,7 @@
+confirmations:
+  - topic: map の画面一覧と画面遷移
+    decision: 計画書の画面一覧（map-overview・map-group・map-node-page・map-edge-list・map-walkthrough・map-sequence-play）と画面遷移で進める。履歴・ノードのページの出し方・視点の部品の 3 点はモック作成で決める（推奨案 A）
+    decided_by: thumbs_up
+    approver: shuhei1101
+    commit: b430b160a
+    thread: https://github.com/shuhei1101/mdmark/pull/445#discussion_r4508885347

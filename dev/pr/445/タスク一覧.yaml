@@ -29,8 +29,10 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-09T00:58:26.045345+00:00'
   - process: 画面一覧・画面遷移
-    status: todo
+    status: done
     note: 図の中の表示（全体・箱の中・ノードのページ）と、中へ入る・パンくず・視点・巡回・再生による移り方
+    updated_by: planner
+    updated_at: '2026-11-09T03:09:38.574729+00:00'
   - process: 単一ユースケース設計
     status: todo
   - process: モック作成
