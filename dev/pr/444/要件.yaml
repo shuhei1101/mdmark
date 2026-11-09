@@ -30,27 +30,39 @@ docs:
   - page: docs/使用方法/ClaudeCodeで使用する/セットアップする.md
     new: false
     change: global-setup が常駐サーバーを systemd --user の unit か tmux で起動することと、起動の方法の選び方を書く
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-09T02:44:36.967495+00:00'
   - page: docs/使用方法/ClaudeCodeで使用する/MCPサーバーを起動する.md
     new: false
     change: unit で動かした常駐サーバーのログの見方（journalctl --user）と止め方を加える
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-09T02:44:36.967495+00:00'
   - page: docs/はじめに/コアコンセプト/ClaudeCodeに使用方法を提供する仕組み.md
     new: false
     change: 常駐サーバーが動く場所の記述を、unit と tmux の起動に合わせる
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-09T02:44:36.967495+00:00'
   - page: docs/リファレンス/設定.md
     new: false
     change: 端末の設定の serve に足す起動の方法・サービス名のキーを加える
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-09T02:44:36.967495+00:00'
   - page: docs/リファレンス/MCP.md
     new: false
     change: MCP の instructions が伝える常駐サーバーの動き場所の記述を合わせる
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-09T02:44:36.967495+00:00'
   - page: docs/リファレンス/用語集.md
     new: false
     change: 常駐サーバー・セットアップのスキルの用語の意味を、unit での起動に合わせる
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-09T02:44:36.967495+00:00'
   - page: dev/設計書/外部ライブラリ/systemd.yaml
     new: true
     change: systemctl --user（daemon-reload・enable --now・is-active・restart・stop）と journalctl --user の使い方と確かめた版を記録する
