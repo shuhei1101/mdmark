@@ -112,3 +112,31 @@ test("test_collect_references_when_related_objects", async () => {
   // 検証
   expect(references.backlinks.arch).toEqual(["api", "guide"]);
 });
+
+// フロントマターの中のリンクと用語集の表を読み込まず、後ろの行番号を保つ（正常系）
+test("test_parse_document_when_frontmatter", async () => {
+  // 準備
+  const { parseDocument } = await loadReferences();
+  const body = [
+    "---",
+    'see: "[設計](../設計/arch.md)"',
+    "| 用語 | 意味 |",
+    "---",
+    "",
+    "<!-- glossary: term=用語 meaning=意味 -->",
+    "",
+    "| 用語 | 意味 |",
+    "| --- | --- |",
+    "| 公開関数 | 外から呼ぶ関数 |",
+    "",
+  ].join("\n");
+  // 実行
+  const parsed = parseDocument({ body, docId: "guide", defaults: { glossary: true } });
+  // 検証
+  const links = parsed.tokens
+    .flatMap((token) => token.children ?? [])
+    .filter((child) => child.type === "link_open");
+  expect(links).toEqual([]);
+  expect(parsed.glossary.map((row) => row.entry.term)).toEqual(["公開関数"]);
+  expect(parsed.glossary[0]?.line).toBe(10);
+});
