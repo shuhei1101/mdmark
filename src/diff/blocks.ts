@@ -238,35 +238,14 @@ const splitSourceLines = (markdown: string): string[] => {
   return lines;
 };
 
-/** 空白だけの行を除いた Markdown と、残った行の元の行番号 */
-type ContentSource = {
-  /** 空白だけの行を除いた Markdown */
-  markdown: string;
-  /** 残った行の、上から順の元の行番号 */
-  lineNumbers: number[];
-};
-
-/** 行の並びから空白だけの行を除き、残った行の元の行番号を添える */
-const toContentSource = (texts: string[]): ContentSource => {
-  const lineNumbers = texts.flatMap((text, line) =>
-    isBlank(text) ? [] : [line],
-  );
-  return {
-    markdown: lineNumbers.map((line) => `${texts[line]}\n`).join(""),
-    lineNumbers,
-  };
-};
-
-/** 空白だけの行を除いて比べた結果を、元の行番号で参照できる構造にする。`same` でない行が続くところを 1 つの変えた塊にする */
+/** 比べた結果を、前と後の行番号で参照できる構造にする。`same` でない行が続くところを 1 つの変えた塊にする */
 function classifyLines(options: {
-  /** 空白だけの行を除いた前と後の比較の結果 */
+  /** 前と後の比較の結果 */
   diff: DiffResult;
-  /** 前と後の元の行の文字 */
+  /** 前と後の行の文字 */
   texts: { before: string[]; after: string[] };
-  /** 比べた行の、前と後の元の行番号 */
-  lineNumbers: { before: number[]; after: number[] };
 }): LineMap {
-  const { diff, texts, lineNumbers } = options;
+  const { diff, texts } = options;
   const map: LineMap = {
     texts,
     deleted: new Set(),
@@ -275,18 +254,16 @@ function classifyLines(options: {
     chunkBefore: new Map(),
     chunkAfter: new Map(),
   };
-  let beforeIndex = 0;
-  let afterIndex = 0;
+  let beforeLine = 0;
+  let afterLine = 0;
   let chunk = -1;
   let inChunk = false;
   for (const block of diff.blocks) {
     for (const line of block.lines) {
-      const beforeLine = lineNumbers.before[beforeIndex] ?? -1;
-      const afterLine = lineNumbers.after[afterIndex] ?? -1;
       if (line.kind === "same") {
         map.same.set(beforeLine, afterLine);
-        beforeIndex += 1;
-        afterIndex += 1;
+        beforeLine += 1;
+        afterLine += 1;
         inChunk = false;
         continue;
       }
@@ -297,11 +274,11 @@ function classifyLines(options: {
       if (line.kind === "del") {
         map.deleted.add(beforeLine);
         map.chunkBefore.set(beforeLine, chunk);
-        beforeIndex += 1;
+        beforeLine += 1;
       } else {
         map.added.add(afterLine);
         map.chunkAfter.set(afterLine, chunk);
-        afterIndex += 1;
+        afterLine += 1;
       }
     }
   }
@@ -322,27 +299,20 @@ export function colorDiffBlocks(options: {
     before: splitSourceLines(before.markdown),
     after: splitSourceLines(after.markdown),
   };
-  const contents = {
-    before: toContentSource(texts.before),
-    after: toContentSource(texts.after),
-  };
   const diff = computeDiff({
-    before: contents.before.markdown,
-    after: contents.after.markdown,
+    before: before.markdown,
+    after: after.markdown,
     segmenter,
     engine,
   });
   if (diff.counts.del === 0 && diff.counts.add === 0) {
     return;
   }
-  const lines = classifyLines({
-    diff,
-    texts,
-    lineNumbers: {
-      before: contents.before.lineNumbers,
-      after: contents.after.lineNumbers,
-    },
-  });
+  const lines = classifyLines({ diff, texts });
+  /** `same` の後の行番号から前の行番号 */
+  const sameAfter = new Map(
+    [...lines.same].map(([beforeLine, afterLine]) => [afterLine, beforeLine]),
+  );
   const beforeCount = lines.texts.before.length;
   const afterCount = lines.texts.after.length;
   const beforeRanges = collectBlockRanges({
@@ -372,9 +342,62 @@ export function colorDiffBlocks(options: {
     }
     return result;
   };
-  /** 後のブロックの範囲に追加した行があるか */
+  /** 同じ単位のブロックのうち、行を範囲に含む最も狭いもの */
+  const ownerOf = (
+    ranges: BlockRange[],
+    unit: BlockUnit,
+    line: number,
+  ): BlockRange | undefined =>
+    ranges
+      .filter(
+        (candidate) =>
+          candidate.unit === unit &&
+          candidate.start <= line &&
+          line <= candidate.end,
+      )
+      .reduce<BlockRange | undefined>(
+        (narrowest, candidate) =>
+          narrowest === undefined ||
+          candidate.end - candidate.start < narrowest.end - narrowest.start
+            ? candidate
+            : narrowest,
+        undefined,
+      );
+  /** ブロックの開始の行が動いた（空行で分けた・つないだ）後のブロック */
+  const regrouped = new Set<BlockRange>();
+  for (const range of afterRanges) {
+    const beforeLine = sameAfter.get(range.start);
+    if (beforeLine === undefined) {
+      continue;
+    }
+    const owner = ownerOf(beforeRanges, range.unit, beforeLine);
+    if (owner === undefined || owner.start === beforeLine) {
+      continue;
+    }
+    // 前の 1 つのブロックの途中から始まる後のブロックと、そのブロックの頭から始まる後のブロック
+    regrouped.add(range);
+    const head = lines.same.get(owner.start);
+    const headRange =
+      head === undefined ? undefined : ownerOf(afterRanges, range.unit, head);
+    if (headRange !== undefined) {
+      regrouped.add(headRange);
+    }
+  }
+  for (const range of beforeRanges) {
+    const afterLine = lines.same.get(range.start);
+    if (afterLine === undefined) {
+      continue;
+    }
+    // 前のブロックの開始の行を途中に含む後のブロック
+    const owner = ownerOf(afterRanges, range.unit, afterLine);
+    if (owner !== undefined && owner.start !== afterLine) {
+      regrouped.add(owner);
+    }
+  }
+  /** 後のブロックの範囲に空白だけでない追加した行があるか、分け直したブロックか */
   const isAdded = (range: BlockRange): boolean =>
-    contentLines(range, "after").some((line) => lines.added.has(line));
+    contentLines(range, "after").some((line) => lines.added.has(line)) ||
+    regrouped.has(range);
   /** 前のブロックの範囲の行が全て削除した行か */
   const isRemoved = (range: BlockRange): boolean => {
     const content = contentLines(range, "before");

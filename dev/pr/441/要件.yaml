@@ -1,0 +1,30 @@
+docs:
+  - page: docs/リファレンス/index.yaml
+    new: false
+    change: 用語集の行の summary の用語の並びを、用語集の冒頭の並びに統一する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-08T22:36:41.851424+00:00'
+  - page: docs/リファレンス/README.md
+    new: false
+    change: index.yaml から再生成し、用語集の行の用語の並びを統一する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-08T22:36:41.851424+00:00'
+  - page: docs/files.yaml
+    new: false
+    change: 用語集の行の description の用語の並びを、用語集の冒頭の並びに統一する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-08T22:36:41.851424+00:00'
+  - page: docs/リファレンス/用語集.md
+    new: false
+    change: 冒頭の並びの途中（「CSV の表」の後ろ）に入った「の用語の意味」を末尾へ戻す
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-08T22:36:41.851424+00:00'
+use_cases: []
+scope_out:
+  - item: 用語集の冒頭の並びと、用語集の本文の一覧の用語の突き合わせ
+    reason: 要望は目次側の 3 か所を冒頭の並びに統一することで、冒頭の並びに載せる用語の過不足は変えない
+    plan: none

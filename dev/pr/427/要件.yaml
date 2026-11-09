@@ -1,0 +1,34 @@
+use_cases:
+  - kind: single
+    scenario: dev/設計書/シナリオ/単一ユースケース/文書の差分を確認する.yaml
+    impact: run_only
+    detail: 差分のパネルで、1 行の段落だけの文書の変えていない段落を削除と追加の対で出さなくなる。シナリオの記述は変わらない
+    depends_on: []
+  - kind: single
+    scenario: dev/設計書/シナリオ/単一ユースケース/比較元のMarkdownを指定して変更を強調する.yaml
+    impact: run_only
+    detail: 空行だけを追加して段落を 2 つに分けた変更を、追加のブロックとして強調する。シナリオの記述は変わらない
+    depends_on: []
+  - kind: single
+    scenario: dev/設計書/シナリオ/単一ユースケース/差分の取り出し元を指定する.yaml
+    impact: run_only
+    detail: 取り出し元から受けた 2 つのリビジョンの比べ方が変わる。シナリオの記述は変わらない
+    depends_on: []
+  - kind: single
+    scenario: dev/設計書/シナリオ/単一ユースケース/差分ビューの変更をプレビューで確認する.yaml
+    impact: run_only
+    detail: VS Code のプレビューのブロックの色分けで、段落を分けた変更を追加として出す。シナリオの記述は変わらない
+    depends_on: []
+  - kind: composite
+    scenario: dev/設計書/シナリオ/複合ユースケース/取り出し元を指定して文書の差分を確認する.yaml
+    impact: run_only
+    detail: 差分のパネルの行の比べ方が変わる。シナリオの記述は変わらない
+    depends_on: []
+docs:
+  - page: docs/はじめに/コアコンセプト/差分を表示する仕組み.md
+    new: false
+    change: 差分のパネルの行の比較の手順 1 に空行どうしの一致を避けることを、ブロックの色分けの手順 4 に段落を分けた変更を追加とする手がかりを反映する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-08T19:25:55.957877+00:00'
+scope_out: []

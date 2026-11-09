@@ -1,0 +1,45 @@
+# 実行したコマンド: node /tmp/m423/measure.mjs（develop 6e8cbadd の dist を Playwright の Chromium headless で描き、data-source-line の要素の getBoundingClientRect を記録する。幅 800px）
+# 文書: '## セクション 1〜10' と各 3 つの段落。8 番目の見出しの直後に <!-- section: closed -->
+
+# import { chromium } from "/mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/develop/node_modules/playwright/index.mjs";
+# import { readFileSync } from "node:fs";
+# const dist = "/mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/develop/dist/";
+# let md = "";
+# for (let i = 1; i <= 10; i++) {
+#   md += `## セクション ${i}\n\n`;
+#   if (i === 8) md += "<!-- section: closed -->\n\n";
+#   for (let p = 1; p <= 3; p++) md += `セクション ${i} の段落 ${p}。`.repeat(8) + "\n\n";
+# }
+# const browser = await chromium.launch();
+# const page = await browser.newPage({ viewport: { width: 800, height: 600 } });
+# await page.route("http://local/**", (r) => {
+#   const name = r.request().url().replace("http://local/", "");
+#   if (name === "index.html") return r.fulfill({ contentType: "text/html", body: `<link rel="stylesheet" href="/dist/index.css"><div id="d"></div>` });
+#   const p = dist + name.replace(/^dist\//, "");
+#   return r.fulfill({ contentType: p.endsWith(".css") ? "text/css" : "text/javascript", body: readFileSync(p) });
+# });
+# await page.goto("http://local/index.html");
+# const out = await page.evaluate(async (md) => {
+#   const m = await import("/dist/index.js");
+#   m.mount(document.getElementById("d"), { markdown: md, sourceLines: true });
+#   await new Promise((r) => setTimeout(r, 500));
+#   return [...document.querySelectorAll("[data-source-line]")].map((e) => {
+#     const r = e.getBoundingClientRect();
+#     return `${e.tagName} line=${e.dataset.sourceLine} top=${Math.round(r.top + scrollY)} h=${Math.round(r.height)} ${e.textContent.slice(0, 14)}`;
+#   }).filter((s) => /セクション (7|8|9)/.test(s));
+# }, md);
+# console.log(out.join("\n"));
+# await browser.close();
+
+H2 line=48 top=1672 h=32 セクション 7
+P line=50 top=1718 h=50 セクション 7 の段落 1。
+P line=52 top=1783 h=50 セクション 7 の段落 2。
+P line=54 top=1847 h=50 セクション 7 の段落 3。
+H2 line=56 top=1929 h=32 セクション 8
+P line=60 top=1962 h=50 セクション 8 の段落 1。
+P line=62 top=2026 h=50 セクション 8 の段落 2。
+P line=64 top=2090 h=50 セクション 8 の段落 3。
+H2 line=66 top=1993 h=32 セクション 9
+P line=68 top=2039 h=50 セクション 9 の段落 1。
+P line=70 top=2104 h=50 セクション 9 の段落 2。
+P line=72 top=2168 h=50 セクション 9 の段落 3。

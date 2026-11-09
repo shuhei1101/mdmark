@@ -1,0 +1,14 @@
+$ npm run test:unit
+
+> test:unit
+> vitest run --project 'unit*'
+
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/refactor-cli-remove-unused-http-pattern
+
+
+ Test Files  260 passed (260)
+      Tests  1835 passed (1835)
+   Start at  07:22:46
+   Duration  98.89s (worker 66%, tests 21%, import 12%, transform 1%)
+
