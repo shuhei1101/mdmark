@@ -15,7 +15,9 @@ test("test_normal", async () => {
   // 検証
   expect(serve.stdout()).toContain(`http://127.0.0.1:${port}/mcp`);
   const instructions = client.getInstructions() ?? "";
-  expect(instructions).toBe(INSTRUCTIONS.replace("{session}", "mdmark-mcp"));
+  expect(instructions).toBe(
+    INSTRUCTIONS.replace("{location}", "tmux のセッション mdmark-mcp"),
+  );
   expect(instructions).toContain("mdmark-mcp");
   expect(instructions.length).toBeLessThanOrEqual(4096);
   expect(tools.map((tool) => tool.name).sort()).toEqual([
@@ -32,6 +34,22 @@ test("test_normal", async () => {
     );
   }
   expect(serve.isRunning()).toBe(true);
+});
+
+// MDMARK_LAUNCHER=systemd で起動すると、instructions が unit の名前とログを確認する操作を伝える（正常系（unit で動いている））
+test("test_normal_when_launched_by_systemd", async () => {
+  // 準備・実行
+  const port = await findFreePort();
+  const serve = await startServe({
+    env: { MDMARK_PORT: String(port), MDMARK_LAUNCHER: "systemd" },
+  });
+  const client = await connectUrl(serve.url);
+  // 検証
+  const instructions = client.getInstructions() ?? "";
+  expect(instructions.length).toBeLessThanOrEqual(4096);
+  expect(instructions).toContain("unit mdmark-mcp");
+  expect(instructions).toContain("journalctl --user -u mdmark-mcp");
+  expect(instructions).not.toContain("tmux のセッション");
 });
 
 // MDMARK_PORT のポートで待ち受ける（正常系（ポートを上書きする））

@@ -3,7 +3,7 @@ import { join } from "node:path";
 import { expect, test } from "vitest";
 import { writeFiles } from "../cli.ts";
 import { runSetupScript } from "../plugin.ts";
-import { HAS_TMUX, useTerminals } from "../terminal.ts";
+import { HAS_SYSTEMD, HAS_TMUX, useTerminals } from "../terminal.ts";
 
 const { createTerminal, tmux } = useTerminals();
 
@@ -23,6 +23,13 @@ test.skipIf(!HAS_TMUX)("test_normal", async () => {
   expect(status.server.listening).toBe(false);
   expect(status.tmux.available).toBe(true);
   expect(status.state.log).toBe(terminal.logPath);
+  expect(status.launcher.setting).toBe("auto");
+  expect(status.server.unit).toBe("mdmark-mcp");
+  expect(status.server.unit_path).toBe(
+    join(terminal.home, ".config", "systemd", "user", "mdmark-mcp.service"),
+  );
+  expect(status.systemd.available).toBe(HAS_SYSTEMD);
+  expect(status.launcher.resolved).toBe(HAS_SYSTEMD ? "systemd" : "tmux");
 });
 
 // 端末の設定のバージョン・セッション名・待ち受けていることを返却する（正常系（セットアップ済み））
@@ -32,7 +39,8 @@ test.skipIf(!HAS_TMUX)(
     // 準備
     const terminal = await createTerminal();
     await writeFiles(join(terminal.home, "config"), {
-      "settings.yaml": "version: v0.0.1\nserve:\n  tmuxSession: mdmark-test\n",
+      "settings.yaml":
+        "version: v0.0.1\nserve:\n  launcher: tmux\n  systemdUnit: mdmark-test-status\n  tmuxSession: mdmark-test\n",
     });
     const started = await runSetupScript({
       args: ["start-server"],
@@ -58,6 +66,26 @@ test.skipIf(!HAS_TMUX)(
   },
   60_000,
 );
+
+// PATH に systemctl が無いことと、auto が tmux になることを返却する（正常系（systemd --user が使えない））
+test("test_normal_when_systemd_unavailable", async () => {
+  // 準備
+  const terminal = await createTerminal();
+  const emptyPath = join(terminal.home, "empty-path");
+  await mkdir(emptyPath);
+  // 実行
+  const result = await runSetupScript({
+    args: ["status"],
+    env: { ...terminal.env, PATH: emptyPath },
+  });
+  // 検証
+  expect(result.code).toBe(0);
+  const status = JSON.parse(result.stdout);
+  expect(status.systemd.available).toBe(false);
+  expect(status.launcher.resolved).toBe("tmux");
+  expect(status.server.unit_active).toBe(false);
+  expect(status.server.unit_enabled).toBe(false);
+});
 
 // PATH に tmux が無いことを返却する（正常系（tmux が無い））
 test("test_normal_when_tmux_missing", async () => {

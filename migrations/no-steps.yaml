@@ -65,8 +65,8 @@ entries:
     reason: 説明文の単語を対応表の置き換え先にしただけで、キーと型は変えないので、古い索引もそのまま新しい Schema に合う
   - version: next
     schema: mdmark.settings.schema.json
-    sha256: 42323a16ad110eed0c2d3bf80336f393fa52a2583c0e8b039485f944573e115d
-    reason: 説明文の単語を対応表の置き換え先にしただけで、キーと型は変えないので、古い端末の設定もそのまま新しい Schema に合う
+    sha256: 689c99393b640b494eb95f43cb0da943cf4c68af08d102f835f15afd3918d570
+    reason: 説明文の単語を対応表の置き換え先にし、端末の設定に省いてよい serve.launcher・serve.systemdUnit を足しただけで、既にあるキーと型は変えないので、古い端末の設定もそのまま新しい Schema に合う
   - version: next
     schema: mdmark.templates.schema.json
     sha256: c852b5d8b2c17a46a1655bdec008679555e74a6adcc94f7b5c3eb9820e7782a3
