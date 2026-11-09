@@ -16,8 +16,11 @@ scope_out:
     reason: メモリの使用を減らす本 Issue と目的が違い、別の Issue がある
     plan: '#390'
   - item: integration-node の tests/integration/cli.ts の useBrowser（書き出した HTML を開くテストのファイルごとの Chromium の起動）の共有
-    reason: 使用するファイルが 3 つで、Issue が挙げた Storybook・ブラウザのプロジェクトの起動の数より小さい。並列の上限はプロジェクトに置くため、起動の数は上限で抑えられる。含めるかはレビューで確定する
+    reason: useBrowser を使用するのは tests/integration/lib/bundle.test.ts・export.test.ts の 2 ファイルで、同時に起動する Chromium は 2 つまで
     plan: none
   - item: plugin/files.yaml の skills/global-setup/SKILL.md の行の description が引用符なしでバッククォートで始まり、YAML として読めず dev-docs が配信から除いている
     reason: YAML として読めない不具合で、結合テストのメモリの使用を減らす今回の要望に含まれない
     plan: '#413'
+  - item: integration-node・integration-browser・integration-storybook の 3 つのプロジェクトを同時に実行することの変更
+    reason: 要件のメモリの使用の条件は、3 つを同時に実行する npm run test:integration の全体で測る。その条件を満たせば、3 つを順に実行する変更は要らない
+    plan: none
