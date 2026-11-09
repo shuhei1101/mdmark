@@ -96,3 +96,20 @@ lint は `テスト結果/20261109120835_6a2b60830_lint.log`（終了コード 0
 <!-- /table -->
 
 lint は `テスト結果/20261109124630_85cf34842_lint.log`（終了コード 0。警告は今回触っていない `plugin/bin/setup.js` のファイルの大きさの 1 件だけ）。
+
+### E2E
+
+E2E テストは作成だけで、実行は tester が担う。
+
+<!-- table: data -->
+
+| ファイル | メソッド | 変更種別 | 結果 | 補足 |
+| --- | --- | --- | --- | --- |
+| `tests/e2e/単一ユースケース/端末にmdmarkをセットアップする.spec.ts` | 全シナリオ | 変更 | - | 11 シナリオ。systemd --user のシナリオは手元の user のマネージャーでテスト専用の unit（`mdmark-test-*`）を起動し、後に止めて削除する。systemd --user が使えない端末では skip する |
+| `tests/e2e/単一ユースケース/セッションの開始で常駐サーバーの状態を受け取る.spec.ts` | 全シナリオ | 変更 | - | `test_normal`（unit）と `test_normal_when_running_in_tmux` に分けた |
+| `tests/e2e/複合ユースケース/プラグインを入れて端末と文書のフォルダをセットアップする.spec.ts` | 全シナリオ | 変更 | - | unit で起動する流れに合わせた |
+| `tests/e2e/setup-skill.ts` | - | 変更 | - | テスト専用の unit の名前と後片付け・`systemctl` を含まない `PATH`。`global-setup` の手順 4 のとおり、端末の設定が無いまま断ったときだけ `--launcher tmux` で呼ぶ |
+
+<!-- /table -->
+
+lint は `テスト結果/20261109131312_64078e25_lint.log`（終了コード 0。警告は既存の `plugin/bin/setup.js` のファイルの大きさの 1 件だけ）。
