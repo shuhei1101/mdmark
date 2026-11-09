@@ -2503,7 +2503,7 @@ functions:
     scope: internal
     summary: 表の最下段の見出しのつまみ（`span.mdmark-col-resize`）に、ドラッグ・←→ キーで列の幅を変え、ダブルクリック・ダブルタップ・Enter で戻す操作を付ける
     description: |-
-      つまみの `pointerdown` で既定の動作を止めて伝わりを止め、`setPointerCapture` でポインターを捕まえ、つまみに `is-dragging` を付ける。`pointermove` では押した位置からの横の移動量を押したときの幅に足し、`setColumnWidth` で入れる。`pointerup`・`pointercancel` で `is-dragging` を外す。`pointerType` が `touch` の `pointerup` が前の `touch` の `pointerup` から `DOUBLE_TAP_MS` 以内なら、幅を戻す。`dblclick` でも幅を戻す。`keydown` の → は `COLUMN_RESIZE_STEP_PX` 広げ、← は狭め、Enter は幅を戻す（どれも既定の動作を止める）。
+      つまみの `pointerdown` で既定の動作を止めて伝わりを止め、`setPointerCapture` でポインターを捕まえ、つまみに `is-dragging` を付ける。`pointermove` では押した位置からの横の移動量を押したときの幅に足し、`setColumnWidth` で入れる。`pointerup`・`pointercancel` で `is-dragging` を外す。`pointerType` が `touch` で、`pointerdown` からの移動が `TAP_MOVE_TOLERANCE_PX` 以内の `pointerup` だけをタップとして数え、タップが前のタップから `DOUBLE_TAP_MS` 以内なら幅を戻す（動かしたドラッグの終わりはタップに数えず、前のタップの記録も消す）。`dblclick` でも幅を戻す。`keydown` の → は `COLUMN_RESIZE_STEP_PX` 広げ、← は狭め、Enter は幅を戻す（どれも既定の動作を止める）。
 
       `setColumnWidth` は、`clampColumnWidth` で列の最小幅（見出しのセルのインラインの `--mdmark-column-min-width` を外して測った `min-width` に左右の余白と罫線を足した外側の幅）から `maxWidth(column)` までに収めた外側の幅を、見出しのセルの内側の幅に換算して `width`・`min-width`・`--mdmark-column-min-width` に入れる。入れた後に測った外側の幅が指定した幅と違えば、差を足して入れ直す。列の全てのセルに `is-resized` を付ける。幅を戻すときは、`width`・`min-width` を外し、`--mdmark-column-min-width` を付けたときの値に戻し、`is-resized` を外す。入れた後と戻した後に `onResize(column)` を呼び、つまみの `aria-valuenow`・`aria-valuetext`（`{幅}px`）・`aria-valuemin`・`aria-valuemax` を書き換える（最小と上限は切り捨て）
     args:
@@ -2543,9 +2543,9 @@ functions:
       - name: test_attach_column_resize_when_double_tap
         case: 正常
         summary: タッチの 2 回のタップの間隔でダブルタップを見分ける
-        condition: '幅を変えた列のつまみで、`pointerType: touch` の `pointerdown`・`pointerup` を 100ms の間隔で 2 回と、400ms の間隔で 2 回'
+        condition: '幅を変えた列のつまみで、`pointerType: touch` の `pointerdown`・`pointerup` を 100ms の間隔で 2 回、400ms の間隔で 2 回と、60px 動かしたドラッグの直後 100ms 以内に 1 回のタップ'
         mock: なし
-        expected: 100ms の間隔では幅が付けた直後に戻り、400ms の間隔では戻らない
+        expected: 100ms の間隔では幅が付けた直後に戻り、400ms の間隔では戻らず、ドラッグの直後の 1 回のタップでも戻らない
       - name: test_attach_column_resize_when_detached
         case: 正常
         summary: 削除する関数で受け取りと幅の指定を外す
@@ -2771,6 +2771,16 @@ constants:
     container: src/interact/table-resize.ts
     summary: タッチの 2 回のタップをダブルタップとみなす、前のタップを離してから次のタップを離すまでの上限（ms）
     value: '300'
+    refs:
+      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[列の幅]
+    status: planned
+    introduced:
+      pr: 449
+  - name: TAP_MOVE_TOLERANCE_PX
+    title: タップとみなす移動の上限
+    container: src/interact/table-resize.ts
+    summary: タッチの `pointerdown` から `pointerup` までの移動がこの幅（px）以内なら、ドラッグでなくタップとして数える
+    value: '8'
     refs:
       - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[列の幅]
     status: planned
