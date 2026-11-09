@@ -52,7 +52,7 @@ use_cases:
   - kind: composite
     scenario: dev/設計書/シナリオ/複合ユースケース/Mermaidと補足で書いた図を辿って読む.yaml
     impact: new
-    detail: 文書の作成者が Mermaid と補足で図を記載して点検し、読者が描いた図をグループの中へ入る・開閉・ノードのページ・視点・巡回・シーケンスの再生で辿る
+    detail: 文書の作成者が Mermaid と補足で図を記載して点検し、読者が描いた図をグループの中へ入る・開閉・巡回・シーケンスの再生で辿る
     depends_on: []
   - kind: single
     scenario: dev/設計書/シナリオ/単一ユースケース/Mermaidと補足で図を描く.yaml
@@ -63,37 +63,25 @@ use_cases:
   - kind: single
     scenario: dev/設計書/シナリオ/単一ユースケース/図のグループの中へ入る・開閉する.yaml
     impact: new
-    detail: 読者がグループの中へ入ってパンくずで戻り、グループを閉じて中への線をまとめた件数と元の線の一覧で見る
-    depends_on:
-      - dev/設計書/シナリオ/複合ユースケース/Mermaidと補足で書いた図を辿って読む.yaml
-  - kind: single
-    scenario: dev/設計書/シナリオ/単一ユースケース/図のノードのページを見る.yaml
-    impact: new
-    detail: 読者がノードの線・視点・リンク先の図・シーケンス・説明を 1 ページで読み、相手のノードやリンク先の図へ移る
-    depends_on:
-      - dev/設計書/シナリオ/複合ユースケース/Mermaidと補足で書いた図を辿って読む.yaml
-  - kind: single
-    scenario: dev/設計書/シナリオ/単一ユースケース/図の視点を切り替える.yaml
-    impact: new
-    detail: 読者が視点を切り替え、その視点の線が使用するノードだけの図で読む
+    detail: 読者がグループの中へ入って戻るボタンか Esc で戻り、グループを閉じて中への線をまとめた件数とツールチップの元の線で見る。開閉と中へ入った状態は描き直しても保つ
     depends_on:
       - dev/設計書/シナリオ/複合ユースケース/Mermaidと補足で書いた図を辿って読む.yaml
   - kind: single
     scenario: dev/設計書/シナリオ/単一ユースケース/図を巡回する.yaml
     impact: new
-    detail: 読者が案内の手順を前へ・次へで進め、手順ごとの視点・グループ・強調と説明を読む
+    detail: 読者が案内の手順を前へ・次へで進め、手順ごとのグループ・強調と説明を読む
     depends_on:
       - dev/設計書/シナリオ/複合ユースケース/Mermaidと補足で書いた図を辿って読む.yaml
   - kind: single
     scenario: dev/設計書/シナリオ/単一ユースケース/シーケンスを構成図の上で再生する.yaml
     impact: new
-    detail: 読者がシーケンス図を、同じノードを持つ構成図の上で 1 通ずつ動かして読む。動きを減らす設定では強調と文だけを出す
+    detail: 読者がシーケンス図を、同じノードを持つ構成図の上で 1 通ずつ、手で、または選んだ間隔で自動で進めて読む。今のメッセージの線の印は再生している間繰り返し動き、動きを減らす設定では強調と文だけを出す
     depends_on:
       - dev/設計書/シナリオ/複合ユースケース/Mermaidと補足で書いた図を辿って読む.yaml
 docs:
   - page: docs/使用方法/図を描く/Mermaidと補足で図を描く.md
     new: true
-    change: map のマーカー・Mermaid のブロック・補足の記載方法と、配置の上書き・視点・巡回・再生の書き方の手順を新設する
+    change: map のマーカー・Mermaid のブロック・補足の記載方法と、配置と色の上書き・巡回・再生の書き方の手順を新設する
     status: todo
   - page: docs/使用方法/図を描く/index.yaml
     new: false
@@ -105,7 +93,7 @@ docs:
     status: todo
   - page: docs/はじめに/コアコンセプト/図を自動配置して辿る仕組み.md
     new: true
-    change: 印の引数・Mermaid・補足の役割の分け方、入れ子の自動配置と上書き、中へ入る・開閉・視点で配置し直す流れを新設する
+    change: 印の引数・Mermaid・補足の役割の分け方、入れ子の自動配置と上書き、今のフロー図・シーケンス図の部品で描く流れ、中へ入る・開閉で配置し直す流れを新設する
     status: todo
   - page: docs/はじめに/コアコンセプト/index.yaml
     new: false
@@ -125,7 +113,7 @@ docs:
     status: todo
   - page: docs/リファレンス/用語集.md
     new: false
-    change: map・補足・自動配置・中へ入る・開閉・ノードのページ・視点・巡回・シーケンスの再生の用語を追加する
+    change: map・補足・自動配置・中へ入る・開閉・巡回・シーケンスの再生の用語を追加する
     status: todo
   - page: guide/index.yaml
     new: false
@@ -150,3 +138,6 @@ scope_out:
   - item: map の印の引数 `mode`（boxes・layers・list の見せ方の切り替え）
     reason: list は A-35 の No 17（一覧の表示）でこの PR の範囲の外。層は補足の layout で指定し、入れ子のグループは既定の描き方になるため、切り替える先が無い
     plan: to_file
+  - item: A-35 の No 6（ノードのページ）と No 7（視点の切り替え）、図の中の段のパンくず
+    reason: モックの確認でユーザーが不要と判断した（ノードの文はそのままコピーしたい、視点の絞り込みは使わない）
+    plan: none

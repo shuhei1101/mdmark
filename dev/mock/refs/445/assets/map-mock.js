@@ -348,7 +348,12 @@ export const createMap = (host, spec, initial = {}) => {
     clearInterval(timer);
     if (state.play === undefined || !state.autoplay || !sequence) return;
     timer = setInterval(() => {
-      state.play = (state.play + 1) % sequence.messages.length;
+      state.play += 1;
+      // 最後のメッセージで自動で進めるのを止める
+      if (state.play === sequence.messages.length - 1) {
+        state.autoplay = false;
+        clearInterval(timer);
+      }
       render();
     }, state.seconds * 1000);
   };

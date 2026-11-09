@@ -359,7 +359,7 @@ scenarios:
     setup:
       - name: map の補足にずれを持つフォルダ
         description: 正常シナリオのフォルダの文書 1 つに、補足にずれを持つ map の範囲 1 つと、ずれの無い map の範囲 1 つを記載したもの
-        notes: ずれは、Mermaid に無いノードの ID を指す `notes` のキー・知らないトップレベルのキー・`--` を含む `relations` の `label` の値の 3 つ
+        notes: ずれは、Mermaid に無いノードの ID を指す `notes` のキー・知らないトップレベルのキー・`--` を含む `walkthroughs` の `text` の値の 3 つ
       - name: Mock
         description: 差し替える依存は無い。点検はブラウザを使用しない
     flow: |-
