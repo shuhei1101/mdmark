@@ -62,14 +62,14 @@ export function labelLineCount(options: {
 }
 
 /** 2 つの矩形の内側が重なるか（辺が接するだけは重ならない） */
-function overlaps(a: Rect, b: Rect): boolean {
+export function overlaps(a: Rect, b: Rect): boolean {
   return (
     a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h
   );
 }
 
 /** 矩形が外の矩形の中に収まるか */
-function inside(rect: Rect, outer: Rect): boolean {
+export function inside(rect: Rect, outer: Rect): boolean {
   return (
     rect.x >= outer.x &&
     rect.y >= outer.y &&
@@ -79,7 +79,7 @@ function inside(rect: Rect, outer: Rect): boolean {
 }
 
 /** 線分が矩形の内側を通るか（辺をなぞる・角に触れるだけは通らない）。Liang–Barsky で矩形に切り取って確認する */
-function crosses(
+export function crosses(
   from: [number, number],
   to: [number, number],
   rect: Rect,

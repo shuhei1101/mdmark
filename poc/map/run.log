@@ -1,0 +1,59 @@
+$ node poc/map/run.mjs
+[
+ {
+  "name": "全体",
+  "max": "58.9",
+  "times": "58.9 28.7 35.4 19.2 23.5 13.7 14.4 17.8 15.9 13.4",
+  "leaves": 30,
+  "boxes": 6,
+  "edges": 40,
+  "issues": 0,
+  "notFit": 0,
+  "diff": "1.0"
+ },
+ {
+  "name": "上書き",
+  "max": "18.1",
+  "times": "15.1 14.8 13.1 14.8 16.5 11.3 12.1 18.1 14.9 15.1",
+  "leaves": 30,
+  "boxes": 6,
+  "edges": 40,
+  "issues": 0,
+  "notFit": 0,
+  "diff": "1.0"
+ },
+ {
+  "name": "中へ入る（app）",
+  "max": "8.8",
+  "times": "5.1 5.1 3.8 4.6 4.7 4.9 8.8 4.2 4.2 5.1",
+  "leaves": 19,
+  "boxes": 3,
+  "edges": 29,
+  "issues": 0,
+  "notFit": 0,
+  "diff": "1.0"
+ },
+ {
+  "name": "閉じる（be）",
+  "max": "20.4",
+  "times": "19.0 13.4 12.7 9.6 9.3 8.8 10.1 9.3 13.5 20.4",
+  "leaves": 26,
+  "boxes": 5,
+  "edges": 35,
+  "issues": 0,
+  "notFit": 0,
+  "diff": "1.0"
+ },
+ {
+  "name": "視点の切り替え（api の線）",
+  "max": "6.2",
+  "times": "2.6 1.2 6.2 1.8 1.5 1.4 1.7 3.5 1.8 1.6",
+  "leaves": 9,
+  "boxes": 6,
+  "edges": 8,
+  "issues": 0,
+  "notFit": 0,
+  "diff": "1.0"
+ }
+]
+{"sizes":[{"file":"layout.js","bytes":8865},{"file":"parse.js","bytes":4714}],"combined":13576,"overrideChecks":{"alignCacheWithGw":0,"auditBeforeUsers":true,"monitorAt":{"x":24,"y":24,"expected":24}}}

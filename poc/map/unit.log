@@ -1,0 +1,10 @@
+$ npx vitest run --config poc/map/vitest.config.ts
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/poc-diagram-map-auto-layout
+
+
+ Test Files  1 passed (1)
+      Tests  13 passed (13)
+   Start at  10:32:46
+   Duration  1.84s (import 48%, transform 30%, worker 13%, tests 9%)
+
