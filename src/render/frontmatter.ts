@@ -43,7 +43,9 @@ export const splitFrontmatter = (markdown: string): SplitFrontmatter => {
   const content = lines.slice(1, endLine).map(stripCr).join("\n");
   // フロントマターの範囲（BOM を含む先頭から閉じる行の終わりまで）を空白にする
   const rangeLength =
-    markdown.length - text.length + lines.slice(0, endLine + 1).join("\n").length;
+    markdown.length -
+    text.length +
+    lines.slice(0, endLine + 1).join("\n").length;
   const body =
     blankOut(markdown.slice(0, rangeLength)) + markdown.slice(rangeLength);
   return { body, content, endLine };
