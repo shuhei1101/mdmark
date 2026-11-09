@@ -1,4 +1,5 @@
-import { join } from "node:path";
+import { dirname, join } from "node:path";
+import { writeFiles } from "../cli.ts";
 import {
   describeError,
   isListening,
@@ -7,9 +8,12 @@ import {
 } from "../plugin.ts";
 import {
   expect,
+  HAS_SYSTEMD,
+  pathWithoutSystemctl,
   runSessionStartHook,
   runSetupScript,
   startTmuxServer,
+  type Terminal,
   test,
 } from "../setup-skill.ts";
 
@@ -25,27 +29,68 @@ const SESSION = "mdmark-mcp";
 /** ビルドした作業ツリーの `plugin/` */
 const pluginOf = (builtRoot: string) => join(builtRoot, "plugin");
 
-// 常駐サーバーが待ち受けていればフックは何も出さず、instructions がセッション名を伝える（正常シナリオ）
-test("test_normal", async ({ builtRoot, terminal }) => {
-  // 準備
-  const pluginDir = pluginOf(builtRoot);
-  await startTmuxServer(terminal);
-  const started = await runSetupScript({
-    pluginDir,
-    terminal,
-    args: ["start-server"],
+/** 端末の設定に、テスト専用の unit の名前を書き込む */
+const writeTestUnit = async (terminal: Terminal) => {
+  await writeFiles(dirname(terminal.settingsPath), {
+    "settings.yaml": `serve:\n  systemdUnit: ${terminal.unit}\n`,
   });
-  expect(started.code, started.stderr).toBe(0);
-  // 実行
+};
+
+/** フックを実行し、MCP の instructions を受け取る */
+const readSessionStart = async (builtRoot: string, terminal: Terminal) => {
+  const pluginDir = pluginOf(builtRoot);
   const hook = await runSessionStartHook({ pluginDir, terminal });
   const mcp = await readMcpUrl({ pluginDir, env: terminal.env });
   const instructions = await withMcpClient(
     { builtRoot, serverUrl: mcp.url },
     async (client) => client.getInstructions() ?? "",
   );
+  return { hook, instructions };
+};
+
+// unit で動く常駐サーバーが待ち受けていればフックは何も出さず、instructions が unit の名前とログを確認する操作を伝える（正常シナリオ）
+(HAS_SYSTEMD ? test : test.skip)(
+  "test_normal",
+  async ({ builtRoot, terminal }) => {
+    // 準備
+    await writeTestUnit(terminal);
+    const started = await runSetupScript({
+      pluginDir: pluginOf(builtRoot),
+      terminal,
+      args: ["start-server"],
+    });
+    expect(started.code, started.stderr).toBe(0);
+    // 実行
+    const { hook, instructions } = await readSessionStart(builtRoot, terminal);
+    // 検証
+    expect(hook).toEqual({ code: 0, stdout: "", stderr: "" });
+    expect(instructions).toContain(`unit ${terminal.unit}`);
+    expect(instructions).toContain(`journalctl --user -u ${terminal.unit}`);
+    expect(instructions).toContain("/mdmark:global-setup");
+  },
+);
+
+// tmux のセッションで動く常駐サーバーが待ち受けていればフックは何も出さず、instructions がセッション名を伝える（正常シナリオ（tmux のセッションで動いている））
+test("test_normal_when_running_in_tmux", async ({
+  builtRoot,
+  terminal,
+  tempDir,
+}) => {
+  // 準備
+  await writeTestUnit(terminal);
+  await startTmuxServer(terminal);
+  const started = await runSetupScript({
+    pluginDir: pluginOf(builtRoot),
+    terminal,
+    args: ["start-server"],
+    env: { PATH: await pathWithoutSystemctl(join(await tempDir(), "bin")) },
+  });
+  expect(started.code, started.stderr).toBe(0);
+  // 実行
+  const { hook, instructions } = await readSessionStart(builtRoot, terminal);
   // 検証
   expect(hook).toEqual({ code: 0, stdout: "", stderr: "" });
-  expect(instructions).toContain(SESSION);
+  expect(instructions).toContain(`tmux のセッション ${SESSION}`);
   expect(instructions).toContain("/mdmark:global-setup");
 });
 

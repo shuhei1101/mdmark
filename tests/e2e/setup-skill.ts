@@ -1,5 +1,7 @@
-import { execFile } from "node:child_process";
-import { readFile } from "node:fs/promises";
+import { execFile, execFileSync } from "node:child_process";
+import { randomUUID } from "node:crypto";
+import { mkdir, readFile, rm, symlink } from "node:fs/promises";
+import { homedir } from "node:os";
 import { join } from "node:path";
 import { test as base, expect } from "./cli.ts";
 import { findFreePort } from "./plugin.ts";
@@ -7,6 +9,8 @@ import { findFreePort } from "./plugin.ts";
 /** 一時の端末: 子プロセスに指定する環境変数と、端末の設定・状態の配置場所・settings.json のパス */
 export type Terminal = {
   env: Record<string, string>;
+  /** テスト専用の unit の名前。手元の `mdmark-mcp` と重ならない */
+  unit: string;
   settingsPath: string;
   stateDir: string;
   logPath: string;
@@ -25,13 +29,17 @@ export type TerminalStatus = {
     version: string | null;
     target_version: string;
   };
-  server: { session: string; listening: boolean };
+  server: { session: string; unit: string; listening: boolean };
+  launcher: { setting: string; resolved: "systemd" | "tmux" };
 };
 
 /** `setup.js start-server` の結果 */
 export type StartResult = {
   result: "started" | "already_running" | "restarted";
-  session: string;
+  launcher: "systemd" | "tmux";
+  changes: Array<"unit_written" | "unit_disabled" | "tmux_session_closed">;
+  unit: string | null;
+  session: string | null;
   url: string;
   tools: string[];
   log: string;
@@ -111,6 +119,69 @@ const runFile = (options: {
     child.stdin?.end(options.stdin ?? "");
   });
 
+/** systemd --user が使えるか（`is-system-running` の標準出力が running・degraded・starting） */
+export const HAS_SYSTEMD = (() => {
+  try {
+    execFileSync("systemctl", ["--user", "is-system-running"]);
+    return true;
+  } catch (error) {
+    const stdout = String((error as { stdout?: unknown }).stdout ?? "").trim();
+    return ["running", "degraded", "starting"].includes(stdout);
+  }
+})();
+
+/** user のマネージャーが unit のファイルを読む `XDG_CONFIG_HOME`（テストを実行している手元の値） */
+export const USER_CONFIG_HOME =
+  process.env.XDG_CONFIG_HOME || join(homedir(), ".config");
+
+/** unit のファイルのパス */
+export const unitPath = (unit: string): string =>
+  join(USER_CONFIG_HOME, "systemd", "user", `${unit}.service`);
+
+/** systemctl --user を実行する */
+export const systemctl = (args: string[]): Promise<RunResult> =>
+  runFile({ command: "systemctl", args: ["--user", ...args], env: {} });
+
+/** unit の値を 1 つ取る */
+export const unitValue = async (unit: string, property: string) =>
+  (await systemctl(["show", "-p", property, "--value", unit])).stdout.trim();
+
+/** unit の journal の本文 */
+export const journalOf = async (unit: string): Promise<string> =>
+  (
+    await runFile({
+      command: "journalctl",
+      args: ["--user", "-u", unit, "--no-pager", "-o", "cat"],
+      env: {},
+    })
+  ).stdout;
+
+/** unit の journal のうち、待ち受ける URL の行 */
+export const unitListeningLines = async (terminal: Terminal) =>
+  (await journalOf(terminal.unit))
+    .split("\n")
+    .filter((line) => line.includes(`http://127.0.0.1:${terminal.port}/mcp`));
+
+/** テスト専用の unit を止め、unit のファイルを削除する */
+const removeTestUnit = async (unit: string): Promise<void> => {
+  await systemctl(["disable", "--now", unit]);
+  await rm(unitPath(unit), { force: true });
+  await systemctl(["daemon-reload"]);
+  await systemctl(["reset-failed", unit]);
+};
+
+/** `systemctl` を含まない `PATH`（`node`・`npx`・`tmux`・`sh`・`tee`・`sleep` だけのフォルダ）を作る */
+export const pathWithoutSystemctl = async (dir: string): Promise<string> => {
+  await mkdir(dir, { recursive: true });
+  for (const name of ["node", "npx", "tmux", "sh", "tee", "sleep"]) {
+    const target = execFileSync("sh", ["-c", `command -v ${name}`], {
+      encoding: "utf8",
+    }).trim();
+    await symlink(target, join(dir, name));
+  }
+  return dir;
+};
+
 /** 空の一時フォルダに端末を作る。常駐サーバーは `npx` の代わりに `builtRoot` の `dist/cli.js serve` で起動する */
 export const createTerminal = async (options: {
   home: string;
@@ -121,6 +192,7 @@ export const createTerminal = async (options: {
   const settingsPath = join(home, "config", "settings.yaml");
   const stateDir = join(home, "state");
   return {
+    unit: `mdmark-test-${randomUUID().slice(0, 8)}`,
     settingsPath,
     stateDir,
     logPath: join(stateDir, "serve.log"),
@@ -132,6 +204,7 @@ export const createTerminal = async (options: {
       MDMARK_STATE_DIR: stateDir,
       CLAUDE_CONFIG_DIR: join(home, "claude"),
       TMUX_TMPDIR: home,
+      XDG_CONFIG_HOME: USER_CONFIG_HOME,
       MDMARK_PORT: String(port),
       MDMARK_SERVE_COMMAND: `'${process.execPath}' '${join(builtRoot, "dist", "cli.js")}' serve`,
     },
@@ -144,6 +217,9 @@ export const test = base.extend<{ terminal: Terminal }>({
     const terminal = await createTerminal({ home: await tempDir(), builtRoot });
     await use(terminal);
     await closeSessions(terminal);
+    if (HAS_SYSTEMD) {
+      await removeTestUnit(terminal.unit);
+    }
   },
 });
 
@@ -259,10 +335,14 @@ export const runGlobalSetup = async (options: {
   answers: GlobalSetupAnswers;
   /** `PATH` を差し替えるときの値 */
   path?: string;
+  /** 端末の環境変数に重ねる値 */
+  env?: Record<string, string>;
 }): Promise<GlobalSetupReport> => {
   const { pluginDir, terminal, answers } = options;
-  const env: Record<string, string> =
-    options.path === undefined ? {} : { PATH: options.path };
+  const env: Record<string, string> = {
+    ...options.env,
+    ...(options.path === undefined ? {} : { PATH: options.path }),
+  };
   const setup = (args: string[]) =>
     runSetupScript({ pluginDir, terminal, args, env });
   // 1. 端末の設定のパス・バージョン・セッション名・待ち受けているか
@@ -300,8 +380,12 @@ export const runGlobalSetup = async (options: {
         await setup(["write-settings", ...sets]),
       )
     : undefined;
-  // 5. 常駐サーバーを起動する
-  const start: GlobalSetupReport["start"] = await setup(["start-server"]);
+  // 5. 常駐サーバーを起動する。端末の設定が無いまま書き込みを断ったときは unit を作らない
+  const start: GlobalSetupReport["start"] = await setup(
+    !answers.approveWrite && !settings.exists
+      ? ["start-server", "--launcher", "tmux"]
+      : ["start-server"],
+  );
   if (start.code !== 0) {
     return { status, upgrade, askedKeys, written, start };
   }
