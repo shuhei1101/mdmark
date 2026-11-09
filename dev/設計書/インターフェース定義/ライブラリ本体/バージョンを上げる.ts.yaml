@@ -383,7 +383,7 @@ flows:
       - name: 語彙を持つ索引のフォルダ
         description: '正常系のフォルダの索引を、`schema: 1`・最上位の `tags` が `topic:mcp`（`aliases` に `MCP`）・`topic:old`（`deprecated` が `topic:mcp`）、`docs[0].tags` が `[MCP]`、`docs[1].tags` が `[topic:old]` にしたもの'
       - name: Mock
-        description: 正常系と同じテスト用のパッケージ。`migrations/v0.5.0/` に、作業ツリーの `migrations/next/` の `steps.yaml` と `drop-tag-vocabulary.mjs` を配置する
+        description: 正常系と同じテスト用のパッケージ。`migrations/v0.5.0/` に、`drop-tag-vocabulary.mjs` を持つ移行の手順のフォルダの `steps.yaml` と全てのスクリプトを配置する
         notes: '`steps.yaml` の手順が `destructive: true` のため `--yes` を指定する'
     flow: |-
       sequenceDiagram
