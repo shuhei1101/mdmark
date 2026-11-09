@@ -1,5 +1,5 @@
 import { execFile } from "node:child_process";
-import { readFile } from "node:fs/promises";
+import { readFile, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { parseArgs } from "node:util";
 import configSchema from "../../../schemas/mdmark.config.schema.json" with {
@@ -22,13 +22,13 @@ declare const __MDMARK_VERSION__: string;
 export const SETUP_EXIT = {
   ok: 0,
   failed: 1,
-  tmuxMissing: 2,
+  launcherMissing: 2,
   timedOut: 3,
 } as const;
 
 /** 知らないサブコマンドのときの使用方法 */
 const USAGE =
-  "使用方法: setup.js status | keys --target settings|config [--dir {文書のフォルダ}] | write-settings [--set {キー}={値}]... | start-server | write-config --dir {文書のフォルダ} [--set {キー}={値}]...";
+  "使用方法: setup.js status | keys --target settings|config [--dir {文書のフォルダ}] | write-settings [--set {キー}={値}]... | start-server [--launcher systemd|tmux] | write-config --dir {文書のフォルダ} [--set {キー}={値}]...";
 
 /** `$ref` のファイル名から、まとめた Schema を返却する */
 const SCHEMAS: Record<string, JsonSchema> = {
@@ -59,6 +59,7 @@ const runCommand = async (options: {
       target: { type: "string" },
       dir: { type: "string" },
       set: { type: "string", multiple: true },
+      launcher: { type: "string" },
     },
     allowPositionals: true,
   });
@@ -106,10 +107,21 @@ const runCommand = async (options: {
     case "write-settings":
       return await writeSettings({ ...base, sets });
     case "start-server":
+      if (
+        values.launcher !== undefined &&
+        values.launcher !== "systemd" &&
+        values.launcher !== "tmux"
+      ) {
+        throw new SetupError(
+          `start-server の --launcher には systemd か tmux を指定してください（${values.launcher}）。${USAGE}`,
+        );
+      }
       return await startServer({
         ...base,
+        launcher: values.launcher,
         run: options.run,
         sleep: (ms) => new Promise((resolve) => setTimeout(resolve, ms)),
+        writeFile: (path, data) => writeFile(path, data, "utf8"),
       });
     case "write-config":
       if (!values.dir) {

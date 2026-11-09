@@ -10,7 +10,8 @@ directory: |-
       ├── status.ts      # status
       ├── keys.ts        # keys
       ├── write.ts       # write-settings・write-config
-      └── server.ts      # start-server
+      ├── server.ts      # start-server
+      └── systemd.ts     # systemd --user の確認・unit のファイル・unit の状態
   plugin/
   ├── bin/setup.js       # ビルドがまとめる
   ├── settings.sample.yaml

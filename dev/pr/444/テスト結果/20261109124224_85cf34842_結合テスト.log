@@ -1,0 +1,5 @@
+$ npx vitest run --project 'integration*' tests/integration/ClaudeCodeプラグイン/
+ Test Files  14 passed (14)
+      Tests  64 passed (64)
+   Duration  262.32s (tests 66%, import 30%, transform 4%)
+exit=0

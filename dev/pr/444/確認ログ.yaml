@@ -1,0 +1,7 @@
+confirmations:
+  - topic: global-setup が常駐サーバーを起動する方法（unit と tmux の選び方）
+    decision: systemd --user が使える端末では unit、使えない端末では tmux で起動し、端末の設定のキーでどちらかに固定できる（推奨案 A）
+    decided_by: thumbs_up
+    approver: shuhei1101
+    commit:
+    thread: https://github.com/shuhei1101/mdmark/pull/444#discussion_r4508526376

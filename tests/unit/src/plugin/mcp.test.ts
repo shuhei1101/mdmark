@@ -24,7 +24,7 @@ async function connectClient(): Promise<Client> {
   const server = createMcpServer({
     roots: { distDir: join(packageDir, "dist") },
     version: "v0.0.0",
-    sessionName: "mdmark-test",
+    serverLocation: "tmux のセッション mdmark-test",
     stderr: () => {},
   });
   const client = new Client({ name: "test", version: "0.0.0" });
@@ -61,7 +61,10 @@ test("test_create_mcp_server", async () => {
     .filter((tool) => tool.annotations?.readOnlyHint === true)
     .map((tool) => tool.name);
   expect(readOnlyNames.sort()).toEqual(["check", "list_templates"]);
-  const instructions = INSTRUCTIONS.replace("{session}", "mdmark-test");
+  const instructions = INSTRUCTIONS.replace(
+    "{location}",
+    "tmux のセッション mdmark-test",
+  );
   expect(client.getInstructions()).toBe(instructions);
   expect(instructions).toContain("mdmark-test");
   expect(instructions.length).toBeLessThanOrEqual(4096);
@@ -84,4 +87,20 @@ test("test_create_mcp_server_when_arguments_invalid", async () => {
     .join("\n");
   expect(text).not.toContain("Input validation error");
   expect(text).toContain("file");
+});
+
+// systemd なら unit とログ、ほかは tmux のセッション（正常系）
+test("test_describe_server_location", async () => {
+  // 準備
+  const { describeServerLocation } = await loadMcp();
+  // 実行・検証
+  expect(
+    describeServerLocation({ launcher: "systemd", unit: "u", session: "s" }),
+  ).toBe("systemd --user の unit u（ログは journalctl --user -u u）");
+  expect(
+    describeServerLocation({ launcher: "tmux", unit: "u", session: "s" }),
+  ).toBe("tmux のセッション s");
+  expect(
+    describeServerLocation({ launcher: undefined, unit: "u", session: "s" }),
+  ).toBe("tmux のセッション s");
 });
