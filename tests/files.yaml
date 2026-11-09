@@ -778,6 +778,14 @@ files:
         type: see_also
       - to: dev/設計書/部品設計/脚注の一覧.ts
         type: see_also
+  - path: integration/lib/frontmatter.story.test.ts
+    description: 部品設計『フロントマター』のストーリーを実際のブラウザで開き、状態ごとの描画を確認する結合テスト。部品の引数や状態を変えたときに参照する。
+    tags: [topic:結合テスト, topic:ストーリー, tool:playwright, tool:vitest, topic:フロントマター]
+    related:
+      - to: src/parts/frontmatter
+        type: tests
+      - to: dev/設計書/部品設計/フロントマター.ts
+        type: see_also
   - path: integration/lib/frame-width.story.test.ts
     description: '`frameWidth` を持つストーリーを 390px の画面幅で開き、枠が横にはみ出さないことを確認する結合テスト。ストーリーを描く枠の幅を変えたときや、`frameWidth` を持つストーリーを追加したときに参照する。'
     tags: [topic:結合テスト, topic:ストーリー, tool:playwright, tool:vitest, tool:storybook]
