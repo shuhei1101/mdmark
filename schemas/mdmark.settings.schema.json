@@ -33,6 +33,21 @@
       "description": "端末の設定だけが持つ、`/mdmark:global-setup` が常駐サーバーを起動するときの値。`mdmark.config.yaml` に書き込んでも読み込まない。",
       "type": "object",
       "properties": {
+        "launcher": {
+          "title": "常駐サーバーの起動の方法",
+          "description": "`/mdmark:global-setup` が `mdmark serve` を起動する方法。`auto` は systemd --user が使える端末では unit、使えない端末では tmux のセッションで起動する。",
+          "enum": ["auto", "systemd", "tmux"],
+          "default": "auto",
+          "examples": ["auto"]
+        },
+        "systemdUnit": {
+          "title": "常駐サーバーの systemd --user の unit の名前",
+          "description": "`/mdmark:global-setup` が `~/.config/systemd/user/{名前}.service` に作って起動する unit の名前。MCP の `instructions` もこの名前を伝える。",
+          "type": "string",
+          "pattern": "^[A-Za-z0-9_-]+$",
+          "default": "mdmark-mcp",
+          "examples": ["mdmark-mcp"]
+        },
         "tmuxSession": {
           "title": "常駐サーバーの tmux のセッション名",
           "description": "`/mdmark:global-setup` が `mdmark serve` を起動する tmux のセッション名。MCP の `instructions` もこの名前を伝える。",

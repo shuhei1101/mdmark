@@ -1,16 +1,31 @@
+import { accessSync, constants } from "node:fs";
 import { mkdir, readFile } from "node:fs/promises";
+import { dirname } from "node:path";
 import {
   Client,
   StreamableHTTPClientTransport,
 } from "@modelcontextprotocol/client";
 import { CONNECT_TIMEOUT_MS, isPortListening } from "../port.ts";
 import {
+  type Launcher,
+  type LauncherSetting,
+  readLauncherSetting,
   readSessionName,
+  readUnitName,
   readYamlFile,
   resolveSetupPaths,
+  resolveUnitPath,
   SetupError,
+  type SetupPaths,
 } from "./paths.ts";
 import { hasSession, hasTmux } from "./status.ts";
+import {
+  buildUnitFile,
+  buildUnitPathEnv,
+  hasSystemd,
+  hasUnitExited,
+  readUnitState,
+} from "./systemd.ts";
 
 /** コマンドと引数を受け、終了コードと標準出力を返却する */
 export type RunCommand = (
@@ -18,23 +33,51 @@ export type RunCommand = (
   args: string[],
 ) => Promise<{ code: number; stdout: string }>;
 
+/** ファイルを書き込む */
+export type WriteTextFile = (path: string, data: string) => Promise<void>;
+
+/** 待つ */
+export type Sleep = (ms: number) => Promise<void>;
+
 /** `MDMARK_START_TIMEOUT_SEC` が無いときの、待ち受けを待つ上限の秒数 */
 export const START_TIMEOUT_SEC = 120;
 
 /** 待ち受けを確認する間隔（ミリ秒） */
 export const POLL_INTERVAL_MS = 1000;
 
+/** 移し替えで止めた常駐サーバーのポートが解放されるまで待つ上限の秒数 */
+export const PORT_RELEASE_TIMEOUT_SEC = 10;
+
 /** 失敗したときに添えるログの末尾の行数 */
 const LOG_TAIL_LINES = 20;
+
+/** `start-server` で行った変更 */
+export type StartChange =
+  | "unit_written"
+  | "unit_disabled"
+  | "tmux_session_closed";
 
 /** `start-server` の結果 */
 export type StartResult = {
   result: "started" | "already_running" | "restarted";
-  session: string;
+  launcher: Launcher;
+  changes: StartChange[];
+  unit: string | null;
+  session: string | null;
   url: string;
   tools: string[];
   log: string;
   stop: string;
+};
+
+/** 使用する起動の方法と、起動しないほうの方法で動いている常駐サーバーを止めるか */
+export type LauncherChoice = { launcher: Launcher; migrate: boolean };
+
+/** 起動の結果のうち、起動の方法ごとの処理が決める部分 */
+type LaunchOutcome = {
+  result: StartResult["result"];
+  changes: StartChange[];
+  launcher: Launcher;
 };
 
 /** 一重引用符で囲み、中の一重引用符を `'\''` にする */
@@ -59,6 +102,8 @@ export const buildTmuxArgs = (options: {
   `MDMARK_CONFIG=${options.settingsPath}`,
   "-e",
   `MDMARK_STATE_DIR=${options.stateDir}`,
+  "-e",
+  "MDMARK_LAUNCHER=tmux",
   "sh",
   "-c",
   `${options.command} 2>&1 | tee -a ${quote(options.logPath)}`,
@@ -97,6 +142,46 @@ const readLogTail = async (path: string): Promise<string> => {
   }
 };
 
+/** unit の journal の末尾を読み込む */
+const readJournalTail = async (options: {
+  run: RunCommand;
+  unit: string;
+}): Promise<string> =>
+  (
+    await options.run("journalctl", [
+      "--user",
+      "-u",
+      options.unit,
+      "-n",
+      String(LOG_TAIL_LINES),
+      "--no-pager",
+      "-o",
+      "cat",
+    ])
+  ).stdout.trimEnd();
+
+/** 今の unit のファイルを読み込む。無ければ `undefined` */
+const readUnitFile = async (path: string): Promise<string | undefined> => {
+  try {
+    return await readFile(path, "utf8");
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code === "ENOENT") {
+      return undefined;
+    }
+    throw error;
+  }
+};
+
+/** ファイルが実行できるか */
+const isExecutable = (file: string): boolean => {
+  try {
+    accessSync(file, constants.X_OK);
+    return true;
+  } catch {
+    return false;
+  }
+};
+
 /** 待ち受けを待つ上限の秒数を読み込む */
 const readTimeoutSec = (env: NodeJS.ProcessEnv): number => {
   const value = env.MDMARK_START_TIMEOUT_SEC;
@@ -111,64 +196,211 @@ const readTimeoutSec = (env: NodeJS.ProcessEnv): number => {
   return Number(value);
 };
 
-/** `start-server`: tmux のセッションで `mdmark serve` を起動し、待ち受けと `tools/list` を確認する */
-export const startServer = async (options: {
-  env: NodeJS.ProcessEnv;
-  pluginRoot: string;
-  version: string;
-  run: RunCommand;
-  sleep: (ms: number) => Promise<void>;
-}): Promise<StartResult> => {
-  const { env, run, sleep } = options;
-  const paths = resolveSetupPaths(env);
-  const command =
-    env.MDMARK_SERVE_COMMAND ||
-    `npx -y github:shuhei1101/mdmark#${options.version} serve`;
-  if (!(await hasTmux(run))) {
+/** ポートが使用されているときの誤り */
+const portInUse = (port: number, detail: string): SetupError =>
+  new SetupError(
+    `ポート ${port} で ${detail}。ほかのプロセスが使用しているときは、~/.claude/settings.json の env の MDMARK_PORT を空いたポートに変え、セッションをもう一度開いて /mdmark:global-setup をもう一度呼んでください。`,
+  );
+
+/** 引数・端末の設定・使用できる方法から、使用する起動の方法と移し替えをするかを決める */
+export const resolveLauncher = (options: {
+  argument: Launcher | undefined;
+  setting: LauncherSetting;
+  systemdAvailable: boolean;
+  tmuxAvailable: boolean;
+  command: string;
+  port: number;
+}): LauncherChoice => {
+  const fromSetting =
+    options.setting === "auto"
+      ? options.systemdAvailable
+        ? "systemd"
+        : "tmux"
+      : options.setting;
+  const launcher = options.argument ?? fromSetting;
+  const usable =
+    launcher === "systemd" ? options.systemdAvailable : options.tmuxAvailable;
+  if (!usable) {
+    const missing =
+      options.argument === undefined && options.setting === "auto"
+        ? "systemd --user も tmux も使えません"
+        : launcher === "systemd"
+          ? "systemd --user が使えません"
+          : "tmux が見つかりません";
     throw new SetupError(
-      `tmux が見つかりません。端末を開いたまま次のコマンドで常駐サーバーを動かしてください: MDMARK_PORT=${paths.port} ${command}`,
+      `${missing}。端末を開いたまま次のコマンドで常駐サーバーを動かしてください: MDMARK_PORT=${options.port} ${options.command}`,
       2,
     );
   }
-  const settings = await readYamlFile({
-    path: paths.settingsPath,
-    readFile: (path) => readFile(path, "utf8"),
-  });
-  const session = readSessionName(settings?.raw);
-  const listening = () =>
-    isPortListening({ port: paths.port, timeoutMs: CONNECT_TIMEOUT_MS });
-  const portInUse = (detail: string) =>
-    new SetupError(
-      `ポート ${paths.port} で ${detail}。ほかのプロセスが使用しているときは、~/.claude/settings.json の env の MDMARK_PORT を空いたポートに変え、セッションをもう一度開いて /mdmark:global-setup をもう一度呼んでください。`,
-    );
-  const done = async (result: StartResult["result"]): Promise<StartResult> => {
-    let tools: string[];
-    try {
-      tools = await listToolNames({ port: paths.port });
-    } catch (error) {
+  return { launcher, migrate: options.argument === undefined };
+};
+
+/** `POLL_INTERVAL_MS` ごとに、終わったか・待ち受けたか・上限を超えたかを確認する */
+export const waitForListening = async (options: {
+  port: number;
+  timeoutSec: number;
+  hasExited: () => Promise<boolean>;
+  sleep: Sleep;
+}): Promise<"listening" | "exited" | "timed_out"> => {
+  const deadline = Date.now() + options.timeoutSec * 1000;
+  for (;;) {
+    if (await options.hasExited()) {
+      return "exited";
+    }
+    if (
+      await isPortListening({
+        port: options.port,
+        timeoutMs: CONNECT_TIMEOUT_MS,
+      })
+    ) {
+      return "listening";
+    }
+    if (Date.now() >= deadline) {
+      return "timed_out";
+    }
+    await options.sleep(POLL_INTERVAL_MS);
+  }
+};
+
+/** 止めた常駐サーバーのポートが解放されるまで待つ。上限を超えたら `SetupError`（1） */
+const waitForPortReleased = async (options: {
+  port: number;
+  sleep: Sleep;
+}): Promise<void> => {
+  const deadline = Date.now() + PORT_RELEASE_TIMEOUT_SEC * 1000;
+  while (
+    await isPortListening({ port: options.port, timeoutMs: CONNECT_TIMEOUT_MS })
+  ) {
+    if (Date.now() >= deadline) {
       throw portInUse(
-        `待ち受けているプロセスから MCP のツールの一覧を受け取れません（${error instanceof Error ? error.message : String(error)}）`,
+        options.port,
+        `止めた常駐サーバーの待ち受けが ${PORT_RELEASE_TIMEOUT_SEC} 秒の間に解放されません`,
       );
     }
+    await options.sleep(POLL_INTERVAL_MS);
+  }
+};
+
+/** 起動の方法ごとの処理が受け取る値 */
+type LaunchOptions = {
+  env: NodeJS.ProcessEnv;
+  paths: SetupPaths;
+  unit: string;
+  session: string;
+  command: string;
+  migrate: boolean;
+  run: RunCommand;
+  sleep: Sleep;
+};
+
+/** unit のファイルを記載し、`daemon-reload`・`enable --now` か `restart` で起動して待ち受けを待つ */
+const startWithSystemd = async (
+  options: LaunchOptions & { writeFile: WriteTextFile },
+): Promise<LaunchOutcome> => {
+  const { paths, unit, run, sleep } = options;
+  const changes: StartChange[] = [];
+  if (
+    options.migrate &&
+    (await hasSession({ run, session: options.session }))
+  ) {
+    await run("tmux", ["kill-session", "-t", `=${options.session}`]);
+    changes.push("tmux_session_closed");
+    await waitForPortReleased({ port: paths.port, sleep });
+  }
+  const unitPath = resolveUnitPath({ env: options.env, unit });
+  const content = buildUnitFile({
+    port: paths.port,
+    settingsPath: paths.settingsPath,
+    stateDir: paths.stateDir,
+    path: buildUnitPathEnv({ path: options.env.PATH, isExecutable }),
+    command: options.command,
+  });
+  const same = (await readUnitFile(unitPath)) === content;
+  const state = await readUnitState({ run, unit });
+  const active = state.activeState === "active";
+  const listening = await isPortListening({
+    port: paths.port,
+    timeoutMs: CONNECT_TIMEOUT_MS,
+  });
+  if (active && same && listening) {
+    if (!state.enabled) {
+      await run("systemctl", ["--user", "enable", unit]);
+    }
+    return { result: "already_running", changes, launcher: "systemd" };
+  }
+  if (!active && listening) {
+    throw portInUse(
+      paths.port,
+      `unit ${unit} の外のプロセスが待ち受けているため、起動していません`,
+    );
+  }
+  if (!same) {
+    await mkdir(dirname(unitPath), { recursive: true });
+    await options.writeFile(unitPath, content);
+    await run("systemctl", ["--user", "daemon-reload"]);
+    changes.push("unit_written");
+  }
+  if (active) {
+    await run("systemctl", ["--user", "restart", unit]);
+  } else {
+    await run("systemctl", ["--user", "enable", "--now", unit]);
+  }
+  const waited = await waitForListening({
+    port: paths.port,
+    timeoutSec: readTimeoutSec(options.env),
+    hasExited: async () => hasUnitExited(await readUnitState({ run, unit })),
+    sleep,
+  });
+  if (waited === "listening") {
     return {
-      result,
-      session,
-      url: `http://127.0.0.1:${paths.port}/mcp`,
-      tools,
-      log: paths.logPath,
-      stop: `tmux kill-session -t =${session}`,
+      result: active ? "restarted" : "started",
+      changes,
+      launcher: "systemd",
     };
-  };
+  }
+  await run("systemctl", ["--user", "disable", "--now", unit]);
+  const journal = await readJournalTail({ run, unit });
+  if (waited === "exited") {
+    throw new SetupError(
+      `mdmark serve が終わったため、unit ${unit} を止めました。journalctl --user -u ${unit} の末尾:\n${journal}\nポートが使用されているときは、~/.claude/settings.json の env の MDMARK_PORT を空いたポートに変え、セッションをもう一度開いて /mdmark:global-setup をもう一度呼んでください。`,
+    );
+  }
+  throw new SetupError(
+    `常駐サーバーが待ち受けるまでの上限を超えたため、unit ${unit} を止めました。journalctl --user -u ${unit} の末尾:\n${journal}\n取得に時間がかかっているので、もう一度 /mdmark:global-setup を呼んでください。`,
+    3,
+  );
+};
+
+/** tmux のセッションで `mdmark serve` を起動して待ち受けを待つ */
+const startWithTmux = async (
+  options: LaunchOptions & { systemdAvailable: boolean },
+): Promise<LaunchOutcome> => {
+  const { paths, unit, session, run, sleep } = options;
+  const changes: StartChange[] = [];
+  const listening = () =>
+    isPortListening({ port: paths.port, timeoutMs: CONNECT_TIMEOUT_MS });
+  if (options.systemdAvailable) {
+    const state = await readUnitState({ run, unit });
+    const active = state.activeState === "active";
+    if (options.migrate && (active || state.enabled)) {
+      await run("systemctl", ["--user", "disable", "--now", unit]);
+      changes.push("unit_disabled");
+      await waitForPortReleased({ port: paths.port, sleep });
+    } else if (!options.migrate && active && (await listening())) {
+      return { result: "already_running", changes, launcher: "systemd" };
+    }
+  }
   let result: StartResult["result"] = "started";
   if (await hasSession({ run, session })) {
     if (await listening()) {
-      return await done("already_running");
+      return { result: "already_running", changes, launcher: "tmux" };
     }
     await run("tmux", ["kill-session", "-t", `=${session}`]);
     result = "restarted";
   }
   if (await listening()) {
     throw portInUse(
+      paths.port,
       `セッション ${session} の外のプロセスが待ち受けているため、起動していません`,
     );
   }
@@ -181,26 +413,95 @@ export const startServer = async (options: {
       settingsPath: paths.settingsPath,
       stateDir: paths.stateDir,
       logPath: paths.logPath,
-      command,
+      command: options.command,
     }),
   );
-  const deadline = Date.now() + readTimeoutSec(env) * 1000;
-  for (;;) {
-    if (!(await hasSession({ run, session }))) {
-      throw new SetupError(
-        `mdmark serve が終わりました。${paths.logPath} の末尾:\n${await readLogTail(paths.logPath)}\nポートが使用されているときは、~/.claude/settings.json の env の MDMARK_PORT を空いたポートに変え、セッションをもう一度開いて /mdmark:global-setup をもう一度呼んでください。`,
-      );
-    }
-    if (await listening()) {
-      return await done(result);
-    }
-    if (Date.now() >= deadline) {
-      await run("tmux", ["kill-session", "-t", `=${session}`]);
-      throw new SetupError(
-        `常駐サーバーが待ち受けるまでの上限を超えたため、セッション ${session} を閉じました。${paths.logPath} の末尾:\n${await readLogTail(paths.logPath)}\n取得に時間がかかっているので、もう一度 /mdmark:global-setup を呼んでください。`,
-        3,
-      );
-    }
-    await sleep(POLL_INTERVAL_MS);
+  const waited = await waitForListening({
+    port: paths.port,
+    timeoutSec: readTimeoutSec(options.env),
+    hasExited: async () => !(await hasSession({ run, session })),
+    sleep,
+  });
+  if (waited === "listening") {
+    return { result, changes, launcher: "tmux" };
   }
+  if (waited === "exited") {
+    throw new SetupError(
+      `mdmark serve が終わりました。${paths.logPath} の末尾:\n${await readLogTail(paths.logPath)}\nポートが使用されているときは、~/.claude/settings.json の env の MDMARK_PORT を空いたポートに変え、セッションをもう一度開いて /mdmark:global-setup をもう一度呼んでください。`,
+    );
+  }
+  await run("tmux", ["kill-session", "-t", `=${session}`]);
+  throw new SetupError(
+    `常駐サーバーが待ち受けるまでの上限を超えたため、セッション ${session} を閉じました。${paths.logPath} の末尾:\n${await readLogTail(paths.logPath)}\n取得に時間がかかっているので、もう一度 /mdmark:global-setup を呼んでください。`,
+    3,
+  );
+};
+
+/** `start-server`: 起動の方法を決め、systemd --user の unit か tmux のセッションで `mdmark serve` を起動し、待ち受けと `tools/list` を確認する */
+export const startServer = async (options: {
+  env: NodeJS.ProcessEnv;
+  pluginRoot: string;
+  version: string;
+  launcher: Launcher | undefined;
+  run: RunCommand;
+  sleep: Sleep;
+  writeFile: WriteTextFile;
+}): Promise<StartResult> => {
+  const { env, run, sleep } = options;
+  const paths = resolveSetupPaths(env);
+  const command =
+    env.MDMARK_SERVE_COMMAND ||
+    `npx -y github:shuhei1101/mdmark#${options.version} serve`;
+  const settings = await readYamlFile({
+    path: paths.settingsPath,
+    readFile: (path) => readFile(path, "utf8"),
+  });
+  const unit = readUnitName(settings?.raw);
+  const session = readSessionName(settings?.raw);
+  const systemdAvailable = await hasSystemd(run);
+  const choice = resolveLauncher({
+    argument: options.launcher,
+    setting: readLauncherSetting(settings?.raw),
+    systemdAvailable,
+    tmuxAvailable: await hasTmux(run),
+    command,
+    port: paths.port,
+  });
+  const launch: LaunchOptions = {
+    env,
+    paths,
+    unit,
+    session,
+    command,
+    migrate: choice.migrate,
+    run,
+    sleep,
+  };
+  const outcome =
+    choice.launcher === "systemd"
+      ? await startWithSystemd({ ...launch, writeFile: options.writeFile })
+      : await startWithTmux({ ...launch, systemdAvailable });
+  let tools: string[];
+  try {
+    tools = await listToolNames({ port: paths.port });
+  } catch (error) {
+    throw portInUse(
+      paths.port,
+      `待ち受けているプロセスから MCP のツールの一覧を受け取れません（${error instanceof Error ? error.message : String(error)}）`,
+    );
+  }
+  const bySystemd = outcome.launcher === "systemd";
+  return {
+    result: outcome.result,
+    launcher: outcome.launcher,
+    changes: outcome.changes,
+    unit: bySystemd ? unit : null,
+    session: bySystemd ? null : session,
+    url: `http://127.0.0.1:${paths.port}/mcp`,
+    tools,
+    log: bySystemd ? `journalctl --user -u ${unit}` : paths.logPath,
+    stop: bySystemd
+      ? `systemctl --user disable --now ${unit}`
+      : `tmux kill-session -t =${session}`,
+  };
 };

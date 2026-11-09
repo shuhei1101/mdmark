@@ -14,7 +14,7 @@ import {
   type McpHttpHandler,
   originValidationResponse,
 } from "@modelcontextprotocol/server";
-import { createMcpServer } from "./mcp.ts";
+import { createMcpServer, describeServerLocation } from "./mcp.ts";
 import {
   DEFAULT_PORT,
   INVALID_PORT_MESSAGE,
@@ -22,8 +22,8 @@ import {
   readPort,
 } from "./port.ts";
 import {
-  DEFAULT_SESSION_NAME,
   readSessionName,
+  readUnitName,
   readYamlFile,
   resolveSetupPaths,
   SetupError,
@@ -45,20 +45,32 @@ export const PORT_IN_USE_MESSAGE =
 /** 本文を持たない HTTP のメソッド */
 const BODYLESS_METHODS = ["GET", "HEAD"];
 
-/** 端末の設定の tmux のセッション名を読み込む。端末の設定を読み込めなければ `DEFAULT_SESSION_NAME` にする（読み込めないことは `mdmark check` が通知する） */
-async function readServeSessionName(env: NodeJS.ProcessEnv): Promise<string> {
+/** 端末の設定を読み込む。読み込めなければ `undefined` にする（読み込めないことは `mdmark check` が通知する） */
+async function readServeSettings(
+  env: NodeJS.ProcessEnv,
+): Promise<Record<string, unknown> | undefined> {
   try {
     const settings = await readYamlFile({
       path: resolveSetupPaths(env).settingsPath,
       readFile: (path) => readFile(path, "utf8"),
     });
-    return readSessionName(settings?.raw);
+    return settings?.raw;
   } catch (error) {
     if (error instanceof SetupError) {
-      return DEFAULT_SESSION_NAME;
+      return undefined;
     }
     throw error;
   }
+}
+
+/** `MDMARK_LAUNCHER` と端末の設定の unit の名前・tmux のセッション名から、常駐サーバーが動いている場所の文を作る */
+async function readServeLocation(env: NodeJS.ProcessEnv): Promise<string> {
+  const settings = await readServeSettings(env);
+  return describeServerLocation({
+    launcher: env.MDMARK_LAUNCHER,
+    unit: readUnitName(settings),
+    session: readSessionName(settings),
+  });
 }
 
 /** パス・Host・Origin を確認し、通った要求だけを MCP のハンドラーへ指定する。パスが違えば 404、Host か Origin が localhost でなければ 403 を返却する */
@@ -184,10 +196,10 @@ export async function runServe(options: {
   const roots: ServerRoots = {
     distDir: join(packageDir, "dist"),
   };
-  const sessionName = await readServeSessionName(env);
+  const serverLocation = await readServeLocation(env);
   // 要求ごとに MCP サーバーを作る（セッションの状態を持たない）
   const handler = createMcpHandler(
-    () => createMcpServer({ roots, version, sessionName, stderr }),
+    () => createMcpServer({ roots, version, serverLocation, stderr }),
     { onerror: (error) => stderr(`[error] ${error.message}`) },
   );
   const server = createServer((req, res) => {
