@@ -97,8 +97,8 @@ export default defineConfig({
           include: ["tests/integration/**/*.story.test.ts"],
           globalSetup: ["tests/integration/storybook-setup.ts"],
           testTimeout: 60_000,
-          // 各ファイルの beforeAll が共有の Chromium に接続する。接続の上限（tests/integration/storybook-setup.ts の CONNECT_TIMEOUT_MS の 50 ミリ秒）に、その 50% の余裕を足した
-          hookTimeout: 75,
+          // 各ファイルの beforeAll の接続と、テストの終わりにページを閉じる処理のハングを検知する。外側の作業の上限の testTimeout と同じ値
+          hookTimeout: 60_000,
           maxWorkers: INTEGRATION_MAX_WORKERS,
           sequence: { groupOrder: INTEGRATION_GROUP_ORDER },
         },

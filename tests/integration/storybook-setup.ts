@@ -21,10 +21,10 @@ const READY_TIMEOUT_MS = 180_000;
 const POLL_INTERVAL_MS = 1_000;
 // 起動する試行の上限
 const START_ATTEMPTS = 3;
-/** 共有の Chromium への接続を待つ上限（ミリ秒。結合テストの全件の実行で測った接続 62 回の p99.9 の 33 ミリ秒に、その 50% の余裕を足した） */
-export const CONNECT_TIMEOUT_MS = 50;
-/** Chromium の起動を待つ上限（ミリ秒。測った起動 12 回（結合テストの全件の実行の中の 2 回を含む）の p99.9 の 46 ミリ秒に、その 50% の余裕を足した） */
-export const LAUNCH_TIMEOUT_MS = 69;
+/** 共有の Chromium への接続を待つ上限（ミリ秒。ハングの検知だけが役目のため、外側の beforeAll の上限 60 秒の内側に収め、残りを余裕にする） */
+export const CONNECT_TIMEOUT_MS = 30_000;
+/** Chromium の起動を待つ上限（ミリ秒。ハングの検知だけが役目のため、接続と同じ値にする） */
+export const LAUNCH_TIMEOUT_MS = 30_000;
 /** 最初のストーリーを開いて、Vite が依存をまとめ終えるまで待つ上限（ミリ秒。測った起動の直後の読み込み 56 秒の約 5 倍） */
 export const WARM_UP_TIMEOUT_MS = 300_000;
 /** 温めに開くストーリー（React の部品と、部品の HTML の描画のインターフェースの両方を経由する） */
