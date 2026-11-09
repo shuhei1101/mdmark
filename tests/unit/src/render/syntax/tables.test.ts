@@ -163,20 +163,21 @@ test("test_read_table_spec_when_columns", async () => {
     args: ["data"],
     keys: { pin: "物理名", wide: "説明", check: "必須,既定" },
   };
+  const headers = ["No", "物理名", "説明", "必須", "既定"];
+  const manyPins = { args: ["data"], keys: { pin: "物理名,No" } };
   // 実行
-  const spec = readTableSpec(
-    args,
-    ["No", "物理名", "説明", "必須", "既定"],
-    10,
-  );
+  const spec = readTableSpec(args, headers, 10);
+  const many = readTableSpec(manyPins, headers, 10);
   // 検証
-  expect(spec.pin).toBe(1);
+  expect(spec.pin).toEqual([1]);
   expect(spec.wide).toEqual([2]);
   expect(spec.check).toEqual([3, 4]);
   expect(spec.warnings).toEqual([]);
+  expect(many.pin).toEqual([0, 1]);
+  expect(many.warnings).toEqual([]);
 });
 
-// 表に無い列名と pin の無い表の pin= を警告にして適用しない（正常系）
+// 表に無い列名と pin の無い表の pin= を警告にして適用せず、pin= は読めた列名だけを適用する（正常系）
 test("test_read_table_spec_when_column_keys_invalid", async () => {
   // 準備
   const { readTableSpec } = await loadTables();
@@ -186,9 +187,11 @@ test("test_read_table_spec_when_column_keys_invalid", async () => {
     keys: { pin: "無い列", wide: "説明", check: "無い列" },
   };
   const withoutPin = { args: ["data", "-pin"], keys: { pin: "名前" } };
+  const partlyUnknown = { args: ["data"], keys: { pin: "名前,無い列" } };
   // 実行
   const first = readTableSpec(unknownColumns, headers, 10);
   const second = readTableSpec(withoutPin, headers, 10);
+  const third = readTableSpec(partlyUnknown, headers, 10);
   // 検証: 表に無い列名
   expect(first.pin).toBeUndefined();
   expect(first.wide).toEqual([1]);
@@ -202,6 +205,9 @@ test("test_read_table_spec_when_column_keys_invalid", async () => {
   expect(second.warnings).toHaveLength(1);
   expect(second.warnings[0]?.label).toBe("pin=");
   expect(second.warnings[0]?.message).toContain("`+pin`");
+  // 検証: 読めない列名だけを警告にし、読めた列名は適用する
+  expect(third.pin).toEqual([0]);
+  expect(third.warnings.map((warning) => warning.label)).toEqual(["無い列"]);
 });
 
 // 見出しと前の行に重ならない ID を作る（正常系）

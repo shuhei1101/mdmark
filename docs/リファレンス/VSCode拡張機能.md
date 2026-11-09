@@ -259,6 +259,7 @@ colorTheme: theme-slate
 | `html-scripts.url` | 範囲のスクリプトの変換のライブラリ。`http:`・`https:` の URL はそのまま、相対 URL はその値を記載した設定ファイルのフォルダを基準に解決して、`mount` の `opts.config.html-scripts.url` に指定する。書き出す HTML には、文書に `ts`・`js` の範囲があるとき相対 URL のモジュールを埋める |
 | `colorTheme` | 配色のテーマ。`mdmark.colorTheme` が空のときだけ、記載した値をそのまま `mount` の `opts.config.colorTheme` に指定する。空でないときは `mdmark.colorTheme` の値に置き換える |
 | `side-toc` | 右側の目次の出し方。値がマップのときだけ、記載した値をそのまま `mount` の `opts.config["side-toc"]` に指定する |
+| `table` | 表の設定。値がマップのときだけ、記載した値をそのまま `mount` の `opts.config.table` に指定する（`pin` は[表のピン止めの動き](./設定.md#表のピン止めの動き)） |
 | `labels` | 部品の文言。値がマップのときだけ、記載した値をそのまま `mount` の `opts.config.labels` に指定する |
 | `colorScheme` | 配色の明暗。プレビューでは `mdmark.preview.theme` が `auto` のときだけ、書き出す HTML ではいつも、記載した値をそのまま `mount` の `opts.config.colorScheme` に指定する |
 | `assets.root` | アセットのルート。Markdown のフォルダからの相対パスに無い画像・動画・音声を、その値を記載した設定ファイルのフォルダからのこのフォルダで同じ相対パスで探す。`mount` には指定しない |

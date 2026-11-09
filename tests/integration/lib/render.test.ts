@@ -607,25 +607,44 @@ test("test_normal_when_table_columns_specified", async () => {
     "",
     "<!-- /table -->",
     "",
+    "<!-- table: data pin=No,物理名 -->",
+    "",
+    "| No | 物理名 | 説明 | 必須 | 既定 |",
+    "| --- | --- | --- | --- | --- |",
+    "| 1 | id | 行の ID | true | true |",
+    "| 2 | name | 表示する名前 | false | false |",
+    "",
+    "<!-- /table -->",
+    "",
   ].join("\n");
   // 実行
   const html = render(markdown);
   // 検証: 囲みの属性
-  const wrapper = findTag(html, '<div class="mdmark-table"');
+  const [first = "", second = ""] = html
+    .split('<div class="mdmark-table"')
+    .slice(1);
+  const wrapper = findTag(
+    `<div class="mdmark-table"${first}`,
+    '<div class="mdmark-table"',
+  );
   expect(wrapper).toContain('data-kind="data"');
   expect(wrapper).toContain('data-pin="1"');
   expect(wrapper).toContain('data-check="3"');
+  // 検証: 2 つ目の表は 2 つの列の位置を空白で区切る
+  expect(
+    findTag(`<div class="mdmark-table"${second}`, '<div class="mdmark-table"'),
+  ).toContain('data-pin="0 1"');
   // 検証: 説明の列の th と 2 つの td
-  const wide = findTags(html, "mdmark-wide");
+  const wide = findTags(first, "mdmark-wide");
   expect(wide.filter((tag) => tag.startsWith("<th"))).toHaveLength(1);
   expect(wide.filter((tag) => tag.startsWith("<td"))).toHaveLength(2);
   // 検証: 必須の列の th と 2 つの td
-  const centered = findTags(html, "mdmark-align-center");
+  const centered = findTags(first, "mdmark-align-center");
   expect(centered.filter((tag) => tag.startsWith("<th"))).toHaveLength(1);
   expect(centered.filter((tag) => tag.startsWith("<td"))).toHaveLength(2);
   // 検証: 必須の列の真偽値のセル
   const [yes = "", no = ""] = matches(
-    html,
+    first,
     /<td\b[^>]*mdmark-align-center[^>]*>[\s\S]*?<\/td>/g,
   );
   expect(yes).toContain('data-value="true"');
@@ -639,7 +658,7 @@ test("test_normal_when_table_columns_specified", async () => {
   );
   // 検証: 既定の列は文字のまま
   const defaults = matches(
-    html,
+    first,
     /<td\b[^>]*data-label="既定"[^>]*>[^<]*<\/td>/g,
   );
   expect(defaults.map((cell) => plainText(cell))).toEqual(["true", "false"]);
@@ -668,13 +687,16 @@ test("test_normal_when_table_column_errors", async () => {
     "<!-- table: data -pin pin=名前 -->",
     "",
     ...table,
+    "<!-- table: data pin=名前,無い列 -->",
+    "",
+    ...table,
   ].join("\n");
   // 実行
   const html = render(markdown);
   // 検証
   const wrappers = html.split('<div class="mdmark-table"').slice(1);
-  expect(wrappers).toHaveLength(2);
-  const [a, b] = wrappers as [string, string];
+  expect(wrappers).toHaveLength(3);
+  const [a, b, c] = wrappers as [string, string, string];
   const wrapperTag = (part: string): string => part.slice(0, part.indexOf(">"));
   // 表 A: 広く取る列だけを当て、表に無い列名ごとに警告を出す
   expect(findTags(a, "mdmark-wide")).toHaveLength(2);
@@ -698,9 +720,18 @@ test("test_normal_when_table_column_errors", async () => {
   expect(warningsB).toHaveLength(1);
   expect(warningsB[0]).toContain("pin=");
   expect(warningsB[0]).toContain("+pin");
+  // 表 C: 読めた列名は当て、表に無い列名だけを警告にする
+  expect(wrapperTag(c)).toContain('data-pin="0"');
+  const warningsC = c
+    .slice(0, c.indexOf("<table"))
+    .split('<div class="mdmark-syntax-warning"')
+    .slice(1);
+  expect(warningsC).toHaveLength(1);
+  expect(warningsC[0]).toContain("無い列");
+  expect(plainText(warningsC[0] ?? "")).not.toMatch(/名前(?!,)/);
   expect(
     html.match(/<div class="mdmark-syntax-warning" role="note">/g),
-  ).toHaveLength(3);
+  ).toHaveLength(4);
 });
 
 // 文書に生の HTML で記載した記法の class・data-*・id を落とす（正常系）
