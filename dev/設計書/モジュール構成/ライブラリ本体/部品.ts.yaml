@@ -1979,15 +1979,15 @@ functions:
     container: src/parts/frontmatter.ts
     kind: 関数
     scope: internal
-    summary: 見出し `フロントマター` の閉じた折りたたみ（`renderCollapsible`、class `mdmark-frontmatter` を加える）に、yaml のコードブロックの HTML を入れ、`data-source-line="0"` を付けて返却する
+    summary: 見出し `フロントマター` の閉じた折りたたみ（`renderCollapsible`、class `mdmark-frontmatter` を加える）に、中身の HTML を入れて返却する
     args:
       - name: options
-        type: '{ codeHtml: string }'
+        type: '{ body: string }'
         required: true
-        description: フロントマターの中身を言語 `yaml` のコードブロックとして描いた HTML
+        description: 中身の HTML（`insertFrontmatter` は `SLOT_MARKER` を指定し、前後に分けて fence のトークンを挟む）
     returns:
       type: string
-      description: '`<details class="mdmark-collapsible mdmark-frontmatter" data-source-line="0">` で始まる HTML'
+      description: '`<details class="mdmark-collapsible mdmark-frontmatter">` で始まる HTML'
     callees:
       - '#functions[renderCollapsible]'
     refs:
@@ -1995,10 +1995,10 @@ functions:
     unit_tests:
       - name: test_render_frontmatter
         case: 正常
-        summary: 閉じた折りたたみにコードブロックを入れ、元の行番号の 0 を付ける
-        condition: '`codeHtml: "<pre><code class=\"language-yaml\">title: a</code></pre>"`'
+        summary: 閉じた折りたたみに中身を入れる
+        condition: '`body: "<pre></pre>"`'
         mock: なし
-        expected: '`<details class="mdmark-collapsible mdmark-frontmatter" data-source-line="0"><summary>フロントマター</summary>` で始まり、`open` を持たず、`codeHtml` をそのまま持つ'
+        expected: '`<details class="mdmark-collapsible mdmark-frontmatter"><summary>フロントマター</summary><pre></pre></details>`（`open` を持たない）'
     status: planned
     introduced:
       pr: 422

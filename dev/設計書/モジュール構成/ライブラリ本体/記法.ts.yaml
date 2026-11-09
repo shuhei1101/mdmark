@@ -3,6 +3,7 @@ lead: マーカーと記法を HTML にする markdown-it のコアルール。�
 directory: |-
   ```tree
   src/render/syntax/
+  ├── frontmatter.ts  # 文書の先頭のフロントマターの表示を差し込むコアルール
   ├── headings.ts     # 見出しの ID とアンカー
   ├── sections.ts     # セクションの囲み
   ├── tables.ts       # 表の種類・機能・絞り込みと、表の属性・列と行の色・多段の見出しと行見出しとセルの結合
@@ -3310,11 +3311,53 @@ functions:
       type: WarningItem
       description: 警告の項目
     status: planned
+  - name: insertFrontmatter
+    title: フロントマターの表示を差し込む
+    container: src/render/syntax/frontmatter.ts
+    kind: 関数
+    scope: internal
+    summary: コアルール（機能を決めた後、取り込みの後、コードブロックの飾りより前）。`frontmatter` がオンで `env.frontmatter` の中身が空白だけでないとき、中身を持つ `fence` のトークン（`info` は `yaml`、`map` はフロントマターの 2 行目から閉じる行まで）を作り、その前後に `renderFrontmatter` の HTML を `SLOT_MARKER` で分けた `ownBlock` を置いて、`state.tokens` の先頭に入れる
+    description: コードブロックの描き方（言語のラベル・コピーのボタン・色分け）は、差し込んだ `fence` に後のコアルールと `renderer.rules.fence` がそのまま当てる。`ownBlock` が `nonce` の印を付けるため、`sanitize` の後も折りたたみの class が残る。取り込んだ文書（`expandIncludes`）はこのルールを通らず、表示を持たない
+    args:
+      - name: state
+        type: StateCore
+        required: true
+        description: markdown-it の状態。`state.env.frontmatter` を読む
+    side_effects: '`state.tokens` の先頭に 3 つのトークンを入れる'
+    callees:
+      - '#functions[featureOn]'
+      - '#functions[ownBlock]'
+      - dev/設計書/モジュール構成/ライブラリ本体/部品.ts#functions[renderFrontmatter]
+    refs:
+      - dev/設計書/インターフェース定義/ライブラリ本体/文書をHTML文字列にする.ts#constraints[フロントマター]
+    unit_tests:
+      - name: test_insert_frontmatter
+        case: 正常
+        summary: 機能がオンなら、折りたたみの開きと閉じの間に yaml の fence を入れる
+        condition: '`env.frontmatter` が `{ content: "title: a", endLine: 2 }`、`features.frontmatter` が `true`'
+        mock: なし
+        expected: '`state.tokens` の先頭が `html_block`（`mdmark-frontmatter` を持ち `data-mdmark-own` の印を持つ）・`fence`（`info` が `yaml`、`content` が `title: a\n`、`map` が `[1, 3]`）・`html_block`（`</details>`）'
+      - name: test_insert_frontmatter_when_off
+        case: 正常
+        summary: 機能がオフなら何も入れない
+        condition: 同じ `env.frontmatter`、`features.frontmatter` が `false`
+        mock: なし
+        expected: '`state.tokens` が変わらない'
+      - name: test_insert_frontmatter_when_blank
+        case: 正常
+        summary: 中身が空白だけなら何も入れない
+        condition: '`env.frontmatter` が `{ content: "  ", endLine: 2 }`、`features.frontmatter` が `true`'
+        mock: なし
+        expected: '`state.tokens` が変わらない'
+    status: planned
+    introduced:
+      pr: 422
 notes:
   コアルールの順: 描画の `createParser` が登録する。マーカー → 機能の重ね合わせ → ページの設定 → 取り込み → 蛍光ペン → 脚注の機能のオン・オフ → カードの格子 → 行内のアイコン → 見出し → 用語集の表 → 行の詳細 → ビュー → CSV の表 → 表 → タブ → ステップ → 注意書き → ファイルツリー → バッジ → キー → 本文の文字の色 → 図の部品 → 埋め込んだ HTML → コードブロック → 表の見本の移動 → 画像の属性と種類 → 図表の番号 → ギャラリー → 画像と動画と音声の図 → カード → 段組み → details の範囲 → wide の範囲 → 改ページ → 用語の下線 → セクション → 目次 → 脚注の一覧 → 関連文書の一覧 → タスクリスト → www の自動リンク → 残ったマーカーを取り除く → 元の行番号 → 脚注の定義の取り出し → 記載の警告を集める。行の詳細は表の囲みより前、セクションは記法の警告を差し込んだ後、目次は見出しの ID を付けた後。埋め込んだ HTML は用語の下線より前に配置し、`html_block` にした中身を用語の下線が重ねて照合しないようにする。画像の属性は図表の番号より前に読み込み、図表の番号がギャラリーに番号を指定してからギャラリーを囲む。残った画像だけの段落は、その後に図にする
   部品の差し込み方: 中身を持つ部品（セクション・タブ・注意書き・行の詳細・図表の番号・表）は、中身の代わりに `SLOT_MARKER` を指定して HTML を作り、`markOwn` を掛けてから `SLOT_MARKER` の前後で分け、開きと閉じの `html_block` のトークンで中身のトークンを挟む。中身の HTML には `markOwn` を掛けない。見出し・表など Markdown から作ったトークンに付ける記法の属性は、同じトークンに `data-mdmark-own` も付ける。埋め込んだ HTML は例外で、`sanitizeEmbedded` で先に落とした中身にも `markOwn` を掛ける
 test_files:
   - tests/unit/src/render/syntax/headings.test.ts
+  - tests/unit/src/render/syntax/frontmatter.test.ts
   - tests/unit/src/render/syntax/sections.test.ts
   - tests/unit/src/render/syntax/tables.test.ts
   - tests/unit/src/render/syntax/row-details.test.ts
