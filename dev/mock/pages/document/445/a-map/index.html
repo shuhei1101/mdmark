@@ -13,12 +13,22 @@
   <link rel="stylesheet" href="../../../../refs/445/assets/map-mock.css">
   <!-- 配布物の mount で本文を描き、map の範囲の場所にモックの map の図を置く -->
   <script type="module" src="../../../../refs/445/assets/scene.js"></script>
+  <style>
+    /* 描く先の要素を画面の幅まで広げ、wide の範囲が本文の幅より広げられるようにする（論点 1 の案 C） */
+    .host { max-width: none; }
+    #doc { --mdmark-content-width: 60rem; }
+  </style>
 </head>
 <body>
   <!-- モック専用の操作列: 場面と明暗の切り替え。[data-scene-list]: scene.js が場面のリンクを並べる -->
   <div class="mock-bar" data-mock-bar>
     <div class="mock-bar-group" role="group" aria-label="場面" data-scene-list>
       <span class="mock-bar-label">場面</span>
+    </div>
+    <div class="mock-bar-group" role="group" aria-label="開いたときの倍率">
+      <span class="mock-bar-label">倍率（論点 1）</span>
+      <a class="mock-bar-item" data-scene-fit="wide">C: 広げてから合わせる</a>
+      <a class="mock-bar-item" data-scene-fit="fit">A: 本文の幅で合わせる</a>
     </div>
     <div class="mock-bar-group" role="group" aria-label="明暗">
       <span class="mock-bar-label">明暗</span>

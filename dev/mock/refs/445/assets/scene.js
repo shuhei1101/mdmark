@@ -23,12 +23,16 @@ const DEFAULT_SCHEME = "light";
 const params = new URLSearchParams(location.search);
 const scene = params.get("scene") ?? DEFAULT_SCENE;
 const scheme = params.get("scheme") ?? DEFAULT_SCHEME;
+/** 開いたときの倍率の案（論点 1）: wide は図の枠を wide の範囲で広げてから倍率を決める案 C、fit は本文の幅のまま倍率を決める案 A */
+const DEFAULT_FIT = "wide";
+const fit = params.get("fit") ?? DEFAULT_FIT;
 
 const sceneGroup = document.querySelector("[data-scene-list]");
 for (const [value, label] of Object.entries(SCENES)) {
   const query = new URLSearchParams();
   if (value !== DEFAULT_SCENE) query.set("scene", value);
   if (scheme !== DEFAULT_SCHEME) query.set("scheme", scheme);
+  if (fit !== DEFAULT_FIT) query.set("fit", fit);
   const link = document.createElement("a");
   link.className = "mock-bar-item";
   link.href = query.size ? `?${query}` : "index.html";
@@ -41,15 +45,25 @@ for (const link of document.querySelectorAll("[data-scene-scheme]")) {
   const query = new URLSearchParams();
   if (scene !== DEFAULT_SCENE) query.set("scene", scene);
   if (value !== DEFAULT_SCHEME) query.set("scheme", value);
+  if (fit !== DEFAULT_FIT) query.set("fit", fit);
   link.href = query.size ? `?${query}` : "index.html";
   if (value === scheme) link.setAttribute("aria-current", "page");
+}
+for (const link of document.querySelectorAll("[data-scene-fit]")) {
+  const value = link.dataset.sceneFit;
+  const query = new URLSearchParams();
+  if (scene !== DEFAULT_SCENE) query.set("scene", scene);
+  if (scheme !== DEFAULT_SCHEME) query.set("scheme", scheme);
+  if (value !== DEFAULT_FIT) query.set("fit", value);
+  link.href = query.size ? `?${query}` : "index.html";
+  if (value === fit) link.setAttribute("aria-current", "page");
 }
 
 const markdown = `# 文書を描く仕組み
 
 mdmark が map の範囲を図にするまでの構成。
 
-MAP-SLOT-FLOW
+${fit === "wide" ? "<!-- wide -->\n\nMAP-SLOT-FLOW\n\n<!-- /wide -->" : "MAP-SLOT-FLOW"}
 
 ## 描くまでの流れ
 
@@ -93,7 +107,7 @@ if (scene === "warnings") {
   warning.setAttribute("role", "note");
   warning.innerHTML = `<p>map の書き方の警告</p><ul>
 <li>mermaid の 14 行目 <code>gw -&gt; api</code> を読めません。矢印は <code>--&gt;</code> で記載してください</li>
-<li>補足の知らないキー <code>layuot</code> を無視しました。使用できるキーは notes・relations・walkthroughs・layout・plays_over・links です</li>
+<li>補足の知らないキー <code>layuot</code> を無視しました。使用できるキーは version・notes・relations・walkthroughs・layout・plays_over・links です</li>
 <li>マーカーの知らない引数 <code>mdoe=boxes</code> を無視しました。使用できる引数は view・focus・play・title・open・closed です</li>
 </ul>`;
   map.frame.before(warning);

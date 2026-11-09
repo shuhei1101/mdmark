@@ -62,7 +62,7 @@ export const createMap = (spec, initial = {}) => {
 
   const frame = el("figure", { class: "map-frame" });
   const bar = el("div", { class: "map-bar" });
-  const crumbs = el("nav", { class: "map-crumbs", "aria-label": "図の現在地" });
+  const crumbs = el("nav", { class: "map-crumbs", "aria-label": `${spec.title}の現在地` });
   const view = el("div", { class: "map-view", tabindex: "0", role: "group", "aria-label": `${spec.title}の図` });
   const band = el("div", { class: "map-band", hidden: true });
   const legend = el("div", { class: "map-legend" });
@@ -423,7 +423,7 @@ export const createMap = (spec, initial = {}) => {
       const step = steps[state.step];
       band.hidden = false;
       band.setAttribute("role", "region");
-      band.setAttribute("aria-label", "案内");
+      band.setAttribute("aria-label", `${spec.title}の案内`);
       band.onkeydown = (event) => {
         if (event.key === "ArrowRight" && state.step < steps.length - 1) applyStep(state.step + 1);
         if (event.key === "ArrowLeft" && state.step > 0) applyStep(state.step - 1);
@@ -446,7 +446,7 @@ export const createMap = (spec, initial = {}) => {
       const paused = frame.dataset.paused === "true";
       band.hidden = false;
       band.setAttribute("role", "region");
-      band.setAttribute("aria-label", "シーケンスの再生");
+      band.setAttribute("aria-label", `${spec.title}のシーケンスの再生`);
       band.append(
         el("p", { class: "map-band-count", text: `${state.play + 1} / ${total}` }),
         el("p", { class: "map-band-text", "aria-live": "polite", text: `${labelOf(message.from)} → ${labelOf(message.to)}: ${message.text}` }),
