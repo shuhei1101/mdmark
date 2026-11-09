@@ -28,6 +28,17 @@ data_models:
     introduced:
       pr: 444
 constants:
+  - name: UNIT_BASE_PATH
+    title: unit の PATH の末尾
+    container: src/plugin/setup/systemd.ts
+    usecase: 常駐サーバーを起動する
+    summary: unit の `PATH` で、`node`・`npx` のフォルダの後ろに続けるフォルダ
+    value: /usr/local/bin:/usr/bin:/bin
+    refs:
+      - dev/設計書/インターフェース定義/ClaudeCodeプラグイン/常駐サーバーを起動する.ts#constraints[unit のファイル]
+    status: planned
+    introduced:
+      pr: 444
   - name: SYSTEMD_USABLE_STATES
     title: systemd --user が使える状態
     container: src/plugin/setup/systemd.ts
@@ -119,7 +130,7 @@ functions:
       - name: options
         type: '{ port: number; settingsPath: string; stateDir: string; path: string; command: string }'
         required: true
-        description: ポート・端末の設定のパス・状態の配置場所・呼んだ側の `PATH`・起動するコマンド
+        description: ポート・端末の設定のパス・状態の配置場所・unit の `PATH`（`buildUnitPathEnv` の値）・起動するコマンド
     returns:
       type: string
       description: unit のファイルの中身（末尾は改行）
@@ -137,6 +148,46 @@ functions:
         condition: ポート 18782・`PATH` が `/a b:/c`・コマンド `npx -y x serve --v 100%`
         mock: なし
         expected: '`Environment="MDMARK_PORT=18782"`・`Environment="MDMARK_LAUNCHER=systemd"`・`Environment="PATH=/a b:/c"`・`ExecStart=/bin/sh -c ''npx -y x serve --v 100%%''`・`Restart=on-failure`・`WantedBy=default.target` の行がある'
+    refs:
+      - dev/設計書/インターフェース定義/ClaudeCodeプラグイン/常駐サーバーを起動する.ts#constraints[unit のファイル]
+      - dev/設計書/外部ライブラリ/systemd#limitations
+    status: planned
+    introduced:
+      pr: 444
+  - name: buildUnitPathEnv
+    title: unit の PATH を作る
+    kind: 関数
+    container: src/plugin/setup/systemd.ts
+    usecase: 常駐サーバーを起動する
+    role: 処理
+    summary: 呼んだ側の `PATH` から `node`・`npx` のあるフォルダだけを取り、`UNIT_BASE_PATH` を続けた値を作る
+    description: セッションや worktree によって変わる `PATH` をそのまま unit に記載すると、呼ぶたびに中身が変わって unit を起動し直すため、セッションによらず決まる値にする
+    scope: public
+    is_async: false
+    args:
+      - name: options
+        type: '{ path: string | undefined; isExecutable: (file: string) => boolean }'
+        required: true
+        description: 呼んだ側の `PATH` と、ファイルが実行できるかを返す関数
+    returns:
+      type: string
+      description: unit に記載する `PATH`
+    process: |-
+      1. `path` を `:` で区切り、前から順に `{フォルダ}/node`・`{フォルダ}/npx` が `isExecutable` で真になる最初のフォルダをそれぞれ取る
+      2. 取れたフォルダ（同じなら 1 つ）を前に、`UNIT_BASE_PATH` のフォルダを後ろに、重なりを除いて `:` でつないで返却する
+    unit_tests:
+      - name: test_build_unit_path_env
+        case: 正常
+        summary: node と npx のフォルダだけを取り、重なりと関係の無いフォルダを除く
+        condition: '`PATH` が `/h/.local/bin:/h/.local/bin:/w/.venv/bin:/n/v24/bin:/usr/bin`、`/n/v24/bin/node` と `/n/v24/bin/npx` だけが実行できる'
+        mock: 差し替えた `isExecutable`
+        expected: '`/n/v24/bin:/usr/local/bin:/usr/bin:/bin`'
+      - name: test_build_unit_path_env_when_same_input
+        case: 正常
+        summary: 関係の無いフォルダの並びが変わっても同じ値
+        condition: 上の `PATH` と、`/w/.venv/bin` を除いて `/x/bin` を先頭に足した `PATH`
+        mock: 差し替えた `isExecutable`
+        expected: どちらも同じ値
     refs:
       - dev/設計書/インターフェース定義/ClaudeCodeプラグイン/常駐サーバーを起動する.ts#constraints[unit のファイル]
       - dev/設計書/外部ライブラリ/systemd#limitations

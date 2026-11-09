@@ -247,7 +247,7 @@ functions:
       description: 結果と行った変更
     process: |-
       1. `migrate` が真で tmux のセッションがあれば `kill-session -t ={session}` し、`changes` に `tmux_session_closed` を足して、ポートが解放されるまで待つ（`PORT_RELEASE_TIMEOUT_SEC`）
-      2. `buildUnitFile` で中身を作り（`PATH` は `env.PATH`）、`resolveUnitPath` のファイルと比べる。`readUnitState` で状態を読む
+      2. `buildUnitFile` で中身を作り（`PATH` は `env.PATH` から `buildUnitPathEnv` で作る）、`resolveUnitPath` のファイルと比べる。`readUnitState` で状態を読む
       3. unit が `active` で、中身が同じで、ポートが待ち受けていれば、enabled でなければ `enable` して `already_running`
       4. unit が `active` でなく、ポートが待ち受けていれば、unit のファイルを記載せずに `MDMARK_PORT` の修正方法を添えて `SetupError`（1）
       5. 中身が違えば unit のフォルダを作って記載し、`daemon-reload` して `changes` に `unit_written` を足す
@@ -256,6 +256,7 @@ functions:
     side_effects: unit のファイルを記載する。unit を enable・起動・停止する。tmux のセッションを閉じる
     callees:
       - dev/設計書/モジュール構成/ClaudeCodeプラグイン/セットアップ/パス.ts#functions[resolveUnitPath]
+      - dev/設計書/モジュール構成/ClaudeCodeプラグイン/セットアップ/systemd.ts#functions[buildUnitPathEnv]
       - dev/設計書/モジュール構成/ClaudeCodeプラグイン/セットアップ/systemd.ts#functions[buildUnitFile]
       - dev/設計書/モジュール構成/ClaudeCodeプラグイン/セットアップ/systemd.ts#functions[readUnitState]
       - dev/設計書/モジュール構成/ClaudeCodeプラグイン/セットアップ/systemd.ts#functions[hasUnitExited]
@@ -268,6 +269,12 @@ functions:
         condition: '`show` に `ActiveState=inactive` を返し、`enable --now` の後は待ち受けるポートを開く `run`、空のフォルダの `XDG_CONFIG_HOME`'
         mock: 差し替えた `run`・すぐ解決する `sleep`
         expected: '`result` が `started`、`changes` が `["unit_written"]`、`run` の呼び出しに `daemon-reload` と `enable --now {unit}` がこの順にある'
+      - name: test_start_with_systemd_when_path_differs
+        case: 正常
+        summary: 呼んだ側の PATH の関係の無いフォルダが変わっても起動し直さない
+        condition: unit が active で待ち受けており、unit のファイルが前の呼び出しで記載したもの。`env.PATH` に関係の無いフォルダを足して呼ぶ
+        mock: 差し替えた `run`
+        expected: '`result` が `already_running`、`writeFile` と `restart` を呼んでいない'
       - name: test_start_with_systemd_when_port_taken
         case: 異常
         summary: unit が active でなくポートが待ち受けていれば記載しない
