@@ -11,7 +11,7 @@ files:
     manages: 端末の設定。`mdmark.config.yaml` と同じキーと、重ね方の切り替えの `config.*` を持ち、重ねる最初の層になる
     notes: 環境変数 `MDMARK_CONFIG` があればそのパスを読み込む。無ければ空の設定として扱う。重ね方はインターフェース定義『設定を重ねて読み込む』
   - file: schemas/mdmark.settings.schema.json
-    manages: 端末の設定の JSON Schema。`mdmark.config.schema.json` のキーに `config.cascade`・`config.applyToExport`・`serve.tmuxSession` を追加したもの
+    manages: 端末の設定の JSON Schema。`mdmark.config.schema.json` のキーに `config.cascade`・`config.applyToExport`・`serve.tmuxSession`・`serve.launcher`・`serve.systemdUnit` を追加したもの
     notes: 構造を変えるときは `migrations/next/` に移行の手順か `migrations/no-steps.yaml` の行を配置する
 settings:
   - key: features
@@ -914,5 +914,33 @@ settings:
       - dev/設計書/インターフェース定義/ClaudeCodeプラグイン/常駐サーバーを起動する.ts#
     introduced:
       pr: 354
+  - key: serve.launcher
+    title: 常駐サーバーの起動の方法
+    file: settings.yaml
+    type: '"auto" | "systemd" | "tmux"'
+    default: auto
+    description: '`global-setup` が常駐サーバー（`mdmark serve`）を起動する方法。`auto` は systemd --user が使えれば unit、使えなければ tmux のセッションで起動する'
+    allowed: '`auto`・`systemd`・`tmux`。端末の設定だけが持ち、`mdmark.config.yaml` に書き込んでも読み込まない'
+    reload: restart
+    required: false
+    status: planned
+    refs:
+      - dev/設計書/インターフェース定義/ClaudeCodeプラグイン/常駐サーバーを起動する.ts#
+    introduced:
+      pr: 444
+  - key: serve.systemdUnit
+    title: 常駐サーバーの systemd --user の unit の名前
+    file: settings.yaml
+    type: string
+    default: mdmark-mcp
+    description: '`global-setup` が `~/.config/systemd/user/{名前}.service` に記載して起動する unit の名前。MCP の `instructions` もこの名前を伝える'
+    allowed: '`^[A-Za-z0-9_-]+$`。端末の設定だけが持ち、`mdmark.config.yaml` に書き込んでも読み込まない'
+    reload: restart
+    required: false
+    status: planned
+    refs:
+      - dev/設計書/インターフェース定義/ClaudeCodeプラグイン/常駐サーバーを起動する.ts#
+    introduced:
+      pr: 444
 refs:
   - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#

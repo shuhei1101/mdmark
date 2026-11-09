@@ -43,5 +43,6 @@
 | [react-error-boundary](./react-error-boundary.yaml) | Webview の画面の最上位の Error Boundary |
 | [testing-library](./testing-library.yaml) | Webview のコンポーネントと hook の単体テスト |
 | [tmux](./tmux.yaml) | global-setup が常駐サーバーを動かすセッションの確認・起動・閉じる操作 |
+| [systemd](./systemd.yaml) | global-setup が常駐サーバーを動かす user の unit の起動・停止・状態の確認と journal |
 
 <!-- /table -->
