@@ -1834,13 +1834,13 @@ export function renderPart(options: {
   for (const [key, value] of params) {
     args[key] = decodeValue(value);
   }
-  // `scheme` が `dark` のストーリーは暗い配色で、`frameWidth` を持つストーリーはその幅の要素で包んで描く
+  // `scheme` が `dark` のストーリーは暗い配色で、`frameWidth` を持つストーリーはその幅の要素で包んで描く（描く先の要素の幅を超えない）
   const className =
     args.scheme === "dark" ? "mdmark mdmark-theme-dark" : "mdmark";
   const html = renderer(args);
   const framed =
     typeof args.frameWidth === "string"
-      ? `<div style="width: ${args.frameWidth}">${html}</div>`
+      ? `<div style="width: ${args.frameWidth}; max-width: 100%">${html}</div>`
       : html;
   return `<div class="${className}">${framed}</div>`;
 }
