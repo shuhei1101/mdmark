@@ -48,7 +48,7 @@ data_models:
     title: mount に指定する設定
     container: vscode/src/config.ts
     usecase: 共通
-    summary: 設定ファイルから取り出した `features`・`libraries`・`html-scripts`・`side-toc`・`labels`・`mermaid`・`colorTheme`・`colorScheme`。`render` の `config` と書き出す HTML の `config` になる
+    summary: 設定ファイルから取り出した `features`・`libraries`・`html-scripts`・`side-toc`・`table`・`labels`・`mermaid`・`colorTheme`・`colorScheme`。`render` の `config` と書き出す HTML の `config` になる
     properties:
       - name: features
         type: Record<string, unknown> | undefined
@@ -71,6 +71,9 @@ data_models:
       - name: colorScheme
         type: string | undefined
         description: 設定ファイルに書き込んだ値のまま。プレビューでは `mdmark.preview.theme` が `light`・`dark` のとき `applyPreviewTheme` が除く（知らない値は mdmark が `auto` で描く）
+      - name: table
+        type: Record<string, unknown> | undefined
+        description: 記載した値のまま（`pin` の知らない値は mdmark が `each` で描く）
     status: planned
   - name: ConfigLoad
     title: 設定ファイルの読み取りの結果
@@ -80,7 +83,7 @@ data_models:
     properties:
       - name: config
         type: PreviewConfig
-        description: 重ねた設定のうち、マップの `features`・`libraries`・`html-scripts`・`side-toc`・`labels`・`mermaid` と文字列の `colorTheme`・`colorScheme`。読み込めない・構造の合わないファイルは重ねずに残りを重ねた値。相対パスはその値を記載した設定ファイルのフォルダから解決した絶対パス
+        description: 重ねた設定のうち、マップの `features`・`libraries`・`html-scripts`・`side-toc`・`table`・`labels`・`mermaid` と文字列の `colorTheme`・`colorScheme`。読み込めない・構造の合わないファイルは重ねずに残りを重ねた値。相対パスはその値を記載した設定ファイルのフォルダから解決した絶対パス
       - name: theme
         type: string | undefined
         description: 重ねた設定の `theme` の絶対パス
@@ -260,7 +263,7 @@ functions:
     kind: 関数
     container: vscode/src/config.ts
     usecase: 記載した内容をプレビューに映す
-    summary: YAML を `yaml` の `parse` で読み込み、最上位がマップのときだけ `features`・`libraries`・`html-scripts`・`side-toc`・`colorTheme`・`colorScheme` を取り出す。`assets` がマップで `root` が文字列なら `assetsRoot` に入れる
+    summary: YAML を `yaml` の `parse` で読み込み、最上位がマップのときだけ `features`・`libraries`・`html-scripts`・`side-toc`・`table`・`colorTheme`・`colorScheme` を取り出す。`assets` がマップで `root` が文字列なら `assetsRoot` に入れる
     scope: public
     args:
       - name: text
@@ -274,7 +277,7 @@ functions:
       1. `parse(text)` を呼ぶ
          - `YAMLParseError` の場合、`{ kind: "error", line: error.linePos[0].line, message: error.message }` を返却する
       2. 最上位がマップでなければ（空のファイルを含む）`{ kind: "ok", config: {} }` を返却する
-      3. `features`・`libraries`・`html-scripts`・`side-toc` のうち値がマップのキーと、値が文字列の `colorTheme`・`colorScheme` だけを `config` に入れ、`assets.root` が文字列なら `assetsRoot` に入れて返却する。他のキーは読み込まない
+      3. `features`・`libraries`・`html-scripts`・`side-toc`・`table` のうち値がマップのキーと、値が文字列の `colorTheme`・`colorScheme` だけを `config` に入れ、`assets.root` が文字列なら `assetsRoot` に入れて返却する。他のキーは読み込まない
     refs:
       - dev/設計書/インターフェース定義/VSCode拡張機能/プレビューを再描画する.ts#constraints[設定の取り出し方]
       - dev/設計書/インターフェース定義/VSCode拡張機能/プレビューを再描画する.ts#constraints[設定ファイルを読み込めないとき]
@@ -301,7 +304,7 @@ functions:
          - そのファイルが無い（`isFile` が `false`）場合、`explicit` を指定せず、`isFile` を常に `false` を返却する関数にして呼ぶ（上へ探さず、端末の設定だけを重ねる）
       2. 設定を重ねて読み込む（設定を重ねて読み込む。`explicitName` は `mdmark.configPath`）
       3. 結果を `ConfigLoad` にする
-         - `config` は重ねた設定のうち、値がマップの `features`・`libraries`・`html-scripts`・`side-toc`・`labels`・`mermaid` と、値が文字列の `colorTheme`・`colorScheme` だけ
+         - `config` は重ねた設定のうち、値がマップの `features`・`libraries`・`html-scripts`・`side-toc`・`table`・`labels`・`mermaid` と、値が文字列の `colorTheme`・`colorScheme` だけ
          - `files` は重ねた設定ファイルの `path`、`theme`・`extensions`・`assetsRoot` は重ねた設定の `theme`・`extensions`・`assets.root`
          - `unreadable` がある場合、`problem` は `{ path, line, message }`。無く `issues` がある場合、`problem` は `{ path: issues[0].file, settingKey: issues[0].where, message: issues[0].message }`
       4. `purpose` が `preview` で重ねた設定に `aliases` がある場合、エイリアスを読み込む（エイリアスを読み込む）
@@ -377,6 +380,12 @@ functions:
         condition: '`test_load_config_when_aliases` と同じファイルで `purpose` が `export`'
         mock: 一時フォルダ
         expected: '`aliases` が無く、`aliasIssues`・`aliasFiles` が空'
+      - name: test_load_config_when_table
+        case: 正常
+        summary: 設定の `table` を `mount` に指定する設定に入れる
+        condition: '端末の設定に `table: { pin: each }`、`/w/mdmark.config.yaml` に `table: { pin: through }`、`cwd` が `/w`。別に `/w/b/mdmark.config.yaml` に `table: through` だけを記載し、`cwd` が `/w/b`'
+        mock: '`readFile`・`isFile` を差し替える'
+        expected: '1 つ目の `config.table` が `{ pin: "through" }`。2 つ目は `table` がマップでないので `/w/b` の値を入れず、`config.table` が `/w` の `{ pin: "through" }`'
     callees:
       - '#functions[resolveConfigPath]'
       - dev/設計書/モジュール構成/ライブラリ本体/設定を重ねて読み込む.ts#functions[loadLayeredConfig]

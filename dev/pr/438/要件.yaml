@@ -14,6 +14,11 @@ use_cases:
     impact: run_only
     detail: 書き出した HTML の表にピン止めのボタンが付くことが、設定のキーの追加で壊れないかを確かめる
     depends_on: []
+  - kind: single
+    scenario: dev/設計書/シナリオ/単一ユースケース/記載した内容をプレビューに映す.yaml
+    impact: run_only
+    detail: VS Code 拡張機能が設定ファイルの `table` をプレビューに渡すようにしたため、設定ファイルの書き換えでプレビューを描き直す動きが壊れないかを確かめる
+    depends_on: []
 docs:
   - page: docs/リファレンス/記法.md
     new: false
