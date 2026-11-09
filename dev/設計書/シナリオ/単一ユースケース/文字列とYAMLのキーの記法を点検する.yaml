@@ -138,6 +138,28 @@ scenarios:
       - 各行の内容が、スキップしたキー・機能・指定と、そのマーカーで使用できるキー・機能・指定を挙げる
       - 終了コードが 0 以外
     test: test_normal_when_unknown_mark_args
+  - name: 正常シナリオ（map の書き方の警告がある）
+    setup:
+      - name: 作業のフォルダ
+        description: 正常シナリオと同じ
+      - name: map の書き方を誤った文字列
+        description: map の範囲の中に、GitHub の Mermaid でも読めない行を 1 行持つ mermaid のブロックと、知らないトップレベルのキーを 1 つ持つ補足を持つ Markdown の文字列
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor W as 文書の作成者
+        participant C as mdmark CLI
+        participant R as mdmark の描画の処理
+        W->>C: mdmark check（Markdown の文字列）
+        C->>R: 文字列を描くときと同じ読み取りで、記載の警告を集める
+        R-->>C: map の書き方の警告 2 件
+        C-->>W: 場所・種類・内容の一覧・終了コード 0 以外
+    expected:
+      - ずれの行が 2 つあり、読めない行と知らないキーをそれぞれ指す
+      - 各行の内容が、同じ文字列を描いたときの書き方の警告と同じ
+      - 終了コードが 0 以外
+    test: test_normal_when_map_warnings
 lead: |-
   文書の作成者が `mdmark check` に Markdown の文字列、またはファイルと YAML のキーを指定し、描いたときの記載の警告と同じ内容をずれの一覧で受け取る。
   YAML のキーの中に Markdown を書き込むツール（dev-docs・MindStella）も、書き込みのたびに同じ点検を呼ぶ。

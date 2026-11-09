@@ -1,0 +1,50 @@
+title: 図の視点を切り替える
+lead: 読者が、map の構成図の視点（補足の名前つきの線の組）を切り替え、その視点の線が使用するノードだけで配置し直した図を読む。
+issue: 324
+test_file: tests/e2e/単一ユースケース/図の視点を切り替える.spec.ts
+primary_actor: 読者
+trigger: 読者が、同じ構成の呼び出しの流れ・データの流れなど、1 つの観点の線だけを見たくなる
+preconditions:
+  - 文書に、補足の `relations` に視点を 2 つ持つ map の構成図が描かれている（『Mermaidと補足で図を描く』）
+success_guarantee: 選んだ視点の線と、その線の端のノード・祖先のグループだけで図が配置し直され、選んでいる視点が帯に示される。
+minimal_guarantee: 知らない視点の名前は書き方の警告にして、全ての線の図を描く。
+scenarios:
+  - name: 正常シナリオ
+    setup:
+      - name: 図を描いたページ
+        description: 視点を 2 つ（呼び出し・データの流れ）持つ map の構成図を描いたページ
+      - name: Mock
+        description: jsDelivr を、ビルドした `dist/` を同じパスで返却する手元の応答に差し替える
+    flow: |-
+      sequenceDiagram
+        actor U as 読者
+        participant D as map の図
+        U->>D: 帯の視点の「呼び出し」を選ぶ
+        D-->>U: 呼び出しの線とその端のノードだけで配置し直す
+        U->>D: 帯の「全ての線」を選ぶ
+        D-->>U: 全ての線の図に戻す
+    expected:
+      - 呼び出しの視点を選ぶと、呼び出しの線の端のノードとその祖先のグループだけが描かれ、ほかのノードと線が出ていない
+      - 配置し直した図でも、ノードとグループが重ならず、線が端点とその祖先以外のノード・グループを横切らない
+      - 帯で今の視点が選んだ状態で示され、視点の部品がキーボードで選べる
+      - 全ての線に戻すと、選ぶ前と同じ配置になる
+    test: test_normal
+  - name: 正常シナリオ（印の引数で最初の視点を決める）
+    setup:
+      - name: 図を描くページ
+        description: 『Mermaidと補足で図を描く』の正常シナリオと同じ
+      - name: 最初の視点を持つ map の Markdown
+        description: 正常シナリオの構成図の印に `view=データの流れ` を持つ文書と、`view=無い名前` を持つ文書
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 読者
+        participant P as 利用側のページ
+        participant D as map の図
+        P->>D: 設定と Markdown を指定して描かせる
+        D-->>U: 印の視点で配置した図
+    expected:
+      - '`view=データの流れ` の図が、開いたときからデータの流れの視点の線だけで描かれ、帯でその視点が選ばれている'
+      - '`view=無い名前` の図に、知らない視点の名前である旨の書き方の警告があり、全ての線の図が描かれる'
+    test: test_normal_when_initial_view

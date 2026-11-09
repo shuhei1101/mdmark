@@ -190,3 +190,28 @@ scenarios:
   - 2 つ目のコードブロックの場所に、図の枠と SVG の図がある
   - mermaid が文書の中に出すエラーの図が無い
   test: test_error_when_syntax_invalid
+
+- name: 正常シナリオ（map の範囲の中の mermaid のブロック）
+  setup:
+  - name: mdmark を読み込むページ
+    description: 正常シナリオと同じ
+  - name: map の範囲と mermaid のコードブロックを持つ Markdown
+    description: map の範囲の中に flowchart の mermaid のブロックを 1 つ持ち、範囲の外に flowchart の mermaid のコードブロックを 1 つ持つ文書と、map の範囲の中にだけ mermaid のブロックを持つ文書
+  - name: Mock
+    description: 正常シナリオと同じ
+  flow: |-
+    sequenceDiagram
+      actor U as 読者
+      participant P as 利用側のページ
+      participant M as mdmark
+      participant X as mermaid
+      P->>M: 設定と Markdown を指定して描かせる
+      M->>M: map の範囲の外の言語 mermaid のコードブロックだけを集める
+      M->>X: 本体を要求（範囲の外にコードブロックがあるときだけ）
+      M-->>P: 範囲の外は mermaid の図、範囲の中は map の図
+      P-->>U: 文書を表示
+  expected:
+  - 範囲の外のコードブロックを持つ文書では、mermaid の本体への要求が 1 件で、範囲の外の場所に mermaid の図が描かれる
+  - 範囲の中の mermaid のブロックは、mermaid の図ではなく map の図として描かれる
+  - map の範囲の中にだけ mermaid のブロックを持つ文書では、mermaid の本体への要求が 0 件
+  test: test_normal_when_inside_map

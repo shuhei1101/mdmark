@@ -1,0 +1,160 @@
+title: Mermaidと補足で図を描く
+lead: 文書の map の範囲の Mermaid と補足を、mdmark が入れ子のグループを自動配置した図にして図の枠に描く。補足の layout で、配置と見た目を必要な箇所だけ上書きする。
+issue: 324
+test_file: tests/e2e/単一ユースケース/Mermaidと補足で図を描く.spec.ts
+primary_actor: 文書の作成者（AI を含む）
+stakeholders:
+  - name: 文書の作成者
+    interest: 座標を記載せずに、GitHub でも読める Mermaid で入れ子の構成図を記載でき、必要な箇所だけ配置と見た目を調整できる
+  - name: 読者
+    interest: 入れ子の構成が、重ならず線が交わりにくい図で、種類ごとの色と凡例つきで読める
+trigger: 利用側のページが、map の範囲を持つ文書を描かせる
+preconditions:
+  - ページがバージョンを固定した URL で mdmark の JavaScript と CSS を読み込んでいる
+success_guarantee: map の範囲の場所に、Mermaid のノード・グループ・線を自動配置した図が図の枠に描かれる。補足の上書きは指定した箇所だけに当たり、上書きの無い箇所は自動配置のまま。
+minimal_guarantee: 読めない行・知らないキー・描かない図の種類は書き方の警告にして、読めた部分の図を描く。ほかの本文と図は描かれる。
+scenarios:
+  - name: 正常シナリオ
+    setup:
+      - name: 図を描くページ
+        description: バージョンを固定した URL で `dist/index.js` と `dist/index.css` を読み込み、文書を描く HTML
+      - name: 構成図の map を持つ Markdown
+        description: map の範囲を 1 つ持つ文書。範囲の中に flowchart の mermaid のブロックと補足を持つ
+        notes: 入れ子 2 レイヤーのグループ（外のグループの向きが LR、中のグループの向きが TB）・グループをまたぐ線 3 本以上・クラス `:::llm`・`:::script`・`:::data`・日本語 30 文字のラベルのノード 1 つ・用語集の用語を含むラベル 1 つ。補足の `notes` で 1 つのノードに説明を持つ。動くと `window.__mdmarkScriptRan` を `true` にする `<script>` を文書に 1 つ持つ
+      - name: Mock
+        description: jsDelivr を、ビルドした `dist/` を同じパスで返却する手元の応答に差し替える。mermaid のライブラリへの要求を数える
+    flow: |-
+      sequenceDiagram
+        actor U as 読者
+        participant P as 利用側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を指定して描かせる
+        M->>M: map の範囲の Mermaid と補足を読み込む
+        M->>M: 内側のグループから配置し、線の経路を決める
+        M-->>P: 図の枠に入れた map の図と本文
+        P-->>U: 文書を表示
+    expected:
+      - map の範囲の場所に図の枠と SVG の図があり、mermaid のブロックの文字と補足の文字が出ていない
+      - 中のグループが外のグループの中に描かれ、外のグループの中は左から右、中のグループの中は上から下に並ぶ
+      - ノードとグループが重ならず、線が端点とその祖先以外のノード・グループを横切らない
+      - 30 文字のラベルがノードの幅の上限で折り返され、文字がノードの中に収まっている
+      - クラスのノードが種類ごとの色で描かれ、凡例に図に 2 種類以上あるノードの種類と線の種類だけが載る
+      - 補足の `notes` を持つノードにツールチップのマーカーがあり、フォーカスすると説明が出る
+      - 用語集の用語を含むラベルに用語の下線がある
+      - mermaid のライブラリへの要求が 0 件
+      - '`window.__mdmarkScriptRan` が `true` になっていない'
+    test: test_normal
+  - name: 正常シナリオ（配置と見た目を上書きする）
+    setup:
+      - name: 図を描くページ
+        description: 正常シナリオと同じ
+      - name: 上書きを持つ map の Markdown
+        description: 正常シナリオの文書の補足に `layout` を足したもの
+        notes: 2 つのノードを同じ段に揃える指定・段の中の並び順の指定・1 つのノードの座標の固定・1 つのノードの幅と名前の色・1 本の線の出る辺の指定を持つ
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 読者
+        participant P as 利用側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を指定して描かせる
+        M->>M: 自動配置に layout の指定を当てる
+        M-->>P: 上書きを当てた map の図
+        P-->>U: 文書を表示
+    expected:
+      - 揃える指定の 2 つのノードが同じ段に並ぶ
+      - 並び順を指定したノードが、同じ段の中で指定の順に並ぶ
+      - 座標を固定したノードが指定の位置にあり、ほかのノードと重ならない
+      - 幅を指定したノードがその幅で、名前の色を指定したノードがその色の名前の配色で描かれる
+      - 出る辺を指定した線が、指定の辺から出る
+      - 上書きの無いノードと線は、正常シナリオと同じ規則で配置され、重なりと横切りが無い
+    test: test_normal_when_layout_overridden
+  - name: 正常シナリオ（構成図の層を指定する）
+    setup:
+      - name: 図を描くページ
+        description: 正常シナリオと同じ
+      - name: 層を持つ map の Markdown
+        description: システムのグループの中のノードを、補足の `layout` で LLM・処理・データの 3 つの層に割り当てた文書。システムのグループの外に外部のシステムのノードを 1 つ持つ
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 読者
+        participant P as 利用側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を指定して描かせる
+        M->>M: 層ごとにノードを並べ、層の帯の中で自動配置する
+        M-->>P: 層を持つ map の図
+        P-->>U: 文書を表示
+    expected:
+      - システムのグループの中に 3 つの層が上から LLM・処理・データの順に並び、層ごとに背景が敷かれている
+      - 外部のシステムのノードがシステムのグループの外にある
+      - 凡例に、システムの枠・層の背景の項目が無い
+    test: test_normal_when_layers
+  - name: 正常シナリオ（シーケンス図）
+    setup:
+      - name: 図を描くページ
+        description: 正常シナリオと同じ
+      - name: シーケンス図の map を持つ Markdown
+        description: sequenceDiagram の mermaid のブロック（相手 3 つ・メッセージ 4 つ・`loop` 1 つ）を持つ map の範囲の文書
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 読者
+        participant P as 利用側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を指定して描かせる
+        M->>M: 相手とメッセージを読み込む
+        M-->>P: 図の枠に入れたシーケンス図
+        P-->>U: 文書を表示
+    expected:
+      - 相手が記載の順に左から右へ並び、メッセージが記載の順に上から下へ並ぶ
+      - '`loop` の範囲のメッセージが繰り返しの枠に入る'
+      - mermaid のライブラリへの要求が 0 件
+    test: test_normal_when_sequence
+  - name: 正常シナリオ（読めない行と知らないキーがある）
+    setup:
+      - name: 図を描くページ
+        description: 正常シナリオと同じ
+      - name: 書き方を誤った map の Markdown
+        description: 正常シナリオの文書のうち、mermaid のブロックに GitHub の Mermaid でも読めない行を 1 行、補足に知らないトップレベルのキーを 1 つ、印に知らない引数を 1 つ足したもの
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 読者
+        participant P as 利用側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を指定して描かせる
+        M->>M: 読めない行・知らないキーと引数を飛ばして読み込む
+        M-->>P: 書き方の警告と、読めた部分の map の図
+        P-->>U: 文書を表示
+    expected:
+      - 図の枠の上に書き方の警告があり、読めない行・知らないキー・知らない引数の 3 つを指す
+      - 読めた部分のノードと線で図が描かれている
+      - 図の後ろの本文が描かれている
+    test: test_normal_when_unreadable
+  - name: 正常シナリオ（描かない図の種類）
+    setup:
+      - name: 図を描くページ
+        description: 正常シナリオと同じ
+      - name: 描かない種類の map を持つ Markdown
+        description: map の範囲の中の mermaid のブロックの 1 行目が `stateDiagram-v2` の文書と、範囲の中に mermaid のブロックが無い文書
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 読者
+        participant P as 利用側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を指定して描かせる
+        M->>M: 図の種類を確かめる
+        M-->>P: 書き方の警告と、範囲の中身
+        P-->>U: 文書を表示
+    expected:
+      - '`stateDiagram-v2` の範囲に、描かない図の種類である旨の書き方の警告があり、mermaid のブロックはコードブロックのまま出る'
+      - mermaid のブロックが無い範囲に、mermaid のブロックが無い旨の書き方の警告がある
+      - どちらの範囲でも、補足の文字が出ていない
+    test: test_normal_when_unsupported_kind

@@ -355,6 +355,30 @@ scenarios:
     test: test_normal_when_unknown_color_scheme
     refs:
       - dev/設計書/シナリオ/単一ユースケース/ページの設定を文書で指定する#scenarios[正常シナリオ（設定で全文書の既定にする）]
+  - name: 正常シナリオ（map の補足にずれがある）
+    setup:
+      - name: map の補足にずれを持つフォルダ
+        description: 正常シナリオのフォルダの文書 1 つに、補足にずれを持つ map の範囲 1 つと、ずれの無い map の範囲 1 つを記載したもの
+        notes: ずれは、Mermaid に無いノードの ID を指す `notes` のキー・知らないトップレベルのキー・`--` を含む `relations` の `label` の値の 3 つ
+      - name: Mock
+        description: 差し替える依存は無い。点検はブラウザを使用しない
+    flow: |-
+      sequenceDiagram
+        actor W as 文書の作成者
+        participant C as mdmark CLI
+        participant M as mdmark の点検の処理
+        W->>C: mdmark check
+        C->>C: 設定・索引・文書を読み込み、設定の Schema と build の対象を確認する
+        C->>M: checkIndex（索引・文書）
+        M-->>C: 空のずれの一覧
+        C->>C: 文書の map の範囲の Mermaid と補足を読み込み、補足のスキーマと ID の参照を点検する
+        C-->>W: ファイル・場所・種類・内容の一覧・終了コード 0 以外
+    expected:
+      - ずれを持つ map の範囲の場所を指す行が 3 つあり、無いノードへの参照・知らないキー・`--` を含む値の種類で 1 つずつ、内容に対象のキーと修正の方法が記載されている
+      - ずれの無い map の範囲を指す行が無い
+      - 終了コードが 0 以外
+      - 設定・索引・文書が変わっていない
+    test: test_normal_when_map_data_drift
 lead: 文書の作成者が `mdmark check` を実行し、設定ファイルと索引の構造・索引と文書のずれ・書き出す対象の有無・文書の本文にある知らないマーカー・図の部品の定義のずれを、ファイル・場所・種類・内容の一覧で受け取る。
 issue: 9
 primary_actor: 文書の作成者

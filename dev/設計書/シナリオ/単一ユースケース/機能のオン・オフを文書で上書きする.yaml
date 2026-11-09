@@ -367,6 +367,30 @@ scenarios:
       - 本文にマーカーの文字が出ていない
       - マーカーを持たない文書を同じ設定で描くと、リサイズハンドルがある
     test: test_normal_when_diagram_resize_disabled
+  - name: 正常シナリオ（map の機能を解除する）
+    setup:
+      - name: mdmark を読み込むページ
+        description: 正常シナリオと同じ
+        notes: 設定の `features` は `map` を記載しない（既定のオン）
+      - name: map の機能を解除する Markdown
+        description: '先頭に `map` の機能を解除する `<!-- features: ... -->` を持ち、map の範囲を 1 つ持つ文書'
+        notes: 機能名はインターフェース定義で決める
+      - name: Mock
+        description: 正常シナリオと同じ。mermaid の本体と chunk も jsDelivr と同じパスで返却する
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 利用側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を指定して描かせる
+        M->>M: 設定の features に文書のマーカーを重ねる
+        M-->>P: map の範囲を普通の Markdown として描く
+        P-->>U: 文書を表示
+    expected:
+      - map の図が描かれず、範囲の中の mermaid のブロックが、mermaid のコードブロックと同じく mermaid の図で描かれる
+      - 補足の文字とマーカーの文字が出ていない
+      - 記載の警告が出ていない
+    test: test_normal_when_map_disabled
 lead: '利用側が設定の `features` で機能のオン・オフの既定を決め、文書の作成者が文書の `<!-- features: +機能 -機能 -->` でその文書だけ上書きする。この Issue が持つ機能の印刷（`print`）で確認する。'
 issue: 3
 primary_actor: 文書の作成者
