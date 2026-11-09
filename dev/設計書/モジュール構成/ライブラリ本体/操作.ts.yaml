@@ -414,7 +414,7 @@ functions:
       - name: test_attach_tables_when_pinned_at_end
         case: 正常
         summary: 留めた列より左を表示している間は、留めた列を右端に並べて留める
-        condition: 幅 320px の要素に 10 列の表、右端までスクロールして 8・9 列目のピン止めを押し、左端までスクロールする
+        condition: 幅 800px の要素（既定で留める先頭の列と 8・9 列目が見えている範囲に収まる）に 10 列の表、右端までスクロールして 8・9 列目のピン止めを押し、左端までスクロールする
         mock: なし
         expected: 8 列目のセルの `right` が 9 列目のセルの `offsetWidth`、9 列目のセルの `right` が `0px`。左端に戻した後、表を包む要素の右端と 9 列目のセルの右端がそろい、8 列目のセルが `is-pinned-edge-end` を持ち、9 列目は持たない
       - name: test_attach_tables_when_pinned_through
@@ -2281,7 +2281,7 @@ functions:
       - name: test_attach_table_settings_when_group_boundary
         case: 正常
         summary: 結合した見出しの範囲の外とピン止めの境には動かさず、動かせないつまみを `disabled` にする
-        condition: '`header-rows=2 pin=名前` の表で、型を備考の下へ `drop`'
+        condition: '`header-rows=2 pin=名前` の表を `pinMode: "through"` で付け、型を備考の下へ `drop`'
         mock: なし
         expected: 列の順が変わらず、名前と備考のつまみが `disabled`
       - name: test_attach_table_settings_when_hidden

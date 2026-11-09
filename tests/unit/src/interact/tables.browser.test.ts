@@ -594,19 +594,14 @@ test("test_attach_tables_when_pinned", async () => {
   // 実行・検証: 3 列目のボタンで 3 列目だけを加えて留める
   widePins[2].click();
   expect(stickyColumns(wide).slice(0, 4)).toEqual([true, false, true, false]);
-  const firstCell = wide.querySelector<HTMLTableRowElement>("tbody tr")
-    ?.cells[0];
-  const thirdCell = wide.querySelector<HTMLTableRowElement>("tbody tr")
-    ?.cells[2];
+  const firstCell =
+    wide.querySelector<HTMLTableRowElement>("tbody tr")?.cells[0];
+  const thirdCell =
+    wide.querySelector<HTMLTableRowElement>("tbody tr")?.cells[2];
   expect(thirdCell?.style.left).toBe(`${firstCell?.offsetWidth}px`);
   // 実行・検証: もう一度押すと 3 列目だけを解除する
   widePins[2].click();
-  expect(stickyColumns(wide).slice(0, 4)).toEqual([
-    true,
-    false,
-    false,
-    false,
-  ]);
+  expect(stickyColumns(wide).slice(0, 4)).toEqual([true, false, false, false]);
 });
 
 // data-pin の列だけを留め、pin の無い表は留めず、幅が広がると留めを解除する（正常系）
@@ -1656,7 +1651,7 @@ test("test_attach_tables_when_pinned_at_end", async () => {
   addStyles();
   const { attachTables } = await loadTables();
   const { root } = createRoot(wideTable(10).join("\n"));
-  setRootWidth(root, 320);
+  setRootWidth(root, 800);
   detachers.push(attachTables(root));
   const table = root.querySelector<HTMLElement>(".mdmark-table");
   const scroller = root.querySelector<HTMLElement>(".mdmark-table-scroll");
@@ -1682,7 +1677,9 @@ test("test_attach_tables_when_pinned_at_end", async () => {
   expect(cells[8].style.right).toBe("0px");
   // 表を包む要素の見えている範囲の右端（縦のスクロールバーを除く）
   const visibleRight =
-    scroller.getBoundingClientRect().left + scroller.clientLeft + scroller.clientWidth;
+    scroller.getBoundingClientRect().left +
+    scroller.clientLeft +
+    scroller.clientWidth;
   await vi.waitFor(() => {
     expect(Math.round(cells[8].getBoundingClientRect().right)).toBe(
       Math.round(visibleRight),
@@ -1756,7 +1753,8 @@ test("test_attach_tables_when_pinned_under_merged_header", async () => {
   const defaultHead = [
     ...table.querySelectorAll<HTMLTableCellElement>("thead tr:last-child th"),
   ].find((cell) => cell.textContent?.includes("既定"));
-  const pin = defaultHead?.querySelector<HTMLButtonElement>("button.mdmark-pin");
+  const pin =
+    defaultHead?.querySelector<HTMLButtonElement>("button.mdmark-pin");
   await vi.waitFor(() => {
     expect(pin?.hasAttribute("hidden")).toBe(false);
   });
