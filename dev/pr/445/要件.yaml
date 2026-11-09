@@ -54,6 +54,42 @@ use_cases:
     impact: new
     detail: 文書の作成者が Mermaid と補足で図を記載して点検し、読者が描いた図をグループの中へ入る・開閉・ノードのページ・視点・巡回・シーケンスの再生で辿る
     depends_on: []
+  - kind: single
+    scenario: dev/設計書/シナリオ/単一ユースケース/Mermaidと補足で図を描く.yaml
+    impact: new
+    detail: map の範囲の Mermaid と補足を、入れ子のグループを自動配置した図に描き、補足の layout で配置と見た目を上書きする。構成図の 3 層とシーケンス図も描く
+    depends_on:
+      - dev/設計書/シナリオ/複合ユースケース/Mermaidと補足で書いた図を辿って読む.yaml
+  - kind: single
+    scenario: dev/設計書/シナリオ/単一ユースケース/図のグループの中へ入る・開閉する.yaml
+    impact: new
+    detail: 読者がグループの中へ入ってパンくずで戻り、グループを閉じて中への線をまとめた件数と元の線の一覧で見る
+    depends_on:
+      - dev/設計書/シナリオ/複合ユースケース/Mermaidと補足で書いた図を辿って読む.yaml
+  - kind: single
+    scenario: dev/設計書/シナリオ/単一ユースケース/図のノードのページを見る.yaml
+    impact: new
+    detail: 読者がノードの線・視点・リンク先の図・シーケンス・説明を 1 ページで読み、相手のノードやリンク先の図へ移る
+    depends_on:
+      - dev/設計書/シナリオ/複合ユースケース/Mermaidと補足で書いた図を辿って読む.yaml
+  - kind: single
+    scenario: dev/設計書/シナリオ/単一ユースケース/図の視点を切り替える.yaml
+    impact: new
+    detail: 読者が視点を切り替え、その視点の線が使用するノードだけの図で読む
+    depends_on:
+      - dev/設計書/シナリオ/複合ユースケース/Mermaidと補足で書いた図を辿って読む.yaml
+  - kind: single
+    scenario: dev/設計書/シナリオ/単一ユースケース/図を巡回する.yaml
+    impact: new
+    detail: 読者が案内の手順を前へ・次へで進め、手順ごとの視点・グループ・強調と説明を読む
+    depends_on:
+      - dev/設計書/シナリオ/複合ユースケース/Mermaidと補足で書いた図を辿って読む.yaml
+  - kind: single
+    scenario: dev/設計書/シナリオ/単一ユースケース/シーケンスを構成図の上で再生する.yaml
+    impact: new
+    detail: 読者がシーケンス図を、同じノードを持つ構成図の上で 1 通ずつ動かして読む。動きを減らす設定では強調と文だけを出す
+    depends_on:
+      - dev/設計書/シナリオ/複合ユースケース/Mermaidと補足で書いた図を辿って読む.yaml
 docs:
   - page: docs/使用方法/図を描く/Mermaidと補足で図を描く.md
     new: true
