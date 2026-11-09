@@ -54,7 +54,9 @@ docs:
   - page: dev/設計書/外部ライブラリ/systemd.yaml
     new: true
     change: systemctl --user（daemon-reload・enable --now・is-active・restart・stop）と journalctl --user の使い方と確かめた版を記録する
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-09T02:02:28.426755+00:00'
 scope_out:
   - item: macOS の launchd で常駐サーバーを起動する
     reason: 要望は規約『ローカルサーバーの立て方』の systemd --user に合わせることで、systemd の無い端末は今の tmux で起動できる
