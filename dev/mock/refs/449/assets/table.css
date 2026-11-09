@@ -45,8 +45,13 @@
       opacity: 0.4;
     }
 
-    /* ポインターが粗い画面: つまみを常に出し、押せる幅を 24px にする */
+    /* ポインターが粗い画面: つまみを常に出し、押せる幅を 24px にする。
+       見出しのボタンがつまみに重ならないよう、見出しのセルの右の余白をつまみの幅だけ広げる */
     @media (pointer: coarse) {
+      .mdmark-table thead th:has(> .mdmark-col-resize) {
+        padding-inline-end: calc(24px + 0.25em);
+      }
+
       .mdmark-table .mdmark-col-resize {
         width: 24px;
 
@@ -57,6 +62,10 @@
     }
 
     /* モックの見本: ポインターが粗い画面のつまみを、PC の画面幅でも同じ見た目で見せる */
+    .mdmark-table.is-coarse thead th:has(> .mdmark-col-resize) {
+      padding-inline-end: calc(24px + 0.25em);
+    }
+
     .mdmark-table.is-coarse .mdmark-col-resize {
       width: 24px;
 

@@ -41,15 +41,24 @@
 
     /** 列の幅（見出しのセルの幅） */
     const widthOf = (c) => headCells[c].getBoundingClientRect().width;
-    /** 列の最小幅（px） */
-    const minWidthOf = (c) => parseFloat(getComputedStyle(headCells[c]).minWidth) || 0;
+    /** 列の最小幅（px）。幅を変えた列も、CSS の列の最小幅で測る */
+    const minWidthOf = (c) => {
+      const cell = headCells[c];
+      const inline = cell.style.minWidth;
+      cell.style.minWidth = "";
+      const value = parseFloat(getComputedStyle(cell).minWidth);
+      cell.style.minWidth = inline;
+      return value;
+    };
 
     /** 列の幅を指定する。null で指定を解除し、描いた直後の幅に戻す（wide= の列は wide= の幅に戻る） */
     const setWidth = (c, width) => {
       const resized = width !== null;
       const value = resized ? `${Math.round(Math.max(minWidthOf(c), width))}px` : "";
       for (const cell of table.querySelectorAll(`[data-col="${c}"]:is(th, td)`)) {
+        // 描く先の要素より広い表でも指定した幅にするため、最小幅にも同じ幅を入れる
         cell.style.width = value;
+        cell.style.minWidth = value;
         cell.classList.toggle("is-resized", resized);
       }
       applyPin();
