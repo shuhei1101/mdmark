@@ -288,7 +288,7 @@ constraints:
     decided_by: dev/設計書/非機能要件/非機能要件#requirements[CLI が動く Node のバージョン]
     notes: 書き出しに埋める `dist/index.css`・`dist/viewer.js`・`dist/viewer.css` は、同じバージョンのものを `dist/cli.js` と同じフォルダから読み込む。`dist/viewer.js` はライブラリ本体を含めてまとめる
   - item: 移行の手順の点検
-    constraint: '配布物を書き込む前に実行する。比べるバージョンは `--version` があればそのバージョン、無ければ `version.ini` のバージョン。最新のバージョンのタグは `git tag` の `v{MAJOR}.{MINOR}.{PATCH}` のうち最も新しいバージョン。比べるバージョンがタグと同じなら `migrations/next/` と `version: next` の行を、新しければ `migrations/v{比べるバージョン}/` と `version: v{比べるバージョン}` の行を確認する。`schemas/mdmark.config.schema.json` と `schemas/mdmark.index.schema.json` の中身がタグのものと違うとき、確認するフォルダに `steps.yaml` があるか、確認する行のうち `schema` がそのファイルで `sha256` が今の中身と合う行があれば合格にする'
+    constraint: '配布物を書き込む前に実行する。比べるバージョンは `--version` があればそのバージョン、無ければ `version.ini` のバージョン。最新のバージョンのタグは `git tag` の `v{MAJOR}.{MINOR}.{PATCH}` のうち最も新しいバージョン。比べるバージョンがタグと同じなら `migrations/next/` と `version: next` の行を、新しければ `migrations/v{比べるバージョン}/` と `version: v{比べるバージョン}` の行を確認する。`schemas/mdmark.config.schema.json`・`schemas/mdmark.index.schema.json`・`schemas/mdmark.settings.schema.json`・`schemas/mdmark.templates.schema.json` の中身がタグのものと違うとき、確認するフォルダに `steps.yaml` があるか、確認する行のうち `schema` がそのファイルで `sha256` が今の中身と合う行があれば合格にする。タグに無い Schema と作業ツリーに無い Schema は比べない'
     decided_by: dev/設計書/ER図/移行の手順#
     notes: バージョンのタグが 1 つも無いとき、git の作業ツリーでないとき、比べるバージョンがタグより古いときは飛ばす。タグに無い Schema は比べない
   - item: 出していないバージョンの手順の移し
