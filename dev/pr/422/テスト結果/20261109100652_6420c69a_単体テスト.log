@@ -1,0 +1,250 @@
+$ npx vitest run --project 'unit*' tests/unit/src/render/frontmatter.test.ts tests/unit/src/parts/frontmatter.test.ts tests/unit/src/render/syntax/frontmatter.test.ts tests/unit/src/parts/collapsible.test.ts tests/unit/src/render/index.test.ts tests/unit/src/render/syntax/includes.test.ts tests/unit/src/knowledge/references.test.ts
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-render-frontmatter
+
+ ❯ |unit| tests/unit/src/parts/collapsible.test.ts (3 tests | 1 failed) 245ms
+   × test_render_collapsible_when_class_name 6ms
+ ❯ |unit| tests/unit/src/parts/frontmatter.test.ts (1 test | 1 failed) 181ms
+   × test_render_frontmatter 180ms
+ ❯ |unit| tests/unit/src/render/frontmatter.test.ts (6 tests | 6 failed) 546ms
+   × test_split_frontmatter 191ms
+   × test_split_frontmatter_when_dots_close 12ms
+   × test_split_frontmatter_when_crlf_and_bom 255ms
+   × test_split_frontmatter_when_unclosed 78ms
+   × test_split_frontmatter_when_not_first_line 3ms
+   × test_split_frontmatter_when_empty 6ms
+ ❯ |unit| tests/unit/src/knowledge/references.test.ts (6 tests | 1 failed) 3087ms
+   × test_parse_document_when_frontmatter 7ms
+ ❯ |unit| tests/unit/src/render/syntax/frontmatter.test.ts (3 tests | 1 failed) 17491ms
+   × test_insert_frontmatter 17489ms
+ ❯ |unit| tests/unit/src/render/index.test.ts (10 tests | 2 failed) 16749ms
+   × test_render_document_when_frontmatter 8ms
+   × test_render_document_when_frontmatter_enabled 2ms
+ ❯ |unit| tests/unit/src/render/syntax/includes.test.ts (7 tests | 1 failed) 39ms
+   × test_expand_includes_when_frontmatter 8ms
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 13 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit| tests/unit/src/knowledge/references.test.ts > test_parse_document_when_frontmatter
+AssertionError: expected [ Array(1) ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   Token {
++     "attrs": [
++       [
++         "href",
++         "../%E8%A8%AD%E8%A8%88/arch.md",
++       ],
++     ],
++     "block": false,
++     "children": null,
++     "content": "",
++     "hidden": false,
++     "info": "",
++     "level": 0,
++     "map": null,
++     "markup": "",
++     "meta": null,
++     "nesting": 1,
++     "tag": "a",
++     "type": "link_open",
++   },
++ ]
+
+ ❯ tests/unit/src/knowledge/references.test.ts:139:17
+    137|     .flatMap((token) => token.children ?? [])
+    138|     .filter((child) => child.type === "link_open");
+    139|   expect(links).toEqual([]);
+       |                 ^
+    140|   expect(parsed.glossary.map((row) => row.entry.term)).toEqual(["公開関数"…
+    141|   expect(parsed.glossary[0]?.line).toBe(10);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/13]⎯
+
+ FAIL  |unit| tests/unit/src/parts/collapsible.test.ts > test_render_collapsible_when_class_name
+AssertionError: expected '<details class="mdmark-collapsible"><…' to be '<details class="mdmark-collapsible md…' // Object.is equality
+
+Expected: "<details class="mdmark-collapsible mdmark-frontmatter"><summary>フロントマター</summary><pre></pre></details>"
+Received: "<details class="mdmark-collapsible"><summary>フロントマター</summary><pre></pre></details>"
+
+ ❯ tests/unit/src/parts/collapsible.test.ts:48:16
+     46|   });
+     47|   // 検証
+     48|   expect(html).toBe(
+       |                ^
+     49|     '<details class="mdmark-collapsible mdmark-frontmatter"><summary>フ…
+     50|   );
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/13]⎯
+
+ FAIL  |unit| tests/unit/src/parts/frontmatter.test.ts > test_render_frontmatter
+Error: Cannot find module '/src/parts/frontmatter.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-render-frontmatter/tests/unit/src/parts/frontmatter.test.ts
+ ❯ tests/unit/src/parts/frontmatter.test.ts:9:33
+      7| test("test_render_frontmatter", async () => {
+      8|   // 準備
+      9|   const { renderFrontmatter } = await loadFrontmatter();
+       |                                 ^
+     10|   // 実行
+     11|   const html = renderFrontmatter({ body: "<pre></pre>" });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/13]⎯
+
+ FAIL  |unit| tests/unit/src/render/frontmatter.test.ts > test_split_frontmatter
+Error: Cannot find module '/src/render/frontmatter.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-render-frontmatter/tests/unit/src/render/frontmatter.test.ts
+ ❯ tests/unit/src/render/frontmatter.test.ts:12:32
+     10| test("test_split_frontmatter", async () => {
+     11|   // 準備
+     12|   const { splitFrontmatter } = await loadFrontmatter();
+       |                                ^
+     13|   const head = "---\ntitle: a\ntags: [b]\n---";
+     14|   const markdown = `${head}\n\n# 見出し`;
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/13]⎯
+
+ FAIL  |unit| tests/unit/src/render/frontmatter.test.ts > test_split_frontmatter_when_dots_close
+Error: Cannot find module '/src/render/frontmatter.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-render-frontmatter/tests/unit/src/render/frontmatter.test.ts
+ ❯ tests/unit/src/render/frontmatter.test.ts:28:32
+     26| test("test_split_frontmatter_when_dots_close", async () => {
+     27|   // 準備
+     28|   const { splitFrontmatter } = await loadFrontmatter();
+       |                                ^
+     29|   const markdown = "---\ntitle: a\n...\n本文";
+     30|   // 実行
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/13]⎯
+
+ FAIL  |unit| tests/unit/src/render/frontmatter.test.ts > test_split_frontmatter_when_crlf_and_bom
+Error: Cannot find module '/src/render/frontmatter.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-render-frontmatter/tests/unit/src/render/frontmatter.test.ts
+ ❯ tests/unit/src/render/frontmatter.test.ts:41:32
+     39| test("test_split_frontmatter_when_crlf_and_bom", async () => {
+     40|   // 準備
+     41|   const { splitFrontmatter } = await loadFrontmatter();
+       |                                ^
+     42|   const markdown = "﻿---  \r\ntitle: a\r\n--- \r\n本文";
+     43|   // 実行
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/13]⎯
+
+ FAIL  |unit| tests/unit/src/render/frontmatter.test.ts > test_split_frontmatter_when_unclosed
+Error: Cannot find module '/src/render/frontmatter.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-render-frontmatter/tests/unit/src/render/frontmatter.test.ts
+ ❯ tests/unit/src/render/frontmatter.test.ts:55:32
+     53| test("test_split_frontmatter_when_unclosed", async () => {
+     54|   // 準備
+     55|   const { splitFrontmatter } = await loadFrontmatter();
+       |                                ^
+     56|   const markdown = "---\n段落\n\n## 見出し";
+     57|   // 実行
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/13]⎯
+
+ FAIL  |unit| tests/unit/src/render/frontmatter.test.ts > test_split_frontmatter_when_not_first_line
+Error: Cannot find module '/src/render/frontmatter.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-render-frontmatter/tests/unit/src/render/frontmatter.test.ts
+ ❯ tests/unit/src/render/frontmatter.test.ts:68:32
+     66| test("test_split_frontmatter_when_not_first_line", async () => {
+     67|   // 準備
+     68|   const { splitFrontmatter } = await loadFrontmatter();
+       |                                ^
+     69|   const markdown = "\n---\ntitle: a\n---";
+     70|   // 実行
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/13]⎯
+
+ FAIL  |unit| tests/unit/src/render/frontmatter.test.ts > test_split_frontmatter_when_empty
+Error: Cannot find module '/src/render/frontmatter.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-render-frontmatter/tests/unit/src/render/frontmatter.test.ts
+ ❯ tests/unit/src/render/frontmatter.test.ts:80:32
+     78| test("test_split_frontmatter_when_empty", async () => {
+     79|   // 準備
+     80|   const { splitFrontmatter } = await loadFrontmatter();
+       |                                ^
+     81|   const markdown = "---\n\n---\n本文";
+     82|   // 実行
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/13]⎯
+
+ FAIL  |unit| tests/unit/src/render/index.test.ts > test_render_document_when_frontmatter
+AssertionError: expected '<hr data-source-line="0" />\n<h2 data…' not to contain 'title: a'
+
+- Expected
++ Received
+
+- title: a
++ <hr data-source-line="0" />
++ <h2 data-source-line="1" class="mdmark-heading" id="title-a">title: a<a class="mdmark-anchor" href="#title-a" aria-label="「title: a」へのリンク"></a></h2><div class="mdmark-section-body" id="section-title-a" data-section="open"></div><h1 data-source-line="4" class="mdmark-heading" id="見出し">見出し<a class="mdmark-anchor" href="#見出し" aria-label="「見出し」へのリンク"></a></h1><div class="mdmark-section-body" id="section-見出し" data-section="open"></div>
+
+ ❯ tests/unit/src/render/index.test.ts:205:20
+    203|   const { html } = renderDocument({ markdown, config: resolveConfig({}…
+    204|   // 検証
+    205|   expect(html).not.toContain("title: a");
+       |                    ^
+    206|   expect(html).not.toContain("<hr");
+    207|   expect(html).not.toContain("<h2");
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/13]⎯
+
+ FAIL  |unit| tests/unit/src/render/index.test.ts > test_render_document_when_frontmatter_enabled
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ tests/unit/src/render/index.test.ts:224:85
+    222|   const { html: fencedHtml } = renderDocument({ markdown: fenced, conf…
+    223|   // 検証
+    224|   expect(html.startsWith('<details class="mdmark-collapsible mdmark-fr…
+       |                                                                                     ^
+    225|   const details = html.slice(0, html.indexOf("</details>"));
+    226|   expect(details).not.toContain(" open");
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/13]⎯
+
+ FAIL  |unit| tests/unit/src/render/syntax/frontmatter.test.ts > test_insert_frontmatter
+AssertionError: expected undefined to be 'html_block' // Object.is equality
+
+- Expected:
+"html_block"
+
++ Received:
+undefined
+
+ ❯ tests/unit/src/render/syntax/frontmatter.test.ts:29:22
+     27|   // 検証
+     28|   const [open, fence, close] = tokens;
+     29|   expect(open?.type).toBe("html_block");
+       |                      ^
+     30|   expect(open?.content).toContain("mdmark-frontmatter");
+     31|   expect(open?.content).toContain('data-mdmark-own="test-nonce"');
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[12/13]⎯
+
+ FAIL  |unit| tests/unit/src/render/syntax/includes.test.ts > test_expand_includes_when_frontmatter
+AssertionError: expected [ …(2) ] to have a length of 1 but got 2
+
+- Expected
++ Received
+
+- 1
++ 2
+
+ ❯ tests/unit/src/render/syntax/includes.test.ts:151:33
+    149|   const { html } = renderDoc(markdown, { frontmatter: true }, { includ…
+    150|   // 検証
+    151|   expect(findTags(html, "<h2")).toHaveLength(1);
+       |                                 ^
+    152|   expect(html).toContain("実行の本文");
+    153|   expect(html).not.toContain("title: 手順");
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[13/13]⎯
+
+
+ Test Files  7 failed (7)
+      Tests  13 failed | 23 passed (36)
+   Start at  10:05:58
+   Duration  20.83s (tests 58%, transform 35%, import 6%, worker 1%)
+

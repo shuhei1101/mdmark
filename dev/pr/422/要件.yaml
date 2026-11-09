@@ -98,15 +98,21 @@ docs:
   - page: schemas/mdmark.config.schema.json
     new: false
     change: features.frontmatter（boolean・既定 false）を追加する
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-09T01:09:31.971622+00:00'
   - page: schemas/mdmark.settings.schema.json
     new: false
-    change: features.frontmatter（boolean・既定 false）を追加する
-    status: todo
+    change: features.frontmatter（boolean・既定 false）を追加する。端末の設定の Schema は allOf で mdmark.config.schema.json を参照するため、このファイルは変えない
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-09T01:09:31.971622+00:00'
   - page: migrations/no-steps.yaml
     new: false
     change: features に省いてよい frontmatter を追加しただけの行を追加する
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-09T01:09:31.971622+00:00'
   - page: docs/リファレンス/設定.md
     new: false
     change: features.frontmatter を追加する
