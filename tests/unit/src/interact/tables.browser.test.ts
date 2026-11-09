@@ -2310,14 +2310,18 @@ test("test_attach_tables_when_resized_column_not_folded", async () => {
   }
   await new Promise((resolve) => requestAnimationFrame(resolve));
   // 検証
-  expect([...lastCells()].some((cell) => cell.classList.contains("mdmark-fold-col"))).toBe(false);
+  expect(
+    [...lastCells()].some((cell) => cell.classList.contains("mdmark-fold-col")),
+  ).toBe(false);
   expect(table.classList.contains("is-folded")).toBe(false);
   // 実行: 描く先の要素の幅を変える
   setRootWidth(root, 590);
   await new Promise((resolve) => requestAnimationFrame(resolve));
   await new Promise((resolve) => requestAnimationFrame(resolve));
   // 検証
-  expect([...lastCells()].some((cell) => cell.classList.contains("mdmark-fold-col"))).toBe(false);
+  expect(
+    [...lastCells()].some((cell) => cell.classList.contains("mdmark-fold-col")),
+  ).toBe(false);
   expect(table.classList.contains("is-folded")).toBe(false);
 });
 
@@ -2326,10 +2330,12 @@ test("test_attach_tables_when_resize_off", async () => {
   // 準備
   addStyles();
   const { attachTables } = await loadTables();
-  const { root } = createRoot(dataTable({ values: ["10", "2", "33"] }).replace(
-    "<!-- table: data -->",
-    "<!-- table: data -resize -->",
-  ));
+  const { root } = createRoot(
+    dataTable({ values: ["10", "2", "33"] }).replace(
+      "<!-- table: data -->",
+      "<!-- table: data -resize -->",
+    ),
+  );
   // 実行
   detachers.push(attachTables(root));
   // 検証

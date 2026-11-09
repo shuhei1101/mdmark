@@ -45,7 +45,9 @@ function resizableTable(): {
     throw new Error("表が無い");
   }
   const headCells = [...table.querySelectorAll<HTMLTableCellElement>("th")];
-  const handles = [...table.querySelectorAll<HTMLElement>(".mdmark-col-resize")];
+  const handles = [
+    ...table.querySelectorAll<HTMLElement>(".mdmark-col-resize"),
+  ];
   return { table, headCells, handles };
 }
 
@@ -112,9 +114,9 @@ test("test_attach_column_resize_when_dragged", async () => {
     new MouseEvent("dblclick", { bubbles: true, cancelable: true }),
   );
   expect(headCells[0].offsetWidth).toBe(before[0]);
-  expect(
-    headCells[0].style.getPropertyValue("--mdmark-column-min-width"),
-  ).toBe(INITIAL_MIN_WIDTH);
+  expect(headCells[0].style.getPropertyValue("--mdmark-column-min-width")).toBe(
+    INITIAL_MIN_WIDTH,
+  );
 });
 
 // ←→ キーで 16px ずつ変え、Enter で戻し、つまみの値を書き換える（正常系）
