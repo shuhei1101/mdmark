@@ -130,7 +130,7 @@ constants:
     title: サーバーの使用方法の説明
     container: src/plugin/mcp.ts
     usecase: 共通
-    summary: MCP の `instructions` に指定する、使用する場面と順序の事実の文。`{session}` は tmux のセッション名
+    summary: MCP の `instructions` に指定する、使用する場面と順序の事実の文。`{location}` は常駐サーバーが動いている場所（`describeServerLocation`）
     value: |-
       mdmark は Markdown 文書の記法・部品・図を描くライブラリで、この MCP サーバーは mdmark の文書の点検（check）・HTML への書き出し（export_html）・1 枚へのまとめ（build_site）と、利用側の CSS のテンプレートの一覧（list_templates）・登録（add_template）・配置（apply_template）を持つ。
       mdmark の記法・部品・図の記載方法は、ガイドとして dev-docs の配信元 mdmark にある。
@@ -140,7 +140,7 @@ constants:
       利用側の CSS を探すときは list_templates で一覧を引き、選んだテンプレートを apply_template で配置して、返った theme の値を設定の theme に記載する。作った CSS を使い回すときは add_template で登録する。
       記法を使用しない Markdown の編集とコードの調査には、この MCP サーバーとガイドは要らない。
 
-      この常駐サーバーは tmux のセッション {session} で動く。止まったときは /mdmark:global-setup でもう一度起動できる。
+      この常駐サーバーは {location} で動く。止まったときは /mdmark:global-setup でもう一度起動できる。
     refs:
       - dev/設計書/インターフェース定義/ClaudeCodeプラグイン/MCPサーバーを起動・停止する.ts#constraints[instructions]
     status: planned
@@ -675,6 +675,36 @@ functions:
     status: planned
     introduced:
       pr: 353
+  - name: describeServerLocation
+    title: 常駐サーバーが動いている場所の文を作る
+    kind: 関数
+    container: src/plugin/mcp.ts
+    usecase: 共通
+    role: 処理
+    summary: '`instructions` の `{location}` に入れる文を、起動の方法から作る'
+    scope: public
+    is_async: false
+    args:
+      - name: options
+        type: '{ launcher: string | undefined; unit: string; session: string }'
+        required: true
+        description: '`MDMARK_LAUNCHER` の値・unit の名前・tmux のセッション名'
+    returns:
+      type: string
+      description: 場所の文
+    process: 1. `launcher` が `systemd` なら `systemd --user の unit {unit}（ログは journalctl --user -u {unit}）`、ほかは `tmux のセッション {session}` を返却する
+    unit_tests:
+      - name: test_describe_server_location
+        case: 正常
+        summary: systemd なら unit とログ、ほかは tmux のセッション
+        condition: '`launcher` が `systemd`・`tmux`・`undefined`、unit `u`・セッション `s`'
+        mock: なし
+        expected: '`systemd --user の unit u（ログは journalctl --user -u u）`・`tmux のセッション s`・`tmux のセッション s`'
+    refs:
+      - dev/設計書/インターフェース定義/ClaudeCodeプラグイン/MCPサーバーを起動・停止する.ts#constraints[instructions]
+    status: planned
+    introduced:
+      pr: 444
   - name: createMcpServer
     title: MCP サーバーを作る
     kind: 関数
@@ -687,14 +717,14 @@ functions:
     is_async: false
     args:
       - name: options
-        type: '{ roots: ServerRoots; version: string; sessionName: string; stderr: (line: string) => void }'
+        type: '{ roots: ServerRoots; version: string; serverLocation: string; stderr: (line: string) => void }'
         required: true
-        description: サーバーの読み込む場所・サーバーのバージョン（mdmark のバージョン）・tmux のセッション名・標準エラーへ 1 行書く関数
+        description: サーバーの読み込む場所・サーバーのバージョン（mdmark のバージョン）・常駐サーバーが動いている場所の文・標準エラーへ 1 行書く関数
     returns:
       type: McpServer
       description: ツールを登録したサーバー
     process: |-
-      1. `{ name: SERVER_NAME, version }` と `{ capabilities: { tools: {} }, instructions: INSTRUCTIONS の {session} をセッション名にしたもの }` で `McpServer` を作る
+      1. `{ name: SERVER_NAME, version }` と `{ capabilities: { tools: {} }, instructions: INSTRUCTIONS の {location} を serverLocation にしたもの }` で `McpServer` を作る
       2. `TOOLS` の各ツールを、説明・`fromJsonSchema(inputSchema, ACCEPT_ALL_VALIDATOR)`・`annotations`（持つツールだけ）で登録し、呼び出しごとに `roots` を指定してツールを呼ぶ（ツールを呼ぶ）
     unit_tests:
       - name: test_create_mcp_server
@@ -702,7 +732,7 @@ functions:
         summary: 6 つのツールと instructions と annotations を出す
         condition: 作ったサーバーを `InMemoryTransport` でクライアントとつなぐ
         mock: なし（SDK の `Client`）
-        expected: '`listTools` の名前が `TOOLS` の 6 つと一致し、どのツールの `inputSchema.properties` にも `project_dir` が無く、`check` と `list_templates` だけの `annotations.readOnlyHint` が `true`、`getInstructions()` が `INSTRUCTIONS` の `{session}` を指定したセッション名にしたもので 4,096 文字以下'
+        expected: '`listTools` の名前が `TOOLS` の 6 つと一致し、どのツールの `inputSchema.properties` にも `project_dir` が無く、`check` と `list_templates` だけの `annotations.readOnlyHint` が `true`、`getInstructions()` が `INSTRUCTIONS` の `{location}` を指定した文にしたもので 4,096 文字以下'
       - name: test_create_mcp_server_when_arguments_invalid
         case: 正常
         summary: 合わない引数は SDK でなく日本語の文で返る
@@ -848,7 +878,7 @@ functions:
       description: 終了コード
     process: |-
       1. ポートを読み込む（`CliError` は呼び出し元の CLI が終了コード 1 にする）
-      2. `{packageDir}/dist` でサーバーの読み込む場所を作り、端末の設定（`resolveSettingsPath`）の `serve.tmuxSession`（無ければ `mdmark-mcp`）をセッション名にする。端末の設定を読み込めなければ既定の名前にする
+      2. `{packageDir}/dist` でサーバーの読み込む場所を作り、端末の設定（`resolveSettingsPath`）の `serve.systemdUnit`・`serve.tmuxSession`（無ければどちらも `mdmark-mcp`）と `MDMARK_LAUNCHER` を `describeServerLocation` に渡して、常駐サーバーが動いている場所の文にする。端末の設定を読み込めなければ既定の名前にする
       3. `createMcpHandler` に、要求ごとに MCP サーバーを作る関数を指定してハンドラーを作る
       4. `node:http` のサーバーで、要求ごとに要求を変換し、要求を振り分け、応答を記載する
       5. `LISTEN_HOST` とポートで待ち受ける。`EADDRINUSE` なら `PORT_IN_USE_MESSAGE` を標準エラーに書き込んで 1 を返却する

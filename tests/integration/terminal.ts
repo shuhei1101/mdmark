@@ -1,4 +1,7 @@
 import { execFile, execFileSync } from "node:child_process";
+import { randomUUID } from "node:crypto";
+import { rm } from "node:fs/promises";
+import { homedir } from "node:os";
 import { join } from "node:path";
 import { afterEach, inject } from "vitest";
 import { useTempDirs } from "./cli.ts";
@@ -24,6 +27,58 @@ export const HAS_TMUX = (() => {
     return false;
   }
 })();
+
+/** systemd --user が使えるか（`is-system-running` の標準出力が running・degraded・starting） */
+export const HAS_SYSTEMD = (() => {
+  try {
+    execFileSync("systemctl", ["--user", "is-system-running"]);
+    return true;
+  } catch (error) {
+    const stdout = String((error as { stdout?: unknown }).stdout ?? "").trim();
+    return ["running", "degraded", "starting"].includes(stdout);
+  }
+})();
+
+/** user のマネージャーが unit のファイルを読む `XDG_CONFIG_HOME`（テストを実行している手元の値） */
+export const USER_CONFIG_HOME =
+  process.env.XDG_CONFIG_HOME || join(homedir(), ".config");
+
+/** systemctl --user を実行し、終了コードと標準出力を返却する */
+export const systemctl = (args: string[]) =>
+  new Promise<{ code: number; stdout: string }>((resolve) => {
+    execFile("systemctl", ["--user", ...args], (error, stdout) => {
+      resolve({ code: error ? Number(error.code ?? 1) : 0, stdout });
+    });
+  });
+
+/** テストごとにテスト専用の unit の名前を作り、終わったら unit を止めて unit のファイルを削除する。手元の `mdmark-mcp` には触れない */
+export function useTestUnits(): {
+  createUnitName: () => string;
+  unitPath: (unit: string) => string;
+} {
+  const names: string[] = [];
+  const unitPath = (unit: string) =>
+    join(USER_CONFIG_HOME, "systemd", "user", `${unit}.service`);
+  afterEach(async () => {
+    const units = names.splice(0);
+    for (const unit of units) {
+      await systemctl(["disable", "--now", unit]);
+      await rm(unitPath(unit), { force: true });
+    }
+    if (units.length > 0) {
+      await systemctl(["daemon-reload"]);
+      for (const unit of units) {
+        await systemctl(["reset-failed", unit]);
+      }
+    }
+  });
+  const createUnitName = () => {
+    const unit = `mdmark-test-${randomUUID().slice(0, 8)}`;
+    names.push(unit);
+    return unit;
+  };
+  return { createUnitName, unitPath };
+}
 
 /** `TMUX`・`TMUX_PANE` を削除した環境。あると tmux は `TMUX_TMPDIR` を確認せず、テストを実行している手元の tmux サーバーにつなぐ */
 const isolatedEnv = (env: Record<string, string>): Record<string, string> => {

@@ -1,0 +1,96 @@
+title: systemd
+kind: CLI
+version:
+  current: '255'
+  checked_on: '2026-11-09'
+  source: 文書の作成者の端末に入っている systemd（`systemctl --version`）
+  pinning: 固定しない。`global-setup` は利用者の端末の systemd --user を呼ぶ
+catalogs:
+  - name: コマンド
+    version: '255'
+    entries:
+      - name: systemctl --user is-system-running
+        kind: コマンド
+        purpose: user のマネージャーの状態を標準出力に返却する
+        returns:
+          - name: 標準出力
+            type: string
+            description: '`running`・`degraded`・`starting` はマネージャーが動いている。`offline` や接続できない誤りは使用できない'
+          - name: 終了コード
+            type: number
+            description: '`running` のときだけ `0`。`degraded` でも `1`'
+      - name: systemctl --user daemon-reload
+        kind: コマンド
+        purpose: unit のファイルを読み直す。unit のファイルを記載・削除した後に呼ぶ
+      - name: systemctl --user enable --now
+        kind: コマンド
+        purpose: unit を `WantedBy` の target に結び、すぐに起動する
+        params:
+          - name: '{unit の名前}'
+            type: string
+            required: true
+            description: '`.service` を省いた名前'
+      - name: systemctl --user disable --now
+        kind: コマンド
+        purpose: unit を target から除外し、止める。unit のファイルは残る
+      - name: systemctl --user restart
+        kind: コマンド
+        purpose: unit を止めてから起動する
+      - name: systemctl --user is-active
+        kind: コマンド
+        purpose: unit が動いているかを標準出力に返却する
+        returns:
+          - name: 標準出力
+            type: string
+            description: '`active`・`inactive`・`failed` など。unit が無くても `inactive`（終了コード 4）'
+      - name: systemctl --user is-enabled
+        kind: コマンド
+        purpose: unit が target に結ばれているかを標準出力に返却する
+        returns:
+          - name: 標準出力
+            type: string
+            description: '`enabled`・`disabled` など。unit が無ければ `not-found`（終了コード 4）'
+      - name: systemctl --user show -p MainPID,NRestarts,ActiveState,SubState --value
+        kind: コマンド
+        purpose: unit のメインのプロセスの PID（動いていなければ `0`）・自動で起動し直した回数・状態を 1 行ずつ返却する。行の順は `-p` の順ではなく systemd の項目の順
+      - name: journalctl --user -u
+        kind: コマンド
+        purpose: unit の標準出力・標準エラーのログを表示する
+        params:
+          - name: -n
+            type: number
+            required: false
+            description: 末尾の行数
+          - name: --no-pager
+            type: flag
+            required: false
+            description: ページャーを使用しない
+          - name: -o cat
+            type: flag
+            required: false
+            description: 時刻などを付けずに本文だけを出す
+lead: '`global-setup` が常駐サーバー（`mdmark serve`）を動かす user のサービスマネージャー。unit の読み直し・起動・停止・状態の確認と journal のログに使用する。'
+supplier: systemd
+dependency_scope: 任意
+adoption: 採用
+used_in:
+  - src/plugin/setup/
+upstream: systemd/systemd
+verification:
+  state: 済
+  date: '2026-11-09'
+  detail: WSL2 の Ubuntu（systemd 255、`/etc/wsl.conf` の `[boot] systemd=true`）で、`is-system-running` が `degraded` を出して終了コード 1 だった。無い unit の `is-active` は `inactive`（終了コード 4）、`is-enabled` は `not-found`（終了コード 4）。`~/.config/systemd/user/` に `Environment="A=x %% y"` と `ExecStart=/bin/sh -c '…'` の unit を配置して `daemon-reload`・`enable --now` すると `active`・`enabled` になり、`journalctl --user -u {名前} -o cat` に `x % y` を含む標準出力の行が出た。user のマネージャーの `PATH` には nvm の node・npx が無かった。`Restart=on-failure` と、2 秒後に `exit 1` する `ExecStart` の unit では、14 秒の間 `ActiveState` が `active` と `activating`（`SubState` が `auto-restart`）を繰り返して `failed` にならず、`NRestarts` が 1 秒前後ごとに増えて 5 になった。`stop` の後の `start`・`restart` で `NRestarts` は 0 に戻った
+license: LGPL-2.1-or-later
+official_url: https://systemd.io/
+docs_url: https://www.freedesktop.org/software/systemd/man/latest/systemctl.html
+limitations:
+  - item: PATH
+    content: user のマネージャーの `PATH`（`systemctl --user show-environment`）はログインシェルと違い、nvm などで入れた node・npx が無いことがある。unit の `Environment=` で `PATH` を指定する
+  - item: Restart=on-failure の状態
+    content: '`Restart=on-failure` の unit のプロセスが 0 以外で終わると、`ActiveState`・`SubState` は `activating`・`auto-restart` と `active`・`running` を繰り返し、起動の上限（`StartLimitIntervalSec=`・`StartLimitBurst=`、既定 10 秒に 5 回）を超えるまで `failed` にならない。`is-active` も多くの時点で `active` を返却する。終わったことは `NRestarts` が増えたことで分かる。`NRestarts` は `start`・`restart` で 0 に戻る'
+  - item: 値の打ち消し
+    content: unit のファイルで `%` は指定子になるため `%%` と記載する。`Environment=` の値は `"` で囲むと空白を含められる
+  - item: 使用できない端末
+    content: macOS、systemd を有効にしていない WSL、コンテナの中などでは user のマネージャーが動いていない
+  - item: unit のファイルの配置場所
+    content: user のマネージャー自身の `XDG_CONFIG_HOME`（既定 `~/.config`）の `systemd/user/` を読む。呼んだ側の環境変数で別のフォルダには切り替えられない

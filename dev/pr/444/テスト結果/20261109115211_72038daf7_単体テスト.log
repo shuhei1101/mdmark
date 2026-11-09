@@ -1,0 +1,54 @@
+$ npx vitest run --project 'unit*' tests/unit/src/plugin/setup tests/unit/src/plugin/mcp.test.ts
+   × test_has_systemd 108ms
+   × test_has_systemd_when_offline 3ms
+   × test_escape_unit_value 3ms
+   × test_build_unit_file 3ms
+   × test_build_unit_path_env 3ms
+   × test_build_unit_path_env_when_same_input 2ms
+   × test_read_unit_state 3ms
+   × test_has_unit_exited 9ms
+   × test_read_unit_name 2ms
+   × test_read_launcher_setting 0ms
+   × test_resolve_unit_path 0ms
+   × test_read_terminal_status_when_systemd_available 1006ms
+   × test_create_mcp_server 7219ms
+   × test_describe_server_location 1ms
+   × test_build_tmux_args 4063ms
+   × test_start_with_tmux 2263ms
+   × test_resolve_launcher 1ms
+   × test_resolve_launcher_when_missing 3ms
+   × test_wait_for_listening 5ms
+   × test_start_with_systemd 18ms
+   × test_start_with_systemd_when_path_differs 6ms
+   × test_start_with_systemd_when_exited 12ms
+   × test_start_with_systemd_when_timed_out 9ms
+   × test_start_with_tmux_when_migrating 76ms
+   × test_start_with_tmux_when_unit_running 54ms
+⎯⎯⎯⎯⎯⎯ Failed Tests 25 ⎯⎯⎯⎯⎯⎯⎯
+ FAIL  |unit| tests/unit/src/plugin/mcp.test.ts > test_create_mcp_server
+ FAIL  |unit| tests/unit/src/plugin/mcp.test.ts > test_describe_server_location
+ FAIL  |unit| tests/unit/src/plugin/setup/paths.test.ts > test_read_unit_name
+ FAIL  |unit| tests/unit/src/plugin/setup/paths.test.ts > test_read_launcher_setting
+ FAIL  |unit| tests/unit/src/plugin/setup/paths.test.ts > test_resolve_unit_path
+ FAIL  |unit| tests/unit/src/plugin/setup/server.test.ts > test_build_tmux_args
+ FAIL  |unit| tests/unit/src/plugin/setup/server.test.ts > test_start_with_tmux
+ FAIL  |unit| tests/unit/src/plugin/setup/server.test.ts > test_resolve_launcher
+ FAIL  |unit| tests/unit/src/plugin/setup/server.test.ts > test_resolve_launcher_when_missing
+ FAIL  |unit| tests/unit/src/plugin/setup/server.test.ts > test_wait_for_listening
+ FAIL  |unit| tests/unit/src/plugin/setup/server.test.ts > test_start_with_systemd
+ FAIL  |unit| tests/unit/src/plugin/setup/server.test.ts > test_start_with_systemd_when_path_differs
+ FAIL  |unit| tests/unit/src/plugin/setup/server.test.ts > test_start_with_systemd_when_exited
+ FAIL  |unit| tests/unit/src/plugin/setup/server.test.ts > test_start_with_systemd_when_timed_out
+ FAIL  |unit| tests/unit/src/plugin/setup/server.test.ts > test_start_with_tmux_when_migrating
+ FAIL  |unit| tests/unit/src/plugin/setup/server.test.ts > test_start_with_tmux_when_unit_running
+ FAIL  |unit| tests/unit/src/plugin/setup/status.test.ts > test_read_terminal_status_when_systemd_available
+ FAIL  |unit| tests/unit/src/plugin/setup/systemd.test.ts > test_has_systemd
+ FAIL  |unit| tests/unit/src/plugin/setup/systemd.test.ts > test_has_systemd_when_offline
+ FAIL  |unit| tests/unit/src/plugin/setup/systemd.test.ts > test_escape_unit_value
+ FAIL  |unit| tests/unit/src/plugin/setup/systemd.test.ts > test_build_unit_file
+ FAIL  |unit| tests/unit/src/plugin/setup/systemd.test.ts > test_build_unit_path_env
+ FAIL  |unit| tests/unit/src/plugin/setup/systemd.test.ts > test_build_unit_path_env_when_same_input
+ FAIL  |unit| tests/unit/src/plugin/setup/systemd.test.ts > test_read_unit_state
+ FAIL  |unit| tests/unit/src/plugin/setup/systemd.test.ts > test_has_unit_exited
+ Test Files  5 failed | 3 passed (8)
+      Tests  25 failed | 26 passed (51)

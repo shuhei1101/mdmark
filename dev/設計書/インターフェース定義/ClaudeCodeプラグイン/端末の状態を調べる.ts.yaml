@@ -23,6 +23,8 @@ flows:
       - 終了コードが 0
       - '`settings.path` が `MDMARK_CONFIG`、`settings.exists` が `false`、`settings.default_path` が `false`'
       - '`server.session` が `mdmark-mcp`、`server.listening` が `false`、`tmux.available` が `true`'
+      - '`launcher.setting` が `auto`、`server.unit` が `mdmark-mcp`、`server.unit_path` が `~/.config/systemd/user/mdmark-mcp.service`'
+      - '`systemd.available` が、`systemctl --user is-system-running` の標準出力が `running`・`degraded`・`starting` のどれかのときに `true`。`launcher.resolved` は `systemd.available` が `true` なら `systemd`、ほかは `tmux`'
       - '`state.log` が `MDMARK_STATE_DIR` の下の `serve.log`'
     test: test_normal
   - name: 正常系（セットアップ済み）
@@ -44,6 +46,25 @@ flows:
       - '`settings.exists` が `true`、`settings.version` が端末の設定の `version`、`settings.target_version` がプラグインのバージョン'
       - '`server.session` が `mdmark-test`、`server.session_exists` と `server.listening` が `true`'
     test: test_normal_when_already_set_up
+  - name: 正常系（systemd --user が使えない）
+    summary: '`PATH` に `systemctl` が無いことと、`auto` が tmux になることを返却する'
+    setup:
+      - name: 一時の端末
+        description: '`MDMARK_CONFIG`・`MDMARK_STATE_DIR`・`CLAUDE_CONFIG_DIR`・`TMUX_TMPDIR` を、それぞれ空の一時フォルダの下にする'
+      - name: systemctl の無い PATH
+        description: '`PATH` から `systemctl` を削除する'
+      - name: Mock
+        description: ビルドした `plugin/bin/setup.js` を子プロセスで実行する。差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        participant K as スキル（global-setup・setup）
+        participant P as setup.js
+        K->>P: status
+        P-->>K: systemd.available: false・終了コード 0
+    expected:
+      - 終了コードが 0
+      - '`systemd.available` が `false`、`launcher.resolved` が `tmux`、`server.unit_active` と `server.unit_enabled` が `false`'
+    test: test_normal_when_systemd_unavailable
   - name: 正常系（tmux が無い）
     summary: '`PATH` に tmux が無いことを返却する'
     setup:
@@ -82,7 +103,7 @@ flows:
       - 終了コードが 1
       - 標準エラーに端末の設定のパスと 3 行目が出る
     test: test_error_when_settings_unreadable
-lead: '`global-setup` と `setup` が最初に呼び、端末の設定のパスとバージョン・tmux のセッション名・常駐サーバーが待ち受けているか・ログの場所を返却する。何も書き換えない。'
+lead: '`global-setup` と `setup` が最初に呼び、端末の設定のパスとバージョン・起動の方法・unit の名前と tmux のセッション名・常駐サーバーが待ち受けているか・ログの場所を返却する。何も書き換えない。'
 test_file: tests/integration/ClaudeCodeプラグイン/setup-status.test.ts
 idempotent: true
 side_effects: なし
@@ -139,6 +160,27 @@ response:
   - name: tmux.available
     type: boolean
     description: '`PATH` に tmux がある'
+  - name: systemd.available
+    type: boolean
+    description: systemd --user が使える（`PATH` に `systemctl` があり、`systemctl --user is-system-running` の標準出力が `running`・`degraded`・`starting` のどれか）
+  - name: launcher.setting
+    type: '"auto" | "systemd" | "tmux"'
+    description: 端末の設定の `serve.launcher`、無ければ `auto`
+  - name: launcher.resolved
+    type: '"systemd" | "tmux"'
+    description: '`start-server` が使用する起動の方法。`auto` は `systemd.available` が `true` なら `systemd`、ほかは `tmux`'
+  - name: server.unit
+    type: string
+    description: unit の名前（端末の設定の `serve.systemdUnit`、無ければ `mdmark-mcp`）
+  - name: server.unit_path
+    type: string
+    description: unit のファイルのパス（`${XDG_CONFIG_HOME:-~/.config}/systemd/user/{unit の名前}.service`）
+  - name: server.unit_active
+    type: boolean
+    description: '`systemctl --user is-active` が `active`。systemd --user が使えなければ `false`'
+  - name: server.unit_enabled
+    type: boolean
+    description: '`systemctl --user is-enabled` が `enabled`。systemd --user が使えなければ `false`'
   - name: state.dir
     type: string
     description: 状態の配置場所
@@ -153,6 +195,9 @@ exceptions:
 constraints:
   - item: ポートの確認
     constraint: '`127.0.0.1:{ポート}` へ TCP でつなぎ、接続を受けたら待ち受けているとする。待ちは 1 秒'
+  - item: systemd --user の確認
+    constraint: '`systemctl --user is-system-running` の標準出力で判定し、終了コードは見ない（`degraded` でも 0 以外になる）'
+    decided_by: dev/設計書/外部ライブラリ/systemd#catalogs
   - item: セッションの確認
     constraint: '`tmux has-session -t ={セッション名}` の終了コード 0 をセッションがあるとする'
   - item: 出力

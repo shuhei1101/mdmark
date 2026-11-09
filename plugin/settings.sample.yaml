@@ -8,5 +8,9 @@ config:
   applyToExport: true
 
 serve:
+  # /mdmark:global-setup が常駐サーバーを起動する方法（auto は systemd --user が使える端末では unit、使えない端末では tmux）
+  launcher: auto
+  # /mdmark:global-setup が常駐サーバーを起動する systemd --user の unit の名前
+  systemdUnit: mdmark-mcp
   # /mdmark:global-setup が常駐サーバーを起動する tmux のセッション名
   tmuxSession: mdmark-mcp

@@ -21,7 +21,7 @@ flows:
         P-->>K: キーごとの今の値・既定・説明・終了コード 0
     expected:
       - 終了コードが 0
-      - '`keys[]` に `features.table`（`current` が `false`）・`config.cascade`・`serve.tmuxSession` があり、それぞれ `default` と `description` を持つ'
+      - '`keys[]` に `features.table`（`current` が `false`）・`config.cascade`・`serve.tmuxSession`・`serve.launcher`・`serve.systemdUnit` があり、それぞれ `default` と `description` を持つ'
     test: test_normal
   - name: 正常系（文書のフォルダの設定）
     summary: '`mdmark.config.yaml` のキーを、端末の設定で重なる値つきで返却し、端末の設定だけのキーを含めない'
@@ -40,7 +40,7 @@ flows:
         P-->>K: キーごとの今の値・端末の設定の値・既定・終了コード 0
     expected:
       - '`features.table` の `current` が `null`、`inherited` が `false`'
-      - '`config.cascade` と `serve.tmuxSession` が無い'
+      - '`config.cascade`・`serve.tmuxSession`・`serve.launcher`・`serve.systemdUnit` が無い'
     test: test_normal_when_config
 lead: '`global-setup` と `setup` が利用者に 1 つずつ確認するために、設定の Schema のキーごとに今の値・既定・説明を返却する。何も書き換えない。'
 test_file: tests/integration/ClaudeCodeプラグイン/setup-keys.test.ts
