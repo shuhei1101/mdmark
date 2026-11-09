@@ -80,3 +80,19 @@
 <!-- /table -->
 
 lint は `テスト結果/20261109120835_6a2b60830_lint.log`（終了コード 0。警告は今回触っていない `plugin/bin/setup.js` のファイルの大きさの 1 件だけ）。
+
+### 結合
+
+<!-- table: data -->
+
+| ファイル | メソッド | 変更種別 | 結果 | 補足 |
+| --- | --- | --- | --- | --- |
+| `tests/integration/ClaudeCodeプラグイン/setup-start-server.test.ts` | 全実行 | 変更 | ✅ | 15 テスト pass。systemd --user の flows を追加し、tmux の flows を `test_normal_when_tmux*` に改名した。手元の user のマネージャーでテスト専用の unit（`mdmark-test-*`）を起動し、後に止めて削除する<br>`テスト結果/20261109124224_85cf34842_結合テスト.log` |
+| `tests/integration/ClaudeCodeプラグイン/setup-status.test.ts` | 全実行 | 変更 | ✅ | `test_normal_when_systemd_unavailable` を追加し、`test_normal` に起動の方法と unit の値を追加した |
+| `tests/integration/ClaudeCodeプラグイン/serve.test.ts` | 全実行 | 変更 | ✅ | `test_normal_when_launched_by_systemd` を追加した |
+| `tests/integration/ClaudeCodeプラグイン/setup-keys.test.ts` | 全実行 | 変更 | ✅ | `serve.launcher`・`serve.systemdUnit` を期待値に追加した |
+| `tests/integration/ClaudeCodeプラグイン/` のほかのファイル | 全実行 | 実行のみ | ✅ | 回帰確認 |
+
+<!-- /table -->
+
+lint は `テスト結果/20261109124630_85cf34842_lint.log`（終了コード 0。警告は今回触っていない `plugin/bin/setup.js` のファイルの大きさの 1 件だけ）。
