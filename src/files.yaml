@@ -959,6 +959,18 @@ files:
     related:
       - to: dev/設計書/部品設計/脚注の一覧.ts
         type: implements
+  - path: parts/frontmatter.stories.ts
+    description: 部品設計『フロントマター』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに参照する。
+    tags: [topic:ストーリー, tool:storybook, topic:部品, topic:フロントマター]
+    related:
+      - to: dev/設計書/部品設計/フロントマター.ts
+        type: implements
+  - path: parts/frontmatter.ts
+    description: モジュール構成『ライブラリ本体 / 部品』のうち「フロントマターの表示の折りたたみの renderFrontmatter」を受け持つ。フロントマターの表示の HTML を変えるときに参照する。
+    tags: [topic:部品, tool:html, topic:フロントマター]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/部品.ts
+        type: implements
   - path: parts/gallery.stories.ts
     description: 部品設計『ギャラリー』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに参照する。
     tags: [topic:ストーリー, tool:storybook, topic:部品, topic:ギャラリー]
@@ -1409,6 +1421,12 @@ files:
     related:
       - to: dev/設計書/モジュール構成/ライブラリ本体/描く.ts
         type: implements
+  - path: render/frontmatter.ts
+    description: モジュール構成『ライブラリ本体 / 描画』のうち「文書の先頭のフロントマターの判定と、本文からの除外の splitFrontmatter」を受け持つ。フロントマターの判定を変えるときに参照する。
+    tags: [topic:markdown, topic:フロントマター]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/描画.ts
+        type: implements
   - path: render/index.ts
     description: モジュール構成『ライブラリ本体 / 描画』のうち「render と renderDocument」を受け持つ。Markdown から HTML 文字列にする流れを変えるときに参照する。
     tags: [topic:markdown, tool:markdown-it]
@@ -1420,6 +1438,12 @@ files:
     tags: [topic:markdown, tool:markdown-it]
     related:
       - to: dev/設計書/モジュール構成/ライブラリ本体/描画.ts
+        type: implements
+  - path: render/syntax/frontmatter.ts
+    description: モジュール構成『ライブラリ本体 / 記法』のうち「フロントマターの表示を差し込むコアルールの insertFrontmatter」を受け持つ。フロントマターの表示の差し込みを変えるときに参照する。
+    tags: [topic:markdown, topic:構文, tool:markdown-it, topic:フロントマター]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/記法.ts
         type: implements
   - path: render/used.ts
     description: モジュール構成『ライブラリ本体 / CLI』のうち、書き出しで埋める外部ライブラリと範囲のスクリプトを文書から取得する処理（esbuild を import しない）を受け持つ。CLI と VS Code 拡張機能の書き出しで埋めるものの判定を変えるときに参照する。

@@ -61,6 +61,7 @@ import { renderEmbeddedHtml } from "../src/parts/embedded-html.ts";
 import { escapeHtml } from "../src/parts/escape.ts";
 import { renderFigure } from "../src/parts/figure.ts";
 import { renderFootnoteRef, renderFootnotes } from "../src/parts/footnote.ts";
+import { renderFrontmatter } from "../src/parts/frontmatter.ts";
 import { renderGallery } from "../src/parts/gallery.ts";
 import { renderGif } from "../src/parts/gif.ts";
 import { renderHighlight } from "../src/parts/highlight.ts";
@@ -1266,6 +1267,11 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
       title: String(args.title ?? ""),
       open: args.open === true,
       body: String(args.html ?? ""),
+    }),
+  frontmatter: (args) =>
+    renderFrontmatter({
+      body: String(args.body ?? ""),
+      open: args.open === true,
     }),
   wide: (args) =>
     `<p>範囲の前の段落</p>${renderWide({

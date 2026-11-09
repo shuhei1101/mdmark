@@ -1698,6 +1698,12 @@ files:
     related:
       - to: src/parts/footnote
         type: tests
+  - path: unit/src/parts/frontmatter.test.ts
+    description: src/parts/frontmatter.ts（「フロントマターの表示の折りたたみの renderFrontmatter」）を確認する単体テスト。frontmatter.ts を変えたときに、合わせて再確認するケースを探すときに参照する。
+    tags: [topic:単体テスト, tool:vitest, topic:部品, topic:フロントマター]
+    related:
+      - to: src/parts/frontmatter
+        type: tests
   - path: unit/src/parts/gallery.test.ts
     description: src/parts/gallery.ts（「ギャラリーの renderGallery」）を確認する単体テスト。gallery.ts を変えたときに、合わせて再確認するケースを探すときに参照する。
     tags: [topic:単体テスト, tool:vitest, topic:部品, tool:html, topic:画像]
@@ -1920,6 +1926,12 @@ files:
     related:
       - to: src/print
         type: tests
+  - path: unit/src/render/frontmatter.test.ts
+    description: src/render/frontmatter.ts（「フロントマターの判定と本文からの除外の splitFrontmatter」）を確認する単体テスト。frontmatter.ts を変えたときに、合わせて再確認するケースを探すときに参照する。
+    tags: [topic:単体テスト, tool:vitest, topic:フロントマター]
+    related:
+      - to: src/render/frontmatter
+        type: tests
   - path: unit/src/render/index.test.ts
     description: src/render/index.ts（「render と renderDocument」）を確認する単体テスト。index.ts を変えたときに、合わせて再確認するケースを探すときに参照する。
     tags: [topic:単体テスト, tool:vitest, topic:markdown, tool:markdown-it]
@@ -1931,6 +1943,12 @@ files:
     tags: [topic:単体テスト, tool:vitest, topic:markdown, tool:markdown-it]
     related:
       - to: src/render/marks
+        type: tests
+  - path: unit/src/render/syntax/frontmatter.test.ts
+    description: src/render/syntax/frontmatter.ts（「フロントマターの表示を差し込むコアルールの insertFrontmatter」）を確認する単体テスト。frontmatter.ts を変えたときに、合わせて再確認するケースを探すときに参照する。
+    tags: [topic:単体テスト, tool:vitest, topic:フロントマター]
+    related:
+      - to: src/render/syntax/frontmatter
         type: tests
   - path: unit/src/render/used.test.ts
     description: src/render/used.ts（書き出しで埋める外部ライブラリと範囲のスクリプトを文書から取得する処理）を確認する単体テスト。used.ts を変えたときに、合わせて再確認するケースを探すときに参照する。
