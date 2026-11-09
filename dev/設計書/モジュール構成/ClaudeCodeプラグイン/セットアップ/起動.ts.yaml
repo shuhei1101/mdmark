@@ -1,11 +1,11 @@
 title: ClaudeCodeプラグイン / セットアップ / 起動
-lead: '`start-server` の tmux の起動と待ち受けの確認。'
+lead: '`start-server` の起動の方法の決定・systemd --user の unit と tmux のセッションでの起動・待ち受けの確認。'
 function_types:
   - name: RunCommand
     title: 外部のコマンドを実行する
     container: src/plugin/setup/server.ts
     usecase: 常駐サーバーを起動する
-    summary: コマンドと引数を受け、終了コードと標準出力を返却する。テストで tmux の呼び出しを差し替える
+    summary: コマンドと引数を受け、終了コードと標準出力を返却する。テストで tmux・systemctl の呼び出しを差し替える
     args:
       - name: command
         type: string
@@ -44,7 +44,114 @@ constants:
     status: planned
     introduced:
       pr: 354
+  - name: PORT_RELEASE_TIMEOUT_SEC
+    title: ポートの解放を待つ上限
+    container: src/plugin/setup/server.ts
+    usecase: 常駐サーバーを起動する
+    summary: 移し替えで止めた常駐サーバーのポートが解放されるまで待つ上限の秒数
+    value: '10'
+    refs:
+      - dev/設計書/インターフェース定義/ClaudeCodeプラグイン/常駐サーバーを起動する.ts#constraints[移し替え]
+    status: planned
+    introduced:
+      pr: 444
+data_models:
+  - name: StartResult
+    title: start-server の結果
+    container: src/plugin/setup/server.ts
+    usecase: 常駐サーバーを起動する
+    summary: インターフェース定義『常駐サーバーを起動する』のレスポンス
+    properties:
+      - name: result
+        type: '"started" | "already_running" | "restarted"'
+        description: 起動したか・既に動いていたか・もう一度起動したか
+      - name: launcher
+        type: Launcher
+        description: 常駐サーバーを動かしている方法
+      - name: changes
+        type: StartChange[]
+        description: '`"unit_written" | "unit_disabled" | "tmux_session_closed"` のうち行ったもの'
+      - name: unit
+        type: string | null
+        description: '`launcher` が `systemd` のとき unit の名前'
+      - name: session
+        type: string | null
+        description: '`launcher` が `tmux` のとき tmux のセッション名'
+      - name: url
+        type: string
+        description: '`http://127.0.0.1:{ポート}/mcp`'
+      - name: tools
+        type: string[]
+        description: '`tools/list` が返却したツールの名前'
+      - name: log
+        type: string
+        description: '`journalctl --user -u {unit}` か `serve.log` のパス'
+      - name: stop
+        type: string
+        description: 止める操作
+    refs:
+      - dev/設計書/インターフェース定義/ClaudeCodeプラグイン/常駐サーバーを起動する.ts#response
+    status: planned
+    introduced:
+      pr: 354
+  - name: LauncherChoice
+    title: 起動の方法の決定
+    container: src/plugin/setup/server.ts
+    usecase: 常駐サーバーを起動する
+    summary: '`resolveLauncher` が返す、使用する起動の方法と移し替えをするか'
+    properties:
+      - name: launcher
+        type: Launcher
+        description: '`"systemd" | "tmux"`（モジュール構成『パス』の `Launcher`）'
+      - name: migrate
+        type: boolean
+        description: 起動しないほうの方法で動いている常駐サーバーを止めるか
+    refs:
+      - dev/設計書/インターフェース定義/ClaudeCodeプラグイン/常駐サーバーを起動する.ts#constraints[移し替え]
+    status: planned
+    introduced:
+      pr: 444
 functions:
+  - name: resolveLauncher
+    title: 起動の方法を決める
+    kind: 関数
+    container: src/plugin/setup/server.ts
+    usecase: 常駐サーバーを起動する
+    role: 処理
+    summary: 引数・端末の設定・使える方法から、使用する起動の方法と移し替えをするかを決める
+    scope: public
+    is_async: false
+    args:
+      - name: options
+        type: '{ argument: Launcher | undefined; setting: LauncherSetting; systemdAvailable: boolean; tmuxAvailable: boolean; command: string; port: number }'
+        required: true
+        description: '`--launcher` の値・`serve.launcher` の値・systemd --user と tmux が使えるか・端末で動かすコマンド・ポート'
+    returns:
+      type: LauncherChoice
+      description: 使用する起動の方法と移し替えをするか
+    process: |-
+      1. `argument` があればそれを使用し、`migrate` を偽にする
+      2. 無ければ `setting` が `systemd`・`tmux` ならそれを、`auto` なら `systemdAvailable` で `systemd`、ほかは `tmux` を使用し、`migrate` を真にする
+      3. 決めた方法が使えなければ（`systemd` で `systemdAvailable` が偽、`tmux` で `tmuxAvailable` が偽）、使えない方法と、端末を開いたまま動かす `MDMARK_PORT={port} {command}` を添えて `SetupError`（`SETUP_EXIT.launcherMissing`）
+    unit_tests:
+      - name: test_resolve_launcher
+        case: 正常
+        summary: auto は systemd が使えれば systemd、引数は移し替えをしない
+        condition: 設定 `auto`・両方使える／設定 `auto`・systemd が使えない／引数 `tmux`・設定 `systemd`／設定 `tmux`
+        mock: なし
+        expected: '`{ systemd, migrate: true }`・`{ tmux, migrate: true }`・`{ tmux, migrate: false }`・`{ tmux, migrate: true }`'
+      - name: test_resolve_launcher_when_missing
+        case: 異常
+        summary: 使える方法が無ければ 2
+        condition: 設定 `auto`・両方使えない、設定 `systemd`・systemd が使えない
+        mock: なし
+        expected: どちらも終了コード 2 の `SetupError`、メッセージに `MDMARK_PORT=` とコマンド
+    refs:
+      - dev/設計書/インターフェース定義/ClaudeCodeプラグイン/常駐サーバーを起動する.ts#constraints[起動の方法の決め方]
+      - dev/設計書/インターフェース定義/ClaudeCodeプラグイン/常駐サーバーを起動する.ts#constraints[移し替え]
+    status: planned
+    introduced:
+      pr: 444
   - name: buildTmuxArgs
     title: tmux の起動の引数を作る
     kind: 関数
@@ -62,16 +169,16 @@ functions:
     returns:
       type: string[]
       description: '`tmux` に指定する引数'
-    process: 1. `["new-session", "-d", "-s", session, "-e", "MDMARK_PORT=…", "-e", "MDMARK_CONFIG=…", "-e", "MDMARK_STATE_DIR=…", "sh", "-c", "{command} 2>&1 | tee -a '{logPath}'"]` を返却する。ログのパスは一重引用符で囲み、中の一重引用符は `'\''` にする
+    process: 1. `["new-session", "-d", "-s", session, "-e", "MDMARK_PORT=…", "-e", "MDMARK_CONFIG=…", "-e", "MDMARK_STATE_DIR=…", "-e", "MDMARK_LAUNCHER=tmux", "sh", "-c", "{command} 2>&1 | tee -a '{logPath}'"]` を返却する。ログのパスは一重引用符で囲み、中の一重引用符は `'\''` にする
     unit_tests:
       - name: test_build_tmux_args
         case: 正常
         summary: 環境変数を -e で指定し sh -c で包む
         condition: セッション `s`・ポート 18782・ログ `/l/serve.log`・コマンド `serve`
         mock: なし
-        expected: '`-e MDMARK_PORT=18782` を含み、末尾 3 つが `sh`・`-c`・`serve 2>&1 | tee -a ''/l/serve.log''`'
+        expected: '`-e MDMARK_PORT=18782`・`-e MDMARK_LAUNCHER=tmux` を含み、末尾 3 つが `sh`・`-c`・`serve 2>&1 | tee -a ''/l/serve.log''`'
     refs:
-      - dev/設計書/インターフェース定義/ClaudeCodeプラグイン/常駐サーバーを起動する.ts#constraints[起動のコマンド]
+      - dev/設計書/インターフェース定義/ClaudeCodeプラグイン/常駐サーバーを起動する.ts#constraints[tmux の起動のコマンド]
       - dev/設計書/外部ライブラリ/tmux#limitations
     status: planned
     introduced:
@@ -82,66 +189,214 @@ functions:
     container: src/plugin/setup/server.ts
     usecase: 常駐サーバーを起動する
     role: 処理
-    summary: '`start-server` の本体'
+    summary: '`start-server` の本体。起動の方法を決め、`startWithSystemd` か `startWithTmux` を呼ぶ'
     scope: public
     is_async: true
     args:
       - name: options
-        type: '{ env: NodeJS.ProcessEnv; pluginRoot: string; version: string } & { run: RunCommand; sleep: (ms: number) => Promise<void> }'
+        type: '{ env: NodeJS.ProcessEnv; pluginRoot: string; version: string; launcher: Launcher | undefined } & { run: RunCommand; sleep: (ms: number) => Promise<void>; writeFile: (path: string, data: string) => Promise<void> }'
         required: true
-        description: 環境変数・プラグインの直下・プラグインのバージョン・コマンドの実行・待つ関数
+        description: 環境変数・プラグインの直下・プラグインのバージョン・`--launcher` の値・コマンドの実行・待つ関数・ファイルの書き込み
     returns:
       type: Promise<StartResult>
       description: インターフェース定義『常駐サーバーを起動する』のレスポンス
     process: |-
-      1. `tmux -V` が失敗すれば、端末で動かすコマンドを添えて `SetupError`（2）
-      2. セッションがあり待ち受けていれば `already_running`。セッションがあり待ち受けていなければ `kill-session -t ={名前}` して起動へ進み `restarted` にする。起動する前にポートが待ち受けていれば（セッションの外のプロセス）、`MDMARK_PORT` の修正方法を添えて `SetupError`（1）で起動しない
-      3. 状態の配置場所を作り、`buildTmuxArgs` の引数で `run("tmux", …)` する。起動するコマンドは `MDMARK_SERVE_COMMAND`、無ければ `npx -y github:shuhei1101/mdmark#{version} serve`
-      4. `POLL_INTERVAL_MS` ごとに、セッションが閉じていればログの末尾 20 行を添えて `SetupError`（1）、待ち受けていれば次へ。上限（`MDMARK_START_TIMEOUT_SEC`、無ければ `START_TIMEOUT_SEC`）を超えたら `kill-session` してログの末尾を添えて `SetupError`（3）
-      5. `listToolNames` でツールの名前を取り、結果を返却する。取れなければ `MDMARK_PORT` の修正方法を添えて `SetupError`（1）
-    side_effects: tmux のセッションを作る・閉じる。状態の配置場所を作る
+      1. パスを決め、端末の設定を読み込み、`readLauncherSetting`・`readUnitName`・`readSessionName` で値を取る。起動するコマンドは `MDMARK_SERVE_COMMAND`、無ければ `npx -y github:shuhei1101/mdmark#{version} serve`
+      2. `hasSystemd`・`hasTmux` と `resolveLauncher` で起動の方法を決める
+      3. `systemd` なら `startWithSystemd`、`tmux` なら `startWithTmux` を呼ぶ
+      4. 待ち受けた後に `listToolNames` でツールの名前を取り、結果を返却する。取れなければ `MDMARK_PORT` の修正方法を添えて `SetupError`（1）
     callees:
       - dev/設計書/モジュール構成/ClaudeCodeプラグイン/セットアップ/パス.ts#functions[resolveSetupPaths]
+      - dev/設計書/モジュール構成/ClaudeCodeプラグイン/セットアップ/パス.ts#functions[readLauncherSetting]
+      - dev/設計書/モジュール構成/ClaudeCodeプラグイン/セットアップ/パス.ts#functions[readUnitName]
       - dev/設計書/モジュール構成/ClaudeCodeプラグイン/セットアップ/パス.ts#functions[readSessionName]
-      - '#functions[buildTmuxArgs]'
-      - dev/設計書/モジュール構成/ClaudeCodeプラグイン/ポート.ts#functions[isPortListening]
+      - dev/設計書/モジュール構成/ClaudeCodeプラグイン/セットアップ/systemd.ts#functions[hasSystemd]
+      - dev/設計書/モジュール構成/ClaudeCodeプラグイン/セットアップ/状態.ts#functions[hasTmux]
+      - '#functions[resolveLauncher]'
+      - '#functions[startWithSystemd]'
+      - '#functions[startWithTmux]'
       - '#functions[listToolNames]'
     unit_tests:
-      - name: test_start_server
-        case: 正常
-        summary: 起動して待ち受けを待つ
-        condition: 一時の端末、`MDMARK_SERVE_COMMAND` に空いたポートで待ち受ける `node -e` のサーバー
-        mock: '`run` は実際の tmux（`TMUX_TMPDIR` は一時フォルダ）'
-        expected: '`result` が `started`、`stop` が `tmux kill-session -t =mdmark-mcp`'
-      - name: test_start_server_when_tmux_missing
+      - name: test_start_server_when_launcher_missing
         case: 異常
-        summary: tmux が無ければ 2
-        condition: '`tmux -V` に 127 を返却する `run`'
+        summary: systemd も tmux も使えなければ 2
+        condition: '`is-system-running` に 127、`tmux -V` に 127 を返却する `run`'
         mock: 差し替えた `run`
         expected: 終了コード 2 の `SetupError`、メッセージに `MDMARK_PORT=` と `serve` のコマンド
-      - name: test_start_server_when_timed_out
+    refs:
+      - dev/設計書/インターフェース定義/ClaudeCodeプラグイン/常駐サーバーを起動する.ts#
+    status: planned
+    introduced:
+      pr: 354
+  - name: startWithSystemd
+    title: unit で起動する
+    kind: 関数
+    container: src/plugin/setup/server.ts
+    usecase: 常駐サーバーを起動する
+    role: 処理
+    summary: unit のファイルを記載し、`daemon-reload`・`enable --now` か `restart` で起動して待ち受けを待つ
+    scope: internal
+    is_async: true
+    args:
+      - name: options
+        type: '{ paths: SetupPaths; unit: string; session: string; command: string; migrate: boolean; env: NodeJS.ProcessEnv } & { run: RunCommand; sleep: (ms: number) => Promise<void>; writeFile: (path: string, data: string) => Promise<void> }'
+        required: true
+        description: パス・unit の名前・セッション名・起動するコマンド・移し替えをするか・環境変数と依存
+    returns:
+      type: 'Promise<{ result: StartResult["result"]; changes: StartChange[] }>'
+      description: 結果と行った変更
+    process: |-
+      1. `migrate` が真で tmux のセッションがあれば `kill-session -t ={session}` し、`changes` に `tmux_session_closed` を足して、ポートが解放されるまで待つ（`PORT_RELEASE_TIMEOUT_SEC`）
+      2. `buildUnitFile` で中身を作り（`PATH` は `env.PATH`）、`resolveUnitPath` のファイルと比べる。`readUnitState` で状態を読む
+      3. unit が `active` で、中身が同じで、ポートが待ち受けていれば、enabled でなければ `enable` して `already_running`
+      4. unit が `active` でなく、ポートが待ち受けていれば、unit のファイルを記載せずに `MDMARK_PORT` の修正方法を添えて `SetupError`（1）
+      5. 中身が違えば unit のフォルダを作って記載し、`daemon-reload` して `changes` に `unit_written` を足す
+      6. unit が `active` なら `restart` して `restarted`、ほかは `enable --now` して `started`
+      7. `waitForListening` で待つ。終わったことの判定は `readUnitState` と `hasUnitExited`。終わったら `disable --now` して journal の末尾を添えて `SetupError`（1）、上限を超えたら `disable --now` して journal の末尾を添えて `SetupError`（3）
+    side_effects: unit のファイルを記載する。unit を enable・起動・停止する。tmux のセッションを閉じる
+    callees:
+      - dev/設計書/モジュール構成/ClaudeCodeプラグイン/セットアップ/パス.ts#functions[resolveUnitPath]
+      - dev/設計書/モジュール構成/ClaudeCodeプラグイン/セットアップ/systemd.ts#functions[buildUnitFile]
+      - dev/設計書/モジュール構成/ClaudeCodeプラグイン/セットアップ/systemd.ts#functions[readUnitState]
+      - dev/設計書/モジュール構成/ClaudeCodeプラグイン/セットアップ/systemd.ts#functions[hasUnitExited]
+      - dev/設計書/モジュール構成/ClaudeCodeプラグイン/セットアップ/状態.ts#functions[hasSession]
+      - '#functions[waitForListening]'
+    unit_tests:
+      - name: test_start_with_systemd
+        case: 正常
+        summary: unit が無ければ記載して enable --now する
+        condition: '`show` に `ActiveState=inactive` を返し、`enable --now` の後は待ち受けるポートを開く `run`、空のフォルダの `XDG_CONFIG_HOME`'
+        mock: 差し替えた `run`・すぐ解決する `sleep`
+        expected: '`result` が `started`、`changes` が `["unit_written"]`、`run` の呼び出しに `daemon-reload` と `enable --now {unit}` がこの順にある'
+      - name: test_start_with_systemd_when_port_taken
+        case: 異常
+        summary: unit が active でなくポートが待ち受けていれば記載しない
+        condition: '`node:net` で先にポートを待ち受け、`show` に `ActiveState=inactive` を返す `run`'
+        mock: 差し替えた `run`
+        expected: 終了コード 1 の `SetupError`、`writeFile` と `enable` を呼んでいない
+      - name: test_start_with_systemd_when_exited
+        case: 異常
+        summary: NRestarts が増えたら待たずに 1
+        condition: '`enable --now` の後の `show` に `NRestarts=1` を返す `run`'
+        mock: 差し替えた `run`・すぐ解決する `sleep`
+        expected: 終了コード 1 の `SetupError`、`disable --now` を呼んでいる
+      - name: test_start_with_systemd_when_timed_out
+        case: 異常
+        summary: 上限を超えたら 3
+        condition: '`MDMARK_START_TIMEOUT_SEC=0`、`show` に `ActiveState=active`・`NRestarts=0` を返し続ける `run`'
+        mock: 差し替えた `run`・すぐ解決する `sleep`
+        expected: 終了コード 3 の `SetupError`、`disable --now` を呼んでいる
+    refs:
+      - dev/設計書/インターフェース定義/ClaudeCodeプラグイン/常駐サーバーを起動する.ts#constraints[unit の書き換え]
+      - dev/設計書/インターフェース定義/ClaudeCodeプラグイン/常駐サーバーを起動する.ts#constraints[移し替え]
+      - dev/設計書/インターフェース定義/ClaudeCodeプラグイン/常駐サーバーを起動する.ts#constraints[終わったことの判定]
+    status: planned
+    introduced:
+      pr: 444
+  - name: startWithTmux
+    title: tmux のセッションで起動する
+    kind: 関数
+    container: src/plugin/setup/server.ts
+    usecase: 常駐サーバーを起動する
+    role: 処理
+    summary: tmux のセッションで `mdmark serve` を起動して待ち受けを待つ
+    scope: internal
+    is_async: true
+    args:
+      - name: options
+        type: '{ paths: SetupPaths; unit: string; session: string; command: string; migrate: boolean; systemdAvailable: boolean; env: NodeJS.ProcessEnv } & { run: RunCommand; sleep: (ms: number) => Promise<void> }'
+        required: true
+        description: パス・unit の名前・セッション名・起動するコマンド・移し替えをするか・systemd --user が使えるか・環境変数と依存
+    returns:
+      type: 'Promise<{ result: StartResult["result"]; changes: StartChange[]; launcher: Launcher }>'
+      description: 結果・行った変更・動かしている方法
+    process: |-
+      1. `systemdAvailable` が真なら `readUnitState` で unit の状態を読む。`migrate` が真で unit が `active` か enabled なら `disable --now` し、`changes` に `unit_disabled` を足して、ポートが解放されるまで待つ（`PORT_RELEASE_TIMEOUT_SEC`）
+      2. `migrate` が偽で unit が `active` で、ポートが待ち受けていれば、`launcher` を `systemd` にして `already_running` を返す（書き込みを断られた端末で既定の unit が動いているとき）
+      3. セッションがあり待ち受けていれば `already_running`。セッションがあり待ち受けていなければ `kill-session -t ={名前}` して `restarted` にする。起動する前にポートが待ち受けていれば、`MDMARK_PORT` の修正方法を添えて `SetupError`（1）で起動しない
+      4. 状態の配置場所を作り、`buildTmuxArgs` の引数で `run("tmux", …)` する
+      5. `waitForListening` で待つ。終わったことの判定は `has-session` が偽。終わったら `serve.log` の末尾 20 行を添えて `SetupError`（1）、上限を超えたら `kill-session` して `serve.log` の末尾を添えて `SetupError`（3）
+    side_effects: tmux のセッションを作る・閉じる。状態の配置場所を作る。unit を止める
+    callees:
+      - dev/設計書/モジュール構成/ClaudeCodeプラグイン/セットアップ/systemd.ts#functions[readUnitState]
+      - dev/設計書/モジュール構成/ClaudeCodeプラグイン/セットアップ/状態.ts#functions[hasSession]
+      - '#functions[buildTmuxArgs]'
+      - '#functions[waitForListening]'
+    unit_tests:
+      - name: test_start_with_tmux
+        case: 正常
+        summary: 起動して待ち受けを待つ
+        condition: 一時の端末、`MDMARK_SERVE_COMMAND` に空いたポートで待ち受ける `node -e` のサーバー、`systemdAvailable` が偽
+        mock: '`run` は実際の tmux（`TMUX_TMPDIR` は一時フォルダ）'
+        expected: '`result` が `started`、`changes` が空'
+      - name: test_start_with_tmux_when_migrating
+        case: 正常
+        summary: 設定で tmux に固定すると active な unit を disable --now する
+        condition: '`migrate` が真、`show` に `ActiveState=active`・`UnitFileState=enabled` を返し、`disable --now` の後はポートを閉じる `run`'
+        mock: 差し替えた `run`・すぐ解決する `sleep`
+        expected: '`changes` が `["unit_disabled"]`、`disable --now {unit}` の後に `new-session` を呼んでいる'
+      - name: test_start_with_tmux_when_unit_running
+        case: 正常
+        summary: 引数の tmux で unit が動いていれば unit に触れずに already_running
+        condition: '`migrate` が偽、`show` に `ActiveState=active` を返し、ポートを待ち受けている'
+        mock: 差し替えた `run`
+        expected: '`result` が `already_running`、`launcher` が `systemd`、`disable` と `new-session` を呼んでいない'
+      - name: test_start_with_tmux_when_timed_out
         case: 異常
         summary: 上限を超えたら 3
         condition: '`MDMARK_START_TIMEOUT_SEC=0`、`has-session` に 0 を返却し続ける `run`'
         mock: 差し替えた `run` と、すぐ解決する `sleep`
         expected: 終了コード 3 の `SetupError`、`kill-session` を呼んでいる
-      - name: test_start_server_when_port_taken
+      - name: test_start_with_tmux_when_port_taken
         case: 異常
         summary: ほかのプロセスがポートを待ち受けていれば起動しない
         condition: '`node:net` で `MDMARK_PORT` のポートを先に待ち受け、`has-session` に 1 を返却する `run`'
         mock: 差し替えた `run`
         expected: 終了コード 1 の `SetupError`、メッセージに `MDMARK_PORT`、`new-session` を呼んでいない
-      - name: test_start_server_when_session_closed
+      - name: test_start_with_tmux_when_session_closed
         case: 異常
         summary: セッションが閉じたら 1
         condition: '`has-session` が起動の後に 1 を返却する `run`、ログに `EADDRINUSE` の行'
         mock: 差し替えた `run`
         expected: 終了コード 1 の `SetupError`、メッセージにログの行と `MDMARK_PORT` の修正方法
     refs:
-      - dev/設計書/インターフェース定義/ClaudeCodeプラグイン/常駐サーバーを起動する.ts#
+      - dev/設計書/インターフェース定義/ClaudeCodeプラグイン/常駐サーバーを起動する.ts#constraints[tmux の起動のコマンド]
+      - dev/設計書/インターフェース定義/ClaudeCodeプラグイン/常駐サーバーを起動する.ts#constraints[移し替え]
     status: planned
     introduced:
-      pr: 354
+      pr: 444
+  - name: waitForListening
+    title: 待ち受けを待つ
+    kind: 関数
+    container: src/plugin/setup/server.ts
+    usecase: 常駐サーバーを起動する
+    role: 処理
+    summary: '`POLL_INTERVAL_MS` ごとに、終わったか・待ち受けたか・上限を超えたかを確かめる'
+    scope: internal
+    is_async: true
+    args:
+      - name: options
+        type: '{ port: number; timeoutSec: number; hasExited: () => Promise<boolean>; sleep: (ms: number) => Promise<void> }'
+        required: true
+        description: ポート・上限の秒数・終わったかを返す関数・待つ関数
+    returns:
+      type: 'Promise<"listening" | "exited" | "timed_out">'
+      description: 待ち受けた・終わった・上限を超えた
+    process: 1. `hasExited` が真なら `exited`、`isPortListening` が真なら `listening`、上限を超えていれば `timed_out` を返し、ほかは `POLL_INTERVAL_MS` 待ってくり返す
+    callees:
+      - dev/設計書/モジュール構成/ClaudeCodeプラグイン/ポート.ts#functions[isPortListening]
+    unit_tests:
+      - name: test_wait_for_listening
+        case: 正常
+        summary: 終わったことを待ち受けより先に確かめる
+        condition: '`hasExited` が 2 回目に真を返し、ポートは待ち受けていない'
+        mock: すぐ解決する `sleep`
+        expected: '`exited`'
+    refs:
+      - dev/設計書/インターフェース定義/ClaudeCodeプラグイン/常駐サーバーを起動する.ts#constraints[待ち]
+    status: planned
+    introduced:
+      pr: 444
   - name: listToolNames
     title: ツールの名前を取る
     kind: 関数

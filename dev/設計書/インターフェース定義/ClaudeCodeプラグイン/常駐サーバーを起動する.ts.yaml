@@ -438,7 +438,7 @@ constraints:
     notes: user のマネージャーの `PATH` には npx・node が無いことがあるため、呼んだ側の `PATH` を渡す。`ExecStart` の既定の `npx -y github:…#v{バージョン} serve` は、取得済みのキャッシュがあればネットワークにつながらなくても CLI を起動するが、GitHub への問い合わせの再試行で約 2 分半かかる（2026-11-09 に v0.10.0 で、`HTTPS_PROXY` を使用できないポートにして測った。`npm_config_prefer_offline=true` でも同じ。つながるときは約 10 秒）。端末の起動時にネットワークが無くても、その後に起動する。user のマネージャーからは `network-online.target` を待てない
     decided_by: dev/設計書/外部ライブラリ/systemd#limitations
   - item: 終わったことの判定
-    constraint: systemd では、待ちの 1 秒ごとに `systemctl --user show -p NRestarts,ActiveState,SubState --value {unit の名前}` を引き、`NRestarts` が 1 以上か、`SubState` が `auto-restart` か、`ActiveState` が `failed` なら終わったとする。tmux では `has-session` が 0 以外なら終わったとする
+    constraint: systemd では、待ちの 1 秒ごとに `systemctl --user show -p NRestarts -p ActiveState -p SubState {unit の名前}` の `Key=Value` の行を引き、`NRestarts` が 1 以上か、`SubState` が `auto-restart` か、`ActiveState` が `failed` なら終わったとする。tmux では `has-session` が 0 以外なら終わったとする
     notes: '`Restart=on-failure` の unit は、起動の上限（既定 10 秒に 5 回）を超えるまで `failed` にならず `activating (auto-restart)` と `active` を繰り返す。`NRestarts` は `start`・`restart` で 0 に戻る'
     decided_by: dev/設計書/外部ライブラリ/systemd#limitations
   - item: unit の値の書き方
@@ -448,7 +448,7 @@ constraints:
     constraint: 記載する内容が今のファイルと同じなら記載しない。記載したら `daemon-reload` し、active なら `restart`、active でなければ `enable --now` する。内容が同じで enabled でなければ `enable` する
   - item: 移し替え
     constraint: 起動の方法を `--launcher` ではなく端末の設定（`auto` を含む）で決めたときだけ行う。systemd で起動するときは、端末の設定のセッション名の tmux のセッションを `kill-session` してから起動する。tmux で起動するのは端末の設定の `serve.launcher` が `tmux` のときと `auto` で systemd --user が使えないときで、前者で unit が active か enabled なら `disable --now` してから起動する。どちらもポートが解放されるまで 1 秒ごとに確かめ、上限は 10 秒
-    notes: 同じポートに 2 つの常駐サーバーを立てない。unit のファイルは削除しない。`--launcher tmux`（書き込みを断られたとき）は unit に触れず、unit が同じポートで待ち受けていれば終了コード 1 になる
+    notes: 同じポートに 2 つの常駐サーバーを立てない。unit のファイルは削除しない。`--launcher tmux`（書き込みを断られたとき）は unit に触れず、unit が active でポートが待ち受けていれば `already_running`（`launcher` は `systemd`）を返却する
   - item: tmux の起動のコマンド
     constraint: "`tmux new-session -d -s {セッション名} -e MDMARK_PORT={ポート} -e MDMARK_CONFIG={パス} -e MDMARK_STATE_DIR={パス} -e MDMARK_LAUNCHER=tmux sh -c '{起動するコマンド} 2>&1 | tee -a {serve.log}'`。環境変数は `-e` で明示して指定し、コマンドは `sh -c` の引数として指定して POSIX の記載方法だけを使用する"
     notes: tmux サーバーが既に動いていると呼んだ側の環境変数は渡らず、1 つの文字列のコマンドは `default-shell` で実行される

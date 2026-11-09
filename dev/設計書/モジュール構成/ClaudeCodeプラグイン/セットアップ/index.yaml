@@ -6,7 +6,7 @@ items:
   - page: 入口.ts.yaml
     summary: setup.js の入口とサブコマンドの振り分け
   - page: パス.ts.yaml
-    summary: 端末の設定・状態の配置場所・settings.json のパスと tmux のセッション名
+    summary: 端末の設定・状態の配置場所・settings.json・unit のファイルのパスと起動の方法・unit の名前・tmux のセッション名
   - page: 状態.ts.yaml
     summary: status の結果を作る
   - page: キーの一覧.ts.yaml
@@ -14,4 +14,6 @@ items:
   - page: 書き込み.ts.yaml
     summary: write-settings・write-config と settings.json の env の書き換え
   - page: 起動.ts.yaml
-    summary: start-server の tmux の起動と待ち受けの確認
+    summary: start-server の起動の方法の決定・unit と tmux での起動・待ち受けの確認
+  - page: systemd.ts.yaml
+    summary: systemd --user の確認・unit のファイルの組み立て・unit の状態の読み取り
