@@ -100,6 +100,34 @@ flows:
     test: test_normal_when_diff_preview
     refs:
       - dev/設計書/シナリオ/単一ユースケース/エディタとプレビューのスクロールを合わせる#scenarios[正常シナリオ（差分で描いたプレビュー）]
+  - name: 正常系（閉じたセクションの中の行）
+    summary: エディタを閉じたセクションの中の行へ動かすと、そのセクションの見出しを先頭に配置し、セクションは閉じたまま
+    setup:
+      - name: 閉じたセクションを持つ長い文書のプレビュー
+        description: '正常系の長い文書の 8 番目のセクションの見出しの直後に `<!-- section: closed -->` を配置し、そのセクションに 3 つの段落を持たせた Markdown を、エディタと横の列のプレビューで開いた状態'
+      - name: Mock
+        description: 正常系と同じ
+    flow: |-
+      sequenceDiagram
+        participant U as 文書の作成者
+        participant EX as 拡張機能
+        participant PV as Webview
+        U->>EX: 8 番目のセクションの 3 つ目の段落の行をエディタの先頭にする
+        EX->>PV: scrollToLine（段落の行）
+        PV->>PV: 閉じたセクションの中の要素を飛ばし、その見出しを先頭に配置する
+        U->>EX: 3 つ目の段落に文字を入力する
+        EX->>PV: render（書き換えた Markdown）
+        PV->>PV: 描く前の位置のまま描き直す
+    expected:
+      - 8 番目のセクションの見出しの下端が、Webview の見えている先頭（帯があれば帯の下端）より下にある
+      - 8 番目のセクションの見出しの上端が、見えている先頭から本文 1 行分の高さ（本文の文字の大きさ × `--mdmark-line-height`）より下へ離れていない
+      - 9 番目のセクションの見出しの上端が、見えている先頭より下にある
+      - 8 番目のセクションの開閉のボタンの `aria-expanded` が `false` のまま
+      - 文字を入力して描き直した後も、上の 3 つの位置の関係が成り立つ
+      - その後 200 ms の間にエディタの `visibleRanges[0].start.line` が変わらない
+    test: test_normal_when_in_closed_section
+    refs:
+      - dev/設計書/シナリオ/単一ユースケース/エディタとプレビューのスクロールを合わせる#scenarios[正常シナリオ（折りたたんだセクションの中を編集する）]
 lead: エディタとプレビューのどちらかをスクロールすると、ブロックの元の行番号を手がかりにもう片方を同じ箇所まで動かす。
 idempotent: true
 side_effects: Webview へ `scrollToLine` を送信する。エディタを `revealRange` で動かす。カーソルの位置と文書は変えない
@@ -125,3 +153,6 @@ constraints:
   - item: 差分のパネルの合わせ方
     constraint: 差分のパネルは差分ビューの変更後の側のエディタと合わせる。`data-source-line` は変更後の文書の行番号で、削除したブロックは `data-source-line` を持たないため、内分の前後の要素にならない。変更前の側のエディタのスクロールは送信せず、プレビューからは変更後の側を動かす
     notes: 差分ビューは両側のスクロールを VS Code が合わせる
+  - item: 閉じたセクションの合わせ方
+    constraint: 閉じたセクション（中身に `hidden` が付いたセクション）の中の `data-source-line` の要素は、両方の向きで内分の前後の要素にならない。エディタから合わせる行が閉じたセクションの中の行（見出しの行より後で、閉じたセクションの後ろの最初の目印の行より前。後ろに目印が無ければ文書の末尾まで）のときは、そのセクションの見出しの上端を先頭に配置する。入れ子のときは最も外側の閉じたセクションの見出しを使用する。プレビューはセクションを開かない
+    notes: '`hidden="until-found"` で隠した中身の要素も、Chromium の `getBoundingClientRect` は高さを持った値を返却し、後ろの見出しが「位置が戻る要素」として目印から除外される'

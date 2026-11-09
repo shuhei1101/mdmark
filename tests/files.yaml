@@ -986,10 +986,10 @@ files:
       - to: dev/設計書/部品設計/プレビューの状態の表示.ts
         type: see_also
   - path: unit/migrations/drop-tag-vocabulary.test.ts
-    description: migrations/next/drop-tag-vocabulary.mjs（「索引からタグの語彙を外す移行の手順」）を確認する単体テスト。drop-tag-vocabulary.mjs を変えたときに、合わせて再確認するケースを探すときに参照する。
+    description: migrations/v0.10.0/drop-tag-vocabulary.mjs（「索引からタグの語彙を外す移行の手順」）を確認する単体テスト。drop-tag-vocabulary.mjs を変えたときに、合わせて再確認するケースを探すときに参照する。
     tags: [topic:単体テスト, tool:vitest, topic:バージョン, topic:移行, topic:索引, topic:タグ]
     related:
-      - to: migrations/next/drop-tag-vocabulary
+      - to: migrations/v0.10.0/drop-tag-vocabulary
         type: tests
   - path: unit/helpers/charts.ts
     description: 単体テストが使用する見本のグラフの定義（棒・円）の JSON を受け持つ。単体テストの準備や比べ方を変えるときに参照する。
@@ -1196,7 +1196,7 @@ files:
     description: migrations/*/alias-rows.mjs（「設定の aliases の行を alias-inject v0.3.0 の構造へ書き換える移行のスクリプト」）を確認する単体テスト。移行のスクリプトを変えたときに、合わせて修正するケースを探すときに参照する。
     tags: [topic:単体テスト, tool:vitest, topic:バージョン, topic:移行, topic:エイリアス]
     related:
-      - to: migrations/next/alias-rows.mjs
+      - to: migrations/v0.10.0/alias-rows.mjs
         type: tests
   - path: unit/src/cli/prompt.test.ts
     description: src/cli/prompt.ts（「標準入力の 1 行を回答にする質問」）を確認する単体テスト。prompt.ts を変えたときに、合わせて再確認するケースを探すときに参照する。
@@ -2405,4 +2405,13 @@ files:
     tags: [topic:単体テスト, tool:vitest, tool:git]
     related:
       - to: tests/git-env
+        type: tests
+  - path: migrations-dir.ts
+    description: テストが参照する、移行の手順のスクリプトを持つリポジトリの移行の手順のフォルダ（`migrations/next/` か `migrations/v{バージョン}/`）を探す処理を受け持つ。テストが移行の手順を参照する場所を変えるときに読む。
+    tags: [topic:単体テスト, tool:vitest, topic:バージョン, topic:移行]
+  - path: unit/migrations-dir.test.ts
+    description: tests/migrations-dir.ts（「移行の手順のスクリプトを持つフォルダを探す」）を確かめる単体テスト。migrations-dir.ts を変えたときに、合わせて修正するケースを探すときに読む。
+    tags: [topic:単体テスト, tool:vitest, topic:バージョン, topic:移行]
+    related:
+      - to: tests/migrations-dir
         type: tests

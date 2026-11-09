@@ -3,7 +3,7 @@ export declare const ALIAS_TYPES: readonly ["term", "doc", "command", "url", "sk
 /** `MdmarkAlias` の `alias_type` の値。`env` は `buildAliases` が作らないため含めない */
 export type MdmarkAliasType = Exclude<(typeof ALIAS_TYPES)[number], "env">;
 /** `readAliasRecord` がレコードから取るキー。`port` は `env` の必須の確かめにだけ使う */
-export declare const ALIAS_KEYS: readonly ["alias_type", "id", "name", "aliases", "description", "related", "command", "cwd", "url", "avoid", "skill", "tool", "path", "port", "replacement"];
+export declare const ALIAS_KEYS: readonly ["id", "name", "aliases", "description", "related", "command", "cwd", "url", "avoid", "skill", "tool", "path", "port", "replacement"];
 /** `id`・`name` のほかに、種類ごとに空にできないキー。`env` は `url` と `port` の 1 つ以上で、`checkAliasFields` が別に確かめる */
 export declare const ALIAS_REQUIRED_KEYS: Record<(typeof ALIAS_TYPES)[number], readonly (typeof ALIAS_KEYS)[number][]>;
 /** `alias_required_empty` の `message` の直し方に出すキーの名前 */
@@ -61,12 +61,14 @@ export type MdmarkAliasProblem = {
 };
 /** `readAliasRecord` が返す、キーごとの値 */
 type AliasValues = Partial<Record<(typeof ALIAS_KEYS)[number], string | string[]>>;
-/** 1 つのレコードに行の `metadata` を当てて、エイリアスのキーごとの値と、`ref` の列が無いキーを返す */
+/** 1 つのレコードに行の `metadata` を当てて、エイリアスのキーごとの値と、`metadata` に記載した列が無いキーを返す */
 export declare function readAliasRecord(options: {
     /** レコード */
     record: Record<string, unknown>;
-    /** 行の `metadata` */
+    /** 行の `metadata`（無い行は空のオブジェクト） */
     metadata: Record<string, unknown>;
+    /** 行の `body_file` */
+    bodyFile?: string;
     /** `name` が無いときの名前 */
     fallbackName: string;
 }): {
@@ -76,11 +78,13 @@ export declare function readAliasRecord(options: {
         field: string;
     }>;
 };
-/** レコードから取った値の種類と必須のキーを確かめ、ずれを返す。無ければ `undefined` */
-export declare function checkAliasFields(values: AliasValues): {
-    kind: "alias_unknown_type";
-    value: string;
-} | {
+/** 行の種類の必須のキーが空でないかを確かめ、ずれを返す。無ければ `undefined` */
+export declare function checkAliasFields(options: {
+    /** 行の `alias_type` */
+    aliasType: (typeof ALIAS_TYPES)[number];
+    /** `readAliasRecord` の `values` */
+    values: AliasValues;
+}): {
     kind: "alias_required_empty";
     keys: string[];
 } | undefined;

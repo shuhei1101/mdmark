@@ -180,12 +180,11 @@ test("test_read_yaml_key_when_missing", async () => {
   const dir = await createTempDir();
   await writeFiles(dir, { "records.yaml": RECORDS_YAML });
   const path = `${dir}/records.yaml`;
-  // 実行
+  // 実行・検証
   const missing = readYamlKey({ path, key: "items[5].body" });
-  const notString = readYamlKey({ path, key: "items[0]" });
-  // 検証
   await expect(missing).rejects.toBeInstanceOf(CliError);
   await expect(missing).rejects.toThrow(/items\[5\]\.body[\s\S]*2/);
+  const notString = readYamlKey({ path, key: "items[0]" });
   await expect(notString).rejects.toBeInstanceOf(CliError);
   await expect(notString).rejects.toThrow(/文字列/);
 });

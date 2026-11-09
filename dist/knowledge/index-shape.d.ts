@@ -60,29 +60,14 @@ export type MdmarkIndexTerm = {
     /** やめた言い方 */
     avoid?: string[];
 };
-/** 索引のタグの語彙の 1 つ */
-export type MdmarkIndexTag = {
-    /** タグの名前 */
-    name: string;
-    /** グループ */
-    group?: string;
-    /** 説明（含める / 含めない / 例） */
-    description?: string;
-    /** 別名 */
-    aliases?: string[];
-    /** やめたタグの振り替え先の `name` */
-    deprecated?: string;
-};
 /** 使う側が索引の YAML を読んだ値の型 */
 export type MdmarkIndex = {
     /** 索引の版 */
-    schema: 1;
+    schema: 2;
     /** 文書 */
     docs: MdmarkIndexDoc[];
     /** 用語 */
     terms?: MdmarkIndexTerm[];
-    /** タグの語彙 */
-    tags?: MdmarkIndexTag[];
 };
 /** 索引のキー 1 つの型と必須か */
 type KeyShape = {
@@ -90,12 +75,11 @@ type KeyShape = {
     type: "string" | "string[]" | "integer" | "array" | "doc_tags" | "doc_related" | "boolean";
     required: boolean;
 };
-/** 索引の最上位・`docs` の要素・`terms` の要素・`tags` の要素ごとの、キーと型と必須か */
+/** 索引の最上位・`docs` の要素・`terms` の要素ごとの、キーと型と必須か */
 export declare const INDEX_SHAPE: {
     root: Record<string, KeyShape>;
     doc: Record<string, KeyShape>;
     term: Record<string, KeyShape>;
-    tag: Record<string, KeyShape>;
 };
 /** 索引の形に合わない場所 */
 export type IndexProblem = {

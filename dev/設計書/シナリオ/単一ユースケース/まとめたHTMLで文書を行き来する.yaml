@@ -94,7 +94,7 @@ scenarios:
     setup:
       - name: まとめた HTML
         description: 文書 A（`entry`）が `<!-- wide -->` 〜 `<!-- /wide -->` で 8 列の表を囲んだ範囲を持つ、文書 A・B をまとめた HTML
-        notes: 画面の幅は 1280px
+        notes: 画面の幅は 1280px。設定の `theme` の CSS で `--mdmark-content-width` を `640px` にしている
       - name: Mock
         description: 差し替える依存は無い（HTML だけを空のフォルダへコピーして file:// で開く）
     flow: |-
@@ -154,12 +154,100 @@ scenarios:
     test: test_normal_when_page_settings_per_document
     refs:
       - dev/設計書/シナリオ/単一ユースケース/ページの設定を文書で指定する#scenarios[正常シナリオ]
+  - name: 正常シナリオ（戻る・進むで離れたときの位置に戻る）
+    setup:
+      - name: まとめた HTML
+        description: 画面の高さの 5 倍より長い文書 A（`entry`）と B をまとめた HTML。A は中ほどの段落に B へのリンクを持ち、B は末尾に A へのリンクを持つ
+        notes: 画面の幅は 1280px、高さは 800px
+      - name: Mock
+        description: 差し替える依存は無い（HTML だけを空のフォルダへコピーして file:// で開く）
+    flow: |-
+      sequenceDiagram
+        actor R as 読者
+        participant P as まとめた HTML
+        R->>P: 開く
+        P-->>R: A の頭
+        R->>P: A を B へのリンクが画面に入るまでスクロールし、リンクを押す
+        P-->>R: B の頭
+        R->>P: B を少しスクロールする
+        R->>P: ブラウザの戻る
+        P-->>R: A のリンクを押したときの位置
+        R->>P: ブラウザの進む
+        P-->>R: B の戻るを押したときの位置
+        R->>P: B の末尾の A へのリンクを押す
+        P-->>R: A の頭
+    expected:
+      - リンクで B へ移ると、B の頭（縦のスクロール位置が 0）が出る
+      - 戻るで A に戻ると、縦のスクロール位置が A のリンクを押したときの値になり、B へのリンクが画面に入っている
+      - 進むで B に戻ると、縦のスクロール位置が B で戻るを押したときの値になる
+      - B の末尾のリンクで A へ移ると、新しい履歴の項目として A の頭（縦のスクロール位置が 0）が出る
+      - URL にスクロール位置が出ない
+    test: test_normal_when_back_forward_restore_scroll
+  - name: 正常シナリオ（再読み込みで離れたときの位置に戻る）
+    setup:
+      - name: まとめた HTML
+        description: 正常シナリオ（戻る・進むで離れたときの位置に戻る）と同じ
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        actor R as 読者
+        participant P as まとめた HTML
+        R->>P: 開いて A を中ほどまでスクロールする
+        R->>P: ブラウザの再読み込み
+        P-->>R: 再読み込みの前の位置の A
+    expected:
+      - 再読み込みの後、A が出て、縦のスクロール位置が再読み込みの前の値になる
+    test: test_normal_when_reload_restore_scroll
+  - name: 正常シナリオ（戻る・進むで開閉と選んだタブを戻す）
+    setup:
+      - name: まとめた HTML
+        description: '文書 A（`entry`）が、`<!-- section: closed -->` で既定で閉じた h2 のセクションと、その中の `group=` の無い 2 つのタブを持ち、2 つ目のタブの中に B へのリンクを持つ、文書 A・B をまとめた HTML'
+        notes: セクションの中身は画面の高さより長い
+      - name: Mock
+        description: 差し替える依存は無い（HTML だけを空のフォルダへコピーして file:// で開く）
+    flow: |-
+      sequenceDiagram
+        actor R as 読者
+        participant P as まとめた HTML
+        R->>P: 開く
+        P-->>R: セクションが閉じた A
+        R->>P: セクションを開き、2 つ目のタブを選ぶ
+        R->>P: 2 つ目のタブの B へのリンクを押す
+        P-->>R: B
+        R->>P: ブラウザの戻る
+        P-->>R: セクションを開き、2 つ目のタブを選んだ A のリンクを押したときの位置
+    expected:
+      - 戻るで A に戻ると、セクションのボタンの `aria-expanded` が `true` で、中身が `hidden` を持たない
+      - 2 つ目のタブの `aria-selected` が `true`
+      - 縦のスクロール位置が A のリンクを押したときの値になり、B へのリンクが画面に入っている
+    test: test_normal_when_back_restore_folds_and_tabs
+  - name: 異常シナリオ（sessionStorage が使えない）
+    setup:
+      - name: まとめた HTML
+        description: 正常シナリオ（戻る・進むで離れたときの位置に戻る）と同じ
+      - name: sessionStorage が使えないページ
+        description: 開く前に、`window.sessionStorage` を読むと `SecurityError` を投げるように差し替える
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        actor R as 読者
+        participant P as まとめた HTML
+        R->>P: 開いて A をスクロールし、B へのリンクを押す
+        P-->>R: B の頭
+        R->>P: ブラウザの戻る
+        P-->>R: A の頭
+    expected:
+      - 戻るで A が出て、縦のスクロール位置が 0
+      - ページに例外が出ない
+    test: test_error_when_session_storage_unavailable
 lead: 読者が `mdmark build` の 1 枚の HTML を file:// で開き、文書の一覧・文書間のリンク・ブラウザの戻ると進むで文書を行き来し、見出しのアンカーと目次でセクションへ移る。
 issue: 9
 primary_actor: 読者
 trigger: 読者が、受け取った 1 枚の HTML を開く
 preconditions:
   - 読者のブラウザが非機能要件『対応ブラウザ』の版以降
-success_guarantee: 開くと URL が指す文書（指していなければ `entry` の文書）が出る。文書を移るたびに履歴に追加し、戻る・進むで確認してきた順に行き来できる。一覧のパネルの開閉は履歴に追加しない。外への要求は 0 件。
-minimal_guarantee: URL が 1 枚に無い文書を指していても、`entry` の文書を出して読み込める状態にする。
+success_guarantee: 開くと URL が指す文書（指していなければ `entry` の文書）が出る。文書を移るたびに履歴に追加し、戻る・進むで確認してきた順に行き来できる。一覧のパネルの開閉は履歴に追加しない。戻る・進む・再読み込みで履歴の項目へ戻ったときは、その項目を離れたときの開閉・選んだタブ・スクロール位置から表示し、文書の一覧・文書間のリンクで移ったときは見出しか文書の頭から表示する。外への要求は 0 件。
+minimal_guarantee: URL が 1 枚に無い文書を指していても、`entry` の文書を出して読み込める状態にする。離れたときの状態を残せない・読めないときも、見出しか文書の頭から文書を出す。
 test_file: tests/e2e/単一ユースケース/まとめたHTMLで文書を行き来する.spec.ts

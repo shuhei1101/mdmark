@@ -1,0 +1,60 @@
+$ npm run test:unit
+
+> test:unit
+> vitest run --project 'unit*'
+
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/fix-diff-blank-line-matching
+
+ ❯ |unit| tests/unit/src/cli/backup.test.ts (4 tests | 1 failed) 30099ms
+   × test_take_backup_when_outside 30007ms
+ ❯ |unit| tests/unit/src/cli/export.test.ts (23 tests | 1 failed) 37633ms
+   × test_prepare_embeds 30473ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit| tests/unit/src/cli/backup.test.ts > test_take_backup_when_outside
+Error: Test timed out in 30000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/unit/src/cli/backup.test.ts:59:1
+     57|
+     58| // 設定ファイルのフォルダの外のファイルは拒む（異常系）
+     59| test("test_take_backup_when_outside", async () => {
+       | ^
+     60|   // 準備
+     61|   const { takeBackup } = await loadModule();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  |unit| tests/unit/src/cli/export.test.ts > test_prepare_embeds
+Error: Test timed out in 30000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/unit/src/cli/export.test.ts:31:1
+     29|
+     30| // マーカーのあるモジュールだけをまとめ、拡張と theme を読み込む（正常系）
+     31| test("test_prepare_embeds", async () => {
+       | ^
+     32|   // 準備
+     33|   const { prepareEmbeds } = await loadExport();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  2 failed | 256 passed (258)
+      Tests  2 failed | 1822 passed (1824)
+   Start at  05:06:55
+   Duration  159.75s (worker 63%, tests 22%, import 13%, transform 1%)
+
+exit=1
+
+# 時間切れの 2 件（ほかの worktree の全件実行と重なった）を単独で流し直した
+$ npx vitest run --project 'unit*' tests/unit/src/cli/backup.test.ts tests/unit/src/cli/export.test.ts
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/fix-diff-blank-line-matching
+
+
+ Test Files  2 passed (2)
+      Tests  27 passed (27)
+   Start at  05:13:24
+   Duration  12.25s (tests 97%, import 2%, transform 1%)
+

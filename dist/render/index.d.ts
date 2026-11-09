@@ -1,8 +1,11 @@
-import { type MdmarkConfig, type ResolvedConfig } from "../config.ts";
+import { type MdmarkConfig, type PageSettings, type ResolvedConfig } from "../config.ts";
 import type { MdmarkParamDefinition } from "../diagram/definition.ts";
 import type { MdmarkAlias } from "../knowledge/aliases.ts";
 import { type MdmarkIndex } from "../knowledge/index-shape.ts";
 import type { MdmarkReferences } from "../knowledge/references.ts";
+import type { MdmarkIconNode } from "../parts/inline-icon.ts";
+import type { CollectedWarning } from "./syntax/warnings.ts";
+export type { CollectedWarning } from "./syntax/warnings.ts";
 /** 本文の HTML と、文書の印で決まった機能のオン・オフ */
 export type RenderedDocument = {
     /** 本文の HTML 文字列 */
@@ -13,6 +16,10 @@ export type RenderedDocument = {
     extensionDefinitions: unknown[];
     /** 描いた操作できる部品の定義。文書の中の並びの順。出力の HTML には残さない */
     paramDefinitions: MdmarkParamDefinition[];
+    /** 本文に置いた書き方の警告を、警告を置いた順に並べたもの */
+    warnings: CollectedWarning[];
+    /** 文書の先頭の page の印から読んだページの設定 */
+    page: PageSettings;
 };
 /** Markdown を本文の HTML にし、文書の印で決まった機能のオン・オフと一緒に返す */
 export declare function renderDocument(options: {
@@ -28,7 +35,15 @@ export declare function renderDocument(options: {
     references?: MdmarkReferences | undefined;
     /** エイリアス。そのまま入れ、使えるものへの絞り込みは `buildDictionary` が行う */
     aliases?: MdmarkAlias[] | undefined;
+    /** 取り込む文書の表。キーは描く文書のフォルダからのパス */
+    includes?: Record<string, string> | undefined;
+    /** 束ねていない名前のアイコンの形の表 */
+    icons?: Record<string, MdmarkIconNode> | undefined;
 }): RenderedDocument;
+/** `render` と同じ設定の当て方で描き、描いたときに置く書き方の警告を HTML にせずに返す */
+export declare function collectWarnings(markdown: string, opts?: {
+    config?: MdmarkConfig;
+}): CollectedWarning[];
 /** 画面を持たずに Markdown を本文の HTML 文字列にする */
 export declare function render(markdown: string, opts?: {
     config?: MdmarkConfig;
@@ -38,4 +53,8 @@ export declare function render(markdown: string, opts?: {
     references?: MdmarkReferences;
     /** `buildAliases` が作ったエイリアス。省くと、エイリアスを照合しない */
     aliases?: MdmarkAlias[];
+    /** 取り込む文書の表。省くと、include のマーカーを取り込み先が無い警告にする */
+    includes?: Record<string, string>;
+    /** 束ねていない名前のアイコンの形の表。省くと、そのアイコンは中が空の要素にする */
+    icons?: Record<string, MdmarkIconNode>;
 }): string;

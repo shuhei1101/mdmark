@@ -9,7 +9,7 @@ const loadScroll = () =>
   );
 
 /** 元の行番号と、スクロールする要素の先頭からの位置 */
-type Anchor = { line: number; top: number };
+type Anchor = { line: number; top: number; collapsed?: boolean };
 
 const placed: HTMLElement[] = [];
 
@@ -77,6 +77,76 @@ test("test_collect_anchors", async () => {
   expect(new Set(tops).size).toBe(tops.length);
 });
 
+/** 元の行番号と高さを持つ見出しを作る */
+function heading(line: number, height: number): HTMLElement {
+  const element = block(line, height);
+  element.classList.add("mdmark-heading");
+  return element;
+}
+
+/** 閉じたセクションの中身を作る */
+function closedBody(): HTMLElement {
+  const element = document.createElement("div");
+  element.className = "mdmark-section-body";
+  element.setAttribute("hidden", "until-found");
+  return element;
+}
+
+// 閉じたセクションの中の要素を除き、見出しに collapsed を付ける（正常系）
+test("test_collect_anchors_when_closed_section", async () => {
+  // 準備
+  const { collectAnchors } = await loadScroll();
+  const scroller = place(document.createElement("div"));
+  scroller.style.cssText = "height: 300px; overflow-y: auto;";
+  const root = place(document.createElement("div"), scroller);
+  // 行 0 の見出しと 2 の段落、行 4 の見出しと閉じた中身（6 の段落と、8 の見出しの閉じた入れ子のセクション）、行 12 の見出し
+  place(heading(0, 40), root);
+  place(block(2, 40), root);
+  place(heading(4, 40), root);
+  const body = place(closedBody(), root);
+  place(block(6, 40), body);
+  place(heading(8, 40), body);
+  const nested = place(closedBody(), body);
+  place(block(10, 40), nested);
+  place(heading(12, 40), root);
+  // 実行
+  const anchors = collectAnchors({ root, scroller });
+  // 検証
+  expect(anchors.map((anchor: Anchor) => anchor.line)).toEqual([0, 2, 4, 12]);
+  expect(anchors.map((anchor: Anchor) => Boolean(anchor.collapsed))).toEqual([
+    false,
+    false,
+    true,
+    false,
+  ]);
+});
+
+// 差分のブロックに包まれた閉じたセクションの見出しにも collapsed を付ける（正常系）
+test("test_collect_anchors_when_closed_section_in_diff_block", async () => {
+  // 準備
+  const { collectAnchors } = await loadScroll();
+  const scroller = place(document.createElement("div"));
+  scroller.style.cssText = "height: 300px; overflow-y: auto;";
+  const root = place(document.createElement("div"), scroller);
+  // 行 0 の見出し、差分のブロックに包んだ行 4 の見出しと閉じた中身（6 の段落）、行 12 の見出し
+  place(heading(0, 40), root);
+  const wrapper = place(document.createElement("div"), root);
+  wrapper.className = "mdmark-diff-block";
+  place(heading(4, 40), wrapper);
+  const body = place(closedBody(), root);
+  place(block(6, 40), body);
+  place(heading(12, 40), root);
+  // 実行
+  const anchors = collectAnchors({ root, scroller });
+  // 検証
+  expect(anchors.map((anchor: Anchor) => anchor.line)).toEqual([0, 4, 12]);
+  expect(anchors.map((anchor: Anchor) => Boolean(anchor.collapsed))).toEqual([
+    false,
+    true,
+    false,
+  ]);
+});
+
 // マーカーの間を行の割合で内分する（正常系）
 test("test_top_for_line", async () => {
   // 準備
@@ -99,6 +169,21 @@ test("test_top_for_line_when_no_anchor", async () => {
   const top = topForLine([], 5);
   // 検証
   expect(top).toBe(0);
+});
+
+// 閉じたセクションの中の行は見出しの位置（正常系）
+test("test_top_for_line_when_collapsed", async () => {
+  // 準備
+  const { topForLine } = await loadScroll();
+  const anchors = [
+    { line: 0, top: 0 },
+    { line: 4, top: 100, collapsed: true },
+    { line: 12, top: 140 },
+  ];
+  // 実行
+  const tops = [4, 11, 12].map((line) => topForLine(anchors, line));
+  // 検証
+  expect(tops).toEqual([100, 100, 140]);
 });
 
 // マーカーの間を内分して切り捨てる（正常系）

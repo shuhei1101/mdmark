@@ -1,5 +1,5 @@
 import { readFile } from "node:fs/promises";
-import { dirname, extname, resolve } from "node:path";
+import { dirname, extname } from "node:path";
 import { build, transform } from "esbuild";
 import {
   BROWSER_TARGETS,
@@ -35,9 +35,6 @@ const IMAGE_MIME: Readonly<Record<string, string>> = {
 
 /** スキームを持つ URL か（`//` で始まる URL を含む） */
 const EXTERNAL_PATTERN = /^(?:[a-z][a-z0-9+.-]*:|\/\/)/i;
-
-/** `http:`・`https:` の URL か */
-const HTTP_PATTERN = /^https?:\/\//i;
 
 /** 色分けの対象の `code` が持つ属性から、言語のモジュール名を読み込む正規表現 */
 const SYNTAX_LANGUAGE_PATTERN = new RegExp(

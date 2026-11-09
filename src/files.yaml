@@ -128,6 +128,12 @@ files:
     related:
       - to: dev/設計書/モジュール構成/ライブラリ本体/CLI.ts
         type: implements
+  - path: cli/markdown-check.ts
+    description: モジュール構成『ライブラリ本体 / CLI』のうち「指定した Markdown の文字列とファイルの YAML のキーの値の記法の点検 checkMarkdownSource」を受け持つ。CLI のコマンドの振る舞いを変えるときに参照する。
+    tags: [topic:cli, topic:検査]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/CLI.ts
+        type: implements
   - path: cli/migrations.ts
     description: モジュール構成『ライブラリ本体 / バージョンを上げる』のうち「移行の手順の読み取り・構造の検め・適用」を受け持つ。mdmark upgrade の移行の流れを変えるときに参照する。
     tags: [topic:バージョン, topic:移行, topic:cli]
@@ -176,6 +182,14 @@ files:
     related:
       - to: dev/設計書/モジュール構成/ライブラリ本体/ビューとコメント.ts
         type: implements
+  - path: comments/margin.ts
+    description: モジュール構成『ライブラリ本体 / ビューとコメント』のうち「本文の列の右の余白の列に、箇所の行の高さで余白のマーカーを配置する（dist/comments.js）」を受け持つ。ビューやコメントの部品を変えるときに参照する。
+    tags: [topic:ビュー, topic:コメント]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/ビューとコメント.ts
+        type: implements
+      - to: dev/設計書/部品設計/余白のマーカー.ts
+        type: implements
   - path: comments/spec.ts
     description: モジュール構成『ライブラリ本体 / ビューとコメント』のうち「公開の型 MdmarkComment・MdmarkCommentDraft・MdmarkCommentStore・MdmarkCommentsHandle、引数とコメントの構造の検査（dist/index.js）」を受け持つ。ビューやコメントの部品を変えるときに参照する。
     tags: [topic:ビュー, topic:コメント]
@@ -187,6 +201,12 @@ files:
     tags: [topic:設定, topic:機能フラグ]
     related:
       - to: dev/設計書/モジュール構成/ライブラリ本体/設定と機能.ts
+        type: implements
+  - path: diagram/check.ts
+    description: モジュール構成『ライブラリ本体 / 図』のうち「フロー図の定義の配置の点検（重なり・はみ出し・線の横切り・ラベルの長さ）」を受け持つ。図の部品の描き方や操作を変えるときに参照する。
+    tags: [topic:図, tool:svg]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/図.ts
         type: implements
   - path: diagram/definition.ts
     description: モジュール構成『ライブラリ本体 / 図』のうち「定義の型・JSON の読み取り・構造の確認」を受け持つ。図の部品の描き方や操作を変えるときに参照する。
@@ -202,6 +222,12 @@ files:
         type: implements
   - path: diagram/geometry.ts
     description: モジュール構成『ライブラリ本体 / 図』のうち「収まる倍率・line jump・重なる線のずらし・軸の刻み」を受け持つ。図の部品の描き方や操作を変えるときに参照する。
+    tags: [topic:図, tool:svg]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/図.ts
+        type: implements
+  - path: diagram/layout.ts
+    description: モジュール構成『ライブラリ本体 / 図』のうち「座標を省いた判定フローチャートの自動の配置」を受け持つ。図の部品の描き方や操作を変えるときに参照する。
     tags: [topic:図, tool:svg]
     related:
       - to: dev/設計書/モジュール構成/ライブラリ本体/図.ts
@@ -260,6 +286,12 @@ files:
     related:
       - to: dev/設計書/モジュール構成/ライブラリ本体/描く.ts
         type: implements
+  - path: html-scripts.ts
+    description: モジュール構成『ライブラリ本体 / 描く』のうち「埋め込んだ HTML の範囲の ts・js を変換して動かす runHtmlScripts と、変換のライブラリの読み込み・埋めた関数の記録」を受け持つ。mount の描く流れや外部ライブラリの読み込みを変えるときに参照する。
+    tags: [topic:dom, topic:markdown]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/描く.ts
+        type: implements
   - path: index.css
     id: src/index.css
     description: モジュール構成『ライブラリ本体 / 公開の入口』のうち「描いた文書と記法の CSS（@layer mdmark）」を受け持つ。公開関数や配布物の入口を変えるときに参照する。
@@ -278,6 +310,14 @@ files:
     tags: [topic:dom, topic:アイコン]
     related:
       - to: dev/設計書/モジュール構成/ライブラリ本体/描く.ts
+        type: implements
+  - path: interact/back-to-top.ts
+    description: モジュール構成『ライブラリ本体 / 操作』のうち「先頭へ戻るボタンを配置し、出し分け・配置する位置・押したときの移動を付ける」を受け持つ。描いた文書での読者の操作を変えるときに参照する。
+    tags: [topic:dom, topic:イベント]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/操作.ts
+        type: implements
+      - to: dev/設計書/部品設計/先頭へ戻るボタン.ts
         type: implements
   - path: interact/clipboard.ts
     description: モジュール構成『ライブラリ本体 / 操作』のうち「クリップボードへ書き込む（表・行の URL・コードブロック・ファイルツリーが使用する）」を受け持つ。描いた文書での読者の操作を変えるときに参照する。
@@ -302,6 +342,12 @@ files:
     tags: [topic:dom, topic:イベント, topic:表]
     related:
       - to: dev/設計書/モジュール構成/ライブラリ本体/操作.ts
+        type: implements
+  - path: interact/diagram-resize.ts
+    description: モジュール構成『ライブラリ本体 / 図』のうち「表示する枠の高さを変えるリサイズハンドルと高さの保持」を受け持つ。図の部品の描き方や操作を変えるときに参照する。
+    tags: [topic:図, tool:svg]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/図.ts
         type: implements
   - path: interact/diagram-tips.ts
     description: モジュール構成『ライブラリ本体 / 図』のうち「図のツールチップ」を受け持つ。図の部品の描き方や操作を変えるときに参照する。
@@ -363,6 +409,12 @@ files:
     related:
       - to: dev/設計書/モジュール構成/ライブラリ本体/操作.ts
         type: implements
+  - path: interact/scroller.ts
+    description: モジュール構成『ライブラリ本体 / 操作』のうち「要素をスクロールする一番近い祖先の要素を見つける（先頭へ戻るボタンと差分のミニマップが使用する）」を受け持つ。描いた文書での読者の操作を変えるときに参照する。
+    tags: [topic:dom, topic:イベント]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/操作.ts
+        type: implements
   - path: interact/sections.ts
     description: 'モジュール構成『ライブラリ本体 / 操作』のうち「セクションと行の詳細の開閉、Shift で入れ子をまとめて開閉、すべて開閉、URL の #ID で開く」を受け持つ。描いた文書での読者の操作を変えるときに参照する。'
     tags: [topic:dom, topic:イベント, topic:セクション]
@@ -378,6 +430,18 @@ files:
   - path: interact/sticky.ts
     description: モジュール構成『ライブラリ本体 / 操作』のうち「表の見出し行と集計の行を画面の端に留める」を受け持つ。描いた文書での読者の操作を変えるときに参照する。
     tags: [topic:dom, topic:イベント]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/操作.ts
+        type: implements
+  - path: interact/table-settings.ts
+    description: モジュール構成『ライブラリ本体 / 操作』のうち「テーブル設定のパネルの開閉・列の表示の切り替え・列の並べ替え（ドラッグと ↑・↓ キー）」を受け持つ。描いた文書での読者の操作を変えるときに参照する。
+    tags: [topic:dom, topic:イベント, topic:テーブル]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/操作.ts
+        type: implements
+  - path: interact/table-tree.ts
+    description: モジュール構成『ライブラリ本体 / 操作』のうち「階層の表の開閉・パスのツールチップとコピー・行の選択・絞り込み・見本との連動」を受け持つ。描いた文書での読者の操作を変えるときに参照する。
+    tags: [topic:dom, topic:イベント, topic:テーブル]
     related:
       - to: dev/設計書/モジュール構成/ライブラリ本体/操作.ts
         type: implements
@@ -507,6 +571,14 @@ files:
     related:
       - to: dev/設計書/モジュール構成/ライブラリ本体/ビューとコメント.ts
         type: implements
+  - path: parts/back-to-top.ts
+    description: モジュール構成『ライブラリ本体 / 部品』のうち「先頭へ戻るボタンの renderBackToTop」を受け持つ。部品が返却する HTML を変えるときに参照する。
+    tags: [topic:部品, tool:html]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/部品.ts
+        type: implements
+      - to: dev/設計書/部品設計/先頭へ戻るボタン.ts
+        type: implements
   - path: parts/backlinks.stories.ts
     description: 部品設計『関連文書の一覧』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに参照する。
     tags: [topic:ストーリー, tool:storybook, topic:部品, topic:被参照]
@@ -549,6 +621,20 @@ files:
         type: implements
       - to: dev/設計書/部品設計/注意書き.ts
         type: implements
+  - path: parts/card-grid.stories.ts
+    description: 部品設計『カードの格子』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに参照する。
+    tags: [topic:ストーリー, tool:storybook, topic:部品, topic:カード]
+    related:
+      - to: dev/設計書/部品設計/カードの格子.ts
+        type: implements
+  - path: parts/card-grid.ts
+    description: モジュール構成『ライブラリ本体 / 部品』のうち「カードの格子の renderCardGrid」を受け持つ。部品が返却する HTML を変えるときに参照する。
+    tags: [topic:部品, tool:html, topic:カード]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/部品.ts
+        type: implements
+      - to: dev/設計書/部品設計/カードの格子.ts
+        type: implements
   - path: parts/card.stories.ts
     description: 部品設計『カード』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに参照する。
     tags: [topic:ストーリー, tool:storybook, topic:部品, topic:カード]
@@ -567,6 +653,14 @@ files:
     description: 部品設計『グラフ』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに参照する。
     tags: [topic:ストーリー, tool:storybook, topic:部品, topic:図]
     related:
+      - to: dev/設計書/部品設計/グラフ.ts
+        type: implements
+  - path: parts/chart.ts
+    description: モジュール構成『ライブラリ本体 / 図』のうち「グラフの種類ごとの描き方と系列の外観の組」を受け持つ。図の部品の描き方や操作を変えるときに参照する。
+    tags: [topic:図, tool:svg]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/図.ts
+        type: implements
       - to: dev/設計書/部品設計/グラフ.ts
         type: implements
   - path: parts/code-block.stories.ts
@@ -1345,6 +1439,12 @@ files:
     related:
       - to: dev/設計書/モジュール構成/ライブラリ本体/描画.ts
         type: implements
+  - path: render/scope-css.ts
+    description: モジュール構成『ライブラリ本体 / 描画』のうち「埋め込んだ HTML の範囲の css を範囲の根の要素の中だけに適用する scopeCss（DOM を使用しない）」を受け持つ。Markdown から HTML 文字列にする流れを変えるときに参照する。
+    tags: [topic:markdown, topic:css]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/描画.ts
+        type: implements
   - path: render/syntax/backlinks.ts
     description: モジュール構成『ライブラリ本体 / 索引と用語』のうち「末尾の関連文書の一覧を配置するコアルール」を受け持つ。索引・用語・被参照の扱いを変えるときに参照する。
     tags: [topic:索引, topic:用語, topic:被参照]
@@ -1513,6 +1613,12 @@ files:
     related:
       - to: dev/設計書/モジュール構成/ライブラリ本体/記法.ts
         type: implements
+  - path: render/syntax/table-tree.ts
+    description: モジュール構成『ライブラリ本体 / 記法』のうち「`tree=` の表の階層の行・型・必須・既定のセルと、`example=` の見本を表の下へ移す処理」を受け持つ。記法の記載方法や出力する HTML を変えるときに参照する。
+    tags: [topic:markdown, topic:構文, tool:markdown-it, topic:テーブル]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/記法.ts
+        type: implements
   - path: render/syntax/tabs.ts
     description: モジュール構成『ライブラリ本体 / 記法』のうち「タブ」を受け持つ。記法の記載方法や出力する HTML を変えるときに参照する。
     tags: [topic:markdown, topic:構文, tool:markdown-it, topic:タブ]
@@ -1579,6 +1685,12 @@ files:
     related:
       - to: dev/設計書/モジュール構成/ライブラリ本体/操作.ts
         type: implements
+  - path: tree-logic.ts
+    description: モジュール構成『ライブラリ本体 / 操作』のうち「キーのパスの分け方・階層の行の計画・YAML の見本の行のパス・階層の絞り込み（render と操作が使用する。DOM もトークンも使用しない）」を受け持つ。描いた文書での読者の操作を変えるときに参照する。
+    tags: [topic:dom, topic:イベント, topic:テーブル]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/操作.ts
+        type: implements
   - path: viewer/bundle.ts
     description: モジュール構成『ライブラリ本体 / 書き出したHTML の起動』のうち「まとめた HTML の文書の行き来と一覧のパネル」を受け持つ。書き出した HTML を開いたときの振る舞いを変えるときに参照する。
     tags: [topic:ナビゲーション, tool:html]
@@ -1605,6 +1717,12 @@ files:
         type: implements
   - path: viewer/route.ts
     description: 'モジュール構成『ライブラリ本体 / 書き出したHTML の起動』のうち「URL の # の読み取りと、描いた文書のリンクの書き換え」を受け持つ。書き出した HTML を開いたときの振る舞いを変えるときに参照する。'
+    tags: [topic:ナビゲーション, tool:html]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/書き出したHTMLの起動.ts
+        type: implements
+  - path: viewer/view-state.ts
+    description: 'モジュール構成『ライブラリ本体 / 書き出したHTML の起動』のうち「まとめた HTML の履歴の項目ごとの表示の状態（位置・開閉・タブ）の取り出し・保存・復元」を受け持つ。書き出した HTML を開いたときの振る舞いを変えるときに参照する。'
     tags: [topic:ナビゲーション, tool:html]
     related:
       - to: dev/設計書/モジュール構成/ライブラリ本体/書き出したHTMLの起動.ts

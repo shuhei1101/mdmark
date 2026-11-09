@@ -227,6 +227,9 @@ data_models:
       - name: top
         type: number
         description: スクロールする要素の先頭からの位置（px）
+      - name: collapsed
+        type: boolean
+        description: 閉じたセクションの見出しのとき `true`。この行より後で次のマーカーの行より前の行は、この見出しの位置に配置する。それ以外の要素は持たない
     status: planned
   - name: DiffTexts
     title: 差分の全文
@@ -1394,7 +1397,12 @@ functions:
     kind: 関数
     container: vscode/src/webview/features/preview/panel/scroll.ts
     usecase: エディタとプレビューのスクロールを合わせる
-    summary: 描いた文書の `data-source-line` を持つ要素を、位置の順に `Anchor` にして返却する。同じ行は最初の要素だけ、見えていない要素（高さ 0）は除く
+    summary: 描いた文書の `data-source-line` を持つ要素を、位置の順に `Anchor` にして返却する。同じ行は最初の要素だけ、見えていない要素（高さ 0）と閉じたセクションの中の要素は除き、閉じたセクションの見出しには `collapsed` を付ける
+    process: |-
+      1. `root` の中の `[data-source-line]` の要素を文書の順に参照する
+      2. 祖先に `hidden` の付いた `.mdmark-section-body` を持つ要素は除く（入れ子のときは、最も外側の閉じたセクションの見出しだけが残る）
+      3. 高さ 0 の要素、行が整数でない要素、行か位置が直前のマーカー以下の要素は除く
+      4. 見出し（`.mdmark-heading`）の直後（差分のブロックに包まれているときはそのブロックの直後）の `.mdmark-section-body` に `hidden` が付いているときは、`collapsed: true` を付ける
     scope: public
     args:
       - name: options
@@ -1411,13 +1419,25 @@ functions:
         condition: '`data-source-line` が 0・2・2・1・5 の要素を上から並べる（3 つ目は 2 つ目の中）'
         mock: なし
         expected: '`line` が `[0, 2, 5]` の並び'
+      - name: test_collect_anchors_when_closed_section
+        case: 正常
+        summary: 閉じたセクションの中の要素を除き、見出しに collapsed を付ける
+        condition: '`data-source-line` が 0 の見出しと 2 の段落、4 の見出しと `hidden` の付いた中身（6 の段落と、8 の見出しの閉じた入れ子のセクション）、12 の見出しを並べる'
+        mock: なし
+        expected: '`line` が `[0, 2, 4, 12]` の並びで、`collapsed` は 4 のマーカーだけが `true`'
+      - name: test_collect_anchors_when_closed_section_in_diff_block
+        case: 正常
+        summary: 差分のブロックに包まれた閉じたセクションの見出しにも collapsed を付ける
+        condition: '`data-source-line` が 0 の見出し、`.mdmark-diff-block` で包んだ 4 の見出しと、ブロックの直後の `hidden` の付いた中身（6 の段落）、12 の見出しを並べる'
+        mock: なし
+        expected: '`line` が `[0, 4, 12]` の並びで、`collapsed` は 4 のマーカーだけが `true`'
     status: planned
   - name: topForLine
     title: 行を位置にする
     kind: 関数
     container: vscode/src/webview/features/preview/panel/scroll.ts
     usecase: エディタとプレビューのスクロールを合わせる
-    summary: 行以下の最後のマーカーと次のマーカーの間を、行の割合で内分した位置を返却する
+    summary: 行以下の最後のマーカーと次のマーカーの間を、行の割合で内分した位置を返却する。行以下の最後のマーカーが `collapsed` のときは、内分せずにそのマーカーの位置を返却する
     scope: public
     args:
       - name: anchors
@@ -1444,6 +1464,12 @@ functions:
         condition: '`[]` で行 5'
         mock: なし
         expected: '`0`'
+      - name: test_top_for_line_when_collapsed
+        case: 正常
+        summary: 閉じたセクションの中の行は見出しの位置
+        condition: '`[{ line: 0, top: 0 }, { line: 4, top: 100, collapsed: true }, { line: 12, top: 140 }]` で行 4・行 11・行 12'
+        mock: なし
+        expected: '`100`・`100`・`140`'
     status: planned
   - name: lineForTop
     title: 位置を行にする

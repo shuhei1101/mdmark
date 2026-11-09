@@ -4,9 +4,28 @@ export type Anchor = {
   line: number;
   /** スクロールする要素の先頭からの位置（px） */
   top: number;
+  /** 閉じたセクションの見出しのとき `true`。この行より後で次のマーカーの行より前の行は、この見出しの位置に配置する */
+  collapsed?: boolean;
 };
 
-/** 描いた文書の `data-source-line` を持つ要素を、位置の順に `Anchor` にして返却する。同じ行は最初の要素だけ、見えていない要素（高さ 0）と、行や位置が戻る要素は除く */
+/** 閉じたセクションの中身 */
+const CLOSED_BODY = ".mdmark-section-body[hidden]";
+
+/** 差分のブロック（見出しを包む `div`） */
+const DIFF_BLOCK = ".mdmark-diff-block";
+
+/** 見出しのセクションの中身が閉じているか。見出しが差分のブロックに包まれているときは、そのブロックの次の兄弟を確認する */
+const isClosedHeading = (element: HTMLElement): boolean => {
+  if (!element.classList.contains("mdmark-heading")) {
+    return false;
+  }
+  const wrapper = element.parentElement?.matches(DIFF_BLOCK)
+    ? element.parentElement
+    : null;
+  return (wrapper ?? element).nextElementSibling?.matches(CLOSED_BODY) ?? false;
+};
+
+/** 描いた文書の `data-source-line` を持つ要素を、位置の順に `Anchor` にして返却する。同じ行は最初の要素だけ、見えていない要素（高さ 0）・閉じたセクションの中の要素と、行や位置が戻る要素は除き、閉じたセクションの見出しには `collapsed` を付ける */
 export const collectAnchors = (options: {
   /** 描いた文書の要素 */
   root: HTMLElement;
@@ -20,9 +39,11 @@ export const collectAnchors = (options: {
     scroller === document.documentElement;
   const origin = page ? 0 : scroller.getBoundingClientRect().top;
   const anchors: Anchor[] = [];
-  for (const element of root.querySelectorAll<HTMLElement>(
-    "[data-source-line]",
-  )) {
+  // 閉じたセクションの中の要素も高さを持って返却されるため、中身の祖先で除く
+  const elements = [
+    ...root.querySelectorAll<HTMLElement>("[data-source-line]"),
+  ].filter((element) => element.closest(CLOSED_BODY) === null);
+  for (const element of elements) {
     const rect = element.getBoundingClientRect();
     const line = Number(element.dataset.sourceLine);
     const top = rect.top - origin + scroller.scrollTop;
@@ -34,7 +55,9 @@ export const collectAnchors = (options: {
     ) {
       continue;
     }
-    anchors.push({ line, top });
+    anchors.push(
+      isClosedHeading(element) ? { line, top, collapsed: true } : { line, top },
+    );
   }
   return anchors;
 };
@@ -52,7 +75,7 @@ const lastIndexOf = (
   return -1;
 };
 
-/** 行以下の最後のマーカーと次のマーカーの間を、行の割合で内分した位置を返却する。マーカーが無いか最初のマーカーより前は 0、最後のマーカーより後は最後のマーカーの位置 */
+/** 行以下の最後のマーカーと次のマーカーの間を、行の割合で内分した位置を返却する。行以下の最後のマーカーが閉じたセクションの見出しのときは、そのマーカーの位置。マーカーが無いか最初のマーカーより前は 0、最後のマーカーより後は最後のマーカーの位置 */
 export const topForLine = (anchors: Anchor[], line: number): number => {
   const first = anchors[0];
   if (first === undefined || line < first.line) {
@@ -61,7 +84,7 @@ export const topForLine = (anchors: Anchor[], line: number): number => {
   const index = lastIndexOf(anchors, (anchor) => anchor.line <= line);
   const before = anchors[index];
   const after = anchors[index + 1];
-  if (after === undefined) {
+  if (after === undefined || before.collapsed === true) {
     return before.top;
   }
   const ratio = (line - before.line) / (after.line - before.line);

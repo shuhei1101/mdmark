@@ -9,6 +9,7 @@ import {
   lastPanel,
   openMarkdown,
   type RecordedPanel,
+  renders,
   resetEnvironment,
   setSetting,
   settledStart,
@@ -35,6 +36,43 @@ function longDocument(): string {
       ]).flat(),
     ].join("\n"),
   ).join("\n");
+}
+
+/** 閉じたセクションの番号（1 始まり） */
+const CLOSED_SECTION = 8;
+
+/** 長い文書の `CLOSED_SECTION` 番目のセクションを `<!-- section: closed -->` で閉じ、3 つの段落にした Markdown と、その見出し・最後の段落・次の見出しの行（0 始まり） */
+function closedDocument(): {
+  markdown: string;
+  heading: number;
+  lastParagraph: number;
+  nextHeading: number;
+} {
+  const lines: string[] = [];
+  let heading = -1;
+  let lastParagraph = -1;
+  let nextHeading = -1;
+  for (let section = 1; section <= SECTIONS; section += 1) {
+    if (section === CLOSED_SECTION) {
+      heading = lines.length;
+    }
+    if (section === CLOSED_SECTION + 1) {
+      nextHeading = lines.length;
+    }
+    lines.push(`## セクション ${section}`);
+    if (section === CLOSED_SECTION) {
+      lines.push("<!-- section: closed -->");
+    }
+    lines.push("");
+    const paragraphs = section === CLOSED_SECTION ? 3 : 40;
+    for (let paragraph = 1; paragraph <= paragraphs; paragraph += 1) {
+      if (section === CLOSED_SECTION) {
+        lastParagraph = lines.length;
+      }
+      lines.push(`${section}-${paragraph} 段落の本文です。`, "");
+    }
+  }
+  return { markdown: lines.join("\n"), heading, lastParagraph, nextHeading };
 }
 
 /** 狭い幅の帯とみなす右側の目次の高さの上限（px） */
@@ -195,6 +233,79 @@ suite("エディタとプレビューのスクロールを合わせる", () => {
       top,
     );
     assert.strictEqual(visibleStart(editor), start);
+  });
+
+  // エディタを閉じたセクションの中の行へ動かすと、そのセクションの見出しを先頭に配置し、セクションは閉じたまま
+  test("test_normal_when_in_closed_section", async () => {
+    // 準備: 8 番目のセクションを閉じた長い文書をエディタと横の列のプレビューで開く
+    const { markdown, heading, lastParagraph, nextHeading } = closedDocument();
+    await writeFixture("closed.md", markdown);
+    const editor = await openMarkdown("closed.md");
+    await vscode.commands.executeCommand("mdmark.openPreviewToSide");
+    const record = lastPanel();
+    await waitForRendered(record);
+    await sleep(500);
+    const before = scrollCount(record);
+    // 実行: 8 番目のセクションの 3 つ目の段落の行をエディタの先頭にする
+    editor.revealRange(
+      new vscode.Range(lastParagraph, 0, lastParagraph, 0),
+      vscode.TextEditorRevealType.AtTop,
+    );
+    await waitFor(() => scrollCount(record) > before, {
+      message: "scrollToLine が送信されない",
+    });
+    const start = await settledStart(editor);
+    assert.ok(
+      start > heading && start < nextHeading,
+      `先頭の行 ${start} が閉じたセクションの中（${heading} より後で ${nextHeading} より前）に無い`,
+    );
+    await waitFor(() => lastScrollLine(record) === start, {
+      message: "止まった先頭の行を送信していない",
+    });
+    // 検証: 8 番目の見出しが見えている先頭にかかり、9 番目の見出しは先頭より下にある
+    const placed = async (): Promise<boolean> => {
+      const headings = await inspect("h2");
+      const closed = headings.find((item) =>
+        item.text.includes(`セクション ${CLOSED_SECTION}`),
+      );
+      const next = headings.find((item) =>
+        item.text.includes(`セクション ${CLOSED_SECTION + 1}`),
+      );
+      const [paragraph] = await inspect("p[data-source-line]");
+      const inset = await bandBottom();
+      return (
+        closed !== undefined &&
+        next !== undefined &&
+        paragraph !== undefined &&
+        closed.top + closed.height > inset &&
+        closed.top <= inset + paragraph.height &&
+        next.top > inset
+      );
+    };
+    await waitFor(placed, {
+      message: "閉じたセクションの見出しが見えている先頭に来ない",
+    });
+    const expanded = async (): Promise<string | undefined> =>
+      (await inspect("button.mdmark-section-toggle")).find((item) =>
+        item.text.includes(`セクション ${CLOSED_SECTION}`),
+      )?.attributes["aria-expanded"];
+    assert.strictEqual(await expanded(), "false");
+    // 実行: 3 つ目の段落に文字を入力する
+    const rendered = renders(record).length;
+    await editor.edit((builder) =>
+      builder.insert(new vscode.Position(lastParagraph, 0), "追記"),
+    );
+    await waitFor(() => renders(record).length > rendered, {
+      message: "書き換えた Markdown を描き直さない",
+    });
+    await sleep(500);
+    // 検証: 描き直した後も同じ位置の関係で、セクションは閉じたまま、エディタは動かない
+    assert.ok(await placed(), "描き直した後に見出しの位置がずれた");
+    assert.strictEqual(await expanded(), "false");
+    const after = visibleStart(editor);
+    await sleep(200);
+    assert.strictEqual(visibleStart(editor), after);
+    assert.strictEqual(after, start);
   });
 
   // 同じ列に開いてエディタが隠れているときは、エディタをもう一度開かない

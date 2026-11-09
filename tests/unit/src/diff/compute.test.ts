@@ -172,3 +172,104 @@ test("test_compute_diff_when_engine", async () => {
   expect(kinds).toEqual(["del", "del", "add", "add"]);
   expect(result.counts).toEqual({ del: 2, add: 2 });
 });
+
+/** 結果の行を、種類と文字の組にして上から順に返却する */
+function kindsOf(blocks: Block[]): [Line["kind"], string][] {
+  return allLines(blocks).map((line) => [line.kind, textOf(line)]);
+}
+
+// 1 行の段落だけの文書で、空行の一致を手がかりにせず、変えていない段落を同じ行にする（正常系）
+test("test_compute_diff_when_one_line_paragraphs", async () => {
+  // 準備
+  const { computeDiff } = await loadCompute();
+  // 実行
+  const result = computeDiff({
+    before: "A\n\nC\n\nD\n",
+    after: "A\n\nB\n\nC\n",
+    segmenter: undefined,
+  });
+  // 検証
+  expect(kindsOf(result.blocks)).toEqual([
+    ["same", "A"],
+    ["same", ""],
+    ["add", "B"],
+    ["add", ""],
+    ["same", "C"],
+    ["del", ""],
+    ["del", "D"],
+  ]);
+  expect(result.counts).toEqual({ del: 2, add: 2 });
+});
+
+// 空行だけを追加した変更を、追加した空行にする（正常系）
+test("test_compute_diff_when_blank_line_added", async () => {
+  // 準備
+  const { computeDiff } = await loadCompute();
+  // 実行
+  const result = computeDiff({
+    before: "X\nY\n",
+    after: "X\n\nY\n",
+    segmenter: undefined,
+  });
+  // 検証
+  expect(kindsOf(result.blocks)).toEqual([
+    ["same", "X"],
+    ["add", ""],
+    ["same", "Y"],
+  ]);
+  expect(result.counts).toEqual({ del: 0, add: 1 });
+});
+
+// 文字の違う空白だけの行は、削除した行と追加した行にする（正常系）
+test("test_compute_diff_when_blank_text_differs", async () => {
+  // 準備
+  const { computeDiff } = await loadCompute();
+  // 実行
+  const result = computeDiff({
+    before: "A\n  \nB\n",
+    after: "A\n\nB\n",
+    segmenter: undefined,
+  });
+  // 検証
+  expect(kindsOf(result.blocks)).toEqual([
+    ["same", "A"],
+    ["del", "  "],
+    ["add", ""],
+    ["same", "B"],
+  ]);
+});
+
+// 先頭の空行はソースの先頭に付け、前と後で対にする（正常系）
+test("test_compute_diff_when_leading_blank_lines", async () => {
+  // 準備
+  const { computeDiff } = await loadCompute();
+  // 実行
+  const result = computeDiff({
+    before: "\n\nA\n",
+    after: "\nA\n",
+    segmenter: undefined,
+  });
+  // 検証
+  expect(kindsOf(result.blocks)).toEqual([
+    ["same", ""],
+    ["del", ""],
+    ["same", "A"],
+  ]);
+});
+
+// 最後の行の改行の有無は比べない（正常系）
+test("test_compute_diff_when_last_newline_missing", async () => {
+  // 準備
+  const { computeDiff } = await loadCompute();
+  // 実行
+  const result = computeDiff({
+    before: "A\nB",
+    after: "A\nB\n",
+    segmenter: undefined,
+  });
+  // 検証
+  expect(result.counts).toEqual({ del: 0, add: 0 });
+  const lines = allLines(result.blocks);
+  expect(lines.map(textOf)).toEqual(["A", "B"]);
+  expect(lines.every((line) => line.kind === "same")).toBe(true);
+});

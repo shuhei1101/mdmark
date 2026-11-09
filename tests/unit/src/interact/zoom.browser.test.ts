@@ -212,6 +212,17 @@ test("test_attach_zoom_when_dragged_on_link", async () => {
   }
 });
 
+// ノードのリンクの上の押下で、ブラウザのリンクのドラッグを始めない（正常系）
+test("test_attach_zoom_when_link_dragstart", async () => {
+  // 準備
+  const { link } = await setUpWithLink();
+  const event = new DragEvent("dragstart", { bubbles: true, cancelable: true });
+  // 実行
+  link.dispatchEvent(event);
+  // 検証
+  expect(event.defaultPrevented).toBe(true);
+});
+
 // しきい値以下の動きはドラッグにしない（正常系）
 test("test_attach_zoom_when_link_pressed", async () => {
   // 準備

@@ -4,6 +4,8 @@ import { type MdmarkMarkArgs } from "../extensions.ts";
 export declare const MARK_PATTERN: RegExp;
 /** 機能のオン・オフを書く印の名前 */
 export declare const FEATURES_MARK = "features";
+/** 明暗・テーマ・右側の目次の出し方を書く印の名前 */
+export declare const PAGE_MARK = "page";
 /** 記法の印の名前から、その記法の機能の名前を引く */
 export declare const SYNTAX_MARKS: Readonly<Record<string, string>>;
 /** 印のトークンの type */
@@ -23,9 +25,11 @@ export type Mark = {
 };
 /** 印の引数の文字を空白で区切り、`キー=値` を `keys`、それ以外を書いた順に `args` に入れる */
 export declare function parseMarkArgs(text: string): MdmarkMarkArgs;
-/** 印を拾い、`features` は引数を環境へ足し、対応表と拡張の名前は印の場所の要素にし、記法の印は印のトークンにし、それ以外は取り除く */
+/** 印を拾い、`features` は引数を環境へ足し、`page` は文書の先頭なら環境へ足し、対応表と拡張の名前は印の場所の要素にし、記法の印は印のトークンにし、それ以外は取り除く */
 export declare function takeMarks(state: StateCore): void;
 /** `takeMarks` の後に、設定の `features` に文書の `features` の印を重ねて `env.features` に入れる */
 export declare function resolveDocumentFeatures(state: StateCore): void;
+/** `takeMarks` が拾った先頭の page の印を読んで `env.page` に入れ、書けるキーの知らない値があれば文書の先頭に書き方の警告を差し込み、知らないキーと指定は読み飛ばした引数にする */
+export declare function resolvePageSettings(state: StateCore): void;
 /** 最後に、記法が使わなかった印のトークン（オフの記法の印を含む）を取り除く */
 export declare function dropMarks(state: StateCore): void;

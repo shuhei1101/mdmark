@@ -10,6 +10,9 @@ import {
 // ビルドした配布物を配置した作業ツリー
 let builtRoot = "";
 
+// 操作が要素に届かないときに、ケースの上限まで待たずに落とす（expect の待ちと同じ 30 秒）
+test.use({ actionTimeout: 30_000 });
+
 // 1 つ目の段落に参照、2 つ目の段落に行内の脚注を持ち、定義を本文の途中に配置した文書
 const MARKDOWN = [
   "出典がある[^src]。",
@@ -49,6 +52,12 @@ function footnoteRef(page: Page, n: number): Locator {
   return page.locator("#doc .mdmark-fn-ref").nth(n - 1);
 }
 
+/** ポインターを番号とツールチップの外へ出し、開いていたツールチップが消えるのを待つ（開いたツールチップは次の段落の番号に重なりうる） */
+async function moveAway(page: Page, tip: Locator): Promise<void> {
+  await page.mouse.move(0, 0);
+  await expect(tip).toBeHidden();
+}
+
 // 参照の場所に番号を配置し、ポインターでツールチップを出し、末尾に閉じた脚注の一覧を配置する（正常シナリオ）
 test("test_normal", async ({ page }) => {
   // 準備
@@ -71,6 +80,7 @@ test("test_normal", async ({ page }) => {
   await expect(firstTip).toContainText("出典の説明");
   await firstTip.hover();
   await expect(firstTip).toBeVisible();
+  await moveAway(page, firstTip);
   // 番号 2: ポインターを乗せると出る
   const secondTip = footnoteRef(page, 2).locator(".mdmark-fn-tip");
   await footnoteRef(page, 2).locator(".mdmark-fn-link").hover();
@@ -140,6 +150,7 @@ test("test_normal_when_referenced_twice", async ({ page }) => {
     await ref.locator(".mdmark-fn-link").hover();
     await expect(ref.locator(".mdmark-fn-tip")).toBeVisible();
     await expect(ref.locator(".mdmark-fn-tip")).toContainText("共通の補足");
+    await moveAway(page, ref.locator(".mdmark-fn-tip"));
   }
   const list = page.locator("#doc details.mdmark-footnotes");
   await list.locator("summary").click();
@@ -206,9 +217,11 @@ test("test_normal_when_jump_to_list", async ({ page }) => {
   // 実行
   await list.locator("summary").click();
   await expect(list).not.toHaveAttribute("open", "");
-  await page.evaluate(() => {
-    (document.activeElement as HTMLElement | null)?.blur();
-  });
+  // Tab の起点を番号 1 の前に置く（`blur()` では起点が押した見出しのまま残る）
+  await page
+    .locator("#doc > p")
+    .first()
+    .click({ position: { x: 1, y: 1 } });
   await page.keyboard.press("Tab");
   await expect(footnoteRef(page, 1).locator(".mdmark-fn-link")).toBeFocused();
   await page.keyboard.press("Enter");

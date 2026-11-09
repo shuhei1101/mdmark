@@ -1,4 +1,4 @@
-import { afterEach, expect, test } from "vitest";
+import { afterEach, expect, test, vi } from "vitest";
 
 /** まとめた HTML の起動の処理を読み込む（実装が無い間は各テストが個別に失敗する） */
 const loadBundle = () => import("../../../../src/viewer/bundle.ts");
@@ -19,10 +19,64 @@ const PAYLOAD = {
 
 const ORIGINAL_URL = `${location.pathname}${location.search}`;
 
+// 段落 200 個の中ほどに b.md へのリンクを持つ a.md（entry）と、目次と見出しを持つ b.md をまとめた中身
+const LONG_PAYLOAD = {
+  ...PAYLOAD,
+  docs: [
+    {
+      path: "a.md",
+      title: "A",
+      markdown: [
+        "# 文書A",
+        "",
+        ...Array.from({ length: 200 }, (_, index) =>
+          index === 99 ? "[B へ](b.md)\n" : `段落 ${index + 1}\n`,
+        ),
+      ].join("\n"),
+    },
+    {
+      path: "b.md",
+      title: "B",
+      markdown:
+        "# 文書B\n\n<!-- toc -->\n\n## 一つ目\n\n本文\n\n## 二つ目\n\n本文\n",
+    },
+  ],
+};
+
 afterEach(() => {
+  vi.restoreAllMocks();
   document.body.innerHTML = "";
   history.replaceState(null, "", ORIGINAL_URL);
+  history.scrollRestoration = "auto";
+  sessionStorage.clear();
+  window.scrollTo(0, 0);
 });
+
+/** 次の `hashchange` を待つ */
+function nextHashchange(): Promise<void> {
+  return new Promise((resolve) => {
+    window.addEventListener("hashchange", () => resolve(), { once: true });
+  });
+}
+
+/** 描いた文書の中の、指した文書へのリンクを返す */
+function linkTo(path: string): HTMLAnchorElement {
+  const link = document.querySelector<HTMLAnchorElement>(
+    `.mdmark-bundle-main a[href="#/${path}"]`,
+  );
+  if (link === null) {
+    throw new Error(`${path} へのリンクが無い`);
+  }
+  return link;
+}
+
+/** a.md を 3000px スクロールして b.md へのリンクを押し、b.md へ移るまで待つ */
+async function leaveLongDocument(): Promise<void> {
+  window.scrollTo(0, 3000);
+  const changed = nextHashchange();
+  linkTo("b.md").click();
+  await changed;
+}
 
 /** 書き出す HTML と同じ画面の骨組みをページに配置する */
 async function placeSkeleton(): Promise<void> {
@@ -102,6 +156,117 @@ test("test_start_bundle_when_side_toc_link_into_closed_section", async () => {
   // 検証
   expect(body.hasAttribute("hidden")).toBe(false);
   expect(decodeURIComponent(location.hash)).toBe("#/b.md#注意");
+});
+
+// 戻るで、離れたときの位置へ戻り、リンクで移ったときは頭から描く（正常系）
+test("test_start_bundle_when_back_restores_view_state", async () => {
+  // 準備
+  const { startBundle } = await loadBundle();
+  await placeSkeleton();
+  sessionStorage.clear();
+  history.replaceState(null, "", "#/a.md");
+  startBundle(document, LONG_PAYLOAD, {});
+  await leaveLongDocument();
+  const scrollAfterLink = window.scrollY;
+  // 実行
+  const back = nextHashchange();
+  history.back();
+  await back;
+  // 検証
+  expect(scrollAfterLink).toBe(0);
+  expect(
+    document.querySelector(".mdmark-bundle-main .mdmark h1")?.textContent,
+  ).toContain("文書A");
+  expect(Math.abs(window.scrollY - 3000)).toBeLessThanOrEqual(1);
+  expect(history.scrollRestoration).toBe("manual");
+});
+
+// 戻るで開閉とタブを戻した後、フォーカスを h1 へ移す（正常系）
+test("test_start_bundle_when_back_focuses_title", async () => {
+  // 準備
+  const { startBundle } = await loadBundle();
+  await placeSkeleton();
+  const payload = {
+    ...PAYLOAD,
+    docs: [
+      {
+        path: "a.md",
+        title: "A",
+        markdown:
+          "# 文書A\n\n<!-- tabs -->\n\n## 一つ目\n\n本文\n\n## 二つ目\n\n[B へ](b.md)\n\n<!-- /tabs -->\n",
+      },
+      { path: "b.md", title: "B", markdown: "# 文書B\n" },
+    ],
+  };
+  history.replaceState(null, "", "#/a.md");
+  startBundle(document, payload, {});
+  const tab = document.querySelector<HTMLButtonElement>(
+    ".mdmark-bundle-main .mdmark-tab:nth-of-type(2)",
+  );
+  if (tab === null) {
+    throw new Error("2 つ目のタブが無い");
+  }
+  tab.click();
+  const changed = nextHashchange();
+  linkTo("b.md").click();
+  await changed;
+  // 実行
+  const back = nextHashchange();
+  history.back();
+  await back;
+  // 検証
+  const restored = document.querySelector(
+    ".mdmark-bundle-main .mdmark-tab:nth-of-type(2)",
+  );
+  expect(restored?.getAttribute("aria-selected")).toBe("true");
+  expect(document.activeElement).toBe(
+    document.querySelector(".mdmark-bundle-main h1"),
+  );
+});
+
+// 見出しへ移るリンクで URL を置き換えても、履歴の項目の ID を引き継ぐ（正常系）
+test("test_start_bundle_when_heading_link_keeps_entry_id", async () => {
+  // 準備
+  const { startBundle } = await loadBundle();
+  await placeSkeleton();
+  history.replaceState(null, "", "#/b.md");
+  startBundle(document, LONG_PAYLOAD, {});
+  const before = history.state?.mdmarkEntry;
+  const link = document.querySelector<HTMLAnchorElement>(
+    '.mdmark-bundle-main .mdmark-toc a[href^="#/b.md#"]',
+  );
+  if (link === null) {
+    throw new Error("目次の見出しのリンクが無い");
+  }
+  // 実行
+  link.click();
+  // 検証
+  expect(before).toEqual(expect.any(String));
+  expect(history.state?.mdmarkEntry).toBe(before);
+});
+
+// sessionStorage が使えないと、戻るで文書の頭から描き例外を出さない（異常系）
+test("test_start_bundle_when_session_storage_unavailable", async () => {
+  // 準備
+  const { startBundle } = await loadBundle();
+  await placeSkeleton();
+  vi.spyOn(window, "sessionStorage", "get").mockImplementation(() => {
+    throw new DOMException("使えない", "SecurityError");
+  });
+  const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+  history.replaceState(null, "", "#/a.md");
+  startBundle(document, LONG_PAYLOAD, {});
+  await leaveLongDocument();
+  // 実行
+  const back = nextHashchange();
+  history.back();
+  await back;
+  // 検証
+  expect(
+    document.querySelector(".mdmark-bundle-main .mdmark h1")?.textContent,
+  ).toContain("文書A");
+  expect(window.scrollY).toBe(0);
+  expect(warn).toHaveBeenCalled();
 });
 
 // キーを data: URL に替え、フラグメントを残す（正常系）

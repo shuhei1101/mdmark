@@ -1,0 +1,13 @@
+scope_out:
+  - item: scripts/ の他の単体テスト（build・build-plugin・eslint・migrations・storybook-render）の最初のテストが負う読み込みの時間
+    reason: 同じく各テストの中で動的 import するが、全件実行で時間切れになった記録が無い
+    plan: none
+  - item: '`src/cli/embed.ts` の使用していない import（`dirname`）と定数（`HTTP_PATTERN`）（lint の Biome の警告 2 件）'
+    reason: Biome の noUnusedImports・noUnusedVariables に当たるが、作業 PR が変えないファイルで今回の要望に含まれない
+    plan: '#363'
+use_cases:
+  - kind: single
+    scenario: dev/設計書/シナリオ/単一ユースケース/配布物をビルドして検査する.yaml
+    impact: none
+    detail: 対応ブラウザの下限の検査の単体テストの待ちだけを直し、開発者が流す検査の手順と結果は変わらない
+    depends_on: []

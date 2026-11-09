@@ -1,0 +1,16 @@
+use_cases:
+  - kind: single
+    scenario: dev/設計書/シナリオ/単一ユースケース/文書をHTMLに書き出す.yaml
+    impact: run_only
+    detail: 書き出しで画像や外部の資源を埋める処理のファイルから、使っていない定数を消す。書き出した HTML が変わらないことを確かめる
+    depends_on: []
+  - kind: single
+    scenario: dev/設計書/シナリオ/単一ユースケース/複数の文書を1枚のHTMLにまとめる.yaml
+    impact: run_only
+    detail: まとめで画像や外部の資源を埋める処理のファイルから、使っていない定数を消す。まとめた HTML が変わらないことを確かめる
+    depends_on: []
+scope_out:
+  - item: src/cli/embed.ts の import の dirname の削除
+    reason: 'readImage の docDir: dirname(docFile) で使用している。Issue 本文の 2:28 の noUnusedImports が指すのは resolve で、resolve はこの PR で削除する'
+    plan: none
+docs: []
