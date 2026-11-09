@@ -263,9 +263,8 @@ scenarios:
     setup:
       - name: 空の端末
         description: 正常シナリオと同じ
-      - name: systemctl の無い PATH
-        description: '`PATH` から `systemctl` を削除する'
-        notes: 端末の設定を書き込まないと unit の名前が既定の `mdmark-mcp` になり、手元の unit と重なるため、tmux で起動させる
+      - name: systemd --user が使える端末
+        description: 正常シナリオと同じ
       - name: 手元と別の tmux サーバーと空いたポート
         description: '`systemd --user が使えない` と同じ'
       - name: Mock
@@ -282,10 +281,11 @@ scenarios:
         end
         C-->>W: 書き込む内容
         W->>C: 書き込まない
-        C->>T: 新しいセッションで mdmark serve を起動する
+        C->>T: 書き込みを断ったので unit を記載せず、新しいセッションで mdmark serve を起動する
         C-->>W: 端末の設定と settings.json を書き込まなかったこと
     expected:
       - '`MDMARK_CONFIG` のパスに端末の設定が無く、`settings.json` が作られていない'
+      - 既定の名前の unit（`mdmark-mcp`）を記載せず、`~/.config/systemd/user/mdmark-mcp.service` の有無と中身と `systemctl --user is-enabled mdmark-mcp` の値が呼ぶ前と同じ
       - 既定のセッション名 `mdmark-mcp` の tmux のセッションで、常駐サーバーが `MDMARK_PORT` のポートで待ち受ける
       - 最後の報告に、端末の設定と `settings.json` を書き込まなかったことが出る
     test: test_error_when_write_declined
@@ -332,7 +332,7 @@ scenarios:
         C->>C: ポートをほかのプロセスが待ち受けているので、起動しない
         C-->>W: ポートが使用されていることと修正方法
     expected:
-      - unit の `is-active` が `active` ではない
+      - '`~/.config/systemd/user/{unit の名前}.service` が作られず、`systemctl --user is-enabled {unit の名前}` が `enabled` ではない'
       - '`MDMARK_PORT` のポートは、ほかのプロセスが待ち受けたまま'
       - 最後の報告に、ポートが使用されていることと、`settings.json` の `env` の `MDMARK_PORT` を空いたポートに変え、セッションをもう一度開いて `global-setup` をもう一度呼ぶ修正方法が出る
     test: test_error_when_port_in_use
@@ -349,5 +349,5 @@ preconditions:
   - Claude Code に mdmark のプラグインを入れている
   - 文書の作成者の手元に Node 24 以降と、systemd --user か tmux 3.4 以降のどちらかがある
 success_guarantee: 端末の設定が文書の作成者の回答した値で今のバージョンの記載方法になり、常駐サーバーが、systemd --user が使える端末では unit で、使えない端末か端末の設定で tmux に固定した端末では tmux のセッションの中で、1 つだけ待ち受け、`tools/list` がツールの一覧を返却する。
-minimal_guarantee: 文書の作成者が書き込むことを認めなかったときは、端末の設定と `settings.json` を書き換えない。ほかのプロセスが待ち受けているポートは、そのプロセスのまま変わらない。unit と tmux のセッションの両方で常駐サーバーを動かさない。
+minimal_guarantee: 文書の作成者が書き込むことを認めなかったときは、端末の設定と `settings.json` を書き換えず、unit のファイルも記載せずに tmux のセッションで起動する。ほかのプロセスが待ち受けているポートは、そのプロセスのまま変わらない。unit と tmux のセッションの両方で常駐サーバーを動かさない。
 test_file: tests/e2e/単一ユースケース/端末にmdmarkをセットアップする.spec.ts
