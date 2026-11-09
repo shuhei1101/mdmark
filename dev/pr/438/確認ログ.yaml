@@ -1,0 +1,31 @@
+confirmations:
+  - topic: 表のピン止めのモックへの合意
+    decision: モックのとおりに進める（推奨案 A）
+    decided_by: thumbs_up
+    approver: shuhei1101
+    commit:
+    thread: https://github.com/shuhei1101/mdmark/pull/438#discussion_r4508032410
+  - topic: ピン止めのボタンの名前
+    decision: each は「「{列名}」の列をピン止め」、through は「「{列名}」の列までピン止め」（推奨案 A）
+    decided_by: thumbs_up
+    approver: shuhei1101
+    commit:
+    thread: https://github.com/shuhei1101/mdmark/pull/438#discussion_r4508032840
+  - topic: pin= に読めない列名を混ぜたときの警告の文面
+    decision: 既存の「知らない列名」の警告と同じ形で、表の列名の一覧と「この列名を無視して描いています」を添える（推奨案 A）
+    decided_by: thumbs_up
+    approver: shuhei1101
+    commit:
+    thread: https://github.com/shuhei1101/mdmark/pull/438#discussion_r4508033298
+  - topic: 留めた列の幅の合計が表の見えている幅を超えたときの扱い
+    decision: 何もしない。右端の列は見えている幅の外へ押し出され、読む人がボタンで解除する（推奨案 A）
+    decided_by: thumbs_up
+    approver: shuhei1101
+    commit:
+    thread: https://github.com/shuhei1101/mdmark/pull/438#discussion_r4508033766
+  - topic: 表に無い列名の警告の文面（確認のやり直し）
+    decision: 今の実装の文面「{mark} の列名 {列名} は表にありません。表の見出しの文字で記載してください。」のままにし、pin= も同じ文面にする（推奨案 A）。前の「pin= に読めない列名を混ぜたときの警告の文面」の決着を置き換える
+    decided_by: thumbs_up
+    approver: shuhei1101
+    commit:
+    thread: https://github.com/shuhei1101/mdmark/pull/438#discussion_r4508235124

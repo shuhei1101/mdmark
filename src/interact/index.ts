@@ -1,4 +1,4 @@
-import type { TooltipPlacement } from "../config.ts";
+import type { TablePinMode, TooltipPlacement } from "../config.ts";
 import type { MdmarkParamDefinition } from "../diagram/definition.ts";
 import type { MdmarkColumnsChange } from "../mount.ts";
 import { attachCodeCopy } from "./code-blocks.ts";
@@ -31,6 +31,8 @@ export function attachInteractions(options: {
   diagramPlacement?: TooltipPlacement;
   /** 描いた操作できる部品の定義。`div.mdmark-param` の並びと同じ順（既定 `[]`） */
   paramDefinitions?: MdmarkParamDefinition[];
+  /** 既定を適用した設定の、表のピン止めの動き（既定 `each`） */
+  pinMode?: TablePinMode;
   /** 列の表示を切り替えたときに通知する */
   onColumnsChange?: (event: MdmarkColumnsChange) => void;
 }): () => void {
@@ -40,6 +42,7 @@ export function attachInteractions(options: {
     placement,
     diagramPlacement = "bottom",
     paramDefinitions = [],
+    pinMode = "each",
     onColumnsChange,
   } = options;
   const detachers: Array<() => void> = [];
@@ -50,7 +53,7 @@ export function attachInteractions(options: {
     detachers.push(attachSections({ root, sections, rowDetails }));
   }
   if (features.table === true) {
-    detachers.push(attachTables(root, { onColumnsChange }));
+    detachers.push(attachTables(root, { onColumnsChange, pinMode }));
     detachers.push(attachStickyRows(root));
   }
   // RAW のボタンは、表の操作の帯ができてからその帯に追加する

@@ -1,0 +1,30 @@
+/* #438 の表の追加分: 右端に留めた列の境の線。
+   拡張記法の規則（refs/19/assets/syntax.css）と #283 の追加分（refs/283/assets/table.css）の後に読む */
+
+@layer mdmark {
+  .mdmark {
+    /* 左端に留まっている列のうち最も右の列だけに境の線を引く（留めた列が離れていても、線は境に 1 本） */
+    .mdmark-table :is(td, thead th).is-pinned-col:not(.is-pinned-edge, .is-pinned-edge-end) {
+      box-shadow: none;
+    }
+
+    .mdmark-table thead th.is-pinned-col:not(.is-pinned-edge, .is-pinned-edge-end) {
+      box-shadow:
+        inset 0 1px var(--mdmark-color-border),
+        inset 0 -2px var(--mdmark-color-border);
+    }
+
+    /* 右端に留まっている列のうち最も左の列: 左の境目に線を引き、留めた列とスクロールする列を分ける */
+    .mdmark-table td.is-pinned-edge-end {
+      box-shadow: inset 2px 0 var(--mdmark-color-border);
+    }
+
+    /* 右端に留まっている最も左の列の見出し: 見出し行の上下の線に左の境目の線を足す */
+    .mdmark-table thead th.is-pinned-edge-end {
+      box-shadow:
+        inset 0 1px var(--mdmark-color-border),
+        inset 0 -2px var(--mdmark-color-border),
+        inset 2px 0 var(--mdmark-color-border);
+    }
+  }
+}

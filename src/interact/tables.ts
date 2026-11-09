@@ -1,3 +1,4 @@
+import type { TablePinMode } from "../config.ts";
 import type { MdmarkColumnsChange } from "../mount.ts";
 import { iconSvg } from "../parts/icons.ts";
 import {
@@ -23,8 +24,10 @@ import {
   type FilterValue,
   FOLD_MAX_WIDTH,
   findUnreadableTotals,
+  initialPinnedColumns,
   matchesFilter,
   mergeSpans,
+  pinOffsets,
   rowIdFromHash,
   shouldFold,
   TOTAL_CALCS,
@@ -32,6 +35,7 @@ import {
   type TotalCalc,
   tableToMarkdown,
   tableToTsv,
+  togglePinnedColumn,
 } from "../table-logic.ts";
 import { COPIED_NOTICE_MS, copyText } from "./clipboard.ts";
 import { attachTableSettings, reorderRowCells } from "./table-settings.ts";
@@ -189,21 +193,22 @@ function columnHeadsOf(table: HTMLTableElement): HTMLTableCellElement[] {
   );
 }
 
-/** 描いた直後に留める列の数: `data-pin` の位置 + 1、無ければ行見出しの列まで（行見出しが無ければ先頭の列）。`pin` の無い表は 0 */
-function initialPinnedCount(options: {
+/** 描いた直後に留める列（元の列の位置）。`data-pin` の列、無ければ行見出しの列（行見出しも無ければ先頭の列）を `initialPinnedColumns` で決める。`pin` の無い表は空 */
+function initialPinned(options: {
   wrapper: HTMLElement;
   features: string[];
   originalRows: HTMLTableRowElement[];
-}): number {
-  const { wrapper, features, originalRows } = options;
+  mode: TablePinMode;
+}): number[] {
+  const { wrapper, features, originalRows, mode } = options;
   if (!features.includes("pin")) {
-    return 0;
+    return [];
   }
-  const pinAt = Number.parseInt(wrapper.dataset.pin ?? "", 10);
+  const pin = readColumnList(wrapper.dataset.pin);
   const rowHeadCount = [...(originalRows[0]?.cells ?? [])].findIndex(
     (cell) => !(cell.tagName === "TH" && cell.scope === "row"),
   );
-  return Number.isNaN(pinAt) ? Math.max(1, rowHeadCount) : pinAt + 1;
+  return initialPinnedColumns({ pin, rowHeadCount, mode });
 }
 
 /** 表 1 つに、並べ替え・ピン止め・絞り込みを付け、削除する関数を返却する */
@@ -212,6 +217,7 @@ function attachTable(
   table: HTMLTableElement,
   root: HTMLElement,
   notifyColumns?: (hidden: string[]) => void,
+  pinMode: TablePinMode = "each",
 ): () => void {
   tableCounter += 1;
   const id = `mdmark-table-${tableCounter}`;
@@ -345,6 +351,7 @@ function attachTable(
         column,
         label: visibleText(cell),
         features,
+        pinMode,
         filter: kind && {
           kind,
           values: [
@@ -406,11 +413,12 @@ function attachTable(
     order,
     groups,
     groupLabels,
-    // 一覧を分けるのは `pin=` で留めた列だけ（既定の先頭の列の留めは、表がはみ出す間だけ該当する）
+    // 一覧を分けるのは `through` の表の `pin=` で留めた列だけ（既定の先頭の列の留めは、表がはみ出す間だけ該当する。`each` の表は分けない）
     pinned:
-      wrapper.dataset.pin === undefined
-        ? 0
-        : initialPinnedCount({ wrapper, features, originalRows }),
+      pinMode === "through" && wrapper.dataset.pin !== undefined
+        ? initialPinned({ wrapper, features, originalRows, mode: pinMode })
+            .length
+        : 0,
   });
   if (barParts.bar) {
     scroller.insertAdjacentHTML("beforebegin", barParts.bar);
@@ -693,23 +701,93 @@ function attachTable(
   };
 
   // ─── ピン止め ───
-  // 留める列の数: `data-pin` の位置 + 1、無ければ行見出しの列まで（行見出しが無ければ先頭の列）。表がはみ出す間だけ適用する
-  let pinned = initialPinnedCount({ wrapper, features, originalRows });
+  // 留める列（元の列の位置）: 描いた直後は `initialPinned`、ボタンを押すと `togglePinnedColumn`。表がはみ出す間だけ適用する
+  let pinned = initialPinned({
+    wrapper,
+    features,
+    originalRows,
+    mode: pinMode,
+  });
   /** 表が横にはみ出しているか */
   const isOverflowing = (): boolean =>
     scroller.scrollWidth > scroller.clientWidth ||
     (scroller === table && table.scrollWidth > wrapper.clientWidth);
-  /** 先頭から `count` 列までを、表がはみ出す間だけ表の左端に留める（0 で削除する） */
-  const pinColumns = (count: number): void => {
-    pinned = count;
-    const applied = isOverflowing() ? count : 0;
-    // 留める列の左の位置: 前の列までの幅の合計
-    const lefts: number[] = [];
-    let left = 0;
-    for (const cell of headCells) {
-      lefts.push(left);
-      left += cell.offsetWidth;
+  /** 今の列の並びでの、列ごとの幅（`offsetWidth`。隠した列は 0）と留める列の位置 */
+  let pinLayout: {
+    /** 並びの位置ごとの元の列の位置 */
+    order: number[];
+    /** 並びの位置ごとの幅 */
+    widths: number[];
+    /** 並びの位置ごとの、それより左の列の幅の合計 */
+    naturalLefts: number[];
+    /** 留める列の並びの位置から左右の位置 */
+    offsets: Map<number, { start: number; end: number }>;
+  } = { order: [], widths: [], naturalLefts: [], offsets: new Map() };
+  /** 左端に留まった最も右の列に `is-pinned-edge`、右端に留まった最も左の列に `is-pinned-edge-end` を付ける */
+  const markPinnedEdges = (): void => {
+    const { order: positions, widths, naturalLefts, offsets } = pinLayout;
+    const viewStart = scroller.scrollLeft;
+    const viewEnd = viewStart + scroller.clientWidth;
+    let startEdge = -1;
+    let endEdge = -1;
+    for (const [position, offset] of offsets) {
+      const left = naturalLefts[position] ?? 0;
+      const width = widths[position] ?? 0;
+      if (pinMode === "through") {
+        startEdge = Math.max(startEdge, position);
+        continue;
+      }
+      if (left < viewStart + offset.start + 1) {
+        startEdge = Math.max(startEdge, position);
+      }
+      if (
+        left + width > viewEnd - offset.end - 1 &&
+        (endEdge < 0 || position < endEdge)
+      ) {
+        endEdge = position;
+      }
     }
+    const startColumn = startEdge >= 0 ? positions[startEdge] : undefined;
+    const endColumn = endEdge >= 0 ? positions[endEdge] : undefined;
+    for (const row of [...table.rows]) {
+      for (const cell of row.cells) {
+        const first = Number(cell.dataset.col);
+        const last = first + (headColumns.has(cell) ? cell.colSpan : 1) - 1;
+        const isPinned = cell.classList.contains("is-pinned-col");
+        cell.classList.toggle(
+          "is-pinned-edge",
+          isPinned && startColumn !== undefined && last === startColumn,
+        );
+        cell.classList.toggle(
+          "is-pinned-edge-end",
+          isPinned && endColumn !== undefined && first === endColumn,
+        );
+      }
+    }
+  };
+  /** 留める列を `columns` にし、表がはみ出す間だけ、留める列のセルを `left`（`each` は `right` も）で留める（空で削除する） */
+  const pinColumns = (columns: number[]): void => {
+    pinned = columns;
+    const applied = new Set(isOverflowing() ? columns : []);
+    // 今の列の並びで幅を測る（列の幅は見出しの列ごとのセル。隠した列は 0）
+    const widths = order.map((column) => {
+      const cell = headCells[column];
+      return cell && !cell.hidden ? cell.offsetWidth : 0;
+    });
+    const naturalLefts: number[] = [];
+    let left = 0;
+    for (const width of widths) {
+      naturalLefts.push(left);
+      left += width;
+    }
+    const positionOf = new Map(
+      order.map((column, position) => [column, position]),
+    );
+    const offsets = pinOffsets({
+      widths,
+      pinned: [...applied].map((column) => positionOf.get(column) ?? -1),
+    });
+    pinLayout = { order: [...order], widths, naturalLefts, offsets };
     for (const row of [...table.rows]) {
       // 行の詳細の行（1 つのセルが全ての列にまたがる）は留めない
       if (
@@ -718,24 +796,41 @@ function attachTable(
       ) {
         continue;
       }
-      [...row.cells].forEach((cell, index) => {
-        // 見出しのセルは格子の列で数え、またぐ列が全て留める範囲のときだけ留める
-        const start = headColumns.get(cell) ?? index;
-        const end = start + (headColumns.has(cell) ? cell.colSpan : 1) - 1;
-        const isPinned = end < applied;
+      for (const cell of row.cells) {
+        // 見出しのセルは格子の列で数え、またぐ列が全て留める列のときだけ留める
+        const first =
+          cell.dataset.col === undefined
+            ? cell.cellIndex
+            : Number(cell.dataset.col);
+        const span = headColumns.has(cell) ? cell.colSpan : 1;
+        const covered = Array.from({ length: span }, (_, i) => first + i);
+        const isPinned =
+          applied.size > 0 && covered.every((column) => applied.has(column));
         cell.classList.toggle("is-pinned-col", isPinned);
-        cell.classList.toggle(
-          "is-pinned-edge",
-          isPinned && end === applied - 1,
-        );
-        cell.style.left = isPinned ? `${lefts[start]}px` : "";
-      });
+        if (!isPinned) {
+          cell.style.left = "";
+          cell.style.right = "";
+          continue;
+        }
+        const positions = covered.map((column) => positionOf.get(column) ?? 0);
+        const startOffset = offsets.get(Math.min(...positions));
+        const endOffset = offsets.get(Math.max(...positions));
+        cell.style.left = `${startOffset?.start ?? 0}px`;
+        cell.style.right = pinMode === "each" ? `${endOffset?.end ?? 0}px` : "";
+      }
     }
-    headCells.forEach((cell, index) => {
+    const last = Math.max(-1, ...columns);
+    headCells.forEach((cell, column) => {
       cell
         .querySelector(".mdmark-pin")
-        ?.setAttribute("aria-pressed", String(index === count - 1));
+        ?.setAttribute(
+          "aria-pressed",
+          String(
+            pinMode === "each" ? columns.includes(column) : column === last,
+          ),
+        );
     });
+    markPinnedEdges();
   };
   /** 表が横にはみ出すときだけピン止めのボタンを出す */
   const updatePinVisibility = (): void => {
@@ -814,7 +909,7 @@ function attachTable(
       });
       reorderRowCells(footRow, order);
     }
-    if (pinned > 0) {
+    if (pinned.length > 0) {
       pinColumns(pinned);
     }
   };
@@ -1019,7 +1114,7 @@ function attachTable(
       updateSettingsToggle(toggle, hiddenColumns.size);
     }
     renderTotals();
-    if (pinned > 0) {
+    if (pinned.length > 0) {
       pinColumns(pinned);
     }
     updateFold();
@@ -1218,7 +1313,7 @@ function attachTable(
       }
     } else if (pin && cell) {
       pinColumns(
-        pin.getAttribute("aria-pressed") === "true" ? 0 : columnOf(cell) + 1,
+        togglePinnedColumn({ pinned, column: columnOf(cell), mode: pinMode }),
       );
     } else if (clear) {
       const drawer = clear.closest<HTMLElement>(".mdmark-filter-drawer");
@@ -1324,7 +1419,7 @@ function attachTable(
         onReorder: (next) => {
           order = next;
           applyMerges();
-          if (pinned > 0) {
+          if (pinned.length > 0) {
             pinColumns(pinned);
           }
           updateFold();
@@ -1334,12 +1429,14 @@ function attachTable(
   }
   wrapper.addEventListener("click", onClick);
   wrapper.addEventListener("keydown", onPanelKeyDown);
+  // 左端・右端に留まった列はスクロールの位置で変わるので、境の線を引き直す
+  scroller.addEventListener("scroll", markPinnedEdges, { passive: true });
   wrapper.addEventListener("input", onInput);
   wrapper.addEventListener("change", onChange);
   const observer = new ResizeObserver(() => {
     updatePinVisibility();
     updateVisibleWidth();
-    if (pinned > 0) {
+    if (pinned.length > 0) {
       pinColumns(pinned);
     }
   });
@@ -1350,7 +1447,7 @@ function attachTable(
   foldObserver.observe(root);
   updateFold();
   updatePinVisibility();
-  if (pinned > 0) {
+  if (pinned.length > 0) {
     pinColumns(pinned);
   }
   updateVisibleWidth();
@@ -1379,7 +1476,8 @@ function attachTable(
       row.hidden = false;
       tbody?.append(row, ...detailsOf(row));
     }
-    pinColumns(0);
+    pinColumns([]);
+    scroller.removeEventListener("scroll", markPinnedEdges);
     table.style.removeProperty("--mdmark-table-visible-width");
     for (const { cell, rowSpan, merged, hidden } of originalMerges) {
       if (rowSpan === null) {
@@ -1404,9 +1502,11 @@ export function attachTables(
   options: {
     /** 列の表示を切り替えたときに通知する */
     onColumnsChange?: ((event: MdmarkColumnsChange) => void) | undefined;
+    /** ピン止めの動き（既定 `each`） */
+    pinMode?: TablePinMode | undefined;
   } = {},
 ): () => void {
-  const { onColumnsChange } = options;
+  const { onColumnsChange, pinMode = "each" } = options;
   const detachers: Array<() => void> = [];
   // 列の表示を付けた表の、削除したブロックの中を除いた文書の順の位置
   let columnsIndex = 0;
@@ -1436,7 +1536,7 @@ export function attachTables(
             }
           }
         : undefined;
-    detachers.push(attachTable(wrapper, table, root, notify));
+    detachers.push(attachTable(wrapper, table, root, notify, pinMode));
   }
   return () => {
     for (const detach of detachers) {

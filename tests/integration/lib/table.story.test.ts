@@ -313,7 +313,7 @@ test("test_no_pin", async () => {
   ).resolves.toBe(true);
 });
 
-// pin=担当 wide=概要 は、担当の列までを留め、概要の列を折り返さずに広く取る（PinAndWide）
+// pin=担当 wide=概要 は、担当の列だけを留め、概要の列を折り返さずに広く取る（PinAndWide）
 test("test_pin_and_wide", async () => {
   // 準備・実行
   const page = await open("pin-and-wide");
@@ -321,7 +321,7 @@ test("test_pin_and_wide", async () => {
   await expect(
     page.locator(".mdmark-table").getAttribute("data-pin"),
   ).resolves.toBe("1");
-  await expect(pinnedColumns(page)).resolves.toEqual([0, 1]);
+  await expect(pinnedColumns(page)).resolves.toEqual([1]);
   // 検証: 概要の列は折り返さず、1 行の高さに収まる
   const summary = page
     .locator("#storybook-root tbody tr")
@@ -395,7 +395,7 @@ test("test_check", async () => {
   ]);
 });
 
-// 2 列目までピン止めすると、留めた最後の列の右に境目の線がある（Pinned）
+// pinMode: through で 2 列目までピン止めすると、2 列目のボタンだけが押され、留めた最後の列の右に境目の線がある（Pinned）
 test("test_pinned", async () => {
   // 準備・実行
   const page = await open("pinned");
@@ -426,6 +426,78 @@ test("test_pinned", async () => {
       .first()
       .evaluate((el) => getComputedStyle(el).backgroundColor),
   ).resolves.toBe(await resolveColor(page, "var(--mdmark-color-table-head)"));
+});
+
+// pinMode: each で 1・3 列目だけを留め、1・3 列目のボタンを押した状態にする（PinnedEach）
+test("test_pinned_each", async () => {
+  // 準備・実行
+  const page = await open("pinned-each");
+  // 検証
+  await expect(
+    page
+      .locator("#storybook-root thead button.mdmark-pin")
+      .evaluateAll((buttons) =>
+        buttons.map((button) => button.getAttribute("aria-pressed")),
+      ),
+  ).resolves.toEqual([
+    "true",
+    "false",
+    "true",
+    "false",
+    "false",
+    "false",
+    "false",
+    "false",
+    "false",
+    "false",
+  ]);
+  await expect(
+    page
+      .locator("#storybook-root thead button.mdmark-pin")
+      .first()
+      .getAttribute("aria-label"),
+  ).resolves.toBe("「文書」の列をピン止め");
+  await expect(pinnedColumns(page)).resolves.toEqual([0, 2]);
+});
+
+// pinMode: each で結合した見出しの下の既定だけを名前と一緒に留め、結合した設定のセルは留めない（PinnedUnderMergedHeader）
+test("test_pinned_under_merged_header", async () => {
+  // 準備・実行
+  const page = await open("pinned-under-merged-header");
+  // 検証
+  await expect(pinnedColumns(page)).resolves.toEqual([0, 2]);
+  const headPositions = await page.evaluate(() =>
+    [
+      ...document.querySelectorAll<HTMLTableCellElement>(
+        "#storybook-root thead th",
+      ),
+    ].map((cell) => ({
+      text: cell.textContent?.trim() ?? "",
+      sticky: getComputedStyle(cell).position === "sticky",
+    })),
+  );
+  expect(headPositions.find((cell) => cell.text === "設定")?.sticky).toBe(
+    false,
+  );
+  expect(headPositions.find((cell) => cell.text === "既定")?.sticky).toBe(true);
+  // ボタンは見出しの行の順に並ぶので、列の名前で引く
+  const pressed = Object.fromEntries(
+    await page
+      .locator("#storybook-root thead button.mdmark-pin")
+      .evaluateAll((buttons) =>
+        buttons.map((button) => [
+          button.getAttribute("aria-label"),
+          button.getAttribute("aria-pressed"),
+        ]),
+      ),
+  );
+  expect(pressed).toEqual({
+    "「名前」の列をピン止め": "true",
+    "「型」の列をピン止め": "false",
+    "「既定」の列をピン止め": "true",
+    "「必須」の列をピン止め": "false",
+    "「備考」の列をピン止め": "false",
+  });
 });
 
 // 幅に収まる既定の種類の表は、ピン止めのボタンを出さない（DefaultFits）
@@ -1307,7 +1379,7 @@ test("test_merged_filtered", async () => {
   expect(headers.slice(1, 3).every((header) => header.hidden)).toBe(true);
 });
 
-// row-header=2 のはみ出す表は、描いた直後に 2 列目まで留め、2 列目のピン止めのボタンが押された状態（RowHeaderPinned）
+// row-header=2 のはみ出す表は、描いた直後に 1・2 列目を留め、1・2 列目のピン止めのボタンが押された状態（RowHeaderPinned）
 test("test_row_header_pinned", async () => {
   // 準備・実行
   const page = await open("row-header-pinned");
@@ -1319,7 +1391,7 @@ test("test_row_header_pinned", async () => {
         buttons.map((button) => button.getAttribute("aria-pressed")),
       ),
   ).resolves.toEqual([
-    "false",
+    "true",
     "true",
     "false",
     "false",
@@ -1526,7 +1598,7 @@ test("test_reordered", async () => {
   ).resolves.toBe("1");
 });
 
-// 2 行の見出しで名前をピン止めした表のパネルを、ピン止めの列・設定の範囲・範囲の外の列に分ける（ReorderGroups）
+// pinMode: through で、2 行の見出しで名前をピン止めした表のパネルを、ピン止めの列・設定の範囲・範囲の外の列に分ける（ReorderGroups）
 test("test_reorder_groups", async () => {
   // 準備・実行
   const page = await open("reorder-groups");
