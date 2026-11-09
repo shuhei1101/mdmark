@@ -111,7 +111,7 @@ flows:
       - name: 配布物を読み込む Node の処理
         description: 正常系と同じ
       - name: 3 つの文書の索引と本文
-        description: '正常系の索引で、`guide` の本文の 1〜4 行目に `---`・`summary: 公開関数の使い方`・`see: ../設計/arch.md`・`---` のフロントマターを配置し、フロントマターの後ろの本文には別名もリンクも持たない'
+        description: '正常系の索引で、`guide` の本文の 1〜4 行目に `---`・`summary: 公開関数の使い方`・`see: "[設計](../設計/arch.md)"`・`---` のフロントマターを配置し、フロントマターの後ろの本文には別名もリンクも持たない'
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
@@ -123,7 +123,7 @@ flows:
         M-->>C: { backlinks, glossary }
     expected:
       - '`backlinks.api` に `guide` が無い（フロントマターの `公開関数`）'
-      - '`backlinks.arch` が `["api"]`（フロントマターの `../設計/arch.md` を数えない）'
+      - '`backlinks.arch` が `["api"]`（フロントマターの `[設計](../設計/arch.md)` のリンクを数えない）'
     test: test_normal_when_frontmatter
 lead: 利用側のサーバーや CLI（#9 の `mdmark build`）が、索引と全ての文書の本文を指定して、文書ごとの被参照と、用語集の表から入れた用語をまとめた参照の表を受け取る。`mount`・`render` はこの表を `opts.references` で受け取り、ほかの文書の本文を読み込まずに被参照とほかの文書の用語を描く。
 idempotent: true
