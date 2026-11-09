@@ -43,7 +43,8 @@ export const buildUnitFile = (options: {
   ].map((value) => `Environment="${escapeUnitValue(value)}"`);
   const command = options.command
     .replaceAll("'", "'\\''")
-    .replaceAll("%", "%%");
+    .replaceAll("%", "%%")
+    .replaceAll("$", "$$$$");
   return [
     "[Unit]",
     "Description=mdmark MCP server",
