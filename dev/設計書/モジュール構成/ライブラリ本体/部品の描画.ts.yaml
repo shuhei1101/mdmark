@@ -65,7 +65,7 @@ functions:
     kind: 関数
     scope: internal
     summary: ストーリーの `server.id` の部品を、問い合わせの引数で描き、描く先の要素（class `mdmark`）で包んで返却する
-    description: '部品の id から部品の関数を参照する表（`notice`・`embed`・`syntax-warning`・`table`・`callout`・`tabs`・`steps`・`tree`・`badge`・`footnote-ref`・`footnotes`・`toc`・`section`・`row-detail`・`figure`・`doc-list`・`text-color`・`image-figure`・`gallery`・`lightbox`・`media`・`gif`・`card`と、VS Code 拡張機能の `media-error`）で描く。ストーリーの引数は問い合わせの文字列で届くため戻す: `notice` の `figure` は `"false"` のときだけ `false`、`embed` の `args` はカンマで区切った配列（空の文字列は `[]`）。それ以外の部品は、JSON として読み込める値（配列・オブジェクト・数・真偽値）は JSON として読み込み、読み込めなければ文字列のまま指定する。`code-block` の `highlight` が `true` のときは、npm の `highlight.js/lib/core` に `language` の言語（`syntaxLanguageOf` で参照した `highlight.js/lib/languages/{モジュール名}`）を登録し、`highlightLines` の行ごとの HTML で、部品の HTML の `mdmark-code-text` の中身（行に分けないときは `code` の中身）を順に置き換える。中身を持つ部品には部品ごとの見本の HTML を中身として指定する（ストーリーの引数 `body` があれば、見本の代わりにそれを指定する）。ストーリーの引数 `scheme` が `dark` のときは描く先の要素に class `mdmark-theme-dark` を加え、`frameWidth` があるときは部品の HTML をその幅の `div` で包む。`comment-button`・`comment-form`・`comment-bubble` は、`document.body` に `position: fixed` で配置する部品を描く先の要素の中に描くため、部品の HTML の前に `.mdmark-comment-add,.mdmark-comment-popover{position:static;max-width:100%}` の `style` を付ける（`max-width` は、描く先の要素の `padding` の内側に枠の幅を収める）。画像・動画・音声の部品の `src` と `poster` に記載した見本のファイル名は、`dev/mock/refs/263/assets/media/` のファイルを読み込んだ `data:` URL にする（見本に無い名前はそのまま指定する）。`mermaid-diagram` の `svg`・`printSvg` に記載した名前は `tests/fixtures/mermaid-svg/{名前}.svg` の中身にし（無い名前は 404 と同じく返却しない）、`renderMermaidDiagram` の HTML を `renderDiagramFrame`（`kind: "mermaid"`・ストーリーの引数 `title`・`legend: []`・`fitMin: 0.75`）で包む'
+    description: '部品の id から部品の関数を参照する表（`notice`・`embed`・`syntax-warning`・`table`・`callout`・`tabs`・`steps`・`tree`・`badge`・`footnote-ref`・`footnotes`・`toc`・`section`・`row-detail`・`figure`・`doc-list`・`text-color`・`image-figure`・`gallery`・`lightbox`・`media`・`gif`・`card`と、VS Code 拡張機能の `media-error`）で描く。ストーリーの引数は問い合わせの文字列で届くため戻す: `notice` の `figure` は `"false"` のときだけ `false`、`embed` の `args` はカンマで区切った配列（空の文字列は `[]`）。それ以外の部品は、JSON として読み込める値（配列・オブジェクト・数・真偽値）は JSON として読み込み、読み込めなければ文字列のまま指定する。`code-block` の `highlight` が `true` のときは、npm の `highlight.js/lib/core` に `language` の言語（`syntaxLanguageOf` で参照した `highlight.js/lib/languages/{モジュール名}`）を登録し、`highlightLines` の行ごとの HTML で、部品の HTML の `mdmark-code-text` の中身（行に分けないときは `code` の中身）を順に置き換える。中身を持つ部品には部品ごとの見本の HTML を中身として指定する（ストーリーの引数 `body` があれば、見本の代わりにそれを指定する）。ストーリーの引数 `scheme` が `dark` のときは描く先の要素に class `mdmark-theme-dark` を加え、`frameWidth` があるときは部品の HTML をその幅の `div` で包む（`max-width: 100%` を付け、描く先の要素の幅を超えない）。`comment-button`・`comment-form`・`comment-bubble` は、`document.body` に `position: fixed` で配置する部品を描く先の要素の中に描くため、部品の HTML の前に `.mdmark-comment-add,.mdmark-comment-popover{position:static;max-width:100%}` の `style` を付ける（`max-width` は、描く先の要素の `padding` の内側に枠の幅を収める）。画像・動画・音声の部品の `src` と `poster` に記載した見本のファイル名は、`dev/mock/refs/263/assets/media/` のファイルを読み込んだ `data:` URL にする（見本に無い名前はそのまま指定する）。`mermaid-diagram` の `svg`・`printSvg` に記載した名前は `tests/fixtures/mermaid-svg/{名前}.svg` の中身にし（無い名前は 404 と同じく返却しない）、`renderMermaidDiagram` の HTML を `renderDiagramFrame`（`kind: "mermaid"`・ストーリーの引数 `title`・`legend: []`・`fitMin: 0.75`）で包む'
     args:
       - name: options
         type: '{ component: string; params: URLSearchParams }'
@@ -156,6 +156,12 @@ functions:
         condition: '`component` が `mermaid-diagram`、`params` が `svg=flowchart&title=問い合わせの受付`。もう 1 つは `svg=missing`'
         mock: なし
         expected: '前者が `figure.mdmark-diagram[data-diagram="mermaid"]` の中に `tests/fixtures/mermaid-svg/flowchart.svg` の `svg` を持つ HTML。後者は `undefined`'
+      - name: test_render_part_when_frame_width
+        case: 正常
+        summary: '`frameWidth` の幅の枠を、描く先の要素の幅で頭打ちにして包む'
+        condition: '`component` が `badge`、`params` が `label=v1&frameWidth=390px`'
+        mock: なし
+        expected: '`<div class="mdmark">` の中を `<div style="width: 390px; max-width: 100%">` で包んだ `renderBadge({ label: "v1" })`'
   - name: writeMermaidFixtures
     title: mermaid の見本の SVG を記載する
     container: scripts/mermaid-fixtures.ts

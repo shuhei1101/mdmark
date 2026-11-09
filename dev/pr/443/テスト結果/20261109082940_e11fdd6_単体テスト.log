@@ -1,0 +1,14 @@
+$ npm run test:unit
+
+> test:unit
+> vitest run --project 'unit*'
+
+
+ RUN  v5.0.4 .
+
+
+ Test Files  260 passed (260)
+      Tests  1839 passed (1839)
+   Start at  08:25:15
+   Duration  92.75s (worker 66%, tests 22%, import 11%, transform 1%)
+

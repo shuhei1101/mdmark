@@ -1,0 +1,4 @@
+scope_out:
+  - item: Storybook のストーリーの既定の余白（layout）の変更
+    reason: 枠を配置先の幅で頭打ちにすれば横のスクロールは消え、余白を変えると frameWidth を持たない全てのストーリーの見た目が変わる
+    plan: none

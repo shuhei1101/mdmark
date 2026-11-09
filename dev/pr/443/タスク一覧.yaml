@@ -1,0 +1,87 @@
+tasks:
+  - process: 初期構築
+    status: skipped
+    reason: 既存リポジトリのため対象外
+    updated_by: planner
+    updated_at: '2026-11-08T22:58:02.769360+00:00'
+  - process: リバースエンジニアリング
+    status: skipped
+    reason: 現状設計書が揃っている
+    updated_by: planner
+    updated_at: '2026-11-08T22:58:02.769360+00:00'
+  - process: 方針決め
+    status: skipped
+    reason: 方針決めを依頼する Issue ではない
+    updated_by: planner
+    updated_at: '2026-11-08T22:58:02.769360+00:00'
+  - process: PoC 検証
+    status: skipped
+    reason: 未検証の技術機構に依存しない
+    updated_by: planner
+    updated_at: '2026-11-08T22:58:02.769360+00:00'
+  - process: 複合ユースケース設計
+    status: skipped
+    reason: '影響なし: 開発用の Storybook のストーリーの枠だけを変え、利用者の業務の流れを変えない'
+    updated_by: planner
+    updated_at: '2026-11-08T22:58:02.769360+00:00'
+  - process: デザインスタイル選定
+    status: skipped
+    reason: 見た目の方向を変えない
+    updated_by: planner
+    updated_at: '2026-11-08T22:58:02.769360+00:00'
+  - process: 画面一覧・画面遷移
+    status: skipped
+    reason: 画面の追加・削除と画面遷移の変更を含まない
+    updated_by: planner
+    updated_at: '2026-11-08T22:58:02.769360+00:00'
+  - process: 単一ユースケース設計
+    status: skipped
+    reason: '影響なし: 利用者の操作のシナリオを変えない'
+    updated_by: planner
+    updated_at: '2026-11-08T22:58:02.769360+00:00'
+  - process: モック作成
+    status: skipped
+    reason: 画面の見た目を新しく決めない
+    updated_by: planner
+    updated_at: '2026-11-08T22:58:02.769360+00:00'
+  - process: インターフェース定義設計
+    status: skipped
+    reason: '影響なし: 公開関数・CLI・描画のインターフェースの入出力を変えない'
+    updated_by: planner
+    updated_at: '2026-11-08T22:58:02.769360+00:00'
+  - process: 部品設計
+    status: skipped
+    reason: '影響なし: 部品の引数・状態を変えない'
+    updated_by: planner
+    updated_at: '2026-11-08T22:58:02.769360+00:00'
+  - process: 画面設計
+    status: skipped
+    reason: '影響なし: 画面の要素を変えない'
+    updated_by: planner
+    updated_at: '2026-11-08T22:58:02.769360+00:00'
+  - process: モジュール構成設計
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-08T23:05:57.734995+00:00'
+  - process: ドキュメント修正
+    status: skipped
+    reason: 設計書のほかに直すページが無い
+    updated_by: planner
+    updated_at: '2026-11-08T22:58:02.769360+00:00'
+  - process: 単体テスト作成
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-08T23:24:41.692397+00:00'
+  - process: 実装
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-08T23:30:06.762121+00:00'
+  - process: 結合テスト作成
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-09T00:30:42.711693+00:00'
+  - process: E2E テスト作成
+    status: skipped
+    reason: 利用者のシナリオを変えない。Storybook のストーリーは結合テストで確認する
+    updated_by: planner
+    updated_at: '2026-11-08T22:58:02.769360+00:00'
