@@ -80,8 +80,10 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-09T04:01:15.756847+00:00'
   - process: 結合テスト作成
-    status: todo
+    status: done
     note: tests/integration/story.ts のブラウザの共有とページを閉じる処理・*.story.test.ts の使い方の置き換え・vitest.config.ts の maxWorkers・修正の前と後の所要時間とメモリの使用の最大の測定
+    updated_by: planner
+    updated_at: '2026-11-09T18:36:49.896989+00:00'
   - process: E2E テスト作成
     status: skipped
     reason: E2E のテストを変えない
