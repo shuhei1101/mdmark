@@ -18,3 +18,6 @@ scope_out:
   - item: integration-node の tests/integration/cli.ts の useBrowser（書き出した HTML を開くテストのファイルごとの Chromium の起動）の共有
     reason: 使用するファイルが 3 つで、Issue が挙げた Storybook・ブラウザのプロジェクトの起動の数より小さい。並列の上限はプロジェクトに置くため、起動の数は上限で抑えられる。含めるかはレビューで確定する
     plan: none
+  - item: plugin/files.yaml の skills/global-setup/SKILL.md の行の description が引用符なしでバッククォートで始まり、YAML として読めず dev-docs が配信から除いている
+    reason: YAML として読めない不具合で、結合テストのメモリの使用を減らす今回の要望に含まれない
+    plan: '#413'
