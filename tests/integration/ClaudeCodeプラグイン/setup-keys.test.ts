@@ -32,7 +32,12 @@ test("test_normal", async () => {
   expect(result.code).toBe(0);
   const keys = byKey(result.stdout);
   expect(keys.get("features.table")?.current).toBe(false);
-  for (const key of ["config.cascade", "serve.tmuxSession"]) {
+  for (const key of [
+    "config.cascade",
+    "serve.tmuxSession",
+    "serve.launcher",
+    "serve.systemdUnit",
+  ]) {
     expect(keys.get(key)).toHaveProperty("default");
     expect(keys.get(key)).toHaveProperty("description");
   }
@@ -58,4 +63,6 @@ test("test_normal_when_config", async () => {
   expect(keys.get("features.table")?.inherited).toBe(false);
   expect(keys.has("config.cascade")).toBe(false);
   expect(keys.has("serve.tmuxSession")).toBe(false);
+  expect(keys.has("serve.launcher")).toBe(false);
+  expect(keys.has("serve.systemdUnit")).toBe(false);
 });
