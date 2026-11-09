@@ -1,0 +1,18 @@
+use_cases:
+  - kind: single
+    scenario: dev/設計書/シナリオ/単一ユースケース/配布物をビルドして検査する.yaml
+    impact: run_only
+    detail: 開発者が流すテスト（npm test）に結合テストを含み、結合テストのブラウザの起動と並列の数を変えるため、全件 pass を確かめ直す
+    depends_on: []
+docs:
+  - page: dev/設計書/テスト/テスト実行方法.yaml
+    new: false
+    change: 結合テスト（フロント）の説明の、integration-storybook の各ファイルの beforeAll の待ちの記載を、プロジェクトで共有するブラウザの準備に合わせて修正し、並列の上限（maxWorkers）を記載する
+    status: todo
+scope_out:
+  - item: 結合テストのテストごとの所要時間の測定・意味の薄い長いテストの削除と軽量化・ときどき落ちる既存のテストの修正
+    reason: メモリの使用を減らす本 Issue と目的が違い、別の Issue がある
+    plan: '#390'
+  - item: integration-node の tests/integration/cli.ts の useBrowser（書き出した HTML を開くテストのファイルごとの Chromium の起動）の共有
+    reason: 使用するファイルが 3 つで、Issue が挙げた Storybook・ブラウザのプロジェクトの起動の数より小さい。並列の上限はプロジェクトに置くため、起動の数は上限で抑えられる。含めるかはレビューで確定する
+    plan: none
