@@ -1,0 +1,7 @@
+confirmations:
+  - topic: 修正の前の測定が端末のメモリ不足で停止された後の進め方
+    decision: メモリの空きをシェルで監視し、空いたら修正の前（引数なし・--maxWorkers=4）と修正の後の 3 回を要件のとおり測定する（推奨案 A）
+    decided_by: reply
+    approver: shuhei1101
+    commit:
+    thread: https://github.com/shuhei1101/mdmark/pull/452#discussion_r4510726411
