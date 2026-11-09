@@ -3325,8 +3325,6 @@ functions:
         description: markdown-it の状態。`state.env.frontmatter` を読む
     side_effects: '`state.tokens` の先頭に 3 つのトークンを入れる'
     callees:
-      - '#functions[featureOn]'
-      - '#functions[ownBlock]'
       - dev/設計書/モジュール構成/ライブラリ本体/部品.ts#functions[renderFrontmatter]
     refs:
       - dev/設計書/インターフェース定義/ライブラリ本体/文書をHTML文字列にする.ts#constraints[フロントマター]
