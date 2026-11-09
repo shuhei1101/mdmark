@@ -266,9 +266,9 @@ constants:
     summary: 種類ごとの既定の機能
     entries:
       - key: default
-        value: '["pin"]'
+        value: '["pin", "resize"]'
       - key: data
-        value: '["sort", "pin", "filter"]'
+        value: '["sort", "pin", "filter", "resize"]'
       - key: plain
         value: '[]'
   - name: FILTER_KINDS
@@ -284,8 +284,8 @@ constants:
   - name: TABLE_FEATURES
     title: 表の機能の名前
     container: src/render/syntax/tables.ts
-    summary: '`+機能`・`-機能` に記載できる機能の名前。後ろの 5 つはどの種類の既定にも入らない'
-    value: '["sort", "pin", "filter", "count", "columns", "total", "copy", "rowlink"]'
+    summary: '`+機能`・`-機能` に記載できる機能の名前。後ろの 6 つはどの種類の既定にも入らない'
+    value: '["sort", "pin", "filter", "resize", "count", "columns", "reorder", "total", "copy", "rowlink"]'
   - name: TOTAL_CALCS
     title: 集計の計算
     container: src/table-logic.ts
