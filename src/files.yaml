@@ -439,6 +439,12 @@ files:
     related:
       - to: dev/設計書/モジュール構成/ライブラリ本体/操作.ts
         type: implements
+  - path: interact/table-resize.ts
+    description: モジュール構成『ライブラリ本体 / 操作』のうち「列の幅のつまみのドラッグ・←→ キーで列の幅を変え、ダブルクリック・ダブルタップ・Enter で戻す」を受け持つ。描いた文書での読者の操作を変えるときに参照する。
+    tags: [topic:dom, topic:イベント, topic:テーブル]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/操作.ts
+        type: implements
   - path: interact/table-tree.ts
     description: モジュール構成『ライブラリ本体 / 操作』のうち「階層の表の開閉・パスのツールチップとコピー・行の選択・絞り込み・見本との連動」を受け持つ。描いた文書での読者の操作を変えるときに参照する。
     tags: [topic:dom, topic:イベント, topic:テーブル]
