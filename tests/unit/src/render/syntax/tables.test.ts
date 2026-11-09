@@ -24,7 +24,7 @@ test("test_read_table_spec", async () => {
   // 検証
   expect(spec).toEqual({
     kind: "data",
-    features: ["pin", "filter"],
+    features: ["pin", "filter", "resize"],
     filters: [
       { column: 0, kind: "select" },
       { column: 2, kind: "date" },
@@ -53,7 +53,7 @@ test("test_read_table_spec_when_unknown", async () => {
   const spec = readTableSpec(args, ["名前", "値"], 10);
   // 検証
   expect(spec.kind).toBe("default");
-  expect(spec.features).toEqual(["pin", "sort"]);
+  expect(spec.features).toEqual(["pin", "resize", "sort"]);
   expect(spec.filters).toEqual([]);
   expect(spec.collapse).toBe("closed");
   const labels = spec.warnings.map((warning) => warning.label);
@@ -106,6 +106,7 @@ test("test_read_table_spec_when_features", async () => {
     "sort",
     "pin",
     "filter",
+    "resize",
     "count",
     "columns",
     "total",
@@ -255,10 +256,10 @@ test("test_decorate_tables", () => {
   const { html } = renderDoc(markdown);
   // 検証
   expect(html).toContain(
-    'data-kind="data" data-features="sort pin filter" data-filter="0:select"',
+    'data-kind="data" data-features="sort pin filter resize" data-filter="0:select"',
   );
   expect(html).toContain('<details class="mdmark-table-details">');
-  expect(html).toContain('data-kind="default" data-features="pin"');
+  expect(html).toContain('data-kind="default" data-features="pin resize"');
 });
 
 // 閉じのマーカーが無いときは文書の終わりまでの表に当て、警告を差し込む（正常系）
@@ -305,7 +306,7 @@ test("test_decorate_tables_when_features", () => {
   const { html } = renderDoc(markdown);
   // 検証: 囲みの属性
   expect(html).toContain(
-    'data-features="sort pin filter count columns total copy rowlink"',
+    'data-features="sort pin filter resize count columns total copy rowlink"',
   );
   expect(html).toContain('data-hide="1"');
   expect(html).toContain('data-total="2:sum"');
@@ -856,5 +857,5 @@ test("test_decorate_tables_when_merge_invalid", () => {
   expect(table).not.toContain("rowspan");
   expect(table).not.toContain("colspan");
   expect(table).not.toContain("data-merge=");
-  expect(html).toContain('data-features="sort pin filter"');
+  expect(html).toContain('data-features="sort pin filter resize"');
 });
