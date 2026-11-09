@@ -1,0 +1,108 @@
+use_cases:
+  - kind: single
+    scenario: dev/設計書/シナリオ/単一ユースケース/mermaidの図を描く.yaml
+    impact: changed
+    detail: map のマーカーの範囲の中の mermaid のブロックは、mermaid のライブラリで描く図にしない
+    depends_on: []
+  - kind: single
+    scenario: dev/設計書/シナリオ/単一ユースケース/設定と索引を点検する.yaml
+    impact: changed
+    detail: map の補足の書き間違い・指すノードの無い参照・補足の値の -- を、点検で知らせる
+    depends_on: []
+  - kind: single
+    scenario: dev/設計書/シナリオ/単一ユースケース/文字列とYAMLのキーの記法を点検する.yaml
+    impact: changed
+    detail: 描いたときの map の書き方の警告を、文字列の点検でも同じく受け取る
+    depends_on: []
+  - kind: single
+    scenario: dev/設計書/シナリオ/単一ユースケース/機能のオン・オフを文書で上書きする.yaml
+    impact: changed
+    detail: 設定と文書の印で、map の図をオン・オフする
+    depends_on: []
+  - kind: single
+    scenario: dev/設計書/シナリオ/単一ユースケース/図を描く.yaml
+    impact: run_only
+    detail: 座標で書いたフロー図・シーケンス図は変わらないが、図の枠と凡例を map と共通にするため壊しうる
+    depends_on: []
+  - kind: single
+    scenario: dev/設計書/シナリオ/単一ユースケース/図を拡大・縮小・移動する.yaml
+    impact: run_only
+    detail: 拡大・縮小・移動の操作を map と共通にするため壊しうる
+    depends_on: []
+  - kind: single
+    scenario: dev/設計書/シナリオ/単一ユースケース/図の要素のツールチップを確認する.yaml
+    impact: run_only
+    detail: 図のツールチップを map の補足の説明でも使うため壊しうる
+    depends_on: []
+  - kind: single
+    scenario: dev/設計書/シナリオ/単一ユースケース/用語の意味をツールチップで確認する.yaml
+    impact: run_only
+    detail: 用語の下線を map のラベルと説明にも付けるため壊しうる
+    depends_on: []
+  - kind: single
+    scenario: dev/設計書/シナリオ/単一ユースケース/文書をHTMLに書き出す.yaml
+    impact: run_only
+    detail: 書き出した 1 枚の HTML でも map を描くため壊しうる
+    depends_on: []
+  - kind: composite
+    scenario: dev/設計書/シナリオ/複合ユースケース/固有の部品で図の文書を描いて確認する.yaml
+    impact: run_only
+    detail: 図の文書の描き方と操作を map と共通にするため壊しうる
+    depends_on: []
+docs:
+  - page: docs/使用方法/図を描く/Mermaidと補足で図を描く.md
+    new: true
+    change: map のマーカー・Mermaid のブロック・補足の記載方法と、配置の上書き・視点・巡回・再生の書き方の手順を新設する
+    status: todo
+  - page: docs/使用方法/図を描く/index.yaml
+    new: false
+    change: 新設する『Mermaidと補足で図を描く』の行を追加する
+    status: todo
+  - page: docs/使用方法/図を描く/図を描く.md
+    new: false
+    change: 新しく図を書くときは map を使う案内を追加する（flow・sequence の記載方法は残す）
+    status: todo
+  - page: docs/はじめに/コアコンセプト/図を自動配置して辿る仕組み.md
+    new: true
+    change: 印の引数・Mermaid・補足の役割の分け方、入れ子の自動配置と上書き、中へ入る・開閉・視点で配置し直す流れを新設する
+    status: todo
+  - page: docs/はじめに/コアコンセプト/index.yaml
+    new: false
+    change: 新設する『図を自動配置して辿る仕組み』の行を追加する
+    status: todo
+  - page: docs/リファレンス/記法.md
+    new: false
+    change: map のマーカーと引数・補足のキー・マーカーに対応しない表示での見え方を追加する
+    status: todo
+  - page: docs/リファレンス/構成図の決まり.md
+    new: false
+    change: 入れ子は 2 レイヤーまでを推奨し、深いものは別の図に切り出してリンクする決まりと、枠と層の入れ子の凡例・層の色の重なり・枠のタイトルの位置の決まりを追加する（#309）
+    status: todo
+  - page: docs/リファレンス/設定.md
+    new: false
+    change: features の map を追加する
+    status: todo
+  - page: docs/リファレンス/用語集.md
+    new: false
+    change: map・補足・自動配置・中へ入る・開閉・ノードのページ・視点・巡回・シーケンスの再生の用語を追加する
+    status: todo
+  - page: guide/index.yaml
+    new: false
+    change: 使い方集の索引に『Mermaidと補足で図を描く』を追加し、diagrams・architecture-style の行の概要を map に合わせる
+    status: todo
+scope_out:
+  - item: A-35 の No 10〜17（状態遷移の再生・ER 図と結合・マインドマップ・確度のマーカー・変更の表示・環境とシナリオ・書き出し・一覧の表示）と、stateDiagram-v2・erDiagram・mindmap の map での描画
+    reason: 未検討で Issue の範囲に含めない（この PR ではこれらの種類を書き方の警告にする）
+    plan: to_file
+  - item: flow・sequence の定義を map へ変換するスクリプトと、flow・sequence の廃止（変換できる旨の書き方の警告を含む）
+    reason: A-38 の「廃止の進め方」で map を追加した後の手順にあたる
+    plan: to_file
+  - item: 純粋な Markdown への書き出しでの map の変換
+    reason: この PR で補足の書式を確定させた後に作る
+    plan: '#313'
+  - item: 既存の文書の図を map へ移行する
+    reason: この PR の完了後に各リポジトリの Issue で行う
+    plan: '#290'
+  - item: VS Code 拡張機能のプレビューでの map の確認
+    reason: プレビューは配布物の mount で描くため、ライブラリ本体の変更でそのまま描ける。拡張機能のコードは変更しない
+    plan: none

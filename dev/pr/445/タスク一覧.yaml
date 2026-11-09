@@ -1,0 +1,51 @@
+tasks:
+  - process: 初期構築
+    status: skipped
+    reason: 既存のリポジトリのため対象外
+    updated_by: planner
+    updated_at: '2026-11-09T00:58:26.045345+00:00'
+  - process: リバースエンジニアリング
+    status: skipped
+    reason: 既存の設計書があるため対象外
+    updated_by: planner
+    updated_at: '2026-11-09T00:58:26.045345+00:00'
+  - process: 方針決め
+    status: skipped
+    reason: 方針決めを依頼する Issue ではないため対象外
+    updated_by: planner
+    updated_at: '2026-11-09T00:58:26.045345+00:00'
+  - process: PoC 検証
+    status: todo
+    note: 入れ子の箱の自動配置と配置し直し（入れ子 2 レイヤー・ノード 30 個）と、Mermaid の flowchart・sequenceDiagram の読み取りを、独自の実装で確かめる
+  - process: 複合ユースケース設計
+    status: todo
+  - process: デザインスタイル選定
+    status: skipped
+    reason: デザイン方針があり、Issue は文書全体の見た目の方向を変えない。map の見た目はモック作成で決める
+    updated_by: planner
+    updated_at: '2026-11-09T00:58:26.045345+00:00'
+  - process: 画面一覧・画面遷移
+    status: todo
+    note: 図の中の表示（全体・箱の中・ノードのページ）と、中へ入る・パンくず・視点・巡回・再生による移り方
+  - process: 単一ユースケース設計
+    status: todo
+  - process: モック作成
+    status: todo
+  - process: インターフェース定義設計
+    status: todo
+  - process: 部品設計
+    status: todo
+  - process: 画面設計
+    status: todo
+  - process: モジュール構成設計
+    status: todo
+  - process: ドキュメント修正
+    status: todo
+  - process: 単体テスト作成
+    status: todo
+  - process: 実装
+    status: todo
+  - process: 結合テスト作成
+    status: todo
+  - process: E2E テスト作成
+    status: todo
