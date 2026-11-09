@@ -83,9 +83,18 @@
           style.boxSizing === "border-box"
             ? 0
             : ["paddingLeft", "paddingRight", "borderLeftWidth", "borderRightWidth"].reduce((sum, key) => sum + parseFloat(style[key]), 0);
-        const value = outer === null ? "" : `${Math.round(outer - inset)}px`;
-        th.style.width = value;
-        th.style.minWidth = value;
+        const set = (value) => {
+          th.style.width = value;
+          th.style.minWidth = value;
+        };
+        if (outer === null) {
+          set("");
+        } else {
+          // 罫線を重ねて描く表では、セルの外側の幅に入る罫線が半分になるので、入れた後の幅を測って差を足し直す
+          const inner = outer - inset;
+          set(`${inner}px`);
+          set(`${inner + (outer - widthOf(c))}px`);
+        }
         for (const cell of table.querySelectorAll(`[data-col="${c}"]:is(th, td)`)) {
           cell.classList.toggle("is-resized", resized);
         }
