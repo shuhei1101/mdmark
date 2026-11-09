@@ -125,7 +125,7 @@ settings:
     type: Record<string, boolean>
     required: false
     default: なし（`mount` に指定せず mdmark の既定で描く）
-    description: 拡張機能は記載した値をそのまま `mount` の `opts.config.features` に指定する
+    description: 拡張機能は記載した値をそのまま `mount` の `opts.config.features` に指定する。フロントマターの表示（`frontmatter`）もこのキーで切り替え、`settings.json` にはキーを持たない
     reload: immediate
     refs:
       - dev/設計書/設定/ライブラリ本体#settings[features]
