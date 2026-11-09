@@ -8,7 +8,9 @@ docs:
   - page: dev/設計書/テスト/テスト実行方法.yaml
     new: false
     change: 結合テスト（フロント）の説明の、integration-storybook の各ファイルの beforeAll の待ちの記載を、プロジェクトで共有するブラウザの準備に合わせて修正し、並列の上限（maxWorkers）を記載する
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-09T04:13:29.427924+00:00'
 scope_out:
   - item: 結合テストのテストごとの所要時間の測定・意味の薄い長いテストの削除と軽量化・ときどき落ちる既存のテストの修正
     reason: メモリの使用を減らす本 Issue と目的が違い、別の Issue がある
