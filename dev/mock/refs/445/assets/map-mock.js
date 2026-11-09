@@ -523,6 +523,8 @@ export const createMap = (spec, initial = {}) => {
   });
 
   const render = () => {
+    // 描き直しで押した部品が消えても、フォーカスを図の中に残す（Esc で戻れるように）
+    const hadFocus = frame.contains(document.activeElement);
     renderBar();
     renderCrumbs();
     if (state.node) {
@@ -536,6 +538,7 @@ export const createMap = (spec, initial = {}) => {
     renderBand();
     legend.replaceChildren(...legendItems());
     legend.hidden = legend.childElementCount === 0;
+    if (hadFocus && !frame.contains(document.activeElement)) view.focus({ preventScroll: true });
   };
 
   // 全体が収まる倍率で開く（拡大はしない）。表示する枠の幅が変わるたびに倍率を決め直す
@@ -562,7 +565,7 @@ export const createMap = (spec, initial = {}) => {
 /** シーケンス図の map の図: 相手を左から右、メッセージを上から下に並べ、構成図の上で再生するボタンを持つ */
 export const createSequence = (spec, onPlay) => {
   const sequence = parseSequence(spec.source);
-  const columnWidth = 150;
+  const columnWidth = 180;
   const rowHeight = 44;
   const top = 56;
   const width = sequence.participants.length * columnWidth;
@@ -578,7 +581,7 @@ export const createSequence = (spec, onPlay) => {
   const lines = svg("svg", { class: "map-lines", width, height, "aria-hidden": "true" });
   const x = (id) => sequence.participants.findIndex((participant) => participant.id === id) * columnWidth + columnWidth / 2;
   sequence.participants.forEach((participant) => {
-    stage.append(el("span", { class: `map-node map-seq-head${participant.actor ? " map-kind-external" : ""}`, style: `left:${x(participant.id) - 60}px;top:8px;width:120px;height:36px` }, [el("span", { class: "map-node-name", text: participant.label })]));
+    stage.append(el("span", { class: `map-node map-seq-head${participant.actor ? " map-kind-external" : ""}`, style: `left:${x(participant.id) - 80}px;top:8px;width:160px;height:36px` }, [el("span", { class: "map-node-name", text: participant.label })]));
     lines.append(svg("line", { x1: x(participant.id), y1: 44, x2: x(participant.id), y2: height - 8, class: "map-lifeline" }));
   });
   sequence.messages.forEach((message, index) => {
