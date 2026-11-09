@@ -1,0 +1,38 @@
+use_cases:
+  - kind: single
+    scenario: dev/設計書/シナリオ/単一ユースケース/表を操作する.yaml
+    impact: changed
+    detail: 読む人が列の見出しの右端のつまみをドラッグしてその列の幅だけを変え、つまみのダブルクリック（スマホではダブルタップ）で元の幅（`wide=` の列はその幅）に戻す。幅を変えた後も留めた列が重ならずに留まる
+    depends_on: []
+docs:
+  - page: docs/使用方法/記載する/表に機能を付ける.md
+    new: false
+    change: 読む人が列の見出しの右端をドラッグして列の幅を変え、ダブルクリックで元の幅に戻せることと、`wide=` の列の元の幅を追加する。種類ごとの既定の機能（`data` と既定の種類）に `resize` を追加する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-09T13:13:35.266909+00:00'
+  - page: docs/リファレンス/記法.md
+    new: false
+    change: 表の操作に列の幅の変更を追加し、`wide=` の説明に幅を戻したときの幅を追加する。`+機能` / `-機能` の機能の一覧と種類ごとの既定の機能に `resize` を追加する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-09T13:13:35.266909+00:00'
+  - page: docs/リファレンス/用語集.md
+    new: false
+    change: 列の幅を変えるつまみの用語「列の幅のつまみ」を追加する（図の高さを変える「リサイズハンドル」とは別の語にする）。「表の種類」の種類ごとの機能に列の幅の変更を追加する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-09T13:13:35.266909+00:00'
+scope_out:
+  - item: 変えた列の幅を、ページを開き直した後や描き直した後も保つ
+    reason: 要望は幅を変える操作と元の幅に戻す操作だけで、幅の保存を含まない
+    plan: none
+  - item: 列の幅を変えなくても、留めた列の幅の合計が表の見える幅を超えると留めた列が重なる
+    reason: '#438 のピン止めで起こる動きで、この PR は列を広げたときに起こる重なりだけを上限で防ぐ'
+    plan: '#453'
+  - item: モジュール構成『ライブラリ本体 / 操作』を物理ファイルごとの設計書に分ける
+    reason: テンプレート『モジュール構成』の「1 ファイル = 物理ファイル 1 つ」から外れているが、この PR より前からの作りで今回の要望に含まれない。新しい src/interact/table-resize.ts は今の置き方にそろえた
+    plan: '#455'
+  - item: 表の操作の E2E の test_normal_when_columns_reordered と test_normal_when_pinned_under_merged_header が develop で失敗する
+    reason: develop（097ad7fc）でも同じく失敗し、列の幅の変更によらない。今回の要望に含まれない
+    plan: '#457'

@@ -5,12 +5,13 @@ directory: |-
   src/
   ├── code-fold-logic.ts # コードの行のインデントのレベル・畳む行の数・隠す行・縦線を濃くする範囲（render と部品と操作が使用する）
   ├── tree-logic.ts   # キーのパスの分け方・階層の行の計画・YAML の見本の行のパス・階層の絞り込み（render と操作が使用する。DOM もトークンも使用しない）
-  ├── table-logic.ts  # 列を動かせるかの判定と列の順の入れ替え・表の並べ替えの比べ方・最下段の見出しのセル・隣り合う同じ値の結合・絞り込みの当てはめ・数の読み込み方・集計と読み込めないセル・TSV と Markdown の表・最終列を畳むか・行を留める量・URL の #ID の読み込み方（部品の表と操作が使用する）
+  ├── table-logic.ts  # 列を動かせるかの判定と列の順の入れ替え・列の幅の上限と収め方・表の並べ替えの比べ方・最下段の見出しのセル・隣り合う同じ値の結合・絞り込みの当てはめ・数の読み込み方・集計と読み込めないセル・TSV と Markdown の表・最終列を畳むか・行を留める量・URL の #ID の読み込み方（部品の表と操作が使用する）
   └── interact/
       ├── index.ts       # attachInteractions
       ├── placement.ts   # ツールチップを持ち主の上と下のどちらに配置するかを決める
       ├── tables.ts      # 表の並べ替え・ピン止め・絞り込み・件数・集計・コピー・行へ移る・行の URL のコピー・最終列を畳む
       ├── table-settings.ts # テーブル設定のパネルの開閉・列の表示の切り替え・列の並べ替え（ドラッグと ↑・↓ キー）
+      ├── table-resize.ts # 列の幅のつまみのドラッグ・←→ キーで列の幅を変え、ダブルクリック・ダブルタップ・Enter で戻す
       ├── table-tree.ts  # 階層の表の開閉・パスのツールチップとコピー・行の選択・絞り込み・見本との連動
       ├── sticky.ts      # 表の見出し行と集計の行を画面の端に留める
       ├── clipboard.ts   # クリップボードへ書き込む（表・行の URL・コードブロック・ファイルツリーが使用する）
@@ -198,7 +199,7 @@ functions:
     container: src/interact/tables.ts
     kind: 関数
     scope: internal
-    summary: 表を横にスクロールさせるのは表を包む `div.mdmark-table-scroll` で、ピン止めを適用するはみ出しはその要素の `scrollWidth` と `clientWidth` で決める。列の表示を切り替えるたびに、テーブル設定のボタンの隠した列の数のバッジ（`span.mdmark-table-tool-badge`。0 列なら `hidden` にする）・`is-active`・`aria-label` を書き換える。コピーの結果はボタンの `title` とスクリーンリーダー向けの名前を書き換えて示す。各 `mdmark-table` の `data-features`・`data-filter`・`data-hide`・`data-total`・`data-pin` を読み込み、見出しに `renderTableTools` のボタンとドロワーを配置して、並べ替え・ピン止め・絞り込みを付ける。`count`・`columns`・`reorder`・`total`・`copy` の表は `renderTableBar` の帯とメニュー（テーブル設定の一覧を分ける留めた列の数は `data-pin` がある表だけ数え、無い表は 0）を、`columns`・`reorder` の表は `attachTableSettings` でテーブル設定を、`data-tree` の表は `attachTableTree` で階層の操作を、`total` の表は `renderTotalRows` の集計の行を配置し、`rowlink` の表は行へ移る処理と行の URL のコピーを付ける。全ての表に、描く先の要素の幅で最終列を畳む処理を付ける。`thead` が複数の行を持つ表は `bottomHeadCells` で列ごとの最下段の見出しのセルを決め、ボタンをそのセルにだけ配置し、列の位置はそのセルの列で数える（`cellIndex` を使用しない）。`data-merge-columns` の表は、並べ替え・絞り込みのたびに、表示している本文の行のその列の値から `mergeSpans` で結合を決め、始まりのセルに `rowspan` と `is-merged`、続くセルに `hidden` をもう一度付ける。結合で隠したセルも値を持つセルとして並べ替え・絞り込み・コピー・集計に使用する。囲み・表から探す部品の要素（ピン止めのボタン・ドロワー・畳んだ列のセル・行の詳細の行など）は、`closest(".mdmark-table")` がその囲みのものだけにし、行の詳細の中の表の要素を取得しない。受け取り（`click`・`change`・`input`・`keydown`）は、対象の `closest(".mdmark-table")` がその囲みのときだけ処理する
+    summary: 表を横にスクロールさせるのは表を包む `div.mdmark-table-scroll` で、ピン止めを適用するはみ出しはその要素の `scrollWidth` と `clientWidth` で決める。列の表示を切り替えるたびに、テーブル設定のボタンの隠した列の数のバッジ（`span.mdmark-table-tool-badge`。0 列なら `hidden` にする）・`is-active`・`aria-label` を書き換える。コピーの結果はボタンの `title` とスクリーンリーダー向けの名前を書き換えて示す。各 `mdmark-table` の `data-features`・`data-filter`・`data-hide`・`data-total`・`data-pin` を読み込み、見出しに `renderTableTools` のボタンとドロワーを配置して、並べ替え・ピン止め・絞り込みを付ける。`count`・`columns`・`reorder`・`total`・`copy` の表は `renderTableBar` の帯とメニュー（テーブル設定の一覧を分ける留めた列の数は `data-pin` がある表だけ数え、無い表は 0）を、`columns`・`reorder` の表は `attachTableSettings` でテーブル設定を、`data-tree` の表は `attachTableTree` で階層の操作を、`total` の表は `renderTotalRows` の集計の行を配置し、`rowlink` の表は行へ移る処理と行の URL のコピーを付け、`resize` の表は `attachColumnResize` で列の幅のつまみの操作を付ける。全ての表に、描く先の要素の幅で最終列を畳む処理を付ける。`thead` が複数の行を持つ表は `bottomHeadCells` で列ごとの最下段の見出しのセルを決め、ボタンをそのセルにだけ配置し、列の位置はそのセルの列で数える（`cellIndex` を使用しない）。`data-merge-columns` の表は、並べ替え・絞り込みのたびに、表示している本文の行のその列の値から `mergeSpans` で結合を決め、始まりのセルに `rowspan` と `is-merged`、続くセルに `hidden` をもう一度付ける。結合で隠したセルも値を持つセルとして並べ替え・絞り込み・コピー・集計に使用する。囲み・表から探す部品の要素（ピン止めのボタン・ドロワー・畳んだ列のセル・行の詳細の行など）は、`closest(".mdmark-table")` がその囲みのものだけにし、行の詳細の中の表の要素を取得しない。受け取り（`click`・`change`・`input`・`keydown`）は、対象の `closest(".mdmark-table")` がその囲みのときだけ処理する
     description: |-
       並べ替えは降順 → 昇順 → 元の並び（描いたときの順を行に記録する）を繰り返し、`th` の `aria-sort` を付与・解除する。行の詳細の行と畳んだ最終列の開閉の行はその行に付いて動かす。ピン止めのボタンは `ResizeObserver` で表がはみ出すときだけ出し、留める列の位置の集まり（付けたときは `initialPinnedColumns`、ボタンを押すと `togglePinnedColumn`）のセルに、表がはみ出す間だけ `position: sticky` と `pinOffsets` の `left`（`each` は `right` も）を適用する（はみ出さない間は留めず、留める列は記録したまま）。列の幅は見出しの列ごとのセルの `offsetWidth`（隠した列は 0）で測る。ボタンの `aria-pressed` は、`each` は留めた列、`through` は留めた最も右の列だけを `true` にする。境の線は、表を包む要素の `scroll` と留める列を変えるたびに、左端に留まっている最も右の列のセルに `is-pinned-edge`、右端に留まっている最も左の列のセルに `is-pinned-edge-end` を付ける（留まっているかは列の元の位置と `scrollLeft`・`clientWidth`・`pinOffsets` で決める）。`thead` が複数の行を持つ表の見出しのセルは、またぐ列が全て留める列のときだけ留め、`left` は最初の列、`right` は最後の列の値にする。セルの値は `cellValue` で読み込む（`data-check` の列は `data-value`）。絞り込みのドロワーは `hidden` と `aria-expanded` で開閉し、同時に 1 つだけ開く。開いたら最初の入力欄へフォーカスを移し（スマホでもボタンの押下の処理の中で移す）、開いている間だけ `document` の `pointerdown`（外を押す）と `keydown`（Esc）を受け取る。「絞り込みを解除」はその列の入力を空にして絞り込みをもう一度適用する（ドロワーの中の押下を外の押下として扱わない）。列ごとの絞り込みは `matchesFilter` で重ねて当て、合わない行に `hidden` を付ける。
 
@@ -208,7 +209,9 @@ functions:
 
       行へ移る処理は、付けたときと `hashchange` で `rowIdFromHash` の ID を持つ行を探し、囲む閉じた `details` を開き（閉じたセクションは、`attachInteractions` が先に付けた `attachSections` が同じきっかけで開いている）、行が `hidden` ならその表の絞り込みを全て削除し、`scrollIntoView` してその行だけに `data-target` を付ける。行へのリンクのマーカーを押すと、移る動きはそのままにマーカーの `href` プロパティ（解決済みの絶対 URL）を `copyText` で記載し、描いたときにマーカーの横へ配置した `mdmark-row-link-notice` に `data-state` と文言（`リンクをコピーしました`・`リンクをコピーできませんでした`）を入れて 2 秒後に空に戻す。
 
-      最終列を畳む処理は、描いた要素 `root` を `ResizeObserver` で見、幅が変わるたびと列の表示の切り替えのたびに、一度畳みを削除して測り、`shouldFold` で決める。測るのは `root` の中身の幅と、表示している最終列（先頭の列を除く）のセルの中身の高さが、計算した `line-height` の 1.5 倍を超えるものがあるか。畳むときは最終列のセルに `mdmark-fold-col`、囲みに `is-folded` を付け、行の詳細を持たない行には `renderFoldedColumn` の開閉のボタンを先頭のセルに、開閉の行を行の直後に配置し、行の詳細を持つ行には詳細の中身の先頭に同じ `mdmark-fold-part` を配置する。畳まないときはこれらを取り除く。開閉のボタンは `aria-expanded` と開閉の行の `hidden` を切り替え、開閉の行はその行が隠れると隠す
+      列の幅は、`attachColumnResize` に、列の幅の上限を返す関数（`columnWidthLimit` に、表を包む要素の `clientWidth`・はみ出しているか・列ごとの幅・留めている列を渡す）と、幅を変えた後の処理を渡す。幅を変えた後は、留める列があれば `pinColumns` で留める位置と境の線をもう一度決める。最終列を畳むかは決め直さない。
+
+      最終列を畳む処理は、描いた要素 `root` を `ResizeObserver` で見、`root` の幅（`contentRect.width`）が前と変わったときと列の表示の切り替えのときだけ、一度畳みを削除して測り、`shouldFold` で決める（高さだけの変化では決め直さない）。表示している最終列に幅を指定している（`is-resized`）ときは畳まない。測るのは `root` の中身の幅と、表示している最終列（先頭の列を除く）のセルの中身の高さが、計算した `line-height` の 1.5 倍を超えるものがあるか。畳むときは最終列のセルに `mdmark-fold-col`、囲みに `is-folded` を付け、行の詳細を持たない行には `renderFoldedColumn` の開閉のボタンを先頭のセルに、開閉の行を行の直後に配置し、行の詳細を持つ行には詳細の中身の先頭に同じ `mdmark-fold-part` を配置する。畳まないときはこれらを取り除く。開閉のボタンは `aria-expanded` と開閉の行の `hidden` を切り替え、開閉の行はその行が隠れると隠す
     args:
       - name: root
         type: HTMLElement
@@ -236,6 +239,8 @@ functions:
       - dev/設計書/モジュール構成/ライブラリ本体/部品.ts#functions[renderFoldedColumn]
       - '#functions[bottomHeadCells]'
       - '#functions[mergeSpans]'
+      - '#functions[attachColumnResize]'
+      - '#functions[columnWidthLimit]'
     unit_tests:
       - name: test_attach_tables_when_sorted
         case: 正常
@@ -429,6 +434,24 @@ functions:
         condition: 幅 320px の要素に、1 行目が `名前`・`設定`（3 列）・`備考`、2 行目が `名前`・`型`・`既定`・`必須`・`備考` の表を付け、`既定` のピン止めを押す
         mock: なし
         expected: '`既定` の 2 行目の `th` と本文の `td` が `sticky` で `left` が `名前` のセルの `offsetWidth`、1 行目の `設定` の `th` は `sticky` でない'
+      - name: test_attach_tables_when_column_resized
+        case: 正常
+        summary: '`resize` の表は、留めた列の幅を変えると留める位置を計算し直し、上限で止める'
+        condition: 幅 320px の要素に `data-features="pin resize"` の、列名が短く留めた 1 列目と 3 列目の幅の合計が見えている幅に収まる 10 列の表を付け、3 列目のピン止めを押し、1 列目のつまみで → キーを押し、続けて 1 列目のつまみを 2000px 右へドラッグする
+        mock: なし
+        expected: → キーの後、3 列目のセルの `left` が 1 列目の `th` の `offsetWidth`。ドラッグの後、1 列目の `th` の `offsetWidth` が表を包む要素の `clientWidth` から 3 列目の `th` の `offsetWidth` を引いた値以下で、つまみの `aria-valuenow` と `aria-valuemax` が同じ。続けて 3 列目のつまみにフォーカスすると、その `aria-valuemax` が表を包む要素の `clientWidth` から 1 列目の `th` の `offsetWidth` を引いた値（切り捨て）
+      - name: test_attach_tables_when_resized_column_not_folded
+        case: 正常
+        summary: 最終列を畳む判定は描く先の要素の幅の変化でだけやり直し、幅を指定した最終列は畳まない
+        condition: 幅 600px の要素に、最終列が 1 行に収まる 3 列の表を付け、最終列のつまみで ← キーを押して折り返させ（最終列のセルの中身の高さが `line-height` の 1.5 倍を超えることを前提として確かめる）、続けて要素の幅を 590px にする
+        mock: なし
+        expected: ← キーの後も、要素の幅を変えた後も、最終列のセルが `mdmark-fold-col` を持たず、囲みが `is-folded` を持たない
+      - name: test_attach_tables_when_resize_off
+        case: 正常
+        summary: '`resize` を持たない表には、つまみの操作を付けない'
+        condition: '`data-features="sort pin"` の表を付ける'
+        mock: なし
+        expected: '`mdmark-col-resize` が無い'
     refs:
       - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[列の表示の通知]
       - '#functions[computeTotal]'
@@ -2473,9 +2496,119 @@ functions:
     status: planned
     introduced:
       pr: 438
+  - name: attachColumnResize
+    title: 列の幅のつまみに操作を付ける
+    container: src/interact/table-resize.ts
+    kind: 関数
+    scope: internal
+    summary: 表の最下段の見出しのつまみ（`span.mdmark-col-resize`）に、ドラッグ・←→ キーで列の幅を変え、ダブルクリック・ダブルタップ・Enter で戻す操作を付ける
+    description: |-
+      つまみの `pointerdown` で既定の動作を止めて伝わりを止め、`setPointerCapture` でポインターを捕まえ、つまみに `is-dragging` を付ける。`pointermove` では押した位置からの横の移動量を押したときの幅に足し、`setColumnWidth` で入れる。`pointerup`・`pointercancel` で `is-dragging` を外す。`pointerType` が `touch` で、`pointerdown` からの移動が `TAP_MOVE_TOLERANCE_PX` 以内の `pointerup` だけをタップとして数え、タップが前のタップから `DOUBLE_TAP_MS` 以内なら幅を戻す（動かしたドラッグの終わりはタップに数えず、前のタップの記録も消す）。`dblclick` でも幅を戻す。`keydown` の → は `COLUMN_RESIZE_STEP_PX` 広げ、← は狭め、Enter は幅を戻す（どれも既定の動作を止める）。
+
+      `setColumnWidth` は、`clampColumnWidth` で列の最小幅（見出しのセルのインラインの `--mdmark-column-min-width` を外して測った `min-width` に左右の余白と罫線を足した外側の幅）から `maxWidth(column)` までに収めた外側の幅を、見出しのセルの内側の幅に換算して `width`・`min-width`・`--mdmark-column-min-width` に入れる。入れた後に測った外側の幅が指定した幅と違えば、差を足して入れ直す。列の全てのセルに `is-resized` を付ける。幅を戻すときは、`width`・`min-width` を外し、`--mdmark-column-min-width` を付けたときの値に戻し、`is-resized` を外す。入れた後と戻した後に `onResize(column)` を呼ぶ。付けたとき・つまみにフォーカスしたとき・入れた後と戻した後に、つまみの `aria-valuenow`・`aria-valuetext`（`{幅}px`）・`aria-valuemin`・`aria-valuemax` を書き換える（最小は切り上げ、上限は切り捨て）
+    args:
+      - name: table
+        type: HTMLTableElement
+        required: true
+        description: つまみを持つ表
+      - name: options
+        type: '{ headCells: HTMLTableCellElement[]; maxWidth: (column: number) => number; onResize: (column: number) => void }'
+        required: true
+        description: 列ごとの最下段の見出しのセル、列の幅の上限を返す関数、幅を変えた後と戻した後に呼ぶ関数
+    returns:
+      type: () => void
+      description: 受け取りを削除し、幅の指定を全て戻す関数
+    side_effects: 見出しのセルの `style` とセルの class、つまみの `aria-*` を書き換え、つまみに `pointerdown`・`pointermove`・`pointerup`・`pointercancel`・`dblclick`・`keydown`・`focus` を付ける
+    callees:
+      - '#functions[clampColumnWidth]'
+    unit_tests:
+      - name: test_attach_column_resize_when_dragged
+        case: 正常
+        summary: ドラッグで列の幅だけを変え、ダブルクリックで戻す
+        condition: 3 列の表の 1 列目のつまみで、`pointerdown` から `pointermove` で 80px 右へ動かして `pointerup`、続けて `dblclick`
+        mock: なし
+        expected: '`pointerup` の後、1 列目の `th` の `offsetWidth` が 80 大きく、2・3 列目は変わらず、`onResize` が `0` で呼ばれる。`dblclick` の後、1 列目の `th` の `offsetWidth` が付けた直後と同じで、`--mdmark-column-min-width` が付けたときの値'
+      - name: test_attach_column_resize_when_key
+        case: 正常
+        summary: ←→ キーで 16px ずつ変え、Enter で戻し、つまみの値を書き換える
+        condition: 1 列目のつまみで → を 2 回、← を 1 回、Enter を押す
+        mock: なし
+        expected: → 2 回の後に `offsetWidth` が 32 大きく `aria-valuenow` と `aria-valuetext` が同じ幅、← の後に 16 大きく、Enter の後に付けた直後の幅
+      - name: test_attach_column_resize_when_clamped
+        case: 正常
+        summary: 列の最小幅と上限で止める
+        condition: '`maxWidth` が `200` を返す表で、1 列目のつまみを 2000px 右へ、続けて 2000px 左へドラッグする'
+        mock: なし
+        expected: 右へ動かした後の `offsetWidth` が 200、左へ動かした後の `offsetWidth` が `aria-valuemin`
+      - name: test_attach_column_resize_when_double_tap
+        case: 正常
+        summary: タッチの 2 回のタップの間隔でダブルタップを見分ける
+        condition: '幅を変えた列のつまみで、`pointerType: touch` の `pointerdown`・`pointerup` を 100ms の間隔で 2 回、400ms の間隔で 2 回と、60px 動かしたドラッグの直後 100ms 以内に 1 回のタップ'
+        mock: なし
+        expected: 100ms の間隔では幅が付けた直後に戻り、400ms の間隔では戻らず、ドラッグの直後の 1 回のタップでも戻らない
+      - name: test_attach_column_resize_when_detached
+        case: 正常
+        summary: 削除する関数で受け取りと幅の指定を外す
+        condition: 幅を変えた後に戻り値の関数を呼び、つまみで → を押す
+        mock: なし
+        expected: 見出しのセルの `width`・`min-width` が空で、→ の後も幅が変わらない
+    status: planned
+    introduced:
+      pr: 449
+  - name: clampColumnWidth
+    title: 列の幅を範囲に収める
+    container: src/table-logic.ts
+    kind: 関数
+    scope: internal
+    summary: 列の幅を、列の最小幅から上限までに収めた値を返却する
+    description: 上限が最小幅より小さいときは最小幅を返す
+    args:
+      - name: options
+        type: '{ width: number; min: number; max: number }'
+        required: true
+        description: 指定したい幅・列の最小幅・上限（px）
+    returns:
+      type: number
+      description: 収めた幅（px）
+    unit_tests:
+      - name: test_clamp_column_width
+        case: 正常
+        summary: 最小幅と上限の間に収める
+        condition: '`{ width: 50, min: 100, max: 300 }`・`{ width: 200, min: 100, max: 300 }`・`{ width: 400, min: 100, max: 300 }`・`{ width: 200, min: 100, max: 80 }`'
+        mock: なし
+        expected: '`100`・`200`・`300`・`100`'
+    status: planned
+    introduced:
+      pr: 449
+  - name: columnWidthLimit
+    title: 列の幅の上限を求める
+    container: src/table-logic.ts
+    kind: 関数
+    scope: internal
+    summary: 表の見えている幅から、ほかに留めている列の幅の合計を引いた幅を返却する
+    description: 表がはみ出していないときは、留める列を当てていないので表の見えている幅をそのまま返す
+    args:
+      - name: options
+        type: '{ visibleWidth: number; overflowing: boolean; widths: number[]; pinned: number[]; column: number }'
+        required: true
+        description: 表を包む要素の `clientWidth`、はみ出しているか、列ごとの幅（隠した列は 0）、留めている列の位置、幅を変える列の位置
+    returns:
+      type: number
+      description: 上限の幅（px）
+    unit_tests:
+      - name: test_column_width_limit
+        case: 正常
+        summary: ほかに留めた列の幅だけを引く
+        condition: '`visibleWidth: 300`・`widths: [100, 80, 60]`・`pinned: [0, 2]` で、`column` が `0` と `1`、はみ出しているときといないとき'
+        mock: なし
+        expected: 'はみ出しているとき、`column: 0` は `240`（2 列目の 60 を引く）、`column: 1` は `140`。はみ出していないときはどちらも `300`'
+    status: planned
+    introduced:
+      pr: 449
 test_files:
   - tests/unit/src/interact/index.browser.test.ts
   - tests/unit/src/interact/tables.browser.test.ts
+  - tests/unit/src/interact/table-resize.browser.test.ts
   - tests/unit/src/interact/tabs.browser.test.ts
   - tests/unit/src/interact/sections.browser.test.ts
   - tests/unit/src/interact/side-toc.browser.test.ts
@@ -2624,3 +2757,33 @@ constants:
     status: planned
     introduced:
       pr: 323
+  - name: COLUMN_RESIZE_STEP_PX
+    title: キーで変える列の幅
+    container: src/interact/table-resize.ts
+    summary: 列の幅のつまみにフォーカスして ←・→ キーを 1 回押したときに変える幅（px）
+    value: '16'
+    refs:
+      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[列の幅]
+    status: planned
+    introduced:
+      pr: 449
+  - name: DOUBLE_TAP_MS
+    title: ダブルタップの間隔
+    container: src/interact/table-resize.ts
+    summary: タッチの 2 回のタップをダブルタップとみなす、前のタップを離してから次のタップを離すまでの上限（ms）
+    value: '300'
+    refs:
+      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[列の幅]
+    status: planned
+    introduced:
+      pr: 449
+  - name: TAP_MOVE_TOLERANCE_PX
+    title: タップとみなす移動の上限
+    container: src/interact/table-resize.ts
+    summary: タッチの `pointerdown` から `pointerup` までの移動がこの幅（px）以内なら、ドラッグでなくタップとして数える
+    value: '8'
+    refs:
+      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[列の幅]
+    status: planned
+    introduced:
+      pr: 449

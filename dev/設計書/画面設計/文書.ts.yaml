@@ -41,7 +41,7 @@ elements:
     description: 'Markdown の表。表のマーカーで囲んだ表はその種類、囲まない表は既定の種類の表の部品にする。表は本文の幅いっぱいに広げ、列が本文の幅に収まらないときだけ表の中で横スクロールし、続きがある側の端に影を出す。縦の高さの上限は持たず、表が画面に残っている間は見出し行を画面の上端（`--mdmark-sticky-top` だけ下）に、集計の行を画面の下端に留める。描く先の要素の中身の幅が 720px 未満で、最終列のセルが 1 行に収まらないときは最終列を畳む。紙の幅が 40rem 以下の印刷では、行ごとの「列名: 値」の並びに追加する。スクリーンリーダー向けの名前（`aria-label`）は `表: {直前の見出しの文字}`（直前に見出しが無ければ `表`）。`table` の機能がオフのときは部品を使用せず今の表を描く'
     visible_when: 文書に表があるとき
     tab_order: 0
-    sorting: 種類と `+機能`・`-機能` で決まる。`data` は並べ替え（降順 → 昇順 → 元の並び）・ピン止め・`filter=` で指定した列の絞り込み、既定の種類はピン止めだけ、`plain` は無し。件数（`count`）・列の表示（`columns`）・列の並べ替え（`reorder`）・集計の行（`total`）・表のコピー（`copy`）・行へのリンク（`rowlink`）はどの種類の既定にも入らず、`+機能` を記載した表にだけ付く。既定の並びは記載した順
+    sorting: 種類と `+機能`・`-機能` で決まる。`data` は並べ替え（降順 → 昇順 → 元の並び）・ピン止め・`filter=` で指定した列の絞り込み・列の幅の変更、既定の種類はピン止めと列の幅の変更、`plain` は無し。件数（`count`）・列の表示（`columns`）・列の並べ替え（`reorder`）・集計の行（`total`）・表のコピー（`copy`）・行へのリンク（`rowlink`）はどの種類の既定にも入らず、`+機能` を記載した表にだけ付く。既定の並びは記載した順
     component: dev/設計書/部品設計/表.ts#
     args:
       - name: kind
@@ -94,7 +94,11 @@ elements:
         value: マーカーの `example=見出し` の見出しの直下のタブと、各タブの `yaml` のコードブロックの行とキーのパス（`tree=` の表だけ）
       - name: pinMode
         value: 設定の `table.pin`（`each`・`through`。他の値と省いたときは `each`）
-    action: 'テーブル設定のパネルで列を動かす・隠す（要素「表のテーブル設定のパネル」）。`tree=` の表は、行を押して選ぶと同じ親の範囲の縦線を濃くし、もう一度押すと解く。`+columns` の表で列の表示を切り替えるたびに、`opts.onColumnsChange` に表の番号と隠している列の名前を指定する'
+      - name: widths
+        value: 読者がつまみで指定した列の幅（`resize` の表だけ。描くたびに空に戻る）
+      - name: resizing
+        value: 読者がつまみをドラッグしている列の位置
+    action: 'テーブル設定のパネルで列を動かす・隠す（要素「表のテーブル設定のパネル」）。列の見出しの右端のつまみで列の幅を変える（要素「表の列の幅のつまみ」）。`tree=` の表は、行を押して選ぶと同じ親の範囲の縦線を濃くし、もう一度押すと解く。`+columns` の表で列の表示を切り替えるたびに、`opts.onColumnsChange` に表の番号と隠している列の名前を指定する'
     action_ref: dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[列の表示の通知]
     error_message: 'マーカーの誤りは表の前の記載の警告で通知する。`mark` はそのマーカーの文字。表に無い列名の `tree=`: `{mark} の tree= の列 {列名} が表にありません。表の列は {列の並び} です。階層にせずに描いています。` / `tree=` の無い `type=`・`required=`・`default=`・`example=`: `{mark} の {引数}= は tree= と一緒に記載してください。当てずに描いています。` / 無い見出しの `example=`: `{mark} の example= の見出し {見出し} が文書に無いか、直下にタブがありません。見本を配置せずに描いています。`。文中のマーカー・列名・見出しは行内のコードにする'
   - name: 表のセル
@@ -1358,6 +1362,23 @@ elements:
     status: planned
     introduced:
       pr: 303
+  - name: 表の列の幅のつまみ
+    id: table-col-resize
+    kind: separator
+    position: 描く先の要素 > 表 > 最下段の各列の見出しのセルの右端
+    description: '見出しのセルの右端に重ねた 12px の範囲で、ポインターを乗せたとき・フォーカスしたとき・ドラッグ中に、右端の罫線の位置に 2px の線をリンクの色で出し、ポインターを `col-resize` にする。ポインターが粗い画面（`(pointer: coarse)`）では線を常に薄く出して押せる範囲を 24px にし、見出しのセルの右の余白を 24px 広げて見出しのボタンと重ねない。`role="separator"`・`aria-orientation="vertical"`・`tabindex="0"`'
+    label: 「{列名}」の列の幅（`aria-label`）
+    io: 入力
+    type: 列の幅（px）
+    visible_when: '`resize` の表（既定の種類と `data` の種類。`-resize` を記載した表と `plain` の表には無い）'
+    initial_value: 描いた直後の列の幅（`wide=` の列は `wide=` の幅）。幅は覚えず、再描画すると戻る
+    action: ドラッグ（マウス・タッチ）か、フォーカスして ←・→ キー（1 回 16px）で、つまみの左の列の幅だけを変える。ダブルクリック・ダブルタップ・Enter で描いた直後の幅に戻す
+    constraints: 列の最小幅（セルの `min-width` の 6em）から、表の見えている幅からほかに留めた列の幅の合計を引いた幅までに収める。`aria-valuenow`・`aria-valuetext`（`{幅}px`）・`aria-valuemin`・`aria-valuemax` で示す
+    refs:
+      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[列の幅]
+    status: planned
+    introduced:
+      pr: 449
   - name: 表のテーブル設定のパネル
     id: table-settings
     kind: dialog

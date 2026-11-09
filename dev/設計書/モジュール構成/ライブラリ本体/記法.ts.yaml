@@ -266,9 +266,9 @@ constants:
     summary: 種類ごとの既定の機能
     entries:
       - key: default
-        value: '["pin"]'
+        value: '["pin", "resize"]'
       - key: data
-        value: '["sort", "pin", "filter"]'
+        value: '["sort", "pin", "filter", "resize"]'
       - key: plain
         value: '[]'
   - name: FILTER_KINDS
@@ -284,8 +284,8 @@ constants:
   - name: TABLE_FEATURES
     title: 表の機能の名前
     container: src/render/syntax/tables.ts
-    summary: '`+機能`・`-機能` に記載できる機能の名前。後ろの 5 つはどの種類の既定にも入らない'
-    value: '["sort", "pin", "filter", "count", "columns", "total", "copy", "rowlink"]'
+    summary: '`+機能`・`-機能` に記載できる機能の名前。後ろの 6 つはどの種類の既定にも入らない'
+    value: '["sort", "pin", "filter", "resize", "count", "columns", "reorder", "total", "copy", "rowlink"]'
   - name: TOTAL_CALCS
     title: 集計の計算
     container: src/table-logic.ts
@@ -523,19 +523,19 @@ functions:
         summary: 種類・機能・絞り込み・折り畳みを読み込む
         condition: '`data -sort filter=名前,更新日:date closed` と見出し `名前`・`値`・`更新日`'
         mock: なし
-        expected: '`kind` が `data`、`features` が `["pin", "filter"]`、`filters` が `[{0, select}, {2, date}]`、`collapse` が `closed`、`warnings` が空'
+        expected: '`kind` が `data`、`features` が `["pin", "filter", "resize"]`、`filters` が `[{0, select}, {2, date}]`、`collapse` が `closed`、`warnings` が空'
       - name: test_read_table_spec_when_unknown
         case: 正常
         summary: 読み込めない値と組み合わせを警告にし、知らない種類・機能・キーをスキップする
         condition: '`unknown +sort +foo size=2 filter=無い列,名前:range closed open`'
         mock: なし
-        expected: '`kind` が `default`、`features` が `["pin", "sort"]`、`filters` が空、`collapse` が `closed`、`warnings` に `無い列`・`range`・`closed と open` の項目だけがあり、`skipped` の `arg` が `unknown`・`+foo`・`size=`'
+        expected: '`kind` が `default`、`features` が `["pin", "resize", "sort"]`、`filters` が空、`collapse` が `closed`、`warnings` に `無い列`・`range`・`closed と open` の項目だけがあり、`skipped` の `arg` が `unknown`・`+foo`・`size=`'
       - name: test_read_table_spec_when_features
         case: 正常
         summary: 5 つの機能と hide=・total= を読み込む
         condition: '`data +count +columns +total +copy +rowlink hide=説明 total=数量:sum,名前:count` と見出し `名前`・`説明`・`数量`'
         mock: なし
-        expected: '`features` が `["sort", "pin", "filter", "count", "columns", "total", "copy", "rowlink"]`、`hide` が `[1]`、`totals` が `[{2, sum}, {0, count}]`、`warnings` が空'
+        expected: '`features` が `["sort", "pin", "filter", "resize", "count", "columns", "total", "copy", "rowlink"]`、`hide` が `[1]`、`totals` が `[{2, sum}, {0, count}]`、`warnings` が空'
       - name: test_read_table_spec_when_feature_keys_invalid
         case: 正常
         summary: 読み込めない集計・隠す列と機能の無い表のキーを警告にして適用しない
@@ -613,7 +613,7 @@ functions:
         summary: 表のマーカーの表を指定どおりに囲み、囲まない表を default にする
         condition: '`<!-- table: data filter=名前 closed -->` 〜 `<!-- /table -->` の表と、マーカーの無い表'
         mock: なし
-        expected: 1 つ目が `data-kind="data" data-features="sort pin filter" data-filter="0:select"` と `<details class="mdmark-table-details">`、2 つ目が `data-kind="default" data-features="pin"`
+        expected: 1 つ目が `data-kind="data" data-features="sort pin filter resize" data-filter="0:select"` と `<details class="mdmark-table-details">`、2 つ目が `data-kind="default" data-features="pin resize"`
       - name: test_decorate_tables_when_range_not_closed
         case: 正常
         summary: 閉じのマーカーが無いときは文書の終わりまでの表に当て、警告を差し込む
@@ -631,7 +631,7 @@ functions:
         summary: 5 つの機能と hide=・total= を属性にコピーし、行に ID とリンクを付ける
         condition: '`## みかん` の後の `<!-- table: data +count +columns +total +copy +rowlink hide=説明 total=数量:sum -->` 〜 `<!-- /table -->` の表（列 `名前`・`説明`・`数量`、名前 `りんご`・`みかん`・`みかん`）'
         mock: なし
-        expected: '`data-features="sort pin filter count columns total copy rowlink"`・`data-hide="1"`・`data-total="2:sum"`、行の `id` が `りんご`・`みかん-1`・`みかん-2`、各行の先頭のセルに `<a class="mdmark-row-anchor" href="#{ID}">`'
+        expected: '`data-features="sort pin filter resize count columns total copy rowlink"`・`data-hide="1"`・`data-total="2:sum"`、行の `id` が `りんご`・`みかん-1`・`みかん-2`、各行の先頭のセルに `<a class="mdmark-row-anchor" href="#{ID}">`'
       - name: test_decorate_tables_when_total_unreadable
         case: 異常
         summary: 集計する列の数として読み込めないセルを、列と計算ごとの警告にして表の上に差し込む

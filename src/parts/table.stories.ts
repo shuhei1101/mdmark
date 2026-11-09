@@ -927,3 +927,35 @@ export const FillsWidth: Story = {
     rows: '[["りんご","3"],["みかん","5"],["ぶどう","2"]]',
   },
 };
+
+/** 列の幅のつまみのストーリーの共通の引数 */
+const resizeArgs = {
+  kind: "data",
+  features: '["sort","pin","filter","resize"]',
+  columns: '["名前","説明","更新日"]',
+  rows: '[["りんご","描画を速くするために、見出しの列ごとの幅を描いた後に一度だけ測る","2026-10-01"],["みかん","印刷を修正する","2026-10-10"]]',
+};
+
+export const Resizable: Story = {
+  name: "Resizable",
+  parameters: { server: { id: "table" } },
+  args: resizeArgs,
+};
+
+export const ResizeDragging: Story = {
+  name: "ResizeDragging",
+  parameters: { server: { id: "table" } },
+  args: { ...resizeArgs, resizing: 0 },
+};
+
+export const ColumnResized: Story = {
+  name: "ColumnResized",
+  parameters: { server: { id: "table" } },
+  args: { ...resizeArgs, widths: '[{"column":0,"width":200}]' },
+};
+
+export const WideResized: Story = {
+  name: "WideResized",
+  parameters: { server: { id: "table" } },
+  args: { ...resizeArgs, wide: "[1]", widths: '[{"column":1,"width":110}]' },
+};

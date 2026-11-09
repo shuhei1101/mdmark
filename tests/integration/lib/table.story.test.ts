@@ -1867,3 +1867,107 @@ test("test_fills_width", async () => {
   );
   await expect(pageOverflows(page)).resolves.toBe(false);
 });
+
+/** 表の列ごとの見出しのセルとつまみの状態を返却する */
+function resizeHandles(page: Page): Promise<
+  Array<{
+    label: string | null;
+    role: string | null;
+    cursor: string;
+    lineOpacity: number;
+    dragging: boolean;
+    resized: boolean;
+    width: number;
+  }>
+> {
+  return page.evaluate(() =>
+    [...document.querySelectorAll<HTMLElement>("#storybook-root thead th")].map(
+      (head) => {
+        const handle = head.querySelector<HTMLElement>(
+          ":scope > .mdmark-col-resize",
+        );
+        return {
+          label: handle?.getAttribute("aria-label") ?? null,
+          role: handle?.getAttribute("role") ?? null,
+          cursor: handle ? getComputedStyle(handle).cursor : "",
+          lineOpacity: handle
+            ? Number(getComputedStyle(handle, "::after").opacity)
+            : -1,
+          dragging: handle?.classList.contains("is-dragging") ?? false,
+          resized: head.classList.contains("is-resized"),
+          width: head.getBoundingClientRect().width,
+        };
+      },
+    ),
+  );
+}
+
+// resize の表の最下段の各列の見出しの右端に、線を出していないつまみがある（Resizable）
+test("test_resizable", async () => {
+  // 準備・実行
+  const page = await open("resizable");
+  // 検証
+  const handles = await resizeHandles(page);
+  expect(handles.map((handle) => handle.label)).toEqual([
+    "「名前」の列の幅",
+    "「説明」の列の幅",
+    "「更新日」の列の幅",
+  ]);
+  for (const handle of handles) {
+    expect(handle.role).toBe("separator");
+    expect(handle.cursor).toBe("col-resize");
+    expect(handle.lineOpacity).toBe(0);
+  }
+  await expect(pageOverflows(page)).resolves.toBe(false);
+});
+
+// ドラッグしている列のつまみだけが線を出したままにする（ResizeDragging）
+test("test_resize_dragging", async () => {
+  // 準備・実行
+  const page = await open("resize-dragging");
+  // 検証
+  const handles = await resizeHandles(page);
+  expect(handles.map((handle) => handle.dragging)).toEqual([
+    true,
+    false,
+    false,
+  ]);
+  expect(handles[0]?.lineOpacity).toBe(1);
+  expect(handles[1]?.lineOpacity).toBe(0);
+});
+
+// 名前の列だけが指定した幅を持つ（ColumnResized）
+test("test_column_resized", async () => {
+  // 準備・実行
+  const page = await open("column-resized");
+  // 検証
+  const handles = await resizeHandles(page);
+  expect(handles.map((handle) => handle.resized)).toEqual([true, false, false]);
+  expect(handles[0]?.width).toBeGreaterThanOrEqual(200);
+});
+
+// 幅を指定した wide= の列は折り返す（WideResized）
+test("test_wide_resized", async () => {
+  // 準備・実行
+  const page = await open("wide-resized");
+  // 検証
+  const cells = await page.evaluate(() =>
+    [
+      ...document.querySelectorAll<HTMLElement>(
+        "#storybook-root tbody td:nth-child(2)",
+      ),
+    ].map((cell) => ({
+      classes: [...cell.classList],
+      whiteSpace: getComputedStyle(cell).whiteSpace,
+      lines: Math.round(
+        cell.getBoundingClientRect().height /
+          Number.parseFloat(getComputedStyle(cell).lineHeight),
+      ),
+    })),
+  );
+  expect(cells[0]?.classes).toEqual(
+    expect.arrayContaining(["mdmark-wide", "is-resized"]),
+  );
+  expect(cells[0]?.whiteSpace).not.toBe("nowrap");
+  expect(cells[0]?.lines).toBeGreaterThan(1);
+});

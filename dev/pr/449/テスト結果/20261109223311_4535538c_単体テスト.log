@@ -1,0 +1,665 @@
+$ npm run test:unit
+
+> test:unit
+> vitest run --project 'unit*'
+
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-table-column-resize
+
+10:33:20 PM [vite] Internal server error: Failed to resolve import "../../../../src/interact/table-resize.ts" from "tests/unit/src/interact/table-resize.browser.test.ts". Does the file exist?
+  Plugin: vite:import-analysis
+  File: /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-table-column-resize/tests/unit/src/interact/table-resize.browser.test.ts:9:32
+  2  |  import { addStyles, createRootFromHtml, removeRoots } from "../../helpers/dom.ts";
+  3  |  /** 列の幅のつまみの操作を読み込む（実装が無い間は各テストが個別に失敗する） */
+  4  |  const loadResize = () => import("../../../../src/interact/table-resize.ts");
+     |                                  ^
+  5  |  const detachers = [];
+  6  |  afterEach(() => {
+      at TransformPluginContext._formatLog (file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-table-column-resize/node_modules/vite/dist/node/chunks/node.js:8861:39)
+      at TransformPluginContext.error (file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-table-column-resize/node_modules/vite/dist/node/chunks/node.js:8858:14)
+      at resolveId (file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-table-column-resize/node_modules/vite/dist/node/chunks/node.js:26533:18)
+      at async file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-table-column-resize/node_modules/vite/dist/node/chunks/node.js:26632:23
+      at async Promise.all (index 2)
+      at async TransformPluginContext.transform (file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-table-column-resize/node_modules/vite/dist/node/chunks/node.js:26605:4)
+      at async EnvironmentPluginContainer.transform (file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-table-column-resize/node_modules/vite/dist/node/chunks/node.js:8632:14)
+      at async loadAndTransform (file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-table-column-resize/node_modules/vite/dist/node/chunks/node.js:20108:26)
+      at async viteTransformMiddleware (file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-table-column-resize/node_modules/vite/dist/node/chunks/node.js:20328:20)
+ ❯ |unit-browser (chromium)| tests/unit/src/interact/table-resize.browser.test.ts (0 test)
+ ❯ |unit| tests/unit/src/parts/table.test.ts (38 tests | 2 failed) 1783ms
+   × test_render_table_tools_when_resize 10ms
+   × test_render_table_when_resized 7ms
+ ❯ |unit-browser (chromium)| tests/unit/src/interact/tables.browser.test.ts (66 tests | 4 failed) 1733ms
+   × test_clamp_column_width 159ms
+   × test_column_width_limit 117ms
+   × test_attach_tables_when_column_resized 141ms
+   × test_attach_tables_when_resized_column_not_folded 130ms
+ ❯ |unit-browser (chromium)| tests/unit/vscode/src/webview/shared/components/preview-status.browser.test.tsx (5 tests | 1 failed) 15776ms
+   × test_preview_status_when_reload_clicked 15237ms
+ ❯ |unit-browser (chromium)| tests/unit/vscode/src/webview/shared/components/config-band.browser.test.tsx (3 tests | 1 failed) 15190ms
+   × test_config_band_when_clicked 15062ms
+ ❯ |unit-browser (chromium)| tests/unit/vscode/src/webview/app/app.browser.test.tsx (1 test | 1 failed) 15115ms
+   × test_app_when_render_error 15115ms
+ ❯ |unit-browser (chromium)| tests/unit/src/interact/diagrams.browser.test.ts (13 tests | 1 failed) 15570ms
+   × test_open_diagram_dialog_when_tip_open 15229ms
+ ❯ |unit-browser (chromium)| tests/unit/src/interact/lightbox.browser.test.ts (7 tests | 1 failed) 15394ms
+   × test_attach_lightbox_when_closed 15220ms
+ ❯ |unit-browser (chromium)| tests/unit/vscode/src/webview/features/preview/panel/panel-screen.browser.test.tsx (15 tests | 2 failed) 35808ms
+   × test_panel_screen_when_reload_clicked 15081ms
+   × test_panel_screen_when_config_error 15179ms
+ ❯ |unit-browser (chromium)| tests/unit/src/interact/er-folds.browser.test.ts (2 tests | 1 failed) 15055ms
+   × test_attach_er_folds 15024ms
+ ❯ |unit-browser (chromium)| tests/unit/vscode/src/webview/features/preview/panel/hooks/use-link-clicks.browser.test.tsx (3 tests | 3 failed) 45151ms
+   × test_use_link_clicks 15107ms
+   × test_use_link_clicks_when_side_toc 15004ms
+   × test_use_link_clicks_when_open_asset 15039ms
+
+⎯⎯⎯⎯⎯⎯ Failed Suites 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/interact/table-resize.browser.test.ts [ tests/unit/src/interact/table-resize.browser.test.ts ]
+Error: Failed to import test file /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-table-column-resize/tests/unit/src/interact/table-resize.browser.test.ts
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=84ed85ee:5843:5
+ ❯ collectTests node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=84ed85ee:5819:3
+ ❯ startTests node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=84ed85ee:6503:17
+
+Caused by: TypeError: Failed to fetch dynamically imported module: http://localhost:63316/mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-table-column-resize/tests/unit/src/interact/table-resize.browser.test.ts?import&browserv=1794231199569
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/18]⎯
+
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 17 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/interact/diagrams.browser.test.ts > test_open_diagram_dialog_when_tip_open
+TimeoutError: locator.hover: Timeout 14860ms exceeded.
+Call log:
+[2m  - waiting for locator('[data-vitest="true"]').contentFrame().getByRole('dialog').getByLabel('問い合わせへの自動返信の構成範囲: メールを受け取ってから返信するまで・更新日: 2026-10-').getByText('メール', { exact: true })[22m
+[2m    - locator resolved to <span tabindex="0" data-line="flow" data-tip-owner="w-mail" class="mdmark-diagram-label has-tip" aria-describedby="mdmark-diagram-10-0-modal-tip-5">メール</span>[22m
+[2m  - attempting hover action[22m
+[2m    2 × waiting for element to be visible and stable[22m
+[2m      - element is visible and stable[22m
+[2m      - scrolling into view if needed[22m
+[2m      - done scrolling[22m
+[2m      - <vite-error-overlay></vite-error-overlay> intercepts pointer events[22m
+[2m    - retrying hover action[22m
+[2m    - waiting 20ms[22m
+[2m    2 × waiting for element to be visible and stable[22m
+[2m      - element is visible and stable[22m
+[2m      - scrolling into view if needed[22m
+[2m      - done scrolling[22m
+[2m      - <vite-error-overlay></vite-error-overlay> intercepts pointer events[22m
+[2m    - retrying hover action[22m
+[2m      - waiting 100ms[22m
+[2m    28 × waiting for element to be visible and stable[22m
+[2m       - element is visible and stable[22m
+[2m       - scrolling into view if needed[22m
+[2m       - done scrolling[22m
+[2m       - <vite-error-overlay></vite-error-overlay> intercepts pointer events[22m
+[2m     - retrying hover action[22m
+[2m       - waiting 500ms[22m
+
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/diagrams.browser.test.ts/test_open_diagram_dialog_when_tip_open.png
+
+ ❯ tests/unit/src/interact/diagrams.browser.test.ts:284:21
+    282|   // 実行・検証
+    283|   for (const owner of owners.slice(0, 2)) {
+    284|     await userEvent.hover(owner);
+       |                     ^
+    285|     const tip = document.getElementById(
+    286|       owner.getAttribute("aria-describedby") ?? "",
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=84ed85ee:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/18]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/interact/er-folds.browser.test.ts > test_attach_er_folds
+TimeoutError: locator.click: Timeout 14869ms exceeded.
+Call log:
+[2m  - waiting for locator('[data-vitest="true"]').contentFrame().getByLabel('「注文」の主キーと外部キー以外の列')[22m
+[2m    - locator resolved to <button type="button" aria-expanded="true" data-er-fold="orders" class="mdmark-diagram-er-fold" aria-label="「注文」の主キーと外部キー以外の列">…</button>[22m
+[2m  - attempting click action[22m
+[2m    2 × waiting for element to be visible, enabled and stable[22m
+[2m      - element is visible, enabled and stable[22m
+[2m      - scrolling into view if needed[22m
+[2m      - done scrolling[22m
+[2m      - <vite-error-overlay></vite-error-overlay> intercepts pointer events[22m
+[2m    - retrying click action[22m
+[2m    - waiting 20ms[22m
+[2m    2 × waiting for element to be visible, enabled and stable[22m
+[2m      - element is visible, enabled and stable[22m
+[2m      - scrolling into view if needed[22m
+[2m      - done scrolling[22m
+[2m      - <vite-error-overlay></vite-error-overlay> intercepts pointer events[22m
+[2m    - retrying click action[22m
+[2m      - waiting 100ms[22m
+[2m    26 × waiting for element to be visible, enabled and stable[22m
+[2m       - element is visible, enabled and stable[22m
+[2m       - scrolling into view if needed[22m
+[2m       - done scrolling[22m
+[2m       - <vite-error-overlay></vite-error-overlay> intercepts pointer events[22m
+[2m     - retrying click action[22m
+[2m       - waiting 500ms[22m
+
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/er-folds.browser.test.ts/test_attach_er_folds.png
+
+ ❯ tests/unit/src/interact/er-folds.browser.test.ts:83:19
+     81|   const before = endY(figure);
+     82|   // 実行
+     83|   await userEvent.click(button);
+       |                   ^
+     84|   const folded = endY(figure);
+     85|   const foldedRows = otherRows(orders).map((row) => row.hidden);
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=84ed85ee:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/18]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/interact/lightbox.browser.test.ts > test_attach_lightbox_when_closed
+TimeoutError: locator.click: Timeout 14881ms exceeded.
+Call log:
+[2m  - waiting for locator('[data-vitest="true"]').contentFrame().getByLabel('拡大した画像。ドラッグか矢印キーで動かす')[22m
+[2m    - locator resolved to <div tabindex="0" class="mdmark-lightbox-stage" aria-label="拡大した画像。ドラッグか矢印キーで動かす">…</div>[22m
+[2m  - attempting click action[22m
+[2m    2 × waiting for element to be visible, enabled and stable[22m
+[2m      - element is visible, enabled and stable[22m
+[2m      - scrolling into view if needed[22m
+[2m      - done scrolling[22m
+[2m      - <vite-error-overlay></vite-error-overlay> intercepts pointer events[22m
+[2m    - retrying click action[22m
+[2m    - waiting 20ms[22m
+[2m    2 × waiting for element to be visible, enabled and stable[22m
+[2m      - element is visible, enabled and stable[22m
+[2m      - scrolling into view if needed[22m
+[2m      - done scrolling[22m
+[2m      - <vite-error-overlay></vite-error-overlay> intercepts pointer events[22m
+[2m    - retrying click action[22m
+[2m      - waiting 100ms[22m
+[2m    27 × waiting for element to be visible, enabled and stable[22m
+[2m       - element is visible, enabled and stable[22m
+[2m       - scrolling into view if needed[22m
+[2m       - done scrolling[22m
+[2m       - <vite-error-overlay></vite-error-overlay> intercepts pointer events[22m
+[2m     - retrying click action[22m
+[2m       - waiting 500ms[22m
+
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/lightbox.browser.test.ts/test_attach_lightbox_when_closed.png
+
+ ❯ tests/unit/src/interact/lightbox.browser.test.ts:198:19
+    196|     throw new Error("画像の場所が無い");
+    197|   }
+    198|   await userEvent.click(stage, { position: { x: 2, y: 2 } });
+       |                   ^
+    199|   // 検証
+    200|   await vi.waitFor(() => {
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=84ed85ee:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/18]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/interact/tables.browser.test.ts > test_clamp_column_width
+TypeError: clampColumnWidth is not a function
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/tables.browser.test.ts/test_clamp_column_width.png
+
+ ❯ tests/unit/src/interact/tables.browser.test.ts:2200:10
+    2198|   const { clampColumnWidth } = await loadLogic();
+    2199|   // 実行・検証
+    2200|   expect(clampColumnWidth({ width: 50, min: 100, max: 300 })).toBe(100…
+       |          ^
+    2201|   expect(clampColumnWidth({ width: 200, min: 100, max: 300 })).toBe(20…
+    2202|   expect(clampColumnWidth({ width: 400, min: 100, max: 300 })).toBe(30…
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=84ed85ee:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/18]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/interact/tables.browser.test.ts > test_column_width_limit
+TypeError: columnWidthLimit is not a function
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/tables.browser.test.ts/test_column_width_limit.png
+
+ ❯ tests/unit/src/interact/tables.browser.test.ts:2212:10
+    2210|   const base = { visibleWidth: 300, widths: [100, 80, 60], pinned: [0,…
+    2211|   // 実行・検証: はみ出しているとき
+    2212|   expect(columnWidthLimit({ ...base, overflowing: true, column: 0 })).…
+       |          ^
+    2213|   expect(columnWidthLimit({ ...base, overflowing: true, column: 1 })).…
+    2214|   // 実行・検証: はみ出していないとき
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=84ed85ee:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/18]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/interact/tables.browser.test.ts > test_attach_tables_when_column_resized
+AssertionError: expected [ 'pin' ] to include 'resize'
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/tables.browser.test.ts/test_attach_tables_when_column_resized.png
+
+ ❯ Proxy.<anonymous> node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/index.uwTEEBsB-Cm3Wu9lp.js?v=84ed85ee:2565:15
+ ❯ Proxy.<anonymous> node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/index.uwTEEBsB-Cm3Wu9lp.js?v=84ed85ee:2435:14
+ ❯ tests/unit/src/interact/tables.browser.test.ts:2249:46
+    2247|     throw new Error("表が無い");
+    2248|   }
+    2249|   expect(table.dataset.features?.split(" ")).toContain("resize");
+       |                                              ^
+    2250|   await vi.waitFor(() => {
+    2251|     expect(pins[2]?.hasAttribute("hidden")).toBe(false);
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=84ed85ee:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/18]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/interact/tables.browser.test.ts > test_attach_tables_when_resized_column_not_folded
+TypeError: Cannot read properties of undefined (reading 'dispatchEvent')
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/tables.browser.test.ts/test_attach_tables_when_resized_column_not_folded.png
+
+ ❯ pressResizeKey tests/unit/src/interact/tables.browser.test.ts:2225:10
+    2223| /** つまみにキーを送信する */
+    2224| function pressResizeKey(handle: HTMLElement, key: string): void {
+    2225|   handle.dispatchEvent(
+       |          ^
+    2226|     new KeyboardEvent("keydown", { key, bubbles: true, cancelable: tru…
+    2227|   );
+ ❯ tests/unit/src/interact/tables.browser.test.ts:2309:5
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=84ed85ee:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/18]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/vscode/src/webview/app/app.browser.test.tsx > test_app_when_render_error
+TimeoutError: locator.click: Timeout 14778ms exceeded.
+Call log:
+[2m  - waiting for locator('[data-vitest="true"]').contentFrame().getByRole('button', { name: 'リロード' })[22m
+[2m    - locator resolved to <button type="button" data-slot="button" data-action="reload" class="inline-flex h-9 min-w-9 cursor-pointer touch-manipulation items-center justify-center gap-2 rounded-md border px-4 text-sm font-medium whitespace-nowrap focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring border-transparent bg-primary text-primary-foreground hover:bg-primary-hover">リロード</button>[22m
+[2m  - attempting click action[22m
+[2m    2 × waiting for element to be visible, enabled and stable[22m
+[2m      - element is visible, enabled and stable[22m
+[2m      - scrolling into view if needed[22m
+[2m      - done scrolling[22m
+[2m      - <vite-error-overlay></vite-error-overlay> intercepts pointer events[22m
+[2m    - retrying click action[22m
+[2m    - waiting 20ms[22m
+[2m    2 × waiting for element to be visible, enabled and stable[22m
+[2m      - element is visible, enabled and stable[22m
+[2m      - scrolling into view if needed[22m
+[2m      - done scrolling[22m
+[2m      - <vite-error-overlay></vite-error-overlay> intercepts pointer events[22m
+[2m    - retrying click action[22m
+[2m      - waiting 100ms[22m
+[2m    27 × waiting for element to be visible, enabled and stable[22m
+[2m       - element is visible, enabled and stable[22m
+[2m       - scrolling into view if needed[22m
+[2m       - done scrolling[22m
+[2m       - <vite-error-overlay></vite-error-overlay> intercepts pointer events[22m
+[2m     - retrying click action[22m
+[2m       - waiting 500ms[22m
+
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/app.browser.test.tsx/test_app_when_render_error.png
+
+ ❯ tests/unit/vscode/src/webview/app/app.browser.test.tsx:44:19
+     42|   // 実行
+     43|   render(<App boot={boot} api={api} />);
+     44|   await userEvent.click(screen.getByRole("button", { name: "リロード" }));
+       |                   ^
+     45|   // 検証
+     46|   const status = screen.getByRole("status");
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=84ed85ee:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/18]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/vscode/src/webview/shared/components/config-band.browser.test.tsx > test_config_band_when_clicked
+TimeoutError: locator.click: Timeout 14893ms exceeded.
+Call log:
+[2m  - waiting for locator('[data-vitest="true"]').contentFrame().getByRole('button', { name: '設定ファイルを開く' })[22m
+[2m    - locator resolved to <button type="button" data-slot="button" data-action="openConfig" class="inline-flex h-9 min-w-9 cursor-pointer touch-manipulation items-center justify-center gap-2 rounded-md border px-4 text-sm font-medium whitespace-nowrap focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring border-warning-border bg-background text-foreground hover:bg-secondary">設定ファイルを開く</button>[22m
+[2m  - attempting click action[22m
+[2m    2 × waiting for element to be visible, enabled and stable[22m
+[2m      - element is visible, enabled and stable[22m
+[2m      - scrolling into view if needed[22m
+[2m      - done scrolling[22m
+[2m      - <vite-error-overlay></vite-error-overlay> intercepts pointer events[22m
+[2m    - retrying click action[22m
+[2m    - waiting 20ms[22m
+[2m    2 × waiting for element to be visible, enabled and stable[22m
+[2m      - element is visible, enabled and stable[22m
+[2m      - scrolling into view if needed[22m
+[2m      - done scrolling[22m
+[2m      - <vite-error-overlay></vite-error-overlay> intercepts pointer events[22m
+[2m    - retrying click action[22m
+[2m      - waiting 100ms[22m
+[2m    28 × waiting for element to be visible, enabled and stable[22m
+[2m       - element is visible, enabled and stable[22m
+[2m       - scrolling into view if needed[22m
+[2m       - done scrolling[22m
+[2m       - <vite-error-overlay></vite-error-overlay> intercepts pointer events[22m
+[2m     - retrying click action[22m
+[2m       - waiting 500ms[22m
+
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/config-band.browser.test.tsx/test_config_band_when_clicked.png
+
+ ❯ tests/unit/vscode/src/webview/shared/components/config-band.browser.test.tsx:52:19
+     50|   );
+     51|   // 実行
+     52|   await userEvent.click(
+       |                   ^
+     53|     screen.getByRole("button", { name: "設定ファイルを開く" }),
+     54|   );
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=84ed85ee:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/18]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/vscode/src/webview/shared/components/preview-status.browser.test.tsx > test_preview_status_when_reload_clicked
+TimeoutError: locator.click: Timeout 14894ms exceeded.
+Call log:
+[2m  - waiting for locator('[data-vitest="true"]').contentFrame().getByRole('button', { name: 'リロード' })[22m
+[2m    - locator resolved to <button type="button" data-slot="button" data-action="reload" class="inline-flex h-9 min-w-9 cursor-pointer touch-manipulation items-center justify-center gap-2 rounded-md border px-4 text-sm font-medium whitespace-nowrap focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring border-transparent bg-primary text-primary-foreground hover:bg-primary-hover">リロード</button>[22m
+[2m  - attempting click action[22m
+[2m    2 × waiting for element to be visible, enabled and stable[22m
+[2m      - element is visible, enabled and stable[22m
+[2m      - scrolling into view if needed[22m
+[2m      - done scrolling[22m
+[2m      - <vite-error-overlay></vite-error-overlay> intercepts pointer events[22m
+[2m    - retrying click action[22m
+[2m    - waiting 20ms[22m
+[2m    2 × waiting for element to be visible, enabled and stable[22m
+[2m      - element is visible, enabled and stable[22m
+[2m      - scrolling into view if needed[22m
+[2m      - done scrolling[22m
+[2m      - <vite-error-overlay></vite-error-overlay> intercepts pointer events[22m
+[2m    - retrying click action[22m
+[2m      - waiting 100ms[22m
+[2m    24 × waiting for element to be visible, enabled and stable[22m
+[2m       - element is visible, enabled and stable[22m
+[2m       - scrolling into view if needed[22m
+[2m       - done scrolling[22m
+[2m       - <vite-error-overlay></vite-error-overlay> intercepts pointer events[22m
+[2m     - retrying click action[22m
+[2m       - waiting 500ms[22m
+
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/preview-status.browser.test.tsx/test_preview_status_when_reload_clicked.png
+
+ ❯ tests/unit/vscode/src/webview/shared/components/preview-status.browser.test.tsx:110:19
+    108|   );
+    109|   // 実行
+    110|   await userEvent.click(screen.getByRole("button", { name: "リロード" }));
+       |                   ^
+    111|   // 検証
+    112|   expect(onReload).toHaveBeenCalledTimes(1);
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=84ed85ee:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/18]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/vscode/src/webview/features/preview/panel/panel-screen.browser.test.tsx > test_panel_screen_when_reload_clicked
+TimeoutError: locator.click: Timeout 14889ms exceeded.
+Call log:
+[2m  - waiting for locator('[data-vitest="true"]').contentFrame().getByRole('button', { name: 'リロード' })[22m
+[2m    - locator resolved to <button type="button" data-slot="button" data-action="reload" class="inline-flex h-9 min-w-9 cursor-pointer touch-manipulation items-center justify-center gap-2 rounded-md border px-4 text-sm font-medium whitespace-nowrap focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring border-transparent bg-primary text-primary-foreground hover:bg-primary-hover">リロード</button>[22m
+[2m  - attempting click action[22m
+[2m    2 × waiting for element to be visible, enabled and stable[22m
+[2m      - element is visible, enabled and stable[22m
+[2m      - scrolling into view if needed[22m
+[2m      - done scrolling[22m
+[2m      - <vite-error-overlay></vite-error-overlay> intercepts pointer events[22m
+[2m    - retrying click action[22m
+[2m    - waiting 20ms[22m
+[2m    2 × waiting for element to be visible, enabled and stable[22m
+[2m      - element is visible, enabled and stable[22m
+[2m      - scrolling into view if needed[22m
+[2m      - done scrolling[22m
+[2m      - <vite-error-overlay></vite-error-overlay> intercepts pointer events[22m
+[2m    - retrying click action[22m
+[2m      - waiting 100ms[22m
+[2m    24 × waiting for element to be visible, enabled and stable[22m
+[2m       - element is visible, enabled and stable[22m
+[2m       - scrolling into view if needed[22m
+[2m       - done scrolling[22m
+[2m       - <vite-error-overlay></vite-error-overlay> intercepts pointer events[22m
+[2m     - retrying click action[22m
+[2m       - waiting 500ms[22m
+
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/panel-screen.browser.test.tsx/test_panel_screen_when_reload_clicked.png
+
+ ❯ tests/unit/vscode/src/webview/features/preview/panel/panel-screen.browser.test.tsx:239:19
+    237|   const button = await screen.findByRole("button", { name: "リロード" });
+    238|   // 実行
+    239|   await userEvent.click(button);
+       |                   ^
+    240|   // 検証
+    241|   expect(postedOf(api.posted, "reload")).toEqual([{ type: "reload" }]);
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=84ed85ee:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[12/18]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/vscode/src/webview/features/preview/panel/panel-screen.browser.test.tsx > test_panel_screen_when_config_error
+TimeoutError: locator.click: Timeout 14844ms exceeded.
+Call log:
+[2m  - waiting for locator('[data-vitest="true"]').contentFrame().getByRole('button', { name: '設定ファイルを開く' })[22m
+[2m    - locator resolved to <button type="button" data-slot="button" data-action="openConfig" class="inline-flex h-9 min-w-9 cursor-pointer touch-manipulation items-center justify-center gap-2 rounded-md border px-4 text-sm font-medium whitespace-nowrap focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring border-warning-border bg-background text-foreground hover:bg-secondary">設定ファイルを開く</button>[22m
+[2m  - attempting click action[22m
+[2m    2 × waiting for element to be visible, enabled and stable[22m
+[2m      - element is visible, enabled and stable[22m
+[2m      - scrolling into view if needed[22m
+[2m      - done scrolling[22m
+[2m      - <vite-error-overlay></vite-error-overlay> intercepts pointer events[22m
+[2m    - retrying click action[22m
+[2m    - waiting 20ms[22m
+[2m    2 × waiting for element to be visible, enabled and stable[22m
+[2m      - element is visible, enabled and stable[22m
+[2m      - scrolling into view if needed[22m
+[2m      - done scrolling[22m
+[2m      - <vite-error-overlay></vite-error-overlay> intercepts pointer events[22m
+[2m    - retrying click action[22m
+[2m      - waiting 100ms[22m
+[2m    27 × waiting for element to be visible, enabled and stable[22m
+[2m       - element is visible, enabled and stable[22m
+[2m       - scrolling into view if needed[22m
+[2m       - done scrolling[22m
+[2m       - <vite-error-overlay></vite-error-overlay> intercepts pointer events[22m
+[2m     - retrying click action[22m
+[2m       - waiting 500ms[22m
+
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/panel-screen.browser.test.tsx/test_panel_screen_when_config_error.png
+
+ ❯ tests/unit/vscode/src/webview/features/preview/panel/panel-screen.browser.test.tsx:287:19
+    285|       0,
+    286|   };
+    287|   await userEvent.click(
+       |                   ^
+    288|     screen.getByRole("button", { name: "設定ファイルを開く" }),
+    289|   );
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=84ed85ee:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[13/18]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/vscode/src/webview/features/preview/panel/hooks/use-link-clicks.browser.test.tsx > test_use_link_clicks
+TimeoutError: locator.click: Timeout 14857ms exceeded.
+Call log:
+[2m  - waiting for locator('[data-vitest="true"]').contentFrame().getByRole('link', { name: '外部' })[22m
+[2m    - locator resolved to <a href="https://example.com/">外部</a>[22m
+[2m  - attempting click action[22m
+[2m    2 × waiting for element to be visible, enabled and stable[22m
+[2m      - element is visible, enabled and stable[22m
+[2m      - scrolling into view if needed[22m
+[2m      - done scrolling[22m
+[2m      - <vite-error-overlay></vite-error-overlay> intercepts pointer events[22m
+[2m    - retrying click action[22m
+[2m    - waiting 20ms[22m
+[2m    2 × waiting for element to be visible, enabled and stable[22m
+[2m      - element is visible, enabled and stable[22m
+[2m      - scrolling into view if needed[22m
+[2m      - done scrolling[22m
+[2m      - <vite-error-overlay></vite-error-overlay> intercepts pointer events[22m
+[2m    - retrying click action[22m
+[2m      - waiting 100ms[22m
+[2m    27 × waiting for element to be visible, enabled and stable[22m
+[2m       - element is visible, enabled and stable[22m
+[2m       - scrolling into view if needed[22m
+[2m       - done scrolling[22m
+[2m       - <vite-error-overlay></vite-error-overlay> intercepts pointer events[22m
+[2m     - retrying click action[22m
+[2m       - waiting 500ms[22m
+
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/use-link-clicks.browser.test.tsx/test_use_link_clicks.png
+
+ ❯ tests/unit/vscode/src/webview/features/preview/panel/hooks/use-link-clicks.browser.test.tsx:45:23
+     43|     // 実行: 本物のクリック（isTrusted が true）で押す
+     44|     for (const link of holder.querySelectorAll("a")) {
+     45|       await userEvent.click(link);
+       |                       ^
+     46|     }
+     47|   } finally {
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=84ed85ee:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[14/18]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/vscode/src/webview/features/preview/panel/hooks/use-link-clicks.browser.test.tsx > test_use_link_clicks_when_side_toc
+TimeoutError: locator.click: Timeout 14895ms exceeded.
+Call log:
+[2m  - waiting for locator('[data-vitest="true"]').contentFrame().getByRole('link', { name: '注意' })[22m
+[2m    - locator resolved to <a href="#注意" data-heading-id="注意">注意</a>[22m
+[2m  - attempting click action[22m
+[2m    2 × waiting for element to be visible, enabled and stable[22m
+[2m      - element is visible, enabled and stable[22m
+[2m      - scrolling into view if needed[22m
+[2m      - done scrolling[22m
+[2m      - <vite-error-overlay></vite-error-overlay> intercepts pointer events[22m
+[2m    - retrying click action[22m
+[2m    - waiting 20ms[22m
+[2m    2 × waiting for element to be visible, enabled and stable[22m
+[2m      - element is visible, enabled and stable[22m
+[2m      - scrolling into view if needed[22m
+[2m      - done scrolling[22m
+[2m      - <vite-error-overlay></vite-error-overlay> intercepts pointer events[22m
+[2m    - retrying click action[22m
+[2m      - waiting 100ms[22m
+[2m    27 × waiting for element to be visible, enabled and stable[22m
+[2m       - element is visible, enabled and stable[22m
+[2m       - scrolling into view if needed[22m
+[2m       - done scrolling[22m
+[2m       - <vite-error-overlay></vite-error-overlay> intercepts pointer events[22m
+[2m     - retrying click action[22m
+[2m       - waiting 500ms[22m
+
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/use-link-clicks.browser.test.tsx/test_use_link_clicks_when_side_toc.png
+
+ ❯ tests/unit/vscode/src/webview/features/preview/panel/hooks/use-link-clicks.browser.test.tsx:74:21
+     72|   try {
+     73|     // 実行
+     74|     await userEvent.click(holder.querySelector("a") as HTMLElement);
+       |                     ^
+     75|   } finally {
+     76|     window.removeEventListener("click", reachedWindow);
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=84ed85ee:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[15/18]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/vscode/src/webview/features/preview/panel/hooks/use-link-clicks.browser.test.tsx > test_use_link_clicks_when_open_asset
+TimeoutError: locator.click: Timeout 14897ms exceeded.
+Call log:
+[2m  - waiting for locator('[data-vitest="true"]').contentFrame().getByRole('link', { name: '既定のアプリで開く' })[22m
+[2m    - locator resolved to <a href="#" data-action="openAsset" data-path="media/a.webm">既定のアプリで開く</a>[22m
+[2m  - attempting click action[22m
+[2m    2 × waiting for element to be visible, enabled and stable[22m
+[2m      - element is visible, enabled and stable[22m
+[2m      - scrolling into view if needed[22m
+[2m      - done scrolling[22m
+[2m      - <vite-error-overlay></vite-error-overlay> intercepts pointer events[22m
+[2m    - retrying click action[22m
+[2m    - waiting 20ms[22m
+[2m    2 × waiting for element to be visible, enabled and stable[22m
+[2m      - element is visible, enabled and stable[22m
+[2m      - scrolling into view if needed[22m
+[2m      - done scrolling[22m
+[2m      - <vite-error-overlay></vite-error-overlay> intercepts pointer events[22m
+[2m    - retrying click action[22m
+[2m      - waiting 100ms[22m
+[2m    28 × waiting for element to be visible, enabled and stable[22m
+[2m       - element is visible, enabled and stable[22m
+[2m       - scrolling into view if needed[22m
+[2m       - done scrolling[22m
+[2m       - <vite-error-overlay></vite-error-overlay> intercepts pointer events[22m
+[2m     - retrying click action[22m
+[2m       - waiting 500ms[22m
+
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/use-link-clicks.browser.test.tsx/test_use_link_clicks_when_open_asset.png
+
+ ❯ tests/unit/vscode/src/webview/features/preview/panel/hooks/use-link-clicks.browser.test.tsx:96:19
+     94|   renderHook(() => useLinkClicks(api));
+     95|   // 実行
+     96|   await userEvent.click(holder.querySelector("a") as HTMLElement);
+       |                   ^
+     97|   // 検証
+     98|   expect(api.posted).toEqual([{ type: "openAsset", path: "media/a.webm…
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=84ed85ee:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[16/18]⎯
+
+ FAIL  |unit| tests/unit/src/parts/table.test.ts > test_render_table_tools_when_resize
+AssertionError: expected '<span class="mdmark-th"><button class…' to match /…/span><span class="mdmark-col-resize" role="separator" aria-orientation="vertical" tabindex="0" aria-label="「名前」の列の幅"[^>]*><\
+
+- Expected:
+/<\/span><span class="mdmark-col-resize" role="separator" aria-orientation="vertical" tabindex="0" aria-label="「名前」の列の幅"[^>]*><\/span>$/
+
++ Received:
+"<span class=\"mdmark-th\"><button class=\"mdmark-sort\" type=\"button\">名前</button></span>"
+
+ ❯ tests/unit/src/parts/table.test.ts:1117:29
+    1115|   const withoutResize = renderTableTools({ ...options, features: ["sor…
+    1116|   // 検証
+    1117|   expect(withResize.header).toMatch(
+       |                             ^
+    1118|     /<\/span><span class="mdmark-col-resize" role="separator" aria-ori…
+    1119|   );
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[17/18]⎯
+
+ FAIL  |unit| tests/unit/src/parts/table.test.ts > test_render_table_when_resized
+AssertionError: expected '<thead>' to contain 'width:200px'
+
+Expected: "width:200px"
+Received: "<thead>"
+
+ ❯ tests/unit/src/parts/table.test.ts:1141:21
+    1139|     throw new Error("見出しのセルが無い");
+    1140|   }
+    1141|   expect(firstHead).toContain("width:200px");
+       |                     ^
+    1142|   expect(firstHead).toContain("min-width:200px");
+    1143|   expect(firstHead).toContain("--mdmark-column-min-width:200px");
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[18/18]⎯
+
+
+ Test Files  11 failed | 250 passed (261)
+      Tests  17 failed | 1849 passed (1866)
+   Start at  22:33:16
+   Duration  105.24s (worker 69%, tests 21%, import 8%, transform 1%)
+
+exit=1
+
+# 全件の実行で 15 秒の待ちを超えた次のファイルを単独で実行し直す（実装の無いことによらない失敗かを確かめる）
+$ npx vitest run --project "unit*" tests/unit/src/interact/diagrams.browser.test.ts tests/unit/src/interact/er-folds.browser.test.ts tests/unit/src/interact/lightbox.browser.test.ts tests/unit/vscode/src/webview
+
+ Test Files  21 passed (21)
+      Tests  96 passed (96)
+   Start at  22:35:18
+   Duration  8.75s (worker 55%, import 22%, tests 21%, transform 1%)
+
+exit=0
