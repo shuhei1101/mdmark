@@ -77,7 +77,9 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-08T23:30:06.762121+00:00'
   - process: 結合テスト作成
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-09T00:30:42.711693+00:00'
   - process: E2E テスト作成
     status: skipped
     reason: 利用者のシナリオを変えない。Storybook のストーリーは結合テストで確認する
