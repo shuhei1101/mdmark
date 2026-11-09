@@ -80,6 +80,7 @@ const initial = {
 }[scene] ?? {};
 
 const flowHost = document.createElement("div");
+flowHost.className = "map-host";
 slot("MAP-SLOT-FLOW").replaceWith(flowHost);
 // 開閉と中へ入った状態は場面ごとに sessionStorage へ保つ
 const map = createMap(flowHost, { id: scene, title: "全体の構成", flow: FLOW, data: DATA, sequence: SEQUENCE }, initial, shrink === "min" ? { minScale: MAP_MIN_SCALE() } : {});
