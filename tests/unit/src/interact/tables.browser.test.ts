@@ -2235,7 +2235,16 @@ test("test_attach_tables_when_column_resized", async () => {
     () => undefined,
   );
   const { attachTables } = await loadTables();
-  const { root } = createRoot(wideTable(10).join("\n"));
+  // 列名が短く、留めた 1 列目と 3 列目の幅の合計が見えている幅に収まる 10 列の表
+  const names = Array.from({ length: 10 }, (_, i) => `列${i + 1}`);
+  const { root } = createRoot(
+    [
+      `| ${names.join(" | ")} |`,
+      `| ${names.map(() => "---").join(" | ")} |`,
+      `| ${names.map((_, i) => `値${i + 1}`).join(" | ")} |`,
+      "",
+    ].join("\n"),
+  );
   setRootWidth(root, 320);
   detachers.push(attachTables(root));
   const table = root.querySelector<HTMLElement>(".mdmark-table");
