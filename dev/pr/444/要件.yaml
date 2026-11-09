@@ -1,0 +1,64 @@
+use_cases:
+  - kind: composite
+    scenario: dev/設計書/シナリオ/複合ユースケース/プラグインを入れて端末と文書のフォルダをセットアップする.yaml
+    impact: following
+    detail: 端末をセットアップした後に常駐サーバーが動いている場所を、起動の方法に合わせて確かめる
+    depends_on:
+      - dev/設計書/シナリオ/単一ユースケース/端末にmdmarkをセットアップする.yaml
+  - kind: single
+    scenario: dev/設計書/シナリオ/単一ユースケース/端末にmdmarkをセットアップする.yaml
+    impact: changed
+    detail: 常駐サーバーを systemd --user の unit で起動し、端末の起動時にも自動で起動する流れと、tmux から unit へ移す流れを加える
+    depends_on: []
+  - kind: single
+    scenario: dev/設計書/シナリオ/単一ユースケース/セッションの開始で常駐サーバーの状態を受け取る.yaml
+    impact: changed
+    detail: 常駐サーバーが unit と tmux のどちらで動いているかと、ログの見方・止め方を受け取る
+    depends_on:
+      - dev/設計書/シナリオ/単一ユースケース/端末にmdmarkをセットアップする.yaml
+  - kind: single
+    scenario: dev/設計書/シナリオ/単一ユースケース/文書のフォルダに設定を作る.yaml
+    impact: run_only
+    detail: 端末の設定のキーの一覧が増えるため、文書のフォルダの設定の確認が壊れないかを確かめる
+    depends_on: []
+  - kind: single
+    scenario: dev/設計書/シナリオ/単一ユースケース/MCPサーバーを起動・停止する.yaml
+    impact: run_only
+    detail: unit から起動した常駐サーバーでも、起動・停止とポートの確かめ方が変わらないかを確かめる
+    depends_on: []
+docs:
+  - page: docs/使用方法/ClaudeCodeで使用する/セットアップする.md
+    new: false
+    change: global-setup が常駐サーバーを systemd --user の unit か tmux で起動することと、起動の方法の選び方を書く
+    status: todo
+  - page: docs/使用方法/ClaudeCodeで使用する/MCPサーバーを起動する.md
+    new: false
+    change: unit で動かした常駐サーバーのログの見方（journalctl --user）と止め方を加える
+    status: todo
+  - page: docs/はじめに/コアコンセプト/ClaudeCodeに使用方法を提供する仕組み.md
+    new: false
+    change: 常駐サーバーが動く場所の記述を、unit と tmux の起動に合わせる
+    status: todo
+  - page: docs/リファレンス/設定.md
+    new: false
+    change: 端末の設定の serve に足す起動の方法・サービス名のキーを加える
+    status: todo
+  - page: docs/リファレンス/MCP.md
+    new: false
+    change: MCP の instructions が伝える常駐サーバーの動き場所の記述を合わせる
+    status: todo
+  - page: docs/リファレンス/用語集.md
+    new: false
+    change: 常駐サーバー・セットアップのスキルの用語の意味を、unit での起動に合わせる
+    status: todo
+  - page: dev/設計書/外部ライブラリ/systemd.yaml
+    new: true
+    change: systemctl --user（daemon-reload・enable --now・is-active・restart・stop）と journalctl --user の使い方と確かめた版を記録する
+    status: todo
+scope_out:
+  - item: macOS の launchd で常駐サーバーを起動する
+    reason: 要望は規約『ローカルサーバーの立て方』の systemd --user に合わせることで、systemd の無い端末は今の tmux で起動できる
+    plan: none
+  - item: Claude Code のセッションの開始で、止まった常駐サーバーを SessionStart のフックから起動し直す
+    reason: 要望に含まれない。#293 で mdmark を使わないセッションにも毎回入るため外し、今は待ち受けていないときだけ global-setup を案内する形にしている
+    plan: none
