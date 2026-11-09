@@ -1,0 +1,40 @@
+$ npm run test:unit
+
+> test:unit
+> vitest run --project 'unit*'
+
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-table-column-resize
+
+ ❯ |unit| tests/unit/src/plugin/setup/server.test.ts (7 tests | 1 failed) 20661ms
+   × test_start_server 2084ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit| tests/unit/src/plugin/setup/server.test.ts > test_start_server
+SetupError: mdmark serve が終わりました。/tmp/mdmark-cli-q91wU6/state/serve.log の末尾:
+ポート 57098 は別のプロセスが使っています。mdmark serve が既に起動しているなら、そのまま使えます。別のポートで動かすときは、~/.claude/settings.json の env と mdmark serve を起動する環境の両方に同じ MDMARK_PORT を設定してください。
+ポートが使用されているときは、~/.claude/settings.json の env の MDMARK_PORT を空いたポートに変え、セッションをもう一度開いて /mdmark:global-setup をもう一度呼んでください。
+ ❯ startServer src/plugin/setup/server.ts:190:13
+
+ ❯ tests/unit/src/plugin/setup/server.test.ts:130:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 260 passed (261)
+      Tests  1 failed | 1870 passed (1871)
+   Start at  23:16:05
+   Duration  102.23s (worker 62%, tests 24%, import 13%, transform 1%)
+
+exit=1
+
+# 全件の実行でポートの取り合い（別のプロセスが同じポートを使用）で失敗したファイルを単独で実行し直す。前の全件の実行では tests/unit/src/cli/export.test.ts が負荷による 30 秒の待ち超えで失敗し、単独では pass した
+$ npx vitest run --project "unit*" tests/unit/src/plugin/setup/server.test.ts tests/unit/src/cli/export.test.ts
+
+ Test Files  2 passed (2)
+      Tests  31 passed (31)
+   Start at  23:18:00
+   Duration  11.85s (tests 98%, transform 1%, import 1%)
+
+exit=0
