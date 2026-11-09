@@ -16,7 +16,7 @@ const DEFAULT_MERMAID_URL =
 const DEFAULT_HTML_SCRIPTS_URL =
   "https://cdn.jsdelivr.net/npm/@babel/standalone@8.1.1/+esm";
 
-/** このバージョンが知っている機能の既定（`comments`・`html-scripts` を除いて全てオン） */
+/** このバージョンが知っている機能の既定（`comments`・`html-scripts`・`frontmatter` を除いて全てオン） */
 const DEFAULT_FEATURES = {
   print: true,
   table: true,
@@ -62,6 +62,7 @@ const DEFAULT_FEATURES = {
   wide: true,
   csv: true,
   "card-grid": true,
+  frontmatter: false,
 };
 
 // 設定が無ければ既定を返却する（正常系）
