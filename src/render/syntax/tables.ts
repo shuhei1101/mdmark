@@ -102,8 +102,8 @@ export type TableSpec = {
   headRows: number;
   /** `row-header=` で `<th scope="row">` にする本文の各行の先頭の列の数（既定 0）。数でない値と、表の列の数以上の値は 0 にする */
   rowHeader: number;
-  /** `pin=` で留める最後の列の位置。`pin` の無い表・表に無い列名では入れない */
-  pin?: number | undefined;
+  /** `pin=` で留める列の位置（`,` で区切った列名のうち表にあるものを小さい順に並べる）。`pin` の無い表・表にある列名が 1 つも無いときは入れない */
+  pin?: number[] | undefined;
   /** `wide=` で広く取る列の位置。表に無い列名は入れない */
   wide: number[];
   /** `check=` で真偽値を ✓ と空欄で出す列の位置。表に無い列名は入れない */
@@ -341,7 +341,7 @@ export function readTableSpec(
   let totals: TableTotal[] = [];
   let headRows = 1;
   let rowHeader = 0;
-  let pin: number | undefined;
+  let pin: number[] | undefined;
   let wide: number[] = [];
   let check: number[] = [];
   const treeValues: Record<string, string> = {};
@@ -383,12 +383,10 @@ export function readTableSpec(
         warnings,
       });
     } else if (key === "pin") {
-      const column = headers.indexOf(value.trim());
-      if (column < 0) {
-        warnings.push(unknownColumn(value.trim()));
-      } else {
-        pin = column;
-      }
+      const columns = readColumns(value, headers, warnings).sort(
+        (a, b) => a - b,
+      );
+      pin = columns.length > 0 ? columns : undefined;
     } else if (key === "wide") {
       wide = readColumns(value, headers, warnings);
     } else if (key === "check") {

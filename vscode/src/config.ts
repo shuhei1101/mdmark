@@ -10,7 +10,7 @@ import {
 import type { MdmarkAlias } from "../../src/knowledge/aliases.ts";
 import type { PreviewSettings } from "./settings.ts";
 
-/** `mount` に指定する設定。設定ファイルから取り出した `features`・`libraries`・`html-scripts`・`side-toc`・`labels`・`mermaid`・`colorTheme`・`colorScheme` */
+/** `mount` に指定する設定。設定ファイルから取り出した `features`・`libraries`・`html-scripts`・`side-toc`・`table`・`labels`・`mermaid`・`colorTheme`・`colorScheme` */
 export type PreviewConfig = {
   /** 記載した値のまま（中の知らない名前と型の違う値は mdmark が無視する） */
   features?: Record<string, unknown>;
@@ -20,6 +20,8 @@ export type PreviewConfig = {
   "html-scripts"?: Record<string, unknown>;
   /** 記載した値のまま（`mode` の知らない値は mdmark が `hover` で描く） */
   "side-toc"?: Record<string, unknown>;
+  /** 記載した値のまま（`pin` の知らない値は mdmark が `each` で描く） */
+  table?: Record<string, unknown>;
   /** 記載した値のまま（中の知らないキーと、空文字・文字列でない値は mdmark が無視して既定の文言で描く） */
   labels?: Record<string, unknown>;
   /** 記載した値のまま。`url` は呼ぶ側が修正する（`theme` の知らない名前は mdmark が `mdmark` で描く） */
@@ -126,7 +128,7 @@ export function resolveConfigPath(options: {
   return isAbsolute(configPath) ? configPath : resolve(baseDir, configPath);
 }
 
-/** 重ねた設定から `mount` に指定するキー（マップの `features`・`libraries`・`html-scripts`・`side-toc`・`labels`・`mermaid` と文字列の `colorTheme`・`colorScheme`）だけを取り出す */
+/** 重ねた設定から `mount` に指定するキー（マップの `features`・`libraries`・`html-scripts`・`side-toc`・`table`・`labels`・`mermaid` と文字列の `colorTheme`・`colorScheme`）だけを取り出す */
 function pickPreviewConfig(config: Record<string, unknown>): PreviewConfig {
   const picked: PreviewConfig = {};
   if (isMap(config.features)) {
@@ -140,6 +142,9 @@ function pickPreviewConfig(config: Record<string, unknown>): PreviewConfig {
   }
   if (isMap(config["side-toc"])) {
     picked["side-toc"] = config["side-toc"];
+  }
+  if (isMap(config.table)) {
+    picked.table = config.table;
   }
   if (isMap(config.labels)) {
     picked.labels = config.labels;

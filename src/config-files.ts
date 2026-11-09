@@ -314,6 +314,10 @@ export function validateConfig(
     delete config["side-toc"];
   }
 
+  if (raw.table !== undefined && !isValidTable(raw.table, file, issues)) {
+    delete config.table;
+  }
+
   if (raw.aliases !== undefined) {
     if (Array.isArray(raw.aliases)) {
       const checked = validateAliasRows(raw.aliases, file);
@@ -438,6 +442,39 @@ function isValidSideToc(
         file,
         "side-toc.mode",
         "`side-toc.mode` は `hover` か `fixed` で記載してください。",
+      ),
+    );
+    return false;
+  }
+  return true;
+}
+
+/** 設定の `table` を検める。キーと値の構造でなければ、`pin` が `each` と `through` のどちらでもなければ、`schema` のずれを追加して `false` を返却する */
+function isValidTable(
+  value: unknown,
+  file: string,
+  issues: CheckIssue[],
+): boolean {
+  if (!isRecord(value)) {
+    issues.push(
+      schemaIssue(
+        file,
+        "table",
+        "`table` は `pin` を持つキーと値で記載してください。",
+      ),
+    );
+    return false;
+  }
+  if (
+    value.pin !== undefined &&
+    value.pin !== "each" &&
+    value.pin !== "through"
+  ) {
+    issues.push(
+      schemaIssue(
+        file,
+        "table.pin",
+        "`table.pin` は `each` か `through` で記載してください。",
       ),
     );
     return false;

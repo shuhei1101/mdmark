@@ -417,6 +417,7 @@ export async function prepareEmbeds(options: EmbedOptions): Promise<{
       ...(loaded.config["side-toc"]
         ? { "side-toc": loaded.config["side-toc"] }
         : {}),
+      ...(loaded.config.table ? { table: loaded.config.table } : {}),
       ...(colorTheme !== undefined ? { colorTheme } : {}),
       ...(loaded.config.colorScheme !== undefined
         ? { colorScheme: loaded.config.colorScheme }

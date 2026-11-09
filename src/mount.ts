@@ -146,6 +146,7 @@ function createDiffHtmlRenderer(options: {
           paramDefinitions: rendered.paramDefinitions,
           placement: config.tooltips.placement,
           diagramPlacement: config.tooltips.diagramPlacement,
+          pinMode: config.table.pin,
         }),
     };
   };
@@ -362,6 +363,7 @@ export function mount(el: HTMLElement, opts: MountOptions): MountHandle {
       paramDefinitions: rendered.paramDefinitions,
       placement: config.tooltips.placement,
       diagramPlacement: config.tooltips.diagramPlacement,
+      pinMode: config.table.pin,
       onColumnsChange,
     });
     // まとめていない名前のアイコンを読み込む。読み込みの完了は待たない
