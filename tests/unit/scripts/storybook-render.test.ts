@@ -23,6 +23,9 @@ const loadDocList = () => import("../../../src/parts/doc-list.ts");
 /** コメントの部品の処理を読み込む */
 const loadComment = () => import("../../../src/parts/comment.ts");
 
+/** バッジの処理を読み込む */
+const loadBadge = () => import("../../../src/parts/badge.ts");
+
 /** VS Code 拡張機能のプレビューの状態の表示の処理を読み込む */
 const loadMediaError = () =>
   import("../../../vscode/src/webview/shared/lib/media-error.ts");
@@ -209,6 +212,20 @@ test("test_render_part_when_comment_popover", async () => {
   // 検証
   expect(html).toBe(
     `<div class="mdmark"><style>.mdmark-comment-add,.mdmark-comment-popover{position:static;max-width:100%}</style>${renderCommentBubble({ quote: "テーマの変数", bodies: ["本文"] })}</div>`,
+  );
+});
+
+// `frameWidth` の幅の枠を、描く先の要素の幅で頭打ちにして包む（正常系）
+test("test_render_part_when_frame_width", async () => {
+  // 準備
+  const { renderPart } = await loadRender();
+  const { renderBadge } = await loadBadge();
+  const params = new URLSearchParams({ label: "v1", frameWidth: "390px" });
+  // 実行
+  const html = renderPart({ component: "badge", params });
+  // 検証
+  expect(html).toBe(
+    `<div class="mdmark"><div style="width: 390px; max-width: 100%">${renderBadge({ label: "v1" })}</div></div>`,
   );
 });
 

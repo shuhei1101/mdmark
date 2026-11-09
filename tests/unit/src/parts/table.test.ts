@@ -459,6 +459,30 @@ test("test_render_table_tools", async () => {
   expect(drawer).toContain("絞り込みを解除");
 });
 
+// ピン止めのボタンの名前をピン止めの動きで切り替える（正常系）
+test("test_render_table_tools_when_pin_mode", async () => {
+  // 準備
+  const { renderTableTools } = await loadTable();
+  const options = {
+    id: "t1",
+    column: 0,
+    label: "名前",
+    features: ["pin"],
+    pinVisible: true,
+    pinPressed: true,
+  };
+  // 実行
+  const each = renderTableTools(options);
+  const through = renderTableTools({ ...options, pinMode: "through" });
+  // 検証
+  const eachPin = findTag(each.header, "mdmark-pin");
+  const throughPin = findTag(through.header, "mdmark-pin");
+  expect(eachPin).toContain('aria-label="「名前」の列をピン止め"');
+  expect(throughPin).toContain('aria-label="「名前」の列までピン止め"');
+  expect(eachPin).toContain('aria-pressed="true"');
+  expect(throughPin).toContain('aria-pressed="true"');
+});
+
 // 日付のドロワーは開始日と終了日の欄を持つ（正常系）
 test("test_render_table_tools_when_date", async () => {
   // 準備
@@ -840,8 +864,8 @@ test("test_render_table_when_columns_specified", async () => {
       ],
     ],
     overflow: true,
-    pin: 1,
-    pinned: 2,
+    pin: [1],
+    pinned: [1],
     wide: [2],
   });
   const check = renderTable({
@@ -866,10 +890,18 @@ test("test_render_table_when_columns_specified", async () => {
     if (cells.length < 5) {
       continue;
     }
-    expect(cells[0]).toContain("is-pinned-col");
+    expect(cells[0]).not.toContain("is-pinned-col");
     expect(cells[1]).toContain("is-pinned-col");
     expect(cells[2]).not.toContain("is-pinned-col");
   }
+  const pins = findTags(pinAndWide, "mdmark-pin");
+  expect(pins.map((tag) => /aria-pressed="true"/.test(tag))).toEqual([
+    false,
+    true,
+    false,
+    false,
+    false,
+  ]);
   // 検証: 真偽値の列
   expect(findTag(check, 'class="mdmark-table')).toContain('data-check="2"');
   const body = innerHtml(check, "<tbody");

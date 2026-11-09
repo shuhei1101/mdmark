@@ -30,6 +30,8 @@
   <link rel="stylesheet" href="../../refs/263/assets/colors.css">
   <!-- 本文の行の地・wide=・check= の規則（#283 の追加分） -->
   <link rel="stylesheet" href="../../refs/283/assets/table.css">
+  <!-- 右端に留めた列の境の線（#438 の追加分） -->
+  <link rel="stylesheet" href="../../refs/438/assets/table.css">
   <!-- 多段の見出し・行見出し・セルの結合の規則（#275 の追加分） -->
   <link rel="stylesheet" href="../../refs/275/assets/table.css">
   <!-- 列の並べ替え・キーの階層・YAML の見本の規則（#303 の追加分） -->
@@ -55,6 +57,9 @@
   <!-- 既定のピン止め・-pin・pin=・wide=・check= の見本の定義と操作（#283。syntax.js の後に読み込む） -->
   <script src="../../refs/283/assets/table-samples.js" defer></script>
   <script src="../../refs/283/assets/table-pin.js" defer></script>
+  <!-- 押した列だけを留めるピン止めと、押した列までを留めるピン止めの見本の定義と操作（#438） -->
+  <script src="../../refs/438/assets/table-samples.js" defer></script>
+  <script src="../../refs/438/assets/table-pin-each.js" defer></script>
   <!-- 多段の見出し・セルの結合と再結合・行見出しの列までのピン止めの見本の定義と操作（#275。syntax.js の後に読み込む） -->
   <script src="../../refs/275/assets/table-samples.js" defer></script>
   <script src="../../refs/275/assets/table-merge.js" defer></script>
@@ -1224,6 +1229,69 @@
           <div data-mock-table283="unknown-column"></div>
         </article>
       </section>
+      <!-- #438 押した列だけを左端に留める。留めた列が離れていても重ならずに並び、境の線は左端に留まった最も右の列にだけ引く -->
+      <section aria-labelledby="state-438-each-left">
+        <h2 class="catalog-label" id="state-438-each-left">押した列だけを留める（table.pin: each。先頭の列と押した 3 列目だけが左端に並び、2 列目はスクロールで隠れる）</h2>
+        <article class="mdmark">
+          <!-- [data-mock-table438]: table-pin-each.js が table-samples.js の同じ名前の定義から表を描く -->
+          <div data-mock-table438="each-left"></div>
+        </article>
+      </section>
+
+      <!-- #438 留めた列より左を表示している間は、留めた列を右端に並べ、右端に留まった最も左の列の左に境の線を引く。右へスクロールして過ぎると左端に留まる -->
+      <section aria-labelledby="state-438-each-right">
+        <h2 class="catalog-label" id="state-438-each-right">押した列が右にあるときは右端に留める（8 列目と 9 列目を押して左端へ戻した）</h2>
+        <article class="mdmark">
+          <!-- [data-mock-table438]: table-pin-each.js が table-samples.js の同じ名前の定義から表を描く -->
+          <div data-mock-table438="each-right"></div>
+        </article>
+      </section>
+
+      <!-- #438 設定の table.pin を through にした表。押した列のボタンだけが押した状態になり、もう一度押すと全て解除する -->
+      <section aria-labelledby="state-438-through">
+        <h2 class="catalog-label" id="state-438-through">押した列までを留める（table.pin: through。押した 3 列目までの全ての列が左端に留まる）</h2>
+        <article class="mdmark">
+          <!-- [data-mock-table438]: table-pin-each.js が table-samples.js の同じ名前の定義から表を描く -->
+          <div data-mock-table438="through"></div>
+        </article>
+      </section>
+
+      <!-- #438 pin= の列だけを最初から留める -->
+      <section aria-labelledby="state-438-pin-one">
+        <h2 class="catalog-label" id="state-438-pin-one">pin=物理名（物理名の列だけを留め、No の列はスクロールで隠れる）</h2>
+        <article class="mdmark">
+          <!-- [data-mock-table438]: table-pin-each.js が table-samples.js の同じ名前の定義から表を描く -->
+          <div data-mock-table438="pin-one"></div>
+        </article>
+      </section>
+
+      <!-- #438 pin= に , で区切って複数の列を記載すると、全ての列を最初から留める -->
+      <section aria-labelledby="state-438-pin-many">
+        <h2 class="catalog-label" id="state-438-pin-many">pin=No,物理名（, で区切った 2 つの列を留める）</h2>
+        <article class="mdmark">
+          <!-- [data-mock-table438]: table-pin-each.js が table-samples.js の同じ名前の定義から表を描く -->
+          <div data-mock-table438="pin-many"></div>
+        </article>
+      </section>
+
+      <!-- #438 知らない列名だけを書き方の警告に出し、読めた列名は当てる -->
+      <section aria-labelledby="state-438-pin-unknown">
+        <h2 class="catalog-label" id="state-438-pin-unknown">pin=物理名,無い列（読めない列名だけを警告し、物理名の列は留める。異常シナリオ）</h2>
+        <article class="mdmark">
+          <!-- [data-mock-table438]: table-pin-each.js が table-samples.js の同じ名前の定義から表を描く -->
+          <div data-mock-table438="pin-unknown"></div>
+        </article>
+      </section>
+
+      <!-- #438 結合した見出しのセルは、またぐ列が全て留まっているときだけ留める。1 列だけを留めたときは 2 行目から下だけが留まる -->
+      <section aria-labelledby="state-438-merged">
+        <h2 class="catalog-label" id="state-438-merged">結合した見出しの下の列だけを留める（header-rows=2 wide=備考 で既定の列を押した。1 行目の「設定」は留めない）</h2>
+        <article class="mdmark">
+          <!-- [data-mock-table438]: table-pin-each.js が table-samples.js の同じ名前の定義から表を描く -->
+          <div data-mock-table438="merged"></div>
+        </article>
+      </section>
+
       <!-- #275 多段の見出しと行見出し: 上期・下期は << で 2 列にまたがり、地域は ^^ で縦に結合する。並べ替え・ピン止めのボタンは列ごとに分かれた最下段の見出しに配置する -->
       <section aria-labelledby="state-275-merge">
         <h2 class="catalog-label" id="state-275-merge">多段の見出しと行見出し（header-rows=2 row-header=1。^^ で縦、&lt;&lt; で横に結合し、ボタンは最下段の見出しに配置する）</h2>

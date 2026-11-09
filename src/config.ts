@@ -12,6 +12,8 @@ export type MdmarkConfig = {
   assets?: { root?: string };
   /** 右側の目次の設定。`mode` は出し方（`hover` / `fixed`）。知らない値も受けて `resolveConfig` が `hover` にするため、型は `string` */
   "side-toc"?: { mode?: string };
+  /** 表の設定。`pin` はピン止めの動き（`each` / `through`）。知らない値も受けて `resolveConfig` が `each` にするため、型は `string` */
+  table?: { pin?: string };
   /** 配色のテーマの名前（`COLOR_THEMES` のどれか）。知らない値も受けて `resolveConfig` が `DEFAULT_COLOR_THEME` にするため、型は `string` */
   colorTheme?: string;
   /** 配色の明暗（`COLOR_SCHEMES` のどれか）。知らない値も受けて `resolveConfig` が `DEFAULT_COLOR_SCHEME` にするため、型は `string` */
@@ -42,6 +44,9 @@ export type TooltipPlacement = "top" | "bottom";
 
 /** 右側の目次の出し方。`hover` は右端の線を出し、指すかフォーカスで目次を重ねて出す。`fixed` は目次を出すボタンでサイドバーを開閉する */
 export type SideTocMode = "hover" | "fixed";
+
+/** 表のピン止めの動き。`each` は押した列だけを留め、留めた列より左を表示している間は右端に、過ぎた後は左端に留める。`through` は押した列までを左端に留める */
+export type TablePinMode = "each" | "through";
 
 /** mdmark に入れた配色のテーマの名前 */
 export type ColorTheme =
@@ -83,6 +88,8 @@ export type ResolvedConfig = {
   syntax: { url: string };
   /** 設定の `side-toc.mode` が `fixed` のときだけ `fixed`、それ以外は `hover` */
   sideToc: { mode: SideTocMode };
+  /** 設定の `table.pin` が `through` のときだけ `through`、それ以外は `each` */
+  table: { pin: TablePinMode };
   /** 設定の `colorTheme` が `COLOR_THEMES` にあればその値、それ以外は `DEFAULT_COLOR_THEME` */
   colorTheme: ColorTheme;
   /** 設定の `colorScheme` が `COLOR_SCHEMES` にあればその値、それ以外は `DEFAULT_COLOR_SCHEME` */
@@ -272,6 +279,9 @@ export function resolveConfig(options: {
   // 右側の目次の出し方は、fixed だけを受け、他の値は hover にする
   const mode: SideTocMode =
     config?.["side-toc"]?.mode === "fixed" ? "fixed" : "hover";
+  // 表のピン止めの動きは、through だけを受け、他の値は each にする
+  const pin: TablePinMode =
+    config?.table?.pin === "through" ? "through" : "each";
   // テーマは、COLOR_THEMES にある名前だけを受け、他の値は既定にする
   const colorTheme =
     COLOR_THEMES.find((name) => name === config?.colorTheme) ??
@@ -296,6 +306,7 @@ export function resolveConfig(options: {
     htmlScripts,
     mermaid: resolveMermaid(config?.mermaid),
     sideToc: { mode },
+    table: { pin },
     colorTheme,
     colorScheme,
     labels,

@@ -320,6 +320,19 @@
         }
       }
     },
+    "table": {
+      "title": "表の設定",
+      "description": "表のマーカーと、マーカーで囲まない表に付ける機能の動き。",
+      "type": "object",
+      "properties": {
+        "pin": {
+          "title": "ピン止めの動き",
+          "description": "`each` は押した列だけを留め、複数の列を留められる。留めた列は、左の列が見えている間は右端に、左の列を越えてスクロールすると左端に留まる。`through` は押した列までの列を左端に留める。`mount` は他の値を無視して `each` にし、CLI は他の値を設定ファイルの誤りにする。",
+          "enum": ["each", "through"],
+          "default": "each"
+        }
+      }
+    },
     "colorScheme": {
       "title": "明暗",
       "description": "描いた文書の明暗。`light` は明るい配色、`dark` はダークの配色に決め、`auto` は今の決め方（祖先の class・OS の設定）に任せる。文書の先頭の `<!-- page: scheme=… -->` のマーカーがこの値に勝つ。`mount` は知らない値を無視して `auto` で描き、CLI は知らない値を `mdmark check` のずれ（`unknown_color_scheme`）にする。",

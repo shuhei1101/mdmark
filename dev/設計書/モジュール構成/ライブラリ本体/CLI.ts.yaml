@@ -325,7 +325,7 @@ functions:
     container: src/config-files.ts
     usecase: 共通
     summary: 読み込んだ値を `schemas/mdmark.config.schema.json` と同じ構造で検め、合わないところを `schema` のずれで返却する
-    description: 検めるのは、最上位がオブジェクトであること・`version` が `VERSION_PATTERN` に合う文字列・`features` の値が真偽値・`libraries` の値が文字列でキーがマーカーの名前・`index`・`theme`・`colorTheme`・`colorScheme` が文字列（`colorTheme` の知らない名前と `colorScheme` の知らない値はここでは拒まず、設定に残す）・`extensions` が文字列の配列・`build` があれば `include`（1 つ以上の文字列）と `out`（`.html` の文字列）を持ち `exclude`・`glossary` が文字列の配列で `entry` が文字列であること・`check` があれば `ignore` がマーカーの名前（`MARK_NAME_PATTERN`）の文字列の配列であること・`tooltips` があれば `placement` と `diagramPlacement` がどちらも（あれば）`top` か `bottom` であること・`labels` があればオブジェクトで `paramCopy` があれば空でない文字列であること（合わなければ `labels` を設定から落とす。知らないキーは拒まない）・`side-toc` があればオブジェクトで `mode` が `hover` か `fixed` であること・`syntax` があればオブジェクトで `url` が文字列であること・`html-scripts` があればオブジェクトで `url` が文字列であること（合わなければ `html-scripts` を設定から落とす）・`mermaid` があればオブジェクトで、`url`・`theme` が（あれば）文字列、`themeVariables` が（あれば）オブジェクトであること（合わなければ `mermaid` を設定から落とす。`theme` の知らない名前はここでは拒まず、設定に残す）・`assets` があればオブジェクトで `root` が文字列であること。`aliases` があれば配列であることを確認し、行は `validateAliasRows` で検める（ずれをそのまま `schema` のずれに加え、返った行を `config.aliases` に入れる）。知らない最上位のキーは拒まない。`aliases` の行のほかの構造の検査は手書きで、ライブラリを追加しない（索引の `normalizeIndex` と同じやり方）。検める構造は `schemas/mdmark.config.schema.json` と統一する
+    description: 検めるのは、最上位がオブジェクトであること・`version` が `VERSION_PATTERN` に合う文字列・`features` の値が真偽値・`libraries` の値が文字列でキーがマーカーの名前・`index`・`theme`・`colorTheme`・`colorScheme` が文字列（`colorTheme` の知らない名前と `colorScheme` の知らない値はここでは拒まず、設定に残す）・`extensions` が文字列の配列・`build` があれば `include`（1 つ以上の文字列）と `out`（`.html` の文字列）を持ち `exclude`・`glossary` が文字列の配列で `entry` が文字列であること・`check` があれば `ignore` がマーカーの名前（`MARK_NAME_PATTERN`）の文字列の配列であること・`tooltips` があれば `placement` と `diagramPlacement` がどちらも（あれば）`top` か `bottom` であること・`labels` があればオブジェクトで `paramCopy` があれば空でない文字列であること（合わなければ `labels` を設定から落とす。知らないキーは拒まない）・`side-toc` があればオブジェクトで `mode` が `hover` か `fixed` であること・`table` があればオブジェクトで `pin` が（あれば）`each` か `through` であること（合わなければ `table` を設定から落とす）・`syntax` があればオブジェクトで `url` が文字列であること・`html-scripts` があればオブジェクトで `url` が文字列であること（合わなければ `html-scripts` を設定から落とす）・`mermaid` があればオブジェクトで、`url`・`theme` が（あれば）文字列、`themeVariables` が（あれば）オブジェクトであること（合わなければ `mermaid` を設定から落とす。`theme` の知らない名前はここでは拒まず、設定に残す）・`assets` があればオブジェクトで `root` が文字列であること。`aliases` があれば配列であることを確認し、行は `validateAliasRows` で検める（ずれをそのまま `schema` のずれに加え、返った行を `config.aliases` に入れる）。知らない最上位のキーは拒まない。`aliases` の行のほかの構造の検査は手書きで、ライブラリを追加しない（索引の `normalizeIndex` と同じやり方）。検める構造は `schemas/mdmark.config.schema.json` と統一する
     kind: 関数
     scope: public
     args:
@@ -443,6 +443,12 @@ functions:
         condition: '`tooltips.diagramPlacement` が `left` の値と、`top` の値'
         mock: なし
         expected: '`left` は `where` が `tooltips.diagramPlacement` の `schema` のずれが 1 件で、内容に `top`・`bottom` があり、`config.tooltips` が無い。`top` は `issues` が空で `config.tooltips.diagramPlacement` が `top`'
+      - name: test_validate_config_when_table_pin_invalid
+        case: 正常
+        summary: '`each`・`through` 以外の `table.pin` を schema のずれにし、設定から落とす'
+        condition: '`table.pin` が `left` の値と、`through` の値'
+        mock: なし
+        expected: '`left` は `where` が `table.pin` の `schema` のずれが 1 件で `config.table` が無い。`through` は `issues` が空で `config.table.pin` が `through`'
     status: planned
     introduced:
       pr: 32
@@ -1123,7 +1129,7 @@ functions:
     container: src/cli/export.ts
     usecase: 共通
     summary: 文書の画像を埋め、マーカーのある外部ライブラリと設定の拡張と色分けのモジュールがまとめられることを確認して読み込み先を集め、`html-scripts` がオンの文書の範囲の `ts`・`js` を `compileHtmlScripts` で変えて `embeds.htmlScripts` に入れ、`theme` を読み込み、索引があれば参照の表を作って、書き出しの中身と警告を返却する。設定に `assets.root` があれば設定ファイルのフォルダから解決し、文書ごとに `copyMedia`（書き出しの中で共有する `copied` を指定する）の後に `inlineImages` を呼ぶ。`bundle` では `inlineImages` に共有の表を指定し、埋めた画像を `payload.assets` に入れる。設定の `features` で `images`・`media` をオフにした文書も同じく扱う
-    description: '`export` と `build` に共通の処理。埋める設定には、設定の `features`・`tooltips`・`side-toc`・`colorTheme`・`colorScheme`・`labels` をあるときだけ写す。`colorTheme` が `COLOR_THEMES` に無い名前のときもコピーしたうえで、警告 `{設定ファイル}: 不明なテーマ名 {名前} です。既定の dev-swiss で描画します。` を 1 件出す。外部ライブラリ・拡張・色分けのモジュールは 1 つずつ `bundleModule` でまとめてみて、まとめられたものだけの読み込み先（URL はそのまま、パスは設定ファイルのあるフォルダを基準にした絶対パス）を `embeds` に入れる。同じ URL のモジュールは 1 回だけまとめる。外部ライブラリと拡張で、まとめたコードに `hasDynamicImport` が該当するものは `embeds` に入れたうえで、警告 `{設定ファイル}: 拡張 \`{パス}\` はまとめた後も動的 import() が残り、blob: と動的 import を許さない環境では読み込めません。読み込む先をリテラルの文字列にしてください。`（外部ライブラリは `外部ライブラリ \`{マーカーの名前}\``）を 1 件出す。文書の色分けの言語を `usedSyntaxLanguages` で取得し、1 つ以上あれば設定の `syntax.url`（無ければ `DEFAULT_SYNTAX_URL`）の `core.min.js` と言語ごとの `languages/{モジュール名}.min.js` を確認して `embeds.syntax` に入れる（まとめたコードは esbuild の既定で頭の著作権表示を残す）。本体をまとめられなければ言語も確認せず `embeds.syntax` を持たない。言語のモジュールだけまとめられなければ、その言語を `embeds.syntax.languages` に入れず、警告を 1 件出す（その言語のコードブロックは色分けせずに描く）。埋める設定には `syntax` を写さない（開いたときに外へ要求しない）。文書に mermaid のコードブロックがあるかを `usesMermaid` で確認して、あれば設定の `mermaid.url`（無ければ `DEFAULT_MERMAID_URL`。パスは設定ファイルのあるフォルダを基準にした絶対パス）をまとめてみて `embeds.mermaid` に入れる。まとめられなければ `embeds.mermaid` を持たず、警告 `{設定ファイル}: mermaid \`{URL}\` をまとめられません（{理由}）。\`mermaid.url\` を修正してください。` を 1 件出す（mermaid のコードブロックは開いたときに通知ブロックとコードブロックになる）。埋める設定には `mermaid` の `theme`・`themeVariables` だけをコピーし、`url` を写さない。設定に `aliases` があれば `loadAliases` の `aliases` を `payload.aliases` に入れ、`issues` は 1 件ずつずれを 1 行にした（`formatCheckIssue`）警告にする（終了コードは変えない）。警告は `{ファイル}: {内容}` の文字列で、読み込めない画像・絶対 URL の画像・まとめられないモジュールと拡張・まとめられない色分けのライブラリ（`{設定ファイル}: 色分けのライブラリ \`{URL}\` をまとめられません（{理由}）。\`syntax.url\` を修正してください。`）・読み込めない `theme`・読み込めない索引の文書を出す'
+    description: '`export` と `build` に共通の処理。埋める設定には、設定の `features`・`tooltips`・`side-toc`・`table`・`colorTheme`・`colorScheme`・`labels` をあるときだけ写す。`colorTheme` が `COLOR_THEMES` に無い名前のときもコピーしたうえで、警告 `{設定ファイル}: 不明なテーマ名 {名前} です。既定の dev-swiss で描画します。` を 1 件出す。外部ライブラリ・拡張・色分けのモジュールは 1 つずつ `bundleModule` でまとめてみて、まとめられたものだけの読み込み先（URL はそのまま、パスは設定ファイルのあるフォルダを基準にした絶対パス）を `embeds` に入れる。同じ URL のモジュールは 1 回だけまとめる。外部ライブラリと拡張で、まとめたコードに `hasDynamicImport` が該当するものは `embeds` に入れたうえで、警告 `{設定ファイル}: 拡張 \`{パス}\` はまとめた後も動的 import() が残り、blob: と動的 import を許さない環境では読み込めません。読み込む先をリテラルの文字列にしてください。`（外部ライブラリは `外部ライブラリ \`{マーカーの名前}\``）を 1 件出す。文書の色分けの言語を `usedSyntaxLanguages` で取得し、1 つ以上あれば設定の `syntax.url`（無ければ `DEFAULT_SYNTAX_URL`）の `core.min.js` と言語ごとの `languages/{モジュール名}.min.js` を確認して `embeds.syntax` に入れる（まとめたコードは esbuild の既定で頭の著作権表示を残す）。本体をまとめられなければ言語も確認せず `embeds.syntax` を持たない。言語のモジュールだけまとめられなければ、その言語を `embeds.syntax.languages` に入れず、警告を 1 件出す（その言語のコードブロックは色分けせずに描く）。埋める設定には `syntax` を写さない（開いたときに外へ要求しない）。文書に mermaid のコードブロックがあるかを `usesMermaid` で確認して、あれば設定の `mermaid.url`（無ければ `DEFAULT_MERMAID_URL`。パスは設定ファイルのあるフォルダを基準にした絶対パス）をまとめてみて `embeds.mermaid` に入れる。まとめられなければ `embeds.mermaid` を持たず、警告 `{設定ファイル}: mermaid \`{URL}\` をまとめられません（{理由}）。\`mermaid.url\` を修正してください。` を 1 件出す（mermaid のコードブロックは開いたときに通知ブロックとコードブロックになる）。埋める設定には `mermaid` の `theme`・`themeVariables` だけをコピーし、`url` を写さない。設定に `aliases` があれば `loadAliases` の `aliases` を `payload.aliases` に入れ、`issues` は 1 件ずつずれを 1 行にした（`formatCheckIssue`）警告にする（終了コードは変えない）。警告は `{ファイル}: {内容}` の文字列で、読み込めない画像・絶対 URL の画像・まとめられないモジュールと拡張・まとめられない色分けのライブラリ（`{設定ファイル}: 色分けのライブラリ \`{URL}\` をまとめられません（{理由}）。\`syntax.url\` を修正してください。`）・読み込めない `theme`・読み込めない索引の文書を出す'
     kind: 関数
     scope: internal
     is_async: true
@@ -1239,6 +1245,12 @@ functions:
         condition: '`tooltips: { placement: bottom, diagramPlacement: top }` を持つ設定'
         mock: なし
         expected: '`payload.config.tooltips` が `{ placement: "bottom", diagramPlacement: "top" }`'
+      - name: test_prepare_embeds_when_table_pin
+        case: 正常
+        summary: 設定の `table` を埋める設定に写す
+        condition: '`table.pin: through` を持つ設定と、`table` を持たない設定'
+        mock: 一時フォルダ
+        expected: '前者の `payload.config.table` が `{ pin: "through" }`、後者は `payload.config` が `table` を持たない'
     callees:
       - '#functions[usedLibraryMarks]'
       - '#functions[usedParts]'

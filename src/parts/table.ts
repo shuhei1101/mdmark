@@ -1,4 +1,5 @@
 import { CodeXml } from "lucide";
+import type { TablePinMode } from "../config.ts";
 import {
   bottomHeadCells,
   compareCells,
@@ -78,8 +79,10 @@ export type TableOptions = {
   sort?: { column: number; direction: "ascending" | "descending" };
   /** 表が幅からはみ出しているか。`true` のときだけピン止めのボタンを出す */
   overflow?: boolean;
-  /** 左端に留める列の数 */
-  pinned?: number;
+  /** 留める列の位置（小さい順。省くと `rowHeader` の全ての列） */
+  pinned?: number[];
+  /** ピン止めの動き（既定 `each`）。ボタンの名前と押した状態にする列が変わる */
+  pinMode?: TablePinMode;
   /** 開いた絞り込みのドロワーの列の位置 */
   openFilter?: number;
   /** 適用している絞り込み */
@@ -120,8 +123,8 @@ export type TableOptions = {
   highlight?: Array<{ column: number; color: ColorName }>;
   /** 本文の行ごとの色（色を付けない行は `null`） */
   rowColors?: Array<ColorName | null>;
-  /** `pin=` で留める最後の列の位置（`data-pin`） */
-  pin?: number | undefined;
+  /** `pin=` で記載した列の位置（小さい順。`data-pin` に半角の空白で区切って写す） */
+  pin?: number[] | undefined;
   /** 折り返さずに広く取る列の位置 */
   wide?: number[];
   /** 真偽値を ✓ と空欄で出す列の位置（`data-check`） */
@@ -206,8 +209,10 @@ export type TableToolsOptions = {
   value?: FilterValue | undefined;
   /** ピン止めのボタンを出すか（既定 `false`。`mount` が幅を測って決める） */
   pinVisible?: boolean;
-  /** この列までを留めているか */
+  /** ピン止めのボタンを押した状態にするか */
   pinPressed?: boolean;
+  /** ピン止めの動き（既定 `each`）。ボタンの名前が変わる */
+  pinMode?: TablePinMode;
 };
 
 /** タグを除き、文字参照を文字に戻して、画面に出る文字を取り出す */
@@ -259,6 +264,7 @@ export function renderTableTools(options: TableToolsOptions): {
     active = false,
     pinVisible = false,
     pinPressed = false,
+    pinMode = "each",
   } = options;
   const open = options.open ?? false;
   const escapedLabel = escapeHtml(label);
@@ -271,7 +277,7 @@ export function renderTableTools(options: TableToolsOptions): {
     ? `<button class="mdmark-filter${active ? " is-active" : ""}" type="button" aria-label="「${escapedLabel}」で絞り込む" aria-expanded="${open}" aria-controls="${escapeHtml(controls)}"><span class="mdmark-visually-hidden">${active ? "（絞り込み中）" : ""}</span></button>`
     : "";
   const pinButton = features.includes("pin")
-    ? `<button class="mdmark-pin" type="button" aria-label="「${escapedLabel}」までを左端に留める" aria-pressed="${pinPressed}"${pinVisible ? "" : " hidden"}></button>`
+    ? `<button class="mdmark-pin" type="button" aria-label="「${escapedLabel}」${pinMode === "each" ? "の列をピン止め" : "の列までピン止め"}" aria-pressed="${pinPressed}"${pinVisible ? "" : " hidden"}></button>`
     : "";
   const tools =
     filterButton || pinButton
@@ -759,9 +765,19 @@ function renderTableBody(options: TableOptions, id: string): string {
   const rows = options.rows ?? [];
   const filters = options.filters ?? [];
   const values = options.filterValues ?? [];
-  const pinned = options.overflow
-    ? (options.pinned ?? options.rowHeader ?? 0)
-    : 0;
+  const pinMode = options.pinMode ?? "each";
+  const pinned = new Set(
+    options.overflow
+      ? (options.pinned ??
+          Array.from({ length: options.rowHeader ?? 0 }, (_, index) => index))
+      : [],
+  );
+  // 境の線は、左端から続けて留めた列の最も右の列に引く（描いた直後のスクロールの位置での見え方）
+  let pinnedEdge = -1;
+  while (pinned.has(pinnedEdge + 1)) {
+    pinnedEdge += 1;
+  }
+  const pinnedLast = Math.max(-1, ...pinned);
   const rowHeader = options.rowHeader ?? 0;
   const hidden = new Set(
     options.features.includes("columns")
@@ -782,8 +798,8 @@ function renderTableBody(options: TableOptions, id: string): string {
   /** セルの class 属性（ピン止めした列・畳んだ最終列・強調する列・広く取る列・真偽値の列・`extra`）と色 */
   const cellClass = (column: number, extra: string[] = []): string => {
     const names = [
-      ...(column < pinned
-        ? column === pinned - 1
+      ...(pinned.has(column)
+        ? column === pinnedEdge
           ? ["is-pinned-col", "is-pinned-edge"]
           : ["is-pinned-col"]
         : []),
@@ -814,7 +830,8 @@ function renderTableBody(options: TableOptions, id: string): string {
       open: options.openFilter === index,
       value,
       pinVisible: options.overflow === true,
-      pinPressed: pinned > 0 && index === pinned - 1,
+      pinPressed: pinMode === "each" ? pinned.has(index) : index === pinnedLast,
+      pinMode,
     });
     drawers.push(tools.drawer);
     const sorted =
@@ -964,7 +981,10 @@ function renderTableBody(options: TableOptions, id: string): string {
     groupLabels: options.headRows
       ? headGroupLabelsOf(options.headRows)
       : undefined,
-    pinned: options.pin !== undefined ? options.pin + 1 : 0,
+    pinned:
+      options.pinMode === "through" && options.pin !== undefined
+        ? Math.max(...options.pin) + 1
+        : 0,
     dragging: options.dragging,
   });
   const panel = options.copyFallback
@@ -1243,7 +1263,7 @@ export function renderTable(options: TableOptions): string {
     : "";
   const pinAttribute =
     options.pin !== undefined && options.features.includes("pin")
-      ? ` data-pin="${options.pin}"`
+      ? ` data-pin="${options.pin.join(" ")}"`
       : "";
   const check = options.check ?? [];
   const checkAttribute = check.length ? ` data-check="${check.join(" ")}"` : "";

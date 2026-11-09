@@ -1,0 +1,411 @@
+$ npm run test:unit
+
+> test:unit
+> vitest run --project 'unit*'
+
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-table-pin-each-column
+
+ ❯ |unit| tests/unit/src/config.test.ts (15 tests | 2 failed) 541ms
+   × test_resolve_config 533ms
+   × test_resolve_config_when_table_pin_given 1ms
+ ❯ |unit| tests/unit/src/parts/table.test.ts (36 tests | 2 failed) 2058ms
+   × test_render_table_tools_when_pin_mode 6ms
+   × test_render_table_when_columns_specified 1ms
+ ❯ |unit| tests/unit/vscode/src/config.test.ts (21 tests | 1 failed) 3597ms
+   × test_load_config_when_table 6ms
+ ❯ |unit| tests/unit/src/render/syntax/tables.test.ts (30 tests | 2 failed) 73ms
+   × test_read_table_spec_when_columns 5ms
+   × test_read_table_spec_when_column_keys_invalid 1ms
+ ❯ |unit-browser (chromium)| tests/unit/src/interact/tables.browser.test.ts (61 tests | 9 failed) 4290ms
+   × test_attach_tables_when_pinned 222ms
+   × test_attach_tables_when_pin_specified 1109ms
+   × test_attach_tables_when_row_header_pinned 237ms
+   × test_attach_tables_when_pinned_at_end 248ms
+   × test_attach_tables_when_pinned_through 109ms
+   × test_attach_tables_when_pinned_under_merged_header 102ms
+   × test_initial_pinned_columns 99ms
+   × test_toggle_pinned_column 137ms
+   × test_pin_offsets 97ms
+ ❯ |unit| tests/unit/src/cli/config.test.ts (24 tests | 1 failed) 15956ms
+   × test_validate_config_when_table_pin_invalid 5ms
+ ❯ |unit| tests/unit/src/cli/export.test.ts (24 tests | 1 failed) 19168ms
+   × test_prepare_embeds_when_table_pin 9ms
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 18 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/interact/tables.browser.test.ts > test_attach_tables_when_pinned
+AssertionError: expected [ true, true, true, false ] to deeply equal [ true, false, true, false ]
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/tables.browser.test.ts/test_attach_tables_when_pinned.png
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[2m  [[22m
+[2m    true,[22m
+[32m-   false,[39m
+[31m+   true,[39m
+[2m    true,[22m
+[2m    false,[22m
+[2m  ][22m
+
+ ❯ tests/unit/src/interact/tables.browser.test.ts:596:43
+    594|   // 実行・検証: 3 列目のボタンで 3 列目だけを加えて留める
+    595|   widePins[2].click();
+    596|   expect(stickyColumns(wide).slice(0, 4)).toEqual([true, false, true, …
+       |                                           ^
+    597|   const firstCell = wide.querySelector<HTMLTableRowElement>("tbody tr")
+    598|     ?.cells[0];
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=057251c5:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/18]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/interact/tables.browser.test.ts > test_attach_tables_when_pin_specified
+AssertionError: expected [ true, true, false ] to deeply equal [ false, true, false ]
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/tables.browser.test.ts/test_attach_tables_when_pin_specified.png
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[2m  [[22m
+[32m-   false,[39m
+[31m+   true,[39m
+[2m    true,[22m
+[2m    false,[22m
+[2m  ][22m
+
+ ❯ tests/unit/src/interact/tables.browser.test.ts:631:47
+    629|   // 検証: data-pin の列だけが留まる
+    630|   await vi.waitFor(() => {
+    631|     expect(stickyColumns(pinned).slice(0, 3)).toEqual([false, true, fa…
+       |                                               ^
+    632|   });
+    633|   expect(pins[0].getAttribute("aria-pressed")).toBe("false");
+ ❯ checkCallback node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/index.uwTEEBsB-Cm3Wu9lp.js?v=057251c5:6076:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/18]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/interact/tables.browser.test.ts > test_attach_tables_when_row_header_pinned
+AssertionError: expected 'false' to be 'true' // Object.is equality
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/tables.browser.test.ts/test_attach_tables_when_row_header_pinned.png
+
+Expected: [32m"[7mtru[27me"[39m
+Received: [31m"[7mfals[27me"[39m
+
+ ❯ tests/unit/src/interact/tables.browser.test.ts:1643:49
+    1641|     expect(pins[1]?.getAttribute("aria-pressed")).toBe("true");
+    1642|   });
+    1643|   expect(pins[0]?.getAttribute("aria-pressed")).toBe("true");
+       |                                                 ^
+    1644|   const cells = root.querySelector<HTMLTableRowElement>("tbody tr")?.c…
+    1645|   if (!cells) {
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=057251c5:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/18]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/interact/tables.browser.test.ts > test_attach_tables_when_pinned_at_end
+AssertionError: expected '' to be '193px' // Object.is equality
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/tables.browser.test.ts/test_attach_tables_when_pinned_at_end.png
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- 193px[39m
+
+ ❯ tests/unit/src/interact/tables.browser.test.ts:1681:32
+    1679|     throw new Error("本文の行が無い");
+    1680|   }
+    1681|   expect(cells[7].style.right).toBe(`${cells[8].offsetWidth}px`);
+       |                                ^
+    1682|   expect(cells[8].style.right).toBe("0px");
+    1683|   // 表を包む要素の見えている範囲の右端（縦のスクロールバーを除く）
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=057251c5:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/18]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/interact/tables.browser.test.ts > test_attach_tables_when_pinned_through
+AssertionError: expected '「とても長い列の名前3」までを左端に留める' to be '「とても長い列の名前3」の列までピン止め' // Object.is equality
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/tables.browser.test.ts/test_attach_tables_when_pinned_through.png
+
+Expected: [32m"「とても長い列の名前3」[7mの列までピン止め[27m"[39m
+Received: [31m"「とても長い列の名前3」[7mまでを左端に留める[27m"[39m
+
+ ❯ tests/unit/src/interact/tables.browser.test.ts:1723:46
+    1721|     ...Array.from({ length: 7 }, () => "false"),
+    1722|   ]);
+    1723|   expect(pins[2].getAttribute("aria-label")).toBe(
+       |                                              ^
+    1724|     "「とても長い列の名前3」の列までピン止め",
+    1725|   );
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=057251c5:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/18]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/interact/tables.browser.test.ts > test_attach_tables_when_pinned_under_merged_header
+AssertionError: expected '270px' to be '134px' // Object.is equality
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/tables.browser.test.ts/test_attach_tables_when_pinned_under_merged_header.png
+
+Expected: [32m"[7m134[27mpx"[39m
+Received: [31m"[7m270[27mpx"[39m
+
+ ❯ tests/unit/src/interact/tables.browser.test.ts:1772:31
+    1770|   expect(getComputedStyle(defaultHead).position).toBe("sticky");
+    1771|   expect(getComputedStyle(cells[2]).position).toBe("sticky");
+    1772|   expect(cells[2].style.left).toBe(`${cells[0].offsetWidth}px`);
+       |                               ^
+    1773|   const groupHead = [
+    1774|     ...table.querySelectorAll<HTMLTableCellElement>("thead tr:first-ch…
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=057251c5:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/18]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/interact/tables.browser.test.ts > test_initial_pinned_columns
+TypeError: initialPinnedColumns is not a function
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/tables.browser.test.ts/test_initial_pinned_columns.png
+
+ ❯ tests/unit/src/interact/tables.browser.test.ts:1785:5
+    1783|   // 実行・検証
+    1784|   expect(
+    1785|     initialPinnedColumns({ pin: [0, 2], rowHeadCount: 0, mode: "each" …
+       |     ^
+    1786|   ).toEqual([0, 2]);
+    1787|   expect(
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=057251c5:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/18]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/interact/tables.browser.test.ts > test_toggle_pinned_column
+TypeError: togglePinnedColumn is not a function
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/tables.browser.test.ts/test_toggle_pinned_column.png
+
+ ❯ tests/unit/src/interact/tables.browser.test.ts:1804:10
+    1802|   const pinned = [0];
+    1803|   // 実行・検証
+    1804|   expect(togglePinnedColumn({ pinned, column: 2, mode: "each" })).toEq…
+       |          ^
+    1805|     0, 2,
+    1806|   ]);
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=057251c5:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/18]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/interact/tables.browser.test.ts > test_pin_offsets
+TypeError: pinOffsets is not a function
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/tables.browser.test.ts/test_pin_offsets.png
+
+ ❯ tests/unit/src/interact/tables.browser.test.ts:1824:19
+    1822|   const { pinOffsets } = await loadLogic();
+    1823|   // 実行
+    1824|   const offsets = pinOffsets({
+       |                   ^
+    1825|     widths: [100, 80, 60, 40, 30],
+    1826|     pinned: [0, 2, 4],
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=057251c5:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/18]⎯
+
+ FAIL  |unit| tests/unit/src/config.test.ts > test_resolve_config
+AssertionError: expected { …(10) } to deeply equal { …(11) }
+
+- Expected
++ Received
+
+@@ -63,13 +63,10 @@
+      "mode": "hover",
+    },
+    "syntax": {
+      "url": "https://cdn.jsdelivr.net/npm/@highlightjs/cdn-assets@11.12.0/es/",
+    },
+-   "table": {
+-     "pin": "each",
+-   },
+    "tooltips": {
+      "diagramPlacement": "bottom",
+      "placement": "top",
+    },
+  }
+
+ ❯ tests/unit/src/config.test.ts:74:20
+     72|   const resolved = resolveConfig({});
+     73|   // 検証
+     74|   expect(resolved).toEqual({
+       |                    ^
+     75|     features: DEFAULT_FEATURES,
+     76|     libraries: {},
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/18]⎯
+
+ FAIL  |unit| tests/unit/src/config.test.ts > test_resolve_config_when_table_pin_given
+TypeError: Cannot read properties of undefined (reading 'pin')
+ ❯ tests/unit/src/config.test.ts:235:32
+    233|   const resolvedEmpty = resolveConfig({ config: {} });
+    234|   // 検証
+    235|   expect(resolvedThrough.table.pin).toBe("through");
+       |                                ^
+    236|   expect(resolvedUnknown.table.pin).toBe("each");
+    237|   expect(resolvedNotString.table.pin).toBe("each");
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/18]⎯
+
+ FAIL  |unit| tests/unit/src/cli/config.test.ts > test_validate_config_when_table_pin_invalid
+AssertionError: expected [] to have a length of 1 but got +0
+
+- Expected
++ Received
+
+- 1
++ 0
+
+ ❯ tests/unit/src/cli/config.test.ts:347:26
+    345|   );
+    346|   // 検証
+    347|   expect(invalid.issues).toHaveLength(1);
+       |                          ^
+    348|   expect(invalid.issues[0]).toMatchObject({
+    349|     where: "table.pin",
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[12/18]⎯
+
+ FAIL  |unit| tests/unit/src/cli/export.test.ts > test_prepare_embeds_when_table_pin
+AssertionError: expected undefined to deeply equal { pin: 'through' }
+
+- Expected:
+{
+  "pin": "through",
+}
+
++ Received:
+undefined
+
+ ❯ tests/unit/src/cli/export.test.ts:321:42
+    319|   const withoutTable = await prepare({ features: { print: true } });
+    320|   // 検証
+    321|   expect(withTable.payload.config.table).toEqual({ pin: "through" });
+       |                                          ^
+    322|   expect(withoutTable.payload.config).not.toHaveProperty("table");
+    323| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[13/18]⎯
+
+ FAIL  |unit| tests/unit/src/parts/table.test.ts > test_render_table_tools_when_pin_mode
+AssertionError: expected '<button class="mdmark-pin" type="butt…' to contain 'aria-label="「名前」の列をピン止め"'
+
+Expected: "aria-label="「名前」の列をピン止め""
+Received: "<button class="mdmark-pin" type="button" aria-label="「名前」までを左端に留める" aria-pressed="true">"
+
+ ❯ tests/unit/src/parts/table.test.ts:480:19
+    478|   const eachPin = findTag(each.header, "mdmark-pin");
+    479|   const throughPin = findTag(through.header, "mdmark-pin");
+    480|   expect(eachPin).toContain('aria-label="「名前」の列をピン止め"');
+       |                   ^
+    481|   expect(throughPin).toContain('aria-label="「名前」の列までピン止め"');
+    482|   expect(eachPin).toContain('aria-pressed="true"');
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[14/18]⎯
+
+ FAIL  |unit| tests/unit/src/parts/table.test.ts > test_render_table_when_columns_specified
+AssertionError: expected '<td class="is-pinned-col is-pinned-ed…' not to contain 'is-pinned-col'
+
+Expected: "is-pinned-col"
+Received: "<td class="is-pinned-col is-pinned-edge" data-label="ID">"
+
+ ❯ tests/unit/src/parts/table.test.ts:893:26
+    891|       continue;
+    892|     }
+    893|     expect(cells[0]).not.toContain("is-pinned-col");
+       |                          ^
+    894|     expect(cells[1]).toContain("is-pinned-col");
+    895|     expect(cells[2]).not.toContain("is-pinned-col");
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[15/18]⎯
+
+ FAIL  |unit| tests/unit/vscode/src/config.test.ts > test_load_config_when_table
+AssertionError: expected {} to deeply equal { table: { pin: 'through' } }
+
+- Expected
++ Received
+
+- {
+-   "table": {
+-     "pin": "through",
+-   },
+- }
++ {}
+
+ ❯ tests/unit/vscode/src/config.test.ts:473:22
+    471|   const text = await load(loadOptions(files, { cwd: "/w/b" }));
+    472|   // 検証
+    473|   expect(map.config).toEqual({ table: { pin: "through" } });
+       |                      ^
+    474|   expect(text.config).not.toHaveProperty("table");
+    475|   expect(text.problem?.settingKey).toBe("table");
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[16/18]⎯
+
+ FAIL  |unit| tests/unit/src/render/syntax/tables.test.ts > test_read_table_spec_when_columns
+AssertionError: expected 1 to deeply equal [ 1 ]
+
+- Expected:
+[
+  1,
+]
+
++ Received:
+1
+
+ ❯ tests/unit/src/render/syntax/tables.test.ts:172:20
+    170|   const many = readTableSpec(manyPins, headers, 10);
+    171|   // 検証
+    172|   expect(spec.pin).toEqual([1]);
+       |                    ^
+    173|   expect(spec.wide).toEqual([2]);
+    174|   expect(spec.check).toEqual([3, 4]);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[17/18]⎯
+
+ FAIL  |unit| tests/unit/src/render/syntax/tables.test.ts > test_read_table_spec_when_column_keys_invalid
+AssertionError: expected undefined to deeply equal [ +0 ]
+
+- Expected:
+[
+  0,
+]
+
++ Received:
+undefined
+
+ ❯ tests/unit/src/render/syntax/tables.test.ts:209:21
+    207|   expect(second.warnings[0]?.message).toContain("`+pin`");
+    208|   // 検証: 読めない列名だけを警告にし、読めた列名は適用する
+    209|   expect(third.pin).toEqual([0]);
+       |                     ^
+    210|   expect(third.warnings.map((warning) => warning.label)).toEqual(["無い列…
+    211| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[18/18]⎯
+
+
+ Test Files  7 failed | 253 passed (260)
+      Tests  18 failed | 1840 passed (1858)
+   Start at  09:37:16
+   Duration  106.23s (worker 64%, tests 21%, import 13%, transform 2%)
+
+exit=1

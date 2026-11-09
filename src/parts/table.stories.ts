@@ -119,7 +119,7 @@ export const DefaultOverflow: Story = {
       '["文書","行数","表","図","Chrome","Edge","Firefox","Safari","iOS Safari","Android Chrome"]',
     rows: '[["導入の手順","128","8","0","18","17","23","16","15","16"]]',
     overflow: true,
-    pinned: 1,
+    pinned: "[0]",
   },
 };
 
@@ -132,7 +132,22 @@ export const Pinned: Story = {
       '["文書","行数","表","図","Chrome","Edge","Firefox","Safari","iOS Safari","Android Chrome"]',
     rows: '[["導入の手順","128","8","0","18","17","23","16","15","16"]]',
     overflow: true,
-    pinned: 2,
+    pinned: "[0,1]",
+    pinMode: "through",
+  },
+};
+
+export const PinnedEach: Story = {
+  name: "PinnedEach",
+  parameters: { server: { id: "table" } },
+  args: {
+    features: '["pin"]',
+    columns:
+      '["文書","行数","表","図","Chrome","Edge","Firefox","Safari","iOS Safari","Android Chrome"]',
+    rows: '[["導入の手順","128","8","0","18","17","23","16","15","16"]]',
+    overflow: true,
+    pinned: "[0,2]",
+    pinMode: "each",
   },
 };
 
@@ -156,8 +171,8 @@ export const PinAndWide: Story = {
     columns: '["ID","担当","概要","状態","期限"]',
     rows: '[["#245","表","はみ出す表で先頭の列を既定でピン止めし、pin= と wide= と check= を使用できるようにする","未着手","2026-11-21"],["#249","コード","tree を除く全てのコードブロックでインデントによる畳む・開くと縦線を付ける","未着手","2026-11-28"]]',
     overflow: true,
-    pin: 1,
-    pinned: 2,
+    pin: "[1]",
+    pinned: "[1]",
     wide: "[2]",
   },
 };
@@ -648,7 +663,7 @@ export const RowHeaderPinned: Story = {
     rowHeader: 2,
     mergeColumns: "[0]",
     overflow: true,
-    pinned: 2,
+    pinned: "[0,1]",
   },
 };
 
@@ -723,10 +738,28 @@ export const ReorderGroups: Story = {
     headRows:
       '[[{"html":"名前","column":0,"rowspan":2},{"html":"設定","column":1,"colspan":3},{"html":"備考","column":4,"rowspan":2}],[{"html":"型","column":1},{"html":"既定","column":2},{"html":"必須","column":3}]]',
     rows: '[["features.table","bool","true","✓",""]]',
-    pin: 0,
+    pin: "[0]",
     overflow: true,
-    pinned: 1,
+    pinned: "[0]",
+    pinMode: "through",
     openColumns: true,
+  },
+};
+
+export const PinnedUnderMergedHeader: Story = {
+  name: "PinnedUnderMergedHeader",
+  parameters: { server: { id: "table" } },
+  args: {
+    kind: "data",
+    features: '["sort","pin","filter"]',
+    columns: '["名前","型","既定","必須","備考"]',
+    headRows:
+      '[[{"html":"名前","column":0,"rowspan":2},{"html":"設定","column":1,"colspan":3},{"html":"備考","column":4,"rowspan":2}],[{"html":"型","column":1},{"html":"既定","column":2},{"html":"必須","column":3}]]',
+    rows: '[["table.pin","string","each","false","each は押した列だけを留め、through は押した列までを留める。既定は each で、mount は他の値を無視して each にする"]]',
+    wide: "[4]",
+    overflow: true,
+    pinned: "[0,2]",
+    pinMode: "each",
   },
 };
 

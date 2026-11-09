@@ -1,0 +1,35 @@
+$ npm run test:unit
+
+> test:unit
+> vitest run --project 'unit*'
+
+
+ RUN  v5.0.4 .
+
+ ❯ |unit| tests/unit/scripts/storybook-render.test.ts (15 tests | 1 failed) 8626ms
+   × test_render_part_when_frame_width 8ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit| tests/unit/scripts/storybook-render.test.ts > test_render_part_when_frame_width
+AssertionError: expected '<div class="mdmark"><div style="width…' to be '<div class="mdmark"><div style="width…' // Object.is equality
+
+Expected: "<div class="mdmark"><div style="width: 390px; max-width: 100%"><span class="mdmark-badge">v1</span></div></div>"
+Received: "<div class="mdmark"><div style="width: 390px"><span class="mdmark-badge">v1</span></div></div>"
+
+ ❯ tests/unit/scripts/storybook-render.test.ts:227:16
+    225|   const html = renderPart({ component: "badge", params });
+    226|   // 検証
+    227|   expect(html).toBe(
+       |                ^
+    228|     `<div class="mdmark"><div style="width: 390px; max-width: 100%">${…
+    229|   );
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 259 passed (260)
+      Tests  1 failed | 1838 passed (1839)
+   Start at  08:22:46
+   Duration  89.12s (worker 68%, tests 19%, import 11%, transform 1%)
+

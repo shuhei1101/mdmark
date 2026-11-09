@@ -57,7 +57,7 @@ entries:
     reason: 説明文の単語を対応表の置き換え先にしただけで、キーと型は変えないので、古い設定もそのまま新しい Schema に合う
   - version: next
     schema: mdmark.config.schema.json
-    sha256: 687a9ff60ebc8e1e413749fa68ec7d2c268870e32b695155a3d1401a40b6b290
+    sha256: c3d63db537fda3f67384fc323f2d009a56f9eb1cd0dfffa0f4c8f42b5bcd94d9
     reason: features に省いてよい frontmatter を足しただけで、古い設定もそのまま新しい Schema に合う
   - version: next
     schema: mdmark.index.schema.json
@@ -71,3 +71,7 @@ entries:
     schema: mdmark.templates.schema.json
     sha256: c852b5d8b2c17a46a1655bdec008679555e74a6adcc94f7b5c3eb9820e7782a3
     reason: 説明文の単語を対応表の置き換え先にしただけで、キーと型は変えないので、古い CSS のテンプレートの索引もそのまま新しい Schema に合う
+  - version: next
+    schema: mdmark.config.schema.json
+    sha256: da6fe20d43de7f2f385d0071c714ec7bf8a8f38e8448096ef56d0d0d8a942c52
+    reason: 省いてよい table と、その中の省いてよい pin を足しただけで、古い設定もそのまま新しい Schema に合う
