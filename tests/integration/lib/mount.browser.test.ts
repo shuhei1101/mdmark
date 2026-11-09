@@ -1636,9 +1636,13 @@ async function checkStickyRows(mode: "timeline" | "script"): Promise<void> {
     );
     expect(columnTexts(el, 1).slice(0, 3)).toEqual(["60", "59", "58"]);
     expect(headCells[1]?.getAttribute("aria-sort")).toBe("descending");
-    // 検証: 文書の中の見出し行は 1 つで、Tab で見出し行の各ボタンへ 1 回ずつ移る
+    // 検証: 文書の中の見出し行は 1 つで、Tab で見出し行の各ボタンと列の幅のつまみへ 1 回ずつ移る
     expect(el.querySelectorAll("thead")).toHaveLength(1);
-    const buttons = [...table.querySelectorAll<HTMLElement>("thead button")];
+    const buttons = [
+      ...table.querySelectorAll<HTMLElement>(
+        "thead :is(button, .mdmark-col-resize)",
+      ),
+    ];
     table.focus({ preventScroll: true });
     for (const button of buttons) {
       await userEvent.tab();
