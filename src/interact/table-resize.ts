@@ -287,6 +287,10 @@ export const attachColumnResize = (
       event.preventDefault();
       resetWidth(column);
     };
+    // 上限はほかの列の幅・ピン止め・表の幅で変わるので、フォーカスしたときにも書き換える
+    const onFocus = (): void => {
+      updateValues(column);
+    };
     const onKeyDown = (event: KeyboardEvent): void => {
       if (event.key === "ArrowRight" || event.key === "ArrowLeft") {
         event.preventDefault();
@@ -306,6 +310,7 @@ export const attachColumnResize = (
     handle.addEventListener("pointercancel", onPointerCancel);
     handle.addEventListener("dblclick", onDoubleClick);
     handle.addEventListener("keydown", onKeyDown);
+    handle.addEventListener("focus", onFocus);
     updateValues(column);
     return [
       (): void => {
@@ -315,6 +320,7 @@ export const attachColumnResize = (
         handle.removeEventListener("pointercancel", onPointerCancel);
         handle.removeEventListener("dblclick", onDoubleClick);
         handle.removeEventListener("keydown", onKeyDown);
+        handle.removeEventListener("focus", onFocus);
         handle.classList.remove("is-dragging");
         for (const name of VALUE_ATTRIBUTES) {
           handle.removeAttribute(name);
