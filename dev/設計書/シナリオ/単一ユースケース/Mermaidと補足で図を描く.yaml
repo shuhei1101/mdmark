@@ -19,7 +19,7 @@ scenarios:
       - name: 図を描くページ
         description: バージョンを固定した URL で `dist/index.js` と `dist/index.css` を読み込み、文書を描く HTML
       - name: 構成図の map を持つ Markdown
-        description: map の範囲を 1 つ持つ文書。範囲の中に flowchart の mermaid のブロックと補足を持つ
+        description: map の範囲を 1 つ持つ文書。印に `title=全体の構成` を持ち、範囲の中に flowchart の mermaid のブロックと補足を持つ
         notes: 入れ子 2 レイヤーのグループ（外のグループの向きが LR、中のグループの向きが TB）・グループをまたぐ線 3 本以上・クラス `:::llm`・`:::script`・`:::data`・日本語 30 文字のラベルのノード 1 つ・用語集の用語を含むラベル 1 つ。補足の `notes` で 1 つのノードに説明を持つ。動くと `window.__mdmarkScriptRan` を `true` にする `<script>` を文書に 1 つ持つ
       - name: Mock
         description: jsDelivr を、ビルドした `dist/` を同じパスで返却する手元の応答に差し替える。mermaid のライブラリへの要求を数える
@@ -35,6 +35,7 @@ scenarios:
         P-->>U: 文書を表示
     expected:
       - map の範囲の場所に図の枠と SVG の図があり、mermaid のブロックの文字と補足の文字が出ていない
+      - 図の枠のタイトルが印の `title` の「全体の構成」
       - 中のグループが外のグループの中に描かれ、外のグループの中は左から右、中のグループの中は上から下に並ぶ
       - ノードとグループが重ならず、線が端点とその祖先以外のノード・グループを横切らない
       - 30 文字のラベルがノードの幅の上限で折り返され、文字がノードの中に収まっている
@@ -158,3 +159,25 @@ scenarios:
       - mermaid のブロックが無い範囲に、mermaid のブロックが無い旨の書き方の警告がある
       - どちらの範囲でも、補足の文字が出ていない
     test: test_normal_when_unsupported_kind
+  - name: 正常シナリオ（印の引数で図を閉じておく）
+    setup:
+      - name: 図を描くページ
+        description: 正常シナリオと同じ
+      - name: 閉じた map を持つ Markdown
+        description: 正常シナリオの構成図の印に `closed` を持つ文書
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 読者
+        participant P as 利用側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を指定して描かせる
+        M-->>P: 閉じた折りたたみに入れた map の図
+        P-->>U: 文書を表示
+        U->>P: 折りたたみの見出しを押す
+        P-->>U: 図を開く
+    expected:
+      - 開いたとき、図が閉じた折りたたみに入り、見出しに印の `title` が出る
+      - 折りたたみを開くと、正常シナリオと同じ配置の図が出る
+    test: test_normal_when_closed

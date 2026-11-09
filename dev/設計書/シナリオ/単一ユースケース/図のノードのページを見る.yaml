@@ -37,7 +37,7 @@ scenarios:
   - name: 正常シナリオ（リンク先の図へ移る）
     setup:
       - name: 図を描いたページ
-        description: map の範囲を 2 つ持つ文書を描いたページ。1 つ目の図のノードが、補足で 2 つ目の図をリンク先に持つ
+        description: map の範囲を 2 つ持つ文書を描いたページ。1 つ目の図の補足の `links` で、1 つのノードのリンク先に 2 つ目の図の印の `title` を記載する
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-

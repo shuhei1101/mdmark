@@ -147,3 +147,6 @@ scope_out:
   - item: VS Code 拡張機能のプレビューでの map の確認
     reason: プレビューは配布物の mount で描くため、ライブラリ本体の変更でそのまま描ける。拡張機能のコードは変更しない
     plan: none
+  - item: map の印の引数 `mode`（boxes・layers・list の見せ方の切り替え）
+    reason: list は A-35 の No 17（一覧の表示）でこの PR の範囲の外。層は補足の layout で指定し、入れ子のグループは既定の描き方になるため、切り替える先が無い
+    plan: to_file

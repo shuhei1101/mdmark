@@ -69,3 +69,22 @@ scenarios:
       - 無い相手のメッセージでは、構成図のノードが強調されず、帯にメッセージの文が出る
       - ほかのメッセージは正常シナリオと同じく動く
     test: test_normal_when_missing_participant
+  - name: 正常シナリオ（印の引数で自動で再生する）
+    setup:
+      - name: 図を描いたページ
+        description: 正常シナリオのシーケンス図の印に `play=autoplay` を持つ文書を描いたページ。シーケンス図は文書の 2 画面目より下にある
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 読者
+        participant S as シーケンス図
+        participant D as 構成図
+        U->>S: 文書をスクロールしてシーケンス図を画面に入れる
+        S->>D: 構成図の上で再生を始める
+        D-->>U: メッセージ 1 から順に動かす
+    expected:
+      - シーケンス図が画面に入るまで、再生が始まらない
+      - シーケンス図が画面に入ると、押さずに再生が始まり、再生の帯が出る
+      - '`play` を持たない正常シナリオの図は、押すまで再生しない'
+    test: test_normal_when_autoplay

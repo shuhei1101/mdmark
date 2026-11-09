@@ -62,13 +62,12 @@ scenarios:
       - Esc で一覧が閉じ、開くと閉じる前と同じ配置に戻る
       - 開閉のボタンがスクリーンリーダー向けの名前と、開いているか閉じているかの状態を持つ
     test: test_normal_when_collapsed
-  - name: 正常シナリオ（印の引数で最初に入る・閉じる）
+  - name: 正常シナリオ（印の引数で最初に入る）
     setup:
       - name: 図を描くページ
         description: 『Mermaidと補足で図を描く』の正常シナリオと同じ
       - name: 最初の見せ方を持つ map の Markdown
-        description: 正常シナリオの構成図の印に、最初に入っているグループと、最初に閉じているグループを指定した文書
-        notes: 引数の名前はインターフェース定義で決める
+        description: 正常シナリオの構成図の印に `focus=` で外のグループの ID を指定した文書
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
@@ -77,9 +76,8 @@ scenarios:
         participant P as 利用側のページ
         participant D as map の図
         P->>D: 設定と Markdown を指定して描かせる
-        D-->>U: 指定のグループに入り、指定のグループを閉じた図
+        D-->>U: 指定のグループに入った図
     expected:
-      - 開いたときに、指定のグループの中に入った図とパンくずが出る
-      - 指定のグループが閉じたノードで描かれる
-      - パンくずで全体へ戻ると、閉じたグループは閉じたまま
-    test: test_normal_when_initial_view
+      - 開いたときに、指定のグループの中に入った図と「全体 / 外のグループ」のパンくずが出る
+      - パンくずで全体へ戻ると、正常シナリオの全体の図と同じ配置になる
+    test: test_normal_when_initial_focus
