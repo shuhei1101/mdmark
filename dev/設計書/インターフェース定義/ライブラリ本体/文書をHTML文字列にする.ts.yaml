@@ -191,7 +191,7 @@ flows:
         M-->>C: HTML 文字列
     expected:
       - '`<div class="mdmark-syntax-warning" role="note">` が 4 つあり、それぞれにタイトル `記載の警告` がある'
-      - 1 つ目の表が `data-kind="default"` と `data-features="pin sort"` を持ち、その前に記載の警告が無い（知らない種類 `unknown` はスキップする）
+      - 1 つ目の表が `data-kind="default"` と `data-features="pin resize sort"` を持ち、その前に記載の警告が無い（知らない種類 `unknown` はスキップする）
       - 見出しの無いタブの範囲の段落がある
       - '`group= grop=os fold` のタブの範囲だけが `data-group` を持たない `<div class="mdmark-tabs">` になり、その前の警告の本文に `group=` があり、知らないキー `grop=` と知らない指定 `fold` が無い'
       - リンクの文字が `図` のままで、警告の本文に `#fig-missing` がある
@@ -501,7 +501,7 @@ flows:
         M->>M: 見出しの ID を決め、行の ID を作る
         M-->>C: HTML 文字列
     expected:
-      - 表が `data-features="sort pin filter count columns total copy rowlink"`・`data-hide="1"`・`data-total="2:sum"` を持つ `<div class="mdmark-table" data-kind="data">` に入る
+      - 表が `data-features="sort pin filter resize count columns total copy rowlink"`・`data-hide="1"`・`data-total="2:sum"` を持つ `<div class="mdmark-table" data-kind="data">` に入る
       - 見出しが `id="みかん"` を持ち、3 行の `tr` が上から `id="りんご"`・`id="みかん-1"`・`id="みかん-2"` を持つ
       - 各行の先頭のセルに `<a class="mdmark-row-anchor" href="#みかん-1" aria-label="「みかん」の行へのリンク">` の構造のリンクがあり、`href` がその行の `id` を指す
       - 文字列に `<tfoot`・`<button`・`<!--` が無い
