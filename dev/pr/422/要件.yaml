@@ -92,7 +92,9 @@ docs:
   - page: dev/設計書/設定/VSCode拡張機能.yaml
     new: false
     change: features の行の説明に、フロントマターの表示の切り替え（frontmatter）も設定ファイルから指定することを追加する（settings.json にキーは追加しない）
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-09T00:57:56.621223+00:00'
   - page: schemas/mdmark.config.schema.json
     new: false
     change: features.frontmatter（boolean・既定 false）を追加する
@@ -108,23 +110,33 @@ docs:
   - page: docs/リファレンス/設定.md
     new: false
     change: features.frontmatter を追加する
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-09T00:57:56.621223+00:00'
   - page: docs/リファレンス/記法.md
     new: false
     change: 文書の先頭のフロントマターの扱い（除外・表示・閉じる行が無いとき）を追加する
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-09T00:57:56.621223+00:00'
   - page: docs/リファレンス/用語集.md
     new: false
     change: フロントマターの用語を追加する
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-09T00:57:56.621223+00:00'
   - page: docs/使用方法/カスタマイズ/機能をオン・オフする.md
     new: false
     change: 既定がオフの機能に frontmatter を追加する
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-09T00:57:56.621223+00:00'
   - page: docs/はじめに/コアコンセプト/文書を描く仕組み.md
     new: false
     change: 解析の前にフロントマターを除外する流れを追加する
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-09T00:57:56.621223+00:00'
 scope_out:
   - item: フロントマターの title・tags などの値を、索引・文書の一覧・文書のタイトルに使用すること
     reason: 要望に含まれない（要望は表示の切り替えだけ）

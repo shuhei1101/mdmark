@@ -60,8 +60,10 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-09T00:41:44.762067+00:00'
   - process: ドキュメント修正
-    status: todo
-    note: 要件.yaml の docs の行
+    status: done
+    note: schemas の 2 件と migrations/no-steps.yaml は、Schema の変更と一緒に実装で修正する
+    updated_by: planner
+    updated_at: '2026-11-09T00:58:05.214097+00:00'
   - process: 単体テスト作成
     status: todo
   - process: 実装
