@@ -207,21 +207,22 @@ flows:
       - '`MDMARK_PORT` のポートで待ち受けるプロセスが 1 つある'
     test: test_normal_when_session_stale
   - name: 正常系（tmux に固定する）
-    summary: '`--launcher tmux` で呼ぶと、active か enabled の unit を disable --now してから tmux で起動する'
+    summary: 端末の設定の `serve.launcher` が `tmux` なら、active か enabled の unit を disable --now してから tmux で起動する
     setup:
       - name: 起動した unit
-        description: 正常系を実行した後の状態
+        description: 正常系を実行した後の状態から、端末の設定の `serve.launcher` を `tmux` に書き換える
       - name: 先に起動した tmux サーバー
         description: 正常系（tmux）と同じ
       - name: Mock
-        description: 正常系と同じ。`start-server --launcher tmux` で呼ぶ
+        description: 正常系と同じ
     flow: |-
       sequenceDiagram
         participant K as スキル（global-setup）
         participant P as setup.js
         participant D as systemd --user
         participant T as tmux
-        K->>P: start-server --launcher tmux
+        K->>P: start-server
+        P->>P: 端末の設定の serve.launcher が tmux
         P->>D: is-active（active）
         P->>D: disable --now
         P->>P: ポートが解放されるまで待つ
@@ -232,6 +233,28 @@ flows:
       - unit の `is-enabled` が `enabled` ではなく、`is-active` が `active` ではない
       - そのセッション名の tmux のセッションがあり、`MDMARK_PORT` のポートで待ち受けるプロセスが 1 つだけ
     test: test_normal_when_fixed_to_tmux
+  - name: 正常系（引数で tmux を指定する）
+    summary: '`--launcher tmux` で呼ぶと、unit に触れずに tmux で起動する（書き込みを断られたときの呼び方）'
+    setup:
+      - name: 起動した unit
+        description: 正常系を実行した後の状態。unit は `MDMARK_PORT` のポートで待ち受けている
+      - name: 先に起動した tmux サーバーと別の空いたポート
+        description: 正常系（tmux）と同じ。`MDMARK_PORT` には unit と別の空いたポートを指定し、端末の設定の `serve.launcher` は書き換えない
+      - name: Mock
+        description: 正常系と同じ。`start-server --launcher tmux` で呼ぶ
+    flow: |-
+      sequenceDiagram
+        participant K as スキル（global-setup）
+        participant P as setup.js
+        participant T as tmux
+        K->>P: start-server --launcher tmux
+        P->>T: has-session（無い）・new-session
+        P-->>K: started・launcher: tmux・changes は空・終了コード 0
+    expected:
+      - '`result` が `started`、`launcher` が `tmux`、`changes` が空'
+      - unit の `is-enabled` が `enabled`、`is-active` が `active` のままで、`MainPID` と unit のファイルの中身が呼ぶ前と同じ
+      - そのセッション名の tmux のセッションがあり、指定したポートで待ち受ける
+    test: test_normal_when_launcher_argument_is_tmux
   - name: 異常系（起動の方法が無い・終了コード 2）
     summary: systemd --user も tmux も使えなければ起動せず、端末で動かすコマンドを返却する
     setup:
@@ -276,6 +299,28 @@ flows:
       - 標準エラーに、ポートが使用されていることと、`settings.json` の `env` の `MDMARK_PORT` を空いたポートに変えてセッションをもう一度開き `global-setup` をもう一度呼ぶ修正方法が出る
       - ほかのプロセスはポートを待ち受けたまま
     test: test_error_when_port_in_use
+  - name: 異常系（mdmark serve が終わった・終了コード 1）
+    summary: unit で起動した `mdmark serve` が待ちの間に終わると、起動し直しを待たずに unit を disable --now して journal の末尾を返却する
+    setup:
+      - name: 一時の端末
+        description: 正常系と同じ
+      - name: Mock
+        description: 正常系と同じ。`MDMARK_SERVE_COMMAND` を、1 行出して 0 以外で終わる `echo failed; exit 1` にする
+    flow: |-
+      sequenceDiagram
+        participant K as スキル（global-setup）
+        participant P as setup.js
+        participant D as systemd --user
+        K->>P: start-server
+        P->>D: unit を記載して enable --now
+        P->>D: show -p NRestarts,ActiveState,SubState（NRestarts が 1）
+        P->>D: disable --now
+        P-->>K: journal の末尾と修正方法・終了コード 1
+    expected:
+      - 終了コードが 1 で、上限の 120 秒より前に返る
+      - unit の `is-enabled` が `enabled` ではなく、`is-active` が `active` ではない
+      - 標準エラーに `mdmark serve` が終わったことと、`journalctl --user -u {unit の名前}` の末尾（`failed` の行）が出る
+    test: test_error_when_server_exited
   - name: 異常系（待ちを超えた・終了コード 3）
     summary: 上限の間に待ち受けなければ、unit を disable --now してログの末尾ともう一度呼ぶことを返却する
     setup:
@@ -310,7 +355,7 @@ request:
     required: false
     default: なし（端末の設定の `serve.launcher`）
     location: argument
-    description: 起動の方法をこの呼び出しだけ固定する。`global-setup` は書き込みを断られたときに `tmux` を指定する
+    description: 起動の方法をこの呼び出しだけ固定する。指定したときは、起動しないほうの方法で動いている常駐サーバーを止めない（制約『移し替え』は行わない）。`global-setup` は書き込みを断られたときに `tmux` を指定する
   - name: MDMARK_PORT
     type: string
     required: false
@@ -373,7 +418,7 @@ exceptions:
   - name: なし（正常終了）
     condition: 待ち受けを確認した。終了コード 0
   - name: なし（ポートが使用されている・終了コード 1）
-    condition: 起動する前に unit とセッションの外のプロセスがポートを待ち受けている、待ちの間に `mdmark serve` が終わった（unit が failed になった・セッションが閉じた）、または待ち受けているプロセスから `tools/list` を受け取れない
+    condition: 起動する前に unit とセッションの外のプロセスがポートを待ち受けている、待ちの間に `mdmark serve` が終わった（制約『終わったことの判定』）、または待ち受けているプロセスから `tools/list` を受け取れない
     notes: '`mdmark serve` が終わったときは、unit を disable --now するかセッションを残さず、ログの末尾を出す'
   - name: なし（起動の方法が無い・終了コード 2）
     condition: 使用する起動の方法が使えない。`systemd` に固定して systemd --user が使えない、`tmux` に固定して `PATH` に tmux が無い、`auto` でどちらも使えない
@@ -390,7 +435,11 @@ constraints:
     decided_by: dev/設計書/外部ライブラリ/systemd#catalogs
   - item: unit のファイル
     constraint: "`${XDG_CONFIG_HOME:-~/.config}/systemd/user/{unit の名前}.service`。`[Service]` に `Environment=` で `MDMARK_PORT`・`MDMARK_CONFIG`・`MDMARK_STATE_DIR`・`MDMARK_LAUNCHER=systemd`・呼んだ側の `PATH` を、`ExecStart=/bin/sh -c '{起動するコマンド}'`・`Restart=on-failure` を、`[Install]` に `WantedBy=default.target` を記載する"
-    notes: user のマネージャーの `PATH` には npx・node が無いことがあるため、呼んだ側の `PATH` を渡す
+    notes: user のマネージャーの `PATH` には npx・node が無いことがあるため、呼んだ側の `PATH` を渡す。`ExecStart` の既定の `npx -y github:…#v{バージョン} serve` は、取得済みのキャッシュがあればネットワークにつながらなくても CLI を起動するが、GitHub への問い合わせの再試行で約 2 分半かかる（2026-11-09 に v0.10.0 で、`HTTPS_PROXY` を使用できないポートにして測った。`npm_config_prefer_offline=true` でも同じ。つながるときは約 10 秒）。端末の起動時にネットワークが無くても、その後に起動する。user のマネージャーからは `network-online.target` を待てない
+    decided_by: dev/設計書/外部ライブラリ/systemd#limitations
+  - item: 終わったことの判定
+    constraint: systemd では、待ちの 1 秒ごとに `systemctl --user show -p NRestarts,ActiveState,SubState --value {unit の名前}` を引き、`NRestarts` が 1 以上か、`SubState` が `auto-restart` か、`ActiveState` が `failed` なら終わったとする。tmux では `has-session` が 0 以外なら終わったとする
+    notes: '`Restart=on-failure` の unit は、起動の上限（既定 10 秒に 5 回）を超えるまで `failed` にならず `activating (auto-restart)` と `active` を繰り返す。`NRestarts` は `start`・`restart` で 0 に戻る'
     decided_by: dev/設計書/外部ライブラリ/systemd#limitations
   - item: unit の値の書き方
     constraint: '`Environment=` の値は `"` で囲み、`\`・`"` を `\` で、`%` を `%%` で打ち消す。`ExecStart` のコマンドの `%` も `%%` にする'
@@ -398,8 +447,8 @@ constraints:
   - item: unit の書き換え
     constraint: 記載する内容が今のファイルと同じなら記載しない。記載したら `daemon-reload` し、active なら `restart`、active でなければ `enable --now` する。内容が同じで enabled でなければ `enable` する
   - item: 移し替え
-    constraint: systemd で起動するときは、端末の設定のセッション名の tmux のセッションを `kill-session` してから起動する。tmux で起動するときは、systemd --user が使えて unit が active か enabled なら `disable --now` してから起動する。どちらもポートが解放されるまで 1 秒ごとに確かめ、上限は 10 秒
-    notes: 同じポートに 2 つの常駐サーバーを立てない。unit のファイルは削除しない
+    constraint: 起動の方法を `--launcher` ではなく端末の設定（`auto` を含む）で決めたときだけ行う。systemd で起動するときは、端末の設定のセッション名の tmux のセッションを `kill-session` してから起動する。tmux で起動するのは端末の設定の `serve.launcher` が `tmux` のときと `auto` で systemd --user が使えないときで、前者で unit が active か enabled なら `disable --now` してから起動する。どちらもポートが解放されるまで 1 秒ごとに確かめ、上限は 10 秒
+    notes: 同じポートに 2 つの常駐サーバーを立てない。unit のファイルは削除しない。`--launcher tmux`（書き込みを断られたとき）は unit に触れず、unit が同じポートで待ち受けていれば終了コード 1 になる
   - item: tmux の起動のコマンド
     constraint: "`tmux new-session -d -s {セッション名} -e MDMARK_PORT={ポート} -e MDMARK_CONFIG={パス} -e MDMARK_STATE_DIR={パス} -e MDMARK_LAUNCHER=tmux sh -c '{起動するコマンド} 2>&1 | tee -a {serve.log}'`。環境変数は `-e` で明示して指定し、コマンドは `sh -c` の引数として指定して POSIX の記載方法だけを使用する"
     notes: tmux サーバーが既に動いていると呼んだ側の環境変数は渡らず、1 つの文字列のコマンドは `default-shell` で実行される

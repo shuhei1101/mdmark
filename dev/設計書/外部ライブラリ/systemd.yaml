@@ -50,9 +50,9 @@ catalogs:
           - name: 標準出力
             type: string
             description: '`enabled`・`disabled` など。unit が無ければ `not-found`（終了コード 4）'
-      - name: systemctl --user show -p MainPID --value
+      - name: systemctl --user show -p MainPID,NRestarts,ActiveState,SubState --value
         kind: コマンド
-        purpose: unit のメインのプロセスの PID を返却する。動いていなければ `0`
+        purpose: unit のメインのプロセスの PID（動いていなければ `0`）・自動で起動し直した回数・状態を 1 行ずつ返却する。行の順は `-p` の順ではなく systemd の項目の順
       - name: journalctl --user -u
         kind: コマンド
         purpose: unit の標準出力・標準エラーのログを表示する
@@ -79,13 +79,15 @@ upstream: systemd/systemd
 verification:
   state: 済
   date: '2026-11-09'
-  detail: WSL2 の Ubuntu（systemd 255、`/etc/wsl.conf` の `[boot] systemd=true`）で、`is-system-running` が `degraded` を出して終了コード 1 だった。無い unit の `is-active` は `inactive`（終了コード 4）、`is-enabled` は `not-found`（終了コード 4）。`~/.config/systemd/user/` に `Environment="A=x %% y"` と `ExecStart=/bin/sh -c '…'` の unit を配置して `daemon-reload`・`enable --now` すると `active`・`enabled` になり、`journalctl --user -u {名前} -o cat` に `x % y` を含む標準出力の行が出た。user のマネージャーの `PATH` には nvm の node・npx が無かった
+  detail: WSL2 の Ubuntu（systemd 255、`/etc/wsl.conf` の `[boot] systemd=true`）で、`is-system-running` が `degraded` を出して終了コード 1 だった。無い unit の `is-active` は `inactive`（終了コード 4）、`is-enabled` は `not-found`（終了コード 4）。`~/.config/systemd/user/` に `Environment="A=x %% y"` と `ExecStart=/bin/sh -c '…'` の unit を配置して `daemon-reload`・`enable --now` すると `active`・`enabled` になり、`journalctl --user -u {名前} -o cat` に `x % y` を含む標準出力の行が出た。user のマネージャーの `PATH` には nvm の node・npx が無かった。`Restart=on-failure` と、2 秒後に `exit 1` する `ExecStart` の unit では、14 秒の間 `ActiveState` が `active` と `activating`（`SubState` が `auto-restart`）を繰り返して `failed` にならず、`NRestarts` が 1 秒前後ごとに増えて 5 になった。`stop` の後の `start`・`restart` で `NRestarts` は 0 に戻った
 license: LGPL-2.1-or-later
 official_url: https://systemd.io/
 docs_url: https://www.freedesktop.org/software/systemd/man/latest/systemctl.html
 limitations:
   - item: PATH
     content: user のマネージャーの `PATH`（`systemctl --user show-environment`）はログインシェルと違い、nvm などで入れた node・npx が無いことがある。unit の `Environment=` で `PATH` を指定する
+  - item: Restart=on-failure の状態
+    content: '`Restart=on-failure` の unit のプロセスが 0 以外で終わると、`ActiveState`・`SubState` は `activating`・`auto-restart` と `active`・`running` を繰り返し、起動の上限（`StartLimitIntervalSec=`・`StartLimitBurst=`、既定 10 秒に 5 回）を超えるまで `failed` にならない。`is-active` も多くの時点で `active` を返却する。終わったことは `NRestarts` が増えたことで分かる。`NRestarts` は `start`・`restart` で 0 に戻る'
   - item: 値の打ち消し
     content: unit のファイルで `%` は指定子になるため `%%` と記載する。`Environment=` の値は `"` で囲むと空白を含められる
   - item: 使用できない端末
