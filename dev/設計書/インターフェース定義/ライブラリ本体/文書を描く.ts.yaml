@@ -5961,7 +5961,7 @@ flows:
     expected:
       - 名前の列を広げた後、説明の列の `th` の `offsetWidth` は広げる前と同じで、`hidden` でなく、行に開閉のボタンが無い
       - 名前の列を広げた後、表の `scrollWidth` が `clientWidth` より大きい
-      - 説明の列を狭めた後も、説明の列の `th` が `hidden` でなく、行に開閉のボタンが無い
+      - 説明の列を狭めた後、説明の列のセルの中身の高さが `line-height` の 1.5 倍を超えるセルがあり（折り返している）、説明の列の `th` が `hidden` でなく、行に開閉のボタンが無い
     test: test_normal_when_column_resized_in_narrow_width
     refs:
       - dev/設計書/シナリオ/単一ユースケース/表を操作する#scenarios[正常シナリオ（狭い幅で列の幅を変える）]
