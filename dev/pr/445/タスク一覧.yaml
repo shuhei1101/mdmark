@@ -15,8 +15,10 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-09T00:58:26.045345+00:00'
   - process: PoC 検証
-    status: todo
+    status: done
     note: 入れ子の箱の自動配置と配置し直し（入れ子 2 レイヤー・ノード 30 個）と、Mermaid の flowchart・sequenceDiagram の読み取りを、独自の実装で確かめる
+    updated_by: planner
+    updated_at: '2026-11-09T01:34:13.208519+00:00'
   - process: 複合ユースケース設計
     status: todo
   - process: デザインスタイル選定
