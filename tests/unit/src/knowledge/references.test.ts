@@ -131,7 +131,11 @@ test("test_parse_document_when_frontmatter", async () => {
     "",
   ].join("\n");
   // 実行
-  const parsed = parseDocument({ body, docId: "guide", defaults: { glossary: true } });
+  const parsed = parseDocument({
+    body,
+    docId: "guide",
+    defaults: { glossary: true },
+  });
   // 検証
   const links = parsed.tokens
     .flatMap((token) => token.children ?? [])

@@ -221,7 +221,9 @@ test("test_render_document_when_frontmatter_enabled", async () => {
   const { html } = renderDocument({ markdown, config });
   const { html: fencedHtml } = renderDocument({ markdown: fenced, config });
   // 検証
-  expect(html.startsWith('<details class="mdmark-collapsible mdmark-frontmatter"')).toBe(true);
+  expect(
+    html.startsWith('<details class="mdmark-collapsible mdmark-frontmatter"'),
+  ).toBe(true);
   const details = html.slice(0, html.indexOf("</details>"));
   expect(details).not.toContain(" open");
   expect(details).toContain("<summary>フロントマター</summary>");
@@ -229,5 +231,7 @@ test("test_render_document_when_frontmatter_enabled", async () => {
   expect(details).toContain("title: a");
   const fencedDetails = fencedHtml.slice(0, fencedHtml.indexOf("</details>"));
   expect(fencedDetails).toContain("code");
-  expect(fencedHtml.slice(fencedHtml.indexOf("</details>"))).not.toContain("code");
+  expect(fencedHtml.slice(fencedHtml.indexOf("</details>"))).not.toContain(
+    "code",
+  );
 });

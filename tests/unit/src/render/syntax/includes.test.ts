@@ -143,7 +143,9 @@ test("test_select_lines", async () => {
 // 取り込む Markdown の先頭のフロントマターを差し込まない（正常系）
 test("test_expand_includes_when_frontmatter", () => {
   // 準備
-  const includes = { "共通/手順.md": "---\ntitle: 手順\n---\n\n## 実行\n\n実行の本文\n" };
+  const includes = {
+    "共通/手順.md": "---\ntitle: 手順\n---\n\n## 実行\n\n実行の本文\n",
+  };
   const markdown = "<!-- include: 共通/手順.md -->\n";
   // 実行
   const { html } = renderDoc(markdown, { frontmatter: true }, { includes });

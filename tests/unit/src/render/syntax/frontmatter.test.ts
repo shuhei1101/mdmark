@@ -4,23 +4,31 @@ import { createEnv } from "../../../helpers/env.ts";
 /** 解析器を読み込む（実装が無い間は各テストが個別に失敗する） */
 const loadParser = () => import("../../../../../src/render/parser.ts");
 
-/** 機能の既定を上書きし、フロントマターを持つ env で空の本文を解析したトークンの並び */
-async function parseWithFrontmatter(options: {
+/** フロントマターの表示の処理を読み込む（実装が無い間は各テストが個別に失敗する） */
+const loadFrontmatter = () =>
+  import("../../../../../src/render/syntax/frontmatter.ts");
+
+/** 機能を決めたフロントマターを持つ状態に、フロントマターの表示のコアルールだけを当てたトークンの並び */
+async function insertWithFrontmatter(options: {
   content: string;
   frontmatter: boolean;
 }) {
   const { createParser } = await loadParser();
+  const { insertFrontmatter } = await loadFrontmatter();
+  const parser = createParser();
   const env = createEnv({
     frontmatter: { content: options.content, endLine: 2 },
+    features: { frontmatter: options.frontmatter },
   });
-  env.defaults = { ...env.defaults, frontmatter: options.frontmatter };
-  return createParser().parse("", env);
+  const state = new parser.core.State("", parser, env);
+  insertFrontmatter(state);
+  return state.tokens;
 }
 
 // 機能がオンなら、折りたたみの開きと閉じの間に yaml の fence を入れる（正常系）
 test("test_insert_frontmatter", async () => {
   // 実行
-  const tokens = await parseWithFrontmatter({
+  const tokens = await insertWithFrontmatter({
     content: "title: a",
     frontmatter: true,
   });
@@ -40,7 +48,7 @@ test("test_insert_frontmatter", async () => {
 // 機能がオフなら何も入れない（正常系）
 test("test_insert_frontmatter_when_off", async () => {
   // 実行
-  const tokens = await parseWithFrontmatter({
+  const tokens = await insertWithFrontmatter({
     content: "title: a",
     frontmatter: false,
   });
@@ -51,7 +59,7 @@ test("test_insert_frontmatter_when_off", async () => {
 // 中身が空白だけなら何も入れない（正常系）
 test("test_insert_frontmatter_when_blank", async () => {
   // 実行
-  const tokens = await parseWithFrontmatter({
+  const tokens = await insertWithFrontmatter({
     content: "  ",
     frontmatter: true,
   });
