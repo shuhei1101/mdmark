@@ -30,7 +30,6 @@ const ICONS = {
   pause: '<rect x="14" y="4" width="4" height="16" rx="1"/><rect x="6" y="4" width="4" height="16" rx="1"/>',
   prev: '<path d="m15 18-6-6 6-6"/>',
   next: '<path d="m9 18 6-6-6-6"/>',
-  reset: '<path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/>',
   close: '<path d="M18 6 6 18"/><path d="m6 6 12 12"/>',
   collapse: '<path d="m6 9 6 6 6-6"/>',
   expand: '<path d="m9 18 6-6-6-6"/>',
@@ -438,7 +437,7 @@ export const createMap = (host, spec, initial = {}) => {
       seconds,
     ];
     if (playing) actions.push(toolButton("close", "再生を終える", () => endPlay()));
-    else if (index !== undefined) actions.push(toolButton("reset", "案内をやめる", () => endWalkthrough()));
+    else if (index !== undefined) actions.push(toolButton("close", "案内をやめる", () => endWalkthrough()));
     band.append(text("map-band-count", `${index === undefined ? "–" : index + 1} / ${total}`), text("map-band-text", textValue, true), buttons(actions));
     band.addEventListener("keydown", (event) => {
       if (event.target instanceof HTMLSelectElement) return;
@@ -555,6 +554,32 @@ export const createMap = (host, spec, initial = {}) => {
   return { startPlay };
 };
 
+/** シーケンス図の map も構成図と同じく等倍より縮めず、表示する枠の高さを等倍の図の高さにする（実装では zoom の fitMin に 1 を渡す） */
+const keepSequenceScale = (host) => {
+  const stage = host.querySelector(".mdmark-diagram-stage");
+  const sizer = host.querySelector(".mdmark-diagram-sizer");
+  const viewport = host.querySelector(".mdmark-diagram-viewport");
+  const enforce = () => {
+    const scale = Number(/scale\(([\d.]+)\)/.exec(stage.style.transform)?.[1] ?? 1);
+    const width = stage.offsetWidth;
+    const height = stage.offsetHeight;
+    if (scale < MIN_SCALE) {
+      stage.style.transform = `scale(${MIN_SCALE})`;
+      sizer.style.width = `${width * MIN_SCALE}px`;
+      sizer.style.height = `${height * MIN_SCALE}px`;
+    }
+    const frame = `${Math.max(scale, MIN_SCALE) * height + 16}px`;
+    if (viewport.style.height !== frame) {
+      viewport.style.height = frame;
+      viewport.style.maxHeight = frame;
+    }
+  };
+  const observer = new MutationObserver(enforce);
+  observer.observe(stage, { attributes: true, attributeFilter: ["style"] });
+  observer.observe(viewport, { attributes: true, attributeFilter: ["style"] });
+  enforce();
+};
+
 /** シーケンス図の map: 今のシーケンス図の部品で描き、右上のツールに「構成図の上で再生」を足す */
 export const createSequence = (host, spec, kinds, onPlay) => {
   const sequence = parseSequence(spec.source);
@@ -566,6 +591,8 @@ export const createSequence = (host, spec, kinds, onPlay) => {
     steps: sequence.messages.map((message) => ({ from: message.from, to: message.to, label: message.text, ...(message.reply ? { reply: true } : {}) })),
   };
   mount(host, { markdown: `<!-- sequence -->\n\n\`\`\`json\n${JSON.stringify(definition)}\n\`\`\`\n\n<!-- /sequence -->\n` });
+  host.querySelector("figure.mdmark-diagram").classList.add("map-figure");
+  keepSequenceScale(host);
   const tools = host.querySelector(".mdmark-diagram-tools");
   const group = document.createElement("div");
   group.className = "mdmark-diagram-tools-group";

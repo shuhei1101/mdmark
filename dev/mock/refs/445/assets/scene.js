@@ -59,7 +59,11 @@ MAP-SLOT-FLOW
 
 ## 描くまでの流れ
 
+<!-- wide -->
+
 MAP-SLOT-SEQUENCE
+
+<!-- /wide -->
 
 図の後ろの本文。
 `;
@@ -87,7 +91,10 @@ flowSlot.replaceWith(flowHost);
 const map = createMap(flowHost, { id: scene, title: "全体の構成", flow: FLOW, data: DATA, sequence: SEQUENCE }, initial);
 
 const sequenceHost = document.createElement("div");
-slot("MAP-SLOT-SEQUENCE").replaceWith(sequenceHost);
+sequenceHost.className = "map-host";
+const sequenceSlot = slot("MAP-SLOT-SEQUENCE");
+sequenceSlot.closest(".mdmark-wide-range")?.parentElement.classList.add("map-wide");
+sequenceSlot.replaceWith(sequenceHost);
 createSequence(sequenceHost, SEQUENCE, { user: "external" }, () => {
   map.startPlay();
   flowHost.scrollIntoView({ block: "nearest" });
