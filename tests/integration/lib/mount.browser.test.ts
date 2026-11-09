@@ -13139,9 +13139,9 @@ test("test_normal_when_block_spacing", async () => {
     for (const after of SPACING_BLOCKS) {
       // 準備
       const el = createElement();
-      // 実行
+      // 実行（1 行目の `---` と後ろの `---` はフロントマターになるため、空行から始める）
       await mountTracked(el, {
-        markdown: `${before.before}\n\n${after.after ?? after.before}\n`,
+        markdown: `\n${before.before}\n\n${after.after ?? after.before}\n`,
         config,
       });
       // 検証
