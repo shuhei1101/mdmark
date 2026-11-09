@@ -55,3 +55,4 @@
 | インターフェース定義設計 | `1d128ef37..8462a0e8c` | 設定（serve.launcher・serve.systemdUnit・MDMARK_LAUNCHER）と外部ライブラリ systemd を含む |
 | インターフェース定義設計 | `da5dbcf23..327596319` | レビューの指摘の修正 |
 | モジュール構成設計 | `2ed905357..27cf4f0b9` | 引数の tmux で unit が動いていれば already_running を返す形をインターフェース定義にも反映 |
+| モジュール構成設計 | `64f6d90c7..60b791c22` | レビューの指摘の修正 |
