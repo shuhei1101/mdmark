@@ -1,5 +1,6 @@
 import type { StateCore, Token } from "markdown-it";
 import { escapeHtml } from "../../parts/escape.ts";
+import { splitFrontmatter } from "../frontmatter.ts";
 import { takeMarks } from "../marks.ts";
 import type { RenderEnv } from "../parser.ts";
 import { slugBase } from "./headings.ts";
@@ -102,7 +103,9 @@ const tokenize = (state: StateCore, text: string): Token[] => {
   const env = envOf(state);
   const subEnv: RenderEnv = { ...env, featureArgs: [] };
   const tokens: Token[] = [];
-  state.md.block.parse(text.replace(/\r\n?/g, "\n"), state.md, subEnv, tokens);
+  // 取り込む Markdown の先頭のフロントマターは空白にして差し込まない
+  const { body } = splitFrontmatter(text);
+  state.md.block.parse(body.replace(/\r\n?/g, "\n"), state.md, subEnv, tokens);
   for (const token of tokens) {
     if (token.type !== "inline") {
       continue;

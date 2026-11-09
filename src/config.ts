@@ -167,6 +167,7 @@ export const DEFAULT_FEATURES: Record<string, boolean> = {
   wide: true,
   csv: true,
   "card-grid": true,
+  frontmatter: false,
 };
 
 /** 設定の `syntax.url` が無いときに読み込む highlight.js の `es/` フォルダの URL。バージョンを固定する */

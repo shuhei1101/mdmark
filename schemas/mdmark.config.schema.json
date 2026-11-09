@@ -224,6 +224,12 @@
           "description": "`<!-- cards -->` のマーカーで囲んだリストをカードの格子にする。オフのときはリストのまま描く。",
           "type": "boolean",
           "default": true
+        },
+        "frontmatter": {
+          "title": "フロントマターの表示の機能",
+          "description": "文書の先頭の YAML のフロントマターを、本文の先頭の閉じた折りたたみに言語 yaml のコードブロックで出す。オフのときもフロントマターは本文から除外する。",
+          "type": "boolean",
+          "default": false
         }
       },
       "additionalProperties": {
