@@ -115,7 +115,7 @@ docs:
     status: todo
   - page: docs/リファレンス/構成図の決まり.md
     new: false
-    change: 入れ子は 2 レイヤーまでを推奨し、深いものは別の図に切り出してリンクする決まりと、map の図は凡例を出さないこと・層の色の重なり・枠のタイトルの位置の決まりを追加する（#309）
+    change: 入れ子は 2 レイヤーまでを推奨し、深いものは別の図に切り出してリンクする決まりと、map の図は凡例を出さないこと・層は役割ごとのグループで表すこと・色の重なり・枠のタイトルの位置の決まりと、グループにするかの判定フローチャート（層をグループで描く例を含む）を追加する（#309、ユーザーの依頼）
     status: done
   - page: docs/リファレンス/設定.md
     new: false
@@ -129,7 +129,7 @@ docs:
     updated_at: '2026-11-10T15:45:13.424108+00:00'
   - page: guide/index.yaml
     new: false
-    change: 使い方集の索引に『Mermaidと補足で図を描く』を追加し、diagrams・architecture-style の行の概要を map に合わせる
+    change: 使い方集の索引に『Mermaidと補足で図を描く』を追加し、diagrams・architecture-style の行の概要を map に合わせる（architecture-style はグループにするかの判定フローチャートを含むことを書く）
     status: todo
 scope_out:
   - item: A-35 の No 10〜17（状態遷移の再生・ER 図と結合・マインドマップ・確度のマーカー・変更の表示・環境とシナリオ・書き出し・一覧の表示）と、stateDiagram-v2・erDiagram・mindmap の map での描画
