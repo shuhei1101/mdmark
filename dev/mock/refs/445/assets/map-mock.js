@@ -870,14 +870,21 @@ export const createMap = (host, spec, initial = {}) => {
         box.id === state.enter ? plainTitle(title) : groupTitle(title, box.id),
       );
       group.append(head);
-      // グループも、ボタンの外を押したままドラッグして動かす。中のノードとグループは同じ並びのまま一緒に動く（今入っているグループと、外の薄いグループは動かさない）
+      // グループは、タイトルの行（開閉とタイトルのボタンの外）を押したままドラッグして動かす。中のノードとグループは同じ並びのまま一緒に動く。
+      // グループの面は今の図と同じく図を動かす（大きなグループが図のほとんどを覆っても、図を動かせる）。今入っているグループと、外の薄いグループは動かさない
       if (box.id !== state.enter && !box.faded) {
+        const bar = document.createElement("div");
+        bar.className = "map-group-bar";
+        bar.title = "ドラッグでグループを動かす";
+        group.prepend(bar);
         group.classList.add("map-movable");
-        group.addEventListener("pointerdown", (event) => {
-          if (event.button !== 0 || event.target.closest("button")) return;
-          event.stopPropagation();
-          startNodeDrag(event, stage, layout, box, group);
-        });
+        for (const handle of [bar, head]) {
+          handle.addEventListener("pointerdown", (event) => {
+            if (event.button !== 0 || event.target.closest("button")) return;
+            event.stopPropagation();
+            startNodeDrag(event, stage, layout, box, group);
+          });
+        }
       }
       stage.insertBefore(group, wires);
     }

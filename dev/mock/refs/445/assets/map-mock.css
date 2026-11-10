@@ -481,7 +481,13 @@
 .map-group {
   border-color: var(--map-ink, color-mix(in srgb, var(--mdmark-color-muted) 70%, transparent));
 }
-/* 動かせるグループ: タイトルと開閉のボタンの外の面を押したままドラッグする */
-.map-figure .map-group.map-movable {
+/* 動かせるグループ: タイトルの行（上端から 36px）を押したままドラッグする。面は図を動かす */
+.map-figure .map-group-bar {
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 36px;
+  cursor: grab;
+}
+.map-figure .map-group.map-movable .map-group-head {
   cursor: grab;
 }
