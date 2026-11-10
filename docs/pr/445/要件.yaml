@@ -105,6 +105,10 @@ docs:
     new: false
     change: 新設する『図を自動配置して辿る仕組み』の行を追加する
     status: todo
+  - page: docs/リファレンス/CLI.md
+    new: false
+    change: 点検のずれの種類に map の 7 種類（map_invalid・map_unknown_ref・map_unknown_key・map_invalid_value・map_unknown_icon・map_unknown_class・map_unknown_line）を追加する
+    status: todo
   - page: docs/リファレンス/記法.md
     new: false
     change: map のマーカーと引数・補足のキー・マーカーに対応しない表示での見え方を追加する
