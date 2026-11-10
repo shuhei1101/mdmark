@@ -69,10 +69,10 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-10T16:57:06.452007+00:00'
   - process: 単体テスト作成
-    status: todo
+    status: done
     note: map のモジュール構成と、変える既存のモジュールの unit_tests の単体テストを作り、Red を確かめた（ede82c36・c8345fad）
     updated_by: planner
-    updated_at: '2026-11-10T15:45:41.439844+00:00'
+    updated_at: '2026-11-10T17:21:44.430971+00:00'
   - process: 実装
     status: todo
   - process: 結合テスト作成
