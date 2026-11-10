@@ -4,8 +4,7 @@
 import { mount } from "../../../../../dist/index.js";
 import { layoutMap, parseFlowchart, parseSequence } from "./map-layout.js";
 
-/** 自動で進める間隔の選択肢（秒）と既定 */
-const AUTOPLAY_SECONDS = [1, 2, 3, 5];
+/** 自動で進める間隔の既定（秒）。文書ではマーカーの引数 `interval` で指定し、画面からは変えない */
 const DEFAULT_AUTOPLAY_SECONDS = 2;
 /** 1 通のメッセージの印が線を 1 往復する時間（秒） */
 const PLAY_LOOP_SECONDS = 1.2;
@@ -30,7 +29,7 @@ const ICONS = {
   pause: '<rect x="14" y="4" width="4" height="16" rx="1"/><rect x="6" y="4" width="4" height="16" rx="1"/>',
   prev: '<path d="m15 18-6-6 6-6"/>',
   next: '<path d="m9 18 6-6-6-6"/>',
-  close: '<path d="M18 6 6 18"/><path d="m6 6 12 12"/>',
+  stop: '<rect x="6" y="6" width="12" height="12" rx="1"/>',
   collapse: '<path d="m6 9 6 6 6-6"/>',
   expand: '<path d="m9 18 6-6-6-6"/>',
 };
@@ -58,7 +57,7 @@ const colorStyle = (color) =>
 /**
  * map の構成図を 1 つ作る。host の中に描き、操作のたびに描き直す。
  * 描き直しても、文書と図の中のスクロール・表示する枠の高さを保ち、ノードとグループは前の位置から動かす。
- * spec: { id, title, flow, data: { notes, walkthroughs, layout, colors }, sequence?: { title, source } }
+ * spec: { id, title, interval, flow, data: { notes, walkthroughs, layout, colors }, sequence?: { title, source } }
  * initial: { enter, collapsed, step, play, auto }
  */
 export const createMap = (host, spec, initial = {}) => {
@@ -77,7 +76,7 @@ export const createMap = (host, spec, initial = {}) => {
     step: initial.step,
     play: initial.play,
     auto: initial.auto ?? false,
-    seconds: DEFAULT_AUTOPLAY_SECONDS,
+    seconds: spec.interval ?? DEFAULT_AUTOPLAY_SECONDS,
     height: undefined,
   };
   const start = { enter: state.enter };
@@ -417,16 +416,10 @@ export const createMap = (host, spec, initial = {}) => {
         ? ""
         : steps[index].text;
     const go = (next) => (playing ? playAt(next) : applyStep(next));
-    const seconds = document.createElement("select");
-    seconds.className = "map-seconds";
-    seconds.setAttribute("aria-label", "自動で進める間隔");
-    for (const value of AUTOPLAY_SECONDS) seconds.append(new Option(`${value} 秒`, String(value), false, value === state.seconds));
-    seconds.addEventListener("change", () => {
-      state.seconds = Number(seconds.value);
-      schedule();
-    });
+    // ボタンは前へ・停止・再生（一時停止）・次への 4 つを常に同じ並びで出し、状態では押せるかだけを変える
     const actions = [
       toolButton("prev", playing ? "前のメッセージ" : "前の手順", () => go(index - 1), index === undefined || index === 0 ? { disabled: "" } : {}),
+      toolButton("stop", playing ? "再生を終える" : "案内をやめる", () => (playing ? endPlay() : endWalkthrough()), index === undefined ? { disabled: "" } : {}),
       toolButton(state.auto ? "pause" : "play", state.auto ? "一時停止" : "自動で進める", () => {
         state.auto = !state.auto;
         if (state.auto && index === undefined) go(0);
@@ -434,13 +427,9 @@ export const createMap = (host, spec, initial = {}) => {
         schedule();
       }, { "aria-pressed": String(state.auto) }),
       toolButton("next", playing ? "次のメッセージ" : "次の手順", () => go(index === undefined ? 0 : (index + 1) % total)),
-      seconds,
     ];
-    if (playing) actions.push(toolButton("close", "再生を終える", () => endPlay()));
-    else if (index !== undefined) actions.push(toolButton("close", "案内をやめる", () => endWalkthrough()));
     band.append(text("map-band-count", `${index === undefined ? "–" : index + 1} / ${total}`), text("map-band-text", textValue, true), buttons(actions));
     band.addEventListener("keydown", (event) => {
-      if (event.target instanceof HTMLSelectElement) return;
       if (event.key === "ArrowRight") go(index === undefined ? 0 : (index + 1) % total);
       if (event.key === "ArrowLeft" && index > 0) go(index - 1);
     });
@@ -483,9 +472,13 @@ export const createMap = (host, spec, initial = {}) => {
       const wire = wires.querySelector(`[data-wire="${CSS.escape(edge.id)}"]`);
       const path = wire.matches("path") ? wire : wire.querySelector("path");
       path.id = `map-dot-${spec.id}-${index}`;
+      // データが流れている線: 太くし、破線を元から先へ流す
+      wire.classList.remove("map-dim");
+      wire.classList.add("map-flowing");
+      if (reverse) wire.classList.add("map-flowing-reverse");
       wires.insertAdjacentHTML(
         "beforeend",
-        `<circle class="map-play-dot" r="6"><animateMotion dur="${PLAY_LOOP_SECONDS}s" repeatCount="indefinite" keyPoints="${reverse ? "1;0" : "0;1"}" keyTimes="0;1" calcMode="linear"><mpath href="#${path.id}"/></animateMotion></circle>`,
+        `<circle class="map-play-dot" r="7"><animateMotion dur="${PLAY_LOOP_SECONDS}s" repeatCount="indefinite" keyPoints="${reverse ? "1;0" : "0;1"}" keyTimes="0;1" calcMode="linear"><mpath href="#${path.id}"/></animateMotion></circle>`,
       );
     });
   };

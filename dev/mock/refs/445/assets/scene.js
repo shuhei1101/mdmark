@@ -108,7 +108,7 @@ if (scene === "warnings") {
   warning.innerHTML = `<p>map の書き方の警告</p><ul>
 <li>mermaid の 14 行目 <code>gw -&gt; api</code> を読めません。矢印は <code>--&gt;</code> で記載してください</li>
 <li>補足の知らないキー <code>layuot</code> を無視しました。使用できるキーは version・notes・walkthroughs・layout・plays_over です</li>
-<li>マーカーの知らない引数 <code>mdoe=boxes</code> を無視しました。使用できる引数は focus・play・title・open・closed です</li>
+<li>マーカーの知らない引数 <code>mdoe=boxes</code> を無視しました。使用できる引数は focus・play・title・open・closed・interval です</li>
 </ul>`;
   flowHost.before(warning);
 }
