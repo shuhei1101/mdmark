@@ -804,12 +804,12 @@ test("test_check_maps", async () => {
   // 準備
   const { checkMaps } = await loadCheck();
   const { resolveConfig } = await import("../../../../src/config.ts");
-  const { mapRange, FLOW } = await import("../../helpers/map.ts");
+  const { mapRange } = await import("../../helpers/map.ts");
   const drift = mapRange({
     mermaid: "flowchart LR\n  A --> B\n",
     data: '{\n  "version": 1,\n  "notes": {\n    "ghost": {"text": "無い"}\n  },\n  "layuot": {},\n  "walkthroughs": [{"text": "a -- b"}]\n}',
   });
-  const markdown = `# A\n\n${drift}\n${"\n".repeat(4)}${mapRange({ mermaid: FLOW })}`;
+  const markdown = `# A\n\n${drift}\n${"\n".repeat(4)}${mapRange({ mermaid: "flowchart LR\n  C --> D\n" })}`;
   // 実行
   const issues = checkMaps(
     [{ path: "docs/a.md", markdown }],
