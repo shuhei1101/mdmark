@@ -183,3 +183,63 @@ test("test_start_drag_when_reattach", async () => {
   });
   expect(last.attachments?.["A->C"]?.to).toBe("top");
 });
+
+// ノード（正常系）
+test("test_move_by_key_when_node", async () => {
+  // 準備
+  const { moveByKey } = await loadDrag();
+  // 実行
+  const next = moveByKey({
+    layout: LAYOUT,
+    state: STATE,
+    target: { node: "A" },
+    dx: 0,
+    dy: 8,
+  });
+  // 検証
+  expect(next?.positions.A).toEqual({ x: 0, y: 8 });
+});
+
+// 線の真ん中の区間（正常系）
+test("test_move_by_key_when_wire", async () => {
+  // 準備
+  const { moveByKey } = await loadDrag();
+  // 実行
+  const next = moveByKey({
+    layout: LAYOUT,
+    state: STATE,
+    target: { wire: "A->C" },
+    dx: 8,
+    dy: 0,
+  });
+  // 検証
+  expect(next?.wireShifts["A->C"]?.[0]).toMatchObject({
+    segment: 1,
+    offset: 8,
+  });
+});
+
+// 動かせない（正常系）
+test("test_move_by_key_when_blocked", async () => {
+  // 準備
+  const { moveByKey } = await loadDrag();
+  // 実行・検証
+  expect(
+    moveByKey({
+      layout: LAYOUT,
+      state: STATE,
+      target: { node: "A" },
+      dx: 0,
+      dy: -8,
+    }),
+  ).toBeUndefined();
+  expect(
+    moveByKey({
+      layout: LAYOUT,
+      state: STATE,
+      target: { wire: "A->C" },
+      dx: 0,
+      dy: 8,
+    }),
+  ).toBeUndefined();
+});

@@ -40,6 +40,29 @@ test("test_render_map_flow", async () => {
   expect(html).not.toContain("mdmark-diagram-legend");
 });
 
+// キーで操作する場所（正常系）
+test("test_render_map_flow_when_keyboard", async () => {
+  // 準備
+  const { renderMapFlow } = await loadParts();
+  // 実行
+  const args = await flowArgs("read");
+  const html = renderMapFlow(args);
+  // 検証
+  const nodes = matches(html, /<div class="[^"]*map-kinded[^"]*"[^>]*>/g);
+  expect(nodes).toHaveLength(args.layout.nodes.length);
+  for (const node of nodes) {
+    expect(node).toContain('tabindex="0"');
+    expect(node).toContain('role="button"');
+  }
+  const hits = matches(html, /<path class="map-wire-hit"[^>]*>/g);
+  expect(hits.length).toBeGreaterThan(0);
+  for (const hit of hits) expect(hit).toContain('tabindex="0"');
+  expect(html).not.toMatch(/data-group="read"[^>]*><div class="map-group-bar"/);
+  expect(renderMapFlow(await flowArgs())).toMatch(
+    /data-group="read"[^>]*><div class="map-group-bar"/,
+  );
+});
+
 // 中へ入った（正常系）
 test("test_render_map_flow_when_entered", async () => {
   // 準備
