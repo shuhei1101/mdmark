@@ -406,10 +406,10 @@ function renderLabel(options: {
   }
   const style = boxStyle({ x: at[0], y: at[1] });
   if (tip === undefined || tip === "") {
-    return `<span class="mdmark-diagram-label" data-line="${line}"${style}>${escapeHtml(label)}</span>`;
+    return `<span class="mdmark-diagram-label" data-line="${line}" data-wire="${escapeHtml(wireId)}"${style}>${escapeHtml(label)}</span>`;
   }
   const id = tips.add({ kind: "wire", label, tip, owner: wireId });
-  return `<span class="mdmark-diagram-label has-tip" data-line="${line}" tabindex="0" aria-describedby="${id}" data-tip-owner="${escapeHtml(wireId)}"${style}>${escapeHtml(label)}</span>`;
+  return `<span class="mdmark-diagram-label has-tip" data-line="${line}" data-wire="${escapeHtml(wireId)}" tabindex="0" aria-describedby="${id}" data-tip-owner="${escapeHtml(wireId)}"${style}>${escapeHtml(label)}</span>`;
 }
 
 /** 折れ線の最も長い区間の中点（`labelAt` を省いたときのラベルの位置） */

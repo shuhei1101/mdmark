@@ -8,7 +8,14 @@ import {
 } from "../parts/map.ts";
 import { attachBand, type BandHandle, type BandStep } from "./band.ts";
 import { type MapData, parseMapData } from "./data.ts";
-import { applyWireShifts, nearestSegment, startDrag } from "./drag.ts";
+import {
+  applyWireShifts,
+  KEY_MOVE_PX,
+  KEY_MOVE_PX_LARGE,
+  moveByKey,
+  nearestSegment,
+  startDrag,
+} from "./drag.ts";
 import { type Flowchart, parseFlowchart } from "./flowchart.ts";
 import { layoutMap, type MapLayout, type MapOverride } from "./layout.ts";
 import type { MapArgs } from "./spec.ts";
@@ -284,13 +291,15 @@ export const attachMapFlow = (
     )) {
       const id = element.getAttribute("data-node") ?? "";
       element.classList.toggle("is-selected", selected.has(id));
+      if (element.hasAttribute("aria-pressed"))
+        element.setAttribute("aria-pressed", String(selected.has(id)));
       element.classList.toggle(
         "map-dim",
         kept !== undefined && !kept.nodes.has(id),
       );
     }
     for (const element of stage.querySelectorAll<Element>(
-      ".mdmark-diagram-wire[data-wire]",
+      ".mdmark-diagram-wire[data-wire], .mdmark-diagram-label[data-wire]",
     )) {
       const id = element.getAttribute("data-wire") ?? "";
       element.classList.toggle(
@@ -459,7 +468,72 @@ export const attachMapFlow = (
     };
     window.addEventListener("pointerup", finish);
   };
+  /** キーで操作する要素（ノード・グループのタイトルの行の帯・線） */
+  const keyTargetOf = (element: Element | undefined) => {
+    const node = element
+      ?.closest(".mdmark-diagram-node[data-node]")
+      ?.getAttribute("data-node");
+    if (node) return { node, selector: `[data-node="${CSS.escape(node)}"]` };
+    const group = element
+      ?.closest(".map-group-bar")
+      ?.closest("[data-group]")
+      ?.getAttribute("data-group");
+    if (group)
+      return {
+        group,
+        selector: `[data-group="${CSS.escape(group)}"] .map-group-bar`,
+      };
+    const wire = element?.closest(".map-wire-hit")?.getAttribute("data-wire");
+    if (wire)
+      return {
+        wire,
+        selector: `.map-wire-hit[data-wire="${CSS.escape(wire)}"]`,
+      };
+    return undefined;
+  };
+  const ARROWS: Record<string, [number, number]> = {
+    ArrowLeft: [-1, 0],
+    ArrowRight: [1, 0],
+    ArrowUp: [0, -1],
+    ArrowDown: [0, 1],
+  };
   const onKeyDown = (event: KeyboardEvent) => {
+    const element = event.target instanceof Element ? event.target : undefined;
+    const keyTarget = keyTargetOf(element);
+    const arrow = ARROWS[event.key];
+    // Alt + 矢印キーで動かす（Shift も押すと大きく）
+    if (keyTarget && arrow && event.altKey) {
+      event.preventDefault();
+      const step = event.shiftKey ? KEY_MOVE_PX_LARGE : KEY_MOVE_PX;
+      const next = moveByKey({
+        layout: { ...layout, wires: applyWireShifts(layout, state).wires },
+        state,
+        target: keyTarget,
+        dx: arrow[0] * step,
+        dy: arrow[1] * step,
+      });
+      if (!next) return;
+      change(next);
+      figure.querySelector<HTMLElement>(keyTarget.selector)?.focus();
+      return;
+    }
+    // Enter・Space でノードを、Enter で線の両端を選ぶ
+    if (
+      keyTarget &&
+      (event.key === "Enter" || (event.key === " " && keyTarget.node))
+    ) {
+      if (keyTarget.node) {
+        event.preventDefault();
+        select([keyTarget.node]);
+      } else if (keyTarget.wire) {
+        event.preventDefault();
+        const item = layout.wires.find((one) => one.id === keyTarget.wire);
+        if (item) select([item.from, item.to]);
+      }
+      if (keyTarget.node || keyTarget.wire)
+        figure.querySelector<HTMLElement>(keyTarget.selector)?.focus();
+      return;
+    }
     if (event.key !== "Escape") return;
     if (state.selected.length > 0) changeSelection([]);
     else if (state.entered !== undefined)
@@ -497,6 +571,23 @@ export const attachMapFlow = (
   figure.addEventListener("click", onClick);
   figure.addEventListener("pointerdown", onPointerDown);
   figure.addEventListener("keydown", onKeyDown);
+  const onFocusIn = (event: FocusEvent) => {
+    const target = event.target instanceof Element ? event.target : undefined;
+    const id = target?.closest(".map-wire-hit")?.getAttribute("data-wire");
+    if (id && id !== hovered) {
+      hovered = id;
+      emphasize();
+    }
+  };
+  const onFocusOut = (event: FocusEvent) => {
+    const target = event.target instanceof Element ? event.target : undefined;
+    if (hovered !== undefined && target?.closest(".map-wire-hit")) {
+      hovered = undefined;
+      emphasize();
+    }
+  };
+  figure.addEventListener("focusin", onFocusIn);
+  figure.addEventListener("focusout", onFocusOut);
   figure.addEventListener("pointermove", onPointerMove);
   figure.addEventListener("pointerover", onPointerOver);
   figure.addEventListener("pointerout", onPointerOut);
@@ -560,6 +651,8 @@ export const attachMapFlow = (
       figure.removeEventListener("click", onClick);
       figure.removeEventListener("pointerdown", onPointerDown);
       figure.removeEventListener("keydown", onKeyDown);
+      figure.removeEventListener("focusin", onFocusIn);
+      figure.removeEventListener("focusout", onFocusOut);
       figure.removeEventListener("pointermove", onPointerMove);
       figure.removeEventListener("pointerover", onPointerOver);
       figure.removeEventListener("pointerout", onPointerOut);

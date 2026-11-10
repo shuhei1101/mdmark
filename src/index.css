@@ -10575,9 +10575,14 @@
   .mdmark-diagram[data-diagram="map"] .map-participant {
     cursor: pointer;
   }
-  .mdmark-diagram[data-diagram="map"] .map-participant:focus-visible {
+  .mdmark-diagram[data-diagram="map"]
+    :is(.map-participant, .mdmark-diagram-node, .map-group-bar):focus-visible {
     outline: 2px solid var(--mdmark-color-link);
     outline-offset: 2px;
+  }
+  .mdmark-diagram[data-diagram="map"] .map-wire-hit:focus-visible {
+    outline: none;
+    stroke: color-mix(in srgb, var(--mdmark-color-link) 40%, transparent);
   }
 
   /* 案内と再生の帯: 図の枠の下。1 行目は番号（左）と操作のボタン（右）、2 行目からが説明の文 */

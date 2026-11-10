@@ -286,6 +286,17 @@ export const renderMapFlow = (args: MapFlowArgs): string => {
     wires,
   };
   let html = renderFlow(definition, args.id ?? "map", true).html;
+  // ノードはフォーカスして Enter・Space で選び、Alt + 矢印キーで動かせる
+  const selectedIds = new Set(args.selected);
+  for (const node of layout.nodes) {
+    const value = escapeHtml(node.id).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    html = html.replace(
+      new RegExp(
+        `(<div class="[^"]*map-kinded[^"]*"[^>]*\\sdata-node="${value}")`,
+      ),
+      `$1 tabindex="0" role="button" aria-pressed="${selectedIds.has(node.id)}"`,
+    );
+  }
   for (const node of layout.nodes) {
     if (node.faded) html = addClass(html, "data-node", node.id, "map-faded");
   }
@@ -318,8 +329,13 @@ export const renderMapFlow = (args: MapFlowArgs): string => {
     .sort((a, b) => a.ancestors.length - b.ancestors.length)
     .map((group) => {
       const current = group.id === args.entered;
-      const classes = `map-group${group.faded ? " map-faded" : ""}${current ? " is-entered" : ""}${args.dragging === group.id ? " is-dragging" : ""}`;
-      return `<div class="${classes}" data-group="${escapeHtml(group.id)}" style="left:${group.x}px;top:${group.y}px;width:${group.w}px;height:${group.h}px${groupTint(group.id)}"><div class="map-group-head">${disclosure(group.id, group.title, true)}${groupTitle(group.id, group.title, current)}</div></div>`;
+      // 中へ入ったグループと薄く残したグループのほかは、タイトルの行の帯をドラッグして動かせる
+      const movable = !current && !group.faded;
+      const classes = `map-group${group.faded ? " map-faded" : ""}${current ? " is-entered" : ""}${movable ? " map-movable" : ""}${args.dragging === group.id ? " is-dragging" : ""}`;
+      const bar = movable
+        ? `<div class="map-group-bar" tabindex="0" role="button" aria-label="${escapeHtml(`${group.title}を動かす`)}" aria-keyshortcuts="Alt+ArrowUp Alt+ArrowDown Alt+ArrowLeft Alt+ArrowRight" title="ドラッグでグループを動かす"></div>`
+        : "";
+      return `<div class="${classes}" data-group="${escapeHtml(group.id)}" style="left:${group.x}px;top:${group.y}px;width:${group.w}px;height:${group.h}px${groupTint(group.id)}">${bar}<div class="map-group-head">${disclosure(group.id, group.title, true)}${groupTitle(group.id, group.title, current)}</div></div>`;
     })
     .join("");
   // 閉じたグループは、二重の枠線の 1 つのノードにする（本数とラベルは出さない）
@@ -334,7 +350,7 @@ export const renderMapFlow = (args: MapFlowArgs): string => {
   const hits = layout.wires
     .map(
       (wire) =>
-        `<path class="map-wire-hit" data-wire="${escapeHtml(wire.id)}" d="${wire.points.map(([x, y], index) => `${index === 0 ? "M" : "L"}${x} ${y}`).join("")}"></path>`,
+        `<path class="map-wire-hit" data-wire="${escapeHtml(wire.id)}" tabindex="0" role="button" aria-label="${escapeHtml(`${wire.from} → ${wire.to}`)}" d="${wire.points.map(([x, y], index) => `${index === 0 ? "M" : "L"}${x} ${y}`).join("")}"></path>`,
     )
     .join("");
   const hitLayer = `<svg class="map-wire-hits" width="${layout.width}" height="${layout.height}">${hits}</svg>`;

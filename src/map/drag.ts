@@ -292,6 +292,56 @@ export const startDrag = (options: {
   window.addEventListener("pointerup", up);
 };
 
+/** フォーカスしたノード・グループを (dx, dy) だけ、線は真ん中の区間を区間と直角の向きへ動かした状態を返す。動かせないときは undefined */
+export const moveByKey = (options: {
+  layout: MapLayout;
+  state: MapState;
+  target: { node?: string; group?: string; wire?: string };
+  dx: number;
+  dy: number;
+}): MapState | undefined => {
+  const { layout, target, dx, dy } = options;
+  const state = {
+    ...options.state,
+    positions: freezePositions(layout, options.state.positions),
+  };
+  const item: Item | undefined =
+    target.node !== undefined
+      ? layout.nodes.find((node) => node.id === target.node)
+      : target.group !== undefined
+        ? layout.groups.find((group) => group.id === target.group)
+        : undefined;
+  if (item) {
+    const next = moveItem(layout, item, dx, dy);
+    const before = state.positions[item.id];
+    if (before && before.x === next.x && before.y === next.y) return undefined;
+    return { ...state, positions: { ...state.positions, [item.id]: next } };
+  }
+  const wire = layout.wires.find((one) => one.id === target.wire);
+  if (!wire || wire.points.length < 2) return undefined;
+  const segment = Math.floor((wire.points.length - 2) / 2);
+  const a = wire.points[segment];
+  const b = wire.points[segment + 1];
+  if (!a || !b) return undefined;
+  const offset = a[1] === b[1] ? dy : dx;
+  if (offset === 0) return undefined;
+  const shifts = options.state.wireShifts[wire.id] ?? [];
+  const old = shifts.find((shift) => shift.segment === segment)?.offset ?? 0;
+  const wireShifts = {
+    ...options.state.wireShifts,
+    [wire.id]: [
+      { segment, offset: old + offset, count: wire.points.length },
+      ...shifts.filter((shift) => shift.segment !== segment),
+    ],
+  };
+  const applied = applyWireShifts(layout, { wireShifts });
+  return {
+    ...options.state,
+    wireShifts,
+    attachments: { ...options.state.attachments, ...applied.attachments },
+  };
+};
+
 /** 線の区間のうち、点に一番近い区間の番号 */
 export const nearestSegment = (
   wire: PlacedWire,
