@@ -8,9 +8,17 @@ test("test_parse_map_args", async () => {
   // 準備
   const { parseMapArgs } = await loadSpec();
   // 実行
-  const result = parseMapArgs('{"title": "全体", "focus": "read", "play": "autoplay", "interval": 3, "collapse": {"open": false}}');
+  const result = parseMapArgs(
+    '{"title": "全体", "focus": "read", "play": "autoplay", "interval": 3, "collapse": {"open": false}}',
+  );
   // 検証
-  expect(result.args).toEqual({ title: "全体", focus: "read", play: "autoplay", interval: 3, collapse: { open: false, title: undefined } });
+  expect(result.args).toEqual({
+    title: "全体",
+    focus: "read",
+    play: "autoplay",
+    interval: 3,
+    collapse: { open: false, title: undefined },
+  });
   expect(result.problems).toEqual([]);
   expect(result.unknownKeys).toEqual([]);
 });
@@ -45,7 +53,9 @@ test("test_parse_map_args_when_not_json", async () => {
   // 実行
   const result = parseMapArgs("{title: 全体}");
   // 検証
-  expect(result.problems.map((problem) => problem.kind)).toEqual(["map_invalid_value"]);
+  expect(result.problems.map((problem) => problem.kind)).toEqual([
+    "map_invalid_value",
+  ]);
   expect(result.args).toEqual({ interval: 2 });
 });
 
@@ -56,6 +66,8 @@ test("test_parse_map_args_when_wrong_type", async () => {
   // 実行
   const result = parseMapArgs('{"interval": "abc"}');
   // 検証
-  expect(result.problems.map((problem) => problem.kind)).toEqual(["map_invalid_value"]);
+  expect(result.problems.map((problem) => problem.kind)).toEqual([
+    "map_invalid_value",
+  ]);
   expect(result.args.interval).toBe(2);
 });

@@ -10,14 +10,26 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
-const STEPS = [0, 1, 2, 3].map((index) => ({ title: `手順 ${index + 1}`, text: "", nodes: [`n${index}`], wires: [], enter: undefined }));
+const STEPS = [0, 1, 2, 3].map((index) => ({
+  title: `手順 ${index + 1}`,
+  text: "",
+  nodes: [`n${index}`],
+  wires: [],
+  enter: undefined,
+}));
 
 /** 図の枠を配置して帯を付ける */
-async function setUp(options: { autoplay?: boolean; reducedMotion?: boolean } = {}) {
+async function setUp(
+  options: { autoplay?: boolean; reducedMotion?: boolean } = {},
+) {
   const { attachBand } = await loadBand();
-  const root = createRootFromHtml('<figure class="mdmark-diagram"><div class="mdmark-diagram-box"><div class="mdmark-diagram-viewport" style="height: 200px; overflow: auto"><div style="width: 2000px; height: 2000px"></div></div></div></figure>');
+  const root = createRootFromHtml(
+    '<figure class="mdmark-diagram"><div class="mdmark-diagram-box"><div class="mdmark-diagram-viewport" style="height: 200px; overflow: auto"><div style="width: 2000px; height: 2000px"></div></div></div></figure>',
+  );
   const figure = root.querySelector("figure") as HTMLElement;
-  const viewport = root.querySelector(".mdmark-diagram-viewport") as HTMLElement;
+  const viewport = root.querySelector(
+    ".mdmark-diagram-viewport",
+  ) as HTMLElement;
   const scrollTo = vi.spyOn(viewport, "scrollTo").mockImplementation(() => {});
   const applied: Array<number | undefined> = [];
   let enter: (() => void) | undefined;
@@ -28,14 +40,30 @@ async function setUp(options: { autoplay?: boolean; reducedMotion?: boolean } = 
     interval: 3,
     autoplay: options.autoplay ?? false,
     reducedMotion: options.reducedMotion ?? false,
-    apply: (step) => applied.push(step === undefined ? undefined : STEPS.indexOf(step as (typeof STEPS)[number])),
+    apply: (step) =>
+      applied.push(
+        step === undefined
+          ? undefined
+          : STEPS.indexOf(step as (typeof STEPS)[number]),
+      ),
     observe: (_target, onEnter) => {
       enter = onEnter;
       return () => {};
     },
   });
-  const button = (label: string) => root.querySelector<HTMLButtonElement>(`button[aria-label="${label}"]`) as HTMLButtonElement;
-  return { root, handle, applied, scrollTo, viewport, button, enter: () => enter?.() };
+  const button = (label: string) =>
+    root.querySelector<HTMLButtonElement>(
+      `button[aria-label="${label}"]`,
+    ) as HTMLButtonElement;
+  return {
+    root,
+    handle,
+    applied,
+    scrollTo,
+    viewport,
+    button,
+    enter: () => enter?.(),
+  };
 }
 
 // 次へ（正常系）
@@ -91,7 +119,10 @@ test("test_attach_band_when_autoplay", async () => {
 // 動きを減らす設定（正常系）
 test("test_attach_band_when_autoplay_reduced", async () => {
   // 準備
-  const { applied, enter, root } = await setUp({ autoplay: true, reducedMotion: true });
+  const { applied, enter, root } = await setUp({
+    autoplay: true,
+    reducedMotion: true,
+  });
   // 実行
   enter();
   // 検証

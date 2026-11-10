@@ -5,14 +5,25 @@ import { CONFIG, DATA, FLOW } from "../../helpers/map.ts";
 const loadCheck = () => import("../../../../src/map/check.ts");
 
 /** 範囲を 1 つの mermaid のブロックと補足で組み立てる */
-const range = (mermaid: string, data?: string, args = "") => ({ args, mermaid, mermaidCount: 1, data, dataCount: data === undefined ? 0 : 1 });
+const range = (mermaid: string, data?: string, args = "") => ({
+  args,
+  mermaid,
+  mermaidCount: 1,
+  data,
+  dataCount: data === undefined ? 0 : 1,
+});
 
 // 形の正しい範囲（正常系）
 test("test_collect_map_structure", async () => {
   // 準備
   const { collectMapStructure } = await loadCheck();
   // 実行
-  const result = collectMapStructure({ args: "", mermaid: "flowchart LR\n  A --> B\n", mermaidCount: 1, dataCount: 1 });
+  const result = collectMapStructure({
+    args: "",
+    mermaid: "flowchart LR\n  A --> B\n",
+    mermaidCount: 1,
+    dataCount: 1,
+  });
   // 検証
   expect(result.problems).toEqual([]);
   expect(result.kind).toBe("flowchart");
@@ -23,9 +34,16 @@ test("test_collect_map_structure_when_two_blocks", async () => {
   // 準備
   const { collectMapStructure } = await loadCheck();
   // 実行
-  const result = collectMapStructure({ args: "", mermaid: "flowchart LR\n  A --> B\n", mermaidCount: 2, dataCount: 0 });
+  const result = collectMapStructure({
+    args: "",
+    mermaid: "flowchart LR\n  A --> B\n",
+    mermaidCount: 2,
+    dataCount: 0,
+  });
   // 検証
-  expect(result.problems.map((problem) => problem.kind)).toEqual(["map_invalid"]);
+  expect(result.problems.map((problem) => problem.kind)).toEqual([
+    "map_invalid",
+  ]);
   expect(result.kind).toBeUndefined();
 });
 
@@ -34,9 +52,16 @@ test("test_collect_map_structure_when_bad_args", async () => {
   // 準備
   const { collectMapStructure } = await loadCheck();
   // 実行
-  const result = collectMapStructure({ args: "{title: 全体}", mermaid: "flowchart LR\n  A --> B\n", mermaidCount: 1, dataCount: 0 });
+  const result = collectMapStructure({
+    args: "{title: 全体}",
+    mermaid: "flowchart LR\n  A --> B\n",
+    mermaidCount: 1,
+    dataCount: 0,
+  });
   // 検証
-  expect(result.problems.map((problem) => problem.kind)).toEqual(["map_invalid_value"]);
+  expect(result.problems.map((problem) => problem.kind)).toEqual([
+    "map_invalid_value",
+  ]);
   expect(result.kind).toBe("flowchart");
 });
 
@@ -55,7 +80,11 @@ test("test_collect_map_problems_when_unknown_ref", async () => {
   // 準備
   const { collectMapProblems } = await loadCheck();
   // 実行
-  const problems = collectMapProblems(range(FLOW, "version: 1\nnotes:\n  ghost: 無いノード\n"), CONFIG, true);
+  const problems = collectMapProblems(
+    range(FLOW, "version: 1\nnotes:\n  ghost: 無いノード\n"),
+    CONFIG,
+    true,
+  );
   // 検証
   expect(problems.map((problem) => problem.kind)).toEqual(["map_unknown_ref"]);
   expect(problems[0]?.message).toContain("notes.ghost");
@@ -66,9 +95,15 @@ test("test_collect_map_problems_when_unknown_class", async () => {
   // 準備
   const { collectMapProblems } = await loadCheck();
   // 実行
-  const problems = collectMapProblems(range("flowchart LR\n  A:::queue --> B\n"), CONFIG, true);
+  const problems = collectMapProblems(
+    range("flowchart LR\n  A:::queue --> B\n"),
+    CONFIG,
+    true,
+  );
   // 検証
-  expect(problems.map((problem) => problem.kind)).toEqual(["map_unknown_class"]);
+  expect(problems.map((problem) => problem.kind)).toEqual([
+    "map_unknown_class",
+  ]);
   expect(problems[0]?.message).toContain("queue");
 });
 
@@ -77,7 +112,14 @@ test("test_collect_map_problems_when_unknown_line", async () => {
   // 準備
   const { collectMapProblems } = await loadCheck();
   // 実行
-  const problems = collectMapProblems(range("flowchart LR\n  A --> B\n", "version: 1\nlayout:\n  A->B:\n    line: fast\n"), CONFIG, true);
+  const problems = collectMapProblems(
+    range(
+      "flowchart LR\n  A --> B\n",
+      "version: 1\nlayout:\n  A->B:\n    line: fast\n",
+    ),
+    CONFIG,
+    true,
+  );
   // 検証
   expect(problems.map((problem) => problem.kind)).toEqual(["map_unknown_line"]);
   expect(problems[0]?.message).toContain("fast");
@@ -88,7 +130,11 @@ test("test_collect_map_problems_when_no_mermaid", async () => {
   // 準備
   const { collectMapProblems } = await loadCheck();
   // 実行
-  const problems = collectMapProblems({ args: "", mermaid: undefined, mermaidCount: 0, data: DATA, dataCount: 1 }, CONFIG, true);
+  const problems = collectMapProblems(
+    { args: "", mermaid: undefined, mermaidCount: 0, data: DATA, dataCount: 1 },
+    CONFIG,
+    true,
+  );
   // 検証
   expect(problems.map((problem) => problem.kind)).toEqual(["map_invalid"]);
 });

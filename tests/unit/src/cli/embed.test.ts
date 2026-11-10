@@ -587,7 +587,10 @@ test("test_uses_map", async () => {
   const { usesMap } = await loadEmbed();
   const { mapRange, FLOW } = await import("../../helpers/map.ts");
   // 実行
-  const withMap = usesMap({ markdowns: ["# A\n", mapRange({ mermaid: FLOW })], config: {} });
+  const withMap = usesMap({
+    markdowns: ["# A\n", mapRange({ mermaid: FLOW })],
+    config: {},
+  });
   const withoutMap = usesMap({ markdowns: ["# A\n"], config: {} });
   // 検証
   expect(withMap).toBe(true);
@@ -600,7 +603,10 @@ test("test_uses_map_when_disabled", async () => {
   const { usesMap } = await loadEmbed();
   const { mapRange, FLOW } = await import("../../helpers/map.ts");
   // 実行
-  const used = usesMap({ markdowns: [`<!-- features: -map -->\n\n${mapRange({ mermaid: FLOW })}`], config: {} });
+  const used = usesMap({
+    markdowns: [`<!-- features: -map -->\n\n${mapRange({ mermaid: FLOW })}`],
+    config: {},
+  });
   // 検証
   expect(used).toBe(false);
 });

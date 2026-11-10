@@ -784,17 +784,33 @@ test("test_render_diagram_frame_when_mermaid", async () => {
 test("test_render_diagram_frame_when_map", async () => {
   // 準備
   const { renderDiagramFrame } = await loadDiagram();
-  const tools = ["back", "expandAll", "collapseAll", "reset"].map((name) => ({ name, label: name, disabled: name === "back" }));
-  const frame = { kind: "map" as const, title: "全体の構成", legend: [], wide: true, tools, id: "d1" };
+  const tools = ["back", "expandAll", "collapseAll", "reset"].map((name) => ({
+    name,
+    label: name,
+    disabled: name === "back",
+  }));
+  const frame = {
+    kind: "map" as const,
+    title: "全体の構成",
+    legend: [],
+    wide: true,
+    tools,
+    id: "d1",
+  };
   // 実行
   const html = renderDiagramFrame(frame, BODY);
   // 検証
-  const caption = /<figcaption[^>]*>([\s\S]*?)<\/figcaption>/.exec(html)?.[1] ?? "";
+  const caption =
+    /<figcaption[^>]*>([\s\S]*?)<\/figcaption>/.exec(html)?.[1] ?? "";
   expect(plainText(caption).trim()).toBe("全体の構成");
   expect(html).not.toContain("<time");
   expect(findTag(html, "<figure")).toContain('data-wide="true"');
-  const toolbar = /<div[^>]*class="mdmark-diagram-tools"[^>]*>([\s\S]*)/.exec(html)?.[1] ?? "";
-  const names = matches(toolbar, /aria-label="([^"]+)"/g).slice(0, 4).map((item) => item.replace(/^aria-label="|"$/g, ""));
+  const toolbar =
+    /<div[^>]*class="mdmark-diagram-tools"[^>]*>([\s\S]*)/.exec(html)?.[1] ??
+    "";
+  const names = matches(toolbar, /aria-label="([^"]+)"/g)
+    .slice(0, 4)
+    .map((item) => item.replace(/^aria-label="|"$/g, ""));
   expect(names).toEqual(["back", "expandAll", "collapseAll", "reset"]);
 });
 
@@ -802,13 +818,22 @@ test("test_render_diagram_frame_when_map", async () => {
 test("test_render_diagram_frame_when_resize_strip", async () => {
   // 準備
   const { renderDiagramFrame } = await loadDiagram();
-  const frame = { kind: "flow" as const, title: "図", legend: [], resizable: true, id: "d1" };
+  const frame = {
+    kind: "flow" as const,
+    title: "図",
+    legend: [],
+    resizable: true,
+    id: "d1",
+  };
   // 実行
   const html = renderDiagramFrame(frame, BODY);
   // 検証
-  const handle = /<div[^>]*class="mdmark-diagram-resize"[^>]*>([\s\S]*?)<\/div>/.exec(html);
+  const handle =
+    /<div[^>]*class="mdmark-diagram-resize"[^>]*>([\s\S]*?)<\/div>/.exec(html);
   expect(handle).not.toBeNull();
-  expect(html.indexOf("mdmark-diagram-resize")).toBeGreaterThan(html.indexOf("mdmark-diagram-viewport"));
+  expect(html.indexOf("mdmark-diagram-resize")).toBeGreaterThan(
+    html.indexOf("mdmark-diagram-viewport"),
+  );
   expect(handle?.[1]).toContain(iconSvg("equal"));
 });
 

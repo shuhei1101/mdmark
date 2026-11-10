@@ -18,7 +18,10 @@ afterEach(() => {
 });
 
 /** sessionStorage に保った 1 つ目の図の状態 */
-const saved = () => JSON.parse(sessionStorage.getItem(`mdmark-map:${location.pathname}#1`) ?? "{}");
+const saved = () =>
+  JSON.parse(
+    sessionStorage.getItem(`mdmark-map:${location.pathname}#1`) ?? "{}",
+  );
 
 /** 構成図を描いて付ける */
 async function setUp(search = "") {
@@ -26,9 +29,15 @@ async function setUp(search = "") {
   const { attachMapFlow } = await loadFlowView();
   const { parseMapArgs } = await loadSpec();
   const { resolveConfig } = await loadConfig();
-  const root = createRootFromHtml(renderDoc(mapRange({ mermaid: FLOW, data: DATA })).html);
+  const root = createRootFromHtml(
+    renderDoc(mapRange({ mermaid: FLOW, data: DATA })).html,
+  );
   const range = root.querySelector<HTMLElement>(".mdmark-map") as HTMLElement;
-  const handle = attachMapFlow(range, resolveConfig({ config: { map: CONFIG } }), parseMapArgs("").args);
+  const handle = attachMapFlow(
+    range,
+    resolveConfig({ config: { map: CONFIG } }),
+    parseMapArgs("").args,
+  );
   handles.push(handle);
   return root;
 }
@@ -38,9 +47,15 @@ test("test_attach_map_flow_when_toggle", async () => {
   // 準備
   const root = await setUp();
   // 実行
-  root.querySelector<HTMLButtonElement>('button[aria-label="データを閉じる"]')?.click();
+  root
+    .querySelector<HTMLButtonElement>('button[aria-label="データを閉じる"]')
+    ?.click();
   // 検証
-  expect(root.querySelector('[data-group="store"]')?.classList.contains("map-closed-group")).toBe(true);
+  expect(
+    root
+      .querySelector('[data-group="store"]')
+      ?.classList.contains("map-closed-group"),
+  ).toBe(true);
   expect(saved().collapsed).toEqual(["store"]);
 });
 
@@ -48,10 +63,18 @@ test("test_attach_map_flow_when_toggle", async () => {
 test("test_attach_map_flow_when_select_wire", async () => {
   // 準備
   const root = await setUp();
-  const wire = root.querySelector<SVGElement>('.map-wire-hit[data-wire="mount->marker"]') as SVGElement;
+  const wire = root.querySelector<SVGElement>(
+    '.map-wire-hit[data-wire="mount->marker"]',
+  ) as SVGElement;
   const press = () => {
     const box = wire.getBoundingClientRect();
-    const point = { bubbles: true, pointerId: 1, button: 0, clientX: box.x + box.width / 2, clientY: box.y + box.height / 2 };
+    const point = {
+      bubbles: true,
+      pointerId: 1,
+      button: 0,
+      clientX: box.x + box.width / 2,
+      clientY: box.y + box.height / 2,
+    };
     wire.dispatchEvent(new PointerEvent("pointerdown", point));
     window.dispatchEvent(new PointerEvent("pointerup", point));
   };
@@ -69,7 +92,9 @@ test("test_attach_map_flow_when_escape", async () => {
   const root = await setUp("?map-1=read");
   const figure = root.querySelector("figure") as HTMLElement;
   // 実行
-  figure.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true }));
+  figure.dispatchEvent(
+    new KeyboardEvent("keydown", { key: "Escape", bubbles: true }),
+  );
   // 検証
   expect(saved().entered).toBe("lib");
   expect(location.search).toBe("?map-1=lib");

@@ -14,23 +14,34 @@ test("test_build_map_ranges", () => {
   expect(opens).toHaveLength(2);
   expect(opens[0]).toContain('data-map="1"');
   expect(opens[0]).toContain('data-map-kind="flowchart"');
-  expect(opens[0]).toContain('data-map-args="{&quot;title&quot;:&quot;全体の構成&quot;,&quot;interval&quot;:3}"');
+  expect(opens[0]).toContain(
+    'data-map-args="{&quot;title&quot;:&quot;全体の構成&quot;,&quot;interval&quot;:3}"',
+  );
   expect(opens[1]).toContain('data-map="2"');
   expect(opens[1]).toContain('data-map-kind="sequenceDiagram"');
   expect(html).not.toContain("data-mdmark-mermaid");
-  expect(matches(html, /<pre class="mdmark-map-data" hidden>/g)).toHaveLength(1);
+  expect(matches(html, /<pre class="mdmark-map-data" hidden>/g)).toHaveLength(
+    1,
+  );
   expect(html).not.toContain("map-data:");
 });
 
 // 範囲の形の誤り（異常系）
 test("test_build_map_ranges_when_problems", () => {
   // 準備
-  const markdown = mapRange({ args: "{title: 全体}", mermaid: "flowchart LR\n  A --> B\n  A -> B\n", data: "version: 1\nlayuot: {}\n" });
+  const markdown = mapRange({
+    args: "{title: 全体}",
+    mermaid: "flowchart LR\n  A --> B\n  A -> B\n",
+    data: "version: 1\nlayuot: {}\n",
+  });
   // 実行
   const { html } = renderDoc(markdown);
   // 検証
   expect(matches(html, /class="mdmark-syntax-warning"/g)).toHaveLength(1);
-  const warning = html.slice(html.indexOf("mdmark-syntax-warning"), html.indexOf('class="mdmark-map"'));
+  const warning = html.slice(
+    html.indexOf("mdmark-syntax-warning"),
+    html.indexOf('class="mdmark-map"'),
+  );
   expect(warning).toContain("JSON");
   expect(warning).not.toContain("layuot");
   expect(warning).not.toContain("A -&gt; B");

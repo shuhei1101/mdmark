@@ -15,7 +15,10 @@ test("test_parse_map_data", async () => {
   expect(data.version).toBe(1);
   expect(Object.keys(data.notes)).toEqual(["layout", "data"]);
   expect(data.walkthroughs).toHaveLength(4);
-  expect(data.walkthroughs[2]).toMatchObject({ enter: "place", nodes: ["layout", "route"] });
+  expect(data.walkthroughs[2]).toMatchObject({
+    enter: "place",
+    nodes: ["layout", "route"],
+  });
   expect(data.layout.read).toEqual({ color: "blue" });
 });
 
@@ -26,7 +29,13 @@ test("test_parse_map_data_when_empty", async () => {
   // 実行
   const { data, problems } = parseMapData(undefined);
   // 検証
-  expect(data).toEqual({ version: 1, notes: {}, walkthroughs: [], layout: {}, plays_over: undefined });
+  expect(data).toEqual({
+    version: 1,
+    notes: {},
+    walkthroughs: [],
+    layout: {},
+    plays_over: undefined,
+  });
   expect(problems).toEqual([]);
 });
 
@@ -50,9 +59,13 @@ test("test_parse_map_data_when_double_hyphen", async () => {
   // 準備
   const { parseMapData } = await loadData();
   // 実行
-  const { problems } = parseMapData("version: 1\nwalkthroughs:\n  - text: a -- b\n");
+  const { problems } = parseMapData(
+    "version: 1\nwalkthroughs:\n  - text: a -- b\n",
+  );
   // 検証
-  expect(problems.map((problem) => problem.kind)).toEqual(["map_invalid_value"]);
+  expect(problems.map((problem) => problem.kind)).toEqual([
+    "map_invalid_value",
+  ]);
   expect(problems[0]?.message).toContain("walkthroughs[0].text");
 });
 
@@ -63,6 +76,8 @@ test("test_parse_map_data_when_unreadable", async () => {
   // 実行
   const { data, problems } = parseMapData("notes: [\n");
   // 検証
-  expect(problems.map((problem) => problem.kind)).toEqual(["map_invalid_value"]);
+  expect(problems.map((problem) => problem.kind)).toEqual([
+    "map_invalid_value",
+  ]);
   expect(data.notes).toEqual({});
 });

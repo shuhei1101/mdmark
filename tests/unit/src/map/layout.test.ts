@@ -8,10 +8,12 @@ const loadFlowchart = () => import("../../../../src/map/flowchart.ts");
 type Rect = { x: number; y: number; w: number; h: number };
 
 /** 辺が接するだけは重ならない扱いで、2 つの矩形が重なるか */
-const overlaps = (a: Rect, b: Rect) => a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h;
+const overlaps = (a: Rect, b: Rect) =>
+  a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h;
 
 /** 点が矩形の内側（辺を除く）にあるか */
-const strictlyInside = (x: number, y: number, r: Rect) => x > r.x && x < r.x + r.w && y > r.y && y < r.y + r.h;
+const strictlyInside = (x: number, y: number, r: Rect) =>
+  x > r.x && x < r.x + r.w && y > r.y && y < r.y + r.h;
 
 /** 線分が矩形の内側を通るか（縦横の線分だけを扱う。線分の中点を細かく確かめる） */
 const segmentCrosses = (a: [number, number], b: [number, number], r: Rect) => {
@@ -24,10 +26,20 @@ const segmentCrosses = (a: [number, number], b: [number, number], r: Rect) => {
 };
 
 /** 構成図を読んで配置する */
-async function laid(view = {}, overrides = {}, nodeFit: "height" | "width" = "height", source = FLOW) {
+async function laid(
+  view = {},
+  overrides = {},
+  nodeFit: "height" | "width" = "height",
+  source = FLOW,
+) {
   const { layoutMap } = await loadLayout();
   const { parseFlowchart } = await loadFlowchart();
-  return layoutMap(parseFlowchart(source), { collapsed: [], ...view }, overrides, nodeFit);
+  return layoutMap(
+    parseFlowchart(source),
+    { collapsed: [], ...view },
+    overrides,
+    nodeFit,
+  );
 }
 
 // 重なりと横切りが無い（正常系）
@@ -44,11 +56,22 @@ test("test_layout_map", async () => {
   }
   for (const wire of layout.wires) {
     const ends = new Set([wire.from, wire.to]);
-    const allowed = new Set([...ends, ...layout.nodes.filter((node) => ends.has(node.id)).flatMap((node) => node.ancestors), ...layout.groups.filter((group) => ends.has(group.id)).flatMap((group) => [group.id, ...group.ancestors])]);
+    const allowed = new Set([
+      ...ends,
+      ...layout.nodes
+        .filter((node) => ends.has(node.id))
+        .flatMap((node) => node.ancestors),
+      ...layout.groups
+        .filter((group) => ends.has(group.id))
+        .flatMap((group) => [group.id, ...group.ancestors]),
+    ]);
     for (const rect of items.filter((item) => !allowed.has(item.id))) {
       for (const [k, point] of wire.points.slice(1).entries()) {
         const previous = wire.points[k] as [number, number];
-        expect(segmentCrosses(previous, point, rect), `${wire.id} が ${rect.id} を横切る`).toBe(false);
+        expect(
+          segmentCrosses(previous, point, rect),
+          `${wire.id} が ${rect.id} を横切る`,
+        ).toBe(false);
       }
     }
   }
@@ -75,9 +98,15 @@ test("test_layout_map_when_collapsed", async () => {
   // 準備・実行
   const layout = await laid({ collapsed: ["store"] });
   // 検証
-  expect(layout.groups.find((group) => group.id === "store")?.collapsed).toBe(true);
-  expect(layout.nodes.some((node) => node.id === "index" || node.id === "doc")).toBe(false);
-  const toStore = layout.wires.filter((wire) => wire.from === "store" || wire.to === "store");
+  expect(layout.groups.find((group) => group.id === "store")?.collapsed).toBe(
+    true,
+  );
+  expect(
+    layout.nodes.some((node) => node.id === "index" || node.id === "doc"),
+  ).toBe(false);
+  const toStore = layout.wires.filter(
+    (wire) => wire.from === "store" || wire.to === "store",
+  );
   const pairs = toStore.map((wire) => `${wire.from}-${wire.to}`);
   expect(new Set(pairs).size).toBe(pairs.length);
   expect(toStore.every((wire) => (wire.merged?.length ?? 0) >= 1)).toBe(true);
@@ -86,7 +115,14 @@ test("test_layout_map_when_collapsed", async () => {
 // 上書き（正常系）
 test("test_layout_map_when_overrides", async () => {
   // 準備・実行
-  const layout = await laid({}, { mermaid: { align: "marker" }, data: { order: -1 }, frame: { pos: { x: 0, y: 0 } } });
+  const layout = await laid(
+    {},
+    {
+      mermaid: { align: "marker" },
+      data: { order: -1 },
+      frame: { pos: { x: 0, y: 0 } },
+    },
+  );
   // 検証
   const byId = new Map(layout.nodes.map((node) => [node.id, node]));
   const lib = layout.groups.find((group) => group.id === "lib") as Rect;
@@ -102,7 +138,10 @@ test("test_layout_map_when_measured_size", async () => {
   // 準備・実行
   const layout = await laid({}, { mount: { size: { w: 300, h: 90 } } });
   // 検証
-  expect(layout.nodes.find((node) => node.id === "mount")).toMatchObject({ w: 300, h: 90 });
+  expect(layout.nodes.find((node) => node.id === "mount")).toMatchObject({
+    w: 300,
+    h: 90,
+  });
 });
 
 // node_fit が width（正常系）
@@ -110,7 +149,12 @@ test("test_layout_map_when_node_fit_width", async () => {
   // 準備
   const long = "あ".repeat(30);
   // 実行
-  const layout = await laid({}, {}, "width", `flowchart LR\n  A["${long}"] --> B\n`);
+  const layout = await laid(
+    {},
+    {},
+    "width",
+    `flowchart LR\n  A["${long}"] --> B\n`,
+  );
   // 検証
   const node = layout.nodes.find((item) => item.id === "A") as Rect;
   expect(node.w).toBeGreaterThan(220);
@@ -120,19 +164,33 @@ test("test_layout_map_when_node_fit_width", async () => {
 // 矩形を避ける（正常系）
 test("test_route_wires", async () => {
   // 準備・実行
-  const layout = await laid({}, { B: { align: "A" }, C: { align: "A" } }, "height", "flowchart LR\n  A --> B --> C\n  A --> C\n");
+  const layout = await laid(
+    {},
+    { B: { align: "A" }, C: { align: "A" } },
+    "height",
+    "flowchart LR\n  A --> B --> C\n  A --> C\n",
+  );
   // 検証
   const b = layout.nodes.find((node) => node.id === "B") as Rect;
-  const wire = layout.wires.find((item) => item.from === "A" && item.to === "C");
+  const wire = layout.wires.find(
+    (item) => item.from === "A" && item.to === "C",
+  );
   for (const [k, point] of (wire?.points ?? []).slice(1).entries()) {
-    expect(segmentCrosses(wire?.points[k] as [number, number], point, b)).toBe(false);
+    expect(segmentCrosses(wire?.points[k] as [number, number], point, b)).toBe(
+      false,
+    );
   }
 });
 
 // 祖先の枠の出入り（正常系）
 test("test_route_wires_when_nested", async () => {
   // 準備・実行
-  const layout = await laid({}, {}, "height", "flowchart LR\n  subgraph g [g]\n    A\n  end\n  subgraph h [h]\n    B\n  end\n  A --> B\n");
+  const layout = await laid(
+    {},
+    {},
+    "height",
+    "flowchart LR\n  subgraph g [g]\n    A\n  end\n  subgraph h [h]\n    B\n  end\n  A --> B\n",
+  );
   // 検証
   const wire = layout.wires[0];
   for (const id of ["g", "h"]) {

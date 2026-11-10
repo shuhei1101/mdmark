@@ -101,8 +101,18 @@ export const CONFIG = {
   url_state: true,
   kinds: {
     step: { label: "処理", icon: "cog", shape: "rounded" as const },
-    store: { label: "保存先", icon: "database", shape: "rect" as const, color: "purple" },
-    outside: { label: "外部", icon: "globe", shape: "pill" as const, color: "green" },
+    store: {
+      label: "保存先",
+      icon: "database",
+      shape: "rect" as const,
+      color: "purple",
+    },
+    outside: {
+      label: "外部",
+      icon: "globe",
+      shape: "pill" as const,
+      color: "green",
+    },
   },
   lines: {
     "-.->": { dash: "dashed" as const, head: "open" as const },
@@ -112,9 +122,22 @@ export const CONFIG = {
 };
 
 /** map の範囲の Markdown を組み立てる */
-export function mapRange(options: { args?: string; mermaid?: string; data?: string }): string {
-  const open = options.args === undefined ? "<!-- map -->" : `<!-- map: ${options.args} -->`;
-  const block = options.mermaid === undefined ? "" : `\n\n\`\`\`mermaid\n${options.mermaid}\`\`\`\n`;
-  const data = options.data === undefined ? "" : `\n<!-- map-data: format=yaml\n${options.data}-->\n`;
+export function mapRange(options: {
+  args?: string;
+  mermaid?: string;
+  data?: string;
+}): string {
+  const open =
+    options.args === undefined
+      ? "<!-- map -->"
+      : `<!-- map: ${options.args} -->`;
+  const block =
+    options.mermaid === undefined
+      ? ""
+      : `\n\n\`\`\`mermaid\n${options.mermaid}\`\`\`\n`;
+  const data =
+    options.data === undefined
+      ? ""
+      : `\n<!-- map-data: format=yaml\n${options.data}-->\n`;
   return `${open}${block}${data}\n<!-- /map -->\n`;
 }

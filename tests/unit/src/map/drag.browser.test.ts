@@ -14,36 +14,114 @@ const LAYOUT = {
   width: 600,
   height: 400,
   nodes: [
-    { id: "A", x: 24, y: 24, w: 120, h: 60, lines: ["A"], faded: false, ancestors: [] },
-    { id: "B", x: 24, y: 160, w: 120, h: 60, lines: ["B"], faded: false, ancestors: [] },
-    { id: "C", x: 300, y: 24, w: 120, h: 60, lines: ["C"], faded: false, ancestors: [] },
+    {
+      id: "A",
+      x: 24,
+      y: 24,
+      w: 120,
+      h: 60,
+      lines: ["A"],
+      faded: false,
+      ancestors: [],
+    },
+    {
+      id: "B",
+      x: 24,
+      y: 160,
+      w: 120,
+      h: 60,
+      lines: ["B"],
+      faded: false,
+      ancestors: [],
+    },
+    {
+      id: "C",
+      x: 300,
+      y: 24,
+      w: 120,
+      h: 60,
+      lines: ["C"],
+      faded: false,
+      ancestors: [],
+    },
   ],
   groups: [],
-  wires: [{ id: "A->C", from: "A", to: "C", label: undefined, merged: undefined, points: [[144, 54], [222, 54], [222, 54], [300, 54]] as Array<[number, number]> }],
+  wires: [
+    {
+      id: "A->C",
+      from: "A",
+      to: "C",
+      label: undefined,
+      merged: undefined,
+      points: [
+        [144, 54],
+        [222, 54],
+        [222, 54],
+        [300, 54],
+      ] as Array<[number, number]>,
+    },
+  ],
 };
 
 /** 空の状態 */
-const STATE = { collapsed: [], entered: undefined, selected: [], positions: {}, wireShifts: {}, order: undefined, height: undefined };
+const STATE = {
+  collapsed: [],
+  entered: undefined,
+  selected: [],
+  positions: {},
+  wireShifts: {},
+  order: undefined,
+  height: undefined,
+};
 
 /** 要素をドラッグする（pointerdown → move → up） */
-function drag(target: Element, dx: number, dy: number, start = { x: 50, y: 50 }) {
+function drag(
+  target: Element,
+  dx: number,
+  dy: number,
+  start = { x: 50, y: 50 },
+) {
   const base = { bubbles: true, pointerId: 1, button: 0 };
-  const down = new PointerEvent("pointerdown", { ...base, clientX: start.x, clientY: start.y });
+  const down = new PointerEvent("pointerdown", {
+    ...base,
+    clientX: start.x,
+    clientY: start.y,
+  });
   target.dispatchEvent(down);
-  window.dispatchEvent(new PointerEvent("pointermove", { ...base, clientX: start.x + dx, clientY: start.y + dy }));
-  window.dispatchEvent(new PointerEvent("pointerup", { ...base, clientX: start.x + dx, clientY: start.y + dy }));
+  window.dispatchEvent(
+    new PointerEvent("pointermove", {
+      ...base,
+      clientX: start.x + dx,
+      clientY: start.y + dy,
+    }),
+  );
+  window.dispatchEvent(
+    new PointerEvent("pointerup", {
+      ...base,
+      clientX: start.x + dx,
+      clientY: start.y + dy,
+    }),
+  );
   return down;
 }
 
 /** ノードと線の要素を配置して、押したときにドラッグを始める */
 async function setUp(selector: string) {
   const { startDrag } = await loadDrag();
-  const root = createRootFromHtml('<div data-node="A"></div><div data-node="B"></div><div data-node="C"></div><svg><path class="map-wire-hit" data-wire="A->C" data-segment="1"></path></svg>');
+  const root = createRootFromHtml(
+    '<div data-node="A"></div><div data-node="B"></div><div data-node="C"></div><svg><path class="map-wire-hit" data-wire="A->C" data-segment="1"></path></svg>',
+  );
   const moves: Array<typeof STATE> = [];
   const clicks: number[] = [];
   const target = root.querySelector(selector) as Element;
   target.addEventListener("pointerdown", (event) => {
-    startDrag({ event: event as PointerEvent, layout: LAYOUT, state: STATE, onMove: (state) => moves.push(state as typeof STATE), onClick: () => clicks.push(1) });
+    startDrag({
+      event: event as PointerEvent,
+      layout: LAYOUT,
+      state: STATE,
+      onMove: (state) => moves.push(state as typeof STATE),
+      onClick: () => clicks.push(1),
+    });
   });
   return { target, moves, clicks };
 }
@@ -66,7 +144,9 @@ test("test_start_drag_when_node", async () => {
   // 実行
   drag(target, 0, 40);
   // 検証
-  const last = moves.at(-1) as unknown as { positions: Record<string, { x: number; y: number }> };
+  const last = moves.at(-1) as unknown as {
+    positions: Record<string, { x: number; y: number }>;
+  };
   expect(last.positions.A).toEqual({ x: 24, y: 64 });
   expect(last.positions.C).toEqual({ x: 300, y: 24 });
 });
@@ -78,7 +158,9 @@ test("test_start_drag_when_blocked", async () => {
   // 実行: B の上端（160）との間が 10px になる位置（A の下端 150）まで動かす
   drag(target, 0, 66);
   // 検証: 間が 16px の位置（A の y が 84）で止まる
-  const last = moves.at(-1) as unknown as { positions: Record<string, { x: number; y: number }> };
+  const last = moves.at(-1) as unknown as {
+    positions: Record<string, { x: number; y: number }>;
+  };
   expect(last.positions.A?.y).toBe(84);
 });
 
@@ -89,7 +171,13 @@ test("test_start_drag_when_reattach", async () => {
   // 実行: 真ん中の区間を C の上（y が 24 より上）まで動かす
   drag(target, 0, -60, { x: 222, y: 54 });
   // 検証
-  const last = moves.at(-1) as unknown as { wireShifts: Record<string, Array<{ segment: number; offset: number }>>; attachments?: Record<string, { to: string }> };
-  expect(last.wireShifts["A->C"]?.[0]).toMatchObject({ segment: 1, offset: -60 });
+  const last = moves.at(-1) as unknown as {
+    wireShifts: Record<string, Array<{ segment: number; offset: number }>>;
+    attachments?: Record<string, { to: string }>;
+  };
+  expect(last.wireShifts["A->C"]?.[0]).toMatchObject({
+    segment: 1,
+    offset: -60,
+  });
   expect(last.attachments?.["A->C"]?.to).toBe("top");
 });

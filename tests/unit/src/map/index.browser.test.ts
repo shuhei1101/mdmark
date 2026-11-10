@@ -28,20 +28,31 @@ async function attach(markdown: string) {
 // 構成図とシーケンス図（正常系）
 test("test_attach_map", async () => {
   // 準備・実行
-  const { root, detach } = await attach(`${mapRange({ mermaid: FLOW, data: DATA })}\n${mapRange({ mermaid: SEQUENCE })}`);
+  const { root, detach } = await attach(
+    `${mapRange({ mermaid: FLOW, data: DATA })}\n${mapRange({ mermaid: SEQUENCE })}`,
+  );
   // 検証
-  expect(root.querySelectorAll('figure.mdmark-diagram[data-diagram="map"]')).toHaveLength(2);
+  expect(
+    root.querySelectorAll('figure.mdmark-diagram[data-diagram="map"]'),
+  ).toHaveLength(2);
   detach();
   detachers.pop();
   const node = root.querySelector<HTMLElement>("[data-node]");
-  node?.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true }));
+  node?.dispatchEvent(
+    new KeyboardEvent("keydown", { key: "Enter", bubbles: true }),
+  );
   expect(node?.hasAttribute("data-selected")).toBe(false);
 });
 
 // 折りたたみ（正常系）
 test("test_attach_map_when_collapse", async () => {
   // 準備・実行
-  const { root } = await attach(mapRange({ args: '{"title": "全体", "collapse": {"open": false}}', mermaid: FLOW }));
+  const { root } = await attach(
+    mapRange({
+      args: '{"title": "全体", "collapse": {"open": false}}',
+      mermaid: FLOW,
+    }),
+  );
   // 検証
   const details = root.querySelector("details");
   expect(details?.hasAttribute("open")).toBe(false);
@@ -52,11 +63,18 @@ test("test_attach_map_when_collapse", async () => {
 // 書き方の誤り（異常系）
 test("test_attach_map_when_problems", async () => {
   // 準備・実行
-  const { root } = await attach(mapRange({ mermaid: "flowchart LR\n  A --> B\n  A -> B\n", data: "version: 1\nlayuot: {}\n" }));
+  const { root } = await attach(
+    mapRange({
+      mermaid: "flowchart LR\n  A --> B\n  A -> B\n",
+      data: "version: 1\nlayuot: {}\n",
+    }),
+  );
   // 検証
   const warnings = root.querySelectorAll(".mdmark-syntax-warning");
   expect(warnings).toHaveLength(1);
   expect(warnings[0]?.textContent).toContain("A -> B");
   expect(warnings[0]?.textContent).toContain("layuot");
-  expect(warnings[0]?.nextElementSibling?.matches(".mdmark-map, figure, details")).toBe(true);
+  expect(
+    warnings[0]?.nextElementSibling?.matches(".mdmark-map, figure, details"),
+  ).toBe(true);
 });

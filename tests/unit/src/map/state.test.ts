@@ -8,7 +8,8 @@ const IDS = new Set(["lib", "read", "place", "store"]);
 const KEY = "mdmark-map:/a.html#1";
 
 /** 検索文字列を持つ Location の代わり */
-const at = (search: string) => ({ pathname: "/a.html", search, hash: "" }) as Location;
+const at = (search: string) =>
+  ({ pathname: "/a.html", search, hash: "" }) as Location;
 
 /** sessionStorage に状態を入れた Storage */
 function stored(state: object): Storage {
@@ -20,7 +21,12 @@ function stored(state: object): Storage {
 /** replaceState の呼び出しを記録する History の代わり */
 function recordingHistory() {
   const calls: string[] = [];
-  const history = { length: 1, state: null, replaceState: (_state: unknown, _title: string, url: string) => calls.push(url) } as unknown as History;
+  const history = {
+    length: 1,
+    state: null,
+    replaceState: (_state: unknown, _title: string, url: string) =>
+      calls.push(url),
+  } as unknown as History;
   return { history, calls };
 }
 
@@ -29,7 +35,14 @@ test("test_read_map_state_when_query", async () => {
   // 準備
   const { readMapState } = await loadState();
   // 実行
-  const state = readMapState({ index: 1, ids: IDS, urlState: true, focus: undefined, storage: stored({ entered: "place" }), location: at("?map-1=read") });
+  const state = readMapState({
+    index: 1,
+    ids: IDS,
+    urlState: true,
+    focus: undefined,
+    storage: stored({ entered: "place" }),
+    location: at("?map-1=read"),
+  });
   // 検証
   expect(state.entered).toBe("read");
 });
@@ -39,7 +52,14 @@ test("test_read_map_state_when_url_state_off", async () => {
   // 準備
   const { readMapState } = await loadState();
   // 実行
-  const state = readMapState({ index: 1, ids: IDS, urlState: false, focus: undefined, storage: stored({ entered: "place" }), location: at("?map-1=read") });
+  const state = readMapState({
+    index: 1,
+    ids: IDS,
+    urlState: false,
+    focus: undefined,
+    storage: stored({ entered: "place" }),
+    location: at("?map-1=read"),
+  });
   // 検証
   expect(state.entered).toBe("place");
 });
@@ -49,7 +69,14 @@ test("test_read_map_state_when_unknown_id", async () => {
   // 準備
   const { readMapState } = await loadState();
   // 実行
-  const state = readMapState({ index: 1, ids: IDS, urlState: true, focus: undefined, storage: memoryStorage(), location: at("?map-1=ghost") });
+  const state = readMapState({
+    index: 1,
+    ids: IDS,
+    urlState: true,
+    focus: undefined,
+    storage: memoryStorage(),
+    location: at("?map-1=ghost"),
+  });
   // 検証
   expect(state.entered).toBeUndefined();
 });
@@ -59,9 +86,20 @@ test("test_read_map_state_when_storage_unavailable", async () => {
   // 準備
   const { readMapState } = await loadState();
   // 実行
-  const state = readMapState({ index: 1, ids: IDS, urlState: true, focus: undefined, storage: undefined, location: at("") });
+  const state = readMapState({
+    index: 1,
+    ids: IDS,
+    urlState: true,
+    focus: undefined,
+    storage: undefined,
+    location: at(""),
+  });
   // 検証
-  expect(state).toMatchObject({ collapsed: [], entered: undefined, selected: [] });
+  expect(state).toMatchObject({
+    collapsed: [],
+    entered: undefined,
+    selected: [],
+  });
 });
 
 // focus だけ（正常系）
@@ -69,7 +107,14 @@ test("test_read_map_state_when_focus", async () => {
   // 準備
   const { readMapState } = await loadState();
   // 実行
-  const state = readMapState({ index: 1, ids: IDS, urlState: true, focus: "read", storage: memoryStorage(), location: at("") });
+  const state = readMapState({
+    index: 1,
+    ids: IDS,
+    urlState: true,
+    focus: "read",
+    storage: memoryStorage(),
+    location: at(""),
+  });
   // 検証
   expect(state.entered).toBe("read");
 });
@@ -79,7 +124,14 @@ test("test_read_map_state_when_saved_over_focus", async () => {
   // 準備
   const { readMapState } = await loadState();
   // 実行
-  const state = readMapState({ index: 1, ids: IDS, urlState: true, focus: "read", storage: stored({ entered: "place" }), location: at("") });
+  const state = readMapState({
+    index: 1,
+    ids: IDS,
+    urlState: true,
+    focus: "read",
+    storage: stored({ entered: "place" }),
+    location: at(""),
+  });
   // 検証
   expect(state.entered).toBe("place");
 });
@@ -90,9 +142,26 @@ test("test_write_map_state", async () => {
   const { writeMapState, readMapState } = await loadState();
   const storage = memoryStorage();
   const { history, calls } = recordingHistory();
-  const state = { ...readMapState({ index: 1, ids: IDS, urlState: true, focus: undefined, storage, location: at("") }), entered: "read" };
+  const state = {
+    ...readMapState({
+      index: 1,
+      ids: IDS,
+      urlState: true,
+      focus: undefined,
+      storage,
+      location: at(""),
+    }),
+    entered: "read",
+  };
   // 実行
-  writeMapState({ index: 1, state, urlState: true, storage, history, location: at("?x=1") });
+  writeMapState({
+    index: 1,
+    state,
+    urlState: true,
+    storage,
+    history,
+    location: at("?x=1"),
+  });
   // 検証
   expect(JSON.parse(storage.getItem(KEY) ?? "{}").entered).toBe("read");
   expect(calls).toEqual(["/a.html?x=1&map-1=read"]);
@@ -105,9 +174,26 @@ test("test_write_map_state_when_url_state_off", async () => {
   const { writeMapState, readMapState } = await loadState();
   const storage = memoryStorage();
   const { history, calls } = recordingHistory();
-  const state = { ...readMapState({ index: 1, ids: IDS, urlState: false, focus: undefined, storage, location: at("") }), entered: "read" };
+  const state = {
+    ...readMapState({
+      index: 1,
+      ids: IDS,
+      urlState: false,
+      focus: undefined,
+      storage,
+      location: at(""),
+    }),
+    entered: "read",
+  };
   // 実行
-  writeMapState({ index: 1, state, urlState: false, storage, history, location: at("") });
+  writeMapState({
+    index: 1,
+    state,
+    urlState: false,
+    storage,
+    history,
+    location: at(""),
+  });
   // 検証
   expect(calls).toEqual([]);
 });
@@ -118,9 +204,26 @@ test("test_write_map_state_when_left", async () => {
   const { writeMapState, readMapState } = await loadState();
   const storage = memoryStorage();
   const { history, calls } = recordingHistory();
-  const state = { ...readMapState({ index: 1, ids: IDS, urlState: true, focus: undefined, storage, location: at("") }), entered: undefined };
+  const state = {
+    ...readMapState({
+      index: 1,
+      ids: IDS,
+      urlState: true,
+      focus: undefined,
+      storage,
+      location: at(""),
+    }),
+    entered: undefined,
+  };
   // 実行
-  writeMapState({ index: 1, state, urlState: true, storage, history, location: at("?map-1=read") });
+  writeMapState({
+    index: 1,
+    state,
+    urlState: true,
+    storage,
+    history,
+    location: at("?map-1=read"),
+  });
   // 検証
   expect(calls).toEqual(["/a.html"]);
 });

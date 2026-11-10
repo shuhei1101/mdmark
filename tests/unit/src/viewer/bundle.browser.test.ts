@@ -300,13 +300,17 @@ test("test_start_bundle_when_switch_clears_map_query", async () => {
   await placeSkeleton();
   history.replaceState(null, "", "?map-1=place&x=1#/a.md");
   startBundle(document, PAYLOAD, {});
-  const link = [...document.querySelectorAll<HTMLAnchorElement>(".mdmark-bundle-side a")].find((item) => item.getAttribute("data-doc-path") === "b.md");
+  const link = [
+    ...document.querySelectorAll<HTMLAnchorElement>(".mdmark-bundle-side a"),
+  ].find((item) => item.getAttribute("data-doc-path") === "b.md");
   // 実行
   link?.click();
   await new Promise((resolve) => setTimeout(resolve, 50));
   // 検証
   expect(location.search).toBe("?x=1");
-  expect(document.querySelector(".mdmark-bundle-main .mdmark h1")?.textContent).toContain("文書B");
+  expect(
+    document.querySelector(".mdmark-bundle-main .mdmark h1")?.textContent,
+  ).toContain("文書B");
   history.back();
   await new Promise((resolve) => setTimeout(resolve, 100));
   expect(location.search).toBe("?map-1=place&x=1");
