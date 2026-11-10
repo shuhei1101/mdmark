@@ -398,7 +398,7 @@
   stroke-dasharray: 4 3;
 }
 .map-seq-fragment-tab.is-block {
-  border-color: color-mix(in srgb, var(--mdmark-color-link) 40%, var(--mdmark-color-border));
+  border-color: color-mix(in srgb, var(--mdmark-color-link) 80%, transparent);
 }
 /* ドラッグで動かしているノード */
 .map-figure .mdmark-diagram-node.is-dragging {
@@ -462,7 +462,7 @@
 }
 .map-figure .map-seq-fragment.is-rect {
   fill: color-mix(in srgb, var(--mdmark-color-link) 10%, transparent);
-  stroke: color-mix(in srgb, var(--mdmark-color-link) 55%, transparent);
+  stroke: color-mix(in srgb, var(--mdmark-color-link) 80%, transparent);
   stroke-width: 1.5;
 }
 .map-figure .map-seq-section {
@@ -474,5 +474,5 @@
   color: var(--mdmark-color-text);
 }
 .map-figure .mdmark-diagram-lifeline {
-  stroke: color-mix(in srgb, var(--mdmark-color-muted) 60%, transparent);
+  stroke: color-mix(in srgb, var(--mdmark-color-muted) 70%, transparent);
 }
