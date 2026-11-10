@@ -131,16 +131,14 @@ test("test_stack_series", async () => {
   ]);
 });
 
-// 下限と上限の間に収める（正常系）
+// 下限に収めて丸める（正常系）
 test("test_clamp_diagram_height", async () => {
   // 準備
   const { clampDiagramHeight } = await loadGeometry();
   // 実行
-  const heights = [50, 400.6, 1000].map((h) => clampDiagramHeight(h, 800));
-  const small = clampDiagramHeight(200, 80);
+  const heights = [50, 400.6, 3000].map((h) => clampDiagramHeight(h));
   // 検証
-  expect(heights).toEqual([120, 401, 800]);
-  expect(small).toBe(120);
+  expect(heights).toEqual([120, 401, 3000]);
 });
 
 // 見えているグループのタイトルを留め、層は枠のタイトルの下に留める（正常系）

@@ -369,3 +369,25 @@ test("test_apply_page_settings", async () => {
   expect(unchanged).toEqual(before);
   expect(config).toEqual(before);
 });
+
+// 既定（正常系）
+test("test_resolve_map_config", async () => {
+  // 準備
+  const { resolveMapConfig } = await loadConfig();
+  // 実行
+  const map = resolveMapConfig(undefined);
+  // 検証
+  expect(map).toEqual({ node_fit: "height", url_state: true, kinds: {}, lines: {} });
+});
+
+// 知らない値（正常系）
+test("test_resolve_map_config_when_unknown_values", async () => {
+  // 準備
+  const { resolveMapConfig } = await loadConfig();
+  // 実行
+  const map = resolveMapConfig({ node_fit: "tall", url_state: "no", kinds: { a: { shape: "hexagon", label: "A" } } });
+  // 検証
+  expect(map.node_fit).toBe("height");
+  expect(map.url_state).toBe(true);
+  expect(map.kinds.a).toEqual({ label: "A" });
+});

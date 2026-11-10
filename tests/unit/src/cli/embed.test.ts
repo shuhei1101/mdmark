@@ -580,3 +580,27 @@ test("test_compile_html_scripts_when_syntax_error", async () => {
   expect(warnings[0]).toContain("docs/broken.md");
   expect(warnings[0]).not.toContain("\n");
 });
+
+// map の範囲があるときだけ（正常系）
+test("test_uses_map", async () => {
+  // 準備
+  const { usesMap } = await loadEmbed();
+  const { mapRange, FLOW } = await import("../../helpers/map.ts");
+  // 実行
+  const withMap = usesMap({ markdowns: ["# A\n", mapRange({ mermaid: FLOW })], config: {} });
+  const withoutMap = usesMap({ markdowns: ["# A\n"], config: {} });
+  // 検証
+  expect(withMap).toBe(true);
+  expect(withoutMap).toBe(false);
+});
+
+// 機能を外した文書（正常系）
+test("test_uses_map_when_disabled", async () => {
+  // 準備
+  const { usesMap } = await loadEmbed();
+  const { mapRange, FLOW } = await import("../../helpers/map.ts");
+  // 実行
+  const used = usesMap({ markdowns: [`<!-- features: -map -->\n\n${mapRange({ mermaid: FLOW })}`], config: {} });
+  // 検証
+  expect(used).toBe(false);
+});
