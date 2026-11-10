@@ -58,11 +58,11 @@ data_models:
   summary: '`attachMapFlow` の戻り値'
   properties:
   - name: focus
-    type: '(focus: { nodes: string[]; wires: string[] } | undefined) => void'
-    description: 再生の強調を当てる・解く
+    type: '(target: { nodes: string[]; wires: string[] }) => void'
+    description: 案内を止めて、外から強調を当てる（シーケンス図の再生）
   - name: clearFocus
     type: () => void
-    description: 案内の強調を解く
+    description: 外から当てた強調を解く
   - name: destroy
     type: () => void
     description: 操作と観察を外す
@@ -73,15 +73,15 @@ data_models:
   role: データモデル
   summary: '`attachMapSequence` の戻り値'
   properties:
-  - name: onPlay
-    type: '(listener: (message: SequenceMessage | undefined) => void) => void'
-    description: 再生で進めたメッセージを受け取る関数を登録する
-  - name: clearFocus
+  - name: playsOver
+    type: number | undefined
+    description: 補足の `plays_over`（再生を重ねる構成図の番号）
+  - name: clear
     type: () => void
-    description: 再生の強調を解く
+    description: 再生を止めて強調を解く（構成図の案内を始めたとき）
   - name: destroy
     type: () => void
-    description: 操作を外す
+    description: 時計と操作を外す
 - name: BandStep
   title: 帯の手順
   container: src/map/band.ts
@@ -114,6 +114,9 @@ data_models:
   - name: stop
     type: () => void
     description: 強調を解いて始める前に戻す
+  - name: update
+    type: '(steps: BandStep[]) => void'
+    description: 進める手順を差し替え、始める前の状態に戻す（強調は当て直さない）
   - name: destroy
     type: () => void
     description: 時計と操作を外す
@@ -321,6 +324,10 @@ functions:
     type: MapArgs
     required: true
     description: 印の引数
+  - name: onWalk
+    type: () => void
+    required: false
+    description: 案内の手順を進めたときに呼ぶ関数
   returns:
     type: MapFlowHandle
     description: 強調を外から当てる関数と片付ける関数
@@ -381,9 +388,17 @@ functions:
     type: MapArgs
     required: true
     description: 印の引数
+  - name: onStep
+    type: '(message: number | undefined) => void'
+    required: false
+    description: 再生で進めたメッセージの番号を受け取る関数（止めたときは `undefined`）
   returns:
     type: MapSequenceHandle
     description: 再生の強調を外から受け取る関数と片付ける関数
+  process: |-
+    1. `parseSequence`・`parseMapData` で読み、`readMapState` で状態を読んで `sequenceRows` で表示する行を決め、`renderMapSequence` で描く
+    2. 表示する行のメッセージを `attachBand`（モード `playback`）の手順にする。開閉・中だけを描くで表示するメッセージが変わったら `update` で手順を差し替え、再生していれば `onStep(undefined)` を呼ぶ
+    3. 参加者の箱の名前の文字の外を押すと選び、4px 動かすと並べ替えのドラッグにして、移す先の列に縦の線（`.map-insert-line`）を出し、離した位置に最も近い列へ移す。ドラッグの直後の押した扱いは選ばない
   unit_tests:
   - name: test_attach_map_sequence_when_reorder
     case: 正常
@@ -508,9 +523,9 @@ functions:
   scope: public
   args:
   - name: options
-    type: '{ event: PointerEvent; layout: MapLayout; state: MapState; onMove: (state: MapState) => void; onClick: () => void }'
+    type: '{ event: PointerEvent; layout: MapLayout; state: MapState; onMove: (state: MapState) => void; onClick: () => void; scale?: number; pointOf?: (event: PointerEvent) => [number, number] }'
     required: true
-    description: 押したイベント・配置・状態・動かしたとき・押したときの関数
+    description: 押したイベント・配置・状態・動かしたとき・押したときの関数・図の中身とポインターの座標の比・ポインターの位置を図の中身の座標にする関数（線の区間を選ぶ）
   returns:
     type: void
     description: なし
@@ -563,7 +578,7 @@ functions:
   process: |-
     1. `renderMapBand` で帯を描き、前へ・次へは端で反対の端へ回し、`apply` で強調を当てる
     2. 自動で進めるの間は `interval` 秒ごとに次へ進め、強調するノードの中心へ表示する枠をスクロールする。読者がホイール・ドラッグ・キーで表示する枠を触ったら、自動で進め直すまでスクロールしない
-    3. 停止で `apply(undefined)` を呼び、始めた段に戻す
+    3. 停止で `apply(undefined)` を呼び、始めた段に戻す。`update` で手順を差し替えたときは、自動で進めるを止めて番号を `–` に戻す
     4. `autoplay` が `true` なら `observe` で図の枠が画面に入るのを待ち、入ったら `reducedMotion` が `false` のときだけ自動で進めるを始める（`true` のときは止めた帯のまま）
   unit_tests:
   - name: test_attach_band_when_next
@@ -590,6 +605,12 @@ functions:
     condition: '`autoplay: true`・`reducedMotion: false`。`observe` の `onEnter` を呼ぶ'
     mock: '`observe`・時計'
     expected: '`onEnter` の前は `apply` を呼ばず、呼んだ後に手順 0 が渡り、自動で進めるの `aria-pressed` が `true`'
+  - name: test_attach_band_when_update
+    case: 正常
+    summary: 手順の差し替え
+    condition: 4 手順で次へを 2 回押してから、2 手順に `update` する
+    mock: '`apply`'
+    expected: 帯の番号が `–/2` になり、`update` で `apply` を呼ばない
   - name: test_attach_band_when_autoplay_reduced
     case: 正常
     summary: 動きを減らす設定
