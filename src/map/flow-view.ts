@@ -179,6 +179,8 @@ export const attachMapFlow = (
       title: args.title ?? "",
       legend: [],
       wide: true,
+      // 等倍より縮めず、収まらない分は図の枠の中で横にスクロールする
+      fitMin: 1,
       tools: tools(),
       id: frameId,
     },
