@@ -1,4 +1,4 @@
-/** map の単体テストの見本（モック `dev/mock/refs/445/assets/samples.js` と同じ Mermaid。補足は ER 図『mapの補足』の構造） */
+/** map の単体テストの見本（モック `dev/mock/refs/445/assets/samples.js` と同じ Mermaid。補足は ER 図『mapの補足』の構造の JSON） */
 
 /** 構成図: 入れ子 2 レイヤーのグループ・グループをまたぐ線・種類のクラス（ノード 10・グループ 4・線 12） */
 export const FLOW = `flowchart LR
@@ -28,7 +28,7 @@ export const FLOW = `flowchart LR
   mount --> marker
   doc -.-> marker
   marker -->|mermaid のブロック| mermaid
-  marker -->|補足の YAML| data
+  marker -->|補足| data
   index -.-> data
   mermaid -->|ノードと線| layout
   data -->|layout の上書き| layout
@@ -64,35 +64,29 @@ export const SEQUENCE = `sequenceDiagram
   mount-->>-user: 描いた文書
 `;
 
-/** 構成図の補足の YAML */
-export const DATA = `version: 1
-notes:
-  layout: 内側のグループから配置し、グループの大きさを決めてから外側を配置する
-  data: version と機能ごとのキーをスキーマで検査する
-walkthroughs:
-  - title: mount に渡す
-    text: 利用側のページが、設定と Markdown を mount に渡します。
-    nodes: [user, mount]
-  - title: 文書と索引を読む
-    text: |-
-      文書と索引は、補足の検査と map のマーカーの読み取りに読まれます。
-      索引の用語と別名は、補足の検査でラベルと notes の文の照合に使います。
-      文書の Markdown は、map の範囲ごとに 1 つの図の定義に分けます。
-    nodes: [doc, index, data]
-  - title: 線の経路を決める
-    text: 配置のグループの中で、自動配置の後に線の経路を決めます。
-    enter: place
-    nodes: [layout, route]
-  - title: 大きさを伝え合う
-    text: 線の経路と図の枠は、描き直すたびに互いに大きさを伝え合います。
-    nodes: [route, frame]
-layout:
-  read:
-    color: blue
-  place:
-    color: green
-  store:
-    color: orange
+/** 構成図の補足（JSON のオブジェクト。複数の行にわたる） */
+export const DATA = `{
+  "version": 1,
+  "notes": {
+    "layout": {"text": "内側のグループから配置し、グループの大きさを決めてから外側を配置する"},
+    "data": {"text": "version と機能ごとのキーをスキーマで検査する"}
+  },
+  "walkthroughs": [
+    {"title": "mount に渡す", "text": "利用側のページが、設定と Markdown を mount に渡します。", "nodes": ["user", "mount"]},
+    {
+      "title": "文書と索引を読む",
+      "text": "文書と索引は、補足の検査と map のマーカーの読み取りに読まれます。\n索引の用語と別名は、補足の検査でラベルと notes の文の照合に使います。\n文書の Markdown は、map の範囲ごとに 1 つの図の定義に分けます。",
+      "nodes": ["doc", "index", "data"]
+    },
+    {"title": "線の経路を決める", "text": "配置のグループの中で、自動配置の後に線の経路を決めます。", "enter": "place", "nodes": ["layout", "route"]},
+    {"title": "大きさを伝え合う", "text": "線の経路と図の枠は、描き直すたびに互いに大きさを伝え合います。", "nodes": ["route", "frame"]}
+  ],
+  "layout": {
+    "read": {"color": "blue"},
+    "place": {"color": "green"},
+    "store": {"color": "orange"}
+  }
+}
 `;
 
 /** 使う側の設定の map（既定を当てた後の形） */
@@ -136,8 +130,6 @@ export function mapRange(options: {
       ? ""
       : `\n\n\`\`\`mermaid\n${options.mermaid}\`\`\`\n`;
   const data =
-    options.data === undefined
-      ? ""
-      : `\n<!-- map-data: format=yaml\n${options.data}-->\n`;
+    options.data === undefined ? "" : `\n<!-- map-data: ${options.data} -->\n`;
   return `${open}${block}${data}\n<!-- /map -->\n`;
 }

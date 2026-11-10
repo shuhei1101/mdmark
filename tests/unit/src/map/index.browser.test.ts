@@ -66,7 +66,7 @@ test("test_attach_map_when_problems", async () => {
   const { root } = await attach(
     mapRange({
       mermaid: "flowchart LR\n  A --> B\n  A -> B\n",
-      data: "version: 1\nlayuot: {}\n",
+      data: '{"version": 1, "layuot": {}}',
     }),
   );
   // 検証

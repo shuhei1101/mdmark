@@ -807,7 +807,7 @@ test("test_check_maps", async () => {
   const { mapRange, FLOW } = await import("../../helpers/map.ts");
   const drift = mapRange({
     mermaid: "flowchart LR\n  A --> B\n",
-    data: "version: 1\nnotes:\n  ghost: 無い\nlayuot: {}\nwalkthroughs:\n  - text: a -- b\n",
+    data: '{\n  "version": 1,\n  "notes": {\n    "ghost": {"text": "無い"}\n  },\n  "layuot": {},\n  "walkthroughs": [{"text": "a -- b"}]\n}',
   });
   const markdown = `# A\n\n${drift}\n${"\n".repeat(4)}${mapRange({ mermaid: FLOW })}`;
   // 実行
@@ -823,7 +823,8 @@ test("test_check_maps", async () => {
   ]);
   expect(issues.every((issue) => issue.file === "docs/a.md")).toBe(true);
   const dataLine =
-    markdown.split("\n").findIndex((line) => line.startsWith("  ghost:")) + 1;
+    markdown.split("\n").findIndex((line) => line.startsWith('    "ghost"')) +
+    1;
   expect(issues.find((issue) => issue.kind === "map_unknown_ref")?.where).toBe(
     String(dataLine),
   );

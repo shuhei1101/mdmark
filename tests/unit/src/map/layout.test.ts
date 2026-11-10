@@ -206,6 +206,67 @@ test("test_route_wires_when_nested", async () => {
   }
 });
 
+// 寄せる（正常系）
+test("test_layout_map_when_justify", async () => {
+  // 準備
+  const source =
+    "flowchart TB\n  subgraph g [g]\n    A --> B\n    A --> C\n    A --> D\n  end\n";
+  // 実行
+  const start = await laid({}, { A: { justify: "start" } }, "height", source);
+  const end = await laid({}, { A: { justify: "end" } }, "height", source);
+  // 検証（グループの中身の左右の端はグループの内側の余白 24px の内側）
+  const left = start.groups.find((item) => item.id === "g") as Rect;
+  const a1 = start.nodes.find((item) => item.id === "A") as Rect;
+  expect(a1.x).toBe(left.x + 24);
+  const right = end.groups.find((item) => item.id === "g") as Rect;
+  const a2 = end.nodes.find((item) => item.id === "A") as Rect;
+  expect(a2.x + a2.w).toBe(right.x + right.w - 24);
+});
+
+// 端の辺（正常系）
+test("test_route_wires_when_ends", async () => {
+  // 準備・実行
+  const layout = await laid(
+    {},
+    { "A->B": { ends: { from: "bottom", to: "top" } } },
+    "height",
+    "flowchart LR\n  A --> B\n",
+  );
+  // 検証
+  const a = layout.nodes.find((node) => node.id === "A") as Rect;
+  const b = layout.nodes.find((node) => node.id === "B") as Rect;
+  const points = layout.wires[0]?.points ?? [];
+  const first = points[0] as [number, number];
+  const second = points[1] as [number, number];
+  const beforeLast = points.at(-2) as [number, number];
+  const last = points.at(-1) as [number, number];
+  expect(first).toEqual([a.x + a.w / 2, a.y + a.h]);
+  expect(last).toEqual([b.x + b.w / 2, b.y]);
+  expect(second[0]).toBe(first[0]);
+  expect(beforeLast[0]).toBe(last[0]);
+});
+
+// 経由点（正常系）
+test("test_route_wires_when_via", async () => {
+  // 準備・実行（図の全体の中身の左上は図の外の余白 24px の内側）
+  const layout = await laid(
+    {},
+    { "A->B": { via: [{ x: 240, y: 300 }] } },
+    "height",
+    "flowchart LR\n  A --> B\n",
+  );
+  // 検証
+  const points = layout.wires[0]?.points ?? [];
+  expect(points).toContainEqual([264, 324]);
+  for (const node of layout.nodes) {
+    for (const [k, point] of points.slice(1).entries()) {
+      const previous = points[k] as [number, number];
+      const ends = node.id === "A" || node.id === "B";
+      if (!ends) expect(segmentCrosses(previous, point, node)).toBe(false);
+    }
+  }
+});
+
 // 全角 30 文字（正常系）
 test("test_wrap_label", async () => {
   // 準備

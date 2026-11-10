@@ -24,6 +24,16 @@ test("test_build_map_ranges", () => {
     1,
   );
   expect(html).not.toContain("map-data:");
+  // pre の中身は補足の JSON のまま（HTML の特殊文字だけを置き換える）
+  const pre =
+    html.match(/<pre class="mdmark-map-data" hidden>([\s\S]*?)<\/pre>/)?.[1] ??
+    "";
+  const decoded = pre
+    .replaceAll("&quot;", '"')
+    .replaceAll("&amp;", "&")
+    .replaceAll("&lt;", "<")
+    .replaceAll("&gt;", ">");
+  expect(JSON.parse(decoded)).toEqual(JSON.parse(DATA));
 });
 
 // 範囲の形の誤り（異常系）
@@ -32,7 +42,7 @@ test("test_build_map_ranges_when_problems", () => {
   const markdown = mapRange({
     args: "{title: 全体}",
     mermaid: "flowchart LR\n  A --> B\n  A -> B\n",
-    data: "version: 1\nlayuot: {}\n",
+    data: '{"version": 1, "layuot": {}}',
   });
   // 実行
   const { html } = renderDoc(markdown);

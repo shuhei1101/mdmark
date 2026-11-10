@@ -81,13 +81,33 @@ test("test_collect_map_problems_when_unknown_ref", async () => {
   const { collectMapProblems } = await loadCheck();
   // 実行
   const problems = collectMapProblems(
-    range(FLOW, "version: 1\nnotes:\n  ghost: 無いノード\n"),
+    range(FLOW, '{"version": 1, "notes": {"ghost": {"text": "無いノード"}}}'),
     CONFIG,
     true,
   );
   // 検証
   expect(problems.map((problem) => problem.kind)).toEqual(["map_unknown_ref"]);
   expect(problems[0]?.message).toContain("notes.ghost");
+});
+
+// 線の上書きをノードに指定した（異常系）
+test("test_collect_map_problems_when_wire_override_on_node", async () => {
+  // 準備
+  const { collectMapProblems } = await loadCheck();
+  // 実行
+  const problems = collectMapProblems(
+    range(
+      FLOW,
+      '{"version": 1, "layout": {"mount": {"via": [{"x": 0, "y": 0}]}}}',
+    ),
+    CONFIG,
+    true,
+  );
+  // 検証
+  expect(problems.map((problem) => problem.kind)).toEqual([
+    "map_invalid_value",
+  ]);
+  expect(problems[0]?.message).toContain("layout.mount.via");
 });
 
 // 設定に無いクラス（異常系）
@@ -115,7 +135,7 @@ test("test_collect_map_problems_when_unknown_line", async () => {
   const problems = collectMapProblems(
     range(
       "flowchart LR\n  A --> B\n",
-      "version: 1\nlayout:\n  A->B:\n    line: fast\n",
+      '{"version": 1, "layout": {"A->B": {"line": "fast"}}}',
     ),
     CONFIG,
     true,

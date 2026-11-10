@@ -40,6 +40,7 @@ test("test_read_map_state_when_query", async () => {
     ids: IDS,
     urlState: true,
     focus: undefined,
+    collapsed: [],
     storage: stored({ entered: "place" }),
     location: at("?map-1=read"),
   });
@@ -57,6 +58,7 @@ test("test_read_map_state_when_url_state_off", async () => {
     ids: IDS,
     urlState: false,
     focus: undefined,
+    collapsed: [],
     storage: stored({ entered: "place" }),
     location: at("?map-1=read"),
   });
@@ -74,6 +76,7 @@ test("test_read_map_state_when_unknown_id", async () => {
     ids: IDS,
     urlState: true,
     focus: undefined,
+    collapsed: [],
     storage: memoryStorage(),
     location: at("?map-1=ghost"),
   });
@@ -91,6 +94,7 @@ test("test_read_map_state_when_storage_unavailable", async () => {
     ids: IDS,
     urlState: true,
     focus: undefined,
+    collapsed: [],
     storage: undefined,
     location: at(""),
   });
@@ -112,6 +116,7 @@ test("test_read_map_state_when_focus", async () => {
     ids: IDS,
     urlState: true,
     focus: "read",
+    collapsed: [],
     storage: memoryStorage(),
     location: at(""),
   });
@@ -129,6 +134,7 @@ test("test_read_map_state_when_saved_over_focus", async () => {
     ids: IDS,
     urlState: true,
     focus: "read",
+    collapsed: [],
     storage: stored({ entered: "place" }),
     location: at(""),
   });
@@ -137,6 +143,29 @@ test("test_read_map_state_when_saved_over_focus", async () => {
 });
 
 // 中へ入る（正常系）
+// 補足で最初に閉じる（正常系）
+test("test_read_map_state_when_layout_collapsed", async () => {
+  // 準備
+  const { readMapState } = await loadState();
+  const options = {
+    index: 1,
+    ids: IDS,
+    urlState: true,
+    focus: undefined,
+    collapsed: ["store"],
+    location: at(""),
+  };
+  // 実行
+  const empty = readMapState({ ...options, storage: memoryStorage() });
+  const saved = readMapState({
+    ...options,
+    storage: stored({ collapsed: [] }),
+  });
+  // 検証
+  expect(empty.collapsed).toEqual(["store"]);
+  expect(saved.collapsed).toEqual([]);
+});
+
 test("test_write_map_state", async () => {
   // 準備
   const { writeMapState, readMapState } = await loadState();
@@ -148,6 +177,7 @@ test("test_write_map_state", async () => {
       ids: IDS,
       urlState: true,
       focus: undefined,
+      collapsed: [],
       storage,
       location: at(""),
     }),
@@ -180,6 +210,7 @@ test("test_write_map_state_when_url_state_off", async () => {
       ids: IDS,
       urlState: false,
       focus: undefined,
+      collapsed: [],
       storage,
       location: at(""),
     }),
@@ -210,6 +241,7 @@ test("test_write_map_state_when_left", async () => {
       ids: IDS,
       urlState: true,
       focus: undefined,
+      collapsed: [],
       storage,
       location: at(""),
     }),
