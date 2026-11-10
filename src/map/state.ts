@@ -18,7 +18,7 @@ export type MapState = {
   height: number | undefined;
 };
 
-/** sessionStorage のキーの頭（`{頭}{pathname}#{図の番号}`） */
+/** sessionStorage のキーの頭（`{頭}{pathname}{まとめた HTML の文書の経路}#{図の番号}`） */
 export const MAP_STATE_KEY_PREFIX = "mdmark-map:";
 
 /** クエリ文字列のキーの頭（`map-{図の番号}`） */
@@ -36,8 +36,14 @@ export const emptyMapState = (): MapState => ({
   height: undefined,
 });
 
-const stateKey = (location: Pick<Location, "pathname">, index: number) =>
-  `${MAP_STATE_KEY_PREFIX}${location.pathname}#${index}`;
+/** キー。まとめた HTML では文書ごとに分けるため、ハッシュの文書の経路（`#/a.md`）を足す */
+const stateKey = (
+  location: Pick<Location, "pathname" | "hash">,
+  index: number,
+) => {
+  const route = /^#\/[^#]*/.exec(location.hash)?.[0] ?? "";
+  return `${MAP_STATE_KEY_PREFIX}${location.pathname}${route}#${index}`;
+};
 
 /** sessionStorage を読み、取り出せないときは undefined */
 const readStored = (
@@ -65,7 +71,7 @@ export const readMapState = (options: {
   /** 補足の layout の collapsed が true のグループ。保った開閉の状態が無いときに閉じる */
   collapsed: string[];
   storage: Storage | undefined;
-  location: Pick<Location, "pathname" | "search">;
+  location: Pick<Location, "pathname" | "search" | "hash">;
 }): MapState => {
   const stored = readStored(
     options.storage,
