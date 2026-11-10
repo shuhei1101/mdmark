@@ -18,6 +18,27 @@
   border-radius: calc(var(--mdmark-radius) * 2);
   background: var(--map-fill, color-mix(in srgb, var(--mdmark-color-surface) 50%, transparent));
 }
+/*
+ * 層の帯: 親のグループの中身の幅で上から積み、層の色をうっすら敷く（今のフロー図の層と同じ濃さ）。
+ * 色を持つグループの面の上でも帯の範囲が分かるよう、上下に文字の薄い色の 70% の境界線を引く
+ */
+.map-lane {
+  position: absolute;
+  box-sizing: border-box;
+  border-block: 1px solid color-mix(in srgb, var(--mdmark-color-muted) 70%, transparent);
+  background: color-mix(in srgb, var(--map-ink, var(--mdmark-color-muted)) var(--mdmark-diagram-lane-tint, 8%), transparent);
+}
+/* 層の名前: 帯の左上に控えめな文字で（今のフロー図の層の見出しと同じ） */
+.map-lane-title {
+  position: absolute;
+  top: 6px;
+  left: 8px;
+  color: var(--map-ink, var(--mdmark-color-muted));
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.4;
+  white-space: nowrap;
+}
 /* グループの見出し: 左上に、開閉の山形とタイトルを並べる */
 .map-group-head {
   position: absolute;
