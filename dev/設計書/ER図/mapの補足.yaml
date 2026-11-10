@@ -34,7 +34,7 @@ tables:
     title: 説明
     type: object
     default: '`{}`'
-    description: ノード・線の ID ごとの説明（`{ "text": 説明の文 }`）。線にポインターを当てたツールチップと、再生の帯の説明に出す
+    description: 'ノード・線の ID ごとの説明（`{ "text": 説明の文 }`）。線にポインターを当てたツールチップと、再生の帯の説明に出す'
     example: '{"mount": {"text": "文書を描く公開関数"}}'
     notes: キーは Mermaid のノード・線の ID（シーケンス図はメッセージの番号）。無い ID は `map_unknown_ref`
   - name: plays_over
@@ -134,7 +134,7 @@ tables:
   - name: ends
     title: 線の端の辺
     type: object
-    description: 線の ID のときだけ。元の端（`from`）と先の端（`to`）をつなぐノードの辺（`{ "from": { "side": … }, "to": { "side": … } }`。`side` は `top`・`right`・`bottom`・`left`）。無い端は自動で決める
+    description: '線の ID のときだけ。元の端（`from`）と先の端（`to`）をつなぐノードの辺（`{ "from": { "side": … }, "to": { "side": … } }`。`side` は `top`・`right`・`bottom`・`left`）。無い端は自動で決める'
     example: '{"from": {"side": "bottom"}, "to": {"side": "top"}}'
   - name: via
     title: 経由点

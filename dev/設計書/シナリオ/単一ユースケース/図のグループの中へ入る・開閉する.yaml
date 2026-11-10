@@ -93,7 +93,7 @@ scenarios:
       - name: 図を描くページ
         description: 『Mermaidと補足で図を描く』の正常シナリオと同じ
       - name: 最初の見せ方を持つ map の Markdown
-        description: 正常シナリオの構成図の印に `{"focus": "{外のグループの ID}"}` を指定した文書。sessionStorage とクエリ文字列は空
+        description: '正常シナリオの構成図の印に `{"focus": "{外のグループの ID}"}` を指定した文書。sessionStorage とクエリ文字列は空'
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-

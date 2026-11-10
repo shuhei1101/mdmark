@@ -80,7 +80,7 @@ scenarios:
   - name: 正常シナリオ（印の引数で自動で再生する）
     setup:
       - name: 図を描いたページ
-        description: 正常シナリオのシーケンス図の印に `{"play": "autoplay"}` を持つ文書を描いたページ。シーケンス図は文書の 2 画面目より下にある
+        description: '正常シナリオのシーケンス図の印に `{"play": "autoplay"}` を持つ文書を描いたページ。シーケンス図は文書の 2 画面目より下にある'
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
@@ -100,7 +100,7 @@ scenarios:
   - name: 正常シナリオ（印の引数で間隔を指定する）
     setup:
       - name: 図を描いたページ
-        description: 正常シナリオのシーケンス図を 2 つ持つ文書を描いたページ。1 つ目の印に `{"interval": 1}`、2 つ目の印に `{"interval": "abc"}` を持つ
+        description: '正常シナリオのシーケンス図を 2 つ持つ文書を描いたページ。1 つ目の印に `{"interval": 1}`、2 つ目の印に `{"interval": "abc"}` を持つ'
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-

@@ -2144,7 +2144,7 @@ flows:
       - name: 配布物を読み込んだ Node の処理
         description: 正常系と同じ
       - name: 書き方を誤った map の Markdown
-        description: 矢印を `->` と書いた行と `subgraph` の閉じの無い mermaid のブロック、補足に知らないキー `layuot`、印の JSON のオブジェクトに知らないキー `mdoe` を持つ範囲、印の引数が `{title: 全体}`（JSON として読めない）の範囲、`pie` の図の範囲、mermaid のブロックの無い範囲、補足を 2 つ持つ範囲を持つ文書
+        description: '矢印を `->` と書いた行と `subgraph` の閉じの無い mermaid のブロック、補足に知らないキー `layuot`、印の JSON のオブジェクトに知らないキー `mdoe` を持つ範囲、印の引数が `{title: 全体}`（JSON として読めない）の範囲、`pie` の図の範囲、mermaid のブロックの無い範囲、補足を 2 つ持つ範囲を持つ文書'
       - name: Mock
         description: 差し替える依存は無い
     flow: |-

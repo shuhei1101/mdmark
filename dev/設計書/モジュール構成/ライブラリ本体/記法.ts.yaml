@@ -3378,7 +3378,7 @@ functions:
     - name: test_build_map_ranges_when_problems
       case: 異常
       summary: 範囲の形の誤り
-      condition: JSON として読めない引数 `{title: 全体}` と、読めない Mermaid の行と知らない補足のキーを持つ範囲
+      condition: 'JSON として読めない引数 `{title: 全体}` と、読めない Mermaid の行と知らない補足のキーを持つ範囲'
       mock: なし
       expected: 範囲の前に記載の警告が 1 つで、引数を JSON で記載する直し方を含み、Mermaid の行と `layuot` は含まない。`div.mdmark-map` がある
     - name: test_build_map_ranges_when_no_mermaid
