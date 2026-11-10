@@ -50,6 +50,7 @@ import { expandIncludes } from "./syntax/includes.ts";
 import { buildInlineIcons } from "./syntax/inline-icons.ts";
 import { buildKbds } from "./syntax/kbd.ts";
 import { buildLayoutColumns } from "./syntax/layout-columns.ts";
+import { buildMapRanges } from "./syntax/map.ts";
 import { buildPagebreaks } from "./syntax/pagebreak.ts";
 import { attachRowDetails } from "./syntax/row-details.ts";
 import { wrapSections } from "./syntax/sections.ts";
@@ -286,7 +287,7 @@ export function createParser(): MarkdownItParser {
   const parser = new MarkdownIt(PARSER_OPTIONS);
   // スキームを持たないドメインも取得させ、後で文字に戻すものを選ぶ
   parser.linkify.set({ fuzzyLink: true });
-  // マーカー → 機能の重ね合わせ → 取り込み → フロントマターの表示 → 蛍光ペン（`useHighlight` が取り込みの後に追加する）→ 脚注の機能のオン・オフ → 記法（アイコン → 見出し → 用語集の表 → 行の詳細 → ビュー → CSV の表 → 表 → タブ → ステップ → 注意書き → ファイルツリー → バッジ → キー → 本文の文字の色 → 図の部品 → 埋め込んだ HTML → コードブロックの飾り → 画像の属性と種類 → 図表の番号 → ギャラリー → 画像と動画と音声の図 → カード → 段組み → details の範囲 → wide の範囲 → 改ページ → 用語の下線 → セクション → 目次 → 脚注の一覧 → 関連文書の一覧）→ タスクリスト → www の自動リンク → 残ったマーカー → 元の行番号 → 脚注の定義の取り出し
+  // マーカー → 機能の重ね合わせ → 取り込み → フロントマターの表示 → 蛍光ペン（`useHighlight` が取り込みの後に追加する）→ 脚注の機能のオン・オフ → 記法（アイコン → 見出し → 用語集の表 → 行の詳細 → ビュー → CSV の表 → 表 → タブ → ステップ → 注意書き → ファイルツリー → バッジ → キー → 本文の文字の色 → 図の部品 → 埋め込んだ HTML → map の範囲 → コードブロックの飾り → 画像の属性と種類 → 図表の番号 → ギャラリー → 画像と動画と音声の図 → カード → 段組み → details の範囲 → wide の範囲 → 改ページ → 用語の下線 → セクション → 目次 → 脚注の一覧 → 関連文書の一覧）→ タスクリスト → www の自動リンク → 残ったマーカー → 元の行番号 → 脚注の定義の取り出し
   const rules: Array<[string, (state: StateCore) => void]> = [
     ["mdmark_take_marks", takeMarks],
     ["mdmark_resolve_features", resolveDocumentFeatures],
@@ -314,6 +315,8 @@ export function createParser(): MarkdownItParser {
     ["mdmark_build_text_colors", buildTextColors],
     ["mdmark_build_diagrams", buildDiagrams],
     ["mdmark_build_embedded_html", buildEmbeddedHtml],
+    // 範囲の中の mermaid のブロックに印を付けるため、コードブロックの飾りより前に配置する
+    ["mdmark_build_map_ranges", buildMapRanges],
     ["mdmark_build_code_blocks", buildCodeBlocks],
     ["mdmark_link_tree_examples", linkTreeExamples],
     ["mdmark_read_images", readImages],

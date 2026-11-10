@@ -1,3 +1,5 @@
+import type { MapKind, MapLine, ResolvedMapConfig } from "./map/spec.ts";
+
 /** 利用側が `opts.config` に指定する設定。他のキーを持っていても読み込まない */
 export type MdmarkConfig = {
   /** 機能のオン・オフの既定 */
@@ -27,6 +29,13 @@ export type MdmarkConfig = {
     url?: string;
     theme?: string;
     themeVariables?: Record<string, unknown>;
+  };
+  /** map の図の設定。`node_fit` は名前の長いノードの広げ方、`url_state` は状態をクエリ文字列に保つか、`kinds` はクラス名ごとのノードの種類、`lines` は矢印と名前ごとの線の種類。知らない値も受けて `resolveConfig` が既定にする */
+  map?: {
+    node_fit?: string;
+    url_state?: unknown;
+    kinds?: Record<string, MapKind>;
+    lines?: Record<string, MapLine>;
   };
 };
 
@@ -104,6 +113,8 @@ export type ResolvedConfig = {
     theme: MermaidTheme;
     themeVariables: Record<string, string>;
   };
+  /** `resolveMapConfig` で既定を当てた設定の `map` */
+  map: ResolvedMapConfig;
 };
 
 /** mdmark に入れた配色のテーマの名前の並び。`resolveConfig`・CLI の点検と書き出しの警告が照らす */
@@ -175,6 +186,7 @@ export const DEFAULT_FEATURES: Record<string, boolean> = {
   csv: true,
   "card-grid": true,
   frontmatter: false,
+  map: true,
 };
 
 /** 設定の `syntax.url` が無いときに読み込む highlight.js の `es/` フォルダの URL。バージョンを固定する */
@@ -310,8 +322,75 @@ export function resolveConfig(options: {
     colorTheme,
     colorScheme,
     labels,
+    map: resolveMapConfig(config?.map),
   };
 }
+
+/** map の図の、ノードの形状に記載できる値 */
+export const MAP_SHAPES = ["rounded", "rect", "pill", "double"] as const;
+/** map の図の、線の模様に記載できる値 */
+export const MAP_DASHES = [
+  "solid",
+  "dashed",
+  "dotted",
+  "dash-dot",
+  "long-dash",
+] as const;
+/** map の図の、線の太さに記載できる値 */
+export const MAP_WIDTHS = ["thin", "normal", "thick"] as const;
+/** map の図の、線の矢じりに記載できる値 */
+export const MAP_HEADS = ["filled", "open", "none"] as const;
+
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === "object" && value !== null && !Array.isArray(value);
+
+/** 値が並びにあればその値、無ければ undefined */
+const oneOf = <T extends string>(
+  list: readonly T[],
+  value: unknown,
+): T | undefined =>
+  typeof value === "string" && (list as readonly string[]).includes(value)
+    ? (value as T)
+    : undefined;
+
+/** 設定の map に既定を当て、知らない値を既定にする（キーごとの値のうち合わないものは捨てる） */
+export const resolveMapConfig = (value: unknown): ResolvedMapConfig => {
+  const map = isRecord(value) ? value : {};
+  const kinds: Record<string, MapKind> = {};
+  for (const [name, kind] of Object.entries(
+    isRecord(map.kinds) ? map.kinds : {},
+  )) {
+    if (!isRecord(kind)) continue;
+    const entry: MapKind = {};
+    if (typeof kind.label === "string") entry.label = kind.label;
+    if (typeof kind.icon === "string") entry.icon = kind.icon;
+    const shape = oneOf(MAP_SHAPES, kind.shape);
+    if (shape) entry.shape = shape;
+    if (typeof kind.color === "string") entry.color = kind.color;
+    kinds[name] = entry;
+  }
+  const lines: Record<string, MapLine> = {};
+  for (const [name, line] of Object.entries(
+    isRecord(map.lines) ? map.lines : {},
+  )) {
+    if (!isRecord(line)) continue;
+    const entry: MapLine = {};
+    const dash = oneOf(MAP_DASHES, line.dash);
+    if (dash) entry.dash = dash;
+    const width = oneOf(MAP_WIDTHS, line.width);
+    if (width) entry.width = width;
+    const head = oneOf(MAP_HEADS, line.head);
+    if (head) entry.head = head;
+    if (typeof line.color === "string") entry.color = line.color;
+    lines[name] = entry;
+  }
+  return {
+    node_fit: map.node_fit === "width" ? "width" : "height",
+    url_state: typeof map.url_state === "boolean" ? map.url_state : true,
+    kinds,
+    lines,
+  };
+};
 
 /** 既定を適用した設定に、文書の page のマーカーの値を重ねた設定を返却する（指定された設定は書き換えない） */
 export const applyPageSettings = (options: {
