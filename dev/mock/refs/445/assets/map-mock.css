@@ -230,6 +230,8 @@
   height: 32px;
   color: var(--mdmark-color-muted);
   cursor: grab;
+  /* 指で押したまま動かしても、ページがスクロールしない */
+  touch-action: none;
 }
 .map-participant-grip .mdmark-diagram-icon {
   width: 16px;

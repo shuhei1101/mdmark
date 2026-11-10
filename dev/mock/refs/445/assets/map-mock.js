@@ -936,7 +936,7 @@ export const createSequence = (host, spec, kinds, onStep) => {
 
   /**
    * 参加者の表示と非表示・並び順を変える一覧。図の右上のツールの下に重ねる。
-   * 並び順は行をドラッグ＆ドロップで変え、キーボードでは行のつまみにフォーカスして Alt + ↑↓ で動かす。
+   * 並び順は行のつまみをポインター（マウス・指）で押したまま動かして変え、キーボードではつまみにフォーカスして Alt + ↑↓ で動かす。
    * 非表示にするとメッセージが 1 つも残らない参加者は、非表示にできない（チェックを押せない）
    */
   const participantMenu = () => {
@@ -960,22 +960,6 @@ export const createSequence = (host, spec, kinds, onStep) => {
       const row = document.createElement("div");
       row.className = "map-participant-row";
       row.dataset.id = id;
-      row.draggable = true;
-      row.addEventListener("dragstart", (event) => {
-        event.dataTransfer.setData("text/plain", String(at));
-        event.dataTransfer.effectAllowed = "move";
-        row.classList.add("is-dragging");
-      });
-      row.addEventListener("dragend", () => row.classList.remove("is-dragging"));
-      row.addEventListener("dragover", (event) => {
-        event.preventDefault();
-        row.classList.add("is-drop-target");
-      });
-      row.addEventListener("dragleave", () => row.classList.remove("is-drop-target"));
-      row.addEventListener("drop", (event) => {
-        event.preventDefault();
-        move(Number(event.dataTransfer.getData("text/plain")), at);
-      });
       const grip = document.createElement("span");
       grip.className = "map-participant-grip";
       grip.tabIndex = 0;
@@ -985,6 +969,31 @@ export const createSequence = (host, spec, kinds, onStep) => {
       grip.addEventListener("keydown", (event) => {
         if (event.altKey && event.key === "ArrowUp") move(at, at - 1);
         if (event.altKey && event.key === "ArrowDown") move(at, at + 1);
+      });
+      // つまみをポインター（マウス・指・ペン）で押したまま動かし、離した行の位置へ移す。HTML のドラッグ＆ドロップはタッチで動かないブラウザがあるため使わない
+      grip.addEventListener("pointerdown", (event) => {
+        event.preventDefault();
+        grip.setPointerCapture(event.pointerId);
+        row.classList.add("is-dragging");
+        let target = at;
+        const rows = [...menu.querySelectorAll(".map-participant-row")];
+        const onMove = (moveEvent) => {
+          const over = rows.findIndex((item) => {
+            const rect = item.getBoundingClientRect();
+            return moveEvent.clientY >= rect.top && moveEvent.clientY < rect.bottom;
+          });
+          if (over === -1) return;
+          target = over;
+          rows.forEach((item, index) => item.classList.toggle("is-drop-target", index === over && over !== at));
+        };
+        const onUp = () => {
+          grip.removeEventListener("pointermove", onMove);
+          row.classList.remove("is-dragging");
+          move(at, target);
+        };
+        grip.addEventListener("pointermove", onMove);
+        grip.addEventListener("pointerup", onUp, { once: true });
+        grip.addEventListener("pointercancel", onUp, { once: true });
       });
       const label = document.createElement("label");
       const check = document.createElement("input");
