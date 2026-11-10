@@ -504,34 +504,57 @@ export const createMap = (host, spec, initial = {}) => {
   const scaleOf = (stage) => Number(/scale\(([\d.]+)\)/.exec(stage.style.transform)?.[1] ?? 1);
 
   /**
-   * ノードのドラッグ: 押したまま動かすと、ノードを親のグループの中で動かし、グループは中身に合わせて広がる。
-   * ほかのノード・グループとの間が 16px より狭くなる位置へは動かさない。4px 動くまでは押した扱い（選択）にする
+   * ノードのドラッグ: 押したまま動かすと、ノードだけをポインターの動いた分だけ動かし、ノードを含むグループは中身に合わせて右と下へ広がる。
+   * 動かし始めに全てのノードとグループの今の位置を固定し、ほかのノードとグループは動かさない。
+   * ノードは親のグループの左端・上端より外へは動かさず、ノードや広がったグループとほかの要素の間が 16px より狭くなる位置へも動かさない。4px 動くまでは押した扱い（選択）にする
    */
+  // ancestors は内側のグループから外側の順
+  const parentOf = (layout, item) => (item.ancestors ?? []).map((id) => layout.boxes.find((box) => box.id === id)).find(Boolean);
+  const originOf = (parent) => (parent ? { x: parent.x + 24, y: parent.y + 24 + 36 } : { x: 24, y: 24 });
+  const freezeLayout = (layout) => {
+    for (const item of [...layout.leaves, ...layout.boxes]) {
+      if (state.positions[item.id]) continue;
+      const origin = originOf(parentOf(layout, item));
+      state.positions[item.id] = { x: item.x - origin.x, y: item.y - origin.y };
+    }
+  };
   const startNodeDrag = (event, stage, layout, leaf, element) => {
     const startX = event.clientX;
     const startY = event.clientY;
     const scale = scaleOf(stage);
-    const parent = [...leaf.ancestors].reverse().map((id) => layout.boxes.find((box) => box.id === id)).find(Boolean);
-    const origin = parent ? { x: parent.x + 24, y: parent.y + 24 + 36 } : { x: 24, y: 24 };
-    const siblings = [...layout.leaves.filter((item) => item.id !== leaf.id), ...layout.boxes.filter((box) => !leaf.ancestors.includes(box.id))].filter((item) => {
-      const itemParent = [...(item.ancestors ?? [])].reverse().find((id) => layout.boxes.some((box) => box.id === id));
-      return itemParent === parent?.id;
-    });
+    const parent = parentOf(layout, leaf);
+    const origin = originOf(parent);
+    const gap = 16;
+    const items = [...layout.leaves, ...layout.boxes];
+    const overlaps = (rect, others) => others.some((item) => rect.x < item.x + item.w + gap && item.x < rect.x + rect.w + gap && rect.y < item.y + item.h + gap && item.y < rect.y + rect.h + gap);
+    const siblingsOf = (container, self) => items.filter((item) => item.id !== self && parentOf(layout, item)?.id === container?.id && !(item.ancestors ?? []).includes(self));
+    // ノードの位置で、ノードを含むグループが広がった大きさを内側から順に求め、どの段でもほかの要素と近づきすぎないか確かめる
+    const fits = (rect) => {
+      if (overlaps(rect, siblingsOf(parent, leaf.id))) return false;
+      let inner = rect;
+      let box = parent;
+      while (box) {
+        const grown = { x: box.x, y: box.y, w: Math.max(box.w, inner.x + inner.w + 24 - box.x), h: Math.max(box.h, inner.y + inner.h + 24 - box.y) };
+        const outer = parentOf(layout, box);
+        if (overlaps(grown, siblingsOf(outer, box.id))) return false;
+        inner = grown;
+        box = outer;
+      }
+      return true;
+    };
     let moved = false;
     let frame;
     const move = (next) => {
       const dx = (next.clientX - startX) / scale;
       const dy = (next.clientY - startY) / scale;
       if (!moved && Math.hypot(dx, dy) < 4) return;
+      if (!moved) freezeLayout(layout);
       moved = true;
       state.dragging = true;
-      element.classList.add("is-dragging");
-      const x = leaf.x + dx;
-      const y = leaf.y + dy;
-      const gap = 16;
-      const hit = siblings.some((item) => x < item.x + item.w + gap && item.x < x + leaf.w + gap && y < item.y + item.h + gap && item.y < y + leaf.h + gap);
-      if (hit) return;
-      state.positions[leaf.id] = { x: Math.round(x - origin.x), y: Math.round(y - origin.y) };
+      const x = Math.max(origin.x, leaf.x + dx);
+      const y = Math.max(origin.y, leaf.y + dy);
+      if (!fits({ x, y, w: leaf.w, h: leaf.h })) return;
+      state.positions[leaf.id] = { x: x - origin.x, y: y - origin.y };
       cancelAnimationFrame(frame);
       frame = requestAnimationFrame(render);
     };
@@ -1333,8 +1356,15 @@ const decorateSequence = ({ stage, svg, rows, rowWires, rowLabels, wires, messag
   above.setAttribute("class", "map-seq-above");
   svg.append(above);
   for (const activation of sequence.activations) {
-    // 閉じたブロック・ブロックの外のメッセージで始まる・終わる帯は、見えているメッセージの範囲に縮める
-    const rowsIn = [...rowOf.entries()].filter(([index]) => activation.start <= index && index <= activation.end).map(([, at]) => at);
+    // 始まりか終わりのメッセージが閉じたブロックの中にある帯は、閉じたブロックの行から・行まで描く。ブロックの中だけを見ているときは、見えている行の範囲に縮める
+    const rowOfMessage = (index) =>
+      rowOf.get(index) ??
+      rows.findIndex((row) => row.collapsed !== undefined && sequence.fragments[row.collapsed].start <= index && index < sequence.fragments[row.collapsed].end);
+    const rowsIn = [];
+    for (let index = activation.start; index <= activation.end; index += 1) {
+      const at = rowOfMessage(index);
+      if (at !== -1 && at !== undefined) rowsIn.push(at);
+    }
     if (rowsIn.length === 0 || !visible.includes(activation.id)) continue;
     const x = columnX(activation.id) - 5 + activation.depth * 6;
     const top = rowY(Math.min(...rowsIn));
