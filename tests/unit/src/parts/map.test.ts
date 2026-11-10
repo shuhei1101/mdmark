@@ -130,12 +130,12 @@ test("test_render_map_band_when_playback", async () => {
   );
 });
 
-/** 描いた HTML の、data-wire が wire の印の要素の開始タグと中身 */
+/** 描いた HTML の、data-wire が wire（属性の中は > をエスケープする）の印の要素の開始タグと中身 */
 const packetsOf = (html: string, wire: string): string[] =>
   matches(
     html,
     new RegExp(
-      `<(circle|rect|polygon)[^>]*class="map-packet"[^>]*data-wire="${wire.replace(/[>]/g, "\\$&")}"[^>]*>[\\s\\S]*?</\\1>`,
+      `<(circle|rect|polygon)[^>]*class="map-packet"[^>]*data-wire="${wire.replace(/>/g, "&gt;")}"[^>]*>[\\s\\S]*?</\\1>`,
       "g",
     ),
   );
