@@ -2551,7 +2551,7 @@ functions:
     usecase: 設定と索引を点検する
     kind: 関数
     scope: internal
-    summary: '文書ごとに map の範囲を読み、`collectMapProblems` の項目を 1 つにつき 1 件のずれにする。`features: -map` の文書は点検しない'
+    summary: '文書ごとに map の範囲を読み、`collectMapProblems`（`includeUnknownKeys: true`）の項目を 1 つにつき 1 件のずれにする。`features: -map` の文書は点検しない'
     description: ずれの `file` は文書のパス、`where` は範囲の開きのマーカーの行に項目の `line` を足した行の番号の文字（項目が `line` を持たなければ開きのマーカーの行）、`message` は項目の文
     args:
     - name: documents
