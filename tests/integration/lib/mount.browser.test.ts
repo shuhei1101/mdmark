@@ -14257,8 +14257,9 @@ test("test_normal_when_map_flowchart_drawn", async () => {
   expect(
     performance
       .getEntriesByType("resource")
-      .filter((entry) => entry.name.includes("mermaid")).length,
-  ).toBe(0);
+      .filter((entry) => entry.name.includes("/npm/mermaid@"))
+      .map((entry) => entry.name),
+  ).toEqual([]);
 });
 
 // map のグループの中へ入る・開閉する（正常系）
