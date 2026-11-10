@@ -424,6 +424,7 @@ export async function prepareEmbeds(options: EmbedOptions): Promise<{
         ? { colorScheme: loaded.config.colorScheme }
         : {}),
       ...(loaded.config.labels ? { labels: loaded.config.labels } : {}),
+      ...(loaded.config.map ? { map: loaded.config.map } : {}),
       ...(Object.keys(mermaidPayload).length > 0
         ? { mermaid: mermaidPayload }
         : {}),
