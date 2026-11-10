@@ -72,7 +72,10 @@ const SVG_NS = "http://www.w3.org/2000/svg";
 /** 色を変えた線の矢じりを線と同じ色にする: 線が指す矢じりの marker を複製して色を付け、線から指し直す */
 let arrowheadCount = 0;
 const tintArrowhead = (figure, path) => {
-  const ref = /url\(#([^)]+)\)/.exec(path.getAttribute("marker-end") ?? "")?.[1];
+  for (const end of ["marker-start", "marker-end"]) tintMarker(figure, path, end);
+};
+const tintMarker = (figure, path, end) => {
+  const ref = /url\(#([^)]+)\)/.exec(path.getAttribute(end) ?? "")?.[1];
   const marker = ref ? figure.querySelector(`marker[id="${CSS.escape(ref)}"]`) : null;
   if (!marker) return;
   const color = getComputedStyle(path).stroke;
@@ -84,7 +87,7 @@ const tintArrowhead = (figure, path) => {
   shape.style.fill = filled ? color : "none";
   shape.style.stroke = filled ? "none" : color;
   marker.after(copy);
-  path.setAttribute("marker-end", `url(#${copy.id})`);
+  path.setAttribute(end, `url(#${copy.id})`);
 };
 const addPackets = (svg, path, { reverse = false, both = false, packet = DEFAULT_PACKET, nodeColor = {} } = {}) => {
   const color =
@@ -192,8 +195,35 @@ export const createMap = (host, spec, initial = {}) => {
   /** 表示している 1 本の線にまとまった元の線 */
   const sourcesOf = (edge) => chart.edges.filter((item) => visibleOf(item.from) === edge.from && visibleOf(item.to) === edge.to);
 
+  /**
+   * 線のラベルの置き場所: 線の区間の中点を長い順に試し、ほかのラベルとノードに重ならない最初の点に置く。
+   * 全て重なるときは最も長い区間の中点（モックの置き方。実装は部品設計で決める）
+   */
+  const placeLabels = (layout) => {
+    const placed = [];
+    const blocks = layout.leaves.map((leaf) => ({ x: leaf.x, y: leaf.y, w: leaf.w, h: leaf.h }));
+    const hits = (a, b) => a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h;
+    const at = new Map();
+    for (const edge of layout.edges) {
+      const sources = sourcesOf(edge);
+      const label = sources.length === 1 ? sources[0].label : undefined;
+      if (!label) continue;
+      const width = [...label].reduce((sum, char) => sum + (char.charCodeAt(0) > 0x7e ? 12 : 7), 12);
+      const segments = edge.points
+        .slice(1)
+        .map((point, index) => [edge.points[index], point])
+        .sort((a, b) => Math.hypot(b[1][0] - b[0][0], b[1][1] - b[0][1]) - Math.hypot(a[1][0] - a[0][0], a[1][1] - a[0][1]));
+      const candidates = segments.flatMap(([a, b]) => [0.5, 0.3, 0.7].map((t) => [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t]));
+      const box = ([x, y]) => ({ x: x - width / 2, y: y - 10, w: width, h: 20 });
+      const choice = candidates.find((point) => ![...placed, ...blocks].some((other) => hits(box(point), other))) ?? candidates[0];
+      placed.push(box(choice));
+      at.set(edge.id, { label, labelAt: choice });
+    }
+    return at;
+  };
+
   /** PoC の配置を、今のフロー図の部品の定義にする */
-  const toFlowDefinition = (layout) => ({
+  const toFlowDefinition = (layout, labels = placeLabels(layout)) => ({
     title: spec.title,
     scope: state.enter ? `${labelOf(state.enter)}の中` : "全体",
     updated: "2026-11-09",
@@ -217,9 +247,8 @@ export const createMap = (host, spec, initial = {}) => {
       };
     }),
     wires: layout.edges.map((edge) => {
-      const sources = sourcesOf(edge);
       // まとめた線は本数もラベルも出さず、元の線はポインターを当てたときのツールチップに出す
-      const label = sources.length === 1 ? sources[0].label : undefined;
+      const label = labels.get(edge.id);
       const source = chart.edges.find((item) => item.id === edge.id);
       return {
         id: edge.id,
@@ -227,23 +256,10 @@ export const createMap = (host, spec, initial = {}) => {
         to: edge.to,
         line: LINES[source?.line ?? "solid"],
         points: edge.points,
-        ...(label ? { label, labelAt: longestMid(edge.points) } : {}),
+        ...(label ?? {}),
       };
     }),
   });
-
-  const longestMid = (points) => {
-    let best = [points[0], points[0]];
-    let bestLength = -1;
-    points.slice(1).forEach((point, index) => {
-      const length = Math.abs(point[0] - points[index][0]) + Math.abs(point[1] - points[index][1]);
-      if (length > bestLength) {
-        bestLength = length;
-        best = [points[index], point];
-      }
-    });
-    return [(best[0][0] + best[1][0]) / 2, (best[0][1] + best[1][1]) / 2];
-  };
 
   /** 線のツールチップの文: 補足の notes に説明を持つ元の線だけを「元 → 先：説明」で並べる。説明が無ければ空 */
   const wireTip = (edge) => {
@@ -486,6 +502,9 @@ export const createMap = (host, spec, initial = {}) => {
       if (!wire) continue;
       const color = spec.data.colors?.[edge.id];
       if (color) wire.style.setProperty("--map-wire", `var(--mdmark-color-accent-${color}-text)`);
+      // 両向きの線（<-->）は元の側にも矢じりを描く（今の部品の marker は orient="auto-start-reverse" のため、同じ marker を両端に使える）
+      const wirePath = wire.matches("path") ? wire : wire.querySelector("path");
+      if (sourcesOf(edge).some((item) => item.both)) wirePath.setAttribute("marker-start", wirePath.getAttribute("marker-end"));
       if (color) wire.classList.add("map-colored-wire");
       if (color) tintArrowhead(figure, wire.matches("path") ? wire : wire.querySelector("path"));
       if (hot && !(hot.has(edge.from) && hot.has(edge.to))) wire.classList.add("map-dim");
