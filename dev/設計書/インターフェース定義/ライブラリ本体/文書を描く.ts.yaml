@@ -7014,6 +7014,6 @@ constraints:
     constraint: 印の引数は shuhei1101/mdmark#451 の資料 A-128 の構成の JSON のオブジェクトで、`title`（図の枠と折りたたみの見出し）・`focus`（最初に入るグループの ID）・`play`（`"autoplay"` で、図が画面に入ったら押さずに再生か案内を始める。動きを減らす設定では始めず止めた帯で出す）・`interval`（自動で進める間隔の秒。正の数。省くと 2）・`collapse`（A-128 の共通の折り畳み。`open`・`title`）だけを読む。知らないキーは無視し、型の合わない値は既定にする（どちらも点検が通知する。型の合わない値は書き方の警告にもする）。最初に入るグループは、クエリ文字列の `map-{図の番号}` → sessionStorage → `focus` の順で決める（無いグループの ID は飛ばす）
     notes: 記載の警告は文書をHTML文字列にする.ts の制約『map の書き方の誤り』
   - item: map の書き方の警告
-    constraint: Mermaid の読めない行（行番号・行の文字・直し方）・閉じの無い `subgraph` と複合フラグメント・補足の YAML の読めない箇所・知らないキー・スキーマに合わない値・補足が指す Mermaid に無いノード・線・グループの ID・`--` を含む補足の文字・設定の `map.kinds` に無いクラス・`map.lines` に無い線の名前を、`dist/map.js` が集めて図の枠の前の書き方の警告にする。`render` が範囲の形の警告を配置していれば、その警告に項目を足す
+    constraint: Mermaid の読めない行（行番号・行の文字・直し方）・閉じの無い `subgraph` と複合フラグメント・補足の JSON の読めない箇所（行と原因）・知らないキー・スキーマに合わない値・補足が指す Mermaid に無いノード・線・グループの ID・`--` を含む補足の文字・設定の `map.kinds` に無いクラス・`map.lines` に無い線の名前を、`dist/map.js` が集めて図の枠の前の書き方の警告にする。`render` が範囲の形の警告を配置していれば、その警告に項目を足す
     notes: '`render` が確かめる範囲の形は文書をHTML文字列にする.ts の制約『map の書き方の誤り』'
 test_file: tests/integration/lib/mount.browser.test.ts
