@@ -78,7 +78,7 @@ const initial = {
   group: { enter: "lib" },
   collapsed: { collapsed: ["read"] },
   walkthrough: { step: 2, enter: "place" },
-  play: { play: 2 },
+  play: { play: 0 },
 }[scene] ?? {};
 
 const flowHost = document.createElement("div");

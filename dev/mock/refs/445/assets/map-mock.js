@@ -315,11 +315,13 @@ export const createMap = (host, spec, initial = {}) => {
         sizer.style.width = `${layout.width * MIN_SCALE}px`;
         sizer.style.height = `${layout.height * MIN_SCALE}px`;
       }
+      // 今の部品は倍率に合わせて高さと高さの上限を書き換えるため、両方を見て戻す
       const height = `${state.height}px`;
-      if (viewport.style.height !== height) {
+      if (viewport.style.height !== height || viewport.style.maxHeight !== height) {
         viewport.style.height = height;
         viewport.style.maxHeight = height;
       }
+      syncZoomText(figure, stage);
     };
     const observer = new MutationObserver(enforce);
     observer.observe(stage, { attributes: true, attributeFilter: ["style"] });
@@ -674,6 +676,14 @@ export const createMap = (host, spec, initial = {}) => {
   return { startPlay };
 };
 
+/** 倍率の文字を、下限を当てた後の実際の倍率に合わせる */
+const syncZoomText = (root, stage) => {
+  const text = root.querySelector('[data-tool="fit"]');
+  const scale = Number(/scale\(([\d.]+)\)/.exec(stage.style.transform)?.[1] ?? 1);
+  const value = `${Math.round(scale * 100)}%`;
+  if (text && text.textContent !== value) text.textContent = value;
+};
+
 /** シーケンス図の map も構成図と同じく等倍より縮めず、表示する枠の高さを等倍の図の高さにする（実装では zoom の fitMin に 1 を渡す） */
 const keepSequenceScale = (host) => {
   const stage = host.querySelector(".mdmark-diagram-stage");
@@ -689,10 +699,11 @@ const keepSequenceScale = (host) => {
       sizer.style.height = `${height * MIN_SCALE}px`;
     }
     const frame = `${Math.max(scale, MIN_SCALE) * height + 16}px`;
-    if (viewport.style.height !== frame) {
+    if (viewport.style.height !== frame || viewport.style.maxHeight !== frame) {
       viewport.style.height = frame;
       viewport.style.maxHeight = frame;
     }
+    syncZoomText(host, stage);
   };
   const observer = new MutationObserver(enforce);
   observer.observe(stage, { attributes: true, attributeFilter: ["style"] });
