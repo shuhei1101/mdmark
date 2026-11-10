@@ -601,7 +601,7 @@ functions:
   - name: test_move_by_key_when_blocked
     case: 正常
     summary: 動かせない
-    condition: 図の余白の内側の左上にある `A` を `dy: -8`。縦の区間の線を `dy: 8`
+    condition: '図の余白の内側の左上にある `A` を `dy: -8`。縦の区間の線を `dy: 8`'
     mock: なし
     expected: どちらも `undefined`
 - name: attachBand
@@ -692,7 +692,7 @@ functions:
     summary: キーで操作する場所
     condition: '`entered: read` と、`entered` なし'
     mock: なし
-    expected: 配置した全てのノードと線を押す場所が `tabindex="0"`・`role="button"` を持ち、`read` の `.map-group-bar` が `entered: read` では無く、`entered` なしではある
+    expected: '配置した全てのノードと線を押す場所が `tabindex="0"`・`role="button"` を持ち、`read` の `.map-group-bar` が `entered: read` では無く、`entered` なしではある'
   - name: test_render_map_flow_when_entered
     case: 正常
     summary: 中へ入った
