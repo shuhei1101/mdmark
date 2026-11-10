@@ -78,3 +78,26 @@ test("test_attach_map_sequence_when_enter_block", async () => {
   );
   expect(shown).toEqual(["mount", "marker", "mermaid", "layout"]);
 });
+
+// 選んだ参加者の印（正常系）
+test("test_attach_map_sequence_when_packets", async () => {
+  // 準備
+  const root = await setUp();
+  const head = root.querySelector<HTMLElement>(
+    '.map-participant[data-participant="mount"]',
+  ) as HTMLElement;
+  // 実行
+  head.click();
+  // 検証
+  const lines = [...root.querySelectorAll(".map-packet[data-message]")].map(
+    (item) => Number(item.getAttribute("data-message")),
+  );
+  expect(lines.length).toBeGreaterThan(0);
+  const { parseSequence } = await import("../../../../src/map/sequence.ts");
+  const { SEQUENCE: source } = await import("../../helpers/map.ts");
+  const messages = parseSequence(source).messages;
+  for (const at of lines) {
+    const message = messages[at];
+    expect(message?.from === "mount" || message?.to === "mount").toBe(true);
+  }
+});

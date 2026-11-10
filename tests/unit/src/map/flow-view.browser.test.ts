@@ -99,3 +99,49 @@ test("test_attach_map_flow_when_escape", async () => {
   expect(saved().entered).toBe("lib");
   expect(location.search).toBe("?map-1=lib");
 });
+
+// 選んだ線と指した線の印（正常系）
+test("test_attach_map_flow_when_packets", async () => {
+  // 準備
+  const root = await setUp();
+  const packetsOn = (wire: string) =>
+    root.querySelectorAll(`.map-packet[data-wire="${wire}"]`).length;
+  const node = root.querySelector<HTMLElement>(
+    '.mdmark-diagram-node[data-node="mount"] .mdmark-diagram-node-kind',
+  ) as HTMLElement;
+  const press = (target: Element) => {
+    const box = target.getBoundingClientRect();
+    const point = {
+      bubbles: true,
+      pointerId: 1,
+      button: 0,
+      clientX: box.x + box.width / 2,
+      clientY: box.y + box.height / 2,
+    };
+    target.dispatchEvent(new PointerEvent("pointerdown", point));
+    window.dispatchEvent(new PointerEvent("pointerup", point));
+  };
+  // 実行・検証: 選ぶ
+  press(node);
+  expect(packetsOn("mount->marker")).toBeGreaterThan(0);
+  // 選択を解く
+  press(
+    root.querySelector<HTMLElement>(
+      '.mdmark-diagram-node[data-node="mount"] .mdmark-diagram-node-kind',
+    ) as HTMLElement,
+  );
+  expect(root.querySelectorAll(".map-packet")).toHaveLength(0);
+  // 線を指す
+  const hit = root.querySelector<SVGElement>(
+    '.map-wire-hit[data-wire="marker->data"]',
+  ) as SVGElement;
+  hit.dispatchEvent(new PointerEvent("pointerover", { bubbles: true }));
+  expect(packetsOn("marker->data")).toBeGreaterThan(0);
+  expect(
+    [...root.querySelectorAll(".map-packet")].every(
+      (item) => item.getAttribute("data-wire") === "marker->data",
+    ),
+  ).toBe(true);
+  hit.dispatchEvent(new PointerEvent("pointerout", { bubbles: true }));
+  expect(root.querySelectorAll(".map-packet")).toHaveLength(0);
+});

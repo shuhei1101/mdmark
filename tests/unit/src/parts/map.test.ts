@@ -129,3 +129,81 @@ test("test_render_map_band_when_playback", async () => {
     ]),
   );
 });
+
+/** 描いた HTML の、data-wire が wire の印の要素の開始タグと中身 */
+const packetsOf = (html: string, wire: string): string[] =>
+  matches(
+    html,
+    new RegExp(
+      `<(circle|rect|polygon)[^>]*class="map-packet"[^>]*data-wire="${wire.replace(/[>]/g, "\\$&")}"[^>]*>[\\s\\S]*?</\\1>`,
+      "g",
+    ),
+  );
+
+// データの印（正常系）
+test("test_render_map_flow_when_packets", async () => {
+  // 準備
+  const { renderMapFlow } = await loadParts();
+  const args = await flowArgs();
+  // 実行
+  const html = renderMapFlow({
+    ...args,
+    packets: [
+      {
+        wire: "mount->marker",
+        direction: "both",
+        color: "orange",
+        shape: "square",
+      },
+      {
+        wire: "marker->data",
+        direction: "forward",
+        color: undefined,
+        shape: "circle",
+      },
+    ],
+  });
+  // 検証
+  const both = packetsOf(html, "mount->marker");
+  expect(both.length).toBeGreaterThanOrEqual(2);
+  for (const item of both) {
+    expect(item).toMatch(/^<rect/);
+    expect(item).toContain("var(--mdmark-color-accent-orange-text)");
+    expect(item).toContain('repeatCount="indefinite"');
+  }
+  expect(both.some((item) => item.includes('keyPoints="1;0"'))).toBe(true);
+  expect(both.some((item) => !item.includes('keyPoints="1;0"'))).toBe(true);
+  const forward = packetsOf(html, "marker->data");
+  expect(forward.length).toBeGreaterThanOrEqual(1);
+  for (const item of forward) {
+    expect(item).toMatch(/^<circle/);
+    expect(item).toContain("var(--mdmark-color-diagram-line)");
+    expect(item).not.toContain('keyPoints="1;0"');
+  }
+});
+
+// 知らない色の名前（異常系）
+test("test_render_map_flow_when_unknown_color", async () => {
+  // 準備
+  const { renderMapFlow } = await loadParts();
+  const args = await flowArgs();
+  // 実行
+  const html = renderMapFlow({
+    ...args,
+    colors: { read: "blue;x" },
+    packets: [
+      {
+        wire: "mount->marker",
+        direction: "forward",
+        color: "red;x:y",
+        shape: "circle",
+      },
+    ],
+  });
+  // 検証
+  const items = packetsOf(html, "mount->marker");
+  expect(items.length).toBeGreaterThanOrEqual(1);
+  expect(items[0]).toContain("var(--mdmark-color-diagram-line)");
+  expect(html).not.toContain(";x:y");
+  expect(html).not.toContain(";x");
+});
