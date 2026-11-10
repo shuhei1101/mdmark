@@ -4,7 +4,7 @@ items:
   - page: 全体.yaml
     summary: map の処理のフォルダ構成と配布ファイルの分け方
   - page: 読み取り.ts.yaml
-    summary: flowchart・sequenceDiagram の Mermaid と補足の YAML の読み取り
+    summary: flowchart・sequenceDiagram の Mermaid と補足の JSON の読み取り
   - page: 配置.ts.yaml
     summary: 入れ子の自動配置・線の経路・名前の折り返しと、シーケンス図の表示する行
   - page: 点検.ts.yaml

@@ -325,7 +325,7 @@ functions:
     type: MapFlowHandle
     description: 強調を外から当てる関数と片付ける関数
   process: |-
-    1. `parseFlowchart`・`parseMapData` で読み、`readMapState`（印の `focus` を指定する）で状態を読む
+    1. `parseFlowchart`・`parseMapData` で読み、`readMapState`（印の `focus` と、補足の `layout` の `collapsed` が `true` の ID を指定する）で状態を読む
     2. `layoutMap` で配置し、`renderDiagramFrame`（種類 `map`・`wide`・`tools`）と `renderMapFlow` で描く
     3. ノードの中身を測り、見積もりと違う大きさのノードを `size` にして配置し直す。以降はノードの大きさを `ResizeObserver` で見て同じく配置し直す
     4. 開閉・中へ入る・選ぶ・線を指す・動かすの操作と、Esc（選択を解き、無ければ外へ戻る）、右上のボタンを付け、変わるたびに `writeMapState` で保つ
@@ -397,13 +397,13 @@ functions:
   container: src/map/state.ts
   usecase: 図のグループの中へ入る・開閉する
   role: 処理
-  summary: クエリ文字列（`url_state` が `true` のとき）→ sessionStorage → 印の `focus` の順に、最初に入るグループかブロックを決め、ほかの状態を sessionStorage から読み、知らない ID・番号を捨てる
+  summary: クエリ文字列（`url_state` が `true` のとき）→ sessionStorage → 印の `focus` の順に、最初に入るグループかブロックを決め、ほかの状態を sessionStorage から読み、知らない ID・番号を捨てる。sessionStorage に開閉の状態が無いときは、補足の `layout` の `collapsed` が `true` のグループを閉じる
   scope: public
   args:
   - name: options
-    type: '{ index: number; ids: Set<string>; urlState: boolean; focus: string | undefined; storage: Storage | undefined; location: Location }'
+    type: '{ index: number; ids: Set<string>; urlState: boolean; focus: string | undefined; collapsed: string[]; storage: Storage | undefined; location: Location }'
     required: true
-    description: 図の番号・知っている ID・設定・印の `focus`・保存先
+    description: 図の番号・知っている ID・設定・印の `focus`・補足で最初に閉じるグループの ID・保存先
   returns:
     type: MapState
     description: 状態
@@ -438,6 +438,12 @@ functions:
     condition: '空のクエリ文字列と sessionStorage・`focus: read`'
     mock: なし
     expected: '`entered` が `read`'
+  - name: test_read_map_state_when_layout_collapsed
+    case: 正常
+    summary: 補足で最初に閉じる
+    condition: '`collapsed: [store]` で、sessionStorage が空のときと、sessionStorage の `collapsed` が `[]` のとき'
+    mock: なし
+    expected: 空のときは `collapsed` が `[store]`、sessionStorage があるときは `[]`
   - name: test_read_map_state_when_saved_over_focus
     case: 正常
     summary: 保った状態を優先

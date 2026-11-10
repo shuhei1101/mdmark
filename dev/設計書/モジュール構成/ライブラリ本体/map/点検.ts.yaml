@@ -10,7 +10,7 @@ functions:
   usecase: Mermaidと補足で図を描く
   role: 処理
   scope: public
-  summary: 範囲の mermaid のブロックと補足の数・図の種類・マーカーの引数だけを確かめ、`MapProblem` を返す。Mermaid と補足の中身は読まない（`dist/index.js` に Mermaid と YAML の読み取りを入れない）
+  summary: 範囲の mermaid のブロックと補足の数・図の種類・マーカーの引数だけを確かめ、`MapProblem` を返す。Mermaid と補足の中身は読まない（`dist/index.js` に Mermaid と補足の読み取りを入れない）
   args:
   - name: range
     type: '{ args: string; mermaid: string | undefined; mermaidCount: number; dataCount: number }'

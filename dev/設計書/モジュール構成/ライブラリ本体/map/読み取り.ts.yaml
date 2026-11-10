@@ -1,5 +1,5 @@
 title: ライブラリ本体 / map / 読み取り
-lead: map の範囲の `flowchart`・`sequenceDiagram` の Mermaid と、補足の YAML を読み取る。描画を止めず、読めない行と箇所を項目にして返す。
+lead: map の範囲の `flowchart`・`sequenceDiagram` の Mermaid と、補足の JSON のオブジェクトを読み取る。描画を止めず、読めない行と箇所を項目にして返す。
 test_files:
 - tests/unit/src/map/flowchart.test.ts
 - tests/unit/src/map/sequence.test.ts
@@ -67,14 +67,14 @@ data_models:
     type: '1'
     description: 補足のバージョン
   - name: notes
-    type: Record<string, string>
+    type: 'Record<string, { text: string }>'
     description: ノード・線の ID ごとの説明
   - name: walkthroughs
     type: MapStep[]
     description: 案内の手順（`title`・`text`・`nodes`・`edges`・`enter`）
   - name: layout
     type: Record<string, MapLayoutEntry>
-    description: ID ごとの上書き（`align`・`order`・`pos`・`width`・`color`・`line`・`packet`）
+    description: ID ごとの上書き（`align`・`order`・`pos`・`width`・`color`・`line`・`packet`・`collapsed`）
   - name: plays_over
     type: number
     description: シーケンス図の再生を重ねる構成図の番号
@@ -272,7 +272,7 @@ functions:
   container: src/map/data.ts
   usecase: Mermaidと補足で図を描く
   role: 処理
-  summary: 補足の YAML を読み込み、スキーマに合う部分を `MapData` にし、合わない箇所を項目にする
+  summary: 補足の JSON のオブジェクトを読み込み、スキーマに合う部分を `MapData` にし、合わない箇所を項目にする
   scope: public
   args:
   - name: source
@@ -283,8 +283,8 @@ functions:
     type: '{ data: MapData; problems: MapProblem[] }'
     description: 読み込んだ補足と項目
   process: |-
-    1. `yaml` の `parse` で読み込む。読み込めなければ `map_invalid_value`（YAML の行と原因）にして空の補足を返す
-    2. トップレベルの知らないキーは `map_unknown_key`（使用できるキーの一覧を含む）、型の違う値は `map_invalid_value` にして捨てる
+    1. `JSON.parse` で読み込む。読み込めないか最上位がオブジェクトでなければ `map_invalid_value`（JSON のオブジェクトで記載する直し方。読めないときは原因と、エラーの位置から求めた補足の中の行）にして空の補足を返す
+    2. トップレベル・`walkthroughs` の手順・`layout` の値の知らないキーは `map_unknown_key`（使用できるキーの一覧を含む）、型の違う値は `map_invalid_value` にして捨てる
     3. 文字の値に `--` を含むものは `map_invalid_value`（HTML コメントを閉じてしまうため `--` を含めない直し方）にする
   unit_tests:
   - name: test_parse_map_data
@@ -292,7 +292,7 @@ functions:
     summary: モックの補足
     condition: モックの `DATA`
     mock: なし
-    expected: '`notes`・`walkthroughs`・`layout`・`plays_over` が読め、`problems` が空'
+    expected: '`notes`（値は `{ text }`）・`walkthroughs`・`layout`（`collapsed` を含む）・`plays_over` が読め、`problems` が空'
   - name: test_parse_map_data_when_empty
     case: 正常
     summary: 補足が無い
@@ -302,7 +302,7 @@ functions:
   - name: test_parse_map_data_when_unknown_key
     case: 異常
     summary: 知らないキー
-    condition: '`layuot:`'
+    condition: '`{"version": 1, "layuot": {}}`'
     mock: なし
     expected: '`map_unknown_key` が 1 件で、使用できるキーの一覧を含む'
   - name: test_parse_map_data_when_double_hyphen
@@ -313,10 +313,16 @@ functions:
     expected: '`map_invalid_value` が 1 件'
   - name: test_parse_map_data_when_unreadable
     case: 異常
-    summary: YAML として読めない
-    condition: '`notes: [`'
+    summary: JSON のオブジェクトとして読めない
+    condition: '`{"notes": [` と `[1]`'
     mock: なし
-    expected: '`map_invalid_value` が 1 件で、補足は空'
+    expected: どちらも `map_invalid_value` が 1 件で、補足は空
+  - name: test_parse_map_data_when_note_is_string
+    case: 異常
+    summary: 説明が文字
+    condition: '`{"version": 1, "notes": {"mount": "公開関数"}}`'
+    mock: なし
+    expected: '`map_invalid_value` が 1 件で、`notes` に `mount` が無い'
 - name: parseMapArgs
   title: 印の引数を読む
   kind: 関数
