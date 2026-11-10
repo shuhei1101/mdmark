@@ -486,7 +486,8 @@ export const createMap = (host, spec, initial = {}) => {
 
   /**
    * 動かした線の区間を、線の点に当てる。点の数が変わった線（配置し直して経路が変わった線）のずらしは捨てる。
-   * 両端の区間はノードにつながる端の点をノードの辺に沿って動かし、辺の端から 8px より外へは出さない
+   * 両端の区間はノードにつながる端をノードの辺に沿って動かす。辺の範囲（辺の端から 8px の内側）を越えて動かしたときは、
+   * 越えた側の辺（上・下・左・右）につなぎ替え、線をノードの中央まで延ばしてから直角に曲げてその辺へ入れる（矢じりもその辺に付く）
    */
   const applyWireShifts = (layout) => {
     const rectOf = (id) => layout.leaves.find((leaf) => leaf.id === id);
@@ -498,21 +499,35 @@ export const createMap = (host, spec, initial = {}) => {
         continue;
       }
       const last = edge.points.length - 2;
-      for (const [key, wanted] of Object.entries(shift.segments)) {
+      let before = [];
+      let after = [];
+      for (const [key, delta] of Object.entries(shift.segments)) {
         const index = Number(key);
         const a = edge.points[index];
         const b = edge.points[index + 1];
         const axis = a[1] === b[1] ? 1 : 0;
-        let delta = wanted;
-        for (const [point, id] of [index === 0 ? [a, edge.from] : undefined, index === last ? [b, edge.to] : undefined].filter(Boolean)) {
-          const rect = rectOf(id);
-          if (!rect) continue;
-          const [low, high] = axis === 1 ? [rect.y + 8, rect.y + rect.h - 8] : [rect.x + 8, rect.x + rect.w - 8];
-          delta = Math.min(Math.max(delta, low - point[axis]), high - point[axis]);
-        }
+        const other = 1 - axis;
         a[axis] += delta;
         b[axis] += delta;
+        // 端の点がノードの辺の範囲を越えたら、越えた側の辺につなぎ替える
+        const reattach = (point, id, add) => {
+          const rect = rectOf(id);
+          if (!rect) return;
+          const [start, size] = axis === 1 ? [rect.y, rect.h] : [rect.x, rect.w];
+          if (point[axis] >= start + 8 && point[axis] <= start + size - 8) return;
+          const center = other === 0 ? rect.x + rect.w / 2 : rect.y + rect.h / 2;
+          const edgeAt = point[axis] < start + 8 ? start : start + size;
+          point[other] = center;
+          const enter = [0, 0];
+          enter[other] = center;
+          enter[axis] = edgeAt;
+          add(enter);
+        };
+        if (index === 0) reattach(a, edge.from, (point) => (before = [point]));
+        if (index === last) reattach(b, edge.to, (point) => (after = [point]));
       }
+      edge.points.splice(0, 0, ...before);
+      edge.points.push(...after);
     }
   };
 
@@ -1528,14 +1543,18 @@ export const createSequence = (host, spec, kinds, onStep) => {
       head.tabIndex = 0;
       head.setAttribute("role", "button");
       head.setAttribute("aria-pressed", String(state.selected.has(id)));
-      head.title = "この参加者のメッセージを強調する";
+      head.title = "名前の外を押すと、この参加者のメッセージを強調する";
       if (state.selected.size && !state.selected.has(id)) for (const element of [head, lifelines[at]]) element?.classList.add("map-dim");
       const toggle = () => {
         if (state.selected.has(id)) state.selected.delete(id);
         else state.selected.add(id);
         render();
       };
-      head.addEventListener("click", toggle);
+      head.addEventListener("click", (event) => {
+        // 名前の文字の上は、文字を選んでコピーできるよう、選択の対象にしない
+        if (event.target.closest(".mdmark-diagram-node-name")) return;
+        toggle();
+      });
       // つまみは箱（ボタン）の中に入れず、箱の右上に重ねた別の要素にする（押せる要素を入れ子にしない）
       // ブロックの中だけを見ているときは並べ替えのつまみを出さない
       if (state.enter !== undefined) return;

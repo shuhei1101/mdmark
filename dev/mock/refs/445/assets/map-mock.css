@@ -442,3 +442,8 @@
   margin-bottom: 0;
   cursor: grab;
 }
+/* シーケンス図の参加者の名前の文字も、選んでコピーできる */
+.map-figure .map-participant .mdmark-diagram-node-name {
+  cursor: text;
+  user-select: text;
+}
