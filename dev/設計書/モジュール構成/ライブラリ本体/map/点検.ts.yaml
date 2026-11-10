@@ -135,7 +135,7 @@ functions:
   container: src/map/check.ts
   usecase: 設定と索引を点検する
   role: 処理
-  summary: 設定の `map.kinds` の `icon` のうち Lucide に無い名前を `map_unknown_icon` の項目にする（Schema の検査は `validateConfig`）
+  summary: 設定の `map.kinds` の `icon` のうち `lucideIconNames` に無い名前を `map_unknown_icon` の項目にする（Schema の検査は `validateConfig`）
   scope: public
   args:
   - name: map
@@ -158,10 +158,15 @@ functions:
     condition: '`icon: no-such-icon`'
     mock: なし
     expected: 1 件で、キーが `map.kinds.store.icon`
-constants:
-- name: LUCIDE_ICON_NAMES
+- name: lucideIconNames
   title: Lucideのアイコンの名前
+  kind: 関数
   container: src/map/lucide-names.ts
   usecase: 設定と索引を点検する
-  role: 定数
-  summary: '`lucide` のパッケージの採用バージョンのアイコンの名前の並び（ビルドで作る）'
+  role: 処理
+  summary: '`lucide` のパッケージの採用バージョンのアイコンの名前（kebab-case）の集合を、初めて呼んだときに作って返す'
+  description: 呼んだときだけ作るため、`checkMapConfig` を使わない配布ファイル（`dist/map.js`・`dist/index.js`）に lucide の全てのアイコンを束ねない
+  scope: internal
+  returns:
+    type: ReadonlySet<string>
+    description: アイコンの名前の集合
