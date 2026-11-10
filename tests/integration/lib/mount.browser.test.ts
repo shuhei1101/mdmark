@@ -22,6 +22,13 @@ import {
   wrapDirective,
 } from "../../unit/helpers/diagrams.ts";
 import { erText, foldEr, shopErFolded } from "../../unit/helpers/er.ts";
+import {
+  CONFIG as MAP_CONFIG,
+  DATA as MAP_DATA,
+  FLOW as MAP_FLOW,
+  SEQUENCE as MAP_SEQUENCE,
+  mapRange,
+} from "../../unit/helpers/map.ts";
 import { stripSourceLine } from "../../unit/helpers/source-line.ts";
 import {
   ALIAS_EXPECTED_HTML,
@@ -14056,4 +14063,440 @@ test("test_normal_when_column_resized_in_narrow_width", async () => {
   // 検証: 最終列は畳まない
   expect(note.hidden).toBe(false);
   expect(table.querySelector(".mdmark-fold-toggle")).toBeNull();
+});
+
+// map の図: 図の枠が描かれるまで待つ時間（dist/map.js の読み込みを含む）
+const MAP_WAIT_MS = 10_000;
+
+/** map の図の見本の構成図（見本の Mermaid に太い線を 1 本足す） */
+const MAP_FLOW_THICK = `${MAP_FLOW}  mount ==> frame\n`;
+
+/** 矩形 */
+type MapRect = { left: number; top: number; right: number; bottom: number };
+
+/** 2 つの矩形が重なるか（辺が接するだけは重ならない） */
+const mapOverlaps = (a: MapRect, b: MapRect): boolean =>
+  a.left < b.right && b.left < a.right && a.top < b.bottom && b.top < a.bottom;
+
+/** map の範囲を描き、map の図の枠が描かれるまで待つ */
+async function mountMap(
+  markdown: string,
+  config: Record<string, unknown> = {},
+): Promise<{ el: HTMLElement; figures: () => HTMLElement[] }> {
+  sessionStorage.clear();
+  const el = createElement();
+  el.style.width = "1200px";
+  await mountTracked(el, {
+    markdown,
+    config: { map: MAP_CONFIG, ...config } as Parameters<
+      Built["mount"]
+    >[1]["config"],
+  });
+  const figures = () => [
+    ...el.querySelectorAll<HTMLElement>(
+      'figure.mdmark-diagram[data-diagram="map"]',
+    ),
+  ];
+  await vi.waitFor(() => expect(figures().length).toBeGreaterThan(0), {
+    timeout: MAP_WAIT_MS,
+  });
+  return { el, figures };
+}
+
+/** 図の中の要素を、ポインターで押して離す（動かさない） */
+function pressMap(target: Element, dx = 0, dy = 0): void {
+  const box = target.getBoundingClientRect();
+  const at = {
+    bubbles: true,
+    pointerId: 1,
+    button: 0,
+    clientX: box.x + box.width / 2,
+    clientY: box.y + box.height / 2,
+  };
+  target.dispatchEvent(new PointerEvent("pointerdown", at));
+  if (dx !== 0 || dy !== 0) {
+    window.dispatchEvent(
+      new PointerEvent("pointermove", {
+        ...at,
+        clientX: at.clientX + dx,
+        clientY: at.clientY + dy,
+      }),
+    );
+  }
+  window.dispatchEvent(
+    new PointerEvent("pointerup", {
+      ...at,
+      clientX: at.clientX + dx,
+      clientY: at.clientY + dy,
+    }),
+  );
+}
+
+// map の構成図を描く（正常系）
+test("test_normal_when_map_flowchart_drawn", async () => {
+  // 準備・実行
+  const { figures } = await mountMap(
+    mapRange({
+      args: '{"title": "全体の構成"}',
+      mermaid: MAP_FLOW_THICK,
+      data: MAP_DATA,
+    }),
+  );
+  const figure = figures()[0] as HTMLElement;
+  // 検証: タイトルと、範囲と更新日を出さない
+  expect(figure.querySelector(".mdmark-diagram-title")?.textContent).toBe(
+    "全体の構成",
+  );
+  expect(figure.querySelector(".mdmark-diagram-meta")).toBeNull();
+  // 検証: 入れ子とノード・グループの重なり
+  const read = find<HTMLElement>(figure, '.map-group[data-group="read"]');
+  const lib = find<HTMLElement>(figure, '.map-group[data-group="lib"]');
+  const inner = read.getBoundingClientRect();
+  const outer = lib.getBoundingClientRect();
+  expect(inner.left).toBeGreaterThanOrEqual(outer.left);
+  expect(inner.right).toBeLessThanOrEqual(outer.right);
+  const nodes = [
+    ...figure.querySelectorAll<HTMLElement>(
+      ".mdmark-diagram-stage > .mdmark-diagram-node[data-node]",
+    ),
+  ];
+  expect(nodes.length).toBe(10);
+  for (const [i, a] of nodes.entries()) {
+    for (const b of nodes.slice(i + 1)) {
+      expect(
+        mapOverlaps(a.getBoundingClientRect(), b.getBoundingClientRect()),
+        `${a.dataset.node} と ${b.dataset.node}`,
+      ).toBe(false);
+    }
+    // 名前がノードに収まり、種類の行がノードの左上にある
+    const name = find<HTMLElement>(a, ".mdmark-diagram-node-name");
+    expect(a.scrollHeight).toBeLessThanOrEqual(a.clientHeight + 1);
+    const kind = find<HTMLElement>(a, ".mdmark-diagram-node-kind");
+    expect(kind.getBoundingClientRect().top).toBeLessThan(
+      name.getBoundingClientRect().top,
+    );
+    expect(kind.getBoundingClientRect().height).toBeGreaterThanOrEqual(24);
+  }
+  // 検証: 種類の行と形・色
+  const store = find<HTMLElement>(figure, '[data-node="index"]');
+  expect(store.dataset.shape).toBe("rect");
+  expect(store.querySelector(".mdmark-diagram-node-kind")?.textContent).toBe(
+    "保存先",
+  );
+  expect(store.querySelector(".mdmark-diagram-node-kind svg")).not.toBeNull();
+  expect(find<HTMLElement>(figure, '[data-node="user"]').dataset.shape).toBe(
+    "pill",
+  );
+  expect(figure.querySelector(".mdmark-diagram-legend li")).toBeNull();
+  // 検証: 線の模様・太さ・矢じり
+  const dashed = find<SVGPathElement>(
+    figure,
+    '.mdmark-diagram-wire[data-wire="doc->marker"]',
+  );
+  expect(dashed.getAttribute("stroke-dasharray")).toBeTruthy();
+  const thick = find<SVGPathElement>(
+    figure,
+    '.mdmark-diagram-wire[data-wire="mount->frame"]',
+  );
+  expect(Number(thick.getAttribute("stroke-width"))).toBeGreaterThan(2);
+  const both = find<SVGPathElement>(
+    figure,
+    '.mdmark-diagram-wire[data-wire="route->frame"]',
+  );
+  expect(both.getAttribute("marker-start")).toBeTruthy();
+  expect(both.getAttribute("marker-end")).toBeTruthy();
+  // 検証: 右上のツールと、図を動かす矢印のボタンが無い
+  const tools = [
+    ...figure.querySelectorAll<HTMLButtonElement>(
+      '.mdmark-diagram-tools-group[data-group="map"] [data-tool]',
+    ),
+  ];
+  expect(tools.map((tool) => tool.dataset.tool)).toEqual([
+    "back",
+    "expandAll",
+    "collapseAll",
+    "reset",
+  ]);
+  expect(tools[0]?.disabled).toBe(true);
+  expect(tools[3]?.disabled).toBe(true);
+  expect(
+    figure.querySelector('.mdmark-diagram-tools-group[data-group="pan"]'),
+  ).toBeNull();
+  // 検証: 案内の帯
+  const band = find<HTMLElement>(
+    figure.parentElement as HTMLElement,
+    ".map-band",
+  );
+  expect(band.querySelector(".map-band-count")?.textContent).toBe("–/4");
+  expect(band.querySelectorAll("button[data-band]")).toHaveLength(4);
+  expect(
+    band.querySelector<HTMLButtonElement>('[data-band="stop"]')?.disabled,
+  ).toBe(true);
+  // 検証: 線にポインターを当てると、ほかが薄くなり印が流れる
+  const hit = find<SVGPathElement>(
+    figure,
+    '.map-wire-hit[data-wire="mount->marker"]',
+  );
+  hit.dispatchEvent(new PointerEvent("pointerover", { bubbles: true }));
+  expect(
+    figure.querySelectorAll('.map-packet[data-wire="mount->marker"]').length,
+  ).toBeGreaterThan(0);
+  expect(
+    find<HTMLElement>(figure, '[data-node="index"]').classList.contains(
+      "map-dim",
+    ),
+  ).toBe(true);
+  expect(
+    find<HTMLElement>(figure, '[data-node="mount"]').classList.contains(
+      "map-dim",
+    ),
+  ).toBe(false);
+  hit.dispatchEvent(new PointerEvent("pointerout", { bubbles: true }));
+  expect(figure.querySelectorAll(".map-packet")).toHaveLength(0);
+  // 検証: mermaid のライブラリを読み込まない
+  expect(
+    performance
+      .getEntriesByType("resource")
+      .filter((entry) => entry.name.includes("mermaid")).length,
+  ).toBe(0);
+});
+
+// map のグループの中へ入る・開閉する（正常系）
+test("test_normal_when_map_group_entered_and_collapsed", async () => {
+  // 準備
+  const markdown = mapRange({ mermaid: MAP_FLOW, data: MAP_DATA });
+  const { el, figures } = await mountMap(markdown);
+  const figure = () => figures()[0] as HTMLElement;
+  const before = history.length;
+  // 実行: 中へ入る
+  find<HTMLButtonElement>(figure(), '[data-group-enter="read"]').click();
+  // 検証
+  expect(
+    find<HTMLElement>(figure(), '[data-node="mount"]').classList.contains(
+      "map-faded",
+    ),
+  ).toBe(true);
+  expect(figure().querySelector('[data-group-enter="read"]')).toBeNull();
+  expect(find<HTMLButtonElement>(figure(), '[data-tool="back"]').disabled).toBe(
+    false,
+  );
+  expect(new URLSearchParams(location.search).get("map-1")).toBe("read");
+  expect(history.length).toBe(before);
+  // 実行・検証: 戻る
+  find<HTMLButtonElement>(figure(), '[data-tool="back"]').click();
+  expect(new URLSearchParams(location.search).get("map-1")).toBe("lib");
+  find<HTMLButtonElement>(figure(), '[data-tool="back"]').click();
+  expect(new URLSearchParams(location.search).has("map-1")).toBe(false);
+  // 実行: 閉じる
+  find<HTMLButtonElement>(
+    figure(),
+    'button[aria-label="データを閉じる"]',
+  ).click();
+  // 検証: 1 つのノードになり、中への線を相手ごとに 1 本にまとめ（marker と data の 2 本）、ラベルを出さない
+  const closed = find<HTMLElement>(
+    figure(),
+    '.map-closed-group[data-group="store"]',
+  );
+  expect(
+    closed.querySelector('button[aria-label="データを開く"]'),
+  ).not.toBeNull();
+  const toStore = [
+    ...figure().querySelectorAll<SVGPathElement>(
+      ".mdmark-diagram-wire[data-wire]",
+    ),
+  ].filter((path) => path.dataset.wire?.includes("store"));
+  expect(toStore.map((path) => path.dataset.wire).sort()).toEqual([
+    "store->data",
+    "store->marker",
+  ]);
+  // 実行・検証: もう一度 mount しても閉じたまま
+  handles.pop()?.destroy();
+  el.replaceChildren();
+  await mountTracked(el, {
+    markdown,
+    config: { map: MAP_CONFIG } as Parameters<Built["mount"]>[1]["config"],
+  });
+  await vi.waitFor(
+    () =>
+      expect(
+        el.querySelector('.map-closed-group[data-group="store"]'),
+      ).not.toBeNull(),
+    { timeout: MAP_WAIT_MS },
+  );
+  // 実行・検証: Shift で中のグループごと閉じる
+  find<HTMLButtonElement>(
+    el,
+    'button[aria-label="mdmarkを閉じる"]',
+  ).dispatchEvent(new MouseEvent("click", { bubbles: true, shiftKey: true }));
+  expect(
+    el.querySelector('.map-closed-group[data-group="lib"]'),
+  ).not.toBeNull();
+  find<HTMLButtonElement>(el, '[data-tool="expandAll"]').click();
+  expect(el.querySelectorAll(".map-closed-group")).toHaveLength(0);
+  find<HTMLButtonElement>(el, '[data-tool="collapseAll"]').click();
+  expect(el.querySelectorAll(".map-closed-group").length).toBeGreaterThan(0);
+  // 実行・検証: クエリ文字列のグループの中から描く。無い ID は無視する
+  history.replaceState(null, "", `${location.pathname}?map-1=read`);
+  sessionStorage.clear();
+  handles.pop()?.destroy();
+  el.replaceChildren();
+  await mountTracked(el, {
+    markdown,
+    config: { map: MAP_CONFIG } as Parameters<Built["mount"]>[1]["config"],
+  });
+  await vi.waitFor(
+    () =>
+      expect(el.querySelector(".map-group-title.is-current")?.textContent).toBe(
+        "記法の読み取り",
+      ),
+    { timeout: MAP_WAIT_MS },
+  );
+  history.replaceState(null, "", `${location.pathname}?map-1=ghost`);
+  sessionStorage.clear();
+  handles.pop()?.destroy();
+  el.replaceChildren();
+  await mountTracked(el, {
+    markdown,
+    config: { map: MAP_CONFIG } as Parameters<Built["mount"]>[1]["config"],
+  });
+  await vi.waitFor(
+    () => expect(el.querySelector("figure.mdmark-diagram")).not.toBeNull(),
+    { timeout: MAP_WAIT_MS },
+  );
+  expect(el.querySelector(".map-group-title.is-current")).toBeNull();
+});
+
+// map の機能を解除する（正常系）
+test("test_normal_when_map_disabled", async () => {
+  // 準備・実行
+  const el = createElement();
+  await mountTracked(el, {
+    markdown: `<!-- features: -map -->\n\n${mapRange({ mermaid: MAP_FLOW, data: MAP_DATA })}`,
+    config: { features: { mermaid: false } },
+  });
+  // 検証
+  expect(
+    el.querySelector('figure.mdmark-diagram[data-diagram="map"]'),
+  ).toBeNull();
+  expect(el.textContent).not.toContain("map-data");
+  expect(el.textContent).not.toContain('"version"');
+  expect(el.querySelector(".mdmark-syntax-warning")).toBeNull();
+  expect(el.querySelector("code.language-mermaid")).not.toBeNull();
+});
+
+// map の設定に無いクラスと線の名前（正常系）
+test("test_normal_when_map_config_names_missing", async () => {
+  // 準備
+  const mermaid = MAP_FLOW.replace(
+    'frame["図の枠"]:::step',
+    'frame["図の枠"]:::queue',
+  );
+  const data = JSON.stringify({
+    version: 1,
+    layout: { "layout->route": { line: "back2" } },
+  });
+  // 実行
+  const { el, figures } = await mountMap(mapRange({ mermaid, data }));
+  const figure = figures()[0] as HTMLElement;
+  // 検証
+  const warnings = el.querySelectorAll(".mdmark-syntax-warning");
+  expect(warnings).toHaveLength(1);
+  expect(warnings[0]?.textContent).toContain("queue");
+  expect(warnings[0]?.textContent).toContain("map.kinds");
+  expect(warnings[0]?.textContent).toContain("back2");
+  expect(warnings[0]?.textContent).toContain("map.lines");
+  const queue = find<HTMLElement>(figure, '[data-node="frame"]');
+  expect(
+    find<HTMLElement>(queue, ".mdmark-diagram-node-kind").classList.contains(
+      "is-empty",
+    ),
+  ).toBe(true);
+  expect(queue.dataset.shape).toBe("rounded");
+  const back = find<SVGPathElement>(
+    figure,
+    '.mdmark-diagram-wire[data-wire="layout->route"]',
+  );
+  expect(back.getAttribute("stroke-dasharray")).toBeNull();
+  expect(back.getAttribute("stroke-width")).toBe("1.5");
+});
+
+// map の線と配置の上書き（正常系）
+test("test_normal_when_map_overrides", async () => {
+  // 準備
+  const data = JSON.stringify({
+    version: 1,
+    layout: {
+      "layout->route": {
+        ends: { from: { side: "right" }, to: { side: "right" } },
+      },
+      "mount->marker": { via: [{ x: 0, y: 0 }] },
+      store: { collapsed: true },
+    },
+  });
+  // 実行
+  const { figures } = await mountMap(mapRange({ mermaid: MAP_FLOW, data }));
+  const figure = figures()[0] as HTMLElement;
+  // 検証: 最初に閉じる
+  expect(
+    figure.querySelector('.map-closed-group[data-group="store"]'),
+  ).not.toBeNull();
+  // 検証: ends の線は元のノードの右の辺から出て、先のノードの右の辺に入る
+  const stage = find<HTMLElement>(figure, ".mdmark-diagram-stage");
+  const rectOf = (id: string) => {
+    const node = find<HTMLElement>(stage, `[data-node="${id}"]`);
+    return {
+      x: node.offsetLeft,
+      y: node.offsetTop,
+      w: node.offsetWidth,
+      h: node.offsetHeight,
+    };
+  };
+  const numbers = (id: string) =>
+    (
+      find<SVGPathElement>(stage, `.map-wire-hit[data-wire="${id}"]`)
+        .getAttribute("d")
+        ?.match(/-?[\d.]+/g) ?? []
+    ).map(Number);
+  const ends = numbers("layout->route");
+  const from = rectOf("layout");
+  const to = rectOf("route");
+  expect(ends[0]).toBeCloseTo(from.x + from.w, 0);
+  expect(ends.at(-2)).toBeCloseTo(to.x + to.w, 0);
+  // 検証: ノード・グループが重ならない
+  const nodes = [
+    ...stage.querySelectorAll<HTMLElement>(":scope > .mdmark-diagram-node"),
+  ];
+  for (const [i, a] of nodes.entries()) {
+    for (const b of nodes.slice(i + 1)) {
+      expect(
+        mapOverlaps(a.getBoundingClientRect(), b.getBoundingClientRect()),
+      ).toBe(false);
+    }
+  }
+});
+
+// map の書き方の警告を描く（正常系）
+test("test_normal_when_map_warnings", async () => {
+  // 準備
+  const mermaid =
+    "flowchart LR\n  A --> B\n  A -> B\n  subgraph g [グループ]\n    C\n";
+  // 実行
+  const { el, figures } = await mountMap(
+    mapRange({
+      args: '{"title": "全体", "mdoe": 1}',
+      mermaid,
+      data: '{"version": 1, "layuot": {}}',
+    }),
+  );
+  // 検証
+  const warnings = el.querySelectorAll(".mdmark-syntax-warning");
+  expect(warnings).toHaveLength(1);
+  const text = warnings[0]?.textContent ?? "";
+  expect(text).toContain("A -> B");
+  expect(text).toContain("-->");
+  expect(text).toContain("layuot");
+  expect(text).not.toContain("mdoe");
+  const figure = figures()[0] as HTMLElement;
+  expect(figure.querySelector('[data-node="A"]')).not.toBeNull();
+  expect(figure.querySelector('[data-node="B"]')).not.toBeNull();
 });
