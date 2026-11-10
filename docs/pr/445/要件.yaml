@@ -88,11 +88,15 @@ docs:
   - page: docs/使用方法/図を描く/Mermaidと補足で図を描く.md
     new: true
     change: map のマーカー・Mermaid のブロック・補足の記載方法と、配置と色の上書き・巡回・再生の書き方の手順を新設する
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-10T16:56:41.862556+00:00'
   - page: docs/使用方法/図を描く/index.yaml
     new: false
     change: 新設する『Mermaidと補足で図を描く』の行を追加する
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-10T16:56:41.862556+00:00'
   - page: docs/使用方法/図を描く/図を描く.md
     new: false
     change: 新しく図を書くときは map を使う案内を追加する（flow・sequence の記載方法は残す）
@@ -100,11 +104,15 @@ docs:
   - page: docs/はじめに/コアコンセプト/図を自動配置して辿る仕組み.md
     new: true
     change: 印の引数・Mermaid・補足の役割の分け方、入れ子の自動配置と上書き、今のフロー図・シーケンス図の部品で描く流れ、中へ入る・開閉で配置し直す流れを新設する
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-10T16:56:41.862556+00:00'
   - page: docs/はじめに/コアコンセプト/index.yaml
     new: false
     change: 新設する『図を自動配置して辿る仕組み』の行を追加する
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-10T16:56:41.862556+00:00'
   - page: docs/リファレンス/CLI.md
     new: false
     change: 点検のずれの種類に map の 7 種類（map_invalid・map_unknown_ref・map_unknown_key・map_invalid_value・map_unknown_icon・map_unknown_class・map_unknown_line）を追加する
@@ -112,7 +120,9 @@ docs:
   - page: docs/リファレンス/記法.md
     new: false
     change: map のマーカーと引数・補足の JSON のキー・マーカーに対応しない表示での見え方を追加する（見出しのアンカーは `#map`）
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-10T16:56:41.862556+00:00'
   - page: docs/リファレンス/構成図の決まり.md
     new: false
     change: 入れ子は 2 レイヤーまでを推奨し、深いものは別の図に切り出してリンクする決まりと、map の図は凡例を出さないこと・層は役割ごとのグループで表すこと・色の重なり・枠のタイトルの位置の決まりと、グループにするかの判定フローチャート（層をグループで描く例を含む）を追加する（#309、ユーザーの依頼）
@@ -124,13 +134,15 @@ docs:
   - page: docs/リファレンス/用語集.md
     new: false
     change: map・補足・自動配置・中へ入る・開閉・巡回・シーケンスの再生の用語を追加する（補足は HTML コメントに記載する JSON のオブジェクト）
-    status: todo
+    status: done
     updated_by: planner
-    updated_at: '2026-11-10T15:45:13.424108+00:00'
+    updated_at: '2026-11-10T16:56:41.862556+00:00'
   - page: guide/index.yaml
     new: false
     change: 使い方集の索引に『Mermaidと補足で図を描く』を追加し、diagrams・architecture-style の行の概要を map に合わせる（architecture-style はグループにするかの判定フローチャートを含むことを書く）
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-10T16:56:41.862556+00:00'
 scope_out:
   - item: A-35 の No 10〜17（状態遷移の再生・ER 図と結合・マインドマップ・確度のマーカー・変更の表示・環境とシナリオ・書き出し・一覧の表示）と、stateDiagram-v2・erDiagram・mindmap の map での描画
     reason: 未検討で Issue の範囲に含めない（この PR ではこれらの種類を書き方の警告にする）

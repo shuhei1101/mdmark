@@ -64,10 +64,10 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-10T16:03:05.424878+00:00'
   - process: ドキュメント修正
-    status: todo
+    status: done
     note: 内容が決まった設定・CLI・用語集・構成図の決まり・図を描くを記載した。補足の記載方法を載せるページは D-347 の回答待ちで、実装の関連ドキュメントの修正で記載する
     updated_by: planner
-    updated_at: '2026-11-10T15:45:41.439844+00:00'
+    updated_at: '2026-11-10T16:57:06.452007+00:00'
   - process: 単体テスト作成
     status: todo
     note: map のモジュール構成と、変える既存のモジュールの unit_tests の単体テストを作り、Red を確かめた（ede82c36・c8345fad）
