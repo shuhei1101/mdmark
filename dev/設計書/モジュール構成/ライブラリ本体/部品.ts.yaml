@@ -1118,9 +1118,9 @@ functions:
     scope: internal
     args:
       - name: options
-        type: '{ title: string; open: boolean; body: string }'
+        type: '{ title: string; open: boolean; body: string; className?: string }'
         required: true
-        description: 見出しの文字、既定で開くか、中身の HTML（`SLOT_MARKER` を指定できる）
+        description: 見出しの文字、既定で開くか、中身の HTML（`SLOT_MARKER` を指定できる）、`mdmark-collapsible` の後ろに加える class（省くと加えない）
     returns:
       type: string
       description: '`<details class="mdmark-collapsible"` で始まる HTML'
@@ -1131,6 +1131,12 @@ functions:
         condition: '`title: "a<b"`、`open: false`、`body: "<ol></ol>"`'
         mock: なし
         expected: '`<details class="mdmark-collapsible"><summary>a&lt;b</summary><ol></ol></details>`'
+      - name: test_render_collapsible_when_class_name
+        case: 正常
+        summary: 加える class を mdmark-collapsible の後ろに付ける
+        condition: '`title: "フロントマター"`、`open: false`、`body: "<pre></pre>"`、`className: "mdmark-frontmatter"`'
+        mock: なし
+        expected: '`<details class="mdmark-collapsible mdmark-frontmatter"><summary>フロントマター</summary><pre></pre></details>`'
       - name: test_render_collapsible_when_open
         case: 正常
         summary: 開いた折り畳みは open を持つ
@@ -1987,11 +1993,40 @@ functions:
         expected: '`<button class="mdmark-raw-toggle" type="button" aria-label="元の CSV を表示" aria-pressed="false">` と `aria-pressed="true"` の `code-xml` のアイコンのボタン'
         mock: なし
         summary: 押した状態を `aria-pressed` に入れる
+  - name: renderFrontmatter
+    title: フロントマターの表示を描く
+    container: src/parts/frontmatter.ts
+    kind: 関数
+    scope: internal
+    summary: 見出し `フロントマター` の閉じた折りたたみ（`renderCollapsible`、class `mdmark-frontmatter` を加える）に、中身の HTML を入れて返却する
+    args:
+      - name: options
+        type: '{ body: string; open?: boolean }'
+        required: true
+        description: 中身の HTML（`insertFrontmatter` は `SLOT_MARKER` を指定し、前後に分けて fence のトークンを挟む）、開いた状態から始めるか（省くと `false`。`renderCollapsible` の `open` に指定する。`insertFrontmatter` は指定しない）
+    returns:
+      type: string
+      description: '`<details class="mdmark-collapsible mdmark-frontmatter">` で始まる HTML'
+    callees:
+      - '#functions[renderCollapsible]'
+    refs:
+      - dev/設計書/部品設計/フロントマター.ts#
+    unit_tests:
+      - name: test_render_frontmatter
+        case: 正常
+        summary: 閉じた折りたたみに中身を入れる
+        condition: '`body: "<pre></pre>"`'
+        mock: なし
+        expected: '`<details class="mdmark-collapsible mdmark-frontmatter"><summary>フロントマター</summary><pre></pre></details>`（`open` を持たない）'
+    status: planned
+    introduced:
+      pr: 422
 notes:
   ストーリー: '`*.stories.yaml` は `title`（部品設計の `story`）と、部品設計の `states` ごとの `stories[].name`・`stories[].parameters.server.id`（部品の id。ファイル名の頭）・`stories[].args` を持つ。`embed` の配列の引数は `a,b` の 1 つの文字列で記載する。この PR で追加する部品の配列・オブジェクトの引数は JSON の文字列で記載する（戻し方は『部品の描画』）。中身を持つ部品のストーリーは、中身に部品ごとの見本の HTML を指定する'
   マーカーの付け方: 部品の関数は `markOwn` を掛けない。記法のコアルールと `mount` の操作が、差し込む前に掛ける
 test_files:
   - tests/unit/src/parts/escape.test.ts
+  - tests/unit/src/parts/frontmatter.test.ts
   - tests/unit/src/parts/notice.test.ts
   - tests/unit/src/parts/embed.test.ts
   - tests/unit/src/parts/own.test.ts

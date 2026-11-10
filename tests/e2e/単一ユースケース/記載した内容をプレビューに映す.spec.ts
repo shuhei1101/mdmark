@@ -445,3 +445,34 @@ test("test_normal_when_aliases_yaml_saved", async () => {
     .toBe(text);
   expect(await scrollTop(frame)).toBe(top);
 });
+
+// フロントマターを持つ文書は表示せずに描き、設定ファイルで features.frontmatter を true にして保存すると先頭に表示を置く（正常シナリオ（フロントマターを持つ文書））
+test("test_normal_when_frontmatter", async () => {
+  // 準備
+  const session = await e2e.launch({
+    files: {
+      "mdmark.config.yaml": EMPTY_CONFIG,
+      "guide.md": "---\ntitle: テスト\ntags: [a, b]\n---\n\n# 見出し\n",
+    },
+  });
+  await session.openFile("guide.md");
+  await session.openPreviewWithShortcut();
+  const frame = await session.frameWith(".mdmark-content h1");
+  const content = frame.locator(".mdmark-content").first();
+  await expect(content.locator("h1")).toHaveText("見出し");
+  // 検証: 保存する前
+  await expect(content).not.toContainText("title: テスト");
+  await expect(content.locator("h2")).toHaveCount(0);
+  await expect(content.locator(".mdmark-frontmatter")).toHaveCount(0);
+  await session.openFile("mdmark.config.yaml");
+  // 実行
+  await replaceAllText(session, "features: { frontmatter: true }");
+  await saveEditor(session);
+  // 検証: 保存した後
+  await expect(content.locator(":scope > *").first()).toHaveClass(
+    /mdmark-frontmatter/,
+  );
+  const code = content.locator(".mdmark-frontmatter code");
+  await expect(code).toContainText("title");
+  await expect(code).toContainText("テスト");
+});

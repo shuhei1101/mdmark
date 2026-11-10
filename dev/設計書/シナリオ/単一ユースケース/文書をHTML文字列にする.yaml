@@ -144,6 +144,24 @@ scenarios:
       - HTML 文字列のマーカーの場所に、`実行` の見出しとその下の段落があり、`準備` の段落が無い
       - 表を指定せずに呼ぶと、マーカーの場所に取り込み先が無い記載の警告が入る
     test: test_normal_when_includes_given
+  - name: 正常シナリオ（フロントマターを持つ文書）
+    setup:
+      - name: フロントマターを持つ Markdown
+        description: '1〜4 行目に `---`・`title: テスト`・`tags: [a, b]`・`---` のフロントマター、6 行目に `# 見出し`、8 行目に段落を配置した文書'
+        notes: 設定は指定しない（`features.frontmatter` は既定の `false`）
+      - name: Mock
+        description: 差し替える依存は無い（画面を持たない）
+    flow: |-
+      sequenceDiagram
+        participant A as 利用側の処理
+        participant M as mdmark
+        A->>M: フロントマターを持つ Markdown を HTML 文字列にさせる
+        M->>M: 先頭のフロントマターを本文から除外する
+        M-->>A: HTML 文字列
+    expected:
+      - 'HTML 文字列に `title: テスト` と `tags: [a, b]` の文字が無い'
+      - HTML 文字列に h2 の要素が無く、`見出し` の h1 の要素と段落がある
+    test: test_normal_when_frontmatter
 lead: 利用側（書き出し・ビルドの処理やサーバー）が、画面を持たずに Markdown を mdmark で HTML 文字列にする。ブラウザでも Node でも同じ文字列を返却する。
 issue: 3
 primary_actor: mdmark で HTML を書き出す利用側の処理

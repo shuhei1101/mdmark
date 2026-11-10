@@ -1,6 +1,7 @@
 import type { MarkdownIt as MarkdownItParser, Token } from "markdown-it";
 import MarkdownIt from "markdown-it";
 import { type MdmarkConfig, resolveConfig } from "../config.ts";
+import { splitFrontmatter } from "../render/frontmatter.ts";
 import { resolveDocumentFeatures, takeMarks } from "../render/marks.ts";
 import type { RenderEnv } from "../render/parser.ts";
 import { glossaryRule } from "../render/syntax/glossary.ts";
@@ -82,7 +83,8 @@ export function parseDocument(options: {
     ownGlossary: [],
     glossaryLines: [],
   };
-  const tokens = parser.parse(options.body, env);
+  // 本文の先頭のフロントマターは空白にして、リンク・別名・用語の照合に数えない
+  const tokens = parser.parse(splitFrontmatter(options.body).body, env);
   const glossary = env.ownGlossary.map((entry, position) => ({
     entry,
     line: env.glossaryLines?.[position] ?? 0,

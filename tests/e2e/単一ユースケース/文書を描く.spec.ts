@@ -282,3 +282,58 @@ test("test_normal_when_theme_selected", async ({ page }) => {
   expect(leftovers.rootClass).not.toMatch(/theme/);
   expect(leftovers.background).toBe("#ffffff");
 });
+
+/** 1〜4 行目にフロントマター、6 行目に見出し、8 行目に段落を持つ文書 */
+const FRONTMATTER_MARKDOWN = [
+  "---",
+  "title: テスト",
+  "tags: [a, b]",
+  "---",
+  "",
+  "# 見出し",
+  "",
+  "段落",
+  "",
+].join("\n");
+
+// 先頭のフロントマターを本文・見出し・右側の目次に出さず、元の行番号は元の Markdown のままにする（正常シナリオ（フロントマターを持つ文書））
+test("test_normal_when_frontmatter", async ({ page }) => {
+  // 準備
+  await openPage(page, builtRoot);
+  // 実行
+  await mountDocument(page, { markdown: FRONTMATTER_MARKDOWN });
+  // 検証
+  const doc = page.locator("#doc");
+  await expect(doc.locator(".mdmark-content h1")).toHaveText("見出し");
+  await expect(doc).not.toContainText("title: テスト");
+  await expect(doc).not.toContainText("tags: [a, b]");
+  await expect(doc.locator(".mdmark-content :is(h1, h2, h3)")).toHaveCount(1);
+  await expect(doc.locator(".mdmark-content h2")).toHaveCount(0);
+  await expect(
+    doc.locator("aside.mdmark-side-toc a[data-heading-id]", {
+      hasText: "title",
+    }),
+  ).toHaveCount(0);
+  await expect(doc.locator(".mdmark-content h1")).toHaveAttribute(
+    "data-source-line",
+    "5",
+  );
+  await expect(doc.locator(".mdmark-content p").first()).toHaveAttribute(
+    "data-source-line",
+    "7",
+  );
+});
+
+// 閉じる行が無い先頭の区切り線は、フロントマターにせず区切り線として描く（正常シナリオ（閉じる行の無い先頭の区切り線））
+test("test_normal_when_frontmatter_unclosed", async ({ page }) => {
+  // 準備
+  const markdown = ["---", "", "段落", "", "## 見出し", ""].join("\n");
+  await openPage(page, builtRoot);
+  // 実行
+  await mountDocument(page, { markdown });
+  // 検証
+  const content = page.locator("#doc .mdmark-content");
+  await expect(content.locator("hr")).toHaveCount(1);
+  await expect(content.locator("p", { hasText: "段落" })).toHaveCount(1);
+  await expect(content.locator("h2")).toHaveText("見出し");
+});

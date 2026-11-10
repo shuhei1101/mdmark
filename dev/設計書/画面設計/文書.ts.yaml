@@ -115,6 +115,14 @@ elements:
     visible_when: 文書に `details` があるとき
     initial_state: 活性
     action: '`summary` を押すと開閉する（ブラウザの振る舞い）'
+  - name: フロントマターの表示
+    id: frontmatter
+    kind: details
+    position: 本文の先頭
+    description: 文書の先頭の YAML のフロントマターを、見出し `フロントマター` の閉じた折りたたみに言語 `yaml` のコードブロックで出す（部品『フロントマター』）。印刷の機能がオンのとき、印刷の前に開き、印刷の後にもう一度閉じる
+    visible_when: 文書の先頭にフロントマターがあり、機能 `frontmatter` がオンのとき（既定はオフで、オフのときはフロントマターを描かない）
+    initial_state: 活性
+    action: '`summary` を押すと開閉する（ブラウザの振る舞い）'
   - name: タスクのチェックボックス
     id: task-checkbox
     kind: input

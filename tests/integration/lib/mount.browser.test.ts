@@ -13143,9 +13143,9 @@ test("test_normal_when_block_spacing", async () => {
     for (const after of SPACING_BLOCKS) {
       // 準備
       const el = createElement();
-      // 実行
+      // 実行（1 行目の `---` と後ろの `---` はフロントマターになるため、空行から始める）
       await mountTracked(el, {
-        markdown: `${before.before}\n\n${after.after ?? after.before}\n`,
+        markdown: `\n${before.before}\n\n${after.after ?? after.before}\n`,
         config,
       });
       // 検証
@@ -13657,6 +13657,93 @@ test(
   },
   MERMAID_WAIT_MS + 30_000,
 );
+
+/** 1〜4 行目にフロントマター、6 行目に見出し、8 行目に段落、10 行目に節を持つ文書 */
+const FRONTMATTER_MARKDOWN_LINES = [
+  "---",
+  "title: テスト",
+  "tags: [a, b]",
+  "---",
+  "",
+  "# 見出し",
+  "",
+  "段落",
+  "",
+  "## 節",
+  "",
+];
+
+/** 本文の見出しの文字を、現れた順に返却する */
+function headingTexts(el: HTMLElement): string[] {
+  return [
+    ...find(el, ".mdmark-content").querySelectorAll("h1, h2, h3, h4, h5, h6"),
+  ].map((heading) => heading.textContent?.trim() ?? "");
+}
+
+/** 右側の目次の項目の文字を、現れた順に返却する */
+function sideTocTexts(el: HTMLElement): string[] {
+  return [
+    ...find(el, "aside.mdmark-side-toc").querySelectorAll("a[data-heading-id]"),
+  ].map((link) => link.textContent?.trim() ?? "");
+}
+
+// 先頭のフロントマターを本文・見出し・右側の目次に出さず、元の行番号は元の Markdown のままにする（正常系（フロントマターを除外する））
+test("test_normal_when_frontmatter", async () => {
+  await withViewport(1280, async () => {
+    // 準備
+    const el = createElement();
+    // 実行
+    await mountTracked(el, { markdown: FRONTMATTER_MARKDOWN_LINES.join("\n") });
+    // 検証
+    expect(el.textContent).not.toContain("title: テスト");
+    expect(el.textContent).not.toContain("tags: [a, b]");
+    expect(el.querySelector(".mdmark-frontmatter")).toBeNull();
+    expect(headingTexts(el)).toEqual(["見出し", "節"]);
+    expect(sideTocTexts(el)).toEqual(["見出し", "節"]);
+    expect(
+      find(el, ".mdmark-content h1").getAttribute("data-source-line"),
+    ).toBe("5");
+    expect(find(el, ".mdmark-content p").getAttribute("data-source-line")).toBe(
+      "7",
+    );
+  });
+});
+
+// 文書のマーカーで機能 frontmatter をオンにすると、本文の先頭の閉じた折りたたみに描き、見出しを押すと開く（正常系（フロントマターの表示をオンにする））
+test("test_normal_when_frontmatter_enabled", async () => {
+  await withViewport(1280, async () => {
+    // 準備
+    const el = createElement();
+    const lines = [...FRONTMATTER_MARKDOWN_LINES];
+    lines.splice(4, 0, "<!-- features: +frontmatter -->");
+    // 実行
+    await mountTracked(el, { markdown: lines.join("\n") });
+    // 検証: 描いた直後
+    const content = find<HTMLElement>(el, ".mdmark-content");
+    const details = content.firstElementChild as HTMLDetailsElement;
+    expect(details.matches("details.mdmark-frontmatter")).toBe(true);
+    expect(details.open).toBe(false);
+    const summary = find<HTMLElement>(details, "summary");
+    expect(summary.textContent?.trim()).toBe("フロントマター");
+    // 実行: 見出しを押す
+    await userEvent.click(summary);
+    // 検証: 開いた後
+    expect(details.open).toBe(true);
+    const code = find<HTMLElement>(details, "code.language-yaml");
+    expect(code.textContent).toContain("title: テスト");
+    expect(code.textContent).toContain("tags: [a, b]");
+    expect(sideTocTexts(el)).toEqual(["見出し", "節"]);
+    // 実行: マーカーでオフにし、設定でオンにする
+    const off = createElement();
+    lines[4] = "<!-- features: -frontmatter -->";
+    await mountTracked(off, {
+      markdown: lines.join("\n"),
+      config: { features: { frontmatter: true } },
+    });
+    // 検証
+    expect(off.querySelector(".mdmark-frontmatter")).toBeNull();
+  });
+});
 
 /** 名前・説明・更新日の 3 列 3 行の表の Markdown（`mark` は表のマーカーの中身。省くと囲まない） */
 function resizeTable(mark?: string): string {

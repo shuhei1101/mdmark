@@ -2022,6 +2022,98 @@ flows:
       - 2 つ目の文書の `div.mdmark-code` が属性 `data-mdmark-mermaid` を持たない
       - どちらの文字列にも `svg` と `data-mdmark-syntax` が無い
     test: test_normal_when_mermaid_code_block
+  - name: 正常系（フロントマターを除外する）
+    summary: 文書の先頭の YAML のフロントマターを解析の前に本文から除外し、後ろのブロックの元の行番号は元の Markdown のままにする
+    setup:
+      - name: 配布物を読み込んだ Node の処理
+        description: 正常系と同じ
+      - name: フロントマターを持つ Markdown
+        description: '1〜4 行目に `---`・`title: テスト`・`tags: [a, b]`・`---`、6 行目に `# 見出し`、8 行目に段落を配置した文書'
+        notes: '`opts.config` は指定しない（`features.frontmatter` は既定の `false`）'
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        participant C as 利用側の処理
+        participant M as mdmark
+        C->>M: render(markdown)
+        M->>M: 先頭のフロントマターの範囲を取り出し、本文から除外する
+        M->>M: 残りを解析し、ブロックに元の Markdown の行番号を付ける
+        M-->>C: HTML 文字列
+    expected:
+      - '文字列に `title: テスト`・`tags: [a, b]`・`<hr` が無い'
+      - 文字列に `<h2` が無く、`<h1` が `data-source-line="5"`、`<p>` が `data-source-line="7"` を持つ
+      - 文字列に `mdmark-frontmatter` が無い
+    test: test_normal_when_frontmatter
+  - name: 正常系（フロントマターの表示をオンにする）
+    summary: 機能 `frontmatter` がオンのとき、本文の先頭の閉じた折りたたみに、フロントマターを言語 `yaml` のコードブロックで描く
+    setup:
+      - name: 配布物を読み込んだ Node の処理
+        description: 正常系と同じ
+      - name: フロントマターを持つ Markdown
+        description: 正常系（フロントマターを除外する）と同じ文書
+      - name: 設定
+        description: '`opts.config.features` に `{ frontmatter: true }`'
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        participant C as 利用側の処理
+        participant M as mdmark
+        C->>M: render(markdown, { config })
+        M->>M: 先頭のフロントマターを本文から除外する
+        M->>M: 本文の先頭に、フロントマターの中身を持つ閉じた折りたたみを配置する
+        M-->>C: HTML 文字列
+    expected:
+      - 文字列の先頭のブロックが `<details class="mdmark-collapsible mdmark-frontmatter"` で、`open` を持たず、`<summary>` の文字が `フロントマター`
+      - '折りたたみの中に言語 `yaml` のコードブロックがあり、その行が `title: テスト` と `tags: [a, b]`'
+      - '折りたたみの外に `title: テスト` の文字が無く、`<h2` が無い'
+      - '`<h1` の `data-source-line` が "5" のまま'
+    test: test_normal_when_frontmatter_enabled
+  - name: 正常系（閉じる行の無い先頭の区切り線）
+    summary: 1 行目が `---` でも、閉じる行が無ければフロントマターとして扱わず、今と同じく描く
+    setup:
+      - name: 配布物を読み込んだ Node の処理
+        description: 正常系と同じ
+      - name: 閉じる行の無い Markdown
+        description: 1 行目に `---`、3 行目に段落、5 行目に `## 見出し` を配置し、2 行目以降に `---` と `...` だけの行を持たない文書
+        notes: '`opts.config.features` に `{ frontmatter: true }`'
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        participant C as 利用側の処理
+        participant M as mdmark
+        C->>M: render(markdown, { config })
+        M->>M: 閉じる行が無いため、フロントマターが無いものとして解析する
+        M-->>C: HTML 文字列
+    expected:
+      - 文字列の先頭のブロックが `<hr`
+      - '`<p>` と `<h2` があり、文字列に `mdmark-frontmatter` が無い'
+    test: test_normal_when_frontmatter_unclosed
+  - name: 正常系（取り込む文書のフロントマター）
+    summary: 取り込む Markdown の先頭のフロントマターは、機能 `frontmatter` がオンでも除外して取り込む
+    setup:
+      - name: 配布物を読み込んだ Node の処理
+        description: 正常系と同じ
+      - name: 取り込む文書の表
+        description: '`共通/手順.md`（1〜3 行目に `---`・`title: 手順`・`---`、5 行目に `## 実行`、7 行目に段落）を持つ `opts.includes`'
+      - name: include のマーカーを持つ Markdown
+        description: 'フロントマターを持たず、段落の間に `<!-- include: 共通/手順.md -->` を持つ文書'
+        notes: '`opts.config.features` に `{ frontmatter: true }`'
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        participant C as 利用側の処理
+        participant M as mdmark
+        C->>M: render(markdown, { config, includes })
+        M->>M: 取り込む文書の先頭のフロントマターを除外して、マーカーの場所に入れる
+        M-->>C: HTML 文字列
+    expected:
+      - '`mdmark-include` の要素の中に `実行` の `<h2` と段落がある'
+      - '文字列に `title: 手順` と `mdmark-frontmatter` が無い'
+    test: test_normal_when_included_has_frontmatter
 lead: 利用側（書き出し・ビルドの処理やサーバー）が、画面を持たずに Markdown を HTML 文字列にする。`mount` が描く本文と同じ文字列を、ブラウザでも Node でも返却する。
 idempotent: true
 side_effects: なし（外部ライブラリも読み込まない）
@@ -2039,7 +2131,7 @@ request:
     required: false
     default: なし（全てのキーに既定を適用する）
     location: argument
-    description: '`mount` の `opts.config` と同じ。この操作が読み込むのは `features`（記法の機能のオン・オフ）・`libraries` の名前（どのマーカーをマーカーの場所の要素にするか）・`labels.paramCopy`（操作できる部品の今の値をコピーするボタンの文言。既定の当て方は `mount` と同じ）だけ'
+    description: '`mount` の `opts.config` と同じ。この操作が読み込むのは `features`（記法の機能とフロントマターの表示のオン・オフ）・`libraries` の名前（どのマーカーをマーカーの場所の要素にするか）・`labels.paramCopy`（操作できる部品の今の値をコピーするボタンの文言。既定の当て方は `mount` と同じ）だけ'
   - name: opts.index
     type: MdmarkIndex
     required: false
@@ -2261,4 +2353,6 @@ constraints:
     constraint: フロー図のノードはリンク先 `href`（文字列）を持てる。`href` を制約「URL のスキーム」と同じ許可（`http`・`https`・`mailto` と相対 URL）で確認し、許すノードはノードの全体を覆う `<a class="mdmark-diagram-node-link" href="{href}">`（スクリーンリーダー向けの名前はノードの名前。開く先は本文のリンクと同じく同じタブ）にし、ノードの要素（`div.mdmark-diagram-node`）に class `has-link` を付ける。`io`・`hint` のマーカーはリンクの中に入れず、リンクの後ろに配置する。許さないリンク先（`javascript:`・`id:` など）のノードはリンクにせず名前を描き、図の前に、ノードの `id` と記載したリンク先と使用できるリンク先を記載した記載の警告を配置する（許さないノードが複数なら 1 つの警告に並べる）。図は描く
     decided_by: dev/設計書/シナリオ/単一ユースケース/図を描く#scenarios[異常シナリオ（ノードのリンク先を許可しない）]
     notes: '`id:` などの参照は利用側が URL に変えてから定義に記載する（要件.md の未確定、推奨 A）。リンクの外観は確認ログの決定（名前を本文のリンクと同じ色と下線、推奨案 A）'
+  - item: フロントマター
+    constraint: Markdown の 1 行目が `---` だけの行で、2 行目以降に `---` か `...` だけの行があるとき、1 行目からその最初の行までをフロントマターとし、解析の前に本文から除外する。開く行と閉じる行は、行末の空白と CR（改行が CRLF の文書）を許す。先頭の BOM（U+FEFF）は判定の前に除く。閉じる行が無ければフロントマターとして扱わない。除外した範囲は、段落・見出し・目次・用語の下線・記載の警告の対象にしない。後ろのブロックの `data-source-line` は、元の Markdown の行番号のままにする。機能 `frontmatter`（既定 `false`）がオンのときだけ、本文の先頭に `<details class="mdmark-collapsible mdmark-frontmatter">`（`open` を持たない。制約「details の範囲」と同じ折りたたみ）を配置し、`<summary>` の文字を `フロントマター` にし、中にフロントマターの中身（開く行と閉じる行を除いた行）を制約「コードブロック」と同じ言語 `yaml` のコードブロックとして描く（コードブロックの `data-source-line` はフロントマターの 2 行目の行番号）。中身が空の行だけのフロントマターは、オンでも表示を配置しない。機能のオン・オフは、フロントマターの後ろの `features` のマーカーでも上書きできる。取り込む Markdown（制約「取り込み」）の先頭のフロントマターは、機能によらず除外して表示を配置しない。フロントマターとその表示は、制約「ページの設定のマーカー」の文書の先頭の判定に数えない
 test_file: tests/integration/lib/render.test.ts

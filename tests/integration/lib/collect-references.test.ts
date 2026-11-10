@@ -158,3 +158,27 @@ test("test_normal_when_encoded_link", async () => {
   // 検証
   expect(references.backlinks.arch).toEqual(["api", "guide"]);
 });
+
+// 本文の先頭のフロントマターにだけ出る文書の別名とリンクは、被参照に数えない（正常系（フロントマターの別名とリンク））
+test("test_normal_when_frontmatter", async () => {
+  // 準備
+  const { collectReferences } = await loadBuilt();
+  const documents = {
+    ...DOCUMENTS,
+    "設計/arch.md": "# アーキテクチャ\n",
+    "使い方/guide.md": [
+      "---",
+      "summary: 公開関数の使い方",
+      'see: "[設計](../設計/arch.md)"',
+      "---",
+      "",
+      "# 使用方法",
+      "",
+    ].join("\n"),
+  };
+  // 実行
+  const references = collectReferences({ index: INDEX, documents });
+  // 検証
+  expect(references.backlinks.api).not.toContain("guide");
+  expect(references.backlinks.arch).toEqual(["api"]);
+});

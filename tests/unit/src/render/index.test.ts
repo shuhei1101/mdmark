@@ -193,3 +193,46 @@ test("test_collect_warnings_when_clean", async () => {
   // 検証
   expect(warnings).toEqual([]);
 });
+
+// 先頭のフロントマターを本文に出さず、後ろのブロックの元の行番号を保つ（正常系）
+test("test_render_document_when_frontmatter", async () => {
+  // 準備
+  const { renderDocument } = await loadRender();
+  const { resolveConfig } = await import("../../../../src/config.ts");
+  const markdown = "---\ntitle: a\n---\n\n# 見出し";
+  // 実行
+  const { html } = renderDocument({ markdown, config: resolveConfig({}) });
+  // 検証
+  expect(html).not.toContain("title: a");
+  expect(html).not.toContain("<hr");
+  expect(html).not.toContain("<h2");
+  expect(html).not.toContain("mdmark-frontmatter");
+  expect(html).toMatch(/<h1[^>]* data-source-line="4"/);
+});
+
+// 機能がオンなら、本文の先頭に閉じた折りたたみの yaml のコードブロックを配置する（正常系）
+test("test_render_document_when_frontmatter_enabled", async () => {
+  // 準備
+  const { renderDocument } = await loadRender();
+  const { resolveConfig } = await import("../../../../src/config.ts");
+  const config = resolveConfig({ config: { features: { frontmatter: true } } });
+  const markdown = "---\ntitle: a\n---\n\n# 見出し";
+  const fenced = "---\nnote: |\n  ```\n  code\n  ```\n---\n\n本文";
+  // 実行
+  const { html } = renderDocument({ markdown, config });
+  const { html: fencedHtml } = renderDocument({ markdown: fenced, config });
+  // 検証
+  expect(
+    html.startsWith('<details class="mdmark-collapsible mdmark-frontmatter"'),
+  ).toBe(true);
+  const details = html.slice(0, html.indexOf("</details>"));
+  expect(details).not.toContain(" open");
+  expect(details).toContain("<summary>フロントマター</summary>");
+  expect(details).toContain("language-yaml");
+  expect(details).toContain("title: a");
+  const fencedDetails = fencedHtml.slice(0, fencedHtml.indexOf("</details>"));
+  expect(fencedDetails).toContain("code");
+  expect(fencedHtml.slice(fencedHtml.indexOf("</details>"))).not.toContain(
+    "code",
+  );
+});

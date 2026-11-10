@@ -2860,6 +2860,11 @@
       margin-block-end: calc(var(--mdmark-space) / 2);
     }
 
+    /* フロントマターの表示の見出し: 本文の見出しと見分けるため、控えめな文字の色にする */
+    .mdmark-frontmatter > summary {
+      color: var(--mdmark-color-muted);
+    }
+
     /* ---------- 行の詳細 ---------- */
 
     /* 行の詳細を持つ先頭のセル: 開閉のボタンと値を横に並べる */

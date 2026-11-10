@@ -56,6 +56,10 @@ entries:
     sha256: 20ea9fcb246968439ca0f76a1b865ba1fdfd15cc4cb841d51488eeb0af0827e0
     reason: 説明文の単語を対応表の置き換え先にしただけで、キーと型は変えないので、古い設定もそのまま新しい Schema に合う
   - version: next
+    schema: mdmark.config.schema.json
+    sha256: c3d63db537fda3f67384fc323f2d009a56f9eb1cd0dfffa0f4c8f42b5bcd94d9
+    reason: features に省いてよい frontmatter を足しただけで、古い設定もそのまま新しい Schema に合う
+  - version: next
     schema: mdmark.index.schema.json
     sha256: bb5710b2a061fcdcdb1f6d55d0bbb20ace1a83ecf4b07e8340a0bab29f780540
     reason: 説明文の単語を対応表の置き換え先にしただけで、キーと型は変えないので、古い索引もそのまま新しい Schema に合う

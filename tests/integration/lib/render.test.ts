@@ -32,6 +32,7 @@ import {
   findTags,
   innerHtml,
   matches,
+  outerHtml,
   plainText,
 } from "../../unit/helpers/html.ts";
 import { stripSourceLine } from "../../unit/helpers/source-line.ts";
@@ -4401,4 +4402,111 @@ test("test_normal_when_mermaid_code_block", async () => {
     expect(html).not.toContain("<svg");
     expect(html).not.toContain("data-mdmark-syntax");
   }
+});
+
+/** 1〜4 行目にフロントマター、6 行目に見出し、8 行目に段落を持つ文書 */
+const FRONTMATTER_MARKDOWN = [
+  "---",
+  "title: テスト",
+  "tags: [a, b]",
+  "---",
+  "",
+  "# 見出し",
+  "",
+  "段落",
+  "",
+].join("\n");
+
+// 先頭のフロントマターを本文から除外し、後ろのブロックの元の行番号は元の Markdown のままにする（正常系）
+test("test_normal_when_frontmatter", async () => {
+  // 準備
+  const render = await loadRawRender();
+  // 実行
+  const html = render(FRONTMATTER_MARKDOWN);
+  // 検証
+  for (const text of ["title: テスト", "tags: [a, b]", "<hr", "<h2"]) {
+    expect(html).not.toContain(text);
+  }
+  expect(findTag(html, "<h1")).toContain('data-source-line="5"');
+  expect(findTag(html, "<p")).toContain('data-source-line="7"');
+  expect(html).not.toContain("mdmark-frontmatter");
+});
+
+// 機能 frontmatter がオンなら、本文の先頭の閉じた折りたたみにフロントマターを yaml のコードブロックで描く（正常系）
+test("test_normal_when_frontmatter_enabled", async () => {
+  // 準備
+  const render = await loadRawRender();
+  // 実行
+  const html = render(FRONTMATTER_MARKDOWN, {
+    config: { features: { frontmatter: true } },
+  });
+  // 検証
+  const details = findTag(html, "<details");
+  expect(html.startsWith(details)).toBe(true);
+  expect(details).toContain('class="mdmark-collapsible mdmark-frontmatter"');
+  expect(details).not.toContain("open");
+  expect(plainText(innerHtml(html, "<summary"))).toBe("フロントマター");
+  const inside = innerHtml(html, "mdmark-frontmatter");
+  expect(findTag(inside, "<code")).toContain('class="language-yaml"');
+  const lines = plainText(innerHtml(inside, "<code"))
+    .split("\n")
+    .filter((line) => line !== "");
+  expect(lines).toEqual(["title: テスト", "tags: [a, b]"]);
+  const outside = html.replace(outerHtml(html, "mdmark-frontmatter"), "");
+  expect(outside).not.toContain("title: テスト");
+  expect(outside).not.toContain("<h2");
+  expect(findTag(html, "<h1")).toContain('data-source-line="5"');
+});
+
+// 閉じる行が無ければ、先頭の区切り線をフロントマターとして扱わない（正常系）
+test("test_normal_when_frontmatter_unclosed", async () => {
+  // 準備
+  const render = await loadRender();
+  const markdown = ["---", "", "段落", "", "## 見出し", ""].join("\n");
+  // 実行
+  const html = render(markdown, {
+    config: { features: { frontmatter: true } },
+  });
+  // 検証
+  expect(html.startsWith("<hr")).toBe(true);
+  expect(html).toContain("<p>");
+  expect(html).toContain("<h2");
+  expect(html).not.toContain("mdmark-frontmatter");
+});
+
+// 取り込む Markdown の先頭のフロントマターは、機能 frontmatter がオンでも除外して取り込む（正常系）
+test("test_normal_when_included_has_frontmatter", async () => {
+  // 準備
+  const render = await loadRender();
+  const includes = {
+    "共通/手順.md": [
+      "---",
+      "title: 手順",
+      "---",
+      "",
+      "## 実行",
+      "",
+      "実行の段落",
+      "",
+    ].join("\n"),
+  };
+  const markdown = [
+    "前の段落",
+    "",
+    "<!-- include: 共通/手順.md -->",
+    "",
+    "後の段落",
+    "",
+  ].join("\n");
+  // 実行
+  const html = render(markdown, {
+    config: { features: { frontmatter: true } },
+    includes,
+  });
+  // 検証
+  const included = innerHtml(html, "mdmark-include");
+  expect(plainText(innerHtml(included, "<h2"))).toContain("実行");
+  expect(included).toContain("実行の段落");
+  expect(html).not.toContain("title: 手順");
+  expect(html).not.toContain("mdmark-frontmatter");
 });

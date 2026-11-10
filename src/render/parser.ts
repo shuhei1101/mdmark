@@ -39,6 +39,7 @@ import {
   takeFootnoteDefinitions,
   useFootnotes,
 } from "./syntax/footnotes.ts";
+import { insertFrontmatter } from "./syntax/frontmatter.ts";
 import { buildGallery } from "./syntax/gallery.ts";
 import { glossaryRule } from "./syntax/glossary.ts";
 import { assignHeadingIds } from "./syntax/headings.ts";
@@ -119,6 +120,8 @@ export type RenderEnv = {
   icons?: Record<string, MdmarkIconNode> | undefined;
   /** 描いた記載の警告（最後のコアルール `collectWarningsRule` が入れる） */
   warnings?: CollectedWarning[];
+  /** 文書の先頭のフロントマターの中身と閉じる行の 0 始まりの行番号（`renderDocument` が入れ、`insertFrontmatter` が読む） */
+  frontmatter?: { content: string; endLine: number } | undefined;
 };
 
 /** スキームも `www.` もメールの `@` も持たない自動リンクの文字を見分ける正規表現 */
@@ -283,12 +286,14 @@ export function createParser(): MarkdownItParser {
   const parser = new MarkdownIt(PARSER_OPTIONS);
   // スキームを持たないドメインも取得させ、後で文字に戻すものを選ぶ
   parser.linkify.set({ fuzzyLink: true });
-  // マーカー → 機能の重ね合わせ → 取り込み → 蛍光ペン（`useHighlight` が取り込みの後に追加する）→ 脚注の機能のオン・オフ → 記法（アイコン → 見出し → 用語集の表 → 行の詳細 → ビュー → CSV の表 → 表 → タブ → ステップ → 注意書き → ファイルツリー → バッジ → キー → 本文の文字の色 → 図の部品 → 埋め込んだ HTML → コードブロックの飾り → 画像の属性と種類 → 図表の番号 → ギャラリー → 画像と動画と音声の図 → カード → 段組み → details の範囲 → wide の範囲 → 改ページ → 用語の下線 → セクション → 目次 → 脚注の一覧 → 関連文書の一覧）→ タスクリスト → www の自動リンク → 残ったマーカー → 元の行番号 → 脚注の定義の取り出し
+  // マーカー → 機能の重ね合わせ → 取り込み → フロントマターの表示 → 蛍光ペン（`useHighlight` が取り込みの後に追加する）→ 脚注の機能のオン・オフ → 記法（アイコン → 見出し → 用語集の表 → 行の詳細 → ビュー → CSV の表 → 表 → タブ → ステップ → 注意書き → ファイルツリー → バッジ → キー → 本文の文字の色 → 図の部品 → 埋め込んだ HTML → コードブロックの飾り → 画像の属性と種類 → 図表の番号 → ギャラリー → 画像と動画と音声の図 → カード → 段組み → details の範囲 → wide の範囲 → 改ページ → 用語の下線 → セクション → 目次 → 脚注の一覧 → 関連文書の一覧）→ タスクリスト → www の自動リンク → 残ったマーカー → 元の行番号 → 脚注の定義の取り出し
   const rules: Array<[string, (state: StateCore) => void]> = [
     ["mdmark_take_marks", takeMarks],
     ["mdmark_resolve_features", resolveDocumentFeatures],
     ["mdmark_resolve_page_settings", resolvePageSettings],
     ["mdmark_expand_includes", expandIncludes],
+    // 機能を決めた後、コードブロックの飾りより前に配置する
+    ["mdmark_insert_frontmatter", insertFrontmatter],
     ["mdmark_collect_footnotes", collectFootnotes],
     // 項目の `icon:` の行内のコードを読み込むため、行内のアイコンより前に配置する
     ["mdmark_build_card_grid", buildCardGrid],

@@ -367,6 +367,51 @@ scenarios:
       - 本文にマーカーの文字が出ていない
       - マーカーを持たない文書を同じ設定で描くと、リサイズハンドルがある
     test: test_normal_when_diagram_resize_disabled
+  - name: 正常シナリオ（フロントマターの表示を設定でオンにする）
+    setup:
+      - name: mdmark を読み込むページ
+        description: 正常シナリオと同じ
+        notes: 設定の `features.frontmatter` は `true`
+      - name: フロントマターを持つ Markdown
+        description: '1〜4 行目に `---`・`title: テスト`・`tags: [a, b]`・`---` のフロントマター、6 行目に `# 見出し` を配置した文書'
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 利用側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を指定して描かせる
+        M->>M: 先頭のフロントマターを本文から除外する
+        M-->>P: 本文の先頭にフロントマターの表示を置いて描く
+        P-->>U: 文書を表示
+    expected:
+      - '`見出し` の要素より前に、フロントマターの表示の要素がある'
+      - フロントマターの表示の中に `title`・`テスト`・`tags` の文字がある
+      - h2 の要素が無く、右側の目次に `title` を含む項目が無い
+    test: test_normal_when_frontmatter_enabled
+  - name: 正常シナリオ（フロントマターの表示を文書でオンにする）
+    setup:
+      - name: mdmark を読み込むページ
+        description: 正常シナリオと同じ
+        notes: 設定は `features` を指定しない（`features.frontmatter` は既定の `false`）
+      - name: フロントマターとマーカーを持つ Markdown
+        description: '1〜4 行目に `---`・`title: テスト`・`tags: [a, b]`・`---` のフロントマター、6 行目に `<!-- features: +frontmatter -->`、8 行目に `# 見出し` を配置した文書'
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 利用側のページ
+        participant M as mdmark
+        P->>M: Markdown を指定して描かせる
+        M->>M: 設定の features に文書のマーカーを重ねる
+        M-->>P: 本文の先頭にフロントマターの表示を置いて描く
+        P-->>U: 文書を表示
+    expected:
+      - '`見出し` の要素より前に、フロントマターの表示の要素がある'
+      - 'マーカーを `<!-- features: -frontmatter -->` にして設定の `features.frontmatter` を `true` にすると、フロントマターの表示の要素も `title: テスト` の文字も無い'
+    test: test_normal_when_frontmatter_enabled_by_mark
 lead: '利用側が設定の `features` で機能のオン・オフの既定を決め、文書の作成者が文書の `<!-- features: +機能 -機能 -->` でその文書だけ上書きする。この Issue が持つ機能の印刷（`print`）で確認する。'
 issue: 3
 primary_actor: 文書の作成者

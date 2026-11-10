@@ -7,6 +7,7 @@ directory: |-
   ├── parser.ts    # markdown-it の解析器と、追加するコアルール
   ├── marks.ts     # マーカーを読み込み、置き換えるコアルール
   ├── page.ts      # ページの設定のマーカーの読み取り
+  ├── frontmatter.ts # 文書の先頭のフロントマターの判定と、本文からの除外（DOM を使用しない）
   ├── sanitize.ts  # sanitize-html の設定と sanitize
   ├── used.ts      # 書き出しで埋める外部ライブラリと範囲のスクリプトを文書から取得する usedLibraryMarks・collectRangeScripts（esbuild を import しない。『CLI』）
   ├── scope-css.ts # 埋め込んだ HTML の範囲の css を範囲の根の要素の中だけに適用する scopeCss（DOM を使用しない）
@@ -84,6 +85,9 @@ data_models:
       - name: mdmarkFootnotes
         type: FootnoteState | undefined
         description: 読み込んだ脚注の定義と参照（`readFootnoteDefinition` が作り、機能がオフなら `collectFootnotes` が削除する）
+      - name: frontmatter
+        type: '{ content: string; endLine: number } | undefined'
+        description: 文書の先頭のフロントマターの中身と閉じる行の 0 始まりの行番号（`renderDocument` が `splitFrontmatter` の結果を入れ、`insertFrontmatter` が読む）
       - name: warnings
         type: CollectedWarning[]
         description: 記載の警告（`collectWarningsRule` が最後に集める）
@@ -282,7 +286,7 @@ functions:
     kind: 関数
     scope: public
     summary: 描くごとに `nonce` を作って `env` に入れ、解析器で Markdown を HTML にし、`sanitize` をかけ、コアルールが決めた `env.features` と、`env.warnings` に集めた記載の警告と一緒に返却する
-    description: '`render` と `mount` が共通で使用する。解析器はモジュールで 1 つだけ作り（`createParser` を初めて使用するときに呼ぶ）、呼び出しごとの値は `env` で指定する。`nonce` は `crypto.getRandomValues` の 16 バイトを 16 進にしたもので、`sanitize` が出力から除外するため、同じ入力には同じ文字列を返却する'
+    description: '`render` と `mount` が共通で使用する。解析の前に `splitFrontmatter` で文書の先頭のフロントマターを空白にした Markdown を解析器に指定し、フロントマターの中身と閉じる行の位置を `env.frontmatter` に入れる（表示はコアルールの `insertFrontmatter` が差し込む）。解析器はモジュールで 1 つだけ作り（`createParser` を初めて使用するときに呼ぶ）、呼び出しごとの値は `env` で指定する。`nonce` は `crypto.getRandomValues` の 16 バイトを 16 進にしたもので、`sanitize` が出力から除外するため、同じ入力には同じ文字列を返却する'
     args:
       - name: options
         type: '{ markdown: string; config: ResolvedConfig; index?: MdmarkIndex; docId?: string; references?: MdmarkReferences; aliases?: MdmarkAlias[]; includes?: Record<string, string>; icons?: Record<string, MdmarkIconNode> }'
@@ -294,9 +298,22 @@ functions:
     callees:
       - '#functions[createParser]'
       - '#functions[sanitize]'
+      - '#functions[splitFrontmatter]'
       - dev/設計書/モジュール構成/ライブラリ本体/設定と機能.ts#functions[resolveFeatures]
       - dev/設計書/モジュール構成/ライブラリ本体/索引と用語.ts#functions[normalizeIndex]
     unit_tests:
+      - name: test_render_document_when_frontmatter
+        case: 正常
+        summary: 先頭のフロントマターを本文に出さず、後ろのブロックの元の行番号を保つ
+        condition: '`---\ntitle: a\n---\n\n# 見出し`。設定の `features` は既定（`frontmatter` は `false`）'
+        mock: なし
+        expected: '`html` に `title: a`・`<hr`・`<h2`・`mdmark-frontmatter` が無く、`<h1` が `data-source-line="4"`'
+      - name: test_render_document_when_frontmatter_enabled
+        case: 正常
+        summary: 機能がオンなら、本文の先頭に閉じた折りたたみの yaml のコードブロックを配置する
+        condition: '同じ文書と、中身に 3 つのバッククォートの行を含むフロントマターの文書。設定の `features` は `{ frontmatter: true }`'
+        mock: なし
+        expected: '`html` の先頭の要素が `details.mdmark-collapsible.mdmark-frontmatter`（`sanitize` の後も class が残る）で、中に `language-yaml` のコードブロックと言語のラベル・コピーのボタンがあり、バッククォートの行もコードブロックの中にある'
       - name: test_render_document
         case: 正常
         summary: 機能のマーカーを重ねたオン・オフを返却し、マーカーは本文に残さない
@@ -327,7 +344,7 @@ functions:
     kind: 関数
     scope: internal
     summary: '`html: true`・`linkify: true` の markdown-it に、追加するコアルールを登録して返却する'
-    description: 'コアルールは `inline` の後に次の順で登録する: マーカー（`takeMarks`）→ 文書の機能（`resolveDocumentFeatures`）→ 文書のページの設定（`resolvePageSettings`）→ 取り込み（`expandIncludes`）→ 蛍光ペン（`useHighlight` が取り込みの後に追加する）→ 脚注の機能のオン・オフ（`collectFootnotes`）→ カードの格子（`buildCardGrid`。項目の `icon:` の行内のコードを読み込むため行内のアイコンより前、範囲の中のリンクをリンクと添付のカードにしないためカードより前）→ 行内のアイコン（`buildInlineIcons`。見出しの ID より前）→ 見出し（`assignHeadingIds`）→ 用語集の表（`glossaryRule`）→ 行の詳細 → ビュー → CSV の表 → 表（`decorateTables`。今の表の属性もここ）→ タブ → ステップ → 注意書き → ファイルツリー → バッジ → キー → 本文の文字の色（`buildTextColors`）→ 図の部品 → 埋め込んだ HTML → コードブロック（`buildCodeBlocks`。図の部品・埋め込んだ HTML より後）→ 表の見本の移動（`linkTreeExamples`）→ 画像の属性と種類（`readImages`）→ 図表の番号 → ギャラリー（`buildGallery`）→ 画像と動画と音声の図（`buildImageFigures`）→ カード（`buildCards`）→ 段組み → details の範囲 → wide の範囲 → 改ページ → 用語の下線（`termsRule`）→ セクション → 目次 → 脚注の一覧（`buildFootnoteList`）→ 関連文書の一覧（`backlinksRule`）→ タスクリスト → www の自動リンク → 残ったマーカー（`dropMarks`）→ 元の行番号（`markSourceLines`）→ 脚注の定義の取り出し（`takeFootnoteDefinitions`）→ 記載の警告を集める（`collectWarningsRule`）。脚注の定義・参照・行内の脚注の block・inline のルールは `useFootnotes` で登録する。記法のコアルールは『記法』、用語と関連文書のコアルールは『索引と用語』。コードブロックの `pre` の属性は `renderer.rules.fence` を包んで付け、スクリーンリーダー向けの名前はエスケープする（部品『HTML の特別な文字をエスケープする』）。www の自動リンクは `linkify.set({ fuzzyLink: true })` にし、スキームも `www.` もメールの `@` も持たない自動リンクを文字に戻す'
+    description: 'コアルールは `inline` の後に次の順で登録する: マーカー（`takeMarks`）→ 文書の機能（`resolveDocumentFeatures`）→ 文書のページの設定（`resolvePageSettings`）→ 取り込み（`expandIncludes`）→ フロントマターの表示（`insertFrontmatter`。機能を決めた後、コードブロックの飾りより前）→ 蛍光ペン（`useHighlight` が取り込みの後に追加する）→ 脚注の機能のオン・オフ（`collectFootnotes`）→ カードの格子（`buildCardGrid`。項目の `icon:` の行内のコードを読み込むため行内のアイコンより前、範囲の中のリンクをリンクと添付のカードにしないためカードより前）→ 行内のアイコン（`buildInlineIcons`。見出しの ID より前）→ 見出し（`assignHeadingIds`）→ 用語集の表（`glossaryRule`）→ 行の詳細 → ビュー → CSV の表 → 表（`decorateTables`。今の表の属性もここ）→ タブ → ステップ → 注意書き → ファイルツリー → バッジ → キー → 本文の文字の色（`buildTextColors`）→ 図の部品 → 埋め込んだ HTML → コードブロック（`buildCodeBlocks`。図の部品・埋め込んだ HTML より後）→ 表の見本の移動（`linkTreeExamples`）→ 画像の属性と種類（`readImages`）→ 図表の番号 → ギャラリー（`buildGallery`）→ 画像と動画と音声の図（`buildImageFigures`）→ カード（`buildCards`）→ 段組み → details の範囲 → wide の範囲 → 改ページ → 用語の下線（`termsRule`）→ セクション → 目次 → 脚注の一覧（`buildFootnoteList`）→ 関連文書の一覧（`backlinksRule`）→ タスクリスト → www の自動リンク → 残ったマーカー（`dropMarks`）→ 元の行番号（`markSourceLines`）→ 脚注の定義の取り出し（`takeFootnoteDefinitions`）→ 記載の警告を集める（`collectWarningsRule`）。脚注の定義・参照・行内の脚注の block・inline のルールは `useFootnotes` で登録する。記法のコアルールは『記法』、用語と関連文書のコアルールは『索引と用語』。コードブロックの `pre` の属性は `renderer.rules.fence` を包んで付け、スクリーンリーダー向けの名前はエスケープする（部品『HTML の特別な文字をエスケープする』）。www の自動リンクは `linkify.set({ fuzzyLink: true })` にし、スキームも `www.` もメールの `@` も持たない自動リンクを文字に戻す'
     returns:
       type: MarkdownIt
       description: 解析器
@@ -957,8 +974,66 @@ functions:
     status: planned
     introduced:
       pr: 328
+  - name: splitFrontmatter
+    title: フロントマターを分ける
+    container: src/render/frontmatter.ts
+    kind: 関数
+    scope: internal
+    summary: Markdown の先頭のフロントマターを判定し、その範囲の改行以外の文字を空白に置き換えた本文と、フロントマターの中身（開く行と閉じる行を除いた行）を返却する。フロントマターが無ければ、本文はそのままで中身は `undefined`
+    description: 判定はインターフェース定義『文書をHTML文字列にする』の制約「フロントマター」のとおり（1 行目が `---`、2 行目以降の最初の `---` か `...` の行まで。行末の空白と CR を許し、先頭の BOM は判定の前に除く）。改行以外を空白にするため、後ろの行の行番号と文字の位置は元の Markdown と同じになり、空白だけの行は markdown-it が段落にしない。描く処理（`renderDocument`・`expandIncludes`）と、本文を読む `parseDocument`（参照の表・本文の参照の取り出し・索引の点検）が共通で呼ぶ
+    args:
+      - name: markdown
+        type: string
+        required: true
+        description: 文書の Markdown
+    returns:
+      type: '{ body: string; content: string | undefined; endLine: number | undefined }'
+      description: '`body` はフロントマターを空白にした Markdown、`content` はフロントマターの中身（行の間は `\n`）、`endLine` は閉じる行の 0 始まりの行番号（フロントマターが無ければ `content` と `endLine` は `undefined`）'
+    refs:
+      - dev/設計書/インターフェース定義/ライブラリ本体/文書をHTML文字列にする.ts#constraints[フロントマター]
+    unit_tests:
+      - name: test_split_frontmatter
+        case: 正常
+        summary: 先頭のフロントマターを空白にし、中身を返却する
+        condition: '`---\ntitle: a\ntags: [b]\n---\n\n# 見出し`'
+        mock: なし
+        expected: '`content` が `title: a\ntags: [b]`、`body` の 1〜4 行目が空白だけで、行の数と長さが元と同じ、6 行目が `# 見出し`'
+      - name: test_split_frontmatter_when_dots_close
+        case: 正常
+        summary: '`...` の行でも閉じる'
+        condition: '`---\ntitle: a\n...\n本文`'
+        mock: なし
+        expected: '`content` が `title: a`、`body` の 4 行目が `本文`'
+      - name: test_split_frontmatter_when_crlf_and_bom
+        case: 正常
+        summary: CRLF と先頭の BOM と行末の空白を許す
+        condition: '`\uFEFF---  \r\ntitle: a\r\n--- \r\n本文`'
+        mock: なし
+        expected: '`content` が `title: a`、`body` の長さが元と同じで、`本文` の位置が元と同じ'
+      - name: test_split_frontmatter_when_unclosed
+        case: 正常
+        summary: 閉じる行が無ければフロントマターとしない
+        condition: '`---\n段落\n\n## 見出し`'
+        mock: なし
+        expected: '`content` が `undefined`、`body` が元と同じ'
+      - name: test_split_frontmatter_when_not_first_line
+        case: 正常
+        summary: 1 行目が `---` でなければフロントマターとしない
+        condition: '`\n---\ntitle: a\n---`'
+        mock: なし
+        expected: '`content` が `undefined`、`body` が元と同じ'
+      - name: test_split_frontmatter_when_empty
+        case: 正常
+        summary: 中身が空の行だけのフロントマターも除外し、中身は空の文字列にする
+        condition: '`---\n\n---\n本文`'
+        mock: なし
+        expected: '`content` が `""`（空白だけ）、`body` の 1〜3 行目が空白だけ'
+    status: planned
+    introduced:
+      pr: 422
 test_files:
   - tests/unit/src/render/index.test.ts
+  - tests/unit/src/render/frontmatter.test.ts
   - tests/unit/src/render/parser.test.ts
   - tests/unit/src/render/marks.test.ts
   - tests/unit/src/render/page.test.ts

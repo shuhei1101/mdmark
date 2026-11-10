@@ -5828,6 +5828,55 @@ flows:
     test: test_normal_when_pinned_under_merged_header
     refs:
       - dev/設計書/シナリオ/単一ユースケース/表を操作する#scenarios[正常シナリオ（結合した見出しの下の列を留める）]
+  - name: 正常系（フロントマターを除外する）
+    summary: 文書の先頭の YAML のフロントマターを本文・見出し・右側の目次に出さず、本文の元の行番号は元の Markdown のままにする
+    setup:
+      - name: 配布物を読み込んだページ
+        description: 正常系と同じ
+      - name: フロントマターを持つ Markdown
+        description: '1〜4 行目に `---`・`title: テスト`・`tags: [a, b]`・`---`、6 行目に `# 見出し`、8 行目に段落、10 行目に `## 節` を配置した文書'
+        notes: '`opts.config` は指定しない（`features.frontmatter` は既定の `false`、`side-toc` は既定の `true`）'
+      - name: Mock
+        description: 正常系と同じ
+    flow: |-
+      sequenceDiagram
+        participant P as 利用側のページ
+        participant M as mdmark
+        P->>M: mount(el, { markdown })
+        M->>M: render と同じく先頭のフロントマターを除外して本文を描く
+        M->>M: 本文の見出しから右側の目次を作る
+        M-->>P: el の中に本文と右側の目次を描く
+    expected:
+      - '`el` の中に `title: テスト` と `tags: [a, b]` の文字が無く、`.mdmark-frontmatter` の要素が無い'
+      - 本文の見出しは `見出し` の `h1` と `節` の `h2` だけで、右側の目次の項目も `見出し` と `節` だけ
+      - '`h1` と段落の `data-source-line` が `"5"` と `"7"`'
+    test: test_normal_when_frontmatter
+  - name: 正常系（フロントマターの表示をオンにする）
+    summary: 機能 `frontmatter` を設定か文書のマーカーでオンにすると、本文の先頭の閉じた折りたたみにフロントマターを描き、読者が開ける
+    setup:
+      - name: 配布物を読み込んだページ
+        description: 正常系と同じ
+      - name: フロントマターとマーカーを持つ Markdown
+        description: '正常系（フロントマターを除外する）の文書の 5 行目に `<!-- features: +frontmatter -->` を配置した文書'
+        notes: '`opts.config` は指定しない'
+      - name: Mock
+        description: 正常系と同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 読者
+        participant P as 利用側のページ
+        participant M as mdmark
+        P->>M: mount(el, { markdown })
+        M->>M: 設定の features に文書のマーカーを重ねる
+        M-->>P: 本文の先頭にフロントマターの閉じた折りたたみを描く
+        U->>P: 折りたたみの見出しを押す
+        P-->>U: yaml のコードブロックを表示
+    expected:
+      - 本文の最初の要素が `details.mdmark-frontmatter` で、描いた直後は `open` を持たず、`summary` の文字が `フロントマター`
+      - '見出しを押すと `open` を持ち、中の言語 `yaml` のコードブロックに `title: テスト` と `tags: [a, b]` が出る'
+      - 右側の目次の項目は `見出し` と `節` だけ
+      - 'マーカーを `-frontmatter` にして `opts.config.features` に `{ frontmatter: true }` を指定すると、`.mdmark-frontmatter` の要素が無い'
+    test: test_normal_when_frontmatter_enabled
   - name: 正常系（列の幅を変える）
     summary: '`resize` の表の見出しの右端につまみを付け、ドラッグでその列の幅だけを変え、列の最小幅で止め、ダブルクリックで描いた直後の幅に戻す'
     setup:
@@ -6017,10 +6066,10 @@ request:
   - name: opts.config.features
     type: Record<string, boolean>
     required: false
-    default: '`comments`・`html-scripts` を除く全ての機能が `true`'
+    default: '`comments`・`html-scripts`・`frontmatter` を除く全ての機能が `true`'
     location: argument
     description: '機能のオン・オフの既定。文書の `<!-- features: +機能 -機能 -->` がその文書だけ上書きする'
-    notes: 知らない機能名は無視する。機能は `print`（印刷の前に折り畳みと記法を開く）と、記法ごとの `table`・`callout`・`tabs`・`steps`・`tree`・`badge`・`code`・`toc`・`side-toc`（右側の目次）・`anchors`・`sections`・`row-details`・`figures`、先頭へ戻るボタンの `back-to-top`、図の部品の `diagrams`、図の表示する枠の高さを変えるリサイズハンドルの `diagram-resize`、埋め込んだ HTML の `html`、図と埋め込んだ HTML のヒント（`data-hint`・`hint`・`io`・線の `tip`・`frame` と `lanes` の `hint`）のツールチップの `hints`、用語のツールチップの `glossary`、被参照の一覧と文書の別名の `backlinks`、ビューのマーカーの `views`、脚注の `footnotes`、選んだ箇所へのコメントの `comments`、埋め込んだ HTML の範囲の `css`・`ts`・`js` の `html-scripts`（`comments` と `html-scripts` だけ既定は `false`）、アイコンの `icon`・段組みの `columns`・蛍光ペンの `highlight`・キーの `kbd`・details の範囲の `details`・改ページの `pagebreak`・取り込みの `include`・wide の範囲の `wide`・CSV の表の `csv`・カードの格子の `card-grid`・mermaid のコードブロックを図にする `mermaid`
+    notes: 知らない機能名は無視する。機能は `print`（印刷の前に折り畳みと記法を開く）と、記法ごとの `table`・`callout`・`tabs`・`steps`・`tree`・`badge`・`code`・`toc`・`side-toc`（右側の目次）・`anchors`・`sections`・`row-details`・`figures`、先頭へ戻るボタンの `back-to-top`、図の部品の `diagrams`、図の表示する枠の高さを変えるリサイズハンドルの `diagram-resize`、埋め込んだ HTML の `html`、図と埋め込んだ HTML のヒント（`data-hint`・`hint`・`io`・線の `tip`・`frame` と `lanes` の `hint`）のツールチップの `hints`、用語のツールチップの `glossary`、被参照の一覧と文書の別名の `backlinks`、ビューのマーカーの `views`、脚注の `footnotes`、選んだ箇所へのコメントの `comments`、埋め込んだ HTML の範囲の `css`・`ts`・`js` の `html-scripts`、文書の先頭のフロントマターの表示の `frontmatter`（`comments`・`html-scripts`・`frontmatter` だけ既定は `false`）、アイコンの `icon`・段組みの `columns`・蛍光ペンの `highlight`・キーの `kbd`・details の範囲の `details`・改ページの `pagebreak`・取り込みの `include`・wide の範囲の `wide`・CSV の表の `csv`・カードの格子の `card-grid`・mermaid のコードブロックを図にする `mermaid`
   - name: opts.config.libraries
     type: Record<string, string>
     required: false
@@ -6610,4 +6659,6 @@ constraints:
     notes: PoC #384 で、`color-mix()` を含む CSS 変数を hex にして `base` テーマへ指定できることを確認した。デザイン方針の「使用しないもの」（影・グラデーション）
   - item: mermaid を読み込めないとき
     constraint: mermaid を読み込めないときは、各 mermaid の対象の読み込み中のブロックを通知ブロック（本文の文言は画面設計『文書』）に替え、コードブロックを出して残す。解釈できないソースは読み込み中のブロックを記載の警告に替え、コードブロックを出して残す
+  - item: フロントマター
+    constraint: インターフェース定義『文書をHTML文字列にする』の制約「フロントマター」と同じく、文書の先頭のフロントマターを除外して描き、機能 `frontmatter` がオンのときだけ本文の先頭に閉じた折りたたみを描く。右側の目次・目次・セクションの開閉はフロントマターとその表示を対象にしない。折りたたみの開閉は、印刷の前に開く折り畳みに含める。`update` は差し替えた本文のフロントマターでもう一度決める
 test_file: tests/integration/lib/mount.browser.test.ts
