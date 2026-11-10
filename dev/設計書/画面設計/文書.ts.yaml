@@ -562,7 +562,7 @@ elements:
     - name: title
       value: 手順の `title` か、メッセージの文
     - name: text
-      value: 手順の `text`
+      value: 構成図は手順の `text`、シーケンス図は `{送り手} → {受け手}` と補足の `notes` のそのメッセージの説明（改行はそのまま）
     - name: label
       value: '`{図のタイトル}の案内`・`{図のタイトル}の再生`'
     position: 描く先の要素 > map の構成図・map のシーケンス図の図の枠の下

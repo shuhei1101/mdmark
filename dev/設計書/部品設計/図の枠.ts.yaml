@@ -185,7 +185,7 @@ accessibility:
   - ボタンの帯は `role="toolbar"` と `aria-label="「{題名}」の表示"` を持つ。縮小・拡大・全画面・移動のボタンはアイコンだけで、スクリーンリーダー向けの名前を `縮小`・`拡大`・`全画面で開く`・`全画面を閉じる`・`左へ動かす`・`上へ動かす`・`下へ動かす`・`右へ動かす` にする
   - 倍率は縮小と拡大の間のボタンに、全体が収まる倍率を 100% とした今の倍率を `125%` の構造（等幅の数字）で出し、スクリーンリーダー向けの名前を `倍率 {今の倍率}。全体が収まる倍率に戻す` にする（今の名前 `全体が収まる倍率に戻す` で探せる。#6 の確認ログ）
   - 凡例は `aria-label="凡例"` の `ul` で、色の見本に名前を並べ、色だけで意味を伝えない
-  - リサイズハンドルは、表示する枠の下端（横のスクロールバーの下）に置く枠線と面を持たない帯で、横の 2 本線のアイコン（lucide の `equal`）を持つ `role="separator"`・`aria-orientation="horizontal"`・`tabindex="0"` の要素。`aria-label="「{題名}」の表示の高さ"`・`aria-keyshortcuts="ArrowUp ArrowDown"`・`aria-valuenow`・`aria-valuemin`（px）と、操作を記載した `title` を持ち、フォーカスの枠を見せる。ポインターの形状は `ns-resize`
+  - リサイズハンドルは、表示する枠の下端（横のスクロールバーの下）に置く枠線と面を持たない帯で、横の 2 本線のアイコン（lucide の `equal`）を持つ `role="separator"`・`aria-orientation="horizontal"`・`tabindex="0"` の要素。`aria-label="「{題名}」の表示の高さ"`・`aria-keyshortcuts="ArrowUp ArrowDown"`・`aria-valuenow`・`aria-valuemin`・`aria-valuemax`（px。`aria-valuemax` は今の倍率の図の全体が収まる高さと今の高さの大きいほう）・`aria-valuetext="{高さ}px"` と、操作を記載した `title` を持ち、フォーカスの枠を見せる。ポインターの形状は `ns-resize`
 status: planned
 introduced:
   pr: 42
