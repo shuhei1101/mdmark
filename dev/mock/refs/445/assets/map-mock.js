@@ -568,7 +568,7 @@ export const createMap = (host, spec, initial = {}) => {
   const scaleOf = (stage) => Number(/scale\(([\d.]+)\)/.exec(stage.style.transform)?.[1] ?? 1);
 
   /**
-   * ノードのドラッグ: 押したまま動かすと、ノードだけをポインターの動いた分だけ動かし、ノードを含むグループは中身に合わせて右と下へ広がる。
+   * ノードとグループのドラッグ: 押したまま動かすと、ノード（グループなら中身ごと）だけをポインターの動いた分だけ動かし、それを含むグループは中身に合わせて右と下へ広がる。
    * 動かし始めに全てのノードとグループの今の位置を固定し、ほかのノードとグループは動かさない。
    * ノードは親のグループの左端・上端より外へは動かさず、ノードや広がったグループとほかの要素の間が 16px より狭くなる位置へも動かさない。4px 動くまでは押した扱い（選択）にする
    */
@@ -870,6 +870,15 @@ export const createMap = (host, spec, initial = {}) => {
         box.id === state.enter ? plainTitle(title) : groupTitle(title, box.id),
       );
       group.append(head);
+      // グループも、ボタンの外を押したままドラッグして動かす。中のノードとグループは同じ並びのまま一緒に動く（今入っているグループと、外の薄いグループは動かさない）
+      if (box.id !== state.enter && !box.faded) {
+        group.classList.add("map-movable");
+        group.addEventListener("pointerdown", (event) => {
+          if (event.button !== 0 || event.target.closest("button")) return;
+          event.stopPropagation();
+          startNodeDrag(event, stage, layout, box, group);
+        });
+      }
       stage.insertBefore(group, wires);
     }
   };

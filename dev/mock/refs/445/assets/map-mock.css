@@ -481,3 +481,7 @@
 .map-group {
   border-color: var(--map-ink, color-mix(in srgb, var(--mdmark-color-muted) 70%, transparent));
 }
+/* 動かせるグループ: タイトルと開閉のボタンの外の面を押したままドラッグする */
+.map-figure .map-group.map-movable {
+  cursor: grab;
+}
