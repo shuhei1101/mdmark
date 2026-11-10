@@ -282,3 +282,103 @@
     white-space: normal;
   }
 }
+
+/* シーケンス図の見出しと注記の行に渡した空のメッセージ */
+.map-figure .map-gap {
+  display: none;
+}
+/* 複合フラグメント（loop・alt など）: 関わる参加者の列を囲む枠と、左上の種類とラベルのタブ、区間の破線 */
+.map-seq-fragment {
+  fill: color-mix(in srgb, var(--mdmark-color-surface) 60%, transparent);
+  stroke: var(--mdmark-color-border);
+  stroke-width: 1;
+}
+.map-seq-fragment.is-rect {
+  fill: color-mix(in srgb, var(--mdmark-color-link) 8%, transparent);
+  stroke: none;
+}
+.map-seq-section {
+  stroke: var(--mdmark-color-border);
+  stroke-dasharray: 5 4;
+}
+.map-seq-fragment-tab,
+.map-seq-section-label {
+  position: absolute;
+  z-index: 1;
+  padding: 1px 8px;
+  font-size: 12px;
+  color: var(--mdmark-color-muted);
+  white-space: nowrap;
+  pointer-events: none;
+}
+.map-seq-fragment-tab {
+  border: 1px solid var(--mdmark-color-border);
+  border-radius: 4px 0 4px 0;
+  background: var(--mdmark-color-surface);
+}
+.map-seq-fragment-tab b {
+  color: var(--mdmark-color-text);
+}
+/* 注記: 参加者の左・右・上に置く箱 */
+.map-seq-note {
+  position: absolute;
+  z-index: 1;
+  box-sizing: border-box;
+  padding: 4px 8px;
+  border: 1px solid var(--mdmark-color-accent-yellow-text, var(--mdmark-color-border));
+  border-radius: 4px;
+  background: var(--mdmark-color-accent-yellow-bg, var(--mdmark-color-surface));
+  font-size: 12px;
+  text-align: center;
+}
+/* 活性化の帯: 参加者の縦線の上の細い帯 */
+.map-seq-activation {
+  fill: var(--mdmark-color-bg);
+  stroke: var(--mdmark-color-muted);
+  stroke-width: 1;
+}
+
+/* ノードの中身: 種類の行（アイコンと名前）を常に左上に置き、ノードの名前をその下から並べる。右上の i と開閉の山形の分だけ右を空ける */
+.map-figure .mdmark-diagram-stage > .mdmark-diagram-node {
+  justify-content: flex-start;
+  padding-right: 28px;
+}
+/* シーケンス図の参加者の箱は、名前が 2 行になっても詰まらないよう高さを中身に合わせる */
+.map-figure[data-diagram="sequence"] .map-participant {
+  height: auto !important;
+  min-height: 56px;
+  padding-right: 30px;
+}
+/* 押して選べるノード */
+.map-figure .map-selectable {
+  cursor: pointer;
+}
+
+/* リサイズハンドル: 枠線と面を持たず、表示する枠の下端（横のスクロールバーの下）の右端に横の 2 本線だけを置く。下端の帯のどこでも上下にドラッグできる */
+.map-figure .mdmark-diagram-resize {
+  position: static;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  width: auto;
+  height: 12px;
+  padding: 0 6px;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  color: var(--mdmark-color-muted);
+  cursor: ns-resize;
+  touch-action: none;
+}
+.map-figure .mdmark-diagram-resize .mdmark-diagram-icon {
+  width: 16px;
+  height: 12px;
+}
+.map-figure .mdmark-diagram-resize:hover,
+.map-figure .mdmark-diagram-resize:focus-visible {
+  color: var(--mdmark-color-text);
+}
+/* ノードの名前は、日本語でも文節の切れ目で折り返す */
+.map-figure .mdmark-diagram-node-name {
+  word-break: auto-phrase;
+}

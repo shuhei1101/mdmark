@@ -14,10 +14,14 @@ const PACKET_MAX = 4;
 const DEFAULT_PACKET = { color: "line", shape: "dot" };
 /** 図を縮める下限（確認ログ: 等倍より縮めない）。24px のボタンを 24px 未満に縮めない */
 const MIN_SCALE = 1;
-/** 開いたときの表示する枠の高さの上限（px）。以降は読む人がリサイズハンドルで変えるまで変えない */
+/** 開いたときの表示する枠の高さの上限（px）。読む人はリサイズハンドルで上限なく高くでき、ダブルクリックで図の高さに合わせる */
 const MAX_INITIAL_HEIGHT = 560;
+/** リサイズハンドルで縮められる表示する枠の高さの下限（px） */
+const MIN_FRAME_HEIGHT = 120;
 /** 中へ入る・開閉・手順の切り替えで、ノードとグループを前の位置から動かす時間（ms） */
 const MOVE_MS = 350;
+/** ノードの幅の上限（px）。長い名前は、既定（height）では見積もりの幅のまま折り返して高さを増やし、width ではこの幅まで広げてから折り返す */
+const NODE_MAX_WIDTH = { height: 220, width: 360 };
 /** 開閉と中へ入った状態をタブの中で保つ sessionStorage のキーの頭 */
 const STORAGE_PREFIX = "mdmark-map:";
 
@@ -296,7 +300,13 @@ export const createMap = (host, spec, initial = {}) => {
     follow: true,
     seconds: spec.interval ?? DEFAULT_AUTOPLAY_SECONDS,
     height: undefined,
+    /** 描いて測ったノードの大きさ（配置し直すときの layout の size） */
+    sizes: {},
+    /** 押して選んだノード。選んだノードとつながる線・相手のノードを残し、ほかを薄くする */
+    selected: new Set(),
   };
+  /** 長い名前のノードの広げ方（設定の map.node_fit）: height（既定。幅は見積もりのまま高さを増やす）・width（上限まで幅を広げてから高さを増やす） */
+  const fit = config.node_fit ?? "height";
   const start = { enter: state.enter };
   const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
   let timer;
@@ -319,9 +329,10 @@ export const createMap = (host, spec, initial = {}) => {
 
   /**
    * 線のラベルの置き場所: 線の区間の中点を長い順に試し、ほかのラベルとノードに重ならない最初の点に置く。
-   * 全て重なるときは最も長い区間の中点（モックの置き方。実装は部品設計で決める）
+   * 全て重なるときはラベルを出さず、線にポインターを当てたときのツールチップに出す（モックの置き方。実装は部品設計で決める）
    */
   const placeLabels = (layout) => {
+    hiddenLabels.clear();
     const placed = [];
     const blocks = layout.leaves.map((leaf) => ({ x: leaf.x, y: leaf.y, w: leaf.w, h: leaf.h }));
     const hits = (a, b) => a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h;
@@ -337,7 +348,11 @@ export const createMap = (host, spec, initial = {}) => {
         .sort((a, b) => Math.hypot(b[1][0] - b[0][0], b[1][1] - b[0][1]) - Math.hypot(a[1][0] - a[0][0], a[1][1] - a[0][1]));
       const candidates = segments.flatMap(([a, b]) => [0.5, 0.3, 0.7].map((t) => [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t]));
       const box = ([x, y]) => ({ x: x - width / 2, y: y - 10, w: width, h: 20 });
-      const choice = candidates.find((point) => ![...placed, ...blocks].some((other) => hits(box(point), other))) ?? candidates[0];
+      const choice = candidates.find((point) => ![...placed, ...blocks].some((other) => hits(box(point), other)));
+      if (!choice) {
+        hiddenLabels.add(edge.id);
+        continue;
+      }
       placed.push(box(choice));
       at.set(edge.id, { label, labelAt: choice });
     }
@@ -383,11 +398,27 @@ export const createMap = (host, spec, initial = {}) => {
     }),
   });
 
-  /** 線のツールチップの文: 補足の notes に説明を持つ元の線だけを「元 → 先：説明」で並べる。説明が無ければ空 */
+  /** 置き場所が無くて出さなかった線のラベル */
+  const hiddenLabels = new Set();
+  /** 線のツールチップの文: 補足の notes に説明を持つ元の線だけを「元 → 先：説明」で並べる。ラベルを出さなかった線は先頭にラベル。説明が無ければ空 */
   const wireTip = (edge) => {
+    const label = hiddenLabels.has(edge.id) ? sourcesOf(edge)[0]?.label : undefined;
+    const body = wireNotes(edge);
+    return [label, body].filter(Boolean).join("\n");
+  };
+  const wireNotes = (edge) => {
     const lines = sourcesOf(edge).filter((item) => notes[item.id]);
     if (lines.length === 1 && sourcesOf(edge).length === 1) return notes[lines[0].id];
     return lines.map((item) => `${labelOf(item.from)} → ${labelOf(item.to)}：${notes[item.id]}`).join("\n");
+  };
+
+  /** ノードの選択: 1 つならそのノードの線と相手、2 つ以上なら選んだノードどうしの線とその両端を残す */
+  const selection = (layout) => {
+    if (state.selected.size === 0) return undefined;
+    const edges = layout.edges.filter((edge) =>
+      state.selected.size === 1 ? state.selected.has(edge.from) || state.selected.has(edge.to) : state.selected.has(edge.from) && state.selected.has(edge.to),
+    );
+    return { nodes: new Set([...state.selected, ...edges.flatMap((edge) => [edge.from, edge.to])]), edges: new Set(edges.map((edge) => edge.id)) };
   };
 
   const highlighted = () => {
@@ -414,7 +445,9 @@ export const createMap = (host, spec, initial = {}) => {
     const oldViewport = host.querySelector(".mdmark-diagram-viewport");
     const scroll = oldViewport ? [oldViewport.scrollLeft, oldViewport.scrollTop] : [0, 0];
     const before = positionsOf();
-    const layout = layoutMap(chart, { enter: state.enter, collapsed: [...state.collapsed] }, spec.data.layout ?? {});
+    const overrides = { ...(spec.data.layout ?? {}) };
+    for (const [id, size] of Object.entries(state.sizes)) overrides[id] = { ...overrides[id], size };
+    const layout = layoutMap(chart, { enter: state.enter, collapsed: [...state.collapsed] }, overrides);
     host.replaceChildren();
     mount(host, { markdown: `<!-- flow -->\n\n\`\`\`json\n${JSON.stringify(toFlowDefinition(layout))}\n\`\`\`\n\n<!-- /flow -->\n` });
     const figure = host.querySelector("figure.mdmark-diagram");
@@ -434,7 +467,46 @@ export const createMap = (host, spec, initial = {}) => {
     viewport.scrollLeft = scroll[0];
     viewport.scrollTop = scroll[1];
     window.scrollTo({ top: pageY });
+    // 描いたノードの中身が見積もりの大きさに収まらなければ、測った大きさで配置し直す（大きさが変わらなくなるまで）
+    if (measureLeaves(stage, layout)) {
+      render();
+      return;
+    }
     revealHot(viewport, stage, layout);
+  };
+
+  /**
+   * ノードの中身（種類の行と名前）が収まる大きさを、同じ CSS の見えない複製で測る。
+   * 種類の行は常に左上に置き、名前はその下から折り返す。測った大きさが配置と違えば state.sizes に入れて true を返す
+   */
+  const measureLeaves = (stage, layout) => {
+    let changed = false;
+    for (const leaf of layout.leaves) {
+      const element = stage.querySelector(`[data-node="${CSS.escape(leaf.id)}"]`);
+      if (!element) continue;
+      const probe = element.cloneNode(true);
+      probe.removeAttribute("data-node");
+      probe.style.left = "0px";
+      probe.style.top = "0px";
+      probe.style.visibility = "hidden";
+      probe.style.height = "auto";
+      stage.append(probe);
+      let width = leaf.w;
+      if (fit === "width") {
+        probe.style.width = "max-content";
+        probe.querySelector(".mdmark-diagram-node-name")?.style.setProperty("white-space", "nowrap");
+        width = Math.min(NODE_MAX_WIDTH.width, Math.max(leaf.w, Math.ceil(probe.offsetWidth) + 2));
+        probe.querySelector(".mdmark-diagram-node-name")?.style.removeProperty("white-space");
+      }
+      probe.style.width = `${width}px`;
+      const height = Math.ceil(probe.offsetHeight);
+      probe.remove();
+      if (Math.abs(width - leaf.w) > 1 || Math.abs(height - leaf.h) > 1) {
+        state.sizes[leaf.id] = { w: width, h: height };
+        changed = true;
+      }
+    }
+    return changed;
   };
 
   /** 読者が図の枠を触ったか: 枠の中のスクロール・ホイール・押す・キーと、拡大・縮小のボタン */
@@ -496,19 +568,35 @@ export const createMap = (host, spec, initial = {}) => {
     const observer = new MutationObserver(enforce);
     observer.observe(stage, { attributes: true, attributeFilter: ["style"] });
     observer.observe(viewport, { attributes: true, attributeFilter: ["style"] });
-    // リサイズハンドルで変えた高さを、次に描き直すときの高さにする
-    const handle = figure.querySelector(".mdmark-diagram-resize");
-    const remember = () => {
-      observer.disconnect();
-      state.height = viewport.getBoundingClientRect().height;
-      observer.observe(stage, { attributes: true, attributeFilter: ["style"] });
-      observer.observe(viewport, { attributes: true, attributeFilter: ["style"] });
-    };
-    handle?.addEventListener("pointerdown", () => observer.disconnect());
-    handle?.addEventListener("keydown", () => observer.disconnect());
-    handle?.addEventListener("pointerup", remember);
-    handle?.addEventListener("keyup", remember);
-    handle?.addEventListener("dblclick", remember);
+    // リサイズハンドル: 今の部品のハンドルを、上限を持たないハンドルに置き換える。ダブルクリックで図の高さに合わせ、倍率は変えない
+    const old = figure.querySelector(".mdmark-diagram-resize");
+    if (old) {
+      const handle = old.cloneNode(true);
+      old.replaceWith(handle);
+      const setHeight = (height) => {
+        state.height = Math.max(MIN_FRAME_HEIGHT, Math.round(height));
+        enforce();
+      };
+      handle.addEventListener("pointerdown", (event) => {
+        event.preventDefault();
+        handle.setPointerCapture(event.pointerId);
+        const startY = event.clientY;
+        const startHeight = state.height;
+        const move = (next) => setHeight(startHeight + next.clientY - startY);
+        handle.addEventListener("pointermove", move);
+        handle.addEventListener("pointerup", () => handle.removeEventListener("pointermove", move), { once: true });
+      });
+      handle.addEventListener("keydown", (event) => {
+        if (event.key === "ArrowUp" || event.key === "ArrowDown") {
+          event.preventDefault();
+          setHeight(state.height + (event.key === "ArrowDown" ? 16 : -16));
+        }
+      });
+      handle.addEventListener("dblclick", () => {
+        const scale = Number(/scale\(([\d.]+)\)/.exec(stage.style.transform)?.[1] ?? 1);
+        setHeight(layout.height * scale + 16);
+      });
+    }
     enforce();
   };
 
@@ -597,6 +685,7 @@ export const createMap = (host, spec, initial = {}) => {
   /** ノード: 閉じたグループは山形で開く。入ったグループの外は薄くする。案内と再生で強調する */
   const decorateNodes = (stage, layout) => {
     const hot = highlighted();
+    const chosen = selection(layout);
     for (const leaf of layout.leaves) {
       const element = stage.querySelector(`[data-node="${CSS.escape(leaf.id)}"]`);
       if (!element) continue;
@@ -607,7 +696,19 @@ export const createMap = (host, spec, initial = {}) => {
         element.classList.add("map-colored");
       }
       if (leaf.faded) element.classList.add("map-faded");
-      if (hot && !hot.has(leaf.id)) element.classList.add("map-dim");
+      // 選んだノードの強調を、案内・再生の強調より優先する
+      if (chosen ? !chosen.nodes.has(leaf.id) : hot && !hot.has(leaf.id)) element.classList.add("map-dim");
+      element.classList.add("map-selectable");
+      // 選んでいるかは data-selected に持つ（ノードは中に i のボタンを持つため、ボタンの役割は付けない。キーボードでの選び方は部品設計で決める）
+      element.toggleAttribute("data-selected", state.selected.has(leaf.id));
+      element.title = "押すと、このノードとつながる線と相手のノードだけを残す";
+      element.addEventListener("click", (event) => {
+        // ノードの中のボタン（i・開閉の山形）を押したときは選ばない
+        if (event.target.closest("button")) return;
+        if (state.selected.has(leaf.id)) state.selected.delete(leaf.id);
+        else state.selected.add(leaf.id);
+        render();
+      });
       if (boxById.has(leaf.id) && !leaf.faded) {
         element.classList.add("map-closed-group");
         element.append(
@@ -625,6 +726,7 @@ export const createMap = (host, spec, initial = {}) => {
   /** 線: 色・強調と、ポインターを当てた線を太くしてツールチップに元の線と説明を出す */
   const decorateWires = (figure, layout) => {
     const hot = highlighted();
+    const chosen = selection(layout);
     let hoverPackets = [];
     const stage = figure.querySelector(".mdmark-diagram-stage");
     const svg = figure.querySelector(".mdmark-diagram-wires");
@@ -651,7 +753,7 @@ export const createMap = (host, spec, initial = {}) => {
       if (color) wire.classList.add("map-colored-wire");
       if (color) tintArrowhead(figure, wire.matches("path") ? wire : wire.querySelector("path"));
       const label = labelOfWire.get(edge.id);
-      if (hot && !(hot.has(edge.from) && hot.has(edge.to))) for (const element of [wire, label]) element?.classList.add("map-dim");
+      if (chosen ? !chosen.edges.has(edge.id) : hot && !(hot.has(edge.from) && hot.has(edge.to))) for (const element of [wire, label]) element?.classList.add("map-dim");
       const path = wire.matches("path") ? wire : wire.querySelector("path");
       const hit = document.createElementNS("http://www.w3.org/2000/svg", "path");
       hit.setAttribute("d", path.getAttribute("d"));
@@ -711,6 +813,16 @@ export const createMap = (host, spec, initial = {}) => {
         save();
         render();
       }),
+      // ノードを選んだときだけ押せる「ノードの選択を元に戻す」（シーケンス図の「元に戻す」と同じアイコン）
+      toolButton(
+        "reset",
+        "ノードの選択を元に戻す",
+        () => {
+          state.selected.clear();
+          render();
+        },
+        state.selected.size ? {} : { disabled: "" },
+      ),
     );
     figure.querySelector(".mdmark-diagram-tools").prepend(group);
   };
@@ -748,10 +860,14 @@ export const createMap = (host, spec, initial = {}) => {
    */
   const renderPackets = (stage, layout) => {
     const hot = highlighted();
-    if (!hot) return;
+    const chosen = selection(layout);
+    if (!hot && !chosen) return;
     const wires = stage.querySelector(".mdmark-diagram-wires");
     const routes = [];
-    if (state.play !== undefined && sequence) {
+    if (chosen) {
+      // 選んだノードの線に流す（案内・再生より優先する）
+      for (const edge of layout.edges) if (chosen.edges.has(edge.id)) routes.push({ edge, reverse: false, both: sourcesOf(edge).some((item) => item.both) });
+    } else if (state.play !== undefined && sequence) {
       const message = sequence.messages[state.play];
       const from = visibleOf(message.from);
       const to = visibleOf(message.to);
@@ -834,6 +950,12 @@ export const createMap = (host, spec, initial = {}) => {
   };
 
   host.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && state.selected.size) {
+      event.stopPropagation();
+      state.selected.clear();
+      render();
+      return;
+    }
     if (event.key === "Escape" && state.enter && state.step === undefined && state.play === undefined) {
       event.stopPropagation();
       leaveGroup();
@@ -889,6 +1011,140 @@ const keepSequenceScale = (host) => {
  * spec: { id, title, source, notes }
  * kinds: 参加者の ID ごとの、使う側の設定の種類（{ label, icon, shape, color }）
  */
+/**
+ * シーケンス図の行: メッセージの行のほかに、複合フラグメントの見出し（loop・alt と else など）と注記の行を空けて、重ならないようにする。
+ * 行は今のシーケンス図の部品の行の高さ（52px）で並ぶ。見出しと注記の行は、部品には空のメッセージとして渡し、描いた後に隠す
+ */
+const SEQ_ROW = { firstY: 116, height: 52 };
+const sequenceRows = (sequence) => {
+  const rows = [];
+  sequence.messages.forEach((_, index) => {
+    for (const note of sequence.notes.filter((item) => item.after === index)) rows.push({ note });
+    for (const fragment of sequence.fragments) {
+      for (const [at, section] of fragment.sections.entries()) {
+        if (section.start === index && (at > 0 || fragment.end > fragment.start)) rows.push({ fragment, section: at });
+      }
+    }
+    rows.push({ message: index });
+  });
+  for (const note of sequence.notes.filter((item) => item.after === sequence.messages.length)) rows.push({ note });
+  return rows;
+};
+
+/** 複合フラグメントの枠・注記・活性化の帯・矢印の種類・番号を、描いたシーケンス図の上に足す */
+const decorateSequence = ({ stage, svg, rows, rowWires, rowLabels, wires, messageLabels, visible, heads, sequence }) => {
+  const rowY = (at) => SEQ_ROW.firstY + at * SEQ_ROW.height;
+  const columnX = (id) => {
+    const head = heads(id);
+    return head ? head.offsetLeft + head.offsetWidth / 2 : 0;
+  };
+  const columns = visible.map(columnX);
+  const rowOf = new Map(rows.flatMap((row, at) => (row.message === undefined ? [] : [[row.message, at]])));
+  // 見出しと注記の行の空のメッセージを隠す
+  rows.forEach((row, at) => {
+    if (row.message !== undefined) return;
+    for (const element of [rowWires[at], rowLabels[at]]) element?.classList.add("map-gap");
+  });
+  const under = document.createElementNS(SVG_NS, "g");
+  under.setAttribute("class", "map-seq-under");
+  svg.prepend(under);
+  // 複合フラグメント: 関わる参加者の列を囲み、左上に種類とラベルのタブ、else・and・option の区間を破線で分ける
+  for (const fragment of sequence.fragments) {
+    if (fragment.end <= fragment.start) continue;
+    const inside = sequence.messages.slice(fragment.start, fragment.end).flatMap((message) => [message.from, message.to]);
+    const xs = inside.map(columnX);
+    const pad = 70 - fragment.depth * 10;
+    const left = Math.min(...xs) - pad;
+    const right = Math.max(...xs) + pad;
+    const headRow = rows.findIndex((row) => row.fragment === fragment && row.section === 0);
+    const top = rowY(headRow === -1 ? rowOf.get(fragment.start) : headRow) - 30;
+    const bottom = rowY(rowOf.get(fragment.end - 1)) + 14;
+    const rect = document.createElementNS(SVG_NS, "rect");
+    rect.setAttribute("class", `map-seq-fragment${fragment.kind === "rect" ? " is-rect" : ""}`);
+    for (const [key, value] of Object.entries({ x: left, y: top, width: right - left, height: bottom - top, rx: 4 })) rect.setAttribute(key, String(value));
+    under.append(rect);
+    if (fragment.kind !== "rect") {
+      const tab = document.createElement("span");
+      tab.className = "map-seq-fragment-tab";
+      tab.innerHTML = `<b>${fragment.kind}</b>${fragment.label ? ` ${fragment.label}` : ""}`;
+      tab.style.left = `${left}px`;
+      tab.style.top = `${top}px`;
+      stage.append(tab);
+    }
+    fragment.sections.slice(1).forEach((section, offset) => {
+      const at = rows.findIndex((row) => row.fragment === fragment && row.section === offset + 1);
+      const y = rowY(at) - 14;
+      const line = document.createElementNS(SVG_NS, "line");
+      line.setAttribute("class", "map-seq-section");
+      for (const [key, value] of Object.entries({ x1: left, x2: right, y1: y, y2: y })) line.setAttribute(key, String(value));
+      under.append(line);
+      const text = document.createElement("span");
+      text.className = "map-seq-section-label";
+      text.textContent = `[${section.label}]`;
+      text.style.left = `${left + 8}px`;
+      text.style.top = `${y + 2}px`;
+      stage.append(text);
+    });
+  }
+  // 注記: 参加者の左・右・上（2 人なら 2 人の上をまたぐ）に置く箱
+  rows.forEach((row, at) => {
+    if (!row.note) return;
+    const xs = row.note.of.map(columnX);
+    const [left, right] =
+      row.note.placement === "left"
+        ? [xs[0] - 170, xs[0] - 16]
+        : row.note.placement === "right"
+          ? [xs[0] + 16, xs[0] + 170]
+          : [Math.min(...xs) - 60, Math.max(...xs) + 60];
+    const note = document.createElement("div");
+    note.className = "map-seq-note";
+    note.textContent = row.note.text;
+    note.style.cssText = `left:${left}px;top:${rowY(at) - 32}px;width:${right - left}px`;
+    stage.append(note);
+  });
+  // 活性化の帯: 参加者の縦線の上に、始まりのメッセージから終わりのメッセージまでの細い帯（入れ子は右へずらす）
+  for (const activation of sequence.activations) {
+    const x = columnX(activation.id) - 5 + activation.depth * 6;
+    const top = rowY(rowOf.get(activation.start));
+    const bottom = rowY(rowOf.get(activation.end));
+    const bar = document.createElementNS(SVG_NS, "rect");
+    bar.setAttribute("class", "map-seq-activation");
+    for (const [key, value] of Object.entries({ x, y: top, width: 10, height: Math.max(12, bottom - top) })) bar.setAttribute(key, String(value));
+    svg.querySelector(".mdmark-diagram-lifeline:last-of-type")?.after(bar);
+  }
+  // 矢印の種類と番号: 実線と点線・矢じり（無し・塗り・×・非同期）・両向き。autonumber のときだけ番号を付ける
+  let number = 0;
+  sequence.messages.forEach((message, index) => {
+    const wire = wires[index];
+    const label = messageLabels[index];
+    number += 1;
+    if (label) label.textContent = sequence.autonumber ? `${number} ${message.text}` : message.text;
+    if (!wire) return;
+    wire.setAttribute("stroke-dasharray", message.arrow.dotted ? "6 4" : "");
+    const marker = wire.getAttribute("marker-end");
+    const ref = marker && /url\(#([^)]+)-head-[a-z]+\)/.exec(marker)?.[1];
+    if (message.arrow.head === "none") wire.removeAttribute("marker-end");
+    else if (ref) wire.setAttribute("marker-end", `url(#${ref}-head-${message.arrow.head === "async" ? "read" : message.arrow.head === "cross" ? "cross" : "flow"})`);
+    if (message.arrow.both && wire.getAttribute("marker-end")) wire.setAttribute("marker-start", wire.getAttribute("marker-end"));
+    if (message.arrow.head === "cross" && ref) ensureCrossMarker(svg.ownerDocument, stage.closest("figure"), ref);
+    tintArrowhead(stage.closest("figure"), wire);
+  });
+};
+
+/** 失敗のメッセージ（-x）の矢じりの × の marker を、図の defs に 1 つだけ足す */
+const ensureCrossMarker = (doc, figure, ref) => {
+  const id = `${ref}-head-cross`;
+  if (figure.querySelector(`marker[id="${CSS.escape(id)}"]`)) return;
+  const marker = doc.createElementNS(SVG_NS, "marker");
+  for (const [key, value] of Object.entries({ id, viewBox: "0 0 10 10", refX: "8", refY: "5", markerWidth: "8", markerHeight: "8", orient: "auto-start-reverse" })) marker.setAttribute(key, value);
+  const path = doc.createElementNS(SVG_NS, "path");
+  path.setAttribute("d", "M2 1 L8 9 M8 1 L2 9");
+  path.setAttribute("fill", "none");
+  path.setAttribute("stroke-width", "1.6");
+  marker.append(path);
+  figure.querySelector(".mdmark-diagram-defs defs").append(marker);
+};
+
 export const createSequence = (host, spec, kinds, onStep) => {
   const sequence = parseSequence(spec.source);
   const notes = spec.notes ?? {};
@@ -909,12 +1165,17 @@ export const createSequence = (host, spec, kinds, onStep) => {
     const scroll = oldViewport ? [oldViewport.scrollLeft, oldViewport.scrollTop] : [0, 0];
     const visible = state.order;
     const shown = sequence.messages.map((message, index) => ({ message, index }));
+    const rows = sequenceRows(sequence);
     const definition = {
       title: spec.title,
       scope: "map のシーケンス図",
       updated: "2026-11-09",
       participants: visible.map((id) => ({ id, kind: "script", name: labelOf(id) })),
-      steps: shown.map(({ message }) => ({ from: message.from, to: message.to, label: message.text, ...(message.reply ? { reply: true } : {}) })),
+      steps: rows.map((row) =>
+        row.message === undefined
+          ? { from: visible[0], to: visible[0], label: "" }
+          : { from: sequence.messages[row.message].from, to: sequence.messages[row.message].to, label: sequence.messages[row.message].text },
+      ),
     };
     host.replaceChildren();
     mount(host, { markdown: `<!-- sequence -->\n\n\`\`\`json\n${JSON.stringify(definition)}\n\`\`\`\n\n<!-- /sequence -->\n` });
@@ -922,9 +1183,14 @@ export const createSequence = (host, spec, kinds, onStep) => {
     figure.classList.add("map-figure");
     const stage = figure.querySelector(".mdmark-diagram-stage");
     const svg = stage.querySelector(".mdmark-diagram-wires");
-    const wires = [...svg.querySelectorAll(".mdmark-diagram-wire")];
+    const rowWires = [...svg.querySelectorAll(".mdmark-diagram-wire")];
+    const rowLabels = [...stage.querySelectorAll(".mdmark-diagram-label")];
     const lifelines = [...svg.querySelectorAll(".mdmark-diagram-lifeline")];
     const heads = (id) => stage.querySelector(`[data-node="${CSS.escape(id)}"]`);
+    const rowOf = new Map(rows.flatMap((row, at) => (row.message === undefined ? [] : [[row.message, at]])));
+    const wires = sequence.messages.map((_, index) => rowWires[rowOf.get(index)]);
+    const messageLabels = sequence.messages.map((_, index) => rowLabels[rowOf.get(index)]);
+    decorateSequence({ stage, svg, rows, rowWires, rowLabels, wires, messageLabels, visible, heads, figure, sequence });
 
     // 参加者を選んだときの強調
     const related = (message) =>
@@ -937,7 +1203,7 @@ export const createSequence = (host, spec, kinds, onStep) => {
       const hit = related(message);
       if (hit === false) {
         wires[at]?.classList.add("map-dim");
-        stage.querySelectorAll(".mdmark-diagram-label")[at]?.classList.add("map-dim");
+        messageLabels[at]?.classList.add("map-dim");
       }
       // 選んだ参加者のメッセージの線には、データの印を送り手から受け手へ流し続ける（再生中の線には重ねない）
       if (hit === true && wires[at] && index !== state.current) {
@@ -988,7 +1254,7 @@ export const createSequence = (host, spec, kinds, onStep) => {
       hit.setAttribute("d", wire.getAttribute("d"));
       hit.setAttribute("class", "map-wire-hit");
       const ends = [heads(message.from), heads(message.to)].filter(Boolean);
-      const label = stage.querySelectorAll(".mdmark-diagram-label")[at];
+      const label = messageLabels[at];
       let hoverPackets = [];
       hit.addEventListener("pointerenter", () => {
         focusOn(stage, [wire, label, ...ends].filter(Boolean));

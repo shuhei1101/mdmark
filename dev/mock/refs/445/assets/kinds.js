@@ -93,6 +93,13 @@ const WORK = `flowchart LR
   check --> sys
 `;
 
+/** 長い名前のノードの広げ方の見本: 同じ図を node_fit の height（既定）と width で描く */
+const FIT_CONFIG = { kinds: { step: { label: "処理", icon: "cog" } } };
+const FIT = `flowchart LR
+  a["入れ子のグループを内側から自動で配置する"]:::step --> b["線の経路"]:::step
+  b --> c["描いた図の枠の大きさを、線の経路と互いに伝え合う"]:::step
+`;
+
 const markdown = `# map の図のノードと線の種類の作り方
 
 map の図は、ノードと線の種類を mdmark では決めない。使う側が設定（\`mdmark.config.yaml\` の \`map\`）で、種類の名前・アイコン・形・色と、線の模様・太さ・矢じり・色を作る。凡例は出さない。
@@ -135,6 +142,18 @@ MAP-SLOT-LINES
 | \`head\` | \`filled\`（塗りの矢じり・既定）・\`open\`（線の矢じり）・\`none\`（矢じり無し） |
 | \`color\` | 色の名前 |
 
+## 長い名前のノード
+
+ノードの中は、左上に種類の行（アイコンと名前）を置き、その下にノードの名前を並べる。名前が長いときの広げ方は \`map.node_fit\` で選ぶ。
+
+### height（既定）: 幅は変えず、折り返して高さを増やす
+
+MAP-SLOT-FIT-HEIGHT
+
+### width: 幅を上限まで広げてから、折り返して高さを増やす
+
+MAP-SLOT-FIT-WIDTH
+
 ## 設定の例 1: システムの構成
 
 MAP-SLOT-SYSTEM
@@ -162,5 +181,7 @@ const place = (text, spec) => {
 const row = Object.fromEntries(["a", "b", "c", "d", "e"].map((id, index) => [id, { pos: { x: index * 180, y: 0 } }]));
 place("MAP-SLOT-SHAPES", { id: "kinds-shapes", title: "ノードの形", flow: SHAPES, config: SHAPE_CONFIG, data: { layout: row } });
 place("MAP-SLOT-LINES", { id: "kinds-lines", title: "線の模様", flow: LINES, config: LINE_CONFIG, data: { layout: LINE_LAYOUT } });
+place("MAP-SLOT-FIT-HEIGHT", { id: "kinds-fit-height", title: "height", flow: FIT, config: FIT_CONFIG, data: {} });
+place("MAP-SLOT-FIT-WIDTH", { id: "kinds-fit-width", title: "width", flow: FIT, config: { ...FIT_CONFIG, node_fit: "width" }, data: {} });
 place("MAP-SLOT-SYSTEM", { id: "kinds-system", title: "システムの構成", flow: SYSTEM, config: SYSTEM_CONFIG, data: {} });
 place("MAP-SLOT-WORK", { id: "kinds-work", title: "業務の流れ", flow: WORK, config: WORK_CONFIG, data: {} });

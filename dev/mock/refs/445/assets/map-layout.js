@@ -1,5 +1,4 @@
-// モックの自動配置と記法の読み取り: PoC（#446、commit 3e4d731e8 の poc/map/layout.ts・parse.ts）をまとめ、中へ入ったときの外の要素の選び方・グループのタイトルの高さ（36px）・ノードの大きさ（今のフロー図のノードの外観に合わせる）を修正し、両向きの矢印（<-->）の読み取りを追加したもの。手で修正しない
-
+// モックの自動配置と記法の読み取り: PoC（#446、commit 3e4d731e8 の poc/map/layout.ts・parse.ts）をまとめ、中へ入ったときの外の要素の選び方・グループのタイトルの高さ（36px）・ノードの大きさ（今のフロー図のノードの外観に合わせる）を修正し、両向きの矢印（<-->）の読み取りと、シーケンス図の全ての記法（複合フラグメント・注記・活性化・まとまり・autonumber・矢印の種類）の読み取り・測ったノードの大きさでの配置を追加したもの。手で修正しない
 // check.ts
 var LABEL_METRICS = {
   kindSize: 11,
@@ -49,8 +48,9 @@ var splitLines = (text, fontSize, width) => {
   return lines;
 };
 var textWidth = (text, fontSize) => Math.max(...text.split("\n").map((line) => [...line].reduce((sum, char) => sum + (isWide(char) ? fontSize : fontSize * 0.6), 0)));
-var sizeLeaf = (label, width) => {
+var sizeLeaf = (label, width, size) => {
   const { nameSize, kindSize, lineHeight, padX, padY } = LABEL_METRICS;
+  if (size) return { w: size.w, h: size.h, lines: [label] };
   const w = width ?? Math.min(MAP_LAYOUT.maxWidth, Math.max(MAP_LAYOUT.minWidth, Math.ceil(textWidth(label, nameSize)) + padX * 2));
   const lines = splitLines(label, nameSize, w - padX * 2);
   const count = lines.length;
@@ -117,7 +117,7 @@ var buildView = (chart, options, overrides) => {
     id,
     label,
     faded,
-    ...sizeLeaf(label, overrides[id]?.width)
+    ...sizeLeaf(label, overrides[id]?.width, overrides[id]?.size)
   });
   const countInside = (boxId) => chart.nodes.filter((node) => chain(node.id).includes(boxId)).length;
   const makeBox = (boxId, title, direction) => {
@@ -867,66 +867,139 @@ var parseFlowchart = (source) => {
   });
   return { direction, nodes: [...nodes.values()], boxes, edges, warnings };
 };
-var MESSAGE_RE = /^([\w\u0080-￿]+)\s*(-->>|->>|-->|->|--x|-x|--\)|-\))\s*([+-]?)([\w\u0080-￿]+)\s*:\s*(.*)$/;
+var SEQ_ID = "[\\w\\u0080-\\uffff]+";
+var SEQ_ARROWS = {
+  "<<-->>": { dotted: true, head: "filled", both: true },
+  "<<->>": { dotted: false, head: "filled", both: true },
+  "-->>": { dotted: true, head: "filled", both: false },
+  "->>": { dotted: false, head: "filled", both: false },
+  "--x": { dotted: true, head: "cross", both: false },
+  "-x": { dotted: false, head: "cross", both: false },
+  "--)": { dotted: true, head: "async", both: false },
+  "-)": { dotted: false, head: "async", both: false },
+  "-->": { dotted: true, head: "none", both: false },
+  "->": { dotted: false, head: "none", both: false }
+};
+var ARROW_RE = Object.keys(SEQ_ARROWS).map((arrow) => arrow.replace(/[()]/g, "\\$&")).join("|");
+var MESSAGE_RE = new RegExp(`^(${SEQ_ID})\\s*(${ARROW_RE})\\s*([+-]?)(${SEQ_ID})\\s*:\\s*(.*)$`);
+var FRAGMENT_RE = /^(loop|alt|opt|par|critical|break|rect)\b\s*(.*)$/;
+var SECTION_RE = /^(else|and|option)\b\s*(.*)$/;
+var NOTE_RE = new RegExp(`^note\\s+(left of|right of|over)\\s+(${SEQ_ID}(?:\\s*,\\s*${SEQ_ID})?)\\s*:\\s*(.*)$`, "i");
 var parseSequence = (source) => {
   const participants = /* @__PURE__ */ new Map();
   const messages = [];
-  const loops = [];
+  const fragments = [];
+  const notes = [];
+  const activations = [];
+  const groups = [];
   const warnings = [];
-  const blocks = [];
+  const open = [];
+  const active = /* @__PURE__ */ new Map();
+  let group;
+  let autonumber = false;
   const ensure = (id) => {
-    if (!participants.has(id)) {
-      participants.set(id, { id, label: id, actor: false });
+    if (!participants.has(id)) participants.set(id, { id, label: id, actor: false });
+  };
+  const activate = (id, at) => {
+    const list = active.get(id) ?? [];
+    list.push(at);
+    active.set(id, list);
+  };
+  const deactivate = (id, at, line, raw) => {
+    const start = active.get(id)?.pop();
+    if (start === void 0) {
+      warnings.push({ line, text: raw });
+      return;
     }
+    activations.push({ id, start, end: at, depth: active.get(id)?.length ?? 0 });
   };
   source.split("\n").slice(1).forEach((raw, index) => {
+    const line = index + 2;
     const text = raw.replace(/%%.*$/, "").trim();
-    if (text === "") {
+    if (text === "") return;
+    if (text === "autonumber") {
+      autonumber = true;
       return;
     }
-    const decl = /^(participant|actor)\s+([\w\u0080-￿]+)(?:\s+as\s+(.+))?$/.exec(text);
+    const box = /^box\s*(.*)$/.exec(text);
+    if (box) {
+      const [, rest2 = ""] = box;
+      const color = /^(rgba?\([^)]*\)|transparent|[a-z]+)(?=\s|$)/i.exec(rest2)?.[0];
+      group = { label: (color ? rest2.slice(color.length) : rest2).trim(), color, members: [] };
+      groups.push(group);
+      return;
+    }
+    const decl = new RegExp(`^(?:create\\s+)?(participant|actor)\\s+(${SEQ_ID})(?:\\s+as\\s+(.+))?$`).exec(text);
     if (decl?.[1] && decl[2]) {
       participants.set(decl[2], { id: decl[2], label: decl[3] ?? decl[2], actor: decl[1] === "actor" });
+      group?.members.push(decl[2]);
       return;
     }
-    const loop = /^loop\s*(.*)$/.exec(text);
-    if (loop) {
-      const id = loops.length;
-      loops.push({ id, label: loop[1] ?? "" });
-      blocks.push(id);
+    if (new RegExp(`^destroy\\s+${SEQ_ID}$`).test(text)) return;
+    const fragment = FRAGMENT_RE.exec(text);
+    if (fragment?.[1]) {
+      const item = {
+        kind: fragment[1],
+        label: fragment[2] ?? "",
+        depth: open.length,
+        sections: [{ start: messages.length, label: fragment[2] ?? "" }],
+        start: messages.length,
+        end: messages.length
+      };
+      open.push(item);
+      fragments.push(item);
       return;
     }
-    if (/^(alt|opt|par|critical|break|rect)\b/.test(text)) {
-      blocks.push(void 0);
-      return;
-    }
-    if (/^(else|and)\b/.test(text) || /^(autonumber|activate|deactivate|Note)\b/.test(text)) {
+    const section = SECTION_RE.exec(text);
+    if (section) {
+      const current = open.at(-1);
+      if (!current) warnings.push({ line, text: raw });
+      else current.sections.push({ start: messages.length, label: section[2] ?? "" });
       return;
     }
     if (text === "end") {
-      if (blocks.length === 0) {
-        warnings.push({ line: index + 2, text: raw });
+      if (group && open.length === 0) {
+        group = void 0;
+        return;
       }
-      blocks.pop();
+      const current = open.pop();
+      if (!current) warnings.push({ line, text: raw });
+      else current.end = messages.length;
+      return;
+    }
+    const toggle = new RegExp(`^(activate|deactivate)\\s+(${SEQ_ID})$`).exec(text);
+    if (toggle?.[2]) {
+      ensure(toggle[2]);
+      if (toggle[1] === "activate") activate(toggle[2], messages.length);
+      else deactivate(toggle[2], messages.length - 1, line, raw);
+      return;
+    }
+    const note = NOTE_RE.exec(text);
+    if (note?.[1] && note[2]) {
+      const of = note[2].split(",").map((id) => id.trim());
+      for (const id of of) ensure(id);
+      notes.push({ after: messages.length, placement: note[1].toLowerCase().startsWith("left") ? "left" : note[1].toLowerCase().startsWith("right") ? "right" : "over", of, text: note[3] ?? "" });
       return;
     }
     const message = MESSAGE_RE.exec(text);
     if (message?.[1] && message[2] && message[4]) {
       ensure(message[1]);
       ensure(message[4]);
-      const loopId = [...blocks].reverse().find((block) => block !== void 0);
-      messages.push({
-        from: message[1],
-        to: message[4],
-        text: message[5] ?? "",
-        reply: message[2].startsWith("--"),
-        loop: loopId
-      });
+      const arrow = SEQ_ARROWS[message[2]];
+      const activation = message[3] === "+" ? "+" : message[3] === "-" ? "-" : void 0;
+      messages.push({ from: message[1], to: message[4], text: message[5] ?? "", arrow, reply: arrow.dotted, activation });
+      const at = messages.length - 1;
+      if (activation === "+") activate(message[4], at);
+      if (activation === "-") deactivate(message[1], at, line, raw);
       return;
     }
-    warnings.push({ line: index + 2, text: raw });
+    warnings.push({ line, text: raw });
   });
-  return { participants: [...participants.values()], messages, loops, warnings };
+  for (const item of open) {
+    item.end = messages.length;
+    warnings.push({ line: 0, text: `${item.kind} \u306B end \u304C\u3042\u308A\u307E\u305B\u3093` });
+  }
+  return { participants: [...participants.values()], messages, fragments, notes, activations, groups, autonumber, warnings };
 };
 export {
   layoutMap,

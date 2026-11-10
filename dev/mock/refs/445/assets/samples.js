@@ -74,15 +74,25 @@ export const SEQUENCE = {
     3: "範囲の中の mermaid のコードブロックの本文。\nmap の範囲の中のブロックは、mermaid のライブラリでは描かない",
   },
   source: `sequenceDiagram
+  autonumber
   participant user as 利用側のページ
   participant mount as mount
   participant marker as map のマーカーの読み取り
   participant mermaid as Mermaid の記法の読み取り
   participant layout as 自動配置
-  user->>mount: 設定と Markdown
-  mount->>marker: map の範囲
-  marker->>mermaid: mermaid のブロック
-  mermaid->>layout: ノードと線
+  user->>+mount: 設定と Markdown
+  loop map の範囲ごと
+    mount->>marker: map の範囲
+    alt mermaid のブロックがある
+      marker->>mermaid: mermaid のブロック
+      mermaid->>layout: ノードと線
+      layout-->>mount: 配置した図
+    else ブロックが無い
+      marker--xmount: 書き方の警告
+    end
+  end
+  Note over user,mount: 全ての範囲を描き終えてから返す
+  mount-->>-user: 描いた文書
 `,
 };
 
