@@ -6082,7 +6082,7 @@ flows:
       - name: 配布物を読み込んだページ
         description: 正常系（map の構成図を描く）と同じ
       - name: 案内を持つ map の Markdown
-        description: '正常系（map の構成図を描く）の範囲。補足の `walkthroughs` は 4 手順（3 手順目は `enter: place`、2 手順目は説明の文が 3 行）、印の `interval=3`'
+        description: '正常系（map の構成図を描く）の範囲。補足の `walkthroughs` は 4 手順（3 手順目は `enter: place`、2 手順目は説明の文が 3 行）、印の `{"interval": 3}`'
       - name: Mock
         description: 自動で進める間隔はテストの時計を進めて確かめる。`prefers-reduced-motion` は `no-preference`
     flow: |-
@@ -6274,9 +6274,32 @@ flows:
     - '`line: back` の線が実線・太さ normal・塗りの矢じり'
     - ほかのノード・線は正常系（map の構成図を描く）と同じに描かれる
     test: test_normal_when_map_config_names_missing
+  - name: 正常系（map の印の引数で最初の見せ方を決める）
+    summary: 印の JSON のオブジェクトの `focus`・`play`・`interval`・`collapse` で、最初に入るグループ・画面に入ったときの自動の再生・自動で進める間隔・折りたたみを決める
+    setup:
+    - name: 配布物を読み込んだページ
+      description: 正常系（map の構成図を描く）と同じ。sessionStorage とクエリ文字列は空。シーケンス図は描く先の要素の 2 画面目より下
+    - name: 印の引数を持つ map の Markdown
+      description: '正常系（map のシーケンス図を描いて再生する）の構成図の印に `{"title": "全体の構成", "focus": "read", "collapse": {"open": false}}`、シーケンス図の印に `{"play": "autoplay", "interval": 1}` を持つ文書'
+    - name: Mock
+      description: 自動で進める間隔はテストの時計を進めて確かめる。`prefers-reduced-motion` は `no-preference` と `reduce` の 2 通り
+    flow: |-
+      sequenceDiagram
+        actor U as ユーザー
+        participant M as mdmark
+        U->>M: mount(el, { markdown, config })
+        M-->>U: 閉じた折りたたみの中に、read の中へ入った構成図と、止めたシーケンス図
+        U->>M: 折りたたみを開き、シーケンス図を画面に入れる
+        M-->>U: 押さずに 1 秒ごとにメッセージを進める
+    expected:
+    - 構成図が見出し「全体の構成」の閉じた折りたたみ（`details`）に入り、開くと「記法の読み取り」の中へ入った図と押せる戻るボタンがある
+    - シーケンス図が画面に入るまで再生が始まらず、画面に入ると押さずに再生が始まり、1 秒ごとに次のメッセージへ進む
+    - '`prefers-reduced-motion: reduce` では、画面に入っても自動で始めず、再生の帯を止めた状態（`–/7`）で出す。再生を押すとデータの印が流れる'
+    - 別のグループの中へ入った状態を sessionStorage に保ってから、もう一度 mount すると、`focus` ではなく保ったグループの中から描く。クエリ文字列の `map-1` は sessionStorage より優先する
+    test: test_normal_when_map_args
 lead: 利用側のページが、要素と Markdown と設定を指定し、要素の中に文書を描く。戻り値で本文の差し替えと片付けができる。
 idempotent: false
-side_effects: '`el` の中身と class を書き換え、記法の操作のイベントを `el` の中に付ける。まとめていない名前の `icon:` があるとき、jsDelivr の Lucide のアイコンのモジュールを名前ごとに `import()` し、読み込めなかった名前だけ同じ URL へ `HEAD` の `fetch` を送信する。`side-toc` がオンで見出しがあるとき、`el` の中を本文の列と右側の目次に分け、見出しの位置を `IntersectionObserver` で確認する。出し方が `hover` のときは、右端の線とパネルの位置を決めるため、`window` の `scroll`・`resize` と、`el` に最も近いスクロールする祖先の要素があればその `scroll` を受け取り、`document.body` の子の追加・削除を `MutationObserver` で確認する。`back-to-top` がオンのとき、`el` の子に先頭へ戻るボタンを配置し、スクロールする場所が画面全体なら `window` の `scroll`、`el` に最も近いスクロールする祖先の要素なら `document` の `scroll`（キャプチャーフェーズ）と、`window` の `resize` を受け取り、`document.body` と `el` の子の追加・削除を `MutationObserver` で確認する。`window` の `beforeprint`・`afterprint`・`hashchange` と、絞り込みのドロワーを開いている間だけ `document` の `pointerdown`・`keydown` を受け取る。図の部品か埋め込んだ HTML があるとき、図の表示する枠と埋め込んだ HTML の大きさを `ResizeObserver` で見、ツールチップを開いている間だけ `document` の `keydown`・`pointerdown` と `window` の `scroll`・`resize` を受け取り、全画面の間だけ `el` の中に `dialog` を配置する。リンク先を持つフロー図のノードの上から図を動かしたとき、次の 1 回の `click` まで `window` の `click`（キャプチャーフェーズ）を受け取る。`diagram-resize` がオンのとき、リサイズハンドルで変えた図の高さを sessionStorage に書き込み、描くたびに読み込み、ダブルクリックで戻すと削除する。操作できる部品の写すボタン・表のコピー・行の URL のコピー・コードブロックのコピー・ファイルツリーのコピーでクリップボードに書き込む。表があるとき、表の大きさと描く先の要素の幅を `ResizeObserver` で見、`animation-timeline` を持たないブラウザでは `window` と文書の中の `scroll` と `window` の `resize` を受け取る。`data-group` を持つタブがあるとき、localStorage の `mdmark-tabs:{group}` を描くたびに読み込み、読者がタブを選ぶと書き込む。そのとき、ページの中の `el` の外にある同じ `group` のタブ群の選択も書き換える。文書に外部ライブラリか拡張のマーカーがあるとき、そのモジュールを読み込む。色分けの対象のコードブロックがあるとき、`syntax.url` の先の core と、使用する言語のモジュールを読み込む。`mermaid` がオンの文書に mermaid のコードブロックがあるとき、`mermaid.url` の先のモジュールを読み込み、描く先の配色の明暗の変化を確認して再描画する。`html-scripts` がオンの文書に範囲の `ts`・`js` があるとき、`html-scripts.url` の先の変換のライブラリを読み込み、範囲ごとに `document.head` へ `script` 要素を 1 つ配置してすぐ削除し、範囲の関数を呼ぶ。`opts.diffSource` を指定したとき、読者が差分を開くと（`opts.diffMode` が `open` なら描いた時点、`blocks` なら描くたびに）取り出し元の `revisions`・`content` を呼び、差分の行を出している間だけミニマップの帯を配置し、スクロール先のスクロールの `scroll` と `window` の `resize` を受け取る。文書にビューのマーカーがあるとき、ビューの部品のモジュールを読み込む。`comments` がオンで `opts.commentStore` を指定したとき、コメントの部品のモジュールを読み込み、`load` を描くたびに 1 回呼び、保存で `save`、読み込みと保存の関数が持つときは吹き出しの修正で `update`・削除で `remove`、`reloadComments` で `load` を呼ぶ。その間は `document` の `selectionchange` を受け取り、コメントのボタン・入力欄・吹き出しを `document.body` に配置する。あわせて本文の列の右に余白の列を配置し、描く先の要素の大きさを `ResizeObserver`、描く先の要素の中の開閉・切り替えを `MutationObserver` で確認する。map の範囲があるとき、図ごとの開閉・中へ入ったグループ・動かした位置・参加者の並び順を sessionStorage に記載し、`map.url_state` が `false` でなければ中へ入ったグループと中だけを描くブロックを `history.replaceState` でクエリ文字列の `map-{図の番号}` に記載する。ノードの大きさの変化を `ResizeObserver` で確認する'
+side_effects: '`el` の中身と class を書き換え、記法の操作のイベントを `el` の中に付ける。まとめていない名前の `icon:` があるとき、jsDelivr の Lucide のアイコンのモジュールを名前ごとに `import()` し、読み込めなかった名前だけ同じ URL へ `HEAD` の `fetch` を送信する。`side-toc` がオンで見出しがあるとき、`el` の中を本文の列と右側の目次に分け、見出しの位置を `IntersectionObserver` で確認する。出し方が `hover` のときは、右端の線とパネルの位置を決めるため、`window` の `scroll`・`resize` と、`el` に最も近いスクロールする祖先の要素があればその `scroll` を受け取り、`document.body` の子の追加・削除を `MutationObserver` で確認する。`back-to-top` がオンのとき、`el` の子に先頭へ戻るボタンを配置し、スクロールする場所が画面全体なら `window` の `scroll`、`el` に最も近いスクロールする祖先の要素なら `document` の `scroll`（キャプチャーフェーズ）と、`window` の `resize` を受け取り、`document.body` と `el` の子の追加・削除を `MutationObserver` で確認する。`window` の `beforeprint`・`afterprint`・`hashchange` と、絞り込みのドロワーを開いている間だけ `document` の `pointerdown`・`keydown` を受け取る。図の部品か埋め込んだ HTML があるとき、図の表示する枠と埋め込んだ HTML の大きさを `ResizeObserver` で見、ツールチップを開いている間だけ `document` の `keydown`・`pointerdown` と `window` の `scroll`・`resize` を受け取り、全画面の間だけ `el` の中に `dialog` を配置する。リンク先を持つフロー図のノードの上から図を動かしたとき、次の 1 回の `click` まで `window` の `click`（キャプチャーフェーズ）を受け取る。`diagram-resize` がオンのとき、リサイズハンドルで変えた図の高さを sessionStorage に書き込み、描くたびに読み込む（ダブルクリックで今の倍率の図の全体が収まる高さを書き込む）。操作できる部品の写すボタン・表のコピー・行の URL のコピー・コードブロックのコピー・ファイルツリーのコピーでクリップボードに書き込む。表があるとき、表の大きさと描く先の要素の幅を `ResizeObserver` で見、`animation-timeline` を持たないブラウザでは `window` と文書の中の `scroll` と `window` の `resize` を受け取る。`data-group` を持つタブがあるとき、localStorage の `mdmark-tabs:{group}` を描くたびに読み込み、読者がタブを選ぶと書き込む。そのとき、ページの中の `el` の外にある同じ `group` のタブ群の選択も書き換える。文書に外部ライブラリか拡張のマーカーがあるとき、そのモジュールを読み込む。色分けの対象のコードブロックがあるとき、`syntax.url` の先の core と、使用する言語のモジュールを読み込む。`mermaid` がオンの文書に mermaid のコードブロックがあるとき、`mermaid.url` の先のモジュールを読み込み、描く先の配色の明暗の変化を確認して再描画する。`html-scripts` がオンの文書に範囲の `ts`・`js` があるとき、`html-scripts.url` の先の変換のライブラリを読み込み、範囲ごとに `document.head` へ `script` 要素を 1 つ配置してすぐ削除し、範囲の関数を呼ぶ。`opts.diffSource` を指定したとき、読者が差分を開くと（`opts.diffMode` が `open` なら描いた時点、`blocks` なら描くたびに）取り出し元の `revisions`・`content` を呼び、差分の行を出している間だけミニマップの帯を配置し、スクロール先のスクロールの `scroll` と `window` の `resize` を受け取る。文書にビューのマーカーがあるとき、ビューの部品のモジュールを読み込む。`comments` がオンで `opts.commentStore` を指定したとき、コメントの部品のモジュールを読み込み、`load` を描くたびに 1 回呼び、保存で `save`、読み込みと保存の関数が持つときは吹き出しの修正で `update`・削除で `remove`、`reloadComments` で `load` を呼ぶ。その間は `document` の `selectionchange` を受け取り、コメントのボタン・入力欄・吹き出しを `document.body` に配置する。あわせて本文の列の右に余白の列を配置し、描く先の要素の大きさを `ResizeObserver`、描く先の要素の中の開閉・切り替えを `MutationObserver` で確認する。map の範囲があるとき、図ごとの開閉・中へ入ったグループ・動かした位置・参加者の並び順を sessionStorage に記載し、`map.url_state` が `false` でなければ中へ入ったグループと中だけを描くブロックを `history.replaceState` でクエリ文字列の `map-{図の番号}` に記載する。ノードの大きさの変化を `ResizeObserver` で確認する。map の部品のモジュール（`dist/map.js`）を読み込む。印の引数が `{"play": "autoplay"}` の図は、画面に入ったかを `IntersectionObserver` で確認し、自動で進めている間は印の `interval` 秒ごとの時計を持つ'
 callers:
   - dev/設計書/シナリオ/単一ユースケース/文書を描く#
   - dev/設計書/シナリオ/単一ユースケース/テーマを上書きする#
@@ -6966,4 +6989,7 @@ constraints:
   - item: map の操作の分け方
     constraint: 構成図のノードは名前の文字の外を押して選び、ドラッグで動かす（4px 未満は押した扱い）。グループはタイトルの行（上端から 36px。ボタンの外）のドラッグで動かし、グループの面と余白のドラッグは図の枠の中をスクロールする。線は 4px 未満で離すと両端の選択、4px 以上で区間の移動。シーケンス図の参加者は名前の文字の外を押して選び、ドラッグで並べ替える。名前の文字は選んでコピーでき、種類の行の文字は選べない。選択・移動・開閉・中へ入る・案内と再生はキーボードでも操作できる
     notes: キーは部品設計。確認ログ『map の構成図のグループをつかむ場所』
+  - item: map の印の引数
+    constraint: 印の引数は shuhei1101/mdmark#451 の資料 A-128 の構成の JSON のオブジェクトで、`title`（図の枠と折りたたみの見出し）・`focus`（最初に入るグループの ID）・`play`（`"autoplay"` で、図が画面に入ったら押さずに再生か案内を始める。動きを減らす設定では始めず止めた帯で出す）・`interval`（自動で進める間隔の秒。正の数。省くと 2）・`collapse`（A-128 の共通の折り畳み。`open`・`title`）だけを読む。知らないキーは無視し、型の合わない値は既定にする（どちらも点検が通知する。型の合わない値は書き方の警告にもする）。最初に入るグループは、クエリ文字列の `map-{図の番号}` → sessionStorage → `focus` の順で決める（無いグループの ID は飛ばす）
+    notes: 記載の警告は文書をHTML文字列にする.ts の制約『map の書き方の誤り』
 test_file: tests/integration/lib/mount.browser.test.ts

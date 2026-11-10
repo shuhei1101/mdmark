@@ -603,7 +603,7 @@ flows:
     summary: 文書の map の範囲の Mermaid と補足を読み込み、補足が指す無い ID・知らないキー・`--` を含む値を、範囲の場所を指すずれにする
     setup:
       - name: map の補足にずれを持つフォルダ
-        description: '`build.include` が該当する `docs/a.md` だけを持ち、3 行目の `<!-- map -->` の範囲に、補足の `notes` のキー `ghost`（Mermaid に無いノード）・トップレベルの知らないキー `layuot`・`walkthroughs[0].text` の値 `a -- b` を持つ範囲と、20 行目にずれの無い map の範囲を持つフォルダ'
+        description: '`build.include` が該当する `docs/a.md` だけを持ち、3 行目の `<!-- map -->` の範囲に、補足の `notes` のキー `ghost`（Mermaid に無いノード）・トップレベルの知らないキー `layuot`・`walkthroughs[0].text` の値 `a -- b` と、印の `{"title": "全体", "mdoe": 1}` を持つ範囲と、20 行目にずれの無い map の範囲を持つフォルダ'
       - name: Mock
         description: 差し替える依存は無い。点検はブラウザを使用しない
     flow: |-
@@ -613,12 +613,12 @@ flows:
         W->>C: mdmark check
         C->>C: 点検する文書の map の範囲の Mermaid と補足を読み込む
         C->>C: 補足のスキーマと、補足が指すノード・線の ID を確認する
-        C-->>W: map のずれの 3 行・終了コード 1
+        C-->>W: map のずれの 4 行・終了コード 1
     expected:
       - 終了コードが 1
-      - '`docs/a.md:3:` で始まる行が `map_unknown_ref`（内容に `notes.ghost` と、ID を Mermaid のノード・線の ID にする修正方法）・`map_unknown_key`（内容に `layuot` と使用できるキーの一覧）・`map_invalid_value`（内容に `walkthroughs[0].text` と、`--` を含めない修正方法）で 1 つずつある'
+      - '`docs/a.md:3:` で始まる行が `map_unknown_ref`（内容に `notes.ghost` と、ID を Mermaid のノード・線の ID にする修正方法）・`map_unknown_key`（内容に `layuot` と使用できるキーの一覧）・`map_invalid_value`（内容に `walkthroughs[0].text` と、`--` を含めない修正方法）で 1 つずつあり、`map_unknown_key` がもう 1 つ（内容に印のキー `mdoe` と、使用できるキー `title`・`focus`・`play`・`interval`・`collapse`）ある'
       - '`docs/a.md:20:` で始まる行が無い'
-      - 最後の行が `ずれ 3 件`
+      - 最後の行が `ずれ 4 件`
       - 設定・索引・文書が変わっていない
     test: test_normal_when_map_data_drift
     refs:
@@ -798,7 +798,7 @@ constraints:
   - item: 重ねた設定ファイルの点検
     constraint: '索引と文書のずれは、インターフェース定義『設定を重ねて読み込む』を `purpose: export` で呼んで重ねた設定で点検する。設定の構造は、重ねた設定ファイルのそれぞれと、`config.applyToExport` によらず端末の設定のファイルがあればその構造も検める。ずれの `file` は『設定を重ねて読み込む』の制約「パスの表示」のパス（今のフォルダからの相対パスか `~` のパス）にする'
   - item: map の点検
-    constraint: '制約「点検する文書」の文書ごとに、map の範囲を文書をHTML文字列にする.ts の制約「map の範囲」と同じ読み込み方で読み込み、制約「map の書き方の誤り」の項目を 1 つにつき 1 件のずれにする。Mermaid の読めない行・閉じの無いブロック・範囲の中の mermaid のブロックと補足の数の誤り・描けない図の種類は `map_invalid`、補足が指す Mermaid に無いノード・線・グループの ID は `map_unknown_ref`、補足の知らないキーと知らない印の引数は `map_unknown_key`、補足のスキーマに合わない値と `--` を含む値は `map_invalid_value`、Mermaid のクラスが設定の `map.kinds` に無いノードは `map_unknown_class`、補足の `layout` の `line` の名前が設定の `map.lines` に無い線は `map_unknown_line` にする（設定に `map` が無いときも同じ）。ファイルは文書の相対パス、場所は Mermaid の行は文書の行、補足の箇所は補足の中の行を文書の行へ置き換えた行、そのほかは map の開きのマーカーの行の番号（1 から）。内容は書き方の警告の項目と同じ文。配置は点検しない。文書の `<!-- features: -map -->` の文書は点検しない。点検はブラウザを使用しない'
+    constraint: '制約「点検する文書」の文書ごとに、map の範囲を文書をHTML文字列にする.ts の制約「map の範囲」と同じ読み込み方で読み込み、制約「map の書き方の誤り」の項目を 1 つにつき 1 件のずれにする。Mermaid の読めない行・閉じの無いブロック・範囲の中の mermaid のブロックと補足の数の誤り・描けない図の種類は `map_invalid`、補足が指す Mermaid に無いノード・線・グループの ID は `map_unknown_ref`、補足の知らないキーと印の JSON のオブジェクトの知らないキーは `map_unknown_key`、補足のスキーマに合わない値・`--` を含む値・JSON として読めない印の引数・型の合わない印の値は `map_invalid_value`、Mermaid のクラスが設定の `map.kinds` に無いノードは `map_unknown_class`、補足の `layout` の `line` の名前が設定の `map.lines` に無い線は `map_unknown_line` にする（設定に `map` が無いときも同じ）。ファイルは文書の相対パス、場所は Mermaid の行は文書の行、補足の箇所は補足の中の行を文書の行へ置き換えた行、そのほかは map の開きのマーカーの行の番号（1 から）。内容は書き方の警告の項目と同じ文。配置は点検しない。文書の `<!-- features: -map -->` の文書は点検しない。点検はブラウザを使用しない'
     notes: '`--text`・`--file` の点検でも同じ種類にする（制約「記法の点検」の `syntax_warning` にしない）'
   - item: map の設定の点検
     constraint: 設定の `map.node_fit`・`map.url_state`・`map.kinds`・`map.lines` は、制約「設定の点検」の Schema で検査し、`node_fit` の知らない値・`url_state` が真偽値でない値・知らない形・模様・太さ・矢じり・色の名前を `schema` のずれにする。`map.kinds` の `icon` が Lucide に無い名前のものは、1 つにつき 1 件の `map_unknown_icon` のずれにする。ファイルは設定ファイル、場所はキーのパス（`map.kinds.store.icon`）、内容は記載した名前と、Lucide のアイコンの名前にする修正方法の 1 文。Lucide の名前の一覧は、外部ライブラリ『lucide』の採用バージョンのパッケージのアイコンの名前を使用する
