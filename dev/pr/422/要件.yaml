@@ -146,10 +146,10 @@ docs:
 scope_out:
   - item: フロントマターの title・tags などの値を、索引・文書の一覧・文書のタイトルに使用すること
     reason: 要望に含まれない（要望は表示の切り替えだけ）
-    plan: to_file
+    plan: '#461'
   - item: 描いた文書の差分のブロックで、フロントマターの変更を示すこと
     reason: 除外した範囲は描いた文書に出ず、要望に含まれない。Markdown の行の差分には今と同じく出る
-    plan: to_file
+    plan: '#462'
   - item: TOML（+++）・JSON のフロントマター
     reason: 要望は YAML のフロントマターで、GitHub の Markdown の表示も YAML だけをフロントマターとして扱う
     plan: none
