@@ -293,7 +293,7 @@ export const startDrag = (options: {
 };
 
 /** 線の区間のうち、点に一番近い区間の番号 */
-const nearestSegment = (
+export const nearestSegment = (
   wire: PlacedWire,
   point: [number, number] | undefined,
 ): number | undefined => {

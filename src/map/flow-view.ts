@@ -8,7 +8,7 @@ import {
 } from "../parts/map.ts";
 import { attachBand, type BandHandle, type BandStep } from "./band.ts";
 import { type MapData, parseMapData } from "./data.ts";
-import { applyWireShifts, startDrag } from "./drag.ts";
+import { applyWireShifts, nearestSegment, startDrag } from "./drag.ts";
 import { type Flowchart, parseFlowchart } from "./flowchart.ts";
 import { layoutMap, type MapLayout, type MapOverride } from "./layout.ts";
 import type { MapArgs } from "./spec.ts";
@@ -408,6 +408,23 @@ export const attachMapFlow = (
         attachments: {},
       });
   };
+  /** 図の中身の倍率と、ポインターの位置の図の中身の座標 */
+  const stageScale = (): number => {
+    const stage = figure.querySelector<HTMLElement>(".mdmark-diagram-stage");
+    if (!stage) return 1;
+    return stage.getBoundingClientRect().width / (stage.offsetWidth || 1) || 1;
+  };
+  const stagePoint = (event: PointerEvent): [number, number] => {
+    const stage = figure.querySelector<HTMLElement>(".mdmark-diagram-stage");
+    const rect = stage?.getBoundingClientRect();
+    const scale = stageScale();
+    return rect
+      ? [
+          (event.clientX - rect.left) / scale,
+          (event.clientY - rect.top) / scale,
+        ]
+      : [0, 0];
+  };
   const onPointerDown = (event: PointerEvent) => {
     if (event.button !== 0) return;
     const target = event.target instanceof Element ? event.target : undefined;
@@ -421,6 +438,8 @@ export const attachMapFlow = (
       event,
       layout: { ...layout, wires: applyWireShifts(layout, state).wires },
       state,
+      scale: stageScale(),
+      pointOf: stagePoint,
       onMove: (next) => {
         state = next;
         refresh();
@@ -445,6 +464,20 @@ export const attachMapFlow = (
     else if (state.entered !== undefined)
       change({ ...state, entered: parentOf(chart, state.entered) });
   };
+  // 線の区間の上では、区間を動かせる向きのポインターにする（横の区間は上下、縦の区間は左右）
+  const onPointerMove = (event: PointerEvent) => {
+    const target = event.target instanceof Element ? event.target : undefined;
+    const hit = target?.closest<SVGPathElement>(".map-wire-hit[data-wire]");
+    if (!hit) return;
+    const wire = applyWireShifts(layout, state).wires.find(
+      (item) => item.id === hit.dataset.wire,
+    );
+    const segment = wire && nearestSegment(wire, stagePoint(event));
+    const a = segment === undefined ? undefined : wire?.points[segment];
+    const b = segment === undefined ? undefined : wire?.points[segment + 1];
+    hit.style.cursor =
+      a && b ? (a[1] === b[1] ? "ns-resize" : "ew-resize") : "";
+  };
   const onPointerOver = (event: PointerEvent) => {
     const target = event.target instanceof Element ? event.target : undefined;
     const id = target?.closest(".map-wire-hit")?.getAttribute("data-wire");
@@ -463,6 +496,7 @@ export const attachMapFlow = (
   figure.addEventListener("click", onClick);
   figure.addEventListener("pointerdown", onPointerDown);
   figure.addEventListener("keydown", onKeyDown);
+  figure.addEventListener("pointermove", onPointerMove);
   figure.addEventListener("pointerover", onPointerOver);
   figure.addEventListener("pointerout", onPointerOut);
 
@@ -524,6 +558,7 @@ export const attachMapFlow = (
       figure.removeEventListener("click", onClick);
       figure.removeEventListener("pointerdown", onPointerDown);
       figure.removeEventListener("keydown", onKeyDown);
+      figure.removeEventListener("pointermove", onPointerMove);
       figure.removeEventListener("pointerover", onPointerOver);
       figure.removeEventListener("pointerout", onPointerOut);
     },
