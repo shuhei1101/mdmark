@@ -93,7 +93,7 @@ args:
   type: オブジェクトの配列
   required: false
   default: '[]'
-  description: データの印を流す線（`{ wire, direction, color, shape }`。`direction` は `forward`・`backward`・`both`、`shape` は `circle`・`square`・`diamond`）。指定している間、元から先へ繰り返し流す。`color` を省くと線の色
+  description: データの印を流す線（`{ wire, direction, color, shape }`。`direction` は `forward`・`backward`・`both`、`shape` は `circle`・`square`・`diamond`）。指定している間、元から先へ繰り返し流す。`color` は色の名前か `line`・`source`・`target` で、省く・知らない値は線の色
 - name: dragging
   type: 文字列
   required: false

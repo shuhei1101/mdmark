@@ -349,6 +349,12 @@ functions:
     condition: '`entered: read` で選択が無い'
     mock: なし
     expected: 外へ戻り、`entered` が `lib`
+  - name: test_attach_map_flow_when_packets
+    case: 正常
+    summary: 選んだ線と指した線の印
+    condition: '`mount` を押して選ぶ。選択を解いてから `marker->data` の線を指す'
+    mock: なし
+    expected: 選んでいる間は `mount` の線の上に `.map-packet` があり、選択を解くと無くなる。線を指している間は `marker->data` の上にだけ `.map-packet` があり、離すと無くなる
 - name: attachMapSequence
   title: シーケンス図を付ける
   kind: 関数
@@ -391,6 +397,12 @@ functions:
     condition: '`loop` のタブの名前を押す'
     mock: '`writeMapState`'
     expected: '`entered` が `1` で、`loop` の中の参加者だけを描く'
+  - name: test_attach_map_sequence_when_packets
+    case: 正常
+    summary: 選んだ参加者の印
+    condition: '`mount` の参加者の箱の名前の外を押す'
+    mock: なし
+    expected: '`mount` が送る・受けるメッセージの線の上に `.map-packet` があり、ほかのメッセージの線の上には無い'
 - name: readMapState
   title: 状態を読む
   kind: 関数
@@ -615,6 +627,18 @@ functions:
     condition: '`entered: read`'
     mock: なし
     expected: '`read` の外の要素が `map-faded` を持ち、`read` のタイトルが `button` でない'
+  - name: test_render_map_flow_when_packets
+    case: 正常
+    summary: データの印
+    condition: '`mount->marker` に `{ direction: both, color: orange, shape: square }`、`marker->data` に `{ direction: forward }` の印'
+    mock: なし
+    expected: '`mount->marker` の印は四角でオレンジの塗りを持ち、逆向き（`keyPoints="1;0"`）を含む両方向へ流れる。`marker->data` の印は丸で線の色、逆向きを含まない。どの印も `animateMotion` を `repeatCount="indefinite"` で持つ'
+  - name: test_render_map_flow_when_unknown_color
+    case: 異常
+    summary: 知らない色の名前
+    condition: '印の `color` が `red;x:y`、グループの色が `blue;x`'
+    mock: なし
+    expected: 印が線の色で塗られ、グループが色を持たず、出力に `;x:y` と `;x` が無い
 - name: renderMapSequence
   title: mapのシーケンス図のHTML
   kind: 関数
