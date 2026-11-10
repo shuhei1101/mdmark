@@ -57,7 +57,7 @@ use_cases:
   - kind: single
     scenario: dev/設計書/シナリオ/単一ユースケース/Mermaidと補足で図を描く.yaml
     impact: new
-    detail: map の範囲の Mermaid と補足を、入れ子のグループを自動配置した図に描き、補足の layout で配置と見た目を上書きする。構成図の 3 層とシーケンス図も描く。印の引数は A-128 の構成の JSON のオブジェクトで、知らないキーは無視して点検が通知する
+    detail: map の範囲の Mermaid と補足を、入れ子のグループを自動配置した図に描き、補足の layout で配置と見た目を上書きする。構成図の 3 層とシーケンス図も描く。印の引数と補足は A-128 の構成の JSON のオブジェクトで、知らないキーは無視して点検が通知する
     depends_on:
       - dev/設計書/シナリオ/複合ユースケース/Mermaidと補足で書いた図を辿って読む.yaml
   - kind: single
@@ -111,7 +111,7 @@ docs:
     status: done
   - page: docs/リファレンス/記法.md
     new: false
-    change: map のマーカーと引数・補足のキー・マーカーに対応しない表示での見え方を追加する（見出しのアンカーは `#map`。D-347 で補足の 1 行目が `map-data` でなくなったら、用語集の「補足」の別名も修正する）
+    change: map のマーカーと引数・補足の JSON のキー・マーカーに対応しない表示での見え方を追加する（見出しのアンカーは `#map`）
     status: todo
   - page: docs/リファレンス/構成図の決まり.md
     new: false
@@ -123,8 +123,10 @@ docs:
     status: done
   - page: docs/リファレンス/用語集.md
     new: false
-    change: map・補足・自動配置・中へ入る・開閉・巡回・シーケンスの再生の用語を追加する
-    status: done
+    change: map・補足・自動配置・中へ入る・開閉・巡回・シーケンスの再生の用語を追加する（補足は HTML コメントに記載する JSON のオブジェクト）
+    status: todo
+    updated_by: planner
+    updated_at: '2026-11-10T15:45:13.424108+00:00'
   - page: guide/index.yaml
     new: false
     change: 使い方集の索引に『Mermaidと補足で図を描く』を追加し、diagrams・architecture-style の行の概要を map に合わせる
