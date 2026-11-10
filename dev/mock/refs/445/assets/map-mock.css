@@ -431,3 +431,25 @@
 .map-figure .mdmark-diagram-node .mdmark-diagram-node-kind {
   user-select: none;
 }
+
+/* 押して選べる・動かせる場所は全て持ち手のポインター。選んでコピーできる名前の文字だけ文字のポインター */
+.map-figure .map-selectable,
+.map-figure .map-participant,
+.map-figure .mdmark-diagram-node .mdmark-diagram-node-kind {
+  cursor: grab;
+}
+.map-figure :is(.map-selectable, .map-participant) .mdmark-diagram-node-name {
+  cursor: text;
+}
+/* 中だけを見ているブロックのタブの名前は押せない */
+.map-seq-fragment-title.is-current {
+  padding: 1px 6px;
+  cursor: default;
+}
+.map-seq-fragment-title.is-current:hover {
+  text-decoration: none;
+}
+/* map の図の題の行には、範囲と更新日を出さない（中へ入ったグループやブロックは枠とタブで分かる） */
+.map-figure .mdmark-diagram-meta {
+  display: none;
+}

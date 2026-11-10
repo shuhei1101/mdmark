@@ -1254,10 +1254,10 @@ const sequenceRows = (sequence, view = { collapsed: new Set(), enter: undefined 
   const scope = view.enter === undefined ? undefined : fragments[view.enter];
   const contains = (outer, inner) => outer.start <= inner.start && inner.end <= outer.end && outer.depth < inner.depth;
   // 閉じたブロックの中のブロックは出さない。中だけを見ているときは、そのブロックの中のブロックだけを出す
+  // 中だけを見ているブロックも、枠とタブを残す（構成図の中へ入ったグループと同じく、外枠が見える）
   const shown = (fragment, at) =>
-    at !== view.enter &&
     fragment.end > fragment.start &&
-    (!scope || contains(scope, fragment)) &&
+    (!scope || at === view.enter || contains(scope, fragment)) &&
     ![...view.collapsed].some((closed) => closed !== at && fragments[closed] && contains(fragments[closed], fragment));
   const closedAt = (index) => [...view.collapsed].find((at) => fragments[at] && shown(fragments[at], at) && fragments[at].start <= index && index < fragments[at].end);
   const rows = [];
@@ -1290,7 +1290,7 @@ const sequenceRows = (sequence, view = { collapsed: new Set(), enter: undefined 
 };
 
 /** 複合フラグメントの枠・注記・活性化の帯・矢印の種類・番号を、描いたシーケンス図の上に足す */
-const decorateSequence = ({ stage, svg, rows, rowWires, rowLabels, wires, messageLabels, visible, heads, sequence, onToggle, onEnter }) => {
+const decorateSequence = ({ stage, svg, rows, rowWires, rowLabels, wires, messageLabels, visible, heads, sequence, enter, onToggle, onEnter }) => {
   const rowY = (at) => SEQ_ROW.firstY + at * SEQ_ROW.height;
   const columnX = (id) => {
     const head = heads(id);
@@ -1321,6 +1321,14 @@ const decorateSequence = ({ stage, svg, rows, rowWires, rowLabels, wires, messag
     toggle.setAttribute("aria-label", `${fragment.kind}「${titleOf(fragment)}」を${expanded ? "閉じる" : "開く"}`);
     toggle.innerHTML = icon(expanded ? "collapse" : "expand");
     toggle.addEventListener("click", (event) => onToggle(at, event.shiftKey));
+    // 中だけを見ているブロックのタブは、開閉の山形を出さず、名前も押せない文字にする（構成図の今入っているグループと同じ）
+    if (at === enter) {
+      const current = document.createElement("span");
+      current.className = "map-seq-fragment-title is-current";
+      current.innerHTML = `${fragment.kind === "rect" ? "" : `<b>${fragment.kind}</b> `}${titleOf(fragment)}`;
+      tab.append(current);
+      return tab;
+    }
     const title = document.createElement("button");
     title.type = "button";
     title.className = "map-seq-fragment-title";
@@ -1523,6 +1531,7 @@ export const createSequence = (host, spec, kinds, onStep) => {
     const wires = sequence.messages.map((_, index) => rowWires[rowOf.get(index)]);
     const messageLabels = sequence.messages.map((_, index) => rowLabels[rowOf.get(index)]);
     decorateSequence({
+      enter: state.enter,
       stage,
       svg,
       rows,
