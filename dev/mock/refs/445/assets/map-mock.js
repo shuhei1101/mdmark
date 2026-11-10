@@ -492,6 +492,8 @@ export const createMap = (host, spec, initial = {}) => {
   const applyWireShifts = (layout) => {
     const rectOf = (id) => layout.leaves.find((leaf) => leaf.id === id);
     for (const edge of layout.edges) {
+      // ずらしは、自動配置の点の数と区間の番号に対して記録する
+      edge.rawCount = edge.points.length;
       const shift = state.wireShifts[edge.id];
       if (!shift) continue;
       if (shift.count !== edge.points.length) {
@@ -659,11 +661,17 @@ export const createMap = (host, spec, initial = {}) => {
     event.preventDefault();
     const scale = scaleOf(stage);
     const start = segment.horizontal ? event.clientY : event.clientX;
-    const shift = state.wireShifts[edge.id] ?? { count: edge.points.length, segments: {} };
+    const startX = event.clientX;
+    const startY = event.clientY;
+    const shift = state.wireShifts[edge.id] ?? { count: edge.rawCount ?? edge.points.length, segments: {} };
     const base = shift.segments[segment.index] ?? 0;
     let frame;
-    state.dragging = true;
+    let moved = false;
     const move = (next) => {
+      // 4px 動くまでは押した扱い（線を押して両端のノードを選ぶ）
+      if (!moved && Math.hypot(next.clientX - startX, next.clientY - startY) < 4) return;
+      moved = true;
+      state.dragging = true;
       const delta = ((segment.horizontal ? next.clientY : next.clientX) - start) / scale;
       shift.segments[segment.index] = Math.round(base + delta);
       state.wireShifts[edge.id] = shift;
@@ -673,11 +681,18 @@ export const createMap = (host, spec, initial = {}) => {
     const up = () => {
       document.removeEventListener("pointermove", move);
       state.dragging = false;
+      if (!moved) selectEnds([edge.from, edge.to]);
       save();
       render();
     };
     document.addEventListener("pointermove", move);
     document.addEventListener("pointerup", up, { once: true });
+  };
+
+  /** 線を押したとき: 両端のノードがどちらも選ばれていれば両方を解き、そうでなければ両方を選ぶ（シーケンス図のメッセージの線も同じ） */
+  const selectEnds = (ids) => {
+    if (ids.every((id) => state.selected.has(id))) for (const id of ids) state.selected.delete(id);
+    else for (const id of ids) state.selected.add(id);
   };
 
   /**
@@ -1653,6 +1668,13 @@ export const createSequence = (host, spec, kinds, onStep) => {
           wire.removeAttribute("id");
         }
         tip.hidden = true;
+      });
+      // メッセージの線を押すと、送り手と受け手を選ぶ（どちらも選ばれていれば両方を解く）
+      hit.addEventListener("click", () => {
+        const ids = [message.from, message.to];
+        if (ids.every((id) => state.selected.has(id))) for (const id of ids) state.selected.delete(id);
+        else for (const id of ids) state.selected.add(id);
+        render();
       });
       svg.append(hit);
       // 構成図の上で再生している今のメッセージ: 参加者を選んでいないときだけ、ほかのメッセージと参加者を薄くする（選んだ参加者の強調を優先する）
