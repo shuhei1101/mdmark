@@ -45,7 +45,7 @@ export const Focused: Story = {
 export const NodeFitWidth: Story = {
   name: "NodeFitWidth",
   parameters: { server: { id: "map-flow" } },
-  args: { node_fit: "width" },
+  args: { node_fit: "width", source: "long" },
 };
 
 export const WireReattached: Story = {

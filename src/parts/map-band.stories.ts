@@ -27,5 +27,11 @@ export const Auto: Story = {
 export const Playback: Story = {
   name: "Playback",
   parameters: { server: { id: "map-band" } },
-  args: { mode: "playback", index: 2, total: 7, title: "mount を呼ぶ" },
+  args: { mode: "playback", index: 2, total: 9, title: "mount を呼ぶ" },
+};
+
+export const Narrow: Story = {
+  name: "Narrow",
+  parameters: { server: { id: "map-band" } },
+  args: { index: 1, title: "長い手順のタイトルで、1 行目に収まらない" },
 };

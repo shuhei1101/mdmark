@@ -1072,6 +1072,12 @@ const jsonObject = <T>(value: unknown): T | undefined =>
       ? (JSON.parse(value) as T)
       : undefined;
 
+/** map の構成図の、名前の長いノードを持つ見本 */
+const MAP_FLOW_LONG = MAP_FLOW.replace(
+  'layout["入れ子のグループの自動配置"]',
+  'layout["入れ子のグループを内側から順に自動配置して、グループの大きさを決める"]',
+);
+
 /** map の部品を図の枠に入れる */
 const mapFrame = (
   title: string,
@@ -1089,7 +1095,7 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
     const collapsed = jsonList(args.collapsed);
     const { data } = parseMapData(MAP_DATA);
     const layout = layoutMap(
-      parseFlowchart(MAP_FLOW),
+      parseFlowchart(args.source === "long" ? MAP_FLOW_LONG : MAP_FLOW),
       { collapsed, entered },
       jsonObject(args.ends) === undefined
         ? {}
@@ -1147,8 +1153,11 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
           : MAP_SEQUENCE,
     );
     const collapsed = jsonList(args.collapsed).map(Number);
+    // 問い合わせの値は数に読み替わって届く
     const entered =
-      typeof args.entered === "string" ? Number(args.entered) : undefined;
+      args.entered === undefined || args.entered === ""
+        ? undefined
+        : Number(args.entered);
     const rows = sequenceRows(sequence, {
       order:
         jsonList(args.order).length > 0
