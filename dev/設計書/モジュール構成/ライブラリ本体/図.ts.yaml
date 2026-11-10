@@ -749,7 +749,7 @@ functions:
         summary: 'リサイズハンドルを配置し、モーダルと `resizable: false` では配置しない'
         condition: '`resizable` を省いた枚、`resizable: false` の枚、`modal: true` の枚'
         mock: なし
-        expected: 省いた枚だけ `div.mdmark-diagram-resize` があり、`role="separator"`・`aria-orientation="horizontal"`・`tabindex="0"`・`aria-label="「{題名}」の表示の高さ"`・`grip-horizontal` のアイコンを持つ
+        expected: 省いた枚だけ `div.mdmark-diagram-resize` があり、`role="separator"`・`aria-orientation="horizontal"`・`tabindex="0"`・`aria-label="「{題名}」の表示の高さ"`・`equal` のアイコンを持つ
       - name: test_render_diagram_frame_when_no_legend
         case: 正常
         summary: 凡例の項目が空なら凡例を隠し、タイトルを留めない図にマーカーを付ける
