@@ -304,6 +304,10 @@ export const createMap = (host, spec, initial = {}) => {
     sizes: {},
     /** 押して選んだノード。選んだノードとつながる線・相手のノードを残し、ほかを薄くする */
     selected: new Set(),
+    /** 読者がドラッグで動かしたノードの位置（親のグループの中身の左上からの座標）と、動かした線の区間（線の ID ごとの点の数と、区間の番号ごとのずらし） */
+    positions: saved.positions ?? {},
+    wireShifts: saved.wireShifts ?? {},
+    dragging: false,
   };
   /** 長い名前のノードの広げ方（設定の map.node_fit）: height（既定。幅は見積もりのまま高さを増やす）・width（上限まで幅を広げてから高さを増やす） */
   const fit = config.node_fit ?? "height";
@@ -312,7 +316,7 @@ export const createMap = (host, spec, initial = {}) => {
   let timer;
 
   const save = () => {
-    sessionStorage.setItem(storageKey, JSON.stringify({ enter: state.enter, collapsed: [...state.collapsed] }));
+    sessionStorage.setItem(storageKey, JSON.stringify({ enter: state.enter, collapsed: [...state.collapsed], positions: state.positions, wireShifts: state.wireShifts }));
   };
 
   const isUnder = (id, ancestor) => {
@@ -412,13 +416,13 @@ export const createMap = (host, spec, initial = {}) => {
     return lines.map((item) => `${labelOf(item.from)} → ${labelOf(item.to)}：${notes[item.id]}`).join("\n");
   };
 
-  /** ノードの選択: 1 つならそのノードの線と相手、2 つ以上なら選んだノードどうしの線とその両端を残す */
+  /** ノードの選択: 選んだノードだけを残し、1 つならそのノードの線、2 つ以上なら選んだノードどうしの線を残す（線の相手のノードは薄くする。シーケンス図の参加者と同じ） */
   const selection = (layout) => {
     if (state.selected.size === 0) return undefined;
     const edges = layout.edges.filter((edge) =>
       state.selected.size === 1 ? state.selected.has(edge.from) || state.selected.has(edge.to) : state.selected.has(edge.from) && state.selected.has(edge.to),
     );
-    return { nodes: new Set([...state.selected, ...edges.flatMap((edge) => [edge.from, edge.to])]), edges: new Set(edges.map((edge) => edge.id)) };
+    return { nodes: new Set(state.selected), edges: new Set(edges.map((edge) => edge.id)) };
   };
 
   const highlighted = () => {
@@ -447,7 +451,9 @@ export const createMap = (host, spec, initial = {}) => {
     const before = positionsOf();
     const overrides = { ...(spec.data.layout ?? {}) };
     for (const [id, size] of Object.entries(state.sizes)) overrides[id] = { ...overrides[id], size };
+    for (const [id, pos] of Object.entries(state.positions)) overrides[id] = { ...overrides[id], pos };
     const layout = layoutMap(chart, { enter: state.enter, collapsed: [...state.collapsed] }, overrides);
+    applyWireShifts(layout);
     host.replaceChildren();
     mount(host, { markdown: `<!-- flow -->\n\n\`\`\`json\n${JSON.stringify(toFlowDefinition(layout))}\n\`\`\`\n\n<!-- /flow -->\n` });
     const figure = host.querySelector("figure.mdmark-diagram");
@@ -473,6 +479,120 @@ export const createMap = (host, spec, initial = {}) => {
       return;
     }
     revealHot(viewport, stage, layout);
+  };
+
+  /** 動かした線の区間を、線の点に当てる。点の数が変わった線（配置し直して経路が変わった線）のずらしは捨てる */
+  const applyWireShifts = (layout) => {
+    for (const edge of layout.edges) {
+      const shift = state.wireShifts[edge.id];
+      if (!shift) continue;
+      if (shift.count !== edge.points.length) {
+        delete state.wireShifts[edge.id];
+        continue;
+      }
+      for (const [index, delta] of Object.entries(shift.segments)) {
+        const a = edge.points[Number(index)];
+        const b = edge.points[Number(index) + 1];
+        const axis = a[1] === b[1] ? 1 : 0;
+        a[axis] += delta;
+        b[axis] += delta;
+      }
+    }
+  };
+
+  /** 今の倍率（図の中身の座標とポインターの座標の比） */
+  const scaleOf = (stage) => Number(/scale\(([\d.]+)\)/.exec(stage.style.transform)?.[1] ?? 1);
+
+  /**
+   * ノードのドラッグ: 押したまま動かすと、ノードを親のグループの中で動かし、グループは中身に合わせて広がる。
+   * ほかのノード・グループとの間が 16px より狭くなる位置へは動かさない。4px 動くまでは押した扱い（選択）にする
+   */
+  const startNodeDrag = (event, stage, layout, leaf, element) => {
+    const startX = event.clientX;
+    const startY = event.clientY;
+    const scale = scaleOf(stage);
+    const parent = [...leaf.ancestors].reverse().map((id) => layout.boxes.find((box) => box.id === id)).find(Boolean);
+    const origin = parent ? { x: parent.x + 24, y: parent.y + 24 + 36 } : { x: 24, y: 24 };
+    const siblings = [...layout.leaves.filter((item) => item.id !== leaf.id), ...layout.boxes.filter((box) => !leaf.ancestors.includes(box.id))].filter((item) => {
+      const itemParent = [...(item.ancestors ?? [])].reverse().find((id) => layout.boxes.some((box) => box.id === id));
+      return itemParent === parent?.id;
+    });
+    let moved = false;
+    let frame;
+    const move = (next) => {
+      const dx = (next.clientX - startX) / scale;
+      const dy = (next.clientY - startY) / scale;
+      if (!moved && Math.hypot(dx, dy) < 4) return;
+      moved = true;
+      state.dragging = true;
+      element.classList.add("is-dragging");
+      const x = leaf.x + dx;
+      const y = leaf.y + dy;
+      const gap = 16;
+      const hit = siblings.some((item) => x < item.x + item.w + gap && item.x < x + leaf.w + gap && y < item.y + item.h + gap && item.y < y + leaf.h + gap);
+      if (hit) return;
+      state.positions[leaf.id] = { x: Math.round(x - origin.x), y: Math.round(y - origin.y) };
+      cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(render);
+    };
+    const up = () => {
+      document.removeEventListener("pointermove", move);
+      if (moved) {
+        state.dragging = false;
+        // ドラッグの後のクリックで選択を切り替えない
+        suppressClick = true;
+        save();
+        render();
+      }
+    };
+    document.addEventListener("pointermove", move);
+    document.addEventListener("pointerup", up, { once: true });
+  };
+  let suppressClick = false;
+
+  /**
+   * 線の区間のドラッグ: 折れ線の両端以外の区間を押したまま、区間と直角の向きへ動かす（横の区間は上下、縦の区間は左右）。
+   * 両端の区間はノードにつながるため動かさない
+   */
+  const innerSegment = (edge, point) => {
+    let best;
+    for (let index = 1; index < edge.points.length - 2; index += 1) {
+      const [a, b] = [edge.points[index], edge.points[index + 1]];
+      const horizontal = a[1] === b[1];
+      const inRange = horizontal ? point[0] >= Math.min(a[0], b[0]) - 4 && point[0] <= Math.max(a[0], b[0]) + 4 : point[1] >= Math.min(a[1], b[1]) - 4 && point[1] <= Math.max(a[1], b[1]) + 4;
+      const distance = horizontal ? Math.abs(point[1] - a[1]) : Math.abs(point[0] - a[0]);
+      if (inRange && distance <= 10 && (!best || distance < best.distance)) best = { index, horizontal, distance };
+    }
+    return best;
+  };
+  const stagePoint = (stage, event) => {
+    const rect = stage.getBoundingClientRect();
+    const scale = scaleOf(stage);
+    return [(event.clientX - rect.left) / scale, (event.clientY - rect.top) / scale];
+  };
+  const startWireDrag = (event, stage, edge, segment) => {
+    event.preventDefault();
+    const scale = scaleOf(stage);
+    const start = segment.horizontal ? event.clientY : event.clientX;
+    const shift = state.wireShifts[edge.id] ?? { count: edge.points.length, segments: {} };
+    const base = shift.segments[segment.index] ?? 0;
+    let frame;
+    state.dragging = true;
+    const move = (next) => {
+      const delta = ((segment.horizontal ? next.clientY : next.clientX) - start) / scale;
+      shift.segments[segment.index] = Math.round(base + delta);
+      state.wireShifts[edge.id] = shift;
+      cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(render);
+    };
+    const up = () => {
+      document.removeEventListener("pointermove", move);
+      state.dragging = false;
+      save();
+      render();
+    };
+    document.addEventListener("pointermove", move);
+    document.addEventListener("pointerup", up, { once: true });
   };
 
   /**
@@ -602,12 +722,14 @@ export const createMap = (host, spec, initial = {}) => {
 
   /** ノードとグループを前の位置から今の位置へ動かし、線は動き終えてから出す */
   const animateFrom = (stage, before) => {
-    if (reduced || before.size === 0) return;
+    if (reduced || before.size === 0 || state.dragging) return;
     const wires = stage.querySelector(".mdmark-diagram-wires");
+    let moved = false;
     for (const element of stage.querySelectorAll("[data-node], [data-group]")) {
       const old = before.get(element.dataset.node ?? element.dataset.group);
       if (!old) {
         element.animate([{ opacity: 0 }, { opacity: 1 }], { duration: MOVE_MS, easing: "ease-out" });
+        moved = true;
         continue;
       }
       const dx = old.x - element.offsetLeft;
@@ -615,13 +737,15 @@ export const createMap = (host, spec, initial = {}) => {
       const sx = old.w / element.offsetWidth;
       const sy = old.h / element.offsetHeight;
       if (dx === 0 && dy === 0 && sx === 1 && sy === 1) continue;
+      moved = true;
       element.style.transformOrigin = "0 0";
       element.animate(
         [{ transform: `translate(${dx}px, ${dy}px) scale(${sx}, ${sy})` }, { transform: "none" }],
         { duration: MOVE_MS, easing: "ease-in-out" },
       );
     }
-    wires.animate([{ opacity: 0 }, { opacity: 0, offset: 0.6 }, { opacity: 1 }], { duration: MOVE_MS * 1.6 });
+    // 線は、ノードとグループが動いたときだけ動き終えてから出す（案内・再生の手順を進めるだけのときは線を消さず、強調が途切れない）
+    if (moved) wires.animate([{ opacity: 0 }, { opacity: 0, offset: 0.6 }, { opacity: 1 }], { duration: MOVE_MS * 1.6 });
   };
 
   /** 入れ子のグループ: 図の線とノードの下に、色の面と、開閉の山形と、タイトルを置く */
@@ -701,10 +825,20 @@ export const createMap = (host, spec, initial = {}) => {
       element.classList.add("map-selectable");
       // 選んでいるかは data-selected に持つ（ノードは中に i のボタンを持つため、ボタンの役割は付けない。キーボードでの選び方は部品設計で決める）
       element.toggleAttribute("data-selected", state.selected.has(leaf.id));
-      element.title = "押すと、このノードとつながる線と相手のノードだけを残す";
+      element.title = "押すと、このノードとつながる線だけを残す。ドラッグで動かす";
+      element.addEventListener("pointerdown", (event) => {
+        if (event.button !== 0 || event.target.closest("button")) return;
+        // 図の枠のドラッグ（図を動かす）に渡さない
+        event.stopPropagation();
+        startNodeDrag(event, stage, layout, leaf, element);
+      });
       element.addEventListener("click", (event) => {
-        // ノードの中のボタン（i・開閉の山形）を押したときは選ばない
+        // ノードの中のボタン（i・開閉の山形）を押したときと、ドラッグした後は選ばない
         if (event.target.closest("button")) return;
+        if (suppressClick) {
+          suppressClick = false;
+          return;
+        }
         if (state.selected.has(leaf.id)) state.selected.delete(leaf.id);
         else state.selected.add(leaf.id);
         render();
@@ -771,7 +905,17 @@ export const createMap = (host, spec, initial = {}) => {
         tip.textContent = wireTip(edge);
         tip.hidden = tip.textContent === "";
       });
+      hit.addEventListener("pointerdown", (event) => {
+        if (event.button !== 0) return;
+        const segment = innerSegment(edge, stagePoint(stage, event));
+        if (!segment) return;
+        event.stopPropagation();
+        startWireDrag(event, stage, edge, segment);
+      });
       hit.addEventListener("pointermove", (event) => {
+        // 動かせる区間の上では、動かせる向きのポインターにする
+        const segment = innerSegment(edge, stagePoint(stage, event));
+        hit.style.cursor = segment ? (segment.horizontal ? "ns-resize" : "ew-resize") : "";
         const rect = box.getBoundingClientRect();
         // 図の枠の右端と下端からはみ出さないよう、ポインターの左上へ回す
         const x = event.clientX - rect.left + 12;
@@ -813,15 +957,18 @@ export const createMap = (host, spec, initial = {}) => {
         save();
         render();
       }),
-      // ノードを選んだときだけ押せる「ノードの選択を元に戻す」（シーケンス図の「元に戻す」と同じアイコン）
+      // ノードを選んだか、ノード・線を動かしたときだけ押せる「配置と選択を元に戻す」（シーケンス図の「元に戻す」と同じアイコン）
       toolButton(
         "reset",
-        "ノードの選択を元に戻す",
+        "配置と選択を元に戻す",
         () => {
           state.selected.clear();
+          state.positions = {};
+          state.wireShifts = {};
+          save();
           render();
         },
-        state.selected.size ? {} : { disabled: "" },
+        state.selected.size || Object.keys(state.positions).length || Object.keys(state.wireShifts).length ? {} : { disabled: "" },
       ),
     );
     figure.querySelector(".mdmark-diagram-tools").prepend(group);
@@ -1016,23 +1163,48 @@ const keepSequenceScale = (host) => {
  * 行は今のシーケンス図の部品の行の高さ（52px）で並ぶ。見出しと注記の行は、部品には空のメッセージとして渡し、描いた後に隠す
  */
 const SEQ_ROW = { firstY: 116, height: 52 };
-const sequenceRows = (sequence) => {
+const sequenceRows = (sequence, view = { collapsed: new Set(), enter: undefined }) => {
+  const fragments = sequence.fragments;
+  const scope = view.enter === undefined ? undefined : fragments[view.enter];
+  const contains = (outer, inner) => outer.start <= inner.start && inner.end <= outer.end && outer.depth < inner.depth;
+  // 閉じたブロックの中のブロックは出さない。中だけを見ているときは、そのブロックの中のブロックだけを出す
+  const shown = (fragment, at) =>
+    at !== view.enter &&
+    fragment.end > fragment.start &&
+    (!scope || contains(scope, fragment)) &&
+    ![...view.collapsed].some((closed) => closed !== at && fragments[closed] && contains(fragments[closed], fragment));
+  const closedAt = (index) => [...view.collapsed].find((at) => fragments[at] && shown(fragments[at], at) && fragments[at].start <= index && index < fragments[at].end);
   const rows = [];
-  sequence.messages.forEach((_, index) => {
-    for (const note of sequence.notes.filter((item) => item.after === index)) rows.push({ note });
-    for (const fragment of sequence.fragments) {
-      for (const [at, section] of fragment.sections.entries()) {
-        if (section.start === index && (at > 0 || fragment.end > fragment.start)) rows.push({ fragment, section: at });
+  const first = scope ? scope.start : 0;
+  const last = scope ? scope.end : sequence.messages.length;
+  for (let index = first; index < last; index += 1) {
+    if (closedAt(index) === undefined) for (const note of sequence.notes.filter((item) => item.after === index)) rows.push({ note });
+    const starting = fragments.map((fragment, at) => ({ fragment, at })).filter(({ fragment, at }) => fragment.start === index && shown(fragment, at)).sort((x, y) => x.fragment.depth - y.fragment.depth);
+    let closed = false;
+    for (const { fragment, at } of starting) {
+      if (view.collapsed.has(at)) {
+        rows.push({ collapsed: at });
+        closed = true;
+        break;
       }
+      rows.push({ fragment, fragmentAt: at, section: 0 });
     }
-    rows.push({ message: index });
-  });
-  for (const note of sequence.notes.filter((item) => item.after === sequence.messages.length)) rows.push({ note });
+    if (!closed && closedAt(index) === undefined) {
+      fragments.forEach((fragment, at) => {
+        if (!shown(fragment, at) || view.collapsed.has(at)) return;
+        fragment.sections.forEach((section, number) => {
+          if (number > 0 && section.start === index) rows.push({ fragment, fragmentAt: at, section: number });
+        });
+      });
+    }
+    if (closedAt(index) === undefined) rows.push({ message: index });
+  }
+  if (!scope) for (const note of sequence.notes.filter((item) => item.after === sequence.messages.length)) rows.push({ note });
   return rows;
 };
 
 /** 複合フラグメントの枠・注記・活性化の帯・矢印の種類・番号を、描いたシーケンス図の上に足す */
-const decorateSequence = ({ stage, svg, rows, rowWires, rowLabels, wires, messageLabels, visible, heads, sequence }) => {
+const decorateSequence = ({ stage, svg, rows, rowWires, rowLabels, wires, messageLabels, visible, heads, sequence, blockTitles, enter, onToggle, onEnter }) => {
   const rowY = (at) => SEQ_ROW.firstY + at * SEQ_ROW.height;
   const columnX = (id) => {
     const head = heads(id);
@@ -1048,31 +1220,69 @@ const decorateSequence = ({ stage, svg, rows, rowWires, rowLabels, wires, messag
   const under = document.createElementNS(SVG_NS, "g");
   under.setAttribute("class", "map-seq-under");
   svg.prepend(under);
-  // 複合フラグメント: 関わる参加者の列を囲み、左上に種類とラベルのタブ、else・and・option の区間を破線で分ける
-  for (const fragment of sequence.fragments) {
-    if (fragment.end <= fragment.start) continue;
-    const inside = sequence.messages.slice(fragment.start, fragment.end).flatMap((message) => [message.from, message.to]);
+  // 複合フラグメント: 関わる参加者の列を囲み、左上に開閉の山形と種類とラベルのタブ（押すとブロックの中だけを見る）、else・and・option の区間を破線で分ける。
+  // rect は名前の無いブロックで、補足の blocks の順に名前を付ける
+  const rects = sequence.fragments.filter((item) => item.kind === "rect");
+  const titleOf = (fragment) => (fragment.kind === "rect" ? (blockTitles[rects.indexOf(fragment)] ?? "") : fragment.label);
+  const tabOf = (fragment, at, expanded, left, top) => {
+    const tab = document.createElement("span");
+    tab.className = `map-seq-fragment-tab${fragment.kind === "rect" ? " is-block" : ""}`;
+    tab.style.left = `${left}px`;
+    tab.style.top = `${top}px`;
+    const toggle = document.createElement("button");
+    toggle.type = "button";
+    toggle.className = "map-disclosure";
+    toggle.setAttribute("aria-expanded", String(expanded));
+    toggle.setAttribute("aria-label", `${fragment.kind}「${titleOf(fragment)}」を${expanded ? "閉じる" : "開く"}`);
+    toggle.innerHTML = icon(expanded ? "collapse" : "expand");
+    toggle.addEventListener("click", (event) => onToggle(at, event.shiftKey));
+    const title = document.createElement("button");
+    title.type = "button";
+    title.className = "map-seq-fragment-title";
+    title.title = "このブロックの中だけを見る";
+    title.innerHTML = `${fragment.kind === "rect" ? "" : `<b>${fragment.kind}</b> `}${titleOf(fragment)}`;
+    title.addEventListener("click", () => onEnter(at));
+    tab.append(toggle, title);
+    return tab;
+  };
+  const spanOf = (fragment) => {
+    const inside = sequence.messages.slice(fragment.start, fragment.end).flatMap((message) => [message.from, message.to]).filter((id) => visible.includes(id));
     const xs = inside.map(columnX);
     const pad = 70 - fragment.depth * 10;
-    const left = Math.min(...xs) - pad;
-    const right = Math.max(...xs) + pad;
-    const headRow = rows.findIndex((row) => row.fragment === fragment && row.section === 0);
-    const top = rowY(headRow === -1 ? rowOf.get(fragment.start) : headRow) - 30;
-    const bottom = rowY(rowOf.get(fragment.end - 1)) + 14;
+    return [Math.min(...xs) - pad, Math.max(...xs) + pad];
+  };
+  rows.forEach((row, at) => {
+    if (row.collapsed === undefined) return;
+    const fragment = sequence.fragments[row.collapsed];
+    const [left, right] = spanOf(fragment);
+    const top = rowY(at) - 30;
+    const rect = document.createElementNS(SVG_NS, "rect");
+    rect.setAttribute("class", "map-seq-fragment is-collapsed");
+    for (const [key, value] of Object.entries({ x: left, y: top, width: right - left, height: 40, rx: 4 })) rect.setAttribute(key, String(value));
+    under.append(rect);
+    const tab = tabOf(fragment, row.collapsed, false, left, top);
+    const count = document.createElement("span");
+    count.className = "map-seq-fragment-count";
+    count.textContent = `メッセージ ${fragment.end - fragment.start} 件`;
+    tab.append(count);
+    stage.append(tab);
+  });
+  rows.forEach((row, headRow) => {
+    if (row.fragment === undefined || row.section !== 0) return;
+    const fragment = row.fragment;
+    const [left, right] = spanOf(fragment);
+    const inside = rows.map((item, at) => ({ item, at })).filter(({ item }) => (item.message !== undefined && fragment.start <= item.message && item.message < fragment.end) || (item.collapsed !== undefined && sequence.fragments[item.collapsed].start >= fragment.start && sequence.fragments[item.collapsed].end <= fragment.end));
+    const lastRow = Math.max(headRow, ...inside.map(({ at }) => at));
+    const top = rowY(headRow) - 30;
+    const bottom = rowY(lastRow) + 14;
     const rect = document.createElementNS(SVG_NS, "rect");
     rect.setAttribute("class", `map-seq-fragment${fragment.kind === "rect" ? " is-rect" : ""}`);
     for (const [key, value] of Object.entries({ x: left, y: top, width: right - left, height: bottom - top, rx: 4 })) rect.setAttribute(key, String(value));
     under.append(rect);
-    if (fragment.kind !== "rect") {
-      const tab = document.createElement("span");
-      tab.className = "map-seq-fragment-tab";
-      tab.innerHTML = `<b>${fragment.kind}</b>${fragment.label ? ` ${fragment.label}` : ""}`;
-      tab.style.left = `${left}px`;
-      tab.style.top = `${top}px`;
-      stage.append(tab);
-    }
+    stage.append(tabOf(fragment, row.fragmentAt, true, left, top));
     fragment.sections.slice(1).forEach((section, offset) => {
-      const at = rows.findIndex((row) => row.fragment === fragment && row.section === offset + 1);
+      const at = rows.findIndex((item) => item.fragment === fragment && item.section === offset + 1);
+      if (at === -1) return;
       const y = rowY(at) - 14;
       const line = document.createElementNS(SVG_NS, "line");
       line.setAttribute("class", "map-seq-section");
@@ -1085,7 +1295,7 @@ const decorateSequence = ({ stage, svg, rows, rowWires, rowLabels, wires, messag
       text.style.top = `${y + 2}px`;
       stage.append(text);
     });
-  }
+  });
   // 注記: 参加者の左・右・上（2 人なら 2 人の上をまたぐ）に置く箱
   rows.forEach((row, at) => {
     if (!row.note) return;
@@ -1102,15 +1312,37 @@ const decorateSequence = ({ stage, svg, rows, rowWires, rowLabels, wires, messag
     note.style.cssText = `left:${left}px;top:${rowY(at) - 32}px;width:${right - left}px`;
     stage.append(note);
   });
-  // 活性化の帯: 参加者の縦線の上に、始まりのメッセージから終わりのメッセージまでの細い帯（入れ子は右へずらす）
+  // 活性化の帯: 参加者の縦線の上に、始まりのメッセージから終わりのメッセージまでの細い帯（入れ子は右へずらす）。
+  // 帯はメッセージの線より上に面の色で描き、帯に出入りするメッセージの線は帯の端で止める（線が帯に透けて重ならない）
+  const activeDepths = (id, index) => sequence.activations.filter((item) => item.id === id && item.start <= index && index <= item.end).map((item) => item.depth);
+  sequence.messages.forEach((message, index) => {
+    const wire = wires[index];
+    const numbers = wire?.getAttribute("d")?.match(/-?[\d.]+/g)?.map(Number);
+    if (!numbers || numbers.length < 4 || message.from === message.to) return;
+    const [x1, y, x2] = numbers;
+    const edge = (id, x, towards) => {
+      const depths = activeDepths(id, index);
+      if (depths.length === 0) return x;
+      return towards > x ? x + 5 + Math.max(...depths) * 6 : x - 5;
+    };
+    const start = edge(message.from, x1, x2);
+    const end = edge(message.to, x2, x1);
+    wire.setAttribute("d", `M${start} ${y}L${end + Math.sign(start - end) * 1} ${y}`);
+  });
+  const above = document.createElementNS(SVG_NS, "g");
+  above.setAttribute("class", "map-seq-above");
+  svg.append(above);
   for (const activation of sequence.activations) {
+    // 閉じたブロック・ブロックの外のメッセージで始まる・終わる帯は、見えているメッセージの範囲に縮める
+    const rowsIn = [...rowOf.entries()].filter(([index]) => activation.start <= index && index <= activation.end).map(([, at]) => at);
+    if (rowsIn.length === 0 || !visible.includes(activation.id)) continue;
     const x = columnX(activation.id) - 5 + activation.depth * 6;
-    const top = rowY(rowOf.get(activation.start));
-    const bottom = rowY(rowOf.get(activation.end));
+    const top = rowY(Math.min(...rowsIn));
+    const bottom = rowY(Math.max(...rowsIn));
     const bar = document.createElementNS(SVG_NS, "rect");
     bar.setAttribute("class", "map-seq-activation");
     for (const [key, value] of Object.entries({ x, y: top, width: 10, height: Math.max(12, bottom - top) })) bar.setAttribute(key, String(value));
-    svg.querySelector(".mdmark-diagram-lifeline:last-of-type")?.after(bar);
+    above.append(bar);
   }
   // 矢印の種類と番号: 実線と点線・矢じり（無し・塗り・×・非同期）・両向き。autonumber のときだけ番号を付ける
   let number = 0;
@@ -1153,6 +1385,10 @@ export const createSequence = (host, spec, kinds, onStep) => {
     order: sequence.participants.map((participant) => participant.id),
     current: undefined,
     auto: false,
+    /** 閉じた複合フラグメント（sequence.fragments の番号） */
+    collapsed: new Set(),
+    /** 中だけを見ている複合フラグメントの番号 */
+    enter: undefined,
   };
   const initialOrder = [...state.order];
   const seconds = spec.interval ?? DEFAULT_AUTOPLAY_SECONDS;
@@ -1163,12 +1399,16 @@ export const createSequence = (host, spec, kinds, onStep) => {
     const pageY = window.scrollY;
     const oldViewport = host.querySelector(".mdmark-diagram-viewport");
     const scroll = oldViewport ? [oldViewport.scrollLeft, oldViewport.scrollTop] : [0, 0];
-    const visible = state.order;
-    const shown = sequence.messages.map((message, index) => ({ message, index }));
-    const rows = sequenceRows(sequence);
+    const view = { collapsed: state.collapsed, enter: state.enter };
+    const rows = sequenceRows(sequence, view);
+    const shownSet = new Set(rows.flatMap((row) => (row.message === undefined ? [] : [row.message])));
+    const shown = sequence.messages.map((message, index) => ({ message, index })).filter(({ index }) => shownSet.has(index));
+    // ブロックの中だけを見ているときは、ブロックの中のメッセージに関わる参加者だけを出す
+    const involved = new Set(shown.flatMap(({ message }) => [message.from, message.to]));
+    const visible = state.enter === undefined ? state.order : state.order.filter((id) => involved.has(id));
     const definition = {
       title: spec.title,
-      scope: "map のシーケンス図",
+      scope: state.enter === undefined ? "map のシーケンス図" : `${sequence.fragments[state.enter].kind === "rect" ? "ブロック" : sequence.fragments[state.enter].kind}「${sequence.fragments[state.enter].kind === "rect" ? (spec.blocks ?? [])[sequence.fragments.filter((item) => item.kind === "rect").indexOf(sequence.fragments[state.enter])] ?? "" : sequence.fragments[state.enter].label}」の中`,
       updated: "2026-11-09",
       participants: visible.map((id) => ({ id, kind: "script", name: labelOf(id) })),
       steps: rows.map((row) =>
@@ -1190,7 +1430,33 @@ export const createSequence = (host, spec, kinds, onStep) => {
     const rowOf = new Map(rows.flatMap((row, at) => (row.message === undefined ? [] : [[row.message, at]])));
     const wires = sequence.messages.map((_, index) => rowWires[rowOf.get(index)]);
     const messageLabels = sequence.messages.map((_, index) => rowLabels[rowOf.get(index)]);
-    decorateSequence({ stage, svg, rows, rowWires, rowLabels, wires, messageLabels, visible, heads, figure, sequence });
+    decorateSequence({
+      stage,
+      svg,
+      rows,
+      rowWires,
+      rowLabels,
+      wires,
+      messageLabels,
+      visible,
+      heads,
+      figure,
+      sequence,
+      blockTitles: spec.blocks ?? [],
+      enter: state.enter,
+      onToggle: (index, all) => {
+        // Shift を押しながらだと、そのブロックと中のブロックを全て開閉する
+        const targets = all ? sequence.fragments.flatMap((item, at) => (item.start >= sequence.fragments[index].start && item.end <= sequence.fragments[index].end ? [at] : [])) : [index];
+        const close = !state.collapsed.has(index);
+        for (const at of targets) close ? state.collapsed.add(at) : state.collapsed.delete(at);
+        render();
+      },
+      onEnter: (index) => {
+        state.enter = index;
+        state.collapsed.delete(index);
+        render();
+      },
+    });
 
     // 参加者を選んだときの強調
     const related = (message) =>
@@ -1199,16 +1465,16 @@ export const createSequence = (host, spec, kinds, onStep) => {
         : state.selected.size === 1
           ? state.selected.has(message.from) || state.selected.has(message.to)
           : state.selected.has(message.from) && state.selected.has(message.to);
-    shown.forEach(({ message, index }, at) => {
+    shown.forEach(({ message, index }) => {
       const hit = related(message);
       if (hit === false) {
-        wires[at]?.classList.add("map-dim");
-        messageLabels[at]?.classList.add("map-dim");
+        wires[index]?.classList.add("map-dim");
+        messageLabels[index]?.classList.add("map-dim");
       }
       // 選んだ参加者のメッセージの線には、データの印を送り手から受け手へ流し続ける（再生中の線には重ねない）
-      if (hit === true && wires[at] && index !== state.current) {
-        wires[at].id = `map-seq-select-${spec.id}-${at}`;
-        addPackets(svg, wires[at]);
+      if (hit === true && wires[index] && index !== state.current) {
+        wires[index].id = `map-seq-select-${spec.id}-${index}`;
+        addPackets(svg, wires[index]);
       }
     });
     visible.forEach((id, at) => {
@@ -1227,6 +1493,8 @@ export const createSequence = (host, spec, kinds, onStep) => {
       };
       head.addEventListener("click", toggle);
       // つまみは箱（ボタン）の中に入れず、箱の右上に重ねた別の要素にする（押せる要素を入れ子にしない）
+      // ブロックの中だけを見ているときは並べ替えのつまみを出さない
+      if (state.enter !== undefined) return;
       const grip = participantGrip(id, at, visible.length);
       grip.style.left = `${head.offsetLeft + head.offsetWidth - 26}px`;
       grip.style.top = `${head.offsetTop + 2}px`;
@@ -1247,7 +1515,8 @@ export const createSequence = (host, spec, kinds, onStep) => {
     tip.setAttribute("role", "tooltip");
     tip.hidden = true;
     box.append(tip);
-    shown.forEach(({ message, index }, at) => {
+    shown.forEach(({ message, index }) => {
+      const at = index;
       const wire = wires[at];
       if (!wire) return;
       const hit = document.createElementNS(SVG_NS, "path");
@@ -1304,6 +1573,21 @@ export const createSequence = (host, spec, kinds, onStep) => {
     // 参加者を並べ替えたか選んだときだけ押せる「元に戻す」: 並び順と選択をまとめて戻す
     const changed = state.selected.size > 0 || state.order.some((id, at) => id !== initialOrder[at]);
     group.append(
+      toolButton("back", "ブロックの外へ戻る", () => {
+        const outer = sequence.fragments.filter((item, at) => at !== state.enter && item.start <= sequence.fragments[state.enter].start && sequence.fragments[state.enter].end <= item.end && item.depth < sequence.fragments[state.enter].depth);
+        state.enter = outer.length ? sequence.fragments.indexOf(outer.at(-1)) : undefined;
+        render();
+      }, state.enter === undefined ? { disabled: "" } : {}),
+      toolButton("expandAll", "全てのブロックを開く", () => {
+        state.collapsed.clear();
+        render();
+      }),
+      toolButton("collapseAll", "全てのブロックを閉じる", () => {
+        sequence.fragments.forEach((item, at) => {
+          if (at !== state.enter && item.depth === (state.enter === undefined ? 0 : sequence.fragments[state.enter].depth + 1)) state.collapsed.add(at);
+        });
+        render();
+      }),
       toolButton("reset", "参加者の並び順と選択を元に戻す", () => {
         state.order = [...initialOrder];
         state.selected.clear();
