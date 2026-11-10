@@ -10483,9 +10483,8 @@
     > .mdmark-diagram-node.map-closed-group {
     padding-left: 30px;
   }
-  .map-closed-group {
-    border-style: double;
-    border-width: 3px;
+  .mdmark-diagram[data-diagram="map"] .mdmark-diagram-node.map-closed-group {
+    border: 3px double var(--mdmark-color-border);
   }
   /* 閉じたグループは処理のノードと見分けるため、種類のアイコンを出さない */
   .map-closed-group .mdmark-diagram-node-kind svg {
@@ -10932,6 +10931,7 @@
   }
   .mdmark-diagram[data-diagram="map"] .mdmark-diagram-lifeline {
     stroke: color-mix(in srgb, var(--mdmark-color-muted) 70%, transparent);
+    stroke-width: 1;
   }
 
   /* 色を指定しない構成図のグループの枠線も、シーケンス図のブロックと同じ濃さにする（太さは色付きのグループと同じ 1px） */

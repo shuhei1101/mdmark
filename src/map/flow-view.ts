@@ -5,6 +5,7 @@ import {
   type MapPacketMark,
   renderMapFlow,
   renderMapPackets,
+  selectableName,
 } from "../parts/map.ts";
 import { attachBand, type BandHandle, type BandStep } from "./band.ts";
 import { type MapData, parseMapData } from "./data.ts";
@@ -305,8 +306,15 @@ export const attachMapFlow = (
     )) {
       const id = element.getAttribute("data-node") ?? "";
       element.classList.toggle("is-selected", selected.has(id));
-      if (element.hasAttribute("aria-pressed"))
-        element.setAttribute("aria-pressed", String(selected.has(id)));
+      if (element.hasAttribute("aria-roledescription")) {
+        element.toggleAttribute("data-selected", selected.has(id));
+        const name =
+          element.querySelector(".mdmark-diagram-node-name")?.textContent ?? "";
+        element.setAttribute(
+          "aria-label",
+          selectableName(name, selected.has(id)),
+        );
+      }
       element.classList.toggle(
         "map-dim",
         kept !== undefined && !kept.nodes.has(id),

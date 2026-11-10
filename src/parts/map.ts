@@ -217,6 +217,14 @@ export const renderMapPackets = (
   return renderPackets(packetPaths);
 };
 
+/** 構成図のノードで使うキー（選ぶ・動かす） */
+const MAP_NODE_KEYS =
+  "Enter Space Alt+ArrowLeft Alt+ArrowUp Alt+ArrowDown Alt+ArrowRight";
+
+/** 選べるノード・参加者のスクリーンリーダー向けの名前（選んでいれば末尾に「（選択中）」） */
+export const selectableName = (name: string, selected: boolean): string =>
+  selected ? `${name}（選択中）` : name;
+
 /** 部品『mapの構成図』の HTML。フロー図の部品の定義にしたノードと線を renderFlow で描き、グループの面とタイトルの行・開閉と中へ入るボタン・閉じたグループを重ねる */
 export const renderMapFlow = (args: MapFlowArgs): string => {
   const { layout } = args;
@@ -226,6 +234,17 @@ export const renderMapFlow = (args: MapFlowArgs): string => {
   };
   const open = layout.groups.filter((group) => !group.collapsed);
   const closed = layout.groups.filter((group) => group.collapsed);
+  const names = new Map<string, string>([
+    ...layout.groups.map((group): [string, string] => [group.id, group.title]),
+    ...layout.nodes.map((node): [string, string] => [
+      node.id,
+      node.label ?? node.lines.join(""),
+    ]),
+  ]);
+  const nameOf = (id: string): string => names.get(id) ?? id;
+  /** 線の押せる帯のスクリーンリーダー向けの名前 */
+  const wireName = (wire: MapLayout["wires"][number]): string =>
+    `${nameOf(wire.from)}から${nameOf(wire.to)}への線${wire.merged === undefined && wire.label !== undefined ? `「${wire.label}」` : ""}`;
   const nodes: MdmarkDiagramNode[] = layout.nodes.map((node) => {
     const kind = kindOf(node.classes);
     const note = args.notes?.[node.id];
@@ -290,11 +309,12 @@ export const renderMapFlow = (args: MapFlowArgs): string => {
   const selectedIds = new Set(args.selected);
   for (const node of layout.nodes) {
     const value = escapeHtml(node.id).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    const selected = selectedIds.has(node.id);
     html = html.replace(
       new RegExp(
         `(<div class="[^"]*map-kinded[^"]*"[^>]*\\sdata-node="${value}")`,
       ),
-      `$1 tabindex="0" role="button" aria-pressed="${selectedIds.has(node.id)}"`,
+      `$1 tabindex="0" role="button" aria-roledescription="ノード" aria-keyshortcuts="${MAP_NODE_KEYS}" aria-label="${escapeHtml(selectableName(nameOf(node.id), selected))}"${selected ? " data-selected" : ""}`,
     );
   }
   for (const node of layout.nodes) {
@@ -350,7 +370,7 @@ export const renderMapFlow = (args: MapFlowArgs): string => {
   const hits = layout.wires
     .map(
       (wire) =>
-        `<path class="map-wire-hit" data-wire="${escapeHtml(wire.id)}" tabindex="0" role="button" aria-label="${escapeHtml(`${wire.from} → ${wire.to}`)}" d="${wire.points.map(([x, y], index) => `${index === 0 ? "M" : "L"}${x} ${y}`).join("")}"></path>`,
+        `<path class="map-wire-hit" data-wire="${escapeHtml(wire.id)}" tabindex="0" role="button" aria-label="${escapeHtml(wireName(wire))}" d="${wire.points.map(([x, y], index) => `${index === 0 ? "M" : "L"}${x} ${y}`).join("")}"></path>`,
     )
     .join("");
   const hitLayer = `<svg class="map-wire-hits" width="${layout.width}" height="${layout.height}">${hits}</svg>`;
@@ -702,7 +722,7 @@ export const renderMapSequence = (args: MapSequenceArgs): string => {
           name !== focusEnds.to)
           ? " map-dim"
           : "";
-      return `<div class="mdmark-diagram-node map-participant map-kinded${dim}${selected.has(name) ? " is-selected" : ""}" data-kind="map" data-shape="${kind?.shape ?? "rounded"}"${kind?.color === undefined ? "" : ` data-color="${escapeHtml(kind.color)}"`} data-node="${escapeHtml(name)}" data-participant="${escapeHtml(name)}" role="button" tabindex="0" aria-pressed="${selected.has(name)}" style="left:${(x.get(name) ?? 0) - MAP_SEQ.headW / 2}px;top:${MAP_SEQ.headTop}px;width:${MAP_SEQ.headW}px"><span class="mdmark-diagram-node-kind${icon === "" && tag === "" ? " is-empty" : ""}">${icon}${tag}</span><span class="mdmark-diagram-node-name">${escapeHtml(labelOf(name))}</span></div>`;
+      return `<div class="mdmark-diagram-node map-participant map-kinded${dim}${selected.has(name) ? " is-selected" : ""}" data-kind="map" data-shape="${kind?.shape ?? "rounded"}"${kind?.color === undefined ? "" : ` data-color="${escapeHtml(kind.color)}"`} data-node="${escapeHtml(name)}" data-participant="${escapeHtml(name)}" role="button" tabindex="0" aria-keyshortcuts="Enter Space Alt+ArrowLeft Alt+ArrowRight" aria-label="${escapeHtml(selectableName(labelOf(name), selected.has(name)))}"${selected.has(name) ? " data-selected" : ""} style="left:${(x.get(name) ?? 0) - MAP_SEQ.headW / 2}px;top:${MAP_SEQ.headTop}px;width:${MAP_SEQ.headW}px"><span class="mdmark-diagram-node-kind${icon === "" && tag === "" ? " is-empty" : ""}">${icon}${tag}</span><span class="mdmark-diagram-node-name">${escapeHtml(labelOf(name))}</span></div>`;
     })
     .join("");
   return [
