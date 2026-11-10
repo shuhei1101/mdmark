@@ -88,12 +88,15 @@ const toolButton = (name, label, onClick, attrs = {}) => {
 const colorStyle = (color) =>
   color ? `--map-fill: var(--mdmark-color-accent-${color}-bg); --map-ink: var(--mdmark-color-accent-${color}-text);` : "";
 
-/** ノードの種類の行（アイコンと名前）と形・色を、使う側の設定の種類で置き換える。アイコンも名前も無いノードは種類の行を出さない */
+/**
+ * ノードの種類の行（アイコンと名前）と形・色を、使う側の設定の種類で置き換える。
+ * 種類の行は選択と移動の押す場所を兼ねるため、アイコンも名前も無いノードでも高さ 24px の空の行を残す
+ */
 const applyKind = (element, kind) => {
   const row = element.querySelector(".mdmark-diagram-node-kind");
   const glyph = kind?.icon && ICONS[kind.icon] ? icon(kind.icon) : "";
-  if (!glyph && !kind?.label) row?.remove();
-  else if (row) row.innerHTML = `${glyph}${kind.label ? `<span>${kind.label}</span>` : ""}`;
+  if (row) row.innerHTML = `${glyph}${kind?.label ? `<span>${kind.label}</span>` : ""}`;
+  row?.classList.toggle("is-empty", !glyph && !kind?.label);
   if (!kind) {
     element.dataset.shape = "rounded";
     return;

@@ -435,3 +435,10 @@
   cursor: text;
   user-select: text;
 }
+/* 種類の行は、選択と移動の押す場所として高さ 24px 以上を取る（種類の無いノードでも空の行を残す） */
+.map-figure .mdmark-diagram-stage > .mdmark-diagram-node .mdmark-diagram-node-kind {
+  min-height: 24px;
+  margin-top: -4px;
+  margin-bottom: 0;
+  cursor: grab;
+}
