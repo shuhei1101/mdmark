@@ -68,6 +68,24 @@ const colorStyle = (color) =>
  * packet: { color: line（線の色）| source（元のノードの色）| target（先のノードの色）| 色の名前, shape: dot | square | diamond }
  */
 const SVG_NS = "http://www.w3.org/2000/svg";
+
+/** 色を変えた線の矢じりを線と同じ色にする: 線が指す矢じりの marker を複製して色を付け、線から指し直す */
+let arrowheadCount = 0;
+const tintArrowhead = (figure, path) => {
+  const ref = /url\(#([^)]+)\)/.exec(path.getAttribute("marker-end") ?? "")?.[1];
+  const marker = ref ? figure.querySelector(`marker[id="${CSS.escape(ref)}"]`) : null;
+  if (!marker) return;
+  const color = getComputedStyle(path).stroke;
+  const copy = marker.cloneNode(true);
+  arrowheadCount += 1;
+  copy.id = `${ref}-map-${arrowheadCount}`;
+  const shape = copy.firstElementChild;
+  const filled = shape.getAttribute("d").includes("z");
+  shape.style.fill = filled ? color : "none";
+  shape.style.stroke = filled ? "none" : color;
+  marker.after(copy);
+  path.setAttribute("marker-end", `url(#${copy.id})`);
+};
 const addPackets = (svg, path, { reverse = false, both = false, packet = DEFAULT_PACKET, nodeColor = {} } = {}) => {
   const color =
     packet.color === "line"
@@ -469,6 +487,7 @@ export const createMap = (host, spec, initial = {}) => {
       const color = spec.data.colors?.[edge.id];
       if (color) wire.style.setProperty("--map-wire", `var(--mdmark-color-accent-${color}-text)`);
       if (color) wire.classList.add("map-colored-wire");
+      if (color) tintArrowhead(figure, wire.matches("path") ? wire : wire.querySelector("path"));
       if (hot && !(hot.has(edge.from) && hot.has(edge.to))) wire.classList.add("map-dim");
       const path = wire.matches("path") ? wire : wire.querySelector("path");
       const hit = document.createElementNS("http://www.w3.org/2000/svg", "path");
@@ -606,6 +625,7 @@ export const createMap = (host, spec, initial = {}) => {
       path.id = `map-packet-${spec.id}-${index}`;
       wire.classList.remove("map-dim");
       wire.classList.add("map-flowing");
+      tintArrowhead(stage.closest("figure"), path);
       // データの流れは読者が次へ・再生を押して始め、停止で止められる動きのため、動きを減らす設定でも流す
       const packet = { ...DEFAULT_PACKET, ...spec.data.layout?.packet, ...spec.data.layout?.[edge.id]?.packet };
       addPackets(wires, path, { reverse, both, packet, nodeColor: { source: nodeColorOf(reverse ? edge.to : edge.from), target: nodeColorOf(reverse ? edge.from : edge.to) } });
@@ -831,6 +851,7 @@ export const createSequence = (host, spec, kinds, onPlay) => {
       // 構成図の上で再生している今のメッセージ
       if (index === state.current) {
         wire.classList.add("map-flowing");
+        tintArrowhead(figure, wire);
         for (const end of ends) end.classList.add("map-hot");
         wire.id = `map-seq-packet-${spec.id}`;
         addPackets(svg, wire, { reverse: false });
