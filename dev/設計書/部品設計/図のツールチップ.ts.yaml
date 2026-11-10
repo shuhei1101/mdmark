@@ -56,12 +56,21 @@ states:
         value: "'true'"
     notes:
       定義: モックの `inquiry-groups`（`dev/mock/refs/308/assets/samples.js`）
+  - name: Merged
+    description: map の構成図で閉じたグループへまとめた線を開いた。元の線を 1 行ずつ並べる
+    args:
+    - name: kind
+      value: merged
+    - name: open
+      value: '''true'''
+    notes:
+      定義: 部品設計『mapの構成図』の Collapsed
 lead: 図の線のラベル・ノードのマーカー・グループのタイトルのマーカー・グラフの項目に付くツールチップ。線は入力の詳細を、LLM・スクリプトなどのノードは入力・処理・出力を、ER 図のテーブルの説明のボタンはテーブルの概要と列の説明を出す。ノードの中の用語は用語のツールチップを使用する。
 args:
   - name: kind
     type: 列挙
     required: true
-    choices: '`wire`（線の入力の詳細）・`io`（ノードの入力・処理・出力と `hint`）・`hint`（ノードの `hint` か埋め込んだ HTML の `data-hint` の文だけ）・`table`（ER 図のテーブルの概要と列の説明）・`item`（グラフの項目の系列か項目の名前と値）。グループのタイトルの `hint` は `hint`'
+    choices: '`wire`（線の入力の詳細）・`io`（ノードの入力・処理・出力と `hint`）・`hint`（ノードの `hint` か埋め込んだ HTML の `data-hint` の文だけ）・`table`（ER 図のテーブルの概要と列の説明）・`item`（グラフの項目の系列か項目の名前と値）・`merged`（map の構成図で閉じたグループへまとめた線の元の線）。グループのタイトルの `hint` は `hint`、map の構成図の線のラベルと補足の `notes` は `wire`'
     description: ツールチップの種類
   - name: label
     type: 文字列
@@ -94,6 +103,11 @@ args:
     required: false
     enabled_when: '`kind` が `item` のとき'
     description: '項目の値の文。`label` に系列の名前（円とドーナツは項目の名前）を配置し、折れ線・面・棒・積み上げ・横棒・レーダー・組み合わせは `{横の目盛り}: {値}`、散布図は `{x のラベル} {x}・{y のラベル} {y}`、バブルはその後ろに `・{大きさのラベル} {値}`、円とドーナツは `{値}{unit}（{割合}）` にする'
+  - name: merged
+    type: オブジェクトの配列
+    required: false
+    enabled_when: '`kind` が `merged` のとき'
+    description: まとめた元の線（`{ from, to, label }`）。`{元} → {先}` とラベルを 1 行ずつ並べる
 events:
   - name: 開く・閉じる
     when: 持ち主にポインターを乗せるかフォーカスする。離すか Esc を押す。タッチの端末では持ち主をタップする。もう一度タップするか、ツールチップと持ち主の外をタップする

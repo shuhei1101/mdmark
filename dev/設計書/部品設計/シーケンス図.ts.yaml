@@ -8,12 +8,20 @@ states:
       定義: モックの `inquiry-seq`
   - name: Invalid
     description: 定義を読み込めない。図の代わりに記載の警告を出す
+  - name: Fragments
+    description: '`loop` の中の `alt` / `else` と `rect`。枠線 1px の枠・左上のタブ・`else` の破線と `[ラベル]` があり、見出しがメッセージのラベルと重ならない'
+  - name: NotesAndActivations
+    description: '`Note over` の箱と活性化の帯。帯に出入りする線が帯の端で止まり、帯は線より手前に描く'
+  - name: Arrows
+    description: 全ての矢印の種類と `autonumber`。点線・開いた矢じり・× の印・非同期の矢じり・両向きの矢じりと、線の頭の番号
+  - name: TallParticipants
+    description: 名前が 2 行の参加者。参加者の箱が高くなり、最初の行が一番高い箱の下から始まる
 lead: 相手を定義の順に左から右へ、メッセージを時刻の順に上から下へ並べる。繰り返しの戻りは右の帯を通る破線と戻り先のラベルにする。
 args:
   - name: definition
     type: オブジェクト
     required: true
-    description: 'シーケンス図の定義（`MdmarkSequenceDefinition`。`participants`・`steps`・`loop`）。`steps` の `reply: true` は応答の線にする'
+    description: 'シーケンス図の定義（`MdmarkSequenceDefinition`。`participants`・`steps`・`loop`）。`steps` の `reply: true` は応答の線にする。map のシーケンス図が指定する定義は、ほかに `fragments`（`loop`・`alt`・`opt`・`par`・`critical`・`break`・`rect` の枠と区切りの `else`・`and`・`option`）・`notes`（`left of`・`right of`・`over`）・`activations`・`autonumber` と、`steps` の `arrow`（`->`・`-->`・`->>`・`-->>`・`-x`・`--x`・`-)`・`--)`・`<<->>`・`<<-->>`）を持てる'
 uses:
   - component: dev/設計書/部品設計/記載の警告.ts#
     how: 定義を読み込めないときに図の代わりに配置する
