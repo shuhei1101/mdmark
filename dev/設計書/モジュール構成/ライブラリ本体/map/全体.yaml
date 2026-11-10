@@ -1,0 +1,58 @@
+title: ライブラリ本体 / map / 全体
+lead: map の範囲の Mermaid と補足の読み取り・入れ子の自動配置・点検と、`dist/map.js` に分けた描画と操作。
+directory: |-
+  ```tree
+  src/
+  ├── render/syntax/map.ts   # map のマーカーの範囲を div.mdmark-map にするコアルール（dist/index.js。モジュール構成『記法』）
+  ├── map/
+  │   ├── spec.ts            # 設定の map と補足の型・既定・検査（dist/index.js と CLI）
+  │   ├── flowchart.ts       # flowchart の読み取り（dist/map.js と CLI）
+  │   ├── sequence.ts        # sequenceDiagram の読み取り（dist/map.js と CLI）
+  │   ├── data.ts            # 補足の YAML の読み取り（dist/map.js と CLI）
+  │   ├── check.ts           # 書き方の誤りの項目を集める（dist/index.js・dist/map.js と CLI）
+  │   ├── layout.ts          # 入れ子の自動配置と線の経路（dist/map.js と CLI）
+  │   ├── sequence-rows.ts   # シーケンス図の表示する行（dist/map.js）
+  │   ├── state.ts           # sessionStorage とクエリ文字列の状態（dist/map.js）
+  │   ├── flow-view.ts       # 構成図を描いて操作を付ける（dist/map.js）
+  │   ├── sequence-view.ts   # シーケンス図を描いて操作を付ける（dist/map.js）
+  │   ├── drag.ts            # ノード・グループ・線の区間のドラッグ（dist/map.js）
+  │   ├── band.ts            # 案内と再生の進め方（dist/map.js）
+  │   └── index.ts           # dist/map.js の入口。attachMap
+  └── parts/map.ts           # 部品『mapの構成図』『mapのシーケンス図』『案内の帯』の HTML（dist/map.js）
+  ```
+diagrams:
+- name: 全体
+  diagram: |-
+    classDiagram
+      direction LR
+      class mapのマーカーのコアルール
+      class 書き方の誤りを集める
+      class flowchartを読む
+      class sequenceDiagramを読む
+      class 補足を読む
+      class 入れ子を配置する
+      class mapを付ける
+      class 構成図を付ける
+      class シーケンス図を付ける
+      class 案内と再生を進める
+      class 状態を読み書きする
+      class 点検のずれにする
+      mapのマーカーのコアルール --> 書き方の誤りを集める
+      書き方の誤りを集める --> flowchartを読む
+      書き方の誤りを集める --> sequenceDiagramを読む
+      書き方の誤りを集める --> 補足を読む
+      mapを付ける --> 構成図を付ける
+      mapを付ける --> シーケンス図を付ける
+      構成図を付ける --> 入れ子を配置する
+      構成図を付ける --> 案内と再生を進める
+      シーケンス図を付ける --> 案内と再生を進める
+      構成図を付ける --> 状態を読み書きする
+      シーケンス図を付ける --> 状態を読み書きする
+      点検のずれにする --> 書き方の誤りを集める
+notes:
+  配布ファイルの分け方: '`src/map/index.ts` は別の esbuild の入口で、`dist/map.js` にまとめる（`dist/index.js` を `import` しない）。`dist/index.js` はコアルール・`spec.ts`・`check.ts`・読み取りの 3 つ（書き方の警告を `render` で出すため）を持ち、配置・描画・操作を持たない。`mount` は `attachParts` が `div.mdmark-map` を見つけたときだけ `loadPartModule("map")` で読み込む。部品の CSS は `src/index.css` に入れる'
+  配置の方式: 計画書の `## PoC 結果` の方式（内側からの配置・段と重心の掃引・格子の A* の線の経路）。PoC の `poc/map/layout.ts` を元にする
+refs:
+- dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#
+- dev/設計書/インターフェース定義/ライブラリ本体/文書をHTML文字列にする.ts#
+- dev/設計書/インターフェース定義/ライブラリ本体/設定と索引を点検する.ts#

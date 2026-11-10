@@ -220,7 +220,7 @@ constants:
     title: 部品のモジュールのファイル名
     container: src/part-modules.ts
     summary: 部品の名前から、`dist/index.js` の隣に配置する配布ファイルの名前を参照する
-    value: '{ view: "view.js", comments: "comments.js" }'
+    value: '{ view: "view.js", comments: "comments.js", map: "map.js" }'
   - name: partModuleLoaders
     title: 部品のモジュールの読み込みの差し替え
     container: src/part-modules.ts
@@ -509,9 +509,10 @@ functions:
     process: |-
       1. `features.views` がオンで `root` に `div.mdmark-view` があれば `loadPartModule("view")` を待ち、`isCurrent()` で削除していなければ、`div.mdmark-view` ごとに `attachView` を呼んで削除する関数を記録する
       2. `features.comments` がオンで `commentStore` と `docId` があれば `loadPartModule("comments")` を待ち、`isCurrent()` で削除していなければ `attachComments({ root, store: commentStore, docId, reveal: openEnclosing, margin: true })` を待って `CommentsController` を記録する（待つ間に削除したら、得た `detach` をすぐ呼ぶ）。この待ちの Promise（読み込めない・削除したときは `undefined` で解決する）も記録する。`features.comments` がオンで `commentStore` を指定していなければ、モジュールを読み込まず、コメントの機能に読み込みと保存の関数が要ることを `console.error` に出す（`mount` ごとに 1 回。`mount` が指定する `warned` で記録する）
-      3. 読み込めないときは付けずに、部品の名前（`view` か `comments`）・URL・元のエラーを `console.error` に 1 回出す（ページの中で部品ごとに 1 回）。ビューのマーカーの場所は `render` の表のまま残す
-      4. `reloadComments` は、コメントの待ちの Promise を記録していなければ解決した Promise を返却する。記録していれば待ち、`CommentsController` を得て削除していなければその `reload()` を返却し、それ以外は解決する。`focusComment(id)` は、`CommentsController` を記録していて削除していなければその `focus(id)` を呼ぶ
-      5. `detach` は、削除したマーカーを起動し、記録した削除する関数を逆の順に呼ぶ。続けて `root` の中の要素ごとに、`mountedViews`・`mountedComments` に残っている戻り値の `destroy` を呼ぶ（拡張の `draw` から呼んだ `mountView`・`mountComments` を、`mount` の `update`・`destroy` で片付ける）
+      3. `features.map` がオンで `root` に `div.mdmark-map` があれば `loadPartModule("map")` を待ち、`isCurrent()` で削除していなければ `attachMap(root, config)` を呼んで削除する関数を記録する
+      4. 読み込めないときは付けずに、部品の名前（`view`・`comments`・`map`）・URL・元のエラーを `console.error` に 1 回出す（ページの中で部品ごとに 1 回）。ビューのマーカーの場所は `render` の表のまま残す
+      5. `reloadComments` は、コメントの待ちの Promise を記録していなければ解決した Promise を返却する。記録していれば待ち、`CommentsController` を得て削除していなければその `reload()` を返却し、それ以外は解決する。`focusComment(id)` は、`CommentsController` を記録していて削除していなければその `focus(id)` を呼ぶ
+      6. `detach` は、削除したマーカーを起動し、記録した削除する関数を逆の順に呼ぶ。続けて `root` の中の要素ごとに、`mountedViews`・`mountedComments` に残っている戻り値の `destroy` を呼ぶ（拡張の `draw` から呼んだ `mountView`・`mountComments` を、`mount` の `update`・`destroy` で片付ける）
     unit_tests:
       - name: test_attach_parts
         case: 正常

@@ -20,7 +20,7 @@ states:
   description: 参加者を 1 人選んだ。その参加者のメッセージとライフラインのほかが薄くなり、その線の上をデータの印が流れる
   args:
   - name: selected
-    value: '["mount"]'
+    value: '["M"]'
 - name: Playing
   description: 再生の 3 つ目のメッセージ。送り手と受け手とその線のほかが薄く、その線の上をデータの印が流れる
   args:
@@ -44,12 +44,12 @@ args:
   type: 配列
   required: false
   default: '[]'
-  description: 閉じたブロックの番号（記載の順に 0 から。クエリ文字列 `map-{図の番号}` の値と同じ）。閉じたブロックは種類・名前・メッセージの件数の 1 行にする
+  description: 閉じたブロックの番号（記載の順に 1 から）。閉じたブロックは種類・名前・メッセージの件数の 1 行にする
 - name: entered
   type: 文字列
   required: false
   default: なし（全体）
-  description: 中だけを描くブロックの番号（`collapsed` と同じく 0 から）。そのブロックのメッセージと関わる参加者だけを描き、ブロックの枠とタブを残す
+  description: 中だけを描くブロックの番号。そのブロックのメッセージと関わる参加者だけを描き、ブロックの枠とタブを残す
 - name: selected
   type: 配列
   required: false

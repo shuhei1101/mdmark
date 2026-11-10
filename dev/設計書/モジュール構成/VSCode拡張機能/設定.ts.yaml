@@ -48,7 +48,7 @@ data_models:
     title: mount に指定する設定
     container: vscode/src/config.ts
     usecase: 共通
-    summary: 設定ファイルから取り出した `features`・`libraries`・`html-scripts`・`side-toc`・`table`・`labels`・`mermaid`・`colorTheme`・`colorScheme`。`render` の `config` と書き出す HTML の `config` になる
+    summary: 設定ファイルから取り出した `features`・`libraries`・`html-scripts`・`side-toc`・`table`・`labels`・`mermaid`・`map`・`colorTheme`・`colorScheme`。`render` の `config` と書き出す HTML の `config` になる
     properties:
       - name: features
         type: Record<string, unknown> | undefined
@@ -65,6 +65,9 @@ data_models:
       - name: mermaid
         type: Record<string, unknown> | undefined
         description: 記載した値のまま。`url` は呼ぶ側が修正する（mermaid の URL を修正する）。`theme` の知らない名前は mdmark が `mdmark` で描く
+      - name: map
+        type: Record<string, unknown> | undefined
+        description: 設定ファイルの `map`（マップのときだけ。中の値は mdmark が検める）
       - name: colorTheme
         type: string | undefined
         description: 設定ファイルに書き込んだ値のまま。`mdmark.colorTheme` が空でないときは `applyColorTheme` がその値に置き換える（知らない名前は mdmark が dev-swiss で描く）
@@ -83,7 +86,7 @@ data_models:
     properties:
       - name: config
         type: PreviewConfig
-        description: 重ねた設定のうち、マップの `features`・`libraries`・`html-scripts`・`side-toc`・`table`・`labels`・`mermaid` と文字列の `colorTheme`・`colorScheme`。読み込めない・構造の合わないファイルは重ねずに残りを重ねた値。相対パスはその値を記載した設定ファイルのフォルダから解決した絶対パス
+        description: 重ねた設定のうち、マップの `features`・`libraries`・`html-scripts`・`side-toc`・`table`・`labels`・`mermaid`・`map` と文字列の `colorTheme`・`colorScheme`。読み込めない・構造の合わないファイルは重ねずに残りを重ねた値。相対パスはその値を記載した設定ファイルのフォルダから解決した絶対パス
       - name: theme
         type: string | undefined
         description: 重ねた設定の `theme` の絶対パス
@@ -263,7 +266,7 @@ functions:
     kind: 関数
     container: vscode/src/config.ts
     usecase: 記載した内容をプレビューに映す
-    summary: YAML を `yaml` の `parse` で読み込み、最上位がマップのときだけ `features`・`libraries`・`html-scripts`・`side-toc`・`table`・`colorTheme`・`colorScheme` を取り出す。`assets` がマップで `root` が文字列なら `assetsRoot` に入れる
+    summary: YAML を `yaml` の `parse` で読み込み、最上位がマップのときだけ `features`・`libraries`・`html-scripts`・`side-toc`・`table`・`map`・`colorTheme`・`colorScheme` を取り出す。`assets` がマップで `root` が文字列なら `assetsRoot` に入れる
     scope: public
     args:
       - name: text

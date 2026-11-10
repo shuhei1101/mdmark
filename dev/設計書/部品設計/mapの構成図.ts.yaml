@@ -10,12 +10,12 @@ states:
   description: 「記法の読み取り」の中へ入った。外の要素が薄く、入ったグループのタイトルがボタンでない
   args:
   - name: entered
-    value: read
+    value: lib
 - name: Collapsed
   description: 「データ」を閉じた。二重の枠線のノードになり、そこへの線が 1 本にまとまり、本数とラベルを出さない
   args:
   - name: collapsed
-    value: '["store"]'
+    value: '["read"]'
 - name: SelectedOne
   description: ノードを 1 つ選んだ。そのノードとその線のほか（線の相手のノードを含む）が薄く、その線の上をデータの印が流れる
   args:
@@ -113,7 +113,7 @@ events:
   value: ノードの ID（`data-node`）か、線の両端の ID
   description: '`mount` が `selected` のノードを切り替える。線は、両端が選ばれていれば両方を解き、それ以外は両方を選ぶ'
 - name: 動かす
-  when: ノード・グループのタイトルの行（上端から 36px。ボタンの外）・線の区間を 4px 以上ドラッグする。ノード・線・グループのタイトルのボタンにフォーカスして Alt + 矢印キーを押す（8px ずつ。Shift も押すと 32px ずつ。線は真ん中の区間を、タイトルのボタンはそのグループを動かす）
+  when: ノード・グループのタイトルの行（上端から 36px。ボタンの外）・線の区間を 4px 以上ドラッグする。フォーカスして Alt + 矢印キーを押す（8px ずつ。Shift も押すと 32px ずつ。線は真ん中の区間を動かす）
   value: 動かした要素の ID と動いた量（px）
   description: '`mount` が位置を固定して配置し直し、sessionStorage に保つ。ほかのノード・グループとの間が 16px より狭くなる位置と、グループの左端・上端より外へは動かさない'
 - name: 線を指す
@@ -137,7 +137,7 @@ uses:
 - component: dev/設計書/部品設計/アイコン.ts#
   how: ノードの種類の行の Lucide のアイコンと、開閉の山形
 accessibility:
-- グループの開閉のボタンは `aria-expanded` と `aria-label="{タイトル}を開く"`（開いているときは `閉じる`）を持つ。タイトルのボタンは `aria-label="{タイトル}の中へ入る"` と `aria-keyshortcuts="Enter Alt+ArrowLeft Alt+ArrowUp Alt+ArrowDown Alt+ArrowRight"` を持ち、Enter で中へ入り、Alt + 矢印キーでグループを動かす。入っているグループのタイトルはボタンでないため、動かすキーを持たない
+- グループの開閉のボタンは `aria-expanded` と `aria-label="{タイトル}を開く"`（開いているときは `閉じる`）を持つ。タイトルのボタンは `aria-label="{タイトル}の中へ入る"` を持つ
 - ノードは `tabindex="0"`・`aria-roledescription="ノード"`・`aria-keyshortcuts="Enter Space Alt+ArrowLeft Alt+ArrowUp Alt+ArrowDown Alt+ArrowRight"` を持ち、選んだかを `data-selected` と、スクリーンリーダー向けの名前の末尾の `（選択中）` で伝える（`div` に `aria-pressed` は付けない）
 - 線は押せる帯（`map-wire-hit`）が `tabindex="0"` と `aria-label="{元}から{先}への線"`（ラベルがあれば末尾に `「{ラベル}」`）を持ち、ポインターの形状は区間の向きで `ns-resize` か `ew-resize`
 - 'ノードの名前の文字は選んでコピーでき（ポインターの形状は `text`）、種類の行の文字は選べない（`user-select: none`）。ドラッグできる場所のポインターの形状は `grab`'

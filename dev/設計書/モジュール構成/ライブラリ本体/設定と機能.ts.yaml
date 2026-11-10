@@ -49,6 +49,9 @@ data_models:
       - name: table
         type: '{ pin?: string } | undefined'
         description: 表の設定。`pin` はピン止めの動き（`each` / `through`）。知らない値も受けて `resolveConfig` が `each` にするため、型は `string`
+      - name: map
+        type: '{ node_fit?: "height" | "width"; url_state?: boolean; kinds?: Record<string, MapKind>; lines?: Record<string, MapLine> }'
+        description: map の図のノードの広げ方・クエリ文字列に保つか・ノードの種類・線の種類（インターフェース定義『文書を描く』の `opts.config.map.*`）
   - name: LibraryEntry
     title: 対応表の行
     container: src/config.ts
@@ -97,6 +100,9 @@ data_models:
       - name: mermaid
         type: '{ url: string; theme: MermaidTheme; themeVariables: Record<string, string> }'
         description: '`url` は設定の `mermaid.url` が文字列ならその値、それ以外は `DEFAULT_MERMAID_URL`。`theme` は `MERMAID_THEMES` にあればその値、それ以外は `mdmark`。`themeVariables` は設定の `mermaid.themeVariables` のうち値が文字列のキーだけ（`useGradient`・`dropShadow` を除く）'
+      - name: map
+        type: '{ node_fit: "height" | "width"; url_state: boolean; kinds: Record<string, MapKind>; lines: Record<string, MapLine> }'
+        description: '`resolveMapConfig` で既定を当てた設定の `map`'
       - name: table
         type: '{ pin: TablePinMode }'
         description: 設定の `table.pin` が `through` のときだけ `through`、それ以外は `each`
@@ -169,7 +175,7 @@ constants:
     title: 機能の既定
     container: src/config.ts
     summary: このバージョンが知っている機能とその既定。機能を作る Issue が行を追加する
-    value: '{ print: true, table: true, callout: true, tabs: true, steps: true, tree: true, badge: true, footnotes: true, code: true, syntax: true, toc: true, anchors: true, sections: true, "row-details": true, figures: true, diagrams: true, "diagram-resize": true, glossary: true, backlinks: true, html: true, hints: true, mermaid: true, views: true, comments: false, "html-scripts": false, "side-toc": true, "back-to-top": true, "text-color": true, images: true, gallery: true, lightbox: true, media: true, gif: true, cards: true, icon: true, columns: true, highlight: true, kbd: true, details: true, pagebreak: true, include: true, wide: true, csv: true, "card-grid": true, frontmatter: false }'
+    value: '{ print: true, table: true, callout: true, tabs: true, steps: true, tree: true, badge: true, footnotes: true, code: true, syntax: true, toc: true, anchors: true, sections: true, "row-details": true, figures: true, diagrams: true, "diagram-resize": true, glossary: true, backlinks: true, html: true, hints: true, mermaid: true, views: true, comments: false, "html-scripts": false, "side-toc": true, "back-to-top": true, "text-color": true, images: true, gallery: true, lightbox: true, media: true, gif: true, cards: true, icon: true, columns: true, highlight: true, kbd: true, details: true, pagebreak: true, include: true, wide: true, csv: true, "card-grid": true, frontmatter: false, map: true }'
     refs:
       - dev/設計書/設定/ライブラリ本体#settings[features.print]
   - name: DEFAULT_LIBRARIES
@@ -266,6 +272,30 @@ constants:
     status: planned
     introduced:
       pr: 303
+  - name: MAP_SHAPES
+    title: mapのノードの形状
+    container: src/config.ts
+    usecase: Mermaidと補足で図を描く
+    summary: '`map.kinds` の `shape` に記載できる値'
+    value: '["rounded", "rect", "pill", "double"]'
+  - name: MAP_DASHES
+    title: mapの線の模様
+    container: src/config.ts
+    usecase: Mermaidと補足で図を描く
+    summary: '`map.lines` の `dash` に記載できる値'
+    value: '["solid", "dashed", "dotted", "dash-dot", "long-dash"]'
+  - name: MAP_WIDTHS
+    title: mapの線の太さ
+    container: src/config.ts
+    usecase: Mermaidと補足で図を描く
+    summary: '`map.lines` の `width` に記載できる値'
+    value: '["thin", "normal", "thick"]'
+  - name: MAP_HEADS
+    title: mapの線の矢じり
+    container: src/config.ts
+    usecase: Mermaidと補足で図を描く
+    summary: '`map.lines` の `head` に記載できる値'
+    value: '["filled", "open", "none"]'
 functions:
   - name: resolveConfig
     title: 設定に既定を適用する
@@ -432,6 +462,38 @@ functions:
         condition: '`defaults` が `{ print: true }`、`args` が `["-print", "+print"]`'
         mock: なし
         expected: '`{ print: true }`'
+  - name: resolveMapConfig
+    title: mapの設定に既定を当てる
+    kind: 関数
+    container: src/config.ts
+    usecase: Mermaidと補足で図を描く
+    role: 処理
+    summary: 設定の `map` に既定を当て、知らない値を既定にした `ResolvedConfig["map"]` を返す。`resolveConfig` が呼ぶ
+    scope: internal
+    args:
+    - name: value
+      type: unknown
+      required: true
+      description: 利用側の `config.map`
+    returns:
+      type: '{ node_fit: "height" | "width"; url_state: boolean; kinds: Record<string, MapKind>; lines: Record<string, MapLine> }'
+      description: 既定を当てた設定
+    process: |-
+      1. `node_fit` が `height`・`width` でなければ `height`、`url_state` が真偽値でなければ `true` にする
+      2. `kinds`・`lines` のオブジェクトの値ごとに、`MAP_SHAPES`・`MAP_DASHES`・`MAP_WIDTHS`・`MAP_HEADS`・色の名前に無い値のキーを捨てる（`icon` は文字列ならそのまま残し、描くときに無い名前を捨てる）
+    unit_tests:
+    - name: test_resolve_map_config
+      case: 正常
+      summary: 既定
+      condition: '`undefined`'
+      mock: なし
+      expected: '`{ node_fit: height, url_state: true, kinds: {}, lines: {} }`'
+    - name: test_resolve_map_config_when_unknown_values
+      case: 正常
+      summary: 知らない値
+      condition: '`node_fit: tall`・`url_state: "no"`・`kinds.a.shape: hexagon`'
+      mock: なし
+      expected: '`node_fit` が `height`、`url_state` が `true`、`kinds.a` に `shape` が無い'
 notes:
   設定の Schema: '`schemas/mdmark.config.schema.json`（draft 2020-12）は設定の設計書の `settings` と同じキーと型を持つ。`features` は値が真偽値のオブジェクト、`libraries` はキーが `MARK_NAME_PATTERN`（`propertyNames.pattern`）で値が文字列のオブジェクト。`features.syntax` は真偽値、`syntax` は `url`（文字列）を持つオブジェクト。`side-toc` は `mode`（`hover` / `fixed` の列挙）を持つオブジェクト。`colorTheme` は文字列（知らない名前は Schema で拒まず、`mdmark check` が `unknown_color_theme` で返却する）。`colorScheme` も文字列（知らない値は `unknown_color_scheme` で返却する）。`labels` は `paramCopy`（`minLength: 1` の文字列）を持つオブジェクト。Schema を変えたら `migrations/no-steps.yaml` に `version: next` の行を配置する。他の Issue が追加するキーを拒まないよう、最上位は `additionalProperties` を許す'
 test_files:

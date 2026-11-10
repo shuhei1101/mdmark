@@ -1,0 +1,294 @@
+title: ライブラリ本体 / map / 読み取り
+lead: map の範囲の `flowchart`・`sequenceDiagram` の Mermaid と、補足の YAML を読み取る。描画を止めず、読めない行と箇所を項目にして返す。
+data_models:
+- name: Flowchart
+  title: 構成図の読み取り結果
+  container: src/map/flowchart.ts
+  usecase: Mermaidと補足で図を描く
+  role: データモデル
+  summary: '`parseFlowchart` の戻り値'
+  properties:
+  - name: direction
+    type: '"TB" | "LR"'
+    description: 最上位の向き（`TD` は `TB`、`RL` は `LR`、`BT` は `TB`）
+  - name: nodes
+    type: FlowNode[]
+    description: ノード（`id`・`label`・`shape`・`classes`・`parent`）。`shape` は Mermaid の形状（`rect`・`round`・`stadium`・`circle`・`cylinder`・`rhombus`・`hexagon`・`subroutine`）
+  - name: groups
+    type: FlowGroup[]
+    description: '`subgraph`（`id`・`title`・`parent`・`direction`）'
+  - name: edges
+    type: FlowEdge[]
+    description: 線（`id`・`from`・`to`・`arrow`（`-->`・`-.->`・`==>`・`---`）・`both`・`label`）。`id` は `e1@-->` の ID、無ければ `{from}->{to}`（重なれば末尾に `#{番号}`）
+  - name: problems
+    type: MapProblem[]
+    description: 読めない行と閉じの無い `subgraph`
+- name: Sequence
+  title: シーケンス図の読み取り結果
+  container: src/map/sequence.ts
+  usecase: Mermaidと補足で図を描く
+  role: データモデル
+  summary: '`parseSequence` の戻り値'
+  properties:
+  - name: participants
+    type: SequenceParticipant[]
+    description: '`participant`・`actor` と、メッセージで初めて出た参加者（`id`・`label`・`actor`）。記載の順'
+  - name: messages
+    type: SequenceMessage[]
+    description: メッセージ（`from`・`to`・`text`・`arrow`・`activation`）。`arrow` は `->`・`-->`・`->>`・`-->>`・`-x`・`--x`・`-)`・`--)`・`<<->>`・`<<-->>`
+  - name: fragments
+    type: SequenceFragment[]
+    description: '複合フラグメントと `rect`（`kind`・`label`・`depth`・`sections`・`start`・`end`）。記載の順（0 から番号を振る）。名前の無い `rect` の `label` は直前の `%% block: 名前` の値'
+  - name: notes
+    type: SequenceNote[]
+    description: 注記（`after`・`placement`・`of`・`text`）
+  - name: activations
+    type: SequenceActivation[]
+    description: 活性化の区間（`id`・`start`・`end`・`depth`）。`+`・`-` と `activate`・`deactivate` から作る
+  - name: autonumber
+    type: boolean
+    description: '`autonumber` の行があるか'
+  - name: problems
+    type: MapProblem[]
+    description: 読めない行と閉じの無いブロック
+- name: MapData
+  title: 補足
+  container: src/map/data.ts
+  usecase: Mermaidと補足で図を描く
+  role: データモデル
+  summary: '`parseMapData` が読み込んだ補足（ER 図『mapの補足』）'
+  properties:
+  - name: version
+    type: '1'
+    description: 補足のバージョン
+  - name: notes
+    type: Record<string, string>
+    description: ノード・線の ID ごとの説明
+  - name: walkthroughs
+    type: MapStep[]
+    description: 案内の手順（`title`・`text`・`nodes`・`edges`・`enter`）
+  - name: layout
+    type: Record<string, MapLayoutEntry>
+    description: ID ごとの上書き（`align`・`order`・`pos`・`width`・`color`・`line`・`packet`）
+  - name: plays_over
+    type: number
+    description: シーケンス図の再生を重ねる構成図の番号
+- name: MapProblem
+  title: 書き方の誤りの項目
+  container: src/map/spec.ts
+  usecase: Mermaidと補足で図を描く
+  role: データモデル
+  summary: 読み取りと点検が返す 1 件
+  properties:
+  - name: kind
+    type: '"map_invalid" | "map_unknown_ref" | "map_unknown_key" | "map_invalid_value" | "map_unknown_icon" | "map_unknown_class" | "map_unknown_line"'
+    description: ずれの種類と同じ名前
+  - name: line
+    type: number | undefined
+    description: 範囲の開きのマーカーからの行（0 から）。範囲の全体を指すときは無い
+  - name: message
+    type: string
+    description: 書き方の警告と点検の内容に出す 1 文（直し方を含む）
+- name: MapKind
+  title: ノードの種類
+  container: src/map/spec.ts
+  usecase: Mermaidと補足で図を描く
+  role: データモデル
+  summary: 設定の `map.kinds` の 1 つの値（公開の型）
+  properties:
+  - name: label
+    type: string | undefined
+    description: 種類の行の名前
+  - name: icon
+    type: string | undefined
+    description: Lucide のアイコンの名前
+  - name: shape
+    type: '"rounded" | "rect" | "pill" | "double" | undefined'
+    description: 形状
+  - name: color
+    type: string | undefined
+    description: 色の名前
+- name: MapLine
+  title: 線の種類
+  container: src/map/spec.ts
+  usecase: Mermaidと補足で図を描く
+  role: データモデル
+  summary: 設定の `map.lines` の 1 つの値（公開の型）
+  properties:
+  - name: dash
+    type: '"solid" | "dashed" | "dotted" | "dash-dot" | "long-dash" | undefined'
+    description: 模様
+  - name: width
+    type: '"thin" | "normal" | "thick" | undefined'
+    description: 太さ
+  - name: head
+    type: '"filled" | "open" | "none" | undefined'
+    description: 矢じり
+  - name: color
+    type: string | undefined
+    description: 色の名前
+functions:
+- name: parseFlowchart
+  title: flowchartを読む
+  kind: 関数
+  container: src/map/flowchart.ts
+  usecase: Mermaidと補足で図を描く
+  role: 処理
+  summary: '`flowchart` の Mermaid を、ノード・グループ・線と読めない行の項目に読む'
+  scope: public
+  args:
+  - name: source
+    type: string
+    required: true
+    description: mermaid のブロックの中身
+  returns:
+    type: Flowchart
+    description: 読み取り結果
+  process: |-
+    1. 1 行目の `flowchart`・`graph` と向きを読む
+    2. 2 行目からを行ごとに、`subgraph`・`end`・`direction`・`classDef`・`class`・`style`・`linkStyle`・`click`・`%%` の行と、ノードと線の文に分けて読む（`classDef`・`style`・`linkStyle`・`click` は読んで捨てる）
+    3. ノードと線の文は、ノード・矢印・ノードの並び（`&` と連なりを含む）を左から読み、ノードは最初に出たときのラベルと形状、`:::クラス` は `classes` に足す
+       - 読めない行は `map_invalid` の項目（行・行の文字・`->` なら `-->` にする直し方）にして次の行へ進む
+    4. 閉じの無い `subgraph` を `map_invalid` の項目にし、最後の行で閉じたものとして扱う
+  unit_tests:
+  - name: test_parse_flowchart
+    case: 正常
+    summary: 入れ子の subgraph・クラス・ラベル付きの線
+    condition: モックの `FLOW`
+    mock: なし
+    expected: ノード 10・グループ 4・線 12 で親子と `classes` がモックと一致し、`problems` が空
+  - name: test_parse_flowchart_when_shapes
+    case: 正常
+    summary: 形状の記法
+    condition: '`A([a])`・`B[(b)]`・`C{c}`・`D((d))`・`E{{e}}`・`F[[f]]`'
+    mock: なし
+    expected: '`shape` が `stadium`・`cylinder`・`rhombus`・`circle`・`hexagon`・`subroutine`'
+  - name: test_parse_flowchart_when_chained
+    case: 正常
+    summary: 連なりと & の線
+    condition: '`A & B --> C --> D`'
+    mock: なし
+    expected: 線が `A->C`・`B->C`・`C->D` の 3 本
+  - name: test_parse_flowchart_when_edge_ids
+    case: 正常
+    summary: 線の ID と重なり
+    condition: '`e1@--> ` の線と、ID の無い `A-->B` 2 本'
+    mock: なし
+    expected: '`e1` と `A->B`・`A->B#2`'
+  - name: test_parse_flowchart_when_unreadable_line
+    case: 異常
+    summary: 読めない行
+    condition: 4 行目が `A -> B`
+    mock: なし
+    expected: '`problems` に `map_invalid` が 1 件（`line` 3・`-->` にする直し方）、ほかの行は読む'
+  - name: test_parse_flowchart_when_unclosed_subgraph
+    case: 異常
+    summary: 閉じの無い subgraph
+    condition: '`subgraph g` の後に `end` が無い'
+    mock: なし
+    expected: '`problems` に `g` を含む `map_invalid` が 1 件で、`g` のグループがある'
+- name: parseSequence
+  title: sequenceDiagramを読む
+  kind: 関数
+  container: src/map/sequence.ts
+  usecase: Mermaidと補足で図を描く
+  role: 処理
+  summary: '`sequenceDiagram` の Mermaid を、参加者・メッセージ・ブロック・注記・活性化と読めない行の項目に読む'
+  scope: public
+  args:
+  - name: source
+    type: string
+    required: true
+    description: mermaid のブロックの中身
+  returns:
+    type: Sequence
+    description: 読み取り結果
+  process: |-
+    1. 行ごとに、`participant`・`actor`（`as` の別名）・`autonumber`・`activate`・`deactivate`・`Note`・`loop`・`alt`・`opt`・`par`・`critical`・`break`・`rect`・`else`・`and`・`option`・`end`・`box`・`%% block:`・`%%`・メッセージの行に分けて読む
+    2. メッセージは長い矢印から順に照らし、受け手の前の `+`・送り手の `-` で活性化の区間を開閉する
+    3. ブロックは開いた順に番号を振り、区切りの行で `sections` を足し、`end` で `end` を記録する
+       - 読めない行・閉じの無いブロック・対の無い `deactivate` は `map_invalid` の項目にする
+  unit_tests:
+  - name: test_parse_sequence
+    case: 正常
+    summary: 全ての記法
+    condition: モックの `SEQUENCE`
+    mock: なし
+    expected: 参加者 5・メッセージ 7・ブロック 3（`rect`・`loop`・`alt`。番号 0・1・2）・注記 1・活性化 1 で、`autonumber` が `true`、`rect` の `label` が `描く前の準備`
+  - name: test_parse_sequence_when_arrows
+    case: 正常
+    summary: 矢印の種類
+    condition: 10 種類の矢印のメッセージを 1 つずつ
+    mock: なし
+    expected: '`arrow` が記載のとおり'
+  - name: test_parse_sequence_when_sections
+    case: 正常
+    summary: alt の区切り
+    condition: '`alt a` `else b` `end`'
+    mock: なし
+    expected: '`sections` が 2 つで、ラベルが `a`・`b`'
+  - name: test_parse_sequence_when_unclosed_block
+    case: 異常
+    summary: 閉じの無いブロック
+    condition: '`loop` の後に `end` が無い'
+    mock: なし
+    expected: '`problems` に `map_invalid` が 1 件で、ブロックは最後のメッセージまで'
+  - name: test_parse_sequence_when_unreadable_line
+    case: 異常
+    summary: 読めない行
+    condition: '`A => B: x`'
+    mock: なし
+    expected: '`problems` に `map_invalid` が 1 件'
+- name: parseMapData
+  title: 補足を読む
+  kind: 関数
+  container: src/map/data.ts
+  usecase: Mermaidと補足で図を描く
+  role: 処理
+  summary: 補足の YAML を読み込み、スキーマに合う部分を `MapData` にし、合わない箇所を項目にする
+  scope: public
+  args:
+  - name: source
+    type: string | undefined
+    required: true
+    description: '`pre.mdmark-map-data` の文字。無ければ空の補足'
+  returns:
+    type: '{ data: MapData; problems: MapProblem[] }'
+    description: 読み込んだ補足と項目
+  process: |-
+    1. `yaml` の `parse` で読み込む。読み込めなければ `map_invalid_value`（YAML の行と原因）にして空の補足を返す
+    2. トップレベルの知らないキーは `map_unknown_key`（使用できるキーの一覧を含む）、型の違う値は `map_invalid_value` にして捨てる
+    3. 文字の値に `--` を含むものは `map_invalid_value`（HTML コメントを閉じてしまうため `--` を含めない直し方）にする
+  unit_tests:
+  - name: test_parse_map_data
+    case: 正常
+    summary: モックの補足
+    condition: モックの `DATA`
+    mock: なし
+    expected: '`notes`・`walkthroughs`・`layout`・`plays_over` が読め、`problems` が空'
+  - name: test_parse_map_data_when_empty
+    case: 正常
+    summary: 補足が無い
+    condition: '`undefined`'
+    mock: なし
+    expected: '`version: 1` だけの補足と空の `problems`'
+  - name: test_parse_map_data_when_unknown_key
+    case: 異常
+    summary: 知らないキー
+    condition: '`layuot:`'
+    mock: なし
+    expected: '`map_unknown_key` が 1 件で、使用できるキーの一覧を含む'
+  - name: test_parse_map_data_when_double_hyphen
+    case: 異常
+    summary: -- を含む値
+    condition: '`walkthroughs[0].text` が `a -- b`'
+    mock: なし
+    expected: '`map_invalid_value` が 1 件'
+  - name: test_parse_map_data_when_unreadable
+    case: 異常
+    summary: YAML として読めない
+    condition: '`notes: [`'
+    mock: なし
+    expected: '`map_invalid_value` が 1 件で、補足は空'
+refs:
+- dev/設計書/ER図/mapの補足.yaml

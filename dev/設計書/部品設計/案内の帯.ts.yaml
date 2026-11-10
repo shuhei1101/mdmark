@@ -21,7 +21,7 @@ states:
   - name: auto
     value: 'true'
 - name: Playback
-  description: シーケンス図の再生。タイトルがメッセージの文、説明の文が送り手 → 受け手と `notes` の説明で、ボタンの名前が前のメッセージ・次のメッセージ・再生をやめる
+  description: シーケンス図の再生。タイトルがメッセージの文で、ボタンの名前が前のメッセージ・次のメッセージ・再生をやめる
   args:
   - name: mode
     value: playback
@@ -31,8 +31,6 @@ states:
     value: '9'
   - name: title
     value: mount を呼ぶ
-  - name: text
-    value: '"利用側のページ → mount\nmarkdown と config を渡す"'
 - name: Narrow
   description: 幅 390px。タイトルは番号とボタンの下の行に回る
   args:
@@ -68,7 +66,7 @@ args:
   type: 文字列
   required: false
   default: 空（文の要素に `hidden`）
-  description: 説明の文。案内では手順の `text`、再生では `{送り手} → {受け手}` と、補足の `notes` のそのメッセージの説明（あれば次の行から）。改行はそのまま出す
+  description: 手順の説明の文。改行はそのまま出す
 - name: auto
   type: 真偽値
   required: false

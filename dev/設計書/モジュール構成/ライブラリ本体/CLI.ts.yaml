@@ -100,7 +100,7 @@ data_models:
         type: string
         description: キーのパスか行。ファイル全体は空文字
       - name: kind
-        type: "'schema' | 'unknown_color_theme' | 'unknown_color_scheme' | 'no_documents' | MdmarkIndexIssue['kind'] | 'alias_no_files' | 'alias_unreadable' | MdmarkAliasProblem['kind'] | 'missing_file' | 'unknown_mark' | 'diagram_invalid' | 'diagram_node_overlap' | 'diagram_node_overflow' | 'diagram_wire_crosses_node' | 'diagram_label_too_long' | 'syntax_warning' | 'unknown_mark_arg'"
+        type: "'schema' | 'unknown_color_theme' | 'unknown_color_scheme' | 'no_documents' | MdmarkIndexIssue['kind'] | 'alias_no_files' | 'alias_unreadable' | MdmarkAliasProblem['kind'] | 'missing_file' | 'unknown_mark' | 'diagram_invalid' | 'diagram_node_overlap' | 'diagram_node_overflow' | 'diagram_wire_crosses_node' | 'diagram_label_too_long' | 'syntax_warning' | 'unknown_mark_arg' | 'map_invalid' | 'map_unknown_ref' | 'map_unknown_key' | 'map_invalid_value' | 'map_unknown_icon' | 'map_unknown_class' | 'map_unknown_line'"
         description: ずれの種類
       - name: message
         type: string
@@ -768,13 +768,13 @@ functions:
       - name: options
         type: '{ viewer: string; view: string; embeds: ViewerEmbeds }'
         required: true
-        description: '`dist/viewer.js`・`dist/view.js` の絶対パスと、まとめるモジュールの読み込み先'
+        description: '`dist/viewer.js`・`dist/view.js`・`dist/map.js` の絶対パスと、まとめるモジュールの読み込み先'
     returns:
       type: string
       description: 入口のモジュールの JavaScript のソース
     process: |-
       1. `viewer` から `startViewer` を import する行を配置する
-      2. `embeds.view` が `true` なら `view` を名前空間で import する行を配置する
+      2. `embeds.view` が `true` なら `view` を、`embeds.map` が `true` なら `map`（`dist/map.js`）を名前空間で import する行を配置し、`parts` に入れる
       3. `embeds.syntax` があれば、本体と言語ごとに `default` を import する行を配置する。`embeds.mermaid` があれば、mermaid を名前空間で import する行を配置する（mermaid が中で読み込む chunk の動的 `import()` は同じスクリプトに取り込まれる）
       4. `embeds.htmlScripts` があれば、範囲ごとに `compileHtmlScripts` の CommonJS のコードを `(module, exports, require) => { … }` で包んだ関数を、範囲のコードの文字を鍵にした `htmlScripts` の表に配置する行を配置する
       5. `startViewer(document, { parts, syntax, mermaid, libraries, extensions, htmlScripts })` を呼ぶ行を配置する。`mermaid` は `embeds.mermaid` があれば import した名前空間、無ければ持たない。`libraries` はマーカーの名前ごとの `() => import("{読み込み先}")`、`extensions` は `embeds.extensions` の順の `() => import("{読み込み先}")`
@@ -1129,7 +1129,7 @@ functions:
     container: src/cli/export.ts
     usecase: 共通
     summary: 文書の画像を埋め、マーカーのある外部ライブラリと設定の拡張と色分けのモジュールがまとめられることを確認して読み込み先を集め、`html-scripts` がオンの文書の範囲の `ts`・`js` を `compileHtmlScripts` で変えて `embeds.htmlScripts` に入れ、`theme` を読み込み、索引があれば参照の表を作って、書き出しの中身と警告を返却する。設定に `assets.root` があれば設定ファイルのフォルダから解決し、文書ごとに `copyMedia`（書き出しの中で共有する `copied` を指定する）の後に `inlineImages` を呼ぶ。`bundle` では `inlineImages` に共有の表を指定し、埋めた画像を `payload.assets` に入れる。設定の `features` で `images`・`media` をオフにした文書も同じく扱う
-    description: '`export` と `build` に共通の処理。埋める設定には、設定の `features`・`tooltips`・`side-toc`・`table`・`colorTheme`・`colorScheme`・`labels` をあるときだけ写す。`colorTheme` が `COLOR_THEMES` に無い名前のときもコピーしたうえで、警告 `{設定ファイル}: 不明なテーマ名 {名前} です。既定の dev-swiss で描画します。` を 1 件出す。外部ライブラリ・拡張・色分けのモジュールは 1 つずつ `bundleModule` でまとめてみて、まとめられたものだけの読み込み先（URL はそのまま、パスは設定ファイルのあるフォルダを基準にした絶対パス）を `embeds` に入れる。同じ URL のモジュールは 1 回だけまとめる。外部ライブラリと拡張で、まとめたコードに `hasDynamicImport` が該当するものは `embeds` に入れたうえで、警告 `{設定ファイル}: 拡張 \`{パス}\` はまとめた後も動的 import() が残り、blob: と動的 import を許さない環境では読み込めません。読み込む先をリテラルの文字列にしてください。`（外部ライブラリは `外部ライブラリ \`{マーカーの名前}\``）を 1 件出す。文書の色分けの言語を `usedSyntaxLanguages` で取得し、1 つ以上あれば設定の `syntax.url`（無ければ `DEFAULT_SYNTAX_URL`）の `core.min.js` と言語ごとの `languages/{モジュール名}.min.js` を確認して `embeds.syntax` に入れる（まとめたコードは esbuild の既定で頭の著作権表示を残す）。本体をまとめられなければ言語も確認せず `embeds.syntax` を持たない。言語のモジュールだけまとめられなければ、その言語を `embeds.syntax.languages` に入れず、警告を 1 件出す（その言語のコードブロックは色分けせずに描く）。埋める設定には `syntax` を写さない（開いたときに外へ要求しない）。文書に mermaid のコードブロックがあるかを `usesMermaid` で確認して、あれば設定の `mermaid.url`（無ければ `DEFAULT_MERMAID_URL`。パスは設定ファイルのあるフォルダを基準にした絶対パス）をまとめてみて `embeds.mermaid` に入れる。まとめられなければ `embeds.mermaid` を持たず、警告 `{設定ファイル}: mermaid \`{URL}\` をまとめられません（{理由}）。\`mermaid.url\` を修正してください。` を 1 件出す（mermaid のコードブロックは開いたときに通知ブロックとコードブロックになる）。埋める設定には `mermaid` の `theme`・`themeVariables` だけをコピーし、`url` を写さない。設定に `aliases` があれば `loadAliases` の `aliases` を `payload.aliases` に入れ、`issues` は 1 件ずつずれを 1 行にした（`formatCheckIssue`）警告にする（終了コードは変えない）。警告は `{ファイル}: {内容}` の文字列で、読み込めない画像・絶対 URL の画像・まとめられないモジュールと拡張・まとめられない色分けのライブラリ（`{設定ファイル}: 色分けのライブラリ \`{URL}\` をまとめられません（{理由}）。\`syntax.url\` を修正してください。`）・読み込めない `theme`・読み込めない索引の文書を出す'
+    description: '`export` と `build` に共通の処理。`usesMap` が `true` なら `embeds.map` を `true` にする。埋める設定には、設定の `features`・`tooltips`・`side-toc`・`table`・`colorTheme`・`colorScheme`・`labels`・`map` をあるときだけ写す（`map` の Schema に合わない値は `validateConfig` が設定の誤りにする）。`colorTheme` が `COLOR_THEMES` に無い名前のときもコピーしたうえで、警告 `{設定ファイル}: 不明なテーマ名 {名前} です。既定の dev-swiss で描画します。` を 1 件出す。外部ライブラリ・拡張・色分けのモジュールは 1 つずつ `bundleModule` でまとめてみて、まとめられたものだけの読み込み先（URL はそのまま、パスは設定ファイルのあるフォルダを基準にした絶対パス）を `embeds` に入れる。同じ URL のモジュールは 1 回だけまとめる。外部ライブラリと拡張で、まとめたコードに `hasDynamicImport` が該当するものは `embeds` に入れたうえで、警告 `{設定ファイル}: 拡張 \`{パス}\` はまとめた後も動的 import() が残り、blob: と動的 import を許さない環境では読み込めません。読み込む先をリテラルの文字列にしてください。`（外部ライブラリは `外部ライブラリ \`{マーカーの名前}\``）を 1 件出す。文書の色分けの言語を `usedSyntaxLanguages` で取得し、1 つ以上あれば設定の `syntax.url`（無ければ `DEFAULT_SYNTAX_URL`）の `core.min.js` と言語ごとの `languages/{モジュール名}.min.js` を確認して `embeds.syntax` に入れる（まとめたコードは esbuild の既定で頭の著作権表示を残す）。本体をまとめられなければ言語も確認せず `embeds.syntax` を持たない。言語のモジュールだけまとめられなければ、その言語を `embeds.syntax.languages` に入れず、警告を 1 件出す（その言語のコードブロックは色分けせずに描く）。埋める設定には `syntax` を写さない（開いたときに外へ要求しない）。文書に mermaid のコードブロックがあるかを `usesMermaid` で確認して、あれば設定の `mermaid.url`（無ければ `DEFAULT_MERMAID_URL`。パスは設定ファイルのあるフォルダを基準にした絶対パス）をまとめてみて `embeds.mermaid` に入れる。まとめられなければ `embeds.mermaid` を持たず、警告 `{設定ファイル}: mermaid \`{URL}\` をまとめられません（{理由}）。\`mermaid.url\` を修正してください。` を 1 件出す（mermaid のコードブロックは開いたときに通知ブロックとコードブロックになる）。埋める設定には `mermaid` の `theme`・`themeVariables` だけをコピーし、`url` を写さない。設定に `aliases` があれば `loadAliases` の `aliases` を `payload.aliases` に入れ、`issues` は 1 件ずつずれを 1 行にした（`formatCheckIssue`）警告にする（終了コードは変えない）。警告は `{ファイル}: {内容}` の文字列で、読み込めない画像・絶対 URL の画像・まとめられないモジュールと拡張・まとめられない色分けのライブラリ（`{設定ファイル}: 色分けのライブラリ \`{URL}\` をまとめられません（{理由}）。\`syntax.url\` を修正してください。`）・読み込めない `theme`・読み込めない索引の文書を出す'
     kind: 関数
     scope: internal
     is_async: true
@@ -1438,7 +1438,7 @@ functions:
     container: src/cli/check.ts
     usecase: 共通
     summary: '設定を重ねて読み込み（`purpose: export`）、重ねた設定ファイルのそれぞれと端末の設定（`config.applyToExport` によらず）の構造のずれを先に、続けて `mdmark check` と同じ並びのずれを返却する。ずれの `file` は設定ファイルのパスを表示の構造にしたパス（`base` は今のフォルダ）'
-    description: '並びは設定の `schema`（`validateConfig` のずれ、`theme`・`extensions` の無いファイル、`build.glossary`・`build.entry` がまとめる文書に該当しないもの）→ `unknown_color_theme`（設定の `colorTheme` が `COLOR_THEMES` に無いとき 1 件。`where` は `colorTheme`、`message` は `不明なテーマ名 {名前} です。{COLOR_THEMES を「・」で結んだもの} のいずれかに修正してください。`）→ `unknown_color_scheme`（設定の `colorScheme` が `COLOR_SCHEMES` に無いとき 1 件。`where` は `colorScheme`、`message` は `不明な明暗 {値} です。{COLOR_SCHEMES を「・」で結んだもの} のいずれかに修正してください。`）→ `no_documents` → `checkIndex` の並び → エイリアスのずれ（`loadAliases` の `issues`。設定に `aliases` があるときだけ）→ `missing_file`（`collectCheckDocuments` の文書ごとの `checkMissingFiles`）→ `unknown_mark`（`checkUnknownMarks`）→ 図の点検のずれ（`checkDiagrams`。`unknownMarks` によらず点検する）。知らないマーカーの点検では、`collectCheckDocuments` の文書を、`loadExtensionDirectives` の `directive` を知っているマーカーに入れて点検し、`loadExtensionDirectives` の `schema` のずれは設定の `schema` の並びの最後に配置する。索引のずれの `file` は設定ファイルのフォルダからの相対パスに修正する。索引を読み込めないときは索引を指す `schema` のずれにする。`base` があり設定に `index` があるときだけ、ずれを集める前に `changedPathsSince`（`cwd` は設定ファイルのフォルダ、`indexDir` は索引のファイルのフォルダ）で変わったファイルを引き、`checkIndex` の `changedPaths` に指定する。`runCheck` と `runUpgrade` が呼び、`runUpgrade` は `unknownMarks: false` で呼ぶ（拡張を読み込まず、知らないマーカーを点検しない）。設定の `assets.root` のフォルダが無いときは `assets.root` を指す `schema` のずれを設定の `schema` の並びに配置し、`missing_file` は文書のフォルダだけで探す'
+    description: '並びは設定の `schema`（`validateConfig` のずれ、`theme`・`extensions` の無いファイル、`build.glossary`・`build.entry` がまとめる文書に該当しないもの）→ `unknown_color_theme`（設定の `colorTheme` が `COLOR_THEMES` に無いとき 1 件。`where` は `colorTheme`、`message` は `不明なテーマ名 {名前} です。{COLOR_THEMES を「・」で結んだもの} のいずれかに修正してください。`）→ `unknown_color_scheme`（設定の `colorScheme` が `COLOR_SCHEMES` に無いとき 1 件。`where` は `colorScheme`、`message` は `不明な明暗 {値} です。{COLOR_SCHEMES を「・」で結んだもの} のいずれかに修正してください。`）→ `no_documents` → `checkIndex` の並び → エイリアスのずれ（`loadAliases` の `issues`。設定に `aliases` があるときだけ）→ `missing_file`（`collectCheckDocuments` の文書ごとの `checkMissingFiles`）→ `unknown_mark`（`checkUnknownMarks`）→ 図の点検のずれ（`checkDiagrams`。`unknownMarks` によらず点検する）→ map のずれ（`checkMaps`）。設定の `map` の `map_unknown_icon`（`checkMapConfig`）は設定の `schema` の並びの後ろに配置する。知らないマーカーの点検では、`collectCheckDocuments` の文書を、`loadExtensionDirectives` の `directive` を知っているマーカーに入れて点検し、`loadExtensionDirectives` の `schema` のずれは設定の `schema` の並びの最後に配置する。索引のずれの `file` は設定ファイルのフォルダからの相対パスに修正する。索引を読み込めないときは索引を指す `schema` のずれにする。`base` があり設定に `index` があるときだけ、ずれを集める前に `changedPathsSince`（`cwd` は設定ファイルのフォルダ、`indexDir` は索引のファイルのフォルダ）で変わったファイルを引き、`checkIndex` の `changedPaths` に指定する。`runCheck` と `runUpgrade` が呼び、`runUpgrade` は `unknownMarks: false` で呼ぶ（拡張を読み込まず、知らないマーカーを点検しない）。設定の `assets.root` のフォルダが無いときは `assets.root` を指す `schema` のずれを設定の `schema` の並びに配置し、`missing_file` は文書のフォルダだけで探す'
     kind: 関数
     scope: public
     is_async: true
@@ -2545,6 +2545,69 @@ functions:
     callees:
       - dev/設計書/モジュール構成/ライブラリ本体/描画.ts#functions[renderDocument]
     status: planned
+  - name: checkMaps
+    title: map の範囲を点検する
+    container: src/cli/check.ts
+    usecase: 設定と索引を点検する
+    kind: 関数
+    scope: internal
+    summary: '文書ごとに map の範囲を読み、`collectMapProblems` の項目を 1 つにつき 1 件のずれにする。`features: -map` の文書は点検しない'
+    description: ずれの `file` は文書のパス、`where` は範囲の開きのマーカーの行に項目の `line` を足した行の番号の文字（項目が `line` を持たなければ開きのマーカーの行）、`message` は項目の文
+    args:
+    - name: documents
+      type: '{ path: string; markdown: string }[]'
+      required: true
+      description: '`collectCheckDocuments` の文書'
+    - name: config
+      type: ResolvedConfig
+      required: true
+      description: 既定を当てた設定
+    returns:
+      type: CheckIssue[]
+      description: '`map_*` のずれ'
+    callees:
+    - dev/設計書/モジュール構成/ライブラリ本体/map/点検.ts#functions[collectMapProblems]
+    unit_tests:
+    - name: test_check_maps
+      case: 正常
+      summary: ずれ 3 件
+      condition: インターフェース定義の正常系（map の補足にずれがある）の `docs/a.md`
+      mock: なし
+      expected: '`map_unknown_ref`・`map_unknown_key`・`map_invalid_value` が 1 件ずつで、`where` が補足のその行、20 行目の範囲のずれが無い'
+    - name: test_check_maps_when_map_disabled
+      case: 正常
+      summary: 機能を外した文書
+      condition: '`<!-- features: -map -->` とずれを持つ範囲'
+      mock: なし
+      expected: 空
+  - name: usesMap
+    title: mapの部品を埋めるか
+    container: src/cli/embed.ts
+    usecase: 文書をHTMLに書き出す
+    kind: 関数
+    scope: internal
+    summary: 文書ごとに `render` を設定と一緒に呼び、返った HTML に `div.mdmark-map` があれば `true` を返す。`prepareEmbeds` が `embeds.map` に入れる
+    args:
+    - name: options
+      type: '{ markdowns: string[]; config: MdmarkConfig }'
+      required: true
+      description: 埋める文書の Markdown と設定
+    returns:
+      type: boolean
+      description: map の部品をまとめるか
+    unit_tests:
+    - name: test_uses_map
+      case: 正常
+      summary: map の範囲があるときだけ
+      condition: map の範囲を持つ文書と、持たない文書だけ
+      mock: なし
+      expected: 前者は `true`、後者は `false`
+    - name: test_uses_map_when_disabled
+      case: 正常
+      summary: 機能を外した文書
+      condition: '`features: -map` と map の範囲'
+      mock: なし
+      expected: '`false`'
 constants:
   - name: TEMPLATE_FILES
     title: 雛形の一覧

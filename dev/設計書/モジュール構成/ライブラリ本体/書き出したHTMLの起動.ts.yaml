@@ -150,7 +150,7 @@ functions:
     container: src/viewer/modules.ts
     usecase: 共通
     summary: 埋めた部品を `setPartModuleLoader`、埋めた色分けの本体と言語を `setEmbeddedSyntax`、埋めた mermaid を `setEmbeddedMermaid`、埋めた外部ライブラリを `setEmbeddedLibraries`、埋めた範囲のスクリプトを `setEmbeddedHtmlScripts` で読み込みに指定し、拡張を 1 つずつ読み込んで既定の export を `registerExtension` で登録する
-    description: '`URL.createObjectURL` と URL を読み込む動的 `import()` を使用しない。`parts` に無い部品（`view`・`comments`）は、呼ぶと拒否する関数を `setPartModuleLoader` で入れ、ページの隣の `view.js`・`comments.js` へ要求しない。`syntax` が無いときは本体を持たない `setEmbeddedSyntax({ languages: {} })` を入れ、色分けのために jsDelivr へ要求しない（色分けせずに描く）。`mermaid` が無いときは `setEmbeddedMermaid({})` を入れ、mermaid のために jsDelivr へ要求しない（mermaid のコードブロックは通知ブロックとコードブロックで描く）。`setEmbeddedLibraries` には `libraries` をそのまま入れ、表に無い外部ライブラリのマーカーは通知ブロックになる。拡張は 1 つずつ `try` で囲んで読み込み（モジュールの評価）と登録をし、例外を投げたものは `console.error` に出して飛ばし（マーカーは知らないマーカーとして取り除かれる）、ほかの拡張と描画は続ける'
+    description: '`URL.createObjectURL` と URL を読み込む動的 `import()` を使用しない。`parts` に無い部品（`view`・`comments`・`map`）は、呼ぶと拒否する関数を `setPartModuleLoader` で入れ、ページの隣の `view.js`・`comments.js`・`map.js` へ要求しない。`syntax` が無いときは本体を持たない `setEmbeddedSyntax({ languages: {} })` を入れ、色分けのために jsDelivr へ要求しない（色分けせずに描く）。`mermaid` が無いときは `setEmbeddedMermaid({})` を入れ、mermaid のために jsDelivr へ要求しない（mermaid のコードブロックは通知ブロックとコードブロックで描く）。`setEmbeddedLibraries` には `libraries` をそのまま入れ、表に無い外部ライブラリのマーカーは通知ブロックになる。拡張は 1 つずつ `try` で囲んで読み込み（モジュールの評価）と登録をし、例外を投げたものは `console.error` に出して飛ばし（マーカーは知らないマーカーとして取り除かれる）、ほかの拡張と描画は続ける'
     kind: 関数
     scope: public
     is_async: true
@@ -293,7 +293,7 @@ functions:
     container: src/viewer/bundle.ts
     usecase: まとめたHTMLで文書を行き来する
     summary: 横の一覧とパネルに `renderDocList` を配置し、URL の `#` が指す文書を `mount` で描いて、`hashchange` で文書を行き来する
-    description: '`mount` の `opts.aliases` にはどの文書も `payload.aliases` を指定する。文書を替えるときは前の `mount` の返り値で片付けてから再描画し、描いた後に `rewriteLinks` を呼ぶ。後は画面設計『まとめたHTML』のとおり: 一覧の `aria-current` と帯のタイトルとページのタイトルを合わせ、見出しを指していればそこへ、無ければ文書の頭へ移り、移ったときは h1 へフォーカスを移す（開いた直後は移さない）。`missing` のときは `history.replaceState` で URL を `entry` に合わせる。開いている文書の中の見出しへ移るリンク（`href` が `#/{今の文書のパス}#` で始まるもの）を修飾キーなしで押したときは、既定の動きを止めて `history.replaceState` で URL を置き換えてから移る。パネルは `showModal` で開き、文書を選ぶ・閉じるボタン・背景・Esc・`WIDE_QUERY` に合う幅になったときに閉じる（`closedby` を持たないブラウザでは背景の押下を座標で判定する）。文書を描く前に `restoreAssets` で `payload.assets` の画像を戻す。表示の状態: 起動したとき `history.scrollRestoration` を `manual` にし、`ensureEntryId` で今の項目の ID をメモリに持つ。`popstate`・文書の一覧と描いた文書のリンクの `click`・`pagehide`・`SCROLL_SAVE_INTERVAL_MS` ごとに間引いた `scroll` のときに、メモリの ID へ `captureViewState` の値を `writeViewState` で保存する。`hashchange` のときと起動したとき（再読み込み）は、移り先の項目の ID を `ensureEntryId` で取り（リンクで新しく積んだ項目には新しい ID が振られる）、その ID の `readViewState` の値が描いた文書と同じパスを持つかで分ける。持つときは、描いた後に `applyViewState`（`keepFocus: true`）で開閉とタブと位置を戻し、その後に `hashchange` のときだけフォーカスを h1 へ `preventScroll` で移す（起動したときは移さない）。持たないときは見出しか文書の頭へ移る。`popstate` の有無では分けない。`history.replaceState` で URL を置き換えるとき（`missing` と見出しへ移るリンク）は、今の `history.state` を引き継ぐ'
+    description: '`mount` の `opts.aliases` にはどの文書も `payload.aliases` を指定する。文書の一覧と文書間のリンクで別の文書へ移るときは、`history.replaceState` で今の URL のクエリ文字列から `map-` で始まるキーを消してから移る（戻る・進む・再読み込みでは消さない）。文書を替えるときは前の `mount` の返り値で片付けてから再描画し、描いた後に `rewriteLinks` を呼ぶ。後は画面設計『まとめたHTML』のとおり: 一覧の `aria-current` と帯のタイトルとページのタイトルを合わせ、見出しを指していればそこへ、無ければ文書の頭へ移り、移ったときは h1 へフォーカスを移す（開いた直後は移さない）。`missing` のときは `history.replaceState` で URL を `entry` に合わせる。開いている文書の中の見出しへ移るリンク（`href` が `#/{今の文書のパス}#` で始まるもの）を修飾キーなしで押したときは、既定の動きを止めて `history.replaceState` で URL を置き換えてから移る。パネルは `showModal` で開き、文書を選ぶ・閉じるボタン・背景・Esc・`WIDE_QUERY` に合う幅になったときに閉じる（`closedby` を持たないブラウザでは背景の押下を座標で判定する）。文書を描く前に `restoreAssets` で `payload.assets` の画像を戻す。表示の状態: 起動したとき `history.scrollRestoration` を `manual` にし、`ensureEntryId` で今の項目の ID をメモリに持つ。`popstate`・文書の一覧と描いた文書のリンクの `click`・`pagehide`・`SCROLL_SAVE_INTERVAL_MS` ごとに間引いた `scroll` のときに、メモリの ID へ `captureViewState` の値を `writeViewState` で保存する。`hashchange` のときと起動したとき（再読み込み）は、移り先の項目の ID を `ensureEntryId` で取り（リンクで新しく積んだ項目には新しい ID が振られる）、その ID の `readViewState` の値が描いた文書と同じパスを持つかで分ける。持つときは、描いた後に `applyViewState`（`keepFocus: true`）で開閉とタブと位置を戻し、その後に `hashchange` のときだけフォーカスを h1 へ `preventScroll` で移す（起動したときは移さない）。持たないときは見出しか文書の頭へ移る。`popstate` の有無では分けない。`history.replaceState` で URL を置き換えるとき（`missing` と見出しへ移るリンク）は、今の `history.state` を引き継ぐ'
     kind: 関数
     scope: public
     side_effects: 画面と履歴を書き換え、`history.scrollRestoration` を `manual` にし、sessionStorage に表示の状態を記載する
@@ -314,6 +314,12 @@ functions:
       type: void
       description: なし
     unit_tests:
+      - name: test_start_bundle_when_switch_clears_map_query
+        case: 正常
+        summary: 文書を切り替えると map のクエリ文字列を消す
+        condition: '`?map-1=place&x=1#/a.md` で開き、文書の一覧で `b.md` を押す'
+        mock: Chromium の `document`（`.browser.test.ts` で実行する）に画面の骨組みを配置する
+        expected: '`location.search` が `?x=1` で、`b.md` が描かれる。戻ると `?map-1=place&x=1` の項目に戻る'
       - name: test_start_bundle
         case: 正常
         summary: URL が指す文書を描き、一覧で開いている文書を示す

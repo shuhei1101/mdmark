@@ -40,3 +40,5 @@ items:
     summary: Webview に適用する ESLint の設定・検査の npm scripts
   - page: 設定を重ねて読み込む.ts.yaml
     summary: 端末の設定と上のフォルダの mdmark.config.yaml を探して重ね、CLI・MCP・VS Code 拡張機能が共に呼ぶ処理
+  - page: map/
+    summary: map の範囲の Mermaid と補足の読み取り・入れ子の自動配置・点検と、dist/map.js に分けた描画と操作

@@ -1,0 +1,13 @@
+summary: map の範囲の Mermaid と補足の読み取り・入れ子の自動配置・点検と、dist/map.js に分けた描画と操作
+docs_index: true
+items:
+  - page: 全体.yaml
+    summary: map の処理のフォルダ構成と配布ファイルの分け方
+  - page: 読み取り.ts.yaml
+    summary: flowchart・sequenceDiagram の Mermaid と補足の YAML の読み取り
+  - page: 配置.ts.yaml
+    summary: 入れ子の自動配置・線の経路・名前の折り返しと、シーケンス図の表示する行
+  - page: 点検.ts.yaml
+    summary: 書き方の警告と点検のずれにする項目を集め、設定の map のアイコンを照らす
+  - page: 描画と操作.ts.yaml
+    summary: dist/map.js の入口と、構成図・シーケンス図・案内の帯の描画・操作・状態の保存と部品の HTML
