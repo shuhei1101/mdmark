@@ -78,6 +78,9 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-10T19:02:43.657236+00:00'
   - process: 結合テスト作成
-    status: todo
+    status: done
+    agent: planner
+    updated_by: planner
+    updated_at: '2026-11-10T23:27:20.321331+00:00'
   - process: E2E テスト作成
     status: todo
