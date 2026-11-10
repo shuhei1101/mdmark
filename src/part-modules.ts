@@ -1,11 +1,21 @@
 import type { CommentsPartModule } from "./comments/index.ts";
+import type { ResolvedConfig } from "./config.ts";
 import type { ViewPartModule } from "./views/index.ts";
 
 /** 部品のモジュールの名前 */
-export type PartName = "view" | "comments";
+export type PartName = "view" | "comments" | "map";
+
+/** map の部品のモジュール（`dist/map.js`）の構造 */
+export type MapPartModule = {
+  attachMap: (root: HTMLElement, config: ResolvedConfig) => () => void;
+};
 
 /** 部品の名前ごとのモジュールの構造 */
-type PartModules = { view: ViewPartModule; comments: CommentsPartModule };
+type PartModules = {
+  view: ViewPartModule;
+  comments: CommentsPartModule;
+  map: MapPartModule;
+};
 
 /** 読み込んだモジュールとその URL */
 export type LoadedPart<Name extends PartName> = {
@@ -22,12 +32,14 @@ export type ImportModule = (url: string) => Promise<Record<string, unknown>>;
 export const PART_MODULE_FILES: Readonly<Record<PartName, string>> = {
   view: "view.js",
   comments: "comments.js",
+  map: "map.js",
 };
 
 /** 部品のモジュールが export しているべき関数の名前 */
 const PART_EXPORTS: Readonly<Record<PartName, readonly string[]>> = {
   view: ["drawView", "attachView"],
   comments: ["attachComments"],
+  map: ["attachMap"],
 };
 
 /** 書き出した HTML の起動の処理が、同じスクリプトにまとめた部品のモジュールを返却する関数を入れる。無い名前は `PART_MODULE_FILES` を `import.meta.url` から解決して読み込む */

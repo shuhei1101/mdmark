@@ -1,5 +1,6 @@
 import { ASSET_SCHEME, type ExportPayload } from "../cli/html.ts";
 import type { MdmarkConfig } from "../config.ts";
+import { MAP_QUERY_PREFIX } from "../map/state.ts";
 import { type MountHandle, mount } from "../mount.ts";
 import { renderDocList } from "../parts/doc-list.ts";
 import { includesOf } from "./includes.ts";
@@ -155,6 +156,17 @@ export function startBundle(
       );
     }
     const switched = path !== currentPath;
+    // 文書を切り替えたら、前の文書の map の状態（クエリ文字列の map-{図の番号}）を消す（履歴に追加しない）
+    if (switched && !initial) {
+      const params = new URLSearchParams(win.location.search);
+      for (const key of [...params.keys()]) {
+        if (key.startsWith(MAP_QUERY_PREFIX)) params.delete(key);
+      }
+      const search = params.toString();
+      const next = `${win.location.pathname}${search === "" ? "" : `?${search}`}${win.location.hash}`;
+      if (search !== win.location.search.replace(/^\?/, ""))
+        win.history.replaceState(win.history.state, "", next);
+    }
     if (switched) {
       showDocument(path);
     }

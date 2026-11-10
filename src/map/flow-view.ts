@@ -1,0 +1,462 @@
+import type { ResolvedConfig } from "../config.ts";
+import { attachDiagrams } from "../interact/diagrams.ts";
+import { renderDiagramFrame } from "../parts/diagram.ts";
+import { type MapPacketMark, renderMapFlow } from "../parts/map.ts";
+import { attachBand, type BandHandle, type BandStep } from "./band.ts";
+import { type MapData, parseMapData } from "./data.ts";
+import { applyWireShifts, startDrag } from "./drag.ts";
+import { type Flowchart, parseFlowchart } from "./flowchart.ts";
+import { layoutMap, type MapLayout, type MapOverride } from "./layout.ts";
+import type { MapArgs } from "./spec.ts";
+import {
+  emptyMapState,
+  type MapState,
+  readMapState,
+  writeMapState,
+} from "./state.ts";
+
+/** 強調するときに map-dim を付ける要素のセレクター（ノード・線・ラベル・ライフライン） */
+export const DIM_SELECTOR =
+  ".mdmark-diagram-node, .mdmark-diagram-wire, .mdmark-diagram-label, .mdmark-diagram-lifeline";
+
+/** attachMapFlow の戻り値 */
+export type MapFlowHandle = {
+  /** 外から強調を当てる（シーケンス図の再生） */
+  focus: (target: { nodes: string[]; wires: string[] }) => void;
+  /** 外から当てた強調を解く */
+  clearFocus: () => void;
+  /** 時計・観察・操作を外す */
+  destroy: () => void;
+};
+
+/** 補足の layout と状態から、ID ごとの配置の上書きを作る */
+const overridesOf = (
+  data: MapData,
+  state: MapState,
+  sizes: Record<string, { w: number; h: number }>,
+): Record<string, MapOverride> => {
+  const overrides: Record<string, MapOverride> = {};
+  for (const [id, entry] of Object.entries(data.layout)) {
+    overrides[id] = {
+      align: entry.align,
+      order: entry.order,
+      pos: entry.pos,
+      width: entry.width,
+      justify: entry.justify,
+      ends: entry.ends,
+      via: entry.via,
+    };
+  }
+  for (const [id, pos] of Object.entries(state.positions))
+    overrides[id] = { ...overrides[id], pos };
+  for (const [id, ends] of Object.entries(state.attachments))
+    overrides[id] = {
+      ...overrides[id],
+      ends: { ...overrides[id]?.ends, ...ends },
+    };
+  for (const [id, size] of Object.entries(sizes))
+    overrides[id] = { ...overrides[id], size };
+  return overrides;
+};
+
+/** 強調するノードどうしの線 */
+const wiresBetween = (layout: MapLayout, nodes: string[]): string[] => {
+  const set = new Set(nodes);
+  return layout.wires
+    .filter((wire) => set.has(wire.from) && set.has(wire.to))
+    .map((wire) => wire.id);
+};
+
+/** グループの親（無ければ undefined） */
+const parentOf = (chart: Flowchart, id: string): string | undefined =>
+  chart.groups.find((group) => group.id === id)?.parent ?? undefined;
+
+/** 構成図を読み取り、状態を読んで配置し、描いて測った大きさで配置し直し、操作を付ける */
+export const attachMapFlow = (
+  range: HTMLElement,
+  config: ResolvedConfig,
+  args: MapArgs,
+): MapFlowHandle => {
+  const index = Number(range.dataset.map ?? "1");
+  const source = range.querySelector("code")?.textContent ?? "";
+  const chart = parseFlowchart(source);
+  const { data } = parseMapData(
+    range.querySelector(".mdmark-map-data")?.textContent ?? undefined,
+  );
+  const ids = new Set([
+    ...chart.nodes.map((node) => node.id),
+    ...chart.groups.map((group) => group.id),
+  ]);
+  const storage =
+    typeof sessionStorage === "undefined" ? undefined : sessionStorage;
+  let state: MapState = {
+    ...emptyMapState(),
+    ...readMapState({
+      index,
+      ids,
+      urlState: config.map.url_state,
+      focus: args.focus,
+      collapsed: Object.entries(data.layout)
+        .filter(([, entry]) => entry.collapsed === true)
+        .map(([id]) => id),
+      storage,
+      location,
+    }),
+  };
+  const notes = Object.fromEntries(
+    Object.entries(data.notes).map(([id, note]) => [id, note.text]),
+  );
+  const wireLines = Object.fromEntries(
+    Object.entries(data.layout).flatMap(([id, entry]) =>
+      entry.line === undefined ? [] : [[id, entry.line]],
+    ),
+  );
+  const sizes: Record<string, { w: number; h: number }> = {};
+  let focus: { nodes: string[]; wires: string[] } | undefined;
+  let layout: MapLayout = layoutMap(
+    chart,
+    { collapsed: state.collapsed, entered: state.entered },
+    overridesOf(data, state, sizes),
+    config.map.node_fit,
+  );
+  const frameId = `map-${index}`;
+  const tools = () => [
+    {
+      name: "back",
+      label: "外へ戻る",
+      disabled: state.entered === undefined,
+    },
+    { name: "expandAll", label: "全て開く" },
+    { name: "collapseAll", label: "全て閉じる" },
+    {
+      name: "reset",
+      label: "配置と選択を元に戻す",
+      disabled:
+        state.selected.length === 0 &&
+        Object.keys(state.positions).length === 0 &&
+        Object.keys(state.wireShifts).length === 0,
+    },
+  ];
+  const body = () => {
+    const applied = applyWireShifts(layout, state);
+    const shown = { ...layout, wires: applied.wires };
+    const packets: MapPacketMark[] = [];
+    return {
+      html: renderMapFlow({
+        layout: shown,
+        kinds: config.map.kinds,
+        lines: config.map.lines,
+        wireLines,
+        notes,
+        collapsed: state.collapsed,
+        entered: state.entered,
+        selected: state.selected,
+        focus,
+        packets,
+        dragging: undefined,
+        id: frameId,
+      }),
+      width: layout.width,
+      height: layout.height,
+      tips: "",
+    };
+  };
+  range.innerHTML = renderDiagramFrame(
+    {
+      kind: "map",
+      title: args.title ?? "",
+      legend: [],
+      wide: true,
+      tools: tools(),
+      id: frameId,
+    },
+    body(),
+  );
+  const figure = range.querySelector<HTMLElement>("figure") as HTMLElement;
+  const detachDiagrams = attachDiagrams({
+    root: range,
+    placement: "bottom",
+    figures: [figure],
+  });
+
+  const save = () =>
+    writeMapState({
+      index,
+      state,
+      urlState: config.map.url_state,
+      storage,
+      history,
+      location,
+    });
+  /** 状態から配置し直して、図の中身とツールを描き直す */
+  const refresh = (relayout = true) => {
+    if (relayout)
+      layout = layoutMap(
+        chart,
+        { collapsed: state.collapsed, entered: state.entered },
+        overridesOf(data, state, sizes),
+        config.map.node_fit,
+      );
+    const part = body();
+    const stage = figure.querySelector<HTMLElement>(".mdmark-diagram-stage");
+    const sizer = figure.querySelector<HTMLElement>(".mdmark-diagram-sizer");
+    if (stage) {
+      stage.innerHTML = part.html;
+      stage.style.width = `${part.width}px`;
+      stage.style.height = `${part.height}px`;
+    }
+    if (sizer) {
+      sizer.style.width = `${part.width}px`;
+      sizer.style.height = `${part.height}px`;
+    }
+    for (const item of tools()) {
+      const button = figure.querySelector<HTMLButtonElement>(
+        `[data-tool="${item.name}"]`,
+      );
+      if (button) button.disabled = item.disabled === true;
+    }
+  };
+  const change = (next: MapState) => {
+    state = next;
+    save();
+    refresh();
+  };
+  /** 選択と強調を、描いた要素のクラスで当て直す（要素は差し替えない） */
+  const emphasize = () => {
+    const stage = figure.querySelector<HTMLElement>(".mdmark-diagram-stage");
+    if (!stage) return;
+    const selected = new Set(state.selected);
+    const kept =
+      selected.size > 0
+        ? {
+            nodes: selected,
+            wires: new Set(
+              layout.wires
+                .filter((wire) =>
+                  selected.size === 1
+                    ? selected.has(wire.from) || selected.has(wire.to)
+                    : selected.has(wire.from) && selected.has(wire.to),
+                )
+                .map((wire) => wire.id),
+            ),
+          }
+        : focus === undefined
+          ? undefined
+          : { nodes: new Set(focus.nodes), wires: new Set(focus.wires) };
+    for (const element of stage.querySelectorAll<Element>(
+      ".mdmark-diagram-node[data-node]",
+    )) {
+      const id = element.getAttribute("data-node") ?? "";
+      element.classList.toggle("is-selected", selected.has(id));
+      element.classList.toggle(
+        "map-dim",
+        kept !== undefined && !kept.nodes.has(id),
+      );
+    }
+    for (const element of stage.querySelectorAll<Element>(
+      ".mdmark-diagram-wire[data-wire]",
+    )) {
+      const id = element.getAttribute("data-wire") ?? "";
+      element.classList.toggle(
+        "map-dim",
+        kept !== undefined && !kept.wires.has(id),
+      );
+    }
+    const reset = figure.querySelector<HTMLButtonElement>(
+      '[data-tool="reset"]',
+    );
+    if (reset)
+      reset.disabled =
+        state.selected.length === 0 &&
+        Object.keys(state.positions).length === 0 &&
+        Object.keys(state.wireShifts).length === 0;
+  };
+  /** 選択だけを変える（配置し直さない） */
+  const changeSelection = (selected: string[]) => {
+    state = { ...state, selected };
+    save();
+    emphasize();
+  };
+  /** 描いたノードの中身を測り、見積もりより大きいノードを測った大きさにして配置し直す */
+  const measure = () => {
+    let changed = false;
+    for (const node of layout.nodes) {
+      const element = figure.querySelector<HTMLElement>(
+        `.mdmark-diagram-node[data-node="${CSS.escape(node.id)}"]`,
+      );
+      if (!element) continue;
+      const h = Math.ceil(element.scrollHeight);
+      if (h > node.h + 1) {
+        sizes[node.id] = { w: node.w, h };
+        changed = true;
+      }
+    }
+    if (changed) refresh();
+  };
+  measure();
+
+  const groupsUnder = (id: string): string[] =>
+    chart.groups
+      .filter((group) => {
+        for (
+          let at: string | undefined = group.id;
+          at;
+          at = parentOf(chart, at)
+        )
+          if (at === id) return true;
+        return false;
+      })
+      .map((group) => group.id);
+  const toggleGroup = (id: string, all: boolean) => {
+    const targets = all ? groupsUnder(id) : [id];
+    const closing = !state.collapsed.includes(id);
+    const set = new Set(state.collapsed);
+    for (const target of targets) {
+      if (closing) set.add(target);
+      else set.delete(target);
+    }
+    change({ ...state, collapsed: [...set] });
+  };
+  const select = (ids: string[]) => {
+    const all = ids.every((id) => state.selected.includes(id));
+    const next = all
+      ? state.selected.filter((id) => !ids.includes(id))
+      : [...new Set([...state.selected, ...ids])];
+    changeSelection(next);
+  };
+  const onClick = (event: MouseEvent) => {
+    const target = event.target instanceof Element ? event.target : undefined;
+    const toggle = target?.closest<HTMLElement>("[data-group-toggle]");
+    if (toggle) {
+      toggleGroup(toggle.dataset.groupToggle ?? "", event.shiftKey);
+      return;
+    }
+    const enter = target?.closest<HTMLElement>("[data-group-enter]");
+    if (enter) {
+      change({ ...state, entered: enter.dataset.groupEnter, selected: [] });
+      return;
+    }
+    const tool = target?.closest<HTMLButtonElement>("[data-tool]");
+    if (!tool || tool.disabled) return;
+    if (tool.dataset.tool === "back" && state.entered !== undefined)
+      change({ ...state, entered: parentOf(chart, state.entered) });
+    else if (tool.dataset.tool === "expandAll")
+      change({ ...state, collapsed: [] });
+    else if (tool.dataset.tool === "collapseAll")
+      change({
+        ...state,
+        collapsed: chart.groups
+          .map((group) => group.id)
+          .filter((id) => id !== state.entered),
+      });
+    else if (tool.dataset.tool === "reset")
+      change({
+        ...state,
+        selected: [],
+        positions: {},
+        wireShifts: {},
+        attachments: {},
+      });
+  };
+  const onPointerDown = (event: PointerEvent) => {
+    if (event.button !== 0) return;
+    const target = event.target instanceof Element ? event.target : undefined;
+    if (!target || target.closest("button, .mdmark-diagram-node-name")) return;
+    const node = target.closest("[data-node]")?.getAttribute("data-node");
+    const wire = target.closest(".map-wire-hit")?.getAttribute("data-wire");
+    const head = target.closest(".map-group-head, .map-group-bar");
+    if (!node && !wire && !head) return;
+    event.preventDefault();
+    startDrag({
+      event,
+      layout: { ...layout, wires: applyWireShifts(layout, state).wires },
+      state,
+      onMove: (next) => {
+        state = next;
+        refresh();
+      },
+      onClick: () => {
+        if (node) select([node]);
+        else if (wire) {
+          const item = layout.wires.find((one) => one.id === wire);
+          if (item) select([item.from, item.to]);
+        }
+      },
+    });
+    const finish = () => {
+      window.removeEventListener("pointerup", finish);
+      save();
+    };
+    window.addEventListener("pointerup", finish);
+  };
+  const onKeyDown = (event: KeyboardEvent) => {
+    if (event.key !== "Escape") return;
+    if (state.selected.length > 0) changeSelection([]);
+    else if (state.entered !== undefined)
+      change({ ...state, entered: parentOf(chart, state.entered) });
+  };
+  figure.addEventListener("click", onClick);
+  figure.addEventListener("pointerdown", onPointerDown);
+  figure.addEventListener("keydown", onKeyDown);
+
+  let band: BandHandle | undefined;
+  if (data.walkthroughs.length > 0) {
+    const steps: BandStep[] = data.walkthroughs.map((step) => ({
+      title: step.title ?? "",
+      text: step.text,
+      nodes: step.nodes,
+      wires: step.edges ?? [],
+      enter: step.enter,
+    }));
+    band = attachBand({
+      figure,
+      mode: "walkthrough",
+      steps,
+      interval: args.interval,
+      autoplay: args.play === "autoplay",
+      reducedMotion:
+        typeof matchMedia !== "undefined" &&
+        matchMedia("(prefers-reduced-motion: reduce)").matches,
+      apply: (step) => {
+        if (step?.enter !== undefined && step.enter !== state.entered)
+          state = { ...state, entered: step.enter };
+        focus =
+          step === undefined
+            ? undefined
+            : {
+                nodes: step.nodes,
+                wires:
+                  step.wires.length > 0
+                    ? step.wires
+                    : wiresBetween(layout, step.nodes),
+              };
+        refresh();
+      },
+    });
+  }
+
+  return {
+    focus: (target) => {
+      band?.stop();
+      focus = {
+        nodes: target.nodes,
+        wires:
+          target.wires.length > 0
+            ? target.wires
+            : wiresBetween(layout, target.nodes),
+      };
+      emphasize();
+    },
+    clearFocus: () => {
+      focus = undefined;
+      emphasize();
+    },
+    destroy: () => {
+      band?.destroy();
+      detachDiagrams();
+      figure.removeEventListener("click", onClick);
+      figure.removeEventListener("pointerdown", onPointerDown);
+      figure.removeEventListener("keydown", onKeyDown);
+    },
+  };
+};

@@ -73,5 +73,5 @@ entries:
     reason: 説明文の単語を対応表の置き換え先にしただけで、キーと型は変えないので、古い CSS のテンプレートの索引もそのまま新しい Schema に合う
   - version: next
     schema: mdmark.config.schema.json
-    sha256: da6fe20d43de7f2f385d0071c714ec7bf8a8f38e8448096ef56d0d0d8a942c52
-    reason: 省いてよい table と、その中の省いてよい pin を足しただけで、古い設定もそのまま新しい Schema に合う
+    sha256: b06ad7017ba653f33a9a62fc6bf9d78d5df0149c4adf1c9e995f2be1f1c9030a
+    reason: 省いてよい table と、その中の省いてよい pin と、features に省いてよい map と、省いてよい map（node_fit・url_state・kinds・lines）を足しただけで、古い設定もそのまま新しい Schema に合う

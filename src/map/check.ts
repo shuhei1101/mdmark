@@ -1,6 +1,6 @@
 import { parseMapData } from "./data.ts";
 import { parseFlowchart } from "./flowchart.ts";
-import { LUCIDE_ICON_NAMES } from "./lucide-names.ts";
+import { lucideIconNames } from "./lucide-names.ts";
 import { parseSequence } from "./sequence.ts";
 import {
   MAP_ARG_KEYS,
@@ -133,7 +133,7 @@ export const checkMapConfig = (
   if (typeof kinds !== "object" || kinds === null) return issues;
   for (const [name, kind] of Object.entries(kinds)) {
     const icon = (kind as { icon?: unknown } | null)?.icon;
-    if (typeof icon === "string" && !LUCIDE_ICON_NAMES.has(icon)) {
+    if (typeof icon === "string" && !lucideIconNames().has(icon)) {
       issues.push({
         key: `map.kinds.${name}.icon`,
         message: `\`${icon}\` は Lucide のアイコンの名前にありません。Lucide のアイコンの名前（\`database\` など）にしてください。`,

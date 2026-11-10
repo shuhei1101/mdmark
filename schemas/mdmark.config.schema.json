@@ -147,6 +147,12 @@
           "type": "boolean",
           "default": true
         },
+        "map": {
+          "title": "map の機能",
+          "description": "`<!-- map -->` の範囲の Mermaid と補足を、入れ子のグループを自動で配置した図にする。オフのときは範囲のマーカーと補足を取り除き、Mermaid のブロックを mermaid のコードブロックとして描く。文書の `<!-- features: -map -->` がその文書だけ上書きする。",
+          "type": "boolean",
+          "default": true
+        },
         "hints": {
           "title": "ヒントの機能",
           "description": "埋め込んだ HTML の `data-hint`、図のノードの `hint`・`io`、線の `tip` のツールチップを出す。オフのときはマーカーとツールチップの中身を出さず、線のラベルとノードの名前は出す。",
@@ -409,6 +415,89 @@
           "additionalProperties": true
         }
       }
+    },
+    "map": {
+      "title": "map の設定",
+      "description": "map の図の、名前の長いノードの広げ方・状態をクエリ文字列に保つか・ノードの種類・線の種類。",
+      "type": "object",
+      "properties": {
+        "node_fit": {
+          "title": "名前の長いノードの広げ方",
+          "description": "`height` は幅を上限 220px のまま折り返して高さを増やし、`width` は幅を上限 360px まで広げてから折り返す。",
+          "type": "string",
+          "enum": ["height", "width"],
+          "default": "height"
+        },
+        "url_state": {
+          "title": "状態をクエリ文字列に保つか",
+          "description": "中へ入ったグループと、シーケンス図の中だけを描くブロックを、URL のクエリ文字列 `map-{図の番号}` にも保つか。`false` ではクエリ文字列を読みも書きもせず、sessionStorage だけに保つ。",
+          "type": "boolean",
+          "default": true
+        },
+        "kinds": {
+          "title": "ノードの種類",
+          "description": "Mermaid のクラス名（`:::名前`）ごとのノードの種類。",
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "properties": {
+              "label": {
+                "type": "string",
+                "description": "種類の行の名前。"
+              },
+              "icon": {
+                "type": "string",
+                "description": "Lucide のアイコンの名前。"
+              },
+              "shape": {
+                "type": "string",
+                "enum": ["rounded", "rect", "pill", "double"],
+                "default": "rounded",
+                "description": "形状。"
+              },
+              "color": {
+                "type": "string",
+                "description": "色の名前（`blue`・`green` など）。"
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "lines": {
+          "title": "線の種類",
+          "description": "Mermaid の矢印（`-->`・`-.->`・`==>`）ごとと、補足の `layout` の `line` で指す名前ごとの線の種類。",
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "properties": {
+              "dash": {
+                "type": "string",
+                "enum": ["solid", "dashed", "dotted", "dash-dot", "long-dash"],
+                "default": "solid",
+                "description": "模様。"
+              },
+              "width": {
+                "type": "string",
+                "enum": ["thin", "normal", "thick"],
+                "default": "normal",
+                "description": "太さ。"
+              },
+              "head": {
+                "type": "string",
+                "enum": ["filled", "open", "none"],
+                "default": "filled",
+                "description": "矢じり。"
+              },
+              "color": {
+                "type": "string",
+                "description": "色の名前（`blue`・`green` など）。"
+              }
+            },
+            "additionalProperties": false
+          }
+        }
+      },
+      "additionalProperties": false
     },
     "theme": {
       "title": "利用側の CSS",

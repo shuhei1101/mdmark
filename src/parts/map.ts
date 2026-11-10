@@ -198,7 +198,15 @@ export const renderMapFlow = (args: MapFlowArgs): string => {
         `<span class="map-packet" data-wire="${escapeHtml(packet.wire)}" data-shape="${packet.shape}" data-reverse="${packet.reverse}" style="--map-packet-color:${escapeHtml(packet.color)}"></span>`,
     )
     .join("");
-  return `${groups}${html}${closedHtml}${packets}`;
+  // 線を押す・指す場所: 見える線より太い透明の線（区間の移動にも使う）
+  const hits = layout.wires
+    .map(
+      (wire) =>
+        `<path class="map-wire-hit" data-wire="${escapeHtml(wire.id)}" d="${wire.points.map(([x, y], index) => `${index === 0 ? "M" : "L"}${x} ${y}`).join("")}"></path>`,
+    )
+    .join("");
+  const hitLayer = `<svg class="map-wire-hits" width="${layout.width}" height="${layout.height}">${hits}</svg>`;
+  return `${groups}${html}${hitLayer}${closedHtml}${packets}`;
 };
 
 /** 部品『案内の帯』の引数 */
@@ -338,7 +346,7 @@ export const renderMapSequence = (args: MapSequenceArgs): string => {
     const body =
       index === args.entered
         ? `<span class="map-seq-fragment-title is-current">${fragmentTitle(fragment)}</span>`
-        : `<button class="map-disclosure" type="button" data-fragment-toggle="${index}" aria-expanded="${expanded}" aria-label="${escapeHtml(`${label}を${expanded ? "閉じる" : "開く"}`)}">${iconSvg(expanded ? "chevron-down" : "chevron-right")}</button><button class="map-seq-fragment-title" type="button" data-fragment-enter="${index}" title="このブロックの中だけを見る">${fragmentTitle(fragment)}</button>`;
+        : `<button class="map-disclosure" type="button" data-fragment-toggle="${index}" aria-expanded="${expanded}" aria-label="${escapeHtml(`${label}を${expanded ? "閉じる" : "開く"}`)}">${iconSvg(expanded ? "chevron-down" : "chevron-right")}</button><button class="map-seq-fragment-title" type="button" data-fragment-enter="${index}" aria-label="${escapeHtml(`${label}の中だけを見る`)}" title="このブロックの中だけを見る">${fragmentTitle(fragment)}</button>`;
     return `<span class="map-seq-fragment-tab" data-kind="${fragment.kind}" data-fragment="${index}" style="left:${left}px;top:${top}px">${body}${extra}</span>`;
   };
   rows.forEach((row, at) => {
@@ -499,7 +507,7 @@ export const renderMapSequence = (args: MapSequenceArgs): string => {
           name !== focusEnds.to)
           ? " map-dim"
           : "";
-      return `<line class="mdmark-diagram-lifeline${dim}" data-participant="${escapeHtml(name)}" x1="${x.get(name)}" y1="${MAP_SEQ.headTop + MAP_SEQ.headH}" x2="${x.get(name)}" y2="${height - 12}"></line>`;
+      return `<line class="mdmark-diagram-lifeline${dim}" data-lifeline="${escapeHtml(name)}" x1="${x.get(name)}" y1="${MAP_SEQ.headTop + MAP_SEQ.headH}" x2="${x.get(name)}" y2="${height - 12}"></line>`;
     })
     .join("");
   const markers = (["filled", "cross", "async"] as const)
@@ -534,7 +542,7 @@ export const renderMapSequence = (args: MapSequenceArgs): string => {
           name !== focusEnds.to)
           ? " map-dim"
           : "";
-      return `<div class="mdmark-diagram-node map-participant map-kinded${dim}${selected.has(name) ? " is-selected" : ""}" data-kind="map" data-shape="${kind?.shape ?? "rounded"}"${kind?.color === undefined ? "" : ` data-color="${escapeHtml(kind.color)}"`} data-node="${escapeHtml(name)}" data-participant="${escapeHtml(name)}" role="button" tabindex="0" aria-pressed="${selected.has(name)}" style="left:${(x.get(name) ?? 0) - MAP_SEQ.headW / 2}px;top:${MAP_SEQ.headTop}px;width:${MAP_SEQ.headW}px;height:${MAP_SEQ.headH}px"><span class="mdmark-diagram-node-kind${icon === "" && tag === "" ? " is-empty" : ""}">${icon}${tag}</span><span class="mdmark-diagram-node-name">${escapeHtml(labelOf(name))}</span></div>`;
+      return `<div class="mdmark-diagram-node map-participant map-kinded${dim}${selected.has(name) ? " is-selected" : ""}" data-kind="map" data-shape="${kind?.shape ?? "rounded"}"${kind?.color === undefined ? "" : ` data-color="${escapeHtml(kind.color)}"`} data-node="${escapeHtml(name)}" data-participant="${escapeHtml(name)}" role="button" tabindex="0" aria-pressed="${selected.has(name)}" style="left:${(x.get(name) ?? 0) - MAP_SEQ.headW / 2}px;top:${MAP_SEQ.headTop}px;width:${MAP_SEQ.headW}px"><span class="mdmark-diagram-node-kind${icon === "" && tag === "" ? " is-empty" : ""}">${icon}${tag}</span><span class="mdmark-diagram-node-name">${escapeHtml(labelOf(name))}</span></div>`;
     })
     .join("");
   return [

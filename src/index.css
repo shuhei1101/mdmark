@@ -10412,4 +10412,560 @@
       display: none;
     }
   }
+
+  /* map の図: 今のフロー図・シーケンス図の部品の上に、入れ子のグループ・色・強調・案内と再生の帯を重ねる */
+
+  /* グループ: 線とノードの下に置く面。色の名前を指定すると、その色の面と文字にする */
+  .map-group {
+    position: absolute;
+    box-sizing: border-box;
+    border: 1px solid var(--map-ink, var(--mdmark-color-border));
+    border-radius: calc(var(--mdmark-radius) * 2);
+    background: var(
+      --map-fill,
+      color-mix(in srgb, var(--mdmark-color-surface) 50%, transparent)
+    );
+  }
+  /* グループの見出し: 左上に、開閉の山形とタイトルを並べる */
+  .map-group-head {
+    position: absolute;
+    top: 6px;
+    left: 6px;
+    display: flex;
+    align-items: center;
+    gap: 2px;
+  }
+  .map-group-title.is-current {
+    display: inline-flex;
+    align-items: center;
+    cursor: text;
+  }
+  .map-group-title {
+    min-height: 24px;
+    padding: 0 4px;
+    border: 0;
+    border-radius: var(--mdmark-radius);
+    background: none;
+    color: var(--map-ink, var(--mdmark-color-text));
+    font: inherit;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+  }
+  /* 開閉の山形: 枠と面を持たず、グループの文字の色のアイコンだけを出す。押せる範囲は 24px */
+  .map-disclosure {
+    display: inline-grid;
+    place-items: center;
+    width: 24px;
+    height: 24px;
+    padding: 0;
+    border: 0;
+    border-radius: var(--mdmark-radius);
+    background: none;
+    color: var(--map-ink, var(--mdmark-color-muted));
+    cursor: pointer;
+  }
+  .map-disclosure:hover {
+    background: color-mix(in srgb, currentColor 12%, transparent);
+  }
+  .map-disclosure .mdmark-diagram-icon {
+    width: 16px;
+    height: 16px;
+  }
+  /* 閉じたグループの開くボタンも、開いたグループと同じく左上に置く */
+  .map-closed-group > .map-disclosure {
+    position: absolute;
+    top: 4px;
+    left: 4px;
+  }
+  .mdmark-diagram[data-diagram="map"]
+    .mdmark-diagram-stage
+    > .mdmark-diagram-node.map-closed-group {
+    padding-left: 30px;
+  }
+  .map-closed-group {
+    border-style: double;
+    border-width: 3px;
+  }
+  /* 閉じたグループは処理のノードと見分けるため、種類のアイコンを出さない */
+  .map-closed-group .mdmark-diagram-node-kind svg {
+    display: none;
+  }
+  :is(.map-group-title, .map-disclosure):focus-visible {
+    outline: 2px solid var(--mdmark-color-link);
+    outline-offset: 2px;
+  }
+
+  /* 線: 色の名前の線 */
+  .mdmark-diagram[data-diagram="map"] .map-colored-wire,
+  .mdmark-diagram[data-diagram="map"] .map-colored-wire path {
+    stroke: var(--map-wire);
+  }
+  .map-wire-hit {
+    fill: none;
+    stroke: transparent;
+    stroke-width: 14;
+    pointer-events: stroke;
+  }
+  .map-wire-tip {
+    position: absolute;
+    z-index: 3;
+    width: max-content;
+    max-width: 320px;
+    padding: 6px 10px;
+    border: 1px solid var(--mdmark-color-border);
+    border-radius: var(--mdmark-radius);
+    background: var(--mdmark-color-bg-opaque, var(--mdmark-color-bg));
+    box-shadow: 0 4px 12px rgb(0 0 0 / 12%);
+    font-size: 13px;
+    white-space: pre-line;
+    pointer-events: none;
+  }
+
+  /* 色を指定したノード */
+  .mdmark-diagram[data-diagram="map"] .mdmark-diagram-node.map-colored {
+    border-color: var(--map-ink);
+    background: var(--map-fill);
+  }
+
+  /* 中へ入ったグループの外は薄くする */
+  .mdmark-diagram[data-diagram="map"] .map-faded {
+    opacity: 0.4;
+    border-style: dashed;
+  }
+  /* 強調: 強調する要素の表示は変えず、案内・再生・参加者の選択で強調しない要素と、線のホバーでほかの要素を薄くする */
+  .mdmark-diagram[data-diagram="map"] .map-dim,
+  .mdmark-diagram[data-diagram="map"]
+    .map-focus
+    :is(
+      .mdmark-diagram-node,
+      .mdmark-diagram-wire,
+      .mdmark-diagram-label,
+      .mdmark-diagram-lifeline
+    ):not(.map-keep) {
+    opacity: 0.25;
+  }
+  .mdmark-diagram[data-diagram="map"] .map-focus .map-keep {
+    opacity: 1;
+  }
+  .mdmark-diagram[data-diagram="map"]
+    :is(
+      .mdmark-diagram-node,
+      .mdmark-diagram-wire,
+      .mdmark-diagram-label,
+      .mdmark-diagram-lifeline
+    ) {
+    transition: opacity 0.15s;
+  }
+
+  /* データの印: 線の上を元から先へ流れる */
+  .map-packet {
+    stroke: var(--mdmark-color-bg);
+    stroke-width: 1.5;
+    /* 印の上にポインターが来ても、線のホバーを外さない */
+    pointer-events: none;
+  }
+
+  /* 図を動かす矢印のボタンは出さない（枠の中のスクロールで動かす） */
+  .mdmark-diagram[data-diagram="map"] [data-group="pan"] {
+    display: none;
+  }
+
+  /* シーケンス図の参加者: 押すとその参加者のメッセージを強調する */
+  .mdmark-diagram[data-diagram="map"] .map-participant {
+    cursor: pointer;
+  }
+  .mdmark-diagram[data-diagram="map"] .map-participant:focus-visible {
+    outline: 2px solid var(--mdmark-color-link);
+    outline-offset: 2px;
+  }
+
+  /* 案内と再生の帯: 図の枠の下。1 行目は番号（左）と操作のボタン（右）、2 行目からが説明の文 */
+  .map-band {
+    margin-top: 4px;
+    padding: 4px 8px 6px 12px;
+    border: 1px solid var(--mdmark-color-border);
+    border-radius: calc(var(--mdmark-radius) * 2);
+    background: var(--mdmark-color-surface);
+  }
+  .map-band-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+  .map-band-actions {
+    display: flex;
+    gap: 4px;
+  }
+  .map-band-count {
+    font-size: 12px;
+    font-variant-numeric: tabular-nums;
+    color: var(--mdmark-color-muted);
+  }
+  .map-band-text {
+    margin: 4px 0 0;
+    white-space: pre-line;
+  }
+
+  .mdmark-diagram[data-diagram="map"] .map-participant.is-dragging {
+    z-index: 3;
+    opacity: 0.8;
+    cursor: grabbing;
+  }
+  /* 並べ替えで挿入する場所を示す縦の線 */
+  .map-insert-line {
+    position: absolute;
+    z-index: 4;
+    top: 8px;
+    bottom: 0;
+    width: 3px;
+    margin-left: -1.5px;
+    border-radius: 2px;
+    background: var(--mdmark-color-link);
+    pointer-events: none;
+  }
+
+  /* 使う側の設定の種類のノード: 形（角の丸い四角・角の四角・丸い端・二重の枠）と、種類の色の枠と種類の行 */
+  .mdmark-diagram[data-diagram="map"] .mdmark-diagram-node[data-shape="rect"] {
+    border-radius: 2px;
+  }
+  .mdmark-diagram[data-diagram="map"] .mdmark-diagram-node[data-shape="pill"] {
+    border-radius: 999px;
+    padding-inline: 16px;
+  }
+  .mdmark-diagram[data-diagram="map"]
+    .mdmark-diagram-node[data-shape="double"] {
+    border-style: double;
+    border-width: 4px;
+  }
+  .mdmark-diagram[data-diagram="map"] .mdmark-diagram-node.map-kinded {
+    border-color: var(--map-kind, var(--mdmark-color-border));
+  }
+  .mdmark-diagram[data-diagram="map"]
+    .mdmark-diagram-node.map-kinded
+    .mdmark-diagram-node-kind {
+    color: var(--map-kind, var(--mdmark-color-muted));
+  }
+
+  /* 書き方の警告: 今の記載の警告と同じ破線の枠 */
+  .map-warning {
+    margin: 1em 0 0;
+    padding: 8px 12px;
+    border: 1px dashed var(--mdmark-color-notice-border);
+    border-radius: var(--mdmark-radius);
+  }
+  .map-warning p {
+    margin: 0 0 4px;
+    font-weight: 700;
+  }
+  .map-warning ul {
+    margin: 0;
+    padding-left: 1.2em;
+  }
+
+  /* 手順のタイトル: 1 行目の番号とボタンの間。狭い幅では番号とボタンの下の行に回す */
+  .map-band {
+    container-type: inline-size;
+  }
+  .map-band-title {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    font-size: 14px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  @container (max-width: 420px) {
+    .map-band-head {
+      flex-wrap: wrap;
+    }
+    .map-band-title {
+      flex-basis: 100%;
+      order: 3;
+      white-space: normal;
+    }
+  }
+
+  /* シーケンス図の見出しと注記の行に渡した空のメッセージ */
+  .mdmark-diagram[data-diagram="map"] .map-gap {
+    display: none;
+  }
+  /* 複合フラグメント（loop・alt など）: 関わる参加者の列を囲む枠と、左上の種類とラベルのタブ、区間の破線 */
+  .map-seq-fragment {
+    fill: color-mix(in srgb, var(--mdmark-color-surface) 60%, transparent);
+    stroke: var(--mdmark-color-border);
+    stroke-width: 1;
+  }
+  .map-seq-fragment.is-rect {
+    fill: color-mix(in srgb, var(--mdmark-color-link) 8%, transparent);
+    stroke: none;
+  }
+  .map-seq-section {
+    stroke: var(--mdmark-color-border);
+    stroke-dasharray: 5 4;
+  }
+  .map-seq-fragment-tab,
+  .map-seq-section-label {
+    position: absolute;
+    z-index: 1;
+    padding: 1px 8px;
+    font-size: 12px;
+    color: var(--mdmark-color-muted);
+    white-space: nowrap;
+    pointer-events: none;
+  }
+  .map-seq-fragment-tab {
+    border: 1px solid var(--mdmark-color-border);
+    border-radius: 4px 0 4px 0;
+    background: var(--mdmark-color-surface);
+  }
+  .map-seq-fragment-tab b {
+    color: var(--mdmark-color-text);
+  }
+  /* 注記: 参加者の左・右・上に置く箱 */
+  .map-seq-note {
+    position: absolute;
+    z-index: 1;
+    box-sizing: border-box;
+    padding: 4px 8px;
+    border: 1px solid
+      var(--mdmark-color-accent-yellow-text, var(--mdmark-color-border));
+    border-radius: 4px;
+    background: var(
+      --mdmark-color-accent-yellow-bg,
+      var(--mdmark-color-surface)
+    );
+    font-size: 12px;
+    text-align: center;
+  }
+  /* 活性化の帯: 参加者の縦線の上の細い帯 */
+  .map-seq-activation {
+    fill: var(--mdmark-color-bg);
+    stroke: var(--mdmark-color-muted);
+    stroke-width: 1;
+  }
+
+  /* ノードの中身: 種類の行（アイコンと名前）を常に左上に置き、ノードの名前をその下から並べる。右上の i と開閉の山形の分だけ右を空ける */
+  .mdmark-diagram[data-diagram="map"]
+    .mdmark-diagram-stage
+    > .mdmark-diagram-node {
+    justify-content: flex-start;
+    padding-right: 28px;
+  }
+  /* シーケンス図の参加者の箱は、名前が 2 行になっても詰まらないよう高さを中身に合わせる */
+  .mdmark-diagram[data-diagram="map"] .map-participant {
+    height: auto;
+    min-height: 56px;
+    padding-right: 30px;
+  }
+  /* 押して選べるノード */
+  .mdmark-diagram[data-diagram="map"] .map-selectable {
+    cursor: pointer;
+  }
+
+  /* リサイズハンドル: 枠線と面を持たず、表示する枠の下端（横のスクロールバーの下）の右端に横の 2 本線だけを置く。下端の帯のどこでも上下にドラッグできる */
+  .mdmark-diagram[data-diagram="map"] .mdmark-diagram-resize {
+    position: static;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    width: auto;
+    height: 12px;
+    padding: 0 6px;
+    border: 0;
+    border-radius: 0;
+    background: none;
+    color: var(--mdmark-color-muted);
+    cursor: ns-resize;
+    touch-action: none;
+  }
+  .mdmark-diagram[data-diagram="map"]
+    .mdmark-diagram-resize
+    .mdmark-diagram-icon {
+    width: 16px;
+    height: 12px;
+  }
+  .mdmark-diagram[data-diagram="map"] .mdmark-diagram-resize:hover,
+  .mdmark-diagram[data-diagram="map"] .mdmark-diagram-resize:focus-visible {
+    color: var(--mdmark-color-text);
+  }
+  /* ノードの名前は、日本語でも文節の切れ目で折り返す */
+  .mdmark-diagram[data-diagram="map"] .mdmark-diagram-node-name {
+    word-break: auto-phrase;
+  }
+  /* ノードの種類の行と名前の間を少し空ける */
+  .mdmark-diagram[data-diagram="map"]
+    .mdmark-diagram-node
+    .mdmark-diagram-node-kind {
+    margin-bottom: 4px;
+  }
+
+  /* 複合フラグメントのタブ: 開閉の山形と、押すとブロックの中だけを見る種類とラベル */
+  .map-seq-fragment-tab {
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+    padding: 0 8px 0 0;
+    pointer-events: auto;
+  }
+  .map-seq-fragment-tab .map-disclosure {
+    width: 22px;
+    height: 22px;
+  }
+  .map-seq-fragment-title {
+    padding: 1px 2px;
+    border: 0;
+    border-radius: var(--mdmark-radius);
+    background: none;
+    color: var(--mdmark-color-muted);
+    font: inherit;
+    cursor: pointer;
+  }
+  .map-seq-fragment-title:hover {
+    text-decoration: underline;
+  }
+  .map-seq-fragment-count {
+    margin-left: 8px;
+    color: var(--mdmark-color-muted);
+  }
+  .map-seq-fragment.is-collapsed {
+    stroke-dasharray: 4 3;
+  }
+  .map-seq-fragment-tab[data-kind="rect"] {
+    border-color: color-mix(in srgb, var(--mdmark-color-link) 80%, transparent);
+  }
+  /* ドラッグで動かしているノード */
+  .mdmark-diagram[data-diagram="map"] .mdmark-diagram-node.is-dragging {
+    cursor: grabbing;
+  }
+
+  /* ノードの名前の文字は選んでコピーできる。名前の外（種類の行と余白）を押すと選択、ドラッグで移動 */
+  .mdmark-diagram[data-diagram="map"]
+    .map-selectable
+    .mdmark-diagram-node-name {
+    cursor: text;
+    user-select: text;
+  }
+  /* 種類の行は、選択と移動の押す場所として高さ 24px 以上を取る（種類の無いノードでも空の行を残す） */
+  .mdmark-diagram[data-diagram="map"]
+    .mdmark-diagram-stage
+    > .mdmark-diagram-node
+    .mdmark-diagram-node-kind {
+    min-height: 24px;
+    margin-top: -4px;
+    margin-bottom: 0;
+    cursor: grab;
+  }
+  /* シーケンス図の参加者の名前の文字も、選んでコピーできる */
+  .mdmark-diagram[data-diagram="map"]
+    .map-participant
+    .mdmark-diagram-node-name {
+    cursor: text;
+    user-select: text;
+  }
+
+  /* 参加者の箱は、名前の文字の外を押したまま左右へ動かして並べ替える */
+  .mdmark-diagram[data-diagram="map"] .map-participant {
+    cursor: grab;
+  }
+  /* 種類の行（アイコンと種類の名前）は文字の選択の対象にしない。選んでコピーできるのはノードと参加者の名前の文字だけ */
+  .mdmark-diagram[data-diagram="map"]
+    .mdmark-diagram-node
+    .mdmark-diagram-node-kind {
+    user-select: none;
+  }
+
+  /* 押して選べる・動かせる場所は全て持ち手のポインター。選んでコピーできる名前の文字だけ文字のポインター */
+  .mdmark-diagram[data-diagram="map"] .map-selectable,
+  .mdmark-diagram[data-diagram="map"] .map-participant,
+  .mdmark-diagram[data-diagram="map"]
+    .mdmark-diagram-node
+    .mdmark-diagram-node-kind {
+    cursor: grab;
+  }
+  .mdmark-diagram[data-diagram="map"]
+    :is(.map-selectable, .map-participant)
+    .mdmark-diagram-node-name {
+    cursor: text;
+  }
+  /* 中だけを見ているブロックのタブの名前は押せない */
+  .map-seq-fragment-title.is-current {
+    padding: 1px 6px;
+    cursor: default;
+  }
+  .map-seq-fragment-title.is-current:hover {
+    text-decoration: none;
+  }
+  /* map の図の題の行には、範囲と更新日を出さない（中へ入ったグループやブロックは枠とタブで分かる） */
+  .mdmark-diagram[data-diagram="map"] .mdmark-diagram-meta {
+    display: none;
+  }
+
+  /* シーケンス図のブロックと補助線を見分けやすくする: ブロックの枠線を濃くして面を少し色付け、区間の破線とライフラインを濃くする */
+  .mdmark-diagram[data-diagram="map"] .map-seq-fragment {
+    fill: color-mix(in srgb, var(--mdmark-color-muted) 7%, transparent);
+    stroke: color-mix(in srgb, var(--mdmark-color-muted) 70%, transparent);
+    stroke-width: 1;
+  }
+  .mdmark-diagram[data-diagram="map"] .map-seq-fragment.is-rect {
+    fill: color-mix(in srgb, var(--mdmark-color-link) 10%, transparent);
+    stroke: color-mix(in srgb, var(--mdmark-color-link) 80%, transparent);
+    stroke-width: 1;
+  }
+  .mdmark-diagram[data-diagram="map"] .map-seq-section {
+    stroke: color-mix(in srgb, var(--mdmark-color-muted) 70%, transparent);
+    stroke-width: 1;
+  }
+  .mdmark-diagram[data-diagram="map"] .map-seq-fragment-tab {
+    border-color: color-mix(
+      in srgb,
+      var(--mdmark-color-muted) 70%,
+      transparent
+    );
+    color: var(--mdmark-color-text);
+  }
+  .mdmark-diagram[data-diagram="map"] .mdmark-diagram-lifeline {
+    stroke: color-mix(in srgb, var(--mdmark-color-muted) 70%, transparent);
+  }
+
+  /* 色を指定しない構成図のグループの枠線も、シーケンス図のブロックと同じ濃さにする（太さは色付きのグループと同じ 1px） */
+  .map-group {
+    border-color: var(
+      --map-ink,
+      color-mix(in srgb, var(--mdmark-color-muted) 70%, transparent)
+    );
+  }
+  /* 動かせるグループ: タイトルの行（上端から 36px）を押したままドラッグする。面は図を動かす */
+  .mdmark-diagram[data-diagram="map"] .map-group-bar {
+    position: absolute;
+    inset: 0 0 auto 0;
+    height: 36px;
+    cursor: grab;
+  }
+  .mdmark-diagram[data-diagram="map"] .map-group.map-movable .map-group-head {
+    cursor: grab;
+  }
+
+  /* 線を押す・指す場所の層: ノードより上、グループのボタンより下 */
+  .map-wire-hits {
+    position: absolute;
+    inset: 0 auto auto 0;
+    overflow: visible;
+    pointer-events: none;
+  }
+  /* 選んだノード・参加者 */
+  .mdmark-diagram[data-diagram="map"] .mdmark-diagram-node.is-selected {
+    outline: 2px solid var(--mdmark-color-link);
+    outline-offset: 2px;
+  }
+  /* 図を入れた折りたたみ */
+  .map-collapse > summary {
+    cursor: pointer;
+    font-weight: 600;
+  }
+  /* map の図は置き場所の幅いっぱいに広げる */
+  .mdmark-diagram[data-diagram="map"][data-wide="true"] {
+    max-width: none;
+  }
 }

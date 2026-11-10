@@ -8,7 +8,10 @@ const kebab = (name: string): string =>
     .replace(/([a-zA-Z])([0-9])/g, "$1-$2")
     .toLowerCase();
 
-/** 採用バージョンの lucide のパッケージのアイコンの名前（kebab-case） */
-export const LUCIDE_ICON_NAMES: ReadonlySet<string> = new Set(
-  Object.keys(icons).map(kebab),
-);
+let names: ReadonlySet<string> | undefined;
+
+/** 採用バージョンの lucide のパッケージのアイコンの名前（kebab-case）。点検で呼んだときだけ作る（使わない配布ファイルにアイコンを束ねない） */
+export const lucideIconNames = (): ReadonlySet<string> => {
+  names ??= new Set(Object.keys(icons).map(kebab));
+  return names;
+};

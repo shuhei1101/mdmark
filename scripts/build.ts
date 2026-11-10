@@ -30,8 +30,8 @@ import { checkMigrations } from "./migrations.ts";
 
 // 埋めるバージョンが合うべき書式
 const VERSION_PATTERN = /^v\d+\.\d+\.\d+$/;
-// 配布ファイル 1 つの上限（非機能要件の 624KB）
-const MAX_DIST_FILE_BYTES = 624 * 1024;
+// 配布ファイル 1 つの上限（非機能要件の 656KB）
+const MAX_DIST_FILE_BYTES = 656 * 1024;
 // 配布物にまとめた依存のライセンスを記載する、`dist/` の中のファイル名
 const LICENSES_FILE = "THIRD_PARTY_LICENSES.txt";
 // サイズを検めない配布ファイル（利用側のページが jsDelivr から読み込まない出力）
@@ -103,7 +103,7 @@ export async function emitDeclarations(root: string): Promise<void> {
   }
 }
 
-/** ビューとコメントの部品のモジュール `src/views/index.ts` と `src/comments/index.ts` を `dist/view.js` と `dist/comments.js` にまとめる。使用する関数はそれぞれのファイルにまとめ、`dist/index.js` は読み込まない。ソースが無ければ何も書き込まない */
+/** ビュー・コメント・map の部品のモジュール `src/views/index.ts`・`src/comments/index.ts`・`src/map/index.ts` を `dist/view.js`・`dist/comments.js`・`dist/map.js` にまとめる。使用する関数はそれぞれのファイルにまとめ、`dist/index.js` は読み込まない。ソースが無ければ何も書き込まない */
 async function buildParts(
   version: string,
   root: string,
@@ -111,6 +111,7 @@ async function buildParts(
   const entryPoints = [
     { in: "src/views/index.ts", out: "view" },
     { in: "src/comments/index.ts", out: "comments" },
+    { in: "src/map/index.ts", out: "map" },
   ].filter((entry) => existsSync(join(root, entry.in)));
   if (entryPoints.length === 0) {
     return {};

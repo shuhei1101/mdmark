@@ -10,7 +10,7 @@ import {
 import type { MdmarkAlias } from "../../src/knowledge/aliases.ts";
 import type { PreviewSettings } from "./settings.ts";
 
-/** `mount` に指定する設定。設定ファイルから取り出した `features`・`libraries`・`html-scripts`・`side-toc`・`table`・`labels`・`mermaid`・`colorTheme`・`colorScheme` */
+/** `mount` に指定する設定。設定ファイルから取り出した `features`・`libraries`・`html-scripts`・`side-toc`・`table`・`labels`・`mermaid`・`map`・`colorTheme`・`colorScheme` */
 export type PreviewConfig = {
   /** 記載した値のまま（中の知らない名前と型の違う値は mdmark が無視する） */
   features?: Record<string, unknown>;
@@ -26,6 +26,8 @@ export type PreviewConfig = {
   labels?: Record<string, unknown>;
   /** 記載した値のまま。`url` は呼ぶ側が修正する（`theme` の知らない名前は mdmark が `mdmark` で描く） */
   mermaid?: Record<string, unknown>;
+  /** 記載した値のまま（知らない値は mdmark が既定で描く） */
+  map?: Record<string, unknown>;
   /** 記載した値のまま。`mdmark.colorTheme` が空でないときは `applyColorTheme` がその値に置き換える（知らない名前は mdmark が dev-swiss で描く） */
   colorTheme?: string;
   /** 記載した値のまま。プレビューでは `mdmark.preview.theme` が `light`・`dark` のとき `applyPreviewTheme` が除く（知らない値は mdmark が `auto` で描く） */
@@ -128,7 +130,7 @@ export function resolveConfigPath(options: {
   return isAbsolute(configPath) ? configPath : resolve(baseDir, configPath);
 }
 
-/** 重ねた設定から `mount` に指定するキー（マップの `features`・`libraries`・`html-scripts`・`side-toc`・`table`・`labels`・`mermaid` と文字列の `colorTheme`・`colorScheme`）だけを取り出す */
+/** 重ねた設定から `mount` に指定するキー（マップの `features`・`libraries`・`html-scripts`・`side-toc`・`table`・`labels`・`mermaid`・`map` と文字列の `colorTheme`・`colorScheme`）だけを取り出す */
 function pickPreviewConfig(config: Record<string, unknown>): PreviewConfig {
   const picked: PreviewConfig = {};
   if (isMap(config.features)) {
@@ -151,6 +153,9 @@ function pickPreviewConfig(config: Record<string, unknown>): PreviewConfig {
   }
   if (isMap(config.mermaid)) {
     picked.mermaid = config.mermaid;
+  }
+  if (isMap(config.map)) {
+    picked.map = config.map;
   }
   if (typeof config.colorTheme === "string") {
     picked.colorTheme = config.colorTheme;
