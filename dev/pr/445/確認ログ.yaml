@@ -83,3 +83,9 @@ confirmations:
     approver: shuhei1101
     commit: 8bb462c5
     thread: https://github.com/shuhei1101/mdmark/pull/445#discussion_r4524676854
+  - topic: グループのドラッグとクエリ文字列の状態を加えた map のモックへの合意
+    decision: dev/mock/pages/document/445/a-map/ のモック（グループはタイトルの行でつかむ・中へ入った状態を map-{図の番号} のクエリ文字列にも保つ・map.url_state で止める）で進める（案 A）
+    decided_by: thumbs_up
+    approver: shuhei1101
+    commit: 8f86d88c
+    thread: https://github.com/shuhei1101/mdmark/pull/445#discussion_r4524785481
