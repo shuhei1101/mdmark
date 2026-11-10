@@ -1487,6 +1487,8 @@ export const createSequence = (host, spec, kinds, onStep) => {
     auto: false,
     /** 閉じた複合フラグメント（sequence.fragments の番号） */
     collapsed: new Set(),
+    /** 参加者の箱が既定より高いとき、最初の行の前に空ける行の数（一番高い箱の下端から行を始める） */
+    headRows: 0,
     /** 中だけを見ている複合フラグメントの番号 */
     enter: undefined,
   };
@@ -1500,7 +1502,7 @@ export const createSequence = (host, spec, kinds, onStep) => {
     const oldViewport = host.querySelector(".mdmark-diagram-viewport");
     const scroll = oldViewport ? [oldViewport.scrollLeft, oldViewport.scrollTop] : [0, 0];
     const view = { collapsed: state.collapsed, enter: state.enter };
-    const rows = sequenceRows(sequence, view);
+    const rows = [...Array.from({ length: state.headRows }, () => ({ gap: true })), ...sequenceRows(sequence, view)];
     const shownSet = new Set(rows.flatMap((row) => (row.message === undefined ? [] : [row.message])));
     const shown = sequence.messages.map((message, index) => ({ message, index })).filter(({ index }) => shownSet.has(index));
     // ブロックの中だけを見ているときは、ブロックの中のメッセージに関わる参加者だけを出す
@@ -1732,6 +1734,14 @@ export const createSequence = (host, spec, kinds, onStep) => {
     viewport.scrollLeft = scroll[0];
     viewport.scrollTop = scroll[1];
     window.scrollTo({ top: pageY });
+    // 名前が 3 行以上に折り返して箱が高くなったときは、最初の行（タブ・注記・メッセージのラベルの上端は行の 30px 上）が一番高い箱の 8px 下から始まるよう、空ける行を決め直して描き直す
+    const tallest = Math.max(...[...stage.querySelectorAll(".map-participant")].map((head) => head.offsetTop + head.offsetHeight));
+    const firstTop = SEQ_ROW.firstY - 30;
+    const needed = Math.max(0, Math.ceil((tallest + 8 - firstTop) / SEQ_ROW.height));
+    if (needed !== state.headRows) {
+      state.headRows = needed;
+      render();
+    }
   };
 
   /**
