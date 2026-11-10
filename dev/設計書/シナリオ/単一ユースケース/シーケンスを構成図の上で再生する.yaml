@@ -93,3 +93,21 @@ scenarios:
       - シーケンス図が画面に入ると、押さずに再生が始まり、再生の帯が出る
       - '`play` を持たない正常シナリオの図は、押すまで再生しない'
     test: test_normal_when_autoplay
+  - name: 正常シナリオ（印の引数で間隔を指定する）
+    setup:
+      - name: 図を描いたページ
+        description: 正常シナリオのシーケンス図を 2 つ持つ文書を描いたページ。1 つ目の印に `interval=1`、2 つ目の印に `interval=abc` を持つ
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 読者
+        participant D as 構成図
+        U->>D: 1 つ目のシーケンス図の再生を自動で進める
+        D-->>U: 1 秒ごとに次のメッセージへ進める
+        U->>D: 2 つ目のシーケンス図の再生を自動で進める
+        D-->>U: 既定の 2 秒ごとに次のメッセージへ進める
+    expected:
+      - '`interval=1` の図は、1 秒ごとに次のメッセージへ進む'
+      - '`interval=abc` の図の枠の上に、`interval` の値を読めない旨の書き方の警告があり、既定の 2 秒ごとに次のメッセージへ進む'
+    test: test_normal_when_interval
