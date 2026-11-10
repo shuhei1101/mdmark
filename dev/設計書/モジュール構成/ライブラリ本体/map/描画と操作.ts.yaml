@@ -1,5 +1,13 @@
 title: ライブラリ本体 / map / 描画と操作
 lead: '`dist/map.js` の入口と、構成図・シーケンス図を描いて開閉・中へ入る・選択・移動・案内・再生の操作を付け、状態を sessionStorage とクエリ文字列に保つ処理と、部品の HTML。ブラウザでだけ動く（部品の HTML は Node でも動く）。'
+test_files:
+- tests/unit/src/map/state.test.ts
+- tests/unit/src/map/drag.browser.test.ts
+- tests/unit/src/map/band.browser.test.ts
+- tests/unit/src/map/index.browser.test.ts
+- tests/unit/src/map/flow-view.browser.test.ts
+- tests/unit/src/map/sequence-view.browser.test.ts
+- tests/unit/src/parts/map.test.ts
 data_models:
 - name: MapPartModule
   title: mapの部品のモジュール

@@ -1,5 +1,10 @@
 title: ライブラリ本体 / map / 読み取り
 lead: map の範囲の `flowchart`・`sequenceDiagram` の Mermaid と、補足の YAML を読み取る。描画を止めず、読めない行と箇所を項目にして返す。
+test_files:
+- tests/unit/src/map/flowchart.test.ts
+- tests/unit/src/map/sequence.test.ts
+- tests/unit/src/map/data.test.ts
+- tests/unit/src/map/spec.test.ts
 data_models:
 - name: Flowchart
   title: 構成図の読み取り結果
