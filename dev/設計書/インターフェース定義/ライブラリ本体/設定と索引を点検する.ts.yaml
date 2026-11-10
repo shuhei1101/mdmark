@@ -642,7 +642,7 @@ flows:
     expected:
       - 終了コードが 1
       - '`-:4: map_invalid:` で始まり `A -> B` と `-->` にする修正方法を含む行と、`-:8: map_unknown_key:` で始まり `layuot` を含む行がある'
-      - 各行の内容が、同じ文字列を `render` で描いたときの書き方の警告の項目と同じ文
+      - 各行の内容が、同じ文字列を `mount` で描いたときの、図の枠の前の書き方の警告の項目と同じ文（どちらも `collectMapProblems` の項目の文）
       - 最後の行が `ずれ 2 件`
     test: test_normal_when_text_map_warnings
     refs:
