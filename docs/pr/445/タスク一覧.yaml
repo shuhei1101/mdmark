@@ -50,9 +50,15 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-10T12:48:03.580746+00:00'
   - process: 部品設計
-    status: todo
+    status: done
+    note: mapの構成図・mapのシーケンス図・案内の帯を新設し、図の枠・フロー図・シーケンス図・図のツールチップに map の分を足した（9716197f）
+    updated_by: planner
+    updated_at: '2026-11-10T13:18:02.402100+00:00'
   - process: 画面設計
-    status: todo
+    status: done
+    note: 文書.ts に map の構成図・map のシーケンス図・map の案内の帯の要素を足した（9716197f）
+    updated_by: planner
+    updated_at: '2026-11-10T13:18:02.402100+00:00'
   - process: モジュール構成設計
     status: todo
   - process: ドキュメント修正
