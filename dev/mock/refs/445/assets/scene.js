@@ -93,11 +93,12 @@ sequenceSlot.closest(".mdmark-wide-range")?.parentElement.classList.add("map-wid
 sequenceSlot.replaceWith(sequenceHost);
 /**
  * map の図の wide の範囲は、右側の目次の右端の線の手前まで広げる。今の wide は、ポインターを当てたときだけ出す目次のパネル（透明）の左端で止まるため、
- * 目次をピン止めしていない（hover）ときは右端の線を、ピン止めしたときはパネルを右の端にする（実装では wide の範囲の幅の決め方を変える）
+ * 目次をピン止めしていないときは右端の線を、ピン止めしたときはパネルを右の端にする（実装では wide の範囲の幅の決め方を変える）
  */
 const fitMapWide = () => {
   const toc = doc.querySelector(".mdmark-side-toc");
-  const edge = toc?.dataset.mode === "hover" ? toc.querySelector(".mdmark-side-toc-rail") : toc?.querySelector(".mdmark-side-toc-panel");
+  const pinned = toc?.hasAttribute("data-pinned") || toc?.dataset.mode !== "hover";
+  const edge = pinned ? toc?.querySelector(".mdmark-side-toc-panel") : toc?.querySelector(".mdmark-side-toc-rail");
   const right = (edge ? edge.getBoundingClientRect().left : document.documentElement.clientWidth) - 16;
   for (const range of doc.querySelectorAll(".map-wide > .mdmark-wide-range")) {
     range.style.width = `${right - range.getBoundingClientRect().left}px`;
@@ -121,6 +122,12 @@ map = createMap(
 if (scene === "play") sequenceView.start(0);
 fitMapWide();
 addEventListener("resize", fitMapWide);
+// 目次のピン止めを切り替えたとき（data-pinned・data-mode の変化）も、パネルが動き終えてから幅を決め直す
+const toc = doc.querySelector(".mdmark-side-toc");
+if (toc) {
+  new MutationObserver(() => requestAnimationFrame(fitMapWide)).observe(toc, { attributes: true, attributeFilter: ["data-mode", "data-pinned"] });
+  toc.addEventListener("transitionend", fitMapWide);
+}
 
 if (scene === "warnings") {
   // 書き方の警告: 図の枠の上に、読めない行・知らないキー・知らない引数を並べる

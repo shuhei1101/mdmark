@@ -22,12 +22,12 @@ use_cases:
   - kind: single
     scenario: dev/設計書/シナリオ/単一ユースケース/図を描く.yaml
     impact: run_only
-    detail: 座標で書いたフロー図・シーケンス図は変わらないが、図の枠と凡例を map と共通にするため壊しうる
+    detail: 座標で書いたフロー図・シーケンス図は変わらないが、図の枠と凡例を map と共通にするため壊しうる。図の枠のリサイズハンドルのアイコンが、点の並びから横の 2 本線に変わる
     depends_on: []
   - kind: single
     scenario: dev/設計書/シナリオ/単一ユースケース/図を拡大・縮小・移動する.yaml
     impact: run_only
-    detail: 拡大・縮小・移動の操作を map と共通にするため壊しうる
+    detail: 拡大・縮小・移動の操作を map と共通にするため壊しうる。リサイズハンドルのアイコンが、点の並びから横の 2 本線に変わる（操作は変わらない）
     depends_on: []
   - kind: single
     scenario: dev/設計書/シナリオ/単一ユースケース/図の要素のツールチップを確認する.yaml
