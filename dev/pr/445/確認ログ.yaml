@@ -59,3 +59,15 @@ confirmations:
     approver: shuhei1101
     commit: fbc3df82
     thread: https://github.com/shuhei1101/mdmark/pull/445#discussion_r4521863814
+  - topic: map のシーケンス図の名前の無いブロックの名前の付け方
+    decision: '`rect` の直前の `%% block: 名前` のコメントで名前を付ける（案 C）。Mermaid ではコメントとして無視されるため、ほかの場所でも描ける'
+    decided_by: thumbs_up
+    approver: shuhei1101
+    commit: d1b5dc04
+    thread: https://github.com/shuhei1101/mdmark/pull/445#discussion_r4522473344
+  - topic: map の長い名前のノードの広げ方の既定（map.node_fit）
+    decision: 既定は height（幅は上限 220px のまま、折り返して高さを増やす。案 A）。width は設定で選ぶ
+    decided_by: thumbs_up
+    approver: shuhei1101
+    commit: d1b5dc04
+    thread: https://github.com/shuhei1101/mdmark/pull/445#discussion_r4522474052

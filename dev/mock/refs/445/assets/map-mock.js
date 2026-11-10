@@ -481,8 +481,12 @@ export const createMap = (host, spec, initial = {}) => {
     revealHot(viewport, stage, layout);
   };
 
-  /** 動かした線の区間を、線の点に当てる。点の数が変わった線（配置し直して経路が変わった線）のずらしは捨てる */
+  /**
+   * 動かした線の区間を、線の点に当てる。点の数が変わった線（配置し直して経路が変わった線）のずらしは捨てる。
+   * 両端の区間はノードにつながる端の点をノードの辺に沿って動かし、辺の端から 8px より外へは出さない
+   */
   const applyWireShifts = (layout) => {
+    const rectOf = (id) => layout.leaves.find((leaf) => leaf.id === id);
     for (const edge of layout.edges) {
       const shift = state.wireShifts[edge.id];
       if (!shift) continue;
@@ -490,10 +494,19 @@ export const createMap = (host, spec, initial = {}) => {
         delete state.wireShifts[edge.id];
         continue;
       }
-      for (const [index, delta] of Object.entries(shift.segments)) {
-        const a = edge.points[Number(index)];
-        const b = edge.points[Number(index) + 1];
+      const last = edge.points.length - 2;
+      for (const [key, wanted] of Object.entries(shift.segments)) {
+        const index = Number(key);
+        const a = edge.points[index];
+        const b = edge.points[index + 1];
         const axis = a[1] === b[1] ? 1 : 0;
+        let delta = wanted;
+        for (const [point, id] of [index === 0 ? [a, edge.from] : undefined, index === last ? [b, edge.to] : undefined].filter(Boolean)) {
+          const rect = rectOf(id);
+          if (!rect) continue;
+          const [low, high] = axis === 1 ? [rect.y + 8, rect.y + rect.h - 8] : [rect.x + 8, rect.x + rect.w - 8];
+          delta = Math.min(Math.max(delta, low - point[axis]), high - point[axis]);
+        }
         a[axis] += delta;
         b[axis] += delta;
       }
@@ -574,12 +587,12 @@ export const createMap = (host, spec, initial = {}) => {
   let suppressClick = false;
 
   /**
-   * 線の区間のドラッグ: 折れ線の両端以外の区間を押したまま、区間と直角の向きへ動かす（横の区間は上下、縦の区間は左右）。
-   * 両端の区間はノードにつながるため動かさない
+   * 線の区間のドラッグ: どの区間も押したまま、区間と直角の向きへ動かす（横の区間は上下、縦の区間は左右）。
+   * 両端の区間は、ノードにつながる端をノードの辺に沿って動かす（applyWireShifts）
    */
   const innerSegment = (edge, point) => {
     let best;
-    for (let index = 1; index < edge.points.length - 2; index += 1) {
+    for (let index = 0; index < edge.points.length - 1; index += 1) {
       const [a, b] = [edge.points[index], edge.points[index + 1]];
       const horizontal = a[1] === b[1];
       const inRange = horizontal ? point[0] >= Math.min(a[0], b[0]) - 4 && point[0] <= Math.max(a[0], b[0]) + 4 : point[1] >= Math.min(a[1], b[1]) - 4 && point[1] <= Math.max(a[1], b[1]) + 4;
@@ -848,16 +861,17 @@ export const createMap = (host, spec, initial = {}) => {
       element.classList.add("map-selectable");
       // 選んでいるかは data-selected に持つ（ノードは中に i のボタンを持つため、ボタンの役割は付けない。キーボードでの選び方は部品設計で決める）
       element.toggleAttribute("data-selected", state.selected.has(leaf.id));
-      element.title = "押すと、このノードとつながる線だけを残す。ドラッグで動かす";
+      element.title = "名前の外を押すと、このノードとつながる線だけを残す。ドラッグで動かす";
       element.addEventListener("pointerdown", (event) => {
-        if (event.button !== 0 || event.target.closest("button")) return;
+        // 名前の文字の上は、文字を選んでコピーできるよう、ドラッグと選択の対象にしない
+        if (event.button !== 0 || event.target.closest("button, .mdmark-diagram-node-name")) return;
         // 図の枠のドラッグ（図を動かす）に渡さない
         event.stopPropagation();
         startNodeDrag(event, stage, layout, leaf, element);
       });
       element.addEventListener("click", (event) => {
-        // ノードの中のボタン（i・開閉の山形）を押したときと、ドラッグした後は選ばない
-        if (event.target.closest("button")) return;
+        // ノードの中のボタン（i・開閉の山形）と名前の文字を押したとき、ドラッグした後は選ばない
+        if (event.target.closest("button, .mdmark-diagram-node-name")) return;
         if (suppressClick) {
           suppressClick = false;
           return;
@@ -1227,7 +1241,7 @@ const sequenceRows = (sequence, view = { collapsed: new Set(), enter: undefined 
 };
 
 /** 複合フラグメントの枠・注記・活性化の帯・矢印の種類・番号を、描いたシーケンス図の上に足す */
-const decorateSequence = ({ stage, svg, rows, rowWires, rowLabels, wires, messageLabels, visible, heads, sequence, blockTitles, enter, onToggle, onEnter }) => {
+const decorateSequence = ({ stage, svg, rows, rowWires, rowLabels, wires, messageLabels, visible, heads, sequence, onToggle, onEnter }) => {
   const rowY = (at) => SEQ_ROW.firstY + at * SEQ_ROW.height;
   const columnX = (id) => {
     const head = heads(id);
@@ -1244,9 +1258,8 @@ const decorateSequence = ({ stage, svg, rows, rowWires, rowLabels, wires, messag
   under.setAttribute("class", "map-seq-under");
   svg.prepend(under);
   // 複合フラグメント: 関わる参加者の列を囲み、左上に開閉の山形と種類とラベルのタブ（押すとブロックの中だけを見る）、else・and・option の区間を破線で分ける。
-  // rect は名前の無いブロックで、補足の blocks の順に名前を付ける
-  const rects = sequence.fragments.filter((item) => item.kind === "rect");
-  const titleOf = (fragment) => (fragment.kind === "rect" ? (blockTitles[rects.indexOf(fragment)] ?? "") : fragment.label);
+  // rect は名前の無いブロックで、直前の `%% block: 名前` のコメントで名前を付ける（読み取りで label に入る）
+  const titleOf = (fragment) => fragment.label;
   const tabOf = (fragment, at, expanded, left, top) => {
     const tab = document.createElement("span");
     tab.className = `map-seq-fragment-tab${fragment.kind === "rect" ? " is-block" : ""}`;
@@ -1438,7 +1451,7 @@ export const createSequence = (host, spec, kinds, onStep) => {
     const visible = state.enter === undefined ? state.order : state.order.filter((id) => involved.has(id));
     const definition = {
       title: spec.title,
-      scope: state.enter === undefined ? "map のシーケンス図" : `${sequence.fragments[state.enter].kind === "rect" ? "ブロック" : sequence.fragments[state.enter].kind}「${sequence.fragments[state.enter].kind === "rect" ? (spec.blocks ?? [])[sequence.fragments.filter((item) => item.kind === "rect").indexOf(sequence.fragments[state.enter])] ?? "" : sequence.fragments[state.enter].label}」の中`,
+      scope: state.enter === undefined ? "map のシーケンス図" : `${sequence.fragments[state.enter].kind === "rect" ? "ブロック" : sequence.fragments[state.enter].kind}「${sequence.fragments[state.enter].label}」の中`,
       updated: "2026-11-09",
       participants: visible.map((id) => ({ id, kind: "script", name: labelOf(id) })),
       steps: rows.map((row) =>
@@ -1472,8 +1485,6 @@ export const createSequence = (host, spec, kinds, onStep) => {
       heads,
       figure,
       sequence,
-      blockTitles: spec.blocks ?? [],
-      enter: state.enter,
       onToggle: (index, all) => {
         // Shift を押しながらだと、そのブロックと中のブロックを全て開閉する
         const targets = all ? sequence.fragments.flatMap((item, at) => (item.start >= sequence.fragments[index].start && item.end <= sequence.fragments[index].end ? [at] : [])) : [index];

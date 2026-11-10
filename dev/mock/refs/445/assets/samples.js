@@ -68,8 +68,6 @@ export const DATA = {
 
 export const SEQUENCE = {
   title: "文書を描くまで",
-  /** 名前の無いブロック（Mermaid の rect）に、出てくる順に付ける名前 */
-  blocks: ["描く前の準備"],
   /** メッセージの番号（1 から）ごとの説明。ポインターを当てたときのツールチップに出す */
   notes: {
     2: "map の範囲の Markdown と印の引数",
@@ -82,6 +80,7 @@ export const SEQUENCE = {
   participant marker as map のマーカーの読み取り
   participant mermaid as Mermaid の記法の読み取り
   participant layout as 自動配置
+  %% block: 描く前の準備
   rect rgb(240, 244, 255)
     user->>+mount: 設定と Markdown
   end

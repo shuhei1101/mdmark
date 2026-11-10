@@ -1,4 +1,4 @@
-// モックの自動配置と記法の読み取り: PoC（#446、commit 3e4d731e8 の poc/map/layout.ts・parse.ts）をまとめ、中へ入ったときの外の要素の選び方・グループのタイトルの高さ（36px）・ノードの大きさ（今のフロー図のノードの外観に合わせる）を修正し、両向きの矢印（<-->）の読み取りと、シーケンス図の全ての記法（複合フラグメント・注記・活性化・まとまり・autonumber・矢印の種類）の読み取り・測ったノードの大きさでの配置を追加したもの。手で修正しない
+// モックの自動配置と記法の読み取り: PoC（#446、commit 3e4d731e8 の poc/map/layout.ts・parse.ts）をまとめ、中へ入ったときの外の要素の選び方・グループのタイトルの高さ（36px）・ノードの大きさ（今のフロー図のノードの外観に合わせる）を修正し、両向きの矢印（<-->）の読み取りと、シーケンス図の全ての記法（複合フラグメント・注記・活性化・まとまり・autonumber・矢印の種類）の読み取り・`%% block: 名前` のブロックの名前・測ったノードの大きさでの配置を追加したもの。手で修正しない
 // check.ts
 var LABEL_METRICS = {
   kindSize: 11,
@@ -897,6 +897,7 @@ var parseSequence = (source) => {
   const active = /* @__PURE__ */ new Map();
   let group;
   let autonumber = false;
+  let pendingBlock;
   const ensure = (id) => {
     if (!participants.has(id)) participants.set(id, { id, label: id, actor: false });
   };
@@ -915,8 +916,15 @@ var parseSequence = (source) => {
   };
   source.split("\n").slice(1).forEach((raw, index) => {
     const line = index + 2;
+    const block = /^\s*%%\s*block:\s*(.*)$/.exec(raw);
+    if (block) {
+      pendingBlock = (block[1] ?? "").trim();
+      return;
+    }
     const text = raw.replace(/%%.*$/, "").trim();
     if (text === "") return;
+    const blockName = pendingBlock;
+    pendingBlock = void 0;
     if (text === "autonumber") {
       autonumber = true;
       return;
@@ -938,11 +946,12 @@ var parseSequence = (source) => {
     if (new RegExp(`^destroy\\s+${SEQ_ID}$`).test(text)) return;
     const fragment = FRAGMENT_RE.exec(text);
     if (fragment?.[1]) {
+      const label = fragment[1] === "rect" ? blockName ?? "" : fragment[2] ?? "";
       const item = {
         kind: fragment[1],
-        label: fragment[2] ?? "",
+        label,
         depth: open.length,
-        sections: [{ start: messages.length, label: fragment[2] ?? "" }],
+        sections: [{ start: messages.length, label }],
         start: messages.length,
         end: messages.length
       };

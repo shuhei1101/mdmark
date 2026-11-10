@@ -64,10 +64,14 @@
   width: 16px;
   height: 16px;
 }
+/* 閉じたグループの開くボタンも、開いたグループと同じく左上に置く */
 .map-closed-group > .map-disclosure {
   position: absolute;
   top: 4px;
-  right: 4px;
+  left: 4px;
+}
+.map-figure .mdmark-diagram-stage > .mdmark-diagram-node.map-closed-group {
+  padding-left: 30px;
 }
 .map-closed-group {
   border-style: double;
@@ -424,4 +428,10 @@
 /* ドラッグで動かしているノード */
 .map-figure .mdmark-diagram-node.is-dragging {
   cursor: grabbing;
+}
+
+/* ノードの名前の文字は選んでコピーできる。名前の外（種類の行と余白）を押すと選択、ドラッグで移動 */
+.map-figure .map-selectable .mdmark-diagram-node-name {
+  cursor: text;
+  user-select: text;
 }
