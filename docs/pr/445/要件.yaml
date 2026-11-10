@@ -111,7 +111,7 @@ docs:
     status: done
   - page: docs/リファレンス/記法.md
     new: false
-    change: map のマーカーと引数・補足のキー・マーカーに対応しない表示での見え方を追加する
+    change: map のマーカーと引数・補足のキー・マーカーに対応しない表示での見え方を追加する（見出しのアンカーは `#map`。D-347 で補足の 1 行目が `map-data` でなくなったら、用語集の「補足」の別名も修正する）
     status: todo
   - page: docs/リファレンス/構成図の決まり.md
     new: false
