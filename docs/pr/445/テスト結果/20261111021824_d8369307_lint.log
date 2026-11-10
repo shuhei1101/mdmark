@@ -1,0 +1,108 @@
+$ npm run lint
+  
+  i Consider removing 'f' prefix from 'fit' to ensure all tests are executed.
+  
+  i Unsafe fix: Remove focus from test.
+  
+     77  77 │       handle.setAttribute(
+     78  78 │         "aria-valuemax",
+     79     │ - ······String(Math.round(Math.max(RESIZE.min,·fit(),·height))),
+         79 │ + ······String(Math.round(Math.max(RESIZE.min,·it(),·height))),
+     80  80 │       );
+     81  81 │       handle.setAttribute("aria-valuetext", `${Math.round(height)}px`);
+  
+
+src/interact/diagram-resize.ts:147:17 lint/suspicious/noFocusedTests  FIXABLE  ━━━━━━━━━━━━━━━━━━━━━
+
+  ! Don't focus the test.
+  
+    145 │     "dblclick",
+    146 │     () => {
+  > 147 │       setHeight(fit());
+        │                 ^^^
+    148 │     },
+    149 │     { signal },
+  
+  i The 'fit' method is often used for debugging or during implementation.
+  
+  i Consider removing 'f' prefix from 'fit' to ensure all tests are executed.
+  
+  i Unsafe fix: Remove focus from test.
+  
+    145 145 │       "dblclick",
+    146 146 │       () => {
+    147     │ - ······setHeight(fit());
+        147 │ + ······setHeight(it());
+    148 148 │       },
+    149 149 │       { signal },
+  
+
+Checked 937 files in 5s. No fixes applied.
+Found 3 warnings.
+exit: 0
+$ npm run lint:eslint
+
+> lint:eslint
+> node scripts/eslint.ts
+
+exit: 0
+$ npm run typecheck
+> typecheck
+> tsc --noEmit
+
+src/cli/markdown-check.ts(218,9): error TS2322: Type '{ file: string; where: string; kind: WarningKind; message: string; }[]' is not assignable to type 'CheckIssue[]'.
+  Type '{ file: string; where: string; kind: WarningKind; message: string; }' is not assignable to type 'CheckIssue'.
+    Types of property 'kind' are incompatible.
+      Type 'WarningKind' is not assignable to type '"alias_field_missing" | "alias_no_files" | "alias_records_missing" | "alias_required_empty" | "alias_unknown_type" | "alias_unreadable" | "avoided_term" | "broken_ref" | ... 20 more ... | FlowLayoutKind'.
+        Type '"map"' is not assignable to type '"alias_field_missing" | "alias_no_files" | "alias_records_missing" | "alias_required_empty" | "alias_unknown_type" | "alias_unreadable" | "avoided_term" | "broken_ref" | ... 20 more ... | FlowLayoutKind'.
+src/parts/diagram.ts(528,23): error TS2345: Argument of type 'IconNode' is not assignable to parameter of type 'MdmarkIconNode'.
+  Type '[tag: string, attrs: SVGProps]' is not assignable to type '[string, Record<string, string>]'.
+    Type at position 1 in source is not compatible with type at position 1 in target.
+      Type 'SVGProps' is not assignable to type 'Record<string, string>'.
+        'string' index signatures are incompatible.
+          Type 'string | number | undefined' is not assignable to type 'string'.
+            Type 'undefined' is not assignable to type 'string'.
+tests/unit/src/cli/check.test.ts(805,11): error TS2339: Property 'checkMaps' does not exist on type 'typeof import("/mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-diagram-map-mermaid-auto-layout/src/cli/check")'.
+tests/unit/src/cli/check.test.ts(819,22): error TS7006: Parameter 'issue' implicitly has an 'any' type.
+tests/unit/src/cli/check.test.ts(824,24): error TS7006: Parameter 'issue' implicitly has an 'any' type.
+tests/unit/src/cli/check.test.ts(828,23): error TS7006: Parameter 'issue' implicitly has an 'any' type.
+tests/unit/src/cli/check.test.ts(836,11): error TS2339: Property 'checkMaps' does not exist on type 'typeof import("/mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-diagram-map-mermaid-auto-layout/src/cli/check")'.
+tests/unit/src/cli/embed.test.ts(587,11): error TS2339: Property 'usesMap' does not exist on type 'typeof import("/mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-diagram-map-mermaid-auto-layout/src/cli/embed")'.
+tests/unit/src/cli/embed.test.ts(603,11): error TS2339: Property 'usesMap' does not exist on type 'typeof import("/mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-diagram-map-mermaid-auto-layout/src/cli/embed")'.
+tests/unit/src/map/data.test.ts(134,28): error TS2339: Property 'justify' does not exist on type 'MapLayoutEntry'.
+tests/unit/src/map/data.test.ts(135,40): error TS2339: Property 'ends' does not exist on type 'MapLayoutEntry'.
+tests/unit/src/map/flow-view.browser.test.ts(7,35): error TS2307: Cannot find module '../../../../src/map/flow-view.ts' or its corresponding type declarations.
+tests/unit/src/map/index.browser.test.ts(7,30): error TS2307: Cannot find module '../../../../src/map/index.ts' or its corresponding type declarations.
+tests/unit/src/map/sequence-view.browser.test.ts(7,39): error TS2307: Cannot find module '../../../../src/map/sequence-view.ts' or its corresponding type declarations.
+tests/unit/src/map/state.test.ts(43,5): error TS2353: Object literal may only specify known properties, and 'collapsed' does not exist in type '{ index: number; ids: Set<string>; urlState: boolean; focus: string | undefined; storage: Storage | undefined; location: Pick<Location, "pathname" | "search">; }'.
+tests/unit/src/map/state.test.ts(61,5): error TS2353: Object literal may only specify known properties, and 'collapsed' does not exist in type '{ index: number; ids: Set<string>; urlState: boolean; focus: string | undefined; storage: Storage | undefined; location: Pick<Location, "pathname" | "search">; }'.
+tests/unit/src/map/state.test.ts(79,5): error TS2353: Object literal may only specify known properties, and 'collapsed' does not exist in type '{ index: number; ids: Set<string>; urlState: boolean; focus: string | undefined; storage: Storage | undefined; location: Pick<Location, "pathname" | "search">; }'.
+tests/unit/src/map/state.test.ts(97,5): error TS2353: Object literal may only specify known properties, and 'collapsed' does not exist in type '{ index: number; ids: Set<string>; urlState: boolean; focus: string | undefined; storage: Storage | undefined; location: Pick<Location, "pathname" | "search">; }'.
+tests/unit/src/map/state.test.ts(119,5): error TS2353: Object literal may only specify known properties, and 'collapsed' does not exist in type '{ index: number; ids: Set<string>; urlState: boolean; focus: string | undefined; storage: Storage | undefined; location: Pick<Location, "pathname" | "search">; }'.
+tests/unit/src/map/state.test.ts(137,5): error TS2353: Object literal may only specify known properties, and 'collapsed' does not exist in type '{ index: number; ids: Set<string>; urlState: boolean; focus: string | undefined; storage: Storage | undefined; location: Pick<Location, "pathname" | "search">; }'.
+tests/unit/src/map/state.test.ts(180,7): error TS2353: Object literal may only specify known properties, and 'collapsed' does not exist in type '{ index: number; ids: Set<string>; urlState: boolean; focus: string | undefined; storage: Storage | undefined; location: Pick<Location, "pathname" | "search">; }'.
+tests/unit/src/map/state.test.ts(213,7): error TS2353: Object literal may only specify known properties, and 'collapsed' does not exist in type '{ index: number; ids: Set<string>; urlState: boolean; focus: string | undefined; storage: Storage | undefined; location: Pick<Location, "pathname" | "search">; }'.
+tests/unit/src/map/state.test.ts(244,7): error TS2353: Object literal may only specify known properties, and 'collapsed' does not exist in type '{ index: number; ids: Set<string>; urlState: boolean; focus: string | undefined; storage: Storage | undefined; location: Pick<Location, "pathname" | "search">; }'.
+tests/unit/src/parts/map.test.ts(34,11): error TS2339: Property 'renderMapFlow' does not exist on type 'typeof import("/mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-diagram-map-mermaid-auto-layout/src/parts/map")'.
+tests/unit/src/parts/map.test.ts(46,11): error TS2339: Property 'renderMapFlow' does not exist on type 'typeof import("/mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-diagram-map-mermaid-auto-layout/src/parts/map")'.
+tests/unit/src/parts/map.test.ts(59,11): error TS2339: Property 'renderMapSequence' does not exist on type 'typeof import("/mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-diagram-map-mermaid-auto-layout/src/parts/map")'.
+tests/unit/src/render/index.test.ts(19,3): error TS2741: Property 'map' is missing in type '{ features: { print: true; }; libraries: Record<string, LibraryEntry>; tooltips: { placement: "top"; diagramPlacement: "bottom"; }; syntax: { url: string; }; htmlScripts: { url: string; }; ... 5 more ...; table: { ...; }; }' but required in type 'ResolvedConfig'.
+exit: 1
+$ npm --prefix vscode run typecheck
+
+> mdmark-vscode@0.1.0 typecheck
+> tsc --noEmit
+
+../src/cli/markdown-check.ts(218,9): error TS2322: Type '{ file: string; where: string; kind: WarningKind; message: string; }[]' is not assignable to type 'CheckIssue[]'.
+  Type '{ file: string; where: string; kind: WarningKind; message: string; }' is not assignable to type 'CheckIssue'.
+    Types of property 'kind' are incompatible.
+      Type 'WarningKind' is not assignable to type '"alias_field_missing" | "alias_no_files" | "alias_records_missing" | "alias_required_empty" | "alias_unknown_type" | "alias_unreadable" | "avoided_term" | "broken_ref" | ... 20 more ... | FlowLayoutKind'.
+        Type '"map"' is not assignable to type '"alias_field_missing" | "alias_no_files" | "alias_records_missing" | "alias_required_empty" | "alias_unknown_type" | "alias_unreadable" | "avoided_term" | "broken_ref" | ... 20 more ... | FlowLayoutKind'.
+../src/parts/diagram.ts(528,23): error TS2345: Argument of type 'IconNode' is not assignable to parameter of type 'MdmarkIconNode'.
+  Type '[tag: string, attrs: SVGProps]' is not assignable to type '[string, Record<string, string>]'.
+    Type at position 1 in source is not compatible with type at position 1 in target.
+      Type 'SVGProps' is not assignable to type 'Record<string, string>'.
+        'string' index signatures are incompatible.
+          Type 'string | number | undefined' is not assignable to type 'string'.
+            Type 'undefined' is not assignable to type 'string'.
+exit: 1
