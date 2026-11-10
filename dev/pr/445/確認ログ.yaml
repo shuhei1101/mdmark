@@ -71,3 +71,9 @@ confirmations:
     approver: shuhei1101
     commit: d1b5dc04
     thread: https://github.com/shuhei1101/mdmark/pull/445#discussion_r4522474052
+  - topic: map のモック（構成図・案内・シーケンス図・種類の作り方）への合意
+    decision: dev/mock/pages/document/445/a-map/ と dev/mock/components/map-kinds/ のモックの見た目と操作で進める（案 A）
+    decided_by: thumbs_up
+    approver: shuhei1101
+    commit: 4b05bcbd
+    thread: https://github.com/shuhei1101/mdmark/pull/445#discussion_r4524451444

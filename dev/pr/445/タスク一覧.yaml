@@ -38,7 +38,10 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-09T03:16:48.352506+00:00'
   - process: モック作成
-    status: todo
+    status: done
+    note: dev/mock/pages/document/445/a-map/ と dev/mock/components/map-kinds/ のモックにユーザーが合意した
+    updated_by: planner
+    updated_at: '2026-11-10T11:57:49.602180+00:00'
   - process: インターフェース定義設計
     status: todo
   - process: 部品設計
