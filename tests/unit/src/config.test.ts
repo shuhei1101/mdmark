@@ -63,6 +63,7 @@ const DEFAULT_FEATURES = {
   csv: true,
   "card-grid": true,
   frontmatter: false,
+  map: true,
 };
 
 // 設定が無ければ既定を返却する（正常系）
@@ -84,6 +85,7 @@ test("test_resolve_config", async () => {
     colorTheme: "dev-swiss",
     colorScheme: "auto",
     labels: { paramCopy: "今の値をコピーする" },
+    map: { node_fit: "height", url_state: true, kinds: {}, lines: {} },
   });
 });
 
