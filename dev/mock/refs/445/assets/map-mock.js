@@ -7,9 +7,9 @@ import { layoutMap, parseFlowchart, parseSequence } from "./map-layout.js";
 /** 自動で進める間隔の既定（秒）。文書ではマーカーの引数 `interval` で指定し、画面からは変えない */
 const DEFAULT_AUTOPLAY_SECONDS = 2;
 /** データの印の速さ（px/秒）・印どうしの間隔（px）・1 本の線に同時に流す印の数の上限 */
-const PACKET_SPEED = 120;
-const PACKET_GAP = 60;
-const PACKET_MAX = 6;
+const PACKET_SPEED = 60;
+const PACKET_GAP = 100;
+const PACKET_MAX = 4;
 /** データの印の既定。補足の layout の packet（図全体）と、線の ID ごとの packet で上書きする */
 const DEFAULT_PACKET = { color: "line", shape: "dot" };
 /** 図を縮める下限（確認ログ: 等倍より縮めない）。24px のボタンを 24px 未満に縮めない */
@@ -68,6 +68,40 @@ const colorStyle = (color) =>
  * packet: { color: line（線の色）| source（元のノードの色）| target（先のノードの色）| 色の名前, shape: dot | square | diamond }
  */
 const SVG_NS = "http://www.w3.org/2000/svg";
+
+/**
+ * 手順の帯: 番号・説明の文と、前へ・停止・自動で進める（一時停止）・次への 4 つのボタンを常に同じ並びで出す。
+ * 前へ・次へは常に押せ、端では反対の端へ回る（始める前の前へは最後へ）。停止は始める前だけ押せない。説明の文の改行はそのまま出す
+ */
+const stepBand = ({ label, total, index, text, auto, names, go, stop, toggleAuto }) => {
+  const band = document.createElement("div");
+  band.className = "map-band";
+  band.setAttribute("role", "region");
+  band.setAttribute("aria-label", label);
+  const prev = () => go(index === undefined || index === 0 ? total - 1 : index - 1);
+  const next = () => go(index === undefined ? 0 : (index + 1) % total);
+  const count = document.createElement("p");
+  count.className = "map-band-count";
+  count.textContent = `${index === undefined ? "–" : index + 1} / ${total}`;
+  const body = document.createElement("p");
+  body.className = "map-band-text";
+  body.textContent = text;
+  body.setAttribute("aria-live", "polite");
+  const actions = document.createElement("div");
+  actions.className = "map-band-actions";
+  actions.append(
+    toolButton("prev", names.prev, prev),
+    toolButton("stop", names.stop, stop, index === undefined ? { disabled: "" } : {}),
+    toolButton(auto ? "pause" : "play", auto ? "一時停止" : "自動で進める", toggleAuto, { "aria-pressed": String(auto) }),
+    toolButton("next", names.next, next),
+  );
+  band.append(count, body, actions);
+  band.addEventListener("keydown", (event) => {
+    if (event.key === "ArrowRight") next();
+    if (event.key === "ArrowLeft") prev();
+  });
+  return band;
+};
 
 /** 色を変えた線の矢じりを線と同じ色にする: 線が指す矢じりの marker を複製して色を付け、線から指し直す */
 let arrowheadCount = 0;
@@ -311,7 +345,6 @@ export const createMap = (host, spec, initial = {}) => {
     viewport.scrollTop = scroll[1];
     window.scrollTo({ top: pageY });
     revealHot(viewport, stage, layout);
-    if (state.play !== undefined) spec.onPlay?.(state.play);
   };
 
   /** 案内と再生で強調するノードが図の枠の外にあるときだけ、枠の中をそのノードが入るまでスクロールする（文書のスクロールと倍率は変えない） */
@@ -562,56 +595,28 @@ export const createMap = (host, spec, initial = {}) => {
     figure.querySelector(".mdmark-diagram-tools").prepend(group);
   };
 
-  /** 図の枠の下の帯: 案内の手順を常に出し、再生している間は再生のメッセージに替える */
+  /** 図の枠の下の帯: 案内の手順を常に出す（シーケンス図のメッセージは、シーケンス図の下の帯で進める） */
   const renderBand = (figure) => {
-    const playing = state.play !== undefined && sequence;
-    if (!playing && steps.length === 0) return;
-    const total = playing ? sequence.messages.length : steps.length;
-    const index = playing ? state.play : state.step;
-    const band = document.createElement("div");
-    band.className = "map-band";
-    band.setAttribute("role", "region");
-    band.setAttribute("aria-label", playing ? `${spec.title}の再生` : `${spec.title}の案内`);
-    const message = playing ? sequence.messages[state.play] : undefined;
-    const textValue = playing
-      ? `${labelOf(message.from)} → ${labelOf(message.to)}　${message.text}`
-      : index === undefined
-        ? ""
-        : steps[index].text;
-    const go = (next) => (playing ? playAt(next) : applyStep(next));
-    // ボタンは前へ・停止・再生（一時停止）・次への 4 つを常に同じ並びで出し、状態では押せるかだけを変える
-    const actions = [
-      // 前へ・次へは常に押せ、端では反対の端へ回る（始める前の前へは最後へ）
-      toolButton("prev", playing ? "前のメッセージ" : "前の手順", () => go(index === undefined || index === 0 ? total - 1 : index - 1)),
-      toolButton("stop", playing ? "再生を終える" : "案内をやめる", () => (playing ? endPlay() : endWalkthrough()), index === undefined ? { disabled: "" } : {}),
-      toolButton(state.auto ? "pause" : "play", state.auto ? "一時停止" : "自動で進める", () => {
-        state.auto = !state.auto;
-        if (state.auto && index === undefined) go(0);
-        else render();
-        schedule();
-      }, { "aria-pressed": String(state.auto) }),
-      toolButton("next", playing ? "次のメッセージ" : "次の手順", () => go(index === undefined ? 0 : (index + 1) % total)),
-    ];
-    band.append(text("map-band-count", `${index === undefined ? "–" : index + 1} / ${total}`), text("map-band-text", textValue, true), buttons(actions));
-    band.addEventListener("keydown", (event) => {
-      if (event.key === "ArrowRight") go(index === undefined ? 0 : (index + 1) % total);
-      if (event.key === "ArrowLeft") go(index === undefined || index === 0 ? total - 1 : index - 1);
-    });
-    figure.querySelector(".mdmark-diagram-box").after(band);
-  };
-
-  const text = (className, value, live = false) => {
-    const p = document.createElement("p");
-    p.className = className;
-    p.textContent = value;
-    if (live) p.setAttribute("aria-live", "polite");
-    return p;
-  };
-  const buttons = (items) => {
-    const wrap = document.createElement("div");
-    wrap.className = "map-band-actions";
-    wrap.append(...items);
-    return wrap;
+    if (steps.length === 0) return;
+    const index = state.step;
+    figure.querySelector(".mdmark-diagram-box").after(
+      stepBand({
+        label: `${spec.title}の案内`,
+        total: steps.length,
+        index,
+        text: index === undefined ? "" : steps[index].text,
+        auto: state.auto,
+        names: { prev: "前の手順", next: "次の手順", stop: "案内をやめる" },
+        go: (next) => applyStep(next),
+        stop: () => endWalkthrough(),
+        toggleAuto: () => {
+          state.auto = !state.auto;
+          if (state.auto && index === undefined) applyStep(0);
+          else render();
+          schedule();
+        },
+      }),
+    );
   };
 
   /**
@@ -656,8 +661,7 @@ export const createMap = (host, spec, initial = {}) => {
     clearInterval(timer);
     if (!state.auto) return;
     timer = setInterval(() => {
-      if (state.play !== undefined && sequence) playAt((state.play + 1) % sequence.messages.length, false);
-      else if (steps.length) applyStep(state.step === undefined ? 0 : (state.step + 1) % steps.length);
+      if (steps.length) applyStep(state.step === undefined ? 0 : (state.step + 1) % steps.length);
     }, state.seconds * 1000);
   };
 
@@ -672,6 +676,11 @@ export const createMap = (host, spec, initial = {}) => {
     render();
   };
   const applyStep = (index) => {
+    // 案内を始めると、シーケンス図のメッセージの強調は解く
+    if (state.play !== undefined) {
+      state.play = undefined;
+      spec.onWalkthrough?.();
+    }
     if (state.step === undefined) start.enter = state.enter;
     state.step = index;
     state.enter = steps[index].enter ?? start.enter;
@@ -684,24 +693,20 @@ export const createMap = (host, spec, initial = {}) => {
     state.enter = start.enter;
     render();
   };
-  const startPlay = () => {
-    if (state.play === undefined) start.enter = state.enter;
-    state.step = undefined;
-    state.auto = true;
-    playAt(0);
-  };
-  const playAt = (index, reschedule = true) => {
-    state.play = index;
+  /** シーケンス図の帯で進めた今のメッセージを、構成図の上でも強調してデータを流す（undefined で解く） */
+  const showMessage = (index) => {
+    if (index === undefined) {
+      if (state.play === undefined) return;
+      state.play = undefined;
+      state.enter = start.enter;
+    } else {
+      if (state.play === undefined) start.enter = state.enter;
+      clearInterval(timer);
+      state.auto = false;
+      state.step = undefined;
+      state.play = index;
+    }
     render();
-    if (reschedule) schedule();
-  };
-  const endPlay = () => {
-    clearInterval(timer);
-    state.auto = false;
-    state.play = undefined;
-    state.enter = start.enter;
-    render();
-    spec.onPlay?.(undefined);
   };
 
   host.addEventListener("keydown", (event) => {
@@ -713,7 +718,7 @@ export const createMap = (host, spec, initial = {}) => {
 
   render();
   schedule();
-  return { startPlay };
+  return { showMessage };
 };
 
 /** 倍率の文字を、下限を当てた後の実際の倍率に合わせる */
@@ -759,7 +764,7 @@ const keepSequenceScale = (host) => {
  * - 構成図の上で再生している間は、今のメッセージの線にもデータの印を流す
  * spec: { id, title, source, notes }
  */
-export const createSequence = (host, spec, kinds, onPlay) => {
+export const createSequence = (host, spec, kinds, onStep) => {
   const sequence = parseSequence(spec.source);
   const notes = spec.notes ?? {};
   const state = {
@@ -767,8 +772,11 @@ export const createSequence = (host, spec, kinds, onPlay) => {
     hidden: new Set(),
     order: sequence.participants.map((participant) => participant.id),
     current: undefined,
+    auto: false,
     menuOpen: false,
   };
+  const seconds = spec.interval ?? DEFAULT_AUTOPLAY_SECONDS;
+  let timer;
   const labelOf = (id) => sequence.participants.find((participant) => participant.id === id)?.label ?? id;
 
   const render = () => {
@@ -886,9 +894,32 @@ export const createSequence = (host, spec, kinds, onPlay) => {
       state.menuOpen = !state.menuOpen;
       render();
     }, { "aria-expanded": String(state.menuOpen), "aria-controls": `map-participants-${spec.id}` });
-    group.append(toolButton("play", "構成図の上で再生", onPlay), menuButton);
+    group.append(menuButton);
     tools.prepend(group);
     if (state.menuOpen) tools.after(participantMenu());
+
+    // 図の枠の下の帯: メッセージを 1 通ずつ進め、構成図の上でも同じメッセージを強調してデータを流す
+    const total = sequence.messages.length;
+    const message = state.current === undefined ? undefined : sequence.messages[state.current];
+    const note = state.current === undefined ? undefined : notes[state.current + 1];
+    figure.querySelector(".mdmark-diagram-box").after(
+      stepBand({
+        label: `${spec.title}の再生`,
+        total,
+        index: state.current,
+        text: message ? `${labelOf(message.from)} → ${labelOf(message.to)}　${message.text}${note ? `\n${note}` : ""}` : "",
+        auto: state.auto,
+        names: { prev: "前のメッセージ", next: "次のメッセージ", stop: "再生を終える" },
+        go: (next) => step(next),
+        stop: () => stop(),
+        toggleAuto: () => {
+          state.auto = !state.auto;
+          if (state.auto && state.current === undefined) step(0);
+          else render();
+          schedule();
+        },
+      }),
+    );
 
     keepSequenceScale(host);
     const viewport = figure.querySelector(".mdmark-diagram-viewport");
@@ -940,6 +971,25 @@ export const createSequence = (host, spec, kinds, onPlay) => {
     return menu;
   };
 
+  const step = (index) => {
+    state.current = index;
+    render();
+    onStep(index);
+  };
+  const stop = () => {
+    clearInterval(timer);
+    state.auto = false;
+    state.current = undefined;
+    render();
+    onStep(undefined);
+  };
+  /** 自動で進める: 印の引数 interval の間隔ごとに次へ進み、最後の次は最初へ戻る */
+  const schedule = () => {
+    clearInterval(timer);
+    if (!state.auto) return;
+    timer = setInterval(() => step(state.current === undefined ? 0 : (state.current + 1) % sequence.messages.length), seconds * 1000);
+  };
+
   host.addEventListener("keydown", (event) => {
     if (event.key === "Escape" && state.selected.size) {
       state.selected.clear();
@@ -949,10 +999,14 @@ export const createSequence = (host, spec, kinds, onPlay) => {
 
   render();
   return {
-    /** 構成図の上で再生している今のメッセージの番号（再生していないときは undefined） */
-    setCurrent: (index) => {
-      if (state.current === index) return;
-      state.current = index;
+    /** 指定の番号のメッセージから進める（モックの場面の初期状態） */
+    start: (index) => step(index),
+    /** 構成図の案内を始めたときに、メッセージの強調と自動で進めるのを止める */
+    clear: () => {
+      if (state.current === undefined) return;
+      clearInterval(timer);
+      state.auto = false;
+      state.current = undefined;
       render();
     },
   };

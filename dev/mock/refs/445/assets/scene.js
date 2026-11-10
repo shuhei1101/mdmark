@@ -78,7 +78,6 @@ const initial = {
   group: { enter: "lib" },
   collapsed: { collapsed: ["read"] },
   walkthrough: { step: 2, enter: "place" },
-  play: { play: 0 },
 }[scene] ?? {};
 
 const flowHost = document.createElement("div");
@@ -93,17 +92,16 @@ const sequenceSlot = slot("MAP-SLOT-SEQUENCE");
 sequenceSlot.closest(".mdmark-wide-range")?.parentElement.classList.add("map-wide");
 sequenceSlot.replaceWith(sequenceHost);
 let map;
-const sequenceView = createSequence(sequenceHost, SEQUENCE, { user: "external" }, () => {
-  map.startPlay();
-  flowHost.scrollIntoView({ block: "nearest" });
-});
+// シーケンス図の帯で進めたメッセージを、構成図の上でも強調する
+const sequenceView = createSequence(sequenceHost, SEQUENCE, { user: "external" }, (index) => map.showMessage(index));
 
-// 開閉と中へ入った状態は場面ごとに sessionStorage へ保つ。再生している今のメッセージをシーケンス図にも伝える
+// 開閉と中へ入った状態は場面ごとに sessionStorage へ保つ。構成図の案内を始めたら、シーケンス図の強調を解く
 map = createMap(
   flowHost,
-  { id: scene, title: "全体の構成", flow: FLOW, data: DATA, sequence: SEQUENCE, onPlay: (index) => sequenceView.setCurrent(index) },
+  { id: scene, title: "全体の構成", flow: FLOW, data: DATA, sequence: SEQUENCE, onWalkthrough: () => sequenceView.clear() },
   initial,
 );
+if (scene === "play") sequenceView.start(0);
 
 if (scene === "warnings") {
   // 書き方の警告: 図の枠の上に、読めない行・知らないキー・知らない引数を並べる

@@ -55,7 +55,7 @@ export const DATA = {
   },
   walkthroughs: [
     { text: "利用側のページが、設定と Markdown を mount に渡します。", highlight: ["user", "mount"] },
-    { text: "文書と索引は、補足の検査と map のマーカーの読み取りに読まれます。", highlight: ["doc", "index", "data"] },
+    { text: "文書と索引は、補足の検査と map のマーカーの読み取りに読まれます。\n索引の用語と別名は、補足の検査でラベルと notes の文の照合に使います。\n文書の Markdown は、map の範囲ごとに 1 つの図の定義に分けます。", highlight: ["doc", "index", "data"] },
     { text: "配置のグループの中で、自動配置の後に線の経路を決めます。", enter: "place", highlight: ["layout", "route"] },
     { text: "線の経路と図の枠は、描き直すたびに互いに大きさを伝え合います。", highlight: ["route", "frame"] },
   ],
@@ -70,7 +70,7 @@ export const SEQUENCE = {
   /** メッセージの番号（1 から）ごとの説明。ポインターを当てたときのツールチップに出す */
   notes: {
     2: "map の範囲の Markdown と印の引数",
-    3: "範囲の中の mermaid のコードブロックの本文",
+    3: "範囲の中の mermaid のコードブロックの本文。\nmap の範囲の中のブロックは、mermaid のライブラリでは描かない",
   },
   source: `sequenceDiagram
   participant user as 利用側のページ
