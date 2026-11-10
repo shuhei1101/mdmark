@@ -107,6 +107,26 @@ scenarios:
       - 開いたときに、指定のグループの中に入った図と戻るボタンが出る
       - 戻るボタンで全体へ戻ると、正常シナリオの全体の図と同じ配置になる
     test: test_normal_when_initial_focus
+  - name: 正常シナリオ（クエリ文字列に保たない設定と、まとめた HTML の文書の切り替え）
+    setup:
+      - name: 図を描いたページ
+        description: '設定の `map.url_state` を `false` にして map の構成図を描いたページと、map の構成図を 1 つずつ持つ文書 A・B を `mdmark build` でまとめた HTML'
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 読者
+        participant D as 図
+        U->>D: url_state が false のページでグループの中へ入る
+        D-->>U: クエリ文字列を変えずにグループの中を描く
+        U->>D: まとめた HTML の文書 A でグループの中へ入る
+        D-->>U: クエリ文字列に map-1 を入れる
+        U->>D: 文書の一覧から文書 B へ切り替える
+        D-->>U: map-1 を消して文書 B の全体の図を描く
+    expected:
+      - '`map.url_state` が `false` のページでは、グループの中へ入ってもクエリ文字列が変わらず、`map-1` を付けた URL を開いても全体の図から描かれる。ページを読み込み直すと、sessionStorage の状態のまま描かれる'
+      - まとめた HTML で文書 A から文書 B へ切り替えると、クエリ文字列から `map-1` が消え、文書 B の図は全体の図から描かれる
+    test: test_normal_when_url_state_disabled_or_document_switched
   - name: 正常シナリオ（シーケンス図のブロックを開閉し、中だけを見る）
     setup:
       - name: 図を描いたページ

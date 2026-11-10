@@ -25,10 +25,13 @@ const NODE_MAX_WIDTH = { height: 220, width: 360 };
 /**
  * 中へ入ったグループ・中だけを見ているブロックを、URL のクエリ文字列にも保つ（sessionStorage に加えて、URL を開き直す・共有しても同じ所から見られる）。
  * キーは `map-{図の番号}`（文書の中の map の図の順。1 から）、値はグループの ID か、シーケンス図のブロックの番号（Mermaid に出てくる順。0 から）。
- * 書き換えは history.replaceState で行い、ページの履歴は増やさない
+ * 書き換えは history.replaceState で行い、ページの履歴は増やさない。設定の map.url_state が false のときは読みも書きもしない（使う側のルーターがクエリ文字列を使うページ向け）。
+ * まとめた HTML で文書を切り替えたときは、前の文書の map-* のキーを消す（書き出したHTMLの起動が行う）
  */
-const readQuery = (key) => new URLSearchParams(location.search).get(key) ?? undefined;
+let urlState = true;
+const readQuery = (key) => (urlState ? (new URLSearchParams(location.search).get(key) ?? undefined) : undefined);
 const writeQuery = (key, value) => {
+  if (!urlState) return;
   const url = new URL(location.href);
   if (value === undefined || value === null || value === "") url.searchParams.delete(key);
   else url.searchParams.set(key, String(value));
@@ -296,6 +299,7 @@ export const createMap = (host, spec, initial = {}) => {
   const labelOf = (id) => nodeById.get(id)?.label ?? boxById.get(id)?.title ?? id;
   const storageKey = `${STORAGE_PREFIX}${spec.id}`;
   const queryKey = spec.queryKey ?? `map-${spec.id}`;
+  urlState = (spec.config ?? {}).url_state !== false;
   const saved = JSON.parse(sessionStorage.getItem(storageKey) ?? "{}");
   const state = {
     // 中へ入ったグループは、URL のクエリ文字列 → sessionStorage の順に読む
