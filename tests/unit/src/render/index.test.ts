@@ -32,6 +32,7 @@ function resolvedConfig(
     colorScheme: "auto",
     labels: { paramCopy: "今の値をコピーする" },
     table: { pin: "each" },
+    map: { node_fit: "height", url_state: true, kinds: {}, lines: {} },
   };
 }
 
