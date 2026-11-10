@@ -2191,3 +2191,177 @@ test("test_attach_tables_when_scroll_wrapper", async () => {
   ).toBe(true);
   expect(manyScroll.scrollWidth).toBeGreaterThan(manyScroll.clientWidth);
 });
+
+// 最小幅と上限の間に収める（正常系）
+test("test_clamp_column_width", async () => {
+  // 準備
+  const { clampColumnWidth } = await loadLogic();
+  // 実行・検証
+  expect(clampColumnWidth({ width: 50, min: 100, max: 300 })).toBe(100);
+  expect(clampColumnWidth({ width: 200, min: 100, max: 300 })).toBe(200);
+  expect(clampColumnWidth({ width: 400, min: 100, max: 300 })).toBe(300);
+  expect(clampColumnWidth({ width: 200, min: 100, max: 80 })).toBe(100);
+});
+
+// ほかに留めた列の幅だけを引く（正常系）
+test("test_column_width_limit", async () => {
+  // 準備
+  const { columnWidthLimit } = await loadLogic();
+  const base = { visibleWidth: 300, widths: [100, 80, 60], pinned: [0, 2] };
+  // 実行・検証: はみ出しているとき
+  expect(columnWidthLimit({ ...base, overflowing: true, column: 0 })).toBe(240);
+  expect(columnWidthLimit({ ...base, overflowing: true, column: 1 })).toBe(140);
+  // 実行・検証: はみ出していないとき
+  expect(columnWidthLimit({ ...base, overflowing: false, column: 0 })).toBe(
+    300,
+  );
+  expect(columnWidthLimit({ ...base, overflowing: false, column: 1 })).toBe(
+    300,
+  );
+});
+
+/** つまみにキーを送信する */
+function pressResizeKey(handle: HTMLElement, key: string): void {
+  handle.dispatchEvent(
+    new KeyboardEvent("keydown", { key, bubbles: true, cancelable: true }),
+  );
+}
+
+// resize の表は、留めた列の幅を変えると留める位置を計算し直し、上限で止める（正常系）
+test("test_attach_tables_when_column_resized", async () => {
+  // 準備
+  addStyles();
+  vi.spyOn(Element.prototype, "setPointerCapture").mockImplementation(
+    () => undefined,
+  );
+  const { attachTables } = await loadTables();
+  // 列名が短く、留めた 1 列目と 3 列目の幅の合計が見えている幅に収まる 10 列の表
+  const names = Array.from({ length: 10 }, (_, i) => `列${i + 1}`);
+  const { root } = createRoot(
+    [
+      `| ${names.join(" | ")} |`,
+      `| ${names.map(() => "---").join(" | ")} |`,
+      `| ${names.map((_, i) => `値${i + 1}`).join(" | ")} |`,
+      "",
+    ].join("\n"),
+  );
+  setRootWidth(root, 320);
+  detachers.push(attachTables(root));
+  const table = root.querySelector<HTMLElement>(".mdmark-table");
+  const scroll = root.querySelector<HTMLElement>(".mdmark-table-scroll");
+  const pins = root.querySelectorAll<HTMLButtonElement>("button.mdmark-pin");
+  const handles = root.querySelectorAll<HTMLElement>(".mdmark-col-resize");
+  const heads = root.querySelectorAll<HTMLTableCellElement>("thead th");
+  if (!table || !scroll) {
+    throw new Error("表が無い");
+  }
+  expect(table.dataset.features?.split(" ")).toContain("resize");
+  await vi.waitFor(() => {
+    expect(pins[2]?.hasAttribute("hidden")).toBe(false);
+  });
+  pins[2].click();
+  // 実行: 1 列目のつまみで → を押す
+  pressResizeKey(handles[0], "ArrowRight");
+  // 検証: 3 列目は広げた 1 列目の右に留まる
+  const third = table.querySelector<HTMLTableRowElement>("tbody tr")?.cells[2];
+  expect(third?.style.left).toBe(`${heads[0].offsetWidth}px`);
+  // 実行: 1 列目のつまみを右へ 2000px ドラッグする
+  const rect = handles[0].getBoundingClientRect();
+  const init = { bubbles: true, cancelable: true, pointerId: 1 };
+  handles[0].dispatchEvent(
+    new PointerEvent("pointerdown", { ...init, clientX: rect.left }),
+  );
+  handles[0].dispatchEvent(
+    new PointerEvent("pointermove", { ...init, clientX: rect.left + 2000 }),
+  );
+  handles[0].dispatchEvent(
+    new PointerEvent("pointerup", { ...init, clientX: rect.left + 2000 }),
+  );
+  // 検証: 上限で止まる
+  expect(heads[0].offsetWidth).toBeLessThanOrEqual(
+    scroll.clientWidth - heads[2].offsetWidth,
+  );
+  expect(handles[0].getAttribute("aria-valuenow")).toBe(
+    handles[0].getAttribute("aria-valuemax"),
+  ); // 実行・検証: 3 列目のつまみにフォーカスすると、広げた 1 列目の幅を引いた上限になる
+  handles[2].focus();
+  expect(handles[2].getAttribute("aria-valuemax")).toBe(
+    String(Math.floor(scroll.clientWidth - heads[0].offsetWidth)),
+  );
+});
+
+// 最終列を畳む判定は描く先の要素の幅の変化でだけやり直し、幅を指定した最終列は畳まない（正常系）
+test("test_attach_tables_when_resized_column_not_folded", async () => {
+  // 準備: 最終列が 600px の幅で 1 行に収まる 3 列の表
+  addStyles();
+  const { attachTables } = await loadTables();
+  const { root } = createRoot(
+    [
+      "<!-- table: data -->",
+      "",
+      "| 名前 | 状態 | 説明 |",
+      "| --- | --- | --- |",
+      "| りんご | 新規 | 描画を速くする改善の説明 |",
+      "| みかん | 進行 | 印刷を直す変更の説明 |",
+      "",
+      "<!-- /table -->",
+      "",
+    ].join("\n"),
+  );
+  setRootWidth(root, 600);
+  detachers.push(attachTables(root));
+  const table = root.querySelector<HTMLElement>(".mdmark-table");
+  const handles = root.querySelectorAll<HTMLElement>(".mdmark-col-resize");
+  if (!table) {
+    throw new Error("表が無い");
+  }
+  const lastCells = () =>
+    root.querySelectorAll<HTMLElement>("tbody td:last-child");
+  // 実行: 最終列のつまみで ← を押して折り返させる
+  for (let i = 0; i < 20; i += 1) {
+    pressResizeKey(handles[2], "ArrowLeft");
+  }
+  await new Promise((resolve) => requestAnimationFrame(resolve));
+  // 検証の前提: 最終列のセルが、畳む判定の折り返し（行の高さの 1.5 倍を超える）になっている
+  expect(
+    [...lastCells()].some((cell) => {
+      const style = getComputedStyle(cell);
+      const content =
+        cell.scrollHeight -
+        Number.parseFloat(style.paddingTop) -
+        Number.parseFloat(style.paddingBottom);
+      return content > Number.parseFloat(style.lineHeight) * 1.5;
+    }),
+  ).toBe(true);
+  // 検証
+  expect(
+    [...lastCells()].some((cell) => cell.classList.contains("mdmark-fold-col")),
+  ).toBe(false);
+  expect(table.classList.contains("is-folded")).toBe(false);
+  // 実行: 描く先の要素の幅を変える
+  setRootWidth(root, 590);
+  await new Promise((resolve) => requestAnimationFrame(resolve));
+  await new Promise((resolve) => requestAnimationFrame(resolve));
+  // 検証
+  expect(
+    [...lastCells()].some((cell) => cell.classList.contains("mdmark-fold-col")),
+  ).toBe(false);
+  expect(table.classList.contains("is-folded")).toBe(false);
+});
+
+// resize を持たない表には、つまみの操作を付けない（正常系）
+test("test_attach_tables_when_resize_off", async () => {
+  // 準備
+  addStyles();
+  const { attachTables } = await loadTables();
+  const { root } = createRoot(
+    dataTable({ values: ["10", "2", "33"] }).replace(
+      "<!-- table: data -->",
+      "<!-- table: data -resize -->",
+    ),
+  );
+  // 実行
+  detachers.push(attachTables(root));
+  // 検証
+  expect(root.querySelector(".mdmark-col-resize")).toBeNull();
+});

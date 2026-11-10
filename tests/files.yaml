@@ -495,6 +495,9 @@ files:
     related:
       - to: dev/設計書/インターフェース定義/ClaudeCodeプラグイン/MCPサーバーを起動・停止する.ts
         type: see_also
+  - path: integration/browser-server.ts
+    description: 結合テストの前に Chromium を 1 つ起動して温め、各ファイルが接続する先を出す子プロセスを受け持つ。結合テストの準備や確認方法を変えるときに参照する。
+    tags: [topic:結合テスト, tool:playwright, topic:ストーリー, tool:storybook]
   - path: integration/built-root.ts
     description: 結合テストがバージョンを埋めてビルドした配布物の場所と、配布ファイルのサイズの上限を受け持つ。結合テストの準備や確認方法を変えるときに参照する。
     tags: [topic:結合テスト, tool:vitest, topic:バンドル]
@@ -983,7 +986,7 @@ files:
     description: 結合テストでストーリーを開いて描画を確認する処理と画面の大きさを受け持つ。結合テストの準備や確認方法を変えるときに参照する。
     tags: [topic:結合テスト, tool:vitest, topic:ストーリー, tool:storybook]
   - path: integration/storybook-setup.ts
-    description: 結合テストの前に Storybook の開発サーバーを起動する処理を受け持つ。結合テストの準備や確認方法を変えるときに参照する。
+    description: 結合テストの前に Storybook の開発サーバーと、各ファイルが接続する Chromium を起動する処理を受け持つ。結合テストの準備や確認方法を変えるときに参照する。
     tags: [topic:結合テスト, tool:vitest, topic:ストーリー, tool:storybook]
   - path: integration/vscode/config-band.story.test.ts
     description: 部品設計『設定ファイルを読み込めない帯』のストーリーを実際のブラウザで開き、状態ごとの描画を確認する結合テスト。部品の引数や状態を変えたときに参照する。

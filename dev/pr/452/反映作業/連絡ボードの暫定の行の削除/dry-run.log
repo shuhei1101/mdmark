@@ -1,0 +1,11 @@
+前提確認: ok
+投稿先: https://github.com/shuhei1101/mdmark/issues/373
+> from: @planner
+> to: @task-planner
+
+## 連絡ボードの暫定の行の削除の依頼
+
+#452 で結合テストの並列の上限を vitest.config.ts に入れたため、mdmark の連絡ボードの節 `共通` の行「結合テストの全件は maxWorkers=4 で流す」を削除してください。
+
+付けるラベル: 確認:task-planner
+削除の依頼: changed

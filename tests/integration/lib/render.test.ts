@@ -314,7 +314,7 @@ test("test_normal_when_syntax", async () => {
     /<nav class="mdmark-toc" aria-label="目次">[\s\S]*<a href="#補足">補足<\/a>[\s\S]*<\/nav>/,
   );
   expect(html).toMatch(
-    /<div class="mdmark-table" data-kind="data" data-features="sort pin filter" data-filter="0:select"><details class="mdmark-table-details"><summary>表（3 行）<\/summary>/,
+    /<div class="mdmark-table" data-kind="data" data-features="sort pin filter resize" data-filter="0:select"><details class="mdmark-table-details"><summary>表（3 行）<\/summary>/,
   );
   expect(html).not.toMatch(/<details class="mdmark-table-details"[^>]*\sopen/);
   expect(html).toContain('<div class="mdmark-tabs" data-group="os">');
@@ -467,7 +467,7 @@ test("test_normal_when_syntax_errors", async () => {
     html.match(/<p class="mdmark-syntax-warning-title">記載の警告<\/p>/g),
   ).toHaveLength(4);
   // 知らない種類 unknown はスキップする
-  expect(html).toContain('data-kind="default" data-features="pin sort"');
+  expect(html).toContain('data-kind="default" data-features="pin resize sort"');
   expect(html).not.toContain("<code>unknown</code>");
   expect(html).toContain("<p>見出しの無い範囲</p>");
   // 見出しの無い範囲はタブにせず、読み込めない指定の範囲だけが組を持たないタブになる
@@ -489,6 +489,42 @@ test("test_normal_when_syntax_errors", async () => {
   expect(html).toContain("<code>#fig-missing</code>");
   expect(html).toContain('data-kind="data"');
   expect(html).toContain("&lt;!-- /table --&gt;");
+});
+
+// 既定の種類と data の種類の表は data-features に resize を持ち、-resize の表と plain の表は持たない（正常系（列の幅の機能））
+test("test_normal_when_table_resize", async () => {
+  // 準備
+  const render = await loadRender();
+  const table = ["| 名前 | 説明 |", "| --- | --- |", "| りんご | 描画 |", ""];
+  const marked = (mark: string): string[] => [
+    `<!-- table: ${mark} -->`,
+    "",
+    ...table,
+    "<!-- /table -->",
+    "",
+  ];
+  const markdown = [
+    ...table,
+    ...marked("data"),
+    ...marked("data -resize"),
+    ...marked("plain"),
+  ].join("\n");
+  // 実行
+  const html = render(markdown);
+  // 検証
+  const features = [
+    ...html.matchAll(
+      /<div class="mdmark-table"[^>]*data-features(?:="([^"]*)")?/g,
+    ),
+  ].map((match) => (match[1] ?? "").split(" ").filter(Boolean));
+  expect(features).toHaveLength(4);
+  expect(features[0]).toEqual(expect.arrayContaining(["pin", "resize"]));
+  expect(features[1]).toEqual(
+    expect.arrayContaining(["sort", "pin", "filter", "resize"]),
+  );
+  expect(features[2]).not.toContain("resize");
+  expect(features[3]).toEqual([]);
+  expect(html).not.toContain("mdmark-col-resize");
 });
 
 // 表のマーカーの 5 つの機能と hide=・total= を data-* にコピーし、行に ID とリンクを付ける（正常系）
@@ -513,7 +549,7 @@ test("test_normal_when_table_features", async () => {
   const html = render(markdown);
   // 検証
   expect(html).toMatch(
-    /<div class="mdmark-table" data-kind="data" data-features="sort pin filter count columns total copy rowlink"[^>]*data-hide="1"[^>]*data-total="2:sum"/,
+    /<div class="mdmark-table" data-kind="data" data-features="sort pin filter resize count columns total copy rowlink"[^>]*data-hide="1"[^>]*data-total="2:sum"/,
   );
   expect(html).toContain('id="みかん"');
   const rowIds = startTags(html, "tr")
@@ -2456,7 +2492,7 @@ test("test_normal_when_table_merge_invalid", async () => {
   expect(html).toContain("<th>&lt;&lt;</th>");
   expect(html).toContain('<td data-label="列B">^^</td>');
   expect(html).not.toMatch(/rowspan|colspan/);
-  expect(html).toContain('data-features="sort pin filter"');
+  expect(html).toContain('data-features="sort pin filter resize"');
 });
 
 // 注意書きのタイトル・`+` の開いた折り畳み・入れ子を出す（正常系）
@@ -3728,7 +3764,7 @@ test("test_normal_when_csv", async () => {
   // 検証
   const wrappers = findTags(html, 'class="mdmark-table"');
   expect(wrappers[0]).toBe(
-    '<div class="mdmark-table" data-kind="data" data-features="sort pin filter" data-source="csv">',
+    '<div class="mdmark-table" data-kind="data" data-features="sort pin filter resize" data-source="csv">',
   );
   const first = innerHtml(html, 'class="mdmark-table"');
   expect(plainText(first)).toContain("名前");

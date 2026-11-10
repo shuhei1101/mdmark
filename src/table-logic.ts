@@ -365,6 +365,42 @@ export const pinOffsets = (options: {
   return offsets;
 };
 
+/** 列の幅を、列の最小幅から上限までに収めた値を返却する。上限が最小幅より小さいときは最小幅を返す */
+export const clampColumnWidth = (options: {
+  /** 指定したい幅（px） */
+  width: number;
+  /** 列の最小幅（px） */
+  min: number;
+  /** 上限（px） */
+  max: number;
+}): number => {
+  const { width, min, max } = options;
+  return Math.max(min, Math.min(width, max));
+};
+
+/** 表の見えている幅から、ほかに留めている列の幅の合計を引いた幅を返却する。表がはみ出していないときは見えている幅をそのまま返す */
+export const columnWidthLimit = (options: {
+  /** 表を包む要素の `clientWidth` */
+  visibleWidth: number;
+  /** 表がはみ出しているか */
+  overflowing: boolean;
+  /** 列ごとの幅（隠した列は 0） */
+  widths: number[];
+  /** 留めている列の位置 */
+  pinned: number[];
+  /** 幅を変える列の位置 */
+  column: number;
+}): number => {
+  const { visibleWidth, overflowing, widths, pinned, column } = options;
+  if (!overflowing) {
+    return visibleWidth;
+  }
+  const others = [...new Set(pinned)]
+    .filter((item) => item !== column)
+    .reduce((sum, item) => sum + (widths[item] ?? 0), 0);
+  return visibleWidth - others;
+};
+
 /** 列が属する結合した見出しの範囲とピン止めの側 */
 export type ColumnPlace = {
   /** 結合した見出しの範囲（`{行}:{位置}`。範囲の外は `undefined`） */

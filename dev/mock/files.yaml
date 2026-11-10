@@ -920,6 +920,18 @@ files:
   - path: refs/438/index.md
     description: '#438（表のピン止めを選んだ列だけを留める動きにし、留めた列をスクロールの位置で左端か右端に留める）の PR のモックへのリンク集。この PR で作ったモックを探すときに参照する。'
     tags: [topic:モック]
+  - path: refs/449/assets/table-resize.js
+    description: '#449 のモックが共通で読み込む素材: 表を組み、列の見出しの右端のつまみのドラッグ・タッチ・←→ キーで、列の最小幅から留めた列が見える幅に収まる上限までの範囲で列の幅を変え、ダブルクリック・ダブルタップ・Enter で元の幅に戻し、留めた列の位置を再計算する。複数のモックに有効になる外観や動きを変えるときに参照する。'
+    tags: [topic:モック, tool:javascript]
+  - path: refs/449/assets/table-samples.js
+    description: '#449 のモックが共通で読み込む素材: つまみにポインターを乗せた表・ドラッグ中の表・列の最小幅まで狭めた表・キーボードで広げた表・ポインターが粗い画面の表・留めた列の幅を変えた表と上限まで広げた表・`-resize` の表の定義の見本。複数のモックに有効になる外観や動きを変えるときに参照する。'
+    tags: [topic:モック, tool:javascript]
+  - path: refs/449/assets/table.css
+    description: '#449 のモックが共通で読み込む素材: 列の見出しの右端の、列の幅を変えるつまみの規則。複数のモックに有効になる外観や動きを変えるときに参照する。'
+    tags: [topic:モック, tool:css]
+  - path: refs/449/index.md
+    description: '#449（表の列の幅を、見出しの右端をドラッグして変えられるようにし、ダブルクリックで元の幅に戻す）の PR のモックへのリンク集。この PR で作ったモックを探すときに参照する。'
+    tags: [topic:モック]
   - path: refs/45/assets/embed.css
     id: dev/mock/refs/45/assets/embed.css
     description: '#45 のモックが共通で読み込む素材: 埋め込んだ HTML と data-hint のヒント: マーカーを付けたコードブロックの HTML を描いた場所と、data-hint を持つ要素のマーカー・下線・ツールチップ。複数のモックに有効になる外観や動きを変えるときに参照する。'

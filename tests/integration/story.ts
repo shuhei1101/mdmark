@@ -1,56 +1,39 @@
 import { type Browser, chromium, type Page } from "playwright";
-import { inject } from "vitest";
+import { inject, onTestFinished } from "vitest";
+import { CONNECT_TIMEOUT_MS } from "./storybook-setup.ts";
 
 // ストーリーを開く画面の大きさ（狭い幅で折り返しを確認する）
 const VIEWPORT = { width: 420, height: 360 };
 
-/** 最初のストーリーを開いて、Vite が依存をまとめ終えるまで待つ上限（ミリ秒。測った起動の直後の読み込み 56 秒の約 5 倍） */
-export const WARM_UP_TIMEOUT_MS = 300_000;
-// 温めに開くストーリー（React の部品と、部品の HTML の描画のインターフェースの両方を経由する）
-const WARM_UP_STORIES = [
-  "vscode-previewstatus--offline",
-  "parts-notice--block",
-];
-
 /** ストーリーを開く画面の大きさ */
 export type Viewport = { width: number; height: number };
 
-/** テストファイルの間で使用する、Chromium の起動と終了 */
+/** テストファイルの間で使用する、共有の Chromium への接続と切断 */
 export function createBrowserHolder(): {
   launch: () => Promise<void>;
   close: () => Promise<void>;
   openStory: (id: string, viewport?: Viewport) => Promise<Page>;
 } {
   let browser: Browser | undefined;
-  const pages: Page[] = [];
   return {
-    // Chromium を発生させ、ストーリーを開いて Vite が依存をまとめ終えるまで待つ
+    // storybook-setup.ts がプロジェクトで 1 つ起動し、温めを済ませた Chromium に接続する
     launch: async () => {
-      browser = await chromium.launch();
-      const page = await browser.newPage();
-      for (const id of WARM_UP_STORIES) {
-        await page.goto(
-          `${inject("storybookUrl")}/iframe.html?id=${id}&viewMode=story`,
-          { timeout: WARM_UP_TIMEOUT_MS },
-        );
-        await page.waitForFunction(
-          () => document.body.classList.contains("sb-show-main"),
-          undefined,
-          { timeout: WARM_UP_TIMEOUT_MS },
-        );
-      }
-      await page.close();
+      browser = await chromium.connect(inject("browserWsEndpoint"), {
+        timeout: CONNECT_TIMEOUT_MS,
+      });
     },
+    // 接続だけを切る（Chromium は storybook-setup.ts が閉じる）
     close: async () => {
       await browser?.close();
     },
-    // ストーリーを単独で開き、部品が描かれるまで待つ
+    // ストーリーを単独で開き、部品が描かれるまで待つ。開いたページはテストの終わりに閉じる
     openStory: async (id, viewport = VIEWPORT) => {
       if (!browser) {
-        throw new Error("ブラウザを起動していない");
+        throw new Error("ブラウザに接続していない");
       }
       const page = await browser.newPage({ viewport });
-      pages.push(page);
+      // テストの中で閉じたページを閉じ直しても失敗しない
+      onTestFinished(() => page.close());
       await page.goto(
         `${inject("storybookUrl")}/iframe.html?id=${id}&viewMode=story`,
       );

@@ -117,7 +117,7 @@ flows:
         M-->>C: HTML 文字列
     expected:
       - '`<nav class="mdmark-toc" aria-label="目次">` の中に `#補足` へのリンクがある'
-      - 表が `<div class="mdmark-table" data-kind="data" data-features="sort pin filter" data-filter="0:select">` の中の `<details class="mdmark-table-details">` に入り、`details` が `open` を持たず、`<summary>表（3 行）</summary>` を持つ
+      - 表が `<div class="mdmark-table" data-kind="data" data-features="sort pin filter resize" data-filter="0:select">` の中の `<details class="mdmark-table-details">` に入り、`details` が `open` を持たず、`<summary>表（3 行）</summary>` を持つ
       - タブの範囲が `<div class="mdmark-tabs" data-group="os">` になり、`macOS`・`Windows` の `<p class="mdmark-tab-title">` を持つ `<div class="mdmark-tab-panel">` が 2 つあり、どちらも `hidden` を持たない。`<h3` の `macOS` が無い
       - '`[!WARNING]` の引用が `<div class="markdown-alert markdown-alert-warning">` とタイトル `警告` になり、文字列に `[!WARNING]` が無い'
       - '`[!NOTE]-` の引用が `<details class="markdown-alert markdown-alert-note">` と `<summary class="markdown-alert-title">補足</summary>` になる'
@@ -191,7 +191,7 @@ flows:
         M-->>C: HTML 文字列
     expected:
       - '`<div class="mdmark-syntax-warning" role="note">` が 4 つあり、それぞれにタイトル `記載の警告` がある'
-      - 1 つ目の表が `data-kind="default"` と `data-features="pin sort"` を持ち、その前に記載の警告が無い（知らない種類 `unknown` はスキップする）
+      - 1 つ目の表が `data-kind="default"` と `data-features="pin resize sort"` を持ち、その前に記載の警告が無い（知らない種類 `unknown` はスキップする）
       - 見出しの無いタブの範囲の段落がある
       - '`group= grop=os fold` のタブの範囲だけが `data-group` を持たない `<div class="mdmark-tabs">` になり、その前の警告の本文に `group=` があり、知らないキー `grop=` と知らない指定 `fold` が無い'
       - リンクの文字が `図` のままで、警告の本文に `#fig-missing` がある
@@ -501,7 +501,7 @@ flows:
         M->>M: 見出しの ID を決め、行の ID を作る
         M-->>C: HTML 文字列
     expected:
-      - 表が `data-features="sort pin filter count columns total copy rowlink"`・`data-hide="1"`・`data-total="2:sum"` を持つ `<div class="mdmark-table" data-kind="data">` に入る
+      - 表が `data-features="sort pin filter resize count columns total copy rowlink"`・`data-hide="1"`・`data-total="2:sum"` を持つ `<div class="mdmark-table" data-kind="data">` に入る
       - 見出しが `id="みかん"` を持ち、3 行の `tr` が上から `id="りんご"`・`id="みかん-1"`・`id="みかん-2"` を持つ
       - 各行の先頭のセルに `<a class="mdmark-row-anchor" href="#みかん-1" aria-label="「みかん」の行へのリンク">` の構造のリンクがあり、`href` がその行の `id` を指す
       - 文字列に `<tfoot`・`<button`・`<!--` が無い
@@ -1167,7 +1167,7 @@ flows:
     expected:
       - 表の前に記載の警告があり、本文に `header-rows=5` と表の行の数、見出しの行と本文の行をまたぐ `^^`、左に結合するセルの無い `<<` がある
       - '`thead` の `tr` が 1 つで、`^^` と `<<` のセルが記載した文字のまま出ていて、`rowspan`・`colspan` を持たない'
-      - 表が `data-features="sort pin filter"` を持つ
+      - 表が `data-features="sort pin filter resize"` を持つ
     test: test_normal_when_table_merge_invalid
     refs:
       - dev/設計書/シナリオ/単一ユースケース/表を操作する#scenarios[異常シナリオ（読み込めないセルの結合）]
@@ -1486,6 +1486,29 @@ flows:
     test: test_normal_when_table_reorder
     refs:
       - dev/設計書/シナリオ/単一ユースケース/表を操作する#scenarios[正常シナリオ（結合した見出しとピン止めの列を並べ替える）]
+  - name: 正常系（列の幅の機能）
+    summary: 既定の種類と `data` の種類の表は `data-features` に `resize` を持ち、`-resize` の表と `plain` の表は持たない
+    setup:
+      - name: 配布物を読み込んだ Node の処理
+        description: 正常系と同じ
+      - name: 4 つの表を持つ Markdown
+        description: '表のマーカーで囲まない表、`<!-- table: data -->` の表、`<!-- table: data -resize -->` の表、`<!-- table: plain -->` の表を持つ文書'
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        participant C as 利用側の処理
+        participant M as mdmark
+        C->>M: render(markdown)
+        M->>M: 種類の機能に +機能・-機能を当てる
+        M-->>C: HTML 文字列
+    expected:
+      - 囲まない表の `data-features` が `pin` と `resize` を含み、`data` の表の `data-features` が `sort`・`pin`・`filter`・`resize` を含む
+      - '`-resize` の表の `data-features` が `resize` を含まず、`plain` の表の `data-features` が空'
+      - 文字列に `mdmark-col-resize` が無い（つまみは `mount` が付ける）
+    test: test_normal_when_table_resize
+    refs:
+      - dev/設計書/シナリオ/単一ユースケース/表を操作する#scenarios[正常シナリオ（列の幅を変える）]
   - name: 正常系（キーの列を階層で出す）
     summary: '`tree=` の列を階層の行にし、表に無い親の行を補い、型・必須・既定の列を替える'
     setup:
@@ -1785,7 +1808,7 @@ flows:
         M->>M: 表にし、元の CSV を隠して添える
         M-->>C: HTML 文字列
     expected:
-      - 1 つ目が `<div class="mdmark-table" data-kind="data" data-features="sort pin filter" data-source="csv">` の中の `名前`・`拠点`・`金額` の `th` と 3 行の表になる
+      - 1 つ目が `<div class="mdmark-table" data-kind="data" data-features="sort pin filter resize" data-source="csv">` の中の `名前`・`拠点`・`金額` の `th` と 3 行の表になる
       - '`東京, 本社` が 1 つの `td` で引用符を持たず、改行を持つ値が 1 つの `td` にあり、`""` が `"` になる'
       - 表の後ろに `<pre class="mdmark-raw" hidden>` があり、中の `code.language-csv` が記載したとおりの CSV
       - 2 つ目が `data-kind="default"` と `data-source="csv"` を持つ
@@ -2178,7 +2201,7 @@ constraints:
   - item: 入力の大きさ
     constraint: 制限なし
   - item: 表
-    constraint: 表のマーカーで囲んだ表と、囲まない表を `<div class="mdmark-table" data-kind="{種類}" data-features="{機能}">` で囲む。種類は `default`（囲まない表と、知らない種類）・`data`・`plain`。機能は種類の機能（`default` は `pin`、`data` は `sort`・`pin`・`filter`、`plain` は無し）に `+機能`・`-機能` を適用したものを空白で並べる。`filter=列名:種類,…` は、見出しの文字が列名と一致する列の位置（0 から）と種類を `data-filter="{位置}:{種類} …"` に写す。種類は `select`（省いたとき）・`text`・`date`。`closed`・`open` は表を `<details class="mdmark-table-details">` と `<summary>表を開く</summary>` に入れ、`open` は `details` に `open` を付ける。`+機能` で追加できる機能に `count`・`columns`・`total`・`copy`・`rowlink`・`reorder` があり、どの種類の既定にも入らない。`columns` の表の `hide=列名,…` は、先頭を除く列の位置を `data-hide="{位置} …"` に写す。`total` の表の `total=列名:計算,…` は、列の位置と計算（`sum`・`avg`・`count`）を `data-total="{位置}:{計算} …"` に写す。`pin` の表の `pin=列名`（`,` で区切って複数の列名を記載できる）は、記載した列の位置を小さい順に半角の空白で区切って `data-pin="{位置} {位置}"` に写す。`wide=列名,…` はその列の `th`・`td` に class `mdmark-wide` を付ける。`check=列名,…` は列の位置を `data-check="{位置} …"` に設定し、その列の文字が `true` のセルを `data-value="true"` と `<span class="mdmark-check" role="img" aria-label="はい">`（lucide の `check`）に、`false` のセルを `data-value="false"` と `<span class="mdmark-visually-hidden">いいえ</span>` に替え、その列の `th`・`td` に class `mdmark-align-center` を付ける（ほかの文字のセルは替えない）。見出しに無い列名（`pin=` は読めない列名だけで、読めた列名は適用する）と、`pin` の無い表の `pin=` は記載の警告にして適用しない。並べ替え・ピン止め・絞り込みのボタンと、表の上の件数・テーブル設定・コピーの帯、集計の行は `mount` が付ける。表のマーカーの `header-rows=N`（既定 1）は表の先頭から N 行を `thead` の行にし、`row-header=N` は本文の各行の先頭から N 列のセルを `<th scope="row">` にする。表のマーカーで囲んだ表で、セルの文字がちょうど `^^` のセルは上のセル、`<<` のセルは左のセルと結合する。見出しの行では、結合の始まりのセルに `rowspan`・`colspan` を付け、結合したセルを出さない。本文の行では、`^^`・`<<` のセルに始まりのセルと同じ値を入れて `data-merge="up"`・`data-merge="left"` と `hidden` を付けて残し、始まりのセルに `rowspan`・`colspan` を付ける。`^^` を持つ本文の列の位置を `data-merge-columns="{位置} …"` に写す。見出しと本文をまたぐ `^^`・上のセルの無い `^^`・左のセルの無い `<<` は結合せず、記載した文字のまま出す。表のマーカーで囲まない表の `^^`・`<<` は文字のまま出す。セルの `rowspan`・`colspan`・`scope`・`hidden` は記法が出したセルだけが持つ
+    constraint: 表のマーカーで囲んだ表と、囲まない表を `<div class="mdmark-table" data-kind="{種類}" data-features="{機能}">` で囲む。種類は `default`（囲まない表と、知らない種類）・`data`・`plain`。機能は種類の機能（`default` は `pin`・`resize`、`data` は `sort`・`pin`・`filter`・`resize`、`plain` は無し）に `+機能`・`-機能` を適用したものを空白で並べる。`filter=列名:種類,…` は、見出しの文字が列名と一致する列の位置（0 から）と種類を `data-filter="{位置}:{種類} …"` に写す。種類は `select`（省いたとき）・`text`・`date`。`closed`・`open` は表を `<details class="mdmark-table-details">` と `<summary>表を開く</summary>` に入れ、`open` は `details` に `open` を付ける。`+機能` で追加できる機能に `count`・`columns`・`total`・`copy`・`rowlink`・`reorder` があり、どの種類の既定にも入らない。`columns` の表の `hide=列名,…` は、先頭を除く列の位置を `data-hide="{位置} …"` に写す。`total` の表の `total=列名:計算,…` は、列の位置と計算（`sum`・`avg`・`count`）を `data-total="{位置}:{計算} …"` に写す。`pin` の表の `pin=列名`（`,` で区切って複数の列名を記載できる）は、記載した列の位置を小さい順に半角の空白で区切って `data-pin="{位置} {位置}"` に写す。`wide=列名,…` はその列の `th`・`td` に class `mdmark-wide` を付ける。`check=列名,…` は列の位置を `data-check="{位置} …"` に設定し、その列の文字が `true` のセルを `data-value="true"` と `<span class="mdmark-check" role="img" aria-label="はい">`（lucide の `check`）に、`false` のセルを `data-value="false"` と `<span class="mdmark-visually-hidden">いいえ</span>` に替え、その列の `th`・`td` に class `mdmark-align-center` を付ける（ほかの文字のセルは替えない）。見出しに無い列名（`pin=` は読めない列名だけで、読めた列名は適用する）と、`pin` の無い表の `pin=` は記載の警告にして適用しない。並べ替え・ピン止め・絞り込みのボタンと、列の幅のつまみ、表の上の件数・テーブル設定・コピーの帯、集計の行は `mount` が付ける。表のマーカーの `header-rows=N`（既定 1）は表の先頭から N 行を `thead` の行にし、`row-header=N` は本文の各行の先頭から N 列のセルを `<th scope="row">` にする。表のマーカーで囲んだ表で、セルの文字がちょうど `^^` のセルは上のセル、`<<` のセルは左のセルと結合する。見出しの行では、結合の始まりのセルに `rowspan`・`colspan` を付け、結合したセルを出さない。本文の行では、`^^`・`<<` のセルに始まりのセルと同じ値を入れて `data-merge="up"`・`data-merge="left"` と `hidden` を付けて残し、始まりのセルに `rowspan`・`colspan` を付ける。`^^` を持つ本文の列の位置を `data-merge-columns="{位置} …"` に写す。見出しと本文をまたぐ `^^`・上のセルの無い `^^`・左のセルの無い `<<` は結合せず、記載した文字のまま出す。表のマーカーで囲まない表の `^^`・`<<` は文字のまま出す。セルの `rowspan`・`colspan`・`scope`・`hidden` は記法が出したセルだけが持つ
   - item: 注意書き
     constraint: '1 行目が `[!NOTE]`・`[!TIP]`・`[!IMPORTANT]`・`[!WARNING]`・`[!CAUTION]` の引用を、`<div class="markdown-alert markdown-alert-{種類の小文字}">` とタイトル `<p class="markdown-alert-title">{補足・ヒント・重要・警告・注意}</p>` にし、種類の文字を本文から除外する。末尾に `-` を付けた種類は `<details class="markdown-alert markdown-alert-{種類}">` と `<summary class="markdown-alert-title">` にし、`+` を付けた種類は同じ `details` に `open` を付ける。種類（と `-`・`+`）の後ろに文字があれば、タイトルの文字をその文字にし、タイトルの頭に `<span class="mdmark-visually-hidden">{補足・ヒント・重要・警告・注意}: </span>` を配置する。注意書きの本文の中の引用も同じ規則で注意書きにする（入れ子）。知らない種類は `note` として出す'
   - item: タブ

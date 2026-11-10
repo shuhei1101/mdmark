@@ -28,6 +28,7 @@ export type TableFeature =
   | "sort"
   | "pin"
   | "filter"
+  | "resize"
   | "count"
   | "columns"
   | "reorder"
@@ -125,6 +126,10 @@ export type TableOptions = {
   rowColors?: Array<ColorName | null>;
   /** `pin=` で記載した列の位置（小さい順。`data-pin` に半角の空白で区切って写す） */
   pin?: number[] | undefined;
+  /** 幅を指定した列と、その列の外側の幅（px） */
+  widths?: Array<{ column: number; width: number }>;
+  /** つまみをドラッグしている列の位置 */
+  resizing?: number;
   /** 折り返さずに広く取る列の位置 */
   wide?: number[];
   /** 真偽値を ✓ と空欄で出す列の位置（`data-check`） */
@@ -250,7 +255,7 @@ function renderFilterFields(options: TableToolsOptions): string {
   return `<label class="mdmark-filter-field">候補を検索<input class="mdmark-filter-search" type="search"></label><ul class="mdmark-filter-options">${items}</ul><p class="mdmark-filter-none" hidden>一致する候補がありません</p>`;
 }
 
-/** 列 1 つの見出しの中身（並べ替え・絞り込み・ピン止めのボタン）と、その列の絞り込みのドロワーの HTML を返却する */
+/** 列 1 つの見出しの中身（並べ替え・絞り込み・ピン止めのボタンと、`resize` のときは列の幅のつまみ）と、その列の絞り込みのドロワーの HTML を返却する */
 export function renderTableTools(options: TableToolsOptions): {
   header: string;
   drawer: string;
@@ -286,8 +291,11 @@ export function renderTableTools(options: TableToolsOptions): {
   const drawer = filterable
     ? `<div class="mdmark-filter-drawer" id="${escapeHtml(controls)}" role="dialog" aria-label="「${escapedLabel}」で絞り込む" data-filter-kind="${filter.kind}" data-column="${column}"${open ? "" : " hidden"}><p class="mdmark-filter-title">「${escapedLabel}」で絞り込む</p>${renderFilterFields(options)}<button class="mdmark-filter-clear" type="button">絞り込みを解除</button></div>`
     : "";
+  const resizeHandle = features.includes("resize")
+    ? `<span class="mdmark-col-resize" role="separator" aria-orientation="vertical" tabindex="0" aria-label="「${escapedLabel}」の列の幅"></span>`
+    : "";
   return {
-    header: `<span class="mdmark-th">${title}${tools}</span>`,
+    header: `<span class="mdmark-th">${title}${tools}</span>${resizeHandle}`,
     drawer,
   };
 }
@@ -795,6 +803,9 @@ function renderTableBody(options: TableOptions, id: string): string {
     options.highlight?.find((item) => item.column === column)?.color;
   const wideColumns = new Set(options.wide ?? []);
   const checkColumns = new Set(options.check ?? []);
+  const widthOf = new Map(
+    (options.widths ?? []).map((item) => [item.column, item.width]),
+  );
   /** セルの class 属性（ピン止めした列・畳んだ最終列・強調する列・広く取る列・真偽値の列・`extra`）と色 */
   const cellClass = (column: number, extra: string[] = []): string => {
     const names = [
@@ -807,6 +818,7 @@ function renderTableBody(options: TableOptions, id: string): string {
       ...(highlightOf(column) ? ["mdmark-col-highlight"] : []),
       ...(wideColumns.has(column) ? ["mdmark-wide"] : []),
       ...(checkColumns.has(column) ? ["mdmark-align-center"] : []),
+      ...(widthOf.has(column) ? ["is-resized"] : []),
       ...extra,
     ];
     const color = highlightOf(column);
@@ -838,13 +850,24 @@ function renderTableBody(options: TableOptions, id: string): string {
       options.sort?.column === index
         ? ` aria-sort="${options.sort.direction}"`
         : "";
-    const header =
-      options.features.includes("sort") ||
-      options.features.includes("filter") ||
-      options.features.includes("pin")
-        ? tools.header
-        : escapeHtml(plainText(column));
-    return `<th${cellClass(index)}${sorted}${hiddenAttribute(index)}>${header}</th>`;
+    const header = ["sort", "filter", "pin", "resize"].some((feature) =>
+      options.features.includes(feature),
+    )
+      ? tools.header
+      : escapeHtml(plainText(column));
+    const resizedHeader =
+      options.resizing === index
+        ? header.replace(
+            'class="mdmark-col-resize"',
+            'class="mdmark-col-resize is-dragging"',
+          )
+        : header;
+    const width = widthOf.get(index);
+    const style =
+      width === undefined
+        ? ""
+        : ` style="width:${width}px;min-width:${width}px;--mdmark-column-min-width:${width}px"`;
+    return `<th${cellClass(index)}${style}${sorted}${hiddenAttribute(index)}>${resizedHeader}</th>`;
   };
   const head = options.headRows
     ? renderHeadRows(options.headRows, columns, headCell)

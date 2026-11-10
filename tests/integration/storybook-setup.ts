@@ -7,6 +7,8 @@ declare module "vitest" {
   interface ProvidedContext {
     /** 部品のストーリーを配る Storybook の開発サーバーの URL */
     storybookUrl: string;
+    /** 各ファイルが接続する、プロジェクトで 1 つ起動した Chromium の WebSocket の URL */
+    browserWsEndpoint: string;
   }
 }
 
@@ -19,6 +21,25 @@ const READY_TIMEOUT_MS = 180_000;
 const POLL_INTERVAL_MS = 1_000;
 // 起動する試行の上限
 const START_ATTEMPTS = 3;
+/** 共有の Chromium への接続を待つ上限（ミリ秒。ハングの検知だけが役目のため、外側の beforeAll の上限 60 秒の内側に収め、残りを余裕にする） */
+export const CONNECT_TIMEOUT_MS = 30_000;
+/** Chromium の起動を待つ上限（ミリ秒。ハングの検知だけが役目のため、接続と同じ値にする） */
+export const LAUNCH_TIMEOUT_MS = 30_000;
+/** 最初のストーリーを開いて、Vite が依存をまとめ終えるまで待つ上限（ミリ秒。測った起動の直後の読み込み 56 秒の約 5 倍） */
+export const WARM_UP_TIMEOUT_MS = 300_000;
+/** 温めに開くストーリー（React の部品と、部品の HTML の描画のインターフェースの両方を経由する） */
+export const WARM_UP_STORIES = [
+  "vscode-previewstatus--offline",
+  "parts-notice--block",
+];
+/** browser-server.ts が温めを終えて標準出力へ出す、接続先の行の先頭 */
+export const BROWSER_READY_PREFIX = "browser-ws-endpoint:";
+// browser-server.ts が接続先を出すまで待つ上限（起動・接続と、温めのストーリーごとの読み込みと描画の待ちの合計に、その 50% の余裕を足した）
+const BROWSER_READY_TIMEOUT_MS =
+  (LAUNCH_TIMEOUT_MS +
+    CONNECT_TIMEOUT_MS +
+    WARM_UP_STORIES.length * 2 * WARM_UP_TIMEOUT_MS) *
+  1.5;
 
 /** 空いているポートを、互いに違うものとして count 個返す */
 async function findFreePorts(count: number): Promise<number[]> {
@@ -126,18 +147,62 @@ async function startOnce(): Promise<{ url: string; stopAll: () => void }> {
   return { url, stopAll };
 }
 
-/** 部品の描画のインターフェースと Storybook の開発サーバーを起動し、閲覧 URL をテストへ指定する */
-export default async function setup(project: TestProject) {
+/** 部品の描画のインターフェースと Storybook の開発サーバーを起動し、閲覧 URL と止める関数を返却する */
+async function startStorybook(): Promise<{ url: string; stopAll: () => void }> {
   // 起動に時間がかかる間に他のプロセスがポートを取ることがあるため、立たなければポートをもう一度選ぶ
   for (let attempt = 1; ; attempt++) {
     try {
-      const { url, stopAll } = await startOnce();
-      project.provide("storybookUrl", url);
-      return stopAll;
+      return await startOnce();
     } catch (error) {
       if (attempt >= START_ATTEMPTS) {
         throw error;
       }
     }
   }
+}
+
+/** Chromium を 1 つ起動して温める子プロセスを起動し、接続先と止める関数を返却する。子プロセスが先に終わったら出力を添えて失敗する */
+async function startBrowserServer(
+  storybookUrl: string,
+): Promise<{ wsEndpoint: string; stop: () => void }> {
+  // Vitest が読み込んだ globalSetup の中で Playwright を呼ぶと、Playwright が取るスタックトレースを vite の module runner が読めずに失敗するため、別のプロセスで起動する
+  const server = start(
+    process.execPath,
+    ["tests/integration/browser-server.ts", storybookUrl],
+    {},
+  );
+  const deadline = Date.now() + BROWSER_READY_TIMEOUT_MS;
+  while (Date.now() < deadline) {
+    const line = server
+      .output()
+      .split("\n")
+      .find((text) => text.startsWith(BROWSER_READY_PREFIX));
+    if (line !== undefined) {
+      return {
+        wsEndpoint: line.slice(BROWSER_READY_PREFIX.length),
+        stop: () => stop(server.child),
+      };
+    }
+    if (server.child.exitCode !== null) {
+      throw new Error(`Chromium の起動が終了した:\n${server.output()}`);
+    }
+    await new Promise((done) => setTimeout(done, POLL_INTERVAL_MS));
+  }
+  stop(server.child);
+  throw new Error(`Chromium が時間内に立たなかった:\n${server.output()}`);
+}
+
+/** Storybook と、各ファイルが接続する Chromium を 1 つ起動して温め、閲覧 URL と接続先をテストへ指定する */
+export default async function setup(project: TestProject) {
+  const { url, stopAll } = await startStorybook();
+  const browser = await startBrowserServer(url).catch((error: unknown) => {
+    stopAll();
+    throw error;
+  });
+  project.provide("storybookUrl", url);
+  project.provide("browserWsEndpoint", browser.wsEndpoint);
+  return () => {
+    browser.stop();
+    stopAll();
+  };
 }

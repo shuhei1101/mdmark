@@ -1,0 +1,82 @@
+/* #449 の表の追加分: 列の見出しの右端の、列の幅を変えるつまみ。
+   拡張記法の規則（refs/19/assets/syntax.css）と #438 の追加分（refs/438/assets/table.css）の後に読む */
+
+@layer mdmark {
+  .mdmark {
+    /* つまみ: 見出しのセルの右端に重ね、押せる幅を取る。線は右端の罫線の位置に 2px で引く */
+    .mdmark-table .mdmark-col-resize {
+      position: absolute;
+      inset-block: 0;
+      inset-inline-end: 0;
+      z-index: 1;
+      width: 12px;
+      cursor: col-resize;
+      touch-action: none;
+
+      &::after {
+        position: absolute;
+        inset-block: 0.35em;
+        inset-inline-end: 0;
+        width: 2px;
+        border-radius: 1px;
+        background: var(--mdmark-color-link);
+        content: "";
+        opacity: 0;
+      }
+
+      /* ポインターを乗せた・ドラッグ中・フォーカスしたときに線を出す */
+      &:hover::after,
+      &.is-hover::after,
+      &.is-dragging::after,
+      &:focus-visible::after,
+      &.is-focus::after {
+        opacity: 1;
+      }
+
+      &:focus-visible,
+      &.is-focus {
+        outline: 2px solid var(--mdmark-color-link);
+        outline-offset: -2px;
+      }
+    }
+
+    /* 見出しのセルの右端に乗せたときも線を出す（つまみの範囲の外のボタンは今のまま押せる） */
+    .mdmark-table thead th:hover > .mdmark-col-resize::after {
+      opacity: 0.4;
+    }
+
+    /* ポインターが粗い画面: つまみを常に出し、押せる幅を 24px にする。
+       見出しのボタンがつまみに重ならないよう、見出しのセルの右の余白をつまみの幅だけ広げる */
+    @media (pointer: coarse) {
+      .mdmark-table thead th:has(> .mdmark-col-resize) {
+        padding-inline-end: calc(24px + 0.25em);
+      }
+
+      .mdmark-table .mdmark-col-resize {
+        width: 24px;
+
+        &::after {
+          opacity: 0.4;
+        }
+      }
+    }
+
+    /* モックの見本: ポインターが粗い画面のつまみを、PC の画面幅でも同じ見た目で見せる */
+    .mdmark-table.is-coarse thead th:has(> .mdmark-col-resize) {
+      padding-inline-end: calc(24px + 0.25em);
+    }
+
+    .mdmark-table.is-coarse .mdmark-col-resize {
+      width: 24px;
+
+      &::after {
+        opacity: 0.4;
+      }
+    }
+
+    /* 幅を変えた列: wide= の列も、指定した幅で折り返す */
+    .mdmark-table :is(th, td).mdmark-wide.is-resized {
+      white-space: normal;
+    }
+  }
+}

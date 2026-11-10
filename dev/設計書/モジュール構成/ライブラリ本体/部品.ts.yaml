@@ -259,7 +259,7 @@ functions:
       - name: options
         type: TableOptions
         required: true
-        description: 部品設計の引数（`kind`・`features`・`columns`・`rows`・`filters`・`collapse`・`title`・`rowCount`（`rows` を省いたときの本文の行の数）・`hide`・`totals`・`rowIds`・`highlight`・`rowColors`・`pin`（`data-pin` に写す列の位置の並び）・`pinMode`（ピン止めのボタンの名前と押した状態を決める。既定 `each`）・`wide`・`check`・`headRows`・`rowHeader`・`mergeColumns`・状態の引数）。`rows` を省いて `body` に `SLOT_MARKER` を指定すると囲みだけを作る
+        description: 部品設計の引数（`kind`・`features`・`columns`・`rows`・`filters`・`collapse`・`title`・`rowCount`（`rows` を省いたときの本文の行の数）・`hide`・`totals`・`rowIds`・`highlight`・`rowColors`・`pin`（`data-pin` に写す列の位置の並び）・`pinMode`（ピン止めのボタンの名前と押した状態を決める。既定 `each`）・`widths`（`{ column, width }` の並び。指定した列の見出しのセルの `width`・`min-width`・`--mdmark-column-min-width` に入れ、セルに `is-resized` を付ける）・`resizing`（つまみの線を出したままにする列の位置）・`wide`・`check`・`headRows`・`rowHeader`・`mergeColumns`・状態の引数）。`rows` を省いて `body` に `SLOT_MARKER` を指定すると囲みだけを作る
     returns:
       type: string
       description: '`<div class="mdmark-table"` で始まる HTML'
@@ -364,6 +364,13 @@ functions:
         condition: 部品設計の `PinAndWide` と `Check`
         mock: なし
         expected: 1 つ目の囲みが `data-pin="1"` を持ち、概要の列の見出しと各セルが class `mdmark-wide` を持ち、2 列目のセルだけが `is-pinned-col` で 2 列目のボタンが `aria-pressed="true"`。2 つ目の囲みが `data-check="2"` を持ち、必須の列の `true` のセルが `data-value="true"` と `mdmark-check`、`false` のセルが `data-value="false"` と `いいえ`、既定の列は文字のまま
+      - name: test_render_table_when_resized
+        case: 正常
+        summary: 指定した列の幅を見出しのセルに入れ、ドラッグ中の列のつまみに印を付ける
+        condition: '`features: [sort, pin, filter, resize]`、`widths: [{ column: 0, width: 200 }]`、`resizing: 0`'
+        mock: なし
+        expected: 1 列目の `th` の `style` に `width:200px`・`min-width:200px`・`--mdmark-column-min-width:200px` があり、1 列目のセルが `is-resized`、1 列目の `mdmark-col-resize` が `is-dragging` を持つ
+
   - name: renderCheckCell
     title: 真偽値のセルの中身を描く
     container: src/parts/table.ts
@@ -390,7 +397,7 @@ functions:
     container: src/parts/table.ts
     kind: 関数
     scope: internal
-    summary: 列 1 つの見出しの中身（並べ替え・絞り込み・ピン止めのボタン）と、その列の絞り込みのドロワーの HTML を返却する。`mount` が描いた表に追加するのにも使用する
+    summary: 列 1 つの見出しの中身（並べ替え・絞り込み・ピン止めのボタンと、`features` に `resize` を含むときは `.mdmark-th` の後ろに列の幅のつまみ `span.mdmark-col-resize`）と、その列の絞り込みのドロワーの HTML を返却する。`mount` が描いた表に追加するのにも使用する
     args:
       - name: options
         type: '{ id: string; column: number; label: string; features: string[]; filter?: { kind: "select" | "text" | "date"; values: string[] }; active?: boolean; open?: boolean; value?: FilterValue; pinVisible?: boolean; pinPressed?: boolean; pinMode?: TablePinMode }'
@@ -414,6 +421,12 @@ functions:
         condition: '`filter: { kind: date }`'
         mock: なし
         expected: '`drawer` に `開始日`・`終了日` の `<input type="date">` がある'
+      - name: test_render_table_tools_when_resize
+        case: 正常
+        summary: '`resize` の機能を持つ列の見出しに、列の幅のつまみを出す'
+        condition: '`features: [sort, resize]`、列名 `名前` と、`features: [sort]`'
+        mock: なし
+        expected: 1 つ目の `header` の末尾に `<span class="mdmark-col-resize" role="separator" aria-orientation="vertical" tabindex="0" aria-label="「名前」の列の幅">` があり、2 つ目の `header` に `mdmark-col-resize` が無い
       - name: test_render_table_tools_when_pin_mode
         case: 正常
         summary: ピン止めのボタンの名前をピン止めの動きで切り替える

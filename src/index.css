@@ -1917,6 +1917,65 @@
       white-space: nowrap;
     }
 
+    /* 幅を指定した wide= の列: 指定した幅で折り返す */
+    .mdmark-table :is(th, td).mdmark-wide.is-resized {
+      white-space: normal;
+    }
+
+    /* 列の幅のつまみ: 見出しのセルの右端に重ね、押せる幅を取る。線は右端の罫線の位置に 2px で引く */
+    .mdmark-table .mdmark-col-resize {
+      position: absolute;
+      inset-block: 0;
+      inset-inline-end: 0;
+      z-index: 1;
+      width: 12px;
+      cursor: col-resize;
+      touch-action: none;
+
+      &::after {
+        position: absolute;
+        inset-block: 0.35em;
+        inset-inline-end: 0;
+        width: 2px;
+        border-radius: 1px;
+        background: var(--mdmark-color-link);
+        content: "";
+        opacity: 0;
+      }
+
+      /* ポインターを乗せた・ドラッグ中・フォーカスしたときに線を出す */
+      &:hover::after,
+      &.is-dragging::after,
+      &:focus-visible::after {
+        opacity: 1;
+      }
+
+      &:focus-visible {
+        outline: 2px solid var(--mdmark-color-link);
+        outline-offset: -2px;
+      }
+    }
+
+    /* 見出しのセルにポインターを乗せたときは、つまみの線を薄く出す（つまみに乗せたときの線より弱く当てる） */
+    .mdmark-table :where(thead th:hover) > .mdmark-col-resize::after {
+      opacity: 0.4;
+    }
+
+    /* ポインターが粗い画面: つまみの線を常に薄く出して押せる幅を 24px にし、見出しのボタンと重ならないよう右の余白を広げる */
+    @media (pointer: coarse) {
+      .mdmark-table thead th:has(> .mdmark-col-resize) {
+        padding-inline-end: calc(24px + 0.25em);
+      }
+
+      .mdmark-table .mdmark-col-resize {
+        width: 24px;
+
+        &::after {
+          opacity: 0.4;
+        }
+      }
+    }
+
     /* check= の列の ✓: 本文の色の太い線のアイコン */
     .mdmark-check {
       display: inline-flex;
@@ -4087,11 +4146,12 @@
   /* 印刷のとき（記法）: 押せない操作を出さず、折り畳み・タブ・表の留めを紙向きにする */
   @media print {
     .mdmark {
-      /* 紙では押せない操作（絞り込み・ピン止め・行の詳細の開閉・見出しのアンカー）: 出さない */
+      /* 紙では押せない操作（絞り込み・ピン止め・列の幅のつまみ・行の詳細の開閉・見出しのアンカー）: 出さない */
       :is(
           .mdmark-filter,
           .mdmark-filter-drawer,
           .mdmark-pin,
+          .mdmark-col-resize,
           .mdmark-row-toggle,
           .mdmark-anchor,
           .mdmark-table-tools,
