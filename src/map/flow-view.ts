@@ -332,9 +332,10 @@ export const attachMapFlow = (
         `.mdmark-diagram-node[data-node="${CSS.escape(node.id)}"]`,
       );
       if (!element) continue;
-      const h = Math.ceil(element.scrollHeight);
-      if (h > node.h + 1) {
-        sizes[node.id] = { w: node.w, h };
+      // 枠線を含む高さに、中身があふれた分を足す
+      const over = Math.ceil(element.scrollHeight - element.clientHeight);
+      if (over > 1) {
+        sizes[node.id] = { w: node.w, h: node.h + over };
         changed = true;
       }
     }
