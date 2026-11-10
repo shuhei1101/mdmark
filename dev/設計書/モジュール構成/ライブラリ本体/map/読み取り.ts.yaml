@@ -74,7 +74,10 @@ data_models:
     description: 案内の手順（`title`・`text`・`nodes`・`edges`・`enter`）
   - name: layout
     type: Record<string, MapLayoutEntry>
-    description: ID ごとの上書き（`align`・`order`・`pos`・`width`・`color`・`line`・`packet`・`collapsed`）
+    description: ID ごとの上書き（`align`・`order`・`pos`・`width`・`color`・`line`・`packet`・`layer`・`justify`・`ends`・`via`・`collapsed`）
+  - name: layers
+    type: 'Array<{ id: string; title: string; color: string | undefined }>'
+    description: 層（記載の順）
   - name: plays_over
     type: number
     description: シーケンス図の再生を重ねる構成図の番号
@@ -292,7 +295,7 @@ functions:
     summary: モックの補足
     condition: モックの `DATA`
     mock: なし
-    expected: '`notes`（値は `{ text }`）・`walkthroughs`・`layout`（`collapsed` を含む）・`plays_over` が読め、`problems` が空'
+    expected: '`notes`（値は `{ text }`）・`walkthroughs`・`layout`（`layer`・`justify`・`ends`・`via`・`collapsed` を含む）・`layers`・`plays_over` が読め、`problems` が空'
   - name: test_parse_map_data_when_empty
     case: 正常
     summary: 補足が無い
@@ -317,6 +320,12 @@ functions:
     condition: '`{"notes": [` と `[1]`'
     mock: なし
     expected: どちらも `map_invalid_value` が 1 件で、補足は空
+  - name: test_parse_map_data_when_invalid_side
+    case: 異常
+    summary: 知らない辺
+    condition: '`layout` の線の `ends.from.side` が `middle`、`justify` が `left`'
+    mock: なし
+    expected: '`map_invalid_value` が 2 件で、`ends` と `justify` を捨てる'
   - name: test_parse_map_data_when_note_is_string
     case: 異常
     summary: 説明が文字

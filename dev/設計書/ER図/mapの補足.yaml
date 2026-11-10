@@ -1,11 +1,12 @@
 title: 'ER 図: map の補足'
 lead: 'map の範囲の `<!-- map-data: {JSON のオブジェクト} -->` に記載する補足の構造。'
-overview: データストアは文書の中の HTML コメントの JSON のオブジェクト 1 つ（複数の行にわたってよい）。キーの構成は shuhei1101/mdmark#451 の資料 A-128 の方針に従い、後から引数が付きうる値はオブジェクトにする。最上位は `version`（補足のバージョン。整数で今は `1`、必須）・`notes`・`walkthroughs`・`layout`・`plays_over`（どれも任意）のキーを持ち、ほかのキーは `map_unknown_key` にする。文字の値に `--` を含めない（HTML コメントを閉じてしまう）
+overview: データストアは文書の中の HTML コメントの JSON のオブジェクト 1 つ（複数の行にわたってよい）。キーの構成は shuhei1101/mdmark#451 の資料 A-128 の方針に従い、後から引数が付きうる値はオブジェクトにする。最上位は `version`（補足のバージョン。整数で今は `1`、必須）・`notes`・`walkthroughs`・`layout`・`layers`・`plays_over`（どれも任意）のキーを持ち、ほかのキーは `map_unknown_key` にする。文字の値に `--` を含めない（HTML コメントを閉じてしまう）
 er:
   entities:
   - name: 補足
   - name: 案内の手順
   - name: 配置の上書き
+  - name: 層
   relations:
   - from: 補足
     to: 案内の手順
@@ -15,6 +16,14 @@ er:
     to: 配置の上書き
     cardinality: '||--o{'
     label: layout
+  - from: 補足
+    to: 層
+    cardinality: '||--o{'
+    label: layers
+  - from: 配置の上書き
+    to: 層
+    cardinality: '}o--o|'
+    label: layer
 tables:
 - name: map_data
   title: 補足
@@ -124,12 +133,62 @@ tables:
     type: object
     description: 線の ID のときだけ。データの印の色と形状（`{ color, shape }`。`shape` は `circle`・`square`・`diamond`）
     example: '{"color": "orange", "shape": "square"}'
+  - name: layer
+    title: 層
+    type: string
+    description: ノードの ID のときだけ。ノードを入れる層の ID。親（グループか図の全体）の中を層の帯に分ける
+    example: ui
+    foreign_key:
+      table: layers
+    notes: '`layers` に無い ID は `map_unknown_ref`'
+  - name: justify
+    title: 寄せる
+    type: string
+    check: '`start`・`center`・`end`'
+    default: '`center`'
+    description: ノード・グループの ID のときだけ。段が親の中身より短いときに、段の中で寄せる側（`start` は左か上、`end` は右か下）
+    example: start
+  - name: ends
+    title: 線の端の辺
+    type: object
+    description: 線の ID のときだけ。元の端（`from`）と先の端（`to`）をつなぐノードの辺（`{ "from": { "side": … }, "to": { "side": … } }`。`side` は `top`・`right`・`bottom`・`left`）。無い端は自動で決める
+    example: '{"from": {"side": "bottom"}, "to": {"side": "top"}}'
+  - name: via
+    title: 経由点
+    type: array
+    description: 線の ID のときだけ。線が順に通る点（`{ "x", "y" }`）。両端のノードの共通の祖先のグループ（無ければ図の全体）の中身の左上からの座標
+    example: '[{"x": 240, "y": 80}]'
   - name: collapsed
     title: 最初に閉じる
     type: boolean
     default: '`false`'
     description: グループの ID のときだけ。`true` なら、開閉の状態が保たれていないときにそのグループを閉じて描く
     example: 'true'
+- name: layers
+  title: 層
+  summary: ノードを割り当てる層の 1 つ。配列の順に、親の中を上から下へ帯にして並べる
+  datastore: JSON
+  access: 全件
+  scale: ~10
+  columns:
+  - name: id
+    title: ID
+    type: string
+    not_null: true
+    description: '`layout` の `layer` から指す ID'
+    example: ui
+  - name: title
+    title: タイトル
+    type: string
+    not_null: true
+    description: 帯の左上に出す層の名前
+    example: 画面
+  - name: color
+    title: 色
+    type: string
+    description: 帯に薄く敷く色の名前。無ければ文字の薄い色
+    example: blue
+    notes: 知らない名前は `map_invalid_value`
 refs:
 - dev/設計書/インターフェース定義/ライブラリ本体/文書をHTML文字列にする.ts#constraints[map の範囲]
 - dev/設計書/モジュール構成/ライブラリ本体/map/読み取り.ts#data_models[MapData]

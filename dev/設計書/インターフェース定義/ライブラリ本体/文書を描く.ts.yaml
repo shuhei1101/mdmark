@@ -6274,6 +6274,29 @@ flows:
     - '`line: back` の線が実線・太さ normal・塗りの矢じり'
     - ほかのノード・線は正常系（map の構成図を描く）と同じに描かれる
     test: test_normal_when_map_config_names_missing
+  - name: 正常系（map の層と線の上書き）
+    summary: 補足の `layers` と `layout` の `layer` でグループの中を層の帯に分け、`justify`・`ends`・`via`・`collapsed` を当てて描く
+    setup:
+    - name: 配布物を読み込んだページ
+      description: 正常系（map の構成図を描く）と同じ
+    - name: 層と上書きを持つ map の Markdown
+      description: '正常系（map の構成図を描く）の範囲の補足に、`layers`（`ui`・`logic`・`store` の 3 つ。`ui` は `color: blue`）と、グループ `app` の中のノードへの `layer`、外部のシステムのノード 1 つ（`app` の外）、線 1 本への `ends`（`from: bottom`・`to: top`）と別の線 1 本への `via` 1 点、ノード 1 つへの `justify: start`、グループ 1 つへの `collapsed: true` を足した範囲'
+    - name: Mock
+      description: 正常系（map の構成図を描く）と同じ
+    flow: |-
+      sequenceDiagram
+        actor U as ユーザー
+        participant M as mdmark
+        U->>M: mount(el, { markdown, config })
+        M->>M: app の中を層の帯に分けて配置し、線の端の辺と経由点を当てて経路を引く
+        M-->>U: 層の帯と上書きを当てた map の図
+    expected:
+    - '`app` の中に `[data-lane]` が `ui`・`logic`・`store` の順に上から 3 つ並び、帯の左上にタイトル、`ui` の帯に青が薄く敷かれ、各ノードが自分の層の帯の中にある'
+    - 外部のシステムのノードが `app` の外にあり、凡例が無い
+    - '`ends` の線が元のノードの下の辺から出て、先のノードの上の辺に矢じりが付き、`via` の線が経由点を通る'
+    - '`justify: start` のノードの左端が段の左端にあり、`collapsed: true` のグループが閉じて描かれる（sessionStorage が空のとき）'
+    - どの 2 つのノード・グループ・帯のタイトルも重ならない
+    test: test_normal_when_map_layers
   - name: 正常系（map の印の引数で最初の見せ方を決める）
     summary: 印の JSON のオブジェクトの `focus`・`play`・`interval`・`collapse` で、最初に入るグループ・画面に入ったときの自動の再生・自動で進める間隔・折りたたみを決める
     setup:

@@ -36,6 +36,18 @@ data_models:
   - name: width
     type: number | undefined
     description: ノードの幅
+  - name: layer
+    type: string | undefined
+    description: ノードを入れる層の ID
+  - name: justify
+    type: '"start" | "center" | "end" | undefined'
+    description: 段の中で寄せる側
+  - name: ends
+    type: '{ from?: "top" | "right" | "bottom" | "left"; to?: "top" | "right" | "bottom" | "left" } | undefined'
+    description: 線の端をつなぐ辺（補足の `ends` と、つなぎ替えた辺の `attachments`）
+  - name: via
+    type: 'Array<{ x: number; y: number }> | undefined'
+    description: 線の経由点（両端の共通の祖先の中身の左上からの座標）
   - name: size
     type: '{ w: number; h: number } | undefined'
     description: 描いて測ったノードの大きさ。見積もりの代わりに使う
@@ -61,6 +73,9 @@ data_models:
   - name: wires
     type: PlacedWire[]
     description: 線（`id`・`from`・`to`・`points`・`label`・`merged`）
+  - name: lanes
+    type: PlacedLane[]
+    description: 層の帯（`id`・`title`・`color`・`parent`・`x`・`y`・`w`・`h`）。層を持つノードの親ごとに、`layers` の順に上から並ぶ
 constants:
 - name: MAP_LAYOUT
   title: 配置の寸法
@@ -134,13 +149,17 @@ functions:
     type: '"height" | "width"'
     required: true
     description: 設定の `map.node_fit`
+  - name: layers
+    type: MapData["layers"]
+    required: true
+    description: 補足の層
   returns:
     type: MapLayout
     description: 配置の結果
   process: |-
     1. 見せ方で表示する木を作る。中へ入ったグループの外は `faded` で残し、閉じたグループは 1 つのノードにして、そこへの線を同じ相手ごとに 1 本にまとめて元の線を `merged` に持つ（表示する木を作る）
-    2. 内側のグループから順に、子孫の線を直下の子どうしの線に持ち上げ、閉路の戻りを外した最長路で段を決め、重心の 4 回の掃引で段の中の並びを決め、上書きの `align`・`order`・`pos` を当てて大きさを決める（グループの中を配置する）
-    3. 外側から座標を足して図の座標にし、線の経路を引く（線の経路を引く）
+    2. 内側のグループから順に、子孫の線を直下の子どうしの線に持ち上げ、閉路の戻りを外した最長路で段を決め、重心の 4 回の掃引で段の中の並びを決め、上書きの `align`・`order`・`justify`・`pos` を当てて大きさを決める。子に `layer` を持つノードがあるグループ（と図の全体）は、`layers` の順に層ごとの帯に分けてから帯の中をそれぞれ配置し、帯を上から積み、層を持たないノードは最後の帯の下に置く（グループの中を配置する）
+    3. 外側から座標を足して図の座標にし、帯の幅を親の中身の幅にそろえ、線の経路を引く（線の経路を引く）
   unit_tests:
   - name: test_layout_map
     case: 正常
@@ -172,6 +191,18 @@ functions:
     condition: 'ノード 1 つに `size: { w: 300, h: 90 }`'
     mock: なし
     expected: そのノードの `w`・`h` が 300・90
+  - name: test_layout_map_when_layers
+    case: 正常
+    summary: 層
+    condition: グループ `app` の中のノードを 3 つの層に割り当てた `layers` と `layer`
+    mock: なし
+    expected: '`lanes` が `layers` の順に 3 つで上から並び、どれも `app` の中身の幅で、各ノードが自分の層の帯の中にあり、重なりと横切りが無い'
+  - name: test_layout_map_when_justify
+    case: 正常
+    summary: 寄せる
+    condition: '段の幅が親より短い段のノードに `justify: start` と `end`'
+    mock: なし
+    expected: '`start` のノードの左端が親の中身の左端、`end` のノードの右端が親の中身の右端'
   - name: test_layout_map_when_node_fit_width
     case: 正常
     summary: node_fit が width
@@ -204,8 +235,8 @@ functions:
     description: '`points` を持つ線'
   process: |-
     1. 端点とその祖先以外の矩形の内側の格子点を通れない点にする
-    2. 片方の端点だけの祖先の枠の出入りに `borderCost`、曲がりに `bendCost` を足し、残りの出入りの数を見積もりに加えた A* で経路を探す
-    3. 一直線に並ぶ点を除く
+    2. 片方の端点だけの祖先の枠の出入りに `borderCost`、曲がりに `bendCost` を足し、残りの出入りの数を見積もりに加えた A* で経路を探す。上書きの `ends` がある端は、その辺の中央から辺と直角に出入りする点だけを始点・終点にする。`via` がある線は、始点 → 経由点 → 終点の区間ごとに探してつなぐ
+    3. 一直線に並ぶ点を除く（経由点は除かない）
   unit_tests:
   - name: test_route_wires
     case: 正常
@@ -219,6 +250,18 @@ functions:
     condition: 別のグループの中のノードどうしの線
     mock: なし
     expected: グループの枠の出入りがそれぞれ 1 回
+  - name: test_route_wires_when_ends
+    case: 正常
+    summary: 端の辺
+    condition: '左右に並んだ 2 つのノードの線に `ends: { from: bottom, to: top }`'
+    mock: なし
+    expected: 最初の点が元のノードの下の辺の中央、最後の点が先のノードの上の辺の中央で、最初と最後の区間が縦
+  - name: test_route_wires_when_via
+    case: 正常
+    summary: 経由点
+    condition: '線に `via: [{ x: 240, y: 300 }]`'
+    mock: なし
+    expected: 線の点に図の座標にした経由点があり、矩形を横切らない
 - name: wrapLabel
   title: 名前を折り返す
   kind: 関数

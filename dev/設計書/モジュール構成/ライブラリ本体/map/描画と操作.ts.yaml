@@ -326,7 +326,7 @@ functions:
     description: 強調を外から当てる関数と片付ける関数
   process: |-
     1. `parseFlowchart`・`parseMapData` で読み、`readMapState`（印の `focus` と、補足の `layout` の `collapsed` が `true` の ID を指定する）で状態を読む
-    2. `layoutMap` で配置し、`renderDiagramFrame`（種類 `map`・`wide`・`tools`）と `renderMapFlow` で描く
+    2. 補足の `layout` に状態の `positions`・`attachments`（`ends` に重ねる）を重ねた上書きと補足の `layers` で `layoutMap` を配置し、`renderDiagramFrame`（種類 `map`・`wide`・`tools`）と `renderMapFlow` で描く
     3. ノードの中身を測り、見積もりと違う大きさのノードを `size` にして配置し直す。以降はノードの大きさを `ResizeObserver` で見て同じく配置し直す
     4. 開閉・中へ入る・選ぶ・線を指す・動かすの操作と、Esc（選択を解き、無ければ外へ戻る）、右上のボタンを付け、変わるたびに `writeMapState` で保つ
     5. 補足に `walkthroughs` があれば `attachBand`（印の `interval`・`play`）で案内の帯を付ける
@@ -590,7 +590,7 @@ functions:
   container: src/parts/map.ts
   usecase: Mermaidと補足で図を描く
   role: 処理
-  summary: 部品設計『mapの構成図』の HTML。フロー図の部品の定義にしたノードと線を `renderFlow` で描き、グループの面とタイトルの行・開閉と中へ入るボタン・閉じたグループを重ねる
+  summary: 部品設計『mapの構成図』の HTML。フロー図の部品の定義にしたノードと線を `renderFlow` で描き、層の帯・グループの面とタイトルの行・開閉と中へ入るボタン・閉じたグループを重ねる
   scope: public
   callees:
   - dev/設計書/モジュール構成/ライブラリ本体/図.ts#functions[renderFlow]
@@ -609,6 +609,12 @@ functions:
     condition: 部品の Default の引数
     mock: なし
     expected: '`[data-group]` が 4 つ、`[data-node]` が 10 で、凡例が無い'
+  - name: test_render_map_flow_when_lanes
+    case: 正常
+    summary: 層の帯
+    condition: '`lanes` が 3 つ（1 つは `color: blue`）の配置'
+    mock: なし
+    expected: '`[data-lane]` が 3 つで記載の順に並び、タイトルの文字を持ち、`blue` の帯だけ `data-color="blue"` を持つ'
   - name: test_render_map_flow_when_entered
     case: 正常
     summary: 中へ入った
