@@ -731,7 +731,7 @@ test("test_render_diagram_frame_when_resizable", async () => {
   expect(handle).toContain('tabindex="0"');
   expect(handle).toContain('aria-label="「問い合わせの流れ」の表示の高さ"');
   expect(outerHtml(omitted, 'class="mdmark-diagram-resize"')).toContain(
-    iconSvg("grip-horizontal"),
+    iconSvg("equal"),
   );
   expect(off).not.toContain("mdmark-diagram-resize");
   expect(modal).not.toContain("mdmark-diagram-resize");
