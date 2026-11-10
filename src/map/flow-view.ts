@@ -238,6 +238,20 @@ export const attachMapFlow = (
       if (button) button.disabled = item.disabled === true;
     }
     emphasize();
+    observeNodes();
+  };
+  /** ノードの大きさの変化（文字の読み込みなど）を見て、測り直す */
+  const resizeObserver =
+    typeof ResizeObserver === "undefined"
+      ? undefined
+      : new ResizeObserver(() => measure());
+  const observeNodes = () => {
+    if (!resizeObserver) return;
+    resizeObserver.disconnect();
+    for (const element of figure.querySelectorAll(
+      ".mdmark-diagram-stage > .mdmark-diagram-node[data-node]",
+    ))
+      resizeObserver.observe(element);
   };
   const change = (next: MapState) => {
     state = next;
@@ -352,6 +366,7 @@ export const attachMapFlow = (
     if (changed) refresh();
   };
   measure();
+  observeNodes();
   // 保った選択の強調と印を、初めに描いた図にも当てる
   emphasize();
 
@@ -656,6 +671,7 @@ export const attachMapFlow = (
     },
     destroy: () => {
       band?.destroy();
+      resizeObserver?.disconnect();
       detachDiagrams();
       figure.removeEventListener("click", onClick);
       figure.removeEventListener("pointerdown", onPointerDown);
