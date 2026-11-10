@@ -59,10 +59,10 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-10T13:18:02.402100+00:00'
   - process: モジュール構成設計
-    status: todo
-    note: 印の引数を JSON のオブジェクトにする要件の書き足しを反映した（a728c66e）
+    status: done
+    note: 補足を JSON のオブジェクトにする要件の書き足しを反映した（534a0cef）
     updated_by: planner
-    updated_at: '2026-11-10T15:45:41.439844+00:00'
+    updated_at: '2026-11-10T16:03:05.424878+00:00'
   - process: ドキュメント修正
     status: todo
     note: 内容が決まった設定・CLI・用語集・構成図の決まり・図を描くを記載した。補足の記載方法を載せるページは D-347 の回答待ちで、実装の関連ドキュメントの修正で記載する
