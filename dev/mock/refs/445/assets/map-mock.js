@@ -528,7 +528,38 @@ export const createMap = (host, spec, initial = {}) => {
       }
       edge.points.splice(0, 0, ...before);
       edge.points.push(...after);
+      normalizeEnds(edge, rectOf);
     }
+  };
+
+  /**
+   * 線の端のつなぐ辺を、ノードの外にある一番近い折れ点の位置から決め直す（ノードの中に入った折れ点は捨てる）。
+   * その折れ点がノードの下（左右の範囲の中）なら下の辺、上なら上の辺、右（上下の範囲の中）なら右の辺、左なら左の辺へ、
+   * その折れ点からまっすぐ入れる。真ん中の区間を動かしたときも、線の来る向きに合わせてつなぐ辺が変わる
+   */
+  const normalizeEnds = (edge, rectOf) => {
+    const inside = (rect, [x, y]) => x > rect.x && x < rect.x + rect.w && y > rect.y && y < rect.y + rect.h;
+    const enter = (rect, [x, y]) => {
+      const insideX = x >= rect.x + 8 && x <= rect.x + rect.w - 8;
+      const insideY = y >= rect.y + 8 && y <= rect.y + rect.h - 8;
+      if (insideX && y >= rect.y + rect.h) return [x, rect.y + rect.h];
+      if (insideX && y <= rect.y) return [x, rect.y];
+      if (insideY && x >= rect.x + rect.w) return [rect.x + rect.w, y];
+      if (insideY && x <= rect.x) return [rect.x, y];
+      return undefined;
+    };
+    const fixEnd = (points, id) => {
+      const rect = rectOf(id);
+      if (!rect || points.length < 3) return points;
+      // 端を除き、ノードの中に入った折れ点を後ろから捨てる
+      let body = points.slice(0, -1);
+      while (body.length > 1 && inside(rect, body.at(-1))) body = body.slice(0, -1);
+      const end = enter(rect, body.at(-1));
+      return end ? [...body, end] : points;
+    };
+    let points = fixEnd(edge.points, edge.to);
+    points = fixEnd([...points].reverse(), edge.from).reverse();
+    edge.points.splice(0, edge.points.length, ...points);
   };
 
   /** 今の倍率（図の中身の座標とポインターの座標の比） */
@@ -1551,24 +1582,22 @@ export const createSequence = (host, spec, kinds, onStep) => {
         render();
       };
       head.addEventListener("click", (event) => {
-        // 名前の文字の上は、文字を選んでコピーできるよう、選択の対象にしない
+        // 名前の文字の上は、文字を選んでコピーできるよう、選択の対象にしない。並べ替えのドラッグの後も選ばない
         if (event.target.closest(".mdmark-diagram-node-name")) return;
+        if (suppressClick) {
+          suppressClick = false;
+          return;
+        }
         toggle();
       });
-      // つまみは箱（ボタン）の中に入れず、箱の右上に重ねた別の要素にする（押せる要素を入れ子にしない）
-      // ブロックの中だけを見ているときは並べ替えのつまみを出さない
-      if (state.enter !== undefined) return;
-      const grip = participantGrip(id, at, visible.length);
-      grip.style.left = `${head.offsetLeft + head.offsetWidth - 26}px`;
-      grip.style.top = `${head.offsetTop + 2}px`;
-      if (head.classList.contains("map-dim")) grip.classList.add("map-dim");
-      head.after(grip);
       head.addEventListener("keydown", (event) => {
         if (event.key === "Enter" || event.key === " ") {
           event.preventDefault();
           toggle();
         }
       });
+      // ブロックの中だけを見ているときは並べ替えない
+      if (state.enter === undefined) attachReorder(head, id, at, visible.length);
     });
 
     // メッセージの線のホバー
@@ -1697,18 +1726,12 @@ export const createSequence = (host, spec, kinds, onStep) => {
   };
 
   /**
-   * 参加者の箱の左上のつまみ: ポインター（マウス・指）で押したまま左右へ動かし、離した位置の列へ参加者を移す。
-   * キーボードではつまみにフォーカスして Alt + 左右の矢印で 1 列ずつ動かす。箱を押したときの強調とは分ける
+   * 参加者の並べ替え: 箱の名前の文字の外を押したまま左右へ動かし（4px 動くまでは押した扱い）、離した位置の列へ参加者を移す。
+   * キーボードでは箱にフォーカスして Alt + 左右の矢印で 1 列ずつ動かす
    */
-  const participantGrip = (id, at, count) => {
-    const grip = document.createElement("span");
-    grip.className = "map-participant-grip";
-    grip.tabIndex = 0;
-    grip.setAttribute("role", "button");
-    grip.setAttribute("aria-label", `${labelOf(id)}の並び順。押したまま左右へ動かすか、Alt + 左右の矢印で動かす`);
-    grip.title = "押したまま左右へ動かして並べ替える";
-    grip.innerHTML = icon("grip");
-    grip.dataset.participant = id;
+  let suppressClick = false;
+  const attachReorder = (head, id, at, count) => {
+    head.setAttribute("aria-keyshortcuts", "Alt+ArrowLeft Alt+ArrowRight");
     const move = (to) => {
       if (to < 0 || to >= count || to === at) return;
       const next = [...state.order];
@@ -1716,33 +1739,37 @@ export const createSequence = (host, spec, kinds, onStep) => {
       next.splice(to, 0, item);
       state.order = next;
       render();
-      host.querySelector(`.map-participant-grip[data-participant="${CSS.escape(id)}"]`)?.focus();
+      host.querySelector(`.map-participant[data-node="${CSS.escape(id)}"]`)?.focus();
     };
-    grip.addEventListener("keydown", (event) => {
+    head.addEventListener("keydown", (event) => {
       if (event.altKey && event.key === "ArrowLeft") move(at - 1);
       if (event.altKey && event.key === "ArrowRight") move(at + 1);
     });
-    grip.addEventListener("pointerdown", (event) => {
-      event.preventDefault();
+    head.addEventListener("pointerdown", (event) => {
+      if (event.button !== 0 || event.target.closest(".mdmark-diagram-node-name, button")) return;
       event.stopPropagation();
-      grip.setPointerCapture(event.pointerId);
       const heads = [...host.querySelectorAll(".map-participant")];
-      const head = heads[at];
       // 動かし始めたときの列の位置で判定する（動かしている箱自身はポインターの下にあるため数えない）
       const rects = heads.map((item) => item.getBoundingClientRect());
       const container = head.parentElement;
       const base = container.getBoundingClientRect();
-      // 挿入する場所を示す縦の線
-      const marker = document.createElement("div");
-      marker.className = "map-insert-line";
-      marker.hidden = true;
-      container.append(marker);
-      head.classList.add("is-dragging");
       const startX = event.clientX;
+      const startY = event.clientY;
+      let dragging = false;
       let target = at;
+      let marker;
       const onMove = (moveEvent) => {
+        if (!dragging && Math.hypot(moveEvent.clientX - startX, moveEvent.clientY - startY) < 4) return;
+        if (!dragging) {
+          dragging = true;
+          // 挿入する場所を示す縦の線
+          marker = document.createElement("div");
+          marker.className = "map-insert-line";
+          marker.hidden = true;
+          container.append(marker);
+          head.classList.add("is-dragging");
+        }
         head.style.translate = `${moveEvent.clientX - startX}px 0`;
-        grip.style.translate = head.style.translate;
         const x = moveEvent.clientX;
         const centers = rects.map((rect) => (rect.left + rect.right) / 2);
         // ポインターに最も近い列を移す先にする
@@ -1757,18 +1784,17 @@ export const createSequence = (host, spec, kinds, onStep) => {
         marker.hidden = false;
       };
       const onUp = () => {
-        grip.removeEventListener("pointermove", onMove);
+        document.removeEventListener("pointermove", onMove);
+        if (!dragging) return;
+        suppressClick = true;
         head.style.translate = "";
-        grip.style.translate = "";
         head.classList.remove("is-dragging");
-        marker.remove();
+        marker?.remove();
         move(target);
       };
-      grip.addEventListener("pointermove", onMove);
-      grip.addEventListener("pointerup", onUp, { once: true });
-      grip.addEventListener("pointercancel", onUp, { once: true });
+      document.addEventListener("pointermove", onMove);
+      document.addEventListener("pointerup", onUp, { once: true });
     });
-    return grip;
   };
 
   const step = (index) => {

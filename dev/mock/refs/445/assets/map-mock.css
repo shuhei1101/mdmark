@@ -125,7 +125,7 @@
 }
 /* 強調: 強調する要素の表示は変えず、案内・再生・参加者の選択で強調しない要素と、線のホバーでほかの要素を薄くする */
 .map-figure .map-dim,
-.map-figure .map-focus :is(.mdmark-diagram-node, .mdmark-diagram-wire, .mdmark-diagram-label, .mdmark-diagram-lifeline, .map-participant-grip):not(.map-keep) {
+.map-figure .map-focus :is(.mdmark-diagram-node, .mdmark-diagram-wire, .mdmark-diagram-label, .mdmark-diagram-lifeline):not(.map-keep) {
   opacity: 0.25;
 }
 .map-figure .map-focus .map-keep {
@@ -186,31 +186,6 @@
   white-space: pre-line;
 }
 
-/* シーケンス図の参加者の箱の右上のつまみ: 押したまま左右へ動かして並べ替える */
-.map-figure .map-participant-grip {
-  position: absolute;
-  z-index: 2;
-  display: grid;
-  place-items: center;
-  width: 24px;
-  height: 24px;
-  border-radius: var(--mdmark-radius);
-  color: var(--mdmark-color-muted);
-  cursor: grab;
-  /* 指で押したまま動かしても、ページがスクロールしない */
-  touch-action: none;
-}
-.map-participant-grip .mdmark-diagram-icon {
-  width: 14px;
-  height: 14px;
-}
-.map-participant-grip:hover {
-  background: color-mix(in srgb, currentColor 12%, transparent);
-}
-.map-participant-grip:focus-visible {
-  outline: 2px solid var(--mdmark-color-link);
-  outline-offset: 2px;
-}
 .map-figure .map-participant.is-dragging {
   z-index: 3;
   opacity: 0.8;
@@ -446,4 +421,13 @@
 .map-figure .map-participant .mdmark-diagram-node-name {
   cursor: text;
   user-select: text;
+}
+
+/* 参加者の箱は、名前の文字の外を押したまま左右へ動かして並べ替える */
+.map-figure .map-participant {
+  cursor: grab;
+}
+/* 種類の行（アイコンと種類の名前）は文字の選択の対象にしない。選んでコピーできるのはノードと参加者の名前の文字だけ */
+.map-figure .mdmark-diagram-node .mdmark-diagram-node-kind {
+  user-select: none;
 }
