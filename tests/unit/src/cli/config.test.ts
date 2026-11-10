@@ -354,6 +354,41 @@ test("test_validate_config_when_table_pin_invalid", async () => {
   expect(valid.config.table?.pin).toBe("through");
 });
 
+// map の Schema に合わない値を、記載できる値の一覧つきの schema のずれにし、設定に残す（正常系）
+test("test_validate_config_when_map_invalid", async () => {
+  // 準備
+  const { validateConfig } = await loadModule();
+  // 実行
+  const invalid = validateConfig(
+    {
+      map: {
+        node_fit: "tall",
+        kinds: { store: { shape: "hexagon" } },
+        lines: { back: { dash: "wavy" } },
+      },
+    },
+    "mdmark.config.yaml",
+  );
+  const notObject = validateConfig({ map: "x" }, "mdmark.config.yaml");
+  // 検証
+  expect(invalid.issues.map((issue) => issue.where)).toEqual([
+    "map.node_fit",
+    "map.kinds.store.shape",
+    "map.lines.back.dash",
+  ]);
+  expect(invalid.issues.every((issue) => issue.kind === "schema")).toBe(true);
+  expect(invalid.issues[0]?.message).toContain("`height`・`width`");
+  expect(invalid.issues[1]?.message).toContain(
+    "`rounded`・`rect`・`pill`・`double`",
+  );
+  expect(
+    (invalid.config as { map?: { kinds?: Record<string, { shape?: string }> } })
+      .map?.kinds?.store?.shape,
+  ).toBe("hexagon");
+  expect(notObject.issues.map((issue) => issue.where)).toEqual(["map"]);
+  expect((notObject.config as { map?: unknown }).map).toBeUndefined();
+});
+
 // 文字列でない colorTheme を schema のずれにして落とし、知らない名前はそのまま残す（正常系）
 test("test_validate_config_when_color_theme_invalid", async () => {
   // 準備
