@@ -13,7 +13,9 @@ import {
   routeTranspiler,
   sendPrintEvent,
 } from "../dist-page.ts";
+import { MAP_DATA, MAP_FLOW, mapRange } from "../map.ts";
 import { colorSvg, routePageFiles } from "../media.ts";
+import { MERMAID_SVG, MERMAID_WAIT_MS, routeMermaid } from "../mermaid.ts";
 
 // ビルドした配布物を配置した作業ツリー
 let builtRoot = "";
@@ -572,4 +574,27 @@ test("test_normal_when_frontmatter_enabled_by_mark", async ({ page }) => {
   await expect(content.locator("h1")).toHaveText("見出し");
   await expect(page.locator("#doc .mdmark-frontmatter")).toHaveCount(0);
   await expect(page.locator("#doc")).not.toContainText("title: テスト");
+});
+
+// 文書のマーカーで map を解除すると、範囲の中の mermaid のブロックを mermaid の図で描く（正常シナリオ（map の機能を解除する））
+test("test_normal_when_map_disabled", async ({ page }) => {
+  // 準備
+  await routeMermaid(page);
+  await openPage(page, builtRoot);
+  // 実行
+  await mountDocument(page, {
+    markdown: `<!-- features: -map -->\n\n${mapRange({ args: '{"title": "全体の構成"}', mermaid: MAP_FLOW, data: MAP_DATA })}`,
+  });
+  // 検証
+  const doc = page.locator("#doc");
+  await expect(doc.locator(MERMAID_SVG)).toHaveCount(1, {
+    timeout: MERMAID_WAIT_MS,
+  });
+  await expect(
+    doc.locator('figure.mdmark-diagram[data-diagram="map"]'),
+  ).toHaveCount(0);
+  await expect(doc).not.toContainText("map-data");
+  await expect(doc).not.toContainText('"walkthroughs"');
+  await expect(doc).not.toContainText("全体の構成");
+  await expect(doc.locator(".mdmark-syntax-warning")).toHaveCount(0);
 });

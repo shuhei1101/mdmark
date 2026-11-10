@@ -654,3 +654,66 @@ test("test_normal_when_cascaded_config_drift", async ({
   );
   expect(after).toEqual(before);
 });
+
+/** map の範囲の行（印・mermaid のブロック・補足） */
+function mapLines(options: {
+  args?: string;
+  mermaid: string[];
+  data?: string;
+}): string[] {
+  return [
+    options.args === undefined
+      ? "<!-- map -->"
+      : `<!-- map: ${options.args} -->`,
+    "",
+    "```mermaid",
+    ...options.mermaid,
+    "```",
+    ...(options.data === undefined
+      ? []
+      : ["", `<!-- map-data: ${options.data} -->`]),
+    "",
+    "<!-- /map -->",
+  ];
+}
+
+// 文書の map の補足のずれを、範囲の場所・種類・対象のキーで 1 つずつ出す（正常シナリオ（map の補足にずれがある））
+test("test_normal_when_map_data_drift", async ({ builtRoot, tempDir }) => {
+  // 準備
+  const dir = await createCleanDir(builtRoot, tempDir);
+  const drift = mapLines({
+    args: '{"title": "全体", "mdoe": 1}',
+    mermaid: ["flowchart LR", "  A[A] --> B[B]"],
+    data: '{"version": 1, "notes": {"ghost": {"text": "無い"}}, "layuot": {}, "walkthroughs": [{"text": "a -- b", "nodes": ["A"]}]}',
+  });
+  const head = ["# A", "", ...drift];
+  const a = [
+    ...head,
+    ...Array.from({ length: 19 - head.length }, () => ""),
+    ...mapLines({ mermaid: ["flowchart LR", "  C[C] --> D[D]"] }),
+    "",
+  ];
+  await writeFiles(dir, { "a.md": a.join("\n") });
+  const dataLine = a.findIndex((line) => line.startsWith("<!-- map-data")) + 1;
+  const before = await snapshot(dir);
+  // 実行
+  const result = await runCli(builtRoot, ["check"], dir);
+  // 検証
+  expect(result.code).not.toBe(0);
+  const lines = linesOf(result.stdout);
+  const at = (line: number, kind: string) =>
+    lines.filter((item) => item.startsWith(`a.md:${line}: ${kind}: `));
+  expect(at(dataLine, "map_unknown_ref")).toHaveLength(1);
+  expect(at(dataLine, "map_unknown_ref")[0]).toContain("notes.ghost");
+  expect(at(dataLine, "map_unknown_key")).toHaveLength(1);
+  expect(at(dataLine, "map_unknown_key")[0]).toContain("layuot");
+  expect(at(dataLine, "map_invalid_value")).toHaveLength(1);
+  expect(at(dataLine, "map_invalid_value")[0]).toContain(
+    "walkthroughs[0].text",
+  );
+  const mark = at(3, "map_unknown_key");
+  expect(mark).toHaveLength(1);
+  expect(mark[0]).toContain("mdoe");
+  expect(lines.some((line) => line.startsWith("a.md:20:"))).toBe(false);
+  expect(await snapshot(dir)).toEqual(before);
+});

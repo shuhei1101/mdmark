@@ -4,7 +4,9 @@ import {
   mountDocument,
   openPage,
   removeDistRoot,
+  routeLucide,
 } from "../dist-page.ts";
+import { MAP_CONFIG, MAP_FLOW, mapFigure, mapRange } from "../map.ts";
 import {
   MERMAID_ENTRY,
   MERMAID_FIGURE,
@@ -198,4 +200,39 @@ test("test_error_when_syntax_invalid", async ({ page }) => {
   await expect(page.locator('svg[aria-roledescription="error"]')).toHaveCount(
     0,
   );
+});
+
+// map の範囲の外の mermaid のコードブロックだけを mermaid で描き、範囲の中は map の図にする（正常シナリオ（map の範囲の中の mermaid のブロック））
+test("test_normal_when_inside_map", async ({ page }) => {
+  // 準備
+  const requests = await routeMermaid(page);
+  await routeLucide(page);
+  await openPage(page, builtRoot);
+  const inside = mapRange({ mermaid: MAP_FLOW });
+  // 実行: 範囲の外にもコードブロックを持つ文書
+  await mountDocument(page, {
+    markdown: `${inside}\n\`\`\`mermaid\n${MERMAID_FLOWCHART}\`\`\`\n`,
+    config: { map: MAP_CONFIG } as never,
+  });
+  // 検証
+  const doc = page.locator("#doc");
+  await expect(doc.locator(MERMAID_SVG)).toHaveCount(1, {
+    timeout: MERMAID_WAIT_MS,
+  });
+  await expect(mapFigure(page)).toBeVisible();
+  await expect(
+    doc.locator('figure[data-diagram="map"] .mdmark-mermaid'),
+  ).toHaveCount(0);
+  expect(entryCount(requests())).toBe(1);
+  // 実行・検証: 範囲の中にだけ mermaid のブロックを持つ文書は、mermaid を読み込まない
+  const only = await routeMermaid(page);
+  await openPage(page, builtRoot);
+  await mountDocument(page, {
+    markdown: inside,
+    config: { map: MAP_CONFIG } as never,
+  });
+  await expect(mapFigure(page)).toBeVisible({ timeout: MERMAID_WAIT_MS });
+  await page.waitForTimeout(SETTLE_MS);
+  expect(entryCount(only())).toBe(0);
+  await expect(doc.locator(MERMAID_FIGURE)).toHaveCount(0);
 });
