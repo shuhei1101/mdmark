@@ -1205,6 +1205,24 @@ files:
         type: implements
       - to: dev/設計書/部品設計/ライトボックス.ts
         type: implements
+  - path: parts/map-band.stories.ts
+    description: 部品設計『案内の帯』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに参照する。
+    tags: [topic:ストーリー, tool:storybook, topic:部品]
+    related:
+      - to: dev/設計書/部品設計/案内の帯.ts
+        type: implements
+  - path: parts/map-flow.stories.ts
+    description: 部品設計『mapの構成図』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに参照する。
+    tags: [topic:ストーリー, tool:storybook, topic:部品]
+    related:
+      - to: dev/設計書/部品設計/mapの構成図.ts
+        type: implements
+  - path: parts/map-sequence.stories.ts
+    description: 部品設計『mapのシーケンス図』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに参照する。
+    tags: [topic:ストーリー, tool:storybook, topic:部品]
+    related:
+      - to: dev/設計書/部品設計/mapのシーケンス図.ts
+        type: implements
   - path: parts/map.ts
     description: モジュール構成『ライブラリ本体 / map / 描画と操作』のうち「部品『mapの構成図』『mapのシーケンス図』『案内の帯』の HTML」を受け持つ。map の部品が返却する HTML を変えるときに参照する。
     tags: [topic:部品, topic:map, tool:html]

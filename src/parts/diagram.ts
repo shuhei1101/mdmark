@@ -532,7 +532,12 @@ function renderStyledNode(options: {
   const empty = icon === "" && label === "" ? " is-empty" : "";
   const color =
     style.color === undefined ? "" : ` data-color="${escapeHtml(style.color)}"`;
-  return `<div class="${classes} map-kinded" data-kind="map" data-shape="${style.shape ?? "rounded"}"${color} data-node="${escapeHtml(node.id)}"${boxStyle(box)}><span class="mdmark-diagram-node-kind${empty}">${icon}${label}</span><span class="mdmark-diagram-node-name">${name}</span>${sub}${link}${info}</div>`;
+  // 種類の色は枠線と種類の行の色に当てる（`--map-kind`）
+  const tint =
+    style.color === undefined
+      ? ""
+      : `;--map-kind:var(--mdmark-color-accent-${escapeHtml(style.color)}-text)`;
+  return `<div class="${classes} map-kinded" data-kind="map" data-shape="${style.shape ?? "rounded"}"${color} data-node="${escapeHtml(node.id)}"${boxStyle({ ...box, inset: tint })}><span class="mdmark-diagram-node-kind${empty}">${icon}${label}</span><span class="mdmark-diagram-node-name">${name}</span>${sub}${link}${info}</div>`;
 }
 
 /** `hint` を持つシステムの枠・層のタイトルの右のマーカー（`hint` が無ければ空） */

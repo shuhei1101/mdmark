@@ -10968,4 +10968,9 @@
   .mdmark-diagram[data-diagram="map"][data-wide="true"] {
     max-width: none;
   }
+
+  /* 設定の種類を持つ map のノードと参加者: 枠線は種類の色（無ければ枠線の色） */
+  .mdmark-diagram-node[data-kind="map"] {
+    --node-color: var(--map-kind, var(--mdmark-color-border));
+  }
 }

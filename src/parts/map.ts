@@ -486,7 +486,7 @@ export const renderMapSequence = (args: MapSequenceArgs): string => {
       ? ` marker-start="url(#${id}-head-${style.head})"`
       : "";
     wires.push(
-      `<path class="mdmark-diagram-wire${dim}" data-line="map" data-message="${message}" d="${d}"${style.dotted ? ' stroke-dasharray="6 4"' : ""} stroke-width="1.5"${head}${both}></path><path class="map-wire-hit" data-message="${message}" d="${d}"></path>`,
+      `<path class="mdmark-diagram-wire${dim}" data-line="map" data-message="${message}" d="${d}"${style.dotted ? ' stroke-dasharray="6 4"' : ""} stroke-width="1.5" style="stroke:var(--mdmark-color-diagram-line)"${head}${both}></path><path class="map-wire-hit" data-message="${message}" d="${d}"></path>`,
     );
     const number = sequence.autonumber ? `${message + 1} ` : "";
     labels.push(
@@ -514,10 +514,10 @@ export const renderMapSequence = (args: MapSequenceArgs): string => {
     .map((head) => {
       const shape =
         head === "filled"
-          ? '<path d="M0,0 L9,4.5 L0,9 z"></path>'
+          ? '<path d="M0,0 L9,4.5 L0,9 z" style="fill:var(--mdmark-color-diagram-line)"></path>'
           : head === "cross"
-            ? '<path d="M1,1 L8,8 M8,1 L1,8" fill="none" stroke-width="1.5"></path>'
-            : '<path d="M1,1 L8,4.5 L1,8" fill="none" stroke-width="1.5"></path>';
+            ? '<path d="M1,1 L8,8 M8,1 L1,8" fill="none" stroke-width="1.5" style="stroke:var(--mdmark-color-diagram-line)"></path>'
+            : '<path d="M1,1 L8,4.5 L1,8" fill="none" stroke-width="1.5" style="stroke:var(--mdmark-color-diagram-line)"></path>';
       return `<marker id="${id}-head-${head}" class="mdmark-diagram-arrowhead" data-head="${head}" viewBox="0 0 9 9" refX="8.5" refY="4.5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto-start-reverse">${shape}</marker>`;
     })
     .join("");

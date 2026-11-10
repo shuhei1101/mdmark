@@ -21,6 +21,11 @@ import { computeDiff } from "../src/diff/compute.ts";
 import type { WarningItem } from "../src/extensions.ts";
 import { highlightLines } from "../src/highlight-lines.ts";
 import type { MdmarkAlias } from "../src/knowledge/aliases.ts";
+import { parseMapData } from "../src/map/data.ts";
+import { parseFlowchart } from "../src/map/flowchart.ts";
+import { layoutMap } from "../src/map/layout.ts";
+import { parseSequence } from "../src/map/sequence.ts";
+import { sequenceRows } from "../src/map/sequence-rows.ts";
 import { renderBackToTop } from "../src/parts/back-to-top.ts";
 import { renderBacklinks } from "../src/parts/backlinks.ts";
 import { renderBadge } from "../src/parts/badge.ts";
@@ -74,6 +79,11 @@ import {
 import { renderKbd } from "../src/parts/kbd.ts";
 import { renderLayoutColumns } from "../src/parts/layout-columns.ts";
 import { renderLightbox } from "../src/parts/lightbox.ts";
+import {
+  renderMapBand,
+  renderMapFlow,
+  renderMapSequence,
+} from "../src/parts/map.ts";
 import { renderMedia } from "../src/parts/media.ts";
 import { renderMermaidDiagram } from "../src/parts/mermaid.ts";
 import { renderNotice } from "../src/parts/notice.ts";
@@ -101,6 +111,12 @@ import { scopeCss } from "../src/render/scope-css.ts";
 import { syntaxLanguageOf } from "../src/render/syntax/code-blocks.ts";
 import { planCellMerges } from "../src/render/syntax/table-cells.ts";
 import { warningsOf } from "../src/render/syntax/tables.ts";
+import {
+  CONFIG as MAP_CONFIG,
+  DATA as MAP_DATA,
+  FLOW as MAP_FLOW,
+  SEQUENCE as MAP_SEQUENCE,
+} from "../tests/unit/helpers/map.ts";
 import { renderMediaError } from "../vscode/src/webview/shared/lib/media-error.ts";
 
 // 描画のインターフェースを外へ出さないための待受アドレス
@@ -1015,7 +1031,131 @@ function rangeScopeStory(args: PartArgs): string {
   return `<div class="mdmark-html${opened}" data-html-scope="${scope}">${style}<div class="box">範囲のノード</div>${template}</div>${renderEmbeddedHtml({ html: '<div class="box">範囲の外のノード</div>' })}`;
 }
 
+/** map のシーケンス図の全ての矢印の種類と autonumber の見本 */
+const MAP_SEQUENCE_ARROWS = `sequenceDiagram
+  autonumber
+  participant A as 送り手
+  participant B as 受け手
+  A->B: 実線
+  A-->B: 点線
+  A->>B: 塗った矢じり
+  A-->>B: 点線と塗った矢じり
+  A-xB: 失敗
+  A--xB: 点線の失敗
+  A-)B: 非同期
+  A--)B: 点線の非同期
+  A<<->>B: 両向き
+  A<<-->>B: 点線の両向き
+`;
+
+/** map のシーケンス図の名前が 2 行の参加者の見本 */
+const MAP_SEQUENCE_TALL = `sequenceDiagram
+  participant A as 利用側のページの描画の処理
+  participant B as mount
+  A->>B: 設定と Markdown
+  B-->>A: 描いた文書
+`;
+
+/** ストーリーの args の JSON の配列（無ければ空） */
+const jsonList = (value: unknown): string[] =>
+  typeof value === "string" && value !== ""
+    ? (JSON.parse(value) as string[])
+    : [];
+
+/** map の部品を図の枠に入れる */
+const mapFrame = (
+  title: string,
+  html: string,
+  size: { width: number; height: number },
+): string =>
+  renderDiagramFrame(
+    { kind: "map", title, legend: [], wide: true, tools: [], id: "story-map" },
+    { html, ...size, tips: "" },
+  );
+
 const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
+  "map-flow": (args) => {
+    const entered = typeof args.entered === "string" ? args.entered : undefined;
+    const collapsed = jsonList(args.collapsed);
+    const { data } = parseMapData(MAP_DATA);
+    const layout = layoutMap(
+      parseFlowchart(MAP_FLOW),
+      { collapsed, entered },
+      typeof args.ends === "string" && args.ends !== ""
+        ? { "mount->marker": { ends: JSON.parse(args.ends) } }
+        : {},
+      args.node_fit === "width" ? "width" : "height",
+    );
+    const focus =
+      typeof args.focus === "string" && args.focus !== ""
+        ? (JSON.parse(args.focus) as { nodes: string[]; wires: string[] })
+        : undefined;
+    return mapFrame(
+      "全体の構成",
+      renderMapFlow({
+        layout,
+        kinds: MAP_CONFIG.kinds,
+        lines: MAP_CONFIG.lines,
+        notes: Object.fromEntries(
+          Object.entries(data.notes).map(([id, note]) => [id, note.text]),
+        ),
+        collapsed,
+        entered,
+        selected: jsonList(args.selected),
+        focus,
+        packets: [],
+        dragging: undefined,
+        id: "story-map",
+      }),
+      layout,
+    );
+  },
+  "map-sequence": (args) => {
+    const sequence = parseSequence(
+      args.source === "arrows"
+        ? MAP_SEQUENCE_ARROWS
+        : args.source === "tall"
+          ? MAP_SEQUENCE_TALL
+          : MAP_SEQUENCE,
+    );
+    const collapsed = jsonList(args.collapsed).map(Number);
+    const entered =
+      typeof args.entered === "string" ? Number(args.entered) : undefined;
+    const rows = sequenceRows(sequence, {
+      order:
+        jsonList(args.order).length > 0
+          ? jsonList(args.order)
+          : sequence.participants.map((item) => item.id),
+      collapsed,
+      entered,
+    });
+    const html = renderMapSequence({
+      sequence,
+      rows: rows.rows,
+      participants: rows.participants,
+      collapsed,
+      entered,
+      selected: jsonList(args.selected),
+      focus:
+        typeof args.focus === "string" && args.focus !== ""
+          ? (JSON.parse(args.focus) as { message: number })
+          : undefined,
+      id: "story-map-seq",
+    });
+    const width = Number(/<svg[^>]*\swidth="([\d.]+)"/.exec(html)?.[1] ?? 0);
+    const height = Number(/<svg[^>]*\sheight="([\d.]+)"/.exec(html)?.[1] ?? 0);
+    return mapFrame("文書を描くまで", html, { width, height });
+  },
+  "map-band": (args) =>
+    renderMapBand({
+      mode: args.mode === "playback" ? "playback" : "walkthrough",
+      total: typeof args.total === "number" ? args.total : 4,
+      index: typeof args.index === "number" ? args.index : undefined,
+      title: typeof args.title === "string" ? args.title : "",
+      text: typeof args.text === "string" ? args.text : "",
+      auto: args.auto === true,
+      label: "全体の構成の案内",
+    }),
   "diff-toggle": (args) =>
     renderDiffToggle({
       controls: String(args.controls ?? ""),
