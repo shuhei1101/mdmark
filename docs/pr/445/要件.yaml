@@ -172,5 +172,8 @@ scope_out:
     reason: reviewer の対象外の逸脱の報告（https://github.com/shuhei1101/mdmark/pull/445#discussion_r4521111705 ）。部品『右側の目次』の既存の見え方で、map の変更とは別
     plan: to_file
   - item: 今の `flow`・`sequence`・判定フローチャートの固定のノードの種類（LLM・意思決定モデル・スクリプト・MCP・データ・外部など）と線の名前（読み込む・書き込むなど）・構成図の 3 層（LLM・処理・データ）を、使う側の設定で作る形にする。ほかの部品にも同じく分野に寄った固定の語が無いかを洗い出す
-    reason: 'ユーザーの指摘（mdmark は汎用のライブラリで、分野に寄った語を固定しない。https://github.com/shuhei1101/mdmark/pull/445#discussion_r4521156220 ）。map は種類を持たない形で作り、今の部品は A-38 の進め方で map へ移行した後に廃止するため、この PR では変更しない'
+    reason: ユーザーの指摘（mdmark は汎用のライブラリで、分野に寄った語を固定しない。https://github.com/shuhei1101/mdmark/pull/445#discussion_r4521156220 ）。map は種類を持たない形で作り、今の部品は A-38 の進め方で map へ移行した後に廃止するため、この PR では変更しない
+    plan: to_file
+  - item: plugin/files.yaml の 28 行目の description が、バッククォートで始まる引用の無い値で YAML として読めず、dev-docs の配信から外れている
+    reason: develop から既にある記載の誤りで、map の変更とは別
     plan: to_file
