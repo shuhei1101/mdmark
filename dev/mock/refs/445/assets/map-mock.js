@@ -835,11 +835,12 @@ export const createSequence = (host, spec, kinds, onStep) => {
         else state.selected.add(id);
         render();
       };
-      head.addEventListener("click", (event) => {
-        if (event.target.closest(".map-participant-grip")) return;
-        toggle();
-      });
-      head.append(participantGrip(id, at, visible.length));
+      head.addEventListener("click", toggle);
+      // つまみは箱（ボタン）の中に入れず、箱の右上に重ねた別の要素にする（押せる要素を入れ子にしない）
+      const grip = participantGrip(id, at, visible.length);
+      grip.style.left = `${head.offsetLeft + head.offsetWidth - 26}px`;
+      grip.style.top = `${head.offsetTop + 2}px`;
+      head.after(grip);
       head.addEventListener("keydown", (event) => {
         if (event.key === "Enter" || event.key === " ") {
           event.preventDefault();
@@ -950,6 +951,7 @@ export const createSequence = (host, spec, kinds, onStep) => {
     grip.setAttribute("aria-label", `${labelOf(id)}の並び順。押したまま左右へ動かすか、Alt + 左右の矢印で動かす`);
     grip.title = "押したまま左右へ動かして並べ替える";
     grip.innerHTML = icon("grip");
+    grip.dataset.participant = id;
     const move = (to) => {
       if (to < 0 || to >= count || to === at) return;
       const next = [...state.order];
@@ -957,7 +959,7 @@ export const createSequence = (host, spec, kinds, onStep) => {
       next.splice(to, 0, item);
       state.order = next;
       render();
-      host.querySelector(`[data-node="${CSS.escape(id)}"] .map-participant-grip`)?.focus();
+      host.querySelector(`.map-participant-grip[data-participant="${CSS.escape(id)}"]`)?.focus();
     };
     grip.addEventListener("keydown", (event) => {
       if (event.altKey && event.key === "ArrowLeft") move(at - 1);
@@ -974,6 +976,7 @@ export const createSequence = (host, spec, kinds, onStep) => {
       let target = at;
       const onMove = (moveEvent) => {
         head.style.translate = `${moveEvent.clientX - startX}px 0`;
+        grip.style.translate = head.style.translate;
         const over = heads.findIndex((item) => {
           const rect = item.getBoundingClientRect();
           return moveEvent.clientX >= rect.left && moveEvent.clientX < rect.right;
@@ -984,6 +987,7 @@ export const createSequence = (host, spec, kinds, onStep) => {
       const onUp = () => {
         grip.removeEventListener("pointermove", onMove);
         head.style.translate = "";
+        grip.style.translate = "";
         head.classList.remove("is-dragging");
         move(target);
       };

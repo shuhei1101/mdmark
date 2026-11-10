@@ -194,10 +194,9 @@
 }
 
 /* シーケンス図の参加者の箱の右上のつまみ: 押したまま左右へ動かして並べ替える */
-.map-figure .map-participant > .map-participant-grip {
+.map-figure .map-participant-grip {
   position: absolute;
-  top: 2px;
-  right: 2px;
+  z-index: 2;
   display: grid;
   place-items: center;
   width: 24px;
