@@ -3356,7 +3356,7 @@ functions:
     usecase: Mermaidと補足で図を描く
     kind: 関数
     scope: internal
-    summary: 'コアルール。`map` がオンのとき、`<!-- map -->` 〜 `<!-- /map -->` の範囲ごとに mermaid のブロックと補足の HTML コメントを数え、範囲を `div.mdmark-map` の開きと閉じのトークンで囲み、補足を `pre.mdmark-map-data[hidden]` にし、`collectMapProblems` の項目があれば範囲の前に記載の警告（`kind: map`）を差し込む'
+    summary: 'コアルール。`map` がオンのとき、`<!-- map -->` 〜 `<!-- /map -->` の範囲ごとに mermaid のブロックと補足の HTML コメントを数え、範囲を `div.mdmark-map` の開きと閉じのトークンで囲み、補足を `pre.mdmark-map-data[hidden]` にし、`collectMapStructure` の項目があれば範囲の前に記載の警告（`kind: map`）を差し込む（Mermaid と補足の中身の警告は `dist/map.js` が足す）'
     description: 印の引数は `parseMapArgs` で読み、`data-map-args` に `normalized` を入れる（知らないキーは警告にせず落とす）。図の番号は文書の中の map の範囲の順に 1 から振る（描かない範囲も数える）。範囲の中の mermaid のブロックには `data-mdmark-mermaid` と色分けの属性を付けない（`attachMermaid` の対象から外れる）。描かない範囲（mermaid のブロックが無い・2 つ以上・補足が 2 つ以上・描けない種類）は `div.mdmark-map` で囲まず、警告だけを差し込む。`map` がオフの文書では範囲のマーカーと補足のコメントを落とし、mermaid のブロックは普通の mermaid のコードブロックにする
     args:
     - name: state
@@ -3367,7 +3367,7 @@ functions:
       type: void
       description: なし
     callees:
-    - dev/設計書/モジュール構成/ライブラリ本体/map/点検.ts#functions[collectMapProblems]
+    - dev/設計書/モジュール構成/ライブラリ本体/map/点検.ts#functions[collectMapStructure]
     unit_tests:
     - name: test_build_map_ranges
       case: 正常
@@ -3377,10 +3377,10 @@ functions:
       expected: '`div.mdmark-map` が 2 つで `data-map` が `1`・`2`、`data-map-kind` が `flowchart`・`sequenceDiagram`、mermaid のブロックが `data-mdmark-mermaid` を持たない'
     - name: test_build_map_ranges_when_problems
       case: 異常
-      summary: 書き方の誤り
-      condition: 読めない行と知らない補足のキーを持つ範囲
+      summary: 範囲の形の誤り
+      condition: JSON として読めない引数 `{title: 全体}` と、読めない Mermaid の行と知らない補足のキーを持つ範囲
       mock: なし
-      expected: 範囲の前に記載の警告が 1 つで項目が 2 つ、`div.mdmark-map` がある
+      expected: 範囲の前に記載の警告が 1 つで、引数を JSON で記載する直し方を含み、Mermaid の行と `layuot` は含まない。`div.mdmark-map` がある
     - name: test_build_map_ranges_when_no_mermaid
       case: 異常
       summary: mermaid のブロックが無い

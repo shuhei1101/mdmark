@@ -3,15 +3,57 @@ lead: map の範囲の読み取りの項目に、補足が指す ID と設定の
 test_files:
 - tests/unit/src/map/check.test.ts
 functions:
+- name: collectMapStructure
+  title: 範囲の形を確かめる
+  kind: 関数
+  container: src/map/check.ts
+  usecase: Mermaidと補足で図を描く
+  role: 処理
+  scope: public
+  summary: 範囲の mermaid のブロックと補足の数・図の種類・マーカーの引数だけを確かめ、`MapProblem` を返す。Mermaid と補足の中身は読まない（`dist/index.js` に Mermaid と YAML の読み取りを入れない）
+  args:
+  - name: range
+    type: '{ args: string; mermaid: string | undefined; mermaidCount: number; dataCount: number }'
+    required: true
+    description: 範囲のマーカーの引数・mermaid のブロック・数
+  returns:
+    type: '{ problems: MapProblem[]; kind: "flowchart" | "sequenceDiagram" | undefined; args: ParsedMapArgs }'
+    description: 項目・描く図の種類（描かないときは無い）・`parseMapArgs` の結果
+  process: |-
+    1. mermaid のブロックが 0 か 2 つ以上、補足が 2 つ以上なら `map_invalid` を 1 件返し、`kind` を無しにする
+    2. Mermaid の 1 行目の最初の単語が `flowchart`・`graph` なら `flowchart`、`sequenceDiagram` なら `sequenceDiagram`。ほかは `map_invalid`（描ける種類の一覧を含む）にし、`kind` を無しにする
+    3. `parseMapArgs` の `problems` を合わせる
+  callees:
+  - dev/設計書/モジュール構成/ライブラリ本体/map/読み取り.ts#functions[parseMapArgs]
+  unit_tests:
+  - name: test_collect_map_structure
+    case: 正常
+    summary: 形の正しい範囲
+    condition: mermaid のブロック 1 つ（`flowchart LR`）・補足 1 つ・空の引数
+    mock: なし
+    expected: 項目が空で、`kind` が `flowchart`
+  - name: test_collect_map_structure_when_two_blocks
+    case: 異常
+    summary: mermaid のブロックが 2 つ
+    condition: '`mermaidCount: 2`'
+    mock: なし
+    expected: '`map_invalid` が 1 件で、`kind` が無い'
+  - name: test_collect_map_structure_when_bad_args
+    case: 異常
+    summary: 読めない引数
+    condition: '引数 `{title: 全体}`'
+    mock: なし
+    expected: '`map_invalid_value` が 1 件で、`kind` が `flowchart`'
 - name: collectMapProblems
   title: 書き方の誤りを集める
   kind: 関数
   container: src/map/check.ts
   usecase: 設定と索引を点検する
   role: 処理
-  summary: map の範囲の Mermaid と補足と設定から、`MapProblem` を全て集める
+  summary: map の範囲の Mermaid と補足と設定から、`collectMapStructure` の項目に Mermaid と補足の中身の項目を加えた `MapProblem` を全て集める（`dist/map.js` と CLI が呼ぶ）
   scope: public
   callees:
+  - dev/設計書/モジュール構成/ライブラリ本体/map/点検.ts#functions[collectMapStructure]
   - dev/設計書/モジュール構成/ライブラリ本体/map/読み取り.ts#functions[parseFlowchart]
   - dev/設計書/モジュール構成/ライブラリ本体/map/読み取り.ts#functions[parseSequence]
   - dev/設計書/モジュール構成/ライブラリ本体/map/読み取り.ts#functions[parseMapData]
@@ -33,8 +75,8 @@ functions:
     type: MapProblem[]
     description: 項目（範囲の行の順）
   process: |-
-    1. mermaid のブロックが 0 か 2 つ以上・補足が 2 つ以上・描けない図の種類（`flowchart`・`sequenceDiagram` 以外）は `map_invalid` を 1 件返して終える
-    2. `parseMapArgs` で印の引数を読み、`problems` を合わせる。`unknownKeys` は `includeUnknownKeys` が `true` のとき（点検）だけ `map_unknown_key` にする（描くときは警告にしない）
+    1. `collectMapStructure` で範囲の形を確かめ、`kind` が無ければその項目を返して終える
+    2. 印の引数の`unknownKeys` は `includeUnknownKeys` が `true` のとき（点検）だけ `map_unknown_key` にする（描くときは警告にしない）
     3. `parseFlowchart` か `parseSequence` と `parseMapData` の項目を合わせる
     4. 補足の `notes`・`walkthroughs`・`layout`・`plays_over` が指す ID が Mermaid に無いものを `map_unknown_ref` にする
     5. ノードのクラスが `config.kinds` に無いものを `map_unknown_class`、`layout` の `line` が `config.lines` に無いものを `map_unknown_line` にする（同じ名前は 1 件）

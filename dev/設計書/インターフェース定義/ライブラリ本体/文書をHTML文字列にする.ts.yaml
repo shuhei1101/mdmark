@@ -2139,7 +2139,7 @@ flows:
       - 同じ Markdown を 2 回描くと同じ文字列が返る
     test: test_normal_when_map_range
   - name: 正常系（map の書き方の誤り）
-    summary: 読めない Mermaid の行・補足の知らないキー・JSON として読めない印の引数・描かない図の種類を、map の場所の前の書き方の警告にし、印の知らないキーは何も出さずに無視し、読めた部分は map の場所として返却する
+    summary: 範囲の形の誤り（JSON として読めない印の引数・型の合わない印の値・描かない図の種類・mermaid のブロックと補足の数）を map の場所の前の書き方の警告にし、印の知らないキーは何も出さずに無視する。Mermaid の行と補足の中身は確かめない（`mount` が確かめる）
     setup:
       - name: 配布物を読み込んだ Node の処理
         description: 正常系と同じ
@@ -2152,10 +2152,10 @@ flows:
         participant C as 利用側の処理
         participant M as mdmark
         C->>M: render(markdown)
-        M->>M: 読めない行・補足の知らないキー・読めない印の引数・描かない種類を集める
+        M->>M: 範囲の形（印の引数・図の種類・ブロックと補足の数）を確かめる
         M-->>C: 書き方の警告と map の場所の HTML 文字列
     expected:
-      - 1 つ目の範囲の場所に、書き方の警告（`div.mdmark-syntax-warning`）が 1 つあり、読めない行の行番号と行の文字・`->` を `-->` にする直し方・閉じの無い `subgraph` の名前・知らないキー `layuot` と使えるキーの一覧が並び、`mdoe` は並ばない。警告の後ろに `div.mdmark-map` があり、その `data-map-args` に `mdoe` が無い
+      - 1 つ目の範囲の場所に書き方の警告が無く（読めない行・閉じの無い `subgraph`・補足の知らないキーは `mount` が警告にする）、`div.mdmark-map` があり、その `data-map-args` に `mdoe` が無い
       - 印の引数が JSON として読めない範囲の場所に、印の引数を JSON のオブジェクトで記載する直し方の書き方の警告があり、引数なしとして `div.mdmark-map` がある
       - '`pie` の範囲の場所に、この版で描ける種類（`flowchart`・`sequenceDiagram`）を記載した書き方の警告があり、`div.mdmark-map` を持たず、ソースのコードブロックがある'
       - mermaid のブロックの無い範囲と、補足を 2 つ持つ範囲の場所に書き方の警告があり、`div.mdmark-map` が無い
@@ -2427,6 +2427,6 @@ constraints:
     constraint: '機能 `map` がオンの文書で、`<!-- map: {JSON のオブジェクト} -->`（引数が無ければ `<!-- map -->`）〜 `<!-- /map -->` の範囲にある、情報文字列の最初の単語が `mermaid` のコードブロック 1 つと、補足の HTML コメント（`<!-- map-data: format=yaml` 〜 `-->`）0〜1 つを 1 つの図にする。範囲は `<div class="mdmark-map" data-map="{図の番号}" data-map-kind="{図の種類}" data-map-args="{引数}">` にし（`{引数}` は印の JSON のオブジェクトから知っているキーだけを残し、空白なしの JSON にした文字）、中に Mermaid のソースのコードブロック（制約『コードブロック』のとおり。`data-mdmark-mermaid` と色分けの属性を付けない）と、補足の YAML の文字を持つ `<pre class="mdmark-map-data" hidden>` を配置する。図の番号は文書の中の map の範囲の順で 1 から。図の種類は Mermaid の 1 行目の最初の単語で、この版で描くのは `flowchart`（`graph` を含む）と `sequenceDiagram`。範囲の中のほかの Markdown とマーカーの文字は出力に残さない。`render` は配置と図を描かない（図にするのは `mount`。文書を描く.ts の制約『map の図』）。範囲の中の mermaid のブロックは、制約『mermaid のコードブロック』の対象にしない。機能 `map` は文書の `<!-- features: -map -->` を受け、返却する `features` に含める'
     notes: 印の引数（`title`・`focus`・`play`・`interval`・`collapse`）の構成は shuhei1101/mdmark#451 の資料 A-128 のとおりで、意味は文書を描く.ts の制約『map の印の引数』。補足の構造は ER 図『mapの補足』
   - item: map の書き方の誤り
-    constraint: map の範囲で、Mermaid の読めない行（行番号・行の文字・直し方）、閉じの無い `subgraph` と複合フラグメント、補足の YAML の読めない箇所・知らないキー・スキーマに合わない値、補足が指す Mermaid に無いノード・線の ID、値に `--` を含む補足の文字、JSON のオブジェクトとして読めない印の引数、型の合わない印の引数の値を集め、範囲の場所の前に書き方の警告を 1 つ配置する。印の知らないキーは警告にせず無視する（点検が `map_unknown_key` で通知する）。読めた部分は図にする。mermaid のブロックが無い・2 つ以上ある・補足が 2 つ以上ある範囲と、描かない図の種類の範囲は図にせず、警告とソースのコードブロックだけを配置する
+    constraint: map の範囲で、JSON のオブジェクトとして読めない印の引数と型の合わない印の引数の値を集め、範囲の場所の前に書き方の警告を 1 つ配置する。印の知らないキーは警告にせず無視する（点検が `map_unknown_key` で通知する）。Mermaid の読めない行・閉じの無い `subgraph` と複合フラグメント・補足の YAML の誤り・補足が指す Mermaid に無い ID・`--` を含む補足の文字は `render` では確かめず、`mount` が図の前の書き方の警告にする（文書を描く.ts の制約『map の書き方の警告』。YAML を読むライブラリを `dist/index.js` に入れないため）。mermaid のブロックが無い・2 つ以上ある・補足が 2 つ以上ある範囲と、描かない図の種類の範囲は図にせず、警告とソースのコードブロックだけを配置する
     notes: 警告の部品は部品設計『書き方の警告』。文言は画面設計『文書』
 test_file: tests/integration/lib/render.test.ts

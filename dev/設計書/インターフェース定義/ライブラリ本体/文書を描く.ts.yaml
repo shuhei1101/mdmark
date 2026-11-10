@@ -6297,6 +6297,27 @@ flows:
     - '`prefers-reduced-motion: reduce` では、画面に入っても自動で始めず、再生の帯を止めた状態（`–/7`）で出す。再生を押すとデータの印が流れる'
     - 別のグループの中へ入った状態を sessionStorage に保ってから、もう一度 mount すると、`focus` ではなく保ったグループの中から描く。クエリ文字列の `map-1` は sessionStorage より優先する
     test: test_normal_when_map_args
+  - name: 正常系（map の書き方の警告を描く）
+    summary: Mermaid の読めない行・閉じの無い `subgraph`・補足の知らないキーを、図の前の書き方の警告にし、読めた部分を図にする
+    setup:
+    - name: 配布物を読み込んだページ
+      description: 正常系（map の構成図を描く）と同じ
+    - name: 書き方を誤った map の Markdown
+      description: 文書をHTML文字列にする.ts の正常系（map の書き方の誤り）の 1 つ目の範囲（矢印を `->` と書いた行と `subgraph` の閉じの無い mermaid のブロック、補足に知らないキー `layuot`、印に知らないキー `mdoe`）を持つ文書
+    - name: Mock
+      description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        actor U as ユーザー
+        participant M as mdmark
+        U->>M: mount(el, { markdown, config })
+        M->>M: dist/map.js で Mermaid と補足を読み、書き方の誤りを集める
+        M-->>U: 書き方の警告と、読めた部分の map の図
+    expected:
+    - 図の枠の前に書き方の警告（`div.mdmark-syntax-warning`）が 1 つあり、読めない行の行番号と行の文字・`->` を `-->` にする直し方・閉じの無い `subgraph` の名前・知らないキー `layuot` と使用できるキーの一覧が並び、`mdoe` は並ばない
+    - 読めた部分のノードと線で図が描かれる
+    - '`render` の書き方の警告がある範囲では、その警告に項目を足し、警告を 2 つにしない'
+    test: test_normal_when_map_warnings
 lead: 利用側のページが、要素と Markdown と設定を指定し、要素の中に文書を描く。戻り値で本文の差し替えと片付けができる。
 idempotent: false
 side_effects: '`el` の中身と class を書き換え、記法の操作のイベントを `el` の中に付ける。まとめていない名前の `icon:` があるとき、jsDelivr の Lucide のアイコンのモジュールを名前ごとに `import()` し、読み込めなかった名前だけ同じ URL へ `HEAD` の `fetch` を送信する。`side-toc` がオンで見出しがあるとき、`el` の中を本文の列と右側の目次に分け、見出しの位置を `IntersectionObserver` で確認する。出し方が `hover` のときは、右端の線とパネルの位置を決めるため、`window` の `scroll`・`resize` と、`el` に最も近いスクロールする祖先の要素があればその `scroll` を受け取り、`document.body` の子の追加・削除を `MutationObserver` で確認する。`back-to-top` がオンのとき、`el` の子に先頭へ戻るボタンを配置し、スクロールする場所が画面全体なら `window` の `scroll`、`el` に最も近いスクロールする祖先の要素なら `document` の `scroll`（キャプチャーフェーズ）と、`window` の `resize` を受け取り、`document.body` と `el` の子の追加・削除を `MutationObserver` で確認する。`window` の `beforeprint`・`afterprint`・`hashchange` と、絞り込みのドロワーを開いている間だけ `document` の `pointerdown`・`keydown` を受け取る。図の部品か埋め込んだ HTML があるとき、図の表示する枠と埋め込んだ HTML の大きさを `ResizeObserver` で見、ツールチップを開いている間だけ `document` の `keydown`・`pointerdown` と `window` の `scroll`・`resize` を受け取り、全画面の間だけ `el` の中に `dialog` を配置する。リンク先を持つフロー図のノードの上から図を動かしたとき、次の 1 回の `click` まで `window` の `click`（キャプチャーフェーズ）を受け取る。`diagram-resize` がオンのとき、リサイズハンドルで変えた図の高さを sessionStorage に書き込み、描くたびに読み込む（ダブルクリックで今の倍率の図の全体が収まる高さを書き込む）。操作できる部品の写すボタン・表のコピー・行の URL のコピー・コードブロックのコピー・ファイルツリーのコピーでクリップボードに書き込む。表があるとき、表の大きさと描く先の要素の幅を `ResizeObserver` で見、`animation-timeline` を持たないブラウザでは `window` と文書の中の `scroll` と `window` の `resize` を受け取る。`data-group` を持つタブがあるとき、localStorage の `mdmark-tabs:{group}` を描くたびに読み込み、読者がタブを選ぶと書き込む。そのとき、ページの中の `el` の外にある同じ `group` のタブ群の選択も書き換える。文書に外部ライブラリか拡張のマーカーがあるとき、そのモジュールを読み込む。色分けの対象のコードブロックがあるとき、`syntax.url` の先の core と、使用する言語のモジュールを読み込む。`mermaid` がオンの文書に mermaid のコードブロックがあるとき、`mermaid.url` の先のモジュールを読み込み、描く先の配色の明暗の変化を確認して再描画する。`html-scripts` がオンの文書に範囲の `ts`・`js` があるとき、`html-scripts.url` の先の変換のライブラリを読み込み、範囲ごとに `document.head` へ `script` 要素を 1 つ配置してすぐ削除し、範囲の関数を呼ぶ。`opts.diffSource` を指定したとき、読者が差分を開くと（`opts.diffMode` が `open` なら描いた時点、`blocks` なら描くたびに）取り出し元の `revisions`・`content` を呼び、差分の行を出している間だけミニマップの帯を配置し、スクロール先のスクロールの `scroll` と `window` の `resize` を受け取る。文書にビューのマーカーがあるとき、ビューの部品のモジュールを読み込む。`comments` がオンで `opts.commentStore` を指定したとき、コメントの部品のモジュールを読み込み、`load` を描くたびに 1 回呼び、保存で `save`、読み込みと保存の関数が持つときは吹き出しの修正で `update`・削除で `remove`、`reloadComments` で `load` を呼ぶ。その間は `document` の `selectionchange` を受け取り、コメントのボタン・入力欄・吹き出しを `document.body` に配置する。あわせて本文の列の右に余白の列を配置し、描く先の要素の大きさを `ResizeObserver`、描く先の要素の中の開閉・切り替えを `MutationObserver` で確認する。map の範囲があるとき、図ごとの開閉・中へ入ったグループ・動かした位置・参加者の並び順を sessionStorage に記載し、`map.url_state` が `false` でなければ中へ入ったグループと中だけを描くブロックを `history.replaceState` でクエリ文字列の `map-{図の番号}` に記載する。ノードの大きさの変化を `ResizeObserver` で確認する。map の部品のモジュール（`dist/map.js`）を読み込む。印の引数が `{"play": "autoplay"}` の図は、画面に入ったかを `IntersectionObserver` で確認し、自動で進めている間は印の `interval` 秒ごとの時計を持つ'
@@ -6992,4 +7013,7 @@ constraints:
   - item: map の印の引数
     constraint: 印の引数は shuhei1101/mdmark#451 の資料 A-128 の構成の JSON のオブジェクトで、`title`（図の枠と折りたたみの見出し）・`focus`（最初に入るグループの ID）・`play`（`"autoplay"` で、図が画面に入ったら押さずに再生か案内を始める。動きを減らす設定では始めず止めた帯で出す）・`interval`（自動で進める間隔の秒。正の数。省くと 2）・`collapse`（A-128 の共通の折り畳み。`open`・`title`）だけを読む。知らないキーは無視し、型の合わない値は既定にする（どちらも点検が通知する。型の合わない値は書き方の警告にもする）。最初に入るグループは、クエリ文字列の `map-{図の番号}` → sessionStorage → `focus` の順で決める（無いグループの ID は飛ばす）
     notes: 記載の警告は文書をHTML文字列にする.ts の制約『map の書き方の誤り』
+  - item: map の書き方の警告
+    constraint: Mermaid の読めない行（行番号・行の文字・直し方）・閉じの無い `subgraph` と複合フラグメント・補足の YAML の読めない箇所・知らないキー・スキーマに合わない値・補足が指す Mermaid に無いノード・線・グループの ID・`--` を含む補足の文字・設定の `map.kinds` に無いクラス・`map.lines` に無い線の名前を、`dist/map.js` が集めて図の枠の前の書き方の警告にする。`render` が範囲の形の警告を配置していれば、その警告に項目を足す
+    notes: '`render` が確かめる範囲の形は文書をHTML文字列にする.ts の制約『map の書き方の誤り』'
 test_file: tests/integration/lib/mount.browser.test.ts
