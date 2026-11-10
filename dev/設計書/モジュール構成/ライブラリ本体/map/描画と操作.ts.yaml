@@ -559,6 +559,44 @@ functions:
     condition: 線の真ん中の区間を相手のノードの上まで動かす
     mock: '`onMove`'
     expected: 線の端がそのノードの上の辺に付く
+- name: moveByKey
+  title: キーで動かす
+  kind: 関数
+  container: src/map/drag.ts
+  usecase: Mermaidと補足で図を描く
+  role: 処理
+  summary: フォーカスしたノード・グループを指定した量だけ、線は真ん中の区間を区間と直角の向きへ動かした状態を返す。動かせないときは `undefined`
+  scope: public
+  args:
+  - name: options
+    type: '{ layout: MapLayout; state: MapState; target: { node?: string; group?: string; wire?: string }; dx: number; dy: number }'
+    required: true
+    description: 配置・状態・動かす要素の ID・動かす量（px。`KEY_MOVE_PX` か `KEY_MOVE_PX_LARGE` に矢印の向きを掛けた値）
+  returns:
+    type: MapState | undefined
+    description: 動かした後の状態
+  process: |-
+    1. 全てのノードとグループの今の位置を `positions` に入れ、ノード・グループは `startDrag` と同じく、ほかとの間が `minGap` より狭くなる位置とグループの左端・上端より外へは進めない
+    2. 線は真ん中の区間のずらしに、横の区間なら `dy`、縦の区間なら `dx` を足し、端のつなぎ替えを `attachments` に入れる。区間と同じ向きの矢印では動かさない
+  unit_tests:
+  - name: test_move_by_key_when_node
+    case: 正常
+    summary: ノード
+    condition: '`A` を `dy: 8`'
+    mock: なし
+    expected: '`positions.A` が `{ x: 0, y: 8 }`'
+  - name: test_move_by_key_when_wire
+    case: 正常
+    summary: 線の真ん中の区間
+    condition: '`A->C`（点 5 つ。真ん中の区間は縦）を `dx: 8`'
+    mock: なし
+    expected: '`wireShifts["A->C"]` の区間 1 のずらしが 8'
+  - name: test_move_by_key_when_blocked
+    case: 正常
+    summary: 動かせない
+    condition: 図の余白の内側の左上にある `A` を `dy: -8`。縦の区間の線を `dy: 8`
+    mock: なし
+    expected: どちらも `undefined`
 - name: attachBand
   title: 案内と再生を進める
   kind: 関数
@@ -623,7 +661,7 @@ functions:
   container: src/parts/map.ts
   usecase: Mermaidと補足で図を描く
   role: 処理
-  summary: 部品設計『mapの構成図』の HTML。フロー図の部品の定義にしたノードと線を `renderFlow` で描き、グループの面とタイトルの行・開閉と中へ入るボタン・閉じたグループを重ねる
+  summary: 部品設計『mapの構成図』の HTML。フロー図の部品の定義にしたノードと線を `renderFlow` で描き、グループの面とタイトルの行・開閉と中へ入るボタン・閉じたグループを重ねる。ノードと線を押す場所はフォーカスできるボタンにし、中へ入ったグループと薄く残したグループのほかは、タイトルの行に動かす帯（`.map-group-bar`）を置く
   scope: public
   callees:
   - dev/設計書/モジュール構成/ライブラリ本体/図.ts#functions[renderFlow]
@@ -642,6 +680,12 @@ functions:
     condition: 部品の Default の引数
     mock: なし
     expected: '`[data-group]` が 4 つ、`[data-node]` が 10 で、凡例が無い'
+  - name: test_render_map_flow_when_keyboard
+    case: 正常
+    summary: キーで操作する場所
+    condition: '`entered: read` と、`entered` なし'
+    mock: なし
+    expected: 配置した全てのノードと線を押す場所が `tabindex="0"`・`role="button"` を持ち、`read` の `.map-group-bar` が `entered: read` では無く、`entered` なしではある
   - name: test_render_map_flow_when_entered
     case: 正常
     summary: 中へ入った
