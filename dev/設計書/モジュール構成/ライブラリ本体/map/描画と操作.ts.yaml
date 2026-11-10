@@ -33,6 +33,9 @@ data_models:
   - name: wireShifts
     type: 'Record<string, Array<{ segment: number; offset: number }>>'
     description: 動かした線の区間のずらし
+  - name: attachments
+    type: 'Record<string, { from?: "top" | "right" | "bottom" | "left"; to?: "top" | "right" | "bottom" | "left" }>'
+    description: 線をつなぎ替えた端の辺（線の ID ごと。元の端は `from`、先の端は `to`）
   - name: order
     type: string[] | undefined
     description: 参加者の並び順
