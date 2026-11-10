@@ -4,6 +4,7 @@ import { renderDiagramFrame } from "../parts/diagram.ts";
 import { renderMapSequence, renderPackets } from "../parts/map.ts";
 import { attachBand, type BandHandle } from "./band.ts";
 import { parseMapData } from "./data.ts";
+import { DRAG_THRESHOLD_PX } from "./drag.ts";
 import { parseSequence, SEQ_ARROW_STYLES } from "./sequence.ts";
 import { sequenceRows } from "./sequence-rows.ts";
 import type { MapArgs } from "./spec.ts";
@@ -185,8 +186,14 @@ export const attachMapSequence = (
         : [...new Set([...state.selected, ...ids])],
     });
   };
+  /** 並べ替えのドラッグを離した直後の click で選ばない */
+  let suppressClick = false;
   const onClick = (event: MouseEvent) => {
     const target = event.target instanceof Element ? event.target : undefined;
+    if (suppressClick) {
+      suppressClick = false;
+      if (target?.closest(".map-participant")) return;
+    }
     const toggle = target?.closest<HTMLElement>("[data-fragment-toggle]");
     if (toggle) {
       const at = Number(toggle.dataset.fragmentToggle);
@@ -296,6 +303,90 @@ export const attachMapSequence = (
     if (event.key === "Escape" && state.selected.length > 0)
       change({ ...state, selected: [] });
   };
+  /** 参加者の箱の名前の文字の外を押したまま左右へ動かし（4px 動くまでは押した扱い）、離した位置に最も近い列へ移す */
+  const onPointerDown = (event: PointerEvent) => {
+    const target = event.target instanceof Element ? event.target : undefined;
+    const head = target?.closest<HTMLElement>(".map-participant");
+    const id = head?.dataset.participant;
+    if (
+      event.button !== 0 ||
+      !head ||
+      id === undefined ||
+      state.entered !== undefined ||
+      target?.closest(".mdmark-diagram-node-name, button")
+    )
+      return;
+    const list = order();
+    const at = list.indexOf(id);
+    // 動かし始めたときの列の位置で判定する
+    const rects = list.map(
+      (name) =>
+        figure
+          .querySelector<HTMLElement>(
+            `.map-participant[data-participant="${CSS.escape(name)}"]`,
+          )
+          ?.getBoundingClientRect() ?? head.getBoundingClientRect(),
+    );
+    const container = head.parentElement as HTMLElement;
+    const startX = event.clientX;
+    const startY = event.clientY;
+    let dragging = false;
+    let to = at;
+    let marker: HTMLElement | undefined;
+    const onMove = (move: PointerEvent) => {
+      if (
+        !dragging &&
+        Math.hypot(move.clientX - startX, move.clientY - startY) <
+          DRAG_THRESHOLD_PX
+      )
+        return;
+      if (!dragging) {
+        dragging = true;
+        marker = document.createElement("div");
+        marker.className = "map-insert-line";
+        marker.hidden = true;
+        container.append(marker);
+        head.classList.add("is-dragging");
+      }
+      head.style.translate = `${move.clientX - startX}px 0`;
+      const centers = rects.map((rect) => (rect.left + rect.right) / 2);
+      to = centers.reduce(
+        (best, center, index) =>
+          Math.abs(center - move.clientX) <
+          Math.abs((centers[best] ?? 0) - move.clientX)
+            ? index
+            : best,
+        0,
+      );
+      const rect = rects[to];
+      if (!marker || !rect || to === at) {
+        if (marker) marker.hidden = true;
+        return;
+      }
+      // 左へ移すときは移す先の列の左、右へ移すときは右に線を出す（図の倍率で割って図の座標にする）
+      const base = container.getBoundingClientRect();
+      const scale = base.width / (container.offsetWidth || base.width || 1);
+      const edge = to < at ? rect.left - 8 : rect.right + 8;
+      marker.style.left = `${(edge - base.left) / (scale || 1)}px`;
+      marker.hidden = false;
+    };
+    const onUp = () => {
+      window.removeEventListener("pointermove", onMove);
+      window.removeEventListener("pointerup", onUp);
+      if (!dragging) return;
+      suppressClick = true;
+      head.style.translate = "";
+      head.classList.remove("is-dragging");
+      marker?.remove();
+      if (to === at) return;
+      const next = [...list];
+      next.splice(at, 1);
+      next.splice(to, 0, id);
+      change({ ...state, order: next });
+    };
+    window.addEventListener("pointermove", onMove);
+    window.addEventListener("pointerup", onUp);
+  };
   // メッセージの線を指している間は、その線にデータの印を流す（選択・再生で流している線には重ねない）
   const onPointerOver = (event: PointerEvent) => {
     const target = event.target instanceof Element ? event.target : undefined;
@@ -326,6 +417,7 @@ export const attachMapSequence = (
       layer.remove();
   };
   figure.addEventListener("click", onClick);
+  figure.addEventListener("pointerdown", onPointerDown);
   figure.addEventListener("keydown", onKeyDown);
   figure.addEventListener("pointerover", onPointerOver);
   figure.addEventListener("pointerout", onPointerOut);
@@ -369,6 +461,7 @@ export const attachMapSequence = (
       band?.destroy();
       detachDiagrams();
       figure.removeEventListener("click", onClick);
+      figure.removeEventListener("pointerdown", onPointerDown);
       figure.removeEventListener("keydown", onKeyDown);
       figure.removeEventListener("pointerover", onPointerOver);
       figure.removeEventListener("pointerout", onPointerOut);
