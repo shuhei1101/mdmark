@@ -54,10 +54,10 @@ export const DATA = {
     L5: "orange",
   },
   walkthroughs: [
-    { text: "利用側のページが、設定と Markdown を mount に渡します。", highlight: ["user", "mount"] },
-    { text: "文書と索引は、補足の検査と map のマーカーの読み取りに読まれます。\n索引の用語と別名は、補足の検査でラベルと notes の文の照合に使います。\n文書の Markdown は、map の範囲ごとに 1 つの図の定義に分けます。", highlight: ["doc", "index", "data"] },
-    { text: "配置のグループの中で、自動配置の後に線の経路を決めます。", enter: "place", highlight: ["layout", "route"] },
-    { text: "線の経路と図の枠は、描き直すたびに互いに大きさを伝え合います。", highlight: ["route", "frame"] },
+    { title: "mount に渡す", text: "利用側のページが、設定と Markdown を mount に渡します。", highlight: ["user", "mount"] },
+    { title: "文書と索引を読む", text: "文書と索引は、補足の検査と map のマーカーの読み取りに読まれます。\n索引の用語と別名は、補足の検査でラベルと notes の文の照合に使います。\n文書の Markdown は、map の範囲ごとに 1 つの図の定義に分けます。", highlight: ["doc", "index", "data"] },
+    { title: "線の経路を決める", text: "配置のグループの中で、自動配置の後に線の経路を決めます。", enter: "place", highlight: ["layout", "route"] },
+    { title: "大きさを伝え合う", text: "線の経路と図の枠は、描き直すたびに互いに大きさを伝え合います。", highlight: ["route", "frame"] },
   ],
   /** 配置と見た目の上書き。packet はデータの印（図全体の既定と、線の ID ごと） */
   layout: {
@@ -92,9 +92,9 @@ export const SEQUENCE = {
  */
 export const CONFIG = {
   kinds: {
-    step: { icon: "cog", shape: "rounded" },
-    store: { icon: "database", shape: "rect", color: "purple" },
-    outside: { icon: "globe", shape: "pill", color: "green" },
+    step: { label: "処理", icon: "cog", shape: "rounded" },
+    store: { label: "保存先", icon: "database", shape: "rect", color: "purple" },
+    outside: { label: "外部", icon: "globe", shape: "pill", color: "green" },
   },
   lines: {
     "-.->": { dash: "dashed", head: "open" },

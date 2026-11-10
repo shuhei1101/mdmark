@@ -53,3 +53,9 @@ confirmations:
     approver: shuhei1101
     commit: f4b69a6b
     thread: https://github.com/shuhei1101/mdmark/pull/445#discussion_r4521238082
+  - topic: map の案内・再生で図の枠の中をスクロールする場合
+    decision: 自動で進めている間だけ、強調するノードの中心へ図の枠の中をスクロールする（倍率は変えない）。読者が図の枠を触ったら自動で進め直すまで止め、前へ・次へで進めたときはスクロールしない（「枠の外にあるときだけスクロールする」案 A を置き換える）
+    decided_by: reply
+    approver: shuhei1101
+    commit: fbc3df82
+    thread: https://github.com/shuhei1101/mdmark/pull/445#discussion_r4521863814

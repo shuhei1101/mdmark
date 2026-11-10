@@ -91,13 +91,25 @@ sequenceHost.className = "map-host";
 const sequenceSlot = slot("MAP-SLOT-SEQUENCE");
 sequenceSlot.closest(".mdmark-wide-range")?.parentElement.classList.add("map-wide");
 sequenceSlot.replaceWith(sequenceHost);
+/**
+ * map の図の wide の範囲は、右側の目次の右端の線の手前まで広げる。今の wide は、ポインターを当てたときだけ出す目次のパネル（透明）の左端で止まるため、
+ * 目次をピン止めしていない（hover）ときは右端の線を、ピン止めしたときはパネルを右の端にする（実装では wide の範囲の幅の決め方を変える）
+ */
+const fitMapWide = () => {
+  const toc = doc.querySelector(".mdmark-side-toc");
+  const edge = toc?.dataset.mode === "hover" ? toc.querySelector(".mdmark-side-toc-rail") : toc?.querySelector(".mdmark-side-toc-panel");
+  const right = (edge ? edge.getBoundingClientRect().left : document.documentElement.clientWidth) - 16;
+  for (const range of doc.querySelectorAll(".map-wide > .mdmark-wide-range")) {
+    range.style.width = `${right - range.getBoundingClientRect().left}px`;
+  }
+};
 let map;
 // シーケンス図の帯で進めたメッセージを、構成図の上でも強調する
 const sequenceView = createSequence(
   sequenceHost,
   SEQUENCE,
   { user: CONFIG.kinds.outside, mount: CONFIG.kinds.step, marker: CONFIG.kinds.step, mermaid: CONFIG.kinds.step, layout: CONFIG.kinds.step },
-  (index) => map.showMessage(index),
+  (index, auto) => map.showMessage(index, auto),
 );
 
 // 開閉と中へ入った状態は場面ごとに sessionStorage へ保つ。構成図の案内を始めたら、シーケンス図の強調を解く
@@ -107,6 +119,8 @@ map = createMap(
   initial,
 );
 if (scene === "play") sequenceView.start(0);
+fitMapWide();
+addEventListener("resize", fitMapWide);
 
 if (scene === "warnings") {
   // 書き方の警告: 図の枠の上に、読めない行・知らないキー・知らない引数を並べる

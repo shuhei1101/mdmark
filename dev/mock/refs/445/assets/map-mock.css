@@ -259,3 +259,26 @@
   margin: 0;
   padding-left: 1.2em;
 }
+
+/* 手順のタイトル: 1 行目の番号とボタンの間。狭い幅では番号とボタンの下の行に回す */
+.map-band {
+  container-type: inline-size;
+}
+.map-band-title {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  font-size: 14px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+@container (max-width: 420px) {
+  .map-band-head {
+    flex-wrap: wrap;
+  }
+  .map-band-title {
+    flex-basis: 100%;
+    order: 3;
+    white-space: normal;
+  }
+}

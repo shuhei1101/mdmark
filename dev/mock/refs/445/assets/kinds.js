@@ -49,9 +49,9 @@ const LINE_LAYOUT = Object.fromEntries(Object.keys(LINE_CONFIG.lines).map((name,
 /** 設定の例 1: システムの構成を描くとき */
 const SYSTEM_CONFIG = {
   kinds: {
-    app: { icon: "server", shape: "rounded", color: "blue" },
-    store: { icon: "database", shape: "rect", color: "purple" },
-    outside: { icon: "globe", shape: "pill", color: "green" },
+    app: { label: "アプリ", icon: "server", shape: "rounded", color: "blue" },
+    store: { label: "保存先", icon: "database", shape: "rect", color: "purple" },
+    outside: { label: "外部のサービス", icon: "globe", shape: "pill", color: "green" },
   },
   lines: {
     "-.->": { dash: "dashed", head: "open" },
@@ -74,9 +74,9 @@ const SYSTEM = `flowchart LR
 /** 設定の例 2: 業務の流れを描くとき */
 const WORK_CONFIG = {
   kinds: {
-    person: { icon: "user", shape: "pill", color: "orange" },
-    doc: { icon: "file", shape: "rect" },
-    tool: { icon: "server", shape: "double", color: "blue" },
+    person: { label: "担当者", icon: "user", shape: "pill", color: "orange" },
+    doc: { label: "書類", icon: "file", shape: "rect" },
+    tool: { label: "システム", icon: "server", shape: "double", color: "blue" },
   },
   lines: {
     "-.->": { dash: "dotted", head: "open", color: "gray" },
@@ -95,12 +95,13 @@ const WORK = `flowchart LR
 
 const markdown = `# map の図のノードと線の種類の作り方
 
-map の図は、ノードと線の種類を mdmark では決めない。使う側が設定（\`mdmark.config.yaml\` の \`map\`）で、種類のアイコン・形・色と、線の模様・太さ・矢じり・色を作る。凡例は出さない。
+map の図は、ノードと線の種類を mdmark では決めない。使う側が設定（\`mdmark.config.yaml\` の \`map\`）で、種類の名前・アイコン・形・色と、線の模様・太さ・矢じり・色を作る。凡例は出さない。
 
 \`\`\`yaml
 map:
   kinds:            # Mermaid のクラス名ごとのノードの種類
     app:            # Mermaid では  api["API"]:::app
+      label: アプリ  # ノードの種類の行に出す名前（省くと出さない）
       icon: server  # Lucide のアイコンの名前（省くとアイコン無し）
       shape: rounded # rounded（既定）・rect・pill・double
       color: blue   # 色の名前（省くと既定の線の色）
@@ -110,7 +111,7 @@ map:
     back:   { dash: dotted }   # 名前の線は補足の layout で  L3: { line: back }
 \`\`\`
 
-種類を書かないノードはアイコンを出さず、設定に無い矢印は既定の実線で描く。
+種類を書かないノードは種類の行を出さず、設定に無い矢印は既定の実線で描く。
 
 ## ノードの形
 
@@ -118,6 +119,7 @@ MAP-SLOT-SHAPES
 
 | 設定 | 値 |
 | --- | --- |
+| \`label\` | ノードの種類の行に、アイコンの右に出す名前 |
 | \`shape\` | \`rounded\`（角の丸い四角・既定）・\`rect\`（角の四角）・\`pill\`（端の丸い形）・\`double\`（二重の枠） |
 | \`icon\` | Lucide のアイコンの名前（\`server\`・\`database\`・\`user\`・\`file\`・\`globe\`・\`cog\` など） |
 | \`color\` | 色の名前（\`blue\`・\`red\`・\`green\`・\`yellow\`・\`orange\`・\`purple\`・\`gray\`） |

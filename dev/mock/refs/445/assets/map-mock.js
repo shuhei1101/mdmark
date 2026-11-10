@@ -23,9 +23,9 @@ const STORAGE_PREFIX = "mdmark-map:";
 
 /**
  * ノードの種類と線の種類は mdmark では決めず、使う側が設定（mdmark.config.yaml の map）で作る。
- * kinds: Mermaid のクラス名ごとの { icon（Lucide の名前）, shape, color（色の名前） }
+ * kinds: Mermaid のクラス名ごとの { label（ノードの種類の行の名前）, icon（Lucide の名前）, shape, color（色の名前） }
  * lines: Mermaid の矢印（-->・-.->・==>）か名前ごとの { dash, width, head, color }。名前の線は補足の layout の line で指す
- * 種類を書かないノードはアイコンを出さず、設定に無い矢印は既定の実線で描く。凡例は出さない
+ * 種類を書かないノードは種類の行を出さず、設定に無い矢印は既定の実線で描く。凡例は出さない
  */
 const SHAPES = ["rounded", "rect", "pill", "double"];
 const DASHES = { solid: "", dashed: "6 4", dotted: "2 4", "dash-dot": "8 3 2 3", "long-dash": "12 5" };
@@ -55,6 +55,13 @@ const ICONS = {
   server: '<rect width="20" height="8" x="2" y="2" rx="2" ry="2"/><rect width="20" height="8" x="2" y="14" rx="2" ry="2"/><line x1="6" x2="6.01" y1="6" y2="6"/><line x1="6" x2="6.01" y1="18" y2="18"/>',
   bot: '<path d="M12 8V4H8"/><rect width="16" height="12" x="4" y="8" rx="2"/><path d="M2 14h2"/><path d="M20 14h2"/><path d="M15 13v2"/><path d="M9 13v2"/>',
   expand: '<path d="m9 18 6-6-6-6"/>',
+  resize: '<line x1="5" x2="19" y1="9" y2="9"/><line x1="5" x2="19" y1="15" y2="15"/>',
+};
+
+/** リサイズハンドルのアイコンを、上下だけに動かせると分かる横の 2 本線にする（今の部品の点の並びを置き換える。実装では図の枠の部品で変える） */
+const replaceResizeIcon = (figure) => {
+  const handle = figure.querySelector(".mdmark-diagram-resize");
+  if (handle) handle.innerHTML = icon("resize");
 };
 
 const icon = (name) =>
@@ -77,11 +84,12 @@ const toolButton = (name, label, onClick, attrs = {}) => {
 const colorStyle = (color) =>
   color ? `--map-fill: var(--mdmark-color-accent-${color}-bg); --map-ink: var(--mdmark-color-accent-${color}-text);` : "";
 
-/** ノードの種類の行（アイコンだけ）と形・色を、使う側の設定の種類で置き換える。アイコンが無いノードは種類の行を出さない */
+/** ノードの種類の行（アイコンと名前）と形・色を、使う側の設定の種類で置き換える。アイコンも名前も無いノードは種類の行を出さない */
 const applyKind = (element, kind) => {
   const row = element.querySelector(".mdmark-diagram-node-kind");
-  if (!kind?.icon || !ICONS[kind.icon]) row?.remove();
-  else if (row) row.innerHTML = icon(kind.icon);
+  const glyph = kind?.icon && ICONS[kind.icon] ? icon(kind.icon) : "";
+  if (!glyph && !kind?.label) row?.remove();
+  else if (row) row.innerHTML = `${glyph}${kind.label ? `<span>${kind.label}</span>` : ""}`;
   if (!kind) {
     element.dataset.shape = "rounded";
     return;
@@ -128,19 +136,24 @@ const SVG_NS = "http://www.w3.org/2000/svg";
  * 手順の帯: 番号・説明の文と、前へ・停止・自動で進める（一時停止）・次への 4 つのボタンを常に同じ並びで出す。
  * 前へ・次へは常に押せ、端では反対の端へ回る（始める前の前へは最後へ）。停止は始める前だけ押せない。説明の文の改行はそのまま出す
  */
-const stepBand = ({ label, total, index, text, auto, names, go, stop, toggleAuto }) => {
+const stepBand = ({ label, total, index, heading = "", text, auto, names, go, stop, toggleAuto }) => {
   const band = document.createElement("div");
   band.className = "map-band";
   band.setAttribute("role", "region");
   band.setAttribute("aria-label", label);
   const prev = () => go(index === undefined || index === 0 ? total - 1 : index - 1);
   const next = () => go(index === undefined ? 0 : (index + 1) % total);
-  // 1 行目は番号（左）と操作のボタン（右）、2 行目からが説明の文。文の長さや行数によらずボタンの位置を変えない。文が無いときは 1 行目だけ
+  // 1 行目は番号（左）・タイトル・操作のボタン（右）、2 行目からが説明の文。文の長さや行数によらずボタンの位置を変えない。文が無いときは 1 行目だけ
   const head = document.createElement("div");
   head.className = "map-band-head";
   const count = document.createElement("span");
   count.className = "map-band-count";
   count.textContent = `${index === undefined ? "–" : index + 1}/${total}`;
+  // 手順のタイトル: 番号とボタンの間に出す。狭い幅では 1 行目に入らないため、番号とボタンの下の行に回す
+  const title = document.createElement("strong");
+  title.className = "map-band-title";
+  title.textContent = heading;
+  title.hidden = heading === "";
   const body = document.createElement("p");
   body.className = "map-band-text";
   body.textContent = text;
@@ -154,7 +167,7 @@ const stepBand = ({ label, total, index, text, auto, names, go, stop, toggleAuto
     toolButton(auto ? "pause" : "play", auto ? "一時停止" : "自動で進める", toggleAuto, { "aria-pressed": String(auto) }),
     toolButton("next", names.next, next),
   );
-  head.append(count, actions);
+  head.append(count, title, actions);
   band.append(head, body);
   band.addEventListener("keydown", (event) => {
     if (event.key === "ArrowRight") next();
@@ -277,6 +290,10 @@ export const createMap = (host, spec, initial = {}) => {
     step: initial.step,
     play: initial.play,
     auto: initial.auto ?? false,
+    /** シーケンス図の帯で自動で進めているか（構成図の上の再生） */
+    playAuto: false,
+    /** 自動で進める間に、強調するノードへ図の枠の中をスクロールするか。読者が図の枠を触ると false にする */
+    follow: true,
     seconds: spec.interval ?? DEFAULT_AUTOPLAY_SECONDS,
     height: undefined,
   };
@@ -409,6 +426,8 @@ export const createMap = (host, spec, initial = {}) => {
     decorateTools(figure);
     renderBand(figure);
     renderPackets(stage, layout);
+    replaceResizeIcon(figure);
+    watchTouch(figure);
     keepScaleAndHeight(figure, layout);
     animateFrom(stage, before);
     const viewport = figure.querySelector(".mdmark-diagram-viewport");
@@ -418,23 +437,34 @@ export const createMap = (host, spec, initial = {}) => {
     revealHot(viewport, stage, layout);
   };
 
-  /** 案内と再生で強調するノードが図の枠の外にあるときだけ、枠の中をそのノードが入るまでスクロールする（文書のスクロールと倍率は変えない） */
+  /** 読者が図の枠を触ったか: 枠の中のスクロール・ホイール・押す・キーと、拡大・縮小のボタン */
+  const watchTouch = (figure) => {
+    const stop = () => {
+      state.follow = false;
+    };
+    const viewport = figure.querySelector(".mdmark-diagram-viewport");
+    for (const type of ["wheel", "pointerdown", "keydown", "touchstart"]) viewport.addEventListener(type, stop, { passive: true });
+    figure.querySelector('.mdmark-diagram-tools [data-group="zoom"]')?.addEventListener("click", stop);
+  };
+
+  /**
+   * 自動で進めている間だけ、強調するノードの中心へ図の枠の中をスクロールする（文書のスクロールと倍率は変えない）。
+   * 読者が図の枠をスクロール・拡大・縮小・押したら、自動で進め直すまでスクロールしない。前へ・次へで進めたときは読者のスクロールの位置のまま
+   */
   const revealHot = (viewport, stage, layout) => {
     const hot = highlighted();
     if (!hot) return;
+    const auto = state.step !== undefined ? state.auto : state.playAuto;
+    if (!auto || !state.follow) return;
     const rects = layout.leaves.filter((leaf) => hot.has(leaf.id));
     if (rects.length === 0) return;
     const left = Math.min(...rects.map((r) => r.x));
     const right = Math.max(...rects.map((r) => r.x + r.w));
     const top = Math.min(...rects.map((r) => r.y));
     const bottom = Math.max(...rects.map((r) => r.y + r.h));
-    const view = { left: viewport.scrollLeft, right: viewport.scrollLeft + viewport.clientWidth, top: viewport.scrollTop, bottom: viewport.scrollTop + viewport.clientHeight };
-    if (left >= view.left && right <= view.right && top >= view.top && bottom <= view.bottom) return;
-    // 強調するノードが枠に収まらないときは、中央ではなく左上のノードが入る位置へ動かす（中央だとどのノードも枠の外に出る）
-    const along = (start, end, size) => Math.max(0, end - start > size ? start - 16 : (start + end) / 2 - size / 2);
     viewport.scrollTo({
-      left: along(left, right, viewport.clientWidth),
-      top: along(top, bottom, viewport.clientHeight),
+      left: Math.max(0, (left + right) / 2 - viewport.clientWidth / 2),
+      top: Math.max(0, (top + bottom) / 2 - viewport.clientHeight / 2),
       behavior: reduced ? "auto" : "smooth",
     });
   };
@@ -694,6 +724,7 @@ export const createMap = (host, spec, initial = {}) => {
         label: `${spec.title}の案内`,
         total: steps.length,
         index,
+        heading: index === undefined ? "" : (steps[index].title ?? ""),
         text: index === undefined ? "" : steps[index].text,
         auto: state.auto,
         names: { prev: "前の手順", next: "次の手順", stop: "案内をやめる" },
@@ -701,6 +732,8 @@ export const createMap = (host, spec, initial = {}) => {
         stop: () => endWalkthrough(),
         toggleAuto: () => {
           state.auto = !state.auto;
+          // 自動で進め始めたら、読者が図を動かすまで、手順ごとに強調するノードへ図の枠の中をスクロールする
+          if (state.auto) state.follow = true;
           if (state.auto && index === undefined) applyStep(0);
           else render();
           schedule();
@@ -782,7 +815,10 @@ export const createMap = (host, spec, initial = {}) => {
     render();
   };
   /** シーケンス図の帯で進めた今のメッセージを、構成図の上でも強調してデータを流す（undefined で解く） */
-  const showMessage = (index) => {
+  const showMessage = (index, auto = false) => {
+    // シーケンス図の帯で自動で進め始めたら、読者が図を動かすまで、メッセージごとに送り手と受け手へスクロールする
+    if (auto && !state.playAuto) state.follow = true;
+    state.playAuto = auto;
     if (index === undefined) {
       if (state.play === undefined) return;
       state.play = undefined;
@@ -1021,7 +1057,8 @@ export const createSequence = (host, spec, kinds, onStep) => {
         label: `${spec.title}の再生`,
         total,
         index: position === -1 ? undefined : position,
-        text: message ? `${labelOf(message.from)} → ${labelOf(message.to)}　${message.text}${note ? `\n${note}` : ""}` : "",
+        heading: message ? message.text : "",
+        text: message ? `${labelOf(message.from)} → ${labelOf(message.to)}${note ? `\n${note}` : ""}` : "",
         auto: state.auto,
         names: { prev: "前のメッセージ", next: "次のメッセージ", stop: "再生を終える" },
         go: (next) => step(state.shownIndexes[next]),
@@ -1029,12 +1066,16 @@ export const createSequence = (host, spec, kinds, onStep) => {
         toggleAuto: () => {
           state.auto = !state.auto;
           if (state.auto && state.current === undefined) step(state.shownIndexes[0]);
-          else render();
+          else {
+            render();
+            if (state.current !== undefined) onStep(state.current, state.auto);
+          }
           schedule();
         },
       }),
     );
 
+    replaceResizeIcon(figure);
     keepSequenceScale(host);
     const viewport = figure.querySelector(".mdmark-diagram-viewport");
     viewport.scrollLeft = scroll[0];
@@ -1120,7 +1161,7 @@ export const createSequence = (host, spec, kinds, onStep) => {
   const step = (index) => {
     state.current = index;
     render();
-    onStep(index);
+    onStep(index, state.auto);
   };
   const stop = () => {
     clearInterval(timer);
