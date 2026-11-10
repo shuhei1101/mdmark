@@ -22,12 +22,12 @@ use_cases:
   - kind: single
     scenario: dev/設計書/シナリオ/単一ユースケース/図を描く.yaml
     impact: run_only
-    detail: 座標で書いたフロー図・シーケンス図は変わらないが、図の枠と凡例を map と共通にするため壊しうる。図の枠のリサイズハンドルのアイコンが、点の並びから横の 2 本線に変わる
+    detail: 座標で書いたフロー図・シーケンス図は変わらないが、図の枠と凡例を map と共通にし、シーケンス図の部品に複合フラグメント・注記・活性化・矢印の種類・まとまりの描き方を追加するため壊しうる。図の枠のリサイズハンドルが、枠線の無い下端の帯と横の 2 本線のアイコンに変わる
     depends_on: []
   - kind: single
     scenario: dev/設計書/シナリオ/単一ユースケース/図を拡大・縮小・移動する.yaml
-    impact: run_only
-    detail: 拡大・縮小・移動の操作を map と共通にするため壊しうる。リサイズハンドルのアイコンが、点の並びから横の 2 本線に変わる（操作は変わらない）
+    impact: changed
+    detail: 全ての図で、リサイズハンドルを枠線の無い下端の帯と横の 2 本線のアイコンにし、高さの上限を外し、ダブルクリックで倍率を変えずに図の全体が収まる高さに合わせる（今は定義から決まる高さに戻し、倍率も変わる）
     depends_on: []
   - kind: single
     scenario: dev/設計書/シナリオ/単一ユースケース/図の要素のツールチップを確認する.yaml
@@ -115,7 +115,7 @@ docs:
     status: todo
   - page: docs/リファレンス/設定.md
     new: false
-    change: features の map と、map.kinds（ノードの種類）・map.lines（線の種類）のキー・既定・許す値を追加する
+    change: features の map と、map.node_fit（長い名前のノードの広げ方）・map.kinds（ノードの種類）・map.lines（線の種類）のキー・既定・許す値を追加する
     status: todo
   - page: docs/リファレンス/用語集.md
     new: false
