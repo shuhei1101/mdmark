@@ -60,7 +60,10 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-10T13:18:02.402100+00:00'
   - process: モジュール構成設計
-    status: todo
+    status: done
+    note: モジュール構成『map』（全体・読み取り・配置・点検・描画と操作）と ER 図『mapの補足』を新設し、既存のモジュール構成と設定に map の分を足した（0f4bed5f）
+    updated_by: planner
+    updated_at: '2026-11-10T14:09:51.656411+00:00'
   - process: ドキュメント修正
     status: todo
   - process: 単体テスト作成
