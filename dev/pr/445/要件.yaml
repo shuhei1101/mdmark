@@ -115,7 +115,7 @@ docs:
     status: todo
   - page: docs/リファレンス/設定.md
     new: false
-    change: features の map を追加する
+    change: features の map と、map.kinds（ノードの種類）・map.lines（線の種類）のキー・既定・許す値を追加する
     status: todo
   - page: docs/リファレンス/用語集.md
     new: false
