@@ -74,10 +74,7 @@ data_models:
     description: 案内の手順（`title`・`text`・`nodes`・`edges`・`enter`）
   - name: layout
     type: Record<string, MapLayoutEntry>
-    description: ID ごとの上書き（`align`・`order`・`pos`・`width`・`color`・`line`・`packet`・`layer`・`justify`・`ends`・`via`・`collapsed`）
-  - name: layers
-    type: 'Array<{ id: string; title: string; color: string | undefined }>'
-    description: 層（記載の順）
+    description: ID ごとの上書き（`align`・`order`・`pos`・`width`・`color`・`line`・`packet`・`justify`・`ends`・`via`・`collapsed`）
   - name: plays_over
     type: number
     description: シーケンス図の再生を重ねる構成図の番号
@@ -295,7 +292,7 @@ functions:
     summary: モックの補足
     condition: モックの `DATA`
     mock: なし
-    expected: '`notes`（値は `{ text }`）・`walkthroughs`・`layout`（`layer`・`justify`・`ends`・`via`・`collapsed` を含む）・`layers`・`plays_over` が読め、`problems` が空'
+    expected: '`notes`（値は `{ text }`）・`walkthroughs`・`layout`（`justify`・`ends`・`via`・`collapsed` を含む）・`plays_over` が読め、`problems` が空'
   - name: test_parse_map_data_when_empty
     case: 正常
     summary: 補足が無い

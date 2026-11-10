@@ -1,9 +1,9 @@
 // map の図を含む文書を見る場面: 配布物の mount で本文を描き、map の範囲の場所にモックの map の図を置く。
-// URL の ?scene= で場面（overview・group・collapsed・walkthrough・play・warnings・layers）、?scheme= で明暗を選ぶ
+// URL の ?scene= で場面（overview・group・collapsed・walkthrough・play・warnings）、?scheme= で明暗を選ぶ
 
 import { mount } from "../../../../../dist/index.js";
 import { createMap, createSequence } from "./map-mock.js";
-import { CONFIG, DATA, DATA_LAYERS, FLOW, FLOW_LAYERS, SEQUENCE } from "./samples.js";
+import { CONFIG, DATA, FLOW, SEQUENCE } from "./samples.js";
 
 /** 場面と、操作列に出す名前 */
 const SCENES = {
@@ -13,7 +13,6 @@ const SCENES = {
   walkthrough: "案内の手順",
   play: "再生",
   warnings: "書き方の警告",
-  layers: "層",
 };
 const DEFAULT_SCENE = "overview";
 const DEFAULT_SCHEME = "light";
@@ -117,9 +116,7 @@ const sequenceView = createSequence(
 // 開閉と中へ入った状態は場面ごとに sessionStorage へ保つ。構成図の案内を始めたら、シーケンス図の強調を解く
 map = createMap(
   flowHost,
-  scene === "layers"
-    ? { id: scene, queryKey: "map-1", title: "注文のシステムの層", flow: FLOW_LAYERS, data: DATA_LAYERS, config: CONFIG }
-    : { id: scene, queryKey: "map-1", title: "全体の構成", flow: FLOW, data: DATA, config: CONFIG, sequence: SEQUENCE, onWalkthrough: () => sequenceView.clear() },
+  { id: scene, queryKey: "map-1", title: "全体の構成", flow: FLOW, data: DATA, config: CONFIG, sequence: SEQUENCE, onWalkthrough: () => sequenceView.clear() },
   initial,
 );
 if (scene === "play") sequenceView.start(0);

@@ -16,11 +16,6 @@ states:
   args:
   - name: collapsed
     value: '["read"]'
-- name: Layers
-  description: グループの中のノードを 3 つの層に割り当てた。層の帯が補足の順に上から並び、帯の左上に層のタイトル、帯に層の色が薄く敷かれ、ノードが自分の層の帯の中にある
-  args:
-  - name: layout.lanes
-    value: '[{"id": "ui", "title": "画面", "color": "blue"}, {"id": "logic", "title": "処理"}, {"id": "store", "title": "データ", "color": "green"}]'
 - name: SelectedOne
   description: ノードを 1 つ選んだ。そのノードとその線のほか（線の相手のノードを含む）が薄く、その線の上をデータの印が流れる
   args:
@@ -46,12 +41,7 @@ args:
 - name: layout
   type: オブジェクト
   required: true
-  description: 自動配置の結果（`MapLayout`。`width`・`height`・`nodes`・`groups`・`wires`・`lanes`）。ノードと線はフロー図の部品の定義にして描き、グループは外側から順に面とタイトルの行を重ねる
-- name: layout.lanes[]
-  type: オブジェクトの配列
-  required: false
-  default: '`[]`'
-  description: 層の帯（`id`・`title`・`color`・`x`・`y`・`w`・`h`）。グループの面より下に、帯ごとに `data-lane` を持つ面と左上のタイトルを描く。`color` が無い帯は文字の薄い色を敷く（明るい配色とダークのどちらでも背景とのコントラスト比 3:1 以上の境界線を持つ）
+  description: 自動配置の結果（`MapLayout`。`width`・`height`・`nodes`・`groups`・`wires`）。ノードと線はフロー図の部品の定義にして描き、グループは外側から順に面とタイトルの行を重ねる
 - name: layout.groups[].id
   type: 文字列
   required: true

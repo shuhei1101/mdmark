@@ -20,8 +20,6 @@ const MAX_INITIAL_HEIGHT = 560;
 const MIN_FRAME_HEIGHT = 120;
 /** 中へ入る・開閉・手順の切り替えで、ノードとグループを前の位置から動かす時間（ms） */
 const MOVE_MS = 350;
-/** グループの内側の余白と図の外の余白（配置の boxPad・margin と同じ） */
-const GROUP_PAD = 24;
 /** ノードの幅の上限（px）。長い名前は、既定（height）では見積もりの幅のまま折り返して高さを増やし、width ではこの幅まで広げてから折り返す */
 const NODE_MAX_WIDTH = { height: 220, width: 360 };
 /**
@@ -283,33 +281,8 @@ const addPackets = (svg, path, { reverse = false, both = false, packet = DEFAULT
  * spec: { id, title, interval, flow, data: { notes, walkthroughs, layout, colors }, sequence?: { title, source } }
  * initial: { enter, collapsed, step, play, auto }
  */
-/**
- * 補足の layers と layout の layer: 層ごとに枠線の無いグループ（帯）を作って親の中のノードを入れ、親の中を上から帯を積む。
- * 帯の ID は `lane:{親}:{層}`。開閉・中へ入る・移動の対象にしない
- */
-const applyLayers = (chart, data) => {
-  const lanes = new Map();
-  for (const node of chart.nodes) {
-    const layer = (data.layers ?? []).find((item) => item.id === data.layout?.[node.id]?.layer);
-    if (!layer) continue;
-    const parent = node.parent ?? "";
-    const id = `lane:${parent}:${layer.id}`;
-    if (!lanes.has(id)) {
-      const outer = chart.boxes.find((box) => box.id === parent);
-      lanes.set(id, { id, title: layer.title, parent: node.parent, direction: "TB", lane: layer, order: data.layers.indexOf(layer) });
-      // 帯は親の中を上から積む
-      if (outer) outer.direction = "TB";
-    }
-    node.parent = id;
-  }
-  // 層の順に並べる（親の中で後ろの帯ほど下）
-  chart.boxes.push(...[...lanes.values()].sort((a, b) => a.order - b.order));
-  return lanes;
-};
-
 export const createMap = (host, spec, initial = {}) => {
   const chart = parseFlowchart(spec.flow);
-  const lanes = applyLayers(chart, spec.data);
   const sequence = spec.sequence ? parseSequence(spec.sequence.source) : undefined;
   const steps = spec.data.walkthroughs ?? [];
   const config = spec.config ?? {};
@@ -502,7 +475,6 @@ export const createMap = (host, spec, initial = {}) => {
     for (const [id, size] of Object.entries(state.sizes)) overrides[id] = { ...overrides[id], size };
     for (const [id, pos] of Object.entries(state.positions)) overrides[id] = { ...overrides[id], pos };
     const layout = layoutMap(chart, { enter: state.enter, collapsed: [...state.collapsed] }, overrides);
-    stretchLanes(layout);
     applyWireShifts(layout);
     host.replaceChildren();
     mount(host, { markdown: `<!-- flow -->\n\n\`\`\`json\n${JSON.stringify(toFlowDefinition(layout))}\n\`\`\`\n\n<!-- /flow -->\n` });
@@ -895,41 +867,10 @@ export const createMap = (host, spec, initial = {}) => {
     if (moved) wires.animate([{ opacity: 0 }, { opacity: 0, offset: 0.6 }, { opacity: 1 }], { duration: MOVE_MS * 1.6 });
   };
 
-  /** 層の帯は、親のグループ（無ければ図の全体）の中身の幅にそろえ、上の帯の下端を次の帯の上端まで伸ばしてすき間なく積む */
-  const stretchLanes = (layout) => {
-    const bands = layout.boxes.filter((box) => lanes.has(box.id)).sort((a, b) => a.y - b.y);
-    for (const [index, box] of bands.entries()) {
-      const outer = layout.boxes.find((item) => item.id === box.ancestors?.[0]);
-      box.x = outer ? outer.x + GROUP_PAD : GROUP_PAD;
-      box.w = (outer ? outer.w : layout.width) - GROUP_PAD * 2;
-      const next = bands.slice(index + 1).find((item) => item.ancestors?.[0] === box.ancestors?.[0]);
-      if (next) box.h = next.y - box.y;
-    }
-  };
-
-  /** 層の帯: グループの面の上・ノードの下に、層の色を薄く敷いた面と、左上の層の名前を置く */
-  const decorateLane = (stage, wires, box) => {
-    const layer = lanes.get(box.id).lane;
-    const lane = document.createElement("div");
-    lane.className = "map-lane";
-    lane.dataset.lane = layer.id;
-    if (layer.color) lane.dataset.color = layer.color;
-    lane.style.cssText = `left:${box.x}px;top:${box.y}px;width:${box.w}px;height:${box.h}px;${colorStyle(layer.color)}`;
-    const title = document.createElement("span");
-    title.className = "map-lane-title";
-    title.textContent = layer.title;
-    lane.append(title);
-    stage.insertBefore(lane, wires);
-  };
-
   /** 入れ子のグループ: 図の線とノードの下に、色の面と、開閉の山形と、タイトルを置く */
   const decorateGroups = (stage, layout) => {
     const wires = stage.querySelector(".mdmark-diagram-wires");
     for (const box of layout.boxes) {
-      if (lanes.has(box.id)) {
-        decorateLane(stage, wires, box);
-        continue;
-      }
       const title = boxById.get(box.id)?.title ?? box.id;
       const group = document.createElement("div");
       group.className = "map-group";
@@ -998,7 +939,7 @@ export const createMap = (host, spec, initial = {}) => {
     return span;
   };
   /** グループと、その中の全てのグループの ID */
-  const groupsUnder = (id) => chart.boxes.filter((box) => !lanes.has(box.id) && isUnder(box.id, id)).map((box) => box.id);
+  const groupsUnder = (id) => chart.boxes.filter((box) => isUnder(box.id, id)).map((box) => box.id);
 
   /** ノード: 閉じたグループは山形で開く。入ったグループの外は薄くする。案内と再生で強調する */
   const decorateNodes = (stage, layout) => {
@@ -1147,7 +1088,7 @@ export const createMap = (host, spec, initial = {}) => {
         render();
       }),
       toolButton("collapseAll", "全てのグループを閉じる", () => {
-        for (const box of chart.boxes) if (!lanes.has(box.id) && (!state.enter || !isUnder(state.enter, box.id))) state.collapsed.add(box.id);
+        for (const box of chart.boxes) if (!state.enter || !isUnder(state.enter, box.id)) state.collapsed.add(box.id);
         state.collapsed.delete(state.enter);
         save();
         render();

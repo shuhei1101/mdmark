@@ -89,3 +89,9 @@ confirmations:
     approver: shuhei1101
     commit: 8f86d88c
     thread: https://github.com/shuhei1101/mdmark/pull/445#discussion_r4524785481
+  - topic: map の図の層の見た目
+    decision: 層の要素（補足の layers・layout の layer と層の帯）は作らない。層はグループ（Mermaid の subgraph）で表す。要件 No 18 の「層は補足の layout の層の指定で描く」を置き換える
+    decided_by: reply
+    approver: shuhei1101
+    commit: bdaf6139
+    thread: https://github.com/shuhei1101/mdmark/pull/445#discussion_r4527634048
