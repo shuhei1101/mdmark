@@ -80,6 +80,7 @@ export const attachMapFlow = (
   range: HTMLElement,
   config: ResolvedConfig,
   args: MapArgs,
+  onWalk?: () => void,
 ): MapFlowHandle => {
   const index = Number(range.dataset.map ?? "1");
   const source = range.querySelector("code")?.textContent ?? "";
@@ -519,6 +520,7 @@ export const attachMapFlow = (
         typeof matchMedia !== "undefined" &&
         matchMedia("(prefers-reduced-motion: reduce)").matches,
       apply: (step) => {
+        if (step !== undefined) onWalk?.();
         if (step?.enter !== undefined && step.enter !== state.entered)
           state = { ...state, entered: step.enter };
         focus =

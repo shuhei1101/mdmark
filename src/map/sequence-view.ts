@@ -144,7 +144,19 @@ export const attachMapSequence = (
       location,
     });
   const refresh = () => {
-    const { html } = view();
+    const { html, rows } = view();
+    // 開閉・中だけを描くで再生するメッセージが変わったら、帯の手順を差し替えて再生を止める
+    const next = shownMessages(rows);
+    if (band && next.join(",") !== shown.join(",")) {
+      shown = next;
+      band.update(stepsOf(shown));
+      if (current !== undefined) {
+        current = undefined;
+        onStep?.(undefined);
+        refresh();
+        return;
+      }
+    }
     const { width, height } = sizeOf(html);
     const stage = figure.querySelector<HTMLElement>(".mdmark-diagram-stage");
     const sizer = figure.querySelector<HTMLElement>(".mdmark-diagram-sizer");
@@ -423,22 +435,34 @@ export const attachMapSequence = (
   figure.addEventListener("pointerout", onPointerOut);
 
   let band: BandHandle | undefined;
+  /** 再生で進めるメッセージ（閉じたブロックと、中だけを描くブロックの外のメッセージを除く） */
+  const shownMessages = (rows: ReturnType<typeof sequenceRows>): number[] =>
+    rows.rows.flatMap((row) => (row.kind === "message" ? [row.message] : []));
+  let shown = shownMessages(first.rows);
+  const stepsOf = (messages: number[]) =>
+    messages.flatMap((at) => {
+      const message = sequence.messages[at];
+      if (!message) return [];
+      return [
+        {
+          title: message.text,
+          text: [
+            `${sequence.participants.find((item) => item.id === message.from)?.label ?? message.from} → ${sequence.participants.find((item) => item.id === message.to)?.label ?? message.to}`,
+            data.notes[String(at + 1)]?.text ?? "",
+          ]
+            .filter((line) => line !== "")
+            .join("\n"),
+          nodes: [message.from, message.to],
+          wires: [String(at)],
+          enter: undefined,
+        },
+      ];
+    });
   if (sequence.messages.length > 0) {
     band = attachBand({
       figure,
       mode: "playback",
-      steps: sequence.messages.map((message, at) => ({
-        title: message.text,
-        text: [
-          `${sequence.participants.find((item) => item.id === message.from)?.label ?? message.from} → ${sequence.participants.find((item) => item.id === message.to)?.label ?? message.to}`,
-          data.notes[String(at + 1)]?.text ?? "",
-        ]
-          .filter((line) => line !== "")
-          .join("\n"),
-        nodes: [message.from, message.to],
-        wires: [String(at)],
-        enter: undefined,
-      })),
+      steps: stepsOf(shown),
       interval: args.interval,
       autoplay: args.play === "autoplay",
       reducedMotion:

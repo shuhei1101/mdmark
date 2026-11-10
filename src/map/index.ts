@@ -61,6 +61,9 @@ export const attachMap = (
     playsOver: number | undefined;
     source: string;
     attach: (onStep: (message: number | undefined) => void) => void;
+    /** 構成図の上を強調しているか */
+    driving: boolean;
+    clear: () => void;
   }> = [];
   for (const range of root.querySelectorAll<HTMLElement>("div.mdmark-map")) {
     const source = sourceOf(range);
@@ -85,18 +88,28 @@ export const attachMap = (
     const number = Number(range.dataset.map ?? "0");
     if (range.dataset.mapKind === "sequenceDiagram") {
       const mermaid = source.mermaid ?? "";
-      sequences.push({
+      const entry: (typeof sequences)[number] = {
         playsOver: undefined,
         source: mermaid,
+        driving: false,
+        clear: () => {},
         attach: (onStep) => {
           const handle = attachMapSequence(range, config, args, onStep);
           destroyers.push(handle.destroy);
-          const entry = sequences.find((item) => item.source === mermaid);
-          if (entry) entry.playsOver = handle.playsOver;
+          entry.playsOver = handle.playsOver;
+          entry.clear = handle.clear;
         },
-      });
+      };
+      sequences.push(entry);
     } else {
-      const handle = attachMapFlow(range, config, args);
+      // 構成図の案内を始めたら、この構成図の上で再生しているシーケンス図の強調を解く（構成図の強調は残す）
+      const handle = attachMapFlow(range, config, args, () => {
+        for (const entry of sequences) {
+          if (entry.playsOver !== number || !entry.driving) continue;
+          entry.driving = false;
+          entry.clear();
+        }
+      });
       flows.set(number, handle);
       destroyers.push(handle.destroy);
     }
@@ -111,8 +124,13 @@ export const attachMap = (
       if (!target) return;
       const item =
         message === undefined ? undefined : sequence.messages[message];
-      if (item === undefined) target.clearFocus();
-      else target.focus({ nodes: [item.from, item.to], wires: [] });
+      if (item === undefined) {
+        if (entry.driving) target.clearFocus();
+        entry.driving = false;
+      } else {
+        entry.driving = true;
+        target.focus({ nodes: [item.from, item.to], wires: [] });
+      }
     });
   }
   return () => {

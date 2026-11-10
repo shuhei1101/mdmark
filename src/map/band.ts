@@ -16,6 +16,8 @@ export type BandStep = {
 export type BandHandle = {
   /** 強調を解いて始める前に戻す */
   stop: () => void;
+  /** 進める手順を差し替え、始める前の状態に戻す（強調は当て直さない） */
+  update: (steps: BandStep[]) => void;
   /** 時計と操作を外す */
   destroy: () => void;
 };
@@ -49,7 +51,8 @@ export const attachBand = (options: {
   observe?: ObserveEnter;
   label?: string;
 }): BandHandle => {
-  const { figure, mode, steps, apply } = options;
+  const { figure, mode, apply } = options;
+  let steps = options.steps;
   const observe = options.observe ?? observeEnter;
   const label =
     options.label ??
@@ -186,6 +189,12 @@ export const attachBand = (options: {
   render();
   return {
     stop,
+    update: (next) => {
+      stopAuto();
+      steps = next;
+      index = undefined;
+      render();
+    },
     destroy: () => {
       stopAuto();
       unobserve();
