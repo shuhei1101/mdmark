@@ -35,3 +35,9 @@ confirmations:
     approver: shuhei1101
     commit: 9186253d6
     thread: https://github.com/shuhei1101/mdmark/pull/445#discussion_r4513446198
+  - topic: map の強調が図の枠の外にあるとき
+    decision: 案内・再生で強調するノードが図の枠の外にあるときだけ、図の枠の中をそのノードが入るまでスクロールする。文書のスクロールと倍率は変えない（案 A）
+    decided_by: reply
+    approver: shuhei1101
+    commit: 134f5378
+    thread: https://github.com/shuhei1101/mdmark/pull/445#discussion_r4519814078

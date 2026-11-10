@@ -1,4 +1,4 @@
-// モックの自動配置と記法の読み取り: PoC（#446、commit 3e4d731e8 の poc/map/layout.ts・parse.ts）をまとめ、中へ入ったときの外の要素の選び方・グループのタイトルの高さ（36px）・ノードの大きさ（今のフロー図のノードの外観に合わせる）を修正したもの。手で修正しない
+// モックの自動配置と記法の読み取り: PoC（#446、commit 3e4d731e8 の poc/map/layout.ts・parse.ts）をまとめ、中へ入ったときの外の要素の選び方・グループのタイトルの高さ（36px）・ノードの大きさ（今のフロー図のノードの外観に合わせる）を修正し、両向きの矢印（<-->）の読み取りを追加したもの。手で修正しない
 
 // check.ts
 var LABEL_METRICS = {
@@ -610,6 +610,9 @@ var SHAPES = [
   { open: ">", close: "]", shape: "flag" }
 ];
 var ARROWS = [
+  { re: /^<-->/, line: "solid", arrow: true, both: true },
+  { re: /^<-\.->/, line: "dotted", arrow: true, both: true },
+  { re: /^<==>/, line: "thick", arrow: true, both: true },
   { re: /^--\s+(.+?)\s+-->/, line: "solid", arrow: true },
   { re: /^--\s+(.+?)\s+---/, line: "solid", arrow: false },
   { re: /^-\.\s+(.+?)\s+\.->/, line: "dotted", arrow: true },
@@ -709,7 +712,7 @@ var readArrow = (cursor) => {
     id = idMatch[1];
     cursor.pos += idMatch[0].length;
   }
-  for (const { re, line, arrow } of ARROWS) {
+  for (const { re, line, arrow, both = false } of ARROWS) {
     const match = re.exec(rest(cursor));
     if (!match) {
       continue;
@@ -721,7 +724,7 @@ var readArrow = (cursor) => {
       label = pipe[1];
       cursor.pos += pipe[0].length;
     }
-    return { id, line, arrow, label: label?.replace(/^"|"$/g, "") };
+    return { id, line, arrow, both, label: label?.replace(/^"|"$/g, "") };
   }
   return void 0;
 };
@@ -855,6 +858,7 @@ var parseFlowchart = (source) => {
             to: to.id,
             line: arrow.line,
             arrow: arrow.arrow,
+            both: arrow.both,
             label: arrow.label
           });
         }

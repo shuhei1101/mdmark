@@ -6,8 +6,12 @@ import { layoutMap, parseFlowchart, parseSequence } from "./map-layout.js";
 
 /** 自動で進める間隔の既定（秒）。文書ではマーカーの引数 `interval` で指定し、画面からは変えない */
 const DEFAULT_AUTOPLAY_SECONDS = 2;
-/** 1 通のメッセージの印が線を 1 往復する時間（秒） */
-const PLAY_LOOP_SECONDS = 1.2;
+/** データの印の速さ（px/秒）・印どうしの間隔（px）・1 本の線に同時に流す印の数の上限 */
+const PACKET_SPEED = 120;
+const PACKET_GAP = 60;
+const PACKET_MAX = 6;
+/** データの印の既定。補足の layout の packet（図全体）と、線の ID ごとの packet で上書きする */
+const DEFAULT_PACKET = { color: "line", shape: "dot" };
 /** 図を縮める下限（確認ログ: 等倍より縮めない）。24px のボタンを 24px 未満に縮めない */
 const MIN_SCALE = 1;
 /** 開いたときの表示する枠の高さの上限（px）。以降は読む人がリサイズハンドルで変えるまで変えない */
@@ -30,6 +34,11 @@ const ICONS = {
   prev: '<path d="m15 18-6-6 6-6"/>',
   next: '<path d="m9 18 6-6-6-6"/>',
   stop: '<rect x="6" y="6" width="12" height="12" rx="1"/>',
+  expandAll: '<path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/>',
+  collapseAll: '<path d="m7 20 5-5 5 5"/><path d="m7 4 5 5 5-5"/>',
+  users: '<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>',
+  up: '<path d="m18 15-6-6-6 6"/>',
+  down: '<path d="m6 9 6 6 6-6"/>',
   collapse: '<path d="m6 9 6 6 6-6"/>',
   expand: '<path d="m9 18 6-6-6-6"/>',
 };
@@ -55,6 +64,65 @@ const colorStyle = (color) =>
   color ? `--map-fill: var(--mdmark-color-accent-${color}-bg); --map-ink: var(--mdmark-color-accent-${color}-text);` : "";
 
 /**
+ * 線の上にデータの印を流す。印は線の長さに応じた数を間をあけて元から先へ繰り返し動かし、両向きの線は先から元へも流す。
+ * packet: { color: line（線の色）| source（元のノードの色）| target（先のノードの色）| 色の名前, shape: dot | square | diamond }
+ */
+const SVG_NS = "http://www.w3.org/2000/svg";
+const addPackets = (svg, path, { reverse = false, both = false, packet = DEFAULT_PACKET, nodeColor = {} } = {}) => {
+  const color =
+    packet.color === "line"
+      ? getComputedStyle(path).stroke
+      : packet.color === "source"
+        ? (nodeColor.source ?? getComputedStyle(path).stroke)
+        : packet.color === "target"
+          ? (nodeColor.target ?? getComputedStyle(path).stroke)
+          : `var(--mdmark-color-accent-${packet.color}-text)`;
+  const shapeOf = () => {
+    if (packet.shape === "square") {
+      const rect = document.createElementNS(SVG_NS, "rect");
+      rect.setAttribute("x", "-6");
+      rect.setAttribute("y", "-6");
+      rect.setAttribute("width", "12");
+      rect.setAttribute("height", "12");
+      rect.setAttribute("rx", "2");
+      return rect;
+    }
+    if (packet.shape === "diamond") {
+      const polygon = document.createElementNS(SVG_NS, "polygon");
+      polygon.setAttribute("points", "0,-8 8,0 0,8 -8,0");
+      return polygon;
+    }
+    const circle = document.createElementNS(SVG_NS, "circle");
+    circle.setAttribute("r", "7");
+    return circle;
+  };
+  // 線の長さによらず同じ速さで動かし、長い線ほど印を多く流す
+  const length = path.getTotalLength();
+  const seconds = Math.max(0.6, length / PACKET_SPEED);
+  const count = Math.max(1, Math.min(PACKET_MAX, Math.floor(length / PACKET_GAP)));
+  const directions = both ? [reverse, !reverse] : [reverse];
+  for (const backward of directions) {
+    for (let index = 0; index < count; index += 1) {
+      const shape = shapeOf();
+      shape.setAttribute("class", "map-packet");
+      shape.style.fill = color;
+      const motion = document.createElementNS(SVG_NS, "animateMotion");
+      motion.setAttribute("dur", `${seconds}s`);
+      motion.setAttribute("begin", `${-(seconds / count) * index}s`);
+      motion.setAttribute("repeatCount", "indefinite");
+      motion.setAttribute("keyPoints", backward ? "1;0" : "0;1");
+      motion.setAttribute("keyTimes", "0;1");
+      motion.setAttribute("calcMode", "linear");
+      const mpath = document.createElementNS(SVG_NS, "mpath");
+      mpath.setAttribute("href", `#${path.id}`);
+      motion.append(mpath);
+      shape.append(motion);
+      svg.append(shape);
+    }
+  }
+};
+
+/**
  * map の構成図を 1 つ作る。host の中に描き、操作のたびに描き直す。
  * 描き直しても、文書と図の中のスクロール・表示する枠の高さを保ち、ノードとグループは前の位置から動かす。
  * spec: { id, title, interval, flow, data: { notes, walkthroughs, layout, colors }, sequence?: { title, source } }
@@ -72,7 +140,14 @@ export const createMap = (host, spec, initial = {}) => {
   const saved = JSON.parse(sessionStorage.getItem(storageKey) ?? "{}");
   const state = {
     enter: initial.enter ?? saved.enter,
-    collapsed: new Set(initial.collapsed ?? saved.collapsed ?? []),
+    // 補足の layout でグループごとに最初に閉じるかを指定できる（既定は開く）
+    collapsed: new Set(
+      initial.collapsed ??
+        saved.collapsed ??
+        Object.entries(spec.data.layout ?? {})
+          .filter(([, value]) => value.collapsed)
+          .map(([id]) => id),
+    ),
     step: initial.step,
     play: initial.play,
     auto: initial.auto ?? false,
@@ -152,14 +227,12 @@ export const createMap = (host, spec, initial = {}) => {
     return [(best[0][0] + best[1][0]) / 2, (best[0][1] + best[1][1]) / 2];
   };
 
-  /** 線のツールチップの文: 元の線ごとに「元 → 先」と、補足の notes の説明 */
-  const wireTip = (edge) =>
-    sourcesOf(edge)
-      .map((item) => {
-        const detail = notes[item.id] ?? item.label;
-        return `${labelOf(item.from)} → ${labelOf(item.to)}${detail ? `：${detail}` : ""}`;
-      })
-      .join("\n");
+  /** 線のツールチップの文: 補足の notes に説明を持つ元の線だけを「元 → 先：説明」で並べる。説明が無ければ空 */
+  const wireTip = (edge) => {
+    const lines = sourcesOf(edge).filter((item) => notes[item.id]);
+    if (lines.length === 1 && sourcesOf(edge).length === 1) return notes[lines[0].id];
+    return lines.map((item) => `${labelOf(item.from)} → ${labelOf(item.to)}：${notes[item.id]}`).join("\n");
+  };
 
   const highlighted = () => {
     if (state.play !== undefined && sequence) {
@@ -196,13 +269,34 @@ export const createMap = (host, spec, initial = {}) => {
     decorateWires(figure, layout);
     decorateTools(figure);
     renderBand(figure);
-    renderDots(stage, layout);
+    renderPackets(stage, layout);
     keepScaleAndHeight(figure, layout);
     animateFrom(stage, before);
     const viewport = figure.querySelector(".mdmark-diagram-viewport");
     viewport.scrollLeft = scroll[0];
     viewport.scrollTop = scroll[1];
     window.scrollTo({ top: pageY });
+    revealHot(viewport, stage, layout);
+    if (state.play !== undefined) spec.onPlay?.(state.play);
+  };
+
+  /** 案内と再生で強調するノードが図の枠の外にあるときだけ、枠の中をそのノードが入るまでスクロールする（文書のスクロールと倍率は変えない） */
+  const revealHot = (viewport, stage, layout) => {
+    const hot = highlighted();
+    if (!hot) return;
+    const rects = layout.leaves.filter((leaf) => hot.has(leaf.id));
+    if (rects.length === 0) return;
+    const left = Math.min(...rects.map((r) => r.x));
+    const right = Math.max(...rects.map((r) => r.x + r.w));
+    const top = Math.min(...rects.map((r) => r.y));
+    const bottom = Math.max(...rects.map((r) => r.y + r.h));
+    const view = { left: viewport.scrollLeft, right: viewport.scrollLeft + viewport.clientWidth, top: viewport.scrollTop, bottom: viewport.scrollTop + viewport.clientHeight };
+    if (left >= view.left && right <= view.right && top >= view.top && bottom <= view.bottom) return;
+    viewport.scrollTo({
+      left: Math.max(0, (left + right) / 2 - viewport.clientWidth / 2),
+      top: Math.max(0, (top + bottom) / 2 - viewport.clientHeight / 2),
+      behavior: reduced ? "auto" : "smooth",
+    });
   };
 
   /**
@@ -282,12 +376,14 @@ export const createMap = (host, spec, initial = {}) => {
       const head = document.createElement("div");
       head.className = "map-group-head";
       head.append(
-        disclosure(true, title, () => {
-          state.collapsed.add(box.id);
+        disclosure(true, title, (event) => {
+          // Shift を押しながらだと、このグループと中のグループを全て閉じる
+          for (const id of event.shiftKey ? groupsUnder(box.id) : [box.id]) state.collapsed.add(id);
           save();
           render();
         }),
-        groupTitle(title, box.id),
+        // 今入っているグループのタイトルは押せない文字にする（それ以上は入れない）
+        box.id === state.enter ? plainTitle(title) : groupTitle(title, box.id),
       );
       group.append(head);
       stage.insertBefore(group, wires);
@@ -307,18 +403,24 @@ export const createMap = (host, spec, initial = {}) => {
     return button;
   };
 
+  /** グループのタイトル: 押すとそのグループの中へ入るボタン */
   const groupTitle = (title, id) => {
     const button = document.createElement("button");
     button.type = "button";
     button.className = "map-group-title";
     button.textContent = title;
-    button.title = "ダブルクリックで中へ入る";
-    button.addEventListener("dblclick", () => enterGroup(id));
-    button.addEventListener("keydown", (event) => {
-      if (event.key === "Enter") enterGroup(id);
-    });
+    button.title = "中へ入る";
+    button.addEventListener("click", () => enterGroup(id));
     return button;
   };
+  const plainTitle = (title) => {
+    const span = document.createElement("span");
+    span.className = "map-group-title is-current";
+    span.textContent = title;
+    return span;
+  };
+  /** グループと、その中の全てのグループの ID */
+  const groupsUnder = (id) => chart.boxes.filter((box) => isUnder(box.id, id)).map((box) => box.id);
 
   /** ノード: 閉じたグループは山形で開く。入ったグループの外は薄くする。案内と再生で強調する */
   const decorateNodes = (stage, layout) => {
@@ -337,8 +439,9 @@ export const createMap = (host, spec, initial = {}) => {
       if (boxById.has(leaf.id) && !leaf.faded) {
         element.classList.add("map-closed-group");
         element.append(
-          disclosure(false, labelOf(leaf.id), () => {
-            state.collapsed.delete(leaf.id);
+          disclosure(false, labelOf(leaf.id), (event) => {
+            // Shift を押しながらだと、このグループと中のグループを全て開く
+            for (const id of event.shiftKey ? groupsUnder(leaf.id) : [leaf.id]) state.collapsed.delete(id);
             save();
             render();
           }),
@@ -350,6 +453,7 @@ export const createMap = (host, spec, initial = {}) => {
   /** 線: 色・強調と、ポインターを当てた線を太くしてツールチップに元の線と説明を出す */
   const decorateWires = (figure, layout) => {
     const hot = highlighted();
+    const stage = figure.querySelector(".mdmark-diagram-stage");
     const svg = figure.querySelector(".mdmark-diagram-wires");
     const box = figure.querySelector(".mdmark-diagram-box");
     const tip = document.createElement("div");
@@ -368,10 +472,13 @@ export const createMap = (host, spec, initial = {}) => {
       const hit = document.createElementNS("http://www.w3.org/2000/svg", "path");
       hit.setAttribute("d", path.getAttribute("d"));
       hit.setAttribute("class", "map-wire-hit");
+      const ends = [edge.from, edge.to].map((id) => stage.querySelector(`[data-node="${CSS.escape(id)}"]`)).filter(Boolean);
       hit.addEventListener("pointerenter", () => {
+        // 線を太くし、つながるノードを強調する（ほかは薄くしない）。説明が無い線はツールチップを出さない
         wire.classList.add("map-wire-hover");
+        for (const end of ends) end.classList.add("map-wire-end");
         tip.textContent = wireTip(edge);
-        tip.hidden = false;
+        tip.hidden = tip.textContent === "";
       });
       hit.addEventListener("pointermove", (event) => {
         const rect = box.getBoundingClientRect();
@@ -383,19 +490,35 @@ export const createMap = (host, spec, initial = {}) => {
       });
       hit.addEventListener("pointerleave", () => {
         wire.classList.remove("map-wire-hover");
+        for (const end of ends) end.classList.remove("map-wire-end");
         tip.hidden = true;
       });
       svg.append(hit);
     }
   };
 
-  /** 図の右上のツール: 中にいるときだけ、外へ戻るボタンを今のツールの並びに足す */
+  /**
+   * 図の右上のツール: 外へ戻る・全て開く・全て閉じるを、今のツールの並びの先頭に常に同じ位置で置く。
+   * 全体の図では戻るは押せない状態で出す。図を動かす矢印のボタンは出さない（枠の中のスクロールで動かす）
+   */
   const decorateTools = (figure) => {
-    if (!state.enter) return;
     const group = document.createElement("div");
     group.className = "mdmark-diagram-tools-group";
     group.dataset.group = "map";
-    group.append(toolButton("back", "グループの外へ戻る", () => leaveGroup()));
+    group.append(
+      toolButton("back", "グループの外へ戻る", () => leaveGroup(), state.enter ? {} : { disabled: "" }),
+      toolButton("expandAll", "全てのグループを開く", () => {
+        state.collapsed.clear();
+        save();
+        render();
+      }),
+      toolButton("collapseAll", "全てのグループを閉じる", () => {
+        for (const box of chart.boxes) if (!state.enter || !isUnder(state.enter, box.id)) state.collapsed.add(box.id);
+        state.collapsed.delete(state.enter);
+        save();
+        render();
+      }),
+    );
     figure.querySelector(".mdmark-diagram-tools").prepend(group);
   };
 
@@ -451,12 +574,12 @@ export const createMap = (host, spec, initial = {}) => {
   };
 
   /**
-   * 線の上を動く印: 再生では今のメッセージの線、案内では強調するノードどうしの線に、
-   * 次へ進むまでずっと繰り返し動かす。動きを減らす設定では出さない
+   * データの流れ: 再生では今のメッセージの線、案内では強調するノードどうしの線を太くし、
+   * データの印を元から先へ流し続ける（両向きの線は両方へ）。動きを減らす設定では線の強調だけにする
    */
-  const renderDots = (stage, layout) => {
+  const renderPackets = (stage, layout) => {
     const hot = highlighted();
-    if (!hot || reduced) return;
+    if (!hot) return;
     const wires = stage.querySelector(".mdmark-diagram-wires");
     const routes = [];
     if (state.play !== undefined && sequence) {
@@ -464,22 +587,25 @@ export const createMap = (host, spec, initial = {}) => {
       const from = visibleOf(message.from);
       const to = visibleOf(message.to);
       const edge = layout.edges.find((item) => item.from === from && item.to === to) ?? layout.edges.find((item) => item.from === to && item.to === from);
-      if (edge) routes.push({ edge, reverse: edge.from !== from });
+      if (edge) routes.push({ edge, reverse: edge.from !== from, both: false });
     } else {
-      for (const edge of layout.edges) if (hot.has(edge.from) && hot.has(edge.to)) routes.push({ edge, reverse: false });
+      for (const edge of layout.edges) {
+        if (hot.has(edge.from) && hot.has(edge.to)) routes.push({ edge, reverse: false, both: sourcesOf(edge).some((item) => item.both) });
+      }
     }
-    routes.forEach(({ edge, reverse }, index) => {
+    const nodeColorOf = (id) => {
+      const element = stage.querySelector(`[data-node="${CSS.escape(id)}"]`);
+      return element ? getComputedStyle(element).borderTopColor : undefined;
+    };
+    routes.forEach(({ edge, reverse, both }, index) => {
       const wire = wires.querySelector(`[data-wire="${CSS.escape(edge.id)}"]`);
       const path = wire.matches("path") ? wire : wire.querySelector("path");
-      path.id = `map-dot-${spec.id}-${index}`;
-      // データが流れている線: 太くし、破線を元から先へ流す
+      path.id = `map-packet-${spec.id}-${index}`;
       wire.classList.remove("map-dim");
       wire.classList.add("map-flowing");
-      if (reverse) wire.classList.add("map-flowing-reverse");
-      wires.insertAdjacentHTML(
-        "beforeend",
-        `<circle class="map-play-dot" r="7"><animateMotion dur="${PLAY_LOOP_SECONDS}s" repeatCount="indefinite" keyPoints="${reverse ? "1;0" : "0;1"}" keyTimes="0;1" calcMode="linear"><mpath href="#${path.id}"/></animateMotion></circle>`,
-      );
+      if (reduced) return;
+      const packet = { ...DEFAULT_PACKET, ...spec.data.layout?.packet, ...spec.data.layout?.[edge.id]?.packet };
+      addPackets(wires, path, { reverse, both, packet, nodeColor: { source: nodeColorOf(reverse ? edge.to : edge.from), target: nodeColorOf(reverse ? edge.from : edge.to) } });
     });
   };
 
@@ -533,6 +659,7 @@ export const createMap = (host, spec, initial = {}) => {
     state.play = undefined;
     state.enter = start.enter;
     render();
+    spec.onPlay?.(undefined);
   };
 
   host.addEventListener("keydown", (event) => {
@@ -573,22 +700,209 @@ const keepSequenceScale = (host) => {
   enforce();
 };
 
-/** シーケンス図の map: 今のシーケンス図の部品で描き、右上のツールに「構成図の上で再生」を足す */
+/**
+ * シーケンス図の map: 今のシーケンス図の部品で描き、次を足す。
+ * - 右上のツール: 構成図の上で再生・参加者（表示と非表示・並び順）
+ * - 参加者の箱を押すと、その参加者が送る・受けるメッセージとライフラインを強調し、ほかを薄くする（2 人以上なら選んだ参加者のあいだ）
+ * - メッセージの線にポインターを当てると線を太くして両端の参加者を強調し、補足の notes に説明があればツールチップに出す
+ * - 構成図の上で再生している間は、今のメッセージの線にもデータの印を流す
+ * spec: { id, title, source, notes }
+ */
 export const createSequence = (host, spec, kinds, onPlay) => {
   const sequence = parseSequence(spec.source);
-  const definition = {
-    title: spec.title,
-    scope: "map のシーケンス図",
-    updated: "2026-11-09",
-    participants: sequence.participants.map((participant) => ({ id: participant.id, kind: kinds[participant.id] ?? "script", name: participant.label })),
-    steps: sequence.messages.map((message) => ({ from: message.from, to: message.to, label: message.text, ...(message.reply ? { reply: true } : {}) })),
+  const notes = spec.notes ?? {};
+  const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const state = {
+    selected: new Set(),
+    hidden: new Set(),
+    order: sequence.participants.map((participant) => participant.id),
+    current: undefined,
+    menuOpen: false,
   };
-  mount(host, { markdown: `<!-- sequence -->\n\n\`\`\`json\n${JSON.stringify(definition)}\n\`\`\`\n\n<!-- /sequence -->\n` });
-  host.querySelector("figure.mdmark-diagram").classList.add("map-figure");
-  keepSequenceScale(host);
-  const tools = host.querySelector(".mdmark-diagram-tools");
-  const group = document.createElement("div");
-  group.className = "mdmark-diagram-tools-group";
-  group.append(toolButton("play", "構成図の上で再生", onPlay));
-  tools.prepend(group);
+  const labelOf = (id) => sequence.participants.find((participant) => participant.id === id)?.label ?? id;
+
+  const render = () => {
+    const pageY = window.scrollY;
+    const oldViewport = host.querySelector(".mdmark-diagram-viewport");
+    const scroll = oldViewport ? [oldViewport.scrollLeft, oldViewport.scrollTop] : [0, 0];
+    const visible = state.order.filter((id) => !state.hidden.has(id));
+    // 非表示の参加者に関わるメッセージは隠す。描いたメッセージの番号から元のメッセージの番号を引けるようにする
+    const shown = sequence.messages.map((message, index) => ({ message, index })).filter(({ message }) => visible.includes(message.from) && visible.includes(message.to));
+    const definition = {
+      title: spec.title,
+      scope: "map のシーケンス図",
+      updated: "2026-11-09",
+      participants: visible.map((id) => ({ id, kind: kinds[id] ?? "script", name: labelOf(id) })),
+      steps: shown.map(({ message }) => ({ from: message.from, to: message.to, label: message.text, ...(message.reply ? { reply: true } : {}) })),
+    };
+    host.replaceChildren();
+    mount(host, { markdown: `<!-- sequence -->\n\n\`\`\`json\n${JSON.stringify(definition)}\n\`\`\`\n\n<!-- /sequence -->\n` });
+    const figure = host.querySelector("figure.mdmark-diagram");
+    figure.classList.add("map-figure");
+    const stage = figure.querySelector(".mdmark-diagram-stage");
+    const svg = stage.querySelector(".mdmark-diagram-wires");
+    const wires = [...svg.querySelectorAll(".mdmark-diagram-wire")];
+    const lifelines = [...svg.querySelectorAll(".mdmark-diagram-lifeline")];
+    const heads = (id) => stage.querySelector(`[data-node="${CSS.escape(id)}"]`);
+
+    // 参加者を選んだときの強調
+    const related = (message) =>
+      state.selected.size === 0
+        ? undefined
+        : state.selected.size === 1
+          ? state.selected.has(message.from) || state.selected.has(message.to)
+          : state.selected.has(message.from) && state.selected.has(message.to);
+    shown.forEach(({ message }, at) => {
+      const hit = related(message);
+      if (hit === false) {
+        wires[at]?.classList.add("map-dim");
+        stage.querySelectorAll(".mdmark-diagram-label")[at]?.classList.add("map-dim");
+      }
+    });
+    visible.forEach((id, at) => {
+      const head = heads(id);
+      head.classList.add("map-participant");
+      head.tabIndex = 0;
+      head.setAttribute("role", "button");
+      head.setAttribute("aria-pressed", String(state.selected.has(id)));
+      head.title = "この参加者のメッセージを強調する";
+      if (state.selected.has(id)) {
+        head.classList.add("map-hot");
+        lifelines[at]?.classList.add("map-lifeline-hot");
+      } else if (state.selected.size) head.classList.add("map-dim");
+      const toggle = () => {
+        if (state.selected.has(id)) state.selected.delete(id);
+        else state.selected.add(id);
+        render();
+      };
+      head.addEventListener("click", toggle);
+      head.addEventListener("keydown", (event) => {
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          toggle();
+        }
+      });
+    });
+
+    // メッセージの線のホバー
+    const box = figure.querySelector(".mdmark-diagram-box");
+    const tip = document.createElement("div");
+    tip.className = "map-wire-tip";
+    tip.setAttribute("role", "tooltip");
+    tip.hidden = true;
+    box.append(tip);
+    shown.forEach(({ message, index }, at) => {
+      const wire = wires[at];
+      if (!wire) return;
+      const hit = document.createElementNS(SVG_NS, "path");
+      hit.setAttribute("d", wire.getAttribute("d"));
+      hit.setAttribute("class", "map-wire-hit");
+      const ends = [heads(message.from), heads(message.to)].filter(Boolean);
+      hit.addEventListener("pointerenter", () => {
+        wire.classList.add("map-wire-hover");
+        for (const end of ends) end.classList.add("map-wire-end");
+        tip.textContent = notes[index + 1] ?? "";
+        tip.hidden = tip.textContent === "";
+      });
+      hit.addEventListener("pointermove", (event) => {
+        const rect = box.getBoundingClientRect();
+        const x = event.clientX - rect.left + 12;
+        const y = event.clientY - rect.top + 12;
+        tip.style.left = `${x + tip.offsetWidth > rect.width ? Math.max(0, x - 24 - tip.offsetWidth) : x}px`;
+        tip.style.top = `${y + tip.offsetHeight > rect.height ? Math.max(0, y - 24 - tip.offsetHeight) : y}px`;
+      });
+      hit.addEventListener("pointerleave", () => {
+        wire.classList.remove("map-wire-hover");
+        for (const end of ends) end.classList.remove("map-wire-end");
+        tip.hidden = true;
+      });
+      svg.append(hit);
+      // 構成図の上で再生している今のメッセージ
+      if (index === state.current) {
+        wire.classList.add("map-flowing");
+        for (const end of ends) end.classList.add("map-hot");
+        wire.id = `map-seq-packet-${spec.id}`;
+        if (!reduced) addPackets(svg, wire, { reverse: false });
+      }
+    });
+
+    // 右上のツール
+    const tools = figure.querySelector(".mdmark-diagram-tools");
+    const group = document.createElement("div");
+    group.className = "mdmark-diagram-tools-group";
+    group.dataset.group = "map";
+    const menuButton = toolButton("users", "参加者", () => {
+      state.menuOpen = !state.menuOpen;
+      render();
+    }, { "aria-expanded": String(state.menuOpen), "aria-controls": `map-participants-${spec.id}` });
+    group.append(toolButton("play", "構成図の上で再生", onPlay), menuButton);
+    tools.prepend(group);
+    if (state.menuOpen) tools.after(participantMenu());
+
+    keepSequenceScale(host);
+    const viewport = figure.querySelector(".mdmark-diagram-viewport");
+    viewport.scrollLeft = scroll[0];
+    viewport.scrollTop = scroll[1];
+    window.scrollTo({ top: pageY });
+  };
+
+  /** 参加者の表示と非表示・並び順を変える一覧。図の右上のツールの下に重ねる */
+  const participantMenu = () => {
+    const menu = document.createElement("div");
+    menu.className = "map-participant-menu";
+    menu.id = `map-participants-${spec.id}`;
+    menu.setAttribute("role", "group");
+    menu.setAttribute("aria-label", "参加者の表示と並び順");
+    state.order.forEach((id, at) => {
+      const row = document.createElement("div");
+      row.className = "map-participant-row";
+      const label = document.createElement("label");
+      const check = document.createElement("input");
+      check.type = "checkbox";
+      check.checked = !state.hidden.has(id);
+      check.addEventListener("change", () => {
+        if (check.checked) state.hidden.delete(id);
+        else state.hidden.add(id);
+        state.selected.delete(id);
+        render();
+      });
+      label.append(check, document.createTextNode(labelOf(id)));
+      const move = (delta) => {
+        const next = [...state.order];
+        [next[at], next[at + delta]] = [next[at + delta], next[at]];
+        state.order = next;
+        render();
+      };
+      row.append(
+        label,
+        toolButton("up", `${labelOf(id)}を前へ`, () => move(-1), at === 0 ? { disabled: "" } : {}),
+        toolButton("down", `${labelOf(id)}を後ろへ`, () => move(1), at === state.order.length - 1 ? { disabled: "" } : {}),
+      );
+      menu.append(row);
+    });
+    menu.addEventListener("keydown", (event) => {
+      if (event.key === "Escape") {
+        state.menuOpen = false;
+        render();
+      }
+    });
+    return menu;
+  };
+
+  host.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && state.selected.size) {
+      state.selected.clear();
+      render();
+    }
+  });
+
+  render();
+  return {
+    /** 構成図の上で再生している今のメッセージの番号（再生していないときは undefined） */
+    setCurrent: (index) => {
+      if (state.current === index) return;
+      state.current = index;
+      render();
+    },
+  };
 };

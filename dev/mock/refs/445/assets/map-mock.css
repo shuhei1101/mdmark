@@ -27,6 +27,11 @@
   align-items: center;
   gap: 2px;
 }
+.map-group-title.is-current {
+  display: inline-flex;
+  align-items: center;
+  cursor: text;
+}
 .map-group-title {
   min-height: 24px;
   padding: 0 4px;
@@ -37,7 +42,7 @@
   font: inherit;
   font-size: 12px;
   font-weight: 700;
-  cursor: zoom-in;
+  cursor: pointer;
 }
 /* 開閉の山形: 枠と面を持たず、グループの文字の色のアイコンだけを出す。押せる範囲は 24px */
 .map-disclosure {
@@ -91,7 +96,6 @@
   stroke: transparent;
   stroke-width: 14;
   pointer-events: stroke;
-  cursor: help;
 }
 .map-wire-tip {
   position: absolute;
@@ -126,34 +130,64 @@
   box-shadow: 0 0 0 3px color-mix(in srgb, var(--mdmark-color-link) 35%, transparent);
 }
 
-/* データが流れている線と、線の上を元から先へ動く印 */
+/* データが流れている線: 太くし、線の上をデータの印が元から先へ流れる */
 .map-figure .map-flowing,
 .map-figure .map-flowing path {
   stroke: var(--mdmark-color-link);
   stroke-width: 3;
-  stroke-dasharray: 10 6;
-  animation: map-flow 0.6s linear infinite;
 }
-.map-figure .map-flowing-reverse,
-.map-figure .map-flowing-reverse path {
-  animation-direction: reverse;
-}
-@keyframes map-flow {
-  to {
-    stroke-dashoffset: -16;
-  }
-}
-.map-play-dot {
-  fill: var(--mdmark-color-link);
+.map-packet {
   stroke: var(--mdmark-color-bg);
+  stroke-width: 1.5;
+}
+
+/* 図を動かす矢印のボタンは出さない（枠の中のスクロールで動かす） */
+.map-figure [data-group="pan"] {
+  display: none;
+}
+
+/* 線にポインターを当てたときに強調する、線の両端のノード（ほかは薄くしない） */
+.map-figure .mdmark-diagram-node.map-wire-end {
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--mdmark-color-link) 35%, transparent);
+}
+
+/* シーケンス図の参加者: 押すとその参加者のメッセージを強調する */
+.map-figure .map-participant {
+  cursor: pointer;
+}
+.map-figure .map-participant:focus-visible {
+  outline: 2px solid var(--mdmark-color-link);
+  outline-offset: 2px;
+}
+.map-figure .map-lifeline-hot {
+  stroke: var(--mdmark-color-link);
   stroke-width: 2;
 }
-@media (prefers-reduced-motion: reduce) {
-  .map-figure .map-flowing,
-  .map-figure .map-flowing path {
-    animation: none;
-    stroke-dasharray: none;
-  }
+
+/* 参加者の表示と並び順: 右上のツールの下に重ねる一覧 */
+.map-participant-menu {
+  position: absolute;
+  z-index: 4;
+  top: 44px;
+  right: 8px;
+  min-width: 240px;
+  padding: 6px 8px;
+  border: 1px solid var(--mdmark-color-border);
+  border-radius: var(--mdmark-radius);
+  background: var(--mdmark-color-bg-opaque, var(--mdmark-color-bg));
+  box-shadow: 0 4px 12px rgb(0 0 0 / 12%);
+}
+.map-participant-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.map-participant-row label {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  gap: 6px;
+  min-height: 32px;
 }
 
 /* 案内と再生の帯: 図の枠の下。番号・文・アイコンのボタンを並べ、狭い幅では折り返す */

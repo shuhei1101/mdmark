@@ -87,18 +87,23 @@ const flowSlot = slot("MAP-SLOT-FLOW");
 // map の図は常に置き場所の幅いっぱいに広げる（wide の範囲の切り替えのボタンを出さない）
 flowSlot.closest(".mdmark-wide-range")?.parentElement.classList.add("map-wide");
 flowSlot.replaceWith(flowHost);
-// 開閉と中へ入った状態は場面ごとに sessionStorage へ保つ
-const map = createMap(flowHost, { id: scene, title: "全体の構成", flow: FLOW, data: DATA, sequence: SEQUENCE }, initial);
-
 const sequenceHost = document.createElement("div");
 sequenceHost.className = "map-host";
 const sequenceSlot = slot("MAP-SLOT-SEQUENCE");
 sequenceSlot.closest(".mdmark-wide-range")?.parentElement.classList.add("map-wide");
 sequenceSlot.replaceWith(sequenceHost);
-createSequence(sequenceHost, SEQUENCE, { user: "external" }, () => {
+let map;
+const sequenceView = createSequence(sequenceHost, SEQUENCE, { user: "external" }, () => {
   map.startPlay();
   flowHost.scrollIntoView({ block: "nearest" });
 });
+
+// 開閉と中へ入った状態は場面ごとに sessionStorage へ保つ。再生している今のメッセージをシーケンス図にも伝える
+map = createMap(
+  flowHost,
+  { id: scene, title: "全体の構成", flow: FLOW, data: DATA, sequence: SEQUENCE, onPlay: (index) => sequenceView.setCurrent(index) },
+  initial,
+);
 
 if (scene === "warnings") {
   // 書き方の警告: 図の枠の上に、読めない行・知らないキー・知らない引数を並べる

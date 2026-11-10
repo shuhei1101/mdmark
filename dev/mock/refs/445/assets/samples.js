@@ -33,7 +33,7 @@ export const FLOW = `flowchart LR
   mermaid -->|ノードと線| layout
   data -->|layout の上書き| layout
   layout --> route
-  route --> frame
+  route <--> frame
   data --> frame
   frame -->|HTML| user
 `;
@@ -57,11 +57,21 @@ export const DATA = {
     { text: "利用側のページが、設定と Markdown を mount に渡します。", highlight: ["user", "mount"] },
     { text: "文書と索引は、補足の検査と map のマーカーの読み取りに読まれます。", highlight: ["doc", "index", "data"] },
     { text: "配置のグループの中で、自動配置の後に線の経路を決めます。", enter: "place", highlight: ["layout", "route"] },
+    { text: "線の経路と図の枠は、描き直すたびに互いに大きさを伝え合います。", highlight: ["route", "frame"] },
   ],
+  /** 配置と見た目の上書き。packet はデータの印（図全体の既定と、線の ID ごと） */
+  layout: {
+    L5: { packet: { color: "source", shape: "diamond" } },
+  },
 };
 
 export const SEQUENCE = {
   title: "文書を描くまで",
+  /** メッセージの番号（1 から）ごとの説明。ポインターを当てたときのツールチップに出す */
+  notes: {
+    2: "map の範囲の Markdown と印の引数",
+    3: "範囲の中の mermaid のコードブロックの本文",
+  },
   source: `sequenceDiagram
   participant user as 利用側のページ
   participant mount as mount
