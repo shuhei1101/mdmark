@@ -142,6 +142,30 @@ test("test_read_map_state_when_saved_over_focus", async () => {
   expect(state.entered).toBe("place");
 });
 
+// まとめた HTML の文書ごと（正常系）
+test("test_read_map_state_when_bundle_route", async () => {
+  // 準備
+  const { readMapState } = await loadState();
+  const storage = memoryStorage();
+  storage.setItem(
+    "mdmark-map:/a.html#/a.md#1",
+    JSON.stringify({ entered: "place" }),
+  );
+  const read = (hash: string) =>
+    readMapState({
+      index: 1,
+      ids: IDS,
+      urlState: true,
+      focus: undefined,
+      collapsed: [],
+      storage,
+      location: { pathname: "/a.html", search: "", hash } as Location,
+    });
+  // 実行・検証
+  expect(read("#/b.md").entered).toBeUndefined();
+  expect(read("#/a.md#見出し").entered).toBe("place");
+});
+
 // 中へ入る（正常系）
 // 補足で最初に閉じる（正常系）
 test("test_read_map_state_when_layout_collapsed", async () => {
