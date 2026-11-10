@@ -96,7 +96,7 @@ docs:
   - page: docs/使用方法/図を描く/図を描く.md
     new: false
     change: 新しく図を書くときは map を使う案内を追加する（flow・sequence の記載方法は残す）
-    status: todo
+    status: done
   - page: docs/はじめに/コアコンセプト/図を自動配置して辿る仕組み.md
     new: true
     change: 印の引数・Mermaid・補足の役割の分け方、入れ子の自動配置と上書き、今のフロー図・シーケンス図の部品で描く流れ、中へ入る・開閉で配置し直す流れを新設する
@@ -108,7 +108,7 @@ docs:
   - page: docs/リファレンス/CLI.md
     new: false
     change: 点検のずれの種類に map の 7 種類（map_invalid・map_unknown_ref・map_unknown_key・map_invalid_value・map_unknown_icon・map_unknown_class・map_unknown_line）を追加する
-    status: todo
+    status: done
   - page: docs/リファレンス/記法.md
     new: false
     change: map のマーカーと引数・補足のキー・マーカーに対応しない表示での見え方を追加する
@@ -116,15 +116,15 @@ docs:
   - page: docs/リファレンス/構成図の決まり.md
     new: false
     change: 入れ子は 2 レイヤーまでを推奨し、深いものは別の図に切り出してリンクする決まりと、map の図は凡例を出さないこと・層の色の重なり・枠のタイトルの位置の決まりを追加する（#309）
-    status: todo
+    status: done
   - page: docs/リファレンス/設定.md
     new: false
     change: features の map と、map.node_fit（長い名前のノードの広げ方）・map.url_state（クエリ文字列に保つか）・map.kinds（ノードの種類）・map.lines（線の種類）のキー・既定・許す値を追加する
-    status: todo
+    status: done
   - page: docs/リファレンス/用語集.md
     new: false
     change: map・補足・自動配置・中へ入る・開閉・巡回・シーケンスの再生の用語を追加する
-    status: todo
+    status: done
   - page: guide/index.yaml
     new: false
     change: 使い方集の索引に『Mermaidと補足で図を描く』を追加し、diagrams・architecture-style の行の概要を map に合わせる
