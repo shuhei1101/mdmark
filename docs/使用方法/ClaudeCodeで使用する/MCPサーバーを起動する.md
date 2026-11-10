@@ -4,7 +4,7 @@ MCP の常駐サーバーを起動・停止し、待ち受けているポート�
 
 プラグインの MCP サーバー `plugin:mdmark:mdmark` は、`mdmark serve` が常駐させるサーバーへ HTTP でつなぐ。
 プラグインを入れた後、MCP のツールを使用する前に、端末で 1 回起動する。
-[セットアップする](./セットアップする.md) の `/mdmark:global-setup` は、tmux のセッションでこの起動をする。
+[セットアップする](./セットアップする.md) の `/mdmark:global-setup` は、systemd --user の unit か tmux のセッションでこの起動をする。
 並行して開いたセッションは、同じプロセスのツールを呼ぶ。
 
 ## 前提
@@ -17,18 +17,20 @@ MCP の常駐サーバーを起動・停止し、待ち受けているポート�
 
 ### 常駐サーバーを起動する
 
-#### tmux のセッションで起動する
+#### `global-setup` で起動する
 
 ```text
 /mdmark:global-setup
 ```
 
-セッション `mdmark-mcp`（端末の設定の `serve.tmuxSession` で変える）で `serve` を起動し、ログを `${XDG_STATE_HOME:-~/.local/state}/mdmark/serve.log` に書き込む。
-セッションが既にあり待ち受けていれば、もう一度起動しない。
+systemd --user が使える端末では unit `mdmark-mcp`（端末の設定の `serve.systemdUnit` で変える）を `~/.config/systemd/user/` に作って `enable --now` し、ログを journal に出す。
+端末を起動し直しても、unit が自動で起動する。
+使えない端末か、端末の設定の `serve.launcher` を `tmux` にした端末では、tmux のセッション `mdmark-mcp`（`serve.tmuxSession` で変える）で `serve` を起動し、ログを `${XDG_STATE_HOME:-~/.local/state}/mdmark/serve.log` に書き込む。
+既に待ち受けていれば、もう一度起動しない。
 
 #### 端末で `serve` を起動する
 
-tmux が無い端末では、端末を開いたまま `serve` を動かす。
+systemd --user も tmux も無い端末では、端末を開いたまま `serve` を動かす。
 
 ```bash
 npx github:shuhei1101/mdmark#v{バージョン} serve
@@ -109,7 +111,7 @@ MDMARK_PORT=18782 npx github:shuhei1101/mdmark#v{バージョン} serve
 ```
 
 PowerShell では、先に `$env:MDMARK_PORT = "18782"` を実行する。
-`/mdmark:global-setup` で起動するときは、`settings.json` の `env` だけを変えてセッションをもう一度開き、もう一度呼ぶ。tmux のセッションへは、その値を指定する。
+`/mdmark:global-setup` で起動するときは、`settings.json` の `env` だけを変えてセッションをもう一度開き、もう一度呼ぶ。unit と tmux のセッションへは、その値を指定する。
 `~/.claude/settings.json` を変えた後は、セッションをもう一度開く。
 
 `MDMARK_PORT` は 1〜65535 の整数。
@@ -117,6 +119,14 @@ PowerShell では、先に `$env:MDMARK_PORT = "18782"` を実行する。
 `serve` が既に起動しているときは、もう一度起動せずにそのまま使用できる。
 
 ### 止める
+
+#### unit を止める
+
+```bash
+systemctl --user disable --now mdmark-mcp
+```
+
+unit を止め、端末の起動時にも起動しないようにする。
 
 #### tmux のセッションを止める
 
@@ -141,7 +151,7 @@ tmux kill-session -t =mdmark-mcp
 
 #### 常駐サーバーが待ち受けている
 
-起動の出力（tmux のセッションで起動したときは `serve.log`）に `http://127.0.0.1:{ポート}/mcp` が出て、そのポートで待ち受けるプロセスがある。
+起動の出力（unit で起動したときは `journalctl --user -u mdmark-mcp`、tmux のセッションで起動したときは `serve.log`）に `http://127.0.0.1:{ポート}/mcp` が出て、そのポートで待ち受けるプロセスがある。
 
 #### MCP サーバーがつながっている
 
@@ -150,6 +160,6 @@ tmux kill-session -t =mdmark-mcp
 
 ## 元に戻す
 
-`tmux kill-session -t =mdmark-mcp` か `Ctrl+C` で常駐サーバーを止める。
+`systemctl --user disable --now mdmark-mcp`・`tmux kill-session -t =mdmark-mcp`・`Ctrl+C` のどれかで常駐サーバーを止める。
 プラグインは入ったまま残る。
 削除するには [プラグインを入れる](./プラグインを入れる.md) の「元に戻す」。

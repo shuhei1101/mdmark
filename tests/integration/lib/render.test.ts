@@ -32,6 +32,7 @@ import {
   findTags,
   innerHtml,
   matches,
+  outerHtml,
   plainText,
 } from "../../unit/helpers/html.ts";
 import { stripSourceLine } from "../../unit/helpers/source-line.ts";
@@ -313,7 +314,7 @@ test("test_normal_when_syntax", async () => {
     /<nav class="mdmark-toc" aria-label="目次">[\s\S]*<a href="#補足">補足<\/a>[\s\S]*<\/nav>/,
   );
   expect(html).toMatch(
-    /<div class="mdmark-table" data-kind="data" data-features="sort pin filter" data-filter="0:select"><details class="mdmark-table-details"><summary>表（3 行）<\/summary>/,
+    /<div class="mdmark-table" data-kind="data" data-features="sort pin filter resize" data-filter="0:select"><details class="mdmark-table-details"><summary>表（3 行）<\/summary>/,
   );
   expect(html).not.toMatch(/<details class="mdmark-table-details"[^>]*\sopen/);
   expect(html).toContain('<div class="mdmark-tabs" data-group="os">');
@@ -466,7 +467,7 @@ test("test_normal_when_syntax_errors", async () => {
     html.match(/<p class="mdmark-syntax-warning-title">記載の警告<\/p>/g),
   ).toHaveLength(4);
   // 知らない種類 unknown はスキップする
-  expect(html).toContain('data-kind="default" data-features="pin sort"');
+  expect(html).toContain('data-kind="default" data-features="pin resize sort"');
   expect(html).not.toContain("<code>unknown</code>");
   expect(html).toContain("<p>見出しの無い範囲</p>");
   // 見出しの無い範囲はタブにせず、読み込めない指定の範囲だけが組を持たないタブになる
@@ -488,6 +489,42 @@ test("test_normal_when_syntax_errors", async () => {
   expect(html).toContain("<code>#fig-missing</code>");
   expect(html).toContain('data-kind="data"');
   expect(html).toContain("&lt;!-- /table --&gt;");
+});
+
+// 既定の種類と data の種類の表は data-features に resize を持ち、-resize の表と plain の表は持たない（正常系（列の幅の機能））
+test("test_normal_when_table_resize", async () => {
+  // 準備
+  const render = await loadRender();
+  const table = ["| 名前 | 説明 |", "| --- | --- |", "| りんご | 描画 |", ""];
+  const marked = (mark: string): string[] => [
+    `<!-- table: ${mark} -->`,
+    "",
+    ...table,
+    "<!-- /table -->",
+    "",
+  ];
+  const markdown = [
+    ...table,
+    ...marked("data"),
+    ...marked("data -resize"),
+    ...marked("plain"),
+  ].join("\n");
+  // 実行
+  const html = render(markdown);
+  // 検証
+  const features = [
+    ...html.matchAll(
+      /<div class="mdmark-table"[^>]*data-features(?:="([^"]*)")?/g,
+    ),
+  ].map((match) => (match[1] ?? "").split(" ").filter(Boolean));
+  expect(features).toHaveLength(4);
+  expect(features[0]).toEqual(expect.arrayContaining(["pin", "resize"]));
+  expect(features[1]).toEqual(
+    expect.arrayContaining(["sort", "pin", "filter", "resize"]),
+  );
+  expect(features[2]).not.toContain("resize");
+  expect(features[3]).toEqual([]);
+  expect(html).not.toContain("mdmark-col-resize");
 });
 
 // 表のマーカーの 5 つの機能と hide=・total= を data-* にコピーし、行に ID とリンクを付ける（正常系）
@@ -512,7 +549,7 @@ test("test_normal_when_table_features", async () => {
   const html = render(markdown);
   // 検証
   expect(html).toMatch(
-    /<div class="mdmark-table" data-kind="data" data-features="sort pin filter count columns total copy rowlink"[^>]*data-hide="1"[^>]*data-total="2:sum"/,
+    /<div class="mdmark-table" data-kind="data" data-features="sort pin filter resize count columns total copy rowlink"[^>]*data-hide="1"[^>]*data-total="2:sum"/,
   );
   expect(html).toContain('id="みかん"');
   const rowIds = startTags(html, "tr")
@@ -607,25 +644,44 @@ test("test_normal_when_table_columns_specified", async () => {
     "",
     "<!-- /table -->",
     "",
+    "<!-- table: data pin=No,物理名 -->",
+    "",
+    "| No | 物理名 | 説明 | 必須 | 既定 |",
+    "| --- | --- | --- | --- | --- |",
+    "| 1 | id | 行の ID | true | true |",
+    "| 2 | name | 表示する名前 | false | false |",
+    "",
+    "<!-- /table -->",
+    "",
   ].join("\n");
   // 実行
   const html = render(markdown);
   // 検証: 囲みの属性
-  const wrapper = findTag(html, '<div class="mdmark-table"');
+  const [first = "", second = ""] = html
+    .split('<div class="mdmark-table"')
+    .slice(1);
+  const wrapper = findTag(
+    `<div class="mdmark-table"${first}`,
+    '<div class="mdmark-table"',
+  );
   expect(wrapper).toContain('data-kind="data"');
   expect(wrapper).toContain('data-pin="1"');
   expect(wrapper).toContain('data-check="3"');
+  // 検証: 2 つ目の表は 2 つの列の位置を空白で区切る
+  expect(
+    findTag(`<div class="mdmark-table"${second}`, '<div class="mdmark-table"'),
+  ).toContain('data-pin="0 1"');
   // 検証: 説明の列の th と 2 つの td
-  const wide = findTags(html, "mdmark-wide");
+  const wide = findTags(first, "mdmark-wide");
   expect(wide.filter((tag) => tag.startsWith("<th"))).toHaveLength(1);
   expect(wide.filter((tag) => tag.startsWith("<td"))).toHaveLength(2);
   // 検証: 必須の列の th と 2 つの td
-  const centered = findTags(html, "mdmark-align-center");
+  const centered = findTags(first, "mdmark-align-center");
   expect(centered.filter((tag) => tag.startsWith("<th"))).toHaveLength(1);
   expect(centered.filter((tag) => tag.startsWith("<td"))).toHaveLength(2);
   // 検証: 必須の列の真偽値のセル
   const [yes = "", no = ""] = matches(
-    html,
+    first,
     /<td\b[^>]*mdmark-align-center[^>]*>[\s\S]*?<\/td>/g,
   );
   expect(yes).toContain('data-value="true"');
@@ -639,7 +695,7 @@ test("test_normal_when_table_columns_specified", async () => {
   );
   // 検証: 既定の列は文字のまま
   const defaults = matches(
-    html,
+    first,
     /<td\b[^>]*data-label="既定"[^>]*>[^<]*<\/td>/g,
   );
   expect(defaults.map((cell) => plainText(cell))).toEqual(["true", "false"]);
@@ -668,13 +724,16 @@ test("test_normal_when_table_column_errors", async () => {
     "<!-- table: data -pin pin=名前 -->",
     "",
     ...table,
+    "<!-- table: data pin=名前,無い列 -->",
+    "",
+    ...table,
   ].join("\n");
   // 実行
   const html = render(markdown);
   // 検証
   const wrappers = html.split('<div class="mdmark-table"').slice(1);
-  expect(wrappers).toHaveLength(2);
-  const [a, b] = wrappers as [string, string];
+  expect(wrappers).toHaveLength(3);
+  const [a, b, c] = wrappers as [string, string, string];
   const wrapperTag = (part: string): string => part.slice(0, part.indexOf(">"));
   // 表 A: 広く取る列だけを当て、表に無い列名ごとに警告を出す
   expect(findTags(a, "mdmark-wide")).toHaveLength(2);
@@ -698,9 +757,18 @@ test("test_normal_when_table_column_errors", async () => {
   expect(warningsB).toHaveLength(1);
   expect(warningsB[0]).toContain("pin=");
   expect(warningsB[0]).toContain("+pin");
+  // 表 C: 読めた列名は当て、表に無い列名だけを警告にする
+  expect(wrapperTag(c)).toContain('data-pin="0"');
+  const warningsC = c
+    .slice(0, c.indexOf("<table"))
+    .split('<div class="mdmark-syntax-warning"')
+    .slice(1);
+  expect(warningsC).toHaveLength(1);
+  expect(warningsC[0]).toContain("無い列");
+  expect(plainText(warningsC[0] ?? "")).not.toMatch(/名前(?!,)/);
   expect(
     html.match(/<div class="mdmark-syntax-warning" role="note">/g),
-  ).toHaveLength(3);
+  ).toHaveLength(4);
 });
 
 // 文書に生の HTML で記載した記法の class・data-*・id を落とす（正常系）
@@ -2424,7 +2492,7 @@ test("test_normal_when_table_merge_invalid", async () => {
   expect(html).toContain("<th>&lt;&lt;</th>");
   expect(html).toContain('<td data-label="列B">^^</td>');
   expect(html).not.toMatch(/rowspan|colspan/);
-  expect(html).toContain('data-features="sort pin filter"');
+  expect(html).toContain('data-features="sort pin filter resize"');
 });
 
 // 注意書きのタイトル・`+` の開いた折り畳み・入れ子を出す（正常系）
@@ -3696,7 +3764,7 @@ test("test_normal_when_csv", async () => {
   // 検証
   const wrappers = findTags(html, 'class="mdmark-table"');
   expect(wrappers[0]).toBe(
-    '<div class="mdmark-table" data-kind="data" data-features="sort pin filter" data-source="csv">',
+    '<div class="mdmark-table" data-kind="data" data-features="sort pin filter resize" data-source="csv">',
   );
   const first = innerHtml(html, 'class="mdmark-table"');
   expect(plainText(first)).toContain("名前");
@@ -4334,4 +4402,111 @@ test("test_normal_when_mermaid_code_block", async () => {
     expect(html).not.toContain("<svg");
     expect(html).not.toContain("data-mdmark-syntax");
   }
+});
+
+/** 1〜4 行目にフロントマター、6 行目に見出し、8 行目に段落を持つ文書 */
+const FRONTMATTER_MARKDOWN = [
+  "---",
+  "title: テスト",
+  "tags: [a, b]",
+  "---",
+  "",
+  "# 見出し",
+  "",
+  "段落",
+  "",
+].join("\n");
+
+// 先頭のフロントマターを本文から除外し、後ろのブロックの元の行番号は元の Markdown のままにする（正常系）
+test("test_normal_when_frontmatter", async () => {
+  // 準備
+  const render = await loadRawRender();
+  // 実行
+  const html = render(FRONTMATTER_MARKDOWN);
+  // 検証
+  for (const text of ["title: テスト", "tags: [a, b]", "<hr", "<h2"]) {
+    expect(html).not.toContain(text);
+  }
+  expect(findTag(html, "<h1")).toContain('data-source-line="5"');
+  expect(findTag(html, "<p")).toContain('data-source-line="7"');
+  expect(html).not.toContain("mdmark-frontmatter");
+});
+
+// 機能 frontmatter がオンなら、本文の先頭の閉じた折りたたみにフロントマターを yaml のコードブロックで描く（正常系）
+test("test_normal_when_frontmatter_enabled", async () => {
+  // 準備
+  const render = await loadRawRender();
+  // 実行
+  const html = render(FRONTMATTER_MARKDOWN, {
+    config: { features: { frontmatter: true } },
+  });
+  // 検証
+  const details = findTag(html, "<details");
+  expect(html.startsWith(details)).toBe(true);
+  expect(details).toContain('class="mdmark-collapsible mdmark-frontmatter"');
+  expect(details).not.toContain("open");
+  expect(plainText(innerHtml(html, "<summary"))).toBe("フロントマター");
+  const inside = innerHtml(html, "mdmark-frontmatter");
+  expect(findTag(inside, "<code")).toContain('class="language-yaml"');
+  const lines = plainText(innerHtml(inside, "<code"))
+    .split("\n")
+    .filter((line) => line !== "");
+  expect(lines).toEqual(["title: テスト", "tags: [a, b]"]);
+  const outside = html.replace(outerHtml(html, "mdmark-frontmatter"), "");
+  expect(outside).not.toContain("title: テスト");
+  expect(outside).not.toContain("<h2");
+  expect(findTag(html, "<h1")).toContain('data-source-line="5"');
+});
+
+// 閉じる行が無ければ、先頭の区切り線をフロントマターとして扱わない（正常系）
+test("test_normal_when_frontmatter_unclosed", async () => {
+  // 準備
+  const render = await loadRender();
+  const markdown = ["---", "", "段落", "", "## 見出し", ""].join("\n");
+  // 実行
+  const html = render(markdown, {
+    config: { features: { frontmatter: true } },
+  });
+  // 検証
+  expect(html.startsWith("<hr")).toBe(true);
+  expect(html).toContain("<p>");
+  expect(html).toContain("<h2");
+  expect(html).not.toContain("mdmark-frontmatter");
+});
+
+// 取り込む Markdown の先頭のフロントマターは、機能 frontmatter がオンでも除外して取り込む（正常系）
+test("test_normal_when_included_has_frontmatter", async () => {
+  // 準備
+  const render = await loadRender();
+  const includes = {
+    "共通/手順.md": [
+      "---",
+      "title: 手順",
+      "---",
+      "",
+      "## 実行",
+      "",
+      "実行の段落",
+      "",
+    ].join("\n"),
+  };
+  const markdown = [
+    "前の段落",
+    "",
+    "<!-- include: 共通/手順.md -->",
+    "",
+    "後の段落",
+    "",
+  ].join("\n");
+  // 実行
+  const html = render(markdown, {
+    config: { features: { frontmatter: true } },
+    includes,
+  });
+  // 検証
+  const included = innerHtml(html, "mdmark-include");
+  expect(plainText(innerHtml(included, "<h2"))).toContain("実行");
+  expect(included).toContain("実行の段落");
+  expect(html).not.toContain("title: 手順");
+  expect(html).not.toContain("mdmark-frontmatter");
 });

@@ -204,6 +204,51 @@ scenarios:
     test: test_normal_when_theme_selected
     refs:
       - dev/設計書/シナリオ/単一ユースケース/テーマを選ぶ#scenarios[正常シナリオ]
+  - name: 正常シナリオ（フロントマターを持つ文書）
+    setup:
+      - name: 配布物を読み込んだページ
+        description: 正常シナリオと同じ
+        notes: 設定は指定しない（`features.frontmatter` は既定の `false`）
+      - name: フロントマターを持つ Markdown
+        description: '1〜4 行目に `---`・`title: テスト`・`tags: [a, b]`・`---` のフロントマター、6 行目に `# 見出し`、8 行目に段落を配置した文書'
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 利用側のページ
+        participant M as mdmark
+        P->>M: フロントマターを持つ Markdown を指定して描かせる
+        M->>M: 先頭のフロントマターを本文から除外する
+        M-->>P: フロントマターを除いた本文を描く
+        P-->>U: 文書を表示
+    expected:
+      - '描く先の要素の中に `title: テスト` と `tags: [a, b]` の文字が無い'
+      - 見出しの要素は `見出し` の h1 だけで、h2 の要素が無い
+      - 右側の目次に `title` を含む項目が無い
+      - '`見出し` の要素と段落の要素が、それぞれ 5 と 7 を元の行番号の属性に持つ'
+    test: test_normal_when_frontmatter
+  - name: 正常シナリオ（閉じる行の無い先頭の区切り線）
+    setup:
+      - name: 配布物を読み込んだページ
+        description: 正常シナリオと同じ
+      - name: 閉じる行の無い Markdown
+        description: 1 行目に `---`、3 行目に段落、5 行目に `## 見出し` を配置し、2 行目以降に `---` と `...` だけの行を持たない文書
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 利用側のページ
+        participant M as mdmark
+        P->>M: 閉じる行の無い Markdown を指定して描かせる
+        M->>M: フロントマターが無いものとして解析する
+        M-->>P: 1 行目を区切り線にした本文を描く
+        P-->>U: 文書を表示
+    expected:
+      - 本文の先頭に区切り線（`hr`）の要素がある
+      - 段落と `見出し` の h2 の要素が描かれている
+    test: test_normal_when_frontmatter_unclosed
 lead: 利用側のページが、要素と Markdown と設定を mdmark に指定し、ブラウザで文書を描く。描いた後に本文だけを差し替えたり、片付けたりできる。
 issue: 3
 primary_actor: mdmark を使用するアプリのページ

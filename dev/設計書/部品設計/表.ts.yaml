@@ -129,9 +129,9 @@ states:
       - name: overflow
         value: 'true'
       - name: pinned
-        value: '1'
+        value: '[0]'
   - name: Pinned
-    description: 2 列目までピン止めした。留めた最後の列の右に境目の線がある
+    description: '`pinMode: through` で 2 列目までピン止めした。2 列目のボタンだけが押され、留めた最後の列の右に境目の線がある'
     args:
       - name: features
         value: '["pin"]'
@@ -142,7 +142,9 @@ states:
       - name: overflow
         value: 'true'
       - name: pinned
-        value: '2'
+        value: '[0,1]'
+      - name: pinMode
+        value: through
   - name: DefaultFits
     description: 既定の種類で幅に収まる表。ピン止めのボタンを出さない
     args:
@@ -164,7 +166,7 @@ states:
       - name: overflow
         value: 'true'
   - name: PinAndWide
-    description: '`pin=担当 wide=概要`。担当の列までを留め、概要の列を折り返さずに広く取る'
+    description: '`pin=担当 wide=概要`。担当の列だけを留め、概要の列を折り返さずに広く取る'
     args:
       - name: features
         value: '["pin"]'
@@ -175,9 +177,9 @@ states:
       - name: overflow
         value: 'true'
       - name: pin
-        value: '1'
+        value: '[1]'
       - name: pinned
-        value: '2'
+        value: '[1]'
       - name: wide
         value: '[2]'
   - name: Check
@@ -705,7 +707,7 @@ states:
       - name: filterValues
         value: '[{"column":0,"values":["東日本"]}]'
   - name: RowHeaderPinned
-    description: '`row-header=2` のはみ出す表。描いた直後に 2 列目まで留め、2 列目のピン止めのボタンが押された状態'
+    description: '`row-header=2` のはみ出す表。描いた直後に 1・2 列目を留め、1・2 列目のピン止めのボタンが押された状態'
     args:
       - name: kind
         value: data
@@ -722,7 +724,7 @@ states:
       - name: overflow
         value: 'true'
       - name: pinned
-        value: '2'
+        value: '[0,1]'
   - name: MergeInvalid
     description: 結合する相手の無い `^^`・`<<`。表の前に記載の警告を配置し、セルを記載した文字のまま描く
     args:
@@ -791,7 +793,7 @@ states:
       - name: hiddenColumns
         value: '[3]'
   - name: ReorderGroups
-    description: 2 行の見出しで名前をピン止めした表のパネル。一覧をピン止めの列・`設定` の範囲・範囲の外の列に分け、名前と備考のつまみを `disabled` にする
+    description: '`pinMode: through` で、2 行の見出しで名前をピン止めした表のパネル。一覧をピン止めの列・`設定` の範囲・範囲の外の列に分け、名前と備考のつまみを `disabled` にする'
     args:
       - name: kind
         value: data
@@ -802,13 +804,15 @@ states:
       - name: rows
         value: '[["features.table","bool","true","✓",""]]'
       - name: pin
-        value: '0'
+        value: '[0]'
       - name: overflow
         value: 'true'
       - name: pinned
-        value: '1'
+        value: '[0]'
       - name: openColumns
         value: 'true'
+      - name: pinMode
+        value: through
   - name: Tree
     description: '`tree=キー type=型 required=必須 default=既定` の表。表に無い親を薄い斜体で補い、型のバッジとチップ、必須の *、既定を出す'
     args:
@@ -958,6 +962,92 @@ states:
         value: "'[\"名前\",\"数量\"]'"
       - name: rows
         value: "'[[\"りんご\",\"3\"],[\"みかん\",\"5\"],[\"ぶどう\",\"2\"]]'"
+  - name: PinnedEach
+    description: '`pinMode: each` で、1 列目と 3 列目だけを留めた。1・3 列目のボタンが押され、1・3 列目のセルが留まる。各列の `left`・`right` と、左端に留まった最も右の列の右・右端に留まった最も左の列の左の境の線は、列の幅と横のスクロールから `mount` が入れる'
+    args:
+      - name: features
+        value: '["pin"]'
+      - name: columns
+        value: '["文書","行数","表","図","Chrome","Edge","Firefox","Safari","iOS Safari","Android Chrome"]'
+      - name: rows
+        value: '[["導入の手順","128","8","0","18","17","23","16","15","16"]]'
+      - name: overflow
+        value: 'true'
+      - name: pinned
+        value: '[0,2]'
+      - name: pinMode
+        value: each
+  - name: PinnedUnderMergedHeader
+    description: '`pinMode: each` で、2 行の見出しの `設定` の下の `既定` だけを名前と一緒に留めた。1 行目の `設定` のセルは、またぐ列が全て留まっていないので留めない'
+    args:
+      - name: kind
+        value: data
+      - name: features
+        value: '["sort","pin","filter"]'
+      - name: headRows
+        value: '[[{"text":"名前","rowspan":2},{"text":"設定","colspan":3},{"text":"備考","rowspan":2}],[{"text":"型"},{"text":"既定"},{"text":"必須"}]]'
+      - name: rows
+        value: '[["table.pin","string","each","false","each は押した列だけを留め、through は押した列までを留める。既定は each で、mount は他の値を無視して each にする"]]'
+      - name: wide
+        value: '[4]'
+      - name: overflow
+        value: 'true'
+      - name: pinned
+        value: '[0,2]'
+      - name: pinMode
+        value: each
+  - name: Resizable
+    description: '`resize` の表。最下段の各列の見出しのセルの右端に、列の幅を変えるつまみ（`role="separator"`）がある。つまみの線は、ポインターを乗せたとき・フォーカスしたとき・ドラッグ中に出し、ポインターが粗い画面では常に薄く出す'
+    args:
+      - name: kind
+        value: data
+      - name: features
+        value: '["sort","pin","filter","resize"]'
+      - name: columns
+        value: '["名前","説明","更新日"]'
+      - name: rows
+        value: '[["りんご","描画を速くするために、見出しの列ごとの幅を描いた後に一度だけ測る","2026-10-01"],["みかん","印刷を修正する","2026-10-10"]]'
+  - name: ResizeDragging
+    description: 名前の列のつまみをドラッグしている。つまみの線を出したままにする
+    args:
+      - name: kind
+        value: data
+      - name: features
+        value: '["sort","pin","filter","resize"]'
+      - name: columns
+        value: '["名前","説明","更新日"]'
+      - name: rows
+        value: '[["りんご","描画を速くするために、見出しの列ごとの幅を描いた後に一度だけ測る","2026-10-01"],["みかん","印刷を修正する","2026-10-10"]]'
+      - name: resizing
+        value: '0'
+  - name: ColumnResized
+    description: 名前の列の幅を 200px に指定した。ほかの列の幅は描いた直後のまま
+    args:
+      - name: kind
+        value: data
+      - name: features
+        value: '["sort","pin","filter","resize"]'
+      - name: columns
+        value: '["名前","説明","更新日"]'
+      - name: rows
+        value: '[["りんご","描画を速くするために、見出しの列ごとの幅を描いた後に一度だけ測る","2026-10-01"],["みかん","印刷を修正する","2026-10-10"]]'
+      - name: widths
+        value: '[{"column":0,"width":200}]'
+  - name: WideResized
+    description: '`wide=説明` の説明の列を列の最小幅まで狭めた。幅を指定した `wide=` の列は折り返す'
+    args:
+      - name: kind
+        value: data
+      - name: features
+        value: '["sort","pin","filter","resize"]'
+      - name: columns
+        value: '["名前","説明","更新日"]'
+      - name: rows
+        value: '[["りんご","描画を速くするために、見出しの列ごとの幅を描いた後に一度だけ測る","2026-10-01"],["みかん","印刷を修正する","2026-10-10"]]'
+      - name: wide
+        value: '[1]'
+      - name: widths
+        value: '[{"column":1,"width":110}]'
 lead: Markdown の表を囲み、多段の見出し・行見出し・縦に結合したセルを描き、種類と `+機能`・`-機能` で決まった並べ替え・ピン止め・絞り込みのボタンと、絞り込みのドロワーを付ける。見出し行は面の色で分け、表が画面に残っている間はページを縦にスクロールしても画面の上端に留め、集計の行を画面の下端に留める。描く先の要素の幅が狭く最終列が 1 行に収まらないときは、最終列を畳んで行ごとに開閉させる。
 args:
   - name: kind
@@ -969,7 +1059,7 @@ args:
   - name: features
     type: 配列
     required: true
-    description: 付ける機能（`sort`・`pin`・`filter`・`count`・`columns`・`total`・`copy`・`rowlink` のうち）。種類の機能に `+機能`・`-機能` を適用したもの。`data-features` に空白で結んで入れる
+    description: 付ける機能（`sort`・`pin`・`filter`・`resize`・`count`・`columns`・`total`・`copy`・`rowlink` のうち）。種類の機能に `+機能`・`-機能` を適用したもの。`data-features` に空白で結んで入れる
   - name: columns
     type: 配列
     required: true
@@ -1003,11 +1093,11 @@ args:
     enabled_when: '`features` に `pin` を含むとき'
     description: 表が幅からはみ出しているか。`true` のときだけピン止めのボタンを出す（`mount` が幅を測って決める）
   - name: pinned
-    type: 整数
+    type: 整数の配列
     required: false
-    default: '0'
+    default: '`[]`'
     enabled_when: '`overflow` が `true` のとき'
-    description: 左端に留める列の数（0 は留めない）。`rowHeader` を持つ表で省いたときは `rowHeader` の数。`mount` は描いた直後に `data-pin` の列まで（無ければ行見出しの列まで、行見出しも無ければ 1）にする
+    description: 留める列の位置（小さい順。空は留めない）。`pinMode` が `each` なら列ごとに、その列より左で留めた列の幅の合計を `left`、右で留めた列の幅の合計を `right` に入れて留め、`through` なら先頭から最も右の列までを左端に留める。`rowHeader` を持つ表で省いたときは行見出しの全ての列。`mount` は描いた直後に `data-pin` の列（無ければ行見出しの列、行見出しも無ければ先頭の列。`through` はその最も右の列まで）にする
   - name: headRows
     type: 配列
     required: false
@@ -1024,11 +1114,11 @@ args:
     default: '[]'
     description: '`^^` で縦に結合する列の位置（`data-merge-columns`）。表示している行の隣り合う同じ値のセルを結合し（左の結合する列の切れ目でも切る）、始まりのセルに `rowspan` と `is-merged`（上寄せ）、続くセルに `hidden` を付ける。並べ替え・絞り込みのたびにもう一度結合する'
   - name: pin
-    type: 整数
+    type: 整数の配列
     required: false
     default: なし（`data-pin` を持たない）
     enabled_when: '`features` に `pin` を含むとき'
-    description: '`pin=` で留める最後の列の位置。囲みの `data-pin` に写す'
+    description: '`pin=` で記載した列の位置（小さい順）。囲みの `data-pin` に半角の空白で区切って写す'
   - name: wide
     type: 配列
     required: false
@@ -1214,6 +1304,24 @@ args:
     default: 'false'
     enabled_when: '`rawCsv` を指定したとき'
     description: 元の CSV を出しているか。`true` なら RAW のボタンを `aria-pressed="true"` にし、表を隠して `pre.mdmark-raw` を出す
+  - name: pinMode
+    type: '`"each"` | `"through"`'
+    required: false
+    default: '`each`'
+    enabled_when: '`features` に `pin` を含むとき'
+    description: ピン止めの動き。設定の `table.pin` を `mount` が渡す。ボタンの名前と `aria-pressed` を付ける列が変わる
+  - name: widths
+    type: オブジェクトの配列
+    required: false
+    default: '`[]`'
+    enabled_when: '`features` に `resize` を含むとき'
+    description: 読者がつまみで指定した列の幅（`{ column, width }`。`width` は見出しのセルの外側の幅の px）。指定した列の見出しのセルに幅を入れ、`wide` の列でも折り返す。`mount` が入れ、描くたびに空に戻る
+  - name: resizing
+    type: 整数
+    required: false
+    default: なし（ドラッグしていない）
+    enabled_when: '`features` に `resize` を含むとき'
+    description: つまみをドラッグしている列の位置。その列のつまみの線を出したままにする。`mount` が入れる
 events:
   - name: 並べ替える
     when: 列の見出しのボタンを押す
@@ -1222,7 +1330,7 @@ events:
   - name: ピン止めする
     when: 列のピン止めのボタンを押す
     value: ボタンの `aria-pressed`
-    description: '`mount` が押した列までを左端に留める。もう一度押すと解除する'
+    description: '`mount` が、`pinMode` が `each` なら押した列だけを留め（もう一度押すとその列だけを解除する）、`through` なら押した列までを左端に留める（もう一度押すと解除する）'
   - name: 絞り込む
     when: 絞り込みのボタンでドロワーを開き、値を選ぶか入れる。「絞り込みを解除」で戻す
     value: ボタンの `aria-expanded` と、ドロワーの入力欄の値
@@ -1258,7 +1366,15 @@ events:
   - name: 列を動かす
     when: テーブル設定の一覧のつまみをドラッグしてドロップするか、つまみにフォーカスして ↑・↓ キーを押す
     value: 一覧の行の `data-column` の並び
-    description: '`mount` が同じ範囲と同じピン止めの側の中で列を動かし、見出しと全ての行のセルをもう一度並べる'
+    description: '`mount` が同じ範囲の中で列を動かし、見出しと全ての行のセルをもう一度並べる。`pinMode` が `through` のときは同じピン止めの側の中だけで動かし、`each` のときは留めているかを列が持ったまま動かす'
+  - name: 列の幅を変える
+    when: 列の見出しの右端のつまみをドラッグするか、つまみにフォーカスして ←・→ キーを押す
+    value: 列の位置と、つまみの `aria-valuenow`（幅の px）
+    description: '`mount` がつまみの左の列の幅だけを、列の最小幅から上限（表の見えている幅からほかに留めた列の幅の合計を引いた幅）までの範囲で変え、留めた列の位置を計算し直す'
+  - name: 列の幅を戻す
+    when: つまみをダブルクリック・ダブルタップするか、つまみにフォーカスして Enter を押す
+    value: 列の位置
+    description: '`mount` がその列の幅の指定を解除し、描いた直後の幅（`wide` の列は `wide=` の幅）に戻す'
   - name: 階層を開閉する
     when: 階層の行の開閉のボタンを押す（Shift を押しながら押す、Enter・Space を含む）
     value: ボタンの `aria-expanded`
@@ -1313,7 +1429,8 @@ accessibility:
   - 並べ替えのボタンは列名をスクリーンリーダー向けの名前にし、並べた列の `th` は `aria-sort` で向きを示す
   - 絞り込みのボタンは `「{列名}」で絞り込む` をスクリーンリーダー向けの名前に持ち、`aria-expanded`・`aria-controls` でドロワーの開閉を示す。絞り込み中は地・線・塗ったアイコンで示し、色だけに頼らない
   - ドロワーは開いたら最初の入力欄へフォーカスを移し、Esc で閉じてボタンへフォーカスを戻す
-  - ピン止めのボタンは `「{列名}」の列までピン止め` をスクリーンリーダー向けの名前に持ち、`aria-pressed` で状態を示す
+  - ピン止めのボタンは、`pinMode` が `each` なら `「{列名}」の列をピン止め`、`through` なら `「{列名}」の列までピン止め` をスクリーンリーダー向けの名前に持ち、`aria-pressed` で状態を示す（`each` は留めた列のボタン、`through` は留めた最も右の列のボタンを `true`）
+  - 列の幅のつまみは `role="separator"`・`aria-orientation="vertical"`・`tabindex="0"` で、`「{列名}」の列の幅` をスクリーンリーダー向けの名前に持ち、`aria-valuenow`・`aria-valuetext`（`{幅}px`）・`aria-valuemin`・`aria-valuemax` で今の幅と範囲を示す。←・→ キーで幅を変え、Enter で戻す。ポインターが粗い画面では押せる幅を 24px にする
   - 多段の見出しは、複数の列をまたぐセルを `scope="colgroup"`、1 列のセルを `scope="col"` にし、行見出しは `scope="row"` にする。結合で隠したセルも値を持ち、並べ替え・絞り込み・コピー・集計はその値で扱う
   - 真偽値の ✓ は `role="img"` と `aria-label="はい"`、空欄のセルはスクリーンリーダー向けの `いいえ` を持ち、外観の空欄とスクリーンリーダーを対応させる
   - 表は `tabindex="0"` で、キーボードで横にスクロールできる。留めた見出し行と集計の行は元のセルをずらしたもので複製を作らず、スクリーンリーダーとフォーカスの順は 1 組のまま
@@ -1336,5 +1453,5 @@ refs:
 status: planned
 notes:
   HTML: '`<div class="mdmark-table" data-kind="{kind}" data-features="{features}"><table tabindex="0" aria-label="…"><thead><tr><th><span class="mdmark-th"><button class="mdmark-sort" type="button">{列名}</button><span class="mdmark-th-tools"><button class="mdmark-filter" type="button" aria-expanded="false" aria-controls="…"></button><button class="mdmark-pin" type="button" aria-pressed="false"></button></span></span></th></tr></thead><tbody>…<tr class="mdmark-table-empty" hidden><td colspan="…">一致する行がありません</td></tr></tbody></table><div class="mdmark-filter-drawer" role="dialog" hidden>…</div></div>`。`collapse` が `closed`・`open` のときは表を `<details class="mdmark-table-details"><summary>{title}</summary>` に入れる（`open` のときは `details` に `open` を付ける）。ドロワーは `select` が「候補を検索」の欄・チェックボックス・`一致する候補がありません`、`text` が「キーワード」の欄、`date` が「開始日」「終了日」の欄で、どれもタイトル `「{列名}」で絞り込む` と「絞り込みを解除」を持つ。表の外観は確認ログの決定（拡張記法のモック・修正した表のモック）。モックは `dev/mock/components/table/`。`count`・`columns`・`reorder`・`total`・`copy` の表は `<table>` の前に `<div class="mdmark-table-bar"><p class="mdmark-table-count" aria-live="polite">…</p><div class="mdmark-table-tools"><button class="mdmark-table-tool mdmark-table-settings-toggle is-icon-only" aria-expanded aria-controls aria-label="テーブル設定（列を隠しているときは「テーブル設定（{隠した列の数} 列を非表示）」）" title="テーブル設定">{アイコン}<span class="mdmark-table-tool-badge" aria-hidden="true">{隠した列の数}</span></button><button class="mdmark-table-tool mdmark-totals-toggle" aria-expanded aria-controls>集計<span class="mdmark-visually-hidden"></span></button><button class="mdmark-table-tool mdmark-copy" data-state="idle" aria-expanded aria-controls><span class="mdmark-copy-label">表をコピー</span></button></div><span class="mdmark-visually-hidden mdmark-table-status" role="status"></span></div>` を配置し、`<table>` の後ろに `<div class="mdmark-table-settings" role="dialog" aria-label="テーブル設定" hidden>`（`mdmark-table-settings-title`・`<ul class="mdmark-table-settings-list">` の列ごとの `<li class="mdmark-table-settings-item" data-column="{元の列の位置}" data-name="{列名}">`（`reorder` のとき `<button class="mdmark-table-settings-grip" aria-label="「{列名}」の列を並べ替える" aria-describedby>`、`mdmark-table-settings-name`、`columns` のとき `<button class="mdmark-table-settings-eye" aria-pressed aria-label>`）・ピン止めと結合した見出しの範囲ごとの `<li class="mdmark-table-settings-group">` の見出し・`mdmark-table-settings-note`）、`<div class="mdmark-totals-menu mdmark-table-menu" role="dialog" aria-label="表示する集計" hidden>`（タイトルと、`value` が計算のチェックボックス）、`<div class="mdmark-copy-menu mdmark-table-menu" role="dialog" aria-label="コピーの形式" hidden>`（`<button class="mdmark-copy-format" data-format="{markdown|tsv}">` が `mdmark-copy-format-name` と `mdmark-copy-format-note` を持つ）を配置する。コピーできないときのパネルは帯の直後の `<div class="mdmark-copy-panel" role="group" aria-labelledby>`（`mdmark-copy-panel-title`・`mdmark-copy-panel-close`・`mdmark-copy-panel-note`・`<textarea class="mdmark-copy-panel-text" readonly rows="6">`）。集計の行は計算ごとの `<tfoot><tr class="mdmark-table-total" data-total-kind="{計算}">` で、先頭のセルに `mdmark-total-name`、集計する列のセルが `data-total="{計算}"` と `mdmark-total-value` を持つ。行へのリンクは `<tr id>` の先頭のセルの `<span class="mdmark-row-link-cell">{中身}<a class="mdmark-row-anchor" href="#{ID}"><span class="mdmark-row-link-notice" role="status"></span>` で、強調する行は `data-target` を持ち、通知の要素はコピーの結果で `data-state` を持つ。畳んだ最終列は、最終列のセルに `mdmark-fold-col`、表の外側に `is-folded` を付け、先頭のセルを `<span class="mdmark-row-head"><button class="mdmark-row-toggle mdmark-fold-toggle" type="button" aria-expanded aria-controls aria-label>{セルの中身}</span>` にし、行の直後に `<tr class="mdmark-row-detail mdmark-fold-detail" hidden><td colspan><div class="mdmark-fold-part"><p class="mdmark-fold-name">{最終列の見出し}</p><div class="mdmark-fold-value">{セルの中身}</div></div></td></tr>` を配置する（行の詳細を持つ行は詳細の中身の先頭に `mdmark-fold-part` を配置する）。真偽値のセルは `<td class="mdmark-align-center" data-value="true"><span class="mdmark-check" role="img" aria-label="はい"><svg class="mdmark-icon">…</svg></span></td>` と `<td class="mdmark-align-center" data-value="false"><span class="mdmark-visually-hidden">いいえ</span></td>`。アイコンは全て lucide（テーブル設定の `settings-2`・つまみの `grip-vertical`・目の `eye`・`eye-off`・開閉の
-    `chevron-down`・`columns-3`・`sigma`・`copy`・`check`・`circle-alert`・`chevron-down`・`x`・`link`）。印刷では帯のボタン・メニュー・パネル・行へのリンクのマーカーと畳んだ最終列の開閉のボタンを出さず、最終列を畳まない。画面の幅が 768px 以下のときは、集計の行のセルの上下の余白を 0.2em に詰め、下端に留めた集計の行が本文の行を覆う高さを減らす'
+    `chevron-down`・`columns-3`・`sigma`・`copy`・`check`・`circle-alert`・`chevron-down`・`x`・`link`）。印刷では帯のボタン・メニュー・パネル・行へのリンクのマーカーと畳んだ最終列の開閉のボタンを出さず、最終列を畳まない。画面の幅が 768px 以下のときは、集計の行のセルの上下の余白を 0.2em に詰め、下端に留めた集計の行が本文の行を覆う高さを減らす。`resize` の表の最下段の各 `th` は、末尾に `<span class="mdmark-col-resize" role="separator" aria-orientation="vertical" tabindex="0" aria-label="「{列名}」の列の幅" aria-valuenow aria-valuetext aria-valuemin aria-valuemax>` を持つ'
   階層の表: '`tree` の表は `<div class="mdmark-table" data-tree>` で、本文の行が `<tr class="mdmark-tree-row" data-path data-parent data-depth aria-selected>`（補った行は `is-virtual`、子を持つ行は `has-children`）。キーのセルは `<td class="mdmark-tree-key"><span class="mdmark-tree-cell">` に、深さの数の `mdmark-tree-guide`（選んだ範囲は `is-active`）・子を持つ行は `<button class="mdmark-tree-toggle" aria-expanded aria-label>`、持たない行は `mdmark-tree-spacer`・`<span class="mdmark-tree-name" tabindex="0">`・`mdmark-tree-array`・`mdmark-tree-required`・`<button class="mdmark-tree-copy" aria-label="全体のパスをコピー">` を並べる。型は `mdmark-type-badge`（`data-type`）か `mdmark-type-chip`、既定は `mdmark-tree-default`、絞り込みで該当した単語は `mark.mdmark-tree-hit`。見本を結んだ表は `<div class="mdmark-tree-bar"><button class="mdmark-tree-example-toggle" aria-expanded aria-controls>`と、`<div class="mdmark-tree-layout">`（隠したとき `is-example-hidden`）の中に表と `<aside class="mdmark-tree-example">` を配置し、見本の行は `<span class="mdmark-yaml-line" data-path>`（表で選んだ行と同じパスは `is-linked`）。モックは `dev/mock/components/table/` の `#state-303-*`。印刷では開閉・コピー・見本の表示の切り替えのボタンを出さない'

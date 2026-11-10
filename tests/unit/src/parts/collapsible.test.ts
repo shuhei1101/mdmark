@@ -32,3 +32,20 @@ test("test_render_collapsible_when_open", async () => {
     ),
   ).toBe(true);
 });
+
+// 加える class を mdmark-collapsible の後ろに付ける（正常系）
+test("test_render_collapsible_when_class_name", async () => {
+  // 準備
+  const { renderCollapsible } = await loadCollapsible();
+  // 実行
+  const html = renderCollapsible({
+    title: "フロントマター",
+    open: false,
+    body: "<pre></pre>",
+    className: "mdmark-frontmatter",
+  });
+  // 検証
+  expect(html).toBe(
+    '<details class="mdmark-collapsible mdmark-frontmatter"><summary>フロントマター</summary><pre></pre></details>',
+  );
+});

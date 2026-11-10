@@ -1,0 +1,53 @@
+use_cases:
+  - kind: single
+    scenario: dev/設計書/シナリオ/単一ユースケース/表を操作する.yaml
+    impact: changed
+    detail: ピン止めのボタンを押した列だけが留まり、複数の列を選べる。留めた列はその列より左を表示している間は右端に、過ぎた後は左端に留まる。設定で押した列までを留める動きも選べる
+    depends_on: []
+  - kind: single
+    scenario: dev/設計書/シナリオ/単一ユースケース/機能のオン・オフを文書で上書きする.yaml
+    impact: run_only
+    detail: 表の機能をオフにした文書でピン止めのボタンが出ないことが、ピン止めの持ち方の変更で壊れないかを確かめる
+    depends_on: []
+  - kind: single
+    scenario: dev/設計書/シナリオ/単一ユースケース/文書をHTMLに書き出す.yaml
+    impact: run_only
+    detail: 書き出した HTML の表にピン止めのボタンが付くことが、設定のキーの追加で壊れないかを確かめる
+    depends_on: []
+  - kind: single
+    scenario: dev/設計書/シナリオ/単一ユースケース/記載した内容をプレビューに映す.yaml
+    impact: run_only
+    detail: VS Code 拡張機能が設定ファイルの `table` をプレビューに渡すようにしたため、設定ファイルの書き換えでプレビューを描き直す動きが壊れないかを確かめる
+    depends_on: []
+docs:
+  - page: docs/リファレンス/記法.md
+    new: false
+    change: 表の機能のピン止めと `pin=` の説明を、選んだ列だけを留める動き・左端と右端に留める位置・設定で選べる動きに合わせる
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-09T00:15:12.678520+00:00'
+  - page: docs/使用方法/記載する/表に機能を付ける.md
+    new: false
+    change: 「ピン止めする列を決める」「ピン止めが働く」を、選んだ列だけを留める動きと設定での切り替えに合わせる
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-09T00:15:12.678520+00:00'
+  - page: docs/リファレンス/設定.md
+    new: false
+    change: 表のピン止めの動きを選ぶキーと既定を追加する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-09T00:15:12.678520+00:00'
+  - page: docs/リファレンス/VSCode拡張機能.md
+    new: false
+    change: 拡張機能が参照する `mdmark.config.yaml` のキーの表に `table` の行を追加する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-09T00:19:47.236556+00:00'
+scope_out:
+  - item: 見出しの右端のドラッグで列の幅を変え、幅を変えた列が留めた列のときに留める位置を計算し直す
+    reason: 別の Issue の要望。留める位置を幅の合計で決めるこの PR の方式を前提にする
+    plan: '#359'
+  - item: 右側の目次のピン止め
+    reason: 表のピン止めとは別の機能で、要望に含まれない
+    plan: none

@@ -1,0 +1,4 @@
+/* フロントマターの表示のカタログの並べ方: 状態の見出しを、上の状態より下の描いた文書に近づける */
+.catalog > section + section {
+  margin-block-start: 64px;
+}

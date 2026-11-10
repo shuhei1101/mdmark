@@ -13,9 +13,9 @@ constants:
       - key: failed
         value: '1'
         description: 設定を読み込めない・Schema に合わない・ポートが使用されている
-      - key: tmuxMissing
+      - key: launcherMissing
         value: '2'
-        description: tmux が無い
+        description: 使用する起動の方法（systemd --user・tmux）が使えない
       - key: timedOut
         value: '3'
         description: 待ち受けを待つ上限を超えた
@@ -43,7 +43,7 @@ functions:
       description: '`SETUP_EXIT` の値'
     process: |-
       1. 先頭の引数でサブコマンドを選び、知らないサブコマンドは使用方法を標準エラーに書き込んで 1 を返却する
-      2. 各サブコマンドの関数を呼び、成功なら結果を JSON の 1 行で標準出力に書き込む
+      2. 各サブコマンドの関数を呼び、成功なら結果を JSON の 1 行で標準出力に書き込む。`start-server` は `--launcher` を読み、`systemd`・`tmux` 以外の値は使用方法を添えて `SetupError`（1）
       3. `SetupError` は理由と修正方法を標準エラーに書き込み、その終了コードを返却する
     callees:
       - dev/設計書/モジュール構成/ClaudeCodeプラグイン/セットアップ/状態.ts#functions[readTerminalStatus]

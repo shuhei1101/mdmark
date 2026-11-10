@@ -495,6 +495,9 @@ files:
     related:
       - to: dev/設計書/インターフェース定義/ClaudeCodeプラグイン/MCPサーバーを起動・停止する.ts
         type: see_also
+  - path: integration/browser-server.ts
+    description: 結合テストの前に Chromium を 1 つ起動して温め、各ファイルが接続する先を出す子プロセスを受け持つ。結合テストの準備や確認方法を変えるときに参照する。
+    tags: [topic:結合テスト, tool:playwright, topic:ストーリー, tool:storybook]
   - path: integration/built-root.ts
     description: 結合テストがバージョンを埋めてビルドした配布物の場所と、配布ファイルのサイズの上限を受け持つ。結合テストの準備や確認方法を変えるときに参照する。
     tags: [topic:結合テスト, tool:vitest, topic:バンドル]
@@ -778,6 +781,14 @@ files:
         type: see_also
       - to: dev/設計書/部品設計/脚注の一覧.ts
         type: see_also
+  - path: integration/lib/frontmatter.story.test.ts
+    description: 部品設計『フロントマター』のストーリーを実際のブラウザで開き、状態ごとの描画を確認する結合テスト。部品の引数や状態を変えたときに参照する。
+    tags: [topic:結合テスト, topic:ストーリー, tool:playwright, tool:vitest, topic:フロントマター]
+    related:
+      - to: src/parts/frontmatter
+        type: tests
+      - to: dev/設計書/部品設計/フロントマター.ts
+        type: see_also
   - path: integration/lib/frame-width.story.test.ts
     description: '`frameWidth` を持つストーリーを 390px の画面幅で開き、枠が横にはみ出さないことを確認する結合テスト。ストーリーを描く枠の幅を変えたときや、`frameWidth` を持つストーリーを追加したときに参照する。'
     tags: [topic:結合テスト, topic:ストーリー, tool:playwright, tool:vitest, tool:storybook]
@@ -975,7 +986,7 @@ files:
     description: 結合テストでストーリーを開いて描画を確認する処理と画面の大きさを受け持つ。結合テストの準備や確認方法を変えるときに参照する。
     tags: [topic:結合テスト, tool:vitest, topic:ストーリー, tool:storybook]
   - path: integration/storybook-setup.ts
-    description: 結合テストの前に Storybook の開発サーバーを起動する処理を受け持つ。結合テストの準備や確認方法を変えるときに参照する。
+    description: 結合テストの前に Storybook の開発サーバーと、各ファイルが接続する Chromium を起動する処理を受け持つ。結合テストの準備や確認方法を変えるときに参照する。
     tags: [topic:結合テスト, tool:vitest, topic:ストーリー, tool:storybook]
   - path: integration/vscode/config-band.story.test.ts
     description: 部品設計『設定ファイルを読み込めない帯』のストーリーを実際のブラウザで開き、状態ごとの描画を確認する結合テスト。部品の引数や状態を変えたときに参照する。
@@ -1706,6 +1717,12 @@ files:
     related:
       - to: src/parts/footnote
         type: tests
+  - path: unit/src/parts/frontmatter.test.ts
+    description: src/parts/frontmatter.ts（「フロントマターの表示の折りたたみの renderFrontmatter」）を確認する単体テスト。frontmatter.ts を変えたときに、合わせて再確認するケースを探すときに参照する。
+    tags: [topic:単体テスト, tool:vitest, topic:部品, topic:フロントマター]
+    related:
+      - to: src/parts/frontmatter
+        type: tests
   - path: unit/src/parts/gallery.test.ts
     description: src/parts/gallery.ts（「ギャラリーの renderGallery」）を確認する単体テスト。gallery.ts を変えたときに、合わせて再確認するケースを探すときに参照する。
     tags: [topic:単体テスト, tool:vitest, topic:部品, tool:html, topic:画像]
@@ -1928,6 +1945,12 @@ files:
     related:
       - to: src/print
         type: tests
+  - path: unit/src/render/frontmatter.test.ts
+    description: src/render/frontmatter.ts（「フロントマターの判定と本文からの除外の splitFrontmatter」）を確認する単体テスト。frontmatter.ts を変えたときに、合わせて再確認するケースを探すときに参照する。
+    tags: [topic:単体テスト, tool:vitest, topic:フロントマター]
+    related:
+      - to: src/render/frontmatter
+        type: tests
   - path: unit/src/render/index.test.ts
     description: src/render/index.ts（「render と renderDocument」）を確認する単体テスト。index.ts を変えたときに、合わせて再確認するケースを探すときに参照する。
     tags: [topic:単体テスト, tool:vitest, topic:markdown, tool:markdown-it]
@@ -1939,6 +1962,12 @@ files:
     tags: [topic:単体テスト, tool:vitest, topic:markdown, tool:markdown-it]
     related:
       - to: src/render/marks
+        type: tests
+  - path: unit/src/render/syntax/frontmatter.test.ts
+    description: src/render/syntax/frontmatter.ts（「フロントマターの表示を差し込むコアルールの insertFrontmatter」）を確認する単体テスト。frontmatter.ts を変えたときに、合わせて再確認するケースを探すときに参照する。
+    tags: [topic:単体テスト, tool:vitest, topic:フロントマター]
+    related:
+      - to: src/render/syntax/frontmatter
         type: tests
   - path: unit/src/render/used.test.ts
     description: src/render/used.ts（書き出しで埋める外部ライブラリと範囲のスクリプトを文書から取得する処理）を確認する単体テスト。used.ts を変えたときに、合わせて再確認するケースを探すときに参照する。

@@ -125,7 +125,7 @@ settings:
     type: Record<string, boolean>
     required: false
     default: なし（`mount` に指定せず mdmark の既定で描く）
-    description: 拡張機能は記載した値をそのまま `mount` の `opts.config.features` に指定する
+    description: 拡張機能は記載した値をそのまま `mount` の `opts.config.features` に指定する。フロントマターの表示（`frontmatter`）もこのキーで切り替え、`settings.json` にはキーを持たない
     reload: immediate
     refs:
       - dev/設計書/設定/ライブラリ本体#settings[features]
@@ -305,3 +305,17 @@ settings:
     visibility: user
     introduced:
       pr: 378
+  - key: table
+    title: 表の設定（拡張機能が指定する）
+    file: mdmark.config.yaml
+    type: Record<string, unknown>
+    required: false
+    default: 'なし（`mount` に指定せず mdmark の既定の `table.pin: each` で描く）'
+    description: 拡張機能は記載した値をそのまま `mount` の `opts.config.table` に指定する。プレビューと書き出した HTML の表のピン止めの動きになる
+    reload: immediate
+    refs:
+      - dev/設計書/設定/ライブラリ本体#settings[table.pin]
+    status: planned
+    visibility: user
+    introduced:
+      pr: 438

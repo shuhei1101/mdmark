@@ -1,0 +1,91 @@
+tasks:
+  - process: 初期構築
+    status: skipped
+    reason: 既存リポジトリのため対象外
+    updated_by: planner
+    updated_at: '2026-11-09T04:01:15.756847+00:00'
+  - process: リバースエンジニアリング
+    status: skipped
+    reason: 既存の設計書があるため対象外
+    updated_by: planner
+    updated_at: '2026-11-09T04:01:15.756847+00:00'
+  - process: 方針決め
+    status: skipped
+    reason: 方針決めの依頼ではない
+    updated_by: planner
+    updated_at: '2026-11-09T04:01:15.756847+00:00'
+  - process: PoC 検証
+    status: skipped
+    reason: Playwright の 1 つのブラウザで複数のページを開く使い方は既存の useBrowser・createBrowserHolder で使っており、未検証の機構に依存しない
+    updated_by: planner
+    updated_at: '2026-11-09T04:01:15.756847+00:00'
+  - process: 複合ユースケース設計
+    status: skipped
+    reason: テストの準備の変更で、業務の流れは変わらない
+    updated_by: planner
+    updated_at: '2026-11-09T04:01:15.756847+00:00'
+  - process: デザインスタイル選定
+    status: skipped
+    reason: 画面を変えない
+    updated_by: planner
+    updated_at: '2026-11-09T04:01:15.756847+00:00'
+  - process: 画面一覧・画面遷移
+    status: skipped
+    reason: 画面を変えない
+    updated_by: planner
+    updated_at: '2026-11-09T04:01:15.756847+00:00'
+  - process: 単一ユースケース設計
+    status: skipped
+    reason: テストの準備の変更で、シナリオの記述は変わらない
+    updated_by: planner
+    updated_at: '2026-11-09T04:01:15.756847+00:00'
+  - process: モック作成
+    status: skipped
+    reason: 画面を変えない
+    updated_by: planner
+    updated_at: '2026-11-09T04:01:15.756847+00:00'
+  - process: インターフェース定義設計
+    status: skipped
+    reason: 公開のインターフェースを変えない
+    updated_by: planner
+    updated_at: '2026-11-09T04:01:15.756847+00:00'
+  - process: 部品設計
+    status: skipped
+    reason: 部品の引数・状態を変えない
+    updated_by: planner
+    updated_at: '2026-11-09T04:01:15.756847+00:00'
+  - process: 画面設計
+    status: skipped
+    reason: 画面を変えない
+    updated_by: planner
+    updated_at: '2026-11-09T04:01:15.756847+00:00'
+  - process: モジュール構成設計
+    status: skipped
+    reason: src/ のモジュールを変えない（テストの準備はモジュール構成の対象外）
+    updated_by: planner
+    updated_at: '2026-11-09T04:01:15.756847+00:00'
+  - process: ドキュメント修正
+    status: done
+    note: dev/設計書/テスト/テスト実行方法.yaml の結合テスト（フロント）の記載
+    updated_by: planner
+    updated_at: '2026-11-09T04:13:34.617876+00:00'
+  - process: 単体テスト作成
+    status: skipped
+    reason: src/ の処理を変えない
+    updated_by: planner
+    updated_at: '2026-11-09T04:01:15.756847+00:00'
+  - process: 実装
+    status: skipped
+    reason: src/ の処理を変えない。変更は tests/integration/ の準備と vitest.config.ts で、結合テスト作成で行う
+    updated_by: planner
+    updated_at: '2026-11-09T04:01:15.756847+00:00'
+  - process: 結合テスト作成
+    status: done
+    note: tests/integration/story.ts のブラウザの共有とページを閉じる処理・*.story.test.ts の使い方の置き換え・vitest.config.ts の maxWorkers・修正の前と後の所要時間とメモリの使用の最大の測定
+    updated_by: planner
+    updated_at: '2026-11-09T18:36:49.896989+00:00'
+  - process: E2E テスト作成
+    status: skipped
+    reason: E2E のテストを変えない
+    updated_by: planner
+    updated_at: '2026-11-09T04:01:15.756847+00:00'

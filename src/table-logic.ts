@@ -1,3 +1,5 @@
+import type { TablePinMode } from "./config.ts";
+
 /** 絞り込みの種類 */
 export type FilterKind = "select" | "text" | "date";
 
@@ -300,6 +302,104 @@ export function mergeSpans(options: {
   }
   return spans;
 }
+
+/** 先頭から `last` までの列の位置を返却する（`last` が負なら空） */
+const columnsThrough = (last: number): number[] =>
+  Array.from({ length: Math.max(0, last + 1) }, (_, index) => index);
+
+/** `data-pin` の位置・行見出しの列の数・ピン止めの動きから、描いた直後に留める列の位置を小さい順に返却する */
+export const initialPinnedColumns = (options: {
+  /** `data-pin` の位置（無ければ空） */
+  pin: number[];
+  /** `th scope="row"` の行見出しの列の数 */
+  rowHeadCount: number;
+  /** ピン止めの動き */
+  mode: TablePinMode;
+}): number[] => {
+  const { pin, rowHeadCount, mode } = options;
+  // 留める元の列は、pin= の列、無ければ行見出しの全ての列、行見出しも無ければ先頭の列
+  const base =
+    pin.length > 0
+      ? [...new Set(pin)].sort((a, b) => a - b)
+      : columnsThrough(Math.max(1, rowHeadCount) - 1);
+  return mode === "each" ? base : columnsThrough(Math.max(...base));
+};
+
+/** ピン止めのボタンを押した列と今の留める列から、新しい留める列の位置を小さい順に返却する（指定された配列は書き換えない） */
+export const togglePinnedColumn = (options: {
+  /** 今の留める列 */
+  pinned: number[];
+  /** 押した列の位置 */
+  column: number;
+  /** ピン止めの動き */
+  mode: TablePinMode;
+}): number[] => {
+  const { pinned, column, mode } = options;
+  if (mode === "each") {
+    // 押した列が留める列にあれば除き、無ければ加える
+    return pinned.includes(column)
+      ? pinned.filter((item) => item !== column)
+      : [...pinned, column].sort((a, b) => a - b);
+  }
+  // 押した列が留める列の最も右なら解除し、それ以外は押した列までにする
+  return Math.max(-1, ...pinned) === column ? [] : columnsThrough(column);
+};
+
+/** 列ごとの幅と留める列から、留める列ごとにそれより左で留めた列の幅の合計（`start`）と右で留めた列の幅の合計（`end`）を返却する */
+export const pinOffsets = (options: {
+  /** 列ごとの幅（隠した列は 0） */
+  widths: number[];
+  /** 留める列の位置 */
+  pinned: number[];
+}): Map<number, { start: number; end: number }> => {
+  const { widths, pinned } = options;
+  const sorted = [...new Set(pinned)].sort((a, b) => a - b);
+  const total = sorted.reduce((sum, column) => sum + (widths[column] ?? 0), 0);
+  const offsets = new Map<number, { start: number; end: number }>();
+  let start = 0;
+  for (const column of sorted) {
+    const width = widths[column] ?? 0;
+    offsets.set(column, { start, end: total - start - width });
+    start += width;
+  }
+  return offsets;
+};
+
+/** 列の幅を、列の最小幅から上限までに収めた値を返却する。上限が最小幅より小さいときは最小幅を返す */
+export const clampColumnWidth = (options: {
+  /** 指定したい幅（px） */
+  width: number;
+  /** 列の最小幅（px） */
+  min: number;
+  /** 上限（px） */
+  max: number;
+}): number => {
+  const { width, min, max } = options;
+  return Math.max(min, Math.min(width, max));
+};
+
+/** 表の見えている幅から、ほかに留めている列の幅の合計を引いた幅を返却する。表がはみ出していないときは見えている幅をそのまま返す */
+export const columnWidthLimit = (options: {
+  /** 表を包む要素の `clientWidth` */
+  visibleWidth: number;
+  /** 表がはみ出しているか */
+  overflowing: boolean;
+  /** 列ごとの幅（隠した列は 0） */
+  widths: number[];
+  /** 留めている列の位置 */
+  pinned: number[];
+  /** 幅を変える列の位置 */
+  column: number;
+}): number => {
+  const { visibleWidth, overflowing, widths, pinned, column } = options;
+  if (!overflowing) {
+    return visibleWidth;
+  }
+  const others = [...new Set(pinned)]
+    .filter((item) => item !== column)
+    .reduce((sum, item) => sum + (widths[item] ?? 0), 0);
+  return visibleWidth - others;
+};
 
 /** 列が属する結合した見出しの範囲とピン止めの側 */
 export type ColumnPlace = {

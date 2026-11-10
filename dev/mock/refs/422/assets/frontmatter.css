@@ -1,0 +1,37 @@
+/* フロントマターの表示（実装で足す規則の見本。mdmark の層の外に置く） */
+
+/* 折りたたみの見出し: 本文の見出しと見分けるため、控えめな文字の色にする */
+.mdmark-frontmatter > summary {
+  color: var(--mdmark-color-muted);
+}
+
+/* 案 A のキーと値の表: 狭い画面でも 2 列のまま、値の欄で折り返す */
+.mdmark-frontmatter table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9em;
+
+  & th,
+  & td {
+    padding: 0.35em 0.75em;
+    border-block-start: 1px solid var(--mdmark-color-border);
+    vertical-align: top;
+    text-align: start;
+  }
+
+  & tr:first-child :is(th, td) {
+    border-block-start: 0;
+  }
+
+  /* キーの欄: 改行せず、値の欄に幅を譲る */
+  & th {
+    width: 1%;
+    font-weight: normal;
+    white-space: nowrap;
+  }
+
+  /* 値の欄: 長い値と区切りの無い URL も欄の中で折り返す */
+  & td {
+    overflow-wrap: anywhere;
+  }
+}

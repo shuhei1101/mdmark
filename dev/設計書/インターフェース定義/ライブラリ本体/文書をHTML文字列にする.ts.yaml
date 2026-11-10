@@ -117,7 +117,7 @@ flows:
         M-->>C: HTML 文字列
     expected:
       - '`<nav class="mdmark-toc" aria-label="目次">` の中に `#補足` へのリンクがある'
-      - 表が `<div class="mdmark-table" data-kind="data" data-features="sort pin filter" data-filter="0:select">` の中の `<details class="mdmark-table-details">` に入り、`details` が `open` を持たず、`<summary>表（3 行）</summary>` を持つ
+      - 表が `<div class="mdmark-table" data-kind="data" data-features="sort pin filter resize" data-filter="0:select">` の中の `<details class="mdmark-table-details">` に入り、`details` が `open` を持たず、`<summary>表（3 行）</summary>` を持つ
       - タブの範囲が `<div class="mdmark-tabs" data-group="os">` になり、`macOS`・`Windows` の `<p class="mdmark-tab-title">` を持つ `<div class="mdmark-tab-panel">` が 2 つあり、どちらも `hidden` を持たない。`<h3` の `macOS` が無い
       - '`[!WARNING]` の引用が `<div class="markdown-alert markdown-alert-warning">` とタイトル `警告` になり、文字列に `[!WARNING]` が無い'
       - '`[!NOTE]-` の引用が `<details class="markdown-alert markdown-alert-note">` と `<summary class="markdown-alert-title">補足</summary>` になる'
@@ -191,7 +191,7 @@ flows:
         M-->>C: HTML 文字列
     expected:
       - '`<div class="mdmark-syntax-warning" role="note">` が 4 つあり、それぞれにタイトル `記載の警告` がある'
-      - 1 つ目の表が `data-kind="default"` と `data-features="pin sort"` を持ち、その前に記載の警告が無い（知らない種類 `unknown` はスキップする）
+      - 1 つ目の表が `data-kind="default"` と `data-features="pin resize sort"` を持ち、その前に記載の警告が無い（知らない種類 `unknown` はスキップする）
       - 見出しの無いタブの範囲の段落がある
       - '`group= grop=os fold` のタブの範囲だけが `data-group` を持たない `<div class="mdmark-tabs">` になり、その前の警告の本文に `group=` があり、知らないキー `grop=` と知らない指定 `fold` が無い'
       - リンクの文字が `図` のままで、警告の本文に `#fig-missing` がある
@@ -501,7 +501,7 @@ flows:
         M->>M: 見出しの ID を決め、行の ID を作る
         M-->>C: HTML 文字列
     expected:
-      - 表が `data-features="sort pin filter count columns total copy rowlink"`・`data-hide="1"`・`data-total="2:sum"` を持つ `<div class="mdmark-table" data-kind="data">` に入る
+      - 表が `data-features="sort pin filter resize count columns total copy rowlink"`・`data-hide="1"`・`data-total="2:sum"` を持つ `<div class="mdmark-table" data-kind="data">` に入る
       - 見出しが `id="みかん"` を持ち、3 行の `tr` が上から `id="りんご"`・`id="みかん-1"`・`id="みかん-2"` を持つ
       - 各行の先頭のセルに `<a class="mdmark-row-anchor" href="#みかん-1" aria-label="「みかん」の行へのリンク">` の構造のリンクがあり、`href` がその行の `id` を指す
       - 文字列に `<tfoot`・`<button`・`<!--` が無い
@@ -536,7 +536,7 @@ flows:
       - name: 配布物を読み込んだ Node の処理
         description: 正常系と同じ
       - name: 列を指定した表の Markdown
-        description: '`<!-- table: data pin=物理名 wide=説明 check=必須 -->` 〜 `<!-- /table -->` で、列 `No`・`物理名`・`説明`・`必須`・`既定` の 2 行の表を囲んだ文書'
+        description: '`<!-- table: data pin=物理名 wide=説明 check=必須 -->` 〜 `<!-- /table -->` で、列 `No`・`物理名`・`説明`・`必須`・`既定` の 2 行の表を囲み、続けて `<!-- table: data pin=No,物理名 -->` で同じ列の表を囲んだ文書'
         notes: '`必須` と `既定` の列は、1 行目が `true`、2 行目が `false`'
       - name: Mock
         description: 差し替える依存は無い
@@ -548,13 +548,14 @@ flows:
         M->>M: 表のマーカーの列名を見出しの位置として解釈する
         M-->>C: HTML 文字列
     expected:
-      - 表が `data-pin="1"`・`data-check="3"` を持つ `<div class="mdmark-table" data-kind="data">` に入る
+      - 1 つ目の表が `data-pin="1"`・`data-check="3"` を持つ `<div class="mdmark-table" data-kind="data">` に入る
       - '`説明` の列の `th` と 2 つの `td` が class `mdmark-wide` を持つ'
       - '`必須` の列の 1 行目の `td` が `data-value="true"` を持ち、中に `<span class="mdmark-check" role="img" aria-label="はい">` があり、文字 `true` が無い'
       - '`必須` の列の 2 行目の `td` が `data-value="false"` を持ち、中身が `<span class="mdmark-visually-hidden">いいえ</span>` だけ'
       - '`必須` の列の `th` と 2 つの `td` が class `mdmark-align-center` を持つ'
       - '`既定` の列のセルは `data-value` を持たず、文字 `true`・`false` のまま'
       - 文字列に `mdmark-syntax-warning` が無い
+      - 2 つ目の表が `data-pin="0 1"` を持つ
     test: test_normal_when_table_columns_specified
   - name: 正常系（表の列の指定の誤り）
     summary: 見出しに無い列名の `pin=`・`check=` と、`pin` の機能の無い表の `pin=` を記載の警告にして適用しない
@@ -562,8 +563,8 @@ flows:
       - name: 配布物を読み込んだ Node の処理
         description: 正常系と同じ
       - name: 列の指定を誤った Markdown
-        description: '`<!-- table: data pin=無い列 wide=説明 check=無い列 -->` 〜 `<!-- /table -->` の表 A と、`<!-- table: data -pin pin=名前 -->` 〜 `<!-- /table -->` の表 B を持つ文書'
-        notes: 2 つの表とも列 `名前`・`説明`
+        description: '`<!-- table: data pin=無い列 wide=説明 check=無い列 -->` 〜 `<!-- /table -->` の表 A と、`<!-- table: data -pin pin=名前 -->` 〜 `<!-- /table -->` の表 B と、`<!-- table: data pin=名前,無い列 -->` 〜 `<!-- /table -->` の表 C を持つ文書'
+        notes: 3 つの表とも列 `名前`・`説明`
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
@@ -577,7 +578,8 @@ flows:
     expected:
       - 表 A の `説明` の列の `th`・`td` が class `mdmark-wide` を持ち、表 A が `data-pin`・`data-check` を持たない。表 A の前に記載の警告が 2 つあり、それぞれの本文に表に無い列名 `無い列` がある
       - 表 B の `data-features` に `pin` が無く、表 B が `data-pin` を持たない。表 B の前の 1 つの記載の警告に、`pin=` には `+pin` が要ることがある
-      - '`<div class="mdmark-syntax-warning" role="note">` が 3 つだけある'
+      - '`<div class="mdmark-syntax-warning" role="note">` が 4 つだけある'
+      - 表 C が `data-pin="0"` を持ち、表 C の前の 1 つの記載の警告の本文に表に無い列名として `無い列` だけがある
     test: test_normal_when_table_column_errors
   - name: 正常系（ビューのマーカー）
     summary: ビューのマーカーの範囲を、引数を持つ `mdmark-view` の中に表を残した HTML にする
@@ -1165,7 +1167,7 @@ flows:
     expected:
       - 表の前に記載の警告があり、本文に `header-rows=5` と表の行の数、見出しの行と本文の行をまたぐ `^^`、左に結合するセルの無い `<<` がある
       - '`thead` の `tr` が 1 つで、`^^` と `<<` のセルが記載した文字のまま出ていて、`rowspan`・`colspan` を持たない'
-      - 表が `data-features="sort pin filter"` を持つ
+      - 表が `data-features="sort pin filter resize"` を持つ
     test: test_normal_when_table_merge_invalid
     refs:
       - dev/設計書/シナリオ/単一ユースケース/表を操作する#scenarios[異常シナリオ（読み込めないセルの結合）]
@@ -1484,6 +1486,29 @@ flows:
     test: test_normal_when_table_reorder
     refs:
       - dev/設計書/シナリオ/単一ユースケース/表を操作する#scenarios[正常シナリオ（結合した見出しとピン止めの列を並べ替える）]
+  - name: 正常系（列の幅の機能）
+    summary: 既定の種類と `data` の種類の表は `data-features` に `resize` を持ち、`-resize` の表と `plain` の表は持たない
+    setup:
+      - name: 配布物を読み込んだ Node の処理
+        description: 正常系と同じ
+      - name: 4 つの表を持つ Markdown
+        description: '表のマーカーで囲まない表、`<!-- table: data -->` の表、`<!-- table: data -resize -->` の表、`<!-- table: plain -->` の表を持つ文書'
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        participant C as 利用側の処理
+        participant M as mdmark
+        C->>M: render(markdown)
+        M->>M: 種類の機能に +機能・-機能を当てる
+        M-->>C: HTML 文字列
+    expected:
+      - 囲まない表の `data-features` が `pin` と `resize` を含み、`data` の表の `data-features` が `sort`・`pin`・`filter`・`resize` を含む
+      - '`-resize` の表の `data-features` が `resize` を含まず、`plain` の表の `data-features` が空'
+      - 文字列に `mdmark-col-resize` が無い（つまみは `mount` が付ける）
+    test: test_normal_when_table_resize
+    refs:
+      - dev/設計書/シナリオ/単一ユースケース/表を操作する#scenarios[正常シナリオ（列の幅を変える）]
   - name: 正常系（キーの列を階層で出す）
     summary: '`tree=` の列を階層の行にし、表に無い親の行を補い、型・必須・既定の列を替える'
     setup:
@@ -1783,7 +1808,7 @@ flows:
         M->>M: 表にし、元の CSV を隠して添える
         M-->>C: HTML 文字列
     expected:
-      - 1 つ目が `<div class="mdmark-table" data-kind="data" data-features="sort pin filter" data-source="csv">` の中の `名前`・`拠点`・`金額` の `th` と 3 行の表になる
+      - 1 つ目が `<div class="mdmark-table" data-kind="data" data-features="sort pin filter resize" data-source="csv">` の中の `名前`・`拠点`・`金額` の `th` と 3 行の表になる
       - '`東京, 本社` が 1 つの `td` で引用符を持たず、改行を持つ値が 1 つの `td` にあり、`""` が `"` になる'
       - 表の後ろに `<pre class="mdmark-raw" hidden>` があり、中の `code.language-csv` が記載したとおりの CSV
       - 2 つ目が `data-kind="default"` と `data-source="csv"` を持つ
@@ -1997,6 +2022,98 @@ flows:
       - 2 つ目の文書の `div.mdmark-code` が属性 `data-mdmark-mermaid` を持たない
       - どちらの文字列にも `svg` と `data-mdmark-syntax` が無い
     test: test_normal_when_mermaid_code_block
+  - name: 正常系（フロントマターを除外する）
+    summary: 文書の先頭の YAML のフロントマターを解析の前に本文から除外し、後ろのブロックの元の行番号は元の Markdown のままにする
+    setup:
+      - name: 配布物を読み込んだ Node の処理
+        description: 正常系と同じ
+      - name: フロントマターを持つ Markdown
+        description: '1〜4 行目に `---`・`title: テスト`・`tags: [a, b]`・`---`、6 行目に `# 見出し`、8 行目に段落を配置した文書'
+        notes: '`opts.config` は指定しない（`features.frontmatter` は既定の `false`）'
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        participant C as 利用側の処理
+        participant M as mdmark
+        C->>M: render(markdown)
+        M->>M: 先頭のフロントマターの範囲を取り出し、本文から除外する
+        M->>M: 残りを解析し、ブロックに元の Markdown の行番号を付ける
+        M-->>C: HTML 文字列
+    expected:
+      - '文字列に `title: テスト`・`tags: [a, b]`・`<hr` が無い'
+      - 文字列に `<h2` が無く、`<h1` が `data-source-line="5"`、`<p>` が `data-source-line="7"` を持つ
+      - 文字列に `mdmark-frontmatter` が無い
+    test: test_normal_when_frontmatter
+  - name: 正常系（フロントマターの表示をオンにする）
+    summary: 機能 `frontmatter` がオンのとき、本文の先頭の閉じた折りたたみに、フロントマターを言語 `yaml` のコードブロックで描く
+    setup:
+      - name: 配布物を読み込んだ Node の処理
+        description: 正常系と同じ
+      - name: フロントマターを持つ Markdown
+        description: 正常系（フロントマターを除外する）と同じ文書
+      - name: 設定
+        description: '`opts.config.features` に `{ frontmatter: true }`'
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        participant C as 利用側の処理
+        participant M as mdmark
+        C->>M: render(markdown, { config })
+        M->>M: 先頭のフロントマターを本文から除外する
+        M->>M: 本文の先頭に、フロントマターの中身を持つ閉じた折りたたみを配置する
+        M-->>C: HTML 文字列
+    expected:
+      - 文字列の先頭のブロックが `<details class="mdmark-collapsible mdmark-frontmatter"` で、`open` を持たず、`<summary>` の文字が `フロントマター`
+      - '折りたたみの中に言語 `yaml` のコードブロックがあり、その行が `title: テスト` と `tags: [a, b]`'
+      - '折りたたみの外に `title: テスト` の文字が無く、`<h2` が無い'
+      - '`<h1` の `data-source-line` が "5" のまま'
+    test: test_normal_when_frontmatter_enabled
+  - name: 正常系（閉じる行の無い先頭の区切り線）
+    summary: 1 行目が `---` でも、閉じる行が無ければフロントマターとして扱わず、今と同じく描く
+    setup:
+      - name: 配布物を読み込んだ Node の処理
+        description: 正常系と同じ
+      - name: 閉じる行の無い Markdown
+        description: 1 行目に `---`、3 行目に段落、5 行目に `## 見出し` を配置し、2 行目以降に `---` と `...` だけの行を持たない文書
+        notes: '`opts.config.features` に `{ frontmatter: true }`'
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        participant C as 利用側の処理
+        participant M as mdmark
+        C->>M: render(markdown, { config })
+        M->>M: 閉じる行が無いため、フロントマターが無いものとして解析する
+        M-->>C: HTML 文字列
+    expected:
+      - 文字列の先頭のブロックが `<hr`
+      - '`<p>` と `<h2` があり、文字列に `mdmark-frontmatter` が無い'
+    test: test_normal_when_frontmatter_unclosed
+  - name: 正常系（取り込む文書のフロントマター）
+    summary: 取り込む Markdown の先頭のフロントマターは、機能 `frontmatter` がオンでも除外して取り込む
+    setup:
+      - name: 配布物を読み込んだ Node の処理
+        description: 正常系と同じ
+      - name: 取り込む文書の表
+        description: '`共通/手順.md`（1〜3 行目に `---`・`title: 手順`・`---`、5 行目に `## 実行`、7 行目に段落）を持つ `opts.includes`'
+      - name: include のマーカーを持つ Markdown
+        description: 'フロントマターを持たず、段落の間に `<!-- include: 共通/手順.md -->` を持つ文書'
+        notes: '`opts.config.features` に `{ frontmatter: true }`'
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        participant C as 利用側の処理
+        participant M as mdmark
+        C->>M: render(markdown, { config, includes })
+        M->>M: 取り込む文書の先頭のフロントマターを除外して、マーカーの場所に入れる
+        M-->>C: HTML 文字列
+    expected:
+      - '`mdmark-include` の要素の中に `実行` の `<h2` と段落がある'
+      - '文字列に `title: 手順` と `mdmark-frontmatter` が無い'
+    test: test_normal_when_included_has_frontmatter
 lead: 利用側（書き出し・ビルドの処理やサーバー）が、画面を持たずに Markdown を HTML 文字列にする。`mount` が描く本文と同じ文字列を、ブラウザでも Node でも返却する。
 idempotent: true
 side_effects: なし（外部ライブラリも読み込まない）
@@ -2014,7 +2131,7 @@ request:
     required: false
     default: なし（全てのキーに既定を適用する）
     location: argument
-    description: '`mount` の `opts.config` と同じ。この操作が読み込むのは `features`（記法の機能のオン・オフ）・`libraries` の名前（どのマーカーをマーカーの場所の要素にするか）・`labels.paramCopy`（操作できる部品の今の値をコピーするボタンの文言。既定の当て方は `mount` と同じ）だけ'
+    description: '`mount` の `opts.config` と同じ。この操作が読み込むのは `features`（記法の機能とフロントマターの表示のオン・オフ）・`libraries` の名前（どのマーカーをマーカーの場所の要素にするか）・`labels.paramCopy`（操作できる部品の今の値をコピーするボタンの文言。既定の当て方は `mount` と同じ）だけ'
   - name: opts.index
     type: MdmarkIndex
     required: false
@@ -2084,7 +2201,7 @@ constraints:
   - item: 入力の大きさ
     constraint: 制限なし
   - item: 表
-    constraint: 表のマーカーで囲んだ表と、囲まない表を `<div class="mdmark-table" data-kind="{種類}" data-features="{機能}">` で囲む。種類は `default`（囲まない表と、知らない種類）・`data`・`plain`。機能は種類の機能（`default` は `pin`、`data` は `sort`・`pin`・`filter`、`plain` は無し）に `+機能`・`-機能` を適用したものを空白で並べる。`filter=列名:種類,…` は、見出しの文字が列名と一致する列の位置（0 から）と種類を `data-filter="{位置}:{種類} …"` に写す。種類は `select`（省いたとき）・`text`・`date`。`closed`・`open` は表を `<details class="mdmark-table-details">` と `<summary>表を開く</summary>` に入れ、`open` は `details` に `open` を付ける。`+機能` で追加できる機能に `count`・`columns`・`total`・`copy`・`rowlink`・`reorder` があり、どの種類の既定にも入らない。`columns` の表の `hide=列名,…` は、先頭を除く列の位置を `data-hide="{位置} …"` に写す。`total` の表の `total=列名:計算,…` は、列の位置と計算（`sum`・`avg`・`count`）を `data-total="{位置}:{計算} …"` に写す。`pin` の表の `pin=列名` は、その列の位置を `data-pin="{位置}"` に写す。`wide=列名,…` はその列の `th`・`td` に class `mdmark-wide` を付ける。`check=列名,…` は列の位置を `data-check="{位置} …"` に設定し、その列の文字が `true` のセルを `data-value="true"` と `<span class="mdmark-check" role="img" aria-label="はい">`（lucide の `check`）に、`false` のセルを `data-value="false"` と `<span class="mdmark-visually-hidden">いいえ</span>` に替え、その列の `th`・`td` に class `mdmark-align-center` を付ける（ほかの文字のセルは替えない）。見出しに無い列名と、`pin` の無い表の `pin=` は記載の警告にして適用しない。並べ替え・ピン止め・絞り込みのボタンと、表の上の件数・テーブル設定・コピーの帯、集計の行は `mount` が付ける。表のマーカーの `header-rows=N`（既定 1）は表の先頭から N 行を `thead` の行にし、`row-header=N` は本文の各行の先頭から N 列のセルを `<th scope="row">` にする。表のマーカーで囲んだ表で、セルの文字がちょうど `^^` のセルは上のセル、`<<` のセルは左のセルと結合する。見出しの行では、結合の始まりのセルに `rowspan`・`colspan` を付け、結合したセルを出さない。本文の行では、`^^`・`<<` のセルに始まりのセルと同じ値を入れて `data-merge="up"`・`data-merge="left"` と `hidden` を付けて残し、始まりのセルに `rowspan`・`colspan` を付ける。`^^` を持つ本文の列の位置を `data-merge-columns="{位置} …"` に写す。見出しと本文をまたぐ `^^`・上のセルの無い `^^`・左のセルの無い `<<` は結合せず、記載した文字のまま出す。表のマーカーで囲まない表の `^^`・`<<` は文字のまま出す。セルの `rowspan`・`colspan`・`scope`・`hidden` は記法が出したセルだけが持つ
+    constraint: 表のマーカーで囲んだ表と、囲まない表を `<div class="mdmark-table" data-kind="{種類}" data-features="{機能}">` で囲む。種類は `default`（囲まない表と、知らない種類）・`data`・`plain`。機能は種類の機能（`default` は `pin`・`resize`、`data` は `sort`・`pin`・`filter`・`resize`、`plain` は無し）に `+機能`・`-機能` を適用したものを空白で並べる。`filter=列名:種類,…` は、見出しの文字が列名と一致する列の位置（0 から）と種類を `data-filter="{位置}:{種類} …"` に写す。種類は `select`（省いたとき）・`text`・`date`。`closed`・`open` は表を `<details class="mdmark-table-details">` と `<summary>表を開く</summary>` に入れ、`open` は `details` に `open` を付ける。`+機能` で追加できる機能に `count`・`columns`・`total`・`copy`・`rowlink`・`reorder` があり、どの種類の既定にも入らない。`columns` の表の `hide=列名,…` は、先頭を除く列の位置を `data-hide="{位置} …"` に写す。`total` の表の `total=列名:計算,…` は、列の位置と計算（`sum`・`avg`・`count`）を `data-total="{位置}:{計算} …"` に写す。`pin` の表の `pin=列名`（`,` で区切って複数の列名を記載できる）は、記載した列の位置を小さい順に半角の空白で区切って `data-pin="{位置} {位置}"` に写す。`wide=列名,…` はその列の `th`・`td` に class `mdmark-wide` を付ける。`check=列名,…` は列の位置を `data-check="{位置} …"` に設定し、その列の文字が `true` のセルを `data-value="true"` と `<span class="mdmark-check" role="img" aria-label="はい">`（lucide の `check`）に、`false` のセルを `data-value="false"` と `<span class="mdmark-visually-hidden">いいえ</span>` に替え、その列の `th`・`td` に class `mdmark-align-center` を付ける（ほかの文字のセルは替えない）。見出しに無い列名（`pin=` は読めない列名だけで、読めた列名は適用する）と、`pin` の無い表の `pin=` は記載の警告にして適用しない。並べ替え・ピン止め・絞り込みのボタンと、列の幅のつまみ、表の上の件数・テーブル設定・コピーの帯、集計の行は `mount` が付ける。表のマーカーの `header-rows=N`（既定 1）は表の先頭から N 行を `thead` の行にし、`row-header=N` は本文の各行の先頭から N 列のセルを `<th scope="row">` にする。表のマーカーで囲んだ表で、セルの文字がちょうど `^^` のセルは上のセル、`<<` のセルは左のセルと結合する。見出しの行では、結合の始まりのセルに `rowspan`・`colspan` を付け、結合したセルを出さない。本文の行では、`^^`・`<<` のセルに始まりのセルと同じ値を入れて `data-merge="up"`・`data-merge="left"` と `hidden` を付けて残し、始まりのセルに `rowspan`・`colspan` を付ける。`^^` を持つ本文の列の位置を `data-merge-columns="{位置} …"` に写す。見出しと本文をまたぐ `^^`・上のセルの無い `^^`・左のセルの無い `<<` は結合せず、記載した文字のまま出す。表のマーカーで囲まない表の `^^`・`<<` は文字のまま出す。セルの `rowspan`・`colspan`・`scope`・`hidden` は記法が出したセルだけが持つ
   - item: 注意書き
     constraint: '1 行目が `[!NOTE]`・`[!TIP]`・`[!IMPORTANT]`・`[!WARNING]`・`[!CAUTION]` の引用を、`<div class="markdown-alert markdown-alert-{種類の小文字}">` とタイトル `<p class="markdown-alert-title">{補足・ヒント・重要・警告・注意}</p>` にし、種類の文字を本文から除外する。末尾に `-` を付けた種類は `<details class="markdown-alert markdown-alert-{種類}">` と `<summary class="markdown-alert-title">` にし、`+` を付けた種類は同じ `details` に `open` を付ける。種類（と `-`・`+`）の後ろに文字があれば、タイトルの文字をその文字にし、タイトルの頭に `<span class="mdmark-visually-hidden">{補足・ヒント・重要・警告・注意}: </span>` を配置する。注意書きの本文の中の引用も同じ規則で注意書きにする（入れ子）。知らない種類は `note` として出す'
   - item: タブ
@@ -2236,4 +2353,6 @@ constraints:
     constraint: フロー図のノードはリンク先 `href`（文字列）を持てる。`href` を制約「URL のスキーム」と同じ許可（`http`・`https`・`mailto` と相対 URL）で確認し、許すノードはノードの全体を覆う `<a class="mdmark-diagram-node-link" href="{href}">`（スクリーンリーダー向けの名前はノードの名前。開く先は本文のリンクと同じく同じタブ）にし、ノードの要素（`div.mdmark-diagram-node`）に class `has-link` を付ける。`io`・`hint` のマーカーはリンクの中に入れず、リンクの後ろに配置する。許さないリンク先（`javascript:`・`id:` など）のノードはリンクにせず名前を描き、図の前に、ノードの `id` と記載したリンク先と使用できるリンク先を記載した記載の警告を配置する（許さないノードが複数なら 1 つの警告に並べる）。図は描く
     decided_by: dev/設計書/シナリオ/単一ユースケース/図を描く#scenarios[異常シナリオ（ノードのリンク先を許可しない）]
     notes: '`id:` などの参照は利用側が URL に変えてから定義に記載する（要件.md の未確定、推奨 A）。リンクの外観は確認ログの決定（名前を本文のリンクと同じ色と下線、推奨案 A）'
+  - item: フロントマター
+    constraint: Markdown の 1 行目が `---` だけの行で、2 行目以降に `---` か `...` だけの行があるとき、1 行目からその最初の行までをフロントマターとし、解析の前に本文から除外する。開く行と閉じる行は、行末の空白と CR（改行が CRLF の文書）を許す。先頭の BOM（U+FEFF）は判定の前に除く。閉じる行が無ければフロントマターとして扱わない。除外した範囲は、段落・見出し・目次・用語の下線・記載の警告の対象にしない。後ろのブロックの `data-source-line` は、元の Markdown の行番号のままにする。機能 `frontmatter`（既定 `false`）がオンのときだけ、本文の先頭に `<details class="mdmark-collapsible mdmark-frontmatter">`（`open` を持たない。制約「details の範囲」と同じ折りたたみ）を配置し、`<summary>` の文字を `フロントマター` にし、中にフロントマターの中身（開く行と閉じる行を除いた行）を制約「コードブロック」と同じ言語 `yaml` のコードブロックとして描く（コードブロックの `data-source-line` はフロントマターの 2 行目の行番号）。中身が空の行だけのフロントマターは、オンでも表示を配置しない。機能のオン・オフは、フロントマターの後ろの `features` のマーカーでも上書きできる。取り込む Markdown（制約「取り込み」）の先頭のフロントマターは、機能によらず除外して表示を配置しない。フロントマターとその表示は、制約「ページの設定のマーカー」の文書の先頭の判定に数えない
 test_file: tests/integration/lib/render.test.ts

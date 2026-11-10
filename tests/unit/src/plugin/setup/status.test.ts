@@ -56,3 +56,40 @@ test("test_read_terminal_status_when_unreadable", async () => {
   await expect(result).rejects.toThrow(settingsPath);
   await expect(result).rejects.toThrow("3");
 });
+
+// systemd が使えれば unit の状態と launcher.resolved を返す（正常系）
+test("test_read_terminal_status_when_systemd_available", async () => {
+  // 準備
+  const { readTerminalStatus } = await loadStatus();
+  const home = await createTempDir();
+  const run = async (command: string, args: string[]) => {
+    if (command === "systemctl" && args[1] === "is-system-running") {
+      return { code: 1, stdout: "degraded\n" };
+    }
+    if (command === "systemctl" && args[1] === "show") {
+      return {
+        code: 0,
+        stdout:
+          "ActiveState=active\nSubState=running\nNRestarts=0\nMainPID=10\nUnitFileState=enabled\n",
+      };
+    }
+    return runWithoutSession(command, args);
+  };
+  // 実行
+  const status = await readTerminalStatus({
+    env: { HOME: home, MDMARK_CONFIG: join(home, "s.yaml"), MDMARK_PORT: "1" },
+    pluginRoot: home,
+    version: "v0.0.0",
+    run,
+  });
+  // 検証
+  expect(status.systemd.available).toBe(true);
+  expect(status.server.unit).toBe("mdmark-mcp");
+  expect(status.server.unit_path).toBe(
+    join(home, ".config", "systemd", "user", "mdmark-mcp.service"),
+  );
+  expect(status.server.unit_active).toBe(true);
+  expect(status.server.unit_enabled).toBe(true);
+  expect(status.launcher.setting).toBe("auto");
+  expect(status.launcher.resolved).toBe("systemd");
+});

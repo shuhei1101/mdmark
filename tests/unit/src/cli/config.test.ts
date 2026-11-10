@@ -330,6 +330,30 @@ test("test_validate_config_when_side_toc_mode_invalid", async () => {
   expect(valid.config["side-toc"]?.mode).toBe("fixed");
 });
 
+// each・through 以外の table.pin を schema のずれにし、設定から落とす（正常系）
+test("test_validate_config_when_table_pin_invalid", async () => {
+  // 準備
+  const { validateConfig } = await loadModule();
+  // 実行
+  const invalid = validateConfig(
+    { table: { pin: "left" } },
+    "mdmark.config.yaml",
+  );
+  const valid = validateConfig(
+    { table: { pin: "through" } },
+    "mdmark.config.yaml",
+  );
+  // 検証
+  expect(invalid.issues).toHaveLength(1);
+  expect(invalid.issues[0]).toMatchObject({
+    where: "table.pin",
+    kind: "schema",
+  });
+  expect(invalid.config.table).toBeUndefined();
+  expect(valid.issues).toEqual([]);
+  expect(valid.config.table?.pin).toBe("through");
+});
+
 // 文字列でない colorTheme を schema のずれにして落とし、知らない名前はそのまま残す（正常系）
 test("test_validate_config_when_color_theme_invalid", async () => {
   // 準備

@@ -8,7 +8,13 @@ export function renderCollapsible(options: {
   open: boolean;
   /** 中身の HTML */
   body: string;
+  /** `mdmark-collapsible` の後ろに加える class */
+  className?: string;
 }): string {
-  const { title, open, body } = options;
-  return `<details class="mdmark-collapsible"${open ? " open" : ""}><summary>${escapeHtml(title)}</summary>${body}</details>`;
+  const { title, open, body, className } = options;
+  const classes =
+    className === undefined
+      ? "mdmark-collapsible"
+      : `mdmark-collapsible ${className}`;
+  return `<details class="${classes}"${open ? " open" : ""}><summary>${escapeHtml(title)}</summary>${body}</details>`;
 }

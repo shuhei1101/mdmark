@@ -1,4 +1,5 @@
 import { afterEach, expect, test, vi } from "vitest";
+import type { TablePinMode } from "../../../../src/config.ts";
 import { addStyles, createRoot, removeRoots } from "../../helpers/dom.ts";
 
 /** 表の操作を読み込む（実装が無い間は各テストが個別に失敗する） */
@@ -43,12 +44,19 @@ const GROUPED_TABLE = [
 ].join("\n");
 
 /** 表を描いて操作を付け、テーブル設定のパネルを開いて返却する */
-async function openSettings(markdown: string, onColumnsChange?: () => void) {
+async function openSettings(
+  markdown: string,
+  onColumnsChange?: () => void,
+  pinMode?: TablePinMode,
+) {
   addStyles();
   const { attachTables } = await loadTables();
   const { root } = createRoot(markdown);
   detachers.push(
-    attachTables(root, onColumnsChange ? { onColumnsChange } : undefined),
+    attachTables(root, {
+      ...(onColumnsChange ? { onColumnsChange } : {}),
+      ...(pinMode ? { pinMode } : {}),
+    }),
   );
   const toggle = root.querySelector<HTMLButtonElement>(
     "button.mdmark-table-settings-toggle",
@@ -164,7 +172,7 @@ test("test_attach_table_settings_when_arrow_key", async () => {
 // 結合した見出しの範囲の外とピン止めの境には動かさず、動かせないつまみを `disabled` にする（正常系）
 test("test_attach_table_settings_when_group_boundary", async () => {
   // 準備
-  const { root } = await openSettings(GROUPED_TABLE);
+  const { root } = await openSettings(GROUPED_TABLE, undefined, "through");
   const before = rowOrders(root);
   // 実行: 型を備考の下へ動かす
   dropOn({ root, from: "型", to: "備考", side: "after" });

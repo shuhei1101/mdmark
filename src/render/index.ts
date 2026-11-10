@@ -10,6 +10,7 @@ import type { MdmarkAlias } from "../knowledge/aliases.ts";
 import { type MdmarkIndex, normalizeIndex } from "../knowledge/index-shape.ts";
 import type { MdmarkReferences } from "../knowledge/references.ts";
 import type { MdmarkIconNode } from "../parts/inline-icon.ts";
+import { splitFrontmatter } from "./frontmatter.ts";
 import { createParser, type RenderEnv } from "./parser.ts";
 import { sanitize } from "./sanitize.ts";
 import type { CollectedWarning } from "./syntax/warnings.ts";
@@ -88,7 +89,12 @@ export function renderDocument(options: {
     extensionDefinitions: [],
     paramDefinitions: [],
   };
-  const html = sanitize(parser.render(options.markdown, env), env.nonce);
+  // 文書の先頭のフロントマターは空白にして解析し、表示はコアルールが差し込む
+  const { body, content, endLine } = splitFrontmatter(options.markdown);
+  if (content !== undefined && endLine !== undefined) {
+    env.frontmatter = { content, endLine };
+  }
+  const html = sanitize(parser.render(body, env), env.nonce);
   return {
     html,
     features: env.features,

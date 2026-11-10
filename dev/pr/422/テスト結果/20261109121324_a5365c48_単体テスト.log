@@ -1,0 +1,15 @@
+$ npm run test:unit -- --maxWorkers=4
+
+> test:unit
+> vitest run --project 'unit*' --maxWorkers=4
+
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-render-frontmatter
+
+
+ Test Files  263 passed (263)
+      Tests  1862 passed (1862)
+   Start at  12:06:52
+   Duration  216.75s (worker 67%, tests 21%, import 11%, transform 2%)
+
+exit=0

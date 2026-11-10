@@ -1,0 +1,155 @@
+use_cases:
+  - kind: single
+    scenario: dev/設計書/シナリオ/単一ユースケース/文書を描く.yaml
+    impact: changed
+    detail: 先頭にフロントマターを持つ文書を描くと、フロントマターが本文・見出し・右側の目次に出ない
+    depends_on: []
+  - kind: single
+    scenario: dev/設計書/シナリオ/単一ユースケース/文書をHTML文字列にする.yaml
+    impact: changed
+    detail: 先頭にフロントマターを持つ文書を HTML 文字列にすると、フロントマターが本文に出ない
+    depends_on: []
+  - kind: single
+    scenario: dev/設計書/シナリオ/単一ユースケース/機能のオン・オフを文書で上書きする.yaml
+    impact: changed
+    detail: 既定がオフのフロントマターの表示を、設定と文書のマーカーでオンにすると、本文の先頭に本文と見分けの付く表示で出る
+    depends_on: []
+  - kind: single
+    scenario: dev/設計書/シナリオ/単一ユースケース/ほかの文書を取り込む.yaml
+    impact: changed
+    detail: 取り込む文書の先頭のフロントマターが、取り込んだ先の本文に出ない
+    depends_on: []
+  - kind: single
+    scenario: dev/設計書/シナリオ/単一ユースケース/ページの設定を文書で指定する.yaml
+    impact: run_only
+    detail: フロントマターの後ろに記載したページの設定を、今と同じく文書に当てる
+    depends_on: []
+  - kind: single
+    scenario: dev/設計書/シナリオ/単一ユースケース/目次と見出しのアンカーでセクションへ移る.yaml
+    impact: run_only
+    detail: フロントマターの行が見出しにならず、目次と右側の目次に出ない
+    depends_on: []
+  - kind: single
+    scenario: dev/設計書/シナリオ/単一ユースケース/文書をHTMLに書き出す.yaml
+    impact: run_only
+    detail: 書き出した HTML にフロントマターが本文として出ない
+    depends_on:
+      - dev/設計書/シナリオ/単一ユースケース/文書をHTML文字列にする.yaml
+  - kind: single
+    scenario: dev/設計書/シナリオ/単一ユースケース/複数の文書を1枚のHTMLにまとめる.yaml
+    impact: run_only
+    detail: まとめた HTML の各文書にフロントマターが本文として出ない
+    depends_on:
+      - dev/設計書/シナリオ/単一ユースケース/文書をHTML文字列にする.yaml
+  - kind: single
+    scenario: dev/設計書/シナリオ/単一ユースケース/記載した内容をプレビューに映す.yaml
+    impact: changed
+    detail: VS Code のプレビューで、先頭にフロントマターを持つ文書のフロントマターが本文に出ない
+    depends_on:
+      - dev/設計書/シナリオ/単一ユースケース/文書を描く.yaml
+  - kind: single
+    scenario: dev/設計書/シナリオ/単一ユースケース/エディタとプレビューのスクロールを合わせる.yaml
+    impact: run_only
+    detail: フロントマターを持つ文書でも、エディタとプレビューが同じ箇所に合う
+    depends_on: []
+  - kind: single
+    scenario: dev/設計書/シナリオ/単一ユースケース/HTMLに書き出す.yaml
+    impact: run_only
+    detail: VS Code から書き出した HTML にフロントマターが本文として出ない
+    depends_on: []
+  - kind: single
+    scenario: dev/設計書/シナリオ/単一ユースケース/比較元のMarkdownを指定して変更を強調する.yaml
+    impact: run_only
+    detail: フロントマターを除外しても、変更したブロックの色分けの位置がずれない
+    depends_on: []
+  - kind: single
+    scenario: dev/設計書/シナリオ/単一ユースケース/被参照を確認する.yaml
+    impact: run_only
+    detail: フロントマターにだけ出る文書の別名からは、被参照の一覧に文書を出さない
+    depends_on: []
+  - kind: single
+    scenario: dev/設計書/シナリオ/単一ユースケース/用語の意味をツールチップで確認する.yaml
+    impact: run_only
+    detail: フロントマターにだけ出る用語は、ツールチップの用語が出る文書に数えない
+    depends_on: []
+  - kind: single
+    scenario: dev/設計書/シナリオ/単一ユースケース/本文に出た用語と文書の参照を取り出す.yaml
+    impact: run_only
+    detail: フロントマターの文字は、本文に出た用語・文書の別名として取り出さない
+    depends_on: []
+  - kind: single
+    scenario: dev/設計書/シナリオ/単一ユースケース/索引と文書のずれを点検する.yaml
+    impact: run_only
+    detail: フロントマターの文字は、索引と文書のずれの照合の対象にしない
+    depends_on: []
+docs:
+  - page: dev/設計書/設定/ライブラリ本体.yaml
+    new: false
+    change: features.frontmatter（既定 false）の行を追加する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-08T19:27:08.083357+00:00'
+  - page: dev/設計書/設定/VSCode拡張機能.yaml
+    new: false
+    change: features の行の説明に、フロントマターの表示の切り替え（frontmatter）も設定ファイルから指定することを追加する（settings.json にキーは追加しない）
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-09T00:57:56.621223+00:00'
+  - page: schemas/mdmark.config.schema.json
+    new: false
+    change: features.frontmatter（boolean・既定 false）を追加する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-09T01:09:31.971622+00:00'
+  - page: schemas/mdmark.settings.schema.json
+    new: false
+    change: features.frontmatter（boolean・既定 false）を追加する。端末の設定の Schema は allOf で mdmark.config.schema.json を参照するため、このファイルは変えない
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-09T01:09:31.971622+00:00'
+  - page: migrations/no-steps.yaml
+    new: false
+    change: features に省いてよい frontmatter を追加しただけの行を追加する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-09T01:09:31.971622+00:00'
+  - page: docs/リファレンス/設定.md
+    new: false
+    change: features.frontmatter を追加する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-09T00:57:56.621223+00:00'
+  - page: docs/リファレンス/記法.md
+    new: false
+    change: 文書の先頭のフロントマターの扱い（除外・表示・閉じる行が無いとき）を追加する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-09T00:57:56.621223+00:00'
+  - page: docs/リファレンス/用語集.md
+    new: false
+    change: フロントマターの用語を追加する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-09T00:57:56.621223+00:00'
+  - page: docs/使用方法/カスタマイズ/機能をオン・オフする.md
+    new: false
+    change: 既定がオフの機能に frontmatter を追加する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-09T00:57:56.621223+00:00'
+  - page: docs/はじめに/コアコンセプト/文書を描く仕組み.md
+    new: false
+    change: 解析の前にフロントマターを除外する流れを追加する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-09T00:57:56.621223+00:00'
+scope_out:
+  - item: フロントマターの title・tags などの値を、索引・文書の一覧・文書のタイトルに使用すること
+    reason: 要望に含まれない（要望は表示の切り替えだけ）
+    plan: '#461'
+  - item: 描いた文書の差分のブロックで、フロントマターの変更を示すこと
+    reason: 除外した範囲は描いた文書に出ず、要望に含まれない。Markdown の行の差分には今と同じく出る
+    plan: '#462'
+  - item: TOML（+++）・JSON のフロントマター
+    reason: 要望は YAML のフロントマターで、GitHub の Markdown の表示も YAML だけをフロントマターとして扱う
+    plan: none

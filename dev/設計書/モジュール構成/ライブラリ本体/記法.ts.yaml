@@ -3,6 +3,7 @@ lead: マーカーと記法を HTML にする markdown-it のコアルール。�
 directory: |-
   ```tree
   src/render/syntax/
+  ├── frontmatter.ts  # 文書の先頭のフロントマターの表示を差し込むコアルール
   ├── headings.ts     # 見出しの ID とアンカー
   ├── sections.ts     # セクションの囲み
   ├── tables.ts       # 表の種類・機能・絞り込みと、表の属性・列と行の色・多段の見出しと行見出しとセルの結合
@@ -75,8 +76,8 @@ data_models:
         type: number
         description: '`row-header=` で `<th scope="row">` にする本文の各行の先頭の列の数（既定 0）。数でない値と、表の列の数以上の値は 0 にする'
       - name: pin
-        type: number | undefined
-        description: '`pin=` で留める最後の列の位置。`pin` の無い表・表に無い列名では入れない'
+        type: number[] | undefined
+        description: '`pin=` で留める列の位置（`,` で区切った列名のうち表にあるものを小さい順に並べる）。`pin` の無い表・表にある列名が 1 つも無いときは入れない'
       - name: wide
         type: number[]
         description: '`wide=` で広く取る列の位置。表に無い列名は入れない'
@@ -266,9 +267,9 @@ constants:
     summary: 種類ごとの既定の機能
     entries:
       - key: default
-        value: '["pin"]'
+        value: '["pin", "resize"]'
       - key: data
-        value: '["sort", "pin", "filter"]'
+        value: '["sort", "pin", "filter", "resize"]'
       - key: plain
         value: '[]'
   - name: FILTER_KINDS
@@ -284,8 +285,8 @@ constants:
   - name: TABLE_FEATURES
     title: 表の機能の名前
     container: src/render/syntax/tables.ts
-    summary: '`+機能`・`-機能` に記載できる機能の名前。後ろの 5 つはどの種類の既定にも入らない'
-    value: '["sort", "pin", "filter", "count", "columns", "total", "copy", "rowlink"]'
+    summary: '`+機能`・`-機能` に記載できる機能の名前。後ろの 6 つはどの種類の既定にも入らない'
+    value: '["sort", "pin", "filter", "resize", "count", "columns", "reorder", "total", "copy", "rowlink"]'
   - name: TOTAL_CALCS
     title: 集計の計算
     container: src/table-logic.ts
@@ -523,19 +524,19 @@ functions:
         summary: 種類・機能・絞り込み・折り畳みを読み込む
         condition: '`data -sort filter=名前,更新日:date closed` と見出し `名前`・`値`・`更新日`'
         mock: なし
-        expected: '`kind` が `data`、`features` が `["pin", "filter"]`、`filters` が `[{0, select}, {2, date}]`、`collapse` が `closed`、`warnings` が空'
+        expected: '`kind` が `data`、`features` が `["pin", "filter", "resize"]`、`filters` が `[{0, select}, {2, date}]`、`collapse` が `closed`、`warnings` が空'
       - name: test_read_table_spec_when_unknown
         case: 正常
         summary: 読み込めない値と組み合わせを警告にし、知らない種類・機能・キーをスキップする
         condition: '`unknown +sort +foo size=2 filter=無い列,名前:range closed open`'
         mock: なし
-        expected: '`kind` が `default`、`features` が `["pin", "sort"]`、`filters` が空、`collapse` が `closed`、`warnings` に `無い列`・`range`・`closed と open` の項目だけがあり、`skipped` の `arg` が `unknown`・`+foo`・`size=`'
+        expected: '`kind` が `default`、`features` が `["pin", "resize", "sort"]`、`filters` が空、`collapse` が `closed`、`warnings` に `無い列`・`range`・`closed と open` の項目だけがあり、`skipped` の `arg` が `unknown`・`+foo`・`size=`'
       - name: test_read_table_spec_when_features
         case: 正常
         summary: 5 つの機能と hide=・total= を読み込む
         condition: '`data +count +columns +total +copy +rowlink hide=説明 total=数量:sum,名前:count` と見出し `名前`・`説明`・`数量`'
         mock: なし
-        expected: '`features` が `["sort", "pin", "filter", "count", "columns", "total", "copy", "rowlink"]`、`hide` が `[1]`、`totals` が `[{2, sum}, {0, count}]`、`warnings` が空'
+        expected: '`features` が `["sort", "pin", "filter", "resize", "count", "columns", "total", "copy", "rowlink"]`、`hide` が `[1]`、`totals` が `[{2, sum}, {0, count}]`、`warnings` が空'
       - name: test_read_table_spec_when_feature_keys_invalid
         case: 正常
         summary: 読み込めない集計・隠す列と機能の無い表のキーを警告にして適用しない
@@ -562,16 +563,16 @@ functions:
         expected: 1 つ目は `headRows` が 1、`rowHeader` が 0、`warnings` に `header-rows=`（本文に表の行の数 3）と `row-header=` の項目。2 つ目は `rowHeader` が 0、`warnings` に `row-header=`（本文に表の列の数 3）の項目
       - name: test_read_table_spec_when_columns
         case: 正常
-        summary: pin=・wide=・check= の列名を列の位置として解釈する
-        condition: '`data pin=物理名 wide=説明 check=必須,既定` と見出し `No`・`物理名`・`説明`・`必須`・`既定`'
+        summary: pin=・wide=・check= の列名を列の位置として解釈し、pin= は複数の列名を読む
+        condition: '`data pin=物理名 wide=説明 check=必須,既定` と `data pin=物理名,No`、見出しはどちらも `No`・`物理名`・`説明`・`必須`・`既定`'
         mock: なし
-        expected: '`pin` が `1`、`wide` が `[2]`、`check` が `[3, 4]`、`warnings` が空'
+        expected: '1 つ目は `pin` が `[1]`、`wide` が `[2]`、`check` が `[3, 4]`、`warnings` が空。2 つ目は `pin` が `[0, 1]`'
       - name: test_read_table_spec_when_column_keys_invalid
         case: 正常
-        summary: 表に無い列名と pin の無い表の pin= を警告にして適用しない
-        condition: 見出し `名前`・`説明` で、`data pin=無い列 wide=説明 check=無い列` と `data -pin pin=名前` をそれぞれ読み込む
+        summary: 表に無い列名と pin の無い表の pin= を警告にして適用せず、pin= は読めた列名だけを適用する
+        condition: 見出し `名前`・`説明` で、`data pin=無い列 wide=説明 check=無い列`・`data -pin pin=名前`・`data pin=名前,無い列` をそれぞれ読み込む
         mock: なし
-        expected: 1 つ目は `pin` が無く、`wide` が `[1]`、`check` が空、`warnings` に `無い列` の項目が 2 つ。2 つ目は `pin` が無く、`warnings` に `pin=`（`+pin` が要る）の項目
+        expected: 1 つ目は `pin` が無く、`wide` が `[1]`、`check` が空、`warnings` に `無い列` の項目が 2 つ。2 つ目は `pin` が無く、`warnings` に `pin=`（`+pin` が要る）の項目。3 つ目は `pin` が `[0]` で、`warnings` に `無い列` の項目が 1 つ
       - name: test_read_table_spec_when_title_has_space
         case: 異常
         summary: title= の値の空白の後ろの単語を警告にし、スキップしない
@@ -591,7 +592,7 @@ functions:
     container: src/render/syntax/tables.ts
     kind: 関数
     scope: internal
-    summary: コアルール。表にスクリーンリーダー向けの名前と `tabindex`、セルに列名を付ける（今の処理）。`table` がオンなら、表のマーカーの範囲の表と囲まない表を `readTableSpec` の指定で部品『表』の囲み（`data-kind`・`data-features`・`data-filter`・`data-hide`・`data-total`・折り畳み）に入れ（折り畳みの見出しは `title` か `表（{本文の行の数} 行）`）、`rowlink` の表は本文の各行に `rowIdOf` の `id`（`taken` は `env.headings` の ID と前の行の ID）を付けて先頭のセルに行へのリンクを配置し、警告を囲みの頭に差し込む。`readTableSpec` にはマーカーの `rest` を指定し、`skipped` を `pushSkippedArgs` で囲みの頭に差し込む。`+total` の表は `findUnreadableTotals` で `sum`・`avg` の列の数として読み込めないセルを探し、列と計算ごとに 1 つずつの警告（値の並びは読み込めない値を `codes` で行内のコードにして `・` でつなぐ）を表の上に差し込む。閉じのマーカーが無ければ文書の終わりまでを範囲にして警告を差し込む。表の範囲は `table_open` と `table_close` の入れ子の数で数え、自分の `table_open` に対応する `table_close` までにする。範囲の中の表（行の詳細の中の表）も部品『表』の囲みに入れ、適用する表のマーカーの範囲は外の表の `table_open` より後ろで開くものに限る（無ければ `default`。外の表のマーカーの指定は適用しない）。表の範囲の中の表のマーカーのトークンは、外の表と一緒に移さず使用し切る。本文の行の数・`rowlink`・`total` は、入れ子の数が自分の表と同じ行だけを対象にする。セルの列名は、見出しを表ごとに追加し、`table_close` で外の表の見出しに戻して付ける。`table` がオンなら、表のマーカーの範囲の表と囲まない表に `readTableColors` の色を当て、強調する列の `th`・`td` のトークンに class `mdmark-col-highlight` と `data-color`、色を付ける本文の行の `tr` のトークンに `data-color` を付け（どちらも `data-mdmark-own` を付ける）、読み込めない色の指定を表の囲みの頭の警告の項目に入れる。`pin` は囲みの `data-pin`、`check` は囲みの `data-check` に写す。`reorder` の表で `headRows` が 2 以上なら、最下段の見出しのセルのトークンに `headerGroupsOf` の結合した見出しの位置を `data-group` で付ける。`tree` の表は囲みに `data-tree` をコピーし、表の範囲のトークンを `decorateTreeTable` に指定する。`wide` の列の `th`・`td` のトークンに class `mdmark-wide`、`check` の列の `th`・`td` のトークンに class `mdmark-align-center` を付ける。`check` の列の本文のセルの中身が `true`・`false` のときは、`td` のトークンに `data-value` を付け、中身のトークンを `renderCheckCell` の HTML に `markOwn` を掛けた 1 つのトークンに替える（どれも `data-mdmark-own` を付ける）。表のマーカーの範囲の表は、`headRows` が 2 以上なら本文の先頭の `headRows - 1` 行を `thead` へ移し、`rowHeader` の列の本文のセルを `<th scope="row">` にし、セルの文字の格子を `planCellMerges` に指定して結合を適用する。見出しの行は始まりのセルに `rowspan`・`colspan`（`colspan` を持つセルは `scope="colgroup"`、ほかは `scope="col"`）を付けて結合したセルのトークンを削除し、本文の行は結合したセルの中身を始まりのセルの中身のトークンのコピーに替えて `data-merge` と `hidden` を付け、始まりのセルに `rowspan`・`colspan` を付ける。`mergeColumns` を `data-merge-columns` に設定し、`warnings` を表の囲みの頭の警告の項目に入れる。追加した属性はどれも `data-mdmark-own` を持つトークンに付ける。表のマーカーの範囲の外の表は結合しない
+    summary: コアルール。表にスクリーンリーダー向けの名前と `tabindex`、セルに列名を付ける（今の処理）。`table` がオンなら、表のマーカーの範囲の表と囲まない表を `readTableSpec` の指定で部品『表』の囲み（`data-kind`・`data-features`・`data-filter`・`data-hide`・`data-total`・折り畳み）に入れ（折り畳みの見出しは `title` か `表（{本文の行の数} 行）`）、`rowlink` の表は本文の各行に `rowIdOf` の `id`（`taken` は `env.headings` の ID と前の行の ID）を付けて先頭のセルに行へのリンクを配置し、警告を囲みの頭に差し込む。`readTableSpec` にはマーカーの `rest` を指定し、`skipped` を `pushSkippedArgs` で囲みの頭に差し込む。`+total` の表は `findUnreadableTotals` で `sum`・`avg` の列の数として読み込めないセルを探し、列と計算ごとに 1 つずつの警告（値の並びは読み込めない値を `codes` で行内のコードにして `・` でつなぐ）を表の上に差し込む。閉じのマーカーが無ければ文書の終わりまでを範囲にして警告を差し込む。表の範囲は `table_open` と `table_close` の入れ子の数で数え、自分の `table_open` に対応する `table_close` までにする。範囲の中の表（行の詳細の中の表）も部品『表』の囲みに入れ、適用する表のマーカーの範囲は外の表の `table_open` より後ろで開くものに限る（無ければ `default`。外の表のマーカーの指定は適用しない）。表の範囲の中の表のマーカーのトークンは、外の表と一緒に移さず使用し切る。本文の行の数・`rowlink`・`total` は、入れ子の数が自分の表と同じ行だけを対象にする。セルの列名は、見出しを表ごとに追加し、`table_close` で外の表の見出しに戻して付ける。`table` がオンなら、表のマーカーの範囲の表と囲まない表に `readTableColors` の色を当て、強調する列の `th`・`td` のトークンに class `mdmark-col-highlight` と `data-color`、色を付ける本文の行の `tr` のトークンに `data-color` を付け（どちらも `data-mdmark-own` を付ける）、読み込めない色の指定を表の囲みの頭の警告の項目に入れる。`pin` は半角の空白で区切って囲みの `data-pin`、`check` は囲みの `data-check` に写す。`reorder` の表で `headRows` が 2 以上なら、最下段の見出しのセルのトークンに `headerGroupsOf` の結合した見出しの位置を `data-group` で付ける。`tree` の表は囲みに `data-tree` をコピーし、表の範囲のトークンを `decorateTreeTable` に指定する。`wide` の列の `th`・`td` のトークンに class `mdmark-wide`、`check` の列の `th`・`td` のトークンに class `mdmark-align-center` を付ける。`check` の列の本文のセルの中身が `true`・`false` のときは、`td` のトークンに `data-value` を付け、中身のトークンを `renderCheckCell` の HTML に `markOwn` を掛けた 1 つのトークンに替える（どれも `data-mdmark-own` を付ける）。表のマーカーの範囲の表は、`headRows` が 2 以上なら本文の先頭の `headRows - 1` 行を `thead` へ移し、`rowHeader` の列の本文のセルを `<th scope="row">` にし、セルの文字の格子を `planCellMerges` に指定して結合を適用する。見出しの行は始まりのセルに `rowspan`・`colspan`（`colspan` を持つセルは `scope="colgroup"`、ほかは `scope="col"`）を付けて結合したセルのトークンを削除し、本文の行は結合したセルの中身を始まりのセルの中身のトークンのコピーに替えて `data-merge` と `hidden` を付け、始まりのセルに `rowspan`・`colspan` を付ける。`mergeColumns` を `data-merge-columns` に設定し、`warnings` を表の囲みの頭の警告の項目に入れる。追加した属性はどれも `data-mdmark-own` を持つトークンに付ける。表のマーカーの範囲の外の表は結合しない
     description: 今の `src/render/parser.ts` の `decorateTables` をここへ移す。並べ替え・ピン止め・絞り込みのボタンは `mount` が付ける
     args:
       - name: state
@@ -613,7 +614,7 @@ functions:
         summary: 表のマーカーの表を指定どおりに囲み、囲まない表を default にする
         condition: '`<!-- table: data filter=名前 closed -->` 〜 `<!-- /table -->` の表と、マーカーの無い表'
         mock: なし
-        expected: 1 つ目が `data-kind="data" data-features="sort pin filter" data-filter="0:select"` と `<details class="mdmark-table-details">`、2 つ目が `data-kind="default" data-features="pin"`
+        expected: 1 つ目が `data-kind="data" data-features="sort pin filter resize" data-filter="0:select"` と `<details class="mdmark-table-details">`、2 つ目が `data-kind="default" data-features="pin resize"`
       - name: test_decorate_tables_when_range_not_closed
         case: 正常
         summary: 閉じのマーカーが無いときは文書の終わりまでの表に当て、警告を差し込む
@@ -631,7 +632,7 @@ functions:
         summary: 5 つの機能と hide=・total= を属性にコピーし、行に ID とリンクを付ける
         condition: '`## みかん` の後の `<!-- table: data +count +columns +total +copy +rowlink hide=説明 total=数量:sum -->` 〜 `<!-- /table -->` の表（列 `名前`・`説明`・`数量`、名前 `りんご`・`みかん`・`みかん`）'
         mock: なし
-        expected: '`data-features="sort pin filter count columns total copy rowlink"`・`data-hide="1"`・`data-total="2:sum"`、行の `id` が `りんご`・`みかん-1`・`みかん-2`、各行の先頭のセルに `<a class="mdmark-row-anchor" href="#{ID}">`'
+        expected: '`data-features="sort pin filter resize count columns total copy rowlink"`・`data-hide="1"`・`data-total="2:sum"`、行の `id` が `りんご`・`みかん-1`・`みかん-2`、各行の先頭のセルに `<a class="mdmark-row-anchor" href="#{ID}">`'
       - name: test_decorate_tables_when_total_unreadable
         case: 異常
         summary: 集計する列の数として読み込めないセルを、列と計算ごとの警告にして表の上に差し込む
@@ -2993,7 +2994,7 @@ functions:
     container: src/render/syntax/includes.ts
     kind: 関数
     scope: internal
-    summary: コアルール（見出しの ID と図表の番号より前）。`include` がオンなら、include のマーカーを `resolveIncludePath` で解き、`opts.includes` の本文を、Markdown は同じパーサでトークンにして `selectHeadingSection` の範囲を、それ以外は `selectLines` の行を拡張子を言語にした `fence` として、`div.mdmark-include` の中に差し込む。差し込んだトークンの元の行番号はマーカーの行にする。取り込んだ Markdown の中のマーカーは取り込みの順を持ってたどり、途中に同じキーがあれば循環の警告を差し込む。表に無いキー・無い見出し・行の数を越える範囲は記載の警告を差し込み、`collectWarnings` が集める警告に `includeTarget` を付ける（`mdmark check --text`・`--file` が除く）。取り込んだ文書の `features` のマーカーは取り除く
+    summary: コアルール（見出しの ID と図表の番号より前）。`include` がオンなら、include のマーカーを `resolveIncludePath` で解き、`opts.includes` の本文を、Markdown は `splitFrontmatter` で先頭のフロントマターを空白にしてから同じパーサでトークンにして `selectHeadingSection` の範囲を、それ以外は `selectLines` の行を拡張子を言語にした `fence` として、`div.mdmark-include` の中に差し込む。差し込んだトークンの元の行番号はマーカーの行にする。取り込んだ Markdown の中のマーカーは取り込みの順を持ってたどり、途中に同じキーがあれば循環の警告を差し込む。表に無いキー・無い見出し・行の数を越える範囲は記載の警告を差し込み、`collectWarnings` が集める警告に `includeTarget` を付ける（`mdmark check --text`・`--file` が除く）。取り込んだ文書の `features` のマーカーは取り除く
     args:
       - name: state
         type: StateCore
@@ -3004,6 +3005,7 @@ functions:
       - '#functions[resolveIncludePath]'
       - '#functions[selectHeadingSection]'
       - '#functions[selectLines]'
+      - dev/設計書/モジュール構成/ライブラリ本体/描画.ts#functions[splitFrontmatter]
     unit_tests:
       - name: test_expand_includes
         case: 正常
@@ -3011,6 +3013,12 @@ functions:
         expected: 1 つ目に 2 つの見出し、2 つ目に `実行` の見出しだけ、3 つ目に 3〜5 行の `language-ts` のコードブロック。差し込んだ見出しの ID が重ならない
         mock: なし
         summary: 全体・見出しの中・行の範囲を差し込む
+      - name: test_expand_includes_when_frontmatter
+        case: 正常
+        summary: 取り込む Markdown の先頭のフロントマターを差し込まない
+        condition: '`opts.includes` の `共通/手順.md` が `---\ntitle: 手順\n---\n\n## 実行` で、設定の `features` は `{ frontmatter: true }`'
+        mock: なし
+        expected: '差し込んだトークンに `実行` の見出しがあり、`title: 手順` の文字と `mdmark-frontmatter` が無い'
       - name: test_expand_includes_when_missing
         case: 異常
         condition: 表に無い `missing.md`・無い見出し・12 行のファイルの `#L20-L22`
@@ -3303,11 +3311,51 @@ functions:
       type: WarningItem
       description: 警告の項目
     status: planned
+  - name: insertFrontmatter
+    title: フロントマターの表示を差し込む
+    container: src/render/syntax/frontmatter.ts
+    kind: 関数
+    scope: internal
+    summary: コアルール（機能を決めた後、取り込みの後、コードブロックの飾りより前）。`frontmatter` がオンで `env.frontmatter` の中身が空白だけでないとき、中身を持つ `fence` のトークン（`info` は `yaml`、`map` はフロントマターの 2 行目から閉じる行まで）を作り、その前後に `renderFrontmatter` の HTML を `SLOT_MARKER` で分けた `ownBlock` を置いて、`state.tokens` の先頭に入れる
+    description: コードブロックの描き方（言語のラベル・コピーのボタン・色分け）は、差し込んだ `fence` に後のコアルールと `renderer.rules.fence` がそのまま当てる。`ownBlock` が `nonce` の印を付けるため、`sanitize` の後も折りたたみの class が残る。取り込んだ文書（`expandIncludes`）はこのルールを通らず、表示を持たない
+    args:
+      - name: state
+        type: StateCore
+        required: true
+        description: markdown-it の状態。`state.env.frontmatter` を読む
+    side_effects: '`state.tokens` の先頭に 3 つのトークンを入れる'
+    callees:
+      - dev/設計書/モジュール構成/ライブラリ本体/部品.ts#functions[renderFrontmatter]
+    refs:
+      - dev/設計書/インターフェース定義/ライブラリ本体/文書をHTML文字列にする.ts#constraints[フロントマター]
+    unit_tests:
+      - name: test_insert_frontmatter
+        case: 正常
+        summary: 機能がオンなら、折りたたみの開きと閉じの間に yaml の fence を入れる
+        condition: '`env.frontmatter` が `{ content: "title: a", endLine: 2 }`、`features.frontmatter` が `true`'
+        mock: なし
+        expected: '`state.tokens` の先頭が `html_block`（`mdmark-frontmatter` を持ち `data-mdmark-own` の印を持つ）・`fence`（`info` が `yaml`、`content` が `title: a\n`、`map` が `[1, 3]`）・`html_block`（`</details>`）'
+      - name: test_insert_frontmatter_when_off
+        case: 正常
+        summary: 機能がオフなら何も入れない
+        condition: 同じ `env.frontmatter`、`features.frontmatter` が `false`
+        mock: なし
+        expected: '`state.tokens` が変わらない'
+      - name: test_insert_frontmatter_when_blank
+        case: 正常
+        summary: 中身が空白だけなら何も入れない
+        condition: '`env.frontmatter` が `{ content: "  ", endLine: 2 }`、`features.frontmatter` が `true`'
+        mock: なし
+        expected: '`state.tokens` が変わらない'
+    status: planned
+    introduced:
+      pr: 422
 notes:
   コアルールの順: 描画の `createParser` が登録する。マーカー → 機能の重ね合わせ → ページの設定 → 取り込み → 蛍光ペン → 脚注の機能のオン・オフ → カードの格子 → 行内のアイコン → 見出し → 用語集の表 → 行の詳細 → ビュー → CSV の表 → 表 → タブ → ステップ → 注意書き → ファイルツリー → バッジ → キー → 本文の文字の色 → 図の部品 → 埋め込んだ HTML → コードブロック → 表の見本の移動 → 画像の属性と種類 → 図表の番号 → ギャラリー → 画像と動画と音声の図 → カード → 段組み → details の範囲 → wide の範囲 → 改ページ → 用語の下線 → セクション → 目次 → 脚注の一覧 → 関連文書の一覧 → タスクリスト → www の自動リンク → 残ったマーカーを取り除く → 元の行番号 → 脚注の定義の取り出し → 記載の警告を集める。行の詳細は表の囲みより前、セクションは記法の警告を差し込んだ後、目次は見出しの ID を付けた後。埋め込んだ HTML は用語の下線より前に配置し、`html_block` にした中身を用語の下線が重ねて照合しないようにする。画像の属性は図表の番号より前に読み込み、図表の番号がギャラリーに番号を指定してからギャラリーを囲む。残った画像だけの段落は、その後に図にする
   部品の差し込み方: 中身を持つ部品（セクション・タブ・注意書き・行の詳細・図表の番号・表）は、中身の代わりに `SLOT_MARKER` を指定して HTML を作り、`markOwn` を掛けてから `SLOT_MARKER` の前後で分け、開きと閉じの `html_block` のトークンで中身のトークンを挟む。中身の HTML には `markOwn` を掛けない。見出し・表など Markdown から作ったトークンに付ける記法の属性は、同じトークンに `data-mdmark-own` も付ける。埋め込んだ HTML は例外で、`sanitizeEmbedded` で先に落とした中身にも `markOwn` を掛ける
 test_files:
   - tests/unit/src/render/syntax/headings.test.ts
+  - tests/unit/src/render/syntax/frontmatter.test.ts
   - tests/unit/src/render/syntax/sections.test.ts
   - tests/unit/src/render/syntax/tables.test.ts
   - tests/unit/src/render/syntax/row-details.test.ts

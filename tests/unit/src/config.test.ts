@@ -16,7 +16,7 @@ const DEFAULT_MERMAID_URL =
 const DEFAULT_HTML_SCRIPTS_URL =
   "https://cdn.jsdelivr.net/npm/@babel/standalone@8.1.1/+esm";
 
-/** このバージョンが知っている機能の既定（`comments`・`html-scripts` を除いて全てオン） */
+/** このバージョンが知っている機能の既定（`comments`・`html-scripts`・`frontmatter` を除いて全てオン） */
 const DEFAULT_FEATURES = {
   print: true,
   table: true,
@@ -62,6 +62,7 @@ const DEFAULT_FEATURES = {
   wide: true,
   csv: true,
   "card-grid": true,
+  frontmatter: false,
 };
 
 // 設定が無ければ既定を返却する（正常系）
@@ -79,6 +80,7 @@ test("test_resolve_config", async () => {
     htmlScripts: { url: DEFAULT_HTML_SCRIPTS_URL },
     mermaid: { url: DEFAULT_MERMAID_URL, theme: "mdmark", themeVariables: {} },
     sideToc: { mode: "hover" },
+    table: { pin: "each" },
     colorTheme: "dev-swiss",
     colorScheme: "auto",
     labels: { paramCopy: "今の値をコピーする" },
@@ -216,6 +218,25 @@ test("test_resolve_config_when_side_toc_mode_given", async () => {
   expect(resolvedEmpty.sideToc.mode).toBe("hover");
   expect(resolvedEmpty.features["side-toc"]).toBe(true);
   expect(resolvedEmpty.features["back-to-top"]).toBe(true);
+});
+
+// through だけを受け、他の値と無いときは each にする（正常系）
+test("test_resolve_config_when_table_pin_given", async () => {
+  // 準備
+  const { resolveConfig } = await loadConfig();
+  const through: MdmarkConfig = { table: { pin: "through" } };
+  const unknown: MdmarkConfig = { table: { pin: "left" } };
+  const notString = { table: { pin: 1 } } as unknown as MdmarkConfig;
+  // 実行
+  const resolvedThrough = resolveConfig({ config: through });
+  const resolvedUnknown = resolveConfig({ config: unknown });
+  const resolvedNotString = resolveConfig({ config: notString });
+  const resolvedEmpty = resolveConfig({ config: {} });
+  // 検証
+  expect(resolvedThrough.table.pin).toBe("through");
+  expect(resolvedUnknown.table.pin).toBe("each");
+  expect(resolvedNotString.table.pin).toBe("each");
+  expect(resolvedEmpty.table.pin).toBe("each");
 });
 
 // COLOR_THEMES の名前だけを受け、他の値と無いときは dev-swiss にする（正常系）

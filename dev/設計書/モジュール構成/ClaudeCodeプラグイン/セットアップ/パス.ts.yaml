@@ -1,5 +1,5 @@
 title: ClaudeCodeプラグイン / セットアップ / パス
-lead: 端末の設定・状態の配置場所・`settings.json` のパスと tmux のセッション名。
+lead: 端末の設定・状態の配置場所・`settings.json`・unit のファイルのパスと、起動の方法・unit の名前・tmux のセッション名の読み取り。
 constants:
   - name: DEFAULT_SESSION_NAME
     title: 既定の tmux のセッション名
@@ -12,6 +12,17 @@ constants:
     status: planned
     introduced:
       pr: 354
+  - name: DEFAULT_UNIT_NAME
+    title: 既定の unit の名前
+    container: src/plugin/setup/paths.ts
+    usecase: 常駐サーバーを起動する
+    summary: 端末の設定に `serve.systemdUnit` が無いときの unit の名前
+    value: mdmark-mcp
+    refs:
+      - dev/設計書/設定/ライブラリ本体#settings[serve.systemdUnit]
+    status: planned
+    introduced:
+      pr: 444
   - name: SERVE_LOG_FILE
     title: 常駐サーバーのログのファイル名
     container: src/plugin/setup/paths.ts
@@ -21,6 +32,29 @@ constants:
     status: planned
     introduced:
       pr: 354
+data_models:
+  - name: Launcher
+    title: 起動の方法
+    container: src/plugin/setup/paths.ts
+    usecase: 常駐サーバーを起動する
+    summary: '`"systemd" | "tmux"`'
+    properties: []
+    refs:
+      - dev/設計書/設定/ライブラリ本体#settings[serve.launcher]
+    status: planned
+    introduced:
+      pr: 444
+  - name: LauncherSetting
+    title: 起動の方法の設定
+    container: src/plugin/setup/paths.ts
+    usecase: 常駐サーバーを起動する
+    summary: '`"auto" | Launcher`'
+    properties: []
+    refs:
+      - dev/設計書/設定/ライブラリ本体#settings[serve.launcher]
+    status: planned
+    introduced:
+      pr: 444
 functions:
   - name: resolveSetupPaths
     title: 端末のパスを決める
@@ -102,6 +136,97 @@ functions:
     status: planned
     introduced:
       pr: 354
+  - name: readUnitName
+    title: unit の名前を読み込む
+    kind: 関数
+    container: src/plugin/setup/paths.ts
+    usecase: 常駐サーバーを起動する
+    role: 処理
+    summary: 端末の設定の `serve.systemdUnit`、無ければ `DEFAULT_UNIT_NAME`
+    scope: public
+    is_async: false
+    args:
+      - name: settings
+        type: Record<string, unknown> | undefined
+        required: true
+        description: 読み込んだ端末の設定。無ければ `undefined`
+    returns:
+      type: string
+      description: unit の名前
+    process: 1. `serve.systemdUnit` が文字列ならそれを、ほかは `DEFAULT_UNIT_NAME` を返却する
+    unit_tests:
+      - name: test_read_unit_name
+        case: 正常
+        summary: 無ければ既定、あれば端末の設定の値
+        condition: '`undefined` と `{ serve: { systemdUnit: "x" } }`'
+        mock: なし
+        expected: '`mdmark-mcp` と `x`'
+    refs:
+      - dev/設計書/設定/ライブラリ本体#settings[serve.systemdUnit]
+    status: planned
+    introduced:
+      pr: 444
+  - name: readLauncherSetting
+    title: 起動の方法の設定を読み込む
+    kind: 関数
+    container: src/plugin/setup/paths.ts
+    usecase: 常駐サーバーを起動する
+    role: 処理
+    summary: 端末の設定の `serve.launcher` が `auto`・`systemd`・`tmux` ならその値、ほかは `auto`
+    scope: public
+    is_async: false
+    args:
+      - name: settings
+        type: Record<string, unknown> | undefined
+        required: true
+        description: 読み込んだ端末の設定。無ければ `undefined`
+    returns:
+      type: LauncherSetting
+      description: 起動の方法の設定
+    process: 1. `serve.launcher` が `auto`・`systemd`・`tmux` のどれかならそれを、ほかは `auto` を返却する（値の誤りは `mdmark check` が通知する）
+    unit_tests:
+      - name: test_read_launcher_setting
+        case: 正常
+        summary: 知らない値と無いときは auto
+        condition: '`undefined`・`{ serve: { launcher: "tmux" } }`・`{ serve: { launcher: "x" } }`'
+        mock: なし
+        expected: '`auto`・`tmux`・`auto`'
+    refs:
+      - dev/設計書/設定/ライブラリ本体#settings[serve.launcher]
+    status: planned
+    introduced:
+      pr: 444
+  - name: resolveUnitPath
+    title: unit のファイルのパスを決める
+    kind: 関数
+    container: src/plugin/setup/paths.ts
+    usecase: 常駐サーバーを起動する
+    role: 処理
+    summary: '`${XDG_CONFIG_HOME:-~/.config}/systemd/user/{unit}.service`'
+    scope: public
+    is_async: false
+    args:
+      - name: options
+        type: '{ env: NodeJS.ProcessEnv; unit: string }'
+        required: true
+        description: 環境変数と unit の名前
+    returns:
+      type: string
+      description: unit のファイルの絶対パス
+    process: 1. `XDG_CONFIG_HOME` が空でなければそれを、ほかは `{HOME}/.config` を基準にし、`systemd/user/{unit}.service` を結合して返却する
+    unit_tests:
+      - name: test_resolve_unit_path
+        case: 正常
+        summary: XDG_CONFIG_HOME と HOME から決める
+        condition: '`XDG_CONFIG_HOME=/x`、`XDG_CONFIG_HOME` が無く `HOME=/h`'
+        mock: なし
+        expected: '`/x/systemd/user/u.service`、`/h/.config/systemd/user/u.service`'
+    refs:
+      - dev/設計書/インターフェース定義/ClaudeCodeプラグイン/常駐サーバーを起動する.ts#constraints[unit のファイル]
+      - dev/設計書/外部ライブラリ/systemd#limitations
+    status: planned
+    introduced:
+      pr: 444
   - name: readYamlFile
     title: YAML のファイルを読み込む
     kind: 関数

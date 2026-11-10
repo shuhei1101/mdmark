@@ -46,6 +46,9 @@ data_models:
       - name: mermaid
         type: '{ url?: string; theme?: string; themeVariables?: Record<string, unknown> } | undefined'
         description: mermaid の設定。`url` は mermaid の ES モジュールの URL、`theme` はテーマの名前（知らない値も受けて `resolveConfig` が `mdmark` にするため、型は `string`）、`themeVariables` はテーマの変数の上書き
+      - name: table
+        type: '{ pin?: string } | undefined'
+        description: 表の設定。`pin` はピン止めの動き（`each` / `through`）。知らない値も受けて `resolveConfig` が `each` にするため、型は `string`
   - name: LibraryEntry
     title: 対応表の行
     container: src/config.ts
@@ -94,6 +97,9 @@ data_models:
       - name: mermaid
         type: '{ url: string; theme: MermaidTheme; themeVariables: Record<string, string> }'
         description: '`url` は設定の `mermaid.url` が文字列ならその値、それ以外は `DEFAULT_MERMAID_URL`。`theme` は `MERMAID_THEMES` にあればその値、それ以外は `mdmark`。`themeVariables` は設定の `mermaid.themeVariables` のうち値が文字列のキーだけ（`useGradient`・`dropShadow` を除く）'
+      - name: table
+        type: '{ pin: TablePinMode }'
+        description: 設定の `table.pin` が `through` のときだけ `through`、それ以外は `each`
   - name: MermaidTheme
     title: mermaid のテーマ
     container: src/config.ts
@@ -149,12 +155,21 @@ data_models:
         type: SideTocMode | undefined
         description: '`toc=` の値'
     status: planned
+  - name: TablePinMode
+    title: 表のピン止めの動き
+    container: src/config.ts
+    usecase: 共通
+    summary: 表のピン止めの動き（`"each" | "through"`）
+    description: '`each` は押した列だけを留め、留めた列より左を表示している間は右端に、過ぎた後は左端に留める。`through` は押した列までを左端に留める'
+    status: planned
+    introduced:
+      pr: 438
 constants:
   - name: DEFAULT_FEATURES
     title: 機能の既定
     container: src/config.ts
     summary: このバージョンが知っている機能とその既定。機能を作る Issue が行を追加する
-    value: '{ print: true, table: true, callout: true, tabs: true, steps: true, tree: true, badge: true, footnotes: true, code: true, syntax: true, toc: true, anchors: true, sections: true, "row-details": true, figures: true, diagrams: true, "diagram-resize": true, glossary: true, backlinks: true, html: true, hints: true, mermaid: true, views: true, comments: false, "html-scripts": false, "side-toc": true, "back-to-top": true, "text-color": true, images: true, gallery: true, lightbox: true, media: true, gif: true, cards: true, icon: true, columns: true, highlight: true, kbd: true, details: true, pagebreak: true, include: true, wide: true, csv: true, "card-grid": true }'
+    value: '{ print: true, table: true, callout: true, tabs: true, steps: true, tree: true, badge: true, footnotes: true, code: true, syntax: true, toc: true, anchors: true, sections: true, "row-details": true, figures: true, diagrams: true, "diagram-resize": true, glossary: true, backlinks: true, html: true, hints: true, mermaid: true, views: true, comments: false, "html-scripts": false, "side-toc": true, "back-to-top": true, "text-color": true, images: true, gallery: true, lightbox: true, media: true, gif: true, cards: true, icon: true, columns: true, highlight: true, kbd: true, details: true, pagebreak: true, include: true, wide: true, csv: true, "card-grid": true, frontmatter: false }'
     refs:
       - dev/設計書/設定/ライブラリ本体#settings[features.print]
   - name: DEFAULT_LIBRARIES
@@ -258,7 +273,7 @@ functions:
     kind: 関数
     scope: public
     summary: 利用側の設定に既定を当て、型の合わない値を落とした `ResolvedConfig` を返却する
-    description: '`features` は `DEFAULT_FEATURES` のキーのうち、設定に真偽値があるものだけを置き換える。`libraries` は `MARK_NAME_PATTERN` に合うキーと文字列の値だけを取り、既定にある名前は `url` だけを置き換え、無い名前は `figure: true` で追加する。`tooltips.placement` は `bottom` のときだけ `bottom` にし、無い値・他の値は `top` にする。`tooltips.diagramPlacement` は `top` のときだけ `top` にし、無い値・他の値は `bottom` にする。`syntax.url` は文字列のときだけ取り、無い値・他の型は `DEFAULT_SYNTAX_URL` にする。`html-scripts.url` は文字列のときだけ取って `htmlScripts.url` に入れ、無い値・他の型は `DEFAULT_HTML_SCRIPTS_URL` にする。`side-toc.mode` は `fixed` のときだけ `fixed` にし、無い値・他の値は `hover` にする。`colorTheme` は `COLOR_THEMES` にあるときだけ取り、無い値・他の値・文字列でない値は `DEFAULT_COLOR_THEME` にする（例外を投げない）。`colorScheme` は `COLOR_SCHEMES` にあるときだけ取り、無い値・他の値・文字列でない値は `DEFAULT_COLOR_SCHEME` にする。`labels.paramCopy` は空でない文字列のときだけ取り、無い値・空文字・他の型は `DEFAULT_LABELS.paramCopy` にする。`mermaid.url` は文字列のときだけ取り、無い値・他の型は `DEFAULT_MERMAID_URL` にする。`mermaid.theme` は `MERMAID_THEMES` にあるときだけ取り、無い値・他の値は `mdmark` にする。`mermaid.themeVariables` はマップのときだけ、値が文字列のキーを取り、`useGradient`・`dropShadow` は取らない。指定されたオブジェクトは書き換えない'
+    description: '`features` は `DEFAULT_FEATURES` のキーのうち、設定に真偽値があるものだけを置き換える。`libraries` は `MARK_NAME_PATTERN` に合うキーと文字列の値だけを取り、既定にある名前は `url` だけを置き換え、無い名前は `figure: true` で追加する。`tooltips.placement` は `bottom` のときだけ `bottom` にし、無い値・他の値は `top` にする。`tooltips.diagramPlacement` は `top` のときだけ `top` にし、無い値・他の値は `bottom` にする。`syntax.url` は文字列のときだけ取り、無い値・他の型は `DEFAULT_SYNTAX_URL` にする。`html-scripts.url` は文字列のときだけ取って `htmlScripts.url` に入れ、無い値・他の型は `DEFAULT_HTML_SCRIPTS_URL` にする。`side-toc.mode` は `fixed` のときだけ `fixed` にし、無い値・他の値は `hover` にする。`table.pin` は `through` のときだけ `through` にし、無い値・他の値は `each` にする。`colorTheme` は `COLOR_THEMES` にあるときだけ取り、無い値・他の値・文字列でない値は `DEFAULT_COLOR_THEME` にする（例外を投げない）。`colorScheme` は `COLOR_SCHEMES` にあるときだけ取り、無い値・他の値・文字列でない値は `DEFAULT_COLOR_SCHEME` にする。`labels.paramCopy` は空でない文字列のときだけ取り、無い値・空文字・他の型は `DEFAULT_LABELS.paramCopy` にする。`mermaid.url` は文字列のときだけ取り、無い値・他の型は `DEFAULT_MERMAID_URL` にする。`mermaid.theme` は `MERMAID_THEMES` にあるときだけ取り、無い値・他の値は `mdmark` にする。`mermaid.themeVariables` はマップのときだけ、値が文字列のキーを取り、`useGradient`・`dropShadow` は取らない。指定されたオブジェクトは書き換えない'
     args:
       - name: options
         type: '{ config?: MdmarkConfig; defaultLibraries?: Record<string, LibraryEntry> }'
@@ -346,6 +361,12 @@ functions:
         condition: '`{ tooltips: { diagramPlacement: "top" } }`、`{ tooltips: { diagramPlacement: "left" } }`、`{ tooltips: { placement: "bottom" } }`'
         mock: なし
         expected: '`tooltips.diagramPlacement` が順に `top`・`bottom`・`bottom`。3 つ目の `tooltips.placement` は `bottom`'
+      - name: test_resolve_config_when_table_pin_given
+        case: 正常
+        summary: '`through` だけを受け、他の値と無いときは `each` にする'
+        condition: '`{ table: { pin: "through" } }`、`{ table: { pin: "left" } }`、`{ table: { pin: 1 } }`、`{}`'
+        mock: なし
+        expected: 1 つ目の `table.pin` が `through`、残りは `each`
   - name: applyPageSettings
     title: ページの設定を重ねる
     container: src/config.ts

@@ -84,6 +84,12 @@ files:
   - path: components/details-range/index.html
     description: '部品『details-range』のモック: `details` のマーカーで囲んだ範囲の折りたたみ（閉じた・開いた・長いタイトル）と、閉じのマーカーが無い記載の警告。部品の外観や状態を決めるときに参照する。'
     tags: [topic:モック, topic:記法]
+  - path: components/frontmatter/index.html
+    description: '部品『frontmatter』のモック: 機能 frontmatter をオンにしたときに本文の先頭に置くフロントマターの表示（キーと値の表と yaml のコードブロックの案、閉じた・開いた・入れ子・長い値）。部品の外観や状態を決めるときに参照する。'
+    tags: [topic:モック, topic:フロントマター]
+  - path: components/frontmatter/style.css
+    description: 'モック『frontmatter』の外観: カタログの状態の見出しの上の余白。このモックの外観を変えるときに参照する。'
+    tags: [topic:モック, tool:css]
   - path: components/highlighter/index.html
     description: '部品『highlighter』のモック: `==text==` の蛍光ペンの既定の色と色の名前ごとの色、コメントのマーカーとの区別、知らない色の名前の記載の警告。部品の外観や状態を決めるときに参照する。'
     tags: [topic:モック, topic:記法]
@@ -175,7 +181,7 @@ files:
     description: '部品『syntax-warning』のモック: 読み込めない指定とその修正方法を作成者へ通知する記載の警告。部品の外観や状態を決めるときに参照する。'
     tags: [topic:モック, topic:構文]
   - path: components/table/index.html
-    description: '部品『table』のモック: 表の種類ごとの外観と、並べ替え・絞り込み・ピン止め・閉じた表・件数の表示・列の表示の切り替え・計算ごとの集計の行・コピーの形式・行へのリンク、画面の上端と下端に留める見出し行と集計の行、狭い幅で畳む最終列、閉じた表の見出しと `title=`、列の強調と行の色、はみ出す表の既定のピン止めと `-pin`・`pin=`・`wide=`・`check=` の ✓、多段の見出し・行見出し・セルの結合と並べ替え・絞り込みの後の再結合・行見出しの列までのピン止め、本文の幅に広げた表、列のボタンの案 A・B・C（アイコンだけ・隠した列の数のバッジ・設定のメニュー）。部品の外観や状態を決めるときに参照する。'
+    description: '部品『table』のモック: 表の種類ごとの外観と、並べ替え・絞り込み・ピン止め・閉じた表・件数の表示・列の表示の切り替え・計算ごとの集計の行・コピーの形式・行へのリンク、画面の上端と下端に留める見出し行と集計の行、狭い幅で畳む最終列、閉じた表の見出しと `title=`、列の強調と行の色、はみ出す表の既定のピン止めと `-pin`・`pin=`・`wide=`・`check=` の ✓、多段の見出し・行見出し・セルの結合と並べ替え・絞り込みの後の再結合・行見出しの列までのピン止め、押した列だけを留めて左端か右端に留めるピン止めと `table.pin: through`・複数の列の `pin=`、本文の幅に広げた表、列のボタンの案 A・B・C（アイコンだけ・隠した列の数のバッジ・設定のメニュー）。部品の外観や状態を決めるときに参照する。'
     tags: [topic:モック, topic:テーブル]
   - path: components/tabs/index.html
     description: '部品『tabs』のモック: 見出しの文字をタブ名にしたタブと、URL の ID が指す見出しを持つタブを選ぶ処理、閉じたタブ・`title=` のタイトル、入れ子のタブ・太字のタブ名・入れ子の閉じが足りない記載の警告。部品の外観や状態を決めるときに参照する。'
@@ -401,6 +407,15 @@ files:
     tags: [topic:モック, topic:図, tool:css]
   - path: pages/document/42/index.md
     description: '#42（図・部品の基盤を TypeScript で点検して配り、ワークスペース固有の定義・AI が読み込む作り方の手順書・図の外観の決まりを持たせる）の画面のモックの案の一覧。案ごとの違いを見比べるときに参照する。'
+    tags: [topic:モック]
+  - path: pages/document/422/a-table/index.html
+    description: '#422 の画面のモックの案『a-table』: 配布物の mount でフロントマターを除外した文書を描き、表示をオンにしたときは本文の先頭の閉じた折りたたみにキーと値の表を置く。描き方と明暗を操作列で切り替える。画面の外観や振る舞いを決めるときに参照する。'
+    tags: [topic:モック, topic:フロントマター]
+  - path: pages/document/422/b-yaml-code/index.html
+    description: '#422 の画面のモックの案『b-yaml-code』: 配布物の mount でフロントマターを除外した文書を描き、表示をオンにしたときは本文の先頭の閉じた折りたたみに yaml のコードブロックを置く。描き方と明暗を操作列で切り替える。画面の外観や振る舞いを決めるときに参照する。'
+    tags: [topic:モック, topic:フロントマター]
+  - path: pages/document/422/index.md
+    description: '#422 の画面のモックの案の一覧。この PR で作った画面の案を探すときに参照する。'
     tags: [topic:モック]
   - path: pages/document/45/embedded-html/app.js
     description: 'モック『embedded-html』の動き: モックの「HTML の表示」「ヒント」の切り替え（設定の features.html・features.hints に該当する）。このモックの動きを変えるときに参照する。'
@@ -881,6 +896,41 @@ files:
     tags: [topic:モック, tool:javascript]
   - path: refs/42/index.md
     description: '#42（図・部品の基盤を TypeScript で点検して配り、ワークスペース固有の定義・AI が読み込む作り方の手順書・図の外観の決まりを持たせる）の PR のモックへのリンク集。この PR で作ったモックを探すときに参照する。'
+    tags: [topic:モック]
+  - path: refs/422/assets/catalog.js
+    description: '#422 の部品のモックの描画: 状態ごとのフロントマターの表示の Markdown を配布物の mount で描く。このモックの振る舞いを変えるときに参照する。'
+    tags: [topic:モック, topic:フロントマター]
+  - path: refs/422/assets/frontmatter.css
+    description: '#422 のモックのフロントマターの表示の規則: 折りたたみの見出しを控えめな文字の色にする。このモックの外観を変えるときに参照する。'
+    tags: [topic:モック, topic:フロントマター, tool:css]
+  - path: refs/422/assets/scene.js
+    description: '#422 の画面のモックの場面: 配布物の mount でフロントマターを除外した文書を描き、表示の形式・描き方・明暗を URL で選ぶ。このモックの振る舞いを変えるときに参照する。'
+    tags: [topic:モック, topic:フロントマター]
+  - path: refs/422/index.md
+    description: '#422（文書の先頭の YAML のフロントマターを既定で表示せず、設定で表示に切り替えられるようにする）の PR のモックへのリンク集。この PR で作ったモックを探すときに参照する。'
+  - path: refs/438/assets/table-pin-each.js
+    description: '#438 のモックが共通で読み込む素材: 表を組み、押した列だけを留めて左端か右端に留めるピン止め（`table.pin: each`）と、押した列までを留めるピン止め（`through`）・複数の列の `pin=`・結合した見出しの下の列のピン止め。複数のモックに有効になる外観や動きを変えるときに参照する。'
+    tags: [topic:モック, tool:javascript]
+  - path: refs/438/assets/table-samples.js
+    description: '#438 のモックが共通で読み込む素材: 押した列だけを留める表・右端に留める表・`through` の表・`pin=` の 1 列と複数の列と知らない列名・結合した見出しの表の定義の見本。複数のモックに有効になる外観や動きを変えるときに参照する。'
+    tags: [topic:モック, tool:javascript]
+  - path: refs/438/assets/table.css
+    description: '#438 のモックが共通で読み込む素材: 左端に留まった最も右の列と、右端に留まった最も左の列の境の線の規則。複数のモックに有効になる外観や動きを変えるときに参照する。'
+    tags: [topic:モック, tool:css]
+  - path: refs/438/index.md
+    description: '#438（表のピン止めを選んだ列だけを留める動きにし、留めた列をスクロールの位置で左端か右端に留める）の PR のモックへのリンク集。この PR で作ったモックを探すときに参照する。'
+    tags: [topic:モック]
+  - path: refs/449/assets/table-resize.js
+    description: '#449 のモックが共通で読み込む素材: 表を組み、列の見出しの右端のつまみのドラッグ・タッチ・←→ キーで、列の最小幅から留めた列が見える幅に収まる上限までの範囲で列の幅を変え、ダブルクリック・ダブルタップ・Enter で元の幅に戻し、留めた列の位置を再計算する。複数のモックに有効になる外観や動きを変えるときに参照する。'
+    tags: [topic:モック, tool:javascript]
+  - path: refs/449/assets/table-samples.js
+    description: '#449 のモックが共通で読み込む素材: つまみにポインターを乗せた表・ドラッグ中の表・列の最小幅まで狭めた表・キーボードで広げた表・ポインターが粗い画面の表・留めた列の幅を変えた表と上限まで広げた表・`-resize` の表の定義の見本。複数のモックに有効になる外観や動きを変えるときに参照する。'
+    tags: [topic:モック, tool:javascript]
+  - path: refs/449/assets/table.css
+    description: '#449 のモックが共通で読み込む素材: 列の見出しの右端の、列の幅を変えるつまみの規則。複数のモックに有効になる外観や動きを変えるときに参照する。'
+    tags: [topic:モック, tool:css]
+  - path: refs/449/index.md
+    description: '#449（表の列の幅を、見出しの右端をドラッグして変えられるようにし、ダブルクリックで元の幅に戻す）の PR のモックへのリンク集。この PR で作ったモックを探すときに参照する。'
     tags: [topic:モック]
   - path: refs/45/assets/embed.css
     id: dev/mock/refs/45/assets/embed.css

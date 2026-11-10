@@ -151,3 +151,23 @@ test("test_error_when_circular", async ({ page }) => {
   await expect(warning).toContainText("a.md → b.md → a.md");
   await expect(page.locator("#doc")).toBeVisible();
 });
+
+// 取り込む文書の先頭のフロントマターは、表示をオンにしても取り込まない（正常シナリオ（取り込む文書がフロントマターを持つ））
+test("test_normal_when_included_has_frontmatter", async ({ page }) => {
+  // 準備
+  await openPage(page, builtRoot);
+  // 実行
+  await mountDocument(page, {
+    markdown: "前の段落\n\n<!-- include: 共通/手順.md -->\n\n後の段落\n",
+    config: { features: { frontmatter: true } },
+    includes: {
+      "共通/手順.md": "---\ntitle: 手順\n---\n\n## 実行\n\n実行の段落\n",
+    },
+  });
+  // 検証
+  const doc = page.locator("#doc");
+  await expect(doc.locator("h2", { hasText: "実行" })).toHaveCount(1);
+  await expect(doc.getByText("実行の段落")).toHaveCount(1);
+  await expect(doc).not.toContainText("title: 手順");
+  await expect(doc.locator(".mdmark-frontmatter")).toHaveCount(0);
+});

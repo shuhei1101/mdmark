@@ -123,5 +123,7 @@ items:
     summary: 本文を 2〜3 列に横に並べる範囲
   - page: detailsの範囲.ts.yaml
     summary: タイトルから開閉する範囲の折りたたみ
+  - page: フロントマター.ts.yaml
+    summary: 文書の先頭の YAML のフロントマターを、本文の先頭の閉じた折りたたみに yaml のコードブロックで出す
   - page: wideの範囲.ts.yaml
     summary: 本文の幅を越えて広げ、本文の幅と切り替える範囲
