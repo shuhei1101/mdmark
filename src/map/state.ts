@@ -1,5 +1,6 @@
-/** 線の端をつなぐ辺 */
-export type MapSide = "top" | "right" | "bottom" | "left";
+import type { MapSide } from "./data.ts";
+
+export type { MapSide } from "./data.ts";
 
 /** 図ごとに保つ状態 */
 export type MapState = {
@@ -61,6 +62,8 @@ export const readMapState = (options: {
   ids: Set<string>;
   urlState: boolean;
   focus: string | undefined;
+  /** 補足の layout の collapsed が true のグループ。保った開閉の状態が無いときに閉じる */
+  collapsed: string[];
   storage: Storage | undefined;
   location: Pick<Location, "pathname" | "search">;
 }): MapState => {
@@ -82,7 +85,9 @@ export const readMapState = (options: {
   );
   return {
     ...emptyMapState(),
-    collapsed: list(stored.collapsed),
+    collapsed: Array.isArray(stored.collapsed)
+      ? list(stored.collapsed)
+      : options.collapsed.filter(known),
     entered,
     selected: list(stored.selected),
     positions:

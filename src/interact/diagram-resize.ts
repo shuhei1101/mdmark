@@ -66,7 +66,7 @@ export const attachDiagramResize = (options: {
   /** 高さを変えたとき（戻したときは `null`）に呼ぶ */
   onResize: (height: number | null) => void;
 }): { restored: number | null; detach: () => void } => {
-  const { viewport, handle, key, storage, fit, onResize } = options;
+  const { viewport, handle, key, storage, fit: fitHeight, onResize } = options;
   const controller = new AbortController();
   const { signal } = controller;
 
@@ -76,7 +76,7 @@ export const attachDiagramResize = (options: {
     handle.setAttribute("aria-valuemin", String(RESIZE.min));
     handle.setAttribute(
       "aria-valuemax",
-      String(Math.round(Math.max(RESIZE.min, fit(), height))),
+      String(Math.round(Math.max(RESIZE.min, fitHeight(), height))),
     );
     handle.setAttribute("aria-valuetext", `${Math.round(height)}px`);
   };
@@ -144,7 +144,7 @@ export const attachDiagramResize = (options: {
   handle.addEventListener(
     "dblclick",
     () => {
-      setHeight(fit());
+      setHeight(fitHeight());
     },
     { signal },
   );

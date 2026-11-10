@@ -21,12 +21,8 @@ export const mapWarningItems = (problems: MapProblem[]): WarningItem[] =>
 const isMermaid = (token: Token) =>
   token.type === "fence" && token.info.trim().split(/\s+/)[0] === "mermaid";
 
-/** 補足のマーカーの引数から、1 行目（`format=yaml`）を除いた YAML を取り出す */
-const dataOf = (rest: string | undefined): string => {
-  const text = rest ?? "";
-  const newline = text.indexOf("\n");
-  return newline < 0 ? "" : text.slice(newline + 1);
-};
+/** 補足のマーカーの引数（`map-data:` の後ろから `-->` の前まで）の JSON の文字 */
+const dataOf = (rest: string | undefined): string => (rest ?? "").trim();
 
 /** `map` がオンのとき、`<!-- map -->` 〜 `<!-- /map -->` の範囲を div.mdmark-map にし、範囲の形の誤りを記載の警告にする。オフのときはマーカーと補足を取り除き、mermaid のブロックを普通のコードブロックとして残す */
 export const buildMapRanges = (state: StateCore): void => {

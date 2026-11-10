@@ -40,8 +40,9 @@ export const collectMapProblems = (
         ? { ...item, line: item.line === undefined ? undefined : item.line }
         : { ...item, line: item.line + offset },
     );
-  const { data, problems: dataProblems } = parseMapData(range.data);
+  const { data, problems: dataProblems, lines } = parseMapData(range.data);
   const ids = new Set<string>();
+  const edgeIds = new Set<string>();
   const classes = new Set<string>();
   if (structure.kind === "flowchart") {
     const chart = parseFlowchart(range.mermaid);
@@ -51,7 +52,10 @@ export const collectMapProblems = (
       for (const name of node.classes) classes.add(name);
     }
     for (const group of chart.groups) ids.add(group.id);
-    for (const edge of chart.edges) ids.add(edge.id);
+    for (const edge of chart.edges) {
+      ids.add(edge.id);
+      edgeIds.add(edge.id);
+    }
   } else {
     const sequence = parseSequence(range.mermaid);
     problems.push(...shift(sequence.problems, range.mermaidLine));
@@ -60,10 +64,18 @@ export const collectMapProblems = (
     for (const index of sequence.fragments.keys()) ids.add(String(index));
   }
   problems.push(...shift(dataProblems, range.dataLine));
+  /** 補足の中のパスの行を、範囲の開きのマーカーからの行にする */
+  const lineOf = (path: string) => {
+    const local = lines.get(path);
+    return local === undefined || range.dataLine === undefined
+      ? undefined
+      : local + range.dataLine;
+  };
   const ref = (path: string, id: string | undefined) => {
     if (id !== undefined && !ids.has(id)) {
       problems.push({
         kind: "map_unknown_ref",
+        line: lineOf(path),
         message: `補足の \`${path}\` が指す \`${id}\` が Mermaid にありません。Mermaid のノード・線・グループの ID にしてください。`,
       });
     }
@@ -78,6 +90,16 @@ export const collectMapProblems = (
   for (const [id, entry] of Object.entries(data.layout)) {
     ref(`layout.${id}`, id);
     ref(`layout.${id}.align`, entry.align);
+    if (ids.has(id) && !edgeIds.has(id)) {
+      for (const key of ["ends", "via"] as const) {
+        if (entry[key] === undefined) continue;
+        problems.push({
+          kind: "map_invalid_value",
+          line: lineOf(`layout.${id}.${key}`),
+          message: `補足の \`layout.${id}.${key}\` は線の ID のときだけ記載できます。\`${id}\` はノードかグループです。`,
+        });
+      }
+    }
     if (
       entry.line !== undefined &&
       !(entry.line in config.lines) &&

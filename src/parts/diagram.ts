@@ -26,7 +26,7 @@ import { pointSvg, renderChart, SCATTER_POINT_SIZE } from "./chart.ts";
 import { erEndSvg, plainDefinitionText, renderErTable } from "./er.ts";
 import { escapeHtml } from "./escape.ts";
 import { bundledIconNode, type IconName, iconSvg } from "./icons.ts";
-import { iconNodeSvg } from "./inline-icon.ts";
+import { iconNodeSvg, type MdmarkIconNode } from "./inline-icon.ts";
 
 /** 線の種類ごとの破線・太さ・矢じり・凡例の名前。色は CSS の変数で適用する */
 export const LINE_STYLES: Readonly<
@@ -525,7 +525,7 @@ function renderStyledNode(options: {
     style.icon === undefined
       ? ""
       : bundled
-        ? iconNodeSvg(bundled)
+        ? iconNodeSvg(bundled as unknown as MdmarkIconNode)
         : `<span class="mdmark-map-icon" data-icon="${escapeHtml(style.icon)}" aria-hidden="true"></span>`;
   const label =
     style.label === undefined ? "" : `<span>${escapeHtml(style.label)}</span>`;

@@ -1,5 +1,6 @@
 import { LABEL_METRICS } from "../diagram/check.ts";
-import type { Direction, Flowchart } from "./flowchart.ts";
+import type { MapSide } from "./data.ts";
+import type { Direction, FlowArrow, Flowchart } from "./flowchart.ts";
 
 /** 配置の寸法（px）と経路の重み */
 export const MAP_LAYOUT = {
@@ -29,7 +30,21 @@ export type MapOverride = {
   order?: number | undefined;
   pos?: { x: number; y: number } | undefined;
   width?: number | undefined;
+  /** 段の中で寄せる側 */
+  justify?: "start" | "center" | "end" | undefined;
+  /** 線の端をつなぐ辺（補足の ends と、つなぎ替えた辺） */
+  ends?: { from?: MapSide; to?: MapSide } | undefined;
+  /** 線の経由点（両端の共通の祖先の中身の左上からの座標） */
+  via?: Array<{ x: number; y: number }> | undefined;
   size?: { w: number; h: number } | undefined;
+};
+
+/** 辺ごとの、線が辺から出ていく向き（routeEdges の向きの番号） */
+const SIDE_DIRECTION: Record<MapSide, number> = {
+  right: 0,
+  bottom: 1,
+  left: 2,
+  top: 3,
 };
 
 export type Rect = { x: number; y: number; w: number; h: number };
@@ -68,6 +83,10 @@ export type PlacedNode = Rect & {
   lines: string[];
   faded: boolean;
   ancestors: string[];
+  /** Mermaid の名前（グループを外に薄く残したノードはグループのタイトル） */
+  label?: string;
+  /** Mermaid のクラス（設定の map.kinds を引く） */
+  classes?: string[];
 };
 /** 配置したグループ。閉じたグループは collapsed が true の 1 つのノードの大きさ */
 export type PlacedGroup = Rect & {
@@ -85,6 +104,10 @@ export type PlacedWire = {
   label: string | undefined;
   merged: MergedWire[] | undefined;
   points: Array<[number, number]>;
+  /** Mermaid の矢印（設定の map.lines を引く） */
+  arrow?: FlowArrow;
+  /** 両向きの矢印か */
+  both?: boolean;
 };
 
 /** layoutMap の戻り値 */
@@ -497,7 +520,12 @@ const layoutBox = (
       0,
       ...row.map((id) => main(byId.get(id) as ViewItem)),
     );
-    let at = (widest - (rowCross[index] ?? 0)) / 2;
+    // 寄せる: 段の中の最初の指定に合わせる（既定は中央）
+    const justify = row
+      .map((id) => overrides[id]?.justify)
+      .find((value) => value !== undefined);
+    const room = widest - (rowCross[index] ?? 0);
+    let at = justify === "start" ? 0 : justify === "end" ? room : room / 2;
     for (const id of row) {
       const item = byId.get(id) as ViewItem;
       const offset = (depth - main(item)) / 2;
@@ -655,8 +683,25 @@ const routeEdges = (
   leaves: InnerLeaf[],
   boxes: Array<Rect & { id: string }>,
   edges: ViewWire[],
+  overrides: Record<string, MapOverride>,
 ): PlacedWire[] => {
   const m = MAP_LAYOUT.clearance;
+  /** 経由点を図の座標にする（両端の共通の祖先のグループの中身の左上、無ければ図の外の余白の内側が原点） */
+  const viaOf = (edge: ViewWire): Array<[number, number]> => {
+    const via = overrides[edge.id]?.via ?? [];
+    if (via.length === 0) return [];
+    const fromAnc =
+      leaves.find((leaf) => leaf.id === edge.from)?.ancestors ?? [];
+    const toAnc = leaves.find((leaf) => leaf.id === edge.to)?.ancestors ?? [];
+    const lca = fromAnc.find((id) => toAnc.includes(id));
+    const group = boxes.find((box) => box.id === lca);
+    const ox = group ? group.x + MAP_LAYOUT.groupPad : MAP_LAYOUT.margin;
+    const oy = group
+      ? group.y + MAP_LAYOUT.groupPad + MAP_LAYOUT.groupTitle
+      : MAP_LAYOUT.margin;
+    return via.map((point): [number, number] => [ox + point.x, oy + point.y]);
+  };
+  const vias = new Map(edges.map((edge) => [edge.id, viaOf(edge)]));
   const rects: Array<Rect & { id: string; leaf: boolean }> = [
     ...leaves.map((leaf) => ({ ...leaf, leaf: true })),
     ...boxes.map((box) => ({ ...box, leaf: false })),
@@ -676,6 +721,12 @@ const routeEdges = (
       // 箱の枠の内側の通り道
       xsSet.add(rect.x + m).add(rect.x + rect.w - m);
       ysSet.add(rect.y + m).add(rect.y + rect.h - m);
+    }
+  }
+  for (const points of vias.values()) {
+    for (const [x, y] of points) {
+      xsSet.add(x);
+      ysSet.add(y);
     }
   }
   const xs = [...xsSet].sort((a, b) => a - b);
@@ -785,107 +836,152 @@ const routeEdges = (
         }))
         .filter((port) => !blocked(port.point));
     };
-    const starts = ports(source);
-    const goals = ports(target);
-    const goalSet = new Map(goals.map((goal) => [goal.point, goal]));
-    const tx = target.x + target.w / 2;
-    const ty = target.y + target.h / 2;
-    const goalMask =
-      goals[0] === undefined ? 0 : (maskAt[goals[0].point] as number);
-    // 残りの距離と、まだ出入りしていない祖先の枠の数（どちらも少なく見積もる）
-    const heuristic = (point: number): number => {
-      let diff = (maskAt[point] as number) ^ goalMask;
-      let count = 0;
-      while (diff) {
-        count += diff & 1;
-        diff >>= 1;
-      }
-      const distance =
-        Math.abs((xs[point % nx] as number) - tx) +
-        Math.abs((ys[Math.floor(point / nx)] as number) - ty) -
-        target.w / 2 -
-        target.h / 2;
-      return Math.max(0, distance) + count * MAP_LAYOUT.borderCost;
+    const sides = overrides[edge.id]?.ends;
+    const bySide = (
+      list: ReturnType<typeof ports>,
+      side: MapSide | undefined,
+    ) => {
+      if (side === undefined) return list;
+      const picked = list.filter((port) => port.dir === SIDE_DIRECTION[side]);
+      return picked.length > 0 ? picked : list;
     };
-    const best = new Float64Array(nx * ny * 4).fill(Number.POSITIVE_INFINITY);
-    const back = new Int32Array(nx * ny * 4).fill(-1);
-    const heap = createHeap();
-    for (const start of starts) {
-      const state = start.point * 4 + start.dir;
-      best[state] = 0;
-      heap.push(heuristic(start.point), state);
-    }
+    const starts = bySide(ports(source), sides?.from);
+    const goals = bySide(ports(target), sides?.to);
+    const pointOf = ([x, y]: [number, number]): number =>
+      (yIndex.get(y) as number) * nx + (xIndex.get(x) as number);
+    const via = (vias.get(edge.id) ?? []).filter(
+      (point) => !blocked(pointOf(point)),
+    );
+    /** 始まりの状態から、着く点のどれかまでの経路を探す（着いた点の状態と、点の列を返す） */
+    const search = (
+      from: Array<{ point: number; dir: number }>,
+      to: Set<number>,
+      goalMask: number,
+      center: { x: number; y: number; w: number; h: number },
+    ): { reached: number; path: Array<[number, number]> } => {
+      // 残りの距離と、まだ出入りしていない祖先の枠の数（どちらも少なく見積もる）
+      const heuristic = (point: number): number => {
+        let diff = (maskAt[point] as number) ^ goalMask;
+        let count = 0;
+        while (diff) {
+          count += diff & 1;
+          diff >>= 1;
+        }
+        const distance =
+          Math.abs((xs[point % nx] as number) - center.x) +
+          Math.abs((ys[Math.floor(point / nx)] as number) - center.y) -
+          center.w / 2 -
+          center.h / 2;
+        return Math.max(0, distance) + count * MAP_LAYOUT.borderCost;
+      };
+      const best = new Float64Array(nx * ny * 4).fill(Number.POSITIVE_INFINITY);
+      const back = new Int32Array(nx * ny * 4).fill(-1);
+      const heap = createHeap();
+      for (const start of from) {
+        const state = start.point * 4 + start.dir;
+        best[state] = 0;
+        heap.push(heuristic(start.point), state);
+      }
+      let reached = -1;
+      while (heap.size() > 0) {
+        const state = heap.pop() as number;
+        const point = state >> 2;
+        const dir = state & 3;
+        if (to.has(point)) {
+          reached = state;
+          break;
+        }
+        const cost = best[state] as number;
+        const i = point % nx;
+        const j = Math.floor(point / nx);
+        for (let d = 0; d < 4; d++) {
+          if (d === ((dir + 2) & 3)) {
+            continue;
+          }
+          const ni = i + (DX[d] as number);
+          const nj = j + (DY[d] as number);
+          if (ni < 0 || nj < 0 || ni >= nx || nj >= ny) {
+            continue;
+          }
+          const next = nj * nx + ni;
+          if (blocked(next)) {
+            continue;
+          }
+          const length =
+            Math.abs((xs[ni] as number) - (xs[i] as number)) +
+            Math.abs((ys[nj] as number) - (ys[j] as number));
+          const nextCost =
+            cost +
+            length +
+            (d === dir ? 0 : MAP_LAYOUT.bendCost) +
+            crossCost(point, next);
+          const nextState = next * 4 + d;
+          if (nextCost < (best[nextState] as number)) {
+            best[nextState] = nextCost;
+            back[nextState] = state;
+            heap.push(nextCost + heuristic(next), nextState);
+          }
+        }
+      }
+      if (reached < 0) {
+        throw new Error(`線を引けません: ${edge.id}`);
+      }
+      const path: Array<[number, number]> = [];
+      for (let state = reached; state >= 0; state = back[state] as number) {
+        const point = state >> 2;
+        path.unshift([
+          xs[point % nx] as number,
+          ys[Math.floor(point / nx)] as number,
+        ]);
+      }
+      return { reached, path };
+    };
+    // 始まり → 経由点 → 終わりの区間ごとに探してつなぐ
+    const legs: Array<{
+      to: Set<number>;
+      mask: number;
+      center: { x: number; y: number; w: number; h: number };
+    }> = [
+      ...via.map(([x, y]) => ({
+        to: new Set([pointOf([x, y])]),
+        mask: maskAt[pointOf([x, y])] as number,
+        center: { x, y, w: 0, h: 0 },
+      })),
+      {
+        to: new Set(goals.map((goal) => goal.point)),
+        mask: goals[0] === undefined ? 0 : (maskAt[goals[0].point] as number),
+        center: {
+          x: target.x + target.w / 2,
+          y: target.y + target.h / 2,
+          w: target.w,
+          h: target.h,
+        },
+      },
+    ];
+    let from: Array<{ point: number; dir: number }> = starts;
     let reached = -1;
-    while (heap.size() > 0) {
-      const state = heap.pop() as number;
-      const point = state >> 2;
-      const dir = state & 3;
-      if (goalSet.has(point)) {
-        reached = state;
-        break;
-      }
-      const cost = best[state] as number;
-      const i = point % nx;
-      const j = Math.floor(point / nx);
-      for (let d = 0; d < 4; d++) {
-        if (d === ((dir + 2) & 3)) {
-          continue;
-        }
-        const ni = i + (DX[d] as number);
-        const nj = j + (DY[d] as number);
-        if (ni < 0 || nj < 0 || ni >= nx || nj >= ny) {
-          continue;
-        }
-        const next = nj * nx + ni;
-        if (blocked(next)) {
-          continue;
-        }
-        const length =
-          Math.abs((xs[ni] as number) - (xs[i] as number)) +
-          Math.abs((ys[nj] as number) - (ys[j] as number));
-        const nextCost =
-          cost +
-          length +
-          (d === dir ? 0 : MAP_LAYOUT.bendCost) +
-          crossCost(point, next);
-        const nextState = next * 4 + d;
-        if (nextCost < (best[nextState] as number)) {
-          best[nextState] = nextCost;
-          back[nextState] = state;
-          heap.push(nextCost + heuristic(next), nextState);
-        }
-      }
-    }
-    if (reached < 0) {
-      throw new Error(`線を引けません: ${edge.id}`);
-    }
     const path: Array<[number, number]> = [];
-    for (let state = reached; state >= 0; state = back[state] as number) {
-      const point = state >> 2;
-      path.unshift([
-        xs[point % nx] as number,
-        ys[Math.floor(point / nx)] as number,
-      ]);
+    for (const leg of legs) {
+      const found = search(from, leg.to, leg.mask, leg.center);
+      path.push(...(path.length === 0 ? found.path : found.path.slice(1)));
+      reached = found.reached;
+      from = [{ point: reached >> 2, dir: reached & 3 }];
     }
     const startPort = starts.find(
-      (start) =>
-        start.point ===
-        (path[0]
-          ? (yIndex.get(path[0][1]) as number) * nx +
-            (xIndex.get(path[0][0]) as number)
-          : -1),
+      (start) => path[0] !== undefined && start.point === pointOf(path[0]),
     );
-    const goal = goalSet.get(reached >> 2);
+    const goal = goals.find((item) => item.point === reached >> 2);
     const points: Array<[number, number]> = [
       ...(startPort ? [startPort.border] : []),
       ...path,
       ...(goal ? [goal.border] : []),
     ];
+    const kept = new Set(via.map(([x, y]) => `${x},${y}`));
     // 同じ向きに続く点を 1 つにまとめる
     const simplified = points.filter((p, index) => {
       const prev = points[index - 1];
       const next = points[index + 1];
-      if (!prev || !next) return true;
+      if (!prev || !next || kept.has(`${p[0]},${p[1]}`)) return true;
       return !(
         (prev[0] === p[0] && p[0] === next[0]) ||
         (prev[1] === p[1] && p[1] === next[1])
@@ -951,7 +1047,23 @@ export const layoutMap = (
   };
   const margin = MAP_LAYOUT.margin;
   walk(root, margin, margin, []);
-  const wires = routeEdges(leaves, boxes, edges);
+  const edgeById = new Map(chart.edges.map((edge) => [edge.id, edge]));
+  const nodeById = new Map(chart.nodes.map((node) => [node.id, node]));
+  const wires = routeEdges(leaves, boxes, edges, overrides).map((wire) => {
+    const first = wire.merged?.[0];
+    const source =
+      edgeById.get(wire.id) ??
+      (first === undefined
+        ? undefined
+        : chart.edges.find(
+            (edge) => edge.from === first.from && edge.to === first.to,
+          ));
+    return {
+      ...wire,
+      arrow: source?.arrow ?? "-->",
+      both: source?.both ?? false,
+    };
+  });
   const nodes: PlacedNode[] = [];
   const groups: PlacedGroup[] = [...boxes];
   for (const leaf of leaves) {
@@ -968,7 +1080,12 @@ export const layoutMap = (
         collapsed: true,
         faded: node.faded,
       });
-    else nodes.push(node);
+    else
+      nodes.push({
+        ...node,
+        label: title,
+        classes: nodeById.get(node.id)?.classes ?? [],
+      });
   }
   return {
     width: root.w + margin * 2,
