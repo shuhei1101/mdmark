@@ -600,10 +600,10 @@ flows:
     refs:
       - dev/設計書/シナリオ/単一ユースケース/文字列とYAMLのキーの記法を点検する#scenarios[正常シナリオ（知らないキー・機能・指定）]
   - name: 正常系（map の補足にずれがある）
-    summary: 文書の map の範囲の Mermaid と補足を読み込み、補足が指す無い ID・知らないキー・`--` を含む値を、範囲の場所を指すずれにする
+    summary: 文書の map の範囲の Mermaid と補足を読み込み、補足が指す無い ID・知らないキー・`--` を含む値を補足の行を、印の知らないキーを印の行を指すずれにする
     setup:
       - name: map の補足にずれを持つフォルダ
-        description: '`build.include` が該当する `docs/a.md` だけを持ち、3 行目の `<!-- map -->` の範囲に、補足の `notes` のキー `ghost`（Mermaid に無いノード）・トップレベルの知らないキー `layuot`・`walkthroughs[0].text` の値 `a -- b` と、印の `{"title": "全体", "mdoe": 1}` を持つ範囲と、20 行目にずれの無い map の範囲を持つフォルダ'
+        description: '`build.include` が該当する `docs/a.md` だけを持ち、3 行目の `<!-- map -->` の範囲に、10 行目の 1 行の補足の `notes` のキー `ghost`（Mermaid に無いノード）・トップレベルの知らないキー `layuot`・`walkthroughs[0].text` の値 `a -- b` と、印の `{"title": "全体", "mdoe": 1}` を持つ範囲と、20 行目にずれの無い map の範囲を持つフォルダ'
       - name: Mock
         description: 差し替える依存は無い。点検はブラウザを使用しない
     flow: |-
@@ -616,7 +616,8 @@ flows:
         C-->>W: map のずれの 4 行・終了コード 1
     expected:
       - 終了コードが 1
-      - '`docs/a.md:3:` で始まる行が `map_unknown_ref`（内容に `notes.ghost` と、ID を Mermaid のノード・線の ID にする修正方法）・`map_unknown_key`（内容に `layuot` と使用できるキーの一覧）・`map_invalid_value`（内容に `walkthroughs[0].text` と、`--` を含めない修正方法）で 1 つずつあり、`map_unknown_key` がもう 1 つ（内容に印のキー `mdoe` と、使用できるキー `title`・`focus`・`play`・`interval`・`collapse`）ある'
+      - '`docs/a.md:10:` で始まる行が `map_unknown_ref`（内容に `notes.ghost` と、ID を Mermaid のノード・線の ID にする修正方法）・`map_unknown_key`（内容に `layuot` と使用できるキーの一覧）・`map_invalid_value`（内容に `walkthroughs[0].text` と、`--` を含めない修正方法）で 1 つずつある'
+      - '`docs/a.md:3:` で始まる行が `map_unknown_key` の 1 つ（内容に印のキー `mdoe` と、使用できるキー `title`・`focus`・`play`・`interval`・`collapse`）だけある'
       - '`docs/a.md:20:` で始まる行が無い'
       - 最後の行が `ずれ 4 件`
       - 設定・索引・文書が変わっていない
