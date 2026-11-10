@@ -6256,6 +6256,24 @@ flows:
       - '`figure.mdmark-diagram[data-diagram="map"]` が無く、`figure.mdmark-diagram[data-diagram="mermaid"]` が 1 つある'
       - 補足の文字・マーカーの文字・書き方の警告が無い
     test: test_normal_when_map_disabled
+  - name: 正常系（map の設定に無いクラスと線の名前）
+    summary: '`map.kinds` に無い Mermaid のクラスと、`map.lines` に無い補足の `line` の名前を、図の前の書き方の警告にし、種類の行の無いノード・既定の線で描く'
+    setup:
+    - name: 配布物を読み込んだページ
+      description: 正常系（map の構成図を描く）と同じ
+    - name: map の Markdown
+      description: '正常系（map の構成図を描く）の範囲のノード 1 つに `:::queue`、補足の `layout` の線 1 本に `line: back` を足した範囲'
+    - name: 設定
+      description: 正常系（map の構成図を描く）と同じ（`map.kinds` に `queue`、`map.lines` に `back` が無い）
+    - name: Mock
+      description: 正常系（map の構成図を描く）と同じ
+    flow: "sequenceDiagram\n  actor U as ユーザー\n  participant M as mdmark\n  U->>M: mount(el, { markdown, config })\n  M-->>U: 書き方の警告と、種類の行の無いノード・既定の線で描いた map の図"
+    expected:
+    - map の図の前に書き方の警告（`div.mdmark-syntax-warning`）が 1 つあり、`queue` と `map.kinds` に記載する修正方法、`back` と `map.lines` に記載する修正方法が並ぶ
+    - '`:::queue` のノードの種類の行が空（高さ 24px）で、角の丸い四角'
+    - '`line: back` の線が実線・太さ normal・塗りの矢じり'
+    - ほかのノード・線は正常系（map の構成図を描く）と同じに描かれる
+    test: test_normal_when_map_config_names_missing
 lead: 利用側のページが、要素と Markdown と設定を指定し、要素の中に文書を描く。戻り値で本文の差し替えと片付けができる。
 idempotent: false
 side_effects: '`el` の中身と class を書き換え、記法の操作のイベントを `el` の中に付ける。まとめていない名前の `icon:` があるとき、jsDelivr の Lucide のアイコンのモジュールを名前ごとに `import()` し、読み込めなかった名前だけ同じ URL へ `HEAD` の `fetch` を送信する。`side-toc` がオンで見出しがあるとき、`el` の中を本文の列と右側の目次に分け、見出しの位置を `IntersectionObserver` で確認する。出し方が `hover` のときは、右端の線とパネルの位置を決めるため、`window` の `scroll`・`resize` と、`el` に最も近いスクロールする祖先の要素があればその `scroll` を受け取り、`document.body` の子の追加・削除を `MutationObserver` で確認する。`back-to-top` がオンのとき、`el` の子に先頭へ戻るボタンを配置し、スクロールする場所が画面全体なら `window` の `scroll`、`el` に最も近いスクロールする祖先の要素なら `document` の `scroll`（キャプチャーフェーズ）と、`window` の `resize` を受け取り、`document.body` と `el` の子の追加・削除を `MutationObserver` で確認する。`window` の `beforeprint`・`afterprint`・`hashchange` と、絞り込みのドロワーを開いている間だけ `document` の `pointerdown`・`keydown` を受け取る。図の部品か埋め込んだ HTML があるとき、図の表示する枠と埋め込んだ HTML の大きさを `ResizeObserver` で見、ツールチップを開いている間だけ `document` の `keydown`・`pointerdown` と `window` の `scroll`・`resize` を受け取り、全画面の間だけ `el` の中に `dialog` を配置する。リンク先を持つフロー図のノードの上から図を動かしたとき、次の 1 回の `click` まで `window` の `click`（キャプチャーフェーズ）を受け取る。`diagram-resize` がオンのとき、リサイズハンドルで変えた図の高さを sessionStorage に書き込み、描くたびに読み込み、ダブルクリックで戻すと削除する。操作できる部品の写すボタン・表のコピー・行の URL のコピー・コードブロックのコピー・ファイルツリーのコピーでクリップボードに書き込む。表があるとき、表の大きさと描く先の要素の幅を `ResizeObserver` で見、`animation-timeline` を持たないブラウザでは `window` と文書の中の `scroll` と `window` の `resize` を受け取る。`data-group` を持つタブがあるとき、localStorage の `mdmark-tabs:{group}` を描くたびに読み込み、読者がタブを選ぶと書き込む。そのとき、ページの中の `el` の外にある同じ `group` のタブ群の選択も書き換える。文書に外部ライブラリか拡張のマーカーがあるとき、そのモジュールを読み込む。色分けの対象のコードブロックがあるとき、`syntax.url` の先の core と、使用する言語のモジュールを読み込む。`mermaid` がオンの文書に mermaid のコードブロックがあるとき、`mermaid.url` の先のモジュールを読み込み、描く先の配色の明暗の変化を確認して再描画する。`html-scripts` がオンの文書に範囲の `ts`・`js` があるとき、`html-scripts.url` の先の変換のライブラリを読み込み、範囲ごとに `document.head` へ `script` 要素を 1 つ配置してすぐ削除し、範囲の関数を呼ぶ。`opts.diffSource` を指定したとき、読者が差分を開くと（`opts.diffMode` が `open` なら描いた時点、`blocks` なら描くたびに）取り出し元の `revisions`・`content` を呼び、差分の行を出している間だけミニマップの帯を配置し、スクロール先のスクロールの `scroll` と `window` の `resize` を受け取る。文書にビューのマーカーがあるとき、ビューの部品のモジュールを読み込む。`comments` がオンで `opts.commentStore` を指定したとき、コメントの部品のモジュールを読み込み、`load` を描くたびに 1 回呼び、保存で `save`、読み込みと保存の関数が持つときは吹き出しの修正で `update`・削除で `remove`、`reloadComments` で `load` を呼ぶ。その間は `document` の `selectionchange` を受け取り、コメントのボタン・入力欄・吹き出しを `document.body` に配置する。あわせて本文の列の右に余白の列を配置し、描く先の要素の大きさを `ResizeObserver`、描く先の要素の中の開閉・切り替えを `MutationObserver` で確認する。map の範囲があるとき、図ごとの開閉・中へ入ったグループ・動かした位置・参加者の並び順を sessionStorage に記載し、`map.url_state` が `false` でなければ中へ入ったグループと中だけを描くブロックを `history.replaceState` でクエリ文字列の `map-{図の番号}` に記載する。ノードの大きさの変化を `ResizeObserver` で確認する'
@@ -6525,7 +6543,7 @@ request:
     default: なし（種類の行を空にし、角の丸い四角で描く）
     location: argument
     description: Mermaid のクラス名（`:::名前`）ごとのノードの種類。`label` は種類の行の名前、`icon` は Lucide のアイコンの名前、`shape` は形（既定 `rounded`）、`color` は色の名前
-    constraints: 知らない形・色の名前・Lucide に無いアイコンの名前は無視して既定にする。mdmark は種類を持たない（プリセットも持たない。確認ログ）
+    constraints: 知らない形・色の名前・Lucide に無いアイコンの名前は無視して既定にする。Mermaid のクラスが `map.kinds` に無いノードは、種類の行を空にして角の丸い四角で描き、図の前の書き方の警告に記載する。mdmark は種類を持たない（プリセットも持たない。確認ログ）
     example: '{ "store": { "label": "保存先", "icon": "database", "shape": "rect", "color": "purple" } }'
   - name: opts.config.map.lines
     type: 'Record<string, { dash?: "solid" | "dashed" | "dotted" | "dash-dot" | "long-dash"; width?: "thin" | "normal" | "thick"; head?: "filled" | "open" | "none"; color?: string }>'
@@ -6533,7 +6551,7 @@ request:
     default: なし（実線・太さ normal・塗りの矢じりで描く）
     location: argument
     description: Mermaid の矢印（`-->`・`-.->`・`==>`）ごとと、補足の `layout` の `line` で指す名前ごとの線の種類
-    constraints: 知らない模様・太さ・矢じり・色の名前は無視して既定にする。凡例は出さない
+    constraints: 知らない模様・太さ・矢じり・色の名前は無視して既定にする。補足の `layout` の `line` の名前が `map.lines` に無い線は既定の線で描き、図の前の書き方の警告に記載する。凡例は出さない
     example: '{ "-.->": { "dash": "dashed", "head": "open" }, "back": { "dash": "dotted" } }'
 request_example: |-
   ```json

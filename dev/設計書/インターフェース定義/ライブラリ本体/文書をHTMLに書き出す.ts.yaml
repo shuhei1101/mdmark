@@ -427,6 +427,20 @@ flows:
       - 書き出した HTML のスクリプトの動的 `import()` の数が、段落だけの文書を書き出した HTML と同じ（mermaid の chunk を動的 `import()` で読み込まない）
       - 段落だけの文書を書き出した HTML には mermaid が埋められていない
     test: test_normal_when_mermaid_embedded
+  - name: 正常系（map の設定）
+    summary: 設定の `map` を埋める設定にコピーし、開いた HTML の map の図を設定の種類・線・ノードの広げ方で描く
+    setup:
+    - name: map の設定
+      description: '`map.kinds` に `store`（`label: 保存先`・`icon: database`・`shape: rect`・`color: purple`）、`map.lines` に `-.->`（`dash: dashed`）、`map.node_fit: width` を持つ設定と、`:::store` のノードと `-.->` の線を持つ map の範囲の文書を持つフォルダ'
+    - name: Mock
+      description: 正常系（テーマを選ぶ設定）と同じ
+    flow: "sequenceDiagram\n  actor W as 文書の作成者\n  participant C as mdmark CLI\n  participant H as 書き出した HTML\n  W->>C: mdmark export {文書}\n  C->>H: map をコピーした設定を埋めて記載する\n  W->>H: 開く\n  H-->>W: 設定の種類と線で map の図を描く"
+    expected:
+    - 終了コードが 0
+    - 開いた HTML で、`:::store` のノードの種類の行に `database` のアイコンと「保存先」があり、ノードが角の四角で紫
+    - '`-.->` の線が破線'
+    - HTML だけを空のフォルダへコピーして file:// で開くと、描き終えるまでにページ自身と画像の `data:` のほかの要求が 0 件
+    test: test_normal_when_map_config
 lead: 文書の作成者が Markdown を 1 つ、配布物・利用側の CSS・外部ライブラリのモジュール・拡張・画像を埋めた 1 枚の HTML に書き出す。開いた HTML は `mount` で文書を描き、外へ要求しない。
 idempotent: true
 side_effects: 出力のパスに HTML を書き込む（既にあれば上書きする）。文書が指す動画・音声を、出力の隣の `_files/` のフォルダへコピーする（同じ名前のファイルは上書きする）。文書が使用する外部ライブラリの設定の `libraries` の URL の先と、そのモジュールが import する先を読み込む。色分けの対象のコードブロックがあるとき、`syntax.url` の先の core と、使用する言語のモジュールを読み込む
@@ -554,4 +568,7 @@ constraints:
   - item: 埋めるアイコン
     constraint: 文書（取り込む文書を含む）の `icon:` のうち配布物にまとめていない名前の IconNode を、依存の lucide から取り出して `opts.icons` として埋め、開いたとき jsDelivr を読み込まない。lucide に無い名前は埋めず警告に出し（書き出しは止めない）、開いたときはその場所を行内のコードのままにして記載の警告を配置する。`opts.icons` を埋める `script` の直前に、注釈 `<!-- lucide {バージョン} - ISC License (c) Lucide Contributors / MIT License (c) 2013-present Cole Bemis -->` を 1 行置く（埋める名前が無いときは配置しない）
     notes: ライセンスの表示を残すことは外部ライブラリ『lucide』の `license`
+  - item: map の設定
+    constraint: 設定の `map` を、`tooltips.placement` と同じく埋める設定にコピーして `mount` の `opts.config` に指定する。無いときは写さず、`mount` の既定に任せる。Schema に合わない値（`map` がマップでない・`node_fit` の知らない値・`url_state` が真偽値でない・知らない形・模様・太さ・矢じり・色の名前）は設定ファイルの誤り（終了コード 1）にする。Lucide に無いアイコンの名前はコピーし、`mount` が無視する（`mdmark check` が `map_unknown_icon` にする）
+    decided_by: dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#request[opts.config.map.kinds]
 test_file: tests/integration/lib/export.test.ts

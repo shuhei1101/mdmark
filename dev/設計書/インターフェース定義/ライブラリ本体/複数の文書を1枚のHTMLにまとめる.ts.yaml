@@ -451,6 +451,18 @@ flows:
     test: test_normal_when_switch_clears_map_query
     refs:
       - dev/設計書/シナリオ/単一ユースケース/図のグループの中へ入る・開閉する#scenarios
+  - name: 正常系（map の設定）
+    summary: 設定の `map` を埋める設定にコピーし、まとめた全ての文書の map の図を設定の種類と線で描く
+    setup:
+    - name: map の設定
+      description: '`map.kinds` に `store`（`label: 保存先`・`icon: database`・`shape: rect`・`color: purple`）、`map.lines` に `-.->`（`dash: dashed`）、`map.node_fit: width` を持つ設定と、`entry` の `a.md` と `b.md` がそれぞれ `:::store` のノードを持つ map の範囲を 1 つ持つフォルダ'
+    - name: Mock
+      description: 正常系と同じ
+    flow: "sequenceDiagram\n  actor W as 文書の作成者\n  participant C as mdmark CLI\n  participant H as まとめた HTML\n  W->>C: mdmark build\n  C->>H: map をコピーした設定を埋めて 1 枚の HTML を書き込む\n  W->>H: a.md を開き、文書の一覧で b.md へ移る\n  H-->>W: どちらの文書も設定の種類と線で map の図を描く"
+    expected:
+    - 終了コードが 0
+    - a.md と b.md のどちらでも、`:::store` のノードの種類の行に `database` のアイコンと「保存先」がある
+    test: test_normal_when_map_config
 lead: 文書の作成者が設定の `build` で決めた文書を、参照・被参照・用語のツールチップが有効になり、文書を行き来できる 1 枚の HTML にまとめる。埋めるものと外へ要求しないことはインターフェース定義『文書をHTMLに書き出す』と同じ。
 idempotent: true
 side_effects: '`build.out` に HTML を書き込む（既にあれば上書きする）。文書が指す動画・音声を、`build.out` の隣の `_files/` のフォルダへコピーする。文書が使用する外部ライブラリの URL の先を読み込む。書き出した HTML を開いたページでは、`history.scrollRestoration` を `manual` にし、履歴の項目ごとの表示の状態を sessionStorage に記載する'
@@ -542,4 +554,7 @@ constraints:
   - item: map のクエリ文字列
     constraint: 文書の一覧と文書間のリンクで別の文書へ移るときは、クエリ文字列から `map-` で始まるキーを消してから移る。戻る・進む・再読み込みでは消さず、移った先の文書の map の図は sessionStorage の状態で描く
     decided_by: dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[map の状態の保存]
+  - item: map の設定
+    constraint: 文書をHTMLに書き出す.ts の制約「map の設定」と同じ
+    decided_by: dev/設計書/インターフェース定義/ライブラリ本体/文書をHTMLに書き出す.ts#constraints[map の設定]
 test_file: tests/integration/lib/bundle.test.ts
