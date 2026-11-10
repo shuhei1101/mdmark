@@ -1,152 +1,168 @@
-// map の図で使えるノードの種類・線の種類・グループ・データの点の一覧: 本文は配布物の mount で描き、目印の段落の場所に map の図を置く
+// map の図のノードと線の種類の作り方の一覧: ノードと線の種類は mdmark では決めず、使う側が設定（mdmark.config.yaml の map）で作る。
+// 設定で選べる形・アイコン・線の模様を並べ、設定の例を 2 つ描く。本文は配布物の mount で描き、目印の段落の場所に map の図を置く
 
 import { mount } from "../../../../../dist/index.js";
 import { createMap } from "./map-mock.js";
 
-/** ノードの種類: Mermaid のクラスと、使う場面の例 */
-const NODES = `flowchart LR
-  llm["要約する"]:::llm
-  dm["振り分けを選ぶ"]:::dm
-  script["形式を検査する"]:::script
-  mcp["Issue を取得する"]:::mcp
-  data[("索引")]:::data
-  external(["利用側のページ"]):::external
+/** 形の見本: 種類ごとに形だけを変えた設定 */
+const SHAPE_CONFIG = {
+  kinds: {
+    rounded: { label: "rounded", shape: "rounded" },
+    rect: { label: "rect", shape: "rect" },
+    pill: { label: "pill", shape: "pill" },
+    double: { label: "double", shape: "double" },
+  },
+};
+const SHAPES = `flowchart LR
+  a["名前"]:::rounded
+  b["名前"]:::rect
+  c["名前"]:::pill
+  d["名前"]:::double
+  e["種類を書かないノード"]
 `;
 
-/** 線の種類: Mermaid の矢印と、使う場面の例 */
-const LINES = `flowchart LR
-  caller["呼び出し元"]:::script
-  worker["処理"]:::script
-  store[("保存先")]:::data
-  source[("読み込み元")]:::data
-  peer["相手"]:::script
-  caller -->|処理の流れ| worker
-  source -.->|読み込む| worker
-  worker ==>|書き込む| store
-  worker <-->|やり取り| peer
+/** 線の模様の見本: 名前の線を補足の layout の line で指す */
+const LINE_CONFIG = {
+  lines: {
+    solid: { label: "solid（実線・既定）" },
+    dashed: { label: "dashed（破線）", dash: "dashed" },
+    dotted: { label: "dotted（点線）", dash: "dotted" },
+    "dash-dot": { label: "dash-dot（一点鎖線）", dash: "dash-dot" },
+    "long-dash": { label: "long-dash（長い破線）", dash: "long-dash" },
+    thick: { label: "width: thick（太い）", width: "thick" },
+    open: { label: "head: open（線の矢じり）", head: "open" },
+    none: { label: "head: none（矢じり無し）", head: "none" },
+  },
+};
+const LINES = `flowchart TB
+  s1["元"] --> t1["先"]
+  s2["元"] --> t2["先"]
+  s3["元"] --> t3["先"]
+  s4["元"] --> t4["先"]
+  s5["元"] --> t5["先"]
+  s6["元"] --> t6["先"]
+  s7["元"] --> t7["先"]
+  s8["元"] --> t8["先"]
 `;
+const LINE_LAYOUT = Object.fromEntries(Object.keys(LINE_CONFIG.lines).map((name, index) => [`L${index}`, { line: name }]));
 
-/** グループ: subgraph の入れ子・色・最初に閉じる */
-const GROUPS = `flowchart LR
-  user(["利用者"]):::external
-  subgraph app [アプリ]
-    direction LR
-    subgraph front [画面]
-      page["一覧の画面"]:::script
-    end
-    subgraph back [サーバー]
-      direction TB
-      api["API"]:::script
-      job["集計の処理"]:::script
-    end
-  end
-  subgraph store [データ]
-    db[("DB")]:::data
-  end
-  user --> page
-  page --> api
+/** 設定の例 1: システムの構成を描くとき */
+const SYSTEM_CONFIG = {
+  kinds: {
+    app: { label: "アプリ", icon: "server", shape: "rounded", color: "blue" },
+    store: { label: "保存先", icon: "database", shape: "rect", color: "purple" },
+    outside: { label: "外部のサービス", icon: "globe", shape: "pill", color: "green" },
+  },
+  lines: {
+    "-->": { label: "呼び出し" },
+    "-.->": { label: "読み込み", dash: "dashed", head: "open" },
+    "==>": { label: "書き込み", width: "thick" },
+  },
+};
+const SYSTEM = `flowchart LR
+  user(["利用者"]):::outside
+  web["Web の画面"]:::app
+  api["API"]:::app
+  db[("DB")]:::store
+  pay(["決済のサービス"]):::outside
+  user --> web
+  web --> api
   api ==> db
-  job -.-> db
+  db -.-> api
+  api --> pay
 `;
 
-/** データの点: 線ごとに色と形を変える */
-const PACKETS = `flowchart LR
-  a["送り手"]:::script
-  b["受け手 1"]:::script
-  c["受け手 2"]:::llm
-  d[("受け手 3")]:::data
-  a -->|丸| b
-  a -->|四角| c
-  a ==>|ひし形| d
+/** 設定の例 2: 業務の流れを描くとき */
+const WORK_CONFIG = {
+  kinds: {
+    person: { label: "担当者", icon: "user", shape: "pill", color: "orange" },
+    doc: { label: "書類", icon: "file", shape: "rect" },
+    tool: { label: "システム", icon: "server", shape: "double", color: "blue" },
+  },
+  lines: {
+    "-->": { label: "作業の順" },
+    "-.->": { label: "書類の受け渡し", dash: "dotted", head: "open", color: "gray" },
+  },
+};
+const WORK = `flowchart LR
+  apply(["申請者"]):::person
+  form["申請書"]:::doc
+  check(["承認者"]):::person
+  sys["経費のシステム"]:::tool
+  apply -.-> form
+  form -.-> check
+  apply --> check
+  check --> sys
 `;
 
-const markdown = `# map の図で使えるノード・線・グループ・データの点
+const markdown = `# map の図のノードと線の種類の作り方
 
-map の図は、Mermaid の \`flowchart\` に書いたクラス・矢印・\`subgraph\` から、今のフロー図と同じ見た目で描く。色と形の上書きは補足の \`layout\` に書く。
+map の図は、ノードと線の種類を mdmark では決めない。使う側が設定（\`mdmark.config.yaml\` の \`map\`）で、種類の名前・アイコン・形・色と、線の模様・太さ・矢じり・色を作る。種類の名前は凡例と、ノードの種類の行に出る。
 
-## ノードの種類
+\`\`\`yaml
+map:
+  kinds:            # Mermaid のクラス名ごとのノードの種類
+    app:            # Mermaid では  api["API"]:::app
+      label: アプリ  # 種類の行と凡例に出す名前
+      icon: server  # Lucide のアイコンの名前（省くとアイコン無し）
+      shape: rounded # rounded（既定）・rect・pill・double
+      color: blue   # 色の名前（省くと既定の線の色）
+  lines:            # Mermaid の矢印か名前ごとの線の種類
+    "-->":  { label: 呼び出し }
+    "-.->": { label: 読み込み, dash: dashed, head: open }
+    "==>":  { label: 書き込み, width: thick }
+    back:   { label: 戻り, dash: dotted }   # 名前の線は補足の layout で  L3: { line: back }
+\`\`\`
 
-MAP-SLOT-NODES
+種類を書かないノードは種類の行を出さず、設定に無い矢印は細い実線で凡例に出さない。
 
-| 種類 | Mermaid の書き方 | 形とアイコン | 使う場面の例 |
-| --- | --- | --- | --- |
-| LLM | \`llm["要約する"]:::llm\` | 角の丸い四角・ロボット | LLM に要約・分類・文章の生成をさせる処理 |
-| 意思決定モデル | \`dm["振り分けを選ぶ"]:::dm\` | 角の丸い四角・分かれ道 | 選択肢から 1 つを選ぶだけの速い判断のモデル |
-| スクリプト | \`script["形式を検査する"]:::script\` | 角の丸い四角・コード | 決まった手順で動くプログラム（変換・検査・集計）。クラスを書かないノードもスクリプト |
-| MCP | \`mcp["Issue を取得する"]:::mcp\` | 角の丸い四角・プラグ | MCP のサーバーやツールの呼び出し |
-| データ | \`data[("索引")]:::data\` | 下の角が丸い四角・データベース | 保存しているデータ（DB・ファイル・索引・キャッシュ） |
-| 外部のシステム | \`external(["利用側のページ"]):::external\` | 角の丸い四角・地球 | 図の範囲の外のシステム・利用者・外部の API |
+## ノードの形
 
-判定フローチャートの開始・質問・アクション・結果の種類（\`:::start\`・\`:::question\`・\`:::action\`・\`:::result\`）は、処理の順番を描く図で使う。
+MAP-SLOT-SHAPES
 
-## 線の種類
+| 設定 | 値 |
+| --- | --- |
+| \`shape\` | \`rounded\`（角の丸い四角・既定）・\`rect\`（角の四角）・\`pill\`（端の丸い形）・\`double\`（二重の枠） |
+| \`icon\` | Lucide のアイコンの名前（\`server\`・\`database\`・\`user\`・\`file\`・\`globe\`・\`cog\` など） |
+| \`color\` | 色の名前（\`blue\`・\`red\`・\`green\`・\`yellow\`・\`orange\`・\`purple\`・\`gray\`） |
+
+## 線の模様
 
 MAP-SLOT-LINES
 
-| 種類 | Mermaid の書き方 | 線の見た目 | 使う場面の例 |
-| --- | --- | --- | --- |
-| 処理の流れ | \`a --> b\` | 実線・塗りの矢じり | 呼び出す・渡す・次の処理へ進む |
-| 読み込む | \`a -.-> b\` | 破線・線の矢じり | データを参照する（元はデータ、先は処理） |
-| 書き込む | \`a ==> b\` | 太い実線・塗りの矢じり | データを保存・更新する（元は処理、先はデータ） |
-| 両向き | \`a <--> b\` | 両端に矢じり | 互いにやり取りする（データの点は両方へ流れる） |
-| 返却する・戻る（ループ） | 補足の \`layout\` で線の ID に \`line: reply\`・\`line: loop\` | 破線・線の矢じり | 呼び出し元へ結果を返す・前の処理へ戻って繰り返す（Mermaid の矢印に無いため補足で指定する） |
+| 設定 | 値 |
+| --- | --- |
+| \`dash\` | \`solid\`（既定）・\`dashed\`・\`dotted\`・\`dash-dot\`・\`long-dash\` |
+| \`width\` | \`thin\`・\`normal\`（既定）・\`thick\` |
+| \`head\` | \`filled\`（塗りの矢じり・既定）・\`open\`（線の矢じり）・\`none\`（矢じり無し） |
+| \`color\` | 色の名前 |
 
-線のラベルは \`a -->|ラベル| b\`、線の説明は補足の \`notes\` に線の ID（\`L0\` など）で書く。説明を持つ線にポインターを当てるとツールチップに出る。
+## 設定の例 1: システムの構成
 
-## グループ
+MAP-SLOT-SYSTEM
 
-MAP-SLOT-GROUPS
+アプリ・保存先・外部のサービスの 3 種類と、呼び出し・読み込み・書き込みの線を作った例。
 
-| 項目 | 書き方 | 見え方 |
-| --- | --- | --- |
-| グループ | \`subgraph app [アプリ]\` 〜 \`end\` | 枠と左上のタイトル。タイトルを押すと中へ入り、山形で開閉する。入れ子は 2 段まで推奨 |
-| 並べる向き | グループの中の \`direction LR\`・\`direction TB\` | 中のノードを左から右・上から下に並べる |
-| 色 | 補足の \`layout\` で \`{グループの ID}: { color: blue }\` | 枠と面とタイトルの文字がその色の名前の配色になる |
-| 最初に閉じる | 補足の \`layout\` で \`{グループの ID}: { collapsed: true }\` | 開いたときから閉じたグループのノードで描く（既定は開く） |
+## 設定の例 2: 業務の流れ
 
-## データの点
+MAP-SLOT-WORK
 
-MAP-SLOT-PACKETS
-
-| 項目 | 書き方 | 既定 | 選べる値 |
-| --- | --- | --- | --- |
-| 形 | 補足の \`layout\` で \`packet: { shape: … }\`（図全体）か \`{線の ID}: { packet: { shape: … } }\` | 丸（\`dot\`） | 丸（\`dot\`）・四角（\`square\`）・ひし形（\`diamond\`） |
-| 色 | 同じく \`packet: { color: … }\` | 線の色（\`line\`） | 線の色（\`line\`）・元のノードの色（\`source\`）・先のノードの色（\`target\`）・色の名前（\`blue\` など） |
+担当者・書類・システムの 3 種類と、作業の順・書類の受け渡しの線を作った例。同じ map の図でも、設定を変えると別の分野の図になる。
 `;
 
 const doc = document.getElementById("doc");
 mount(doc, { markdown });
 const slot = (text) => [...doc.querySelectorAll("p")].find((p) => p.textContent.trim() === text);
-const place = (text, spec, initial = {}) => {
+const place = (text, spec) => {
   const host = document.createElement("div");
   host.className = "map-host";
   slot(text).replaceWith(host);
-  createMap(host, spec, initial);
+  createMap(host, spec);
 };
 
-// 線を持たないノードは自動配置で 1 列に並ぶため、一覧では座標の固定（補足の layout の pos）で 3 列に並べる
-const grid = Object.fromEntries(["llm", "dm", "script", "mcp", "data", "external"].map((id, index) => [id, { pos: { x: (index % 3) * 200, y: Math.floor(index / 3) * 100 } }]));
-place("MAP-SLOT-NODES", { id: "kinds-nodes", title: "ノードの種類", flow: NODES, data: { layout: grid } });
-place("MAP-SLOT-LINES", { id: "kinds-lines", title: "線の種類", flow: LINES, data: {} });
-place("MAP-SLOT-GROUPS", {
-  id: "kinds-groups",
-  title: "グループ",
-  flow: GROUPS,
-  data: { colors: { front: "blue", back: "green", store: "orange" }, layout: {} },
-});
-place(
-  "MAP-SLOT-PACKETS",
-  {
-    id: "kinds-packets",
-    title: "データの点",
-    flow: PACKETS,
-    data: {
-      walkthroughs: [{ text: "上から、丸・線の色（既定）、四角・先のノードの色、ひし形・色の名前（purple）のデータの点が流れます。", highlight: ["a", "b", "c", "d"] }],
-      layout: {
-        L1: { packet: { shape: "square", color: "target" } },
-        L2: { packet: { shape: "diamond", color: "purple" } },
-      },
-    },
-  },
-  { step: 0 },
-);
+// 線を持たないノードは自動配置で 1 列に並ぶため、見本では座標の固定（補足の layout の pos）で横に並べる
+const row = Object.fromEntries(["a", "b", "c", "d", "e"].map((id, index) => [id, { pos: { x: index * 180, y: 0 } }]));
+place("MAP-SLOT-SHAPES", { id: "kinds-shapes", title: "ノードの形", flow: SHAPES, config: SHAPE_CONFIG, data: { layout: row } });
+place("MAP-SLOT-LINES", { id: "kinds-lines", title: "線の模様", flow: LINES, config: LINE_CONFIG, data: { layout: LINE_LAYOUT } });
+place("MAP-SLOT-SYSTEM", { id: "kinds-system", title: "システムの構成", flow: SYSTEM, config: SYSTEM_CONFIG, data: {} });
+place("MAP-SLOT-WORK", { id: "kinds-work", title: "業務の流れ", flow: WORK, config: WORK_CONFIG, data: {} });

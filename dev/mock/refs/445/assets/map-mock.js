@@ -21,10 +21,18 @@ const MOVE_MS = 350;
 /** 開閉と中へ入った状態をタブの中で保つ sessionStorage のキーの頭 */
 const STORAGE_PREFIX = "mdmark-map:";
 
-/** Mermaid のクラスと、今のフロー図のノードの種類の対応 */
-const KINDS = { llm: "llm", script: "script", data: "data", external: "external", mcp: "mcp", dm: "dm" };
-/** Mermaid の矢印と、今のフロー図の線の種類の対応 */
-const LINES = { solid: "flow", dotted: "read", thick: "write" };
+/**
+ * ノードの種類と線の種類は mdmark では決めず、使う側が設定（mdmark.config.yaml の map）で作る。
+ * kinds: Mermaid のクラス名ごとの { label（種類の行の名前・凡例）, icon（Lucide の名前）, shape, color（色の名前） }
+ * lines: Mermaid の矢印（-->・-.->・==>）か名前ごとの { label（凡例）, dash, width, head, color }。名前の線は補足の layout の line で指す
+ * 種類を書かないノードは種類の行を出さず、設定に無い矢印は細い実線で凡例に出さない
+ */
+const SHAPES = ["rounded", "rect", "pill", "double"];
+const DASHES = { solid: "", dashed: "6 4", dotted: "2 4", "dash-dot": "8 3 2 3", "long-dash": "12 5" };
+const WIDTHS = { thin: 1, normal: 1.5, thick: 3 };
+const ARROWS = { solid: "-->", dotted: "-.->", thick: "==>" };
+/** 矢じりの元にする今の部品の marker（塗りは flow、線は read） */
+const HEAD_MARKERS = { filled: "flow", open: "read" };
 
 /** 今の図のボタンと同じ Lucide のアイコン */
 const ICONS = {
@@ -39,6 +47,13 @@ const ICONS = {
   reset: '<path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/>',
   grip: '<circle cx="9" cy="5" r="1"/><circle cx="9" cy="12" r="1"/><circle cx="9" cy="19" r="1"/><circle cx="15" cy="5" r="1"/><circle cx="15" cy="12" r="1"/><circle cx="15" cy="19" r="1"/>',
   collapse: '<path d="m6 9 6 6 6-6"/>',
+  cog: '<path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/>',
+  database: '<ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5V19A9 3 0 0 0 21 19V5"/><path d="M3 12A9 3 0 0 0 21 12"/>',
+  globe: '<circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/>',
+  file: '<path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/>',
+  user: '<path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>',
+  server: '<rect width="20" height="8" x="2" y="2" rx="2" ry="2"/><rect width="20" height="8" x="2" y="14" rx="2" ry="2"/><line x1="6" x2="6.01" y1="6" y2="6"/><line x1="6" x2="6.01" y1="18" y2="18"/>',
+  bot: '<path d="M12 8V4H8"/><rect width="16" height="12" x="4" y="8" rx="2"/><path d="M2 14h2"/><path d="M20 14h2"/><path d="M15 13v2"/><path d="M9 13v2"/>',
   expand: '<path d="m9 18 6-6-6-6"/>',
 };
 
@@ -61,6 +76,50 @@ const toolButton = (name, label, onClick, attrs = {}) => {
 /** 補足の layout の色（mdmark の色の名前）を、面と文字の CSS 変数にする */
 const colorStyle = (color) =>
   color ? `--map-fill: var(--mdmark-color-accent-${color}-bg); --map-ink: var(--mdmark-color-accent-${color}-text);` : "";
+
+/** ノードの種類の行（アイコンと名前）と形・色を、使う側の設定の種類で置き換える。種類が無いノードは種類の行を出さない */
+const applyKind = (element, kind) => {
+  const row = element.querySelector(".mdmark-diagram-node-kind");
+  if (!kind) {
+    row?.remove();
+    element.dataset.shape = "rounded";
+    return;
+  }
+  if (row) row.innerHTML = `${kind.icon && ICONS[kind.icon] ? icon(kind.icon) : ""}<span>${kind.label ?? ""}</span>`;
+  element.dataset.shape = SHAPES.includes(kind.shape) ? kind.shape : "rounded";
+  if (kind.color) element.style.setProperty("--map-kind", `var(--mdmark-color-accent-${kind.color}-text)`);
+  element.classList.add("map-kinded");
+};
+
+/** 線の見た目（破線の模様・太さ・矢じり・色）を、使う側の設定の線の種類で置き換える */
+const applyLine = (figure, path, line = {}) => {
+  path.dataset.line = "flow";
+  path.setAttribute("stroke-dasharray", DASHES[line.dash ?? "solid"] ?? "");
+  path.setAttribute("stroke-width", String(WIDTHS[line.width ?? "normal"] ?? 1.5));
+  const head = line.head ?? "filled";
+  const base = path.getAttribute("marker-end")?.replace(/head-[a-z]+\)/, `head-${HEAD_MARKERS[head] ?? "flow"})`);
+  if (head === "none") path.removeAttribute("marker-end");
+  else if (base) path.setAttribute("marker-end", base);
+  if (line.color) {
+    path.style.stroke = `var(--mdmark-color-accent-${line.color}-text)`;
+    tintArrowhead(figure, path);
+  }
+};
+
+/** 凡例: 図で使っている種類と線のうち、設定で名前を付けたものだけを、図の枠と帯のあいだに並べる */
+const renderLegend = (figure, kinds, lines) => {
+  figure.querySelector(".mdmark-diagram-legend")?.setAttribute("hidden", "");
+  const items = [
+    ...kinds.filter((kind) => kind.label).map((kind) => `<li class="map-legend-item"><span class="map-legend-node" data-shape="${SHAPES.includes(kind.shape) ? kind.shape : "rounded"}" style="${kind.color ? `--map-kind: var(--mdmark-color-accent-${kind.color}-text)` : ""}">${kind.icon && ICONS[kind.icon] ? icon(kind.icon) : ""}</span>${kind.label}</li>`),
+    ...lines.filter((line) => line.label).map((line) => `<li class="map-legend-item"><svg class="map-legend-line" width="28" height="10" aria-hidden="true"><line x1="1" y1="5" x2="27" y2="5" stroke-dasharray="${DASHES[line.dash ?? "solid"] ?? ""}" stroke-width="${WIDTHS[line.width ?? "normal"] ?? 1.5}" style="${line.color ? `stroke: var(--mdmark-color-accent-${line.color}-text)` : ""}"/></svg>${line.label}</li>`),
+  ];
+  if (items.length === 0) return;
+  const list = document.createElement("ul");
+  list.className = "map-legend";
+  list.setAttribute("aria-label", "凡例");
+  list.innerHTML = items.join("");
+  figure.querySelector(".mdmark-diagram-box").after(list);
+};
 
 /**
  * 線の上にデータの印を流す。印は線の長さに応じた数を間をあけて元から先へ繰り返し動かし、両向きの線は先から元へも流す。
@@ -191,6 +250,14 @@ export const createMap = (host, spec, initial = {}) => {
   const chart = parseFlowchart(spec.flow);
   const sequence = spec.sequence ? parseSequence(spec.sequence.source) : undefined;
   const steps = spec.data.walkthroughs ?? [];
+  const config = spec.config ?? {};
+  const kindOf = (id) => {
+    const node = nodeById.get(id);
+    const name = node?.classes.find((cls) => config.kinds?.[cls]);
+    return name ? config.kinds[name] : undefined;
+  };
+  /** 線の種類: 補足の layout の line の名前か、Mermaid の矢印の設定 */
+  const lineOf = (edgeId, lineKind) => config.lines?.[spec.data.layout?.[edgeId]?.line] ?? config.lines?.[ARROWS[lineKind ?? "solid"]];
   const notes = spec.data.notes ?? {};
   const nodeById = new Map(chart.nodes.map((node) => [node.id, node]));
   const boxById = new Map(chart.boxes.map((box) => [box.id, box]));
@@ -270,7 +337,7 @@ export const createMap = (host, spec, initial = {}) => {
     nodes: layout.leaves.map((leaf) => {
       const node = nodeById.get(leaf.id);
       const box = boxById.get(leaf.id);
-      const kind = KINDS[node?.classes.find((cls) => KINDS[cls])] ?? "script";
+      const kind = "script";
       const note = notes[leaf.id];
       return {
         id: leaf.id,
@@ -292,7 +359,7 @@ export const createMap = (host, spec, initial = {}) => {
         id: edge.id,
         from: edge.from,
         to: edge.to,
-        line: LINES[source?.line ?? "solid"],
+        line: "flow",
         points: edge.points,
         ...(label ?? {}),
       };
@@ -341,6 +408,11 @@ export const createMap = (host, spec, initial = {}) => {
     decorateWires(figure, layout);
     decorateTools(figure);
     renderBand(figure);
+    renderLegend(
+      figure,
+      [...new Set(chart.nodes.map((node) => node.classes.find((cls) => config.kinds?.[cls])).filter(Boolean))].map((name) => config.kinds[name]),
+      [...new Set(chart.edges.map((edge) => lineOf(edge.id, edge.line)).filter(Boolean))],
+    );
     renderPackets(stage, layout);
     keepScaleAndHeight(figure, layout);
     animateFrom(stage, before);
@@ -501,6 +573,7 @@ export const createMap = (host, spec, initial = {}) => {
     for (const leaf of layout.leaves) {
       const element = stage.querySelector(`[data-node="${CSS.escape(leaf.id)}"]`);
       if (!element) continue;
+      if (!boxById.has(leaf.id)) applyKind(element, kindOf(leaf.id));
       const color = spec.data.colors?.[leaf.id];
       if (color) {
         element.style.cssText += colorStyle(color);
@@ -539,6 +612,8 @@ export const createMap = (host, spec, initial = {}) => {
       if (!wire) continue;
       const color = spec.data.colors?.[edge.id];
       if (color) wire.style.setProperty("--map-wire", `var(--mdmark-color-accent-${color}-text)`);
+      const lineSource = chart.edges.find((item) => item.id === edge.id);
+      applyLine(figure, wire.matches("path") ? wire : wire.querySelector("path"), lineOf(edge.id, lineSource?.line));
       // 両向きの線（<-->）は元の側にも矢じりを描く（今の部品の marker は orient="auto-start-reverse" のため、同じ marker を両端に使える）
       const wirePath = wire.matches("path") ? wire : wire.querySelector("path");
       if (sourcesOf(edge).some((item) => item.both)) wirePath.setAttribute("marker-start", wirePath.getAttribute("marker-end"));
@@ -767,6 +842,7 @@ const keepSequenceScale = (host) => {
  * - メッセージの線にポインターを当てると線を太くして両端の参加者を強調し、補足の notes に説明があればツールチップに出す
  * - 構成図の上で再生している間は、今のメッセージの線にもデータの印を流す
  * spec: { id, title, source, notes }
+ * kinds: 参加者の ID ごとの、使う側の設定の種類（{ label, icon, shape, color }）
  */
 export const createSequence = (host, spec, kinds, onStep) => {
   const sequence = parseSequence(spec.source);
@@ -792,7 +868,7 @@ export const createSequence = (host, spec, kinds, onStep) => {
       title: spec.title,
       scope: "map のシーケンス図",
       updated: "2026-11-09",
-      participants: visible.map((id) => ({ id, kind: kinds[id] ?? "script", name: labelOf(id) })),
+      participants: visible.map((id) => ({ id, kind: "script", name: labelOf(id) })),
       steps: shown.map(({ message }) => ({ from: message.from, to: message.to, label: message.text, ...(message.reply ? { reply: true } : {}) })),
     };
     host.replaceChildren();
@@ -821,6 +897,7 @@ export const createSequence = (host, spec, kinds, onStep) => {
     });
     visible.forEach((id, at) => {
       const head = heads(id);
+      applyKind(head, kinds[id]);
       head.classList.add("map-participant");
       head.tabIndex = 0;
       head.setAttribute("role", "button");
@@ -932,6 +1009,7 @@ export const createSequence = (host, spec, kinds, onStep) => {
       }),
     );
 
+    renderLegend(figure, [...new Set(Object.values(kinds))], []);
     keepSequenceScale(host);
     const viewport = figure.querySelector(".mdmark-diagram-viewport");
     viewport.scrollLeft = scroll[0];
@@ -971,24 +1049,40 @@ export const createSequence = (host, spec, kinds, onStep) => {
       grip.setPointerCapture(event.pointerId);
       const heads = [...host.querySelectorAll(".map-participant")];
       const head = heads[at];
+      // 動かし始めたときの列の位置で判定する（動かしている箱自身はポインターの下にあるため数えない）
+      const rects = heads.map((item) => item.getBoundingClientRect());
+      const container = head.parentElement;
+      const base = container.getBoundingClientRect();
+      // 挿入する場所を示す縦の線
+      const marker = document.createElement("div");
+      marker.className = "map-insert-line";
+      marker.hidden = true;
+      container.append(marker);
       head.classList.add("is-dragging");
       const startX = event.clientX;
       let target = at;
       const onMove = (moveEvent) => {
         head.style.translate = `${moveEvent.clientX - startX}px 0`;
         grip.style.translate = head.style.translate;
-        const over = heads.findIndex((item) => {
-          const rect = item.getBoundingClientRect();
-          return moveEvent.clientX >= rect.left && moveEvent.clientX < rect.right;
-        });
-        if (over !== -1) target = over;
-        heads.forEach((item, index) => item.classList.toggle("is-drop-target", index === target && target !== at));
+        const x = moveEvent.clientX;
+        const centers = rects.map((rect) => (rect.left + rect.right) / 2);
+        // ポインターに最も近い列を移す先にする
+        target = centers.reduce((best, center, index) => (Math.abs(center - x) < Math.abs(centers[best] - x) ? index : best), 0);
+        if (target === at) {
+          marker.hidden = true;
+          return;
+        }
+        // 左へ移すときは移す先の列の左、右へ移すときは右に線を出す
+        const edge = target < at ? rects[target].left - 8 : rects[target].right + 8;
+        marker.style.left = `${(edge - base.left) / (base.width / container.offsetWidth || 1)}px`;
+        marker.hidden = false;
       };
       const onUp = () => {
         grip.removeEventListener("pointermove", onMove);
         head.style.translate = "";
         grip.style.translate = "";
         head.classList.remove("is-dragging");
+        marker.remove();
         move(target);
       };
       grip.addEventListener("pointermove", onMove);

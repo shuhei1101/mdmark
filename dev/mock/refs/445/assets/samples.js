@@ -2,27 +2,27 @@
 
 /** 構成図: 入れ子 2 レイヤーのグループ・グループをまたぐ線・種類のクラス */
 export const FLOW = `flowchart LR
-  user(["利用側のページ"]):::external
+  user(["利用側のページ"]):::outside
   subgraph lib [mdmark]
     direction LR
-    mount["mount"]:::script
+    mount["mount"]:::step
     subgraph read [記法の読み取り]
       direction TB
-      marker["map のマーカーの読み取り"]:::script
-      mermaid["Mermaid の記法の読み取り"]:::script
-      data["補足の検査"]:::script
+      marker["map のマーカーの読み取り"]:::step
+      mermaid["Mermaid の記法の読み取り"]:::step
+      data["補足の検査"]:::step
     end
     subgraph place [配置]
       direction TB
-      layout["入れ子のグループの自動配置"]:::script
-      route["線の経路"]:::script
+      layout["入れ子のグループの自動配置"]:::step
+      route["線の経路"]:::step
     end
-    frame["図の枠"]:::script
+    frame["図の枠"]:::step
   end
   subgraph store [データ]
     direction TB
-    index[("索引")]:::data
-    doc[("文書の Markdown")]:::data
+    index[("索引")]:::store
+    doc[("文書の Markdown")]:::store
   end
   user -->|設定と Markdown| mount
   mount --> marker
@@ -62,6 +62,7 @@ export const DATA = {
   /** 配置と見た目の上書き。packet はデータの印（図全体の既定と、線の ID ごと） */
   layout: {
     L5: { packet: { color: "source", shape: "diamond" } },
+    L11: { line: "back" },
   },
 };
 
@@ -83,4 +84,22 @@ export const SEQUENCE = {
   marker->>mermaid: mermaid のブロック
   mermaid->>layout: ノードと線
 `,
+};
+
+/**
+ * 使う側の設定（mdmark.config.yaml の map に該当する）: ノードの種類と線の種類は mdmark では決めず、ここで作る。
+ * この見本は「処理・保存先・外部」の 3 種類と、矢印ごとの線と名前の線（戻り）を作った例
+ */
+export const CONFIG = {
+  kinds: {
+    step: { label: "処理", icon: "cog", shape: "rounded" },
+    store: { label: "保存先", icon: "database", shape: "rect", color: "purple" },
+    outside: { label: "外部", icon: "globe", shape: "pill", color: "green" },
+  },
+  lines: {
+    "-->": { label: "呼び出し" },
+    "-.->": { label: "参照", dash: "dashed", head: "open" },
+    "==>": { label: "保存", width: "thick", color: "orange" },
+    back: { label: "戻り", dash: "dotted", head: "open" },
+  },
 };

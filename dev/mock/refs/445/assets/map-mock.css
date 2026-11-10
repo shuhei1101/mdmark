@@ -223,8 +223,79 @@
   opacity: 0.8;
   cursor: grabbing;
 }
-.map-figure .map-participant.is-drop-target {
-  box-shadow: inset 3px 0 0 var(--mdmark-color-link);
+/* 並べ替えで挿入する場所を示す縦の線 */
+.map-insert-line {
+  position: absolute;
+  z-index: 4;
+  top: 8px;
+  bottom: 0;
+  width: 3px;
+  margin-left: -1.5px;
+  border-radius: 2px;
+  background: var(--mdmark-color-link);
+  pointer-events: none;
+}
+
+/* 使う側の設定の種類のノード: 形（角の丸い四角・角の四角・丸い端・二重の枠）と、種類の色の枠と種類の行 */
+.map-figure .mdmark-diagram-node[data-shape="rect"] {
+  border-radius: 2px;
+}
+.map-figure .mdmark-diagram-node[data-shape="pill"] {
+  border-radius: 999px;
+  padding-inline: 16px;
+}
+.map-figure .mdmark-diagram-node[data-shape="double"] {
+  border-style: double;
+  border-width: 4px;
+}
+.map-figure .mdmark-diagram-node.map-kinded {
+  border-color: var(--map-kind, var(--mdmark-color-border));
+}
+.map-figure .mdmark-diagram-node.map-kinded .mdmark-diagram-node-kind {
+  color: var(--map-kind, var(--mdmark-color-muted));
+}
+
+/* 凡例: 図の枠と帯のあいだ。使う側の設定で名前を付けた種類と線だけを並べる */
+.map-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 16px;
+  margin: 6px 0 0;
+  padding: 0;
+  list-style: none;
+  color: var(--mdmark-color-muted);
+  font-size: 12px;
+}
+.map-legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.map-legend-node {
+  display: inline-grid;
+  place-items: center;
+  width: 22px;
+  height: 16px;
+  border: 1.5px solid var(--map-kind, var(--mdmark-color-border));
+  border-radius: var(--mdmark-radius);
+  color: var(--map-kind, var(--mdmark-color-muted));
+}
+.map-legend-node[data-shape="rect"] {
+  border-radius: 1px;
+}
+.map-legend-node[data-shape="pill"] {
+  border-radius: 999px;
+}
+.map-legend-node[data-shape="double"] {
+  border-style: double;
+  border-width: 3px;
+}
+.map-legend-node .mdmark-diagram-icon {
+  width: 11px;
+  height: 11px;
+}
+.map-legend-line line {
+  stroke: var(--mdmark-color-diagram-line, currentColor);
 }
 
 /* 書き方の警告: 今の記載の警告と同じ破線の枠 */

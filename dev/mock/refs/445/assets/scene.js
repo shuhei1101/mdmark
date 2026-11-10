@@ -3,7 +3,7 @@
 
 import { mount } from "../../../../../dist/index.js";
 import { createMap, createSequence } from "./map-mock.js";
-import { DATA, FLOW, SEQUENCE } from "./samples.js";
+import { CONFIG, DATA, FLOW, SEQUENCE } from "./samples.js";
 
 /** 場面と、操作列に出す名前 */
 const SCENES = {
@@ -93,12 +93,17 @@ sequenceSlot.closest(".mdmark-wide-range")?.parentElement.classList.add("map-wid
 sequenceSlot.replaceWith(sequenceHost);
 let map;
 // シーケンス図の帯で進めたメッセージを、構成図の上でも強調する
-const sequenceView = createSequence(sequenceHost, SEQUENCE, { user: "external" }, (index) => map.showMessage(index));
+const sequenceView = createSequence(
+  sequenceHost,
+  SEQUENCE,
+  { user: CONFIG.kinds.outside, mount: CONFIG.kinds.step, marker: CONFIG.kinds.step, mermaid: CONFIG.kinds.step, layout: CONFIG.kinds.step },
+  (index) => map.showMessage(index),
+);
 
 // 開閉と中へ入った状態は場面ごとに sessionStorage へ保つ。構成図の案内を始めたら、シーケンス図の強調を解く
 map = createMap(
   flowHost,
-  { id: scene, title: "全体の構成", flow: FLOW, data: DATA, sequence: SEQUENCE, onWalkthrough: () => sequenceView.clear() },
+  { id: scene, title: "全体の構成", flow: FLOW, data: DATA, config: CONFIG, sequence: SEQUENCE, onWalkthrough: () => sequenceView.clear() },
   initial,
 );
 if (scene === "play") sequenceView.start(0);
