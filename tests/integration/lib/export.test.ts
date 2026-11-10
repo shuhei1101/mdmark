@@ -10,8 +10,11 @@ import {
   GREET_SOURCE,
   GREET_WITH_IMPORT_SOURCE,
   linesOf,
+  MAP_STORE_CONFIG,
+  mapStoreDoc,
   PNG_BYTES,
   readHighlightVendor,
+  readMapStore,
   readMediaSamples,
   runCli,
   TEST_LIB_SOURCE,
@@ -941,6 +944,31 @@ test("test_normal_when_mermaid_embedded", async () => {
       timeout: 60_000,
     },
   );
+  expect(externalRequests()).toEqual([]);
+  await page.close();
+}, 180_000);
+
+// 設定の map を埋める設定にコピーし、開いた HTML の map の図を設定の種類と線で描く（正常系（map の設定））
+test("test_normal_when_map_config", async () => {
+  // 準備
+  const dir = await createTempDir();
+  await writeFiles(dir, {
+    "mdmark.config.yaml": MAP_STORE_CONFIG,
+    "guide.md": mapStoreDoc("ガイド"),
+  });
+  // 実行
+  const result = await runCli(["export", "guide.md"], dir);
+  // 検証
+  expect(result.code).toBe(0);
+  const { page, externalRequests } = await browser.openHtml(
+    join(dir, "guide.html"),
+  );
+  await expect(readMapStore(page)).resolves.toEqual({
+    label: "保存先",
+    shape: "rect",
+    color: "purple",
+    dash: expect.stringMatching(/\d/),
+  });
   expect(externalRequests()).toEqual([]);
   await page.close();
 }, 180_000);

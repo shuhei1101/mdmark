@@ -1072,3 +1072,175 @@ test("test_normal_when_group_options_invalid", async () => {
   expect(invalid[0]).toContain("stickyTitles");
   expect(await read()).toEqual(before);
 });
+
+/** map の範囲の行（3 行目から始まるよう `# A` と空行を前に置く） */
+const mapLines = (options: {
+  args?: string;
+  mermaid: string[];
+  data?: string;
+}): string[] => [
+  options.args === undefined ? "<!-- map -->" : `<!-- map: ${options.args} -->`,
+  "",
+  "```mermaid",
+  ...options.mermaid,
+  "```",
+  "",
+  ...(options.data === undefined
+    ? []
+    : [`<!-- map-data: ${options.data} -->`, ""]),
+  "<!-- /map -->",
+];
+
+/** `docs/a.md` だけを索引に持つフォルダを作る */
+async function createMapDir(a: string[], config = ""): Promise<string> {
+  const dir = await createTempDir();
+  await runCli(["init", dir], dir);
+  const base = await readFile(join(dir, "mdmark.config.yaml"), "utf8");
+  await writeFiles(dir, {
+    "mdmark.config.yaml": `${base}${config}`,
+    "docs/a.md": a.join("\n"),
+    "index.yaml": [
+      "schema: 2",
+      "docs:",
+      "  - id: a",
+      "    path: docs/a.md",
+      "    title: A",
+      "",
+    ].join("\n"),
+  });
+  return dir;
+}
+
+const MAP_FILES = ["mdmark.config.yaml", "index.yaml", "docs/a.md"];
+
+// 文書の map の補足が指す無い ID・知らないキー・-- を含む値を、範囲の場所を指すずれにする（正常系（map の補足にずれがある））
+test("test_normal_when_map_data_drift", async () => {
+  // 準備
+  const drift = mapLines({
+    args: '{"title": "全体", "mdoe": 1}',
+    mermaid: ["flowchart LR", "  A[A] --> B[B]"],
+    data: '{"version": 1, "notes": {"ghost": {"text": "無い"}}, "layuot": {}, "walkthroughs": [{"text": "a -- b", "nodes": ["A"]}]}',
+  });
+  const head = ["# A", "", ...drift];
+  const a = [
+    ...head,
+    ...Array.from({ length: 19 - head.length }, () => ""),
+    ...mapLines({ mermaid: ["flowchart LR", "  C[C] --> D[D]"] }),
+    "",
+  ];
+  expect(a.indexOf("<!-- map -->") + 1).toBe(20);
+  const dir = await createMapDir(a);
+  const before = await snapshotFiles(dir, MAP_FILES);
+  // 実行
+  const result = await runCli(["check"], dir);
+  // 検証
+  expect(result.code).toBe(1);
+  const lines = linesOf(result.stdout);
+  const at = (line: number, kind: string) =>
+    lines.filter((item) => item.startsWith(`docs/a.md:${line}: ${kind}:`));
+  expect(
+    a.indexOf(drift.find((item) => item.startsWith("<!-- map-data")) ?? "") + 1,
+  ).toBe(10);
+  expect(at(10, "map_unknown_ref")).toHaveLength(1);
+  expect(at(10, "map_unknown_ref")[0]).toContain("notes.ghost");
+  expect(at(10, "map_unknown_key")).toHaveLength(1);
+  expect(at(10, "map_unknown_key")[0]).toContain("layuot");
+  expect(at(10, "map_invalid_value")).toHaveLength(1);
+  expect(at(10, "map_invalid_value")[0]).toContain("walkthroughs[0].text");
+  expect(at(10, "map_invalid_value")[0]).toContain("--");
+  const mark = lines.filter((item) => item.startsWith("docs/a.md:3:"));
+  expect(mark).toHaveLength(1);
+  expect(mark[0]).toMatch(/^docs\/a\.md:3: map_unknown_key: .*mdoe/);
+  for (const key of ["title", "focus", "play", "interval", "collapse"])
+    expect(mark[0]).toContain(key);
+  expect(lines.some((line) => line.startsWith("docs/a.md:20:"))).toBe(false);
+  expect(lines.at(-1)).toBe("ずれ 4 件");
+  expect(await snapshotFiles(dir, MAP_FILES)).toEqual(before);
+});
+
+// --text の Markdown の map の範囲の書き方の警告を、警告の項目ごとのずれにする（正常系（文字列の map の書き方の警告））
+test("test_normal_when_text_map_warnings", async () => {
+  // 準備
+  const dir = await createTempDir();
+  await runCli(["init", dir], dir);
+  const markdown = [
+    "<!-- map -->",
+    "```mermaid",
+    "flowchart LR",
+    "  A -> B",
+    "```",
+    "<!-- map-data: {",
+    '  "version": 1,',
+    '  "layuot": {}',
+    "} -->",
+    "<!-- /map -->",
+    "",
+  ].join("\n");
+  // 実行
+  const result = await runCli(["check", "--text", markdown], dir);
+  // 検証
+  expect(result.code).toBe(1);
+  const lines = linesOf(result.stdout);
+  const invalid = lines.filter((line) => line.startsWith("-:4: map_invalid:"));
+  expect(invalid).toHaveLength(1);
+  expect(invalid[0]).toContain("A -> B");
+  expect(invalid[0]).toContain("-->");
+  const key = lines.filter((line) => line.startsWith("-:8: map_unknown_key:"));
+  expect(key).toHaveLength(1);
+  expect(key[0]).toContain("layuot");
+  expect(lines.at(-1)).toBe("ずれ 2 件");
+});
+
+// 設定の map の Schema に合わない値と無いアイコン、文書の map の範囲の設定に無いクラスと線の名前をずれにする（正常系（map の設定にずれがある））
+test("test_normal_when_map_config_drift", async () => {
+  // 準備
+  const a = [
+    "# A",
+    "",
+    ...mapLines({
+      mermaid: ["flowchart LR", "  A[A]:::queue --> B[B]"],
+      data: '{"version": 1, "layout": {"A->B": {"line": "back"}}}',
+    }),
+    "",
+  ];
+  const dir = await createMapDir(
+    a,
+    [
+      "map:",
+      "  node_fit: tall",
+      "  kinds:",
+      "    store:",
+      "      shape: hexagon",
+      "      icon: no-such-icon",
+      "",
+    ].join("\n"),
+  );
+  const before = await snapshotFiles(dir, MAP_FILES);
+  // 実行
+  const result = await runCli(["check"], dir);
+  // 検証
+  expect(result.code).toBe(1);
+  const lines = linesOf(result.stdout);
+  const config = lines.filter((line) => line.startsWith("mdmark.config.yaml"));
+  const schema = config.filter((line) => line.includes(" schema:"));
+  expect(schema).toHaveLength(2);
+  expect(schema.some((line) => line.includes("map.node_fit"))).toBe(true);
+  expect(schema.some((line) => line.includes("map.kinds.store.shape"))).toBe(
+    true,
+  );
+  const icon = config.filter((line) => line.includes(" map_unknown_icon:"));
+  expect(icon).toHaveLength(1);
+  expect(icon[0]).toContain("no-such-icon");
+  const doc = (kind: string) =>
+    lines.filter(
+      (line) => line.startsWith("docs/a.md") && line.includes(` ${kind}:`),
+    );
+  expect(doc("map_unknown_class")).toHaveLength(1);
+  expect(doc("map_unknown_class")[0]).toContain("queue");
+  expect(doc("map_unknown_class")[0]).toContain("map.kinds");
+  expect(doc("map_unknown_line")).toHaveLength(1);
+  expect(doc("map_unknown_line")[0]).toContain("back");
+  expect(doc("map_unknown_line")[0]).toContain("map.lines");
+  expect(lines.at(-1)).toBe("ずれ 5 件");
+  expect(await snapshotFiles(dir, MAP_FILES)).toEqual(before);
+});
