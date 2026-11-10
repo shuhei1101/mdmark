@@ -427,6 +427,30 @@ flows:
     test: test_normal_when_session_storage_unavailable
     refs:
       - dev/設計書/シナリオ/単一ユースケース/まとめたHTMLで文書を行き来する#scenarios[異常シナリオ（sessionStorage が使えない）]
+  - name: 正常系（文書を切り替えると map のクエリ文字列を消す）
+    summary: map のグループの中へ入った文書から文書の一覧で別の文書へ移ると、クエリ文字列の `map-*` を消し、移った先の図を全体から描く
+    setup:
+      - name: map を持つフォルダ
+        description: '`entry` の `a.md` と `b.md` が、それぞれ構成図の map の範囲を 1 つ持つ（どちらもグループ `place` を持つ）'
+      - name: Mock
+        description: 正常系と同じ。sessionStorage は開く前に空にする
+    flow: |-
+      sequenceDiagram
+        actor U as 読者
+        participant H as まとめた HTML
+        U->>H: a.md の図の「配置」のタイトルを押す
+        H-->>U: グループの中を描き、クエリ文字列に map-1=place
+        U->>H: 文書の一覧で b.md を押す
+        H-->>U: クエリ文字列の map-1 を消し、b.md の図を全体から描く
+        U->>H: 戻る
+        H-->>U: a.md の図を「配置」の中から描く
+    expected:
+      - b.md へ移った後の `location.search` に `map-` で始まるキーが無く、b.md の図の戻るボタンが押せない
+      - 戻るで a.md に戻ると、a.md の図が「配置」の中から描かれる
+      - '`map-` 以外のクエリ文字列のキーは変わらない'
+    test: test_normal_when_switch_clears_map_query
+    refs:
+      - dev/設計書/シナリオ/単一ユースケース/図のグループの中へ入る・開閉する#scenarios
 lead: 文書の作成者が設定の `build` で決めた文書を、参照・被参照・用語のツールチップが有効になり、文書を行き来できる 1 枚の HTML にまとめる。埋めるものと外へ要求しないことはインターフェース定義『文書をHTMLに書き出す』と同じ。
 idempotent: true
 side_effects: '`build.out` に HTML を書き込む（既にあれば上書きする）。文書が指す動画・音声を、`build.out` の隣の `_files/` のフォルダへコピーする。文書が使用する外部ライブラリの URL の先を読み込む。書き出した HTML を開いたページでは、`history.scrollRestoration` を `manual` にし、履歴の項目ごとの表示の状態を sessionStorage に記載する'
@@ -515,4 +539,7 @@ constraints:
   - item: 表示の状態の保存先
     constraint: sessionStorage。キーは履歴の項目ごとに振る ID（`history.state` に持たせる）を含む。sessionStorage を取り出せない・書き込めないときは `console.warn` に出し、保存した状態を持たない項目と同じく描く
     decided_by: dev/設計書/シナリオ/単一ユースケース/まとめたHTMLで文書を行き来する#scenarios[異常シナリオ（sessionStorage が使えない）]
+  - item: map のクエリ文字列
+    constraint: 文書の一覧と文書間のリンクで別の文書へ移るときは、クエリ文字列から `map-` で始まるキーを消してから移る。戻る・進む・再読み込みでは消さず、移った先の文書の map の図は sessionStorage の状態で描く
+    decided_by: dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[map の状態の保存]
 test_file: tests/integration/lib/bundle.test.ts

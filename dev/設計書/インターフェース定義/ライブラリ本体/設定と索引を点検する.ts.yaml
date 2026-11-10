@@ -599,6 +599,54 @@ flows:
     test: test_normal_when_text_unknown_mark_args
     refs:
       - dev/設計書/シナリオ/単一ユースケース/文字列とYAMLのキーの記法を点検する#scenarios[正常シナリオ（知らないキー・機能・指定）]
+  - name: 正常系（map の補足にずれがある）
+    summary: 文書の map の範囲の Mermaid と補足を読み込み、補足が指す無い ID・知らないキー・`--` を含む値を、範囲の場所を指すずれにする
+    setup:
+      - name: map の補足にずれを持つフォルダ
+        description: '`build.include` が該当する `docs/a.md` だけを持ち、3 行目の `<!-- map -->` の範囲に、補足の `notes` のキー `ghost`（Mermaid に無いノード）・トップレベルの知らないキー `layuot`・`walkthroughs[0].text` の値 `a -- b` を持つ範囲と、20 行目にずれの無い map の範囲を持つフォルダ'
+      - name: Mock
+        description: 差し替える依存は無い。点検はブラウザを使用しない
+    flow: |-
+      sequenceDiagram
+        actor W as 文書の作成者
+        participant C as mdmark CLI
+        W->>C: mdmark check
+        C->>C: 点検する文書の map の範囲の Mermaid と補足を読み込む
+        C->>C: 補足のスキーマと、補足が指すノード・線の ID を確認する
+        C-->>W: map のずれの 3 行・終了コード 1
+    expected:
+      - 終了コードが 1
+      - '`docs/a.md:3:` で始まる行が `map_unknown_ref`（内容に `notes.ghost` と、ID を Mermaid のノード・線の ID にする修正方法）・`map_unknown_key`（内容に `layuot` と使用できるキーの一覧）・`map_invalid_value`（内容に `walkthroughs[0].text` と、`--` を含めない修正方法）で 1 つずつある'
+      - '`docs/a.md:20:` で始まる行が無い'
+      - 最後の行が `ずれ 3 件`
+      - 設定・索引・文書が変わっていない
+    test: test_normal_when_map_data_drift
+    refs:
+      - dev/設計書/シナリオ/単一ユースケース/設定と索引を点検する#scenarios[正常シナリオ（map の補足にずれがある）]
+  - name: 正常系（文字列の map の書き方の警告）
+    summary: '`--text` の Markdown の map の範囲の書き方の警告を、警告の項目ごとのずれにする'
+    setup:
+      - name: 作業のフォルダ
+        description: 正常系（文字列の記法を点検する）と同じ
+      - name: map の書き方を誤った文字列
+        description: 1 行目に `<!-- map -->`、2〜5 行目に 4 行目が `A -> B` の `flowchart` の mermaid のブロック、6〜9 行目にトップレベルの知らないキー `layuot` を持つ補足、10 行目に `<!-- /map -->` を持つ Markdown
+      - name: Mock
+        description: 正常系と同じ
+    flow: |-
+      sequenceDiagram
+        actor W as 文書の作成者
+        participant C as mdmark CLI
+        W->>C: mdmark check --text {Markdown}
+        C->>C: 描くときと同じ読み取りで、map の書き方の警告の項目を集める
+        C-->>W: ずれ 2 行・終了コード 1
+    expected:
+      - 終了コードが 1
+      - '`-:4: map_invalid:` で始まり `A -> B` と `-->` にする修正方法を含む行と、`-:8: map_unknown_key:` で始まり `layuot` を含む行がある'
+      - 各行の内容が、同じ文字列を `render` で描いたときの書き方の警告の項目と同じ文
+      - 最後の行が `ずれ 2 件`
+    test: test_normal_when_text_map_warnings
+    refs:
+      - dev/設計書/シナリオ/単一ユースケース/文字列とYAMLのキーの記法を点検する#scenarios[正常シナリオ（map の書き方の警告がある）]
 lead: 文書の作成者が、設定ファイルの構造・索引と文書のずれ（`checkIndex`）・`build` の対象の有無・文書の本文にある知らないマーカー・文書が指す見つからないファイル・文書の図の部品の定義を点検し、ファイル・場所・種類・内容の一覧を受け取る。`--text` か `--file` と `--key` を指定したときは、設定と索引の点検の代わりに、指定した Markdown を描いたときの記載の警告と図の定義のずれを同じ一覧で受け取る。点検は設定・索引・文書を書き換えない。
 idempotent: true
 side_effects: なし（設定・索引・文書を書き換えない）
@@ -733,4 +781,7 @@ constraints:
     constraint: '`--text` のずれの場所は、文字列の中の行の番号（1 から）。`--file` のずれのファイルは YAML のファイル、場所は YAML のファイルの行の番号（1 から）。キーの値がブロックスカラー（`|`・`>`）なら、値の中の行を YAML のファイルの行へ置き換え、それ以外の記載方法の値はキーの行にする。警告の場所は、警告の元になったマーカー（範囲なら開きのマーカー）の行。マーカーを持たない警告（読み込めないファイルツリーなど）は、警告を配置した場所の後ろのブロックの開始の行'
   - item: 重ねた設定ファイルの点検
     constraint: '索引と文書のずれは、インターフェース定義『設定を重ねて読み込む』を `purpose: export` で呼んで重ねた設定で点検する。設定の構造は、重ねた設定ファイルのそれぞれと、`config.applyToExport` によらず端末の設定のファイルがあればその構造も検める。ずれの `file` は『設定を重ねて読み込む』の制約「パスの表示」のパス（今のフォルダからの相対パスか `~` のパス）にする'
+  - item: map の点検
+    constraint: '制約「点検する文書」の文書ごとに、map の範囲を文書をHTML文字列にする.ts の制約「map の範囲」と同じ読み込み方で読み込み、制約「map の書き方の誤り」の項目を 1 つにつき 1 件のずれにする。Mermaid の読めない行・閉じの無いブロック・範囲の中の mermaid のブロックと補足の数の誤り・描けない図の種類は `map_invalid`、補足が指す Mermaid に無いノード・線・グループの ID は `map_unknown_ref`、補足の知らないキーと知らない印の引数は `map_unknown_key`、補足のスキーマに合わない値と `--` を含む値は `map_invalid_value` にする。ファイルは文書の相対パス、場所は Mermaid の行は文書の行、補足の箇所は補足の中の行を文書の行へ置き換えた行、そのほかは map の開きのマーカーの行の番号（1 から）。内容は書き方の警告の項目と同じ文。配置は点検しない。文書の `<!-- features: -map -->` の文書は点検しない。点検はブラウザを使用しない'
+    notes: '`--text`・`--file` の点検でも同じ種類にする（制約「記法の点検」の `syntax_warning` にしない）'
 test_file: tests/integration/lib/check-config.test.ts

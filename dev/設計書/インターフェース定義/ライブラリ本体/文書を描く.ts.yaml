@@ -6014,9 +6014,251 @@ flows:
     test: test_normal_when_column_resized_in_narrow_width
     refs:
       - dev/設計書/シナリオ/単一ユースケース/表を操作する#scenarios[正常シナリオ（狭い幅で列の幅を変える）]
+  - name: 正常系（map の構成図を描く）
+    summary: map の場所の `flowchart` を、入れ子のグループを内側から自動配置したフロー図にして、置き場所の幅いっぱいの図の枠に描く
+    setup:
+      - name: 配布物を読み込んだページ
+        description: 正常系と同じ。描く先の `div` の幅は 1200px
+      - name: map の構成図を持つ Markdown
+        description: 文書をHTML文字列にする.ts の正常系（map の範囲）の 1 つ目の範囲と同じ。クラス `:::step`・`:::store`・`:::outside` と、ラベルを持つ線・`<-->`・`-.->`・`==>` を持つ
+      - name: 設定
+        description: '`opts.config.map.kinds` に `step`（`label`・`icon: cog`）・`store`（`icon: database`・`shape: rect`・`color: purple`）・`outside`（`shape: pill`・`color: green`）、`opts.config.map.lines` に `-.->`（`dash: dashed`・`head: open`）・`==>`（`width: thick`・`color: orange`）'
+        notes: モック `dev/mock/refs/445/assets/samples.js` の `CONFIG` と同じ
+      - name: Mock
+        description: 差し替える依存は無い。sessionStorage とクエリ文字列は描く前に空にする
+    flow: |-
+      sequenceDiagram
+        actor U as ユーザー
+        participant M as mdmark
+        U->>M: mount(el, { markdown, config })
+        M->>M: Mermaid と補足を読み込み、内側のグループから配置して線の経路を決める
+        M->>M: 描いたノードの中身を測り、大きさが変わったら配置し直す
+        M-->>U: 図の枠に入れた map の構成図と、図の枠の下の案内の帯
+    expected:
+      - map の場所が `figure.mdmark-diagram[data-diagram="map"]` になり、タイトルが印の `title` の「全体の構成」で、範囲と更新日を出さない
+      - 入れ子のグループが外のグループの中にあり、どの 2 つのノード・グループも重ならず、線が端点とその祖先以外の矩形を横切らない
+      - クラスのノードの種類の行に設定のアイコンと `label` があり、形・色が設定のとおりで、種類を書かないノードにも高さ 24px の空の種類の行がある。凡例が無い
+      - どのノードも名前の要素がノードの中に収まり（`scrollHeight` が `clientHeight` 以下）、種類の行がノードの左上にある
+      - '`-.->` の線が破線で線の矢じり、`==>` の線が太い橙色で、どの線も矢じりの色が線の色と同じ。`<-->` の線は両端に矢じりを持つ'
+      - 図の枠の幅が置き場所の幅いっぱいで、本文の幅との切り替えのボタンが無く、倍率が 1 より小さくならない
+      - 右上のツールの先頭に、外へ戻る（押せない）・全て開く・全て閉じる・配置と選択を元に戻す（押せない）があり、図を動かす矢印のボタンが無い
+      - 図の枠の下に案内の帯があり、1 行目に `–/4` と前へ・停止（押せない）・自動で進める・次への 4 つのボタンがある
+      - 置き場所の無い線のラベルを出さず、その線にポインターを当てるとツールチップにラベルが出る
+      - 線にポインターを当てると、線と両端のノードのほかが薄くなり、その線の上をデータの印が流れ、補足の `notes` を持つ線だけツールチップに説明が出る。離すと元に戻る
+      - mermaid のライブラリへの要求が 0 件
+    test: test_normal_when_map_flowchart_drawn
+  - name: 正常系（map のグループの中へ入る・開閉する）
+    summary: グループのタイトルで中へ入り、戻るボタンで外へ戻り、山形で開閉し、状態を sessionStorage とクエリ文字列に保つ
+    setup:
+      - name: 配布物を読み込んだページ
+        description: 正常系（map の構成図を描く）と同じ
+      - name: map の構成図を持つ Markdown
+        description: 正常系（map の構成図を描く）と同じ
+      - name: Mock
+        description: 差し替える依存は無い。ページの再読み込みは、同じ要素へ `destroy` の後にもう一度 `mount` することで代える
+    flow: |-
+      sequenceDiagram
+        actor U as ユーザー
+        participant M as mdmark
+        U->>M: 「記法の読み取り」のタイトルを押す
+        M-->>U: グループの中だけを配置し直し、外を薄く残す
+        U->>M: 戻るボタンを押す
+        M-->>U: 外のグループの図に戻す
+        U->>M: 「データ」の山形を押す
+        M-->>U: 「データ」を 1 つのノードに閉じ、中への線をまとめる
+        U->>M: destroy() の後に mount(el, { markdown, config })
+        M-->>U: 閉じた状態のまま描く
+    expected:
+      - 中へ入ると、そのグループの中のノードだけが配置し直され、外のノードは薄く（`map-faded`）残り、入っているグループのタイトルがボタンでない文字になり、戻るボタンが押せる
+      - 中へ入ると、クエリ文字列に `map-1=read` が入り、`history.length` が増えない。戻るボタンで全体に戻ると値が `lib` になり、もう一度戻るとキーが消える
+      - 閉じたグループが、左上に開くボタンを持つ 1 つのノードになり、同じグループどうしの線が 1 本にまとまり、本数とラベルを出さない
+      - Shift を押しながら山形を押すと、そのグループと中のグループが全て開閉する
+      - もう一度 mount した後も、閉じた状態で描かれる。`map-1=read` を付けた URL で sessionStorage を空にして mount すると「記法の読み取り」の中から描かれ、無いグループの ID は無視される
+      - 全て開く・全て閉じるで、中のグループが全て開く・閉じる。操作しても図の倍率と表示する枠の高さが変わらない
+    test: test_normal_when_map_group_entered_and_collapsed
+  - name: 正常系（map の案内を進める）
+    summary: 案内の帯の前へ・次へ・自動で進める・停止で手順を進め、手順ごとに強調するノードのほかを薄くし、データの印を流す
+    setup:
+      - name: 配布物を読み込んだページ
+        description: 正常系（map の構成図を描く）と同じ
+      - name: 案内を持つ map の Markdown
+        description: '正常系（map の構成図を描く）の範囲。補足の `walkthroughs` は 4 手順（3 手順目は `enter: place`、2 手順目は説明の文が 3 行）、印の `interval=3`'
+      - name: Mock
+        description: 自動で進める間隔はテストの時計を進めて確かめる。`prefers-reduced-motion` は `no-preference`
+    flow: |-
+      sequenceDiagram
+        actor U as ユーザー
+        participant M as mdmark
+        U->>M: 次へを押す
+        M-->>U: 手順 1 のタイトルと説明、強調するノードのほかを薄くし、データの印を流す
+        U->>M: 自動で進めるを押す
+        M-->>U: 3 秒ごとに次の手順へ進め、強調するノードの中心へ図の枠の中をスクロールする
+        U->>M: 停止を押す
+        M-->>U: 強調を解き、始めた段の図に戻す
+    expected:
+      - 帯の 1 行目に番号（`1/4`）・手順のタイトル・4 つのボタン、2 行目から説明の文（改行はそのまま）があり、説明の行数によらずボタンの位置が変わらない
+      - 強調するノードの表示は変わらず、ほかのノード・線・ラベルが薄くなり（`opacity` 0.25）、強調するノードどうしの線の上をデータの印（既定は線の色の丸）が流れ続ける
+      - 手順 3 で「配置」のグループの中に入る
+      - 次へ・前へは常に押せ、最後の次へで最初、始める前の前へで最後の手順へ回る。前へ・次へでは図の枠の中のスクロールの位置が変わらない
+      - 自動で進めている間は 3 秒ごとに進み、強調するノードの中心へ図の枠の中がスクロールする。図の枠をホイールで動かした後は、自動で進め直すまでスクロールしない
+      - 手順を進める間、両方の手順で残す線の `opacity` が 0 にならない
+      - 停止で強調が解け、案内を始めた全体の図に戻り、帯が `–/4` に戻る
+    test: test_normal_when_map_walkthrough_played
+  - name: 正常系（map のシーケンス図を描いて再生する）
+    summary: map の場所の `sequenceDiagram` を全ての記法で描き、再生の帯でメッセージを進め、`plays_over` で指した構成図の上でも強調する
+    setup:
+      - name: 配布物を読み込んだページ
+        description: 正常系（map の構成図を描く）と同じ
+      - name: 構成図とシーケンス図の map を持つ Markdown
+        description: '正常系（map の構成図を描く）の範囲と、`autonumber`・`%% block:` を付けた `rect`・`loop` の中の `alt` / `else`・`Note over`・`->>+` と `-->>-`・`--x` を持つ `sequenceDiagram` の範囲（補足に `plays_over: 1`）'
+        notes: モック `dev/mock/refs/445/assets/samples.js` の `SEQUENCE` と同じ
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        actor U as ユーザー
+        participant M as mdmark
+        U->>M: mount(el, { markdown, config })
+        M-->>U: 構成図とシーケンス図と、それぞれの帯
+        U->>M: シーケンス図の帯の次へを押す
+        M-->>U: メッセージ 1 のほかを両方の図で薄くし、両方の線にデータの印を流す
+    expected:
+      - シーケンス図に、`loop` と `alt` の枠（枠線 1px・背景とのコントラスト比 3:1 以上）と左上のタブ、`else` の破線と `[ラベル]`、`Note over` の箱、活性化の帯があり、見出し・注記がメッセージのラベルと重ならない
+      - 名前の無いブロック（`rect`）のタブに `%% block:` の名前が出る
+      - 点線・× の矢じり・`autonumber` の番号があり、活性化の帯に出入りする線が帯の端で止まる
+      - 参加者の箱が名前の行数に合わせて高くなり、最初の行が一番高い箱の下から始まる
+      - 次への後、帯のタイトルがメッセージ 1 の文で、シーケンス図と構成図の両方でメッセージ 1 の線と送り手・受け手のほかが薄くなり、その線の上をデータの印が流れる
+      - 構成図の案内を始めると、シーケンス図の強調が解ける
+    test: test_normal_when_map_sequence_played
+  - name: 正常系（map のノード・参加者・線を選ぶ）
+    summary: 構成図のノードとシーケンス図の参加者を押して選び、線を押して両端を選び、元に戻すボタンと Esc で解く
+    setup:
+      - name: 配布物を読み込んだページ
+        description: 正常系（map の構成図を描く）と同じ
+      - name: 構成図とシーケンス図の map を持つ Markdown
+        description: 正常系（map のシーケンス図を描いて再生する）と同じ
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        actor U as ユーザー
+        participant M as mdmark
+        U->>M: 構成図の mount のノードの種類の行を押す
+        M-->>U: mount とその線のほかを薄くし、その線にデータの印を流す
+        U->>M: mount と marker の間の線を押す
+        M-->>U: 両端の mount と marker を選ぶ
+        U->>M: シーケンス図の参加者の種類の行を押す
+        M-->>U: その参加者のメッセージとライフラインのほかを薄くする
+        U->>M: Esc を押す
+        M-->>U: 選択を解く
+    expected:
+      - ノードを 1 つ選ぶと、そのノードとそのノードの線・ラベルの表示は変わらず、線の相手のノードを含むほかが薄くなり、その線の上をデータの印が流れる。2 つ選ぶと、選んだノードどうしの線だけが残る
+      - 線を押すと両端のノードが選ばれ、もう一度押すと両方の選択が解ける。片方だけ選んだ状態で押すと両方が選ばれる。線を 3px だけ動かして離しても押した扱いになる
+      - ノードと参加者の名前の文字の上を押しても選択は変わらず、名前の文字を選んでコピーできる。種類の行の文字は選べない
+      - シーケンス図のメッセージの線を押すと送り手と受け手が選ばれる
+      - 右上の「配置と選択を元に戻す」（構成図）・「参加者の並び順と選択を元に戻す」（シーケンス図）が選んだときだけ押せ、押すか Esc で選択が解ける
+      - 選んだノードの強調が、案内・再生の強調より優先される
+    test: test_normal_when_map_items_selected
+  - name: 正常系（map のノード・グループ・線を動かす）
+    summary: 構成図のノードとグループのタイトルの行と線の区間をドラッグで動かし、シーケンス図の参加者をドラッグで並べ替え、位置を sessionStorage に保つ
+    setup:
+      - name: 配布物を読み込んだページ
+        description: 正常系（map の構成図を描く）と同じ
+      - name: 構成図とシーケンス図の map を持つ Markdown
+        description: 正常系（map のシーケンス図を描いて再生する）と同じ
+      - name: Mock
+        description: 差し替える依存は無い。sessionStorage は描く前に空にする
+    flow: |-
+      sequenceDiagram
+        actor U as ユーザー
+        participant M as mdmark
+        U->>M: 2 段目のグループの中のノードを下へ 40px ドラッグする
+        M-->>U: ノードだけを動かし、グループを広げる
+        U->>M: グループのタイトルの行を下へ 60px ドラッグする
+        M-->>U: グループを中身ごと動かす
+        U->>M: 線の真ん中の区間をノードの上まで動かす
+        M-->>U: 区間を動かし、線をノードの上の辺へつなぎ替える
+        U->>M: シーケンス図の 5 人目の参加者を 2 人目の位置へドラッグする
+        M-->>U: 並び順を変えて描き直す
+    expected:
+      - ノードがポインターの動いた分だけ動き、そのノードを含むグループの大きさのほかは位置が変わらない。ほかのノード・グループとの間が 16px より狭くなる位置と、グループの左端・上端より外へは動かない。4px 未満の動きは押した扱い
+      - グループのタイトルの行のドラッグで、グループと中のノード・グループが同じ並びのまま 60px 動く。グループの面のドラッグは、グループを動かさず図の枠の中をスクロールする
+      - 線のどの区間の上でもポインターが `ns-resize` か `ew-resize` になり、真ん中の区間をノードの上へ動かすと、線がノードの上の辺から入り、矢じりもその辺に付く。端の区間はノードの辺に沿って動き、辺の端を越えると越えた側の辺へつなぎ替わる
+      - シーケンス図の参加者は、並べ替えのアイコンを持たず、名前の文字の外のドラッグで列を移り、移す先に縦の線が出る。Alt + 左右の矢印でも 1 列ずつ動く
+      - もう一度 mount しても、動かした位置と並び順のまま描かれ、Markdown は変わらない。「配置と選択を元に戻す」で自動配置に戻る
+      - ドラッグできる場所はポインターが `grab`、名前の文字の上は `text`
+    test: test_normal_when_map_items_moved
+  - name: 正常系（map のシーケンス図のブロックを開閉する）
+    summary: シーケンス図のブロックをタブの山形で開閉し、タブの名前で中だけを描き、状態をクエリ文字列に保つ
+    setup:
+      - name: 配布物を読み込んだページ
+        description: 正常系（map の構成図を描く）と同じ
+      - name: 構成図とシーケンス図の map を持つ Markdown
+        description: 正常系（map のシーケンス図を描いて再生する）と同じ
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        actor U as ユーザー
+        participant M as mdmark
+        U->>M: alt のタブの山形を押す
+        M-->>U: alt を名前とメッセージの数の 1 行に閉じる
+        U->>M: loop のタブの名前を押す
+        M-->>U: loop の中のメッセージと関わる参加者だけの図にする
+        U->>M: 戻るボタンを押す
+        M-->>U: 全体の図に戻す
+    expected:
+      - 閉じた alt が「alt と名前・メッセージ 4 件」の 1 行になり、再生の帯の数が閉じた分だけ減り、閉じたブロックの中で始まる活性化の帯が閉じた行から描かれる
+      - loop の中だけを描くと、loop の枠とタブが残り、タブの名前が押せず山形が無く、loop の中のメッセージに関わる参加者だけが並ぶ。クエリ文字列に `map-2=1` が入る
+      - 右上に戻る・全て開く・全て閉じるが構成図と同じ位置にあり、中だけを描いていないときは戻るが押せない
+      - Shift を押しながら山形を押すと、そのブロックと中のブロックが全て開閉する
+    test: test_normal_when_map_sequence_blocks_toggled
+  - name: 正常系（map の状態をクエリ文字列に保たない）
+    summary: 設定 `map.url_state` が `false` のとき、中へ入ったグループとブロックをクエリ文字列に読み書きしない
+    setup:
+      - name: 配布物を読み込んだページ
+        description: 正常系（map の構成図を描く）と同じ。URL は `?map-1=read`
+      - name: 設定
+        description: '`opts.config.map.url_state` に `false`'
+      - name: Mock
+        description: 差し替える依存は無い。sessionStorage は描く前に空にする
+    flow: |-
+      sequenceDiagram
+        actor U as ユーザー
+        participant M as mdmark
+        U->>M: mount(el, { markdown, config })
+        M-->>U: クエリ文字列を読まずに全体の図を描く
+        U->>M: 「配置」のタイトルを押す
+        M-->>U: クエリ文字列を変えずにグループの中を描く
+    expected:
+      - '`map-1=read` の URL でも全体の図から描かれる'
+      - グループの中へ入っても `location.search` が `?map-1=read` のままで、`history.replaceState` が呼ばれない
+      - もう一度 mount すると、sessionStorage の状態（「配置」の中）で描かれる
+    test: test_normal_when_map_url_state_disabled
+  - name: 正常系（map の機能を解除する）
+    summary: 機能 `map` がオフの文書では map の図を描かず、範囲の中の mermaid のブロックを mermaid の図として描く
+    setup:
+      - name: 配布物を読み込んだページ
+        description: 正常系と同じ
+      - name: map の機能を解除する Markdown
+        description: '先頭に `<!-- features: -map -->` を持ち、map の範囲を 1 つ持つ文書'
+      - name: Mock
+        description: 正常系（mermaid のコードブロックを描く）と同じ。mermaid の本体と chunk も jsDelivr と同じパスで返却する
+    flow: |-
+      sequenceDiagram
+        actor U as ユーザー
+        participant M as mdmark
+        participant X as mermaid
+        U->>M: mount(el, { markdown })
+        M->>X: import(mermaid.url)
+        M-->>U: map の範囲を普通の Markdown として描き、mermaid のブロックを mermaid の図にする
+    expected:
+      - '`figure.mdmark-diagram[data-diagram="map"]` が無く、`figure.mdmark-diagram[data-diagram="mermaid"]` が 1 つある'
+      - 補足の文字・マーカーの文字・書き方の警告が無い
+    test: test_normal_when_map_disabled
 lead: 利用側のページが、要素と Markdown と設定を指定し、要素の中に文書を描く。戻り値で本文の差し替えと片付けができる。
 idempotent: false
-side_effects: '`el` の中身と class を書き換え、記法の操作のイベントを `el` の中に付ける。まとめていない名前の `icon:` があるとき、jsDelivr の Lucide のアイコンのモジュールを名前ごとに `import()` し、読み込めなかった名前だけ同じ URL へ `HEAD` の `fetch` を送信する。`side-toc` がオンで見出しがあるとき、`el` の中を本文の列と右側の目次に分け、見出しの位置を `IntersectionObserver` で確認する。出し方が `hover` のときは、右端の線とパネルの位置を決めるため、`window` の `scroll`・`resize` と、`el` に最も近いスクロールする祖先の要素があればその `scroll` を受け取り、`document.body` の子の追加・削除を `MutationObserver` で確認する。`back-to-top` がオンのとき、`el` の子に先頭へ戻るボタンを配置し、スクロールする場所が画面全体なら `window` の `scroll`、`el` に最も近いスクロールする祖先の要素なら `document` の `scroll`（キャプチャーフェーズ）と、`window` の `resize` を受け取り、`document.body` と `el` の子の追加・削除を `MutationObserver` で確認する。`window` の `beforeprint`・`afterprint`・`hashchange` と、絞り込みのドロワーを開いている間だけ `document` の `pointerdown`・`keydown` を受け取る。図の部品か埋め込んだ HTML があるとき、図の表示する枠と埋め込んだ HTML の大きさを `ResizeObserver` で見、ツールチップを開いている間だけ `document` の `keydown`・`pointerdown` と `window` の `scroll`・`resize` を受け取り、全画面の間だけ `el` の中に `dialog` を配置する。リンク先を持つフロー図のノードの上から図を動かしたとき、次の 1 回の `click` まで `window` の `click`（キャプチャーフェーズ）を受け取る。`diagram-resize` がオンのとき、リサイズハンドルで変えた図の高さを sessionStorage に書き込み、描くたびに読み込み、ダブルクリックで戻すと削除する。操作できる部品の写すボタン・表のコピー・行の URL のコピー・コードブロックのコピー・ファイルツリーのコピーでクリップボードに書き込む。表があるとき、表の大きさと描く先の要素の幅を `ResizeObserver` で見、`animation-timeline` を持たないブラウザでは `window` と文書の中の `scroll` と `window` の `resize` を受け取る。`data-group` を持つタブがあるとき、localStorage の `mdmark-tabs:{group}` を描くたびに読み込み、読者がタブを選ぶと書き込む。そのとき、ページの中の `el` の外にある同じ `group` のタブ群の選択も書き換える。文書に外部ライブラリか拡張のマーカーがあるとき、そのモジュールを読み込む。色分けの対象のコードブロックがあるとき、`syntax.url` の先の core と、使用する言語のモジュールを読み込む。`mermaid` がオンの文書に mermaid のコードブロックがあるとき、`mermaid.url` の先のモジュールを読み込み、描く先の配色の明暗の変化を確認して再描画する。`html-scripts` がオンの文書に範囲の `ts`・`js` があるとき、`html-scripts.url` の先の変換のライブラリを読み込み、範囲ごとに `document.head` へ `script` 要素を 1 つ配置してすぐ削除し、範囲の関数を呼ぶ。`opts.diffSource` を指定したとき、読者が差分を開くと（`opts.diffMode` が `open` なら描いた時点、`blocks` なら描くたびに）取り出し元の `revisions`・`content` を呼び、差分の行を出している間だけミニマップの帯を配置し、スクロール先のスクロールの `scroll` と `window` の `resize` を受け取る。文書にビューのマーカーがあるとき、ビューの部品のモジュールを読み込む。`comments` がオンで `opts.commentStore` を指定したとき、コメントの部品のモジュールを読み込み、`load` を描くたびに 1 回呼び、保存で `save`、読み込みと保存の関数が持つときは吹き出しの修正で `update`・削除で `remove`、`reloadComments` で `load` を呼ぶ。その間は `document` の `selectionchange` を受け取り、コメントのボタン・入力欄・吹き出しを `document.body` に配置する。あわせて本文の列の右に余白の列を配置し、描く先の要素の大きさを `ResizeObserver`、描く先の要素の中の開閉・切り替えを `MutationObserver` で確認する'
+side_effects: '`el` の中身と class を書き換え、記法の操作のイベントを `el` の中に付ける。まとめていない名前の `icon:` があるとき、jsDelivr の Lucide のアイコンのモジュールを名前ごとに `import()` し、読み込めなかった名前だけ同じ URL へ `HEAD` の `fetch` を送信する。`side-toc` がオンで見出しがあるとき、`el` の中を本文の列と右側の目次に分け、見出しの位置を `IntersectionObserver` で確認する。出し方が `hover` のときは、右端の線とパネルの位置を決めるため、`window` の `scroll`・`resize` と、`el` に最も近いスクロールする祖先の要素があればその `scroll` を受け取り、`document.body` の子の追加・削除を `MutationObserver` で確認する。`back-to-top` がオンのとき、`el` の子に先頭へ戻るボタンを配置し、スクロールする場所が画面全体なら `window` の `scroll`、`el` に最も近いスクロールする祖先の要素なら `document` の `scroll`（キャプチャーフェーズ）と、`window` の `resize` を受け取り、`document.body` と `el` の子の追加・削除を `MutationObserver` で確認する。`window` の `beforeprint`・`afterprint`・`hashchange` と、絞り込みのドロワーを開いている間だけ `document` の `pointerdown`・`keydown` を受け取る。図の部品か埋め込んだ HTML があるとき、図の表示する枠と埋め込んだ HTML の大きさを `ResizeObserver` で見、ツールチップを開いている間だけ `document` の `keydown`・`pointerdown` と `window` の `scroll`・`resize` を受け取り、全画面の間だけ `el` の中に `dialog` を配置する。リンク先を持つフロー図のノードの上から図を動かしたとき、次の 1 回の `click` まで `window` の `click`（キャプチャーフェーズ）を受け取る。`diagram-resize` がオンのとき、リサイズハンドルで変えた図の高さを sessionStorage に書き込み、描くたびに読み込み、ダブルクリックで戻すと削除する。操作できる部品の写すボタン・表のコピー・行の URL のコピー・コードブロックのコピー・ファイルツリーのコピーでクリップボードに書き込む。表があるとき、表の大きさと描く先の要素の幅を `ResizeObserver` で見、`animation-timeline` を持たないブラウザでは `window` と文書の中の `scroll` と `window` の `resize` を受け取る。`data-group` を持つタブがあるとき、localStorage の `mdmark-tabs:{group}` を描くたびに読み込み、読者がタブを選ぶと書き込む。そのとき、ページの中の `el` の外にある同じ `group` のタブ群の選択も書き換える。文書に外部ライブラリか拡張のマーカーがあるとき、そのモジュールを読み込む。色分けの対象のコードブロックがあるとき、`syntax.url` の先の core と、使用する言語のモジュールを読み込む。`mermaid` がオンの文書に mermaid のコードブロックがあるとき、`mermaid.url` の先のモジュールを読み込み、描く先の配色の明暗の変化を確認して再描画する。`html-scripts` がオンの文書に範囲の `ts`・`js` があるとき、`html-scripts.url` の先の変換のライブラリを読み込み、範囲ごとに `document.head` へ `script` 要素を 1 つ配置してすぐ削除し、範囲の関数を呼ぶ。`opts.diffSource` を指定したとき、読者が差分を開くと（`opts.diffMode` が `open` なら描いた時点、`blocks` なら描くたびに）取り出し元の `revisions`・`content` を呼び、差分の行を出している間だけミニマップの帯を配置し、スクロール先のスクロールの `scroll` と `window` の `resize` を受け取る。文書にビューのマーカーがあるとき、ビューの部品のモジュールを読み込む。`comments` がオンで `opts.commentStore` を指定したとき、コメントの部品のモジュールを読み込み、`load` を描くたびに 1 回呼び、保存で `save`、読み込みと保存の関数が持つときは吹き出しの修正で `update`・削除で `remove`、`reloadComments` で `load` を呼ぶ。その間は `document` の `selectionchange` を受け取り、コメントのボタン・入力欄・吹き出しを `document.body` に配置する。あわせて本文の列の右に余白の列を配置し、描く先の要素の大きさを `ResizeObserver`、描く先の要素の中の開閉・切り替えを `MutationObserver` で確認する。map の範囲があるとき、図ごとの開閉・中へ入ったグループ・動かした位置・参加者の並び順を sessionStorage に記載し、`map.url_state` が `false` でなければ中へ入ったグループと中だけを描くブロックを `history.replaceState` でクエリ文字列の `map-{図の番号}` に記載する。ノードの大きさの変化を `ResizeObserver` で確認する'
 callers:
   - dev/設計書/シナリオ/単一ユースケース/文書を描く#
   - dev/設計書/シナリオ/単一ユースケース/テーマを上書きする#
@@ -6259,6 +6501,40 @@ request:
     location: argument
     description: 表のピン止めの動き。`each` は押した列だけを留め、留めた列より左を表示している間は右端に、過ぎた後は左端に留める。`through` は押した列までを左端に留める
     notes: 他の値は無視して `each` にする。`table` がオフのときは使用しない
+  - name: opts.config.map.node_fit
+    type: '"height" | "width"'
+    required: false
+    default: '`height`'
+    location: argument
+    description: map の構成図の、名前が長いノードの広げ方。`height` は幅を上限 220px のまま折り返して高さを増やし、`width` は幅を上限 360px まで広げてから折り返す
+    constraints: 知らない値は無視して `height` にする
+    example: '"width"'
+    notes: 既定は確認ログで決定した。`mdmark.config.yaml` の `map.node_fit` と同じ値
+  - name: opts.config.map.url_state
+    type: boolean
+    required: false
+    default: '`true`'
+    location: argument
+    description: map の中へ入ったグループと、シーケンス図の中だけを描くブロックを、URL のクエリ文字列（`map-{図の番号}`）に保つか。`false` ではクエリ文字列を読みも書きもしない
+    constraints: 真偽値でない値は無視して `true` にする
+    example: 'false'
+    notes: 使う側のルーターがクエリ文字列を使うページ向け。sessionStorage には設定によらず保つ
+  - name: opts.config.map.kinds
+    type: 'Record<string, { label?: string; icon?: string; shape?: "rounded" | "rect" | "pill" | "double"; color?: string }>'
+    required: false
+    default: なし（種類の行を空にし、角の丸い四角で描く）
+    location: argument
+    description: Mermaid のクラス名（`:::名前`）ごとのノードの種類。`label` は種類の行の名前、`icon` は Lucide のアイコンの名前、`shape` は形（既定 `rounded`）、`color` は色の名前
+    constraints: 知らない形・色の名前・Lucide に無いアイコンの名前は無視して既定にする。mdmark は種類を持たない（プリセットも持たない。確認ログ）
+    example: '{ "store": { "label": "保存先", "icon": "database", "shape": "rect", "color": "purple" } }'
+  - name: opts.config.map.lines
+    type: 'Record<string, { dash?: "solid" | "dashed" | "dotted" | "dash-dot" | "long-dash"; width?: "thin" | "normal" | "thick"; head?: "filled" | "open" | "none"; color?: string }>'
+    required: false
+    default: なし（実線・太さ normal・塗りの矢じりで描く）
+    location: argument
+    description: Mermaid の矢印（`-->`・`-.->`・`==>`）ごとと、補足の `layout` の `line` で指す名前ごとの線の種類
+    constraints: 知らない模様・太さ・矢じり・色の名前は無視して既定にする。凡例は出さない
+    example: '{ "-.->": { "dash": "dashed", "head": "open" }, "back": { "dash": "dotted" } }'
 request_example: |-
   ```json
   {
@@ -6661,4 +6937,15 @@ constraints:
     constraint: mermaid を読み込めないときは、各 mermaid の対象の読み込み中のブロックを通知ブロック（本文の文言は画面設計『文書』）に替え、コードブロックを出して残す。解釈できないソースは読み込み中のブロックを記載の警告に替え、コードブロックを出して残す
   - item: フロントマター
     constraint: インターフェース定義『文書をHTML文字列にする』の制約「フロントマター」と同じく、文書の先頭のフロントマターを除外して描き、機能 `frontmatter` がオンのときだけ本文の先頭に閉じた折りたたみを描く。右側の目次・目次・セクションの開閉はフロントマターとその表示を対象にしない。折りたたみの開閉は、印刷の前に開く折り畳みに含める。`update` は差し替えた本文のフロントマターでもう一度決める
+  - item: map の図
+    constraint: '`div.mdmark-map`（文書をHTML文字列にする.ts の制約『map の範囲』）を、`flowchart` は入れ子のグループを内側から自動配置したフロー図、`sequenceDiagram` は全ての記法を描いたシーケンス図にして、`figure.mdmark-diagram[data-diagram="map"]` の図の枠に入れる。図の枠は置き場所の幅いっぱい（右側の目次をピン止めしていないときは右端の線の手前、ピン止めしたときはパネルの手前）に広げ、本文の幅との切り替えのボタン、凡例、範囲と更新日を出さない。倍率は 1 より小さくしない。ノードの大きさは描いた中身を測って決め、大きさが変わったら配置し直す'
+    notes: 外観はモック `dev/mock/pages/document/445/a-map/` と `dev/mock/components/map-kinds/`（確認ログ）。配置の方式はライブラリ本体.md の `## PoC 結果`
+  - item: map の強調
+    constraint: 線のホバー・案内・再生・ノードと参加者の選択では、強調する要素の表示は変えず、ほかのノード・線・ラベル・ライフラインを `opacity` 0.25 にし、強調する線の上をデータの印が流れ続ける（両向きの線は両方へ）。選択の強調は案内・再生の強調より優先する。読者が始めたデータの印は `prefers-reduced-motion` でも流し、自動で始める再生は動きを減らす設定では止めて始める
+  - item: map の状態の保存
+    constraint: 開閉・中へ入ったグループ・動かしたノードとグループの位置・動かした線の区間・参加者の並び順は、図ごとの sessionStorage のキーに保ち、文書には書き戻さない。中へ入ったグループと中だけを描くブロックは、`map.url_state` が `false` でなければクエリ文字列の `map-{図の番号}` にも `history.replaceState` で書き（履歴を増やさない）、開いたときはクエリ文字列 → sessionStorage の順に読む。知らない ID・番号は無視する
+    notes: まとめた HTML で文書を切り替えたときに `map-*` を消すのは、複数の文書を1枚のHTMLにまとめる.ts
+  - item: map の操作の分け方
+    constraint: 構成図のノードは名前の文字の外を押して選び、ドラッグで動かす（4px 未満は押した扱い）。グループはタイトルの行（上端から 36px。ボタンの外）のドラッグで動かし、グループの面と余白のドラッグは図の枠の中をスクロールする。線は 4px 未満で離すと両端の選択、4px 以上で区間の移動。シーケンス図の参加者は名前の文字の外を押して選び、ドラッグで並べ替える。名前の文字は選んでコピーでき、種類の行の文字は選べない。選択・移動・開閉・中へ入る・案内と再生はキーボードでも操作できる
+    notes: キーは部品設計。確認ログ『map の構成図のグループをつかむ場所』
 test_file: tests/integration/lib/mount.browser.test.ts
