@@ -76,6 +76,19 @@ test("test_attach_band_when_next", async () => {
   expect(applied).toEqual([0, 1, 2, 3, 0]);
 });
 
+// 手順の差し替え（正常系）
+test("test_attach_band_when_update", async () => {
+  // 準備
+  const { root, handle, applied, button } = await setUp();
+  button("次の手順").click();
+  button("次の手順").click();
+  // 実行
+  handle.update(STEPS.slice(0, 2));
+  // 検証
+  expect(root.querySelector(".map-band-count")?.textContent).toBe("–/2");
+  expect(applied).toEqual([0, 1]);
+});
+
 // 自動で進める（正常系）
 test("test_attach_band_when_auto", async () => {
   // 準備
