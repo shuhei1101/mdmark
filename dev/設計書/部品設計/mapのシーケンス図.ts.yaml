@@ -6,6 +6,10 @@ states:
   description: '`autonumber`・`%% block:` の名前を持つ `rect`・`loop` の中の `alt` / `else`・`Note over`・活性化・点線・× の矢じり。参加者の箱は名前の行数に合わせて高い'
   notes:
     定義: モックの `SEQUENCE`（`dev/mock/refs/445/assets/samples.js`）
+- name: Arrows
+  description: 全ての矢印の種類と `autonumber`。点線・塗った矢じり・× の印・非同期の開いた矢じり・両向きの矢じりと、ラベルの頭の番号（`autonumber` のときだけ）
+- name: TallParticipants
+  description: 名前が 2 行の参加者。参加者の箱が高くなり、最初の行が一番高い箱の下から始まる
 - name: BlockCollapsed
   description: '`alt` を閉じた。「alt と名前・メッセージ 4 件」の 1 行になり、中で始まる活性化の帯がその行から描かれる'
   args:
@@ -29,12 +33,12 @@ states:
 - name: Reordering
   description: 5 人目の参加者を 2 人目の位置へドラッグしている。移す先に縦の線が出る
   screenshot: false
-lead: map の `sequenceDiagram` の全ての記法をシーケンス図の部品で描き、ブロックの開閉と中だけを描く操作、参加者の選択と並べ替え、強調しない要素を薄くする表示を加える。
+lead: map の `sequenceDiagram` の全ての記法を、シーケンス図の部品と同じ class と寸法で描き、ブロックの開閉と中だけを描く操作、参加者の選択と並べ替え、強調しない要素を薄くする表示を加える。
 args:
 - name: sequence
   type: オブジェクト
   required: true
-  description: 読み取った `sequenceDiagram`（`MapSequence`。`participants`・`messages`・`fragments`・`notes`・`activations`・`autonumber`）。表示する行を決めてからシーケンス図の部品の定義にする
+  description: 読み取った `sequenceDiagram`（`MapSequence`。`participants`・`messages`・`fragments`・`notes`・`activations`・`autonumber`）。表示する行（`sequenceRows`）の順に描く
 - name: order
   type: 配列
   required: false
