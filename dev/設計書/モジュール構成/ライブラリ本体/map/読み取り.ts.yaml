@@ -127,6 +127,28 @@ data_models:
   - name: color
     type: string | undefined
     description: 色の名前
+- name: MapArgs
+  title: 印の引数
+  container: src/map/spec.ts
+  usecase: Mermaidと補足で図を描く
+  role: データモデル
+  summary: '`parseMapArgs` が読んだ印の引数（A-128 の構成）'
+  properties:
+  - name: title
+    type: string | undefined
+    description: 図の枠と折りたたみの見出し
+  - name: focus
+    type: string | undefined
+    description: 最初に入るグループの ID
+  - name: play
+    type: '"autoplay" | undefined'
+    description: 画面に入ったら押さずに再生か案内を始める
+  - name: interval
+    type: number
+    description: 自動で進める間隔の秒（既定 2）
+  - name: collapse
+    type: '{ open: boolean; title: string | undefined } | undefined'
+    description: 図を折りたたみに入れる（A-128 の共通の折り畳み）
 functions:
 - name: parseFlowchart
   title: flowchartを読む
@@ -290,5 +312,70 @@ functions:
     condition: '`notes: [`'
     mock: なし
     expected: '`map_invalid_value` が 1 件で、補足は空'
+- name: parseMapArgs
+  title: 印の引数を読む
+  kind: 関数
+  container: src/map/spec.ts
+  usecase: Mermaidと補足で図を描く
+  role: 処理
+  scope: public
+  summary: 印の引数の文字を JSON のオブジェクトとして読み、`MAP_ARG_KEYS` のキーだけを `MapArgs` にし、知らないキーと読めない・型の合わない値を項目にする
+  args:
+  - name: source
+    type: string
+    required: true
+    description: '`<!-- map:` と `-->` の間の文字（無ければ空）'
+  returns:
+    type: '{ args: MapArgs; normalized: string; problems: MapProblem[]; unknownKeys: string[] }'
+    description: 読んだ引数・`data-map-args` に入れる空白なしの JSON・書き方の警告にする項目・点検だけが通知する知らないキー
+  process: |-
+    1. 空なら既定の `MapArgs` を返す
+    2. `JSON.parse` で読み、オブジェクトでなければ `map_invalid_value`（JSON のオブジェクトで記載する直し方）の項目にして既定を返す
+    3. `MAP_ARG_KEYS` に無いキーを `unknownKeys` に入れて捨てる
+    4. 型の合わない値（`play` が `autoplay` でない・`interval` が正の数でない・`collapse` がオブジェクトでない など）を `map_invalid_value` の項目にして既定にする
+  unit_tests:
+  - name: test_parse_map_args
+    case: 正常
+    summary: 全てのキー
+    condition: '`{"title": "全体", "focus": "read", "play": "autoplay", "interval": 3, "collapse": {"open": false}}`'
+    mock: なし
+    expected: 全てのキーが読め、`problems`・`unknownKeys` が空
+  - name: test_parse_map_args_when_empty
+    case: 正常
+    summary: 引数なし
+    condition: 空の文字
+    mock: なし
+    expected: '`interval` が 2 で、ほかのキーが無い'
+  - name: test_parse_map_args_when_unknown_key
+    case: 正常
+    summary: 知らないキー
+    condition: '`{"title": "全体", "mdoe": 1}`'
+    mock: なし
+    expected: '`unknownKeys` が `[mdoe]` で、`problems` が空、`normalized` に `mdoe` が無い'
+  - name: test_parse_map_args_when_not_json
+    case: 異常
+    summary: JSON として読めない
+    condition: '`{title: 全体}`'
+    mock: なし
+    expected: '`map_invalid_value` が 1 件で、既定の引数'
+  - name: test_parse_map_args_when_wrong_type
+    case: 異常
+    summary: 型の合わない値
+    condition: '`{"interval": "abc"}`'
+    mock: なし
+    expected: '`map_invalid_value` が 1 件で、`interval` が 2'
 refs:
 - dev/設計書/ER図/mapの補足.yaml
+constants:
+- name: MAP_ARG_KEYS
+  title: 印の引数のキー
+  container: src/map/spec.ts
+  usecase: Mermaidと補足で図を描く
+  summary: 印の JSON のオブジェクトで読むキー
+  value: '["title", "focus", "play", "interval", "collapse"]'
+- name: DEFAULT_MAP_INTERVAL
+  title: 自動で進める間隔の既定
+  container: src/map/spec.ts
+  usecase: 図を巡回する
+  summary: 印に `interval` が無いか型が合わないときの間隔（秒）
+  value: '2'

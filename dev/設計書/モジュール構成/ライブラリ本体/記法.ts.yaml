@@ -3357,7 +3357,7 @@ functions:
     kind: 関数
     scope: internal
     summary: 'コアルール。`map` がオンのとき、`<!-- map -->` 〜 `<!-- /map -->` の範囲ごとに mermaid のブロックと補足の HTML コメントを数え、範囲を `div.mdmark-map` の開きと閉じのトークンで囲み、補足を `pre.mdmark-map-data[hidden]` にし、`collectMapProblems` の項目があれば範囲の前に記載の警告（`kind: map`）を差し込む'
-    description: 図の番号は文書の中の map の範囲の順に 1 から振る（描かない範囲も数える）。範囲の中の mermaid のブロックには `data-mdmark-mermaid` と色分けの属性を付けない（`attachMermaid` の対象から外れる）。描かない範囲（mermaid のブロックが無い・2 つ以上・補足が 2 つ以上・描けない種類）は `div.mdmark-map` で囲まず、警告だけを差し込む。`map` がオフの文書では範囲のマーカーと補足のコメントを落とし、mermaid のブロックは普通の mermaid のコードブロックにする
+    description: 印の引数は `parseMapArgs` で読み、`data-map-args` に `normalized` を入れる（知らないキーは警告にせず落とす）。図の番号は文書の中の map の範囲の順に 1 から振る（描かない範囲も数える）。範囲の中の mermaid のブロックには `data-mdmark-mermaid` と色分けの属性を付けない（`attachMermaid` の対象から外れる）。描かない範囲（mermaid のブロックが無い・2 つ以上・補足が 2 つ以上・描けない種類）は `div.mdmark-map` で囲まず、警告だけを差し込む。`map` がオフの文書では範囲のマーカーと補足のコメントを落とし、mermaid のブロックは普通の mermaid のコードブロックにする
     args:
     - name: state
       type: StateCore

@@ -244,6 +244,7 @@ functions:
   callees:
   - dev/設計書/モジュール構成/ライブラリ本体/map/描画と操作.ts#functions[attachMapFlow]
   - dev/設計書/モジュール構成/ライブラリ本体/map/描画と操作.ts#functions[attachMapSequence]
+  - dev/設計書/モジュール構成/ライブラリ本体/map/読み取り.ts#functions[parseMapArgs]
   args:
   - name: root
     type: HTMLElement
@@ -257,7 +258,7 @@ functions:
     type: () => void
     description: 付けた操作と観察を外す関数
   process: |-
-    1. `div.mdmark-map` ごとに `data-map-kind` で `attachMapFlow` か `attachMapSequence` を呼ぶ
+    1. `div.mdmark-map` ごとに `data-map-args` を `parseMapArgs` で読み、`data-map-kind` で `attachMapFlow` か `attachMapSequence` に引数と一緒に指定する。`collapse` があれば図の枠を `details`（`open` は `collapse.open`、見出しは `collapse.title` か `title`）で包む
     2. シーケンス図の補足の `plays_over` が指す構成図を探し、再生の強調を構成図にも当てる。片方の図で案内か再生を始めたら、もう片方の強調を解く
   unit_tests:
   - name: test_attach_map
@@ -266,6 +267,12 @@ functions:
     condition: 2 つの `div.mdmark-map`
     mock: なし（jsdom）
     expected: '`figure.mdmark-diagram[data-diagram=map]` が 2 つになり、返した関数で操作が外れる'
+  - name: test_attach_map_when_collapse
+    case: 正常
+    summary: 折りたたみ
+    condition: '`data-map-args` が `{"title":"全体","collapse":{"open":false}}`'
+    mock: なし（jsdom）
+    expected: 図の枠が `open` を持たない `details` に入り、`summary` の文字が `全体`
 - name: attachMapFlow
   title: 構成図を付ける
   kind: 関数
@@ -291,15 +298,19 @@ functions:
     type: ResolvedConfig
     required: true
     description: 既定を当てた設定
+  - name: args
+    type: MapArgs
+    required: true
+    description: 印の引数
   returns:
     type: MapFlowHandle
     description: 強調を外から当てる関数と片付ける関数
   process: |-
-    1. `parseFlowchart`・`parseMapData` で読み、`readMapState` で状態を読む
+    1. `parseFlowchart`・`parseMapData` で読み、`readMapState`（印の `focus` を指定する）で状態を読む
     2. `layoutMap` で配置し、`renderDiagramFrame`（種類 `map`・`wide`・`tools`）と `renderMapFlow` で描く
     3. ノードの中身を測り、見積もりと違う大きさのノードを `size` にして配置し直す。以降はノードの大きさを `ResizeObserver` で見て同じく配置し直す
     4. 開閉・中へ入る・選ぶ・線を指す・動かすの操作と、Esc（選択を解き、無ければ外へ戻る）、右上のボタンを付け、変わるたびに `writeMapState` で保つ
-    5. 補足に `walkthroughs` があれば `attachBand` で案内の帯を付ける
+    5. 補足に `walkthroughs` があれば `attachBand`（印の `interval`・`play`）で案内の帯を付ける
   unit_tests:
   - name: test_attach_map_flow_when_toggle
     case: 正常
@@ -341,6 +352,10 @@ functions:
     type: ResolvedConfig
     required: true
     description: 既定を当てた設定
+  - name: args
+    type: MapArgs
+    required: true
+    description: 印の引数
   returns:
     type: MapSequenceHandle
     description: 再生の強調を外から受け取る関数と片付ける関数
@@ -363,13 +378,13 @@ functions:
   container: src/map/state.ts
   usecase: 図のグループの中へ入る・開閉する
   role: 処理
-  summary: クエリ文字列（`url_state` が `true` のとき）→ sessionStorage の順に図の状態を読み、知らない ID・番号を捨てる
+  summary: クエリ文字列（`url_state` が `true` のとき）→ sessionStorage → 印の `focus` の順に、最初に入るグループかブロックを決め、ほかの状態を sessionStorage から読み、知らない ID・番号を捨てる
   scope: public
   args:
   - name: options
-    type: '{ index: number; ids: Set<string>; urlState: boolean; storage: Storage | undefined; location: Location }'
+    type: '{ index: number; ids: Set<string>; urlState: boolean; focus: string | undefined; storage: Storage | undefined; location: Location }'
     required: true
-    description: 図の番号・知っている ID・設定・保存先
+    description: 図の番号・知っている ID・設定・印の `focus`・保存先
   returns:
     type: MapState
     description: 状態
@@ -398,6 +413,18 @@ functions:
     condition: '`storage: undefined`'
     mock: なし
     expected: 空の状態で、例外を投げない
+  - name: test_read_map_state_when_focus
+    case: 正常
+    summary: focus だけ
+    condition: '空のクエリ文字列と sessionStorage・`focus: read`'
+    mock: なし
+    expected: '`entered` が `read`'
+  - name: test_read_map_state_when_saved_over_focus
+    case: 正常
+    summary: 保った状態を優先
+    condition: 'sessionStorage の `entered: place`・`focus: read`'
+    mock: なし
+    expected: '`entered` が `place`'
 - name: writeMapState
   title: 状態を保つ
   kind: 関数
@@ -490,9 +517,9 @@ functions:
   scope: public
   args:
   - name: options
-    type: '{ figure: HTMLElement; mode: "walkthrough" | "playback"; steps: BandStep[]; interval: number; apply: (step: BandStep | undefined) => void; reducedMotion: boolean }'
+    type: '{ figure: HTMLElement; mode: "walkthrough" | "playback"; steps: BandStep[]; interval: number; autoplay: boolean; apply: (step: BandStep | undefined) => void; reducedMotion: boolean; observe: (target: Element, onEnter: () => void) => () => void }'
     required: true
-    description: 図の枠・モード・手順・間隔（秒）・強調を当てる関数・動きを減らす設定
+    description: 図の枠・モード・手順・間隔（秒。印の `interval`）・印の `play` が `autoplay` か・強調を当てる関数・動きを減らす設定・画面に入ったら 1 回呼ぶ関数を登録して外す関数を返す関数（`IntersectionObserver` の差し替え口）
   returns:
     type: BandHandle
     description: 止める関数と片付ける関数
@@ -500,6 +527,7 @@ functions:
     1. `renderMapBand` で帯を描き、前へ・次へは端で反対の端へ回し、`apply` で強調を当てる
     2. 自動で進めるの間は `interval` 秒ごとに次へ進め、強調するノードの中心へ表示する枠をスクロールする。読者がホイール・ドラッグ・キーで表示する枠を触ったら、自動で進め直すまでスクロールしない
     3. 停止で `apply(undefined)` を呼び、始めた段に戻す
+    4. `autoplay` が `true` なら `observe` で図の枠が画面に入るのを待ち、入ったら `reducedMotion` が `false` のときだけ自動で進めるを始める（`true` のときは止めた帯のまま）
   unit_tests:
   - name: test_attach_band_when_next
     case: 正常
@@ -519,6 +547,18 @@ functions:
     condition: 自動で進める間に表示する枠でホイールを回す
     mock: 時計・`scrollTo`
     expected: 以降の手順で `scrollTo` を呼ばない
+  - name: test_attach_band_when_autoplay
+    case: 正常
+    summary: 画面に入ったら始める
+    condition: '`autoplay: true`・`reducedMotion: false`。`observe` の `onEnter` を呼ぶ'
+    mock: '`observe`・時計'
+    expected: '`onEnter` の前は `apply` を呼ばず、呼んだ後に手順 0 が渡り、自動で進めるの `aria-pressed` が `true`'
+  - name: test_attach_band_when_autoplay_reduced
+    case: 正常
+    summary: 動きを減らす設定
+    condition: '`autoplay: true`・`reducedMotion: true`。`onEnter` を呼ぶ'
+    mock: '`observe`'
+    expected: '`apply` を呼ばず、帯の番号が `–` のまま'
 - name: renderMapFlow
   title: mapの構成図のHTML
   kind: 関数
