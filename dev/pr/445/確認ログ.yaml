@@ -77,3 +77,9 @@ confirmations:
     approver: shuhei1101
     commit: 4b05bcbd
     thread: https://github.com/shuhei1101/mdmark/pull/445#discussion_r4524451444
+  - topic: map の構成図のグループをつかむ場所
+    decision: グループはタイトルの行だけでつかんで動かし、グループの面と余白のドラッグは図を動かす（案 C）
+    decided_by: reply
+    approver: shuhei1101
+    commit: 8bb462c5
+    thread: https://github.com/shuhei1101/mdmark/pull/445#discussion_r4524676854

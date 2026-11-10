@@ -22,6 +22,18 @@ const MIN_FRAME_HEIGHT = 120;
 const MOVE_MS = 350;
 /** ノードの幅の上限（px）。長い名前は、既定（height）では見積もりの幅のまま折り返して高さを増やし、width ではこの幅まで広げてから折り返す */
 const NODE_MAX_WIDTH = { height: 220, width: 360 };
+/**
+ * 中へ入ったグループ・中だけを見ているブロックを、URL のクエリ文字列にも保つ（sessionStorage に加えて、URL を開き直す・共有しても同じ所から見られる）。
+ * キーは `map-{図の番号}`（文書の中の map の図の順。1 から）、値はグループの ID か、シーケンス図のブロックの番号（Mermaid に出てくる順。0 から）。
+ * 書き換えは history.replaceState で行い、ページの履歴は増やさない
+ */
+const readQuery = (key) => new URLSearchParams(location.search).get(key) ?? undefined;
+const writeQuery = (key, value) => {
+  const url = new URL(location.href);
+  if (value === undefined || value === null || value === "") url.searchParams.delete(key);
+  else url.searchParams.set(key, String(value));
+  if (url.href !== location.href) history.replaceState(history.state, "", url);
+};
 /** 開閉と中へ入った状態をタブの中で保つ sessionStorage のキーの頭 */
 const STORAGE_PREFIX = "mdmark-map:";
 
@@ -283,9 +295,11 @@ export const createMap = (host, spec, initial = {}) => {
   const boxById = new Map(chart.boxes.map((box) => [box.id, box]));
   const labelOf = (id) => nodeById.get(id)?.label ?? boxById.get(id)?.title ?? id;
   const storageKey = `${STORAGE_PREFIX}${spec.id}`;
+  const queryKey = spec.queryKey ?? `map-${spec.id}`;
   const saved = JSON.parse(sessionStorage.getItem(storageKey) ?? "{}");
   const state = {
-    enter: initial.enter ?? saved.enter,
+    // 中へ入ったグループは、URL のクエリ文字列 → sessionStorage の順に読む
+    enter: initial.enter ?? (boxById.has(readQuery(queryKey) ?? "") ? readQuery(queryKey) : undefined) ?? saved.enter,
     // 補足の layout でグループごとに最初に閉じるかを指定できる（既定は開く）
     collapsed: new Set(
       initial.collapsed ??
@@ -320,6 +334,7 @@ export const createMap = (host, spec, initial = {}) => {
 
   const save = () => {
     sessionStorage.setItem(storageKey, JSON.stringify({ enter: state.enter, collapsed: [...state.collapsed], positions: state.positions, wireShifts: state.wireShifts }));
+    writeQuery(queryKey, state.enter);
   };
 
   const isUnder = (id, ancestor) => {
@@ -1520,8 +1535,11 @@ export const createSequence = (host, spec, kinds, onStep) => {
     collapsed: new Set(),
     /** 参加者の箱が既定より高いとき、最初の行の前に空ける行の数（一番高い箱の下端から行を始める） */
     headRows: 0,
-    /** 中だけを見ている複合フラグメントの番号 */
-    enter: undefined,
+    /** 中だけを見ている複合フラグメントの番号（URL のクエリ文字列から読む） */
+    enter: (() => {
+      const value = Number(readQuery(spec.queryKey ?? "map-sequence"));
+      return Number.isInteger(value) && sequence.fragments[value] ? value : undefined;
+    })(),
   };
   const initialOrder = [...state.order];
   const seconds = spec.interval ?? DEFAULT_AUTOPLAY_SECONDS;
@@ -1529,6 +1547,7 @@ export const createSequence = (host, spec, kinds, onStep) => {
   const labelOf = (id) => sequence.participants.find((participant) => participant.id === id)?.label ?? id;
 
   const render = () => {
+    writeQuery(spec.queryKey ?? "map-sequence", state.enter);
     const pageY = window.scrollY;
     const oldViewport = host.querySelector(".mdmark-diagram-viewport");
     const scroll = oldViewport ? [oldViewport.scrollLeft, oldViewport.scrollTop] : [0, 0];

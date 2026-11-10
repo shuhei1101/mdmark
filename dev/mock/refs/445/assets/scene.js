@@ -108,7 +108,7 @@ let map;
 // シーケンス図の帯で進めたメッセージを、構成図の上でも強調する
 const sequenceView = createSequence(
   sequenceHost,
-  SEQUENCE,
+  { ...SEQUENCE, queryKey: "map-2" },
   { user: CONFIG.kinds.outside, mount: CONFIG.kinds.step, marker: CONFIG.kinds.step, mermaid: CONFIG.kinds.step, layout: CONFIG.kinds.step },
   (index, auto) => map.showMessage(index, auto),
 );
@@ -116,7 +116,7 @@ const sequenceView = createSequence(
 // 開閉と中へ入った状態は場面ごとに sessionStorage へ保つ。構成図の案内を始めたら、シーケンス図の強調を解く
 map = createMap(
   flowHost,
-  { id: scene, title: "全体の構成", flow: FLOW, data: DATA, config: CONFIG, sequence: SEQUENCE, onWalkthrough: () => sequenceView.clear() },
+  { id: scene, queryKey: "map-1", title: "全体の構成", flow: FLOW, data: DATA, config: CONFIG, sequence: SEQUENCE, onWalkthrough: () => sequenceView.clear() },
   initial,
 );
 if (scene === "play") sequenceView.start(0);
