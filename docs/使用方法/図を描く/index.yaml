@@ -4,6 +4,8 @@ items:
     summary: HTML の用途と、文書に部品の定義を記載してフロー図・シーケンス図・グラフ・ER 図を描く手順
   - page: 操作できる部品を作る.md
     summary: スライダー・グラフ・今の値を写すボタンの部品の定義を記載する手順
+  - page: Mermaidと補足で図を描く.md
+    summary: map のマーカー・Mermaid のブロック・補足の記載方法と、配置と色の上書き・案内・再生の書き方の手順
   - page: mermaidの図を描く.md
     summary: mermaid のコードブロックを記載して mdmark の外観の図にし、テーマを変える手順
   - page: コードブロックのHTMLを描く.md
