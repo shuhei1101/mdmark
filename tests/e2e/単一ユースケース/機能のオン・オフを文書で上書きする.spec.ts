@@ -505,3 +505,71 @@ test("test_normal_when_diagram_resize_disabled", async ({ page }) => {
     page.getByRole("separator", { name: /の表示の高さ$/ }),
   ).toHaveCount(1);
 });
+
+/** 1〜4 行目にフロントマター、6 行目に `between` の行、その後に見出しを持つ文書（`between` を省くと 6 行目が見出し） */
+function frontmatterMarkdown(between?: string): string {
+  return [
+    "---",
+    "title: テスト",
+    "tags: [a, b]",
+    "---",
+    "",
+    ...(between === undefined ? [] : [between, ""]),
+    "# 見出し",
+    "",
+  ].join("\n");
+}
+
+// 設定の features.frontmatter を true にすると、本文の先頭にフロントマターの表示を置く（正常シナリオ（フロントマターの表示を設定でオンにする））
+test("test_normal_when_frontmatter_enabled", async ({ page }) => {
+  // 準備
+  await openPage(page, builtRoot);
+  // 実行
+  await mountDocument(page, {
+    markdown: frontmatterMarkdown(),
+    config: { features: { frontmatter: true } },
+  });
+  // 検証
+  const content = page.locator("#doc .mdmark-content");
+  const display = content.locator("details.mdmark-frontmatter");
+  await expect(display).toHaveCount(1);
+  await expect(content.locator(":scope > *").first()).toHaveClass(
+    /mdmark-frontmatter/,
+  );
+  await expect(content.locator("h1")).toHaveText("見出し");
+  const code = display.locator("code");
+  await expect(code).toContainText("title");
+  await expect(code).toContainText("テスト");
+  await expect(code).toContainText("tags");
+  await expect(content.locator("h2")).toHaveCount(0);
+  await expect(
+    page.locator("#doc aside.mdmark-side-toc a[data-heading-id]", {
+      hasText: "title",
+    }),
+  ).toHaveCount(0);
+});
+
+// 文書のマーカーで機能 frontmatter をオン・オフし、設定の既定を上書きする（正常シナリオ（フロントマターの表示を文書でオンにする））
+test("test_normal_when_frontmatter_enabled_by_mark", async ({ page }) => {
+  // 準備
+  await openPage(page, builtRoot);
+  // 実行: 設定を指定せず、マーカーでオンにする
+  await mountDocument(page, {
+    markdown: frontmatterMarkdown("<!-- features: +frontmatter -->"),
+  });
+  // 検証
+  const content = page.locator("#doc .mdmark-content");
+  await expect(content.locator("h1")).toHaveText("見出し");
+  await expect(content.locator(":scope > *").first()).toHaveClass(
+    /mdmark-frontmatter/,
+  );
+  // 実行: 設定でオンにし、マーカーでオフにする
+  await mountDocument(page, {
+    markdown: frontmatterMarkdown("<!-- features: -frontmatter -->"),
+    config: { features: { frontmatter: true } },
+  });
+  // 検証
+  await expect(content.locator("h1")).toHaveText("見出し");
+  await expect(page.locator("#doc .mdmark-frontmatter")).toHaveCount(0);
+  await expect(page.locator("#doc")).not.toContainText("title: テスト");
+});

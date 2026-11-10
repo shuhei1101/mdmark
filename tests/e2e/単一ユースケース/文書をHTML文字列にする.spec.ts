@@ -236,3 +236,27 @@ test("test_normal_when_includes_given", async () => {
   expect(without).toContain("mdmark-syntax-warning");
   expect(without).toContain("共通/手順.md");
 });
+
+// 先頭のフロントマターを HTML 文字列に出さない（正常シナリオ（フロントマターを持つ文書））
+test("test_normal_when_frontmatter", async () => {
+  // 準備
+  const markdown = [
+    "---",
+    "title: テスト",
+    "tags: [a, b]",
+    "---",
+    "",
+    "# 見出し",
+    "",
+    "段落",
+    "",
+  ].join("\n");
+  // 実行
+  const html = await renderInNode(builtRoot, markdown);
+  // 検証
+  expect(html).not.toContain("title: テスト");
+  expect(html).not.toContain("tags: [a, b]");
+  expect(html).not.toMatch(/<h2[\s>]/);
+  expect(html).toMatch(/<h1[^>]*>見出し/);
+  expect(html).toMatch(/<p[^>]*>段落<\/p>/);
+});
