@@ -37,8 +37,7 @@ const ICONS = {
   expandAll: '<path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/>',
   collapseAll: '<path d="m7 20 5-5 5 5"/><path d="m7 4 5 5 5-5"/>',
   users: '<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>',
-  up: '<path d="m18 15-6-6-6 6"/>',
-  down: '<path d="m6 9 6 6 6-6"/>',
+  grip: '<circle cx="9" cy="5" r="1"/><circle cx="9" cy="12" r="1"/><circle cx="9" cy="19" r="1"/><circle cx="15" cy="5" r="1"/><circle cx="15" cy="12" r="1"/><circle cx="15" cy="19" r="1"/>',
   collapse: '<path d="m6 9 6 6 6-6"/>',
   expand: '<path d="m9 18 6-6-6-6"/>',
 };
@@ -80,13 +79,17 @@ const stepBand = ({ label, total, index, text, auto, names, go, stop, toggleAuto
   band.setAttribute("aria-label", label);
   const prev = () => go(index === undefined || index === 0 ? total - 1 : index - 1);
   const next = () => go(index === undefined ? 0 : (index + 1) % total);
-  const count = document.createElement("p");
+  // ボタンは帯の右上に浮かせて置き、文の長さや行数によらず位置を変えない。番号と文はボタンの左から流し、収まらない行はボタンの下へ回る
+  const line = document.createElement("p");
+  line.className = "map-band-line";
+  const count = document.createElement("span");
   count.className = "map-band-count";
-  count.textContent = `${index === undefined ? "–" : index + 1} / ${total}`;
-  const body = document.createElement("p");
+  count.textContent = `${index === undefined ? "–" : index + 1}/${total}`;
+  const body = document.createElement("span");
   body.className = "map-band-text";
   body.textContent = text;
   body.setAttribute("aria-live", "polite");
+  line.append(count, body);
   const actions = document.createElement("div");
   actions.className = "map-band-actions";
   actions.append(
@@ -95,7 +98,7 @@ const stepBand = ({ label, total, index, text, auto, names, go, stop, toggleAuto
     toolButton(auto ? "pause" : "play", auto ? "一時停止" : "自動で進める", toggleAuto, { "aria-pressed": String(auto) }),
     toolButton("next", names.next, next),
   );
-  band.append(count, body, actions);
+  band.append(actions, line);
   band.addEventListener("keydown", (event) => {
     if (event.key === "ArrowRight") next();
     if (event.key === "ArrowLeft") prev();
@@ -899,22 +902,25 @@ export const createSequence = (host, spec, kinds, onStep) => {
     if (state.menuOpen) tools.after(participantMenu());
 
     // 図の枠の下の帯: メッセージを 1 通ずつ進め、構成図の上でも同じメッセージを強調してデータを流す
-    const total = sequence.messages.length;
+    // 帯は表示しているメッセージだけを進める（非表示の参加者に関わるメッセージは飛ばす）
+    state.shownIndexes = shown.map(({ index }) => index);
+    const total = shown.length;
+    const position = state.shownIndexes.indexOf(state.current);
     const message = state.current === undefined ? undefined : sequence.messages[state.current];
     const note = state.current === undefined ? undefined : notes[state.current + 1];
     figure.querySelector(".mdmark-diagram-box").after(
       stepBand({
         label: `${spec.title}の再生`,
         total,
-        index: state.current,
+        index: position === -1 ? undefined : position,
         text: message ? `${labelOf(message.from)} → ${labelOf(message.to)}　${message.text}${note ? `\n${note}` : ""}` : "",
         auto: state.auto,
         names: { prev: "前のメッセージ", next: "次のメッセージ", stop: "再生を終える" },
-        go: (next) => step(next),
+        go: (next) => step(state.shownIndexes[next]),
         stop: () => stop(),
         toggleAuto: () => {
           state.auto = !state.auto;
-          if (state.auto && state.current === undefined) step(0);
+          if (state.auto && state.current === undefined) step(state.shownIndexes[0]);
           else render();
           schedule();
         },
@@ -928,38 +934,77 @@ export const createSequence = (host, spec, kinds, onStep) => {
     window.scrollTo({ top: pageY });
   };
 
-  /** 参加者の表示と非表示・並び順を変える一覧。図の右上のツールの下に重ねる */
+  /**
+   * 参加者の表示と非表示・並び順を変える一覧。図の右上のツールの下に重ねる。
+   * 並び順は行をドラッグ＆ドロップで変え、キーボードでは行のつまみにフォーカスして Alt + ↑↓ で動かす。
+   * 非表示にするとメッセージが 1 つも残らない参加者は、非表示にできない（チェックを押せない）
+   */
   const participantMenu = () => {
     const menu = document.createElement("div");
     menu.className = "map-participant-menu";
     menu.id = `map-participants-${spec.id}`;
     menu.setAttribute("role", "group");
     menu.setAttribute("aria-label", "参加者の表示と並び順");
+    // 非表示にするとメッセージが 1 つも残らない参加者は、非表示にできない（図を描けなくなるため）
+    const remains = (hidden) => sequence.messages.some((message) => !hidden.has(message.from) && !hidden.has(message.to));
+    const move = (from, to) => {
+      if (to < 0 || to >= state.order.length || from === to) return;
+      const next = [...state.order];
+      const [item] = next.splice(from, 1);
+      next.splice(to, 0, item);
+      state.order = next;
+      render();
+      host.querySelector(`.map-participant-row[data-id="${CSS.escape(item)}"] .map-participant-grip`)?.focus();
+    };
     state.order.forEach((id, at) => {
       const row = document.createElement("div");
       row.className = "map-participant-row";
+      row.dataset.id = id;
+      row.draggable = true;
+      row.addEventListener("dragstart", (event) => {
+        event.dataTransfer.setData("text/plain", String(at));
+        event.dataTransfer.effectAllowed = "move";
+        row.classList.add("is-dragging");
+      });
+      row.addEventListener("dragend", () => row.classList.remove("is-dragging"));
+      row.addEventListener("dragover", (event) => {
+        event.preventDefault();
+        row.classList.add("is-drop-target");
+      });
+      row.addEventListener("dragleave", () => row.classList.remove("is-drop-target"));
+      row.addEventListener("drop", (event) => {
+        event.preventDefault();
+        move(Number(event.dataTransfer.getData("text/plain")), at);
+      });
+      const grip = document.createElement("span");
+      grip.className = "map-participant-grip";
+      grip.tabIndex = 0;
+      grip.setAttribute("role", "button");
+      grip.setAttribute("aria-label", `${labelOf(id)}の並び順。Alt + 上下の矢印で動かす`);
+      grip.innerHTML = icon("grip");
+      grip.addEventListener("keydown", (event) => {
+        if (event.altKey && event.key === "ArrowUp") move(at, at - 1);
+        if (event.altKey && event.key === "ArrowDown") move(at, at + 1);
+      });
       const label = document.createElement("label");
       const check = document.createElement("input");
       check.type = "checkbox";
       check.checked = !state.hidden.has(id);
+      check.disabled = check.checked && !remains(new Set([...state.hidden, id]));
+      if (check.disabled) label.title = "非表示にすると、表示するメッセージが無くなります";
       check.addEventListener("change", () => {
         if (check.checked) state.hidden.delete(id);
         else state.hidden.add(id);
         state.selected.delete(id);
+        const current = state.current === undefined ? undefined : sequence.messages[state.current];
+        if (current && (state.hidden.has(current.from) || state.hidden.has(current.to))) {
+          state.current = undefined;
+          onStep(undefined);
+        }
         render();
       });
       label.append(check, document.createTextNode(labelOf(id)));
-      const move = (delta) => {
-        const next = [...state.order];
-        [next[at], next[at + delta]] = [next[at + delta], next[at]];
-        state.order = next;
-        render();
-      };
-      row.append(
-        label,
-        toolButton("up", `${labelOf(id)}を前へ`, () => move(-1), at === 0 ? { disabled: "" } : {}),
-        toolButton("down", `${labelOf(id)}を後ろへ`, () => move(1), at === state.order.length - 1 ? { disabled: "" } : {}),
-      );
+      row.append(grip, label);
       menu.append(row);
     });
     menu.addEventListener("keydown", (event) => {
@@ -987,7 +1032,11 @@ export const createSequence = (host, spec, kinds, onStep) => {
   const schedule = () => {
     clearInterval(timer);
     if (!state.auto) return;
-    timer = setInterval(() => step(state.current === undefined ? 0 : (state.current + 1) % sequence.messages.length), seconds * 1000);
+    timer = setInterval(() => {
+      const list = state.shownIndexes;
+      const at = list.indexOf(state.current);
+      step(list[at === -1 ? 0 : (at + 1) % list.length]);
+    }, seconds * 1000);
   };
 
   host.addEventListener("keydown", (event) => {
