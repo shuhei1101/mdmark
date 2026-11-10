@@ -57,7 +57,7 @@ use_cases:
   - kind: single
     scenario: dev/設計書/シナリオ/単一ユースケース/Mermaidと補足で図を描く.yaml
     impact: new
-    detail: map の範囲の Mermaid と補足を、入れ子のグループを自動配置した図に描き、補足の layout で配置と見た目を上書きする。構成図の 3 層とシーケンス図も描く
+    detail: map の範囲の Mermaid と補足を、入れ子のグループを自動配置した図に描き、補足の layout で配置と見た目を上書きする。構成図の 3 層とシーケンス図も描く。印の引数は A-128 の構成の JSON のオブジェクトで、知らないキーは無視して点検が通知する
     depends_on:
       - dev/設計書/シナリオ/複合ユースケース/Mermaidと補足で書いた図を辿って読む.yaml
   - kind: single

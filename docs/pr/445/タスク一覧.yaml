@@ -34,9 +34,10 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-09T03:09:38.574729+00:00'
   - process: 単一ユースケース設計
-    status: done
+    status: todo
+    note: 起点 Issue #324 に書き足された印の引数の JSON のオブジェクトの要件で、印の引数の書き方と知らないキーの扱いをやり直す
     updated_by: planner
-    updated_at: '2026-11-09T03:16:48.352506+00:00'
+    updated_at: '2026-11-10T14:16:49.315049+00:00'
   - process: モック作成
     status: done
     note: dev/mock/pages/document/445/a-map/ と dev/mock/components/map-kinds/ のモックにユーザーが合意した（グループのドラッグとクエリ文字列の状態を含む）
@@ -45,10 +46,10 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-10T11:57:49.602180+00:00'
   - process: インターフェース定義設計
-    status: done
-    note: 文書をHTML文字列にする・文書を描く・設定と索引を点検する・文書をHTMLに書き出す・複数の文書を1枚のHTMLにまとめる と、VS Code 拡張機能のプレビューを開く・プレビューを再描画する に map の流れと制約を足した
+    status: todo
+    note: 起点 Issue #324 に書き足された印の引数の JSON のオブジェクトの要件で、印の引数の書き方と知らないキーの扱いをやり直す
     updated_by: planner
-    updated_at: '2026-11-10T12:48:03.580746+00:00'
+    updated_at: '2026-11-10T14:16:49.315049+00:00'
   - process: 部品設計
     status: done
     note: mapの構成図・mapのシーケンス図・案内の帯を新設し、図の枠・フロー図・シーケンス図・図のツールチップに map の分を足した（9716197f）
@@ -60,10 +61,10 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-10T13:18:02.402100+00:00'
   - process: モジュール構成設計
-    status: done
-    note: モジュール構成『map』（全体・読み取り・配置・点検・描画と操作）と ER 図『mapの補足』を新設し、既存のモジュール構成と設定に map の分を足した（0f4bed5f）
+    status: todo
+    note: 起点 Issue #324 に書き足された印の引数の JSON のオブジェクトの要件で、印の引数の書き方と知らないキーの扱いをやり直す
     updated_by: planner
-    updated_at: '2026-11-10T14:09:51.656411+00:00'
+    updated_at: '2026-11-10T14:16:49.315049+00:00'
   - process: ドキュメント修正
     status: todo
   - process: 単体テスト作成
