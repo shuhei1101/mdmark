@@ -55,9 +55,10 @@ const LAYOUT = {
       merged: undefined,
       points: [
         [144, 54],
-        [222, 54],
-        [222, 54],
-        [300, 54],
+        [200, 54],
+        [200, 140],
+        [360, 140],
+        [360, 84],
       ] as Array<[number, number]>,
     },
   ],
@@ -70,6 +71,7 @@ const STATE = {
   selected: [],
   positions: {},
   wireShifts: {},
+  attachments: {},
   order: undefined,
   height: undefined,
 };
@@ -109,7 +111,7 @@ function drag(
 async function setUp(selector: string) {
   const { startDrag } = await loadDrag();
   const root = createRootFromHtml(
-    '<div data-node="A"></div><div data-node="B"></div><div data-node="C"></div><svg><path class="map-wire-hit" data-wire="A->C" data-segment="1"></path></svg>',
+    '<div data-node="A"></div><div data-node="B"></div><div data-node="C"></div><svg><path class="map-wire-hit" data-wire="A->C" data-segment="2"></path></svg>',
   );
   const moves: Array<typeof STATE> = [];
   const clicks: number[] = [];
@@ -143,12 +145,12 @@ test("test_start_drag_when_node", async () => {
   const { target, moves } = await setUp('[data-node="A"]');
   // 実行
   drag(target, 0, 40);
-  // 検証
+  // 検証: 位置は親の中身の左上（最上位は図の余白の内側 24, 24）からの座標
   const last = moves.at(-1) as unknown as {
     positions: Record<string, { x: number; y: number }>;
   };
-  expect(last.positions.A).toEqual({ x: 24, y: 64 });
-  expect(last.positions.C).toEqual({ x: 300, y: 24 });
+  expect(last.positions.A).toEqual({ x: 0, y: 40 });
+  expect(last.positions.C).toEqual({ x: 276, y: 0 });
 });
 
 // 近づけすぎ（正常系）
@@ -157,27 +159,27 @@ test("test_start_drag_when_blocked", async () => {
   const { target, moves } = await setUp('[data-node="A"]');
   // 実行: B の上端（160）との間が 10px になる位置（A の下端 150）まで動かす
   drag(target, 0, 66);
-  // 検証: 間が 16px の位置（A の y が 84）で止まる
+  // 検証: 間が 16px の位置（A の図の y が 84。親の中身からは 60）で止まる
   const last = moves.at(-1) as unknown as {
     positions: Record<string, { x: number; y: number }>;
   };
-  expect(last.positions.A?.y).toBe(84);
+  expect(last.positions.A?.y).toBe(60);
 });
 
 // つなぎ替え（正常系）
 test("test_start_drag_when_reattach", async () => {
   // 準備
   const { target, moves } = await setUp(".map-wire-hit");
-  // 実行: 真ん中の区間を C の上（y が 24 より上）まで動かす
-  drag(target, 0, -60, { x: 222, y: 54 });
+  // 実行: C の下を通る真ん中の区間（y が 140）を、C の上（y が 24 より上）まで動かす
+  drag(target, 0, -150, { x: 280, y: 140 });
   // 検証
   const last = moves.at(-1) as unknown as {
     wireShifts: Record<string, Array<{ segment: number; offset: number }>>;
     attachments?: Record<string, { to: string }>;
   };
   expect(last.wireShifts["A->C"]?.[0]).toMatchObject({
-    segment: 1,
-    offset: -60,
+    segment: 2,
+    offset: -150,
   });
   expect(last.attachments?.["A->C"]?.to).toBe("top");
 });
