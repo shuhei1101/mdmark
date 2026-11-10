@@ -19,7 +19,7 @@ scenarios:
       - name: 図を描くページ
         description: バージョンを固定した URL で `dist/index.js` と `dist/index.css` を読み込み、文書を描く HTML
       - name: 構成図の map を持つ Markdown
-        description: map の範囲を 1 つ持つ文書。印に `title=全体の構成` を持ち、範囲の中に flowchart の mermaid のブロックと補足を持つ
+        description: map の範囲を 1 つ持つ文書。印に `{"title": "全体の構成"}` を持ち、範囲の中に flowchart の mermaid のブロックと補足を持つ
         notes: 入れ子 2 レイヤーのグループ（外のグループの向きが LR、中のグループの向きが TB）・グループをまたぐ線 3 本以上・使う側の設定（`map.kinds`）で名前・アイコン・形・色を作った 3 種類のクラス・日本語 30 文字のラベルのノード 1 つ・用語集の用語を含むラベル 1 つ。補足の `notes` で 1 つのノードと 1 本の線に説明を持つ。動くと `window.__mdmarkScriptRan` を `true` にする `<script>` を文書に 1 つ持つ
       - name: Mock
         description: jsDelivr を、ビルドした `dist/` を同じパスで返却する手元の応答に差し替える。mermaid のライブラリへの要求を数える
@@ -132,7 +132,7 @@ scenarios:
       - name: 図を描くページ
         description: 正常シナリオと同じ
       - name: 書き方を誤った map の Markdown
-        description: 正常シナリオの文書のうち、mermaid のブロックに GitHub の Mermaid でも読めない行を 1 行、補足に知らないトップレベルのキーを 1 つ、印に知らない引数を 1 つ足したもの
+        description: 正常シナリオの文書のうち、mermaid のブロックに GitHub の Mermaid でも読めない行を 1 行、補足に知らないトップレベルのキーを 1 つ、印の JSON のオブジェクトに知らないキーを 1 つ足したもの
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
@@ -141,11 +141,11 @@ scenarios:
         participant P as 利用側のページ
         participant M as mdmark
         P->>M: 設定と Markdown を指定して描かせる
-        M->>M: 読めない行・知らないキーと引数を飛ばして読み込む
+        M->>M: 読めない行・補足の知らないキー・印の知らないキーを飛ばして読み込む
         M-->>P: 書き方の警告と、読めた部分の map の図
         P-->>U: 文書を表示
     expected:
-      - 図の枠の上に書き方の警告があり、読めない行・知らないキー・知らない引数の 3 つを指す
+      - 図の枠の上に書き方の警告があり、読めない行と補足の知らないキーの 2 つを指す。印の知らないキーは警告に出さない（点検が通知する）
       - 読めた部分のノードと線で図が描かれている
       - 図の後ろの本文が描かれている
     test: test_normal_when_unreadable
@@ -176,7 +176,7 @@ scenarios:
       - name: 図を描くページ
         description: 正常シナリオと同じ
       - name: 閉じた map を持つ Markdown
-        description: 正常シナリオの構成図の印に `closed` を持つ文書
+        description: 正常シナリオの構成図の印に `{"title": "全体の構成", "collapse": {"open": false}}` を持つ文書
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-

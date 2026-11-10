@@ -93,7 +93,7 @@ scenarios:
       - name: 図を描くページ
         description: 『Mermaidと補足で図を描く』の正常シナリオと同じ
       - name: 最初の見せ方を持つ map の Markdown
-        description: 正常シナリオの構成図の印に `focus=` で外のグループの ID を指定した文書
+        description: 正常シナリオの構成図の印に `{"focus": "{外のグループの ID}"}` を指定した文書。sessionStorage とクエリ文字列は空
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
@@ -106,6 +106,7 @@ scenarios:
     expected:
       - 開いたときに、指定のグループの中に入った図と戻るボタンが出る
       - 戻るボタンで全体へ戻ると、正常シナリオの全体の図と同じ配置になる
+      - 別のグループの中へ入ってからページを再読み込みすると、`focus` ではなく保った状態のグループの中から描く
     test: test_normal_when_initial_focus
   - name: 正常シナリオ（クエリ文字列に保たない設定と、まとめた HTML の文書の切り替え）
     setup:

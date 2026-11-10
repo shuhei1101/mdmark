@@ -80,7 +80,7 @@ scenarios:
   - name: 正常シナリオ（印の引数で自動で再生する）
     setup:
       - name: 図を描いたページ
-        description: 正常シナリオのシーケンス図の印に `play=autoplay` を持つ文書を描いたページ。シーケンス図は文書の 2 画面目より下にある
+        description: 正常シナリオのシーケンス図の印に `{"play": "autoplay"}` を持つ文書を描いたページ。シーケンス図は文書の 2 画面目より下にある
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
@@ -100,7 +100,7 @@ scenarios:
   - name: 正常シナリオ（印の引数で間隔を指定する）
     setup:
       - name: 図を描いたページ
-        description: 正常シナリオのシーケンス図を 2 つ持つ文書を描いたページ。1 つ目の印に `interval=1`、2 つ目の印に `interval=abc` を持つ
+        description: 正常シナリオのシーケンス図を 2 つ持つ文書を描いたページ。1 つ目の印に `{"interval": 1}`、2 つ目の印に `{"interval": "abc"}` を持つ
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
@@ -112,6 +112,6 @@ scenarios:
         U->>D: 2 つ目のシーケンス図の再生を自動で進める
         D-->>U: 既定の 2 秒ごとに次のメッセージへ進める
     expected:
-      - '`interval=1` の図は、1 秒ごとに次のメッセージへ進む'
-      - '`interval=abc` の図の枠の上に、`interval` の値を読めない旨の書き方の警告があり、既定の 2 秒ごとに次のメッセージへ進む'
+      - '`{"interval": 1}` の図は、1 秒ごとに次のメッセージへ進む'
+      - '`{"interval": "abc"}` の図の枠の上に、`interval` の値を読めない旨の書き方の警告があり、既定の 2 秒ごとに次のメッセージへ進む'
     test: test_normal_when_interval
