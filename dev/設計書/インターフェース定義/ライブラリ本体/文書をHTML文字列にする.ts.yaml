@@ -2180,7 +2180,6 @@ flows:
       - '`div.mdmark-map` が無い'
       - 範囲の中の mermaid のブロックが、属性 `data-mdmark-mermaid` を付けた `div.mdmark-code` になる
       - 補足の文字・マーカーの文字・書き方の警告が無い
-      - 返却する `features` の `map` が `false`
     test: test_normal_when_map_disabled
 lead: 利用側（書き出し・ビルドの処理やサーバー）が、画面を持たずに Markdown を HTML 文字列にする。`mount` が描く本文と同じ文字列を、ブラウザでも Node でも返却する。
 idempotent: true
