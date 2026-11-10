@@ -543,7 +543,8 @@ export const createMap = (host, spec, initial = {}) => {
     const go = (next) => (playing ? playAt(next) : applyStep(next));
     // ボタンは前へ・停止・再生（一時停止）・次への 4 つを常に同じ並びで出し、状態では押せるかだけを変える
     const actions = [
-      toolButton("prev", playing ? "前のメッセージ" : "前の手順", () => go(index - 1), index === undefined || index === 0 ? { disabled: "" } : {}),
+      // 前へ・次へは常に押せ、端では反対の端へ回る（始める前の前へは最後へ）
+      toolButton("prev", playing ? "前のメッセージ" : "前の手順", () => go(index === undefined || index === 0 ? total - 1 : index - 1)),
       toolButton("stop", playing ? "再生を終える" : "案内をやめる", () => (playing ? endPlay() : endWalkthrough()), index === undefined ? { disabled: "" } : {}),
       toolButton(state.auto ? "pause" : "play", state.auto ? "一時停止" : "自動で進める", () => {
         state.auto = !state.auto;
@@ -556,7 +557,7 @@ export const createMap = (host, spec, initial = {}) => {
     band.append(text("map-band-count", `${index === undefined ? "–" : index + 1} / ${total}`), text("map-band-text", textValue, true), buttons(actions));
     band.addEventListener("keydown", (event) => {
       if (event.key === "ArrowRight") go(index === undefined ? 0 : (index + 1) % total);
-      if (event.key === "ArrowLeft" && index > 0) go(index - 1);
+      if (event.key === "ArrowLeft") go(index === undefined || index === 0 ? total - 1 : index - 1);
     });
     figure.querySelector(".mdmark-diagram-box").after(band);
   };
@@ -605,7 +606,7 @@ export const createMap = (host, spec, initial = {}) => {
       path.id = `map-packet-${spec.id}-${index}`;
       wire.classList.remove("map-dim");
       wire.classList.add("map-flowing");
-      if (reduced) return;
+      // データの流れは読者が次へ・再生を押して始め、停止で止められる動きのため、動きを減らす設定でも流す
       const packet = { ...DEFAULT_PACKET, ...spec.data.layout?.packet, ...spec.data.layout?.[edge.id]?.packet };
       addPackets(wires, path, { reverse, both, packet, nodeColor: { source: nodeColorOf(reverse ? edge.to : edge.from), target: nodeColorOf(reverse ? edge.from : edge.to) } });
     });
@@ -722,7 +723,6 @@ const keepSequenceScale = (host) => {
 export const createSequence = (host, spec, kinds, onPlay) => {
   const sequence = parseSequence(spec.source);
   const notes = spec.notes ?? {};
-  const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
   const state = {
     selected: new Set(),
     hidden: new Set(),
@@ -833,7 +833,7 @@ export const createSequence = (host, spec, kinds, onPlay) => {
         wire.classList.add("map-flowing");
         for (const end of ends) end.classList.add("map-hot");
         wire.id = `map-seq-packet-${spec.id}`;
-        if (!reduced) addPackets(svg, wire, { reverse: false });
+        addPackets(svg, wire, { reverse: false });
       }
     });
 

@@ -41,3 +41,9 @@ confirmations:
     approver: shuhei1101
     commit: 134f5378
     thread: https://github.com/shuhei1101/mdmark/pull/445#discussion_r4519814078
+  - topic: map のグループは要るか
+    decision: グループを残し、中へ入る・開閉・全て開閉を、押して入る・今いるグループは押せない・戻るの位置を固定する操作で持つ（案 A）
+    decided_by: thumbs_up
+    approver: shuhei1101
+    commit: 4f56bf51
+    thread: https://github.com/shuhei1101/mdmark/pull/445#discussion_r4519932154
