@@ -593,6 +593,8 @@ export const attachMapFlow = (
   figure.addEventListener("pointerout", onPointerOut);
 
   let band: BandHandle | undefined;
+  /** 案内を始めたときに中へ入っていたグループ（停止で戻す） */
+  let walkFrom: { entered: string | undefined } | undefined;
   if (data.walkthroughs.length > 0) {
     const steps: BandStep[] = data.walkthroughs.map((step) => ({
       title: step.title ?? "",
@@ -611,7 +613,14 @@ export const attachMapFlow = (
         typeof matchMedia !== "undefined" &&
         matchMedia("(prefers-reduced-motion: reduce)").matches,
       apply: (step) => {
-        if (step !== undefined) onWalk?.();
+        if (step !== undefined) {
+          onWalk?.();
+          walkFrom ??= { entered: state.entered };
+        } else if (walkFrom !== undefined) {
+          state = { ...state, entered: walkFrom.entered };
+          walkFrom = undefined;
+          save();
+        }
         if (step?.enter !== undefined && step.enter !== state.entered)
           state = { ...state, entered: step.enter };
         focus =
