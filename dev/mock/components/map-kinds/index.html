@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <!-- viewport: スマホ幅で等倍に表示する -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>map-kinds（map の図で使えるノード・線・グループ・データの点） | mdmark のモック</title>
+  <!-- 配布物の CSS（ライブラリ本体） -->
+  <link rel="stylesheet" href="../../../../dist/index.css">
+  <!-- 利用側のページの外観（#287 で共有するアセット） -->
+  <link rel="stylesheet" href="../../refs/287/assets/scene.css">
+  <!-- map の図のモックの規則（#445 で共有するアセット） -->
+  <link rel="stylesheet" href="../../refs/445/assets/map-mock.css">
+  <style>
+    /* 描く先の要素を画面の幅まで広げ、図を wide の範囲で本文の幅より広げられるようにする */
+    .host { max-width: none; }
+  </style>
+</head>
+<body class="mdmark-theme-light">
+  <header class="host-bar">利用側のアプリ</header>
+  <nav class="crumbs" aria-label="パンくずリスト">
+    <a href="../index.md">components</a> / map-kinds
+  </nav>
+  <main class="host">
+    <!-- mount で一覧の文書を描き、目印の段落の場所に図を置く -->
+    <div id="doc"></div>
+  </main>
+  <script type="module" src="../../refs/445/assets/kinds.js"></script>
+</body>
+</html>

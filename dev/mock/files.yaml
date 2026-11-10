@@ -1065,6 +1065,9 @@ files:
   - path: styles/theme-slate/index.html
     description: 'デザインスタイル『theme-slate』の見本: 選べるテーマ（#181）。青灰: 青みの灰の地と面に青のリンク、暗い配色は紺の地。書体・余白は dev-swiss のまま。文書の既定の外観を決めるときに参照する。'
     tags: [topic:モック, topic:デザインスタイル, topic:テーマ]
+  - path: components/map-kinds/index.html
+    description: '部品『map-kinds』のモック: map の図で使えるノードの種類・線の種類・グループ・データの点の一覧と、使う場面の例。'
+    tags: [topic:モック, topic:図]
   - path: components/map-diagram/index.html
     description: '部品『map-diagram』のモック: Mermaid と補足で書いた map の図の、全体・グループの中・閉じたグループとまとめた線・案内の最初と最後・再生の一時停止・狭い幅。部品の外観や状態を決めるときに参照する。'
     tags: [topic:モック, topic:図]
@@ -1082,6 +1085,9 @@ files:
     tags: [topic:モック, topic:図]
   - path: refs/445/assets/map-mock.css
     description: '#445 のモックの map の図の規則: グループの面と開閉のボタン・色・強調・案内と再生の帯・書き方の警告。このモックの外観を変えるときに参照する。'
+    tags: [topic:モック, topic:図]
+  - path: refs/445/assets/kinds.js
+    description: '#445 のモックの一覧: map の図で使えるノードの種類・線の種類・グループ・データの点を、図と書き方の表で並べる。使える種類と使う場面を確かめるときに参照する。'
     tags: [topic:モック, topic:図]
   - path: refs/445/assets/samples.js
     description: '#445 のモックの見本: 構成図の Mermaid・補足（説明・色・案内）・シーケンス図。このモックの図の中身を変えるときに参照する。'

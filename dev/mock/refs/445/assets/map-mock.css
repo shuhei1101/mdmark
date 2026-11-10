@@ -164,88 +164,68 @@
   stroke-width: 2;
 }
 
-/* 参加者の表示と並び順: 右上のツールの下に重ねる一覧 */
-.map-participant-menu {
-  position: absolute;
-  z-index: 4;
-  top: 44px;
-  right: 8px;
-  min-width: 240px;
-  padding: 6px 8px;
-  border: 1px solid var(--mdmark-color-border);
-  border-radius: var(--mdmark-radius);
-  background: var(--mdmark-color-bg-opaque, var(--mdmark-color-bg));
-  box-shadow: 0 4px 12px rgb(0 0 0 / 12%);
-}
-.map-participant-row {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-}
-.map-participant-row label {
-  display: flex;
-  flex: 1;
-  align-items: center;
-  gap: 6px;
-  min-height: 32px;
-}
 
-/*
- * 案内と再生の帯: 図の枠の下。ボタンは右上に浮かせて置き、文の長さや行数によらず位置を変えない。
- * 番号と文はボタンの左から流し、短い文は 1 行に収まり、長い文はボタンの下へ回る
- */
+/* 案内と再生の帯: 図の枠の下。1 行目は番号（左）と操作のボタン（右）、2 行目からが説明の文 */
 .map-band {
-  display: flow-root;
   margin-top: 4px;
-  padding: 6px 8px 6px 12px;
+  padding: 4px 8px 6px 12px;
   border: 1px solid var(--mdmark-color-border);
   border-radius: calc(var(--mdmark-radius) * 2);
   background: var(--mdmark-color-surface);
 }
+.map-band-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
 .map-band-actions {
-  float: right;
   display: flex;
   gap: 4px;
-  margin-left: 12px;
-}
-.map-band-line {
-  margin: 0;
-  /* 1 行目をボタンの高さ（32px）の中央にそろえる */
-  padding-top: 4px;
-  line-height: 24px;
-  white-space: pre-line;
 }
 .map-band-count {
-  margin-right: 8px;
   font-size: 12px;
   font-variant-numeric: tabular-nums;
   color: var(--mdmark-color-muted);
 }
+.map-band-text {
+  margin: 4px 0 0;
+  white-space: pre-line;
+}
 
-/* 参加者の一覧の行: つまみでドラッグ＆ドロップして並び順を変える */
-.map-participant-grip {
-  display: inline-grid;
+/* シーケンス図の参加者の箱の右上のつまみ: 押したまま左右へ動かして並べ替える */
+.map-figure .map-participant > .map-participant-grip {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  display: grid;
   place-items: center;
   width: 24px;
-  height: 32px;
+  height: 24px;
+  border-radius: var(--mdmark-radius);
   color: var(--mdmark-color-muted);
   cursor: grab;
   /* 指で押したまま動かしても、ページがスクロールしない */
   touch-action: none;
 }
 .map-participant-grip .mdmark-diagram-icon {
-  width: 16px;
-  height: 16px;
+  width: 14px;
+  height: 14px;
+}
+.map-participant-grip:hover {
+  background: color-mix(in srgb, currentColor 12%, transparent);
 }
 .map-participant-grip:focus-visible {
   outline: 2px solid var(--mdmark-color-link);
   outline-offset: 2px;
 }
-.map-participant-row.is-dragging {
-  opacity: 0.4;
+.map-figure .map-participant.is-dragging {
+  z-index: 3;
+  opacity: 0.8;
+  cursor: grabbing;
 }
-.map-participant-row.is-drop-target {
-  box-shadow: inset 0 2px 0 var(--mdmark-color-link);
+.map-figure .map-participant.is-drop-target {
+  box-shadow: inset 3px 0 0 var(--mdmark-color-link);
 }
 
 /* 書き方の警告: 今の記載の警告と同じ破線の枠 */
