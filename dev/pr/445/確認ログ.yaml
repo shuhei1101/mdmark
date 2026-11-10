@@ -47,3 +47,9 @@ confirmations:
     approver: shuhei1101
     commit: 4f56bf51
     thread: https://github.com/shuhei1101/mdmark/pull/445#discussion_r4519932154
+  - topic: map の種類と線のプリセットを mdmark が持つか
+    decision: プリセットを持たない。使い方集に設定の例を載せ、使う側が複製して使用する（案 A）
+    decided_by: thumbs_up
+    approver: shuhei1101
+    commit: f4b69a6b
+    thread: https://github.com/shuhei1101/mdmark/pull/445#discussion_r4521238082

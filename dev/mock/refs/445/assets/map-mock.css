@@ -82,14 +82,10 @@
   outline-offset: 2px;
 }
 
-/* 線: 色の名前の線と、ポインターを当てた線を太くする */
+/* 線: 色の名前の線 */
 .map-figure .map-colored-wire,
 .map-figure .map-colored-wire path {
   stroke: var(--map-wire);
-}
-.map-figure .map-wire-hover,
-.map-figure .map-wire-hover path {
-  stroke-width: 3.5;
 }
 .map-wire-hit {
   fill: none;
@@ -118,24 +114,24 @@
   background: var(--map-fill);
 }
 
-/* 中へ入ったグループの外・案内と再生で強調しない要素は薄くする */
+/* 中へ入ったグループの外は薄くする */
 .map-figure .map-faded {
   opacity: 0.4;
   border-style: dashed;
 }
-.map-figure .map-dim {
+/* 強調: 強調する要素の表示は変えず、案内・再生・参加者の選択で強調しない要素と、線のホバーでほかの要素を薄くする */
+.map-figure .map-dim,
+.map-figure .map-focus :is(.mdmark-diagram-node, .mdmark-diagram-wire, .mdmark-diagram-label, .mdmark-diagram-lifeline, .map-participant-grip):not(.map-keep) {
   opacity: 0.25;
 }
-.map-figure .mdmark-diagram-node.map-hot {
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--mdmark-color-link) 35%, transparent);
+.map-figure .map-focus .map-keep {
+  opacity: 1;
+}
+.map-figure :is(.mdmark-diagram-node, .mdmark-diagram-wire, .mdmark-diagram-label, .mdmark-diagram-lifeline) {
+  transition: opacity 0.15s;
 }
 
-/* データが流れている線: 太くし、線の上をデータの印が元から先へ流れる */
-.map-figure .map-flowing,
-.map-figure .map-flowing path {
-  stroke: var(--mdmark-color-link);
-  stroke-width: 3;
-}
+/* データの印: 線の上を元から先へ流れる */
 .map-packet {
   stroke: var(--mdmark-color-bg);
   stroke-width: 1.5;
@@ -146,11 +142,6 @@
   display: none;
 }
 
-/* 線にポインターを当てたときに強調する、線の両端のノード（ほかは薄くしない） */
-.map-figure .mdmark-diagram-node.map-wire-end {
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--mdmark-color-link) 35%, transparent);
-}
-
 /* シーケンス図の参加者: 押すとその参加者のメッセージを強調する */
 .map-figure .map-participant {
   cursor: pointer;
@@ -158,10 +149,6 @@
 .map-figure .map-participant:focus-visible {
   outline: 2px solid var(--mdmark-color-link);
   outline-offset: 2px;
-}
-.map-figure .map-lifeline-hot {
-  stroke: var(--mdmark-color-link);
-  stroke-width: 2;
 }
 
 
@@ -253,49 +240,6 @@
 }
 .map-figure .mdmark-diagram-node.map-kinded .mdmark-diagram-node-kind {
   color: var(--map-kind, var(--mdmark-color-muted));
-}
-
-/* 凡例: 図の枠と帯のあいだ。使う側の設定で名前を付けた種類と線だけを並べる */
-.map-legend {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px 16px;
-  margin: 6px 0 0;
-  padding: 0;
-  list-style: none;
-  color: var(--mdmark-color-muted);
-  font-size: 12px;
-}
-.map-legend-item {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-}
-.map-legend-node {
-  display: inline-grid;
-  place-items: center;
-  width: 22px;
-  height: 16px;
-  border: 1.5px solid var(--map-kind, var(--mdmark-color-border));
-  border-radius: var(--mdmark-radius);
-  color: var(--map-kind, var(--mdmark-color-muted));
-}
-.map-legend-node[data-shape="rect"] {
-  border-radius: 1px;
-}
-.map-legend-node[data-shape="pill"] {
-  border-radius: 999px;
-}
-.map-legend-node[data-shape="double"] {
-  border-style: double;
-  border-width: 3px;
-}
-.map-legend-node .mdmark-diagram-icon {
-  width: 11px;
-  height: 11px;
-}
-.map-legend-line line {
-  stroke: var(--mdmark-color-diagram-line, currentColor);
 }
 
 /* 書き方の警告: 今の記載の警告と同じ破線の枠 */

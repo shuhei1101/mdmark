@@ -88,18 +88,17 @@ export const SEQUENCE = {
 
 /**
  * 使う側の設定（mdmark.config.yaml の map に該当する）: ノードの種類と線の種類は mdmark では決めず、ここで作る。
- * この見本は「処理・保存先・外部」の 3 種類と、矢印ごとの線と名前の線（戻り）を作った例
+ * この見本は 3 種類のノードと、矢印ごとの線と名前の線（back）を作った例
  */
 export const CONFIG = {
   kinds: {
-    step: { label: "処理", icon: "cog", shape: "rounded" },
-    store: { label: "保存先", icon: "database", shape: "rect", color: "purple" },
-    outside: { label: "外部", icon: "globe", shape: "pill", color: "green" },
+    step: { icon: "cog", shape: "rounded" },
+    store: { icon: "database", shape: "rect", color: "purple" },
+    outside: { icon: "globe", shape: "pill", color: "green" },
   },
   lines: {
-    "-->": { label: "呼び出し" },
-    "-.->": { label: "参照", dash: "dashed", head: "open" },
-    "==>": { label: "保存", width: "thick", color: "orange" },
-    back: { label: "戻り", dash: "dotted", head: "open" },
+    "-.->": { dash: "dashed", head: "open" },
+    "==>": { width: "thick", color: "orange" },
+    back: { dash: "dotted", head: "open" },
   },
 };
