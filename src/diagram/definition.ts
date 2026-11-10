@@ -54,6 +54,26 @@ export type MdmarkDiagramNode = {
   hint?: string;
   /** リンク先。`http`・`https`・`mailto` の URL か相対パス */
   href?: string;
+  /** map の構成図が指定する、設定の map.kinds の種類（`kind` の既定の名前・アイコン・構造の代わりに使う） */
+  style?: MdmarkNodeStyle;
+};
+
+/** map の構成図のノードの種類（種類の行の名前・Lucide のアイコンの名前・構造・色の名前） */
+export type MdmarkNodeStyle = {
+  label?: string | undefined;
+  icon?: string | undefined;
+  shape?: "rounded" | "rect" | "pill" | "double" | undefined;
+  color?: string | undefined;
+};
+
+/** map の構成図の線の種類（模様・太さ・矢じり・色の名前） */
+export type MdmarkWireStyle = {
+  dash?: "solid" | "dashed" | "dotted" | "dash-dot" | "long-dash" | undefined;
+  width?: "thin" | "normal" | "thick" | undefined;
+  head?: "filled" | "open" | "none" | undefined;
+  color?: string | undefined;
+  /** 両端に矢じりを付けるか（`<-->`） */
+  both?: boolean | undefined;
 };
 
 /** フロー図の線 */
@@ -74,6 +94,8 @@ export type MdmarkDiagramWire = {
   labelAt?: [number, number];
   /** ラベルの詳細。持つラベルにツールチップを付ける */
   tip?: string;
+  /** map の構成図が指定する、設定の map.lines の線の種類（`line` の見た目の代わりに使う） */
+  style?: MdmarkWireStyle;
 };
 
 /** フロー図の定義 */

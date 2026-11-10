@@ -197,13 +197,9 @@ function attachView(
       handle,
       key: resize.key,
       storage: resize.storage,
-      max: () => content.height * scale,
-      reset: () => {
-        userHeight = null;
-        zoom.refit();
-        zoom.reset();
-        return viewport.getBoundingClientRect().height;
-      },
+      fit: () =>
+        content.height * scale +
+        (viewport.offsetHeight - viewport.clientHeight),
       onResize: (height) => {
         userHeight = height;
         zoom.refit();

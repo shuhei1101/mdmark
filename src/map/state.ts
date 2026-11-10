@@ -7,7 +7,11 @@ export type MapState = {
   entered: string | undefined;
   selected: string[];
   positions: Record<string, { x: number; y: number }>;
-  wireShifts: Record<string, Array<{ segment: number; offset: number }>>;
+  /** 動かした線の区間のずらし。count は動かしたときの線の点の数（配置し直して変わったら捨てる） */
+  wireShifts: Record<
+    string,
+    Array<{ segment: number; offset: number; count?: number }>
+  >;
   attachments: Record<string, { from?: MapSide; to?: MapSide }>;
   order: string[] | undefined;
   height: number | undefined;
