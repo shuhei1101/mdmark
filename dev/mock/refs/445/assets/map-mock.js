@@ -216,6 +216,7 @@ const addPackets = (svg, path, { reverse = false, both = false, packet = DEFAULT
   const seconds = Math.max(0.6, length / PACKET_SPEED);
   const count = Math.max(1, Math.min(PACKET_MAX, Math.floor(length / PACKET_GAP)));
   const directions = both ? [reverse, !reverse] : [reverse];
+  const added = [];
   for (const backward of directions) {
     for (let index = 0; index < count; index += 1) {
       const shape = shapeOf();
@@ -233,8 +234,10 @@ const addPackets = (svg, path, { reverse = false, both = false, packet = DEFAULT
       motion.append(mpath);
       shape.append(motion);
       svg.append(shape);
+      added.push(shape);
     }
   }
+  return added;
 };
 
 /**
@@ -592,6 +595,7 @@ export const createMap = (host, spec, initial = {}) => {
   /** 線: 色・強調と、ポインターを当てた線を太くしてツールチップに元の線と説明を出す */
   const decorateWires = (figure, layout) => {
     const hot = highlighted();
+    let hoverPackets = [];
     const stage = figure.querySelector(".mdmark-diagram-stage");
     const svg = figure.querySelector(".mdmark-diagram-wires");
     const box = figure.querySelector(".mdmark-diagram-box");
@@ -626,6 +630,12 @@ export const createMap = (host, spec, initial = {}) => {
       hit.addEventListener("pointerenter", () => {
         // 線とつながるノードの表示は変えず、ほかを薄くする。説明が無い線はツールチップを出さない
         focusOn(stage, [wire, labelOfWire.get(edge.id), ...ends].filter(Boolean));
+        // ポインターを当てている間は、その線にもデータの印を流す（案内・再生で流している線には重ねない）
+        if (!path.id) {
+          path.id = `map-hover-${spec.id}-${edge.id}`;
+          const packet = { ...DEFAULT_PACKET, ...spec.data.layout?.packet, ...spec.data.layout?.[edge.id]?.packet };
+          hoverPackets = addPackets(svg, path, { both: sourcesOf(edge).some((item) => item.both), packet });
+        }
         tip.textContent = wireTip(edge);
         tip.hidden = tip.textContent === "";
       });
@@ -639,6 +649,11 @@ export const createMap = (host, spec, initial = {}) => {
       });
       hit.addEventListener("pointerleave", () => {
         clearFocus(stage);
+        if (hoverPackets.length) {
+          for (const shape of hoverPackets) shape.remove();
+          hoverPackets = [];
+          path.removeAttribute("id");
+        }
         tip.hidden = true;
       });
       svg.append(hit);
@@ -882,11 +897,16 @@ export const createSequence = (host, spec, kinds, onStep) => {
         : state.selected.size === 1
           ? state.selected.has(message.from) || state.selected.has(message.to)
           : state.selected.has(message.from) && state.selected.has(message.to);
-    shown.forEach(({ message }, at) => {
+    shown.forEach(({ message, index }, at) => {
       const hit = related(message);
       if (hit === false) {
         wires[at]?.classList.add("map-dim");
         stage.querySelectorAll(".mdmark-diagram-label")[at]?.classList.add("map-dim");
+      }
+      // 選んだ参加者のメッセージの線には、データの印を送り手から受け手へ流し続ける（再生中の線には重ねない）
+      if (hit === true && wires[at] && index !== state.current) {
+        wires[at].id = `map-seq-select-${spec.id}-${at}`;
+        addPackets(svg, wires[at]);
       }
     });
     visible.forEach((id, at) => {
@@ -933,8 +953,14 @@ export const createSequence = (host, spec, kinds, onStep) => {
       hit.setAttribute("class", "map-wire-hit");
       const ends = [heads(message.from), heads(message.to)].filter(Boolean);
       const label = stage.querySelectorAll(".mdmark-diagram-label")[at];
+      let hoverPackets = [];
       hit.addEventListener("pointerenter", () => {
         focusOn(stage, [wire, label, ...ends].filter(Boolean));
+        // ポインターを当てている間は、その線にもデータの印を流す（選択・再生で流している線には重ねない）
+        if (!wire.id) {
+          wire.id = `map-seq-hover-${spec.id}-${at}`;
+          hoverPackets = addPackets(svg, wire);
+        }
         tip.textContent = notes[index + 1] ?? "";
         tip.hidden = tip.textContent === "";
       });
@@ -947,6 +973,11 @@ export const createSequence = (host, spec, kinds, onStep) => {
       });
       hit.addEventListener("pointerleave", () => {
         clearFocus(stage);
+        if (hoverPackets.length) {
+          for (const shape of hoverPackets) shape.remove();
+          hoverPackets = [];
+          wire.removeAttribute("id");
+        }
         tip.hidden = true;
       });
       svg.append(hit);

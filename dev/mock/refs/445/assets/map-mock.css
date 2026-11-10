@@ -135,6 +135,8 @@
 .map-packet {
   stroke: var(--mdmark-color-bg);
   stroke-width: 1.5;
+  /* 印の上にポインターが来ても、線のホバーを外さない */
+  pointer-events: none;
 }
 
 /* 図を動かす矢印のボタンは出さない（枠の中のスクロールで動かす） */
