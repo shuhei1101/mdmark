@@ -334,6 +334,56 @@ function checkColorTheme(config: CliConfig, file: string): CheckIssue[] {
   ];
 }
 
+/** 設定の `map` の値ごとに記載できる値（`schemas/mdmark.config.schema.json` と同じ） */
+const MAP_ENUMS = {
+  node_fit: ["height", "width"],
+  shape: ["rounded", "rect", "pill", "double"],
+  dash: ["solid", "dashed", "dotted", "dash-dot", "long-dash"],
+  width: ["thin", "normal", "thick"],
+  head: ["filled", "open", "none"],
+} as const;
+
+/** 設定の `map` の値のうち、記載できる値に無いものを `schema` のずれにして返却する（描くときは既定にする） */
+function checkMapValues(map: unknown, file: string): CheckIssue[] {
+  const issues: CheckIssue[] = [];
+  if (typeof map !== "object" || map === null) return issues;
+  const value = map as Record<string, unknown>;
+  const check = (where: string, item: unknown, allowed: readonly string[]) => {
+    if (item === undefined || allowed.includes(item as string)) return;
+    issues.push({
+      file,
+      where,
+      kind: "schema",
+      message: `\`${where}\` は ${allowed.map((name) => `\`${name}\``).join("・")} のどれかで記載してください。`,
+    });
+  };
+  check("map.node_fit", value.node_fit, MAP_ENUMS.node_fit);
+  if (value.url_state !== undefined && typeof value.url_state !== "boolean")
+    issues.push({
+      file,
+      where: "map.url_state",
+      kind: "schema",
+      message: "`map.url_state` は `true` か `false` で記載してください。",
+    });
+  for (const [group, keys] of [
+    ["kinds", ["shape"]],
+    ["lines", ["dash", "width", "head"]],
+  ] as const) {
+    const rows = value[group];
+    if (typeof rows !== "object" || rows === null) continue;
+    for (const [name, row] of Object.entries(rows)) {
+      if (typeof row !== "object" || row === null) continue;
+      for (const key of keys)
+        check(
+          `map.${group}.${name}.${key}`,
+          (row as Record<string, unknown>)[key],
+          MAP_ENUMS[key],
+        );
+    }
+  }
+  return issues;
+}
+
 /** 設定の `colorScheme` が記載できる値に無いときの、`unknown_color_scheme` のずれを返却する */
 function checkColorScheme(config: CliConfig, file: string): CheckIssue[] {
   const value = config.colorScheme;
@@ -663,6 +713,7 @@ export async function collectCheckIssues(
     ...shapeIssues,
     ...referenced,
     ...build.schema,
+    ...checkMapValues(config.map, file),
     ...mapIcons,
     ...extensions.issues,
     ...checkColorTheme(config, file),

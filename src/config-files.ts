@@ -351,63 +351,21 @@ export function validateConfig(
   return { config: config as CliConfig, issues };
 }
 
-/** `map` の値ごとに記載できる値（`schemas/mdmark.config.schema.json` と同じ） */
-const MAP_ENUMS = {
-  node_fit: ["height", "width"],
-  shape: ["rounded", "rect", "pill", "double"],
-  dash: ["solid", "dashed", "dotted", "dash-dot", "long-dash"],
-  width: ["thin", "normal", "thick"],
-  head: ["filled", "open", "none"],
-} as const;
-
-/** 設定の `map` を検める。オブジェクトでなければ `false` を返却する。記載できる値に無い値は `schema` のずれを追加し、設定には残す（描くときに既定にする） */
+/** 設定の `map` を検める。オブジェクトでなければ `schema` のずれを追加して `false` を返却する（値はここでは拒まず設定に残し、`mdmark check` が点検する） */
 function isValidMap(
   value: unknown,
   file: string,
   issues: CheckIssue[],
 ): boolean {
-  if (!isRecord(value)) {
-    issues.push(
-      schemaIssue(
-        file,
-        "map",
-        "`map` は `node_fit`・`url_state`・`kinds`・`lines` を持つキーと値で記載してください。",
-      ),
-    );
-    return false;
-  }
-  const check = (where: string, item: unknown, allowed: readonly string[]) => {
-    if (item === undefined || allowed.includes(item as string)) return;
-    issues.push(
-      schemaIssue(
-        file,
-        where,
-        `\`${where}\` は ${allowed.map((name) => `\`${name}\``).join("・")} のどれかで記載してください。`,
-      ),
-    );
-  };
-  check("map.node_fit", value.node_fit, MAP_ENUMS.node_fit);
-  if (value.url_state !== undefined && typeof value.url_state !== "boolean")
-    issues.push(
-      schemaIssue(
-        file,
-        "map.url_state",
-        "`map.url_state` は `true` か `false` で記載してください。",
-      ),
-    );
-  for (const [group, keys] of [
-    ["kinds", ["shape"]],
-    ["lines", ["dash", "width", "head"]],
-  ] as const) {
-    const rows = value[group];
-    if (!isRecord(rows)) continue;
-    for (const [name, row] of Object.entries(rows)) {
-      if (!isRecord(row)) continue;
-      for (const key of keys)
-        check(`map.${group}.${name}.${key}`, row[key], MAP_ENUMS[key]);
-    }
-  }
-  return true;
+  if (isRecord(value)) return true;
+  issues.push(
+    schemaIssue(
+      file,
+      "map",
+      "`map` は `node_fit`・`url_state`・`kinds`・`lines` を持つキーと値で記載してください。",
+    ),
+  );
+  return false;
 }
 
 /** 設定の `tooltips` を検める。キーと値の構造でなければ、`placement`・`diagramPlacement` が `top` と `bottom` のどちらでもなければ、`schema` のずれを追加して `false` を返却する */
