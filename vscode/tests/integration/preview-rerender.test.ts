@@ -320,14 +320,10 @@ suite("プレビューを再描画する", () => {
     await waitFor(() => renders(record).length > before, {
       message: "再描画されない",
     });
-    assert.strictEqual(
-      (
-        renders(record).at(-1)?.config.map as {
-          kinds: { store: { shape: string } };
-        }
-      ).kinds.store.shape,
-      "hexagon",
-    );
+    const map = renders(record).at(-1)?.config.map as
+      | { kinds?: { store?: { shape?: string } } }
+      | undefined;
+    assert.strictEqual(map?.kinds?.store?.shape, "hexagon");
     assert.ok(
       !record.sent
         .slice(sentBefore)

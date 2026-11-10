@@ -11943,7 +11943,7 @@ function viewportHeight(figure: Element): number {
   return viewportOf(figure).getBoundingClientRect().height;
 }
 
-// リサイズハンドルのドラッグと上下キーで表示する枠の高さを変え、倍率をもう一度求め、sessionStorage に保ち、ダブルクリックで戻す（正常系（図の高さを変える））
+// リサイズハンドルのドラッグと上下キーで表示する枠の高さを変え、倍率をもう一度求め、sessionStorage に保ち、ダブルクリックで図の全体が収まる高さにする（正常系（図の高さを変える））
 test("test_normal_when_diagram_resized", async () => {
   // 準備
   sessionStorage.clear();
@@ -12022,13 +12022,18 @@ test("test_normal_when_diagram_resized", async () => {
   figure = diagramFiguresOf(el)[0] as HTMLElement;
   handle = find<HTMLElement>(figure, ".mdmark-diagram-resize");
   expect(Math.abs(viewportHeight(figure) - kept)).toBeLessThanOrEqual(1);
-  // 実行・検証: ダブルクリックで定義から決まる高さに戻し、もう一度 mount しても同じ
+  // 実行・検証: ダブルクリックで、倍率を変えずに今の倍率の図の全体が収まる高さにし、もう一度 mount しても同じ
+  const scale = scaleOf(figure);
   await userEvent.dblClick(handle);
-  expect(Math.abs(viewportHeight(figure) - opened)).toBeLessThanOrEqual(1);
+  expect(scaleOf(figure)).toBeCloseTo(scale, 4);
+  expect(
+    Math.abs(viewportOf(figure).clientHeight - 1600 * scale),
+  ).toBeLessThanOrEqual(1);
+  const fitted = viewportHeight(figure);
   second.destroy();
   await mountTracked(el, { markdown });
   figure = diagramFiguresOf(el)[0] as HTMLElement;
-  expect(Math.abs(viewportHeight(figure) - opened)).toBeLessThanOrEqual(1);
+  expect(Math.abs(viewportHeight(figure) - fitted)).toBeLessThanOrEqual(1);
   // 実行・検証: 全画面のモーダルの中にリサイズハンドルが無い
   buttonOf(figure, "全画面で開く").click();
   const dialog = find<HTMLDialogElement>(el, "dialog");
