@@ -48,7 +48,7 @@ test("test_render_map_flow_when_entered", async () => {
   const html = renderMapFlow(await flowArgs("read"));
   // 検証
   expect(html).toMatch(
-    /data-node="user"[^>]*class="[^"]*map-faded|class="[^"]*map-faded[^"]*"[^>]*data-node="user"/,
+    /data-node="mount"[^>]*class="[^"]*map-faded|class="[^"]*map-faded[^"]*"[^>]*data-node="mount"/,
   );
   expect(html).not.toMatch(/<button[^>]*data-group-enter="read"/);
 });
