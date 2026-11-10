@@ -48,3 +48,15 @@ test("test_attach_map_when_collapse", async () => {
   expect(details?.querySelector("summary")?.textContent?.trim()).toBe("全体");
   expect(details?.querySelector('figure[data-diagram="map"]')).not.toBeNull();
 });
+
+// 書き方の誤り（異常系）
+test("test_attach_map_when_problems", async () => {
+  // 準備・実行
+  const { root } = await attach(mapRange({ mermaid: "flowchart LR\n  A --> B\n  A -> B\n", data: "version: 1\nlayuot: {}\n" }));
+  // 検証
+  const warnings = root.querySelectorAll(".mdmark-syntax-warning");
+  expect(warnings).toHaveLength(1);
+  expect(warnings[0]?.textContent).toContain("A -> B");
+  expect(warnings[0]?.textContent).toContain("layuot");
+  expect(warnings[0]?.nextElementSibling?.matches(".mdmark-map, figure, details")).toBe(true);
+});

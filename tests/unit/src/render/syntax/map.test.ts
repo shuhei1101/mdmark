@@ -22,16 +22,19 @@ test("test_build_map_ranges", () => {
   expect(html).not.toContain("map-data:");
 });
 
-// 書き方の誤り（異常系）
+// 範囲の形の誤り（異常系）
 test("test_build_map_ranges_when_problems", () => {
   // 準備
-  const markdown = mapRange({ mermaid: "flowchart LR\n  A --> B\n  A -> B\n", data: "version: 1\nlayuot: {}\n" });
+  const markdown = mapRange({ args: "{title: 全体}", mermaid: "flowchart LR\n  A --> B\n  A -> B\n", data: "version: 1\nlayuot: {}\n" });
   // 実行
   const { html } = renderDoc(markdown);
   // 検証
   expect(matches(html, /class="mdmark-syntax-warning"/g)).toHaveLength(1);
-  expect(html).toContain("layuot");
-  expect(html.indexOf("mdmark-syntax-warning")).toBeLessThan(html.indexOf('class="mdmark-map"'));
+  const warning = html.slice(html.indexOf("mdmark-syntax-warning"), html.indexOf('class="mdmark-map"'));
+  expect(warning).toContain("JSON");
+  expect(warning).not.toContain("layuot");
+  expect(warning).not.toContain("A -&gt; B");
+  expect(html).toContain('class="mdmark-map"');
 });
 
 // mermaid のブロックが無い（異常系）

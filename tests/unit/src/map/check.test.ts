@@ -7,6 +7,39 @@ const loadCheck = () => import("../../../../src/map/check.ts");
 /** 範囲を 1 つの mermaid のブロックと補足で組み立てる */
 const range = (mermaid: string, data?: string, args = "") => ({ args, mermaid, mermaidCount: 1, data, dataCount: data === undefined ? 0 : 1 });
 
+// 形の正しい範囲（正常系）
+test("test_collect_map_structure", async () => {
+  // 準備
+  const { collectMapStructure } = await loadCheck();
+  // 実行
+  const result = collectMapStructure({ args: "", mermaid: "flowchart LR\n  A --> B\n", mermaidCount: 1, dataCount: 1 });
+  // 検証
+  expect(result.problems).toEqual([]);
+  expect(result.kind).toBe("flowchart");
+});
+
+// mermaid のブロックが 2 つ（異常系）
+test("test_collect_map_structure_when_two_blocks", async () => {
+  // 準備
+  const { collectMapStructure } = await loadCheck();
+  // 実行
+  const result = collectMapStructure({ args: "", mermaid: "flowchart LR\n  A --> B\n", mermaidCount: 2, dataCount: 0 });
+  // 検証
+  expect(result.problems.map((problem) => problem.kind)).toEqual(["map_invalid"]);
+  expect(result.kind).toBeUndefined();
+});
+
+// 読めない引数（異常系）
+test("test_collect_map_structure_when_bad_args", async () => {
+  // 準備
+  const { collectMapStructure } = await loadCheck();
+  // 実行
+  const result = collectMapStructure({ args: "{title: 全体}", mermaid: "flowchart LR\n  A --> B\n", mermaidCount: 1, dataCount: 0 });
+  // 検証
+  expect(result.problems.map((problem) => problem.kind)).toEqual(["map_invalid_value"]);
+  expect(result.kind).toBe("flowchart");
+});
+
 // ずれの無い範囲（正常系）
 test("test_collect_map_problems", async () => {
   // 準備
