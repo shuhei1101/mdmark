@@ -10947,6 +10947,13 @@
     cursor: grab;
   }
 
+  /* データの印の層: 線とノードの上に重ね、押す・指す操作を下へ通す */
+  .map-packets:is(svg) {
+    position: absolute;
+    inset: 0 auto auto 0;
+    overflow: visible;
+    pointer-events: none;
+  }
   /* 線を押す・指す場所の層: ノードより上、グループのボタンより下 */
   .map-wire-hits {
     position: absolute;

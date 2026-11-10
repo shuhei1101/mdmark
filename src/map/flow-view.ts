@@ -1,7 +1,11 @@
 import type { ResolvedConfig } from "../config.ts";
 import { attachDiagrams } from "../interact/diagrams.ts";
 import { renderDiagramFrame } from "../parts/diagram.ts";
-import { type MapPacketMark, renderMapFlow } from "../parts/map.ts";
+import {
+  type MapPacketMark,
+  renderMapFlow,
+  renderMapPackets,
+} from "../parts/map.ts";
 import { attachBand, type BandHandle, type BandStep } from "./band.ts";
 import { type MapData, parseMapData } from "./data.ts";
 import { applyWireShifts, startDrag } from "./drag.ts";
@@ -111,8 +115,15 @@ export const attachMapFlow = (
       entry.line === undefined ? [] : [[id, entry.line]],
     ),
   );
+  const colors = Object.fromEntries(
+    Object.entries(data.layout).flatMap(([id, entry]) =>
+      entry.color === undefined ? [] : [[id, entry.color]],
+    ),
+  );
   const sizes: Record<string, { w: number; h: number }> = {};
   let focus: { nodes: string[]; wires: string[] } | undefined;
+  /** 指している線の ID */
+  let hovered: string | undefined;
   let layout: MapLayout = layoutMap(
     chart,
     { collapsed: state.collapsed, entered: state.entered },
@@ -148,6 +159,7 @@ export const attachMapFlow = (
         lines: config.map.lines,
         wireLines,
         notes,
+        colors,
         collapsed: state.collapsed,
         entered: state.entered,
         selected: state.selected,
@@ -215,19 +227,40 @@ export const attachMapFlow = (
       );
       if (button) button.disabled = item.disabled === true;
     }
+    emphasize();
   };
   const change = (next: MapState) => {
     state = next;
     save();
     refresh();
   };
-  /** 選択と強調を、描いた要素のクラスで当て直す（要素は差し替えない） */
+  /** 線の上に流すデータの印（補足の layout の packet の色と形状。両向きの線は両方へ） */
+  const packetsOf = (wires: Iterable<string>): MapPacketMark[] =>
+    [...wires].flatMap((id) => {
+      const wire = layout.wires.find((item) => item.id === id);
+      if (!wire) return [];
+      const packet = data.layout[id]?.packet;
+      return [
+        {
+          wire: id,
+          direction: wire.both ? "both" : "forward",
+          color: packet?.color,
+          shape: packet?.shape ?? "circle",
+        },
+      ];
+    });
+  /** 選択と強調を、描いた要素のクラスとデータの印で当て直す（ノードと線の要素は差し替えない）。線を指している間はその線を、次に選択、次に外からの強調を当てる */
   const emphasize = () => {
     const stage = figure.querySelector<HTMLElement>(".mdmark-diagram-stage");
     if (!stage) return;
     const selected = new Set(state.selected);
-    const kept =
-      selected.size > 0
+    const pointed = layout.wires.find((wire) => wire.id === hovered);
+    const kept = pointed
+      ? {
+          nodes: new Set([pointed.from, pointed.to]),
+          wires: new Set([pointed.id]),
+        }
+      : selected.size > 0
         ? {
             nodes: selected,
             wires: new Set(
@@ -262,6 +295,18 @@ export const attachMapFlow = (
         kept !== undefined && !kept.wires.has(id),
       );
     }
+    const layer = stage.querySelector(".map-packets");
+    if (layer)
+      layer.innerHTML = renderMapPackets(
+        {
+          layout: { ...layout, wires: applyWireShifts(layout, state).wires },
+          kinds: config.map.kinds,
+          lines: config.map.lines,
+          wireLines,
+          colors,
+        },
+        packetsOf(kept?.wires ?? []),
+      );
     const reset = figure.querySelector<HTMLButtonElement>(
       '[data-tool="reset"]',
     );
@@ -294,6 +339,8 @@ export const attachMapFlow = (
     if (changed) refresh();
   };
   measure();
+  // 保った選択の強調と印を、初めに描いた図にも当てる
+  emphasize();
 
   const groupsUnder = (id: string): string[] =>
     chart.groups
@@ -395,9 +442,26 @@ export const attachMapFlow = (
     else if (state.entered !== undefined)
       change({ ...state, entered: parentOf(chart, state.entered) });
   };
+  const onPointerOver = (event: PointerEvent) => {
+    const target = event.target instanceof Element ? event.target : undefined;
+    const id = target?.closest(".map-wire-hit")?.getAttribute("data-wire");
+    if (id && id !== hovered) {
+      hovered = id;
+      emphasize();
+    }
+  };
+  const onPointerOut = (event: PointerEvent) => {
+    const target = event.target instanceof Element ? event.target : undefined;
+    if (hovered !== undefined && target?.closest(".map-wire-hit")) {
+      hovered = undefined;
+      emphasize();
+    }
+  };
   figure.addEventListener("click", onClick);
   figure.addEventListener("pointerdown", onPointerDown);
   figure.addEventListener("keydown", onKeyDown);
+  figure.addEventListener("pointerover", onPointerOver);
+  figure.addEventListener("pointerout", onPointerOut);
 
   let band: BandHandle | undefined;
   if (data.walkthroughs.length > 0) {
@@ -457,6 +521,8 @@ export const attachMapFlow = (
       figure.removeEventListener("click", onClick);
       figure.removeEventListener("pointerdown", onPointerDown);
       figure.removeEventListener("keydown", onKeyDown);
+      figure.removeEventListener("pointerover", onPointerOver);
+      figure.removeEventListener("pointerout", onPointerOut);
     },
   };
 };

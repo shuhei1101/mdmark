@@ -23,6 +23,7 @@ import {
 } from "../diagram/er.ts";
 import { jumpPaths, polylinePath, ZOOM } from "../diagram/geometry.ts";
 import { pointSvg, renderChart, SCATTER_POINT_SIZE } from "./chart.ts";
+import { isColorName } from "./colors.ts";
 import { erEndSvg, plainDefinitionText, renderErTable } from "./er.ts";
 import { escapeHtml } from "./escape.ts";
 import { bundledIconNode, type IconName, iconSvg } from "./icons.ts";
@@ -352,7 +353,7 @@ const MAP_WIDTHS: Record<NonNullable<MdmarkWireStyle["width"]>, number> = {
 
 /** map の線の色。色の名前が無ければ線の既定の色 */
 const wireColor = (color: string | undefined): string =>
-  color === undefined
+  color === undefined || !isColorName(color)
     ? "var(--mdmark-color-diagram-line)"
     : `var(--mdmark-color-accent-${color}-text, var(--mdmark-color-diagram-line))`;
 
@@ -530,13 +531,12 @@ function renderStyledNode(options: {
   const label =
     style.label === undefined ? "" : `<span>${escapeHtml(style.label)}</span>`;
   const empty = icon === "" && label === "" ? " is-empty" : "";
-  const color =
-    style.color === undefined ? "" : ` data-color="${escapeHtml(style.color)}"`;
-  // 種類の色は枠線と種類の行の色に当てる（`--map-kind`）
-  const tint =
-    style.color === undefined
-      ? ""
-      : `;--map-kind:var(--mdmark-color-accent-${escapeHtml(style.color)}-text)`;
+  const named = style.color !== undefined && isColorName(style.color);
+  const color = named ? ` data-color="${style.color}"` : "";
+  // 種類の色は枠線と種類の行の色に当てる（`--map-kind`。色の名前の一覧に無い値は当てない）
+  const tint = named
+    ? `;--map-kind:var(--mdmark-color-accent-${style.color}-text)`
+    : "";
   return `<div class="${classes} map-kinded" data-kind="map" data-shape="${style.shape ?? "rounded"}"${color} data-node="${escapeHtml(node.id)}"${boxStyle({ ...box, inset: tint })}><span class="mdmark-diagram-node-kind${empty}">${icon}${label}</span><span class="mdmark-diagram-node-name">${name}</span>${sub}${link}${info}</div>`;
 }
 

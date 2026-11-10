@@ -1056,11 +1056,21 @@ const MAP_SEQUENCE_TALL = `sequenceDiagram
   B-->>A: 描いた文書
 `;
 
-/** ストーリーの args の JSON の配列（無ければ空） */
+/** ストーリーの args の配列（JSON の文字でも、Storybook が配列にした値でもよい。無ければ空） */
 const jsonList = (value: unknown): string[] =>
-  typeof value === "string" && value !== ""
-    ? (JSON.parse(value) as string[])
-    : [];
+  Array.isArray(value)
+    ? value.map(String)
+    : typeof value === "string" && value !== ""
+      ? (JSON.parse(value) as string[])
+      : [];
+
+/** ストーリーの args のオブジェクト（JSON の文字でも、Storybook がオブジェクトにした値でもよい） */
+const jsonObject = <T>(value: unknown): T | undefined =>
+  typeof value === "object" && value !== null
+    ? (value as T)
+    : typeof value === "string" && value !== ""
+      ? (JSON.parse(value) as T)
+      : undefined;
 
 /** map の部品を図の枠に入れる */
 const mapFrame = (
@@ -1081,15 +1091,13 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
     const layout = layoutMap(
       parseFlowchart(MAP_FLOW),
       { collapsed, entered },
-      typeof args.ends === "string" && args.ends !== ""
-        ? { "mount->marker": { ends: JSON.parse(args.ends) } }
-        : {},
+      jsonObject(args.ends) === undefined
+        ? {}
+        : { "mount->marker": { ends: jsonObject(args.ends) } },
       args.node_fit === "width" ? "width" : "height",
     );
-    const focus =
-      typeof args.focus === "string" && args.focus !== ""
-        ? (JSON.parse(args.focus) as { nodes: string[]; wires: string[] })
-        : undefined;
+    const focus = jsonObject<{ nodes: string[]; wires: string[] }>(args.focus);
+    const selected = jsonList(args.selected);
     return mapFrame(
       "全体の構成",
       renderMapFlow({
@@ -1101,9 +1109,29 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
         ),
         collapsed,
         entered,
-        selected: jsonList(args.selected),
+        selected,
         focus,
-        packets: [],
+        // 選んだノードの線か、強調する線にデータの印を流す（mount の attachMapFlow と同じ）
+        packets: (selected.length > 0
+          ? layout.wires
+              .filter((wire) =>
+                selected.length === 1
+                  ? selected.includes(wire.from) || selected.includes(wire.to)
+                  : selected.includes(wire.from) && selected.includes(wire.to),
+              )
+              .map((wire) => wire.id)
+          : (focus?.wires ?? [])
+        ).map((wire) => ({
+          wire,
+          direction: "forward" as const,
+          color: data.layout[wire]?.packet?.color,
+          shape: data.layout[wire]?.packet?.shape ?? "circle",
+        })),
+        colors: Object.fromEntries(
+          Object.entries(data.layout).flatMap(([id, entry]) =>
+            entry.color === undefined ? [] : [[id, entry.color]],
+          ),
+        ),
         dragging: undefined,
         id: "story-map",
       }),
@@ -1136,10 +1164,7 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
       collapsed,
       entered,
       selected: jsonList(args.selected),
-      focus:
-        typeof args.focus === "string" && args.focus !== ""
-          ? (JSON.parse(args.focus) as { message: number })
-          : undefined,
+      focus: jsonObject<{ message: number }>(args.focus),
       id: "story-map-seq",
     });
     const width = Number(/<svg[^>]*\swidth="([\d.]+)"/.exec(html)?.[1] ?? 0);

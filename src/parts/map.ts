@@ -12,17 +12,91 @@ import {
 } from "../map/sequence.ts";
 import type { SequenceRow } from "../map/sequence-rows.ts";
 import type { MapKind, MapLine } from "../map/spec.ts";
+import { isColorName } from "./colors.ts";
 import { renderFlow } from "./diagram.ts";
 import { escapeHtml } from "./escape.ts";
 import { iconSvg } from "./icons.ts";
 
-/** 線の上を流れるデータの印 */
+/** 線の上を流れるデータの印。color は色の名前か line・source・target（省く・知らない値は線の色） */
 export type MapPacketMark = {
   wire: string;
-  color: string;
+  direction: "forward" | "backward" | "both";
+  color: string | undefined;
   shape: "circle" | "square" | "diamond";
-  reverse: boolean;
 };
+
+/** 線の既定の色 */
+const LINE_FILL = "var(--mdmark-color-diagram-line)";
+/** 印が線の上を進む速さ（px/秒）と、印の間隔（px）と、1 本の線に流す印の数の上限 */
+const PACKET_SPEED = 60;
+const PACKET_GAP = 100;
+const PACKET_MAX = 4;
+
+/** 色の名前を CSS 変数にする。色の名前の一覧に無い値は undefined（利用側の文字を CSS の値にそのまま埋めない） */
+export const colorVar = (
+  name: string | undefined,
+  tone: "text" | "bg" = "text",
+): string | undefined =>
+  name !== undefined && isColorName(name)
+    ? `var(--mdmark-color-accent-${name}-${tone})`
+    : undefined;
+
+/** 印を描く 1 本の経路 */
+export type PacketPath = {
+  /** 印の要素に付ける属性（`data-wire="…"` か `data-message="…"`） */
+  owner: string;
+  d: string;
+  length: number;
+  fill: string;
+  shape: MapPacketMark["shape"];
+  direction: MapPacketMark["direction"];
+};
+
+/** 経路の上を元から先へ繰り返し流れる印の SVG。線の長さによらず同じ速さで動かし、長い線ほど印を多く流す */
+export const renderPackets = (paths: PacketPath[]): string =>
+  paths
+    .flatMap((path) => {
+      const seconds = Math.max(0.6, path.length / PACKET_SPEED);
+      const count = Math.max(
+        1,
+        Math.min(PACKET_MAX, Math.floor(path.length / PACKET_GAP)),
+      );
+      const ways =
+        path.direction === "both"
+          ? [false, true]
+          : [path.direction === "backward"];
+      return ways.flatMap((backward) =>
+        Array.from({ length: count }, (_item, index) => {
+          const begin = -((seconds * index) / count);
+          const motion = `<animateMotion dur="${seconds}s" begin="${begin}s" repeatCount="indefinite" path="${path.d}"${backward ? ' keyPoints="1;0" keyTimes="0;1" calcMode="linear"' : ""}></animateMotion>`;
+          const attributes = `class="map-packet" ${path.owner} style="fill:${path.fill}"`;
+          return path.shape === "square"
+            ? `<rect x="-6" y="-6" width="12" height="12" rx="2" ${attributes}>${motion}</rect>`
+            : path.shape === "diamond"
+              ? `<polygon points="0,-8 8,0 0,8 -8,0" ${attributes}>${motion}</polygon>`
+              : `<circle r="7" ${attributes}>${motion}</circle>`;
+        }),
+      );
+    })
+    .join("");
+
+/** 折れ線の SVG の経路と長さ */
+const polyline = (points: Array<[number, number]>) => ({
+  d: points
+    .map(([x, y], index) => `${index === 0 ? "M" : "L"}${x} ${y}`)
+    .join(""),
+  length: points
+    .slice(1)
+    .reduce(
+      (sum, [x, y], index) =>
+        sum +
+        Math.hypot(
+          x - (points[index] as [number, number])[0],
+          y - (points[index] as [number, number])[1],
+        ),
+      0,
+    ),
+});
 
 /** 部品『mapの構成図』の引数 */
 export type MapFlowArgs = {
@@ -35,6 +109,8 @@ export type MapFlowArgs = {
   wireLines?: Record<string, string> | undefined;
   /** 補足の notes（ID ごとの説明） */
   notes?: Record<string, string> | undefined;
+  /** 補足の layout の color（グループの ID ごとの色の名前） */
+  colors?: Record<string, string> | undefined;
   collapsed: string[];
   entered: string | undefined;
   selected: string[];
@@ -93,6 +169,54 @@ const addClass = (
   );
 };
 
+/** 構成図の線の上のデータの印の SVG。色の名前・line・source・target を、線とノードの種類の色の変数にする */
+export const renderMapPackets = (
+  args: Pick<
+    MapFlowArgs,
+    "layout" | "kinds" | "lines" | "wireLines" | "colors"
+  >,
+  marks: MapPacketMark[],
+): string => {
+  const { layout } = args;
+  const kindOf = (classes: string[] | undefined): MapKind | undefined => {
+    const name = (classes ?? []).find((item) => item in args.kinds);
+    return name === undefined ? undefined : args.kinds[name];
+  };
+  const nodeFill = (id: string): string =>
+    colorVar(
+      kindOf(layout.nodes.find((node) => node.id === id)?.classes)?.color,
+    ) ?? LINE_FILL;
+  const packetPaths = marks.flatMap((packet): PacketPath[] => {
+    const wire = layout.wires.find((item) => item.id === packet.wire);
+    if (!wire) return [];
+    const named = args.wireLines?.[wire.id];
+    const lineColor = colorVar(
+      args.colors?.[wire.id] ??
+        (
+          (named === undefined ? undefined : args.lines[named]) ??
+          args.lines[wire.arrow ?? "-->"]
+        )?.color,
+    );
+    const lineFill = lineColor ?? LINE_FILL;
+    const fill =
+      packet.color === "source"
+        ? nodeFill(wire.from)
+        : packet.color === "target"
+          ? nodeFill(wire.to)
+          : (colorVar(packet.color) ?? lineFill);
+    return [
+      {
+        owner: `data-wire="${escapeHtml(wire.id)}"`,
+        ...polyline(wire.points),
+        fill,
+        shape: packet.shape,
+        direction: packet.direction,
+      },
+    ];
+  });
+  return renderPackets(packetPaths);
+};
+
 /** 部品『mapの構成図』の HTML。フロー図の部品の定義にしたノードと線を renderFlow で描き、グループの面とタイトルの行・開閉と中へ入るボタン・閉じたグループを重ねる */
 export const renderMapFlow = (args: MapFlowArgs): string => {
   const { layout } = args;
@@ -117,7 +241,7 @@ export const renderMapFlow = (args: MapFlowArgs): string => {
         label: kind?.label,
         icon: kind?.icon,
         shape: kind?.shape,
-        color: kind?.color,
+        color: args.colors?.[node.id] ?? kind?.color,
       },
       ...(note === undefined ? {} : { hint: note }),
     };
@@ -145,7 +269,11 @@ export const renderMapFlow = (args: MapFlowArgs): string => {
         ? { label: wire.label }
         : {}),
       ...(tip === "" ? {} : { tip }),
-      style: { ...line, both: wire.both ?? false },
+      style: {
+        ...line,
+        color: args.colors?.[wire.id] ?? line.color,
+        both: wire.both ?? false,
+      },
     };
   });
   const definition: MdmarkFlowDefinition = {
@@ -176,13 +304,22 @@ export const renderMapFlow = (args: MapFlowArgs): string => {
     html = addClass(html, "data-node", id, "is-selected");
   if (args.dragging !== undefined)
     html = addClass(html, "data-node", args.dragging, "is-dragging");
+  /** グループの色の名前を、面と文字の色の変数にする（知らない名前は色を持たない） */
+  const groupTint = (id: string): string => {
+    const name = args.colors?.[id];
+    const fill = colorVar(name, "bg");
+    const ink = colorVar(name);
+    return fill === undefined || ink === undefined
+      ? ""
+      : `;--map-fill:${fill};--map-ink:${ink}`;
+  };
   // グループは外側から順に、線とノードの下に重ねる
   const groups = [...open]
     .sort((a, b) => a.ancestors.length - b.ancestors.length)
     .map((group) => {
       const current = group.id === args.entered;
       const classes = `map-group${group.faded ? " map-faded" : ""}${current ? " is-entered" : ""}${args.dragging === group.id ? " is-dragging" : ""}`;
-      return `<div class="${classes}" data-group="${escapeHtml(group.id)}" style="left:${group.x}px;top:${group.y}px;width:${group.w}px;height:${group.h}px"><div class="map-group-head">${disclosure(group.id, group.title, true)}${groupTitle(group.id, group.title, current)}</div></div>`;
+      return `<div class="${classes}" data-group="${escapeHtml(group.id)}" style="left:${group.x}px;top:${group.y}px;width:${group.w}px;height:${group.h}px${groupTint(group.id)}"><div class="map-group-head">${disclosure(group.id, group.title, true)}${groupTitle(group.id, group.title, current)}</div></div>`;
     })
     .join("");
   // 閉じたグループは、二重の枠線の 1 つのノードにする（本数とラベルは出さない）
@@ -192,12 +329,7 @@ export const renderMapFlow = (args: MapFlowArgs): string => {
         `<div class="mdmark-diagram-node map-closed-group${group.faded ? " map-faded" : ""}" data-group="${escapeHtml(group.id)}" style="left:${group.x}px;top:${group.y}px;width:${group.w}px;height:${group.h}px"><div class="map-group-head">${disclosure(group.id, group.title, false)}${groupTitle(group.id, group.title, false)}</div></div>`,
     )
     .join("");
-  const packets = args.packets
-    .map(
-      (packet) =>
-        `<span class="map-packet" data-wire="${escapeHtml(packet.wire)}" data-shape="${packet.shape}" data-reverse="${packet.reverse}" style="--map-packet-color:${escapeHtml(packet.color)}"></span>`,
-    )
-    .join("");
+  const packets = `<svg class="map-packets" width="${layout.width}" height="${layout.height}" aria-hidden="true">${renderMapPackets(args, args.packets)}</svg>`;
   // 線を押す・指す場所: 見える線より太い透明の線（区間の移動にも使う）
   const hits = layout.wires
     .map(
@@ -458,6 +590,7 @@ export const renderMapSequence = (args: MapSequenceArgs): string => {
   };
   const wires: string[] = [];
   const labels: string[] = [];
+  const packetPaths: PacketPath[] = [];
   const dimByPlay = args.focus !== undefined && selected.size === 0;
   for (const [message, at] of rowOfMessage) {
     const item = sequence.messages[message];
@@ -488,6 +621,17 @@ export const renderMapSequence = (args: MapSequenceArgs): string => {
     wires.push(
       `<path class="mdmark-diagram-wire${dim}" data-line="map" data-message="${message}" d="${d}"${style.dotted ? ' stroke-dasharray="6 4"' : ""} stroke-width="1.5" style="stroke:var(--mdmark-color-diagram-line)"${head}${both}></path><path class="map-wire-hit" data-message="${message}" d="${d}"></path>`,
     );
+    // 選んだ参加者のメッセージと再生している今のメッセージの線に、データの印を送り手から受け手へ流す
+    if (hit === true || message === args.focus?.message) {
+      packetPaths.push({
+        owner: `data-message="${message}"`,
+        d,
+        length: self ? 64 : Math.abs(end - start),
+        fill: LINE_FILL,
+        shape: "circle",
+        direction: style.both ? "both" : "forward",
+      });
+    }
     const number = sequence.autonumber ? `${message + 1} ` : "";
     labels.push(
       `<span class="mdmark-diagram-label${dim}" data-message="${message}" style="left:${(start + end) / 2}px;top:${y - 14}px">${escapeHtml(`${number}${item.text}`)}</span>`,
@@ -546,7 +690,7 @@ export const renderMapSequence = (args: MapSequenceArgs): string => {
     })
     .join("");
   return [
-    `<svg class="mdmark-diagram-wires" width="${width}" height="${height}" aria-hidden="true"><defs>${markers}</defs><g class="map-seq-under">${under.join("")}</g>${lifelines}${wires.join("")}<g class="map-seq-above">${above.join("")}</g></svg>`,
+    `<svg class="mdmark-diagram-wires" width="${width}" height="${height}" aria-hidden="true"><defs>${markers}</defs><g class="map-seq-under">${under.join("")}</g>${lifelines}${wires.join("")}<g class="map-seq-above">${above.join("")}</g><g class="map-packets" aria-hidden="true">${renderPackets(packetPaths)}</g></svg>`,
     labels.join(""),
     overlay.join(""),
     `<div class="mdmark-diagram-seq-heads" style="width:${width}px;height:${MAP_SEQ.headTop + MAP_SEQ.headH + 8}px">${heads}</div>`,

@@ -1,10 +1,10 @@
 import type { ResolvedConfig } from "../config.ts";
 import { attachDiagrams } from "../interact/diagrams.ts";
 import { renderDiagramFrame } from "../parts/diagram.ts";
-import { renderMapSequence } from "../parts/map.ts";
+import { renderMapSequence, renderPackets } from "../parts/map.ts";
 import { attachBand, type BandHandle } from "./band.ts";
 import { parseMapData } from "./data.ts";
-import { parseSequence } from "./sequence.ts";
+import { parseSequence, SEQ_ARROW_STYLES } from "./sequence.ts";
 import { sequenceRows } from "./sequence-rows.ts";
 import type { MapArgs } from "./spec.ts";
 import {
@@ -294,8 +294,39 @@ export const attachMapSequence = (
     if (event.key === "Escape" && state.selected.length > 0)
       change({ ...state, selected: [] });
   };
+  // メッセージの線を指している間は、その線にデータの印を流す（選択・再生で流している線には重ねない）
+  const onPointerOver = (event: PointerEvent) => {
+    const target = event.target instanceof Element ? event.target : undefined;
+    const hit = target?.closest<SVGPathElement>(".map-wire-hit[data-message]");
+    const at = Number(hit?.dataset.message);
+    const message = sequence.messages[at];
+    if (!hit || !message) return;
+    const svg = hit.ownerSVGElement;
+    if (!svg || svg.querySelector(`.map-packet[data-message="${at}"]`)) return;
+    const layer = document.createElementNS("http://www.w3.org/2000/svg", "g");
+    layer.setAttribute("class", "map-packets map-packets-hover");
+    layer.innerHTML = renderPackets([
+      {
+        owner: `data-message="${at}"`,
+        d: hit.getAttribute("d") ?? "",
+        length: hit.getTotalLength(),
+        fill: "var(--mdmark-color-diagram-line)",
+        shape: "circle",
+        direction: SEQ_ARROW_STYLES[message.arrow].both ? "both" : "forward",
+      },
+    ]);
+    svg.append(layer);
+  };
+  const onPointerOut = (event: PointerEvent) => {
+    const target = event.target instanceof Element ? event.target : undefined;
+    if (!target?.closest(".map-wire-hit")) return;
+    for (const layer of figure.querySelectorAll(".map-packets-hover"))
+      layer.remove();
+  };
   figure.addEventListener("click", onClick);
   figure.addEventListener("keydown", onKeyDown);
+  figure.addEventListener("pointerover", onPointerOver);
+  figure.addEventListener("pointerout", onPointerOut);
 
   let band: BandHandle | undefined;
   if (sequence.messages.length > 0) {
@@ -337,6 +368,8 @@ export const attachMapSequence = (
       detachDiagrams();
       figure.removeEventListener("click", onClick);
       figure.removeEventListener("keydown", onKeyDown);
+      figure.removeEventListener("pointerover", onPointerOver);
+      figure.removeEventListener("pointerout", onPointerOut);
     },
   };
 };
