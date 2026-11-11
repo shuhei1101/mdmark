@@ -1,4 +1,4 @@
-import { afterEach, expect, test } from "vitest";
+import { afterEach, expect, test, vi } from "vitest";
 import { createRootFromHtml, removeRoots } from "../../helpers/dom.ts";
 import { CONFIG, DATA, FLOW, mapRange, SEQUENCE } from "../../helpers/map.ts";
 import { renderDoc } from "../../helpers/render.ts";
@@ -11,6 +11,8 @@ const detachers: Array<() => void> = [];
 
 afterEach(() => {
   for (const detach of detachers.splice(0)) detach();
+  vi.useRealTimers();
+  vi.restoreAllMocks();
   removeRoots();
   sessionStorage.clear();
 });
@@ -96,4 +98,29 @@ test("test_attach_map_when_missing_participant", async () => {
     (warnings[0] as Element).compareDocumentPosition(figures[1] as Element) &
       Node.DOCUMENT_POSITION_FOLLOWING,
   ).toBeTruthy();
+});
+
+// 再生で構成図をスクロールする（正常系）
+test("test_attach_map_when_auto_follow", async () => {
+  // 準備
+  vi.useFakeTimers();
+  const { root } = await attach(
+    `${mapRange({ mermaid: FLOW, data: DATA })}\n${mapRange({ mermaid: SEQUENCE, data: '{"version": 1, "plays_over": 1}' })}`,
+  );
+  const [flow, seq] = [...root.querySelectorAll("figure.mdmark-diagram")];
+  const viewport = flow?.querySelector(
+    ".mdmark-diagram-viewport",
+  ) as HTMLElement;
+  const scrollTo = vi.spyOn(viewport, "scrollTo").mockImplementation(() => {});
+  // 実行
+  seq?.querySelector<HTMLButtonElement>('[data-band="auto"]')?.click();
+  vi.advanceTimersByTime(2000);
+  // 検証
+  expect(scrollTo).toHaveBeenCalledTimes(1);
+  // 実行
+  viewport.dispatchEvent(new WheelEvent("wheel", { deltaY: 100 }));
+  scrollTo.mockClear();
+  vi.advanceTimersByTime(2000);
+  // 検証
+  expect(scrollTo).not.toHaveBeenCalled();
 });

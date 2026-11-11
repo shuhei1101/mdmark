@@ -1,4 +1,4 @@
-import { afterEach, expect, test } from "vitest";
+import { afterEach, expect, test, vi } from "vitest";
 import { createRootFromHtml, removeRoots } from "../../helpers/dom.ts";
 import { CONFIG, DATA, FLOW, mapRange } from "../../helpers/map.ts";
 import { renderDoc } from "../../helpers/render.ts";
@@ -15,6 +15,7 @@ afterEach(() => {
   removeRoots();
   sessionStorage.clear();
   history.replaceState(null, "", location.pathname);
+  vi.restoreAllMocks();
 });
 
 /** sessionStorage に保った 1 つ目の図の状態 */
@@ -162,4 +163,26 @@ test("test_attach_map_flow_when_walk_leaves_group", async () => {
   press("prev");
   expect(root.querySelector(".map-band-count")?.textContent).toBe("2/4");
   expect(root.querySelector(".map-group-title.is-current")).toBeNull();
+});
+
+// 外からスクロールする（正常系）
+test("test_attach_map_flow_when_follow", async () => {
+  // 準備
+  const root = await setUp();
+  const handle = handles.at(-1) as unknown as {
+    follow: (nodes: string[]) => void;
+    resumeFollow: () => void;
+  };
+  const viewport = root.querySelector(
+    ".mdmark-diagram-viewport",
+  ) as HTMLElement;
+  const scrollTo = vi.spyOn(viewport, "scrollTo").mockImplementation(() => {});
+  // 実行
+  handle.follow(["mount", "marker"]);
+  viewport.dispatchEvent(new WheelEvent("wheel", { deltaY: 100 }));
+  handle.follow(["mount", "marker"]);
+  handle.resumeFollow();
+  handle.follow(["mount", "marker"]);
+  // 検証
+  expect(scrollTo).toHaveBeenCalledTimes(2);
 });

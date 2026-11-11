@@ -14630,6 +14630,25 @@ test("test_normal_when_map_sequence_played", async () => {
   expect(seq().querySelectorAll(".map-dim")).toHaveLength(0);
   expect(flow().querySelector(".map-band-count")?.textContent).toBe("1/4");
   expect(mapDimmed(mapNode(flow(), "index"))).toBe(true);
+  // 実行: シーケンス図の帯の自動で進める
+  vi.useFakeTimers({ toFake: ["setInterval", "clearInterval"] });
+  const flowViewport = find<HTMLElement>(flow(), ".mdmark-diagram-viewport");
+  const flowScroll = vi
+    .spyOn(flowViewport, "scrollTo")
+    .mockImplementation(() => {});
+  find<HTMLButtonElement>(seq(), '[data-band="auto"]').click();
+  vi.advanceTimersByTime(2000);
+  // 検証: 構成図の図の枠の中を、送り手と受け手のノードへスクロールする
+  expect(seq().querySelector(".map-band-count")?.textContent).toBe("2/7");
+  expect(flowScroll).toHaveBeenCalledTimes(1);
+  // 実行・検証: 構成図の図の枠をホイールで動かした後は、自動で進め直すまでスクロールしない
+  flowViewport.dispatchEvent(new WheelEvent("wheel", { deltaY: 100 }));
+  vi.advanceTimersByTime(2000);
+  expect(flowScroll).toHaveBeenCalledTimes(1);
+  find<HTMLButtonElement>(seq(), '[data-band="auto"]').click();
+  find<HTMLButtonElement>(seq(), '[data-band="auto"]').click();
+  vi.advanceTimersByTime(2000);
+  expect(flowScroll).toHaveBeenCalledTimes(2);
 });
 
 // map のノード・参加者・線を選ぶ（正常系）

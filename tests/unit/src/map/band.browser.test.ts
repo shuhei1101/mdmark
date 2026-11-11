@@ -20,7 +20,11 @@ const STEPS = [0, 1, 2, 3].map((index) => ({
 
 /** 図の枠を配置して帯を付ける */
 async function setUp(
-  options: { autoplay?: boolean; reducedMotion?: boolean } = {},
+  options: {
+    autoplay?: boolean;
+    reducedMotion?: boolean;
+    follow?: { start: () => void; step: (step: unknown) => void };
+  } = {},
 ) {
   const { attachBand } = await loadBand();
   const root = createRootFromHtml(
@@ -50,6 +54,7 @@ async function setUp(
       enter = onEnter;
       return () => {};
     },
+    ...(options.follow === undefined ? {} : { follow: options.follow }),
   });
   const button = (label: string) =>
     root.querySelector<HTMLButtonElement>(
@@ -114,6 +119,53 @@ test("test_attach_band_when_user_scrolls", async () => {
   vi.advanceTimersByTime(6000);
   // 検証
   expect(scrollTo).not.toHaveBeenCalled();
+});
+
+// 自動で進める間の follow（正常系）
+test("test_attach_band_when_follow", async () => {
+  // 準備
+  vi.useFakeTimers();
+  const start = vi.fn();
+  const followed: number[] = [];
+  const { button } = await setUp({
+    follow: {
+      start,
+      step: (step) =>
+        followed.push(STEPS.indexOf(step as (typeof STEPS)[number])),
+    },
+  });
+  // 実行
+  button("自動で進める").click();
+  vi.advanceTimersByTime(6000);
+  button("一時停止").click();
+  button("次の手順").click();
+  // 検証
+  expect(start).toHaveBeenCalledTimes(1);
+  expect(followed).toEqual([1, 2]);
+});
+
+// 読者が触る（正常系）
+test("test_create_follow_when_touched", async () => {
+  // 準備
+  const { createFollow } = await loadBand();
+  const root = createRootFromHtml(
+    '<figure class="mdmark-diagram"><div class="mdmark-diagram-box"><div class="mdmark-diagram-viewport" style="height: 200px; overflow: auto"><div style="width: 2000px; height: 2000px"><div data-node="n1" style="margin-left: 1500px; width: 40px; height: 40px"></div></div></div></div></figure>',
+  );
+  const figure = root.querySelector("figure") as HTMLElement;
+  const viewport = root.querySelector(
+    ".mdmark-diagram-viewport",
+  ) as HTMLElement;
+  const scrollTo = vi.spyOn(viewport, "scrollTo").mockImplementation(() => {});
+  const follow = createFollow(figure, false);
+  // 実行
+  follow.reveal(["n1"]);
+  viewport.dispatchEvent(new WheelEvent("wheel", { deltaY: 100 }));
+  follow.reveal(["n1"]);
+  follow.resume();
+  follow.reveal(["n1"]);
+  follow.destroy();
+  // 検証
+  expect(scrollTo).toHaveBeenCalledTimes(2);
 });
 
 // 画面に入ったら始める（正常系）

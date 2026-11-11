@@ -78,6 +78,7 @@ test("test_normal", async ({ page }) => {
     };
   };
   const idle = await actionsAt();
+  const flowStart = await viewState(flow);
   // 実行: 自動で進める
   await bandButton(seq, "auto").click();
   // 検証: メッセージ 1 を両方の図で強調し、送り手から受け手へ印を流す
@@ -97,6 +98,9 @@ test("test_normal", async ({ page }) => {
   await expect(bandCount(seq)).toHaveText("2/4");
   await page.clock.runFor(4_000);
   await expect(bandCount(seq)).toHaveText("4/4");
+  await expect
+    .poll(async () => (await viewState(flow)).scroll[0])
+    .toBeGreaterThan(flowStart.scroll[0]);
   // 実行・検証: 最後の次は最初へ戻る
   await page.clock.runFor(2_000);
   await expect(bandCount(seq)).toHaveText("1/4");
