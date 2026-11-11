@@ -112,6 +112,18 @@ test("test_normal", async ({ page }) => {
   );
   await page.clock.runFor(4_000);
   await expect(bandCount(seq)).toHaveText("1/4");
+  // 自動で進めた最後の手順のスクロールが止まるのを待つ
+  for (const figure of [flow, seq]) {
+    let last = "";
+    await expect
+      .poll(async () => {
+        const now = (await viewState(figure)).scroll.join();
+        const settled = now === last;
+        last = now;
+        return settled;
+      })
+      .toBe(true);
+  }
   // 実行・検証: 次へで 1 通ずつ進み、帯の文はメッセージの文と説明を改行のまま出す
   const before = { flow: await viewState(flow), seq: await viewState(seq) };
   await bandButton(seq, "next").click();
