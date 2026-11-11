@@ -369,6 +369,12 @@ functions:
         condition: '`mount` を押して選ぶ。選択を解いてから `marker->data` の線を指す'
         mock: なし
         expected: 選んでいる間は `mount` の線の上に `.map-packet` があり、選択を解くと無くなる。線を指している間は `marker->data` の上にだけ `.map-packet` があり、離すと無くなる
+      - name: test_attach_map_flow_when_walk_leaves_group
+        case: 正常
+        summary: 中へ入る手順の後の手順
+        condition: '手順 3 だけが `enter: place` の案内で、次へを 3 回押してから前へを押す'
+        mock: なし（jsdom）
+        expected: 手順 3 では `place` の中に入り、前へで手順 2 に戻ると、案内を始めた段（全体）の図に戻る（今入っているグループのタイトルが無い）
   - name: attachMapSequence
     title: シーケンス図を付ける
     kind: 関数
