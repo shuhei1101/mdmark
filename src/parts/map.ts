@@ -246,6 +246,44 @@ const markTerms = (text: string, words: string[]): string => {
   return out;
 };
 
+/** ツールチップの説明の文（逃がした HTML）の中の用語を、フォーカスを持たない下線にし、末尾に「{用語}：{意味}」の行を並べる */
+const markTipTerms = (
+  tips: string,
+  terms: Record<string, string> | undefined,
+): string => {
+  const words = Object.keys(terms ?? {}).sort((a, b) => b.length - a.length);
+  if (words.length === 0) return tips;
+  return tips.replace(
+    /<span class="mdmark-term-tip-meaning">([\s\S]*?)<\/span>/g,
+    (whole, text: string) => {
+      const used: string[] = [];
+      let out = "";
+      let at = 0;
+      while (at < text.length) {
+        const word = words.find((item) =>
+          text.startsWith(escapeHtml(item), at),
+        );
+        if (word === undefined) {
+          out += text[at];
+          at += 1;
+          continue;
+        }
+        if (!used.includes(word)) used.push(word);
+        out += `<span class="mdmark-term">${escapeHtml(word)}</span>`;
+        at += escapeHtml(word).length;
+      }
+      if (used.length === 0) return whole;
+      const lines = used
+        .map(
+          (word) =>
+            `<span class="mdmark-term-tip-meaning map-tip-term"><span class="mdmark-term">${escapeHtml(word)}</span>：${escapeHtml(terms?.[word] ?? "")}</span>`,
+        )
+        .join("");
+      return `<span class="mdmark-term-tip-meaning">${out}</span>${lines}`;
+    },
+  );
+};
+
 /** 用語の下線を付けるための、用語の並び・意味の参照・ツールチップ */
 type TermMarker = {
   /** 文字を逃がし、用語を `span.mdmark-term` にした HTML */
@@ -325,7 +363,7 @@ export const renderMapFlow = (args: MapFlowArgs): MapPart => {
     const tip = [
       ...(wire.merged ?? []).map(
         (item) =>
-          `${item.from} → ${item.to}${item.label ? `：${item.label}` : ""}`,
+          `${nameOf(item.from)} → ${nameOf(item.to)}${item.label ? `：${item.label}` : ""}`,
       ),
       ...(args.notes?.[wire.id] === undefined ? [] : [args.notes[wire.id]]),
     ].join("\n");
@@ -356,6 +394,21 @@ export const renderMapFlow = (args: MapFlowArgs): MapPart => {
     wires,
   };
   const part = renderFlow(definition, args.id ?? "map", true);
+  // ラベルを持たない線の説明とまとめた元の線は、線の押せる帯を持ち主にしたツールチップにする
+  const wireTips = createTips(`${args.id ?? "map"}-wire`);
+  const tipped = new Set<string>();
+  for (const wire of wires) {
+    if (wire.tip === undefined) continue;
+    tipped.add(wire.id);
+    if (wire.label !== undefined) continue;
+    const shown = layout.wires.find((item) => item.id === wire.id);
+    wireTips.add({
+      kind: "wire",
+      label: shown === undefined ? wire.id : wireName(shown),
+      tip: wire.tip,
+      owner: wire.id,
+    });
+  }
   let html = part.html;
   // ノードの名前の中の用語に下線を付ける（名前の文字は逃がしたまま、名前の要素の中に置く）
   const marker = termMarker(args.terms, args.id ?? "map");
@@ -436,13 +489,13 @@ export const renderMapFlow = (args: MapFlowArgs): MapPart => {
   const hits = layout.wires
     .map(
       (wire) =>
-        `<path class="map-wire-hit" data-wire="${escapeHtml(wire.id)}" tabindex="0" role="button" aria-label="${escapeHtml(wireName(wire))}" d="${wire.points.map(([x, y], index) => `${index === 0 ? "M" : "L"}${x} ${y}`).join("")}"></path>`,
+        `<path class="map-wire-hit" data-wire="${escapeHtml(wire.id)}"${tipped.has(wire.id) ? ` data-tip-owner="${escapeHtml(wire.id)}"` : ""} tabindex="0" role="button" aria-label="${escapeHtml(wireName(wire))}" d="${wire.points.map(([x, y], index) => `${index === 0 ? "M" : "L"}${x} ${y}`).join("")}"></path>`,
     )
     .join("");
   const hitLayer = `<svg class="map-wire-hits" width="${layout.width}" height="${layout.height}">${hits}</svg>`;
   return {
     html: `${groups}${html}${hitLayer}${closedHtml}${packets}`,
-    tips: `${part.tips}${marker.tips.html()}`,
+    tips: `${markTipTerms(`${part.tips}${wireTips.html()}`, args.terms)}${marker.tips.html()}`,
   };
 };
 
