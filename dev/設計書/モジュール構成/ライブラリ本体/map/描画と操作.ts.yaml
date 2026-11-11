@@ -668,6 +668,12 @@ functions:
         condition: '`autoplay: true`・`reducedMotion: true`。`onEnter` を呼ぶ'
         mock: '`observe`'
         expected: '`apply` を呼ばず、帯の番号が `–` のまま'
+      - name: test_attach_band_when_keys_kept_focus
+        case: 正常
+        summary: 矢印キーで続けて進める
+        condition: 帯の次へのボタンにフォーカスして → を 2 回
+        mock: なし（jsdom）
+        expected: 番号が 2 つ進み、描き直した後もフォーカスが帯の次へのボタンにある
   - name: renderMapFlow
     title: mapの構成図のHTML
     kind: 関数
@@ -735,6 +741,12 @@ functions:
         condition: '`collapsed: ["read"]`'
         mock: なし
         expected: '`.map-closed-group[data-group="read"]` の中に「ノード 3 件」がある'
+      - name: test_render_map_flow_when_merged_notes
+        case: 正常
+        summary: まとめた線の説明
+        condition: '`collapsed: ["read"]` で、`notes` が `{"data->layout": "上書きを当てる"}`'
+        mock: なし
+        expected: '`read->layout` のツールチップが「補足の検査 → 入れ子のグループの自動配置：上書きを当てる」だけを持ち、説明を持たない元の線（`mermaid->layout`）を含まない。`notes` が空なら `read->layout` の押せる帯は `data-tip-owner` を持たない'
   - name: renderMapSequence
     title: mapのシーケンス図のHTML
     kind: 関数

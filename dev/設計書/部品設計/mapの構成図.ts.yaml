@@ -68,7 +68,7 @@ args:
   - name: layout.wires[].merged
     type: オブジェクトの配列
     required: false
-    description: 閉じたグループへの線を 1 本にまとめたときの元の線（`{ from, to, label }`）。まとめた線は本数とラベルを出さず、図のツールチップに元の線を並べる
+    description: 閉じたグループへの線を 1 本にまとめたときの元の線（`{ from, to, label }`）。まとめた線は本数とラベルを出さず、補足の `notes` に説明を持つ元の線だけを「{元の名前} → {先の名前}：{説明}」で図のツールチップに並べる（説明を持つ元の線が無ければツールチップを付けない）
   - name: collapsed
     type: 配列
     required: false
