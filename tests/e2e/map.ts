@@ -334,6 +334,7 @@ export async function dragBy(
   dx: number,
   dy: number,
 ): Promise<void> {
+  await locator.scrollIntoViewIfNeeded();
   const [x, y] = await centerOf(locator);
   await page.mouse.move(x, y);
   await page.mouse.down();

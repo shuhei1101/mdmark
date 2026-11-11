@@ -142,3 +142,19 @@ test("test_attach_band_when_autoplay_reduced", async () => {
   expect(applied).toEqual([]);
   expect(root.querySelector(".map-band-count")?.textContent).toBe("–/4");
 });
+
+// 矢印キーで続けて進める（正常系）
+test("test_attach_band_when_keys_kept_focus", async () => {
+  // 準備
+  const { root, applied, button } = await setUp();
+  button("次の手順").focus();
+  // 実行
+  for (let i = 0; i < 2; i += 1)
+    document.activeElement?.dispatchEvent(
+      new KeyboardEvent("keydown", { key: "ArrowRight", bubbles: true }),
+    );
+  // 検証
+  expect(applied).toEqual([0, 1]);
+  expect(root.querySelector(".map-band-count")?.textContent).toBe("2/4");
+  expect(document.activeElement).toBe(button("次の手順"));
+});

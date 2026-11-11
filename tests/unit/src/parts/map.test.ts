@@ -401,3 +401,36 @@ test("test_render_map_flow_when_collapsed_count", async () => {
     )?.[0] ?? "";
   expect(closed).toContain("ノード 3 件");
 });
+
+// まとめた線の説明（正常系）
+test("test_render_map_flow_when_merged_notes", async () => {
+  // 準備
+  const { renderMapFlow } = await loadParts();
+  const { parseFlowchart } = await loadFlowchart();
+  const { layoutMap } = await loadLayout();
+  const layout = layoutMap(
+    parseFlowchart(FLOW),
+    { collapsed: ["read"], entered: undefined },
+    {},
+    "height",
+  );
+  const args = { ...(await flowArgs()), layout, collapsed: ["read"] };
+  // 実行
+  const noted = renderMapFlow({
+    ...args,
+    notes: { "data->layout": "上書きを当てる" },
+  });
+  const plain = renderMapFlow(args);
+  // 検証
+  const tip =
+    noted.tips.match(
+      /<div class="mdmark-diagram-tip"[^>]*data-tip-for="read-&gt;layout"[\s\S]*?<\/div>/,
+    )?.[0] ?? "";
+  expect(tip).toContain(
+    "補足の検査 → 入れ子のグループの自動配置：上書きを当てる",
+  );
+  expect(tip).not.toContain("Mermaid の記法の読み取り");
+  expect(plain.html).not.toMatch(
+    /class="map-wire-hit" data-wire="read-&gt;layout" data-tip-owner/,
+  );
+});
