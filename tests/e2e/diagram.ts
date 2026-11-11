@@ -13,12 +13,7 @@ const REPO_ROOT = resolve(import.meta.dirname, "../..");
 const SAMPLE_PATH = join(REPO_ROOT, "docs", "guide", "図を描く-見本.md");
 
 // 使用方法『図を描く』（判定フローチャートの定義の例を持つ）
-const GUIDE_PATH = join(
-  REPO_ROOT,
-  "docs",
-  "guide",
-  "図を描く-図を描く.md",
-);
+const GUIDE_PATH = join(REPO_ROOT, "docs", "guide", "図を描く-図を描く.md");
 
 // 固有の部品のモジュールを返却する架空の URL
 export const CARD_URL = "https://libs.example.test/card.js";

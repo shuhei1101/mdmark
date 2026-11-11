@@ -208,12 +208,7 @@ const SAMPLE_TABLE =
   "<table><thead><tr><th>列A</th><th>列B</th></tr></thead><tbody><tr><td>1</td><td>2</td></tr></tbody></table>";
 
 // 図の見本の定義を記載した文書と、その中の `json` のコードブロックの並び
-const SAMPLE_DOCUMENT = join(
-  REPO_ROOT,
-  "docs",
-  "guide",
-  "図を描く-見本.md",
-);
+const SAMPLE_DOCUMENT = join(REPO_ROOT, "docs", "guide", "図を描く-見本.md");
 const SAMPLE_BLOCKS: Record<string, number> = {
   inquiry: 0,
   "inquiry-seq": 1,
@@ -222,12 +217,7 @@ const SAMPLE_BLOCKS: Record<string, number> = {
 };
 
 // 使用方法『図を描く』（判定フローチャートの定義の例を持つ）
-const GUIDE_DOCUMENT = join(
-  REPO_ROOT,
-  "docs",
-  "guide",
-  "図を描く-図を描く.md",
-);
+const GUIDE_DOCUMENT = join(REPO_ROOT, "docs", "guide", "図を描く-図を描く.md");
 
 // 判定フローチャートの長いタイトルと文の見本。質問の文が長いので菱形を大きくする
 const JUDGEMENT_LONG_SAMPLE: MdmarkFlowDefinition = {
