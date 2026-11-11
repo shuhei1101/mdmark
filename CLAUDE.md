@@ -4,8 +4,8 @@ Markdown 文書の表示（拡張記法・図・差分・部品）を各アプ�
 
 ## ドキュメント
 
-実体は開発ドキュメント [dev/](./dev/) と公開ドキュメント [docs/](./docs/) にある。
-使用方法は [使用方法](./docs/使用方法/)。
+実体は [docs/](./docs/) にあり、公開ドキュメントは [docs/guide/](./docs/guide/)。
+使用方法は [使用方法](./docs/guide/使用方法.md)。
 
 着手前に索引を参照して読み込む。
 
@@ -20,4 +20,4 @@ PROJECT_ROOT="$PWD" PYTHONPATH="$AI_MONITOR_HOME/src" python3 -m ai_monitor.inje
 
 ## 設定・索引の Schema
 
-`schemas/` の設定・索引の JSON Schema を変えるときは、`migrations/next/` に移行の手順か、`migrations/no-steps.yaml` に行を配置する（[移行の手順](./dev/設計書/ER図/移行の手順.yaml)）。
+`schemas/` の設定・索引の JSON Schema を変えるときは、`migrations/next/` に移行の手順か、`migrations/no-steps.yaml` に行を配置する（[移行の手順](./docs/er/ER-472-5.yaml)）。

@@ -1,0 +1,133 @@
+id: MOD-472-15
+visibility: internal
+title: ClaudeCodeプラグイン / ポート / port.ts
+lead: '`127.0.0.1` のポートが待ち受けているかの確認と、待ち受けるポートの読み取り（`mdmark serve`・SessionStart のフック・`setup.js` が使用する）。'
+test_files:
+  - tests/unit/src/plugin/port.test.ts
+constants:
+  - name: CONNECT_TIMEOUT_MS
+    title: ポートへの接続の待ち
+    container: src/plugin/port.ts
+    usecase: 端末の状態を調べる
+    summary: 1 回の TCP の接続を待つ上限
+    value: '1000'
+    refs:
+      - IF-472-11#constraints[ポートの確認]
+      - IF-472-6#constraints[待ち]
+    status: planned
+    introduced:
+      pr: 354
+  - name: PORT_ENV
+    title: ポートの環境変数
+    container: src/plugin/port.ts
+    usecase: 共通
+    summary: 待ち受けるポートを上書きする環境変数の名前。`plugin/.mcp.json` の `url` も同じ名前で展開する
+    value: MDMARK_PORT
+    refs:
+      - IF-472-4#request[MDMARK_PORT]
+    status: planned
+    introduced:
+      pr: 141
+  - name: DEFAULT_PORT
+    title: 既定のポート
+    container: src/plugin/port.ts
+    usecase: 共通
+    summary: '`PORT_ENV` が無いときに待ち受けるポート'
+    value: '8782'
+    refs:
+      - IF-472-4#request[MDMARK_PORT]
+    status: planned
+    introduced:
+      pr: 141
+  - name: INVALID_PORT_MESSAGE
+    title: ポートに使用できない値の文
+    container: src/plugin/port.ts
+    usecase: 共通
+    summary: '`PORT_ENV` が 1〜65535 の整数でないときの `CliError` の文。`{value}` を受け取った値に置き換える'
+    value: MDMARK_PORT の値 {value} はポートに使用できません。1〜65535 の整数を設定してください。
+    refs:
+      - IF-472-4#exceptions[なし（MDMARK_PORT が使用できない値・終了コード 1）]
+    status: planned
+    introduced:
+      pr: 141
+functions:
+  - name: isPortListening
+    title: ポートが待ち受けているかを確認する
+    kind: 関数
+    container: src/plugin/port.ts
+    usecase: 端末の状態を調べる
+    role: 処理
+    summary: '`127.0.0.1:{port}` へ TCP でつなぎ、接続を受ければ真'
+    scope: public
+    is_async: true
+    args:
+      - name: options
+        type: '{ port: number; timeoutMs: number }'
+        required: true
+        description: ポートと待ちの上限
+    returns:
+      type: Promise<boolean>
+      description: 接続を受けたか
+    process: 1. `node:net` で接続し、`connect` で真、`error` か待ちの上限で偽を返却し、ソケットを閉じる
+    unit_tests:
+      - name: test_is_port_listening
+        case: 正常
+        summary: 待ち受けていれば真
+        condition: テストが `node:net` のサーバーで待ち受けるポート
+        mock: なし
+        expected: 真
+      - name: test_is_port_listening_when_closed
+        case: 正常
+        summary: 待ち受けていなければ偽
+        condition: 待ち受けるプロセスの無いポート
+        mock: なし
+        expected: 偽
+    refs:
+      - IF-472-6#constraints[待ち]
+    status: planned
+    introduced:
+      pr: 354
+  - name: readPort
+    title: ポートを読み込む
+    kind: 関数
+    container: src/plugin/port.ts
+    usecase: MCPサーバーを起動・停止する
+    summary: '`PORT_ENV` から待ち受けるポートを決める'
+    scope: public
+    is_async: false
+    args:
+      - name: options
+        type: '{ env: NodeJS.ProcessEnv }'
+        required: true
+        description: 環境変数
+    returns:
+      type: number
+      description: 待ち受けるポート
+    process: |-
+      1. `PORT_ENV` が無いか空なら `DEFAULT_PORT` を返却する
+      2. 10 進の整数で 1〜65535 なら、その数を返却する
+      3. それ以外は `INVALID_PORT_MESSAGE` の `CliError` を投げる
+    unit_tests:
+      - name: test_read_port
+        case: 正常
+        summary: 環境変数が無ければ既定のポート
+        condition: '`env` が `{}`'
+        mock: なし
+        expected: '`DEFAULT_PORT`'
+      - name: test_read_port_when_overridden
+        case: 正常
+        summary: 環境変数のポートを使用する
+        condition: '`MDMARK_PORT=18782`'
+        mock: なし
+        expected: '18782'
+      - name: test_read_port_when_invalid
+        case: 異常
+        summary: 整数でない・範囲の外の値を拒む
+        condition: '`MDMARK_PORT` が `abc`・`0`・`65536`・`1.5`'
+        mock: なし
+        expected: どれも `CliError` で、メッセージに受け取った値を含む
+    refs:
+      - IF-472-4#request[MDMARK_PORT]
+    status: planned
+    introduced:
+      pr: 141

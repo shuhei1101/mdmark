@@ -1,0 +1,219 @@
+id: MOD-472-306
+visibility: internal
+title: ライブラリ本体 / 部品 / code-block.ts
+test_files:
+  - tests/unit/src/parts/code-block.test.ts
+data_models:
+  - name: CodeLine
+    title: コードの行
+    container: src/parts/code-block.ts
+    summary: 部品『コードブロック』の `lines` の要素
+    properties:
+      - name: text
+        type: string
+        description: コードの行のマーカーを削除した行の文字（エスケープ前）
+      - name: kind
+        type: '"add" | "del" | "highlight" | "focus" | "error" | "warning" | undefined'
+        description: 行の種類。無ければ飾らない行
+      - name: indent
+        type: number | undefined
+        description: インデントのレベル（`data-indent`）。無ければインデントの無い行か空行
+      - name: foldLines
+        type: number | undefined
+        description: 畳める行の後ろの畳む行の数（`data-fold-lines`）。無ければ畳めない行
+      - name: folded
+        type: boolean | undefined
+        description: 最初から畳んだ状態か（`fold=` の行。`data-folded`）
+constants:
+  - name: SYNTAX_ATTRIBUTE
+    title: 色分けの対象の属性
+    container: src/parts/code-block.ts
+    summary: 色分けするコードブロックの `code` に付け、値に言語のモジュール名を持つ属性。mdmark が出した要素だけが sanitize を通って持ち続けるため、文書に記載した生の HTML の `code` は色分けの対象にならない
+    value: '"data-mdmark-syntax"'
+    status: planned
+    introduced:
+      pr: 97
+  - name: MERMAID_ATTRIBUTE
+    title: mermaid の対象の属性
+    container: src/parts/code-block.ts
+    summary: mermaid のコードブロックの一番外の要素に付ける属性。`mount` が図にする対象を見つけるのに使用する。`SYNTAX_ATTRIBUTE` と同じく mdmark が出した要素だけが持ち続ける
+    value: '"data-mdmark-mermaid"'
+    refs:
+      - IF-472-34#constraints[mermaid のコードブロック]
+    status: planned
+    introduced:
+      pr: 382
+functions:
+  - name: renderCodeBlock
+    title: コードブロックを描く
+    container: src/parts/code-block.ts
+    kind: 関数
+    scope: internal
+    summary: '部品設計『コードブロック』の HTML を返却する。行番号か行の種類かインデントのある行を持つときは行ごとの `mdmark-code-line` に分け、行に `data-indent`・`data-fold-lines`・`data-folded` を付け、`focus` の行を持てば `pre` に `mdmark-code-has-focus` を付ける。`foldButtons` が `true` なら、畳める行を持つとき `pre` に `mdmark-code-foldable` を付け、畳める行に `renderCodeFoldToggle` を配置し、`folded` の行の後ろの行を `hidden` にして行の末尾に `renderCodeFoldMore` を配置する（`mount` の操作の後の外観。`hiddenLinesOf` で隠す行を決める）。`bar` が `true` なら、タイトルを持てば `<figure class="mdmark-code">` と `<figcaption class="mdmark-code-title mdmark-code-bar">`、無ければ `<div class="mdmark-code">` と `<div class="mdmark-code-bar">` で包み、帯の左端に言語を持つとき `<span class="mdmark-code-lang"><span class="mdmark-code-lang-name" aria-hidden="true">{言語}</span><span class="mdmark-code-file">{ファイル名}</span></span>`（`mdmark-code-file` はファイル名を持つときだけ）、その後ろにタイトルの文字、`copyState` を指定したときは右端に `renderCodeCopy` を配置する。`bar` が `false` なら今の `pre` だけを返却する。`pre` には `tabindex="0"` とスクリーンリーダー向けの名前（`コード: {タイトル}`、タイトルが無ければ `コード: {ファイル名}`、ファイル名も無ければ `コード: {言語}`、言語も無ければ `コード`）を付ける'
+    args:
+      - name: options
+        type: '{ language: string; fileName?: string; title: string; lineNumbers: boolean; wrap?: boolean; lines: CodeLine[]; syntax?: string; mermaid?: boolean; bar?: boolean; copyState?: "idle" | "copied" | "failed"; foldButtons?: boolean }'
+        required: true
+        description: 部品設計の引数。`language`・`title`・`fileName` は無ければ空。`syntax` は色分けする言語のモジュール名（`SYNTAX_LANGUAGES` の値）で、指定すると `code` に `SYNTAX_ATTRIBUTE` を付ける。`mermaid` が `true` なら、一番外の要素（`bar` が `true` なら `figure`・`div`、`false` なら `pre`）に `MERMAID_ATTRIBUTE` を付ける。`bar` は帯で包むか（既定 `true`。`code` がオフの色分けだけのコードブロックは `false`）。`copyState` は省くとコピーのボタンを配置しない（`render` は指定せず、Storybook が指定する）。`foldButtons` は行の開閉のボタンを配置するか（既定 `false`。`render` は指定せず、Storybook が指定する）
+    returns:
+      type: string
+      description: '`bar` が `true` なら `<figure class="mdmark-code">` か `<div class="mdmark-code">`、`false` なら `<pre` で始まる HTML。行番号を持つときは `code` に `style="--mdmark-code-digits: {行の数の桁の数}"`'
+    callees:
+      - 'MOD-472-313#functions[escapeHtml]'
+      - '#functions[renderCodeCopy]'
+      - '#functions[renderCodeFoldToggle]'
+      - '#functions[renderCodeFoldMore]'
+      - MOD-472-237#functions[hiddenLinesOf]
+    unit_tests:
+      - name: test_render_code_block
+        case: 正常
+        summary: タイトル・行番号・行の種類を付け、文字をエスケープする
+        condition: '`language` が `ts`、`title` が `a<b>.ts`、`lineNumbers` が `true`、`lines` が `{ text: "x < 1", kind: "add" }` と `{ text: "y" }`'
+        mock: なし
+        expected: '`<figure class="mdmark-code"><figcaption class="mdmark-code-title mdmark-code-bar">` の中に `mdmark-code-lang-name` の `ts` と `a&lt;b&gt;.ts` がこの順にあり、`pre` が `mdmark-code-lines mdmark-code-numbered mdmark-code-signs` と `aria-label="コード: a&lt;b&gt;.ts"`、1 行目が `data-line="1" data-kind="add"` で文字が `x &lt; 1`、2 行目が `data-kind` を持たない。`mdmark-code-copy` が無い'
+      - name: test_render_code_block_when_title_only
+        case: 正常
+        summary: タイトルだけなら行に分けない
+        condition: '`title` が `a.yaml`、`lineNumbers` が `false`、種類の無い 2 行'
+        mock: なし
+        expected: '`figure` の中の `pre` が class を持たず、`mdmark-code-line` が無い'
+      - name: test_render_code_block_when_two_digits
+        case: 正常
+        summary: 行の数の桁の数を指定する
+        condition: '`lineNumbers` が `true` で 13 行'
+        mock: なし
+        expected: '`code` が `style="--mdmark-code-digits: 2"`、最後の行が `data-line="13"`'
+      - name: test_render_code_block_when_syntax
+        case: 正常
+        summary: 色分けする言語を指定すると `code` に色分けの対象の属性を付ける
+        condition: '`language` が `yml`、`syntax` が `yaml`、タイトル・行番号・行の種類が無い 1 行。もう 1 つは `syntax` を省く'
+        mock: なし
+        expected: '前者が `<div class="mdmark-code"><div class="mdmark-code-bar">` で始まり、`<pre tabindex="0" aria-label="コード: yml"><code class="language-yml" data-mdmark-syntax="yaml">` を持ち、後者の `code` は `data-mdmark-syntax` を持たない'
+      - name: test_render_code_block_when_mermaid
+        case: 正常
+        summary: mermaid の対象は一番外の要素に属性を付ける
+        condition: '`language` が `mermaid`、`mermaid` が `true` の 1 行。もう 1 つは同じ引数に `bar: false`'
+        mock: なし
+        expected: '前者が `<div class="mdmark-code" data-mdmark-mermaid>` で始まり、後者が `<pre data-mdmark-mermaid` で始まる。どちらも `data-mdmark-syntax` を持たない'
+      - name: test_render_code_block_when_file_name
+        case: 正常
+        summary: ファイル名を言語の後ろに出し、スクリーンリーダー向けの名前に使用する
+        condition: '`language` が `python`、`fileName` が `hoge.py`、タイトルが空'
+        mock: なし
+        expected: '`mdmark-code-lang-name` が `aria-hidden="true"` で `python`、`mdmark-code-file` が `hoge.py`、`pre` の `aria-label` が `コード: hoge.py`'
+      - name: test_render_code_block_when_no_language
+        case: 正常
+        summary: 言語が無ければ帯に言語のラベルを出さない
+        condition: '`language` が空、タイトルが空'
+        mock: なし
+        expected: '`mdmark-code-bar` を持ち、`mdmark-code-lang` が無く、`pre` の `aria-label` が `コード`'
+      - name: test_render_code_block_when_bar_off
+        case: 正常
+        summary: 帯を付けないときは `pre` だけを返却する
+        condition: '`language` が `ts`、`syntax` が `typescript`、`bar` が `false`'
+        mock: なし
+        expected: '`<pre tabindex="0" aria-label="コード: ts">` で始まり、`mdmark-code-bar` が無い'
+      - name: test_render_code_block_when_copy_state
+        case: 正常
+        summary: コピーの状態を指定すると帯の右端にボタンを配置する
+        condition: '`language` が `ts`、`copyState` が `copied`'
+        mock: なし
+        expected: 帯の最後に `mdmark-code-meta` があり、ボタンが `data-state="copied"` と `コピーしました`
+      - name: test_render_code_block_when_line_kinds
+        case: 正常
+        summary: focus・error・warning の行に種類を付ける
+        condition: '`kind` が `focus`・`error`・`warning` の 3 行と、種類の無い 1 行'
+        mock: なし
+        expected: '`pre` が `mdmark-code-lines` と `mdmark-code-has-focus` を持ち、3 行の `data-kind` が `focus`・`error`・`warning`'
+      - name: test_render_code_block_when_indented
+        case: 正常
+        summary: インデントと畳む行の属性を行に付ける
+        condition: 部品設計『コードブロック』の `Foldable` の引数で、`foldButtons` を省く
+        mock: なし
+        expected: 2 行目が `data-indent="1"`、1 行目が `data-fold-lines="10"`、3 行目が `data-fold-lines="4"` を持ち、開閉のボタンが無い
+      - name: test_render_code_block_when_fold_buttons
+        case: 正常
+        summary: 畳んだ行の後ろを隠し、開閉のボタンと ⋯ を配置する
+        condition: 部品設計『コードブロック』の `Folded` の引数と、`foldButtons` が `true`
+        mock: なし
+        expected: '`pre` が `mdmark-code-foldable` を持ち、3 行目の開閉のボタンが `aria-expanded="false"`、4〜7 行目が `hidden`、8 行目が `hidden` を持たず、3 行目の末尾に `mdmark-code-fold-more` がある。ほかの畳める行のボタンが `aria-expanded="true"`'
+      - name: test_render_code_block_when_wrap
+        case: 正常
+        summary: wrap のコードブロックを行に分け、折り返す class を付ける
+        condition: 部品設計『コードブロック』の状態 `Wrap` の引数と、そこから `lineNumbers` を削除した引数
+        mock: なし
+        expected: 1 つ目の `pre` が `mdmark-code-lines mdmark-code-numbered mdmark-code-wrap` を持ち、2 つ目の `pre` が `mdmark-code-lines mdmark-code-wrap` を持って `mdmark-code-numbered` を持たず、どちらも `mdmark-code-line` が 3 つ
+  - name: renderCodeCopy
+    title: コードのコピーのボタンを描く
+    container: src/parts/code-block.ts
+    summary: コードブロックの帯の右端に配置する `<span class="mdmark-code-meta"><button class="mdmark-code-copy" type="button" data-state="{状態}">{アイコン}{文言}</button><span class="mdmark-visually-hidden mdmark-code-status" role="status"></span></span>` を返却する。文言とアイコンは `idle` が `コピー`（`copy`）、`copied` が `コピーしました`（`check`）、`failed` が `コピーできませんでした`（`circle-alert`）。`copied`・`failed` のときは `role="status"` の要素に `コードを{文言}` を入れる。`mount` が帯に付けるときと状態を切り替えるときにも使用する
+    kind: 関数
+    scope: internal
+    args:
+      - name: options
+        type: '{ state: "idle" | "copied" | "failed" }'
+        required: true
+        description: ボタンの状態
+    returns:
+      type: string
+      description: '`<span class="mdmark-code-meta">` で始まる HTML'
+    unit_tests:
+      - name: test_render_code_copy
+        case: 正常
+        summary: 状態ごとの文言とスクリーンリーダーを返却する
+        condition: '`idle`・`copied`・`failed`'
+        mock: なし
+        expected: '`idle` は `コピー` で `role="status"` が空、`copied` は `コピーしました` と `コードをコピーしました`、`failed` は `コピーできませんでした` と `コードをコピーできませんでした`。どれも `type="button"` と `data-state` を持つ'
+    status: planned
+    introduced:
+      pr: 151
+  - name: renderCodeFoldToggle
+    title: 行の開閉のボタンを描く
+    container: src/parts/code-block.ts
+    kind: 関数
+    scope: internal
+    summary: 畳める行の行番号の右に配置する開閉のボタン（`type="button"`・class `mdmark-code-fold`・`aria-expanded`・`aria-controls`・スクリーンリーダー向けの名前 `{開始} 行目から {終了} 行目`・`chevron-down` か `chevron-right` のアイコン）の HTML を返却する
+    args:
+      - name: options
+        type: '{ expanded: boolean; from: number; to: number; controls: string }'
+        required: true
+        description: 開いているか、畳む範囲の最初と最後の行番号（1 から）、畳む行の `id` を空白で並べたもの
+    returns:
+      type: string
+      description: '`<button class="mdmark-code-fold"` で始まる HTML'
+    callees:
+      - MOD-472-180#functions[iconSvg]
+    unit_tests:
+      - name: test_render_code_fold_toggle
+        case: 正常
+        summary: 開閉の状態と範囲をスクリーンリーダー向けの名前に持つ
+        condition: '`expanded` が `false`、`from` が 4、`to` が 7'
+        mock: なし
+        expected: '`aria-expanded="false"`・`aria-label="4 行目から 7 行目"` と `chevron-right` の svg を持つ'
+    status: planned
+    introduced:
+      pr: 275
+  - name: renderCodeFoldMore
+    title: 畳んだ行の ⋯ のボタンを描く
+    container: src/parts/code-block.ts
+    kind: 関数
+    scope: internal
+    summary: 畳んだ行の末尾に配置する `⋯` のボタン（`type="button"`・class `mdmark-code-fold-more`・スクリーンリーダー向けの名前 `{開始} 行目から {終了} 行目を展開`）の HTML を返却する
+    args:
+      - name: options
+        type: '{ from: number; to: number }'
+        required: true
+        description: 畳んだ範囲の最初と最後の行番号（1 から）
+    returns:
+      type: string
+      description: '`<button class="mdmark-code-fold-more"` で始まる HTML'
+    unit_tests:
+      - name: test_render_code_fold_more
+        case: 正常
+        summary: 開く範囲をスクリーンリーダー向けの名前に持つ
+        condition: '`from` が 4、`to` が 7'
+        mock: なし
+        expected: '`aria-label="4 行目から 7 行目を展開"` と文字 `⋯` を持つ'
+    status: planned
+    introduced:
+      pr: 275

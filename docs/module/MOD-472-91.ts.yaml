@@ -1,0 +1,79 @@
+id: MOD-472-91
+visibility: internal
+title: VS Code 拡張機能 / プレビュー / scroll-guard.ts
+test_files:
+  - tests/unit/vscode/src/preview/scroll-guard.test.ts
+classes:
+  - name: EditorScrollGuard
+    title: エディタのスクロールの見張り
+    container: vscode/src/preview/scroll-guard.ts
+    usecase: エディタとプレビューのスクロールを合わせる
+    summary: '`revealLine` で動かした行を覚え、次に届く見えている範囲の通知が自分の発生させたものかを判定する。時間で捨てない'
+    kind: クラス
+    properties:
+      - name: revealedLine
+        type: number | undefined
+        access: private
+        description: 動かした行
+    methods:
+      - name: shouldReveal
+        title: 動かすかを決める
+        kind: メソッド
+        summary: 行が見えている範囲の先頭から `REVEAL_MARGIN_LINES` 行以内にあれば `false`（覚えを作らない）、それ以外は行を覚えて `true`
+        args:
+          - name: line
+            type: number
+            required: true
+            description: 動かす行
+          - name: visibleStart
+            type: number
+            required: true
+            description: 今の `visibleRanges[0].start.line`
+        returns:
+          type: boolean
+          description: '`revealRange` を呼ぶか'
+        unit_tests:
+          - name: test_should_reveal
+            case: 正常
+            summary: 先頭から 6 行を超えた先の行だけ動かす
+            condition: '`visibleStart` が 100 で、行 106 と行 107 と行 99'
+            mock: なし
+            expected: 106 は `false`、107 と 99 は `true`
+      - name: takeVisibleRange
+        title: 通知を受ける
+        kind: メソッド
+        summary: 覚えがあり、見えている範囲がその行を含むなら `false`（送信しない）。どちらの場合も覚えを削除する。覚えが無ければ `true`
+        args:
+          - name: range
+            type: '{ start: number; end: number }'
+            required: true
+            description: '`visibleRanges[0]` の開始と終わりの行'
+        returns:
+          type: boolean
+          description: '`scrollToLine` を送信するか'
+        unit_tests:
+          - name: test_take_visible_range
+            case: 正常
+            summary: 動かした行を含む最初の通知だけを捨てる
+            condition: '`shouldReveal(150, 0)` の後、`{ start: 145, end: 190 }` を 2 回'
+            mock: なし
+            expected: 1 回目は `false`、2 回目は `true`
+          - name: test_take_visible_range_when_not_containing
+            case: 正常
+            summary: 動かした行を含まない通知は送信し、覚えを削除する
+            condition: '`shouldReveal(150, 0)` の後、`{ start: 10, end: 50 }`'
+            mock: なし
+            expected: '`true`。続けて `{ start: 145, end: 190 }` も `true`'
+    refs:
+      - IF-472-17#constraints[往復の止め方]
+      - LIB-472-35#
+    status: planned
+constants:
+  - name: REVEAL_MARGIN_LINES
+    title: 動かさない行の幅
+    container: vscode/src/preview/scroll-guard.ts
+    summary: 動かす行が、見えている範囲の先頭からこの行数以内にあるときは `revealRange` を呼ばない
+    value: '6'
+    refs:
+      - IF-472-17#constraints[往復の止め方]
+    status: planned

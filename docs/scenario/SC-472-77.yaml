@@ -1,0 +1,245 @@
+id: SC-472-77
+visibility: internal
+title: "記載した内容をプレビューに映す"
+scenarios:
+  - name: 正常シナリオ
+    setup:
+      - name: プレビューを開いたワークスペース
+        description: VSCodeでプレビューを開くの正常シナリオの後。`mdmark.preview.liveUpdate` は既定の `true`、`mdmark.preview.updateDelayMs` は既定の 300
+      - name: Mock
+        description: VSCodeでプレビューを開くの正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor W as 文書の作成者
+        participant ED as エディタ（VS Code）
+        participant EX as 拡張機能
+        participant PV as プレビュー（Webview）
+        W->>ED: 見出しを書き換える（保存しない）
+        ED->>EX: 文書の変更
+        EX->>EX: updateDelayMs 待つ
+        EX->>PV: 最後の全文を送信する
+        PV->>PV: update で再描画する
+        PV-->>W: 書き換えた見出しを表示
+    expected:
+      - 保存しないまま、プレビューの見出しが書き換えた文字になる
+      - 最後に打ってから updateDelayMs より前には再描画しない（続けて打った間の途中の全文は描かない）
+    test: test_normal
+  - name: 正常シナリオ（保存したときだけ再描画する）
+    setup:
+      - name: プレビューを開いたワークスペース
+        description: 正常シナリオと同じ。`mdmark.preview.liveUpdate` を `false` にする
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor W as 文書の作成者
+        participant ED as エディタ（VS Code）
+        participant EX as 拡張機能
+        participant PV as プレビュー（Webview）
+        W->>ED: 見出しを書き換える
+        W->>ED: 保存する
+        ED->>EX: 保存の通知
+        EX->>PV: 全文を送信する
+        PV-->>W: 書き換えた見出しを表示
+    expected:
+      - 保存する前は、プレビューの見出しが変わらない
+      - 保存すると、プレビューの見出しが書き換えた文字になる
+    test: test_normal_when_live_update_off
+  - name: 正常シナリオ（設定ファイルを保存する）
+    setup:
+      - name: プレビューを開いたワークスペース
+        description: 正常シナリオと同じ。`mdmark.config.yaml` は `features` を記載していない
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor W as 文書の作成者
+        participant ED as エディタ（VS Code）
+        participant EX as 拡張機能
+        participant PV as プレビュー（Webview）
+        W->>ED: mdmark.config.yaml に features.callout: false を記載して保存する
+        ED->>EX: 設定ファイルの保存の通知
+        EX->>EX: 重ねた設定を再読み込みする
+        EX->>PV: 新しい設定で再描画させる
+        PV-->>W: 注意書きを枠にしない文書を表示
+    expected:
+      - プレビューの注意書きが、注意書きの枠ではなく引用として描かれる
+    test: test_normal_when_config_saved
+  - name: 正常シナリオ（背面から戻る）
+    setup:
+      - name: プレビューを開いたワークスペース
+        description: 見出しを多く持つ長い Markdown を左の列のエディタで開き、右の列にプレビューを開いた状態。プレビューを見出し A が先頭に見えるまでスクロールし、エディタも合わせて動いた後、右の列で別の Markdown を開いてプレビューのタブをその後ろに回しておく。エディタは左の列に見えたまま
+        notes: 書き換える見出し B は、エディタの見えている範囲にある見出し A より下の見出し。エディタのスクロールを動かさずに書き換える
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor W as 文書の作成者
+        participant ED as エディタ（VS Code）
+        participant EX as 拡張機能
+        participant PV as プレビュー（Webview）
+        W->>ED: パネルが背面の間に見出し B を 3 回書き換える
+        W->>ED: プレビューのタブを表に戻す
+        PV-->>EX: ready
+        EX->>PV: 最後の全文を送信する
+        PV-->>W: 最後に書き換えた見出し B を、背面に回す前のスクロールの位置で表示
+    expected:
+      - 表に戻したプレビューに、3 回目に書き換えた見出し B が描かれる
+      - 表に戻したプレビューの見えている先頭の見出しが見出し A
+      - 表に戻した後、エディタの見えている先頭の行は表に戻す直前から変わらない
+    test: test_normal_when_revealed
+  - name: 正常シナリオ（リロードする）
+    setup:
+      - name: 描けないプレビュー
+        description: VSCodeでプレビューを開くの異常シナリオ（配布物を読み込めない）の後
+      - name: Mock
+        description: 配布物を配る手元のサーバーを、配布物を配る状態へ戻す
+    flow: |-
+      sequenceDiagram
+        actor W as 文書の作成者
+        participant EX as 拡張機能
+        participant PV as プレビュー（Webview）
+        participant CDN as jsDelivr
+        W->>PV: 「リロード」を押す
+        PV-->>EX: リロードの依頼
+        EX->>EX: 設定ファイルとバージョンを再読み込みする
+        EX->>PV: パネルを再読み込みする
+        PV->>CDN: 配布物を読み込む
+        PV-->>EX: ready
+        EX->>PV: 全文と設定を送信する
+        PV-->>W: 描いた文書を表示
+    expected:
+      - 描けない理由と「リロード」のボタンが消え、見出し・表・注意書き・フロー図が描かれる
+      - 'コマンドパレットの「mdmark: プレビューをリロード」でも同じになる'
+    test: test_normal_when_reloaded
+  - name: 異常シナリオ（設定ファイルを読み込めない）
+    setup:
+      - name: プレビューを開いたワークスペース
+        description: 正常シナリオと同じ
+      - name: 壊れた設定ファイル
+        description: YAML として読み込めない `mdmark.config.yaml`（閉じていない括弧）
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor W as 文書の作成者
+        participant ED as エディタ（VS Code）
+        participant EX as 拡張機能
+        participant PV as プレビュー（Webview）
+        W->>ED: 読み込めない mdmark.config.yaml を保存する
+        ED->>EX: 設定ファイルの保存の通知
+        EX->>EX: 読み込めないので前の設定のまま
+        EX->>PV: 読み込めないことを通知する
+        PV-->>W: 文書は描いたまま、上部に通知の帯と「設定ファイルを開く」
+        W->>PV: 「設定ファイルを開く」を押す
+        PV-->>EX: 設定ファイルを開く依頼
+        EX->>ED: mdmark.config.yaml を開く
+    expected:
+      - プレビューの文書は描いたまま残る
+      - パネルの上部に、設定ファイルを読み込めないことを示す帯と「設定ファイルを開く」のボタンが出る
+      - ボタンを押すと `mdmark.config.yaml` がエディタで開く
+    test: test_error_when_config_unreadable
+  - name: 正常シナリオ（theme の CSS を書き換える）
+    setup:
+      - name: プレビューを開いたワークスペース
+        description: VSCodeでプレビューを開くの正常シナリオ（設定を重ねる）の後
+      - name: Mock
+        description: VSCodeでプレビューを開くの正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor W as 文書の作成者
+        participant ED as エディタ（VS Code）
+        participant EX as 拡張機能
+        participant PV as プレビュー（Webview）
+        W->>ED: theme.css の色を書き換えて保存する
+        ED->>EX: theme の CSS の変更の通知
+        EX->>PV: theme の CSS を再読み込みさせる
+        PV-->>W: 書き換えた色を適用した文書を表示
+    expected:
+      - リロードせずに、描く先の要素の計算値が書き換えた後の `theme.css` の色になる
+      - Markdown の本文とスクロールの位置は保存する前と同じ
+    test: test_normal_when_theme_css_saved
+  - name: 正常シナリオ（ワークスペースの外の設定を保存する）
+    setup:
+      - name: プレビューを開いたワークスペース
+        description: VSCodeでプレビューを開くの正常シナリオ（設定を重ねる）の後。端末の設定（`MDMARK_CONFIG` が指す `settings.yaml`）はワークスペースの外にある
+        notes: '端末の設定は `features` に `callout: false` を持たない状態から始める'
+      - name: Mock
+        description: VSCodeでプレビューを開くの正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor W as 文書の作成者
+        participant ED as エディタ（VS Code）
+        participant EX as 拡張機能
+        participant PV as プレビュー（Webview）
+        W->>ED: 端末の設定に features.callout: false を記載して保存する
+        ED->>EX: 重ねた設定ファイルの変更の通知
+        EX->>EX: 重ねた設定を再読み込みする
+        EX->>PV: 新しい設定で再描画させる
+        PV-->>W: 注意書きを枠にしない文書を表示
+        W->>ED: 上のフォルダの mdmark.config.yaml の extensions のモジュールを書き換えて保存する
+        ED->>EX: extensions のファイルの変更の通知
+        EX->>PV: パネルを再読み込みして描かせる
+        PV-->>W: 書き換えた固有の部品で描いた文書を表示
+    expected:
+      - 端末の設定を保存した後、リロードせずにプレビューの注意書きが引用として描かれる
+      - '`extensions` のモジュールを保存した後、固有の部品の場所に書き換えた後の部品が描いた要素がある'
+      - どちらの保存でも、Markdown の本文とスクロールの位置は保存する前と同じ
+    test: test_normal_when_outside_config_saved
+  - name: 正常シナリオ（aliases の YAML を書き換える）
+    setup:
+      - name: プレビューを開いたワークスペース
+        description: VSCodeでプレビューを開くの正常シナリオ（設定の aliases のエイリアス）の後
+      - name: Mock
+        description: VSCodeでプレビューを開くの正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor W as 文書の作成者
+        participant ED as エディタ（VS Code）
+        participant EX as 拡張機能
+        participant PV as プレビュー（Webview）
+        W->>ED: glossary.yaml の用語の意味を書き換えて保存する
+        ED->>EX: aliases の行が指す YAML の変更の通知
+        EX->>EX: エイリアスを再作成する
+        EX->>PV: 再作成したエイリアスで再描画させる
+        PV-->>W: 書き換えた意味のツールチップを持つ文書を表示
+    expected:
+      - リロードせずに、下線の単語のツールチップに書き換えた後の意味が出る
+      - Markdown の本文とスクロールの位置は保存する前と同じ
+    test: test_normal_when_aliases_yaml_saved
+  - name: 正常シナリオ（フロントマターを持つ文書）
+    setup:
+      - name: プレビューを開いたワークスペース
+        description: 正常シナリオと同じ。`mdmark.config.yaml` は `features` を記載していない
+      - name: フロントマターを持つ Markdown
+        description: '1〜4 行目に `---`・`title: テスト`・`tags: [a, b]`・`---` のフロントマター、6 行目に `# 見出し` を配置した文書'
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor W as 文書の作成者
+        participant ED as エディタ（VS Code）
+        participant EX as 拡張機能
+        participant PV as プレビュー（Webview）
+        W->>ED: フロントマターを持つ Markdown のプレビューを開く
+        EX->>PV: 全文を送信する
+        PV-->>W: フロントマターを除いた文書を表示
+        W->>ED: mdmark.config.yaml に features.frontmatter: true を記載して保存する
+        EX->>PV: 新しい設定で再描画させる
+        PV-->>W: 先頭にフロントマターの表示を置いた文書を表示
+    expected:
+      - '設定ファイルを保存する前は、プレビューに `title: テスト` の文字と h2 の要素が無い'
+      - 設定ファイルを保存した後は、プレビューの `見出し` の要素より前にフロントマターの表示の要素があり、その中に `title`・`テスト` の文字がある
+    test: test_normal_when_frontmatter
+lead: 文書の作成者が Markdown や設定ファイルを書き換えると、開いているプレビューが再描画される。背面から表に戻したときと、「リロード」を押したときも最後の内容で描く。
+issue: 22
+primary_actor: 文書の作成者
+stakeholders:
+  - name: 文書の作成者
+    interest: 保存しなくても、打った内容が少し後にプレビューに出る
+trigger: 文書の作成者がプレビューを開いたまま Markdown か `mdmark.config.yaml` を書き換える
+preconditions:
+  - Markdown のプレビューを開いている（VSCodeでプレビューを開く）
+success_guarantee: プレビューに、最後に記載した Markdown の全文が、重ねた設定の `features`・`libraries`・`side-toc`・`theme`・`extensions`・`aliases` を適用して描かれる。
+minimal_guarantee: 設定ファイルを読み込めないときも文書は描いたままにし、読み込めないことを通知する。
+test_file: tests/e2e/単一ユースケース/記載した内容をプレビューに映す.spec.ts

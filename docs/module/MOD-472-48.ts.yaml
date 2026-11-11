@@ -1,0 +1,464 @@
+id: MOD-472-48
+visibility: internal
+title: ClaudeCodeプラグイン / MCPサーバー / tools.ts
+test_files:
+  - tests/unit/src/plugin/tools.test.ts
+data_models:
+  - name: ToolContext
+    title: ツールの前提
+    container: src/plugin/tools.ts
+    usecase: 共通
+    role: DTO
+    summary: ツールの処理が使用する、呼び出しの作業のフォルダとサーバーが読み込む配布物の場所
+    description: '`callTool` が呼び出しごとに作る'
+    inherits: ServerRoots
+    properties:
+      - name: projectDir
+        type: string
+        description: 引数の `project_dir`。相対パスの引数と設定ファイルの探索の基準
+    status: planned
+    introduced:
+      pr: 72
+  - name: ToolDefinition
+    title: ツールの定義
+    container: src/plugin/tools.ts
+    usecase: 共通
+    role: DTO
+    summary: ツール 1 つの名前・説明・引数の構造・処理
+    properties:
+      - name: name
+        type: "'export_html' | 'build_site' | 'check' | 'list_templates' | 'add_template' | 'apply_template'"
+        description: ツールの名前
+      - name: description
+        type: string
+        description: ツールの説明。呼ぶ場面と、引数・戻り値を日本語で記載する
+      - name: inputSchema
+        type: ToolInputSchema
+        description: 引数の構造。`tools/list` に JSON Schema として出し、引数を検査するものにも使用する
+      - name: run
+        type: '(args: Record<string, unknown>, context: ToolContext) => Promise<ToolOutput>'
+        description: 検査を通った引数で処理し、結果を返却する。利用者に見せる誤りは `CliError` を投げる
+      - name: annotations
+        type: '{ readOnlyHint: boolean } | undefined'
+        description: '`tools/list` に出すツールの annotations。何も書き換えない `check` と `list_templates` だけが `{ readOnlyHint: true }` を持つ'
+    status: planned
+    introduced:
+      pr: 72
+  - name: ToolOutput
+    title: ツールの処理の結果
+    container: src/plugin/tools.ts
+    usecase: 共通
+    role: DTO
+    summary: ツールの処理が返却する、JSON にする値
+    properties:
+      - name: json
+        type: Record<string, unknown>
+        description: JSON の文字列にして 1 つのテキストで返却する値（`export_html`・`build_site`・`check`）
+    status: planned
+    introduced:
+      pr: 72
+  - name: ServerRoots
+    title: サーバーの読み込む場所
+    container: src/plugin/tools.ts
+    usecase: 共通
+    role: DTO
+    summary: '`mdmark serve` を起動したパッケージの直下から決める、配布物のフォルダ'
+    properties:
+      - name: distDir
+        type: string
+        description: 書き出しに埋める配布物のフォルダ（`{パッケージの直下}/dist`）
+    status: planned
+    introduced:
+      pr: 141
+constants:
+  - name: TOOLS
+    title: ツールの一覧
+    container: src/plugin/tools.ts
+    usecase: 共通
+    summary: 登録するツールの定義（`ToolDefinition`）の並び
+    entries:
+      - key: export_html
+        value: file（必須）・out・config（文字列）
+        description: '`mdmark export` と同じ処理で文書を 1 枚の HTML に書き出し、書き出した絶対パス `out` と警告 `warnings` を返却する'
+      - key: build_site
+        value: config（文字列）
+        description: '`mdmark build` と同じ処理で設定の `build` の文書を 1 枚にまとめ、`out`・文書の数 `docs`・`warnings` を返却する'
+      - key: check
+        value: config・base・text・file・key（文字列）
+        description: '`mdmark check` と同じ点検をし、ずれの一覧 `issues`（file・where・kind・message）を返却する。`base` を指定すると `mdmark check --base` と同じ `change_together` の修正漏れも返却する。`text` か `file`・`key` を指定すると `mdmark check --text`・`--file --key` と同じく、指定した Markdown を描いたときの記載の警告を返却する（YAML のキーへ記法を書き込んだ後に呼ぶ）。点検は書き換えない。`annotations` は `readOnlyHint: true`'
+      - key: list_templates
+        value: 引数なし
+        description: '端末の設定のフォルダの CSS のテンプレートを、名前・説明・タグ・CSS の絶対パスの一覧 `templates` で返却する。`annotations` は `readOnlyHint: true`'
+      - key: add_template
+        value: file・name・description（必須）・tags（文字列の配列）・overwrite（真偽値）
+        description: 作業のフォルダの CSS をテンプレートに登録し、`name`・`path`・`replaced` を返却する。`name` は `TEMPLATE_NAME_PATTERN` に合う文字列
+      - key: apply_template
+        value: name（必須）・dir（文字列）・overwrite（真偽値）
+        description: テンプレートの CSS を配置先へコピーし、`path`・`theme`（基準の設定ファイルが無ければ持たない）・`replaced` を返却する
+    status: planned
+    introduced:
+      pr: 72
+    description: どのツールも引数の `project_dir` を必須にし、`project_dir` は `inputSchema` に含めない
+  - name: PROJECT_DIR_ARG
+    title: 作業のフォルダの引数
+    container: src/plugin/tools.ts
+    usecase: 共通
+    summary: PreToolUse のフックが作業のフォルダの絶対パスを入れる引数の名前
+    value: project_dir
+    refs:
+      - IF-472-5#
+    status: planned
+    introduced:
+      pr: 141
+  - name: PROJECT_DIR_ERROR_MESSAGE
+    title: 作業のフォルダが無いときの文
+    container: src/plugin/tools.ts
+    usecase: 共通
+    summary: '`project_dir` が無い・絶対パスでない・そのフォルダが無いときのツールのエラーの文'
+    value: 引数 project_dir が無いか、ある作業のフォルダの絶対パスではありません。mdmark のプラグインを入れた Claude Code のセッションから呼んでください。
+    refs:
+      - IF-472-10#exceptions[ツールのエラー（作業のフォルダが無い）]
+    status: planned
+    introduced:
+      pr: 141
+functions:
+  - name: callTool
+    title: ツールを呼ぶ
+    kind: 関数
+    container: src/plugin/tools.ts
+    usecase: 共通
+    role: アダプター
+    summary: 引数を検査してツールの処理を呼び、結果か誤りを MCP のツールの結果にする
+    description: 'どの誤りでもサーバーを止めず、その呼び出しだけを `isError: true` にする。ログは標準エラーへ書き込む'
+    scope: public
+    is_async: true
+    args:
+      - name: options
+        type: '{ tool: ToolDefinition; args: unknown; roots: ServerRoots; stderr: (line: string) => void }'
+        required: true
+        description: 呼ぶツール・指定された引数・サーバーの読み込む場所・標準エラーへ 1 行書く関数
+    returns:
+      type: Promise<CallToolResult>
+      description: '`content` にテキストを並べた MCP のツールの結果。誤りのときは `isError: true` と 1 つのテキスト'
+    process: |-
+      1. 引数から `PROJECT_DIR_ARG` を取り出す。文字列でない・絶対パスでない・そのフォルダが無いときは `PROJECT_DIR_ERROR_MESSAGE` を `isError: true` で返却する
+      2. `PROJECT_DIR_ARG` を除いた引数を検査し、合わなければその 1 文を `isError: true` で返却する（引数を検査する）
+      3. 取り出した `projectDir` と `roots` でツールの前提を作り、ツールの処理を呼び、`json` を JSON の文字列にした 1 つのテキストにする
+      4. `CliError` を捕まえたら、そのメッセージを `isError: true` で返却する
+      5. それ以外の例外を捕まえたら、標準エラーに書き込み、例外のメッセージを `isError: true` で返却する
+         - `[error]` ツールの処理が想定しない例外で止まった（ツール名・メッセージ・スタック）
+    unit_tests:
+      - name: test_call_tool
+        case: 正常
+        summary: json を 1 つのテキストにする
+        condition: '`run` が `{ json: { out: "/a.html" } }` を返却するツール'
+        mock: なし（テストの中で定義したツール）
+        expected: 'テキストが 1 つで `JSON.parse` すると `{ out: "/a.html" }`、`isError` が立たない'
+      - name: test_call_tool_when_arguments_invalid
+        case: 正常
+        summary: 合わない引数は処理を呼ばない
+        condition: 必須の引数が無い
+        mock: 呼ばれたかを記録する `run`
+        expected: '`isError: true`、`run` が呼ばれない'
+      - name: test_call_tool_when_cli_error
+        case: 正常
+        summary: CliError はその文を返却し、ログを書き込まない
+        condition: '`run` が `CliError("修正方法の文")` を投げる'
+        mock: 行を配列に貯める `stderr`
+        expected: '`isError: true` でテキストが `修正方法の文`、`stderr` が空'
+      - name: test_call_tool_when_unexpected_error
+        case: 正常
+        summary: 想定しない例外は標準エラーに書き込んで返却する
+        condition: '`run` が `Error("boom")` を投げる'
+        mock: 行を配列に貯める `stderr`
+        expected: '`isError: true` でテキストに `boom`、`stderr` にツール名と `boom` とスタック'
+      - name: test_call_tool_when_project_dir
+        case: 正常
+        summary: project_dir を前提に入れ、引数から除いて処理を呼ぶ
+        condition: 一時フォルダの絶対パスの `project_dir` と `config` を指定する
+        mock: 受け取った引数と前提を記録する `run`
+        expected: '`run` の引数が `{ config }` だけで、前提の `projectDir` が指定した絶対パス'
+      - name: test_call_tool_when_project_dir_missing
+        case: 異常
+        summary: project_dir が無ければ処理を呼ばない
+        condition: '`project_dir` を指定しない'
+        mock: 呼ばれたかを記録する `run`
+        expected: '`isError: true` でテキストが `PROJECT_DIR_ERROR_MESSAGE`、`run` が呼ばれない'
+      - name: test_call_tool_when_project_dir_invalid
+        case: 異常
+        summary: 絶対パスでないか、無いフォルダの project_dir を拒む
+        condition: '`project_dir` が `docs`、続けて無いフォルダの絶対パス'
+        mock: 呼ばれたかを記録する `run`
+        expected: 'どちらも `isError: true` でテキストが `PROJECT_DIR_ERROR_MESSAGE`、`run` が呼ばれない'
+    callees:
+      - 'MOD-472-49#functions[checkArguments]'
+    refs:
+      - IF-472-4#constraints[ツールのログ]
+    status: planned
+    introduced:
+      pr: 72
+  - name: runExportHtml
+    title: 文書を HTML に書き出す（export_html）
+    kind: 関数
+    container: src/plugin/tools.ts
+    usecase: 文書をHTMLに書き出す
+    role: ツール
+    summary: 作業のフォルダを基準に `mdmark export` と同じ処理で書き出し、絶対パスと警告を返却する
+    scope: public
+    is_async: true
+    side_effects: 出力のパスに HTML を書き込む
+    args:
+      - name: args
+        type: '{ file: string; out?: string; config?: string }'
+        required: true
+        description: 検査を通った引数
+      - name: context
+        type: ToolContext
+        required: true
+        description: ツールの前提
+    returns:
+      type: Promise<ToolOutput>
+      description: '`json` が `{ out, warnings }`'
+    process: |-
+      1. `cwd` を `projectDir`、`distDir` を `context.distDir` にして書き出す（文書を HTML に書き出して結果を返却する）。相対パスの `file`・`out`・`config` は `projectDir` を基準にする
+      2. `out`（絶対パス）と `warnings` を返却する
+    unit_tests:
+      - name: test_run_export_html
+        case: 正常
+        summary: 作業のフォルダからの相対パスで書き出す
+        condition: '`projectDir` に設定と `guide.md`、`distDir` に中身を短くした配布物、`file: guide.md`'
+        mock: なし（一時フォルダ）
+        expected: '`json.out` が `{projectDir}/guide.html`、`json.warnings` が空'
+      - name: test_run_export_html_when_cwd_differs
+        case: 正常
+        summary: サーバーの cwd が作業のフォルダと違っても、相対パスの out と config を作業のフォルダから解く
+        condition: '`process.cwd()` と別の一時フォルダを `projectDir` にし、`file: guide.md`・`out: out/a.html`・`config: conf/mdmark.config.yaml`'
+        mock: なし（一時フォルダ）
+        expected: '`json.out` が `{projectDir}/out/a.html` で、そのファイルがあり、`process.cwd()` の下に `out/` が無い'
+    callees:
+      - MOD-472-120#functions[exportDocument]
+    refs:
+      - IF-472-9#
+    status: planned
+    introduced:
+      pr: 72
+  - name: runBuildSite
+    title: 複数の文書を 1 枚にまとめる（build_site）
+    kind: 関数
+    container: src/plugin/tools.ts
+    usecase: 複数の文書を1枚のHTMLにまとめる
+    role: ツール
+    summary: 作業のフォルダを基準に `mdmark build` と同じ処理でまとめ、絶対パス・文書の数・警告を返却する
+    scope: public
+    is_async: true
+    side_effects: '`build.out` に HTML を書き込む'
+    args:
+      - name: args
+        type: '{ config?: string }'
+        required: true
+        description: 検査を通った引数
+      - name: context
+        type: ToolContext
+        required: true
+        description: ツールの前提
+    returns:
+      type: Promise<ToolOutput>
+      description: '`json` が `{ out, docs, warnings }`'
+    process: |-
+      1. `cwd` を `projectDir`、`distDir` を `context.distDir` にしてまとめる（複数の文書を 1 枚にまとめて結果を返却する）。相対パスの `config` と設定の `build.out` は `projectDir` を基準にする
+      2. `out`（絶対パス）・`docs`・`warnings` を返却する
+    unit_tests:
+      - name: test_run_build_site
+        case: 正常
+        summary: まとめて絶対パスと文書の数を返却する
+        condition: '`projectDir` の設定の `build` が文書 2 つに該当する'
+        mock: なし（一時フォルダ）
+        expected: '`json.out` が `build.out` の絶対パス、`json.docs` が 2'
+      - name: test_run_build_site_when_cwd_differs
+        case: 正常
+        summary: サーバーの cwd が作業のフォルダと違っても、作業のフォルダの設定と build.out で記載する
+        condition: '`process.cwd()` と別の一時フォルダを `projectDir` にし、設定の `build.out` が相対パス'
+        mock: なし（一時フォルダ）
+        expected: '`json.out` が `{projectDir}/{build.out}` で、そのファイルがある'
+    callees:
+      - MOD-472-121#functions[buildSite]
+    refs:
+      - IF-472-13#
+    status: planned
+    introduced:
+      pr: 72
+  - name: runCheckTool
+    title: 点検する（check）
+    kind: 関数
+    container: src/plugin/tools.ts
+    usecase: 設定と索引を点検する
+    role: ツール
+    summary: 作業のフォルダから設定ファイルを探し、`mdmark check` と同じずれの一覧を返却する
+    scope: public
+    is_async: true
+    args:
+      - name: args
+        type: '{ config?: string; base?: string; text?: string; file?: string; key?: string }'
+        required: true
+        description: 検査を通った引数
+      - name: context
+        type: ToolContext
+        required: true
+        description: ツールの前提
+    returns:
+      type: Promise<ToolOutput>
+      description: '`json` が `{ issues }`（`CheckIssue` の並び。ずれがあっても誤りにしない）'
+    process: |-
+      1. `text` か `file` を指定したときは、`runCheck` と同じ引数の組を確認し、`checkMarkdownSource`（`cwd` は `projectDir`）のずれを `issues` で返却する（記法を点検する）。以降の手順は行わない
+
+      2. 端末の設定と `projectDir` から上の設定ファイルを、`mdmark check` と同じく重ねて読み込む（設定を重ねて読み込む。`cwd` は `projectDir`、`env` は `mdmark serve` のプロセスの `process.env`）
+      3. `base` を指定してずれを集め、`issues` で返却する（ずれを集める）。比べる基準を参照できない `CliError` は `callTool` がその文のツールのエラーにする
+    unit_tests:
+      - name: test_run_check_tool
+        case: 正常
+        summary: ずれを一覧で返却する
+        condition: '`projectDir` の索引が無い文書 `old.md` を指す'
+        mock: なし（一時フォルダ）
+        expected: '`json.issues` に `kind: missing_doc` が 1 件'
+      - name: test_run_check_tool_when_base_given
+        case: 正常
+        summary: '`base` から片方だけが変わった change_together の組を返却する'
+        condition: '索引の `a`（`a.md`）と `b`（`b.md`）が互いを `change_together` で記載した `projectDir` をコミットしてタグ `base` を付け、`a.md` だけを書き換えてコミットする。`{ base: "base" }`'
+        mock: なし（一時フォルダの git のリポジトリ）
+        expected: '`json.issues` が `{ file: "b.md", where: "", kind: "missed_change_together" }` の 1 件'
+      - name: test_run_check_tool_when_base_unknown
+        case: 異常
+        summary: 参照できない `base` は `CliError` にする
+        condition: '`test_run_check_tool_when_base_given` と同じリポジトリ、`{ base: "no-such-ref" }`'
+        mock: なし（一時フォルダの git のリポジトリ）
+        expected: '`CliError` を投げ、メッセージが `mdmark check --base no-such-ref` が標準エラーに出す文と等しい'
+      - case: 正常
+        condition: 'インターフェース定義『点検する』の「正常系（文字列と YAML のキーを指定する）」の `projectDir`。`{ text }` と `{ file: "records.yaml", key: "items[0].body" }` の 2 回'
+        expected: '1 回目の `json.issues` が `{ file: "-", where: "3", kind: "unknown_mark" }`、2 回目が `{ file: "records.yaml", where: "8", kind: "unknown_mark" }` の 1 件'
+        mock: なし（一時フォルダ）
+        name: test_run_check_tool_when_text_and_key
+        summary: text と file・key で mdmark check と同じずれを返却する
+    callees:
+      - MOD-472-109#functions[findConfigFile]
+      - MOD-472-110#functions[collectCheckIssues]
+      - MOD-472-127#functions[checkMarkdownSource]
+    refs:
+      - IF-472-10#
+    status: planned
+    introduced:
+      pr: 72
+  - name: runListTemplates
+    title: CSS のテンプレートの一覧を返却する（list_templates）
+    kind: 関数
+    container: src/plugin/tools.ts
+    usecase: CSSのテンプレートの一覧を返却する
+    role: ツール
+    summary: '`mdmark serve` のプロセスの環境変数からテンプレートのフォルダを決め、一覧を返却する'
+    scope: public
+    is_async: true
+    args:
+      - name: context
+        type: ToolContext
+        required: true
+        description: ツールの前提
+    returns:
+      type: Promise<ToolOutput>
+      description: '`json` が `{ templates }`'
+    process: |-
+      1. `resolveTemplatesDir`（`env` は `process.env`、`home` は `os.homedir()`）でテンプレートのフォルダを決める
+      2. `listTemplates` の結果を `templates` で返却する
+    unit_tests:
+      - name: test_run_list_templates
+        case: 正常
+        summary: '`MDMARK_CONFIG` のフォルダのテンプレートを返却する'
+        condition: '`process.env.MDMARK_CONFIG` に一時フォルダの `settings.yaml`、その `templates/css/` に 1 行の索引'
+        mock: '`process.env.MDMARK_CONFIG` をテストの間だけ差し替える'
+        expected: '`json.templates` が 1 行'
+    callees:
+      - MOD-472-1#functions[resolveTemplatesDir]
+      - MOD-472-1#functions[listTemplates]
+    refs:
+      - IF-472-1#
+    status: planned
+    introduced:
+      pr: 353
+  - name: runAddTemplate
+    title: CSS のテンプレートを登録する（add_template）
+    kind: 関数
+    container: src/plugin/tools.ts
+    usecase: CSSのテンプレートを登録する
+    role: ツール
+    summary: '`file` を `projectDir` から解決し、テンプレートに登録する'
+    scope: public
+    is_async: true
+    side_effects: テンプレートのフォルダに CSS と索引を書き込む
+    args:
+      - name: args
+        type: '{ file: string; name: string; description: string; tags?: string[]; overwrite?: boolean }'
+        required: true
+        description: 検査を通った引数
+      - name: context
+        type: ToolContext
+        required: true
+        description: ツールの前提
+    returns:
+      type: Promise<ToolOutput>
+      description: '`json` が `{ name, path, replaced }`'
+    process: |-
+      1. `resolveTemplatesDir` でテンプレートのフォルダを決める
+      2. `file` を `projectDir` から絶対パスにし、`tags` を省いたら空の並び、`overwrite` を省いたら `false` にして `addTemplate` を呼ぶ
+    unit_tests:
+      - name: test_run_add_template
+        case: 正常
+        summary: 作業のフォルダからの相対パスの CSS を登録する
+        condition: '`projectDir` に `brand.css`、`{ file: "brand.css", name: "brand", description: "x" }`'
+        mock: '`process.env.MDMARK_CONFIG` をテストの間だけ差し替える'
+        expected: '`json.path` が `{テンプレートのフォルダ}/brand.css`、`json.replaced` が `false`'
+    callees:
+      - MOD-472-1#functions[resolveTemplatesDir]
+      - MOD-472-1#functions[addTemplate]
+    refs:
+      - IF-472-2#
+    status: planned
+    introduced:
+      pr: 353
+  - name: runApplyTemplate
+    title: CSS のテンプレートを配置する（apply_template）
+    kind: 関数
+    container: src/plugin/tools.ts
+    usecase: CSSのテンプレートを配置する
+    role: ツール
+    summary: '`dir` を `projectDir` から解決し、テンプレートを配置する'
+    scope: public
+    is_async: true
+    side_effects: 配置先に CSS を書き込む
+    args:
+      - name: args
+        type: '{ name: string; dir?: string; overwrite?: boolean }'
+        required: true
+        description: 検査を通った引数
+      - name: context
+        type: ToolContext
+        required: true
+        description: ツールの前提
+    returns:
+      type: Promise<ToolOutput>
+      description: '`json` が `{ path, theme, replaced }`（`theme` が `undefined` なら JSON に出ない）'
+    process: |-
+      1. `resolveTemplatesDir` でテンプレートのフォルダを決める
+      2. `dir` を指定したら `projectDir` から絶対パスにし、`cwd` を `projectDir`、`overwrite` を省いたら `false` にして `applyTemplate` を呼ぶ
+    unit_tests:
+      - name: test_run_apply_template
+        case: 正常
+        summary: 作業のフォルダから上の設定ファイルのフォルダへ配置する
+        condition: '`projectDir` の上に `mdmark.config.yaml`、テンプレート `brand` を登録した端末の設定、`{ name: "brand" }`'
+        mock: '`process.env.MDMARK_CONFIG` をテストの間だけ差し替える'
+        expected: '`json.theme` が `./brand.css`'
+    callees:
+      - MOD-472-1#functions[resolveTemplatesDir]
+      - MOD-472-1#functions[applyTemplate]
+    refs:
+      - IF-472-3#
+    status: planned
+    introduced:
+      pr: 353

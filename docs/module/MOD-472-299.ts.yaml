@@ -1,0 +1,129 @@
+id: MOD-472-299
+visibility: internal
+title: ライブラリ本体 / 記法 / includes.ts
+test_files:
+  - tests/unit/src/render/syntax/includes.test.ts
+functions:
+  - name: resolveIncludePath
+    title: 取り込みのパスを解く
+    container: src/render/syntax/includes.ts
+    kind: 関数
+    scope: internal
+    summary: マーカーを記載した文書のパスのフォルダを基準に、記載したパスの `./`・`../` を解いて、描く文書のフォルダからのパスにする。`#` の後ろを見出しの ID か行の範囲として分ける（行の範囲は Markdown 以外のファイルだけ）。CLI は同じ関数でパスを解き、単独でまとめる VS Code 拡張機能は同じ解き方を `readIncludes` に持つ
+    args:
+      - name: fromPath
+        type: string
+        required: true
+        description: マーカーを記載した文書の、描く文書のフォルダからのパス（描く文書そのものは空文字）
+      - name: written
+        type: string
+        required: true
+        description: マーカーに記載した取り込み先（`#` を含む）
+    returns:
+      type: '{ key: string; target: { kind: "whole" } | { kind: "heading"; id: string } | { kind: "lines"; from: number; to: number } }'
+      description: 取り込む文書の表のキーと、取り込む範囲
+    unit_tests:
+      - name: test_resolve_include_path
+        case: 正常
+        condition: '`("", "./共通/手順.md#実行")`・`("共通/手順.md", "../src/app.ts#L3-L5")`・`("", "src/app.ts#L5")`・`("", "a.md#L3-L5")`'
+        expected: '`共通/手順.md` と見出し `実行`・`src/app.ts` と 3〜5 行・`src/app.ts` と 5〜5 行・`a.md` と見出し `L3-L5`'
+        mock: なし
+        summary: 取り込んだ文書のフォルダを基準に解き、Markdown の `#L` は見出しにする
+  - name: expandIncludes
+    title: 取り込む
+    container: src/render/syntax/includes.ts
+    kind: 関数
+    scope: internal
+    summary: コアルール（見出しの ID と図表の番号より前）。`include` がオンなら、include のマーカーを `resolveIncludePath` で解き、`opts.includes` の本文を、Markdown は `splitFrontmatter` で先頭のフロントマターを空白にしてから同じパーサでトークンにして `selectHeadingSection` の範囲を、それ以外は `selectLines` の行を拡張子を言語にした `fence` として、`div.mdmark-include` の中に差し込む。差し込んだトークンの元の行番号はマーカーの行にする。取り込んだ Markdown の中のマーカーは取り込みの順を持ってたどり、途中に同じキーがあれば循環の警告を差し込む。表に無いキー・無い見出し・行の数を越える範囲は記載の警告を差し込み、`collectWarnings` が集める警告に `includeTarget` を付ける（`mdmark check --text`・`--file` が除く）。取り込んだ文書の `features` のマーカーは取り除く
+    args:
+      - name: state
+        type: StateCore
+        required: true
+        description: markdown-it の状態。`state.env` から `opts.includes` を読み込む
+    side_effects: '`state.tokens` を書き換える'
+    callees:
+      - '#functions[resolveIncludePath]'
+      - '#functions[selectHeadingSection]'
+      - '#functions[selectLines]'
+      - MOD-472-217#functions[splitFrontmatter]
+    unit_tests:
+      - name: test_expand_includes
+        case: 正常
+        condition: '`opts.includes` に `共通/手順.md`（`## 準備`・`## 実行`）と 12 行の `src/app.ts`。文書は `共通/手順.md`・`共通/手順.md#実行`・`src/app.ts#L3-L5` を取り込む'
+        expected: 1 つ目に 2 つの見出し、2 つ目に `実行` の見出しだけ、3 つ目に 3〜5 行の `language-ts` のコードブロック。差し込んだ見出しの ID が重ならない
+        mock: なし
+        summary: 全体・見出しの中・行の範囲を差し込む
+      - name: test_expand_includes_when_frontmatter
+        case: 正常
+        summary: 取り込む Markdown の先頭のフロントマターを差し込まない
+        condition: '`opts.includes` の `共通/手順.md` が `---\ntitle: 手順\n---\n\n## 実行` で、設定の `features` は `{ frontmatter: true }`'
+        mock: なし
+        expected: '差し込んだトークンに `実行` の見出しがあり、`title: 手順` の文字と `mdmark-frontmatter` が無い'
+      - name: test_expand_includes_when_missing
+        case: 異常
+        condition: 表に無い `missing.md`・無い見出し・12 行のファイルの `#L20-L22`
+        expected: 3 つの場所に記載の警告があり、本文に `missing.md`・見出しの ID・`12 行` がある
+        mock: なし
+        summary: 取り込めないと警告する
+      - name: test_expand_includes_when_circular
+        case: 異常
+        condition: '`a.md` と `b.md` が互いを取り込み、文書が `a.md` を取り込む'
+        expected: '`a.md`・`b.md` の段落が 1 回ずつで、`a.md → b.md → a.md` を含む記載の警告が 1 つある'
+        mock: なし
+        summary: 循環を止める
+  - name: selectHeadingSection
+    title: 見出しの範囲を選ぶ
+    container: src/render/syntax/includes.ts
+    kind: 関数
+    scope: internal
+    summary: トークンの並びから、見出しの文字を `slugBase` で ID にしたものが `id` と一致する最初の見出しから、次の同じか上の階層の見出しの前まで（見出しを含む）を返却する
+    args:
+      - name: tokens
+        type: Token[]
+        required: true
+        description: 取り込む文書のブロックのトークン
+      - name: id
+        type: string
+        required: true
+        description: 見出しの ID
+    returns:
+      type: Token[] | null
+      description: 範囲のトークン。見出しが無いとき `null`
+    callees:
+      - 'MOD-472-279#functions[slugBase]'
+    unit_tests:
+      - name: test_select_heading_section
+        case: 正常
+        condition: '`## 準備`・`## 実行`（下に `### 手順`）・`## 片付け` と `実行`、と `無い`'
+        expected: '`実行` の見出しから `手順` の中身までで `片付け` を含まない、と `null`'
+        mock: なし
+        summary: 同じか上の階層の見出しの前までを選ぶ
+  - name: selectLines
+    title: 行の範囲を選ぶ
+    container: src/render/syntax/includes.ts
+    kind: 関数
+    scope: internal
+    summary: 本文を行（LF・CRLF）に分け、`from`〜`to` 行目（1 から）を返却する。範囲が行の数を越えるときは行の数を返却する
+    args:
+      - name: text
+        type: string
+        required: true
+        description: ファイルの本文
+      - name: from
+        type: number
+        required: true
+        description: 始めの行
+      - name: to
+        type: number
+        required: true
+        description: 終わりの行
+    returns:
+      type: '{ text: string } | { lineCount: number }'
+      description: 選んだ行か、範囲を越えたときの行の数
+    unit_tests:
+      - name: test_select_lines
+        case: 正常
+        condition: 12 行の本文と 3〜5、20〜22
+        expected: '3〜5 行目の文字と `{ lineCount: 12 }`'
+        mock: なし
+        summary: 範囲の行を返却し、越えたら行の数を返却する

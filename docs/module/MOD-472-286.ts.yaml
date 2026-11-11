@@ -1,0 +1,72 @@
+id: MOD-472-286
+visibility: internal
+title: ライブラリ本体 / 記法 / badges.ts
+test_files:
+  - tests/unit/src/render/syntax/badges.test.ts
+functions:
+  - name: buildBadges
+    title: バッジにする
+    container: src/render/syntax/badges.ts
+    kind: 関数
+    scope: internal
+    summary: コアルール。`badge` がオンなら、頭が `badge:` で後ろに空白以外の文字を持つ `code_inline` を部品『バッジ』にし、頭が `badge\:` のものは `\` を削除したコードにする。`badge:` の後ろが空か空白だけのものはコードのまま残す。`splitBadgeColor` で色とラベルに分け、色があれば部品へ指定する。色の名前の後ろが空か空白だけのものもコードのまま残す
+    args:
+      - name: state
+        type: StateCore
+        required: true
+        description: markdown-it の状態
+    side_effects: '`state.tokens` を書き換える'
+    callees:
+      - MOD-472-318#functions[renderBadge]
+      - '#functions[splitBadgeColor]'
+    unit_tests:
+      - name: test_build_badges
+        case: 正常
+        summary: 札にし、打ち消しはコードに戻す
+        condition: '`` `badge:v0.1.0` `` と `` `badge\:v0.1.0` ``'
+        mock: なし
+        expected: '`<span class="mdmark-badge">v0.1.0</span>` と `<code>badge:v0.1.0</code>`'
+      - name: test_build_badges_when_empty
+        case: 正常
+        summary: '`badge:` の後ろが空か空白だけならコードのまま残す'
+        condition: '`` `badge:` `` と `` `badge:  ` ``'
+        mock: なし
+        expected: どちらも `<code>` のままで、`mdmark-badge` が無い
+      - name: test_build_badges_when_colored
+        case: 正常
+        summary: 色の名前の頭で色を付け、色の名前でない頭はラベルに残す
+        condition: '`` `badge:red:要確認` ``・`` `badge:v1:beta` ``・`` `badge:red:` ``'
+        mock: なし
+        expected: '`<span class="mdmark-badge" data-color="red">要確認</span>`・`<span class="mdmark-badge">v1:beta</span>`・`<code>badge:red:</code>`'
+  - name: splitBadgeColor
+    title: バッジの色とラベルを分ける
+    container: src/render/syntax/badges.ts
+    kind: 関数
+    scope: internal
+    summary: '`badge:` の後ろの文字の最初の `:` の前が色の名前（`isColorName`）なら、色と `:` の後ろのラベルに分ける。色の名前でないときと `:` が無いときは、全てをラベルにする'
+    args:
+      - name: text
+        type: string
+        required: true
+        description: '`badge:` の後ろの文字'
+    returns:
+      type: '{ color?: ColorName; label: string }'
+      description: 色とラベル
+    callees:
+      - MOD-472-312#functions[isColorName]
+    unit_tests:
+      - name: test_split_badge_color
+        case: 正常
+        summary: 色の名前の頭を色にする
+        condition: '`red:要確認` と `v1:beta` と `v0.1.0`'
+        mock: なし
+        expected: '`{ color: red, label: 要確認 }`・`{ label: v1:beta }`・`{ label: v0.1.0 }`'
+      - name: test_split_badge_color_when_label_empty
+        case: 正常
+        summary: 色の後ろが空ならラベルを空にする
+        condition: '`red:` と `red:  `'
+        mock: なし
+        expected: どちらも `color` が `red` で、`label` が空白だけ
+    status: planned
+    introduced:
+      pr: 263

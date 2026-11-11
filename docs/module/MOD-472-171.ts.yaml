@@ -1,0 +1,444 @@
+id: MOD-472-171
+visibility: internal
+title: ライブラリ本体 / 図 / definition.ts
+test_files:
+  - tests/unit/src/diagram/definition.test.ts
+data_models:
+  - name: MdmarkFlowDefinition
+    title: フロー図の定義
+    container: src/diagram/definition.ts
+    summary: '`<!-- flow -->` の範囲に記載する定義。`dist/index.d.ts` へ書き出す'
+    properties:
+      - name: title
+        type: string
+        description: 題名
+      - name: scope
+        type: string
+        description: 範囲
+      - name: updated
+        type: string
+        description: 更新日（`YYYY-MM-DD`）
+      - name: width
+        type: number
+        description: 図の幅（px）。座標を省いた判定フローチャートでは記載せず、`layoutFlowchart` が入れる
+      - name: height
+        type: number
+        description: 図の高さ（px）。座標を省いた判定フローチャートでは記載せず、`layoutFlowchart` が入れる
+      - name: frame
+        type: '{ title: string; x: number; y: number; w: number; h: number; hint?: string } | undefined'
+        description: システムの枠。`hint` はタイトルの右のマーカーに出す文
+      - name: lanes
+        type: '{ label: string; kind: "llm" | "mcp" | "data"; y: number; h: number; hint?: string }[] | undefined'
+        description: 枠の中の層。層のノードの色をうっすら敷く。`hint` はタイトルの右のマーカーに出す文
+      - name: nodes
+        type: MdmarkDiagramNode[]
+        description: ノード（`id`・`kind`・`x`・`y`・`w`・`h`・`name`・`tag?`・`sub?`・`io?`・`hint?`・`href?`）。`href` はノードのリンク先。`hint` はノードの右上のマーカーに出す文。`kind` は `llm`・`dm`・`script`・`mcp`・`data`・`external` と、判定フローチャートの `start`・`question`・`action`・`result`。判定フローチャートは `frame`・`lanes` を持たず、ノードの座標と線の `points` を他のフロー図と同じく記載するか、図の `width`・`height` と合わせて全て省く（`readDefinition` が全て記載するか全て省くかを確認し、省いた定義は `layoutFlowchart` が入れた座標で返却する。型は読み込んだ後の定義で、`x`・`y`・`w`・`h`・`points`・`width`・`height` を必ず持つ）。`tag`・`name`・`sub` の `{{単語}}` は用語の照合に回す
+      - name: wires
+        type: MdmarkDiagramWire[]
+        description: 線（`id`・`from`・`to`・`line`・`points`・`label?`・`labelAt?`・`tip?`）。`from`・`to` は端のノードの `id`、`line` は `flow`・`read`・`write`・`reply`・`loop`、`points` は縦横だけの折れ線
+      - name: stickyTitles
+        type: boolean | undefined
+        description: 拡大して動かしたときに、見えている枠と層のタイトルを表示する枠の上端に留めるか。省いたとき `true`
+  - name: MdmarkSequenceDefinition
+    title: シーケンス図の定義
+    container: src/diagram/definition.ts
+    summary: '`<!-- sequence -->` の範囲に記載する定義'
+    properties:
+      - name: title
+        type: string
+        description: 題名
+      - name: scope
+        type: string
+        description: 範囲
+      - name: updated
+        type: string
+        description: 更新日
+      - name: participants
+        type: '{ id: string; kind: MdmarkDiagramNode["kind"]; name: string; tag?: string }[]'
+        description: 相手。左から右へ並べる順
+      - name: steps
+        type: '{ from: string; to: string; label: string; reply?: boolean; tip?: string }[]'
+        description: メッセージ。時刻の順
+      - name: loop
+        type: '{ label: string } | undefined'
+        description: 最後のメッセージから最初へ戻る繰り返し
+  - name: MdmarkChartDefinition
+    title: グラフの定義
+    container: src/diagram/definition.ts
+    summary: '`<!-- chart -->` の範囲に記載する定義'
+    properties:
+      - name: type
+        type: '"line" | "bar" | "pie" | "scatter" | "area" | "stacked-bar" | "stacked-area" | "horizontal-bar" | "donut" | "radar" | "bubble" | "combo" | undefined'
+        description: グラフの種類。省くと `line`
+      - name: title
+        type: string
+        description: 題名
+      - name: scope
+        type: string
+        description: 範囲
+      - name: updated
+        type: string
+        description: 更新日
+      - name: x
+        type: '{ label: string; ticks?: string[] } | undefined'
+        description: 横の軸。`line`・`bar`・`area`・`stacked-bar`・`stacked-area`・`horizontal-bar`・`combo` は `ticks` が必須（`horizontal-bar` は縦に並ぶ項目）、`radar` は `ticks` を軸の名前にし、`scatter`・`bubble` は数値の軸で `ticks` を持たない。`pie`・`donut` は持たない
+      - name: y
+        type: '{ label: string; min?: number; max?: number; step?: number } | undefined'
+        description: 縦の軸。`min`・`max`・`step` は 3 つとも記載するか 3 つとも省き、省くと `niceTicks` で切る。`pie`・`donut` は持たない
+      - name: series
+        type: '{ name: string; points: number[] | [number, number][] | [number, number, number][]; as?: "line" | "bar"; axis?: "y" | "y2" }[] | undefined'
+        description: 系列。`pie`・`donut` 以外で 1〜6 つ。`points` の数は `x.ticks` と同じ、`scatter` は `[x, y]`、`bubble` は `[x, y, size]` の組。`as`・`axis` は `combo` だけが読み込み、`as` は系列の描き方（省くと `line`）、`axis` は使用する縦の軸（省くと `y`）
+      - name: items
+        type: '{ name: string; value: number }[] | undefined'
+        description: '`pie`・`donut` の項目。1〜6 つで、`value` は 0 より大きい'
+      - name: unit
+        type: string | undefined
+        description: '`pie`・`donut` の凡例の値と `donut` の中央の合計に付ける単位（例 ` 件`）'
+      - name: y2
+        type: '{ label: string; min?: number; max?: number; step?: number } | undefined'
+        description: '`combo` の右の縦の軸。記載方法は `y` と同じ'
+      - name: size
+        type: '{ label: string } | undefined'
+        description: '`bubble` の円の面積が表す値の名前'
+  - name: MdmarkParamDefinition
+    title: 操作できる部品の定義
+    container: src/diagram/definition.ts
+    summary: '`<!-- param -->` の範囲に記載する定義'
+    properties:
+      - name: title
+        type: string
+        description: 部品のタイトル
+      - name: knob
+        type: '{ key: string; label: string; min: number; max: number; step: number; value: number }'
+        description: スライダー。`value` が既定の値
+      - name: chart
+        type: Omit<MdmarkChartDefinition, "series">
+        description: グラフのタイトルと軸
+      - name: table
+        type: Record<string, number[]>
+        description: スライダーの値（文字にしたもの）ごとの点。`min` から `max` まで `step` ごとの全ての値を持つ
+  - name: MdmarkErDefinition
+    title: ER 図の定義
+    container: src/diagram/definition.ts
+    summary: '`<!-- er -->` の範囲に記載する定義'
+    properties:
+      - name: title
+        type: string
+        description: 題名
+      - name: scope
+        type: string
+        description: 範囲
+      - name: updated
+        type: string
+        description: 更新日
+      - name: width
+        type: number
+        description: 図の幅（px）。高さはテーブルの位置と列の数から求める
+      - name: tables
+        type: MdmarkErTable[]
+        description: テーブル。定義の座標に配置する
+      - name: relations
+        type: MdmarkErRelation[]
+        description: 関係
+    status: planned
+    introduced:
+      pr: 298
+  - name: MdmarkErTable
+    title: ER 図のテーブル
+    container: src/diagram/definition.ts
+    summary: '`MdmarkErDefinition` の `tables` の 1 つ'
+    properties:
+      - name: id
+        type: string
+        description: 関係の `from`・`to` で指す名前
+      - name: name
+        type: string
+        description: 物理名
+      - name: label
+        type: string
+        description: 論理名
+      - name: kind
+        type: '"master" | "transaction" | undefined'
+        description: 種類。見出しの札と既定の色を決める
+      - name: color
+        type: ColorName | undefined
+        description: 色の名前（分類『部品』の `ColorName`。`dist/index.d.ts` は `src/index.ts` から辿れる型を書き込むため、`dist/parts/colors.d.ts` の `ColorName` も型の解決に含まれる）。`kind` の既定の色より優先する
+      - name: desc
+        type: string | undefined
+        description: 概要。テーブルのツールチップに出す
+      - name: x
+        type: number
+        description: 左端（px）
+      - name: y
+        type: number
+        description: 上端（px）
+      - name: w
+        type: number
+        description: 幅（px）
+      - name: folded
+        type: boolean | undefined
+        description: 主キーと外部キーの列だけを出した状態で開くか
+      - name: columns
+        type: '{ name: string; type: string; pk?: boolean; fk?: boolean; nn?: boolean; desc?: string }[]'
+        description: 列。定義の順に並べる
+    status: planned
+    introduced:
+      pr: 298
+  - name: MdmarkErRelation
+    title: ER 図の関係
+    container: src/diagram/definition.ts
+    summary: '`MdmarkErDefinition` の `relations` の 1 つ'
+    properties:
+      - name: from
+        type: string
+        description: 元のテーブルの `id`
+      - name: fromColumn
+        type: string
+        description: 元のテーブルの列の `name`
+      - name: fromCard
+        type: '"1" | "0..1" | "1..n" | "0..n"'
+        description: 元の端の多重度
+      - name: to
+        type: string
+        description: 先のテーブルの `id`
+      - name: toColumn
+        type: string
+        description: 先のテーブルの列の `name`
+      - name: toCard
+        type: '"1" | "0..1" | "1..n" | "0..n"'
+        description: 先の端の多重度
+      - name: label
+        type: string | undefined
+        description: 縦の線の中ほどに出すラベル
+      - name: midX
+        type: number | undefined
+        description: 縦の線の x（px）。省くと両端の中間
+    status: planned
+    introduced:
+      pr: 298
+  - name: DefinitionResult
+    title: 定義を読み込んだ結果
+    container: src/diagram/definition.ts
+    summary: '`readDefinition` の戻り値'
+    properties:
+      - name: ok
+        type: boolean
+        description: 読み込めたか
+      - name: definition
+        type: MdmarkFlowDefinition | MdmarkSequenceDefinition | MdmarkChartDefinition | MdmarkParamDefinition | MdmarkErDefinition | undefined
+        description: 読み込めた定義
+      - name: problems
+        type: string[]
+        description: 読み込めない箇所と修正方法の文（画面設計『文書』の記載の警告の文言）。読み込めたときは空
+constants:
+  - name: DIAGRAM_DIRECTIVES
+    title: 図の部品のマーカー
+    container: src/diagram/definition.ts
+    summary: 図の部品のマーカーの名前と、記載の警告に出す図の種類の名前・呼び名
+    entries:
+      - key: flow
+        value: '{ name: "フロー図", call: "この図" }'
+      - key: sequence
+        value: '{ name: "シーケンス図", call: "この図" }'
+      - key: chart
+        value: '{ name: "グラフ", call: "このグラフ" }'
+      - key: param
+        value: '{ name: "操作できる部品", call: "この部品" }'
+      - key: er
+        value: '{ name: "ER 図", call: "この ER 図" }'
+  - name: NODE_KINDS
+    title: ノードの種類の並び
+    container: src/diagram/definition.ts
+    summary: '`MdmarkDiagramKind` の値の並び。知らない種類の記載の警告の「使用できる種類」はこの順に `・` でつなぐ'
+    value: '`llm`・`dm`・`script`・`mcp`・`data`・`external`・`start`・`question`・`action`・`result`'
+functions:
+  - name: parseDefinitionJson
+    title: 定義の JSON を読み込む
+    container: src/diagram/definition.ts
+    kind: 関数
+    scope: internal
+    summary: '`JSON.parse` で読み込み、読み込めないときは読み込めたところまでを頭から数え、行・読み込めた最後の部分（その行の空白を除いた文字）・足りない記号（閉じていない `{`・`[`・`"` の対）を返却する'
+    args:
+      - name: text
+        type: string
+        required: true
+        description: コードブロックの中身
+    returns:
+      type: '{ ok: true; value: unknown } | { ok: false; line: number; after: string; missing: string }'
+      description: 読み込めた値か、読み込めない箇所
+    unit_tests:
+      - name: test_parse_definition_json
+        case: 正常
+        summary: 読み込める JSON は値を返却する
+        condition: '`{"title": "a"}`'
+        mock: なし
+        expected: '`ok` が `true` で `value.title` が `a`'
+      - name: test_parse_definition_json_when_unclosed
+        case: 異常
+        summary: 閉じの `}` が無い
+        condition: '12 行目が `"label": "本文",` で終わる JSON'
+        mock: なし
+        expected: '`line` が 12、`after` が `"label": "本文",`、`missing` が `}`'
+  - name: readDefinition
+    title: 定義を読み込んで構造を確認する
+    container: src/diagram/definition.ts
+    kind: 関数
+    scope: internal
+    summary: マーカーの範囲の `json` のコードブロックの数を確認し、`parseDefinitionJson` で読み込み、種類ごとの構造（必須の項目・型・列挙の値・線の端のノードの `id`・`id` の重なり・系列の点の数・系列と項目の数の上限 6 つ・`table` の値の漏れ・ER 図の関係の端のテーブルと列・テーブルの `id` と同じテーブルの列の名前の重なり・`kind`・`color`（`isColorName`。記載の警告に並べる色の名前は `COLOR_NAMES` から出す）・多重度の値・フロー図の `frame.hint` と `lanes[].hint` が文字で `stickyTitles` が真偽値か）を確認する。フロー図では、座標（ノードの `x`・`y`・`w`・`h`、線の `points`、図の `width`・`height`）を記載したものと省いたものの混在と、座標を省いた定義の `start`・`question`・`action`・`result` 以外の種類のノードも確認し、全て省いた読み込める定義は `layoutFlowchart` で配置した定義を返却する（描く処理と点検が同じ配置を使用する）。読み込めない箇所は、記載の警告の文言の文にして返却する。文の中でノードは `ノード「{name}」`・`ノードの id`・`端のノード` と呼ぶ
+    args:
+      - name: directive
+        type: '"flow" | "sequence" | "chart" | "param" | "er"'
+        required: true
+        description: マーカーの名前
+      - name: blocks
+        type: string[]
+        required: true
+        description: 範囲の `json` のコードブロックの中身
+    returns:
+      type: DefinitionResult
+      description: 読み込めた定義か、読み込めない箇所の文
+    callees:
+      - MOD-472-312#functions[isColorName]
+    unit_tests:
+      - name: test_read_definition
+        case: 正常
+        summary: モックの見本の定義を読み込める
+        condition: '`inquiry`・`inquiry-seq`・`reply-time`・`strength` と同じ定義（線に `from`・`to` を追加したもの）'
+        mock: なし
+        expected: どれも `ok` が `true`
+      - name: test_read_definition_when_kind_unknown
+        case: 異常
+        summary: ノードの種類が使用できない
+        condition: 3 つ目のノード（名前 `分類`）の `kind` が `robot`
+        mock: なし
+        expected: '`problems[0]` が `ノード「分類」の種類 robot は使用できません。使用できる種類は llm・dm・script・mcp・data・external・start・question・action・result です`'
+      - name: test_read_definition_when_judgement
+        case: 正常
+        summary: 判定フローチャートの種類のノードを読み込める
+        condition: モックの `judgement` と同じ定義（`frame`・`lanes` が無く、線に `from`・`to` を追加したもの）
+        mock: なし
+        expected: '`ok` が `true` で `problems` が空'
+      - name: test_read_definition_when_points_mismatch
+        case: 異常
+        summary: 系列の点の数が目盛りと合わない
+        condition: 系列 `担当者` の点が 4 つ、`x.ticks` が 5 つ
+        mock: なし
+        expected: '`problems[0]` が `系列「担当者」の点が 4 つで、横の目盛り（x.ticks）の 5 つと合いません`'
+      - name: test_read_definition_when_wire_end_missing
+        case: 異常
+        summary: 線の端が無いノードを指す
+        condition: 線 `w-mail` の `to` が無いノードの `id` `recieve`
+        mock: なし
+        expected: '`problems[0]` が `線 w-mail の端のノード recieve がありません。ノードの id で記載してください`'
+      - name: test_read_definition_when_id_duplicated
+        case: 異常
+        summary: ノードの id が重なる
+        condition: 2 つのノードの `id` が `recv`
+        mock: なし
+        expected: '`problems[0]` が `ノードの id recv が 2 つあります。別の id にしてください`'
+      - name: test_read_definition_when_blocks_count
+        case: 異常
+        summary: json のコードブロックが 0 つ・2 つ
+        condition: '`blocks` が `[]` と 2 つ'
+        mock: なし
+        expected: どちらも `problems[0]` が `マーカーの範囲に json のコードブロックを 1 つだけ配置してください` を含む
+      - name: test_read_definition_when_chart_types
+        case: 正常
+        summary: 棒・円・散布図のモックの見本を読み込める
+        condition: '`inquiry-count`・`reply-kind`・`length-time`・`inquiry-hint` と同じ定義'
+        mock: なし
+        expected: どれも `ok` が `true`
+      - name: test_read_definition_when_chart_shape_mismatch
+        case: 異常
+        summary: 種類に合わない項目を読み込めない箇所にする
+        condition: '`type` が `pie` で `items` が無い定義と、`type` が `scatter` で点が数値 1 つの定義と、`y` に `min` だけを記載した定義'
+        mock: なし
+        expected: どれも `ok` が `false` で、`problems[0]` がそれぞれ `items`・点の形状 `[x, y]`・`min`・`max`・`step` を統一して記載することを含む
+      - name: test_read_definition_when_chart_types_added
+        case: 正常
+        summary: 追加したグラフの種類の定義を読み込める
+        condition: インターフェース定義『文書をHTML文字列にする』の「正常系（追加したグラフの種類）」の 9 つの定義
+        mock: なし
+        expected: どれも `ok` が `true`
+      - name: test_read_definition_when_chart_series_too_many
+        case: 異常
+        summary: 系列と項目の 7 つ以上を読み込めない箇所にする
+        condition: 系列 7 つの `line` と、項目 7 つの `donut` の定義
+        mock: なし
+        expected: どちらも `ok` が `false` で、`problems[0]` が系列（`donut` は項目）の数 7 と上限の 6 つを含む
+      - name: test_read_definition_when_bubble_point
+        case: 異常
+        summary: バブルの点の形状を確認する
+        condition: '`type` が `bubble` で、点が `[x, y]` の定義'
+        mock: なし
+        expected: '`ok` が `false` で、`problems[0]` が点の形状 `[x, y, size]` を含む'
+      - name: test_read_definition_when_er
+        case: 正常
+        summary: ER 図のモックの見本を読み込める
+        condition: '`shop-er`・`shop-er-colors`・`shop-er-folded` と同じ定義'
+        mock: なし
+        expected: どれも `ok` が `true`
+      - name: test_read_definition_when_er_column_missing
+        case: 異常
+        summary: 関係がテーブルに無い列を指す
+        condition: 関係「注文する」の `toColumn` が、テーブル `orders` に無い `customer`
+        mock: なし
+        expected: '`problems[0]` が `関係「注文する」の先の列 orders.customer がテーブル orders にありません`'
+      - name: test_read_definition_when_er_invalid_values
+        case: 異常
+        summary: テーブルの id・列の名前の重なりと、使用できない種類・色・多重度
+        condition: テーブルの `id` が重なる定義、同じテーブルに同じ列の名前がある定義、`kind` が `view`・`color` が `pink`・`toCard` が `many` の定義
+        mock: なし
+        expected: どれも `ok` が `false` で、`problems[0]` が重なった `id`・列の名前、使用できる種類 `master・transaction`・色の名前・多重度 `1・0..1・1..n・0..n` をそれぞれ含む
+      - name: test_read_definition_when_coordinates_omitted
+        case: 正常
+        summary: 座標を全て省いた判定フローチャートを配置した定義で返却する
+        condition: モックの `judgement-auto` から座標・`points`・`width`・`height` を除き、線に `from`・`to` を追加した定義
+        mock: なし
+        expected: '`ok` が `true` で、定義の `height` が 584 で、全てのノードが `x`・`y`・`w`・`h` を、全ての線が `points` を持つ'
+      - name: test_read_definition_when_coordinates_mixed
+        case: 異常
+        summary: 座標を記載したものと省いたものが混ざる
+        condition: 座標を省いた `judgement-auto` の 1 つのノードだけに `x`・`y`・`w`・`h` を記載した定義
+        mock: なし
+        expected: '`problems[0]` が `座標（x・y・w・h・points・width・height）を記載したものと省いたものが混ざっています。全て記載するか、全て省いてください`'
+      - name: test_read_definition_when_coordinates_omitted_not_judgement
+        case: 異常
+        summary: 判定フローチャート以外の種類で座標を省く
+        condition: 座標を全て省き、名前 `分類` の `llm` のノードを持つ定義
+        mock: なし
+        expected: '`problems[0]` が `ノード「分類」の種類 llm では座標を省けません。` で始まる'
+      - name: test_read_definition_when_group_options_invalid
+        case: 異常
+        summary: グループの `hint` と `stickyTitles` の型を確認する
+        condition: '`frame.hint` が数 `1`、`stickyTitles` が文字 `no` のフロー図の定義と、`lanes[0].hint` が文字で `stickyTitles` が `false` の定義'
+        mock: なし
+        expected: 前者は `ok` が `false` で、`problems` が `frame.hint` を文字で、`stickyTitles` を真偽値で記載することをそれぞれ含む 2 つ。後者は `ok` が `true`
+  - name: nodeLinkProblems
+    title: ノードのリンク先を確認する
+    container: src/diagram/definition.ts
+    kind: 関数
+    scope: internal
+    summary: フロー図の定義の `href` を `isAllowedUrl` で確認し、許さないリンク先を持つノードの `id` とリンク先を定義の順に返却する
+    args:
+      - name: definition
+        type: MdmarkFlowDefinition
+        required: true
+        description: 読み込めたフロー図の定義
+    returns:
+      type: 'Array<{ id: string; href: string }>'
+      description: 許さないリンク先のノード（無ければ空）
+    callees:
+      - MOD-472-214#functions[isAllowedUrl]
+    refs:
+      - IF-472-34#constraints[ノードのリンク先]
+    unit_tests:
+      - name: test_node_link_problems
+        case: 正常
+        summary: 許さないリンク先だけを返却する
+        condition: '`href` が `https://example.com/spec`・`./other.md`・`mailto:a@example.com`・`javascript:alert(1)`・`id:spec#items` のノードと、`href` の無いノード'
+        mock: なし
+        expected: '`javascript:alert(1)` と `id:spec#items` の 2 件を定義の順に返却する'
+    status: planned
+    introduced:
+      pr: 328

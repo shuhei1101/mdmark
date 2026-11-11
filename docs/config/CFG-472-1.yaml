@@ -1,0 +1,138 @@
+id: CFG-472-1
+visibility: internal
+title: '設定: Claude Code プラグイン'
+lead: Claude Code プラグインの MCP サーバー（`mdmark serve`）が待ち受けるポート、Claude Code がつなぐ先、スキルが呼ぶスクリプト（`plugin/bin/setup.js`）と SessionStart のフックが読み込む環境変数の一覧。実装は `src/plugin/http.ts`、つなぐ先は `plugin/.mcp.json`
+files:
+  - file: 環境変数
+    manages: '`mdmark serve` が待ち受けるポートと、Claude Code が `.mcp.json` の URL を展開する値'
+  - file: plugin/.mcp.json
+    manages: Claude Code がつなぐ MCP サーバーの種類と URL
+    notes: プラグインと一緒に配る。利用側は書き換えない
+settings:
+  - key: MDMARK_PORT
+    title: MCP サーバーのポート
+    file: 環境変数
+    type: integer
+    default: '8782'
+    description: '`mdmark serve` が 127.0.0.1 で待ち受けるポート。Claude Code は `plugin/.mcp.json` の URL で同じ変数を展開するため、変えるときは `~/.claude/settings.json` の `env` と `mdmark serve` を起動する環境の両方に同じ値を設定する'
+    env_var: MDMARK_PORT
+    reload: restart
+    allowed: 1〜65535 の整数。範囲外・整数でない値は `mdmark serve` が起動せず終了コード 1 で終わる
+    refs:
+      - MOD-472-15#constants[DEFAULT_PORT]
+    status: planned
+    visibility: user
+    implementation: src/plugin/http.ts#readPort
+    introduced:
+      pr: 141
+  - key: mcpServers.mdmark.type
+    title: MCP サーバーの種類
+    file: plugin/.mcp.json
+    type: '"http"'
+    required: true
+    description: Claude Code が子プロセスを起動せず、常駐のサーバーへ Streamable HTTP でつなぐ
+    missing: Claude Code が MCP サーバーを読み込まない
+    reload: restart
+    status: planned
+    visibility: developer
+    introduced:
+      pr: 141
+  - key: mcpServers.mdmark.url
+    title: MCP サーバーの URL
+    file: plugin/.mcp.json
+    type: string
+    required: true
+    description: Claude Code がつなぐ先。ポートは `MDMARK_PORT` を展開し、無ければ 8782
+    missing: Claude Code が MCP サーバーを読み込まない
+    reload: restart
+    allowed: '`http://127.0.0.1:${MDMARK_PORT:-8782}/mcp`'
+    refs:
+      - LIB-472-1#
+    status: planned
+    visibility: developer
+    introduced:
+      pr: 141
+  - key: MDMARK_STATE_DIR
+    title: 状態の配置場所
+    file: 環境変数
+    type: string
+    default: ${XDG_STATE_HOME:-~/.local/state}/mdmark
+    description: '`setup.js start-server` が常駐サーバーのログ（`serve.log`）を記載するフォルダ。tmux のセッションへ `-e` で、unit へ `Environment=` で指定する。unit で動かすときのログは journal に出し、`serve.log` には記載しない'
+    env_var: MDMARK_STATE_DIR
+    reload: restart
+    status: planned
+    visibility: user
+    refs:
+      - IF-472-7#
+    introduced:
+      pr: 354
+  - key: MDMARK_LAUNCHER
+    title: 常駐サーバーを動かしている方法
+    file: 環境変数
+    type: '"systemd" | "tmux"'
+    default: なし
+    description: '`setup.js start-server` が unit の `Environment=` か tmux のセッションの `-e` で `mdmark serve` に渡す。`mdmark serve` はこの値で、MCP の `instructions` に unit と tmux のセッションのどちらを伝えるかを決める。無いときは tmux のセッションとして伝える'
+    env_var: MDMARK_LAUNCHER
+    reload: restart
+    status: planned
+    visibility: developer
+    refs:
+      - IF-472-7#
+    introduced:
+      pr: 444
+  - key: MDMARK_CONFIG
+    title: 端末の設定のパス
+    file: 環境変数
+    type: string
+    default: ${XDG_CONFIG_HOME:-~/.config}/mdmark/settings.yaml
+    description: '`setup.js` が読み込みと保存をする端末の設定のパス。既定と違うパスにしたときは、`global-setup` が `~/.claude/settings.json` の `env` に書き込む'
+    env_var: MDMARK_CONFIG
+    reload: restart
+    status: planned
+    visibility: user
+    refs:
+      - CFG-472-3#files
+    introduced:
+      pr: 354
+  - key: CLAUDE_CONFIG_DIR
+    title: Claude Code の設定のフォルダ
+    file: 環境変数
+    type: string
+    default: ~/.claude
+    description: '`setup.js write-settings` が `env.MDMARK_CONFIG` を書き込む `settings.json` のフォルダ'
+    env_var: CLAUDE_CONFIG_DIR
+    reload: restart
+    status: planned
+    visibility: developer
+    refs:
+      - LIB-472-1#
+    introduced:
+      pr: 354
+  - key: MDMARK_SERVE_COMMAND
+    title: 常駐サーバーを起動するコマンド
+    file: 環境変数
+    type: string
+    default: npx -y github:shuhei1101/mdmark#v{プラグインのバージョン} serve
+    description: '`setup.js start-server` が tmux のセッションで実行するコマンド。テストでこのブランチのビルドした CLI に差し替える'
+    env_var: MDMARK_SERVE_COMMAND
+    reload: restart
+    status: planned
+    visibility: developer
+    refs:
+      - IF-472-7#
+    introduced:
+      pr: 354
+  - key: MDMARK_START_TIMEOUT_SEC
+    title: 常駐サーバーの待ち受けを待つ上限
+    file: 環境変数
+    type: integer
+    default: '120'
+    description: '`setup.js start-server` が `mdmark serve` の待ち受けを待つ上限の秒数。テストで短くする'
+    env_var: MDMARK_START_TIMEOUT_SEC
+    reload: restart
+    status: planned
+    visibility: developer
+    refs:
+      - IF-472-7#constraints[待ち]
+    introduced:
+      pr: 354

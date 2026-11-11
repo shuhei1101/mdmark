@@ -1,0 +1,104 @@
+id: SC-472-61
+visibility: internal
+title: 本文を横に並べる
+scenarios:
+  - name: 正常シナリオ
+    setup:
+      - name: mdmark を読み込むページ
+        description: バージョンを固定した URL で `dist/index.js` と `dist/index.css` を読み込み、設定を指定して文書を描く HTML
+        notes: 画面と描く先の要素の幅は 1280px
+      - name: columns の範囲を持つ Markdown
+        description: '`<!-- columns -->` 〜 `<!-- /columns -->` を `<!-- column -->` 1 つで区切って段落とリストを 2 列に分けた範囲と、`<!-- column -->` 2 つで 3 列に分けた範囲を並べた文書。どの列も見出しを持たない'
+      - name: Mock
+        description: jsDelivr を、ビルドした `dist/` を同じパスで返却する手元の応答に差し替える
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 利用側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を指定して描かせる
+        M->>M: column のマーカーで範囲を列に分ける
+        M-->>P: 横に並べた列を描く
+        P-->>U: 文書を表示
+    expected:
+      - 1 つ目の範囲の 2 つの列が、同じ高さの位置から横に並んでいて、幅が等しい
+      - 2 つ目の範囲の 3 つの列が、横に等しい幅で並んでいる
+      - 列の class が、表の列のメニューの `.mdmark-columns-*` と別の名前である
+      - 本文にマーカーの文字が出ていない
+      - 記載の警告が出ていない
+    test: test_normal
+  - name: 正常シナリオ（狭い画面）
+    setup:
+      - name: mdmark を読み込むページ
+        description: 正常シナリオと同じ
+        notes: 画面と描く先の要素の幅は 390px
+      - name: columns の範囲を持つ Markdown
+        description: 正常シナリオと同じ
+      - &id001
+        name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 利用側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を指定して描かせる
+        M-->>P: 列を記載した順に縦に追加して描く
+        P-->>U: 文書を表示
+    expected:
+      - どちらの範囲も、列が記載した順に縦に追加され、各列の幅が本文の幅と等しい
+      - 文書に横のスクロールが出ていない
+    test: test_normal_when_narrow
+  - name: 異常シナリオ（列の数が 2〜3 でない）
+    setup:
+      - name: mdmark を読み込むページ
+        description: 正常シナリオと同じ
+      - name: 列の数が 2〜3 でない Markdown
+        description: '`<!-- column -->` を持たない columns の範囲と、`<!-- column -->` 3 つで 4 列に分けた columns の範囲を並べた文書'
+      - *id001
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 利用側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を指定して描かせる
+        M->>M: 列の数が 1 つと 4 つで、並べられない
+        M-->>P: 記載の警告と、中身を記載した順に描く
+        P-->>U: 記載の警告と本文を表示
+    expected:
+      - それぞれの範囲の上に、列の数と、並べられるのが 2〜3 列であることを記載した記載の警告がある
+      - 範囲の中身が横に並ばず、記載した順に本文の幅で出ている
+    test: test_error_when_column_count_invalid
+  - name: 異常シナリオ（columns の入れ子）
+    setup:
+      - name: mdmark を読み込むページ
+        description: 正常シナリオと同じ
+      - name: 入れ子の columns を持つ Markdown
+        description: 2 列の columns の範囲の 1 列目の中に、もう 1 つ 2 列の columns の範囲を記載した文書
+      - *id001
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 利用側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を指定して描かせる
+        M->>M: columns の中に columns がある
+        M-->>P: 外側を列に並べ、内側は記載の警告と記載した順の中身で描く
+        P-->>U: 文書を表示
+    expected:
+      - 外側の範囲の 2 つの列が横に並んでいる
+      - 内側の範囲の上に、columns を入れ子にできないことを記載した記載の警告があり、内側の中身は記載した順に縦に出ている
+    test: test_error_when_nested
+lead: 文書の作成者が `<!-- columns -->` 〜 `<!-- /columns -->` を `<!-- column -->` で区切り、mdmark が本文を横に 2〜3 列で並べる。狭い画面では縦に並べる。
+issue: 193
+primary_actor: 文書の作成者
+stakeholders:
+  - name: 読者
+    interest: 並べて比べたい中身を横に並んだまま読み込め、狭い画面でも横にスクロールせずに読み込める
+trigger: 利用側のページが、columns のマーカーを持つ文書を描かせる
+preconditions:
+  - ページがバージョンを固定した URL で mdmark の JavaScript と CSS を読み込んでいる
+  - 段組みの機能がオン（既定）
+success_guarantee: 区切った 2〜3 の中身が、広い画面では横に等しい幅で並び、狭い画面では記載した順に縦に追加される。
+minimal_guarantee: 列の数が 2〜3 でない範囲と入れ子の範囲は、記載の警告を出して中身を記載した順に描く。
+test_file: tests/e2e/単一ユースケース/本文を横に並べる.spec.ts

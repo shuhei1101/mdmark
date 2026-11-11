@@ -1,0 +1,40 @@
+id: MOD-472-345
+visibility: internal
+title: ライブラリ本体 / 部品の描画 / server-html.tsx
+functions:
+  - name: withServerHtml
+    title: 描画のインターフェースの HTML を描く
+    container: .storybook/server-html.tsx
+    kind: 関数
+    scope: public
+    summary: ストーリーに `parameters.server.id` があれば、ストーリーの代わりに `ServerHtml` を描くデコレーター。無ければストーリーをそのまま描く
+    args:
+      - name: Story
+        type: StoryFn
+        required: true
+        description: ストーリー
+      - name: context
+        type: StoryContext
+        required: true
+        description: '`parameters.server.id` と `args` を読み込む'
+    returns:
+      type: ReactElement
+      description: 描く要素
+    callees:
+      - '#components[ServerHtml]'
+components:
+  - name: ServerHtml
+    title: 描画のインターフェースの HTML
+    container: .storybook/server-html.tsx
+    kind: コンポーネント
+    summary: '`/render/{id}?{引数}` を取り、本文の HTML を ref の要素の `innerHTML` に入れる。200 でなければ状態コードと本文で例外を投げ、Storybook のエラーにする'
+    reason: 知らない部品の 404 の本文をストーリーに出して見逃さないようにする
+    props:
+      - name: id
+        type: string
+        required: true
+        description: ストーリーの `parameters.server.id`
+      - name: args
+        type: Record<string, unknown>
+        required: true
+        description: ストーリーの引数。文字列でない値は JSON にして問い合わせの引数にする

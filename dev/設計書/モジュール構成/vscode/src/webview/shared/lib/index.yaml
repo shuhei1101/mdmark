@@ -1,6 +1,0 @@
-summary: lib の設計書
-items:
-  - page: cn.ts.yaml
-    summary: VS Code 拡張機能 / Webview / cn.ts
-  - page: media-error.ts.yaml
-    summary: VS Code 拡張機能 / Webview / media-error.ts

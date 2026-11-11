@@ -1,0 +1,88 @@
+id: MOD-472-327
+visibility: internal
+title: ライブラリ本体 / 部品 / image.ts
+test_files:
+  - tests/unit/src/parts/image.test.ts
+functions:
+  - name: renderImageOpener
+    title: 画像の拡大のボタンを描く
+    container: src/parts/image.ts
+    kind: 関数
+    scope: internal
+    summary: '`img` の HTML を、スクリーンリーダー向けの名前 `画像を拡大: {alt}` の `button.mdmark-image-open` と、右上の `maximize-2` のアイコン（`aria-hidden`）で包む。`icon` が `false` のとき（GIF の画像。右上に止める・再生するボタンを配置するため）はアイコンを配置しない。`mount` が描いた `img` を包むときと、Storybook の部品が使用する'
+    args:
+      - name: options
+        type: '{ alt: string; img: string; icon?: boolean }'
+        required: true
+        description: 画像の代わりの文字と、`img` の HTML と、アイコンを配置するか（既定 `true`）
+    returns:
+      type: string
+      description: '`<button class="mdmark-image-open" type="button"` で始まる HTML'
+    callees:
+      - 'MOD-472-313#functions[escapeHtml]'
+      - MOD-472-180#functions[iconSvg]
+    refs:
+      - CMP-472-54#
+    unit_tests:
+      - name: test_render_image_opener
+        case: 正常
+        summary: スクリーンリーダー向けの名前を alt から作り、アイコンを配置する
+        condition: '`alt: "売上<推移>"`、`img: "<img src=\"a.png\" alt=\"売上\">"`'
+        mock: なし
+        expected: '`aria-label="画像を拡大: 売上&lt;推移&gt;"` の `button` の中に `img` と `<span class="mdmark-image-open-icon" aria-hidden="true">` の `svg`'
+      - name: test_render_image_opener_when_no_icon
+        case: 正常
+        summary: icon が false ならアイコンを配置しない
+        condition: '`alt: "ビルド"`、`img: "<img src=\"a.gif\" alt=\"ビルド\">"`、`icon: false`'
+        mock: なし
+        expected: '`button.mdmark-image-open` の中に `img` だけがあり、`mdmark-image-open-icon` が無い'
+    status: planned
+    introduced:
+      pr: 263
+  - name: renderImageFigure
+    title: 画像の図を描く
+    container: src/parts/image.ts
+    kind: 関数
+    scope: internal
+    summary: 部品設計『画像の図』の HTML を返却する。`width` を `style` の `--mdmark-image-width`、`align` を `data-align`、`only` を class `mdmark-only-{only}` にし、`caption` か `label` があれば `figcaption` を配置する（`label` は頭の `b`）。`lightbox` が `false` のときは `img` に `data-nolightbox` を付ける。`opener` が `false` のとき（`render`）は拡大のボタンを付けず `img` だけを配置し、`true` のとき（Storybook）は `lightbox` が `false` でなければ `renderImageOpener` で包む。`gif` が `true` のときは `img` に `data-gif` を付ける
+    args:
+      - name: options
+        type: '{ src: string; alt: string; caption?: string; width?: string; align?: "left" | "center" | "right"; lightbox?: boolean; only?: "light" | "dark"; id?: string; label?: string; opener?: boolean; gif?: boolean }'
+        required: true
+        description: 部品設計の引数と、内部で使用する `opener`（既定 `true`）・`gif`（既定 `false`）
+    returns:
+      type: string
+      description: '`<figure class="mdmark-figure mdmark-image"` で始まる HTML'
+    callees:
+      - 'MOD-472-313#functions[escapeHtml]'
+      - '#functions[renderImageOpener]'
+    refs:
+      - CMP-472-54#
+    unit_tests:
+      - name: test_render_image_figure
+        case: 正常
+        summary: 幅・配置・キャプションを当て、拡大のボタンで包む
+        condition: '部品設計の `Caption` に `width: "300px"`、`align: center`'
+        mock: なし
+        expected: '`<figure class="mdmark-figure mdmark-image" data-align="center" style="--mdmark-image-width: 300px">` の中に `button.mdmark-image-open` と `figcaption`'
+      - name: test_render_image_figure_when_render
+        case: 正常
+        summary: opener が false なら img だけを配置する
+        condition: '`opener: false`、`gif: true`、`only: dark`'
+        mock: なし
+        expected: '`button` が無く、`figure` が class `mdmark-only-dark`、`img` が `data-gif` を持つ'
+      - name: test_render_image_figure_when_no_lightbox
+        case: 正常
+        summary: lightbox が false ならボタンで包まない
+        condition: 部品設計の `NoLightbox`
+        mock: なし
+        expected: '`button` が無く、`img` が `data-nolightbox` を持つ'
+      - name: test_render_image_figure_when_sub_figure
+        case: 正常
+        summary: サブ図の番号と id を付ける
+        condition: 部品設計の `SubFigure`
+        mock: なし
+        expected: '`figure` が `id="fig-schemes-b"`、`figcaption` が `<b>図 2b</b>暗い配色`'
+    status: planned
+    introduced:
+      pr: 263

@@ -1,0 +1,157 @@
+id: MOD-472-109
+visibility: internal
+title: ライブラリ本体 / CLI / config.ts
+test_files:
+  - tests/unit/src/cli/config.test.ts
+data_models:
+  - name: LoadedConfig
+    title: 読み込んだ設定
+    container: src/cli/config.ts
+    usecase: 共通
+    summary: 見つけた設定ファイルの場所と、読み込んだ値
+    properties:
+      - name: path
+        type: string
+        description: 設定ファイルの絶対パス
+      - name: dir
+        type: string
+        description: 設定ファイルのあるフォルダ（設定のパスと glob の基準）
+      - name: config
+        type: CliConfig
+        description: 読み込んだ値。`MdmarkConfig` に `index`・`theme`・`extensions`・`build`・`aliases`（Schema に合わない行は `null`）を追加した構造
+constants:
+  - name: CONFIG_FILE
+    title: 設定ファイルの名前
+    container: src/cli/config.ts
+    summary: 上へ探す設定ファイルの名前
+    value: '`mdmark.config.yaml`'
+functions:
+  - name: findConfigFile
+    title: 設定ファイルを探す
+    container: src/cli/config.ts
+    usecase: 共通
+    summary: '`--config` があればそのパスを、無ければ今のフォルダから上へ順に最初に見つかった `mdmark.config.yaml` の絶対パスを返却する'
+    kind: 関数
+    scope: public
+    is_async: true
+    args:
+      - name: cwd
+        type: string
+        required: true
+        description: 今のフォルダ
+      - name: explicit
+        type: string | undefined
+        required: false
+        description: '`--config` の値'
+    returns:
+      type: Promise<string>
+      description: 設定ファイルの絶対パス
+    exceptions:
+      - name: CliError
+        condition: '`--config` のファイルが無い、またはルートまで探しても無い'
+        message: mdmark.config.yaml が見つかりません（{探し始めたフォルダ} から上を探しました）。mdmark init で配置できます。
+    unit_tests:
+      - name: test_find_config_file
+        case: 正常
+        summary: 上のフォルダの設定ファイルを見つける
+        condition: '`{一時}/mdmark.config.yaml` があり、`cwd` は `{一時}/a/b`'
+        mock: 一時フォルダ
+        expected: '`{一時}/mdmark.config.yaml`'
+      - name: test_find_config_file_when_explicit
+        case: 正常
+        summary: '`--config` のパスを優先する'
+        condition: '`explicit` に `docs/mdmark.config.yaml`'
+        mock: 一時フォルダにそのファイルを配置する
+        expected: '`{cwd}/docs/mdmark.config.yaml`'
+      - name: test_find_config_file_when_missing
+        case: 異常
+        summary: 見つからないと CliError を投げる
+        condition: 一時フォルダと上に設定ファイルが無い
+        mock: 一時フォルダ
+        expected: '`CliError` を投げ、メッセージに `mdmark init` が入る'
+        exception: CliError
+    status: planned
+    introduced:
+      pr: 32
+  - name: loadConfig
+    title: 設定ファイルを読み込む
+    container: src/cli/config.ts
+    usecase: 共通
+    summary: 設定ファイルを yaml の `parse` で読み込み、構造を検めずに返却する
+    kind: 関数
+    scope: public
+    is_async: true
+    args:
+      - name: path
+        type: string
+        required: true
+        description: 設定ファイルの絶対パス
+    returns:
+      type: 'Promise<{ path: string; dir: string; raw: unknown }>'
+      description: 場所と読み込んだ値（空のファイルは `null`）
+    exceptions:
+      - name: CliError
+        condition: YAML として読み込めない（`YAMLParseError`）、またはファイルを開けない
+        message: '{ファイル} の {行} 行目を YAML として読み込めません（{誤りの内容}）。字下げと記載方法を修正してください。'
+    unit_tests:
+      - name: test_load_config
+        case: 正常
+        summary: 読み込んだ値とフォルダを返却する
+        condition: '`build: {include: ["*.md"], out: a.html}` のファイル'
+        mock: 一時フォルダ
+        expected: '`raw.build.out` が `a.html`、`dir` が一時フォルダ'
+      - name: test_load_config_when_yaml_broken
+        case: 異常
+        summary: 読み込めない行を示す CliError を投げる
+        condition: 3 行目の字下げが崩れたファイル
+        mock: 一時フォルダ
+        expected: '`CliError` を投げ、メッセージに `3 行目` が入る'
+        exception: CliError
+    status: planned
+    introduced:
+      pr: 32
+  - name: requireConfig
+    title: 書き出しに使用する設定を読み込む
+    container: src/cli/config.ts
+    usecase: 共通
+    summary: 端末の設定と上のフォルダの設定ファイルを重ねて読み込み、読み込めない・構造が合わなければ `mdmark check` で確認できることを添えた CliError を投げる
+    kind: 関数
+    scope: public
+    is_async: true
+    args:
+      - name: cwd
+        type: string
+        required: true
+        description: 今のフォルダ
+      - name: explicit
+        type: string | undefined
+        required: false
+        description: '`--config` の値'
+    returns:
+      type: Promise<LoadedConfig>
+      description: 構造の合う設定
+    exceptions:
+      - name: CliError
+        condition: 設定ファイルが無い・読み込めない・`validateConfig` のずれが 1 件以上
+        message: '{ファイル} の {場所} が設定の構造に合いません（{内容}）。mdmark check で合わないところを確認できます。'
+    unit_tests:
+      - name: test_require_config_when_invalid
+        case: 異常
+        summary: 構造が合わないと mdmark check を添えた CliError を投げる
+        condition: '`libraries` が文字列の設定ファイル'
+        mock: 一時フォルダ
+        expected: '`CliError` を投げ、メッセージに `libraries` と `mdmark check` が入る'
+        exception: CliError
+    callees:
+      - MOD-472-116#functions[loadLayeredConfig]
+      - MOD-472-116#functions[displayConfigPath]
+    status: planned
+    introduced:
+      pr: 32
+    process: |-
+      1. 設定を重ねて読み込む（設定を重ねて読み込む。`purpose: export`、`env` は `process.env`、`home` は `os.homedir()`）
+         - `ConfigNotFoundError` の場合、その文で `CliError` を投げる
+      2. `nearest` が無い場合、今の「`mdmark.config.yaml` が見つかりません」の `CliError` を投げる
+      3. `unreadable` がある場合、そのファイルのパス（設定ファイルのパスを表示の構造にする。`base` は `cwd`）と行で、今の「YAML として読み込めません」の `CliError` を投げる
+      4. `issues` が 1 件以上の場合、最初のずれのファイルを表示の構造にして、今の「設定の構造に合いません」の `CliError` を投げる
+      5. `{ path: nearest, dir: nearest のフォルダ, config }` を返却する。`config` は重ねた設定のパスを相対パスに戻したもの（パスを相対パスに戻す。`dir` は nearest のフォルダ）

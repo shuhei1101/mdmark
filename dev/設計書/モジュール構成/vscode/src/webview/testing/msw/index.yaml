@@ -1,4 +1,0 @@
-summary: msw の設計書
-items:
-  - page: handlers.ts.yaml
-    summary: VS Code 拡張機能 / Webview / handlers.ts

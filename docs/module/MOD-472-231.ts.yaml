@@ -1,0 +1,40 @@
+id: MOD-472-231
+visibility: internal
+title: ライブラリ本体 / 操作 / placement.ts
+test_files:
+  - tests/unit/src/interact/placement.test.ts
+functions:
+  - name: chooseTipSide
+    title: ツールチップを配置する側を決める
+    container: src/interact/placement.ts
+    summary: 持ち主の上端・下端とツールチップの高さから、ツールチップを上と下のどちらに配置するかを返却する
+    description: '`placement` が `top` なら、`anchorTop - gap - height` が 0 以上のとき `top`、そうでなければ `bottom`。`bottom` なら、`anchorBottom + gap + height` が `viewportHeight` 以下のとき `bottom`、収まらず `anchorTop - gap - height` が 0 以上のとき `top`、どちらにも収まらなければ `bottom`。用語・図・ヒントのツールチップを配置する処理が共通で使用する'
+    kind: 関数
+    scope: internal
+    args:
+      - name: options
+        type: '{ anchorTop: number; anchorBottom: number; height: number; gap: number; viewportHeight: number; placement: TooltipPlacement }'
+        required: true
+        description: 持ち主の画面に対する上端・下端、ツールチップの高さ、持ち主との間、画面の高さ、先に出す側（どれも px）
+    returns:
+      type: TooltipPlacement
+      description: 配置する側
+    unit_tests:
+      - name: test_choose_tip_side
+        case: 正常
+        summary: 既定の `top` で上に収まれば上
+        condition: '`anchorTop: 300`・`anchorBottom: 320`・`height: 100`・`gap: 6`・`viewportHeight: 800`・`placement: "top"`'
+        mock: なし
+        expected: '`top`'
+      - name: test_choose_tip_side_when_no_room_above
+        case: 正常
+        summary: '`top` で上に収まらなければ下'
+        condition: '`anchorTop: 50`・`height: 100`・`gap: 6`・`placement: "top"`（他は `test_choose_tip_side` と同じ）と、境の `anchorTop: 106`'
+        mock: なし
+        expected: '`anchorTop: 50` は `bottom`、`anchorTop: 106` は `top`'
+      - name: test_choose_tip_side_when_bottom
+        case: 正常
+        summary: '`bottom` は下を先にし、下に収まらず上に収まれば上'
+        condition: '`placement: "bottom"` で、`anchorBottom: 320`（下に収まる）と `anchorTop: 740`・`anchorBottom: 760`（下に収まらず上に収まる）と、`viewportHeight: 120`・`anchorTop: 50`・`anchorBottom: 70`（どちらにも収まらない）'
+        mock: なし
+        expected: 順に `bottom`・`top`・`bottom`

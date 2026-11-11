@@ -1,0 +1,79 @@
+id: LIB-472-11
+visibility: internal
+title: "esbuild-wasm"
+kind: "ライブラリ"
+version:
+  current: 0.28.2
+  latest: 0.28.2
+  checked_on: '2026-11-06'
+  source: vscode/package.json
+  pinning: 完全一致（CLI が使用する esbuild と同じバージョンにそろえる。0.x はマイナーバージョンで破壊的変更が入る）
+catalogs:
+  - name: API
+    version: 0.28.2
+    entries:
+      - name: initialize
+        kind: 関数
+        purpose: コンパイルした `esbuild.wasm` で esbuild を初期化する（1 つのプロセスで 1 回）
+        params:
+          - name: wasmModule
+            type: WebAssembly.Module
+            required: true
+            description: '`dist/esbuild.wasm` を `WebAssembly.compile` したもの'
+          - name: worker
+            type: boolean
+            default: 'true'
+            description: Web の Worker で動かすか。拡張機能ホストには Worker が無いため `false` にする
+        returns:
+          - name: '-'
+            type: Promise<void>
+            description: 初期化を終えたら解決する
+      - name: build
+        kind: 関数
+        purpose: 拡張のモジュールを import 先も含めて 1 つの ES モジュールにまとめる。引数と戻り値は esbuild の `build` と同じ
+        params:
+          - name: plugins
+            type: Plugin[]
+            description: ファイルシステムを持たないため、ローカルのファイルも `onResolve`・`onLoad` で読み込む。`file` の名前空間は Windows のパスを拒むため、独自の名前空間を使用する
+          - name: write
+            type: boolean
+            default: 'true'
+            description: '`false` で `outputFiles` に結果を返却する'
+        returns:
+          - name: outputFiles[0].text
+            type: string
+            description: まとめた ES モジュールのコード
+lead: esbuild を WebAssembly で動かすバージョン。VS Code 拡張機能が拡張機能ホストの中で設定の `extensions` をまとめるのに使用する。
+purl: pkg:npm/esbuild-wasm@0.28.2
+dependency_scope: 必須
+adoption: 採用
+upstream: evanw/esbuild
+verification:
+  state: 済
+  date: '2026-11-06'
+  detail: 'PoC #349（`206ff67d`）。`esbuild-wasm/lib/browser.js` を、そのファイルの先頭に `var self = globalThis;` を追加する esbuild のプラグインつきで `dist/extension.cjs` にまとめ、`esbuild.wasm` を `dist/` にコピーした。`vsce package --no-dependencies` の .vsix は 3.99MB で `node_modules` を含まない。VS Code 1.141.0 の拡張機能ホストで `initialize({ wasmModule, worker: false })` が通り、`globalThis.self` は増えない。`build`（`bundle`・`format: esm`・`platform: browser`・`minify`・`target`・`write: false`）で、型注釈・相対パスの `.ts`・jsDelivr の URL の import を持つ拡張を 1 つの ES モジュールにした。初期化と 1 回目 801ms、2 回目以降 189〜555ms（URL の取得を含む）。20 回で RSS が 12.1MB 増え、`stop()` では戻らない'
+limitations:
+  - item: 入口
+    content: '`main` の `lib/main.js` はまとめると例外を投げ、PATH の `node` を子プロセスで起動するため、拡張機能ホストでは使用できない。`lib/browser.js` を読み込む'
+    notes: PoC #349
+issues:
+  - title: 終わったビルドの結果がメモリに残る
+    summary: '`worker: false` では、終わったビルドの結果が解放されない'
+    occurred_on: '2026-11-06'
+    state: 回避策あり
+    description: 'evanw/esbuild#4560（未解決）。PoC で 20 回束ねると RSS が 12.1MB 増え、`stop()` してもう一度初期化しても戻らなかった。'
+    conditions:
+      - 0.28.2
+    workarounds:
+      - method: まとめるのを、設定を再読み込みして `extensions` のパスの並びかそのファイルが変わったときだけにする
+        result: Markdown の書き換えの再描画ではメモリが増えない
+license: MIT（商用利用可）
+docs_url: https://esbuild.github.io/api/
+selection:
+  candidates: esbuild-wasm・`@rollup/wasm-node` と sucrase・`@rollup/browser` と sucrase・`@rolldown/browser` を比べた（PR #347 の案のレビュー）。ネイティブの esbuild は .vsix に入らないため削除した。
+  decision: CLI と同じ esbuild のバージョン・プラグイン・`minify`・`target` でまとめられ、`mdmark export` と同じ出力になる。依存が自身だけで、今の配布（`dist/extension.cjs` 1 つ・`--no-dependencies`）に入る。
+  consequences: .vsix が約 3.6MB 増える。`lib/browser.js` を読み込み、`self` を追加するビルドのプラグインが要る。
+install: |-
+  ```bash
+  cd vscode && npm i -D -E esbuild-wasm@0.28.2
+  ```

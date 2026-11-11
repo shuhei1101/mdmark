@@ -1,0 +1,223 @@
+id: MOD-472-157
+visibility: internal
+title: ライブラリ本体 / ビューとコメント / index.ts
+test_files:
+  - tests/unit/src/comments/index.browser.test.ts
+data_models:
+  - name: CommentsPartModule
+    title: コメントの部品のモジュール
+    container: src/comments/index.ts
+    role: モジュールの構造
+    summary: '`dist/comments.js` が export する関数'
+    properties:
+      - name: attachComments
+        type: '(options: { root: HTMLElement; store: MdmarkCommentStore; docId: string; reveal?: (element: HTMLElement) => void; margin?: boolean }) => Promise<CommentsController>'
+        description: '`mountComments` と `mount` が呼ぶ'
+  - name: CommentsController
+    title: 付けたコメントの操作
+    container: src/comments/index.ts
+    role: モジュールの構造
+    summary: '`attachComments` の Promise の値'
+    properties:
+      - name: detach
+        type: () => void
+        description: マーカーを削除して文字を元に戻し、配置した要素と受け取りを解除する。2 回目以降は何もしない
+      - name: reload
+        type: () => Promise<void>
+        description: '`load` をもう一度呼んでマーカーをもう一度付ける'
+      - name: focus
+        type: '(id: string) => void'
+        description: その `id` のコメントのマーカーへ移って強調する
+    status: planned
+    introduced:
+      pr: 280
+constants:
+  - name: COMMENT_BLOCKS
+    title: コメントを付けられるブロック
+    container: src/comments/index.ts
+    summary: 選んだ文字の始まりと終わりが同じ 1 つに入っていればボタンを出すブロック
+    value: '"p, li, td, th, h1, h2, h3, h4, h5, h6, blockquote"'
+  - name: COMMENT_EXCLUDED
+    title: コメントを付けない場所
+    container: src/comments/index.ts
+    summary: この中の選びにはボタンを出さず、箇所を探す本文の文字にも数えない（マーカー `.mdmark-comment-mark` だけは本文の文字に数える）
+    value: '"input, textarea, pre, code, .mdmark-view-switch, .mdmark-view-board, .mdmark-filter-drawer, .mdmark-comment-mark, .mdmark-comment-popover, .mdmark-comment-add, .mdmark-comment-orphans"'
+  - name: PENDING_HIGHLIGHT
+    title: 選んだ箇所の色の名前
+    container: src/comments/index.ts
+    summary: 入力欄を開いている間の選んだ文字に適用する Custom Highlight の名前（CSS の `::highlight()` と統一する）
+    value: '"mdmark-comment-pending"'
+  - name: DISCARD_MESSAGE
+    title: 捨てる確認の文
+    container: src/comments/index.ts
+    summary: 本文がある入力欄を閉じるときの `window.confirm` の文
+    value: '"記載したコメントを捨てて閉じますか？"'
+  - name: POPOVER_GAP_PX
+    title: 箇所と枠の隙間
+    container: src/comments/index.ts
+    summary: ボタン・入力欄・吹き出しを箇所から離す幅
+    value: '6'
+  - name: POPOVER_GUTTER_PX
+    title: 画面の端からの幅
+    container: src/comments/index.ts
+    summary: ボタン・入力欄・吹き出しを画面の端から離す幅
+    value: '8'
+functions:
+  - name: attachComments
+    title: コメントを付ける
+    container: src/comments/index.ts
+    summary: 読み込んだコメントにマーカーを付け、文字の選び・ボタン・入力欄・吹き出しの操作を付け、削除する関数を返却する
+    kind: 関数
+    scope: public
+    is_async: true
+    side_effects: '`root` の中の文字をマーカーで包み、ボタン・一覧を配置し、`document` と `window` に受け取りを付ける。`store.load`・`store.save`・`store.update`・`store.remove` を呼ぶ'
+    args:
+      - name: options
+        type: '{ root: HTMLElement; store: MdmarkCommentStore; docId: string; reveal?: (element: HTMLElement) => void; margin?: boolean }'
+        required: true
+        description: 範囲の要素・読み込みと保存の関数・対象の ID・マーカーを囲む閉じたセクションと行の詳細を開く関数（`mount` は `openEnclosing` を指定する。`mountComments` は指定しない）・余白のマーカーを配置するか（`mount` だけが `true` を指定する。既定は `false`）
+    returns:
+      type: Promise<CommentsController>
+      description: 削除する関数と、再読み込みする・マーカーへ移る関数
+    process: |-
+      1. `store.load({ docId })` を待つ。reject するか、配列でないか `isComment` でない要素があれば、`load`・`docId`・元のエラーか合わなかった値を `console.error` に出し、コメントを空にする
+      2. `commentText(root)` と `locateComments` で箇所を探し、箇所ごとに文字のセクションを分けて `renderCommentMark` の構造の `mark` で包み、付いたコメントを記録する。見つからないコメントがあれば `root` の末尾に `renderCommentOrphans` を配置する。スクリーンリーダーの説明 `コメントが付いた箇所` を `document.body` に 1 つ配置する
+      3. `selectionchange` を受け、選びの始まりと終わりが `root` の中の同じ `COMMENT_BLOCKS` に入り、`COMMENT_EXCLUDED` に入らず、文字が空白だけでないときに、`renderCommentButton` をそのブロックの直後に配置し、選んだ文字の終わりの下（収まらなければ上）に配置する。条件を削除されたらボタンを隠す（フォーカス中は隠さない）
+      4. ボタンを押すと、`renderCommentForm` の入力欄を `document.body` に配置して選んだ範囲の下に配置し、本文の欄へフォーカスを移し、`CSS.highlights` があれば範囲を `PENDING_HIGHLIGHT` に入れる
+      5. 保存のボタンで、本文が空なら `state: empty` の通知を出す。空でなければ `state: saving` にして `store.save({ docId, comment: draftFromRange(...) })` を待つ。reject するか `isComment` でなければ `save`・`docId`・元のエラーを `console.error` に出して `state: failed` にし、本文を残す。保存できたら入力欄を閉じ、範囲をマーカーで包んでマーカーへフォーカスを移す
+      6. キャンセルと Esc で入力欄を閉じる。本文があれば `window.confirm(DISCARD_MESSAGE)` で確認し、捨てないときは残す。閉じたらボタンへフォーカスを戻す。外側の押下では閉じない
+      7. マーカーの押下・Enter・Space で `renderCommentBubble`（`ids`、`canEdit` は `store.update` が関数か、`canRemove` は `store.remove` が関数か）の吹き出しを開いてマーカーの `aria-expanded` を `true` にし、吹き出しへフォーカスを移す。`canEdit` か `canRemove` なら `attachCommentActions` で修正と削除の操作を付ける。閉じるボタンと Esc で閉じてマーカーへフォーカスを戻し、外側の押下でも閉じる。Esc は、`attachCommentActions` の `cancel()` が真を返却したら（入力欄か削除の確認を閉じた・待っている）吹き出しを閉じない
+      8. 修正できたら（`onUpdated`）、記録したコメントとマーカーに付いたコメントの、その `id` の本文を書き換える。削除できたら（`onRemoved`）、記録したコメントとマーカーに付いたコメントからその `id` を除く。そのマーカーのコメントが残らなければ、吹き出しを開いていれば閉じ、マーカーを含む `COMMENT_BLOCKS` のブロックを記録してからマーカーを中の文字のセクションに戻して `normalize` し、吹き出しを開いていたときはそのブロックに `tabindex="-1"` を付けて `focus({ preventScroll: true })` する。残るかを返却する
+      9. `scroll`（捕捉）と `resize` で、開いている枠かボタンを元の箇所に付いていかせる
+      10. `reload` は、再読み込みの番号を 1 進めて記録し、`store.load({ docId })` を待つ。待つ間に削除したか番号が進んだら何もせずに解決する。reject したか配列でないか `isComment` でない要素があれば、`load`・`docId`・元のエラーか合わなかった値を `console.error` に出し、元のエラー（合わない値のときは `TypeError`）で reject する（マーカーは残す）。読み込めたら記録したコメントを置き換え、開いている吹き出しを閉じ（入力欄は残す）、手順 2 のとおりマーカーと一覧をもう一度付けて解決する
+      11. `focus(id)` は、削除した後か、その `id` のコメントを持つマーカーが無ければ何もしない。あれば、全てのマーカーの `data-focused` を削除し、最初のマーカーを `reveal` に指定してから `scrollIntoView({ block: "nearest" })` してフォーカスを移し、その `id` を持つマーカーに `data-focused` を付ける。吹き出しは開かない
+      12. `detach` は、受け取りを解除し、配置した要素と `PENDING_HIGHLIGHT` を削除し、マーカーを中の文字のセクションに戻して `normalize` する。2 回目以降は何もしない
+      13. `margin` が `true` で `root` が `div.mdmark-content` のときは、手順 2 の後に `attachMarginMarkers({ content: root })` を呼び、削除する関数を手順 12 の `detach` で呼ぶ。マーカーのもう一度付け（保存・`reload`）と吹き出しの開閉は、`attachMarginMarkers` が `root` の中の変化から取得する
+    unit_tests:
+      - name: test_attach_comments_when_loaded
+        case: 正常
+        summary: 読み込んだコメントにマーカーを付け、見つからないものを一覧に出す
+        condition: '`導入の手順` を持つ段落。`load` が `quote` が `導入の手順` と `無い文字` の 2 件を返却する'
+        mock: '`store` はメモリーで返却する'
+        expected: '`導入の手順` が `mark.mdmark-comment-mark` に包まれ、末尾の一覧に `無い文字` がある'
+      - name: test_attach_comments_when_saved
+        case: 正常
+        summary: 選んで記載して保存するとマーカーを付ける
+        condition: 段落の `導入の手順` を選び、ボタン・本文 `手順の数を <b>3</b> にする`・保存を押す
+        mock: '`save` は下書きに `id: "c1"` を追加して返却し、引数を記録する'
+        expected: '`save` が `docId` と `quote`・`prefix`・`suffix`・`body` で呼ばれる。入力欄が無く、マーカーにフォーカスがある。マーカーを押すと吹き出しに本文が文字のまま出る'
+      - name: test_attach_comments_when_empty_body
+        case: 異常
+        summary: 空のまま保存すると通知を出して save を呼ばない
+        condition: 本文を記載せずに保存を押す
+        mock: '`save` は呼ばれたかを記録する'
+        expected: '`コメントを記載してから保存してください。` が出て、`save` は呼ばれない'
+      - name: test_attach_comments_when_save_rejected
+        case: 異常
+        summary: 保存できないと本文を残して通知する
+        condition: 本文を記載して保存を押す
+        mock: '`save` は reject する。`console.error` を記録する'
+        expected: 入力欄と本文が残り、`role="alert"` に失敗の通知。`console.error` に `save` と `docId`
+      - name: test_attach_comments_when_load_rejected
+        case: 異常
+        summary: 読み込めないとマーカーを付けずに新しいコメントは付けられる
+        condition: '`load` が reject する'
+        mock: '`console.error` を記録する'
+        expected: マーカーが無く、`console.error` に `load`。文字を選ぶとボタンが出る
+      - name: test_attach_comments_when_discarding
+        case: 正常
+        summary: 本文があるときの Esc で確認し、捨てないと残す
+        condition: 本文を記載して Esc を押す
+        mock: '`window.confirm` は `false` を返却する'
+        expected: '`window.confirm` が `記載したコメントを捨てて閉じますか？` で呼ばれ、入力欄が残る'
+      - name: test_attach_comments_when_excluded
+        case: 正常
+        summary: コードとビューの操作の中の選びにはボタンを出さない
+        condition: '`code` の中の文字を選ぶ'
+        mock: なし
+        expected: ボタンが `hidden`
+      - name: test_attach_comments_when_detached
+        case: 正常
+        summary: 削除すると文字を元の並びに戻す
+        condition: マーカーを付けた後に削除する関数を呼ぶ
+        mock: なし
+        expected: '`root` の `innerHTML` が付ける前と同じで、ボタン・一覧・説明が無い'
+      - name: test_attach_comments_when_store_without_edit
+        case: 正常
+        summary: update・remove を持たない読み込みと保存の関数では、吹き出しに編集と削除を出さず、持つ関数のボタンだけを出す
+        condition: '`load`・`save` だけの `store` と、`remove` も持つ `store` で、それぞれマーカーを押す'
+        mock: '`store` はメモリーで返却する'
+        expected: 1 つ目の吹き出しに `mdmark-comment-icon-button` が無い。2 つ目は `aria-label="削除"` のボタンだけがある
+      - name: test_attach_comments_when_removed_last
+        case: 正常
+        summary: マーカーの最後のコメントを削除すると、マーカーを削除して吹き出しを閉じ、マーカーを含んでいたブロックへフォーカスを移す
+        condition: '`導入の手順` に 1 件のコメント。マーカーを押し、「削除」と確認の「削除」を押す'
+        mock: '`remove` は引数を記録して解決する'
+        expected: '`remove` が `{ docId, id }` で 1 回呼ばれる。マーカーと吹き出しが無く、段落が `tabindex="-1"` でフォーカスを持つ'
+      - name: test_attach_comments_when_reloaded
+        case: 正常
+        summary: 再読み込みするとマーカーをもう一度付け、開いている吹き出しを閉じる
+        condition: '`load` が 1 回目は `導入の手順`、2 回目は `手順の数` のコメントを返却する。マーカーを押して吹き出しを開いてから `reload()`'
+        mock: '`store` はメモリーで返却する'
+        expected: '`reload()` が解決した後、`mark` の文字が `手順の数` だけで、吹き出しが無い'
+      - name: test_attach_comments_when_reloaded_with_form
+        case: 正常
+        summary: 再読み込みしても記載している入力欄は残す
+        condition: 文字を選んで入力欄に本文を記載した後に `reload()`
+        mock: '`store` はメモリーで返却する'
+        expected: 入力欄と記載した本文が残る
+      - name: test_attach_comments_when_reload_rejected
+        case: 異常
+        summary: 再読み込みできないとマーカーを残して元のエラーで reject する
+        condition: 1 件を読み込んでマーカーを付けた後、2 回目の `load` が reject する
+        mock: '`console.error` を記録する'
+        expected: '`reload()` が元のエラーで reject し、マーカーが残る。`console.error` に `load` と `docId`'
+      - name: test_attach_comments_when_reload_superseded
+        case: 正常
+        summary: 次の reload か detach の後に届いた再読み込みの結果を描かない
+        condition: 2 回目の `load` を待たせたまま `reload()` をもう 1 回呼び、3 回目を先に返却してから 2 回目を返却する。別の `root` で、`load` を待たせたまま `detach` を呼んでから返却する
+        mock: 合図で返却する `load`
+        expected: 1 つ目は 3 回目の結果のマーカーのまま。2 つ目は `reload()` が解決し、マーカーが無い
+      - name: test_attach_comments_when_focused
+        case: 正常
+        summary: マーカーへ移ってフォーカスと data-focused を付け、次の focus で前の強調を解除する
+        condition: '`c1`・`c2` の 2 件を別の段落に付け、`focus("c1")`、`focus("c2")`、`focus("無い")` の順に呼ぶ'
+        mock: '`reveal` は引数を記録する関数。`Element.prototype.scrollIntoView` を引数を記録する関数に差し替える'
+        expected: '`focus("c1")` の後は `c1` のマーカーにフォーカスと `data-focused` があり、`reveal` がそのマーカーで、`scrollIntoView` が `{ block: "nearest" }` で呼ばれる。`focus("c2")` の後は `c1` のマーカーが `data-focused` を持たない。`focus("無い")` の後も `c2` のマーカーが `data-focused` を持つ。吹き出しは開かない'
+      - name: test_attach_comments_when_reloaded_with_margin
+        case: 正常
+        summary: 余白のマーカーを配置したとき、再読み込みするともう一度付けたマーカーの数に余白のマーカーをもう一度配置する
+        condition: '`root` が `div.mdmark-content` で `margin: true`。`load` が 1 回目は 1 つ目の段落の 1 件、2 回目は 2 つの段落それぞれの 2 件を返却する。`reload()` の後に次のフレームを待つ'
+        mock: '`store` はメモリーで返却する'
+        expected: '`reload()` の前は `div.mdmark-comment-margin` の中のマーカーが 1 つ、後は 2 つ'
+    refs:
+      - IF-472-35#constraints[コメントの操作]
+      - IF-472-35#constraints[コメントの修正と削除]
+      - IF-472-35#constraints[コメントの再読み込み]
+      - IF-472-35#constraints[コメントの箇所へ移る]
+      - IF-472-27#
+      - SCR-472-4#
+  - name: placePopover
+    title: 枠を箇所に配置する
+    container: src/comments/index.ts
+    summary: 枠を箇所の下に配置し、下に収まらなければ上に配置し、左右は画面の中に収める
+    kind: 関数
+    scope: internal
+    args:
+      - name: options
+        type: '{ element: HTMLElement; rect: DOMRect }'
+        required: true
+        description: 配置する枠と箇所の矩形
+    returns:
+      type: void
+      description: '-'
+    process: |-
+      1. 左は `rect.left` を `POPOVER_GUTTER_PX` と画面の幅から枠の幅と `POPOVER_GUTTER_PX` を参照した値の間に収める
+      2. 上は `rect.bottom + POPOVER_GAP_PX`。枠の下端が画面の高さから `POPOVER_GUTTER_PX` を参照した値を超えるなら `rect.top - 枠の高さ - POPOVER_GAP_PX`（`POPOVER_GUTTER_PX` 未満にしない）
+    unit_tests:
+      - name: test_place_popover_when_no_room_below
+        case: 正常
+        summary: 下に収まらなければ上に配置する
+        condition: 画面の下端近くの矩形
+        mock: なし
+        expected: '`top` が矩形の上端より上'

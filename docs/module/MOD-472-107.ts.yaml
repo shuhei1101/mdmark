@@ -1,0 +1,29 @@
+id: MOD-472-107
+visibility: internal
+title: ライブラリ本体 / CLI / errors.ts
+data_models:
+  - name: CliIo
+    title: CLI の入出力
+    container: src/cli/errors.ts
+    usecase: 共通
+    summary: コマンドが使用する今のフォルダと、標準出力・標準エラーへの書き出し
+    properties:
+      - name: cwd
+        type: string
+        description: 今のフォルダ
+      - name: stdout
+        type: '(line: string) => void'
+        description: 標準出力へ 1 行書く
+      - name: stderr
+        type: '(line: string) => void'
+        description: 標準エラーへ 1 行書く
+  - name: CliError
+    title: CLI の誤り
+    container: src/cli/errors.ts
+    usecase: 共通
+    summary: 原因と修正方法の 1 文を持ち、`main` が標準エラーに出して終了コード 1 にする誤り
+    inherits: Error
+    properties:
+      - name: message
+        type: string
+        description: 原因と修正方法の日本語の 1 文

@@ -1,0 +1,100 @@
+id: MOD-472-148
+visibility: internal
+title: ライブラリ本体 / バージョンを上げる / versions.ts
+test_files:
+  - tests/unit/src/cli/versions.test.ts
+constants:
+  - name: VERSION_PATTERN
+    title: バージョンの書式
+    container: src/cli/versions.ts
+    summary: 手元のバージョン・パッケージのバージョン・移行の手順のフォルダ名が合うべき書式
+    value: '`/^v(\d+)\.(\d+)\.(\d+)$/`'
+functions:
+  - name: parseVersion
+    title: バージョンを読み込む
+    container: src/cli/versions.ts
+    usecase: バージョンを上げる
+    summary: '`v{MAJOR}.{MINOR}.{PATCH}` を 3 つの数にする。書式が違えば `undefined`'
+    kind: 関数
+    scope: public
+    is_async: false
+    args:
+      - name: text
+        type: string
+        required: true
+        description: バージョンの文字列
+    returns:
+      type: '[number, number, number] | undefined'
+      description: MAJOR・MINOR・PATCH
+    unit_tests:
+      - name: test_parse_version
+        case: 正常
+        summary: バージョンを 3 つの数にする
+        condition: '`v0.12.3`'
+        mock: なし
+        expected: '`[0, 12, 3]`'
+      - name: test_parse_version_when_invalid
+        case: 異常
+        summary: 書式の違うバージョンは undefined
+        condition: '`0.3`・`v0.3`・`v0.3.0-rc`'
+        mock: なし
+        expected: どれも `undefined`
+    status: planned
+    introduced:
+      pr: 39
+  - name: compareVersions
+    title: バージョンを比べる
+    container: src/cli/versions.ts
+    usecase: バージョンを上げる
+    summary: 2 つのバージョンを MAJOR・MINOR・PATCH の順に数として比べる
+    kind: 関数
+    scope: public
+    is_async: false
+    args:
+      - name: a
+        type: string
+        required: true
+        description: 書式の合うバージョン
+      - name: b
+        type: string
+        required: true
+        description: 書式の合うバージョン
+    returns:
+      type: -1 | 0 | 1
+      description: '`a` が古ければ -1、同じなら 0、新しければ 1'
+    exceptions:
+      - name: Error
+        condition: どちらかが `VERSION_PATTERN` に合わない（呼ぶ側の不具合）
+        message: 'バージョンの書式が違います: {バージョン}'
+    unit_tests:
+      - name: test_compare_versions
+        case: 正常
+        summary: 桁ごとに数として比べる
+        condition: '`v0.10.0` と `v0.9.9`、`v1.0.0` と `v1.0.0`、`v0.3.0` と `v0.4.0`'
+        mock: なし
+        expected: 1・0・-1
+    status: planned
+    introduced:
+      pr: 39
+  - name: cliVersion
+    title: 呼んだ CLI のバージョン
+    container: src/cli/versions.ts
+    usecase: 共通
+    summary: ビルドが `dist/cli.js` に埋めた `__MDMARK_VERSION__` を返却する
+    description: ライブラリ本体の `version()` と同じ出所。hotfix のビルドは `version.ini` を上げず `--version` で打つタグのバージョンを埋めるため、`version.ini` は読み込まない
+    kind: 関数
+    scope: public
+    is_async: false
+    returns:
+      type: string
+      description: 埋めたバージョン（`v{MAJOR}.{MINOR}.{PATCH}`）
+    unit_tests:
+      - name: test_cli_version
+        case: 正常
+        summary: 埋めたバージョンを返却する
+        condition: '`__MDMARK_VERSION__` が `v0.5.0`'
+        mock: '`vi.stubGlobal("__MDMARK_VERSION__", "v0.5.0")`'
+        expected: '`v0.5.0`'
+    status: planned
+    introduced:
+      pr: 39

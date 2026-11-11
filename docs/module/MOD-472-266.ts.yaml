@@ -1,0 +1,80 @@
+id: MOD-472-266
+visibility: internal
+title: ライブラリ本体 / 索引と用語 / terms.ts
+test_files:
+  - tests/unit/src/interact/terms.browser.test.ts
+functions:
+  - name: attachTermTips
+    title: 用語のツールチップの操作を付ける
+    container: src/interact/terms.ts
+    kind: 関数
+    scope: internal
+    summary: mount が描いた用語の下線に、ツールチップを開閉する操作を付ける
+    description: '用語のツールチップと関連文書の一覧のタイトルの `id` をページで一意にもう一度振り、`aria-describedby`・`aria-details`・`aria-labelledby` もそれに合わせる。開閉は `mdmark-term-wrap` の class で表す（モック `docs/mock/refs/27/assets/glossary.js` のとおり）: ポインターを乗せたとき・フォーカスしたときにほかのツールチップを閉じて `is-open` を付け、画面に対して配置する。配置する側は `chooseTipSide`（単語の最初の行の上端と最後の行の下端、`gap` は 0）で決め、上なら最初の行の上、下なら最後の行の下に配置して `is-below` も付ける。ポインターもフォーカスも離れたら 150 ミリ秒待って `is-open`・`is-below`・`is-dismissed` を削除する。Esc では `is-open` を削除して `is-dismissed` を付け、ツールチップの中にフォーカスがあれば単語へ戻す。`pointerType` が `touch` のときは `pointerenter`・`pointerleave` で開閉せず、単語（`mdmark-term`）の `pointerdown` で開閉を切り替え（ツールチップの中の `pointerdown` では切り替えない。閉じるときは `is-dismissed` を付け、続く `focusin` と、iOS で残る `:hover` の間の `pointerenter` でもう一度開かない。開くときは `is-dismissed` を削除する）、開いている間は `document` のキャプチャーフェーズの `pointerdown` の対象が開いている `mdmark-term-wrap` の外なら閉じて `is-dismissed` を付ける（単語に残る `:hover`・`:focus-within` で CSS がツールチップを出し続けないため。iOS の Safari はタップした単語に `:hover` を残すため、`pointerleave`・`focusout` だけでは閉じない）。関連文書・エイリアスのリンク・コマンドのコピーのボタンのあるツールチップは単語の次の Tab で中のリンクとボタンへ移れ、中にフォーカスがある間は出したままにする。コピーのボタン（`button.mdmark-term-tip-copy`）を押したら、同じ区分の `code` の文字を `copyText` で記載し、書き込めたらボタンを `copied`（`data-state` と中身を `renderTermTipCopy` で替える）にして `COPIED_NOTICE_MS` 後に `idle` に戻し、書き込めなければ `failed` にして次に押すまで残す。`copied`・`failed` にしたときは同じ区分の `role="status"` の要素に `コマンドを{文言}` を入れ、`idle` に戻したときは空にする。押した後もツールチップを出したままにし、例外を外へ出さない。もう一度押したときは前の戻す待ちを止める。印刷の前は開いたツールチップを閉じる（下線とツールチップを削除するのは印刷の CSS）。返却する関数で付けた操作と戻す待ちを削除し、付けた class を削除する'
+    args:
+      - name: options
+        type: '{ root: HTMLElement; placement: TooltipPlacement }'
+        required: true
+        description: 描いた文書の要素と、ツールチップを先に出す側
+    returns:
+      type: () => void
+      description: 付けた操作を削除する関数
+    side_effects: '`root` の中の要素の `id`・属性を書き換え、イベントを付ける'
+    unit_tests:
+      - name: test_attach_term_tips
+        case: 正常
+        summary: フォーカスで開き Esc で閉じる
+        condition: 意味だけの用語の単語とツールチップの組 1 つを持つ要素
+        mock: なし（Chromium）
+        expected: 付けた直後は `mdmark-term-wrap` が `is-open` を持たず、単語のフォーカスで `is-open` を持ち、Esc で `is-open` が削除されて `is-dismissed` を持ち、フォーカスは単語に残る。削除する関数の後はどの class も残らない
+      - name: test_attach_term_tips_unique_ids
+        case: 正常
+        summary: 同じページに 2 回描いても `id` が重ならない
+        condition: 同じ HTML を 2 つの要素に入れて両方に付ける
+        mock: なし（Chromium）
+        expected: ページの `id` が全て一意で、`aria-describedby` が同じ要素の中のツールチップを指す
+      - name: test_attach_term_tips_when_no_room_above
+        case: 正常
+        summary: 上に収まれば単語の上、収まらなければ単語の下に配置し `is-below` を付ける
+        condition: '`placement` が `top` で、要素の上端に配置した単語と、画面の中ほどに配置した単語にそれぞれフォーカスする'
+        mock: なし（Chromium）
+        expected: 中ほどの単語は `is-below` を持たずツールチップの `bottom` が単語の `top` 以下、上端の単語は `is-below` を持ちツールチップの `top` が単語の `bottom` 以上。閉じた後は `is-below` が残らない
+      - name: test_attach_term_tips_copy_command
+        case: 正常
+        summary: コピーのボタンでコマンドを記載し、ボタンとスクリーンリーダー向けの要素で通知し、待った後に戻す
+        condition: '`command` のエイリアスの単語とツールチップの組 1 つを持つ要素。単語にフォーカスし、Tab でボタンへ移って Enter'
+        mock: Chromium の `navigator.clipboard.writeText` を、指定した文字を記録して解決する関数に差し替える。時計を偽のタイマーにする
+        expected: 記録した文字が `npm run test:unit`、ボタンが `data-state="copied"` で文言 `コピーしました`、`role="status"` が `コマンドをコピーしました`、`mdmark-term-wrap` が `is-open` を持つ。2000 ミリ秒進めた後は `data-state="idle"` で文言 `コピー`、`role="status"` が空
+      - name: test_attach_term_tips_copy_command_denied
+        case: 正常
+        summary: コマンドを書き込めなければ failed にして残し、例外を外へ出さない
+        condition: '`test_attach_term_tips_copy_command` と同じ要素でボタンを押す'
+        mock: '`navigator.clipboard.writeText` を reject する関数に差し替える。時計を偽のタイマーにする'
+        expected: ボタンが `data-state="failed"` で文言 `コピーできませんでした`、`role="status"` が `コマンドをコピーできませんでした`。2000 ミリ秒進めても変わらず、未処理の例外が無い
+      - name: test_attach_term_tips_when_touch_tapped
+        case: 正常
+        summary: タッチの 1 回のタップで開き、もう一度のタップで閉じる
+        condition: 閉じた単語に `pointerType` が `touch` の `pointerenter`・`pointerdown`・`pointerup`・`pointerleave` をこの順に送信して単語の `focus()` を呼び、続けて同じ 4 つをもう一度送る（既にフォーカスを持つ単語では `focus` は発火しない）
+        mock: タイマーを `vi.useFakeTimers` で進める
+        expected: 1 回目の後に `mdmark-term-wrap` が `is-open` を持ち、2 回目の後に `is-open` を持たない
+      - name: test_attach_term_tips_when_touch_outside
+        case: 正常
+        summary: タッチで開いた後、外の `pointerdown` だけで閉じ、ツールチップの中では閉じない
+        condition: '`command` のエイリアスの単語をタッチでタップして開き、ツールチップのコピーのボタンに `pointerType` が `touch` の `pointerdown` を送信し、次に `root` の外の要素に `pointerType` が `touch` の `pointerdown` だけを送信する（`pointerleave`・`focusout` は送信しない）'
+        mock: タイマーを `vi.useFakeTimers` で進める
+        expected: コピーのボタンの後は `is-open` を持ち、外の後は `is-open` を持たず `is-dismissed` を持ち、単語にフォーカスが残ったままでもツールチップの `display` が `none`
+      - name: test_attach_term_tips_when_touch_tapped_after_button_focus
+        case: 正常
+        summary: ツールチップの中のボタンにフォーカスがある状態で単語をタップすると、閉じたままになる
+        condition: '`command` のエイリアスの単語をタッチでタップして開き、コピーのボタンにタッチの `pointerdown` を送信してボタンの `focus()` を呼び、続けて単語に `pointerType` が `touch` の `pointerenter`・`pointerdown`・`pointerup`・`pointerleave` を送信して単語の `focus()` を呼ぶ（単語の `focusin` が `pointerdown` の後に発火する）'
+        mock: タイマーを `vi.useFakeTimers` で進める
+        expected: 単語のタップの後、`mdmark-term-wrap` が `is-open` を持たない。もう一度語をタップすると `is-open` を持つ
+      - name: test_attach_term_tips_when_mouse_pressed
+        case: 正常
+        summary: マウスの `pointerdown` では開閉を切り替えない
+        condition: 単語に `pointerType` が `mouse` の `pointerenter` を送信して開き、同じ単語に `pointerType` が `mouse` の `pointerdown` を送信する
+        mock: なし（Chromium）
+        expected: '`pointerdown` の後も `is-open` を持つ'
+    callees:
+      - MOD-472-232#functions[copyText]
+      - 'MOD-472-261#functions[renderTermTipCopy]'

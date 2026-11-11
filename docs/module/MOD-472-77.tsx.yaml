@@ -1,0 +1,23 @@
+id: MOD-472-77
+visibility: internal
+title: VS Code 拡張機能 / Webview / alert.tsx
+components:
+  - name: Alert
+    title: Alert
+    container: vscode/src/webview/shared/components/ui/alert.tsx
+    usecase: 共通
+    role: shadcn/ui のコピー
+    summary: shadcn/ui の `Alert`・`AlertTitle`・`AlertDescription`。`variant` に `default`・`warning` を持ち（`warning` を追加）、`AlertTitle` は `asChild` で `h1`・`h2` を受ける
+    kind: コンポーネント
+    props:
+      - name: variant
+        type: '"default" | "warning"'
+        required: false
+        default: '`default`'
+        description: 外観。`warning` は線と警告のアイコンを `--warning-border`、地を `--background`、文字を `--foreground` にする（警告の色を文字の地にしない）
+      - name: role
+        type: string
+        required: false
+        default: '`alert`'
+        description: 状態の表示と帯は `status` を指定する
+    status: planned

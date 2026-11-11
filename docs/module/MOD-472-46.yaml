@@ -1,0 +1,49 @@
+id: MOD-472-46
+visibility: internal
+title: ライブラリ本体 / 部品
+lead: 文書の中に mdmark が配置する UI の部品を HTML 文字列で返却する関数と、Storybook のストーリー。DOM に頼らず、ブラウザと Node で同じ出力になる。
+directory: |-
+  ```tree
+  src/parts/
+  ├── escape.ts                    # HTML の特別な文字をエスケープする escapeHtml
+  ├── own.ts                       # mdmark が出した要素のマーカーを付ける markOwn と SLOT_MARKER
+  ├── notice.ts                    # 通知ブロックの renderNotice
+  ├── notice.stories.yaml          # 通知ブロックのストーリー（Figure・Block・LongName・Extension）
+  ├── embed.ts                     # 読み込み中のブロックの renderEmbed
+  ├── embed.stories.yaml           # 読み込み中のブロックのストーリー（Loading）
+  ├── syntax-warning.ts            # 記載の警告の renderSyntaxWarning
+  ├── table.ts                     # 表の renderTable・renderTableTools・renderTableBar・renderTableSettings・renderTreeKeyCell・renderTypeCell・renderTreeTools・renderTotalRows・renderCopyPanel・renderFoldedColumn・renderCheckCell
+  ├── callout.ts                   # 注意書きの renderCallout
+  ├── tabs.ts                      # タブの renderTabs
+  ├── steps.ts                     # ステップの renderSteps
+  ├── collapsible.ts               # タブとステップの折り畳みの renderCollapsible
+  ├── tree.ts                      # ファイルツリーの renderTree・renderTreeBar・fileIconOf・folderOpenByDefault
+  ├── badge.ts                     # バッジの renderBadge（色を含む）
+  ├── inline-icon.ts               # 行内のアイコンの renderInlineIcon と IconNode の svg の iconNodeSvg
+  ├── kbd.ts                       # キーの renderKbd
+  ├── highlight.ts                 # 蛍光ペンの renderHighlight
+  ├── layout-columns.ts            # 段組みの renderLayoutColumns
+  ├── card-grid.ts                 # カードの格子の renderCardGrid
+  ├── wide.ts                      # wide の範囲の renderWide
+  ├── footnote.ts                  # 脚注の番号の renderFootnoteRef と脚注の一覧の renderFootnotes
+  ├── code-block.ts                # コードブロックの renderCodeBlock と renderCodeCopy と、行の開閉のボタンの renderCodeFoldToggle・renderCodeFoldMore
+  ├── toc.ts                       # 目次の renderToc
+  ├── section.ts                   # セクションの renderSection
+  ├── side-toc.ts                  # 右側の目次の renderSideToc
+  ├── back-to-top.ts               # 先頭へ戻るボタンの renderBackToTop
+  ├── row-detail.ts                # 行の詳細の renderRowDetail
+  ├── figure.ts                    # 図表の番号の renderFigure
+  ├── doc-list.ts                  # 文書の一覧の renderDocList
+  ├── colors.ts                    # 色の名前の COLOR_NAMES と isColorName
+  ├── text-color.ts                # 文字の色の renderTextColor
+  ├── image.ts                     # 画像の図の renderImageFigure と拡大のボタンの renderImageOpener
+  ├── gallery.ts                   # ギャラリーの renderGallery
+  ├── lightbox.ts                  # ライトボックスの renderLightbox
+  ├── media.ts                     # 動画と音声の renderMedia
+  ├── gif.ts                       # GIF の renderGif と止める・再生するボタンの renderGifToggle
+  ├── card.ts                      # カードの renderCard
+  └── {部品}.stories.yaml         # 部品設計の states ごとのストーリー（上の部品ごとに 1 つ）
+  ```
+notes:
+  ストーリー: '`*.stories.yaml` は `title`（部品設計の `story`）と、部品設計の `states` ごとの `stories[].name`・`stories[].parameters.server.id`（部品の id。ファイル名の頭）・`stories[].args` を持つ。`embed` の配列の引数は `a,b` の 1 つの文字列で記載する。この PR で追加する部品の配列・オブジェクトの引数は JSON の文字列で記載する（戻し方は『部品の描画』）。中身を持つ部品のストーリーは、中身に部品ごとの見本の HTML を指定する'
+  マーカーの付け方: 部品の関数は `markOwn` を掛けない。記法のコアルールと `mount` の操作が、差し込む前に掛ける

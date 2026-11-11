@@ -1,0 +1,48 @@
+id: MOD-472-67
+visibility: internal
+title: VS Code 拡張機能 / Webview / use-link-clicks.ts
+test_files:
+  - tests/unit/vscode/src/webview/features/preview/panel/hooks/use-link-clicks.browser.test.tsx
+functions:
+  - name: useLinkClicks
+    title: リンクの押下を受ける
+    kind: フック
+    container: vscode/src/webview/features/preview/panel/hooks/use-link-clicks.ts
+    usecase: プレビューのリンクと画像を開く
+    summary: '`document` の `click` をキャプチャとバブリングで受け、本文のリンク・右側の目次のリンク・「既定のアプリで開く」を振り分ける'
+    scope: public
+    args:
+      - name: api
+        type: VsCodeApi
+        required: true
+        description: VS Code の Webview の API
+    returns:
+      type: void
+      description: '-'
+    process: |-
+      1. キャプチャで受け、`data-action="openAsset"` の要素なら `preventDefault`・`stopPropagation` を呼び、`href` を確認せずに `data-path` で `openAsset` を送信する
+      2. `a[href]` で、右側の目次（`.mdmark-side-toc`）の中でなければ `preventDefault`・`stopPropagation` を呼び（VS Code の Webview の外枠が `window` の `click` でリンクを開かないようにする）、`href` が `#` で始まればその `id` の要素へ `scrollIntoView`、それ以外は `openLink` を送信する
+      3. 右側の目次の中のリンクはキャプチャでは止めずに右側の目次の `click` へ届け、バブリングで `preventDefault`・`stopPropagation` を呼ぶ（`openLink` は送信しない）
+      4. 後始末で両方の購読を削除する
+    unit_tests:
+      - name: test_use_link_clicks
+        case: 正常
+        summary: 本物のクリックでもリンクの押下を window へ伝えず、openLink を 1 回だけ送信する
+        condition: 本文の `https://example.com/`・`./other.md`・`#末尾` のリンクと、`window` に `click` の記録のリスナーを配置し、Playwright の `userEvent.click` で押す
+        mock: '`api` を `postMessage` を記録する代役にする'
+        expected: '`window` のリスナーにどの押下も届かない。`openLink` が `https://example.com/` と `./other.md` で 1 回ずつ送信され、`#末尾` では送信されない'
+      - name: test_use_link_clicks_when_side_toc
+        case: 正常
+        summary: 右側の目次の項目の押下を右側の目次へ届け、window へは伝えない
+        condition: '`aside.mdmark-side-toc` の中の `#注意` のリンクと、`aside` と `window` に `click` の記録のリスナーを配置して押す'
+        mock: '`api` を代役にする'
+        expected: '`aside` のリスナーに押下が 1 回届き、`window` のリスナーには届かない。`openLink` が送信されない'
+      - name: test_use_link_clicks_when_open_asset
+        case: 正常
+        summary: 既定のアプリで開くは記載したパスで openAsset を送信する
+        condition: '`href="#"`・`data-action="openAsset"`・`data-path="media/a.webm"` のリンクを押す'
+        mock: '`api` を代役にする'
+        expected: '`openAsset` が `media/a.webm` で 1 回、`openLink` が送信されない'
+    refs:
+      - IF-472-19#constraints[リンクの見分け方]
+    status: planned

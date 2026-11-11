@@ -1,0 +1,96 @@
+id: SC-472-94
+visibility: internal
+title: 端末の設定を重ねてプレビューと書き出しをそろえる
+scenarios:
+  - name: 正常シナリオ
+    setup:
+      - name: 端末の設定
+        description: '一時フォルダに配置した `settings.yaml`。重ねて読み込む切り替えをオンにし、書き出しのときも端末の設定を重ねる値にして、`features.callout: false` を記載する。`MDMARK_CONFIG` でこのファイルを指す'
+      - name: 見本のワークスペース
+        description: '上のフォルダの `mdmark.config.yaml` に `theme: ./theme.css` と `extensions` の固有の部品 1 つを記載し、その下のフォルダの `mdmark.config.yaml` に `features.table: false` を記載する。下のフォルダに、注意書き・表・固有の部品のマーカーを持つ Markdown を 1 つ配置する'
+      - name: Mock
+        description: jsDelivr の代わりに、このブランチでビルドした配布物を版付きの構造の URL で配る手元のサーバー。GitHub のタグ一覧は、そのバージョンを最新の `vX.Y.Z` として返却する代役
+    flow: |-
+      flowchart TD
+        A[VSCodeでプレビューを開く:正常シナリオ（設定を重ねる）] --> B[記載した内容をプレビューに映す:正常シナリオ（theme の CSS を書き換える）]
+        B --> C[文書をHTMLに書き出す:正常シナリオ（設定を重ねる）]
+        C --> D[ClaudeCodeから点検と書き出しを呼ぶ:正常シナリオ（設定を重ねる）]
+        click A "id:SC-472-10#scenarios[正常シナリオ（設定を重ねる）]"
+        click B "id:SC-472-77#scenarios[正常シナリオ（theme の CSS を書き換える）]"
+        click C "id:SC-472-56#scenarios[正常シナリオ（設定を重ねる）]"
+        click D "id:SC-472-3#scenarios[正常シナリオ（設定を重ねる）]"
+    expected:
+      - プレビューで、注意書きと表の機能がオフで描かれ、固有の部品が描かれ、`theme.css` の規則が該当する
+      - '`theme.css` を書き換えて保存すると、エディタの Markdown を書き換えずに、プレビューに書き換えた規則が該当する'
+      - 下のフォルダで `mdmark export` を実行すると終了コード 0 で 1 枚の HTML を書き込み、開くとプレビューと同じ要素に同じ計算後のスタイルが該当する
+      - Claude Code から `export_html` を呼んで書き出した HTML でも、注意書きと表の機能がオフで、固有の部品が描かれ、`mdmark export` の HTML と同じ要素に同じ計算後のスタイルが該当する
+      - 端末の設定と 2 つの `mdmark.config.yaml` は書き換わらない
+    test: test_normal
+    uses:
+      - SC-472-10#scenarios[正常シナリオ（設定を重ねる）]
+      - SC-472-77#scenarios[正常シナリオ（theme の CSS を書き換える）]
+      - SC-472-56#scenarios[正常シナリオ（設定を重ねる）]
+      - SC-472-3#scenarios[正常シナリオ（設定を重ねる）]
+  - name: 正常シナリオ（最初の 1 つだけを読み込む）
+    setup:
+      - name: 端末の設定
+        description: 正常シナリオの端末の設定のうち、重ねて読み込む切り替えをオフにしたもの
+      - name: 見本のワークスペース
+        description: 正常シナリオと同じ
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      flowchart TD
+        A[VSCodeでプレビューを開く:正常シナリオ（最初の 1 つだけを読み込む）] --> B[文書をHTMLに書き出す:正常シナリオ（最初の 1 つだけを読み込む）]
+        click A "id:SC-472-10#scenarios[正常シナリオ（最初の 1 つだけを読み込む）]"
+        click B "id:SC-472-56#scenarios[正常シナリオ（最初の 1 つだけを読み込む）]"
+    expected:
+      - プレビューと書き出した HTML の両方で、注意書きと表の機能がオフで描かれる（端末の設定と下のフォルダの設定だけが有効になる）
+      - 上のフォルダの設定の `theme.css` の規則と固有の部品は、両方とも該当しない
+    test: test_normal_when_first_only
+    uses:
+      - SC-472-10#scenarios[正常シナリオ（最初の 1 つだけを読み込む）]
+      - SC-472-56#scenarios[正常シナリオ（最初の 1 つだけを読み込む）]
+  - name: 異常シナリオ（端末の設定を読み込めない）
+    setup:
+      - name: 端末の設定
+        description: 正常シナリオの端末の設定のうち、YAML として読み込めない行を 1 つ持つもの
+      - name: 修正した端末の設定
+        description: 1 回目の書き出しの後に、文書の作成者がその行を手で修正したもの
+      - name: 見本のワークスペース
+        description: 正常シナリオと同じ
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      flowchart TD
+        A[VSCodeでプレビューを開く:異常シナリオ（設定ファイルを読み込めない）] --> B[文書をHTMLに書き出す:異常シナリオ（設定ファイルを読み込めない）]
+        B --> C[文書をHTMLに書き出す:正常シナリオ（設定を重ねる）]
+        click A "id:SC-472-10#scenarios[異常シナリオ（設定ファイルを読み込めない）]"
+        click B "id:SC-472-56#scenarios[異常シナリオ（設定ファイルを読み込めない）]"
+        click C "id:SC-472-56#scenarios[正常シナリオ（設定を重ねる）]"
+    expected:
+      - プレビューの先頭に、端末の設定を読み込めないことを示す帯が出る
+      - '`mdmark export` が端末の設定のパスと読み込めない行と修正方法を標準エラーに出し、終了コード 1 で HTML を書き込まない'
+      - 修正した後の `mdmark export` は終了コード 0 で 1 枚の HTML を書き込む
+      - 端末の設定と 2 つの `mdmark.config.yaml` は書き換わらない
+    test: test_error_when_settings_unreadable
+    uses:
+      - SC-472-10#scenarios[異常シナリオ（設定ファイルを読み込めない）]
+      - SC-472-56#scenarios[異常シナリオ（設定ファイルを読み込めない）]
+      - SC-472-56#scenarios[正常シナリオ（設定を重ねる）]
+lead: 文書の作成者が、端末の設定と、文書のフォルダから上のフォルダの `mdmark.config.yaml` を重ねた設定で、VS Code のプレビュー・CLI の書き出し・Claude Code から呼んだ書き出しを同じ外観にそろえる。
+issue: 163
+primary_actor: 文書の作成者
+stakeholders:
+  - name: 文書の作成者
+    interest: 端末ごとの設定とリポジトリの設定を分けて記載し、どの道具から描いても書き出しても同じ設定と外観になる
+  - name: 読者
+    interest: 受け取った HTML が、作成者がプレビューで確認した外観のまま描かれる
+trigger: 文書の作成者が、端末に共通の設定と、リポジトリやフォルダごとの設定を分けて記載したくなる
+preconditions:
+  - VS Code に mdmark の拡張機能を入れている
+  - 文書の作成者の手元に Node 24 以降がある
+  - Claude Code に mdmark のプラグインを入れ、MCP の常駐サーバーを起動している
+success_guarantee: 端末の設定・上のフォルダの設定・近いフォルダの設定を重ねた設定が、プレビュー・`mdmark export`・`export_html` の全てで同じに有効になり、`theme` の CSS と `extensions` の部品がプレビューにも書き出した HTML にも該当する。
+minimal_guarantee: 重ねる設定ファイルのどれかを読み込めないときは、読み込めないファイルと修正方法を出し、設定ファイルと文書を書き換えない。
+test_file: tests/e2e/複合ユースケース/端末の設定を重ねてプレビューと書き出しをそろえる.spec.ts

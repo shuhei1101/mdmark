@@ -1,0 +1,57 @@
+id: MOD-472-84
+visibility: internal
+title: VS Code 拡張機能 / ビルドと配布 / package.json
+constants:
+  - name: scripts
+    title: 拡張機能の npm のスクリプト
+    container: vscode/package.json
+    summary: '`vscode/package.json` の `scripts`'
+    entries:
+      - key: build
+        value: '`node scripts/build.ts`'
+      - key: vscode:prepublish
+        value: '`npm run build`'
+        description: '`vsce package` が先に実行する'
+      - key: package
+        value: '`vsce package --no-dependencies --out mdmark-$npm_package_version.vsix`'
+      - key: release:check
+        value: '`node scripts/release-check.ts`'
+        description: 引数にタグを指定する
+      - key: typecheck
+        value: '`tsc --noEmit`'
+      - key: test:integration
+        value: '`node scripts/build.ts --tests && node tests/integration/run.ts`'
+        description: ヘッドレスの Linux では `xvfb-run -a` で包む
+    status: planned
+  - name: contributes
+    title: 拡張機能が追加するもの
+    container: vscode/package.json
+    summary: '`package.json` の `contributes` と、それを有効にしるキー'
+    entries:
+      - key: engines.vscode
+        value: '`^1.141.0`'
+        description: 非機能要件「対応する VS Code のバージョン」。`@types/vscode` は `1.141.0` に統一する
+      - key: activationEvents
+        value: '`onLanguage:markdown`・`onWebviewPanel:mdmark.preview`'
+        description: コマンドは `contributes.commands` から VS Code が追加する
+      - key: contributes.commands
+        value: '`mdmark.openPreviewToSide`・`mdmark.openPreview`・`mdmark.refreshPreview`・`mdmark.openConfig`・`mdmark.openSettings`・`mdmark.exportHtml`・`mdmark.openInBrowser`・`mdmark.printToPdf`'
+        description: '`category` は `mdmark`、`title` は画面設計の「コマンドの表示名」。`mdmark.openPreviewToSide` は `icon` に `$(open-preview)`、`mdmark.openSettings` は `icon` に `$(gear)`'
+      - key: contributes.menus.editor/title
+        value: '`mdmark.openPreviewToSide`（`when`: `editorLangId == markdown`、`group`: `navigation`）・`mdmark.openSettings`（`when`: `activeWebviewPanelId == ''mdmark.preview''`、`group`: `navigation`）'
+        description: エディタのタイトルのボタン
+      - key: contributes.menus.commandPalette
+        value: "`mdmark.refreshPreview` は `mdmark.previewOpen`、`mdmark.openConfig`・`mdmark.openSettings` は常時、他は `editorLangId == markdown || activeWebviewPanelId == 'mdmark.preview'`"
+        description: コマンドパレットに出す条件。`mdmark.previewOpen` は `setContext` でパネルが 1 つ以上開いているかを記載する
+      - key: contributes.keybindings
+        value: '`mdmark.openPreviewToSide` に `shift+alt+d`（`mac`: `shift+alt+d`）、`when`: `editorLangId == markdown`'
+        description: 既定のショートカット（Mac は `Shift+Option+D`）
+      - key: contributes.configuration
+        value: 設定『VS Code 拡張機能』の `settings.json` のキー。`mdmark.version` は `pattern` `^(latest|v\d+\.\d+\.\d+)$`、`mdmark.preview.updateDelayMs` は `minimum` 0・`maximum` 5000、`mdmark.preview.theme` は `enum`、`mdmark.colorTheme` は `enum`（`""`・`dev-swiss`・`theme-paper`・`theme-slate`・`theme-contrast`）と `enumItemLabels`（`""` は「（設定ファイルに従う）」、他は名前のまま）
+        description: 既定は `SETTING_DEFAULTS` と同じ値
+    refs:
+      - SCR-472-1#
+      - CFG-472-2#
+      - NFR-472-1#requirements[対応する VS Code のバージョン]
+      - MOD-472-103#constants[SETTING_DEFAULTS]
+    status: planned

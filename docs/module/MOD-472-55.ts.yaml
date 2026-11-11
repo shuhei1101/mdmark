@@ -1,0 +1,139 @@
+id: MOD-472-55
+visibility: internal
+title: VS Code 拡張機能 / Webview / load-mdmark.ts
+test_files:
+  - tests/unit/vscode/src/webview/features/preview/panel/load-mdmark.test.ts
+data_models:
+  - name: Mdmark
+    title: 読み込んだ配布物
+    container: vscode/src/webview/features/preview/panel/load-mdmark.ts
+    usecase: 共通
+    summary: '`import()` で読み込んだ mdmark の配布物のうち、Webview が使用するもの'
+    properties:
+      - name: mount
+        type: '(element: HTMLElement, options: { markdown: string; config?: unknown; diffSource?: DiffSource; docId?: string; diffMode?: "blocks"; includes?: Record<string, string>; aliases?: unknown[] }) => MountHandle'
+        description: 描く。`MountHandle` は `update(markdown, options?)`・`destroy()` を持つ
+      - name: diffModes
+        type: unknown
+        description: 対応する差分の出し方。持たない前のバージョンもある
+      - name: registerExtension
+        type: '(extension: unknown) => void'
+        description: 拡張を登録する。配布物を読み込んだ後、`mount` の前に呼ぶ
+    status: planned
+functions:
+  - name: loadMdmark
+    title: 配布物を読み込む
+    kind: 関数
+    container: vscode/src/webview/features/preview/panel/load-mdmark.ts
+    usecase: VSCodeでプレビューを開く
+    summary: '`import(/* @vite-ignore */ url)` で配布物を読み込む'
+    description: React Compiler は `import()` を中に持つコンポーネントを変換しないため、コンポーネントの外の関数に配置する
+    scope: public
+    is_async: true
+    args:
+      - name: url
+        type: string
+        required: true
+        description: 配布物の `index.js` の URL
+    returns:
+      type: Promise<Mdmark>
+      description: 読み込んだ配布物。読み込めなければ reject
+    status: planned
+  - name: classifyLoadFailure
+    title: 読み込めない理由を見分ける
+    kind: 関数
+    container: vscode/src/webview/features/preview/panel/load-mdmark.ts
+    usecase: VSCodeでプレビューを開く
+    summary: 読み込めなかった `index.js` の URL を `fetch` の `HEAD` で確認し、404 なら `versionMissing`、それ以外は `offline` を返却する
+    scope: public
+    is_async: true
+    args:
+      - name: options
+        type: '{ url: string; fetch: typeof fetch }'
+        required: true
+        description: 読み込めなかった URL と `fetch`
+    returns:
+      type: Promise<"offline" | "versionMissing">
+      description: 描けない理由
+    unit_tests:
+      - name: test_classify_load_failure
+        case: 正常
+        summary: 404 は指定したバージョンが無い
+        condition: '`fetch` が 404'
+        mock: '`fetch` を代役にする'
+        expected: '`versionMissing`。`fetch` に `method: "HEAD"` が渡る'
+      - name: test_classify_load_failure_when_network_error
+        case: 正常
+        summary: ネットワークのエラーと 404 以外はオフライン
+        condition: '`fetch` が `TypeError` で reject、別の回に 503'
+        mock: '`fetch` を代役にする'
+        expected: どちらも `offline`
+    refs:
+      - IF-472-22#constraints[描けない理由の見分け方]
+    status: planned
+  - name: supportsDiffBlocks
+    title: 差分の色分けに対応するかを確認する
+    kind: 関数
+    container: vscode/src/webview/features/preview/panel/load-mdmark.ts
+    usecase: VS Code の差分ビューの変更をプレビューで確認する
+    summary: 読み込んだ配布物の `diffModes` が配列で `blocks` を含むとき true を返却する
+    scope: public
+    args:
+      - name: mdmark
+        type: '{ diffModes?: unknown }'
+        required: true
+        description: '`import()` で読み込んだ配布物'
+    returns:
+      type: boolean
+      description: 対応すれば true
+    unit_tests:
+      - name: test_supports_diff_blocks
+        case: 正常
+        summary: diffModes に blocks があれば対応する
+        condition: '`{ diffModes: ["button", "open", "blocks"] }`'
+        mock: なし
+        expected: 'true'
+      - name: test_supports_diff_blocks_when_missing
+        case: 正常
+        summary: diffModes が無いか blocks を含まなければ対応しない
+        condition: '`{}`・`{ diffModes: ["button"] }`・`{ diffModes: "blocks" }`'
+        mock: なし
+        expected: どれも false
+    refs:
+      - IF-472-22#constraints[差分に対応しないバージョン]
+      - IF-472-35#constraints[対応する差分の出し方]
+    status: planned
+    introduced:
+      pr: 196
+  - name: registerExtensions
+    title: 拡張を登録する
+    kind: 関数
+    container: vscode/src/webview/features/preview/panel/load-mdmark.ts
+    usecase: VSCodeでプレビューを開く
+    summary: 拡張の URL を順に読み込み、`default` を読み込んだ配布物の `registerExtension` に指定する。読み込めない・登録できない拡張は飛ばして続ける
+    description: CLI が書き出した HTML の `prepareModules` と同じ順と扱い。React Compiler は `import()` を中に持つコンポーネントを変換しないため、コンポーネントの外の関数に配置する
+    scope: public
+    is_async: true
+    args:
+      - name: options
+        type: '{ mdmark: Mdmark; urls: string[]; importModule?: (url: string) => Promise<{ default?: unknown }> }'
+        required: true
+        description: 読み込んだ配布物・`boot.extensions`・拡張を読み込む関数（既定は `import(/* @vite-ignore */ url)`）
+    returns:
+      type: Promise<void>
+      description: 全ての拡張を試したら解決する
+    process: |-
+      1. `urls` の順に `importModule(url)` で読み込み、`default` を `mdmark.registerExtension` に指定する
+         - 読み込めない・`registerExtension` が例外を投げた場合、`console.error` に出して次の拡張へ進む（マーカーは知らないマーカーとして取り除かれる）
+    unit_tests:
+      - name: test_register_extensions
+        case: 正常
+        summary: 順に登録し、読み込めない拡張を飛ばす
+        condition: '`urls` が `["a.js", "b.js", "c.js"]`、`b.js` だけ reject する `importModule`'
+        mock: '`importModule` と `registerExtension` を記録する代役にする。`console.error` を記録する'
+        expected: '`registerExtension` が `a.js`・`c.js` の `default` の順に呼ばれ、`console.error` が 1 回'
+    refs:
+      - IF-472-21#constraints[theme と extensions]
+    status: planned
+    introduced:
+      pr: 347

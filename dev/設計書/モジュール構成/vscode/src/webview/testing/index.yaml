@@ -1,6 +1,0 @@
-summary: testing の設計書
-items:
-  - page: fake-vscode-api.ts.yaml
-    summary: VS Code 拡張機能 / Webview / fake-vscode-api.ts
-  - page: msw/
-    summary: msw の設計書

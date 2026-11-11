@@ -1,0 +1,70 @@
+id: MOD-472-284
+visibility: internal
+title: ライブラリ本体 / 記法 / callouts.ts
+test_files:
+  - tests/unit/src/render/syntax/callouts.test.ts
+functions:
+  - name: buildCallouts
+    title: 注意書きにする
+    container: src/render/syntax/callouts.ts
+    kind: 関数
+    scope: internal
+    summary: コアルール。`callout` がオンなら、1 行目が `[!種類]`（末尾に `-` を許す）の引用を部品『注意書き』にし、種類の文字を本文から除外する。知らない種類は `note`。1 行目は `readCallout` で読み取り、`+` は開いた折り畳み、種類の後ろの文字はタイトルとして部品へ指定し、1 行目を本文から削除する。注意書きの本文の範囲（引用の開きに対応する閉じまで）は同じ処理に指定し、中の引用も注意書きにする
+    args:
+      - name: state
+        type: StateCore
+        required: true
+        description: markdown-it の状態
+    side_effects: '`state.tokens` を書き換える'
+    callees:
+      - MOD-472-275#functions[renderCallout]
+      - '#functions[readCallout]'
+    unit_tests:
+      - name: test_build_callouts
+        case: 正常
+        summary: 5 種を種類ごとの枠にする
+        condition: '`[!NOTE]`・`[!TIP]`・`[!IMPORTANT]`・`[!WARNING]`・`[!CAUTION]` の引用'
+        mock: なし
+        expected: それぞれ `markdown-alert-{種類}` とタイトル `補足`・`ヒント`・`重要`・`警告`・`注意`、本文に `[!` が無い
+      - name: test_build_callouts_when_collapsed_or_unknown
+        case: 正常
+        summary: 末尾の `-` は折り畳み、知らない種類は note
+        condition: '`[!WARNING]-` と `[!FAQ]` の引用'
+        mock: なし
+        expected: 1 つ目が `<details class="markdown-alert markdown-alert-warning">`、2 つ目が `markdown-alert-note`
+      - name: test_build_callouts_when_titled_and_nested
+        case: 正常
+        summary: タイトル・+・入れ子の注意書きにする
+        condition: インターフェース定義『文書をHTML文字列にする』の「正常系（注意書きのタイトルと入れ子）」の文書
+        mock: なし
+        expected: '1 つ目のタイトルが `設定を先に確認する` で頭にスクリーンリーダー向けの `ヒント: `、2 つ目が `open` を持つ `details` で `summary` が `詳細`、`markdown-alert-warning` の中に `markdown-alert-tip` があり、`[!` が無い'
+  - name: readCallout
+    title: 注意書きの 1 行目を読み取る
+    container: src/render/syntax/callouts.ts
+    kind: 関数
+    scope: internal
+    summary: 引用の最初の段落の 1 行目（最初の `softbreak` の手前まで）が `[!種類]` で始まるかを `CALLOUT_PATTERN` で読み取り、末尾の `-`・`+` と、後ろの空白の後の文字をタイトルにする。タイトルは 1 行目の残りの行内のトークンを `state.md.renderer.renderInline` で HTML にしたもの
+    args:
+      - name: options
+        type: '{ state: StateCore; tokens: Token[]; openIndex: number }'
+        required: true
+        description: markdown-it の状態とトークンの並び、`blockquote_open` の位置
+    returns:
+      type: '{ kind: CalloutKind; collapsed: boolean; open: boolean; title?: string } | undefined'
+      description: 種類・折り畳みか・開いた状態か・タイトルの HTML。注意書きでなければ `undefined`
+    unit_tests:
+      - name: test_read_callout
+        case: 正常
+        summary: 種類と開閉とタイトルを読み取る
+        condition: 1 行目が `[!TIP] 設定を **先に** 確認する`・`[!NOTE]+ 詳細`・`[!WARNING]-`・`[!FAQ]` の引用
+        mock: なし
+        expected: 1 つ目が `tip`・`collapsed` `false`・タイトル `設定を <strong>先に</strong> 確認する`、2 つ目が `note`・`collapsed` `true`・`open` `true`・タイトル `詳細`、3 つ目が `warning`・`collapsed` `true`・`open` `false`・タイトル無し、4 つ目が `note`
+      - name: test_read_callout_when_not_callout
+        case: 正常
+        summary: 1 行目が種類で始まらない引用は注意書きにしない
+        condition: 1 行目が `メモ [!TIP]` の引用と、1 行目が `[!TIP]x`（空白の無い後ろの文字）の引用
+        mock: なし
+        expected: どちらも `undefined`
+    status: planned
+    introduced:
+      pr: 275

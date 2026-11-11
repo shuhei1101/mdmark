@@ -1,0 +1,27 @@
+id: MOD-472-61
+visibility: internal
+title: VS Code 拡張機能 / Webview / vite.config.ts
+constants:
+  - name: viteConfig
+    title: Webview の Vite の設定
+    container: vscode/vite.config.ts
+    summary: '`export default defineConfig(...)` する設定'
+    entries:
+      - key: plugins
+        value: '`@vitejs/plugin-react`・`@rolldown/plugin-babel` の `reactCompilerPreset`・`@tailwindcss/vite`'
+      - key: build.lib
+        value: '`entry: "src/webview/main.tsx"`・`formats: ["es"]`・`fileName: () => "preview.js"`・`cssFileName: "preview"`'
+      - key: build.outDir
+        value: '`media`（`emptyOutDir: false`。結合テストのビルドが `media/test/` に配置する axe を残す）'
+      - key: build.rolldownOptions.output.codeSplitting
+        value: '`false`（ES モジュール 1 ファイルにし、Webview のリソースの範囲の外へチャンクを読み込みに行かない）'
+      - key: build.target
+        value: '`es2022`'
+      - key: build.assetsInlineLimit
+        value: '`0`（CSS に `data:` を埋めず、CSP の `img-src` を広げない）'
+      - key: resolve.alias
+        value: '`@` → `src/webview`'
+    refs:
+      - LIB-472-32#
+      - LIB-472-21#
+    status: planned

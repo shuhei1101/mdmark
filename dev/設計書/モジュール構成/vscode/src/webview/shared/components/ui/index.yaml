@@ -1,8 +1,0 @@
-summary: ui の設計書
-items:
-  - page: alert.tsx.yaml
-    summary: VS Code 拡張機能 / Webview / alert.tsx
-  - page: button.tsx.yaml
-    summary: VS Code 拡張機能 / Webview / button.tsx
-  - page: spinner.tsx.yaml
-    summary: VS Code 拡張機能 / Webview / spinner.tsx

@@ -1,0 +1,194 @@
+id: CMP-472-39
+visibility: internal
+title: "図の枠"
+implementation: "src/parts/diagram.ts#renderDiagramFrame"
+story: "Parts/DiagramFrame"
+states:
+  - name: Fit
+    description: 開いたとき。全体が収まる倍率（倍率のボタンは 100%）で、縮小は押せず（倍率のボタンは押せるが何も変わらない）、移動のボタンを出さない
+    notes:
+      定義: モックの `inquiry`（`docs/mock/refs/42/assets/samples.js`）
+  - name: Zoomed
+    description: 1 段拡大して位置を動かした。移動のボタンが出る
+    args:
+      - name: zoom
+        value: '1.25'
+  - name: Max
+    description: 上限（定義の大きさの 3 倍）。拡大は押せない
+    args:
+      - name: zoom
+        value: '3'
+  - name: Narrow
+    description: 狭い枠で拡大した。凡例を折り返し、ボタンの帯は間を詰めて移動のボタンまで 1 行に収める（1 行に収まらない約 266px 未満の枠では折り返す）
+    args:
+      - name: zoom
+        value: '0.6'
+      - name: fit
+        value: '0.48'
+  - name: Fullscreen
+    description: 全画面のモーダルの中。全画面のボタンの位置に閉じるボタンがある
+    args:
+      - name: modal
+        value: 'true'
+  - name: InFramedSurface
+    description: '利用側の枠を持つ面の中。面で `--mdmark-diagram-box-shadow: none` を指定し、表示するノードの線が無い'
+    notes:
+      定義: 'ストーリーは図の枠を線と影を持つ面の要素で包み、面に `--mdmark-diagram-box-shadow: none` を指定する'
+  - name: InFramedSurfaceFullscreen
+    description: '枠を持つ面の中の図を全画面で開いたとき。面に指定した `--mdmark-diagram-box-shadow: none` を受け継がず、モーダルの中の表示するノードに既定の線がある'
+    args:
+      - name: modal
+        value: 'true'
+    notes:
+      定義: '`InFramedSurface` と同じ面で包む'
+  - name: Resized
+    description: リサイズハンドルで表示する枠を低くした。全体が収まる倍率を幅と高さで求め、倍率のボタンは 100%
+    args:
+      - name: height
+        value: "'240'"
+  - name: ResizeHandleFocused
+    description: リサイズハンドルにフォーカスした。フォーカスの枠が見える
+  - name: ResizeOff
+    description: 機能 `diagram-resize` がオフ。右下にリサイズハンドルが無い
+    args:
+      - name: resizable
+        value: "'false'"
+  - name: NoLegendItems
+    description: ノードも線も 1 種類ずつのフロー図。凡例の項目が無く、凡例の場所を取らない
+    args:
+      - name: legend
+        value: "'[]'"
+    notes:
+      定義: モックの `single-kinds`（`docs/mock/refs/308/assets/samples.js`）
+  - name: Mermaid
+    description: 種類 `mermaid`。タイトルは題名だけで範囲と更新日を出さず、凡例の場所を取らない
+    args:
+      - name: kind
+        value: mermaid
+      - name: title
+        value: 問い合わせの受付
+      - name: legend
+        value: "'[]'"
+    notes:
+      定義: 部品設計『mermaid の図』の Flowchart と同じ SVG
+  - name: Map
+    description: 種類 `map`。タイトルは題名だけで範囲と更新日と凡例が無く、置き場所の幅いっぱいで、右上の帯の先頭に外へ戻る（押せない）・全て開く・全て閉じる・配置と選択を元に戻す（押せない）が並ぶ
+    args:
+      - name: kind
+        value: map
+      - name: legend
+        value: '''[]'''
+      - name: wide
+        value: '''true'''
+    notes:
+      定義: 部品設計『mapの構成図』の Default
+  - name: ResizedToFit
+    description: リサイズハンドルをダブルクリックした。倍率は変わらず、表示する枠の高さが今の倍率の図の全体が収まる高さになる
+    args:
+      - name: zoom
+        value: '1.25'
+lead: |-
+  図の部品（フロー図・シーケンス図・グラフ・ER 図）を囲む枠。タイトル（題名・範囲・更新日）・右上のボタンの帯・図を出す表示する枠・凡例をこの順に配置し、拡大・縮小・移動・全画面のモーダルと、表示する枠の高さを変える右下のリサイズハンドルを持つ。
+  右上のボタンの帯と表示する枠は、表示するノード（`.mdmark-diagram-box`）にまとめる。ボタンは 1.75rem 四方、帯の余白は 0.25rem。
+args:
+  - name: kind
+    type: 列挙
+    required: true
+    choices: '`flow`・`sequence`・`chart`・`er`・`mermaid`・`map`'
+    description: 中の図の種類。`data-diagram` に入れる
+  - name: title
+    type: 文字列
+    required: true
+    description: 図の題名
+  - name: scope
+    type: 文字列
+    required: false
+    description: '図の範囲。タイトルの後ろに `範囲: {scope}` で出す。種類 `mermaid`・`map` では指定せず、範囲を出さない'
+  - name: updated
+    type: 文字列
+    required: false
+    description: 更新日（`YYYY-MM-DD`）。`time` 要素で出す。種類 `mermaid`・`map` では指定せず、更新日を出さない
+  - name: legend
+    type: オブジェクトの配列
+    required: true
+    description: 凡例の項目（`{ sample, label }`。`sample` はノードの種類・線の種類・系列・テーブルの種類・列のマーカー・多重度のどれか）。図の下に並べる。空のときは凡例の `ul` に `hidden` を付け、凡例の場所を取らない
+  - name: zoom
+    type: 数値
+    default: 全体が収まる倍率
+    description: 今の倍率（定義の大きさを 1 とする）。全体が収まる倍率より大きいときだけ移動のボタンを出す
+  - name: fit
+    type: 数値
+    default: '1'
+    description: 全体が収まる倍率（定義の大きさを 1 とする）。倍率のボタンの文字は `zoom / fit` を百分率にして出す
+  - name: modal
+    type: 真偽値
+    default: 'false'
+    description: 全画面のモーダルの中に描くか。`true` のときは全画面のボタンの位置に閉じるボタンを配置し、表示する枠をモーダルの高さいっぱいにする
+  - name: resizable
+    type: 真偽値
+    default: "'true'"
+    description: 表示する枠の下端にリサイズハンドルを配置するか。`modal` が `true` のときと、機能 `diagram-resize` がオフのときは `false`
+  - name: height
+    type: 数値
+    required: false
+    default: 定義と `--mdmark-diagram-max-height` から決まる高さ
+    description: リサイズハンドルで変えた表示する枠の高さ（px）。指定したときは全体が収まる倍率を幅とこの高さで求める
+  - name: wide
+    type: 真偽値
+    default: 'false'
+    description: 置き場所の幅いっぱいに広げるか（右側の目次をピン止めしていないときは右端の線の手前、ピン止めしたときはパネルの手前まで）。`true` のときは本文の幅との切り替えのボタンを出さず、倍率を 1 より小さくしない。種類 `map` は `true`
+  - name: tools
+    type: オブジェクトの配列
+    default: '[]'
+    description: 右上のボタンの帯の先頭に並べるボタン（`{ name, label, disabled }`。`name` はアイコン、`label` はスクリーンリーダー向けの名前と `title`）。種類 `map` は、構成図では外へ戻る・全て開く・全て閉じる・配置と選択を元に戻す、シーケンス図では外へ戻る・全て開く・全て閉じる・参加者の並び順と選択を元に戻す
+slots:
+  - name: default
+    description: 表示する枠の中に配置する図の本体
+    accepts:
+      - CMP-472-28#
+      - CMP-472-19#
+      - CMP-472-13#
+      - CMP-472-1#
+      - CMP-472-6#
+      - CMP-472-5#
+      - CMP-472-4#
+events:
+  - name: 拡大・縮小する
+    when: 拡大・縮小・倍率のボタンを押すか、表示する枠にフォーカスして `+`・`-`・`0` を押す
+    value: 倍率のボタンの文字とスクリーンリーダー向けの名前
+    description: '`mount` が倍率を 1.25 倍ずつ変え（倍率のボタンと `0` は開いたときの倍率と位置に戻す）、ボタンの `disabled` と倍率のボタンの文字・スクリーンリーダー向けの名前と、文書の中の表示する枠の高さの上限（定義の高さ × 今の倍率。`kind` が `map` の図は上限を持たず、リサイズハンドルで図の高さを越えて広げられる）を付け替える'
+  - name: 動かす
+    when: 余白をドラッグする、矢印キーを押す、移動のボタンを押す
+    value: 表示する枠の `scrollLeft`・`scrollTop`
+    description: '`mount` が表示する枠をスクロールさせる'
+  - name: 全画面で開く・閉じる
+    when: 全画面のボタンを押す。閉じるボタンか Esc を押す
+    value: '`dialog` の `open`'
+    description: '`mount` が `modal` を `true` にした枠を `dialog` に描いて開き、閉じたら削除して全画面のボタンへフォーカスを戻す'
+  - name: 高さを変える・戻す
+    when: リサイズハンドルをドラッグする、フォーカスして `↑`・`↓` を押す。ダブルクリックする
+    value: 表示する枠の高さとリサイズハンドルの `aria-valuenow`
+    description: '`mount` が表示する枠の高さを変え（`↑`・`↓` は 32px ずつ。120px 以上で上限は持たない）、全体が収まる倍率をもう一度求める。ダブルクリックで倍率を変えずに、今の倍率の図の全体が収まる高さにする'
+css_properties:
+  - name: --mdmark-color-bg-opaque
+    syntax: <color>
+    default: var(--mdmark-color-bg)
+    description: 右上のボタンと全画面のモーダルの地の色
+  - name: --mdmark-diagram-max-height
+    syntax: <length>
+    default: 36rem
+    description: 文書の中の表示する枠の最初の高さの上限。開いたときと全体が収まる倍率に戻したときは、高さを定義の高さ × 全体が収まる倍率とこの値の小さいほうにする（全体が収まる倍率は枠の幅で決める）。利用側が高さを変えたときはこの値で止めない
+  - name: --mdmark-diagram-box-shadow
+    syntax: none | <shadow>
+    default: inset 0 0 0 1px var(--mdmark-color-border)
+    description: 表示するノードの線（`box-shadow` の値）。既定値は `:root` に配置せず `var()` のフォールバックで持ち、描く先の要素で変えた `--mdmark-color-border` に追従する。利用側は枠を持つ面で `none` を指定して線を削除する。操作できる部品の中は mdmark が `none` にし、全画面のモーダルの中はこの値を受け継がず既定の線で描く
+accessibility:
+  - タイトルは `figcaption` で、表示する枠は `role="group"`・`aria-roledescription="図"`・`aria-labelledby`（タイトル）・`aria-keyshortcuts="+ - 0 ArrowLeft ArrowUp ArrowDown ArrowRight"`・`tabindex="0"` を持ち、フォーカスの枠を見せる
+  - ボタンの帯は `role="toolbar"` と `aria-label="「{題名}」の表示"` を持つ。縮小・拡大・全画面・移動のボタンはアイコンだけで、スクリーンリーダー向けの名前を `縮小`・`拡大`・`全画面で開く`・`全画面を閉じる`・`左へ動かす`・`上へ動かす`・`下へ動かす`・`右へ動かす` にする
+  - 倍率は縮小と拡大の間のボタンに、全体が収まる倍率を 100% とした今の倍率を `125%` の構造（等幅の数字）で出し、スクリーンリーダー向けの名前を `倍率 {今の倍率}。全体が収まる倍率に戻す` にする（今の名前 `全体が収まる倍率に戻す` で探せる。#6 の確認ログ）
+  - 凡例は `aria-label="凡例"` の `ul` で、色の見本に名前を並べ、色だけで意味を伝えない
+  - リサイズハンドルは、表示する枠の下端（横のスクロールバーの下）に置く枠線と面を持たない帯で、横の 2 本線のアイコン（lucide の `equal`）を持つ `role="separator"`・`aria-orientation="horizontal"`・`tabindex="0"` の要素。`aria-label="「{題名}」の表示の高さ"`・`aria-keyshortcuts="ArrowUp ArrowDown"`・`aria-valuenow`・`aria-valuemin`・`aria-valuemax`（px。`aria-valuemax` は今の倍率の図の全体が収まる高さと今の高さの大きいほう）・`aria-valuetext="{高さ}px"` と、操作を記載した `title` を持ち、フォーカスの枠を見せる。ポインターの形状は `ns-resize`
+status: planned
+introduced:
+  pr: 42
+test_file: tests/integration/lib/diagram-frame.story.test.ts

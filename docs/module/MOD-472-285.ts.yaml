@@ -1,0 +1,123 @@
+id: MOD-472-285
+visibility: internal
+title: ライブラリ本体 / 記法 / tree.ts
+test_files:
+  - tests/unit/src/render/syntax/tree.test.ts
+functions:
+  - name: parseTree
+    title: 罫線のツリーを読み込む
+    container: src/render/syntax/tree.ts
+    kind: 関数
+    scope: internal
+    summary: 罫線（`├── `・`└── `・`│   `）と ASCII の罫線（`|-- `・`` `-- ``・`|   `）と字下げで記載した行を `TreeNode` の入れ子にする（1 つのツリーで 2 種類の罫線を混ぜてよい）。項目は、前に空白がある最初の `#` で名前と注釈に分け、注釈を `renderNote` で HTML にする。上の行より 2 段以上深い行があれば、その行番号と階層の差を返却する
+    args:
+      - name: source
+        type: string
+        required: true
+        description: コードブロックの中身
+      - name: renderNote
+        type: '(markdown: string) => string'
+        required: false
+        default: 注釈の文字をエスケープしたものを返却する関数
+        description: 注釈の Markdown を HTML にする関数
+    returns:
+      type: '{ nodes: TreeNode[] } | { line: number; depth: number }'
+      description: 読み込めた項目か、読み込めない行
+    unit_tests:
+      - name: test_parse_tree
+        case: 正常
+        summary: 入れ子を読み込む
+        condition: '`mdmark/`・`├── src/`・`│   └── index.ts`・`└── package.json`'
+        mock: なし
+        expected: '`[{ name: "mdmark/", children: [{ name: "src/", children: [{ name: "index.ts" }] }, { name: "package.json" }] }]`'
+      - name: test_parse_tree_when_too_deep
+        case: 異常
+        summary: 2 階層深い行を返却する
+        condition: 3 行目が上の行より 2 階層深い
+        mock: なし
+        expected: '`{ line: 3, depth: 2 }`'
+      - name: test_parse_tree_when_notes
+        case: 正常
+        summary: '前に空白がある最初の # で名前と注釈に分ける'
+        condition: '`mdmark/`・`├── src/ #ソース`・`│   └── index.ts # 入口 # 中の #`・`├── C#/`・`└── #notes.md` を、`renderNote` に文字を `<em>` で囲む関数を指定して読み込む'
+        mock: なし
+        expected: '`src/` の `note` が `<em>ソース</em>`、`index.ts` の `note` が `<em>入口 # 中の #</em>`、`C#/` と `#notes.md` がその名前のまま `note` を持たない'
+      - name: test_parse_tree_when_ascii
+        case: 正常
+        summary: ASCII の罫線を今の罫線と同じ階層の数え方で読み込む
+        condition: '`src/`・`|-- index.ts`・`` `-- parts/ ``・`    ├── tree.ts`・``    `-- ... ``'
+        mock: なし
+        expected: '`[{ name: "src/", children: [{ name: "index.ts" }, { name: "parts/", children: [{ name: "tree.ts" }, { name: "..." }] }] }]`'
+  - name: buildFileTrees
+    title: ファイルツリーにする
+    container: src/render/syntax/tree.ts
+    kind: 関数
+    scope: internal
+    summary: コアルール。`tree` がオンなら、言語 `tree` のコードブロックを、注釈を `state.md.renderInline` で描く `parseTree` で読み込み、部品『ファイルツリー』（`source` は末尾の改行を除いたコードブロックの中身）にする。直前に `tree` のマーカーがあれば `readTreeOptions` で読み込み、読み込めた `open` と `wrap` を部品へ指定し、読み込めない指定の警告と、`skipped` を `pushSkippedArgs` でツリーの前に差し込む。罫線を読み込めなければ警告を差し込み、コードブロックのままにする
+    args:
+      - name: state
+        type: StateCore
+        required: true
+        description: markdown-it の状態
+    side_effects: '`state.tokens` を書き換える'
+    callees:
+      - '#functions[parseTree]'
+      - 'MOD-472-213#functions[pushWarning]'
+      - MOD-472-269#functions[renderTree]
+      - '#functions[readTreeOptions]'
+    unit_tests:
+      - name: test_build_file_trees
+        case: 正常
+        summary: 読み込めるツリーを部品にし、読み込めないツリーは警告とコードブロックにする
+        condition: 読み込める `tree` のコードブロックと、3 行目が 2 階層深いもの
+        mock: なし
+        expected: 1 つ目が `<div class="mdmark-tree"` で `data-source` にコードブロックの中身を持ち、2 つ目の前に警告（本文に `3 行目`）と `<pre`
+      - name: test_build_file_trees_when_mark
+        case: 正常
+        summary: マーカーの open= を部品へ指定し、注釈のインラインを描く
+        condition: '`<!-- tree: open=2 -->` の後ろに、`src/ # **ソース**` とその下の `` index.ts # `badge:新規` `` を記載した言語 `tree` のコードブロック'
+        mock: なし
+        expected: '`<div class="mdmark-tree" data-open="2"` があり、`mdmark-tree-note` に `<strong>ソース</strong>` と `<span class="mdmark-badge">新規</span>` がある。記載の警告と `<!-- tree` が無い'
+      - name: test_build_file_trees_when_mark_unreadable
+        case: 異常
+        summary: 読み込めない open= は警告にして既定の開き方のツリーにする
+        condition: '`<!-- tree: open=deep -->` の後ろの読み込める `tree` のコードブロック'
+        mock: なし
+        expected: ツリーの前に記載の警告（項目に `open=deep`）があり、`<div class="mdmark-tree"` が `data-open` を持たない
+  - name: readTreeOptions
+    title: ファイルツリーのマーカーの指定を読み込む
+    container: src/render/syntax/tree.ts
+    summary: ファイルツリーのマーカーの引数から `open=` と `wrap` を読み込み（値を持つ `wrap=` は当てずに警告にする）、読み込めない指定を 1 つの警告にまとめる
+    description: '`open=` の値が `all` か 1 以上の整数ならその文字を `open` にする。それ以外の `open=` の値（項目の本文に記載できる値 `all`・階層の数）を、画面設計『文書』の「ファイルツリーのマーカーの読み込めない指定」の項目にして 1 つの警告にまとめる。`open=`・`wrap` 以外のキーと `キー=値` の構造でない指定は `skipped` に入れる'
+    kind: 関数
+    scope: internal
+    args:
+      - name: mark
+        type: Mark
+        required: true
+        description: ファイルツリーのマーカー
+    returns:
+      type: '{ open?: string; wrap: boolean; warning?: SyntaxWarning; skipped: SkippedArg[] }'
+      description: 開く階層と、読み込めない指定があれば記載の警告と、スキップした引数
+    unit_tests:
+      - name: test_read_tree_options
+        case: 正常
+        summary: all と階層の数を読み込む
+        condition: '`<!-- tree: open=all -->` と `<!-- tree: open=2 -->` をそれぞれ読み込む'
+        mock: なし
+        expected: '`open` が `all`・`2` で、どちらも `warning` が無い'
+      - name: test_read_tree_options_when_unreadable
+        case: 異常
+        summary: 読み込めない値を警告にし、知らないキーと指定をスキップする
+        condition: '`<!-- tree: open=deep depth=2 closed -->` と `<!-- tree: open=0 -->` をそれぞれ読み込む'
+        mock: なし
+        expected: どちらも `open` が無い。1 つ目の `warning.items` の `label` が `open=deep` の 1 つで、本文に `all` と階層の数があり、`skipped` の `arg` が `depth=`・`closed`。2 つ目の `label` が `open=0`
+      - name: test_read_tree_options_when_wrap
+        case: 正常
+        summary: open= と並べた wrap を読み込む
+        condition: '`<!-- tree: open=all wrap -->` と `<!-- tree: wrap=1 -->` をそれぞれ読み込む'
+        mock: なし
+        expected: 1 つ目は `open` が `all`・`wrap` が `true` で `warning` が無い。2 つ目は `wrap` が `false` で、`warning.items` の `label` が `wrap=1`
+    status: planned
+    introduced:
+      pr: 225

@@ -1,0 +1,154 @@
+id: SC-472-26
+visibility: internal
+title: "テーマを選ぶ"
+scenarios:
+  - name: 正常シナリオ
+    setup:
+      - name: テーマを選ぶ設定
+        description: テーマを選ぶキーに theme-slate を記載した設定のオブジェクト
+        notes: 'キーは `colorTheme`、値は `dev-swiss`・`theme-paper`・`theme-slate`・`theme-contrast`（インターフェース定義『文書を描く』）。OS の配色はライト（`prefers-color-scheme: light`）'
+      - name: 見本の Markdown
+        description: 段落とリンクと、言語 `mermaid` の flowchart のコードブロックを持つ文書
+      - name: Mock
+        description: jsDelivr を、ビルドした `dist/` と mermaid の本体と chunk を同じパスで返却する手元の応答に差し替える
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 利用側のページ
+        participant M as mdmark
+        U->>P: ページを開く
+        P->>M: テーマを選んだ設定を指定して文書を描かせる
+        M-->>P: 選んだテーマの値が該当した本文
+        P-->>U: theme-slate の明るい配色で表示
+    expected:
+      - 描く先の要素の地の色の計算値が、デザイン方針の theme-slate の明るい配色の `--mdmark-color-bg` の値
+      - リンクの色の計算値が、theme-slate の明るい配色の `--mdmark-color-link` の値
+      - mermaid の図のノードの塗りと文字の色が、theme-slate の明るい配色の CSS 変数の値と一致する
+    test: test_normal
+  - name: 正常シナリオ（ダークの配色）
+    setup:
+      - name: テーマを選ぶ設定
+        description: 正常シナリオと同じ
+        notes: 'OS の配色はダーク（`prefers-color-scheme: dark`）'
+      - name: 見本の Markdown
+        description: 正常シナリオと同じ
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 利用側のページ
+        participant M as mdmark
+        P->>M: テーマを選んだ設定を指定して文書を描かせる
+        M-->>P: 選んだテーマの暗い配色の値が該当した本文
+        P-->>U: theme-slate の暗い配色で表示
+    expected:
+      - 描く先の要素の地の色の計算値が、theme-slate の暗い配色の `--mdmark-color-bg` の値
+      - mermaid の図のノードの塗りと文字の色が、theme-slate の暗い配色の CSS 変数の値と一致する
+    test: test_normal_when_dark
+  - name: 正常シナリオ（親の class で明るい配色にする）
+    setup:
+      - name: テーマを選ぶ設定
+        description: 正常シナリオと同じ
+        notes: 'OS の配色はダーク（`prefers-color-scheme: dark`）'
+      - name: 見本の Markdown
+        description: 正常シナリオと同じ
+      - name: ライトの class
+        description: 描く先の要素の祖先（`body`）に、ライトを表す class（`mdmark-theme-light`）を付ける
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 利用側のページ
+        participant M as mdmark
+        P->>P: body にライトの class を付ける
+        P->>M: テーマを選んだ設定を指定して文書を描かせる
+        M-->>P: 選んだテーマの明るい配色の値が該当した本文
+        P-->>U: theme-slate の明るい配色で表示
+    expected:
+      - OS の配色がダークでも、描く先の要素の地の色の計算値が theme-slate の明るい配色の `--mdmark-color-bg` の値
+      - OS の配色がダークでも、mermaid の図のノードの塗りと文字の色が theme-slate の明るい配色の CSS 変数の値と一致する
+    test: test_normal_when_parent_class_light
+    refs:
+      - SC-472-25#scenarios[正常シナリオ（親の class でライトにする）]
+  - name: 正常シナリオ（テーマを選ばない）
+    setup:
+      - name: テーマを選ばない設定
+        description: テーマを選ぶキーを持たない設定のオブジェクト
+        notes: OS の配色はライト
+      - name: 見本の Markdown
+        description: 正常シナリオと同じ
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 利用側のページ
+        participant M as mdmark
+        P->>M: テーマを選ばない設定を指定して文書を描かせる
+        M-->>P: 既定のテーマの値が該当した本文
+        P-->>U: dev-swiss の明るい配色で表示
+    expected:
+      - 描く先の要素の地の色とリンクの色の計算値が、デザイン方針の dev-swiss の明るい配色の値（テーマを選ぶ前の mdmark と同じ）
+    test: test_normal_when_not_selected
+  - name: 正常シナリオ（知らないテーマの名前）
+    setup:
+      - name: 知らない名前を記載した設定
+        description: テーマを選ぶキーに、mdmark に入っていない名前 `sepia` を記載した設定のオブジェクト
+        notes: OS の配色はライト
+      - name: 見本の Markdown
+        description: 正常シナリオと同じ
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 利用側のページ
+        participant M as mdmark
+        P->>M: 知らないテーマの名前の設定を指定して文書を描かせる
+        M-->>P: 既定のテーマの値が該当した本文
+        P-->>U: dev-swiss の明るい配色で表示
+    expected:
+      - 描く先の要素の地の色の計算値が、dev-swiss の明るい配色の `--mdmark-color-bg` の値
+      - 本文の段落とリンクが描かれ、例外が出ない
+    test: test_normal_when_unknown_theme
+    refs:
+      - SC-472-78#scenarios[正常シナリオ（知らないテーマの名前がある）]
+  - name: 正常シナリオ（選んだテーマの色のプリセット）
+    setup:
+      - name: テーマを選ぶ設定
+        description: 正常シナリオと同じ（theme-slate、OS の配色はライト）
+      - name: 色の名前を記載した Markdown
+        description: 行内のコード `` `badge:green:完了` `` と、本文の `[決め手の 1 文]{color=red}` を持つ文書
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 利用側のページ
+        participant M as mdmark
+        U->>P: ページを開く
+        P->>M: テーマを選んだ設定を指定して文書を描かせる
+        M-->>P: 選んだテーマの色のプリセットで色を付けた本文
+        P-->>U: 文書を表示
+    expected:
+      - バッジと本文の文字の色の計算値が、デザイン方針の theme-slate の明るい配色の green・red の文字の色の値
+      - 色を付けた文字と、その面の色のコントラストが 4.5:1 以上
+    test: test_normal_when_color_preset_in_theme
+lead: 文書の作成者が設定で mdmark に入れたテーマを選び、描いた文書の配色をそのテーマの値の組にする。明暗は今の決め方のまま、選んだテーマの中で明るい配色と暗い配色を選ぶ。
+issue: 120
+primary_actor: 文書の作成者
+stakeholders:
+  - name: 読者
+    interest: 文書の用途に合った配色で読み込める
+  - name: mdmark を使用するアプリの開発者
+    interest: テーマを選ばなければ今の外観のまま変わらない
+trigger: 文書の作成者が `mdmark.config.yaml` のテーマを選ぶキーにテーマの名前を記載し、利用側のページがその設定を `opts.config` に指定して文書を描く
+preconditions:
+  - ページがバージョンを固定した URL で mdmark の JavaScript と CSS を読み込んでいる
+success_guarantee: 選んだテーマの配色の値が描いた文書に該当し、明暗は OS の設定・親の class の決め方のまま選ばれる。
+minimal_guarantee: テーマを選ばないときと、知らないテーマの名前を記載したときは、既定のテーマ（dev-swiss）の配色で文書が描かれる。
+test_file: tests/e2e/単一ユースケース/テーマを選ぶ.spec.ts
+refs:
+  - SC-472-33#scenarios[正常シナリオ（文書のマーカーが設定に勝つ）]

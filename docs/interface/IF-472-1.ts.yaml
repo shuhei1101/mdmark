@@ -1,0 +1,106 @@
+id: IF-472-1
+visibility: internal
+title: CSSのテンプレートの一覧を返却する
+entry:
+  kind: mcp_tool
+  value: list_templates
+lead: 端末の設定のフォルダの CSS のテンプレートの索引を読み込み、テンプレートごとの名前・説明・タグ・CSS の絶対パスを返却する。
+idempotent: true
+side_effects: なし（テンプレートのフォルダと索引を作らず、書き換えない）
+request:
+  - name: project_dir
+    type: string
+    required: true
+    location: argument
+    description: 作業のフォルダの絶対パス。プラグインの PreToolUse のフックが `CLAUDE_PROJECT_DIR` の値を入れる
+    constraints: 絶対パスで、そのフォルダがある
+    notes: '`tools/list` の `inputSchema` には出さず、サーバーの引数の検査だけが必須にする'
+request_example: |-
+  ```json
+  {}
+  ```
+response:
+  - name: templates
+    type: '{ name: string; description: string; tags: string[]; path: string }[]'
+    description: 索引の行を索引の順に並べたもの。`path` は CSS の絶対パス。フォルダか索引が無ければ空の並び
+response_example: |-
+  ```json
+  {"templates": [{"name": "brand", "description": "見出しを社の色にする", "tags": ["見出し", "色"], "path": "/home/user/.config/mdmark/templates/css/brand.css"}]}
+  ```
+exceptions:
+  - name: なし（正常終了）
+    condition: 索引を読み込めた、またはテンプレートのフォルダか索引が無い
+  - name: ツールのエラー（索引を読み込めない）
+    condition: 索引が YAML として読み込めない、または索引のスキーマに合わない
+    notes: 内容の文に、索引のパスと、読み込めない行か合わないキーと、修正方法を記載する
+  - name: ツールのエラー（作業のフォルダが無い）
+    condition: '`project_dir` が無い、絶対パスでない、またはそのフォルダが無い'
+    notes: ほかのツールと同じ文
+error_format: 'ツールの結果を `isError: true` にし、内容のテキストに、何が合わないかと修正方法を日本語の 1 文で記載する。'
+constraints:
+  - item: テンプレートのフォルダ
+    constraint: 端末の設定のファイル（`MDMARK_CONFIG`、無ければ `${XDG_CONFIG_HOME:-~/.config}/mdmark/settings.yaml`）と同じフォルダの `templates/css/`。端末の設定のファイルが無くても、このフォルダを読み込む
+    decided_by: IF-472-40#constraints[端末の設定のパス]
+  - item: 索引
+    constraint: テンプレートのフォルダの `templates.yaml`。スキーマは ER 図『CSSのテンプレート』
+    decided_by: ER-472-1#
+  - item: annotations
+    constraint: '`readOnlyHint: true`'
+flows:
+  - name: 正常系
+    summary: 索引の行を、名前・説明・タグ・CSS の絶対パスで返却する
+    setup:
+      - name: 端末の設定
+        description: 一時フォルダの `settings.yaml`。常駐サーバーを `MDMARK_CONFIG` でこのファイルを指して起動する。テンプレートのフォルダに CSS 2 つと、2 つを並べた索引を配置する
+      - name: Mock
+        description: Claude Code の代わりに、起動した常駐サーバーへ HTTP でつなぐ MCP のクライアント。`project_dir` に作業のフォルダの絶対パスを入れて呼ぶ
+    flow: |-
+      sequenceDiagram
+        participant C as Claude Code
+        participant S as MCP サーバー
+        participant T as テンプレートのフォルダ
+        C->>S: list_templates
+        S->>T: 索引を読み込む
+        S-->>C: templates
+    expected:
+      - '`templates` が索引の順の 2 行で、各行の `name`・`description`・`tags` が索引と同じ'
+      - 各行の `path` が、テンプレートのフォルダの CSS の絶対パス
+    test: test_normal
+  - name: 正常系（テンプレートのフォルダが無い）
+    summary: フォルダが無いとき、作らずに空の一覧を返却する
+    setup:
+      - name: 端末の設定
+        description: 一時フォルダの `settings.yaml`。常駐サーバーを `MDMARK_CONFIG` でこのファイルを指して起動する。テンプレートのフォルダは無い
+      - name: Mock
+        description: Claude Code の代わりに、起動した常駐サーバーへ HTTP でつなぐ MCP のクライアント。`project_dir` に作業のフォルダの絶対パスを入れて呼ぶ
+    flow: |-
+      sequenceDiagram
+        participant C as Claude Code
+        participant S as MCP サーバー
+        C->>S: list_templates
+        S->>S: テンプレートのフォルダが無い
+        S-->>C: 空の templates
+    expected:
+      - '`templates` が空の並び'
+      - テンプレートのフォルダが作られていない
+    test: test_normal_when_folder_missing
+  - name: 異常系（索引を読み込めない・ツールのエラー）
+    summary: 索引がスキーマに合わないとき、合わないキーを示してエラーにする
+    setup:
+      - name: 端末の設定
+        description: 一時フォルダの `settings.yaml`。常駐サーバーを `MDMARK_CONFIG` でこのファイルを指して起動する。テンプレートのフォルダの索引の 1 行目に `file` が無い
+      - name: Mock
+        description: Claude Code の代わりに、起動した常駐サーバーへ HTTP でつなぐ MCP のクライアント。`project_dir` に作業のフォルダの絶対パスを入れて呼ぶ
+    flow: |-
+      sequenceDiagram
+        participant C as Claude Code
+        participant S as MCP サーバー
+        participant T as テンプレートのフォルダ
+        C->>S: list_templates
+        S->>T: 索引を読み込む
+        S-->>C: isError（索引のパスと templates[0].file）
+    expected:
+      - '`isError` が立つ'
+      - 内容の文に、索引のパスと `templates[0].file` が出る
+    test: test_error_when_index_invalid
+test_file: tests/integration/ClaudeCodeプラグイン/list-templates.test.ts

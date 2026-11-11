@@ -1,0 +1,22 @@
+id: MOD-472-47
+visibility: internal
+title: ライブラリ本体 / 部品の描画
+lead: Storybook（`@storybook/react-vite`）のストーリーに部品の HTML を出す仕組み。部品の HTML を返却する描画のインターフェース（Node の HTTP サーバー）と、Storybook の設定・描画のインターフェースの HTML を描くデコレーター・VS Code の配色を与えるデコレーターを持つ。配布物には入らない。
+directory: |-
+  ```tree
+  scripts/
+  └── storybook-render.ts  # 描画のインターフェース（部品の HTML と CSS を返却する HTTP サーバー）
+  .storybook/
+  ├── main.ts              # Storybook の設定（@storybook/react-vite・addon-a11y・ストーリーの場所・/render の中継・許すホスト）
+  ├── preview.tsx          # デコレーター・MSW の読み込み・描いた後に付ける操作
+  ├── server-html.tsx      # 描画のインターフェースの HTML を描くデコレーター
+  ├── vscode-theme.tsx     # VSCode/* のストーリーに --vscode-* を与えるデコレーター
+  ├── preview-head.html    # 描画のインターフェースの CSS を読み込む link
+  └── public/
+      └── mockServiceWorker.js  # MSW の Service Worker（`msw init` が記載する）
+  ```
+notes:
+  ストーリーの場所: '部品『部品』のストーリーは `src/parts/*.stories.ts`（CSF。`meta` の `title` と `parameters.server.id`、ストーリーごとの `args` だけを持ち、描くのは `withServerHtml`）。ストーリーの ID は server 形式のときと同じ（`title` と export 名から作る）。`preview-head.html` は `<link rel="stylesheet" href="/render/index.css">` を持ち、ストーリーに本文の CSS を適用する。`preview.tsx` は、描いた直後のストーリーの `.mdmark` に、`data-story-fit` のマーカーを持つ図なら `/render/diagram.js` の `attachDiagrams` を、表の部品（`.mdmark-table`）を持つなら `/render/sticky.js` の `attachStickyRows` を、ファイルツリーなら `/render/trees.js` の `alignFileTreeNotes` を付け、止めた GIF の `canvas` に最初のフレームを描く（`mount` が付けるのと同じ。`import()` は `/* @vite-ignore */`）。VS Code 拡張機能の React の部品のストーリーは、設計書『VS Code 拡張機能 / Webview』の部品の横に配置する'
+  起動: 描画のインターフェースを `RENDER_PORT={ポート} node scripts/storybook-render.ts`（`npm run storybook:render`）で起動し、Storybook を `RENDER_ORIGIN=http://127.0.0.1:{描画のインターフェースのポート} storybook dev --host 127.0.0.1 --exact-port -p {ポート}`（`npm run storybook -- ...`）で起動する。WSL の `/mnt/c` では開発サーバーがファイルの変更を取得しないため、ストーリーを修正したらもう一度起動する
+  依存: '`storybook`・`@storybook/react-vite`・`@storybook/addon-a11y` を `10.6.2`、`msw`・`msw-storybook-addon` を開発の依存に追加し、`@storybook/server-webpack5`・`@storybook/server` と `package.json` の `overrides` の `webpack-dev-middleware` を削除する。React・Tailwind は直下の開発の依存にも追加し（`vscode/` と同じバージョン）、`resolve.dedupe` で 1 つにする。ストーリーの色分けに npm の `highlight.js` を `11.12.0` で開発の依存に追加する（`src/` は型だけを `import type` で使用する）。どれも配布物には入らない'
+  単体テストの場所: '`renderPart`・`createRenderServer`・`main` は `tests/unit/scripts/storybook-render.test.ts`（`unit` プロジェクト）。`.storybook/` の中は Storybook を起動して確認する'

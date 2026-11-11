@@ -1,0 +1,192 @@
+summary: 単一 / 複合ユースケースの業務フロー設計（E2E テストの元）
+items:
+- page: SC-472-82.yaml
+  summary: 開発者が依存の導入・lint・型検査・ビルド・テストを実行し、バージョンを埋めた配布物を得る
+- page: SC-472-28.yaml
+  summary: 利用側のページがバージョンのタグを固定した URL で配布物を読み込み、公開関数を呼ぶ
+- page: SC-472-59.yaml
+  summary: 利用側のページが要素と Markdown を指定して文書を描き、本文の差し替えと片付けをする
+- page: SC-472-57.yaml
+  summary: 利用側の処理が画面を持たずに Markdown を HTML 文字列にする
+- page: SC-472-25.yaml
+  summary: 利用側が自分の CSS で描いた文書の外観を変える
+- page: SC-472-62.yaml
+  summary: 設定の features を既定にし、文書のマーカーでその文書だけ機能をオン・オフする
+- page: SC-472-46.yaml
+  summary: 文書にマーカーがあるときだけ外部ライブラリを読み込み、読み込めない箇所に通知ブロックを出す
+- page: SC-472-58.yaml
+  summary: 印刷・PDF で折り畳みを開き、ダークを解除し、リンクの URL を併記して出す
+- page: SC-472-73.yaml
+  summary: マーカーで囲んだ表を、読者が並べ替え・絞り込み・ピン止めし、閉じた表を開く
+- page: SC-472-64.yaml
+  summary: GitHub と同じ `> [!NOTE]` などの引用を、種類ごとの注意書きの枠に描く
+- page: SC-472-23.yaml
+  summary: マーカーで囲んだ見出しごとのセクションをタブに描き、読者が切り替える
+- page: SC-472-20.yaml
+  summary: 番号付きリスト・罫線のフォルダ構成・`badge:` の行内のコードを、手順・ファイルツリー・バッジに描く
+- page: SC-472-61.yaml
+  summary: columns のマーカーで区切った本文を横に 2〜3 列で並べ、狭い画面では縦に並べる
+- page: SC-472-12.yaml
+  summary: include のマーカーの場所に、ほかの文書の全体・見出しの中・コードの行の範囲を取り込んで描く
+- page: SC-472-38.yaml
+  summary: wide のマーカーで囲んだ図・表・画像を、目次と文書の一覧に重ならない幅まで本文の幅より広げる
+- page: SC-472-68.yaml
+  summary: 見出しに GitHub と同じ ID とリンクを付け、マーカーの場所の目次からセクションへ移る
+- page: SC-472-54.yaml
+  summary: 一定量スクロールした文書で、画面の右下のボタンを押して描いた文書の先頭へ戻る
+- page: SC-472-33.yaml
+  summary: 文書の先頭のマーカーと設定で、配色の明暗・テーマ・右側の目次の出し方を文書ごとに指定する
+- page: SC-472-21.yaml
+  summary: 見出しのセクションと、表の行の下に出す行の詳細を、マーカーのとおりの開閉から開閉する
+- page: SC-472-71.yaml
+  summary: '`[^1]` と行内の `^[…]` の脚注を、本文の番号のツールチップと末尾の閉じた一覧で読み込む'
+- page: SC-472-37.yaml
+  summary: マーカーを付けた図と表に通し番号を付け、参照のリンクの文字を番号にする
+- page: SC-472-49.yaml
+  summary: 利用側が `registerExtension` でマーカーを追加し、マーカーのある文書でだけモジュールを読み込んで描かせる
+- page: SC-472-65.yaml
+  summary: 索引の用語が本文に出たら下線を付け、ポインターとフォーカスで意味を出す
+- page: SC-472-72.yaml
+  summary: マーカーで囲んだ表の用語・意味・別名の列から用語を入れる
+- page: SC-472-75.yaml
+  summary: 描いた文書を参照している文書と、用語が出る文書を確認する
+- page: SC-472-70.yaml
+  summary: 利用側の処理が索引と文書を指定し、ずれの一覧を受け取る
+- page: SC-472-83.yaml
+  summary: 文書の作成者が `mdmark init` で設定・利用側の CSS・索引・拡張のビルドの雛形を配置する
+- page: SC-472-78.yaml
+  summary: 文書の作成者が `mdmark check` で設定と索引の構造・索引と文書のずれ・書き出す対象を確認する
+- page: SC-472-52.yaml
+  summary: 文書の作成者が `mdmark check` に Markdown の文字列、またはファイルと YAML のキーを指定し、描いたときの記載の警告と同じずれを受け取る
+- page: SC-472-56.yaml
+  summary: 文書の作成者が `mdmark export` で 1 文書を、外を読み込まない 1 枚の HTML に書き出す
+- page: SC-472-76.yaml
+  summary: 文書の作成者が `mdmark build` で、参照・被参照・用語のツールチップが有効になる 1 枚の HTML にまとめる
+- page: SC-472-13.yaml
+  summary: 読者がまとめた HTML を file:// で開き、文書の一覧・リンク・戻ると進むで文書を行き来する
+- page: SC-472-27.yaml
+  summary: 文書の作成者が `mdmark upgrade` で移行の手順をバージョンの順に当て、点検に合格してから設定のバージョンを書き換える
+- page: SC-472-43.yaml
+  summary: 文書に部品の定義を記載し、共通の部品にフロー図・シーケンス図・グラフを図の決まりのとおりに描かせる
+- page: SC-472-11.yaml
+  summary: 言語 mermaid のコードブロックを、mdmark の外観のテーマで図の枠に入れて描く
+- page: SC-472-42.yaml
+  summary: 読者が図を右上のボタンとキーで拡大・縮小し、ドラッグ・矢印キー・ボタンで動かす
+- page: SC-472-40.yaml
+  summary: 読者が図の矢印・ノード・ノードの中の用語の詳細を、ホバーとフォーカスで出るツールチップで読み込む
+- page: SC-472-51.yaml
+  summary: 読者がスライダーで値を変えてグラフを見、今の値を JSON にしてクリップボードへ写す
+- page: SC-472-44.yaml
+  summary: 利用側が自分の場所だけの部品を `registerExtension` で追加し、自分の場所だけの外観を CSS で適用する
+- page: SC-472-79.yaml
+  summary: 利用側が `// @ts-check` と JSDoc で記載した JavaScript を、配布物の型定義に対して `tsc --noEmit` で点検する
+- page: SC-472-16.yaml
+  summary: マーカーで囲んだ `html` のコードブロックを、スクリプトを落としてその場の HTML として描く
+- page: SC-472-24.yaml
+  summary: 埋め込んだ HTML の custom element に記載した定義から、図の部品をその場所に図の枠に記載して描く
+- page: SC-472-47.yaml
+  summary: 利用側のページが `DiffSource` を指定して文書を描き、差分を開いたときにリビジョンの一覧と本文を取り出す
+- page: SC-472-63.yaml
+  summary: 利用側のページが比較元の Markdown を文字列で指定し、本文の中で追加・変更・削除したブロックを強調する
+- page: SC-472-55.yaml
+  summary: 読者が 2 つのリビジョンの差分を、削除した行は赤・追加した行は緑・変わった文字は濃い色で見、リビジョンをもう一度選ぶ
+- page: SC-472-45.yaml
+  summary: 読者が差分の中の埋め込んだ HTML を、ソースの色分けから描いた結果の前と後に切り替える
+- page: SC-472-29.yaml
+  summary: マーカーで囲んだ項目の表を、読者がボード表示と表形式のビューで切り替えて確認する
+- page: SC-472-74.yaml
+  summary: 読者が表形式のビューを、マーカーの `filter=` で指定した列の見出しの絞り込みで絞る
+- page: SC-472-80.yaml
+  summary: 読者が本文の選んだ箇所にコメントを付け、利用側の読み込みと保存の関数で残す
+- page: SC-472-81.yaml
+  summary: 利用側がページと拡張のモジュールから部品の関数を呼び、要素にビューを描き、選んだ箇所にコメントを付ける
+- page: SC-472-17.yaml
+  summary: マーカーと行末の行コメントで、コードブロックにタイトル・行番号・行の強調と、追加した行・削除した行・強調のマーカーを付ける
+- page: SC-472-10.yaml
+  summary: 文書の作成者が VS Code で Markdown の横に mdmark のプレビューを開き、拡張機能が読み込むバージョンを決めて描く
+- page: SC-472-77.yaml
+  summary: Markdown と設定ファイルの書き換え・背面からの復帰・リロードで、プレビューを最後の内容で再描画する
+- page: SC-472-14.yaml
+  summary: エディタかプレビューをスクロールすると、元の行番号を手がかりにもう片方が同じ箇所まで動く
+- page: SC-472-32.yaml
+  summary: プレビューの配色を VS Code のライト・ダークに合わせて切り替え、設定で固定もできる
+- page: SC-472-31.yaml
+  summary: プレビューの外部の URL・Markdown へのリンク・`#` のリンクを開き、相対パスの画像を出す
+- page: SC-472-6.yaml
+  summary: 開いている Markdown を HTML に書き出し、既定のブラウザで開く
+- page: SC-472-50.yaml
+  summary: 開発者が `vscode-v{バージョン}` のタグを打つと、GitHub Actions が .vsix を作って GitHub Release に添える
+- page: SC-472-9.yaml
+  summary: 開いている Markdown を書き出した HTML をブラウザで開き、印刷のダイアログで PDF にする
+- page: SC-472-60.yaml
+  summary: 利用側の処理が画面を出さずに、本文に出た用語・文書の別名とその参照先を受け取る
+- page: SC-472-4.yaml
+  summary: 文書の作成者が mdmark のリポジトリをマーケットプレイスとして追加し、mdmark のプラグインを Claude Code に入れる
+- page: SC-472-15.yaml
+  summary: Claude Code が dev-docs の `search_docs` で、mdmark の配信元からガイドのページを受け取る
+- page: SC-472-3.yaml
+  summary: Claude Code が `check`・`export_html`・`build_site` で、CLI と同じ点検・書き出し・まとめを呼ぶ
+- page: SC-472-7.yaml
+  summary: 文書の作成者が `mdmark serve` で MCP の常駐サーバーを起動し、接続先を確認し、使用し終えたら止める
+- page: SC-472-5.yaml
+  summary: 文書の作成者が `npx github:shuhei1101/mdmark#v{バージョン}` と同じ経路でバージョンのタグから mdmark を入れ、CLI を起動する
+- page: SC-472-26.yaml
+  summary: 設定で mdmark に入れたテーマを選び、明暗は今の決め方のままそのテーマの配色で描く
+- page: SC-472-30.yaml
+  summary: プレビューの歯車のボタンかコマンドパレットから VS Code の設定画面を mdmark の項目に絞って開き、変えた設定をプレビューに映す
+- page: SC-472-48.yaml
+  summary: 文書の作成者が VS Code の差分ビューからプレビューを開き、追加・変更したブロックと削除したブロックを色分けした文書で読み込む
+- page: SC-472-36.yaml
+  summary: 表の列・行、バッジ、本文の一部を色の名前で強調し、テーマとダークに合わせた配色で描く
+- page: SC-472-67.yaml
+  summary: 画像に幅・統一し・キャプションを付け、ギャラリー・テーマごとの画像・動画・音声・GIF の停止を配置する
+- page: SC-472-66.yaml
+  summary: 読者が本文の画像を押すかキーで開き、ライトボックスで拡大して前後の画像へ移る
+- page: SC-472-34.yaml
+  summary: URL・リンク・添付のファイルだけの段落を、外へ要求せずにカードとして描く
+- page: SC-472-35.yaml
+  summary: cards のマーカーで囲んだリストの項目を、リンク・説明・アイコンのカードにして格子に並べる
+- page: SC-472-69.yaml
+  summary: 文書の作成者が Claude Code で global-setup を呼び、端末の設定を作る・移行し、tmux のセッションで常駐サーバーを起動して、つながりとフックを確認する
+- page: SC-472-53.yaml
+  summary: 文書の作成者が Claude Code で setup を呼び、文書のフォルダの mdmark.config.yaml をキーごとに確認しながら作る・修正する
+- page: SC-472-22.yaml
+  summary: セッションの開始で、常駐サーバーが待ち受けていないときだけ SessionStart のフックが起動の仕方を伝え、起動しているときは instructions がセッション名を伝える
+- page: SC-472-1.yaml
+  summary: Claude Code が MCP のツールで、作業のフォルダの CSS を名前・説明・タグつきで端末の設定のフォルダのテンプレートに登録する
+- page: SC-472-2.yaml
+  summary: Claude Code が MCP のツールで、テンプレートの一覧から CSS を選んで作業のフォルダへ配置し、theme に記載する値を受け取る
+- page: SC-472-8.yaml
+  summary: 文書の map の範囲の Mermaid と補足を、入れ子のグループを自動配置した図にして描き、補足の layout で配置と見た目を上書きする
+- page: SC-472-39.yaml
+  summary: 読者が map の図のグループの中へ入って戻るボタンで戻り、グループを閉じて中への線をまとめる
+- page: SC-472-41.yaml
+  summary: 読者が map の構成図の案内の手順を前へ・次へで進め、手順ごとのグループ・強調と説明を読む
+- page: SC-472-18.yaml
+  summary: 読者が map のシーケンス図を、同じノードを持つ構成図の上で 1 通ずつ動かして読む
+- page: SC-472-19.yaml
+  summary: 読者が map のシーケンス図の参加者を選んでメッセージとライフラインを強調し、箱をドラッグして並び順を変える
+- page: SC-472-95.yaml
+  summary: 文書の作成者が CLI で雛形を配置し、点検して 1 枚の HTML にまとめ、読者が file:// で開いて文書を行き来する
+- page: SC-472-93.yaml
+  summary: 利用側が雛形に固有の部品と CSS を追加して型で点検し、図の文書を描いて読者の操作で確認する
+- page: SC-472-89.yaml
+  summary: 文書の作成者がコードブロックの HTML にチャートとヒントを記載し、読者が描いた文書と書き出した HTML で拡大・移動とツールチップで読み込む
+- page: SC-472-92.yaml
+  summary: 利用側が差分の取り出し元を指定して文書を描き、読者が 2 つのリビジョンを比べて本文と埋め込んだ HTML の変更を読み込む
+- page: SC-472-90.yaml
+  summary: 文書の作成者が項目の表をビューのマーカーで囲み、読者がビューを切り替えて表形式を列で絞り込み、選んだ箇所にコメントを付ける
+- page: SC-472-88.yaml
+  summary: 文書の作成者が VS Code で記載しながら mdmark のプレビューで確認し、HTML に書き出してブラウザの印刷で PDF にする
+- page: SC-472-86.yaml
+  summary: 文書の作成者が MCP の常駐サーバーを起動し、プラグインを入れた 2 つのセッションから同じプロセスのツールを呼び、使用し終えたら止める
+- page: SC-472-85.yaml
+  summary: 文書の作成者がプラグインを入れ、Claude Code が記載する前に dev-docs でガイドを参照し、記載した後に check で点検する
+- page: SC-472-94.yaml
+  summary: 文書の作成者が端末の設定と上のフォルダの設定を重ね、VS Code のプレビュー・CLI の書き出し・Claude Code から呼んだ書き出しを同じ外観にそろえる
+- page: SC-472-91.yaml
+  summary: 文書の作成者がプラグインを入れ、global-setup で端末の設定と常駐サーバーを、setup で文書のフォルダの設定を用意して、MCP のツールで点検と書き出しを呼ぶ
+- page: SC-472-84.yaml
+  summary: 文書の作成者が CSS を端末の設定のフォルダのテンプレートに登録し、別のリポジトリで一覧から選んで配置し、theme に記載して書き出した HTML に適用する
+- page: SC-472-87.yaml
+  summary: 文書の作成者が Mermaid と補足で図を記載して点検し、読者が自動配置で描いた図をグループの中へ入る・開閉・巡回・シーケンスの再生で辿って読む

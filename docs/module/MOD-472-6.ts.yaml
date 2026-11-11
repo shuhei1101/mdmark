@@ -1,0 +1,46 @@
+id: MOD-472-6
+visibility: internal
+title: ClaudeCodeプラグイン / セットアップ / キーの一覧 / keys.ts
+lead: '`keys` の結果を作る。'
+test_files:
+  - tests/unit/src/plugin/setup/keys.test.ts
+functions:
+  - name: listConfigKeys
+    title: 設定のキーの一覧を作る
+    kind: 関数
+    container: src/plugin/setup/keys.ts
+    usecase: 設定のキーの一覧を返却する
+    role: 処理
+    summary: Schema の葉のキーごとに今の値・端末の設定の値・既定・説明を返却する
+    scope: public
+    is_async: false
+    args:
+      - name: options
+        type: '{ target: "settings" | "config"; schema: JsonSchema; resolveRef: (ref: string) => JsonSchema; current: Record<string, unknown>; inherited?: Record<string, unknown> | undefined }'
+        required: true
+        description: 対象・設定の Schema・`$ref` を Schema に解決する関数・今の値・端末の設定の値（`config` のとき）
+    returns:
+      type: ConfigKey[]
+      description: '`key`・`current`・`inherited`・`default`・`description`'
+    process: |-
+      1. Schema の `properties` を並びのまま葉まで展開する（`allOf` の `$ref` は先に展開する）。`version` は含めない
+      2. `target` が `config` なら、端末の設定だけが持つキー（`config.*`・`serve.*`）を除く
+      3. `additionalProperties` で受けるキーは、今の値にあるものだけを追加する
+    unit_tests:
+      - name: test_list_config_keys
+        case: 正常
+        summary: 端末の設定のキー
+        condition: '`target: settings`、`schemas/mdmark.settings.schema.json`、`{ features: { table: false } }`'
+        mock: なし
+        expected: '`features.table` の `current` が `false`、`config.cascade` と `serve.tmuxSession` があり、`version` が無い'
+      - name: test_list_config_keys_when_config
+        case: 正常
+        summary: 文書のフォルダの設定では端末の設定だけのキーを除く
+        condition: '`target: config`、`inherited` が `{ features: { table: false } }`'
+        mock: なし
+        expected: '`features.table` の `inherited` が `false`、`config.cascade` と `serve.tmuxSession` が無い'
+    refs:
+      - IF-472-14#
+    status: planned
+    introduced:
+      pr: 354

@@ -1,0 +1,44 @@
+id: LIB-472-22
+visibility: internal
+title: react-error-boundary
+kind: ライブラリ
+version:
+  current: 6.1.6
+  latest: 6.1.6
+  checked_on: '2026-11-06'
+  source: vscode/package.json
+  pinning: 完全一致
+catalogs:
+  - name: API
+    version: 6.1.6
+    entries:
+      - name: ErrorBoundary
+        kind: コンポーネント
+        purpose: 描画中と、次の描画でもう一度投げた処理の例外を受け、代わりの表示を出す
+        params:
+          - name: fallbackRender
+            type: '(props: FallbackProps) => ReactNode'
+            required: false
+            description: 例外を受けたときに出す要素を返却する（`props.error`・`props.resetErrorBoundary` を受ける）
+          - name: onError
+            type: '(error: unknown, info: ErrorInfo) => void'
+            required: false
+            description: 例外を受けたときに呼ぶ
+lead: React のクラスの Error Boundary を、関数のコンポーネントから props で使用できるようにするライブラリ。
+purl: pkg:npm/react-error-boundary@6.1.6
+dependency_scope: 開発のみ
+adoption: 採用
+upstream: bvaughn/react-error-boundary
+used_in:
+  - vscode/src/webview/app/app.tsx
+verification:
+  state: 済
+  date: '2026-11-06'
+  detail: '`npm run test:unit` の `unit-browser`（Vitest のブラウザ・Chromium）で `tests/unit/vscode/src/webview/` の 18 ファイルが pass した。`app.browser.test.tsx` で、画面が投げた例外を受けて `Unexpected` の状態の表示を出すことを確認した'
+license: MIT（商用利用可）
+docs_url: https://github.com/bvaughn/react-error-boundary#readme
+install: '```bash
+
+  npm i -D -E react-error-boundary@6.1.6
+
+  ```'

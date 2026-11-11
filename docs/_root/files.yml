@@ -1,0 +1,34 @@
+# yaml-language-server: $schema=../../schemas/files.schema.yaml
+files:
+  - path: ../_theme/_includes/sidebar-source.html
+    visibility: public
+    description: 公開ドキュメントのサイトで、サイドバーの元になる目次の表を隠し要素として埋める Jekyll の部品。サイドバーに出す項目の決め方を変えるときに参照する。
+    tags: [topic:サイドバー, topic:ナビゲーション, tool:html]
+  - path: ../_theme/_includes/tab-link.html
+    visibility: public
+    description: 公開ドキュメントのサイトで、上部のタブを 1 つ出す Jekyll の部品。タブの出し方や種別の決め方を変えるときに参照する。
+    tags: [topic:タブ, topic:ナビゲーション, tool:html]
+  - path: ../_theme/_layouts/default.html
+    visibility: public
+    description: 公開ドキュメントのサイトの全ページに共通のレイアウト。ページの骨組み・読み込むスクリプトと CSS を変えるときに参照する。
+    tags: [topic:レイアウト, tool:html]
+  - path: ../_theme/assets/app.js
+    visibility: public
+    description: 公開ドキュメントのサイトの全ページで読み込む共通のスクリプト。サイトのタブ・サイドバー・図の振る舞いを変えるときに参照する。
+    tags: [topic:ナビゲーション, tool:javascript]
+  - path: ../_theme/assets/style.css
+    visibility: public
+    description: 公開ドキュメントのサイトの全ページで読み込む共通の外観。サイトの外観を変えるときに参照する。
+    tags: [topic:スタイル, tool:css]
+  - path: ../rules.yaml
+    visibility: internal
+    description: 公開ドキュメントに適用する rule-inject のルールの設定（適用する契機と、ルールの一覧）。公開ドキュメントを記載するときに案内するルールを変えるときに参照する。
+    tags: [topic:ルール, tool:rule-inject]
+  - path: ../index.md
+    visibility: public
+    description: 公開ドキュメントのサイトのトップページ。上タブの分類への入口を変えるときに参照する。
+    tags: [topic:ナビゲーション]
+  - path: ../design-policy.md
+    visibility: internal
+    description: mdmark が描く文書の既定の外観に経由するデザインの方向性（採用スタイルと、外観の決まり）を受け持つ。部品やテーマの外観を決めるときに参照する。
+    tags: [topic:デザイン, topic:デザインスタイル, topic:テーマ]

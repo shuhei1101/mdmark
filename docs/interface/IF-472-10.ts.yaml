@@ -1,0 +1,240 @@
+id: IF-472-10
+visibility: internal
+title: "点検する"
+entry:
+  kind: mcp_tool
+  value: check
+flows:
+  - name: 正常系
+    summary: ずれの無いフォルダで空の一覧を返却する
+    setup:
+      - name: ずれの無いフォルダ
+        description: 雛形に文書 2 つを追加し、索引に 2 つとも記載し、`build.include` が 2 つに該当するフォルダ
+      - name: Mock
+        description: Claude Code の代わりに、起動した常駐サーバーへ HTTP でつなぐ MCP のクライアント。`project_dir` にそのフォルダの絶対パスを入れて呼ぶ
+    flow: |-
+      sequenceDiagram
+        participant C as Claude Code
+        participant S as MCP サーバー
+        participant F as 作業のフォルダ
+        C->>S: check
+        S->>F: 設定・索引・文書を読み込む
+        S-->>C: issues（0 件）
+    expected:
+      - '`issues` が空で、`isError` が立たない'
+      - 設定・索引・文書が変わっていない
+    test: test_normal
+  - name: 正常系（ずれがある）
+    summary: CLI と同じずれを一覧で返却する
+    setup:
+      - name: ずれを持つフォルダ
+        description: 正常系のフォルダから文書 `old.md` を削除して索引には残し、設定の `build` から `out` を削除したフォルダ
+      - name: Mock
+        description: 正常系と同じ
+    flow: |-
+      sequenceDiagram
+        participant C as Claude Code
+        participant S as MCP サーバー
+        participant F as 作業のフォルダ
+        C->>S: check
+        S->>F: 設定・索引・文書を読み込む
+        S-->>C: issues（schema・missing_doc）
+    expected:
+      - '`issues` が `schema`（`mdmark.config.yaml`・`build`）と `missing_doc`（`index.yaml`・`docs[1].path`）の 2 件'
+      - '`isError` が立たない'
+      - 同じフォルダで実行した `mdmark check` の出力の行と一致する
+    test: test_normal_when_drift
+  - name: 異常系（設定ファイルが無い・ツールのエラー）
+    summary: 設定ファイルが見つからないと mdmark init で配置できることを返却する
+    setup:
+      - name: 設定ファイルの無いフォルダ
+        description: 文書だけがあり、そのフォルダと上のフォルダに `mdmark.config.yaml` が無い一時フォルダ
+      - name: Mock
+        description: 正常系と同じ
+    flow: |-
+      sequenceDiagram
+        participant C as Claude Code
+        participant S as MCP サーバー
+        C->>S: check
+        S->>S: 作業のフォルダから上へ設定ファイルを探す
+        S-->>C: isError（無いことと mdmark init）
+    expected:
+      - '`isError` が立つ'
+      - 内容に `mdmark.config.yaml` が無いことと `mdmark init` が出る
+    test: test_error_when_config_missing
+  - name: 正常系（比べる基準を指定する）
+    summary: base を指定すると、mdmark check --base と同じ修正漏れを返却する
+    setup:
+      - name: 組で修正する文書を持つ git のフォルダ
+        description: インターフェース定義『設定と索引を点検する』の正常系（比べる基準を指定する）と同じフォルダ。タグ `base` の後に `a.md` だけを書き換えてコミットしてある
+      - name: Mock
+        description: 正常系と同じ
+    flow: |-
+      ```mermaid
+      sequenceDiagram
+        participant C as Claude Code
+        participant S as MCP サーバー
+        participant F as 作業のフォルダ
+        C->>S: check（base: base）
+        S->>F: 設定・索引・文書と、merge-base から変わったファイルを読み込む
+        S-->>C: issues（missed_change_together）
+      ```
+    expected:
+      - '`issues` が `missed_change_together`（`b.md`・空の `where`）の 1 件で、`isError` が立たない'
+      - 同じフォルダで実行した `mdmark check --base base` の出力の行と一致する
+    test: test_normal_when_base_given
+  - name: 異常系（作業のフォルダが無い・ツールのエラー）
+    summary: '`project_dir` を持たない呼び出しを、作業のフォルダを読み込まずにエラーにする'
+    setup:
+      - name: Mock
+        description: 起動した常駐サーバーへ HTTP でつなぐ MCP のクライアント。`project_dir` を入れずに呼ぶ
+    flow: |-
+      sequenceDiagram
+        participant C as Claude Code
+        participant S as MCP サーバー
+        C->>S: check（project_dir なし）
+        S->>S: 引数を検査する
+        S-->>C: isError（project_dir が無いこととプラグインから呼ぶこと）
+    expected:
+      - '`isError` が立つ'
+      - 内容の文に `project_dir` と、プラグインを入れたセッションから呼ぶことが出る
+    test: test_error_when_project_dir_missing
+  - name: 正常系（取り込み先が無い）
+    summary: CLI と同じ `include_target_missing` のずれを返却し、説明文で取り込み先も点検すると通知する
+    setup:
+      - name: 取り込み先の無いマーカーを持つフォルダ
+        description: インターフェース定義『設定と索引を点検する』の正常系（取り込み先が無い）と同じフォルダ
+      - name: Mock
+        description: 正常系と同じ
+    flow: |-
+      sequenceDiagram
+        participant C as Claude Code
+        participant S as MCP サーバー
+        participant F as 作業のフォルダ
+        C->>S: tools/list
+        S-->>C: check の説明文
+        C->>S: check
+        S->>F: 設定・索引・文書・取り込み先を読み込む
+        S-->>C: issues（include_target_missing × 3）
+    expected:
+      - '`issues` に `include_target_missing` が 3 件あり、同じフォルダで実行した `mdmark check` の出力の行と一致する'
+      - '`tools/list` の `check` の説明文に、include の取り込み先を点検することがある'
+      - 設定・索引・文書が変わらない
+    test: test_normal_when_include_targets_missing
+    refs:
+      - SC-472-3#scenarios[正常シナリオ（取り込み先が無い）]
+  - name: 正常系（文字列と YAML のキーを指定する）
+    summary: '`text` と `file`・`key` を指定すると、`mdmark check --text`・`--file --key` と同じずれを返却する'
+    setup:
+      - name: ずれの無いフォルダ
+        description: 正常系と同じフォルダに、`items[0].body` が 5 行目の `|` で始まるブロックスカラーで、値の 3 行目（ファイルの 8 行目）に `<!-- tabz -->` を持つ `records.yaml` を配置したもの
+      - name: 点検する文字列
+        description: '`records.yaml` の `items[0].body` と同じ Markdown'
+      - name: Mock
+        description: 正常系と同じ
+    flow: |-
+      sequenceDiagram
+        participant C as Claude Code
+        participant S as MCP サーバー
+        participant F as 作業のフォルダ
+        C->>S: check（text）
+        S-->>C: issues（unknown_mark）
+        C->>S: check（file: records.yaml・key: items[0].body）
+        S->>F: YAML を読み込み、キーの値を取り出す
+        S-->>C: issues（unknown_mark）
+    expected:
+      - '`text` の `issues` が `unknown_mark`（`-`・`3`）の 1 件で、`isError` が立たない'
+      - '`file`・`key` の `issues` が `unknown_mark`（`records.yaml`・`8`）の 1 件で、`isError` が立たない'
+      - 同じフォルダで同じ引数の `mdmark check --text`・`--file --key` の出力の行と一致する
+      - 設定・索引・文書と `records.yaml` が変わっていない
+    test: test_normal_when_text_and_key
+lead: '`mdmark check` と同じ処理で、設定の構造・索引と文書のずれ・`build` の対象の有無・知らないマーカー・見つからないファイル・include のマーカーの取り込み先・図の部品の定義を点検し、ずれの一覧を返却する。`text` か `file` と `key` を指定したときは、`mdmark check --text`・`--file --key` と同じく、指定した Markdown を描いたときの記載の警告と図の定義のずれを返却する。'
+idempotent: true
+side_effects: なし（設定・索引・文書を書き換えない）
+request:
+  - name: config
+    type: string
+    required: false
+    default: なし（端末の設定と、`project_dir` から上のフォルダの `mdmark.config.yaml` を重ねる。端末の設定は `mdmark serve` のプロセスの環境変数で決まる）
+    location: argument
+    description: 使用する設定ファイルのパス
+  - name: base
+    type: string
+    required: false
+    default: なし（`change_together` の修正漏れを確認しない）
+    location: argument
+    description: 修正漏れの検査に比べる基準の git の ref。`mdmark check` の `--base` と同じ
+  - name: project_dir
+    type: string
+    required: true
+    location: argument
+    description: 作業のフォルダの絶対パス。プラグインの PreToolUse のフックが `CLAUDE_PROJECT_DIR` の値を入れる
+    constraints: 絶対パスで、そのフォルダがある
+    notes: '`tools/list` の `inputSchema` には出さず、サーバーの引数の検査だけが必須にする'
+  - name: text
+    type: string
+    required: false
+    default: なし（設定と索引を点検する）
+    location: argument
+    description: 点検する Markdown の文字列。`mdmark check` の `--text` と同じ
+    constraints: '`base`・`file`・`key` と一緒に指定できない'
+  - name: file
+    type: string
+    required: false
+    default: なし（設定と索引を点検する）
+    location: argument
+    description: Markdown をキーの値に持つ YAML のファイルのパス（`project_dir` からの相対パスか絶対パス）。`mdmark check` の `--file` と同じ
+    constraints: '`key` と一緒に指定する。`base`・`text` と一緒に指定できない'
+  - name: key
+    type: string
+    required: false
+    default: なし
+    location: argument
+    description: '`file` の YAML の中で点検する文字列の値のキーのパス。`mdmark check` の `--key` と同じ'
+    constraints: '`file` と一緒に指定する'
+request_example: |-
+  ```json
+  {}
+  ```
+response:
+  - name: issues[].file
+    type: string
+    description: ずれのあるファイル（設定ファイルのあるフォルダからの相対パス。`text` のときは `-`、設定ファイルが無いときは `project_dir` からの相対パス）
+  - name: issues[].where
+    type: string
+    description: 行かキーのパス。無いときは空の文字列
+  - name: issues[].kind
+    type: "'schema' | 'unknown_color_theme' | 'no_documents' | 'missing_doc' | 'orphan_doc' | 'broken_ref' | 'untyped_related' | 'one_sided_change_together' | 'related_link_overlap' | 'missed_change_together' | 'duplicate_term' | 'avoided_term' | 'alias_no_files' | 'alias_unreadable' | 'duplicate_alias_row_id' | 'alias_records_missing' | 'alias_field_missing' | 'alias_unknown_type' | 'alias_required_empty' | 'duplicate_alias_id' | 'unknown_mark' | 'missing_file' | 'diagram_invalid' | 'diagram_node_overlap' | 'diagram_node_overflow' | 'diagram_wire_crosses_node' | 'diagram_label_too_long' | 'syntax_warning' | 'unknown_mark_arg'"
+    description: ずれの種類。意味は『設定と索引を点検する』の「種類」
+  - name: issues[].message
+    type: string
+    description: 何が合わないかと修正方法の 1 文
+response_example: |-
+  ```json
+  {"issues": [{"file": "index.yaml", "where": "docs[1].path", "kind": "missing_doc", "message": "`old.md` が見つかりません。文書を戻すか、索引の `docs[1]` を削除してください。"}]}
+  ```
+response_notes: ずれがあることはツールのエラーにしない（`isError` を起動せず、`issues` に並べる）。並びは `mdmark check` の出力の行の並びと同じ。
+exceptions:
+  - name: なし（正常終了）
+    condition: 点検できた。ずれの有無を問わない
+  - name: ツールのエラー（設定ファイルが無い）
+    condition: '`config` のファイルが無いか、作業のフォルダと上のフォルダに `mdmark.config.yaml` が無い（`text`・`file` を指定し、`config` を指定しないときを除く）'
+    notes: 探した場所と `mdmark init` で配置できることを記載する。設定ファイルを YAML として読み込めないときも同じくエラーにし、読み込めない行を記載する
+  - name: ツールのエラー（比べる基準を参照できない）
+    condition: '`base` を指定し、`mdmark check --base` が比べる基準を参照できないときと同じ条件'
+    notes: '`mdmark check` が標準エラーに出すのと同じ文を書き込む'
+  - name: ツールのエラー（作業のフォルダが無い）
+    condition: '`project_dir` が無い、絶対パスでない、またはそのフォルダが無い'
+    notes: 内容の文に、`project_dir` が無いか違うことと、プラグインを入れたセッションから呼ぶことを記載する
+  - name: ツールのエラー（引数の組が誤り・ファイルを読み込めない・キーが無い）
+    condition: '`mdmark check` が引数の組の誤り・点検するファイルを読み込めない・キーが無いで終わるときと同じ条件'
+    notes: '`mdmark check` が標準エラーに出すのと同じ文を書き込む'
+error_format: 'ツールの結果を `isError: true` にし、内容のテキストに `mdmark check` が標準エラーに出すのと同じ文を書き込む。'
+constraints:
+  - item: CLI との一致
+    constraint: 同じ設定・索引・文書では、`issues` が `mdmark check` の出力の行と 1 対 1 に一致する
+  - item: readOnlyHint
+    constraint: 'ツールの annotations に `readOnlyHint: true` を付ける'
+refs:
+  - IF-472-39#
+test_file: tests/integration/ClaudeCodeプラグイン/check.test.ts

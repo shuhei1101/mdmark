@@ -1,0 +1,153 @@
+id: MOD-472-205
+visibility: internal
+title: ライブラリ本体 / 描く / highlight.ts
+test_files:
+  - tests/unit/src/highlight.browser.test.ts
+data_models:
+  - name: EmbeddedSyntax
+    title: 埋めた色分けのモジュール
+    container: src/highlight.ts
+    summary: 書き出した HTML の起動の処理が `setEmbeddedSyntax` で指定する、同じスクリプトにまとめた色分けのモジュール
+    properties:
+      - name: core
+        type: '{ default?: unknown } | undefined'
+        description: 本体（`core.min.js`）のモジュール。埋めなかったときは持たない
+      - name: languages
+        type: 'Record<string, { default?: unknown }>'
+        description: 言語のモジュール名からモジュールを参照する表。埋めなかった言語は持たない
+    status: planned
+    introduced:
+      pr: 97
+constants:
+  - name: embeddedSyntax
+    title: 埋めた色分けのモジュールの記録
+    container: src/highlight.ts
+    summary: '`setEmbeddedSyntax` が入れる `EmbeddedSyntax`。無ければ `syntax.url` から読み込む。モジュールの中の `let` で持ち、ページの中の全ての `mount` に有効になる'
+    value: undefined
+    status: planned
+    introduced:
+      pr: 97
+functions:
+  - name: highlightCodeBlocks
+    title: 色分けの対象を色分けする
+    container: src/highlight.ts
+    kind: 関数
+    scope: internal
+    is_async: true
+    summary: 要素の中の `code[data-mdmark-syntax]` が 1 つ以上あれば、色分けのライブラリの本体と使用する言語のモジュールを読み込み、読み込めた言語の `code` の中身を色分けした HTML に置き換える
+    description: 読み込む先は、`embeddedSyntax` があればそのモジュール（URL を読み込まない。`core` が無ければ色分けせずに終え、`languages` に無い言語は色分けしない。どちらも `console.error` に出さない）、無ければ `url` を `document.baseURI` を基準に解決した `{url}core.min.js` と `{url}languages/{モジュール名}.min.js`。読み込んだモジュールは `modules`（URL → 読み込みの Promise）に記録し、同じ `mount` の再描画では再読み込みしない。色分けの HTML は highlight.js が文字をエスケープしてから `span` を付けたもので、sanitize を経由しない。待ちに時間の上限は配置しない
+    side_effects: '`code` と `mdmark-code-text` の中身を置き換える。本体に言語を登録する。読み込めないモジュールを `console.error` に出す'
+    args:
+      - name: options
+        type: '{ root: HTMLElement; url: string; isCurrent: () => boolean; modules: Map<string, Promise<{ default?: unknown }>>; importModule?: SyntaxImport }'
+        required: true
+        description: '`root` は描いた要素、`url` は既定を適用した設定の `syntax.url`、`isCurrent` は描いた文書がまだ今のものか、`modules` は `mount` ごとに 1 つの読み込んだモジュールの記録、`importModule` はモジュールを読み込む関数（既定 `(url) => import(url)`）'
+    returns:
+      type: Promise<void>
+      description: 色分けし終えるか、読み込めずにやめたら解決する。失敗しても拒否しない
+    process: |-
+      1. `root` の中の `code[data-mdmark-syntax]` を取得する。無ければ何も読み込まずに終える
+      2. 本体の URL を決め、`modules` に無ければ読み込み始めて記録し、待つ
+         - `[error]` 本体を読み込めない（URL と元のエラーを `console.error` に出し、色分けせずに終える）
+      3. 取得した `code` の `data-mdmark-syntax` の値を重なりなく並べ、言語ごとに URL を決めて並べて読み込み（`Promise.allSettled`）、読み込めた言語を本体の `registerLanguage` で登録する（登録済みの言語は飛ばす）
+         - `[error]` 言語のモジュールを読み込めない（URL と元のエラーを `console.error` に出し、その言語の `code` を色分けせずに残す）
+      4. 待った後に `isCurrent()` が `false` なら何もしない
+      5. 登録できた言語の `code` ごとに次の処理をする
+         - `mdmark-code-text` を持つときは、各行の `textContent` を色分けした行にし（色分けした行を作る）、各 `mdmark-code-text` の `innerHTML` に入れる
+         - 持たないときは、`code` の `textContent` を `highlight`（`ignoreIllegals: true`）に経由した HTML を `code` の `innerHTML` に入れる
+    callees:
+      - 'MOD-472-209#functions[highlightLines]'
+    unit_tests:
+      - name: test_highlight_code_blocks
+        case: 正常
+        summary: 行に分けた構造と分けない構造の両方を色分けし、文字と行の構造を変えない
+        condition: '`renderCodeBlock` の `syntax: "typescript"` の行に分けないコードブロックと、`syntax: "yaml"`・`lineNumbers: true` で 3 行のブロックスカラーを持つコードブロック。`url` は `/hl/`'
+        mock: '`importModule` が `/hl/core.min.js` に npm の `highlight.js/lib/core`、`/hl/languages/{名前}.min.js` に `highlight.js/lib/languages/{名前}` を返却する'
+        expected: '`importModule` が `location.origin` + `/hl/core.min.js`・`/hl/languages/typescript.min.js`・`/hl/languages/yaml.min.js` の 3 回。両方の `code` に class が `hljs-` で始まる `span` があり、`textContent` と `mdmark-code-line` の数・`data-line` が色分けの前と同じ'
+      - name: test_highlight_code_blocks_when_no_target
+        case: 正常
+        summary: 色分けの対象が無ければ何も読み込まない
+        condition: '`data-mdmark-syntax` を持たない `pre > code.language-ts` だけの要素'
+        mock: '`importModule` を見張る'
+        expected: '`importModule` が呼ばれない'
+      - name: test_highlight_code_blocks_when_core_fails
+        case: 異常
+        summary: 本体を読み込めないときは色分けせずに残し、エラーを出す
+        condition: '`test_highlight_code_blocks` と同じ要素'
+        mock: '`importModule` が `core.min.js` を `new Error("404")` で拒否する。`console.error` を見張る'
+        expected: 戻りの Promise が解決し、両方の `code` の HTML が前と同じ。言語のモジュールを読み込まず、`console.error` が URL と `Error("404")` を含めて 1 回呼ばれる
+      - name: test_highlight_code_blocks_when_language_fails
+        case: 異常
+        summary: 読み込めない言語だけ色分けせずに残す
+        condition: '`test_highlight_code_blocks` と同じ要素'
+        mock: '`test_highlight_code_blocks` と同じで、`languages/yaml.min.js` だけ拒否する。`console.error` を見張る'
+        expected: '`typescript` の `code` は色分けし、`yaml` の `code` の HTML は前と同じ。`console.error` が `languages/yaml.min.js` を含めて 1 回呼ばれる'
+      - name: test_highlight_code_blocks_when_stale
+        case: 正常
+        summary: 読み込み終えたときに再描画していたら色を適用しない
+        condition: '`test_highlight_code_blocks` と同じ要素。`isCurrent` が `false` を返却する'
+        mock: '`test_highlight_code_blocks` と同じ'
+        expected: 両方の `code` の HTML が前と同じ
+      - name: test_highlight_code_blocks_when_cached
+        case: 正常
+        summary: 同じモジュールの記録で 2 回呼ぶとモジュールを再読み込みしない
+        condition: '`test_highlight_code_blocks` と同じ要素を 2 つ作り、同じ `modules` で順に呼ぶ'
+        mock: '`test_highlight_code_blocks` と同じ'
+        expected: '`importModule` が合わせて 3 回で、両方の要素が色分けされる'
+      - name: test_highlight_code_blocks_when_embedded
+        case: 正常
+        summary: 埋めたモジュールがあれば URL を読み込まずに使用し、埋めていない言語は色分けしない
+        condition: '`setEmbeddedSyntax({ core: 本体, languages: { typescript: 言語 } })`（npm の `highlight.js` の本体と typescript）の後に `test_highlight_code_blocks` と同じ要素。終えたら `setEmbeddedSyntax(undefined)`'
+        mock: '`importModule` と `console.error` を見張る'
+        expected: '`importModule` が呼ばれない。`typescript` の `code` は色分けし、`yaml` の `code` は前と同じで、`console.error` が呼ばれない'
+      - name: test_highlight_code_blocks_when_embedded_without_core
+        case: 正常
+        summary: 本体を埋めていなければ何も読み込まずに色分けせずに残す
+        condition: '`setEmbeddedSyntax({ languages: {} })` の後に `test_highlight_code_blocks` と同じ要素。終えたら `setEmbeddedSyntax(undefined)`'
+        mock: '`importModule` と `console.error` を見張る'
+        expected: '`importModule` と `console.error` が呼ばれず、両方の `code` の HTML が前と同じ'
+      - name: test_highlight_code_blocks_when_dockerfile_and_diff
+        case: 正常
+        summary: dockerfile と、行のマーカーを持つ diff を色分けする
+        condition: '`render` で描いた `dockerfile` のコードブロック（`FROM node:22`）と、`diff` のコードブロック（`-old`・`+new // [!code ++]`）。`url` は `/hl/`'
+        mock: '`importModule` が `test_highlight_code_blocks` と同じく npm の `highlight.js` の本体と言語を返却する'
+        expected: '`importModule` が `/hl/languages/dockerfile.min.js` と `/hl/languages/diff.min.js` を読み込む。`dockerfile` の `code` に `hljs-keyword` の `span`、`diff` の行に `hljs-deletion` と `hljs-addition` の `span` があり、`+new` の行は `data-kind="add"` のまま'
+    refs:
+      - IF-472-35#constraints[色分けの読み込み]
+      - LIB-472-14#
+    status: planned
+    introduced:
+      pr: 97
+  - name: setEmbeddedSyntax
+    title: 埋めた色分けのモジュールを入れる
+    container: src/highlight.ts
+    kind: 関数
+    scope: internal
+    summary: '`embeddedSyntax` を置き換える。`undefined` で `syntax.url` から読み込む構造に戻す'
+    side_effects: '`embeddedSyntax` を書き換える'
+    args:
+      - name: modules
+        type: EmbeddedSyntax | undefined
+        required: true
+        description: 埋めた色分けのモジュール
+    returns:
+      type: void
+      description: なし
+    status: planned
+    introduced:
+      pr: 97
+function_types:
+  - name: SyntaxImport
+    title: 色分けのモジュールを読み込む
+    container: src/highlight.ts
+    summary: URL の色分けのモジュールを読み込む関数。既定は `(url) => import(url)` で、単体テストで差し替える
+    args:
+      - name: url
+        type: string
+        description: 解決済みの URL
+    returns:
+      type: 'Promise<{ default?: unknown }>'
+      description: 読み込んだモジュール。本体の `default` は `HLJSApi`、言語の `default` は `LanguageFn`
+    status: planned
+    introduced:
+      pr: 97

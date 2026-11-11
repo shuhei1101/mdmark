@@ -1,0 +1,6 @@
+summary: 採用済みの外部 API のリファレンス
+items:
+- page: API-472-2.yaml
+  summary: GitHub のリポジトリのバージョンのタグが指すファイルの配信
+- page: API-472-1.yaml
+  summary: リポジトリのタグの一覧の取得

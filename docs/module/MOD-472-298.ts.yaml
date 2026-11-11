@@ -1,0 +1,25 @@
+id: MOD-472-298
+visibility: internal
+title: ライブラリ本体 / 記法 / pagebreak.ts
+test_files:
+  - tests/unit/src/render/syntax/pagebreak.test.ts
+functions:
+  - name: buildPagebreaks
+    title: 改ページにする
+    container: src/render/syntax/pagebreak.ts
+    kind: 関数
+    scope: internal
+    summary: コアルール。`pagebreak` がオンなら `<!-- pagebreak -->` を `<div class="mdmark-pagebreak" aria-hidden="true"></div>` にし、オフなら取り除く
+    args:
+      - name: state
+        type: StateCore
+        required: true
+        description: markdown-it の状態
+    side_effects: '`state.tokens` を書き換える'
+    unit_tests:
+      - name: test_build_pagebreaks
+        case: 正常
+        condition: '`<!-- pagebreak -->` を持つ文書を、`pagebreak` のオンとオフで描く'
+        expected: オンは `div.mdmark-pagebreak` が 1 つ、オフは無く、どちらも `<!--` が無い
+        mock: なし
+        summary: オンなら要素、オフなら取り除く

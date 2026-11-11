@@ -1,0 +1,159 @@
+id: MOD-472-212
+visibility: internal
+title: ライブラリ本体 / 描画 / index.ts
+test_files:
+  - tests/unit/src/render/index.test.ts
+data_models:
+  - name: RenderedDocument
+    title: 描いた文書
+    container: src/render/index.ts
+    summary: 本文の HTML と、文書のマーカーで決まった機能のオン・オフ
+    properties:
+      - name: html
+        type: string
+        description: 本文の HTML 文字列
+      - name: features
+        type: Record<string, boolean>
+        description: '`resolveFeatures` が返却したオン・オフ。`mount` と、機能を作る Issue が読み込む'
+      - name: warnings
+        type: CollectedWarning[]
+        description: 本文に配置した記載の警告を、警告を配置した順に並べたもの。`collectWarnings` が返却する
+      - name: page
+        type: PageSettings
+        description: 文書の先頭の page のマーカーから読み込んだページの設定。`mount` が `applyPageSettings` で設定に重ねる
+functions:
+  - name: render
+    title: Markdown を HTML 文字列にする
+    container: src/render/index.ts
+    kind: 関数
+    scope: public
+    summary: 公開関数。設定に既定を適用して `renderDocument` を呼び、本文の HTML だけを返却する
+    args:
+      - name: markdown
+        type: string
+        required: true
+        description: HTML にする Markdown
+      - name: opts
+        type: '{ config?: MdmarkConfig; index?: MdmarkIndex; docId?: string; references?: MdmarkReferences; aliases?: MdmarkAlias[]; includes?: Record<string, string>; icons?: Record<string, MdmarkIconNode> }'
+        required: false
+        default: '{}'
+        description: 設定・索引・描く文書の `id`・参照の表・エイリアス
+    returns:
+      type: string
+      description: 本文の HTML 文字列
+    callees:
+      - MOD-472-304#functions[resolveConfig]
+      - '#functions[renderDocument]'
+    refs:
+      - IF-472-34#
+    unit_tests:
+      - name: test_render
+        case: 正常
+        summary: 設定を指定しなくても本文の HTML を返却する
+        condition: '`# 見出し` だけの Markdown、`opts` 無し'
+        mock: なし
+        expected: 文字が `見出し` の `h1` を含む文字列
+      - name: test_render_when_aliases
+        case: 正常
+        summary: 指定したエイリアスに下線と種類のツールチップを付けた文字列を返却する
+        condition: インターフェース定義『文書をHTML文字列にする』の「正常系（エイリアス）」のエイリアスと Markdown
+        mock: なし
+        expected: そのフローの期待値のうち、下線・ツールチップ・`script` と `<!--` が無いことが成り立つ
+  - name: renderDocument
+    title: 文書を描く
+    container: src/render/index.ts
+    kind: 関数
+    scope: public
+    summary: 描くごとに `nonce` を作って `env` に入れ、解析器で Markdown を HTML にし、`sanitize` をかけ、コアルールが決めた `env.features` と、`env.warnings` に集めた記載の警告と一緒に返却する
+    description: '`render` と `mount` が共通で使用する。解析の前に `splitFrontmatter` で文書の先頭のフロントマターを空白にした Markdown を解析器に指定し、フロントマターの中身と閉じる行の位置を `env.frontmatter` に入れる（表示はコアルールの `insertFrontmatter` が差し込む）。解析器はモジュールで 1 つだけ作り（`createParser` を初めて使用するときに呼ぶ）、呼び出しごとの値は `env` で指定する。`nonce` は `crypto.getRandomValues` の 16 バイトを 16 進にしたもので、`sanitize` が出力から除外するため、同じ入力には同じ文字列を返却する'
+    args:
+      - name: options
+        type: '{ markdown: string; config: ResolvedConfig; index?: MdmarkIndex; docId?: string; references?: MdmarkReferences; aliases?: MdmarkAlias[]; includes?: Record<string, string>; icons?: Record<string, MdmarkIconNode> }'
+        required: true
+        description: '`markdown` は Markdown、`config` は既定を適用した設定、`index`・`docId`・`references`・`aliases` は `env` に入れる値（`index` は `normalizeIndex` にかけてから入れる。`aliases` はそのまま入れ、使用できるものへの絞り込みは `buildDictionary` が行う）。`config` の `libraries`・`features`・`labels` は `env` の `libraries`・`defaults`・`labels` に入れる'
+    returns:
+      type: RenderedDocument
+      description: 本文の HTML と機能のオン・オフ
+    callees:
+      - 'MOD-472-211#functions[createParser]'
+      - 'MOD-472-214#functions[sanitize]'
+      - 'MOD-472-217#functions[splitFrontmatter]'
+      - MOD-472-305#functions[resolveFeatures]
+      - MOD-472-254#functions[normalizeIndex]
+    unit_tests:
+      - name: test_render_document_when_frontmatter
+        case: 正常
+        summary: 先頭のフロントマターを本文に出さず、後ろのブロックの元の行番号を保つ
+        condition: '`---\ntitle: a\n---\n\n# 見出し`。設定の `features` は既定（`frontmatter` は `false`）'
+        mock: なし
+        expected: '`html` に `title: a`・`<hr`・`<h2`・`mdmark-frontmatter` が無く、`<h1` が `data-source-line="4"`'
+      - name: test_render_document_when_frontmatter_enabled
+        case: 正常
+        summary: 機能がオンなら、本文の先頭に閉じた折りたたみの yaml のコードブロックを配置する
+        condition: '同じ文書と、中身に 3 つのバッククォートの行を含むフロントマターの文書。設定の `features` は `{ frontmatter: true }`'
+        mock: なし
+        expected: '`html` の先頭の要素が `details.mdmark-collapsible.mdmark-frontmatter`（`sanitize` の後も class が残る）で、中に `language-yaml` のコードブロックと言語のラベル・コピーのボタンがあり、バッククォートの行もコードブロックの中にある'
+      - name: test_render_document
+        case: 正常
+        summary: 機能のマーカーを重ねたオン・オフを返却し、マーカーは本文に残さない
+        condition: '`<!-- features: -print -->` と段落。設定の `features` は `{ print: true }`'
+        mock: なし
+        expected: '`features` が `{ print: false }`、`html` に `<!--` が無い'
+      - name: test_render_document_when_same_input
+        case: 正常
+        summary: 同じ入力には同じ文字列を返却する（解析器を使い回しても前の呼び出しのマーカーが残らない）
+        condition: マーカーを持つ文書を 2 回描く
+        mock: なし
+        expected: 2 回の `html` と `features` が等しい
+      - name: test_render_document_when_raw_html_imitates_syntax
+        case: 正常
+        summary: 生の HTML で記載した記法の class・data-*・id を落とし、記法が出したものは残す
+        condition: '`<div class="mdmark-tabs" data-kind="data"><p id="fig-x">偽り</p></div>` と `> [!NOTE]` の引用'
+        mock: なし
+        expected: '`偽り` の段落に class・`data-kind`・`id` が無く、注意書きが `markdown-alert-note` を持ち、出力に `data-mdmark-own` が無い'
+      - name: test_render_document_when_labels_given
+        case: 正常
+        summary: 設定の部品の文言で操作できる部品のボタンを描く
+        condition: '`<!-- param -->` の範囲に `strength` の定義を配置した文書。設定の `labels` は `{ paramCopy: "コピー" }`'
+        mock: なし
+        expected: '`button.mdmark-param-copy` の文字が `コピー` で、`今の値をコピーする` が無い'
+  - name: collectWarnings
+    title: 記載の警告を取り出す
+    container: src/render/index.ts
+    kind: 関数
+    scope: internal
+    summary: '`render` と同じ設定の当て方で `renderDocument` を呼び、描いたときに配置する記載の警告を HTML にせずに返却する。`mdmark check --text`・`--file` が Node で呼ぶ（ブラウザを使用しない）'
+    args:
+      - name: markdown
+        type: string
+        required: true
+        description: 点検する Markdown
+      - name: opts
+        type: '{ config?: MdmarkConfig }'
+        required: false
+        default: '{}'
+        description: 設定（`features`・`libraries` を適用する）
+    returns:
+      type: CollectedWarning[]
+      description: 警告を配置した順の警告（無ければ空）
+    callees:
+      - MOD-472-304#functions[resolveConfig]
+      - '#functions[renderDocument]'
+    refs:
+      - IF-472-39#constraints[記法の点検]
+    unit_tests:
+      - name: test_collect_warnings
+        case: 正常
+        summary: 記載の警告を場所と種類つきで返却する
+        condition: '1 行目の `<!-- flow -->` の範囲にノードの種類 `begin` の定義、22 行目に `<!-- code: highlight=9 -->` と 3 行のコードブロックを持つ Markdown'
+        mock: なし
+        expected: '`{ line: 1, kind: "diagram_invalid" }` と `{ line: 22, kind: "syntax_warning" }` の 2 件で、`message` が同じ Markdown を `render` で描いた警告の文字と同じ'
+      - name: test_collect_warnings_when_clean
+        case: 正常
+        summary: 警告の無い Markdown は空の配列を返却する
+        condition: '正しいフロー図の定義と `<!-- table: data -->` で囲んだ表'
+        mock: なし
+        expected: 空の配列
+    status: planned
+    introduced:
+      pr: 328

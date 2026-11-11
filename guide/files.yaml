@@ -1,8 +1,8 @@
-# yaml-language-server: $schema=../dev/テンプレート/files.schema.yaml
+# yaml-language-server: $schema=../schemas/files.schema.yaml
 files:
   - path: index.yaml
     description: モジュール構成『ClaudeCodeプラグイン / プラグインのビルド』のうち「ガイドの索引の原本」を受け持つ。プラグインの配布物の作り方を変えるときに参照する。
     tags: [topic:プラグイン, tool:claude-code, tool:esbuild, topic:ガイド]
     related:
-      - to: dev/設計書/モジュール構成/ClaudeCodeプラグイン/プラグインのビルド.ts
+      - to: docs/module/MOD-472-14.ts
         type: implements

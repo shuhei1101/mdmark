@@ -1,0 +1,35 @@
+id: MOD-472-317
+visibility: internal
+title: ライブラリ本体 / 部品 / steps.ts
+test_files:
+  - tests/unit/src/parts/steps.test.ts
+functions:
+  - name: renderSteps
+    title: ステップを描く
+    container: src/parts/steps.ts
+    kind: 関数
+    scope: internal
+    summary: 部品設計『ステップ』の HTML を返却する（Storybook 用。`render` は `ol` に class を付けるだけ）。`collapse` が `closed`・`open` なら、`ol` を `renderCollapsible` の折り畳み（見出しは `title` か `手順（{項目の数} ステップ）`）に入れる
+    args:
+      - name: options
+        type: '{ items: string[]; start?: number; collapse?: "none" | "closed" | "open"; title?: string }'
+        required: true
+        description: 項目の HTML、最初の番号、折り畳み（既定 `none`）、折り畳みの見出し
+    returns:
+      type: string
+      description: '`<ol class="mdmark-steps">` で始まる HTML'
+    unit_tests:
+      - name: test_render_steps
+        case: 正常
+        summary: 項目を並べ、start が 1 なら属性を省く
+        condition: 3 項目
+        mock: なし
+        expected: '`<ol class="mdmark-steps">` に `li` が 3 つ'
+      - name: test_render_steps_when_collapsed
+        case: 正常
+        summary: 折り畳みの見出しを項目の数か title にする
+        condition: '部品設計の `Closed`（3 項目、`collapse: closed`）と `OpenTitle`（`collapse: open`、`title: 準備`）'
+        mock: なし
+        expected: 1 つ目が `<details class="mdmark-collapsible"><summary>手順（3 ステップ）</summary><ol class="mdmark-steps">` で始まり、2 つ目が `<details class="mdmark-collapsible" open><summary>準備</summary>` で始まる
+    callees:
+      - 'MOD-472-325#functions[renderCollapsible]'

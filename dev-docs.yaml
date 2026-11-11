@@ -8,198 +8,209 @@ github:
 instructions: |-
   mdmark のガイドは、公開ドキュメントの行（kind が docs）のうちタグ topic:ガイド の文書。
   mdmark で文書を記載するときは、filter に {"and": [{"field": "tags", "op": "eq", "values": ["topic:ガイド"]}, {"field": "kind", "op": "eq", "values": ["docs"]}]} を指定して一覧を検索し、description の「〜ときに参照する」が作業に該当するページを view: "full" で読み込む。
-  人が読み込む資料を記載するときは、最初に『文書の記載方法』（使用方法/記載する/文書の記載方法.md）を読み込む。
-  記法の記載方法を確認するときは『記法』（リファレンス/記法.md）を読み込む。
+  人が読み込む資料を記載するときは、最初に『文書の記載方法』（guide/記載する-文書の記載方法.md）を読み込む。
+  記法の記載方法を確認するときは『記法』（guide/記法.md）を読み込む。
+  設計書は `docs/` の種類ごとのフォルダの YAML（`{ID}.yaml`）で、書式は `schemas/{種類}.schema.yaml` が持つ。各文書の公開範囲は `visibility`（`public` / `internal`）で、YAML の文書はキー、Markdown は `files.yml` の行が持つ。
 documents:
-  # 設計書は種類ごとの行。index.yaml は目次なので exclude で削除する
+  # 設計書は種類ごとの行。index.yaml は目次なので exclude で除く
   - id: architecture
     title: アーキテクチャ図
-    paths: ["dev/設計書/アーキテクチャ図/*.yaml"]
+    paths: ["docs/architecture/*.yaml"]
     exclude: [index.yaml]
-    schema: dev/テンプレート/アーキテクチャ図.schema.yaml
+    schema: schemas/architecture.schema.yaml
     metadata:
       name: title
+      visibility: visibility
   - id: scenario
     title: シナリオ
-    paths:
-      - "dev/設計書/シナリオ/単一ユースケース/*.yaml"
-      - "dev/設計書/シナリオ/複合ユースケース/*.yaml"
+    paths: ["docs/scenario/*.yaml"]
     exclude: [index.yaml]
-    schema: dev/テンプレート/シナリオ.schema.yaml
+    schema: schemas/scenario.schema.yaml
     metadata:
       name: title
+      visibility: visibility
   - id: interface
     title: インターフェース定義
-    paths: ["dev/設計書/インターフェース定義/**/*.yaml"]
+    paths: ["docs/interface/*.yaml"]
     exclude: [index.yaml]
-    schema: dev/テンプレート/インターフェース定義.schema.yaml
+    schema: schemas/interface.schema.yaml
     metadata:
       name: title
+      visibility: visibility
   - id: module
     title: モジュール構成
-    paths: ["dev/設計書/モジュール構成/**/*.yaml"]
+    paths: ["docs/module/*.yaml"]
     exclude: [index.yaml]
-    schema: dev/テンプレート/モジュール構成.schema.yaml
+    schema: schemas/module.schema.yaml
     metadata:
       name: title
+      visibility: visibility
   - id: component
     title: 部品設計
-    paths: ["dev/設計書/部品設計/*.yaml"]
+    paths: ["docs/component/*.yaml"]
     exclude: [index.yaml]
-    schema: dev/テンプレート/部品設計.schema.yaml
+    schema: schemas/component.schema.yaml
     metadata:
       name: title
+      visibility: visibility
   - id: screen
     title: 画面設計
-    paths: ["dev/設計書/画面設計/*.yaml"]
+    paths: ["docs/screen/*.yaml"]
     exclude: [index.yaml]
-    schema: dev/テンプレート/画面設計.schema.yaml
+    schema: schemas/screen.schema.yaml
     metadata:
       name: title
+      visibility: visibility
   - id: config
     title: 設定
-    paths: ["dev/設計書/設定/*.yaml"]
+    paths: ["docs/config/*.yaml"]
     exclude: [index.yaml]
-    schema: dev/テンプレート/設定.schema.yaml
+    schema: schemas/config.schema.yaml
     metadata:
       name: title
+      visibility: visibility
   - id: er
     title: ER 図
-    paths: ["dev/設計書/ER図/*.yaml"]
+    paths: ["docs/er/*.yaml"]
     exclude: [index.yaml]
-    schema: dev/テンプレート/ER図.schema.yaml
+    schema: schemas/er.schema.yaml
     metadata:
       name: title
+      visibility: visibility
   - id: external_api
     title: 外部 API
-    paths: ["dev/設計書/外部API/*.yaml"]
+    paths: ["docs/external-api/*.yaml"]
     exclude: [index.yaml]
-    schema: dev/テンプレート/外部API.schema.yaml
+    schema: schemas/external-api.schema.yaml
     metadata:
       name: title
+      visibility: visibility
   - id: library
     title: 外部ライブラリ
-    paths: ["dev/設計書/外部ライブラリ/*.yaml"]
+    paths: ["docs/library/*.yaml"]
     exclude: [index.yaml]
-    schema: dev/テンプレート/外部ライブラリ.schema.yaml
+    schema: schemas/library.schema.yaml
     metadata:
       name: title
+      visibility: visibility
   - id: test_procedure
     title: テスト実行方法
-    paths: ["dev/設計書/テスト/*.yaml"]
+    paths: ["docs/test-procedure/*.yaml"]
     exclude: [index.yaml]
-    schema: dev/テンプレート/テスト実行方法.schema.yaml
+    schema: schemas/test-procedure.schema.yaml
     metadata:
       name: title
+      visibility: visibility
   - id: dev_command
     title: 開発コマンド
-    paths: ["dev/設計書/開発コマンド/*.yaml"]
+    paths: ["docs/dev-command/*.yaml"]
     exclude: [index.yaml]
-    schema: dev/テンプレート/開発コマンド.schema.yaml
+    schema: schemas/dev-command.schema.yaml
     metadata:
       name: title
+      visibility: visibility
   - id: nonfunctional
     title: 非機能要件
-    paths: ["dev/設計書/非機能要件/*.yaml"]
+    paths: ["docs/nonfunctional/*.yaml"]
     exclude: [index.yaml]
-    schema: dev/テンプレート/非機能要件.schema.yaml
+    schema: schemas/nonfunctional.schema.yaml
     metadata:
       name: title
-  # YAML の設計書でないファイルは、フォルダごとの files.yaml が 1 ファイル 1 行で持つ
-  # 設計書の YAML は上の種類ごとの行が配信するので、files.yaml 以外の YAML を削除する
-  - id: design_notes
-    title: 設計書の Markdown
-    paths: [dev/設計書/files.yaml]
-    exclude: [README.md, index.yaml, "[!f]*.yaml"]
+      visibility: visibility
+  # YAML の設計書でないファイルは、フォルダごとの管理用の YAML が 1 ファイル 1 行で持つ
+  - id: files_root
+    title: docs の直下の Markdown と Pages の共通レイアウト
+    paths: [docs/_root/files.yml]
+    exclude: [README.md, index.yaml, nav.yml, nav.project.yml, llms.txt, search.json, _config.yml]
     records: files
     body_file: path
-    schema: dev/テンプレート/files.schema.yaml
-  - id: templates_design
-    title: 設計書のテンプレート
-    paths: [dev/テンプレート/files.yaml]
-    exclude: [README.md, index.yaml]
-    records: files
-    body_file: path
-    schema: dev/テンプレート/files.schema.yaml
+    schema: schemas/files.schema.yaml
+    metadata:
+      visibility: visibility
   - id: mock
     title: モック
-    paths: [dev/mock/files.yaml]
+    paths: [docs/mock/files.yml]
     exclude: [comments.js, index.css, index.js, view.js, viewer.css, viewer.js]
     records: files
     body_file: path
-    schema: dev/テンプレート/files.schema.yaml
+    schema: schemas/files.schema.yaml
+    metadata:
+      visibility: visibility
   - id: docs
     title: 公開ドキュメント
-    paths: [docs/files.yaml]
-    exclude: [README.md, index.yaml, nav.yml, nav.project.yml, llms.txt, search.json]
+    paths: [docs/guide/files.yml]
+    exclude: [README.md, index.yaml, はじめに.md, 使用方法.md, リファレンス.md]
     records: files
     body_file: path
-    schema: dev/テンプレート/files.schema.yaml
+    schema: schemas/files.schema.yaml
+    metadata:
+      visibility: visibility
+      category: category
   - id: src
     title: ライブラリ本体のコード
     paths: [src/files.yaml]
     records: files
     body_file: path
-    schema: dev/テンプレート/files.schema.yaml
+    schema: schemas/files.schema.yaml
   - id: tests
     title: テスト
     paths: [tests/files.yaml]
     records: files
     body_file: path
-    schema: dev/テンプレート/files.schema.yaml
+    schema: schemas/files.schema.yaml
   - id: scripts
     title: 開発のスクリプト
     paths: [scripts/files.yaml]
     exclude: ["*.txt"]
     records: files
     body_file: path
-    schema: dev/テンプレート/files.schema.yaml
+    schema: schemas/files.schema.yaml
   - id: init_templates
     title: 雛形
     paths: [templates/files.yaml]
     records: files
     body_file: path
-    schema: dev/テンプレート/files.schema.yaml
+    schema: schemas/files.schema.yaml
   - id: schemas
-    title: JSON Schema
+    title: Schema
     paths: [schemas/files.yaml]
     records: files
     body_file: path
-    schema: dev/テンプレート/files.schema.yaml
+    schema: schemas/files.schema.yaml
   - id: migrations
     title: 移行の手順
     paths: [migrations/files.yaml]
     records: files
     body_file: path
-    schema: dev/テンプレート/files.schema.yaml
+    schema: schemas/files.schema.yaml
   - id: guide
     title: ガイドの索引
     paths: [guide/files.yaml]
     records: files
     body_file: path
-    schema: dev/テンプレート/files.schema.yaml
+    schema: schemas/files.schema.yaml
   - id: vscode
     title: VS Code 拡張機能
     paths: [vscode/files.yaml]
     records: files
     body_file: path
-    schema: dev/テンプレート/files.schema.yaml
+    schema: schemas/files.schema.yaml
   - id: plugin
     title: Claude Code プラグインの定義
     paths: [plugin/files.yaml]
     exclude: [THIRD_PARTY_LICENSES.txt, pre-tool-use.js]
     records: files
     body_file: path
-    schema: dev/テンプレート/files.schema.yaml
+    schema: schemas/files.schema.yaml
   - id: storybook
     title: Storybook の設定
     paths: [.storybook/files.yaml]
     records: files
     body_file: path
-    schema: dev/テンプレート/files.schema.yaml
+    schema: schemas/files.schema.yaml
   - id: workflows
     title: ワークフロー
     paths: [.github/files.yaml]
     records: files
     body_file: path
-    schema: dev/テンプレート/files.schema.yaml
+    schema: schemas/files.schema.yaml

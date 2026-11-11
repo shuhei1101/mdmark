@@ -1,0 +1,231 @@
+id: MOD-472-271
+visibility: internal
+title: ライブラリ本体 / 記法 / images.ts
+test_files:
+  - tests/unit/src/render/syntax/images.test.ts
+data_models:
+  - name: ImageAttributes
+    title: 画像の属性
+    container: src/render/syntax/images.ts
+    summary: 画像の直後の `{…}` を読み込んだ結果。`readImages` がトークンの `meta.mdmarkImage` に配置し、図を作るコアルールが読み込む
+    properties:
+      - name: kind
+        type: MediaKind
+        description: '`src` の拡張子で見分けた種類'
+      - name: width
+        type: string | undefined
+        description: '`300px` か `40%` の構造の幅'
+      - name: align
+        type: '"left" | "center" | "right" | undefined'
+        description: 配置。文の中の画像には入れない
+      - name: lightbox
+        type: boolean
+        description: '`nolightbox` を記載したら `false`'
+      - name: autoplay
+        type: boolean
+        description: 動画・音声だけ
+      - name: muted
+        type: boolean
+        description: 動画・音声だけ。`autoplay` が `true` なら `true`
+      - name: loop
+        type: boolean
+        description: 動画・音声だけ
+      - name: poster
+        type: string | undefined
+        description: 動画だけ。記載したパス
+      - name: items
+        type: WarningItem[]
+        description: 読み込めなかった属性（知らない属性・読み込めない値・文の中の画像の `align`・画像に記載した動画と音声だけの属性）
+    refs:
+      - IF-472-34#constraints[画像の属性]
+    status: planned
+    introduced:
+      pr: 263
+constants:
+  - name: MEDIA_EXTENSIONS
+    title: 動画と音声の拡張子
+    container: src/render/syntax/images.ts
+    summary: '`src` の拡張子（小文字）から種類を参照する。どれにも該当しない `gif` は `gif`、それ以外は `image`。CLI の書き出しと点検も使用する'
+    entries:
+      - key: video
+        value: '["mp4", "m4v", "webm", "mov", "ogv"]'
+      - key: audio
+        value: '["mp3", "m4a", "aac", "ogg", "oga", "opus", "wav", "flac"]'
+    refs:
+      - IF-472-34#constraints[動画と音声]
+    status: planned
+    introduced:
+      pr: 263
+  - name: IMAGE_ATTRIBUTE_NAMES
+    title: 画像の属性の名前
+    container: src/render/syntax/images.ts
+    summary: '`{…}` に記載できる属性の名前。記載の警告の本文に並べる。後ろの 4 つは動画・音声だけ'
+    value: '["width", "align", "nolightbox", "autoplay", "muted", "loop", "poster"]'
+    status: planned
+    introduced:
+      pr: 263
+functions:
+  - name: mediaKindOf
+    title: 画像の種類を見分ける
+    container: src/render/syntax/images.ts
+    kind: 関数
+    scope: internal
+    summary: '`src` からクエリとフラグメントを除いた拡張子を小文字にし、`MEDIA_EXTENSIONS` の動画・音声なら `video`・`audio`、`gif` なら `gif`、それ以外は `image` を返却する'
+    args:
+      - name: src
+        type: string
+        required: true
+        description: 画像の `src`
+    returns:
+      type: MediaKind
+      description: '`"image" | "gif" | "video" | "audio"`'
+    unit_tests:
+      - name: test_media_kind_of
+        case: 正常
+        summary: 拡張子で種類を見分ける
+        condition: '`demo.MP4?v=2`・`voice.m4a#t=3`・`build.gif`・`chart.png`・`readme`'
+        mock: なし
+        expected: '`video`・`audio`・`gif`・`image`・`image`'
+    status: planned
+    introduced:
+      pr: 263
+  - name: readImageAttributes
+    title: 画像の属性を読み込む
+    container: src/render/syntax/images.ts
+    kind: 関数
+    scope: internal
+    summary: '`{` と `}` の中の文字を空白で区切って `ImageAttributes` を作る。`width` は `1` 以上の整数か `{整数}px` を px、`1`〜`100` の `{整数}%` を % にする。`autoplay` に `muted` が無いときは `muted` を `true` にする。読み込めない属性は当てずに `items` に入れる'
+    args:
+      - name: text
+        type: string
+        required: true
+        description: '`{` と `}` の中の文字'
+      - name: kind
+        type: MediaKind
+        required: true
+        description: 画像の種類（`mediaKindOf`）
+      - name: inline
+        type: boolean
+        required: true
+        description: 文の中の画像か（`align` を読み込めない属性にする）
+    returns:
+      type: ImageAttributes
+      description: 画像の属性
+    unit_tests:
+      - name: test_read_image_attributes
+        case: 正常
+        summary: 幅・配置・nolightbox を読み込む
+        condition: '`width=300 align=center nolightbox`・`width=40%`（`image`・段落の画像）'
+        mock: なし
+        expected: 1 つ目が `width` `300px`・`align` `center`・`lightbox` `false`、2 つ目が `width` `40%`、どちらも `items` が空
+      - name: test_read_image_attributes_when_media
+        case: 正常
+        summary: 動画の属性を読み込み、autoplay に muted を追加する
+        condition: '`autoplay loop poster=demo.png width=480`（`video`）'
+        mock: なし
+        expected: '`autoplay`・`muted`・`loop` が `true`、`poster` が `demo.png`、`width` が `480px`'
+      - name: test_read_image_attributes_when_unreadable
+        case: 異常
+        summary: 読み込めない属性を項目にする
+        condition: '`width=big width=0% width=101% foo autoplay`（`image`）と `align=left`（`image`・文の中）'
+        mock: なし
+        expected: 1 つ目の `width` が無く、`items` の項目が `width=big`・`width=0%`・`width=101%`・`foo`・`autoplay` の 5 つ。2 つ目の `align` が無く、`items` の項目が `align` の 1 つ
+    status: planned
+    introduced:
+      pr: 263
+  - name: readImages
+    title: 画像の属性を読み込んで種類を見分ける
+    container: src/render/syntax/images.ts
+    kind: 関数
+    scope: internal
+    summary: コアルール。`inline` の子の `image` のトークンごとに、`mediaKindOf` の種類と、`images` がオンなら直後の `text` の頭の `{…}` を `readImageAttributes` で読み込んだ属性を `meta.mdmarkImage` に配置し、`{…}` を `text` から除外する。`gif` の画像に `data-gif` を、文の中の画像の `width` を `img` の `style` の `--mdmark-image-width` に付ける。読み込めない属性は段落の前に 1 つの記載の警告を差し込む
+    description: '`media` がオフのときは動画・音声も `image` として扱う。リンクの中の画像は種類と属性を読み込むが、図にしない'
+    args:
+      - name: state
+        type: StateCore
+        required: true
+        description: markdown-it の状態
+    side_effects: '`state.tokens` を書き換える'
+    callees:
+      - '#functions[mediaKindOf]'
+      - '#functions[readImageAttributes]'
+      - 'MOD-472-213#functions[pushWarning]'
+    refs:
+      - IF-472-34#constraints[画像の属性]
+      - IF-472-34#constraints[GIF]
+    unit_tests:
+      - name: test_read_images
+        case: 正常
+        summary: 属性を読み込んで削除し、種類を配置する
+        condition: '`![グラフ](chart.png){width=300 align=center}` だけの段落と `押す前に ![アイコン](icon.png){width=16} を確認する。`'
+        mock: なし
+        expected: '1 つ目の `image` の `meta.mdmarkImage` が `width` `300px`・`align` `center`、2 つ目の `img` が `style="--mdmark-image-width: 16px"` を持ち、どちらの段落の文字にも `{width=` が無い'
+      - name: test_read_images_when_gif
+        case: 正常
+        summary: GIF に data-gif を付ける
+        condition: '`![ビルド](build.gif)`'
+        mock: なし
+        expected: '`img` が `data-gif` を持つ'
+      - name: test_read_images_when_unreadable
+        case: 異常
+        summary: 読み込めない属性を警告にする
+        condition: '`![グラフ](chart.png){width=big align=center foo}` だけの段落'
+        mock: なし
+        expected: 段落の前に記載の警告が 1 つあり本文に `width=big`・`foo` と `IMAGE_ATTRIBUTE_NAMES` の名前があり、`meta.mdmarkImage.align` が `center`
+      - name: test_read_images_when_feature_off
+        case: 正常
+        summary: images がオフなら属性を読み込まない
+        condition: '`env.features.images` が `false` で `![グラフ](chart.png){width=300}`'
+        mock: なし
+        expected: 段落の文字に `{width=300}` が残る
+    status: planned
+    introduced:
+      pr: 263
+  - name: buildImageFigures
+    title: 画像と動画と音声を図にする
+    container: src/render/syntax/images.ts
+    kind: 関数
+    scope: internal
+    summary: 'コアルール。`images` がオンなら、画像 1 つだけの段落（前後の空白を除く。図表の番号とギャラリーが図にしたもの・リンクの中の画像を除く）を部品『画像の図』（`opener: false`）の `html_block` に置き換える。`media` がオンなら、`video`・`audio` の画像を部品『動画と音声』の `html_block` にし、画像 1 つだけの段落は段落ごと置き換え、文の中のものは段落の後ろに配置する'
+    description: 部品へは `meta.mdmarkImage` の属性・`src`・`alt`（子のトークンの文字）・title を指定する。`#only-dark`・`#only-light` のフラグメントは `only` にする。文の中の `#only-*` の画像は `img` に class `mdmark-only-*` を付ける
+    args:
+      - name: state
+        type: StateCore
+        required: true
+        description: markdown-it の状態
+    side_effects: '`state.tokens` を書き換える'
+    callees:
+      - MOD-472-327#functions[renderImageFigure]
+      - MOD-472-330#functions[renderMedia]
+    refs:
+      - IF-472-34#constraints[画像の図とキャプション]
+      - IF-472-34#constraints[テーマごとの画像]
+      - IF-472-34#constraints[動画と音声]
+    unit_tests:
+      - name: test_build_image_figures
+        case: 正常
+        summary: 画像だけの段落を図にし、title をキャプションにする
+        condition: '`![グラフ](chart.png "売上の推移"){width=300 align=center}`・`![構成](arch-dark.png#only-dark)` をそれぞれ画像だけの段落に持つ'
+        mock: なし
+        expected: '1 つ目が `<figure class="mdmark-figure mdmark-image" data-align="center" style="--mdmark-image-width: 300px">` と `<figcaption class="mdmark-figure-caption">売上の推移</figcaption>`、2 つ目の `figure` が class `mdmark-only-dark` を持ち `src` が `arch-dark.png#only-dark`。どちらも `button` が無い'
+      - name: test_build_image_figures_when_media
+        case: 正常
+        summary: 動画と音声を再生バー付きの図にする
+        condition: '`![操作の様子](demo.mp4 "保存までの操作"){autoplay poster=demo.png}` だけの段落と、`読み上げは ![読み上げ](voice.mp3) で聞く。` の段落'
+        mock: なし
+        expected: 1 つ目が `figure.mdmark-media` の `video`（`controls`・`autoplay`・`muted`・`playsinline`・`preload="metadata"`・`poster`）と `img.mdmark-media-print`。2 つ目の段落の後ろに `audio` の `figure.mdmark-media` があり、段落の中に `img` が無い
+      - name: test_build_image_figures_when_link
+        case: 正常
+        summary: リンクの中の画像と、文の中の画像は図にしない
+        condition: '`[![ロゴ](logo.png)](https://example.com)` だけの段落と `押す前に ![アイコン](icon.png) を確認する。`'
+        mock: なし
+        expected: どちらも `figure` が無い
+      - name: test_build_image_figures_when_media_off
+        case: 正常
+        summary: media がオフなら動画を画像として描く
+        condition: '`env.features.media` が `false` で `![操作](demo.mp4)` だけの段落'
+        mock: なし
+        expected: '`video` が無く、`figure.mdmark-image` の `img` の `src` が `demo.mp4`'
+    status: planned
+    introduced:
+      pr: 263

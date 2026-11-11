@@ -1,0 +1,86 @@
+id: SC-472-24
+visibility: internal
+title: "チャートを描く"
+scenarios:
+  - name: 正常シナリオ
+    setup:
+      - name: 文書を描くページ
+        description: バージョンを固定した URL で `dist/index.js` と `dist/index.css` を読み込み、文書を描く HTML
+      - name: 棒のチャートを配置した Markdown
+        description: '`<!-- html -->` の範囲の `html` のコードブロックに、見出し 1 つと `<mdmark-chart>` 1 つを配置する文書'
+        notes: '`<mdmark-chart>` の中身は、種類が棒・系列 2 つ・項目 4 つで、縦の軸の範囲を記載しない定義'
+      - name: Mock
+        description: jsDelivr を、ビルドした `dist/` を同じパスで返却する手元の応答に差し替える
+    flow: |-
+      sequenceDiagram
+        actor U as 読者
+        participant P as 利用側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を指定して描かせる
+        M->>M: コードブロックの HTML の中の mdmark-chart の定義を読み込んで構造を確認する
+        M->>M: グラフの部品で棒を描き、図の枠に記載する
+        M-->>P: 図の枠に記載したタイトルと凡例つきのチャートと、HTML の残り
+        P-->>U: 文書を表示
+    expected:
+      - '`<mdmark-chart>` の場所に、`<!-- chart -->` で描いたときと同じ棒のグラフが、タイトルと凡例つきで図の枠に載って描かれている'
+      - 図の枠の右上に拡大・縮小・戻すのボタンがある
+      - HTML の見出しがチャートの前に描かれ、定義の JSON の文字は描いた文書に残っていない
+    test: test_normal
+  - name: 異常シナリオ（定義を読み込めない）
+    setup:
+      - name: 文書を描くページ
+        description: 正常シナリオと同じ
+      - name: 読み込めない定義を配置した Markdown
+        description: '`html` のコードブロックに、JSON として読み込めない `<mdmark-chart>` 1 つと、正しい `<mdmark-chart>` 1 つと段落を配置する文書'
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 読者
+        participant P as 利用側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を指定して描かせる
+        M->>M: mdmark-chart の定義を読み込んで構造を確認する
+        M-->>P: 読み込めない定義の場所に記載の警告、ほかはチャートと段落を描く
+        P-->>U: 警告とチャートと段落を表示
+    expected:
+      - 読み込めない定義の場所に記載の警告があり、読み込めない箇所が記載されている
+      - 正しい定義のチャートが描かれている
+      - 段落が描かれている
+    test: test_error_when_definition_invalid
+  - name: 正常シナリオ（追加したグラフの種類）
+    setup:
+      - name: 文書を描くページ
+        description: 正常シナリオと同じ
+      - name: 追加した種類のチャートを配置した Markdown
+        description: '`<!-- html -->` の範囲の `html` のコードブロックに、種類がドーナツの `<mdmark-chart>` と、種類が折れ線と棒の組み合わせの `<mdmark-chart>` を配置する文書'
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 読者
+        participant P as 利用側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を指定して描かせる
+        M->>M: mdmark-chart の定義を読み込み、グラフの部品で種類ごとに描く
+        M-->>P: 図の枠に記載した 2 つのチャートと、HTML の残り
+        P-->>U: 文書を表示
+    expected:
+      - 2 つの `<mdmark-chart>` の場所に、`<!-- chart -->` で描いたときと同じドーナツと、折れ線と棒の組み合わせのグラフが、タイトルと凡例つきで図の枠に載って描かれている
+      - 記載の警告が無い
+    test: test_normal_when_more_chart_types
+lead: 文書の作成者が、埋め込んだ HTML の中に図の部品の custom element（`<mdmark-chart>` など）を配置し、中身に部品の定義（JSON）だけを記載する。mdmark が、`<!-- chart -->` などのマーカーと同じ図の部品で、HTML のその場所に図の枠に記載して描く。グラフの種類ごとの描き方は『図を描く』が確認する。
+issue: 6
+primary_actor: 文書の作成者（AI を含む）
+stakeholders:
+  - name: 文書の作成者
+    interest: スクリプトを記載せずに、データだけで HTML の中にチャートを配置できる
+  - name: 読者
+    interest: どの文書のチャートも図の部品と同じタイトル・凡例・色で読み込める
+trigger: 文書の作成者が、マーカーで囲んだ `html` のコードブロックの中にチャートを配置する
+preconditions:
+  - コードブロックの HTML を描ける（『コードブロックのHTMLを描く』）
+  - 図の部品の機能（`diagrams`）がオン（既定）
+success_guarantee: custom element の場所に、マーカーで描いたときと同じ図の部品が図の枠に載って描かれる。定義の JSON は描いた文書に残らない。
+minimal_guarantee: 定義を読み込めないチャートの場所には記載の警告が出て、HTML の残りと文書の残りは描かれる。
+test_file: tests/e2e/単一ユースケース/チャートを描く.spec.ts

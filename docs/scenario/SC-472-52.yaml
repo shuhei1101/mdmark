@@ -1,0 +1,185 @@
+id: SC-472-52
+visibility: internal
+title: 文字列とYAMLのキーの記法を点検する
+scenarios:
+  - name: 正常シナリオ
+    setup:
+      - name: 作業のフォルダ
+        description: '`mdmark init` の後のフォルダ'
+      - name: 点検する文字列
+        description: '正しいフロー図の部品の定義と、`<!-- table: data -->` で囲んだ表を持つ Markdown の文字列'
+      - name: Mock
+        description: 差し替える依存は無い。点検はブラウザを使用しない
+    flow: |-
+      sequenceDiagram
+        actor W as 文書の作成者
+        participant C as mdmark CLI
+        participant R as mdmark の描画の処理
+        W->>C: mdmark check（Markdown の文字列）
+        C->>R: 文字列を描くときと同じ読み取りで記載の警告を集める
+        R-->>C: 空の警告の一覧
+        C-->>W: ずれ 0 件・終了コード 0
+    expected:
+      - 出力がずれ 0 件を示す
+      - 終了コードが 0
+      - 作業のフォルダのファイルが変わっていない
+    test: test_normal
+  - name: 正常シナリオ（記載の警告がある）
+    setup:
+      - name: 作業のフォルダ
+        description: 正常シナリオと同じ
+      - name: 記載の警告を持つ文字列
+        description: 'ノードの種類に無い `begin` を記載したフロー図の定義、知らないマーカー `<!-- tabz -->`、`<!-- code: highlight=9 -->` の直後の 3 行のコードブロックを持つ Markdown の文字列'
+        notes: 同じ文字列を `render` で描いたときに、記載の警告が 3 つ出る
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor W as 文書の作成者
+        participant C as mdmark CLI
+        participant R as mdmark の描画の処理
+        W->>C: mdmark check（Markdown の文字列）
+        C->>R: 文字列を描くときと同じ読み取りで記載の警告を集める
+        R-->>C: 記載の警告の一覧
+        C-->>W: 場所・種類・内容の一覧・終了コード 0 以外
+    expected:
+      - 'ずれの行が 3 つあり、それぞれが文字列の中のフロー図の定義・`<!-- tabz -->`・`<!-- code: highlight=9 -->` の行を指す'
+      - 各行の内容が、同じ文字列を `render` で描いたときの記載の警告の文言と同じ
+      - 終了コードが 0 以外
+    test: test_normal_when_warnings
+  - name: 正常シナリオ（ファイルとYAMLのキー）
+    setup:
+      - name: 作業のフォルダ
+        description: 正常シナリオと同じ
+      - name: Markdown をキーに持つ YAML のファイル
+        description: '`items[0].body` に、ブロックスカラー（`|`）の 3 行目へ知らないマーカー `<!-- tabz -->` を記載した Markdown、`items[1].body` に正しい Markdown を持つ `records.yaml`'
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor W as 文書の作成者
+        participant C as mdmark CLI
+        participant F as ファイル
+        participant R as mdmark の描画の処理
+        W->>C: mdmark check（records.yaml・items[0].body）
+        C->>F: YAML のファイルを読み込み、キーの値を取り出す
+        C->>R: キーの値を描くときと同じ読み取りで記載の警告を集める
+        R-->>C: 記載の警告の一覧
+        C-->>W: ファイル・場所・種類・内容の一覧・終了コード 0 以外
+    expected:
+      - 'ずれの行が 1 つだけで、`records.yaml` と、`<!-- tabz -->` を記載した YAML のファイルの行を指す'
+      - 内容にマーカーの名前 `tabz` と修正の方法が記載されている
+      - '`items[1].body` を指す行が無い'
+      - 終了コードが 0 以外
+      - '`records.yaml` が変わっていない'
+    test: test_normal_when_yaml_key
+  - name: 正常シナリオ（拡張のマーカー）
+    setup:
+      - name: 拡張を登録した作業のフォルダ
+        description: '正常シナリオのフォルダの設定の `extensions` に、マーカー `note-card` を追加する拡張を記載したもの'
+      - name: 拡張のマーカーを持つ文字列
+        description: '`<!-- note-card -->` と知らないマーカー `<!-- tabz -->` を持つ Markdown の文字列'
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor W as 文書の作成者
+        participant C as mdmark CLI
+        participant R as mdmark の描画の処理
+        W->>C: mdmark check（Markdown の文字列）
+        C->>C: 設定の extensions が追加するマーカーを読み込む
+        C->>R: 文字列を描くときと同じ読み取りで記載の警告を集める
+        R-->>C: 記載の警告の一覧
+        C-->>W: 場所・種類・内容の一覧・終了コード 0 以外
+    expected:
+      - 'ずれの行が `<!-- tabz -->` を指す 1 つだけで、`<!-- note-card -->` を指す行が無い'
+      - 終了コードが 0 以外
+    test: test_normal_when_extension_mark
+  - name: 異常シナリオ（キーが無い）
+    setup:
+      - name: 作業のフォルダ
+        description: 正常シナリオ（ファイルとYAMLのキー）と同じ
+      - name: 無いキー
+        description: '`records.yaml` に無いキー `items[5].body` を指定する'
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor W as 文書の作成者
+        participant C as mdmark CLI
+        participant F as ファイル
+        W->>C: mdmark check（records.yaml・items[5].body）
+        C->>F: YAML のファイルを読み込み、キーを探す
+        C-->>W: キーが無いことと修正の方法の 1 文・終了コード 0 以外
+    expected:
+      - '出力に、指定したキーが `records.yaml` に無いことと修正の方法が出る'
+      - 終了コードが 0 以外
+      - '`records.yaml` が変わっていない'
+    test: test_error_when_key_missing
+  - name: 正常シナリオ（知らないキー・機能・指定）
+    setup:
+      - name: 作業のフォルダ
+        description: 正常シナリオと同じ
+      - name: 知らないキー・機能・指定を持つ文字列
+        description: '`<!-- table: data +unknown widht=説明 -->` で囲んだ表と、`<!-- tabs: grop=os -->` で `### macOS`・`### Windows` を囲んだ範囲を持つ Markdown の文字列'
+        notes: 同じ文字列を `render` で描いたときに、記載の警告は出ない
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor W as 文書の作成者
+        participant C as mdmark CLI
+        participant R as mdmark の描画の処理
+        W->>C: mdmark check（Markdown の文字列）
+        C->>R: 文字列を描くときと同じ読み取りで、記載の警告とスキップしたキー・機能・指定を集める
+        R-->>C: 空の警告の一覧と、スキップしたキー・機能・指定の一覧
+        C-->>W: 場所・種類・内容の一覧・終了コード 0 以外
+    expected:
+      - ずれの行が 3 つあり、`+unknown`・`widht=` の 2 つが表のマーカーの行を、`grop=` がタブのマーカーの行を指す
+      - 各行の種類が記載の警告でも知らないマーカーでもない、知らないキー・機能・指定の種類
+      - 各行の内容が、スキップしたキー・機能・指定と、そのマーカーで使用できるキー・機能・指定を挙げる
+      - 終了コードが 0 以外
+    test: test_normal_when_unknown_mark_args
+  - name: 正常シナリオ（map の書き方の警告がある）
+    setup:
+      - name: 作業のフォルダ
+        description: 正常シナリオと同じ
+      - name: map の書き方を誤った文字列
+        description: map の範囲の中に、GitHub の Mermaid でも読めない行を 1 行持つ mermaid のブロックと、知らないトップレベルのキーを 1 つ持つ補足を持つ Markdown の文字列
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor W as 文書の作成者
+        participant C as mdmark CLI
+        participant R as mdmark の描画の処理
+        W->>C: mdmark check（Markdown の文字列）
+        C->>R: 文字列を描くときと同じ読み取りで、記載の警告を集める
+        R-->>C: map の書き方の警告 2 件
+        C-->>W: 場所・種類・内容の一覧・終了コード 0 以外
+    expected:
+      - ずれの行が 2 つあり、読めない行と知らないキーをそれぞれ指す
+      - 各行の内容が、同じ文字列を描いたときの書き方の警告と同じ
+      - 終了コードが 0 以外
+    test: test_normal_when_map_warnings
+lead: |-
+  文書の作成者が `mdmark check` に Markdown の文字列、またはファイルと YAML のキーを指定し、描いたときの記載の警告と同じ内容をずれの一覧で受け取る。
+  YAML のキーの中に Markdown を書き込むツール（dev-docs・MindStella）も、書き込みのたびに同じ点検を呼ぶ。
+issue: 288
+primary_actor: 文書の作成者（AI と、書き込みのたびに点検を呼ぶツールを含む）
+stakeholders:
+  - name: 文書の作成者
+    interest: 描く前に、描いたときに出る記載の警告を見つけて修正できる
+  - name: 読者
+    interest: 描いた文書に記載の警告が残らない
+  - name: 書き込みを受けるツール（dev-docs・MindStella）
+    interest: 書き込みのたびに、描くときと同じ点検をブラウザなしで呼べる
+trigger: Markdown を文字列のまま持つか YAML のキーへ書き込んだ後、記法の誤りを確認する
+preconditions:
+  - 文書の作成者の手元に Node 24 以降がある
+success_guarantee: 指定した Markdown を描いたときの記載の警告と同じ内容と、描くときにスキップするマーカーの知らないキー・機能・指定が、ファイル・場所・種類・内容の一覧で出る。ずれが無ければ終了コード 0、あれば 0 以外で終わる。
+minimal_guarantee: 点検はファイルを書き換えない。ファイルやキーを読み込めないときは、原因と修正の方法の 1 文を出して 0 以外で終わる。
+refs:
+  - SC-472-78#
+  - SC-472-57#
+test_file: tests/e2e/単一ユースケース/文字列とYAMLのキーの記法を点検する.spec.ts

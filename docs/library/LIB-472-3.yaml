@@ -1,0 +1,72 @@
+id: LIB-472-3
+visibility: internal
+title: Storybook
+kind: ライブラリ
+version:
+  current: '`storybook==10.6.2` / `@storybook/react-vite==10.6.2` / `@storybook/addon-a11y==10.6.2`'
+  latest: 10.6.2
+  checked_on: '2026-11-06'
+  source: package.json
+  pinning: 3 パッケージを完全一致で固定する（10.6.2 より前は未公開の勧告 2 件の修正前）
+catalogs:
+  - name: コマンド
+    version: '`storybook==10.6.2`'
+    entries:
+      - name: storybook dev
+        kind: コマンド
+        purpose: 開発サーバーを起動してストーリーを配信する
+        description: '`--ci --no-open --host 127.0.0.1 -p {ポート}` で発生させる。環境変数 `RENDER_ORIGIN` に描画のインターフェースの origin を指定する（無ければ設定の読み込みで止まる）。撮影と結合テストは `storybook dev` に向ける'
+  - name: ファイル
+    version: '`storybook==10.6.2`'
+    entries:
+      - name: .storybook/main.ts
+        kind: 設定ファイル
+        purpose: framework（`@storybook/react-vite`）・ストーリーの場所・`addon-a11y`・`staticDirs`・`viteFinal` を決める
+        description: '`viteFinal` で Tailwind の plugin・`/render` の描画のインターフェースへの中継（`server.proxy`）・`@` の別名・React の `dedupe` を追加する'
+      - name: .storybook/preview.tsx
+        kind: 設定ファイル
+        purpose: 全ストーリーに共通のデコレーター・`loaders`（`mswLoader`）・`globalTypes`・`parameters.a11y.test` を決める
+      - name: '*.stories.ts / *.stories.tsx'
+        kind: ストーリー
+        purpose: CSF（`export default meta` と名前付き export のストーリー）で記載する
+        description: 部品の HTML のストーリーは `parameters.server.id` と `args` を持ち、デコレーターが描画のインターフェースの HTML を描く。id は `title` と export の名前を整えたもの（`Parts/Notice` と `Block` → `parts-notice--block`）
+  - name: API
+    version: '`@storybook/react-vite==10.6.2`'
+    entries:
+      - name: Meta・StoryObj
+        kind: 型
+        purpose: ストーリーの型（部品の HTML のストーリーは `Meta<Record<string, unknown>>`）
+      - name: Decorator
+        kind: 型
+        purpose: ストーリーを包んで描く関数（`(Story, context) => ReactNode`）
+      - name: parameters.a11y.test
+        kind: パラメータ
+        purpose: '`addon-a11y` の違反を `error` にする（Vitest の addon のテストを失敗にする）'
+      - name: /index.json
+        kind: エンドポイント
+        purpose: ストーリーの索引
+      - name: iframe.html?id={ストーリーの id}
+        kind: エンドポイント
+        purpose: ストーリーを単独で開くプレビュー
+        description: 描いた要素は `#storybook-root` に入る
+lead: UI の部品を状態ごとのストーリーとして並べ、ブラウザで開いて確認する開発サーバー。
+purl: pkg:npm/storybook@10.6.2
+dependency_scope: 開発のみ
+adoption: 採用
+upstream: storybookjs/storybook
+license: MIT（商用利用可）
+official_url: https://storybook.js.org/
+docs_url: https://storybook.js.org/docs
+verification:
+  state: 済
+  date: '2026-11-06'
+  detail: '`RENDER_PORT=6181 node scripts/storybook-render.ts` と `RENDER_ORIGIN=http://127.0.0.1:6181 npx storybook dev --ci --no-open --host 127.0.0.1 -p 6106` を起動し、`/index.json` に 446 個のストーリーが載った。Playwright で開いた `iframe.html?id=` の 446 個が `#storybook-root` にエラーの表示・`pageerror`・空の描画なしで描かれ、Error Boundary の描画の失敗に落ちたのは、その状態を見せる `vscode-previewstatus--unexpected` だけだった。`vscode-panelscreen--offline`・`--version-missing` は MSW の `HEAD` のハンドラどおりの描けない理由を出した'
+selection:
+  candidates: '`@storybook/server-webpack5`・`@storybook/html-vite`・`@storybook/web-components-vite`（いずれも 10.6.2）・`storybook-html-rsbuild` 3.6.1 を比べた。'
+  decision: 判定フローチャート『Storybookの描画の方式』の R3（部品を Node で描く描画のインターフェース）に合い、AI Monitor の Storybook の配信と同じ構造で起動できる。html-vite はフローチャートの結果から削除され、Vitest 5 への対応が途中で TypeScript 7 も未対応と表明されている。web-components-vite は lit が要り、rsbuild は非公式で 3 つ目のバンドラーになる。
+  consequences: 描画のインターフェースを `scripts/` に Node の HTTP サーバーとして配置し、`src/` の部品の関数を型の除去で直接読む。`fetchStoryHtml` で失敗の応答を例外にする。`webpack-dev-middleware` は `overrides` で 7.4.6 以上にして GHSA-g84c-rxfj-3j2c を削除する（Storybook 10.6.2 が参照する 6 系に修正版が無い）。 VS Code の Webview を React にした（#342）ため、framework を `@storybook/react-vite` に替え、部品の HTML のストーリーは CSF とデコレーターで描画のインターフェースの HTML を描く。`@storybook/server-webpack5` と `webpack-dev-middleware` の `overrides` は削除した。
+install: '```bash
+
+  npm i -D -E storybook@10.6.2 @storybook/react-vite@10.6.2 @storybook/addon-a11y@10.6.2
+
+  ```'

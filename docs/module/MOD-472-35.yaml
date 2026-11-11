@@ -1,0 +1,48 @@
+id: MOD-472-35
+visibility: internal
+title: "ライブラリ本体 / 差分"
+lead: '`mount` に指定した取り出し元から 2 つのリビジョンの本文を受け、行と単語を比べて描き、ミニマップでスクロールする処理と、描いた文書のブロックを追加と削除の色で塗り分ける処理と、その部品の HTML。ブラウザでだけ動く（部品の HTML と比較は Node でも動く）。'
+directory: |-
+  ```tree
+  src/
+  ├── diff/
+  │   ├── source.ts   # 公開の型 DiffSource・DiffRevision・DiffMode と対応する差分の出し方 diffModes、取り出し元が返却した値の検査
+  │   ├── compute.ts  # 行と単語の比較（jsdiff を差分の計算の関数型の後ろに配置する）
+  │   ├── panel.ts    # 差分を開く UI・待ち・再選択・通知ブロックを付ける attachDiff
+  │   ├── blocks.ts   # 比べる 2 つの本文の取り出し loadDiffPair と、描いた文書のブロックの色分け colorDiffBlocks
+  │   └── minimap.ts  # スクロール先ごとに 1 本のミニマップを配置する attachMinimap
+  └── parts/
+      ├── diff-toggle.ts      # 差分を開くボタンの HTML
+      ├── revision-picker.ts  # リビジョンの選択の HTML
+      ├── diff-lines.ts       # 差分の行の HTML
+      ├── diff-html.ts        # 埋め込んだ HTML の差分の HTML
+      ├── diff-blocks.ts      # 差分のブロックの HTML
+      ├── diff-minimap.ts     # ミニマップの HTML
+      └── diff-message.ts     # 差分の状態の文の HTML
+  ```
+diagrams:
+  - name: 全体
+    diagram: |-
+      classDiagram
+        direction LR
+        class 差分を付ける
+        class 比べる2つの本文を取り出す
+        class ブロックを色分けする
+        class 取り出し元の値を検める
+        class 差分を計算する
+        class 差分の計算の関数型
+        class jsdiffの計算
+        class ミニマップを付ける
+        class 部品のHTML
+        差分を付ける --> 取り出し元の値を検める : 戻り値を検める
+        差分を付ける --> 差分を計算する : 本文を指定する
+        比べる2つの本文を取り出す --> 取り出し元の値を検める : 戻り値を検める
+        ブロックを色分けする --> 差分を計算する : 本文を指定する
+        ブロックを色分けする --> 部品のHTML : 色を適用する
+        差分を計算する --> 差分の計算の関数型 : 使用する
+        jsdiffの計算 ..|> 差分の計算の関数型
+        差分を付ける --> ミニマップを付ける : 行を描いたら付ける
+        差分を付ける --> 部品のHTML : 描く
+notes:
+  単体テストの実行場所: '`checkRevisions`・`normalizeDiffMode`・`computeDiff` と `render*` は DOM を使用せず `tests/unit/src/diff/{source,compute}.test.ts` と `tests/unit/src/parts/diff-*.test.ts` で Vitest の `unit` プロジェクトで実行する。`attachDiff`・`attachMinimap`・`src/diff/blocks.ts` の関数は `tests/unit/src/diff/{panel,minimap,blocks}.browser.test.ts` で `unit-browser` プロジェクトで実行する'
+  配布物の大きさ: jsdiff は `diffLines`・`diffWords`・`diffChars` だけを名前で import し、使用しない関数をまとめない。追加した後の `dist/index.js` が非機能要件の上限に収まることを、ビルドのサイズの検査で確認する

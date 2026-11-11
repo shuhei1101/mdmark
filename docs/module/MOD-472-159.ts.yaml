@@ -1,0 +1,101 @@
+id: MOD-472-159
+visibility: internal
+title: ライブラリ本体 / ビューとコメント / part-modules.ts
+test_files:
+  - tests/unit/src/part-modules.test.ts
+constants:
+  - name: PART_MODULE_FILES
+    title: 部品のモジュールのファイル名
+    container: src/part-modules.ts
+    summary: 部品の名前から、`dist/index.js` の隣に配置する配布ファイルの名前を参照する
+    value: '{ view: "view.js", comments: "comments.js", map: "map.js" }'
+  - name: partModuleLoaders
+    title: 部品のモジュールの読み込みの差し替え
+    container: src/part-modules.ts
+    summary: 書き出した HTML の起動の処理が、同じスクリプトにまとめた部品のモジュールを返却する関数を入れる。無い名前は `PART_MODULE_FILES` を `import.meta.url` から解決して読み込む
+    value: 'new Map<PartName, () => Promise<Record<string, unknown>>>()'
+    status: planned
+    introduced:
+      pr: 296
+  - name: partModules
+    title: 読み込んだ部品のモジュール
+    container: src/part-modules.ts
+    summary: 部品の名前から読み込みの Promise を参照する。ページの中で 1 回だけ読み込む（失敗も記録し、再読み込みしない）
+    value: new Map<PartName, Promise<unknown>>()
+functions:
+  - name: loadPartModule
+    title: 部品のモジュールを読み込む
+    container: src/part-modules.ts
+    summary: 部品の配布ファイルをページの中で 1 回だけ `import()` し、export の構造を確認して返却する
+    kind: 関数
+    scope: internal
+    args:
+      - name: name
+        type: PartName
+        required: true
+        description: '`"view"` か `"comments"`'
+      - name: importModule
+        type: '(url: string) => Promise<Record<string, unknown>>'
+        required: false
+        default: 動的 `import()`
+        passing: injected
+        description: モジュールを読み込む関数（単体テストで差し替える）
+    returns:
+      type: 'Promise<{ url: string; module: ViewPartModule | CommentsPartModule }>'
+      description: 読み込んだ URL とモジュール。読み込めない・構造が合わないときは元のエラーで reject し、エラーの `cause` に URL を持たせる
+    process: |-
+      1. `partModules` に名前があればその Promise を返却する
+      2. `partModuleLoaders` に名前があれば、URL を `PART_MODULE_FILES[name]` にしてその関数を待つ。無ければ URL を `new URL("./" + PART_MODULE_FILES[name], import.meta.url).href` にして `importModule(url)` を待つ
+      3. 読み込んだモジュールで、`view` は `drawView`・`attachView`、`comments` は `attachComments` が関数かを確認する。合わなければ `Error`（モジュールが {名前} を export していない）を投げる
+      4. 手順 2〜3 の Promise を `partModules` に記録して返却する
+    unit_tests:
+      - name: test_load_part_module
+        case: 正常
+        summary: 隣の配布ファイルを読み込み、同じ名前は 1 回だけ読み込む
+        condition: '`view` を 2 回読む'
+        mock: '`importModule` は呼ばれた URL を記録し、2 つの関数を持つオブジェクトを返却する'
+        expected: '`importModule` が 1 回だけ、`view.js` で終わる URL で呼ばれる。2 回とも同じモジュール'
+      - name: test_load_part_module_when_loader
+        case: 正常
+        summary: 差し替えた関数で読み込み、URL を読み込まない
+        condition: '`setPartModuleLoader("view", 関数)` の後に `view` を読み込む。関数は 2 つの関数を持つオブジェクトを返却する'
+        mock: '`importModule` を見張る'
+        expected: '`importModule` が呼ばれず、関数が返却したモジュールと `url` の `view.js` を返却する'
+      - name: test_load_part_module_when_shape_mismatch
+        case: 異常
+        summary: 関数を export しないモジュールを拒む
+        condition: '`comments` を読み込む'
+        mock: '`importModule` は `{}` を返却する'
+        expected: '`attachComments` を含むメッセージの Error で reject し、`cause` に URL'
+      - name: test_load_part_module_when_rejected
+        case: 異常
+        summary: 読み込めないモジュールは元のエラーで reject し、次も再読み込みしない
+        condition: '`view` を 2 回読む'
+        mock: '`importModule` は reject する'
+        expected: 2 回とも同じエラーで reject し、`importModule` は 1 回だけ呼ばれる
+    refs:
+      - IF-472-30#constraints[部品のモジュールの読み込み]
+      - IF-472-27#constraints[部品のモジュールの読み込み]
+  - name: setPartModuleLoader
+    title: 部品のモジュールの読み込みを差し替える
+    container: src/part-modules.ts
+    summary: '`partModuleLoaders` に部品の名前とモジュールを返却する関数を入れる。書き出した HTML の起動の処理が呼ぶ'
+    kind: 関数
+    scope: internal
+    args:
+      - name: name
+        type: PartName
+        required: true
+        description: 部品の名前
+      - name: loader
+        type: '() => Promise<Record<string, unknown>>'
+        required: true
+        description: 同じスクリプトにまとめた部品のモジュールを返却する関数。埋めなかった部品は拒否する関数
+    returns:
+      type: void
+      description: '-'
+    process: 1. `partModuleLoaders` に `name` → `loader` を入れる
+    unit_tests: []
+    status: planned
+    introduced:
+      pr: 296

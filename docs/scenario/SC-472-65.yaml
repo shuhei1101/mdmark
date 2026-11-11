@@ -1,0 +1,422 @@
+id: SC-472-65
+visibility: internal
+title: "用語の意味をツールチップで確認する"
+scenarios:
+  - name: 正常シナリオ
+    setup:
+      - name: mdmark を読み込むページ
+        description: バージョンを固定した URL で `dist/index.js` と `dist/index.css` を読み込み、索引と描く文書の `id` を指定して文書を描く HTML
+      - name: 用語を持つ索引
+        description: 用語 `ワークスペース`（別名 `WS`、意味 `話し合いの記録を配置するフォルダ`）と用語 `マーカー`（意味 `HTML コメントで記載する指定`）を持ち、描く文書を `docs` に持つ索引
+      - name: 用語が出る Markdown
+        description: 1 つ目のセクションの段落に `ワークスペース` が 2 回と `WS` が出て、2 つ目のセクションの段落に `WS` と `印刷` が出る文書
+        notes: '`印刷` は用語 `マーカー` を含むが、単語の区切りは `印刷` の 1 単語'
+      - name: Mock
+        description: jsDelivr を、ビルドした `dist/` を同じパスで返却する手元の応答に差し替える
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 利用側のページ
+        participant M as mdmark
+        P->>M: 索引・文書の id・Markdown を指定して描かせる
+        M->>M: 単語の区切りに一致する用語の単語と別名を照合する
+        M-->>P: セクションごとに用語を最初に出たところだけに下線を描く
+        U->>P: 下線の付いた単語にポインターを乗せる
+        P-->>U: 用語の意味のツールチップを表示
+    expected:
+      - 1 つ目のセクションでは、最初の `ワークスペース` だけに破線の下線が付き、2 回目の `ワークスペース` と同じ用語の別名 `WS` には付いていない
+      - 2 つ目のセクションでは `WS` に破線の下線が付いている
+      - '`印刷` の `マーカー` には下線が付いていない'
+      - '`WS` にポインターを乗せると `話し合いの記録を配置するフォルダ` のツールチップが出る'
+      - ツールチップは `WS` の上に出る（ツールチップの下端が単語の上端より上にある）
+      - ツールチップの上へポインターを移しても、ツールチップが出たまま
+    test: test_normal
+  - name: 正常シナリオ（キーボードで読み込む）
+    setup:
+      - name: mdmark を読み込むページ
+        description: 正常シナリオと同じ
+      - name: 用語を持つ索引
+        description: 正常シナリオと同じ
+      - name: 用語が出る Markdown
+        description: 正常シナリオと同じ
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 利用側のページ
+        participant M as mdmark
+        P->>M: 索引・文書の id・Markdown を指定して描かせる
+        M-->>P: 用語に下線を描く
+        U->>P: Tab で下線の付いた単語へフォーカスを移す
+        P-->>U: 用語の意味のツールチップを表示
+        U->>P: Esc を押す
+        P-->>U: ツールチップを削除する
+    expected:
+      - Tab で下線の付いた単語にフォーカスが移る
+      - フォーカスした単語の `aria-describedby` が、`role="tooltip"` を持つ意味の要素を指す
+      - Esc を押すとツールチップが消え、フォーカスは単語に残る
+    test: test_normal_when_keyboard
+  - name: 正常シナリオ（下線を付けない場所）
+    setup:
+      - name: mdmark を読み込むページ
+        description: 正常シナリオと同じ
+      - name: 用語を持つ索引
+        description: 正常シナリオと同じ
+      - name: 用語が出る場所を分けた Markdown
+        description: 見出し・行内のコード・コードブロック・リンクの文字の中にだけ `ワークスペース` が出る文書
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 利用側のページ
+        participant M as mdmark
+        P->>M: 索引・文書の id・Markdown を指定して描かせる
+        M->>M: 見出し・コード・リンクの中を照合から除外する
+        M-->>P: 下線を付けずに描く
+        P-->>U: 本文を表示
+    expected:
+      - 見出し・行内のコード・コードブロック・リンクの中の `ワークスペース` に下線が付いていない
+      - 本文の文字は Markdown のとおり
+    test: test_normal_when_excluded_place
+  - name: 正常シナリオ（索引を指定しない）
+    setup:
+      - name: mdmark を読み込むページ
+        description: 索引を指定せずに文書を描く。ほかは正常シナリオと同じ
+      - name: 用語が出る Markdown
+        description: 正常シナリオと同じ
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 利用側のページ
+        participant M as mdmark
+        P->>M: Markdown だけを指定して描かせる
+        M-->>P: 下線を付けずに描く
+        P-->>U: 本文を表示
+    expected:
+      - '`ワークスペース` と `WS` に下線が付いていない'
+      - 段落が描かれている
+    test: test_normal_when_no_index
+  - name: 異常シナリオ（Schema に合わない索引）
+    setup:
+      - name: mdmark を読み込むページ
+        description: 正常シナリオと同じ
+      - name: Schema に合わない索引
+        description: 用語 `ワークスペース` は正しく持ち、用語 `ブランチ` が `meaning` を持たない索引
+      - name: 2 つの用語が出る Markdown
+        description: 段落に `ワークスペース` と `ブランチ` が出る文書
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 利用側のページ
+        participant M as mdmark
+        P->>M: 索引・文書の id・Markdown を指定して描かせる
+        M->>M: 構造の合わない用語を除く
+        M-->>P: 読み込めた用語だけに下線を描く
+        P-->>U: 本文を表示
+    expected:
+      - 段落が描かれている
+      - '`ワークスペース` に下線が付き、意味のツールチップが出る'
+      - '`ブランチ` に下線が付いていない'
+    test: test_error_when_invalid_index
+  - name: 正常シナリオ（埋め込んだ HTML の中の用語）
+    setup:
+      - name: mdmark を読み込むページ
+        description: 正常シナリオと同じ
+      - name: 用語を持つ索引
+        description: 正常シナリオと同じ
+      - name: 用語が HTML の中に出る Markdown
+        description: '`<!-- html -->` の範囲の `html` のコードブロックの段落に `ワークスペース` が出て、その後ろの Markdown の段落にも `ワークスペース` が出る文書。HTML の中には `ワークスペース` を文字に持つリンクも 1 つ配置する'
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 利用側のページ
+        participant M as mdmark
+        P->>M: 索引・文書の id・Markdown を指定して描かせる
+        M->>M: 埋め込んだ HTML の文字も用語と照合する
+        M-->>P: HTML の中の用語にも下線を描く
+        U->>P: HTML の中の下線の単語にフォーカスする
+        P-->>U: 用語の意味のツールチップを表示
+    expected:
+      - HTML の中の段落の `ワークスペース` に、本文の用語と同じ破線の下線が参照されている
+      - その単語にフォーカスすると `話し合いの記録を配置するフォルダ` のツールチップが出る
+      - HTML の中のリンクの文字には下線が参照されていない（本文のリンクと同じ扱い）
+      - 埋め込んだ HTML の中は範囲ごとに数え、本文のセクションとは別に数えるため、後ろの Markdown の段落の `ワークスペース` にも下線が参照される（下線は HTML の中と後ろの段落で合わせて 2 つ）
+    test: test_normal_when_embedded_html
+  - name: 正常シナリオ（やめた言い方が本文に出る）
+    setup:
+      - name: mdmark を読み込むページ
+        description: 正常シナリオと同じ
+      - name: やめた言い方を持つ索引
+        description: 用語 `ワークスペース`（意味 `話し合いの記録を配置するフォルダ`、`avoid` に `作業場`）を持ち、描く文書を `docs` に持つ索引
+      - name: やめた言い方が出る Markdown
+        description: 1 つ目のセクションの段落に `作業場` が 2 回と `ワークスペース` が 1 回出て、2 つ目のセクションの段落に `作業場` が出る文書。見出しと行内のコードにも `作業場` を記載する
+        notes: セクションごとに最初の 1 回だけにマーカーが付くことを、1 つ目のセクションに 2 回書いて決定的に発生させる
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 利用側のページ
+        participant M as mdmark
+        P->>M: 索引・文書の id・Markdown を指定して描かせる
+        M->>M: 単語の区切りに一致する用語の単語・別名とやめた言い方を照合する
+        M-->>P: セクションごとにやめた言い方が最初に出たところだけにマーカーを付けて描く
+        U->>P: マーカーの付いた単語にポインターを乗せる
+        P-->>U: 代わりの用語と意味のツールチップを表示
+        U->>P: Tab でマーカーの付いた単語へフォーカスを移し、Esc を押す
+        P-->>U: ツールチップを削除する
+    expected:
+      - 1 つ目のセクションでは、最初の `作業場` だけにマーカーが付き、2 回目の `作業場` には付いていない
+      - 1 つ目のセクションの `ワークスペース` には、やめた言い方のマーカーではなく用語の破線の下線が付いている
+      - 2 つ目のセクションの `作業場` にマーカーが付いている
+      - 見出しと行内のコードの `作業場` にはマーカーが付いていない
+      - マーカーは用語の破線の下線と構造で見分けられる（色だけで分けない）
+      - マーカーの付いた `作業場` にポインターを乗せると、代わりの用語 `ワークスペース` と意味 `話し合いの記録を配置するフォルダ` のツールチップが出て、ツールチップの上へポインターを移しても出たまま
+      - Tab でマーカーの付いた単語にフォーカスが移り、その単語の `aria-describedby` がツールチップの要素を指す
+      - Esc を押すとツールチップが消え、フォーカスは単語に残る
+    test: test_normal_when_avoided_term
+  - name: 正常シナリオ（上に収まらない単語）
+    setup:
+      - name: mdmark を読み込むページ
+        description: 描く先の要素をページの上端に配置し、スクロールせずに文書を描く。ほかは正常シナリオと同じ
+        notes: 文書の 1 行目の単語の上に、ツールチップの高さが残らない状態を決定的に発生させる
+      - name: 用語を持つ索引
+        description: 正常シナリオと同じ
+      - name: 1 行目に用語が出る Markdown
+        description: 見出しを配置せず、1 行目の段落に `ワークスペース` が出る文書
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 利用側のページ
+        participant M as mdmark
+        P->>M: 索引・文書の id・Markdown を指定して描かせる
+        M-->>P: 用語に下線を描く
+        U->>P: 1 行目の下線の付いた単語にポインターを乗せる
+        M->>M: 単語の上にツールチップが収まらないことを確認する
+        P-->>U: 単語の下に用語の意味のツールチップを表示
+    expected:
+      - '`ワークスペース` のツールチップが単語の下に出る（ツールチップの上端が単語の下端より下にある）'
+      - ツールチップの全体が画面の中に収まっている
+    test: test_normal_when_no_room_above
+  - name: 正常シナリオ（設定で下に出す）
+    setup:
+      - name: mdmark を読み込むページ
+        description: 設定の `tooltips.placement` を `bottom` にした `opts.config` を指定して文書を描く。ほかは正常シナリオと同じ
+      - name: 用語を持つ索引
+        description: 正常シナリオと同じ
+      - name: 用語が出る Markdown
+        description: 正常シナリオと同じ
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 利用側のページ
+        participant M as mdmark
+        P->>M: 設定・索引・文書の id・Markdown を指定して描かせる
+        M-->>P: 用語に下線を描く
+        U->>P: 下線の付いた単語にポインターを乗せる
+        P-->>U: 単語の下に用語の意味のツールチップを表示
+    expected:
+      - '`WS` にポインターを乗せると、`話し合いの記録を配置するフォルダ` のツールチップが単語の下に出る（ツールチップの上端が単語の下端より下にある）'
+    test: test_normal_when_placement_bottom
+  - name: 正常シナリオ（全角と半角・大文字と小文字だけが違う単語）
+    setup:
+      - name: mdmark を読み込むページ
+        description: 正常シナリオと同じ
+      - name: 表記の揺れを持つ索引
+        description: 用語 `ワークスペース`（別名 `WS`、意味 `話し合いの記録を配置するフォルダ`、`avoid` に `workplace`）を持ち、描く文書を `docs` に持つ索引
+      - name: 表記の違う単語が出る Markdown
+        description: 1 つ目のセクションの段落に全角の `ＷＳ` が出て、2 つ目のセクションの段落に小文字の `ws` と、大文字と小文字の混ざった `WorkPlace` が出る文書
+        notes: 索引の別名・やめた言い方と、全角と半角・大文字と小文字だけが違う単語を本文に配置して決定的に発生させる
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 利用側のページ
+        participant M as mdmark
+        P->>M: 索引・文書の id・Markdown を指定して描かせる
+        M->>M: 本文の単語と用語の単語・別名・やめた言い方を、NFKC・英字の小文字化・前後の空白の除去で正規化して照合する
+        M-->>P: 本文の表記のまま、用語に下線を、やめた言い方にマーカーを付けて描く
+        U->>P: 下線の付いた単語にポインターを乗せる
+        P-->>U: 用語の意味のツールチップを表示
+    expected:
+      - 1 つ目のセクションの `ＷＳ` と 2 つ目のセクションの `ws` に破線の下線が付いている
+      - 下線の付いた単語の文字は本文の表記のまま（`ＷＳ`・`ws`）
+      - '`ＷＳ` にポインターを乗せると `話し合いの記録を配置するフォルダ` のツールチップが出る'
+      - '`WorkPlace` にやめた言い方のマーカーが付き、ポインターを乗せると代わりの用語 `ワークスペース` と意味 `話し合いの記録を配置するフォルダ` のツールチップが出る'
+    test: test_normal_when_width_and_case_differ
+  - name: 正常シナリオ（エイリアスを指定する）
+    setup:
+      - name: mdmark を読み込むページ
+        description: バージョンを固定した URL で `dist/index.js` と `dist/index.css` を読み込み、索引を指定せずに、読み込んだエイリアスを指定して文書を描く HTML
+      - name: 種類の違うエイリアス
+        description: '`term` の `レビュー`（説明 `変更を別の人が確認すること`）、`doc` の `設計書`（説明 `仕様を記載した文書`）、`url` の `課題の一覧`（説明 `Issue を並べたページ`、URL `https://github.com/shuhei1101/mdmark/issues`）、`skill` の `記録の取り込み`（スキル名 `mindstella:session`）、`tool` の `点検のツール`（ツール名 `check`）、`path` の `設定ファイル`（パス `mdmark.config.yaml`）、`env` の `開発サーバー`（URL `http://127.0.0.1:8767/`、ポート `8767`）'
+        notes: '`term` の `レビュー` は別名 `査読` も持つ'
+      - name: エイリアスが出る Markdown
+        description: 1 つ目のセクションに 7 つのエイリアスの名前、別の見出しの下の 2 つ目のセクションに `レビュー` の別名 `査読` が出る文書
+        notes: '-'
+      - name: Mock
+        description: jsDelivr を、ビルドした `dist/` を同じパスで返却する手元の応答に差し替える
+        notes: '-'
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 利用側のページ
+        participant M as mdmark
+        P->>M: 読み込んだエイリアスと Markdown を指定して描かせる
+        M->>M: エイリアスの名前と別名を、用語と同じ規則で照合する
+        M-->>P: セクションごとに最初に出たところだけに下線を描く
+        U->>P: 下線の付いた単語にポインターを乗せる
+        P-->>U: エイリアスの種類ごとの内容のツールチップを表示
+    expected:
+      - '`開発サーバー` を除く 6 つのエイリアスの名前と別名 `査読` に、用語と同じ破線の下線が付いている'
+      - '`査読` のツールチップに名前 `レビュー` と説明 `変更を別の人が確認すること` が出る'
+      - '`設計書` のツールチップに名前と概要 `仕様を記載した文書` が出る'
+      - '`課題の一覧` のツールチップに名前・説明と、`href` が `https://github.com/shuhei1101/mdmark/issues` のリンクが出る'
+      - '`記録の取り込み`・`点検のツール`・`設定ファイル` のツールチップに、それぞれスキル名 `mindstella:session`・ツール名 `check`・パス `mdmark.config.yaml` がコードとして出る'
+      - '`env` の `開発サーバー` には下線が付かず、ツールチップも出ない（値にシークレットキーを含みうるため照合しない）'
+      - Tab でツールチップの中のリンクへフォーカスが移り、Esc を押すとツールチップが消える
+    test: test_normal_when_aliases
+  - name: 正常シナリオ（コマンドをコピーする）
+    setup:
+      - name: mdmark を読み込むページ
+        description: 正常シナリオ（エイリアスを指定する）と同じ
+      - name: コマンドのエイリアス
+        description: '`command` の `単体テスト`（説明 `ライブラリ本体の単体テストを実行する`、コマンド `npm run test:unit`、実行場所 `リポジトリの直下`）'
+      - name: コマンドが出る Markdown
+        description: 段落に `単体テスト` が出る文書
+      - name: Mock
+        description: jsDelivr を、ビルドした `dist/` を同じパスで返却する手元の応答に差し替える。クリップボードの読み込みと保存を許可したブラウザで開く
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 利用側のページ
+        participant M as mdmark
+        P->>M: 読み込んだエイリアスと Markdown を指定して描かせる
+        M-->>P: コマンドのエイリアスに下線を描く
+        U->>P: 下線の付いた単語にフォーカスし、ツールチップのコピーのボタンを押す
+        P-->>U: コマンドをクリップボードへコピーし、コピーしたことを表示
+    expected:
+      - '`単体テスト` のツールチップに、説明 `ライブラリ本体の単体テストを実行する`・コマンド `npm run test:unit`（コードとして出る）・実行場所 `リポジトリの直下` が出る'
+      - コピーのボタンを押すと、クリップボードの文字が `npm run test:unit` になる
+      - 押した後、ボタンにコピーしたことが文字で出る（色だけで示さない）
+      - Tab でコピーのボタンへフォーカスが移り、Enter で押せる
+    test: test_normal_when_copy_command
+  - name: 正常シナリオ（やめた言い方のエイリアス）
+    setup:
+      - name: mdmark を読み込むページ
+        description: 正常シナリオ（エイリアスを指定する）と同じ
+      - name: やめた言い方のエイリアス
+        description: '`avoid` の `作業場`（置き換え先 `ワークスペース`）と、`term` の `ブランチ`（説明 `作業を分ける線`、`avoid` に `枝`）'
+      - name: やめた言い方が出る Markdown
+        description: 段落に `作業場` と `枝` が出る文書
+      - name: Mock
+        description: jsDelivr を、ビルドした `dist/` を同じパスで返却する手元の応答に差し替える
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 利用側のページ
+        participant M as mdmark
+        P->>M: 読み込んだエイリアスと Markdown を指定して描かせる
+        M->>M: やめた言い方のエイリアスと term の avoid を、やめた言い方として照合する
+        M-->>P: やめた言い方にマーカーを付けて描く
+        U->>P: マーカーの付いた単語にポインターを乗せる
+        P-->>U: 置き換え先のツールチップを表示
+    expected:
+      - '`作業場` と `枝` に、索引のやめた言い方と同じマーカーが付いている（用語の破線の下線と構造で見分けられる）'
+      - '`作業場` のツールチップに置き換え先 `ワークスペース` が出る'
+      - '`枝` のツールチップに代わりの用語 `ブランチ` と説明 `作業を分ける線` が出る'
+    test: test_normal_when_avoid_alias
+  - name: 異常シナリオ（使用できないエイリアス）
+    setup:
+      - name: mdmark を読み込むページ
+        description: 正常シナリオ（エイリアスを指定する）と同じ
+      - name: 使用できないエイリアスを含むエイリアス
+        description: 正しい `term` の `レビュー`、コマンドを持たない `command` の `ビルド`、9 つの種類に無い `alias_type`（`memo`）の `メモ`、URL が `javascript:alert(1)` の `url` の `危ないリンク`
+        notes: 種類の必須のキーが空・知らない種類・http と https でない URL を 1 つずつ配置して決定的に発生させる
+      - name: エイリアスが出る Markdown
+        description: 段落に `レビュー`・`ビルド`・`メモ`・`危ないリンク` が出る文書
+      - name: Mock
+        description: jsDelivr を、ビルドした `dist/` を同じパスで返却する手元の応答に差し替える
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 利用側のページ
+        participant M as mdmark
+        P->>M: 読み込んだエイリアスと Markdown を指定して描かせる
+        M->>M: 種類の必須のキーが空のエイリアスと知らない種類のエイリアスを除く
+        M-->>P: 使用できるエイリアスだけに下線を描く
+        U->>P: 危ないリンクの下線の単語にポインターを乗せる
+        P-->>U: URL をリンクにせず文字で出したツールチップを表示
+    expected:
+      - 段落が描かれている
+      - '`レビュー` に下線が付き、ツールチップが出る'
+      - '`ビルド` と `メモ` に下線が付いていない'
+      - '`危ないリンク` のツールチップの URL は `a` 要素ではなく文字で出る'
+      - 描く処理が例外を投げず、通知ブロックも出ない
+    test: test_error_when_invalid_alias
+  - name: 正常シナリオ（タッチ）
+    setup:
+      - name: mdmark を読み込むページ
+        description: 正常シナリオ（コマンドをコピーする）と同じページを、タッチの端末（`hasTouch`）として開いたページ
+        notes: Chromium のタッチの再現では `:hover` が残らないため、外のタップで閉じる期待値は今の実装でも pass しうる。iOS の `:hover` が残る状態は単体テストで、`pointerleave`・`blur` を発火させずに外の `pointerdown` だけで閉じることを確認する
+      - name: コマンドのエイリアス
+        description: 正常シナリオ（コマンドをコピーする）と同じ
+      - name: コマンドが出る Markdown
+        description: 段落に `単体テスト` が出て、その後ろに用語を含まない段落が続く文書
+      - name: Mock
+        description: 正常シナリオ（コマンドをコピーする）と同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 利用側のページ
+        participant M as mdmark
+        P->>M: 読み込んだエイリアスと Markdown を指定して描かせる
+        M-->>P: コマンドのエイリアスに下線を描く
+        U->>P: 下線の付いた単語をタップする
+        P-->>U: コマンドとコピーのボタンのツールチップを表示
+        U->>P: ツールチップのコピーのボタンをタップする
+        P-->>U: コマンドをコピーし、ツールチップを出したままにする
+        U->>P: 同じ単語をもう一度タップする
+        P-->>U: ツールチップを削除する
+        U->>P: 同じ単語をもう一度タップする
+        P-->>U: コマンドとコピーのボタンのツールチップを表示
+        U->>P: 用語を含まない段落をタップする
+        P-->>U: ツールチップを削除する
+    expected:
+      - '`単体テスト` のタップで、コマンド `npm run test:unit` とコピーのボタンを持つツールチップが出る'
+      - コピーのボタンのタップで、クリップボードの文字が `npm run test:unit` になり、ツールチップは消えない
+      - 同じ単語をもう一度タップすると、ツールチップが消える
+      - ツールチップと単語の外（用語を含まない段落）をタップすると、ツールチップが消える
+    test: test_normal_when_touch
+lead: 利用側が索引に記載した用語の単語・別名か、読み込んで指定したエイリアスの単語が本文に出ると、mdmark が破線の下線を付け、読者がポインターを乗せるかフォーカスすると意味のツールチップが出る。
+issue: 5
+primary_actor: 読者
+stakeholders:
+  - name: 文書の作成者
+    interest: 用語の意味を本文に追記せずに、索引に 1 度書けば全ての文書で参照できる。やめた言い方が残った本文でも、読者に代わりの用語が伝わる
+  - name: キーボードとスクリーンリーダーで読者
+    interest: ポインターを使用しなくても、用語の意味を読み込める
+trigger: 利用側のページが、索引と描く文書の `id`、または読み込んだエイリアスを指定して文書を描かせる
+preconditions:
+  - ページがバージョンを固定した URL で mdmark の JavaScript と CSS を読み込んでいる
+  - 用語のツールチップの機能（`glossary`）がオン（既定）
+success_guarantee: |-
+  本文に出た用語の単語・別名に破線の下線が付き、ポインターを乗せたときとフォーカスしたときに、その用語の意味のツールチップが出る。ツールチップは単語の上に出て、上に収まらないときだけ単語の下に出る。本文に出た用語のやめた言い方にはマーカーが付き、同じ操作で代わりの用語とその意味のツールチップが出る。タッチの端末では、単語のタップでツールチップが出て、ツールチップと単語の外のタップか、同じ単語のもう一度のタップで消える。ツールチップの中のリンクとボタンのタップでは消えない。用語の単語・別名・やめた言い方は、全角と半角・英字の大文字と小文字・前後の空白の違いを区別せずに照合する。
+  利用側が読み込んだエイリアスを指定すると、エイリアスの名前・別名にも同じ下線が付き、ツールチップにエイリアスの種類ごとの内容（コマンドとコピーのボタン・リンク・置き換え先など）が出る。
+minimal_guarantee: 索引を指定しないときも、索引の一部が Schema に合わないときも、本文は描かれる。
+refs:
+  - SC-472-59#
+test_file: tests/e2e/単一ユースケース/用語の意味をツールチップで確認する.spec.ts

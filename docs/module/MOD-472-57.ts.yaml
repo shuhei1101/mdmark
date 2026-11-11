@@ -1,0 +1,55 @@
+id: MOD-472-57
+visibility: internal
+title: VS Code 拡張機能 / Webview / diff-source.ts
+test_files:
+  - tests/unit/vscode/src/webview/features/preview/panel/diff-source.test.ts
+data_models:
+  - name: DiffTexts
+    title: 差分の全文
+    container: vscode/src/webview/features/preview/panel/diff-source.ts
+    usecase: VS Code の差分ビューの変更をプレビューで確認する
+    role: DTO
+    summary: 差分のパネルで取り出し元が返却する、最後に受けた `render` の全文。書き換えられる入れ物
+    properties:
+      - name: modified
+        type: string
+        description: 変更後の全文（`render` の `markdown`）
+      - name: original
+        type: string
+        description: 変更前の全文（`render` の `previous`）
+    status: planned
+    introduced:
+      pr: 196
+constants:
+  - name: DIFF_DOC_ID
+    title: 差分の取り出し元の docId
+    container: vscode/src/webview/features/preview/panel/diff-source.ts
+    summary: 差分のパネルで `mount` に指定する `docId`
+    value: '"diff"'
+    status: planned
+functions:
+  - name: createDiffSource
+    title: 差分の取り出し元を作る
+    kind: 関数
+    container: vscode/src/webview/features/preview/panel/diff-source.ts
+    usecase: VS Code の差分ビューの変更をプレビューで確認する
+    summary: '`revisions` が `modified`・`original` の 2 つをこの順に返却し、`content` が呼ばれた時点の `texts` の全文を返却する `DiffSource` を作る'
+    scope: public
+    args:
+      - name: texts
+        type: DiffTexts
+        required: true
+        description: 書き換えられる全文の入れ物
+    returns:
+      type: DiffSource
+      description: mdmark の差分の取り出し元。`revisions` の `at` は呼ばれた時刻の ISO 8601、`content` は知らない `revisionId` で reject する
+    unit_tests:
+      - name: test_create_diff_source
+        case: 正常
+        summary: 呼ばれた時点の全文を返却する
+        condition: '`{ modified: "A2", original: "A1" }` で作り、`modified` を `A3` に書き換えてから `content` を呼ぶ'
+        mock: なし
+        expected: '`revisions("diff")` の `id` が `modified`・`original` の順。`content` が `modified` で `A3`、`original` で `A1`、`other` で reject'
+    status: planned
+    introduced:
+      pr: 196

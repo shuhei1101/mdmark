@@ -1,0 +1,116 @@
+id: MOD-472-103
+visibility: internal
+title: VS Code 拡張機能 / 設定 / settings.ts
+test_files:
+  - tests/unit/vscode/src/settings.test.ts
+data_models:
+  - name: PreviewSettings
+    title: 拡張機能の設定
+    container: vscode/src/settings.ts
+    usecase: 共通
+    summary: '`mdmark.*` を読み込み、範囲の外の値を既定に戻した値'
+    properties:
+      - name: version
+        type: string
+        description: '`mdmark.version`'
+      - name: configPath
+        type: string
+        description: '`mdmark.configPath`'
+      - name: liveUpdate
+        type: boolean
+        description: '`mdmark.preview.liveUpdate`'
+      - name: updateDelayMs
+        type: number
+        description: '`mdmark.preview.updateDelayMs`（再描画するまでの待ちを整える）'
+      - name: scrollPreviewWithEditor
+        type: boolean
+        description: '`mdmark.preview.scrollPreviewWithEditor`'
+      - name: scrollEditorWithPreview
+        type: boolean
+        description: '`mdmark.preview.scrollEditorWithPreview`'
+      - name: theme
+        type: '"auto" | "light" | "dark"'
+        description: '`mdmark.preview.theme`。知らない値は `auto`'
+      - name: outputDir
+        type: string
+        description: '`mdmark.export.outputDir`'
+      - name: colorTheme
+        type: '"" | "dev-swiss" | "theme-paper" | "theme-slate" | "theme-contrast"'
+        description: '`mdmark.colorTheme`。知らない値と文字列でない値は `""`（設定ファイルに従う）'
+    refs:
+      - CFG-472-2#
+    status: planned
+constants:
+  - name: SETTING_DEFAULTS
+    title: 設定の既定
+    container: vscode/src/settings.ts
+    summary: 設定が無いか型が違うときに使用する値。`vscode/package.json` の `contributes.configuration` の `default` と同じ値
+    entries:
+      - key: version
+        value: '"latest"'
+      - key: configPath
+        value: '""'
+      - key: liveUpdate
+        value: 'true'
+      - key: updateDelayMs
+        value: '300'
+      - key: scrollPreviewWithEditor
+        value: 'true'
+      - key: scrollEditorWithPreview
+        value: 'true'
+      - key: theme
+        value: '"auto"'
+      - key: outputDir
+        value: '""'
+      - key: colorTheme
+        value: '""'
+    refs:
+      - CFG-472-2#
+    status: planned
+  - name: UPDATE_DELAY_RANGE
+    title: 再描画するまでの待ちの範囲
+    container: vscode/src/settings.ts
+    summary: '`mdmark.preview.updateDelayMs` に許すミリ秒の最小と最大'
+    value: '{ min: 0, max: 5000 }'
+    refs:
+      - NFR-472-1#requirements[再描画するまでの待ち]
+    status: planned
+functions:
+  - name: readSettings
+    title: 設定を読み込む
+    kind: 関数
+    container: vscode/src/settings.ts
+    usecase: 共通
+    summary: '`mdmark` の設定の値を読み込み、型が違う値と範囲の外の値を `SETTING_DEFAULTS` に戻して返却する'
+    description: 呼ぶ側が `workspace.getConfiguration("mdmark", uri).get` を指定する
+    scope: public
+    args:
+      - name: get
+        type: '(key: string) => unknown'
+        required: true
+        description: '`mdmark.` を除いたキー（`preview.updateDelayMs` など）の値を返却する関数'
+    returns:
+      type: PreviewSettings
+      description: 整えた設定
+    unit_tests:
+      - name: test_read_settings
+        case: 正常
+        summary: 記載した値をそのまま読み込む
+        condition: '`version` が `v0.6.0`、`preview.updateDelayMs` が `1000`、`preview.theme` が `dark`、他は `undefined`'
+        mock: なし
+        expected: '`version` が `v0.6.0`、`updateDelayMs` が `1000`、`theme` が `dark`、他は `SETTING_DEFAULTS`'
+      - name: test_read_settings_when_out_of_range
+        case: 正常
+        summary: 範囲の外・整数でない待ちと知らない配色は既定に戻す
+        condition: '`preview.updateDelayMs` が `-1`・`5001`・`12.5`・`"300"` の 4 通り、`preview.theme` が `sepia`'
+        mock: なし
+        expected: '`updateDelayMs` がどれも `300`、`theme` が `auto`。`0` と `5000` はそのまま読み込む'
+      - name: test_read_settings_when_color_theme
+        case: 正常
+        summary: 入っているテーマの名前だけを読み込み、他の値は空に戻す
+        condition: '`colorTheme` が `theme-slate`・`sepia`・`1` の 3 通り'
+        mock: なし
+        expected: 1 つ目の `colorTheme` が `theme-slate`、残りは `""`
+    refs:
+      - IF-472-21#constraints[再描画するまでの待ち]
+    status: planned

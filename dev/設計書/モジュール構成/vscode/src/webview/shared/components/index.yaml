@@ -1,8 +1,0 @@
-summary: components の設計書
-items:
-  - page: config-band.tsx.yaml
-    summary: VS Code 拡張機能 / Webview / config-band.tsx
-  - page: preview-status.tsx.yaml
-    summary: VS Code 拡張機能 / Webview / preview-status.tsx
-  - page: ui/
-    summary: ui の設計書

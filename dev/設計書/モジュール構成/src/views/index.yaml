@@ -1,6 +1,0 @@
-summary: views の設計書
-items:
-  - page: index.ts.yaml
-    summary: ライブラリ本体 / ビューとコメント / index.ts
-  - page: spec.ts.yaml
-    summary: ライブラリ本体 / ビューとコメント / spec.ts

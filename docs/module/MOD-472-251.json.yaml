@@ -1,0 +1,16 @@
+id: MOD-472-251
+visibility: internal
+title: ライブラリ本体 / 検査 / package.json
+constants:
+  - name: rootScripts
+    title: 検査の npm scripts
+    container: package.json
+    summary: 直下の `package.json` の `scripts` に追加する検査の入口（今の `lint`・`typecheck`・`test:unit` はそのまま）。`prepare` など、依存の導入で実行される lifecycle のスクリプトは持たない
+    entries:
+      - key: lint:eslint
+        value: '`node scripts/eslint.ts`（引数はそのまま ESLint へ指定する。`tools/eslint/` の ESLint が無ければ入れてから起動する）'
+      - key: typecheck:vscode
+        value: '`tsc --noEmit -p vscode`'
+      - key: check
+        value: '`npm run lint && npm run lint:eslint && npm run typecheck && npm run typecheck:vscode`'
+    status: planned

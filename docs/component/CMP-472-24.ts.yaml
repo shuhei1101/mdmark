@@ -1,0 +1,72 @@
+id: CMP-472-24
+visibility: internal
+title: "ヒント"
+implementation: "src/parts/hint.ts#renderHint"
+story: "Parts/Hint"
+states:
+  - name: Block
+    description: ブロックの要素。右上にマーカーがあり、閉じている
+    args:
+      - name: placement
+        value: block
+  - name: BlockOpen
+    description: ブロックの要素のマーカーに乗せて開いた。マーカーの下に文を出す（`tooltips.diagramPlacement` の既定）
+    args:
+      - name: placement
+        value: block
+      - name: open
+        value: 'true'
+  - name: Inline
+    description: 行内の要素。破線の下線がある
+    args:
+      - name: placement
+        value: inline
+  - name: InlineOpen
+    description: 行内の要素にフォーカスして開いた（ダークでも確認する）
+    args:
+      - name: placement
+        value: inline
+      - name: open
+        value: 'true'
+  - name: Colored
+    description: 記載した人が地の色を付けたブロックの要素。マーカーが地の色の上でも判読できる
+    args:
+      - name: placement
+        value: block
+lead: 埋め込んだ HTML の `data-hint` を持つ要素に付けるマーカー。ブロックの要素は右上の情報のアイコン、行内の要素は破線の下線で示し、図のツールチップと同じ外観で文を出す。
+args:
+  - name: text
+    type: 文字列
+    required: true
+    description: '`data-hint` の文。文字として出す'
+  - name: placement
+    type: 列挙
+    required: true
+    choices: '`block`（右上のマーカー）・`inline`（要素そのものに下線）'
+    description: 要素の種類から決まるマーカーの付け方（インターフェース定義『文書をHTML文字列にする』の制約「ヒント」）
+  - name: open
+    type: 真偽値
+    required: false
+    default: 'false'
+    description: ツールチップを開いているか
+slots:
+  - name: default
+    description: '`data-hint` を持つ記載した人の要素'
+events:
+  - name: 開く・閉じる
+    when: ブロックはマーカー、行内は要素にポインターを乗せるかフォーカスする。離すか Esc を押す。タッチの端末ではマーカーか要素をタップする。もう一度タップするか、ツールチップと持ち主の外をタップする
+    value: ツールチップの `hidden`
+    description: '`mount` が 1 つだけ開き、ツールチップの上では閉じず、Esc で閉じてフォーカスを持ち主に残す'
+uses:
+  - component: CMP-472-38#
+    how: '`kind` を `hint` にして文を出す'
+accessibility:
+  - ブロックのマーカーは `<button type="button" aria-label="説明">` で、行内の要素は `tabindex="0"` を持ち、どちらも `aria-describedby` でツールチップを指す
+  - ブロックの要素のマーカーの外では開かず、ポインターの形状は変えない
+  - ホバーとフォーカスの両方で出し、Esc で消え、上に乗っても消えない（WCAG 1.4.13）。タッチの端末では持ち主のタップで開閉を切り替え、ツールチップと持ち主の外のタップで閉じる。印刷では出さない
+status: planned
+introduced:
+  pr: 45
+refs:
+  - IF-472-35#constraints[ヒントの操作]
+test_file: tests/integration/lib/hint.story.test.ts

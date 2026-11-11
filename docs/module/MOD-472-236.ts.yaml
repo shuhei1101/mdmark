@@ -1,0 +1,46 @@
+id: MOD-472-236
+visibility: internal
+title: ライブラリ本体 / 操作 / gif.ts
+test_files:
+  - tests/unit/src/interact/gif.browser.test.ts
+functions:
+  - name: attachGifs
+    title: GIF を止める・再生するボタンを付ける
+    container: src/interact/gif.ts
+    kind: 関数
+    scope: internal
+    summary: '`img[data-gif]` ごとに `span.mdmark-gif` で包み、`img.decode()` の後に最初のフレームを同じ大きさの `canvas`（`aria-hidden`・`hidden`）に描いて `img` の後ろに配置し、`renderGifToggle` のボタンを付ける。押すと `canvas` の `hidden` と `img` の `visibility` とボタンの状態を切り替える。`prefers-reduced-motion: reduce` のときは止めた状態で始める。`decode()` が失敗した GIF は包まずボタンを付けない。ライトボックスの拡大のボタンで包んだ `img` は、ボタンごと包む'
+    args:
+      - name: root
+        type: HTMLElement
+        required: true
+        description: 描いた要素
+    returns:
+      type: () => void
+      description: 包みとボタンを削除し、`img` を元に戻す関数
+    callees:
+      - MOD-472-331#functions[renderGifToggle]
+    refs:
+      - IF-472-35#constraints[GIF の止める・再生する]
+    unit_tests:
+      - name: test_attach_gifs
+        case: 正常
+        summary: 包んでボタンで止める・再生する
+        condition: GIF の画像を描いた要素で、ボタンを押して、もう一度押す
+        mock: なし
+        expected: '`span.mdmark-gif` の中に `img`・`canvas[hidden]`・`button[aria-pressed="false"]`、1 回目の後に `canvas` が `hidden` を持たず `img` が `visibility: hidden` で `aria-label` が `GIF を再生`、2 回目の後に元に戻る'
+      - name: test_attach_gifs_when_reduced_motion
+        case: 正常
+        summary: 動きを減らす設定では止めて始める
+        condition: '`prefers-reduced-motion: reduce` をエミュレートして描く'
+        mock: なし
+        expected: ボタンが `aria-pressed="true"` で `canvas` が `hidden` を持たない
+      - name: test_attach_gifs_when_decode_failed
+        case: 異常
+        summary: decode に失敗した GIF にはボタンを付けない
+        condition: '`src` が GIF として読み込めないファイルの `img[data-gif]`'
+        mock: なし
+        expected: '`span.mdmark-gif` と `button.mdmark-gif-toggle` が無い'
+    status: planned
+    introduced:
+      pr: 263

@@ -1,0 +1,60 @@
+id: MOD-472-16
+visibility: internal
+title: VS Code 拡張機能 / Webview
+lead: プレビューのパネルの中で動く React の画面と、配布物を読み込む前にも出す部品。jsDelivr の mdmark を読み込んで `mount`・`update` で描き、スクロール・リンク・状態の表示を担う。拡張機能とのメッセージの型も持つ。
+directory: |-
+  ```tree
+  vscode/
+  ├── vite.config.ts                     # Webview を media/preview.js・media/preview.css に書き込む Vite の設定
+  ├── components.json                    # shadcn/ui の CLI の設定
+  └── src/
+      ├── messages.ts                    # 拡張機能 ⇄ Webview のメッセージの型（型だけ）
+      └── webview/
+          ├── main.tsx                   # 入口: 描く先を包む要素を読み込み、React の木を描く
+          ├── app/
+          │   └── app.tsx                # Error Boundary と画面
+          ├── features/preview/panel/
+          │   ├── panel-screen.tsx       # 画面: 状態の表示・帯・描く先の要素を並べ、メッセージ・読み込み・スクロール・リンクをつなぐ
+          │   ├── panel-screen.stories.tsx
+          │   ├── boot.ts                # 描く先を包む要素の data-* と保存した状態の読み取り
+          │   ├── document-view.ts       # mdmark の mount・update・スクロールの位置・inspect・axe
+          │   ├── load-mdmark.ts         # 配布物の import()・読み込めない理由の見分け・差分の色分けへの対応
+          │   ├── diff-source.ts         # 差分の取り出し元
+          │   ├── scroll.ts              # 元の行番号とスクロールの位置の内分
+          │   ├── assets.ts              # 相対パスのアセットの差し替え・再生できない要素の通知
+          │   └── hooks/
+          │       ├── use-document-view.ts
+          │       ├── use-host-messages.ts
+          │       ├── use-load-mdmark.ts
+          │       ├── use-scroll-sync.ts
+          │       ├── use-link-clicks.ts
+          │       └── use-media-errors.ts
+          ├── shared/
+          │   ├── adapters/
+          │   │   └── vscode-api.ts      # acquireVsCodeApi を 1 回だけ呼び、送信と状態の読み込みと保存を指定する
+          │   ├── components/
+          │   │   ├── preview-status.tsx # プレビューの状態の表示
+          │   │   ├── preview-status.stories.tsx
+          │   │   ├── config-band.tsx    # 設定ファイルを読み込めない帯
+          │   │   ├── config-band.stories.tsx
+          │   │   └── ui/
+          │   │       ├── alert.tsx      # shadcn/ui の Alert（warning の variant を追加）
+          │   │       ├── button.tsx     # shadcn/ui の Button（default・outline）
+          │   │       └── spinner.tsx    # shadcn/ui の Spinner
+          │   ├── lib/
+          │   │   ├── cn.ts              # class の結合（clsx + tailwind-merge）
+          │   │   ├── media-error.ts     # 再生できない動画・音声の通知の HTML
+          │   │   └── media-error.stories.ts
+          │   └── styles/
+          │       └── panel.css          # トークンの 3 ティア・@theme inline・Tailwind の theme と utilities
+          └── testing/
+              ├── fake-vscode-api.ts     # 送信したメッセージと状態を記録する acquireVsCodeApi の代役
+              └── msw/
+                  └── handlers.ts        # 読み込めなかった配布物の HEAD の応答（成功・404・ネットワークのエラー・遅延）
+  ```
+
+  `main.tsx` と `panel.css` は Vite が `vscode/media/preview.js`（ES モジュール 1 ファイル）と `vscode/media/preview.css` に書き込む。mdmark の配布物はまとめず、実行時に `import()` で読み込む。`vscode/media/` は丸ごと git の管理の外にする。
+notes:
+  ストーリー: '`panel-screen.stories.tsx` は画面の本体のストーリーで、モックの場面（`Document`・`Loading`・`Offline`・`VersionMissing`・`VersionUndecidable`・`DiffUnsupported`・`ConfigError`・`MediaError`）を持つ。`load` はストーリーの引数で代役（`Document` などはリポジトリの `dist/index.js` を読み込む関数）を指定し、読み込めなかった配布物の `HEAD` は MSW のハンドラで回答する。拡張機能から受けるメッセージは `createFakeVsCodeApi` が `ready` の後に送信する。`--vscode-*` の値はデコレーターが `:root` に与える（Light Modern・Dark Modern）'
+  React の外の DOM: 描く先の要素の子は mdmark だけが書き換え、React は子を描かない。配色の class は描く先を包む要素（React の木を描く要素）に `DocumentView` が付ける
+  テストの配置場所: '単体テストは今と同じく `tests/unit/vscode/src/webview/` の下に、`src/webview/` からの相対パスと同じ場所に配置する（設計書の `test_files` が `tests/` から始まるため。knowledge の規約『フォルダ構成』の対象の横に配置する決まりから削除される）。DOM と React を使用するテストは `*.browser.test.ts(x)` にし、Vitest のブラウザ（Chromium）で Testing Library と userEvent を使用する（スクロールの位置と要素の高さを測るため jsdom は使用しない）。MSW は公式の Vitest Browser Mode の構成で、`msw/browser` の `setupWorker(...handlers)` を `test.extend` のフィクスチャで `worker.start()`・`worker.resetHandlers()`・`worker.stop()` し、直下の `vitest.config.ts` の `unit-browser` のプロジェクトに `publicDir: ".storybook/public"` を指定して Storybook と同じ `mockServiceWorker.js` を配信する'

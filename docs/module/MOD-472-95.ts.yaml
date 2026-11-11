@@ -1,0 +1,28 @@
+id: MOD-472-95
+visibility: internal
+title: VS Code 拡張機能 / プレビュー / includes.ts
+test_files:
+  - tests/unit/vscode/src/preview/includes.test.ts
+functions:
+  - name: readIncludes
+    title: 取り込む文書を読み込む
+    container: vscode/src/preview/includes.ts
+    summary: 開いている Markdown の include のマーカーを、ライブラリ本体の `resolveIncludePath` と同じ解き方で解き、根のフォルダ（設定ファイルのフォルダ。無ければ Markdown のフォルダ）の中のファイルだけを `readFile` で読み込んで取り込む文書の表を作る。取り込んだ Markdown の中のマーカーもたどり、同じファイルは 1 回だけ読み込む。読み込んだファイルのパスの一覧も返却し、保存で再描画するかの判定に使用する。パネルは `workspace.fs` で読み込む `readFile` を指定する
+    kind: 関数
+    scope: internal
+    args:
+      - name: options
+        type: '{ markdownPath: string; markdown: string; root: string; readFile: (path: string) => Promise<string | undefined> }'
+        required: true
+        description: '`markdownPath` は開いている Markdown の絶対パス、`markdown` はその本文、`root` は根のフォルダの絶対パス、`readFile` はファイルを読み込む関数（読み込めないとき `undefined`）'
+    returns:
+      type: 'Promise<{ includes: Record<string, string>; paths: string[] }>'
+      description: 取り込む文書の表と読み込んだファイル
+    side_effects: ファイルを読み込む
+    unit_tests:
+      - name: test_read_includes
+        case: 正常
+        condition: '`docs/guide.md` が `共通/手順.md#実行` と `missing.md` と根の外の `../../outside.md` を取り込む'
+        expected: 表が `共通/手順.md` だけをキーに持ち、パスの一覧が `docs/共通/手順.md` だけで、根の外を読み込んでいない
+        mock: '`readFile` に本文の表を参照する関数を指定する'
+        summary: 根の中の読み込めるファイルだけを読み込む

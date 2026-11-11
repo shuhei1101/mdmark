@@ -1,0 +1,136 @@
+id: MOD-472-189
+visibility: internal
+title: ライブラリ本体 / 差分 / source.ts
+test_files:
+  - tests/unit/src/diff/source.test.ts
+data_models:
+  - name: DiffSource
+    title: 差分の取り出し元
+    container: src/diff/source.ts
+    usecase: 利用側のページが差分の取り出し元を指定する
+    role: インターフェース
+    summary: 利用側が記載する取り出し元（公開の型）
+    properties:
+      - name: revisions
+        type: '(docId: string) => Promise<DiffRevision[]>'
+        description: 文書のリビジョンを新しい順に返却する
+      - name: content
+        type: '(target: { docId: string; revisionId: string }) => Promise<string>'
+        description: そのリビジョンの Markdown を返却する
+  - name: DiffRevision
+    title: リビジョン
+    container: src/diff/source.ts
+    usecase: 利用側のページが差分の取り出し元を指定する
+    role: DTO
+    summary: 文書の変更の 1 回分（公開の型）
+    properties:
+      - name: id
+        type: string
+        description: リビジョンの識別子。空でない文字列で、一覧の中で重ならない
+      - name: at
+        type: string
+        description: ISO 8601 の日時
+      - name: label
+        type: string | undefined
+        description: 一言の説明
+      - name: author
+        type: string | undefined
+        description: 記載した人
+  - name: DiffMode
+    title: 差分の出し方
+    container: src/diff/source.ts
+    usecase: 利用側のページが差分の取り出し元を指定する
+    role: DTO
+    summary: '`mount` の `opts.diffMode` の値（公開の型）'
+    description: '`(typeof diffModes)[number]`（`"button" | "open" | "blocks"`）'
+    status: planned
+    introduced:
+      pr: 196
+constants:
+  - name: diffModes
+    title: 対応する差分の出し方
+    container: src/diff/source.ts
+    summary: 配布物が対応する `opts.diffMode` の値の並び。`src/index.ts` が名前付きで公開し、利用側が差分の出し方に対応するバージョンかを見分ける
+    value: '["button", "open", "blocks"] as const'
+    status: planned
+    introduced:
+      pr: 196
+functions:
+  - name: checkRevisions
+    title: 取り出し元の一覧を検める
+    container: src/diff/source.ts
+    summary: '`revisions` が返却した値がリビジョンの配列の構造かを検め、構造が合うときだけその配列を返却する'
+    kind: 関数
+    scope: internal
+    args:
+      - name: value
+        type: unknown
+        required: true
+        description: '`revisions` が解決した値'
+    returns:
+      type: DiffRevision[]
+      description: 検めたリビジョンの並び（並べ替えない）
+    process: |-
+      1. 配列でなければ `TypeError` を投げる
+      2. 要素ごとに、`id` が空でない文字列・`at` が `Date.parse` で読み込める文字列・`label` と `author` が無いか文字列であることを確認し、合わなければその要素と位置を持つ `TypeError` を投げる
+      3. `id` が重なれば `TypeError` を投げる
+      4. 配列をそのまま返却する
+    unit_tests:
+      - name: test_check_revisions
+        case: 正常
+        summary: 構造が合う一覧をそのまま返却する
+        condition: '`label`・`author` を持つものと持たないものの 2 つ'
+        mock: なし
+        expected: 同じ配列を同じ順で返却する
+      - name: test_check_revisions_when_not_array
+        case: 異常
+        summary: 配列でなければ投げる
+        condition: '`{}`'
+        mock: なし
+        expected: '`TypeError` を投げる'
+      - name: test_check_revisions_when_at_missing
+        case: 異常
+        summary: '`at` が無い要素を拒む'
+        condition: '`[{ id: "r1" }]`'
+        mock: なし
+        expected: '`TypeError` を投げ、メッセージに `at` と位置 `0` を含む'
+      - name: test_check_revisions_when_id_duplicated
+        case: 異常
+        summary: '`id` が重なる一覧を拒む'
+        condition: '`id` がどちらも `r1` の 2 つ'
+        mock: なし
+        expected: '`TypeError` を投げる'
+    refs:
+      - IF-472-35#constraints[差分の取り出し元]
+  - name: normalizeDiffMode
+    title: 差分の出し方を決める
+    container: src/diff/source.ts
+    summary: '`opts.diffMode` の値が `diffModes` にあればそのまま、無いか知らない値なら `button` を返却する'
+    kind: 関数
+    scope: internal
+    args:
+      - name: value
+        type: unknown
+        required: true
+        description: '`opts.diffMode` に指定された値'
+    returns:
+      type: DiffMode
+      description: 使用する差分の出し方
+    unit_tests:
+      - name: test_normalize_diff_mode
+        case: 正常
+        summary: 対応する値をそのまま返却する
+        condition: '`button`・`open`・`blocks`'
+        mock: なし
+        expected: それぞれ同じ値を返却する
+      - name: test_normalize_diff_mode_when_unknown
+        case: 異常
+        summary: 知らない値と省いた値は button にする
+        condition: '`undefined`・`"side"`・`1`'
+        mock: なし
+        expected: どれも `button` を返却し、例外を投げない
+    refs:
+      - IF-472-35#constraints[差分の出し方]
+    status: planned
+    introduced:
+      pr: 196

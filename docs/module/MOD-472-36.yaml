@@ -1,0 +1,12 @@
+id: MOD-472-36
+visibility: internal
+title: "ライブラリ本体 / 拡張"
+lead: 利用側が `registerExtension` で追加したマーカーの登録表と、引数を Standard Schema で検査して記載の警告の項目にする処理。登録表はページに 1 つで、`render` と `mount` が読み込む。
+directory: |-
+  ```tree
+  src/
+  ├── extensions.ts       # 拡張の登録表と registerExtension、引数の検査
+  └── standard-schema.ts  # Standard Schema の型（仕様の型を複製したもの）
+  ```
+notes:
+  単体テストの依存: valibot 1.5.0 を開発用の依存に入れ、単体・結合テストの schema に使用する。配布物にはまとめない

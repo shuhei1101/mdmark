@@ -1,0 +1,48 @@
+id: MOD-472-88
+visibility: internal
+title: VS Code 拡張機能 / プレビュー / links.ts
+test_files:
+  - tests/unit/vscode/src/preview/links.test.ts
+data_models:
+  - name: LinkTarget
+    title: リンクの開き先
+    container: vscode/src/preview/links.ts
+    usecase: プレビューのリンクと画像を開く
+    summary: '`{ kind: "external"; url: string }`・`{ kind: "markdown"; path: string }`・`{ kind: "file"; path: string }`・`{ kind: "none" }` の判別付きの型'
+    properties:
+      - name: kind
+        type: '"external" | "markdown" | "file" | "none"'
+        description: 既定のブラウザ・VS Code のエディタ・`vscode.open`・何もしない
+    status: planned
+functions:
+  - name: resolveLink
+    title: リンクの開き先を見分ける
+    kind: 関数
+    container: vscode/src/preview/links.ts
+    usecase: プレビューのリンクと画像を開く
+    summary: '`http:`・`https:`・`mailto:` は `external`、それ以外のスキームは `none`、相対パスは `#` 以降を落として Markdown のフォルダから解決し、拡張子が `.md` なら `markdown`、他は `file` を返却する'
+    scope: public
+    args:
+      - name: options
+        type: '{ href: string; markdownDir: string }'
+        required: true
+        description: 記載したままの `href` と Markdown のフォルダの絶対パス
+    returns:
+      type: LinkTarget
+      description: 開き先
+    unit_tests:
+      - name: test_resolve_link
+        case: 正常
+        summary: 種類ごとに開き先を決める
+        condition: '`markdownDir` が `/ws/docs` で、`https://example.com`・`mailto:a@example.com`・`./guide.md#使い方`・`../img/a.png`・`javascript:x`'
+        mock: なし
+        expected: '`external`（URL のまま）・`external`・`{ kind: "markdown", path: "/ws/docs/guide.md" }`・`{ kind: "file", path: "/ws/img/a.png" }`・`none`'
+      - name: test_resolve_link_when_encoded
+        case: 正常
+        summary: パーセントエンコードした相対パスを戻して解決する
+        condition: '`./%E4%BD%BF%E3%81%84%E6%96%B9.md`'
+        mock: なし
+        expected: '`{ kind: "markdown", path: "/ws/docs/使用方法.md" }`'
+    refs:
+      - IF-472-19#constraints[リンクの見分け方]
+    status: planned

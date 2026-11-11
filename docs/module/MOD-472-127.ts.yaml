@@ -1,0 +1,121 @@
+id: MOD-472-127
+visibility: internal
+title: ライブラリ本体 / CLI / markdown-check.ts
+test_files:
+  - tests/unit/src/cli/markdown-check.test.ts
+functions:
+  - name: checkMarkdownSource
+    title: 指定した Markdown の記法を点検する
+    container: src/cli/markdown-check.ts
+    usecase: 文字列とYAMLのキーの記法を点検する
+    kind: 関数
+    scope: public
+    is_async: true
+    summary: Markdown の文字列か、YAML のファイルのキーの値を、描いたときの記載の警告・スキップした記法のマーカーの引数・知らないマーカー・図の配置のずれにして返却する。`runCheck` と MCP の `runCheckTool` が呼ぶ
+    description: 設定ファイルは `config` か、`cwd` から上へ `CONFIG_FILE` を探して見つかったものを使用し、見つからなければ既定の設定で点検する（`config` を指定して無いときだけ `CliError`）。`file` のときは `readYamlKey` で値と行の置き換えを得る。ずれは `collectWarnings` の警告（設定の `features`・`libraries` を適用する。include の取り込み先が無い警告（`includeTarget` を持つもの）と、種類が `map` の警告は除く）、`checkMaps`（map の範囲の項目ごとのずれ）、`checkUnknownMarks`（`loadExtensionDirectives` の `directive` と `check.ignore` を知っているマーカーに入れる）、`checkDiagrams` のうち `diagram_invalid` でないずれ（定義の誤りは `collectWarnings` が返却するため）を合わせ、行の順（同じ行は警告・知らないマーカーとスキップした引数・配置のずれの順）に並べる。`collectWarnings` の `unknown_mark_arg` はそのまま `unknown_mark_arg` のずれにする。`file` は `text` のとき `-`、`file` のとき設定ファイルのフォルダ（無ければ `cwd`）からの相対パス。`where` は文字列の行を `file` のとき `readYamlKey` の `lineOf` で YAML のファイルの行に置き換えた番号の文字
+    args:
+      - name: options
+        type: '{ cwd: string; config?: string; text?: string; file?: string; key?: string; importCode: (code: string) => Promise<unknown> }'
+        required: true
+        description: 今のフォルダ・`--config`・点検する文字列か YAML のファイルとキー・拡張を読み込む関数（`loadExtensionDirectives` と同じ）
+    returns:
+      type: Promise<CheckIssue[]>
+      description: ずれの並び（無ければ空）
+    exceptions:
+      - name: CliError
+        condition: '`config` のファイルが無いか読み込めない、`readYamlKey` が投げた'
+        message: '`findConfigFile`・`loadConfig`・`readYamlKey` のメッセージ'
+    callees:
+      - '#functions[readYamlKey]'
+      - 'MOD-472-110#functions[loadExtensionDirectives]'
+      - 'MOD-472-110#functions[checkUnknownMarks]'
+      - 'MOD-472-110#functions[checkDiagrams]'
+      - 'MOD-472-110#functions[checkMaps]'
+      - MOD-472-212#functions[collectWarnings]
+    refs:
+      - IF-472-39#constraints[記法の点検]
+    unit_tests:
+      - name: test_check_markdown_source
+        case: 正常
+        summary: 警告・知らないマーカーを行の順に返却し、図の定義の誤りを 1 件にする
+        condition: 「正常系（文字列に記載の警告がある）」の文字列を `text` で指定する
+        mock: 一時フォルダ
+        expected: '`kind` が `diagram_invalid`・`unknown_mark`・`syntax_warning` の 3 件で、`where` が `1`・`20`・`22`、`file` がどれも `-`'
+      - name: test_check_markdown_source_when_yaml_key
+        case: 正常
+        summary: YAML のキーの値のずれを YAML のファイルの行で返却する
+        condition: 「正常系（ファイルと YAML のキー）」の `records.yaml` と `items[0].body`
+        mock: 一時フォルダ
+        expected: '`{ file: "records.yaml", where: "8", kind: "unknown_mark" }` の 1 件'
+      - name: test_check_markdown_source_when_extension
+        case: 正常
+        summary: 設定の拡張のマーカーを知っているマーカーにする
+        condition: 設定の `extensions` に `directive` が `note-card` の拡張。文字列は 1 行目に `<!-- note-card -->`、3 行目に `<!-- tabz -->`
+        mock: 一時フォルダ
+        expected: '`unknown_mark`（`where` が `3`）の 1 件だけ'
+      - name: test_check_markdown_source_when_no_config
+        case: 正常
+        summary: 設定ファイルが無くても既定の設定で点検する
+        condition: 設定ファイルの無い一時フォルダで、`<!-- tabz -->` を持つ文字列
+        mock: 一時フォルダ
+        expected: 例外を投げず、`unknown_mark` の 1 件
+      - name: test_check_markdown_source_when_include
+        case: 正常
+        condition: '`text` に `<!-- include: missing.md -->` と `<!-- tabz -->` を持つ Markdown'
+        expected: ずれが `unknown_mark` の 1 件だけで、`missing.md` の `syntax_warning` が無い
+        mock: なし
+        summary: 取り込み先が無い警告を出さない
+      - name: test_check_markdown_source_when_unknown_mark_args
+        case: 正常
+        summary: 描くときにスキップするマーカーの引数を unknown_mark_arg にする
+        condition: 「正常系（文字列の記法のマーカーに知らない引数がある）」の文字列を `text` で指定する
+        mock: 一時フォルダ
+        expected: '`kind` がどれも `unknown_mark_arg` の 3 件で、`where` が `1`・`1`・`8`、`syntax_warning` が無い'
+    status: planned
+    introduced:
+      pr: 328
+  - name: readYamlKey
+    title: YAML のキーの値を読み込む
+    container: src/cli/markdown-check.ts
+    usecase: 文字列とYAMLのキーの記法を点検する
+    kind: 関数
+    scope: internal
+    is_async: true
+    summary: YAML のファイルを `yaml` の `parseDocument`（`LineCounter` つき）で読み込み、キーのパスをたどって文字列の値と、値の中の行（1 から）をファイルの行（1 から）に置き換える関数を返却する
+    description: キーのパスは `.` でマップのキーを、`[位置]` で配列の要素をたどる（`items[0].body`）。値がブロックスカラー（`BLOCK_LITERAL`・`BLOCK_FOLDED`）なら、値の 1 行目はインジケータ（`|`・`>`）の次の行で、`lineOf(n)` はその行に `n - 1` を追加した行。それ以外の記載方法の値は、`lineOf` がどの `n` にもキーの行を返却する
+    args:
+      - name: options
+        type: '{ path: string; key: string }'
+        required: true
+        description: YAML のファイルの絶対パスとキーのパス
+    returns:
+      type: 'Promise<{ value: string; lineOf: (line: number) => number }>'
+      description: キーの値と行の置き換え
+    exceptions:
+      - name: CliError
+        condition: ファイルが無い・YAML として読み込めない・キーのパスを読み込めない・キーが無い・値が文字列でない
+        message: ファイルと、無いことか読み込めない行か、指定したキーとたどれたところまでのキー（配列なら要素の数）か値の型と、修正方法の 1 文
+    refs:
+      - IF-472-39#constraints[記法の点検の場所]
+    unit_tests:
+      - name: test_read_yaml_key
+        case: 正常
+        summary: ブロックスカラーの値と行を返却する
+        condition: '5 行目が `    body: |` の `records.yaml` と `items[0].body`'
+        mock: 一時フォルダ
+        expected: '`value` が値の文字で、`lineOf(3)` が 8'
+      - name: test_read_yaml_key_when_plain
+        case: 正常
+        summary: ブロックスカラーでない値はキーの行を返却する
+        condition: '2 行目が `title: "<!-- tabz -->"` の YAML と `title`'
+        mock: 一時フォルダ
+        expected: '`lineOf(1)` も `lineOf(5)` も 2'
+      - name: test_read_yaml_key_when_missing
+        case: 異常
+        summary: 無いキーと文字列でない値を CliError にする
+        condition: '`items` が 2 要素の `records.yaml` と `items[5].body`、`items[0]`'
+        mock: 一時フォルダ
+        expected: 1 つ目の文に `items[5].body` と要素が 2 つであること、2 つ目の文に値が文字列でないことがある
+    status: planned
+    introduced:
+      pr: 328

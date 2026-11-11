@@ -1,0 +1,253 @@
+id: MOD-472-256
+visibility: internal
+title: ライブラリ本体 / 索引と用語 / check.ts
+test_files:
+  - tests/unit/src/knowledge/check.test.ts
+data_models:
+  - name: MdmarkIndexIssue
+    title: 索引のずれ
+    container: src/knowledge/check.ts
+    role: DTO
+    summary: '`checkIndex` が返却するずれ 1 件（公開の型）'
+    properties:
+      - name: file
+        type: string
+        description: ずれのあるファイル
+      - name: where
+        type: string
+        description: 索引のキーのパスか文書の行。ファイル全体は空文字
+      - name: kind
+        type: '"schema" | "missing_doc" | "orphan_doc" | "broken_ref" | "untyped_related" | "one_sided_change_together" | "related_link_overlap" | "missed_change_together" | "duplicate_term" | "avoided_term"'
+        description: ずれの種類
+      - name: message
+        type: string
+        description: ずれの内容と修正方法
+functions:
+  - name: checkIndex
+    title: 索引を点検する
+    container: src/knowledge/check.ts
+    kind: 関数
+    scope: public
+    summary: 索引と文書の本文から、`schema`・`missing_doc`・`orphan_doc`・`broken_ref`・`untyped_related`・`one_sided_change_together`・`related_link_overlap`・`missed_change_together`・`duplicate_term`・`avoided_term` のずれをこの順で返却する
+    description: '`schema` は `normalizeIndex` の合わない場所。文書の対応は `./` と重なった `/` を除いて比べる。用語の重複は、索引の `terms` どうし・索引と用語集の表・用語集の表どうしで、単語か別名が `normalizeWord` で正規化した後に同じになるものを 1 組 1 件にし、`message` には後ろの側の記載した表記と先の側の場所を記載する。用語集の表は `collectReferences` と同じ読み込み方。やめた言い方は、先に索引の全ての文書を `parseDocument` で読み込み、索引の `terms` に索引の `docs` の順の文書の用語集の表の用語（`parseDocument` の `glossary` の行の用語。やめた言い方は用語の `avoid`）を続けた並びを、文書ごとのトークンと一緒に `findAvoidedTerms` に指定して取得する。`broken_ref` は `readRelated` の `to` が索引の文書に無い要素ごとに 1 つで、`where` は文字列の要素が `docs[0].related[1]`、オブジェクトの要素が `docs[0].related[1].to`。`untyped_related`・`one_sided_change_together`・`related_link_overlap` は `findRelatedIssues` で、`missed_change_together` は `changedPaths` を指定したときだけ `findMissedChangeTogether` で取得し、`broken_ref` の後ろに並べる。`findRelatedIssues` に指定する文書ごとの本文のリンクは、`parseDocument` で読み込んだトークンの `link_open` の `href` を `resolveLink` で解いたパス。`message` は日本語の 1 文で、修正する場所を記載する'
+    args:
+      - name: input
+        type: '{ index: unknown; documents: Record<string, string>; indexFile?: string; changedPaths?: string[] }'
+        required: true
+        description: 索引の値・文書のパスから本文を参照する表・索引のファイルの名前（既定 `index.yaml`）・比べる基準から変わった文書のパス（指定したときだけ修正漏れを確認する）
+    returns:
+      type: MdmarkIndexIssue[]
+      description: ずれの一覧
+    callees:
+      - 'MOD-472-254#functions[normalizeIndex]'
+      - 'MOD-472-259#functions[readGlossaryTable]'
+      - '#functions[findAvoidedTerms]'
+      - '#functions[findRelatedIssues]'
+      - '#functions[findMissedChangeTogether]'
+    unit_tests:
+      - name: test_check_index
+        case: 正常
+        summary: ずれの無い索引で空を返却する
+        condition: インターフェース定義『索引を点検する』の「正常系」の索引と文書
+        mock: なし
+        expected: '`[]`'
+      - name: test_check_index_when_drift
+        case: 正常
+        summary: 消えた文書・索引に無い文書・切れた `id`・用語の重複 3 種を返却する
+        condition: 「正常系（ずれがある）」の索引と文書
+        mock: なし
+        expected: '`file`・`where`・`kind` と並びがそのフローの期待値と等しい'
+      - name: test_check_index_when_invalid_schema
+        case: 異常
+        summary: Schema に合わない索引で例外を投げず `schema` のずれを返却する
+        condition: '`schema` が無く `docs[1]` が `path` を持たない索引'
+        mock: なし
+        expected: '`where` が `schema` と `docs[1].path` の `schema` の行がある'
+      - name: test_check_index_when_avoided_term
+        case: 正常
+        summary: 本文に出たやめた言い方を `avoided_term` で返却する
+        condition: インターフェース定義『索引を点検する』の「正常系（やめた言い方が本文に出る）」の索引と文書
+        mock: なし
+        expected: '`file`・`where`・`kind` と並びがそのフローの期待値と等しく、他の種類のずれが無い'
+      - name: test_check_index_when_glossary_avoided_term
+        case: 正常
+        summary: 用語集の表のやめた言い方を、表を持たない文書の本文から `avoided_term` で返却する
+        condition: インターフェース定義『索引を点検する』の「正常系（用語集の表のやめた言い方が本文に出る）」の索引と文書
+        mock: なし
+        expected: '`file`・`where`・`kind` と並びがそのフローの期待値と等しく、他の種類のずれが無い'
+      - name: test_check_index_when_normalized_words
+        case: 正常
+        summary: 正規化すると同じになる用語の単語と、表記の違うやめた言い方を返却する
+        condition: インターフェース定義『索引を点検する』の「正常系（正規化すると同じになる単語）」の索引と文書
+        mock: なし
+        expected: '`file`・`where`・`kind`・`message` と並びがそのフローの期待値と等しく、他の種類のずれが無い'
+      - name: test_check_index_when_related_drift
+        case: 正常
+        summary: 文字列の関連・片側だけの change_together・本文のリンクと重なる関連を返却する
+        condition: インターフェース定義『索引を点検する』の「正常系（関連がずれる）」の索引と文書
+        mock: なし
+        expected: '`file`・`where`・`kind`・`message` と並びがそのフローの期待値と等しく、他の種類のずれが無い'
+      - name: test_check_index_when_change_together_missed
+        case: 正常
+        summary: '`changedPaths` で組の片方だけが変わったときだけ `missed_change_together` を返却する'
+        condition: インターフェース定義『索引を点検する』の「正常系（change_together の修正漏れ）」の索引と文書で、`changedPaths` を指定しない・`["a.md"]`・`["a.md", "b.md"]` の 3 回
+        mock: なし
+        expected: 3 回の戻り値がそのフローの期待値と等しい
+      - name: test_check_index_when_broken_related_object
+        case: 正常
+        summary: 索引に無い `to` のオブジェクトの関連を `to` を指す `broken_ref` にする
+        condition: '「正常系」の索引で、`docs[0].related` を `[{ to: "zzz", type: "references", when: "使用方法を確認するとき" }]` にしたもの'
+        mock: なし
+        expected: '`{ file: "index.yaml", where: "docs[0].related[0].to", kind: "broken_ref" }` の 1 つだけで、`message` に `zzz` がある'
+      - name: test_check_index_when_old_schema
+        case: 異常
+        summary: v0.9.0 までの索引で `schema` のずれを 2 件返す
+        condition: インターフェース定義『索引を点検する』の「正常系（v0.9.0 までの索引）」の索引と文書
+        mock: なし
+        expected: '`file`・`where`・`kind` と並びがそのフローの期待値と等しく、`where` が `schema` の `message` に `mdmark upgrade` がある'
+    refs:
+      - IF-472-37#
+  - name: findAvoidedTerms
+    title: やめた言い方を探す
+    container: src/knowledge/check.ts
+    summary: 1 つの文書のトークンから、用語のやめた言い方が出た行とやめた言い方の組を `avoided_term` のずれにする
+    description: 見出しの中を飛ばして行内のトークンを頭から辿り、`matchableChildren` の位置のテキストを `findWords` で照合する。`findWords` には用語の単語・別名を先に、やめた言い方を後に並べて指定し（同じ長さなら用語の側が該当する）、やめた言い方が該当したものだけを数える。該当した単語とやめた言い方・用語の単語・別名は `normalizeWord` で正規化した単語で引き合わせ、`message` のやめた言い方は用語に記載した表記で出す。行は、行内のトークンの `map` の開始行（無ければ直前の `tr_open` の `map` の開始行）に、その子より前の `softbreak`・`hardbreak` の数と 1 を追加する。同じ行とやめた言い方の組は 1 件にまとめ、行の順・行の中は出た順に返却する
+    kind: 関数
+    scope: internal
+    args:
+      - name: options
+        type: '{ file: string; tokens: Token[]; terms: Array<Pick<MdmarkIndexTerm, "term" | "aliases" | "avoid">> }'
+        required: true
+        description: ずれの `file` に出す文書のパス・`parseDocument` のトークン・用語（索引の用語の後に、索引の `docs` の順の文書の用語集の表の用語を続けた並び。同じやめた言い方は先の用語を使用する）
+    returns:
+      type: MdmarkIndexIssue[]
+      description: '`kind` が `avoided_term` のずれ。`where` は `{行} 行目`、`message` は `` `{やめた言い方}` はやめた言い方です。用語 `{単語}` に書き換えてください。 ``'
+    callees:
+      - 'MOD-472-257#functions[findWords]'
+    unit_tests:
+      - name: test_find_avoided_terms
+        case: 正常
+        summary: 段落・段落の 2 行目・表のセルのやめた言い方をその行で返却する
+        condition: 用語 `ワークスペース`（`avoid` に `作業場`）と、インターフェース定義『索引を点検する』の「正常系（やめた言い方が本文に出る）」の `guide.md` のトークン
+        mock: なし
+        expected: '`where` が `3 行目`・`8 行目`・`12 行目` の 3 件をこの順に返却し、どれも `message` に `作業場` と `ワークスペース` がある'
+      - name: test_find_avoided_terms_ignores_code_links_and_headings
+        case: 正常
+        summary: 見出し・リンクの中・行内のコード・コードブロック・用語集の表の中のやめた言い方を返却しない
+        condition: '`作業場` を見出し・リンクの文字・行内のコード・コードブロック・`glossary` のマーカーで囲んだ表にだけ記載した本文'
+        mock: なし
+        expected: '`[]`'
+      - name: test_find_avoided_terms_prefers_term_words
+        case: 正常
+        summary: やめた言い方が用語の単語の一部として出たところと、同じ行に 2 回出たやめた言い方を数え分ける
+        condition: 用語 `ワークスペース`（`avoid` なし）と用語 `仕事`（`avoid` に `ワーク`）。本文の 1 行目が `ワークスペースを開く。`、3 行目が `ワークとワーク。`（どちらも `ワーク` の終わりが単語の切れ目に一致するので、用語の単語を指定しないと 1 行目も該当する）
+        mock: なし
+        expected: '`where` が `3 行目` の 1 件だけ'
+      - name: test_find_avoided_terms_prefers_first_term
+        case: 正常
+        summary: 同じやめた言い方を持つ用語が 2 つあるとき、先の用語を代わりに使用する用語にする
+        condition: 用語 `ワークスペース`（`avoid` に `作業場`）、用語 `作業スペース`（`avoid` に `作業場`）の順。本文の 1 行目が `作業場を開く。`
+        mock: なし
+        expected: 1 件だけで、`message` に `ワークスペース` があり `作業スペース` が無い
+      - name: test_find_avoided_terms_when_notation_differs
+        case: 正常
+        summary: 表記の違うやめた言い方を取得し、表記の違う用語の別名は取得しない
+        condition: 用語 `ワークスペース`（別名 `WS`、`avoid` に `workplace`）。本文の 1 行目が `ｗｓ を開く。`、3 行目が `WorkPlace を開く。`
+        mock: なし
+        expected: '`where` が `3 行目` の 1 件だけで、`message` に `workplace` と `ワークスペース` がある'
+  - name: findRelatedIssues
+    title: 関連のずれを取得する
+    kind: 関数
+    container: src/knowledge/check.ts
+    usecase: 索引を点検する
+    summary: 索引の関連から `untyped_related`・`one_sided_change_together`・`related_link_overlap` をこの順で返却する
+    description: 同じ種類の中は索引の `docs` の並び、文書の中は `related` の並び。関連の相手は `readRelated` の `to`。`untyped_related` は文字列の要素ごとに 1 つ。`one_sided_change_together` は `type` が `change_together` の要素のうち、相手が索引にあり、相手の `related` に自分を `to` とする `change_together` が無いものごとに 1 つ。`related_link_overlap` は `type` が `change_together` でない要素（文字列の要素を含む）のうち、相手が索引にあり、自分の `links` が相手の `path`（`./` と重なった `/` を除いたもの）を持つものごとに 1 つで、`links` にキーを持たない文書は確認しない。`where` はどれも `docs[0].related[1]`、`file` は `indexFile`。`message` は日本語の 1 文で、`untyped_related` は `to`・`type`・`when` を持つ関連に書き換える修正方法、`one_sided_change_together` は相手の `id` と自分の `id` と相手にも記載する修正方法、`related_link_overlap` は相手の `id` と関連か本文のリンクのどちらかにする修正方法を記載する
+    scope: internal
+    args:
+      - name: options
+        type: '{ index: MdmarkIndex; links: Record<string, string[]>; indexFile: string; positionOf?: (doc: MdmarkIndexDoc) => number }'
+        required: true
+        description: '`normalizeIndex` で合う要素だけにした索引・文書の `id` から本文のリンクが指す文書のパス（本文を `documents` に持たない文書はキーを持たない）・索引のファイルの名前・`where` に出す文書の位置を返却する関数（`checkIndex` が検査で除かれる前の `docs` の位置を指定する。省くと `index.docs` の位置）'
+    returns:
+      type: MdmarkIndexIssue[]
+      description: 関連のずれ（無ければ空）
+    unit_tests:
+      - name: test_find_related_issues
+        case: 正常
+        summary: 文字列の関連・片側だけの change_together・本文のリンクと重なる関連を種類の順に返却する
+        condition: '`a`（`related` が `b` への `change_together`・`c` への `references`）・`b`（`related` なし）・`c`（`related` が文字列の `a`）、`links` が `{ a: ["c.md"], b: [], c: [] }`、`indexFile: "index.yaml"`'
+        mock: なし
+        expected: '`where` と `kind` が `docs[2].related[0]` の `untyped_related`・`docs[0].related[0]` の `one_sided_change_together`・`docs[0].related[1]` の `related_link_overlap` の順で、`file` がどれも `index.yaml`'
+      - name: test_find_related_issues_when_change_together_both_sides
+        case: 正常
+        summary: 両側に記載した change_together は、本文のリンクがあってもずれにしない
+        condition: '`a` と `b` が互いを `change_together` で記載し、`links` が `{ a: ["b.md"], b: ["./a.md"] }`'
+        mock: なし
+        expected: '`[]`'
+      - name: test_find_related_issues_when_target_missing
+        case: 正常
+        summary: 索引に無い相手への関連は片側だけの change_together にもリンクの重なりにもしない
+        condition: '`a` の `related` が `zzz` への `change_together` と `yyy` への `references`、`links` が `{ a: ["yyy.md"] }`'
+        mock: なし
+        expected: '`[]`'
+      - name: test_find_related_issues_without_body
+        case: 正常
+        summary: '`links` にキーを持たない文書はリンクの重なりを確認しない'
+        condition: '`a` の `related` が `b` への `references`、`links` が `{}`'
+        mock: なし
+        expected: '`[]`'
+    callees:
+      - 'MOD-472-254#functions[readRelated]'
+    refs:
+      - IF-472-37#constraints[関連の点検]
+    status: planned
+    introduced:
+      pr: 127
+  - name: findMissedChangeTogether
+    title: change_together の修正漏れを取得する
+    kind: 関数
+    container: src/knowledge/check.ts
+    usecase: 索引を点検する
+    summary: '`change_together` の組のうち片方の文書だけが `changedPaths` にある組を `missed_change_together` で返却する'
+    description: 組は、どちらかの側の `related` に `type` が `change_together` の要素がある 2 つの文書で、向きを問わず組ごとに 1 回だけ確認する。相手が索引に無い組は確認しない。文書の `path` と `changedPaths` は `./` と重なった `/` を除いて比べ、索引のどの `path` にも該当しないパスは無視する。`file` は変わっていない側の索引に記載した `path`、`where` は空文字。`message` は日本語の 1 文で、変わった側のパスと、変わっていない側も修正するか確認する修正方法を記載する。並びは、組を先に記載した側の文書の索引の並び（同じ文書の中は `related` の並び）
+    scope: internal
+    args:
+      - name: options
+        type: '{ index: MdmarkIndex; changedPaths: string[] }'
+        required: true
+        description: '`normalizeIndex` で合う要素だけにした索引・比べる基準から変わった文書のパス'
+    returns:
+      type: MdmarkIndexIssue[]
+      description: 修正漏れの組（無ければ空）
+    unit_tests:
+      - name: test_find_missed_change_together
+        case: 正常
+        summary: 片側だけに記載した組でも、片方だけが変わったら変わっていない側を返却する
+        condition: '`a`（`a.md`、`related` が `b` への `change_together`）・`b`（`b.md`、`related` なし）、`changedPaths: ["b.md"]`'
+        mock: なし
+        expected: '`{ file: "a.md", where: "", kind: "missed_change_together" }` の 1 つだけで、`message` に `b.md` がある'
+      - name: test_find_missed_change_together_when_both_sides_written
+        case: 正常
+        summary: 両側に記載した組を 1 つだけ返却する
+        condition: '`a` と `b` が互いを `change_together` で記載し、`changedPaths: ["./a.md"]`'
+        mock: なし
+        expected: '`file` が `b.md` の 1 つだけ'
+      - name: test_find_missed_change_together_when_both_or_none_changed
+        case: 正常
+        summary: 両方が変わった組と、どちらも変わっていない組は返却しない
+        condition: '`a` と `b` が互いを `change_together` で記載し、`changedPaths` が `["a.md", "b.md"]` と `["other.md"]`'
+        mock: なし
+        expected: どちらも `[]`
+      - name: test_find_missed_change_together_ignores_other_types
+        case: 正常
+        summary: '`change_together` でない関連と索引に無い相手の組は数えない'
+        condition: '`c` の `related` が `a` への `references` と `zzz` への `change_together`、`changedPaths: ["a.md"]`'
+        mock: なし
+        expected: '`[]`'
+    callees:
+      - 'MOD-472-254#functions[readRelated]'
+    refs:
+      - IF-472-37#constraints[修正漏れ]
+    status: planned
+    introduced:
+      pr: 127
