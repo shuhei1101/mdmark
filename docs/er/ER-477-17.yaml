@@ -37,7 +37,7 @@ tables:
     type: string
     description: ボードの列の見出しのアイコンの名前
     enum_values: '`circle-dashed` / `circle-dot` / `circle-pause` / `circle-check` / `circle-x` / `circle` / `inbox` / `archive` / `clock` / `flag` / `star` / `bug` / `eye` / `lock` / `zap` / `ban`'
-    example: '"check"'
+    example: '"inbox"'
   - name: initial
     title: 描いた直後に出すビュー
     type: string

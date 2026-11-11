@@ -13,7 +13,8 @@ tables:
   - name: group
     title: タブの組の名前
     type: string
-    description: タブの組の名前
+    check: 1 文字以上
+    description: タブの組の名前。1 文字以上。空の文字は記載の警告にし、組を持たないタブにする
     example: '"os"'
   - name: collapse
     title: 共通のオブジェクトの折り畳み
