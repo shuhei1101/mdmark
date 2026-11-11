@@ -753,6 +753,12 @@ functions:
         condition: '`terms` が `{"補足": "意味"}` で、メッセージの文の 1 つが「補足を読む」'
         mock: なし
         expected: そのメッセージのラベルの中に `span.mdmark-term` があり、`tips` に意味のツールチップがある
+      - name: test_render_map_sequence_when_notes
+        case: 正常
+        summary: メッセージの説明
+        condition: '`notes` が `{"2": "補足を渡す"}`、`terms` が `{"補足": "意味"}`'
+        mock: なし
+        expected: 2 つ目のメッセージ（`data-message="1"`）の `.map-wire-hit` だけが `data-tip-owner` を持ち、`tips` にその持ち主のツールチップがあり、説明の中の `補足` が `tabindex` を持たない `span.mdmark-term` で、末尾に「補足：意味」の行がある
   - name: renderMapBand
     title: 案内の帯のHTML
     kind: 関数

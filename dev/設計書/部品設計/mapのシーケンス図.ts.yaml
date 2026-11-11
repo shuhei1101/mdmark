@@ -69,6 +69,11 @@ args:
     required: false
     default: なし（下線を付けない）
     description: 用語から意味への対応（`data-map-terms`）。参加者の名前・メッセージの文・注記の文の中の用語を `span.mdmark-term` にし、意味を図のツールチップにする。ブロックのタブには付けない
+  - name: notes
+    type: オブジェクト
+    required: false
+    default: なし（ツールチップを付けない）
+    description: 補足の `notes`（記載の順に 1 からのメッセージの番号から説明）。説明を持つメッセージの線の押せる帯を持ち主にした図のツールチップを作る
 events:
   - name: ブロックを開閉する
     when: ブロックのタブの山形のボタンを押す（Shift を押しながら押すと中のブロックも）
