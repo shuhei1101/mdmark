@@ -1,0 +1,341 @@
+use_cases:
+  - kind: single
+    scenario: docs/scenario/SC-472-73.yaml
+    impact: changed
+    detail: 表のマーカーを JSON のオブジェクトで記載し、列の設定（絞り込み・隠す列・ピン止め・集計）を記載するとその機能が付き、機能ごとの設定は features の機能のオブジェクトに持つ
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-36.yaml
+    impact: changed
+    detail: 表の列の強調と行の色の条件を、列ごとの設定と行の色の条件の並び（行の範囲は from・to）で記載する
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-72.yaml
+    impact: changed
+    detail: 用語集の表のマーカーで、用語・意味・別名・やめた言い方の列を列の見出しの文字のオブジェクトで指す
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-29.yaml
+    impact: changed
+    detail: ビューのマーカーで、ボード表示の列分け・値ごとのアイコン・最初に出すビューを JSON のオブジェクトで記載する
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-74.yaml
+    impact: changed
+    detail: 表形式のビューの絞り込みを列ごとの設定で記載する
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-23.yaml
+    impact: changed
+    detail: タブの組の名前と折り畳みを JSON のオブジェクトで記載する
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-20.yaml
+    impact: changed
+    detail: ステップの折り畳みと、ファイルツリーの開く階層（既定は全て開く）・折り返しを JSON のオブジェクトで記載する
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-17.yaml
+    impact: changed
+    detail: コードブロックの飾りのタイトル（空白を含められる）・行番号（開始の番号）・強調と畳む行（行の範囲は from・to）を JSON のオブジェクトで記載する
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-21.yaml
+    impact: changed
+    detail: セクションの開閉と行の詳細の行の位置を JSON のオブジェクトで記載する
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-38.yaml
+    impact: changed
+    detail: wide の範囲の開閉を JSON のオブジェクトで記載する
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-37.yaml
+    impact: changed
+    detail: 図と表の番号の ID を JSON のオブジェクトで記載する
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-67.yaml
+    impact: changed
+    detail: ギャラリーの列の数と図の番号を JSON のオブジェクトで記載する
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-12.yaml
+    impact: changed
+    detail: 取り込みのパス・見出しの ID・行の範囲（from・to）を JSON のオブジェクトで記載する
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-33.yaml
+    impact: changed
+    detail: ページの設定（配色の明暗・テーマ・右側の目次の出し方）を JSON のオブジェクトで記載する
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-62.yaml
+    impact: changed
+    detail: 機能のオン・オフのマーカーを、機能名をキーにした真偽の JSON のオブジェクトで記載する
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-68.yaml
+    impact: changed
+    detail: 記載例のセクションと表のマーカーを JSON のオブジェクトに書き換える
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-49.yaml
+    impact: changed
+    detail: 拡張のマーカーの引数を JSON のオブジェクトで記載し、拡張の schema と draw は options と definition を受け取る。旧記法の拡張のマーカーは描かずに記載の警告で移行を案内する
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-46.yaml
+    impact: changed
+    detail: 設定の libraries のマーカーの引数を JSON のオブジェクトで記載し、draw に渡す。旧記法は描かずに記載の警告で移行を案内する
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-78.yaml
+    impact: changed
+    detail: mdmark check が、マーカーごとの JSON Schema の検証で知らないキー・型の誤り・旧記法・値の --> を通知する
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-52.yaml
+    impact: changed
+    detail: Markdown の点検で、マーカーの JSON の検証のずれと旧記法の警告を受け取る
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-27.yaml
+    impact: changed
+    detail: mdmark upgrade の移行の手順で、文書のマーカーの今の書き方を JSON のオブジェクトに書き換え、適用されていない記載・読み込めない記載を移行の報告に挙げる
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-83.yaml
+    impact: changed
+    detail: mdmark init が配置する拡張の雛形を、options と definition を受け取る形にする
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-44.yaml
+    impact: changed
+    detail: 自分の場所だけの部品を追加する拡張が、マーカーの JSON のオブジェクトを options で受け取る
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-57.yaml
+    impact: changed
+    detail: 記載例の機能・セクション・図の番号のマーカーを JSON のオブジェクトに書き換える
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-58.yaml
+    impact: changed
+    detail: 記載例のセクション・行の詳細・表のマーカーを JSON のオブジェクトに書き換える
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-59.yaml
+    impact: changed
+    detail: 記載例の知らないマーカーの引数を JSON のオブジェクトに書き換える
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-60.yaml
+    impact: changed
+    detail: 記載例の機能のマーカーを JSON のオブジェクトに書き換える
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-70.yaml
+    impact: changed
+    detail: 記載例の用語集の表のマーカーを JSON のオブジェクトに書き換える
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-80.yaml
+    impact: changed
+    detail: 記載例の表のマーカーを JSON のオブジェクトに書き換える
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-56.yaml
+    impact: changed
+    detail: 記載例の取り込みとページの設定のマーカーを JSON のオブジェクトに書き換える
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-10.yaml
+    impact: changed
+    detail: 記載例の取り込みのマーカーを JSON のオブジェクトに書き換える
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-11.yaml
+    impact: changed
+    detail: 記載例の機能のマーカーを JSON のオブジェクトに書き換える
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-13.yaml
+    impact: changed
+    detail: 記載例のページの設定とセクションのマーカーを JSON のオブジェクトに書き換える
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-14.yaml
+    impact: changed
+    detail: 記載例のセクションのマーカーを JSON のオブジェクトに書き換える
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-25.yaml
+    impact: changed
+    detail: 記載例のコードブロックの飾りのマーカーを JSON のオブジェクトに書き換える
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-32.yaml
+    impact: changed
+    detail: 記載例のページの設定のマーカーを JSON のオブジェクトに書き換える
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-35.yaml
+    impact: changed
+    detail: 記載例の機能のマーカーを JSON のオブジェクトに書き換える
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-8.yaml
+    impact: run_only
+    detail: map・map-data のマーカーは既に JSON のオブジェクトで、マーカーごとの JSON Schema の検証へ寄せても描き方が変わらないことを確かめる
+    depends_on: []
+  - kind: composite
+    scenario: docs/scenario/SC-472-95.yaml
+    impact: changed
+    detail: 見本の文書の取り込み・外部ライブラリのマーカーを JSON のオブジェクトで記載し、点検してまとめる
+    depends_on:
+      - docs/scenario/SC-472-12.yaml
+      - docs/scenario/SC-472-46.yaml
+      - docs/scenario/SC-472-78.yaml
+  - kind: composite
+    scenario: docs/scenario/SC-472-93.yaml
+    impact: changed
+    detail: 雛形に追加した固有の部品の拡張が、マーカーの JSON のオブジェクトを options で受け取る
+    depends_on:
+      - docs/scenario/SC-472-44.yaml
+      - docs/scenario/SC-472-83.yaml
+  - kind: composite
+    scenario: docs/scenario/SC-472-90.yaml
+    impact: following
+    detail: ビューのマーカーと絞り込みの記載が JSON のオブジェクトになることに追随する
+    depends_on:
+      - docs/scenario/SC-472-29.yaml
+      - docs/scenario/SC-472-74.yaml
+  - kind: composite
+    scenario: docs/scenario/SC-472-87.yaml
+    impact: run_only
+    detail: map の図の記載と点検が、マーカーごとの JSON Schema の検証へ寄せた後も同じに動くことを確かめる
+    depends_on: []
+docs:
+  - page: docs/guide/記法.md
+    new: false
+    change: マーカーごとの引数の記載方法を JSON のオブジェクトにし、キーの表はマーカーごとの設計書へリンクする。旧記法を 1 つのマイナーバージョンの間だけ読むことと、値に --> を記載できないことを書く
+    status: todo
+  - page: docs/guide/記載する-表に機能を付ける.md
+    new: false
+    change: 表の記載例を JSON にし、列の設定を記載すると機能が付くことと features.{機能} の記載方法に書き換える
+    status: todo
+  - page: docs/guide/記載する-本文を部品で組む.md
+    new: false
+    change: タブ・ステップ・ファイルツリー・コードブロック・セクション・details・wide・行の詳細・取り込みの記載例を JSON に書き換える
+    status: todo
+  - page: docs/guide/記載する-ビューとコメントを使用する.md
+    new: false
+    change: ビューのマーカーの記載例を JSON に書き換える
+    status: todo
+  - page: docs/guide/記載する-図と表に番号を付ける.md
+    new: false
+    change: fig のマーカーの記載例を JSON に書き換える
+    status: todo
+  - page: docs/guide/記載する-索引と用語集を記載する.md
+    new: false
+    change: 用語集の表のマーカーの記載例を JSON（列は column のオブジェクト）に書き換える
+    status: todo
+  - page: docs/guide/記載する-色で強調する.md
+    new: false
+    change: 列の強調・行の色の記載例を JSON に書き換える
+    status: todo
+  - page: docs/guide/記載する-画像と動画を配置する.md
+    new: false
+    change: ギャラリーのマーカーの記載例を JSON に書き換える
+    status: todo
+  - page: docs/guide/カスタマイズ-機能をオン・オフする.md
+    new: false
+    change: 機能のマーカーと表の機能の記載例を JSON に書き換える
+    status: todo
+  - page: docs/guide/カスタマイズ-拡張を登録する.md
+    new: false
+    change: 拡張の schema と draw が options と definition を受け取ることと、旧記法の拡張のマーカーが描かれず移行を案内されることを書く
+    status: todo
+  - page: docs/guide/API.md
+    new: false
+    change: MdmarkMarkArgs の型と registerExtension・libraries の draw に渡す値を書き換える
+    status: todo
+  - page: docs/guide/設定.md
+    new: false
+    change: libraries の draw に JSON のオブジェクトを渡すことと、記載例のマーカーを書き換える
+    status: todo
+  - page: docs/guide/書き出す-点検する.md
+    new: false
+    change: マーカーの JSON の検証（知らないキー・型の誤り・旧記法・値の -->）のずれと直し方を追加する
+    status: todo
+  - page: docs/guide/導入-バージョンを上げる.md
+    new: false
+    change: 文書のマーカーを JSON に書き換える移行の手順と、移行の報告に挙がる記載の直し方を追加する
+    status: todo
+  - page: docs/guide/用語集.md
+    new: false
+    change: マーカーの引数・旧記法の用語を JSON のオブジェクトに合わせる
+    status: todo
+  - page: docs/guide/コアコンセプト-文書を描く仕組み.md
+    new: false
+    change: マーカーの引数を JSON として読み、マーカーごとの JSON Schema で検証する流れを書く
+    status: todo
+  - page: docs/guide/変更履歴.md
+    new: false
+    change: マーカーの引数の JSON 化と、拡張の引数の破壊的変更・移行の手順を書く（release を master へ入れるとき）
+    status: todo
+  - page: guide/index.yaml
+    new: false
+    change: 使い方集の索引の記法の概要・マーカーの記載例を JSON に合わせる
+    status: todo
+  - page: templates/extensions/example.ts
+    new: false
+    change: 拡張の雛形を options と definition を受け取る形にする
+    status: todo
+  - page: templates/extensions/example.js
+    new: false
+    change: 拡張の雛形を options と definition を受け取る形にする
+    status: todo
+  - page: docs/screen/SCR-472-4.ts.yaml
+    new: false
+    change: 記載例のマーカーを JSON のオブジェクトに書き換える
+    status: todo
+  - page: docs/config/CFG-472-3.yaml
+    new: false
+    change: libraries の draw に渡す値と、記載例のマーカーを書き換える
+    status: todo
+  - page: docs/config/CFG-472-2.yaml
+    new: false
+    change: 記載例のマーカーを JSON のオブジェクトに書き換える
+    status: todo
+  - page: docs/er/ER-472-5.yaml
+    new: false
+    change: 文書のマーカーを書き換える移行の手順の行を追加する
+    status: todo
+  - page: docs/er/ER-477-1.yaml
+    new: true
+    change: マーカーごとの設定の設計書（共通の決まり・共通のオブジェクト・今の引数との対応。マーカーごとのファイルの ID と分け方は設計で決める）
+    status: todo
+scope_out:
+  - item: ほかのリポジトリ（ai-monitor・mindstella・dev-docs など）と MindStella のワークスペースの文書の移行
+    reason: Issue の「後続」。この PR のリリースの後に、リポジトリごとに mdmark の移行の手順を当てる Issue を起票する（完了したら起点 Issue にその旨をコメントし、確認:task-planner を付ける）
+    plan: to_file
+  - item: mdmark のリポジトリの、設計書・使い方集・雛形のほかの文書（docs/mock の部品のモックの本文のマーカー）の移行
+    reason: 今の書き方を 1 つのマイナーバージョンの間は読むため、この PR で書き換えなくても描ける。リポジトリごとの移行の Issue にまとめる
+    plan: to_file
+  - item: docs/pr の過去の PR ドキュメントの本文のマーカーの書き換え
+    reason: マージ済みの作業の記録で、書き換えると当時の記載と食い違う
+    plan: none
+  - item: 今の書き方（キー=値・+機能・位置の値）を読む処理の削除
+    reason: D-312 で 1 つのマイナーバージョンの間は読むと決めた。削除は次のマイナーバージョンの破壊的変更で行う
+    plan: to_file
+  - item: 列の幅 columns.{列名}.width.min・width.max を使った自動計算
+    reason: 'この PR はキーとスキーマだけを持ち、幅の計算は #458 で行う'
+    plan: '#458'
+  - item: ファイルツリーの既定を全てのフォルダを開いた状態にする振る舞いの変更
+    reason: 'この PR は depth のキーと既定の値 all を定義する。今の既定の振る舞いの変更は #459 で行う'
+    plan: '#459'
+  - item: 'HTML コメントでない記法（画像の {width=…}・[!NOTE]・badge: など）と設定ファイルの書き方'
+    reason: A-128 の対象外（HTML コメントのマーカーの引数だけを JSON にする）
+    plan: none
