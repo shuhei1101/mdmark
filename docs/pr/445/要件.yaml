@@ -146,10 +146,10 @@ docs:
 scope_out:
   - item: A-35 の No 10〜17（状態遷移の再生・ER 図と結合・マインドマップ・確度のマーカー・変更の表示・環境とシナリオ・書き出し・一覧の表示）と、stateDiagram-v2・erDiagram・mindmap の map での描画
     reason: 未検討で Issue の範囲に含めない（この PR ではこれらの種類を書き方の警告にする）
-    plan: to_file
+    plan: '#465'
   - item: flow・sequence の定義を map へ変換するスクリプトと、flow・sequence の廃止（変換できる旨の書き方の警告を含む）
     reason: A-38 の「廃止の進め方」で map を追加した後の手順にあたる
-    plan: to_file
+    plan: '#467'
   - item: 純粋な Markdown への書き出しでの map の変換
     reason: この PR で補足の書式を確定させた後に作る
     plan: '#313'
@@ -161,7 +161,7 @@ scope_out:
     plan: none
   - item: map の印の引数 `mode`（boxes・layers・list の見せ方の切り替え）
     reason: list は A-35 の No 17（一覧の表示）でこの PR の範囲の外。層は補足の layout で指定し、入れ子のグループは既定の描き方になるため、切り替える先が無い
-    plan: to_file
+    plan: '#468'
   - item: A-35 の No 6（ノードのページ）と No 7（視点の切り替え）、図の中の段のパンくず
     reason: モックの確認でユーザーが不要と判断した（ノードの文はそのままコピーしたい、視点の絞り込みは使わない）
     plan: none
@@ -170,10 +170,13 @@ scope_out:
     plan: none
   - item: 390x844 で右側の目次の今の項目の文字（span.mdmark-side-toc-current）が枠から 134px はみ出す
     reason: reviewer の対象外の逸脱の報告（https://github.com/shuhei1101/mdmark/pull/445#discussion_r4521111705 ）。部品『右側の目次』の既存の見え方で、map の変更とは別
-    plan: to_file
+    plan: '#469'
   - item: 今の `flow`・`sequence`・判定フローチャートの固定のノードの種類（LLM・意思決定モデル・スクリプト・MCP・データ・外部など）と線の名前（読み込む・書き込むなど）・構成図の 3 層（LLM・処理・データ）を、使う側の設定で作る形にする。ほかの部品にも同じく分野に寄った固定の語が無いかを洗い出す
     reason: ユーザーの指摘（mdmark は汎用のライブラリで、分野に寄った語を固定しない。https://github.com/shuhei1101/mdmark/pull/445#discussion_r4521156220 ）。map は種類を持たない形で作り、今の部品は A-38 の進め方で map へ移行した後に廃止するため、この PR では変更しない
-    plan: to_file
+    plan: '#470'
   - item: plugin/files.yaml の 28 行目の description が、バッククォートで始まる引用の無い値で YAML として読めず、dev-docs の配信から外れている
     reason: develop から既にある記載の誤りで、map の変更とは別
-    plan: to_file
+    plan: '#413'
+  - item: A-35 の No 13〜17（確度のマーカー・変更の表示・環境とシナリオ・書き出し・一覧の表示）
+    reason: '未検討で Issue の範囲に含めない。No 10〜12 と stateDiagram-v2・erDiagram・mindmap は #465 が扱う'
+    plan: '#471'
