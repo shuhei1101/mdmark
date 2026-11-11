@@ -1,9 +1,37 @@
 title: mdmark
-summary: mdmark の公開ドキュメント全体の目次
+summary: mdmark のドキュメント全体の目次
 items:
-  - page: はじめに/
-    summary: 概要・コアコンセプト・変更履歴
-  - page: 使用方法/
-    summary: 導入と使用方法の手順
-  - page: リファレンス/
-    summary: 名前から参照する一覧
+- page: scenario/
+  summary: 単一 / 複合ユースケースの業務フロー設計（E2E テストの元）
+- page: interface/
+  summary: サブシステムの外部インターフェースと処理フロー（結合テストの元）
+- page: module/
+  summary: クラス / 関数 / 定数を物理ファイルごとにまとめる（単体テストの元）
+- page: component/
+  summary: 文書の中に mdmark が配置する UI の部品の引数・状態（Storybook のストーリーの元）
+- page: screen/
+  summary: mdmark が描く画面の要素と、使用する部品へ指定する値
+- page: config/
+  summary: 利用側が指定する設定のキー・既定・許す値
+- page: er/
+  summary: 利用側が記載し mdmark が読み込むデータの構造
+- page: external-api/
+  summary: 採用済みの外部 API のリファレンス
+- page: library/
+  summary: 採用済みの外部ライブラリ / 外部ツールのリファレンス
+- page: architecture/
+  summary: システム全体構成（ライブラリ本体と配布の経路）
+- page: nonfunctional/
+  summary: 外部の制約から逆算したアプリ側の決定値（非機能要件テストの元）
+- page: dev-command/
+  summary: 開発で使用するコマンドの分類ごとの前提・順序・コマンド・料金や副作用・確認した記録
+- page: test-procedure/
+  summary: プロジェクト固有のテスト起動コマンドと前提条件
+- page: design-policy.md
+  summary: mdmark が描く文書の既定の外観に経由するデザインの方向性
+- page: guide/
+  summary: mdmark の使い方（はじめに・使用方法・リファレンス）
+- page: mock/
+  summary: モック HTML（部品・画面・スタイル・案）
+- page: pr/
+  summary: 作業 PR ごとの PR ドキュメント

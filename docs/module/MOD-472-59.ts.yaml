@@ -1,0 +1,342 @@
+id: MOD-472-59
+visibility: internal
+title: VS Code 拡張機能 / Webview / document-view.ts
+test_files:
+  - tests/unit/vscode/src/webview/features/preview/panel/document-view.browser.test.ts
+classes:
+  - name: DocumentView
+    title: 描いた文書
+    container: vscode/src/webview/features/preview/panel/document-view.ts
+    usecase: 共通
+    role: 外部ライブラリとの同期
+    summary: React の外の DOM として持つ描く先の要素に、mdmark の `mount`・`update` で文書を描き、スクロールの位置と配色の class を持つ
+    description: '`type` で定義し、`createDocumentView` が作る。プロパティは関数の中に閉じた状態で、外から読み込まない。React の state を持たず、画面の hook とメッセージの処理から呼ばれる。描く先の要素の子は mdmark だけが書き換える'
+    kind: インタフェース
+    properties:
+      - name: root
+        type: HTMLElement
+        access: private
+        description: 描く先を包む要素（`#mdmark-preview`）。配色の class を付ける
+      - name: element
+        type: HTMLElement | undefined
+        access: private
+        description: 描く先の要素。`attach` で受け、`detach` で削除する
+      - name: mdmark
+        type: Mdmark | undefined
+        access: private
+        description: '`import()` で読み込んだ配布物。`useMdmark` で受ける'
+      - name: handle
+        type: MountHandle | undefined
+        access: private
+        description: 今の描画。初回の `render` までは `undefined`
+      - name: configKey
+        type: string | undefined
+        access: private
+        description: 今の描画に指定した `config` と `aliases` の組の `JSON.stringify`（前と同じかの比較に使用する）
+      - name: pendingScrollTop
+        type: number | undefined
+        access: private
+        description: '`scrollToLine` で動かした `scrollTop`。次の `scroll` の通知でその値なら `revealLine` を送信せずに削除する'
+      - name: diffTexts
+        type: DiffTexts | undefined
+        access: private
+        description: 差分のパネルで取り出し元に指定した全文。`previous` を持つ `render` を初めて受けたときに作る
+      - name: savedLine
+        type: number | undefined
+        access: private
+        description: 再作成した Webview が起動したときに `getState` で読み込んだ行。最初の `render` でその行へ戻したら削除する
+    methods:
+      - name: attach
+        title: 描く先の要素を受ける
+        kind: メソッド
+        summary: React が描いた描く先の要素を受ける（ref のコールバックが呼ぶ）
+        args:
+          - name: element
+            type: HTMLElement
+            required: true
+            description: 描く先の要素
+        returns:
+          type: void
+          description: '-'
+      - name: detach
+        title: 描く先の要素を削除する
+        kind: メソッド
+        summary: '`handle?.destroy()` を呼び、描く先の要素と描画を削除する（ref のコールバックの後始末が呼ぶ）'
+        returns:
+          type: void
+          description: '-'
+        unit_tests:
+          - name: test_detach
+            case: 正常
+            summary: 削除すると描画を destroy し、次の render で もう一度 mount する
+            condition: '`render` の後に `detach`、`attach` で同じ要素を受けて同じ設定の `render`'
+            mock: mdmark を `mount` と戻り値の `destroy` を記録する代役にする
+            expected: '`destroy` が 1 回、`mount` が 2 回'
+      - name: useMdmark
+        title: 配布物を受ける
+        kind: メソッド
+        summary: '`import()` で読み込み終えた配布物を後から受ける'
+        args:
+          - name: mdmark
+            type: Mdmark
+            required: true
+            description: 読み込み終えた配布物
+        returns:
+          type: void
+          description: '-'
+      - name: supportsDiff
+        title: 差分の色分けに対応するかを返却する
+        kind: メソッド
+        summary: 受けた配布物が差分の色分けに対応するかを返却する。配布物を受ける前は `true`
+        returns:
+          type: boolean
+          description: 対応すれば true
+        callees:
+          - 'MOD-472-55#functions[supportsDiffBlocks]'
+      - name: render
+        title: 描く
+        kind: メソッド
+        summary: '`render` を受けて文書を描く。初回と `config` か `aliases` が変わったときは `mount`（前の描画は `destroy`）、それ以外は `update`'
+        args:
+          - name: message
+            type: 'Extract<HostMessage, { type: "render" }>'
+            required: true
+            description: 全文・設定・配色・取り込む文書の表
+        returns:
+          type: void
+          description: '-'
+        process: |-
+          1. `theme` が `light`・`dark` なら `root` に class `mdmark-theme-light`・`mdmark-theme-dark` を付け、`auto` なら両方を削除する
+          2. 再描画する前の `scrollTop` を記録する
+          3. `previous` を持つときは、`diffTexts` が無ければ作り、`modified` を `markdown`、`original` を `previous` に書き換える
+          4. `configKey` が同じで `handle` があれば `handle.update(markdown)`（`includes` を持てば `{ includes }` も指定する）、違えば `handle?.destroy()` の後に描く先の要素へ `mount(element, { markdown, config, includes, aliases })`（`aliases` は持つときだけ指定する）。`diffTexts` があるときは `diffSource: createDiffSource(diffTexts)`・`docId: DIFF_DOC_ID`・`diffMode: "blocks"` も指定する
+          5. `savedLine` があれば `scrollToLine(savedLine)` で配置して `savedLine` を削除し（`pendingScrollTop` に覚えるため `revealLine` は送信しない）、無ければ記録した `scrollTop` に戻す
+          6. `savedLine` で配置したときは、次の `requestAnimationFrame` で `scrollTop` が配置した値から動いていなければ、もう一度 `scrollToLine` でもう一度配置する（差分のパネルは描いた後に色分けで再描画し、行より上の高さが変わる）
+        exceptions:
+          - name: Error
+            condition: 配布物か描く先の要素を受ける前に呼ばれた
+            message: '`mdmark の配布物を読み込む前に render を受けた`'
+        unit_tests:
+          - name: test_render
+            case: 正常
+            summary: 初回は mount、同じ設定の次の回は update
+            condition: '`config` が `{}` の `render` を 2 回'
+            mock: mdmark を `mount` と戻り値の `update`・`destroy` を記録する代役にする
+            expected: '`mount` が 1 回、2 回目は `update` が 2 回目の `markdown` で 1 回、`destroy` は呼ばれない'
+          - name: test_render_when_config_changed
+            case: 正常
+            summary: 設定が変わったら destroy してから もう一度 mount し、スクロールの位置を保つ
+            condition: '`config` が `{}` の `render` の後、`scrollTop` を 200 にして `config` が `{ features: { callout: false } }` の `render`'
+            mock: mdmark を代役にする
+            expected: '`destroy` の後に `mount` が新しい `config` で呼ばれ、`scrollTop` が 200'
+          - name: test_render_when_aliases_changed
+            case: 正常
+            summary: aliases が変わったら destroy してから もう一度 mount し、mount に aliases を指定する
+            condition: '`aliases` を持たない `render` の後、同じ `config` で `aliases` に用語 1 件を持つ `render`'
+            mock: mdmark を `mount` に指定された引数と `update`・`destroy` を記録する代役にする
+            expected: '1 回目の `mount` に `aliases` が渡らず、2 回目は `destroy` の後に `mount` が `aliases` の 1 件で呼ばれ、`update` は呼ばれない'
+          - name: test_render_when_theme
+            case: 正常
+            summary: 配色を固定するときだけ包む要素に class を付ける
+            condition: '`theme` が `dark`、続けて `auto`'
+            mock: mdmark を代役にする
+            expected: 1 回目の後は `root` が `mdmark-theme-dark` を持ち、2 回目の後は `mdmark-theme-*` を持たない
+          - name: test_render_when_diff
+            case: 正常
+            summary: previous を持つ render では取り出し元を指定して blocks で描き、次の render では取り出し元の全文を書き換えてから update する
+            condition: '`markdown` が `A2`・`previous` が `A1` の `render` の後、`markdown` が `A3` の `render`（`config` は同じ）'
+            mock: mdmark を `mount` に指定された引数と `update` を記録する代役にする
+            expected: '`mount` に `docId: "diff"`・`diffMode: "blocks"` と `diffSource` が渡る。`diffSource.revisions("diff")` が `modified`・`original` の順。`update` が `A3` で呼ばれた時点で `content` の `modified` が `A3`、`original` が `A1`'
+          - name: test_render_when_saved_line
+            case: 正常
+            summary: 保存した行を持つ view は、最初の render の後だけその行へ戻し、自分が発生させたスクロールとして捨てる
+            condition: '`data-source-line` を持つ見出しを並べた長い文書を描く代役で、`savedLine` が 20 の view を作り `render`、続けて `takeScroll()`。その後 `scrollTop` を 100 にして同じ設定の `render`'
+            mock: mdmark を `markdown` の見出しを `data-source-line` つきで描く代役にする
+            expected: 1 回目の後の `scrollTop` が `scrollToLine(20)` で配置する位置と同じで、`takeScroll()` が `undefined`。2 回目の後の `scrollTop` が 100
+          - name: test_render_when_not_loaded
+            case: 異常
+            summary: 配布物を受ける前は描かない
+            condition: '`useMdmark` を呼ばずに `render`'
+            mock: なし
+            expected: '`Error`'
+            exception: 配布物か描く先の要素を受ける前に呼ばれた
+        refs:
+          - IF-472-21#constraints[設定が変わったときの描き方]
+          - IF-472-21#constraints[背面のパネル]
+          - IF-472-22#constraints[配色]
+        callees:
+          - 'MOD-472-57#functions[createDiffSource]'
+      - name: scrollToLine
+        title: 行まで動かす
+        kind: メソッド
+        summary: 元の行番号の位置を先頭（上端の帯があればその下端）に配置する。動かす `scrollTop` が今の値と違うときだけ動かし、`pendingScrollTop` に覚える
+        args:
+          - name: line
+            type: number
+            required: true
+            description: 元の行番号（0 始まり）
+        returns:
+          type: void
+          description: '-'
+        process: |-
+          1. 元の行番号の位置から上端の帯の高さ（`topInset`）を参照した値を `scrollTop` にする
+          2. 狭い幅で右側の目次の帯が上端に留まると帯の下端が変わるため、動かした後の `topInset` で 1 をもう一度行う
+          3. `scrollTop` が動かす前と違えば、`pendingScrollTop` に覚える
+        callees:
+          - 'MOD-472-56#functions[collectAnchors]'
+          - 'MOD-472-56#functions[topForLine]'
+          - 'MOD-472-56#functions[topInset]'
+        refs:
+          - IF-472-17#constraints[往復の止め方]
+      - name: takeScroll
+        title: スクロールを行にする
+        kind: メソッド
+        summary: '`scroll` の通知を受け、自分が発生させたスクロールなら `undefined`、そうでなければ見えている先頭の元の行番号を返却する'
+        returns:
+          type: number | undefined
+          description: '`revealLine` で送信する行'
+        process: |-
+          1. `scrollTop` が `pendingScrollTop` と等しければ、`pendingScrollTop` を削除して `undefined` を返却する
+          2. `pendingScrollTop` を削除し、`currentLine()` を返却する
+        unit_tests:
+          - name: test_take_scroll_when_own_scroll
+            case: 正常
+            summary: 自分が動かしたスクロールの通知だけを捨てる
+            condition: '`scrollToLine(20)` の後に `takeScroll()`、続けて `scrollTop` を別の値にして `takeScroll()`'
+            mock: なし
+            expected: 1 回目は `undefined`、2 回目はその位置の行
+        callees:
+          - 'MOD-472-56#functions[collectAnchors]'
+          - 'MOD-472-56#functions[lineForTop]'
+          - 'MOD-472-56#functions[topInset]'
+      - name: currentLine
+        title: 先頭の行を返却する
+        kind: メソッド
+        summary: 見えている先頭の位置（上端の帯があればその下端）を元の行番号にして返却する。描く前は `undefined`
+        returns:
+          type: number | undefined
+          description: '`revealLine` で送信する行'
+        process: |-
+          1. `handle` が無ければ `undefined` を返却する
+          2. 今の `scrollTop` に上端の帯の高さ（`topInset`）を追加した位置を行にして返却する（行のマーカーを集める、位置を行にする）
+        unit_tests:
+          - name: test_current_line
+            case: 正常
+            summary: 描く前は行を返却せず、描いた後は先頭の行を返却する
+            condition: '`render` の前に `currentLine()`、`render` の後に `scrollToLine(20)` して `currentLine()`'
+            mock: mdmark を `data-source-line` つきの見出しを描く代役にする
+            expected: 1 回目は `undefined`、2 回目は 20
+        callees:
+          - 'MOD-472-56#functions[collectAnchors]'
+          - 'MOD-472-56#functions[lineForTop]'
+          - 'MOD-472-56#functions[topInset]'
+      - name: currentPosition
+        title: 先頭の位置を返却する
+        kind: メソッド
+        summary: 見えている先頭の位置（上端の帯があればその下端）を、整数に切り捨てない元の行番号にして返却する。描く前は `undefined`
+        returns:
+          type: number | undefined
+          description: '`setState` で保存する位置'
+        process: |-
+          1. `handle` が無ければ `undefined` を返却する
+          2. 今の `scrollTop` に上端の帯の高さ（`topInset`）を追加した位置を、切り捨てない行にして返却する（行のマーカーを集める、位置を切り捨てない行にする）
+        unit_tests:
+          - name: test_current_position
+            case: 正常
+            summary: 描く前は位置を返却せず、描いた後は行の途中の位置を切り捨てずに返却する
+            condition: '`render` の前に `currentPosition()`、`render` の後に `scrollToLine(20.5)` して `currentPosition()` と `currentLine()`'
+            mock: mdmark を `data-source-line` つきの見出しを描く代役にする
+            expected: 1 回目は `undefined`、2 回目は 20.5 との差が 0.05 未満、`currentLine()` は 20
+        callees:
+          - 'MOD-472-56#functions[collectAnchors]'
+          - 'MOD-472-56#functions[fractionalLineForTop]'
+          - 'MOD-472-56#functions[topInset]'
+        refs:
+          - IF-472-21#constraints[背面のパネル]
+      - name: inspect
+        title: 要素を調べる
+        kind: メソッド
+        summary: '`selector` に該当する要素ごとの `InspectedElement` を返却する（テストのときだけ呼ばれる）。`play` のときは、該当した `video`・`audio` を `muted` にして `play()` を呼び、`INSPECT_PLAY_MS` 待ってから調べる（`play()` が拒まれた要素もそのまま調べる）'
+        is_async: true
+        args:
+          - name: selector
+            type: string
+            required: true
+            description: CSS セレクタ（`document` 全体に適用する）
+          - name: play
+            type: boolean
+            required: false
+            default: 'false'
+            description: 該当した動画・音声を再生してから調べるか
+        returns:
+          type: Promise<InspectedElement[]>
+          description: 該当した要素の並び
+        unit_tests:
+          - name: test_inspect
+            case: 正常
+            summary: 属性・文字・画像の幅・位置を返却する
+            condition: '`<h1 id="a" class="x">タイトル</h1>` と読み込み終えた `<img alt="図">` を配置し、`h1, img` で調べる'
+            mock: なし
+            expected: '`h1` は `className` が `x`・`attributes.id` が `a`・`text` が `タイトル`・`naturalWidth` が無い。`img` は `naturalWidth` が画像の幅。どちらも `top`・`height` が数'
+          - name: test_inspect_when_play
+            case: 正常
+            summary: 動画を再生してから調べる
+            condition: '再生できる短い `webm` の `<video>` を配置し、`video` と `play: true` で調べる'
+            mock: なし
+            expected: '`currentTime` が 0.5 以上'
+        refs:
+          - IF-472-22#constraints[テストのときの差し替え]
+          - IF-472-22#flows[正常系（相対パスとアセットのルートの動画・音声）]
+      - name: audit
+        title: axe で検査する
+        kind: メソッド
+        summary: 結合テストのビルドが配置した `media/test/axe.js` を、`preview.js` と同じ場所の Webview の URL から `import()` で読み込み、`root` に `axe.run` を実行して違反を返却する（テストのときだけ呼ばれる）
+        is_async: true
+        returns:
+          type: Promise<AxeViolation[]>
+          description: 違反の並び。無ければ空
+        process: |-
+          1. `document` の `script[src$='preview.js']` の `src` の `preview.js` を `test/axe.js` に替えた URL を `import()` で読み込む（UMD のため `window.axe` に入る）
+          2. `window.axe.run({ include: [root], exclude: [element] })` の `violations` を、`id`・`impact`・`nodes[].target` を連ねたセレクタの `targets` にして返却する。描く先の要素（mdmark が描いた文書）は検査の範囲に入れず、パネルの部品（状態の表示・帯）だけを検査する（文書のアクセシビリティはライブラリ本体のテストが受け持ち、PoC で出た `label-content-name-mismatch` はライブラリ本体の問題として切り出す）
+        exceptions:
+          - name: Error
+            condition: '`preview.js` の `script` が無い'
+            message: '`preview.js の script が無い`'
+        unit_tests:
+          - name: test_audit
+            case: 正常
+            summary: axe の違反を ID・影響度・セレクタにして返却する
+            condition: '`src` が `…/preview.js` の `script` を配置し、`…/test/axe.js` を `window.axe.run` が違反 1 件（`color-contrast`・`serious`・`[["#a"]]`）を返却する代役のモジュールにする'
+            mock: '`axe.js` を代役のモジュールにする'
+            expected: '`[{ id: "color-contrast", impact: "serious", targets: ["#a"] }]`。`run` に `include: [root]`・`exclude: [描く先の要素]` が渡る'
+        refs:
+          - IF-472-22#constraints[テストのときの差し替え]
+          - LIB-472-5#
+    status: planned
+    implementations:
+      - target: '#functions[createDocumentView]'
+        notes: クロージャに状態を持つオブジェクトを返却する（knowledge の規約『TypeScript のスタイル』の関数ベースで記載する決まりに合わせ、クラスにしない）
+constants:
+  - name: INSPECT_PLAY_MS
+    title: 再生してから調べるまでの待ち
+    container: vscode/src/webview/features/preview/panel/document-view.ts
+    summary: '`inspect` の `play` で、`play()` を呼んでから調べるまで待つミリ秒'
+    value: '1000'
+    status: planned
+functions:
+  - name: createDocumentView
+    title: 描いた文書を作る
+    kind: 関数
+    container: vscode/src/webview/features/preview/panel/document-view.ts
+    usecase: 共通
+    summary: 描く先を包む要素と保存した行を受け、`DocumentView` のメソッドを持つオブジェクトを返却する。`DocumentView` のプロパティはこの関数の中の変数に持つ
+    scope: public
+    args:
+      - name: options
+        type: '{ root: HTMLElement; savedLine?: number; mdmark?: Mdmark }'
+        required: true
+        description: 描く先を包む要素・保存した行・（単体テストの）配布物
+    returns:
+      type: DocumentView
+      description: 描いた文書
+    status: planned

@@ -1,0 +1,101 @@
+id: MOD-472-246
+visibility: internal
+title: ライブラリ本体 / 書き出したHTMLの起動 / route.ts
+test_files:
+  - tests/unit/src/viewer/route.test.ts
+  - tests/unit/src/viewer/route.browser.test.ts
+constants:
+  - name: DOC_HASH_PREFIX
+    title: '文書を指す # の頭'
+    container: src/viewer/route.ts
+    summary: URL の `#` のうち、文書の指定として扱う頭
+    value: '"#/"'
+    refs:
+      - SCR-472-3#elements[開いている文書]
+functions:
+  - name: resolveRoute
+    title: 'URL の # から開く文書を決める'
+    container: src/viewer/route.ts
+    usecase: まとめたHTMLで文書を行き来する
+    summary: '`#/{文書のパス}` と `#/{文書のパス}#{見出しの ID}` を読み込み、`#/` で始まらないときと 1 枚に無い文書を指すときは `entry` を返却する'
+    kind: 関数
+    scope: public
+    args:
+      - name: hash
+        type: string
+        required: true
+        description: '`location.hash`（パーセント符号化されたまま）'
+      - name: paths
+        type: ReadonlySet<string>
+        required: true
+        description: まとめた文書のパス
+      - name: entry
+        type: string
+        required: true
+        description: 最初に開く文書
+    returns:
+      type: '{ path: string; heading: string | null; missing: boolean }'
+      description: 開く文書・移る見出しの ID・1 枚に無い文書を指していたか
+    unit_tests:
+      - name: test_resolve_route
+        case: 正常
+        summary: 文書と見出しを読み込む
+        condition: '`#/%E4%BD%BF%E3%81%84%E6%96%B9/guide.md#%E6%8F%8F%E3%81%8F`（`#/使い方/guide.md#描く`）'
+        mock: なし
+        expected: '`{ path: "使い方/guide.md", heading: "描く", missing: false }`'
+      - name: test_resolve_route_when_no_hash
+        case: 正常
+        summary: '# が無いと entry'
+        condition: '`""`'
+        mock: なし
+        expected: '`{ path: entry, heading: null, missing: false }`'
+      - name: test_resolve_route_when_heading_only
+        case: 正常
+        summary: '#/ で始まらない # は文書の指定にしない'
+        condition: '`#描く`'
+        mock: なし
+        expected: '`{ path: entry, heading: null, missing: false }`'
+      - name: test_resolve_route_when_missing_document
+        case: 正常
+        summary: 1 枚に無い文書は entry で missing
+        condition: '`#/下書き/メモ.md`'
+        mock: なし
+        expected: '`{ path: entry, heading: null, missing: true }`'
+    status: planned
+    introduced:
+      pr: 32
+  - name: rewriteLinks
+    title: 描いた文書のリンクを 1 枚の中へ向ける
+    container: src/viewer/route.ts
+    usecase: まとめたHTMLで文書を行き来する
+    summary: 描いた文書のリンクのうち、まとめた文書への相対リンクを `#/{文書のパス}`（`#` 付きなら `#/{文書のパス}#{ID}`）に、`#{ID}` だけのリンクを `#/{描いた文書のパス}#{ID}` に書き換え、文書へのリンクに `data-doc-path` を付ける
+    description: 相対リンクは `resolveLink` で描いた文書のパスから解く。まとめた文書に無いリンク・スキームを持つリンクは記載したまま残す。印刷の規則は `data-doc-path` を関連文書のリンクの後ろに併記する
+    kind: 関数
+    scope: public
+    side_effects: '`root` の中の `a` の `href` と `data-doc-path` を書き換える'
+    args:
+      - name: root
+        type: HTMLElement
+        required: true
+        description: 描いた文書の要素
+      - name: docPath
+        type: string
+        required: true
+        description: 描いた文書のパス
+      - name: paths
+        type: ReadonlySet<string>
+        required: true
+        description: まとめた文書のパス
+    returns:
+      type: void
+      description: なし
+    unit_tests:
+      - name: test_rewrite_links
+        case: 正常
+        summary: 文書間のリンク・見出しのアンカー・含まれないリンクを分けて記載する
+        condition: '`使い方/guide.md` に `../リファレンス/api.md#mount`・`#描く`・`../下書き/メモ.md`・`https://example.com/` のリンク、まとめた文書は `使い方/guide.md`・`リファレンス/api.md`'
+        mock: Chromium の `document`（`.browser.test.ts` で実行する）に作った要素
+        expected: '`href` が順に `#/リファレンス/api.md#mount`・`#/使い方/guide.md#描く`・`../下書き/メモ.md`・`https://example.com/`、`data-doc-path` は 1 つ目だけが `リファレンス/api.md`'
+    status: planned
+    introduced:
+      pr: 32

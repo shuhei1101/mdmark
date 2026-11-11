@@ -1,0 +1,200 @@
+id: MOD-472-173
+visibility: internal
+title: ライブラリ本体 / 図 / geometry.ts
+test_files:
+  - tests/unit/src/diagram/geometry.test.ts
+constants:
+  - name: ZOOM
+    title: 拡大・縮小と移動の量
+    container: src/diagram/geometry.ts
+    summary: 1 回の倍率・上限・1 回の移動量
+    entries:
+      - key: step
+        value: '1.25'
+      - key: max
+        value: '3'
+      - key: pan
+        value: '80'
+  - name: JUMP_RADIUS
+    title: 飛び越えの弧の半径
+    container: src/diagram/geometry.ts
+    summary: line jump の弧の半径（px）
+    value: '6'
+  - name: OVERLAP_OFFSET
+    title: 重なる線のずらし
+    container: src/diagram/geometry.ts
+    summary: 同じ向きで重なる線をずらす幅（px）
+    value: '4'
+  - name: RESIZE
+    title: リサイズハンドルの量
+    container: src/diagram/geometry.ts
+    summary: キー 1 回で変える高さと、表示する枠の高さの下限（px）
+    entries:
+      - key: step
+        value: '32'
+      - key: min
+        value: '120'
+    status: planned
+    introduced:
+      pr: 308
+functions:
+  - name: fitScale
+    title: 全体が収まる倍率
+    container: src/diagram/geometry.ts
+    kind: 関数
+    scope: internal
+    summary: 図の幅と高さが表示する枠に収まる倍率を返却する。100% を超えない
+    args:
+      - name: content
+        type: '{ width: number; height: number }'
+        required: true
+        description: 図の大きさ
+      - name: box
+        type: '{ width: number; height: number }'
+        required: true
+        description: 表示する枠の大きさ
+    returns:
+      type: number
+      description: '`min(1, box.width / content.width, box.height / content.height)`'
+    unit_tests:
+      - name: test_fit_scale
+        case: 正常
+        summary: 広い図は幅で収め、小さい図は 1
+        condition: 1100×560 と 600×576、300×200 と 600×576
+        mock: なし
+        expected: '`600 / 1100` と 1'
+  - name: jumpPaths
+    title: 飛び越えの弧を入れた線のパス
+    container: src/diagram/geometry.ts
+    kind: 関数
+    scope: internal
+    summary: 全ての線の横の区間が、ほかの線の縦の区間と交わる点に `JUMP_RADIUS` の半円の弧を入れ、同じ向きで重なる区間を `OVERLAP_OFFSET` ずつずらした svg のパスを返却する
+    args:
+      - name: wires
+        type: MdmarkDiagramWire[]
+        required: true
+        description: 線
+    returns:
+      type: Map<string, string>
+      description: 線の `id` から svg の `d`
+    unit_tests:
+      - name: test_jump_paths
+        case: 正常
+        summary: 横の線が縦の線を飛び越える
+        condition: (0,50)→(100,50) の横の線と (50,0)→(50,100) の縦の線
+        mock: なし
+        expected: 横の線のパスが x 44〜56 に弧（`A`）を持ち、縦の線は弧を持たない
+      - name: test_jump_paths_when_overlap
+        case: 正常
+        summary: 重なる線をずらす
+        condition: 同じ y で区間が重なる横の線 2 本
+        mock: なし
+        expected: 2 本目の y が 4 ずれる
+  - name: niceTicks
+    title: 縦の軸の刻みを切る
+    container: src/diagram/geometry.ts
+    summary: データの最小と最大を含む範囲を、1・2・5×10 のべき乗の刻みで 4〜6 等分に切る。最小が 0 以上なら下端を 0 にする
+    kind: 関数
+    scope: internal
+    args:
+      - name: values
+        type: number[]
+        required: true
+        description: 軸に記載する値
+    returns:
+      type: '{ min: number; max: number; step: number }'
+      description: 軸の範囲と刻み
+    unit_tests:
+      - name: test_nice_ticks
+        case: 正常
+        summary: 最大を含むきりのよい刻みにする
+        condition: '`[124, 86, 57, 12, 38, 41, 63, 95]`'
+        mock: なし
+        expected: '`{ min: 0, max: 150, step: 50 }`'
+      - name: test_nice_ticks_when_small
+        case: 正常
+        summary: 1 未満の値も切れる
+        condition: '`[0.12, 0.47]`'
+        mock: なし
+        expected: '`{ min: 0, max: 0.5, step: 0.1 }`'
+      - name: test_nice_ticks_when_flat
+        case: 正常
+        summary: 全て同じ値でも幅を持たせる
+        condition: '`[0, 0]`'
+        mock: なし
+        expected: '`max` が `min` より大きく、`step` が 0 より大きい'
+    status: planned
+    introduced:
+      pr: 45
+  - name: stackSeries
+    title: 系列を積み上げる
+    container: src/diagram/geometry.ts
+    kind: 関数
+    scope: internal
+    summary: 目盛りごとに、0 以上の値は 0 から上へ、負の値は 0 から下へ、系列の順に積み上げた下端と上端を返却する
+    args:
+      - name: series
+        type: number[][]
+        required: true
+        description: 系列ごとの目盛りごとの値
+    returns:
+      type: 'Array<Array<{ from: number; to: number }>>'
+      description: 系列と目盛りごとの下端と上端の値
+    unit_tests:
+      - name: test_stack_series
+        case: 正常
+        summary: 正の値を上へ、負の値を下へ追加する
+        condition: '`[[3, 1], [4, -2], [-1, 2]]`'
+        mock: なし
+        expected: '`[[{0, 3}, {0, 1}], [{3, 7}, {0, -2}], [{0, -1}, {1, 3}]]`'
+    status: planned
+    introduced:
+      pr: 275
+  - name: clampDiagramHeight
+    title: 表示する枠の高さを範囲に収める
+    container: src/diagram/geometry.ts
+    kind: 関数
+    scope: internal
+    summary: 高さを `RESIZE.min` 以上に収め、整数に丸める（上限は持たない）
+    args:
+      - name: height
+        type: number
+        required: true
+        description: 求めた高さ（px）
+    returns:
+      type: number
+      description: 収めた高さ
+    unit_tests:
+      - name: test_clamp_diagram_height
+        case: 正常
+        summary: 下限に収めて丸める
+        condition: '`height` が `50`・`400.6`・`3000`'
+        mock: なし
+        expected: '`120`・`401`・`3000`'
+    status: planned
+    introduced:
+      pr: 308
+  - name: stickyTitleShifts
+    title: グループのタイトルをずらす量
+    container: src/diagram/geometry.ts
+    kind: 関数
+    scope: internal
+    summary: 表示する枠の上端（定義の座標）から、タイトルごとの下へずらす量と留めているかを求める。`top + gap` から始め、タイトルごとに `limit = bottom - height - gap`、`shift = max(0, min(今の上端, limit) - base)`、留めているのは `shift > 0` かつ `今の上端 <= limit`。枠のタイトルを留めている間は、後の層の今の上端を枠のタイトルの高さと `gap` だけ下げる（`docs/mock/refs/42/assets/diagram.js` の `stickTitles`）
+    args:
+      - name: options
+        type: '{ top: number; gap: number; titles: { base: number; bottom: number; height: number; frame: boolean }[] }'
+        required: true
+        description: 表示する枠の上端の定義の座標（`scrollTop / 倍率`）、タイトルの間の余白、タイトルごとの元の位置・グループの下端・タイトルの高さ・枠のタイトルか（枠、層の順）
+    returns:
+      type: '{ shift: number; stuck: boolean }[]'
+      description: タイトルごとのずらす量と留めているか
+    unit_tests:
+      - name: test_sticky_title_shifts
+        case: 正常
+        summary: 見えているグループのタイトルを留め、層は枠のタイトルの下に留める
+        condition: '`gap: 4`。枠 `{ base: 8, bottom: 600, height: 20, frame: true }`、層 A `{ base: 40, bottom: 200 }`、層 B `{ base: 206, bottom: 400 }`（どちらも `height: 18`）。`top` が `0`・`100`・`250`'
+        mock: なし
+        expected: '`0` では全て `shift: 0` で留めない。`100` では枠と層 A を留め、層 A の `shift` が `100 + 4 + 20 + 4 - 40`。`250` では層 A は `stuck: false`（下端で止める）、層 B を留める'
+    status: planned
+    introduced:
+      pr: 308

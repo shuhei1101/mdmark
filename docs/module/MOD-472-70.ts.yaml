@@ -1,0 +1,95 @@
+id: MOD-472-70
+visibility: internal
+title: VS Code 拡張機能 / Webview / assets.ts
+test_files:
+  - tests/unit/vscode/src/webview/features/preview/panel/assets.browser.test.ts
+functions:
+  - name: collectAssetPaths
+    title: 相対パスの画像・動画・音声を集める
+    kind: 関数
+    container: vscode/src/webview/features/preview/panel/assets.ts
+    usecase: プレビューのリンクと画像を開く
+    summary: 描いた文書の `img` の `src`、`video`・`audio` の `src` と `poster` のうち、スキームも `/` も `#` も持たない相対パスを、重ねずに記載した順で返却する
+    scope: public
+    args:
+      - name: root
+        type: HTMLElement
+        required: true
+        description: 描いた文書の要素
+    returns:
+      type: string[]
+      description: 記載したままの相対パス（クエリとフラグメントを含む）
+    refs:
+      - IF-472-22#constraints[動画・音声とアセットのルートの解決]
+    unit_tests:
+      - name: test_collect_asset_paths
+        case: 正常
+        summary: 相対パスだけを重ねずに集める
+        condition: '`img src="a.png"`・`img src="https://x/b.png"`・`video src="m/demo.mp4" poster="a.png"`・`audio src="data:audio/mpeg;base64,AA=="`'
+        mock: なし
+        expected: '`["a.png", "m/demo.mp4"]`'
+    status: planned
+    introduced:
+      pr: 263
+  - name: applyAssetUrls
+    title: Webview の URL に替える
+    kind: 関数
+    container: vscode/src/webview/features/preview/panel/assets.ts
+    usecase: プレビューのリンクと画像を開く
+    summary: '`assetsResolved` の `urls` で、記載したパスが一致する要素の `src`・`poster` を替える。`null` のパスの要素は替えない'
+    scope: public
+    side_effects: 要素の属性を書き換える
+    args:
+      - name: root
+        type: HTMLElement
+        required: true
+        description: 描いた文書の要素
+      - name: urls
+        type: Record<string, string | null>
+        required: true
+        description: 記載したパスから Webview の URL を参照する表
+    returns:
+      type: void
+      description: '-'
+    refs:
+      - IF-472-22#constraints[動画・音声とアセットのルートの解決]
+    unit_tests:
+      - name: test_apply_asset_urls
+        case: 正常
+        summary: URL のあるパスだけを替える
+        condition: '`video src="m/demo.mp4" poster="a.png"` と `img src="none.png"`、`urls` が `{ "m/demo.mp4": "https://w/demo.mp4", "a.png": "https://w/a.png", "none.png": null }`'
+        mock: なし
+        expected: '`video` の `src` と `poster` が替わり、`img` の `src` が `none.png` のまま'
+    status: planned
+    introduced:
+      pr: 263
+  - name: attachMediaErrors
+    title: 再生できない動画・音声を通知に替える
+    kind: 関数
+    container: vscode/src/webview/features/preview/panel/assets.ts
+    usecase: プレビューのリンクと画像を開く
+    summary: 描いた文書の `video`・`audio` の `error` を受け、要素（`figure.mdmark-media` の中なら `figure`）を `renderMediaError` の枠に替える。枠の「既定のアプリで開く」の押下は `useLinkClicks` が受け、`openAsset` を送信する。替える前の要素が記載したパスは `data-mdmark-src` に記録する（`applyAssetUrls` が `src` を替えるため）
+    scope: public
+    side_effects: 要素を枠に置き換える
+    args:
+      - name: root
+        type: HTMLElement
+        required: true
+        description: 描いた文書の要素
+    returns:
+      type: () => void
+      description: 受け取りを解除する関数
+    callees:
+      - 'MOD-472-71#functions[renderMediaError]'
+    refs:
+      - IF-472-22#constraints[再生できない動画・音声]
+    unit_tests:
+      - name: test_attach_media_errors
+        case: 正常
+        summary: error の動画を枠に替え、記載したパスをリンクに持たせる
+        condition: '`data-mdmark-src="media/clip.webm"` の `video` に `error` を送信する'
+        mock: なし
+        expected: '`video` の場所に `mdmark-notice` の枠があり本文に `webm` と `media/clip.webm`、リンクが `data-path="media/clip.webm"`'
+    status: planned
+    introduced:
+      pr: 263

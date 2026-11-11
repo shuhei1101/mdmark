@@ -1,0 +1,89 @@
+/* #352 のカードの格子のモックの規則。採用スタイルの変数（docs/mock/assets/style.css）だけを使う */
+
+/* 格子: 1 枚の幅を 14rem 以上にして入るだけ並べ、狭い画面では 1 列に積む */
+.mdmark-card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 14rem), 1fr));
+  gap: 0.75rem;
+  margin: var(--mdmark-space) 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* 項目: 本文のリストの項目の間の余白を消し、格子の gap だけで並べる */
+.mdmark-card-grid > li {
+  margin: 0;
+}
+
+/* カード: 線で囲み、上にアイコンとタイトル、下に説明を置く */
+.mdmark-card-grid-item {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  grid-template-rows: auto 1fr;
+  gap: 0.35em 0.6em;
+  align-content: start;
+  min-height: 100%;
+  box-sizing: border-box;
+  padding: 0.85em 1em;
+  border: 1px solid var(--mdmark-color-border);
+  border-radius: var(--mdmark-radius);
+  color: var(--mdmark-color-text);
+  text-decoration: none;
+}
+
+/* リンクのカード: 押せることを面の色と輪郭で示す */
+a.mdmark-card-grid-item:hover {
+  background: var(--mdmark-color-surface);
+  border-color: var(--mdmark-color-link);
+}
+a.mdmark-card-grid-item:focus-visible {
+  outline: 2px solid var(--mdmark-color-link);
+  outline-offset: 2px;
+}
+
+/* アイコン: タイトルの行の先頭。アイコンの無いカードはタイトルを左端から始める */
+.mdmark-card-grid-icon {
+  width: 1.25rem;
+  height: 1.25rem;
+  margin-top: 0.1em;
+  color: var(--mdmark-color-muted);
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.mdmark-card-grid-item:not(:has(.mdmark-card-grid-icon)) .mdmark-card-grid-title {
+  grid-column: 1 / -1;
+}
+
+/* タイトル: リンクのカードはリンクと添付のカードと同じくリンクの色と下線、リンクの無いカードは本文の色で下線なし */
+.mdmark-card-grid-title {
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+a.mdmark-card-grid-item .mdmark-card-grid-title {
+  color: var(--mdmark-color-link);
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+
+/* 説明: タイトルの下に全幅で出し、長い文も折り返す */
+.mdmark-card-grid-desc {
+  grid-column: 1 / -1;
+  margin: 0;
+  color: var(--mdmark-color-muted);
+  font-size: 0.875em;
+  overflow-wrap: anywhere;
+}
+
+/* 印刷: 面の色を落とし、カードの途中で改ページしない */
+@media print {
+  .mdmark-card-grid-item {
+    break-inside: avoid;
+    background: none;
+  }
+}
+
+/* モックの「狭い画面」の見本: 390px の画面の本文の幅に縮める */
+.demo-narrow-card-grid { max-width: 358px; }

@@ -1,0 +1,454 @@
+id: SC-472-62
+visibility: internal
+title: 機能のオン・オフを文書で上書きする
+scenarios:
+  - name: 正常シナリオ
+    setup:
+      - name: mdmark を読み込むページ
+        description: バージョンを固定した URL で `dist/index.js` と `dist/index.css` を読み込み、設定を指定して文書を描く HTML
+        notes: 設定の `features.print` は `true`
+      - name: 機能を解除する Markdown
+        description: '先頭に `<!-- features: -print -->` を持ち、閉じた折り畳み（`details`）を持つ文書'
+      - name: Mock
+        description: jsDelivr を、ビルドした `dist/` を同じパスで返却する手元の応答に差し替える。印刷は、媒体を `print` にして印刷の前のイベントを送信することで代える
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 利用側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を指定して描かせる
+        M->>M: 設定の features に文書のマーカーを重ねる
+        M-->>P: 印刷の機能をオフにして本文を描く
+        U->>P: 印刷する
+        P-->>U: 折り畳みは閉じたまま
+    expected:
+      - 印刷の前のイベントの後も、折り畳み（`details`）が閉じている
+    test: test_normal
+  - name: 正常シナリオ（設定でオフにした機能を文書でオンにする）
+    setup:
+      - name: mdmark を読み込むページ
+        description: 正常シナリオと同じ
+        notes: 設定の `features.print` は `false`
+      - name: 機能を追加する Markdown
+        description: '先頭に `<!-- features: +print -->` を持ち、閉じた折り畳み（`details`）を持つ文書'
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 利用側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を指定して描かせる
+        M->>M: 設定の features に文書のマーカーを重ねる
+        M-->>P: 印刷の機能をオンにして本文を描く
+        U->>P: 印刷する
+        P-->>U: 折り畳みを開いて出す
+    expected:
+      - 印刷の前のイベントの後、折り畳み（`details`）が開いている
+    test: test_normal_when_enabled_by_mark
+  - name: 正常シナリオ（マーカーの無い文書）
+    setup:
+      - name: mdmark を読み込むページ
+        description: 正常シナリオと同じ
+        notes: 設定の `features.print` は `false`
+      - name: マーカーの無い Markdown
+        description: 閉じた折り畳み（`details`）だけを持つ文書
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 利用側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を指定して描かせる
+        M-->>P: 設定のとおり印刷の機能をオフにして本文を描く
+        U->>P: 印刷する
+        P-->>U: 折り畳みは閉じたまま
+    expected:
+      - 印刷の前のイベントの後も、折り畳み（`details`）が閉じている
+    test: test_normal_when_no_mark
+  - name: 正常シナリオ（知らない機能名）
+    setup:
+      - name: mdmark を読み込むページ
+        description: 正常シナリオと同じ
+      - name: 知らない機能名を記載した Markdown
+        description: '先頭に `<!-- features: +unknown -->` を持ち、段落を持つ文書'
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 利用側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を指定して描かせる
+        M->>M: 知らない機能名を無視する
+        M-->>P: 要素の中に本文を描く
+        P-->>U: 段落を表示
+    expected:
+      - 段落が描かれている
+      - 本文にマーカーの文字が出ていない
+    test: test_normal_when_unknown_feature
+  - name: 正常シナリオ（記法の機能を解除する）
+    setup:
+      - name: mdmark を読み込むページ
+        description: 正常シナリオと同じ
+        notes: 設定の `features` は表・注意書きの機能を記載しない（既定のオン）
+      - name: 記法の機能を解除する Markdown
+        description: '先頭に `<!-- features: -table -callout -->` を持ち、`<!-- table: data -->` 〜 `<!-- /table -->` で囲んだ表と `> [!NOTE]` の引用を持つ文書'
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 利用側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を指定して描かせる
+        M->>M: 設定の features に文書のマーカーを重ねる
+        M-->>P: 表と注意書きを普通の Markdown として描く
+        P-->>U: 表と引用を表示
+    expected:
+      - 表に並べ替え・ピン止めのボタンが無い
+      - 引用が注意書きの枠（class `markdown-alert`）にならず、引用として描かれている
+      - 本文にマーカーの文字が出ていない
+    test: test_normal_when_syntax_disabled
+  - name: 正常シナリオ（用語と被参照の機能を解除する）
+    setup:
+      - name: mdmark を読み込むページ
+        description: 索引・描く文書の `id`・ほかの文書から算出した参照・読み込んだエイリアスを指定して文書を描く。ほかは正常シナリオと同じ
+        notes: 設定の `features` は `glossary`・`backlinks` を記載しない（既定のオン）
+      - name: 用語と被参照を持つ索引
+        description: 用語 `ワークスペース`（`avoid` に `作業場`）を持ち、ほかの文書の `related` が描く文書を指す索引
+        notes: '-'
+      - name: エイリアス
+        description: '`command` の `単体テスト`（コマンド `npm run test:unit`）'
+        notes: '-'
+      - name: 機能を解除する Markdown
+        description: '先頭に `<!-- features: -glossary -backlinks -->` を持ち、段落に `ワークスペース`・やめた言い方 `作業場`・`単体テスト` が出て、`<!-- glossary: term=用語 meaning=意味 -->` で囲んだ表を持つ文書'
+        notes: '-'
+      - name: Mock
+        description: 正常シナリオと同じ
+        notes: '-'
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 利用側のページ
+        participant M as mdmark
+        P->>M: 索引・文書の id・参照・Markdown を指定して描かせる
+        M->>M: 設定の features に文書のマーカーを重ねる
+        M-->>P: 下線と被参照の一覧を付けずに描く
+        P-->>U: 本文と表を表示
+    expected:
+      - '`ワークスペース` に下線が付いていない'
+      - やめた言い方 `作業場` にマーカーが付いていない
+      - エイリアスの `単体テスト` に下線が付いていない
+      - 被参照の一覧が無い
+      - 用語集の表が普通の表として描かれ、本文にマーカーの文字が出ていない
+    test: test_normal_when_glossary_disabled
+  - name: 正常シナリオ（被参照の機能だけを解除する）
+    setup:
+      - name: mdmark を読み込むページ
+        description: 索引・描く文書の `id`・ほかの文書から算出した参照を指定して文書を描く。ほかは正常シナリオと同じ
+        notes: 設定の `features` は `glossary`・`backlinks` を記載しない（既定のオン）
+      - name: 用語と別名を持つ索引
+        description: 用語 `索引` を持ち、文書 `api`（`aliases` に `公開関数`）と文書 `index-ref`（`aliases` に `索引`）を持ち、`api` の `related` が描く文書を指す索引
+      - name: 被参照を削除する Markdown
+        description: '先頭に `<!-- features: -backlinks -->` を持ち、段落に `索引` と `公開関数` が出る文書'
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 利用側のページ
+        participant M as mdmark
+        P->>M: 索引・文書の id・参照・Markdown を指定して描かせる
+        M->>M: 設定の features に文書のマーカーを重ねる
+        M-->>P: 用語にだけ下線を付け、関連文書を出さずに描く
+        U->>P: 下線の付いた単語にポインターを乗せる
+        P-->>U: 用語の意味だけのツールチップを表示
+    expected:
+      - '`索引` に下線が付き、ツールチップに「用語」の意味だけがあり、「関連文書」の区分が無い'
+      - 文書の別名だけに一致する `公開関数` に下線が付いていない
+      - 文書の末尾に「関連文書」の一覧が無い
+    test: test_normal_when_backlinks_disabled
+  - name: 正常シナリオ（右側の目次の機能を解除する）
+    setup:
+      - name: mdmark を読み込むページ
+        description: 正常シナリオと同じ
+        notes: 設定の `features` は `side-toc` を記載しない（既定のオン）。画面の幅は 1280px
+      - name: 右側の目次を削除する Markdown
+        description: '先頭に `<!-- features: -side-toc -->` を持ち、`## 導入`・`## 使用方法` の見出しと段落を持つ文書'
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 利用側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を指定して描かせる
+        M->>M: 設定の features に文書のマーカーを重ねる
+        M-->>P: 右側の目次を配置せずに本文を描く
+        U->>P: 画面の右端にポインターを配置する
+        P-->>U: 右側の目次を出さない
+    expected:
+      - 右側の目次と、目次を出すボタン・ピン止めのボタンが無い
+      - 見出しのアンカーとセクションの開閉のボタンはある
+      - 本文にマーカーの文字が出ていない
+    test: test_normal_when_side_toc_disabled
+  - name: 正常シナリオ（設定でオフにした右側の目次を文書でオンにする）
+    setup:
+      - name: mdmark を読み込むページ
+        description: 正常シナリオと同じ
+        notes: 設定の `features.side-toc` は `false`。画面の幅は 1280px
+      - name: 右側の目次を追加する Markdown
+        description: '先頭に `<!-- features: +side-toc -->` を持ち、`## 導入`・`## 使用方法` の見出しと段落を持つ文書'
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 利用側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を指定して描かせる
+        M->>M: 設定の features に文書のマーカーを重ねる
+        M-->>P: 右側の目次を配置して本文を描く
+        U->>P: 画面の右端にポインターを配置する
+        P-->>U: 右側の目次を表示
+    expected:
+      - 右端にポインターを配置した後、`導入`・`使用方法` の項目を持つ右側の目次が表示されている
+    test: test_normal_when_side_toc_enabled_by_mark
+  - name: 正常シナリオ（先頭へ戻るボタンの機能を解除する）
+    setup:
+      - name: mdmark を読み込むページ
+        description: 正常シナリオと同じ
+        notes: 設定の `features` は先頭へ戻るボタンの機能を記載しない。画面の大きさは 1280×800px
+      - name: 先頭へ戻るボタンを削除する Markdown
+        description: '先頭に先頭へ戻るボタンの機能を解除する `<!-- features: ... -->` を持ち、画面の高さの 3 倍を超える段落を持つ文書'
+        notes: 機能名はインターフェース定義で決める
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 利用側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を指定して描かせる
+        M->>M: 設定の features に文書のマーカーを重ねる
+        M-->>P: 先頭へ戻るボタンを配置せずに本文を描く
+        U->>P: 文書の末尾までスクロールする
+        P-->>U: 先頭へ戻るボタンを出さない
+    expected:
+      - 末尾までスクロールした後も、先頭へ戻るボタンが無い
+      - 本文にマーカーの文字が出ていない
+    test: test_normal_when_back_to_top_disabled
+    refs:
+      - SC-472-54#scenarios[正常シナリオ]
+  - name: 正常シナリオ（色・画像・カードの機能を解除する）
+    setup:
+      - name: mdmark を読み込むページ
+        description: 正常シナリオと同じ
+        notes: 設定の `features` はこれらの機能を記載しない（既定のオン）
+      - name: 新しい記法の機能を解除する Markdown
+        description: '先頭に、本文の文字の色・画像の属性・ライトボックス・リンクと添付のカードの機能を解除する `<!-- features: ... -->` を持ち、`[決め手の 1 文]{color=blue}`、`![グラフ](chart.png){width=300}`、`https://example.com/docs` だけの段落を持つ文書'
+        notes: 機能名はインターフェース定義で決める
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 利用側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を指定して描かせる
+        M->>M: 設定の features に文書のマーカーを重ねる
+        M-->>P: 削除した記法を普通の Markdown として描く
+        P-->>U: 文書を表示
+    expected:
+      - 本文の文字に色が付いていない
+      - 本文に `[決め手の 1 文]{color=blue}` が記載したとおりの文字で出ている
+      - 画像に幅が該当せず、画像の後ろに `{width=300}` が文字で出ている。押してもライトボックスが開かない
+      - URL だけの段落がカードにならず、リンクとして描かれている
+      - '`<!-- features: ... -->` のマーカーは本文に出ていない'
+    test: test_normal_when_media_features_disabled
+  - name: 正常シナリオ（脚注の機能を解除する）
+    setup:
+      - name: mdmark を読み込むページ
+        description: 正常シナリオと同じ
+        notes: 設定の `features` は `footnotes` を記載しない（既定のオン）
+      - name: 脚注の機能を解除する Markdown
+        description: '先頭に `<!-- features: -footnotes -->` を持ち、段落に `[^src]` と定義 `[^src]: 出典の説明` を持つ文書'
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 利用側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を指定して描かせる
+        M->>M: 設定の features に文書のマーカーを重ねる
+        M-->>P: 脚注を読み込まずに本文を描く
+        P-->>U: 文書を表示
+    expected:
+      - 本文に脚注の番号が無く、文書の末尾に脚注の一覧が無い
+      - 段落に `[^src]` が記載した文字のまま出ている
+      - '`<!-- features: -footnotes -->` のマーカーは本文に出ていない'
+    test: test_normal_when_footnotes_disabled
+    refs:
+      - SC-472-71#scenarios[正常シナリオ]
+  - name: 正常シナリオ（範囲のスクリプトを文書でオンにする）
+    setup:
+      - name: mdmark を読み込むページ
+        description: 正常シナリオと同じ
+        notes: 設定の `features` は `html-scripts` を記載しない（既定のオフ）
+      - name: 範囲のスクリプトをオンにする Markdown
+        description: '先頭に `<!-- features: +html-scripts -->` を持ち、`<!-- html -->` の範囲に `html`・`css`・`ts` のコードブロックを 1 つずつ配置した文書'
+      - name: Mock
+        description: 正常シナリオと同じ。加えて、範囲の `ts` の型を削除する変換のライブラリを手元のモジュールに差し替える
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 利用側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を指定して描かせる
+        M->>M: 設定の features に文書のマーカーを重ねる
+        M-->>P: 範囲の css と ts を適用した HTML
+        P-->>U: 文書を表示
+    expected:
+      - 範囲のノードの背景が `css` の色で描かれている
+      - 範囲の `ts` の既定のエクスポートの関数が、範囲の根の要素で 1 回呼ばれている
+      - 本文にマーカーの文字が出ていない
+    test: test_normal_when_range_scripts_enabled_by_document
+  - name: 正常シナリオ（新しい記法の機能を解除する）
+    setup:
+      - name: mdmark を読み込むページ
+        description: 正常シナリオと同じ。取り込む文書の表に `part.md` を指定する
+        notes: 設定の `features` はこれらの機能を記載しない（既定のオン）
+      - name: 新しい記法の機能を解除する Markdown
+        description: '先頭に、アイコン・段組み・蛍光ペン・キー・details・改ページ・取り込み・wide・CSV の表の機能を解除する `<!-- features: ... -->` を持ち、それぞれの記法を 1 つずつ持つ文書'
+        notes: 機能名はインターフェース定義で決める
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 利用側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を指定して描かせる
+        M->>M: 設定の features に文書のマーカーを重ねる
+        M-->>P: 削除した記法を普通の Markdown として描く
+        P-->>U: 文書を表示
+    expected:
+      - '`icon:`・`kbd:` が記載したとおりの行内のコードで出ている'
+      - '`==` で囲んだ文字が `==` を含む記載したとおりの文字で出ている'
+      - columns・details・wide の範囲の中身が、横に並ばず、折りたたまれず、本文の幅で順に出ている
+      - include のマーカーの場所に、取り込む文書の中身が出ていない
+      - 言語 `csv` のコードブロックが、表にならずコードブロックで出ている
+      - マーカーの文字と記載の警告が出ていない
+      - '`pagebreak` の場所に改ページの要素が無く、印刷の前のイベントの後も改ページの指定（`break-before: page`）が該当した要素が無い'
+    test: test_normal_when_new_syntax_disabled
+  - name: 正常シナリオ（図のリサイズハンドルの機能を解除する）
+    setup:
+      - name: mdmark を読み込むページ
+        description: 正常シナリオと同じ
+        notes: 設定の `features` は図のリサイズハンドルの機能を記載しない（既定のオン）
+      - name: 図のリサイズハンドルを削除する Markdown
+        description: '先頭に図のリサイズハンドルの機能を解除する `<!-- features: ... -->` を持ち、フロー図の部品の定義 1 つを持つ文書'
+        notes: 機能名はインターフェース定義で決める
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 利用側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を指定して描かせる
+        M->>M: 設定の features に文書のマーカーを重ねる
+        M-->>P: リサイズハンドルを配置せずに図を描く
+        P-->>U: 文書を表示
+    expected:
+      - 図の表示する枠の右下にリサイズハンドルが無い
+      - 図の右上の拡大・縮小のボタンはある
+      - 本文にマーカーの文字が出ていない
+      - マーカーを持たない文書を同じ設定で描くと、リサイズハンドルがある
+    test: test_normal_when_diagram_resize_disabled
+  - name: 正常シナリオ（フロントマターの表示を設定でオンにする）
+    setup:
+      - name: mdmark を読み込むページ
+        description: 正常シナリオと同じ
+        notes: 設定の `features.frontmatter` は `true`
+      - name: フロントマターを持つ Markdown
+        description: '1〜4 行目に `---`・`title: テスト`・`tags: [a, b]`・`---` のフロントマター、6 行目に `# 見出し` を配置した文書'
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 利用側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を指定して描かせる
+        M->>M: 先頭のフロントマターを本文から除外する
+        M-->>P: 本文の先頭にフロントマターの表示を置いて描く
+        P-->>U: 文書を表示
+    expected:
+      - '`見出し` の要素より前に、フロントマターの表示の要素がある'
+      - フロントマターの表示の中に `title`・`テスト`・`tags` の文字がある
+      - h2 の要素が無く、右側の目次に `title` を含む項目が無い
+    test: test_normal_when_frontmatter_enabled
+  - name: 正常シナリオ（フロントマターの表示を文書でオンにする）
+    setup:
+      - name: mdmark を読み込むページ
+        description: 正常シナリオと同じ
+        notes: 設定は `features` を指定しない（`features.frontmatter` は既定の `false`）
+      - name: フロントマターとマーカーを持つ Markdown
+        description: '1〜4 行目に `---`・`title: テスト`・`tags: [a, b]`・`---` のフロントマター、6 行目に `<!-- features: +frontmatter -->`、8 行目に `# 見出し` を配置した文書'
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 利用側のページ
+        participant M as mdmark
+        P->>M: Markdown を指定して描かせる
+        M->>M: 設定の features に文書のマーカーを重ねる
+        M-->>P: 本文の先頭にフロントマターの表示を置いて描く
+        P-->>U: 文書を表示
+    expected:
+      - '`見出し` の要素より前に、フロントマターの表示の要素がある'
+      - 'マーカーを `<!-- features: -frontmatter -->` にして設定の `features.frontmatter` を `true` にすると、フロントマターの表示の要素も `title: テスト` の文字も無い'
+    test: test_normal_when_frontmatter_enabled_by_mark
+  - name: 正常シナリオ（map の機能を解除する）
+    setup:
+      - name: mdmark を読み込むページ
+        description: 正常シナリオと同じ
+        notes: 設定の `features` は `map` を記載しない（既定のオン）
+      - name: map の機能を解除する Markdown
+        description: '先頭に `map` の機能を解除する `<!-- features: ... -->` を持ち、map の範囲を 1 つ持つ文書'
+        notes: 機能名はインターフェース定義で決める
+      - name: Mock
+        description: 正常シナリオと同じ。mermaid の本体と chunk も jsDelivr と同じパスで返却する
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 利用側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を指定して描かせる
+        M->>M: 設定の features に文書のマーカーを重ねる
+        M-->>P: map の範囲を普通の Markdown として描く
+        P-->>U: 文書を表示
+    expected:
+      - map の図が描かれず、範囲の中の mermaid のブロックが、mermaid のコードブロックと同じく mermaid の図で描かれる
+      - 補足の文字とマーカーの文字が出ていない
+      - 記載の警告が出ていない
+    test: test_normal_when_map_disabled
+lead: '利用側が設定の `features` で機能のオン・オフの既定を決め、文書の作成者が文書の `<!-- features: +機能 -機能 -->` でその文書だけ上書きする。この Issue が持つ機能の印刷（`print`）で確認する。'
+issue: 3
+primary_actor: 文書の作成者
+stakeholders:
+  - name: 利用側のアプリの開発者
+    interest: 設定で決めた既定が、マーカーの無い文書にそのまま該当する
+  - name: 機能を作る Issue
+    interest: 決まったオン・オフを読み込んで、機能を出すかを決められる
+trigger: 利用側のページが、設定と、マーカーを持つ文書を指定して描かせる
+preconditions:
+  - ページがバージョンを固定した URL で mdmark の JavaScript と CSS を読み込んでいる
+success_guarantee: 文書のマーカーで追加した機能はオン、削除した機能はオフになり、マーカーに記載しない機能は設定のとおりになる。
+minimal_guarantee: 知らない機能名をマーカーに記載しても、本文は描かれる。
+test_file: tests/e2e/単一ユースケース/機能のオン・オフを文書で上書きする.spec.ts

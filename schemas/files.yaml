@@ -1,38 +1,92 @@
-# yaml-language-server: $schema=../dev/テンプレート/files.schema.yaml
+# yaml-language-server: $schema=files.schema.yaml
 files:
   - path: alias-inject/v0.3.0/aliases.schema.json
     description: モジュール構成『ライブラリ本体 / CLI』のうち「取り込んだ alias-inject の行の Schema」を受け持つ。CLI のコマンドの振る舞いを変えるときに参照する。
     tags: [topic:cli, topic:エイリアス, tool:ajv]
     related:
-      - to: dev/設計書/モジュール構成/ライブラリ本体/CLI.ts
+      - to: docs/module/MOD-472-23
         type: implements
   - path: mdmark.config.schema.json
     description: モジュール構成『ライブラリ本体 / 設定と機能』のうち「設定の JSON Schema」を受け持つ。設定のキーや機能のオン・オフの決め方を変えるときに参照する。
     tags: [topic:設定, topic:機能フラグ]
     related:
-      - to: dev/設計書/モジュール構成/ライブラリ本体/設定と機能.ts
+      - to: docs/module/MOD-472-44
         type: implements
   - path: mdmark.settings.schema.json
     description: 設定『ライブラリ本体』のうち「端末の設定の JSON Schema（mdmark.config.yaml のキーと config.cascade・config.applyToExport）」を受け持つ。端末の設定のキーを変えるときに参照する。
     tags: [topic:設定]
     related:
-      - to: dev/設計書/モジュール構成/ライブラリ本体/設定を重ねて読み込む.ts
+      - to: docs/module/MOD-472-45
         type: implements
   - path: mdmark.templates.schema.json
     description: ER 図『CSSのテンプレート』の「端末の設定のフォルダの templates/css/templates.yaml の JSON Schema」を受け持つ。テンプレートの索引のキーを変えるときに参照する。
     tags: [topic:テンプレート, topic:スキーマ, tool:jsonschema]
     related:
-      - to: dev/設計書/ER図/CSSのテンプレート
+      - to: docs/er/ER-472-1
         type: implements
   - path: mdmark.index.schema.json
     description: 利用側が文書のメタデータ・用語を記載する索引の JSON Schema。索引のキーを追加・変更するときに参照する。
     tags: [topic:索引, topic:スキーマ, tool:jsonschema]
     related:
-      - to: dev/設計書/ER図/索引
+      - to: docs/er/ER-472-6
         type: implements
   - path: mdmark.steps.schema.json
     description: モジュール構成『ライブラリ本体 / バージョンを上げる』のうち「steps.yaml の JSON Schema」を受け持つ。mdmark upgrade の移行の流れを変えるときに参照する。
     tags: [topic:バージョン, topic:移行, topic:cli, topic:ステップ]
     related:
-      - to: dev/設計書/モジュール構成/ライブラリ本体/バージョンを上げる.ts
+      - to: docs/module/MOD-472-30
         type: implements
+  - path: er.schema.yaml
+    description: ER 図の設計書のスキーマ。データストアの構造（DB・JSON・YAML）を分類ごとに記載する。ER 図の設計書を記載するときや項目を確認するときに参照する。
+    tags: [topic:スキーマ, topic:テンプレート, topic:設計書, tool:jsonschema]
+  - path: files.schema.yaml
+    description: dev-docs の管理用の YAML（files.yaml）の 1 行の項目を定めるスキーマ。AI Monitor の配布物（visibility と分類を足したもの）。files.yaml に記載する項目を確認するときに参照する。
+    tags: [topic:スキーマ, topic:テンプレート, topic:メタデータ, tool:dev-docs, tool:jsonschema]
+  - path: index.schema.yaml
+    description: フォルダの直下の目次（index.yaml）のスキーマ。README はここから作る。目次の行を追加・変更するときに参照する。
+    tags: [topic:スキーマ, topic:テンプレート, topic:設計書, tool:jsonschema]
+  - path: architecture.schema.yaml
+    description: アーキテクチャ図の設計書のスキーマ。システム全体図・リポジトリ構成・サブシステム一覧・外部システム連携を記載する。アーキテクチャ図を記載するときや項目を確認するときに参照する。
+    tags: [topic:スキーマ, topic:テンプレート, topic:設計書, tool:jsonschema]
+  - path: interface.schema.yaml
+    description: インターフェース定義の設計書のスキーマ。1 操作の入出力・制約・正常系と異常系のフローを記載する。インターフェース定義を記載するときや項目を確認するときに参照する。
+    tags: [topic:スキーマ, topic:テンプレート, topic:設計書, tool:jsonschema]
+  - path: scenario.schema.yaml
+    description: シナリオの設計書のスキーマ。単一・複合ユースケースの正常・異常シナリオを記載する。シナリオを記載するときや項目を確認するときに参照する。
+    tags: [topic:スキーマ, topic:テンプレート, topic:設計書, tool:jsonschema]
+  - path: test-procedure.schema.yaml
+    description: テスト実行方法の設計書のスキーマ。テストの種別ごとの実行コマンドと前提を記載する。テスト実行方法を記載するときや項目を確認するときに参照する。
+    tags: [topic:スキーマ, topic:テンプレート, topic:設計書, tool:jsonschema]
+  - path: dataflow.schema.yaml
+    description: データフローの設計書のスキーマ。1 つのデータがシステムの中をどう流れるかを記載する。データフローの設計書を記載するときに参照する。
+    tags: [topic:スキーマ, topic:テンプレート, topic:設計書, tool:jsonschema]
+  - path: module.schema.yaml
+    description: モジュール構成の設計書のスキーマ。クラス・関数・関数型・定数をドメインの分類でまとめる。モジュール構成を記載するときや項目を確認するときに参照する。
+    tags: [topic:スキーマ, topic:テンプレート, topic:設計書, tool:jsonschema]
+  - path: common.schema.yaml
+    description: 種別をまたいで使用する型（本文・参照・共通の項目・状態遷移・フローチャート・ER 図）のスキーマ。複数の種別に有効になる項目を変えるときに参照する。
+    tags: [topic:スキーマ, topic:テンプレート, topic:設計書, tool:jsonschema]
+  - path: external-api.schema.yaml
+    description: 外部 API の設計書のスキーマ。認証・エンドポイント・調べた不具合と対処を記載する。外部 API の設計書を記載するときに参照する。
+    tags: [topic:スキーマ, topic:テンプレート, topic:設計書, tool:jsonschema]
+  - path: library.schema.yaml
+    description: 外部ライブラリの設計書のスキーマ。バージョン・動作確認・API・調べた不具合と対処を記載する。外部ライブラリの設計書を記載するときに参照する。
+    tags: [topic:スキーマ, topic:テンプレート, topic:設計書, tool:jsonschema]
+  - path: state-transition.schema.yaml
+    description: 状態遷移の設計書のスキーマ。エンティティの取りうる状態と許可された遷移を記載する。状態遷移の設計書を記載するときに参照する。
+    tags: [topic:スキーマ, topic:テンプレート, topic:設計書, tool:jsonschema]
+  - path: screen.schema.yaml
+    description: 画面設計の設計書のスキーマ。1 画面ごとの要素と入力の検査を記載する。画面設計を記載するときや項目を確認するときに参照する。
+    tags: [topic:スキーマ, topic:テンプレート, topic:設計書, tool:jsonschema]
+  - path: config.schema.yaml
+    description: 設定の設計書のスキーマ。設定のキーと環境変数の一覧を記載する。設定の設計書を記載するときに参照する。
+    tags: [topic:スキーマ, topic:テンプレート, topic:設計書, tool:jsonschema]
+  - path: component.schema.yaml
+    description: 部品設計の設計書のスキーマ。部品の引数・スロット・イベント・状態（Storybook のストーリー）を記載する。部品設計を記載するときや項目を確認するときに参照する。
+    tags: [topic:スキーマ, topic:テンプレート, topic:設計書, tool:jsonschema]
+  - path: dev-command.schema.yaml
+    description: 開発コマンドの設計書のスキーマ。分類ごとの前提・順序・コマンド・料金や副作用・確認した記録を記載する。開発コマンドを記載するときに参照する。
+    tags: [topic:スキーマ, topic:テンプレート, topic:設計書, tool:jsonschema]
+  - path: nonfunctional.schema.yaml
+    description: 非機能要件の設計書のスキーマ。外部の制約から逆算したアプリの決定値を記載する。非機能要件を記載するときに参照する。
+    tags: [topic:スキーマ, topic:テンプレート, topic:設計書, tool:jsonschema]

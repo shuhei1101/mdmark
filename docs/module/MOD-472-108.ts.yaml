@@ -1,0 +1,61 @@
+id: MOD-472-108
+visibility: internal
+title: ライブラリ本体 / CLI / includes.ts
+test_files:
+  - tests/unit/src/cli/includes.test.ts
+data_models:
+  - name: IncludeProblem
+    title: 取り込みの問題
+    container: src/cli/includes.ts
+    usecase: 共通
+    summary: '`collectIncludes` が返却する、取り込めない include のマーカー 1 つ'
+    properties:
+      - name: kind
+        type: '"missing" | "heading" | "lines" | "outside" | "circular"'
+        description: 無いファイル・無い見出し・行の数を越える範囲・根の外・循環
+      - name: file
+        type: string
+        description: マーカーを記載した文書の、文書のフォルダからのパス（文書そのものは空文字）
+      - name: line
+        type: number
+        description: マーカーの行（1 から）
+      - name: target
+        type: string
+        description: マーカーに記載した取り込み先
+      - name: lineCount
+        type: number
+        description: '`lines` のときのファイルの行の数'
+      - name: chain
+        type: string[]
+        description: '`circular` のときの取り込みの順（最初と最後が同じキー）'
+functions:
+  - name: collectIncludes
+    title: 取り込む文書を集める
+    container: src/cli/includes.ts
+    summary: '文書の include のマーカー（コードブロックとインラインコードの中を除く）を `resolveIncludePath` で解き、根のフォルダ（設定ファイルのフォルダ。無ければ文書のフォルダ）の中のファイルだけを読み込んで、キーを文書のフォルダからのパスにした取り込む文書の表を作る。取り込んだ Markdown の中のマーカーもたどり、同じファイルは 1 回だけ読み込む。根の外を指すパス・無いファイル・無い見出し・行の数を越える範囲・循環を、マーカーの文書と行を持つ問題として返却する。`<!-- features: -include -->` の文書は読み込まない'
+    kind: 関数
+    scope: internal
+    args:
+      - name: options
+        type: '{ docPath: string; markdown: string; root: string }'
+        required: true
+        description: '`docPath` は文書の絶対パス、`markdown` は文書の本文、`root` は根のフォルダの絶対パス'
+    returns:
+      type: '{ includes: Record<string, string>; problems: IncludeProblem[] }'
+      description: 取り込む文書の表と問題
+    side_effects: ファイルを読み込む
+    callees:
+      - MOD-472-299#functions[resolveIncludePath]
+    unit_tests:
+      - name: test_collect_includes
+        case: 正常
+        condition: '`guide.md` が `共通/手順.md#実行` を、`共通/手順.md` が `../../src/app.ts#L1` を取り込む'
+        expected: 表のキーが `共通/手順.md` と `../src/app.ts` で、問題が 0 件
+        mock: 一時フォルダに文書を配置する
+        summary: 入れ子の取り込みもたどって表を作る
+      - name: test_collect_includes_when_problems
+        case: 異常
+        condition: '`missing.md`・`共通/手順.md#無い見出し`・5 行の `src/app.ts#L8-L10`・根の外の `../../outside.md`・`a.md` と `b.md` の循環'
+        expected: '`missing`・`heading`・`lines`（行の数 5）・`outside`・`circular`（順 `a.md → b.md → a.md`）の問題が 1 件ずつで、`outside.md` を読み込んでいない'
+        mock: 一時フォルダに文書を配置する
+        summary: 取り込めないものを種類ごとの問題にする

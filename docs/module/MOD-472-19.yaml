@@ -1,0 +1,17 @@
+id: MOD-472-19
+visibility: internal
+title: "VS Code 拡張機能 / 拡張機能の入口"
+lead: 拡張機能の `activate` と、`vscode/package.json` の `contributes`（コマンド・ショートカット・メニュー・設定）。コマンドと VS Code の通知を各機能へつなぐ。
+directory: |-
+  ```tree
+  vscode/
+  ├── package.json      # 拡張機能の定義（main・engines・contributes・scripts・依存）
+  └── src/
+      ├── extension.ts  # activate（コマンドと通知の登録、テストのときの戻り値）
+      ├── deps.ts       # 各処理が受ける共通の依存 ExtensionDeps と globalState のキー
+      ├── workspace.ts  # 相対パスの設定の基準のフォルダ（baseDirOf）
+      ├── escape.ts     # HTML として特別な文字のエスケープ（vscode を import しない）
+      └── log.ts        # ログの出力先の型（vscode を import しない）
+  ```
+
+  `extension.ts` はビルドが `vscode/dist/extension.cjs`（CommonJS。`vscode` はまとめない）にまとめ、`package.json` の `main` が指す。

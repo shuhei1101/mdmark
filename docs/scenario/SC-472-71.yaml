@@ -1,0 +1,212 @@
+id: SC-472-71
+visibility: internal
+title: 脚注を確認する
+lead: '文書の作成者が GitHub と同じ `[^1]` と `[^1]: 中身`、行内の `^[中身]` で脚注を記載すると、mdmark が本文の参照の場所に番号を出し、文書の末尾に閉じた脚注の一覧をまとめる。読者は番号のツールチップか末尾の一覧で脚注の中身を確認する。'
+issue: 215
+test_file: tests/e2e/単一ユースケース/脚注を確認する.spec.ts
+primary_actor: 読者
+stakeholders:
+  - name: 文書の作成者
+    interest: 補足を本文から除外して記載でき、GitHub で読み込んでも同じ脚注として読み込める
+  - name: 読者
+    interest: 本文を読み込む位置から離れずに脚注の中身を確認でき、用語のツールチップと見分けられる
+trigger: 利用側のページが、脚注を持つ文書を描かせる
+preconditions:
+  - ページがバージョンを固定した URL で mdmark の JavaScript と CSS を読み込んでいる
+  - 脚注の機能（`footnotes`）がオン（既定）
+success_guarantee: 本文の参照の場所に出た順の番号があり、番号のツールチップと末尾の一覧の両方で同じ脚注の中身を読み込める。タッチの端末では、閉じた番号のタップでツールチップが出て、開いた番号のもう一度のタップで末尾の一覧へ移り、ツールチップと番号の外のタップでツールチップが消える。ツールチップの中のリンクのタップでは消えない。
+minimal_guarantee: 定義の無い参照を記載しても、本文は描かれ、参照は記載した文字のまま出る。
+scenarios:
+  - name: 正常シナリオ
+    setup:
+      - name: mdmark を読み込むページ
+        description: バージョンを固定した URL で `dist/index.js` と `dist/index.css` を読み込み、設定を指定して文書を描く HTML
+      - name: 脚注を持つ Markdown
+        description: '1 つ目の段落に `[^src]`、2 つ目の段落に行内の `^[行内の補足]` を持ち、文書の途中に定義 `[^src]: 出典の説明` を配置した文書'
+        notes: 定義を本文の途中に配置し、末尾へまとめることを決定的に発生させる
+      - name: Mock
+        description: jsDelivr を、ビルドした `dist/` を同じパスで返却する手元の応答に差し替える
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 利用側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を指定して描かせる
+        M->>M: 脚注の参照と定義を読み込み、出た順に番号を振る
+        M-->>P: 参照の場所に番号を配置し、末尾に閉じた脚注の一覧を配置して描く
+        U->>P: 番号 1 にポインターを乗せる
+        P-->>U: 脚注 1 の中身のツールチップを表示
+    expected:
+      - 1 つ目の段落の参照の場所に上付きの番号 `1`、2 つ目の段落の参照の場所に `2` が出ている
+      - '本文に `[^src]`・`^[`・定義の行 `[^src]: 出典の説明` の文字が出ていない'
+      - 番号 `1` にポインターを乗せると `出典の説明` のツールチップが出て、ツールチップの上へポインターを移しても出たまま
+      - 番号 `2` にポインターを乗せると `行内の補足` のツールチップが出る
+      - 文書の末尾に脚注の一覧があり、描いた直後は閉じていて、一覧の中身が表示されていない
+    test: test_normal
+  - name: 正常シナリオ（キーボードで読み込む）
+    setup:
+      - name: mdmark を読み込むページ
+        description: 正常シナリオと同じ
+      - name: 脚注を持つ Markdown
+        description: 正常シナリオと同じ
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 利用側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を指定して描かせる
+        M-->>P: 参照の場所に番号を配置して描く
+        U->>P: Tab で番号 1 へフォーカスを移す
+        P-->>U: 脚注 1 の中身のツールチップを表示
+        U->>P: Esc を押す
+        P-->>U: ツールチップを削除する
+    expected:
+      - Tab で番号 `1` にフォーカスが移る
+      - フォーカスした番号の `aria-describedby` が、`role="tooltip"` を持つ脚注の中身の要素を指す
+      - Esc を押すとツールチップが消え、フォーカスは番号に残る
+    test: test_normal_when_keyboard
+  - name: 正常シナリオ（末尾の一覧から本文へ戻る）
+    setup:
+      - name: mdmark を読み込むページ
+        description: 正常シナリオと同じ
+      - name: 脚注を持つ Markdown
+        description: 正常シナリオと同じ
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 利用側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を指定して描かせる
+        M-->>P: 末尾に閉じた脚注の一覧を配置して描く
+        U->>P: 脚注の一覧の見出しを押す
+        P-->>U: 開いた脚注の一覧
+        U->>P: 脚注 1 の戻るリンクを押す
+        P-->>U: 本文の番号 1 の場所を表示
+    expected:
+      - 見出しを押した後、一覧に `1` と `出典の説明`、`2` と `行内の補足` の 2 つの項目が出た順に並んでいる
+      - 脚注 1 の戻るリンクを押すと、1 つ目の段落の番号 `1` が画面の中に入り、番号にフォーカスが移る
+    test: test_normal_when_back_from_list
+  - name: 正常シナリオ（同じ脚注を複数回参照する）
+    setup:
+      - name: mdmark を読み込むページ
+        description: 正常シナリオと同じ
+      - name: 同じ脚注を 2 回参照する Markdown
+        description: '2 つの段落に `[^note]` を 1 回ずつ持ち、定義 `[^note]: 共通の補足` を 1 つ持つ文書'
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 利用側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を指定して描かせる
+        M->>M: 同じラベルの参照に同じ番号を振る
+        M-->>P: 2 つの参照の場所に同じ番号を配置して描く
+        U->>P: 脚注の一覧を開く
+        P-->>U: 戻るリンクを 2 つ持つ脚注 1
+    expected:
+      - 2 つの参照の場所の番号がどちらも `1` で、どちらにポインターを乗せても `共通の補足` のツールチップが出る
+      - 一覧の項目は `1` の 1 つだけで、本文の 2 つの参照の場所へそれぞれ戻るリンクを持つ
+    test: test_normal_when_referenced_twice
+  - name: 正常シナリオ（用語と脚注が同じ段落に出る）
+    setup:
+      - name: mdmark を読み込むページ
+        description: 索引と描く文書の `id` を指定して文書を描く。ほかは正常シナリオと同じ
+      - name: 用語を持つ索引
+        description: 用語 `ワークスペース`（意味 `話し合いの記録を配置するフォルダ`）を持ち、描く文書を `docs` に持つ索引
+      - name: 用語と脚注が出る Markdown
+        description: '段落に `ワークスペース` と `[^1]` が出て、定義 `[^1]: 補足の文` を持つ文書'
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 利用側のページ
+        participant M as mdmark
+        P->>M: 索引・文書の id・Markdown を指定して描かせる
+        M-->>P: 用語に下線を付け、参照の場所に番号を配置して描く
+        U->>P: 番号と下線の付いた単語に順にポインターを乗せる
+        P-->>U: 脚注のツールチップと用語のツールチップを表示
+    expected:
+      - 番号は上付きの数字で、用語の破線の下線が付いていない（構造で見分けられ、色だけで分けない）
+      - 番号のツールチップに脚注であることと番号 `1` を示すタイトルがあり、用語のツールチップの「用語」の区分が無い
+      - '`ワークスペース` のツールチップに「用語」の区分があり、脚注のタイトルが無い'
+    test: test_normal_when_with_terms
+  - name: 異常シナリオ（定義の無い参照）
+    setup:
+      - name: mdmark を読み込むページ
+        description: 正常シナリオと同じ
+      - name: 定義の無い参照を持つ Markdown
+        description: 段落に `[^missing]` を持ち、どの脚注の定義も持たない文書
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 利用側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を指定して描かせる
+        M->>M: 定義の無い参照を脚注にしない
+        M-->>P: 参照を記載した文字のまま描く
+        P-->>U: 段落を表示
+    expected:
+      - 段落に `[^missing]` が記載した文字のまま出ている
+      - 番号と文書の末尾の脚注の一覧が無い
+    test: test_error_when_definition_missing
+  - name: 正常シナリオ（番号から末尾の一覧へ移る）
+    setup:
+      - name: mdmark を読み込むページ
+        description: 正常シナリオと同じ
+      - name: 脚注を持つ Markdown
+        description: 正常シナリオと同じ
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 利用側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を指定して描かせる
+        M-->>P: 末尾に閉じた脚注の一覧を配置して描く
+        U->>P: 番号 2 を押す
+        P-->>U: 一覧を開き、脚注 2 の項目を表示
+        U->>P: 一覧を閉じ、Tab で番号 1 へフォーカスを移して Enter を押す
+        P-->>U: 一覧を開き、脚注 1 の項目を表示
+    expected:
+      - 番号 `2` を押すと、末尾の脚注の一覧が開き、`行内の補足` の項目が画面の中に入り、その項目にフォーカスが移る
+      - 番号 `1` にフォーカスして Enter を押すと、閉じていた一覧が開き、`出典の説明` の項目が画面の中に入り、その項目にフォーカスが移る
+    test: test_normal_when_jump_to_list
+  - name: 正常シナリオ（タッチ）
+    setup:
+      - name: mdmark を読み込むページ
+        description: 正常シナリオと同じページを、タッチの端末（`hasTouch`）として開いたページ
+        notes: Chromium のタッチの再現では `:hover` が残らないため、外のタップで閉じる期待値は今の実装でも pass しうる。iOS の `:hover` が残る状態は単体テストで、`pointerleave`・`blur` を発火させずに外の `pointerdown` だけで閉じることを確認する。ツールチップの中のリンクのタップで閉じないことも単体テストで確認する
+      - name: 脚注を持つ Markdown
+        description: 正常シナリオと同じ文書の後ろに、脚注を含まない段落を続けた文書
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 利用側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を指定して描かせる
+        M-->>P: 参照の場所に番号を配置し、末尾に閉じた脚注の一覧を配置して描く
+        U->>P: 番号 1 をタップする
+        P-->>U: 脚注 1 の中身のツールチップを表示
+        U->>P: 脚注を含まない段落をタップする
+        P-->>U: ツールチップを削除する
+        U->>P: 番号 1 をタップする
+        P-->>U: 脚注 1 の中身のツールチップを表示
+        U->>P: 番号 1 をもう一度タップする
+        P-->>U: 一覧を開き、脚注 1 の項目を表示
+    expected:
+      - 閉じた番号 `1` のタップで `出典の説明` のツールチップが出て、末尾の脚注の一覧は閉じたまま
+      - ツールチップと番号の外（脚注を含まない段落）をタップすると、ツールチップが消える
+      - 消えた後に番号 `1` をタップすると、ツールチップがもう一度出る
+      - 開いた番号 `1` をもう一度タップすると、ツールチップが消え、末尾の脚注の一覧が開き、`出典の説明` の項目が画面の中に入り、その項目にフォーカスが移る
+    test: test_normal_when_touch

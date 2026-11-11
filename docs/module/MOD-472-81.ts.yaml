@@ -1,0 +1,33 @@
+id: MOD-472-81
+visibility: internal
+title: VS Code 拡張機能 / ビルドと配布 / run.ts
+constants:
+  - name: TEST_VSCODE_VERSIONS
+    title: 結合テストを実行する VS Code
+    container: vscode/tests/integration/run.ts
+    summary: 非機能要件の下限と、その時点の stable
+    value: '["1.141.0", "stable"]'
+    refs:
+      - NFR-472-1#requirements[対応する VS Code のバージョン]
+    status: planned
+functions:
+  - name: runIntegrationTests
+    title: 結合テストを実行する
+    kind: 関数
+    container: vscode/tests/integration/run.ts
+    usecase: 共通
+    summary: 代役の配信（このブランチでビルドした mdmark の配布物とタグ一覧）を空きポートで起動し、`TEST_VSCODE_VERSIONS` のそれぞれで `runTests` を呼ぶ
+    description: ファイルの末尾で `import.meta.main` が `true` のときだけ呼ぶ。どれかが落ちたら終了コードを 1 にする
+    scope: public
+    is_async: true
+    side_effects: VS Code を `.vscode-test/` に取得する（1.141.0 はキャッシュがあれば取得しない）
+    process: |-
+      1. このブランチのソースを一時フォルダにビルドし、その `dist/` を配る代役の配信を `127.0.0.1` の空きポートで起動する（代役の配信を作る）
+      2. `TEST_VSCODE_VERSIONS` の順に `runTests({ version, extensionDevelopmentPath, extensionTestsPath: out/test/index.mjs, launchArgs: [見本のワークスペース, "--disable-extensions"], extensionTestsEnv: { MDMARK_VSCODE_DIST_BASE, MDMARK_VSCODE_TAGS_URL } })` を呼ぶ
+      3. サーバーを閉じる
+    callees:
+      - MOD-472-87#functions[createStubServer]
+      - LIB-472-27#catalogs[API].entries[runTests]
+    refs:
+      - LIB-472-27#
+    status: planned

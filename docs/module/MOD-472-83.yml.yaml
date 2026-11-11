@@ -1,0 +1,20 @@
+id: MOD-472-83
+visibility: internal
+title: VS Code 拡張機能 / ビルドと配布 / vscode-release.yml
+constants:
+  - name: releaseWorkflow
+    title: リリースのワークフロー
+    container: .github/workflows/vscode-release.yml
+    summary: '`vscode-v*` のタグの push で、バージョンの照合 → `npm --prefix vscode ci` → `npm --prefix vscode run package` → `gh release upload`（Release が無ければ `gh release create`）を `ubuntu-latest` で実行する'
+    entries:
+      - key: on.push.tags
+        value: '`vscode-v*`'
+      - key: permissions
+        value: '`contents: write`'
+      - key: concurrency
+        value: '`group: vscode-release-${{ github.ref }}`、`cancel-in-progress: false`'
+      - key: Node
+        value: '`actions/setup-node` で 24'
+    refs:
+      - IF-472-23#
+    status: planned

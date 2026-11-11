@@ -1,0 +1,93 @@
+id: MOD-472-244
+visibility: internal
+title: ライブラリ本体 / 書き出したHTMLの起動 / modules.ts
+test_files:
+  - tests/unit/src/viewer/modules.test.ts
+data_models:
+  - name: EmbeddedModules
+    title: 埋めたモジュール
+    container: src/viewer/modules.ts
+    usecase: 共通
+    summary: CLI がまとめる入口のモジュールが `startViewer` に指定する、同じスクリプトにまとめた部品・色分け・外部ライブラリ・拡張のモジュール
+    properties:
+      - name: parts
+        type: 'Partial<Record<PartName, Record<string, unknown>>>'
+        description: 静的な `import` で取り込んだ部品のモジュール。文書にビューのマーカーがあるときだけ `view` を持つ
+      - name: syntax
+        type: 'EmbeddedSyntax | undefined'
+        description: 静的な `import` で取り込んだ色分けの本体と言語のモジュール。文書に色分けの対象があり本体をまとめられたときだけ持つ
+      - name: mermaid
+        type: '{ default?: unknown } | undefined'
+        description: 静的な `import` で取り込んだ mermaid のモジュールの名前空間。文書に mermaid のコードブロックがありまとめられたときだけ持つ
+      - name: libraries
+        type: 'Record<string, () => Promise<LibraryModule>>'
+        description: マーカーの名前から、外部ライブラリのモジュールをリテラルの動的 `import()` で読み込む関数を参照する表。まとめた後は同じスクリプトの中のモジュールを評価して返却する
+      - name: extensions
+        type: 'Array<() => Promise<{ default?: unknown }>>'
+        description: 拡張のモジュールをリテラルの動的 `import()` で読み込む関数。設定の `extensions` の順
+      - name: htmlScripts
+        type: Map<string, () => unknown> | undefined
+        description: 範囲のコードの文字から、既定のエクスポートを返却する関数を参照する表（CLI が esbuild で変えてまとめたもの）
+    refs:
+      - IF-472-33#constraints[まとめるスクリプト]
+    status: planned
+    introduced:
+      pr: 296
+functions:
+  - name: prepareModules
+    title: 埋めたモジュールを用意する
+    container: src/viewer/modules.ts
+    usecase: 共通
+    summary: 埋めた部品を `setPartModuleLoader`、埋めた色分けの本体と言語を `setEmbeddedSyntax`、埋めた mermaid を `setEmbeddedMermaid`、埋めた外部ライブラリを `setEmbeddedLibraries`、埋めた範囲のスクリプトを `setEmbeddedHtmlScripts` で読み込みに指定し、拡張を 1 つずつ読み込んで既定の export を `registerExtension` で登録する
+    description: '`URL.createObjectURL` と URL を読み込む動的 `import()` を使用しない。`parts` に無い部品（`view`・`comments`・`map`）は、呼ぶと拒否する関数を `setPartModuleLoader` で入れ、ページの隣の `view.js`・`comments.js`・`map.js` へ要求しない。`syntax` が無いときは本体を持たない `setEmbeddedSyntax({ languages: {} })` を入れ、色分けのために jsDelivr へ要求しない（色分けせずに描く）。`mermaid` が無いときは `setEmbeddedMermaid({})` を入れ、mermaid のために jsDelivr へ要求しない（mermaid のコードブロックは通知ブロックとコードブロックで描く）。`setEmbeddedLibraries` には `libraries` をそのまま入れ、表に無い外部ライブラリのマーカーは通知ブロックになる。拡張は 1 つずつ `try` で囲んで読み込み（モジュールの評価）と登録をし、例外を投げたものは `console.error` に出して飛ばし（マーカーは知らないマーカーとして取り除かれる）、ほかの拡張と描画は続ける'
+    kind: 関数
+    scope: public
+    is_async: true
+    side_effects: 部品・色分け・外部ライブラリの読み込みの差し替えを入れ、拡張を登録する
+    args:
+      - name: embedded
+        type: EmbeddedModules
+        required: true
+        description: 同じスクリプトにまとめたモジュール
+      - name: deps
+        type: '{ register: (ext: MdmarkExtension) => void }'
+        required: false
+        default: '`registerExtension`'
+        passing: injected
+        description: 差し替える依存（テスト用）
+    returns:
+      type: Promise<void>
+      description: 全ての拡張を登録するか飛ばしたら解決する
+    unit_tests:
+      - name: test_prepare_modules
+        case: 正常
+        summary: 埋めたモジュールを読み込みに指定し、拡張を登録する
+        condition: '`parts` に `view`、`libraries` に `chart`、`extensions` に `{ default: { name: "greet", ... } }` を返却する関数 1 つ'
+        mock: 呼ばれた拡張を貯める `register`
+        expected: '`loadPartModule("view")` が `parts.view` を返却し、`loadPartModule("comments")` が拒否する。`embeddedLibraries` が `libraries` で、`register` が `greet` で 1 回呼ばれる'
+      - name: test_prepare_modules_when_extension_fails
+        case: 正常
+        summary: 読み込みで例外を投げる拡張を飛ばして続ける
+        condition: '`extensions` に 2 つで、1 つ目の関数が例外で拒否する（モジュールの最上位の例外）'
+        mock: 呼ばれた拡張を貯める `register`。`console.error` を見張る
+        expected: '`register` が 2 つ目で 1 回だけ呼ばれ、`console.error` が 1 回呼ばれ、例外を投げない'
+      - name: test_prepare_modules_when_syntax
+        case: 正常
+        summary: 埋めた色分けのモジュールを入れ、無ければ本体を持たない値を入れる
+        condition: '`syntax` が `{ core: 本体, languages: { typescript: 言語 } }` の中身と、`syntax` を持たない中身'
+        mock: なし。`setEmbeddedSyntax` の後に `embeddedSyntax` を読み込む
+        expected: 前者は `embeddedSyntax` が指定した `syntax`。後者は `core` を持たず `languages` が空
+      - name: test_prepare_modules_when_mermaid
+        case: 正常
+        summary: 埋めた mermaid を入れ、無ければ mermaid を持たない値を入れる
+        condition: '`mermaid` が `{ default: { initialize, render } }` の中身と、`mermaid` を持たない中身'
+        mock: なし。`setEmbeddedMermaid` の後に `embeddedMermaid` を読み込む
+        expected: 前者は `embeddedMermaid` が指定した `mermaid`。後者は `default` を持たない `{}`
+    callees:
+      - MOD-472-205#functions[setEmbeddedSyntax]
+      - MOD-472-204#functions[setEmbeddedLibraries]
+      - MOD-472-143#functions[setEmbeddedMermaid]
+      - MOD-472-159#functions[setPartModuleLoader]
+    status: planned
+    introduced:
+      pr: 32

@@ -1,0 +1,74 @@
+summary: 採用済みの外部ライブラリ / 外部ツールのリファレンス
+items:
+- page: LIB-472-10.yaml
+  summary: TS と CSS を配布物の ES モジュールの JS と CSS にまとめる
+- page: LIB-472-11.yaml
+  summary: VS Code 拡張機能が拡張機能ホストの中で設定の extensions をまとめる
+- page: LIB-472-33.yaml
+  summary: 単体テスト（Node）と結合テスト（実ブラウザ）のランナー
+- page: LIB-472-20.yaml
+  summary: E2E のブラウザ操作と、結合テストのブラウザの起動
+- page: LIB-472-7.yaml
+  summary: lint と整形の検査
+- page: LIB-472-30.yaml
+  summary: 型の検査
+- page: LIB-472-16.yaml
+  summary: GitHub Flavored Markdown をトークンに解析し、HTML 文字列にする
+- page: LIB-472-23.yaml
+  summary: 描く前の HTML からスクリプトと許可していない要素・属性を落とす
+- page: LIB-472-3.yaml
+  summary: UI の部品を状態ごとのストーリーとして並べる（react-vite）
+- page: LIB-472-31.yaml
+  summary: テストで拡張の引数の Standard Schema を作る（配布物にまとめない）
+- page: LIB-472-36.yaml
+  summary: CLI が設定と索引の YAML を読み込む（配布物にまとめない）
+- page: LIB-472-15.yaml
+  summary: 図と記法のアイコンの形状
+- page: LIB-472-9.yaml
+  summary: 2 つのリビジョンの Markdown を行と単語で比べる（jsdiff）
+- page: LIB-472-35.yaml
+  summary: VS Code の拡張機能の API（コマンド・設定・エディタ・Webview）
+- page: LIB-472-34.yaml
+  summary: VS Code の拡張機能を .vsix にまとめる
+- page: LIB-472-27.yaml
+  summary: VS Code を取得して起動し、拡張機能ホストの中で結合テストを走らせる
+- page: LIB-472-18.yaml
+  summary: 拡張機能ホストの中で結合テストを走らせるテストフレームワーク
+- page: LIB-472-2.yaml
+  summary: Claude Code のプラグインの MCP サーバーとテストのクライアント
+- page: LIB-472-1.yaml
+  summary: プラグインの導入・PreToolUse のフック・プラグインの MCP サーバーの起動
+- page: LIB-472-12.yaml
+  summary: まとめた JS を構文木にして規則を適用する（対応ブラウザの下限の確認と、Webview の React の規則）
+- page: LIB-472-13.yaml
+  summary: 対応ブラウザの下限のバージョンに無い API の使用を報告する
+- page: LIB-472-14.yaml
+  summary: コードブロックを言語に応じて色分けする（配布物にまとめず jsDelivr から読み込む）
+- page: LIB-472-17.yaml
+  summary: 言語 mermaid のコードブロックを図にする（配布物にまとめず jsDelivr から読み込む）
+- page: LIB-472-6.yaml
+  summary: 範囲の TypeScript の型を削除して JavaScript にする（配布物にまとめず jsDelivr から読み込む）
+- page: LIB-472-4.yaml
+  summary: CLI が設定の aliases を取り込んだ JSON Schema で検証する（配布物にまとめない）
+- page: LIB-472-8.yaml
+  summary: 配信元の文書を MCP で検索・参照する（Claude Code がガイドを参照する先）
+- page: LIB-472-21.yaml
+  summary: VS Code の Webview の画面と hook（React Compiler を含む）
+- page: LIB-472-32.yaml
+  summary: VS Code の Webview を 1 つの JS と CSS にまとめる
+- page: LIB-472-26.yaml
+  summary: Webview の部品の class とトークン（Preflight を読み込まない）
+- page: LIB-472-24.yaml
+  summary: Webview の部品のソース（Button・Alert・Spinner）
+- page: LIB-472-19.yaml
+  summary: ストーリーと単体テストの配布物の HEAD のモック
+- page: LIB-472-5.yaml
+  summary: テストのときだけパネルをアクセシビリティの規則で検査する
+- page: LIB-472-22.yaml
+  summary: Webview の画面の最上位の Error Boundary
+- page: LIB-472-28.yaml
+  summary: Webview のコンポーネントと hook の単体テスト
+- page: LIB-472-29.yaml
+  summary: global-setup が常駐サーバーを動かすセッションの確認・起動・閉じる操作
+- page: LIB-472-25.yaml
+  summary: global-setup が常駐サーバーを動かす user の unit の起動・停止・状態の確認と journal

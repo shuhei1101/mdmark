@@ -1,12 +1,32 @@
 import { readFile } from "node:fs/promises";
 import { expect, test } from "vitest";
 import type { MdmarkChartDefinition } from "../../../../src/diagram/definition.ts";
-import { REPLY_KIND_TEXT } from "../../helpers/charts.ts";
+import {
+  INQUIRY_COUNT_TEXT,
+  LENGTH_TIME_TEXT,
+  REPLY_KIND_TEXT,
+} from "../../helpers/charts.ts";
 import { parsed, REPLY_TIME_TEXT } from "../../helpers/diagrams.ts";
 import { findTag, matches, plainText } from "../../helpers/html.ts";
 
 /** グラフの部品を読み込む（実装が無い間は各テストが個別に失敗する） */
 const loadChart = () => import("../../../../src/parts/chart.ts");
+
+/** 塗りの模様 `id` の中身を返却する */
+function patternOf(html: string, id: string): string {
+  const pattern = new RegExp(
+    `<pattern[^>]*id="${id}"[^>]*>([\\s\\S]*?)</pattern>`,
+  );
+  return pattern.exec(html)?.[1] ?? "";
+}
+
+/** 軸の目盛りの文字のうち数だけを、現れた順に返却する */
+function axisNumbers(html: string): number[] {
+  return matches(
+    html,
+    /<text[^>]*class="mdmark-diagram-axis-text"[^>]*>-?\d+(?:\.\d+)?<\/text>/g,
+  ).map((text) => Number(plainText(text)));
+}
 
 /** タイトル・範囲・更新日に `rest` を加えたグラフの定義 */
 function chartOf(rest: Partial<MdmarkChartDefinition>): MdmarkChartDefinition {
@@ -414,4 +434,83 @@ test("test_chart_item_text", async () => {
     "文字数 3・分 40・件数 16",
     "50 件（50%）",
   ]);
+});
+
+// 系列ごとに線と点を描き、スクリーンリーダーに値を記載する（正常系）
+test("test_render_chart", async () => {
+  // 準備
+  const { renderChart } = await loadChart();
+  const definition = parsed<MdmarkChartDefinition>(REPLY_TIME_TEXT);
+  // 実行
+  const { html, tips } = renderChart(definition, "d1");
+  // 検証
+  expect(matches(html, /<path[^>]*data-series="1"/g)).toHaveLength(1);
+  expect(matches(html, /<path[^>]*data-series="2"/g)).toHaveLength(1);
+  expect(matches(html, /class="mdmark-diagram-point"/g)).toHaveLength(10);
+  expect(html).toContain(
+    'aria-label="返信までの時間。自動返信: 12・9・14・8・10。担当者: 42・38・51・35・44"',
+  );
+  expect(matches(tips, /role="tooltip"/g)).toHaveLength(10);
+});
+
+// 棒を系列ごとの塗りの模様で描き、縦の軸をデータから切る（正常系）
+test("test_render_chart_when_bar", async () => {
+  // 準備
+  const { renderChart } = await loadChart();
+  const definition = parsed<MdmarkChartDefinition>(INQUIRY_COUNT_TEXT);
+  // 実行
+  const { html } = renderChart(definition, "d1");
+  // 検証
+  expect(matches(html, /<rect[^>]*class="mdmark-diagram-bar"/g)).toHaveLength(
+    8,
+  );
+  const second = /<g data-series="2">([\s\S]*?)<\/g>/.exec(html)?.[1] ?? "";
+  expect(matches(second, /fill="url\(#d1-fill-2\)"/g)).toHaveLength(4);
+  expect(patternOf(html, "d1-fill-1")).not.toContain("<path");
+  expect(patternOf(html, "d1-fill-2")).toContain("<path");
+  expect(axisNumbers(html)).toEqual([0, 50, 100, 150]);
+});
+
+// 扇形の外に合計 100 の整数の割合を配置し、凡例に名前と値を出す（正常系）
+test("test_render_chart_when_pie", async () => {
+  // 準備
+  const { renderChart } = await loadChart();
+  const definition = parsed<MdmarkChartDefinition>(REPLY_KIND_TEXT);
+  // 実行
+  const { html } = renderChart(definition, "d1");
+  // 検証
+  expect(matches(html, /<path[^>]*class="mdmark-diagram-slice"/g)).toHaveLength(
+    3,
+  );
+  const percents = matches(
+    html,
+    /<text[^>]*class="mdmark-diagram-value-text"[^>]*>[^<]*<\/text>/g,
+  ).map((text) => plainText(text));
+  expect(percents).toEqual(["62%", "31%", "7%"]);
+  expect(html).toContain("よくある質問で回答した: 186 件");
+});
+
+// 横と縦を数値の軸にして系列ごとの構造の点を配置する（正常系）
+test("test_render_chart_when_scatter", async () => {
+  // 準備
+  const { renderChart } = await loadChart();
+  const definition = parsed<MdmarkChartDefinition>(LENGTH_TIME_TEXT);
+  // 実行
+  const { html } = renderChart(definition, "d1");
+  // 検証
+  const first = /<g data-series="1">([\s\S]*?)<\/g>/.exec(html)?.[1] ?? "";
+  const second = /<g data-series="2">([\s\S]*?)<\/g>/.exec(html)?.[1] ?? "";
+  expect(
+    matches(first, /<circle[^>]*class="mdmark-diagram-point"/g),
+  ).toHaveLength(6);
+  expect(
+    matches(second, /<rect[^>]*class="mdmark-diagram-point"/g),
+  ).toHaveLength(6);
+  // 縦の軸の目盛りに加え、横の軸（中央揃えの文字）も数値の目盛りを持つ
+  const horizontal = matches(
+    html,
+    /<text[^>]*class="mdmark-diagram-axis-text"[^>]*text-anchor="middle"[^>]*>-?\d+(?:\.\d+)?<\/text>/g,
+  );
+  expect(horizontal.length).toBeGreaterThanOrEqual(2);
+  expect(axisNumbers(html).length).toBeGreaterThan(horizontal.length);
 });

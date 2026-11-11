@@ -1,0 +1,80 @@
+id: MOD-472-238
+visibility: internal
+title: ライブラリ本体 / 操作 / footnotes.ts
+test_files:
+  - tests/unit/src/interact/footnotes.browser.test.ts
+functions:
+  - name: attachFootnotes
+    title: 脚注の操作を付ける
+    container: src/interact/footnotes.ts
+    kind: 関数
+    scope: internal
+    summary: mount が描いた脚注の番号にツールチップを開閉する操作を、番号と末尾の一覧の項目に行き来する操作を付ける
+    description: 'モック `docs/mock/refs/311/assets/footnote.js` のとおり。付ける前に、`root` の中の `mdmark-fnref-`・`mdmark-fn-tip-`・`mdmark-fn-` で始まる `id` をモジュールの通し番号を添えた値にもう一度振り、それを指す `href`・`aria-describedby`・`aria-details` も修正する（`attachTermTips` と同じ）。開閉は `sup.mdmark-fn-ref` の class で表す: ポインターを乗せたとき・フォーカスしたときにほかの脚注のツールチップを閉じて `is-open` を付け、画面に対して配置する。配置する側は `chooseTipSide`（`placement` を指定する）で決め、下なら `is-below` も付け、画面の端からはみ出さないよう左右を統一する。ポインターもフォーカスも離れたら 150 ミリ秒待って `is-open`・`is-below`・`is-dismissed` を削除する。`sup.mdmark-fn-ref` の `pointerenter`・`pointerleave` は `pointerType` が `touch` のとき無視する。番号のリンクの `pointerdown` ごとに、続く `click` で一覧へ移らない番号の記録をもう一度配置する: `touch` で閉じた番号なら、`is-dismissed` を削除してから開き（`attachTermTips` のタッチの切り替えと同じく、一覧へ移った後や外のタップで閉じた後ももう一度開く）、その番号を記録する。開いた番号の `touch` と、`mouse`・`pen` では記録を削除する。`document` の `keydown` でも記録を削除する（タップの `click` が発火しなかった後の Enter で一覧へ移る）。記録した番号の `click` では既定の動作を止め、一覧へ移らずに記録を削除する。`document` のキャプチャーフェーズの `pointerdown` で、開いている `sup.mdmark-fn-ref`（番号とツールチップ）の外が対象なら閉じて `is-dismissed` を付け、番号に残る `:hover`・`:focus-within` で CSS がツールチップを出し続けないようにする（`attachTermTips` と同じ。用語の単語の枠と脚注の番号は互いの外になる）。開閉の処理は `attachTermTips`・`attachDiagramTips` と共通にしない（脚注はタップで閉じず一覧へ移るため、共通にすると分岐の引数が要る）。Esc では `is-open` を削除して `is-dismissed` を付け、ツールチップの中にフォーカスがあれば番号へ戻す。番号を押すと（Enter を含む）、`href` の最後の `#` の後ろの `id` の項目を `root` の中で引き（まとめた HTML は同じ文書の中のアンカーを `#/{文書のパス}#{id}` に書き換える）、あれば既定の動作を止め、ツールチップを閉じて `is-dismissed` を付け、項目を含む `details` を開き、`openEnclosing` で囲む閉じたセクション・タブ・行の詳細を開いてから項目を `scrollIntoView({ block: "center" })` し、`tabindex="-1"` を付けてフォーカスを移す。戻るリンクを押すと、同じく `href` の最後の `#` の後ろの `id` の番号のリンクを `root` の中で引き、既定の動作を止め、`openEnclosing` で番号を囲む閉じたセクション・タブ・行の詳細を開き、番号を画面に入れてフォーカスを移す。どちらも URL の `#` を書き換えない。開いたツールチップはスクロールと画面の幅の変化でもう一度配置する。印刷の前は開いたツールチップを閉じる（ツールチップと戻るリンクを隠すのは印刷の CSS、一覧を開くのは `attachPrint`）。返却する関数で付けた操作と閉じる待ちを削除し、付けた class と配置した位置を削除する'
+    args:
+      - name: options
+        type: '{ root: HTMLElement; placement: TooltipPlacement }'
+        required: true
+        description: 描いた文書の要素と、ツールチップを先に出す側
+    returns:
+      type: () => void
+      description: 付けた操作を削除する関数
+    side_effects: '`root` の中の要素の `id`・属性を書き換え、`root`・`document`・`window` にイベントを付ける'
+    callees:
+      - 'MOD-472-231#functions[chooseTipSide]'
+      - 'MOD-472-222#functions[openEnclosing]'
+    unit_tests:
+      - name: test_attach_footnotes
+        case: 正常
+        summary: フォーカスで開き Esc で閉じる
+        condition: 脚注 1 つの番号と一覧を描いた要素
+        mock: なし（Chromium）
+        expected: 付けた直後は `sup.mdmark-fn-ref` が `is-open` を持たず、番号のフォーカスで `is-open` を持ち、Esc で `is-open` が削除されて `is-dismissed` を持ち、フォーカスは番号に残る。削除する関数の後はどの class も残らない
+      - name: test_attach_footnotes_when_jump
+        case: 正常
+        summary: 番号で一覧の項目へ、戻るリンクで番号へ移る
+        condition: 脚注 1 つの番号と閉じた一覧を描いた要素。番号を押し、次に戻るリンクを押す
+        mock: なし（Chromium）
+        expected: 番号の後は `details` が `open` を持ち、項目が `tabindex="-1"` でフォーカスを持ち、`sup` が `is-open` を持たない。戻るリンクの後は番号のリンクがフォーカスを持つ。どちらの後も `location.hash` が変わらない
+      - name: test_attach_footnotes_unique_ids
+        case: 正常
+        summary: 同じページに 2 回描いても id が重ならない
+        condition: 同じ HTML を 2 つの要素に入れて両方に付ける
+        mock: なし（Chromium）
+        expected: ページの `id` が全て一意で、`href`・`aria-describedby` が同じ要素の中の要素を指す
+      - name: test_attach_footnotes_when_back_into_closed_section
+        case: 正常
+        summary: 閉じたセクションの中の番号へ、戻るリンクでセクションを開いて移る
+        condition: '`<!-- section: closed -->` のセクションの中に `[^a]` を持つ文書を描き、`attachSections` と一緒に付け、一覧を開いて戻るリンクを押す'
+        mock: なし（Chromium）
+        expected: セクションの中身が `hidden` を持たず、番号のリンクがフォーカスを持つ
+      - name: test_attach_footnotes_when_touch_tapped
+        case: 正常
+        summary: タッチの 1 回目のタップで開いて一覧へ移らず、開いた番号のタップで一覧へ移る
+        condition: 脚注 1 つの番号と閉じた一覧を描いた要素。番号のリンクに `pointerType` が `touch` の `pointerenter`・`pointerdown`・`pointerup`・`pointerleave` をこの順に送信してリンクの `focus()` を呼び、`click` を送信する。続けて同じタップをもう一度送る（既にフォーカスを持つリンクでは `focus` は発火しない）
+        mock: タイマーを `vi.useFakeTimers` で進める
+        expected: 1 回目の後に `sup.mdmark-fn-ref` が `is-open` を持ち、`details` が `open` を持たず、`click` の `defaultPrevented` が `true`。2 回目の後は `is-open` を持たず、`details` が `open` を持ち、項目がフォーカスを持つ
+      - name: test_attach_footnotes_when_touch_outside
+        case: 正常
+        summary: タッチで開いた後、外の `pointerdown` だけで閉じ、ツールチップの中のリンクでは閉じない
+        condition: 中身にリンクを持つ脚注の番号をタッチでタップして開き、ツールチップの中のリンクに `pointerType` が `touch` の `pointerdown` を送信し、次に `root` の外の要素に `pointerType` が `touch` の `pointerdown` だけを送信する（`pointerleave`・`focusout` は送信しない）
+        mock: タイマーを `vi.useFakeTimers` で進める
+        expected: 中のリンクの後は `is-open` を持ち、外の後は `is-open` を持たず `is-dismissed` を持ち、番号にフォーカスが残ったままでもツールチップの `display` が `none`
+      - name: test_attach_footnotes_when_touch_reopened
+        case: 正常
+        summary: タップで一覧へ移った後も、同じ番号のタップでもう一度開く
+        condition: '`test_attach_footnotes_when_touch_tapped` と同じ 2 回のタップで一覧へ移った後、同じ番号にタッチのタップ（`pointerenter`・`pointerdown`・`pointerup`・`pointerleave`・`focus()`・`click`）をもう一度送る'
+        mock: タイマーを `vi.useFakeTimers` で進める
+        expected: '`sup.mdmark-fn-ref` が `is-dismissed` を持たず `is-open` を持ち、`click` の `defaultPrevented` が `true`'
+      - name: test_attach_footnotes_when_mouse_clicked
+        case: 正常
+        summary: マウスでは今のまま 1 回のクリックで一覧へ移る
+        condition: 脚注 1 つの番号と閉じた一覧を描いた要素。番号のリンクに `pointerType` が `mouse` の `pointerenter`・`pointerdown`・`pointerup` を送信し、`click` を送信する
+        mock: タイマーを `vi.useFakeTimers` で進める
+        expected: '`click` の後、`sup.mdmark-fn-ref` が `is-open` を持たず、`details` が `open` を持ち、項目がフォーカスを持つ'
+      - name: test_attach_footnotes_when_doc_path_in_href
+        case: 正常
+        summary: まとめた HTML が `href` に文書のパスを足しても、番号と戻るリンクで移る
+        condition: 脚注 1 つの番号と閉じた一覧を描いた要素に付けた後、番号のリンクと戻るリンクの `href` を `#/doc.md#{id}` に書き換え、番号を押し、次に戻るリンクを押す
+        mock: なし（Chromium）
+        expected: 番号の `click` の `defaultPrevented` が `true` で、`details` が `open` を持ち、項目がフォーカスを持つ。戻るリンクの `click` の `defaultPrevented` が `true` で、番号のリンクがフォーカスを持つ

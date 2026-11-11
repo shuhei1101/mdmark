@@ -1,0 +1,108 @@
+id: SC-472-37
+visibility: internal
+title: "図と表に番号を付けて参照する"
+scenarios:
+  - name: 正常シナリオ
+    setup:
+      - name: mdmark を読み込むページ
+        description: バージョンを固定した URL で `dist/index.js` と `dist/index.css` を読み込み、設定を指定して文書を描く HTML
+      - name: 図表のマーカーを持つ Markdown
+        description: '`<!-- fig: arch -->` の後に画像 1 つの段落、`<!-- fig: flow -->` の後に画像 1 つの段落、`<!-- fig: list -->` の後に表を持ち、本文に `[図](#fig-flow)` と `[表](#fig-list)` のリンクを持つ文書'
+      - name: Mock
+        description: jsDelivr を、ビルドした `dist/` を同じパスで返却する手元の応答に差し替える。画像は手元の応答で返却する
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 利用側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を指定して描かせる
+        M->>M: 文書の頭から図と表を別々に数える
+        M-->>P: 番号を付けた図表と、番号にした参照を描く
+        U->>P: 参照の「図 2」を押す
+        P-->>U: 2 つ目の図へ移る
+    expected:
+      - 1 つ目の画像に `図 1`、2 つ目の画像に `図 2`、表に `表 1` の番号が付いている
+      - 図表の要素が ID `fig-arch`・`fig-flow`・`fig-list` を持つ
+      - 本文のリンクの文字が `図 2` と `表 1` になっている
+      - '`図 2` のリンクを押した後、URL の末尾が `#fig-flow` で、2 つ目の画像が画面に入っている'
+    test: test_normal
+  - name: 異常シナリオ（切れた参照）
+    setup:
+      - name: mdmark を読み込むページ
+        description: 正常シナリオと同じ
+      - name: 無い ID を指す Markdown
+        description: '`<!-- fig: arch -->` の後に画像を持ち、本文に `[図](#fig-missing)` のリンクを持つ文書'
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 利用側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を指定して描かせる
+        M->>M: 参照先の ID が文書に無い
+        M-->>P: リンクの文字をそのままにし、記載の警告を付けて描く
+        P-->>U: 記載の警告と本文を表示
+    expected:
+      - リンクの文字が `図` のまま
+      - リンクのある段落の上に、`fig-missing` の図表が無いことを記載した記載の警告がある
+      - '`図 1` の番号は画像に付いている'
+    test: test_error_when_reference_missing
+  - name: 異常シナリオ（同じ ID を 2 回書く）
+    setup:
+      - name: mdmark を読み込むページ
+        description: 正常シナリオと同じ
+      - name: 同じ ID を 2 回書いた Markdown
+        description: '`<!-- fig: arch -->` の後に画像を持つ段落を 2 つ持つ文書'
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 利用側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を指定して描かせる
+        M->>M: 2 つ目の ID が 1 つ目と同じ
+        M-->>P: 1 つ目にだけ ID を付け、両方に番号を付けて描く
+        P-->>U: 記載の警告と図を表示
+    expected:
+      - 両方の画像に `図 1`・`図 2` の番号が付いている
+      - ID `fig-arch` を持つ要素は 1 つ目の図だけ
+      - 2 つ目の図の上に、`arch` が他の図表と重なっていることを記載した記載の警告がある
+    test: test_error_when_id_duplicated
+  - name: 正常シナリオ（ギャラリーのサブ図とキャプション）
+    setup:
+      - name: mdmark を読み込むページ
+        description: 正常シナリオと同じ
+      - name: ギャラリーとキャプションを持つ Markdown
+        description: '`<!-- fig: shots -->` の後ろに `<!-- gallery: cols=2 -->` 〜 `<!-- /gallery -->` で 2 つの画像を囲んだ範囲、`<!-- fig: arch -->` の後ろに title `構成` を持つ画像だけの段落、マーカーの無い title `写真` を持つ画像だけの段落を並べ、本文に `[図](#fig-shots)` のリンクを持つ文書'
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 利用側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を指定して描かせる
+        M->>M: マーカーのある図だけを数え、ギャラリーの画像にサブ図の番号を付ける
+        M-->>P: 番号とキャプションを付けた図を描く
+        P-->>U: 文書を表示
+    expected:
+      - ギャラリーに `図 1` の番号が付き、2 つの画像に `図 1a`・`図 1b` のサブ図の番号が付いている
+      - title `構成` の画像のキャプションが `図 2` の番号と `構成` を持つ
+      - マーカーの無い画像のキャプションが `写真` だけで、番号を持たない
+      - 本文のリンクの文字が `図 1` になっている
+    test: test_normal_when_gallery_and_caption
+lead: '文書の作成者が図・表の直前に `<!-- fig: ID -->` を記載すると、mdmark が種類ごとの通し番号（`図 1`・`表 1`）を付け、本文の `#fig-ID` へのリンクの文字をその番号にする。'
+issue: 4
+primary_actor: 文書の作成者
+stakeholders:
+  - name: 読者
+    interest: 「図 2 を参照」の番号から図へ移れ、図を追加・削除しても番号がずれない
+trigger: 利用側のページが、図表の番号のマーカーを持つ文書を描かせる
+preconditions:
+  - ページがバージョンを固定した URL で mdmark の JavaScript と CSS を読み込んでいる
+  - 図表の番号の機能（`figures`）がオン（既定）
+success_guarantee: マーカーを付けた図と表に、文書の頭から種類ごとに数えた番号が付き、参照のリンクがその番号と図表への移動を持つ。
+minimal_guarantee: 切れた参照や重なった ID があっても、本文は描かれ、記載の警告が出る。
+test_file: tests/e2e/単一ユースケース/図と表に番号を付けて参照する.spec.ts

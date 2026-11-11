@@ -1,0 +1,96 @@
+id: MOD-472-13
+visibility: internal
+title: ClaudeCodeプラグイン / フック / pre-tool-use.ts
+lead: プラグインの `hooks/hooks.json` が `node` で起動する処理。PreToolUse で作業のフォルダを MCP のツールの引数 `project_dir` に入れる。
+test_files:
+  - tests/unit/src/plugin/pre-tool-use.test.ts
+directory: |-
+  ```tree
+  src/plugin/
+  └── pre-tool-use.ts   # PreToolUse のフックの入口
+  ```
+constants:
+  - name: PROJECT_DIR_ENV
+    title: 作業のフォルダの環境変数
+    container: src/plugin/pre-tool-use.ts
+    usecase: 作業のフォルダを引数に入れる
+    summary: Claude Code がフックに指定する、セッションの作業のフォルダの絶対パスの環境変数
+    value: CLAUDE_PROJECT_DIR
+    refs:
+      - IF-472-5#
+    status: planned
+    introduced:
+      pr: 72
+  - name: TOOL_NAME_PREFIX
+    title: ツールの完全名の頭
+    container: src/plugin/pre-tool-use.ts
+    usecase: 作業のフォルダを引数に入れる
+    summary: Claude Code がプラグイン mdmark の MCP サーバー mdmark のツール名の前に付ける頭
+    value: mcp__plugin_mdmark_mdmark__
+    status: planned
+    introduced:
+      pr: 141
+  - name: PROJECT_DIR_TOOLS
+    title: 作業のフォルダを使用するツール
+    container: src/plugin/pre-tool-use.ts
+    usecase: 作業のフォルダを引数に入れる
+    summary: '`project_dir` を入れるツールの名前。`TOOLS` のツールの名前と一致させ、`plugin/hooks/hooks.json` の PreToolUse の `matcher` はこの名前に `TOOL_NAME_PREFIX` を付けて `|` でつないだもの'
+    value: check・export_html・build_site・list_templates・add_template・apply_template
+    refs:
+      - IF-472-5#constraints
+    status: planned
+    introduced:
+      pr: 141
+functions:
+  - name: runPreToolUse
+    title: 作業のフォルダを引数に入れる
+    kind: 関数
+    container: src/plugin/pre-tool-use.ts
+    usecase: 作業のフォルダを引数に入れる
+    role: 入口
+    summary: 標準入力の `tool_input` に `project_dir` を入れた `updatedInput` を標準出力に 1 行書く
+    description: まとめた `plugin/scripts/pre-tool-use.js` を入口として実行したときだけ、標準入力を読み込み切って実行し、戻り値を終了コードにする（`import.meta.main`）。`permissionDecision` は記載しない
+    scope: public
+    is_async: false
+    args:
+      - name: options
+        type: '{ env: NodeJS.ProcessEnv; input: string; stdout: (line: string) => void }'
+        required: true
+        description: 環境変数・標準入力の文字列・標準出力へ 1 行書く関数
+    returns:
+      type: '0'
+      description: 常に 0
+    process: |-
+      1. `PROJECT_DIR_ENV` が無いか空なら、何も書き込まず 0 を返却する
+      2. 標準入力を JSON として読み込み、`tool_input` の引数に `project_dir` を環境変数の値で入れる（既にあれば上書きする）
+      3. `{ hookSpecificOutput: { hookEventName: "PreToolUse", updatedInput } }` を JSON の 1 行で標準出力に書き込んで 0 を返却する
+    unit_tests:
+      - name: test_run_pre_tool_use
+        case: 正常
+        summary: project_dir を入れた updatedInput を記載する
+        condition: '`CLAUDE_PROJECT_DIR=/work`、`tool_input` が `{ "config": "a.yaml" }`'
+        mock: 行を配列に貯める `stdout`
+        expected: '0 を返却し、`stdout` の 1 行を JSON として読み込むと `hookEventName` が `PreToolUse`、`updatedInput` が `{ "config": "a.yaml", "project_dir": "/work" }`、`permissionDecision` が無い'
+      - name: test_run_pre_tool_use_when_project_dir_given
+        case: 正常
+        summary: エージェントが記載した project_dir を上書きする
+        condition: '`CLAUDE_PROJECT_DIR=/work`、`tool_input` が `{ "project_dir": "/other" }`'
+        mock: 行を配列に貯める `stdout`
+        expected: '`updatedInput.project_dir` が `/work`'
+      - name: test_run_pre_tool_use_when_project_dir_unknown
+        case: 正常
+        summary: 環境変数が無ければ何も書き込まない
+        condition: '`env` に `CLAUDE_PROJECT_DIR` が無い'
+        mock: 行を配列に貯める `stdout`
+        expected: 0 を返却し、`stdout` が空
+      - name: test_run_pre_tool_use_when_matcher
+        case: 正常
+        summary: hooks.json の matcher が `PROJECT_DIR_TOOLS` のツールだけに該当する
+        condition: '`plugin/hooks/hooks.json` の PreToolUse の `matcher` を読み込む'
+        mock: なし
+        expected: '`PROJECT_DIR_TOOLS` に `TOOL_NAME_PREFIX` を付けて `|` でつないだ文字列と等しく、`PROJECT_DIR_TOOLS` が `TOOLS` の名前と一致し、並べ替えると `add_template`・`apply_template`・`build_site`・`check`・`export_html`・`list_templates` になる'
+    refs:
+      - IF-472-5#
+    status: planned
+    introduced:
+      pr: 141

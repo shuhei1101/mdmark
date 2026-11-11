@@ -1,0 +1,14 @@
+summary: 利用側が記載し mdmark が読み込むデータの構造
+items:
+- page: ER-472-6.yaml
+  summary: 文書のメタデータと用語を記載する YAML の索引
+- page: ER-472-5.yaml
+  summary: バージョンごとに適用する移行の手順と、移行の手順が要らないスキーマの変更の一覧
+- page: ER-472-4.yaml
+  summary: Claude Code のプラグインが指定するガイドの索引
+- page: ER-472-3.yaml
+  summary: 設定の aliases に並べるエイリアスの元の行と、元の行から作るエイリアス
+- page: ER-472-1.yaml
+  summary: 端末の設定のフォルダに配置する CSS のテンプレートの索引
+- page: ER-472-2.yaml
+  summary: map の範囲に記載する補足の YAML の構造

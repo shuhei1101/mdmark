@@ -201,7 +201,7 @@ function migrationFiles(options?: {
   return {
     "migrations/v0.4.0/steps.yaml": STEPS_V040,
     "migrations/v0.5.0/steps.yaml": options?.stepsV050 ?? stepsV050(),
-    "docs/はじめに/変更履歴.md": CHANGELOG,
+    "docs/guide/変更履歴.md": CHANGELOG,
     ...options?.extra,
   };
 }
@@ -348,7 +348,7 @@ test("test_normal_when_value_asked", async () => {
       "    ask: 書き出す HTML のタイトルを入れてください",
       "",
     ].join("\n"),
-    "docs/はじめに/変更履歴.md": CHANGELOG,
+    "docs/guide/変更履歴.md": CHANGELOG,
   });
   const dir = await createWork();
   // 実行
@@ -458,7 +458,7 @@ test("test_normal_when_tag_vocabulary_dropped", async () => {
       "utf8",
     ),
     ...scripts,
-    "docs/はじめに/変更履歴.md": CHANGELOG,
+    "docs/guide/変更履歴.md": CHANGELOG,
   });
   const dir = await createWork();
   await writeFile(

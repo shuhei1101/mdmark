@@ -1,0 +1,45 @@
+id: MOD-472-278
+visibility: internal
+title: ライブラリ本体 / 記法 / inline-icons.ts
+test_files:
+  - tests/unit/src/render/syntax/inline-icons.test.ts
+constants:
+  - name: ICON_NAME_PATTERN
+    title: アイコンの名前の記載方法
+    container: src/render/syntax/inline-icons.ts
+    value: /^[a-z0-9][a-z0-9-]*$/
+    summary: Lucide のアイコンの名前の記載方法
+functions:
+  - name: buildInlineIcons
+    title: 行内のアイコンにする
+    container: src/render/syntax/inline-icons.ts
+    kind: 関数
+    scope: internal
+    summary: コアルール。`icon` がオンなら、頭が `icon:` の `code_inline` のうち名前が `ICON_NAME_PATTERN` に合うものを部品『アイコン』にし、まとめた名前と `opts.icons` の名前は IconNode を指定する。合わない名前はコードのまま残して段落の前に記載の警告を差し込む。`icon\:` は `\` を削除したコード、後ろが空か空白だけのものはコードのまま
+    args:
+      - name: state
+        type: StateCore
+        required: true
+        description: markdown-it の状態
+    side_effects: '`state.tokens` を書き換える'
+    callees:
+      - MOD-472-334#functions[renderInlineIcon]
+    unit_tests:
+      - name: test_build_inline_icons
+        case: 正常
+        condition: '`` `icon:flag` ``（まとめた名前）・`` `icon:sailboat` ``（まとめていない名前）・`` `icon\:check` ``・`` `icon:` ``'
+        expected: '`flag` は中に `svg` を持つ `span.mdmark-inline-icon`、`sailboat` は中が空の `span.mdmark-inline-icon`、`<code>icon:check</code>`、`<code>icon:</code>`'
+        mock: なし
+        summary: まとめた名前だけ構造を入れ、打ち消しと空はコードに残す
+      - name: test_build_inline_icons_when_invalid_name
+        case: 異常
+        condition: '`` `icon:Rocket!` ``'
+        expected: '`<code>icon:Rocket!</code>` が残り、段落の前に `Rocket!` を含む記載の警告が入る'
+        mock: なし
+        summary: 名前の記載方法に合わないと警告する
+      - name: test_build_inline_icons_when_icon_nodes
+        case: 正常
+        condition: '`` `icon:sailboat` `` と、`opts.icons` に `sailboat` の IconNode'
+        expected: '`sailboat` の `span` の中にその構造の `svg` がある'
+        mock: なし
+        summary: 指定した構造の表を使用する

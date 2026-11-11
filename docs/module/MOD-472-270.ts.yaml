@@ -1,0 +1,127 @@
+id: MOD-472-270
+visibility: internal
+title: ライブラリ本体 / 記法 / collapse.ts
+test_files:
+  - tests/unit/src/render/syntax/collapse.test.ts
+data_models:
+  - name: CollapseSpec
+    title: 折り畳みの指定
+    container: src/render/syntax/collapse.ts
+    summary: 表・タブ・ステップのマーカーから `closed`・`open`・`title=` を読み込んだ結果
+    properties:
+      - name: collapse
+        type: '"none" | "closed" | "open"'
+        description: 折り畳みに入れるかと、既定の開閉。`closed` と `open` を両方書いたら `closed`
+      - name: title
+        type: string | undefined
+        description: 折り畳みの見出し（`title=` の値）。`collapse` が `none` のときと、値の無い `title=` では入れない
+      - name: items
+        type: WarningItem[]
+        description: 読み込めなかった指定（`closed と open`・`closed` も `open` も無い `title=`・値の無い `title=`）
+      - name: rest
+        type: MdmarkMarkArgs
+        description: '`closed`・`open`・`title=` を除いた残りの引数'
+      - name: titleTail
+        type: string | undefined
+        description: '`title=` の値の空白の後ろの単語。`closed`・`open` と `+`・`-` で始まる単語は入れない'
+    status: planned
+    introduced:
+      pr: 225
+functions:
+  - name: readCollapse
+    title: 折り畳みの指定を読み込む
+    container: src/render/syntax/collapse.ts
+    summary: 表・タブ・ステップのマーカーの引数から `closed`・`open`・`title=` を読み込み、`CollapseSpec` を作る
+    description: '`closed` と `open` を両方書いたら `closed` を適用して項目 `closed と open` を、`closed` も `open` も無い `title=` は当てずに項目 `title=`（`closed`・`open` と一緒に記載する案内）を、値の無い `title=` は見出しを中身から作る案内の項目 `title=` を入れる。`text` を `titleTailOf` に指定し、`title=` の値の空白の後ろの単語が `closed`・`open` でも `+`・`-` で始まる単語でもなければ `titleTail` に入れる（項目にはしない。表の種類のように呼ぶ側だけが知っている単語があるため、呼ぶ側が知らない指定としてスキップする前に `titleTail` と比べ、同じなら `titleTailItem` の警告にする）。`closed`・`open`・`title=` を除いた引数を `rest` に残す'
+    kind: 関数
+    scope: internal
+    args:
+      - name: args
+        type: MdmarkMarkArgs
+        required: true
+        description: マーカーの引数
+      - name: text
+        type: string
+        required: false
+        default: '""'
+        description: マーカーの引数の文字（`Mark` の `rest`）
+    returns:
+      type: CollapseSpec
+      description: 折り畳みの指定と、残りの引数
+    unit_tests:
+      - name: test_read_collapse
+        case: 正常
+        summary: closed と title= を読み込み、残りの引数を返却する
+        condition: '`data closed title=リリースの一覧 filter=名前`'
+        mock: なし
+        expected: '`collapse` が `closed`、`title` が `リリースの一覧`、`items` が空、`rest` が `data` と `filter=名前` だけ'
+      - name: test_read_collapse_when_none
+        case: 正常
+        summary: closed も open も無ければ折り畳まない
+        condition: '`group=os`'
+        mock: なし
+        expected: '`collapse` が `none`、`title` が無く、`items` が空、`rest` が `group=os`'
+      - name: test_read_collapse_when_conflict
+        case: 異常
+        summary: closed と open を両方書いたら closed にして項目を入れる
+        condition: '`closed open title=入れ方`'
+        mock: なし
+        expected: '`collapse` が `closed`、`title` が `入れ方`、`items` の `label` が `closed と open` の 1 つ'
+      - name: test_read_collapse_when_title_alone
+        case: 異常
+        summary: closed も open も無い title= は当てずに項目を入れる
+        condition: '`title=準備` と、`open title=` をそれぞれ読み込む'
+        mock: なし
+        expected: 1 つ目は `collapse` が `none`、`title` が無く、`items` の `label` が `title=` で本文に `closed`・`open` がある。2 つ目は `collapse` が `open`、`title` が無く、`items` の `label` が `title=`
+      - name: test_read_collapse_when_title_has_space
+        case: 異常
+        summary: title= の値の空白の後ろの単語を titleTail にする
+        condition: '`open title=入れ 方 fold`（`text` も同じ文字）'
+        mock: なし
+        expected: '`title` が `入れ`、`items` が空、`titleTail` が `方`、`rest` が `方`・`fold`'
+      - name: test_read_collapse_when_title_followed_by_known
+        case: 正常
+        summary: title= の直後の closed・open・+機能 は titleTail にしない
+        condition: '`title=一覧 open` と `open title=一覧 +sort`（`text` も同じ文字）'
+        mock: なし
+        expected: 1 つ目は `collapse` が `open`、`titleTail` が無く `items` が空。2 つ目は `titleTail` が無く `rest.args` が `+sort`
+    status: planned
+    introduced:
+      pr: 225
+  - name: titleTailOf
+    title: title= の後ろの単語を参照する
+    container: src/render/syntax/collapse.ts
+    kind: 関数
+    scope: internal
+    summary: マーカーの引数の文字から、`title=値` の直後に空白を挟んで続く `キー=値` でない単語を返却する（空白を含むタイトルの続きとみなす単語）。無ければ `undefined`。`readCollapse` と `readCodeSpec` が使用する
+    args:
+      - name: text
+        type: string
+        required: true
+        description: マーカーの引数の文字（`Mark` の `rest`）
+    returns:
+      type: string | undefined
+      description: '`title=` の直後の単語'
+    unit_tests:
+      - name: test_title_tail_of
+        case: 正常
+        summary: title= の直後の単語だけを返却する
+        condition: '`title=My App.ts color=red`、`title=app.ts color=red`、`lines App.ts` をそれぞれ指定する'
+        mock: なし
+        expected: '`App.ts`・`undefined`・`undefined`'
+    status: planned
+  - name: titleTailItem
+    title: title= の続きの警告の項目を作る
+    container: src/render/syntax/collapse.ts
+    kind: 関数
+    scope: internal
+    summary: '`title=` の値の空白の後ろの単語を `label` にし、マーカーの引数は空白で区切るため `title=` の値に空白は記載できないことを伝える項目を返却する。`readTableSpec`・`readTabsOptions`・`readStepsOptions` が、知らない指定としてスキップする前に `titleTail` と同じ単語に使用する'
+    args:
+      - name: word
+        type: string
+        required: true
+        description: '`titleTail` の単語'
+    returns:
+      type: WarningItem
+      description: 警告の項目
+    status: planned

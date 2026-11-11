@@ -1,0 +1,77 @@
+id: MOD-472-223
+visibility: internal
+title: ライブラリ本体 / 操作 / back-to-top.ts
+test_files:
+  - tests/unit/src/interact/back-to-top.browser.test.ts
+constants:
+  - name: BACK_TO_TOP_AVOID_GAP_PX
+    title: 回避する部品と先頭へ戻るボタンの間
+    container: src/interact/back-to-top.ts
+    summary: 差分のミニマップか余白の列と横の範囲が重なるとき、その部品の左端からボタンの右端までに空ける幅（px）
+    value: '8'
+    refs:
+      - IF-472-35#constraints[先頭へ戻るボタン]
+    status: planned
+    introduced:
+      pr: 287
+functions:
+  - name: attachBackToTop
+    title: 先頭へ戻るボタンを付ける
+    container: src/interact/back-to-top.ts
+    summary: '`renderBackToTop({ hidden: true })` のボタンを `el` の子の末尾に配置し、スクロールする場所を `findScrollContainer(el)` で決めて、出し分け・配置する位置・押したときの移動を付ける'
+    kind: 関数
+    scope: internal
+    side_effects: '`el` にボタンを追加する。スクロールする場所が画面全体なら `window` の `scroll`、そうでなければ `document` の `scroll`（キャプチャーフェーズ）と、`window` の `resize` を受け取る。`document.body` と `el` の子の追加・削除を `MutationObserver` で監視する'
+    args:
+      - name: options
+        type: '{ el: HTMLElement; content: HTMLElement }'
+        required: true
+        description: 描く先の要素と、押した後にフォーカスを移す本文の列（右側の目次も余白の列も配置しないときは `el`）
+    returns:
+      type: () => void
+      description: ボタンと受け取りを解除する関数
+    process: |-
+      1. ボタンを配置し、スクロールする場所を決める
+      2. もう一度配置する処理: スクロールする場所の矩形（スクロールバーを除き、右端と下端は画面の中に収める）の上端から `el` の上端までの量が、スクロールする場所の `clientHeight` 未満ならボタンに `hidden` を付けて終える。そうでなければ `hidden` を削除し、`--mdmark-back-to-top-right` に `calc({画面の右端からスクロールする場所の右端までの px} + var(--mdmark-back-to-top-gap))`、`--mdmark-back-to-top-bottom` に同じく下端の値を入れる。続けて、ページの差分のミニマップの帯（`document.body` の全ての `.mdmark-diff-minimap`）と `el` の子の余白の列（`div.mdmark-comment-margin`）の順に、ボタンの矩形と横の範囲（部品の左端から `BACK_TO_TOP_AVOID_GAP_PX` 左までを含む）が重なれば、`--mdmark-back-to-top-right` を `{画面の右端から部品の左端までの px + BACK_TO_TOP_AVOID_GAP_PX}px` にする。縦の位置は比べない
+      3. 手順 2 を、スクロールと `resize`、`document.body` の子の追加・削除（ミニマップの帯）と `el` の子の追加・削除（余白の列）のたびに `requestAnimationFrame` で 1 フレームに 1 回だけ行い、付けた直後にも 1 回行う
+      4. ボタンを押すと、`matchMedia("(prefers-reduced-motion: reduce)")` が該当すれば `behavior: "auto"`、ほかは `smooth` で、スクロールする場所を `el` の上端へ `scrollTo` する（画面全体なら `window.scrollTo` で、`el` の `--mdmark-sticky-top` の px を参照する）。続けて `content` に `tabindex="-1"` を付け、`focus({ preventScroll: true })` する
+      5. 削除する関数は、受け取り・`MutationObserver` の監視・予約したフレームを削除し、ボタンを取り除き、付けた `tabindex` を削除する
+    callees:
+      - 'MOD-472-234#functions[findScrollContainer]'
+      - MOD-472-324#functions[renderBackToTop]
+    refs:
+      - IF-472-35#constraints[先頭へ戻るボタン]
+    unit_tests:
+      - name: test_attach_back_to_top
+        case: 正常
+        summary: 画面の高さ分スクロールするまで隠し、届いたら右下に出す
+        condition: 高さ 800px の画面で、高さ 3000px の段落を描いた要素に付け、799px と 800px スクロールする
+        mock: なし
+        expected: 799px の後はボタンが `hidden` を持ち、800px の後は持たず、`--mdmark-back-to-top-right` と `--mdmark-back-to-top-bottom` が `calc(0px + var(--mdmark-back-to-top-gap))`
+      - name: test_attach_back_to_top_when_obstacle
+        case: 正常
+        summary: 余白の列と横の範囲が重なれば、その左から間を空けて配置する
+        condition: '`el` の右端に幅 40px の `div.mdmark-comment-margin` を配置して付け、800px スクロールする'
+        mock: なし
+        expected: '`--mdmark-back-to-top-right` が `{画面の右端から余白の列の左端までの px + 8}px`'
+      - name: test_attach_back_to_top_when_minimap_added
+        case: 正常
+        summary: ミニマップの帯が後から配置されると、スクロールせずに帯の左へずらす
+        condition: 800px スクロールしてボタンを出した後、`document.body` に画面の右端に接する幅 12px の `div.mdmark-diff-minimap` を配置し、次のフレームを待つ
+        mock: なし
+        expected: '`--mdmark-back-to-top-right` が `{画面の右端から帯の左端までの px + 8}px`'
+      - name: test_attach_back_to_top_when_pressed
+        case: 正常
+        summary: 押すと先頭へスクロールして本文の列へフォーカスを移す
+        condition: 800px スクロールしてからボタンを押す
+        mock: '`window.scrollTo` を引数を記録する関数に差し替え、`matchMedia` を `(prefers-reduced-motion: reduce)` に該当する関数とそうでない関数で差し替える'
+        expected: '動きを減らす設定では `behavior: "auto"`、そうでなければ `smooth` で、`top` が `el` の上端の位置。`content` が `tabindex="-1"` を持ち `document.activeElement`'
+      - name: test_attach_back_to_top_when_detached
+        case: 正常
+        summary: 削除する関数でボタンと受け取りを解除する
+        condition: 付けて削除した後にスクロールする
+        mock: なし
+        expected: '`el` にボタンが無く、`content` が `tabindex` を持たず、例外が出ない'
+    status: planned
+    introduced:
+      pr: 287

@@ -1,0 +1,57 @@
+id: MOD-472-123
+visibility: internal
+title: ライブラリ本体 / CLI / alias-schema.ts
+test_files:
+  - tests/unit/src/cli/alias-schema.test.ts
+functions:
+  - name: validateAliasRows
+    title: エイリアスの行を Schema で検める
+    container: src/cli/alias-schema.ts
+    usecase: 共通
+    summary: 設定の `aliases` の配列に、取り込んだ alias-inject の `aliases.schema.json` を ajv で当て、ずれを日本語の 1 文の `schema` のずれにする
+    description: '`new Ajv2020({ allErrors: true, strict: true, verbose: true })` に `schemas/alias-inject/v0.3.0/aliases.schema.json` を読み込んで作った検査の関数を、モジュールの中で 1 回だけ作って使い回す（`$data` は使用しない）。この Schema は alias-inject v0.3.0 の `aliases.schema.yaml` を内容を変えず JSON にして配置し（他の `schemas/` と同じく JSON で持ち、esbuild がそのまままとめる）、`schemas/mdmark.config.schema.json` の `aliases` から相対の `$ref` で指す。Schema を変えるので `migrations/next/` に移行の手順を配置する。`instancePath` の `/1/alias_type` を `aliases[1].alias_type` の構造にして `where` にする。`message` は `keyword`・`params`・`parentSchema.title` から組む: `required` は ``\`{where}\` に `{missingProperty}`（{子の title}）がありません。記載してください。``、`type` は ``\`{where}\`（{title}）は{型}にしてください。``（型は `文字列`・`真偽値`・`配列`・`オブジェクト`）、`minLength`・`minItems` は ``\`{where}\`（{title}）が空です。記載してください。``、`enum` は ``\`{where}\`（{title}）は {値を `・` で並べた} のどれかにしてください。``、`additionalProperties` は ``\`{where}\` の `{additionalProperty}` は記載できません。削除してください。``、ほかは ``\`{where}\`（{title}）が Schema に合いません（{ajv の message}）。``（`where` が空なら `aliases`）。1 つの場所に同じ文が重なるときは 1 件にする。ずれのある行は返却する行で `null` に置き換え、行の位置を保つ。引数を書き換えない'
+    kind: 関数
+    scope: public
+    args:
+      - name: rows
+        type: unknown[]
+        required: true
+        description: 設定の `aliases` の配列
+      - name: file
+        type: string
+        required: true
+        description: ずれの `file` に出す設定ファイルの名前
+    returns:
+      type: '{ rows: unknown[]; issues: CheckIssue[] }'
+      description: Schema に合わない行を `null` にした行の並びと、`schema` のずれ（並びは行の順、行の中は ajv が返却した順）
+    refs:
+      - LIB-472-4#
+      - IF-472-39#constraints[エイリアスの点検]
+    unit_tests:
+      - name: test_validate_alias_rows
+        case: 正常
+        summary: Schema に合う行はずれにせず、そのまま返却する
+        condition: '`{id: terms, paths: [aliases/*.yaml], alias_type: term, records: terms, body_file: path, metadata: {name: term, description: meta.summary}}` の 1 行'
+        mock: なし
+        expected: '`issues` が空、`rows` が指定した行と同じ'
+      - name: test_validate_alias_rows_when_required_missing
+        case: 異常
+        summary: 必須のキーが無い行を、キーの title を入れた 1 文にする
+        condition: '`alias_type` の無い行'
+        mock: なし
+        expected: '`where` が `aliases[0]`、`message` に `alias_type` と `引用の種類` が入り、`rows[0]` が `null`'
+      - name: test_validate_alias_rows_when_alias_type_unknown
+        case: 異常
+        summary: 9 つの種類に無い alias_type を、許す値を並べた 1 文にする
+        condition: '`alias_type` が `memo` の行'
+        mock: なし
+        expected: ずれが 1 件で `where` が `aliases[0].alias_type`、`message` に `term` と `avoid` が入る
+      - name: test_validate_alias_rows_when_v020_metadata
+        case: 異常
+        summary: v0.2.0 の構造の metadata の値を文字列でないずれにする
+        condition: '`alias_type: term` で、`metadata.name` が `{type: ref, field: term}` の行'
+        mock: なし
+        expected: ずれが 1 件で `where` が `aliases[0].metadata.name`、`message` が文字列にするよう求める
+    status: planned
+    introduced:
+      pr: 176

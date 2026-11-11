@@ -1,0 +1,52 @@
+id: LIB-472-24
+visibility: internal
+title: shadcn-ui
+kind: CLI
+version:
+  current: '`shadcn==4.23.0`（CLI）/ `@radix-ui/react-slot==1.5.0` / `class-variance-authority==0.7.1` / `clsx==2.1.1` / `tailwind-merge==3.7.0` / `lucide-react==1.69.0`'
+  latest: 4.23.0
+  checked_on: '2026-11-06'
+  source: vscode/components.json・vscode/package.json
+  pinning: 部品はソースをリポジトリに配置し、CLI はバージョンを指定して `npx` で呼ぶ。部品が使用する依存は完全一致
+catalogs:
+  - name: コマンド
+    version: 4.23.0
+    entries:
+      - name: npx shadcn@4.23.0 add
+        kind: コマンド
+        purpose: '`components.json` の `aliases.ui` に部品のソースを書き出す'
+      - name: npx shadcn@4.23.0 info
+        kind: コマンド
+        purpose: '`components.json` と tsconfig の別名・Tailwind の CSS の読み取りを確認する'
+  - name: 部品
+    version: new-york
+    entries:
+      - name: Button
+        kind: コンポーネント
+        purpose: リロード・設定ファイルを開くの操作（`asChild` は Radix の `Slot`）
+      - name: Alert
+        kind: コンポーネント
+        purpose: 状態の表示と帯の枠（`AlertTitle`・`AlertDescription`）
+      - name: Spinner
+        kind: コンポーネント
+        purpose: 読み込み中の回るマーカー
+lead: React の UI の部品のソースを、CLI でリポジトリへ書き出して持つ部品集。部品は Radix UI と Tailwind で記載される。
+purl: pkg:npm/shadcn@4.23.0
+dependency_scope: 開発のみ
+adoption: 採用
+upstream: shadcn-ui/ui
+used_in:
+  - vscode/components.json
+  - vscode/src/webview/shared/components/ui/
+verification:
+  state: 済
+  date: '2026-11-06'
+  detail: '`npx shadcn@4.23.0 info`（vscode/）が `components.json` を読み込み、style `new-york`・Tailwind v4・CSS `src/webview/shared/styles/panel.css`・別名 `@` を返却した（tsconfig の `paths` に `@/*` が無いと別名は `-` になる）'
+license: MIT（商用利用可）
+official_url: https://ui.shadcn.com/
+docs_url: https://ui.shadcn.com/docs/cli
+install: '```bash
+
+  npm i -D -E @radix-ui/react-slot@1.5.0 class-variance-authority@0.7.1 clsx@2.1.1 tailwind-merge@3.7.0 lucide-react@1.69.0
+
+  ```'

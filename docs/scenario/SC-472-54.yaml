@@ -1,0 +1,244 @@
+id: SC-472-54
+visibility: internal
+title: "文書の先頭へ戻る"
+scenarios:
+  - name: 正常シナリオ
+    setup:
+      - name: 文書を描いたページ
+        description: バージョンを固定した URL で mdmark を読み込み、文書を描いた HTML
+        notes: 画面の大きさは 1280×800px。画面全体がスクロールする
+      - name: 長い Markdown
+        description: '`## 導入` から `## 付録` まで 10 個の見出しと、画面の高さの 3 倍を超える段落を持つ文書'
+      - name: Mock
+        description: jsDelivr を、ビルドした `dist/` を同じパスで返却する手元の応答に差し替える
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant B as ブラウザ
+        participant M as mdmark
+        U->>B: 文書の末尾までスクロールする
+        B->>M: スクロールの位置
+        M-->>U: 画面の右下に先頭へ戻るボタンを出す
+        U->>M: ボタンを押す
+        M->>B: 描いた文書の先頭へスクロールする
+        M->>M: 文書の先頭へフォーカスを移す
+        M-->>U: 先頭へ戻るボタンを隠す
+    expected:
+      - 末尾までスクロールした後、先頭へ戻るボタンが画面の右下に表示されている
+      - ボタンを押した後、描いた文書の先頭（`## 導入` の見出し）が画面に表示されている
+      - ボタンを押した後、フォーカスが描いた文書の先頭にあり、続けて Tab を押すと本文の最初のフォーカスできる要素へ移る
+      - 先頭へ戻った後、先頭へ戻るボタンが表示されていない
+    test: test_normal
+  - name: 正常シナリオ（先頭の近くでは出さない）
+    setup:
+      - name: 文書を描いたページ
+        description: 正常シナリオと同じ
+      - name: 長い Markdown
+        description: 正常シナリオと同じ
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant B as ブラウザ
+        participant M as mdmark
+        U->>B: 文書を開く
+        M-->>U: 先頭へ戻るボタンを出さない
+        U->>B: 出し始める量より少なくスクロールする
+        M-->>U: 先頭へ戻るボタンを出さない
+    expected:
+      - 文書を開いた直後、先頭へ戻るボタンが表示されておらず、Tab でも届かない
+      - 出し始める量より少なくスクロールした後も、先頭へ戻るボタンが表示されていない
+    test: test_normal_when_near_top
+    notes:
+      出し始める量: スクロールする場所の高さ 1 つ分
+  - name: 正常シナリオ（キーボードで押す）
+    setup:
+      - name: 文書を描いたページ
+        description: 正常シナリオと同じ
+      - name: 長い Markdown
+        description: 正常シナリオと同じ
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant B as ブラウザ
+        participant M as mdmark
+        U->>B: 文書の末尾までスクロールする
+        M-->>U: 先頭へ戻るボタンを出す
+        U->>M: Tab でボタンへフォーカスを移し、Enter を押す
+        M->>B: 描いた文書の先頭へスクロールする
+        M-->>U: 文書の先頭を表示
+        U->>B: 文書の末尾までもう一度スクロールする
+        M-->>U: 先頭へ戻るボタンを出す
+        U->>M: Tab でボタンへフォーカスを移し、Space を押す
+        M->>B: 描いた文書の先頭へスクロールする
+        M-->>U: 文書の先頭を表示
+    expected:
+      - ボタンが、スクリーンリーダー向けの名前「先頭へ戻る」を持つ `button` の役割でスクリーンリーダーに伝えられる
+      - ボタンにフォーカスの輪郭が表示されている
+      - Enter を押した後、描いた文書の先頭が画面に表示されている
+      - 末尾へもう一度スクロールして Space を押した後、描いた文書の先頭が画面に表示されている
+    test: test_normal_when_pressed_by_keyboard
+  - name: 正常シナリオ（スクロールする祖先の要素の中に描いた文書）
+    setup:
+      - name: 祖先の要素の中に文書を描いたページ
+        description: 高さ 600px で縦にスクロールする要素の中の描く先の要素に、文書を描いた HTML
+        notes: 画面全体はスクロールしない
+      - name: 長い Markdown
+        description: 正常シナリオと同じ
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 利用側のページ
+        participant M as mdmark
+        U->>P: スクロールする要素の中で文書の末尾までスクロールする
+        M-->>U: 先頭へ戻るボタンを出す
+        U->>M: ボタンを押す
+        M->>P: スクロールする要素を描いた文書の先頭へスクロールする
+        M-->>U: 文書の先頭を表示
+    expected:
+      - スクロールする要素の中で末尾までスクロールした後、先頭へ戻るボタンが表示されている
+      - ボタンを押した後、スクロールする要素の `scrollTop` が描いた文書の先頭の位置になっている
+    test: test_normal_when_scroll_container
+    notes:
+      スクロールする場所: 描く先の要素に最も近いスクロールする祖先の要素。無ければ画面全体
+  - name: 正常シナリオ（右側の目次と重ならない）
+    setup:
+      - name: 文書を描いたページ
+        description: 正常シナリオと同じ
+        notes: 設定の `side-toc.mode` は `fixed`。描いた後に目次を出すボタンを押し、右側の目次を出しておく
+      - name: 長い Markdown
+        description: 正常シナリオと同じ
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant B as ブラウザ
+        participant M as mdmark
+        U->>B: 文書の末尾までスクロールする
+        M-->>U: 先頭へ戻るボタンを出す
+        U->>M: 右側の目次の最後の項目を押す
+        M-->>U: 項目のセクションへ移る
+    expected:
+      - 先頭へ戻るボタンの矩形が、右側の目次のパネルと目次を出すボタンの矩形と重なっていない
+      - 右側の目次の最後の項目を押せて、そのセクションの見出しが画面に表示されている
+    test: test_normal_when_side_toc_shown
+  - name: 正常シナリオ（差分のミニマップと重ならない）
+    setup:
+      - name: 差分の取り出し元を指定して文書を描いたページ
+        description: バージョンを固定した URL で mdmark を読み込み、`diffSource` を指定して文書を描いた HTML。描いた後に「変更表示」を押して差分を開いておく
+        notes: 画面の大きさは 1280×800px
+      - name: 長い 2 つのリビジョン
+        description: 『文書の差分を確認する』の正常シナリオと同じ取り出し元で、画面の高さの 3 倍を超える段落と、末尾の近くに変えた行を持つ 2 つのリビジョン
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant B as ブラウザ
+        participant M as mdmark
+        U->>B: 差分の末尾までスクロールする
+        M-->>U: 先頭へ戻るボタンを出す
+        U->>M: ミニマップの末尾の近くのマーカーを押す
+        M-->>U: マーカーの行へ移る
+    expected:
+      - 先頭へ戻るボタンの矩形が、ミニマップの帯の矩形と重なっていない
+      - ミニマップの末尾の近くのマーカーを押せて、そのマーカーの変えた行が画面に表示されている
+    test: test_normal_when_diff_minimap_shown
+    refs:
+      - SC-472-55#scenarios[正常シナリオ]
+  - name: 正常シナリオ（余白のマーカーと重ならない）
+    setup:
+      - name: コメントの機能をオンにして文書を描いたページ
+        description: バージョンを固定した URL で mdmark を読み込み、設定の `features.comments` を `true` にし、コメントの読み込みと保存の関数を指定して文書を描いた HTML
+        notes: 画面の大きさは 1280×800px
+      - name: 長い Markdown
+        description: 正常シナリオと同じ
+      - name: 末尾の近くの箇所に付いたコメント
+        description: 読み取りの関数が返却する、`## 付録` の段落の箇所に付いたコメント 1 件
+      - name: Mock
+        description: 正常シナリオと同じ。コメントの読み込みと保存の関数はページの中の配列を読み込みと保存をする
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant B as ブラウザ
+        participant M as mdmark
+        U->>B: 文書の末尾までスクロールする
+        M-->>U: 先頭へ戻るボタンと余白のマーカーを出す
+        U->>M: 余白のマーカーを押す
+        M-->>U: コメントの吹き出しを開く
+    expected:
+      - 先頭へ戻るボタンの矩形が、余白のマーカーの矩形と重なっていない
+      - 余白のマーカーを押せて、コメントの吹き出しが開いている
+    test: test_normal_when_comment_margin_shown
+    refs:
+      - SC-472-80#scenarios[正常シナリオ]
+  - name: 正常シナリオ（ライトボックスを開いている間）
+    setup:
+      - name: 文書を描いたページ
+        description: 正常シナリオと同じ
+      - name: 末尾に画像を持つ長い Markdown
+        description: 正常シナリオの文書の末尾に、画像 `![グラフ](chart.png)` を 1 つ配置した文書
+      - name: Mock
+        description: 正常シナリオと同じ。`chart.png` は手元の応答で返却する
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant B as ブラウザ
+        participant M as mdmark
+        U->>B: 文書の末尾までスクロールする
+        M-->>U: 先頭へ戻るボタンを出す
+        U->>M: 画像を押す
+        M-->>U: ライトボックスを開く
+        U->>M: Esc を押す
+        M-->>U: ライトボックスを閉じる
+    expected:
+      - ライトボックスを開いている間、先頭へ戻るボタンがライトボックスの前に出ておらず、Tab でも届かない
+      - ライトボックスを閉じた後、先頭へ戻るボタンが画面の右下に表示されている
+    test: test_normal_when_lightbox_open
+    refs:
+      - SC-472-66#scenarios[正常シナリオ]
+  - name: 正常シナリオ（狭い幅）
+    setup:
+      - name: 文書を描いたページ
+        description: 正常シナリオと同じ
+        notes: 画面の大きさは 390×844px
+      - name: 長い Markdown
+        description: 正常シナリオと同じ
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant B as ブラウザ
+        participant M as mdmark
+        U->>B: 文書の末尾までスクロールする
+        M-->>U: 先頭へ戻るボタンを出す
+        U->>M: ボタンをタップする
+        M->>B: 描いた文書の先頭へスクロールする
+        M-->>U: 文書の先頭を表示
+    expected:
+      - 先頭へ戻るボタンが画面の中に収まり、横のスクロールが生じていない
+      - ボタンのタップできる領域が 44×44px 以上ある
+      - ボタンを押した後、描いた文書の先頭が画面に表示されている
+    test: test_normal_when_narrow_width
+lead: 読者が描いた文書を一定量スクロールすると、画面の右下に先頭へ戻るボタンが出る。押すと描いた文書の先頭へ戻り、先頭の近くにいる間はボタンを出さない。
+issue: 162
+primary_actor: 読者
+stakeholders:
+  - name: キーボードとスクリーンリーダーで読者
+    interest: Tab でボタンに届き、スクリーンリーダーでボタンの用途が分かる
+  - name: 利用側のアプリの開発者
+    interest: 自分のページの部品と重ならず、要らないページでは機能をオフにできる
+trigger: 読者が、描いた文書を一定量スクロールした後にボタンを押す
+preconditions:
+  - ページが mdmark で文書を描いている
+  - 先頭へ戻るボタンの機能がオン
+success_guarantee: ボタンを押した後、描いた文書の先頭が画面に出ていて、フォーカスが文書の先頭にある。
+minimal_guarantee: ボタンを出している間も、本文・右側の目次・余白のマーカー・ミニマップ・ライトボックス・図の全画面の操作は変わらない。
+test_file: tests/e2e/単一ユースケース/文書の先頭へ戻る.spec.ts

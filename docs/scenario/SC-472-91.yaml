@@ -1,0 +1,115 @@
+id: SC-472-91
+visibility: internal
+title: プラグインを入れて端末と文書のフォルダをセットアップする
+scenarios:
+  - name: 正常シナリオ
+    setup:
+      - name: 空の端末
+        description: 端末の設定（`MDMARK_CONFIG` が指すパス）・状態の配置場所（`MDMARK_STATE_DIR`）・Claude Code の設定のフォルダ（`CLAUDE_CONFIG_DIR`）を、どれも空の一時フォルダにする
+      - name: 文書のフォルダ
+        description: '`mdmark.config.yaml` と索引の無いフォルダに、Markdown を 1 つ配置する'
+      - name: systemd --user が使える端末と空いたポート
+        description: '`systemctl --user is-system-running` が `running` か `degraded` を返却する端末で、`MDMARK_PORT` に待ち受けるプロセスの無いポートを指定する'
+        notes: 手元の常駐サーバーの unit（`mdmark-mcp`）とポート 8782 を回避するため、unit の名前はテスト専用の名前にし、テストの後に unit を止めて unit のファイルを削除する
+      - name: Mock
+        description: スキルを読み込むモデルの代わりに、スキルの手順が呼ぶスクリプトを手順の順に実行し、利用者への確認には決めた回答を返却する。unit の名前にはテスト専用の名前を回答する。Claude Code のセッションの代わりに、SessionStart のフックを実行し、`.mcp.json` の接続先へ HTTP でつなぐ MCP のクライアントを使用する
+    flow: |-
+      flowchart TD
+        A[ClaudeCodeにプラグインを入れる:正常シナリオ] --> B[セッションの開始で常駐サーバーの状態を受け取る:異常シナリオ（起動していない）]
+        B --> C[端末にmdmarkをセットアップする:正常シナリオ]
+        C --> D[セッションの開始で常駐サーバーの状態を受け取る:正常シナリオ]
+        D --> E[文書のフォルダに設定を作る:正常シナリオ]
+        E --> F[ClaudeCodeから点検と書き出しを呼ぶ:正常シナリオ（1 文書を書き出す）]
+        click A "id:SC-472-4#scenarios[正常シナリオ]"
+        click B "id:SC-472-22#scenarios[異常シナリオ（起動していない）]"
+        click C "id:SC-472-69#scenarios[正常シナリオ]"
+        click D "id:SC-472-22#scenarios[正常シナリオ]"
+        click E "id:SC-472-53#scenarios[正常シナリオ]"
+        click F "id:SC-472-3#scenarios[正常シナリオ（1 文書を書き出す）]"
+    expected:
+      - プラグインを入れた直後のセッションの開始で、常駐サーバーが起動していないことと `global-setup` で起動できることが伝わる
+      - '`global-setup` の後、端末の設定のパスに確認で回答した値の端末の設定があり、回答した名前の unit が `enabled` で `active` で、`MDMARK_PORT` のポートで待ち受けるプロセスが 1 つだけある'
+      - '`CLAUDE_CONFIG_DIR` の `settings.json` の `env` に、端末の設定のパスの `MDMARK_CONFIG` がある'
+      - '`journalctl --user -u {unit の名前}` に待ち受ける URL の 1 行がある'
+      - 次のセッションの開始で SessionStart のフックが何も出さず、MCP の `instructions` に unit の名前がある
+      - '`setup` の後、文書のフォルダに確認で回答した値の `mdmark.config.yaml` があり、`mdmark check` と同じ点検が設定の構造のずれを返却しない'
+      - MCP のクライアントの `export_html` が、文書のフォルダの Markdown を 1 枚の HTML に書き出す
+    test: test_normal
+    uses:
+      - SC-472-4#scenarios[正常シナリオ]
+      - SC-472-22#scenarios[異常シナリオ（起動していない）]
+      - SC-472-69#scenarios[正常シナリオ]
+      - SC-472-22#scenarios[正常シナリオ]
+      - SC-472-53#scenarios[正常シナリオ]
+      - SC-472-3#scenarios[正常シナリオ（1 文書を書き出す）]
+  - name: 正常シナリオ（セットアップ済みの端末でもう一度入れる）
+    setup:
+      - name: セットアップ済みの端末
+        description: 正常シナリオを終えた後の端末の設定・状態の配置場所・unit と、待ち受けている常駐サーバー
+      - name: もう一度入れたプラグイン
+        description: プラグインを削除してもう一度入れた Claude Code の設定のフォルダ
+      - name: systemd --user が使える端末と空いたポート
+        description: 正常シナリオと同じ
+      - name: Mock
+        description: 正常シナリオと同じ。端末の設定の各キーの確認には、今の値のままにする回答を返却する
+    flow: |-
+      flowchart TD
+        A[ClaudeCodeにプラグインを入れる:正常シナリオ] --> B[セッションの開始で常駐サーバーの状態を受け取る:正常シナリオ]
+        B --> C[端末にmdmarkをセットアップする:正常シナリオ（セットアップ済み）]
+        C --> D[ClaudeCodeから点検と書き出しを呼ぶ:正常シナリオ]
+        click A "id:SC-472-4#scenarios[正常シナリオ]"
+        click B "id:SC-472-22#scenarios[正常シナリオ]"
+        click C "id:SC-472-69#scenarios[正常シナリオ（セットアップ済み）]"
+        click D "id:SC-472-3#scenarios[正常シナリオ]"
+    expected:
+      - '`global-setup` が unit を起動し直さず、常駐サーバーのプロセスがもう一度入れる前と同じ'
+      - 端末の設定の中身がもう一度入れる前と同じ
+      - MCP のクライアントの `check` が、文書のフォルダの空のずれの一覧を返却する
+    test: test_normal_when_already_set_up
+    uses:
+      - SC-472-4#scenarios[正常シナリオ]
+      - SC-472-22#scenarios[正常シナリオ]
+      - SC-472-69#scenarios[正常シナリオ（セットアップ済み）]
+      - SC-472-3#scenarios[正常シナリオ]
+  - name: 異常シナリオ（常駐サーバーが止まっている）
+    setup:
+      - name: セットアップ済みの端末
+        description: 正常シナリオを終えた後の端末の設定・状態の配置場所・unit
+      - name: 止めた常駐サーバー
+        description: '`systemctl --user stop {unit の名前}` で unit を止め、`MDMARK_PORT` のポートで待ち受けるプロセスが無い状態'
+      - name: systemd --user が使える端末と空いたポート
+        description: 正常シナリオと同じ
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      flowchart TD
+        A[セッションの開始で常駐サーバーの状態を受け取る:異常シナリオ（起動していない）] --> B[端末にmdmarkをセットアップする:正常シナリオ（常駐サーバーが止まっている）]
+        B --> C[ClaudeCodeから点検と書き出しを呼ぶ:正常シナリオ]
+        click A "id:SC-472-22#scenarios[異常シナリオ（起動していない）]"
+        click B "id:SC-472-69#scenarios[正常シナリオ（常駐サーバーが止まっている）]"
+        click C "id:SC-472-3#scenarios[正常シナリオ]"
+    expected:
+      - セッションの開始で、常駐サーバーが起動していないことと `global-setup` で起動できることが伝わる
+      - '`global-setup` の後、unit の `is-active` が `active` を返却し、`MDMARK_PORT` のポートで待ち受けるプロセスが 1 つだけある'
+      - 端末の設定の中身が止める前と同じ
+      - 同じ MCP のクライアントがもう一度接続すると、`check` が文書のフォルダの空のずれの一覧を返却する
+    test: test_error_when_server_stopped
+    uses:
+      - SC-472-22#scenarios[異常シナリオ（起動していない）]
+      - SC-472-69#scenarios[正常シナリオ（常駐サーバーが止まっている）]
+      - SC-472-3#scenarios[正常シナリオ]
+lead: 文書の作成者が mdmark のプラグインを入れ、`global-setup` で端末の設定と常駐サーバーを、`setup` で文書のフォルダの `mdmark.config.yaml` を用意して、MCP のツールで点検と書き出しを呼ぶ。
+issue: 165
+primary_actor: 文書の作成者
+stakeholders:
+  - name: 文書の作成者
+    interest: 設定のキーを調べずに、項目ごとに聞かれて回答するだけで端末と文書のフォルダの設定がそろい、常駐サーバーがどこで動いているか・どう止めるか・ログをどこで確認するかが分かる
+  - name: Claude Code
+    interest: セッションの開始で常駐サーバーが待ち受けていないことを知り、`global-setup` で起動できる
+trigger: 文書の作成者が、新しい端末かもう一度入れた端末で、Claude Code から mdmark を使用し始める
+preconditions:
+  - 文書の作成者の手元に Claude Code・git・Node 24 以降と、systemd --user か tmux 3.4 以降のどちらかがある
+  - 文書の作成者の手元から GitHub と npm のレジストリへ届く
+success_guarantee: 端末の設定と文書のフォルダの `mdmark.config.yaml` が、文書の作成者が回答した値で書き込まれ、常駐サーバーが systemd --user の unit か tmux のセッションの中で 1 つだけ待ち受ける。次に開いたセッションで、MCP の `instructions` から常駐サーバーが動いている unit かセッションが伝わり、MCP のツールがそのセッションの作業のフォルダに対して働く。
+minimal_guarantee: 文書の作成者が書き込むことを認めなかった値は、端末の設定にも `mdmark.config.yaml` にも書き込まない。常駐サーバーが起動していないときも Claude Code のセッションは開け、セッションの開始で起動していないことと `global-setup` で起動できることが伝わる。
+test_file: tests/e2e/複合ユースケース/プラグインを入れて端末と文書のフォルダをセットアップする.spec.ts

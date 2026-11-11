@@ -1,0 +1,36 @@
+id: MOD-472-74
+visibility: internal
+title: VS Code 拡張機能 / Webview / app.tsx
+test_files:
+  - tests/unit/vscode/src/webview/app/app.browser.test.tsx
+components:
+  - name: App
+    title: Webview のアプリ
+    container: vscode/src/webview/app/app.tsx
+    usecase: 共通
+    summary: 画面を `react-error-boundary` の `ErrorBoundary` で包む
+    description: '描画中の例外は `fallbackRender` で `PreviewStatus`（`state: "unexpected"`）を出し、`onError` で `console.error` に例外を出す。「リロード」は `reload` を送信し、拡張機能が HTML をもう一度入れる（`resetErrorBoundary` の代わり）'
+    kind: コンポーネント
+    props:
+      - name: boot
+        type: PreviewBoot
+        required: true
+        description: パネルの始め方
+      - name: api
+        type: VsCodeApi
+        required: true
+        description: VS Code の Webview の API
+      - name: savedLine
+        type: number | undefined
+        required: false
+        description: 保存した行
+    unit_tests:
+      - name: test_app_when_render_error
+        case: 異常
+        summary: 画面の描画で例外が出たら、描画の失敗とリロードを出す
+        condition: '`PanelScreen` を例外を投げる代役にして描き、「リロード」を押す'
+        mock: '`PanelScreen` を代役にする。`api` を `postMessage` を記録する代役にする'
+        expected: タイトル「プレビューを表示できません」と描画の失敗の文言があり、`reload` が 1 回送られる
+    refs:
+      - CMP-472-29#
+    status: planned

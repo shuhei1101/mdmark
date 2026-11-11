@@ -1,4 +1,4 @@
-# yaml-language-server: $schema=../dev/テンプレート/files.schema.yaml
+# yaml-language-server: $schema=../schemas/files.schema.yaml
 files:
   - path: e2e/chart.ts
     description: E2E テストが使用する見本のグラフの定義を受け持つ。E2E テストの準備や操作の仕方を変えるときに参照する。
@@ -49,451 +49,451 @@ files:
     description: シナリオ『ClaudeCodeから点検と書き出しを呼ぶ』に記載したシナリオを Playwright で実行する E2E テスト。このユースケースの振る舞いを変えたときに参照する。
     tags: [topic:e2e, topic:シナリオ, tool:playwright]
     related:
-      - to: dev/設計書/シナリオ/単一ユースケース/ClaudeCodeから点検と書き出しを呼ぶ
+      - to: docs/scenario/SC-472-3
         type: see_also
   - path: e2e/単一ユースケース/ClaudeCodeにプラグインを入れる.spec.ts
     description: シナリオ『ClaudeCode にプラグインを入れる』に記載したシナリオを Playwright で実行する E2E テスト。このユースケースの振る舞いを変えたときに参照する。
     tags: [topic:e2e, topic:シナリオ, tool:playwright]
     related:
-      - to: dev/設計書/シナリオ/単一ユースケース/ClaudeCodeにプラグインを入れる
+      - to: docs/scenario/SC-472-4
         type: see_also
   - path: e2e/単一ユースケース/GitHubの参照から入れてCLIを起動する.spec.ts
     description: シナリオ『GitHubの参照から入れてCLIを起動する』に記載したシナリオを Playwright で実行する E2E テスト。このユースケースの振る舞いを変えたときに参照する。
     tags: [topic:e2e, topic:シナリオ, tool:playwright]
     related:
-      - to: dev/設計書/シナリオ/単一ユースケース/GitHubの参照から入れてCLIを起動する
+      - to: docs/scenario/SC-472-5
         type: see_also
   - path: e2e/単一ユースケース/HTMLに書き出す.spec.ts
     description: シナリオ『HTML に書き出す』に記載したシナリオを Playwright で実行する E2E テスト。このユースケースの振る舞いを変えたときに参照する。
     tags: [topic:e2e, topic:シナリオ, tool:playwright]
     related:
-      - to: dev/設計書/シナリオ/単一ユースケース/HTMLに書き出す
+      - to: docs/scenario/SC-472-6
         type: see_also
   - path: e2e/単一ユースケース/MCPサーバーを起動・停止する.spec.ts
     description: シナリオ『MCPサーバーを起動・停止する』に記載したシナリオを Playwright で実行する E2E テスト。このユースケースの振る舞いを変えたときに参照する。
     tags: [topic:e2e, topic:シナリオ, tool:playwright]
     related:
-      - to: dev/設計書/シナリオ/単一ユースケース/MCPサーバーを起動・停止する
+      - to: docs/scenario/SC-472-7
         type: see_also
   - path: e2e/単一ユースケース/PDFに印刷する.spec.ts
     description: シナリオ『PDF に印刷する』に記載したシナリオを Playwright で実行する E2E テスト。このユースケースの振る舞いを変えたときに参照する。
     tags: [topic:e2e, topic:シナリオ, tool:playwright]
     related:
-      - to: dev/設計書/シナリオ/単一ユースケース/PDFに印刷する
+      - to: docs/scenario/SC-472-9
         type: see_also
   - path: e2e/単一ユースケース/VSCodeでプレビューを開く.spec.ts
     description: シナリオ『VSCode でプレビューを開く』に記載したシナリオを Playwright で実行する E2E テスト。このユースケースの振る舞いを変えたときに参照する。
     tags: [topic:e2e, topic:シナリオ, tool:playwright]
     related:
-      - to: dev/設計書/シナリオ/単一ユースケース/VSCodeでプレビューを開く
+      - to: docs/scenario/SC-472-10
         type: see_also
   - path: e2e/単一ユースケース/まとめたHTMLで文書を行き来する.spec.ts
     description: シナリオ『まとめたHTML で文書を行き来する』に記載したシナリオを Playwright で実行する E2E テスト。このユースケースの振る舞いを変えたときに参照する。
     tags: [topic:e2e, topic:シナリオ, tool:playwright]
     related:
-      - to: dev/設計書/シナリオ/単一ユースケース/まとめたHTMLで文書を行き来する
+      - to: docs/scenario/SC-472-13
         type: see_also
   - path: e2e/単一ユースケース/エディタとプレビューのスクロールを合わせる.spec.ts
     description: シナリオ『エディタとプレビューのスクロールを合わせる』に記載したシナリオを Playwright で実行する E2E テスト。このユースケースの振る舞いを変えたときに参照する。
     tags: [topic:e2e, topic:シナリオ, tool:playwright]
     related:
-      - to: dev/設計書/シナリオ/単一ユースケース/エディタとプレビューのスクロールを合わせる
+      - to: docs/scenario/SC-472-14
         type: see_also
   - path: e2e/単一ユースケース/コードブロックのHTMLを描く.spec.ts
     description: シナリオ『コードブロックのHTML を描く』に記載したシナリオを Playwright で実行する E2E テスト。このユースケースの振る舞いを変えたときに参照する。
     tags: [topic:e2e, topic:シナリオ, tool:playwright]
     related:
-      - to: dev/設計書/シナリオ/単一ユースケース/コードブロックのHTMLを描く
+      - to: docs/scenario/SC-472-16
         type: see_also
   - path: e2e/単一ユースケース/コードブロックを飾る.spec.ts
     description: シナリオ『コードブロックを飾る』に記載したシナリオを Playwright で実行する E2E テスト。このユースケースの振る舞いを変えたときに参照する。
     tags: [topic:e2e, topic:シナリオ, tool:playwright]
     related:
-      - to: dev/設計書/シナリオ/単一ユースケース/コードブロックを飾る
+      - to: docs/scenario/SC-472-17
         type: see_also
   - path: e2e/単一ユースケース/ステップ・ファイルツリー・バッジで本文を組む.spec.ts
     description: シナリオ『ステップ・ファイルツリー・バッジで本文を組む』に記載したシナリオを Playwright で実行する E2E テスト。このユースケースの振る舞いを変えたときに参照する。
     tags: [topic:e2e, topic:シナリオ, tool:playwright]
     related:
-      - to: dev/設計書/シナリオ/単一ユースケース/ステップ・ファイルツリー・バッジで本文を組む
+      - to: docs/scenario/SC-472-20
         type: see_also
   - path: e2e/単一ユースケース/タブを切り替える.spec.ts
     description: シナリオ『タブを切り替える』に記載したシナリオを Playwright で実行する E2E テスト。このユースケースの振る舞いを変えたときに参照する。
     tags: [topic:e2e, topic:シナリオ, tool:playwright]
     related:
-      - to: dev/設計書/シナリオ/単一ユースケース/タブを切り替える
+      - to: docs/scenario/SC-472-23
         type: see_also
   - path: e2e/単一ユースケース/チャートを描く.spec.ts
     description: シナリオ『チャートを描く』に記載したシナリオを Playwright で実行する E2E テスト。このユースケースの振る舞いを変えたときに参照する。
     tags: [topic:e2e, topic:シナリオ, tool:playwright]
     related:
-      - to: dev/設計書/シナリオ/単一ユースケース/チャートを描く
+      - to: docs/scenario/SC-472-24
         type: see_also
   - path: e2e/単一ユースケース/テーマを上書きする.spec.ts
     description: シナリオ『テーマを上書きする』に記載したシナリオを Playwright で実行する E2E テスト。このユースケースの振る舞いを変えたときに参照する。
     tags: [topic:e2e, topic:シナリオ, tool:playwright]
     related:
-      - to: dev/設計書/シナリオ/単一ユースケース/テーマを上書きする
+      - to: docs/scenario/SC-472-25
         type: see_also
   - path: e2e/単一ユースケース/テーマを選ぶ.spec.ts
     description: シナリオ『テーマを選ぶ』に記載したシナリオを Playwright で実行する E2E テスト。このユースケースの振る舞いを変えたときに参照する。
     tags: [topic:e2e, topic:シナリオ, tool:playwright]
     related:
-      - to: dev/設計書/シナリオ/単一ユースケース/テーマを選ぶ
+      - to: docs/scenario/SC-472-26
         type: see_also
   - path: e2e/単一ユースケース/ビューで項目を確認する.spec.ts
     description: シナリオ『ビューで項目を確認する』に記載したシナリオを Playwright で実行する E2E テスト。このユースケースの振る舞いを変えたときに参照する。
     tags: [topic:e2e, topic:シナリオ, tool:playwright]
     related:
-      - to: dev/設計書/シナリオ/単一ユースケース/ビューで項目を確認する
+      - to: docs/scenario/SC-472-29
         type: see_also
   - path: e2e/単一ユースケース/プレビューから設定を開く.spec.ts
     description: シナリオ『プレビューから設定を開く』に記載したシナリオを Playwright で実行する E2E テスト。このユースケースの振る舞いを変えたときに参照する。
     tags: [topic:e2e, topic:シナリオ, tool:playwright]
     related:
-      - to: dev/設計書/シナリオ/単一ユースケース/プレビューから設定を開く
+      - to: docs/scenario/SC-472-30
         type: see_also
   - path: e2e/単一ユースケース/プレビューのリンクと画像を開く.spec.ts
     description: シナリオ『プレビューのリンクと画像を開く』に記載したシナリオを Playwright で実行する E2E テスト。このユースケースの振る舞いを変えたときに参照する。
     tags: [topic:e2e, topic:シナリオ, tool:playwright]
     related:
-      - to: dev/設計書/シナリオ/単一ユースケース/プレビューのリンクと画像を開く
+      - to: docs/scenario/SC-472-31
         type: see_also
   - path: e2e/単一ユースケース/プレビューをVSCodeのテーマに合わせる.spec.ts
     description: シナリオ『プレビューをVSCode のテーマに合わせる』に記載したシナリオを Playwright で実行する E2E テスト。このユースケースの振る舞いを変えたときに参照する。
     tags: [topic:e2e, topic:シナリオ, tool:playwright]
     related:
-      - to: dev/設計書/シナリオ/単一ユースケース/プレビューをVSCodeのテーマに合わせる
+      - to: docs/scenario/SC-472-32
         type: see_also
   - path: e2e/単一ユースケース/ガイドを参照する.spec.ts
     description: シナリオ『ガイドを参照する』に記載したシナリオを Playwright で実行する E2E テスト。このユースケースの振る舞いを変えたときに参照する。
     tags: [topic:e2e, topic:シナリオ, tool:playwright]
     related:
-      - to: dev/設計書/シナリオ/単一ユースケース/ガイドを参照する
+      - to: docs/scenario/SC-472-15
         type: see_also
   - path: e2e/単一ユースケース/図と表に番号を付けて参照する.spec.ts
     description: シナリオ『図と表に番号を付けて参照する』に記載したシナリオを Playwright で実行する E2E テスト。このユースケースの振る舞いを変えたときに参照する。
     tags: [topic:e2e, topic:シナリオ, tool:playwright]
     related:
-      - to: dev/設計書/シナリオ/単一ユースケース/図と表に番号を付けて参照する
+      - to: docs/scenario/SC-472-37
         type: see_also
   - path: e2e/単一ユースケース/図の要素のツールチップを確認する.spec.ts
     description: シナリオ『図の要素のツールチップを確認する』に記載したシナリオを Playwright で実行する E2E テスト。このユースケースの振る舞いを変えたときに参照する。
     tags: [topic:e2e, topic:シナリオ, tool:playwright]
     related:
-      - to: dev/設計書/シナリオ/単一ユースケース/図の要素のツールチップを確認する
+      - to: docs/scenario/SC-472-40
         type: see_also
   - path: e2e/単一ユースケース/図を拡大・縮小・移動する.spec.ts
     description: シナリオ『図を拡大・縮小・移動する』に記載したシナリオを Playwright で実行する E2E テスト。このユースケースの振る舞いを変えたときに参照する。
     tags: [topic:e2e, topic:シナリオ, tool:playwright]
     related:
-      - to: dev/設計書/シナリオ/単一ユースケース/図を拡大・縮小・移動する
+      - to: docs/scenario/SC-472-42
         type: see_also
   - path: e2e/単一ユースケース/図を描く.spec.ts
     description: シナリオ『図を描く』に記載したシナリオを Playwright で実行する E2E テスト。このユースケースの振る舞いを変えたときに参照する。
     tags: [topic:e2e, topic:シナリオ, tool:playwright]
     related:
-      - to: dev/設計書/シナリオ/単一ユースケース/図を描く
+      - to: docs/scenario/SC-472-43
         type: see_also
   - path: e2e/単一ユースケース/固有の部品とCSSを適用する.spec.ts
     description: シナリオ『固有の部品とCSS を適用する』に記載したシナリオを Playwright で実行する E2E テスト。このユースケースの振る舞いを変えたときに参照する。
     tags: [topic:e2e, topic:シナリオ, tool:playwright]
     related:
-      - to: dev/設計書/シナリオ/単一ユースケース/固有の部品とCSSを適用する
+      - to: docs/scenario/SC-472-44
         type: see_also
   - path: e2e/単一ユースケース/埋め込んだHTMLの差分を切り替える.spec.ts
     description: シナリオ『埋め込んだHTML の差分を切り替える』に記載したシナリオを Playwright で実行する E2E テスト。このユースケースの振る舞いを変えたときに参照する。
     tags: [topic:e2e, topic:シナリオ, tool:playwright]
     related:
-      - to: dev/設計書/シナリオ/単一ユースケース/埋め込んだHTMLの差分を切り替える
+      - to: docs/scenario/SC-472-45
         type: see_also
   - path: e2e/単一ユースケース/外部ライブラリを使用するときだけ読み込む.spec.ts
     description: シナリオ『外部ライブラリを使用するときだけ読み込む』に記載したシナリオを Playwright で実行する E2E テスト。このユースケースの振る舞いを変えたときに参照する。
     tags: [topic:e2e, topic:シナリオ, tool:playwright]
     related:
-      - to: dev/設計書/シナリオ/単一ユースケース/外部ライブラリを使用するときだけ読み込む
+      - to: docs/scenario/SC-472-46
         type: see_also
   - path: e2e/単一ユースケース/差分の取り出し元を指定する.spec.ts
     description: シナリオ『差分の取り出し元を指定する』に記載したシナリオを Playwright で実行する E2E テスト。このユースケースの振る舞いを変えたときに参照する。
     tags: [topic:e2e, topic:シナリオ, tool:playwright]
     related:
-      - to: dev/設計書/シナリオ/単一ユースケース/差分の取り出し元を指定する
+      - to: docs/scenario/SC-472-47
         type: see_also
   - path: e2e/単一ユースケース/比較元のMarkdownを指定して変更を強調する.spec.ts
     description: シナリオ『比較元のMarkdownを指定して変更を強調する』に記載したシナリオを Playwright で実行する E2E テスト。このユースケースの振る舞いを変えたときに参照する。
     tags: [topic:e2e, topic:シナリオ, tool:playwright]
     related:
-      - to: dev/設計書/シナリオ/単一ユースケース/比較元のMarkdownを指定して変更を強調する
+      - to: docs/scenario/SC-472-63
         type: see_also
   - path: e2e/単一ユースケース/差分ビューの変更をプレビューで確認する.spec.ts
     description: シナリオ『差分ビューの変更をプレビューで確認する』に記載したシナリオを Playwright で実行する E2E テスト。このユースケースの振る舞いを変えたときに参照する。
     tags: [topic:e2e, topic:シナリオ, tool:playwright]
     related:
-      - to: dev/設計書/シナリオ/単一ユースケース/差分ビューの変更をプレビューで確認する
+      - to: docs/scenario/SC-472-48
         type: see_also
   - path: e2e/単一ユースケース/拡張を登録してマーカーを追加する.spec.ts
     description: シナリオ『拡張を登録してマーカーを追加する』に記載したシナリオを Playwright で実行する E2E テスト。このユースケースの振る舞いを変えたときに参照する。
     tags: [topic:e2e, topic:シナリオ, tool:playwright]
     related:
-      - to: dev/設計書/シナリオ/単一ユースケース/拡張を登録してマーカーを追加する
+      - to: docs/scenario/SC-472-49
         type: see_also
   - path: e2e/単一ユースケース/拡張機能の配布物を作る.spec.ts
     description: シナリオ『拡張機能の配布物を作る』に記載したシナリオを Playwright で実行する E2E テスト。このユースケースの振る舞いを変えたときに参照する。
     tags: [topic:e2e, topic:シナリオ, tool:playwright]
     related:
-      - to: dev/設計書/シナリオ/単一ユースケース/拡張機能の配布物を作る
+      - to: docs/scenario/SC-472-50
         type: see_also
   - path: e2e/単一ユースケース/操作できる部品で値を変えて写す.spec.ts
     description: シナリオ『操作できる部品で値を変えて写す』に記載したシナリオを Playwright で実行する E2E テスト。このユースケースの振る舞いを変えたときに参照する。
     tags: [topic:e2e, topic:シナリオ, tool:playwright]
     related:
-      - to: dev/設計書/シナリオ/単一ユースケース/操作できる部品で値を変えて写す
+      - to: docs/scenario/SC-472-51
         type: see_also
   - path: e2e/単一ユースケース/文書の差分を確認する.spec.ts
     description: シナリオ『文書の差分を確認する』に記載したシナリオを Playwright で実行する E2E テスト。このユースケースの振る舞いを変えたときに参照する。
     tags: [topic:e2e, topic:シナリオ, tool:playwright]
     related:
-      - to: dev/設計書/シナリオ/単一ユースケース/文書の差分を確認する
+      - to: docs/scenario/SC-472-55
         type: see_also
   - path: e2e/単一ユースケース/文書をHTMLに書き出す.spec.ts
     description: シナリオ『文書をHTML に書き出す』に記載したシナリオを Playwright で実行する E2E テスト。このユースケースの振る舞いを変えたときに参照する。
     tags: [topic:e2e, topic:シナリオ, tool:playwright]
     related:
-      - to: dev/設計書/シナリオ/単一ユースケース/文書をHTMLに書き出す
+      - to: docs/scenario/SC-472-56
         type: see_also
   - path: e2e/単一ユースケース/文書をHTML文字列にする.spec.ts
     description: シナリオ『文書をHTML文字列にする』に記載したシナリオを Playwright で実行する E2E テスト。このユースケースの振る舞いを変えたときに参照する。
     tags: [topic:e2e, topic:シナリオ, tool:playwright]
     related:
-      - to: dev/設計書/シナリオ/単一ユースケース/文書をHTML文字列にする
+      - to: docs/scenario/SC-472-57
         type: see_also
   - path: e2e/単一ユースケース/文書を印刷する.spec.ts
     description: シナリオ『文書を印刷する』に記載したシナリオを Playwright で実行する E2E テスト。このユースケースの振る舞いを変えたときに参照する。
     tags: [topic:e2e, topic:シナリオ, tool:playwright]
     related:
-      - to: dev/設計書/シナリオ/単一ユースケース/文書を印刷する
+      - to: docs/scenario/SC-472-58
         type: see_also
   - path: e2e/単一ユースケース/文書を描く.spec.ts
     description: シナリオ『文書を描く』に記載したシナリオを Playwright で実行する E2E テスト。このユースケースの振る舞いを変えたときに参照する。
     tags: [topic:e2e, topic:シナリオ, tool:playwright]
     related:
-      - to: dev/設計書/シナリオ/単一ユースケース/文書を描く
+      - to: docs/scenario/SC-472-59
         type: see_also
   - path: e2e/単一ユースケース/記載した内容をプレビューに映す.spec.ts
     description: シナリオ『記載した内容をプレビューに映す』に記載したシナリオを Playwright で実行する E2E テスト。このユースケースの振る舞いを変えたときに参照する。
     tags: [topic:e2e, topic:シナリオ, tool:playwright]
     related:
-      - to: dev/設計書/シナリオ/単一ユースケース/記載した内容をプレビューに映す
+      - to: docs/scenario/SC-472-77
         type: see_also
   - path: e2e/単一ユースケース/本文に出た用語と文書の参照を取り出す.spec.ts
     description: シナリオ『本文に出た用語と文書の参照を取り出す』に記載したシナリオを Playwright で実行する E2E テスト。このユースケースの振る舞いを変えたときに参照する。
     tags: [topic:e2e, topic:シナリオ, tool:playwright]
     related:
-      - to: dev/設計書/シナリオ/単一ユースケース/本文に出た用語と文書の参照を取り出す
+      - to: docs/scenario/SC-472-60
         type: see_also
   - path: e2e/単一ユースケース/機能のオン・オフを文書で上書きする.spec.ts
     description: シナリオ『機能のオン・オフを文書で上書きする』に記載したシナリオを Playwright で実行する E2E テスト。このユースケースの振る舞いを変えたときに参照する。
     tags: [topic:e2e, topic:シナリオ, tool:playwright]
     related:
-      - to: dev/設計書/シナリオ/単一ユースケース/機能のオン・オフを文書で上書きする
+      - to: docs/scenario/SC-472-62
         type: see_also
   - path: e2e/単一ユースケース/注意書きを記載する.spec.ts
     description: シナリオ『注意書きを記載する』に記載したシナリオを Playwright で実行する E2E テスト。このユースケースの振る舞いを変えたときに参照する。
     tags: [topic:e2e, topic:シナリオ, tool:playwright]
     related:
-      - to: dev/設計書/シナリオ/単一ユースケース/注意書きを記載する
+      - to: docs/scenario/SC-472-64
         type: see_also
   - path: e2e/単一ユースケース/バージョンを上げる.spec.ts
     description: シナリオ『バージョンを上げる』に記載したシナリオを Playwright で実行する E2E テスト。このユースケースの振る舞いを変えたときに参照する。
     tags: [topic:e2e, topic:シナリオ, tool:playwright]
     related:
-      - to: dev/設計書/シナリオ/単一ユースケース/バージョンを上げる
+      - to: docs/scenario/SC-472-27
         type: see_also
   - path: e2e/単一ユースケース/バージョンを固定して配布物を読み込む.spec.ts
     description: シナリオ『バージョンを固定して配布物を読み込む』に記載したシナリオを Playwright で実行する E2E テスト。このユースケースの振る舞いを変えたときに参照する。
     tags: [topic:e2e, topic:シナリオ, tool:playwright]
     related:
-      - to: dev/設計書/シナリオ/単一ユースケース/バージョンを固定して配布物を読み込む
+      - to: docs/scenario/SC-472-28
         type: see_also
   - path: e2e/単一ユースケース/用語の意味をツールチップで確認する.spec.ts
     description: シナリオ『用語の意味をツールチップで確認する』に記載したシナリオを Playwright で実行する E2E テスト。このユースケースの振る舞いを変えたときに参照する。
     tags: [topic:e2e, topic:シナリオ, tool:playwright]
     related:
-      - to: dev/設計書/シナリオ/単一ユースケース/用語の意味をツールチップで確認する
+      - to: docs/scenario/SC-472-65
         type: see_also
   - path: e2e/単一ユースケース/目次と見出しのアンカーでセクションへ移る.spec.ts
     description: シナリオ『目次と見出しのアンカーでセクションへ移る』に記載したシナリオを Playwright で実行する E2E テスト。このユースケースの振る舞いを変えたときに参照する。
     tags: [topic:e2e, topic:シナリオ, tool:playwright]
     related:
-      - to: dev/設計書/シナリオ/単一ユースケース/目次と見出しのアンカーでセクションへ移る
+      - to: docs/scenario/SC-472-68
         type: see_also
   - path: e2e/単一ユースケース/セクションと行の詳細を開閉する.spec.ts
     description: シナリオ『セクションと行の詳細を開閉する』に記載したシナリオを Playwright で実行する E2E テスト。このユースケースの振る舞いを変えたときに参照する。
     tags: [topic:e2e, topic:シナリオ, tool:playwright]
     related:
-      - to: dev/設計書/シナリオ/単一ユースケース/セクションと行の詳細を開閉する
+      - to: docs/scenario/SC-472-21
         type: see_also
   - path: e2e/単一ユースケース/索引と文書のずれを点検する.spec.ts
     description: シナリオ『索引と文書のずれを点検する』に記載したシナリオを Playwright で実行する E2E テスト。このユースケースの振る舞いを変えたときに参照する。
     tags: [topic:e2e, topic:シナリオ, tool:playwright]
     related:
-      - to: dev/設計書/シナリオ/単一ユースケース/索引と文書のずれを点検する
+      - to: docs/scenario/SC-472-70
         type: see_also
   - path: e2e/単一ユースケース/表から用語集に用語を入れる.spec.ts
     description: シナリオ『表から用語集に用語を入れる』に記載したシナリオを Playwright で実行する E2E テスト。このユースケースの振る舞いを変えたときに参照する。
     tags: [topic:e2e, topic:シナリオ, tool:playwright]
     related:
-      - to: dev/設計書/シナリオ/単一ユースケース/表から用語集に用語を入れる
+      - to: docs/scenario/SC-472-72
         type: see_also
   - path: e2e/単一ユースケース/表を操作する.spec.ts
     description: シナリオ『表を操作する』に記載したシナリオを Playwright で実行する E2E テスト。このユースケースの振る舞いを変えたときに参照する。
     tags: [topic:e2e, topic:シナリオ, tool:playwright]
     related:
-      - to: dev/設計書/シナリオ/単一ユースケース/表を操作する
+      - to: docs/scenario/SC-472-73
         type: see_also
   - path: e2e/単一ユースケース/表形式のビューを列で絞り込む.spec.ts
     description: シナリオ『表形式のビューを列で絞り込む』に記載したシナリオを Playwright で実行する E2E テスト。このユースケースの振る舞いを変えたときに参照する。
     tags: [topic:e2e, topic:シナリオ, tool:playwright]
     related:
-      - to: dev/設計書/シナリオ/単一ユースケース/表形式のビューを列で絞り込む
+      - to: docs/scenario/SC-472-74
         type: see_also
   - path: e2e/単一ユースケース/被参照を確認する.spec.ts
     description: シナリオ『被参照を確認する』に記載したシナリオを Playwright で実行する E2E テスト。このユースケースの振る舞いを変えたときに参照する。
     tags: [topic:e2e, topic:シナリオ, tool:playwright]
     related:
-      - to: dev/設計書/シナリオ/単一ユースケース/被参照を確認する
+      - to: docs/scenario/SC-472-75
         type: see_also
   - path: e2e/単一ユースケース/複数の文書を1枚のHTMLにまとめる.spec.ts
     description: シナリオ『複数の文書を1枚のHTML にまとめる』に記載したシナリオを Playwright で実行する E2E テスト。このユースケースの振る舞いを変えたときに参照する。
     tags: [topic:e2e, topic:シナリオ, tool:playwright]
     related:
-      - to: dev/設計書/シナリオ/単一ユースケース/複数の文書を1枚のHTMLにまとめる
+      - to: docs/scenario/SC-472-76
         type: see_also
   - path: e2e/単一ユースケース/脚注を確認する.spec.ts
     description: シナリオ『脚注を確認する』に記載したシナリオを Playwright で実行する E2E テスト。このユースケースの振る舞いを変えたときに参照する。
     tags: [topic:e2e, topic:シナリオ, tool:playwright, topic:脚注]
     related:
-      - to: dev/設計書/シナリオ/単一ユースケース/脚注を確認する
+      - to: docs/scenario/SC-472-71
         type: see_also
   - path: e2e/単一ユースケース/文字列とYAMLのキーの記法を点検する.spec.ts
     description: シナリオ『文字列とYAMLのキーの記法を点検する』に記載したシナリオを Playwright で実行する E2E テスト。このユースケースの振る舞いを変えたときに参照する。
     tags: [topic:e2e, topic:シナリオ, tool:playwright]
     related:
-      - to: dev/設計書/シナリオ/単一ユースケース/文字列とYAMLのキーの記法を点検する
+      - to: docs/scenario/SC-472-52
         type: see_also
   - path: e2e/単一ユースケース/設定と索引を点検する.spec.ts
     description: シナリオ『設定と索引を点検する』に記載したシナリオを Playwright で実行する E2E テスト。このユースケースの振る舞いを変えたときに参照する。
     tags: [topic:e2e, topic:シナリオ, tool:playwright]
     related:
-      - to: dev/設計書/シナリオ/単一ユースケース/設定と索引を点検する
+      - to: docs/scenario/SC-472-78
         type: see_also
   - path: e2e/単一ユースケース/追加するJavaScriptを型で点検する.spec.ts
     description: シナリオ『追加するJavaScript を型で点検する』に記載したシナリオを Playwright で実行する E2E テスト。このユースケースの振る舞いを変えたときに参照する。
     tags: [topic:e2e, topic:シナリオ, tool:playwright]
     related:
-      - to: dev/設計書/シナリオ/単一ユースケース/追加するJavaScriptを型で点検する
+      - to: docs/scenario/SC-472-79
         type: see_also
   - path: e2e/単一ユースケース/選んだ箇所にコメントする.spec.ts
     description: シナリオ『選んだ箇所にコメントする』に記載したシナリオを Playwright で実行する E2E テスト。このユースケースの振る舞いを変えたときに参照する。
     tags: [topic:e2e, topic:シナリオ, tool:playwright]
     related:
-      - to: dev/設計書/シナリオ/単一ユースケース/選んだ箇所にコメントする
+      - to: docs/scenario/SC-472-80
         type: see_also
   - path: e2e/単一ユースケース/部品をJavaScriptから使用する.spec.ts
     description: シナリオ『部品をJavaScriptから使用する』に記載したシナリオを Playwright で実行する E2E テスト。このユースケースの振る舞いを変えたときに参照する。
     tags: [topic:e2e, topic:シナリオ, tool:playwright]
     related:
-      - to: dev/設計書/シナリオ/単一ユースケース/部品をJavaScriptから使用する
+      - to: docs/scenario/SC-472-81
         type: see_also
   - path: e2e/単一ユースケース/配布物をビルドして検査する.spec.ts
     description: シナリオ『配布物をビルドして検査する』に記載したシナリオを Playwright で実行する E2E テスト。このユースケースの振る舞いを変えたときに参照する。
     tags: [topic:e2e, topic:シナリオ, tool:playwright]
     related:
-      - to: dev/設計書/シナリオ/単一ユースケース/配布物をビルドして検査する
+      - to: docs/scenario/SC-472-82
         type: see_also
   - path: e2e/単一ユースケース/雛形を配置する.spec.ts
     description: シナリオ『雛形を配置する』に記載したシナリオを Playwright で実行する E2E テスト。このユースケースの振る舞いを変えたときに参照する。
     tags: [topic:e2e, topic:シナリオ, tool:playwright]
     related:
-      - to: dev/設計書/シナリオ/単一ユースケース/雛形を配置する
+      - to: docs/scenario/SC-472-83
         type: see_also
   - path: e2e/複合ユースケース/ClaudeCodeでガイドを参照して記載し点検する.spec.ts
     description: シナリオ『ClaudeCodeでガイドを参照して記載し点検する』に記載したシナリオを Playwright で実行する E2E テスト。このユースケースの振る舞いを変えたときに参照する。
     tags: [topic:e2e, topic:シナリオ, tool:playwright, topic:複合ユースケース]
     related:
-      - to: dev/設計書/シナリオ/複合ユースケース/ClaudeCodeでガイドを参照して記載し点検する
+      - to: docs/scenario/SC-472-85
         type: see_also
   - path: e2e/複合ユースケース/MCPサーバーを起動してプラグインからつなぐ.spec.ts
     description: シナリオ『MCPサーバーを起動してプラグインからつなぐ』に記載したシナリオを Playwright で実行する E2E テスト。このユースケースの振る舞いを変えたときに参照する。
     tags: [topic:e2e, topic:シナリオ, tool:playwright, topic:複合ユースケース]
     related:
-      - to: dev/設計書/シナリオ/複合ユースケース/MCPサーバーを起動してプラグインからつなぐ
+      - to: docs/scenario/SC-472-86
         type: see_also
   - path: e2e/複合ユースケース/VSCodeで記載しながら確認してPDFにする.spec.ts
     description: シナリオ『VSCode で記載しながら確認してPDF にする』に記載したシナリオを Playwright で実行する E2E テスト。このユースケースの振る舞いを変えたときに参照する。
     tags: [topic:e2e, topic:シナリオ, tool:playwright, topic:複合ユースケース]
     related:
-      - to: dev/設計書/シナリオ/複合ユースケース/VSCodeで記載しながら確認してPDFにする
+      - to: docs/scenario/SC-472-88
         type: see_also
   - path: e2e/複合ユースケース/コードブロックのHTMLでチャートとヒントを読み取る.spec.ts
     description: シナリオ『コードブロックのHTML でチャートとヒントを読み取る』に記載したシナリオを Playwright で実行する E2E テスト。このユースケースの振る舞いを変えたときに参照する。
     tags: [topic:e2e, topic:シナリオ, tool:playwright, topic:複合ユースケース]
     related:
-      - to: dev/設計書/シナリオ/複合ユースケース/コードブロックのHTMLでチャートとヒントを読み取る
+      - to: docs/scenario/SC-472-89
         type: see_also
   - path: e2e/複合ユースケース/ビューで探してコメントを付ける.spec.ts
     description: シナリオ『ビューで探してコメントを付ける』に記載したシナリオを Playwright で実行する E2E テスト。このユースケースの振る舞いを変えたときに参照する。
     tags: [topic:e2e, topic:シナリオ, tool:playwright, topic:複合ユースケース]
     related:
-      - to: dev/設計書/シナリオ/複合ユースケース/ビューで探してコメントを付ける
+      - to: docs/scenario/SC-472-90
         type: see_also
   - path: e2e/複合ユースケース/取り出し元を指定して文書の差分を確認する.spec.ts
     description: シナリオ『取り出し元を指定して文書の差分を確認する』に記載したシナリオを Playwright で実行する E2E テスト。このユースケースの振る舞いを変えたときに参照する。
     tags: [topic:e2e, topic:シナリオ, tool:playwright, topic:複合ユースケース]
     related:
-      - to: dev/設計書/シナリオ/複合ユースケース/取り出し元を指定して文書の差分を確認する
+      - to: docs/scenario/SC-472-92
         type: see_also
   - path: e2e/複合ユースケース/固有の部品で図の文書を描いて確認する.spec.ts
     description: シナリオ『固有の部品で図の文書を描いて確認する』に記載したシナリオを Playwright で実行する E2E テスト。このユースケースの振る舞いを変えたときに参照する。
     tags: [topic:e2e, topic:シナリオ, tool:playwright, topic:複合ユースケース]
     related:
-      - to: dev/設計書/シナリオ/複合ユースケース/固有の部品で図の文書を描いて確認する
+      - to: docs/scenario/SC-472-93
         type: see_also
   - path: e2e/複合ユースケース/雛形から1枚のHTMLを配る.spec.ts
     description: シナリオ『雛形から1枚のHTML を配る』に記載したシナリオを Playwright で実行する E2E テスト。このユースケースの振る舞いを変えたときに参照する。
     tags: [topic:e2e, topic:シナリオ, tool:playwright, topic:複合ユースケース]
     related:
-      - to: dev/設計書/シナリオ/複合ユースケース/雛形から1枚のHTMLを配る
+      - to: docs/scenario/SC-472-95
         type: see_also
   - path: integration/ClaudeCodeプラグイン/build-site.test.ts
     description: インターフェース定義『複数の文書を1枚のHTML にまとめる』の正常系と異常系のフローを確認する結合テスト。この操作の入出力を変えたときに参照する。
     tags: [topic:結合テスト, tool:vitest, tool:mcp, tool:claude-code, topic:バンドル]
     related:
-      - to: dev/設計書/インターフェース定義/ClaudeCodeプラグイン/複数の文書を1枚のHTMLにまとめる.ts
+      - to: docs/interface/IF-472-13.ts
         type: see_also
   - path: integration/ClaudeCodeプラグイン/check.test.ts
     description: インターフェース定義『点検する』の正常系と異常系のフローを確認する結合テスト。この操作の入出力を変えたときに参照する。
     tags: [topic:結合テスト, tool:vitest, tool:mcp, tool:claude-code, topic:検査]
     related:
-      - to: dev/設計書/インターフェース定義/ClaudeCodeプラグイン/点検する.ts
+      - to: docs/interface/IF-472-10.ts
         type: see_also
   - path: integration/ClaudeCodeプラグイン/export-html.test.ts
     description: インターフェース定義『文書をHTML に書き出す』の正常系と異常系のフローを確認する結合テスト。この操作の入出力を変えたときに参照する。
     tags: [topic:結合テスト, tool:vitest, tool:mcp, tool:claude-code, topic:書き出し, tool:html]
     related:
-      - to: dev/設計書/インターフェース定義/ClaudeCodeプラグイン/文書をHTMLに書き出す.ts
+      - to: docs/interface/IF-472-9.ts
         type: see_also
   - path: integration/ClaudeCodeプラグイン/pre-tool-use.test.ts
     description: インターフェース定義『作業のフォルダを引数に入れる』の正常系と異常系のフローを確認する結合テスト。この操作の入出力を変えたときに参照する。
     tags: [topic:結合テスト, tool:vitest, tool:mcp, tool:claude-code]
     related:
-      - to: dev/設計書/インターフェース定義/ClaudeCodeプラグイン/作業のフォルダを引数に入れる.ts
+      - to: docs/interface/IF-472-5.ts
         type: see_also
   - path: integration/ClaudeCodeプラグイン/serve.test.ts
     description: インターフェース定義『MCPサーバーを起動・停止する』の正常系と異常系のフローを確認する結合テスト。この操作の入出力を変えたときに参照する。
     tags: [topic:結合テスト, tool:vitest, tool:mcp, tool:claude-code]
     related:
-      - to: dev/設計書/インターフェース定義/ClaudeCodeプラグイン/MCPサーバーを起動・停止する.ts
+      - to: docs/interface/IF-472-4.ts
         type: see_also
   - path: integration/browser-server.ts
     description: 結合テストの前に Chromium を 1 つ起動して温め、各ファイルが接続する先を出す子プロセスを受け持つ。結合テストの準備や確認方法を変えるときに参照する。
@@ -543,7 +543,7 @@ files:
     related:
       - to: src/parts/backlinks
         type: tests
-      - to: dev/設計書/部品設計/関連文書の一覧.ts
+      - to: docs/component/CMP-472-66.ts
         type: see_also
   - path: integration/lib/badge.story.test.ts
     description: 部品設計『バッジ』のストーリーを実際のブラウザで開き、状態ごとの描画を確認する結合テスト。部品の引数や状態を変えたときに参照する。
@@ -551,19 +551,19 @@ files:
     related:
       - to: src/parts/badge
         type: tests
-      - to: dev/設計書/部品設計/バッジ.ts
+      - to: docs/component/CMP-472-23.ts
         type: see_also
   - path: integration/lib/build.test.ts
     description: インターフェース定義『配布物をビルドする』の正常系と異常系のフローを確認する結合テスト。この操作の入出力を変えたときに参照する。
     tags: [topic:結合テスト, tool:vitest, topic:api, topic:バンドル]
     related:
-      - to: dev/設計書/インターフェース定義/ライブラリ本体/配布物をビルドする.ts
+      - to: docs/interface/IF-472-41.ts
         type: see_also
   - path: integration/lib/bundle.test.ts
     description: インターフェース定義『複数の文書を1枚のHTML にまとめる』の正常系と異常系のフローを確認する結合テスト。この操作の入出力を変えたときに参照する。
     tags: [topic:結合テスト, tool:vitest, topic:api]
     related:
-      - to: dev/設計書/インターフェース定義/ライブラリ本体/複数の文書を1枚のHTMLにまとめる.ts
+      - to: docs/interface/IF-472-38.ts
         type: see_also
   - path: integration/lib/callout.story.test.ts
     description: 部品設計『注意書き』のストーリーを実際のブラウザで開き、状態ごとの描画を確認する結合テスト。部品の引数や状態を変えたときに参照する。
@@ -571,7 +571,7 @@ files:
     related:
       - to: src/parts/callout
         type: tests
-      - to: dev/設計書/部品設計/注意書き.ts
+      - to: docs/component/CMP-472-52.ts
         type: see_also
   - path: integration/lib/chart.story.test.ts
     description: 部品設計『グラフ』のストーリーを実際のブラウザで開き、状態ごとの描画を確認する結合テスト。部品の引数や状態を変えたときに参照する。
@@ -579,19 +579,19 @@ files:
     related:
       - to: src/parts/diagram
         type: tests
-      - to: dev/設計書/部品設計/グラフ.ts
+      - to: docs/component/CMP-472-13.ts
         type: see_also
   - path: integration/lib/check-config.test.ts
     description: インターフェース定義『設定と索引を点検する』の正常系と異常系のフローを確認する結合テスト。この操作の入出力を変えたときに参照する。
     tags: [topic:結合テスト, tool:vitest, topic:api, topic:設定, topic:検査]
     related:
-      - to: dev/設計書/インターフェース定義/ライブラリ本体/設定と索引を点検する.ts
+      - to: docs/interface/IF-472-39.ts
         type: see_also
   - path: integration/lib/check-index.test.ts
     description: インターフェース定義『索引を点検する』の正常系と異常系のフローを確認する結合テスト。この操作の入出力を変えたときに参照する。
     tags: [topic:結合テスト, tool:vitest, topic:api, topic:検査]
     related:
-      - to: dev/設計書/インターフェース定義/ライブラリ本体/索引を点検する.ts
+      - to: docs/interface/IF-472-37.ts
         type: see_also
   - path: integration/lib/code-block.story.test.ts
     description: 部品設計『コードブロック』のストーリーを実際のブラウザで開き、状態ごとの描画を確認する結合テスト。部品の引数や状態を変えたときに参照する。
@@ -599,19 +599,19 @@ files:
     related:
       - to: src/parts/code-block
         type: tests
-      - to: dev/設計書/部品設計/コードブロック.ts
+      - to: docs/component/CMP-472-18.ts
         type: see_also
   - path: integration/lib/collect-matches.test.ts
     description: インターフェース定義『本文の参照を取り出す』の正常系と異常系のフローを確認する結合テスト。この操作の入出力を変えたときに参照する。
     tags: [topic:結合テスト, tool:vitest, topic:api]
     related:
-      - to: dev/設計書/インターフェース定義/ライブラリ本体/本文の参照を取り出す.ts
+      - to: docs/interface/IF-472-36.ts
         type: see_also
   - path: integration/lib/collect-references.test.ts
     description: インターフェース定義『参照の表を作る』の正常系と異常系のフローを確認する結合テスト。この操作の入出力を変えたときに参照する。
     tags: [topic:結合テスト, tool:vitest, topic:api, topic:被参照]
     related:
-      - to: dev/設計書/インターフェース定義/ライブラリ本体/参照の表を作る.ts
+      - to: docs/interface/IF-472-31.ts
         type: see_also
   - path: integration/lib/comment-bubble.story.test.ts
     description: 部品設計『コメントの吹き出し』のストーリーを実際のブラウザで開き、状態ごとの描画を確認する結合テスト。部品の引数や状態を変えたときに参照する。
@@ -619,7 +619,7 @@ files:
     related:
       - to: src/parts/comment
         type: tests
-      - to: dev/設計書/部品設計/コメントの吹き出し.ts
+      - to: docs/component/CMP-472-17.ts
         type: see_also
   - path: integration/lib/comment-button.story.test.ts
     description: 部品設計『コメントのボタン』のストーリーを実際のブラウザで開き、状態ごとの描画を確認する結合テスト。部品の引数や状態を変えたときに参照する。
@@ -627,7 +627,7 @@ files:
     related:
       - to: src/parts/comment
         type: tests
-      - to: dev/設計書/部品設計/コメントのボタン.ts
+      - to: docs/component/CMP-472-14.ts
         type: see_also
   - path: integration/lib/comment-form.story.test.ts
     description: 部品設計『コメントの入力欄』のストーリーを実際のブラウザで開き、状態ごとの描画を確認する結合テスト。部品の引数や状態を変えたときに参照する。
@@ -635,7 +635,7 @@ files:
     related:
       - to: src/parts/comment
         type: tests
-      - to: dev/設計書/部品設計/コメントの入力欄.ts
+      - to: docs/component/CMP-472-16.ts
         type: see_also
   - path: integration/lib/comment-mark.story.test.ts
     description: 部品設計『コメントのマーカー』のストーリーを実際のブラウザで開き、状態ごとの描画を確認する結合テスト。部品の引数や状態を変えたときに参照する。
@@ -643,7 +643,7 @@ files:
     related:
       - to: src/parts/comment
         type: tests
-      - to: dev/設計書/部品設計/コメントのマーカー.ts
+      - to: docs/component/CMP-472-15.ts
         type: see_also
   - path: integration/lib/comment-orphans.story.test.ts
     description: 部品設計『箇所が見つからないコメントの一覧』のストーリーを実際のブラウザで開き、状態ごとの描画を確認する結合テスト。部品の引数や状態を変えたときに参照する。
@@ -651,7 +651,7 @@ files:
     related:
       - to: src/parts/comment
         type: tests
-      - to: dev/設計書/部品設計/箇所が見つからないコメントの一覧.ts
+      - to: docs/component/CMP-472-56.ts
         type: see_also
   - path: integration/lib/diagram-frame.story.test.ts
     description: 部品設計『図の枠』のストーリーを実際のブラウザで開き、状態ごとの描画を確認する結合テスト。部品の引数や状態を変えたときに参照する。
@@ -659,7 +659,7 @@ files:
     related:
       - to: src/parts/diagram
         type: tests
-      - to: dev/設計書/部品設計/図の枠.ts
+      - to: docs/component/CMP-472-39.ts
         type: see_also
   - path: integration/lib/diagram-tooltip.story.test.ts
     description: 部品設計『図のツールチップ』のストーリーを実際のブラウザで開き、状態ごとの描画を確認する結合テスト。部品の引数や状態を変えたときに参照する。
@@ -667,7 +667,7 @@ files:
     related:
       - to: src/parts/diagram
         type: tests
-      - to: dev/設計書/部品設計/図のツールチップ.ts
+      - to: docs/component/CMP-472-38.ts
         type: see_also
   - path: integration/lib/diff-blocks.story.test.ts
     description: 部品設計『差分のブロック』のストーリーを実際のブラウザで開き、状態ごとの描画を確認する結合テスト。部品の引数や状態を変えたときに参照する。
@@ -675,7 +675,7 @@ files:
     related:
       - to: src/parts/diff-blocks
         type: tests
-      - to: dev/設計書/部品設計/差分のブロック.ts
+      - to: docs/component/CMP-472-43.ts
         type: see_also
   - path: integration/lib/diff-html.story.test.ts
     description: 部品設計『埋め込んだHTML の差分』のストーリーを実際のブラウザで開き、状態ごとの描画を確認する結合テスト。部品の引数や状態を変えたときに参照する。
@@ -683,7 +683,7 @@ files:
     related:
       - to: src/parts/diff-html
         type: tests
-      - to: dev/設計書/部品設計/埋め込んだHTMLの差分.ts
+      - to: docs/component/CMP-472-42.ts
         type: see_also
   - path: integration/lib/diff-lines.story.test.ts
     description: 部品設計『差分の行』のストーリーを実際のブラウザで開き、状態ごとの描画を確認する結合テスト。部品の引数や状態を変えたときに参照する。
@@ -691,7 +691,7 @@ files:
     related:
       - to: src/parts/diff-lines
         type: tests
-      - to: dev/設計書/部品設計/差分の行.ts
+      - to: docs/component/CMP-472-45.ts
         type: see_also
   - path: integration/lib/diff-message.story.test.ts
     description: 部品設計『差分の状態の文』のストーリーを実際のブラウザで開き、状態ごとの描画を確認する結合テスト。部品の引数や状態を変えたときに参照する。
@@ -699,7 +699,7 @@ files:
     related:
       - to: src/parts/diff-message
         type: tests
-      - to: dev/設計書/部品設計/差分の状態の文.ts
+      - to: docs/component/CMP-472-44.ts
         type: see_also
   - path: integration/lib/diff-minimap.story.test.ts
     description: 部品設計『ミニマップ』のストーリーを実際のブラウザで開き、状態ごとの描画を確認する結合テスト。部品の引数や状態を変えたときに参照する。
@@ -707,7 +707,7 @@ files:
     related:
       - to: src/parts/diff-minimap
         type: tests
-      - to: dev/設計書/部品設計/ミニマップ.ts
+      - to: docs/component/CMP-472-30.ts
         type: see_also
   - path: integration/lib/diff-toggle.story.test.ts
     description: 部品設計『差分を開くボタン』のストーリーを実際のブラウザで開き、状態ごとの描画を確認する結合テスト。部品の引数や状態を変えたときに参照する。
@@ -715,7 +715,7 @@ files:
     related:
       - to: src/parts/diff-toggle
         type: tests
-      - to: dev/設計書/部品設計/差分を開くボタン.ts
+      - to: docs/component/CMP-472-46.ts
         type: see_also
   - path: integration/lib/doc-list.story.test.ts
     description: 部品設計『文書の一覧』のストーリーを実際のブラウザで開き、状態ごとの描画を確認する結合テスト。部品の引数や状態を変えたときに参照する。
@@ -723,7 +723,7 @@ files:
     related:
       - to: src/parts/doc-list
         type: tests
-      - to: dev/設計書/部品設計/文書の一覧.ts
+      - to: docs/component/CMP-472-49.ts
         type: see_also
   - path: integration/lib/embed.story.test.ts
     description: 部品設計『読み込み中のブロック』のストーリーを実際のブラウザで開き、状態ごとの描画を確認する結合テスト。部品の引数や状態を変えたときに参照する。
@@ -731,7 +731,7 @@ files:
     related:
       - to: src/parts/embed
         type: tests
-      - to: dev/設計書/部品設計/読み込み中のブロック.ts
+      - to: docs/component/CMP-472-64.ts
         type: see_also
   - path: integration/lib/embedded-html.story.test.ts
     description: 部品設計『埋め込んだHTML』のストーリーを実際のブラウザで開き、状態ごとの描画を確認する結合テスト。部品の引数や状態を変えたときに参照する。
@@ -739,13 +739,13 @@ files:
     related:
       - to: src/parts/embedded-html
         type: tests
-      - to: dev/設計書/部品設計/埋め込んだHTML.ts
+      - to: docs/component/CMP-472-41.ts
         type: see_also
   - path: integration/lib/export.test.ts
     description: インターフェース定義『文書をHTML に書き出す』の正常系と異常系のフローを確認する結合テスト。この操作の入出力を変えたときに参照する。
     tags: [topic:結合テスト, tool:vitest, topic:api, topic:書き出し]
     related:
-      - to: dev/設計書/インターフェース定義/ライブラリ本体/文書をHTMLに書き出す.ts
+      - to: docs/interface/IF-472-33.ts
         type: see_also
   - path: integration/lib/figure.story.test.ts
     description: 部品設計『図表の番号』のストーリーを実際のブラウザで開き、状態ごとの描画を確認する結合テスト。部品の引数や状態を変えたときに参照する。
@@ -753,7 +753,7 @@ files:
     related:
       - to: src/parts/figure
         type: tests
-      - to: dev/設計書/部品設計/図表の番号.ts
+      - to: docs/component/CMP-472-40.ts
         type: see_also
   - path: integration/lib/er-diagram.story.test.ts
     description: 部品設計『ER 図』のストーリーを実際のブラウザで開き、状態ごとの描画を確認する結合テスト。部品の引数や状態を変えたときに参照する。
@@ -761,7 +761,7 @@ files:
     related:
       - to: src/parts/diagram
         type: tests
-      - to: dev/設計書/部品設計/ER図.ts
+      - to: docs/component/CMP-472-1.ts
         type: see_also
   - path: integration/lib/flow-diagram.story.test.ts
     description: 部品設計『フロー図』のストーリーを実際のブラウザで開き、状態ごとの描画を確認する結合テスト。部品の引数や状態を変えたときに参照する。
@@ -769,7 +769,7 @@ files:
     related:
       - to: src/parts/diagram
         type: tests
-      - to: dev/設計書/部品設計/フロー図.ts
+      - to: docs/component/CMP-472-28.ts
         type: see_also
   - path: integration/lib/footnote.story.test.ts
     description: 部品設計『脚注の番号』『脚注の一覧』のストーリーを実際のブラウザで開き、状態ごとの描画を確認する結合テスト。部品の引数や状態を変えたときに参照する。
@@ -777,9 +777,9 @@ files:
     related:
       - to: src/parts/footnote
         type: tests
-      - to: dev/設計書/部品設計/脚注の番号.ts
+      - to: docs/component/CMP-472-58.ts
         type: see_also
-      - to: dev/設計書/部品設計/脚注の一覧.ts
+      - to: docs/component/CMP-472-57.ts
         type: see_also
   - path: integration/lib/frontmatter.story.test.ts
     description: 部品設計『フロントマター』のストーリーを実際のブラウザで開き、状態ごとの描画を確認する結合テスト。部品の引数や状態を変えたときに参照する。
@@ -787,7 +787,7 @@ files:
     related:
       - to: src/parts/frontmatter
         type: tests
-      - to: dev/設計書/部品設計/フロントマター.ts
+      - to: docs/component/CMP-472-27.ts
         type: see_also
   - path: integration/lib/frame-width.story.test.ts
     description: '`frameWidth` を持つストーリーを 390px の画面幅で開き、枠が横にはみ出さないことを確認する結合テスト。ストーリーを描く枠の幅を変えたときや、`frameWidth` を持つストーリーを追加したときに参照する。'
@@ -795,7 +795,7 @@ files:
     related:
       - to: scripts/storybook-render
         type: tests
-      - to: dev/設計書/モジュール構成/ライブラリ本体/部品の描画.ts
+      - to: docs/module/MOD-472-47
         type: see_also
   - path: integration/lib/hint.story.test.ts
     description: 部品設計『ヒント』のストーリーを実際のブラウザで開き、状態ごとの描画を確認する結合テスト。部品の引数や状態を変えたときに参照する。
@@ -803,7 +803,7 @@ files:
     related:
       - to: src/parts/hint
         type: tests
-      - to: dev/設計書/部品設計/ヒント.ts
+      - to: docs/component/CMP-472-24.ts
         type: see_also
   - path: integration/lib/index-render.ts
     description: 索引つきの render の結合テストが使用する索引と参照の表を受け持つ。結合テストの準備や確認方法を変えるときに参照する。
@@ -812,25 +812,25 @@ files:
     description: インターフェース定義『雛形を配置する』の正常系と異常系のフローを確認する結合テスト。この操作の入出力を変えたときに参照する。
     tags: [topic:結合テスト, tool:vitest, topic:api]
     related:
-      - to: dev/設計書/インターフェース定義/ライブラリ本体/雛形を配置する.ts
+      - to: docs/interface/IF-472-42.ts
         type: see_also
   - path: integration/lib/mount-comments.browser.test.ts
     description: インターフェース定義『コメントを付ける』の正常系と異常系のフローを確認する結合テスト。この操作の入出力を変えたときに参照する。
     tags: [topic:結合テスト, tool:vitest, topic:api, topic:コメント]
     related:
-      - to: dev/設計書/インターフェース定義/ライブラリ本体/コメントを付ける.ts
+      - to: docs/interface/IF-472-27.ts
         type: see_also
   - path: integration/lib/mount-view.browser.test.ts
     description: インターフェース定義『ビューを描く』の正常系と異常系のフローを確認する結合テスト。この操作の入出力を変えたときに参照する。
     tags: [topic:結合テスト, tool:vitest, topic:api, topic:ビュー]
     related:
-      - to: dev/設計書/インターフェース定義/ライブラリ本体/ビューを描く.ts
+      - to: docs/interface/IF-472-30.ts
         type: see_also
   - path: integration/lib/mount.browser.test.ts
     description: インターフェース定義『文書を描く』の正常系と異常系のフローを確認する結合テスト。この操作の入出力を変えたときに参照する。
     tags: [topic:結合テスト, tool:vitest, topic:api]
     related:
-      - to: dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts
+      - to: docs/interface/IF-472-35.ts
         type: see_also
   - path: integration/lib/notice.story.test.ts
     description: 部品設計『通知ブロック』のストーリーを実際のブラウザで開き、状態ごとの描画を確認する結合テスト。部品の引数や状態を変えたときに参照する。
@@ -838,7 +838,7 @@ files:
     related:
       - to: src/parts/notice
         type: tests
-      - to: dev/設計書/部品設計/通知ブロック.ts
+      - to: docs/component/CMP-472-65.ts
         type: see_also
   - path: integration/lib/param.story.test.ts
     description: 部品設計『操作できる部品』のストーリーを実際のブラウザで開き、状態ごとの描画を確認する結合テスト。部品の引数や状態を変えたときに参照する。
@@ -846,19 +846,19 @@ files:
     related:
       - to: src/parts/param
         type: tests
-      - to: dev/設計書/部品設計/操作できる部品.ts
+      - to: docs/component/CMP-472-47.ts
         type: see_also
   - path: integration/lib/register-extension.browser.test.ts
     description: インターフェース定義『拡張を登録する』の正常系と異常系のフローを確認する結合テスト。この操作の入出力を変えたときに参照する。
     tags: [topic:結合テスト, tool:vitest, topic:api]
     related:
-      - to: dev/設計書/インターフェース定義/ライブラリ本体/拡張を登録する.ts
+      - to: docs/interface/IF-472-32.ts
         type: see_also
   - path: integration/lib/render.test.ts
     description: インターフェース定義『文書をHTML文字列にする』の正常系と異常系のフローを確認する結合テスト。この操作の入出力を変えたときに参照する。
     tags: [topic:結合テスト, tool:vitest, topic:api]
     related:
-      - to: dev/設計書/インターフェース定義/ライブラリ本体/文書をHTML文字列にする.ts
+      - to: docs/interface/IF-472-34.ts
         type: see_also
   - path: integration/lib/revision-picker.story.test.ts
     description: 部品設計『リビジョンの選択』のストーリーを実際のブラウザで開き、状態ごとの描画を確認する結合テスト。部品の引数や状態を変えたときに参照する。
@@ -866,7 +866,7 @@ files:
     related:
       - to: src/parts/revision-picker
         type: tests
-      - to: dev/設計書/部品設計/リビジョンの選択.ts
+      - to: docs/component/CMP-472-32.ts
         type: see_also
   - path: integration/lib/row-detail.story.test.ts
     description: 部品設計『行の詳細』のストーリーを実際のブラウザで開き、状態ごとの描画を確認する結合テスト。部品の引数や状態を変えたときに参照する。
@@ -874,7 +874,7 @@ files:
     related:
       - to: src/parts/row-detail
         type: tests
-      - to: dev/設計書/部品設計/行の詳細.ts
+      - to: docs/component/CMP-472-60.ts
         type: see_also
   - path: integration/lib/section.story.test.ts
     description: 部品設計『セクション』のストーリーを実際のブラウザで開き、状態ごとの描画を確認する結合テスト。部品の引数や状態を変えたときに参照する。
@@ -882,7 +882,7 @@ files:
     related:
       - to: src/parts/section
         type: tests
-      - to: dev/設計書/部品設計/セクション.ts
+      - to: docs/component/CMP-472-21.ts
         type: see_also
   - path: integration/lib/sequence-diagram.story.test.ts
     description: 部品設計『シーケンス図』のストーリーを実際のブラウザで開き、状態ごとの描画を確認する結合テスト。部品の引数や状態を変えたときに参照する。
@@ -890,7 +890,7 @@ files:
     related:
       - to: src/parts/diagram
         type: tests
-      - to: dev/設計書/部品設計/シーケンス図.ts
+      - to: docs/component/CMP-472-19.ts
         type: see_also
   - path: integration/lib/side-toc.story.test.ts
     description: 部品設計『右側の目次』のストーリーを実際のブラウザで開き、状態ごとの描画を確認する結合テスト。部品の引数や状態を変えたときに参照する。
@@ -898,7 +898,7 @@ files:
     related:
       - to: src/parts/side-toc
         type: tests
-      - to: dev/設計書/部品設計/右側の目次.ts
+      - to: docs/component/CMP-472-37.ts
         type: see_also
   - path: integration/lib/steps.story.test.ts
     description: 部品設計『ステップ』のストーリーを実際のブラウザで開き、状態ごとの描画を確認する結合テスト。部品の引数や状態を変えたときに参照する。
@@ -906,7 +906,7 @@ files:
     related:
       - to: src/parts/steps
         type: tests
-      - to: dev/設計書/部品設計/ステップ.ts
+      - to: docs/component/CMP-472-20.ts
         type: see_also
   - path: integration/lib/syntax-warning.story.test.ts
     description: 部品設計『記載の警告』のストーリーを実際のブラウザで開き、状態ごとの描画を確認する結合テスト。部品の引数や状態を変えたときに参照する。
@@ -914,7 +914,7 @@ files:
     related:
       - to: src/parts/syntax-warning
         type: tests
-      - to: dev/設計書/部品設計/記載の警告.ts
+      - to: docs/component/CMP-472-62.ts
         type: see_also
   - path: integration/lib/table.story.test.ts
     description: 部品設計『表』のストーリーを実際のブラウザで開き、状態ごとの描画を確認する結合テスト。部品の引数や状態を変えたときに参照する。
@@ -922,7 +922,7 @@ files:
     related:
       - to: src/parts/table
         type: tests
-      - to: dev/設計書/部品設計/表.ts
+      - to: docs/component/CMP-472-61.ts
         type: see_also
   - path: integration/lib/tabs.story.test.ts
     description: 部品設計『タブ』のストーリーを実際のブラウザで開き、状態ごとの描画を確認する結合テスト。部品の引数や状態を変えたときに参照する。
@@ -930,7 +930,7 @@ files:
     related:
       - to: src/parts/tabs
         type: tests
-      - to: dev/設計書/部品設計/タブ.ts
+      - to: docs/component/CMP-472-22.ts
         type: see_also
   - path: integration/lib/term-tip.story.test.ts
     description: 部品設計『用語のツールチップ』のストーリーを実際のブラウザで開き、状態ごとの描画を確認する結合テスト。部品の引数や状態を変えたときに参照する。
@@ -938,7 +938,7 @@ files:
     related:
       - to: src/parts/term-tip
         type: tests
-      - to: dev/設計書/部品設計/用語のツールチップ.ts
+      - to: docs/component/CMP-472-53.ts
         type: see_also
   - path: integration/lib/toc.story.test.ts
     description: 部品設計『目次』のストーリーを実際のブラウザで開き、状態ごとの描画を確認する結合テスト。部品の引数や状態を変えたときに参照する。
@@ -946,7 +946,7 @@ files:
     related:
       - to: src/parts/toc
         type: tests
-      - to: dev/設計書/部品設計/目次.ts
+      - to: docs/component/CMP-472-55.ts
         type: see_also
   - path: integration/lib/tree.story.test.ts
     description: 部品設計『ファイルツリー』のストーリーを実際のブラウザで開き、状態ごとの描画を確認する結合テスト。部品の引数や状態を変えたときに参照する。
@@ -954,19 +954,19 @@ files:
     related:
       - to: src/parts/tree
         type: tests
-      - to: dev/設計書/部品設計/ファイルツリー.ts
+      - to: docs/component/CMP-472-26.ts
         type: see_also
   - path: integration/lib/upgrade.test.ts
     description: インターフェース定義『バージョンを上げる』の正常系と異常系のフローを確認する結合テスト。この操作の入出力を変えたときに参照する。
     tags: [topic:結合テスト, tool:vitest, topic:api]
     related:
-      - to: dev/設計書/インターフェース定義/ライブラリ本体/バージョンを上げる.ts
+      - to: docs/interface/IF-472-28.ts
         type: see_also
   - path: integration/lib/version.browser.test.ts
     description: インターフェース定義『バージョンを返却する』の正常系と異常系のフローを確認する結合テスト。この操作の入出力を変えたときに参照する。
     tags: [topic:結合テスト, tool:vitest, topic:api, topic:バージョン]
     related:
-      - to: dev/設計書/インターフェース定義/ライブラリ本体/バージョンを返却する.ts
+      - to: docs/interface/IF-472-29.ts
         type: see_also
   - path: integration/lib/view.story.test.ts
     description: 部品設計『ビュー』のストーリーを実際のブラウザで開き、状態ごとの描画を確認する結合テスト。部品の引数や状態を変えたときに参照する。
@@ -974,7 +974,7 @@ files:
     related:
       - to: src/parts/view
         type: tests
-      - to: dev/設計書/部品設計/ビュー.ts
+      - to: docs/component/CMP-472-25.ts
         type: see_also
   - path: integration/plugin-inputs.ts
     description: 結合テストで、プラグインのビルドに要るファイルを一時フォルダへコピーする処理を受け持つ。結合テストの準備や確認方法を変えるときに参照する。
@@ -994,7 +994,7 @@ files:
     related:
       - to: vscode/src/webview/shared/components/config-band
         type: tests
-      - to: dev/設計書/部品設計/設定ファイルを読み込めない帯.ts
+      - to: docs/component/CMP-472-63.ts
         type: see_also
   - path: integration/vscode/preview-status.story.test.ts
     description: 部品設計『プレビューの状態の表示』のストーリーを実際のブラウザで開き、状態ごとの描画を確認する結合テスト。部品の引数や状態を変えたときに参照する。
@@ -1002,7 +1002,7 @@ files:
     related:
       - to: vscode/src/webview/shared/components/preview-status
         type: tests
-      - to: dev/設計書/部品設計/プレビューの状態の表示.ts
+      - to: docs/component/CMP-472-29.ts
         type: see_also
   - path: unit/migrations/drop-tag-vocabulary.test.ts
     description: migrations/v0.10.0/drop-tag-vocabulary.mjs（「索引からタグの語彙を外す移行の手順」）を確認する単体テスト。drop-tag-vocabulary.mjs を変えたときに、合わせて再確認するケースを探すときに参照する。
@@ -2435,7 +2435,7 @@ files:
     description: モジュール構成『ライブラリ本体 / 検査』のうち「clearGitLocalEnv（Git のリポジトリの場所を指す環境変数を削除する）」を受け持つ。テストの起動で削除する環境変数を変えるときに参照する。
     tags: [topic:単体テスト, tool:vitest, tool:git]
     related:
-      - to: dev/設計書/モジュール構成/ライブラリ本体/検査.ts
+      - to: docs/module/MOD-472-253.ts
         type: implements
   - path: unit/git-env.test.ts
     description: tests/git-env.ts（「Git のリポジトリの場所を指す環境変数を削除する」）を確認する単体テスト。git-env.ts を変えたときに、合わせて修正するケースを探すときに参照する。

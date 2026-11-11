@@ -378,7 +378,7 @@ systemdTest(
     await rm(join(upgradePackage, "docs"), { recursive: true, force: true });
     await writeFiles(upgradePackage, {
       "migrations/v0.0.1/steps.yaml": TEST_STEPS,
-      "docs/はじめに/変更履歴.md": TEST_CHANGELOG,
+      "docs/guide/変更履歴.md": TEST_CHANGELOG,
     });
     const old = oldSettings(terminal.unit);
     await writeFiles(dirname(terminal.settingsPath), { "settings.yaml": old });

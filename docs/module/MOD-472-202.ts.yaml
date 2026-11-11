@@ -1,0 +1,14 @@
+id: MOD-472-202
+visibility: internal
+title: ライブラリ本体 / 拡張 / standard-schema.ts
+data_models:
+  - name: StandardSchemaV1
+    title: Standard Schema
+    container: src/standard-schema.ts
+    usecase: 拡張の登録
+    summary: Standard Schema の仕様の型（`~standard` の `version`・`vendor`・`validate`、`Result`・`Issue`・`PathSegment`）を複製したもの（公開の型）
+    description: 仕様は型を記載し写すか `@standard-schema/spec` を入れる構造で配られる。mdmark は依存を持たないため記載し写す（https://standardschema.dev/）
+    properties:
+      - name: ~standard
+        type: StandardSchemaV1.Props<Input, Output>
+        description: '`version: 1`・`vendor`・`validate(value) => Result | Promise<Result>`'

@@ -1,0 +1,20 @@
+id: MOD-472-69
+visibility: internal
+title: VS Code 拡張機能 / Webview / cn.ts
+functions:
+  - name: cn
+    title: class を結ぶ
+    kind: 関数
+    container: vscode/src/webview/shared/lib/cn.ts
+    usecase: 共通
+    summary: '`clsx` で結んだ class を `tailwind-merge` で重複を除いて返却する（shadcn/ui の `cn`）'
+    scope: public
+    args:
+      - name: inputs
+        type: ClassValue[]
+        required: true
+        description: class の並び
+    returns:
+      type: string
+      description: 結んだ class
+    status: planned

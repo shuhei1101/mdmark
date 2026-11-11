@@ -1,0 +1,49 @@
+id: MOD-472-293
+visibility: internal
+title: ライブラリ本体 / 記法 / kbd.ts
+test_files:
+  - tests/unit/src/render/syntax/kbd.test.ts
+functions:
+  - name: buildKbds
+    title: キーにする
+    container: src/render/syntax/kbd.ts
+    kind: 関数
+    scope: internal
+    summary: コアルール。`kbd` がオンなら、頭が `kbd:` で後ろに空白以外の文字を持つ `code_inline` を、`splitKeys` で区切った部品『キー』にする。`kbd\:` と空の扱いは `buildBadges` と同じ
+    args:
+      - name: state
+        type: StateCore
+        required: true
+        description: markdown-it の状態
+    side_effects: '`state.tokens` を書き換える'
+    callees:
+      - '#functions[splitKeys]'
+      - MOD-472-335#functions[renderKbd]
+    unit_tests:
+      - name: test_build_kbds
+        case: 正常
+        condition: '`` `kbd:Ctrl+C` ``・`` `kbd\:Ctrl+C` ``・`` `kbd:` ``'
+        expected: '`span.mdmark-kbd-group` の中に `Ctrl`・`C` の `kbd`、`<code>kbd:Ctrl+C</code>`、`<code>kbd:</code>`'
+        mock: なし
+        summary: キーにし、打ち消しと空はコードに残す
+  - name: splitKeys
+    title: キーに区切る
+    container: src/render/syntax/kbd.ts
+    kind: 関数
+    scope: internal
+    summary: '`+` で区切り、`++` を `+` のキーとして読み込む。キーの前後の空白を削除し、空のキーを捨てる'
+    args:
+      - name: text
+        type: string
+        required: true
+        description: '`kbd:` の後ろの文字'
+    returns:
+      type: string[]
+      description: キーの並び
+    unit_tests:
+      - name: test_split_keys
+        case: 正常
+        condition: '`Ctrl+Shift+P`・`Ctrl++`・` Ctrl + C `'
+        expected: '`["Ctrl","Shift","P"]`・`["Ctrl","+"]`・`["Ctrl","C"]`'
+        mock: なし
+        summary: '`+` で区切り、`++` を `+` のキーにする'

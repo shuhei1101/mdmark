@@ -1,0 +1,23 @@
+# GitHub Pages 用 Jekyll 設定
+
+# ビルドから除外するもの（文書を指す行は python -m ai_monitor.design_docs publish が visibility から書き出す）
+exclude:
+  - README.md
+  - architecture/
+  - component/
+  - config/
+  - design-policy.md
+  - dev-command/
+  - er/
+  - external-api/
+  - interface/
+  - library/
+  - module/
+  - nonfunctional/
+  - rules.yaml
+  - scenario/
+  - screen/
+  - test-procedure/
+  - pr/
+  - mock/
+  - generated/

@@ -1,0 +1,111 @@
+id: CMP-472-4
+visibility: internal
+title: mapのシーケンス図
+implementation: src/parts/map.ts#renderMapSequence
+story: Parts/MapSequence
+states:
+  - name: Default
+    description: '`autonumber`・`%% block:` の名前を持つ `rect`・`loop` の中の `alt` / `else`・`Note over`・活性化・点線・× の矢じり。参加者の箱は名前の行数に合わせて高い'
+    notes:
+      定義: モックの `SEQUENCE`（`docs/mock/refs/445/assets/samples.js`）
+  - name: Arrows
+    description: 全ての矢印の種類と `autonumber`。点線・塗った矢じり・× の印・非同期の開いた矢じり・両向きの矢じりと、ラベルの頭の番号（`autonumber` のときだけ）
+  - name: TallParticipants
+    description: 名前が 2 行の参加者。参加者の箱が高くなり、最初の行が一番高い箱の下から始まる
+  - name: BlockCollapsed
+    description: '`alt` を閉じた。「alt と名前・メッセージ 4 件」の 1 行になり、中で始まる活性化の帯がその行から描かれる'
+    args:
+      - name: collapsed
+        value: '["2"]'
+  - name: BlockEntered
+    description: '`loop` の中だけを描いた。`loop` の枠とタブが残り、タブの名前が押せず山形が無く、関わる参加者だけが並ぶ'
+    args:
+      - name: entered
+        value: '"1"'
+  - name: ParticipantSelected
+    description: 参加者を 1 人選んだ。その参加者のメッセージとライフラインのほかが薄くなり、その線の上をデータの印が流れる
+    args:
+      - name: selected
+        value: '["M"]'
+  - name: Playing
+    description: 再生の 3 つ目のメッセージ。送り手と受け手とその線のほかが薄く、その線の上をデータの印が流れる
+    args:
+      - name: focus
+        value: '{"message": 2}'
+  - name: Reordering
+    description: 5 人目の参加者を 2 人目の位置へドラッグしている。移す先に縦の線が出る
+    screenshot: false
+lead: map の `sequenceDiagram` の全ての記法を、シーケンス図の部品と同じ class と寸法で描き、ブロックの開閉と中だけを描く操作、参加者の選択と並べ替え、強調しない要素を薄くする表示を加える。
+args:
+  - name: sequence
+    type: オブジェクト
+    required: true
+    description: 読み取った `sequenceDiagram`（`MapSequence`。`participants`・`messages`・`fragments`・`notes`・`activations`・`autonumber`）。表示する行（`sequenceRows`）の順に描く
+  - name: order
+    type: 配列
+    required: false
+    default: Mermaid の記載の順
+    description: 参加者の ID の並び順
+  - name: collapsed
+    type: 配列
+    required: false
+    default: '[]'
+    description: 閉じたブロックの番号（記載の順に 1 から）。閉じたブロックは種類・名前・メッセージの件数の 1 行にする
+  - name: entered
+    type: 文字列
+    required: false
+    default: なし（全体）
+    description: 中だけを描くブロックの番号。そのブロックのメッセージと関わる参加者だけを描き、ブロックの枠とタブを残す
+  - name: selected
+    type: 配列
+    required: false
+    default: '[]'
+    description: 選んだ参加者の ID。1 人ならその参加者が送る・受けるメッセージ、2 人以上ならそのあいだのメッセージとライフラインのほかに `map-dim` を付ける。`focus` より優先する
+  - name: focus
+    type: オブジェクト
+    required: false
+    default: なし
+    description: 再生で強調するメッセージ（`{ message }`）。送り手・受け手・その線のほかに `map-dim` を付け、その線にデータの印を流す
+  - name: terms
+    type: オブジェクト
+    required: false
+    default: なし（下線を付けない）
+    description: 用語から意味への対応（`data-map-terms`）。参加者の名前・メッセージの文・注記の文の中の用語を `span.mdmark-term` にし、意味を図のツールチップにする。ブロックのタブには付けない
+  - name: notes
+    type: オブジェクト
+    required: false
+    default: なし（ツールチップを付けない）
+    description: 補足の `notes`（記載の順に 1 からのメッセージの番号から説明）。説明を持つメッセージの線の押せる帯を持ち主にした図のツールチップを作る
+events:
+  - name: ブロックを開閉する
+    when: ブロックのタブの山形のボタンを押す（Shift を押しながら押すと中のブロックも）
+    value: ブロックの番号と Shift の有無
+    description: '`mount` が `collapsed` を切り替えて描き直し、再生のメッセージの数を決め直す'
+  - name: ブロックの中だけを描く
+    when: ブロックのタブの名前のボタンを押す
+    value: ブロックの番号
+    description: '`mount` が `entered` をそのブロックにして描き直し、クエリ文字列と sessionStorage に保つ'
+  - name: 参加者を選ぶ
+    when: 参加者の箱の名前の文字の外を押すか、箱にフォーカスして Enter か Space を押す。メッセージの線を押す
+    value: 参加者の ID（線は送り手と受け手）
+    description: '`mount` が `selected` を切り替える'
+  - name: 並べ替える
+    when: 参加者の箱を名前の文字の外からドラッグする。箱にフォーカスして Alt + 左右の矢印キーを押す（1 列ずつ）
+    value: 参加者の ID と移す先の位置
+    description: '`mount` が `order` を変えて描き直し、sessionStorage に保つ'
+uses:
+  - component: CMP-472-19#
+    how: 参加者・ライフライン・メッセージ・複合フラグメント・注記・活性化
+  - component: CMP-472-8#
+    how: ブロックのタブの開閉の山形
+accessibility:
+  - ブロックの開閉のボタンは `aria-expanded` と `aria-label="{種類}「{名前}」を開く"`（開いているときは `閉じる`）を持つ。タブの名前のボタンは `aria-label="{種類}「{名前}」の中だけを見る"` を持つ
+  - 参加者の箱は `tabindex="0"`・`aria-keyshortcuts="Enter Space Alt+ArrowLeft Alt+ArrowRight"` を持ち、選んだかを `data-selected` とスクリーンリーダー向けの名前の末尾の `（選択中）` で伝える。並べ替えのアイコンは持たない
+  - 参加者の名前の文字は選んでコピーでき、ドラッグできる場所のポインターの形状は `grab`
+  - ブロックの枠線とライフラインは 1px で、背景とのコントラスト比 3:1 以上
+refs:
+  - IF-472-35#
+status: planned
+introduced:
+  pr: 445
+test_file: tests/integration/lib/map-sequence.story.test.ts

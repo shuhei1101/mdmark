@@ -1,0 +1,53 @@
+id: MOD-472-329
+visibility: internal
+title: ライブラリ本体 / 部品 / lightbox.ts
+test_files:
+  - tests/unit/src/parts/lightbox.test.ts
+functions:
+  - name: renderLightbox
+    title: ライトボックスを描く
+    container: src/parts/lightbox.ts
+    kind: 関数
+    scope: internal
+    summary: 部品設計『ライトボックス』の `dialog` の HTML を返却する。`total` が `1` のときは切り替えのボタンと枚数を出さず、`index` が端のときは端の切り替えのボタンを `disabled` にする。`zoom` が全体の収まる倍率（`fit`）のときは縮小を、`ZOOM.max` のときは拡大を `disabled` にし、`fit` より大きいときだけ移動のボタンのまとまりの `hidden` を削除する。アイコンは `iconSvg`（`chevron-left`・`chevron-right`・`minus`・`plus`・`x` と移動の矢印）
+    args:
+      - name: options
+        type: '{ src: string; alt: string; caption?: string; index: number; total: number; zoom?: number; fit?: number }'
+        required: true
+        description: 部品設計の引数と、全体が収まる倍率（`fit`。既定 `1`）
+    returns:
+      type: string
+      description: '`<dialog class="mdmark-lightbox" aria-label="画像の拡大">` で始まる HTML'
+    callees:
+      - 'MOD-472-313#functions[escapeHtml]'
+      - MOD-472-180#functions[iconSvg]
+    refs:
+      - CMP-472-31#
+    unit_tests:
+      - name: test_render_lightbox
+        case: 正常
+        summary: 途中の画像は前後に送信でき、枚数を出す
+        condition: 部品設計の `Middle`
+        mock: なし
+        expected: '`前の画像`・`次の画像` のボタンが `disabled` を持たず、`mdmark-lightbox-count` が `3 / 15`、移動のまとまりが `hidden`'
+      - name: test_render_lightbox_when_edge
+        case: 正常
+        summary: 端の切り替えのボタンを押せなくする
+        condition: 部品設計の `First` と `Last`
+        mock: なし
+        expected: 1 つ目は `前の画像` だけ、2 つ目は `次の画像` だけが `disabled`
+      - name: test_render_lightbox_when_single
+        case: 正常
+        summary: 1 枚なら切り替えのボタンと枚数を出さない
+        condition: 部品設計の `Single`
+        mock: なし
+        expected: '`mdmark-lightbox-nav` が無い'
+      - name: test_render_lightbox_when_max
+        case: 正常
+        summary: 上限の倍率で拡大を押せなくし、移動のボタンを出す
+        condition: 部品設計の `Max`
+        mock: なし
+        expected: 拡大が `disabled`、倍率の文字が `300%`、移動のまとまりが `hidden` を持たない
+    status: planned
+    introduced:
+      pr: 263

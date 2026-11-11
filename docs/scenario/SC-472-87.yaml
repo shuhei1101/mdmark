@@ -1,0 +1,129 @@
+id: SC-472-87
+visibility: internal
+title: Mermaidと補足で書いた図を辿って読む
+lead: 文書の作成者が Mermaid と補足で図を記載して点検し、読者が自動配置で描いた図を、グループの中へ入る・開閉・巡回・シーケンスの再生で辿って読む。
+issue: 324
+test_file: tests/e2e/複合ユースケース/Mermaidと補足で書いた図を辿って読む.spec.ts
+primary_actor: 文書の作成者
+stakeholders:
+  - name: 文書の作成者
+    interest: 座標を記載せずに、GitHub でも読める Mermaid で構成図を記載でき、補足の書き間違いを描く前に点検で見つけられる
+  - name: 読者
+    interest: 大きい構成図を、全体からグループの中へと辿り、手順ごと・メッセージごとに絞って読める
+trigger: 文書の作成者が、入れ子の構成を持つシステムの図を文書に記載したくなる
+preconditions:
+  - 文書の作成者の手元に Node 24 以降がある
+  - 読者が、配布物を読み込んだページで文書を開く。「正常シナリオ（書き出した HTML で辿る）」では、書き出した HTML を開く
+success_guarantee: 文書の map の範囲が、入れ子のグループを自動配置した図に描かれ、読者が中へ入る・開閉・巡回・再生で図を辿れる。点検は補足のずれを 0 件としている。
+minimal_guarantee: 補足にずれがあるときは、点検が文書と図の場所を指すずれの一覧を出して終了コードを 0 以外にする。描いたときは、読めない行・知らないキーを書き方の警告にして、読めた部分の図を描く。点検は文書を書き換えない。
+scenarios:
+  - name: 正常シナリオ
+    setup:
+      - name: 空のフォルダ
+        description: 文書の作成者の場所。何も配置していない
+      - name: 構成図とシーケンス図の文書
+        description: map の範囲を 2 つ持つ文書 1 つ。索引に文書を記載する
+        notes: 1 つ目は flowchart の構成図（入れ子 2 レイヤーのグループ・グループをまたぐ線・使う側の設定で作った種類のクラス）で、補足に `notes`・色を指定する `layout`・手順 3 つの `walkthroughs` を持つ。2 つ目は同じノードの ID を使用する sequenceDiagram（メッセージ 4 つ）で、補足の `plays_over` で 1 つ目の図を指す
+      - name: Mock
+        description: jsDelivr を、ビルドした `dist/` を同じパスで返却する手元の応答に差し替える。mermaid のライブラリへの要求を数える
+    flow: |-
+      flowchart TD
+        A[雛形を配置する:正常シナリオ] --> B[設定と索引を点検する:正常シナリオ]
+        B --> C[Mermaidと補足で図を描く:正常シナリオ]
+        C --> D[図のグループの中へ入る・開閉する:正常シナリオ]
+        D --> E[図のグループの中へ入る・開閉する:正常シナリオ（グループを閉じる）]
+        E --> H[図を巡回する:正常シナリオ]
+        H --> I[シーケンスを構成図の上で再生する:正常シナリオ]
+        I --> J[シーケンス図の参加者を選んで強調する:正常シナリオ]
+        click A "id:SC-472-83#scenarios[正常シナリオ]"
+        click B "id:SC-472-78#scenarios[正常シナリオ]"
+        click C "id:SC-472-8#scenarios[正常シナリオ]"
+        click D "id:SC-472-39#scenarios[正常シナリオ]"
+        click E "id:SC-472-39#scenarios[正常シナリオ（グループを閉じる）]"
+        click H "id:SC-472-41#scenarios[正常シナリオ]"
+        click I "id:SC-472-18#scenarios[正常シナリオ]"
+        click J "id:SC-472-19#scenarios[正常シナリオ]"
+    expected:
+      - '`mdmark check` が map の補足のずれを含めてずれ 0 件で、終了コード 0 を返却する'
+      - 構成図が、入れ子のグループを自動配置した図に描かれ、ノードとグループが重ならず、線が端点とその祖先以外のノード・グループを横切らない。クラスのノードが、使う側の設定の種類の名前・アイコン・形・色で描かれる
+      - 構成図のノード・線が今のフロー図と同じ見た目で描かれ、線の交差は飛び越えの弧で描かれる。`layout` で色を指定したグループ・ノード・線がその色で描かれる
+      - グループの中へ入ると中だけが配置し直され、外は薄く残り、戻るボタンで全体へ戻れる
+      - グループを閉じると、中への線が閉じたグループへ付け替えられ、同じ相手への線が 1 本にまとまる
+      - 補足の説明を持つノードのツールチップに、その説明が出る
+      - 巡回の次へ・前へで、手順ごとのグループと強調するノードと説明が出る
+      - シーケンスを再生すると、構成図とシーケンス図の今のメッセージの線の上をデータの印が流れ続け、各メッセージの文が出て、印の引数 `interval` の間隔で次のメッセージへ進む
+      - シーケンス図の参加者を選ぶと、その参加者のメッセージとライフラインが強調される
+      - mermaid のライブラリへの要求が 0 件（map の範囲の中の mermaid のブロックを mermaid のライブラリで描かない）
+    test: test_normal
+    uses:
+      - SC-472-83#scenarios[正常シナリオ]
+      - SC-472-78#scenarios[正常シナリオ]
+      - SC-472-8#scenarios[正常シナリオ]
+      - SC-472-39#scenarios[正常シナリオ]
+      - SC-472-39#scenarios[正常シナリオ（グループを閉じる）]
+      - SC-472-41#scenarios[正常シナリオ]
+      - SC-472-18#scenarios[正常シナリオ]
+      - SC-472-19#scenarios[正常シナリオ]
+  - name: 正常シナリオ（書き出した HTML で辿る）
+    setup:
+      - name: 空のフォルダ
+        description: 正常シナリオと同じ
+      - name: 構成図とシーケンス図の文書
+        description: 正常シナリオと同じ
+      - name: Mock
+        description: なし。書き出した HTML を開くブラウザのコンテキストで、外への要求を全て止める
+    flow: |-
+      flowchart TD
+        A[雛形を配置する:正常シナリオ] --> B[文書をHTMLに書き出す:正常シナリオ]
+        B --> C[Mermaidと補足で図を描く:正常シナリオ]
+        C --> D[図のグループの中へ入る・開閉する:正常シナリオ]
+        D --> F[シーケンスを構成図の上で再生する:正常シナリオ]
+        click A "id:SC-472-83#scenarios[正常シナリオ]"
+        click B "id:SC-472-56#scenarios[正常シナリオ]"
+        click C "id:SC-472-8#scenarios[正常シナリオ]"
+        click D "id:SC-472-39#scenarios[正常シナリオ]"
+        click F "id:SC-472-18#scenarios[正常シナリオ]"
+    expected:
+      - '`mdmark export` が終了コード 0 を返却し、1 枚の HTML を書き出す'
+      - 書き出した HTML を開いてから操作を終えるまで、外への要求が 0 件
+      - 書き出した HTML の構成図が、正常シナリオと同じく入れ子のグループを自動配置した図に描かれる
+      - グループの中へ入ると中だけが配置し直され、戻るボタンで全体へ戻れる
+      - シーケンスを再生すると、構成図の上で今のメッセージの線の上をデータの印が流れる
+    test: test_normal_when_exported
+    uses:
+      - SC-472-83#scenarios[正常シナリオ]
+      - SC-472-56#scenarios[正常シナリオ]
+      - SC-472-8#scenarios[正常シナリオ]
+      - SC-472-39#scenarios[正常シナリオ]
+      - SC-472-18#scenarios[正常シナリオ]
+  - name: 異常シナリオ（補足にずれがある）
+    setup:
+      - name: 空のフォルダ
+        description: 正常シナリオと同じ
+      - name: ずれを持つ図の文書
+        description: 正常シナリオの構成図の文書のうち、補足に 3 つのずれを持つもの。索引に文書を記載する
+        notes: Mermaid に無いノード・線の ID を指す `notes` のキー・知らないトップレベルのキー・`--` を含む `label` の値
+      - name: 修正した図の文書
+        description: 1 回目の点検の後に、文書の作成者が 3 つのずれを手で修正したもの
+      - name: Mock
+        description: 差し替えない。点検はブラウザを使用しない
+    flow: |-
+      flowchart TD
+        A[雛形を配置する:正常シナリオ] --> B[設定と索引を点検する:正常シナリオ（map の補足にずれがある）]
+        B --> C[設定と索引を点検する:正常シナリオ]
+        C --> D[Mermaidと補足で図を描く:正常シナリオ]
+        click A "id:SC-472-83#scenarios[正常シナリオ]"
+        click B "id:SC-472-78#scenarios[正常シナリオ（map の補足にずれがある）]"
+        click C "id:SC-472-78#scenarios[正常シナリオ]"
+        click D "id:SC-472-8#scenarios[正常シナリオ]"
+    expected:
+      - 1 回目の `mdmark check` が、ずれを持つ図の文書と図の場所を指す 3 件のずれ（無いノード・線への参照・知らないキー・`--` を含む値）を出し、終了コード 0 以外を返却する
+      - 修正した後の 2 回目の `mdmark check` がずれ 0 件で終了コード 0 を返却する
+      - その後に描いた文書に、書き方の警告が無く構成図が描かれる
+      - 点検は文書を書き換えない
+    test: test_error_when_map_data_drift
+    uses:
+      - SC-472-83#scenarios[正常シナリオ]
+      - SC-472-78#scenarios[正常シナリオ]
+      - SC-472-78#scenarios[正常シナリオ（map の補足にずれがある）]
+      - SC-472-8#scenarios[正常シナリオ]

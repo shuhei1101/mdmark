@@ -1,0 +1,87 @@
+id: MOD-472-193
+visibility: internal
+title: ライブラリ本体 / 差分 / minimap.ts
+test_files:
+  - tests/unit/src/diff/minimap.browser.test.ts
+constants:
+  - name: minimaps
+    title: スクロール先ごとのミニマップ
+    container: src/diff/minimap.ts
+    summary: スクロール先のスクロールの要素から、そこに配置した帯とマーカーを出している差分の行の集まりを参照する
+    value: 'new WeakMap<Element, { band: HTMLElement; lines: Set<HTMLElement>; detach: () => void }>()'
+  - name: MINIMAP_VARIABLES
+    title: 帯に写す変数
+    container: src/diff/minimap.ts
+    summary: 差分の行の計算値から読み込み、`document.body` の直下の帯の `style` に写す CSS 変数。利用側が `.mdmark` に記載した上書きを帯にも適用する
+    value: '["--mdmark-color-diff-del-sign", "--mdmark-color-diff-add-sign", "--mdmark-color-border", "--mdmark-color-surface", "--mdmark-color-muted", "--mdmark-color-text", "--mdmark-diff-minimap-width", "--mdmark-diff-minimap-z-index"]'
+functions:
+  - name: attachMinimap
+    title: ミニマップを付ける
+    container: src/diff/minimap.ts
+    summary: 差分の行のスクロール先のスクロールを見つけ、そこに 1 本だけの帯を配置してマーカーと今見えている範囲の枠を並べ、押す・押したまま動かすで送信する
+    kind: 関数
+    scope: internal
+    side_effects: '`document.body` に帯を配置し、スクロール先の `scroll`・`window` の `resize`・`matchMedia("(prefers-color-scheme: dark)")` の `change` と、`document.documentElement` の配下の `class` 属性の変更（`MutationObserver`）を受け取る。差分の行の大きさを `ResizeObserver` で確認する'
+    args:
+      - name: lines
+        type: HTMLElement
+        required: true
+        description: 差分の行の並びの要素
+    returns:
+      type: () => void
+      description: この行を帯から除外する関数。帯に残る行が無くなったら帯と受け取りを解除する
+    process: |-
+      1. スクロール先を決める。`lines` の祖先をたどり、`overflow-y` が `auto`・`scroll` で中身がはみ出す一番近い要素、無ければ `document.scrollingElement`（`操作.ts#functions[findScrollContainer]`）
+      2. `minimaps` にスクロール先が無ければ、`renderDiffMinimap` の帯を `document.body` に配置し、スクロール先の `scroll` と `window` の `resize` を受け取って帯の位置と枠をもう一度配置する。帯は `position: fixed` で、スクロール先が画面なら右端に画面の高さいっぱい、そうでなければスクロール先の `getBoundingClientRect` の右端にその高さで配置する。スクロール先が画面でないときは、スクロール先の外（画面や祖先の枠）がスクロールしてもスクロール先の位置が変わるため、`document` の `scroll` をキャプチャーフェーズで受け取って帯の位置をもう一度配置する。`document.body` に配置するのは、描く先の祖先の `transform`・`filter`・`contain` で `position: fixed` の基準が変わらないようにするため。帯をもう一度配置するたびと配色が切り替わったとき（`prefers-color-scheme` の `change` と、配色を決める祖先の `class` の変更）に、集まりの最初の差分の行の `getComputedStyle` から `MINIMAP_VARIABLES` を読み込み、帯の `style` に写す
+      3. スクロール先の行の集まりに `lines` を追加し、集まりの全ての行から `del`・`add` の行の位置をスクロール先の `scrollHeight` に対する割合にし、続いた同じ種類の行を 1 つのマーカーにまとめてもう一度配置する。隠れた見方の行は、埋め込んだ HTML の差分の塊の位置で示す。差分の行の大きさが変わったらもう一度配置する
+      4. 帯の `pointerdown` でポインターを捕まえ、押した位置の割合の場所がスクロール先の中ほどに来るよう `scrollTo` で送信する。捕まえている間の `pointermove` も同じに送信する
+      5. 削除する関数は、集まりから `lines` を除いてマーカーをもう一度配置し、空になったら帯を取り除いて受け取り（配色の `change` と `class` の観測を含む）を削除し、`minimaps` から削除する
+    unit_tests:
+      - name: test_attach_minimap
+        case: 正常
+        summary: 画面の右端に帯を配置し、削除した行と追加した行のマーカーを並べる
+        condition: 画面に収まらない長さの差分の行（前半に `del`、後半に `add`）
+        mock: なし
+        expected: '`document.body` の直下に `mdmark-diff-minimap` が 1 つあり、`del` と `add` のマーカーを 1 つずつ持つ'
+      - name: test_attach_minimap_when_pressed
+        case: 正常
+        summary: 帯を押すとその位置へスクロールする
+        condition: 帯の下寄りの位置で `pointerdown` を送信する
+        mock: '`window.scrollTo` を記録する関数に差し替える'
+        expected: '`scrollTo` が下寄りの `top` で呼ばれる'
+      - name: test_attach_minimap_when_two_diffs
+        case: 正常
+        summary: 同じスクロール先の 2 つの差分で帯を 1 本にまとめる
+        condition: 2 つの差分の行で `attachMinimap` を呼び、1 つ目を削除する
+        mock: なし
+        expected: 帯が 1 本で、削除した後は 2 つ目のマーカーだけを持つ。両方外すと帯が無い
+      - name: test_attach_minimap_when_scroll_container
+        case: 正常
+        summary: スクロールする枠の中の差分は、枠の右端に配置し、枠をスクロールする
+        condition: '`overflow-y: auto` で高さを決めた枠の中の差分の行'
+        mock: なし
+        expected: 帯の右端と高さが枠と同じで、帯を押すと枠の `scrollTop` が変わる
+      - name: test_attach_minimap_when_theme_overridden
+        case: 正常
+        summary: 利用側が `.mdmark` に記載した変数の上書きを帯にコピーし、配色が切り替わるともう一度コピーする
+        condition: '`.mdmark { --mdmark-color-diff-del-sign: #000; --mdmark-diff-minimap-z-index: 50 }` の下の差分の行。後で上書きを `#111` に変え、`prefers-color-scheme` の `change` を送信する'
+        mock: '`window.matchMedia` を `change` を送信できる偽物に差し替える'
+        expected: 帯の `style` の `--mdmark-color-diff-del-sign` が `#000`、`--mdmark-diff-minimap-z-index` が `50`。`change` の後は `--mdmark-color-diff-del-sign` が `#111`
+      - name: test_attach_minimap_when_page_scrolled
+        case: 正常
+        summary: スクロールする枠の外で画面がスクロールすると、帯を枠の右端にもう一度配置する
+        condition: '画面より高いページの中の、`overflow-y: auto` で高さを決めた枠の中の差分の行。帯を配置した後に画面を下へスクロールする'
+        mock: なし
+        expected: スクロールの後も、帯の上端と高さが枠の `getBoundingClientRect` と同じ
+      - name: test_attach_minimap_when_class_changed
+        case: 正常
+        summary: 祖先の class で配色が切り替わると帯にもう一度コピーする
+        condition: '`body` が class `vscode-light` を持つページの差分の行。後で `body` の class を `vscode-dark` に替え、`MutationObserver` の通知を待つ'
+        mock: なし
+        expected: 帯の `style` の `--mdmark-color-diff-del-sign` が、替える前は `#d1242f`、替えた後はダークの値 `#f85149`
+    callees:
+      - 'MOD-472-198#functions[renderDiffMinimap]'
+      - MOD-472-234#functions[findScrollContainer]
+    refs:
+      - IF-472-35#constraints[ミニマップ]
+      - CMP-472-30#

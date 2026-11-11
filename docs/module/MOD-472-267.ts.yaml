@@ -1,0 +1,86 @@
+id: MOD-472-267
+visibility: internal
+title: ライブラリ本体 / 索引と用語 / positions.ts
+test_files:
+  - tests/unit/src/knowledge/positions.test.ts
+functions:
+  - name: alignText
+    title: 文字を本文へ適用する
+    container: src/knowledge/positions.ts
+    kind: 関数
+    scope: internal
+    summary: 本文の位置 `cursor` から、照合した文字を 1 文字ずつ本文へ当て、各文字の本文の位置と当て終えた位置を返却する
+    description: 本文の文字が同じなら 1 文字進め、エスケープ（`\*`）は 2 文字で 1 文字、実体参照（`&amp;`・`&#x30EF;`）は markdown-it の `utils.unescapeAll` で戻した文字の長さぶん同じ位置を指し、どれにも該当しない本文の文字（記法の記号・字下げ・引用のマーカー）は飛ばす。実体参照を戻すために新しい依存を追加しない
+    args:
+      - name: options
+        type: '{ body: string; cursor: number; text: string }'
+        required: true
+        description: 本文・当て始める本文の頭からの位置・適用する文字
+    returns:
+      type: '{ offsets: number[]; end: number }'
+      description: '`text` の各文字の本文の頭からの位置（末尾に終わりの位置を 1 つ追加する）と、当て終えた位置'
+    unit_tests:
+      - name: test_align_text
+        case: 正常
+        summary: 記法の記号を飛ばして文字を適用する
+        condition: 本文 `**ワークスペース**`、文字 `ワークスペース`、`cursor` 0
+        mock: なし
+        expected: 始まりが 2、終わりが 9
+      - name: test_align_text_with_escape_and_entity
+        case: 正常
+        summary: エスケープと実体参照を数えて適用する
+        condition: 本文 `\*記号\* と A&amp;B`、文字 `*記号* と A&B`
+        mock: なし
+        expected: '`A&B` の範囲が本文の `A&amp;B` を指す'
+  - name: inlineOffsets
+    title: 行内のトークンを本文へ適用する
+    container: src/knowledge/positions.ts
+    kind: 関数
+    scope: internal
+    summary: 行内のトークンの子を頭から本文へ当て、照合してよい `text` の子ごとに各文字の本文の位置を返却する
+    description: 照合してよい子は `matchableChildren` と同じ。始めの位置はブロックのトークンの `map` の行の頭。子の種類ごとに本文の位置を進める（`text` は `alignText`、`code_inline` は記号と中身、`link_open` は `[`・自動リンクは `<`、`link_close` は `](…)` を入れ子の括弧ごと、参照形式の `][ref]`、自動リンクは `>`、`image` は `![…](…)` ごと、`softbreak`・`hardbreak` は次の行の頭、`html_inline` はその文字、強調などは `markup`）。同じ行から始まる行内のトークン（表のセル）は、前のセルを当て終えた位置から始める
+    args:
+      - name: options
+        type: '{ body: string; inline: Token; start: number }'
+        required: true
+        description: 本文・行内のトークン・当て始める本文の頭からの位置
+    returns:
+      type: '{ byChild: Map<number, number[]>; end: number }'
+      description: 照合してよい子の並びの位置から、その子の各文字の本文の位置（`alignText` の `offsets`）を参照する表と、当て終えた位置
+    callees:
+      - '#functions[alignText]'
+    unit_tests:
+      - name: test_inline_offsets
+        case: 正常
+        summary: 同じ綴りが先に行内のコードとリンクの文字にあっても、地の文の位置を返却する
+        condition: 本文 `` `ワークスペース` と [ワークスペース](./WS/ws.md) の後ろのワークスペース ``
+        mock: なし
+        expected: 地の文の `ワークスペース` の位置だけが返り、コード・リンクの文字・ URL の位置は返らない
+      - name: test_inline_offsets_in_blocks
+        case: 正常
+        summary: 複数行の段落・リストの入れ子・引用・表のセル・参照形式のリンク・画像の後ろでも、本文の行と行の中の位置が合う
+        condition: PoC（#75）の見本のうち地の文のものと、`[文字][ref]`・`![画像の文字](a.png)` の後ろに用語を記載した行
+        mock: なし
+        expected: 全ての一致で、本文の行を切り出した文字が一致した文字と同じ（実体参照は戻して同じ）
+  - name: maskEmbeddedHtml
+    title: 埋め込んだ HTML の照合しない範囲を伏せる
+    container: src/knowledge/positions.ts
+    kind: 関数
+    scope: internal
+    summary: 埋め込んだ HTML のうち、照合に渡らない範囲を、どの文字にも該当しない文字で伏せた同じ長さの文字列を返却する
+    description: 伏せるのは、タグ（`<`〜`>`。属性の値を含む）・コメント（`<!--`〜`-->`）と、中身ごと落ちる要素（sanitize-html の `nonTextTags` の `script`・`style`・`textarea`・`option`・`xmp` と、`button` を除く図の部品だけが持つ要素）の開きから閉じまでと、図の部品の custom element（`PART_PATTERN`）の定義ごとと、文字を照合しない要素（`TEXT_FILTER_SKIP_TAGS`）が直接持つ文字。`sanitizeEmbedded` の `textFilter` はその文字を直接持つ一番内側の要素で判定するため、タグを頭から読み込んで開いている要素の並びを持ち、一番内側が `TEXT_FILTER_SKIP_TAGS` の要素のときの文字だけを伏せる（`<a><span>単語</span></a>` の `span` の文字は伏せない）。要素の一覧は `src/render/sanitize.ts` から同じ定数を export して使用し、別に記載しない。文字の位置は変えない
+    args:
+      - name: html
+        type: string
+        required: true
+        description: コードブロックの中身の HTML
+    returns:
+      type: string
+      description: 照合に渡らない範囲を伏せた、同じ長さの文字列
+    unit_tests:
+      - name: test_mask_embedded_html
+        case: 正常
+        summary: タグ・コメント・落ちる要素の中と、照合しない要素が直接持つ文字を伏せ、要素の文字と入れ子の文字を残す
+        condition: '`<span title="単語">単語</span><!-- 単語 --><script>単語</script><code>単語</code><a href="#">単語</a><a href="#"><span>入</span></a><h2><em>見</em></h2>`'
+        mock: なし
+        expected: 長さが同じで、最初の `span` の要素の文字の `単語` と、`a` の中の `span` の `入`、見出しの中の `em` の `見` だけが残る

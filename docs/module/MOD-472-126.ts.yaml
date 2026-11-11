@@ -1,0 +1,27 @@
+id: MOD-472-126
+visibility: internal
+title: ライブラリ本体 / CLI / icons.ts
+test_files:
+  - tests/unit/src/cli/icons.test.ts
+functions:
+  - name: collectIconNodes
+    title: 埋めるアイコンの形状を集める
+    container: src/cli/icons.ts
+    summary: 文書と取り込む文書の `icon:` のうち配布物にまとめていない名前の IconNode を、依存の lucide の `icons` から取り出す。lucide に無い名前は別に返却する
+    kind: 関数
+    scope: internal
+    args:
+      - name: markdowns
+        type: string[]
+        required: true
+        description: 文書と取り込む文書の本文
+    returns:
+      type: '{ icons: Record<string, MdmarkIconNode>; missing: string[] }'
+      description: アイコンの形状の表と lucide に無い名前
+    unit_tests:
+      - name: test_collect_icon_nodes
+        case: 正常
+        condition: '`` `icon:sailboat` ``・`` `icon:flag` ``（まとめた名前）・`` `icon:no-such-icon` `` を持つ本文'
+        expected: '`icons` が `sailboat` だけを持ち、`missing` が `["no-such-icon"]`'
+        mock: なし
+        summary: まとめていない名前の構造だけを取り出す

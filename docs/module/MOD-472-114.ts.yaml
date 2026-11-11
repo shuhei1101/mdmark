@@ -1,0 +1,68 @@
+id: MOD-472-114
+visibility: internal
+title: ライブラリ本体 / CLI / init.ts
+test_files:
+  - tests/unit/src/cli/init.test.ts
+constants:
+  - name: TEMPLATE_FILES
+    title: 雛形の一覧
+    container: src/cli/init.ts
+    summary: '`init` が配置する雛形の、配置先のパスと `templates/` の中の原本のパスを、配置する順に並べたもの。`--js` のときに配置するかを各行が持つ'
+    value: '`mdmark.config.yaml`・`theme.css`・`index.yaml`・`extensions/example.ts`（TypeScript だけ）・`extensions/example.js`（JavaScript だけ）・`tsconfig.json`（TypeScript だけ）・`package.json`（TypeScript だけ）'
+    refs:
+      - IF-472-42#constraints[配置する雛形]
+functions:
+  - name: runInit
+    title: 雛形を配置する
+    container: src/cli/init.ts
+    usecase: 雛形を配置する
+    summary: '`TEMPLATE_FILES` のうち配置先に無いものをコピーし、配置した・配置しなかった行を出す'
+    description: '雛形の原本は `dist/cli.js` を基準にした `../templates/` を読み込む。既にあるファイルは中身を読み込まずに飛ばす（`writeFile` の `flag: "wx"`）。`mdmark.config.yaml` は雛形の `version` の値を `options.version` に置き換えて記載する'
+    kind: 関数
+    scope: public
+    is_async: true
+    side_effects: 配置先にフォルダとファイルを書き込む
+    args:
+      - name: options
+        type: '{ dir: string; js: boolean; templatesDir: string; version: string }'
+        required: true
+        description: 配置先・`--js`・雛形の原本のフォルダ・呼んだ CLI のバージョン
+      - name: io
+        type: CliIo
+        required: true
+        description: 出力の先
+    returns:
+      type: Promise<0>
+      description: 配置できたら 0
+    exceptions:
+      - name: CliError
+        condition: 配置先のフォルダを作れない・ファイルを書き込めない
+        message: '{パス} に書き込めません（{理由}）。配置先のフォルダを確認してください。'
+    unit_tests:
+      - name: test_run_init
+        case: 正常
+        summary: 空のフォルダに 6 つの雛形を配置する
+        condition: '`js: false`、空の一時フォルダ'
+        mock: 作業ツリーの `templates/`
+        expected: 6 つのファイルがあり、標準出力に `配置した:` が 6 行
+      - name: test_run_init_when_javascript
+        case: 正常
+        summary: --js では JavaScript の拡張だけを配置する
+        condition: '`js: true`'
+        mock: 作業ツリーの `templates/`
+        expected: '`extensions/example.js` があり、`extensions/example.ts`・`tsconfig.json`・`package.json` が無い'
+      - name: test_run_init_when_file_exists
+        case: 正常
+        summary: 既にあるファイルを上書きしない
+        condition: '中身 `x: 1` の `mdmark.config.yaml` がある'
+        mock: 作業ツリーの `templates/`
+        expected: '`mdmark.config.yaml` が `x: 1` のままで、標準出力に `配置しなかった（既にある）: mdmark.config.yaml` が出る'
+      - name: test_run_init_writes_version
+        case: 正常
+        summary: 配置する設定の version を呼んだ CLI のバージョンにする
+        condition: '`version: v0.5.0`、空の一時フォルダ'
+        mock: 作業ツリーの `templates/`
+        expected: 配置した `mdmark.config.yaml` の `version` が `v0.5.0` で、コメントは雛形のまま
+    status: planned
+    introduced:
+      pr: 32

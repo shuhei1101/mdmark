@@ -1,0 +1,256 @@
+id: MOD-472-191
+visibility: internal
+title: ライブラリ本体 / 差分 / blocks.ts
+test_files:
+  - tests/unit/src/diff/blocks.browser.test.ts
+data_models:
+  - name: DiffPair
+    title: 比べる 2 つの本文
+    container: src/diff/blocks.ts
+    usecase: VS Code の差分ビューの変更をプレビューで確認する
+    role: DTO
+    summary: ブロックの色分けのために取り出した結果
+    description: '`{ kind: "pair"; before: string; after: string } | { kind: "single" } | { kind: "failed" }`。`pair` は 2 番目（前）と 1 番目（後）のリビジョンの Markdown、`single` はリビジョンが 1 つ以下、`failed` は一覧か本文を取り出せなかった'
+    status: planned
+    introduced:
+      pr: 196
+  - name: BlockRange
+    title: ブロックの行の範囲
+    container: src/diff/blocks.ts
+    usecase: VS Code の差分ビューの変更をプレビューで確認する
+    role: DTO
+    summary: 色分けの単位のブロック 1 つと、その元の行の範囲
+    properties:
+      - name: element
+        type: HTMLElement
+        description: ブロックの要素（本文かセクションの中身の直下の要素、いちばん外の `li`、`tbody` の `tr`）
+      - name: unit
+        type: '"block" | "item" | "row"'
+        description: 部品『差分のブロック』の `unit` に指定する値
+      - name: start
+        type: number
+        description: ブロックの `data-source-line`（0 始まり）
+      - name: end
+        type: number
+        description: 次のブロックの `data-source-line` の 1 つ前。最後のブロックは文書の最後の行
+    status: planned
+    introduced:
+      pr: 196
+functions:
+  - name: loadDiffPair
+    title: 比べる 2 つの本文を取り出す
+    container: src/diff/blocks.ts
+    summary: 取り出し元の一覧を 1 回、前と後の本文を 1 回ずつ呼び、ブロックの色分けに使用する 2 つの Markdown を返却する
+    kind: 関数
+    scope: internal
+    is_async: true
+    side_effects: 取り出し元を呼ぶ。取り出せないときは `console.error` に出す
+    args:
+      - name: options
+        type: '{ source: DiffSource; docId: string }'
+        required: true
+        description: '`mount` に指定された取り出し元と文書の `id`'
+    returns:
+      type: Promise<DiffPair>
+      description: 取り出した結果。reject しない
+    process: |-
+      1. `source.revisions(docId)` を待ち、`checkRevisions` で検める。拒否か投げたら `{ kind: "failed" }` を返却する
+         - `[error]` リビジョンの一覧を取り出せない（`revisions`・`docId`・元のエラーを `console.error` の引数に並べる。`attachDiff` と同じ）
+      2. リビジョンが 1 つ以下なら `{ kind: "single" }` を返却する
+      3. 2 番目（前）と 1 番目（後）の `source.content({ docId, revisionId })` を並んで待つ。拒否か文字列でないものがあれば `{ kind: "failed" }` を返却する
+         - `[error]` 本文を取り出せない（`content`・`docId`・リビジョンの `id`・元のエラーか合わなかった値を並べる。`attachDiff` と同じ）
+      4. `{ kind: "pair", before, after }` を返却する
+    unit_tests:
+      - name: test_load_diff_pair
+        case: 正常
+        summary: 2 番目を前、1 番目を後にして取り出す
+        condition: '`modified`・`original` を返却し、`content` がリビジョンごとの全文を返却する取り出し元'
+        mock: 取り出し元は呼ばれた引数を記録する関数
+        expected: '`revisions` が 1 回、`content` が `original`・`modified` で 1 回ずつ呼ばれ、`{ kind: "pair" }` の `before` が `original`、`after` が `modified` の全文'
+      - name: test_load_diff_pair_when_single
+        case: 正常
+        summary: リビジョンが 1 つなら本文を取り出さない
+        condition: '`revisions` が 1 つを返却する'
+        mock: 取り出し元は呼ばれた引数を記録する関数
+        expected: '`{ kind: "single" }` を返却し、`content` が呼ばれない'
+      - name: test_load_diff_pair_when_content_rejected
+        case: 異常
+        summary: 本文を取り出せなければ failed を返却する
+        condition: '`content` が `original` で拒否する'
+        mock: '`console.error` を記録する関数で包む'
+        expected: '`{ kind: "failed" }` を返却し、`console.error` の引数に `content`・`docId`・`original`・元のエラーを含む'
+      - name: test_load_diff_pair_when_revisions_invalid
+        case: 異常
+        summary: 一覧の構造が合わなければ failed を返却する
+        condition: '`revisions` が `{}` を返却する'
+        mock: '`console.error` を記録する関数で包む'
+        expected: '`{ kind: "failed" }` を返却し、`content` が呼ばれない'
+    callees:
+      - 'MOD-472-189#functions[checkRevisions]'
+    refs:
+      - IF-472-35#constraints[差分の出し方]
+      - IF-472-35#constraints[差分の取り出し元]
+    status: planned
+    introduced:
+      pr: 196
+  - name: collectBlockRanges
+    title: ブロックに分ける
+    container: src/diff/blocks.ts
+    summary: 描いた文書の要素を色分けの単位のブロックに分け、元の行の範囲を付けて上から順に返却する
+    kind: 関数
+    scope: internal
+    args:
+      - name: options
+        type: '{ root: ParentNode; lineCount: number }'
+        required: true
+        description: '`root` は描いた文書の中身、`lineCount` はその Markdown の行の数'
+    returns:
+      type: BlockRange[]
+      description: 上から順のブロック
+    process: |-
+      1. `root` の直下と `div.mdmark-section-body` の直下の要素を文書の順に辿る。`mdmark-section-body` はその中に入り、`data-source-line` を自分か子孫に持たない要素は飛ばす
+      2. `ul`・`ol` は直下の `li` ごとに `unit: "item"`、`data-source-line` を持つ表（`table` か表の記法の外側）は見出し行を `unit: "block"` の表そのもの、`tbody` の `tr` ごとに `unit: "row"`、それ以外は要素ごとに `unit: "block"` のブロックにする
+      3. ブロックの `start` は要素（無ければ最初の子孫）の `data-source-line`、`end` は次のブロックの `start` の 1 つ前（最後は `lineCount - 1`）にする
+    unit_tests:
+      - name: test_collect_block_ranges
+        case: 正常
+        summary: セクションの中身の中のブロックと、リストの項目・表の行を分ける
+        condition: '`# タイトル`・`## セクション` の下に段落・3 つの項目の番号付きリスト・2 行の表を持つ Markdown を既定の設定で描いた要素'
+        mock: なし
+        expected: '`h1`・`h2`・段落・`li` 3 つ・表・`tr` 2 つの順で、`unit` が `block`・`item`・`row`。`mdmark-section-body` は含まない。各 `start`・`end` が Markdown の行と合う'
+    refs:
+      - IF-472-35#constraints[描いた文書のブロックの色分け]
+    status: planned
+    introduced:
+      pr: 196
+  - name: colorDiffBlocks
+    title: ブロックを色分けする
+    container: src/diff/blocks.ts
+    summary: 後の文書を描いた中身に、追加の色を当て、前の文書から削除したブロックを差し込む
+    kind: 関数
+    scope: internal
+    side_effects: '`after` の子孫を書き換える。`before` の要素を `after` へ移す'
+    args:
+      - name: options
+        type: '{ before: { root: ParentNode; markdown: string }; after: { root: ParentNode; markdown: string }; segmenter: Intl.Segmenter | undefined; engine?: DiffEngine }'
+        required: true
+        description: '`before`・`after` は前と後の Markdown と、それを今の描き方で描いた中身（画面に配置する前の `template` の中身）。`segmenter` と `engine` は `computeDiff` に指定する'
+    returns:
+      type: void
+      description: なし
+    process: |-
+      1. 前と後の Markdown を `computeDiff` で比べる（空白だけの行どうしの一致は、`computeDiff` が変えていない行の手がかりにしない）。`del`・`add` の行が無ければ何もしない。全ての塊の行を上から読み込んで前と後の行番号を数え、前の行番号ごとに削除したか、後の行番号ごとに追加したか、`same` の行の前から後への行番号の対応を作る。`same` でない行が続くところを 1 つの変えた塊にする
+      2. `collectBlockRanges` で前と後をブロックに分ける。後のブロックで、範囲に空白だけでない追加した行を持つものと、分け直したものを追加にする。分け直したものは、ブロックの開始の行（`start`）が動いたもの（空行で段落を分けた・つないだもの）。後のブロックの開始の行が `same` で、対応する前の行が、それを範囲に含む前の同じ `unit` のブロック（含むものが 2 つ以上あれば最も狭いもの。以下、含むブロック）の開始の行でなければ、その後のブロックと、含むブロックの開始の行を対応で後の行にした行の含むブロックを分け直したものにする。前のブロックの開始の行が `same` で、対応する後の行が、後の含むブロックの開始の行でなければ、その後の含むブロックを分け直したものにする。前のブロックで範囲の空白だけでない行が全て削除した行のものを削除の候補にする。前のブロックで見出しのセクションが丸ごと削除の候補なら、見出しとセクションの中身を 1 つの候補にまとめる。リスト・表の全ての項目・行が候補で、後にそのリスト・表が無いときはリスト・表ごと 1 つの候補にする
+      3. 同じ変えた塊の候補と追加のブロックを前から順に対にし、`isRewrite` が true の対は候補を削除する。残った候補を削除したブロックにする
+      4. 追加のブロックを `renderDiffBlock({ kind: "add", unit, html: 要素の outerHTML })` の要素に置き換える。置き換えたブロックの中の項目・行の範囲は、置き換えた後の要素の中の同じ位置の要素を指すように付け替える
+      5. 削除したブロックごとに、`renderDiffBlock({ kind: "del", ... })` の要素を作り、差し込む場所を決める。前の文書で同じ親の直前にあった変えていないブロックの `start` を行の対応で後の行番号にし、その行を範囲に持つ後のブロックの後ろ（その後ろに先に差し込んだ削除のブロックがあればその後ろ）に配置する。直前に無ければ、前の文書で属していたセクションの見出しを同じ対応で参照した後のセクションの中身の先頭、セクションに属さなければ `after.root` の先頭に配置する。リストの項目と表の行は、前の文書で直前の項目・行の後ろ（無ければ対応するリスト・`tbody` の先頭）に配置する
+    unit_tests:
+      - name: test_color_diff_blocks
+        case: 正常
+        summary: 追加した・書き換えた段落に追加の色、削除した段落を前の位置に削除の色で差し込む
+        condition: '前: `# タイトル`・段落 A・`## セクション`・段落 C・段落 D。後: 段落 A の単語を 1 つ書き換え、段落 C を削除し、段落 D を別の文の段落 E に入れ替える。どちらも既定の設定で描いた中身'
+        mock: なし（既定の `jsdiffEngine`）
+        expected: 段落 A と E が `data-kind="add"` の `div.mdmark-diff-block` に包まれる。段落 C が `## セクション` の `mdmark-section-body` の先頭、段落 D が E の直前に `data-kind="del"` である。段落 A の削除は無い。削除のブロックの中に `data-source-line` と `id` が無い
+      - name: test_color_diff_blocks_when_list_and_table
+        case: 正常
+        summary: リストの項目と表の行の単位で色を適用する
+        condition: '前: 5 つの項目の番号付きリストと 3 行の表。後: 4 番目の項目を削除し、項目を 1 つ追加し、表の 2 行目の全てのセルを書き換える'
+        mock: なし
+        expected: リストと表は包まれない。削除した `li` が 3 番目の項目の後ろに `data-kind="del"`、追加した `li` が `data-kind="add"` で、どちらも class `mdmark-diff-block`。表の 2 行目は削除の `tr` と追加の `tr` がこの順
+      - name: test_color_diff_blocks_when_section_deleted
+        case: 正常
+        summary: 見出しごと削除したセクションを 1 つの削除のブロックにする
+        condition: '前: `## 一`・段落・`## 二`・段落 2 つ・`## 三`・段落。後: `## 二` のセクションを丸ごと削除する'
+        mock: なし
+        expected: '`## 一` のセクションの後ろに `data-kind="del"` のブロックが 1 つだけあり、その中に `h2` と段落 2 つを持ち、`h2` が `id` を持たない'
+      - name: test_color_diff_blocks_when_same
+        case: 正常
+        summary: 同じ本文なら何も変えない
+        condition: 前と後が同じ Markdown
+        mock: なし
+        expected: '`after.root` の HTML が呼ぶ前と同じ'
+      - name: test_color_diff_blocks_when_table_header_changed
+        case: 正常
+        summary: 見出し行を変えて行を削除した表でも、削除した行を差し込む
+        condition: '前: `| 名前 | 値 |` の表（行 a・b・c）。後: 見出しを `| 名前 | 数 |` にし、行 b を削除した表'
+        mock: なし
+        expected: 表が `data-kind="add"` のブロックに包まれ、`after.root` の中で行 a の後ろに行 b の `tr` が `data-kind="del"` である
+      - name: test_color_diff_blocks_when_one_line_paragraphs
+        case: 正常
+        summary: 1 行の段落だけの文書で、空行の一致に参照されず変えていない段落に色を適用しない
+        condition: '前: 段落 `A`・`C`・`D`。後: 段落 `A`・`B`・`C`。どれも 1 行の段落を空行で区切り、既定の設定で描いた中身'
+        mock: なし（既定の `jsdiffEngine`）
+        expected: 段落 B だけが `data-kind="add"` の `div.mdmark-diff-block` に包まれ、段落 C の後ろに段落 D が `data-kind="del"` である。段落 A と C は包まれない
+      - name: test_color_diff_blocks_when_paragraph_split
+        case: 正常
+        summary: 空行だけを追加して段落を 2 つに分けた変更で、分けた後の段落に追加の色を適用する
+        condition: '前: 2 行の段落 `X\nY`。後: `X\n\nY`（段落 `X`・`Y`）。どちらも既定の設定で描いた中身'
+        mock: なし（既定の `jsdiffEngine`）
+        expected: 段落 `X` と `Y` がそれぞれ `data-kind="add"` の `div.mdmark-diff-block` に包まれる。`data-kind="del"` のブロックは無い
+      - name: test_color_diff_blocks_when_paragraphs_joined
+        case: 正常
+        summary: 空行だけを削除して 2 つの段落を 1 つにつないだ変更で、つないだ段落に追加の色を適用する
+        condition: '前: `X\n\nY`（段落 `X`・`Y`）。後: 2 行の段落 `X\nY`。どちらも既定の設定で描いた中身'
+        mock: なし
+        expected: つないだ段落が `data-kind="add"` の `div.mdmark-diff-block` に包まれる。`data-kind="del"` のブロックは無い
+      - name: test_color_diff_blocks_when_unrendered_line_follows
+        case: 正常
+        summary: 描いた結果に要素を出さない行が範囲の末尾にあっても、手前に追加した段落だけに色を適用する
+        condition: '前: `P\n\n[ref]: https://example.com\n`。後: `P\n\nN\n\n[ref]: https://example.com\n`（`[ref]` はリンクの参照の定義）。どちらも既定の設定で描いた中身'
+        mock: なし
+        expected: 段落 `N` だけが `data-kind="add"` の `div.mdmark-diff-block` に包まれ、段落 `P` は包まれない
+      - name: test_color_diff_blocks_when_blank_lines_only
+        case: 正常
+        summary: 段落の間の空行の数だけを変えた変更では、色を適用しない
+        condition: '前: `A\n\nB\n`。後: `A\n\n\nB\n`。どちらも既定の設定で描いた中身'
+        mock: なし
+        expected: '`after.root` の HTML が呼ぶ前と同じ'
+    callees:
+      - 'MOD-472-190#functions[computeDiff]'
+      - '#functions[collectBlockRanges]'
+      - '#functions[isRewrite]'
+      - 'MOD-472-200#functions[renderDiffBlock]'
+    refs:
+      - IF-472-35#constraints[描いた文書のブロックの色分け]
+      - IF-472-35#constraints[色を適用したブロックの要素]
+    status: planned
+    introduced:
+      pr: 196
+  - name: isRewrite
+    title: 書き換えかを見分ける
+    container: src/diff/blocks.ts
+    summary: 対の 2 つのブロックの文字を単語ごとに比べ、同じ文字の数が長い方の文字の数の半分以上なら true を返却する
+    kind: 関数
+    scope: internal
+    args:
+      - name: options
+        type: '{ before: string; after: string; segmenter: Intl.Segmenter | undefined; engine: DiffEngine }'
+        required: true
+        description: '`before`・`after` は削除の候補と追加のブロックの `textContent`'
+    returns:
+      type: boolean
+      description: 書き換えなら true、入れ替えなら false。どちらも空なら true
+    unit_tests:
+      - name: test_is_rewrite
+        case: 正常
+        summary: 単語を 1 つ書き換えた文は書き換え
+        condition: '`差分を確認する手順です。` と `変更を確認する手順です。`'
+        mock: なし（既定の `jsdiffEngine`）
+        expected: 'true'
+      - name: test_is_rewrite_when_replaced
+        case: 正常
+        summary: 別の文は入れ替え
+        condition: 共通する単語が句点だけの 2 つの文
+        mock: なし
+        expected: 'false'
+      - name: test_is_rewrite_when_half
+        case: 正常
+        summary: 同じ文字がちょうど半分なら書き換え
+        condition: '`segmenter` が `undefined` で、`abcd` と `abxy`'
+        mock: なし
+        expected: 'true'
+    refs:
+      - IF-472-35#constraints[書き換えと入れ替えの見分け]
+    status: planned
+    introduced:
+      pr: 196

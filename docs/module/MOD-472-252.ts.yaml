@@ -1,0 +1,53 @@
+id: MOD-472-252
+visibility: internal
+title: ライブラリ本体 / 検査 / eslint.ts
+test_files:
+  - tests/unit/scripts/eslint.test.ts
+functions:
+  - name: runEslint
+    title: tools/eslint/ の ESLint を起動する
+    kind: 関数
+    container: scripts/eslint.ts
+    usecase: 配布物をビルドして検査する
+    summary: '`tools/eslint/` の ESLint が入っていなければ `npm ci --prefix tools/eslint` で入れてから、ESLint 9 を `tools/eslint/eslint.config.js` と `--max-warnings 0` で起動し、終了コードを返却する'
+    description: '`lint:eslint` から `node scripts/eslint.ts` で呼ばれ、`import.meta.main` のとき `process.exitCode` に戻り値を入れる。`warn` の規則（`react-hooks/exhaustive-deps` など）も 1 件で失敗にする。直下の `eslint` 10 ではなく `tools/eslint/` の ESLint 9 を呼ぶ。引数が無ければ設定の `files` の全てを検査する'
+    scope: public
+    is_async: true
+    side_effects: '`tools/eslint/node_modules/` が無いときだけ作る。npm と ESLint の出力はそのまま標準出力・標準エラーへ出す'
+    args:
+      - name: argv
+        type: string[]
+        required: true
+        description: ESLint へ指定する引数
+      - name: options
+        type: '{ root: string; run: (command: string, args: string[], cwd: string) => Promise<number> }'
+        required: false
+        default: リポジトリの直下と、子プロセスを入出力を引き継いで起動し終了コードを返却する関数
+        description: 作業ツリーの場所と子プロセスの起動（テストで差し替える）
+    returns:
+      type: Promise<number>
+      description: ESLint の終了コード。依存の導入が失敗したときはその終了コード
+    process: |-
+      1. `{root}/tools/eslint/node_modules/eslint/package.json` があるかを確認する
+      2. 無ければ `run("npm", ["ci", "--prefix", "tools/eslint"], root)` を呼び、0 以外ならその値を返却する
+      3. `run(process.execPath, ["tools/eslint/node_modules/eslint/bin/eslint.js", "-c", "tools/eslint/eslint.config.js", "--max-warnings", "0", ...argv], root)` の終了コードを返却する
+    unit_tests:
+      - name: test_run_eslint
+        case: 正常
+        summary: ESLint が入っていれば入れずに起動する
+        condition: '`argv` は `["a.ts"]`'
+        mock: 一時フォルダを `root` にして `tools/eslint/node_modules/eslint/package.json` を配置し、`run` を呼ばれた引数を記録して 0 を返却する関数に差し替える
+        expected: 0 を返却し、`run` は ESLint の 1 回だけで、引数が `-c tools/eslint/eslint.config.js --max-warnings 0 a.ts` で終わる
+      - name: test_run_eslint_when_not_installed
+        case: 正常
+        summary: ESLint が無ければ入れてから起動する
+        condition: '`tools/eslint/node_modules/` が無い'
+        mock: 一時フォルダを `root` にし、`run` を呼ばれた引数を記録して 0 を返却する関数に差し替える
+        expected: 0 を返却し、`run` は `npm ci --prefix tools/eslint`、ESLint の順に 2 回呼ばれる
+      - name: test_run_eslint_when_install_fails
+        case: 異常
+        summary: 依存の導入が失敗すると ESLint を起動しない
+        condition: '`tools/eslint/node_modules/` が無く、`npm ci` が 1 で終わる'
+        mock: 一時フォルダを `root` にし、`run` を npm には 1 を返却する関数に差し替える
+        expected: 1 を返却し、ESLint を呼ばない
+    status: planned

@@ -1,0 +1,25 @@
+id: MOD-472-253
+visibility: internal
+title: ライブラリ本体 / 検査 / git-env.ts
+test_files:
+  - tests/unit/git-env.test.ts
+functions:
+  - name: clearGitLocalEnv
+    title: Git のリポジトリの場所を指す環境変数を削除する
+    kind: 関数
+    container: tests/git-env.ts
+    usecase: 配布物をビルドして検査する
+    summary: '`git rev-parse --local-env-vars` が返却する環境変数（`GIT_DIR`・`GIT_COMMON_DIR`・`GIT_INDEX_FILE`・`GIT_OBJECT_DIRECTORY`・`GIT_CONFIG` など）を `process.env` から除外する'
+    description: '`vitest.config.ts` が読み込んだ時点で呼ぶ。Vitest の本体・`globalSetup`・テストの worker と、テストと製品のコード（`src/cli/git.ts` など）が起動する子プロセスは、削除した後の環境を引き継ぐ。Git のフック（worktree のフックは `GIT_DIR` を持つ）や、`GIT_DIR` を持つ環境から Vitest を呼んでも、一時のフォルダで `git` を呼ぶテストが作業中のリポジトリへ記載しない'
+    scope: public
+    process: |-
+      1. `git rev-parse --local-env-vars` を `execFileSync` で呼び、出力を行に分ける
+      2. 行の名前ごとに `delete process.env[名前]`
+    unit_tests:
+      - name: test_clear_git_local_env
+        case: 正常
+        summary: リポジトリの場所を指す環境変数だけを削除する
+        condition: '`process.env` に `GIT_DIR`・`GIT_COMMON_DIR`・`GIT_INDEX_FILE` と、場所を指さない `GIT_AUTHOR_NAME` を配置して呼ぶ'
+        mock: '`vi.stubEnv` で環境変数を配置し、テストの後に `vi.unstubAllEnvs` で戻す'
+        expected: '`GIT_DIR`・`GIT_COMMON_DIR`・`GIT_INDEX_FILE` が無くなり、`GIT_AUTHOR_NAME` は残る'
+    status: planned

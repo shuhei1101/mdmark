@@ -1,0 +1,21 @@
+id: MOD-472-72
+visibility: internal
+title: VS Code 拡張機能 / Webview / fake-vscode-api.ts
+functions:
+  - name: createFakeVsCodeApi
+    title: VS Code の API の代役を作る
+    kind: 関数
+    container: vscode/src/webview/testing/fake-vscode-api.ts
+    usecase: 共通
+    role: テストの道具
+    summary: 送信したメッセージ（`posted`）と保存した状態を記録し、`getState` が指定した初期の状態を返却する `VsCodeApi` を作る。ストーリーでは `ready` を受けたら、ストーリーの引数のメッセージを `window.postMessage` で順に送信する
+    scope: public
+    args:
+      - name: options
+        type: '{ state?: unknown; onPost?: (message: WebviewMessage) => void }'
+        required: false
+        description: 初期の状態と、送信したときの処理
+    returns:
+      type: 'VsCodeApi & { posted: WebviewMessage[] }'
+      description: 代役
+    status: planned

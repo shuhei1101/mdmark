@@ -1,0 +1,121 @@
+id: MOD-472-162
+visibility: internal
+title: ライブラリ本体 / ビューとコメント / margin.ts
+test_files:
+  - tests/unit/src/comments/margin.test.ts
+  - tests/unit/src/comments/margin.browser.test.ts
+constants:
+  - name: SAME_LINE_PX
+    title: 同じ行とみなす差
+    container: src/comments/margin.ts
+    summary: 箇所の行の上端の差がこの値以下なら、同じ行として 1 つのマーカーにまとめる
+    value: '4'
+  - name: MARKER_GAP_PX
+    title: マーカーの間の幅
+    container: src/comments/margin.ts
+    summary: 上下に並んだマーカーの間に空ける幅
+    value: '4'
+  - name: MAX_OPEN_DEPTH
+    title: 開く処理の上限
+    container: src/comments/margin.ts
+    summary: 閉じた中の箇所へ移るとき、入れ子の閉じた要素を外側から開く処理を繰り返す上限
+    value: '4'
+functions:
+  - name: attachMarginMarkers
+    title: 余白のマーカーを付ける
+    container: src/comments/margin.ts
+    summary: 本文の列の右に余白の列を配置し、マーカーの行の縦の中ほどに余白のマーカーを配置して、押すとマーカーへ移る操作と再配置を付け、削除する関数を返却する
+    kind: 関数
+    scope: internal
+    side_effects: '`content` の直後に余白の列の要素を配置し、`content` の親を `ResizeObserver`、`content` の中を `MutationObserver` で確認する'
+    args:
+      - name: options
+        type: '{ content: HTMLElement }'
+        required: true
+        description: 本文の列（`div.mdmark-content`）
+    returns:
+      type: () => void
+      description: 余白の列と受け取りを解除する関数
+    process: |-
+      1. `renderCommentMarker` を入れる `div.mdmark-comment-margin` を `content` の直後に配置する
+      2. 再配置は、`content` の中の `mark.mdmark-comment-mark` ごとに、祖先のうち `hidden` を持ついちばん外側の要素を探す。無ければマーカー、あれば `aria-controls` でその要素の ID を指す開くボタンを基準の要素にし、閉じた中の種類（`[role="tabpanel"]` は `tab`・`.mdmark-row-detail` は `row`・それ以外は `section`）を記録する。開くボタンが無いマーカーは除く
+      3. 基準の要素の最初の行の矩形（`getClientRects()[0]`）から、余白の列の上端からの上端と高さを測り、`layoutMarkers` で行ごとにまとめた縦の中ほどを得る。まとめた行ごとに、行の最初のマーカーの文字・箇所の数・`aria-expanded="true"` のマーカーを含むか・閉じた中の種類で `renderCommentMarker` を描き、`top` に縦の中ほどを入れて余白の列の中身を置き換える。置き換える前に余白のマーカーにフォーカスがあれば、同じ順番のマーカー（数が減ったときは最後のマーカー）へフォーカスを戻す
+      4. マーカーの押下（Enter・Space を含む）で、行の最初のマーカーについて、祖先の `hidden` のいちばん外側の要素の開くボタンを押すことを `MAX_OPEN_DEPTH` 回まで繰り返し、マーカーを `scrollIntoView({ block: "center" })` してからマーカーの `click()` を呼ぶ
+      5. `content` の中の子の増減と、`hidden`・`aria-expanded`・`class` の属性の変化（余白の列の中を除く）と、`content` の親の大きさの変化で、`requestAnimationFrame` で 1 フレームに 1 回にまとめて手順 2〜3 をする
+      6. 削除する関数は、受け取りと予約したフレームを削除し、余白の列を取り除く
+    callees:
+      - '#functions[layoutMarkers]'
+      - 'MOD-472-163#functions[renderCommentMarker]'
+    unit_tests:
+      - name: test_attach_margin_markers
+        case: 正常
+        summary: マーカーの行の縦の中ほどにマーカーを配置し、押すと吹き出しを開く
+        condition: '`div.mdmark-content` の 2 つの段落の文字をマーカーで包み、マーカーの `click` を記録する'
+        mock: なし
+        expected: '`content` の直後に `div.mdmark-comment-margin` があり、マーカーが 2 つで、それぞれの `top` がマーカーの行の縦の中ほど。1 つ目を押すと 1 つ目のマーカーの `click` が 1 回呼ばれる'
+      - name: test_attach_margin_markers_when_closed
+        case: 正常
+        summary: 閉じた中のマーカーは開くボタンの行に配置し、押すと開いてからマーカーを押す
+        condition: '`hidden` を持つセクションの中身の中のマーカーと、`aria-controls` でその中身を指し、押すと `hidden` を削除するボタン'
+        mock: なし
+        expected: マーカーが `data-closed="section"` を持ち、`top` がボタンの行の縦の中ほど。押すとボタンが押され、マーカーの `click` が呼ばれる
+      - name: test_attach_margin_markers_when_no_opener
+        case: 正常
+        summary: 開くボタンが無い閉じた中のマーカーにはマーカーを配置しない
+        condition: '`hidden` を持ち ID の無い要素の中のマーカー'
+        mock: なし
+        expected: マーカーが無い
+      - name: test_attach_margin_markers_when_changed
+        case: 正常
+        summary: 中の変化で次のフレームにもう一度配置する
+        condition: 付けた後に段落を 1 つ追加し、その文字をマーカーで包む
+        mock: なし
+        expected: 次のフレームでマーカーが 1 つ増える。余白の列の中の書き換えではもう一度配置しない
+      - name: test_attach_margin_markers_when_detached
+        case: 正常
+        summary: 削除すると余白の列を取り除く
+        condition: 付けた後に削除する関数を呼び、段落を追加する
+        mock: なし
+        expected: 余白の列が無く、次のフレームでも配置しない
+    refs:
+      - IF-472-35#constraints[余白のマーカー]
+      - IF-472-35#constraints[余白のマーカーから移る]
+      - IF-472-35#constraints[余白のマーカーの再配置]
+  - name: layoutMarkers
+    title: マーカーの縦の位置を決める
+    container: src/comments/margin.ts
+    summary: 行の上端と高さの並びから、同じ行をまとめ、重ならないように下げたマーカーの縦の中ほどを返却する
+    kind: 関数
+    scope: internal
+    args:
+      - name: options
+        type: '{ lines: Array<{ top: number; height: number }>; markerSize: number }'
+        required: true
+        description: 箇所ごとの行の上端と高さ（px。並びは問わない）と、マーカーの高さ（px）
+    returns:
+      type: 'Array<{ center: number; indexes: number[] }>'
+      description: 上から順のまとめた行ごとの、マーカーの縦の中ほどと、その行に入る `lines` の添え字
+    process: |-
+      1. `lines` を上端の順に並べ、直前のまとまりの最初の行との上端の差が `SAME_LINE_PX` 以下なら同じまとまりに入れる
+      2. まとまりごとに、最初の行の上端 + 高さ / 2 を縦の中ほどにし、直前のマーカーの縦の中ほど + `markerSize` + `MARKER_GAP_PX` より上なら、その値まで下げる
+    unit_tests:
+      - name: test_layout_markers
+        case: 正常
+        summary: 行の縦の中ほどを返却する
+        condition: '`lines` が `[{ top: 100, height: 20 }, { top: 0, height: 20 }]`、`markerSize: 24`'
+        mock: なし
+        expected: '`[{ center: 10, indexes: [1] }, { center: 110, indexes: [0] }]`'
+      - name: test_layout_markers_when_same_line
+        case: 正常
+        summary: 上端の差が 4 以下の行を 1 つにまとめる
+        condition: '`lines` が `[{ top: 0, height: 20 }, { top: 3, height: 20 }]`'
+        mock: なし
+        expected: まとまりが 1 つで `indexes` が `[0, 1]`
+      - name: test_layout_markers_when_overlapping
+        case: 正常
+        summary: 上のマーカーと重なると下げる
+        condition: '`lines` が `[{ top: 0, height: 20 }, { top: 20, height: 20 }]`、`markerSize: 24`'
+        mock: なし
+        expected: 2 つ目の `center` が `38`（10 + 24 + 4）
+    refs:
+      - IF-472-35#constraints[余白のマーカー]

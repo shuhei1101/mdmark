@@ -1,0 +1,118 @@
+use_cases:
+  - kind: composite
+    scenario: dev/設計書/シナリオ/複合ユースケース/ClaudeCodeでガイドを参照して記載し点検する.yaml
+    impact: run_only
+    detail: ガイドのページの置き場所が docs/guide/ へ変わるため、記載の前にガイドを参照できることを確かめる
+    depends_on: []
+  - kind: single
+    scenario: dev/設計書/シナリオ/単一ユースケース/ガイドを参照する.yaml
+    impact: run_only
+    detail: ガイドの索引が指すページの置き場所が docs/guide/ へ変わるため、タグで絞ってガイドを参照できることを確かめる
+    depends_on: []
+  - kind: single
+    scenario: dev/設計書/シナリオ/単一ユースケース/VSCodeでプレビューを開く.yaml
+    impact: run_only
+    detail: プレビューの確認に使う文書の置き場所が変わるため、プレビューを開けることを確かめる
+    depends_on: []
+  - kind: single
+    scenario: dev/設計書/シナリオ/単一ユースケース/バージョンを上げる.yaml
+    impact: run_only
+    detail: 変更履歴のページの置き場所が docs/guide/ へ変わるため、上げる版の変更を示して版を上げられることを確かめる
+    depends_on: []
+  - kind: single
+    scenario: dev/設計書/シナリオ/単一ユースケース/端末にmdmarkをセットアップする.yaml
+    impact: run_only
+    detail: 変更履歴のページの置き場所が docs/guide/ へ変わるため、端末の設定を用意できることを確かめる
+    depends_on: []
+docs:
+  - page: CLAUDE.md
+    new: false
+    change: 「実体は開発ドキュメント dev/ と公開ドキュメント docs/」・使い方のリンク・移行の手順のリンクを、移した後の docs/ の置き場所に合わせる
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-11T08:54:30.015530+00:00'
+  - page: README.md
+    new: false
+    change: dev/ と旧 docs/ を指すリンクを、移した後の置き場所に合わせる
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-11T08:54:30.015530+00:00'
+  - page: dev-docs.yaml
+    new: false
+    change: 設計書の種類ごとの行と各 files.yaml の行を、docs/ の種類のフォルダと schemas/ に合わせる
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-11T08:54:30.015530+00:00'
+  - page: docs/rules.yaml
+    new: false
+    change: ルールを当てるパスを、移した後の置き場所に合わせる（rules が空のため書き換える箇所は無い）
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-11T08:54:39.912462+00:00'
+  - page: docs/index.yaml
+    new: false
+    change: 起点の索引を 1 つにし、行が種類のフォルダを指すようにする（dev/index.yaml・dev/設計書/index.yaml・dev/テンプレート/index.yaml・dev/コーディング規約/index.yaml をまとめる）
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-11T08:54:30.015530+00:00'
+  - page: docs/files.yaml
+    new: false
+    change: 公開ドキュメントの行を docs/guide/files.yml へ、_theme・rules.yaml・design-policy.md・index.md の行を docs/_root/files.yml へ分け、各行に visibility と（公開ドキュメントは）分類を持たせる
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-11T08:54:39.912462+00:00'
+  - page: docs/_config.yml
+    new: true
+    change: exclude に internal の種類のフォルダと pr/・mock/・generated/ を載せ、Pages に出さない
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-11T08:54:30.015530+00:00'
+  - page: guide/index.yaml
+    new: false
+    change: 使い方集の索引が指すページのパスを docs/guide/ に合わせる
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-11T08:54:30.015530+00:00'
+  - page: docs/はじめに/変更履歴.md
+    new: false
+    change: docs/guide/変更履歴.md へ移す（表の PR のリンクはリリースのタグに固定した URL のため書き換えない）
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-11T08:54:39.912462+00:00'
+  - page: dev/設計書/アーキテクチャ図/アーキテクチャ図.yaml
+    new: false
+    change: docs/architecture/ へ移し、repository.layout の dev/ と dev/テンプレート/files.schema.yaml の記載を移した後の置き場所に合わせる
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-11T08:54:39.912462+00:00'
+  - page: dev/テンプレート/files.schema.yaml
+    new: false
+    change: dev/テンプレート/*.schema.yaml を schemas/{kind}.schema.yaml へ移し、中身を AI Monitor の develop の Schema（visibility と分類のキーを持つ）に揃える。Schema の行の概要文は schemas/files.yaml へ移す
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-11T08:54:39.912462+00:00'
+  - page: tmp/.gitignore
+    new: true
+    change: 中身が * だけの .gitignore を置き、develop に入った tmp/screenshots/ の PNG 43 件を削除する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-11T08:54:30.015530+00:00'
+scope_out:
+  - item: フォルダ構成の設計書（layout）の作成
+    reason: 移した後の構成を前提に書く後続の作業で、要望に含まれない
+    plan: '#361'
+  - item: 'dev/mock/files.yaml の #263 のバイナリの素材 4 行を dev-docs が配信から除いている問題'
+    reason: 置き場所を移しても同じ内容で成り立つ別の不具合で、要望に含まれない（行はそのまま docs/mock/files.yaml へ移す）
+    plan: '#341'
+  - item: 既存の文書の中身の表し方の移行
+    reason: 置き場所だけを移し、文書の中身は変えない
+    plan: '#290'
+  - item: docs/_theme/ を AI Monitor の develop の公開ドキュメントの部品（上タブの pages の対応表・分類のトップページの permalink を読むレイアウト）へ取り込むことと、docs/_config.yml へレイアウトとプラグインの設定を足すこと
+    reason: docs/_theme/ は AI Monitor の配布物で、取り込みは版上げの追従の作業になる。この PR は _config.yml に exclude だけを置き、今の Pages の描き方（Jekyll の既定）を変えない
+    plan: '#473'
+  - item: '#394 で Schema の説明文に当てた用語の言い換え（書く → 記載する 等）'
+    reason: 設計書の Schema は AI Monitor の配布物で、AI Monitor の develop の Schema に揃えると上書きされる。次の版上げの追従でも同じく上書きされるため、mdmark の側では当て直さない
+    plan: none
+  - item: VS Code 拡張機能の結合テスト『プレビューを再描画する』の test_normal が、stable の VS Code で時間の比較（「最後の書き換えから -1254 ms」）でときどき fail する
+    reason: 同じ commit で次の実行は全 pass し、失敗は文書のパスでなく時間の比較で起きた。置き場所の移行と無関係で、この PR がマージされなくても成り立つ
+    plan: '#474'

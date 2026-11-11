@@ -1,0 +1,28 @@
+id: MOD-472-243
+visibility: internal
+title: ライブラリ本体 / 操作 / csv-raw.ts
+test_files:
+  - tests/unit/src/interact/csv-raw.browser.test.ts
+functions:
+  - name: attachCsvRaw
+    title: CSV の表と元の CSV の切り替えを付ける
+    container: src/interact/csv-raw.ts
+    summary: '`data-source="csv"` の表の RAW のボタンを押すたびに、`aria-pressed` と囲みの `data-view="raw"` を入れ替え、表を包む横のスクロールの要素（`.mdmark-table-scroll`。無ければ表）と `pre.mdmark-raw` の `hidden` を入れ替える。並べ替え・絞り込み・ピン止めの状態は触らない'
+    kind: 関数
+    scope: internal
+    args:
+      - name: root
+        type: HTMLElement
+        required: true
+        description: 描く先の要素
+    returns:
+      type: () => void
+      description: 削除する関数
+    side_effects: '`click` を付ける'
+    unit_tests:
+      - name: test_attach_csv_raw
+        case: 正常
+        condition: CSV の表を持つ要素で RAW のボタンを 2 回押す
+        expected: 1 回目の後は表を包む要素（`.mdmark-table-scroll`）が隠れ `pre.mdmark-raw` が出て `aria-pressed="true"`、2 回目の後は元に戻る
+        mock: なし（ブラウザ）
+        summary: 押すたびに表と元の CSV を入れ替える

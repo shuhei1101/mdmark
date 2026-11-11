@@ -1,0 +1,264 @@
+id: MOD-472-90
+visibility: internal
+title: VS Code 拡張機能 / プレビュー / panel.ts
+classes:
+  - name: PreviewPanel
+    title: プレビューのパネル
+    container: vscode/src/preview/panel.ts
+    usecase: 共通
+    summary: 1 つの Markdown のパネル。読み込むバージョンと設定を決めて HTML を入れ、Webview とメッセージをやり取りし、再描画の待ちを 1 つだけ持つ
+    kind: クラス
+    properties:
+      - name: webviewPanel
+        type: WebviewPanel
+        access: private
+        description: VS Code のパネル
+      - name: document
+        type: TextDocument
+        access: private
+        description: 対象の Markdown
+      - name: config
+        type: PreviewConfig
+        access: private
+        description: 最後に使用した設定（`libraries`・`html-scripts.url`・`mermaid.url` は Webview で読み込める URL に修正した値）。読み込めない設定ファイルがあるときは前に使用した設定を残し、使用したことが無ければ残りを重ねた設定
+      - name: timer
+        type: NodeJS.Timeout | undefined
+        access: private
+        description: 再描画するまでの待ち。待つ間に変更が来たらもう一度始める
+      - name: ready
+        type: boolean
+        access: private
+        description: 今の HTML の Webview から `ready` を受けたか
+      - name: loadToken
+        type: number
+        access: private
+        description: 読み込むたびに増やす番号。リロードが重なったとき、後の呼び出しだけが HTML を入れる
+      - name: scrollGuard
+        type: EditorScrollGuard
+        access: private
+        description: エディタを動かした直後の通知を捨てる判定
+      - name: pendingInspects
+        type: 'Map<number, (elements: InspectedElement[]) => void>'
+        access: private
+        description: '`inspect` の `id` → 結果を指定する関数（テストのときだけ使用する）'
+      - name: cspLibraryOrigins
+        type: string[]
+        access: private
+        description: 今の HTML の CSP に入れた `libraries` の origin（`load` が記載する）。設定ファイルを再読み込みした後の origin と比べ、違えば HTML をもう一度入れる
+      - name: rawLibraries
+        type: Record<string, unknown> | undefined
+        access: private
+        description: '`config` の `libraries` の URL を修正する前の値（CSP に入れる origin の元）。読み込めなかったときは前に読み込めた値を残す'
+      - name: original
+        type: TextDocument | undefined
+        access: private
+        description: 差分のパネルの変更前の文書。通常のパネルでは `undefined`
+      - name: fileUri
+        type: Uri
+        access: private
+        description: '`Uri.file(document.uri.fsPath)`。設定のスコープ・設定ファイルと `<base>` の基準のフォルダ・リンクを解決するフォルダ・`localResourceRoots` に使用する（差分の変更後が `git:` などの URI でもファイルの場所で決める）'
+      - name: pendingAudits
+        type: 'Map<number, (violations: AxeViolation[]) => void>'
+        access: private
+        description: '`axe` の `id` → 結果を指定する関数（テストのときだけ使用する）'
+      - name: configProblem
+        type: ConfigProblem | undefined
+        access: private
+        description: 帯に出している読み込めない設定ファイル。`ready` を受けたときに `configError` をもう一度送信し、「設定ファイルを開く」で開く
+      - name: nearest
+        type: string | undefined
+        access: private
+        description: 最も近い設定ファイル（`loadConfig` の `nearest`）
+      - name: watched
+        type: string[]
+        access: public
+        description: 見張るファイル（重ねた設定ファイル・`theme`・`extensions`・`aliases` の行の `paths` に該当した YAML と、記載した `mdmark.configPath` のファイル）。`PreviewManager` が張る
+      - name: aliases
+        type: MdmarkAlias[] | undefined
+        access: private
+        description: 最後に使用したエイリアス（`loadConfig` の `aliases`）。読み込めない設定ファイルがあるときは前に使用したエイリアスを残す
+      - name: loaded
+        type: '{ theme?: string; extensions: Array<{ path: string; hash: string; file?: string }> }'
+        access: private
+        description: 今の HTML に入れた `theme` の絶対パスと、`extensions` の絶対パス・そのファイルの中身の SHA-256・まとめて記載したファイル。再読み込みした値と比べ、違えばもう一度まとめて HTML をもう一度入れる
+    methods:
+      - name: load
+        title: 読み込む
+        kind: メソッド
+        summary: 読み込むバージョンと設定をもう一度決め、Webview に HTML を入れる（開くときとリロードのとき）
+        is_async: true
+        side_effects: '`mdmark.version` が `latest` のときはタグ一覧を 1 回取り、選んだバージョンを `globalState` の `mdmark.lastVersion` に記載する'
+        returns:
+          type: Promise<void>
+          description: HTML を入れたら解決する
+        process: |-
+          1. `loadToken` を増やして記録する
+          2. 設定を読み込み（設定を読み込む）、読み込むバージョンを決める（読み込むバージョンを決める）
+             - `fetched` が `true` の場合、`mdmark.lastVersion` に記載する
+          3. 設定を再読み込みする（設定を再読み込みする）
+          4. 記録した番号が今の `loadToken` と違えば、後の呼び出しに任せて終わる
+          5. `extensions` のパスの並びかそのファイルが `loaded` と違う場合、拡張をまとめ（拡張をまとめる）、まとめたコードを `{globalStorageUri}/extensions/{コードの SHA-256}.mjs` に記載する。まとめられない拡張は飛ばす
+             - `[warn]` 拡張をまとめられない（パス・理由）
+          6. `webview.options` の `localResourceRoots` に、`assets.root` のフォルダ・`theme` のファイルのフォルダ・`{globalStorageUri}/extensions` を加えてもう一度入れる（前に加えたフォルダは削除する）。CSP には `extensions` のための origin を追加しない（URL の import はまとめに取り込む）
+          7. `ready` を `false` にし、HTML を組んで（Webview の HTML を組む。`themeHref` は `theme` の `asWebviewUri`、`extensions` は記載した各ファイルの `asWebviewUri`）`webview.html` に入れる。入れた `theme`・`extensions` のパスを記録する。決められないときは配布物を読み込まない HTML（`status: "versionUndecidable"`）
+        callees:
+          - MOD-472-22#functions[decideVersion]
+          - MOD-472-22#functions[fetchLatestVersion]
+          - MOD-472-103#functions[readSettings]
+          - 'MOD-472-92#functions[buildPreviewHtml]'
+          - MOD-472-106#functions[bundleExtensions]
+        refs:
+          - IF-472-22#
+          - IF-472-20#
+          - IF-472-22#constraints[動画・音声とアセットのルートの解決]
+      - name: reloadConfig
+        title: 設定を再読み込みする
+        kind: メソッド
+        summary: 設定を重ねて読み込み、読み込めない設定ファイルが無ければ `config` を替えて（前に帯を出していたら）`configOk` を、あれば前に使用した `config` を残して `configError` を送信する。読み込めない設定ファイルが無いかを返却する
+        is_async: true
+        returns:
+          type: Promise<boolean>
+          description: '読み込めない設定ファイルが無いとき true、あるとき・開けないときは false'
+        callees:
+          - MOD-472-104#functions[loadConfig]
+          - MOD-472-104#functions[resolveLibraries]
+          - MOD-472-104#functions[resolveHtmlScripts]
+          - MOD-472-116#functions[displayConfigPath]
+          - MOD-472-125#functions[formatCheckIssue]
+        refs:
+          - IF-472-21#constraints[設定ファイルを読み込めないとき]
+          - IF-472-22#constraints[エイリアス]
+        process: |-
+          1. 設定ファイルを読み込む（設定ファイルを読み込む。`purpose: preview`、`cwd` は Markdown のフォルダ、`baseDir` は Markdown を含むワークスペースのフォルダ、`env` は `process.env`、`home` は `os.homedir()`）
+             - `readFile` が `ENOENT` 以外で失敗した場合、`config` を残して false を返却する
+               - `[error]` 設定ファイルを開けない（パス・誤り）
+          2. `files`・`theme`・`extensions`・`aliasFiles` と、`configPath` を記載したときはそのファイルを `watched` に入れ、`nearest` を記録する
+          3. `problem` で分ける
+             - 無い場合、`libraries`・`html-scripts`・`mermaid` を `asWebviewUri` で修正して（libraries の URL を修正する・html-scripts の URL を修正する・mermaid の URL を修正する）`config` を替え、`aliases` を `loadConfig` の `aliases` に替え、`configProblem` があったときだけ削除して `configOk` を送信する
+               - `[warn]` エイリアスのずれ（`aliasIssues` の 1 件ずつ、ずれを 1 行にした値）
+             - ある場合、前に使用した `config` が無ければ同じく修正して使用し、あれば残す。`configProblem` に入れ、`{ type: "configError", path, line, settingKey }` を送信する（`path` は設定ファイルのパスを表示の構造にする。`base` はワークスペースのフォルダ、`home` は `os.homedir()`）
+               - `[warn]` 設定ファイルを読み込めない（パス・行かキー・`message`）
+          4. `problem` が無ければ true、あれば false を返却する
+      - name: scheduleRender
+        title: 再描画を待つ
+        kind: メソッド
+        summary: 待ちをもう一度始め、`mdmark.preview.updateDelayMs` 後に送信する（今すぐ送信する）
+        returns:
+          type: void
+          description: '-'
+        refs:
+          - IF-472-21#constraints[再描画するまでの待ち]
+      - name: renderNow
+        title: 今すぐ送信する
+        kind: メソッド
+        summary: 待ちを削除し、パネルが見えていて `ready` を受けていれば、その時点の `getText()` の全文・`config` をその時点の `mdmark.colorTheme` で上書きし（テーマの設定で上書きする）、`mdmark.preview.theme` が `light`・`dark` なら `colorScheme` を除いた設定（プレビューの配色の固定で明暗を解除する）・`mdmark.preview.theme`・`aliases`（無いときは持たない）で `render` を送信する。差分のパネルでは `previous` に変更前の `getText()` の全文も入れる。見えていなければ送信しない
+        returns:
+          type: void
+          description: '-'
+        refs:
+          - IF-472-21#constraints[送信する中身]
+          - IF-472-21#constraints[背面のパネル]
+          - IF-472-22#constraints[差分の受け渡し]
+      - name: handleMessage
+        title: Webview のメッセージを受ける
+        kind: メソッド
+        summary: '`onDidReceiveMessage` を `type` ごとに処理する'
+        is_async: true
+        args:
+          - name: message
+            type: WebviewMessage
+            required: true
+            description: Webview からのメッセージ
+        returns:
+          type: Promise<void>
+          description: '-'
+        process: |-
+          1. `type` で分ける
+             - `ready` の場合、`ready` を `true` にして今すぐ送信する（設定ファイルを読み込めないときは `configError` も送信する）
+             - `revealLine` の場合、`mdmark.preview.scrollEditorWithPreview` が `true` でその Markdown のエディタが見えていれば、動かすかを判定し（動かすかを決める）、動かすときだけ `revealRange(行, AtTop)` を呼ぶ
+             - `openLink` の場合、開き先を見分け（リンクの開き先を見分ける）、`external` は `env.openExternal`、`markdown` は元のエディタと同じ列に `window.showTextDocument`、`file` は `vscode.open` で開く。ファイルが無いときは何もしない
+               - `[warn]` リンク先が無い（`href`・解決したパス）。`none` のときは `[warn]` 開けないリンク（`href`）
+             - `reload` の場合、読み込む
+             - `openConfig` の場合、設定ファイルを開く（`path` は `configProblem` のパス、無ければ `nearest`）
+             - `resolveAssets` の場合、パスごとに探す場所の候補（探す場所の候補を返却する）を `workspace.fs.stat` で順に確認し、最初にあったファイルの `asWebviewUri` に候補の `suffix` を付けた URL を、どれも無ければ `null` を、`assetsResolved` で同じ `id` に返却する
+             - `openAsset` の場合、同じく探し、あったファイルだけを `env.openExternal(Uri.file(…))` で開く
+               - `[warn]` 開けないファイル（パス）
+             - `inspected` の場合、`pendingInspects` の同じ `id` に指定して削除する
+                       - `axed` の場合、`pendingAudits` の同じ `id` に指定して削除する
+             - `loadFailed` の場合、描けない理由は Webview が出す
+               - `[warn]` 配布物を読み込めない（`reason`・バージョン・`index.js` の URL）。`reason` が `diffUnsupported` のときは `[warn]` 差分の色分けに対応しないバージョン（バージョン）
+             - `rendered` は何もしない（結合テストが受けたことを `onDidReceiveMessage` で確認する）
+        callees:
+          - 'MOD-472-91#classes[EditorScrollGuard]'
+          - 'MOD-472-88#functions[resolveLink]'
+          - MOD-472-105#functions[openConfigFile]
+          - 'MOD-472-94#functions[assetCandidates]'
+        refs:
+          - IF-472-19#
+          - IF-472-17#constraints[プレビューから合わせる]
+          - IF-472-22#constraints[差分に対応しないバージョン]
+          - IF-472-22#constraints[動画・音声とアセットのルートの解決]
+          - IF-472-22#constraints[再生できない動画・音声]
+      - name: syncFromEditor
+        title: エディタに合わせる
+        kind: メソッド
+        summary: エディタの見えている範囲が変わったとき、自分が動かした通知でなければ、`mdmark.preview.scrollPreviewWithEditor` が `true` のとき `visibleRanges[0].start.line` を `scrollToLine` で送信する
+        args:
+          - name: range
+            type: '{ start: number; end: number }'
+            required: true
+            description: '`visibleRanges[0]` の開始と終わりの行'
+        returns:
+          type: void
+          description: '-'
+        callees:
+          - 'MOD-472-91#classes[EditorScrollGuard]'
+        refs:
+          - IF-472-17#constraints[エディタから合わせる]
+      - name: inspect
+        title: 要素を調べさせる
+        kind: メソッド
+        summary: 新しい `id` で `inspect` を送信し、`inspected` を受けたら解決する（テストのときだけ呼ばれる）
+        is_async: true
+        args:
+          - name: selector
+            type: string
+            required: true
+            description: CSS セレクタ
+          - name: play
+            type: boolean
+            required: false
+            default: 'false'
+            description: 該当した動画・音声を再生してから調べるか（`inspect` の `play` に指定する）
+        returns:
+          type: Promise<InspectedElement[]>
+          description: 該当した要素の様子
+        refs:
+          - IF-472-22#flows[正常系（相対パスとアセットのルートの動画・音声）]
+      - name: applyConfigChange
+        title: 設定の変更を適用する
+        kind: メソッド
+        summary: '設定を再読み込みし（設定を再読み込みする）、次のどれかに適用する（`PreviewManager.handleConfigChange` が呼ぶ）。`libraries` の origin の集まりが `cspLibraryOrigins` と違うか、`extensions` のパスの並びかそのファイルが変わったか、`theme` のパスが変わったときは読み込む（読み込む）。`theme` のファイルだけが変わったときは `{ type: "theme", href }`（`theme` の `asWebviewUri` に変えた回数の `?v={回数}` を付けた URL）を送信する。それ以外は今すぐ送信する。読み込めない設定ファイルがあれば `render` を送信しない'
+        is_async: true
+        returns:
+          type: Promise<void>
+          description: '-'
+        refs:
+          - IF-472-21#constraints[libraries の URL]
+        args:
+          - name: path
+            type: string | undefined
+            required: false
+            description: 変わった見張るファイル。設定の変更のときは無い
+      - name: audit
+        title: axe で検査させる
+        kind: メソッド
+        summary: '`inspect` と同じ番号の列の新しい `id` で `axe` を送信し、`axed` を受けたら解決する（テストのときだけ呼ばれる。待ちの上限は `inspect` と同じ）'
+        is_async: true
+        returns:
+          type: Promise<AxeViolation[]>
+          description: 違反の並び
+        refs:
+          - IF-472-22#constraints[テストのときの差し替え]
+          - MOD-472-52#data_models[AxeViolation]
+    status: planned

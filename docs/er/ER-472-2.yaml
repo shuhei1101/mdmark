@@ -1,0 +1,156 @@
+id: ER-472-2
+visibility: internal
+title: 'ER 図: map の補足'
+lead: 'map の範囲の `<!-- map-data: {JSON のオブジェクト} -->` に記載する補足の構造。'
+overview: データストアは文書の中の HTML コメントの JSON のオブジェクト 1 つ（複数の行にわたってよい）。キーの構成は shuhei1101/mdmark#451 の資料 A-128 の方針に従い、後から引数が付きうる値はオブジェクトにする。最上位は `version`（補足のバージョン。整数で今は `1`、必須）・`notes`・`walkthroughs`・`layout`・`plays_over`（どれも任意）のキーを持ち、ほかのキーは `map_unknown_key` にする。文字の値に `--` を含めない（HTML コメントを閉じてしまう）
+er:
+  entities:
+    - name: 補足
+    - name: 案内の手順
+    - name: 配置の上書き
+  relations:
+    - from: 補足
+      to: 案内の手順
+      from_cardinality: '1'
+      to_cardinality: 0..n
+      label: walkthroughs
+    - from: 補足
+      to: 配置の上書き
+      from_cardinality: '1'
+      to_cardinality: 0..n
+      label: layout
+tables:
+  - name: map_data
+    title: 補足
+    summary: map の範囲 1 つの補足
+    datastore: JSON
+    access: 全件
+    scale: ~1
+    columns:
+      - name: version
+        title: バージョン
+        type: integer
+        not_null: true
+        check: '`1`'
+        description: 補足のバージョン
+        example: '1'
+      - name: notes
+        title: 説明
+        type: object
+        default: '`{}`'
+        description: 'ノード・線の ID ごとの説明（`{ "text": 説明の文 }`）。線にポインターを当てたツールチップと、再生の帯の説明に出す'
+        example: '{"mount": {"text": "文書を描く公開関数"}}'
+        notes: キーは Mermaid のノード・線の ID（シーケンス図はメッセージの番号）。無い ID は `map_unknown_ref`
+      - name: plays_over
+        title: 再生を重ねる構成図
+        type: integer
+        description: シーケンス図の補足だけが持つ。再生の強調を重ねる構成図の図の番号
+        example: '1'
+        notes: 無い番号は `map_unknown_ref`
+  - name: walkthroughs
+    title: 案内の手順
+    summary: 構成図の案内の 1 手順
+    datastore: JSON
+    access: 全件
+    scale: ~20
+    columns:
+      - name: title
+        title: タイトル
+        type: string
+        description: 帯のタイトル
+        example: 記法を読む
+      - name: text
+        title: 説明
+        type: string
+        not_null: true
+        description: 帯の説明の文（改行はそのまま）
+        example: map のマーカーを読み、範囲を 1 つの図にする
+      - name: nodes
+        title: 強調するノード
+        type: array
+        default: '`[]`'
+        description: 強調するノードの ID
+        example: '["mount", "marker"]'
+        foreign_key:
+          table: Mermaid のノードの ID
+      - name: edges
+        title: データの印を流す線
+        type: array
+        default: 強調するノードどうしの線
+        description: データの印を流す線の ID
+        example: '["e1"]'
+      - name: enter
+        title: 中へ入るグループ
+        type: string
+        description: その手順で中へ入るグループの ID
+        example: place
+  - name: layout
+    title: 配置の上書き
+    summary: ノード・グループ・線の ID ごとの配置と見た目の上書き（キーが ID）
+    datastore: JSON
+    access: 全件
+    scale: ~100
+    columns:
+      - name: align
+        title: 揃える相手
+        type: string
+        description: 同じ段に置く相手の ID
+        example: marker
+      - name: order
+        title: 並び順
+        type: integer
+        description: 段の中の並び順（小さいほど先）
+        example: '1'
+      - name: pos
+        title: 座標
+        type: object
+        description: 親の中身の左上からの座標で固定する（`{ x, y }`）
+        example: '{"x": 0, "y": 120}'
+      - name: width
+        title: 幅
+        type: integer
+        description: ノードの幅（px）
+        example: '260'
+      - name: color
+        title: 色
+        type: string
+        description: グループ・ノード・線の色の名前
+        example: blue
+        notes: 知らない名前は `map_invalid_value`
+      - name: line
+        title: 線の種類の名前
+        type: string
+        description: 線の ID のときだけ。設定の `map.lines` の名前
+        example: back
+        notes: '`map.lines` に無い名前は `map_unknown_line`'
+      - name: packet
+        title: データの印
+        type: object
+        description: 線の ID のときだけ。データの印の色と形状（`{ color, shape }`。`shape` は `circle`・`square`・`diamond`）
+        example: '{"color": "orange", "shape": "square"}'
+      - name: justify
+        title: 寄せる
+        type: string
+        check: '`start`・`center`・`end`'
+        default: '`center`'
+        description: ノード・グループの ID のときだけ。段が親の中身より短いときに、段の中で寄せる側（`start` は左か上、`end` は右か下）
+        example: start
+      - name: ends
+        title: 線の端の辺
+        type: object
+        description: '線の ID のときだけ。元の端（`from`）と先の端（`to`）をつなぐノードの辺（`{ "from": { "side": … }, "to": { "side": … } }`。`side` は `top`・`right`・`bottom`・`left`）。無い端は自動で決める'
+        example: '{"from": {"side": "bottom"}, "to": {"side": "top"}}'
+      - name: via
+        title: 経由点
+        type: array
+        description: 線の ID のときだけ。線が順に通る点（`{ "x", "y" }`）。両端のノードの共通の祖先のグループ（無ければ図の全体）の中身の左上からの座標
+        example: '[{"x": 240, "y": 80}]'
+      - name: collapsed
+        title: 最初に閉じる
+        type: boolean
+        default: '`false`'
+        description: グループの ID のときだけ。`true` なら、開閉の状態が保たれていないときにそのグループを閉じて描く
+        example: 'true'
+refs:
+  - IF-472-34#constraints[map の範囲]
+  - MOD-472-139#data_models[MapData]

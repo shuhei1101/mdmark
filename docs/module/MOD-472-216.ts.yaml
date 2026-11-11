@@ -1,0 +1,63 @@
+id: MOD-472-216
+visibility: internal
+title: ライブラリ本体 / 描画 / scope-css.ts
+test_files:
+  - tests/unit/src/render/scope-css.test.ts
+functions:
+  - name: scopeCss
+    title: 範囲の css を根の要素の中に限る
+    container: src/render/scope-css.ts
+    kind: 関数
+    scope: internal
+    summary: 範囲の `css` の各規則のセレクタの前に `.mdmark-html[data-html-scope="{scope}"]` を付け、`:scope` をその根の要素のセレクタに置き換えた CSS を返却する
+    description: 要件の `未確定`（範囲の `css` を範囲の HTML にだけ適用する手段）の案 A。対応ブラウザの下限（Chrome 99・Firefox 98・Safari 16.4）で有効になり、範囲の中の mdmark の部品に `dist/index.css` が該当するため、`@scope` と Shadow DOM は使用しない。文字列・コメント・括弧の中の `,`・`{`・`}` を区切りとして扱わない。`@media`・`@supports`・`@container`・`@layer` の中の規則も同じく書き換え、`@keyframes`・`@font-face` は中を書き換えずに残す。この 6 つ以外の `@` の規則（`@import`・`@scope`・`@starting-style` など）は、範囲の外へ適用しない・外へ要求させないため落とし、記載の警告は出さない。`html`・`body`・`:root` で始まるセレクタはその部分を根の要素に置き換える。DOM を使用せず、`render` と同じく Node でも動く
+    args:
+      - name: options
+        type: '{ css: string; scope: number }'
+        required: true
+        description: '`css` は範囲の `css` のコードブロックの中身、`scope` は範囲の通し番号'
+    returns:
+      type: string
+      description: 書き換えた CSS。`</style` の並びは `<\/style` に替える
+    process: |-
+      1. 文字列とコメントを飛ばしながら、最上位の規則を `{` と対応する `}` で切り出す
+      2. 規則ごとに次の処理をする
+         - `@media`・`@supports`・`@container`・`@layer` は中身に 1 からをもう一度適用する
+         - `@keyframes`・`@font-face` はそのまま残す
+         - 他の `@` の規則（`@import` を含む）は落とす
+         - それ以外はセレクタを最上位の `,` で分け、各セレクタの `:scope`・先頭の `html`・`body`・`:root` を根の要素のセレクタに置き換え、置き換えなかったセレクタの前に根の要素のセレクタと空白を付ける
+      3. 書き換えた規則をつなげ、`</style` を `<\/style` に替えて返却する
+    unit_tests:
+      - name: test_scope_css
+        case: 正常
+        summary: セレクタの前に根の要素を付け、`,` で分けたそれぞれに付ける
+        condition: '`css` が `.box, p > a { color: red }`、`scope` が `0`'
+        mock: なし
+        expected: '`.mdmark-html[data-html-scope="0"] .box, .mdmark-html[data-html-scope="0"] p > a { color: red }`'
+      - name: test_scope_css_when_scope_selector
+        case: 正常
+        summary: '`:scope`・`:root`・`body` を根の要素に置き換える'
+        condition: '`:scope.is-open .box { display: block } :root { --x: 1 } body p { margin: 0 }`、`scope` が `2`'
+        mock: なし
+        expected: '`.mdmark-html[data-html-scope="2"].is-open .box`・`.mdmark-html[data-html-scope="2"] { --x: 1 }`・`.mdmark-html[data-html-scope="2"] p` の規則になる'
+      - name: test_scope_css_when_at_rules
+        case: 正常
+        summary: '`@media` の中は書き換え、`@keyframes` はそのまま、`@import`・`@scope`・`@starting-style` は落とす'
+        condition: '`@import url(x.css); @media (max-width: 600px) { .a { color: red } } @keyframes k { from { opacity: 0 } to { opacity: 1 } } @scope (html) { p { color: red } } @starting-style { .b { opacity: 0 } }`'
+        mock: なし
+        expected: '`@import`・`@scope`・`@starting-style` が無く、`@media` の中が `.mdmark-html[data-html-scope="0"] .a`、`@keyframes k` の `from`・`to` がそのまま'
+      - name: test_scope_css_when_strings_and_comments
+        case: 正常
+        summary: 文字列・コメント・括弧の中の `,`・`{`・`}` で区切らない
+        condition: '`/* a, b { } */ .a[data-x="1,2"], :is(.b, .c) { content: "}" }`'
+        mock: なし
+        expected: 'セレクタが `.a[data-x="1,2"]` と `:is(.b, .c)` の 2 つに分かれ、宣言の `content: "}"` がそのまま残る'
+      - name: test_scope_css_when_style_end_tag
+        case: 正常
+        summary: '`</style` の並びで `style` 要素が閉じないように替える'
+        condition: '`.a { content: "</style>" }`'
+        mock: なし
+        expected: 戻りに `</style` が無く、`<\/style` がある
+    status: planned
+    introduced:
+      pr: 303

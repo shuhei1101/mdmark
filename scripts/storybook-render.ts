@@ -208,13 +208,7 @@ const SAMPLE_TABLE =
   "<table><thead><tr><th>列A</th><th>列B</th></tr></thead><tbody><tr><td>1</td><td>2</td></tr></tbody></table>";
 
 // 図の見本の定義を記載した文書と、その中の `json` のコードブロックの並び
-const SAMPLE_DOCUMENT = join(
-  REPO_ROOT,
-  "docs",
-  "使用方法",
-  "図を描く",
-  "見本.md",
-);
+const SAMPLE_DOCUMENT = join(REPO_ROOT, "docs", "guide", "図を描く-見本.md");
 const SAMPLE_BLOCKS: Record<string, number> = {
   inquiry: 0,
   "inquiry-seq": 1,
@@ -223,13 +217,7 @@ const SAMPLE_BLOCKS: Record<string, number> = {
 };
 
 // 使用方法『図を描く』（判定フローチャートの定義の例を持つ）
-const GUIDE_DOCUMENT = join(
-  REPO_ROOT,
-  "docs",
-  "使用方法",
-  "図を描く",
-  "図を描く.md",
-);
+const GUIDE_DOCUMENT = join(REPO_ROOT, "docs", "guide", "図を描く-図を描く.md");
 
 // 判定フローチャートの長いタイトルと文の見本。質問の文が長いので菱形を大きくする
 const JUDGEMENT_LONG_SAMPLE: MdmarkFlowDefinition = {
@@ -421,7 +409,7 @@ function sampleText(name: string): string {
 // #275 で追加したグラフの種類の見本（モックと同じ定義）
 const CHART_SAMPLES_FILE = join(
   REPO_ROOT,
-  "dev",
+  "docs",
   "mock",
   "refs",
   "275",
@@ -448,7 +436,7 @@ function mockChart(name: string): MdmarkChartDefinition {
 // #298 の ER 図の見本（モックと同じ定義）
 const ER_SAMPLES_FILE = join(
   REPO_ROOT,
-  "dev",
+  "docs",
   "mock",
   "refs",
   "298",
@@ -474,8 +462,8 @@ function mockEr(name: string): MdmarkErDefinition {
 
 // #308 の図の見本（refs/42 の見本の後に読み込む、モックと同じ定義）
 const GROUP_SAMPLES_FILES = [
-  join(REPO_ROOT, "dev", "mock", "refs", "42", "assets", "samples.js"),
-  join(REPO_ROOT, "dev", "mock", "refs", "308", "assets", "samples.js"),
+  join(REPO_ROOT, "docs", "mock", "refs", "42", "assets", "samples.js"),
+  join(REPO_ROOT, "docs", "mock", "refs", "308", "assets", "samples.js"),
 ];
 
 /** モックの #308 の見本のスクリプトから、名前 `name` の構成図の定義を取り出す（モックの表の `kind` は定義に含めない） */
@@ -645,7 +633,7 @@ type PartArgs = Record<string, unknown>;
 // 画像・動画・音声のストーリーが `src` に記載するファイルの配置場所（モックと同じ見本）
 const SAMPLE_MEDIA_DIR = join(
   REPO_ROOT,
-  "dev",
+  "docs",
   "mock",
   "refs",
   "263",

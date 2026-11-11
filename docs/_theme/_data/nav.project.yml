@@ -1,1 +1,66 @@
-tabs: []
+# publish が docs/guide/ の文書の分類から書き出す（直接編集しない）
+tabs:
+  - name: はじめに
+    page: guide/はじめに.md
+  - name: 使用方法
+    page: guide/使用方法.md
+  - name: リファレンス
+    page: guide/リファレンス.md
+pages:
+  guide/コアコンセプト-文書を描く仕組み.md: はじめに
+  guide/コアコンセプト-共通の定義と固有の定義.md: はじめに
+  guide/コアコンセプト-索引と被参照.md: はじめに
+  guide/コアコンセプト-1枚にまとめる仕組み.md: はじめに
+  guide/コアコンセプト-設定を重ねて読み込む仕組み.md: はじめに
+  guide/コアコンセプト-バージョンを上げる仕組み.md: はじめに
+  guide/コアコンセプト-図を自動配置して辿る仕組み.md: はじめに
+  guide/コアコンセプト-差分を表示する仕組み.md: はじめに
+  guide/コアコンセプト-ClaudeCodeに使用方法を提供する仕組み.md: はじめに
+  guide/変更履歴.md: はじめに
+  guide/導入-配布物を読み込む.md: 使用方法
+  guide/導入-文書を描く.md: 使用方法
+  guide/導入-バージョンを上げる.md: 使用方法
+  guide/導入-差分を表示する.md: 使用方法
+  guide/記載する-表に機能を付ける.md: 使用方法
+  guide/記載する-本文を部品で組む.md: 使用方法
+  guide/記載する-索引と用語集を記載する.md: 使用方法
+  guide/記載する-色で強調する.md: 使用方法
+  guide/記載する-画像と動画を配置する.md: 使用方法
+  guide/記載する-図と表に番号を付ける.md: 使用方法
+  guide/記載する-ビューとコメントを使用する.md: 使用方法
+  guide/記載する-文書の記載方法.md: 使用方法
+  guide/図を描く-図を描く.md: 使用方法
+  guide/図を描く-操作できる部品を作る.md: 使用方法
+  guide/図を描く-Mermaidと補足で図を描く.md: 使用方法
+  guide/図を描く-mermaidの図を描く.md: 使用方法
+  guide/図を描く-コードブロックのHTMLを描く.md: 使用方法
+  guide/図を描く-描いた図を確認する.md: 使用方法
+  guide/図を描く-固有の部品とCSSを適用する.md: 使用方法
+  guide/図を描く-見本.md: 使用方法
+  guide/カスタマイズ-テーマを上書きする.md: 使用方法
+  guide/カスタマイズ-機能をオン・オフする.md: 使用方法
+  guide/カスタマイズ-拡張を登録する.md: 使用方法
+  guide/カスタマイズ-部品をJavaScriptから使用する.md: 使用方法
+  guide/カスタマイズ-印刷する.md: 使用方法
+  guide/書き出す-雛形を配置する.md: 使用方法
+  guide/書き出す-文書を書き出す.md: 使用方法
+  guide/書き出す-文書を1枚にまとめる.md: 使用方法
+  guide/書き出す-点検する.md: 使用方法
+  guide/VSCodeで確認する-プレビューを開く.md: 使用方法
+  guide/VSCodeで確認する-差分をプレビューで確認する.md: 使用方法
+  guide/VSCodeで確認する-HTMLとPDFにする.md: 使用方法
+  guide/ClaudeCodeで使用する-プラグインを入れる.md: 使用方法
+  guide/ClaudeCodeで使用する-セットアップする.md: 使用方法
+  guide/ClaudeCodeで使用する-MCPサーバーを起動する.md: 使用方法
+  guide/ClaudeCodeで使用する-MCPのツールを使用する.md: 使用方法
+  guide/API.md: リファレンス
+  guide/CLI.md: リファレンス
+  guide/VSCode拡張機能.md: リファレンス
+  guide/MCP.md: リファレンス
+  guide/記法.md: リファレンス
+  guide/HTMLの記載方法.md: リファレンス
+  guide/構成図の決まり.md: リファレンス
+  guide/フローチャートの決まり.md: リファレンス
+  guide/設定.md: リファレンス
+  guide/索引.md: リファレンス
+  guide/用語集.md: リファレンス

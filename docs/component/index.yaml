@@ -1,0 +1,134 @@
+summary: 文書の中に mdmark が配置する UI の部品の引数・状態（Storybook のストーリーの元）
+items:
+- page: CMP-472-65.ts.yaml
+  summary: 外部ライブラリを読み込めないマーカーの場所に配置する枠
+- page: CMP-472-64.ts.yaml
+  summary: 外部ライブラリを読み込んでいる間に図の高さを取っておく枠
+- page: CMP-472-62.ts.yaml
+  summary: 記法のマーカーや拡張の引数に読み込めない指定がある箇所に配置する枠
+- page: CMP-472-61.ts.yaml
+  summary: 種類ごとの並べ替え・ピン止め・絞り込みを付けた表
+- page: CMP-472-52.ts.yaml
+  summary: 種類ごとのタイトル・色・アイコンを持つ注意書きの枠
+- page: CMP-472-22.ts.yaml
+  summary: 見出しで区切った中身を切り替えるタブ
+- page: CMP-472-20.ts.yaml
+  summary: 番号と項目を線でつなぐ手順
+- page: CMP-472-26.ts.yaml
+  summary: フォルダとファイルの入れ子のツリー
+- page: CMP-472-23.ts.yaml
+  summary: 行内の札
+- page: CMP-472-55.ts.yaml
+  summary: h2〜h3 を入れ子にした目次
+- page: CMP-472-21.ts.yaml
+  summary: 見出しから開閉するセクションと見出しのアンカー
+- page: CMP-472-60.ts.yaml
+  summary: 表の行の下に開閉して出す詳細
+- page: CMP-472-40.ts.yaml
+  summary: 図と表に付ける通し番号のタイトル
+- page: CMP-472-53.ts.yaml
+  summary: 本文の用語と文書の別名の下線と、用語の意味・関連文書を出すツールチップ
+- page: CMP-472-66.ts.yaml
+  summary: 描いた文書の末尾に配置する、その文書を参照している文書の一覧
+- page: CMP-472-58.ts.yaml
+  summary: 本文の参照の場所に配置する上付きの番号と、脚注の中身を出すツールチップ
+- page: CMP-472-57.ts.yaml
+  summary: 描いた文書の末尾に配置する、閉じた脚注の一覧と本文へ戻るリンク
+- page: CMP-472-49.ts.yaml
+  summary: まとめた HTML の文書をフォルダごとに並べ、開いている文書を示す一覧
+- page: CMP-472-39.ts.yaml
+  summary: 図のタイトル・右上のボタンの帯・表示する枠・凡例と、拡大・縮小・移動・全画面
+- page: CMP-472-28.ts.yaml
+  summary: システムの枠と 3 つの層にノードと線を配置する構成図
+- page: CMP-472-19.ts.yaml
+  summary: 相手を左から右、メッセージを時刻の順に並べる図
+- page: CMP-472-13.ts.yaml
+  summary: 系列を色と模様の組で分ける折れ線・棒・円・散布図のグラフ
+- page: CMP-472-1.ts.yaml
+  summary: テーブル・列・関係を定義の座標に配置し、多重度の記号で結ぶ ER 図
+- page: CMP-472-6.ts.yaml
+  summary: 図の枠の表示する枠に入れる、mermaid で mdmark の外観のテーマで描いた SVG
+- page: CMP-472-5.ts.yaml
+  summary: map の flowchart を自動配置した結果に入れ子のグループの面を重ね、開閉・中へ入る・選択・移動・強調・データの印を付けた構成図
+- page: CMP-472-4.ts.yaml
+  summary: map の sequenceDiagram を全ての記法で描き、ブロックの開閉と中だけを描く操作・参加者の選択と並べ替え・強調を付けたシーケンス図
+- page: CMP-472-50.ts.yaml
+  summary: 図の枠の下に常に出し、番号・タイトル・説明の文と、前へ・停止・自動で進める・次へのボタンで案内と再生を進める帯
+- page: CMP-472-38.ts.yaml
+  summary: 図の線の入力の詳細と、ノードの入力・処理・出力・ヒントと、ER 図のテーブルの概要と列の説明を出すツールチップ
+- page: CMP-472-47.ts.yaml
+  summary: スライダー・今の値を写すボタン・グラフを組み合わせた部品
+- page: CMP-472-41.ts.yaml
+  summary: コードブロックに記載した HTML をその場に描き、列より広いときだけ中で横にスクロールする枠
+- page: CMP-472-24.ts.yaml
+  summary: 埋め込んだ HTML の `data-hint` の要素に付けるマーカーと下線とツールチップ
+- page: CMP-472-46.ts.yaml
+  summary: 文書のタイトルの後ろに配置し、差分を開閉する「変更表示」のボタン
+- page: CMP-472-32.ts.yaml
+  summary: 差分で比べる前と後のリビジョンを選ぶ欄と、削除した行と追加した行の数
+- page: CMP-472-45.ts.yaml
+  summary: 削除した行を赤・追加した行を緑、変わった単語を濃い色で出す差分の行
+- page: CMP-472-42.ts.yaml
+  summary: 差分の中の埋め込んだ HTML の範囲を、ソースとプレビューで切り替える外枠
+- page: CMP-472-30.ts.yaml
+  summary: スクロール先のスクロールの右端に貼り付け、変えた行の位置をマーカーで並べる帯
+- page: CMP-472-44.ts.yaml
+  summary: 差分の場所に行の代わりに出す、変更が無い・比較対象が無い・読み込んでいるの文
+- page: CMP-472-25.ts.yaml
+  summary: 項目の表をボードと表形式で切り替えて出すビュー
+- page: CMP-472-14.ts.yaml
+  summary: 本文の文字を選んだときに出す「コメント」のボタン
+- page: CMP-472-16.ts.yaml
+  summary: 選んだ文字の下に開き、コメントを記載して保存する枠
+- page: CMP-472-15.ts.yaml
+  summary: コメントが付いた本文の文字を包むマーカー
+- page: CMP-472-17.ts.yaml
+  summary: マーカーの下に開き、付いたコメントの本文を並べる枠
+- page: CMP-472-56.ts.yaml
+  summary: 付けた箇所が見つからないコメントを文書の末尾に並べる一覧
+- page: CMP-472-33.ts.yaml
+  summary: 本文の右の余白の列に、コメントの箇所の行の高さで配置するボタン
+- page: CMP-472-18.ts.yaml
+  summary: タイトル・行番号・行の強調・追加した行と削除した行を付けたコードブロック
+- page: CMP-472-29.ts.yaml
+  summary: VS Code 拡張機能のプレビューで文書の代わりに出す、読み込み中と描けない理由と「リロード」
+- page: CMP-472-63.ts.yaml
+  summary: VS Code 拡張機能のプレビューで文書の先頭に配置する、設定ファイルを読み込めない帯と「設定ファイルを開く」
+- page: CMP-472-37.ts.yaml
+  summary: 描いた文書の右側に配置する、h1〜h3 の目次・右端の線・ピン止め・すべて展開とすべて折りたたむ
+- page: CMP-472-34.ts.yaml
+  summary: 描いた文書をスクロールすると右下に出し、押すと文書の先頭へ戻すボタン
+- page: CMP-472-43.ts.yaml
+  summary: 描いた文書の追加・変更したブロックと削除したブロックを、面の色と左の余白の + / − で示すブロック
+- page: CMP-472-54.ts.yaml
+  summary: 画像 1 つだけの段落の画像を、キャプション・幅・配置・テーマごとの出し分けと拡大のボタンを持つ図にしたもの
+- page: CMP-472-12.ts.yaml
+  summary: 画像を列の数の格子に並べ、配置場所の幅が狭いと列を減らす並び
+- page: CMP-472-31.ts.yaml
+  summary: 画像を全画面で拡大し、前後へ切り替え、拡大・縮小・移動するダイアログ
+- page: CMP-472-36.ts.yaml
+  summary: 再生バーとキャプションを持つ動画・音声の図
+- page: CMP-472-2.ts.yaml
+  summary: GIF を止める・再生するボタンと、止めたときに重ねる最初のフレーム
+- page: CMP-472-9.ts.yaml
+  summary: リンク 1 つだけの段落を、タイトル・ドメイン・URL を出すリンクのカードと添付のカードにしたもの
+- page: CMP-472-10.ts.yaml
+  summary: cards の範囲のリストの項目を、アイコン・タイトル・説明のカードにして格子に並べたもの
+- page: CMP-472-48.ts.yaml
+  summary: 本文の文字を色のプリセットの文字の色と太字で強調する
+- page: CMP-472-35.ts.yaml
+  summary: VS Code 拡張機能のプレビューで再生できない動画・音声の場所に配置する、通知ブロックと「既定のアプリで開く」
+- page: CMP-472-8.ts.yaml
+  summary: 行内に配置する Lucide のアイコン
+- page: CMP-472-11.ts.yaml
+  summary: '`+` で区切ったキーの外観の並び'
+- page: CMP-472-59.ts.yaml
+  summary: 文字に色の面を敷くマーカー
+- page: CMP-472-51.ts.yaml
+  summary: 本文を 2〜3 列に横に並べる範囲
+- page: CMP-472-3.ts.yaml
+  summary: タイトルから開閉する範囲の折りたたみ
+- page: CMP-472-27.ts.yaml
+  summary: 文書の先頭の YAML のフロントマターを、本文の先頭の閉じた折りたたみに yaml のコードブロックで出す
+- page: CMP-472-7.ts.yaml
+  summary: 本文の幅を越えて広げ、本文の幅と切り替える範囲

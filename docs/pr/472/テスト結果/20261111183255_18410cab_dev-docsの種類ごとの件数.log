@@ -1,0 +1,48 @@
+# dev-docs の search_docs（group_by: kind と、topic:ガイド かつ kind docs の件数）
+# tests/e2e/dev-docs.ts の withDevDocs で、このブランチの dev-docs.yaml を配信元 mdmark に登録した dev-docs を起動して実行した。
+# dev-docs は default_ref のリビジョンの dev-docs.yaml を読むため、実行の間だけ dev-docs.yaml に default_ref: chore/docs/merge-dev-into-docs を足した（commit していない）
+mdmark: 該当 1909 件・返却した 60 件
+
+| 値 | 件数 |
+| --- | --- |
+| tests | 437 |
+| mock | 370 |
+| module | 345 |
+| src | 297 |
+| scenario | 95 |
+| vscode | 78 |
+| component | 66 |
+| docs | 57 |
+| interface | 42 |
+| library | 36 |
+| schemas | 24 |
+| files_root | 8 |
+| init_templates | 8 |
+| scripts | 8 |
+| er | 6 |
+| plugin | 6 |
+| storybook | 6 |
+| migrations | 5 |
+| screen | 4 |
+| config | 3 |
+| external_api | 2 |
+| architecture | 1 |
+| dev_command | 1 |
+| guide | 1 |
+| nonfunctional | 1 |
+| test_procedure | 1 |
+| workflows | 1 |
+
+| id | kind | name | description | chars | version |
+| --- | --- | --- | --- | --- | --- |
+| API-472-1 | external_api | GitHub |  | 2521 | a0d8c9 |
+| API-472-2 | external_api | jsDelivr |  | 2908 | 683548 |
+| ARCH-472-1 | architecture | アーキテクチャ図 |  | 8050 | 07b5fa |
+| CFG-472-1 | config | 設定: Claude Code プラグイン |  | 4280 | df7c1a |
+mdmark: 該当 22 件・返却した 0 件
+
+> docs/mock/files.yml を読み込めないので除きました（files[218] の path（refs/263/assets/media/build.gif）が指すファイルがありません）
+> docs/mock/files.yml を読み込めないので除きました（files[219] の path（refs/263/assets/media/demo-poster.png）が指すファイルがありません）
+> docs/mock/files.yml を読み込めないので除きました（files[220] の path（refs/263/assets/media/demo.mp4）が指すファイルがありません）
+> docs/mock/files.yml を読み込めないので除きました（files[227] の path（refs/263/assets/media/voice.mp3）が指すファイルがありません）
+

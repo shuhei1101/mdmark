@@ -1,0 +1,27 @@
+id: MOD-472-313
+visibility: internal
+title: ライブラリ本体 / 部品 / escape.ts
+test_files:
+  - tests/unit/src/parts/escape.test.ts
+functions:
+  - name: escapeHtml
+    title: HTML の特別な文字をエスケープする
+    container: src/parts/escape.ts
+    kind: 関数
+    scope: public
+    summary: "`&`・`<`・`>`・`\"`・`'` を文字参照にする"
+    args:
+      - name: text
+        type: string
+        required: true
+        description: エスケープする文字列
+    returns:
+      type: string
+      description: 要素の中身にも属性の値にも配置できる文字列
+    unit_tests:
+      - name: test_escape_html
+        case: 正常
+        summary: 特別な文字を全て文字参照にする
+        condition: "`<a href=\"x\">'&'</a>`"
+        mock: なし
+        expected: '`&lt;a href=&quot;x&quot;&gt;&#39;&amp;&#39;&lt;/a&gt;`'

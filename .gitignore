@@ -1,4 +1,4 @@
-dev/generated/
+docs/generated/
 node_modules/
 .vitest/
 test-results/

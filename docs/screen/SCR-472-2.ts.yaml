@@ -1,0 +1,119 @@
+id: SCR-472-2
+visibility: internal
+title: "VSCodeのプレビュー"
+elements:
+  - name: タブのタイトル
+    id: preview-title
+    kind: label
+    position: エディタの列のタブ
+    description: パネルのタブに出すタイトル
+    label: プレビュー {ファイル名}（差分のパネルは `差分プレビュー {ファイル名}`）
+    io: 表示
+    type: 文字列
+    visible_when: 常時
+    source: プレビューを開く.request.uri（ファイル名だけ。差分のパネルは差分ビューの `modified` のファイル名）
+    status: planned
+    introduced:
+      pr: 69
+  - name: 描く先を包む要素
+    id: preview-root
+    kind: container
+    position: Webview の `body` の直下
+    description: 状態の表示、設定ファイルを読み込めない帯、描く先の要素を入れる。`mdmark.preview.theme` が `light`・`dark` のとき class `mdmark-theme-light`・`mdmark-theme-dark` を持つ
+    visible_when: 常時
+    source: プレビューを開くの Webview とのメッセージ `render.theme`
+    refs:
+      - IF-472-22#constraints[配色]
+    status: planned
+    introduced:
+      pr: 69
+  - name: 描いた文書
+    id: preview-document
+    kind: container
+    position: 描く先を包む要素
+    description: 'mdmark の `mount` に指定する描く先の要素。React が中身を持たない要素として配置し、中身は mdmark の `mount`・`update` だけが書き換える。中身と外観は画面設計『文書』のままで、拡張機能は手を加えない。差分のパネルは `diffMode: "blocks"` で描き、画面設計『文書』の差分のブロックを出す'
+    visible_when: 配布物を読み込み終え、最初の `rendered` を送信した後
+    source: プレビューを再描画するの送信する中身（全文・差分のパネルの `previous`・重ねた設定のうち `mount` の `opts.config` が読み込むキー）。重ねた設定の `theme` の CSS と `extensions` の部品が該当する
+    action: 本文のリンクを押すと `#` で始まるリンクはこの中で移り、それ以外は `openLink` を送信する。スクロールすると `revealLine` を送信する
+    action_ref: SCR-472-4#
+    refs:
+      - IF-472-19#
+      - IF-472-17#
+    status: planned
+    introduced:
+      pr: 69
+  - name: 読み込み中の表示
+    id: preview-loading
+    kind: status
+    component: CMP-472-29#
+    args:
+      - name: state
+        value: '`loading`'
+    position: 描く先を包む要素
+    description: 配布物を読み込んでいる間、文書の代わりに出す
+    visible_when: Webview に HTML を入れてから 1 秒経っても、最初の `rendered` を送信しておらず描けない理由も出ていないとき。`rendered` か描けない理由で削除する
+    reason: 1 秒未満で描き終えるときに読み込み中が一瞬だけ出てちらつかないようにする（計画書『VS Code 拡張機能』の読み込み中）
+    status: planned
+    introduced:
+      pr: 69
+  - name: 描けない理由
+    id: preview-error
+    kind: status
+    component: CMP-472-29#
+    args:
+      - name: state
+        value: '`loadFailed` の `reason`（`offline` / `versionMissing` / `diffUnsupported`）か、バージョンを決められないとき `versionUndecidable`'
+      - name: version
+        value: 読み込もうとしたバージョン（`versionUndecidable` では指定しない）
+    position: 描く先を包む要素
+    description: 配布物を読み込めないときと、差分のパネルで読み込んだ配布物が差分の表示に対応しないとき、文書の代わりに理由と「リロード」を出す
+    visible_when: Webview が `loadFailed` を送信したときか、拡張機能がバージョンを決められず配布物を読み込まない HTML を入れたとき
+    action: 「リロード」を押すと `reload` を送信する
+    action_ref: IF-472-20#
+    status: planned
+    introduced:
+      pr: 69
+  - name: 設定ファイルを読み込めない帯
+    id: preview-config-band
+    kind: status
+    component: CMP-472-63#
+    args:
+      - name: path
+        value: '`configError.path`（読み込めない設定ファイルを、インターフェース定義『設定を重ねて読み込む』の制約「パスの表示」で書き換えたパス）'
+      - name: line
+        value: '`configError.line`（YAML として読み込めないとき）'
+      - name: settingKey
+        value: '`configError.settingKey`（設定の構造に合わないとき）'
+    position: 描く先を包む要素 > 描いた文書の前
+    description: 重ねた設定ファイル（端末の設定を含む）のどれかを読み込めない・設定の構造に合わないことを、端末の設定 → 上 → 近いの順で最初の 1 つだけ、文書を描いたまま文書の先頭で通知する。固定せずスクロールに合わせて動かす。描いた文書は React の外の DOM のため、帯の子にせず帯の後ろに並べる
+    visible_when: '`configError` を受けてから `configOk` を受けるまで'
+    action: 「設定ファイルを開く」を押すと `openConfig` を送信する
+    action_ref: IF-472-25#
+    status: planned
+    introduced:
+      pr: 69
+  - name: 再生できない動画・音声の通知
+    id: preview-media-error
+    kind: status
+    component: CMP-472-35#
+    args:
+      - name: kind
+        value: '`error` になった要素が `video` なら `video`、`audio` なら `audio`'
+      - name: format
+        value: 文書に記載したパスの拡張子
+      - name: path
+        value: 文書に記載したパス
+    position: 描く先を包む要素 > 描いた文書 > 再生できない動画・音声の場所
+    description: プレビューの Webview が再生できない動画・音声の要素を替える枠。再生できないことと「既定のアプリで開く」を出す
+    visible_when: '`video`・`audio` が `error` になったとき'
+    action: 「既定のアプリで開く」を押すと `openAsset` を送信する
+    action_ref: IF-472-22#
+    refs:
+      - IF-472-22#constraints[再生できない動画・音声]
+    status: planned
+screen: vscode/src/webview/features/preview/panel/panel-screen.tsx
+mock: docs/mock/pages/vscode-preview/342/shadcn/
+lead: VS Code 拡張機能が開くプレビューのパネル（Webview）。mdmark が描いた文書と、拡張機能が追加する状態の表示を同じパネルの中で切り替える。
+refs:
+  - IF-472-22#
+  - IF-472-21#

@@ -1,0 +1,18 @@
+id: MOD-472-78
+visibility: internal
+title: VS Code 拡張機能 / Webview / button.tsx
+components:
+  - name: Button
+    title: Button
+    container: vscode/src/webview/shared/components/ui/button.tsx
+    usecase: 共通
+    role: shadcn/ui のコピー
+    summary: shadcn/ui の `Button`。`variant` は `default`・`outline` だけを持つ
+    kind: コンポーネント
+    props:
+      - name: variant
+        type: '"default" | "outline"'
+        required: false
+        default: '`default`'
+        description: '`outline` の線は `--warning-border`'
+    status: planned

@@ -241,26 +241,6 @@ test("test_used_syntax_languages_when_disabled", async () => {
   expect(languages).toEqual([]);
 });
 
-// mermaid のコードブロックがある文書があれば true、機能を解除した文書だけなら false（正常系）
-test("test_uses_mermaid", async () => {
-  // 準備
-  const { usesMermaid } = await loadEmbed();
-  const mermaid = ["```mermaid", "flowchart LR", "```", ""].join("\n");
-  const ts = ["```ts", "const a = 1;", "```", ""].join("\n");
-  const disabled = `<!-- features: -mermaid -->\n\n${mermaid}`;
-  // 実行
-  const results = [
-    usesMermaid({ markdowns: [mermaid, ts], config: {} }),
-    usesMermaid({ markdowns: [disabled], config: {} }),
-    usesMermaid({
-      markdowns: [mermaid],
-      config: { features: { mermaid: false } },
-    }),
-  ];
-  // 検証
-  expect(results).toEqual([true, false, false]);
-});
-
 // アセットのルートの画像とフラグメントと poster を替える（正常系）
 test("test_inline_images_when_assets_root", async () => {
   // 準備

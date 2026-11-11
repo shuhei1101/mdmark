@@ -1,0 +1,29 @@
+id: MOD-472-250
+visibility: internal
+title: ライブラリ本体 / 検査 / eslint.config.js
+constants:
+  - name: eslintConfig
+    title: ESLint の設定
+    container: tools/eslint/eslint.config.js
+    summary: '`export default` する Flat Config の配列。`basePath` をリポジトリの直下にし、`files` は `vscode/src/webview/**/*.{ts,tsx}`（ストーリーと `testing/` を含む）'
+    entries:
+      - key: 型の情報
+        value: 'typescript-eslint の `recommendedTypeChecked`、`parserOptions.projectService: true`、`@typescript-eslint/no-deprecated`・`no-non-null-assertion`・`consistent-type-definitions: ["error", "type"]`'
+      - key: React
+        value: '`eslint-plugin-react-hooks` の `recommended-latest`（React Compiler の規則を含む）'
+      - key: アクセシビリティ
+        value: '`eslint-plugin-jsx-a11y` の `recommended` と `tabindex-no-positive`・`no-noninteractive-tabindex`・`interactive-supports-focus`・`click-events-have-key-events`・`no-autofocus`'
+      - key: import の向き
+        value: '`eslint-plugin-boundaries` の `boundaries/dependencies`（`default: "disallow"`）。要素は `app`（`app/`）・`features`（`features/`）・`shared`（`shared/`）・`testing`（`testing/`）のフォルダで、`app → features → shared` の向きと、`testing` から `features`・`shared`、ストーリー（`boundaries/files` の `*.stories.{ts,tsx}`）から `testing` への import だけを許す。入口の `main.tsx` はどの要素にも入れない'
+      - key: Tailwind
+        value: '`eslint-plugin-better-tailwindcss` の `recommended-error`（`entryPoint` は `vscode/src/webview/shared/styles/panel.css`）から、整形の規則 `enforce-consistent-line-wrapping` を削除したものと、任意値の class（`[` を含む class）を禁じる `better-tailwindcss/no-restricted-classes`。登録の無い class の検査は、結合テストが探す `mdmark-` で始まる class を除く'
+      - key: 複雑さ
+        value: '`complexity: ["error", 10]`・`max-depth: ["error", 4]`・`max-params: ["error", 3]`・`sonarjs/cognitive-complexity: ["error", 15]`（`eslint-plugin-sonarjs`）'
+      - key: 記載方法
+        value: '`func-style: ["error", "expression"]`・`no-restricted-syntax` で `TSEnumDeclaration` を禁じる・`import/no-default-export`（`*.stories.ts`・`*.stories.tsx` は除く）'
+      - key: Biome との重なり
+        value: 整形は Biome が受け持つため、ESLint は整形の規則を持たない（Prettier は入れない。class の並びの規則は整形ではないため残す）
+    refs:
+      - LIB-472-12#
+      - LIB-472-7#
+    status: planned

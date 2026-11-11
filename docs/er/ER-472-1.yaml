@@ -1,0 +1,52 @@
+id: ER-472-1
+visibility: internal
+title: "ER 図: CSSのテンプレート"
+lead: 端末の設定のフォルダに配置する CSS のテンプレートの索引。行ごとに名前・CSS のファイル名・説明・タグを持つ。
+overview: 原本は、端末の設定のファイルと同じフォルダの `templates/css/templates.yaml`（YAML の 1 ファイル）。最上位は `schema`（索引のバージョン。整数で今は `1`、必須）と `templates`（行の並び、必須）の 2 つのキーを持ち、ほかのキーを拒む。CSS は同じフォルダの、行の `file` のファイル名で配置する。スキーマの正は `schemas/mdmark.templates.schema.json`。MCP の `add_template` が記載し、`list_templates`・`apply_template` が読み込む
+tables:
+  - name: templates
+    title: テンプレートの行
+    datastore: YAML
+    summary: CSS のテンプレート 1 つの名前・ファイル・説明・タグ
+    primary_key: name
+    scale: ~100
+    access: 全件
+    columns:
+      - name: name
+        title: 名前
+        type: string
+        not_null: true
+        primary_key: true
+        unique: true
+        check: 英小文字・数字・`-` の 1〜64 文字で、英小文字か数字で始まる
+        description: テンプレートの名前。索引の中で一意
+        example: brand
+      - name: file
+        title: CSS のファイル名
+        type: string
+        not_null: true
+        check: '`.css` で終わるファイル名。`/` と `..` を含まない'
+        description: テンプレートのフォルダの直下の CSS のファイル名。`list_templates`・`apply_template` はこの値で CSS を読み込む
+        notes: '`add_template` は `{name}.css` を記載する（名前と違うファイル名は、手で索引を書き込んだときだけ）'
+        example: brand.css
+      - name: description
+        title: 説明
+        type: string
+        not_null: true
+        check: 空でない
+        description: どんな外観にする CSS か・どんな文書に向くか
+        example: 見出しを社の色にする
+      - name: tags
+        title: タグ
+        type: string[]
+        not_null: true
+        check: 要素は空でない文字列。省くと空の並び
+        description: 探すときの単語
+        example: '["見出し", "色"]'
+    status: planned
+    introduced:
+      pr: 353
+refs:
+  - IF-472-1#
+  - IF-472-2#
+  - IF-472-3#

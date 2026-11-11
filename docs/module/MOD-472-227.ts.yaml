@@ -1,0 +1,69 @@
+id: MOD-472-227
+visibility: internal
+title: ライブラリ本体 / 操作 / index.ts
+test_files:
+  - tests/unit/src/interact/index.browser.test.ts
+functions:
+  - name: attachInteractions
+    title: 記法の操作を付ける
+    container: src/interact/index.ts
+    kind: 関数
+    scope: internal
+    summary: 機能がオンの記法だけ `attachSections`・`attachTables`・`attachTabs` の順に呼び（付けたときも `hashchange` も、`attachTables` が行へ送信する前に `attachSections` が URL の `#ID` の指す閉じたセクションを開くため）、`table` がオンなら `attachTables` の後に `attachStickyRows` を、`code` がオンなら `attachCodeCopy` と `attachCodeFolds` を、`tree` がオンなら `attachFileTrees` を呼び、`footnotes` がオンなら `attachFootnotes` を呼び、`glossary` か `backlinks` がオンなら `attachTermTips` を呼ぶ。`html` がオンなら `attachEmbeddedHtml` を、さらに `hints` がオンなら `div.mdmark-html` ごとに `attachDiagramTips` を呼ぶ。`attachTermTips`・`attachFootnotes` には `placement` を、`attachDiagrams` と `div.mdmark-html` の `attachDiagramTips` には `diagramPlacement` を指定する。まとめて削除する関数を返却する。`lightbox` がオンなら `attachLightbox` を、`gif` がオンなら `attachLightbox` の後に `attachGifs` を呼ぶ（GIF の包みが拡大のボタンを含むため）
+    args:
+      - name: options
+        type: '{ root: HTMLElement; features: Record<string, boolean>; placement: TooltipPlacement; diagramPlacement: TooltipPlacement; pinMode?: TablePinMode; onColumnsChange?: (event: MdmarkColumnsChange) => void }'
+        required: true
+        description: 描いた要素と文書で決まった機能のオン・オフと、既定を適用した設定のツールチップを出す場所（本文の `placement` と図の `diagramPlacement`）と、`attachTables` に指定する表のピン止めの動き（既定を適用した設定の `table.pin`。既定 `each`）と列の表示の通知（`mount` の `opts.onColumnsChange`。`MdmarkColumnsChange` は `src/mount.ts` から型だけを読み込む）
+    returns:
+      type: () => void
+      description: 付けた操作を削除する関数
+    callees:
+      - 'MOD-472-228#functions[attachTables]'
+      - 'MOD-472-220#functions[attachTabs]'
+      - 'MOD-472-222#functions[attachSections]'
+      - MOD-472-266#functions[attachTermTips]
+      - 'MOD-472-221#functions[attachStickyRows]'
+      - 'MOD-472-233#functions[attachCodeCopy]'
+      - 'MOD-472-235#functions[attachFileTrees]'
+      - 'MOD-472-224#functions[attachLightbox]'
+      - 'MOD-472-236#functions[attachGifs]'
+      - 'MOD-472-225#functions[attachCodeFolds]'
+      - 'MOD-472-238#functions[attachFootnotes]'
+    unit_tests:
+      - name: test_attach_interactions
+        case: 正常
+        summary: オフの記法には操作を付けない
+        condition: タブと表を描いた要素、`features` の `tabs` が `false`
+        mock: なし
+        expected: '`role="tablist"` が無く、表の見出しにボタンがある'
+      - name: test_attach_interactions_when_hints_off
+        case: 正常
+        summary: hints がオフなら埋め込んだ HTML にツールチップの操作を付けない
+        condition: ヒントを持つ `div.mdmark-html` を描いた要素と、`features` の `hints` が `false`
+        mock: なし
+        expected: マーカーにフォーカスしても `role="tooltip"` の要素が `hidden` を持ったまま
+      - name: test_attach_interactions_when_row_in_closed_section
+        case: 正常
+        summary: 閉じたセクションの中の行へは、セクションを開いてから送信する
+        condition: '`data-section="closed"` のセクションの中に `rowlink` の表（`id` `もも` の行）を描いた要素で、`location.hash` を `#もも` にして付け、次に `#/a.md#もも` にして `hashchange` を送信する'
+        mock: '`Element.prototype.scrollIntoView` を、呼ばれたときにセクションの中身の `hidden` を記録する関数に差し替える'
+        expected: どちらも、`もも` の行の `scrollIntoView` が呼ばれたときにセクションの中身が `hidden` を持たず、行が `data-target` を持つ
+      - name: test_attach_interactions_when_code_off
+        case: 正常
+        summary: code がオフならコードブロックにコピーのボタンを付けず、table がオフなら行を留めない
+        condition: 帯を持つコードブロックと表を描いた要素、`features` の `code` と `table` が `false`
+        mock: なし
+        expected: '`mdmark-code-copy` が無く、`table` が `data-mdmark-sticky` を持たない'
+      - name: test_attach_interactions_when_tree_off
+        case: 正常
+        summary: tree がオフならファイルツリーに開閉とコピーを付けない
+        condition: ファイルツリーを描いた要素と、`features` の `tree` が `false`
+        mock: なし
+        expected: '`mdmark-tree-bar` と `mdmark-tree-toggle` が無い'
+      - name: test_attach_interactions_when_lightbox_off
+        case: 正常
+        summary: lightbox がオフなら画像を包まず、gif がオフならボタンを付けない
+        condition: 画像と GIF を描いた要素と、`features` の `lightbox` と `gif` が `false`
+        mock: なし
+        expected: '`button.mdmark-image-open` と `button.mdmark-gif-toggle` が無い'

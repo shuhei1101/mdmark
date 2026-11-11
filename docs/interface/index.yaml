@@ -1,0 +1,86 @@
+summary: サブシステムの外部インターフェースと処理フロー（結合テストの元）
+items:
+- page: IF-472-29.ts.yaml
+  summary: 利用側のページが、読み込んだ配布物のバージョンを取る
+- page: IF-472-41.ts.yaml
+  summary: バージョンを埋めた dist/index.js と dist/index.css をビルドする
+- page: IF-472-35.ts.yaml
+  summary: 利用側のページが、要素の中に Markdown を文書として描く（mount）
+- page: IF-472-34.ts.yaml
+  summary: 画面を持たずに Markdown を HTML 文字列にする（render）
+- page: IF-472-32.ts.yaml
+  summary: 利用側が、自分のマーカーとそのマーカーを描くモジュールの読み込み方を登録する（registerExtension）
+- page: IF-472-31.ts.yaml
+  summary: 索引と全ての文書の本文から、被参照と用語集の表の用語をまとめた参照の表を作る（collectReferences）
+- page: IF-472-37.ts.yaml
+  summary: 索引と文書の本文から、索引と文書のずれの一覧を返却する（checkIndex）
+- page: IF-472-42.ts.yaml
+  summary: 文書の作成者が、設定・利用側の CSS・索引・拡張の雛形をフォルダに配置する（mdmark init）
+- page: IF-472-39.ts.yaml
+  summary: 文書の作成者が、設定の構造・索引と文書のずれ・build の対象の有無を点検する（mdmark check）
+- page: IF-472-33.ts.yaml
+  summary: 文書の作成者が、Markdown を 1 つ、外へ要求しない 1 枚の HTML に書き出す（mdmark export）
+- page: IF-472-38.ts.yaml
+  summary: 文書の作成者が、設定の build の文書を行き来できる 1 枚の HTML にまとめる（mdmark build）
+- page: IF-472-28.ts.yaml
+  summary: 文書の作成者が、移行の手順をバージョンの順に適用して設定のバージョンを呼んだ CLI のバージョンにする（mdmark upgrade）
+- page: IF-472-30.ts.yaml
+  summary: 利用側のページと拡張のモジュールが、列名と項目の値から要素の中にボード表示と表形式のビューを描く（mountView）
+- page: IF-472-27.ts.yaml
+  summary: 利用側のページが、自分の要素と読み込みと保存の関数を指定し、要素の中の選んだ箇所にコメントを付ける（mountComments）
+- page: IF-472-36.ts.yaml
+  summary: 利用側の処理が、索引と文書の本文から、本文に出た用語・文書の別名の一致と参照先を取り出す（collectMatches）
+- page: IF-472-26.ts.yaml
+  summary: 設定の aliases の行と読み込んだ YAML の中身から、metadata を適用したエイリアスの配列を作る（buildAliases）
+- page: IF-472-40.ts.yaml
+  summary: 端末の設定と上のフォルダの mdmark.config.yaml を探して重ね、重ねた設定と重ねた設定ファイルの一覧を返却する（loadLayeredConfig）
+- page: IF-472-22.ts.yaml
+  summary: Markdown の横か同じ列に、読み込むバージョンを決めて mdmark で描くプレビューを開く（mdmark.openPreviewToSide・mdmark.openPreview）
+- page: IF-472-21.ts.yaml
+  summary: Markdown・設定ファイルの書き換えと背面からの復帰で、最後の内容で再描画する
+- page: IF-472-20.ts.yaml
+  summary: 設定ファイルと読み込むバージョンをもう一度決め、配布物を再読み込みして描く（mdmark.refreshPreview）
+- page: IF-472-17.ts.yaml
+  summary: エディタとプレビューのスクロールを、元の行番号で両方向に合わせる
+- page: IF-472-19.ts.yaml
+  summary: プレビューの外部の URL・Markdown・`#` のリンクを、種類ごとの先で開く
+- page: IF-472-25.ts.yaml
+  summary: 設定ファイルを開き、無ければ雛形を作るかを尋ねる（mdmark.openConfig）
+- page: IF-472-15.ts.yaml
+  summary: 開いている Markdown を jsDelivr の配布物で描く HTML に書き出す（mdmark.exportHtml）
+- page: IF-472-18.ts.yaml
+  summary: もう一度書き出した HTML を既定のブラウザで開く（mdmark.openInBrowser）
+- page: IF-472-16.ts.yaml
+  summary: 描き終えた後に印刷のダイアログを出す HTML を書き出して開く（mdmark.printToPdf）
+- page: IF-472-23.ts.yaml
+  summary: '`vscode-v*` のタグで .vsix を作り、GitHub Release に添える'
+- page: IF-472-24.ts.yaml
+  summary: VS Code の設定画面を mdmark の項目に絞って開く（mdmark.openSettings）
+- page: IF-472-10.ts.yaml
+  summary: mdmark check と同じ点検をし、ずれの一覧を返却する（check）
+- page: IF-472-9.ts.yaml
+  summary: mdmark export と同じ処理で 1 文書を 1 枚の HTML に書き出す（export_html）
+- page: IF-472-13.ts.yaml
+  summary: mdmark build と同じ処理で文書を 1 枚の HTML にまとめる（build_site）
+- page: IF-472-4.ts.yaml
+  summary: MCP の常駐サーバーを 127.0.0.1 の Streamable HTTP で起動し、instructions とツールを返却し、シグナルで停止する（mdmark serve）
+- page: IF-472-5.ts.yaml
+  summary: 作業のフォルダを使用するツールの引数に、PreToolUse のフックで project_dir を入れる
+- page: IF-472-6.ts.yaml
+  summary: SessionStart で常駐サーバーのポートを確認し、待ち受けていないときだけ global-setup での起動の仕方を 1 行で指定する
+- page: IF-472-11.ts.yaml
+  summary: 端末の設定のパスとバージョン・tmux のセッション名・待ち受けているか・ログの場所を返却する（setup.js status）
+- page: IF-472-14.ts.yaml
+  summary: 設定の Schema のキーごとに今の値・既定・説明を返却する（setup.js keys）
+- page: IF-472-12.ts.yaml
+  summary: 回答した値で端末の設定を作る・書き換え、既定のパスでなければ settings.json の env に MDMARK_CONFIG を書き込む（setup.js write-settings）
+- page: IF-472-7.ts.yaml
+  summary: tmux のセッションで mdmark serve を起動し、待ち受けと tools/list を確認する（setup.js start-server）
+- page: IF-472-8.ts.yaml
+  summary: 回答した値で文書のフォルダの mdmark.config.yaml を作る・書き換える（setup.js write-config）
+- page: IF-472-1.ts.yaml
+  summary: 端末の設定のフォルダの CSS のテンプレートを、名前・説明・タグ・パスつきで返却する（list_templates）
+- page: IF-472-2.ts.yaml
+  summary: 作業のフォルダの CSS をテンプレートにコピーし、名前・説明・タグを索引に記載する（add_template）
+- page: IF-472-3.ts.yaml
+  summary: テンプレートの CSS を配置先へコピーし、theme に記載する値を返却する（apply_template）

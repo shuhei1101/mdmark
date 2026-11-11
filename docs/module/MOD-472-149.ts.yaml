@@ -1,0 +1,87 @@
+id: MOD-472-149
+visibility: internal
+title: ライブラリ本体 / バージョンを上げる / backup.ts
+test_files:
+  - tests/unit/src/cli/backup.test.ts
+constants:
+  - name: BACKUP_DIR
+    title: コピーのフォルダ
+    container: src/cli/backup.ts
+    summary: 設定ファイルのあるフォルダからのコピーの配置場所と、中身が `*` の `.gitignore` を配置するフォルダ
+    entries:
+      - key: root
+        value: '`.mdmark`'
+      - key: backups
+        value: '`.mdmark/backup`'
+functions:
+  - name: takeBackup
+    title: コピーを取る
+    container: src/cli/backup.ts
+    usecase: バージョンを上げる
+    summary: ファイルを `.mdmark/backup/{yyyymmddHHMMSS}/` へ、設定ファイルのフォルダからの相対パスを保って写す
+    description: '`.mdmark/.gitignore`（中身 `*`）が無ければ配置する。日時は引数の時刻の手元の時刻。同じ名前のフォルダが既にあれば末尾に `-2`・`-3` …を付ける。設定ファイルのフォルダの外のファイルは写さずに `CliError` を投げる'
+    kind: 関数
+    scope: public
+    is_async: true
+    side_effects: コピーのフォルダと `.gitignore` を記載する
+    args:
+      - name: options
+        type: '{ dir: string; files: string[]; now: Date }'
+        required: true
+        description: 設定ファイルのフォルダ・写すファイルの絶対パス・今の時刻（テストで差し替える）
+    returns:
+      type: Promise<string>
+      description: コピーのフォルダの絶対パス
+    exceptions:
+      - name: CliError
+        condition: 写すファイルが設定ファイルのフォルダの外にある、またはコピーを記載できない
+        message: '{パス} のコピーを取れません（{理由}）。何も書き換えていません。'
+    unit_tests:
+      - name: test_take_backup
+        case: 正常
+        summary: 相対パスを保ってコピーし、.gitignore を配置する
+        condition: '`mdmark.config.yaml` と `docs/a.md`、`now` は 2026-10-17 12:00:00'
+        mock: 一時フォルダ
+        expected: '`.mdmark/backup/20261017120000/mdmark.config.yaml` と `.../docs/a.md` が元と同じ中身で、`.mdmark/.gitignore` が `*`'
+      - name: test_take_backup_when_same_time
+        case: 正常
+        summary: 同じ日時のコピーがあれば別の名前にする
+        condition: 同じ `now` で 2 回呼ぶ
+        mock: 一時フォルダ
+        expected: 2 回目のフォルダ名が `20261017120000-2`
+      - name: test_take_backup_when_outside
+        case: 異常
+        summary: 設定ファイルのフォルダの外のファイルは拒む
+        condition: '`files` に親のフォルダのファイルがある'
+        mock: 一時フォルダ
+        expected: '`CliError` を投げ、`.mdmark/backup/` にファイルが無い'
+    status: planned
+    introduced:
+      pr: 39
+  - name: restoreBackup
+    title: コピーから戻す
+    container: src/cli/backup.ts
+    usecase: バージョンを上げる
+    summary: コピーの全てのファイルを元の場所へ書き込んで戻す
+    kind: 関数
+    scope: public
+    is_async: true
+    side_effects: 設定・索引・文書を書き込んで戻す
+    args:
+      - name: options
+        type: '{ dir: string; backupDir: string }'
+        required: true
+        description: 設定ファイルのフォルダ・コピーのフォルダ
+    returns:
+      type: Promise<void>
+      description: 戻し終えた
+    unit_tests:
+      - name: test_restore_backup
+        case: 正常
+        summary: 書き換えたファイルをコピーの中身に戻す
+        condition: コピーを取った後に設定と文書を書き換える
+        mock: 一時フォルダ
+        expected: 設定と文書がコピーを取る前の中身
+    status: planned
+    introduced:
+      pr: 39

@@ -1,0 +1,1742 @@
+id: SCR-472-4
+visibility: internal
+title: 文書
+elements:
+  - name: 描く先の要素
+    id: mdmark-root
+    kind: container
+    description: 利用側のページが `mount` に指定した要素。class `mdmark` を付け、地の色・内側の余白・角丸を適用する（枠と影は付けない）。配色は文書の page のマーカーの `scheme`・`opts.config.colorScheme`・祖先の class・`prefers-color-scheme` の順でライトかダークにし、印刷では明るい配色にする（文書を描く.ts の制約「明暗の当て方」「配色の切り替え」）。配色の値の組は page のマーカーの `theme` か `opts.config.colorTheme` で選んだテーマのものにする（同じ制約「選んだテーマ」）
+    visible_when: 常時
+    source: 文書を描く.request.el
+    refs:
+      - IF-472-35#
+  - name: コードブロック
+    id: code-block
+    kind: region
+    position: 描く先の要素
+    description: 'Markdown のコードブロック。上に帯を配置し、左端に言語のラベルとタイトル、右端にコードのコピーのボタンを出す。狭い幅ではブロックの中で横スクロールし、続きがある側の端に影を出す（利用側の `pre` への汎用の CSS でも折り返さない）。直前の `<!-- code: -->` に `wrap` があるブロックだけは、長い行を枠の幅で折り返す。印刷では折り返す。スクリーンリーダー向けの名前（`aria-label`）は、タイトルがあれば `コード: {タイトル}`、ファイル名があれば `コード: {ファイル名}`、言語があれば `コード: {言語の識別子}`、どれも無ければ `コード`。情報文字列の最初の単語は最初の `:` の前を言語、後ろをファイル名として読み込む（```python:hoge.py）。`code` がオンで、直前に `<!-- code: -->` か行末にコードの行のマーカーがあるときは、コードブロックの部品でタイトル・行番号・行の強調・追加した行と削除した行・注目する行・エラーと警告の行を付けて描く。インデントのある行は、レベルごとの縦線を描き、次の行がより深い行を開閉できるようにする。`syntax` がオンで、言語が色分けの言語の対応表にあるときは、描いた後に言語に応じて色分けする（色分けのライブラリかその言語のモジュールを読み込めないときは色分けせずに残す）'
+    visible_when: 文書にコードブロックがあるとき
+    tab_order: 0
+    reason: キーボードで横スクロールできるように `tabindex="0"` を付ける。スクリーンリーダー向けの名前は情報文字列をそのまま使用し、言語名への対応表は持たない（モックの `TypeScript` は `ts` になる）
+    component: CMP-472-18#
+    args:
+      - name: lines
+        value: コードブロックの行（行末のコードの行のマーカーを削除した文字と、マーカーと `highlight=` から決めた行の種類、インデントのレベル、畳む行の数、`fold=` で最初から畳むか）
+      - name: language
+        value: コードブロックの情報文字列の言語
+      - name: title
+        value: '直前の `<!-- code: -->` の `title=`'
+      - name: lineNumbers
+        value: '直前の `<!-- code: -->` に `lines` があるか'
+      - name: fileName
+        value: コードブロックの情報文字列の最初の単語の、最初の `:` より後ろ
+      - name: copyState
+        value: '`mount` が付けたときは `idle`、コピーした結果で `copied`・`failed`'
+      - name: wrap
+        value: '直前の `<!-- code: -->` に `wrap` があるか'
+    refs:
+      - IF-472-35#constraints[色分けの対象]
+  - name: 表
+    id: table
+    kind: table
+    position: 描く先の要素
+    description: 'Markdown の表。表のマーカーで囲んだ表はその種類、囲まない表は既定の種類の表の部品にする。表は本文の幅いっぱいに広げ、列が本文の幅に収まらないときだけ表の中で横スクロールし、続きがある側の端に影を出す。縦の高さの上限は持たず、表が画面に残っている間は見出し行を画面の上端（`--mdmark-sticky-top` だけ下）に、集計の行を画面の下端に留める。描く先の要素の中身の幅が 720px 未満で、最終列のセルが 1 行に収まらないときは最終列を畳む。紙の幅が 40rem 以下の印刷では、行ごとの「列名: 値」の並びに追加する。スクリーンリーダー向けの名前（`aria-label`）は `表: {直前の見出しの文字}`（直前に見出しが無ければ `表`）。`table` の機能がオフのときは部品を使用せず今の表を描く'
+    visible_when: 文書に表があるとき
+    tab_order: 0
+    sorting: 種類と `+機能`・`-機能` で決まる。`data` は並べ替え（降順 → 昇順 → 元の並び）・ピン止め・`filter=` で指定した列の絞り込み・列の幅の変更、既定の種類はピン止めと列の幅の変更、`plain` は無し。件数（`count`）・列の表示（`columns`）・列の並べ替え（`reorder`）・集計の行（`total`）・表のコピー（`copy`）・行へのリンク（`rowlink`）はどの種類の既定にも入らず、`+機能` を記載した表にだけ付く。既定の並びは記載した順
+    component: CMP-472-61#
+    args:
+      - name: kind
+        value: 表のマーカーの種類（囲まない表と知らない種類は `default`）
+      - name: features
+        value: 種類の機能にマーカーの `+機能`・`-機能` を適用したもの
+      - name: columns
+        value: 表の見出し行のセル（`header-rows=` で多段にした表は、列ごとに最も下で覆う見出しのセル）
+      - name: rows
+        value: 表の本文の行のセル
+      - name: filters
+        value: マーカーの `filter=列名:種類,…`（列名を列の位置として解釈する）
+      - name: collapse
+        value: マーカーの `closed`・`open`（無ければ `none`）
+      - name: headRows
+        value: マーカーの `header-rows=` の数の先頭の行を、`<<` を `colspan`・`^^` を `rowspan` として解釈した行ごとのセル（2 段以上のときだけ）
+      - name: rowHeader
+        value: マーカーの `row-header=` の数（無ければ 0）
+      - name: mergeColumns
+        value: 本文に `^^` を記載した列の位置
+      - name: hide
+        value: マーカーの `hide=列名,…`（`+columns` の表だけ。先頭を除く列の位置として解釈する）
+      - name: totals
+        value: マーカーの `total=列名:計算,…`（`+total` の表だけ。列名を列の位置として解釈する）
+      - name: rowIds
+        value: '`+rowlink` の表の行ごとの、先頭のセルの文字から見出しと同じ規則で作った ID（文書の中の見出し・前の行と重なれば `-1`・`-2`）'
+      - name: title
+        value: マーカーの `title=` の値（`closed`・`open` を記載した表だけ。記載しなければ指定しない）
+      - name: highlight
+        value: マーカーの `highlight=列名[:色],…`（列名を列の位置として解釈する。色を省いた列は `blue`）
+      - name: rowColors
+        value: マーカーの `row-color=` の値と `row-at=` の位置から決めた本文の行ごとの色（両方が該当する行は `row-at=` の色）
+      - name: pinned
+        value: '`pin` の表で幅からはみ出す間は、マーカーの `pin=` の列の位置（無ければ行見出しの列、行見出しも無ければ先頭の列。`pinMode` が `through` ならその最も右の列までの全ての列）。押したピン止めのボタンで変わる'
+      - name: wide
+        value: マーカーの `wide=列名,…`（列名を列の位置として解釈する）
+      - name: check
+        value: マーカーの `check=列名,…`（列名を列の位置として解釈する）
+      - name: order
+        value: 読者がテーブル設定で動かした列の順（`+reorder` の表だけ。描くたびに Markdown に記載した順に戻る）
+      - name: tree
+        value: マーカーの `tree=列名`（列名を列の位置として解釈する）
+      - name: treeType
+        value: マーカーの `type=列名`（`tree=` の表だけ）
+      - name: treeRequired
+        value: マーカーの `required=列名`（`tree=` の表だけ）
+      - name: treeDefault
+        value: マーカーの `default=列名`（`tree=` の表だけ）
+      - name: example
+        value: マーカーの `example=見出し` の見出しの直下のタブと、各タブの `yaml` のコードブロックの行とキーのパス（`tree=` の表だけ）
+      - name: pinMode
+        value: 設定の `table.pin`（`each`・`through`。他の値と省いたときは `each`）
+      - name: widths
+        value: 読者がつまみで指定した列の幅（`resize` の表だけ。描くたびに空に戻る）
+      - name: resizing
+        value: 読者がつまみをドラッグしている列の位置
+    action: 'テーブル設定のパネルで列を動かす・隠す（要素「表のテーブル設定のパネル」）。列の見出しの右端のつまみで列の幅を変える（要素「表の列の幅のつまみ」）。`tree=` の表は、行を押して選ぶと同じ親の範囲の縦線を濃くし、もう一度押すと解く。`+columns` の表で列の表示を切り替えるたびに、`opts.onColumnsChange` に表の番号と隠している列の名前を指定する'
+    action_ref: IF-472-35#constraints[列の表示の通知]
+    error_message: 'マーカーの誤りは表の前の記載の警告で通知する。`mark` はそのマーカーの文字。表に無い列名の `tree=`: `{mark} の tree= の列 {列名} が表にありません。表の列は {列の並び} です。階層にせずに描いています。` / `tree=` の無い `type=`・`required=`・`default=`・`example=`: `{mark} の {引数}= は tree= と一緒に記載してください。当てずに描いています。` / 無い見出しの `example=`: `{mark} の example= の見出し {見出し} が文書に無いか、直下にタブがありません。見本を配置せずに描いています。`。文中のマーカー・列名・見出しは行内のコードにする'
+  - name: 表のセル
+    id: table-cell
+    kind: label
+    position: 描く先の要素 > 表
+    description: '`td` は同じ列の見出しの文字を `data-label` に持ち、狭い紙の印刷で列名として出す。列の配置は Markdown の `:--`・`:-:`・`--:` に従い、class `mdmark-align-{left,center,right}` で適用する。`check=` の列の `true`・`false` のセルは ✓ と空欄で出す'
+    visible_when: 常時
+  - name: 折り畳み
+    id: details
+    kind: details
+    position: 描く先の要素
+    description: 文書に記載した `details` と `summary`。開閉は文書に記載したとおり（`open` の有無）で始まる。印刷の機能がオンのとき、印刷の前に開き、印刷の後に開いたものだけをもう一度閉じる
+    visible_when: 文書に `details` があるとき
+    initial_state: 活性
+    action: '`summary` を押すと開閉する（ブラウザの振る舞い）'
+  - name: フロントマターの表示
+    id: frontmatter
+    kind: details
+    position: 本文の先頭
+    description: 文書の先頭の YAML のフロントマターを、見出し `フロントマター` の閉じた折りたたみに言語 `yaml` のコードブロックで出す（部品『フロントマター』）。印刷の機能がオンのとき、印刷の前に開き、印刷の後にもう一度閉じる
+    visible_when: 文書の先頭にフロントマターがあり、機能 `frontmatter` がオンのとき（既定はオフで、オフのときはフロントマターを描かない）
+    initial_state: 活性
+    action: '`summary` を押すと開閉する（ブラウザの振る舞い）'
+  - name: タスクのチェックボックス
+    id: task-checkbox
+    kind: input
+    position: 描く先の要素 > リストの項目
+    description: '`- [ ]` と `- [x]` の項目の頭に配置するチェックボックス。表示だけで操作できない'
+    type: 真偽値
+    io: 表示
+    visible_when: 文書にタスクリストがあるとき
+    initial_state: 非活性
+    initial_value: '`[x]` なら `checked`'
+  - name: 外部ライブラリのマーカーの場所
+    id: embed
+    kind: region
+    component: CMP-472-64#
+    args:
+      - name: name
+        value: マーカーの名前
+      - name: args
+        value: マーカーの引数
+    position: 描く先の要素
+    description: 対応表にあるマーカーと、`registerExtension` で登録した拡張のマーカーの場所。読み込み中のブロックを配置し、読み込んだモジュールの `draw` がこの要素に描く
+    visible_when: 文書に対応表にあるマーカーがあるとき
+  - name: 通知ブロック
+    id: notice
+    kind: label
+    component: CMP-472-65#
+    args:
+      - name: name
+        value: マーカーの名前（拡張は拡張の `name`）
+      - name: source
+        value: 対応表のマーカーは `library`、拡張のマーカーは `extension`
+    position: 描く先の要素
+    description: 外部ライブラリや拡張のモジュールを読み込めない、`draw` が例外を投げた、または拡張の `schema` の `validate` が失敗したマーカーの場所を置き換える
+    visible_when: 外部ライブラリか拡張のモジュールを読み込めないときと、拡張の `validate` が失敗したとき
+    refs:
+      - IF-472-35#exceptions[なし（通知ブロック）]
+  - name: 見出しとセクション
+    id: section
+    kind: heading
+    component: CMP-472-21#
+    args:
+      - name: level
+        value: 見出しの階層（1〜4）
+      - name: id
+        value: GitHub と同じ規則の見出しの ID
+      - name: title
+        value: 見出しの中身
+    position: 描く先の要素
+    description: h1〜h4 の見出しとそのセクション。`anchors` がオンのとき見出しに ID へのアンカーを、`sections` がオンのとき開閉のボタンを付ける。h5・h6 は ID とアンカーだけを付ける
+    visible_when: 文書に見出しがあるとき
+    initial_value: '開いた状態。見出しの直後に `<!-- section: closed -->` があるセクションは閉じた状態'
+    action: 開閉のボタンでセクションを開閉する。Shift を押しながら押す（Shift+Enter・Shift+Space を含む）と、そのセクションと中の入れ子のセクションを全て同じ状態にする。URL の `#ID` が閉じたセクションの中を指すときはそのセクションを開く
+    refs:
+      - IF-472-35#constraints[セクションと行の詳細の開閉]
+      - IF-472-35#constraints[入れ子をまとめて開閉]
+    status: planned
+  - name: 目次
+    id: toc
+    kind: nav
+    component: CMP-472-55#
+    args:
+      - name: headings
+        value: 文書の h2・h3 の階層・ID・文字
+    position: 描く先の要素
+    description: '`<!-- toc -->` の場所に配置する目次'
+    visible_when: 文書に `<!-- toc -->` があり、`toc` がオンのとき
+    action: 項目を押すとその見出しへ移る（ページ内のリンク）
+    status: planned
+  - name: 注意書き
+    id: callout
+    kind: region
+    component: CMP-472-52#
+    args:
+      - name: kind
+        value: 引用の 1 行目の種類（知らない種類は `note`）
+      - name: collapsed
+        value: 種類の末尾に `-` があるか
+    slots:
+      - name: default
+        value: 引用の 2 行目からの本文
+    position: 描く先の要素
+    description: 1 行目が `[!NOTE]` などの引用
+    visible_when: 文書に注意書きの引用があり、`callout` がオンのとき
+    initial_value: 閉じた注意書きは閉じた状態
+    status: planned
+  - name: タブ
+    id: tabs
+    kind: tabs
+    component: CMP-472-22#
+    args:
+      - name: titles
+        value: 範囲で最初に出る見出しの階層の見出しの文字
+      - name: group
+        value: タブのマーカーの `group=` の値（記載しないか値が無いときは指定しない）
+      - name: collapse
+        value: マーカーの `closed`・`open`（無ければ `none`。両方を記載したときは `closed`）
+      - name: title
+        value: マーカーの `title=` の値（`closed`・`open` を記載した範囲だけ。記載しなければ指定しない）
+    slots:
+      - name: default
+        value: 区切りの見出しから次の見出しの前までの中身
+    position: 描く先の要素
+    description: '`<!-- tabs -->` の範囲'
+    visible_when: 文書にタブの範囲があり、`tabs` がオンのとき
+    initial_value: 1 つ目のタブを選んだ状態。`group` を持ち、localStorage にその組で残したタブ名のタブがあればそのタブを選んだ状態。URL の `#ID` がタブの中の要素を指すときは、localStorage より優先してその要素を含むタブを選んだ状態。`closed` の範囲は見出しだけを出した閉じた状態
+    action: タブを押すか矢印キーで中身を切り替える。`group` を持つときは、ページの同じ `group` で同じタブ名を持つタブも切り替え、選んだタブ名を残す。URL の `#ID`（`hashchange` を含む）が選ばれていないタブの中の要素を指すときは、そのタブを選んでから要素へ移る（選んだタブ名は残さず、同じ `group` のほかのタブも切り替えない）
+    refs:
+      - IF-472-35#constraints[タブの操作]
+      - IF-472-35#constraints[URL の ID でタブの中へ移る]
+    status: planned
+  - name: ステップ
+    id: steps
+    kind: list
+    component: CMP-472-20#
+    args:
+      - name: items
+        value: 範囲の最初の番号付きリストの項目
+      - name: collapse
+        value: マーカーの `closed`・`open`（無ければ `none`。両方を記載したときは `closed`）
+      - name: title
+        value: マーカーの `title=` の値（`closed`・`open` を記載した範囲だけ。記載しなければ指定しない）
+    position: 描く先の要素
+    description: '`<!-- steps -->` の範囲の番号付きリスト'
+    visible_when: 文書にステップの範囲があり、`steps` がオンのとき
+    initial_value: '`closed` の範囲は見出しだけを出した閉じた状態、それ以外は全ての手順を出した状態'
+    status: planned
+  - name: ファイルツリー
+    id: file-tree
+    kind: tree
+    component: CMP-472-26#
+    args:
+      - name: nodes
+        value: 言語 `tree` のコードブロックの罫線（`├── `・`└── `・`│   ` と `\|-- `・`` `-- ``・`\|   `）を読み込んだ項目。前に空白がある最初の `#` で名前と注釈を分け、注釈はインラインを描いた HTML
+      - name: source
+        value: コードブロックの中身
+      - name: open
+        value: '直前の `<!-- tree: open=… -->` の値（記載しないか読み込めないときは指定しない）'
+      - name: interactive
+        value: '`render` は `false`、`mount` が付けた後は `true`'
+      - name: wrap
+        value: '直前の `<!-- tree: -->` に `wrap` があるか'
+    position: 描く先の要素
+    description: '言語 `tree` のコードブロック。長い名前と注釈は折り返さずにツリーの中で横スクロールし、直前の `<!-- tree: -->` に `wrap` があるツリーだけは、名前を名前の列の中で折り返し、注釈を名前の下の行に出す'
+    visible_when: 文書に言語 `tree` のコードブロックがあり、`tree` がオンで、全ての行を読み込めたとき
+    initial_value: '`open=` の階層まで開いた状態（指定が無ければルートだけ開く）。コピーボタンは `コピー`'
+    action: フォルダの名前かアイコンを押すか Enter・Space で開閉し、Shift を押しながらなら入れ子のフォルダも同じ状態にする。ページ内検索が閉じたフォルダの中に該当するとそのフォルダを開く。コピーボタンで `source` をクリップボードへ書き込み、書き込めないときはツリーの下に手動でコピーするパネルを出す。印刷の前に閉じたフォルダを開き、後にもう一度閉じる
+    refs:
+      - IF-472-35#constraints[ファイルツリーの開閉とコピー]
+    status: planned
+  - name: バッジ
+    id: badge
+    kind: label
+    component: CMP-472-23#
+    args:
+      - name: label
+        value: 行内のコードから頭の `badge:` を削除した文言（頭の後ろの最初の `:` の前が色の名前のときは、2 つ目の `:` の後ろ）
+      - name: color
+        value: 頭の後ろの最初の `:` の前が色の名前のときの色の名前
+    position: 描く先の要素 > 段落・表のセル
+    description: 頭に `badge:` を付けた行内のコード。頭の後ろが空（空白だけを含む）の `badge:` は札にせず、記載した文字のままの行内のコードで描く
+    visible_when: 文書にその行内のコードがあり、`badge` がオンのとき
+    status: planned
+  - name: 行の詳細
+    id: row-detail
+    kind: row
+    component: CMP-472-60#
+    args:
+      - name: row
+        value: マーカーの行の位置
+      - name: columns
+        value: 表の列の数
+      - name: label
+        value: その行の先頭のセルの文字
+      - name: foldedColumn
+        value: 表が最終列を畳んでいるときの、最終列の見出しの文字とその行の最終列のセルの中身（`{ name, html }`）。畳んでいないときは指定しない
+    slots:
+      - name: default
+        value: '`<!-- row-detail -->` の範囲の中身'
+    position: 描く先の要素 > 表
+    description: '表の直後の `<!-- row-detail: 行の位置 -->` の範囲'
+    visible_when: 文書に行の詳細の範囲があり、`row-details` がオンで、行の位置が表にあるとき
+    initial_value: 閉じた状態
+    action: 行の開閉のボタンで開閉する。表が最終列を畳んでいるときは、詳細の中身の上に最終列の見出しと中身を配置し、このボタンだけで両方を開閉する
+    status: planned
+  - name: 図表の番号
+    id: figure
+    kind: figure
+    component: CMP-472-40#
+    args:
+      - name: kind
+        value: マーカーの直後が画像の段落なら `image`、表なら `table`
+      - name: id
+        value: マーカーの ID
+      - name: number
+        value: 文書の頭から種類ごとに数えた番号
+    slots:
+      - name: default
+        value: マーカーの直後の画像の図・ギャラリーか表
+    position: 描く先の要素
+    description: '`<!-- fig: ID -->` の直後の図と表'
+    visible_when: 文書に `fig` のマーカーがあり、`figures` がオンのとき
+    status: planned
+  - name: 図表へのリンク
+    id: figure-ref
+    kind: link
+    position: 描く先の要素 > 段落
+    description: 本文の `#fig-ID` へのリンク。文字をその図表の `図 {番号}`・`表 {番号}` に替える
+    visible_when: 文書に `#fig-ID` へのリンクがあり、`figures` がオンのとき
+    action: 押すとその図表へ移る
+    status: planned
+  - name: 記載の警告
+    id: syntax-warning
+    kind: label
+    component: CMP-472-62#
+    args:
+      - name: message
+        value: 誤りごとの本文（エラーの文言）
+    position: 描く先の要素
+    description: 記法のマーカーや拡張の引数に読み込めない指定がある箇所の前に配置し、読み込めた指定で描いた本文はそのまま出す
+    visible_when: 作成者の誤りがあるとき
+    error_message: '`mark` はそのマーカーの文字。タブのマーカーの読み込めない指定: `{mark} の読み込めない指定を当てずに描いています。` と、項目 `group=: 組の名前がありません。group=os のように名前を記載してください。組を持たないタブとして描いています` / 知らない絞り込みの種類: `{mark} の絞り込みの種類 {種類} は使用できません。使用できる種類は select・text・date です。{列名}の列には絞り込みを付けずに描いています。` / 表に無い列名: `{mark} の列名 {列名} は表にありません。表の見出しの文字で記載してください。` / 隠せない先頭の列: `{mark} の列 {列名} は先頭の列のため隠せません。先頭の列は行の識別子と行へのリンクの配置場所なので、隠さずに描いています。` / 知らない集計の計算: `{mark} の計算 {計算} は使用できません。total=列名:計算 の構造で記載し、使用できる計算は sum・avg・count です。{列名} の列は集計せずに描いています。` / 集計する列の数として読み込めないセル: `「{列名}」の列に数として読み込めない値 {値の並び} があるため、{計算の名前}を出していません。数を記載するか、セルを空にしてください。`（`{値の並び}` は読み込めない値を `<code>` で囲んで `・` でつなぐ。`{計算の名前}` は `合計`・`平均`。列と計算ごとに 1 つずつの警告にし、表の上に配置する） / 機能を付けていない表のキー: `{mark} の読み込めない指定を当てずに描いています。` と、項目 `{キー}=: +{機能} を記載した表でだけ使用できます。当てずに描いています`（`total=` は `+total`、`hide=` は `+columns`）。表のマーカーの読み込めない列名・計算・先頭の列は、指定ごとに 1 つずつの警告にする / closed と open: `{mark} の closed と open は同時に記載できません。どちらか 1 つにしてください。closed を適用して描いています。` / 閉じのマーカーが無い: `{mark} の閉じのマーカー <!-- /{名前} --> がありません。範囲の終わりに閉じのマーカーを記載してください。マーカーから文書の終わりまでを範囲にして描いています。` / タブ名の見出しが無い: `<!-- tabs --> の範囲に、タブ名にする見出しがありません。タブにしたい中身ごとに見出し（### macOS など）を記載してください。範囲の中身はそのまま描いています。` / 番号付きリストが無い: `<!-- steps --> の範囲に、手順にする番号付きリストがありません。手順を 1. から始まる番号付きリストで記載してください。範囲の中身はそのまま描いています。` / 表に無い行: `{mark} の {n} 行目がありません。表は {m} 行です。行の位置を 1〜{m} で記載してください。詳細は表の後の本文として描いています。` / 切れた参照: `リンク先の #fig-{ID} の図表がありません。<!-- fig: {ID} --> を図か表の直前に記載するか、リンク先を修正してください。` / 重なった ID: `{mark} の ID {ID} は、前の図表と重なっています。別の ID にしてください。この図には番号だけを付け、ID を付けていません。` / 読み込めないファイルツリー: `ファイルツリーの {n} 行目が、上の行より {k} 階層深く記載されていて読み込めません。罫線の階層を 1 階層ずつ深くしてください。コードブロックのまま描いています。` / ビューの `group=` の列が表に無い: `{mark} の列 {列名} は表にありません。表の列は {列の並び} です。ボードにせず、表で描いています。` / ビューの範囲に表が無い: `{mark} の範囲に、項目にする表がありません。範囲の中に Markdown の表を記載してください。範囲の中身はそのまま描いています。` / ビューの使用できないアイコン: `{mark} のアイコン {名前} は使用できません。使用できるアイコンは {並び} です。{値} の列には既定のアイコンを付けています。` / コードブロックのマーカーの読み込めない指定: `{mark} の読み込めない指定を当てずに描いています。` と、項目 `{指定}: 使用できない指定です。使用できる指定は title=・lines・highlight=・fold=・wrap です。マーカーの引数は空白で区切るため、タイトルに空白は記載できません`（`title=` の直後の単語だけ）・`title=: タイトルがありません。title=app.ts のように記載してください`・`{指定}: 読み込めない行の指定です。2・4-6 のように、行の番号と範囲をコンマで並べてください`・`{指定}: コードブロックに無い行の番号です。コードブロックは {m} 行です。行の番号を 1〜{m} で記載してください` / コードブロックのマーカーの直後にコードブロックが無い: `{mark} の直後にコードブロックがありません。マーカーの次の行にコードブロックを記載してください。` / 知らないコードの行のマーカー: `コードの行のマーカー {マーカー} は使用できません。使用できるマーカーは [!code ++]・[!code --]・[!code highlight] です。{n} 行目には当てず、記載した文字のまま描いています。`（知らないマーカー 1 つにつき 1 つの警告） / 拡張の引数: `{mark} の引数が、拡張 {name} の決まりに合いません。修正してから再読み込みしてください。` と、issue ごとの項目（拡張を登録するの制約「引数の検査」） / 図の部品の定義の誤り（`{図}` はマーカーの図の種類の名前（`flow` はフロー図・`sequence` はシーケンス図・`chart` はグラフ・`param` は操作できる部品）、`{呼び名}` はグラフなら「このグラフ」、操作できる部品なら「この部品」、それ以外は「この図」）: JSON のコードブロックが無い・2 つ以上: `{図}の部品の定義を読み込めません。マーカーの範囲に json のコードブロックを 1 つだけ配置してください。{呼び名}は描いていません。` / JSON として読み込めない: `{図}の部品の定義を JSON として読み込めません（{行} 行目の {読み込めた最後の部分} の後に {足りない記号} がありません）。{呼び名}は描いていません。` / 構造に合わない: `{図}の部品の定義を読み込めません。{読み込めない箇所と修正方法の文}。{呼び名}は描いていません。`（例 `系列「担当者」の点が 4 つで、横の目盛り（x.ticks）の 5 つと合いません`・`ノード「分類」の種類 robot は使用できません。使用できる種類は llm・dm・script・mcp・data・external・start・question・action・result です`）。読み込めない箇所が 2 つ以上あるときは、本文に 1 つ目を記載し、残りを項目に並べる。埋め込んだ HTML の中の custom element（`<mdmark-chart>` など）の定義の誤りも同じ文言で、`{図}` はその要素の図の種類 / `<!-- html -->` の範囲に `html` のコードブロックが無い・2 つ以上: `<!-- html --> の範囲に html のコードブロックを 1 つだけ配置してください。範囲の中身はそのまま描いています。` / 拡張のマーカーの部品の定義を JSON として読み込めない: `{mark} の部品の定義を JSON として読み込めません（{行} 行目の {読み込めた最後の部分} の後に {足りない記号} がありません）。拡張 {name} の部品は描いていません。` / 値を持つ `wrap=`: `{mark} の wrap は値を持ちません。wrap=… ではなく wrap と記載してください。折り返さずに描いています。` / フロー図の座標の記載したものと省いたものが混ざる（図の部品の定義の誤りの「構造に合わない」の `{読み込めない箇所と修正方法の文}`）: `座標（x・y・w・h・points・width・height）を記載したものと省いたものが混ざっています。全て記載するか、全て省いてください` / 座標を省けない種類（同じく `{読み込めない箇所と修正方法の文}`）: `ノード「{名前}」の種類 {種類} では座標を省けません。座標を省けるのは、種類が start・question・action・result だけの判定フローチャートです。座標を記載するか、種類を変えてください` / フロー図のノードの許さないリンク先: `フロー図のノードのリンク先に使用できないものがあります。使用できるリンク先は http・https・mailto と相対パスです。このノードはリンクにせずに描いています。` と、ノードごとの項目 `{id}: {記載したリンク先}`（図ごとに 1 つの警告）。記法のマーカーの知らない種類・`+機能`・`-機能`・キー・指定の単語には警告を配置しない / mermaid が解釈できないソース: `mermaid
+      の図を描けません（{mermaid のエラーの 1 行目}）。コードブロックのまま表示しています。`（コードブロックの前に配置する）。文中のマーカー・ID・値は行内のコードにする'
+    refs:
+      - IF-472-34#constraints[作成者の誤り]
+      - IF-472-35#exceptions[なし（mermaid の記法を解釈できない）]
+    status: planned
+  - name: 用語の下線
+    id: term
+    kind: tooltip
+    component: CMP-472-53#
+    args:
+      - name: text
+        value: 照合した本文の単語
+      - name: id
+        value: '`render` は描くごとに文書の中で一意な値（`mdmark-term-{通し番号}`）。`mount` はページの中で一意な値（`mdmark-term-{mount の通し番号}-{通し番号}`）にもう一度振り、単語の `aria-describedby`・`aria-details` も合わせて修正する'
+      - name: meaning
+        value: 一致した用語の意味（索引の `terms[].meaning`、描く文書の用語集の表の意味の列、参照の表の `glossary[].meaning` の優先の順）。用語に一致しないときと、エイリアスを選んだときは空
+      - name: docs
+        value: 単語に `aliases` が一致した索引の文書（描く文書自身を除く）の `title`・描く文書の `path` を基準にした相対パス・`description`。`backlinks` がオフのときは空
+      - name: alias
+        value: 単語が `opts.aliases` の `avoid` 以外の種類のエイリアスの `name`・`aliases` に一致し、照合の優先の順（索引の `terms`・`opts.aliases`・描く文書の表・ほかの文書の表）でそのエイリアスを選んだとき、そのエイリアス。選ばなかったときは指定しない
+      - name: copy
+        value: '`command` のエイリアスのとき `idle`。コピーのボタンを押した後は `mount` が `copied`・`failed` に切り替える'
+      - name: replacement
+        value: 単語が索引の `terms[].avoid`、`opts.aliases` の `avoid` の種類の `name`・`aliases` と `term` の種類の `avoid`、描く文書の用語集の表のやめた言い方の列、参照の表の `glossary[].avoid` のどれかに一致したとき、その用語の `term` と `meaning`（`avoid` の種類のエイリアスは `replacement` を `term` にし `meaning` を指定しない。`term` の種類の `avoid` はそのエイリアスの `name` と `description`。用語集の表はその行の用語の列と意味の列。同じ言い方を複数の用語が持つときは、索引の `terms`、`opts.aliases` の並び、索引の `docs` の順の文書の表の順で先の用語）。一致しないときは指定しない
+    position: 描く先の要素 > 本文の文字
+    description: 本文に出た用語と文書の別名に破線の下線を付け、ポインターとフォーカスで「用語」「関連文書」のツールチップを出す。エイリアスにも破線の下線を付け、種類ごとの区分のツールチップを出す。用語のやめた言い方には波線の下線を付け、「代わりの用語」のツールチップを出す。描いた直後はツールチップを閉じている
+    visible_when: 用語・文書の別名・エイリアス・用語のやめた言い方が本文に出て、`glossary`（文書の別名は `backlinks`）がオンのとき。用語は用語の `id`、文書の別名は文書の `id`、エイリアスはエイリアスの `id`、やめた言い方は言い方ごとに、セクションで最初に出たところだけ。コード・リンク・見出し・用語集の表の中には配置しない
+    action: ポインターを乗せるかフォーカスすると開き、ツールチップの上へ移っても開いたまま。Esc で閉じてフォーカスを単語に戻す。タッチの端末では単語のタップで開閉を切り替え、ツールチップと単語の外のタップで閉じる（中のリンクとボタンのタップでは閉じない）。関連文書・エイリアスの URL のリンク・コマンドのコピーのボタンのあるときは Tab で中のリンクとボタンへ移る。単語の上に開き、上に収まらなければ下に開く（設定の `tooltips.placement` が `bottom` のときは下に開き、下に収まらなければ上に開く）
+    refs:
+      - IF-472-35#constraints[用語と文書の別名の下線]
+      - IF-472-35#constraints[やめた言い方のマーカー]
+      - IF-472-35#constraints[エイリアスのツールチップ]
+    status: planned
+  - name: 用語集の表
+    id: glossary-table
+    kind: table
+    position: 描く先の要素
+    description: '`<!-- glossary: term=列名 meaning=列名 aliases=列名 -->` 〜 `<!-- /glossary -->` で囲んだ表。表の機能を持つ普通の表として描き、中の単語には下線を付けない'
+    visible_when: 文書に用語集の表のマーカーがあるとき（`glossary` がオフのときも表は描く）
+    error_message: 'マーカーの誤りは表の前の記載の警告で通知する。`mark` はそのマーカーの文字。表に無い列名: `{mark} の {引数}= の列 {列名} が表にありません。表の列は {列の並び} です。列名を修正してください。この表からは用語を入れずに描いています。` / 必須の指定が無い: `{mark} に {引数}= がありません。{用語の列か意味の列}を {引数}=列名 で指してください。この表からは用語を入れずに描いています。`。文中のマーカー・列名は行内のコードにする'
+    refs:
+      - CMP-472-62#states[GlossaryColumn]
+    status: planned
+  - name: 関連文書の一覧
+    id: backlinks
+    kind: nav
+    component: CMP-472-66#
+    args:
+      - name: id
+        value: '`render` は `mdmark-backlinks-title`。`mount` はページの中で一意な値（`mdmark-backlinks-title-{mount の通し番号}`）にもう一度振り、一覧の `aria-labelledby` も合わせて修正する'
+      - name: docs
+        value: '`opts.references.backlinks[opts.docId]`（無ければ索引の `related` に描く文書を持つ文書）の各文書の `title` と、描く文書の `path` を基準にした相対パス'
+    position: 描く先の要素 > 本文の後
+    description: 描いた文書を参照している文書を、タイトル「関連文書」のリンクの一覧で本文の後に配置する
+    label: 関連文書
+    visible_when: '`opts.docId` を指定し、参照している文書が 1 つ以上あり、`backlinks` がオンのとき'
+    action: タイトルを押すとその文書へのリンクを開く。印刷ではリンクの後ろに相対パスを併記する
+    refs:
+      - IF-472-35#constraints[関連文書と被参照の一覧]
+    status: planned
+  - name: 図
+    id: diagram
+    kind: figure
+    component: CMP-472-39#
+    args:
+      - name: kind
+        value: マーカーの名前（`flow`・`sequence`・`chart`・`er`）
+      - name: title
+        value: 部品の定義の `title`
+      - name: scope
+        value: 部品の定義の `scope`
+      - name: updated
+        value: 部品の定義の `updated`
+      - name: legend
+        value: フロー図とシーケンス図は図に 2 種類以上あるノード（相手）の種類と線の種類だけ、グラフは系列（円とドーナツは項目）。ER 図は図にあるテーブルの種類・列のマーカー・多重度だけ
+      - name: resizable
+        value: 機能 `diagram-resize` がオンか
+      - name: height
+        value: sessionStorage に保ったその図の高さ（無ければ指定しない）
+    slots:
+      - name: default
+        value: マーカーの名前に合う部品（`flow` は docs/component/CMP-472-28.ts#、`sequence` は docs/component/CMP-472-19.ts#、`chart` は docs/component/CMP-472-13.ts#、`er` は docs/component/CMP-472-1.ts#）
+    position: 描く先の要素
+    description: 図の部品のマーカーの範囲に配置した定義から描く図。描いたときは全体が収まる倍率で出す
+    visible_when: '`diagrams` がオンで、図の部品のマーカーの範囲か、埋め込んだ HTML の中の図の部品の custom element に読み込める定義があるとき'
+    action: 右上の縮小・拡大のボタンとキーで拡大・縮小し、倍率のボタンと `0` で開いたときの倍率と位置に戻す、ドラッグ・矢印キー・移動のボタンで動かす、全画面のボタンで全画面のモーダルを開く。フロー図のリンク先を持つノードを動かさずに押すか、フォーカスして Enter で、リンク先を同じタブで開く（ノードの上から図を動かしたときと右上のマーカーを押したときは開かない）。表示する枠の下端のリサイズハンドルのドラッグと `↑`・`↓` で表示する枠の高さを変え、ダブルクリックで倍率を変えずに図の全体が収まる高さにする。フロー図は動かした間、見えているシステムの枠と層のタイトルを上端に留める。ER 図はテーブルの見出しの開閉のボタンで、主キーと外部キー以外の列を畳む・開く
+    refs:
+      - IF-472-34#constraints[図の部品]
+      - IF-472-34#constraints[ER 図]
+      - IF-472-35#constraints[図の拡大・縮小]
+      - IF-472-35#constraints[ER 図の列の開閉]
+      - IF-472-35#constraints[図の高さのリサイズハンドル]
+      - IF-472-35#constraints[図の移動]
+    status: planned
+  - name: 図の全画面
+    id: diagram-dialog
+    kind: dialog
+    component: CMP-472-39#
+    args:
+      - name: kind
+        value: 開いた図と同じ
+      - name: title
+        value: 開いた図と同じ
+      - name: scope
+        value: 開いた図と同じ
+      - name: updated
+        value: 開いた図と同じ
+      - name: legend
+        value: 開いた図と同じ
+      - name: modal
+        value: 'true'
+      - name: resizable
+        value: "'false'"
+    position: 描く先の要素 > 図の全画面
+    description: 図の全画面のボタンで開く `dialog` のモーダル。タイトル・図・凡例をモーダルの幅と高さに収まる倍率で出す
+    visible_when: 図の全画面のボタンを押してから閉じるまで
+    action: 閉じるボタンか Esc で閉じ、フォーカスを全画面のボタンへ戻す。ツールチップを開いている間の Esc はツールチップだけを閉じる
+    refs:
+      - IF-472-35#constraints[図の全画面]
+    status: planned
+  - name: mermaid の図
+    id: mermaid-diagram
+    kind: figure
+    component: CMP-472-39#
+    args:
+      - name: kind
+        value: '`mermaid`'
+      - name: title
+        value: front matter の `title`、無ければ `accTitle`、どちらも無ければ図の種類の名前
+      - name: legend
+        value: '`[]`'
+      - name: resizable
+        value: 機能 `diagram-resize` がオンか
+      - name: height
+        value: sessionStorage に保ったその図の高さ（無ければ指定しない）
+    slots:
+      - name: default
+        value: docs/component/CMP-472-6.ts#（`svg` は今の配色で描いた SVG、`printSvg` は暗い配色のときだけ明るい配色で描いた SVG）
+    position: 描く先の要素
+    description: 言語 `mermaid` のコードブロックを mermaid で描いた図。コードブロックの場所に置き換え、描いたときは全体が収まる倍率（0.75 を下限）で出す
+    visible_when: '`mermaid` がオンで、mermaid のコードブロックを mermaid が描けたとき'
+    action: 要素「図」と同じ拡大・縮小・移動・全画面・リサイズハンドル
+    refs:
+      - IF-472-35#constraints[mermaid の描き方]
+      - IF-472-35#constraints[mermaid のテーマ]
+    status: planned
+  - name: map の構成図
+    id: map-flow
+    kind: figure
+    component: CMP-472-39#
+    args:
+      - name: kind
+        value: '`map`'
+      - name: title
+        value: map のマーカーの `title`
+      - name: legend
+        value: '`[]`'
+      - name: wide
+        value: '''true'''
+      - name: tools
+        value: 外へ戻る（中へ入っていないときは押せない）・全て開く・全て閉じる・配置と選択を元に戻す（選んだか動かしたときだけ押せる）
+      - name: resizable
+        value: 機能 `diagram-resize` がオンか
+      - name: height
+        value: sessionStorage に保ったその図の高さ（無ければ指定しない）
+    slots:
+      - name: default
+        value: docs/component/CMP-472-5.ts#（`layout` は Mermaid と補足から自動配置した結果、`collapsed`・`entered`・`selected`・位置は sessionStorage とクエリ文字列 `map-{図の番号}` の状態）
+    position: 描く先の要素
+    description: map の範囲の `flowchart` を自動配置して描いた構成図。置き場所の幅いっぱいに広げ、倍率 1 で出す。図の枠の下に要素「map の案内の帯」を置く
+    visible_when: '`map` がオンで、map の範囲に `flowchart` の mermaid のブロックがあるとき'
+    action: 要素「図」と同じ拡大・縮小・移動・全画面・リサイズハンドルに加え、グループの山形で開閉し、タイトルで中へ入り、外へ戻る・Esc で外へ戻る。ノードを押して選び、線を押して両端を選び、Esc か「配置と選択を元に戻す」で解く。ノード・グループのタイトルの行・線の区間をドラッグか Alt + 矢印キーで動かす。線にポインターを当てると強調する
+    refs:
+      - IF-472-35#constraints[map の図]
+      - IF-472-35#constraints[map の強調]
+      - IF-472-35#constraints[map の状態の保存]
+      - IF-472-35#constraints[map の操作の分け方]
+    status: planned
+  - name: map のシーケンス図
+    id: map-sequence
+    kind: figure
+    component: CMP-472-39#
+    args:
+      - name: kind
+        value: '`map`'
+      - name: title
+        value: map のマーカーの `title`
+      - name: legend
+        value: '`[]`'
+      - name: wide
+        value: '''true'''
+      - name: tools
+        value: 外へ戻る（中だけを描いていないときは押せない）・全て開く・全て閉じる・参加者の並び順と選択を元に戻す（選んだか並べ替えたときだけ押せる）
+      - name: resizable
+        value: 機能 `diagram-resize` がオンか
+    slots:
+      - name: default
+        value: docs/component/CMP-472-4.ts#
+    position: 描く先の要素
+    description: map の範囲の `sequenceDiagram` を全ての記法で描いたシーケンス図。図の枠の下に要素「map の案内の帯」を再生として置く
+    visible_when: '`map` がオンで、map の範囲に `sequenceDiagram` の mermaid のブロックがあるとき'
+    action: 要素「map の構成図」と同じ図の枠の操作に加え、ブロックのタブの山形で開閉し、タブの名前で中だけを描く。参加者を押して選び、ドラッグか Alt + 左右の矢印キーで並べ替える
+    refs:
+      - IF-472-35#constraints[map の図]
+      - IF-472-35#constraints[map の状態の保存]
+    status: planned
+  - name: map の案内の帯
+    id: map-band
+    kind: toolbar
+    component: CMP-472-50#
+    args:
+      - name: mode
+        value: 構成図は `walkthrough`、シーケンス図は `playback`
+      - name: total
+        value: 補足の `walkthroughs` の手順の数か、表示するメッセージの数
+      - name: title
+        value: 手順の `title` か、メッセージの文
+      - name: text
+        value: 構成図は手順の `text`、シーケンス図は `{送り手} → {受け手}` と補足の `notes` のそのメッセージの説明（改行はそのまま）
+      - name: label
+        value: '`{図のタイトル}の案内`・`{図のタイトル}の再生`'
+    position: 描く先の要素 > map の構成図・map のシーケンス図の図の枠の下
+    description: 案内と再生の帯。始める前も常に出す
+    visible_when: 構成図は補足に `walkthroughs` があるとき、シーケンス図は常時
+    action: 前へ・次へで手順を進め（端では反対の端へ回る）、停止で強調を解き、自動で進めるで印の `interval` 秒ごとに進める。シーケンス図の再生は、補足の `plays_over` で指した構成図の上でも強調する。片方の図で案内か再生を始めると、もう片方の強調を解く
+    refs:
+      - IF-472-35#constraints[map の強調]
+    status: planned
+  - name: mermaid の読み込み中のブロック
+    id: mermaid-loading
+    kind: label
+    component: CMP-472-64#
+    args:
+      - name: name
+        value: '`mermaid`'
+    position: 描く先の要素 > mermaid のコードブロックの場所
+    description: mermaid を読み込んで描き終えるまで、隠した mermaid のコードブロックの場所に配置し、図の高さを取っておく
+    visible_when: '`mermaid` がオンで、mermaid のコードブロックがあり、図に置き換える前'
+    refs:
+      - IF-472-35#constraints[mermaid の読み込み]
+    status: planned
+  - name: mermaid の通知ブロック
+    id: mermaid-notice
+    kind: label
+    component: CMP-472-65#
+    args:
+      - name: name
+        value: '`mermaid`'
+      - name: source
+        value: '`library`'
+    position: 描く先の要素 > mermaid のコードブロックの前
+    description: mermaid を読み込めないとき、mermaid のコードブロックごとに読み込み中のブロックと替える。コードブロックは出して残す
+    visible_when: '`mermaid` がオンで、`mermaid.url` のモジュールを読み込めないか、`render` を持たないとき'
+    refs:
+      - IF-472-35#exceptions[なし（mermaid を読み込めない）]
+    status: planned
+  - name: 図のツールチップ
+    id: diagram-tip
+    kind: tooltip
+    component: CMP-472-38#
+    args:
+      - name: kind
+        value: '`tip` を持つ線は `wire`、`io` を持つノードは `io`、`hint` を持つノード・`frame`・`lanes` は `hint`、ER 図の説明のボタンを持つテーブルは `table`、グラフの項目は `item`'
+      - name: label
+        value: 線の `label`・ノードの `name`・`frame` の `title`・層の `label`・テーブルの `label`・グラフの系列の名前（円とドーナツは項目の名前）
+      - name: tip
+        value: 線の定義の `tip`
+      - name: io
+        value: ノードの定義の `io`
+      - name: table
+        value: ER 図のテーブルの定義の `name`・`label`・`desc`・`columns`
+      - name: value
+        value: グラフの項目の値の文（部品設計『図のツールチップ』の `value`）
+    position: 描く先の要素 > 図
+    description: 線の入力の詳細と、ノードの入力・処理・出力と、グループのタイトルの `hint` と、グラフの項目の名前と値と、ER 図のテーブルの概要と列の説明。ノードの中の `{{単語}}` は用語の下線（要素「用語の下線」）にする
+    visible_when: '`hints` がオンで、定義の線が `tip`、ノードが `io` か `hint`、`frame`・`lanes` が `hint`、ER 図のテーブルか列が `desc` を持つとき。グラフの項目は `hints` によらず付く'
+    action: 線のラベルとノードの右上のマーカーにポインターを乗せるかフォーカスすると開き、上に乗っても閉じず、Esc で閉じる。タッチの端末では持ち主のタップで開閉を切り替え、ツールチップと持ち主の外のタップで閉じる。グループのタイトルのマーカーとグラフの項目も同じ。持ち主の下に開き、下に収まらなければ上に開く（`tooltips.diagramPlacement` に従う）。ノードのマーカーの外では開かず、ポインターの形状は変えない。ER 図のテーブルの説明のボタンでは、テーブルの下に開く。グラフの項目の上で押しても、動いた距離が小さいうちは図を動かさず開いたままにする
+    refs:
+      - IF-472-35#constraints[図のツールチップ]
+    status: planned
+  - name: 操作できる部品
+    id: param
+    kind: group
+    component: CMP-472-47#
+    args:
+      - name: definition
+        value: '`<!-- param -->` の範囲の部品の定義'
+      - name: copyLabel
+        value: 文書を描く.opts.config.labels.paramCopy（空でない文字列でないときは `今の値をコピーする`）
+    position: 描く先の要素
+    description: スライダー・今の値を写すボタン・グラフ。写すボタンの文言は設定 `labels.paramCopy` で替えられる。コピーした通知は `クリップボードにコピーしました`、書き込めなかったときは `クリップボードへ書き込めませんでした。下の JSON を選んでコピーしてください`
+    visible_when: '`diagrams` がオンで、`<!-- param -->` の範囲に読み込める定義があるとき'
+    initial_value: 定義の `knob.value`
+    action: スライダーでグラフを再描画し、写すボタンで今の値を JSON にしてクリップボードへ写す
+    refs:
+      - IF-472-35#constraints[操作できる部品の操作]
+    status: planned
+  - name: 埋め込んだ HTML
+    id: embedded-html
+    kind: region
+    component: CMP-472-41#
+    args:
+      - name: html
+        value: '`<!-- html -->` の範囲の `html` のコードブロックの中身を、許可の検査に合格したもの'
+      - name: scope
+        value: 文書の中の範囲の通し番号（`html-scripts` がオンのときだけ）
+      - name: css
+        value: 範囲の `css` のコードブロックの中身（`html-scripts` がオンのときだけ）
+      - name: script
+        value: 範囲の `ts`・`js` のコードブロックの言語と中身（`html-scripts` がオンのときだけ）
+    position: 描く先の要素
+    description: 記載した人の HTML をその場に描く。中の `<mdmark-chart>` などは要素「図」、`data-hint` を持つ要素は要素「ヒント」、文字の中の用語は要素「用語の下線」になる
+    visible_when: '`html` がオンで、`<!-- html -->` の範囲に `html` のコードブロックが 1 つだけあるとき（`html-scripts` がオンのときは、加えて `css`・`ts`・`js` を 1 つずつまで配置できる。`ts` と `js` はどちらか 1 つ）'
+    action: 列より広いときだけ中で横にスクロールする。記載したボタンは、`html-scripts` がオンの文書で範囲の `ts`・`js` が操作を付けたときだけ動き、それ以外は押しても何も起きない。範囲の `css` はその範囲の HTML にだけ該当する
+    action_ref: IF-472-35#constraints[埋め込んだ HTML の操作]
+    status: planned
+    introduced:
+      pr: 45
+    error_message: '範囲の誤りは範囲の前の記載の警告で通知する。`ts` と `js` を両方置いた: `<!-- html --> の範囲に ts と js のコードブロックが両方あります。どちらか 1 つにしてください。スクリプトを動かさずに描いています。` / 既定のエクスポートが関数でない: `範囲の {ts|js} の既定のエクスポートが関数ではありません。export default で、範囲の根の要素を受け取る関数を記載してください。` / 例外を投げた: `範囲の {ts|js} が例外を投げたため、動きを付けずに描いています。内容はブラウザのコンソールに出しています。` / 構文エラー: `範囲の {ts|js} をスクリプトとして読み込めません（構文エラー）。内容はブラウザのコンソールに出しています。`。文中のマーカー・言語名は行内のコードにする'
+  - name: ヒント
+    id: hint
+    kind: tooltip
+    component: CMP-472-24#
+    args:
+      - name: text
+        value: 要素の `data-hint` の値
+      - name: placement
+        value: 行内の要素なら `inline`、それ以外は `block`
+    position: 描く先の要素 > 埋め込んだ HTML
+    description: '`data-hint` を持つ要素に、ブロックは右上の情報のアイコン、行内は破線の下線を付け、図のツールチップと同じ外観で文を出す。描いた直後は閉じている'
+    visible_when: '`hints` がオンで、埋め込んだ HTML の要素が `data-hint` を持つとき'
+    action: ブロックはマーカー、行内は要素にポインターを乗せるかフォーカスすると開き、上に乗っても閉じず、Esc で閉じる。タッチの端末では持ち主のタップで開閉を切り替え、ツールチップと持ち主の外のタップで閉じる。マーカー・行内の要素の上に開き、上に収まらなければ下に開く（要素「用語の下線」と同じく `tooltips.placement` に従う）。ブロックのマーカーの外では開かず、ポインターの形状は変えない
+    action_ref: IF-472-35#constraints[ヒントの操作]
+    status: planned
+    introduced:
+      pr: 45
+  - name: 差分を開くボタン
+    id: diff-toggle
+    kind: button
+    component: CMP-472-46#
+    args:
+      - name: controls
+        value: 差分の場所の `id`（ページの中で一意な `mdmark-diff-panel-{n}`）
+      - name: expanded
+        value: 差分を開いているか
+    position: 描く先の要素 > 本文の列 > タイトルの後ろ（右側の目次を配置しないときは描く先の要素 > タイトルの後ろ）
+    description: 本文の直下の最初の `h1`（文書のタイトル）の後ろ、`h1` が無ければ本文の先頭に、右に詰めて配置する。タイトルがセクションのときはタイトルとそのセクションの中身の間に配置し、H1 のセクションを閉じても隠れない
+    label: 変更表示
+    visible_when: '`opts.diffSource` を指定し、`opts.diffMode` が `blocks` でないとき'
+    initial_state: 活性
+    initial_value: 閉じた状態（`aria-expanded="false"`）。`opts.diffMode` が `open` のときは開いた状態（`aria-expanded="true"`）
+    action: 押すと、タイトルを残して本文と右側の目次を隠し、差分の場所を開く。差分を開いている間はセクションの開閉で本文を出さない。もう一度押すと差分を片付け、本文（セクションは今の開閉の状態）と右側の目次に戻す
+    refs:
+      - IF-472-35#constraints[差分を開く UI]
+    status: planned
+  - name: 差分の場所
+    id: diff-panel
+    kind: region
+    position: 描く先の要素 > 本文の列 > タイトルの後ろ（右側の目次を配置しないときは描く先の要素 > タイトルの後ろ）
+    description: 差分を開いている間、隠した本文と右側の目次の代わりに出す場所。差分を開くボタンの直後に配置する。リビジョンの選択・差分の行・差分の状態の文・差分の通知ブロックを入れる
+    visible_when: 差分を開いている間
+    initial_value: '`hidden`'
+    refs:
+      - IF-472-35#constraints[差分を開く UI]
+    status: planned
+  - name: リビジョンの選択
+    id: revision-picker
+    kind: select
+    component: CMP-472-32#
+    args:
+      - name: revisions
+        value: DiffSource.revisions の戻り値
+      - name: before
+        value: 既定は 2 番目のリビジョンの `id`
+      - name: after
+        value: 既定は 1 番目のリビジョンの `id`
+    position: 描く先の要素 > 差分の場所
+    description: 比べる前と後のリビジョンを選ぶ 2 つの欄と、削除した行と追加した行の数。幅が狭いときは 2 つの欄を縦に並べる
+    io: 入力
+    visible_when: リビジョンが 2 つ以上あるとき
+    initial_value: 前に 2 番目、後に 1 番目のリビジョン
+    options: 取り出し元が返却した順（新しい順）。前の欄では一番新しいリビジョン、後の欄では前に選んだもの以前のリビジョンを選べない
+    display_format: '`2026/10/19 16:40 件数を修正する（鈴木）`（JST。`label`・`author` が無ければ出さない）'
+    source: 文書を描く.request.opts.diffSource
+    action: もう一度選ぶと、選んだ 2 つの本文を取り出して差分を再描画する
+    refs:
+      - IF-472-35#constraints[比べる 2 つのリビジョン]
+    status: planned
+  - name: 差分の行
+    id: diff-lines
+    kind: region
+    component: CMP-472-45#
+    args:
+      - name: blocks
+        value: 選んだ 2 つの `DiffSource.content` の戻り値を比べた結果
+    slots:
+      - name: html
+        value: 埋め込んだ HTML の差分
+    position: 描く先の要素 > 差分の場所
+    description: 前と後の Markdown のソースを比べた行。削除した行を赤と `-`、追加した行を緑と `+`、対の行で変わった単語を濃い色で出す
+    io: 表示
+    visible_when: 選んだ 2 つの本文を取り出せ、変更があるとき
+    refs:
+      - IF-472-35#constraints[差分の行]
+    status: planned
+  - name: 埋め込んだ HTML の差分
+    id: diff-html
+    kind: region
+    component: CMP-472-42#
+    args:
+      - name: changed
+        value: 前か後で範囲の行が変わったか
+      - name: lines
+        value: 範囲の行の比較の結果
+    position: 描く先の要素 > 差分の場所 > 差分の行
+    description: 差分の中の `<!-- html -->` の範囲。右端に「HTML」のラベルを配置し、変えた範囲は「ソース」「プレビュー」で切り替える。幅が狭いときは前と後を縦に並べる
+    visible_when: 差分の行に埋め込んだ HTML の範囲があるとき
+    initial_value: ソース
+    action: 「プレビュー」で前と後の描いた結果を並べ、「ソース」で行の色分けに戻す
+    refs:
+      - IF-472-35#constraints[埋め込んだ HTML の差分]
+    status: planned
+  - name: 差分の状態の文
+    id: diff-message
+    kind: label
+    component: CMP-472-44#
+    args:
+      - name: kind
+        value: '`loading`（待ちが 1 秒を過ぎた）・`single`（リビジョンが 1 つ）・`same`（本文が同じ）'
+    position: 描く先の要素 > 差分の場所
+    description: 差分の行の代わりに出す短い文
+    visible_when: 待ちが 1 秒を過ぎたとき・リビジョンが 1 つのとき・選んだ 2 つの本文が同じとき
+    refs:
+      - IF-472-35#constraints[差分の待ち]
+    status: planned
+  - name: 差分の通知ブロック
+    id: diff-notice
+    kind: label
+    component: CMP-472-65#
+    args:
+      - name: name
+        value: 取り出せなかったリビジョンの説明（`diff-revisions` のときは文書の `id`）
+      - name: source
+        value: '`diff-revisions`（一覧を取り出せない）・`diff-content`（本文を取り出せない）'
+    position: 描く先の要素 > 差分の場所
+    description: 取り出し元が一覧か本文を返却できないときに出す。一覧のときは差分の場所の全体、本文のときはリビジョンの選択を残して差分の行の場所に配置する
+    visible_when: 取り出し元の `revisions`・`content` が reject するか、構造に合わない値を返却したとき
+    refs:
+      - IF-472-35#constraints[差分の通知ブロック]
+    status: planned
+  - name: ミニマップ
+    id: diff-minimap
+    kind: region
+    component: CMP-472-30#
+    args:
+      - name: marks
+        value: 差分の行の削除した行・追加した行の位置（スクロール先の全体に対する割合）
+      - name: view
+        value: スクロール先の今見えている範囲
+    position: スクロール先のスクロールの右端
+    description: 差分の行を出している間、スクロール先のスクロール（ページ全体がスクロールするときは画面）の右端に、その高さいっぱいで貼り付ける帯。差分の行の横幅は削らない
+    visible_when: 差分の行を出している間
+    action: 帯を押すとその位置へ、押したまま上下に動かすとそれに合わせて差分をスクロールする
+    refs:
+      - IF-472-35#constraints[ミニマップ]
+    reason: スクロールバーと一体に見せる（確認ログのモックへの合意）
+    status: planned
+  - name: ビュー
+    id: view
+    kind: group
+    component: CMP-472-25#
+    args:
+      - name: columns
+        value: マーカーの範囲の最初の表の見出しの行の文字（`mountView` は ビューを描く.request.opts.columns）
+      - name: items
+        value: マーカーの範囲の最初の表の本文の行のセルの文字（`mountView` は ビューを描く.request.opts.items）
+      - name: id
+        value: 描くごとに文書の中で一意な値
+    position: 描く先の要素
+    description: '`<!-- view: 引数 -->` 〜 `<!-- /view -->` の範囲。`group=` があれば頭に「ボード」「表」の切り替えを配置し、ボードは `group=` の列の値ごとの列に項目を並べ、表形式は記法の表と同じ並べ替えと `filter=` の列の絞り込みを付ける。利用側が `mountView` に指定した要素にも同じ要素を描く。ビューの上に検索欄と件数は配置しない'
+    label: ボード / 表
+    visible_when: 文書にビューのマーカーがあり `views` がオンのとき、または `mountView` を呼んだとき。`views` がオフのときと、ビューの部品のモジュールを読み込めないときは範囲の表だけを出す
+    initial_value: '`default=` のビュー（既定は `group=` があればボード）。`group=` の列が表に無いときはボードのボタンを押せなくして表形式'
+    sorting: 表形式だけ。並べ替え（降順 → 昇順 → 元の並び）と、`filter=` で指定した列の絞り込み（`select`・`text`・`date`）。ボードには絞り込みを当てず、全ての項目を出す。既定の並びは記載した順
+    action: 切り替えのボタンでボードと表形式を切り替える。表形式の絞り込みはボードへ切り替えても残り、表形式へ戻すと該当している。印刷では今のビューを出し、切り替えと絞り込みのボタンを出さない
+    refs:
+      - IF-472-35#constraints[ビューの操作]
+      - IF-472-30#
+    status: planned
+  - name: コメントのボタン
+    id: comment-add
+    kind: button
+    component: CMP-472-14#
+    position: 描く先の要素 > 選んだ文字のブロックの直後
+    description: 本文の文字を 1 つのブロック（段落・リストの項目・表のセル・見出し・引用）の中で選んだとき、選んだ文字の終わりの下（収まらなければ上）に出す
+    label: コメント
+    visible_when: '`comments` がオンで `opts.commentStore` を指定したか `mountComments` を呼び、文字を選んでいて入力欄を開いていないとき。入力欄・ビューの操作・コード・既にあるマーカーの中の選びでは出さない。コメントの部品のモジュールを読み込めないときは出さない'
+    action: 押すと選んだ文字の下にコメントの入力欄を開く
+    refs:
+      - IF-472-35#constraints[コメントの操作]
+    status: planned
+  - name: コメントの入力欄
+    id: comment-form
+    kind: dialog
+    component: CMP-472-16#
+    args:
+      - name: quote
+        value: 選んだ文字（前後の空白を落とす）
+      - name: id
+        value: 開くごとに文書の中で一意な値
+    position: コメントの入力欄
+    description: タイトル `「{選んだ文字}」へのコメント`・本文の欄・「キャンセル」「コメントを保存」。選んだ文字の下（収まらなければ上）に開き、スクロールと幅の変化に付いていく。Custom Highlight API があるブラウザでだけ、開いている間の選んだ文字にマーカーの地の色を残す
+    io: 入力
+    type: 文字列
+    visible_when: コメントのボタンを押してから、保存できるかキャンセル・Esc で閉じるまで
+    autofocus: true
+    initial_value: 空
+    required: true
+    error_message: '本文が空: `コメントを記載してから保存してください。` / 保存できない: `コメントを保存できませんでした。記載したコメントは残っています。もう一度「コメントを保存」を押してください。`（理由は `console.error` に出す）'
+    target: コメントを付ける.request.opts.store（`save` の `comment.body`。`quote`・`prefix`・`suffix` は選んだ範囲から作る）
+    action: 「コメントを保存」で保存し、待つ間は保存のボタンを押せなくして `保存しています…` にする。保存できたら入力欄を閉じ、選んだ文字をマーカーで包んでマーカーへフォーカスを移す。保存できないときは入力欄と本文を残す。キャンセルか Esc で閉じ（本文があるときは `記載したコメントを捨てて閉じますか？` を確認する）、外側の押下では閉じない
+    action_ref: IF-472-27#
+    refs:
+      - IF-472-35#constraints[コメントの操作]
+    status: planned
+  - name: コメントのマーカー
+    id: comment-mark
+    kind: button
+    component: CMP-472-15#
+    args:
+      - name: text
+        value: '`load` が返却したコメントの `quote` に一致した本文の文字'
+      - name: focused
+        value: '`focusComment` で移ったマーカーなら `true`'
+    position: 描く先の要素 > 本文の文字
+    description: コメントが付いた本文の文字を包むマーカー。同じ箇所のコメントは 1 つのマーカーにまとめる。本文の文字は変えない
+    visible_when: '`load` が返却したコメントの箇所が本文に見つかったときと、保存できたとき'
+    source: コメントを付ける.request.opts.store（`load` の戻り値）
+    action: 押下・Enter・Space でコメントの吹き出しを開く。`focusComment` で移ると画面に入れてフォーカスを受け、次の `focusComment` かマーカーの再付与まで強調する。印刷では地の色を削除し、下線だけを残す
+    refs:
+      - IF-472-35#constraints[コメントの箇所]
+      - IF-472-35#constraints[コメントの箇所へ移る]
+    status: planned
+  - name: コメントの吹き出し
+    id: comment-bubble
+    kind: dialog
+    component: CMP-472-17#
+    args:
+      - name: quote
+        value: マーカーの文字
+      - name: bodies
+        value: そのマーカーにまとめたコメントの `body`（保存した順）
+      - name: ids
+        value: そのマーカーにまとめたコメントの `id`（`bodies` と同じ順）
+      - name: canEdit
+        value: '`opts.commentStore` が `update` を持つか'
+      - name: canRemove
+        value: '`opts.commentStore` が `remove` を持つか'
+      - name: editIndex
+        value: 「編集」を押したコメントの位置
+      - name: draft
+        value: 入力欄の本文の欄の文字
+      - name: editState
+        value: 記載している間は `idle`、保存を待つ間は `saving`、空のまま保存したら `empty`、`update` が reject したら `failed`
+      - name: confirmIndex
+        value: 「削除」を押したコメントの位置
+      - name: removeState
+        value: 確認している間は `idle`、削除を待つ間は `removing`、`remove` が reject したら `failed`
+    position: コメントの吹き出し
+    description: タイトル `「{マーカーの文字}」へのコメント`・閉じるボタン・コメントの本文の並び。読み込みと保存の関数が `update`・`remove` を持つときは、コメントごとの本文の右上に「編集」「削除」のアイコンのボタンを配置する。マーカーの下（収まらなければ上）に開き、スクロールと幅の変化に付いていく
+    io: 入力
+    visible_when: マーカーを押してから閉じるまで
+    error_message: '修正できない: `コメントを保存できませんでした。記載したコメントは残っています。もう一度「保存」を押してください。` / 削除できない: `コメントを削除できませんでした。もう一度「削除」を押してください。`（理由は `console.error` に出す）'
+    target: 文書を描く.request.opts.commentStore（「保存」で `update` の `body`、確認の「削除」で `remove`）
+    action: 閉じるボタン・外側の押下・Esc で閉じる。閉じるボタンと Esc ではフォーカスをマーカーへ戻す。「編集」でそのコメントを入力欄に替え、「保存」で `update` を呼ぶ。「削除」でそのコメントの下に削除の確認を出し、確認の「削除」で `remove` を呼ぶ。入力欄・削除の確認を開いている間の Esc は、それだけを閉じる
+    action_ref: IF-472-35#constraints[コメントの修正と削除]
+    refs:
+      - IF-472-35#constraints[コメントの操作]
+      - IF-472-35#constraints[コメントの修正と削除]
+    status: planned
+  - name: 箇所が見つからないコメントの一覧
+    id: comment-orphans
+    kind: list
+    component: CMP-472-56#
+    args:
+      - name: comments
+        value: コメントを付ける.request.opts.store（`load` が返却したコメントのうち、箇所が見つからないものの `quote`・`body`）
+      - name: id
+        value: 描くごとに文書の中で一意な値
+    position: 描く先の要素 > 本文の後
+    description: 本文が書き換わり、付けた箇所が見つからないコメントを、選んだ文字と本文の組で並べる
+    label: 箇所が見つからないコメント / 本文が書き換わり、コメントを付けた文字が見つかりません。
+    io: 表示
+    visible_when: 箇所が見つからないコメントが 1 つ以上あるとき
+    refs:
+      - IF-472-35#constraints[コメントの箇所]
+    status: planned
+  - name: 余白のマーカー
+    id: comment-marker
+    kind: button
+    component: CMP-472-33#
+    args:
+      - name: quote
+        value: 行の最初のマーカーの文字
+      - name: count
+        value: 行の上端の差が 4px 以内のマーカーの数
+      - name: current
+        value: 行のマーカーのどれかの吹き出しを開いているか
+      - name: closed
+        value: マーカーを包むいちばん外側の閉じた要素の種類（閉じたセクションは section・選ばれていないタブは tab・閉じた行の詳細は row）
+    position: 描く先の要素 > 本文の列の右の余白の列（右側の目次があるときはその左）
+    description: マーカーのある行の縦の中ほどに配置するボタン。閉じた中のマーカーは、その閉じた要素を開くボタンの行に配置する。上のマーカーと重なるときは重ならない位置まで下げる
+    io: 表示
+    visible_when: '`comments` がオンで `opts.commentStore` を指定し、箇所が見つかったマーカーが 1 つ以上あるとき。印刷では出さない'
+    action: 押下・Enter・Space で、マーカーを包む閉じた要素を開き、マーカーまでスクロールして吹き出しを開く
+    refs:
+      - IF-472-35#constraints[余白のマーカー]
+      - IF-472-35#constraints[余白のマーカーから移る]
+    status: planned
+  - name: 表の集計のボタン
+    id: table-totals-toggle
+    kind: button
+    position: 描く先の要素 > 表 > 帯
+    description: 表の上の帯に配置し、表の集計のメニューを開閉する。`sigma` のアイコンを文言の前に配置し、`aria-expanded`・`aria-controls` を持つ。集計の行を 1 つでも隠しているときは押した外観（`is-active`）にし、スクリーンリーダー向けの名前に `（{隠している数} 件を隠しています）` を含める
+    label: 集計
+    visible_when: '`+total` の表で、印刷していないとき'
+    initial_state: 活性
+    initial_value: 閉じた状態（`aria-expanded="false"`）
+    action: 押すと表の集計のメニューを開き、もう一度押すと閉じる
+    refs:
+      - IF-472-35#constraints[表の操作]
+    status: planned
+  - name: 表の集計のメニュー
+    id: table-totals-menu
+    kind: dialog
+    position: 描く先の要素 > 表
+    description: タイトル `表示する集計` と、マーカーの `total=` に記載した計算の名前のチェックボックスを `合計`・`平均`・`件数` の順に並べる。`role="dialog"`・`aria-label="表示する集計"`。開いたら最初のチェックボックスへフォーカスを移し、外を押すか Esc で閉じる（Esc は表の集計のボタンへフォーカスを戻す）
+    label: 表示する集計
+    io: 入力
+    type: 真偽値
+    visible_when: 表の集計のボタンで開いたとき
+    initial_value: 全ての計算にチェックが入った状態（選択は覚えず、再描画すると戻る）
+    options: マーカーの `total=` に記載した計算（`合計`・`平均`・`件数` の順。複数選べる）
+    action: チェックを解除した計算の集計の行を隠し、入れた計算の行を出して、`{計算の名前}の行を出しました`・`{計算の名前}の行を隠しました` をスクリーンリーダーで通知する
+    refs:
+      - IF-472-35#constraints[表の操作]
+    status: planned
+  - name: 表のコピーの形式のメニュー
+    id: table-copy-menu
+    kind: dialog
+    position: 描く先の要素 > 表
+    description: '`表をコピー` のボタン（`copy` のアイコンだけで、ツールチップとスクリーンリーダー向けの名前が `表をコピー`。`aria-expanded`・`aria-controls` で開閉を示す）が開くメニュー。タイトル `コピーの形式` と、形式の名前と用途を 2 行で出すボタンを 2 つ並べる。`role="dialog"`・`aria-label="コピーの形式"`。開閉の作法はテーブル設定のパネルと同じ'
+    label: コピーの形式
+    visible_when: '`表をコピー` のボタンで開いたとき'
+    options: '`Markdown の表`（文書に貼るとそのまま表になる）・`TSV`（表計算ソフトに貼るとセルに分かれる）の順'
+    action: 形式を押すとメニューを閉じ、表示している行と列をその形式でクリップボードへ写す。書き込めたら `表をコピー` のアイコンを `check`、ツールチップとスクリーンリーダー向けの名前を `コピーしました` にして 2 秒で戻し、`{形式の名前}をコピーしました` をスクリーンリーダーで通知する。書き込めなければ表のコピーできないときのパネルを出す
+    refs:
+      - IF-472-35#constraints[表の操作]
+    status: planned
+  - name: 表のコピーできないときのパネル
+    id: table-copy-panel
+    kind: group
+    position: 描く先の要素 > 表 > 帯の直後
+    description: クリップボードに書き込めなかったときに出し、コピーする中身を手動でコピーさせる。タイトル（`circle-alert` のアイコン付き）・閉じるボタン（`x` のアイコン、スクリーンリーダー向けの名前 `閉じる`）・案内・コピーする中身を入れた読み取り専用の `textarea`（6 行）を持つ。`role="group"` でタイトルを名前にする。出したら `textarea` へフォーカスを移して中身を全て選択し、`クリップボードにコピーできませんでした。選択した{形式の名前}を手動でコピーできます` をスクリーンリーダーで通知する
+    label: タイトル `クリップボードにコピーできませんでした`、案内 `「{形式の名前}」の中身を選択しています。Ctrl+C（Mac は ⌘C）でコピーしてください。`
+    io: 表示
+    visible_when: 表のコピーで `navigator.clipboard` が無いか書き込みを拒まれたとき
+    action: 閉じるボタンか、パネルの中にフォーカスがある間の Esc で閉じ、フォーカスを `表をコピー` に戻す。もう一度コピーするときは前のパネルを閉じてから記載する
+    refs:
+      - IF-472-35#constraints[表の操作]
+    status: planned
+  - name: 行の URL の通知
+    id: row-link-notice
+    kind: label
+    position: 描く先の要素 > 表 > 行の先頭のセル
+    description: '`+rowlink` の表の行へのリンクのマーカーの横に、描くときに空で配置する `role="status"` の要素。マーカーを押して行の URL をコピーした結果を、アイコン（`check`・`circle-alert`）と文言で 2 秒出して空に戻す'
+    label: '`リンクをコピーしました`（書き込めたとき）・`リンクをコピーできませんでした`（書き込めなかったとき）'
+    io: 表示
+    visible_when: 行へのリンクのマーカーを押してから 2 秒の間
+    initial_value: 空
+    refs:
+      - IF-472-35#constraints[表の操作]
+    status: planned
+  - name: 最終列の開閉のボタン
+    id: fold-toggle
+    kind: button
+    position: 描く先の要素 > 表 > 行の先頭のセル
+    description: 表が最終列を畳んだとき、本文の各行の先頭のセルの頭に配置する開閉のボタン（`chevron-down` のアイコン）。スクリーンリーダー向けの名前は `「{先頭のセルの文字}」の{最終列の見出しの文字}`。行の詳細を持つ行には配置せず、行の詳細の開閉のボタンが兼ねる
+    visible_when: 描く先の要素の中身の幅が 720px 未満で、表示している最終列（先頭の列を除く）のセルのどれかが 1 行に収まらず、印刷していないとき
+    initial_state: 活性
+    initial_value: 閉じた状態（`aria-expanded="false"`）
+    action: 押すと（Enter・Space を含む）行の直後の行に最終列の見出しの文字とその行のセルの中身を出し、もう一度押すと閉じる
+    refs:
+      - IF-472-35#constraints[最終列を畳む]
+    status: planned
+  - name: コードブロックの言語のラベル
+    id: code-lang
+    kind: label
+    position: 描く先の要素 > コードブロック > 帯
+    description: 帯の左端に配置する言語の識別子（本文より淡い色。スクリーンリーダーに伝えず、選んで写す中身に入れない）と、ファイル名を持つときは細い縦線で区切ったファイル名（本文の色。長い名前は帯の中で折り返す）。タイトルを持つときはその後ろにタイトルを配置する。印刷でも出す
+    label: 情報文字列の言語とファイル名（言語名への対応表は持たず、記載した識別子のまま）
+    io: 表示
+    visible_when: コードブロックが言語を持つとき
+    refs:
+      - IF-472-34#constraints[コードブロック]
+    status: planned
+  - name: コードの行の開閉のボタン
+    id: code-fold
+    kind: button
+    position: 描く先の要素 > コードブロック > 畳める行
+    description: 次の空でない行がより深い行の、行番号の右（行番号を持たないときは行の頭の余白）に配置する開閉のボタン。開いた行は `chevron-down`、畳んだ行は `chevron-right`。スクリーンリーダー向けの名前は `{n} 行目から {m} 行目`
+    visible_when: 畳める行を持つコードブロックで、印刷していないとき。開いた行はポインターを乗せた行とフォーカスのときだけ出し、畳んだ行とポインターで乗せられない端末では常に出す
+    initial_state: 活性
+    initial_value: 開いた状態（`aria-expanded="true"`）。`fold=` の行は畳んだ状態
+    action: 押すと（Enter・Space を含む）後ろの範囲の行を隠して行の末尾に `⋯` のボタンを配置し、もう一度押すと開く。Shift を押しながらなら範囲の中の畳める行も同じ状態にする。開いたとき、内側で畳んでいた行は畳んだまま残す
+    refs:
+      - IF-472-35#constraints[コードの折りたたみ]
+    status: planned
+  - name: 畳んだ行の展開のボタン
+    id: code-fold-more
+    kind: button
+    position: 描く先の要素 > コードブロック > 畳んだ行の末尾
+    description: 畳んだ行の末尾に配置する `⋯` のボタン（隠した行の数は出さない）。スクリーンリーダー向けの名前は `{n} 行目から {m} 行目を展開`
+    label: ⋯
+    visible_when: 行を畳んでいて、印刷していないとき
+    initial_state: 活性
+    action: 押すと畳んだ行を開き、ボタンを削除する
+    refs:
+      - IF-472-35#constraints[コードの折りたたみ]
+    status: planned
+  - name: コードのコピーのボタン
+    id: code-copy
+    kind: button
+    position: 描く先の要素 > コードブロック > 帯
+    description: 帯の右端に配置するコピーのボタン（アイコンと文言）と、結果をスクリーンリーダーに伝える `role="status"` の要素。文言とアイコンは `コピー`（`copy`）・`コピーしました`（`check`）・`コピーできませんでした`（`circle-alert`）で切り替え、スクリーンリーダーには `コードを{文言}` を指定する
+    label: コピー
+    visible_when: 帯を持つコードブロックで、印刷していないとき
+    initial_state: 活性
+    initial_value: '`コピー`（`data-state="idle"`）'
+    action: 押すと削除した行を除いたコードの文字をクリップボードへ写す。書き込めたら `コピーしました` にして 2 秒で戻し、書き込めなければ次に押すまで `コピーできませんでした` にする
+    refs:
+      - IF-472-35#constraints[コードブロックのコピー]
+    status: planned
+  - name: 本文の列
+    id: content
+    kind: container
+    position: 描く先の要素
+    description: 右側の目次を配置するとき、`render` の HTML を入れる `div.mdmark-content`。`--mdmark-content-width` はこの列に適用する。印刷では紙の幅いっぱいに出す
+    visible_when: '`side-toc` がオンで、文書に h1〜h3 の見出しが 1 つ以上あるとき（それ以外は描く先の要素に本文を直に入れる）'
+    refs:
+      - IF-472-35#constraints[右側の目次]
+    status: planned
+    introduced:
+      pr: 166
+  - name: 右側の目次
+    id: side-toc
+    kind: aside
+    component: CMP-472-37#
+    args:
+      - name: headings
+        value: 文書の h1・h2・h3 の階層・ID・文字（閉じたセクションと選ばれていないタブの中も含める）
+      - name: mode
+        value: 文書の page のマーカーの `toc`、無ければ 文書を描く.request.opts.config.side-toc.mode（hover・fixed 以外は hover）
+      - name: sections
+        value: '`sections` の機能がオンで、文書にセクションが 1 つ以上あるか'
+    position: 描く先の要素 > 本文の列の右（hover でピン止めしていない間の右端の線と重ねて出す枠は、スクロールする場所の右端。狭い幅では本文の列の上の帯）
+    description: 本文の列の右に配置し、画面に留める目次。hover でピン止めしていない間は、右端の線と重ねて出す目次の枠を、描く先の要素の幅によらず見えている枠の右端（スクロールバーを除く）から 1rem に配置し、ページの差分のミニマップの帯と横の範囲が重なる間はその左端から 8px 左へずらす。ピン止めすると本文の列の右に配置する。表の見出し行・集計の行・ピン止めした列のセルを含む本文の全ての要素より手前に描く。hover は右端の線だけを出し（本文をスクロールした後は、文書の末尾まで、見えている枠の上端から `--mdmark-space` 下に留め、高さを見えている枠に収める）、指すかフォーカスで目次を本文に重ねて出す。重ねて出す目次の枠は画面に固定し、文書のどこを表示していても、見えている枠の上端（スクロールする場所の上端に `--mdmark-sticky-top` を加算した位置）から `--mdmark-space` 下に出し、右端の線の上端から線 3 本分の位置まで届く高さを下限に持つ（線から枠へポインターを動かしても hover が切れない）。目次の上端にはタイトルを配置せず、すべて展開・すべて折りたたむを左、ピン止めを右に 1 行で並べる。fixed は目次を出すボタンでサイドバーを開閉する。描く先の要素の幅が 48rem 未満のときは、`--mdmark-sticky-top` の位置に留める帯で今いるセクションの見出しと目次を出すボタンを出し、目次は帯の下に本文へ重ねて開く。パネルの `nav` は `aria-label="右側の目次"` で、本文の目次（`aria-label="目次"`）とランドマークの名前を分ける。印刷では出さない
+    label: 右側の目次（パネルの `nav` の `aria-label`。見えるタイトルは持たない）
+    io: 表示
+    visible_when: '`side-toc` がオンで、文書に h1〜h3 の見出しが 1 つ以上あるとき。差分を開いている間と印刷では出さない'
+    initial_value: 目次を出していない・ピン止めしていない状態（`mount` のたびに戻し、`update` では保つ）。今いるセクションは画面の高さの 25% の線より上の最後の見出し
+    action: 項目を押すと URL の `#ID` で移るのと同じく、閉じたセクションを開きタブを選んでその見出しへ移る（URL が同じでも移る）。本文に重ねて開いた目次は項目を押すと閉じる。出している目次の中で Esc を押すと隠し、目次を出すボタンへフォーカスを戻す
+    refs:
+      - IF-472-35#constraints[右側の目次]
+      - IF-472-35#constraints[右側の目次の出し方]
+      - IF-472-35#constraints[狭い幅の右側の目次]
+      - IF-472-35#constraints[今いるセクション]
+      - IF-472-35#constraints[右側の目次から移る]
+      - IF-472-35#constraints[右側の目次の重なりと留める位置]
+    status: planned
+    introduced:
+      pr: 166
+  - name: 目次を出すボタン
+    id: side-toc-toggle
+    kind: button
+    position: 描く先の要素 > 右側の目次
+    description: 三点リーダーのアイコンのボタン。`aria-expanded`・`aria-controls` で目次を出しているかを示す。狭い幅では帯いっぱいに広げ、今いるセクションの見出しの文字を並べる（1 行に収め、収まらない分は `…` で省く）
+    label: 目次を表示（`aria-label`・`title`）
+    visible_when: 'fixed の出し方、ポインターを配置できない端末（`hover: none`）の hover の出し方、または狭い幅のとき'
+    initial_value: '`aria-expanded="false"`'
+    action: 目次を出すか隠すかを切り替える
+    refs:
+      - IF-472-35#constraints[右側の目次の出し方]
+    status: planned
+    introduced:
+      pr: 166
+  - name: 目次のピン止めのボタン
+    id: side-toc-pin
+    kind: button
+    position: 描く先の要素 > 右側の目次 > 上端の右
+    description: 点線の右の列のアイコン（lucide の `panel-right-dashed`）だけのボタン。押した後は実線の右の列のアイコン（`panel-right`）と選択中の背景にする。`aria-pressed` でピン止めしているかを示す
+    label: 目次をピン止め（`aria-label`・`title`）
+    visible_when: hover の出し方で目次を出しているとき（狭い幅では出さない）
+    initial_value: '`aria-pressed="false"`'
+    action: ピン止めすると目次を本文の右の列に出したままにし、本文の列をその分狭める。もう一度押すと解除する
+    refs:
+      - IF-472-35#constraints[右側の目次の出し方]
+    status: planned
+    introduced:
+      pr: 166
+  - name: すべて展開のボタン
+    id: fold-all-open
+    kind: button
+    position: 描く先の要素 > 右側の目次 > 上端の左
+    description: 文字を持たず、上下に開く矢印のアイコンだけを持つボタン
+    label: すべて展開（`aria-label`・`title`）
+    visible_when: 右側の目次を出していて、`sections` がオンで文書にセクションが 1 つ以上あるとき
+    action: 文書の全てのセクション（h1〜h4）を開く。フォーカスはこのボタンに残す
+    reason: アイコンだけにし、右側の目次の上部に配置するのは確認ログの決定
+    refs:
+      - IF-472-35#constraints[すべて展開・すべて折りたたむ]
+    status: planned
+    introduced:
+      pr: 166
+  - name: すべて折りたたむのボタン
+    id: fold-all-close
+    kind: button
+    position: 描く先の要素 > 右側の目次 > 上端の左
+    description: 文字を持たず、内側へ閉じる矢印のアイコンだけを持つボタン
+    label: すべて折りたたむ（`aria-label`・`title`）
+    visible_when: すべて展開のボタンと同じ
+    action: h1 のセクションを開き、h2〜h4 の全てのセクションを閉じて見出しを並べる。フォーカスはこのボタンに残す
+    reason: H1 のセクションを閉じないのは確認ログの決定
+    refs:
+      - IF-472-35#constraints[すべて展開・すべて折りたたむ]
+    status: planned
+    introduced:
+      pr: 166
+  - name: 先頭へ戻るボタン
+    id: back-to-top
+    kind: button
+    component: CMP-472-34#
+    args:
+      - name: hidden
+        value: スクロールする場所の上端から描く先の要素の上端までのスクロールの量が、スクロールする場所の高さ未満か
+    position: 描く先の要素 > 末尾（画面に固定し、スクロールする場所の右下に出す）
+    description: 上向きの矢印と線のアイコンだけのボタン。スクロールする場所の右端と下端から 16px の位置に出し、差分のミニマップか余白の列と横の範囲が重なるときは、その左端から 8px 左へずらす。ボタンを出している間は、右側の目次のパネルをボタンの上で終わらせる。印刷では出さない
+    label: 先頭へ戻る（`aria-label`・`title`）
+    visible_when: '`back-to-top` がオンで、スクロールする場所の高さ分以上スクロールしたとき。ライトボックスと図の全画面を開いている間は、その後ろに隠れる'
+    initial_value: '`hidden`'
+    action: 押すとスクロールする場所を描いた文書の先頭へスクロールし（動きを減らす設定では一度に移る）、本文の列へフォーカスを移す
+    reason: 出し始める量・回避するときの位置・既定でオンにするのは確認ログの決定
+    refs:
+      - IF-472-35#constraints[先頭へ戻るボタン]
+    status: planned
+    introduced:
+      pr: 287
+  - name: エイリアスのコマンドのコピーのボタン
+    id: alias-copy
+    kind: button
+    position: 描く先の要素 > 本文の文字 > 用語のツールチップ > コマンド
+    description: '`command` のエイリアスのツールチップで、コマンドの右に配置するコピーのボタン（アイコンと文言）と、結果をスクリーンリーダーに伝える `role="status"` の要素。文言とアイコンは `コピー`（`copy`）・`コピーしました`（`check`）・`コピーできませんでした`（`circle-alert`）で切り替え、スクリーンリーダーには `コマンドを{文言}` を指定する'
+    label: コピー
+    visible_when: '`command` のエイリアスのツールチップを開いたとき'
+    initial_state: 活性
+    initial_value: '`コピー`（`data-state="idle"`）'
+    action: 押すとエイリアスの `command` の文字をクリップボードへ書き込む。書き込めたら `コピーしました` にして 2 秒で戻し、書き込めなければ次に押すまで `コピーできませんでした` にする。押してもツールチップを閉じない
+    refs:
+      - IF-472-35#constraints[コマンドのコピー]
+    status: planned
+  - name: 差分のブロック
+    id: diff-block
+    kind: region
+    component: CMP-472-43#
+    args:
+      - name: kind
+        value: 追加・変更したブロックは `add`、削除したブロックは `del`
+      - name: unit
+        value: リストの項目は `item`、表の行は `row`、それ以外は `block`
+      - name: html
+        value: 後のリビジョン（削除したブロックは前のリビジョン）を描いたブロックの HTML
+    position: 描く先の要素 > 本文（セクションの中身の中を含む）
+    description: '`opts.baseMarkdown` を指定したとき（比較元が前、本文が後）か、`opts.diffMode` が `blocks` のとき（前と後のリビジョン）に変えたブロック。追加・変更したブロックはその場所に、削除したブロックは前の文書での位置に差し込む'
+    io: 表示
+    visible_when: '`opts.baseMarkdown` が文字列で本文に変更があるときか、`opts.baseMarkdown` を指定せず `opts.diffMode` が `blocks` で、取り出し元が 2 つ以上のリビジョンを返却し、本文に変更があるとき'
+    source: 文書を描く.request.opts.baseMarkdown・文書を描く.request.opts.diffSource
+    refs:
+      - IF-472-35#constraints[比較元の Markdown]
+      - IF-472-35#constraints[描いた文書のブロックの色分け]
+      - IF-472-35#constraints[色を適用したブロックの要素]
+    status: planned
+  - name: 色分けの通知ブロック
+    id: diff-blocks-notice
+    kind: label
+    component: CMP-472-65#
+    args:
+      - name: name
+        value: 文書の `id`
+      - name: source
+        value: '`diff-blocks`'
+    position: 描く先の要素 > 本文の先頭
+    description: '`opts.diffMode` が `blocks` で、取り出し元が一覧か本文を返却できないときに出す。本文は色を当てずに描いたまま残す'
+    visible_when: '`opts.diffMode` が `blocks` で、取り出し元の `revisions`・`content` が reject するか、構造に合わない値を返却したとき'
+    refs:
+      - IF-472-35#exceptions[なし（ブロックの色分けを出せない）]
+    status: planned
+  - name: 本文の文字の色
+    id: text-color
+    kind: label
+    component: CMP-472-48#
+    args:
+      - name: color
+        value: '`{color=色}` の色の名前'
+      - name: text
+        value: 角括弧の中の文字
+    position: 描く先の要素 > 段落・リスト・表のセル
+    description: '`[文字]{color=色}` の文字を、色のプリセットの文字の色と太字で強調する。知らない色の名前は色を付けず、段落の前に記載の警告を配置する'
+    visible_when: 文書に `[文字]{color=色}` があり、`text-color` がオンのとき
+    refs:
+      - IF-472-34#constraints[本文の文字の色]
+    status: planned
+  - name: 画像の図
+    id: image-figure
+    kind: figure
+    component: CMP-472-54#
+    args:
+      - name: src
+        value: 画像の `src`（フラグメントを含む）
+      - name: alt
+        value: 画像の alt
+      - name: caption
+        value: 画像の title
+      - name: width
+        value: 属性の `width=`
+      - name: align
+        value: 属性の `align=`
+      - name: lightbox
+        value: 属性に `nolightbox` が無く、`lightbox` がオンのとき `true`
+      - name: only
+        value: '`src` のフラグメントが `#only-light` なら `light`、`#only-dark` なら `dark`'
+    position: 描く先の要素
+    description: 画像 1 つだけの段落の画像。title をキャプションにし、幅・配置を当て、今の配色に合わない `#only-*` の画像を隠す。拡大できる画像は拡大のボタンで包み、右上に拡大のアイコンを出す
+    visible_when: 文書に画像だけの段落があり、`images` がオンのとき
+    tab_order: 0
+    action: 拡大のボタンを押すとライトボックスを開く
+    refs:
+      - IF-472-34#constraints[画像の図とキャプション]
+      - IF-472-35#constraints[ライトボックス]
+    status: planned
+  - name: ギャラリー
+    id: gallery
+    kind: figure
+    component: CMP-472-12#
+    args:
+      - name: cols
+        value: マーカーの `cols=`（省いたときは `2`）
+    slots:
+      - name: default
+        value: 範囲の中の画像の、画像の図
+    position: 描く先の要素
+    description: '`<!-- gallery: cols=N -->` 〜 `<!-- /gallery -->` の中の画像を格子に並べる。`fig` のマーカーの直後なら図表の番号のスロットに入り、中の画像にサブ図の番号（`図 2a`）を付ける'
+    visible_when: 文書に `gallery` のマーカーがあり、`gallery` がオンのとき
+    refs:
+      - IF-472-34#constraints[ギャラリー]
+    status: planned
+  - name: ライトボックス
+    id: lightbox
+    kind: dialog
+    component: CMP-472-31#
+    args:
+      - name: src
+        value: 押した画像の `src`
+      - name: alt
+        value: 押した画像の alt
+      - name: caption
+        value: 押した画像の title
+      - name: index
+        value: 切り替えの並びの中の押した画像の位置
+      - name: total
+        value: 同じ文書の拡大できる画像のうち、今の配色で隠れていないものの数
+    position: 描く先の要素 > ライトボックス
+    description: 画像の拡大のボタンで開く `dialog` のモーダル。画像を全体が収まる倍率で出し、前後への切り替え・拡大と縮小・移動を図の全画面と同じ操作で行う
+    visible_when: 画像の拡大のボタンを押してから閉じるまで
+    action: 閉じるボタン・Esc・画像の外の背景で閉じ、フォーカスを押した画像の拡大のボタンへ戻す。文書のスクロールの位置は開く前のまま
+    refs:
+      - IF-472-35#constraints[ライトボックス]
+      - IF-472-35#constraints[ライトボックスの拡大・縮小・移動]
+    status: planned
+  - name: 動画・音声
+    id: media
+    kind: figure
+    component: CMP-472-36#
+    args:
+      - name: kind
+        value: '`src` の拡張子が動画なら `video`、音声なら `audio`'
+      - name: src
+        value: 画像の `src`
+      - name: alt
+        value: 画像の alt
+      - name: caption
+        value: 画像の title
+      - name: width
+        value: 属性の `width=`
+      - name: poster
+        value: 属性の `poster=`
+      - name: autoplay
+        value: 属性に `autoplay` があるとき `true`
+      - name: muted
+        value: 属性に `muted` か `autoplay` があるとき `true`
+      - name: loop
+        value: 属性に `loop` があるとき `true`
+    position: 描く先の要素
+    description: 拡張子が動画・音声の画像を、再生バーを持つ要素にして図に入れる。文の中に記載しても段落の後ろに配置する。印刷では動画の代わりに `poster` の画像を出す
+    visible_when: 文書に拡張子が動画・音声の画像があり、`media` がオンのとき
+    tab_order: 0
+    refs:
+      - IF-472-34#constraints[動画と音声]
+    status: planned
+  - name: GIF のボタン
+    id: gif-toggle
+    kind: button
+    component: CMP-472-2#
+    args:
+      - name: src
+        value: GIF の `src`
+      - name: alt
+        value: GIF の alt
+      - name: paused
+        value: '`prefers-reduced-motion: reduce` のとき `true`'
+    position: 描く先の要素 > 画像の図の右上
+    description: GIF を止める・再生するボタン。止めると最初のフレームを重ねる
+    visible_when: 文書に GIF の画像があり、`gif` がオンで、`img.decode()` が成功したとき
+    tab_order: 0
+    action: 押すと止める・再生するを切り替える
+    refs:
+      - IF-472-35#constraints[GIF の止める・再生する]
+    status: planned
+  - name: カード
+    id: card
+    kind: link
+    component: CMP-472-9#
+    args:
+      - name: kind
+        value: リンク先の拡張子が添付の拡張子の一覧にあれば `file`、それ以外の `http`・`https` の URL なら `link`
+      - name: href
+        value: リンク先
+      - name: title
+        value: リンクに記載した文字（URL をそのまま記載したときはスキームを除いた URL）
+      - name: fileKind
+        value: 添付の拡張子の種類
+    position: 描く先の要素
+    description: リンク 1 つだけの段落をリンクのカードか添付のカードにする。印刷ではリンク先の URL を文字で出す
+    visible_when: 文書にリンク 1 つだけの段落があり、`cards` がオンのとき
+    tab_order: 0
+    action: 押すとリンク先を開く
+    refs:
+      - IF-472-34#constraints[リンクと添付のカード]
+    status: planned
+  - name: 脚注の番号
+    id: footnote-ref
+    kind: tooltip
+    component: CMP-472-58#
+    args:
+      - name: number
+        value: 本文で最初に参照した順に 1 から振った脚注の番号
+      - name: refIndex
+        value: その脚注の何回目の参照か（0 から）。`mount` は番号・ツールチップの `id` をページの中で一意な値にもう一度振り、`href`・`aria-describedby`・`aria-details` も合わせて修正する
+      - name: bodies
+        value: '定義（`[^ラベル]: 中身` と字下げ 4 で続く段落、行内の `^[中身]`）を描いた段落ごとの行内の HTML。用語の下線とやめた言い方のマーカーを付けない'
+    position: 描く先の要素 > 本文の文字
+    description: 脚注の参照の場所に、マーカーの色で角括弧付きの上付きの番号を出し、ポインターとフォーカスで「脚注 {番号}」のツールチップを出す
+    label: 脚注 {番号}（ツールチップのタイトルと、番号のリンクのスクリーンリーダー向けの名前）
+    visible_when: '`footnotes` がオンで、定義のある参照か行内の脚注があるとき'
+    action: ポインターを乗せるかフォーカスするとツールチップを出し、Esc で削除する。タッチの端末では、閉じた番号のタップでツールチップを出し（一覧へは移らない）、開いた番号のタップで一覧へ移り、ツールチップと番号の外のタップで削除する（中のリンクのタップでは消えない）。押すと（Enter を含む）閉じた脚注の一覧を開いて該当の項目へフォーカスを移す。印刷ではツールチップを出さず、番号を残す
+    refs:
+      - IF-472-35#constraints[脚注の操作]
+    status: planned
+  - name: 脚注の一覧
+    id: footnotes
+    kind: details
+    component: CMP-472-57#
+    args:
+      - name: items
+        value: 参照された脚注を番号の順に並べたもの。`number` は本文の番号、`html` は定義を描いた HTML（用語の下線とやめた言い方のマーカーを付けない）、`refCount` は本文で参照した回数。参照されない定義は入れない
+    position: 描く先の要素 > 本文の後（関連文書の一覧の前）
+    description: 本文の脚注を、見出し「脚注（{件数} 件）」の閉じた一覧にまとめ、項目ごとに本文の参照へ戻るリンクを配置する
+    label: 脚注（{件数} 件）
+    visible_when: '`footnotes` がオンで、参照された脚注が 1 つ以上あるとき'
+    action: 見出しを押すと開閉する。戻るリンクを押すと本文の参照の番号へフォーカスを移す。印刷では開いて出し、戻るリンクを出さない
+    refs:
+      - IF-472-34#constraints[脚注]
+      - IF-472-35#constraints[脚注の操作]
+    status: planned
+  - name: 表のテーブル設定のボタン
+    id: table-settings-toggle
+    kind: button
+    position: 描く先の要素 > 表 > 帯
+    description: 表の上の帯に配置するアイコンだけのボタン（lucide の `settings-2`）。名前はツールチップと `aria-label` に持ち、`aria-expanded`・`aria-controls` でパネルの開閉を示す。列を隠しているときは、隠した列の数のバッジを出し、スクリーンリーダー向けの名前を `テーブル設定（{隠した列の数} 列を非表示）` にする
+    label: テーブル設定（ツールチップとスクリーンリーダー）
+    visible_when: '`+columns`・`+reorder` のどちらかの表で、印刷していないとき'
+    initial_state: 活性
+    initial_value: 閉じた状態（`aria-expanded="false"`）
+    action: 押すと表のテーブル設定のパネルを開き、もう一度押すと閉じる
+    refs:
+      - IF-472-35#constraints[表の操作]
+    status: planned
+    introduced:
+      pr: 303
+  - name: 表の列の幅のつまみ
+    id: table-col-resize
+    kind: separator
+    position: 描く先の要素 > 表 > 最下段の各列の見出しのセルの右端
+    description: '見出しのセルの右端に重ねた 12px の範囲で、ポインターを乗せたとき・フォーカスしたとき・ドラッグ中に、右端の罫線の位置に 2px の線をリンクの色で出し、ポインターを `col-resize` にする。ポインターが粗い画面（`(pointer: coarse)`）では線を常に薄く出して押せる範囲を 24px にし、見出しのセルの右の余白を 24px 広げて見出しのボタンと重ねない。`role="separator"`・`aria-orientation="vertical"`・`tabindex="0"`'
+    label: 「{列名}」の列の幅（`aria-label`）
+    io: 入力
+    type: 列の幅（px）
+    visible_when: '`resize` の表（既定の種類と `data` の種類。`-resize` を記載した表と `plain` の表には無い）'
+    initial_value: 描いた直後の列の幅（`wide=` の列は `wide=` の幅）。幅は覚えず、再描画すると戻る
+    action: ドラッグ（マウス・タッチ）か、フォーカスして ←・→ キー（1 回 16px）で、つまみの左の列の幅だけを変える。ダブルクリック・ダブルタップ・Enter で描いた直後の幅に戻す
+    constraints: 列の最小幅（セルの `min-width` の 6em）から、表の見えている幅からほかに留めた列の幅の合計を引いた幅までに収める。`aria-valuenow`・`aria-valuetext`（`{幅}px`）・`aria-valuemin`・`aria-valuemax` で示す
+    refs:
+      - IF-472-35#constraints[列の幅]
+    status: planned
+    introduced:
+      pr: 449
+  - name: 表のテーブル設定のパネル
+    id: table-settings
+    kind: dialog
+    position: 描く先の要素 > 表
+    description: タイトル（`+columns` があれば `表示と並び順`、`+reorder` だけなら `並び順`）、列名の一覧、操作の案内を並べる。一覧の各行は `+reorder` のとき並べ替えのつまみ、`+columns` のとき表示・非表示の目のアイコンを持つ。結合した見出しを持つ表は、一覧を結合した見出しの範囲ごと・範囲の外の列に分ける。設定の `table.pin` が `through` の表は、一覧の先頭に `pin=` で留めた列も分ける（`each` の表は留めた列で分けない）。`role="dialog"`・`aria-label="テーブル設定"`。ボタンの左端に合わせてボタンの下に開き、右側の目次より奥に描く（右側の目次が重なるときは目次を手前にする）。開いたら最初のつまみか目のアイコンへフォーカスを移し、外を押すか Esc で閉じる（Esc はテーブル設定のボタンへフォーカスを戻す）
+    label: 表示と並び順・並び順
+    io: 入力
+    type: 列の順と列ごとの表示・非表示
+    visible_when: 表のテーブル設定のボタンで開いたとき
+    initial_value: Markdown に記載した列の順で、`hide=` の列を隠した状態（順と表示は覚えず、再描画すると戻る）
+    action: つまみをドラッグ＆ドロップするか、つまみにフォーカスして ↑・↓ キーで列を動かす（同じ範囲の中だけ。`through` の表は同じピン止めの側の中だけで、`each` の表は留めているかを列が持ったまま動く）。目のアイコンで列を隠す・出す。Markdown に記載した先頭の列は隠せない
+    error_message: '案内の文言: `つまみをドラッグするか、つまみにフォーカスして ↑・↓ キーで並べ替えます。先頭の列は隠せません`（`+reorder` だけの表は後ろの文を出さない。`+columns` だけの表は `先頭の列は隠せません` だけ）'
+    refs:
+      - IF-472-35#constraints[列の並べ替え]
+      - IF-472-35#constraints[表の操作]
+    status: planned
+    introduced:
+      pr: 303
+  - name: 階層の表の開閉のボタン
+    id: tree-toggle
+    kind: button
+    position: 描く先の要素 > 表 > キーのセル
+    description: 子を持つ行の縦線の後ろ・キーのすぐ左に配置する ▾・▸ のボタン。`aria-expanded` と `{パス} を畳む`・`{パス} を開く` のスクリーンリーダー向けの名前を持つ
+    visible_when: '`tree=` の表の子を持つ行で、印刷していないとき'
+    initial_state: 活性
+    initial_value: 開いた状態（`aria-expanded="true"`）
+    action: 押すと子孫の行を畳み、もう一度押すと子を出す。Shift を押しながら押すと入れ子もまとめて畳む・開く。行の選択は変えない
+    refs:
+      - IF-472-35#constraints[階層の表の操作]
+    status: planned
+    introduced:
+      pr: 303
+  - name: 階層の表のパスのコピーのボタン
+    id: tree-copy
+    kind: button
+    position: 描く先の要素 > 表 > キーのセル
+    description: キーの名前の後ろに配置する ⧉ のボタン。キーの名前にポインターを乗せるかフォーカスすると、全体のパスのツールチップを出す
+    label: 全体のパスをコピー（スクリーンリーダー）
+    visible_when: '`tree=` の表で、印刷していないとき'
+    initial_state: 活性
+    action: 押すと全体のパスをクリップボードへコピーし、`コピーしました`・`コピーできませんでした` を 2 秒出す。行の選択は変えない
+    refs:
+      - IF-472-35#constraints[階層の表の操作]
+    status: planned
+    introduced:
+      pr: 303
+  - name: YAML の見本
+    id: tree-example
+    kind: region
+    position: 描く先の要素 > 表の下
+    description: '`example=` の見出しの直下のタブを表の下に配置する。表で選んだ行と同じパスの見本の行に色を付ける。`aria-label` は `見本: {見出し}`'
+    visible_when: '`tree=` と `example=` の表で、見本を隠していないとき（印刷では隠していても出す）'
+    action: キーを持つ行を押すと、表の同じパスの行を選ぶ
+    refs:
+      - IF-472-35#constraints[YAML の見本の操作]
+    status: planned
+    introduced:
+      pr: 303
+  - name: 見本の表示を切り替えるボタン
+    id: tree-example-toggle
+    kind: button
+    position: 描く先の要素 > 表の上
+    description: '`aria-expanded`・`aria-controls` で見本の開閉を示す'
+    label: 見本を隠す（隠した後は見本を表示）
+    visible_when: '`tree=` と `example=` の表で、印刷していないとき'
+    initial_state: 活性
+    initial_value: 見本を表示した状態（`aria-expanded="true"`）
+    action: 押すと見本を隠し、もう一度押すと出す
+    refs:
+      - IF-472-35#constraints[YAML の見本の操作]
+    status: planned
+    introduced:
+      pr: 303
+  - name: 範囲のスクリプトの通知ブロック
+    id: html-scripts-notice
+    kind: label
+    component: CMP-472-65#
+    args:
+      - name: name
+        value: '`html-scripts`'
+      - name: source
+        value: '`library`'
+    position: 描く先の要素 > 埋め込んだ HTML の前
+    description: 変換のライブラリを読み込めないとき、`ts`・`js` の範囲の前に配置する。範囲の `html`・`css` は描いたまま残す
+    visible_when: '`html-scripts` がオンで、`html-scripts.url` のモジュールを読み込めないとき'
+    error_message: タイトル `スクリプトを動かせません`・本文 `範囲のスクリプトを変換するライブラリを読み込めませんでした。動きを付けずに表示しています。`
+    refs:
+      - IF-472-35#exceptions[なし（変換のライブラリを読み込めない）]
+    status: planned
+    introduced:
+      pr: 303
+  - id: inline-icon
+    name: アイコン
+    kind: label
+    label: なし（`aria-hidden`）
+    description: '`icon:名前` の場所に配置する Lucide のアイコン'
+    position: 描く先の要素 > 本文の見出し・段落の中
+    component: CMP-472-8#
+    args:
+      - name: name
+        value: '`icon:` の後ろの名前'
+      - name: node
+        value: まとめた名前と `opts.icons` の名前はその IconNode。まとめていない名前は `mount` が読み込んだ IconNode
+    visible_when: '`icon` がオンで、名前が Lucide の名前の記載方法に合うとき'
+    refs:
+      - IF-472-34#constraints[アイコン]
+    status: planned
+    introduced:
+      pr: 307
+  - id: kbd
+    name: キー
+    kind: label
+    label: キーの文言
+    description: '`kbd:` の場所に配置するキーの並び'
+    position: 描く先の要素 > 本文の段落・表のセルの中
+    component: CMP-472-11#
+    args:
+      - name: keys
+        value: '`kbd:` の後ろを `+` で区切ったキー'
+    visible_when: '`kbd` がオンのとき'
+    refs:
+      - IF-472-34#constraints[キー]
+    status: planned
+    introduced:
+      pr: 307
+  - id: highlight
+    name: 蛍光ペン
+    kind: label
+    label: マーカーの中身
+    description: '`==文字==` の場所に配置する蛍光ペンのマーカー'
+    position: 描く先の要素 > 本文の段落の中
+    component: CMP-472-59#
+    args:
+      - name: html
+        value: '`==` で囲んだ行内の Markdown を描いた HTML'
+      - name: color
+        value: 直後の `{color=色}` の色の名前
+    visible_when: '`highlight` がオンのとき'
+    refs:
+      - IF-472-34#constraints[蛍光ペン]
+    status: planned
+    introduced:
+      pr: 307
+  - id: ruby
+    name: ルビ
+    kind: label
+    label: 文書に記載したルビ
+    description: 文書の HTML の `ruby`。`rt` は親の文字の 0.6 倍と 11px の大きい方の大きさで出す
+    position: 描く先の要素 > 本文の段落の中
+    visible_when: 文書に `ruby` を記載したとき
+    refs:
+      - IF-472-34#constraints[ルビ]
+    status: planned
+    introduced:
+      pr: 307
+  - id: layout-columns
+    name: 段組み
+    kind: container
+    description: columns の範囲の中身を 2〜3 列に並べる。描く先の要素が狭いときは縦に並べる
+    position: 描く先の要素 > 本文の列
+    component: CMP-472-51#
+    args:
+      - name: columns
+        value: '`<!-- column -->` で区切った中身を描いた HTML'
+    visible_when: '`columns` がオンで、列の数が 2〜3 のとき'
+    refs:
+      - IF-472-34#constraints[段組み]
+    status: planned
+    introduced:
+      pr: 307
+  - id: card-grid
+    name: カードの格子
+    kind: container
+    description: cards の範囲のリストの項目を、アイコン・タイトル・説明のカードにして入るだけ横に並べる。描く先の要素が狭いときは 1 列に追加する。リンクを持つ項目はリンクのカード、持たない項目はリンクではないカード
+    position: 描く先の要素 > 本文の列
+    component: CMP-472-10#
+    args:
+      - name: items
+        value: 範囲のリストの項目ごとの、最初のリンク先・リンクの文字・前の `icon:` のアイコン・残りの文字の説明
+    visible_when: '`card-grid` がオンで、`<!-- cards -->` の範囲の中身がリスト 1 つのとき'
+    refs:
+      - IF-472-34#constraints[カードの格子]
+    status: planned
+    introduced:
+      pr: 352
+  - id: details-range
+    name: details の範囲
+    kind: details
+    label: マーカーのタイトル（空のとき `詳細`）
+    description: details の範囲をタイトルから開閉する
+    position: 描く先の要素 > 本文の列
+    component: CMP-472-3#
+    args:
+      - name: title
+        value: マーカーのタイトル
+      - name: html
+        value: 範囲の中身を描いた HTML
+      - name: open
+        value: マーカーの最後の単語が `open`
+    action: タイトルを押すと開閉する。印刷では開いて出す
+    visible_when: '`details` がオンのとき'
+    refs:
+      - IF-472-34#constraints[details の範囲]
+    status: planned
+    introduced:
+      pr: 307
+  - id: include
+    name: 取り込んだ中身
+    kind: container
+    description: include のマーカーの場所に、取り込んだ文書の全体・見出しの中・行の範囲を本文と同じ外観で描く。取り込んだことを示すラベルは出さない
+    position: 描く先の要素 > 本文の列
+    visible_when: '`include` がオンで、取り込み先があるとき'
+    refs:
+      - IF-472-34#constraints[取り込み]
+    status: planned
+    introduced:
+      pr: 307
+  - id: pagebreak
+    name: 改ページ
+    kind: container
+    description: 印刷のときだけこの場所で改ページする。画面では何も出さず高さを持たない
+    position: 描く先の要素 > 本文の列
+    visible_when: 印刷のとき（`pagebreak` がオン）
+    refs:
+      - IF-472-34#constraints[改ページ]
+    status: planned
+    introduced:
+      pr: 307
+  - id: wide
+    name: wide の範囲
+    kind: region
+    description: wide の範囲を本文の幅を越えて広げる。範囲の上の本文の幅の右端に切り替えのボタンを配置する
+    position: 描く先の要素 > 本文の列（広げた幅は右側の目次・文書の一覧の列と右端の線の内側）
+    component: CMP-472-7#
+    args:
+      - name: html
+        value: 範囲の中身を描いた HTML
+      - name: state
+        value: '`<!-- wide: closed -->` なら `narrow`、それ以外は `wide`。読者がボタンを押すたびに入れ替える'
+      - name: toggle
+        value: '`mount` は `true`、`render` は `false`'
+    action: 切り替えのボタンを押すと、広げた幅と本文の幅を切り替える。印刷では用紙の幅に収め、ボタンを出さない
+    visible_when: '`wide` がオンのとき。ボタンは広げられる幅（右側の目次を付けたときは描く先の要素、付けないときは描く先の要素の親の幅）が本文の幅より広いときだけ'
+    refs:
+      - IF-472-35#constraints[wide の幅の切り替え]
+    status: planned
+    introduced:
+      pr: 307
+  - id: csv-raw-toggle
+    name: RAW のボタン
+    kind: button
+    label: なし（スクリーンリーダー向けの名前 `元の CSV を表示`）
+    description: CSV の表の帯の右端に配置するコードのアイコンのボタン
+    position: 描く先の要素 > CSV の表 > 帯の右端
+    component: CMP-472-61#
+    args:
+      - name: rawCsv
+        value: 言語 `csv` のコードブロックに記載したとおりの CSV
+      - name: rawShown
+        value: 読者が押すたびに入れ替える
+    action: 押すと表を隠して元の CSV を出し、もう一度押すと表に戻す
+    visible_when: '`csv` がオンで、表が言語 `csv` のコードブロックから作られたとき'
+    refs:
+      - IF-472-35#constraints[CSV の表と元の CSV の切り替え]
+    status: planned
+    introduced:
+      pr: 307
+mock: docs/mock/pages/ui-canvas/80/side-by-side/
+lead: mdmark が描く先の要素の中に描く文書。Markdown の本文に加え、mdmark が追加する UI の項目（横スクロールする領域のキー操作・表の列名・タスクのチェックボックス・外部ライブラリと拡張のマーカーの場所・拡張記法の部品・記載の警告）を持つ。

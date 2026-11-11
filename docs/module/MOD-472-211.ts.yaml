@@ -1,0 +1,223 @@
+id: MOD-472-211
+visibility: internal
+title: ライブラリ本体 / 描画 / parser.ts
+test_files:
+  - tests/unit/src/render/parser.test.ts
+data_models:
+  - name: RenderEnv
+    title: 解析の環境
+    container: src/render/parser.ts
+    summary: markdown-it の `env` としてコアルールに指定する値と、コアルールが取得したもの
+    properties:
+      - name: libraries
+        type: Record<string, LibraryEntry>
+        description: 対応表（どのマーカーをマーカーの場所の要素にするか）
+      - name: defaults
+        type: Record<string, boolean>
+        description: 設定の `features`
+      - name: labels
+        type: '{ paramCopy: string } | undefined'
+        description: 既定を適用した設定の `labels`（部品の文言。`renderDocument` が入れ、図の部品・埋め込んだ HTML のコアルールが `env.labels?.paramCopy` を `renderParam` に指定する）
+      - name: featureArgs
+        type: string[]
+        description: '`features` のマーカーの引数を記載した順に並べたもの（コアルールが追加する）'
+      - name: features
+        type: Record<string, boolean>
+        description: '`defaults` に `featureArgs` を重ねたもの（`resolveDocumentFeatures` が入れる。記法のコアルールが読み込む）'
+      - name: pageArgs
+        type: 'Array<{ args: string[]; keys: Record<string, string> }>'
+        description: 文書の先頭の page のマーカーの引数を記載した順に並べたもの（`takeMarks` が追加する）
+      - name: page
+        type: PageSettings
+        description: '`pageArgs` を読み込んだページの設定（`resolvePageSettings` が入れる）'
+      - name: headings
+        type: 'Array<{ level: number; id: string; text: string }>'
+        description: 見出しの ID と文字（`assignHeadingIds` が追加する）
+      - name: nonce
+        type: string
+        description: 描くごとに作る mdmark が出した要素のマーカー（`markOwn`）の値
+      - name: index
+        type: MdmarkIndex | undefined
+        description: '`normalizeIndex` で合う要素だけにした索引'
+      - name: docId
+        type: string | undefined
+        description: 描く文書の索引の `id`（索引に無ければ `undefined`）
+      - name: mdmarkReferences
+        type: MdmarkReferences | undefined
+        description: 参照の表（`render`・`mount` の `references`）。markdown-it が `env.references` にリンク参照定義を記載するため、この名前にする
+      - name: ownGlossary
+        type: MdmarkGlossaryEntry[]
+        description: 描く文書の用語集の表から読み込んだ用語（`glossaryRule` が追加する）
+      - name: glossaryLines
+        type: number[] | undefined
+        description: 用語集の表の用語ごとの文書の中の行番号（`ownGlossary` と同じ並び。`checkIndex` が `duplicate_term` の `where` に使用する）
+      - name: aliases
+        type: MdmarkAlias[] | undefined
+        description: 利用側が指定したエイリアス（`render`・`mount` の `aliases`）。`termsRule`・`buildEmbeddedHtml` が `buildDictionary` に指定する
+      - name: mdmarkFootnotes
+        type: FootnoteState | undefined
+        description: 読み込んだ脚注の定義と参照（`readFootnoteDefinition` が作り、機能がオフなら `collectFootnotes` が削除する）
+      - name: frontmatter
+        type: '{ content: string; endLine: number } | undefined'
+        description: 文書の先頭のフロントマターの中身と閉じる行の 0 始まりの行番号（`renderDocument` が `splitFrontmatter` の結果を入れ、`insertFrontmatter` が読む）
+      - name: warnings
+        type: CollectedWarning[]
+        description: 記載の警告（`collectWarningsRule` が最後に集める）
+functions:
+  - name: createParser
+    title: 解析器を作る
+    container: src/render/parser.ts
+    kind: 関数
+    scope: internal
+    summary: '`html: true`・`linkify: true` の markdown-it に、追加するコアルールを登録して返却する'
+    description: 'コアルールは `inline` の後に次の順で登録する: マーカー（`takeMarks`）→ 文書の機能（`resolveDocumentFeatures`）→ 文書のページの設定（`resolvePageSettings`）→ 取り込み（`expandIncludes`）→ フロントマターの表示（`insertFrontmatter`。機能を決めた後、コードブロックの飾りより前）→ 蛍光ペン（`useHighlight` が取り込みの後に追加する）→ 脚注の機能のオン・オフ（`collectFootnotes`）→ カードの格子（`buildCardGrid`。項目の `icon:` の行内のコードを読み込むため行内のアイコンより前、範囲の中のリンクをリンクと添付のカードにしないためカードより前）→ 行内のアイコン（`buildInlineIcons`。見出しの ID より前）→ 見出し（`assignHeadingIds`）→ 用語集の表（`glossaryRule`）→ 行の詳細 → ビュー → CSV の表 → 表（`decorateTables`。今の表の属性もここ）→ タブ → ステップ → 注意書き → ファイルツリー → バッジ → キー → 本文の文字の色（`buildTextColors`）→ 図の部品 → 埋め込んだ HTML → コードブロック（`buildCodeBlocks`。図の部品・埋め込んだ HTML より後）→ 表の見本の移動（`linkTreeExamples`）→ 画像の属性と種類（`readImages`）→ 図表の番号 → ギャラリー（`buildGallery`）→ 画像と動画と音声の図（`buildImageFigures`）→ カード（`buildCards`）→ 段組み → details の範囲 → wide の範囲 → 改ページ → 用語の下線（`termsRule`）→ セクション → 目次 → 脚注の一覧（`buildFootnoteList`）→ 関連文書の一覧（`backlinksRule`）→ タスクリスト → www の自動リンク → 残ったマーカー（`dropMarks`）→ 元の行番号（`markSourceLines`）→ 脚注の定義の取り出し（`takeFootnoteDefinitions`）→ 記載の警告を集める（`collectWarningsRule`）。脚注の定義・参照・行内の脚注の block・inline のルールは `useFootnotes` で登録する。記法のコアルールは『記法』、用語と関連文書のコアルールは『索引と用語』。コードブロックの `pre` の属性は `renderer.rules.fence` を包んで付け、スクリーンリーダー向けの名前はエスケープする（部品『HTML の特別な文字をエスケープする』）。www の自動リンクは `linkify.set({ fuzzyLink: true })` にし、スキームも `www.` もメールの `@` も持たない自動リンクを文字に戻す'
+    returns:
+      type: MarkdownIt
+      description: 解析器
+    unit_tests:
+      - name: test_create_parser_when_task_list
+        case: 正常
+        summary: タスクリストの項目をチェックボックスにする
+        condition: '`- [x] 済み` と `- [ ] 未`'
+        mock: なし
+        expected: '`li` が class `task-list-item` を持ち、頭に `<input type="checkbox" disabled checked>` と `<input type="checkbox" disabled>` があり、`[x]`・`[ ]` の文字が残らない'
+      - name: test_create_parser_when_autolink
+        case: 正常
+        summary: www はリンクにし、スキームも www も無いドメインはリンクにしない
+        condition: '`www.example.com と example.com と https://example.org`'
+        mock: なし
+        expected: '`href="http://www.example.com"` と `href="https://example.org"` の 2 つだけがリンク'
+      - name: test_create_parser_when_strikethrough
+        case: 正常
+        summary: 取り消し線を `del` にする
+        condition: '`~~削除する~~`'
+        mock: なし
+        expected: '`<del>削除する</del>`（`<s>` が無い）'
+      - name: test_create_parser_when_table
+        case: 正常
+        summary: 表にスクリーンリーダー向けの名前と `tabindex`、セルに列名を付ける
+        condition: '`## 変数` の後に、見出しが `**列A**` と `列B` の表'
+        mock: なし
+        expected: '`<table tabindex="0" aria-label="表: 変数">`、`td` が `data-label="列A"` と `data-label="列B"` を持つ'
+      - name: test_create_parser_when_table_without_heading
+        case: 正常
+        summary: 直前に見出しが無ければスクリーンリーダー向けの名前は `表`
+        condition: 見出しの無い文書の表
+        mock: なし
+        expected: '`aria-label="表"`'
+      - name: test_create_parser_when_code_block
+        case: 正常
+        summary: コードブロックの `pre` にスクリーンリーダー向けの名前と `tabindex` を付ける
+        condition: 情報文字列 `ts` のコードブロックと、情報文字列の無いコードブロック
+        mock: なし
+        expected: '`<pre tabindex="0" aria-label="コード: ts"><code class="language-ts">` と `<pre tabindex="0" aria-label="コード">`'
+      - name: test_create_parser_when_info_has_quote
+        case: 正常
+        summary: 情報文字列に `"` があっても、コードブロックのスクリーンリーダー向けの名前が途中で切れない
+        condition: 情報文字列 `ts"x` のコードブロック
+        mock: なし
+        expected: '`aria-label="コード: ts&quot;x"`'
+    callees:
+      - MOD-472-274#functions[useFootnotes]
+      - MOD-472-274#functions[buildFootnoteList]
+      - MOD-472-274#functions[collectFootnotes]
+      - MOD-472-274#functions[takeFootnoteDefinitions]
+  - name: findMarks
+    title: 文書のマーカーを取得する
+    container: src/render/parser.ts
+    usecase: 設定と索引を点検する
+    summary: Markdown の生の HTML のブロックと行内の HTML から `MARK_PATTERN` に該当するマーカーを取得し、名前と行の番号を記載した順に返却する
+    description: '`createParser` と同じ設定（`html: true`・`linkify: true`）の markdown-it で、追加するコアルールを登録せずに解析する（コードブロックとインラインコードの中は `html_block`・`html_inline` にならないため取得しない）。行の番号は 1 からで、`html_block` はトークンの `map` の開始行にマーカーより前の改行の数を追加し、`html_inline` は親の `inline` の `map` の開始行（表のセルのように `map` が `null` のときは直前の `tr_open` の `map` の開始行）に、マーカーより前の子の `softbreak`・`hardbreak` の数と、マーカーより前の子の `html_inline` の内容の改行の数と、同じ `html_inline` の中でマーカーより前の改行の数を追加する。閉じのマーカーも 1 つのマーカーとして返却する'
+    kind: 関数
+    scope: public
+    args:
+      - name: markdown
+        type: string
+        required: true
+        description: 文書の Markdown
+    returns:
+      type: '{ name: string; line: number }[]'
+      description: 取得したマーカーの名前と行の番号
+    unit_tests:
+      - name: test_find_marks
+        case: 正常
+        summary: ブロックと行内のマーカーを行の番号つきで取得する
+        condition: '1 行目が `# タイトル`、3 行目が `<!-- tabz -->`、5・6 行目が `段落` と `続き <!-- note: a --> と <!-- /note -->`'
+        mock: なし
+        expected: '`[{ name: "tabz", line: 3 }, { name: "note", line: 6 }, { name: "note", line: 6 }]`'
+      - name: test_find_marks_when_code
+        case: 正常
+        summary: コードブロックとインラインコードの中のマーカーは取得しない
+        condition: '`markdown` のコードブロックの中の `<!-- tabz -->` と、段落の中のインラインコード `` `<!-- tabz -->` ``'
+        mock: なし
+        expected: 空の配列
+      - name: test_find_marks_when_multiline_block
+        case: 正常
+        summary: 複数行の HTML のブロックの中のマーカーの行を数える
+        condition: 2 行目から `<div>`・`<!-- tabz -->`・`</div>` の 3 行のブロック
+        mock: なし
+        expected: '`[{ name: "tabz", line: 3 }]`'
+      - name: test_find_marks_when_table_cell
+        case: 正常
+        summary: 表のセルの中のマーカーの行を行の番号で返却する
+        condition: 1・2 行目が表の見出しと区切り、3 行目が `| 1 <!-- tabz --> | 2 |`
+        mock: なし
+        expected: '`[{ name: "tabz", line: 3 }]`'
+      - name: test_find_marks_when_multiline_inline_html
+        case: 正常
+        summary: 前に複数行の行内の HTML があるマーカーの行を数える
+        condition: 1・2 行目が `p <a` と `href="x">l</a> <!-- c -->`
+        mock: なし
+        expected: '`[{ name: "c", line: 2 }]`'
+    refs:
+      - 'MOD-472-210#constants[MARK_PATTERN]'
+      - '#functions[createParser]'
+    status: planned
+    introduced:
+      pr: 64
+  - name: markSourceLines
+    title: 元の行番号を付ける
+    kind: 関数
+    container: src/render/parser.ts
+    usecase: 文書を描く
+    summary: コアルール。`map` を持つブロックの開始のトークンに、`map[0]` を `data-source-line` で付ける
+    description: 対象は `block` が `true` で `map` を持ち、`nesting` が `1`（見出し・段落・リスト・リストの項目・表・表の行・引用）か `0`（`hr`・`code_block`）のトークンで、`attrSet("data-source-line", String(map[0]))` を呼ぶ。`fence` は `createParser` が包んだ `renderer.rules.fence` が、帯で包むコードブロックでは外側の `div.mdmark-code` に、帯で包まないコードブロック（`code` がオフ）では `pre` に付ける。記法のコアルールがマーカーの範囲を置き換えた `html_block`（`ownBlock`。開きのマーカーのトークンの `map` を写す）は、HTML の最初の開始タグに属性を差し込む。文書に記載した生の HTML の `html_block` は変えない
+    scope: internal
+    side_effects: '`state.tokens` の属性と `html_block` の `content` を書き換える'
+    args:
+      - name: state
+        type: StateCore
+        required: true
+        description: markdown-it の状態
+    unit_tests:
+      - name: test_mark_source_lines
+        case: 正常
+        summary: ブロックごとに始まる行の 0 始まりの番号を付ける
+        condition: 1 行目 `# 見出し`、3 行目から段落、5 行目から 2 項目のリスト、8 行目から引用、10 行目 `---` を `render` で描く
+        mock: なし
+        expected: '`<h1 data-source-line="0"`・`<p data-source-line="2"`・`<ul data-source-line="4"` と項目の `<li data-source-line="4"`・`<li data-source-line="5"`・`<blockquote data-source-line="7"`・`<hr data-source-line="9"`'
+      - name: test_mark_source_lines_when_table_and_code
+        case: 正常
+        summary: 表と表の行、コードブロックに付ける
+        condition: 1 行目から見出し行と 2 行の表、6 行目から情報文字列 `ts` のコードブロック
+        mock: なし
+        expected: '`<table data-source-line="0"`、本体の `tr` が `data-source-line="2"` と `"3"`、コードブロックを包む `div.mdmark-code` が `data-source-line="5"`'
+      - name: test_mark_source_lines_when_mark_range
+        case: 正常
+        summary: マーカーの範囲を囲む要素と注意書きに開きのマーカーの行を付け、中のブロックにもそれぞれの行を付ける
+        condition: '1 行目 `<!-- table: data -->`、3 行目から表、6 行目 `<!-- /table -->`、8 行目から `> [!NOTE]` の注意書き'
+        mock: なし
+        expected: 表を囲む要素が `data-source-line="0"`、中の `table` が `data-source-line="2"`、注意書きの外側の要素が `data-source-line="7"`
+      - name: test_mark_source_lines_when_raw_html
+        case: 正常
+        summary: 文書に記載した生の HTML のブロックは変えない
+        condition: 1 行目 `<div class="x">地</div>`
+        mock: なし
+        expected: '`div` が `data-source-line` を持たない'
+    callers:
+      - '#functions[createParser]'
+    refs:
+      - IF-472-34#constraints[元の行番号]
+    status: planned
+    introduced:
+      pr: 69

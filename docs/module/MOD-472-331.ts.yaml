@@ -1,0 +1,70 @@
+id: MOD-472-331
+visibility: internal
+title: ライブラリ本体 / 部品 / gif.ts
+test_files:
+  - tests/unit/src/parts/gif.test.ts
+functions:
+  - name: renderGifToggle
+    title: GIF の止める・再生するボタンを描く
+    container: src/parts/gif.ts
+    kind: 関数
+    scope: internal
+    summary: '`button.mdmark-gif-toggle` の HTML を返却する。`paused` に合わせて `aria-pressed`・スクリーンリーダー向けの名前と `title`（`GIF を停止`・`GIF を再生`）を出し、`pause` と `play` のアイコンを両方置く（出す側は CSS が `aria-pressed` で決める）'
+    args:
+      - name: options
+        type: '{ paused: boolean }'
+        required: true
+        description: 止めているか
+    returns:
+      type: string
+      description: '`<button class="mdmark-gif-toggle" type="button"` で始まる HTML'
+    callees:
+      - MOD-472-180#functions[iconSvg]
+    refs:
+      - CMP-472-2#
+    unit_tests:
+      - name: test_render_gif_toggle
+        case: 正常
+        summary: 止めているかを aria-pressed と名前に出す
+        condition: '`paused: false` と `paused: true`'
+        mock: なし
+        expected: 1 つ目が `aria-pressed="false"`・`aria-label="GIF を停止"`、2 つ目が `aria-pressed="true"`・`aria-label="GIF を再生"`。どちらも `svg` を 2 つ持つ
+    status: planned
+    introduced:
+      pr: 263
+  - name: renderGif
+    title: GIF を描く
+    container: src/parts/gif.ts
+    kind: 関数
+    scope: internal
+    summary: '部品設計『GIF』の HTML を返却する（Storybook が使用する。`mount` は描いた `img` を `span.mdmark-gif` で包み、`renderGifToggle` のボタンを追加する）。`lightbox` が `false` でなければ `img` を `renderImageOpener`（`icon: false`）で包む。`paused` のときは `canvas` の `hidden` を削除し、`img` を `visibility: hidden` にする'
+    args:
+      - name: options
+        type: '{ src: string; alt: string; paused?: boolean; lightbox?: boolean }'
+        required: true
+        description: 部品設計の引数
+    returns:
+      type: string
+      description: '`<span class="mdmark-gif">` で始まる HTML'
+    callees:
+      - 'MOD-472-313#functions[escapeHtml]'
+      - 'MOD-472-327#functions[renderImageOpener]'
+      - '#functions[renderGifToggle]'
+    refs:
+      - CMP-472-2#
+    unit_tests:
+      - name: test_render_gif
+        case: 正常
+        summary: 再生中は canvas を隠し、停止のボタンを配置する
+        condition: 部品設計の `Playing`
+        mock: なし
+        expected: '`canvas` が `hidden`・`aria-hidden="true"` を持ち、`button.mdmark-image-open` の中に `img`、`button.mdmark-gif-toggle` が `aria-pressed="false"`'
+      - name: test_render_gif_when_paused
+        case: 正常
+        summary: 止めたときは canvas を出し img を隠す
+        condition: 部品設計の `Paused`
+        mock: なし
+        expected: '`canvas` が `hidden` を持たず、`img` が `visibility: hidden`、ボタンが `aria-pressed="true"`'
+    status: planned
+    introduced:
+      pr: 263

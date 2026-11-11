@@ -1,0 +1,79 @@
+id: SC-472-51
+visibility: internal
+title: "操作できる部品で値を変えて写す"
+scenarios:
+  - name: 正常シナリオ
+    setup:
+      - name: 操作できる部品を描いたページ
+        description: スライダー 1 つ（範囲 0〜10、既定 5）・その値で線を描くグラフ・今の値を写すボタンを組み合わせた部品の定義の文書を描いたページ
+      - name: Mock
+        description: jsDelivr を、ビルドした `dist/` を同じパスで返却する手元の応答に差し替える。クリップボードの読み込みと保存を許したブラウザのコンテキストで開く
+    flow: |-
+      sequenceDiagram
+        actor U as 読者
+        participant C as 操作できる部品
+        participant B as クリップボード
+        U->>C: スライダーを 7 に動かす
+        C-->>U: グラフを 7 で再描画する
+        U->>C: スライダーにフォーカスして→を押す
+        C-->>U: グラフを 8 で再描画する
+        U->>C: 今の値を写すボタンを押す
+        C->>B: 今の値を JSON で記載する
+        C-->>U: コピーしたことを通知する
+    expected:
+      - スライダーを動かすと、グラフが新しい値で再描画される
+      - クリップボードの中身が、スライダーの名前と今の値 8 を持つ JSON として読み込める
+      - ボタンのそばにコピーしたことが出る
+      - スライダーは矢印キーでも動かせ、スクリーンリーダー向けの名前と今の値を持つ
+    test: test_normal
+  - name: 異常シナリオ（クリップボードへ書き込めない）
+    setup:
+      - name: 操作できる部品を描いたページ
+        description: 正常シナリオと同じ
+      - name: Mock
+        description: クリップボードの書き込みを許さないブラウザのコンテキストで開く。ほかは正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 読者
+        participant C as 操作できる部品
+        participant B as クリップボード
+        U->>C: 今の値を写すボタンを押す
+        C->>B: 今の値を JSON で記載する
+        B-->>C: 書き込みを拒む
+        C-->>U: 書き込めなかったことと、選んで写せる JSON を出す
+    expected:
+      - ボタンのそばに、クリップボードへ書き込めなかったことが出る
+      - 写すはずだった JSON が、選んで写せる文字として出る
+      - スライダーとグラフは操作できるまま
+    test: test_error_when_clipboard_denied
+  - name: 正常シナリオ（設定でボタンの文言を替えたとき）
+    setup:
+      - name: 文言を替えた設定で操作できる部品を描いたページ
+        description: 正常シナリオと同じ部品の定義の文書を、設定 `labels.paramCopy` に `コピー` を指定して描いたページ
+        notes: '`labels.paramCopy: "コピー"`'
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 読者
+        participant C as 操作できる部品
+        participant B as クリップボード
+        U->>C: スライダーを 7 に動かす
+        C-->>U: グラフを 7 で再描画する
+        U->>C: 「コピー」のボタンを押す
+        C->>B: 今の値を JSON で記載する
+        C-->>U: コピーしたことを通知する
+    expected:
+      - 今の値をコピーするボタンの文字とスクリーンリーダー向けの名前が、設定で指定した `コピー` になる
+      - スライダーで部品を再描画した後も、ボタンの文字とスクリーンリーダー向けの名前は `コピー` のまま
+      - クリップボードの中身が、スライダーの名前と今の値 7 を持つ JSON として読み込める
+    test: test_normal_when_label_configured
+lead: 読者が、文書のスライダーで値を変えてグラフの変わり方を見、「今の値をコピーする」ボタンで値を JSON にしてクリップボードへ写す。
+issue: 21
+primary_actor: 読者
+trigger: 読者が、パラメーターを変えたときの動きを確認し、決めた値を他の場所へ貼りたくなる
+preconditions:
+  - 文書にスライダー・グラフ・今の値を写すボタンを組み合わせた部品の定義がある
+success_guarantee: スライダーの今の値がグラフに該当し、コピーした JSON が画面の値と一致する。
+minimal_guarantee: クリップボードへ書き込めないときは、ボタンのそばに書き込めなかったことを出し、写すはずだった JSON を選んで写せる構造で見せる。
+test_file: tests/e2e/単一ユースケース/操作できる部品で値を変えて写す.spec.ts

@@ -1,0 +1,44 @@
+id: LIB-472-7
+visibility: internal
+title: biome
+kind: CLI
+version:
+  current: 2.5.15
+  latest: 2.5.15
+  checked_on: '2026-11-06'
+  source: package.json
+  pinning: 完全一致
+catalogs:
+  - name: コマンド
+    version: 2.5.15
+    entries:
+      - name: biome check
+        kind: コマンド
+        purpose: lint と整形の違反を検査する（`--write` で修正する）
+  - name: 設定
+    version: 2.5.15
+    entries:
+      - name: css.parser.tailwindDirectives
+        kind: 設定
+        purpose: Tailwind の `@theme`・`@utility` を CSS として読み込む
+      - name: linter.domains.react
+        kind: 設定
+        purpose: '`none` にし、React の規則は ESLint が受け持つ（直下に `react` を入れると既定で有効になる）'
+lead: JavaScript・TypeScript・CSS・JSON の lint と整形を 1 つで行うツール。
+purl: pkg:npm/%40biomejs/biome@2.5.15
+dependency_scope: 開発のみ
+adoption: 採用
+upstream: biomejs/biome
+verification:
+  state: 済
+  date: '2026-11-06'
+  detail: 'PoC #14 で `biome check .` が整形の違反を出し、`biome check --write .` の後に 0 件になった。`css.parser.tailwindDirectives: true` で `panel.css` の `@theme inline`・`@utility` の parse の違反が 0 件になった'
+license: MIT または Apache-2.0（商用利用可）
+docs_url: https://biomejs.dev/reference/cli/
+install: '```bash
+
+  npm i -D -E @biomejs/biome@2.5.15
+
+  ```'
+notes:
+  ESLint との受け持ち: 整形とリポジトリ全体の lint は Biome が受け持つ。Webview の React・アクセシビリティ・import の向き・Tailwind・複雑さの規則は ESLint が受け持つ（`.tsx` も整形は Biome）

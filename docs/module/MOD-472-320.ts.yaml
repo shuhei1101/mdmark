@@ -1,0 +1,39 @@
+id: MOD-472-320
+visibility: internal
+title: ライブラリ本体 / 部品 / section.ts
+test_files:
+  - tests/unit/src/parts/section.test.ts
+functions:
+  - name: renderSection
+    title: セクションを描く
+    container: src/parts/section.ts
+    kind: 関数
+    scope: internal
+    summary: 部品設計『セクション』の HTML を返却する。`toggle` が `false` のときは開閉のボタンを配置せず中身を隠さない
+    args:
+      - name: options
+        type: '{ level: 1 | 2 | 3 | 4; id: string; title: string; open?: boolean; toggle?: boolean; anchor?: boolean; body: string }'
+        required: true
+        description: 部品設計の引数と中身の HTML（`SLOT_MARKER` を指定できる）
+    returns:
+      type: string
+      description: 見出しと `mdmark-section-body` の HTML
+    unit_tests:
+      - name: test_render_section
+        case: 正常
+        summary: 閉じたセクションはボタンを aria-expanded=false にし、中身を hidden=until-found にする
+        condition: '`open: false`、`toggle: true`'
+        mock: なし
+        expected: '`aria-expanded="false"`、`data-section="closed" hidden="until-found"`'
+      - name: test_render_section_when_unmounted
+        case: 正常
+        summary: toggle が false なら中身を隠さず data-section だけに写す
+        condition: '`open: false`、`toggle: false`'
+        mock: なし
+        expected: '`<button` が無く、`data-section="closed"` で `hidden` が無い'
+      - name: test_render_section_when_h1
+        case: 正常
+        summary: h1 のセクションも見出しと開閉のボタンを描く
+        condition: '`level: 1`、`open: true`、`toggle: true`'
+        mock: なし
+        expected: '`<h1 id="{id}"` の中に `mdmark-section-toggle` のボタンが `aria-expanded="true"` であり、中身が `data-section="open"`'

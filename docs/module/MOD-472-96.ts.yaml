@@ -1,0 +1,55 @@
+id: MOD-472-96
+visibility: internal
+title: VS Code 拡張機能 / 拡張機能の入口 / extension.ts
+data_models:
+  - name: TestApi
+    title: テストのときの戻り値
+    container: vscode/src/extension.ts
+    usecase: 共通
+    summary: '`ExtensionMode.Test` のときだけ `activate` が返却する、結合テストが Webview の DOM を確認するインターフェース'
+    properties:
+      - name: inspectPreview
+        type: '(selector: string) => Promise<InspectedElement[]>'
+        description: 最後に表に出たパネルの要素を調べる
+      - name: auditPreview
+        type: () => Promise<AxeViolation[]>
+        description: 最後に表に出たパネルを axe で検査する
+    refs:
+      - MOD-472-89#classes[PreviewManager]
+    status: planned
+functions:
+  - name: activate
+    title: 拡張機能を動かし始める
+    kind: 関数
+    container: vscode/src/extension.ts
+    usecase: 共通
+    summary: コマンドと VS Code の通知を登録し、テストのときだけ `TestApi` を返却する
+    scope: public
+    side_effects: 登録したものを `context.subscriptions` に入れる
+    args:
+      - name: context
+        type: ExtensionContext
+        required: true
+        description: VS Code が指定する
+    returns:
+      type: TestApi | undefined
+      description: '`ExtensionMode.Test` のときだけ `TestApi`'
+    process: |-
+      1. `context.extensionMode` が `ExtensionMode.Test` のときだけ、環境変数 `MDMARK_VSCODE_DIST_BASE`・`MDMARK_VSCODE_TAGS_URL` を読み込む。無ければ `DIST_BASE`・`TAGS_URL`
+      2. `window.createOutputChannel("mdmark", { log: true })` でログの出力先を 1 つ作り、`openConfigFile` には `Logger` として、`PreviewManager`・`exportMarkdown` には `ExtensionDeps` の `log` として指定する。`PreviewManager` を作る
+      3. コマンドを登録する
+         - `mdmark.openPreviewToSide`・`mdmark.openPreview` は `PreviewManager.open`（`ViewColumn.Beside`・`ViewColumn.Active`）
+         - `mdmark.refreshPreview` は `PreviewManager.refresh`
+         - `mdmark.openConfig` は対象の Markdown の基準のフォルダと Markdown のフォルダ（`cwd`。対象が無ければ基準のフォルダ）で `openConfigFile`
+         - `mdmark.openSettings` は `commands.executeCommand("workbench.action.openSettings", "@ext:" + context.extension.id)`（`context.extension.id` は `package.json` の `publisher`.`name`）
+         - `mdmark.exportHtml`・`mdmark.openInBrowser`・`mdmark.printToPdf` は `exportMarkdown`（`export`・`browser`・`print`）
+      4. `workspace.onDidChangeTextDocument`・`onDidSaveTextDocument`・`onDidChangeConfiguration`・`window.onDidChangeTextEditorVisibleRanges` を `PreviewManager` へ、ワークスペースの `**/mdmark.config.yaml` の `createFileSystemWatcher` の作成・変更・削除を `PreviewManager.handleConfigChange` へつなぐ（パネルごとの見張るファイルは `PreviewManager` が張る）
+      5. テストのときだけ `{ inspectPreview, auditPreview }` を返却する
+    callees:
+      - MOD-472-89#classes[PreviewManager]
+      - MOD-472-105#functions[openConfigFile]
+      - MOD-472-99#functions[exportMarkdown]
+    refs:
+      - IF-472-22#constraints[テストのときの差し替え]
+      - IF-472-21#
+    status: planned

@@ -1,0 +1,60 @@
+id: LIB-472-21
+visibility: internal
+title: react
+kind: ライブラリ
+version:
+  current: '`react==19.3.1` / `react-dom==19.3.1` / `babel-plugin-react-compiler==1.0.0`'
+  latest: 19.3.1
+  checked_on: '2026-11-06'
+  source: vscode/package.json・package.json
+  pinning: 完全一致。直下にも同じバージョンを入れ、Vitest の `resolve.dedupe` で 1 つにする
+catalogs:
+  - name: API
+    version: 19.3.1
+    entries:
+      - name: createRoot
+        kind: 関数
+        purpose: 描く先を包む要素に React の木を描く（`react-dom/client`）
+      - name: useState
+        kind: フック
+        purpose: 状態の表示・帯の行・処理で投げた例外を持つ
+      - name: useRef
+        kind: フック
+        purpose: 最初の `rendered` を送信したか・最後の `resolveAssets` の番号を再描画しなしで持つ
+      - name: useEffect
+        kind: フック
+        purpose: '`message`・`scroll`・`click`・`error` の購読と配布物の読み込みを、要素の外の世界と同期する'
+      - name: useEffectEvent
+        kind: フック
+        purpose: 購読をもう一度張らずに、最新の props の処理を呼ぶ
+      - name: RefCallback
+        kind: 型
+        purpose: 描く先の要素を受け取ったときに mdmark を `mount` し、削除されたときに `destroy` する
+  - name: 設定
+    version: babel-plugin-react-compiler 1.0.0
+    entries:
+      - name: reactCompilerPreset
+        kind: 関数
+        purpose: '`@vitejs/plugin-react` と `@rolldown/plugin-babel` で React Compiler を当て、手書きの `useMemo`・`useCallback` を要らなくする'
+lead: UI を状態から描くコンポーネントの関数と hook のライブラリ。React Compiler は、ビルドの時にコンポーネントと hook の値を自動でメモ化する。
+purl: pkg:npm/react@19.3.1
+dependency_scope: 開発のみ
+adoption: 採用
+upstream: facebook/react
+used_in:
+  - vscode/src/webview/
+verification:
+  state: 済
+  date: '2026-11-06'
+  detail: '`npm run test:unit` の `unit-browser`（Vitest のブラウザ・Chromium）で `tests/unit/vscode/src/webview/` の 18 ファイルが pass した。`npm run build`（vscode/）の `media/preview.js` に React Compiler の `react.memo_cache_sentinel` が入り、`process.env` が残らないことを確認した'
+license: MIT（商用利用可）
+official_url: https://react.dev/
+docs_url: https://react.dev/reference/react
+install: '```bash
+
+  npm i -D -E react@19.3.1 react-dom@19.3.1 babel-plugin-react-compiler@1.0.0 @types/react@19.3.0 @types/react-dom@19.3.0
+
+  ```
+
+
+  拡張機能は Webview の JS をまとめて配るため、`dependencies` ではなく `devDependencies` に入れる。'

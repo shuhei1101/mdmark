@@ -1,0 +1,389 @@
+id: SC-472-80
+visibility: internal
+title: "選んだ箇所にコメントする"
+scenarios:
+  - name: 正常シナリオ
+    setup:
+      - name: mdmark を読み込むページ
+        description: '`features.comments` を `true` にした設定と、コメントの読み込みと保存の関数を指定して文書を描く HTML'
+      - name: コメントの読み込みと保存の関数
+        description: 保存で指定されたコメントを配列に溜め、読み込みでその配列を返却する手元の関数。読み込みは空の配列を返却する
+      - name: 段落を持つ Markdown
+        description: '`描いた文書の外観はテーマの変数で変える。` の段落を 1 つ持つ文書'
+      - name: Mock
+        description: jsDelivr を、ビルドした `dist/` を同じパスで返却する手元の応答に差し替える
+      - name: コメントの本文
+        description: 読者が入力欄に記載する本文
+        notes: '`ここは <b>太字</b> にしたい`'
+    flow: |-
+      sequenceDiagram
+        actor U as 読者
+        participant P as 利用側のページ
+        participant M as mdmark
+        participant S as 読み込みと保存の関数
+        P->>M: 設定・読み込みと保存の関数・Markdown を指定して描かせる
+        M->>S: コメントを読み込む
+        S-->>M: 空の配列
+        M-->>P: 描いた文書
+        U->>P: 「テーマの変数」を選ぶ
+        P-->>U: 選んだ文字のそばのコメントのボタン
+        U->>P: ボタンを押し、コメントを記載して保存する
+        M->>S: 選んだ文字・前後の文字・本文を指定して保存する
+        S-->>M: 保存した
+        M-->>P: 選んだ文字にマーカーを付ける
+        U->>P: マーカーにフォーカスして Enter を押す
+        P-->>U: 記載したコメントの吹き出し
+    expected:
+      - 文字を選ぶと、選んだ文字のそばにコメントのボタンが出る。選択を解除するとボタンが消える
+      - 保存を押すと、読み込みと保存の関数の保存に、選んだ文字 `テーマの変数`・前後の文字・コメントの本文が渡る
+      - 保存の後、`テーマの変数` にマーカーが付き、マーカーはフォーカスできる
+      - マーカーにフォーカスして Enter を押すと、記載したコメントの吹き出しが出て、Esc で閉じる
+      - コメントの本文の `<b>太字</b>` は文字のまま出て、HTML として解釈されない
+    test: test_normal
+  - name: 正常シナリオ（保存したコメントを読み込む）
+    setup:
+      - name: mdmark を読み込むページ
+        description: 正常シナリオと同じ
+      - name: コメントの読み込みと保存の関数
+        description: 読み込みで、選んだ文字 `テーマの変数` と前後の文字・本文を持つコメント 1 件を返却する手元の関数
+      - name: 段落を持つ Markdown
+        description: 正常シナリオと同じ
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 読者
+        participant P as 利用側のページ
+        participant M as mdmark
+        participant S as 読み込みと保存の関数
+        P->>M: 設定・読み込みと保存の関数・Markdown を指定して描かせる
+        M->>S: コメントを読み込む
+        S-->>M: コメント 1 件
+        M-->>P: 選んだ文字にマーカーを付けた文書
+        U->>P: マーカーを押す
+        P-->>U: コメントの吹き出し
+    expected:
+      - 描いた時点で `テーマの変数` にマーカーが付いている
+      - マーカーを押すと、読み込んだコメントの本文の吹き出しが出る
+      - 読み込みと保存の関数が `update`・`remove` を持たないので、吹き出しに「編集」「削除」のボタンが無い
+    test: test_normal_when_loaded
+  - name: 正常シナリオ（再描画した後にもう一度付く）
+    setup:
+      - name: mdmark を読み込むページ
+        description: 正常シナリオと同じ。`mount` の戻り値の `update` を呼べる
+      - name: コメントの読み込みと保存の関数
+        description: 正常シナリオ（保存したコメントを読み込む）と同じ
+      - name: 段落を持つ Markdown
+        description: 正常シナリオと同じ
+      - name: 再描画する Markdown
+        description: 段落の前に別の段落を 1 つ追加した文書と、`テーマの変数` を `CSS 変数` に書き換えた文書の 2 つ
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 読者
+        participant P as 利用側のページ
+        participant M as mdmark
+        P->>M: 段落を追加した Markdown で再描画させる
+        M-->>P: 同じ文字にマーカーをもう一度付けた文書
+        P->>M: 選んだ文字を書き換えた Markdown で再描画させる
+        M-->>P: 箇所が見つからないコメントを末尾に並べた文書
+        U->>P: 末尾の一覧のコメントを開く
+        P-->>U: コメントの本文
+    expected:
+      - 段落を追加して再描画した後も、`テーマの変数` にマーカーが付いている
+      - 選んだ文字を書き換えて再描画した後、本文にマーカーは無く、文書の末尾の `箇所が見つからないコメント` の一覧に、選んだ文字とコメントの本文が出る
+    test: test_normal_when_updated
+  - name: 正常シナリオ（余白のマーカーから移る）
+    setup:
+      - name: mdmark を読み込むページ
+        description: 正常シナリオと同じ。描く先の要素は画面の高さより長い文書を描き、要素の幅を変えられる
+      - name: コメントの読み込みと保存の関数
+        description: 読み込みで、末尾の段落の `テーマの変数`・閉じたセクションの中の `閉じた箇所`・2 つ目のタブの中の `タブの箇所` のコメントを 1 件ずつと、本文に無い文字 `無い文字` のコメント 1 件を返却する手元の関数
+      - name: 長い Markdown
+        description: 画面の高さを超える段落を並べ、末尾に `描いた文書の外観はテーマの変数で変える。` の段落を持つ文書。既定で閉じたセクションと、2 つのタブを持つ範囲を含み、閉じたセクションの中に `閉じた箇所`、2 つ目のタブの中に `タブの箇所` の文字を配置する
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 読者
+        participant P as 利用側のページ
+        participant M as mdmark
+        participant S as 読み込みと保存の関数
+        P->>M: 設定・読み込みと保存の関数・Markdown を指定して描かせる
+        M->>S: コメントを読み込む
+        S-->>M: コメント 4 件
+        M-->>P: マーカーと、本文の右の余白に余白のマーカーを配置した文書
+        U->>P: 余白のマーカーを押す
+        P-->>U: マーカーまでスクロールし、コメントの吹き出しを開く
+        U->>P: 描く先の要素の幅を狭める
+        P-->>U: もう一度折り返したマーカーの行の高さへもう一度配置した余白のマーカー
+        U->>P: 2 つ目のタブに切り替える
+        P-->>U: 2 つ目のタブのマーカーの行の高さに配置した余白のマーカー
+    expected:
+      - 描いた時点で、本文の右の余白に `テーマの変数` の余白のマーカーが出て、縦の中ほどが `テーマの変数` のマーカーのある行の縦の中ほどと同じ高さにある
+      - 箇所が見つからない `無い文字` のコメントには余白のマーカーが出ない
+      - 余白のマーカーを押すと、`テーマの変数` のマーカーが画面に入るまで本文がスクロールし、そのコメントの吹き出しが開く
+      - 余白のマーカーにフォーカスして Enter を押しても、同じくマーカーまで移って吹き出しが開く
+      - 描く先の要素の幅を狭めて行がもう一度折り返すと、余白のマーカーの縦の中ほどがマーカーのある行の縦の中ほどと同じ高さに再配置される
+      - '`閉じた箇所` と `タブの箇所` の余白のマーカーは、本文の先頭の高さに重ねて出ず、閉じたセクションの見出しの行と 2 つ目のタブの行に破線で出る'
+      - 閉じたセクションの見出しの行の余白のマーカーを押すと、セクションが開き、`閉じた箇所` のマーカーまでスクロールしてそのコメントの吹き出しが開く
+      - 2 つ目のタブに切り替えると、`タブの箇所` の余白のマーカーが、縦の中ほどがそのマーカーのある行の縦の中ほどと同じ高さに出る
+    test: test_normal_when_jumped_from_margin
+  - name: 正常シナリオ（機能を解除する）
+    setup:
+      - name: mdmark を読み込むページ
+        description: '`features.comments` を指定しない（既定のオフ）設定と、コメントの読み込みと保存の関数を指定して文書を描く HTML'
+      - name: 段落を持つ Markdown
+        description: 正常シナリオと同じ
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 読者
+        participant P as 利用側のページ
+        participant M as mdmark
+        participant S as 読み込みと保存の関数
+        P->>M: 設定・読み込みと保存の関数・Markdown を指定して描かせる
+        M-->>P: 描いた文書
+        U->>P: 本文の文字を選ぶ
+        P-->>U: コメントのボタンの無い選び
+    expected:
+      - 文字を選んでもコメントのボタンが出ない
+      - 読み込みと保存の関数の読み込みが呼ばれない
+    test: test_normal_when_disabled
+  - name: 異常シナリオ（保存できない）
+    setup:
+      - name: mdmark を読み込むページ
+        description: 正常シナリオと同じ
+      - name: コメントの読み込みと保存の関数
+        description: 保存で失敗の Promise を返却する手元の関数
+      - name: 段落を持つ Markdown
+        description: 正常シナリオと同じ
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 読者
+        participant P as 利用側のページ
+        participant M as mdmark
+        participant S as 読み込みと保存の関数
+        U->>P: 文字を選び、コメントを記載して保存する
+        M->>S: 保存する
+        S-->>M: 失敗
+        M-->>P: 保存できなかったことの通知
+    expected:
+      - コメントの入力欄が閉じずに、記載した本文が残っている
+      - 入力欄のそばに、保存できなかったことの通知が `role="alert"` で出る
+      - 選んだ文字にマーカーが付かない
+      - 失敗の理由が `console.error` に出る
+    test: test_error_when_save_failed
+  - name: 異常シナリオ（読み込みと保存の関数が無い）
+    setup:
+      - name: mdmark を読み込むページ
+        description: '`features.comments` を `true` にした設定を指定し、コメントの読み込みと保存の関数を指定せずに文書を描く HTML'
+      - name: 段落を持つ Markdown
+        description: 正常シナリオと同じ
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 読者
+        participant P as 利用側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を指定して描かせる
+        M-->>P: 描いた文書
+        U->>P: 本文の文字を選ぶ
+        P-->>U: コメントのボタンの無い選び
+    expected:
+      - 文字を選んでもコメントのボタンが出ない
+      - コメントの機能に読み込みと保存の関数が要ることが `console.error` に 1 回だけ出る
+      - 文書の残りは描かれる
+    test: test_error_when_store_missing
+  - name: 正常シナリオ（コメントを修正・削除する）
+    setup:
+      - name: mdmark を読み込むページ
+        description: 正常シナリオと同じ
+      - name: コメントの読み込みと保存の関数
+        description: 読み込みで、選んだ文字 `テーマの変数` に付いた `id` が `c1` のコメントと、`CSS` に付いた `id` が `c2` のコメントを返却し、`update`・`remove` で受けた引数を記録して配列を書き換える手元の関数
+      - name: 段落を持つ Markdown
+        description: '`描いた文書の外観はテーマの変数で変える。CSS を書き込んで上書きする。` の段落を 1 つ持つ文書'
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 読者
+        participant P as 利用側のページ
+        participant M as mdmark
+        participant S as 読み込みと保存の関数
+        U->>P: テーマの変数のマーカーを押す
+        P-->>U: 「編集」「削除」の付いた吹き出し
+        U->>P: 「編集」を押し、本文を書き換えて保存する
+        M->>S: update({docId, id: c1, body: 書き換えた本文})
+        S-->>M: 保存した
+        M-->>P: 書き換えた本文の吹き出し
+        U->>P: CSS のマーカーの吹き出しの「削除」を押す
+        P-->>U: 削除の確認
+        U->>P: 確認の「削除」を押す
+        M->>S: remove({docId, id: c2})
+        S-->>M: 削除した
+        M-->>P: CSS のマーカーを削除した文書
+    expected:
+      - 吹き出しのコメントの本文の右上に、「編集」「削除」のアイコンのボタンがあり、`aria-label` と `title` に「編集」「削除」が入っている
+      - 「編集」を押すと、吹き出しの中にコメントの本文を入れた入力欄が開く
+      - '保存を押すと、`update` が `{docId, id: "c1", body: 書き換えた本文}` を受けて 1 回呼ばれ、吹き出しに書き換えた本文が出る'
+      - '`テーマの変数` のマーカーは付いたまま'
+      - '「削除」を押すと、コメントの下に `このコメントを削除しますか? 削除すると元に戻せません。` とキャンセル・削除のボタンが出てキャンセルにフォーカスが移り、この時点では `remove` は呼ばれない'
+      - '確認の「削除」を押すと、`remove` が `{docId, id: "c2"}` を受けて 1 回呼ばれ、`CSS` のマーカーが削除されて文字が元の並びに戻る'
+      - 削除の後、削除したマーカーを含んでいた段落に `tabindex="-1"` が付いてフォーカスが移り、スクロールの位置は変わらない
+    test: test_normal_when_edited_and_removed
+  - name: 正常シナリオ（再読み込みする）
+    setup:
+      - name: mdmark を読み込むページ
+        description: 正常シナリオと同じ。`mount` の戻り値の `reloadComments` を呼べる
+      - name: コメントの読み込みと保存の関数
+        description: 1 回目の読み込みで `テーマの変数` のコメント 1 件、2 回目以降で `テーマの変数` と `CSS` のコメント 2 件を返却する手元の関数
+      - name: 段落と表を持つ Markdown
+        description: '正常シナリオ（コメントを修正・削除する）の段落の後に、`<!-- table: data +sort -->` で囲んだ名前の列の表（行は `b`・`a`・`c` の順）を配置した文書'
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 読者
+        participant P as 利用側のページ
+        participant M as mdmark
+        participant S as 読み込みと保存の関数
+        P->>M: 設定・読み込みと保存の関数・Markdown を指定して描かせる
+        M->>S: コメントを読み込む
+        S-->>M: コメント 1 件
+        M-->>P: テーマの変数にマーカーを付けた文書
+        U->>P: 表の名前の列の見出しを押して降順に並べ替える
+        P->>M: reloadComments()
+        M->>S: コメントを読み込む
+        S-->>M: コメント 2 件
+        M-->>P: テーマの変数と CSS にマーカーを付けた文書
+    expected:
+      - '`reloadComments()` の Promise が解決した時点で、`テーマの変数` と `CSS` の両方にマーカーが付いている'
+      - 読み込みが 2 回呼ばれる
+      - '`reloadComments()` の後も、表の行が並べ替えた順（`c`・`b`・`a`）のまま'
+    test: test_normal_when_reloaded
+  - name: 正常シナリオ（コメントの箇所へ移る）
+    setup:
+      - name: mdmark を読み込むページ
+        description: 正常シナリオと同じ。`mount` の戻り値の `focusComment` を呼べる
+        notes: 描く先の要素の高さは、文書の末尾の段落が画面の外になる高さ
+      - name: コメントの読み込みと保存の関数
+        description: '文書の先頭の段落の `先頭の単語` に付いた `id` が `c1` のコメントと、末尾の段落の `末尾の単語` に付いた `id` が `c9` のコメントを返却する手元の関数'
+      - name: 段落の多い Markdown
+        description: 30 の段落を持ち、先頭の段落に `先頭の単語`、末尾の段落に `末尾の単語` を含む文書
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 読者
+        participant P as 利用側のページ
+        participant M as mdmark
+        P->>M: focusComment(c1)
+        M-->>P: 先頭の単語のマーカーを強調した文書
+        P->>M: focusComment(c9)
+        M-->>P: 末尾の単語のマーカーを画面に入れて強調した文書
+        P-->>U: 強調したマーカー
+        P->>M: focusComment(無い id)
+        M-->>P: 変わらない文書
+    expected:
+      - '`focusComment("c9")` の後、`末尾の単語` のマーカーが画面に入っている'
+      - '`focusComment("c1")` の後、`先頭の単語` のマーカーが強調の状態になる'
+      - '`focusComment("c9")` の後、`先頭の単語` のマーカーの強調が解除され、`末尾の単語` のマーカーだけが強調されている'
+      - マーカーにフォーカスが移り、吹き出しは開かない
+      - 無い `id` で呼んでも、スクロールの位置と強調が変わらず、エラーも出ない
+    test: test_normal_when_focused
+  - name: 異常シナリオ（修正できない）
+    setup:
+      - name: mdmark を読み込むページ
+        description: 正常シナリオと同じ
+      - name: コメントの読み込みと保存の関数
+        description: 正常シナリオ（コメントを修正・削除する）と同じで、`update` が失敗の Promise を返却する手元の関数
+      - name: 段落を持つ Markdown
+        description: 正常シナリオ（コメントを修正・削除する）と同じ
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 読者
+        participant P as 利用側のページ
+        participant M as mdmark
+        participant S as 読み込みと保存の関数
+        U->>P: 「編集」を押し、本文を書き換えて保存する
+        M->>S: update
+        S-->>M: 失敗
+        M-->>P: 保存できなかったことの通知
+    expected:
+      - 入力欄が閉じずに、書き換えた本文が残っている
+      - 入力欄のそばに、保存できなかったことの通知が `role="alert"` で出る
+      - 吹き出しの本文は書き換える前のまま
+      - 失敗の理由が `console.error` に出る
+    test: test_error_when_update_failed
+  - name: 異常シナリオ（削除できない）
+    setup:
+      - name: mdmark を読み込むページ
+        description: 正常シナリオと同じ
+      - name: コメントの読み込みと保存の関数
+        description: 正常シナリオ（コメントを修正・削除する）と同じで、`remove` が失敗の Promise を返却する手元の関数
+      - name: 段落を持つ Markdown
+        description: 正常シナリオ（コメントを修正・削除する）と同じ
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 読者
+        participant P as 利用側のページ
+        participant M as mdmark
+        participant S as 読み込みと保存の関数
+        U->>P: 吹き出しの「削除」を押し、確認の「削除」を押す
+        M->>S: remove
+        S-->>M: 失敗
+        M-->>P: 削除できなかったことの通知
+    expected:
+      - マーカーが付いたままで、吹き出しにコメントの本文が残っている
+      - 吹き出しの中に、`コメントを削除できませんでした。もう一度「削除」を押してください。` の通知が `role="alert"` で出て、削除の確認は開いたまま
+      - 失敗の理由が `console.error` に出る
+    test: test_error_when_remove_failed
+  - name: 異常シナリオ（再読み込みできない）
+    setup:
+      - name: mdmark を読み込むページ
+        description: 正常シナリオ（再読み込みする）と同じ
+      - name: コメントの読み込みと保存の関数
+        description: 1 回目の読み込みで `テーマの変数` のコメント 1 件を返却し、2 回目以降で失敗の Promise を返却する手元の関数
+      - name: 段落を持つ Markdown
+        description: 正常シナリオ（コメントを修正・削除する）と同じ
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        participant P as 利用側のページ
+        participant M as mdmark
+        participant S as 読み込みと保存の関数
+        P->>M: reloadComments()
+        M->>S: コメントを読み込む
+        S-->>M: 失敗
+        M-->>P: reject
+    expected:
+      - '`reloadComments()` の Promise が、読み込みの失敗の理由で reject される'
+      - '`テーマの変数` のマーカーは付いたまま'
+      - 失敗の理由が `console.error` に出る
+    test: test_error_when_reload_failed
+lead: 読者が、描いた文書の本文の文字を選んでコメントを付け、付いた箇所のマーカーからコメントを開く。コメントは利用側が `mount` に指定した読み込みと保存の関数で残る。
+issue: 8
+primary_actor: 読者
+stakeholders:
+  - name: 読者
+    interest: 気になった箇所を選ぶだけで、その場にコメントを残せ、後から箇所のマーカーで開ける
+  - name: 利用側
+    interest: コメントを自分の保存先に残せ、他の人とも共有できる
+trigger: 読者が、文書の中の気になった箇所に意見を残したくなる
+preconditions:
+  - ページが `mount` で文書を描き、コメントの読み込みと保存の関数を指定している
+  - コメントの機能（`comments`）がオン（既定はオフ）
+success_guarantee: 選んだ文字と前後の文字・コメントの本文が読み込みと保存の関数へ渡り、選んだ箇所にマーカーが付く。本文を再描画した後も、同じ文字の箇所にもう一度マーカーが付く。読み込みと保存の関数が `update`・`remove` を持つときは吹き出しからコメントを修正・削除でき、利用側は `reloadComments` でマーカーを再読み込みし、`focusComment` でコメントの箇所へ移れる。本文の右の余白に、マーカーのある行の高さで余白のマーカーが出て、押すとそのマーカーのコメントへ移る。
+minimal_guarantee: コメントを保存できないときは、記載したコメントを削除せずに通知し、文書の残りは今のとおり読み込める。
+test_file: tests/e2e/単一ユースケース/選んだ箇所にコメントする.spec.ts

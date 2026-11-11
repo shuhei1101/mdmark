@@ -12,7 +12,7 @@ const REPO_ROOT = resolve(import.meta.dirname, "..");
 const FIXTURES_DIR = "tests/fixtures/mermaid-svg";
 
 /** ソースを取るモック（リポジトリの直下から） */
-const MOCK_FILE = "dev/mock/components/mermaid-diagram/index.html";
+const MOCK_FILE = "docs/mock/components/mermaid-diagram/index.html";
 
 /** ページを開く名前（`page.route` が中身を返却する） */
 const ORIGIN = "http://mermaid-fixtures.local";

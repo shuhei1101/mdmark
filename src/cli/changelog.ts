@@ -1,7 +1,7 @@
 import { compareVersions, parseVersion } from "./versions.ts";
 
 /** パッケージの直下からの変更履歴のパス */
-export const CHANGELOG_FILE = "docs/はじめに/変更履歴.md";
+export const CHANGELOG_FILE = "docs/guide/変更履歴.md";
 
 /** 変更履歴の表の 1 行 */
 export type ChangelogRow = {

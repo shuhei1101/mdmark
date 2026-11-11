@@ -1,0 +1,192 @@
+id: LIB-472-15
+visibility: internal
+title: lucide
+kind: ライブラリ
+version:
+  current: 1.59.0
+  latest: 1.59.0
+  checked_on: '2026-10-18'
+  source: package.json
+  pinning: 完全一致。上げるときは図と記法のスクリーンショットで崩れを確認する
+catalogs:
+  - name: アイコン
+    version: 1.59.0
+    entries:
+      - name: plus
+        kind: アイコン
+        purpose: 図の拡大のボタン
+      - name: minus
+        kind: アイコン
+        purpose: 図の縮小のボタン
+      - name: rotate-ccw
+        kind: アイコン
+        purpose: 図を全体が収まる倍率に戻すボタン
+        status: removed
+        reason: 図の枠の戻すのボタンを倍率のボタンにまとめ、使用しなくなった（#6 の確認ログ）
+      - name: expand
+        kind: アイコン
+        purpose: 図を全画面のモーダルで開くボタン
+      - name: x
+        kind: アイコン
+        purpose: 全画面のモーダルと、まとめた HTML の文書の一覧のパネルを閉じるボタン
+      - name: chevron-left
+        kind: アイコン
+        purpose: 図の移動のボタン（左）
+      - name: chevron-right
+        kind: アイコン
+        purpose: 図の移動のボタン（右）
+      - name: chevron-up
+        kind: アイコン
+        purpose: 図の移動のボタン（上）
+      - name: chevron-down
+        kind: アイコン
+        purpose: 図の移動のボタン（下）と、セクション・行の詳細・閉じた注意書きの開閉
+      - name: bot
+        kind: アイコン
+        purpose: 図のノードの種類（LLM）
+      - name: split
+        kind: アイコン
+        purpose: 図のノードの種類（意思決定モデル）
+      - name: code-xml
+        kind: アイコン
+        purpose: 図のノードの種類（スクリプト）
+      - name: plug
+        kind: アイコン
+        purpose: 図のノードの種類（MCP）
+      - name: table
+        kind: アイコン
+        purpose: ER 図のテーブルの見出し
+      - name: database
+        kind: アイコン
+        purpose: 図のノードの種類（データ）
+      - name: globe
+        kind: アイコン
+        purpose: 図のノードの種類（外部のシステム）
+      - name: circle-question-mark
+        kind: アイコン
+        purpose: 図のノードの種類（判定フローチャートの質問）
+      - name: wrench
+        kind: アイコン
+        purpose: 図のノードの種類（判定フローチャートのアクション）
+      - name: flag
+        kind: アイコン
+        purpose: 図のノードの種類（判定フローチャートの結果）
+      - name: server
+        kind: アイコン
+        purpose: 図のシステムの枠のタイトル
+      - name: info
+        kind: アイコン
+        purpose: 図の入力・処理・出力とヒントが出るノードのマーカー、埋め込んだ HTML のヒントのマーカー、注意書き（補足）
+      - name: copy
+        kind: アイコン
+        purpose: 操作できる部品の今の値を写すボタン
+      - name: check
+        kind: アイコン
+        purpose: コピーしたことの通知
+      - name: circle-alert
+        kind: アイコン
+        purpose: 写せなかったことの通知
+      - name: lightbulb
+        kind: アイコン
+        purpose: 注意書き（ヒント）
+      - name: message-square-warning
+        kind: アイコン
+        purpose: 注意書き（重要）
+      - name: triangle-alert
+        kind: アイコン
+        purpose: 注意書き（警告）
+      - name: octagon-alert
+        kind: アイコン
+        purpose: 注意書き（注意）
+      - name: pencil
+        kind: アイコン
+        purpose: 記載の警告のタイトル
+      - name: pin
+        kind: アイコン
+        purpose: 表のピン止め
+      - name: chevrons-up-down
+        kind: アイコン
+        purpose: 表の並べ替え（並べていない）・ER 図のテーブルの列を開く
+      - name: chevrons-down-up
+        kind: アイコン
+        purpose: ER 図のテーブルの列を畳む
+      - name: arrow-up
+        kind: アイコン
+        purpose: 表の並べ替え（昇順）
+      - name: arrow-down
+        kind: アイコン
+        purpose: 表の並べ替え（降順）
+      - name: funnel
+        kind: アイコン
+        purpose: 表の絞り込み
+      - name: link
+        kind: アイコン
+        purpose: 見出しのアンカー
+      - name: file
+        kind: アイコン
+        purpose: ファイルツリーのファイル
+      - name: folder
+        kind: アイコン
+        purpose: ファイルツリーのフォルダ
+      - name: menu
+        kind: アイコン
+        purpose: まとめた HTML の文書の一覧を開くボタン
+      - name: maximize-2
+        kind: アイコン
+        purpose: 画像の拡大のボタンの右上のアイコン
+        status: planned
+        introduced:
+          pr: 263
+      - name: pause
+        kind: アイコン
+        purpose: GIF を止めるボタン
+        status: planned
+        introduced:
+          pr: 263
+      - name: play
+        kind: アイコン
+        purpose: GIF を再生するボタンと、図のノードの種類（判定フローチャートの開始）
+        status: planned
+        introduced:
+          pr: 263
+      - name: file-text
+        kind: アイコン
+        purpose: PDF・文書・テキストの添付のカード（CSS）
+        status: planned
+        introduced:
+          pr: 263
+      - name: file-spreadsheet
+        kind: アイコン
+        purpose: 表の添付のカード（CSS）
+        status: planned
+        introduced:
+          pr: 263
+      - name: file-archive
+        kind: アイコン
+        purpose: アーカイブの添付のカード（CSS）
+        status: planned
+        introduced:
+          pr: 263
+      - name: panel-right-dashed
+        kind: アイコン
+        purpose: 右側の目次のピン止め（押す前）
+        introduced:
+          pr: 320
+      - name: panel-right
+        kind: アイコン
+        purpose: 右側の目次のピン止め（押した後）
+        introduced:
+          pr: 320
+lead: 線で描く 24 の格子の SVG アイコン集。アイコンごとに `path` などの要素の並びを持つ。
+purl: pkg:npm/lucide@1.59.0
+upstream: lucide-icons/lucide
+license: ISC（商用利用可）。Feather 由来のアイコンは MIT（Copyright (c) 2013-present Cole Bemis）。構造をコピーした配布物に、ISC と MIT の両方の著作権表示とライセンスの本文を残す（https://unpkg.com/lucide@1.59.0/LICENSE）
+official_url: https://lucide.dev/
+docs_url: https://lucide.dev/icons/
+verification:
+  state: 済
+  date: '2026-11-05'
+  detail: 'lucide 1.59.0 の `maximize-2`・`pause`・`play`・`globe`・`file-text`・`file-spreadsheet`・`file-archive`・`file` を名前付きの import で取り出せることを確認し、`src/parts/icons.ts` から import した部品の HTML（拡大のボタン・GIF のボタン）と、構造をコピーした `src/index.css` のカードのアイコンを Storybook のストーリーで描いて確認した。`circle-question-mark`・`wrench`・`flag` も lucide 1.59.0 の名前付きの import（`CircleQuestionMark`・`Wrench`・`Flag`）で取り出せることを確認し、`src/parts/icons.ts` から描いた判定フローチャートのノードを Storybook のストーリー `parts-flowdiagram--judgement` で描いて確認した。2026-11-05: まとめていない名前を読み込む `https://cdn.jsdelivr.net/npm/lucide@1.59.0/dist/esm/icons/{名前}.mjs` が、`rocket` で 200（646 バイト・`access-control-allow-origin: *`・IconNode を `export default` する ES モジュール）、無い名前（`no-such-icon-x`）で 404 を返却することを確認した（#307 のライブラリ選定）'
+used_in:
+  - src/parts/icons.ts
+  - src/index.css

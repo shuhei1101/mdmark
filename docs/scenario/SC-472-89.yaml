@@ -1,0 +1,123 @@
+id: SC-472-89
+visibility: internal
+title: コードブロックのHTMLでチャートとヒントを読み取る
+scenarios:
+  - name: 正常シナリオ
+    setup:
+      - name: 見本の HTML の文書
+        description: マーカーを付けた `html` のコードブロック 1 つと、`<!-- flow -->` のフロー図 1 つを持つ文書。HTML の中に、データ（JSON）だけを記載した `<mdmark-chart>` 1 つ、`data-hint` を付けたノード 1 つ、索引に記載した用語を含む文、`script` 要素 1 つを配置する。フロー図には `hint` を持つノードを 1 つ配置する。マーカーの無い `html` のコードブロックも 1 つ配置する
+      - name: 索引
+        description: 見本の HTML の文書の文に出る用語 1 つを記載する
+      - name: Mock
+        description: jsDelivr を、ビルドした `dist/` を同じパスで返却する手元の応答に差し替える。チャートは配布物が描くため、外部ライブラリは読み込まない
+    flow: |-
+      flowchart TD
+        A[コードブロックのHTMLを描く:正常シナリオ] --> B[チャートを描く:正常シナリオ]
+        B --> C[図を拡大・縮小・移動する:正常シナリオ（埋め込んだ HTML の中のチャート）]
+        C --> G[図の要素のツールチップを確認する:正常シナリオ（グラフの項目）]
+        G --> D[図の要素のツールチップを確認する:正常シナリオ（埋め込んだ HTML の data-hint）]
+        D --> E[用語の意味をツールチップで確認する:正常シナリオ（埋め込んだ HTML の中の用語）]
+        click A "id:SC-472-16#scenarios[正常シナリオ]"
+        click B "id:SC-472-24#scenarios[正常シナリオ]"
+        click C "id:SC-472-42#scenarios[正常シナリオ（埋め込んだ HTML の中のチャート）]"
+        click G "id:SC-472-40#scenarios[正常シナリオ（グラフの項目）]"
+        click D "id:SC-472-40#scenarios[正常シナリオ（埋め込んだ HTML の data-hint）]"
+        click E "id:SC-472-65#scenarios[正常シナリオ（埋め込んだ HTML の中の用語）]"
+    expected:
+      - マーカーを付けたコードブロックの HTML が、コードではなくその場の HTML として描かれる
+      - マーカーの無い `html` のコードブロックは、コードのまま出る
+      - HTML に書き込んだ `script` 要素は描いた文書に残らず、実行されない
+      - チャートが描かれ、右上のボタンとキーの `+`・`-`・`0` で拡大・縮小でき、ドラッグで動かせる。ホイールは文書をスクロールする
+      - チャートでない HTML の部分には拡大・縮小のボタンが出ない。チャートの項目にポインターを乗せるかフォーカスすると、系列の名前と値のツールチップが項目の下に出る
+      - '`data-hint` を付けたノードの右上のマーカーにフォーカスすると、その文のツールチップが出て、Esc で消える'
+      - HTML の中の用語に下線が参照され、フォーカスすると用語集の意味のツールチップが出る
+    test: test_normal
+    uses:
+      - SC-472-16#scenarios[正常シナリオ]
+      - SC-472-24#scenarios[正常シナリオ]
+      - SC-472-42#scenarios[正常シナリオ（埋め込んだ HTML の中のチャート）]
+      - SC-472-40#scenarios[正常シナリオ（グラフの項目）]
+      - SC-472-40#scenarios[正常シナリオ（埋め込んだ HTML の data-hint）]
+      - SC-472-65#scenarios[正常シナリオ（埋め込んだ HTML の中の用語）]
+  - name: 正常シナリオ（書き出した HTML で読み込む）
+    setup:
+      - name: 見本の HTML の文書
+        description: 正常シナリオと同じ。`script` 要素は配置しない
+      - name: 設定
+        description: 見本の HTML の文書を書き出す `mdmark.config.yaml`
+      - name: Mock
+        description: なし（チャートは配布物が描くため、書き出しは外部ライブラリを読み込まない）。書き出した HTML を開くブラウザのコンテキストで、外への要求を全て止める
+    flow: |-
+      flowchart TD
+        A[文書をHTMLに書き出す:正常シナリオ] --> B[図を拡大・縮小・移動する:正常シナリオ（埋め込んだ HTML の中のチャート）]
+        B --> G[図の要素のツールチップを確認する:正常シナリオ（グラフの項目）]
+        G --> C[図の要素のツールチップを確認する:正常シナリオ（埋め込んだ HTML の data-hint）]
+        C --> D[図の要素のツールチップを確認する:正常シナリオ（ノードの hint）]
+        D --> E[用語の意味をツールチップで確認する:正常シナリオ（埋め込んだ HTML の中の用語）]
+        click A "id:SC-472-56#scenarios[正常シナリオ]"
+        click B "id:SC-472-42#scenarios[正常シナリオ（埋め込んだ HTML の中のチャート）]"
+        click G "id:SC-472-40#scenarios[正常シナリオ（グラフの項目）]"
+        click C "id:SC-472-40#scenarios[正常シナリオ（埋め込んだ HTML の data-hint）]"
+        click D "id:SC-472-40#scenarios[正常シナリオ（ノードの hint）]"
+        click E "id:SC-472-65#scenarios[正常シナリオ（埋め込んだ HTML の中の用語）]"
+    expected:
+      - '`mdmark export` が終了コード 0 で 1 枚の HTML を書き出す'
+      - 書き出した HTML を外への要求を止めて開いても、埋め込んだ HTML とチャートが描かれる
+      - チャートを右上のボタンで拡大・縮小でき、ドラッグで動かせる
+      - チャートの項目・`data-hint` を付けたノード・図のノードの `hint`・HTML の中の用語に、ツールチップが出る
+    test: test_normal_when_exported
+    uses:
+      - SC-472-56#scenarios[正常シナリオ]
+      - SC-472-42#scenarios[正常シナリオ（埋め込んだ HTML の中のチャート）]
+      - SC-472-40#scenarios[正常シナリオ（グラフの項目）]
+      - SC-472-40#scenarios[正常シナリオ（埋め込んだ HTML の data-hint）]
+      - SC-472-40#scenarios[正常シナリオ（ノードの hint）]
+      - SC-472-65#scenarios[正常シナリオ（埋め込んだ HTML の中の用語）]
+  - name: 正常シナリオ（範囲のスクリプトと CSS）
+    setup:
+      - name: 見本の HTML の文書
+        description: 正常シナリオと同じ HTML の範囲に、`css` のコードブロック 1 つと `ts` のコードブロック 1 つを加えた文書
+        notes: '`css` は範囲のノードの背景の色を変える。`ts` は既定のエクスポートの関数で、ノードを押すと根の要素に class `is-open` を付与・解除する。範囲の外に、同じ class を持つノードを 1 つ配置する'
+      - name: 索引
+        description: 正常シナリオと同じ
+      - name: 設定
+        description: 範囲のスクリプトの機能をオンにした設定。見本の HTML の文書を書き出す `mdmark.config.yaml` も同じ値を持つ
+      - name: Mock
+        description: 正常シナリオと同じ。加えて、`mount` の経路で範囲の `ts` の型を削除する変換のライブラリを、手元のモジュールに差し替える（書き出した HTML は CLI の esbuild で変換するため対象外）。書き出した HTML を開くブラウザのコンテキストでは、外への要求を全て止める
+    flow: |-
+      flowchart TD
+        A[コードブロックのHTMLを描く:正常シナリオ（範囲のスクリプトと CSS）] --> B[チャートを描く:正常シナリオ]
+        B --> C[用語の意味をツールチップで確認する:正常シナリオ（埋め込んだ HTML の中の用語）]
+        C --> D[文書をHTMLに書き出す:正常シナリオ（範囲のスクリプトと CSS）]
+        click A "id:SC-472-16#scenarios[正常シナリオ（範囲のスクリプトと CSS）]"
+        click B "id:SC-472-24#scenarios[正常シナリオ]"
+        click C "id:SC-472-65#scenarios[正常シナリオ（埋め込んだ HTML の中の用語）]"
+        click D "id:SC-472-56#scenarios[正常シナリオ（範囲のスクリプトと CSS）]"
+    expected:
+      - 範囲のノードの背景が `css` の色で描かれ、範囲の外のノードの背景は変わらない
+      - 範囲のノードを押すと根の要素に class `is-open` が付き、もう一度押すと削除される
+      - 範囲の中のチャートが描かれ、右上のボタンで拡大・縮小できる
+      - 範囲の中の用語に下線が参照され、フォーカスすると用語集の意味のツールチップが出る
+      - '`mdmark export` が終了コード 0 で 1 枚の HTML を書き出し、外への要求を止めて開いても、範囲のノードの色と押したときの class の付与・解除が同じように有効になる'
+      - HTML に記載した `script` 要素は、機能がオンでも描いた文書に残らず、実行されない
+    test: test_normal_when_range_scripts
+    uses:
+      - SC-472-16#scenarios[正常シナリオ（範囲のスクリプトと CSS）]
+      - SC-472-24#scenarios[正常シナリオ]
+      - SC-472-65#scenarios[正常シナリオ（埋め込んだ HTML の中の用語）]
+      - SC-472-56#scenarios[正常シナリオ（範囲のスクリプトと CSS）]
+lead: 文書の作成者が、マーカーを付けたコードブロックの HTML にチャートとヒントを記載して描かせ、読者がチャートを拡大・縮小・移動し、ヒントと用語をツールチップで読み込む。書き出した 1 枚の HTML でも同じように読み込める。
+issue: 6
+primary_actor: 文書の作成者（AI を含む）
+stakeholders:
+  - name: 文書の作成者
+    interest: Markdown の文書の中に HTML で図・チャートを記載でき、スクリプトを記載せずに mdmark の部品でチャートとヒントを動かせる
+  - name: 読者
+    interest: チャートを寄って見られ、図の要素のヒントと用語の意味をツールチップで読み込め、書き出した HTML でも同じ読み込み方ができる
+trigger: 文書の作成者が、Markdown では表せない図・チャートを文書の中に HTML で配置したくなる
+preconditions:
+  - 利用側のページが配布物を読み込み、`mount` で文書を描ける
+  - 索引に用語を記載している
+success_guarantee: マーカーを付けたコードブロックの HTML がその場に描かれ、その中のチャートは拡大・縮小・移動でき、`data-hint` を付けた要素と HTML の中の用語にツールチップが出る。書き出した 1 枚の HTML でも外を読み込まずに同じように動く。
+minimal_guarantee: 埋め込んだ HTML に書き込んだスクリプトとイベントの属性は動かない。チャートを描けないときは、その場所に記載の警告を出し、文書の残りは描く。
+test_file: tests/e2e/複合ユースケース/コードブロックのHTMLでチャートとヒントを読み取る.spec.ts

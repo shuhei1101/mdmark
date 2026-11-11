@@ -1,0 +1,33 @@
+id: MOD-472-294
+visibility: internal
+title: ライブラリ本体 / 記法 / highlight.ts
+test_files:
+  - tests/unit/src/render/syntax/highlight.test.ts
+functions:
+  - name: useHighlight
+    title: 蛍光ペンのルールを追加する
+    container: src/render/syntax/highlight.ts
+    kind: 関数
+    scope: internal
+    summary: markdown-it の行内のルールとして、`==` で囲んだ文字（開きの直後と閉じの直前が空白でない）を `mark_open`・`mark_close` にし、閉じの直後の `{color=色}` を色の名前として読み込んで `data-color` に写す。`highlight` がオフのときはルールを適用しない。知らない色の名前は属性を削除して既定の色にし、段落の前に記載の警告を差し込む
+    args:
+      - name: md
+        type: MarkdownIt
+        required: true
+        description: ルールを追加するパーサ
+    side_effects: '`md.inline.ruler` と `md.core.ruler` にルールを追加する'
+    callees:
+      - MOD-472-312#functions[isColorName]
+    unit_tests:
+      - name: test_use_highlight
+        case: 正常
+        condition: '`==決め手==`・`==例外=={color=green}`・`== a ==`・`\=\=x\=\=`'
+        expected: '`<mark class="mdmark-highlight">決め手</mark>`・`<mark class="mdmark-highlight" data-color="green">例外</mark>`・`== a ==` の文字・`==x==` の文字'
+        mock: なし
+        summary: 空白で接する `==` と打ち消しは蛍光ペンにしない
+      - name: test_use_highlight_when_unknown_color
+        case: 異常
+        condition: '`==決め手=={color=pink}`'
+        expected: '`data-color` を持たない `mark.mdmark-highlight` と、段落の前の `pink` を含む記載の警告'
+        mock: なし
+        summary: 知らない色は既定の色で警告する

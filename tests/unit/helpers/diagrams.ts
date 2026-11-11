@@ -1,5 +1,5 @@
-import guide from "../../../docs/使用方法/図を描く/図を描く.md?raw";
-import sample from "../../../docs/使用方法/図を描く/見本.md?raw";
+import guide from "../../../docs/guide/図を描く-図を描く.md?raw";
+import sample from "../../../docs/guide/図を描く-見本.md?raw";
 
 /** 見本の文書に記載した部品の定義（`json` のコードブロックを記載した順に） */
 const SAMPLE_BLOCKS: string[] = [
