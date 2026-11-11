@@ -1,0 +1,38 @@
+$ (ai-monitor e0f6c0846) PYTHONPATH=src uv run python -m ai_monitor.design_docs validate --root <worktree>
+docs/er/ER-472-2.yaml:er.relations[#0].from_column: 必須の項目が無い
+docs/er/ER-472-2.yaml:er.relations[#0].to_column: 必須の項目が無い
+docs/er/ER-472-2.yaml:er.relations[#1].from_column: 必須の項目が無い
+docs/er/ER-472-2.yaml:er.relations[#1].to_column: 必須の項目が無い
+docs/er/ER-472-3.yaml:er.relations[#0].from_column: 必須の項目が無い
+docs/er/ER-472-3.yaml:er.relations[#0].to_column: 必須の項目が無い
+docs/er/ER-472-6.yaml:er.relations[#0].from_column: 必須の項目が無い
+docs/er/ER-472-6.yaml:er.relations[#0].to_column: 必須の項目が無い
+docs/module/MOD-472-116.ts.yaml:functions[validateConfig].unit_tests[test_validate_config].name: テスト関数がありません: test_validate_config
+docs/module/MOD-472-116.ts.yaml:functions[validateConfig].unit_tests[test_validate_config_when_aliases_invalid].name: テスト関数がありません: test_validate_config_when_aliases_invalid
+docs/module/MOD-472-116.ts.yaml:functions[validateConfig].unit_tests[test_validate_config_when_assets_not_string].name: テスト関数がありません: test_validate_config_when_assets_not_string
+docs/module/MOD-472-116.ts.yaml:functions[validateConfig].unit_tests[test_validate_config_when_build_out_missing].name: テスト関数がありません: test_validate_config_when_build_out_missing
+docs/module/MOD-472-116.ts.yaml:functions[validateConfig].unit_tests[test_validate_config_when_check_ignore_invalid].name: テスト関数がありません: test_validate_config_when_check_ignore_invalid
+docs/module/MOD-472-116.ts.yaml:functions[validateConfig].unit_tests[test_validate_config_when_color_scheme_invalid].name: テスト関数がありません: test_validate_config_when_color_scheme_invalid
+docs/module/MOD-472-116.ts.yaml:functions[validateConfig].unit_tests[test_validate_config_when_color_theme_invalid].name: テスト関数がありません: test_validate_config_when_color_theme_invalid
+docs/module/MOD-472-116.ts.yaml:functions[validateConfig].unit_tests[test_validate_config_when_diagram_placement_invalid].name: テスト関数がありません: test_validate_config_when_diagram_placement_invalid
+docs/module/MOD-472-116.ts.yaml:functions[validateConfig].unit_tests[test_validate_config_when_empty].name: テスト関数がありません: test_validate_config_when_empty
+docs/module/MOD-472-116.ts.yaml:functions[validateConfig].unit_tests[test_validate_config_when_html_scripts_url_invalid].name: テスト関数がありません: test_validate_config_when_html_scripts_url_invalid
+docs/module/MOD-472-116.ts.yaml:functions[validateConfig].unit_tests[test_validate_config_when_labels_invalid].name: テスト関数がありません: test_validate_config_when_labels_invalid
+docs/module/MOD-472-116.ts.yaml:functions[validateConfig].unit_tests[test_validate_config_when_libraries_not_object].name: テスト関数がありません: test_validate_config_when_libraries_not_object
+docs/module/MOD-472-116.ts.yaml:functions[validateConfig].unit_tests[test_validate_config_when_map_invalid].name: テスト関数がありません: test_validate_config_when_map_invalid
+docs/module/MOD-472-116.ts.yaml:functions[validateConfig].unit_tests[test_validate_config_when_mermaid_invalid].name: テスト関数がありません: test_validate_config_when_mermaid_invalid
+docs/module/MOD-472-116.ts.yaml:functions[validateConfig].unit_tests[test_validate_config_when_side_toc_mode_invalid].name: テスト関数がありません: test_validate_config_when_side_toc_mode_invalid
+docs/module/MOD-472-116.ts.yaml:functions[validateConfig].unit_tests[test_validate_config_when_syntax_url_invalid].name: テスト関数がありません: test_validate_config_when_syntax_url_invalid
+docs/module/MOD-472-116.ts.yaml:functions[validateConfig].unit_tests[test_validate_config_when_table_pin_invalid].name: テスト関数がありません: test_validate_config_when_table_pin_invalid
+docs/module/MOD-472-116.ts.yaml:functions[validateConfig].unit_tests[test_validate_config_when_tooltip_placement_invalid].name: テスト関数がありません: test_validate_config_when_tooltip_placement_invalid
+docs/module/MOD-472-116.ts.yaml:functions[validateConfig].unit_tests[test_validate_config_when_version_invalid].name: テスト関数がありません: test_validate_config_when_version_invalid
+docs/module/MOD-472-118.ts.yaml:functions[usesMermaid].unit_tests[test_uses_mermaid].name: テスト関数がありません: test_uses_mermaid
+docs/module/MOD-472-174.ts.yaml:functions[renderChart].unit_tests[test_render_chart].name: テスト関数がありません: test_render_chart
+docs/module/MOD-472-174.ts.yaml:functions[renderChart].unit_tests[test_render_chart_when_bar].name: テスト関数がありません: test_render_chart_when_bar
+docs/module/MOD-472-174.ts.yaml:functions[renderChart].unit_tests[test_render_chart_when_pie].name: テスト関数がありません: test_render_chart_when_pie
+docs/module/MOD-472-174.ts.yaml:functions[renderChart].unit_tests[test_render_chart_when_scatter].name: テスト関数がありません: test_render_chart_when_scatter
+docs/scenario/SC-472-18.yaml:scenarios[正常シナリオ（印の引数で自動で再生する）].expected[#2]: 型が違う
+exit=1
+
+$ PYTHONPATH=src uv run python -m ai_monitor.design_docs publish --check --root <worktree>
+exit=0

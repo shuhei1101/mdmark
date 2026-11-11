@@ -65,8 +65,10 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-11T08:13:24.632806+00:00'
   - process: ドキュメント修正
-    status: todo
+    status: done
     note: v0.4.0 の変換を dev/ の置き場所のまま掛け、dev/ と docs/ の文書を種類のフォルダへ移し、visibility・docs/_config.yml の exclude を足し、dev/ と旧 docs/ のパスを指す CLAUDE.md・README.md・dev-docs.yaml・docs/rules.yaml・各 files.yaml・guide/index.yaml を合わせる。tmp/screenshots/ を削除し tmp/.gitignore を置く
+    updated_by: planner
+    updated_at: '2026-11-11T08:55:25.687339+00:00'
   - process: 単体テスト作成
     status: skipped
     reason: 新しい振る舞いが無い。移した後のパスを指すテストの書き換えは実装で行い、既存の単体テストの全 pass で確かめる

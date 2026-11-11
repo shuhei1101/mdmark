@@ -28,51 +28,75 @@ docs:
   - page: CLAUDE.md
     new: false
     change: 「実体は開発ドキュメント dev/ と公開ドキュメント docs/」・使い方のリンク・移行の手順のリンクを、移した後の docs/ の置き場所に合わせる
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-11T08:54:30.015530+00:00'
   - page: README.md
     new: false
     change: dev/ と旧 docs/ を指すリンクを、移した後の置き場所に合わせる
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-11T08:54:30.015530+00:00'
   - page: dev-docs.yaml
     new: false
     change: 設計書の種類ごとの行と各 files.yaml の行を、docs/ の種類のフォルダと schemas/ に合わせる
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-11T08:54:30.015530+00:00'
   - page: docs/rules.yaml
     new: false
-    change: ルールを当てるパスを、移した後の置き場所に合わせる
-    status: todo
+    change: ルールを当てるパスを、移した後の置き場所に合わせる（rules が空のため書き換える箇所は無い）
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-11T08:54:39.912462+00:00'
   - page: docs/index.yaml
     new: false
     change: 起点の索引を 1 つにし、行が種類のフォルダを指すようにする（dev/index.yaml・dev/設計書/index.yaml・dev/テンプレート/index.yaml・dev/コーディング規約/index.yaml をまとめる）
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-11T08:54:30.015530+00:00'
   - page: docs/files.yaml
     new: false
-    change: '公開ドキュメントを docs/guide/ へ移したパスにし、各行に visibility: public と分類（はじめに・使い方・リファレンス）を持たせる'
-    status: todo
+    change: 公開ドキュメントの行を docs/guide/files.yml へ、_theme・rules.yaml・design-policy.md・index.md の行を docs/_root/files.yml へ分け、各行に visibility と（公開ドキュメントは）分類を持たせる
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-11T08:54:39.912462+00:00'
   - page: docs/_config.yml
     new: true
     change: exclude に internal の種類のフォルダと pr/・mock/・generated/ を載せ、Pages に出さない
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-11T08:54:30.015530+00:00'
   - page: guide/index.yaml
     new: false
     change: 使い方集の索引が指すページのパスを docs/guide/ に合わせる
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-11T08:54:30.015530+00:00'
   - page: docs/はじめに/変更履歴.md
     new: false
-    change: docs/guide/ へ移し、dev/ を指すリンクを移した後の置き場所に合わせる
-    status: todo
+    change: docs/guide/変更履歴.md へ移す（表の PR のリンクはリリースのタグに固定した URL のため書き換えない）
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-11T08:54:39.912462+00:00'
   - page: dev/設計書/アーキテクチャ図/アーキテクチャ図.yaml
     new: false
     change: docs/architecture/ へ移し、repository.layout の dev/ と dev/テンプレート/files.schema.yaml の記載を移した後の置き場所に合わせる
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-11T08:54:39.912462+00:00'
   - page: dev/テンプレート/files.schema.yaml
     new: false
-    change: dev/テンプレート/*.schema.yaml を schemas/{kind}.schema.yaml へ移し、visibility と分類のキーを持たせる
-    status: todo
+    change: dev/テンプレート/*.schema.yaml を schemas/{kind}.schema.yaml へ移し、中身を AI Monitor の develop の Schema（visibility と分類のキーを持つ）に揃える。Schema の行の概要文は schemas/files.yaml へ移す
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-11T08:54:39.912462+00:00'
   - page: tmp/.gitignore
     new: true
     change: 中身が * だけの .gitignore を置き、develop に入った tmp/screenshots/ の PNG 43 件を削除する
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-11T08:54:30.015530+00:00'
 scope_out:
   - item: フォルダ構成の設計書（layout）の作成
     reason: 移した後の構成を前提に書く後続の作業で、要望に含まれない
@@ -83,3 +107,9 @@ scope_out:
   - item: 既存の文書の中身の表し方の移行
     reason: 置き場所だけを移し、文書の中身は変えない
     plan: '#290'
+  - item: docs/_theme/ を AI Monitor の develop の公開ドキュメントの部品（上タブの pages の対応表・分類のトップページの permalink を読むレイアウト）へ取り込むことと、docs/_config.yml へレイアウトとプラグインの設定を足すこと
+    reason: docs/_theme/ は AI Monitor の配布物で、取り込みは版上げの追従の作業になる。この PR は _config.yml に exclude だけを置き、今の Pages の描き方（Jekyll の既定）を変えない
+    plan: to_file
+  - item: '#394 で Schema の説明文に当てた用語の言い換え（書く → 記載する 等）'
+    reason: 設計書の Schema は AI Monitor の配布物で、AI Monitor の develop の Schema に揃えると上書きされる。次の版上げの追従でも同じく上書きされるため、mdmark の側では当て直さない
+    plan: none
