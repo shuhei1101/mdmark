@@ -34,6 +34,7 @@ export const attachMapSequence = (
   config: ResolvedConfig,
   args: MapArgs,
   onStep?: (message: number | undefined) => void,
+  follow?: { start: () => void; step: (message: number) => void },
 ): MapSequenceHandle => {
   const index = Number(range.dataset.map ?? "1");
   const sequence = parseSequence(
@@ -500,6 +501,17 @@ export const attachMapSequence = (
         refresh();
         onStep?.(current);
       },
+      ...(follow === undefined
+        ? {}
+        : {
+            follow: {
+              start: follow.start,
+              step: (step) => {
+                const message = Number(step.wires[0] ?? Number.NaN);
+                if (!Number.isNaN(message)) follow.step(message);
+              },
+            },
+          }),
     });
   }
 

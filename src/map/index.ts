@@ -62,7 +62,10 @@ export const attachMap = (
     range: HTMLElement;
     playsOver: number | undefined;
     source: string;
-    attach: (onStep: (message: number | undefined) => void) => void;
+    attach: (
+      onStep: (message: number | undefined) => void,
+      follow: { start: () => void; step: (message: number) => void },
+    ) => void;
     /** 構成図の上を強調しているか */
     driving: boolean;
     clear: () => void;
@@ -98,8 +101,8 @@ export const attachMap = (
         source: mermaid,
         driving: false,
         clear: () => {},
-        attach: (onStep) => {
-          const handle = attachMapSequence(range, config, args, onStep);
+        attach: (onStep, follow) => {
+          const handle = attachMapSequence(range, config, args, onStep, follow);
           destroyers.push(handle.destroy);
           entry.playsOver = handle.playsOver;
           entry.clear = handle.clear;
@@ -130,25 +133,46 @@ export const attachMap = (
     const sequence = parseSequence(entry.source);
     let target: MapFlowHandle | undefined;
     let missing = new Set<string>();
-    entry.attach((message) => {
+    /** plays_over で指した構成図（構成図を付け終えた後に引く） */
+    const targetOf = () => {
       target ??=
         entry.playsOver === undefined ? undefined : flows.get(entry.playsOver);
-      if (!target) return;
-      const item =
-        message === undefined ? undefined : sequence.messages[message];
-      // 構成図に無い相手のメッセージでは、構成図の強調を解く
-      if (
-        item === undefined ||
-        missing.has(item.from) ||
-        missing.has(item.to)
-      ) {
-        if (entry.driving) target.clearFocus();
-        entry.driving = false;
-      } else {
-        entry.driving = true;
-        target.focus({ nodes: [item.from, item.to], wires: [] });
-      }
-    });
+      return target;
+    };
+    entry.attach(
+      (message) => {
+        const flow = targetOf();
+        if (!flow) return;
+        const item =
+          message === undefined ? undefined : sequence.messages[message];
+        // 構成図に無い相手のメッセージでは、構成図の強調を解く
+        if (
+          item === undefined ||
+          missing.has(item.from) ||
+          missing.has(item.to)
+        ) {
+          if (entry.driving) flow.clearFocus();
+          entry.driving = false;
+        } else {
+          entry.driving = true;
+          flow.focus({ nodes: [item.from, item.to], wires: [] });
+        }
+      },
+      // 自動で進めている間は、構成図の図の枠の中も送り手と受け手のノードへスクロールする（構成図に無い相手のメッセージは除く）
+      {
+        start: () => targetOf()?.resumeFollow(),
+        step: (message) => {
+          const item = sequence.messages[message];
+          if (
+            item === undefined ||
+            missing.has(item.from) ||
+            missing.has(item.to)
+          )
+            return;
+          targetOf()?.follow([item.from, item.to]);
+        },
+      },
+    );
     // plays_over で指した構成図に無い参加者を、シーケンス図の前の書き方の警告にする
     const ids =
       entry.playsOver === undefined ? undefined : flowIds.get(entry.playsOver);

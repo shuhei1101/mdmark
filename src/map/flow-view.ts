@@ -7,7 +7,12 @@ import {
   renderMapPackets,
   selectableName,
 } from "../parts/map.ts";
-import { attachBand, type BandHandle, type BandStep } from "./band.ts";
+import {
+  attachBand,
+  type BandHandle,
+  type BandStep,
+  createFollow,
+} from "./band.ts";
 import { type MapData, parseMapData } from "./data.ts";
 import {
   applyWireShifts,
@@ -37,6 +42,10 @@ export type MapFlowHandle = {
   focus: (target: { nodes: string[]; wires: string[] }) => void;
   /** 外から当てた強調を解く */
   clearFocus: () => void;
+  /** ノードの中心へ表示する枠をスクロールする（シーケンス図の再生を自動で進めている間） */
+  follow: (nodes: string[]) => void;
+  /** 読者が触って止めたスクロールを再開する */
+  resumeFollow: () => void;
   /** 時計・観察・操作を外す */
   destroy: () => void;
 };
@@ -222,6 +231,12 @@ export const attachMapFlow = (
     placement: "bottom",
     figures: [figure],
   });
+  // シーケンス図の再生を自動で進めている間に、送り手と受け手のノードへ表示する枠をスクロールする
+  const follower = createFollow(
+    figure,
+    typeof matchMedia !== "undefined" &&
+      matchMedia("(prefers-reduced-motion: reduce)").matches,
+  );
 
   const save = () =>
     writeMapState({
@@ -702,8 +717,11 @@ export const attachMapFlow = (
       focus = undefined;
       emphasize();
     },
+    follow: follower.reveal,
+    resumeFollow: follower.resume,
     destroy: () => {
       band?.destroy();
+      follower.destroy();
       resizeObserver?.disconnect();
       detachDiagrams();
       figure.removeEventListener("click", onClick);

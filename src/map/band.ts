@@ -22,6 +22,83 @@ export type BandHandle = {
   destroy: () => void;
 };
 
+/** createFollow の戻り値 */
+export type FollowHandle = {
+  /** ノードか参加者の中心へ表示する枠をスクロールする（読者が触った後は resume まで何もしない） */
+  reveal: (ids: string[]) => void;
+  /** 読者が触って止めたスクロールを再開する */
+  resume: () => void;
+  /** 表示する枠のイベントを外す */
+  destroy: () => void;
+};
+
+/** 読者が表示する枠を触ったとみなすイベント */
+const TOUCH_EVENTS = ["wheel", "pointerdown", "keydown", "touchstart"] as const;
+
+/** 図の枠の表示する枠を、指定したノードか参加者の中心へスクロールし、読者が表示する枠を触ったら resume まで止める */
+export const createFollow = (
+  figure: HTMLElement,
+  reducedMotion: boolean,
+): FollowHandle => {
+  const viewport = figure.querySelector<HTMLElement>(
+    ".mdmark-diagram-viewport",
+  );
+  let follow = true;
+  const touched = () => {
+    follow = false;
+  };
+  for (const type of TOUCH_EVENTS)
+    viewport?.addEventListener(type, touched, { passive: true });
+  return {
+    reveal: (ids) => {
+      if (!viewport || !follow) return;
+      const elements = ids
+        .map((id) =>
+          figure.querySelector<HTMLElement>(
+            `[data-node="${CSS.escape(id)}"], [data-participant="${CSS.escape(id)}"]`,
+          ),
+        )
+        .filter((element): element is HTMLElement => element !== null);
+      const view = viewport.getBoundingClientRect();
+      let left = viewport.scrollLeft;
+      let top = viewport.scrollTop;
+      if (elements.length > 0) {
+        const rects = elements.map((element) =>
+          element.getBoundingClientRect(),
+        );
+        const cx =
+          (Math.min(...rects.map((r) => r.left)) +
+            Math.max(...rects.map((r) => r.right))) /
+          2;
+        const cy =
+          (Math.min(...rects.map((r) => r.top)) +
+            Math.max(...rects.map((r) => r.bottom))) /
+          2;
+        left = Math.max(
+          0,
+          viewport.scrollLeft + cx - view.left - viewport.clientWidth / 2,
+        );
+        top = Math.max(
+          0,
+          viewport.scrollTop + cy - view.top - viewport.clientHeight / 2,
+        );
+      }
+      viewport.scrollTo({
+        left,
+        top,
+        behavior: reducedMotion ? "auto" : "smooth",
+      });
+    },
+    resume: () => {
+      follow = true;
+    },
+    destroy: () => {
+      for (const type of TOUCH_EVENTS)
+        viewport?.removeEventListener(type, touched);
+    },
+  };
+};
+
 /** 画面に入ったら 1 回呼ぶ関数を登録し、外す関数を返す（既定は IntersectionObserver） */
 export type ObserveEnter = (target: Element, onEnter: () => void) => () => void;
 
@@ -50,6 +127,8 @@ export const attachBand = (options: {
   reducedMotion: boolean;
   observe?: ObserveEnter;
   label?: string;
+  /** 自動で進め始めたとき（start）と、自動で次の手順へ進めたとき（step）に呼ぶ関数 */
+  follow?: { start: () => void; step: (step: BandStep) => void };
 }): BandHandle => {
   const { figure, mode, apply } = options;
   let steps = options.steps;
@@ -57,12 +136,9 @@ export const attachBand = (options: {
   const label =
     options.label ??
     `${figure.querySelector(".mdmark-diagram-title")?.textContent ?? ""}の${mode === "playback" ? "再生" : "案内"}`;
-  const viewport = figure.querySelector<HTMLElement>(
-    ".mdmark-diagram-viewport",
-  );
+  const follower = createFollow(figure, options.reducedMotion);
   let index: number | undefined;
   let auto = false;
-  let follow = true;
   let timer: ReturnType<typeof setInterval> | undefined;
   const holder = document.createElement("div");
   holder.className = "map-band-holder";
@@ -90,45 +166,6 @@ export const attachBand = (options: {
         .querySelector<HTMLElement>(`[data-band="${CSS.escape(focused)}"]`)
         ?.focus();
   };
-  /** 強調するノードの中心へ、表示する枠の中をスクロールする（倍率と文書のスクロールは変えない） */
-  const reveal = () => {
-    if (!viewport || !follow || index === undefined) return;
-    const ids = steps[index]?.nodes ?? [];
-    const elements = ids
-      .map((id) =>
-        figure.querySelector<HTMLElement>(
-          `[data-node="${CSS.escape(id)}"], [data-participant="${CSS.escape(id)}"]`,
-        ),
-      )
-      .filter((element): element is HTMLElement => element !== null);
-    const view = viewport.getBoundingClientRect();
-    let left = viewport.scrollLeft;
-    let top = viewport.scrollTop;
-    if (elements.length > 0) {
-      const rects = elements.map((element) => element.getBoundingClientRect());
-      const cx =
-        (Math.min(...rects.map((r) => r.left)) +
-          Math.max(...rects.map((r) => r.right))) /
-        2;
-      const cy =
-        (Math.min(...rects.map((r) => r.top)) +
-          Math.max(...rects.map((r) => r.bottom))) /
-        2;
-      left = Math.max(
-        0,
-        viewport.scrollLeft + cx - view.left - viewport.clientWidth / 2,
-      );
-      top = Math.max(
-        0,
-        viewport.scrollTop + cy - view.top - viewport.clientHeight / 2,
-      );
-    }
-    viewport.scrollTo({
-      left,
-      top,
-      behavior: options.reducedMotion ? "auto" : "smooth",
-    });
-  };
   const go = (next: number | undefined) => {
     index = next;
     apply(next === undefined ? undefined : steps[next]);
@@ -142,11 +179,15 @@ export const attachBand = (options: {
   const startAuto = () => {
     stopAuto();
     auto = true;
-    follow = true;
+    follower.resume();
+    options.follow?.start();
     go(index ?? 0);
     timer = setInterval(() => {
       go(index === undefined ? 0 : (index + 1) % steps.length);
-      reveal();
+      const step = index === undefined ? undefined : steps[index];
+      if (step === undefined) return;
+      follower.reveal(step.nodes);
+      options.follow?.step(step);
     }, options.interval * 1000);
   };
   const stop = () => {
@@ -177,19 +218,8 @@ export const attachBand = (options: {
     if (event.key === "ArrowLeft")
       go(index === undefined || index === 0 ? steps.length - 1 : index - 1);
   };
-  const touched = () => {
-    follow = false;
-  };
   holder.addEventListener("click", onClick);
   holder.addEventListener("keydown", onKey);
-  const touchEvents = [
-    "wheel",
-    "pointerdown",
-    "keydown",
-    "touchstart",
-  ] as const;
-  for (const type of touchEvents)
-    viewport?.addEventListener(type, touched, { passive: true });
   let unobserve = () => {};
   if (options.autoplay) {
     unobserve = observe(figure, () => {
@@ -210,8 +240,7 @@ export const attachBand = (options: {
       unobserve();
       holder.removeEventListener("click", onClick);
       holder.removeEventListener("keydown", onKey);
-      for (const type of touchEvents)
-        viewport?.removeEventListener(type, touched);
+      follower.destroy();
       holder.remove();
     },
   };
