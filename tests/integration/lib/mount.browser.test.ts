@@ -15257,3 +15257,79 @@ test("test_normal_when_map_warnings", async () => {
   expect(figure.querySelector('[data-node="A"]')).not.toBeNull();
   expect(figure.querySelector('[data-node="B"]')).not.toBeNull();
 });
+
+// map のノードの名前とシーケンス図の文に用語の下線を付ける（正常系（map の用語の下線））
+test("test_normal_when_map_terms", async () => {
+  // 準備
+  sessionStorage.clear();
+  clearMapQuery();
+  const el = createElement();
+  el.style.width = "1200px";
+  const sequence = MAP_SEQUENCE.replace(
+    "mount->>marker: map の範囲",
+    "mount->>marker: 補足を読む",
+  );
+  const markdown = `${mapRange({ mermaid: MAP_FLOW, data: MAP_DATA })}\n${mapRange({ mermaid: sequence })}`;
+  // 実行
+  await mountTracked(el, {
+    markdown,
+    config: { map: MAP_CONFIG } as Parameters<Built["mount"]>[1]["config"],
+    index: {
+      schema: 2,
+      docs: [],
+      terms: [
+        { id: "data", term: "補足", meaning: "map の範囲の上書きと説明" },
+      ],
+    },
+  });
+  await vi.waitFor(
+    () =>
+      expect(
+        el.querySelectorAll('figure.mdmark-diagram[data-diagram="map"]'),
+      ).toHaveLength(2),
+    { timeout: MAP_WAIT_MS },
+  );
+  const [flow, seq] = [
+    ...el.querySelectorAll<HTMLElement>(
+      'figure.mdmark-diagram[data-diagram="map"]',
+    ),
+  ] as [HTMLElement, HTMLElement];
+  // 検証: ノードの名前の中の用語
+  const name = find<HTMLElement>(
+    mapNode(flow, "data"),
+    ".mdmark-diagram-node-name",
+  );
+  const term = find<HTMLElement>(name, ".mdmark-term");
+  expect(term.textContent).toBe("補足");
+  expect(name.textContent).toBe("補足の検査");
+  // 検証: 用語にフォーカスすると、図の枠のツールチップに意味が出る
+  term.focus();
+  await vi.waitFor(() =>
+    expect(
+      [...flow.querySelectorAll<HTMLElement>(".mdmark-diagram-tip")].some(
+        (tip) =>
+          !tip.hidden && tip.textContent?.includes("map の範囲の上書きと説明"),
+      ),
+    ).toBe(true),
+  );
+  term.blur();
+  // 検証: ノードの説明のマーカーにフォーカスすると、説明のツールチップが出る
+  find<HTMLElement>(mapNode(flow, "layout"), ".mdmark-diagram-info").focus();
+  await vi.waitFor(() =>
+    expect(
+      [...flow.querySelectorAll<HTMLElement>(".mdmark-diagram-tip")].some(
+        (tip) =>
+          !tip.hidden && tip.textContent?.includes("内側のグループから配置し"),
+      ),
+    ).toBe(true),
+  );
+  // 検証: シーケンス図のメッセージの文の中の用語
+  expect(
+    find<HTMLElement>(
+      seq,
+      '.mdmark-diagram-label[data-message="1"]',
+    ).querySelector(".mdmark-term")?.textContent,
+  ).toBe("補足");
+  // 検証: グループのタイトルのボタンには付けない
+  expect(flow.querySelector(".map-group-title .mdmark-term")).toBeNull();
+});

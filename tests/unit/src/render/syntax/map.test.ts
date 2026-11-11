@@ -80,3 +80,28 @@ test("test_build_map_ranges_when_disabled", () => {
   expect(html).toContain("data-mdmark-mermaid");
   expect(html).not.toContain("layout:");
 });
+
+// 用語（正常系）
+test("test_build_map_ranges_when_terms", () => {
+  // 準備
+  const markdown = mapRange({ mermaid: FLOW, data: DATA });
+  const index = {
+    schema: 2 as const,
+    docs: [],
+    terms: [
+      { id: "data", term: "補足", meaning: "map の範囲の上書きと説明" },
+      { id: "figure", term: "図", meaning: "" },
+    ],
+  };
+  // 実行
+  const on = renderDoc(markdown, {}, { index }).html;
+  const off = renderDoc(markdown, { glossary: false }, { index }).html;
+  // 検証
+  const attr =
+    on.match(/<div class="mdmark-map"[^>]*data-map-terms="([^"]*)"/)?.[1] ?? "";
+  const terms = JSON.parse(
+    attr.replaceAll("&quot;", '"').replaceAll("&amp;", "&"),
+  );
+  expect(terms).toEqual({ 補足: "map の範囲の上書きと説明" });
+  expect(off).not.toContain("data-map-terms");
+});

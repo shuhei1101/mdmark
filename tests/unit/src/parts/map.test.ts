@@ -33,7 +33,7 @@ test("test_render_map_flow", async () => {
   // 準備
   const { renderMapFlow } = await loadParts();
   // 実行
-  const html = renderMapFlow(await flowArgs());
+  const { html } = renderMapFlow(await flowArgs());
   // 検証
   expect(matches(html, /data-group="[^"]+"/g)).toHaveLength(4);
   expect(new Set(matches(html, /data-node="[^"]+"/g)).size).toBe(10);
@@ -46,7 +46,7 @@ test("test_render_map_flow_when_keyboard", async () => {
   const { renderMapFlow } = await loadParts();
   // 実行
   const args = await flowArgs("read");
-  const html = renderMapFlow(args);
+  const { html } = renderMapFlow(args);
   // 検証
   const nodes = matches(html, /<div class="[^"]*map-kinded[^"]*"[^>]*>/g);
   expect(nodes).toHaveLength(args.layout.nodes.length);
@@ -58,7 +58,7 @@ test("test_render_map_flow_when_keyboard", async () => {
   expect(hits.length).toBeGreaterThan(0);
   for (const hit of hits) expect(hit).toContain('tabindex="0"');
   expect(html).not.toMatch(/data-group="read"[^>]*><div class="map-group-bar"/);
-  expect(renderMapFlow(await flowArgs())).toMatch(
+  expect(renderMapFlow(await flowArgs()).html).toMatch(
     /data-group="read"[^>]*><div class="map-group-bar"/,
   );
 });
@@ -68,7 +68,7 @@ test("test_render_map_flow_when_entered", async () => {
   // 準備
   const { renderMapFlow } = await loadParts();
   // 実行
-  const html = renderMapFlow(await flowArgs("read"));
+  const { html } = renderMapFlow(await flowArgs("read"));
   // 検証
   expect(html).toMatch(
     /data-node="mount"[^>]*class="[^"]*map-faded|class="[^"]*map-faded[^"]*"[^>]*data-node="mount"/,
@@ -90,7 +90,7 @@ test("test_render_map_sequence", async () => {
   };
   const rows = sequenceRows(sequence, view);
   // 実行
-  const html = renderMapSequence({
+  const { html } = renderMapSequence({
     sequence,
     rows: rows.rows,
     participants: rows.participants,
@@ -169,7 +169,7 @@ test("test_render_map_flow_when_packets", async () => {
   const { renderMapFlow } = await loadParts();
   const args = await flowArgs();
   // 実行
-  const html = renderMapFlow({
+  const { html } = renderMapFlow({
     ...args,
     packets: [
       {
@@ -211,7 +211,7 @@ test("test_render_map_flow_when_unknown_color", async () => {
   const { renderMapFlow } = await loadParts();
   const args = await flowArgs();
   // 実行
-  const html = renderMapFlow({
+  const { html } = renderMapFlow({
     ...args,
     colors: { read: "blue;x" },
     packets: [
@@ -229,4 +229,84 @@ test("test_render_map_flow_when_unknown_color", async () => {
   expect(items[0]).toContain("var(--mdmark-color-diagram-line)");
   expect(html).not.toContain(";x:y");
   expect(html).not.toContain(";x");
+});
+
+// 用語の下線（正常系）
+test("test_render_map_flow_when_terms", async () => {
+  // 準備
+  const { renderMapFlow } = await loadParts();
+  const { parseFlowchart } = await loadFlowchart();
+  const { layoutMap } = await loadLayout();
+  const chart = parseFlowchart(
+    FLOW.replace('data["補足の検査"]', 'data["<b>補足</b>の検査"]'),
+  );
+  const layout = layoutMap(
+    chart,
+    { collapsed: [], entered: undefined },
+    {},
+    "height",
+  );
+  // 実行
+  const { html, tips } = renderMapFlow({
+    ...(await flowArgs()),
+    layout,
+    notes: { layout: "内側から配置する" },
+    terms: { 補足: "map の範囲の上書きと説明" },
+  });
+  // 検証
+  const name =
+    html.match(
+      /data-node="data"[^>]*>[\s\S]*?<span class="mdmark-diagram-node-name">([\s\S]*?)<\/span><\/div>/,
+    )?.[1] ?? "";
+  expect(
+    matches(name, /<span class="mdmark-term"[^>]*>補足<\/span>/g),
+  ).toHaveLength(1);
+  expect(name).toContain("&lt;b&gt;");
+  expect(name).not.toContain("<b>");
+  expect(tips).toContain("map の範囲の上書きと説明");
+  expect(tips).toContain("内側から配置する");
+  const titles = matches(
+    html,
+    /<button class="map-group-title"[^>]*>[^<]*<\/button>/g,
+  );
+  expect(titles.length).toBeGreaterThan(0);
+  for (const title of titles) expect(title).not.toContain("mdmark-term");
+});
+
+// 用語の下線（正常系）
+test("test_render_map_sequence_when_terms", async () => {
+  // 準備
+  const { renderMapSequence } = await loadParts();
+  const { parseSequence } = await loadSequence();
+  const { sequenceRows } = await loadRows();
+  const sequence = parseSequence(
+    SEQUENCE.replace(
+      "mount->>marker: map の範囲",
+      "mount->>marker: 補足を読む",
+    ),
+  );
+  const rows = sequenceRows(sequence, {
+    order: sequence.participants.map((item) => item.id),
+    collapsed: [],
+    entered: undefined,
+  });
+  // 実行
+  const { html, tips } = renderMapSequence({
+    sequence,
+    rows: rows.rows,
+    participants: rows.participants,
+    collapsed: [],
+    entered: undefined,
+    selected: [],
+    focus: undefined,
+    terms: { 補足: "map の範囲の上書きと説明" },
+  });
+  // 検証
+  const label =
+    html.match(
+      /<span class="mdmark-diagram-label[^"]*" data-message="1"[^>]*>([\s\S]*?)<\/span><span/,
+    )?.[1] ?? "";
+  expect(label).toContain('<span class="mdmark-term"');
+  expect(label).toContain(">補足</span>を読む");
+  expect(tips).toContain("map の範囲の上書きと説明");
 });
