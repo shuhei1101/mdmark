@@ -666,8 +666,11 @@ export const attachMapFlow = (
           walkFrom = undefined;
           save();
         }
-        if (step?.enter !== undefined && step.enter !== state.entered)
-          state = { ...state, entered: step.enter };
+        // 手順の enter のグループへ入り、enter を持たない手順は案内を始めた段の図で出す
+        if (step !== undefined) {
+          const entered = step.enter ?? walkFrom?.entered;
+          if (entered !== state.entered) state = { ...state, entered };
+        }
         focus =
           step === undefined
             ? undefined
