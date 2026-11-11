@@ -75,8 +75,10 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-11T08:13:24.632806+00:00'
   - process: 実装
-    status: todo
+    status: done
     note: dev/ と旧 docs/ のパスを指す src/・scripts/・tests/・vscode/・biome.json・.gitignore・.github/ を移した後の置き場所に合わせ、単体・結合テストと lint を全 pass させる
+    updated_by: planner
+    updated_at: '2026-11-11T09:56:02.688448+00:00'
   - process: 結合テスト作成
     status: skipped
     reason: 新しい振る舞いが無い。パスを書き換えた既存の結合テストの全 pass を実装で確かめる
