@@ -233,7 +233,7 @@ export function renderDiagramTip(tip: DiagramTip): string {
 }
 
 /** 図の中のツールチップを集める入れ物 */
-type TipList = {
+export type TipList = {
   /** ツールチップを追加して `id` を返却する */
   add: (tip: Omit<DiagramTip, "id">) => string;
   /** 追加したツールチップの HTML */
@@ -241,7 +241,7 @@ type TipList = {
 };
 
 /** `id` の頭から通し番号の `id` を振るツールチップの入れ物を作る */
-function createTips(prefix: string): TipList {
+export function createTips(prefix: string): TipList {
   const rendered: string[] = [];
   return {
     add: (tip) => {
@@ -254,7 +254,7 @@ function createTips(prefix: string): TipList {
 }
 
 /** 定義の文字の `{{単語}}` を、意味のある用語なら下線とツールチップの持ち主にし、それ以外は単語だけにして、文字を逃がして返却する */
-function renderText(
+export function renderText(
   text: string,
   tips: TipList,
   lookup: TermLookup | undefined,

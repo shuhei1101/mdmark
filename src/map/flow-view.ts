@@ -1,5 +1,5 @@
 import type { ResolvedConfig } from "../config.ts";
-import { attachDiagrams } from "../interact/diagrams.ts";
+import { attachDiagrams, DIAGRAM_REDRAW_EVENT } from "../interact/diagrams.ts";
 import { renderDiagramFrame } from "../parts/diagram.ts";
 import {
   type MapPacketMark,
@@ -69,6 +69,24 @@ const overridesOf = (
   for (const [id, size] of Object.entries(sizes))
     overrides[id] = { ...overrides[id], size };
   return overrides;
+};
+
+/** 範囲の `data-map-terms`（用語から意味の JSON）。無ければ undefined */
+export const termsOf = (
+  range: HTMLElement,
+): Record<string, string> | undefined =>
+  range.dataset.mapTerms === undefined
+    ? undefined
+    : (JSON.parse(range.dataset.mapTerms) as Record<string, string>);
+
+/** 図の枠の図のツールチップを差し替え、ツールチップの操作を付け直させる */
+export const replaceTips = (figure: HTMLElement, tips: string): void => {
+  const box = figure.querySelector<HTMLElement>(".mdmark-diagram-box");
+  if (!box) return;
+  for (const tip of box.querySelectorAll(":scope > .mdmark-diagram-tip"))
+    tip.remove();
+  box.insertAdjacentHTML("beforeend", tips);
+  figure.dispatchEvent(new Event(DIAGRAM_REDRAW_EVENT));
 };
 
 /** 強調するノードどうしの線 */
@@ -157,29 +175,32 @@ export const attachMapFlow = (
         Object.keys(state.wireShifts).length === 0,
     },
   ];
+  const terms = termsOf(range);
   const body = () => {
     const applied = applyWireShifts(layout, state);
     const shown = { ...layout, wires: applied.wires };
     const packets: MapPacketMark[] = [];
+    const part = renderMapFlow({
+      layout: shown,
+      kinds: config.map.kinds,
+      lines: config.map.lines,
+      wireLines,
+      notes,
+      colors,
+      collapsed: state.collapsed,
+      entered: state.entered,
+      selected: state.selected,
+      focus,
+      packets,
+      dragging: undefined,
+      id: frameId,
+      terms,
+    });
     return {
-      html: renderMapFlow({
-        layout: shown,
-        kinds: config.map.kinds,
-        lines: config.map.lines,
-        wireLines,
-        notes,
-        colors,
-        collapsed: state.collapsed,
-        entered: state.entered,
-        selected: state.selected,
-        focus,
-        packets,
-        dragging: undefined,
-        id: frameId,
-      }),
+      html: part.html,
       width: layout.width,
       height: layout.height,
-      tips: "",
+      tips: part.tips,
     };
   };
   range.innerHTML = renderDiagramFrame(
@@ -232,6 +253,7 @@ export const attachMapFlow = (
       sizer.style.width = `${part.width}px`;
       sizer.style.height = `${part.height}px`;
     }
+    replaceTips(figure, part.tips);
     for (const item of tools()) {
       const button = figure.querySelector<HTMLButtonElement>(
         `[data-tool="${item.name}"]`,

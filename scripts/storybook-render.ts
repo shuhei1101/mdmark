@@ -1081,12 +1081,12 @@ const MAP_FLOW_LONG = MAP_FLOW.replace(
 /** map の部品を図の枠に入れる */
 const mapFrame = (
   title: string,
-  html: string,
+  part: { html: string; tips: string },
   size: { width: number; height: number },
 ): string =>
   renderDiagramFrame(
     { kind: "map", title, legend: [], wide: true, tools: [], id: "story-map" },
-    { html, ...size, tips: "" },
+    { ...part, ...size },
   );
 
 const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
@@ -1166,7 +1166,7 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
       collapsed,
       entered,
     });
-    const html = renderMapSequence({
+    const part = renderMapSequence({
       sequence,
       rows: rows.rows,
       participants: rows.participants,
@@ -1176,9 +1176,13 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
       focus: jsonObject<{ message: number }>(args.focus),
       id: "story-map-seq",
     });
-    const width = Number(/<svg[^>]*\swidth="([\d.]+)"/.exec(html)?.[1] ?? 0);
-    const height = Number(/<svg[^>]*\sheight="([\d.]+)"/.exec(html)?.[1] ?? 0);
-    return mapFrame("文書を描くまで", html, { width, height });
+    const width = Number(
+      /<svg[^>]*\swidth="([\d.]+)"/.exec(part.html)?.[1] ?? 0,
+    );
+    const height = Number(
+      /<svg[^>]*\sheight="([\d.]+)"/.exec(part.html)?.[1] ?? 0,
+    );
+    return mapFrame("文書を描くまで", part, { width, height });
   },
   "map-band": (args) =>
     renderMapBand({

@@ -1,10 +1,11 @@
 import type { StateCore, Token } from "markdown-it";
 import type { WarningItem } from "../../extensions.ts";
+import { buildDictionary, findWords } from "../../knowledge/dictionary.ts";
 import type { MapProblem } from "../../map/spec.ts";
 import { collectMapStructure } from "../../map/structure.ts";
 import { escapeHtml } from "../../parts/escape.ts";
 import { outermostRanges, pairRanges } from "./blocks.ts";
-import { featureOn, markOf, ownBlock } from "./tokens.ts";
+import { envOf, featureOn, markOf, ownBlock } from "./tokens.ts";
 import { unclosedWarning, warningBlock } from "./warnings.ts";
 
 /** map の範囲のマーカーと、補足のマーカーの名前 */
@@ -24,6 +25,33 @@ const isMermaid = (token: Token) =>
 /** 補足のマーカーの引数（`map-data:` の後ろから `-->` の前まで）の JSON の文字 */
 const dataOf = (rest: string | undefined): string => (rest ?? "").trim();
 
+/** `glossary` がオンのとき、文字に出る意味を持つ用語（エイリアスと文書の別名を除く）を、文字に出たままの用語から意味への対応にする関数 */
+const termsFinder = (
+  state: StateCore,
+): ((text: string) => Record<string, string>) | undefined => {
+  if (!featureOn(state, "glossary")) return undefined;
+  const env = envOf(state);
+  const dictionary = buildDictionary({
+    index: env.index,
+    docId: env.docId,
+    ownGlossary: env.ownGlossary,
+    references: env.mdmarkReferences,
+    aliases: env.aliases,
+    features: env.features,
+  });
+  if (dictionary.words.length === 0) return undefined;
+  return (text) => {
+    const terms: Record<string, string> = {};
+    for (const found of findWords(text, dictionary.words)) {
+      const term = dictionary.terms.get(found.word);
+      if (term === undefined || term.alias !== undefined || term.meaning === "")
+        continue;
+      terms[text.slice(found.start, found.end)] = term.meaning;
+    }
+    return terms;
+  };
+};
+
 /** `map` がオンのとき、`<!-- map -->` 〜 `<!-- /map -->` の範囲を div.mdmark-map にし、範囲の形の誤りを記載の警告にする。オフのときはマーカーと補足を取り除き、mermaid のブロックを普通のコードブロックとして残す */
 export const buildMapRanges = (state: StateCore): void => {
   const tokens = state.tokens;
@@ -38,6 +66,7 @@ export const buildMapRanges = (state: StateCore): void => {
   const out: Token[] = [];
   let cursor = 0;
   let number = 0;
+  const findTerms = termsFinder(state);
   for (const { open, close } of ranges) {
     out.push(...tokens.slice(cursor, open));
     const openToken = tokens[open] as Token;
@@ -89,10 +118,17 @@ export const buildMapRanges = (state: StateCore): void => {
     }
     fence.meta = { ...(fence.meta ?? {}), [MAP_SOURCE_META]: true };
     const args = escapeHtml(structure.args.normalized);
+    const terms = findTerms?.(
+      `${fence.content}\n${data === undefined ? "" : dataOf(markOf(data)?.rest)}`,
+    );
+    const termsAttr =
+      terms === undefined || Object.keys(terms).length === 0
+        ? ""
+        : ` data-map-terms="${escapeHtml(JSON.stringify(terms))}"`;
     out.push(
       ownBlock(
         state,
-        `<div class="mdmark-map" data-map="${number}" data-map-kind="${structure.kind}" data-map-args="${args}">`,
+        `<div class="mdmark-map" data-map="${number}" data-map-kind="${structure.kind}" data-map-args="${args}"${termsAttr}>`,
         openToken,
       ),
     );

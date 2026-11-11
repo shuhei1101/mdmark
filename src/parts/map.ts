@@ -13,7 +13,13 @@ import {
 import type { SequenceRow } from "../map/sequence-rows.ts";
 import type { MapKind, MapLine } from "../map/spec.ts";
 import { isColorName } from "./colors.ts";
-import { renderFlow } from "./diagram.ts";
+import {
+  createTips,
+  renderFlow,
+  renderText,
+  type TermLookup,
+  type TipList,
+} from "./diagram.ts";
 import { escapeHtml } from "./escape.ts";
 import { iconSvg } from "./icons.ts";
 
@@ -101,6 +107,8 @@ const polyline = (points: Array<[number, number]>) => ({
 /** 部品『mapの構成図』の引数 */
 export type MapFlowArgs = {
   layout: MapLayout;
+  /** 用語から意味（`data-map-terms`）。ノードの名前の中の用語に下線を付ける */
+  terms?: Record<string, string> | undefined;
   /** 設定の map.kinds（Mermaid のクラスごとのノードの種類） */
   kinds: Record<string, MapKind>;
   /** 設定の map.lines（矢印ごとと名前ごとの線の種類） */
@@ -217,6 +225,49 @@ export const renderMapPackets = (
   return renderPackets(packetPaths);
 };
 
+/** 部品の HTML と、図の枠の `.mdmark-diagram-box` に配置するツールチップの HTML */
+export type MapPart = { html: string; tips: string };
+
+/** 文字の中の用語（`terms` のキー。長い用語を先に照合する）を `{{用語}}` で囲む */
+const markTerms = (text: string, words: string[]): string => {
+  if (words.length === 0) return text;
+  let out = "";
+  let at = 0;
+  while (at < text.length) {
+    const word = words.find((item) => text.startsWith(item, at));
+    if (word === undefined) {
+      out += text[at];
+      at += 1;
+    } else {
+      out += `{{${word}}}`;
+      at += word.length;
+    }
+  }
+  return out;
+};
+
+/** 用語の下線を付けるための、用語の並び・意味の参照・ツールチップ */
+type TermMarker = {
+  /** 文字を逃がし、用語を `span.mdmark-term` にした HTML */
+  render: (text: string) => string;
+  tips: TipList;
+};
+
+/** `terms`（用語から意味）の下線を付ける関数と、そのツールチップ */
+const termMarker = (
+  terms: Record<string, string> | undefined,
+  id: string,
+): TermMarker => {
+  const words = Object.keys(terms ?? {}).sort((a, b) => b.length - a.length);
+  const lookup: TermLookup = (word) => terms?.[word];
+  const tips = createTips(`${id}-term`);
+  const found = { terms: false };
+  return {
+    render: (text) => renderText(markTerms(text, words), tips, lookup, found),
+    tips,
+  };
+};
+
 /** 構成図のノードで使うキー（選ぶ・動かす） */
 const MAP_NODE_KEYS =
   "Enter Space Alt+ArrowLeft Alt+ArrowUp Alt+ArrowDown Alt+ArrowRight";
@@ -226,7 +277,7 @@ export const selectableName = (name: string, selected: boolean): string =>
   selected ? `${name}（選択中）` : name;
 
 /** 部品『mapの構成図』の HTML。フロー図の部品の定義にしたノードと線を renderFlow で描き、グループの面とタイトルの行・開閉と中へ入るボタン・閉じたグループを重ねる */
-export const renderMapFlow = (args: MapFlowArgs): string => {
+export const renderMapFlow = (args: MapFlowArgs): MapPart => {
   const { layout } = args;
   const kindOf = (classes: string[] | undefined): MapKind | undefined => {
     const name = (classes ?? []).find((item) => item in args.kinds);
@@ -304,7 +355,22 @@ export const renderMapFlow = (args: MapFlowArgs): string => {
     nodes,
     wires,
   };
-  let html = renderFlow(definition, args.id ?? "map", true).html;
+  const part = renderFlow(definition, args.id ?? "map", true);
+  let html = part.html;
+  // ノードの名前の中の用語に下線を付ける（名前の文字は逃がしたまま、名前の要素の中に置く）
+  const marker = termMarker(args.terms, args.id ?? "map");
+  for (const node of layout.nodes) {
+    const label = node.label ?? node.lines.join("");
+    const marked = marker.render(label);
+    if (marked === escapeHtml(label)) continue;
+    const value = escapeHtml(node.id).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    html = html.replace(
+      new RegExp(
+        `(data-node="${value}"[^>]*>[\\s\\S]*?<span class="mdmark-diagram-node-name">)[\\s\\S]*?(</span>)`,
+      ),
+      (_whole, head: string, tail: string) => `${head}${marked}${tail}`,
+    );
+  }
   // ノードはフォーカスして Enter・Space で選び、Alt + 矢印キーで動かせる
   const selectedIds = new Set(args.selected);
   for (const node of layout.nodes) {
@@ -374,7 +440,10 @@ export const renderMapFlow = (args: MapFlowArgs): string => {
     )
     .join("");
   const hitLayer = `<svg class="map-wire-hits" width="${layout.width}" height="${layout.height}">${hits}</svg>`;
-  return `${groups}${html}${hitLayer}${closedHtml}${packets}`;
+  return {
+    html: `${groups}${html}${hitLayer}${closedHtml}${packets}`,
+    tips: `${part.tips}${marker.tips.html()}`,
+  };
 };
 
 /** 部品『案内の帯』の引数 */
@@ -433,6 +502,8 @@ export const renderMapBand = (args: MapBandArgs): string => {
 /** 部品『mapのシーケンス図』の引数 */
 export type MapSequenceArgs = {
   sequence: Sequence;
+  /** 用語から意味（`data-map-terms`）。参加者の名前・メッセージの文・注記の文の中の用語に下線を付ける */
+  terms?: Record<string, string> | undefined;
   rows: SequenceRow[];
   participants: string[];
   collapsed: number[];
@@ -462,7 +533,8 @@ const fragmentTitle = (fragment: SequenceFragment): string =>
   `${fragment.kind === "rect" ? "" : `<b>${fragment.kind}</b> `}${escapeHtml(fragment.label)}`;
 
 /** 部品『mapのシーケンス図』の HTML。参加者・ライフライン・メッセージに、ブロックのタブの開閉と名前のボタン・区間・注記・活性化の帯・参加者の選択を重ねる */
-export const renderMapSequence = (args: MapSequenceArgs): string => {
+export const renderMapSequence = (args: MapSequenceArgs): MapPart => {
+  const marker = termMarker(args.terms, `${args.id ?? "map"}-seq`);
   const { sequence, rows, participants } = args;
   const id = args.id ?? "map-seq";
   const x = new Map(
@@ -586,7 +658,7 @@ export const renderMapSequence = (args: MapSequenceArgs): string => {
             ? [(xs[0] as number) + 16, (xs[0] as number) + 170]
             : [Math.min(...xs) - 60, Math.max(...xs) + 60];
       overlay.push(
-        `<div class="map-seq-note" style="left:${left}px;top:${rowY(at) - 32}px;width:${right - left}px">${escapeHtml(note.text)}</div>`,
+        `<div class="map-seq-note" style="left:${left}px;top:${rowY(at) - 32}px;width:${right - left}px">${marker.render(note.text)}</div>`,
       );
     }
   });
@@ -670,7 +742,7 @@ export const renderMapSequence = (args: MapSequenceArgs): string => {
     }
     const number = sequence.autonumber ? `${message + 1} ` : "";
     labels.push(
-      `<span class="mdmark-diagram-label${dim}" data-message="${message}" style="left:${(start + end) / 2}px;top:${y - 14}px">${escapeHtml(`${number}${item.text}`)}</span>`,
+      `<span class="mdmark-diagram-label${dim}" data-message="${message}" style="left:${(start + end) / 2}px;top:${y - 14}px">${escapeHtml(number)}${marker.render(item.text)}</span>`,
     );
   }
   const focusEnds =
@@ -722,13 +794,14 @@ export const renderMapSequence = (args: MapSequenceArgs): string => {
           name !== focusEnds.to)
           ? " map-dim"
           : "";
-      return `<div class="mdmark-diagram-node map-participant map-kinded${dim}${selected.has(name) ? " is-selected" : ""}" data-kind="map" data-shape="${kind?.shape ?? "rounded"}"${kind?.color === undefined ? "" : ` data-color="${escapeHtml(kind.color)}"`} data-node="${escapeHtml(name)}" data-participant="${escapeHtml(name)}" role="button" tabindex="0" aria-keyshortcuts="Enter Space Alt+ArrowLeft Alt+ArrowRight" aria-label="${escapeHtml(selectableName(labelOf(name), selected.has(name)))}"${selected.has(name) ? " data-selected" : ""} style="left:${(x.get(name) ?? 0) - MAP_SEQ.headW / 2}px;top:${MAP_SEQ.headTop}px;width:${MAP_SEQ.headW}px"><span class="mdmark-diagram-node-kind${icon === "" && tag === "" ? " is-empty" : ""}">${icon}${tag}</span><span class="mdmark-diagram-node-name">${escapeHtml(labelOf(name))}</span></div>`;
+      return `<div class="mdmark-diagram-node map-participant map-kinded${dim}${selected.has(name) ? " is-selected" : ""}" data-kind="map" data-shape="${kind?.shape ?? "rounded"}"${kind?.color === undefined ? "" : ` data-color="${escapeHtml(kind.color)}"`} data-node="${escapeHtml(name)}" data-participant="${escapeHtml(name)}" role="button" tabindex="0" aria-keyshortcuts="Enter Space Alt+ArrowLeft Alt+ArrowRight" aria-label="${escapeHtml(selectableName(labelOf(name), selected.has(name)))}"${selected.has(name) ? " data-selected" : ""} style="left:${(x.get(name) ?? 0) - MAP_SEQ.headW / 2}px;top:${MAP_SEQ.headTop}px;width:${MAP_SEQ.headW}px"><span class="mdmark-diagram-node-kind${icon === "" && tag === "" ? " is-empty" : ""}">${icon}${tag}</span><span class="mdmark-diagram-node-name">${marker.render(labelOf(name))}</span></div>`;
     })
     .join("");
-  return [
+  const html = [
     `<svg class="mdmark-diagram-wires" width="${width}" height="${height}" aria-hidden="true"><defs>${markers}</defs><g class="map-seq-under">${under.join("")}</g>${lifelines}${wires.join("")}<g class="map-seq-above">${above.join("")}</g><g class="map-packets" aria-hidden="true">${renderPackets(packetPaths)}</g></svg>`,
     labels.join(""),
     overlay.join(""),
     `<div class="mdmark-diagram-seq-heads" style="width:${width}px;height:${MAP_SEQ.headTop + MAP_SEQ.headH + 8}px">${heads}</div>`,
   ].join("");
+  return { html, tips: marker.tips.html() };
 };

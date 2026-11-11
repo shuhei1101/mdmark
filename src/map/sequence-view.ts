@@ -5,6 +5,7 @@ import { renderMapSequence, renderPackets } from "../parts/map.ts";
 import { attachBand, type BandHandle } from "./band.ts";
 import { parseMapData } from "./data.ts";
 import { DRAG_THRESHOLD_PX } from "./drag.ts";
+import { replaceTips, termsOf } from "./flow-view.ts";
 import { parseSequence, SEQ_ARROW_STYLES } from "./sequence.ts";
 import { sequenceRows } from "./sequence-rows.ts";
 import type { MapArgs } from "./spec.ts";
@@ -71,27 +72,26 @@ export const attachMapSequence = (
     ]),
   );
   const frameId = `map-${index}`;
+  const terms = termsOf(range);
   const view = () => {
     const rows = sequenceRows(sequence, {
       order: order(),
       collapsed: state.collapsed.map(Number),
       entered: state.entered === undefined ? undefined : Number(state.entered),
     });
-    return {
-      html: renderMapSequence({
-        sequence,
-        rows: rows.rows,
-        participants: rows.participants,
-        collapsed: state.collapsed.map(Number),
-        entered:
-          state.entered === undefined ? undefined : Number(state.entered),
-        selected: state.selected,
-        focus: current === undefined ? undefined : { message: current },
-        kinds,
-        id: frameId,
-      }),
-      rows,
-    };
+    const part = renderMapSequence({
+      sequence,
+      rows: rows.rows,
+      participants: rows.participants,
+      collapsed: state.collapsed.map(Number),
+      entered: state.entered === undefined ? undefined : Number(state.entered),
+      selected: state.selected,
+      focus: current === undefined ? undefined : { message: current },
+      kinds,
+      id: frameId,
+      terms,
+    });
+    return { html: part.html, tips: part.tips, rows };
   };
   const tools = () => [
     {
@@ -126,7 +126,7 @@ export const attachMapSequence = (
       tools: tools(),
       id: frameId,
     },
-    { html: first.html, ...sizeOf(first.html), tips: "" },
+    { html: first.html, ...sizeOf(first.html), tips: first.tips },
   );
   const figure = range.querySelector<HTMLElement>("figure") as HTMLElement;
   const detachDiagrams = attachDiagrams({
@@ -144,7 +144,7 @@ export const attachMapSequence = (
       location,
     });
   const refresh = () => {
-    const { html, rows } = view();
+    const { html, tips, rows } = view();
     // 開閉・中だけを描くで再生するメッセージが変わったら、帯の手順を差し替えて再生を止める
     const next = shownMessages(rows);
     if (band && next.join(",") !== shown.join(",")) {
@@ -169,6 +169,7 @@ export const attachMapSequence = (
       sizer.style.width = `${width}px`;
       sizer.style.height = `${height}px`;
     }
+    replaceTips(figure, tips);
     for (const item of tools()) {
       const button = figure.querySelector<HTMLButtonElement>(
         `[data-tool="${item.name}"]`,
