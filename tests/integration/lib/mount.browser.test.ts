@@ -7625,7 +7625,7 @@ function pngUrl(options: {
 
 /** 無限ループで、フレームの間隔が 100ms の GIF（モックの見本） */
 const ANIMATED_GIF_URL = new URL(
-  "../../../dev/mock/refs/263/assets/media/build.gif",
+  "../../../docs/mock/refs/263/assets/media/build.gif",
   import.meta.url,
 ).href;
 

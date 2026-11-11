@@ -37,7 +37,7 @@ export const PNG_BYTES = Buffer.from(
 
 /** 動画・音声・GIF の見本（モックの見本のファイル） */
 const MEDIA_SAMPLE_DIR = fileURLToPath(
-  new URL("../../dev/mock/refs/263/assets/media/", import.meta.url),
+  new URL("../../docs/mock/refs/263/assets/media/", import.meta.url),
 );
 
 /** 見本の動画（mp4）・音声（mp3）・動く GIF の中身を読み込む */
