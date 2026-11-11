@@ -397,7 +397,7 @@ test("test_render_map_flow_when_collapsed_count", async () => {
   // 検証
   const closed =
     html.match(
-      /<div class="mdmark-diagram-node map-closed-group[^"]*" data-group="read"[\s\S]*?<\/div><\/div>/,
+      /<div class="mdmark-diagram-node map-closed-group[^"]*" data-group="read"[\s\S]*?<span class="map-closed-count">[^<]*<\/span>/,
     )?.[0] ?? "";
   expect(closed).toContain("ノード 3 件");
 });
