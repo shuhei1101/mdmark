@@ -100,15 +100,16 @@ repository:
     | `scripts/` | 開発のスクリプト（ビルド） | 届けない | この土台 |
     | `tests/` | 単体・結合・E2E のテスト | 届けない | この土台 |
     | `templates/` | 利用側へ配置する雛形（設定・`theme.css`・索引・拡張の雛形。差分のアダプターのサンプルは #7） | CLI の `init` が配置する | #9 |
-    | `schemas/` | 設定・索引・部品の JSON Schema | CDN と CLI | #3・#5・#6 |
+    | `schemas/` | 設定・索引・部品の JSON Schema と、設計書の種類ごとの Schema（`{種類}.schema.yaml`。AI Monitor の配布物） | JSON Schema は CDN と CLI。設計書の Schema は届けない | #3・#5・#6・#454 |
+    | `docs/` | 設計書（種類ごとのフォルダに `{ID}.yaml`）・公開ドキュメント（`guide/`）・PR ドキュメント（`pr/`）・モック（`mock/`）。公開範囲は各文書の `visibility` | `visibility` が `public` の文書を GitHub Pages で公開する（`_config.yml` の `exclude` で `internal` を除く） | #454 |
     | `migrations/` | バージョンごとの移行の手順とスクリプト（`v{バージョン}/`）、出していないバージョンの手順（`next/`）、移行の手順が要らないスキーマの変更の一覧（`no-steps.yaml`） | CLI の `upgrade` が `v{バージョン}/` を読み込む（`next/` と `no-steps.yaml` は配布物のビルドだけが読み込む） | #10 |
-    | `guide/` | ガイドの索引（`index.yaml`。本文は `docs/` のページを指す） | 配布物のビルドが検査し、Claude Code が dev-docs の配信元 `mdmark` からタグ `topic:ガイド` で絞って参照する | #11 |
+    | `guide/` | ガイドの索引（`index.yaml`。本文は `docs/guide/` のページを指す） | 配布物のビルドが検査し、Claude Code が dev-docs の配信元 `mdmark` からタグ `topic:ガイド` で絞って参照する | #11 |
     | `.claude-plugin/` | マーケットプレイスの定義（`marketplace.json`。`plugin/` を記載する） | `/plugin marketplace add shuhei1101/mdmark` | #11 |
     | `plugin/` | Claude Code のプラグインの定義（`plugin.json`・`.mcp.json`・`hooks/hooks.json`）と、配布物のビルドが記載するまとめたフック（`dist/` と同じく release と hotfix でだけ commit する） | プラグインのマーケットプレイスから Claude Code が入れる | #11 |
     | `vscode/` | VS Code 拡張機能（独自の `package.json`。バージョンは `vscode-v{バージョン}` のタグ） | GitHub Release に添えた .vsix と、Marketplace・Open VSX（拡張機能の ID `ShuheiNishikawa.mdmark-vscode`・表示名 `mdmark for VS Code`） | #22 |
     | `.github/workflows/` | `vscode-v*` のタグで .vsix を作って Release に添えるワークフロー | 届けない | #22 |
     | `dev-docs.yaml` | dev-docs の配信元の設定（設計書の種類ごとの行と、各フォルダの `files.yaml` の行） | 届けない | #178 |
-    | 各フォルダの `files.yaml` | YAML の設計書でないファイルの概要文・タグ・関連（1 ファイル 1 行。スキーマは `schemas/files.schema.yaml`） | 届けない | #178 |
+    | 各フォルダの `files.yaml`（`docs/` の下は `files.yml`） | YAML の設計書でないファイルの概要文・タグ・関連（1 ファイル 1 行。スキーマは `schemas/files.schema.yaml`） | 届けない | #178 |
 
     この土台で実体を作るのは `src/`・`dist/`・`scripts/`・`tests/` だけで、他は中身を持つ Issue が作る。
 subsystems:

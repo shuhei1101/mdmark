@@ -25,13 +25,13 @@ files:
       - to: docs/module/MOD-472-10.ts
         type: implements
   - path: skills/global-setup/SKILL.md
-    description: `/mdmark:global-setup` のスキルの本文。端末の設定と常駐サーバーを用意する手順を変えるときに参照する。
+    description: '`/mdmark:global-setup` のスキルの本文。端末の設定と常駐サーバーを用意する手順を変えるときに参照する。'
     tags: [topic:プラグイン, topic:スキル, tool:claude-code]
     related:
       - to: docs/module/MOD-472-9
         type: implements
   - path: skills/setup/SKILL.md
-    description: `/mdmark:setup` のスキルの本文。文書のフォルダの設定を作る手順を変えるときに参照する。
+    description: '`/mdmark:setup` のスキルの本文。文書のフォルダの設定を作る手順を変えるときに参照する。'
     tags: [topic:プラグイン, topic:スキル, tool:claude-code]
     related:
       - to: docs/module/MOD-472-9
