@@ -598,7 +598,7 @@ async function startVscode(
 /** 見出し・表・注意書き・流れ図を持つ見本の Markdown */
 export async function guideMarkdown(): Promise<string> {
   const sample = await readFile(
-    join(REPO_ROOT, "docs", "使用方法", "図を描く", "見本.md"),
+    join(REPO_ROOT, "docs", "guide", "図を描く-見本.md"),
     "utf8",
   );
   const flow = /```json\n([\s\S]*?)\n```/.exec(sample)?.[1];

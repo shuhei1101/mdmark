@@ -119,7 +119,7 @@ function migrationFiles(options?: {
   return {
     "migrations/v0.4.0/steps.yaml": STEPS_V040,
     "migrations/v0.5.0/steps.yaml": options?.stepsV050 ?? stepsV050(),
-    "docs/はじめに/変更履歴.md": CHANGELOG,
+    "docs/guide/変更履歴.md": CHANGELOG,
     ...options?.extra,
   };
 }
@@ -214,7 +214,7 @@ test("test_normal", async ({ package050, tempDir }) => {
   for (const path of [
     "migrations/no-steps.yaml",
     "schemas/mdmark.steps.schema.json",
-    "docs/はじめに/変更履歴.md",
+    "docs/guide/変更履歴.md",
   ]) {
     expect(packed).toContain(path);
   }
@@ -257,7 +257,7 @@ test("test_normal_when_value_asked", async ({ package040, tempDir }) => {
       "    ask: 書き出す HTML の題を入れてください",
       "",
     ].join("\n"),
-    "docs/はじめに/変更履歴.md": CHANGELOG,
+    "docs/guide/変更履歴.md": CHANGELOG,
   });
   const dir = await createWork(tempDir);
   // 実行

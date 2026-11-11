@@ -90,7 +90,7 @@ async function createFixture(options?: {
   await writeFiles(packageDir, {
     "migrations/v0.4.0/steps.yaml": STEPS_V040,
     "migrations/v0.5.0/steps.yaml": options?.stepsV050 ?? STEPS_V050,
-    "docs/はじめに/変更履歴.md": CHANGELOG,
+    "docs/guide/変更履歴.md": CHANGELOG,
     ...options?.packageFiles,
   });
   return {

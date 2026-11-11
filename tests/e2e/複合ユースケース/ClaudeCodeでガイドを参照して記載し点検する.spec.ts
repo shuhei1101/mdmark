@@ -26,7 +26,7 @@ test.skip(
 );
 
 // 文書の記載方法のガイドのページ
-const WRITING_PAGE = "docs/使用方法/記載する/文書の記載方法.md";
+const WRITING_PAGE = "docs/guide/記載する-文書の記載方法.md";
 // 知らないマーカーを記載した文書
 const DOCUMENT_WITH_UNKNOWN_MARK = "# A\n\n<!-- tabz -->\n\n段落\n";
 // マーカーを修正した文書

@@ -1,4 +1,4 @@
-/** map の単体テストの見本（モック `dev/mock/refs/445/assets/samples.js` と同じ Mermaid。補足は ER 図『mapの補足』の構造の JSON） */
+/** map の単体テストの見本（モック `docs/mock/refs/445/assets/samples.js` と同じ Mermaid。補足は ER 図『mapの補足』の構造の JSON） */
 
 /** 構成図: 入れ子 2 レイヤーのグループ・グループをまたぐ線・種類のクラス（ノード 10・グループ 4・線 12） */
 export const FLOW = `flowchart LR

@@ -2351,7 +2351,7 @@
       height: 1em;
     }
 
-    /* 表の追加分: 縦の高さの上限を削除した表、ページのスクロールで留める見出し行と集計の行、計算ごとの集計の行と集計のメニュー、コピーの形式のメニューとコピーできないときのパネル、行の URL の通知、狭い幅で畳む最終列。`dev/mock/refs/151/assets/table.css` から取る */
+    /* 表の追加分: 縦の高さの上限を削除した表、ページのスクロールで留める見出し行と集計の行、計算ごとの集計の行と集計のメニュー、コピーの形式のメニューとコピーできないときのパネル、行の URL の通知、狭い幅で畳む最終列。`docs/mock/refs/151/assets/table.css` から取る */
     /* ---------- 表の高さと、見出し行・集計の行の留め方 ---------- */
 
     /* 表: 縦の高さの上限を削除し、縦はページのスクロールで読み込む（横にはみ出す表は今のまま表の中で横にスクロールする） */
@@ -4160,7 +4160,7 @@
         display: none;
       }
 
-      /* 見出し行と集計の行: 紙では留めず、元の位置に 1 組だけ出す（`animation-timeline` のアニメーションとスクリプトのずれを削除する）。`dev/mock/refs/151/assets/table-print.css` から取る */
+      /* 見出し行と集計の行: 紙では留めず、元の位置に 1 組だけ出す（`animation-timeline` のアニメーションとスクリプトのずれを削除する）。`docs/mock/refs/151/assets/table-print.css` から取る */
       &[data-mdmark-sticky] .mdmark-table :is(thead th, tfoot td) {
         --mdmark-sticky-foot-reach: 0px;
         animation: none;
@@ -4332,7 +4332,7 @@
     }
   }
 
-  /* 紙の幅が 40rem 以下のとき（表の追加分）: 集計の行を計算の名前と値の並びにする。`dev/mock/refs/151/assets/table-print.css` から取る */
+  /* 紙の幅が 40rem 以下のとき（表の追加分）: 集計の行を計算の名前と値の並びにする。`docs/mock/refs/151/assets/table-print.css` から取る */
   /* 紙の幅が狭く、表を行ごとの「見出し: 値」の並びに追加するとき */
   @media print and (max-width: 40rem) {
     .mdmark {
@@ -7140,7 +7140,7 @@
     vertical-align: -0.125em;
   }
 
-  /* ビュー: 切り替え・ボード・表形式。`dev/mock/refs/55/assets/view.css` から取る */
+  /* ビュー: 切り替え・ボード・表形式。`docs/mock/refs/55/assets/view.css` から取る */
   .mdmark {
     /* ビューの入れ物: 切り替え・ボードか表を縦に並べる */
     .mdmark-view {
@@ -7303,7 +7303,7 @@
     }
   }
 
-  /* 余白のマーカー: 本文の列の右の余白の列に、コメントの箇所の行の高さで配置するボタン。`dev/mock/refs/277/assets/margin.css` から取る */
+  /* 余白のマーカー: 本文の列の右の余白の列に、コメントの箇所の行の高さで配置するボタン。`docs/mock/refs/277/assets/margin.css` から取る */
   /* 右側の目次を持たず余白の列を持つ描く先の要素: 本文の列と余白の列を横に並べる。行の長さの上限は本文の列が持つ */
   .mdmark:has(> .mdmark-comment-margin):not(:has(> .mdmark-side-toc)) {
     display: flex;
@@ -7400,7 +7400,7 @@
     }
   }
 
-  /* コメント: 選んだ箇所のマーカー・ボタン・入力欄・吹き出し・箇所が見つからないコメントの一覧。ボタン・入力欄・吹き出しは `document.body` に配置するため、`.mdmark` の外で適用する。`dev/mock/refs/55/assets/comment.css` から取る */
+  /* コメント: 選んだ箇所のマーカー・ボタン・入力欄・吹き出し・箇所が見つからないコメントの一覧。ボタン・入力欄・吹き出しは `document.body` に配置するため、`.mdmark` の外で適用する。`docs/mock/refs/55/assets/comment.css` から取る */
   /* コメントの付いた箇所のマーカー: 地の色と下線の両方で示し、色だけに頼らない */
   .mdmark-comment-mark {
     padding: 0.05em 0;
@@ -7683,7 +7683,7 @@
     }
   }
 
-  /* 吹き出しの 1 件のコメント: 本文・通知し・削除の確認を縦に並べる。`dev/mock/refs/280/assets/comment-edit.css` から取る */
+  /* 吹き出しの 1 件のコメント: 本文・通知し・削除の確認を縦に並べる。`docs/mock/refs/280/assets/comment-edit.css` から取る */
   .mdmark-comment-item {
     display: grid;
     gap: 0.4rem;
@@ -7776,7 +7776,7 @@
     color: var(--mdmark-color-muted);
   }
 
-  /* コードブロックの飾り: タイトル・行番号・行の強調・コードの行のマーカー。`dev/mock/refs/65/assets/code-block.css` から取る */
+  /* コードブロックの飾り: タイトル・行番号・行の強調・コードの行のマーカー。`docs/mock/refs/65/assets/code-block.css` から取る */
   .mdmark {
     /* 飾ったコードブロックの入れ物: 上の余白は指定せず、前のブロックとの間隔は入れ物の規則に任せる（タイトルを持つときの figure の既定の余白は本文の規則で 0 にする） */
     :where(.mdmark-code) {
@@ -7817,7 +7817,7 @@
       }
     }
 
-    /* コードブロックの言語のラベルとコピーボタン、diff の色分け。`dev/mock/refs/151/assets/code-block.css` から取る */
+    /* コードブロックの言語のラベルとコピーボタン、diff の色分け。`docs/mock/refs/151/assets/code-block.css` から取る */
     /* コードブロックの帯: 左端に言語のラベル、続けてタイトル（タイトルの無いコードブロックは無し）、右端にコピーボタンを配置する */
     .mdmark-code-bar {
       flex-wrap: wrap;
@@ -8051,7 +8051,7 @@
     }
   }
 
-  /* コードブロックの行のマーカー（注目・エラー・警告）と行の開閉・インデントの縦線: `dev/mock/refs/275/assets/code-block.css` から取る */
+  /* コードブロックの行のマーカー（注目・エラー・警告）と行の開閉・インデントの縦線: `docs/mock/refs/275/assets/code-block.css` から取る */
   .mdmark {
     /* 帯の言語のラベル: 後ろのファイルのアイコンとタイトルとの間を空ける */
     .mdmark-code-bar > .mdmark-code-lang {
@@ -8318,7 +8318,7 @@
     }
   }
 
-  /* コードブロックの色分け: 色分けのライブラリが付ける `hljs-*` の class に、種類ごとの色の CSS 変数を適用する。`dev/mock/refs/97/assets/syntax-highlight.css` から取る */
+  /* コードブロックの色分け: 色分けのライブラリが付ける `hljs-*` の class に、種類ごとの色の CSS 変数を適用する。`docs/mock/refs/97/assets/syntax-highlight.css` から取る */
   .mdmark {
     pre code {
       /* キーワード: 予約語・デコレーター・document や self などの言語の変数 */
@@ -8391,7 +8391,7 @@
     }
   }
 
-  /* 印刷のとき（コードブロックの飾り）: `dev/mock/refs/65/assets/code-block-print.css` から取る */
+  /* 印刷のとき（コードブロックの飾り）: `docs/mock/refs/65/assets/code-block-print.css` から取る */
   @media print {
     .mdmark {
       /* 行に分けたコード: 紙の幅に合わせる（折り返した行の行番号は最初の 1 行にだけ出る） */
@@ -8404,7 +8404,7 @@
         print-color-adjust: exact;
       }
 
-      /* コピーボタン: 紙では押せないので出さない。言語のラベルは残す（`dev/mock/refs/151/assets/code-block-print.css`） */
+      /* コピーボタン: 紙では押せないので出さない。言語のラベルは残す（`docs/mock/refs/151/assets/code-block-print.css`） */
       .mdmark-code-copy {
         display: none;
       }
@@ -8416,7 +8416,7 @@
     }
   }
 
-  /* 印刷のとき（ビューとコメント）: `dev/mock/refs/55/assets/view-print.css` から取る */
+  /* 印刷のとき（ビューとコメント）: `docs/mock/refs/55/assets/view-print.css` から取る */
   @media print {
     .mdmark {
       /* 紙では押せない操作（ビューの切り替え）: 出さない */
@@ -8448,7 +8448,7 @@
     }
   }
 
-  /* mermaid の図: `dev/mock/refs/382/assets/mermaid.css` から取る */
+  /* mermaid の図: `docs/mock/refs/382/assets/mermaid.css` から取る */
   .mdmark .mdmark-mermaid {
     /* 影: mermaid が SVG の filter で付ける影（シーケンス図の参加者のノードなど）を削除する。テーマの変数の dropShadow では削除されない */
     svg [filter],
@@ -8506,7 +8506,7 @@
   }
 }
 
-/* 右側の目次とまとめて開閉するボタン: `dev/mock/refs/166/assets/side-toc.css` から取る */
+/* 右側の目次とまとめて開閉するボタン: `docs/mock/refs/166/assets/side-toc.css` から取る */
 @layer mdmark {
   /* 広い幅の見出し: 移る先を、利用側が留めた帯に隠れない位置で止める */
   .mdmark-content [id] {
@@ -8985,7 +8985,7 @@
     display: none !important;
   }
 
-  /* 印刷のとき（右側の目次）: `dev/mock/refs/166/assets/side-toc-print.css` から取る */
+  /* 印刷のとき（右側の目次）: `docs/mock/refs/166/assets/side-toc-print.css` から取る */
   @media print {
     /* 右側の目次を持つ描く先の要素: 本文の列だけを紙の幅いっぱいに並べる */
     .mdmark:has(> .mdmark-side-toc) {
@@ -9005,7 +9005,7 @@
     }
   }
 
-  /* 先頭へ戻るボタン: `dev/mock/refs/287/assets/back-to-top.css` から取る */
+  /* 先頭へ戻るボタン: `docs/mock/refs/287/assets/back-to-top.css` から取る */
   .mdmark {
     --mdmark-back-to-top-size: 2.75rem;
     --mdmark-back-to-top-gap: 1rem;
@@ -9084,7 +9084,7 @@
     }
   }
 
-  /* 名前の色: 色の名前ごとの面と文字の色の組を選び、表の列と行・バッジ・本文の文字に適用する。`dev/mock/refs/263/assets/colors.css` から取る */
+  /* 名前の色: 色の名前ごとの面と文字の色の組を選び、表の列と行・バッジ・本文の文字に適用する。`docs/mock/refs/263/assets/colors.css` から取る */
   .mdmark {
     /* 色の名前ごとに、使用する組を選ぶ（[data-color] を持つ要素とその中で使用する） */
     [data-color="blue"] {
@@ -9173,7 +9173,7 @@
     }
   }
 
-  /* 画像・動画・音声・GIF・リンクと添付のカード: 画像の図・拡大のボタン・ギャラリー・配色ごとの画像・再生バー・止める・再生するボタン・カード。`dev/mock/refs/263/assets/media.css` から取る */
+  /* 画像・動画・音声・GIF・リンクと添付のカード: 画像の図・拡大のボタン・ギャラリー・配色ごとの画像・再生バー・止める・再生するボタン・カード。`docs/mock/refs/263/assets/media.css` から取る */
   .mdmark {
     /* 画像だけの段落の図・動画と音声の図: 幅は属性の width（px か %）を受け取る */
     :is(.mdmark-image, .mdmark-media) {
@@ -9749,7 +9749,7 @@
     }
   }
 
-  /* 印刷のとき（画像と動画）: 押せない操作を出さず、動画と音声はポスターとキャプションだけにし、カードを改ページで割らない。`dev/mock/refs/263/assets/media-print.css` から取る */
+  /* 印刷のとき（画像と動画）: 押せない操作を出さず、動画と音声はポスターとキャプションだけにし、カードを改ページで割らない。`docs/mock/refs/263/assets/media-print.css` から取る */
   @media print {
     .mdmark {
       :is(.mdmark-image-open-icon, .mdmark-gif-toggle) {
@@ -9816,7 +9816,7 @@
   }
 }
 
-/* コードブロックとファイルツリーの折り返し（`dev/mock/refs/328/assets/wrap.css` から取る）。
+/* コードブロックとファイルツリーの折り返し（`docs/mock/refs/328/assets/wrap.css` から取る）。
    レイヤーの外に配置し、利用側の要素名だけ・クラス 1 つの pre への汎用の CSS で既定の「折り返さない」を変えない */
 /* 印刷はレイヤーの中の印刷の規則でコードを紙の幅に折り返すため、既定は印刷以外に適用する */
 @media not print {

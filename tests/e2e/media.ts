@@ -7,7 +7,7 @@ import { PAGE_URL } from "./dist-page.ts";
 
 /** 動画・音声・GIF の見本（モックの見本のファイル） */
 const MEDIA_SAMPLE_DIR = fileURLToPath(
-  new URL("../../dev/mock/refs/263/assets/media/", import.meta.url),
+  new URL("../../docs/mock/refs/263/assets/media", import.meta.url),
 );
 
 /** 見本の動画（mp4）・音声（mp3）・無限ループで間隔が 100ms の GIF・動画の poster の画像（png） */

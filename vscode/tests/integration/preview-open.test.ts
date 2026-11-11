@@ -842,7 +842,7 @@ suite("プレビューを開く", () => {
   test("test_normal_when_relative_media", async () => {
     // 準備
     await writeFixture("mdmark.config.yaml", "assets:\n  root: assets\n");
-    const samples = join(REPO_ROOT, "dev/mock/refs/263/assets/media");
+    const samples = join(REPO_ROOT, "docs/mock/refs/263/assets/media");
     const mp3 = await readFile(join(samples, "voice.mp3"));
     await writeFixture("docs/media/demo.mp3", mp3);
     await writeFixture(

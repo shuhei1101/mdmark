@@ -10,15 +10,14 @@ const execFileAsync = promisify(execFile);
 // リポジトリの直下
 const REPO_ROOT = resolve(import.meta.dirname, "../..");
 // 見本の文書（見本のページはこの文書を描く）
-const SAMPLE_PATH = join(REPO_ROOT, "docs", "使用方法", "図を描く", "見本.md");
+const SAMPLE_PATH = join(REPO_ROOT, "docs", "guide", "図を描く-見本.md");
 
 // 使用方法『図を描く』（判定フローチャートの定義の例を持つ）
 const GUIDE_PATH = join(
   REPO_ROOT,
   "docs",
-  "使用方法",
-  "図を描く",
-  "図を描く.md",
+  "guide",
+  "図を描く-図を描く.md",
 );
 
 // 固有の部品のモジュールを返却する架空の URL
