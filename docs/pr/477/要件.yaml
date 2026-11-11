@@ -307,14 +307,120 @@ docs:
     new: false
     change: 記載例のマーカーを JSON のオブジェクトに書き換える
     status: todo
-  - page: docs/er/ER-472-5.yaml
-    new: false
-    change: 文書のマーカーを書き換える移行の手順の行を追加する
-    status: todo
   - page: docs/er/ER-477-1.yaml
     new: true
-    change: マーカーごとの設定の設計書（共通の決まり・共通のオブジェクト・今の引数との対応。マーカーごとのファイルの ID と分け方は設計で決める）
-    status: todo
+    change: マーカーの設定の共通の決まり・共通のオブジェクト（折り畳み・行の範囲・列を指す値）・今の引数との対応の ER 図を新設する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-11T13:20:53.620601+00:00'
+  - page: docs/er/ER-477-2.yaml
+    new: true
+    change: 表のマーカーの設定の ER 図を新設する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-11T13:21:48.555370+00:00'
+  - page: docs/er/ER-477-3.yaml
+    new: true
+    change: タブのマーカーの設定の ER 図を新設する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-11T13:21:48.555370+00:00'
+  - page: docs/er/ER-477-4.yaml
+    new: true
+    change: ステップのマーカーの設定の ER 図を新設する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-11T13:21:48.555370+00:00'
+  - page: docs/er/ER-477-5.yaml
+    new: true
+    change: ファイルツリーのマーカーの設定の ER 図を新設する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-11T13:21:48.555370+00:00'
+  - page: docs/er/ER-477-6.yaml
+    new: true
+    change: コードブロックの飾りのマーカーの設定の ER 図を新設する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-11T13:21:48.555370+00:00'
+  - page: docs/er/ER-477-7.yaml
+    new: true
+    change: セクションの開閉のマーカーの設定の ER 図を新設する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-11T13:21:48.555370+00:00'
+  - page: docs/er/ER-477-8.yaml
+    new: true
+    change: details の範囲のマーカーの設定の ER 図を新設する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-11T13:21:48.555370+00:00'
+  - page: docs/er/ER-477-9.yaml
+    new: true
+    change: wide の範囲のマーカーの設定の ER 図を新設する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-11T13:21:48.555370+00:00'
+  - page: docs/er/ER-477-10.yaml
+    new: true
+    change: 行の詳細のマーカーの設定の ER 図を新設する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-11T13:21:48.555370+00:00'
+  - page: docs/er/ER-477-11.yaml
+    new: true
+    change: 図と表の番号のマーカーの設定の ER 図を新設する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-11T13:21:48.555370+00:00'
+  - page: docs/er/ER-477-12.yaml
+    new: true
+    change: ギャラリーのマーカーの設定の ER 図を新設する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-11T13:21:48.555370+00:00'
+  - page: docs/er/ER-477-13.yaml
+    new: true
+    change: 取り込みのマーカーの設定の ER 図を新設する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-11T13:21:48.555370+00:00'
+  - page: docs/er/ER-477-14.yaml
+    new: true
+    change: ページの設定のマーカーの設定の ER 図を新設する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-11T13:21:48.555370+00:00'
+  - page: docs/er/ER-477-15.yaml
+    new: true
+    change: 機能のオン・オフのマーカーの設定の ER 図を新設する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-11T13:21:48.555370+00:00'
+  - page: docs/er/ER-477-16.yaml
+    new: true
+    change: 用語集の表のマーカーの設定の ER 図を新設する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-11T13:21:48.555370+00:00'
+  - page: docs/er/ER-477-17.yaml
+    new: true
+    change: ビューのマーカーの設定の ER 図を新設する（アイコンの例は使用できるアイコンの inbox にした）
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-11T13:21:48.555370+00:00'
+  - page: docs/er/ER-477-18.yaml
+    new: true
+    change: map のマーカーの設定の ER 図を新設する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-11T13:21:48.555370+00:00'
+  - page: docs/er/index.yaml
+    new: false
+    change: マーカーの設定の ER 図の行を追加する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-11T13:21:48.555370+00:00'
 scope_out:
   - item: ほかのリポジトリ（ai-monitor・mindstella・dev-docs など）と MindStella のワークスペースの文書の移行
     reason: Issue の「後続」。この PR のリリースの後に、リポジトリごとに mdmark の移行の手順を当てる Issue を起票する（完了したら起点 Issue にその旨をコメントし、確認:task-planner を付ける）
