@@ -3357,42 +3357,48 @@ functions:
     kind: 関数
     scope: internal
     summary: 'コアルール。`map` がオンのとき、`<!-- map -->` 〜 `<!-- /map -->` の範囲ごとに mermaid のブロックと補足の HTML コメントを数え、範囲を `div.mdmark-map` の開きと閉じのトークンで囲み、補足を `pre.mdmark-map-data[hidden]` にし、`collectMapStructure` の項目があれば範囲の前に記載の警告（`kind: map`）を差し込む（Mermaid と補足の中身の警告は `dist/map.js` が足す）'
-    description: 印の引数は `parseMapArgs` で読み、`data-map-args` に `normalized` を入れる（知らないキーは警告にせず落とす）。`pre.mdmark-map-data` の中身は補足のマーカーの引数の文字（`map-data:` の後ろから `-->` の前まで）を JSON のまま入れる。図の番号は文書の中の map の範囲の順に 1 から振る（描かない範囲も数える）。範囲の中の mermaid のブロックには `data-mdmark-mermaid` と色分けの属性を付けない（`attachMermaid` の対象から外れる）。描かない範囲（mermaid のブロックが無い・2 つ以上・補足が 2 つ以上・描けない種類）は `div.mdmark-map` で囲まず、警告だけを差し込む。`map` がオフの文書では範囲のマーカーと補足のコメントを落とし、mermaid のブロックは普通の mermaid のコードブロックにする
+    description: 印の引数は `parseMapArgs` で読み、`data-map-args` に `normalized` を入れる（知らないキーは警告にせず落とす）。`pre.mdmark-map-data` の中身は補足のマーカーの引数の文字（`map-data:` の後ろから `-->` の前まで）を JSON のまま入れる。`glossary` がオンのとき、`buildDictionary` の辞書で範囲の Mermaid と補足の文字を `findWords` で照合し、意味を持つ用語（エイリアスを除く）を、文字に出たままの用語から意味への JSON にして `data-map-terms` に入れる（該当が無ければ付けない）。図の番号は文書の中の map の範囲の順に 1 から振る（描かない範囲も数える）。範囲の中の mermaid のブロックには `data-mdmark-mermaid` と色分けの属性を付けない（`attachMermaid` の対象から外れる）。描かない範囲（mermaid のブロックが無い・2 つ以上・補足が 2 つ以上・描けない種類）は `div.mdmark-map` で囲まず、警告だけを差し込む。`map` がオフの文書では範囲のマーカーと補足のコメントを落とし、mermaid のブロックは普通の mermaid のコードブロックにする
     args:
-    - name: state
-      type: StateCore
-      required: true
-      description: markdown-it の状態
+      - name: state
+        type: StateCore
+        required: true
+        description: markdown-it の状態
     returns:
       type: void
       description: なし
     callees:
-    - dev/設計書/モジュール構成/ライブラリ本体/map/点検.ts#functions[collectMapStructure]
+      - dev/設計書/モジュール構成/ライブラリ本体/map/点検.ts#functions[collectMapStructure]
     unit_tests:
-    - name: test_build_map_ranges
-      case: 正常
-      summary: 2 つの範囲
-      condition: 構成図とシーケンス図の範囲
-      mock: なし
-      expected: '`div.mdmark-map` が 2 つで `data-map` が `1`・`2`、`data-map-kind` が `flowchart`・`sequenceDiagram`、mermaid のブロックが `data-mdmark-mermaid` を持たない'
-    - name: test_build_map_ranges_when_problems
-      case: 異常
-      summary: 範囲の形の誤り
-      condition: 'JSON として読めない引数 `{title: 全体}` と、読めない Mermaid の行と知らない補足のキーを持つ範囲'
-      mock: なし
-      expected: 範囲の前に記載の警告が 1 つで、引数を JSON で記載する直し方を含み、Mermaid の行と `layuot` は含まない。`div.mdmark-map` がある
-    - name: test_build_map_ranges_when_no_mermaid
-      case: 異常
-      summary: mermaid のブロックが無い
-      condition: 補足だけの範囲
-      mock: なし
-      expected: 記載の警告だけで `div.mdmark-map` が無い
-    - name: test_build_map_ranges_when_disabled
-      case: 正常
-      summary: 機能を外した
-      condition: '`features: -map` の文書'
-      mock: なし
-      expected: '`div.mdmark-map` が無く、mermaid のブロックが `data-mdmark-mermaid` を持つ'
+      - name: test_build_map_ranges
+        case: 正常
+        summary: 2 つの範囲
+        condition: 構成図とシーケンス図の範囲
+        mock: なし
+        expected: '`div.mdmark-map` が 2 つで `data-map` が `1`・`2`、`data-map-kind` が `flowchart`・`sequenceDiagram`、mermaid のブロックが `data-mdmark-mermaid` を持たない'
+      - name: test_build_map_ranges_when_problems
+        case: 異常
+        summary: 範囲の形の誤り
+        condition: 'JSON として読めない引数 `{title: 全体}` と、読めない Mermaid の行と知らない補足のキーを持つ範囲'
+        mock: なし
+        expected: 範囲の前に記載の警告が 1 つで、引数を JSON で記載する直し方を含み、Mermaid の行と `layuot` は含まない。`div.mdmark-map` がある
+      - name: test_build_map_ranges_when_no_mermaid
+        case: 異常
+        summary: mermaid のブロックが無い
+        condition: 補足だけの範囲
+        mock: なし
+        expected: 記載の警告だけで `div.mdmark-map` が無い
+      - name: test_build_map_ranges_when_disabled
+        case: 正常
+        summary: 機能を外した
+        condition: '`features: -map` の文書'
+        mock: なし
+        expected: '`div.mdmark-map` が無く、mermaid のブロックが `data-mdmark-mermaid` を持つ'
+      - name: test_build_map_ranges_when_terms
+        case: 正常
+        summary: 用語
+        condition: 索引に意味を持つ用語 `補足` と意味の無い用語 `図` を持ち、Mermaid のノードの名前が「補足の検査」の範囲
+        mock: なし
+        expected: '`data-map-terms` が `{"補足": "{意味}"}` で、`図` を含まない。`glossary` をオフにすると `data-map-terms` が無い'
 notes:
   コアルールの順: 描画の `createParser` が登録する。マーカー → 機能の重ね合わせ → ページの設定 → 取り込み → 蛍光ペン → 脚注の機能のオン・オフ → カードの格子 → 行内のアイコン → 見出し → 用語集の表 → 行の詳細 → ビュー → CSV の表 → 表 → タブ → ステップ → 注意書き → ファイルツリー → バッジ → キー → 本文の文字の色 → 図の部品 → 埋め込んだ HTML → コードブロック → 表の見本の移動 → 画像の属性と種類 → 図表の番号 → ギャラリー → 画像と動画と音声の図 → カード → 段組み → details の範囲 → wide の範囲 → 改ページ → 用語の下線 → セクション → 目次 → 脚注の一覧 → 関連文書の一覧 → タスクリスト → www の自動リンク → 残ったマーカーを取り除く → 元の行番号 → 脚注の定義の取り出し → 記載の警告を集める。行の詳細は表の囲みより前、セクションは記法の警告を差し込んだ後、目次は見出しの ID を付けた後。埋め込んだ HTML は用語の下線より前に配置し、`html_block` にした中身を用語の下線が重ねて照合しないようにする。画像の属性は図表の番号より前に読み込み、図表の番号がギャラリーに番号を指定してからギャラリーを囲む。残った画像だけの段落は、その後に図にする
   部品の差し込み方: 中身を持つ部品（セクション・タブ・注意書き・行の詳細・図表の番号・表）は、中身の代わりに `SLOT_MARKER` を指定して HTML を作り、`markOwn` を掛けてから `SLOT_MARKER` の前後で分け、開きと閉じの `html_block` のトークンで中身のトークンを挟む。中身の HTML には `markOwn` を掛けない。見出し・表など Markdown から作ったトークンに付ける記法の属性は、同じトークンに `data-mdmark-own` も付ける。埋め込んだ HTML は例外で、`sanitizeEmbedded` で先に落とした中身にも `markOwn` を掛ける
