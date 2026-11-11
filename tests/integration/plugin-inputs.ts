@@ -21,10 +21,12 @@ export async function writeRootPackageJson(root: string): Promise<void> {
   );
 }
 
-/** プラグインのビルドが読み込む入力（ガイドの索引・指す `docs/` のページ・`plugin/` の定義・取り込まれたパッケージのライセンスの本文）を、一時の作業ツリーへ写す */
+/** プラグインのビルドが読み込む入力（ガイドの索引・指す `docs/guide/` のページ・`plugin/` の定義・取り込まれたパッケージのライセンスの本文）を、一時の作業ツリーへ写す */
 export async function copyPluginInputs(root: string): Promise<void> {
   await cp(join(REPO_ROOT, "guide"), join(root, "guide"), { recursive: true });
-  await cp(join(REPO_ROOT, "docs"), join(root, "docs"), { recursive: true });
+  await cp(join(REPO_ROOT, "docs", "guide"), join(root, "docs", "guide"), {
+    recursive: true,
+  });
   await cp(
     join(REPO_ROOT, "scripts", "licenses"),
     join(root, "scripts", "licenses"),
