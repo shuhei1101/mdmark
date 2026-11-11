@@ -145,3 +145,21 @@ test("test_attach_map_flow_when_packets", async () => {
   hit.dispatchEvent(new PointerEvent("pointerout", { bubbles: true }));
   expect(root.querySelectorAll(".map-packet")).toHaveLength(0);
 });
+
+// 中へ入る手順の後の手順（正常系）
+test("test_attach_map_flow_when_walk_leaves_group", async () => {
+  // 準備
+  const root = await setUp();
+  const press = (action: string) =>
+    root.querySelector<HTMLButtonElement>(`[data-band="${action}"]`)?.click();
+  // 実行
+  for (let i = 0; i < 3; i += 1) press("next");
+  // 検証
+  expect(root.querySelector(".map-group-title.is-current")?.textContent).toBe(
+    "配置",
+  );
+  // 実行・検証: 前へで手順 2 に戻ると、案内を始めた全体の図に戻る
+  press("prev");
+  expect(root.querySelector(".map-band-count")?.textContent).toBe("2/4");
+  expect(root.querySelector(".map-group-title.is-current")).toBeNull();
+});

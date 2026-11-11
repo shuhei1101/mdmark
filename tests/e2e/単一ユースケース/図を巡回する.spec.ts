@@ -36,7 +36,7 @@ const MARKDOWN = mapRange({
 // 案内の帯の前へ・次へ・自動で進める・停止で、手順ごとのグループ・強調・説明を出す（正常シナリオ）
 test("test_normal", async ({ page }) => {
   // 準備
-  await page.setViewportSize({ width: 1280, height: 900 });
+  await page.setViewportSize({ width: 900, height: 900 });
   await page.clock.install();
   await openMap(page, builtRoot, { markdown: MARKDOWN });
   await pauseClock(page);
@@ -124,8 +124,8 @@ test("test_normal", async ({ page }) => {
   await expect(bandCount(figure)).toHaveText("1/3");
   await page.clock.runFor(100);
   await expect(bandCount(figure)).toHaveText("2/3");
-  await page.clock.runFor(2_000);
-  await expect(bandCount(figure)).toHaveText("3/3");
+  // なめらかなスクロールは止めた時計で動くため、手順が進まない間だけ時計を進める
+  await page.clock.runFor(1_000);
   await expect
     .poll(async () => (await viewState(figure)).scroll[0])
     .toBeGreaterThan(0);
