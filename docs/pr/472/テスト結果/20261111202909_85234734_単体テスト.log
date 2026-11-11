@@ -1,0 +1,15 @@
+$ npm run test:unit
+
+> test:unit
+> vitest run --project 'unit*'
+
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/chore-docs-merge-dev-into-docs
+
+
+ Test Files  280 passed (280)
+      Tests  2034 passed (2034)
+   Start at  20:24:20
+   Duration  144.97s (worker 70%, tests 18%, import 11%, transform 1%)
+
+exit=0

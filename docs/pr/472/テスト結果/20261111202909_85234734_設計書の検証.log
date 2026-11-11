@@ -1,0 +1,11 @@
+$ (ai-monitor develop) PYTHONPATH=src uv run python -m ai_monitor.design_docs validate --root <worktree>
+docs/er/ER-472-2.yaml:er.relations[#0].from_column: 必須の項目が無い
+docs/er/ER-472-2.yaml:er.relations[#0].to_column: 必須の項目が無い
+docs/er/ER-472-2.yaml:er.relations[#1].from_column: 必須の項目が無い
+docs/er/ER-472-2.yaml:er.relations[#1].to_column: 必須の項目が無い
+docs/er/ER-472-3.yaml:er.relations[#0].from_column: 必須の項目が無い
+docs/er/ER-472-3.yaml:er.relations[#0].to_column: 必須の項目が無い
+docs/er/ER-472-6.yaml:er.relations[#0].from_column: 必須の項目が無い
+docs/er/ER-472-6.yaml:er.relations[#0].to_column: 必須の項目が無い
+docs/scenario/SC-472-18.yaml:scenarios[正常シナリオ（印の引数で自動で再生する）].expected[#2]: 型が違う
+exit=1
