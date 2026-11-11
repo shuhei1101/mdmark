@@ -66,6 +66,12 @@ data_models:
       - name: destroy
         type: () => void
         description: 操作と観察を外す
+      - name: follow
+        type: '(nodes: string[]) => void'
+        description: ノードの中心へ表示する枠をスクロールする（シーケンス図の再生を自動で進めている間。`createFollow` の `reveal`）
+      - name: resumeFollow
+        type: () => void
+        description: 読者が触って止めたスクロールを再開する（`createFollow` の `resume`）
   - name: MapSequenceHandle
     title: シーケンス図の操作の口
     container: src/map/sequence-view.ts
@@ -204,6 +210,22 @@ data_models:
       - name: label
         type: string
         description: 帯の名前
+  - name: FollowHandle
+    title: 表示する枠のスクロールの操作の口
+    container: src/map/band.ts
+    usecase: 図を巡回する
+    role: データモデル
+    summary: '`createFollow` の戻り値'
+    properties:
+      - name: reveal
+        type: '(ids: string[]) => void'
+        description: ノードか参加者の中心へ表示する枠をスクロールする（読者が触った後は `resume` まで何もしない）
+      - name: resume
+        type: () => void
+        description: 読者が触って止めたスクロールを再開する
+      - name: destroy
+        type: () => void
+        description: 表示する枠のイベントを外す
 constants:
   - name: MAP_STATE_KEY_PREFIX
     title: 状態のキーの頭
@@ -275,7 +297,7 @@ functions:
     process: |-
       1. `div.mdmark-map` ごとに `data-map-args` を `parseMapArgs` で読み、`data-map-kind` で `attachMapFlow` か `attachMapSequence` に引数と一緒に指定する。`collapse` があれば図の枠を `details`（`open` は `collapse.open`、見出しは `collapse.title` か `title`）で包む
       2. 範囲ごとに `collectMapProblems`（`includeUnknownKeys: false`）から `collectMapStructure` の項目を除いた項目があれば、`render` の記載の警告に足すか、無ければ図の枠の前に部品『書き方の警告』を配置する
-      3. シーケンス図の補足の `plays_over` が指す構成図を探し、再生の強調を構成図にも当てる。片方の図で案内か再生を始めたら、もう片方の強調を解く
+      3. シーケンス図の補足の `plays_over` が指す構成図を探し、再生の強調を構成図にも当てる。片方の図で案内か再生を始めたら、もう片方の強調を解く。再生を自動で進め始めたら構成図の `resumeFollow`、自動で進めたら構成図の `follow` で送り手と受け手のノードへ構成図の表示する枠をスクロールする（構成図に無い相手のメッセージではスクロールしない）
     unit_tests:
       - name: test_attach_map
         case: 正常
@@ -301,6 +323,12 @@ functions:
         condition: '構成図と、`plays_over: 1` で構成図に無い参加者 `ghost` を持つシーケンス図'
         mock: なし（jsdom）
         expected: シーケンス図の図の枠の前の記載の警告に `ghost` がある
+      - name: test_attach_map_when_auto_follow
+        case: 正常
+        summary: 再生で構成図をスクロールする
+        condition: '構成図と `plays_over: 1` のシーケンス図で、シーケンス図の自動で進めるを押し、時計を 2 秒進める。次に構成図の表示する枠でホイールを回して時計を 2 秒進める'
+        mock: 時計・構成図の表示する枠の `scrollTo`
+        expected: 最初の 2 秒で構成図の `scrollTo` を 1 回呼び、ホイールの後は呼ばない
   - name: attachMapFlow
     title: 構成図を付ける
     kind: 関数
@@ -336,7 +364,7 @@ functions:
         description: 案内の手順を進めたときに呼ぶ関数
     returns:
       type: MapFlowHandle
-      description: 強調を外から当てる関数と片付ける関数
+      description: 強調を外から当てる関数・表示する枠を外からスクロールする関数と片付ける関数
     process: |-
       1. `parseFlowchart`・`parseMapData` で読み、`readMapState`（印の `focus` と、補足の `layout` の `collapsed` が `true` の ID を指定する）で状態を読む
       2. 補足の `layout` に状態の `positions`・`attachments`（`ends` に重ねる）を重ねた上書きで `layoutMap` を配置し、`renderDiagramFrame`（種類 `map`・`wide`・`tools`）と `renderMapFlow` で描く
@@ -375,6 +403,12 @@ functions:
         condition: '手順 3 だけが `enter: place` の案内で、次へを 3 回押してから前へを押す'
         mock: なし（jsdom）
         expected: 手順 3 では `place` の中に入り、前へで手順 2 に戻ると、案内を始めた段（全体）の図に戻る（今入っているグループのタイトルが無い）
+      - name: test_attach_map_flow_when_follow
+        case: 正常
+        summary: 外からスクロールする
+        condition: '`follow([mount, marker])` を呼ぶ。表示する枠でホイールを回してからもう一度呼ぶ。`resumeFollow` の後にもう一度呼ぶ'
+        mock: 表示する枠の `scrollTo`
+        expected: '`scrollTo` を 1 回目と 3 回目だけ呼ぶ'
   - name: attachMapSequence
     title: シーケンス図を付ける
     kind: 関数
@@ -405,12 +439,16 @@ functions:
         type: '(message: number | undefined) => void'
         required: false
         description: 再生で進めたメッセージの番号を受け取る関数（止めたときは `undefined`）
+      - name: follow
+        type: '{ start: () => void; step: (message: number) => void }'
+        required: false
+        description: 再生を自動で進め始めたとき（`start`）と、自動で次のメッセージへ進めたとき（`step`。メッセージの番号）に呼ぶ関数
     returns:
       type: MapSequenceHandle
       description: 再生の強調を外から受け取る関数と片付ける関数
     process: |-
       1. `parseSequence`・`parseMapData` で読み、`readMapState` で状態を読んで `sequenceRows` で表示する行を決め、`renderMapSequence` で描く
-      2. 表示する行のメッセージを `attachBand`（モード `playback`）の手順にする。開閉・中だけを描くで表示するメッセージが変わったら `update` で手順を差し替え、再生していれば `onStep(undefined)` を呼ぶ
+      2. 表示する行のメッセージを `attachBand`（モード `playback`）の手順にする。開閉・中だけを描くで表示するメッセージが変わったら `update` で手順を差し替え、再生していれば `onStep(undefined)` を呼ぶ。`follow` を `attachBand` の `follow` にし、`step` には手順のメッセージの番号を指定する
       3. 参加者の箱の名前の文字の外を押すと選び、4px 動かすと並べ替えのドラッグにして、移す先の列に縦の線（`.map-insert-line`）を出し、離した位置に最も近い列へ移す。ドラッグの直後の押した扱いは選ばない
     unit_tests:
       - name: test_attach_map_sequence_when_reorder
@@ -626,15 +664,15 @@ functions:
     scope: public
     args:
       - name: options
-        type: '{ figure: HTMLElement; mode: "walkthrough" | "playback"; steps: BandStep[]; interval: number; autoplay: boolean; apply: (step: BandStep | undefined) => void; reducedMotion: boolean; observe: (target: Element, onEnter: () => void) => () => void }'
+        type: '{ figure: HTMLElement; mode: "walkthrough" | "playback"; steps: BandStep[]; interval: number; autoplay: boolean; apply: (step: BandStep | undefined) => void; reducedMotion: boolean; observe: (target: Element, onEnter: () => void) => () => void; follow?: { start: () => void; step: (step: BandStep) => void } }'
         required: true
-        description: 図の枠・モード・手順・間隔（秒。印の `interval`）・印の `play` が `autoplay` か・強調を当てる関数・動きを減らす設定・画面に入ったら 1 回呼ぶ関数を登録して外す関数を返す関数（`IntersectionObserver` の差し替え口）
+        description: 図の枠・モード・手順・間隔（秒。印の `interval`）・印の `play` が `autoplay` か・強調を当てる関数・動きを減らす設定・画面に入ったら 1 回呼ぶ関数を登録して外す関数を返す関数（`IntersectionObserver` の差し替え口）・自動で進め始めたとき（`start`）と自動で次の手順へ進めたとき（`step`）に呼ぶ関数
     returns:
       type: BandHandle
       description: 止める関数と片付ける関数
     process: |-
       1. `renderMapBand` で帯を描き、前へ・次へは端で反対の端へ回し、`apply` で強調を当てる
-      2. 自動で進めるの間は `interval` 秒ごとに次へ進め、強調するノードの中心へ表示する枠をスクロールする。読者がホイール・ドラッグ・キーで表示する枠を触ったら、自動で進め直すまでスクロールしない
+      2. 自動で進めるの間は `interval` 秒ごとに次へ進め、強調するノードの中心へ表示する枠をスクロールする。スクロールは `createFollow` で行い、自動で進め始めたら `resume` を呼ぶ。自動で進め始めたときに `follow.start`、自動で次の手順へ進めたときに `follow.step` を呼ぶ（前へ・次へでは呼ばない）
       3. 停止で `apply(undefined)` を呼び、始めた段に戻す。`update` で手順を差し替えたときは、自動で進めるを止めて番号を `–` に戻す
       4. `autoplay` が `true` なら `observe` で図の枠が画面に入るのを待ち、入ったら `reducedMotion` が `false` のときだけ自動で進めるを始める（`true` のときは止めた帯のまま）
     unit_tests:
@@ -680,6 +718,12 @@ functions:
         condition: 帯の次へのボタンにフォーカスして → を 2 回
         mock: なし（jsdom）
         expected: 番号が 2 つ進み、描き直した後もフォーカスが帯の次へのボタンにある
+      - name: test_attach_band_when_follow
+        case: 正常
+        summary: 自動で進める間の follow
+        condition: '`interval: 3` で自動で進めるを押し、時計を 6 秒進め、一時停止して次へを押す'
+        mock: 時計・`follow`
+        expected: '`follow.start` を 1 回、`follow.step` を手順 1・2 で 2 回呼び、次へでは呼ばない'
   - name: renderMapFlow
     title: mapの構成図のHTML
     kind: 関数
@@ -818,3 +862,33 @@ functions:
         condition: '`mode: playback`'
         mock: なし
         expected: ボタンの名前が `前のメッセージ`・`再生をやめる`・`自動で進める`・`次のメッセージ`
+  - name: createFollow
+    title: 表示する枠をノードへスクロールする
+    kind: 関数
+    container: src/map/band.ts
+    usecase: 図を巡回する
+    role: 処理
+    summary: 図の枠の表示する枠を、指定したノードか参加者の中心へスクロールし、読者が表示する枠を触ったら `resume` まで止める
+    scope: public
+    args:
+      - name: figure
+        type: HTMLElement
+        required: true
+        description: 図の枠
+      - name: reducedMotion
+        type: boolean
+        required: true
+        description: 動きを減らす設定（`true` なら滑らかにスクロールしない）
+    returns:
+      type: FollowHandle
+      description: スクロールする関数・再開する関数・片付ける関数
+    process: |-
+      1. `reveal` は、指定した ID の `[data-node]`・`[data-participant]` を囲む矩形の中心が表示する枠の中央に来るように、表示する枠の `scrollTo` を呼ぶ（倍率と文書のスクロールは変えない）
+      2. 読者が表示する枠でホイール・`pointerdown`・キー・タッチをしたら、`resume` まで `reveal` でスクロールしない
+    unit_tests:
+      - name: test_create_follow_when_touched
+        case: 正常
+        summary: 読者が触る
+        condition: '`reveal` を呼び、表示する枠でホイールを回して `reveal`、`resume` の後に `reveal` を呼ぶ'
+        mock: 表示する枠の `scrollTo`
+        expected: '`scrollTo` を 1 回目と 3 回目だけ呼ぶ'
