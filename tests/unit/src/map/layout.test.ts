@@ -279,3 +279,15 @@ test("test_wrap_label", async () => {
     expect(line.length * 14).toBeLessThanOrEqual(200);
   }
 });
+
+// 閉じたグループのノードの数（正常系）
+test("test_layout_map_when_collapsed_count", async () => {
+  // 準備・実行
+  const layout = await laid({ collapsed: ["read", "lib"] });
+  // 検証
+  const lib = layout.groups.find((group) => group.id === "lib");
+  expect(lib?.collapsed).toBe(true);
+  expect(lib?.count).toBe(7);
+  for (const group of layout.groups.filter((item) => !item.collapsed))
+    expect(group.count).toBeUndefined();
+});

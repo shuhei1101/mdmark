@@ -171,8 +171,8 @@ test("test_normal_when_exported", async ({ builtRoot, tempDir, page }) => {
     tempDir,
     htmlFile: join(dir, "map.html"),
   });
-  const flow = mapFigure(page, 0);
-  const seq = mapFigure(page, 1);
+  const flow = mapFigure(page, 0, "body");
+  const seq = mapFigure(page, 1, "body");
   await expect(seq).toBeVisible({ timeout: 10_000 });
   await expect(flow.locator('.map-group[data-group="read"]')).toBeVisible();
   // 実行・検証: グループの中へ入り、戻る

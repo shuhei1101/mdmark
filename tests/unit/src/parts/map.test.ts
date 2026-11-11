@@ -375,3 +375,29 @@ test("test_render_map_sequence_when_notes", async () => {
   expect(tip).toContain("補足</span>：意味");
   expect(tip).not.toMatch(/mdmark-term"[^>]*tabindex/);
 });
+
+// 閉じたグループのノードの数（正常系）
+test("test_render_map_flow_when_collapsed_count", async () => {
+  // 準備
+  const { renderMapFlow } = await loadParts();
+  const { parseFlowchart } = await loadFlowchart();
+  const { layoutMap } = await loadLayout();
+  const layout = layoutMap(
+    parseFlowchart(FLOW),
+    { collapsed: ["read"], entered: undefined },
+    {},
+    "height",
+  );
+  // 実行
+  const { html } = renderMapFlow({
+    ...(await flowArgs()),
+    layout,
+    collapsed: ["read"],
+  });
+  // 検証
+  const closed =
+    html.match(
+      /<div class="mdmark-diagram-node map-closed-group[^"]*" data-group="read"[\s\S]*?<\/div><\/div>/,
+    )?.[0] ?? "";
+  expect(closed).toContain("ノード 3 件");
+});

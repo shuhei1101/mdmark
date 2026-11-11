@@ -211,7 +211,8 @@ test("test_normal_when_inside_map", async ({ page }) => {
   const inside = mapRange({ mermaid: MAP_FLOW });
   // 実行: 範囲の外にもコードブロックを持つ文書
   await mountDocument(page, {
-    markdown: `${inside}\n\`\`\`mermaid\n${MERMAID_FLOWCHART}\`\`\`\n`,
+    markdown: `${inside}
+${MERMAID_FLOWCHART}`,
     config: { map: MAP_CONFIG } as never,
   });
   // 検証

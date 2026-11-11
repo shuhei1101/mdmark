@@ -131,7 +131,7 @@ test("test_normal_when_warnings", async ({ builtRoot, tempDir }) => {
     .replace(/\s+/g, "");
   for (const line of [lines[0], lines[2]]) {
     const message = (line ?? "").replace(/^-:\d+: \w+: /, "");
-    expect(rendered).toContain(message.replace(/\s+/g, ""));
+    expect(rendered).toContain(message.replace(/[\s`]+/g, ""));
   }
 });
 

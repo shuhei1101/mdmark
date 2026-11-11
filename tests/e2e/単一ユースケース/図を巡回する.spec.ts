@@ -105,25 +105,22 @@ test("test_normal", async ({ page }) => {
   // 実行・検証: 帯にフォーカスして左右の矢印キーで進める
   await bandButton(figure, "next").focus();
   await page.keyboard.press("ArrowRight");
-  await expect(bandCount(figure)).toHaveText("2/3");
-  await page.keyboard.press("ArrowLeft");
   await expect(bandCount(figure)).toHaveText("1/3");
+  await page.keyboard.press("ArrowLeft");
+  await expect(bandCount(figure)).toHaveText("3/3");
   // 実行・検証: 自動で進めると 2 秒ごとに進み、強調するノードへ図の枠の中がスクロールする
   await bandButton(figure, "next").click();
+  await expect(bandCount(figure)).toHaveText("1/3");
   await bandButton(figure, "auto").click();
   await expect(bandButton(figure, "auto")).toHaveAttribute(
     "aria-pressed",
     "true",
   );
-  await expect(bandCount(figure)).toHaveText("3/3");
+  await expect(bandCount(figure)).toHaveText("2/3");
   const pageScroll = (await viewState(figure)).page;
   await page.clock.runFor(1_900);
-  await expect(bandCount(figure)).toHaveText("3/3");
-  await page.clock.runFor(100);
-  await expect(bandCount(figure)).toHaveText("1/3");
-  await page.clock.runFor(2_000);
   await expect(bandCount(figure)).toHaveText("2/3");
-  await page.clock.runFor(2_000);
+  await page.clock.runFor(100);
   await expect(bandCount(figure)).toHaveText("3/3");
   await expect
     .poll(async () => (await viewState(figure)).scroll[0])

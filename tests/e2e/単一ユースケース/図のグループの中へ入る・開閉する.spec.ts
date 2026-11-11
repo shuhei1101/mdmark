@@ -374,7 +374,8 @@ test("test_normal_when_sequence_blocks", async ({ builtRoot, page }) => {
   // 実行・検証: 全てのブロックを閉じると、閉じた行から活性化の帯を描く
   await mapTool(reopened, "collapseAll").click();
   const row = await reopened
-    .locator('.map-seq-fragment-tab[data-fragment="0"]')
+    .locator("rect.map-seq-fragment.is-collapsed")
+    .first()
     .boundingBox();
   const bar = await reopened.locator(".map-seq-activation").boundingBox();
   const last = await reopened

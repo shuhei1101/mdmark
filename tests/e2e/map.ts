@@ -222,8 +222,10 @@ export const BOTH_RANGES = `${FLOW_RANGE}\n${mapRange({
 })}`;
 
 /** 文書の中の n 番目（0 から）の map の図 */
-export function mapFigure(page: Page, n = 0): Locator {
-  return page.locator('#doc figure.mdmark-diagram[data-diagram="map"]').nth(n);
+export function mapFigure(page: Page, n = 0, root = "#doc"): Locator {
+  return page
+    .locator(`${root} figure.mdmark-diagram[data-diagram="map"]`)
+    .nth(n);
 }
 
 /** 図の中の data-node の要素（構成図のノードかシーケンス図の参加者） */

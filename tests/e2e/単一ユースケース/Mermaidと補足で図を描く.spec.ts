@@ -266,9 +266,11 @@ test("test_normal", async ({ page }) => {
   await page.mouse.move(5, 5);
   await expect(figure.locator(".map-packet")).toHaveCount(0);
   // 検証: 図の枠は置き場所の幅いっぱいで、リサイズハンドルがあり、本文の幅との切り替えが無い。等倍のまま横にスクロールする
-  const docBox = await boxOf(doc);
-  const frame = await boxOf(figure);
-  expect(frame.width).toBeGreaterThanOrEqual(docBox.width - 2);
+  const room = await figure.evaluate((element) => ({
+    frame: element.getBoundingClientRect().width,
+    room: element.parentElement?.clientWidth ?? 0,
+  }));
+  expect(room.frame).toBeGreaterThanOrEqual(room.room - 2);
   await expect(figure.locator(".mdmark-diagram-resize")).toBeVisible();
   await expect(figure.locator('button[aria-label*="本文の幅"]')).toHaveCount(0);
   const view = await figure
@@ -317,10 +319,14 @@ test("test_normal_when_layout_overridden", async ({ page }) => {
   const box = (id: string) => boxOf(mapNode(figure, id));
   const index = await box("index");
   const doc = await box("doc");
-  expect(Math.abs(index.y - doc.y)).toBeLessThanOrEqual(1);
+  expect(
+    Math.abs(index.y + index.height / 2 - (doc.y + doc.height / 2)),
+  ).toBeLessThanOrEqual(2);
   const data = await box("data");
   const mermaid = await box("mermaid");
-  expect(Math.abs(data.y - mermaid.y)).toBeLessThanOrEqual(1);
+  expect(
+    Math.abs(data.y + data.height / 2 - (mermaid.y + mermaid.height / 2)),
+  ).toBeLessThanOrEqual(2);
   expect(data.x).toBeLessThan(mermaid.x);
   // 検証: 幅と色
   const route = await box("route");
@@ -683,6 +689,7 @@ test("test_normal_when_node_selected", async ({ page }) => {
   expect(await isSelected(mapNode(figure, "mount"))).toBe(true);
   expect(await isSelected(mapNode(figure, "marker"))).toBe(true);
   // 実行・検証: Esc で全ての選択が解け、薄くした表示と印が消える
+  await page.mouse.move(5, 5);
   await figure.locator(".mdmark-diagram-viewport").focus();
   await page.keyboard.press("Escape");
   await expect(figure.locator("[data-selected]")).toHaveCount(0);

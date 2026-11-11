@@ -78,3 +78,22 @@ test("test_attach_map_when_problems", async () => {
     warnings[0]?.nextElementSibling?.matches(".mdmark-map, figure, details"),
   ).toBe(true);
 });
+
+// 構成図に無い再生の相手（正常系）
+test("test_attach_map_when_missing_participant", async () => {
+  // 準備・実行
+  const sequence = `${SEQUENCE}  ghost->>mount: 外からの呼び出し\n`;
+  const { root } = await attach(
+    `${mapRange({ mermaid: FLOW, data: DATA })}\n${mapRange({ mermaid: sequence, data: '{"version": 1, "plays_over": 1}' })}`,
+  );
+  // 検証
+  const figures = root.querySelectorAll("figure.mdmark-diagram");
+  expect(figures).toHaveLength(2);
+  const warnings = [...root.querySelectorAll(".mdmark-syntax-warning")];
+  expect(warnings).toHaveLength(1);
+  expect(warnings[0]?.textContent).toContain("ghost");
+  expect(
+    (warnings[0] as Element).compareDocumentPosition(figures[1] as Element) &
+      Node.DOCUMENT_POSITION_FOLLOWING,
+  ).toBeTruthy();
+});

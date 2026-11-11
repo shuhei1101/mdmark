@@ -15265,15 +15265,15 @@ test("test_normal_when_map_terms", async () => {
   clearMapQuery();
   const el = createElement();
   el.style.width = "1200px";
-  const sequence = MAP_SEQUENCE.replace(
+  const sequence = `${MAP_SEQUENCE.replace(
     "mount->>marker: map の範囲",
     "mount->>marker: 補足を読む",
-  );
+  )}  ghost->>mount: 外からの呼び出し\n`;
   const data = MAP_DATA.replace(
     "内側のグループから配置し、グループの大きさを決めてから外側を配置する",
     "補足の上書きを当てて、内側のグループから配置する",
   );
-  const markdown = `${mapRange({ mermaid: MAP_FLOW, data })}\n${mapRange({ mermaid: sequence, data: '{"version": 1, "notes": {"2": {"text": "補足を渡す"}}}' })}`;
+  const markdown = `${mapRange({ mermaid: MAP_FLOW, data })}\n${mapRange({ mermaid: sequence, data: '{"version": 1, "plays_over": 1, "notes": {"2": {"text": "補足を渡す"}}}' })}`;
   // 実行
   await mountTracked(el, {
     markdown,
@@ -15372,6 +15372,23 @@ test("test_normal_when_map_terms", async () => {
   hit.dispatchEvent(new PointerEvent("pointerleave", { bubbles: true }));
   hit.dispatchEvent(new PointerEvent("pointerout", { bubbles: true }));
   expect(seq.querySelectorAll(".map-dim")).toHaveLength(0);
+  // 検証: 閉じたグループのノードの数
+  find<HTMLButtonElement>(flow, '[data-group-toggle="read"]').click();
+  expect(
+    find<HTMLElement>(el, '.map-closed-group[data-group="read"]').textContent,
+  ).toContain("ノード 3 件");
+  // 検証: 構成図に無い再生の相手を書き方の警告にし、そのメッセージでは構成図を強調しない
+  expect(
+    [...el.querySelectorAll(".mdmark-syntax-warning")].some((warning) =>
+      warning.textContent?.includes("ghost"),
+    ),
+  ).toBe(true);
+  find<HTMLButtonElement>(seq, '[data-band="prev"]').click();
+  expect(seq.querySelector(".map-band-title")?.textContent).toBe(
+    "外からの呼び出し",
+  );
+  expect(flow.querySelectorAll(".map-dim")).toHaveLength(0);
+  find<HTMLButtonElement>(seq, '[data-band="stop"]').click();
   // 検証: グループのタイトルのボタンには付けない
   expect(flow.querySelector(".map-group-title .mdmark-term")).toBeNull();
 });
