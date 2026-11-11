@@ -2,11 +2,13 @@ import { readFile, stat } from "node:fs/promises";
 import { homedir } from "node:os";
 import { basename, dirname, join, relative, resolve, sep } from "node:path";
 import { build } from "esbuild";
+import MarkdownIt from "markdown-it";
 import { bundleModule } from "../bundle-module.ts";
 import {
   COLOR_SCHEMES,
   COLOR_THEMES,
   MARK_NAME_PATTERN,
+  type ResolvedConfig,
   resolveConfig,
 } from "../config.ts";
 import { displayConfigPath, relativizeConfigPaths } from "../config-files.ts";
@@ -23,7 +25,11 @@ import {
 import type { MdmarkAliasProblem } from "../knowledge/aliases.ts";
 import { checkIndex, type MdmarkIndexIssue } from "../knowledge/check.ts";
 import { normalizePath } from "../knowledge/paths.ts";
-import { FEATURES_MARK, SYNTAX_MARKS } from "../render/marks.ts";
+import { checkMapConfig, collectMapProblems } from "../map/check.ts";
+import type { MapProblem } from "../map/spec.ts";
+import type { MapRangeSource } from "../map/structure.ts";
+import { renderDocument } from "../render/index.ts";
+import { FEATURES_MARK, MARK_PATTERN, SYNTAX_MARKS } from "../render/marks.ts";
 import { findMarks } from "../render/parser.ts";
 import { findDiagramBlocks } from "../render/syntax/diagrams.ts";
 import { loadAliases } from "./aliases.ts";
@@ -59,6 +65,7 @@ export type CheckIssue = {
     | "syntax_warning"
     | "unknown_mark_arg"
     | FlowLayoutKind
+    | MapProblem["kind"]
     | "alias_no_files"
     | "alias_unreadable"
     | "include_target_missing"
@@ -327,6 +334,56 @@ function checkColorTheme(config: CliConfig, file: string): CheckIssue[] {
   ];
 }
 
+/** 設定の `map` の値ごとに記載できる値（`schemas/mdmark.config.schema.json` と同じ） */
+const MAP_ENUMS = {
+  node_fit: ["height", "width"],
+  shape: ["rounded", "rect", "pill", "double"],
+  dash: ["solid", "dashed", "dotted", "dash-dot", "long-dash"],
+  width: ["thin", "normal", "thick"],
+  head: ["filled", "open", "none"],
+} as const;
+
+/** 設定の `map` の値のうち、記載できる値に無いものを `schema` のずれにして返却する（描くときは既定にする） */
+function checkMapValues(map: unknown, file: string): CheckIssue[] {
+  const issues: CheckIssue[] = [];
+  if (typeof map !== "object" || map === null) return issues;
+  const value = map as Record<string, unknown>;
+  const check = (where: string, item: unknown, allowed: readonly string[]) => {
+    if (item === undefined || allowed.includes(item as string)) return;
+    issues.push({
+      file,
+      where,
+      kind: "schema",
+      message: `\`${where}\` は ${allowed.map((name) => `\`${name}\``).join("・")} のどれかで記載してください。`,
+    });
+  };
+  check("map.node_fit", value.node_fit, MAP_ENUMS.node_fit);
+  if (value.url_state !== undefined && typeof value.url_state !== "boolean")
+    issues.push({
+      file,
+      where: "map.url_state",
+      kind: "schema",
+      message: "`map.url_state` は `true` か `false` で記載してください。",
+    });
+  for (const [group, keys] of [
+    ["kinds", ["shape"]],
+    ["lines", ["dash", "width", "head"]],
+  ] as const) {
+    const rows = value[group];
+    if (typeof rows !== "object" || rows === null) continue;
+    for (const [name, row] of Object.entries(rows)) {
+      if (typeof row !== "object" || row === null) continue;
+      for (const key of keys)
+        check(
+          `map.${group}.${name}.${key}`,
+          (row as Record<string, unknown>)[key],
+          MAP_ENUMS[key],
+        );
+    }
+  }
+  return issues;
+}
+
 /** 設定の `colorScheme` が記載できる値に無いときの、`unknown_color_scheme` のずれを返却する */
 function checkColorScheme(config: CliConfig, file: string): CheckIssue[] {
   const value = config.colorScheme;
@@ -397,6 +454,103 @@ export function checkUnknownMarks(
           where: String(mark.line),
           kind: "unknown_mark",
           message: `マーカー \`${mark.name}\` は知らないマーカーで、描くときに取り除かれます。名前を修正するか、拡張・\`libraries\`・\`check.ignore\` に追加してください。`,
+        });
+      }
+    }
+  }
+  return issues;
+}
+
+/** html_block の中身が、名前のマーカー 1 つだけなら、その引数（無ければ空）と閉じかを返す */
+const onlyMark = (
+  content: string,
+  name: string,
+): { rest: string; closing: boolean; offset: number } | undefined => {
+  const found = [...content.matchAll(MARK_PATTERN)];
+  const [only] = found;
+  if (found.length !== 1 || !only || only[2] !== name) return undefined;
+  const rest = only[3] ?? "";
+  // 引数の先頭が始まる行（中身の先頭からの改行の数）
+  const start = content.indexOf(rest.trimStart(), only.index ?? 0);
+  return {
+    rest: rest.trim(),
+    closing: only[1] === "/",
+    offset: (content.slice(0, Math.max(0, start)).match(/\n/g) ?? []).length,
+  };
+};
+
+/** 文書の map の範囲ごとに、開きのマーカーの行（1 から）と、範囲の中身を返却する（`buildMapRanges` と同じ範囲の読み込み方） */
+const findMapRanges = (
+  markdown: string,
+): Array<{ line: number; range: MapRangeSource }> => {
+  const tokens = new MarkdownIt({ html: true }).parse(markdown, {});
+  const ranges: Array<{ line: number; range: MapRangeSource }> = [];
+  for (let index = 0; index < tokens.length; index++) {
+    const token = tokens[index];
+    const open =
+      token?.type === "html_block" ? onlyMark(token.content, "map") : undefined;
+    if (!token || !open || open.closing) continue;
+    const start = token.map?.[0] ?? 0;
+    const range: MapRangeSource = {
+      args: open.rest,
+      mermaid: undefined,
+      mermaidCount: 0,
+      data: undefined,
+      dataCount: 0,
+    };
+    let next = index + 1;
+    for (; next < tokens.length; next++) {
+      const inner = tokens[next];
+      if (!inner) continue;
+      const mark =
+        inner.type === "html_block"
+          ? (onlyMark(inner.content, "map") ??
+            onlyMark(inner.content, "map-data"))
+          : undefined;
+      if (mark?.closing && onlyMark(inner.content, "map")) break;
+      const at = (inner.map?.[0] ?? start) - start;
+      if (
+        inner.type === "fence" &&
+        inner.info.trim().split(/\s+/)[0] === "mermaid"
+      ) {
+        range.mermaidCount += 1;
+        if (range.mermaid === undefined) {
+          range.mermaid = inner.content;
+          range.mermaidLine = at + 1;
+        }
+      } else if (mark && onlyMark(inner.content, "map-data")) {
+        range.dataCount += 1;
+        if (range.data === undefined) {
+          range.data = mark.rest;
+          range.dataLine = at + mark.offset;
+        }
+      }
+    }
+    ranges.push({ line: start + 1, range });
+    index = next;
+  }
+  return ranges;
+};
+
+/** 文書ごとに map の範囲を読み、`collectMapProblems` の項目を 1 つにつき 1 件のずれにする。`features: -map` の文書は点検しない */
+export function checkMaps(
+  documents: Array<{ path: string; markdown: string }>,
+  config: ResolvedConfig,
+): CheckIssue[] {
+  const issues: CheckIssue[] = [];
+  for (const document of documents) {
+    const { features } = renderDocument({
+      markdown: document.markdown,
+      config,
+    });
+    if (features.map === false) continue;
+    for (const { line, range } of findMapRanges(document.markdown)) {
+      for (const problem of collectMapProblems(range, config.map, true)) {
+        issues.push({
+          file: document.path,
+          where: String(line + (problem.line ?? 0)),
+          kind: problem.kind,
+          message: problem.message,
         });
       }
     }
@@ -548,10 +702,19 @@ export async function collectCheckIssues(
     : [];
   const includes = await checkIncludes({ documents, root: loaded.dir });
   const diagrams = checkDiagrams(documents);
+  const maps = checkMaps(documents, resolveConfig({ config }));
+  const mapIcons: CheckIssue[] = checkMapConfig(config.map).map((issue) => ({
+    file,
+    where: issue.key,
+    kind: "map_unknown_icon",
+    message: issue.message,
+  }));
   return [
     ...shapeIssues,
     ...referenced,
     ...build.schema,
+    ...checkMapValues(config.map, file),
+    ...mapIcons,
     ...extensions.issues,
     ...checkColorTheme(config, file),
     ...checkColorScheme(config, file),
@@ -562,6 +725,7 @@ export async function collectCheckIssues(
     ...unknownMarks,
     ...includes,
     ...diagrams,
+    ...maps,
   ];
 }
 

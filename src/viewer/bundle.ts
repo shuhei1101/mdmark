@@ -1,5 +1,6 @@
 import { ASSET_SCHEME, type ExportPayload } from "../cli/html.ts";
 import type { MdmarkConfig } from "../config.ts";
+import { MAP_QUERY_PREFIX } from "../map/state.ts";
 import { type MountHandle, mount } from "../mount.ts";
 import { renderDocList } from "../parts/doc-list.ts";
 import { includesOf } from "./includes.ts";
@@ -139,7 +140,26 @@ export function startBundle(
     }
   };
 
+  /** 今の項目のクエリ文字列から map- で始まるキーを消す（履歴に追加しない） */
+  const clearMapQuery = (): void => {
+    const params = new URLSearchParams(win.location.search);
+    for (const key of [...params.keys()]) {
+      if (key.startsWith(MAP_QUERY_PREFIX)) params.delete(key);
+    }
+    const search = params.toString();
+    if (search === win.location.search.replace(/^\?/, "")) return;
+    win.history.replaceState(
+      win.history.state,
+      "",
+      `${win.location.pathname}${search === "" ? "" : `?${search}`}${win.location.hash}`,
+    );
+  };
+
   /** URL の `#` のとおりに文書を出す。移り先の項目に同じ文書の表示の状態を保存していればそれを戻し、無ければ見出しを指していればそこへ、文書だけが替わったときは頭へ移す */
+  /** 前に route で出した URL（popstate と hashchange が続けて来たとき、同じ URL を 2 回出さない） */
+  let routedHref: string | undefined;
+  /** リンクで別の文書へ移るところか（移った先で map のクエリ文字列を消す） */
+  let clearOnSwitch = false;
   const route = (initial: boolean): void => {
     const { path, heading, missing } = resolveRoute(
       win.location.hash,
@@ -155,6 +175,9 @@ export function startBundle(
       );
     }
     const switched = path !== currentPath;
+    if (switched && clearOnSwitch) clearMapQuery();
+    clearOnSwitch = false;
+    routedHref = win.location.href;
     if (switched) {
       showDocument(path);
     }
@@ -189,8 +212,12 @@ export function startBundle(
     (event) => {
       const link =
         event.target instanceof Element ? event.target.closest("a") : null;
-      if (link?.getAttribute("href")?.startsWith(DOC_HASH_PREFIX)) {
+      const href = link?.getAttribute("href");
+      if (href?.startsWith(DOC_HASH_PREFIX)) {
         saveViewState();
+        // 別の文書へ移るリンク: 移った先の項目のクエリ文字列から map の状態を消す（戻る・進む・再読み込みでは消さない）
+        clearOnSwitch =
+          resolveRoute(href, paths, payload.entry).path !== currentPath;
       }
     },
     true,
@@ -210,7 +237,13 @@ export function startBundle(
     },
     { passive: true },
   );
-  win.addEventListener("hashchange", () => route(false));
+  // 戻る・進むで文書の # の無い項目（開いた直後の entry）へ戻ったときは hashchange が来ないため、popstate で出す
+  win.addEventListener("popstate", () => {
+    if (!win.location.hash.startsWith(DOC_HASH_PREFIX)) route(false);
+  });
+  win.addEventListener("hashchange", () => {
+    if (win.location.href !== routedHref) route(false);
+  });
   // 開いている文書の中の見出しへ移るリンク（見出しのアンカー・目次）は、履歴に追加せず今の項目を置き換える（戻るで文書を行き来できる）
   view.addEventListener("click", (event) => {
     const link =

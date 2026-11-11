@@ -274,6 +274,31 @@ test("test_prepare_embeds_when_labels", async () => {
   expect(withoutLabels.payload.config).not.toHaveProperty("labels");
 });
 
+// 設定の map を埋める設定に写す（正常系）
+test("test_prepare_embeds_when_map", async () => {
+  // 準備
+  const { prepareEmbeds } = await loadExport();
+  const dir = await createTempDir();
+  await writeFiles(dir, { "guide.md": "# Guide\n" });
+  const docs = [{ path: "guide.md", file: join(dir, "guide.md") }];
+  const prepare = (config: Record<string, unknown>) =>
+    prepareEmbeds({
+      fetchText: NO_FETCH,
+      loaded: createLoaded(dir, config),
+      docs,
+      kind: "document",
+      entry: "guide.md",
+      out: join(dir, "guide.html"),
+    });
+  const map = { kinds: { store: { label: "保存先" } } };
+  // 実行
+  const withMap = await prepare({ map });
+  const withoutMap = await prepare({ features: { print: true } });
+  // 検証
+  expect(withMap.payload.config.map).toEqual(map);
+  expect(withoutMap.payload.config).not.toHaveProperty("map");
+});
+
 // 設定の side-toc を埋める設定に写す（正常系）
 test("test_prepare_embeds_when_side_toc_mode", async () => {
   // 準備

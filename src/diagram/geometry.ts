@@ -215,10 +215,9 @@ export function stackSeries(
   );
 }
 
-/** 表示する枠の高さを `RESIZE.min` 以上・`max` 以下に収め、整数に丸める（`max` が下限より小さいときは下限） */
-export function clampDiagramHeight(height: number, max: number): number {
-  const upper = Math.max(RESIZE.min, max);
-  return Math.round(Math.min(upper, Math.max(RESIZE.min, height)));
+/** 高さを `RESIZE.min` 以上に収め、整数に丸める（上限は持たない） */
+export function clampDiagramHeight(height: number): number {
+  return Math.round(Math.max(RESIZE.min, height));
 }
 
 /** グループのタイトル 1 つの位置（定義の座標） */

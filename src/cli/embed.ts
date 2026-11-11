@@ -100,6 +100,8 @@ export type ViewerEmbeds = {
   mermaid?: string | undefined;
   /** ビューの部品をまとめるか */
   view: boolean;
+  /** map の部品（`dist/map.js`）をまとめるか */
+  map?: boolean | undefined;
   /** `compileHtmlScripts` の結果。`source` は範囲のコードの文字、`code` は CommonJS のコード。範囲が無ければ入れない */
   htmlScripts?: Array<{ source: string; code: string }> | undefined;
 };
@@ -145,12 +147,30 @@ export async function compileHtmlScripts(options: {
   return { scripts, warnings };
 }
 
+/** map の範囲の要素 */
+const MAP_PATTERN = /<div\b[^>]*\sclass="mdmark-map"/;
+
+/** 文書ごとに `render` を設定と一緒に呼び、返った HTML に `div.mdmark-map` があれば `true` を返す。`prepareEmbeds` が `embeds.map` に入れる */
+export function usesMap(options: {
+  /** 埋める文書の Markdown */
+  markdowns: string[];
+  /** 読み込んだ設定 */
+  config: MdmarkConfig;
+}): boolean {
+  const config = resolveConfig({ config: options.config });
+  return options.markdowns.some((markdown) =>
+    MAP_PATTERN.test(renderDocument({ markdown, config }).html),
+  );
+}
+
 /** 起動の処理・部品・色分けを静的な `import`、外部ライブラリと拡張をリテラルの動的 `import()` を返却する関数で取り込み、`startViewer(document, 埋めたモジュール)` を呼ぶ入口のモジュールのソースを返却する */
 export function createViewerEntry(options: {
   /** `dist/viewer.js` の絶対パス */
   viewer: string;
   /** `dist/view.js` の絶対パス */
   view: string;
+  /** `dist/map.js` の絶対パス。`embeds.map` のときだけ読み込む */
+  map?: string | undefined;
   /** まとめるモジュールの読み込み先 */
   embeds: ViewerEmbeds;
 }): string {
@@ -160,6 +180,13 @@ export function createViewerEntry(options: {
   if (embeds.view) {
     lines.push(`import * as viewPart from ${literal(view)};`);
   }
+  if (embeds.map && options.map !== undefined) {
+    lines.push(`import * as mapPart from ${literal(options.map)};`);
+  }
+  const parts = [
+    ...(embeds.view ? ["view: viewPart"] : []),
+    ...(embeds.map && options.map !== undefined ? ["map: mapPart"] : []),
+  ];
   const languages = Object.entries(embeds.syntax?.languages ?? {});
   if (embeds.syntax) {
     lines.push(`import syntaxCore from ${literal(embeds.syntax.core)};`);
@@ -194,7 +221,7 @@ export function createViewerEntry(options: {
         .join(", ")}])`
     : "";
   lines.push(
-    `startViewer(document, { parts: ${embeds.view ? "{ view: viewPart }" : "{}"}${syntax}${embeds.mermaid ? ", mermaid: mermaidModule" : ""}, libraries: { ${libraries} }, extensions: [${extensions}]${htmlScripts} });`,
+    `startViewer(document, { parts: ${parts.length > 0 ? `{ ${parts.join(", ")} }` : "{}"}${syntax}${embeds.mermaid ? ", mermaid: mermaidModule" : ""}, libraries: { ${libraries} }, extensions: [${extensions}]${htmlScripts} });`,
   );
   return `${lines.join("\n")}\n`;
 }

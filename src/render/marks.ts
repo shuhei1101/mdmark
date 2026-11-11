@@ -45,6 +45,8 @@ export const SYNTAX_MARKS: Readonly<Record<string, string>> = {
   include: "include",
   wide: "wide",
   cards: "card-grid",
+  map: "map",
+  "map-data": "map",
 };
 
 /** 図の部品のマーカーの名前。同じ名前の拡張と対応表が先に使用される */

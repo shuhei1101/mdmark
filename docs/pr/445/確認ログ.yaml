@@ -1,0 +1,97 @@
+confirmations:
+  - topic: map の画面一覧と画面遷移
+    decision: 計画書の画面一覧（map-overview・map-group・map-node-page・map-edge-list・map-walkthrough・map-sequence-play）と画面遷移で進める。履歴・ノードのページの出し方・視点の部品の 3 点はモック作成で決める（推奨案 A）
+    decided_by: thumbs_up
+    approver: shuhei1101
+    commit: b430b160a
+    thread: https://github.com/shuhei1101/mdmark/pull/445#discussion_r4508885347
+  - topic: map の図の中の段の履歴（論点 1）
+    decision: 図の中の段はブラウザの履歴にもパンくずにも積まない。戻るのは図の右上の戻るボタンと Esc。開閉と中へ入った状態は sessionStorage に保つ
+    decided_by: reply
+    approver: shuhei1101
+    commit: 4ec4b2ad4
+    thread: https://github.com/shuhei1101/mdmark/pull/445#discussion_r4512815823
+  - topic: map のノードのページ（論点 2）
+    decision: ノードのページは作らない（A-35 の No 6 を範囲から外す）。ノードの説明はツールチップに出す
+    decided_by: reply
+    approver: shuhei1101
+    commit: 4ec4b2ad4
+    thread: https://github.com/shuhei1101/mdmark/pull/445#discussion_r4512921772
+  - topic: map の視点（論点 3）
+    decision: 視点の切り替えは作らない（A-35 の No 7 と補足の relations を範囲から外す）
+    decided_by: reply
+    approver: shuhei1101
+    commit: 4ec4b2ad4
+    thread: https://github.com/shuhei1101/mdmark/pull/445#discussion_r4512932653
+  - topic: map の図を縮める下限
+    decision: 等倍より縮めず、収まらない分は図の枠の中で横にスクロールする（案 B）
+    decided_by: thumbs_up
+    approver: shuhei1101
+    commit: 9186253d6
+    thread: https://github.com/shuhei1101/mdmark/pull/445#discussion_r4513330501
+  - topic: map の図の枠の幅と高さ
+    decision: 図の枠は常に置き場所の幅いっぱいに広げ、本文の幅との切り替えのボタンは置かない。高さだけを読者が変えられ、ボタンを押しても高さを変えない
+    decided_by: reply
+    approver: shuhei1101
+    commit: 9186253d6
+    thread: https://github.com/shuhei1101/mdmark/pull/445#discussion_r4513446198
+  - topic: map の強調が図の枠の外にあるとき
+    decision: 案内・再生で強調するノードが図の枠の外にあるときだけ、図の枠の中をそのノードが入るまでスクロールする。文書のスクロールと倍率は変えない（案 A）
+    decided_by: reply
+    approver: shuhei1101
+    commit: 134f5378
+    thread: https://github.com/shuhei1101/mdmark/pull/445#discussion_r4519814078
+  - topic: map のグループは要るか
+    decision: グループを残し、中へ入る・開閉・全て開閉を、押して入る・今いるグループは押せない・戻るの位置を固定する操作で持つ（案 A）
+    decided_by: thumbs_up
+    approver: shuhei1101
+    commit: 4f56bf51
+    thread: https://github.com/shuhei1101/mdmark/pull/445#discussion_r4519932154
+  - topic: map の種類と線のプリセットを mdmark が持つか
+    decision: プリセットを持たない。使い方集に設定の例を載せ、使う側が複製して使用する（案 A）
+    decided_by: thumbs_up
+    approver: shuhei1101
+    commit: f4b69a6b
+    thread: https://github.com/shuhei1101/mdmark/pull/445#discussion_r4521238082
+  - topic: map の案内・再生で図の枠の中をスクロールする場合
+    decision: 自動で進めている間だけ、強調するノードの中心へ図の枠の中をスクロールする（倍率は変えない）。読者が図の枠を触ったら自動で進め直すまで止め、前へ・次へで進めたときはスクロールしない（「枠の外にあるときだけスクロールする」案 A を置き換える）
+    decided_by: reply
+    approver: shuhei1101
+    commit: fbc3df82
+    thread: https://github.com/shuhei1101/mdmark/pull/445#discussion_r4521863814
+  - topic: map のシーケンス図の名前の無いブロックの名前の付け方
+    decision: '`rect` の直前の `%% block: 名前` のコメントで名前を付ける（案 C）。Mermaid ではコメントとして無視されるため、ほかの場所でも描ける'
+    decided_by: thumbs_up
+    approver: shuhei1101
+    commit: d1b5dc04
+    thread: https://github.com/shuhei1101/mdmark/pull/445#discussion_r4522473344
+  - topic: map の長い名前のノードの広げ方の既定（map.node_fit）
+    decision: 既定は height（幅は上限 220px のまま、折り返して高さを増やす。案 A）。width は設定で選ぶ
+    decided_by: thumbs_up
+    approver: shuhei1101
+    commit: d1b5dc04
+    thread: https://github.com/shuhei1101/mdmark/pull/445#discussion_r4522474052
+  - topic: map のモック（構成図・案内・シーケンス図・種類の作り方）への合意
+    decision: dev/mock/pages/document/445/a-map/ と dev/mock/components/map-kinds/ のモックの見た目と操作で進める（案 A）
+    decided_by: thumbs_up
+    approver: shuhei1101
+    commit: 4b05bcbd
+    thread: https://github.com/shuhei1101/mdmark/pull/445#discussion_r4524451444
+  - topic: map の構成図のグループをつかむ場所
+    decision: グループはタイトルの行だけでつかんで動かし、グループの面と余白のドラッグは図を動かす（案 C）
+    decided_by: reply
+    approver: shuhei1101
+    commit: 8bb462c5
+    thread: https://github.com/shuhei1101/mdmark/pull/445#discussion_r4524676854
+  - topic: グループのドラッグとクエリ文字列の状態を加えた map のモックへの合意
+    decision: dev/mock/pages/document/445/a-map/ のモック（グループはタイトルの行でつかむ・中へ入った状態を map-{図の番号} のクエリ文字列にも保つ・map.url_state で止める）で進める（案 A）
+    decided_by: thumbs_up
+    approver: shuhei1101
+    commit: 8f86d88c
+    thread: https://github.com/shuhei1101/mdmark/pull/445#discussion_r4524785481
+  - topic: map の図の層の見た目
+    decision: 層の要素（補足の layers・layout の layer と層の帯）は作らない。層はグループ（Mermaid の subgraph）で表す。要件 No 18 の「層は補足の layout の層の指定で描く」を置き換える
+    decided_by: reply
+    approver: shuhei1101
+    commit: bdaf6139
+    thread: https://github.com/shuhei1101/mdmark/pull/445#discussion_r4527634048

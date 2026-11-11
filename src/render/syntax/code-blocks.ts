@@ -3,6 +3,7 @@ import { foldLinesOf, measureIndents } from "../../code-fold-logic.ts";
 import type { MdmarkMarkArgs, WarningItem } from "../../extensions.ts";
 import { type CodeLine, renderCodeBlock } from "../../parts/code-block.ts";
 import { titleTailOf } from "./collapse.ts";
+import { MAP_SOURCE_META } from "./map.ts";
 import { featureOn, markOf, ownBlock } from "./tokens.ts";
 import { type SkippedArg, skippedArgBlocks, warningBlock } from "./warnings.ts";
 
@@ -444,7 +445,9 @@ export function buildCodeBlocks(state: StateCore): void {
     const lineNumbers = options?.lineNumbers ?? false;
     const { language, fileName } = splitInfoString(token.info);
     const mermaid =
-      mermaidOn && token.info.trim().split(/\s+/)[0] === "mermaid";
+      mermaidOn &&
+      token.info.trim().split(/\s+/)[0] === "mermaid" &&
+      token.meta?.[MAP_SOURCE_META] !== true;
     const syntax =
       syntaxOn && !mermaid ? syntaxLanguageOf(language) : undefined;
     if (codeOn || syntax !== undefined || mermaid) {

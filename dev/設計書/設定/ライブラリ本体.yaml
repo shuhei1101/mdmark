@@ -969,5 +969,77 @@ settings:
     status: planned
     refs:
       - dev/設計書/インターフェース定義/ライブラリ本体/文書をHTML文字列にする.ts#constraints[フロントマター]
+  - key: features.map
+    title: map の図の機能
+    type: boolean
+    default: 'true'
+    description: '`<!-- map -->` の範囲の Mermaid と補足を、自動配置した図にする。オフの文書は範囲の中の mermaid のブロックを mermaid の図にする'
+    file: mdmark.config.yaml
+    required: false
+    reload: reload
+    refs:
+    - dev/設計書/インターフェース定義/ライブラリ本体/文書をHTML文字列にする.ts#constraints[map の範囲]
+    status: planned
+    introduced:
+      pr: 445
+  - key: map.node_fit
+    title: map の名前の長いノードの広げ方
+    type: '"height" | "width"'
+    default: '`height`'
+    allowed: '`height` / `width`。`mount` は他の値を無視して `height` にし、CLI は他の値を設定ファイルの誤りにする'
+    description: '`height` は幅を上限 220px のまま折り返して高さを増やし、`width` は幅を上限 360px まで広げてから折り返す'
+    file: mdmark.config.yaml
+    implementation: src/config.ts#resolveMapConfig
+    required: false
+    reload: reload
+    refs:
+    - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#request[opts.config.map.node_fit]
+    status: planned
+    introduced:
+      pr: 445
+  - key: map.url_state
+    title: map の状態をクエリ文字列に保つか
+    type: boolean
+    default: 'true'
+    description: 中へ入ったグループと中だけを描くブロックを、URL のクエリ文字列 `map-{図の番号}` にも保つか
+    file: mdmark.config.yaml
+    implementation: src/config.ts#resolveMapConfig
+    required: false
+    reload: reload
+    refs:
+    - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#request[opts.config.map.url_state]
+    status: planned
+    introduced:
+      pr: 445
+  - key: map.kinds
+    title: map のノードの種類
+    type: 'Record<string, { label?: string; icon?: string; shape?: "rounded" | "rect" | "pill" | "double"; color?: string }>'
+    default: なし
+    allowed: キーは Mermaid のクラス名。`shape` と `color` は記載の値と色の名前だけ（CLI は他の値を設定ファイルの誤りにする）。`icon` は Lucide のアイコンの名前（無い名前は `mdmark check` が `map_unknown_icon` にし、描くときは無視する）
+    description: Mermaid のクラス名ごとのノードの種類の行の名前・アイコン・形状・色
+    file: mdmark.config.yaml
+    implementation: src/config.ts#resolveMapConfig
+    required: false
+    reload: reload
+    refs:
+    - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#request[opts.config.map.kinds]
+    status: planned
+    introduced:
+      pr: 445
+  - key: map.lines
+    title: map の線の種類
+    type: 'Record<string, { dash?: "solid" | "dashed" | "dotted" | "dash-dot" | "long-dash"; width?: "thin" | "normal" | "thick"; head?: "filled" | "open" | "none"; color?: string }>'
+    default: なし
+    allowed: キーは Mermaid の矢印（`-->`・`-.->`・`==>`）か、補足の `layout` の `line` の名前。値は記載の値と色の名前だけ（CLI は他の値を設定ファイルの誤りにする）
+    description: 矢印ごと・名前ごとの線の模様・太さ・矢じり・色
+    file: mdmark.config.yaml
+    implementation: src/config.ts#resolveMapConfig
+    required: false
+    reload: reload
+    refs:
+    - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#request[opts.config.map.lines]
+    status: planned
+    introduced:
+      pr: 445
 refs:
   - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#

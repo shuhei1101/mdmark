@@ -292,3 +292,50 @@ test("test_restore_assets_when_unknown", async () => {
   // 検証
   expect(restored).toBe(markdown);
 });
+
+// 文書の # の無い項目へ戻る（正常系）
+test("test_start_bundle_when_back_to_entry_without_hash", async () => {
+  // 準備
+  const { startBundle } = await loadBundle();
+  await placeSkeleton();
+  history.replaceState(null, "", location.pathname + location.search);
+  startBundle(document, PAYLOAD, {});
+  const link = [
+    ...document.querySelectorAll<HTMLAnchorElement>(".mdmark-bundle-side a"),
+  ].find((item) => item.getAttribute("data-doc-path") === "b.md");
+  link?.click();
+  await new Promise((resolve) => setTimeout(resolve, 50));
+  // 実行
+  const back = new Promise((resolve) =>
+    window.addEventListener("popstate", resolve, { once: true }),
+  );
+  history.back();
+  await back;
+  // 検証
+  expect(
+    document.querySelector(".mdmark-bundle-main .mdmark h1")?.textContent,
+  ).toContain("文書A");
+});
+
+// 文書を切り替えると map のクエリ文字列を消す（正常系）
+test("test_start_bundle_when_switch_clears_map_query", async () => {
+  // 準備
+  const { startBundle } = await loadBundle();
+  await placeSkeleton();
+  history.replaceState(null, "", "?map-1=place&x=1#/a.md");
+  startBundle(document, PAYLOAD, {});
+  const link = [
+    ...document.querySelectorAll<HTMLAnchorElement>(".mdmark-bundle-side a"),
+  ].find((item) => item.getAttribute("data-doc-path") === "b.md");
+  // 実行
+  link?.click();
+  await new Promise((resolve) => setTimeout(resolve, 50));
+  // 検証
+  expect(location.search).toBe("?x=1");
+  expect(
+    document.querySelector(".mdmark-bundle-main .mdmark h1")?.textContent,
+  ).toContain("文書B");
+  history.back();
+  await new Promise((resolve) => setTimeout(resolve, 100));
+  expect(location.search).toBe("?map-1=place&x=1");
+});

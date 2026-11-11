@@ -1,0 +1,729 @@
+$ npm run test:unit
+
+> test:unit
+> vitest run --project 'unit*'
+
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-diagram-map-mermaid-auto-layout
+
+ ❯ |unit| tests/unit/src/map/layout.test.ts (12 tests | 3 failed) 769ms
+   × test_layout_map_when_justify 7ms
+   × test_route_wires_when_ends 2ms
+   × test_route_wires_when_via 2ms
+ ❯ |unit| tests/unit/src/map/data.test.ts (7 tests | 4 failed) 1335ms
+   × test_parse_map_data 1326ms
+   × test_parse_map_data_when_unreadable 2ms
+   × test_parse_map_data_when_invalid_side 1ms
+   × test_parse_map_data_when_note_is_string 2ms
+ ❯ |unit| tests/unit/src/map/check.test.ts (13 tests | 3 failed) 2059ms
+   × test_collect_map_problems 17ms
+   × test_collect_map_problems_when_unknown_ref 2ms
+   × test_collect_map_problems_when_wire_override_on_node 1ms
+ ❯ |unit| tests/unit/src/parts/map.test.ts (5 tests | 3 failed) 1859ms
+   × test_render_map_flow 1771ms
+   × test_render_map_flow_when_entered 2ms
+   × test_render_map_sequence 83ms
+ ❯ |unit| tests/unit/src/map/state.test.ts (10 tests | 1 failed) 162ms
+   × test_read_map_state_when_layout_collapsed 5ms
+2:05:55 AM [vite] Internal server error: Failed to resolve import "../../../../src/map/flow-view.ts" from "tests/unit/src/map/flow-view.browser.test.ts". Does the file exist?
+  Plugin: vite:import-analysis
+  File: /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-diagram-map-mermaid-auto-layout/tests/unit/src/map/flow-view.browser.test.ts:7:34
+  4  |  import { renderDoc } from "../../helpers/render.ts";
+  5  |  /** 構成図を付ける処理を読み込む（実装が無い間は各テストが個別に失敗する） */
+  6  |  const loadFlowView = () => import("../../../../src/map/flow-view.ts");
+     |                                    ^
+  7  |  const loadSpec = () => import("../../../../src/map/spec.ts");
+  8  |  const loadConfig = () => import("../../../../src/config.ts");
+      at TransformPluginContext._formatLog (file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-diagram-map-mermaid-auto-layout/node_modules/vite/dist/node/chunks/node.js:8861:39)
+      at TransformPluginContext.error (file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-diagram-map-mermaid-auto-layout/node_modules/vite/dist/node/chunks/node.js:8858:14)
+      at resolveId (file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-diagram-map-mermaid-auto-layout/node_modules/vite/dist/node/chunks/node.js:26533:18)
+      at async file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-diagram-map-mermaid-auto-layout/node_modules/vite/dist/node/chunks/node.js:26632:23
+      at async Promise.all (index 4)
+      at async TransformPluginContext.transform (file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-diagram-map-mermaid-auto-layout/node_modules/vite/dist/node/chunks/node.js:26605:4)
+      at async EnvironmentPluginContainer.transform (file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-diagram-map-mermaid-auto-layout/node_modules/vite/dist/node/chunks/node.js:8632:14)
+      at async loadAndTransform (file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-diagram-map-mermaid-auto-layout/node_modules/vite/dist/node/chunks/node.js:20108:26)
+ ❯ |unit-browser (chromium)| tests/unit/src/map/flow-view.browser.test.ts (0 test)
+2:05:55 AM [vite] Internal server error: Failed to resolve import "../../../../src/map/index.ts" from "tests/unit/src/map/index.browser.test.ts". Does the file exist?
+  Plugin: vite:import-analysis
+  File: /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-diagram-map-mermaid-auto-layout/tests/unit/src/map/index.browser.test.ts:7:29
+  4  |  import { renderDoc } from "../../helpers/render.ts";
+  5  |  /** dist/map.js の入口を読み込む（実装が無い間は各テストが個別に失敗する） */
+  6  |  const loadMap = () => import("../../../../src/map/index.ts");
+     |                               ^
+  7  |  const loadConfig = () => import("../../../../src/config.ts");
+  8  |  const detachers = [];
+      at TransformPluginContext._formatLog (file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-diagram-map-mermaid-auto-layout/node_modules/vite/dist/node/chunks/node.js:8861:39)
+      at TransformPluginContext.error (file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-diagram-map-mermaid-auto-layout/node_modules/vite/dist/node/chunks/node.js:8858:14)
+      at resolveId (file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-diagram-map-mermaid-auto-layout/node_modules/vite/dist/node/chunks/node.js:26533:18)
+      at async file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-diagram-map-mermaid-auto-layout/node_modules/vite/dist/node/chunks/node.js:26632:23
+      at async Promise.all (index 4)
+      at async TransformPluginContext.transform (file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-diagram-map-mermaid-auto-layout/node_modules/vite/dist/node/chunks/node.js:26605:4)
+      at async EnvironmentPluginContainer.transform (file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-diagram-map-mermaid-auto-layout/node_modules/vite/dist/node/chunks/node.js:8632:14)
+      at async loadAndTransform (file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-diagram-map-mermaid-auto-layout/node_modules/vite/dist/node/chunks/node.js:20108:26)
+ ❯ |unit-browser (chromium)| tests/unit/src/map/index.browser.test.ts (0 test)
+ ❯ |unit-browser (chromium)| tests/unit/src/viewer/bundle.browser.test.ts (10 tests | 1 failed) 8839ms
+   × test_start_bundle_when_switch_clears_map_query 463ms
+2:05:55 AM [vite] Internal server error: Failed to resolve import "../../../../src/map/sequence-view.ts" from "tests/unit/src/map/sequence-view.browser.test.ts". Does the file exist?
+  Plugin: vite:import-analysis
+  File: /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-diagram-map-mermaid-auto-layout/tests/unit/src/map/sequence-view.browser.test.ts:7:38
+  4  |  import { renderDoc } from "../../helpers/render.ts";
+  5  |  /** シーケンス図を付ける処理を読み込む（実装が無い間は各テストが個別に失敗する） */
+  6  |  const loadSequenceView = () => import("../../../../src/map/sequence-view.ts");
+     |                                        ^
+  7  |  const loadSpec = () => import("../../../../src/map/spec.ts");
+  8  |  const loadConfig = () => import("../../../../src/config.ts");
+      at TransformPluginContext._formatLog (file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-diagram-map-mermaid-auto-layout/node_modules/vite/dist/node/chunks/node.js:8861:39)
+      at TransformPluginContext.error (file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-diagram-map-mermaid-auto-layout/node_modules/vite/dist/node/chunks/node.js:8858:14)
+      at resolveId (file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-diagram-map-mermaid-auto-layout/node_modules/vite/dist/node/chunks/node.js:26533:18)
+      at async file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-diagram-map-mermaid-auto-layout/node_modules/vite/dist/node/chunks/node.js:26632:23
+      at async Promise.all (index 4)
+      at async TransformPluginContext.transform (file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-diagram-map-mermaid-auto-layout/node_modules/vite/dist/node/chunks/node.js:26605:4)
+      at async EnvironmentPluginContainer.transform (file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-diagram-map-mermaid-auto-layout/node_modules/vite/dist/node/chunks/node.js:8632:14)
+      at async loadAndTransform (file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-diagram-map-mermaid-auto-layout/node_modules/vite/dist/node/chunks/node.js:20108:26)
+ ❯ |unit-browser (chromium)| tests/unit/src/map/sequence-view.browser.test.ts (0 test)
+ ❯ |unit| tests/unit/src/render/syntax/map.test.ts (4 tests | 1 failed) 44ms
+   × test_build_map_ranges 32ms
+ ❯ |unit| tests/unit/src/cli/embed.test.ts (27 tests | 2 failed) 17600ms
+   × test_uses_map 12ms
+   × test_uses_map_when_disabled 0ms
+ ❯ |unit| tests/unit/src/cli/check.test.ts (31 tests | 2 failed) 17822ms
+   × test_check_maps 15ms
+   × test_check_maps_when_map_disabled 0ms
+ ❯ |unit-browser (chromium)| tests/unit/src/interact/lightbox.browser.test.ts (7 tests | 1 failed) 15990ms
+   × test_attach_lightbox_when_closed 15338ms
+ ❯ |unit-browser (chromium)| tests/unit/src/interact/er-folds.browser.test.ts (2 tests | 1 failed) 15440ms
+   × test_attach_er_folds 15378ms
+ ❯ |unit-browser (chromium)| tests/unit/src/interact/diagrams.browser.test.ts (13 tests | 1 failed) 16260ms
+   × test_open_diagram_dialog_when_tip_open 15367ms
+ ❯ |unit-browser (chromium)| tests/unit/vscode/src/webview/app/app.browser.test.tsx (1 test | 1 failed) 15157ms
+   × test_app_when_render_error 15157ms
+ ❯ |unit-browser (chromium)| tests/unit/vscode/src/webview/features/preview/panel/panel-screen.browser.test.tsx (15 tests | 1 failed) 23818ms
+   × test_panel_screen_when_config_error 15337ms
+
+⎯⎯⎯⎯⎯⎯ Failed Suites 3 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/map/flow-view.browser.test.ts [ tests/unit/src/map/flow-view.browser.test.ts ]
+Error: Failed to import test file /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-diagram-map-mermaid-auto-layout/tests/unit/src/map/flow-view.browser.test.ts
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=bec337ec:5843:5
+ ❯ collectTests node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=bec337ec:5819:3
+ ❯ startTests node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=bec337ec:6503:17
+
+Caused by: TypeError: Failed to fetch dynamically imported module: http://localhost:63316/mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-diagram-map-mermaid-auto-layout/tests/unit/src/map/flow-view.browser.test.ts?import&browserv=1794330354550
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/28]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/map/index.browser.test.ts [ tests/unit/src/map/index.browser.test.ts ]
+Error: Failed to import test file /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-diagram-map-mermaid-auto-layout/tests/unit/src/map/index.browser.test.ts
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=bec337ec:5843:5
+ ❯ collectTests node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=bec337ec:5819:3
+ ❯ startTests node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=bec337ec:6503:17
+
+Caused by: TypeError: Failed to fetch dynamically imported module: http://localhost:63316/mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-diagram-map-mermaid-auto-layout/tests/unit/src/map/index.browser.test.ts?import&browserv=1794330355328
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/28]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/map/sequence-view.browser.test.ts [ tests/unit/src/map/sequence-view.browser.test.ts ]
+Error: Failed to import test file /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-diagram-map-mermaid-auto-layout/tests/unit/src/map/sequence-view.browser.test.ts
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=bec337ec:5843:5
+ ❯ collectTests node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=bec337ec:5819:3
+ ❯ startTests node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=bec337ec:6503:17
+
+Caused by: TypeError: Failed to fetch dynamically imported module: http://localhost:63316/mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-diagram-map-mermaid-auto-layout/tests/unit/src/map/sequence-view.browser.test.ts?import&browserv=1794330355714
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/28]⎯
+
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 25 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit| tests/unit/src/cli/check.test.ts > test_check_maps
+TypeError: checkMaps is not a function
+ ❯ tests/unit/src/cli/check.test.ts:814:18
+    812|   const markdown = `# A\n\n${drift}\n${"\n".repeat(4)}${mapRange({ mer…
+    813|   // 実行
+    814|   const issues = checkMaps(
+       |                  ^
+    815|     [{ path: "docs/a.md", markdown }],
+    816|     resolveConfig({}),
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/28]⎯
+
+ FAIL  |unit| tests/unit/src/cli/check.test.ts > test_check_maps_when_map_disabled
+TypeError: checkMaps is not a function
+ ❯ tests/unit/src/cli/check.test.ts:841:18
+    839|   const markdown = `<!-- features: -map -->\n\n${mapRange({ mermaid: "…
+    840|   // 実行
+    841|   const issues = checkMaps([{ path: "a.md", markdown }], resolveConfig…
+       |                  ^
+    842|   // 検証
+    843|   expect(issues).toEqual([]);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/28]⎯
+
+ FAIL  |unit| tests/unit/src/cli/embed.test.ts > test_uses_map
+TypeError: usesMap is not a function
+ ❯ tests/unit/src/cli/embed.test.ts:590:19
+    588|   const { mapRange, FLOW } = await import("../../helpers/map.ts");
+    589|   // 実行
+    590|   const withMap = usesMap({
+       |                   ^
+    591|     markdowns: ["# A\n", mapRange({ mermaid: FLOW })],
+    592|     config: {},
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/28]⎯
+
+ FAIL  |unit| tests/unit/src/cli/embed.test.ts > test_uses_map_when_disabled
+TypeError: usesMap is not a function
+ ❯ tests/unit/src/cli/embed.test.ts:606:16
+    604|   const { mapRange, FLOW } = await import("../../helpers/map.ts");
+    605|   // 実行
+    606|   const used = usesMap({
+       |                ^
+    607|     markdowns: [`<!-- features: -map -->\n\n${mapRange({ mermaid: FLOW…
+    608|     config: {},
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/28]⎯
+
+ FAIL  |unit| tests/unit/src/map/check.test.ts > test_collect_map_problems
+AssertionError: expected [ { …(3) }, { …(3) } ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   {
++     "kind": "map_invalid_value",
++     "line": 3,
++     "message": "補足の `notes.layout` は文字で記載してください。",
++   },
++   {
++     "kind": "map_invalid_value",
++     "line": 4,
++     "message": "補足の `notes.data` は文字で記載してください。",
++   },
++ ]
+
+ ❯ tests/unit/src/map/check.test.ts:75:20
+     73|   const problems = collectMapProblems(range(FLOW, DATA), CONFIG, true);
+     74|   // 検証
+     75|   expect(problems).toEqual([]);
+       |                    ^
+     76| });
+     77|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/28]⎯
+
+ FAIL  |unit| tests/unit/src/map/check.test.ts > test_collect_map_problems_when_unknown_ref
+AssertionError: expected [ 'map_invalid_value' ] to deeply equal [ 'map_unknown_ref' ]
+
+- Expected
++ Received
+
+  [
+-   "map_unknown_ref",
++   "map_invalid_value",
+  ]
+
+ ❯ tests/unit/src/map/check.test.ts:89:51
+     87|   );
+     88|   // 検証
+     89|   expect(problems.map((problem) => problem.kind)).toEqual(["map_unknow…
+       |                                                   ^
+     90|   expect(problems[0]?.message).toContain("notes.ghost");
+     91| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/28]⎯
+
+ FAIL  |unit| tests/unit/src/map/check.test.ts > test_collect_map_problems_when_wire_override_on_node
+AssertionError: expected [ 'map_unknown_key' ] to deeply equal [ 'map_invalid_value' ]
+
+- Expected
++ Received
+
+  [
+-   "map_invalid_value",
++   "map_unknown_key",
+  ]
+
+ ❯ tests/unit/src/map/check.test.ts:107:51
+    105|   );
+    106|   // 検証
+    107|   expect(problems.map((problem) => problem.kind)).toEqual([
+       |                                                   ^
+    108|     "map_invalid_value",
+    109|   ]);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/28]⎯
+
+ FAIL  |unit| tests/unit/src/map/data.test.ts > test_parse_map_data
+AssertionError: expected [ { …(3) }, { …(3) } ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   {
++     "kind": "map_invalid_value",
++     "line": 3,
++     "message": "補足の `notes.layout` は文字で記載してください。",
++   },
++   {
++     "kind": "map_invalid_value",
++     "line": 4,
++     "message": "補足の `notes.data` は文字で記載してください。",
++   },
++ ]
+
+ ❯ tests/unit/src/map/data.test.ts:28:20
+     26|   const overrides = parseMapData(OVERRIDES);
+     27|   // 検証
+     28|   expect(problems).toEqual([]);
+       |                    ^
+     29|   expect(data.version).toBe(1);
+     30|   expect(Object.keys(data.notes)).toEqual(["layout", "data"]);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/28]⎯
+
+ FAIL  |unit| tests/unit/src/map/data.test.ts > test_parse_map_data_when_unreadable
+AssertionError: expected '補足はキーと値の YAML で記載してください。' to contain 'JSON のオブジェクト'
+
+Expected: "JSON のオブジェクト"
+Received: "補足はキーと値の YAML で記載してください。"
+
+ ❯ tests/unit/src/map/data.test.ts:113:42
+    111|     expect(data.notes).toEqual({});
+    112|   }
+    113|   expect(notObject.problems[0]?.message).toContain("JSON のオブジェクト");
+       |                                          ^
+    114| });
+    115|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[12/28]⎯
+
+ FAIL  |unit| tests/unit/src/map/data.test.ts > test_parse_map_data_when_invalid_side
+AssertionError: expected [ Array(2) ] to deeply equal [ 'map_invalid_value', …(1) ]
+
+- Expected
++ Received
+
+  [
+-   "map_invalid_value",
+-   "map_invalid_value",
++   "map_unknown_key",
++   "map_unknown_key",
+  ]
+
+ ❯ tests/unit/src/map/data.test.ts:130:51
+    128|   const { data, problems } = parseMapData(source);
+    129|   // 検証
+    130|   expect(problems.map((problem) => problem.kind)).toEqual([
+       |                                                   ^
+    131|     "map_invalid_value",
+    132|     "map_invalid_value",
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[13/28]⎯
+
+ FAIL  |unit| tests/unit/src/map/data.test.ts > test_parse_map_data_when_note_is_string
+AssertionError: expected [] to deeply equal [ 'map_invalid_value' ]
+
+- Expected
++ Received
+
+- [
+-   "map_invalid_value",
+- ]
++ []
+
+ ❯ tests/unit/src/map/data.test.ts:147:51
+    145|   );
+    146|   // 検証
+    147|   expect(problems.map((problem) => problem.kind)).toEqual([
+       |                                                   ^
+    148|     "map_invalid_value",
+    149|   ]);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[14/28]⎯
+
+ FAIL  |unit| tests/unit/src/map/layout.test.ts > test_layout_map_when_justify
+AssertionError: expected 216 to be 48 // Object.is equality
+
+- Expected
++ Received
+
+- 48
++ 216
+
+ ❯ tests/unit/src/map/layout.test.ts:220:16
+    218|   const left = start.groups.find((item) => item.id === "g") as Rect;
+    219|   const a1 = start.nodes.find((item) => item.id === "A") as Rect;
+    220|   expect(a1.x).toBe(left.x + 24);
+       |                ^
+    221|   const right = end.groups.find((item) => item.id === "g") as Rect;
+    222|   const a2 = end.nodes.find((item) => item.id === "A") as Rect;
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[15/28]⎯
+
+ FAIL  |unit| tests/unit/src/map/layout.test.ts > test_route_wires_when_ends
+AssertionError: expected [ 144, 55.5 ] to deeply equal [ 84, 87 ]
+
+- Expected
++ Received
+
+  [
+-   84,
+-   87,
++   144,
++   55.5,
+  ]
+
+ ❯ tests/unit/src/map/layout.test.ts:243:17
+    241|   const beforeLast = points.at(-2) as [number, number];
+    242|   const last = points.at(-1) as [number, number];
+    243|   expect(first).toEqual([a.x + a.w / 2, a.y + a.h]);
+       |                 ^
+    244|   expect(last).toEqual([b.x + b.w / 2, b.y]);
+    245|   expect(second[0]).toBe(first[0]);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[16/28]⎯
+
+ FAIL  |unit| tests/unit/src/map/layout.test.ts > test_route_wires_when_via
+AssertionError: expected [ [ 144, 55.5 ], [ 208, 55.5 ] ] to deep equally contain [ 264, 324 ]
+
+- Expected
++ Received
+
+  [
+-   264,
+-   324,
++   [
++     144,
++     55.5,
++   ],
++   [
++     208,
++     55.5,
++   ],
+  ]
+
+ ❯ tests/unit/src/map/layout.test.ts:260:18
+    258|   // 検証
+    259|   const points = layout.wires[0]?.points ?? [];
+    260|   expect(points).toContainEqual([264, 324]);
+       |                  ^
+    261|   for (const node of layout.nodes) {
+    262|     for (const [k, point] of points.slice(1).entries()) {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[17/28]⎯
+
+ FAIL  |unit| tests/unit/src/map/state.test.ts > test_read_map_state_when_layout_collapsed
+AssertionError: expected [] to deeply equal [ 'store' ]
+
+- Expected
++ Received
+
+- [
+-   "store",
+- ]
++ []
+
+ ❯ tests/unit/src/map/state.test.ts:165:27
+    163|   });
+    164|   // 検証
+    165|   expect(empty.collapsed).toEqual(["store"]);
+       |                           ^
+    166|   expect(saved.collapsed).toEqual([]);
+    167| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[18/28]⎯
+
+ FAIL  |unit| tests/unit/src/parts/map.test.ts > test_render_map_flow
+TypeError: renderMapFlow is not a function
+ ❯ tests/unit/src/parts/map.test.ts:36:16
+     34|   const { renderMapFlow } = await loadParts();
+     35|   // 実行
+     36|   const html = renderMapFlow(await flowArgs());
+       |                ^
+     37|   // 検証
+     38|   expect(matches(html, /data-group="[^"]+"/g)).toHaveLength(4);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[19/28]⎯
+
+ FAIL  |unit| tests/unit/src/parts/map.test.ts > test_render_map_flow_when_entered
+TypeError: renderMapFlow is not a function
+ ❯ tests/unit/src/parts/map.test.ts:48:16
+     46|   const { renderMapFlow } = await loadParts();
+     47|   // 実行
+     48|   const html = renderMapFlow(await flowArgs("read"));
+       |                ^
+     49|   // 検証
+     50|   expect(html).toMatch(
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[20/28]⎯
+
+ FAIL  |unit| tests/unit/src/parts/map.test.ts > test_render_map_sequence
+TypeError: renderMapSequence is not a function
+ ❯ tests/unit/src/parts/map.test.ts:70:16
+     68|   const rows = sequenceRows(sequence, view);
+     69|   // 実行
+     70|   const html = renderMapSequence({
+       |                ^
+     71|     sequence,
+     72|     rows: rows.rows,
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[21/28]⎯
+
+ FAIL  |unit| tests/unit/src/render/syntax/map.test.ts > test_build_map_ranges
+SyntaxError: Unexpected non-whitespace character after JSON at position 11 (line 1 column 12)
+ ❯ tests/unit/src/render/syntax/map.test.ts:36:15
+     34|     .replaceAll("&lt;", "<")
+     35|     .replaceAll("&gt;", ">");
+     36|   expect(JSON.parse(decoded)).toEqual(JSON.parse(DATA));
+       |               ^
+     37| });
+     38|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[22/28]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/interact/diagrams.browser.test.ts > test_open_diagram_dialog_when_tip_open
+TimeoutError: locator.hover: Timeout 14852ms exceeded.
+Call log:
+[2m  - waiting for locator('[data-vitest="true"]').contentFrame().getByRole('dialog').getByLabel('問い合わせへの自動返信の構成範囲: メールを受け取ってから返信するまで・更新日: 2026-10-').getByText('メール', { exact: true })[22m
+[2m    - locator resolved to <span tabindex="0" data-line="flow" data-tip-owner="w-mail" class="mdmark-diagram-label has-tip" aria-describedby="mdmark-diagram-10-0-modal-tip-5">メール</span>[22m
+[2m  - attempting hover action[22m
+[2m    2 × waiting for element to be visible and stable[22m
+[2m      - element is visible and stable[22m
+[2m      - scrolling into view if needed[22m
+[2m      - done scrolling[22m
+[2m      - <vite-error-overlay></vite-error-overlay> intercepts pointer events[22m
+[2m    - retrying hover action[22m
+[2m    - waiting 20ms[22m
+[2m    2 × waiting for element to be visible and stable[22m
+[2m      - element is visible and stable[22m
+[2m      - scrolling into view if needed[22m
+[2m      - done scrolling[22m
+[2m      - <vite-error-overlay></vite-error-overlay> intercepts pointer events[22m
+[2m    - retrying hover action[22m
+[2m      - waiting 100ms[22m
+[2m    23 × waiting for element to be visible and stable[22m
+[2m       - element is visible and stable[22m
+[2m       - scrolling into view if needed[22m
+[2m       - done scrolling[22m
+[2m       - <vite-error-overlay></vite-error-overlay> intercepts pointer events[22m
+[2m     - retrying hover action[22m
+[2m       - waiting 500ms[22m
+[2m    - waiting for element to be visible and stable[22m
+
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/diagrams.browser.test.ts/test_open_diagram_dialog_when_tip_open.png
+
+ ❯ tests/unit/src/interact/diagrams.browser.test.ts:284:21
+    282|   // 実行・検証
+    283|   for (const owner of owners.slice(0, 2)) {
+    284|     await userEvent.hover(owner);
+       |                     ^
+    285|     const tip = document.getElementById(
+    286|       owner.getAttribute("aria-describedby") ?? "",
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=bec337ec:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[23/28]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/interact/er-folds.browser.test.ts > test_attach_er_folds
+TimeoutError: locator.click: Timeout 14836ms exceeded.
+Call log:
+[2m  - waiting for locator('[data-vitest="true"]').contentFrame().getByLabel('「注文」の主キーと外部キー以外の列')[22m
+[2m    - locator resolved to <button type="button" aria-expanded="true" data-er-fold="orders" class="mdmark-diagram-er-fold" aria-label="「注文」の主キーと外部キー以外の列">…</button>[22m
+[2m  - attempting click action[22m
+[2m    2 × waiting for element to be visible, enabled and stable[22m
+[2m      - element is visible, enabled and stable[22m
+[2m      - scrolling into view if needed[22m
+[2m      - done scrolling[22m
+[2m      - <vite-error-overlay></vite-error-overlay> intercepts pointer events[22m
+[2m    - retrying click action[22m
+[2m    - waiting 20ms[22m
+[2m    2 × waiting for element to be visible, enabled and stable[22m
+[2m      - element is visible, enabled and stable[22m
+[2m      - scrolling into view if needed[22m
+[2m      - done scrolling[22m
+[2m      - <vite-error-overlay></vite-error-overlay> intercepts pointer events[22m
+[2m    - retrying click action[22m
+[2m      - waiting 100ms[22m
+[2m    23 × waiting for element to be visible, enabled and stable[22m
+[2m       - element is visible, enabled and stable[22m
+[2m       - scrolling into view if needed[22m
+[2m       - done scrolling[22m
+[2m       - <vite-error-overlay></vite-error-overlay> intercepts pointer events[22m
+[2m     - retrying click action[22m
+[2m       - waiting 500ms[22m
+[2m    - waiting for element to be visible, enabled and stable[22m
+
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/er-folds.browser.test.ts/test_attach_er_folds.png
+
+ ❯ tests/unit/src/interact/er-folds.browser.test.ts:83:19
+     81|   const before = endY(figure);
+     82|   // 実行
+     83|   await userEvent.click(button);
+       |                   ^
+     84|   const folded = endY(figure);
+     85|   const foldedRows = otherRows(orders).map((row) => row.hidden);
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=bec337ec:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[24/28]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/interact/lightbox.browser.test.ts > test_attach_lightbox_when_closed
+TimeoutError: locator.click: Timeout 14849ms exceeded.
+Call log:
+[2m  - waiting for locator('[data-vitest="true"]').contentFrame().getByLabel('拡大した画像。ドラッグか矢印キーで動かす')[22m
+[2m    - locator resolved to <div tabindex="0" class="mdmark-lightbox-stage" aria-label="拡大した画像。ドラッグか矢印キーで動かす">…</div>[22m
+[2m  - attempting click action[22m
+[2m    2 × waiting for element to be visible, enabled and stable[22m
+[2m      - element is visible, enabled and stable[22m
+[2m      - scrolling into view if needed[22m
+[2m      - done scrolling[22m
+[2m      - <vite-error-overlay></vite-error-overlay> intercepts pointer events[22m
+[2m    - retrying click action[22m
+[2m    - waiting 20ms[22m
+[2m    2 × waiting for element to be visible, enabled and stable[22m
+[2m      - element is visible, enabled and stable[22m
+[2m      - scrolling into view if needed[22m
+[2m      - done scrolling[22m
+[2m      - <vite-error-overlay></vite-error-overlay> intercepts pointer events[22m
+[2m    - retrying click action[22m
+[2m      - waiting 100ms[22m
+[2m    23 × waiting for element to be visible, enabled and stable[22m
+[2m       - element is visible, enabled and stable[22m
+[2m       - scrolling into view if needed[22m
+[2m       - done scrolling[22m
+[2m       - <vite-error-overlay></vite-error-overlay> intercepts pointer events[22m
+[2m     - retrying click action[22m
+[2m       - waiting 500ms[22m
+[2m    - waiting for element to be visible, enabled and stable[22m
+
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/lightbox.browser.test.ts/test_attach_lightbox_when_closed.png
+
+ ❯ tests/unit/src/interact/lightbox.browser.test.ts:198:19
+    196|     throw new Error("画像の場所が無い");
+    197|   }
+    198|   await userEvent.click(stage, { position: { x: 2, y: 2 } });
+       |                   ^
+    199|   // 検証
+    200|   await vi.waitFor(() => {
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=bec337ec:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[25/28]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/viewer/bundle.browser.test.ts > test_start_bundle_when_switch_clears_map_query
+AssertionError: expected '?map-1=place&x=1' to be '?x=1' // Object.is equality
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/bundle.browser.test.ts/test_start_bundle_when_switch_clears_map_query.png
+
+Expected: [32m"?x=1"[39m
+Received: [31m"?[7mmap-1=place&[27mx=1"[39m
+
+ ❯ tests/unit/src/viewer/bundle.browser.test.ts:310:27
+    308|   await new Promise((resolve) => setTimeout(resolve, 50));
+    309|   // 検証
+    310|   expect(location.search).toBe("?x=1");
+       |                           ^
+    311|   expect(
+    312|     document.querySelector(".mdmark-bundle-main .mdmark h1")?.textCont…
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=bec337ec:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[26/28]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/vscode/src/webview/app/app.browser.test.tsx > test_app_when_render_error
+TimeoutError: locator.click: Timeout 13903ms exceeded.
+Call log:
+[2m  - waiting for locator('[data-vitest="true"]').contentFrame().getByRole('button', { name: 'リロード' })[22m
+[2m    - locator resolved to <button type="button" data-slot="button" data-action="reload" class="inline-flex h-9 min-w-9 cursor-pointer touch-manipulation items-center justify-center gap-2 rounded-md border px-4 text-sm font-medium whitespace-nowrap focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring border-transparent bg-primary text-primary-foreground hover:bg-primary-hover">リロード</button>[22m
+[2m  - attempting click action[22m
+[2m    2 × waiting for element to be visible, enabled and stable[22m
+[2m      - element is visible, enabled and stable[22m
+[2m      - scrolling into view if needed[22m
+[2m      - done scrolling[22m
+[2m      - <vite-error-overlay></vite-error-overlay> intercepts pointer events[22m
+[2m    - retrying click action[22m
+[2m    - waiting 20ms[22m
+[2m    2 × waiting for element to be visible, enabled and stable[22m
+[2m      - element is visible, enabled and stable[22m
+[2m      - scrolling into view if needed[22m
+[2m      - done scrolling[22m
+[2m      - <vite-error-overlay></vite-error-overlay> intercepts pointer events[22m
+[2m    - retrying click action[22m
+[2m      - waiting 100ms[22m
+[2m    22 × waiting for element to be visible, enabled and stable[22m
+[2m       - element is visible, enabled and stable[22m
+[2m       - scrolling into view if needed[22m
+[2m       - done scrolling[22m
+[2m       - <vite-error-overlay></vite-error-overlay> intercepts pointer events[22m
+[2m     - retrying click action[22m
+[2m       - waiting 500ms[22m
+
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/app.browser.test.tsx/test_app_when_render_error.png
+
+ ❯ tests/unit/vscode/src/webview/app/app.browser.test.tsx:44:19
+     42|   // 実行
+     43|   render(<App boot={boot} api={api} />);
+     44|   await userEvent.click(screen.getByRole("button", { name: "リロード" }));
+       |                   ^
+     45|   // 検証
+     46|   const status = screen.getByRole("status");
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=bec337ec:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[27/28]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/vscode/src/webview/features/preview/panel/panel-screen.browser.test.tsx > test_panel_screen_when_config_error
+TimeoutError: locator.click: Timeout 14836ms exceeded.
+Call log:
+[2m  - waiting for locator('[data-vitest="true"]').contentFrame().getByRole('button', { name: '設定ファイルを開く' })[22m
+[2m    - locator resolved to <button type="button" data-slot="button" data-action="openConfig" class="inline-flex h-9 min-w-9 cursor-pointer touch-manipulation items-center justify-center gap-2 rounded-md border px-4 text-sm font-medium whitespace-nowrap focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring border-warning-border bg-background text-foreground hover:bg-secondary">設定ファイルを開く</button>[22m
+[2m  - attempting click action[22m
+[2m    2 × waiting for element to be visible, enabled and stable[22m
+[2m      - element is visible, enabled and stable[22m
+[2m      - scrolling into view if needed[22m
+[2m      - done scrolling[22m
+[2m      - <vite-error-overlay></vite-error-overlay> intercepts pointer events[22m
+[2m    - retrying click action[22m
+[2m    - waiting 20ms[22m
+[2m    2 × waiting for element to be visible, enabled and stable[22m
+[2m      - element is visible, enabled and stable[22m
+[2m      - scrolling into view if needed[22m
+[2m      - done scrolling[22m
+[2m      - <vite-error-overlay></vite-error-overlay> intercepts pointer events[22m
+[2m    - retrying click action[22m
+[2m      - waiting 100ms[22m
+[2m    23 × waiting for element to be visible, enabled and stable[22m
+[2m       - element is visible, enabled and stable[22m
+[2m       - scrolling into view if needed[22m
+[2m       - done scrolling[22m
+[2m       - <vite-error-overlay></vite-error-overlay> intercepts pointer events[22m
+[2m     - retrying click action[22m
+[2m       - waiting 500ms[22m
+[2m    - waiting for element to be visible, enabled and stable[22m
+
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/panel-screen.browser.test.tsx/test_panel_screen_when_config_error.png
+
+ ❯ tests/unit/vscode/src/webview/features/preview/panel/panel-screen.browser.test.tsx:287:19
+    285|       0,
+    286|   };
+    287|   await userEvent.click(
+       |                   ^
+    288|     screen.getByRole("button", { name: "設定ファイルを開く" }),
+    289|   );
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=bec337ec:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[28/28]⎯
+
+
+ Test Files  17 failed | 263 passed (280)
+      Tests  25 failed | 1973 passed (1998)
+   Start at  02:05:41
+   Duration  136.75s (worker 68%, tests 21%, import 9%, transform 2%)
+

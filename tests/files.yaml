@@ -2452,3 +2452,96 @@ files:
     related:
       - to: tests/migrations-dir
         type: tests
+  - path: unit/helpers/map.ts
+    description: 単体テストが使用する、map の見本の Mermaid（構成図とシーケンス図）・補足の YAML・設定の map と、範囲の Markdown の組み立てを受け持つ。単体テストの準備や比べ方を変えるときに参照する。
+    tags: [topic:単体テスト, tool:vitest, topic:図, topic:フィクスチャ]
+  - path: unit/src/map/flowchart.test.ts
+    description: src/map/flowchart.ts を確認する単体テスト。flowchart.ts を変えたときに、合わせて再確認するケースを探すときに参照する。
+    tags: [topic:単体テスト, tool:vitest, topic:図]
+    related:
+      - to: src/map/flowchart
+        type: tests
+  - path: unit/src/map/sequence.test.ts
+    description: src/map/sequence.ts を確認する単体テスト。sequence.ts を変えたときに、合わせて再確認するケースを探すときに参照する。
+    tags: [topic:単体テスト, tool:vitest, topic:図]
+    related:
+      - to: src/map/sequence
+        type: tests
+  - path: unit/src/map/data.test.ts
+    description: src/map/data.ts を確認する単体テスト。data.ts を変えたときに、合わせて再確認するケースを探すときに参照する。
+    tags: [topic:単体テスト, tool:vitest, topic:図]
+    related:
+      - to: src/map/data
+        type: tests
+  - path: unit/src/map/spec.test.ts
+    description: src/map/spec.ts を確認する単体テスト。spec.ts を変えたときに、合わせて再確認するケースを探すときに参照する。
+    tags: [topic:単体テスト, tool:vitest, topic:図]
+    related:
+      - to: src/map/spec
+        type: tests
+  - path: unit/src/map/check.test.ts
+    description: src/map/check.ts を確認する単体テスト。check.ts を変えたときに、合わせて再確認するケースを探すときに参照する。
+    tags: [topic:単体テスト, tool:vitest, topic:図]
+    related:
+      - to: src/map/check
+        type: tests
+  - path: unit/src/map/layout.test.ts
+    description: src/map/layout.ts を確認する単体テスト。layout.ts を変えたときに、合わせて再確認するケースを探すときに参照する。
+    tags: [topic:単体テスト, tool:vitest, topic:図]
+    related:
+      - to: src/map/layout
+        type: tests
+  - path: unit/src/map/sequence-rows.test.ts
+    description: src/map/sequence-rows.ts を確認する単体テスト。sequence-rows.ts を変えたときに、合わせて再確認するケースを探すときに参照する。
+    tags: [topic:単体テスト, tool:vitest, topic:図]
+    related:
+      - to: src/map/sequence-rows
+        type: tests
+  - path: unit/src/map/state.test.ts
+    description: src/map/state.ts を確認する単体テスト。state.ts を変えたときに、合わせて再確認するケースを探すときに参照する。
+    tags: [topic:単体テスト, tool:vitest, topic:図]
+    related:
+      - to: src/map/state
+        type: tests
+  - path: unit/src/map/drag.browser.test.ts
+    description: src/map/drag.ts を確認する単体テスト。drag.ts を変えたときに、合わせて再確認するケースを探すときに参照する。
+    tags: [topic:単体テスト, tool:vitest, topic:図]
+    related:
+      - to: src/map/drag
+        type: tests
+  - path: unit/src/map/band.browser.test.ts
+    description: src/map/band.ts を確認する単体テスト。band.ts を変えたときに、合わせて再確認するケースを探すときに参照する。
+    tags: [topic:単体テスト, tool:vitest, topic:図]
+    related:
+      - to: src/map/band
+        type: tests
+  - path: unit/src/map/index.browser.test.ts
+    description: src/map/index.ts を確認する単体テスト。index.ts を変えたときに、合わせて再確認するケースを探すときに参照する。
+    tags: [topic:単体テスト, tool:vitest, topic:図]
+    related:
+      - to: src/map/index
+        type: tests
+  - path: unit/src/map/flow-view.browser.test.ts
+    description: src/map/flow-view.ts を確認する単体テスト。flow-view.ts を変えたときに、合わせて再確認するケースを探すときに参照する。
+    tags: [topic:単体テスト, tool:vitest, topic:図]
+    related:
+      - to: src/map/flow-view
+        type: tests
+  - path: unit/src/map/sequence-view.browser.test.ts
+    description: src/map/sequence-view.ts を確認する単体テスト。sequence-view.ts を変えたときに、合わせて再確認するケースを探すときに参照する。
+    tags: [topic:単体テスト, tool:vitest, topic:図]
+    related:
+      - to: src/map/sequence-view
+        type: tests
+  - path: unit/src/parts/map.test.ts
+    description: src/parts/map.ts を確認する単体テスト。map.ts を変えたときに、合わせて再確認するケースを探すときに参照する。
+    tags: [topic:単体テスト, tool:vitest, topic:図]
+    related:
+      - to: src/parts/map
+        type: tests
+  - path: unit/src/render/syntax/map.test.ts
+    description: src/render/syntax/map.ts を確認する単体テスト。map.ts を変えたときに、合わせて再確認するケースを探すときに参照する。
+    tags: [topic:単体テスト, tool:vitest, topic:図, topic:記法]
+    related:
+      - to: src/render/syntax/map
+        type: tests

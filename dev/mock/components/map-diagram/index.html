@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <!-- viewport: スマホ幅で等倍に表示する -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>map-diagram（map の図の状態） | mdmark のモック</title>
+  <!-- 配布物の CSS（ライブラリ本体）: 色・余白・角丸の CSS 変数 -->
+  <link rel="stylesheet" href="../../../../dist/index.css">
+  <!-- 利用側のページの外観（#287 で共有するアセット） -->
+  <link rel="stylesheet" href="../../refs/287/assets/scene.css">
+  <!-- map の図のモックの規則（#445 で共有するアセット） -->
+  <link rel="stylesheet" href="../../refs/445/assets/map-mock.css">
+  <style>
+    /* カタログの並び: 状態ごとに見出しと図を縦に並べる */
+    .map-catalog { box-sizing: border-box; max-width: 1100px; margin: 0 auto; padding: 16px; }
+    .map-catalog h2 { font-size: 20px; margin: 32px 0 4px; }
+    .map-catalog p.state-note { margin: 0; color: var(--mdmark-color-muted); font-size: 13px; }
+    .narrow { max-width: 390px; }
+  </style>
+</head>
+<body class="mdmark-theme-light">
+  <header class="host-bar">利用側のアプリ</header>
+  <nav class="crumbs" aria-label="パンくずリスト">
+    <a href="../index.md">components</a> / map-diagram
+  </nav>
+  <main class="map-catalog" id="catalog"><h1>map-diagram</h1></main>
+  <script type="module">
+    import { createMap } from "../../refs/445/assets/map-mock.js";
+    import { DATA, FLOW, SEQUENCE } from "../../refs/445/assets/samples.js";
+
+    /** 状態の見出し・補足・初期状態 */
+    const STATES = [
+      ["通常", "今のフロー図の部品で描き、入れ子のグループを色の面で重ねる。図の枠の下に案内の帯を常に出し、次へか自動で進めるで始める", {}],
+      ["グループの中", "入ったグループの中だけを配置し直し、外を薄く残す。右上の戻るボタンか Esc で外へ戻る", { enter: "lib" }],
+      ["閉じたグループとまとめた線", "閉じたグループは二重の枠のノード。同じ相手への線は 1 本にまとめ、元の線のラベルを並べる。線にポインターを当てると太くなり、元の線と説明を出す", { collapsed: ["read"] }],
+      ["案内（最初の手順）", "前へは押せない状態。強調しないノードは薄くし、強調するノードどうしの線に印を繰り返し動かす", { step: 0 }],
+      ["案内（最後の手順）", "グループの中に入る。次へで最初の手順へ戻る", { step: 2, enter: "place" }],
+      ["再生", "送り手と受け手を強調し、今のメッセージの線の上の印を繰り返し動かす", { play: 1 }],
+    ];
+    const catalog = document.getElementById("catalog");
+    const add = (index, title, note, initial, narrow = false) => {
+      catalog.append(Object.assign(document.createElement("h2"), { textContent: title }));
+      catalog.append(Object.assign(document.createElement("p"), { className: "state-note", textContent: note }));
+      const host = document.createElement("div");
+      if (narrow) host.className = "narrow";
+      catalog.append(host);
+      createMap(host, { id: `catalog-${index}`, title: `全体の構成（${title}）`, flow: FLOW, data: DATA, sequence: SEQUENCE }, initial);
+    };
+    STATES.forEach(([title, note, initial], index) => add(index, title, note, initial));
+    add(STATES.length, "狭い幅（390px）", "帯は折り返し、図は表示する枠の中で横にスクロールする", { enter: "lib" }, true);
+  </script>
+</body>
+</html>

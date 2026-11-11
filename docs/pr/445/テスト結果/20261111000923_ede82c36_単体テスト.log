@@ -1,0 +1,1735 @@
+# 単体テスト作成の Red。実装（src/map/ ほか）が無い状態で実行した
+# 失敗は全て実装の無いことによる: map と変えた既存のテストは、無い関数・モジュールで落ちる。図の全画面・ER 図・ライトボックス・VS Code の Webview のブラウザのテストは、無い src/map/ を import した Vite のエラー画面（vite-error-overlay）がクリックを遮って落ちる
+# commit: cec800fb（テストコードの末尾の commit: ede82c36）
+$ npm run test:unit
+
+> test:unit
+> vitest run --project 'unit*'
+
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-diagram-map-mermaid-auto-layout
+
+ ❯ |unit| tests/unit/src/map/flowchart.test.ts (6 tests | 6 failed) 4553ms
+   × test_parse_flowchart 1016ms
+   × test_parse_flowchart_when_shapes 1024ms
+   × test_parse_flowchart_when_chained 519ms
+   × test_parse_flowchart_when_edge_ids 978ms
+   × test_parse_flowchart_when_unreadable_line 459ms
+   × test_parse_flowchart_when_unclosed_subgraph 554ms
+12:06:09 AM [vite] Internal server error: Failed to resolve import "../../../../src/map/band.ts" from "tests/unit/src/map/band.browser.test.ts". Does the file exist?
+  Plugin: vite:import-analysis
+  File: /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-diagram-map-mermaid-auto-layout/tests/unit/src/map/band.browser.test.ts:5:30
+  2  |  import { createRootFromHtml, removeRoots } from "../../helpers/dom.ts";
+  3  |  /** 案内と再生の帯を読み込む（実装が無い間は各テストが個別に失敗する） */
+  4  |  const loadBand = () => import("../../../../src/map/band.ts");
+     |                                ^
+  5  |  afterEach(() => {
+  6  |  	removeRoots();
+      at TransformPluginContext._formatLog (file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-diagram-map-mermaid-auto-layout/node_modules/vite/dist/node/chunks/node.js:8861:39)
+      at TransformPluginContext.error (file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-diagram-map-mermaid-auto-layout/node_modules/vite/dist/node/chunks/node.js:8858:14)
+      at resolveId (file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-diagram-map-mermaid-auto-layout/node_modules/vite/dist/node/chunks/node.js:26533:18)
+      at async file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-diagram-map-mermaid-auto-layout/node_modules/vite/dist/node/chunks/node.js:26632:23
+      at async Promise.all (index 2)
+      at async TransformPluginContext.transform (file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-diagram-map-mermaid-auto-layout/node_modules/vite/dist/node/chunks/node.js:26605:4)
+      at async EnvironmentPluginContainer.transform (file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-diagram-map-mermaid-auto-layout/node_modules/vite/dist/node/chunks/node.js:8632:14)
+      at async loadAndTransform (file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-diagram-map-mermaid-auto-layout/node_modules/vite/dist/node/chunks/node.js:20108:26)
+      at async viteTransformMiddleware (file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-diagram-map-mermaid-auto-layout/node_modules/vite/dist/node/chunks/node.js:20328:20)
+ ❯ |unit| tests/unit/src/map/data.test.ts (5 tests | 5 failed) 4169ms
+   × test_parse_map_data 1574ms
+   × test_parse_map_data_when_empty 974ms
+   × test_parse_map_data_when_unknown_key 459ms
+   × test_parse_map_data_when_double_hyphen 554ms
+   × test_parse_map_data_when_unreadable 604ms
+ ❯ |unit-browser (chromium)| tests/unit/src/map/band.browser.test.ts (0 test)
+ ❯ |unit| tests/unit/src/map/state.test.ts (9 tests | 9 failed) 6204ms
+   × test_read_map_state_when_query 986ms
+   × test_read_map_state_when_url_state_off 1017ms
+   × test_read_map_state_when_unknown_id 518ms
+   × test_read_map_state_when_storage_unavailable 977ms
+   × test_read_map_state_when_focus 462ms
+   × test_read_map_state_when_saved_over_focus 557ms
+   × test_write_map_state 605ms
+   × test_write_map_state_when_url_state_off 627ms
+   × test_write_map_state_when_left 453ms
+ ❯ |unit| tests/unit/src/map/layout.test.ts (9 tests | 9 failed) 6431ms
+   × test_layout_map 1004ms
+   × test_layout_map_when_entered 1031ms
+   × test_layout_map_when_collapsed 520ms
+   × test_layout_map_when_overrides 977ms
+   × test_layout_map_when_measured_size 463ms
+   × test_layout_map_when_node_fit_width 556ms
+   × test_route_wires 606ms
+   × test_route_wires_when_nested 628ms
+   × test_wrap_label 641ms
+12:06:16 AM [vite] Internal server error: Failed to resolve import "../../../../src/map/drag.ts" from "tests/unit/src/map/drag.browser.test.ts". Does the file exist?
+  Plugin: vite:import-analysis
+  File: /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-diagram-map-mermaid-auto-layout/tests/unit/src/map/drag.browser.test.ts:5:30
+  2  |  import { createRootFromHtml, removeRoots } from "../../helpers/dom.ts";
+  3  |  /** ドラッグを読み込む（実装が無い間は各テストが個別に失敗する） */
+  4  |  const loadDrag = () => import("../../../../src/map/drag.ts");
+     |                                ^
+  5  |  afterEach(() => {
+  6  |  	removeRoots();
+      at TransformPluginContext._formatLog (file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-diagram-map-mermaid-auto-layout/node_modules/vite/dist/node/chunks/node.js:8861:39)
+      at TransformPluginContext.error (file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-diagram-map-mermaid-auto-layout/node_modules/vite/dist/node/chunks/node.js:8858:14)
+      at resolveId (file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-diagram-map-mermaid-auto-layout/node_modules/vite/dist/node/chunks/node.js:26533:18)
+      at async file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-diagram-map-mermaid-auto-layout/node_modules/vite/dist/node/chunks/node.js:26632:23
+      at async Promise.all (index 2)
+      at async TransformPluginContext.transform (file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-diagram-map-mermaid-auto-layout/node_modules/vite/dist/node/chunks/node.js:26605:4)
+      at async EnvironmentPluginContainer.transform (file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-diagram-map-mermaid-auto-layout/node_modules/vite/dist/node/chunks/node.js:8632:14)
+      at async loadAndTransform (file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-diagram-map-mermaid-auto-layout/node_modules/vite/dist/node/chunks/node.js:20108:26)
+ ❯ |unit-browser (chromium)| tests/unit/src/map/drag.browser.test.ts (0 test)
+ ❯ |unit| tests/unit/src/parts/diagram.test.ts (31 tests | 2 failed) 468ms
+   × test_render_diagram_frame_when_map 6ms
+   × test_render_diagram_frame_when_resize_strip 1ms
+12:06:18 AM [vite] Internal server error: Failed to resolve import "../../../../src/map/flow-view.ts" from "tests/unit/src/map/flow-view.browser.test.ts". Does the file exist?
+  Plugin: vite:import-analysis
+  File: /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-diagram-map-mermaid-auto-layout/tests/unit/src/map/flow-view.browser.test.ts:7:34
+  4  |  import { renderDoc } from "../../helpers/render.ts";
+  5  |  /** 構成図を付ける処理を読み込む（実装が無い間は各テストが個別に失敗する） */
+  6  |  const loadFlowView = () => import("../../../../src/map/flow-view.ts");
+     |                                    ^
+  7  |  const loadSpec = () => import("../../../../src/map/spec.ts");
+  8  |  const loadConfig = () => import("../../../../src/config.ts");
+      at TransformPluginContext._formatLog (file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-diagram-map-mermaid-auto-layout/node_modules/vite/dist/node/chunks/node.js:8861:39)
+      at TransformPluginContext.error (file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-diagram-map-mermaid-auto-layout/node_modules/vite/dist/node/chunks/node.js:8858:14)
+      at resolveId (file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-diagram-map-mermaid-auto-layout/node_modules/vite/dist/node/chunks/node.js:26533:18)
+      at async file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-diagram-map-mermaid-auto-layout/node_modules/vite/dist/node/chunks/node.js:26632:23
+      at async Promise.all (index 4)
+      at async TransformPluginContext.transform (file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-diagram-map-mermaid-auto-layout/node_modules/vite/dist/node/chunks/node.js:26605:4)
+      at async EnvironmentPluginContainer.transform (file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-diagram-map-mermaid-auto-layout/node_modules/vite/dist/node/chunks/node.js:8632:14)
+      at async loadAndTransform (file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-diagram-map-mermaid-auto-layout/node_modules/vite/dist/node/chunks/node.js:20108:26)
+ ❯ |unit-browser (chromium)| tests/unit/src/map/flow-view.browser.test.ts (0 test)
+ ❯ |unit| tests/unit/src/map/check.test.ts (12 tests | 12 failed) 11409ms
+   × test_collect_map_structure 1033ms
+   × test_collect_map_structure_when_two_blocks 950ms
+   × test_collect_map_structure_when_bad_args 464ms
+   × test_collect_map_problems 585ms
+   × test_collect_map_problems_when_unknown_ref 1457ms
+   × test_collect_map_problems_when_unknown_class 385ms
+   × test_collect_map_problems_when_unknown_line 612ms
+   × test_collect_map_problems_when_no_mermaid 2699ms
+   × test_collect_map_problems_when_unsupported_kind 632ms
+   × test_collect_map_problems_when_unknown_arg 760ms
+   × test_check_map_config 737ms
+   × test_check_map_config_when_unknown_icon 1095ms
+ ❯ |unit| tests/unit/src/map/sequence-rows.test.ts (4 tests | 4 failed) 6437ms
+   × test_sequence_rows 4155ms
+   × test_sequence_rows_when_collapsed 640ms
+   × test_sequence_rows_when_entered 652ms
+   × test_sequence_rows_when_reordered 988ms
+ ❯ |unit| tests/unit/src/map/sequence.test.ts (5 tests | 5 failed) 7716ms
+   × test_parse_sequence 4478ms
+   × test_parse_sequence_when_arrows 1177ms
+   × test_parse_sequence_when_sections 422ms
+   × test_parse_sequence_when_unclosed_block 650ms
+   × test_parse_sequence_when_unreadable_line 988ms
+ ❯ |unit| tests/unit/src/parts/map.test.ts (5 tests | 5 failed) 5154ms
+   × test_render_map_flow 2357ms
+   × test_render_map_flow_when_entered 538ms
+   × test_render_map_sequence 696ms
+   × test_render_map_band 1338ms
+   × test_render_map_band_when_playback 223ms
+ ❯ |unit| tests/unit/src/config.test.ts (17 tests | 2 failed) 33ms
+   × test_resolve_map_config 7ms
+   × test_resolve_map_config_when_unknown_values 0ms
+12:06:22 AM [vite] Internal server error: Failed to resolve import "../../../../src/map/index.ts" from "tests/unit/src/map/index.browser.test.ts". Does the file exist?
+  Plugin: vite:import-analysis
+  File: /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-diagram-map-mermaid-auto-layout/tests/unit/src/map/index.browser.test.ts:7:29
+  4  |  import { renderDoc } from "../../helpers/render.ts";
+  5  |  /** dist/map.js の入口を読み込む（実装が無い間は各テストが個別に失敗する） */
+  6  |  const loadMap = () => import("../../../../src/map/index.ts");
+     |                               ^
+  7  |  const loadConfig = () => import("../../../../src/config.ts");
+  8  |  const detachers = [];
+      at TransformPluginContext._formatLog (file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-diagram-map-mermaid-auto-layout/node_modules/vite/dist/node/chunks/node.js:8861:39)
+      at TransformPluginContext.error (file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-diagram-map-mermaid-auto-layout/node_modules/vite/dist/node/chunks/node.js:8858:14)
+      at resolveId (file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-diagram-map-mermaid-auto-layout/node_modules/vite/dist/node/chunks/node.js:26533:18)
+      at async file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-diagram-map-mermaid-auto-layout/node_modules/vite/dist/node/chunks/node.js:26632:23
+      at async Promise.all (index 4)
+      at async TransformPluginContext.transform (file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-diagram-map-mermaid-auto-layout/node_modules/vite/dist/node/chunks/node.js:26605:4)
+      at async EnvironmentPluginContainer.transform (file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-diagram-map-mermaid-auto-layout/node_modules/vite/dist/node/chunks/node.js:8632:14)
+      at async loadAndTransform (file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-diagram-map-mermaid-auto-layout/node_modules/vite/dist/node/chunks/node.js:20108:26)
+ ❯ |unit-browser (chromium)| tests/unit/src/map/index.browser.test.ts (0 test)
+12:06:23 AM [vite] Internal server error: Failed to resolve import "../../../../src/map/sequence-view.ts" from "tests/unit/src/map/sequence-view.browser.test.ts". Does the file exist?
+  Plugin: vite:import-analysis
+  File: /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-diagram-map-mermaid-auto-layout/tests/unit/src/map/sequence-view.browser.test.ts:7:38
+  4  |  import { renderDoc } from "../../helpers/render.ts";
+  5  |  /** シーケンス図を付ける処理を読み込む（実装が無い間は各テストが個別に失敗する） */
+  6  |  const loadSequenceView = () => import("../../../../src/map/sequence-view.ts");
+     |                                        ^
+  7  |  const loadSpec = () => import("../../../../src/map/spec.ts");
+  8  |  const loadConfig = () => import("../../../../src/config.ts");
+      at TransformPluginContext._formatLog (file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-diagram-map-mermaid-auto-layout/node_modules/vite/dist/node/chunks/node.js:8861:39)
+      at TransformPluginContext.error (file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-diagram-map-mermaid-auto-layout/node_modules/vite/dist/node/chunks/node.js:8858:14)
+      at resolveId (file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-diagram-map-mermaid-auto-layout/node_modules/vite/dist/node/chunks/node.js:26533:18)
+      at async file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-diagram-map-mermaid-auto-layout/node_modules/vite/dist/node/chunks/node.js:26632:23
+      at async Promise.all (index 4)
+      at async TransformPluginContext.transform (file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-diagram-map-mermaid-auto-layout/node_modules/vite/dist/node/chunks/node.js:26605:4)
+      at async EnvironmentPluginContainer.transform (file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-diagram-map-mermaid-auto-layout/node_modules/vite/dist/node/chunks/node.js:8632:14)
+      at async loadAndTransform (file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-diagram-map-mermaid-auto-layout/node_modules/vite/dist/node/chunks/node.js:20108:26)
+ ❯ |unit-browser (chromium)| tests/unit/src/map/sequence-view.browser.test.ts (0 test)
+ ❯ |unit| tests/unit/src/diagram/geometry.test.ts (9 tests | 1 failed) 41ms
+   × test_clamp_diagram_height 15ms
+ ❯ |unit| tests/unit/src/map/spec.test.ts (5 tests | 5 failed) 206ms
+   × test_parse_map_args 109ms
+   × test_parse_map_args_when_empty 42ms
+   × test_parse_map_args_when_unknown_key 40ms
+   × test_parse_map_args_when_not_json 5ms
+   × test_parse_map_args_when_wrong_type 9ms
+ ❯ |unit-browser (chromium)| tests/unit/src/viewer/bundle.browser.test.ts (10 tests | 1 failed) 15562ms
+   × test_start_bundle_when_switch_clears_map_query 1244ms
+ ❯ |unit-browser (chromium)| tests/unit/src/interact/diagram-resize.browser.test.ts (5 tests | 4 failed) 1952ms
+   × test_attach_diagram_resize 570ms
+   × test_attach_diagram_resize_when_fit 1046ms
+   × test_attach_diagram_resize_when_restored 174ms
+   × test_attach_diagram_resize_when_storage_throws 159ms
+ ❯ |unit| tests/unit/src/render/syntax/map.test.ts (4 tests | 3 failed) 40ms
+   × test_build_map_ranges 29ms
+   × test_build_map_ranges_when_problems 4ms
+   × test_build_map_ranges_when_no_mermaid 2ms
+ ❯ |unit| tests/unit/src/cli/embed.test.ts (27 tests | 2 failed) 29420ms
+   × test_uses_map 9ms
+   × test_uses_map_when_disabled 0ms
+ ❯ |unit| tests/unit/src/cli/check.test.ts (31 tests | 2 failed) 24385ms
+   × test_check_maps 12ms
+   × test_check_maps_when_map_disabled 0ms
+ ❯ |unit-browser (chromium)| tests/unit/src/interact/er-folds.browser.test.ts (2 tests | 1 failed) 15155ms
+   × test_attach_er_folds 15117ms
+ ❯ |unit-browser (chromium)| tests/unit/src/interact/lightbox.browser.test.ts (7 tests | 1 failed) 15440ms
+   × test_attach_lightbox_when_closed 15123ms
+ ❯ |unit-browser (chromium)| tests/unit/src/interact/diagrams.browser.test.ts (13 tests | 1 failed) 17990ms
+   × test_open_diagram_dialog_when_tip_open 16351ms
+ ❯ |unit-browser (chromium)| tests/unit/vscode/src/webview/shared/components/preview-status.browser.test.tsx (5 tests | 1 failed) 15195ms
+   × test_preview_status_when_reload_clicked 15055ms
+ ❯ |unit-browser (chromium)| tests/unit/vscode/src/webview/shared/components/config-band.browser.test.tsx (3 tests | 1 failed) 15212ms
+   × test_config_band_when_clicked 15104ms
+ ❯ |unit-browser (chromium)| tests/unit/vscode/src/webview/app/app.browser.test.tsx (1 test | 1 failed) 15089ms
+   × test_app_when_render_error 15089ms
+ ❯ |unit-browser (chromium)| tests/unit/vscode/src/webview/features/preview/panel/panel-screen.browser.test.tsx (15 tests | 2 failed) 44305ms
+   × test_panel_screen_when_reload_clicked 15121ms
+   × test_panel_screen_when_config_error 15220ms
+ ❯ |unit-browser (chromium)| tests/unit/vscode/src/webview/features/preview/panel/hooks/use-link-clicks.browser.test.tsx (3 tests | 3 failed) 45232ms
+   × test_use_link_clicks 15153ms
+   × test_use_link_clicks_when_side_toc 15038ms
+   × test_use_link_clicks_when_open_asset 15040ms
+
+⎯⎯⎯⎯⎯⎯ Failed Suites 5 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/map/band.browser.test.ts [ tests/unit/src/map/band.browser.test.ts ]
+Error: Failed to import test file /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-diagram-map-mermaid-auto-layout/tests/unit/src/map/band.browser.test.ts
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=bec337ec:5843:5
+ ❯ collectTests node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=bec337ec:5819:3
+ ❯ startTests node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=bec337ec:6503:17
+
+Caused by: TypeError: Failed to fetch dynamically imported module: http://localhost:63315/mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-diagram-map-mermaid-auto-layout/tests/unit/src/map/band.browser.test.ts?import&browserv=1794323167865
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/93]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/map/drag.browser.test.ts [ tests/unit/src/map/drag.browser.test.ts ]
+Error: Failed to import test file /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-diagram-map-mermaid-auto-layout/tests/unit/src/map/drag.browser.test.ts
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=bec337ec:5843:5
+ ❯ collectTests node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=bec337ec:5819:3
+ ❯ startTests node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=bec337ec:6503:17
+
+Caused by: TypeError: Failed to fetch dynamically imported module: http://localhost:63315/mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-diagram-map-mermaid-auto-layout/tests/unit/src/map/drag.browser.test.ts?import&browserv=1794323171651
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/93]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/map/flow-view.browser.test.ts [ tests/unit/src/map/flow-view.browser.test.ts ]
+Error: Failed to import test file /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-diagram-map-mermaid-auto-layout/tests/unit/src/map/flow-view.browser.test.ts
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=bec337ec:5843:5
+ ❯ collectTests node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=bec337ec:5819:3
+ ❯ startTests node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=bec337ec:6503:17
+
+Caused by: TypeError: Failed to fetch dynamically imported module: http://localhost:63315/mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-diagram-map-mermaid-auto-layout/tests/unit/src/map/flow-view.browser.test.ts?import&browserv=1794323176449
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/93]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/map/index.browser.test.ts [ tests/unit/src/map/index.browser.test.ts ]
+Error: Failed to import test file /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-diagram-map-mermaid-auto-layout/tests/unit/src/map/index.browser.test.ts
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=bec337ec:5843:5
+ ❯ collectTests node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=bec337ec:5819:3
+ ❯ startTests node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=bec337ec:6503:17
+
+Caused by: TypeError: Failed to fetch dynamically imported module: http://localhost:63315/mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-diagram-map-mermaid-auto-layout/tests/unit/src/map/index.browser.test.ts?import&browserv=1794323180372
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/93]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/map/sequence-view.browser.test.ts [ tests/unit/src/map/sequence-view.browser.test.ts ]
+Error: Failed to import test file /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-diagram-map-mermaid-auto-layout/tests/unit/src/map/sequence-view.browser.test.ts
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=bec337ec:5843:5
+ ❯ collectTests node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=bec337ec:5819:3
+ ❯ startTests node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=bec337ec:6503:17
+
+Caused by: TypeError: Failed to fetch dynamically imported module: http://localhost:63315/mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-diagram-map-mermaid-auto-layout/tests/unit/src/map/sequence-view.browser.test.ts?import&browserv=1794323182775
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/93]⎯
+
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 88 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit| tests/unit/src/config.test.ts > test_resolve_map_config
+TypeError: resolveMapConfig is not a function
+ ❯ tests/unit/src/config.test.ts:378:15
+    376|   const { resolveMapConfig } = await loadConfig();
+    377|   // 実行
+    378|   const map = resolveMapConfig(undefined);
+       |               ^
+    379|   // 検証
+    380|   expect(map).toEqual({ node_fit: "height", url_state: true, kinds: {}…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/93]⎯
+
+ FAIL  |unit| tests/unit/src/config.test.ts > test_resolve_map_config_when_unknown_values
+TypeError: resolveMapConfig is not a function
+ ❯ tests/unit/src/config.test.ts:388:15
+    386|   const { resolveMapConfig } = await loadConfig();
+    387|   // 実行
+    388|   const map = resolveMapConfig({ node_fit: "tall", url_state: "no", ki…
+       |               ^
+    389|   // 検証
+    390|   expect(map.node_fit).toBe("height");
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/93]⎯
+
+ FAIL  |unit| tests/unit/src/cli/check.test.ts > test_check_maps
+TypeError: checkMaps is not a function
+ ❯ tests/unit/src/cli/check.test.ts:811:18
+    809|   const markdown = `# A\n\n${drift}\n${"\n".repeat(4)}${mapRange({ mer…
+    810|   // 実行
+    811|   const issues = checkMaps([{ path: "docs/a.md", markdown }], resolveC…
+       |                  ^
+    812|   // 検証
+    813|   expect(issues.map((issue) => issue.kind).sort()).toEqual(["map_inval…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/93]⎯
+
+ FAIL  |unit| tests/unit/src/cli/check.test.ts > test_check_maps_when_map_disabled
+TypeError: checkMaps is not a function
+ ❯ tests/unit/src/cli/check.test.ts:827:18
+    825|   const markdown = `<!-- features: -map -->\n\n${mapRange({ mermaid: "…
+    826|   // 実行
+    827|   const issues = checkMaps([{ path: "a.md", markdown }], resolveConfig…
+       |                  ^
+    828|   // 検証
+    829|   expect(issues).toEqual([]);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/93]⎯
+
+ FAIL  |unit| tests/unit/src/cli/embed.test.ts > test_uses_map
+TypeError: usesMap is not a function
+ ❯ tests/unit/src/cli/embed.test.ts:590:19
+    588|   const { mapRange, FLOW } = await import("../../helpers/map.ts");
+    589|   // 実行
+    590|   const withMap = usesMap({ markdowns: ["# A\n", mapRange({ mermaid: F…
+       |                   ^
+    591|   const withoutMap = usesMap({ markdowns: ["# A\n"], config: {} });
+    592|   // 検証
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/93]⎯
+
+ FAIL  |unit| tests/unit/src/cli/embed.test.ts > test_uses_map_when_disabled
+TypeError: usesMap is not a function
+ ❯ tests/unit/src/cli/embed.test.ts:603:16
+    601|   const { mapRange, FLOW } = await import("../../helpers/map.ts");
+    602|   // 実行
+    603|   const used = usesMap({ markdowns: [`<!-- features: -map -->\n\n${map…
+       |                ^
+    604|   // 検証
+    605|   expect(used).toBe(false);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/93]⎯
+
+ FAIL  |unit| tests/unit/src/diagram/geometry.test.ts > test_clamp_diagram_height
+AssertionError: expected [ NaN, NaN, NaN ] to deeply equal [ 120, 401, 3000 ]
+
+- Expected
++ Received
+
+  [
+-   120,
+-   401,
+-   3000,
++   NaN,
++   NaN,
++   NaN,
+  ]
+
+ ❯ tests/unit/src/diagram/geometry.test.ts:141:19
+    139|   const heights = [50, 400.6, 3000].map((h) => clampDiagramHeight(h));
+    140|   // 検証
+    141|   expect(heights).toEqual([120, 401, 3000]);
+       |                   ^
+    142| });
+    143|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[12/93]⎯
+
+ FAIL  |unit| tests/unit/src/map/check.test.ts > test_collect_map_structure
+Error: Cannot find module '/src/map/check.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-diagram-map-mermaid-auto-layout/tests/unit/src/map/check.test.ts
+ ❯ tests/unit/src/map/check.test.ts:13:35
+     11| test("test_collect_map_structure", async () => {
+     12|   // 準備
+     13|   const { collectMapStructure } = await loadCheck();
+       |                                   ^
+     14|   // 実行
+     15|   const result = collectMapStructure({ args: "", mermaid: "flowchart L…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[13/93]⎯
+
+ FAIL  |unit| tests/unit/src/map/check.test.ts > test_collect_map_structure_when_two_blocks
+Error: Cannot find module '/src/map/check.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-diagram-map-mermaid-auto-layout/tests/unit/src/map/check.test.ts
+ ❯ tests/unit/src/map/check.test.ts:24:35
+     22| test("test_collect_map_structure_when_two_blocks", async () => {
+     23|   // 準備
+     24|   const { collectMapStructure } = await loadCheck();
+       |                                   ^
+     25|   // 実行
+     26|   const result = collectMapStructure({ args: "", mermaid: "flowchart L…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[14/93]⎯
+
+ FAIL  |unit| tests/unit/src/map/check.test.ts > test_collect_map_structure_when_bad_args
+Error: Cannot find module '/src/map/check.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-diagram-map-mermaid-auto-layout/tests/unit/src/map/check.test.ts
+ ❯ tests/unit/src/map/check.test.ts:35:35
+     33| test("test_collect_map_structure_when_bad_args", async () => {
+     34|   // 準備
+     35|   const { collectMapStructure } = await loadCheck();
+       |                                   ^
+     36|   // 実行
+     37|   const result = collectMapStructure({ args: "{title: 全体}", mermaid: "…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[15/93]⎯
+
+ FAIL  |unit| tests/unit/src/map/check.test.ts > test_collect_map_problems
+Error: Cannot find module '/src/map/check.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-diagram-map-mermaid-auto-layout/tests/unit/src/map/check.test.ts
+ ❯ tests/unit/src/map/check.test.ts:46:34
+     44| test("test_collect_map_problems", async () => {
+     45|   // 準備
+     46|   const { collectMapProblems } = await loadCheck();
+       |                                  ^
+     47|   // 実行
+     48|   const problems = collectMapProblems(range(FLOW, DATA), CONFIG, true);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[16/93]⎯
+
+ FAIL  |unit| tests/unit/src/map/check.test.ts > test_collect_map_problems_when_unknown_ref
+Error: Cannot find module '/src/map/check.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-diagram-map-mermaid-auto-layout/tests/unit/src/map/check.test.ts
+ ❯ tests/unit/src/map/check.test.ts:56:34
+     54| test("test_collect_map_problems_when_unknown_ref", async () => {
+     55|   // 準備
+     56|   const { collectMapProblems } = await loadCheck();
+       |                                  ^
+     57|   // 実行
+     58|   const problems = collectMapProblems(range(FLOW, "version: 1\nnotes:\…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[17/93]⎯
+
+ FAIL  |unit| tests/unit/src/map/check.test.ts > test_collect_map_problems_when_unknown_class
+Error: Cannot find module '/src/map/check.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-diagram-map-mermaid-auto-layout/tests/unit/src/map/check.test.ts
+ ❯ tests/unit/src/map/check.test.ts:67:34
+     65| test("test_collect_map_problems_when_unknown_class", async () => {
+     66|   // 準備
+     67|   const { collectMapProblems } = await loadCheck();
+       |                                  ^
+     68|   // 実行
+     69|   const problems = collectMapProblems(range("flowchart LR\n  A:::queue…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[18/93]⎯
+
+ FAIL  |unit| tests/unit/src/map/check.test.ts > test_collect_map_problems_when_unknown_line
+Error: Cannot find module '/src/map/check.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-diagram-map-mermaid-auto-layout/tests/unit/src/map/check.test.ts
+ ❯ tests/unit/src/map/check.test.ts:78:34
+     76| test("test_collect_map_problems_when_unknown_line", async () => {
+     77|   // 準備
+     78|   const { collectMapProblems } = await loadCheck();
+       |                                  ^
+     79|   // 実行
+     80|   const problems = collectMapProblems(range("flowchart LR\n  A --> B\n…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[19/93]⎯
+
+ FAIL  |unit| tests/unit/src/map/check.test.ts > test_collect_map_problems_when_no_mermaid
+Error: Cannot find module '/src/map/check.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-diagram-map-mermaid-auto-layout/tests/unit/src/map/check.test.ts
+ ❯ tests/unit/src/map/check.test.ts:89:34
+     87| test("test_collect_map_problems_when_no_mermaid", async () => {
+     88|   // 準備
+     89|   const { collectMapProblems } = await loadCheck();
+       |                                  ^
+     90|   // 実行
+     91|   const problems = collectMapProblems({ args: "", mermaid: undefined, …
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[20/93]⎯
+
+ FAIL  |unit| tests/unit/src/map/check.test.ts > test_collect_map_problems_when_unsupported_kind
+Error: Cannot find module '/src/map/check.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-diagram-map-mermaid-auto-layout/tests/unit/src/map/check.test.ts
+ ❯ tests/unit/src/map/check.test.ts:99:34
+     97| test("test_collect_map_problems_when_unsupported_kind", async () => {
+     98|   // 準備
+     99|   const { collectMapProblems } = await loadCheck();
+       |                                  ^
+    100|   // 実行
+    101|   const problems = collectMapProblems(range('pie\n  "a": 1\n'), CONFIG…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[21/93]⎯
+
+ FAIL  |unit| tests/unit/src/map/check.test.ts > test_collect_map_problems_when_unknown_arg
+Error: Cannot find module '/src/map/check.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-diagram-map-mermaid-auto-layout/tests/unit/src/map/check.test.ts
+ ❯ tests/unit/src/map/check.test.ts:112:34
+    110| test("test_collect_map_problems_when_unknown_arg", async () => {
+    111|   // 準備
+    112|   const { collectMapProblems } = await loadCheck();
+       |                                  ^
+    113|   const withArg = range("flowchart LR\n  A --> B\n", undefined, '{"mdo…
+    114|   // 実行
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[22/93]⎯
+
+ FAIL  |unit| tests/unit/src/map/check.test.ts > test_check_map_config
+Error: Cannot find module '/src/map/check.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-diagram-map-mermaid-auto-layout/tests/unit/src/map/check.test.ts
+ ❯ tests/unit/src/map/check.test.ts:126:30
+    124| test("test_check_map_config", async () => {
+    125|   // 準備
+    126|   const { checkMapConfig } = await loadCheck();
+       |                              ^
+    127|   // 実行
+    128|   const issues = checkMapConfig({ kinds: { store: { icon: "database" }…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[23/93]⎯
+
+ FAIL  |unit| tests/unit/src/map/check.test.ts > test_check_map_config_when_unknown_icon
+Error: Cannot find module '/src/map/check.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-diagram-map-mermaid-auto-layout/tests/unit/src/map/check.test.ts
+ ❯ tests/unit/src/map/check.test.ts:136:30
+    134| test("test_check_map_config_when_unknown_icon", async () => {
+    135|   // 準備
+    136|   const { checkMapConfig } = await loadCheck();
+       |                              ^
+    137|   // 実行
+    138|   const issues = checkMapConfig({ kinds: { store: { icon: "no-such-ico…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[24/93]⎯
+
+ FAIL  |unit| tests/unit/src/map/data.test.ts > test_parse_map_data
+Error: Cannot find module '/src/map/data.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-diagram-map-mermaid-auto-layout/tests/unit/src/map/data.test.ts
+ ❯ tests/unit/src/map/data.test.ts:10:28
+      8| test("test_parse_map_data", async () => {
+      9|   // 準備
+     10|   const { parseMapData } = await loadData();
+       |                            ^
+     11|   // 実行
+     12|   const { data, problems } = parseMapData(DATA);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[25/93]⎯
+
+ FAIL  |unit| tests/unit/src/map/data.test.ts > test_parse_map_data_when_empty
+Error: Cannot find module '/src/map/data.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-diagram-map-mermaid-auto-layout/tests/unit/src/map/data.test.ts
+ ❯ tests/unit/src/map/data.test.ts:25:28
+     23| test("test_parse_map_data_when_empty", async () => {
+     24|   // 準備
+     25|   const { parseMapData } = await loadData();
+       |                            ^
+     26|   // 実行
+     27|   const { data, problems } = parseMapData(undefined);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[26/93]⎯
+
+ FAIL  |unit| tests/unit/src/map/data.test.ts > test_parse_map_data_when_unknown_key
+Error: Cannot find module '/src/map/data.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-diagram-map-mermaid-auto-layout/tests/unit/src/map/data.test.ts
+ ❯ tests/unit/src/map/data.test.ts:36:28
+     34| test("test_parse_map_data_when_unknown_key", async () => {
+     35|   // 準備
+     36|   const { parseMapData } = await loadData();
+       |                            ^
+     37|   // 実行
+     38|   const { problems } = parseMapData("version: 1\nlayuot: {}\n");
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[27/93]⎯
+
+ FAIL  |unit| tests/unit/src/map/data.test.ts > test_parse_map_data_when_double_hyphen
+Error: Cannot find module '/src/map/data.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-diagram-map-mermaid-auto-layout/tests/unit/src/map/data.test.ts
+ ❯ tests/unit/src/map/data.test.ts:51:28
+     49| test("test_parse_map_data_when_double_hyphen", async () => {
+     50|   // 準備
+     51|   const { parseMapData } = await loadData();
+       |                            ^
+     52|   // 実行
+     53|   const { problems } = parseMapData("version: 1\nwalkthroughs:\n  - te…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[28/93]⎯
+
+ FAIL  |unit| tests/unit/src/map/data.test.ts > test_parse_map_data_when_unreadable
+Error: Cannot find module '/src/map/data.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-diagram-map-mermaid-auto-layout/tests/unit/src/map/data.test.ts
+ ❯ tests/unit/src/map/data.test.ts:62:28
+     60| test("test_parse_map_data_when_unreadable", async () => {
+     61|   // 準備
+     62|   const { parseMapData } = await loadData();
+       |                            ^
+     63|   // 実行
+     64|   const { data, problems } = parseMapData("notes: [\n");
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[29/93]⎯
+
+ FAIL  |unit| tests/unit/src/map/flowchart.test.ts > test_parse_flowchart
+Error: Cannot find module '/src/map/flowchart.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-diagram-map-mermaid-auto-layout/tests/unit/src/map/flowchart.test.ts
+ ❯ tests/unit/src/map/flowchart.test.ts:10:30
+      8| test("test_parse_flowchart", async () => {
+      9|   // 準備
+     10|   const { parseFlowchart } = await loadFlowchart();
+       |                              ^
+     11|   // 実行
+     12|   const chart = parseFlowchart(FLOW);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[30/93]⎯
+
+ FAIL  |unit| tests/unit/src/map/flowchart.test.ts > test_parse_flowchart_when_shapes
+Error: Cannot find module '/src/map/flowchart.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-diagram-map-mermaid-auto-layout/tests/unit/src/map/flowchart.test.ts
+ ❯ tests/unit/src/map/flowchart.test.ts:28:30
+     26| test("test_parse_flowchart_when_shapes", async () => {
+     27|   // 準備
+     28|   const { parseFlowchart } = await loadFlowchart();
+       |                              ^
+     29|   const source = "flowchart TB\n  A([a])\n  B[(b)]\n  C{c}\n  D((d))\n…
+     30|   // 実行
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[31/93]⎯
+
+ FAIL  |unit| tests/unit/src/map/flowchart.test.ts > test_parse_flowchart_when_chained
+Error: Cannot find module '/src/map/flowchart.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-diagram-map-mermaid-auto-layout/tests/unit/src/map/flowchart.test.ts
+ ❯ tests/unit/src/map/flowchart.test.ts:39:30
+     37| test("test_parse_flowchart_when_chained", async () => {
+     38|   // 準備
+     39|   const { parseFlowchart } = await loadFlowchart();
+       |                              ^
+     40|   // 実行
+     41|   const chart = parseFlowchart("flowchart LR\n  A & B --> C --> D\n");
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[32/93]⎯
+
+ FAIL  |unit| tests/unit/src/map/flowchart.test.ts > test_parse_flowchart_when_edge_ids
+Error: Cannot find module '/src/map/flowchart.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-diagram-map-mermaid-auto-layout/tests/unit/src/map/flowchart.test.ts
+ ❯ tests/unit/src/map/flowchart.test.ts:53:30
+     51| test("test_parse_flowchart_when_edge_ids", async () => {
+     52|   // 準備
+     53|   const { parseFlowchart } = await loadFlowchart();
+       |                              ^
+     54|   // 実行
+     55|   const chart = parseFlowchart("flowchart LR\n  A e1@--> C\n  A --> B\…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[33/93]⎯
+
+ FAIL  |unit| tests/unit/src/map/flowchart.test.ts > test_parse_flowchart_when_unreadable_line
+Error: Cannot find module '/src/map/flowchart.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-diagram-map-mermaid-auto-layout/tests/unit/src/map/flowchart.test.ts
+ ❯ tests/unit/src/map/flowchart.test.ts:63:30
+     61| test("test_parse_flowchart_when_unreadable_line", async () => {
+     62|   // 準備
+     63|   const { parseFlowchart } = await loadFlowchart();
+       |                              ^
+     64|   // 実行
+     65|   const chart = parseFlowchart("flowchart LR\n  A --> B\n  B --> C\n  …
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[34/93]⎯
+
+ FAIL  |unit| tests/unit/src/map/flowchart.test.ts > test_parse_flowchart_when_unclosed_subgraph
+Error: Cannot find module '/src/map/flowchart.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-diagram-map-mermaid-auto-layout/tests/unit/src/map/flowchart.test.ts
+ ❯ tests/unit/src/map/flowchart.test.ts:76:30
+     74| test("test_parse_flowchart_when_unclosed_subgraph", async () => {
+     75|   // 準備
+     76|   const { parseFlowchart } = await loadFlowchart();
+       |                              ^
+     77|   // 実行
+     78|   const chart = parseFlowchart("flowchart LR\n  subgraph g [グループ]\n   …
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[35/93]⎯
+
+ FAIL  |unit| tests/unit/src/map/layout.test.ts > test_layout_map
+Error: Cannot find module '/src/map/layout.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-diagram-map-mermaid-auto-layout/tests/unit/src/map/layout.test.ts
+ ❯ laid tests/unit/src/map/layout.test.ts:28:25
+     26| /** 構成図を読んで配置する */
+     27| async function laid(view = {}, overrides = {}, nodeFit: "height" | "wi…
+     28|   const { layoutMap } = await loadLayout();
+       |                         ^
+     29|   const { parseFlowchart } = await loadFlowchart();
+     30|   return layoutMap(parseFlowchart(source), { collapsed: [], ...view },…
+ ❯ tests/unit/src/map/layout.test.ts:36:18
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[36/93]⎯
+
+ FAIL  |unit| tests/unit/src/map/layout.test.ts > test_layout_map_when_entered
+Error: Cannot find module '/src/map/layout.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-diagram-map-mermaid-auto-layout/tests/unit/src/map/layout.test.ts
+ ❯ laid tests/unit/src/map/layout.test.ts:28:25
+     26| /** 構成図を読んで配置する */
+     27| async function laid(view = {}, overrides = {}, nodeFit: "height" | "wi…
+     28|   const { layoutMap } = await loadLayout();
+       |                         ^
+     29|   const { parseFlowchart } = await loadFlowchart();
+     30|   return layoutMap(parseFlowchart(source), { collapsed: [], ...view },…
+ ❯ tests/unit/src/map/layout.test.ts:60:18
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[37/93]⎯
+
+ FAIL  |unit| tests/unit/src/map/layout.test.ts > test_layout_map_when_collapsed
+Error: Cannot find module '/src/map/layout.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-diagram-map-mermaid-auto-layout/tests/unit/src/map/layout.test.ts
+ ❯ laid tests/unit/src/map/layout.test.ts:28:25
+     26| /** 構成図を読んで配置する */
+     27| async function laid(view = {}, overrides = {}, nodeFit: "height" | "wi…
+     28|   const { layoutMap } = await loadLayout();
+       |                         ^
+     29|   const { parseFlowchart } = await loadFlowchart();
+     30|   return layoutMap(parseFlowchart(source), { collapsed: [], ...view },…
+ ❯ tests/unit/src/map/layout.test.ts:76:18
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[38/93]⎯
+
+ FAIL  |unit| tests/unit/src/map/layout.test.ts > test_layout_map_when_overrides
+Error: Cannot find module '/src/map/layout.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-diagram-map-mermaid-auto-layout/tests/unit/src/map/layout.test.ts
+ ❯ laid tests/unit/src/map/layout.test.ts:28:25
+     26| /** 構成図を読んで配置する */
+     27| async function laid(view = {}, overrides = {}, nodeFit: "height" | "wi…
+     28|   const { layoutMap } = await loadLayout();
+       |                         ^
+     29|   const { parseFlowchart } = await loadFlowchart();
+     30|   return layoutMap(parseFlowchart(source), { collapsed: [], ...view },…
+ ❯ tests/unit/src/map/layout.test.ts:89:18
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[39/93]⎯
+
+ FAIL  |unit| tests/unit/src/map/layout.test.ts > test_layout_map_when_measured_size
+Error: Cannot find module '/src/map/layout.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-diagram-map-mermaid-auto-layout/tests/unit/src/map/layout.test.ts
+ ❯ laid tests/unit/src/map/layout.test.ts:28:25
+     26| /** 構成図を読んで配置する */
+     27| async function laid(view = {}, overrides = {}, nodeFit: "height" | "wi…
+     28|   const { layoutMap } = await loadLayout();
+       |                         ^
+     29|   const { parseFlowchart } = await loadFlowchart();
+     30|   return layoutMap(parseFlowchart(source), { collapsed: [], ...view },…
+ ❯ tests/unit/src/map/layout.test.ts:103:18
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[40/93]⎯
+
+ FAIL  |unit| tests/unit/src/map/layout.test.ts > test_layout_map_when_node_fit_width
+Error: Cannot find module '/src/map/layout.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-diagram-map-mermaid-auto-layout/tests/unit/src/map/layout.test.ts
+ ❯ laid tests/unit/src/map/layout.test.ts:28:25
+     26| /** 構成図を読んで配置する */
+     27| async function laid(view = {}, overrides = {}, nodeFit: "height" | "wi…
+     28|   const { layoutMap } = await loadLayout();
+       |                         ^
+     29|   const { parseFlowchart } = await loadFlowchart();
+     30|   return layoutMap(parseFlowchart(source), { collapsed: [], ...view },…
+ ❯ tests/unit/src/map/layout.test.ts:113:18
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[41/93]⎯
+
+ FAIL  |unit| tests/unit/src/map/layout.test.ts > test_route_wires
+Error: Cannot find module '/src/map/layout.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-diagram-map-mermaid-auto-layout/tests/unit/src/map/layout.test.ts
+ ❯ laid tests/unit/src/map/layout.test.ts:28:25
+     26| /** 構成図を読んで配置する */
+     27| async function laid(view = {}, overrides = {}, nodeFit: "height" | "wi…
+     28|   const { layoutMap } = await loadLayout();
+       |                         ^
+     29|   const { parseFlowchart } = await loadFlowchart();
+     30|   return layoutMap(parseFlowchart(source), { collapsed: [], ...view },…
+ ❯ tests/unit/src/map/layout.test.ts:123:18
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[42/93]⎯
+
+ FAIL  |unit| tests/unit/src/map/layout.test.ts > test_route_wires_when_nested
+Error: Cannot find module '/src/map/layout.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-diagram-map-mermaid-auto-layout/tests/unit/src/map/layout.test.ts
+ ❯ laid tests/unit/src/map/layout.test.ts:28:25
+     26| /** 構成図を読んで配置する */
+     27| async function laid(view = {}, overrides = {}, nodeFit: "height" | "wi…
+     28|   const { layoutMap } = await loadLayout();
+       |                         ^
+     29|   const { parseFlowchart } = await loadFlowchart();
+     30|   return layoutMap(parseFlowchart(source), { collapsed: [], ...view },…
+ ❯ tests/unit/src/map/layout.test.ts:135:18
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[43/93]⎯
+
+ FAIL  |unit| tests/unit/src/map/layout.test.ts > test_wrap_label
+Error: Cannot find module '/src/map/layout.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-diagram-map-mermaid-auto-layout/tests/unit/src/map/layout.test.ts
+ ❯ tests/unit/src/map/layout.test.ts:154:25
+    152| test("test_wrap_label", async () => {
+    153|   // 準備
+    154|   const { wrapLabel } = await loadLayout();
+       |                         ^
+    155|   // 実行
+    156|   const lines = wrapLabel("あ".repeat(30), 220);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[44/93]⎯
+
+ FAIL  |unit| tests/unit/src/map/sequence-rows.test.ts > test_sequence_rows
+Error: Cannot find module '/src/map/sequence-rows.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-diagram-map-mermaid-auto-layout/tests/unit/src/map/sequence-rows.test.ts
+ ❯ rows tests/unit/src/map/sequence-rows.test.ts:10:28
+      8| /** 見せ方で行を決める */
+      9| async function rows(view: { order?: string[]; collapsed?: number[]; en…
+     10|   const { sequenceRows } = await loadRows();
+       |                            ^
+     11|   const { parseSequence } = await loadSequence();
+     12|   const sequence = parseSequence(SEQUENCE);
+ ❯ tests/unit/src/map/sequence-rows.test.ts:19:18
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[45/93]⎯
+
+ FAIL  |unit| tests/unit/src/map/sequence-rows.test.ts > test_sequence_rows_when_collapsed
+Error: Cannot find module '/src/map/sequence-rows.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-diagram-map-mermaid-auto-layout/tests/unit/src/map/sequence-rows.test.ts
+ ❯ rows tests/unit/src/map/sequence-rows.test.ts:10:28
+      8| /** 見せ方で行を決める */
+      9| async function rows(view: { order?: string[]; collapsed?: number[]; en…
+     10|   const { sequenceRows } = await loadRows();
+       |                            ^
+     11|   const { parseSequence } = await loadSequence();
+     12|   const sequence = parseSequence(SEQUENCE);
+ ❯ tests/unit/src/map/sequence-rows.test.ts:28:18
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[46/93]⎯
+
+ FAIL  |unit| tests/unit/src/map/sequence-rows.test.ts > test_sequence_rows_when_entered
+Error: Cannot find module '/src/map/sequence-rows.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-diagram-map-mermaid-auto-layout/tests/unit/src/map/sequence-rows.test.ts
+ ❯ rows tests/unit/src/map/sequence-rows.test.ts:10:28
+      8| /** 見せ方で行を決める */
+      9| async function rows(view: { order?: string[]; collapsed?: number[]; en…
+     10|   const { sequenceRows } = await loadRows();
+       |                            ^
+     11|   const { parseSequence } = await loadSequence();
+     12|   const sequence = parseSequence(SEQUENCE);
+ ❯ tests/unit/src/map/sequence-rows.test.ts:39:18
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[47/93]⎯
+
+ FAIL  |unit| tests/unit/src/map/sequence-rows.test.ts > test_sequence_rows_when_reordered
+Error: Cannot find module '/src/map/sequence-rows.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-diagram-map-mermaid-auto-layout/tests/unit/src/map/sequence-rows.test.ts
+ ❯ rows tests/unit/src/map/sequence-rows.test.ts:10:28
+      8| /** 見せ方で行を決める */
+      9| async function rows(view: { order?: string[]; collapsed?: number[]; en…
+     10|   const { sequenceRows } = await loadRows();
+       |                            ^
+     11|   const { parseSequence } = await loadSequence();
+     12|   const sequence = parseSequence(SEQUENCE);
+ ❯ tests/unit/src/map/sequence-rows.test.ts:48:18
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[48/93]⎯
+
+ FAIL  |unit| tests/unit/src/map/sequence.test.ts > test_parse_sequence
+Error: Cannot find module '/src/map/sequence.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-diagram-map-mermaid-auto-layout/tests/unit/src/map/sequence.test.ts
+ ❯ tests/unit/src/map/sequence.test.ts:10:29
+      8| test("test_parse_sequence", async () => {
+      9|   // 準備
+     10|   const { parseSequence } = await loadSequence();
+       |                             ^
+     11|   // 実行
+     12|   const sequence = parseSequence(SEQUENCE);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[49/93]⎯
+
+ FAIL  |unit| tests/unit/src/map/sequence.test.ts > test_parse_sequence_when_arrows
+Error: Cannot find module '/src/map/sequence.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-diagram-map-mermaid-auto-layout/tests/unit/src/map/sequence.test.ts
+ ❯ tests/unit/src/map/sequence.test.ts:30:29
+     28| test("test_parse_sequence_when_arrows", async () => {
+     29|   // 準備
+     30|   const { parseSequence } = await loadSequence();
+       |                             ^
+     31|   const arrows = ["->", "-->", "->>", "-->>", "-x", "--x", "-)", "--)"…
+     32|   const source = `sequenceDiagram\n${arrows.map((arrow) => `  A${arrow…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[50/93]⎯
+
+ FAIL  |unit| tests/unit/src/map/sequence.test.ts > test_parse_sequence_when_sections
+Error: Cannot find module '/src/map/sequence.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-diagram-map-mermaid-auto-layout/tests/unit/src/map/sequence.test.ts
+ ❯ tests/unit/src/map/sequence.test.ts:43:29
+     41| test("test_parse_sequence_when_sections", async () => {
+     42|   // 準備
+     43|   const { parseSequence } = await loadSequence();
+       |                             ^
+     44|   // 実行
+     45|   const sequence = parseSequence("sequenceDiagram\n  alt a\n    A->>B:…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[51/93]⎯
+
+ FAIL  |unit| tests/unit/src/map/sequence.test.ts > test_parse_sequence_when_unclosed_block
+Error: Cannot find module '/src/map/sequence.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-diagram-map-mermaid-auto-layout/tests/unit/src/map/sequence.test.ts
+ ❯ tests/unit/src/map/sequence.test.ts:53:29
+     51| test("test_parse_sequence_when_unclosed_block", async () => {
+     52|   // 準備
+     53|   const { parseSequence } = await loadSequence();
+       |                             ^
+     54|   // 実行
+     55|   const sequence = parseSequence("sequenceDiagram\n  loop ずっと\n    A->…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[52/93]⎯
+
+ FAIL  |unit| tests/unit/src/map/sequence.test.ts > test_parse_sequence_when_unreadable_line
+Error: Cannot find module '/src/map/sequence.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-diagram-map-mermaid-auto-layout/tests/unit/src/map/sequence.test.ts
+ ❯ tests/unit/src/map/sequence.test.ts:64:29
+     62| test("test_parse_sequence_when_unreadable_line", async () => {
+     63|   // 準備
+     64|   const { parseSequence } = await loadSequence();
+       |                             ^
+     65|   // 実行
+     66|   const sequence = parseSequence("sequenceDiagram\n  A => B: x\n");
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[53/93]⎯
+
+ FAIL  |unit| tests/unit/src/map/spec.test.ts > test_parse_map_args
+Error: Cannot find module '/src/map/spec.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-diagram-map-mermaid-auto-layout/tests/unit/src/map/spec.test.ts
+ ❯ tests/unit/src/map/spec.test.ts:9:28
+      7| test("test_parse_map_args", async () => {
+      8|   // 準備
+      9|   const { parseMapArgs } = await loadSpec();
+       |                            ^
+     10|   // 実行
+     11|   const result = parseMapArgs('{"title": "全体", "focus": "read", "play"…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[54/93]⎯
+
+ FAIL  |unit| tests/unit/src/map/spec.test.ts > test_parse_map_args_when_empty
+Error: Cannot find module '/src/map/spec.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-diagram-map-mermaid-auto-layout/tests/unit/src/map/spec.test.ts
+ ❯ tests/unit/src/map/spec.test.ts:21:28
+     19| test("test_parse_map_args_when_empty", async () => {
+     20|   // 準備
+     21|   const { parseMapArgs } = await loadSpec();
+       |                            ^
+     22|   // 実行
+     23|   const result = parseMapArgs("");
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[55/93]⎯
+
+ FAIL  |unit| tests/unit/src/map/spec.test.ts > test_parse_map_args_when_unknown_key
+Error: Cannot find module '/src/map/spec.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-diagram-map-mermaid-auto-layout/tests/unit/src/map/spec.test.ts
+ ❯ tests/unit/src/map/spec.test.ts:32:28
+     30| test("test_parse_map_args_when_unknown_key", async () => {
+     31|   // 準備
+     32|   const { parseMapArgs } = await loadSpec();
+       |                            ^
+     33|   // 実行
+     34|   const result = parseMapArgs('{"title": "全体", "mdoe": 1}');
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[56/93]⎯
+
+ FAIL  |unit| tests/unit/src/map/spec.test.ts > test_parse_map_args_when_not_json
+Error: Cannot find module '/src/map/spec.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-diagram-map-mermaid-auto-layout/tests/unit/src/map/spec.test.ts
+ ❯ tests/unit/src/map/spec.test.ts:44:28
+     42| test("test_parse_map_args_when_not_json", async () => {
+     43|   // 準備
+     44|   const { parseMapArgs } = await loadSpec();
+       |                            ^
+     45|   // 実行
+     46|   const result = parseMapArgs("{title: 全体}");
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[57/93]⎯
+
+ FAIL  |unit| tests/unit/src/map/spec.test.ts > test_parse_map_args_when_wrong_type
+Error: Cannot find module '/src/map/spec.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-diagram-map-mermaid-auto-layout/tests/unit/src/map/spec.test.ts
+ ❯ tests/unit/src/map/spec.test.ts:55:28
+     53| test("test_parse_map_args_when_wrong_type", async () => {
+     54|   // 準備
+     55|   const { parseMapArgs } = await loadSpec();
+       |                            ^
+     56|   // 実行
+     57|   const result = parseMapArgs('{"interval": "abc"}');
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[58/93]⎯
+
+ FAIL  |unit| tests/unit/src/map/state.test.ts > test_read_map_state_when_query
+Error: Cannot find module '/src/map/state.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-diagram-map-mermaid-auto-layout/tests/unit/src/map/state.test.ts
+ ❯ tests/unit/src/map/state.test.ts:30:28
+     28| test("test_read_map_state_when_query", async () => {
+     29|   // 準備
+     30|   const { readMapState } = await loadState();
+       |                            ^
+     31|   // 実行
+     32|   const state = readMapState({ index: 1, ids: IDS, urlState: true, foc…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[59/93]⎯
+
+ FAIL  |unit| tests/unit/src/map/state.test.ts > test_read_map_state_when_url_state_off
+Error: Cannot find module '/src/map/state.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-diagram-map-mermaid-auto-layout/tests/unit/src/map/state.test.ts
+ ❯ tests/unit/src/map/state.test.ts:40:28
+     38| test("test_read_map_state_when_url_state_off", async () => {
+     39|   // 準備
+     40|   const { readMapState } = await loadState();
+       |                            ^
+     41|   // 実行
+     42|   const state = readMapState({ index: 1, ids: IDS, urlState: false, fo…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[60/93]⎯
+
+ FAIL  |unit| tests/unit/src/map/state.test.ts > test_read_map_state_when_unknown_id
+Error: Cannot find module '/src/map/state.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-diagram-map-mermaid-auto-layout/tests/unit/src/map/state.test.ts
+ ❯ tests/unit/src/map/state.test.ts:50:28
+     48| test("test_read_map_state_when_unknown_id", async () => {
+     49|   // 準備
+     50|   const { readMapState } = await loadState();
+       |                            ^
+     51|   // 実行
+     52|   const state = readMapState({ index: 1, ids: IDS, urlState: true, foc…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[61/93]⎯
+
+ FAIL  |unit| tests/unit/src/map/state.test.ts > test_read_map_state_when_storage_unavailable
+Error: Cannot find module '/src/map/state.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-diagram-map-mermaid-auto-layout/tests/unit/src/map/state.test.ts
+ ❯ tests/unit/src/map/state.test.ts:60:28
+     58| test("test_read_map_state_when_storage_unavailable", async () => {
+     59|   // 準備
+     60|   const { readMapState } = await loadState();
+       |                            ^
+     61|   // 実行
+     62|   const state = readMapState({ index: 1, ids: IDS, urlState: true, foc…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[62/93]⎯
+
+ FAIL  |unit| tests/unit/src/map/state.test.ts > test_read_map_state_when_focus
+Error: Cannot find module '/src/map/state.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-diagram-map-mermaid-auto-layout/tests/unit/src/map/state.test.ts
+ ❯ tests/unit/src/map/state.test.ts:70:28
+     68| test("test_read_map_state_when_focus", async () => {
+     69|   // 準備
+     70|   const { readMapState } = await loadState();
+       |                            ^
+     71|   // 実行
+     72|   const state = readMapState({ index: 1, ids: IDS, urlState: true, foc…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[63/93]⎯
+
+ FAIL  |unit| tests/unit/src/map/state.test.ts > test_read_map_state_when_saved_over_focus
+Error: Cannot find module '/src/map/state.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-diagram-map-mermaid-auto-layout/tests/unit/src/map/state.test.ts
+ ❯ tests/unit/src/map/state.test.ts:80:28
+     78| test("test_read_map_state_when_saved_over_focus", async () => {
+     79|   // 準備
+     80|   const { readMapState } = await loadState();
+       |                            ^
+     81|   // 実行
+     82|   const state = readMapState({ index: 1, ids: IDS, urlState: true, foc…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[64/93]⎯
+
+ FAIL  |unit| tests/unit/src/map/state.test.ts > test_write_map_state
+Error: Cannot find module '/src/map/state.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-diagram-map-mermaid-auto-layout/tests/unit/src/map/state.test.ts
+ ❯ tests/unit/src/map/state.test.ts:90:43
+     88| test("test_write_map_state", async () => {
+     89|   // 準備
+     90|   const { writeMapState, readMapState } = await loadState();
+       |                                           ^
+     91|   const storage = memoryStorage();
+     92|   const { history, calls } = recordingHistory();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[65/93]⎯
+
+ FAIL  |unit| tests/unit/src/map/state.test.ts > test_write_map_state_when_url_state_off
+Error: Cannot find module '/src/map/state.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-diagram-map-mermaid-auto-layout/tests/unit/src/map/state.test.ts
+ ❯ tests/unit/src/map/state.test.ts:105:43
+    103| test("test_write_map_state_when_url_state_off", async () => {
+    104|   // 準備
+    105|   const { writeMapState, readMapState } = await loadState();
+       |                                           ^
+    106|   const storage = memoryStorage();
+    107|   const { history, calls } = recordingHistory();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[66/93]⎯
+
+ FAIL  |unit| tests/unit/src/map/state.test.ts > test_write_map_state_when_left
+Error: Cannot find module '/src/map/state.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-diagram-map-mermaid-auto-layout/tests/unit/src/map/state.test.ts
+ ❯ tests/unit/src/map/state.test.ts:118:43
+    116| test("test_write_map_state_when_left", async () => {
+    117|   // 準備
+    118|   const { writeMapState, readMapState } = await loadState();
+       |                                           ^
+    119|   const storage = memoryStorage();
+    120|   const { history, calls } = recordingHistory();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[67/93]⎯
+
+ FAIL  |unit| tests/unit/src/parts/diagram.test.ts > test_render_diagram_frame_when_map
+AssertionError: expected '<figure class="mdmark-diagram" data-d…' to contain 'data-wide="true"'
+
+Expected: "data-wide="true""
+Received: "<figure class="mdmark-diagram" data-diagram="map">"
+
+ ❯ tests/unit/src/parts/diagram.test.ts:795:36
+    793|   expect(plainText(caption).trim()).toBe("全体の構成");
+    794|   expect(html).not.toContain("<time");
+    795|   expect(findTag(html, "<figure")).toContain('data-wide="true"');
+       |                                    ^
+    796|   const toolbar = /<div[^>]*class="mdmark-diagram-tools"[^>]*>([\s\S]*…
+    797|   const names = matches(toolbar, /aria-label="([^"]+)"/g).slice(0, 4).…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[68/93]⎯
+
+ FAIL  |unit| tests/unit/src/parts/diagram.test.ts > test_render_diagram_frame_when_resize_strip
+TypeError: Cannot read properties of undefined (reading 'map')
+ ❯ iconSvg src/parts/icons.ts:166:28
+    164| /** lucide のアイコンの形状を、24 の格子・`stroke="currentColor"`・`aria-hidden="true…
+    165| export function iconSvg(name: IconName): string {
+    166|   const body = ICONS[name].map(renderNode).join("");
+       |                            ^
+    167|   return `<svg class="mdmark-diagram-icon" viewBox="0 0 24 24" fill="n…
+    168| }
+ ❯ tests/unit/src/parts/diagram.test.ts:812:33
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[69/93]⎯
+
+ FAIL  |unit| tests/unit/src/parts/map.test.ts > test_render_map_flow
+Error: Cannot find module '/src/parts/map.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-diagram-map-mermaid-auto-layout/tests/unit/src/parts/map.test.ts
+ ❯ tests/unit/src/parts/map.test.ts:24:29
+     22| test("test_render_map_flow", async () => {
+     23|   // 準備
+     24|   const { renderMapFlow } = await loadParts();
+       |                             ^
+     25|   // 実行
+     26|   const html = renderMapFlow(await flowArgs());
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[70/93]⎯
+
+ FAIL  |unit| tests/unit/src/parts/map.test.ts > test_render_map_flow_when_entered
+Error: Cannot find module '/src/parts/map.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-diagram-map-mermaid-auto-layout/tests/unit/src/parts/map.test.ts
+ ❯ tests/unit/src/parts/map.test.ts:36:29
+     34| test("test_render_map_flow_when_entered", async () => {
+     35|   // 準備
+     36|   const { renderMapFlow } = await loadParts();
+       |                             ^
+     37|   // 実行
+     38|   const html = renderMapFlow(await flowArgs("read"));
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[71/93]⎯
+
+ FAIL  |unit| tests/unit/src/parts/map.test.ts > test_render_map_sequence
+Error: Cannot find module '/src/parts/map.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-diagram-map-mermaid-auto-layout/tests/unit/src/parts/map.test.ts
+ ❯ tests/unit/src/parts/map.test.ts:47:33
+     45| test("test_render_map_sequence", async () => {
+     46|   // 準備
+     47|   const { renderMapSequence } = await loadParts();
+       |                                 ^
+     48|   const { parseSequence } = await loadSequence();
+     49|   const { sequenceRows } = await loadRows();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[72/93]⎯
+
+ FAIL  |unit| tests/unit/src/parts/map.test.ts > test_render_map_band
+Error: Cannot find module '/src/parts/map.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-diagram-map-mermaid-auto-layout/tests/unit/src/parts/map.test.ts
+ ❯ tests/unit/src/parts/map.test.ts:63:29
+     61| test("test_render_map_band", async () => {
+     62|   // 準備
+     63|   const { renderMapBand } = await loadParts();
+       |                             ^
+     64|   // 実行
+     65|   const html = renderMapBand({ mode: "walkthrough", total: 4, index: u…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[73/93]⎯
+
+ FAIL  |unit| tests/unit/src/parts/map.test.ts > test_render_map_band_when_playback
+Error: Cannot find module '/src/parts/map.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-diagram-map-mermaid-auto-layout/tests/unit/src/parts/map.test.ts
+ ❯ tests/unit/src/parts/map.test.ts:74:29
+     72| test("test_render_map_band_when_playback", async () => {
+     73|   // 準備
+     74|   const { renderMapBand } = await loadParts();
+       |                             ^
+     75|   // 実行
+     76|   const html = renderMapBand({ mode: "playback", total: 7, index: 2, t…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[74/93]⎯
+
+ FAIL  |unit| tests/unit/src/render/syntax/map.test.ts > test_build_map_ranges
+AssertionError: expected [] to have a length of 2 but got +0
+
+- Expected
++ Received
+
+- 2
++ 0
+
+ ❯ tests/unit/src/render/syntax/map.test.ts:14:17
+     12|   // 検証
+     13|   const opens = matches(html, /<div class="mdmark-map"[^>]*>/g);
+     14|   expect(opens).toHaveLength(2);
+       |                 ^
+     15|   expect(opens[0]).toContain('data-map="1"');
+     16|   expect(opens[0]).toContain('data-map-kind="flowchart"');
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[75/93]⎯
+
+ FAIL  |unit| tests/unit/src/render/syntax/map.test.ts > test_build_map_ranges_when_problems
+AssertionError: expected [] to have a length of 1 but got +0
+
+- Expected
++ Received
+
+- 1
++ 0
+
+ ❯ tests/unit/src/render/syntax/map.test.ts:32:59
+     30|   const { html } = renderDoc(markdown);
+     31|   // 検証
+     32|   expect(matches(html, /class="mdmark-syntax-warning"/g)).toHaveLength…
+       |                                                           ^
+     33|   const warning = html.slice(html.indexOf("mdmark-syntax-warning"), ht…
+     34|   expect(warning).toContain("JSON");
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[76/93]⎯
+
+ FAIL  |unit| tests/unit/src/render/syntax/map.test.ts > test_build_map_ranges_when_no_mermaid
+AssertionError: expected [] to have a length of 1 but got +0
+
+- Expected
++ Received
+
+- 1
++ 0
+
+ ❯ tests/unit/src/render/syntax/map.test.ts:47:59
+     45|   const { html } = renderDoc(markdown);
+     46|   // 検証
+     47|   expect(matches(html, /class="mdmark-syntax-warning"/g)).toHaveLength…
+       |                                                           ^
+     48|   expect(html).not.toContain('class="mdmark-map"');
+     49| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[77/93]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/interact/diagram-resize.browser.test.ts > test_attach_diagram_resize
+TypeError: max is not a function
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/diagram-resize.browser.test.ts/test_attach_diagram_resize.png
+
+ ❯ updateValues src/interact/diagram-resize.ts:81:46
+     79|     handle.setAttribute(
+     80|       "aria-valuemax",
+     81|       String(Math.round(Math.max(RESIZE.min, max()))),
+       |                                              ^
+     82|     );
+     83|   };
+ ❯ attachDiagramResize src/interact/diagram-resize.ts:160:5
+ ❯ setUp tests/unit/src/interact/diagram-resize.browser.test.ts:34:18
+ ❯ tests/unit/src/interact/diagram-resize.browser.test.ts:67:41
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=bec337ec:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[78/93]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/interact/diagram-resize.browser.test.ts > test_attach_diagram_resize_when_fit
+TypeError: max is not a function
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/diagram-resize.browser.test.ts/test_attach_diagram_resize_when_fit.png
+
+ ❯ updateValues src/interact/diagram-resize.ts:81:46
+     79|     handle.setAttribute(
+     80|       "aria-valuemax",
+     81|       String(Math.round(Math.max(RESIZE.min, max()))),
+       |                                              ^
+     82|     );
+     83|   };
+ ❯ attachDiagramResize src/interact/diagram-resize.ts:160:5
+ ❯ setUp tests/unit/src/interact/diagram-resize.browser.test.ts:34:18
+ ❯ tests/unit/src/interact/diagram-resize.browser.test.ts:87:41
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=bec337ec:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[79/93]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/interact/diagram-resize.browser.test.ts > test_attach_diagram_resize_when_restored
+TypeError: max is not a function
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/diagram-resize.browser.test.ts/test_attach_diagram_resize_when_restored.png
+
+ ❯ attachDiagramResize src/interact/diagram-resize.ts:158:68
+    156|   // 保った高さは、操作で変えるときと同じく範囲に収めて適用する
+    157|   const kept = readHeight(storage, key);
+    158|   const restored = kept === null ? null : clampDiagramHeight(kept, max…
+       |                                                                    ^
+    159|   if (restored === null) {
+    160|     updateValues(viewport.getBoundingClientRect().height);
+ ❯ setUp tests/unit/src/interact/diagram-resize.browser.test.ts:34:18
+ ❯ tests/unit/src/interact/diagram-resize.browser.test.ts:99:16
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=bec337ec:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[80/93]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/interact/diagram-resize.browser.test.ts > test_attach_diagram_resize_when_storage_throws
+TypeError: max is not a function
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/diagram-resize.browser.test.ts/test_attach_diagram_resize_when_storage_throws.png
+
+ ❯ updateValues src/interact/diagram-resize.ts:81:46
+     79|     handle.setAttribute(
+     80|       "aria-valuemax",
+     81|       String(Math.round(Math.max(RESIZE.min, max()))),
+       |                                              ^
+     82|     );
+     83|   };
+ ❯ attachDiagramResize src/interact/diagram-resize.ts:160:5
+ ❯ setUp tests/unit/src/interact/diagram-resize.browser.test.ts:34:18
+ ❯ tests/unit/src/interact/diagram-resize.browser.test.ts:122:32
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=bec337ec:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[81/93]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/interact/diagrams.browser.test.ts > test_open_diagram_dialog_when_tip_open
+Error: Test timed out in 15000ms while waiting for hover.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/diagrams.browser.test.ts/test_open_diagram_dialog_when_tip_open.png
+
+ ❯ tests/unit/src/interact/diagrams.browser.test.ts:284:21
+    282|   // 実行・検証
+    283|   for (const owner of owners.slice(0, 2)) {
+    284|     await userEvent.hover(owner);
+       |                     ^
+    285|     const tip = document.getElementById(
+    286|       owner.getAttribute("aria-describedby") ?? "",
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=bec337ec:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[82/93]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/interact/er-folds.browser.test.ts > test_attach_er_folds
+TimeoutError: locator.click: Timeout 14797ms exceeded.
+Call log:
+  - waiting for locator('[data-vitest="true"]').contentFrame().getByLabel('「注文」の主キーと外部キー以外の列')
+    - locator resolved to <button type="button" aria-expanded="true" data-er-fold="orders" class="mdmark-diagram-er-fold" aria-label="「注文」の主キーと外部キー以外の列">…</button>
+  - attempting click action
+    2 × waiting for element to be visible, enabled and stable
+      - element is visible, enabled and stable
+      - scrolling into view if needed
+      - done scrolling
+      - <vite-error-overlay></vite-error-overlay> intercepts pointer events
+    - retrying click action
+    - waiting 20ms
+    2 × waiting for element to be visible, enabled and stable
+      - element is visible, enabled and stable
+      - scrolling into view if needed
+      - done scrolling
+      - <vite-error-overlay></vite-error-overlay> intercepts pointer events
+    - retrying click action
+      - waiting 100ms
+    24 × waiting for element to be visible, enabled and stable
+       - element is visible, enabled and stable
+       - scrolling into view if needed
+       - done scrolling
+       - <vite-error-overlay></vite-error-overlay> intercepts pointer events
+     - retrying click action
+       - waiting 500ms
+
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/er-folds.browser.test.ts/test_attach_er_folds.png
+
+ ❯ tests/unit/src/interact/er-folds.browser.test.ts:83:19
+     81|   const before = endY(figure);
+     82|   // 実行
+     83|   await userEvent.click(button);
+       |                   ^
+     84|   const folded = endY(figure);
+     85|   const foldedRows = otherRows(orders).map((row) => row.hidden);
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=bec337ec:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[83/93]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/interact/lightbox.browser.test.ts > test_attach_lightbox_when_closed
+TimeoutError: locator.click: Timeout 14858ms exceeded.
+Call log:
+  - waiting for locator('[data-vitest="true"]').contentFrame().getByLabel('拡大した画像。ドラッグか矢印キーで動かす')
+    - locator resolved to <div tabindex="0" class="mdmark-lightbox-stage" aria-label="拡大した画像。ドラッグか矢印キーで動かす">…</div>
+  - attempting click action
+    2 × waiting for element to be visible, enabled and stable
+      - element is visible, enabled and stable
+      - scrolling into view if needed
+      - done scrolling
+      - <vite-error-overlay></vite-error-overlay> intercepts pointer events
+    - retrying click action
+    - waiting 20ms
+    2 × waiting for element to be visible, enabled and stable
+      - element is visible, enabled and stable
+      - scrolling into view if needed
+      - done scrolling
+      - <vite-error-overlay></vite-error-overlay> intercepts pointer events
+    - retrying click action
+      - waiting 100ms
+    24 × waiting for element to be visible, enabled and stable
+       - element is visible, enabled and stable
+       - scrolling into view if needed
+       - done scrolling
+       - <vite-error-overlay></vite-error-overlay> intercepts pointer events
+     - retrying click action
+       - waiting 500ms
+
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/lightbox.browser.test.ts/test_attach_lightbox_when_closed.png
+
+ ❯ tests/unit/src/interact/lightbox.browser.test.ts:198:19
+    196|     throw new Error("画像の場所が無い");
+    197|   }
+    198|   await userEvent.click(stage, { position: { x: 2, y: 2 } });
+       |                   ^
+    199|   // 検証
+    200|   await vi.waitFor(() => {
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=bec337ec:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[84/93]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/viewer/bundle.browser.test.ts > test_start_bundle_when_switch_clears_map_query
+AssertionError: expected '?map-1=place&x=1' to be '?x=1' // Object.is equality
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/bundle.browser.test.ts/test_start_bundle_when_switch_clears_map_query.png
+
+Expected: "?x=1"
+Received: "?map-1=place&x=1"
+
+ ❯ tests/unit/src/viewer/bundle.browser.test.ts:308:27
+    306|   await new Promise((resolve) => setTimeout(resolve, 50));
+    307|   // 検証
+    308|   expect(location.search).toBe("?x=1");
+       |                           ^
+    309|   expect(document.querySelector(".mdmark-bundle-main .mdmark h1")?.tex…
+    310|   history.back();
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=bec337ec:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[85/93]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/vscode/src/webview/app/app.browser.test.tsx > test_app_when_render_error
+TimeoutError: locator.click: Timeout 14618ms exceeded.
+Call log:
+  - waiting for locator('[data-vitest="true"]').contentFrame().getByRole('button', { name: 'リロード' })
+    - locator resolved to <button type="button" data-slot="button" data-action="reload" class="inline-flex h-9 min-w-9 cursor-pointer touch-manipulation items-center justify-center gap-2 rounded-md border px-4 text-sm font-medium whitespace-nowrap focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring border-transparent bg-primary text-primary-foreground hover:bg-primary-hover">リロード</button>
+  - attempting click action
+    2 × waiting for element to be visible, enabled and stable
+      - element is visible, enabled and stable
+      - scrolling into view if needed
+      - done scrolling
+      - <vite-error-overlay></vite-error-overlay> intercepts pointer events
+    - retrying click action
+    - waiting 20ms
+    2 × waiting for element to be visible, enabled and stable
+      - element is visible, enabled and stable
+      - scrolling into view if needed
+      - done scrolling
+      - <vite-error-overlay></vite-error-overlay> intercepts pointer events
+    - retrying click action
+      - waiting 100ms
+    23 × waiting for element to be visible, enabled and stable
+       - element is visible, enabled and stable
+       - scrolling into view if needed
+       - done scrolling
+       - <vite-error-overlay></vite-error-overlay> intercepts pointer events
+     - retrying click action
+       - waiting 500ms
+
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/app.browser.test.tsx/test_app_when_render_error.png
+
+ ❯ tests/unit/vscode/src/webview/app/app.browser.test.tsx:44:19
+     42|   // 実行
+     43|   render(<App boot={boot} api={api} />);
+     44|   await userEvent.click(screen.getByRole("button", { name: "リロード" }));
+       |                   ^
+     45|   // 検証
+     46|   const status = screen.getByRole("status");
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=bec337ec:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[86/93]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/vscode/src/webview/shared/components/config-band.browser.test.tsx > test_config_band_when_clicked
+TimeoutError: locator.click: Timeout 14893ms exceeded.
+Call log:
+  - waiting for locator('[data-vitest="true"]').contentFrame().getByRole('button', { name: '設定ファイルを開く' })
+    - locator resolved to <button type="button" data-slot="button" data-action="openConfig" class="inline-flex h-9 min-w-9 cursor-pointer touch-manipulation items-center justify-center gap-2 rounded-md border px-4 text-sm font-medium whitespace-nowrap focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring border-warning-border bg-background text-foreground hover:bg-secondary">設定ファイルを開く</button>
+  - attempting click action
+    2 × waiting for element to be visible, enabled and stable
+      - element is visible, enabled and stable
+      - scrolling into view if needed
+      - done scrolling
+      - <vite-error-overlay></vite-error-overlay> intercepts pointer events
+    - retrying click action
+    - waiting 20ms
+    2 × waiting for element to be visible, enabled and stable
+      - element is visible, enabled and stable
+      - scrolling into view if needed
+      - done scrolling
+      - <vite-error-overlay></vite-error-overlay> intercepts pointer events
+    - retrying click action
+      - waiting 100ms
+    23 × waiting for element to be visible, enabled and stable
+       - element is visible, enabled and stable
+       - scrolling into view if needed
+       - done scrolling
+       - <vite-error-overlay></vite-error-overlay> intercepts pointer events
+     - retrying click action
+       - waiting 500ms
+
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/config-band.browser.test.tsx/test_config_band_when_clicked.png
+
+ ❯ tests/unit/vscode/src/webview/shared/components/config-band.browser.test.tsx:52:19
+     50|   );
+     51|   // 実行
+     52|   await userEvent.click(
+       |                   ^
+     53|     screen.getByRole("button", { name: "設定ファイルを開く" }),
+     54|   );
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=bec337ec:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[87/93]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/vscode/src/webview/shared/components/preview-status.browser.test.tsx > test_preview_status_when_reload_clicked
+TimeoutError: locator.click: Timeout 14892ms exceeded.
+Call log:
+  - waiting for locator('[data-vitest="true"]').contentFrame().getByRole('button', { name: 'リロード' })
+    - locator resolved to <button type="button" data-slot="button" data-action="reload" class="inline-flex h-9 min-w-9 cursor-pointer touch-manipulation items-center justify-center gap-2 rounded-md border px-4 text-sm font-medium whitespace-nowrap focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring border-transparent bg-primary text-primary-foreground hover:bg-primary-hover">リロード</button>
+  - attempting click action
+    2 × waiting for element to be visible, enabled and stable
+      - element is visible, enabled and stable
+      - scrolling into view if needed
+      - done scrolling
+      - <vite-error-overlay></vite-error-overlay> intercepts pointer events
+    - retrying click action
+    - waiting 20ms
+    2 × waiting for element to be visible, enabled and stable
+      - element is visible, enabled and stable
+      - scrolling into view if needed
+      - done scrolling
+      - <vite-error-overlay></vite-error-overlay> intercepts pointer events
+    - retrying click action
+      - waiting 100ms
+    23 × waiting for element to be visible, enabled and stable
+       - element is visible, enabled and stable
+       - scrolling into view if needed
+       - done scrolling
+       - <vite-error-overlay></vite-error-overlay> intercepts pointer events
+     - retrying click action
+       - waiting 500ms
+
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/preview-status.browser.test.tsx/test_preview_status_when_reload_clicked.png
+
+ ❯ tests/unit/vscode/src/webview/shared/components/preview-status.browser.test.tsx:110:19
+    108|   );
+    109|   // 実行
+    110|   await userEvent.click(screen.getByRole("button", { name: "リロード" }));
+       |                   ^
+    111|   // 検証
+    112|   expect(onReload).toHaveBeenCalledTimes(1);
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=bec337ec:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[88/93]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/vscode/src/webview/features/preview/panel/panel-screen.browser.test.tsx > test_panel_screen_when_reload_clicked
+TimeoutError: locator.click: Timeout 14885ms exceeded.
+Call log:
+  - waiting for locator('[data-vitest="true"]').contentFrame().getByRole('button', { name: 'リロード' })
+    - locator resolved to <button type="button" data-slot="button" data-action="reload" class="inline-flex h-9 min-w-9 cursor-pointer touch-manipulation items-center justify-center gap-2 rounded-md border px-4 text-sm font-medium whitespace-nowrap focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring border-transparent bg-primary text-primary-foreground hover:bg-primary-hover">リロード</button>
+  - attempting click action
+    2 × waiting for element to be visible, enabled and stable
+      - element is visible, enabled and stable
+      - scrolling into view if needed
+      - done scrolling
+      - <vite-error-overlay></vite-error-overlay> intercepts pointer events
+    - retrying click action
+    - waiting 20ms
+    2 × waiting for element to be visible, enabled and stable
+      - element is visible, enabled and stable
+      - scrolling into view if needed
+      - done scrolling
+      - <vite-error-overlay></vite-error-overlay> intercepts pointer events
+    - retrying click action
+      - waiting 100ms
+    24 × waiting for element to be visible, enabled and stable
+       - element is visible, enabled and stable
+       - scrolling into view if needed
+       - done scrolling
+       - <vite-error-overlay></vite-error-overlay> intercepts pointer events
+     - retrying click action
+       - waiting 500ms
+
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/panel-screen.browser.test.tsx/test_panel_screen_when_reload_clicked.png
+
+ ❯ tests/unit/vscode/src/webview/features/preview/panel/panel-screen.browser.test.tsx:239:19
+    237|   const button = await screen.findByRole("button", { name: "リロード" });
+    238|   // 実行
+    239|   await userEvent.click(button);
+       |                   ^
+    240|   // 検証
+    241|   expect(postedOf(api.posted, "reload")).toEqual([{ type: "reload" }]);
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=bec337ec:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[89/93]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/vscode/src/webview/features/preview/panel/panel-screen.browser.test.tsx > test_panel_screen_when_config_error
+TimeoutError: locator.click: Timeout 14840ms exceeded.
+Call log:
+  - waiting for locator('[data-vitest="true"]').contentFrame().getByRole('button', { name: '設定ファイルを開く' })
+    - locator resolved to <button type="button" data-slot="button" data-action="openConfig" class="inline-flex h-9 min-w-9 cursor-pointer touch-manipulation items-center justify-center gap-2 rounded-md border px-4 text-sm font-medium whitespace-nowrap focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring border-warning-border bg-background text-foreground hover:bg-secondary">設定ファイルを開く</button>
+  - attempting click action
+    2 × waiting for element to be visible, enabled and stable
+      - element is visible, enabled and stable
+      - scrolling into view if needed
+      - done scrolling
+      - <vite-error-overlay></vite-error-overlay> intercepts pointer events
+    - retrying click action
+    - waiting 20ms
+    2 × waiting for element to be visible, enabled and stable
+      - element is visible, enabled and stable
+      - scrolling into view if needed
+      - done scrolling
+      - <vite-error-overlay></vite-error-overlay> intercepts pointer events
+    - retrying click action
+      - waiting 100ms
+    22 × waiting for element to be visible, enabled and stable
+       - element is visible, enabled and stable
+       - scrolling into view if needed
+       - done scrolling
+       - <vite-error-overlay></vite-error-overlay> intercepts pointer events
+     - retrying click action
+       - waiting 500ms
+
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/panel-screen.browser.test.tsx/test_panel_screen_when_config_error.png
+
+ ❯ tests/unit/vscode/src/webview/features/preview/panel/panel-screen.browser.test.tsx:287:19
+    285|       0,
+    286|   };
+    287|   await userEvent.click(
+       |                   ^
+    288|     screen.getByRole("button", { name: "設定ファイルを開く" }),
+    289|   );
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=bec337ec:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[90/93]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/vscode/src/webview/features/preview/panel/hooks/use-link-clicks.browser.test.tsx > test_use_link_clicks
+TimeoutError: locator.click: Timeout 14866ms exceeded.
+Call log:
+  - waiting for locator('[data-vitest="true"]').contentFrame().getByRole('link', { name: '外部' })
+    - locator resolved to <a href="https://example.com/">外部</a>
+  - attempting click action
+    2 × waiting for element to be visible, enabled and stable
+      - element is visible, enabled and stable
+      - scrolling into view if needed
+      - done scrolling
+      - <vite-error-overlay></vite-error-overlay> intercepts pointer events
+    - retrying click action
+    - waiting 20ms
+    2 × waiting for element to be visible, enabled and stable
+      - element is visible, enabled and stable
+      - scrolling into view if needed
+      - done scrolling
+      - <vite-error-overlay></vite-error-overlay> intercepts pointer events
+    - retrying click action
+      - waiting 100ms
+    25 × waiting for element to be visible, enabled and stable
+       - element is visible, enabled and stable
+       - scrolling into view if needed
+       - done scrolling
+       - <vite-error-overlay></vite-error-overlay> intercepts pointer events
+     - retrying click action
+       - waiting 500ms
+
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/use-link-clicks.browser.test.tsx/test_use_link_clicks.png
+
+ ❯ tests/unit/vscode/src/webview/features/preview/panel/hooks/use-link-clicks.browser.test.tsx:45:23
+     43|     // 実行: 本物のクリック（isTrusted が true）で押す
+     44|     for (const link of holder.querySelectorAll("a")) {
+     45|       await userEvent.click(link);
+       |                       ^
+     46|     }
+     47|   } finally {
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=bec337ec:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[91/93]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/vscode/src/webview/features/preview/panel/hooks/use-link-clicks.browser.test.tsx > test_use_link_clicks_when_side_toc
+TimeoutError: locator.click: Timeout 14896ms exceeded.
+Call log:
+  - waiting for locator('[data-vitest="true"]').contentFrame().getByRole('link', { name: '注意' })
+    - locator resolved to <a href="#注意" data-heading-id="注意">注意</a>
+  - attempting click action
+    2 × waiting for element to be visible, enabled and stable
+      - element is visible, enabled and stable
+      - scrolling into view if needed
+      - done scrolling
+      - <vite-error-overlay></vite-error-overlay> intercepts pointer events
+    - retrying click action
+    - waiting 20ms
+    2 × waiting for element to be visible, enabled and stable
+      - element is visible, enabled and stable
+      - scrolling into view if needed
+      - done scrolling
+      - <vite-error-overlay></vite-error-overlay> intercepts pointer events
+    - retrying click action
+      - waiting 100ms
+    28 × waiting for element to be visible, enabled and stable
+       - element is visible, enabled and stable
+       - scrolling into view if needed
+       - done scrolling
+       - <vite-error-overlay></vite-error-overlay> intercepts pointer events
+     - retrying click action
+       - waiting 500ms
+
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/use-link-clicks.browser.test.tsx/test_use_link_clicks_when_side_toc.png
+
+ ❯ tests/unit/vscode/src/webview/features/preview/panel/hooks/use-link-clicks.browser.test.tsx:74:21
+     72|   try {
+     73|     // 実行
+     74|     await userEvent.click(holder.querySelector("a") as HTMLElement);
+       |                     ^
+     75|   } finally {
+     76|     window.removeEventListener("click", reachedWindow);
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=bec337ec:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[92/93]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/vscode/src/webview/features/preview/panel/hooks/use-link-clicks.browser.test.tsx > test_use_link_clicks_when_open_asset
+TimeoutError: locator.click: Timeout 14898ms exceeded.
+Call log:
+  - waiting for locator('[data-vitest="true"]').contentFrame().getByRole('link', { name: '既定のアプリで開く' })
+    - locator resolved to <a href="#" data-action="openAsset" data-path="media/a.webm">既定のアプリで開く</a>
+  - attempting click action
+    2 × waiting for element to be visible, enabled and stable
+      - element is visible, enabled and stable
+      - scrolling into view if needed
+      - done scrolling
+      - <vite-error-overlay></vite-error-overlay> intercepts pointer events
+    - retrying click action
+    - waiting 20ms
+    2 × waiting for element to be visible, enabled and stable
+      - element is visible, enabled and stable
+      - scrolling into view if needed
+      - done scrolling
+      - <vite-error-overlay></vite-error-overlay> intercepts pointer events
+    - retrying click action
+      - waiting 100ms
+    28 × waiting for element to be visible, enabled and stable
+       - element is visible, enabled and stable
+       - scrolling into view if needed
+       - done scrolling
+       - <vite-error-overlay></vite-error-overlay> intercepts pointer events
+     - retrying click action
+       - waiting 500ms
+
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/use-link-clicks.browser.test.tsx/test_use_link_clicks_when_open_asset.png
+
+ ❯ tests/unit/vscode/src/webview/features/preview/panel/hooks/use-link-clicks.browser.test.tsx:96:19
+     94|   renderHook(() => useLinkClicks(api));
+     95|   // 実行
+     96|   await userEvent.click(holder.querySelector("a") as HTMLElement);
+       |                   ^
+     97|   // 検証
+     98|   expect(api.posted).toEqual([{ type: "openAsset", path: "media/a.webm…
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=bec337ec:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[93/93]⎯
+
+
+ Test Files  30 failed | 250 passed (280)
+      Tests  88 failed | 1894 passed (1982)
+   Start at  00:06:01
+   Duration  133.08s (worker 73%, tests 18%, import 7%, transform 2%)
+
+exit=1

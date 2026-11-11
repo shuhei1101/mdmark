@@ -318,6 +318,10 @@ export function validateConfig(
     delete config.table;
   }
 
+  if (raw.map !== undefined && !isValidMap(raw.map, file, issues)) {
+    delete config.map;
+  }
+
   if (raw.aliases !== undefined) {
     if (Array.isArray(raw.aliases)) {
       const checked = validateAliasRows(raw.aliases, file);
@@ -345,6 +349,23 @@ export function validateConfig(
   }
 
   return { config: config as CliConfig, issues };
+}
+
+/** 設定の `map` を検める。オブジェクトでなければ `schema` のずれを追加して `false` を返却する（値はここでは拒まず設定に残し、`mdmark check` が点検する） */
+function isValidMap(
+  value: unknown,
+  file: string,
+  issues: CheckIssue[],
+): boolean {
+  if (isRecord(value)) return true;
+  issues.push(
+    schemaIssue(
+      file,
+      "map",
+      "`map` は `node_fit`・`url_state`・`kinds`・`lines` を持つキーと値で記載してください。",
+    ),
+  );
+  return false;
 }
 
 /** 設定の `tooltips` を検める。キーと値の構造でなければ、`placement`・`diagramPlacement` が `top` と `bottom` のどちらでもなければ、`schema` のずれを追加して `false` を返却する */

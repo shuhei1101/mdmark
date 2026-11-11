@@ -35,6 +35,12 @@ import {
   outerHtml,
   plainText,
 } from "../../unit/helpers/html.ts";
+import {
+  DATA as MAP_DATA,
+  FLOW as MAP_FLOW,
+  SEQUENCE as MAP_SEQUENCE,
+  mapRange,
+} from "../../unit/helpers/map.ts";
 import { stripSourceLine } from "../../unit/helpers/source-line.ts";
 import {
   ALIAS_EXPECTED_HTML,
@@ -4509,4 +4515,111 @@ test("test_normal_when_included_has_frontmatter", async () => {
   expect(included).toContain("実行の段落");
   expect(html).not.toContain("title: 手順");
   expect(html).not.toContain("mdmark-frontmatter");
+});
+
+// map の範囲を、mount が図にする場所の要素とソースのコードブロックにする（正常系（map の範囲））
+test("test_normal_when_map_range", async () => {
+  // 準備
+  const render = await loadRender();
+  const markdown = [
+    mapRange({
+      args: '{"title": "全体の構成", "interval": 3}',
+      mermaid: MAP_FLOW,
+      data: MAP_DATA,
+    }),
+    mapRange({ mermaid: MAP_SEQUENCE }),
+  ].join("\n");
+  // 実行
+  const html = render(markdown);
+  // 検証
+  const ranges = findTags(html, 'class="mdmark-map"');
+  expect(ranges).toHaveLength(2);
+  expect(ranges[0]).toContain('data-map="1"');
+  expect(ranges[0]).toContain('data-map-kind="flowchart"');
+  expect(ranges[0]).toContain(
+    'data-map-args="{&quot;title&quot;:&quot;全体の構成&quot;,&quot;interval&quot;:3}"',
+  );
+  expect(ranges[1]).toContain('data-map="2"');
+  expect(ranges[1]).toContain('data-map-kind="sequenceDiagram"');
+  const codes = findTags(html, 'class="mdmark-code"');
+  expect(codes).toHaveLength(2);
+  for (const code of codes) expect(code).not.toContain("data-mdmark-mermaid");
+  expect(findTags(html, 'class="language-mermaid"')).toHaveLength(2);
+  const data = findTags(html, 'class="mdmark-map-data"');
+  expect(data).toHaveLength(1);
+  expect(data[0]).toMatch(/^<pre /);
+  expect(data[0]).toContain("hidden");
+  expect(plainText(html)).toContain('"walkthroughs"');
+  expect(html).not.toContain("<!-- map");
+  expect(html).not.toContain("-->");
+  expect(html).not.toContain("<svg");
+  expect(html).not.toContain("mdmark-diagram");
+  expect(render(markdown)).toBe(html);
+});
+
+// map の範囲の形の誤りを書き方の警告にし、印の知らないキーは無視する（正常系（map の書き方の誤り））
+test("test_normal_when_map_written_wrongly", async () => {
+  // 準備
+  const render = await loadRender();
+  const parts = [
+    mapRange({
+      args: '{"mdoe": 1}',
+      mermaid: "flowchart LR\n  subgraph lib [mdmark]\n  A -> B\n",
+      data: '{"version": 1, "layuot": {}}',
+    }),
+    mapRange({ args: "{title: 全体}", mermaid: "flowchart LR\n  A --> B\n" }),
+    mapRange({ mermaid: 'pie\n  "a" : 1\n' }),
+    mapRange({}),
+    `<!-- map -->\n\n\`\`\`mermaid\nflowchart LR\n  A --> B\n\`\`\`\n\n<!-- map-data: {"version": 1} -->\n\n<!-- map-data: {"version": 1} -->\n\n<!-- /map -->\n`,
+  ];
+  const markdown = parts
+    .map((part, index) => `段落 P${index + 1}\n\n${part}`)
+    .join("\n");
+  // 実行
+  const html = render(`${markdown}\n段落 END\n`);
+  // 検証: 範囲ごとに切り分ける
+  const pieces = html.split(/<p[^>]*>段落 P\d<\/p>/).slice(1);
+  expect(pieces).toHaveLength(5);
+  const warning = (piece: string) =>
+    matches(piece, /class="mdmark-syntax-warning[" ]/g).length;
+  // 1 つ目: 書き方の警告が無く、印の知らないキーを落とす
+  expect(warning(pieces[0] ?? "")).toBe(0);
+  const first = findTags(pieces[0] ?? "", 'class="mdmark-map"');
+  expect(first).toHaveLength(1);
+  expect(first[0]).not.toContain("mdoe");
+  // 2 つ目: JSON として読めない印の引数
+  expect(warning(pieces[1] ?? "")).toBe(1);
+  expect(plainText(pieces[1] ?? "")).toContain("JSON");
+  const second = findTags(pieces[1] ?? "", 'class="mdmark-map"');
+  expect(second).toHaveLength(1);
+  expect(second[0]).not.toContain("title");
+  // 3 つ目: 描かない図の種類
+  expect(warning(pieces[2] ?? "")).toBe(1);
+  expect(plainText(pieces[2] ?? "")).toContain("flowchart");
+  expect(plainText(pieces[2] ?? "")).toContain("sequenceDiagram");
+  expect(findTags(pieces[2] ?? "", 'class="mdmark-map"')).toHaveLength(0);
+  expect(findTags(pieces[2] ?? "", "language-mermaid")).toHaveLength(1);
+  // 4・5 つ目: mermaid のブロックが無い範囲・補足が 2 つの範囲
+  for (const piece of [pieces[3] ?? "", pieces[4] ?? ""]) {
+    expect(warning(piece)).toBe(1);
+    expect(findTags(piece, 'class="mdmark-map"')).toHaveLength(0);
+  }
+  expect(plainText(html)).toContain("段落 END");
+});
+
+// 機能 map がオフの文書では、範囲を普通の Markdown として描く（正常系（map の機能を解除する））
+test("test_normal_when_map_disabled", async () => {
+  // 準備
+  const render = await loadRender();
+  // 実行
+  const html = render(
+    `<!-- features: -map -->\n\n${mapRange({ mermaid: MAP_FLOW, data: MAP_DATA })}`,
+  );
+  // 検証
+  expect(findTags(html, 'class="mdmark-map"')).toHaveLength(0);
+  expect(findTag(html, 'class="mdmark-code"')).toContain("data-mdmark-mermaid");
+  expect(html).not.toContain("mdmark-map-data");
+  expect(html).not.toContain("walkthroughs");
+  expect(html).not.toContain("<!-- map");
+  expect(html).not.toContain("mdmark-syntax-warning");
 });

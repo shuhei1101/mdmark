@@ -715,9 +715,9 @@ functions:
     summary: 部品設計『図の枠』の HTML。タイトル・ボタンの帯（縮小・倍率・拡大・全画面。倍率のボタンは全体が収まる倍率を 100% とした等幅の数字の `{倍率}%` とスクリーンリーダー向けの名前 `倍率 {倍率}%。全体が収まる倍率に戻す`。`zoom` は定義の大きさを 1 とする倍率で、大きさのノードと中身の `scale()` に使用する。倍率のボタンの文字は `zoom / fit`、縮小の `disabled` と移動のボタンの有無は `zoom <= fit`、拡大の `disabled` は `zoom >= ZOOM.max` で決める。`fit` は省くと 1）・表示する枠・ツールチップの中身・凡例を並べ、表示する枠に `body` を差す。`resizable` が `true`（既定。`modal` のときは配置しない）なら表示するノードの右下に部品設計『図の枠』のリサイズハンドル（`div.mdmark-diagram-resize`。`aria-valuenow` などは `mount` が付ける）を配置し、`legend` が空なら凡例の `ul` に `hidden` を付ける。`stickyTitles` が `false` のときは `figure` に `data-sticky-titles="off"` を付ける。`scope`・`updated` を持たない（種類 `mermaid`）ときは、タイトルに範囲と更新日を出さない。`fitMin` を指定したときは `figure` に `data-fit-min` を付ける。`id` は `render` の中の通し番号で文書の中で一意にする
     args:
       - name: frame
-        type: '{ kind; title; scope?; updated?; legend; zoom?; fit?; fitMin?: number; modal?; resizable?: boolean; stickyTitles?: boolean; id: string }'
+        type: '{ kind; title; scope?; updated?; legend; zoom?; fit?; fitMin?: number; modal?; resizable?: boolean; stickyTitles?: boolean; wide?: boolean; tools?: Array<{ name: string; label: string; disabled?: boolean }>; id: string }'
         required: true
-        description: 部品設計の引数と、開いたときの倍率の下限（`fitMin`。mermaid の図が指定する）と、タイトル・ツールチップに使用する `id` の頭
+        description: 部品設計の引数と、開いたときの倍率の下限（`fitMin`。mermaid の図が指定する。map の図は `1`）と、タイトル・ツールチップに使用する `id` の頭。`wide` は本文の幅との切り替えのボタンを出さず、`tools` は右上の帯の先頭に並べるボタン。リサイズハンドルは表示する枠の下端（横のスクロールバーの下）の帯にし、アイコンを `iconSvg("equal")` にする
       - name: body
         type: '{ html: string; width: number; height: number; tips: string }'
         required: true
@@ -749,7 +749,7 @@ functions:
         summary: 'リサイズハンドルを配置し、モーダルと `resizable: false` では配置しない'
         condition: '`resizable` を省いた枚、`resizable: false` の枚、`modal: true` の枚'
         mock: なし
-        expected: 省いた枚だけ `div.mdmark-diagram-resize` があり、`role="separator"`・`aria-orientation="horizontal"`・`tabindex="0"`・`aria-label="「{題名}」の表示の高さ"`・`grip-horizontal` のアイコンを持つ
+        expected: 省いた枚だけ `div.mdmark-diagram-resize` があり、`role="separator"`・`aria-orientation="horizontal"`・`tabindex="0"`・`aria-label="「{題名}」の表示の高さ"`・`equal` のアイコンを持つ
       - name: test_render_diagram_frame_when_no_legend
         case: 正常
         summary: 凡例の項目が空なら凡例を隠し、タイトルを留めない図にマーカーを付ける
@@ -762,6 +762,18 @@ functions:
         condition: '`kind` が `mermaid`、`title` が `問い合わせの受付`、`scope`・`updated` を省き、`legend: []`、`fitMin: 0.75`'
         mock: なし
         expected: '`figure` が `data-diagram="mermaid"`・`data-fit-min="0.75"` を持ち、`figcaption` の文字が `問い合わせの受付` だけで `time` 要素が無い'
+      - name: test_render_diagram_frame_when_map
+        case: 正常
+        summary: 種類 map の枠
+        condition: '`kind: map`・`wide: true`・`legend: []`・`tools` に 4 つ'
+        mock: なし
+        expected: 範囲と更新日と凡例と本文の幅との切り替えのボタンが無く、右上の帯の先頭に 4 つのボタンが記載の順に並ぶ
+      - name: test_render_diagram_frame_when_resize_strip
+        case: 正常
+        summary: リサイズハンドルの帯
+        condition: '`resizable: true`'
+        mock: なし
+        expected: リサイズハンドルが表示する枠の後ろにあり、`equal` のアイコンを持つ
   - name: renderFlow
     title: フロー図を描く
     container: src/parts/diagram.ts
@@ -1935,26 +1947,22 @@ functions:
     container: src/diagram/geometry.ts
     kind: 関数
     scope: internal
-    summary: 高さを `RESIZE.min` 以上、`max`（図の全体が今の倍率で収まる高さ。`RESIZE.min` より小さいときは `RESIZE.min`）以下に収め、整数に丸める
+    summary: 高さを `RESIZE.min` 以上に収め、整数に丸める（上限は持たない）
     args:
       - name: height
         type: number
         required: true
         description: 求めた高さ（px）
-      - name: max
-        type: number
-        required: true
-        description: 定義の高さ × 今の倍率
     returns:
       type: number
       description: 収めた高さ
     unit_tests:
       - name: test_clamp_diagram_height
         case: 正常
-        summary: 下限と上限の間に収める
-        condition: '`max: 800` で `height` が `50`・`400.6`・`1000`。`max: 80` で `height` が `200`'
+        summary: 下限に収めて丸める
+        condition: '`height` が `50`・`400.6`・`3000`'
         mock: なし
-        expected: '`120`・`401`・`800`。`max: 80` のときは `120`'
+        expected: '`120`・`401`・`3000`'
     status: planned
     introduced:
       pr: 308
@@ -2011,12 +2019,12 @@ functions:
     container: src/interact/diagram-resize.ts
     kind: 関数
     scope: internal
-    summary: リサイズハンドルの `pointerdown`（`setPointerCapture`）から `pointerup` までの縦の移動だけ表示する枠の `style.height` を変え、フォーカスの間の `ArrowUp`・`ArrowDown` で `RESIZE.step` ずつ変え、`dblclick` で `reset` に戻す。高さは `clampDiagramHeight` で収め、変えるたびに `aria-valuenow`・`aria-valuemin`・`aria-valuemax` を書き換え、`onResize` を呼ぶ。変えた高さを `storage` の `key` に整数の文字で記載し、戻したらキーを削除する。`storage` の読み込みと保存の例外は捕まえて保たない。読み込んだ値が正の整数でなければ使用しない。ドラッグの間はリサイズハンドルに class `is-resizing` を付ける
+    summary: リサイズハンドルの `pointerdown`（`setPointerCapture`）から `pointerup` までの縦の移動だけ表示する枠の `style.height` を変え、フォーカスの間の `ArrowUp`・`ArrowDown` で `RESIZE.step` ずつ変え、`dblclick` で倍率を変えずに `fit()`（今の倍率の図の全体が収まる高さ）にする。高さは `clampDiagramHeight` で収め、変えるたびに `aria-valuenow`・`aria-valuemin`・`aria-valuemax`（今の倍率の図の全体が収まる高さと今の高さの大きいほう）・`aria-valuetext`（`{高さ}px`）を書き換え、`onResize` を呼ぶ。変えた高さを `storage` の `key` に整数の文字で記載し、戻したらキーを削除する。`storage` の読み込みと保存の例外は捕まえて保たない。読み込んだ値が正の整数でなければ使用しない。ドラッグの間はリサイズハンドルに class `is-resizing` を付ける
     args:
       - name: options
-        type: '{ viewport: HTMLElement; handle: HTMLElement; key: string; storage: Storage | null; max: () => number; reset: () => number; onResize: (height: number | null) => void }'
+        type: '{ viewport: HTMLElement; handle: HTMLElement; key: string; storage: Storage | null; fit: () => number; onResize: (height: number | null) => void }'
         required: true
-        description: 表示する枠・リサイズハンドル・高さを保つキー（`diagramHeightKey`）・保つ先・今の上限を返却する関数・定義から決まる高さを適用してその高さを返却する関数・高さを変えたとき（戻したときは `null`）に呼ぶ関数
+        description: 表示する枠・リサイズハンドル・高さを保つキー（`diagramHeightKey`）・保つ先・今の倍率の図の全体が収まる高さを返却する関数・高さを変えたとき（戻したときは `null`）に呼ぶ関数
     returns:
       type: '{ restored: number | null; detach: () => void }'
       description: 付けたときに `storage` から読み込んで適用した高さ（無ければ `null`）と、操作を削除する関数
@@ -2029,21 +2037,21 @@ functions:
       - name: test_attach_diagram_resize
         case: 正常
         summary: ドラッグと上下キーで高さを変えて保つ
-        condition: 高さ 300px の表示する枠、`max` が `1000`。リサイズハンドルを 200px 下へドラッグし、`ArrowUp` を押す
+        condition: 高さ 300px の表示する枠、`fit` が `1000`。リサイズハンドルを 200px 下へドラッグし、`ArrowUp` を押す
         mock: '`storage` に `Map` で包んだ `Storage` の構造のオブジェクトを指定する'
         expected: 高さが `500px`、`468px` の順になり、`aria-valuenow` も同じ。`storage` の `key` が `468`。`onResize` が `500`・`468` で呼ばれる
-      - name: test_attach_diagram_resize_when_reset
+      - name: test_attach_diagram_resize_when_fit
         case: 正常
-        summary: ダブルクリックで戻し、キーを削除する
-        condition: 高さを変えた後に `dblclick`
+        summary: ダブルクリックで今の倍率の図の全体が収まる高さにする
+        condition: 高さを 300px にした後に `dblclick`、`fit` が `760`
         mock: 同上
-        expected: 高さが `reset` の返却した高さで、`storage` に `key` が無く、`onResize` が `null` で呼ばれる
+        expected: 高さが `760px` で、`storage` の `key` が `760`、`onResize` が `760` で呼ばれる。倍率は変わらない
       - name: test_attach_diagram_resize_when_restored
         case: 正常
         summary: 保った高さで開き、読み込めない値は使用しない
-        condition: '`storage` の `key` が `420` のときと `abc` のときと、`max` の 1000 を超える `1500` のとき'
+        condition: '`storage` の `key` が `420` のときと `abc` のときと、`fit` の 1000 を超える `1500` のとき'
         mock: 同上
-        expected: '`420` では `restored` が `420` で高さが `420px`。`abc` では `restored` が `null` で高さを変えない。`1500` では `restored` が `1000` で高さが `1000px`、`aria-valuenow` が `1000`'
+        expected: '`420` では `restored` が `420` で高さが `420px`。`abc` では `restored` が `null` で高さを変えない。`1500` では上限を持たないため `restored` が `1500` で高さが `1500px`、`aria-valuenow`・`aria-valuemax` が `1500`'
       - name: test_attach_diagram_resize_when_storage_throws
         case: 異常
         summary: 保つ先が例外を投げても高さを変える

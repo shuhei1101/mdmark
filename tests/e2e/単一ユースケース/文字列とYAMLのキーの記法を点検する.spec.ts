@@ -9,7 +9,7 @@ import {
   test,
   writeFiles,
 } from "../cli.ts";
-import { renderInNode } from "../dist-page.ts";
+import { mountDocument, openPage, renderInNode } from "../dist-page.ts";
 
 // ブラウザを使用しないため、1 つのブラウザのプロジェクトだけで実行する
 test.skip(
@@ -259,4 +259,52 @@ test("test_error_when_key_missing", async ({ builtRoot, tempDir }) => {
   expect(result.stderr).toContain("items[5].body");
   expect(result.stderr).toContain("位置を");
   expect(await readFile(join(dir, "records.yaml"), "utf8")).toBe(RECORDS_YAML);
+});
+
+/** map の書き方を誤った文字列: 4 行目に読めない行、8 行目に補足の知らないキー */
+const MAP_WARNINGS_MARKDOWN = [
+  "<!-- map -->",
+  "```mermaid",
+  "flowchart LR",
+  "  A -> B",
+  "```",
+  "<!-- map-data: {",
+  '  "version": 1,',
+  '  "layuot": {}',
+  "} -->",
+  "<!-- /map -->",
+  "",
+].join("\n");
+
+// map の範囲の読めない行と補足の知らないキーを、描いたときの書き方の警告と同じ内容のずれにする（正常シナリオ（map の書き方の警告がある））
+test("test_normal_when_map_warnings", async ({ builtRoot, tempDir, page }) => {
+  // 準備
+  const dir = await createInitDir(builtRoot, tempDir);
+  // 実行
+  const result = await runCli(
+    builtRoot,
+    ["check", "--text", "-"],
+    dir,
+    MAP_WARNINGS_MARKDOWN,
+  );
+  // 検証
+  expect(result.code).not.toBe(0);
+  const lines = linesOf(result.stdout);
+  expect(lines.slice(0, -1).map((line) => line.split(": ")[0])).toEqual([
+    "-:4",
+    "-:8",
+  ]);
+  expect(lines[0]).toContain("A -> B");
+  expect(lines[1]).toContain("layuot");
+  expect(lines.at(-1)).toBe("ずれ 2 件");
+  // 検証: 同じ文字列を描いたときの書き方の警告と同じ内容
+  await openPage(page, builtRoot);
+  await mountDocument(page, { markdown: MAP_WARNINGS_MARKDOWN });
+  const warning = page.locator("#doc .mdmark-syntax-warning");
+  await expect(warning).toHaveCount(1, { timeout: 10_000 });
+  const rendered = ((await warning.textContent()) ?? "").replace(/\s+/g, "");
+  for (const line of lines.slice(0, -1)) {
+    const message = line.replace(/^-:\d+: \w+: /, "");
+    expect(rendered).toContain(message.replace(/[\s`]+/g, ""));
+  }
 });

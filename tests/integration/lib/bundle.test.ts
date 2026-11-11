@@ -7,8 +7,11 @@ import {
   copyMermaidVendor,
   GREET_WITH_IMPORT_SOURCE,
   linesOf,
+  MAP_STORE_CONFIG,
+  mapStoreDoc,
   PNG_BYTES,
   readHighlightVendor,
+  readMapStore,
   readMediaSamples,
   runCli,
   TEST_LIB_SOURCE,
@@ -982,3 +985,125 @@ test("test_normal_when_session_storage_unavailable", async () => {
   expect(warnings.some((text) => text.includes("表示の状態"))).toBe(true);
   await page.close();
 });
+
+/** グループ place を持つ map の範囲の文書 */
+const mapPlaceDoc = (title: string, links: string): string =>
+  [
+    `# ${title}`,
+    "",
+    links,
+    "",
+    "<!-- map -->",
+    "",
+    "```mermaid",
+    "flowchart LR",
+    '  user["利用側"]',
+    "  subgraph place [配置]",
+    "    direction TB",
+    '    layout["自動配置"]',
+    '    route["線の経路"]',
+    "  end",
+    "  user --> layout",
+    "  layout --> route",
+    "```",
+    "",
+    "<!-- /map -->",
+    "",
+  ].join("\n");
+
+// 文書を切り替えると map のクエリ文字列を消し、戻ると前の文書の図を中へ入った状態から描く（正常系（文書を切り替えると map のクエリ文字列を消す））
+test("test_normal_when_switch_clears_map_query", async () => {
+  // 準備
+  const dir = await createTempDir();
+  await writeFiles(dir, {
+    "mdmark.config.yaml": [
+      "build:",
+      '  include: ["*.md"]',
+      "  entry: a.md",
+      "  out: dist/docs.html",
+      "",
+    ].join("\n"),
+    "a.md": mapPlaceDoc("A", "[B へ](b.md)"),
+    "b.md": mapPlaceDoc("B", "[A へ](a.md)"),
+  });
+  // 実行
+  const result = await runCli(["build"], dir);
+  // 検証
+  expect(result.code).toBe(0);
+  const { page } = await browser.openHtml(join(dir, "dist", "docs.html"));
+  await page.evaluate(() => sessionStorage.clear());
+  const url = new URL(page.url());
+  url.search = "?keep=1";
+  await page.goto(url.href);
+  await waitForTitle(page, "A");
+  const enter = page.locator(
+    'article figure[data-diagram="map"] [data-group-enter="place"]',
+  );
+  await enter.waitFor({ timeout: 60_000 });
+  await enter.click();
+  const params = async () =>
+    new URL(page.url()).searchParams.toString().split("&").sort();
+  await expect(params()).resolves.toEqual(["keep=1", "map-1=place"]);
+  // 実行: 文書の一覧で b.md へ移る
+  await page
+    .locator('.mdmark-bundle-side .mdmark-doc-list a[href="#/b.md"]')
+    .click();
+  await waitForTitle(page, "B");
+  // 検証: map- のキーが消え、ほかのキーは変わらず、b.md の図を全体から描く
+  await page
+    .locator('article figure[data-diagram="map"] [data-group-enter="place"]')
+    .waitFor({ timeout: 60_000 });
+  await expect(params()).resolves.toEqual(["keep=1"]);
+  await expect(
+    page
+      .locator('article figure[data-diagram="map"] [data-tool="back"]')
+      .isDisabled(),
+  ).resolves.toBe(true);
+  // 実行・検証: 戻ると a.md の図を「配置」の中から描く
+  await page.goBack();
+  await waitForTitle(page, "A");
+  await page.waitForFunction(
+    () =>
+      document.querySelector(
+        'article figure[data-diagram="map"] .map-group-title.is-current',
+      )?.textContent === "配置",
+    undefined,
+    { timeout: 60_000 },
+  );
+  await page.close();
+}, 180_000);
+
+// 設定の map を埋める設定にコピーし、まとめた全ての文書の map の図を設定の種類と線で描く（正常系（map の設定））
+test("test_normal_when_map_config", async () => {
+  // 準備
+  const dir = await createTempDir();
+  await writeFiles(dir, {
+    "mdmark.config.yaml": [
+      MAP_STORE_CONFIG,
+      "build:",
+      '  include: ["*.md"]',
+      "  entry: a.md",
+      "  out: dist/docs.html",
+      "",
+    ].join("\n"),
+    "a.md": mapStoreDoc("A", "[B へ](b.md)"),
+    "b.md": mapStoreDoc("B"),
+  });
+  // 実行
+  const result = await runCli(["build"], dir);
+  // 検証
+  expect(result.code).toBe(0);
+  const { page } = await browser.openHtml(join(dir, "dist", "docs.html"));
+  await waitForTitle(page, "A");
+  const expected = {
+    label: "保存先",
+    shape: "rect",
+    color: "purple",
+    dash: expect.stringMatching(/\d/),
+  };
+  await expect(readMapStore(page)).resolves.toEqual(expected);
+  await page.locator('article p a[href="#/b.md"]').click();
+  await waitForTitle(page, "B");
+  await expect(readMapStore(page)).resolves.toEqual(expected);
+  await page.close();
+}, 180_000);

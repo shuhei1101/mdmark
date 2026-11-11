@@ -156,8 +156,11 @@ function attachView(
         const height = content.height * fit;
         viewport.style.height = `${Number.isNaN(cap) ? height : Math.min(height, cap)}px`;
       }
-      // 利用側が高さを変えたときに図の全体が収まる高さまで広げられるよう、上限を今の倍率の図の高さにする
-      viewport.style.maxHeight = `${content.height * zoom}px`;
+      // 利用側が高さを変えたときに図の全体が収まる高さまで広げられるよう、上限を今の倍率の図の高さにする（map の図は上限を持たず、ドラッグした分だけ広げる）
+      viewport.style.maxHeight =
+        figure.dataset.diagram === "map"
+          ? "none"
+          : `${content.height * zoom}px`;
     }
     stickHeads();
     stickTitles();
@@ -197,13 +200,9 @@ function attachView(
       handle,
       key: resize.key,
       storage: resize.storage,
-      max: () => content.height * scale,
-      reset: () => {
-        userHeight = null;
-        zoom.refit();
-        zoom.reset();
-        return viewport.getBoundingClientRect().height;
-      },
+      fit: () =>
+        content.height * scale +
+        (viewport.offsetHeight - viewport.clientHeight),
       onResize: (height) => {
         userHeight = height;
         zoom.refit();

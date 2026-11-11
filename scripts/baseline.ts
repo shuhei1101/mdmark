@@ -27,6 +27,7 @@ const BASELINE_ENTRIES = [
   { in: "src/index.ts", out: "index" },
   { in: "src/views/index.ts", out: "view" },
   { in: "src/comments/index.ts", out: "comments" },
+  { in: "src/map/index.ts", out: "map" },
   { in: "src/viewer/index.ts", out: "viewer" },
 ];
 // esbuild の target の記載方法: 小文字の名前と、数字と `.` のバージョン

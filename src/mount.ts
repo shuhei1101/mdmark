@@ -429,6 +429,7 @@ export function mount(el: HTMLElement, opts: MountOptions): MountHandle {
       docId,
       isCurrent: () => !destroyed && generation === current,
       warned,
+      config: drawn,
     });
     if (diffSource !== undefined && docId !== undefined) {
       if (diffMode !== "blocks") {

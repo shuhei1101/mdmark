@@ -421,3 +421,62 @@ export function countDynamicImportsInScripts(html: string): number {
     .map((match) => (match[1] ?? "").match(/\bimport\s*\(/g)?.length ?? 0)
     .reduce((sum, count) => sum + count, 0);
 }
+
+/** map の設定（`map.kinds` の store・`map.lines` の -.->・`map.node_fit: width`）の YAML の行 */
+export const MAP_STORE_CONFIG = [
+  "map:",
+  "  node_fit: width",
+  "  kinds:",
+  "    store: { label: 保存先, icon: database, shape: rect, color: purple }",
+  "  lines:",
+  '    "-.->": { dash: dashed }',
+  "",
+].join("\n");
+
+/** `:::store` のノードと -.-> の線を持つ map の範囲の文書 */
+export const mapStoreDoc = (title: string, links = ""): string =>
+  [
+    `# ${title}`,
+    "",
+    links,
+    "",
+    "<!-- map -->",
+    "",
+    "```mermaid",
+    "flowchart LR",
+    '  doc[("文書")]:::store',
+    '  read["読み取り"]',
+    "  doc -.-> read",
+    "```",
+    "",
+    "<!-- /map -->",
+    "",
+  ].join("\n");
+
+/** 開いた HTML の map の図で、`doc` のノードの種類の行と、`doc->read` の線を読む（図とアイコンが描かれるまで待つ） */
+export async function readMapStore(page: Page): Promise<{
+  label: string;
+  shape: string | undefined;
+  color: string | undefined;
+  dash: string | null;
+}> {
+  await page.waitForSelector(
+    'article figure.mdmark-diagram[data-diagram="map"] .mdmark-diagram-node[data-node="doc"] .mdmark-diagram-node-kind svg',
+    { timeout: 60_000 },
+  );
+  return page.evaluate(() => {
+    const node = document.querySelector<HTMLElement>(
+      'article figure[data-diagram="map"] .mdmark-diagram-node[data-node="doc"]',
+    );
+    return {
+      label:
+        node?.querySelector(".mdmark-diagram-node-kind")?.textContent ?? "",
+      shape: node?.dataset.shape,
+      color: node?.dataset.color,
+      dash:
+        document
+          .querySelector('article .mdmark-diagram-wire[data-wire="doc->read"]')
+          ?.getAttribute("stroke-dasharray") ?? null,
+    };
+  });
+}

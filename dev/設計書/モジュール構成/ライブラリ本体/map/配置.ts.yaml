@@ -1,0 +1,330 @@
+title: ライブラリ本体 / map / 配置
+lead: 構成図を、表示するノードとグループの集合を決めてから入れ子の内側から配置し、線の経路を引く。シーケンス図の表示する行を決める。
+test_files:
+  - tests/unit/src/map/layout.test.ts
+  - tests/unit/src/map/sequence-rows.test.ts
+data_models:
+  - name: MapView
+    title: 見せ方
+    container: src/map/layout.ts
+    usecase: Mermaidと補足で図を描く
+    role: データモデル
+    summary: '`layoutMap` に指定する中へ入ったグループ・閉じたグループ'
+    properties:
+      - name: entered
+        type: string | undefined
+        description: 中へ入ったグループの ID
+      - name: collapsed
+        type: string[]
+        description: 閉じたグループの ID
+  - name: MapOverride
+    title: 配置の上書き
+    container: src/map/layout.ts
+    usecase: Mermaidと補足で図を描く
+    role: データモデル
+    summary: 補足の `layout`・動かした位置・測った大きさを合わせた 1 つの ID の制約
+    properties:
+      - name: align
+        type: string | undefined
+        description: 同じ段に置く相手の ID
+      - name: order
+        type: number | undefined
+        description: 段の中の並び順
+      - name: pos
+        type: '{ x: number; y: number } | undefined'
+        description: 親の中身の左上からの座標で固定する
+      - name: width
+        type: number | undefined
+        description: ノードの幅
+      - name: justify
+        type: '"start" | "center" | "end" | undefined'
+        description: 段の中で寄せる側
+      - name: ends
+        type: '{ from?: "top" | "right" | "bottom" | "left"; to?: "top" | "right" | "bottom" | "left" } | undefined'
+        description: 線の端をつなぐ辺（補足の `ends` と、つなぎ替えた辺の `attachments`）
+      - name: via
+        type: 'Array<{ x: number; y: number }> | undefined'
+        description: 線の経由点（両端の共通の祖先の中身の左上からの座標）
+      - name: size
+        type: '{ w: number; h: number } | undefined'
+        description: 描いて測ったノードの大きさ。見積もりの代わりに使う
+  - name: MapLayout
+    title: 配置の結果
+    container: src/map/layout.ts
+    usecase: Mermaidと補足で図を描く
+    role: データモデル
+    summary: '`layoutMap` の戻り値（部品『mapの構成図』の `layout`）'
+    properties:
+      - name: width
+        type: number
+        description: 図の幅
+      - name: height
+        type: number
+        description: 図の高さ
+      - name: nodes
+        type: PlacedNode[]
+        description: ノード（`id`・`x`・`y`・`w`・`h`・`lines`・`faded`・`ancestors`）。`ancestors` は内側から
+      - name: groups
+        type: PlacedGroup[]
+        description: グループ（`id`・`title`・`x`・`y`・`w`・`h`・`ancestors`・`collapsed`）
+      - name: wires
+        type: PlacedWire[]
+        description: 線（`id`・`from`・`to`・`points`・`label`・`merged`）
+constants:
+  - name: MAP_LAYOUT
+    title: 配置の寸法
+    container: src/map/layout.ts
+    usecase: Mermaidと補足で図を描く
+    role: 定数
+    summary: 配置の寸法（px）と経路の重み
+    entries:
+      - key: maxWidth
+        value: '220'
+        description: '`node_fit` が `height` のノードの幅の上限'
+      - key: maxWidthWide
+        value: '360'
+        description: '`node_fit` が `width` のノードの幅の上限'
+      - key: minWidth
+        value: '120'
+        description: ノードの幅の下限
+      - key: gapItem
+        value: '48'
+        description: 段の中の間
+      - key: gapRank
+        value: '64'
+        description: 段の間
+      - key: groupPad
+        value: '24'
+        description: グループの内側の余白
+      - key: groupTitle
+        value: '36'
+        description: グループのタイトルの行の高さ
+      - key: margin
+        value: '24'
+        description: 図の外の余白
+      - key: clearance
+        value: '12'
+        description: 線の通り道の矩形からの離れ
+      - key: bendCost
+        value: '30'
+        description: 曲がり 1 回の重み
+      - key: borderCost
+        value: '100000'
+        description: 祖先でないグループの枠の出入り 1 回の重み
+      - key: minGap
+        value: '16'
+        description: ドラッグで近づけられる間の下限
+functions:
+  - name: layoutMap
+    title: 入れ子を配置する
+    kind: 関数
+    container: src/map/layout.ts
+    usecase: Mermaidと補足で図を描く
+    role: 処理
+    summary: 構成図と見せ方と上書きから、ノード・グループ・線の配置を返す
+    scope: public
+    callees:
+      - dev/設計書/モジュール構成/ライブラリ本体/map/配置.ts#functions[routeWires]
+      - dev/設計書/モジュール構成/ライブラリ本体/map/配置.ts#functions[wrapLabel]
+    args:
+      - name: chart
+        type: Flowchart
+        required: true
+        description: 読み取った構成図
+      - name: view
+        type: MapView
+        required: true
+        description: 見せ方
+      - name: overrides
+        type: Record<string, MapOverride>
+        required: true
+        description: ID ごとの上書き
+      - name: nodeFit
+        type: '"height" | "width"'
+        required: true
+        description: 設定の `map.node_fit`
+    returns:
+      type: MapLayout
+      description: 配置の結果
+    process: |-
+      1. 見せ方で表示する木を作る。中へ入ったグループの外は `faded` で残し、閉じたグループは 1 つのノードにして、そこへの線を同じ相手ごとに 1 本にまとめて元の線を `merged` に持つ（表示する木を作る）
+      2. 内側のグループから順に、子孫の線を直下の子どうしの線に持ち上げ、閉路の戻りを外した最長路で段を決め、重心の 4 回の掃引で段の中の並びを決め、上書きの `align`・`order`・`justify`・`pos` を当てて大きさを決める（グループの中を配置する）
+      3. 外側から座標を足して図の座標にし、線の経路を引く（線の経路を引く）
+    unit_tests:
+      - name: test_layout_map
+        case: 正常
+        summary: 重なりと横切りが無い
+        condition: モックの `FLOW` と空の見せ方
+        mock: なし
+        expected: どの 2 つのノード・グループも重ならず、線が端点とその祖先以外の矩形を横切らず、祖先の枠の出入りが 1 回
+      - name: test_layout_map_when_entered
+        case: 正常
+        summary: 中へ入る
+        condition: '`entered: read`'
+        mock: なし
+        expected: '`read` の外のノードの `faded` が `true` で、`read` の中のノードは `read` の中に収まる'
+      - name: test_layout_map_when_collapsed
+        case: 正常
+        summary: 閉じる
+        condition: '`collapsed: [store]`'
+        mock: なし
+        expected: '`store` が 1 つのノードになり、`store` への線が相手ごとに 1 本で `merged` に元の線を持つ'
+      - name: test_layout_map_when_overrides
+        case: 正常
+        summary: 上書き
+        condition: '`align`・`order`・`pos` を 1 つずつ'
+        mock: なし
+        expected: 指定どおりの段・並び・座標で、重なりと横切りが無い
+      - name: test_layout_map_when_measured_size
+        case: 正常
+        summary: 測った大きさ
+        condition: 'ノード 1 つに `size: { w: 300, h: 90 }`'
+        mock: なし
+        expected: そのノードの `w`・`h` が 300・90
+      - name: test_layout_map_when_justify
+        case: 正常
+        summary: 寄せる
+        condition: '段の幅が親より短い段のノードに `justify: start` と `end`'
+        mock: なし
+        expected: '`start` のノードの左端が親の中身の左端、`end` のノードの右端が親の中身の右端'
+      - name: test_layout_map_when_node_fit_width
+        case: 正常
+        summary: node_fit が width
+        condition: '名前が全角 30 文字のノードと `nodeFit: width`'
+        mock: なし
+        expected: そのノードの幅が 220 より大きく 360 以下
+      - name: test_layout_map_when_collapsed_count
+        case: 正常
+        summary: 閉じたグループのノードの数
+        condition: '部品の Default の Mermaid で `collapsed: ["read", "lib"]`'
+        mock: なし
+        expected: 閉じた `lib` の `count` が、入れ子の `read`・`place` の中を含む 7。開いたグループは `count` を持たない
+  - name: routeWires
+    title: 線の経路を引く
+    kind: 関数
+    container: src/map/layout.ts
+    usecase: Mermaidと補足で図を描く
+    role: 処理
+    summary: 矩形の辺から離した座標と中心の座標の格子の A* で、縦横の折れ線の経路を引く
+    scope: internal
+    args:
+      - name: nodes
+        type: PlacedNode[]
+        required: true
+        description: 配置したノード
+      - name: groups
+        type: PlacedGroup[]
+        required: true
+        description: 配置したグループ
+      - name: wires
+        type: ViewWire[]
+        required: true
+        description: 表示する線
+    returns:
+      type: PlacedWire[]
+      description: '`points` を持つ線'
+    process: |-
+      1. 端点とその祖先以外の矩形の内側の格子点を通れない点にする
+      2. 片方の端点だけの祖先の枠の出入りに `borderCost`、曲がりに `bendCost` を足し、残りの出入りの数を見積もりに加えた A* で経路を探す。上書きの `ends` がある端は、その辺の中央から辺と直角に出入りする点だけを始点・終点にする。`via` がある線は、始点 → 経由点 → 終点の区間ごとに探してつなぐ
+      3. 一直線に並ぶ点を除く（経由点は除かない）
+    unit_tests:
+      - name: test_route_wires
+        case: 正常
+        summary: 矩形を避ける
+        condition: 間にノードを 1 つ挟む 2 つのノードの線
+        mock: なし
+        expected: 線の点が挟んだノードの矩形の外
+      - name: test_route_wires_when_nested
+        case: 正常
+        summary: 祖先の枠の出入り
+        condition: 別のグループの中のノードどうしの線
+        mock: なし
+        expected: グループの枠の出入りがそれぞれ 1 回
+      - name: test_route_wires_when_ends
+        case: 正常
+        summary: 端の辺
+        condition: '左右に並んだ 2 つのノードの線に `ends: { from: bottom, to: top }`'
+        mock: なし
+        expected: 最初の点が元のノードの下の辺の中央、最後の点が先のノードの上の辺の中央で、最初と最後の区間が縦
+      - name: test_route_wires_when_via
+        case: 正常
+        summary: 経由点
+        condition: '線に `via: [{ x: 240, y: 300 }]`'
+        mock: なし
+        expected: 線の点に図の座標にした経由点があり、矩形を横切らない
+  - name: wrapLabel
+    title: 名前を折り返す
+    kind: 関数
+    container: src/map/layout.ts
+    usecase: Mermaidと補足で図を描く
+    role: 処理
+    summary: 全角の文字を文字の大きさ、半角の文字を 0.6 倍の幅とみなし、幅で折り返した行を返す
+    scope: public
+    args:
+      - name: text
+        type: string
+        required: true
+        description: 名前
+      - name: width
+        type: number
+        required: true
+        description: 折り返す幅（px）
+    returns:
+      type: string[]
+      description: 行
+    unit_tests:
+      - name: test_wrap_label
+        case: 正常
+        summary: 全角 30 文字
+        condition: 220px
+        mock: なし
+        expected: 2 行以上で、各行の見積もりの幅が 220 - 20 以下
+  - name: sequenceRows
+    title: シーケンス図の行を決める
+    kind: 関数
+    container: src/map/sequence-rows.ts
+    usecase: 図のグループの中へ入る・開閉する
+    role: 処理
+    summary: 並び順・閉じたブロック・中だけを描くブロックから、表示する参加者と行（メッセージ・閉じたブロック・区切り・注記・空き）を返す
+    scope: public
+    args:
+      - name: sequence
+        type: Sequence
+        required: true
+        description: 読み取ったシーケンス図
+      - name: view
+        type: '{ order: string[]; collapsed: number[]; entered: number | undefined }'
+        required: true
+        description: 見せ方
+    returns:
+      type: '{ participants: string[]; rows: SequenceRow[]; headRows: number }'
+      description: 表示する参加者・行・一番高い参加者の箱の下まで空ける行の数
+    process: |-
+      1. 中だけを描くブロックがあれば、その中のメッセージと、それに関わる参加者だけにする
+      2. 閉じたブロックの中のメッセージを、種類・名前・件数の 1 行にまとめる（入れ子は外側の閉じたブロックにまとめる）
+      3. 注記とブロックの見出しの行を、メッセージのラベルと重ならないように空きの行で挟む
+    unit_tests:
+      - name: test_sequence_rows
+        case: 正常
+        summary: 全体
+        condition: モックの `SEQUENCE` と空の見せ方
+        mock: なし
+        expected: メッセージの行が 7 で、参加者が記載の順
+      - name: test_sequence_rows_when_collapsed
+        case: 正常
+        summary: 閉じたブロック
+        condition: '`collapsed: [2]`'
+        mock: なし
+        expected: '`alt` の中の 4 件が 1 行になる'
+      - name: test_sequence_rows_when_entered
+        case: 正常
+        summary: 中だけを描く
+        condition: '`entered: 1`'
+        mock: なし
+        expected: '`loop` の中のメッセージと関わる参加者だけ'
+      - name: test_sequence_rows_when_reordered
+        case: 正常
+        summary: 並び順
+        condition: '`order` で 5 人目を 2 人目にした'
+        mock: なし
+        expected: '`participants` がその順'

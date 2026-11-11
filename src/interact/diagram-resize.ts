@@ -51,7 +51,7 @@ const writeHeight = (
   }
 };
 
-/** リサイズハンドルのドラッグと上下キーで表示する枠の高さを変え、ダブルクリックで戻し、変えた高さを保つ。付けたときに保った高さを当て、その高さと操作を削除する関数を返却する */
+/** リサイズハンドルのドラッグと上下キーで表示する枠の高さを変え、ダブルクリックで今の倍率の図の全体が収まる高さにし、変えた高さを保つ。付けたときに保った高さを当て、その高さと操作を削除する関数を返却する */
 export const attachDiagramResize = (options: {
   /** 表示する枠 */
   viewport: HTMLElement;
@@ -61,14 +61,12 @@ export const attachDiagramResize = (options: {
   key: string;
   /** 高さを保つ先（sessionStorage。使用できないときは `null`） */
   storage: Storage | null;
-  /** 今の上限（定義の高さ × 今の倍率） */
-  max: () => number;
-  /** 定義から決まる高さを当て、その高さを返却する */
-  reset: () => number;
+  /** 今の倍率の図の全体が収まる高さを返却する */
+  fit: () => number;
   /** 高さを変えたとき（戻したときは `null`）に呼ぶ */
   onResize: (height: number | null) => void;
 }): { restored: number | null; detach: () => void } => {
-  const { viewport, handle, key, storage, max, reset, onResize } = options;
+  const { viewport, handle, key, storage, fit: fitHeight, onResize } = options;
   const controller = new AbortController();
   const { signal } = controller;
 
@@ -78,13 +76,14 @@ export const attachDiagramResize = (options: {
     handle.setAttribute("aria-valuemin", String(RESIZE.min));
     handle.setAttribute(
       "aria-valuemax",
-      String(Math.round(Math.max(RESIZE.min, max()))),
+      String(Math.round(Math.max(RESIZE.min, fitHeight(), height))),
     );
+    handle.setAttribute("aria-valuetext", `${Math.round(height)}px`);
   };
 
   /** 高さを範囲に収めて当て、保って通知する */
   const setHeight = (height: number): void => {
-    const next = clampDiagramHeight(height, max());
+    const next = clampDiagramHeight(height);
     viewport.style.height = `${next}px`;
     updateValues(next);
     writeHeight(storage, key, next);
@@ -141,21 +140,18 @@ export const attachDiagramResize = (options: {
     { signal },
   );
 
-  // ダブルクリック: 定義から決まる高さに戻し、保った高さを削除する
+  // ダブルクリック: 倍率を変えずに、今の倍率の図の全体が収まる高さにする
   handle.addEventListener(
     "dblclick",
     () => {
-      const height = reset();
-      updateValues(height);
-      writeHeight(storage, key, null);
-      onResize(null);
+      setHeight(fitHeight());
     },
     { signal },
   );
 
   // 保った高さは、操作で変えるときと同じく範囲に収めて適用する
   const kept = readHeight(storage, key);
-  const restored = kept === null ? null : clampDiagramHeight(kept, max());
+  const restored = kept === null ? null : clampDiagramHeight(kept);
   if (restored === null) {
     updateValues(viewport.getBoundingClientRect().height);
   } else {

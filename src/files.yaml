@@ -547,6 +547,96 @@ files:
     related:
       - to: dev/設計書/モジュール構成/ライブラリ本体/描く.ts
         type: implements
+  - path: map/band.ts
+    description: モジュール構成『ライブラリ本体 / map / 描画と操作』のうち「案内と再生の帯の attachBand・observeEnter」を受け持つ。案内と再生の帯の操作を変えるときに参照する。
+    tags: [topic:図, topic:map]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/map/描画と操作.ts
+        type: implements
+  - path: map/check.ts
+    description: モジュール構成『ライブラリ本体 / map / 点検』のうち「書き方の誤りの collectMapProblems と設定の checkMapConfig」を受け持つ。map の書き方の警告と点検のずれを変えるときに参照する。
+    tags: [topic:図, topic:map]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/map/点検.ts
+        type: implements
+  - path: map/data.ts
+    description: モジュール構成『ライブラリ本体 / map / 読み取り』のうち「補足の JSON の parseMapData」を受け持つ。補足のキーと読み取り方を変えるときに参照する。
+    tags: [topic:図, topic:map]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/map/読み取り.ts
+        type: implements
+  - path: map/drag.ts
+    description: モジュール構成『ライブラリ本体 / map / 描画と操作』のうち「ノード・グループ・線の区間の移動の startDrag と線の区間のずらし」を受け持つ。構成図の移動の操作を変えるときに参照する。
+    tags: [topic:図, topic:map]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/map/描画と操作.ts
+        type: implements
+  - path: map/flow-view.ts
+    description: モジュール構成『ライブラリ本体 / map / 描画と操作』のうち「構成図の attachMapFlow」を受け持つ。構成図の描画と操作を変えるときに参照する。
+    tags: [topic:図, topic:map]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/map/描画と操作.ts
+        type: implements
+  - path: map/flowchart.ts
+    description: モジュール構成『ライブラリ本体 / map / 読み取り』のうち「Mermaid の flowchart の parseFlowchart」を受け持つ。構成図の記法の読み取りを変えるときに参照する。
+    tags: [topic:図, topic:map]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/map/読み取り.ts
+        type: implements
+  - path: map/index.ts
+    description: モジュール構成『ライブラリ本体 / map / 描画と操作』のうち「dist/map.js の入口の attachMap」を受け持つ。map の図の付け方を変えるときに参照する。
+    tags: [topic:図, topic:map]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/map/描画と操作.ts
+        type: implements
+  - path: map/layout.ts
+    description: モジュール構成『ライブラリ本体 / map / 配置』のうち「入れ子の自動配置の layoutMap と線の経路」を受け持つ。構成図の配置を変えるときに参照する。
+    tags: [topic:図, topic:map]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/map/配置.ts
+        type: implements
+  - path: map/lucide-names.ts
+    description: モジュール構成『ライブラリ本体 / map / 点検』のうち「Lucide のアイコンの名前の lucideIconNames」を受け持つ。設定のアイコンの点検を変えるときに参照する。
+    tags: [topic:図, topic:map]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/map/点検.ts
+        type: implements
+  - path: map/sequence-rows.ts
+    description: モジュール構成『ライブラリ本体 / map / 配置』のうち「シーケンス図の表示する行の sequenceRows」を受け持つ。シーケンス図の行の決め方を変えるときに参照する。
+    tags: [topic:図, topic:map]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/map/配置.ts
+        type: implements
+  - path: map/sequence-view.ts
+    description: モジュール構成『ライブラリ本体 / map / 描画と操作』のうち「シーケンス図の attachMapSequence」を受け持つ。シーケンス図の描画と操作を変えるときに参照する。
+    tags: [topic:図, topic:map]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/map/描画と操作.ts
+        type: implements
+  - path: map/sequence.ts
+    description: モジュール構成『ライブラリ本体 / map / 読み取り』のうち「Mermaid の sequenceDiagram の parseSequence」を受け持つ。シーケンス図の記法の読み取りを変えるときに参照する。
+    tags: [topic:図, topic:map]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/map/読み取り.ts
+        type: implements
+  - path: map/spec.ts
+    description: モジュール構成『ライブラリ本体 / map / 読み取り』のうち「マーカーの引数の parseMapArgs と map の型」を受け持つ。マーカーの引数を変えるときに参照する。
+    tags: [topic:図, topic:map]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/map/読み取り.ts
+        type: implements
+  - path: map/state.ts
+    description: モジュール構成『ライブラリ本体 / map / 描画と操作』のうち「図の状態の readMapState・writeMapState」を受け持つ。状態の保ち方を変えるときに参照する。
+    tags: [topic:図, topic:map]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/map/描画と操作.ts
+        type: implements
+  - path: map/structure.ts
+    description: モジュール構成『ライブラリ本体 / map / 点検』のうち「範囲の形の collectMapStructure」を受け持つ。範囲の形の誤りを変えるときに参照する。
+    tags: [topic:図, topic:map]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/map/点検.ts
+        type: implements
   - path: mermaid-source.ts
     description: モジュール構成『ライブラリ本体 / mermaid』のうち「ソースのタイトルの取り出し・図の種類の名前・テーマの変数と CSS 変数の対応表（DOM を使用しない）」を受け持つ。mermaid の図のタイトルやテーマを変えるときに参照する。
     tags: [topic:図, topic:テーマ]
@@ -1115,6 +1205,30 @@ files:
         type: implements
       - to: dev/設計書/部品設計/ライトボックス.ts
         type: implements
+  - path: parts/map-band.stories.ts
+    description: 部品設計『案内の帯』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに参照する。
+    tags: [topic:ストーリー, tool:storybook, topic:部品]
+    related:
+      - to: dev/設計書/部品設計/案内の帯.ts
+        type: implements
+  - path: parts/map-flow.stories.ts
+    description: 部品設計『mapの構成図』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに参照する。
+    tags: [topic:ストーリー, tool:storybook, topic:部品]
+    related:
+      - to: dev/設計書/部品設計/mapの構成図.ts
+        type: implements
+  - path: parts/map-sequence.stories.ts
+    description: 部品設計『mapのシーケンス図』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに参照する。
+    tags: [topic:ストーリー, tool:storybook, topic:部品]
+    related:
+      - to: dev/設計書/部品設計/mapのシーケンス図.ts
+        type: implements
+  - path: parts/map.ts
+    description: モジュール構成『ライブラリ本体 / map / 描画と操作』のうち「部品『mapの構成図』『mapのシーケンス図』『案内の帯』の HTML」を受け持つ。map の部品が返却する HTML を変えるときに参照する。
+    tags: [topic:部品, topic:map, tool:html]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/map/描画と操作.ts
+        type: implements
   - path: parts/media.stories.ts
     description: 部品設計『動画と音声』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに参照する。
     tags: [topic:ストーリー, tool:storybook, topic:部品, topic:動画]
@@ -1604,6 +1718,12 @@ files:
   - path: render/syntax/layout-columns.ts
     description: モジュール構成『ライブラリ本体 / 記法』のうち「段組み」を受け持つ。記法の記載方法や出力する HTML を変えるときに参照する。
     tags: [topic:markdown, topic:構文, tool:markdown-it]
+    related:
+      - to: dev/設計書/モジュール構成/ライブラリ本体/記法.ts
+        type: implements
+  - path: render/syntax/map.ts
+    description: モジュール構成『ライブラリ本体 / 記法』のうち「map の範囲の buildMapRanges」を受け持つ。map の範囲の出力を変えるときに参照する。
+    tags: [topic:記法, topic:map]
     related:
       - to: dev/設計書/モジュール構成/ライブラリ本体/記法.ts
         type: implements

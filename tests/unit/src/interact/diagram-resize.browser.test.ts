@@ -20,7 +20,7 @@ afterEach(() => {
 const KEY = "mdmark-diagram-height:/a.html#0:図";
 
 /** 高さ 300px の表示する枠とリサイズハンドルを配置し、リサイズハンドルを付ける */
-async function setUp(storage: Storage | null) {
+async function setUp(storage: Storage | null, fit = 1000) {
   const { attachDiagramResize } = await loadResize();
   const root = createRootFromHtml(
     '<div class="viewport" style="height: 300px; overflow: auto"></div><div class="handle" role="separator" tabindex="0"></div>',
@@ -36,11 +36,7 @@ async function setUp(storage: Storage | null) {
     handle,
     key: KEY,
     storage,
-    max: () => 1000,
-    reset: () => {
-      viewport.style.height = "300px";
-      return 300;
-    },
+    fit: () => fit,
     onResize: (height) => {
       resized.push(height);
     },
@@ -84,19 +80,17 @@ test("test_attach_diagram_resize", async () => {
   expect(resized).toEqual([500, 468]);
 });
 
-// ダブルクリックで戻し、キーを削除する（正常系）
-test("test_attach_diagram_resize_when_reset", async () => {
+// ダブルクリックで今の倍率の図の全体が収まる高さにする（正常系）
+test("test_attach_diagram_resize_when_fit", async () => {
   // 準備
-  vi.spyOn(Element.prototype, "setPointerCapture").mockImplementation(() => {});
   const storage = memoryStorage();
-  const { viewport, handle, resized } = await setUp(storage);
-  drag(handle, 200);
+  const { viewport, handle, resized } = await setUp(storage, 760);
   // 実行
   handle.dispatchEvent(new MouseEvent("dblclick", { bubbles: true }));
   // 検証
-  expect(viewport.style.height).toBe("300px");
-  expect(storage.getItem(KEY)).toBeNull();
-  expect(resized.at(-1)).toBeNull();
+  expect(viewport.style.height).toBe("760px");
+  expect(storage.getItem(KEY)).toBe("760");
+  expect(resized.at(-1)).toBe(760);
 });
 
 // 保った高さで開き、読み込めない値は使用しない（正常系）
@@ -112,13 +106,14 @@ test("test_attach_diagram_resize_when_restored", async () => {
   // 検証
   expect(broken.result.restored).toBeNull();
   expect(broken.viewport.style.height).toBe("300px");
-  // 準備・実行: 保った高さが今の上限（1000px）を超える
+  // 準備・実行: 保った高さが図の全体の収まる高さ（1000px）を超える
   removeRoots();
   const tall = await setUp(memoryStorage({ [KEY]: "1500" }));
-  // 検証: 上限に収めて当て、スクリーンリーダーの値も収めた高さにする
-  expect(tall.result.restored).toBe(1000);
-  expect(tall.viewport.style.height).toBe("1000px");
-  expect(tall.handle.getAttribute("aria-valuenow")).toBe("1000");
+  // 検証: 上限を持たないため、保った高さのまま当て、最大値も今の高さにする
+  expect(tall.result.restored).toBe(1500);
+  expect(tall.viewport.style.height).toBe("1500px");
+  expect(tall.handle.getAttribute("aria-valuenow")).toBe("1500");
+  expect(tall.handle.getAttribute("aria-valuemax")).toBe("1500");
 });
 
 // 保つ先が例外を投げても高さを変える（異常系）

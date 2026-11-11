@@ -1,0 +1,14 @@
+$ npm run test:unit
+
+> test:unit
+> vitest run --project 'unit*'
+
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-diagram-map-mermaid-auto-layout
+
+
+ Test Files  280 passed (280)
+      Tests  2010 passed (2010)
+   Start at  04:20:49
+   Duration  112.83s (worker 66%, tests 21%, import 12%, transform 1%)
+

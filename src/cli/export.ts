@@ -32,6 +32,7 @@ import {
   inlineImages,
   usedParts,
   usedSyntaxLanguages,
+  usesMap,
   usesMermaid,
   type ViewerEmbeds,
 } from "./embed.ts";
@@ -423,6 +424,7 @@ export async function prepareEmbeds(options: EmbedOptions): Promise<{
         ? { colorScheme: loaded.config.colorScheme }
         : {}),
       ...(loaded.config.labels ? { labels: loaded.config.labels } : {}),
+      ...(loaded.config.map ? { map: loaded.config.map } : {}),
       ...(Object.keys(mermaidPayload).length > 0
         ? { mermaid: mermaidPayload }
         : {}),
@@ -478,6 +480,7 @@ export async function prepareEmbeds(options: EmbedOptions): Promise<{
     ...(syntax ? { syntax } : {}),
     ...(mermaid ? { mermaid } : {}),
     view: usedParts({ markdowns: [...originals.values()] }),
+    map: usesMap({ markdowns: [...originals.values()], config: loaded.config }),
     ...(compiled.scripts.length > 0 ? { htmlScripts: compiled.scripts } : {}),
   };
   return { payload, embeds, themeCss, warnings };
@@ -494,11 +497,12 @@ export async function readDistAssets(options: {
   distDir: string;
   /** 書き出しの種類 */
   kind: "document" | "bundle";
-}): Promise<{ distCss: string; viewer: string; view: string }> {
+}): Promise<{ distCss: string; viewer: string; view: string; map: string }> {
   const { distDir, kind } = options;
   let distCss: string;
   const viewer = resolve(distDir, "viewer.js");
   const view = resolve(distDir, "view.js");
+  const map = resolve(distDir, "map.js");
   try {
     distCss = await readFile(join(distDir, "index.css"), "utf8");
     await stat(viewer);
@@ -519,7 +523,7 @@ export async function readDistAssets(options: {
       }
     }
   }
-  return { distCss, viewer, view };
+  return { distCss, viewer, view, map };
 }
 
 /** HTML を書き込む。親のフォルダが無ければ作り、書き込めなければ書き込めなかったパスを示す誤りを投げる */
@@ -579,12 +583,12 @@ export async function exportDocument(options: {
     out: outFile,
     fetchText,
   });
-  const { distCss, viewer, view } = await readDistAssets({
+  const { distCss, viewer, view, map } = await readDistAssets({
     distDir: options.distDir,
     kind: "document",
   });
   const script = await bundleViewer({
-    entry: createViewerEntry({ viewer, view, embeds }),
+    entry: createViewerEntry({ viewer, view, map, embeds }),
     baseDir: loaded.dir,
     fetchText,
   });

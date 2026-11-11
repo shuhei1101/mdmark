@@ -429,7 +429,7 @@ elements:
     position: 描く先の要素
     description: 図の部品のマーカーの範囲に配置した定義から描く図。描いたときは全体が収まる倍率で出す
     visible_when: '`diagrams` がオンで、図の部品のマーカーの範囲か、埋め込んだ HTML の中の図の部品の custom element に読み込める定義があるとき'
-    action: 右上の縮小・拡大のボタンとキーで拡大・縮小し、倍率のボタンと `0` で開いたときの倍率と位置に戻す、ドラッグ・矢印キー・移動のボタンで動かす、全画面のボタンで全画面のモーダルを開く。フロー図のリンク先を持つノードを動かさずに押すか、フォーカスして Enter で、リンク先を同じタブで開く（ノードの上から図を動かしたときと右上のマーカーを押したときは開かない）。右下のリサイズハンドルのドラッグと `↑`・`↓` で表示する枠の高さを変え、ダブルクリックで戻す。フロー図は動かした間、見えているシステムの枠と層のタイトルを上端に留める。ER 図はテーブルの見出しの開閉のボタンで、主キーと外部キー以外の列を畳む・開く
+    action: 右上の縮小・拡大のボタンとキーで拡大・縮小し、倍率のボタンと `0` で開いたときの倍率と位置に戻す、ドラッグ・矢印キー・移動のボタンで動かす、全画面のボタンで全画面のモーダルを開く。フロー図のリンク先を持つノードを動かさずに押すか、フォーカスして Enter で、リンク先を同じタブで開く（ノードの上から図を動かしたときと右上のマーカーを押したときは開かない）。表示する枠の下端のリサイズハンドルのドラッグと `↑`・`↓` で表示する枠の高さを変え、ダブルクリックで倍率を変えずに図の全体が収まる高さにする。フロー図は動かした間、見えているシステムの枠と層のタイトルを上端に留める。ER 図はテーブルの見出しの開閉のボタンで、主キーと外部キー以外の列を畳む・開く
     refs:
       - dev/設計書/インターフェース定義/ライブラリ本体/文書をHTML文字列にする.ts#constraints[図の部品]
       - dev/設計書/インターフェース定義/ライブラリ本体/文書をHTML文字列にする.ts#constraints[ER 図]
@@ -489,6 +489,88 @@ elements:
     refs:
       - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[mermaid の描き方]
       - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[mermaid のテーマ]
+    status: planned
+  - name: map の構成図
+    id: map-flow
+    kind: figure
+    component: dev/設計書/部品設計/図の枠.ts#
+    args:
+    - name: kind
+      value: '`map`'
+    - name: title
+      value: map のマーカーの `title`
+    - name: legend
+      value: '`[]`'
+    - name: wide
+      value: '''true'''
+    - name: tools
+      value: 外へ戻る（中へ入っていないときは押せない）・全て開く・全て閉じる・配置と選択を元に戻す（選んだか動かしたときだけ押せる）
+    - name: resizable
+      value: 機能 `diagram-resize` がオンか
+    - name: height
+      value: sessionStorage に保ったその図の高さ（無ければ指定しない）
+    slots:
+    - name: default
+      value: dev/設計書/部品設計/mapの構成図.ts#（`layout` は Mermaid と補足から自動配置した結果、`collapsed`・`entered`・`selected`・位置は sessionStorage とクエリ文字列 `map-{図の番号}` の状態）
+    position: 描く先の要素
+    description: map の範囲の `flowchart` を自動配置して描いた構成図。置き場所の幅いっぱいに広げ、倍率 1 で出す。図の枠の下に要素「map の案内の帯」を置く
+    visible_when: '`map` がオンで、map の範囲に `flowchart` の mermaid のブロックがあるとき'
+    action: 要素「図」と同じ拡大・縮小・移動・全画面・リサイズハンドルに加え、グループの山形で開閉し、タイトルで中へ入り、外へ戻る・Esc で外へ戻る。ノードを押して選び、線を押して両端を選び、Esc か「配置と選択を元に戻す」で解く。ノード・グループのタイトルの行・線の区間をドラッグか Alt + 矢印キーで動かす。線にポインターを当てると強調する
+    refs:
+    - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[map の図]
+    - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[map の強調]
+    - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[map の状態の保存]
+    - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[map の操作の分け方]
+    status: planned
+  - name: map のシーケンス図
+    id: map-sequence
+    kind: figure
+    component: dev/設計書/部品設計/図の枠.ts#
+    args:
+    - name: kind
+      value: '`map`'
+    - name: title
+      value: map のマーカーの `title`
+    - name: legend
+      value: '`[]`'
+    - name: wide
+      value: '''true'''
+    - name: tools
+      value: 外へ戻る（中だけを描いていないときは押せない）・全て開く・全て閉じる・参加者の並び順と選択を元に戻す（選んだか並べ替えたときだけ押せる）
+    - name: resizable
+      value: 機能 `diagram-resize` がオンか
+    slots:
+    - name: default
+      value: dev/設計書/部品設計/mapのシーケンス図.ts#
+    position: 描く先の要素
+    description: map の範囲の `sequenceDiagram` を全ての記法で描いたシーケンス図。図の枠の下に要素「map の案内の帯」を再生として置く
+    visible_when: '`map` がオンで、map の範囲に `sequenceDiagram` の mermaid のブロックがあるとき'
+    action: 要素「map の構成図」と同じ図の枠の操作に加え、ブロックのタブの山形で開閉し、タブの名前で中だけを描く。参加者を押して選び、ドラッグか Alt + 左右の矢印キーで並べ替える
+    refs:
+    - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[map の図]
+    - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[map の状態の保存]
+    status: planned
+  - name: map の案内の帯
+    id: map-band
+    kind: toolbar
+    component: dev/設計書/部品設計/案内の帯.ts#
+    args:
+    - name: mode
+      value: 構成図は `walkthrough`、シーケンス図は `playback`
+    - name: total
+      value: 補足の `walkthroughs` の手順の数か、表示するメッセージの数
+    - name: title
+      value: 手順の `title` か、メッセージの文
+    - name: text
+      value: 構成図は手順の `text`、シーケンス図は `{送り手} → {受け手}` と補足の `notes` のそのメッセージの説明（改行はそのまま）
+    - name: label
+      value: '`{図のタイトル}の案内`・`{図のタイトル}の再生`'
+    position: 描く先の要素 > map の構成図・map のシーケンス図の図の枠の下
+    description: 案内と再生の帯。始める前も常に出す
+    visible_when: 構成図は補足に `walkthroughs` があるとき、シーケンス図は常時
+    action: 前へ・次へで手順を進め（端では反対の端へ回る）、停止で強調を解き、自動で進めるで印の `interval` 秒ごとに進める。シーケンス図の再生は、補足の `plays_over` で指した構成図の上でも強調する。片方の図で案内か再生を始めると、もう片方の強調を解く
+    refs:
+    - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[map の強調]
     status: planned
   - name: mermaid の読み込み中のブロック
     id: mermaid-loading

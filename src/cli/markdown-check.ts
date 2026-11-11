@@ -9,10 +9,12 @@ import {
   parseDocument,
   Scalar,
 } from "yaml";
+import { resolveConfig } from "../config.ts";
 import { collectWarnings } from "../render/index.ts";
 import {
   type CheckIssue,
   checkDiagrams,
+  checkMaps,
   checkUnknownMarks,
   loadExtensionDirectives,
 } from "./check.ts";
@@ -215,25 +217,28 @@ export async function checkMarkdownSource(options: {
         .directives
     : new Set<string>();
   const document = [{ path: file, markdown }];
-  const warnings: CheckIssue[] = collectWarnings(markdown, {
+  const warnings: CheckIssue[] = [];
+  for (const warning of collectWarnings(markdown, {
     config: {
       ...(config.features ? { features: config.features } : {}),
       ...(config.libraries ? { libraries: config.libraries } : {}),
     },
-  })
-    // 取り込み先を読み込まないため、include の取り込み先が無い警告は出さない
-    .filter((warning) => !warning.includeTarget)
-    .map((warning) => ({
+  })) {
+    // 取り込み先を読み込まないため、include の取り込み先が無い警告は出さない。map の警告は checkMaps の項目ごとのずれにする
+    if (warning.includeTarget || warning.kind === "map") continue;
+    warnings.push({
       file,
       where: String(warning.line),
       kind: warning.kind,
       message: warning.message,
-    }));
+    });
+  }
+  const maps = checkMaps(document, resolveConfig({ config }));
   const unknownMarks = checkUnknownMarks(document, config, directives);
   const layout = checkDiagrams(document).filter(
     (issue) => issue.kind !== "diagram_invalid",
   );
-  return [...warnings, ...unknownMarks, ...layout]
+  return [...warnings, ...unknownMarks, ...layout, ...maps]
     .map((issue, order) => ({ issue, order }))
     .sort(
       (a, b) =>

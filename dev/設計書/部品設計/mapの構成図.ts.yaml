@@ -1,0 +1,156 @@
+title: mapの構成図
+implementation: src/parts/map.ts#renderMapFlow
+story: Parts/MapFlow
+states:
+  - name: Default
+    description: 入れ子のグループ 2 つ・色を持つグループ・種類を持つノードと持たないノード・破線と太い線・両向きの線。凡例が無く、種類を持たないノードも高さ 24px の空の種類の行を持つ
+    notes:
+      定義: モックの `FLOW`・`DATA`・`CONFIG`（`dev/mock/refs/445/assets/samples.js`）
+  - name: Entered
+    description: 「記法の読み取り」の中へ入った。外の要素が薄く、入ったグループのタイトルがボタンでない
+    args:
+      - name: entered
+        value: lib
+  - name: Collapsed
+    description: 「データ」を閉じた。二重の枠線のノードになり、そこへの線が 1 本にまとまり、本数とラベルを出さない
+    args:
+      - name: collapsed
+        value: '["read"]'
+  - name: SelectedOne
+    description: ノードを 1 つ選んだ。そのノードとその線のほか（線の相手のノードを含む）が薄く、その線の上をデータの印が流れる
+    args:
+      - name: selected
+        value: '["mount"]'
+  - name: SelectedTwo
+    description: ノードを 2 つ選んだ。選んだノードどうしの線だけが残る
+    args:
+      - name: selected
+        value: '["mount", "marker"]'
+  - name: Focused
+    description: 案内の手順で強調した。強調するノードどうしの線の上を既定の丸と、`packet` で色と形状を変えた印が流れる
+  - name: WireReattached
+    description: 線の真ん中の区間をノードの上へ動かした。線と矢じりがノードの上の辺に付く
+  - name: NodeFitWidth
+    description: '`map.node_fit` が `width`。名前の長いノードが幅 360px まで広がってから折り返す'
+    notes:
+      定義: モックの `dev/mock/components/map-kinds/` の「長い名前のノードの広げ方」
+  - name: Narrow
+    description: 幅 390px の置き場所。図は倍率 1 のまま表示する枠の中で横にスクロールする
+lead: map の `flowchart` を自動配置した結果を、フロー図の部品の上に入れ子のグループの面を重ねて描く。グループの開閉と中へ入るボタン、ノードと線の選択・移動、強調しない要素を薄くする表示、線の上を流れるデータの印を持つ。
+args:
+  - name: layout
+    type: オブジェクト
+    required: true
+    description: 自動配置の結果（`MapLayout`。`width`・`height`・`nodes`・`groups`・`wires`）。ノードと線はフロー図の部品の定義にして描き、グループは外側から順に面とタイトルの行を重ねる
+  - name: layout.groups[].id
+    type: 文字列
+    required: true
+    description: Mermaid の `subgraph` の ID。`data-group` に入れる
+  - name: layout.groups[].title
+    type: 文字列
+    required: true
+    description: グループのタイトル。中へ入るボタンの文字にする
+  - name: layout.groups[].color
+    type: 文字列
+    required: false
+    default: なし（`--mdmark-map-group-border` の枠線だけを描く）
+    description: 補足の `layout` の色の名前。面とタイトルの文字をその色にする
+  - name: layout.nodes[].kind
+    type: オブジェクト
+    required: false
+    default: なし（種類の行を空にし、角の丸い四角で描く）
+    description: 設定の `map.kinds` のそのノードのクラスの値（`{ label, icon, shape, color }`）。フロー図の部品のノードの `style` に指定する
+  - name: layout.wires[].line
+    type: オブジェクト
+    required: false
+    default: なし（実線・太さ normal・塗りの矢じり）
+    description: 設定の `map.lines` のその線の矢印か名前の値（`{ dash, width, head, color }`）。フロー図の部品の線の `style` に指定する
+  - name: layout.wires[].merged
+    type: オブジェクトの配列
+    required: false
+    description: 閉じたグループへの線を 1 本にまとめたときの元の線（`{ from, to, label }`）。まとめた線は本数とラベルを出さず、補足の `notes` に説明を持つ元の線だけを「{元の名前} → {先の名前}：{説明}」で図のツールチップに並べる（説明を持つ元の線が無ければツールチップを付けない）
+  - name: collapsed
+    type: 配列
+    required: false
+    default: '[]'
+    description: 閉じたグループの ID。閉じたグループは、左上に開くボタンを持つ二重の枠線の 1 つのノード（`map-closed-group`）で描き、名前の後ろに中のノードの数を「ノード {数} 件」で出す
+  - name: entered
+    type: 文字列
+    required: false
+    default: なし（全体）
+    description: 中へ入ったグループの ID。そのグループの外のノード・グループ・線に class `map-faded` を付け、そのグループのタイトルをボタンでない文字にする
+  - name: selected
+    type: 配列
+    required: false
+    default: '[]'
+    description: 選んだノードの ID。選んだノードに `data-selected` を付け、`focus` より優先して強調する範囲を決める（1 つならそのノードとそのノードの線、2 つ以上なら選んだノードどうしの線）
+  - name: focus
+    type: オブジェクト
+    required: false
+    default: なし（薄くしない）
+    description: 案内・再生・線のホバーで強調するノードと線（`{ nodes, wires }`）。強調する要素に `map-focus`、ほかのノード・線・ラベルに `map-dim` を付ける
+  - name: packets
+    type: オブジェクトの配列
+    required: false
+    default: '[]'
+    description: データの印を流す線（`{ wire, direction, color, shape }`。`direction` は `forward`・`backward`・`both`、`shape` は `circle`・`square`・`diamond`）。指定している間、元から先へ繰り返し流す。`color` は色の名前か `line`・`source`・`target` で、省く・知らない値は線の色
+  - name: dragging
+    type: 文字列
+    required: false
+    default: なし
+    description: 動かしているノード・グループ・線の ID。その要素のポインターの形状を `grabbing` にし、動かしている間は配置のアニメーションを止める
+  - name: terms
+    type: オブジェクト
+    required: false
+    default: なし（下線を付けない）
+    description: 用語から意味への対応（`data-map-terms`）。ノードの名前の中の用語を `span.mdmark-term` にし、意味を図のツールチップにする。説明のツールチップの文の中の用語はフォーカスを持たない下線にし、末尾に「{用語}：{意味}」の行を並べる。グループのタイトルと線のラベルには付けない
+events:
+  - name: 開閉する
+    when: グループの左上の山形のボタンか、閉じたグループの開くボタンを押す（Shift を押しながら押すと中のグループも）
+    value: グループの ID（`data-group`）と Shift の有無
+    description: '`mount` が `collapsed` を切り替えて配置し直し、図の倍率と表示する枠の高さを保つ'
+  - name: 中へ入る
+    when: グループのタイトルのボタンを押す
+    value: グループの ID
+    description: '`mount` が `entered` をそのグループにして中だけを配置し直す'
+  - name: 選ぶ
+    when: ノードの名前の文字の外を押す（ポインターが 4px 動くまで）か、ノードにフォーカスして Enter か Space を押す。線を押す（4px 未満の動き）か、線にフォーカスして Enter を押す
+    value: ノードの ID（`data-node`）か、線の両端の ID
+    description: '`mount` が `selected` のノードを切り替える。線は、両端が選ばれていれば両方を解き、それ以外は両方を選ぶ'
+  - name: 動かす
+    when: ノード・グループのタイトルの行（上端から 36px。ボタンの外）・線の区間を 4px 以上ドラッグする。フォーカスして Alt + 矢印キーを押す（8px ずつ。Shift も押すと 32px ずつ。線は真ん中の区間を動かす）
+    value: 動かした要素の ID と動いた量（px）
+    description: '`mount` が位置を固定して配置し直し、sessionStorage に保つ。ほかのノード・グループとの間が 16px より狭くなる位置と、グループの左端・上端より外へは動かさない'
+  - name: 線を指す
+    when: 線にポインターを乗せるかフォーカスする。離す
+    value: 線の ID
+    description: '`mount` がその線と両端のノードを `focus` にし、その線に `packets` を流す。離すと元に戻す'
+css_properties:
+  - name: --mdmark-map-dim-opacity
+    syntax: <number>
+    default: '0.25'
+    description: 強調しないノード・線・ラベルの `opacity`
+  - name: --mdmark-map-group-border
+    syntax: <color>
+    default: color-mix(in srgb, var(--mdmark-color-muted) 70%, transparent)
+    description: 色を持たないグループの枠線の色
+uses:
+  - component: dev/設計書/部品設計/フロー図.ts#
+    how: ノードと線、線の交差の飛び越え
+  - component: dev/設計書/部品設計/図のツールチップ.ts#
+    how: 置き場所の無い線のラベル・補足の `notes`・まとめた線の元の線
+  - component: dev/設計書/部品設計/アイコン.ts#
+    how: ノードの種類の行の Lucide のアイコンと、開閉の山形
+accessibility:
+  - グループの開閉のボタンは `aria-expanded` と `aria-label="{タイトル}を開く"`（開いているときは `閉じる`）を持つ。タイトルのボタンは `aria-label="{タイトル}の中へ入る"` を持つ
+  - ノードは `tabindex="0"`・`aria-roledescription="ノード"`・`aria-keyshortcuts="Enter Space Alt+ArrowLeft Alt+ArrowUp Alt+ArrowDown Alt+ArrowRight"` を持ち、選んだかを `data-selected` と、スクリーンリーダー向けの名前の末尾の `（選択中）` で伝える（`div` に `aria-pressed` は付けない）
+  - 線は押せる帯（`map-wire-hit`）が `tabindex="0"` と `aria-label="{元}から{先}への線"`（ラベルがあれば末尾に `「{ラベル}」`）を持ち、ポインターの形状は区間の向きで `ns-resize` か `ew-resize`
+  - 'ノードの名前の文字は選んでコピーでき（ポインターの形状は `text`）、種類の行の文字は選べない（`user-select: none`）。ドラッグできる場所のポインターの形状は `grab`'
+  - 強調は薄くするだけで色を変えず、データの印は `aria-hidden`。読者が始めた印は `prefers-reduced-motion` でも流し、配置し直したときのノードとグループの移動は止める
+  - 色を持たないグループの枠線は背景とのコントラスト比 3:1 以上
+refs:
+  - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#
+status: planned
+introduced:
+  pr: 445
+test_file: tests/integration/lib/map-flow.story.test.ts

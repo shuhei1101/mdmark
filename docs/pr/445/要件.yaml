@@ -1,0 +1,182 @@
+use_cases:
+  - kind: single
+    scenario: dev/設計書/シナリオ/単一ユースケース/mermaidの図を描く.yaml
+    impact: changed
+    detail: map のマーカーの範囲の中の mermaid のブロックは、mermaid のライブラリで描く図にしない
+    depends_on: []
+  - kind: single
+    scenario: dev/設計書/シナリオ/単一ユースケース/設定と索引を点検する.yaml
+    impact: changed
+    detail: map の補足の書き間違い・指すノードの無い参照・補足の値の -- を、点検で知らせる
+    depends_on: []
+  - kind: single
+    scenario: dev/設計書/シナリオ/単一ユースケース/文字列とYAMLのキーの記法を点検する.yaml
+    impact: changed
+    detail: 描いたときの map の書き方の警告を、文字列の点検でも同じく受け取る
+    depends_on: []
+  - kind: single
+    scenario: dev/設計書/シナリオ/単一ユースケース/機能のオン・オフを文書で上書きする.yaml
+    impact: changed
+    detail: 設定と文書の印で、map の図をオン・オフする
+    depends_on: []
+  - kind: single
+    scenario: dev/設計書/シナリオ/単一ユースケース/図を描く.yaml
+    impact: run_only
+    detail: 座標で書いたフロー図・シーケンス図は変わらないが、図の枠と凡例を map と共通にし、シーケンス図の部品に複合フラグメント・注記・活性化・矢印の種類・まとまりの描き方を追加するため壊しうる。図の枠のリサイズハンドルが、枠線の無い下端の帯と横の 2 本線のアイコンに変わる
+    depends_on: []
+  - kind: single
+    scenario: dev/設計書/シナリオ/単一ユースケース/図を拡大・縮小・移動する.yaml
+    impact: changed
+    detail: 全ての図で、リサイズハンドルを枠線の無い下端の帯と横の 2 本線のアイコンにし、高さの上限を外し、ダブルクリックで倍率を変えずに図の全体が収まる高さに合わせる（今は定義から決まる高さに戻し、倍率も変わる）
+    depends_on: []
+  - kind: single
+    scenario: dev/設計書/シナリオ/単一ユースケース/図の要素のツールチップを確認する.yaml
+    impact: run_only
+    detail: 図のツールチップを map の補足の説明でも使うため壊しうる
+    depends_on: []
+  - kind: single
+    scenario: dev/設計書/シナリオ/単一ユースケース/用語の意味をツールチップで確認する.yaml
+    impact: run_only
+    detail: 用語の下線を map のラベルと説明にも付けるため壊しうる
+    depends_on: []
+  - kind: single
+    scenario: dev/設計書/シナリオ/単一ユースケース/文書をHTMLに書き出す.yaml
+    impact: run_only
+    detail: 書き出した 1 枚の HTML でも map を描くため壊しうる
+    depends_on: []
+  - kind: composite
+    scenario: dev/設計書/シナリオ/複合ユースケース/固有の部品で図の文書を描いて確認する.yaml
+    impact: run_only
+    detail: 図の文書の描き方と操作を map と共通にするため壊しうる
+    depends_on: []
+  - kind: composite
+    scenario: dev/設計書/シナリオ/複合ユースケース/Mermaidと補足で書いた図を辿って読む.yaml
+    impact: new
+    detail: 文書の作成者が Mermaid と補足で図を記載して点検し、読者が描いた図をグループの中へ入る・開閉・巡回・シーケンスの再生で辿る
+    depends_on: []
+  - kind: single
+    scenario: dev/設計書/シナリオ/単一ユースケース/Mermaidと補足で図を描く.yaml
+    impact: new
+    detail: map の範囲の Mermaid と補足を、入れ子のグループを自動配置した図に描き、補足の layout で配置と見た目を上書きする。構成図の 3 層とシーケンス図も描く。印の引数と補足は A-128 の構成の JSON のオブジェクトで、知らないキーは無視して点検が通知する
+    depends_on:
+      - dev/設計書/シナリオ/複合ユースケース/Mermaidと補足で書いた図を辿って読む.yaml
+  - kind: single
+    scenario: dev/設計書/シナリオ/単一ユースケース/図のグループの中へ入る・開閉する.yaml
+    impact: new
+    detail: 読者がグループの中へ入って戻るボタンか Esc で戻り、グループを閉じて中への線をまとめた件数とツールチップの元の線で見る。開閉と中へ入った状態は描き直しても保つ
+    depends_on:
+      - dev/設計書/シナリオ/複合ユースケース/Mermaidと補足で書いた図を辿って読む.yaml
+  - kind: single
+    scenario: dev/設計書/シナリオ/単一ユースケース/図を巡回する.yaml
+    impact: new
+    detail: 読者が案内の手順を前へ・次へで進め、手順ごとのグループ・強調と説明を読む
+    depends_on:
+      - dev/設計書/シナリオ/複合ユースケース/Mermaidと補足で書いた図を辿って読む.yaml
+  - kind: single
+    scenario: dev/設計書/シナリオ/単一ユースケース/シーケンスを構成図の上で再生する.yaml
+    impact: new
+    detail: 読者がシーケンス図を、同じノードを持つ構成図の上で 1 通ずつ、手で、または選んだ間隔で自動で進めて読む。今のメッセージの線の印は再生している間繰り返し動き、動きを減らす設定では強調と文だけを出す
+    depends_on:
+      - dev/設計書/シナリオ/複合ユースケース/Mermaidと補足で書いた図を辿って読む.yaml
+  - kind: single
+    scenario: dev/設計書/シナリオ/単一ユースケース/シーケンス図の参加者を選んで強調する.yaml
+    impact: new
+    detail: 読者が map のシーケンス図の参加者を選んでメッセージとライフラインを強調し、参加者の表示と非表示・並び順を変える（#404 を取り込む）
+    depends_on:
+      - dev/設計書/シナリオ/複合ユースケース/Mermaidと補足で書いた図を辿って読む.yaml
+docs:
+  - page: docs/使用方法/図を描く/Mermaidと補足で図を描く.md
+    new: true
+    change: map のマーカー・Mermaid のブロック・補足の記載方法と、配置と色の上書き・巡回・再生の書き方の手順を新設する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-10T16:56:41.862556+00:00'
+  - page: docs/使用方法/図を描く/index.yaml
+    new: false
+    change: 新設する『Mermaidと補足で図を描く』の行を追加する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-10T16:56:41.862556+00:00'
+  - page: docs/使用方法/図を描く/図を描く.md
+    new: false
+    change: 新しく図を書くときは map を使う案内を追加する（flow・sequence の記載方法は残す）
+    status: done
+  - page: docs/はじめに/コアコンセプト/図を自動配置して辿る仕組み.md
+    new: true
+    change: 印の引数・Mermaid・補足の役割の分け方、入れ子の自動配置と上書き、今のフロー図・シーケンス図の部品で描く流れ、中へ入る・開閉で配置し直す流れを新設する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-10T16:56:41.862556+00:00'
+  - page: docs/はじめに/コアコンセプト/index.yaml
+    new: false
+    change: 新設する『図を自動配置して辿る仕組み』の行を追加する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-10T16:56:41.862556+00:00'
+  - page: docs/リファレンス/CLI.md
+    new: false
+    change: 点検のずれの種類に map の 7 種類（map_invalid・map_unknown_ref・map_unknown_key・map_invalid_value・map_unknown_icon・map_unknown_class・map_unknown_line）を追加する
+    status: done
+  - page: docs/リファレンス/記法.md
+    new: false
+    change: map のマーカーと引数・補足の JSON のキー・マーカーに対応しない表示での見え方を追加する（見出しのアンカーは `#map`）
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-10T16:56:41.862556+00:00'
+  - page: docs/リファレンス/構成図の決まり.md
+    new: false
+    change: 入れ子は 2 レイヤーまでを推奨し、深いものは別の図に切り出してリンクする決まりと、map の図は凡例を出さないこと・層は役割ごとのグループで表すこと・色の重なり・枠のタイトルの位置の決まりと、グループにするかの判定フローチャート（層をグループで描く例を含む）を追加する（#309、ユーザーの依頼）
+    status: done
+  - page: docs/リファレンス/設定.md
+    new: false
+    change: features の map と、map.node_fit（長い名前のノードの広げ方）・map.url_state（クエリ文字列に保つか）・map.kinds（ノードの種類）・map.lines（線の種類）のキー・既定・許す値を追加する
+    status: done
+  - page: docs/リファレンス/用語集.md
+    new: false
+    change: map・補足・自動配置・中へ入る・開閉・巡回・シーケンスの再生の用語を追加する（補足は HTML コメントに記載する JSON のオブジェクト）
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-10T16:56:41.862556+00:00'
+  - page: guide/index.yaml
+    new: false
+    change: 使い方集の索引に『Mermaidと補足で図を描く』を追加し、diagrams・architecture-style の行の概要を map に合わせる（architecture-style はグループにするかの判定フローチャートを含むことを書く）
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-10T16:56:41.862556+00:00'
+scope_out:
+  - item: A-35 の No 10〜17（状態遷移の再生・ER 図と結合・マインドマップ・確度のマーカー・変更の表示・環境とシナリオ・書き出し・一覧の表示）と、stateDiagram-v2・erDiagram・mindmap の map での描画
+    reason: 未検討で Issue の範囲に含めない（この PR ではこれらの種類を書き方の警告にする）
+    plan: '#465'
+  - item: flow・sequence の定義を map へ変換するスクリプトと、flow・sequence の廃止（変換できる旨の書き方の警告を含む）
+    reason: A-38 の「廃止の進め方」で map を追加した後の手順にあたる
+    plan: '#467'
+  - item: 純粋な Markdown への書き出しでの map の変換
+    reason: この PR で補足の書式を確定させた後に作る
+    plan: '#313'
+  - item: 既存の文書の図を map へ移行する
+    reason: この PR の完了後に各リポジトリの Issue で行う
+    plan: '#290'
+  - item: VS Code 拡張機能のプレビューでの map の確認
+    reason: プレビューは配布物の mount で描くため、ライブラリ本体の変更でそのまま描ける。拡張機能のコードは変更しない
+    plan: none
+  - item: map の印の引数 `mode`（boxes・layers・list の見せ方の切り替え）
+    reason: list は A-35 の No 17（一覧の表示）でこの PR の範囲の外。層は補足の layout で指定し、入れ子のグループは既定の描き方になるため、切り替える先が無い
+    plan: '#468'
+  - item: A-35 の No 6（ノードのページ）と No 7（視点の切り替え）、図の中の段のパンくず
+    reason: モックの確認でユーザーが不要と判断した（ノードの文はそのままコピーしたい、視点の絞り込みは使わない）
+    plan: none
+  - item: '今の `sequence`（座標の JSON のシーケンス図）での #404 の参加者の強調・表示と並び順'
+    reason: A-38 の進め方で map へ移行してから `sequence` を廃止するため、新しい操作は map のシーケンス図にだけ追加する
+    plan: none
+  - item: 390x844 で右側の目次の今の項目の文字（span.mdmark-side-toc-current）が枠から 134px はみ出す
+    reason: reviewer の対象外の逸脱の報告（https://github.com/shuhei1101/mdmark/pull/445#discussion_r4521111705 ）。部品『右側の目次』の既存の見え方で、map の変更とは別
+    plan: '#469'
+  - item: 今の `flow`・`sequence`・判定フローチャートの固定のノードの種類（LLM・意思決定モデル・スクリプト・MCP・データ・外部など）と線の名前（読み込む・書き込むなど）・構成図の 3 層（LLM・処理・データ）を、使う側の設定で作る形にする。ほかの部品にも同じく分野に寄った固定の語が無いかを洗い出す
+    reason: ユーザーの指摘（mdmark は汎用のライブラリで、分野に寄った語を固定しない。https://github.com/shuhei1101/mdmark/pull/445#discussion_r4521156220 ）。map は種類を持たない形で作り、今の部品は A-38 の進め方で map へ移行した後に廃止するため、この PR では変更しない
+    plan: '#470'
+  - item: plugin/files.yaml の 28 行目の description が、バッククォートで始まる引用の無い値で YAML として読めず、dev-docs の配信から外れている
+    reason: develop から既にある記載の誤りで、map の変更とは別
+    plan: '#413'
+  - item: A-35 の No 13〜17（確度のマーカー・変更の表示・環境とシナリオ・書き出し・一覧の表示）
+    reason: '未検討で Issue の範囲に含めない。No 10〜12 と stateDiagram-v2・erDiagram・mindmap は #465 が扱う'
+    plan: '#471'

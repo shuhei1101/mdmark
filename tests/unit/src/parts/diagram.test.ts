@@ -731,7 +731,7 @@ test("test_render_diagram_frame_when_resizable", async () => {
   expect(handle).toContain('tabindex="0"');
   expect(handle).toContain('aria-label="「問い合わせの流れ」の表示の高さ"');
   expect(outerHtml(omitted, 'class="mdmark-diagram-resize"')).toContain(
-    iconSvg("grip-horizontal"),
+    iconSvg("equal"),
   );
   expect(off).not.toContain("mdmark-diagram-resize");
   expect(modal).not.toContain("mdmark-diagram-resize");
@@ -778,6 +778,63 @@ test("test_render_diagram_frame_when_mermaid", async () => {
     /<figcaption[^>]*>([\s\S]*?)<\/figcaption>/.exec(html)?.[1] ?? "";
   expect(plainText(caption).trim()).toBe("問い合わせの受付");
   expect(caption).not.toContain("<time");
+});
+
+// 種類 map の枠（正常系）
+test("test_render_diagram_frame_when_map", async () => {
+  // 準備
+  const { renderDiagramFrame } = await loadDiagram();
+  const tools = ["back", "expandAll", "collapseAll", "reset"].map((name) => ({
+    name,
+    label: name,
+    disabled: name === "back",
+  }));
+  const frame = {
+    kind: "map" as const,
+    title: "全体の構成",
+    legend: [],
+    wide: true,
+    tools,
+    id: "d1",
+  };
+  // 実行
+  const html = renderDiagramFrame(frame, BODY);
+  // 検証
+  const caption =
+    /<figcaption[^>]*>([\s\S]*?)<\/figcaption>/.exec(html)?.[1] ?? "";
+  expect(plainText(caption).trim()).toBe("全体の構成");
+  expect(html).not.toContain("<time");
+  expect(findTag(html, "<figure")).toContain('data-wide="true"');
+  const toolbar =
+    /<div[^>]*class="mdmark-diagram-tools"[^>]*>([\s\S]*)/.exec(html)?.[1] ??
+    "";
+  const names = matches(toolbar, /aria-label="([^"]+)"/g)
+    .slice(0, 4)
+    .map((item) => item.replace(/^aria-label="|"$/g, ""));
+  expect(names).toEqual(["back", "expandAll", "collapseAll", "reset"]);
+});
+
+// リサイズハンドルの帯（正常系）
+test("test_render_diagram_frame_when_resize_strip", async () => {
+  // 準備
+  const { renderDiagramFrame } = await loadDiagram();
+  const frame = {
+    kind: "flow" as const,
+    title: "図",
+    legend: [],
+    resizable: true,
+    id: "d1",
+  };
+  // 実行
+  const html = renderDiagramFrame(frame, BODY);
+  // 検証
+  const handle =
+    /<div[^>]*class="mdmark-diagram-resize"[^>]*>([\s\S]*?)<\/div>/.exec(html);
+  expect(handle).not.toBeNull();
+  expect(html.indexOf("mdmark-diagram-resize")).toBeGreaterThan(
+    html.indexOf("mdmark-diagram-viewport"),
+  );
+  expect(handle?.[1]).toContain(iconSvg("equal"));
 });
 
 // 枠と層の hint のマーカーと留める範囲を配置する（正常系）

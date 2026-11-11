@@ -8,7 +8,8 @@ import { envOf, ownBlock } from "./tokens.ts";
 export type WarningKind =
   | "diagram_invalid"
   | "syntax_warning"
-  | "unknown_mark_arg";
+  | "unknown_mark_arg"
+  | "map";
 
 /** 記法のマーカーの知らない種類・`+機能`・`-機能`・キー・指定の単語 1 つと、そのマーカーで使用できるもの */
 export type SkippedArg = {
@@ -29,7 +30,7 @@ export type SyntaxWarning = {
   /** 枠の `id` */
   id?: string;
   /** 警告の種類（省くと `syntax_warning`） */
-  kind?: "diagram_invalid" | "syntax_warning";
+  kind?: "diagram_invalid" | "syntax_warning" | "map";
   /** 警告の元のマーカーのトークンの `map[0]`（マーカーのトークンを持たない警告は省く） */
   line?: number;
   /** include のマーカーの取り込み先が無い警告か（`mdmark check --text`・`--file` が除く） */

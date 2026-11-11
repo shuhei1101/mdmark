@@ -28,5 +28,5 @@
 | [ビューとコメント.ts](./ビューとコメント.ts.yaml) | ビューとコメントの部品を別の配布ファイルに分け、使用するときだけ読み込む処理と、mountView・mountComments・部品の HTML |
 | [検査.ts](./検査.ts.yaml) | Webview に適用する ESLint の設定・検査の npm scripts |
 | [設定を重ねて読み込む.ts](./設定を重ねて読み込む.ts.yaml) | 端末の設定と上のフォルダの mdmark.config.yaml を探して重ね、CLI・MCP・VS Code 拡張機能が共に呼ぶ処理 |
-
+| [map](./map/) | map の範囲の Mermaid と補足の読み取り・入れ子の自動配置・点検と、dist/map.js に分けた描画と操作 |
 <!-- /table -->

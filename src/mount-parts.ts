@@ -4,6 +4,7 @@ import {
   type MdmarkCommentStore,
   type MdmarkCommentsHandle,
 } from "./comments/spec.ts";
+import type { ResolvedConfig } from "./config.ts";
 import { openEnclosing } from "./interact/sections.ts";
 import { loadPartModule, type PartName } from "./part-modules.ts";
 import { renderNotice } from "./parts/notice.ts";
@@ -164,6 +165,8 @@ export function attachParts(options: {
   isCurrent: () => boolean;
   /** `mount` ごとに記録する、読み込みと保存の関数が無いことを出したか */
   warned: PartsWarned;
+  /** 既定を当てた設定（map の図が使う） */
+  config?: ResolvedConfig | undefined;
 }): PartsHandle {
   const { root, features, commentStore, docId, isCurrent, warned } = options;
   const detachers: Array<() => void> = [];
@@ -194,6 +197,18 @@ export function attachParts(options: {
         }
       })
       .catch((error: unknown) => report("view", error));
+  }
+  const { config } = options;
+  if (
+    features.map === true &&
+    config !== undefined &&
+    root.querySelector("div.mdmark-map")
+  ) {
+    loadPartModule("map")
+      .then(({ module }) => {
+        if (active()) detachers.push(module.attachMap(root, config));
+      })
+      .catch((error: unknown) => report("map", error));
   }
   if (features.comments === true) {
     if (commentStore === undefined || docId === undefined) {

@@ -1,0 +1,121 @@
+# 単体テスト作成の lint。Biome と ESLint の違反は無い。型検査の違反は全て、まだ無い実装（src/map/・parts/map.ts の関数と型、resolveMapConfig・usesMap・checkMaps、図の枠の wide・tools と equal のアイコン、attachDiagramResize の fit、clampDiagramHeight の 1 引数、MdmarkConfig の map）によるもの
+# 回したコードの commit: c8345fad
+$ (rc=0; npm run lint || rc=1; npm run lint:eslint || rc=1; npm run typecheck || rc=1; npm --prefix vscode run typecheck || rc=1; exit $rc)
+
+> lint
+> biome check .
+
+plugin/bin/setup.js check ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  ! The size of the file is 1.5 MiB, which exceeds the configured maximum of 1.0 MiB for this project.
+    Use the `files.maxSize` configuration to change the maximum size of files processed, or `files.includes` to ignore the file.
+  
+
+Checked 923 files in 6s. No fixes applied.
+Found 1 warning.
+
+> lint:eslint
+> node scripts/eslint.ts
+
+
+> typecheck
+> tsc --noEmit
+
+tests/unit/src/cli/check.test.ts(805,11): error TS2339: Property 'checkMaps' does not exist on type 'typeof import("/mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-diagram-map-mermaid-auto-layout/src/cli/check")'.
+tests/unit/src/cli/check.test.ts(819,22): error TS7006: Parameter 'issue' implicitly has an 'any' type.
+tests/unit/src/cli/check.test.ts(824,24): error TS7006: Parameter 'issue' implicitly has an 'any' type.
+tests/unit/src/cli/check.test.ts(827,23): error TS7006: Parameter 'issue' implicitly has an 'any' type.
+tests/unit/src/cli/check.test.ts(835,11): error TS2339: Property 'checkMaps' does not exist on type 'typeof import("/mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-diagram-map-mermaid-auto-layout/src/cli/check")'.
+tests/unit/src/cli/embed.test.ts(587,11): error TS2339: Property 'usesMap' does not exist on type 'typeof import("/mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-diagram-map-mermaid-auto-layout/src/cli/embed")'.
+tests/unit/src/cli/embed.test.ts(603,11): error TS2339: Property 'usesMap' does not exist on type 'typeof import("/mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-diagram-map-mermaid-auto-layout/src/cli/embed")'.
+tests/unit/src/config.test.ts(376,11): error TS2339: Property 'resolveMapConfig' does not exist on type 'typeof import("/mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-diagram-map-mermaid-auto-layout/src/config")'.
+tests/unit/src/config.test.ts(391,11): error TS2339: Property 'resolveMapConfig' does not exist on type 'typeof import("/mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-diagram-map-mermaid-auto-layout/src/config")'.
+tests/unit/src/diagram/geometry.test.ts(139,48): error TS2554: Expected 2 arguments, but got 1.
+tests/unit/src/interact/diagram-resize.browser.test.ts(39,5): error TS2353: Object literal may only specify known properties, and 'fit' does not exist in type '{ viewport: HTMLElement; handle: HTMLElement; key: string; storage: Storage | null; max: () => number; reset: () => number; onResize: (height: number | null) => void; }'.
+tests/unit/src/map/band.browser.test.ts(5,31): error TS2307: Cannot find module '../../../../src/map/band.ts' or its corresponding type declarations.
+tests/unit/src/map/band.browser.test.ts(43,13): error TS7006: Parameter 'step' implicitly has an 'any' type.
+tests/unit/src/map/band.browser.test.ts(49,15): error TS7006: Parameter '_target' implicitly has an 'any' type.
+tests/unit/src/map/band.browser.test.ts(49,24): error TS7006: Parameter 'onEnter' implicitly has an 'any' type.
+tests/unit/src/map/check.test.ts(5,32): error TS2307: Cannot find module '../../../../src/map/check.ts' or its corresponding type declarations.
+tests/unit/src/map/check.test.ts(44,31): error TS7006: Parameter 'problem' implicitly has an 'any' type.
+tests/unit/src/map/check.test.ts(62,31): error TS7006: Parameter 'problem' implicitly has an 'any' type.
+tests/unit/src/map/check.test.ts(89,24): error TS7006: Parameter 'problem' implicitly has an 'any' type.
+tests/unit/src/map/check.test.ts(104,24): error TS7006: Parameter 'problem' implicitly has an 'any' type.
+tests/unit/src/map/check.test.ts(124,24): error TS7006: Parameter 'problem' implicitly has an 'any' type.
+tests/unit/src/map/check.test.ts(139,24): error TS7006: Parameter 'problem' implicitly has an 'any' type.
+tests/unit/src/map/check.test.ts(164,23): error TS7006: Parameter 'problem' implicitly has an 'any' type.
+tests/unit/src/map/data.test.ts(5,31): error TS2307: Cannot find module '../../../../src/map/data.ts' or its corresponding type declarations.
+tests/unit/src/map/data.test.ts(66,24): error TS7006: Parameter 'problem' implicitly has an 'any' type.
+tests/unit/src/map/data.test.ts(79,24): error TS7006: Parameter 'problem' implicitly has an 'any' type.
+tests/unit/src/map/drag.browser.test.ts(5,31): error TS2307: Cannot find module '../../../../src/map/drag.ts' or its corresponding type declarations.
+tests/unit/src/map/drag.browser.test.ts(122,16): error TS7006: Parameter 'state' implicitly has an 'any' type.
+tests/unit/src/map/flow-view.browser.test.ts(7,35): error TS2307: Cannot find module '../../../../src/map/flow-view.ts' or its corresponding type declarations.
+tests/unit/src/map/flow-view.browser.test.ts(8,31): error TS2307: Cannot find module '../../../../src/map/spec.ts' or its corresponding type declarations.
+tests/unit/src/map/flow-view.browser.test.ts(38,31): error TS2353: Object literal may only specify known properties, and 'map' does not exist in type 'MdmarkConfig'.
+tests/unit/src/map/flowchart.test.ts(5,36): error TS2307: Cannot find module '../../../../src/map/flowchart.ts' or its corresponding type declarations.
+tests/unit/src/map/flowchart.test.ts(19,36): error TS7006: Parameter 'node' implicitly has an 'any' type.
+tests/unit/src/map/flowchart.test.ts(25,29): error TS7006: Parameter 'group' implicitly has an 'any' type.
+tests/unit/src/map/flowchart.test.ts(30,28): error TS7006: Parameter 'node' implicitly has an 'any' type.
+tests/unit/src/map/flowchart.test.ts(46,27): error TS7006: Parameter 'node' implicitly has an 'any' type.
+tests/unit/src/map/flowchart.test.ts(63,27): error TS7006: Parameter 'edge' implicitly has an 'any' type.
+tests/unit/src/map/flowchart.test.ts(79,27): error TS7006: Parameter 'edge' implicitly has an 'any' type.
+tests/unit/src/map/flowchart.test.ts(94,27): error TS7006: Parameter 'edge' implicitly has an 'any' type.
+tests/unit/src/map/flowchart.test.ts(109,28): error TS7006: Parameter 'group' implicitly has an 'any' type.
+tests/unit/src/map/index.browser.test.ts(7,30): error TS2307: Cannot find module '../../../../src/map/index.ts' or its corresponding type declarations.
+tests/unit/src/map/index.browser.test.ts(23,60): error TS2353: Object literal may only specify known properties, and 'map' does not exist in type 'MdmarkConfig'.
+tests/unit/src/map/layout.test.ts(5,33): error TS2307: Cannot find module '../../../../src/map/layout.ts' or its corresponding type declarations.
+tests/unit/src/map/layout.test.ts(6,36): error TS2307: Cannot find module '../../../../src/map/flowchart.ts' or its corresponding type declarations.
+tests/unit/src/map/layout.test.ts(62,18): error TS7006: Parameter 'node' implicitly has an 'any' type.
+tests/unit/src/map/layout.test.ts(63,19): error TS7006: Parameter 'node' implicitly has an 'any' type.
+tests/unit/src/map/layout.test.ts(65,18): error TS7006: Parameter 'group' implicitly has an 'any' type.
+tests/unit/src/map/layout.test.ts(66,19): error TS7006: Parameter 'group' implicitly has an 'any' type.
+tests/unit/src/map/layout.test.ts(85,36): error TS7006: Parameter 'group' implicitly has an 'any' type.
+tests/unit/src/map/layout.test.ts(101,30): error TS7006: Parameter 'group' implicitly has an 'any' type.
+tests/unit/src/map/layout.test.ts(105,24): error TS7006: Parameter 'node' implicitly has an 'any' type.
+tests/unit/src/map/layout.test.ts(108,6): error TS7006: Parameter 'wire' implicitly has an 'any' type.
+tests/unit/src/map/layout.test.ts(110,30): error TS7006: Parameter 'wire' implicitly has an 'any' type.
+tests/unit/src/map/layout.test.ts(112,25): error TS7006: Parameter 'wire' implicitly has an 'any' type.
+tests/unit/src/map/layout.test.ts(127,42): error TS7006: Parameter 'node' implicitly has an 'any' type.
+tests/unit/src/map/layout.test.ts(128,35): error TS7006: Parameter 'group' implicitly has an 'any' type.
+tests/unit/src/map/layout.test.ts(129,29): error TS2339: Property 'x' does not exist on type '{}'.
+tests/unit/src/map/layout.test.ts(130,29): error TS2339: Property 'y' does not exist on type '{}'.
+tests/unit/src/map/layout.test.ts(141,29): error TS7006: Parameter 'node' implicitly has an 'any' type.
+tests/unit/src/map/layout.test.ts(159,35): error TS7006: Parameter 'item' implicitly has an 'any' type.
+tests/unit/src/map/layout.test.ts(174,32): error TS7006: Parameter 'node' implicitly has an 'any' type.
+tests/unit/src/map/layout.test.ts(176,6): error TS7006: Parameter 'item' implicitly has an 'any' type.
+tests/unit/src/map/layout.test.ts(197,39): error TS7006: Parameter 'item' implicitly has an 'any' type.
+tests/unit/src/map/sequence-rows.test.ts(5,31): error TS2307: Cannot find module '../../../../src/map/sequence-rows.ts' or its corresponding type declarations.
+tests/unit/src/map/sequence-rows.test.ts(6,35): error TS2307: Cannot find module '../../../../src/map/sequence.ts' or its corresponding type declarations.
+tests/unit/src/map/sequence-rows.test.ts(18,53): error TS7006: Parameter 'item' implicitly has an 'any' type.
+tests/unit/src/map/sequence-rows.test.ts(29,30): error TS7006: Parameter 'row' implicitly has an 'any' type.
+tests/unit/src/map/sequence-rows.test.ts(44,30): error TS7006: Parameter 'row' implicitly has an 'any' type.
+tests/unit/src/map/sequence-rows.test.ts(45,38): error TS7006: Parameter 'row' implicitly has an 'any' type.
+tests/unit/src/map/sequence-rows.test.ts(55,30): error TS7006: Parameter 'row' implicitly has an 'any' type.
+tests/unit/src/map/sequence-view.browser.test.ts(7,39): error TS2307: Cannot find module '../../../../src/map/sequence-view.ts' or its corresponding type declarations.
+tests/unit/src/map/sequence-view.browser.test.ts(8,31): error TS2307: Cannot find module '../../../../src/map/spec.ts' or its corresponding type declarations.
+tests/unit/src/map/sequence-view.browser.test.ts(38,33): error TS2353: Object literal may only specify known properties, and 'map' does not exist in type 'MdmarkConfig'.
+tests/unit/src/map/sequence.test.ts(5,35): error TS2307: Cannot find module '../../../../src/map/sequence.ts' or its corresponding type declarations.
+tests/unit/src/map/sequence.test.ts(14,37): error TS7006: Parameter 'item' implicitly has an 'any' type.
+tests/unit/src/map/sequence.test.ts(22,34): error TS7006: Parameter 'item' implicitly has an 'any' type.
+tests/unit/src/map/sequence.test.ts(53,33): error TS7006: Parameter 'message' implicitly has an 'any' type.
+tests/unit/src/map/sequence.test.ts(67,42): error TS7006: Parameter 'section' implicitly has an 'any' type.
+tests/unit/src/map/sequence.test.ts(80,33): error TS7006: Parameter 'problem' implicitly has an 'any' type.
+tests/unit/src/map/spec.test.ts(4,31): error TS2307: Cannot find module '../../../../src/map/spec.ts' or its corresponding type declarations.
+tests/unit/src/map/spec.test.ts(56,31): error TS7006: Parameter 'problem' implicitly has an 'any' type.
+tests/unit/src/map/spec.test.ts(69,31): error TS7006: Parameter 'problem' implicitly has an 'any' type.
+tests/unit/src/map/state.test.ts(5,32): error TS2307: Cannot find module '../../../../src/map/state.ts' or its corresponding type declarations.
+tests/unit/src/parts/diagram.test.ts(801,35): error TS2345: Argument of type '{ kind: "map"; title: string; legend: never[]; wide: boolean; tools: { name: string; label: string; disabled: boolean; }[]; id: string; }' is not assignable to parameter of type 'DiagramFrame'.
+  Types of property 'kind' are incompatible.
+    Type '"map"' is not assignable to type '"chart" | "er" | "flow" | "mermaid" | "sequence"'.
+tests/unit/src/parts/diagram.test.ts(837,41): error TS2345: Argument of type '"equal"' is not assignable to parameter of type '"arrow-down" | "arrow-right" | "arrow-up" | "arrow-up-to-line" | "bot" | "check" | "chevron-down" | "chevron-left" | "chevron-right" | "chevron-up" | "chevrons-down-up" | "chevrons-up-down" | ... 46 more ... | "x"'.
+tests/unit/src/parts/map.test.ts(6,32): error TS2307: Cannot find module '../../../../src/parts/map.ts' or its corresponding type declarations.
+tests/unit/src/parts/map.test.ts(7,33): error TS2307: Cannot find module '../../../../src/map/layout.ts' or its corresponding type declarations.
+tests/unit/src/parts/map.test.ts(8,36): error TS2307: Cannot find module '../../../../src/map/flowchart.ts' or its corresponding type declarations.
+tests/unit/src/parts/map.test.ts(9,35): error TS2307: Cannot find module '../../../../src/map/sequence.ts' or its corresponding type declarations.
+tests/unit/src/parts/map.test.ts(10,31): error TS2307: Cannot find module '../../../../src/map/sequence-rows.ts' or its corresponding type declarations.
+tests/unit/src/parts/map.test.ts(64,39): error TS7006: Parameter 'item' implicitly has an 'any' type.
+
+> mdmark-vscode@0.1.0 typecheck
+> tsc --noEmit
+
+exit=1

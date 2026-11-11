@@ -1,0 +1,89 @@
+tasks:
+  - process: 初期構築
+    status: skipped
+    reason: 既存のリポジトリのため対象外
+    updated_by: planner
+    updated_at: '2026-11-09T00:58:26.045345+00:00'
+  - process: リバースエンジニアリング
+    status: skipped
+    reason: 既存の設計書があるため対象外
+    updated_by: planner
+    updated_at: '2026-11-09T00:58:26.045345+00:00'
+  - process: 方針決め
+    status: skipped
+    reason: 方針決めを依頼する Issue ではないため対象外
+    updated_by: planner
+    updated_at: '2026-11-09T00:58:26.045345+00:00'
+  - process: PoC 検証
+    status: done
+    note: 入れ子の箱の自動配置と配置し直し（入れ子 2 レイヤー・ノード 30 個）と、Mermaid の flowchart・sequenceDiagram の読み取りを、独自の実装で確かめる
+    updated_by: planner
+    updated_at: '2026-11-09T01:34:13.208519+00:00'
+  - process: 複合ユースケース設計
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-09T01:52:04.396700+00:00'
+  - process: デザインスタイル選定
+    status: skipped
+    reason: デザイン方針があり、Issue は文書全体の見た目の方向を変えない。map の見た目はモック作成で決める
+    updated_by: planner
+    updated_at: '2026-11-09T00:58:26.045345+00:00'
+  - process: 画面一覧・画面遷移
+    status: done
+    note: 図の中の表示（全体・箱の中・ノードのページ）と、中へ入る・パンくず・視点・巡回・再生による移り方
+    updated_by: planner
+    updated_at: '2026-11-09T03:09:38.574729+00:00'
+  - process: 単一ユースケース設計
+    status: done
+    note: 印の引数を JSON のオブジェクトにする要件の書き足しを反映した（ed026a22）
+    updated_by: planner
+    updated_at: '2026-11-10T14:23:57.551151+00:00'
+  - process: モック作成
+    status: done
+    note: dev/mock/pages/document/445/a-map/ と dev/mock/components/map-kinds/ のモックにユーザーが合意した（グループのドラッグとクエリ文字列の状態を含む）
+    updated_by: planner
+    updated_at: '2026-11-10T12:30:23.754931+00:00'
+  - process: インターフェース定義設計
+    status: done
+    note: 補足を JSON のオブジェクトにする要件の書き足しを反映した（d9c1ccec）
+    updated_by: planner
+    updated_at: '2026-11-10T15:48:56.781266+00:00'
+  - process: 部品設計
+    status: done
+    note: mapの構成図・mapのシーケンス図・案内の帯を新設し、図の枠・フロー図・シーケンス図・図のツールチップに map の分を足した（9716197f）
+    updated_by: planner
+    updated_at: '2026-11-10T13:18:02.402100+00:00'
+  - process: 画面設計
+    status: done
+    note: 文書.ts に map の構成図・map のシーケンス図・map の案内の帯の要素を足した（9716197f）
+    updated_by: planner
+    updated_at: '2026-11-10T13:18:02.402100+00:00'
+  - process: モジュール構成設計
+    status: done
+    note: 補足を JSON のオブジェクトにする要件の書き足しを反映した（534a0cef）
+    updated_by: planner
+    updated_at: '2026-11-10T16:03:05.424878+00:00'
+  - process: ドキュメント修正
+    status: done
+    note: 内容が決まった設定・CLI・用語集・構成図の決まり・図を描くを記載した。補足の記載方法を載せるページは D-347 の回答待ちで、実装の関連ドキュメントの修正で記載する
+    updated_by: planner
+    updated_at: '2026-11-10T16:57:06.452007+00:00'
+  - process: 単体テスト作成
+    status: done
+    note: map のモジュール構成と、変える既存のモジュールの unit_tests の単体テストを作り、Red を確かめた（ede82c36・c8345fad）
+    updated_by: planner
+    updated_at: '2026-11-10T17:21:44.430971+00:00'
+  - process: 実装
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-10T19:02:43.657236+00:00'
+  - process: 結合テスト作成
+    status: done
+    agent: planner
+    updated_by: planner
+    updated_at: '2026-11-10T23:27:20.321331+00:00'
+  - process: E2E テスト作成
+    status: done
+    agent: planner
+    updated_by: planner
+    updated_at: '2026-11-10T23:58:27.388898+00:00'

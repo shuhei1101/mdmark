@@ -1,0 +1,894 @@
+title: ライブラリ本体 / map / 描画と操作
+lead: '`dist/map.js` の入口と、構成図・シーケンス図を描いて開閉・中へ入る・選択・移動・案内・再生の操作を付け、状態を sessionStorage とクエリ文字列に保つ処理と、部品の HTML。ブラウザでだけ動く（部品の HTML は Node でも動く）。'
+test_files:
+  - tests/unit/src/map/state.test.ts
+  - tests/unit/src/map/drag.browser.test.ts
+  - tests/unit/src/map/band.browser.test.ts
+  - tests/unit/src/map/index.browser.test.ts
+  - tests/unit/src/map/flow-view.browser.test.ts
+  - tests/unit/src/map/sequence-view.browser.test.ts
+  - tests/unit/src/parts/map.test.ts
+data_models:
+  - name: MapPartModule
+    title: mapの部品のモジュール
+    container: src/map/index.ts
+    usecase: Mermaidと補足で図を描く
+    role: データモデル
+    summary: '`dist/map.js` が export する関数'
+    properties:
+      - name: attachMap
+        type: '(root: HTMLElement, config: ResolvedConfig) => () => void'
+        description: '`root` の中の `div.mdmark-map` を全て図にし、片付ける関数を返す'
+  - name: MapState
+    title: 図の状態
+    container: src/map/state.ts
+    usecase: 図のグループの中へ入る・開閉する
+    role: データモデル
+    summary: 図ごとに保つ状態
+    properties:
+      - name: collapsed
+        type: string[]
+        description: 閉じたグループの ID かブロックの番号
+      - name: entered
+        type: string | undefined
+        description: 中へ入ったグループの ID か、中だけを描くブロックの番号
+      - name: selected
+        type: string[]
+        description: 選んだノードか参加者の ID
+      - name: positions
+        type: 'Record<string, { x: number; y: number }>'
+        description: 動かしたノード・グループの座標
+      - name: wireShifts
+        type: 'Record<string, Array<{ segment: number; offset: number }>>'
+        description: 動かした線の区間のずらし
+      - name: attachments
+        type: 'Record<string, { from?: "top" | "right" | "bottom" | "left"; to?: "top" | "right" | "bottom" | "left" }>'
+        description: 線をつなぎ替えた端の辺（線の ID ごと。元の端は `from`、先の端は `to`）
+      - name: order
+        type: string[] | undefined
+        description: 参加者の並び順
+      - name: height
+        type: number | undefined
+        description: 表示する枠の高さ
+  - name: MapFlowHandle
+    title: 構成図の操作の口
+    container: src/map/flow-view.ts
+    usecase: Mermaidと補足で図を描く
+    role: データモデル
+    summary: '`attachMapFlow` の戻り値'
+    properties:
+      - name: focus
+        type: '(target: { nodes: string[]; wires: string[] }) => void'
+        description: 案内を止めて、外から強調を当てる（シーケンス図の再生）
+      - name: clearFocus
+        type: () => void
+        description: 外から当てた強調を解く
+      - name: destroy
+        type: () => void
+        description: 操作と観察を外す
+      - name: follow
+        type: '(nodes: string[]) => void'
+        description: ノードの中心へ表示する枠をスクロールする（シーケンス図の再生を自動で進めている間。`createFollow` の `reveal`）
+      - name: resumeFollow
+        type: () => void
+        description: 読者が触って止めたスクロールを再開する（`createFollow` の `resume`）
+  - name: MapSequenceHandle
+    title: シーケンス図の操作の口
+    container: src/map/sequence-view.ts
+    usecase: Mermaidと補足で図を描く
+    role: データモデル
+    summary: '`attachMapSequence` の戻り値'
+    properties:
+      - name: playsOver
+        type: number | undefined
+        description: 補足の `plays_over`（再生を重ねる構成図の番号）
+      - name: clear
+        type: () => void
+        description: 再生を止めて強調を解く（構成図の案内を始めたとき）
+      - name: destroy
+        type: () => void
+        description: 時計と操作を外す
+  - name: BandStep
+    title: 帯の手順
+    container: src/map/band.ts
+    usecase: Mermaidと補足で図を描く
+    role: データモデル
+    summary: '`attachBand` が進める 1 つの手順'
+    properties:
+      - name: title
+        type: string
+        description: 帯のタイトル
+      - name: text
+        type: string
+        description: 説明の文
+      - name: nodes
+        type: string[]
+        description: 強調するノードか参加者
+      - name: wires
+        type: string[]
+        description: データの印を流す線
+      - name: enter
+        type: string | undefined
+        description: その手順で中へ入るグループ
+  - name: BandHandle
+    title: 帯の操作の口
+    container: src/map/band.ts
+    usecase: Mermaidと補足で図を描く
+    role: データモデル
+    summary: '`attachBand` の戻り値'
+    properties:
+      - name: stop
+        type: () => void
+        description: 強調を解いて始める前に戻す
+      - name: update
+        type: '(steps: BandStep[]) => void'
+        description: 進める手順を差し替え、始める前の状態に戻す（強調は当て直さない）
+      - name: destroy
+        type: () => void
+        description: 時計と操作を外す
+  - name: MapFlowArgs
+    title: mapの構成図の引数
+    container: src/parts/map.ts
+    usecase: Mermaidと補足で図を描く
+    role: データモデル
+    summary: 部品設計『mapの構成図』の引数（`layout`・`collapsed`・`entered`・`selected`・`focus`・`packets`・`dragging`）
+    properties:
+      - name: layout
+        type: MapLayout
+        description: 配置の結果
+      - name: collapsed
+        type: string[]
+        description: 閉じたグループ
+      - name: entered
+        type: string | undefined
+        description: 中へ入ったグループ
+      - name: selected
+        type: string[]
+        description: 選んだノード
+      - name: focus
+        type: '{ nodes: string[]; wires: string[] } | undefined'
+        description: 強調
+      - name: packets
+        type: MapPacket[]
+        description: データの印
+      - name: dragging
+        type: string | undefined
+        description: 動かしている要素
+  - name: MapSequenceArgs
+    title: mapのシーケンス図の引数
+    container: src/parts/map.ts
+    usecase: Mermaidと補足で図を描く
+    role: データモデル
+    summary: 部品設計『mapのシーケンス図』の引数
+    properties:
+      - name: sequence
+        type: Sequence
+        description: 読み取り結果
+      - name: rows
+        type: SequenceRow[]
+        description: '`sequenceRows` の行'
+      - name: participants
+        type: string[]
+        description: 表示する参加者の順
+      - name: collapsed
+        type: number[]
+        description: 閉じたブロック
+      - name: entered
+        type: number | undefined
+        description: 中だけを描くブロック
+      - name: selected
+        type: string[]
+        description: 選んだ参加者
+      - name: focus
+        type: '{ message: number } | undefined'
+        description: 再生の強調
+  - name: MapBandArgs
+    title: 案内の帯の引数
+    container: src/parts/map.ts
+    usecase: Mermaidと補足で図を描く
+    role: データモデル
+    summary: 部品設計『案内の帯』の引数
+    properties:
+      - name: mode
+        type: '"walkthrough" | "playback"'
+        description: モード
+      - name: total
+        type: number
+        description: 手順の数
+      - name: index
+        type: number | undefined
+        description: 今の番号
+      - name: title
+        type: string
+        description: タイトル
+      - name: text
+        type: string
+        description: 説明の文
+      - name: auto
+        type: boolean
+        description: 自動で進めているか
+      - name: label
+        type: string
+        description: 帯の名前
+  - name: FollowHandle
+    title: 表示する枠のスクロールの操作の口
+    container: src/map/band.ts
+    usecase: 図を巡回する
+    role: データモデル
+    summary: '`createFollow` の戻り値'
+    properties:
+      - name: reveal
+        type: '(ids: string[]) => void'
+        description: ノードか参加者の中心へ表示する枠をスクロールする（読者が触った後は `resume` まで何もしない）
+      - name: resume
+        type: () => void
+        description: 読者が触って止めたスクロールを再開する
+      - name: destroy
+        type: () => void
+        description: 表示する枠のイベントを外す
+constants:
+  - name: MAP_STATE_KEY_PREFIX
+    title: 状態のキーの頭
+    container: src/map/state.ts
+    usecase: 図のグループの中へ入る・開閉する
+    role: 定数
+    summary: sessionStorage のキーの頭（`{頭}{pathname}{まとめた HTML の文書の経路}#{図の番号}`。文書の経路はハッシュの `#/{パス}` の部分で、まとめた HTML のほかでは空）
+    value: '"mdmark-map:"'
+  - name: MAP_QUERY_PREFIX
+    title: クエリ文字列のキーの頭
+    container: src/map/state.ts
+    usecase: 図のグループの中へ入る・開閉する
+    role: 定数
+    summary: クエリ文字列のキーの頭（`map-{図の番号}`）
+    value: '"map-"'
+  - name: DRAG_THRESHOLD_PX
+    title: 押した扱いの動き
+    container: src/map/drag.ts
+    usecase: Mermaidと補足で図を描く
+    role: 定数
+    summary: この値より動かずに離したら押した扱いにする（px）
+    value: '4'
+  - name: KEY_MOVE_PX
+    title: キー 1 回で動かす量
+    container: src/map/drag.ts
+    usecase: Mermaidと補足で図を描く
+    role: 定数
+    summary: Alt + 矢印キー 1 回で動かす量（px）。Shift も押すと `KEY_MOVE_PX_LARGE`
+    value: '8'
+  - name: KEY_MOVE_PX_LARGE
+    title: Shift で動かす量
+    container: src/map/drag.ts
+    usecase: Mermaidと補足で図を描く
+    role: 定数
+    summary: Alt + Shift + 矢印キー 1 回で動かす量（px）
+    value: '32'
+  - name: DIM_SELECTOR
+    title: 薄くする対象
+    container: src/map/flow-view.ts
+    usecase: Mermaidと補足で図を描く
+    role: 定数
+    summary: 強調するときに `map-dim` を付ける要素のセレクター（ノード・線・ラベル・ライフライン）
+functions:
+  - name: attachMap
+    title: mapを付ける
+    kind: 関数
+    container: src/map/index.ts
+    usecase: Mermaidと補足で図を描く
+    role: 処理
+    summary: '`root` の中の `div.mdmark-map` ごとに、種類で構成図かシーケンス図を付け、案内と再生をつなぎ、片付ける関数を返す'
+    scope: public
+    callees:
+      - dev/設計書/モジュール構成/ライブラリ本体/map/描画と操作.ts#functions[attachMapFlow]
+      - dev/設計書/モジュール構成/ライブラリ本体/map/描画と操作.ts#functions[attachMapSequence]
+      - dev/設計書/モジュール構成/ライブラリ本体/map/読み取り.ts#functions[parseMapArgs]
+      - dev/設計書/モジュール構成/ライブラリ本体/map/点検.ts#functions[collectMapProblems]
+    args:
+      - name: root
+        type: HTMLElement
+        required: true
+        description: '`mount` が描いた要素'
+      - name: config
+        type: ResolvedConfig
+        required: true
+        description: 既定を当てた設定
+    returns:
+      type: () => void
+      description: 付けた操作と観察を外す関数
+    process: |-
+      1. `div.mdmark-map` ごとに `data-map-args` を `parseMapArgs` で読み、`data-map-kind` で `attachMapFlow` か `attachMapSequence` に引数と一緒に指定する。`collapse` があれば図の枠を `details`（`open` は `collapse.open`、見出しは `collapse.title` か `title`）で包む
+      2. 範囲ごとに `collectMapProblems`（`includeUnknownKeys: false`）から `collectMapStructure` の項目を除いた項目があれば、`render` の記載の警告に足すか、無ければ図の枠の前に部品『書き方の警告』を配置する
+      3. シーケンス図の補足の `plays_over` が指す構成図を探し、再生の強調を構成図にも当てる。片方の図で案内か再生を始めたら、もう片方の強調を解く。再生を自動で進め始めたら構成図の `resumeFollow`、自動で進めたら構成図の `follow` で送り手と受け手のノードへ構成図の表示する枠をスクロールする（構成図に無い相手のメッセージではスクロールしない）
+    unit_tests:
+      - name: test_attach_map
+        case: 正常
+        summary: 構成図とシーケンス図
+        condition: 2 つの `div.mdmark-map`
+        mock: なし（jsdom）
+        expected: '`figure.mdmark-diagram[data-diagram=map]` が 2 つになり、返した関数で操作が外れる'
+      - name: test_attach_map_when_collapse
+        case: 正常
+        summary: 折りたたみ
+        condition: '`data-map-args` が `{"title":"全体","collapse":{"open":false}}`'
+        mock: なし（jsdom）
+        expected: 図の枠が `open` を持たない `details` に入り、`summary` の文字が `全体`
+      - name: test_attach_map_when_problems
+        case: 異常
+        summary: 書き方の誤り
+        condition: 読めない Mermaid の行と知らない補足のキー `layuot` を持つ範囲
+        mock: なし（jsdom）
+        expected: 図の枠の前の記載の警告が 1 つで、読めない行と `layuot` を含む
+      - name: test_attach_map_when_missing_participant
+        case: 正常
+        summary: 構成図に無い再生の相手
+        condition: '構成図と、`plays_over: 1` で構成図に無い参加者 `ghost` を持つシーケンス図'
+        mock: なし（jsdom）
+        expected: シーケンス図の図の枠の前の記載の警告に `ghost` がある
+      - name: test_attach_map_when_auto_follow
+        case: 正常
+        summary: 再生で構成図をスクロールする
+        condition: '構成図と `plays_over: 1` のシーケンス図で、シーケンス図の自動で進めるを押し、時計を 2 秒進める。次に構成図の表示する枠でホイールを回して時計を 2 秒進める'
+        mock: 時計・構成図の表示する枠の `scrollTo`
+        expected: 最初の 2 秒で構成図の `scrollTo` を 1 回呼び、ホイールの後は呼ばない
+  - name: attachMapFlow
+    title: 構成図を付ける
+    kind: 関数
+    container: src/map/flow-view.ts
+    usecase: 図のグループの中へ入る・開閉する
+    role: 処理
+    summary: 構成図を読み取り、状態を読んで配置し、描いて測った大きさで配置し直し、操作を付ける
+    scope: public
+    callees:
+      - dev/設計書/モジュール構成/ライブラリ本体/map/読み取り.ts#functions[parseFlowchart]
+      - dev/設計書/モジュール構成/ライブラリ本体/map/配置.ts#functions[layoutMap]
+      - dev/設計書/モジュール構成/ライブラリ本体/map/描画と操作.ts#functions[readMapState]
+      - dev/設計書/モジュール構成/ライブラリ本体/map/描画と操作.ts#functions[writeMapState]
+      - dev/設計書/モジュール構成/ライブラリ本体/map/描画と操作.ts#functions[startDrag]
+      - dev/設計書/モジュール構成/ライブラリ本体/map/描画と操作.ts#functions[attachBand]
+      - dev/設計書/モジュール構成/ライブラリ本体/map/描画と操作.ts#functions[renderMapFlow]
+    args:
+      - name: range
+        type: HTMLElement
+        required: true
+        description: '`div.mdmark-map`'
+      - name: config
+        type: ResolvedConfig
+        required: true
+        description: 既定を当てた設定
+      - name: args
+        type: MapArgs
+        required: true
+        description: 印の引数
+      - name: onWalk
+        type: () => void
+        required: false
+        description: 案内の手順を進めたときに呼ぶ関数
+    returns:
+      type: MapFlowHandle
+      description: 強調を外から当てる関数・表示する枠を外からスクロールする関数と片付ける関数
+    process: |-
+      1. `parseFlowchart`・`parseMapData` で読み、`readMapState`（印の `focus` と、補足の `layout` の `collapsed` が `true` の ID を指定する）で状態を読む
+      2. 補足の `layout` に状態の `positions`・`attachments`（`ends` に重ねる）を重ねた上書きで `layoutMap` を配置し、`renderDiagramFrame`（種類 `map`・`wide`・`tools`）と `renderMapFlow` で描く
+      3. ノードの中身を測り、見積もりと違う大きさのノードを `size` にして配置し直す。以降はノードの大きさを `ResizeObserver` で見て同じく配置し直す
+      4. 補足の `walkthroughs` を `attachBand`（モード `walkthrough`）の手順にする。手順を進めるたびに `onWalk` を呼び、停止で案内を始めたときに中へ入っていたグループに戻す
+      4. 開閉・中へ入る・選ぶ・線を指す・動かすの操作と、Esc（選択を解き、無ければ外へ戻る）、右上のボタンを付け、変わるたびに `writeMapState` で保つ
+      5. 補足に `walkthroughs` があれば `attachBand`（印の `interval`・`play`）で案内の帯を付ける
+    unit_tests:
+      - name: test_attach_map_flow_when_toggle
+        case: 正常
+        summary: グループを閉じる
+        condition: モックの `FLOW` を描き、`store` の開閉のボタンを押す
+        mock: '`readMapState`・`writeMapState`'
+        expected: '`store` が `map-closed-group` になり、`writeMapState` の `collapsed` が `[store]`'
+      - name: test_attach_map_flow_when_select_wire
+        case: 正常
+        summary: 線を押す
+        condition: '`mount`→`marker` の線を押す'
+        mock: '`writeMapState`'
+        expected: '`selected` が `[mount, marker]`。もう一度押すと空'
+      - name: test_attach_map_flow_when_escape
+        case: 正常
+        summary: Esc
+        condition: '`entered: read` で選択が無い'
+        mock: なし
+        expected: 外へ戻り、`entered` が `lib`
+      - name: test_attach_map_flow_when_packets
+        case: 正常
+        summary: 選んだ線と指した線の印
+        condition: '`mount` を押して選ぶ。選択を解いてから `marker->data` の線を指す'
+        mock: なし
+        expected: 選んでいる間は `mount` の線の上に `.map-packet` があり、選択を解くと無くなる。線を指している間は `marker->data` の上にだけ `.map-packet` があり、離すと無くなる
+      - name: test_attach_map_flow_when_walk_leaves_group
+        case: 正常
+        summary: 中へ入る手順の後の手順
+        condition: '手順 3 だけが `enter: place` の案内で、次へを 3 回押してから前へを押す'
+        mock: なし（jsdom）
+        expected: 手順 3 では `place` の中に入り、前へで手順 2 に戻ると、案内を始めた段（全体）の図に戻る（今入っているグループのタイトルが無い）
+      - name: test_attach_map_flow_when_follow
+        case: 正常
+        summary: 外からスクロールする
+        condition: '`follow([mount, marker])` を呼ぶ。表示する枠でホイールを回してからもう一度呼ぶ。`resumeFollow` の後にもう一度呼ぶ'
+        mock: 表示する枠の `scrollTo`
+        expected: '`scrollTo` を 1 回目と 3 回目だけ呼ぶ'
+  - name: attachMapSequence
+    title: シーケンス図を付ける
+    kind: 関数
+    container: src/map/sequence-view.ts
+    usecase: シーケンス図の参加者を選んで強調する
+    role: 処理
+    summary: シーケンス図を読み取り、状態を読んで表示する行を決めて描き、ブロックの開閉・中だけを描く・参加者の選択と並べ替えを付ける
+    scope: public
+    callees:
+      - dev/設計書/モジュール構成/ライブラリ本体/map/読み取り.ts#functions[parseSequence]
+      - dev/設計書/モジュール構成/ライブラリ本体/map/配置.ts#functions[sequenceRows]
+      - dev/設計書/モジュール構成/ライブラリ本体/map/描画と操作.ts#functions[attachBand]
+      - dev/設計書/モジュール構成/ライブラリ本体/map/描画と操作.ts#functions[renderMapSequence]
+    args:
+      - name: range
+        type: HTMLElement
+        required: true
+        description: '`div.mdmark-map`'
+      - name: config
+        type: ResolvedConfig
+        required: true
+        description: 既定を当てた設定
+      - name: args
+        type: MapArgs
+        required: true
+        description: 印の引数
+      - name: onStep
+        type: '(message: number | undefined) => void'
+        required: false
+        description: 再生で進めたメッセージの番号を受け取る関数（止めたときは `undefined`）
+      - name: follow
+        type: '{ start: () => void; step: (message: number) => void }'
+        required: false
+        description: 再生を自動で進め始めたとき（`start`）と、自動で次のメッセージへ進めたとき（`step`。メッセージの番号）に呼ぶ関数
+    returns:
+      type: MapSequenceHandle
+      description: 再生の強調を外から受け取る関数と片付ける関数
+    process: |-
+      1. `parseSequence`・`parseMapData` で読み、`readMapState` で状態を読んで `sequenceRows` で表示する行を決め、`renderMapSequence` で描く
+      2. 表示する行のメッセージを `attachBand`（モード `playback`）の手順にする。開閉・中だけを描くで表示するメッセージが変わったら `update` で手順を差し替え、再生していれば `onStep(undefined)` を呼ぶ。`follow` を `attachBand` の `follow` にし、`step` には手順のメッセージの番号を指定する
+      3. 参加者の箱の名前の文字の外を押すと選び、4px 動かすと並べ替えのドラッグにして、移す先の列に縦の線（`.map-insert-line`）を出し、離した位置に最も近い列へ移す。ドラッグの直後の押した扱いは選ばない
+    unit_tests:
+      - name: test_attach_map_sequence_when_reorder
+        case: 正常
+        summary: Alt + →
+        condition: 1 人目の参加者にフォーカスして Alt + →
+        mock: '`writeMapState`'
+        expected: '`order` の 1 人目と 2 人目が入れ替わる'
+      - name: test_attach_map_sequence_when_enter_block
+        case: 正常
+        summary: 中だけを描く
+        condition: '`loop` のタブの名前を押す'
+        mock: '`writeMapState`'
+        expected: '`entered` が `1` で、`loop` の中の参加者だけを描く'
+      - name: test_attach_map_sequence_when_packets
+        case: 正常
+        summary: 選んだ参加者の印
+        condition: '`mount` の参加者の箱の名前の外を押す'
+        mock: なし
+        expected: '`mount` が送る・受けるメッセージの線の上に `.map-packet` があり、ほかのメッセージの線の上には無い'
+  - name: readMapState
+    title: 状態を読む
+    kind: 関数
+    container: src/map/state.ts
+    usecase: 図のグループの中へ入る・開閉する
+    role: 処理
+    summary: クエリ文字列（`url_state` が `true` のとき）→ sessionStorage → 印の `focus` の順に、最初に入るグループかブロックを決め、ほかの状態を sessionStorage から読み、知らない ID・番号を捨てる。sessionStorage に開閉の状態が無いときは、補足の `layout` の `collapsed` が `true` のグループを閉じる
+    scope: public
+    args:
+      - name: options
+        type: '{ index: number; ids: Set<string>; urlState: boolean; focus: string | undefined; collapsed: string[]; storage: Storage | undefined; location: Location }'
+        required: true
+        description: 図の番号・知っている ID・設定・印の `focus`・補足で最初に閉じるグループの ID・保存先
+    returns:
+      type: MapState
+      description: 状態
+    unit_tests:
+      - name: test_read_map_state_when_query
+        case: 正常
+        summary: クエリ文字列を先に読む
+        condition: '`?map-1=read` と sessionStorage の `entered: place`'
+        mock: なし
+        expected: '`entered` が `read`'
+      - name: test_read_map_state_when_url_state_off
+        case: 正常
+        summary: url_state が false
+        condition: '同上で `urlState: false`'
+        mock: なし
+        expected: '`entered` が `place`'
+      - name: test_read_map_state_when_unknown_id
+        case: 正常
+        summary: 知らない ID
+        condition: '`?map-1=ghost`'
+        mock: なし
+        expected: '`entered` が無い'
+      - name: test_read_map_state_when_storage_unavailable
+        case: 正常
+        summary: sessionStorage が無い
+        condition: '`storage: undefined`'
+        mock: なし
+        expected: 空の状態で、例外を投げない
+      - name: test_read_map_state_when_focus
+        case: 正常
+        summary: focus だけ
+        condition: '空のクエリ文字列と sessionStorage・`focus: read`'
+        mock: なし
+        expected: '`entered` が `read`'
+      - name: test_read_map_state_when_layout_collapsed
+        case: 正常
+        summary: 補足で最初に閉じる
+        condition: '`collapsed: [store]` で、sessionStorage が空のときと、sessionStorage の `collapsed` が `[]` のとき'
+        mock: なし
+        expected: 空のときは `collapsed` が `[store]`、sessionStorage があるときは `[]`
+      - name: test_read_map_state_when_saved_over_focus
+        case: 正常
+        summary: 保った状態を優先
+        condition: 'sessionStorage の `entered: place`・`focus: read`'
+        mock: なし
+        expected: '`entered` が `place`'
+      - name: test_read_map_state_when_bundle_route
+        case: 正常
+        summary: まとめた HTML の文書ごと
+        condition: '`mdmark-map:/a.html#/a.md#1` に `entered: place` を入れ、`location.hash` が `#/b.md` と `#/a.md#見出し`'
+        mock: なし
+        expected: '`#/b.md` では `entered` が `undefined`、`#/a.md#見出し` では `place`'
+  - name: writeMapState
+    title: 状態を保つ
+    kind: 関数
+    container: src/map/state.ts
+    usecase: 図のグループの中へ入る・開閉する
+    role: 処理
+    summary: sessionStorage に状態を書き、`url_state` が `true` なら中へ入ったグループ・ブロックを `history.replaceState` でクエリ文字列に書く（無ければキーを消す）
+    scope: public
+    side_effects: sessionStorage と `history` の今の項目の URL を書き換える
+    args:
+      - name: options
+        type: '{ index: number; state: MapState; urlState: boolean; storage: Storage | undefined; history: History; location: Location }'
+        required: true
+        description: 図の番号・状態・設定・保存先
+    returns:
+      type: void
+      description: なし
+    unit_tests:
+      - name: test_write_map_state
+        case: 正常
+        summary: 中へ入る
+        condition: '`entered: read`'
+        mock: '`history`（`replaceState` の呼び出しを記録）'
+        expected: sessionStorage に書き、URL が `?map-1=read`、`history.length` が変わらない
+      - name: test_write_map_state_when_url_state_off
+        case: 正常
+        summary: url_state が false
+        condition: '同上で `urlState: false`'
+        mock: '`history`'
+        expected: '`replaceState` を呼ばない'
+      - name: test_write_map_state_when_left
+        case: 正常
+        summary: 全体に戻る
+        condition: '`entered: undefined`'
+        mock: '`history`'
+        expected: URL から `map-1` が消える
+  - name: startDrag
+    title: ドラッグを始める
+    kind: 関数
+    container: src/map/drag.ts
+    usecase: Mermaidと補足で図を描く
+    role: 処理
+    summary: 押した場所（ノード・グループのタイトルの行・線の区間）を判定し、4px 動くまでは押した扱い、動いたら全てのノードとグループの位置を固定してから動かす
+    scope: public
+    args:
+      - name: options
+        type: '{ event: PointerEvent; layout: MapLayout; state: MapState; onMove: (state: MapState) => void; onClick: () => void; scale?: number; pointOf?: (event: PointerEvent) => [number, number] }'
+        required: true
+        description: 押したイベント・配置・状態・動かしたとき・押したときの関数・図の中身とポインターの座標の比・ポインターの位置を図の中身の座標にする関数（線の区間を選ぶ）
+    returns:
+      type: void
+      description: なし
+    process: |-
+      1. 押した要素からノード・グループ・線の区間を決める（グループの面と余白は図の移動に任せて何もしない）
+      2. 4px 動くまでは待ち、離したら `onClick` を呼ぶ
+      3. 動いたら全てのノードとグループの今の位置を `positions` に入れ、ノード・グループは動いた分を足し、線の区間は `wireShifts` に足す。ほかとの間が `minGap` より狭くなる位置と、グループの左端・上端より外へは進めない
+      4. 線の端の区間がノードの辺の端を越えたら、越えた側の辺へつなぎ替える
+    unit_tests:
+      - name: test_start_drag_when_click
+        case: 正常
+        summary: 押しただけ
+        condition: 3px 動かして離す
+        mock: '`onMove`・`onClick`'
+        expected: '`onClick` を 1 回呼び、`onMove` を呼ばない'
+      - name: test_start_drag_when_node
+        case: 正常
+        summary: ノードを動かす
+        condition: ノードを下へ 40px
+        mock: '`onMove`'
+        expected: そのノードの `y` が 40 増え、ほかのノードの位置が変わらない
+      - name: test_start_drag_when_blocked
+        case: 正常
+        summary: 近づけすぎ
+        condition: 隣のノードとの間が 10px になる位置まで動かす
+        mock: '`onMove`'
+        expected: 間が 16px の位置で止まる
+      - name: test_start_drag_when_reattach
+        case: 正常
+        summary: つなぎ替え
+        condition: 線の真ん中の区間を相手のノードの上まで動かす
+        mock: '`onMove`'
+        expected: 線の端がそのノードの上の辺に付く
+  - name: moveByKey
+    title: キーで動かす
+    kind: 関数
+    container: src/map/drag.ts
+    usecase: Mermaidと補足で図を描く
+    role: 処理
+    summary: フォーカスしたノード・グループを指定した量だけ、線は真ん中の区間を区間と直角の向きへ動かした状態を返す。動かせないときは `undefined`
+    scope: public
+    args:
+      - name: options
+        type: '{ layout: MapLayout; state: MapState; target: { node?: string; group?: string; wire?: string }; dx: number; dy: number }'
+        required: true
+        description: 配置・状態・動かす要素の ID・動かす量（px。`KEY_MOVE_PX` か `KEY_MOVE_PX_LARGE` に矢印の向きを掛けた値）
+    returns:
+      type: MapState | undefined
+      description: 動かした後の状態
+    process: |-
+      1. 全てのノードとグループの今の位置を `positions` に入れ、ノード・グループは `startDrag` と同じく、ほかとの間が `minGap` より狭くなる位置とグループの左端・上端より外へは進めない
+      2. 線は真ん中の区間のずらしに、横の区間なら `dy`、縦の区間なら `dx` を足し、端のつなぎ替えを `attachments` に入れる。区間と同じ向きの矢印では動かさない
+    unit_tests:
+      - name: test_move_by_key_when_node
+        case: 正常
+        summary: ノード
+        condition: '`A` を `dy: 8`'
+        mock: なし
+        expected: '`positions.A` が `{ x: 0, y: 8 }`'
+      - name: test_move_by_key_when_wire
+        case: 正常
+        summary: 線の真ん中の区間
+        condition: '`A->C`（点 5 つ。真ん中の区間は縦）を `dx: 8`'
+        mock: なし
+        expected: '`wireShifts["A->C"]` の区間 1 のずらしが 8'
+      - name: test_move_by_key_when_blocked
+        case: 正常
+        summary: 動かせない
+        condition: '図の余白の内側の左上にある `A` を `dy: -8`。縦の区間の線を `dy: 8`'
+        mock: なし
+        expected: どちらも `undefined`
+  - name: attachBand
+    title: 案内と再生を進める
+    kind: 関数
+    container: src/map/band.ts
+    usecase: 図を巡回する
+    role: 処理
+    summary: 図の枠の下に案内の帯を配置し、前へ・次へ・停止・自動で進めると強調・データの印・スクロールを付ける
+    scope: public
+    args:
+      - name: options
+        type: '{ figure: HTMLElement; mode: "walkthrough" | "playback"; steps: BandStep[]; interval: number; autoplay: boolean; apply: (step: BandStep | undefined) => void; reducedMotion: boolean; observe: (target: Element, onEnter: () => void) => () => void; follow?: { start: () => void; step: (step: BandStep) => void } }'
+        required: true
+        description: 図の枠・モード・手順・間隔（秒。印の `interval`）・印の `play` が `autoplay` か・強調を当てる関数・動きを減らす設定・画面に入ったら 1 回呼ぶ関数を登録して外す関数を返す関数（`IntersectionObserver` の差し替え口）・自動で進め始めたとき（`start`）と自動で次の手順へ進めたとき（`step`）に呼ぶ関数
+    returns:
+      type: BandHandle
+      description: 止める関数と片付ける関数
+    process: |-
+      1. `renderMapBand` で帯を描き、前へ・次へは端で反対の端へ回し、`apply` で強調を当てる
+      2. 自動で進めるの間は `interval` 秒ごとに次へ進め、強調するノードの中心へ表示する枠をスクロールする。スクロールは `createFollow` で行い、自動で進め始めたら `resume` を呼ぶ。自動で進め始めたときに `follow.start`、自動で次の手順へ進めたときに `follow.step` を呼ぶ（前へ・次へでは呼ばない）
+      3. 停止で `apply(undefined)` を呼び、始めた段に戻す。`update` で手順を差し替えたときは、自動で進めるを止めて番号を `–` に戻す
+      4. `autoplay` が `true` なら `observe` で図の枠が画面に入るのを待ち、入ったら `reducedMotion` が `false` のときだけ自動で進めるを始める（`true` のときは止めた帯のまま）
+    unit_tests:
+      - name: test_attach_band_when_next
+        case: 正常
+        summary: 次へ
+        condition: 4 手順で次へを 5 回押す
+        mock: '`apply`'
+        expected: '`apply` に手順 0・1・2・3・0 が渡る'
+      - name: test_attach_band_when_auto
+        case: 正常
+        summary: 自動で進める
+        condition: '`interval: 3` で自動で進めるを押し、時計を 6 秒進める'
+        mock: 時計（fake timers）・`scrollTo`
+        expected: 手順 0・1 まで進み、表示する枠の `scrollTo` を 2 回呼ぶ
+      - name: test_attach_band_when_user_scrolls
+        case: 正常
+        summary: 読者が触る
+        condition: 自動で進める間に表示する枠でホイールを回す
+        mock: 時計・`scrollTo`
+        expected: 以降の手順で `scrollTo` を呼ばない
+      - name: test_attach_band_when_autoplay
+        case: 正常
+        summary: 画面に入ったら始める
+        condition: '`autoplay: true`・`reducedMotion: false`。`observe` の `onEnter` を呼ぶ'
+        mock: '`observe`・時計'
+        expected: '`onEnter` の前は `apply` を呼ばず、呼んだ後に手順 0 が渡り、自動で進めるの `aria-pressed` が `true`'
+      - name: test_attach_band_when_update
+        case: 正常
+        summary: 手順の差し替え
+        condition: 4 手順で次へを 2 回押してから、2 手順に `update` する
+        mock: '`apply`'
+        expected: 帯の番号が `–/2` になり、`update` で `apply` を呼ばない
+      - name: test_attach_band_when_autoplay_reduced
+        case: 正常
+        summary: 動きを減らす設定
+        condition: '`autoplay: true`・`reducedMotion: true`。`onEnter` を呼ぶ'
+        mock: '`observe`'
+        expected: '`apply` を呼ばず、帯の番号が `–` のまま'
+      - name: test_attach_band_when_keys_kept_focus
+        case: 正常
+        summary: 矢印キーで続けて進める
+        condition: 帯の次へのボタンにフォーカスして → を 2 回
+        mock: なし（jsdom）
+        expected: 番号が 2 つ進み、描き直した後もフォーカスが帯の次へのボタンにある
+      - name: test_attach_band_when_follow
+        case: 正常
+        summary: 自動で進める間の follow
+        condition: '`interval: 3` で自動で進めるを押し、時計を 6 秒進め、一時停止して次へを押す'
+        mock: 時計・`follow`
+        expected: '`follow.start` を 1 回、`follow.step` を手順 1・2 で 2 回呼び、次へでは呼ばない'
+  - name: renderMapFlow
+    title: mapの構成図のHTML
+    kind: 関数
+    container: src/parts/map.ts
+    usecase: Mermaidと補足で図を描く
+    role: 処理
+    summary: 部品設計『mapの構成図』の HTML。フロー図の部品の定義にしたノードと線を `renderFlow` で描き、グループの面とタイトルの行・開閉と中へ入るボタン・閉じたグループを重ねる。ノードと線を押す場所はフォーカスできるボタンにし、中へ入ったグループと薄く残したグループのほかは、タイトルの行に動かす帯（`.map-group-bar`）を置く
+    scope: public
+    callees:
+      - dev/設計書/モジュール構成/ライブラリ本体/図.ts#functions[renderFlow]
+    args:
+      - name: args
+        type: MapFlowArgs
+        required: true
+        description: 部品の引数
+    returns:
+      type: '{ html: string; tips: string }'
+      description: 図の HTML（`html`）と、ノードの説明と用語のツールチップの HTML（`tips`。図の枠の `.mdmark-diagram-box` に配置する）
+    unit_tests:
+      - name: test_render_map_flow
+        case: 正常
+        summary: グループとノード
+        condition: 部品の Default の引数
+        mock: なし
+        expected: '`[data-group]` が 4 つ、`[data-node]` が 10 で、凡例が無い'
+      - name: test_render_map_flow_when_keyboard
+        case: 正常
+        summary: キーで操作する場所
+        condition: '`entered: read` と、`entered` なし'
+        mock: なし
+        expected: '配置した全てのノードと線を押す場所が `tabindex="0"`・`role="button"` を持ち、`read` の `.map-group-bar` が `entered: read` では無く、`entered` なしではある'
+      - name: test_render_map_flow_when_entered
+        case: 正常
+        summary: 中へ入った
+        condition: '`entered: read`'
+        mock: なし
+        expected: '`read` の外の要素が `map-faded` を持ち、`read` のタイトルが `button` でない'
+      - name: test_render_map_flow_when_packets
+        case: 正常
+        summary: データの印
+        condition: '`mount->marker` に `{ direction: both, color: orange, shape: square }`、`marker->data` に `{ direction: forward }` の印'
+        mock: なし
+        expected: '`mount->marker` の印は四角でオレンジの塗りを持ち、逆向き（`keyPoints="1;0"`）を含む両方向へ流れる。`marker->data` の印は丸で線の色、逆向きを含まない。どの印も `animateMotion` を `repeatCount="indefinite"` で持つ'
+      - name: test_render_map_flow_when_unknown_color
+        case: 異常
+        summary: 知らない色の名前
+        condition: '印の `color` が `red;x:y`、グループの色が `blue;x`'
+        mock: なし
+        expected: 印が線の色で塗られ、グループが色を持たず、出力に `;x:y` と `;x` が無い
+      - name: test_render_map_flow_when_terms
+        case: 正常
+        summary: 用語の下線
+        condition: '`terms` が `{"補足": "意味"}` で、ノード `data` の名前が `<b>補足</b>の検査`'
+        mock: なし
+        expected: ノード `data` の `.mdmark-diagram-node-name` の中に `span.mdmark-term` が 1 つで文字が `補足`、`<b>` は逃がした文字で、`tips` に意味のツールチップと、`notes` の説明のツールチップがある。グループのタイトルに `mdmark-term` が無い
+      - name: test_render_map_flow_when_note_terms
+        case: 正常
+        summary: 説明の中の用語
+        condition: '`terms` が `{"補足": "意味"}` で、ノード `layout` と線 `mount->marker` の `notes` が「補足を当てる」'
+        mock: なし
+        expected: '`tips` の 2 つの説明のツールチップのそれぞれに、`tabindex` を持たない `<span class="mdmark-term">補足</span>` と、末尾の「補足：意味」の行がある'
+      - name: test_render_map_flow_when_collapsed_count
+        case: 正常
+        summary: 閉じたグループのノードの数
+        condition: '`collapsed: ["read"]`'
+        mock: なし
+        expected: '`.map-closed-group[data-group="read"]` の中に「ノード 3 件」がある'
+      - name: test_render_map_flow_when_merged_notes
+        case: 正常
+        summary: まとめた線の説明
+        condition: '`collapsed: ["read"]` で、`notes` が `{"data->layout": "上書きを当てる"}`'
+        mock: なし
+        expected: '`read->layout` のツールチップが「補足の検査 → 入れ子のグループの自動配置：上書きを当てる」だけを持ち、説明を持たない元の線（`mermaid->layout`）を含まない。`notes` が空なら `read->layout` の押せる帯は `data-tip-owner` を持たない'
+  - name: renderMapSequence
+    title: mapのシーケンス図のHTML
+    kind: 関数
+    container: src/parts/map.ts
+    usecase: Mermaidと補足で図を描く
+    role: 処理
+    summary: 部品設計『mapのシーケンス図』の HTML。参加者の箱・ライフライン・メッセージの線とラベルを今のシーケンス図の部品と同じ class で描き、ブロックの枠とタブの開閉と名前のボタン・区間・注記・活性化の帯・参加者の選択を重ねる
+    description: 今の `renderSequence` は全てのメッセージに番号を付け、複合フラグメント・注記・活性化・矢印の種類を持たないため、図の部品の HTML は使わず同じ class と寸法（`MAP_SEQ`）で描く
+    scope: public
+    args:
+      - name: args
+        type: MapSequenceArgs
+        required: true
+        description: 部品の引数
+    returns:
+      type: '{ html: string; tips: string }'
+      description: 図の HTML（`html`）と、用語のツールチップの HTML（`tips`）
+    unit_tests:
+      - name: test_render_map_sequence
+        case: 正常
+        summary: 全ての記法
+        condition: 部品の Default の引数
+        mock: なし
+        expected: ブロックのタブが 3 つで、それぞれ開閉と名前のボタンを持つ
+      - name: test_render_map_sequence_when_terms
+        case: 正常
+        summary: 用語の下線
+        condition: '`terms` が `{"補足": "意味"}` で、メッセージの文の 1 つが「補足を読む」'
+        mock: なし
+        expected: そのメッセージのラベルの中に `span.mdmark-term` があり、`tips` に意味のツールチップがある
+      - name: test_render_map_sequence_when_notes
+        case: 正常
+        summary: メッセージの説明
+        condition: '`notes` が `{"2": "補足を渡す"}`、`terms` が `{"補足": "意味"}`'
+        mock: なし
+        expected: 2 つ目のメッセージ（`data-message="1"`）の `.map-wire-hit` だけが `data-tip-owner` を持ち、`tips` にその持ち主のツールチップがあり、説明の中の `補足` が `tabindex` を持たない `span.mdmark-term` で、末尾に「補足：意味」の行がある
+  - name: renderMapBand
+    title: 案内の帯のHTML
+    kind: 関数
+    container: src/parts/map.ts
+    usecase: Mermaidと補足で図を描く
+    role: 処理
+    summary: 部品設計『案内の帯』の HTML
+    scope: public
+    args:
+      - name: args
+        type: MapBandArgs
+        required: true
+        description: 部品の引数
+    returns:
+      type: string
+      description: HTML
+    unit_tests:
+      - name: test_render_map_band
+        case: 正常
+        summary: 始める前
+        condition: '`total: 4`'
+        mock: なし
+        expected: 番号が `–/4` で、停止の `button` が `disabled`
+      - name: test_render_map_band_when_playback
+        case: 正常
+        summary: 再生
+        condition: '`mode: playback`'
+        mock: なし
+        expected: ボタンの名前が `前のメッセージ`・`再生をやめる`・`自動で進める`・`次のメッセージ`
+  - name: createFollow
+    title: 表示する枠をノードへスクロールする
+    kind: 関数
+    container: src/map/band.ts
+    usecase: 図を巡回する
+    role: 処理
+    summary: 図の枠の表示する枠を、指定したノードか参加者の中心へスクロールし、読者が表示する枠を触ったら `resume` まで止める
+    scope: public
+    args:
+      - name: figure
+        type: HTMLElement
+        required: true
+        description: 図の枠
+      - name: reducedMotion
+        type: boolean
+        required: true
+        description: 動きを減らす設定（`true` なら滑らかにスクロールしない）
+    returns:
+      type: FollowHandle
+      description: スクロールする関数・再開する関数・片付ける関数
+    process: |-
+      1. `reveal` は、指定した ID の `[data-node]`・`[data-participant]` を囲む矩形の中心が表示する枠の中央に来るように、表示する枠の `scrollTo` を呼ぶ（倍率と文書のスクロールは変えない）
+      2. 読者が表示する枠でホイール・`pointerdown`・キー・タッチをしたら、`resume` まで `reveal` でスクロールしない
+    unit_tests:
+      - name: test_create_follow_when_touched
+        case: 正常
+        summary: 読者が触る
+        condition: '`reveal` を呼び、表示する枠でホイールを回して `reveal`、`resume` の後に `reveal` を呼ぶ'
+        mock: 表示する枠の `scrollTo`
+        expected: '`scrollTo` を 1 回目と 3 回目だけ呼ぶ'

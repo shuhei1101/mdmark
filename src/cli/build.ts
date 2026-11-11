@@ -89,12 +89,12 @@ export async function buildSite(options: {
     }
   }
 
-  const { distCss, viewer, view } = await readDistAssets({
+  const { distCss, viewer, view, map } = await readDistAssets({
     distDir: options.distDir,
     kind: "bundle",
   });
   const script = await bundleViewer({
-    entry: createViewerEntry({ viewer, view, embeds }),
+    entry: createViewerEntry({ viewer, view, map, embeds }),
     baseDir: loaded.dir,
     fetchText,
   });

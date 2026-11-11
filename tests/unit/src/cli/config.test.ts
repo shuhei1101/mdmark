@@ -354,6 +354,26 @@ test("test_validate_config_when_table_pin_invalid", async () => {
   expect(valid.config.table?.pin).toBe("through");
 });
 
+// オブジェクトでない map を schema のずれにして落とし、知らない値はそのまま残す（正常系）
+test("test_validate_config_when_map_invalid", async () => {
+  // 準備
+  const { validateConfig } = await loadModule();
+  // 実行
+  const unknown = validateConfig(
+    { map: { kinds: { store: { shape: "hexagon" } } } },
+    "mdmark.config.yaml",
+  );
+  const notObject = validateConfig({ map: "x" }, "mdmark.config.yaml");
+  // 検証
+  expect(unknown.issues).toEqual([]);
+  expect(
+    (unknown.config as { map?: { kinds?: Record<string, { shape?: string }> } })
+      .map?.kinds?.store?.shape,
+  ).toBe("hexagon");
+  expect(notObject.issues.map((issue) => issue.where)).toEqual(["map"]);
+  expect((notObject.config as { map?: unknown }).map).toBeUndefined();
+});
+
 // 文字列でない colorTheme を schema のずれにして落とし、知らない名前はそのまま残す（正常系）
 test("test_validate_config_when_color_theme_invalid", async () => {
   // 準備

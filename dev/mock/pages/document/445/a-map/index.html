@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <!-- viewport: スマホ幅で等倍に表示する -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>document / a-map（Mermaid と補足で描く map の図） | mdmark のモック</title>
+  <!-- 配布物の CSS（ライブラリ本体） -->
+  <link rel="stylesheet" href="../../../../../../dist/index.css">
+  <!-- 利用側のページの外観と、モック専用の操作列（#287 で共有するアセット） -->
+  <link rel="stylesheet" href="../../../../refs/287/assets/scene.css">
+  <!-- map の図のモックの規則（#445 で共有するアセット） -->
+  <link rel="stylesheet" href="../../../../refs/445/assets/map-mock.css">
+  <!-- 配布物の mount で本文を描き、map の範囲の場所にモックの map の図を置く -->
+  <script type="module" src="../../../../refs/445/assets/scene.js"></script>
+  <style>
+    /* 描く先の要素を画面の幅まで広げ、map の図を wide の範囲で本文の幅より広げられるようにする */
+    .host { max-width: none; }
+    #doc { --mdmark-content-width: 60rem; }
+  </style>
+</head>
+<body>
+  <!-- モック専用の操作列: 場面と明暗の切り替え。[data-scene-list]: scene.js が場面のリンクを並べる -->
+  <div class="mock-bar" data-mock-bar>
+    <div class="mock-bar-group" role="group" aria-label="場面" data-scene-list>
+      <span class="mock-bar-label">場面</span>
+    </div>
+    <div class="mock-bar-group" role="group" aria-label="明暗">
+      <span class="mock-bar-label">明暗</span>
+      <a class="mock-bar-item" data-scene-scheme="light">明るい配色</a>
+      <a class="mock-bar-item" data-scene-scheme="dark">ダーク</a>
+    </div>
+  </div>
+
+  <!-- 利用側のページのトップバー（mdmark の外） -->
+  <header class="host-bar">利用側のアプリ</header>
+
+  <nav class="crumbs" aria-label="パンくずリスト">
+    <a href="../../../index.md">pages</a> / <a href="../../index.md">document</a> / <a href="../index.md">445</a> / a-map
+  </nav>
+
+  <main class="host">
+    <!-- mount で描く先の要素 -->
+    <div id="doc"></div>
+  </main>
+</body>
+</html>

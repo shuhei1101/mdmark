@@ -254,6 +254,88 @@ suite("プレビューを再描画する", () => {
     );
   });
 
+  // 設定ファイルの map を config に入れ、map の図を設定の種類と線で再描画する
+  test("test_normal_when_map_configured", async () => {
+    // 準備
+    await writeFixture(
+      "guide.md",
+      [
+        "# 案内",
+        "",
+        "<!-- map -->",
+        "",
+        "```mermaid",
+        "flowchart LR",
+        '  doc[("文書")]:::store',
+        '  read["読み取り"]',
+        "  doc -.-> read",
+        "```",
+        "",
+        "<!-- /map -->",
+        "",
+      ].join("\n"),
+    );
+    await writeFixture("mdmark.config.yaml", "# 設定\n");
+    await openMarkdown("guide.md");
+    await vscode.commands.executeCommand("mdmark.openPreviewToSide");
+    const record = lastPanel();
+    await waitForRendered(record);
+    const config = (shape: string) =>
+      [
+        "map:",
+        "  kinds:",
+        `    store: { label: 保存先, icon: database, shape: ${shape} }`,
+        "  lines:",
+        '    "-.->": { dash: dashed }',
+        "",
+      ].join("\n");
+    const node = '[data-diagram="map"] .mdmark-diagram-node[data-node="doc"]';
+    let before = renders(record).length;
+    // 実行
+    await writeFixture("mdmark.config.yaml", config("rect"));
+    // 検証
+    await waitFor(() => renders(record).length > before, {
+      message: "再描画されない",
+    });
+    assert.deepStrictEqual(renders(record).at(-1)?.config.map, {
+      kinds: { store: { label: "保存先", icon: "database", shape: "rect" } },
+      lines: { "-.->": { dash: "dashed" } },
+    });
+    await waitFor(
+      async () =>
+        (await inspect(`${node} .mdmark-diagram-node-kind svg`)).length > 0,
+      { message: "種類の行のアイコンが描かれない" },
+    );
+    const [kind] = await inspect(`${node} .mdmark-diagram-node-kind`);
+    assert.strictEqual(kind?.text, "保存先");
+    const [wire] = await inspect(
+      '[data-diagram="map"] .mdmark-diagram-wire[data-wire="doc->read"]',
+    );
+    assert.ok(wire?.attributes["stroke-dasharray"]);
+    // 実行: 知らない形状にする
+    before = renders(record).length;
+    const sentBefore = record.sent.length;
+    await writeFixture("mdmark.config.yaml", config("hexagon"));
+    // 検証: その値のまま送り、設定の誤りを送らず、角の丸い四角で描く
+    await waitFor(() => renders(record).length > before, {
+      message: "再描画されない",
+    });
+    const map = renders(record).at(-1)?.config.map as
+      | { kinds?: { store?: { shape?: string } } }
+      | undefined;
+    assert.strictEqual(map?.kinds?.store?.shape, "hexagon");
+    assert.ok(
+      !record.sent
+        .slice(sentBefore)
+        .some((message) => message.type === "configError"),
+    );
+    await waitFor(async () =>
+      (await inspect(node)).some(
+        (item) => item.attributes["data-shape"] === "rounded",
+      ),
+    );
+  });
+
   // aliases の行が指す YAML を保存すると、再作成したエイリアスで再描画する
   test("test_normal_when_aliases_yaml_saved", async () => {
     // 準備

@@ -69,6 +69,22 @@ states:
         value: "'[]'"
     notes:
       定義: 部品設計『mermaid の図』の Flowchart と同じ SVG
+  - name: Map
+    description: 種類 `map`。タイトルは題名だけで範囲と更新日と凡例が無く、置き場所の幅いっぱいで、右上の帯の先頭に外へ戻る（押せない）・全て開く・全て閉じる・配置と選択を元に戻す（押せない）が並ぶ
+    args:
+      - name: kind
+        value: map
+      - name: legend
+        value: '''[]'''
+      - name: wide
+        value: '''true'''
+    notes:
+      定義: 部品設計『mapの構成図』の Default
+  - name: ResizedToFit
+    description: リサイズハンドルをダブルクリックした。倍率は変わらず、表示する枠の高さが今の倍率の図の全体が収まる高さになる
+    args:
+      - name: zoom
+        value: '1.25'
 lead: |-
   図の部品（フロー図・シーケンス図・グラフ・ER 図）を囲む枠。タイトル（題名・範囲・更新日）・右上のボタンの帯・図を出す表示する枠・凡例をこの順に配置し、拡大・縮小・移動・全画面のモーダルと、表示する枠の高さを変える右下のリサイズハンドルを持つ。
   右上のボタンの帯と表示する枠は、表示するノード（`.mdmark-diagram-box`）にまとめる。ボタンは 1.75rem 四方、帯の余白は 0.25rem。
@@ -76,7 +92,7 @@ args:
   - name: kind
     type: 列挙
     required: true
-    choices: '`flow`・`sequence`・`chart`・`er`・`mermaid`'
+    choices: '`flow`・`sequence`・`chart`・`er`・`mermaid`・`map`'
     description: 中の図の種類。`data-diagram` に入れる
   - name: title
     type: 文字列
@@ -85,11 +101,11 @@ args:
   - name: scope
     type: 文字列
     required: false
-    description: '図の範囲。タイトルの後ろに `範囲: {scope}` で出す。種類 `mermaid` では指定せず、範囲を出さない'
+    description: '図の範囲。タイトルの後ろに `範囲: {scope}` で出す。種類 `mermaid`・`map` では指定せず、範囲を出さない'
   - name: updated
     type: 文字列
     required: false
-    description: 更新日（`YYYY-MM-DD`）。`time` 要素で出す。種類 `mermaid` では指定せず、更新日を出さない
+    description: 更新日（`YYYY-MM-DD`）。`time` 要素で出す。種類 `mermaid`・`map` では指定せず、更新日を出さない
   - name: legend
     type: オブジェクトの配列
     required: true
@@ -109,12 +125,20 @@ args:
   - name: resizable
     type: 真偽値
     default: "'true'"
-    description: 表示する枠の右下にリサイズハンドルを配置するか。`modal` が `true` のときと、機能 `diagram-resize` がオフのときは `false`
+    description: 表示する枠の下端にリサイズハンドルを配置するか。`modal` が `true` のときと、機能 `diagram-resize` がオフのときは `false`
   - name: height
     type: 数値
     required: false
     default: 定義と `--mdmark-diagram-max-height` から決まる高さ
     description: リサイズハンドルで変えた表示する枠の高さ（px）。指定したときは全体が収まる倍率を幅とこの高さで求める
+  - name: wide
+    type: 真偽値
+    default: 'false'
+    description: 置き場所の幅いっぱいに広げるか（右側の目次をピン止めしていないときは右端の線の手前、ピン止めしたときはパネルの手前まで）。`true` のときは本文の幅との切り替えのボタンを出さず、倍率を 1 より小さくしない。種類 `map` は `true`
+  - name: tools
+    type: オブジェクトの配列
+    default: '[]'
+    description: 右上のボタンの帯の先頭に並べるボタン（`{ name, label, disabled }`。`name` はアイコン、`label` はスクリーンリーダー向けの名前と `title`）。種類 `map` は、構成図では外へ戻る・全て開く・全て閉じる・配置と選択を元に戻す、シーケンス図では外へ戻る・全て開く・全て閉じる・参加者の並び順と選択を元に戻す
 slots:
   - name: default
     description: 表示する枠の中に配置する図の本体
@@ -124,11 +148,13 @@ slots:
       - dev/設計書/部品設計/グラフ.ts#
       - dev/設計書/部品設計/ER図.ts#
       - dev/設計書/部品設計/mermaidの図.ts#
+      - dev/設計書/部品設計/mapの構成図.ts#
+      - dev/設計書/部品設計/mapのシーケンス図.ts#
 events:
   - name: 拡大・縮小する
     when: 拡大・縮小・倍率のボタンを押すか、表示する枠にフォーカスして `+`・`-`・`0` を押す
     value: 倍率のボタンの文字とスクリーンリーダー向けの名前
-    description: '`mount` が倍率を 1.25 倍ずつ変え（倍率のボタンと `0` は開いたときの倍率と位置に戻す）、ボタンの `disabled` と倍率のボタンの文字・スクリーンリーダー向けの名前と、文書の中の表示する枠の高さの上限（定義の高さ × 今の倍率）を付け替える'
+    description: '`mount` が倍率を 1.25 倍ずつ変え（倍率のボタンと `0` は開いたときの倍率と位置に戻す）、ボタンの `disabled` と倍率のボタンの文字・スクリーンリーダー向けの名前と、文書の中の表示する枠の高さの上限（定義の高さ × 今の倍率。`kind` が `map` の図は上限を持たず、リサイズハンドルで図の高さを越えて広げられる）を付け替える'
   - name: 動かす
     when: 余白をドラッグする、矢印キーを押す、移動のボタンを押す
     value: 表示する枠の `scrollLeft`・`scrollTop`
@@ -140,7 +166,7 @@ events:
   - name: 高さを変える・戻す
     when: リサイズハンドルをドラッグする、フォーカスして `↑`・`↓` を押す。ダブルクリックする
     value: 表示する枠の高さとリサイズハンドルの `aria-valuenow`
-    description: '`mount` が表示する枠の高さを変え（`↑`・`↓` は 32px ずつ。120px から定義の高さ × 今の倍率まで）、全体が収まる倍率をもう一度求める。ダブルクリックで定義から決まる高さに戻す'
+    description: '`mount` が表示する枠の高さを変え（`↑`・`↓` は 32px ずつ。120px 以上で上限は持たない）、全体が収まる倍率をもう一度求める。ダブルクリックで倍率を変えずに、今の倍率の図の全体が収まる高さにする'
 css_properties:
   - name: --mdmark-color-bg-opaque
     syntax: <color>
@@ -149,7 +175,7 @@ css_properties:
   - name: --mdmark-diagram-max-height
     syntax: <length>
     default: 36rem
-    description: 文書の中の表示する枠の最初の高さの上限。開いたときと全体が収まる倍率に戻したときは、高さを定義の高さ × 全体が収まる倍率とこの値の小さいほうにする（全体が収まる倍率は枠の幅で決める）。利用側が高さを変えたときはこの値で止めず、定義の高さ × 今の倍率を上限にする
+    description: 文書の中の表示する枠の最初の高さの上限。開いたときと全体が収まる倍率に戻したときは、高さを定義の高さ × 全体が収まる倍率とこの値の小さいほうにする（全体が収まる倍率は枠の幅で決める）。利用側が高さを変えたときはこの値で止めない
   - name: --mdmark-diagram-box-shadow
     syntax: none | <shadow>
     default: inset 0 0 0 1px var(--mdmark-color-border)
@@ -159,7 +185,7 @@ accessibility:
   - ボタンの帯は `role="toolbar"` と `aria-label="「{題名}」の表示"` を持つ。縮小・拡大・全画面・移動のボタンはアイコンだけで、スクリーンリーダー向けの名前を `縮小`・`拡大`・`全画面で開く`・`全画面を閉じる`・`左へ動かす`・`上へ動かす`・`下へ動かす`・`右へ動かす` にする
   - 倍率は縮小と拡大の間のボタンに、全体が収まる倍率を 100% とした今の倍率を `125%` の構造（等幅の数字）で出し、スクリーンリーダー向けの名前を `倍率 {今の倍率}。全体が収まる倍率に戻す` にする（今の名前 `全体が収まる倍率に戻す` で探せる。#6 の確認ログ）
   - 凡例は `aria-label="凡例"` の `ul` で、色の見本に名前を並べ、色だけで意味を伝えない
-  - リサイズハンドルは lucide の `grip-horizontal` のアイコンを持つ `role="separator"`・`aria-orientation="horizontal"`・`tabindex="0"` の要素で、`aria-label="「{題名}」の表示の高さ"`・`aria-keyshortcuts="ArrowUp ArrowDown"`・`aria-valuenow`・`aria-valuemin`・`aria-valuemax`（px）と、操作を記載した `title` を持ち、フォーカスの枠を見せる。ポインターの形状は `ns-resize`
+  - リサイズハンドルは、表示する枠の下端（横のスクロールバーの下）に置く枠線と面を持たない帯で、横の 2 本線のアイコン（lucide の `equal`）を持つ `role="separator"`・`aria-orientation="horizontal"`・`tabindex="0"` の要素。`aria-label="「{題名}」の表示の高さ"`・`aria-keyshortcuts="ArrowUp ArrowDown"`・`aria-valuenow`・`aria-valuemin`・`aria-valuemax`（px。`aria-valuemax` は今の倍率の図の全体が収まる高さと今の高さの大きいほう）・`aria-valuetext="{高さ}px"` と、操作を記載した `title` を持ち、フォーカスの枠を見せる。ポインターの形状は `ns-resize`
 status: planned
 introduced:
   pr: 42

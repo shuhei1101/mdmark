@@ -28,7 +28,7 @@ type ModuleDeps = {
 };
 
 /** 部品のモジュールの名前。埋めなかった部品は、ページの隣の配布ファイルへ要求しないよう、呼ぶと拒否する関数を入れる */
-const PART_NAMES: readonly PartName[] = ["view", "comments"];
+const PART_NAMES: readonly PartName[] = ["view", "comments", "map"];
 
 /** 既定の依存: `registerExtension` */
 const defaultDeps: ModuleDeps = { register: registerExtension };

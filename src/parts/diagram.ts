@@ -9,7 +9,9 @@ import type {
   MdmarkErTable,
   MdmarkErTableKind,
   MdmarkFlowDefinition,
+  MdmarkNodeStyle,
   MdmarkSequenceDefinition,
+  MdmarkWireStyle,
 } from "../diagram/definition.ts";
 import {
   ER_CARDINALITIES,
@@ -21,9 +23,11 @@ import {
 } from "../diagram/er.ts";
 import { jumpPaths, polylinePath, ZOOM } from "../diagram/geometry.ts";
 import { pointSvg, renderChart, SCATTER_POINT_SIZE } from "./chart.ts";
+import { isColorName } from "./colors.ts";
 import { erEndSvg, plainDefinitionText, renderErTable } from "./er.ts";
 import { escapeHtml } from "./escape.ts";
-import { type IconName, iconSvg } from "./icons.ts";
+import { bundledIconNode, type IconName, iconSvg } from "./icons.ts";
+import { iconNodeSvg, type MdmarkIconNode } from "./inline-icon.ts";
 
 /** 線の種類ごとの破線・太さ・矢じり・凡例の名前。色は CSS の変数で適用する */
 export const LINE_STYLES: Readonly<
@@ -108,7 +112,7 @@ export type DiagramLegendItem = {
 /** 図の枠の引数 */
 export type DiagramFrame = {
   /** 中の図の種類 */
-  kind: "flow" | "sequence" | "chart" | "er" | "mermaid";
+  kind: "flow" | "sequence" | "chart" | "er" | "mermaid" | "map";
   /** 題名 */
   title: string;
   /** 範囲（種類 `mermaid` では持たず、タイトルに出さない） */
@@ -129,8 +133,20 @@ export type DiagramFrame = {
   stickyTitles?: boolean;
   /** 開いたときの倍率の下限（`figure` の `data-fit-min` に入れる） */
   fitMin?: number;
+  /** 置き場所の幅いっぱいに広げるか（`figure` に `data-wide="true"`。map の図） */
+  wide?: boolean;
+  /** 右上の帯の先頭に並べるボタン（map の図）。`name` は `MAP_TOOL_ICONS` のキー */
+  tools?: Array<{ name: string; label: string; disabled?: boolean }>;
   /** ツールチップと矢じりの `id` の頭 */
   id: string;
+};
+
+/** map の図の右上の帯の先頭のボタンのアイコン */
+export const MAP_TOOL_ICONS: Readonly<Record<string, IconName>> = {
+  back: "corner-up-left",
+  expandAll: "chevrons-up-down",
+  collapseAll: "chevrons-down-up",
+  reset: "rotate-ccw",
 };
 
 /** 図の中身 */
@@ -217,7 +233,7 @@ export function renderDiagramTip(tip: DiagramTip): string {
 }
 
 /** 図の中のツールチップを集める入れ物 */
-type TipList = {
+export type TipList = {
   /** ツールチップを追加して `id` を返却する */
   add: (tip: Omit<DiagramTip, "id">) => string;
   /** 追加したツールチップの HTML */
@@ -225,7 +241,7 @@ type TipList = {
 };
 
 /** `id` の頭から通し番号の `id` を振るツールチップの入れ物を作る */
-function createTips(prefix: string): TipList {
+export function createTips(prefix: string): TipList {
   const rendered: string[] = [];
   return {
     add: (tip) => {
@@ -238,7 +254,7 @@ function createTips(prefix: string): TipList {
 }
 
 /** 定義の文字の `{{単語}}` を、意味のある用語なら下線とツールチップの持ち主にし、それ以外は単語だけにして、文字を逃がして返却する */
-function renderText(
+export function renderText(
   text: string,
   tips: TipList,
   lookup: TermLookup | undefined,
@@ -303,11 +319,72 @@ function renderWire(options: {
   line: MdmarkDiagramLine;
   d: string;
   hit: boolean;
+  custom?: MdmarkWireStyle | undefined;
+  index?: number;
 }): string {
-  const { id, wireId, line, d, hit } = options;
+  const { id, wireId, line, d, hit, custom } = options;
+  if (custom !== undefined) {
+    return renderStyledWire({ ...options, custom, index: options.index ?? 0 });
+  }
   const style = LINE_STYLES[line];
   const dash = style.dash ? ` stroke-dasharray="${style.dash}"` : "";
   const visible = `<path class="mdmark-diagram-wire" data-line="${line}" data-wire="${escapeHtml(wireId)}" d="${d}"${dash} stroke-width="${style.width}" marker-end="url(#${id}-head-${line})"></path>`;
+  const target = hit
+    ? `<path class="mdmark-diagram-wire-hit" data-tip-owner="${escapeHtml(wireId)}" d="${d}"></path>`
+    : "";
+  return visible + target;
+}
+
+/** map の線の模様ごとの破線の間隔 */
+const MAP_DASHES: Record<NonNullable<MdmarkWireStyle["dash"]>, string> = {
+  solid: "",
+  dashed: "6 4",
+  dotted: "2 4",
+  "dash-dot": "8 3 2 3",
+  "long-dash": "12 5",
+};
+
+/** map の線の太さ（px） */
+const MAP_WIDTHS: Record<NonNullable<MdmarkWireStyle["width"]>, number> = {
+  thin: 1,
+  normal: 1.5,
+  thick: 3,
+};
+
+/** map の線の色。色の名前が無ければ線の既定の色 */
+const wireColor = (color: string | undefined): string =>
+  color === undefined || !isColorName(color)
+    ? "var(--mdmark-color-diagram-line)"
+    : `var(--mdmark-color-accent-${color}-text, var(--mdmark-color-diagram-line))`;
+
+/** 設定の線の種類で描く線。矢じりは線ごとに線と同じ色の marker を持つ */
+function renderStyledWire(options: {
+  id: string;
+  wireId: string;
+  d: string;
+  hit: boolean;
+  custom: MdmarkWireStyle;
+  index: number;
+}): string {
+  const { id, wireId, d, hit, custom, index } = options;
+  const color = wireColor(custom.color);
+  const dash = MAP_DASHES[custom.dash ?? "solid"];
+  const width = MAP_WIDTHS[custom.width ?? "normal"];
+  const head = custom.head ?? "filled";
+  const markerId = `${id}-head-map-${index}`;
+  const shape =
+    head === "filled"
+      ? `<path d="M0,0 L9,4.5 L0,9 z" fill="${color}"></path>`
+      : `<path d="M1,1 L8,4.5 L1,8" fill="none" stroke="${color}" stroke-width="1.5"></path>`;
+  const marker =
+    head === "none"
+      ? ""
+      : `<marker id="${markerId}" class="mdmark-diagram-arrowhead" viewBox="0 0 9 9" refX="8.5" refY="4.5" markerWidth="${HEAD_SIZE}" markerHeight="${HEAD_SIZE}" markerUnits="userSpaceOnUse" orient="auto-start-reverse">${shape}</marker>`;
+  const ends =
+    head === "none"
+      ? ""
+      : ` marker-end="url(#${markerId})"${custom.both ? ` marker-start="url(#${markerId})"` : ""}`;
+  const visible = `${marker === "" ? "" : `<defs>${marker}</defs>`}<path class="mdmark-diagram-wire" data-line="map" data-wire="${escapeHtml(wireId)}" d="${d}"${dash ? ` stroke-dasharray="${dash}"` : ""} stroke-width="${width}" style="stroke:${color}"${ends}></path>`;
   const target = hit
     ? `<path class="mdmark-diagram-wire-hit" data-tip-owner="${escapeHtml(wireId)}" d="${d}"></path>`
     : "";
@@ -329,10 +406,10 @@ function renderLabel(options: {
   }
   const style = boxStyle({ x: at[0], y: at[1] });
   if (tip === undefined || tip === "") {
-    return `<span class="mdmark-diagram-label" data-line="${line}"${style}>${escapeHtml(label)}</span>`;
+    return `<span class="mdmark-diagram-label" data-line="${line}" data-wire="${escapeHtml(wireId)}"${style}>${escapeHtml(label)}</span>`;
   }
   const id = tips.add({ kind: "wire", label, tip, owner: wireId });
-  return `<span class="mdmark-diagram-label has-tip" data-line="${line}" tabindex="0" aria-describedby="${id}" data-tip-owner="${escapeHtml(wireId)}"${style}>${escapeHtml(label)}</span>`;
+  return `<span class="mdmark-diagram-label has-tip" data-line="${line}" data-wire="${escapeHtml(wireId)}" tabindex="0" aria-describedby="${id}" data-tip-owner="${escapeHtml(wireId)}"${style}>${escapeHtml(label)}</span>`;
 }
 
 /** 折れ線の最も長い区間の中点（`labelAt` を省いたときのラベルの位置） */
@@ -380,7 +457,7 @@ function diamondSvg(box: { w: number; h: number }): string {
 function renderNode(options: {
   node: Pick<
     MdmarkDiagramNode,
-    "id" | "kind" | "name" | "tag" | "sub" | "io" | "hint" | "href"
+    "id" | "kind" | "name" | "tag" | "sub" | "io" | "hint" | "href" | "style"
   >;
   box: { x: number; y: number; w: number; h: number };
   tips: TipList;
@@ -416,7 +493,51 @@ function renderNode(options: {
       ? ""
       : `<a class="mdmark-diagram-node-link" href="${escapeHtml(node.href)}" aria-label="${escapeHtml(node.name)}"></a>`;
   const classes = `mdmark-diagram-node${hasTip ? " has-tip" : ""}${node.href === undefined ? "" : " has-link"}`;
+  if (node.style !== undefined) {
+    return renderStyledNode({
+      node,
+      style: node.style,
+      box,
+      classes,
+      name,
+      sub,
+      link,
+      info,
+    });
+  }
   return `<div class="${classes}" data-kind="${node.kind}" data-node="${escapeHtml(node.id)}"${boxStyle({ ...box, inset: nodeInset(node.kind, box) })}>${node.kind === "question" ? diamondSvg(box) : ""}<span class="mdmark-diagram-node-kind">${iconSvg(kind.icon)}<span>${tag}</span></span><span class="mdmark-diagram-node-name">${name}</span>${sub}${link}${info}</div>`;
+}
+
+/** map の構成図のノード: 設定の種類の名前・アイコン・構造・色で描く。種類の行は名前もアイコンも無いときも高さを取る空の行にする */
+function renderStyledNode(options: {
+  node: Pick<MdmarkDiagramNode, "id" | "name">;
+  style: MdmarkNodeStyle;
+  box: { x: number; y: number; w: number; h: number };
+  classes: string;
+  name: string;
+  sub: string;
+  link: string;
+  info: string;
+}): string {
+  const { node, style, box, classes, name, sub, link, info } = options;
+  const bundled =
+    style.icon === undefined ? undefined : bundledIconNode(style.icon);
+  const icon =
+    style.icon === undefined
+      ? ""
+      : bundled
+        ? iconNodeSvg(bundled as unknown as MdmarkIconNode)
+        : `<span class="mdmark-map-icon" data-icon="${escapeHtml(style.icon)}" aria-hidden="true"></span>`;
+  const label =
+    style.label === undefined ? "" : `<span>${escapeHtml(style.label)}</span>`;
+  const empty = icon === "" && label === "" ? " is-empty" : "";
+  const named = style.color !== undefined && isColorName(style.color);
+  const color = named ? ` data-color="${style.color}"` : "";
+  // 種類の色は枠線と種類の行の色に当てる（`--map-kind`。色の名前の一覧に無い値は当てない）
+  const tint = named
+    ? `;--map-kind:var(--mdmark-color-accent-${style.color}-text)`
+    : "";
+  return `<div class="${classes} map-kinded" data-kind="map" data-shape="${style.shape ?? "rounded"}"${color} data-node="${escapeHtml(node.id)}"${boxStyle({ ...box, inset: tint })}><span class="mdmark-diagram-node-kind${empty}">${icon}${label}</span><span class="mdmark-diagram-node-name">${name}</span>${sub}${link}${info}</div>`;
 }
 
 /** `hint` を持つシステムの枠・層のタイトルの右のマーカー（`hint` が無ければ空） */
@@ -459,13 +580,15 @@ export function renderFlow(
   }
   const paths = jumpPaths(definition.wires);
   const wires = definition.wires
-    .map((wire) =>
+    .map((wire, index) =>
       renderWire({
         id,
         wireId: wire.id,
         line: wire.line,
         d: paths.get(wire.id) ?? "",
         hit: hints && wire.tip !== undefined && wire.tip !== "",
+        custom: wire.style,
+        index,
       }),
     )
     .join("");
@@ -948,6 +1071,15 @@ function renderTools(frame: DiagramFrame): string {
     disabled = false,
   ): string =>
     `<button class="mdmark-diagram-tool" type="button" data-tool="${name}" aria-label="${label}"${disabled ? ' disabled="disabled"' : ""}>${iconSvg(icon)}</button>`;
+  const extra =
+    frame.tools === undefined || frame.tools.length === 0
+      ? ""
+      : `<div class="mdmark-diagram-tools-group" data-group="map">${frame.tools
+          .map(
+            (item) =>
+              `<button class="mdmark-diagram-tool" type="button" data-tool="${escapeHtml(item.name)}" aria-label="${escapeHtml(item.label)}" title="${escapeHtml(item.label)}"${item.disabled ? ' disabled="disabled"' : ""}>${iconSvg(MAP_TOOL_ICONS[item.name] ?? "ellipsis")}</button>`,
+          )
+          .join("")}</div>`;
   const pan = [
     tool("left", "左へ動かす", "chevron-left"),
     tool("up", "上へ動かす", "chevron-up"),
@@ -959,7 +1091,11 @@ function renderTools(frame: DiagramFrame): string {
     : tool("fullscreen", "全画面で開く", "expand");
   const percent = `${Math.round((zoom / fit) * 100)}%`;
   const zoomButton = `<button class="mdmark-diagram-tool mdmark-diagram-zoom" type="button" data-tool="fit" aria-label="倍率 ${percent}。全体が収まる倍率に戻す">${percent}</button>`;
-  return `<div class="mdmark-diagram-tools" role="toolbar" aria-label="「${escapeHtml(frame.title)}」の表示"><div class="mdmark-diagram-tools-group" data-group="pan"${zoom > fit ? "" : ' hidden="hidden"'}>${pan}</div><div class="mdmark-diagram-tools-group" data-group="zoom">${tool("out", "縮小", "minus", zoom <= fit)}${zoomButton}${tool("in", "拡大", "plus", zoom >= ZOOM.max)}</div><div class="mdmark-diagram-tools-group" data-group="screen">${screen}</div></div>`;
+  const panGroup =
+    frame.kind === "map"
+      ? ""
+      : `<div class="mdmark-diagram-tools-group" data-group="pan"${zoom > fit ? "" : ' hidden="hidden"'}>${pan}</div>`;
+  return `<div class="mdmark-diagram-tools" role="toolbar" aria-label="「${escapeHtml(frame.title)}」の表示">${extra}${panGroup}<div class="mdmark-diagram-tools-group" data-group="zoom">${tool("out", "縮小", "minus", zoom <= fit)}${zoomButton}${tool("in", "拡大", "plus", zoom >= ZOOM.max)}</div><div class="mdmark-diagram-tools-group" data-group="screen">${screen}</div></div>`;
 }
 
 /** 図の枠を描く: タイトル・ボタンの帯・表示する枠・ツールチップの中身・凡例を並べる */
@@ -974,7 +1110,7 @@ export function renderDiagramFrame(
   const legend = renderLegendItems(id, frame.legend);
   const resize =
     frame.resizable !== false && frame.modal !== true
-      ? `<div class="mdmark-diagram-resize" role="separator" tabindex="0" aria-orientation="horizontal" aria-label="「${escapeHtml(frame.title)}」の表示の高さ" aria-keyshortcuts="ArrowUp ArrowDown" title="ドラッグか ↑ ↓ で高さを変える。ダブルクリックで元の高さに戻す">${iconSvg("grip-horizontal")}</div>`
+      ? `<div class="mdmark-diagram-resize" role="separator" tabindex="0" aria-orientation="horizontal" aria-label="「${escapeHtml(frame.title)}」の表示の高さ" aria-keyshortcuts="ArrowUp ArrowDown" title="ドラッグか ↑ ↓ で高さを変える。ダブルクリックで図の全体が収まる高さにする">${iconSvg("equal")}</div>`
       : "";
   const sticky =
     frame.stickyTitles === false ? ' data-sticky-titles="off"' : "";
@@ -984,11 +1120,12 @@ export function renderDiagramFrame(
     frame.scope === undefined || frame.updated === undefined
       ? ""
       : `<span class="mdmark-diagram-meta">範囲: ${escapeHtml(frame.scope)}・更新日: <time datetime="${escapeHtml(frame.updated)}">${escapeHtml(frame.updated)}</time></span>`;
-  return `<figure class="mdmark-diagram" data-diagram="${frame.kind}"${sticky}${fitMin}><figcaption class="mdmark-diagram-head" id="${id}-title"><span class="mdmark-diagram-title">${escapeHtml(frame.title)}</span>${meta}</figcaption><div class="mdmark-diagram-box">${renderTools(frame)}<div class="mdmark-diagram-viewport" tabindex="0" role="group" aria-roledescription="図" aria-labelledby="${id}-title" aria-keyshortcuts="${VIEWPORT_KEYS}"><div class="mdmark-diagram-sizer" style="${sizer}"><div class="mdmark-diagram-stage" style="${stage}">${body.html}</div></div></div>${resize}${body.tips}</div><ul class="mdmark-diagram-legend" aria-label="凡例"${frame.legend.length === 0 ? ' hidden="hidden"' : ""}>${legend}</ul><svg class="mdmark-diagram-defs" width="0" height="0" aria-hidden="true"><defs>${markerDefs(id)}</defs></svg></figure>`;
+  const wide = frame.wide === true ? ' data-wide="true"' : "";
+  return `<figure class="mdmark-diagram" data-diagram="${frame.kind}"${sticky}${fitMin}${wide}><figcaption class="mdmark-diagram-head" id="${id}-title"><span class="mdmark-diagram-title">${escapeHtml(frame.title)}</span>${meta}</figcaption><div class="mdmark-diagram-box">${renderTools(frame)}<div class="mdmark-diagram-viewport" tabindex="0" role="group" aria-roledescription="図" aria-labelledby="${id}-title" aria-keyshortcuts="${VIEWPORT_KEYS}"><div class="mdmark-diagram-sizer" style="${sizer}"><div class="mdmark-diagram-stage" style="${stage}">${body.html}</div></div></div>${resize}${body.tips}</div><ul class="mdmark-diagram-legend" aria-label="凡例"${frame.legend.length === 0 ? ' hidden="hidden"' : ""}>${legend}</ul><svg class="mdmark-diagram-defs" width="0" height="0" aria-hidden="true"><defs>${markerDefs(id)}</defs></svg></figure>`;
 }
 
 /** 図の種類 */
-export type DiagramKind = Exclude<DiagramFrame["kind"], "mermaid">;
+export type DiagramKind = Exclude<DiagramFrame["kind"], "mermaid" | "map">;
 
 /** 図を描く: 種類ごとの中身を描き、凡例を決めて枠に差す。`hints` がオフ（既定はオン）なら、線の詳細・ノードの説明と入力・処理・出力のツールチップとマーカーを配置しない */
 export function renderDiagram(options: {
