@@ -69,10 +69,11 @@ test("test_normal", async ({ page }) => {
   // 準備
   await openMap(page, builtRoot, { markdown: MARKDOWN });
   const figure = mapFigure(page);
-  const kind = (id: string) =>
-    mapNode(figure, id).locator(".mdmark-diagram-node-kind");
-  // 実行: 3 人目の参加者の箱（種類の行）を押す
-  await kind("marker").click();
+  /** 参加者の箱の、名前の文字の外の余白（左上）を押す */
+  const press = (id: string) =>
+    mapNode(figure, id).click({ position: { x: 6, y: 6 } });
+  // 実行: 3 人目の参加者の箱（名前の文字の外の余白）を押す
+  await press("marker");
   // 検証
   expect(await isSelected(mapNode(figure, "marker"))).toBe(true);
   expect(await messageDims(figure)).toEqual([true, false, false, true]);
@@ -89,7 +90,7 @@ test("test_normal", async ({ page }) => {
   expect(await isDimmed(mapNode(figure, "user"))).toBe(true);
   expect((await packetOwners(figure)).sort()).toEqual(["1", "2"]);
   // 実行・検証: 4 人目も選ぶと、2 人のあいだのメッセージだけを強調する
-  await kind("mermaid").click();
+  await press("mermaid");
   expect(await messageDims(figure)).toEqual([true, true, false, true]);
   // 実行・検証: Esc で解ける
   await figure.locator(".mdmark-diagram-viewport").focus();
@@ -102,10 +103,12 @@ test("test_normal", async ({ page }) => {
   expect(await isSelected(mapNode(figure, "marker"))).toBe(true);
   await clickMessage(page, figure, 1);
   await expect(figure.locator("[data-selected]")).toHaveCount(0);
-  await kind("mount").click();
+  await press("mount");
   await clickMessage(page, figure, 1);
   expect(await isSelected(mapNode(figure, "marker"))).toBe(true);
+  await figure.locator(".mdmark-diagram-viewport").focus();
   await page.keyboard.press("Escape");
+  await expect(figure.locator("[data-selected]")).toHaveCount(0);
   // 実行・検証: キーボードで選べ、選んでいるかをスクリーンリーダー向けに持つ
   await mapNode(figure, "layout").focus();
   await page.keyboard.press("Enter");
@@ -115,7 +118,7 @@ test("test_normal", async ({ page }) => {
     "自動配置（選択中）",
   );
   // 実行・検証: 選んだ箱をもう一度押すと解ける
-  await kind("layout").click();
+  await press("layout");
   expect(await isSelected(mapNode(figure, "layout"))).toBe(false);
   await expect(mapNode(figure, "layout")).toHaveAttribute(
     "aria-label",
@@ -166,17 +169,21 @@ test("test_normal_when_participants_reordered", async ({ page }) => {
     figure.locator(".map-participant [aria-label*='並べ替え']"),
   ).toHaveCount(0);
   const styles = await mapNode(figure, "layout").evaluate((head) => ({
-    touch: getComputedStyle(head).touchAction,
+    // 横の指の動きでページを動かさない（図の表示する枠は縦の動きだけをページに渡す）
+    touch: getComputedStyle(head.closest(".mdmark-diagram-viewport") ?? head)
+      .touchAction,
     kind: getComputedStyle(
       head.querySelector(".mdmark-diagram-node-kind") ?? head,
     ).userSelect,
   }));
-  expect(styles.touch).toBe("none");
+  expect(["none", "pan-y"]).toContain(styles.touch);
   expect(styles.kind).toBe("none");
   // 実行: 5 人目の箱を、名前の文字の外を押したまま 2 人目の位置へ動かして離す
-  const from = await centerOf(
-    mapNode(figure, "layout").locator(".mdmark-diagram-node-kind"),
-  );
+  const layoutBox = await mapNode(figure, "layout").boundingBox();
+  const from: [number, number] = [
+    (layoutBox?.x ?? 0) + 6,
+    (layoutBox?.y ?? 0) + 6,
+  ];
   const [toX] = await centerOf(mapNode(figure, "mount"));
   await page.mouse.move(from[0], from[1]);
   await page.mouse.down();
@@ -195,9 +202,11 @@ test("test_normal_when_participants_reordered", async ({ page }) => {
   expect(after.scroll).toEqual(state.scroll);
   expect(after.page).toEqual(state.page);
   // 実行・検証: 指で動かしても並べ替える
-  const finger = await centerOf(
-    mapNode(figure, "user").locator(".mdmark-diagram-node-kind"),
-  );
+  const userBox = await mapNode(figure, "user").boundingBox();
+  const finger: [number, number] = [
+    (userBox?.x ?? 0) + 6,
+    (userBox?.y ?? 0) + 6,
+  ];
   const [fingerTo] = await centerOf(mapNode(figure, "layout"));
   await mapNode(figure, "user").evaluate(
     (head, { start, end }) => {
@@ -208,8 +217,7 @@ test("test_normal_when_participants_reordered", async ({ page }) => {
         isPrimary: true,
         button: 0,
       };
-      const kind = head.querySelector(".mdmark-diagram-node-kind") ?? head;
-      kind.dispatchEvent(
+      head.dispatchEvent(
         new PointerEvent("pointerdown", {
           ...base,
           clientX: start[0],
@@ -244,7 +252,7 @@ test("test_normal_when_participants_reordered", async ({ page }) => {
     .poll(() => order(figure))
     .toEqual(["user", "layout", "mount", "marker", "mermaid"]);
   // 実行・検証: 「参加者の並び順と選択を元に戻す」で記載の順に戻り、選択が解ける
-  await mapNode(figure, "marker").locator(".mdmark-diagram-node-kind").click();
+  await mapNode(figure, "marker").click({ position: { x: 6, y: 6 } });
   await reset.click();
   expect(await order(figure)).toEqual([
     "user",

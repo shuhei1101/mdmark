@@ -15350,7 +15350,15 @@ test("test_normal_when_map_terms", async () => {
       .querySelector('.map-wire-hit[data-message="0"]')
       ?.hasAttribute("data-tip-owner"),
   ).toBe(false);
+  hit.dispatchEvent(new PointerEvent("pointerover", { bubbles: true }));
   hit.dispatchEvent(new PointerEvent("pointerenter", { bubbles: true }));
+  // 検証: その線と送り手・受け手のほかが薄くなる
+  expect(mapDimmed(mapNode(seq, "mount"))).toBe(false);
+  expect(mapDimmed(mapNode(seq, "marker"))).toBe(false);
+  expect(mapDimmed(mapNode(seq, "user"))).toBe(true);
+  expect(mapDimmed(find(seq, '.mdmark-diagram-wire[data-message="0"]'))).toBe(
+    true,
+  );
   await vi.waitFor(() => {
     const shown = [
       ...seq.querySelectorAll<HTMLElement>(".mdmark-diagram-tip"),
@@ -15362,6 +15370,8 @@ test("test_normal_when_map_terms", async () => {
     expect(shown?.textContent).toContain("補足：map の範囲の上書きと説明");
   });
   hit.dispatchEvent(new PointerEvent("pointerleave", { bubbles: true }));
+  hit.dispatchEvent(new PointerEvent("pointerout", { bubbles: true }));
+  expect(seq.querySelectorAll(".map-dim")).toHaveLength(0);
   // 検証: グループのタイトルのボタンには付けない
   expect(flow.querySelector(".map-group-title .mdmark-term")).toBeNull();
 });

@@ -142,7 +142,7 @@ test("test_normal", async ({ builtRoot, tempDir, page }) => {
   await expect(bandCount(seq)).toHaveText("2/4");
   await bandButton(seq, "stop").click();
   // 実行・検証: 参加者を選ぶと、その参加者のメッセージとライフラインを強調する
-  await mapNode(seq, "marker").locator(".mdmark-diagram-node-kind").click();
+  await mapNode(seq, "marker").click({ position: { x: 6, y: 6 } });
   expect(await isSelected(mapNode(seq, "marker"))).toBe(true);
   expect(
     await isDimmed(seq.locator('path.mdmark-diagram-wire[data-message="1"]')),
