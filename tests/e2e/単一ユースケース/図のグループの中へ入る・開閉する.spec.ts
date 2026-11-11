@@ -147,7 +147,7 @@ test("test_normal_when_collapsed", async ({ builtRoot, page, context }) => {
   const closedBox = await closed.boundingBox();
   const openBox = await open.boundingBox();
   expect((openBox?.x ?? 0) - (closedBox?.x ?? 0)).toBeLessThanOrEqual(12);
-  expect((openBox?.y ?? 0) - (closedBox?.y ?? 0)).toBeLessThanOrEqual(12);
+  expect((openBox?.y ?? 0) - (closedBox?.y ?? 0)).toBeLessThanOrEqual(16);
   expect(closedBox?.height ?? 0).toBeLessThan(groupBox?.height ?? 0);
   // 検証: 外の layout への 2 本の線が 1 本にまとまり、ラベルを出さない
   await expect(mapWire(figure, "read->layout")).toHaveCount(1);

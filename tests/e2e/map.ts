@@ -465,3 +465,9 @@ export function nodeLayout(
       ),
     );
 }
+
+/** ページの時計を止める（`page.clock.install` の後は時刻が流れ続けるため、`runFor` だけで進める） */
+export async function pauseClock(page: Page): Promise<void> {
+  const now = await page.evaluate(() => Date.now());
+  await page.clock.pauseAt(now + 1_000);
+}

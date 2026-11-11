@@ -721,6 +721,8 @@ test("test_normal_when_moved", async ({ page }) => {
     boxOf(figure.locator(`.map-group[data-group="${id}"]`));
   const kind = (id: string) =>
     mapNode(figure, id).locator(".mdmark-diagram-node-kind");
+  // route が図の枠の見えている範囲に入るまで、図の枠の中をスクロールする
+  await kind("route").scrollIntoViewIfNeeded();
   const route = await box("route");
   const user = await box("user");
   const place = await group("place");

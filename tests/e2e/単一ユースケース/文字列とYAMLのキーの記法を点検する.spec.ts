@@ -305,6 +305,6 @@ test("test_normal_when_map_warnings", async ({ builtRoot, tempDir, page }) => {
   const rendered = ((await warning.textContent()) ?? "").replace(/\s+/g, "");
   for (const line of lines.slice(0, -1)) {
     const message = line.replace(/^-:\d+: \w+: /, "");
-    expect(rendered).toContain(message.replace(/\s+/g, ""));
+    expect(rendered).toContain(message.replace(/[\s`]+/g, ""));
   }
 });

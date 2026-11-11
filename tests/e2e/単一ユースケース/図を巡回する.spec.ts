@@ -11,6 +11,7 @@ import {
   mapRange,
   openMap,
   packetOwners,
+  pauseClock,
   viewState,
 } from "../map.ts";
 
@@ -38,6 +39,7 @@ test("test_normal", async ({ page }) => {
   await page.setViewportSize({ width: 1280, height: 900 });
   await page.clock.install();
   await openMap(page, builtRoot, { markdown: MARKDOWN });
+  await pauseClock(page);
   const figure = mapFigure(page);
   const band = figure.locator(".map-band");
   const actions = figure.locator(".map-band-actions");

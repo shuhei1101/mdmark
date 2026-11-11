@@ -14,6 +14,7 @@ import {
   mapRange,
   openMap,
   packetOwners,
+  pauseClock,
   viewState,
 } from "../map.ts";
 
@@ -51,6 +52,7 @@ test("test_normal", async ({ page }) => {
   // 準備
   await page.clock.install();
   await openMap(page, builtRoot, { markdown: BOTH_RANGES });
+  await pauseClock(page);
   const flow = mapFigure(page, 0);
   const seq = mapFigure(page, 1);
   await expect(seq).toBeVisible();
@@ -66,7 +68,16 @@ test("test_normal", async ({ page }) => {
     await expect(bandButton(seq, name)).toHaveAttribute("aria-label", label);
   }
   await expect(seq.locator(".map-band input, .map-band select")).toHaveCount(0);
-  const idle = await actions.boundingBox();
+  /** 帯の左上からのボタンの位置 */
+  const actionsAt = async () => {
+    const band = await seq.locator(".map-band").boundingBox();
+    const box = await actions.boundingBox();
+    return {
+      x: (box?.x ?? 0) - (band?.x ?? 0),
+      y: (box?.y ?? 0) - (band?.y ?? 0),
+    };
+  };
+  const idle = await actionsAt();
   // 実行: 自動で進める
   await bandButton(seq, "auto").click();
   // 検証: メッセージ 1 を両方の図で強調し、送り手から受け手へ印を流す
@@ -104,9 +115,9 @@ test("test_normal", async ({ page }) => {
   await expect(seq.locator(".map-band-title")).toHaveText("map の範囲");
   const text = await seq.locator(".map-band-text").textContent();
   expect(text?.split("\n")).toContain(MESSAGE_NOTE);
-  const step = await actions.boundingBox();
-  expect(step?.x).toBeCloseTo(idle?.x ?? -1, 0);
-  expect(step?.y).toBeCloseTo(idle?.y ?? -1, 0);
+  const step = await actionsAt();
+  expect(step.x).toBeCloseTo(idle.x, 0);
+  expect(step.y).toBeCloseTo(idle.y, 0);
   // 検証: 前へ・次へでは図の倍率・図の枠の中のスクロール・文書のスクロールが変わらない
   for (const [figure, state] of [
     [flow, before.flow],
@@ -199,6 +210,7 @@ test("test_normal_when_autoplay", async ({ page }) => {
   await page.clock.install();
   const markdown = belowFold(sequenceRange('{"play": "autoplay"}'));
   await openMap(page, builtRoot, { markdown });
+  await pauseClock(page);
   const seq = mapFigure(page, 1);
   // 検証: 画面に入るまで始まらない
   await page.clock.runFor(3_000);
@@ -211,6 +223,7 @@ test("test_normal_when_autoplay", async ({ page }) => {
   // 実行: 動きを減らす設定で開き直す
   await page.emulateMedia({ reducedMotion: "reduce" });
   await openMap(page, builtRoot, { markdown });
+  await pauseClock(page);
   const reduced = mapFigure(page, 1);
   await reduced.scrollIntoViewIfNeeded();
   await page.clock.runFor(3_000);
@@ -221,6 +234,7 @@ test("test_normal_when_autoplay", async ({ page }) => {
   // 実行・検証: play を持たない図は、押すまで再生しない
   await page.emulateMedia({ reducedMotion: "no-preference" });
   await openMap(page, builtRoot, { markdown: belowFold(sequenceRange()) });
+  await pauseClock(page);
   const plain = mapFigure(page, 1);
   await plain.scrollIntoViewIfNeeded();
   await page.clock.runFor(3_000);
@@ -234,6 +248,7 @@ test("test_normal_when_interval", async ({ page }) => {
   await openMap(page, builtRoot, {
     markdown: `${FLOW_RANGE}\n${sequenceRange('{"interval": 1}')}\n${sequenceRange('{"interval": "abc"}')}`,
   });
+  await pauseClock(page);
   const first = mapFigure(page, 1);
   const second = mapFigure(page, 2);
   await expect(second).toBeVisible();

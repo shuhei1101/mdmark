@@ -26,6 +26,7 @@ import {
   openMap,
   overlaps,
   packetOwners,
+  pauseClock,
   resolveColor,
 } from "../map.ts";
 import { MERMAID_ENTRY, routeMermaid } from "../mermaid.ts";
@@ -134,6 +135,7 @@ test("test_normal", async ({ builtRoot, tempDir, page }) => {
   await bandButton(flow, "stop").click();
   // 実行・検証: シーケンスを再生すると、両方の図の線に印が流れ続ける
   await page.clock.install();
+  await pauseClock(page);
   await bandButton(seq, "auto").click();
   await expect(bandCount(seq)).toHaveText("1/4");
   expect(await packetOwners(flow)).toEqual(["user->mount"]);
