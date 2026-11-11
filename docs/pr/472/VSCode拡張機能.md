@@ -1,0 +1,21 @@
+# VS Code 拡張機能
+
+## 現状
+
+| 分類 | ページ / ファイル | 概要 | 補足 |
+| --- | --- | --- | --- |
+| ドキュメント | [dev/設計書/インターフェース定義/VSCode拡張機能/](https://github.com/shuhei1101/mdmark/blob/develop/dev/設計書/インターフェース定義/VSCode拡張機能)・[dev/設計書/モジュール構成/VSCode拡張機能/](https://github.com/shuhei1101/mdmark/blob/develop/dev/設計書/モジュール構成/VSCode拡張機能)・[dev/設計書/設定/VSCode拡張機能.yaml](https://github.com/shuhei1101/mdmark/blob/develop/dev/設計書/設定/VSCode拡張機能.yaml)・[dev/設計書/画面設計/](https://github.com/shuhei1101/mdmark/blob/develop/dev/設計書/画面設計) | VS Code 拡張機能の設計書 | 種類のフォルダへ移す |
+| 設定 | [vscode/files.yaml](https://github.com/shuhei1101/mdmark/blob/develop/vscode/files.yaml) | 拡張機能のファイルのメタデータ。関連が `dev/設計書/` を指す | パスを合わせる |
+| テスト | [vscode/tests/integration/preview-open.test.ts](https://github.com/shuhei1101/mdmark/blob/develop/vscode/tests/integration/preview-open.test.ts)・[vscode/tests/integration/helpers.ts](https://github.com/shuhei1101/mdmark/blob/develop/vscode/tests/integration/helpers.ts) | プレビューの確認に `dev/`・`docs/` の文書を使う | パスを合わせる |
+| 設定 | [.github/workflows/vscode-release.yml](https://github.com/shuhei1101/mdmark/blob/develop/.github/workflows/vscode-release.yml) | `dev/` を指す | パスを合わせる |
+
+## 変更方針
+
+| 対象 | 方針 | 補足 |
+| --- | --- | --- |
+| 設計書の置き場所 | ライブラリ本体と同じ手順で、v0.4.0 の変換の後に種類のフォルダへ移す | 中身は変えない |
+| パスを指す設定・テスト | `vscode/files.yaml`・`vscode/tests/integration/`・`.github/workflows/vscode-release.yml` を移した後のパスに合わせる | 振る舞いは変えない |
+
+## テスト結果
+
+（実装で記入する）

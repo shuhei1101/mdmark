@@ -1,0 +1,85 @@
+use_cases:
+  - kind: composite
+    scenario: dev/設計書/シナリオ/複合ユースケース/ClaudeCodeでガイドを参照して記載し点検する.yaml
+    impact: run_only
+    detail: ガイドのページの置き場所が docs/guide/ へ変わるため、記載の前にガイドを参照できることを確かめる
+    depends_on: []
+  - kind: single
+    scenario: dev/設計書/シナリオ/単一ユースケース/ガイドを参照する.yaml
+    impact: run_only
+    detail: ガイドの索引が指すページの置き場所が docs/guide/ へ変わるため、タグで絞ってガイドを参照できることを確かめる
+    depends_on: []
+  - kind: single
+    scenario: dev/設計書/シナリオ/単一ユースケース/VSCodeでプレビューを開く.yaml
+    impact: run_only
+    detail: プレビューの確認に使う文書の置き場所が変わるため、プレビューを開けることを確かめる
+    depends_on: []
+  - kind: single
+    scenario: dev/設計書/シナリオ/単一ユースケース/バージョンを上げる.yaml
+    impact: run_only
+    detail: 変更履歴のページの置き場所が docs/guide/ へ変わるため、上げる版の変更を示して版を上げられることを確かめる
+    depends_on: []
+  - kind: single
+    scenario: dev/設計書/シナリオ/単一ユースケース/端末にmdmarkをセットアップする.yaml
+    impact: run_only
+    detail: 変更履歴のページの置き場所が docs/guide/ へ変わるため、端末の設定を用意できることを確かめる
+    depends_on: []
+docs:
+  - page: CLAUDE.md
+    new: false
+    change: 「実体は開発ドキュメント dev/ と公開ドキュメント docs/」・使い方のリンク・移行の手順のリンクを、移した後の docs/ の置き場所に合わせる
+    status: todo
+  - page: README.md
+    new: false
+    change: dev/ と旧 docs/ を指すリンクを、移した後の置き場所に合わせる
+    status: todo
+  - page: dev-docs.yaml
+    new: false
+    change: 設計書の種類ごとの行と各 files.yaml の行を、docs/ の種類のフォルダと schemas/ に合わせる
+    status: todo
+  - page: docs/rules.yaml
+    new: false
+    change: ルールを当てるパスを、移した後の置き場所に合わせる
+    status: todo
+  - page: docs/index.yaml
+    new: false
+    change: 起点の索引を 1 つにし、行が種類のフォルダを指すようにする（dev/index.yaml・dev/設計書/index.yaml・dev/テンプレート/index.yaml・dev/コーディング規約/index.yaml をまとめる）
+    status: todo
+  - page: docs/files.yaml
+    new: false
+    change: '公開ドキュメントを docs/guide/ へ移したパスにし、各行に visibility: public と分類（はじめに・使い方・リファレンス）を持たせる'
+    status: todo
+  - page: docs/_config.yml
+    new: true
+    change: exclude に internal の種類のフォルダと pr/・mock/・generated/ を載せ、Pages に出さない
+    status: todo
+  - page: guide/index.yaml
+    new: false
+    change: 使い方集の索引が指すページのパスを docs/guide/ に合わせる
+    status: todo
+  - page: docs/はじめに/変更履歴.md
+    new: false
+    change: docs/guide/ へ移し、dev/ を指すリンクを移した後の置き場所に合わせる
+    status: todo
+  - page: dev/設計書/アーキテクチャ図/アーキテクチャ図.yaml
+    new: false
+    change: docs/architecture/ へ移し、repository.layout の dev/ と dev/テンプレート/files.schema.yaml の記載を移した後の置き場所に合わせる
+    status: todo
+  - page: dev/テンプレート/files.schema.yaml
+    new: false
+    change: dev/テンプレート/*.schema.yaml を schemas/{kind}.schema.yaml へ移し、visibility と分類のキーを持たせる
+    status: todo
+  - page: tmp/.gitignore
+    new: true
+    change: 中身が * だけの .gitignore を置き、develop に入った tmp/screenshots/ の PNG 43 件を削除する
+    status: todo
+scope_out:
+  - item: フォルダ構成の設計書（layout）の作成
+    reason: 移した後の構成を前提に書く後続の作業で、要望に含まれない
+    plan: '#361'
+  - item: 'dev/mock/files.yaml の #263 のバイナリの素材 4 行を dev-docs が配信から除いている問題'
+    reason: 置き場所を移しても同じ内容で成り立つ別の不具合で、要望に含まれない（行はそのまま docs/mock/files.yaml へ移す）
+    plan: '#341'
+  - item: 既存の文書の中身の表し方の移行
+    reason: 置き場所だけを移し、文書の中身は変えない
+    plan: '#290'
