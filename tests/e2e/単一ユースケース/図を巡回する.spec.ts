@@ -118,11 +118,13 @@ test("test_normal", async ({ page }) => {
     "aria-pressed",
     "true",
   );
-  await expect(bandCount(figure)).toHaveText("2/3");
+  await expect(bandCount(figure)).toHaveText("1/3");
   const pageScroll = (await viewState(figure)).page;
   await page.clock.runFor(1_900);
-  await expect(bandCount(figure)).toHaveText("2/3");
+  await expect(bandCount(figure)).toHaveText("1/3");
   await page.clock.runFor(100);
+  await expect(bandCount(figure)).toHaveText("2/3");
+  await page.clock.runFor(2_000);
   await expect(bandCount(figure)).toHaveText("3/3");
   await expect
     .poll(async () => (await viewState(figure)).scroll[0])
