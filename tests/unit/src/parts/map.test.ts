@@ -333,3 +333,45 @@ test("test_render_map_flow_when_note_terms", async () => {
     expect(tip).not.toMatch(/mdmark-term"[^>]*tabindex/);
   }
 });
+
+// メッセージの説明（正常系）
+test("test_render_map_sequence_when_notes", async () => {
+  // 準備
+  const { renderMapSequence } = await loadParts();
+  const { parseSequence } = await loadSequence();
+  const { sequenceRows } = await loadRows();
+  const sequence = parseSequence(SEQUENCE);
+  const rows = sequenceRows(sequence, {
+    order: sequence.participants.map((item) => item.id),
+    collapsed: [],
+    entered: undefined,
+  });
+  // 実行
+  const { html, tips } = renderMapSequence({
+    sequence,
+    rows: rows.rows,
+    participants: rows.participants,
+    collapsed: [],
+    entered: undefined,
+    selected: [],
+    focus: undefined,
+    notes: { "2": "補足を渡す" },
+    terms: { 補足: "意味" },
+  });
+  // 検証
+  const owners = matches(html, /<path class="map-wire-hit"[^>]*>/g).filter(
+    (hit) => hit.includes("data-tip-owner"),
+  );
+  expect(owners).toHaveLength(1);
+  expect(owners[0]).toContain('data-message="1"');
+  const owner = owners[0]?.match(/data-tip-owner="([^"]+)"/)?.[1] ?? "";
+  const tip =
+    tips.match(
+      new RegExp(
+        `<div class="mdmark-diagram-tip"[^>]*data-tip-for="${owner}"[\\s\\S]*?</div>`,
+      ),
+    )?.[0] ?? "";
+  expect(tip).toContain('<span class="mdmark-term">補足</span>を渡す');
+  expect(tip).toContain("補足</span>：意味");
+  expect(tip).not.toMatch(/mdmark-term"[^>]*tabindex/);
+});

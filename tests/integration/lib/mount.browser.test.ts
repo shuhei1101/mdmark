@@ -15273,7 +15273,7 @@ test("test_normal_when_map_terms", async () => {
     "内側のグループから配置し、グループの大きさを決めてから外側を配置する",
     "補足の上書きを当てて、内側のグループから配置する",
   );
-  const markdown = `${mapRange({ mermaid: MAP_FLOW, data })}\n${mapRange({ mermaid: sequence })}`;
+  const markdown = `${mapRange({ mermaid: MAP_FLOW, data })}\n${mapRange({ mermaid: sequence, data: '{"version": 1, "notes": {"2": {"text": "補足を渡す"}}}' })}`;
   // 実行
   await mountTracked(el, {
     markdown,
@@ -15343,6 +15343,25 @@ test("test_normal_when_map_terms", async () => {
       '.mdmark-diagram-label[data-message="1"]',
     ).querySelector(".mdmark-term")?.textContent,
   ).toBe("補足");
+  // 検証: 説明を持つメッセージの線の押せる帯にポインターを当てると、説明のツールチップが出る
+  const hit = find<SVGPathElement>(seq, '.map-wire-hit[data-message="1"]');
+  expect(
+    seq
+      .querySelector('.map-wire-hit[data-message="0"]')
+      ?.hasAttribute("data-tip-owner"),
+  ).toBe(false);
+  hit.dispatchEvent(new PointerEvent("pointerenter", { bubbles: true }));
+  await vi.waitFor(() => {
+    const shown = [
+      ...seq.querySelectorAll<HTMLElement>(".mdmark-diagram-tip"),
+    ].find((tip) => !tip.hidden && tip.textContent?.includes("を渡す"));
+    expect(shown).toBeDefined();
+    expect(shown?.querySelector(".mdmark-term")?.hasAttribute("tabindex")).toBe(
+      false,
+    );
+    expect(shown?.textContent).toContain("補足：map の範囲の上書きと説明");
+  });
+  hit.dispatchEvent(new PointerEvent("pointerleave", { bubbles: true }));
   // 検証: グループのタイトルのボタンには付けない
   expect(flow.querySelector(".map-group-title .mdmark-term")).toBeNull();
 });
