@@ -295,6 +295,12 @@ functions:
         condition: 読めない Mermaid の行と知らない補足のキー `layuot` を持つ範囲
         mock: なし（jsdom）
         expected: 図の枠の前の記載の警告が 1 つで、読めない行と `layuot` を含む
+      - name: test_attach_map_when_missing_participant
+        case: 正常
+        summary: 構成図に無い再生の相手
+        condition: '構成図と、`plays_over: 1` で構成図に無い参加者 `ghost` を持つシーケンス図'
+        mock: なし（jsdom）
+        expected: シーケンス図の図の枠の前の記載の警告に `ghost` がある
   - name: attachMapFlow
     title: 構成図を付ける
     kind: 関数
@@ -723,6 +729,12 @@ functions:
         condition: '`terms` が `{"補足": "意味"}` で、ノード `layout` と線 `mount->marker` の `notes` が「補足を当てる」'
         mock: なし
         expected: '`tips` の 2 つの説明のツールチップのそれぞれに、`tabindex` を持たない `<span class="mdmark-term">補足</span>` と、末尾の「補足：意味」の行がある'
+      - name: test_render_map_flow_when_collapsed_count
+        case: 正常
+        summary: 閉じたグループのノードの数
+        condition: '`collapsed: ["read"]`'
+        mock: なし
+        expected: '`.map-closed-group[data-group="read"]` の中に「ノード 3 件」がある'
   - name: renderMapSequence
     title: mapのシーケンス図のHTML
     kind: 関数

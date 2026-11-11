@@ -73,7 +73,7 @@ args:
     type: 配列
     required: false
     default: '[]'
-    description: 閉じたグループの ID。閉じたグループは、左上に開くボタンを持つ二重の枠線の 1 つのノード（`map-closed-group`）で描く
+    description: 閉じたグループの ID。閉じたグループは、左上に開くボタンを持つ二重の枠線の 1 つのノード（`map-closed-group`）で描き、名前の後ろに中のノードの数を「ノード {数} 件」で出す
   - name: entered
     type: 文字列
     required: false
