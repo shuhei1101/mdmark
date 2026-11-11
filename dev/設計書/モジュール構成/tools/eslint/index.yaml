@@ -1,0 +1,6 @@
+summary: eslint の設計書
+items:
+  - page: eslint.config.js.yaml
+    summary: ライブラリ本体 / 検査 / eslint.config.js
+  - page: package.json.yaml
+    summary: ライブラリ本体 / 検査 / package.json

@@ -1,3 +1,4 @@
+id: SC-472-54
 title: "文書の先頭へ戻る"
 scenarios:
   - name: 正常シナリオ
@@ -149,7 +150,7 @@ scenarios:
       - ミニマップの末尾の近くのマーカーを押せて、そのマーカーの変えた行が画面に表示されている
     test: test_normal_when_diff_minimap_shown
     refs:
-      - dev/設計書/シナリオ/単一ユースケース/文書の差分を確認する#scenarios[正常シナリオ]
+      - SC-472-55#scenarios[正常シナリオ]
   - name: 正常シナリオ（余白のマーカーと重ならない）
     setup:
       - name: コメントの機能をオンにして文書を描いたページ
@@ -175,7 +176,7 @@ scenarios:
       - 余白のマーカーを押せて、コメントの吹き出しが開いている
     test: test_normal_when_comment_margin_shown
     refs:
-      - dev/設計書/シナリオ/単一ユースケース/選んだ箇所にコメントする#scenarios[正常シナリオ]
+      - SC-472-80#scenarios[正常シナリオ]
   - name: 正常シナリオ（ライトボックスを開いている間）
     setup:
       - name: 文書を描いたページ
@@ -200,7 +201,7 @@ scenarios:
       - ライトボックスを閉じた後、先頭へ戻るボタンが画面の右下に表示されている
     test: test_normal_when_lightbox_open
     refs:
-      - dev/設計書/シナリオ/単一ユースケース/画像をライトボックスで拡大する#scenarios[正常シナリオ]
+      - SC-472-66#scenarios[正常シナリオ]
   - name: 正常シナリオ（狭い幅）
     setup:
       - name: 文書を描いたページ

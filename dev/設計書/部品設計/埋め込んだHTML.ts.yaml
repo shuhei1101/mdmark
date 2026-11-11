@@ -1,3 +1,4 @@
+id: CMP-472-41
 title: "埋め込んだHTML"
 implementation: "src/parts/embedded-html.ts#renderEmbeddedHtml"
 story: "Parts/EmbeddedHtml"
@@ -61,11 +62,11 @@ slots:
   - name: default
     description: 記載した人の HTML。`<mdmark-chart>` などは図の枠に、`data-hint` を持つ要素はヒントに置き換わる
 uses:
-  - component: dev/設計書/部品設計/図の枠.ts#
+  - component: CMP-472-39#
     how: 中の `<mdmark-chart>` などを図の枠に記載する
-  - component: dev/設計書/部品設計/ヒント.ts#
+  - component: CMP-472-24#
     how: '`data-hint` を持つ要素にマーカーか下線とツールチップを付ける'
-  - component: dev/設計書/部品設計/用語のツールチップ.ts#
+  - component: CMP-472-53#
     how: 中の文字の用語に本文と同じ下線とツールチップを付ける
 accessibility:
   - 列より広いときだけ `tabindex="0"` を持ち、キーボードで横にスクロールできる
@@ -74,7 +75,7 @@ status: planned
 introduced:
   pr: 45
 refs:
-  - dev/設計書/インターフェース定義/ライブラリ本体/文書をHTML文字列にする.ts#constraints[埋め込んだ HTML]
-  - dev/設計書/インターフェース定義/ライブラリ本体/文書をHTML文字列にする.ts#constraints[範囲のスクリプトと CSS]
-  - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[範囲のスクリプト]
+  - IF-472-34#constraints[埋め込んだ HTML]
+  - IF-472-34#constraints[範囲のスクリプトと CSS]
+  - IF-472-35#constraints[範囲のスクリプト]
 test_file: tests/integration/lib/embedded-html.story.test.ts

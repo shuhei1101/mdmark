@@ -1,0 +1,29 @@
+id: MOD-472-2
+title: "ClaudeCodeプラグイン / MCPサーバー"
+lead: '`mdmark serve` が 127.0.0.1 の Streamable HTTP で待ち受ける MCP の常駐サーバー。`export_html`・`build_site`・`check`・`list_templates`・`add_template`・`apply_template` を登録し、作業のフォルダを引数の `project_dir` で受け、引数を検査してから CLI と同じ処理を呼ぶ。`src/cli/main.ts` は読み込まない。'
+directory: |-
+  ```tree
+  src/plugin/
+  ├── mcp.ts        # MCP サーバーの組み立て・ツールの登録・instructions
+  ├── http.ts       # mdmark serve の HTTP の待ち受け・ポートの読み取り・要求と応答の変換
+  ├── tools.ts      # ツールの定義と処理・ツールの結果への変換
+  ├── templates.ts  # CSS のテンプレートの索引・一覧・登録・配置（別の設計書）
+  └── arguments.ts  # ツールの引数の検査・SDK に指定する素通しの検証器
+  ```
+diagrams:
+  - name: 全体
+    diagram: |-
+      classDiagram
+      direction LR
+      class 常駐サーバーを動かす
+      class 要求を振り分ける
+      class MCPサーバーを作る
+      class ツールを呼ぶ
+      class 引数を検査する
+      class ツールの定義
+      常駐サーバーを動かす --> 要求を振り分ける : 要求ごと
+      要求を振り分ける --> MCPサーバーを作る : createMcpHandler
+      MCPサーバーを作る --> ツールの定義 : 登録する
+      MCPサーバーを作る --> ツールを呼ぶ : 呼び出しごと
+      ツールを呼ぶ --> 引数を検査する
+      ツールを呼ぶ --> ツールの定義 : run

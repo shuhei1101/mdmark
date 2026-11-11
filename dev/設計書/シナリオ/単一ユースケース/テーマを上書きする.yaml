@@ -1,3 +1,4 @@
+id: SC-472-25
 title: テーマを上書きする
 scenarios:
   - name: 正常シナリオ
@@ -204,7 +205,7 @@ scenarios:
       - 描く先の要素の地の色の計算値が、theme-slate の明るい配色の `--mdmark-color-bg` の値
     test: test_normal_when_theme_selected
     refs:
-      - dev/設計書/シナリオ/単一ユースケース/テーマを選ぶ#scenarios[正常シナリオ]
+      - SC-472-26#scenarios[正常シナリオ]
   - name: 正常シナリオ（色のプリセットを上書きする）
     setup:
       - name: 上書きの CSS を読み込むページ

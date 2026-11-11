@@ -1,0 +1,64 @@
+id: MOD-472-290
+title: ライブラリ本体 / 記法 / views.ts
+test_files:
+  - tests/unit/src/render/syntax/views.test.ts
+functions:
+  - name: buildViews
+    title: ビューのマーカーを囲みにする
+    container: src/render/syntax/views.ts
+    summary: 'コアルール。`views` がオンのとき、`<!-- view: 引数 -->` の範囲を `div.mdmark-view` の囲みにし、範囲の最初の表に表の部品の指定を当て、記載方法の誤りを警告にする。オフのときは何もしない（マーカーは `dropMarks` が取り除き、表は囲まない表として描く）'
+    kind: 関数
+    scope: internal
+    side_effects: '`state.tokens` を書き換える'
+    args:
+      - name: state
+        type: StateCore
+        required: true
+        description: markdown-it の状態
+    process: |-
+      1. `view` のマーカーごとに閉じのマーカーを探す。無ければ文書の終わりまでを範囲にし、閉じのマーカーが無い警告を `pushWarning` で差し込む
+      2. 引数を `parseMarkArgs` で読み込む。使用できるキーは `group`・`default`・`filter`・`icons`。知らないキーは警告にせず、`pushSkippedArgs` で範囲の前にスキップした引数として差し込む
+      3. 範囲に表が無ければ、範囲に表が無い警告を差し込み、中身はそのまま残す
+      4. 最初の表の見出しの行の文字を列名にして、`group=`・`filter=` の列名を位置にし、`filter=` の種類を `FILTER_KINDS`、`icons=` の名前を `VIEW_ICON_NAMES` で確認する。表に無い `group=` の列は `boardDisabled` に警告の `id` を入れ、表に無い `filter=` の列・知らない絞り込みの種類・使用できないアイコンはその指定だけを当てずに警告にする（文言は画面設計『文書』の記載の警告）
+      5. 表の `table_open` に、`data` の種類・`sort` と読み込めた `filter=` の列を持ち、`hide`・`totals` を空にした `TableSpec` を適用する（ビューの表に件数・テーブル設定・集計は付けない）（`decorateTables` が表の部品にする）
+      6. 範囲を `<div class="mdmark-view" data-view="{ViewSpec の JSON}">` の開きと閉じの `html_block`（`markOwn`）で挟む。`mode` は `default=`、無ければ `group=` が該当すれば `board`、それ以外は `table`。`default=board` で `group=` が該当しないときは `table`
+    unit_tests:
+      - name: test_build_views
+        case: 正常
+        summary: 範囲を囲みにし、表を data の種類にする
+        condition: '`<!-- view: group=状態 filter=担当 icons=完了:archive -->` とタイトル・状態・担当の表と `<!-- /view -->` を `render` に経由する'
+        mock: なし
+        expected: '`div.mdmark-view` の `data-view` が `{"group":1,"mode":"board","boardDisabled":"","icons":{"完了":"archive"}}`。中の表の囲みが `data-kind="data"` で、担当の列にだけ絞り込みを持つ'
+      - name: test_build_views_when_group_missing
+        case: 正常
+        summary: 表に無い group の列を警告にし、表で描く
+        condition: '`group=優先度`'
+        mock: なし
+        expected: 範囲の前に `の列 優先度 は表にありません` の警告があり、`data-view` の `mode` が `table`、`boardDisabled` がその警告の `id`
+      - name: test_build_views_when_no_table
+        case: 正常
+        summary: 範囲に表が無いと警告を出して中身を残す
+        condition: 範囲に段落だけ
+        mock: なし
+        expected: '`の範囲に、項目にする表がありません` の警告と段落があり、`div.mdmark-view` が無い'
+      - name: test_build_views_when_unknown_icon
+        case: 正常
+        summary: 使用できないアイコンは当てずに警告にする
+        condition: '`icons=完了:rocket`'
+        mock: なし
+        expected: '`のアイコン rocket は使用できません` の警告があり、`data-view` の `icons` が `{}`'
+      - name: test_build_views_when_disabled
+        case: 正常
+        summary: views がオフなら囲まずに表だけを描く
+        condition: '`<!-- features: -views -->` とビューの範囲'
+        mock: なし
+        expected: '`div.mdmark-view` が無く、表は既定の種類の囲み。マーカーの文字が出ない'
+      - name: test_build_views_when_unknown_key
+        case: 正常
+        summary: 知らないキーは警告にせずスキップする
+        condition: '`<!-- view: group=状態 size=2 -->` とタイトル・状態の表と `<!-- /view -->`'
+        mock: なし
+        expected: 記載の警告が無く、`data-view` の `mode` が `board`、`env.warnings` が `size=` を含む `unknown_mark_arg` の 1 件
+    refs:
+      - IF-472-34#
+      - MOD-472-154#data_models[ViewSpec]

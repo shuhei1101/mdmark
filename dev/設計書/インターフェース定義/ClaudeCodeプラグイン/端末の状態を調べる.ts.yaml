@@ -1,3 +1,4 @@
+id: IF-472-11
 title: 端末の状態を調べる
 entry:
   kind: operation
@@ -108,8 +109,8 @@ test_file: tests/integration/ClaudeCodeプラグイン/setup-status.test.ts
 idempotent: true
 side_effects: なし
 callers:
-  - dev/設計書/シナリオ/単一ユースケース/端末にmdmarkをセットアップする#
-  - dev/設計書/シナリオ/単一ユースケース/文書のフォルダに設定を作る#
+  - SC-472-69#
+  - SC-472-53#
 request:
   - name: MDMARK_CONFIG
     type: string
@@ -197,11 +198,11 @@ constraints:
     constraint: '`127.0.0.1:{ポート}` へ TCP でつなぎ、接続を受けたら待ち受けているとする。待ちは 1 秒'
   - item: systemd --user の確認
     constraint: '`systemctl --user is-system-running` の標準出力で判定し、終了コードは見ない（`degraded` でも 0 以外になる）'
-    decided_by: dev/設計書/外部ライブラリ/systemd#catalogs
+    decided_by: LIB-472-25#catalogs
   - item: セッションの確認
     constraint: '`tmux has-session -t ={セッション名}` の終了コード 0 をセッションがあるとする'
   - item: 出力
     constraint: 結果は標準出力に JSON の 1 行で出す。誤りは標準エラーに理由と修正方法を出す
   - item: 動く Node のバージョン
     constraint: Node 24 以降
-    decided_by: dev/設計書/非機能要件/非機能要件#requirements[CLI が動く Node のバージョン]
+    decided_by: NFR-472-1#requirements[CLI が動く Node のバージョン]

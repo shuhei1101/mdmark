@@ -1,3 +1,4 @@
+id: LIB-472-5
 title: axe-core
 kind: ライブラリ
 version:
@@ -7,43 +8,43 @@ version:
   source: vscode/package.json
   pinning: 完全一致
 catalogs:
-- name: API
-  version: 4.14.0
-  entries:
-  - name: axe.run
-    kind: 関数
-    purpose: 要素の範囲をアクセシビリティの規則で検査し、違反を返却する
-    params:
-    - name: context.include
-      type: Element[] | string[][]
-      required: false
-      description: 検査する範囲
-    - name: context.exclude
-      type: Element[] | string[][]
-      required: false
-      description: 検査から除外する範囲
-    - name: options.resultTypes
-      type: string[]
-      required: false
-      description: '`["violations"]` で違反だけを詳しく返却する'
-    returns:
-    - name: violations[].id
-      type: string
-      description: 規則の名前
-    - name: violations[].impact
-      type: string
-      description: '`minor`・`moderate`・`serious`・`critical`'
-    - name: violations[].nodes[].target
-      type: string[]
-      description: 違反した要素のセレクタ
+  - name: API
+    version: 4.14.0
+    entries:
+      - name: axe.run
+        kind: 関数
+        purpose: 要素の範囲をアクセシビリティの規則で検査し、違反を返却する
+        params:
+          - name: context.include
+            type: Element[] | string[][]
+            required: false
+            description: 検査する範囲
+          - name: context.exclude
+            type: Element[] | string[][]
+            required: false
+            description: 検査から除外する範囲
+          - name: options.resultTypes
+            type: string[]
+            required: false
+            description: '`["violations"]` で違反だけを詳しく返却する'
+        returns:
+          - name: violations[].id
+            type: string
+            description: 規則の名前
+          - name: violations[].impact
+            type: string
+            description: '`minor`・`moderate`・`serious`・`critical`'
+          - name: violations[].nodes[].target
+            type: string[]
+            description: 違反した要素のセレクタ
 lead: HTML をアクセシビリティの規則（WCAG）で検査するエンジン。
 purl: pkg:npm/axe-core@4.14.0
 dependency_scope: 開発のみ
 adoption: 採用
 upstream: dequelabs/axe-core
 used_in:
-- vscode/scripts/build.ts
-- vscode/src/webview/features/preview/panel/document-view.ts
+  - vscode/scripts/build.ts
+  - vscode/src/webview/features/preview/panel/document-view.ts
 verification:
   state: 済
   date: '2026-11-06'

@@ -1,0 +1,116 @@
+id: MOD-472-161
+title: ライブラリ本体 / ビューとコメント / anchor.ts
+test_files:
+  - tests/unit/src/comments/anchor.test.ts
+  - tests/unit/src/comments/anchor.browser.test.ts
+constants:
+  - name: CONTEXT_CHARS
+    title: 前後の文字の数
+    container: src/comments/anchor.ts
+    summary: 下書きの `prefix`・`suffix` に取る文字の上限
+    value: '32'
+functions:
+  - name: draftFromRange
+    title: 選んだ範囲から下書きを作る
+    container: src/comments/anchor.ts
+    summary: 範囲の文字と、範囲の前後の本文の文字から `MdmarkCommentDraft` を作る
+    kind: 関数
+    scope: internal
+    args:
+      - name: options
+        type: '{ root: HTMLElement; range: Range; body: string }'
+        required: true
+        description: 範囲の要素・選んだ範囲・本文
+    returns:
+      type: MdmarkCommentDraft
+      description: 下書き
+    process: |-
+      1. `commentText(root)` で本文の文字と、文字のセクションごとの位置を得る
+      2. 範囲の始まりと終わりを本文の文字の位置にし、間の文字の前後の空白を落として `quote` にする（落とした分だけ位置をずらす）
+      3. 始まりの前の `CONTEXT_CHARS` 文字の先頭の空白を落としたものを `prefix`、終わりの後の `CONTEXT_CHARS` 文字の末尾の空白（ブロックの間の改行を含む）を落としたものを `suffix`、`body` の前後の空白を落としたものを `body` にする
+    unit_tests:
+      - name: test_draft_from_range
+        case: 正常
+        summary: 前後 32 文字までを取る
+        condition: 40 文字の後に `導入の手順` があり、後ろに 10 文字ある段落で `導入の手順` を選ぶ
+        mock: なし
+        expected: '`quote` が `導入の手順`、`prefix` が直前の 32 文字、`suffix` が後ろの 10 文字'
+      - name: test_draft_from_range_when_spaces
+        case: 正常
+        summary: 選んだ文字の前後の空白を落とす
+        condition: '` 手順 ` を選ぶ'
+        mock: なし
+        expected: '`quote` が `手順`、`prefix` の末尾が空白'
+      - name: test_draft_from_range_when_block_end
+        case: 正常
+        summary: 前後の文字の外側の空白を落とす
+        condition: '`<p>先頭で選ぶ。</p>\n` のようにブロックの後ろに改行の文字のセクションがある `root` で、段落の途中を選ぶ'
+        mock: なし
+        expected: '`suffix` が段落の最後の文字で終わり、改行を含まない。段落の前に改行があるときは `prefix` も改行で始まらない'
+  - name: commentText
+    title: 本文の文字を集める
+    container: src/comments/anchor.ts
+    summary: '`root` の中の、`COMMENT_EXCLUDED` に入らない文字のセクション（マーカー `.mdmark-comment-mark` の中の文字は本文の文字なので数える）を順に集め、つないだ文字とセクションごとの始まりの位置を返却する'
+    kind: 関数
+    scope: internal
+    args:
+      - name: root
+        type: HTMLElement
+        required: true
+        description: 範囲の要素
+    returns:
+      type: '{ text: string; nodes: Array<{ node: Text; start: number }> }'
+      description: 本文の文字とセクションの位置
+    process: 1. `TreeWalker` で文字のセクションを順に辿り、`COMMENT_EXCLUDED` の中のセクションを飛ばしてつなぐ。マーカー `.mdmark-comment-mark` の中のセクションは飛ばさない（マーカーは本文の文字を変えず、飛ばすとマーカーを付けた後に保存するコメントの前後の文字が欠ける）
+    unit_tests:
+      - name: test_comment_text
+        case: 正常
+        summary: コードとビューの操作の文字を除く
+        condition: 段落・`code`・`.mdmark-view-switch` を持つ要素
+        mock: なし
+        expected: 段落の文字だけをつないだ文字
+  - name: locateComments
+    title: コメントの箇所を探す
+    container: src/comments/anchor.ts
+    summary: 本文の文字の中で、コメントごとに箇所を探し、同じ箇所のコメントをまとめ、見つからないものを分ける
+    kind: 関数
+    scope: internal
+    args:
+      - name: options
+        type: '{ text: string; comments: MdmarkComment[] }'
+        required: true
+        description: 本文の文字と読み込んだコメント
+    returns:
+      type: '{ anchors: Array<{ start: number; end: number; comments: MdmarkComment[] }>; orphans: MdmarkComment[] }'
+      description: 箇所の並び（始まりの順）と見つからないコメント
+    process: |-
+      1. `prefix + quote + suffix` が一致する最初の位置があれば、`quote` の始まりと終わりを箇所にする
+      2. 無ければ `quote` が 1 か所だけ一致すればそこを箇所にし、0 か所か 2 か所以上なら見つからないコメントにする
+      3. 始まりと終わりが同じ箇所はまとめ（保存の順を保つ）、ほかの箇所と重なる箇所は見つからないコメントにする
+    unit_tests:
+      - name: test_locate_comments
+        case: 正常
+        summary: 前後の文字で箇所を決める
+        condition: '`手順` が 2 か所ある本文と、2 か所目の前後の文字を持つコメント'
+        mock: なし
+        expected: 2 か所目の位置
+      - name: test_locate_comments_when_context_changed
+        case: 正常
+        summary: 前後が変わっても 1 か所だけなら付く
+        condition: '`prefix` が合わず、`quote` が 1 か所だけある'
+        mock: なし
+        expected: その位置
+      - name: test_locate_comments_when_ambiguous
+        case: 正常
+        summary: 前後が合わず 2 か所あると見つからないにする
+        condition: '`prefix` が合わず、`quote` が 2 か所ある'
+        mock: なし
+        expected: '`orphans` に入る'
+      - name: test_locate_comments_when_same_place
+        case: 正常
+        summary: 同じ箇所のコメントをまとめる
+        condition: 同じ `quote`・`prefix`・`suffix` のコメント 2 つ
+        mock: なし
+        expected: 箇所が 1 つで `comments` が 2 つ
+    refs:
+      - IF-472-35#constraints[コメントの箇所]

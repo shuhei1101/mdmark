@@ -1,3 +1,4 @@
+id: CMP-472-6
 title: "mermaid の図"
 implementation: "src/parts/mermaid.ts#renderMermaidDiagram"
 story: "Parts/MermaidDiagram"
@@ -65,8 +66,8 @@ status: planned
 introduced:
   pr: 382
 refs:
-  - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[mermaid の描き方]
-  - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[mermaid のテーマ]
+  - IF-472-35#constraints[mermaid の描き方]
+  - IF-472-35#constraints[mermaid のテーマ]
 notes:
   ストーリーの SVG: Storybook のストーリーは Node で HTML を返却するため、mermaid をストーリーの中で動かさない。モックと同じソースを `mount` が描いた SVG を、テストの準備で書き出したファイルとして指定する。ストーリーは図の枠（種類 `mermaid`）で包んで出し、題名はモックの場面のタイトル（front matter の `title` か図の種類の名前）にする
 test_file: tests/integration/lib/mermaid-diagram.story.test.ts

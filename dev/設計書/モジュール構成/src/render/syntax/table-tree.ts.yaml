@@ -1,0 +1,76 @@
+id: MOD-472-292
+title: ライブラリ本体 / 記法 / table-tree.ts
+test_files:
+  - tests/unit/src/render/syntax/table-tree.test.ts
+functions:
+  - name: decorateTreeTable
+    title: 階層の表の行を作る
+    container: src/render/syntax/table-tree.ts
+    kind: 関数
+    scope: internal
+    summary: '`tree` の表の範囲のトークンの、本文の各行の `tr` に `data-path`・`data-parent`・`data-depth`・ class を付け、表に無い親の行のトークンを差し込む。キー・型・必須・既定の列のセルを替える'
+    description: 行の計画は DOM もトークンも使用しない `planTreeRows` で決める。キーのセルの中身は `renderTreeKeyCell` の HTML、型のセルは `renderTypeCell` の HTML に替える。必須の列の `th`・`td` のトークンは削除し、その列の文字が `✓`・`true` の行を必須として `renderTreeKeyCell` に指定する。既定の列の空でないセルの中身を `<span class="mdmark-tree-default">` で囲む。補った行は列の数の空の `td`（キーのセルだけ中身を持つ）。追加した属性とトークンはどれも `data-mdmark-own` を持つ
+    side_effects: '`state.tokens` の表の範囲を書き換える'
+    args:
+      - name: options
+        type: '{ state: StateCore; start: number; end: number; spec: TableSpec }'
+        required: true
+        description: '`start`・`end` は表の `table_open`・`table_close` のトークンの位置、`spec` は `readTableSpec` の結果（`tree` を持つ）'
+    returns:
+      type: void
+      description: なし
+    callees:
+      - MOD-472-239#functions[planTreeRows]
+      - MOD-472-315#functions[renderTreeKeyCell]
+      - MOD-472-315#functions[renderTypeCell]
+    unit_tests:
+      - name: test_decorate_tree_table
+        case: 正常
+        summary: 表に無い親の行を補い、行にパスと深さを付ける
+        condition: '`<!-- table: data tree=キー -->` の表。キーは `features.table`・`features.html`・`aliases[].id`'
+        mock: なし
+        expected: '`render` の HTML の `tr.mdmark-tree-row` の `data-path` が `features`・`features.table`・`features.html`・`aliases[]`・`aliases[].id` の順で、`features`・`aliases[]` が `is-virtual has-children`、`aliases[].id` が `data-depth="1"`・`data-parent="aliases[]"`'
+      - name: test_decorate_tree_table_when_columns
+        case: 正常
+        summary: 型をバッジとチップにし、必須の列を出さず * にし、既定を囲む
+        condition: '`tree=キー type=型 required=必須 default=既定` の表。`features.table` は `bool`・`✓`・`true`、`aliases[].type` は `ref \| custom`'
+        mock: なし
+        expected: '`mdmark-type-badge` の `data-type="bool"`、`ref`・`custom` の `mdmark-type-chip` があり、`必須` の `th` が無く、`features.table` の行だけに `mdmark-tree-required`、`<span class="mdmark-tree-default">true</span>` がある'
+    status: planned
+    introduced:
+      pr: 303
+  - name: linkTreeExamples
+    title: 見本を表の下へ移す
+    container: src/render/syntax/table-tree.ts
+    kind: 関数
+    scope: internal
+    summary: コアルール。`example` を持つ階層の表ごとに、文字が一致する見出しの直下のタブの範囲のトークンを表の直後の `aside.mdmark-tree-example` に移し、表と見本を `div.mdmark-tree-layout` で囲む。見本の `yaml` のコードブロックの行に `yamlLinePaths` のパスを付ける
+    description: '`decorateTables`・`buildTabs` の後に配置する。見出しが無いか、直下にタブの範囲を持たないときは `pushWarning` で表の前に記載の警告を差し込み、見本を配置しない。見出しは元の場所に残す。コードブロックの行は、コードブロックの行と同じ分け方の `span.mdmark-yaml-line` にし、キーを持つ行に `data-path` を付ける'
+    side_effects: '`state.tokens` を書き換える'
+    args:
+      - name: state
+        type: StateCore
+        required: true
+        description: markdown-it の状態
+    returns:
+      type: void
+      description: なし
+    callees:
+      - MOD-472-239#functions[yamlLinePaths]
+      - 'MOD-472-213#functions[pushWarning]'
+    unit_tests:
+      - name: test_link_tree_examples
+        case: 正常
+        summary: 見出しの下のタブを表の下へ移し、見本の行にパスを付ける
+        condition: '`tree=キー example=設定の見本` の表と、見出し `設定の見本` の下の `最小`・`エイリアス` のタブ'
+        mock: なし
+        expected: '表の直後に `aside.mdmark-tree-example` があり 2 つのタブを持ち、見出しが元の場所にある。`  - id: terms` の行が `data-path="aliases[].id"` を持つ'
+      - name: test_link_tree_examples_when_heading_missing
+        case: 異常
+        summary: 見出しが無い `example=` は記載の警告にし、見本を配置しない
+        condition: '`tree=キー example=見本` の表だけの文書'
+        mock: なし
+        expected: 表の前に `mdmark-syntax-warning` があり、`mdmark-tree-example` が無い
+    status: planned
+    introduced:
+      pr: 303

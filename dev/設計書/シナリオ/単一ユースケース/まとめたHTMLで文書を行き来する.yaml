@@ -1,3 +1,4 @@
+id: SC-472-13
 title: まとめたHTMLで文書を行き来する
 scenarios:
   - name: 正常シナリオ
@@ -153,7 +154,7 @@ scenarios:
       - 戻るで A に戻ると、地の色の計算値がダークの `--mdmark-color-bg` の値に戻る
     test: test_normal_when_page_settings_per_document
     refs:
-      - dev/設計書/シナリオ/単一ユースケース/ページの設定を文書で指定する#scenarios[正常シナリオ]
+      - SC-472-33#scenarios[正常シナリオ]
   - name: 正常シナリオ（戻る・進むで離れたときの位置に戻る）
     setup:
       - name: まとめた HTML

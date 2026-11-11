@@ -1,3 +1,4 @@
+id: IF-472-12
 title: 端末の設定を書き込む
 entry:
   kind: operation
@@ -87,7 +88,7 @@ test_file: tests/integration/ClaudeCodeプラグイン/setup-write-settings.test
 idempotent: true
 side_effects: 端末の設定と `${CLAUDE_CONFIG_DIR:-~/.claude}/settings.json` を書き換える
 callers:
-  - dev/設計書/シナリオ/単一ユースケース/端末にmdmarkをセットアップする#
+  - SC-472-69#
 request:
   - name: --set
     type: string
@@ -124,10 +125,10 @@ exceptions:
 constraints:
   - item: Schema
     constraint: 書き込む前に、書き込んだ後の端末の設定を `schemas/mdmark.settings.schema.json` で検める
-    decided_by: dev/設計書/設定/ライブラリ本体#settings[serve.tmuxSession]
+    decided_by: CFG-472-3#settings[serve.tmuxSession]
   - item: YAML の書き換え
     constraint: コメント・キーの並び・触らないキーの記載方法を残す
-    decided_by: dev/設計書/外部ライブラリ/yaml#
+    decided_by: LIB-472-36#
   - item: version
     constraint: 端末の設定を新しく作るときだけ `version` をプラグインのバージョンにする。既にある `version` は書き換えない（移行は `mdmark upgrade --settings`）
   - item: settings.json
@@ -136,4 +137,4 @@ constraints:
     constraint: 結果は標準出力に JSON の 1 行で出す。誤りは標準エラーに理由と修正方法を出す
   - item: 動く Node のバージョン
     constraint: Node 24 以降
-    decided_by: dev/設計書/非機能要件/非機能要件#requirements[CLI が動く Node のバージョン]
+    decided_by: NFR-472-1#requirements[CLI が動く Node のバージョン]

@@ -1,3 +1,4 @@
+id: CMP-472-1
 title: "ER 図"
 implementation: "src/parts/diagram.ts#renderEr"
 story: "Parts/ErDiagram"
@@ -28,9 +29,9 @@ events:
     value: 開閉のボタンの `aria-expanded`
     description: '`mount` が主キーと外部キー以外の列の行を出し入れし、関係の線・多重度の記号・ラベルを今の列の行の位置へもう一度結ぶ'
 uses:
-  - component: dev/設計書/部品設計/記載の警告.ts#
+  - component: CMP-472-62#
     how: 定義を読み込めないときに図の代わりに配置する
-  - component: dev/設計書/部品設計/図のツールチップ.ts#
+  - component: CMP-472-38#
     how: テーブルの説明のボタンに、論理名と物理名・概要・列の説明を出す
 accessibility:
   - テーブルの種類は色だけでなく、見出しの札の文字（`マスター`・`トランザクション`）でも示す

@@ -1,3 +1,4 @@
+id: SC-472-42
 title: 図を拡大・縮小・移動する
 scenarios:
   - name: 正常シナリオ

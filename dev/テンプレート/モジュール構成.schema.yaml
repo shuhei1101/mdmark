@@ -1,31 +1,37 @@
 $schema: https://json-schema.org/draft/2020-12/schema
 title: モジュール構成
 description: |-
-  サブシステム × 分類 1 つ分の構成要素（データモデル / クラス / 関数 / 関数型 / 定数 / 画面・コンポーネント / フック / ストア / スタイル）。
-  1 ファイル = 分類 1 つ。分類は業務ドメインの軸で切り、プロセスの入口は専用の分類に切り出す。
+  物理ファイル 1 つ分の構成要素（データモデル / クラス / 関数 / 関数型 / 定数 / 画面・コンポーネント / フック / ストア / スタイル）。
+  1 ファイル = 物理ファイル 1 つ。全ての要素の `container` は同じ物理ファイルを指し、`test_files` はその物理ファイルの単体テストのファイル 1 つだけを持つ。置き場所は `モジュール構成/{container}.yaml`。
   設計書の中を横断する一覧（ユースケース・役割・コンテナ・種別・名前・概要）は、各要素の項目から生成する。
-  分類を細分化したフォルダは、細分類のページどうしのつながりの図とフォルダ全体の決まりを、まとめの設計書 `全体.yaml`（`diagrams` と `notes`）に配置する。
+  分類の構成図・ディレクトリ構成と分類全体の決まりは、分類ごとの束ねる設計書に置く。束ねる設計書は `モジュール構成/分類/` の下に置き、要素を持たず `diagrams`・`directory`・`notes` だけを持つ。
 x-kind: module
 x-folder: dev/設計書/モジュール構成
+x-id-prefix: MOD
 x-cross: functions
 x-test-file: test_files
 x-test-file-optional: true
 type: object
 additionalProperties: false
 required:
+- id
 - title
 properties:
+  id:
+    $ref: 共通.schema.yaml#/$defs/id
+    title: ID
+    description: 設計書の変わらない ID。書くツールの `create` が振り、改名・移動でも変わらない。他の設計書からは `{ID}#{項目のパス}` で指す。
   title:
     type: string
     title: タイトル
-    description: '`{サブシステム名} / {分類名}`（細分化した分類は `{サブシステム名} / {分類名} / {細分類名}`）。フォルダとファイル名に合わせる。'
+    description: '`{サブシステム名} / {分類名}`（物理ファイルの設計書は `{サブシステム名} / {分類名} / {物理ファイルの名前}`）。'
     pattern: ^.+ / .+$
   lead:
     $ref: 共通.schema.yaml#/$defs/markdown
     title: 冒頭リード
     description: |-
       対象を 1〜3 行で説明する。
-      初回に記載した内容のまま保ち、後から情報を追加しない（仕様は各項目に記載する）。
+      初回に書いた内容のまま保ち、後から情報を足さない（仕様は各項目に書く）。
       対象そのものが変わったときだけ書き換える。
   test_files:
     type: array
@@ -40,7 +46,7 @@ properties:
     type: array
     title: 対応疎通テストファイル
     description: |-
-      疎通テスト（`connectivity_tests`）を持つ関数の、外部疎通テストのファイル（`tests/external/` の下）。
+      疎通テスト（`connectivity_tests`）を持つ関数・メソッドの、外部疎通テストのファイル（`tests/external/` の下）。
       疎通テストのレビューを終えたときに planner が記入する（設計の時点では空でよい）。
     items:
       type: string
@@ -48,12 +54,12 @@ properties:
   directory:
     $ref: 共通.schema.yaml#/$defs/markdown
     title: ディレクトリ構成
-    description: 属するファイルのツリー（コードブロック）。各ファイルの右に主な中身を 1 行で記載する。
+    description: 属するファイルのツリー（コードブロック）。各ファイルの右に主な中身を 1 行で書く。
     x-heading: ディレクトリ構成
   diagrams:
     type: array
     title: 構成図
-    description: 矢印で繋がる塊 1 つ = 1 枚。1 枚のノードが 15 を超えるときは切りインターフェースで分ける。記載する要素が無いときは持たない。
+    description: 矢印で繋がる塊 1 つ = 1 枚。1 枚のノードが 15 を超えるときは切り口で分ける。載せる要素が無いときは持たない。
     x-heading: 構成図
     x-shape: sections
     x-key: name
@@ -72,8 +78,8 @@ properties:
           $ref: 共通.schema.yaml#/$defs/mermaid
           title: 図
           description: |-
-            Mermaid の `classDiagram`（次の行に `direction`）。図の中の名前は論理名で記載する。
-            定数・先頭 `_` の要素と、他の要素と矢印で繋がらない要素は記載しない。
+            Mermaid の `classDiagram`（次の行に `direction`）。図の中の名前は論理名で書く。
+            定数・先頭 `_` の要素と、他の要素と矢印で繋がらない要素は載せない。
   data_models:
     type: array
     title: データモデル
@@ -151,7 +157,7 @@ properties:
               default:
                 type: string
                 title: デフォルト
-                description: 生成時の値。無いときは記載しない。
+                description: 生成時の値。無いときは書かない。
               description:
                 type: string
                 title: 説明
@@ -174,6 +180,12 @@ properties:
           title: 関連
           items:
             $ref: 共通.schema.yaml#/$defs/ref
+        decisions:
+          type: array
+          title: 検討事項
+          description: 根拠になった話し合いの記録の検討事項の ID。
+          items:
+            $ref: 共通.schema.yaml#/$defs/decision
         reason:
           $ref: 共通.schema.yaml#/$defs/reason
         status:
@@ -233,7 +245,7 @@ properties:
               member:
                 type: string
                 title: メンバー名
-                description: コード上の識別子。`Literal` のように無いときは記載しない。
+                description: コード上の識別子。`Literal` のように無いときは書かない。
               title:
                 type: string
                 title: 論理名
@@ -248,6 +260,12 @@ properties:
           title: 関連
           items:
             $ref: 共通.schema.yaml#/$defs/ref
+        decisions:
+          type: array
+          title: 検討事項
+          description: 根拠になった話し合いの記録の検討事項の ID。
+          items:
+            $ref: 共通.schema.yaml#/$defs/decision
         reason:
           $ref: 共通.schema.yaml#/$defs/reason
         status:
@@ -331,12 +349,18 @@ properties:
               notes:
                 type: string
                 title: 補足
-                description: どの条件で使用されるか。
+                description: どの条件で使われるか。
         refs:
           type: array
           title: 関連
           items:
             $ref: 共通.schema.yaml#/$defs/ref
+        decisions:
+          type: array
+          title: 検討事項
+          description: 根拠になった話し合いの記録の検討事項の ID。
+          items:
+            $ref: 共通.schema.yaml#/$defs/decision
         reason:
           $ref: 共通.schema.yaml#/$defs/reason
         status:
@@ -354,7 +378,7 @@ properties:
   constants:
     type: array
     title: 定数
-    description: 定数。単純な即値は `value` だけを持ち、辞書・配列は `entries` を持つ。設定値はここではなく設計書『設定』に記載する。
+    description: 定数。単純な即値は `value` だけを持ち、辞書・配列は `entries` を持つ。設定値はここではなく設計書『設定』に書く。
     x-heading: 定数
     x-shape: sections
     x-key: name
@@ -409,6 +433,12 @@ properties:
           title: 関連
           items:
             $ref: 共通.schema.yaml#/$defs/ref
+        decisions:
+          type: array
+          title: 検討事項
+          description: 根拠になった話し合いの記録の検討事項の ID。
+          items:
+            $ref: 共通.schema.yaml#/$defs/decision
         reason:
           $ref: 共通.schema.yaml#/$defs/reason
         status:
@@ -426,7 +456,7 @@ properties:
   functions:
     type: array
     title: 関数
-    description: 関数・フック。1 関数 = 1 要素で、`container` に所属ファイルを書き込む。
+    description: 関数・フック。1 関数 = 1 要素で、`container` に所属ファイルを書く。
     x-heading: 関数
     x-shape: sections
     x-key: name
@@ -479,17 +509,17 @@ properties:
               type:
                 type: string
                 title: 型
-                description: 実装言語の型名。取りうる値が限られるときはリテラルの列挙で記載する。
+                description: 実装言語の型名。取りうる値が限られるときはリテラルの列挙で書く。
               required:
                 type: boolean
                 title: 必須
               default:
                 type: string
                 title: デフォルト
-                description: 省略時の値。必須の引数には記載しない。
+                description: 省略時の値。必須の引数には書かない。
               passing:
                 type: string
-                title: 指定方法
+                title: 渡し方
                 description: '`positional`（位置）/ `keyword`（キーワード引数）/ `injected`（依存の注入）。'
                 enum:
                 - positional
@@ -532,6 +562,12 @@ properties:
           title: 関連
           items:
             $ref: 共通.schema.yaml#/$defs/ref
+        decisions:
+          type: array
+          title: 検討事項
+          description: 根拠になった話し合いの記録の検討事項の ID。
+          items:
+            $ref: 共通.schema.yaml#/$defs/decision
         reason:
           $ref: 共通.schema.yaml#/$defs/reason
         status:
@@ -750,7 +786,7 @@ properties:
                 title: テスト名
                 description: |-
                   テスト関数の名前。`test_{関数の物理名}_when_{条件}`（条件分岐の無い唯一のケースは `test_{関数の物理名}`）。
-                  期待値は名前に入れない。先頭が `_` の関数は `_` を削除する。
+                  期待値は名前に入れない。先頭が `_` の関数は `_` を外す。
                 pattern: ^test_[a-z0-9_]+$
                 x-test-function: true
               case:
@@ -765,11 +801,11 @@ properties:
               condition:
                 type: string
                 title: 条件
-                description: テストの条件。Mock の応答の設定もここに記載する。
+                description: テストの条件。Mock の応答の設定もここに書く。
               mock:
                 type: string
                 title: Mock
-                description: 差し替えるファイル外・プロセス外の依存だけ。差し替えないときも `なし` と記載する。
+                description: 差し替えるファイル外・プロセス外の依存だけ。差し替えないときも `なし` と書く。
               expected:
                 type: string
                 title: 期待値
@@ -777,7 +813,7 @@ properties:
               exception:
                 type: string
                 title: 対応する例外
-                description: 自関数で送出する例外を確認する行のとき、対応する例外の行の発生条件の要旨。
+                description: 自関数で送出する例外を確かめる行のとき、対応する例外の行の発生条件の要旨。
               notes:
                 type: string
                 title: 補足
@@ -786,6 +822,12 @@ properties:
           title: 関連
           items:
             $ref: 共通.schema.yaml#/$defs/ref
+        decisions:
+          type: array
+          title: 検討事項
+          description: 根拠になった話し合いの記録の検討事項の ID。
+          items:
+            $ref: 共通.schema.yaml#/$defs/decision
         reason:
           $ref: 共通.schema.yaml#/$defs/reason
         status:
@@ -868,6 +910,12 @@ properties:
           title: 関連
           items:
             $ref: 共通.schema.yaml#/$defs/ref
+        decisions:
+          type: array
+          title: 検討事項
+          description: 根拠になった話し合いの記録の検討事項の ID。
+          items:
+            $ref: 共通.schema.yaml#/$defs/decision
         reason:
           $ref: 共通.schema.yaml#/$defs/reason
         status:
@@ -936,6 +984,12 @@ properties:
           title: 関連
           items:
             $ref: 共通.schema.yaml#/$defs/ref
+        decisions:
+          type: array
+          title: 検討事項
+          description: 根拠になった話し合いの記録の検討事項の ID。
+          items:
+            $ref: 共通.schema.yaml#/$defs/decision
         reason:
           $ref: 共通.schema.yaml#/$defs/reason
         status:
@@ -955,6 +1009,12 @@ properties:
     title: 関連
     items:
       $ref: 共通.schema.yaml#/$defs/ref
+  decisions:
+    type: array
+    title: 検討事項
+    description: 根拠になった話し合いの記録の検討事項の ID。
+    items:
+      $ref: 共通.schema.yaml#/$defs/decision
   notes:
     $ref: 共通.schema.yaml#/$defs/notes
     x-heading: 補足
@@ -1034,7 +1094,7 @@ $defs:
           type:
             type: string
             title: 型
-            description: void / None も記載する。
+            description: void / None も書く。
           description:
             type: string
             title: 説明
@@ -1052,7 +1112,7 @@ $defs:
           番号付きのステップ。1 ステップ = 意味のある処理の単位。
           呼び出す関数は文末の括弧内に論理名で添える。
           択一の分岐は 1 つの番号の下に `- {条件}の場合、{内容}` で並べる。
-          ログは配下に `- `[{レベル}]` {出力する事実}（{値}）` で記載する。
+          ログは配下に `- `[{レベル}]` {出力する事実}（{値}）` で書く。
         x-heading: 処理
       exceptions:
         type: array
@@ -1075,7 +1135,7 @@ $defs:
             condition:
               type: string
               title: 発生条件
-              description: 送出する条件。同じ例外を複数の箇所から送信するときは箇所ごとに別の要素にする。
+              description: 送出する条件。同じ例外を複数の箇所から送るときは箇所ごとに別の要素にする。
             message:
               type: string
               title: メッセージ
@@ -1110,7 +1170,7 @@ $defs:
         title: 単体テスト
         description: |-
           条件分岐の単位で 1 行以上。自関数で送出する例外は異常の行にする。
-          キャッチせずに伝播する例外には行を配置しない。
+          キャッチせずに伝播する例外には行を置かない。
         x-heading: 単体テスト
         x-shape: table
         x-key: name
@@ -1118,7 +1178,7 @@ $defs:
       connectivity_tests:
         type: array
         title: 疎通テスト
-        description: 実 API を呼ぶラッパーの関数だけが持つ。使用するパラメータの値の組を 1 組 = 1 テストで並べる。
+        description: 実 API を呼ぶラッパーの関数だけが持つ。使うパラメータの値の組を 1 組 = 1 テストで並べる。
         x-heading: 疎通テスト
         x-shape: table
         x-key: name
@@ -1147,11 +1207,11 @@ $defs:
             checks:
               type: string
               title: 確認内容
-              description: 認証・エンドポイント・使用するパラメータの値・応答の構造など。
+              description: 認証・エンドポイント・使うパラメータの値・応答の形など。
             cost:
               type: string
               title: 料金・副作用
-              description: 1 回あたりの料金と副作用。無いときも `なし` と記載する。
+              description: 1 回あたりの料金と副作用。無いときも `なし` と書く。
             notes:
               type: string
               title: 補足
@@ -1170,6 +1230,12 @@ $defs:
         title: 関連
         items:
           $ref: 共通.schema.yaml#/$defs/ref
+      decisions:
+        type: array
+        title: 検討事項
+        description: 根拠になった話し合いの記録の検討事項の ID。
+        items:
+          $ref: 共通.schema.yaml#/$defs/decision
       reason:
         $ref: 共通.schema.yaml#/$defs/reason
       status:
@@ -1185,7 +1251,8 @@ $defs:
       notes:
         $ref: 共通.schema.yaml#/$defs/notes
 examples:
-- title: 設計書 / 種別とSchema
+- id: MOD-1
+  title: 設計書 / 種別とSchema
   lead: 種別の Schema を読み込んで種別の一覧と `$ref` の解決先を持ち、設計書のパスから種別を解決する。
   test_files:
   - tests/unit/ai_monitor/features/design_docs/test_schemas.py
@@ -1196,7 +1263,7 @@ examples:
     container: features/design_docs/schemas.py
     usecase: 共通
     role: 読み込み
-    summary: 作業ツリーの Schema のファイルを名前 → 中身で読み込む
+    summary: 作業ツリーの Schema のファイルを名前 → 中身で読む
     args:
     - name: root
       title: リポジトリの直下
@@ -1206,7 +1273,7 @@ examples:
     returns:
       type: dict[str, str]
       description: ファイル名 → 中身
-    process: 1. `{root}/{TEMPLATES_DIR}` の直下の `*{SCHEMA_SUFFIX}` をファイル名の順に UTF-8 で読み込んで返却する
+    process: 1. `{root}/{TEMPLATES_DIR}` の直下の `*{SCHEMA_SUFFIX}` をファイル名の順に UTF-8 で読んで返す
     exceptions:
     - name: FileNotFoundError
       condition: '`{root}/{TEMPLATES_DIR}` が無い'
@@ -1214,7 +1281,7 @@ examples:
     unit_tests:
     - name: test_read_schema_files
       case: 正常
-      summary: 直下の Schema だけを読み込む
+      summary: 直下の Schema だけを読む
       condition: 直下に Schema 2 つと md 1 つ、下のフォルダに Schema 1 つ
       mock: なし（一時ディレクトリ）
       expected: 直下の Schema 2 つだけ

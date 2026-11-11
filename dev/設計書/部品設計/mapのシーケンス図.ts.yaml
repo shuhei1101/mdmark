@@ -1,3 +1,4 @@
+id: CMP-472-4
 title: mapのシーケンス図
 implementation: src/parts/map.ts#renderMapSequence
 story: Parts/MapSequence
@@ -92,9 +93,9 @@ events:
     value: 参加者の ID と移す先の位置
     description: '`mount` が `order` を変えて描き直し、sessionStorage に保つ'
 uses:
-  - component: dev/設計書/部品設計/シーケンス図.ts#
+  - component: CMP-472-19#
     how: 参加者・ライフライン・メッセージ・複合フラグメント・注記・活性化
-  - component: dev/設計書/部品設計/アイコン.ts#
+  - component: CMP-472-8#
     how: ブロックのタブの開閉の山形
 accessibility:
   - ブロックの開閉のボタンは `aria-expanded` と `aria-label="{種類}「{名前}」を開く"`（開いているときは `閉じる`）を持つ。タブの名前のボタンは `aria-label="{種類}「{名前}」の中だけを見る"` を持つ
@@ -102,7 +103,7 @@ accessibility:
   - 参加者の名前の文字は選んでコピーでき、ドラッグできる場所のポインターの形状は `grab`
   - ブロックの枠線とライフラインは 1px で、背景とのコントラスト比 3:1 以上
 refs:
-  - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#
+  - IF-472-35#
 status: planned
 introduced:
   pr: 445

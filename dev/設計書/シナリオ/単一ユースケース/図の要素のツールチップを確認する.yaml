@@ -1,3 +1,4 @@
+id: SC-472-40
 title: 図の要素のツールチップを確認する
 scenarios:
   - name: 正常シナリオ

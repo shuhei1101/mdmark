@@ -1,3 +1,4 @@
+id: CMP-472-55
 title: "目次"
 implementation: "src/parts/toc.ts#renderToc"
 story: "Parts/Toc"
@@ -37,7 +38,7 @@ accessibility:
   - 目次は `aria-label="目次"` を持つ `nav` で、ランドマークとして飛べる
   - 入れ子の `ul` で見出しの階層を伝える
 refs:
-  - dev/設計書/インターフェース定義/ライブラリ本体/文書をHTML文字列にする.ts#constraints[目次]
+  - IF-472-34#constraints[目次]
 status: planned
 notes:
   HTML: '`<nav class="mdmark-toc" aria-label="目次"><p class="mdmark-toc-title">目次</p><ul><li><a href="#{id}">{text}</a><ul>…</ul></li></ul></nav>`。モックは `dev/mock/components/toc/`'

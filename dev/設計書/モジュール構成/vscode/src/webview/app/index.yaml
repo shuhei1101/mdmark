@@ -1,0 +1,4 @@
+summary: app の設計書
+items:
+  - page: app.tsx.yaml
+    summary: VS Code 拡張機能 / Webview / app.tsx

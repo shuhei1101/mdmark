@@ -1,3 +1,4 @@
+id: SCR-472-1
 title: "VSCodeのコマンドと通知"
 elements:
   - name: プレビューを横に開くボタン
@@ -7,7 +8,7 @@ elements:
     description: '`contributes.menus.editor/title` のボタン。アイコンは VS Code の `$(open-preview)`、ポインターを合わせるとコマンドの表示名を出す'
     label: 'mdmark: プレビューを横に開く'
     visible_when: '`editorLangId == markdown`'
-    action_ref: dev/設計書/インターフェース定義/VSCode拡張機能/プレビューを開く.ts#
+    action_ref: IF-472-22#
     status: planned
     introduced:
       pr: 69
@@ -19,7 +20,7 @@ elements:
     label: 'mdmark: {title}'
     visible_when: '`mdmark.refreshPreview` は mdmark のプレビューが開いているとき。他は `editorLangId == markdown` か mdmark のプレビューにフォーカスがあるとき（`mdmark.openConfig`・`mdmark.openSettings` は常時）'
     refs:
-      - dev/設計書/インターフェース定義/VSCode拡張機能/プレビューを開く.ts#exceptions[なし（Markdown でない）]
+      - IF-472-22#exceptions[なし（Markdown でない）]
     reason: 「プレビューをリロード」は確認ログの決定。「プレビューを開く」「HTML に書き出す」「ブラウザで開く」「PDF に印刷」は単一ユースケースのシナリオの表記
     status: planned
     introduced:
@@ -31,7 +32,7 @@ elements:
     description: '設定ファイルが無いときに `mdmark.openConfig` が `showInformationMessage(文, { modal: true, detail }, "作成")` で尋ねる。作らないときは VS Code が追加する「キャンセル」を押す'
     label: '文: `{雛形を作るパス} がありません。雛形を作りますか？`（雛形を作るパスは `mdmark.configPath`、空のときは `mdmark.config.yaml` を、インターフェース定義『設定を重ねて読み込む』の制約「パスの表示」のパスにしたもの。例 `mdmark.config.yaml がありません。雛形を作りますか？`）、detail: `features・libraries・theme・extensions の記載方法をコメントで添えたファイルを作ります。作った直後は、プレビューの外観は変わりません。`、ボタン: `作成`'
     visible_when: '`mdmark.openConfig` を呼び、設定ファイルが無いとき'
-    action_ref: dev/設計書/インターフェース定義/VSCode拡張機能/設定ファイルを開く.ts#
+    action_ref: IF-472-25#
     status: planned
     introduced:
       pr: 69
@@ -68,9 +69,9 @@ elements:
       ```
     visible_when: 雛形を作ったとき
     refs:
-      - dev/設計書/設定/ライブラリ本体#settings[features]
-      - dev/設計書/設定/ライブラリ本体#settings[libraries]
-      - dev/設計書/設定/ライブラリ本体#settings[colorTheme]
+      - CFG-472-3#settings[features]
+      - CFG-472-3#settings[libraries]
+      - CFG-472-3#settings[colorTheme]
     status: planned
     introduced:
       pr: 69
@@ -82,7 +83,7 @@ elements:
     label: '文: `HTML を書き出しました: {書き出したファイルのパス}`、ボタン: `ブラウザで開く`'
     visible_when: '`mdmark.exportHtml` が書き出せたとき'
     action: 「ブラウザで開く」を押すと、書き出した HTML を `env.openExternal` で開く
-    action_ref: dev/設計書/インターフェース定義/VSCode拡張機能/HTMLに書き出す.ts#constraints[通知]
+    action_ref: IF-472-15#constraints[通知]
     status: planned
     introduced:
       pr: 69
@@ -114,11 +115,11 @@ elements:
     label: 'mdmark: 設定を開く'
     visible_when: mdmark のプレビューのパネルがアクティブなとき（`activeWebviewPanelId`）
     action: VS Code の設定画面を mdmark の項目に絞って開く
-    action_ref: dev/設計書/インターフェース定義/VSCode拡張機能/設定を開く.ts#
+    action_ref: IF-472-24#
     reason: 歯車の配置場所は確認ログ「プレビューの歯車のボタンの配置場所と押したときの動き」の決定
     status: planned
 screen: vscode/package.json
 lead: VS Code 拡張機能が VS Code の画面に追加する入口（エディタのタイトルのボタン・コマンドパレットのコマンド）と、VS Code のダイアログ・通知に出す文言。外観は VS Code のままで、モックは作らない。
 refs:
-  - dev/設計書/インターフェース定義/VSCode拡張機能/HTMLに書き出す.ts#
-  - dev/設計書/インターフェース定義/VSCode拡張機能/設定ファイルを開く.ts#
+  - IF-472-15#
+  - IF-472-25#

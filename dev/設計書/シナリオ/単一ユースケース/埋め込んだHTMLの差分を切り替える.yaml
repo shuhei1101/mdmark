@@ -1,3 +1,4 @@
+id: SC-472-45
 title: "埋め込んだHTMLの差分を切り替える"
 scenarios:
   - name: 正常シナリオ

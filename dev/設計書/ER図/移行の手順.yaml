@@ -1,3 +1,4 @@
+id: ER-472-5
 title: "ER 図: 移行の手順"
 lead: mdmark の開発者がバージョンごとに記載し、`mdmark upgrade` が利用側の設定・索引・文書へ適用する移行の手順と、配布物のビルドが読み込む手順なしの一覧。どちらもリポジトリの `migrations/` に配置し、バージョンのタグのパッケージに入る。`steps.yaml` の構造は `schemas/mdmark.steps.schema.json`（JSON Schema draft 2020-12）で縛る。
 tables:

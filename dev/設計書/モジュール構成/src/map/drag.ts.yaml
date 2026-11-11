@@ -1,0 +1,111 @@
+id: MOD-472-134
+title: ライブラリ本体 / map / 描画と操作 / drag.ts
+test_files:
+  - tests/unit/src/map/drag.browser.test.ts
+constants:
+  - name: DRAG_THRESHOLD_PX
+    title: 押した扱いの動き
+    container: src/map/drag.ts
+    usecase: Mermaidと補足で図を描く
+    role: 定数
+    summary: この値より動かずに離したら押した扱いにする（px）
+    value: '4'
+  - name: KEY_MOVE_PX
+    title: キー 1 回で動かす量
+    container: src/map/drag.ts
+    usecase: Mermaidと補足で図を描く
+    role: 定数
+    summary: Alt + 矢印キー 1 回で動かす量（px）。Shift も押すと `KEY_MOVE_PX_LARGE`
+    value: '8'
+  - name: KEY_MOVE_PX_LARGE
+    title: Shift で動かす量
+    container: src/map/drag.ts
+    usecase: Mermaidと補足で図を描く
+    role: 定数
+    summary: Alt + Shift + 矢印キー 1 回で動かす量（px）
+    value: '32'
+functions:
+  - name: startDrag
+    title: ドラッグを始める
+    kind: 関数
+    container: src/map/drag.ts
+    usecase: Mermaidと補足で図を描く
+    role: 処理
+    summary: 押した場所（ノード・グループのタイトルの行・線の区間）を判定し、4px 動くまでは押した扱い、動いたら全てのノードとグループの位置を固定してから動かす
+    scope: public
+    args:
+      - name: options
+        type: '{ event: PointerEvent; layout: MapLayout; state: MapState; onMove: (state: MapState) => void; onClick: () => void; scale?: number; pointOf?: (event: PointerEvent) => [number, number] }'
+        required: true
+        description: 押したイベント・配置・状態・動かしたとき・押したときの関数・図の中身とポインターの座標の比・ポインターの位置を図の中身の座標にする関数（線の区間を選ぶ）
+    returns:
+      type: void
+      description: なし
+    process: |-
+      1. 押した要素からノード・グループ・線の区間を決める（グループの面と余白は図の移動に任せて何もしない）
+      2. 4px 動くまでは待ち、離したら `onClick` を呼ぶ
+      3. 動いたら全てのノードとグループの今の位置を `positions` に入れ、ノード・グループは動いた分を足し、線の区間は `wireShifts` に足す。ほかとの間が `minGap` より狭くなる位置と、グループの左端・上端より外へは進めない
+      4. 線の端の区間がノードの辺の端を越えたら、越えた側の辺へつなぎ替える
+    unit_tests:
+      - name: test_start_drag_when_click
+        case: 正常
+        summary: 押しただけ
+        condition: 3px 動かして離す
+        mock: '`onMove`・`onClick`'
+        expected: '`onClick` を 1 回呼び、`onMove` を呼ばない'
+      - name: test_start_drag_when_node
+        case: 正常
+        summary: ノードを動かす
+        condition: ノードを下へ 40px
+        mock: '`onMove`'
+        expected: そのノードの `y` が 40 増え、ほかのノードの位置が変わらない
+      - name: test_start_drag_when_blocked
+        case: 正常
+        summary: 近づけすぎ
+        condition: 隣のノードとの間が 10px になる位置まで動かす
+        mock: '`onMove`'
+        expected: 間が 16px の位置で止まる
+      - name: test_start_drag_when_reattach
+        case: 正常
+        summary: つなぎ替え
+        condition: 線の真ん中の区間を相手のノードの上まで動かす
+        mock: '`onMove`'
+        expected: 線の端がそのノードの上の辺に付く
+  - name: moveByKey
+    title: キーで動かす
+    kind: 関数
+    container: src/map/drag.ts
+    usecase: Mermaidと補足で図を描く
+    role: 処理
+    summary: フォーカスしたノード・グループを指定した量だけ、線は真ん中の区間を区間と直角の向きへ動かした状態を返す。動かせないときは `undefined`
+    scope: public
+    args:
+      - name: options
+        type: '{ layout: MapLayout; state: MapState; target: { node?: string; group?: string; wire?: string }; dx: number; dy: number }'
+        required: true
+        description: 配置・状態・動かす要素の ID・動かす量（px。`KEY_MOVE_PX` か `KEY_MOVE_PX_LARGE` に矢印の向きを掛けた値）
+    returns:
+      type: MapState | undefined
+      description: 動かした後の状態
+    process: |-
+      1. 全てのノードとグループの今の位置を `positions` に入れ、ノード・グループは `startDrag` と同じく、ほかとの間が `minGap` より狭くなる位置とグループの左端・上端より外へは進めない
+      2. 線は真ん中の区間のずらしに、横の区間なら `dy`、縦の区間なら `dx` を足し、端のつなぎ替えを `attachments` に入れる。区間と同じ向きの矢印では動かさない
+    unit_tests:
+      - name: test_move_by_key_when_node
+        case: 正常
+        summary: ノード
+        condition: '`A` を `dy: 8`'
+        mock: なし
+        expected: '`positions.A` が `{ x: 0, y: 8 }`'
+      - name: test_move_by_key_when_wire
+        case: 正常
+        summary: 線の真ん中の区間
+        condition: '`A->C`（点 5 つ。真ん中の区間は縦）を `dx: 8`'
+        mock: なし
+        expected: '`wireShifts["A->C"]` の区間 1 のずらしが 8'
+      - name: test_move_by_key_when_blocked
+        case: 正常
+        summary: 動かせない
+        condition: '図の余白の内側の左上にある `A` を `dy: -8`。縦の区間の線を `dy: 8`'
+        mock: なし
+        expected: どちらも `undefined`

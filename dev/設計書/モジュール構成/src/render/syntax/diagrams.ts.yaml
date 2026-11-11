@@ -1,0 +1,79 @@
+id: MOD-472-182
+title: ライブラリ本体 / 図 / diagrams.ts
+test_files:
+  - tests/unit/src/render/syntax/diagrams.test.ts
+functions:
+  - name: buildDiagrams
+    title: 図の部品のマーカーを部品にする
+    container: src/render/syntax/diagrams.ts
+    kind: 関数
+    scope: internal
+    summary: markdown-it のコアルール。`diagrams` がオンのとき、登録した拡張に無い図の部品のマーカーの範囲ごとに `json` のコードブロックを集めて `readDefinition` を呼び、読み込めたら（フロー図は `nodeLinkProblems` が返却した許さないリンク先のノードから `href` を削除し、あれば記載の警告を図の前に差し込んでから）部品の HTML（`renderDiagramFrame` に機能 `diagram-resize` のオン・オフを `resizable`、定義の `stickyTitles` を指定し、`renderFlow`・`renderEr` に `hints` のオン・オフと用語の `lookup` を、`renderParam` に `env.labels?.paramCopy` を指定する）（`markOwn` を掛けた `html_block`）、読み込めなければ記載の警告に範囲のトークンを置き換える。オフのときはマーカーだけを取り除く
+    args:
+      - name: state
+        type: StateCore
+        required: true
+        description: markdown-it のコアの状態。`env` に機能のオン・オフと登録した拡張を持つ
+    returns:
+      type: void
+      description: トークンの並びを書き換える
+    callees:
+      - 'MOD-472-171#functions[readDefinition]'
+      - 'MOD-472-172#functions[renderDiagramFrame]'
+      - 'MOD-472-172#functions[renderEr]'
+      - 'MOD-472-181#functions[renderParam]'
+    unit_tests:
+      - name: test_build_diagrams
+        case: 正常
+        summary: 範囲を図にして定義の JSON を残さない
+        condition: '`<!-- flow -->` 〜 `<!-- /flow -->` に `inquiry` の定義を配置した文書'
+        mock: なし
+        expected: '`figure.mdmark-diagram` が 1 つで、出力に `"nodes"` が無い'
+      - name: test_build_diagrams_when_disabled
+        case: 正常
+        summary: 機能がオフなら定義をコードブロックのまま描く
+        condition: 同じ文書と `diagrams` が `false`
+        mock: なし
+        expected: '`pre > code.language-json` があり、`figure.mdmark-diagram` が無い'
+      - name: test_build_diagrams_when_extension_registered
+        case: 正常
+        summary: 同じ名前の拡張を優先する
+        condition: '`directive` が `flow` の拡張を登録した `env`'
+        mock: なし
+        expected: '`figure.mdmark-diagram` が無く、マーカーの場所の要素がある'
+      - name: test_build_diagrams_when_invalid
+        case: 異常
+        summary: 読み込めない定義は記載の警告にする
+        condition: 閉じの `}` が無いフロー図の定義
+        mock: なし
+        expected: '`.mdmark-syntax-warning` の本文が `フロー図の部品の定義を JSON として読み込めません` で始まる'
+      - name: test_build_diagrams_when_param_copy_label
+        case: 正常
+        summary: 操作できる部品のボタンを `env.labels.paramCopy` の文言で描く
+        condition: '`<!-- param -->` の範囲に `strength` の定義を配置した文書と、`labels` が `{ paramCopy: "コピー" }` の `env`'
+        mock: なし
+        expected: '`button.mdmark-param-copy` の文字が `コピー`'
+  - name: findDiagramBlocks
+    title: 図の部品の範囲を探す
+    container: src/render/syntax/diagrams.ts
+    kind: 関数
+    scope: internal
+    summary: Markdown を markdown-it で解析し、`flow`・`sequence`・`chart`・`param`・`er` のマーカーの範囲ごとに、マーカーの名前・開きのマーカーの行の番号・範囲の `json` のコードブロックの中身を返却する（`buildDiagrams` と同じ範囲の読み込み方。埋め込んだ HTML の中の custom element は返却しない）
+    args:
+      - name: markdown
+        type: string
+        required: true
+        description: 文書の本文
+    returns:
+      type: 'Array<{ directive: "flow" | "sequence" | "chart" | "param" | "er"; line: number; blocks: string[] }>'
+      description: 範囲ごとのマーカーの名前・行の番号（1 から）・`json` のコードブロック
+    unit_tests:
+      - name: test_find_diagram_blocks
+        case: 正常
+        summary: 図の部品の範囲だけを返却する
+        condition: '`<!-- flow -->` の範囲（3 行目）と `<!-- chart -->` の範囲と、`<!-- html -->` の中の `<mdmark-chart>`'
+        mock: なし
+        expected: 2 つの範囲を返却し、1 つ目が `flow`・行 3・`json` 1 つ
+    status: planned
+    introduced:
+      pr: 275

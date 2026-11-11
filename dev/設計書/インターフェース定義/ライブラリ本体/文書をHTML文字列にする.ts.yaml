@@ -1,3 +1,4 @@
+id: IF-472-34
 title: 文書をHTML文字列にする
 entry:
   kind: operation
@@ -840,7 +841,7 @@ flows:
       - Node とブラウザで同じ文字列を返却する
     test: test_normal_when_aliases
     refs:
-      - dev/設計書/シナリオ/単一ユースケース/文書をHTML文字列にする#scenarios[正常シナリオ（エイリアスを指定する）]
+      - SC-472-57#scenarios[正常シナリオ（エイリアスを指定する）]
   - name: 正常系（表・タブ・ステップの折りたたみ）
     summary: '`closed`・`open` の表・タブ・ステップを、`title=` か中身から作った見出しの `details` に入れる'
     setup:
@@ -946,7 +947,7 @@ flows:
       - '`mdmark-syntax-warning` が無い'
     test: test_normal_when_named_colors
     refs:
-      - dev/設計書/シナリオ/単一ユースケース/名前の色で表・バッジ・本文を強調する#scenarios[正常シナリオ]
+      - SC-472-36#scenarios[正常シナリオ]
   - name: 正常系（知らない色の名前）
     summary: 色の名前の一覧に無い名前を記載の警告にし、色を付けない
     setup:
@@ -969,7 +970,7 @@ flows:
       - 段落に `決め手の 1 文` が `mdmark-color` に入らない文字で出て、`{color=pink}` と `[決め手` が無い
     test: test_normal_when_color_unknown
     refs:
-      - dev/設計書/シナリオ/単一ユースケース/名前の色で表・バッジ・本文を強調する#scenarios[異常シナリオ（知らない色の名前）]
+      - SC-472-36#scenarios[異常シナリオ（知らない色の名前）]
   - name: 正常系（画像の属性とキャプション）
     summary: 画像だけの段落の画像を図にし、後ろの属性・title・テーマごとのフラグメントを適用する
     setup:
@@ -995,8 +996,8 @@ flows:
       - 文字列に `{width=` と `nolightbox}` が無く、`mdmark-syntax-warning` が無い
     test: test_normal_when_image_attributes
     refs:
-      - dev/設計書/シナリオ/単一ユースケース/画像・動画・音声を配置する#scenarios[正常シナリオ]
-      - dev/設計書/シナリオ/単一ユースケース/画像・動画・音声を配置する#scenarios[正常シナリオ（テーマごとの画像）]
+      - SC-472-67#scenarios[正常シナリオ]
+      - SC-472-67#scenarios[正常シナリオ（テーマごとの画像）]
   - name: 正常系（読み込めない画像の属性）
     summary: 読み込めない属性を記載の警告にし、読み込めた属性だけを適用する
     setup:
@@ -1020,7 +1021,7 @@ flows:
       - 文字列に `{width=big` と `{align=left}` が無い
     test: test_normal_when_image_attribute_invalid
     refs:
-      - dev/設計書/シナリオ/単一ユースケース/画像・動画・音声を配置する#scenarios[異常シナリオ（読み込めない属性）]
+      - SC-472-67#scenarios[異常シナリオ（読み込めない属性）]
   - name: 正常系（ギャラリー）
     summary: ギャラリーのマーカーの範囲の画像を格子に並べ、`fig` のマーカーの番号にサブ図の番号を付ける
     setup:
@@ -1045,8 +1046,8 @@ flows:
       - 本文のリンクの文字が `図 1`
     test: test_normal_when_gallery
     refs:
-      - dev/設計書/シナリオ/単一ユースケース/画像・動画・音声を配置する#scenarios[正常シナリオ（ギャラリー）]
-      - dev/設計書/シナリオ/単一ユースケース/図と表に番号を付けて参照する#scenarios[正常シナリオ（ギャラリーのサブ図とキャプション）]
+      - SC-472-67#scenarios[正常シナリオ（ギャラリー）]
+      - SC-472-37#scenarios[正常シナリオ（ギャラリーのサブ図とキャプション）]
   - name: 正常系（動画・音声・GIF）
     summary: 拡張子で動画・音声・GIF を分け、動画と音声を再生バー付きの要素にする
     setup:
@@ -1070,7 +1071,7 @@ flows:
       - 文字列に `button`・`canvas` が無い（GIF のボタンは `mount` が付ける）
     test: test_normal_when_video_audio_gif
     refs:
-      - dev/設計書/シナリオ/単一ユースケース/画像・動画・音声を配置する#scenarios[正常シナリオ（動画と音声）]
+      - SC-472-67#scenarios[正常シナリオ（動画と音声）]
   - name: 正常系（リンクと添付のカード）
     summary: リンク 1 つだけの段落を、拡張子でリンクのカードと添付のカードにする
     setup:
@@ -1095,8 +1096,8 @@ flows:
       - 文字列に `iframe` が無い
     test: test_normal_when_cards
     refs:
-      - dev/設計書/シナリオ/単一ユースケース/リンクと添付のカードを配置する#scenarios[正常シナリオ]
-      - dev/設計書/シナリオ/単一ユースケース/リンクと添付のカードを配置する#scenarios[正常シナリオ（文の中のリンク）]
+      - SC-472-34#scenarios[正常シナリオ]
+      - SC-472-34#scenarios[正常シナリオ（文の中のリンク）]
   - name: 正常系（色・画像・カードの機能を解除する）
     summary: 文書のマーカーで削除した新しい記法を、普通の Markdown として描く
     setup:
@@ -1119,7 +1120,7 @@ flows:
       - '`mdmark-card` が無く、URL がリンクとして描かれている'
     test: test_normal_when_media_features_disabled
     refs:
-      - dev/設計書/シナリオ/単一ユースケース/機能のオン・オフを文書で上書きする#scenarios[正常シナリオ（色・画像・カードの機能を解除する）]
+      - SC-472-62#scenarios[正常シナリオ（色・画像・カードの機能を解除する）]
   - name: 正常系（表のセルの結合と多段の見出し）
     summary: '`header-rows=`・`row-header=` と `^^`・`<<` を、多段の見出し・行見出し・結合したセルの HTML にする'
     setup:
@@ -1146,7 +1147,7 @@ flows:
       - '`<div class="mdmark-syntax-warning" role="note">` が無い'
     test: test_normal_when_table_cells_merged
     refs:
-      - dev/設計書/シナリオ/単一ユースケース/表を操作する#scenarios[正常シナリオ（多段の見出しと行見出し）]
+      - SC-472-73#scenarios[正常シナリオ（多段の見出しと行見出し）]
   - name: 正常系（読み込めないセルの結合）
     summary: 表の行の数を超える `header-rows=` と、結合する相手の無い `^^`・`<<` を記載の警告にして文字のまま出す
     setup:
@@ -1170,7 +1171,7 @@ flows:
       - 表が `data-features="sort pin filter resize"` を持つ
     test: test_normal_when_table_merge_invalid
     refs:
-      - dev/設計書/シナリオ/単一ユースケース/表を操作する#scenarios[異常シナリオ（読み込めないセルの結合）]
+      - SC-472-73#scenarios[異常シナリオ（読み込めないセルの結合）]
   - name: 正常系（注意書きのタイトルと入れ子）
     summary: 種類の後ろの文字をタイトルにし、`+` を開いた折りたたみにし、注意書きの中の注意書きを入れ子にする
     setup:
@@ -1194,9 +1195,9 @@ flows:
       - 文字列に `[!TIP]`・`[!NOTE]`・`[!WARNING]` が無い
     test: test_normal_when_callout_titled_and_nested
     refs:
-      - dev/設計書/シナリオ/単一ユースケース/注意書きを記載する#scenarios[正常シナリオ（タイトルを付けた注意書き）]
-      - dev/設計書/シナリオ/単一ユースケース/注意書きを記載する#scenarios[正常シナリオ（開いた折りたたみの注意書き）]
-      - dev/設計書/シナリオ/単一ユースケース/注意書きを記載する#scenarios[正常シナリオ（入れ子の注意書き）]
+      - SC-472-64#scenarios[正常シナリオ（タイトルを付けた注意書き）]
+      - SC-472-64#scenarios[正常シナリオ（開いた折りたたみの注意書き）]
+      - SC-472-64#scenarios[正常シナリオ（入れ子の注意書き）]
   - name: 正常系（入れ子のタブと強調したタブ名）
     summary: タブのマーカーの入れ子を数えて内側のタブを外側の中身に入れ、太字の見出しのタブ名を `strong` で残す
     setup:
@@ -1219,8 +1220,8 @@ flows:
       - 記載の警告が無く、文字列に `<!--` が無い
     test: test_normal_when_tabs_nested
     refs:
-      - dev/設計書/シナリオ/単一ユースケース/タブを切り替える#scenarios[正常シナリオ（入れ子のタブ）]
-      - dev/設計書/シナリオ/単一ユースケース/タブを切り替える#scenarios[正常シナリオ（太字のタブ名）]
+      - SC-472-23#scenarios[正常シナリオ（入れ子のタブ）]
+      - SC-472-23#scenarios[正常シナリオ（太字のタブ名）]
   - name: 正常系（閉じの足りない入れ子のタブ）
     summary: 閉じの無い外側のタブの開きを記載の警告にし、範囲の中のタブのマーカーをタブにしない
     setup:
@@ -1242,7 +1243,7 @@ flows:
       - '`div.mdmark-tabs` が無く、`<h3` の `macOS`・`Windows` と `<h4` の `zsh`・`bash` と、中身の段落が全てある'
     test: test_normal_when_nested_tabs_unclosed
     refs:
-      - dev/設計書/シナリオ/単一ユースケース/タブを切り替える#scenarios[異常シナリオ（入れ子の閉じが足りない）]
+      - SC-472-23#scenarios[異常シナリオ（入れ子の閉じが足りない）]
   - name: 正常系（追加したグラフの種類）
     summary: 追加した 8 つの種類と、6 つの系列のグラフを図の枠に描く
     setup:
@@ -1269,8 +1270,8 @@ flows:
       - 6 つの系列の折れ線のグラフに `data-series` が `1`〜`6` の系列があり、凡例に 6 つの系列の名前がある
     test: test_normal_when_chart_types_added
     refs:
-      - dev/設計書/シナリオ/単一ユースケース/図を描く#scenarios[正常シナリオ（追加したグラフの種類）]
-      - dev/設計書/シナリオ/単一ユースケース/図を描く#scenarios[正常シナリオ（5 つ以上の系列）]
+      - SC-472-43#scenarios[正常シナリオ（追加したグラフの種類）]
+      - SC-472-43#scenarios[正常シナリオ（5 つ以上の系列）]
   - name: 正常系（系列の多すぎるグラフ）
     summary: 系列が 7 つ以上のグラフの定義を記載の警告にし、ほかの図と本文を描く
     setup:
@@ -1292,7 +1293,7 @@ flows:
       - '`figure.mdmark-diagram` が 1 つだけあり、段落がある'
     test: test_normal_when_chart_series_too_many
     refs:
-      - dev/設計書/シナリオ/単一ユースケース/図を描く#scenarios[異常シナリオ（定義を読み込めない）]
+      - SC-472-43#scenarios[異常シナリオ（定義を読み込めない）]
   - name: 正常系（埋め込んだ HTML の中の追加したグラフの種類）
     summary: '`<mdmark-chart>` に記載した追加した種類の定義を、`<!-- chart -->` と同じグラフに置き換える'
     setup:
@@ -1314,7 +1315,7 @@ flows:
       - 記載の警告が無く、文字列に `<mdmark-chart` が無い
     test: test_normal_when_embedded_chart_types_added
     refs:
-      - dev/設計書/シナリオ/単一ユースケース/チャートを描く#scenarios[正常シナリオ（追加したグラフの種類）]
+      - SC-472-24#scenarios[正常シナリオ（追加したグラフの種類）]
   - name: 正常系（focus・error・warning の行）
     summary: '`[!code focus]`・`[!code error]`・`[!code warning]` を行の種類にしてマーカーを削除する'
     setup:
@@ -1337,7 +1338,7 @@ flows:
       - 文字列に `[!code` と、マーカーだけを持つ行コメントの頭 `//` が無い
     test: test_normal_when_code_focus_error_warning
     refs:
-      - dev/設計書/シナリオ/単一ユースケース/コードブロックを飾る#scenarios[正常シナリオ（focus・error・warning の行）]
+      - SC-472-17#scenarios[正常シナリオ（focus・error・warning の行）]
   - name: 正常系（畳める行とインデント）
     summary: インデントのある行にレベルを、畳める行に畳む行の数を付け、`fold=` の行を畳んだ状態の行にする
     setup:
@@ -1361,8 +1362,8 @@ flows:
       - 記載の警告が無い
     test: test_normal_when_code_foldable
     refs:
-      - dev/設計書/シナリオ/単一ユースケース/コードブロックを飾る#scenarios[正常シナリオ（インデントで畳む・開く）]
-      - dev/設計書/シナリオ/単一ユースケース/コードブロックを飾る#scenarios[正常シナリオ（最初から畳む行を指定する）]
+      - SC-472-17#scenarios[正常シナリオ（インデントで畳む・開く）]
+      - SC-472-17#scenarios[正常シナリオ（最初から畳む行を指定する）]
   - name: 正常系（畳めない行の fold=）
     summary: '`fold=` の畳めない行とコードブロックに無い行を記載の警告にし、畳める行だけを畳んだ状態にする'
     setup:
@@ -1386,7 +1387,7 @@ flows:
       - コードの 5 行が全て文字列にある
     test: test_normal_when_code_fold_invalid
     refs:
-      - dev/設計書/シナリオ/単一ユースケース/コードブロックを飾る#scenarios[異常シナリオ（畳めない行の fold=）]
+      - SC-472-17#scenarios[異常シナリオ（畳めない行の fold=）]
   - name: 正常系（脚注）
     summary: '`[^ラベル]`・定義・行内の `^[中身]` を、番号・ツールチップ・末尾の閉じた一覧にする'
     setup:
@@ -1411,7 +1412,7 @@ flows:
       - 文字列に `[^src]`・`^[`・定義の行の文字が無い
     test: test_normal_when_footnotes
     refs:
-      - dev/設計書/シナリオ/単一ユースケース/文書をHTML文字列にする#scenarios[正常シナリオ（脚注を持つ文書）]
+      - SC-472-57#scenarios[正常シナリオ（脚注を持つ文書）]
   - name: 正常系（脚注の照合）
     summary: ラベルを大文字小文字を区別せずに照合し、最初の定義を採り、定義の無い参照とリンクを文字のまま残す
     setup:
@@ -1437,8 +1438,8 @@ flows:
       - 末尾の一覧の項目は 1 つで、戻るリンクが 2 つ（文字 `a`・`b`）あり、`使用しない` が文字列に無い
     test: test_normal_when_footnotes_matched
     refs:
-      - dev/設計書/シナリオ/単一ユースケース/脚注を確認する#scenarios[正常シナリオ（同じ脚注を複数回参照する）]
-      - dev/設計書/シナリオ/単一ユースケース/脚注を確認する#scenarios[異常シナリオ（定義の無い参照）]
+      - SC-472-71#scenarios[正常シナリオ（同じ脚注を複数回参照する）]
+      - SC-472-71#scenarios[異常シナリオ（定義の無い参照）]
   - name: 正常系（脚注の機能を解除する）
     summary: 文書のマーカーで `footnotes` を削除し、参照と定義を記載した文字のまま記載した位置に残す
     setup:
@@ -1462,7 +1463,7 @@ flows:
       - 文字列に class `mdmark-fn-` で始まる要素と `details.mdmark-footnotes` が無い
     test: test_normal_when_footnotes_disabled
     refs:
-      - dev/設計書/シナリオ/単一ユースケース/機能のオン・オフを文書で上書きする#scenarios[正常シナリオ（脚注の機能を解除する）]
+      - SC-472-62#scenarios[正常シナリオ（脚注の機能を解除する）]
   - name: 正常系（列の並べ替えのマーカー）
     summary: '`+reorder` を `data-features` に設定し、結合した見出しの範囲を列ごとに写す'
     setup:
@@ -1485,7 +1486,7 @@ flows:
       - 列は Markdown に記載した順で、文字列に `<button` が無い
     test: test_normal_when_table_reorder
     refs:
-      - dev/設計書/シナリオ/単一ユースケース/表を操作する#scenarios[正常シナリオ（結合した見出しとピン止めの列を並べ替える）]
+      - SC-472-73#scenarios[正常シナリオ（結合した見出しとピン止めの列を並べ替える）]
   - name: 正常系（列の幅の機能）
     summary: 既定の種類と `data` の種類の表は `data-features` に `resize` を持ち、`-resize` の表と `plain` の表は持たない
     setup:
@@ -1508,7 +1509,7 @@ flows:
       - 文字列に `mdmark-col-resize` が無い（つまみは `mount` が付ける）
     test: test_normal_when_table_resize
     refs:
-      - dev/設計書/シナリオ/単一ユースケース/表を操作する#scenarios[正常シナリオ（列の幅を変える）]
+      - SC-472-73#scenarios[正常シナリオ（列の幅を変える）]
   - name: 正常系（キーの列を階層で出す）
     summary: '`tree=` の列を階層の行にし、表に無い親の行を補い、型・必須・既定の列を替える'
     setup:
@@ -1535,7 +1536,7 @@ flows:
       - '`features.table` の既定のセルが `<span class="mdmark-tree-default">true</span>` を持ち、`data-features` に `sort` が無い'
     test: test_normal_when_table_tree
     refs:
-      - dev/設計書/シナリオ/単一ユースケース/表を操作する#scenarios[正常シナリオ（キーの列を階層で描く）]
+      - SC-472-73#scenarios[正常シナリオ（キーの列を階層で描く）]
   - name: 正常系（YAML の見本を結ぶ）
     summary: '`example=` の見出しの下のタブを表の下へ移し、見本の行にキーのパスを持たせる'
     setup:
@@ -1559,7 +1560,7 @@ flows:
       - '見本の `        type: custom` の行が `data-path="aliases[].metadata.alias_type.type"`、`  - id: terms` の行が `data-path="aliases[].id"` を持つ'
     test: test_normal_when_table_tree_example
     refs:
-      - dev/設計書/シナリオ/単一ユースケース/表を操作する#scenarios[正常シナリオ（YAML の見本と連動する）]
+      - SC-472-73#scenarios[正常シナリオ（YAML の見本と連動する）]
   - name: 正常系（読み込めない階層の指定）
     summary: 表に無い列名の `tree=`・`tree=` の無い `type=`・無い見出しの `example=` に記載の警告を配置する
     setup:
@@ -1582,7 +1583,7 @@ flows:
       - '`example=見本` の表は `mdmark-tree-row` を持ち、`mdmark-tree-example` が無い'
     test: test_normal_when_table_tree_invalid
     refs:
-      - dev/設計書/シナリオ/単一ユースケース/表を操作する#scenarios[異常シナリオ（読み込めない階層の指定）]
+      - SC-472-73#scenarios[異常シナリオ（読み込めない階層の指定）]
   - name: 正常系（範囲のスクリプトと CSS）
     summary: '`html-scripts` がオンのとき、範囲の `css` を根の要素に限った `style` にし、`ts` を実行しない `template` に入れる'
     setup:
@@ -1606,7 +1607,7 @@ flows:
       - '`css`・`ts` のコードブロックが `<pre>` で出ない'
     test: test_normal_when_range_scripts
     refs:
-      - dev/設計書/シナリオ/単一ユースケース/コードブロックのHTMLを描く#scenarios[正常シナリオ（範囲のスクリプトと CSS）]
+      - SC-472-16#scenarios[正常シナリオ（範囲のスクリプトと CSS）]
   - name: 正常系（範囲のスクリプトの機能がオフ）
     summary: '`html-scripts` がオフのとき、範囲の `html` だけを描き、`css`・`ts` をコードのまま出す'
     setup:
@@ -1629,7 +1630,7 @@ flows:
       - 記載の警告が無い
     test: test_normal_when_range_scripts_off
     refs:
-      - dev/設計書/シナリオ/単一ユースケース/コードブロックのHTMLを描く#scenarios[正常シナリオ（範囲のスクリプトの機能がオフ）]
+      - SC-472-16#scenarios[正常シナリオ（範囲のスクリプトの機能がオフ）]
   - name: 正常系（ts と js を両方置いた範囲）
     summary: '`ts` と `js` を両方置いた範囲に記載の警告を配置し、どちらのスクリプトも配置しない'
     setup:
@@ -1652,7 +1653,7 @@ flows:
       - 範囲の後ろの段落がある
     test: test_normal_when_range_scripts_both_languages
     refs:
-      - dev/設計書/シナリオ/単一ユースケース/コードブロックのHTMLを描く#scenarios[異常シナリオ（範囲のスクリプトを動かせない）]
+      - SC-472-16#scenarios[異常シナリオ（範囲のスクリプトを動かせない）]
   - name: 正常系（アイコン・キー・蛍光ペン・ルビ）
     summary: 行内の新しい記法を、スクリプト無しで読み込める HTML にする
     setup:
@@ -1680,8 +1681,8 @@ flows:
       - 文字列に `icon:flag`・`kbd:` が無い
     test: test_normal_when_inline_notations
     refs:
-      - dev/設計書/シナリオ/単一ユースケース/ステップ・ファイルツリー・バッジで本文を組む#scenarios[正常シナリオ（アイコン・キー・ルビ）]
-      - dev/設計書/シナリオ/単一ユースケース/名前の色で表・バッジ・本文を強調する#scenarios[正常シナリオ（蛍光ペンのマーカー）]
+      - SC-472-20#scenarios[正常シナリオ（アイコン・キー・ルビ）]
+      - SC-472-36#scenarios[正常シナリオ（蛍光ペンのマーカー）]
   - name: 正常系（アイコンの形状の表）
     summary: '`opts.icons` にあるまとめていない名前を、その構造の svg で描く'
     setup:
@@ -1729,9 +1730,9 @@ flows:
       - 文字列に `<!--`・`<button` が無い
     test: test_normal_when_block_notations
     refs:
-      - dev/設計書/シナリオ/単一ユースケース/本文を横に並べる#scenarios[正常シナリオ]
-      - dev/設計書/シナリオ/単一ユースケース/セクションと行の詳細を開閉する#scenarios[正常シナリオ（details の範囲）]
-      - dev/設計書/シナリオ/単一ユースケース/図と表を本文の幅より広げる#scenarios[正常シナリオ（本文の幅から始める）]
+      - SC-472-61#scenarios[正常シナリオ]
+      - SC-472-21#scenarios[正常シナリオ（details の範囲）]
+      - SC-472-38#scenarios[正常シナリオ（本文の幅から始める）]
   - name: 正常系（取り込む文書を指定する）
     summary: include のマーカーの場所に、取り込む文書の表から参照した全体・見出しの中・行の範囲を描く
     setup:
@@ -1760,8 +1761,8 @@ flows:
       - 文字列に `<!--` と `mdmark-syntax-warning` が無い
     test: test_normal_when_includes
     refs:
-      - dev/設計書/シナリオ/単一ユースケース/文書をHTML文字列にする#scenarios[正常シナリオ（取り込む文書を指定する）]
-      - dev/設計書/シナリオ/単一ユースケース/ほかの文書を取り込む#scenarios[正常シナリオ]
+      - SC-472-57#scenarios[正常シナリオ（取り込む文書を指定する）]
+      - SC-472-12#scenarios[正常シナリオ]
   - name: 正常系（取り込み先が無い・循環する）
     summary: 取り込めないマーカーの場所に記載の警告を配置し、循環する取り込みを止める
     setup:
@@ -1788,8 +1789,8 @@ flows:
       - マーカーの前後の段落がある
     test: test_normal_when_include_errors
     refs:
-      - dev/設計書/シナリオ/単一ユースケース/ほかの文書を取り込む#scenarios[異常シナリオ（取り込み先が無い）]
-      - dev/設計書/シナリオ/単一ユースケース/ほかの文書を取り込む#scenarios[異常シナリオ（取り込みが循環する）]
+      - SC-472-12#scenarios[異常シナリオ（取り込み先が無い）]
+      - SC-472-12#scenarios[異常シナリオ（取り込みが循環する）]
   - name: 正常系（CSV の表）
     summary: 言語 `csv` のコードブロックを表にし、元の CSV を隠して添える
     setup:
@@ -1816,8 +1817,8 @@ flows:
       - 4 つ目の表の前に記載の警告があり、本文に行番号 `2`・`3` がある。表は 3 列で、2 行目の 3 列目が空の `td`
     test: test_normal_when_csv
     refs:
-      - dev/設計書/シナリオ/単一ユースケース/表を操作する#scenarios[正常シナリオ（CSV の表）]
-      - dev/設計書/シナリオ/単一ユースケース/表を操作する#scenarios[異常シナリオ（CSV の列の数がそろわない）]
+      - SC-472-73#scenarios[正常シナリオ（CSV の表）]
+      - SC-472-73#scenarios[異常シナリオ（CSV の列の数がそろわない）]
   - name: 正常系（ページの設定のマーカーとカードの格子）
     summary: page のマーカーを本文に出さず、cards の範囲のリストをカードの格子の HTML にする
     setup:
@@ -1845,8 +1846,8 @@ flows:
       - 2 つ目の文書の HTML で、マーカーの場所に記載の警告がある
     test: test_normal_when_page_marker_and_card_grid
     refs:
-      - dev/設計書/シナリオ/単一ユースケース/リンクをカードの格子に並べる#scenarios[正常シナリオ]
-      - dev/設計書/シナリオ/単一ユースケース/ページの設定を文書で指定する#scenarios[異常シナリオ（文書の先頭に無いマーカー）]
+      - SC-472-35#scenarios[正常シナリオ]
+      - SC-472-33#scenarios[異常シナリオ（文書の先頭に無いマーカー）]
   - name: 正常系（新しい記法の記載方法の誤り）
     summary: 新しい記法の読み込めない記載方法の箇所に記載の警告を配置し、読み込めた分で描く
     setup:
@@ -1873,12 +1874,12 @@ flows:
       - 表が `mdmark-wide-range` に入らず、警告の本文に `<!-- /wide -->` がある
     test: test_normal_when_new_syntax_errors
     refs:
-      - dev/設計書/シナリオ/単一ユースケース/ステップ・ファイルツリー・バッジで本文を組む#scenarios[異常シナリオ（アイコンの名前の記載方法が誤っている）]
-      - dev/設計書/シナリオ/単一ユースケース/名前の色で表・バッジ・本文を強調する#scenarios[異常シナリオ（蛍光ペンの知らない色の名前）]
-      - dev/設計書/シナリオ/単一ユースケース/本文を横に並べる#scenarios[異常シナリオ（列の数が 2〜3 でない）]
-      - dev/設計書/シナリオ/単一ユースケース/本文を横に並べる#scenarios[異常シナリオ（columns の入れ子）]
-      - dev/設計書/シナリオ/単一ユースケース/セクションと行の詳細を開閉する#scenarios[異常シナリオ（details の閉じのマーカーが無い）]
-      - dev/設計書/シナリオ/単一ユースケース/図と表を本文の幅より広げる#scenarios[異常シナリオ（wide の閉じのマーカーが無い）]
+      - SC-472-20#scenarios[異常シナリオ（アイコンの名前の記載方法が誤っている）]
+      - SC-472-36#scenarios[異常シナリオ（蛍光ペンの知らない色の名前）]
+      - SC-472-61#scenarios[異常シナリオ（列の数が 2〜3 でない）]
+      - SC-472-61#scenarios[異常シナリオ（columns の入れ子）]
+      - SC-472-21#scenarios[異常シナリオ（details の閉じのマーカーが無い）]
+      - SC-472-38#scenarios[異常シナリオ（wide の閉じのマーカーが無い）]
   - name: 正常系（新しい記法の機能を解除する）
     summary: オフの新しい記法を、記載した文字か普通の Markdown として描く
     setup:
@@ -1907,7 +1908,7 @@ flows:
       - 文字列に `<!--` が無い
     test: test_normal_when_new_syntax_disabled
     refs:
-      - dev/設計書/シナリオ/単一ユースケース/機能のオン・オフを文書で上書きする#scenarios[正常シナリオ（新しい記法の機能を解除する）]
+      - SC-472-62#scenarios[正常シナリオ（新しい記法の機能を解除する）]
   - name: 正常系（座標を省いた判定フローチャート）
     summary: 座標を省いた判定フローチャートを配置して描き、座標を省けない定義を記載の警告にする
     setup:
@@ -2185,8 +2186,8 @@ lead: 利用側（書き出し・ビルドの処理やサーバー）が、画�
 idempotent: true
 side_effects: なし（外部ライブラリも読み込まない）
 callers:
-  - dev/設計書/シナリオ/単一ユースケース/文書をHTML文字列にする#
-  - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#
+  - SC-472-57#
+  - IF-472-35#
 request:
   - name: markdown
     type: string
@@ -2414,11 +2415,11 @@ constraints:
     notes: class はリンクと添付のカードの `.mdmark-card` とビューのボードの `.mdmark-view-cards` と分ける。外観はモック `dev/mock/components/card-grid/`
   - item: 自動の配置
     constraint: フロー図の定義の全てのノードが `x`・`y`・`w`・`h` を、全ての線が `points` を持たず、図が `width`・`height` を持たず、ノードの種類が全て `start`・`question`・`action`・`result` のとき、mdmark が配置して描く。`start` を一番上に配置し、`start` から線をたどって `question` を左の列に上から下へ並べる。`question` から出る線は、先が `question` の線を下、先が `action`・`result` の線を右へ出し、両方の先が `action`・`result` ならラベル `NO` の線を下、`YES` の線を右へ出す。右へ出した線の先のノードはその `question` と同じ行の右の列に、下へ出した線の先の `action`・`result` はその `question` の下の左の列に配置し、`action` の先は同じ列の下へ続ける。複数の線が入るノードは、`question` から右へ出る線の先の位置（その `question` と同じ行）を優先して 1 つだけ配置し、その線が無ければ最初にたどった線の先の位置に配置する。線をたどって届かないノードは、届くノードの下に定義の順に並べる。ノードの大きさは種類と名前の文字から、インターフェース定義『設定と索引を点検する』の制約「ラベルの長さの目安」で収まる大きさにする。線は縦と横だけの折れ線で、`from`・`to` でないノードの中を通らない点を求める。図の `width`・`height` は、ノードと線を囲む大きさに余白を加算した値にする。配置した結果は、同じ座標を記載した定義と同じ HTML に描く
-    decided_by: dev/設計書/シナリオ/単一ユースケース/図を描く#scenarios[正常シナリオ（座標を省いた判定フローチャート）]
+    decided_by: SC-472-43#scenarios[正常シナリオ（座標を省いた判定フローチャート）]
     notes: 配置の決まりはリファレンス『フローチャートの決まり』。列と行の関係はモックの素材 `dev/mock/refs/42/assets/samples.js` の `judgement-auto` と同じ。向きは確認ログの決定（自動の配置の向き、推奨案 A）。間隔・余白・大きさの値はモジュール構成設計
   - item: ノードのリンク先
     constraint: フロー図のノードはリンク先 `href`（文字列）を持てる。`href` を制約「URL のスキーム」と同じ許可（`http`・`https`・`mailto` と相対 URL）で確認し、許すノードはノードの全体を覆う `<a class="mdmark-diagram-node-link" href="{href}">`（スクリーンリーダー向けの名前はノードの名前。開く先は本文のリンクと同じく同じタブ）にし、ノードの要素（`div.mdmark-diagram-node`）に class `has-link` を付ける。`io`・`hint` のマーカーはリンクの中に入れず、リンクの後ろに配置する。許さないリンク先（`javascript:`・`id:` など）のノードはリンクにせず名前を描き、図の前に、ノードの `id` と記載したリンク先と使用できるリンク先を記載した記載の警告を配置する（許さないノードが複数なら 1 つの警告に並べる）。図は描く
-    decided_by: dev/設計書/シナリオ/単一ユースケース/図を描く#scenarios[異常シナリオ（ノードのリンク先を許可しない）]
+    decided_by: SC-472-43#scenarios[異常シナリオ（ノードのリンク先を許可しない）]
     notes: '`id:` などの参照は利用側が URL に変えてから定義に記載する（要件.md の未確定、推奨 A）。リンクの外観は確認ログの決定（名前を本文のリンクと同じ色と下線、推奨案 A）'
   - item: フロントマター
     constraint: Markdown の 1 行目が `---` だけの行で、2 行目以降に `---` か `...` だけの行があるとき、1 行目からその最初の行までをフロントマターとし、解析の前に本文から除外する。開く行と閉じる行は、行末の空白と CR（改行が CRLF の文書）を許す。先頭の BOM（U+FEFF）は判定の前に除く。閉じる行が無ければフロントマターとして扱わない。除外した範囲は、段落・見出し・目次・用語の下線・記載の警告の対象にしない。後ろのブロックの `data-source-line` は、元の Markdown の行番号のままにする。機能 `frontmatter`（既定 `false`）がオンのときだけ、本文の先頭に `<details class="mdmark-collapsible mdmark-frontmatter">`（`open` を持たない。制約「details の範囲」と同じ折りたたみ）を配置し、`<summary>` の文字を `フロントマター` にし、中にフロントマターの中身（開く行と閉じる行を除いた行）を制約「コードブロック」と同じ言語 `yaml` のコードブロックとして描く（コードブロックの `data-source-line` はフロントマターの 2 行目の行番号）。中身が空の行だけのフロントマターは、オンでも表示を配置しない。機能のオン・オフは、フロントマターの後ろの `features` のマーカーでも上書きできる。取り込む Markdown（制約「取り込み」）の先頭のフロントマターは、機能によらず除外して表示を配置しない。フロントマターとその表示は、制約「ページの設定のマーカー」の文書の先頭の判定に数えない

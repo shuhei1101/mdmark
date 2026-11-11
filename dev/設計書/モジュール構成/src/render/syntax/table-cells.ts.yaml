@@ -1,0 +1,90 @@
+id: MOD-472-273
+title: ライブラリ本体 / 記法 / table-cells.ts
+test_files:
+  - tests/unit/src/render/syntax/table-cells.test.ts
+data_models:
+  - name: CellMergePlan
+    title: セルの結合の計画
+    container: src/render/syntax/table-cells.ts
+    summary: 表のセルの文字の格子から決めた、セルごとの結合と、結合できない `^^`・`<<` の警告
+    properties:
+      - name: cells
+        type: 'Array<Array<{ rowspan: number; colspan: number; merged?: "up" | "left"; source?: [number, number] }>>'
+        description: 行と列の位置ごとのセル。結合の始まりのセルは `rowspan`・`colspan` に覆う数（覆わないときは 1）、結合したセルは `merged` に向きと `source` に始まりのセルの位置（行・列）を持つ。結合できない `^^`・`<<` は `merged` を持たない
+      - name: mergeColumns
+        type: number[]
+        description: 本文の行に `^^` の結合を持つ列の位置（小さい順）
+      - name: warnings
+        type: WarningItem[]
+        description: 結合する相手の無い `^^`・`<<` の項目（ラベルは `^^`・`<<`、本文に行と列の位置）
+    status: planned
+    introduced:
+      pr: 275
+functions:
+  - name: planCellMerges
+    title: セルの結合を決める
+    container: src/render/syntax/table-cells.ts
+    kind: 関数
+    scope: internal
+    summary: 表のセルの文字の格子から、`^^`（上のセルと結合）・`<<`（左のセルと結合）の結合を決める。結合したセルは、上か左のセルが結合したセルならその始まりのセルにたどって覆う数を増やす。見出しと本文をまたぐ `^^`（本文の最初の行）・最初の行の `^^`・最初の列の `<<` と、縦と横の結合が交わって矩形にならない結合は結合せず警告にする
+    args:
+      - name: options
+        type: '{ cells: string[][]; headRows: number }'
+        required: true
+        description: '`cells` は行ごとのセルの文字（前後の空白を除いたもの。見出しの行を含む）、`headRows` は見出しの行の数'
+    returns:
+      type: CellMergePlan
+      description: セルごとの結合と、結合する列と警告
+    unit_tests:
+      - name: test_plan_cell_merges
+        case: 正常
+        summary: 見出しの横の結合と本文の縦の結合を決める
+        condition: '`headRows` が 2 で、1 行目 `地域`・`上期`・`<<`、2 行目 `^^`・`売上`・`件数`、3 行目 `東`・`1`・`2`、4 行目 `^^`・`3`・`4`'
+        mock: なし
+        expected: 1 行目の 1 列目が `rowspan` 2、2 列目が `colspan` 2、3 列目が `merged` `left` と `source` `[0, 1]`。3 行目の 1 列目が `rowspan` 2、4 行目の 1 列目が `merged` `up` と `source` `[2, 0]`。`mergeColumns` が `[0]`、`warnings` が空
+      - name: test_plan_cell_merges_when_chained
+        case: 正常
+        summary: 続けて記載した ^^ を同じ始まりのセルにまとめる
+        condition: '`headRows` が 1 で、本文の 1 列目が `A`・`^^`・`^^`・`B`'
+        mock: なし
+        expected: '`A` のセルが `rowspan` 3、続く 2 つが `source` `[1, 0]`、`B` が `rowspan` 1'
+      - name: test_plan_cell_merges_when_no_partner
+        case: 異常
+        summary: 結合する相手の無い ^^・<< と、見出しと本文をまたぐ ^^ を警告にする
+        condition: '`headRows` が 1 で、見出しの 1 列目が `<<`、本文の 1 行目の 2 列目が `^^`'
+        mock: なし
+        expected: どのセルも `merged` を持たず、`rowspan`・`colspan` が 1。`warnings` が 2 つで、ラベルが `<<`・`^^`
+      - name: test_plan_cell_merges_when_not_rectangle
+        case: 異常
+        summary: 矩形にならない結合を警告にする
+        condition: '`headRows` が 1 で、本文の 1 行目 `A`・`<<`、2 行目 `^^`・`x`'
+        mock: なし
+        expected: 2 行目の 1 列目が `merged` を持たず、`warnings` にその `^^` の項目がある
+    status: planned
+    introduced:
+      pr: 275
+  - name: headerGroupsOf
+    title: 結合した見出しの範囲を求める
+    container: src/render/syntax/table-cells.ts
+    kind: 関数
+    scope: internal
+    summary: '`planCellMerges` の見出しの結合の計画から、最下段の列ごとに、その列を覆う上の行の `colspan` を持つ見出しの `{行}:{位置}` を返却する（無ければ `undefined`）'
+    description: 複数の行が覆うときは最も下の行を選ぶ。トークンを使用しない
+    args:
+      - name: options
+        type: '{ head: string[][]; plan: CellMergePlan }'
+        required: true
+        description: '`head` は見出しの行のセルの文字、`plan` は `planCellMerges` の結果'
+    returns:
+      type: Array<string | undefined>
+      description: 最下段の列ごとの範囲
+    unit_tests:
+      - name: test_header_groups_of
+        case: 正常
+        summary: 上の行の結合した見出しが覆う列だけに範囲を返却する
+        condition: 1 行目 `名前`・`設定`・`<<`・`<<`・`備考`、2 行目 `^^`・`型`・`既定`・`必須`・`^^`
+        mock: なし
+        expected: '`[undefined, "0:1", "0:1", "0:1", undefined]`'
+    status: planned
+    introduced:
+      pr: 303

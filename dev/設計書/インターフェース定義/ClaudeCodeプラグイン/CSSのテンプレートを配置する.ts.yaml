@@ -1,3 +1,4 @@
+id: IF-472-3
 title: CSSのテンプレートを配置する
 entry:
   kind: mcp_tool
@@ -77,10 +78,10 @@ error_format: 'ツールの結果を `isError: true` にし、内容のテキス
 constraints:
   - item: テンプレートのフォルダと索引
     constraint: '`list_templates` と同じ'
-    decided_by: dev/設計書/インターフェース定義/ClaudeCodeプラグイン/CSSのテンプレートの一覧を返却する.ts#constraints[テンプレートのフォルダ]
+    decided_by: IF-472-1#constraints[テンプレートのフォルダ]
   - item: 基準の設定ファイル
     constraint: '`dir` を指定したときは `dir` から、省いたときは `project_dir` から上へ探して最初に見つかった `mdmark.config.yaml`（`loadLayeredConfig` の `nearest` と同じ探し方）。`dir` を省いたときの配置先はこのファイルのフォルダ'
-    decided_by: dev/設計書/インターフェース定義/ライブラリ本体/設定を重ねて読み込む.ts#response[nearest]
+    decided_by: IF-472-40#response[nearest]
   - item: 設定ファイル
     constraint: 設定の `theme` を書き換えない。`theme` に記載するのは呼んだ側
   - item: 同じ中身

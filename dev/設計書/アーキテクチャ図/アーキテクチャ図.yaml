@@ -1,3 +1,4 @@
+id: ARCH-472-1
 title: "アーキテクチャ図"
 overview:
   direction: LR
@@ -81,12 +82,11 @@ overview:
     - from: cc
       to: devdocs
       label: MCP（ガイドの参照）
-  subgraphs:
-    - id: mdmark
-      label: mdmark
-      nodes:
-        - lib
-        - plugin
+  frame:
+    label: mdmark
+    nodes:
+      - lib
+      - plugin
 repository:
   style: モノレポ
   repositories:
@@ -123,7 +123,7 @@ subsystems:
     runtime: TypeScript 7。Webview は React（Vite で書き出し、shadcn/ui と Tailwind の部品）
     runs_on: 文書の作成者の VS Code（拡張機能のホストと Webview）。`vscode/` に独自の `package.json` を配置し、.vsix で配る
     refs:
-      - dev/設計書/インターフェース定義/VSCode拡張機能/プレビューを開く.ts#
+      - IF-472-22#
     status: planned
     introduced:
       pr: 69
@@ -142,7 +142,7 @@ external_systems:
     purpose: GitHub のリポジトリのバージョンのタグが指す配布物を、利用側のページへ配る
     direction: 受信のみ
     protocol: HTTPS
-    detail: dev/設計書/外部API/jsDelivr#
+    detail: API-472-2#
     cost: 無料。1 ファイル 20MB まで
     status: planned
     notes:
@@ -154,17 +154,17 @@ external_systems:
     cost: 無料。マーカーの無い文書では要求が 0 件
     status: planned
     refs:
-      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[外部ライブラリの読み込み]
+      - IF-472-35#constraints[外部ライブラリの読み込み]
     notes:
       事前確認: 否。この Issue の既定の対応表は空で、読み込む先は利用側が設定で指定する。結合テストは手元の開発サーバーが配る代役のモジュールで確認する。既定の対応表に外部の配信元を記載する Issue（#6）が、その配信元の事前確認を決める
   - name: GitHub のタグ一覧
     purpose: 'VS Code 拡張機能が `mdmark.version: latest` のときに、読み込む mdmark のバージョンを選ぶ'
     direction: 受信のみ
     protocol: HTTPS（REST、認証なし）
-    detail: dev/設計書/外部API/GitHub#
+    detail: API-472-1#
     cost: 無料。60 回/時（送信元の IP ごと）。プレビューを開く・リロードする・書き出すときだけ 1 回呼ぶ
     refs:
-      - dev/設計書/インターフェース定義/VSCode拡張機能/プレビューを開く.ts#constraints[バージョンの決め方]
+      - IF-472-22#constraints[バージョンの決め方]
     status: planned
     introduced:
       pr: 69
@@ -172,10 +172,10 @@ external_systems:
     purpose: '`vscode-v*` のタグで拡張機能の .vsix を作り、そのタグの Release に添える'
     direction: 送信のみ
     protocol: GitHub Actions のワークフロー（`.github/workflows/vscode-release.yml`）と `gh release`
-    detail: dev/設計書/外部ライブラリ/vsce#
+    detail: LIB-472-34#
     cost: 公開リポジトリの GitHub Actions は無料。Release に .vsix を残す
     refs:
-      - dev/設計書/インターフェース定義/VSCode拡張機能/拡張機能の配布物を作る.ts#
+      - IF-472-23#
     status: planned
     introduced:
       pr: 69
@@ -183,10 +183,10 @@ external_systems:
     purpose: 拡張機能を動かし、コマンド・設定・エディタ・Webview の API を指定する
     direction: 双方向
     protocol: VS Code の拡張機能の API（`vscode`）と Webview の `postMessage`
-    detail: dev/設計書/外部ライブラリ/vscode#
+    detail: LIB-472-35#
     cost: 無料
     refs:
-      - dev/設計書/非機能要件/非機能要件#requirements[対応する VS Code のバージョン]
+      - NFR-472-1#requirements[対応する VS Code のバージョン]
     status: planned
     introduced:
       pr: 69
@@ -194,10 +194,10 @@ external_systems:
     purpose: マーケットプレイスからプラグインを入れ、常駐の MCP サーバーへ HTTP でつないで instructions を受け取り、ツールを呼ぶ。ツールの呼び出しの前に PreToolUse のフックを実行する
     direction: 双方向
     protocol: フックは子プロセスの標準入出力（JSON）、MCP は 127.0.0.1 への Streamable HTTP（JSON-RPC）
-    detail: dev/設計書/外部ライブラリ/ClaudeCode#
+    detail: LIB-472-1#
     cost: mdmark の側には無い（Claude Code の利用料は利用側が持つ）。`export_html`・`build_site` は利用側の作業のフォルダに書き込む
     refs:
-      - dev/設計書/インターフェース定義/ClaudeCodeプラグイン/MCPサーバーを起動・停止する.ts#
+      - IF-472-4#
     status: planned
     introduced:
       pr: 72
@@ -205,10 +205,10 @@ external_systems:
     purpose: Claude Code が、mdmark のクローンを登録した配信元 `mdmark` から、ガイドのページを `search_docs` で参照する。mdmark のプラグインと MCP サーバーは dev-docs を呼ばず、端末の設定も書き換えない
     direction: 受信のみ
     protocol: Claude Code から dev-docs の MCP（127.0.0.1 への Streamable HTTP）
-    detail: dev/設計書/外部ライブラリ/dev-docs#
+    detail: LIB-472-8#
     cost: 無料。dev-docs は文書の作成者が自分の端末に入れ、mdmark のクローンを配信元に登録する
     refs:
-      - dev/設計書/シナリオ/単一ユースケース/ガイドを参照する#
+      - SC-472-15#
     status: planned
     introduced:
       pr: 293

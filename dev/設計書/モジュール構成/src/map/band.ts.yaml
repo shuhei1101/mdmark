@@ -1,0 +1,160 @@
+id: MOD-472-132
+title: ライブラリ本体 / map / 描画と操作 / band.ts
+test_files:
+  - tests/unit/src/map/band.browser.test.ts
+data_models:
+  - name: BandStep
+    title: 帯の手順
+    container: src/map/band.ts
+    usecase: Mermaidと補足で図を描く
+    role: データモデル
+    summary: '`attachBand` が進める 1 つの手順'
+    properties:
+      - name: title
+        type: string
+        description: 帯のタイトル
+      - name: text
+        type: string
+        description: 説明の文
+      - name: nodes
+        type: string[]
+        description: 強調するノードか参加者
+      - name: wires
+        type: string[]
+        description: データの印を流す線
+      - name: enter
+        type: string | undefined
+        description: その手順で中へ入るグループ
+  - name: BandHandle
+    title: 帯の操作の口
+    container: src/map/band.ts
+    usecase: Mermaidと補足で図を描く
+    role: データモデル
+    summary: '`attachBand` の戻り値'
+    properties:
+      - name: stop
+        type: () => void
+        description: 強調を解いて始める前に戻す
+      - name: update
+        type: '(steps: BandStep[]) => void'
+        description: 進める手順を差し替え、始める前の状態に戻す（強調は当て直さない）
+      - name: destroy
+        type: () => void
+        description: 時計と操作を外す
+  - name: FollowHandle
+    title: 表示する枠のスクロールの操作の口
+    container: src/map/band.ts
+    usecase: 図を巡回する
+    role: データモデル
+    summary: '`createFollow` の戻り値'
+    properties:
+      - name: reveal
+        type: '(ids: string[]) => void'
+        description: ノードか参加者の中心へ表示する枠をスクロールする（読者が触った後は `resume` まで何もしない）
+      - name: resume
+        type: () => void
+        description: 読者が触って止めたスクロールを再開する
+      - name: destroy
+        type: () => void
+        description: 表示する枠のイベントを外す
+functions:
+  - name: attachBand
+    title: 案内と再生を進める
+    kind: 関数
+    container: src/map/band.ts
+    usecase: 図を巡回する
+    role: 処理
+    summary: 図の枠の下に案内の帯を配置し、前へ・次へ・停止・自動で進めると強調・データの印・スクロールを付ける
+    scope: public
+    args:
+      - name: options
+        type: '{ figure: HTMLElement; mode: "walkthrough" | "playback"; steps: BandStep[]; interval: number; autoplay: boolean; apply: (step: BandStep | undefined) => void; reducedMotion: boolean; observe: (target: Element, onEnter: () => void) => () => void; follow?: { start: () => void; step: (step: BandStep) => void } }'
+        required: true
+        description: 図の枠・モード・手順・間隔（秒。印の `interval`）・印の `play` が `autoplay` か・強調を当てる関数・動きを減らす設定・画面に入ったら 1 回呼ぶ関数を登録して外す関数を返す関数（`IntersectionObserver` の差し替え口）・自動で進め始めたとき（`start`）と自動で次の手順へ進めたとき（`step`）に呼ぶ関数
+    returns:
+      type: BandHandle
+      description: 止める関数と片付ける関数
+    process: |-
+      1. `renderMapBand` で帯を描き、前へ・次へは端で反対の端へ回し、`apply` で強調を当てる
+      2. 自動で進めるの間は `interval` 秒ごとに次へ進め、強調するノードの中心へ表示する枠をスクロールする。スクロールは `createFollow` で行い、自動で進め始めたら `resume` を呼ぶ。自動で進め始めたときに `follow.start`、自動で次の手順へ進めたときに `follow.step` を呼ぶ（前へ・次へでは呼ばない）
+      3. 停止で `apply(undefined)` を呼び、始めた段に戻す。`update` で手順を差し替えたときは、自動で進めるを止めて番号を `–` に戻す
+      4. `autoplay` が `true` なら `observe` で図の枠が画面に入るのを待ち、入ったら `reducedMotion` が `false` のときだけ自動で進めるを始める（`true` のときは止めた帯のまま）
+    unit_tests:
+      - name: test_attach_band_when_next
+        case: 正常
+        summary: 次へ
+        condition: 4 手順で次へを 5 回押す
+        mock: '`apply`'
+        expected: '`apply` に手順 0・1・2・3・0 が渡る'
+      - name: test_attach_band_when_auto
+        case: 正常
+        summary: 自動で進める
+        condition: '`interval: 3` で自動で進めるを押し、時計を 6 秒進める'
+        mock: 時計（fake timers）・`scrollTo`
+        expected: 手順 0・1 まで進み、表示する枠の `scrollTo` を 2 回呼ぶ
+      - name: test_attach_band_when_user_scrolls
+        case: 正常
+        summary: 読者が触る
+        condition: 自動で進める間に表示する枠でホイールを回す
+        mock: 時計・`scrollTo`
+        expected: 以降の手順で `scrollTo` を呼ばない
+      - name: test_attach_band_when_autoplay
+        case: 正常
+        summary: 画面に入ったら始める
+        condition: '`autoplay: true`・`reducedMotion: false`。`observe` の `onEnter` を呼ぶ'
+        mock: '`observe`・時計'
+        expected: '`onEnter` の前は `apply` を呼ばず、呼んだ後に手順 0 が渡り、自動で進めるの `aria-pressed` が `true`'
+      - name: test_attach_band_when_update
+        case: 正常
+        summary: 手順の差し替え
+        condition: 4 手順で次へを 2 回押してから、2 手順に `update` する
+        mock: '`apply`'
+        expected: 帯の番号が `–/2` になり、`update` で `apply` を呼ばない
+      - name: test_attach_band_when_autoplay_reduced
+        case: 正常
+        summary: 動きを減らす設定
+        condition: '`autoplay: true`・`reducedMotion: true`。`onEnter` を呼ぶ'
+        mock: '`observe`'
+        expected: '`apply` を呼ばず、帯の番号が `–` のまま'
+      - name: test_attach_band_when_keys_kept_focus
+        case: 正常
+        summary: 矢印キーで続けて進める
+        condition: 帯の次へのボタンにフォーカスして → を 2 回
+        mock: なし（jsdom）
+        expected: 番号が 2 つ進み、描き直した後もフォーカスが帯の次へのボタンにある
+      - name: test_attach_band_when_follow
+        case: 正常
+        summary: 自動で進める間の follow
+        condition: '`interval: 3` で自動で進めるを押し、時計を 6 秒進め、一時停止して次へを押す'
+        mock: 時計・`follow`
+        expected: '`follow.start` を 1 回、`follow.step` を手順 1・2 で 2 回呼び、次へでは呼ばない'
+  - name: createFollow
+    title: 表示する枠をノードへスクロールする
+    kind: 関数
+    container: src/map/band.ts
+    usecase: 図を巡回する
+    role: 処理
+    summary: 図の枠の表示する枠を、指定したノードか参加者の中心へスクロールし、読者が表示する枠を触ったら `resume` まで止める
+    scope: public
+    args:
+      - name: figure
+        type: HTMLElement
+        required: true
+        description: 図の枠
+      - name: reducedMotion
+        type: boolean
+        required: true
+        description: 動きを減らす設定（`true` なら滑らかにスクロールしない）
+    returns:
+      type: FollowHandle
+      description: スクロールする関数・再開する関数・片付ける関数
+    process: |-
+      1. `reveal` は、指定した ID の `[data-node]`・`[data-participant]` を囲む矩形の中心が表示する枠の中央に来るように、表示する枠の `scrollTo` を呼ぶ（倍率と文書のスクロールは変えない）
+      2. 読者が表示する枠でホイール・`pointerdown`・キー・タッチをしたら、`resume` まで `reveal` でスクロールしない
+    unit_tests:
+      - name: test_create_follow_when_touched
+        case: 正常
+        summary: 読者が触る
+        condition: '`reveal` を呼び、表示する枠でホイールを回して `reveal`、`resume` の後に `reveal` を呼ぶ'
+        mock: 表示する枠の `scrollTo`
+        expected: '`scrollTo` を 1 回目と 3 回目だけ呼ぶ'

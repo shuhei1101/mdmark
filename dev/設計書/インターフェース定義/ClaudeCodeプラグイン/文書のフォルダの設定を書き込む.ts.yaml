@@ -1,3 +1,4 @@
+id: IF-472-8
 title: 文書のフォルダの設定を書き込む
 entry:
   kind: operation
@@ -65,7 +66,7 @@ test_file: tests/integration/ClaudeCodeプラグイン/setup-write-config.test.t
 idempotent: true
 side_effects: 文書のフォルダの `mdmark.config.yaml` を書き換える
 callers:
-  - dev/設計書/シナリオ/単一ユースケース/文書のフォルダに設定を作る#
+  - SC-472-53#
 request:
   - name: --dir
     type: string
@@ -94,14 +95,14 @@ exceptions:
 constraints:
   - item: 雛形
     constraint: '`mdmark init` が配置する `templates/mdmark.config.yaml` と同じ中身'
-    decided_by: dev/設計書/インターフェース定義/ライブラリ本体/雛形を配置する.ts#
+    decided_by: IF-472-42#
   - item: YAML の書き換え
     constraint: コメント・キーの並び・触らないキーの記載方法を残す
-    decided_by: dev/設計書/外部ライブラリ/yaml#
+    decided_by: LIB-472-36#
   - item: version
     constraint: 新しく作るときだけ `version` をプラグインのバージョンにする
   - item: 出力
     constraint: 結果は標準出力に JSON の 1 行で出す。誤りは標準エラーに理由と修正方法を出す
   - item: 動く Node のバージョン
     constraint: Node 24 以降
-    decided_by: dev/設計書/非機能要件/非機能要件#requirements[CLI が動く Node のバージョン]
+    decided_by: NFR-472-1#requirements[CLI が動く Node のバージョン]

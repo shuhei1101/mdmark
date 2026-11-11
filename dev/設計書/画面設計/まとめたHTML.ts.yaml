@@ -1,9 +1,10 @@
+id: SCR-472-3
 title: "まとめたHTML"
 elements:
   - name: 横の文書の一覧
     id: bundle-side
     kind: nav
-    component: dev/設計書/部品設計/文書の一覧.ts#
+    component: CMP-472-49#
     args:
       - name: docs
         value: まとめた文書の `{ path, title }`（`build.include` の並び。タイトルは索引の `title`、無ければ文書の最初の h1、無ければファイル名）
@@ -57,9 +58,9 @@ elements:
     visible_when: 常時
     initial_value: URL が指す文書（指していなければ `build.entry` の文書）
     action: 文書の一覧・文書間のリンクで文書を移ると、見出しを指していればその見出しへ、指していなければ文書の頭へ移り、フォーカスを文書の h1 へ移す（開いた直後は移さない）。ページのタイトルを文書のタイトルにする。開いている文書の中の見出しへ移るリンク（見出しのアンカー・目次）は、履歴に追加せず今の項目を置き換える（戻るは文書の単位で戻る）。戻る・進む・再読み込みで、離れたときの表示の状態を保存した履歴の項目へ戻ると、文書を描いた後に本文の開閉と `group=` の無いタブで選んだタブを戻してから、離れたときのスクロール位置へ移る（戻る・進むではフォーカスを文書を移ったときと同じく h1 へ、位置を動かさずに移す。再読み込みは開いた直後に当たるため移さない）。保存した状態が無い項目では、文書を移ったときと同じく見出しか文書の頭へ移る
-    action_ref: dev/設計書/画面設計/文書.ts#
+    action_ref: SCR-472-4#
     refs:
-      - dev/設計書/インターフェース定義/ライブラリ本体/複数の文書を1枚のHTMLにまとめる.ts#
+      - IF-472-38#
     reason: '`#/` で始まる `#` だけを文書の指定として扱い、文書のパスと GitHub と同じ見出しの ID をそのまま読み込めるようにする'
     status: planned
     introduced:
@@ -89,7 +90,7 @@ elements:
   - name: パネルの文書の一覧
     id: bundle-panel-list
     kind: nav
-    component: dev/設計書/部品設計/文書の一覧.ts#
+    component: CMP-472-49#
     args:
       - name: docs
         value: 横の文書の一覧と同じ

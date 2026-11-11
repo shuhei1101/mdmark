@@ -1,0 +1,59 @@
+id: MOD-472-188
+title: ライブラリ本体 / 図 / er-folds.ts
+test_files:
+  - tests/unit/src/interact/er-folds.browser.test.ts
+functions:
+  - name: attachErFolds
+    title: ER 図の列の開閉を付ける
+    container: src/interact/er-folds.ts
+    kind: 関数
+    scope: internal
+    summary: '`figure` の中の `button.mdmark-diagram-er-fold` の `click`（Enter・Space を含む）で `setErTableFolded` を呼び、フォーカスをボタンに残す。図の倍率は変えない'
+    args:
+      - name: figure
+        type: HTMLElement
+        required: true
+        description: '`data-diagram="er"` の `figure.mdmark-diagram`（全画面の枠を含む）'
+    returns:
+      type: () => void
+      description: 付けた受け取りを解除する関数
+    callees:
+      - '#functions[setErTableFolded]'
+    unit_tests:
+      - name: test_attach_er_folds
+        case: 正常
+        summary: 開閉のボタンで列を畳み、関係の線をもう一度結ぶ
+        condition: 主キー 1 つ・ほかの列 10 個・12 番目に外部キーを持つ `orders` と、その外部キーへ関係を持つ `customers` の ER 図（インターフェース定義『文書を描く』のフロー `正常系（ER 図の列を開閉する）` と同じ定義）で、`orders` の開閉のボタンを押し、もう一度押す
+        mock: なし（Chromium）
+        expected: 1 回目の後に主キーと外部キー以外の列の行が `hidden` を持ち、ボタンが `aria-expanded="false"`、12 番目の外部キーの列へ結ぶ線の端の y が変わる。2 回目の後に全ての列が出て、線の端の y が初めと同じ。フォーカスがボタンに残る
+    status: planned
+    introduced:
+      pr: 298
+  - name: setErTableFolded
+    title: ER 図のテーブルの列を畳む・開く
+    container: src/interact/er-folds.ts
+    kind: 関数
+    scope: internal
+    summary: テーブルの主キーでも外部キーでもない列の行の `hidden`・`非表示 {数} 列` の行・開閉のボタンの `aria-expanded` とアイコン（`chevrons-down-up`・`chevrons-up-down`）を切り替え、図の中の関係ごとに、テーブルの位置と大きさ（`style` の `left`・`top`・`width`）と列の行の並びから作った `MdmarkErTable` で `erRelationRoute` をもう一度求め、線の `d`・両端の記号（`erEndSvg`）・ラベルの位置を書き換え、図の高さを `erTableHeight` でもう一度求める。分類『描く』の `attachPrint` も使用する
+    args:
+      - name: options
+        type: '{ table: HTMLElement; folded: boolean }'
+        required: true
+        description: '`div.mdmark-diagram-er-table` と、畳むか'
+    returns:
+      type: void
+      description: テーブルと図の関係の線を書き換える
+    callees:
+      - 'MOD-472-176#functions[erRelationRoute]'
+      - 'MOD-472-187#functions[erEndSvg]'
+      - 'MOD-472-176#functions[erTableHeight]'
+    unit_tests:
+      - name: test_set_er_table_folded
+        case: 正常
+        summary: 畳んだテーブルを開き、もう一度畳む
+        condition: モックの `shop-er-folded` を描いた図の注文のテーブルに `folded` を `false`、続けて `true`
+        mock: なし（Chromium）
+        expected: '`false` の後に全ての列の行が `hidden` を持たず `非表示 {数} 列` の行が無い。`true` の後に描いた直後と同じ HTML'
+    status: planned
+    introduced:
+      pr: 298

@@ -1,0 +1,50 @@
+id: MOD-472-82
+title: VS Code 拡張機能 / ビルドと配布 / release-check.ts
+test_files:
+  - tests/unit/vscode/scripts/release-check.test.ts
+constants:
+  - name: RELEASE_TAG_PATTERN
+    title: 拡張機能のタグの構造
+    container: vscode/scripts/release-check.ts
+    summary: '`vscode-v{X}.{Y}.{Z}`'
+    value: /^vscode-v(\d+\.\d+\.\d+)$/
+    status: planned
+functions:
+  - name: checkReleaseTag
+    title: タグとバージョンを照合する
+    kind: 関数
+    container: vscode/scripts/release-check.ts
+    usecase: 拡張機能の配布物を作る
+    summary: タグが `RELEASE_TAG_PATTERN` に合い、`vscode-v` の後ろが `package.json` の `version` と等しいかを返却する
+    description: ファイルの末尾で `import.meta.main` が `true` のときだけ、`process.argv[2]` のタグと `package.json` の `version` で呼び、合わなければ理由を標準エラーに出して終了コードを 1 にする
+    scope: public
+    args:
+      - name: options
+        type: '{ tag: string; version: string }'
+        required: true
+        description: push されたタグと `package.json` の `version`
+    returns:
+      type: '{ ok: true } | { ok: false; message: string }'
+      description: 照合の結果。合わないときは 2 つのバージョン（構造に合わないときはタグ）を含む文
+    unit_tests:
+      - name: test_check_release_tag
+        case: 正常
+        summary: タグのバージョンと version が等しい
+        condition: '`tag` が `vscode-v0.1.0`、`version` が `0.1.0`'
+        mock: なし
+        expected: '`{ ok: true }`'
+      - name: test_check_release_tag_when_mismatch
+        case: 正常
+        summary: バージョンが違うときは 2 つのバージョンを出す
+        condition: '`tag` が `vscode-v0.2.0`、`version` が `0.1.0`'
+        mock: なし
+        expected: '`ok` が `false` で、`message` が `0.2.0` と `0.1.0` を含む'
+      - name: test_check_release_tag_when_invalid_tag
+        case: 正常
+        summary: 構造に合わないタグは合わないときと同じく止める
+        condition: '`tag` が `v0.1.0` と `vscode-0.1.0`'
+        mock: なし
+        expected: どちらも `ok` が `false` で、`message` がタグを含む
+    refs:
+      - IF-472-23#constraints[タグの構造]
+    status: planned

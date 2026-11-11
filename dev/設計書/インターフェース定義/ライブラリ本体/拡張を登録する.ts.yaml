@@ -1,3 +1,4 @@
+id: IF-472-32
 title: "拡張を登録する"
 entry:
   kind: operation
@@ -258,8 +259,8 @@ test_file: tests/integration/lib/register-extension.browser.test.ts
 idempotent: false
 side_effects: mdmark の中の拡張の登録表に追加する。同じページの以降の `mount`・`update`・`render` に有効になる
 callers:
-  - dev/設計書/シナリオ/単一ユースケース/拡張を登録してマーカーを追加する#
-  - dev/設計書/シナリオ/単一ユースケース/固有の部品とCSSを適用する#
+  - SC-472-49#
+  - SC-472-44#
 exclusivity: 登録は同期で終わる。描いた後に登録したマーカーは、次の `mount`・`update` から有効になる
 request:
   - name: extension.name

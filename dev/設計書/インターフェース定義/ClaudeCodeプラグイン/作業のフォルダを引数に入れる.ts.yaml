@@ -1,3 +1,4 @@
+id: IF-472-5
 title: "作業のフォルダを引数に入れる"
 entry:
   kind: trigger
@@ -89,5 +90,5 @@ constraints:
   - item: 公開の Schema
     constraint: Claude Code は `updatedInput` を `tools/list` の `inputSchema` でもう一度検査しない。`project_dir` は `inputSchema` に出さない
 refs:
-  - dev/設計書/シナリオ/単一ユースケース/ClaudeCodeから点検と書き出しを呼ぶ#
+  - SC-472-3#
 test_file: tests/integration/ClaudeCodeプラグイン/pre-tool-use.test.ts

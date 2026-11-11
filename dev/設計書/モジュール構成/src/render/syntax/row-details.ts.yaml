@@ -1,0 +1,33 @@
+id: MOD-472-281
+title: ライブラリ本体 / 記法 / row-details.ts
+test_files:
+  - tests/unit/src/render/syntax/row-details.test.ts
+functions:
+  - name: attachRowDetails
+    title: 行の詳細を表に入れる
+    container: src/render/syntax/row-details.ts
+    kind: 関数
+    scope: internal
+    summary: 'コアルール。`row-details` がオンなら、表の直後の `row-detail` の範囲のトークンを、その行の直後の部品『行の詳細』の行（`toggle: false`）に移す。表に無い行は警告を差し込み、中身を表の後に残す'
+    args:
+      - name: state
+        type: StateCore
+        required: true
+        description: markdown-it の状態
+    side_effects: '`state.tokens` を書き換える'
+    callees:
+      - MOD-472-321#functions[renderRowDetail]
+      - 'MOD-472-213#functions[pushWarning]'
+    unit_tests:
+      - name: test_attach_row_details
+        case: 正常
+        summary: 詳細を指定の行の直後に入れる
+        condition: '3 行の表の直後の `<!-- row-detail: 2 -->` 〜 `<!-- /row-detail -->` に段落'
+        mock: なし
+        expected: 2 行目の直後に `<tr class="mdmark-row-detail" data-row="2"><td colspan="{列の数}">` と段落があり、表の後に段落が無い
+      - name: test_attach_row_details_when_row_missing
+        case: 正常
+        summary: 表に無い行は警告を差し込み、中身を表の後に残す
+        condition: '3 行の表と `<!-- row-detail: 5 -->`'
+        mock: なし
+        expected: 警告の本文に `5` と `3`、表の後に段落

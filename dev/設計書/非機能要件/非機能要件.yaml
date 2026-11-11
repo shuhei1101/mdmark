@@ -1,6 +1,8 @@
+id: NFR-472-1
 title: 非機能要件
 requirements:
-  - name: 配布ファイル 1 つのサイズ
+  - id: NFR-1
+    name: 配布ファイル 1 つのサイズ
     english_name: dist_file_size
     category: 性能
     external_constraint: jsDelivr の GitHub エンドポイントは 1 ファイル 20MB までを配る
@@ -10,7 +12,8 @@ requirements:
     unit: KB 以下（671744 バイト）
     rationale: '外部の上限は 20MB。利用側のページが開くたびに読み込むため、まとめた後の実測から目標を配置する。markdown-it 15.0.2 と sanitize-html 2.18.0（postcss を空の部品に差し替えたもの）を、対応ブラウザの target でまとめて minify すると 178,594 バイトだった（2026-10-13、作業ツリーの外で実測。minify しないと 388,091 バイト）。mdmark 自身のコードと、後続の Issue が追加する機能の余地を確認して 256KB にした。後続の Issue が超えるときは、その Issue が実測を添えて上げる。図の部品（定義の読み取り・図と操作できる部品の HTML・拡大などの操作）と lucide のアイコンを追加した #42 で、まとめた dist/index.js が 293,909 バイトになった（2026-10-20）ため、余地を確認して 320KB に上げた。差分の表示（jsdiff の 3 つの関数と差分の処理・部品）を追加した #49 で、まとめた dist/index.js が 336,305 バイトになった（2026-10-22、#45 を入れた develop は 312,423 バイト）ため、余地を確認して 352KB に上げた。ビュー・コメントの部品を追加した #55 で、表の機能を追加した #57 を取り込んだ後のまとめた dist/index.js が 360,299 バイトになった（2026-10-23。ビューとコメントの本体は dist/view.js・dist/comments.js に分けている）ため、余地を確認して 368KB に上げた。元の行番号と配色の class を追加した #69 で、#72・#74・#78 を取り込んだ後のまとめた dist/index.js が 376,991 バイトになった（2026-10-24）ため、余地を確認して 384KB に上げた。コードブロックの色分け（色分けのライブラリの本体と言語のモジュールは配布物にまとめず、使用するときだけ読み込む）を追加した #97 で、#109 を取り込んだ後のまとめた dist/index.js が 382,101 バイトになった（2026-10-24）。上限の内に収まるため変えていない。表の見出し行と集計の行を留める処理・集計とコピーの形式のメニュー・最終列を畳む処理・コードブロックのラベルとコピーを追加した #150 で、まとめた dist/index.js が 408,445 バイトになった（2026-10-27、develop は 391,395 バイト）ため、余地を確認して 416KB に上げた。右側の目次と、H1 のセクション・すべて展開・すべて折りたたむ・Shift でのまとめての開閉を追加した #166 で、#151 を取り込んだ後のまとめた dist/index.js が 415,123 バイトになった（2026-10-28、develop は 391,395 バイト）。上限の内に収まるため変えていない。エイリアスの作成（`buildAliases`）と、種類ごとのツールチップ・コマンドのコピーを追加した #176 で、まとめた dist/index.js が 425,127 バイトになった（2026-10-28、#166 を取り込んだ develop は 415,123 バイト）。上限（425,984 バイト）の内に収まるため変えていない。描いた文書のブロックの色分け（ブロックの分け方・書き換えと入れ替えの見分け・削除したブロックの差し込みと、差分のブロックの部品・スタイル）を追加した #196 で、まとめた dist/index.js が 433,348 バイトになった（2026-10-30、develop は 425,336 バイト）ため、余地を確認して 440KB に上げた。検証に使用する ajv は dist/cli.js とプラグインにだけまとめ、dist/index.js には入れない。名前の色・画像の図・ギャラリー・ライトボックス・動画と音声・GIF・リンクと添付のカードを追加した #263 で、まとめた dist/index.js が 472,675 バイトになった（2026-11-02、develop は 446,474 バイト）ため、余地を確認して 480KB に上げた。表のセルの結合と行見出し・コードブロックの行の種類と開閉・グラフの種類を追加した #275 で、まとめた dist/index.js が 503,918 バイト（#287 を取り込んだ後は 506,704 バイト）になった（2026-11-03、develop は 478,882 バイト）ため、余地を確認して 512KB に上げた。脚注（定義・参照・行内の脚注の読み取り、番号と一覧の部品、ツールチップと一覧への移動の操作）を追加した #215 で、まとめた dist/index.js が 532,216 バイトになった（2026-11-04、develop は 520,634 バイト）ため、余地を確認して 544KB に上げた。表の列の並べ替え（テーブル設定のパネルと操作）・キーの列の階層と YAML の見本・埋め込んだ HTML の範囲の css・ts・js（変換のライブラリは配布物にまとめず、使用するときだけ読み込む）を追加した #303 で、#329 を取り込んだ後のまとめた dist/index.js が 580,912 バイトになった（2026-11-05、develop は 542,773 バイト）ため、余地を確認して 592KB に上げた。新しい記法 8 件（アイコン・キー・蛍光ペン・段組み・details・改ページ・取り込み・wide・CSV の表）とまとめていないアイコンの読み込みを追加した #307 で、#328 を取り込んだ後のまとめた dist/index.js が 565,186 バイトになった（2026-11-05、develop は 542,267 バイト）ため、余地を確認して 576KB に上げた。#303 に #307 を取り込んだ後のまとめた dist/index.js が 604,146 バイトになった（2026-11-05）ため、余地を確認して 624KB に上げた。map の記法の読み取り・マーカーの引数の検査・部品の読み込みを追加した #445 で、まとめた dist/index.js が 646,957 バイトになった（2026-11-11、develop は 638,287 バイト。Mermaid と補足の読み取り・配置・描画・操作は dist/map.js に分けている）ため、余地を確認して 656KB に上げた'
     overflow: ビルドの後に配布ファイルのサイズを数え、超えていればビルドを失敗させる。確認する時点はビルドの直後で、バージョンのタグを打つ前。
-  - name: 対応ブラウザ
+  - id: NFR-2
+    name: 対応ブラウザ
     english_name: supported_browsers
     category: 動作環境
     external_constraint: 制限なし
@@ -23,7 +26,8 @@ requirements:
       version: Playwright 1.64.0（Chromium 156.0.8078.4・Firefox 157.0）
       date: '2026-10-31'
       result: 合格
-  - name: 通信
+  - id: NFR-3
+    name: 通信
     english_name: network
     category: 動作環境
     external_constraint: 配布物を jsDelivr から HTTPS で読み込む
@@ -31,7 +35,8 @@ requirements:
     value: 利用側のページでは jsDelivr へ HTTPS で届くことを前提にする。CLI が書き出した HTML は外へ要求せず、オフラインでも開ける（『書き出した HTML の外部への要求』）
     rationale: 利用側のページへは配布物を CDN から読み込む構造で配る。CDN を読み込めない環境へは CLI で書き出した 1 枚の HTML を配る（#9）
     overflow: 読み込めないときはページの本文だけを表示し、ブラウザが読み込めなかった旨をコンソールに出す
-  - name: 書き出した HTML の外部への要求
+  - id: NFR-4
+    name: 書き出した HTML の外部への要求
     english_name: exported_html_requests
     category: 動作環境
     external_constraint: Microsoft の環境（OneDrive など）では CDN を読み込めない
@@ -50,7 +55,8 @@ requirements:
       version: Playwright 1.64.0（Chromium 156.0.8078.4・Firefox 157.0）
       date: '2026-10-31'
       result: 合格
-  - name: mermaid を埋めた書き出しの HTML のサイズ
+  - id: NFR-5
+    name: mermaid を埋めた書き出しの HTML のサイズ
     english_name: exported_html_mermaid_size
     category: 性能
     external_constraint: 制限なし（書き出した HTML は 1 枚のファイルとして配り、jsDelivr の 1 ファイル 20MB の上限は該当しない）
@@ -61,7 +67,8 @@ requirements:
     status: planned
     introduced:
       pr: 382
-  - name: CLI が動く Node のバージョン
+  - id: NFR-6
+    name: CLI が動く Node のバージョン
     english_name: cli_node_version
     category: 動作環境
     external_constraint: Node.js の保守の期限（Node 22 は 2027-04-30 まで、Node 24 は 2028-04-30 まで）
@@ -78,7 +85,8 @@ requirements:
       version: Node v24.14.0
       date: '2026-10-31'
       result: 合格
-  - name: 対応する VS Code のバージョン
+  - id: NFR-7
+    name: 対応する VS Code のバージョン
     english_name: vscode_version
     category: 動作環境
     external_constraint: 拡張機能は `package.json` の `engines.vscode` より古い VS Code に入らない
@@ -96,12 +104,13 @@ requirements:
       version: VS Code 1.141.0・1.145.1（stable）。React（Vite でビルドした `media/preview.js`）にした Webview で、CSP・動的 `import()`・`ready` を受けた再送信の結合テストが 69 件 pass した
       date: '2026-11-06'
       result: 合格
-  - name: タグ一覧を取る待ちの上限
+  - id: NFR-8
+    name: タグ一覧を取る待ちの上限
     english_name: tag_list_timeout
     category: 耐障害
     external_constraint: GitHub の REST API は未認証で 60 回/時まで。応答の時間の保証は無い
     source_kind: 外部 API の制限
-    source: dev/設計書/外部API/GitHub#
+    source: API-472-1#
     value: '3'
     unit: 秒
     rationale: 取れないときは前回のバージョンで描けるため、長く待たずに描き始める。プレビューは開いてから 1 秒経っても描けないときだけ読み込み中を出し、PoC（#70）の配布物の読み込みは 641〜1,400 ms だった。タグ一覧の待ちを追加しても、前回のバージョンで描き始めるまでを 5 秒前後に収める
@@ -109,7 +118,8 @@ requirements:
     status: planned
     introduced:
       pr: 69
-  - name: 再描画するまでの待ち
+  - id: NFR-9
+    name: 再描画するまでの待ち
     english_name: preview_update_delay
     category: 性能
     external_constraint: 制限なし
@@ -121,7 +131,8 @@ requirements:
     status: planned
     introduced:
       pr: 69
-  - name: 印刷のダイアログを出すまでの待ちの上限
+  - id: NFR-10
+    name: 印刷のダイアログを出すまでの待ちの上限
     english_name: print_wait_limit
     category: 耐障害
     external_constraint: 制限なし
@@ -133,12 +144,13 @@ requirements:
     status: planned
     introduced:
       pr: 69
-  - name: 確認した Claude Code のバージョン
+  - id: NFR-11
+    name: 確認した Claude Code のバージョン
     english_name: claude_code_version
     category: 動作環境
     external_constraint: プラグイン・フック・MCP の挙動は Claude Code のバージョンで変わる。バージョンは利用側の手元のものを使用し、mdmark は固定しない
     source_kind: 外部ライブラリの制限
-    source: dev/設計書/外部ライブラリ/ClaudeCode#version
+    source: LIB-472-1#version
     value: 2.1.309
     rationale: PoC（#73）でマーケットプレイスの追加と導入・索引の注入・MCP サーバーの接続・ツールの呼び出しを確認したバージョン。これより新しいバージョンと古いバージョンは確認していない
     measurement: Claude Code の実機で、プラグインを入れ、セッションの開始で索引を受け取り、ツールを呼べるかを確認する
@@ -150,12 +162,13 @@ requirements:
       version: Claude Code 2.1.316
       date: '2026-10-31'
       result: 合格
-  - name: MCP サーバーの接続の待ち
+  - id: NFR-12
+    name: MCP サーバーの接続の待ち
     english_name: mcp_connect_wait
     category: 性能
     external_constraint: MCP サーバーの接続を待つ上限は MCP_TIMEOUT の既定で 30 秒。超えるとサーバーを使用できない
     source_kind: 外部ライブラリの制限
-    source: dev/設計書/外部ライブラリ/ClaudeCode#limitations[MCP サーバーの接続の待ち]
+    source: LIB-472-1#limitations[MCP サーバーの接続の待ち]
     value: '30'
     unit: 秒 以内
     rationale: 'MCP サーバーの起動で CLI を取得すると、空の npm のキャッシュから 53 秒かかった（PoC #73）。`mdmark serve` を先に常駐させ、Claude Code は起動済みのサーバーへ HTTP でつなぐだけにする'

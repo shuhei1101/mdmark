@@ -1,3 +1,4 @@
+id: SC-472-57
 title: 文書をHTML文字列にする
 scenarios:
   - name: 正常シナリオ
@@ -123,7 +124,7 @@ scenarios:
       - 文字列に `[^src]` と定義の行の文字が無い
     test: test_normal_when_footnotes
     refs:
-      - dev/設計書/シナリオ/単一ユースケース/脚注を確認する#scenarios[正常シナリオ]
+      - SC-472-71#scenarios[正常シナリオ]
   - name: 正常シナリオ（取り込む文書を指定する）
     setup:
       - name: 取り込む文書の表

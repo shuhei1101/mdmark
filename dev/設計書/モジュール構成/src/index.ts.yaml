@@ -1,0 +1,24 @@
+id: MOD-472-169
+title: ライブラリ本体 / 公開の入口 / index.ts
+test_files:
+  - tests/unit/src/index.test.ts
+functions:
+  - name: version
+    title: バージョンを返却する
+    container: src/index.ts
+    kind: 関数
+    scope: public
+    summary: ビルドで埋めたバージョンを返却する
+    description: 'ビルドが識別子 `__MDMARK_VERSION__` をバージョンの文字列に置き換える。ソースでは `declare const __MDMARK_VERSION__: string` で宣言する。'
+    returns:
+      type: string
+      description: '`v{MAJOR}.{MINOR}.{PATCH}` のバージョン'
+    unit_tests:
+      - name: test_version
+        case: 正常
+        summary: 埋めたバージョンを返却する
+        condition: '`__MDMARK_VERSION__` に `v9.9.9` を配置する'
+        mock: '`globalThis.__MDMARK_VERSION__` に値を配置してから読み込む'
+        expected: '`v9.9.9` を返却する'
+    refs:
+      - IF-472-29#

@@ -1,3 +1,4 @@
+id: CMP-472-23
 title: "バッジ"
 implementation: "src/parts/badge.ts#renderBadge"
 story: "Parts/Badge"
@@ -73,8 +74,8 @@ css_properties:
 accessibility:
   - 札は文言をそのままスクリーンリーダーに伝える `span` で、色だけで意味を持たせない
 refs:
-  - dev/設計書/インターフェース定義/ライブラリ本体/文書をHTML文字列にする.ts#constraints[ステップ・ファイルツリー・バッジ]
-  - dev/設計書/インターフェース定義/ライブラリ本体/文書をHTML文字列にする.ts#constraints[バッジの色]
+  - IF-472-34#constraints[ステップ・ファイルツリー・バッジ]
+  - IF-472-34#constraints[バッジの色]
 status: planned
 notes:
   HTML: '`<span class="mdmark-badge">{label}</span>`。色のバッジは `<span class="mdmark-badge" data-color="{color}">{label}</span>`。モックは `dev/mock/components/badge/`'

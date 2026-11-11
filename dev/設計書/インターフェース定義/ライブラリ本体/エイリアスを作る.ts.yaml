@@ -1,3 +1,4 @@
+id: IF-472-26
 title: "エイリアスを作る"
 entry:
   kind: operation
@@ -58,9 +59,9 @@ identifier: buildAliases
 idempotent: true
 side_effects: なし（引数を書き換えず、ファイルとネットワークを読み込まない）
 callers:
-  - dev/設計書/インターフェース定義/ライブラリ本体/文書をHTMLに書き出す.ts#
-  - dev/設計書/インターフェース定義/ライブラリ本体/複数の文書を1枚のHTMLにまとめる.ts#
-  - dev/設計書/インターフェース定義/ライブラリ本体/設定と索引を点検する.ts#
+  - IF-472-33#
+  - IF-472-38#
+  - IF-472-39#
 request:
   - name: input.rows
     type: unknown[]
@@ -192,5 +193,5 @@ constraints:
   - item: 上限
     constraint: 制限なし（指定された全ての行とファイルを使用する）
 refs:
-  - dev/設計書/ER図/エイリアス#
-  - dev/設計書/設定/ライブラリ本体#settings[aliases]
+  - ER-472-3#
+  - CFG-472-3#settings[aliases]

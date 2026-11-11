@@ -1,0 +1,85 @@
+id: MOD-472-164
+title: ライブラリ本体 / ビューとコメント / bubble.ts
+test_files:
+  - tests/unit/src/comments/bubble.browser.test.ts
+functions:
+  - name: attachCommentActions
+    title: コメントを修正・削除する
+    container: src/comments/bubble.ts
+    summary: 開いた吹き出しのコメントごとの「編集」「削除」に、入力欄・削除の確認と `store.update`・`store.remove` の呼び出しを付ける
+    kind: 関数
+    scope: internal
+    side_effects: '吹き出しの中の `li` を書き換え、`store.update`・`store.remove` を呼ぶ'
+    args:
+      - name: options
+        type: '{ bubble: HTMLElement; store: MdmarkCommentStore; docId: string; isActive: () => boolean; onUpdated: (id: string, body: string) => void; onRemoved: (id: string) => boolean }'
+        required: true
+        description: '`renderCommentBubble` で開いた吹き出し・読み込みと保存の関数・対象の ID・付けたコメントがまだ削除されていないか・修正できたときと削除できたときに `attachComments` へ通知する関数（`onRemoved` は同じマーカーにコメントが残るかを返却する）'
+    returns:
+      type: '{ cancel: () => boolean }'
+      description: '開いている入力欄か削除の確認を閉じる関数。閉じたか、修正・削除を待っているなら真、どちらも開いていなければ偽を返却する'
+    process: |-
+      1. 吹き出しの押下を受け、押したボタンの `data-action` と `li` の `data-comment-id` で振り分ける。入力欄と削除の確認は吹き出しの中で同時に 1 つだけ開く（開くときは開いている方を閉じる）
+      2. 「編集」は、その `li` を `renderCommentItem` の入力欄（`draft` は今の本文、`state: idle`）に替え、本文の欄へフォーカスを移す
+      3. 入力欄の「保存」は、本文の前後の空白を落として空なら `state: empty` にして本文の欄へフォーカスを移す。空でなければ `state: saving` にして `store.update({ docId, id, body })` を待つ。待つ間に `isActive()` が偽になれば何もしない。reject したら `update`・`docId`・`id`・元のエラーを `console.error` に出し、吹き出しが残っていれば `state: failed` にして本文の欄へフォーカスを移す。解決したら `onUpdated(id, body)` を呼び、吹き出しが残っていれば `li` を書き換えた本文の表示に替えて「編集」へフォーカスを移す
+      4. 入力欄の「キャンセル」と `cancel()` は、`li` を書き換える前の本文の表示に戻して「編集」へフォーカスを移す
+      5. 「削除」は、その `li` を `renderCommentItem` の削除の確認（`state: idle`）に替え、確認の「キャンセル」へフォーカスを移す
+      6. 確認の「削除」は、`state: removing` にして `store.remove({ docId, id })` を待つ。待つ間に `isActive()` が偽になれば何もしない。reject したら `remove`・`docId`・`id`・元のエラーを `console.error` に出し、吹き出しが残っていれば `state: failed` にする（確認は開いたまま）。解決したら `onRemoved(id)` を呼び、真が返って吹き出しが残っていれば `li` を除き、次の `li`（無ければ前の `li`）の最初のボタンへフォーカスを移す
+      7. 確認の「キャンセル」と `cancel()` は、`li` を本文の表示に戻して「削除」へフォーカスを移す
+      8. `cancel()` は、保存か削除を待っている間は何もせずに真を返却する
+    unit_tests:
+      - name: test_attach_comment_actions_when_edited
+        case: 正常
+        summary: 編集して保存すると update を呼び、書き換えた本文を出して編集へフォーカスを戻す
+        condition: 2 件の吹き出しで 1 件目の「編集」を押し、本文を `修正した本文` にして「保存」を押す
+        mock: '`update` は引数を記録して解決する。`onUpdated` は引数を記録する'
+        expected: '押した後に本文の欄にフォーカスがあり今の本文が入っている。保存の後は `update` が `{ docId, id, body: "修正した本文" }` で呼ばれ、`onUpdated` が同じ `id` と本文で呼ばれ、1 件目の本文が `修正した本文` で、1 件目の「編集」にフォーカスがある'
+      - name: test_attach_comment_actions_when_edit_empty
+        case: 異常
+        summary: 本文を空にして保存すると通知を出して update を呼ばない
+        condition: 「編集」を押し、本文を空にして「保存」を押す
+        mock: '`update` は呼ばれたかを記録する'
+        expected: '`コメントを記載してから保存してください。` が出て、本文の欄が `aria-invalid="true"`。`update` は呼ばれない'
+      - name: test_attach_comment_actions_when_update_rejected
+        case: 異常
+        summary: 修正できないと入力欄と本文を残して通知する
+        condition: 「編集」を押し、本文を書き換えて「保存」を押す
+        mock: '`update` は reject する。`console.error` を記録する'
+        expected: 入力欄と書き換えた本文が残り、`role="alert"` に `コメントを保存できませんでした。記載したコメントは残っています。もう一度「保存」を押してください。`。`console.error` に `update`・`docId`・`id`。`onUpdated` は呼ばれない
+      - name: test_attach_comment_actions_when_edit_cancelled
+        case: 正常
+        summary: キャンセルと cancel() で書き換える前の本文に戻して編集へフォーカスを戻す
+        condition: 「編集」を押して本文を書き換えて「キャンセル」を押す。もう一度「編集」を押して `cancel()` を呼ぶ
+        mock: なし
+        expected: どちらも元の本文が出て「編集」にフォーカスがあり、`cancel()` は `true` を返却する。何も開いていないときの `cancel()` は `false`
+      - name: test_attach_comment_actions_when_removed
+        case: 正常
+        summary: 削除を確認してから remove を呼び、残ったコメントのボタンへフォーカスを移す
+        condition: 2 件の吹き出しで 1 件目の「削除」を押し、確認の「削除」を押す
+        mock: '`remove` は引数を記録して解決する。`onRemoved` は `true` を返却する'
+        expected: 「削除」の後に `このコメントを削除しますか? 削除すると元に戻せません。` と確認の「キャンセル」へのフォーカスがあり、`remove` はまだ呼ばれない。確認の「削除」の後は `remove` が `{ docId, id }` で呼ばれ、`li` が 1 つで、その「編集」にフォーカスがある
+      - name: test_attach_comment_actions_when_remove_cancelled
+        case: 正常
+        summary: 確認のキャンセルと cancel() では remove を呼ばずに削除へフォーカスを戻す
+        condition: 「削除」を押して確認の「キャンセル」を押す。もう一度「削除」を押して `cancel()` を呼ぶ
+        mock: '`remove` は呼ばれたかを記録する'
+        expected: どちらも確認が無く、その「削除」にフォーカスがある。`remove` は呼ばれない
+      - name: test_attach_comment_actions_when_remove_rejected
+        case: 異常
+        summary: 削除できないと確認を開いたまま通知する
+        condition: 「削除」と確認の「削除」を押す
+        mock: '`remove` は reject する。`console.error` を記録する'
+        expected: 確認とコメントが残り、`role="alert"` に `コメントを削除できませんでした。もう一度「削除」を押してください。`。`console.error` に `remove`・`docId`・`id`。`onRemoved` は呼ばれない
+      - name: test_attach_comment_actions_when_inactive
+        case: 正常
+        summary: 待つ間に削除されたら結果を描かない
+        condition: '`update` を待たせたまま `isActive` を偽にしてから解決する'
+        mock: 合図で解決する `update`
+        expected: '`onUpdated` が呼ばれず、入力欄が `saving` のまま'
+    refs:
+      - IF-472-35#constraints[コメントの修正と削除]
+      - IF-472-35#exceptions[なし（コメントを修正・削除できない）]
+      - CMP-472-17#
+    status: planned
+    introduced:
+      pr: 280

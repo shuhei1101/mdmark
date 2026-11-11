@@ -1,0 +1,212 @@
+id: MOD-472-257
+title: ライブラリ本体 / 索引と用語 / dictionary.ts
+test_files:
+  - tests/unit/src/knowledge/dictionary.test.ts
+  - tests/unit/src/knowledge/dictionary.browser.test.ts
+data_models:
+  - name: Dictionary
+    title: 照合の辞書
+    container: src/knowledge/dictionary.ts
+    summary: 索引の用語・用語集の表の用語・文書の別名を、照合する単語から参照できる構造にまとめたもの（内部の型）
+    properties:
+      - name: words
+        type: string[]
+        description: 照合する単語。`normalizeWord` で正規化した単語を、長い単語から並べる
+      - name: terms
+        type: 'Map<string, { id: string; meaning: string; alias?: MdmarkAlias }>'
+        description: 正規化した単語から、優先の順（索引の `terms` → エイリアス（指定した並び） → 描く文書の表 → ほかの文書の表）で選んだ用語。エイリアスは `id` を `alias:{エイリアスの id}`、`meaning` を `description`（無ければ空文字）にし、`alias` にそのエイリアスを持つ
+      - name: docs
+        type: Map<string, MdmarkIndexDoc[]>
+        description: 正規化した単語から、その単語を `aliases` に持つ文書（索引の `docs` の順）
+      - name: avoided
+        type: 'Map<string, { id: string; term: string; meaning?: string; alias?: MdmarkAlias }>'
+        description: 正規化したやめた言い方から代わりの用語（`glossary` がオンのとき、索引の `terms[].avoid`、エイリアスの `avoid` の種類の `name`・`aliases` と `term` の種類の `avoid`、用語集の表の用語の `avoid` から。同じ言い方は索引の `terms`、エイリアスの並び、索引の `docs` の順の文書の表の順で先の用語）。`avoid` の種類は `term` を `replacement` にして `meaning` を持たず、`term` の種類は `term` を名前、`meaning` を `description` にする。エイリアスの代わりの用語は `id` を `alias:{エイリアスの id}` にし、`alias` にそのエイリアスを持つ。用語の単語・別名と同じ単語は入れない。`words` には入れず、照合でやめた言い方を利用側だけが `words` に追加する
+      - name: written
+        type: Map<string, string>
+        description: 正規化した単語から、索引・用語集の表・文書の `aliases` に記載した表記。`words` と `avoided` の単語を持ち、同じ正規化の単語は `terms`・`avoided` と同じ優先の順で先の表記
+      - name: term
+        type: '(word: string) => { id: string; meaning: string } | undefined'
+        description: 単語を `normalizeWord` で正規化してから、エイリアスを除いた用語を参照する。`findWords` を通らずに記載した単語で用語を参照する箇所（図のノード・埋め込んだ HTML のチャートの `{{単語}}`）が使用する。エイリアスの単語は参照しない（図の部品の `{{単語}}` はエイリアスを参照しない）
+functions:
+  - name: buildDictionary
+    title: 照合の辞書を作る
+    container: src/knowledge/dictionary.ts
+    kind: 関数
+    scope: internal
+    summary: 索引の用語・描く文書の表の用語・参照の表の用語・文書の別名から `Dictionary` を作る
+    description: 単語は `normalizeWord` で正規化してから入れ、正規化した後に同じになる単語は同じ単語として扱う。同じ単語が複数の用語に該当するときは、索引の `terms`・`aliases`（並びの順）・描く文書の表・ほかの文書の表（`docId` が索引の `docs` で先のもの）の順で 1 つを選ぶ。用語集の表の用語の `id` は `glossary:{docId}:{単語}`。`aliases` は `usableAliases` で使用できるものだけにし、`avoid` でない種類の `name`・`aliases` を単語にして、`id` を `alias:{エイリアスの id}`、`meaning` を `description`（無ければ空文字）、`alias` をそのエイリアスにする。`term` はエイリアスを入れずに同じ優先の順で用語を参照する。描く文書自身の別名は入れない。`backlinks` がオフなら文書の別名を入れず、`glossary` がオフなら用語・エイリアス・やめた言い方を入れない。やめた言い方は索引の `terms[].avoid` と、描く文書の表とほかの文書の表の用語の `avoid`（`avoid` が無い用語はやめた言い方を持たないものとして扱う）から入れ、代わりの用語は索引の用語なら `terms[].id`・単語・意味、用語集の表の用語なら `glossary:{docId}:{単語}`・用語・意味にする。エイリアスのやめた言い方は、`avoid` の種類の `name`・`aliases`（代わりの用語は `alias:{id}`・`replacement` で、意味を持たない）と `term` の種類の `avoid`（代わりの用語は `alias:{id}`・`name`・`description`）から入れ、どちらも `alias` にそのエイリアスを持つ。同じやめた言い方は、索引の `terms`、`aliases` の並び、索引の `docs` の順の文書の表（描く文書の表は描く文書の位置。描く文書が索引の `docs` に無いときはほかの文書の表より先）の順で先の用語を使用する。やめた言い方が用語の単語・別名と同じかも正規化した単語で比べる。やめた言い方は `avoided` にだけ入れて `words` に追加しないので、`words` を使用する `collectMatches`・図のノードの `{{単語}}` の照合はやめた言い方に該当しない
+    args:
+      - name: options
+        type: '{ index?: MdmarkIndex; docId?: string; ownGlossary: MdmarkGlossaryEntry[]; references?: MdmarkReferences; aliases?: readonly unknown[]; features: Record<string, boolean> }'
+        required: true
+        description: 索引・描く文書の `id`・描く文書の表の用語・参照の表・利用側が指定したエイリアス・文書の機能
+    returns:
+      type: Dictionary
+      description: 照合の辞書
+    unit_tests:
+      - name: test_build_dictionary
+        case: 正常
+        summary: 同じ単語は索引 → 描く文書の表 → ほかの文書の表の順で選ぶ
+        condition: 単語 `マーカー` を索引・描く文書の表・ほかの文書 2 つの表に持つ。単語 `マーク` をほかの文書 2 つの表に持つ
+        mock: なし
+        expected: '`マーカー` は索引の意味、`マーク` は索引の `docs` で先の文書の表の意味、`words` は長い単語から'
+      - name: test_build_dictionary_when_backlinks_disabled
+        case: 正常
+        summary: '`backlinks` がオフなら文書の別名を入れない'
+        condition: 文書 `api` の別名 `公開関数`、`features.backlinks` が `false`
+        mock: なし
+        expected: '`docs` が空で、`words` に `公開関数` が無い'
+      - name: test_build_dictionary_excludes_self
+        case: 正常
+        summary: 描く文書自身の別名は入れない
+        condition: '`docId` が `api`、`api` の別名 `公開関数`'
+        mock: なし
+        expected: '`docs` に `公開関数` が無い'
+      - name: test_build_dictionary_avoided
+        case: 正常
+        summary: 索引の用語のやめた言い方を `avoided` に入れ、`words` には入れない
+        condition: 用語 `ワークスペース`（`ws`、`avoid` に `作業場`・`WS`、別名 `WS`）と用語 `作業スペース`（`avoid` に `作業場`）の順
+        mock: なし
+        expected: '`avoided` が `作業場` → `{ id: "ws", term: "ワークスペース", meaning: … }` の 1 件だけ（別名と同じ `WS` は入らない）で、`words` に `作業場` が無い'
+      - name: test_build_dictionary_avoided_when_glossary_disabled
+        case: 正常
+        summary: '`glossary` がオフならやめた言い方を入れない'
+        condition: '`test_build_dictionary_avoided` と同じ索引、`features.glossary` が `false`'
+        mock: なし
+        expected: '`avoided` が空'
+      - name: test_build_dictionary_avoided_from_glossary
+        case: 正常
+        summary: 用語集の表のやめた言い方を `avoided` に入れ、索引の `terms`、索引の `docs` の順の文書の表の順で代わりの用語を選ぶ
+        condition: 索引の `docs` が `glossary`・`guide` の順で、用語 `フォルダ`（`avoid` に `作業場`）を持つ。`docId` が `guide`、`ownGlossary` が用語 `下書き`（`docId` `guide`、`avoid` に `草稿`・`ワーク場`）、`references.glossary` が用語 `ワークスペース`（`docId` `glossary`、`avoid` に `作業場`・`ワーク場`）と `下書き` の 2 つ
+        mock: なし
+        expected: '`avoided` が `作業場` → 索引の `フォルダ`、`ワーク場` → `{ id: "glossary:glossary:ワークスペース", term: "ワークスペース", meaning: … }`、`草稿` → `{ id: "glossary:guide:下書き", term: "下書き", meaning: … }` の 3 件で、`words` にどれも無い'
+      - name: test_build_dictionary_avoided_own_table_first_when_not_in_index
+        case: 正常
+        summary: 描く文書が索引の `docs` に無いときは、描く文書の表のやめた言い方をほかの文書の表より先にする
+        condition: 索引の `docs` が `glossary` だけで `docId` を指定しない。`ownGlossary` が用語 `下書き`（`docId` 空文字、`avoid` に `ワーク場`）、`references.glossary` が用語 `ワークスペース`（`docId` `glossary`、`avoid` に `ワーク場`）
+        mock: なし
+        expected: '`avoided` の `ワーク場` が `下書き` の用語'
+      - name: test_build_dictionary_avoided_when_glossary_entry_without_avoid
+        case: 正常
+        summary: '`avoid` が無い用語集の表の用語は、やめた言い方を持たないものとして扱う'
+        condition: '`references.glossary` が `avoid` を持たない用語 `ワークスペース`（`docId` `glossary`）と、`avoid` に `草稿` を持つ用語 `下書き`（`docId` `glossary`）'
+        mock: なし
+        expected: 例外を送出せず、`avoided` が `草稿` → `下書き` の 1 件だけで、`words` に `ワークスペース` がある
+      - name: test_build_dictionary_when_notation_differs
+        case: 正常
+        summary: 正規化した後に同じになる単語を 1 つの単語にまとめ、優先の順で先の用語と表記を残す
+        condition: 索引の用語 `MCP`（`mcp`）と、`ownGlossary` の用語 `ｍｃｐ`。文書 `api` の別名 `ＡＰＩ`。索引の用語 `ワークスペース`（別名 `WS`、`avoid` に `ws`）
+        mock: なし
+        expected: '`words` に `mcp` と `api` があり `MCP`・`ｍｃｐ` が無い。`terms.get("mcp")` と `term("Ｍｃｐ")` が索引の `mcp` の用語、`written.get("mcp")` が `MCP`、`docs.get("api")` が `api` の文書。`avoided` が空（`ws` は別名 `WS` と同じ単語）'
+      - name: test_build_dictionary_when_aliases
+        case: 正常
+        summary: エイリアスの名前と別名を、索引の後・描く文書の表の前の優先で入れ、term では参照しない
+        condition: 索引の用語 `マーカー`。`aliases` が `term` の `マーカー`（`mark`）と `command` の `単体テスト`（`unit-test`、別名 `ユニットテスト`）。`ownGlossary` が用語 `単体テスト`
+        mock: なし
+        expected: '`terms.get("マーカー")` が索引の用語で `alias` を持たない。`terms.get("単体テスト")` と `terms.get("ユニットテスト")` が `id` `alias:unit-test` で `alias` がそのエイリアス。`term("単体テスト")` が `glossary::単体テスト` の用語'
+      - name: test_build_dictionary_avoided_from_aliases
+        case: 正常
+        summary: avoid の種類と term の種類の avoid をやめた言い方に入れ、索引のやめた言い方を先にする
+        condition: 索引の用語 `フォルダ`（`avoid` に `作業場`）。`aliases` が `avoid` の `作業場`（`workplace`、別名 `作業所`、置き換え先 `ワークスペース`）と `term` の `レビュー`（`review`、`avoid` に `査読会`）
+        mock: なし
+        expected: '`avoided` が `作業場` → 索引の `フォルダ`、`作業所` → `id` が `alias:workplace`・`term` が `ワークスペース`・`alias` が `workplace` のエイリアスで `meaning` を持たないもの、`査読会` → `id` が `alias:review`・`term` が `レビュー`・`meaning` がその説明・`alias` が `review` のエイリアスのものの 3 件で、`words` にどれも無い'
+      - name: test_build_dictionary_skips_unusable_aliases
+        case: 正常
+        summary: 使用できないエイリアスと、glossary がオフのときのエイリアスを入れない
+        condition: '`aliases` が `env` の `開発サーバー`・`command` が空の `command` の `単体テスト`・`url` の `課題の一覧`。もう 1 つは同じ `aliases` で `features.glossary` が `false`'
+        mock: なし
+        expected: 前者の `words` が `課題の一覧` だけを持ち、後者の `words` が空
+  - name: findWords
+    title: 単語の区切りで単語を照合する
+    container: src/knowledge/dictionary.ts
+    kind: 関数
+    scope: internal
+    summary: 文字列の中で、始まりと終わりが単語の区切り（`wordStarts`）に一致する辞書の単語の位置を、重ならないよう長い単語を先に返却する
+    description: 区切り方は実行環境の辞書に依るため、要件とシナリオの単語の区切りを Node と対応ブラウザの単体テストで確認する。元の文字列を `wordStarts` の区切りごとに NFKC と英字の小文字化をかけてつなぎ、`normalizeWord` で正規化した辞書の単語が区切りの境目から境目までに一致する箇所を、元の文字列の位置に戻して返却する。区切りごとに正規化するため、NFKC で長さが変わる文字があっても位置は元の区切りに一致する。`word` は `words` に指定したままの単語で、正規化した後に同じになる単語が複数あるときは `words` で先の単語
+    args:
+      - name: text
+        type: string
+        required: true
+        description: 照合する文字列（テキストのトークン 1 つの中身）
+      - name: words
+        type: string[]
+        required: true
+        description: 辞書の単語（長い単語から）
+    returns:
+      type: 'Array<{ start: number; end: number; word: string }>'
+      description: 一致した位置（頭から順）
+    unit_tests:
+      - name: test_find_words
+        case: 正常
+        summary: 単語の区切りに一致する単語だけを返却する
+        condition: 単語 `マーカー`・`ワークスペース`・`WS`。文字列 `本文のマーカーは印刷でも使用する` と `ワークスペースにWSを配置する`
+        mock: なし（Node と対応ブラウザの両方で実行する）
+        expected: 1 つ目は `マーカー` が 1 つ（`印刷` の `マーカー` は入らない）、2 つ目は `ワークスペース` と `WS`
+      - name: test_find_words_prefers_longer
+        case: 正常
+        summary: 重なる単語は長い単語を選ぶ
+        condition: 単語 `オン・オフのマーカー` と `マーカー`、文字列 `オン・オフのマーカーを記載する`
+        mock: なし
+        expected: '`オン・オフのマーカー` が 1 つだけ'
+      - name: test_find_words_without_intl_segmenter
+        case: 正常
+        summary: '`Intl.Segmenter` を持たない環境で、英数字の単語の一部を照合しない'
+        condition: 単語 `ワークスペース`・`WS`。文字列 `ワークスペースをWSLに配置する`
+        mock: '`Intl` から `Segmenter` を取り除いてから、ほかのテストと共有しない新しいモジュールとして `dictionary.ts` を読み込む（テストの後に戻す）'
+        expected: 読み込みが例外を出さず、`ワークスペース` が 1 つだけ（`WSL` の中の `WS` は入らない）
+      - name: test_find_words_when_notation_differs
+        case: 正常
+        summary: 全角と半角・英字の大文字と小文字だけが違う単語を、元の文字列の位置で返却する
+        condition: 単語 `ワークスペース`・`ws`・`MCP`。文字列 `ﾜｰｸｽﾍﾟｰｽとＷＳ` と `mcp と Mcp`
+        mock: なし（Node と対応ブラウザの両方で実行する）
+        expected: '1 つ目は `{ start: 0, end: 8, word: "ワークスペース" }` と `{ start: 9, end: 11, word: "ws" }`、2 つ目は `word` が `MCP` の 2 つ（`0`〜`3` と `6`〜`9`）'
+  - name: wordStarts
+    title: 単語の区切りの位置を返却する
+    container: src/knowledge/dictionary.ts
+    kind: 関数
+    scope: internal
+    summary: 文字列を単語に区切り、各語の始まりの位置（UTF-16 の位置）を頭から順に返却する
+    description: '`Intl.Segmenter` があれば `ja`・`word` で区切る。`Intl.Segmenter` は初めて呼ばれたときに 1 つだけ作り、以降は使い回す（モジュールを読み込んだ時点では作らない）。`Intl.Segmenter` が無い環境では、英数字（`A-Z`・`a-z`・`0-9` と全角の英数字）の連なりを 1 単語とし、それ以外の文字を 1 文字（コードポイント）ずつ区切る'
+    args:
+      - name: text
+        type: string
+        required: true
+        description: 区切る文字列
+    returns:
+      type: number[]
+      description: 各語の始まりの位置（頭から順）
+    unit_tests:
+      - name: test_word_starts_without_intl_segmenter
+        case: 正常
+        summary: '`Intl.Segmenter` を持たない環境で、英数字の連なりを 1 単語、それ以外を 1 文字ずつ区切る'
+        condition: 文字列 `印刷をWSL2で😀確認する`
+        mock: '`Intl` から `Segmenter` を取り除いてから、ほかのテストと共有しない新しいモジュールとして `dictionary.ts` を読み込む（テストの後に戻す）'
+        expected: '`[0, 1, 2, 3, 7, 8, 10, 11]`（`WSL2` は 1 単語、サロゲートペアの絵文字は 1 文字）'
+      - name: test_word_starts_without_intl_segmenter_when_fullwidth
+        case: 正常
+        summary: '`Intl.Segmenter` を持たない環境で、全角の英数字の連なりも 1 単語にする'
+        condition: 文字列 `ＷＳＬ2を確認する`
+        mock: '`test_word_starts_without_intl_segmenter` と同じ'
+        expected: '`[0, 4, 5, 6]`（`ＷＳＬ2` は 1 単語）'
+  - name: normalizeWord
+    title: 単語を正規化する
+    container: src/knowledge/dictionary.ts
+    summary: 照合・点検・検索の前に単語に NFKC・英字の小文字化・前後の空白の除去をかける
+    description: '`String.prototype.normalize("NFKC")`・`toLowerCase()`・`trim()` の順にかける。辞書の単語の登録（`buildDictionary`）・本文の照合（`findWords`）・点検（`checkIndex`・`findAvoidedTerms`）がこの関数を使用する'
+    kind: 関数
+    scope: internal
+    args:
+      - name: word
+        type: string
+        required: true
+        description: 正規化する単語
+    returns:
+      type: string
+      description: 正規化した単語
+    unit_tests:
+      - name: test_normalize_word
+        case: 正常
+        summary: 全角と半角・英字の大文字と小文字・前後の空白をそろえる
+        condition: '`　Ｗｏｒｋ Place `・`ﾜｰｸｽﾍﾟｰｽ`・`㍻`'
+        mock: なし
+        expected: '`work place`・`ワークスペース`・`平成`'

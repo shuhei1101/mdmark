@@ -1,3 +1,4 @@
+id: IF-472-29
 title: "バージョンを返却する"
 entry:
   kind: operation
@@ -24,7 +25,7 @@ lead: 利用側のページが、読み込んだ配布物のバージョンを�
 idempotent: true
 side_effects: なし
 callers:
-  - dev/設計書/シナリオ/単一ユースケース/バージョンを固定して配布物を読み込む#
+  - SC-472-28#
 response:
   - name: '-'
     type: string

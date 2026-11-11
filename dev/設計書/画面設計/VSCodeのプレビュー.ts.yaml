@@ -1,3 +1,4 @@
+id: SCR-472-2
 title: "VSCodeのプレビュー"
 elements:
   - name: タブのタイトル
@@ -21,7 +22,7 @@ elements:
     visible_when: 常時
     source: プレビューを開くの Webview とのメッセージ `render.theme`
     refs:
-      - dev/設計書/インターフェース定義/VSCode拡張機能/プレビューを開く.ts#constraints[配色]
+      - IF-472-22#constraints[配色]
     status: planned
     introduced:
       pr: 69
@@ -33,17 +34,17 @@ elements:
     visible_when: 配布物を読み込み終え、最初の `rendered` を送信した後
     source: プレビューを再描画するの送信する中身（全文・差分のパネルの `previous`・重ねた設定のうち `mount` の `opts.config` が読み込むキー）。重ねた設定の `theme` の CSS と `extensions` の部品が該当する
     action: 本文のリンクを押すと `#` で始まるリンクはこの中で移り、それ以外は `openLink` を送信する。スクロールすると `revealLine` を送信する
-    action_ref: dev/設計書/画面設計/文書.ts#
+    action_ref: SCR-472-4#
     refs:
-      - dev/設計書/インターフェース定義/VSCode拡張機能/プレビューのリンクを開く.ts#
-      - dev/設計書/インターフェース定義/VSCode拡張機能/スクロールを合わせる.ts#
+      - IF-472-19#
+      - IF-472-17#
     status: planned
     introduced:
       pr: 69
   - name: 読み込み中の表示
     id: preview-loading
     kind: status
-    component: dev/設計書/部品設計/プレビューの状態の表示.ts#
+    component: CMP-472-29#
     args:
       - name: state
         value: '`loading`'
@@ -57,7 +58,7 @@ elements:
   - name: 描けない理由
     id: preview-error
     kind: status
-    component: dev/設計書/部品設計/プレビューの状態の表示.ts#
+    component: CMP-472-29#
     args:
       - name: state
         value: '`loadFailed` の `reason`（`offline` / `versionMissing` / `diffUnsupported`）か、バージョンを決められないとき `versionUndecidable`'
@@ -67,14 +68,14 @@ elements:
     description: 配布物を読み込めないときと、差分のパネルで読み込んだ配布物が差分の表示に対応しないとき、文書の代わりに理由と「リロード」を出す
     visible_when: Webview が `loadFailed` を送信したときか、拡張機能がバージョンを決められず配布物を読み込まない HTML を入れたとき
     action: 「リロード」を押すと `reload` を送信する
-    action_ref: dev/設計書/インターフェース定義/VSCode拡張機能/プレビューをリロードする.ts#
+    action_ref: IF-472-20#
     status: planned
     introduced:
       pr: 69
   - name: 設定ファイルを読み込めない帯
     id: preview-config-band
     kind: status
-    component: dev/設計書/部品設計/設定ファイルを読み込めない帯.ts#
+    component: CMP-472-63#
     args:
       - name: path
         value: '`configError.path`（読み込めない設定ファイルを、インターフェース定義『設定を重ねて読み込む』の制約「パスの表示」で書き換えたパス）'
@@ -86,14 +87,14 @@ elements:
     description: 重ねた設定ファイル（端末の設定を含む）のどれかを読み込めない・設定の構造に合わないことを、端末の設定 → 上 → 近いの順で最初の 1 つだけ、文書を描いたまま文書の先頭で通知する。固定せずスクロールに合わせて動かす。描いた文書は React の外の DOM のため、帯の子にせず帯の後ろに並べる
     visible_when: '`configError` を受けてから `configOk` を受けるまで'
     action: 「設定ファイルを開く」を押すと `openConfig` を送信する
-    action_ref: dev/設計書/インターフェース定義/VSCode拡張機能/設定ファイルを開く.ts#
+    action_ref: IF-472-25#
     status: planned
     introduced:
       pr: 69
   - name: 再生できない動画・音声の通知
     id: preview-media-error
     kind: status
-    component: dev/設計書/部品設計/再生できない動画・音声の通知.ts#
+    component: CMP-472-35#
     args:
       - name: kind
         value: '`error` になった要素が `video` なら `video`、`audio` なら `audio`'
@@ -105,13 +106,13 @@ elements:
     description: プレビューの Webview が再生できない動画・音声の要素を替える枠。再生できないことと「既定のアプリで開く」を出す
     visible_when: '`video`・`audio` が `error` になったとき'
     action: 「既定のアプリで開く」を押すと `openAsset` を送信する
-    action_ref: dev/設計書/インターフェース定義/VSCode拡張機能/プレビューを開く.ts#
+    action_ref: IF-472-22#
     refs:
-      - dev/設計書/インターフェース定義/VSCode拡張機能/プレビューを開く.ts#constraints[再生できない動画・音声]
+      - IF-472-22#constraints[再生できない動画・音声]
     status: planned
 screen: vscode/src/webview/features/preview/panel/panel-screen.tsx
 mock: dev/mock/pages/vscode-preview/342/shadcn/
 lead: VS Code 拡張機能が開くプレビューのパネル（Webview）。mdmark が描いた文書と、拡張機能が追加する状態の表示を同じパネルの中で切り替える。
 refs:
-  - dev/設計書/インターフェース定義/VSCode拡張機能/プレビューを開く.ts#
-  - dev/設計書/インターフェース定義/VSCode拡張機能/プレビューを再描画する.ts#
+  - IF-472-22#
+  - IF-472-21#

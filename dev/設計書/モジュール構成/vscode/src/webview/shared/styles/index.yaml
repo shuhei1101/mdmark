@@ -1,0 +1,4 @@
+summary: styles の設計書
+items:
+  - page: panel.css.yaml
+    summary: VS Code 拡張機能 / Webview / panel.css

@@ -1,3 +1,4 @@
+id: LIB-472-7
 title: biome
 kind: CLI
 version:
@@ -7,21 +8,21 @@ version:
   source: package.json
   pinning: 完全一致
 catalogs:
-- name: コマンド
-  version: 2.5.15
-  entries:
-  - name: biome check
-    kind: コマンド
-    purpose: lint と整形の違反を検査する（`--write` で修正する）
-- name: 設定
-  version: 2.5.15
-  entries:
-  - name: css.parser.tailwindDirectives
-    kind: 設定
-    purpose: Tailwind の `@theme`・`@utility` を CSS として読み込む
-  - name: linter.domains.react
-    kind: 設定
-    purpose: '`none` にし、React の規則は ESLint が受け持つ（直下に `react` を入れると既定で有効になる）'
+  - name: コマンド
+    version: 2.5.15
+    entries:
+      - name: biome check
+        kind: コマンド
+        purpose: lint と整形の違反を検査する（`--write` で修正する）
+  - name: 設定
+    version: 2.5.15
+    entries:
+      - name: css.parser.tailwindDirectives
+        kind: 設定
+        purpose: Tailwind の `@theme`・`@utility` を CSS として読み込む
+      - name: linter.domains.react
+        kind: 設定
+        purpose: '`none` にし、React の規則は ESLint が受け持つ（直下に `react` を入れると既定で有効になる）'
 lead: JavaScript・TypeScript・CSS・JSON の lint と整形を 1 つで行うツール。
 purl: pkg:npm/%40biomejs/biome@2.5.15
 dependency_scope: 開発のみ

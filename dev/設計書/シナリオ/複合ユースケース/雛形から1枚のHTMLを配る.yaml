@@ -1,3 +1,4 @@
+id: SC-472-95
 title: 雛形から1枚のHTMLを配る
 scenarios:
   - name: 正常シナリオ
@@ -13,10 +14,10 @@ scenarios:
         A[雛形を配置する:正常シナリオ] --> B[設定と索引を点検する:正常シナリオ]
         B --> C[複数の文書を1枚のHTMLにまとめる:正常シナリオ]
         C --> D[まとめたHTMLで文書を行き来する:正常シナリオ]
-        click A "../単一ユースケース/雛形を配置する.yaml#正常シナリオ"
-        click B "../単一ユースケース/設定と索引を点検する.yaml#正常シナリオ"
-        click C "../単一ユースケース/複数の文書を1枚のHTMLにまとめる.yaml#正常シナリオ"
-        click D "../単一ユースケース/まとめたHTMLで文書を行き来する.yaml#正常シナリオ"
+        click A "id:SC-472-83#scenarios[正常シナリオ]"
+        click B "id:SC-472-78#scenarios[正常シナリオ]"
+        click C "id:SC-472-76#scenarios[正常シナリオ]"
+        click D "id:SC-472-13#scenarios[正常シナリオ]"
     expected:
       - '`mdmark init` が設定・`theme.css`・索引・拡張のビルドの雛形を配置する'
       - '`mdmark check` がずれ 0 件で終了コード 0 を返却する'
@@ -28,10 +29,10 @@ scenarios:
       - 入口の文書に、取り込んだ見出しの中とコードの行の範囲が描かれ、見出しの `icon:` がアイコンで描かれる
     test: test_normal
     uses:
-      - dev/設計書/シナリオ/単一ユースケース/雛形を配置する#scenarios[正常シナリオ]
-      - dev/設計書/シナリオ/単一ユースケース/設定と索引を点検する#scenarios[正常シナリオ]
-      - dev/設計書/シナリオ/単一ユースケース/複数の文書を1枚のHTMLにまとめる#scenarios[正常シナリオ]
-      - dev/設計書/シナリオ/単一ユースケース/まとめたHTMLで文書を行き来する#scenarios[正常シナリオ]
+      - SC-472-83#scenarios[正常シナリオ]
+      - SC-472-78#scenarios[正常シナリオ]
+      - SC-472-76#scenarios[正常シナリオ]
+      - SC-472-13#scenarios[正常シナリオ]
   - name: 正常シナリオ（1 文書だけを書き出す）
     setup:
       - name: 空のフォルダ
@@ -43,15 +44,15 @@ scenarios:
     flow: |-
       flowchart TD
         A[雛形を配置する:正常シナリオ] --> B[文書をHTMLに書き出す:正常シナリオ]
-        click A "../単一ユースケース/雛形を配置する.yaml#正常シナリオ"
-        click B "../単一ユースケース/文書をHTMLに書き出す.yaml#正常シナリオ"
+        click A "id:SC-472-83#scenarios[正常シナリオ]"
+        click B "id:SC-472-56#scenarios[正常シナリオ]"
     expected:
       - '`mdmark export` が指定した出力に 1 枚の HTML を書き込み、終了コード 0 を返却する'
       - 書き出した HTML だけを別の空のフォルダへコピーして file:// で開くと、外への要求が 0 件で、文書・Chart.js の図・相対パスで指した画像が描かれる
     test: test_normal_when_single_document
     uses:
-      - dev/設計書/シナリオ/単一ユースケース/雛形を配置する#scenarios[正常シナリオ]
-      - dev/設計書/シナリオ/単一ユースケース/文書をHTMLに書き出す#scenarios[正常シナリオ]
+      - SC-472-83#scenarios[正常シナリオ]
+      - SC-472-56#scenarios[正常シナリオ]
   - name: 異常シナリオ（点検でずれが見つかる）
     setup:
       - name: ずれを持つ文書群
@@ -65,20 +66,20 @@ scenarios:
         A[雛形を配置する:正常シナリオ] --> B[設定と索引を点検する:正常シナリオ（ずれがある）]
         B --> C[設定と索引を点検する:正常シナリオ]
         C --> D[複数の文書を1枚のHTMLにまとめる:正常シナリオ]
-        click A "../単一ユースケース/雛形を配置する.yaml#正常シナリオ"
-        click B "../単一ユースケース/設定と索引を点検する.yaml#正常シナリオずれがある"
-        click C "../単一ユースケース/設定と索引を点検する.yaml#正常シナリオ"
-        click D "../単一ユースケース/複数の文書を1枚のHTMLにまとめる.yaml#正常シナリオ"
+        click A "id:SC-472-83#scenarios[正常シナリオ]"
+        click B "id:SC-472-78#scenarios[正常シナリオ（ずれがある）]"
+        click C "id:SC-472-78#scenarios[正常シナリオ]"
+        click D "id:SC-472-76#scenarios[正常シナリオ]"
     expected:
       - 1 回目の `mdmark check` が消えた文書の `missing_doc` を出し、終了コード 0 以外を返却する
       - ずれを修正した索引での 2 回目の `mdmark check` がずれ 0 件で終了コード 0 を返却する
       - その後の `mdmark build` が 1 枚の HTML を書き込む
     test: test_error_when_drift
     uses:
-      - dev/設計書/シナリオ/単一ユースケース/雛形を配置する#scenarios[正常シナリオ]
-      - dev/設計書/シナリオ/単一ユースケース/設定と索引を点検する#scenarios[正常シナリオ（ずれがある）]
-      - dev/設計書/シナリオ/単一ユースケース/設定と索引を点検する#scenarios[正常シナリオ]
-      - dev/設計書/シナリオ/単一ユースケース/複数の文書を1枚のHTMLにまとめる#scenarios[正常シナリオ]
+      - SC-472-83#scenarios[正常シナリオ]
+      - SC-472-78#scenarios[正常シナリオ（ずれがある）]
+      - SC-472-78#scenarios[正常シナリオ]
+      - SC-472-76#scenarios[正常シナリオ]
 lead: 文書の作成者が、サーバーを持たずに CLI で雛形を配置し、文書と索引を書き込んで点検し、1 枚の HTML にまとめて配る。読者は受け取った HTML を file:// で開き、外を読み込まずに文書を行き来する。
 issue: 9
 primary_actor: 文書の作成者
@@ -94,5 +95,5 @@ preconditions:
 success_guarantee: '`build.out` に 1 枚の HTML ができ、読者が file:// で開くと、外への要求 0 件で `entry` の文書が描かれ、文書の一覧と文書間のリンクで全ての文書へ移れ、用語のツールチップ・被参照・外部ライブラリの図が有効になる。'
 minimal_guarantee: 点検でずれが見つかったときは、ずれの一覧を出して終了コードを 0 以外にする。CLI は文書と索引を書き換えない。
 refs:
-  - dev/設計書/シナリオ/単一ユースケース/索引と文書のずれを点検する#
+  - SC-472-70#
 test_file: tests/e2e/複合ユースケース/雛形から1枚のHTMLを配る.spec.ts

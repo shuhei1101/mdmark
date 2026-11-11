@@ -1,0 +1,4 @@
+summary: adapters の設計書
+items:
+  - page: vscode-api.ts.yaml
+    summary: VS Code 拡張機能 / Webview / vscode-api.ts

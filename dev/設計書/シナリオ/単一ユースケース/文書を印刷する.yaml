@@ -1,3 +1,4 @@
+id: SC-472-58
 title: 文書を印刷する
 scenarios:
   - name: 正常シナリオ
@@ -222,7 +223,7 @@ scenarios:
       - 印刷の後のイベントの後、先頭へ戻るボタンが画面の右下に表示されている
     test: test_normal_when_back_to_top_hidden_in_print
     refs:
-      - dev/設計書/シナリオ/単一ユースケース/文書の先頭へ戻る#scenarios[正常シナリオ]
+      - SC-472-54#scenarios[正常シナリオ]
   - name: 正常シナリオ（テーマを選んだ文書）
     setup:
       - name: テーマを選んで描いたページ
@@ -244,7 +245,7 @@ scenarios:
       - 地の色は正常シナリオと同じく削除される
     test: test_normal_when_theme_selected
     refs:
-      - dev/設計書/シナリオ/単一ユースケース/テーマを選ぶ#scenarios[正常シナリオ（ダークの配色）]
+      - SC-472-26#scenarios[正常シナリオ（ダークの配色）]
   - name: 正常シナリオ（色・画像・動画・カードを印刷に出す）
     setup:
       - name: 文書を描いたページ
@@ -320,7 +321,7 @@ scenarios:
       - 印刷の後のイベントの後、脚注の一覧が閉じている
     test: test_normal_when_footnotes_printed
     refs:
-      - dev/設計書/シナリオ/単一ユースケース/脚注を確認する#scenarios[正常シナリオ]
+      - SC-472-71#scenarios[正常シナリオ]
   - name: 正常シナリオ（畳んだ階層の行と隠した見本を開いて出す）
     setup:
       - name: 文書を描いたページ

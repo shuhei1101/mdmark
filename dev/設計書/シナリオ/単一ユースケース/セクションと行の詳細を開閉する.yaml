@@ -1,3 +1,4 @@
+id: SC-472-21
 title: セクションと行の詳細を開閉する
 scenarios:
   - name: 正常シナリオ

@@ -1,0 +1,189 @@
+id: MOD-472-150
+title: ライブラリ本体 / バージョンを上げる / upgrade.ts
+test_files:
+  - tests/unit/src/cli/upgrade.test.ts
+constants:
+  - name: CONFIRM_ANSWER
+    title: 承諾の回答
+    container: src/cli/upgrade.ts
+    summary: 壊す手順の確認で承諾とする回答し
+    value: '`y`'
+functions:
+  - name: writeConfigVersion
+    title: 設定のバージョンを書き換える
+    container: src/cli/upgrade.ts
+    usecase: バージョンを上げる
+    summary: 設定ファイルの `version` をバージョンにし、無ければ最上位の先頭に追加する
+    description: '`parseDocument` で読み込み、コメントと他のキーの記載方法を残して `doc.toString({ flowCollectionPadding: false })` で書き込んで戻す'
+    kind: 関数
+    scope: internal
+    is_async: true
+    side_effects: 設定ファイルを書き換える
+    args:
+      - name: configPath
+        type: string
+        required: true
+        description: 設定ファイルの絶対パス
+      - name: version
+        type: string
+        required: true
+        description: 記載するバージョン
+    returns:
+      type: Promise<void>
+      description: 書き込み終えた
+    unit_tests:
+      - name: test_write_config_version
+        case: 正常
+        summary: ある version を書き換え、コメントを残す
+        condition: 'コメントつきで `version: v0.3.0` とフロー形式の並び `include: ["**/*.md"]`（雛形と同じ記載方法）を持つ設定、バージョン `v0.5.0`'
+        mock: 一時フォルダ
+        expected: '書き込んで戻した文字列が、元の文字列の `version: v0.3.0` を `version: v0.5.0` にしたものと一致する（コメントと `["**/*.md"]` の記載方法が残る）'
+      - name: test_write_config_version_when_missing
+        case: 正常
+        summary: 無い version を先頭に追加する
+        condition: '`version` を持たない設定'
+        mock: 一時フォルダ
+        expected: '最上位の先頭のキーが `version: v0.5.0`'
+    status: planned
+    introduced:
+      pr: 39
+  - name: runUpgrade
+    title: バージョンを上げる
+    container: src/cli/upgrade.ts
+    usecase: バージョンを上げる
+    summary: 手元のバージョンから呼んだ CLI のバージョンまでの移行の手順を当て、点検が通ったら設定のバージョンを書き換える
+    description: '順に、設定を探して読み込む（`findConfigFile`・`loadConfig`）→ 手元のバージョン（設定の `version`、無ければ `ask`）→ 目標のバージョン（`options.cliVersion`）と比べる（新しければ `CliError`、同じならその旨を出して 0）→ `loadMigrationVersions` → 当て先を作る（索引は設定の `index`、文書は `collectBuildDocuments` と `readIndexWithDocuments` の文書）→ 手順と `changelogRows` の行を出す → `--plan` ならその旨を出して 0 → キーが無い `set_default` の `ask` を適用する順に聞く → 壊すマーカーがあり `--yes` が無ければ確認し、`CONFIRM_ANSWER` 以外なら `CliError` → `takeBackup`（`stepFiles`）→ バージョンの順に `applyStep`（返った行があれば、`{バージョン} の手順「{説明}」:` の行に続けて 2 字下げて標準出力へ出す） → `collectCheckIssues`（`unknownMarks: false`）→ ずれがあれば `restoreBackup` してずれの行を標準エラーに出し 1 → `writeConfigVersion` → コピーの場所とバージョンを出して 0。`applyStep` が投げた `CliError` は `restoreBackup` してからもう一度投げる。質問に回答が無い（`undefined`）ときは、書き換えの前に `CliError` を投げる。`settings` が真のときは、設定を探す代わりに `resolveSettingsPath` の端末の設定を読み込み、`file: config` 以外の手順（`files` が `[config]` だけの `call` は残す）と索引・文書の当て先を飛ばし、点検は `validateConfig`（`settings: true`）だけにする。`config` と一緒なら `CliError`'
+    kind: 関数
+    scope: public
+    is_async: true
+    side_effects: 設定・索引・文書を書き換え、コピーを配置する
+    args:
+      - name: options
+        type: '{ config?: string | undefined; settings: boolean; plan: boolean; yes: boolean; packageDir: string; cliVersion: string; now: Date }'
+        required: true
+        description: '`--config`・`--settings`・`--plan`・`--yes`・パッケージの直下（`migrations/` と変更履歴の基準）・目標のバージョン（`cliVersion()`。テストで差し替える）・今の時刻'
+      - name: io
+        type: CliIo
+        required: true
+        description: 今のフォルダと出力の先
+      - name: ask
+        type: Prompter
+        required: true
+        description: 質問（テストで差し替える）
+    returns:
+      type: Promise<0 | 1>
+      description: 適用した・示した・適用する手順が無いとき 0、点検のずれで戻したとき 1
+    exceptions:
+      - name: CliError
+        condition: 設定ファイルが無い・読み込めない
+        message: '`findConfigFile`・`loadConfig` のメッセージ'
+      - name: CliError
+        condition: 手元のバージョンの書式が違う
+        message: 手元のバージョン {値} の書式が違います。v{MAJOR}.{MINOR}.{PATCH} で記載してください。
+      - name: CliError
+        condition: 質問に回答する前に入力が終わった
+        message: 「{質問}」に回答がありません。何も書き換えていません。
+      - name: CliError
+        condition: 手元のバージョンが目標のバージョンより新しい
+        message: 手元のバージョン {手元のバージョン} はこの mdmark（{目標のバージョン}）より新しいです。npx github:shuhei1101/mdmark#{手元のバージョン} upgrade のように、手元のバージョン以上の mdmark で呼んでください。
+      - name: CliError
+        condition: 壊す手順の確認を断った
+        message: 何も適用していません。確認せずに適用するときは --yes を付けてください。
+      - name: CliError
+        condition: 手順のファイルの誤り・手順の失敗・コピーを取れない
+        message: '`loadMigrationVersions`・`applyStep`・`takeBackup` のメッセージ（手順の失敗はコピーから戻した後）'
+      - name: CliError
+        condition: '`--config` と `--settings` を一緒に指定した'
+        message: --config と --settings は一緒に指定できません。
+    unit_tests:
+      - name: test_run_upgrade
+        case: 正常
+        summary: 2 つのバージョンの手順を適用してバージョンを書き換える
+        condition: '`version: v0.3.0` の設定、パッケージは `v0.5.0` で `v0.4.0`（`rename_key`）・`v0.5.0`（`replace_mark`）を持つ'
+        mock: 一時フォルダのパッケージと設定、出力を配列に貯める `CliIo`、呼ばれたら失敗にする `Prompter`
+        expected: 0 を返却し、キーとマーカーが書き換わり、`version` が `v0.5.0`、標準出力の最後が `バージョンを v0.5.0 にしました`
+      - name: test_run_upgrade_when_plan
+        case: 正常
+        summary: --plan は何も書き換えない
+        condition: 'test_run_upgrade と同じで `plan: true`'
+        mock: test_run_upgrade と同じ
+        expected: 0 を返却し、設定・文書が変わらず `.mdmark/` が無い
+      - name: test_run_upgrade_when_up_to_date
+        case: 正常
+        summary: 同じバージョンなら何も適用しない
+        condition: '`version: v0.5.0` の設定'
+        mock: test_run_upgrade と同じ
+        expected: 0 を返却し、標準出力に `適用する手順はありません` が出る
+      - name: test_run_upgrade_when_version_missing
+        case: 正常
+        summary: version が無ければ手元のバージョンを聞く
+        condition: '`version` を持たない設定'
+        mock: 1 回目に `v0.3.0` を返却する `Prompter`
+        expected: 0 を返却し、`version` が `v0.5.0`
+      - name: test_run_upgrade_when_local_newer
+        case: 異常
+        summary: 手元のバージョンが新しければ CliError
+        condition: '`version: v0.6.0` の設定'
+        mock: test_run_upgrade と同じ
+        expected: '`CliError` の文に `v0.6.0`・`v0.5.0`・`npx github:shuhei1101/mdmark#v0.6.0 upgrade` が入る'
+      - name: test_run_upgrade_when_declined
+        case: 異常
+        summary: 壊す手順を断ると何も書き換えない
+        condition: '`v0.5.0` の手順に `destructive: true`、`yes: false`'
+        mock: '`n` を返却する `Prompter`'
+        expected: '`CliError` の文に `--yes` が入り、設定が変わらず `.mdmark/` が無い'
+      - name: test_run_upgrade_when_step_fails
+        case: 異常
+        summary: 手順が失敗するとコピーから戻してもう一度投げる
+        condition: '`v0.5.0` が `process.exit(1)` する `call`'
+        mock: test_run_upgrade と同じ
+        expected: '`CliError` を投げ、設定に `v0.4.0` で変えたキーが戻り `version` が `v0.3.0`'
+      - name: test_run_upgrade_when_check_fails
+        case: 異常
+        summary: 点検のずれでコピーから戻し 1 を返却する
+        condition: '`v0.5.0` が `build.out` を `.txt` として解釈する `map_values`'
+        mock: test_run_upgrade と同じ
+        expected: 1 を返却し、標準エラーに `build.out` の `schema` の行があり、設定が適用する前の中身
+      - name: test_run_upgrade_when_answer_missing
+        case: 異常
+        summary: 質問に回答が無ければ書き換えずに CliError
+        condition: '`version` を持たない設定'
+        mock: '`undefined` を返却する `Prompter`'
+        expected: '`CliError` を投げ、`.mdmark/` が無い'
+      - name: test_run_upgrade_when_plan_with_ask
+        case: 正常
+        summary: --plan では値を聞く手順があっても聞かない
+        condition: '`v0.5.0` が `ask` を持つ `set_default`、`plan: true`'
+        mock: 呼ばれたら失敗にする `Prompter`
+        expected: 0 を返却し、`Prompter` が呼ばれない
+      - name: test_run_upgrade_when_script_prints
+        case: 正常
+        summary: call のスクリプトが標準出力に書き込んだ行を、手順の行に続けて出す
+        condition: '`v0.5.0` が標準出力に `除外しました` を書き込んで 0 で終わる `call`'
+        mock: 一時フォルダ・差し替えた移行の手順のフォルダ
+        expected: 0 を返却し、標準出力に `v0.5.0 の手順「` で始まる行と、その次の行に `  除外しました` がある
+      - name: test_run_upgrade_when_settings
+        case: 正常
+        summary: --settings で端末の設定だけを移行する
+        condition: '`version: v0.3.0`・`legacy: 1` の端末の設定を `MDMARK_CONFIG` で指し、`v0.4.0` が `rename_key`（config）・`v0.5.0` が `replace_mark`'
+        mock: テスト用の `migrations/`
+        expected: 0 を返却し、端末の設定の `legacy` が `renamed`・`version` が `v0.5.0`、文書を読み込まない
+      - name: test_run_upgrade_when_settings_with_config_call
+        case: 正常
+        summary: --settings で files が config だけの call を端末の設定に適用する
+        condition: '`version: v0.3.0` の端末の設定を `MDMARK_CONFIG` で指し、`v0.5.0` が `--config` のファイルに `migrated: true` を追記する `call`（`files: [config]`）'
+        mock: テスト用の `migrations/`
+        expected: 0 を返却し、端末の設定の `migrated` が `true`・`version` が `v0.5.0`、手元の `mdmark.config.yaml` が書き換わらない
+    refs:
+      - 'MOD-472-146#functions[loadMigrationVersions]'
+      - 'MOD-472-146#functions[stepFiles]'
+      - 'MOD-472-146#functions[applyStep]'
+      - 'MOD-472-149#functions[takeBackup]'
+      - 'MOD-472-149#functions[restoreBackup]'
+      - 'MOD-472-147#functions[changelogRows]'
+      - '#functions[writeConfigVersion]'
+      - MOD-472-109#functions[findConfigFile]
+      - MOD-472-117#functions[collectBuildDocuments]
+    status: planned
+    introduced:
+      pr: 39

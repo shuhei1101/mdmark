@@ -1,0 +1,56 @@
+id: MOD-472-31
+title: "ライブラリ本体 / ビューとコメント"
+lead: ビューとコメントの部品を `dist/index.js` と別の配布ファイル（`dist/view.js`・`dist/comments.js`）に分け、マーカーのある文書と `mountView`・`mountComments` を呼んだときにだけ読み込む処理と、その部品の HTML。ブラウザでだけ動く（部品の HTML と箇所の探し方は Node でも動く）。
+directory: |-
+  ```tree
+  src/
+  ├── part-modules.ts      # 部品のモジュールのファイル名・読み込みの差し替え・1 回だけ読み込む loadPartModule（dist/index.js）
+  ├── mount-parts.ts       # 公開関数 mountView・mountComments と、mount が呼ぶ attachParts（dist/index.js）
+  ├── views/
+  │   ├── spec.ts          # 公開の型 MdmarkViewOptions・MdmarkViewHandle、使用できるアイコンと既定の対応、引数の検査（dist/index.js）
+  │   └── index.ts         # dist/view.js の入口。drawView・attachView
+  ├── comments/
+  │   ├── spec.ts          # 公開の型 MdmarkComment・MdmarkCommentDraft・MdmarkCommentStore・MdmarkCommentsHandle、引数とコメントの構造の検査（dist/index.js）
+  │   ├── anchor.ts        # 選んだ範囲から下書きを作る・本文の文字から箇所を探す（dist/comments.js）
+  │   ├── bubble.ts        # 吹き出しのコメントの修正と削除の操作（dist/comments.js）
+  │   ├── margin.ts        # 本文の列の右の余白の列に、箇所の行の高さで余白のマーカーを配置する（dist/comments.js）
+  │   └── index.ts         # dist/comments.js の入口。attachComments
+  └── parts/
+      ├── view.ts          # ビューの HTML とアイコンの形状（dist/view.js）
+      └── comment.ts       # コメントのボタン・入力欄・マーカー・吹き出し・箇所が見つからないコメントの一覧・余白のマーカーの HTML（dist/comments.js）
+  ```
+diagrams:
+  - name: 全体
+    diagram: |-
+      classDiagram
+        direction LR
+        class 部品のモジュールを読み込む
+        class ビューを描く公開関数
+        class コメントを付ける公開関数
+        class 描いた文書に部品を付ける
+        class ビューの引数を検める
+        class コメントの引数を検める
+        class ビューを描く
+        class マーカーのビューに付ける
+        class コメントを付ける
+        class 選んだ範囲から下書きを作る
+        class コメントの箇所を探す
+        class コメントを修正・削除する
+        class 部品のHTML
+        ビューを描く公開関数 --> ビューの引数を検める : 同期で検める
+        ビューを描く公開関数 --> 部品のモジュールを読み込む : view
+        コメントを付ける公開関数 --> コメントの引数を検める : 同期で検める
+        コメントを付ける公開関数 --> 部品のモジュールを読み込む : comments
+        描いた文書に部品を付ける --> 部品のモジュールを読み込む : マーカーと機能があるときだけ
+        部品のモジュールを読み込む ..> ビューを描く : dist/view.js
+        部品のモジュールを読み込む ..> マーカーのビューに付ける : dist/view.js
+        部品のモジュールを読み込む ..> コメントを付ける : dist/comments.js
+        コメントを付ける --> コメントの箇所を探す : 読み込んだコメント
+        コメントを付ける --> 選んだ範囲から下書きを作る : 保存するとき
+        コメントを付ける --> コメントを修正・削除する : 吹き出しを開くとき
+        コメントを修正・削除する --> 部品のHTML
+        ビューを描く --> 部品のHTML
+        マーカーのビューに付ける --> 部品のHTML
+        コメントを付ける --> 部品のHTML
+notes:
+  配布ファイルの分け方: '`src/views/index.ts` と `src/comments/index.ts` は別の esbuild の入口で、使用する関数（表の部品・表の操作・通知ブロックなど）をそれぞれのファイルにまとめる（`dist/index.js` を `import` しない）。`dist/index.js` は `src/part-modules.ts`・`src/mount-parts.ts`・2 つの `spec.ts` だけを持ち、部品の HTML と操作を持たない。部品の CSS は `src/index.css` に入れる'

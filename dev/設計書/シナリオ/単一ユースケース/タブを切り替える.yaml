@@ -1,3 +1,4 @@
+id: SC-472-23
 title: "タブを切り替える"
 scenarios:
   - name: 正常シナリオ

@@ -1,0 +1,102 @@
+id: MOD-472-160
+title: ライブラリ本体 / ビューとコメント / view.ts
+test_files:
+  - tests/unit/src/parts/view.test.ts
+constants:
+  - name: VIEW_ICON_PATHS
+    title: アイコンの形状
+    container: src/parts/view.ts
+    summary: '`VIEW_ICON_NAMES` と切り替えの `board`・`table` の、24 の格子の lucide の SVG の中身'
+    value: "{ circle: '<circle cx=\"12\" cy=\"12\" r=\"10\"/>', … }"
+functions:
+  - name: renderView
+    title: ビューの HTML
+    container: src/parts/view.ts
+    summary: 部品設計『ビュー』の HTML を返却する
+    kind: 関数
+    scope: public
+    args:
+      - name: props
+        type: '{ columns: string[]; items: string[][]; group?: string; mode?: "board" | "table"; filters?: TableFilter[]; filterValues?: FilterValue[]; openFilter?: number; icons?: Record<string, string>; boardDisabled?: string; id: string }'
+        required: true
+        description: 部品設計の引数
+    returns:
+      type: string
+      description: '`<div class="mdmark-view">` で始まる HTML'
+    process: |-
+      1. `group` があれば `renderViewSwitch` と `renderViewBoard` を、無ければどちらも配置しない
+      2. 列名と値をエスケープした表を `renderTable`（`kind: "data"`、`features` は `sort` と、`filters` があれば `filter`）で作り、`div.mdmark-view-table` に入れる
+      3. `mode` で出さない方に `hidden` を付ける
+    unit_tests:
+      - name: test_render_view
+        case: 正常
+        summary: ボードの列を値の出た順に並べ、項目の数を出す
+        condition: 部品設計の `Board` の引数
+        mock: なし
+        expected: 列が `進行中`・`未着手`・`完了` の順で、数が `2`・`2`・`1`。表は `hidden`
+      - name: test_render_view_when_values_have_html
+        case: 正常
+        summary: 列名と値をエスケープする
+        condition: タイトルが `<b>x</b>`
+        mock: なし
+        expected: '`&lt;b&gt;x&lt;/b&gt;` を含み、`<b>` を含まない'
+      - name: test_render_view_when_table_only
+        case: 正常
+        summary: group が無ければ切り替えもボードも配置しない
+        condition: 部品設計の `TableOnly` の引数
+        mock: なし
+        expected: '`mdmark-view-switch` と `mdmark-view-board` を含まない'
+    refs:
+      - CMP-472-25#
+  - name: renderViewSwitch
+    title: 切り替えの HTML
+    container: src/parts/view.ts
+    summary: 「ボード」「表」の切り替えの HTML を返却する
+    kind: 関数
+    scope: internal
+    args:
+      - name: props
+        type: '{ mode: "board" | "table"; boardDisabled?: string }'
+        required: true
+        description: 出すビューと、ボードにできない理由の記載の警告の `id`
+    returns:
+      type: string
+      description: '`div.mdmark-view-switch` の HTML'
+    process: 1. 部品設計の HTML の構造で、`mode` のボタンを `aria-pressed="true"` にする。`boardDisabled` があればボードのボタンを `disabled` にして `aria-describedby` を付ける
+    unit_tests:
+      - name: test_render_view_switch_when_board_disabled
+        case: 正常
+        summary: ボードのボタンを押せなくする
+        condition: '`{ mode: "table", boardDisabled: "w1" }`'
+        mock: なし
+        expected: ボードのボタンが `disabled` と `aria-describedby="w1"`、表のボタンが `aria-pressed="true"`
+  - name: renderViewBoard
+    title: ボードの HTML
+    container: src/parts/view.ts
+    summary: 値ごとの列に項目を並べたボードの HTML を返却する
+    kind: 関数
+    scope: internal
+    args:
+      - name: props
+        type: '{ columns: string[]; items: string[][]; group: number; icons: Record<string, string> }'
+        required: true
+        description: 列名・値・分ける列の位置・上書きのアイコン
+    returns:
+      type: string
+      description: '`div.mdmark-view-board` の HTML'
+    process: |-
+      1. `group` の列の値を出た順に並べ、値ごとに列の見出し（`icons`・`DEFAULT_VALUE_ICONS`・`FALLBACK_VALUE_ICON` の順に参照したアイコン・値・`toLocaleString("ja-JP")` の数）と項目を配置する
+      2. 項目は先頭の列の値をタイトルにし、`group` の列と空の値を除いた列を `dl` に並べる
+    unit_tests:
+      - name: test_render_view_board_icons
+        case: 正常
+        summary: 既定・上書き・対応に無い値のアイコンを参照する
+        condition: '値 `未着手`・`完了`・`受付`、`icons` に `完了: "archive"`'
+        mock: なし
+        expected: '`未着手` は `circle-dashed`、`完了` は `archive`、`受付` は `circle` の構造'
+      - name: test_render_view_board_when_empty_value
+        case: 正常
+        summary: 空の値の列を項目に出さない
+        condition: 担当が空の項目
+        mock: なし
+        expected: その項目の `dl` に `担当` の `dt` が無い

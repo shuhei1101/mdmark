@@ -1,0 +1,29 @@
+id: MOD-472-145
+title: ライブラリ本体 / mermaid / mermaid.ts
+test_files:
+  - tests/unit/src/parts/mermaid.test.ts
+functions:
+  - name: renderMermaidDiagram
+    title: mermaid の図を描く部品
+    container: src/parts/mermaid.ts
+    kind: 関数
+    scope: internal
+    usecase: mermaidの図を描く
+    summary: '部品設計『mermaid の図』の HTML。`<div class="mdmark-mermaid">` に `svg` を入れ、`printSvg` があれば `<div class="mdmark-mermaid-print" aria-hidden="true">` に入れて後ろに配置し、包む要素に `mdmark-mermaid-has-print` を付ける。図の枠の `body` に指定する大きさも返却する'
+    args:
+      - name: options
+        type: '{ svg: string; printSvg?: string; width: number; height: number }'
+        required: true
+        description: '部品設計の引数と、SVG の `viewBox` の高さ'
+    returns:
+      type: '{ html: string; width: number; height: number; tips: string }'
+      description: 図の枠の `body`。`tips` は空
+    refs:
+      - CMP-472-6#
+    unit_tests:
+      - name: test_render_mermaid_diagram
+        case: 正常
+        summary: 印刷用の SVG があるときだけ並べる
+        condition: '`printSvg` を指定した呼び出しと指定しない呼び出し'
+        mock: なし
+        expected: '前者は `mdmark-mermaid mdmark-mermaid-has-print` の中に `svg` と `div.mdmark-mermaid-print[aria-hidden="true"]` がこの順にある。後者は `mdmark-mermaid-print` が無い。どちらも `width`・`height` が指定した値'

@@ -1,0 +1,35 @@
+id: MOD-472-234
+title: ライブラリ本体 / 操作 / scroller.ts
+test_files:
+  - tests/unit/src/interact/scroller.browser.test.ts
+functions:
+  - name: findScrollContainer
+    title: スクロールする場所を見つける
+    container: src/interact/scroller.ts
+    summary: 要素の祖先を `document.body` の手前までたどり、`overflow-y` が `auto` か `scroll` で `scrollHeight` が `clientHeight` より大きい一番近い要素を返却する。無ければ `document.scrollingElement`（無ければ `document.documentElement`）を返却し、`page` を `true` にする
+    kind: 関数
+    scope: internal
+    args:
+      - name: from
+        type: HTMLElement
+        required: true
+        description: たどり始める要素（この要素自身は見ない）
+    returns:
+      type: '{ target: HTMLElement; page: boolean }'
+      description: スクロールする要素と、それが画面全体か
+    unit_tests:
+      - name: test_find_scroll_container
+        case: 正常
+        summary: 中身がはみ出す一番近いスクロールする祖先の要素を返却する
+        condition: '高さ 600px・`overflow-y: auto` の `div` の中に、高さ 2000px の要素を入れ、その中の要素から探す'
+        mock: なし
+        expected: '`target` が `div`、`page` が `false`'
+      - name: test_find_scroll_container_when_not_overflowing
+        case: 正常
+        summary: 中身がはみ出さない祖先の要素は飛ばして画面全体を返却する
+        condition: '高さ 600px・`overflow-y: auto` の `div` の中に、高さ 100px の要素を入れ、その中の要素から探す'
+        mock: なし
+        expected: '`target` が `document.scrollingElement`、`page` が `true`'
+    status: planned
+    introduced:
+      pr: 287

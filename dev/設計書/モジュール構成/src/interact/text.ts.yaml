@@ -1,0 +1,51 @@
+id: MOD-472-229
+title: ライブラリ本体 / 操作 / text.ts
+test_files:
+  - tests/unit/src/interact/text.browser.test.ts
+functions:
+  - name: visibleText
+    title: 要素の見える文字を読み込む
+    container: src/interact/text.ts
+    kind: 関数
+    scope: internal
+    summary: 要素の `textContent` から、用語のツールチップ（`.mdmark-term-tip`）の文字を除いて前後の空白を落とした文字を返却する
+    description: 表の並べ替え・絞り込み・ピン止めのセルの値、見出しのボタンの名前、行の詳細の開閉ボタンの名前は、この関数で読み込む。要素は書き換えない
+    args:
+      - name: element
+        type: Element
+        required: true
+        description: 読み込む要素
+    returns:
+      type: string
+      description: ツールチップを除いた文字
+    unit_tests:
+      - name: test_visible_text
+        case: 正常
+        summary: ツールチップの文字を除く
+        condition: '`<td>本文の<span class="mdmark-term-wrap"><span class="mdmark-term">マーカー</span><span class="mdmark-term-tip">用語HTML コメントで記載する指定</span></span></td>`'
+        mock: なし（Chromium）
+        expected: '`本文のマーカー`、`td` の中身が変わらない'
+  - name: cellValue
+    title: 表のセルの値を読み込む
+    container: src/interact/text.ts
+    kind: 関数
+    scope: internal
+    summary: セルが `data-value` を持てばその値を、持たなければ `visibleText` の文字を返却する
+    description: 表の並べ替え・絞り込み（候補を含む）・コピー・集計のセルの値は、この関数で読み込む
+    args:
+      - name: cell
+        type: HTMLTableCellElement
+        required: true
+        description: 読み込むセル
+    returns:
+      type: string
+      description: セルの値
+    callees:
+      - '#functions[visibleText]'
+    unit_tests:
+      - name: test_cell_value
+        case: 正常
+        summary: data-value を優先し、無ければ見える文字を読み込む
+        condition: '`<td data-value="false"><span class="mdmark-visually-hidden">いいえ</span></td>` と `<td>未定</td>`'
+        mock: なし（Chromium）
+        expected: '`false` と `未定`'

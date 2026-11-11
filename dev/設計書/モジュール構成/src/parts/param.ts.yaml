@@ -1,0 +1,61 @@
+id: MOD-472-181
+title: ライブラリ本体 / 図 / param.ts
+test_files:
+  - tests/unit/src/parts/param.test.ts
+functions:
+  - name: renderParam
+    title: 操作できる部品を描く
+    container: src/parts/param.ts
+    kind: 関数
+    scope: internal
+    summary: 部品設計『操作できる部品』の HTML。タイトル・スライダー・今の値・写すボタン・通知し・写せなかったときの `pre` と、`table` の今の値と既定の値の系列のグラフを図の枠で出す
+    args:
+      - name: definition
+        type: MdmarkParamDefinition
+        required: true
+        description: 読み込めた定義
+      - name: state
+        type: '{ value?: number; copy?: "none" | "copied" | "failed"; id: string; copyLabel?: string }'
+        required: true
+        description: 今の値・コピーした結果・`id` の頭・今の値をコピーするボタンの文言（既定 `DEFAULT_LABELS.paramCopy`。エスケープして出す）
+    returns:
+      type: string
+      description: '`div.mdmark-param` の HTML'
+    unit_tests:
+      - name: test_render_param
+        case: 正常
+        summary: 既定の値で描く
+        condition: '`strength` の定義'
+        mock: なし
+        expected: '`input type="range"` の `min`・`max`・`step`・`value` が 0・10・1・5 で、グラフの系列が `今の値（5）`・`既定の値（5）`。`button.mdmark-param-copy` の文字が `今の値をコピーする`'
+      - name: test_render_param_when_copy_label
+        case: 正常
+        summary: 指定した文言でボタンを描き、HTML の特別な文字をエスケープする
+        condition: '`strength` の定義と `copyLabel` が `コピー`。もう 1 つは `copyLabel` が `<b>写す</b>`'
+        mock: なし
+        expected: 前者の `button.mdmark-param-copy` の文字が `コピー` で `aria-label` を持たない。後者の出力に `&lt;b&gt;写す&lt;/b&gt;` があり `<b>` が無い
+  - name: paramJson
+    title: 今の値の JSON
+    container: src/parts/param.ts
+    kind: 関数
+    scope: internal
+    summary: '`{"{key}": {"name": "{label}", "value": {値}}}` を 2 字下げの JSON にする'
+    args:
+      - name: knob
+        type: MdmarkParamDefinition["knob"]
+        required: true
+        description: スライダー
+      - name: value
+        type: number
+        required: true
+        description: 今の値
+    returns:
+      type: string
+      description: JSON
+    unit_tests:
+      - name: test_param_json
+        case: 正常
+        summary: 名前と値を持つ
+        condition: '`strength` の `knob` と 8'
+        mock: なし
+        expected: '`JSON.parse` すると `{"strength": {"name": "反応の強さ", "value": 8}}`'

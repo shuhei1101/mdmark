@@ -1,0 +1,20 @@
+id: MOD-472-249
+title: ライブラリ本体 / 検査 / package.json
+constants:
+  - name: eslintPackage
+    title: ESLint の道具の package
+    container: tools/eslint/package.json
+    summary: 直下の `package.json` と分けて、ESLint の実行に要るものだけをバージョンを固定して持つ `private` の package
+    entries:
+      - key: eslint
+        value: '`9.39.5`'
+      - key: typescript
+        value: '`6.0.3`（typescript-eslint が型の情報を取るのに使用する。直下の型検査は今と同じ `typescript` 7.0 が受け持つ）'
+      - key: typescript-eslint
+        value: '`8.72.1`'
+      - key: plugin
+        value: '`eslint-plugin-react-hooks` 7.1.1・`eslint-plugin-jsx-a11y` 6.10.2・`eslint-plugin-boundaries` 7.4.2・`eslint-plugin-better-tailwindcss` 4.10.0・`eslint-plugin-sonarjs` 4.2.2・`eslint-plugin-import-x` 4.17.1'
+    refs:
+      - LIB-472-12#
+      - LIB-472-30#
+    status: planned

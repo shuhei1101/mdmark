@@ -1,0 +1,25 @@
+id: MOD-472-87
+title: VS Code 拡張機能 / ビルドと配布 / stub-server.ts
+functions:
+  - name: createStubServer
+    title: 代役の配信を作る
+    kind: 関数
+    container: vscode/tests/integration/stub-server.ts
+    usecase: 共通
+    summary: 配布物の経路 `/mdmark@{バージョン}/dist/{ファイル}` とタグ一覧 `/tags` を返却し、テストが状態を切り替える `PUT /tags`・`PUT /mode` と、受けた要求を読み込む `GET /requests`・`DELETE /requests` を持つ HTTP サーバーを作る
+    description: 結合テストの入口（`runIntegrationTests`）と E2E（`tests/e2e/vscode.ts`）が同じ代役を使用する。直下の型検査が `vscode/` の依存を参照しないよう、`@vscode/test-electron` を import しないファイルに配置する
+    scope: public
+    is_async: false
+    args:
+      - name: stub
+        type: Stub
+        required: true
+        description: 'タグ一覧・振る舞い（`tags`: `ok` / `hang` / `forbidden`、`dist`: `ok` / `drop` / `slow`）・受けた要求の経路。サーバーが書き換える'
+      - name: distDir
+        type: string
+        required: true
+        description: 配る配布物のフォルダ
+    returns:
+      type: Server
+      description: 待ち受けを始めていない `node:http` のサーバー
+    status: planned

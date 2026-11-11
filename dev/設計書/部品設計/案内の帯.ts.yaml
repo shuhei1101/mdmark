@@ -1,103 +1,104 @@
+id: CMP-472-50
 title: 案内の帯
 implementation: src/parts/map.ts#renderMapBand
 story: Parts/MapBand
 states:
-- name: Idle
-  description: 始める前。番号は `–/4`、停止は押せず、タイトルと文の行が無い
-- name: Step
-  description: 2 つ目の手順。番号 `2/4`・手順のタイトル・3 行の説明の文。ボタンの位置は Idle と同じ
-  args:
-  - name: index
-    value: '1'
-  - name: title
-    value: 記法を読む
-  - name: text
-    value: '"1 行目\n2 行目\n3 行目"'
-- name: Auto
-  description: 自動で進めている。自動で進めるのボタンが一時停止のアイコンになり、`aria-pressed` が `true`
-  args:
-  - name: index
-    value: '0'
-  - name: auto
-    value: 'true'
-- name: Playback
-  description: シーケンス図の再生。タイトルがメッセージの文で、ボタンの名前が前のメッセージ・次のメッセージ・再生をやめる
-  args:
-  - name: mode
-    value: playback
-  - name: index
-    value: '2'
-  - name: total
-    value: '9'
-  - name: title
-    value: mount を呼ぶ
-- name: Narrow
-  description: 幅 390px。タイトルは番号とボタンの下の行に回る
-  args:
-  - name: index
-    value: '1'
-  - name: title
-    value: 長い手順のタイトルで、1 行目に収まらない
+  - name: Idle
+    description: 始める前。番号は `–/4`、停止は押せず、タイトルと文の行が無い
+  - name: Step
+    description: 2 つ目の手順。番号 `2/4`・手順のタイトル・3 行の説明の文。ボタンの位置は Idle と同じ
+    args:
+      - name: index
+        value: '1'
+      - name: title
+        value: 記法を読む
+      - name: text
+        value: '"1 行目\n2 行目\n3 行目"'
+  - name: Auto
+    description: 自動で進めている。自動で進めるのボタンが一時停止のアイコンになり、`aria-pressed` が `true`
+    args:
+      - name: index
+        value: '0'
+      - name: auto
+        value: 'true'
+  - name: Playback
+    description: シーケンス図の再生。タイトルがメッセージの文で、ボタンの名前が前のメッセージ・次のメッセージ・再生をやめる
+    args:
+      - name: mode
+        value: playback
+      - name: index
+        value: '2'
+      - name: total
+        value: '9'
+      - name: title
+        value: mount を呼ぶ
+  - name: Narrow
+    description: 幅 390px。タイトルは番号とボタンの下の行に回る
+    args:
+      - name: index
+        value: '1'
+      - name: title
+        value: 長い手順のタイトルで、1 行目に収まらない
 lead: 図の枠の下に常に出す、案内（構成図）と再生（シーケンス図）の帯。1 行目に番号・タイトル・前へ・停止・自動で進める・次への 4 つのボタンを置き、2 行目から説明の文を出す。
 args:
-- name: mode
-  type: 列挙
-  required: false
-  default: walkthrough
-  choices: '`walkthrough`・`playback`'
-  description: 構成図の案内か、シーケンス図の再生か。ボタンのスクリーンリーダー向けの名前を変える
-- name: total
-  type: 整数
-  required: true
-  choices: 1 以上
-  description: 手順かメッセージの数
-- name: index
-  type: 整数
-  required: false
-  default: なし（始める前。番号は `–`）
-  choices: 0 から `total - 1`
-  description: 今の手順かメッセージの番号
-- name: title
-  type: 文字列
-  required: false
-  default: 空（タイトルの要素に `hidden`）
-  description: 手順の `title` か、メッセージの文
-- name: text
-  type: 文字列
-  required: false
-  default: 空（文の要素に `hidden`）
-  description: 手順の説明の文。改行はそのまま出す
-- name: auto
-  type: 真偽値
-  required: false
-  default: 'false'
-  description: 自動で進めているか
-- name: label
-  type: 文字列
-  required: true
-  description: 帯のスクリーンリーダー向けの名前（`{図のタイトル}の案内`・`{図のタイトル}の再生`）
+  - name: mode
+    type: 列挙
+    required: false
+    default: walkthrough
+    choices: '`walkthrough`・`playback`'
+    description: 構成図の案内か、シーケンス図の再生か。ボタンのスクリーンリーダー向けの名前を変える
+  - name: total
+    type: 整数
+    required: true
+    choices: 1 以上
+    description: 手順かメッセージの数
+  - name: index
+    type: 整数
+    required: false
+    default: なし（始める前。番号は `–`）
+    choices: 0 から `total - 1`
+    description: 今の手順かメッセージの番号
+  - name: title
+    type: 文字列
+    required: false
+    default: 空（タイトルの要素に `hidden`）
+    description: 手順の `title` か、メッセージの文
+  - name: text
+    type: 文字列
+    required: false
+    default: 空（文の要素に `hidden`）
+    description: 手順の説明の文。改行はそのまま出す
+  - name: auto
+    type: 真偽値
+    required: false
+    default: 'false'
+    description: 自動で進めているか
+  - name: label
+    type: 文字列
+    required: true
+    description: 帯のスクリーンリーダー向けの名前（`{図のタイトル}の案内`・`{図のタイトル}の再生`）
 events:
-- name: 前へ・次へ
-  when: 前へ・次へのボタンを押すか、帯にフォーカスして ← ・ → を押す
-  value: 次の番号（端では反対の端）
-  description: '`mount` が手順を進め、強調を付け替える。図の枠の中のスクロールは変えない'
-- name: 停止
-  when: 停止のボタンを押す
-  value: なし
-  description: '`mount` が強調を解き、始めた段の図に戻し、`index` を無しにする'
-- name: 自動で進める・一時停止
-  when: 自動で進めるのボタンを押す
-  value: '`aria-pressed`'
-  description: '`mount` が印の `interval` 秒ごとに次へ進め、強調するノードの中心へ図の枠の中をスクロールする。読者が図の枠を触ったらスクロールを止める'
+  - name: 前へ・次へ
+    when: 前へ・次へのボタンを押すか、帯にフォーカスして ← ・ → を押す
+    value: 次の番号（端では反対の端）
+    description: '`mount` が手順を進め、強調を付け替える。図の枠の中のスクロールは変えない'
+  - name: 停止
+    when: 停止のボタンを押す
+    value: なし
+    description: '`mount` が強調を解き、始めた段の図に戻し、`index` を無しにする'
+  - name: 自動で進める・一時停止
+    when: 自動で進めるのボタンを押す
+    value: '`aria-pressed`'
+    description: '`mount` が印の `interval` 秒ごとに次へ進め、強調するノードの中心へ図の枠の中をスクロールする。読者が図の枠を触ったらスクロールを止める'
 uses:
-- component: dev/設計書/部品設計/アイコン.ts#
-  how: 前へ・停止・自動で進める（一時停止）・次へのアイコン
+  - component: CMP-472-8#
+    how: 前へ・停止・自動で進める（一時停止）・次へのアイコン
 accessibility:
-- 帯は `role="region"` と `aria-label`（引数 `label`）を持ち、文の要素は `aria-live="polite"`
-- ボタンはアイコンだけで、スクリーンリーダー向けの名前と `title` を、案内では `前の手順`・`案内をやめる`・`自動で進める`（自動のときは `一時停止`）・`次の手順`、再生では `前のメッセージ`・`再生をやめる`・`自動で進める`・`次のメッセージ` にする
-- 番号は等幅の数字で出し、説明の文の行数によらずボタンの位置を変えない
+  - 帯は `role="region"` と `aria-label`（引数 `label`）を持ち、文の要素は `aria-live="polite"`
+  - ボタンはアイコンだけで、スクリーンリーダー向けの名前と `title` を、案内では `前の手順`・`案内をやめる`・`自動で進める`（自動のときは `一時停止`）・`次の手順`、再生では `前のメッセージ`・`再生をやめる`・`自動で進める`・`次のメッセージ` にする
+  - 番号は等幅の数字で出し、説明の文の行数によらずボタンの位置を変えない
 refs:
-- dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#
+  - IF-472-35#
 status: planned
 introduced:
   pr: 445

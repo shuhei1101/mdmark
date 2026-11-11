@@ -1,3 +1,4 @@
+id: SC-472-88
 title: "VSCodeで記載しながら確認してPDFにする"
 scenarios:
   - name: 正常シナリオ
@@ -12,11 +13,11 @@ scenarios:
         B --> C[エディタとプレビューのスクロールを合わせる:正常シナリオ]
         C --> D[HTMLに書き出す:正常シナリオ]
         D --> E[PDFに印刷する:正常シナリオ]
-        click A "../単一ユースケース/VSCodeでプレビューを開く.yaml#正常シナリオ"
-        click B "../単一ユースケース/記載した内容をプレビューに映す.yaml#正常シナリオ"
-        click C "../単一ユースケース/エディタとプレビューのスクロールを合わせる.yaml#正常シナリオ"
-        click D "../単一ユースケース/HTMLに書き出す.yaml#正常シナリオ"
-        click E "../単一ユースケース/PDFに印刷する.yaml#正常シナリオ"
+        click A "id:SC-472-10#scenarios[正常シナリオ]"
+        click B "id:SC-472-77#scenarios[正常シナリオ]"
+        click C "id:SC-472-14#scenarios[正常シナリオ]"
+        click D "id:SC-472-6#scenarios[正常シナリオ]"
+        click E "id:SC-472-9#scenarios[正常シナリオ]"
     expected:
       - プレビューが Markdown の横の列に開き、見出し・表・注意書き・フロー図が mdmark で描かれる
       - エディタで見出しを書き換えると、保存せずにプレビューの見出しが書き換えた文字になる
@@ -26,11 +27,11 @@ scenarios:
       - PDF に印刷すると、もう一度書き出した HTML がブラウザで開き、印刷のダイアログが呼ばれる
     test: test_normal
     uses:
-      - dev/設計書/シナリオ/単一ユースケース/VSCodeでプレビューを開く#scenarios[正常シナリオ]
-      - dev/設計書/シナリオ/単一ユースケース/記載した内容をプレビューに映す#scenarios[正常シナリオ]
-      - dev/設計書/シナリオ/単一ユースケース/エディタとプレビューのスクロールを合わせる#scenarios[正常シナリオ]
-      - dev/設計書/シナリオ/単一ユースケース/HTMLに書き出す#scenarios[正常シナリオ]
-      - dev/設計書/シナリオ/単一ユースケース/PDFに印刷する#scenarios[正常シナリオ]
+      - SC-472-10#scenarios[正常シナリオ]
+      - SC-472-77#scenarios[正常シナリオ]
+      - SC-472-14#scenarios[正常シナリオ]
+      - SC-472-6#scenarios[正常シナリオ]
+      - SC-472-9#scenarios[正常シナリオ]
   - name: 異常シナリオ（配布物を読み込めない）
     setup:
       - name: 見本のワークスペース
@@ -40,16 +41,16 @@ scenarios:
     flow: |-
       flowchart TD
         A[VSCodeでプレビューを開く:異常シナリオ（配布物を読み込めない）] --> B[記載した内容をプレビューに映す:正常シナリオ（リロードする）]
-        click A "../単一ユースケース/VSCodeでプレビューを開く.yaml#異常シナリオ配布物を読み込めない"
-        click B "../単一ユースケース/記載した内容をプレビューに映す.yaml#正常シナリオリロードする"
+        click A "id:SC-472-10#scenarios[異常シナリオ（配布物を読み込めない）]"
+        click B "id:SC-472-77#scenarios[正常シナリオ（リロードする）]"
     expected:
       - プレビューに、配布物を読み込めず描けない理由と、再描画する操作が出る
       - Markdown と `mdmark.config.yaml` は書き換わらない
       - 配布物を配る状態へ戻して再描画すると、見出し・表・注意書き・フロー図が描かれる
     test: test_error_when_distribution_unreachable
     uses:
-      - dev/設計書/シナリオ/単一ユースケース/VSCodeでプレビューを開く#scenarios[異常シナリオ（配布物を読み込めない）]
-      - dev/設計書/シナリオ/単一ユースケース/記載した内容をプレビューに映す#scenarios[正常シナリオ（リロードする）]
+      - SC-472-10#scenarios[異常シナリオ（配布物を読み込めない）]
+      - SC-472-77#scenarios[正常シナリオ（リロードする）]
 lead: 文書の作成者が、VS Code で Markdown を記載しながら横に出した mdmark のプレビューで描いた外観を確認し、書き込み終えた文書を HTML に書き出してブラウザの印刷で PDF にする。
 issue: 22
 primary_actor: 文書の作成者

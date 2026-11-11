@@ -1,0 +1,32 @@
+id: MOD-472-295
+title: ライブラリ本体 / 記法 / layout-columns.ts
+test_files:
+  - tests/unit/src/render/syntax/layout-columns.test.ts
+functions:
+  - name: buildLayoutColumns
+    title: 段組みにする
+    container: src/render/syntax/layout-columns.ts
+    kind: 関数
+    scope: internal
+    summary: コアルール。`columns` がオンなら、`<!-- columns -->` 〜 `<!-- /columns -->` を `<!-- column -->` で区切り、2〜3 列なら部品『段組み』で囲む。列の数が 2〜3 でない範囲と入れ子の内側は、記載の警告を差し込んで囲まない。範囲の外の `<!-- column -->` と、オフのときのマーカーは取り除く
+    args:
+      - name: state
+        type: StateCore
+        required: true
+        description: markdown-it の状態
+    side_effects: '`state.tokens` を書き換える'
+    callees:
+      - MOD-472-337#functions[renderLayoutColumns]
+    unit_tests:
+      - name: test_build_layout_columns
+        case: 正常
+        condition: '`<!-- column -->` 1 つと 2 つの columns の範囲'
+        expected: '`data-count="2"` と `data-count="3"` の `div.mdmark-layout-columns` に、それぞれ 2・3 個の `div.mdmark-layout-column`'
+        mock: なし
+        summary: 区切りで列に分ける
+      - name: test_build_layout_columns_when_invalid
+        case: 異常
+        condition: '`<!-- column -->` を持たない範囲・4 列の範囲・入れ子の範囲'
+        expected: それぞれの範囲の前に記載の警告があり、その中身が `mdmark-layout-columns` に入っていない。入れ子の外側は 2 列のまま
+        mock: なし
+        summary: 2〜3 列でない範囲と入れ子は囲まずに警告する

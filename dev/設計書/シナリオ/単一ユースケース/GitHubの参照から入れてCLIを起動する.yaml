@@ -1,3 +1,4 @@
+id: SC-472-5
 title: GitHubの参照から入れてCLIを起動する
 scenarios:
   - name: 正常シナリオ

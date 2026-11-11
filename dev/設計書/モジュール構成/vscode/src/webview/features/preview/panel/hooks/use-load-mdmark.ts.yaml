@@ -1,0 +1,61 @@
+id: MOD-472-60
+title: VS Code 拡張機能 / Webview / use-load-mdmark.ts
+test_files:
+  - tests/unit/vscode/src/webview/features/preview/panel/hooks/use-load-mdmark.browser.test.tsx
+constants:
+  - name: LOADING_DELAY_MS
+    title: 読み込み中を出すまでの待ち
+    container: vscode/src/webview/features/preview/panel/hooks/use-load-mdmark.ts
+    summary: 配布物を読み込み始めてからこのミリ秒が経っても描けていなければ読み込み中を出す
+    value: '1000'
+    refs:
+      - SCR-472-2#elements[読み込み中の表示]
+    status: planned
+functions:
+  - name: useLoadMdmark
+    title: 配布物を読み込む
+    kind: フック
+    container: vscode/src/webview/features/preview/panel/hooks/use-load-mdmark.ts
+    usecase: VSCodeでプレビューを開く
+    summary: '`distJs` があれば配布物を読み込み、読み込めたら `onLoaded`、読み込めなければ理由を見分けて `onFailed`、`LOADING_DELAY_MS` 経ったら `onSlow` を呼ぶ'
+    scope: public
+    is_async: false
+    args:
+      - name: options
+        type: '{ distJs: string | undefined; load: (url: string) => Promise<Mdmark>; onLoaded: (mdmark: Mdmark) => void; onFailed: (reason: "offline" | "versionMissing") => void; onSlow: () => void }'
+        required: true
+        description: 読み込む URL・読み込む関数・結果の処理
+    returns:
+      type: void
+      description: '-'
+    process: |-
+      1. `distJs` が無ければ何もしない
+      2. `LOADING_DELAY_MS` 後に `onSlow` を呼ぶタイマーを配置する
+      3. `load(distJs)` を呼ぶ
+         - 解決した場合、`onLoaded`
+         - reject した場合、理由を見分けて（読み込めない理由を見分ける）`onFailed`
+      4. 後始末でタイマーを削除し、削除した後に届いた結果は捨てる
+    callees:
+      - 'MOD-472-55#functions[classifyLoadFailure]'
+    unit_tests:
+      - name: test_use_load_mdmark_when_loaded
+        case: 正常
+        summary: 読み込めたら onLoaded を呼ぶ
+        condition: 解決する `load`
+        mock: '`load` を代役にする'
+        expected: '`onLoaded` が配布物で 1 回、`onFailed` が呼ばれない'
+      - name: test_use_load_mdmark_when_failed
+        case: 異常
+        summary: 読み込めなければ理由を見分けて onFailed を呼ぶ
+        condition: reject する `load`、MSW で HEAD を 404 にする
+        mock: '`load` を代役にする。MSW の `versionMissing` のハンドラ'
+        expected: '`onFailed` が `versionMissing` で 1 回'
+      - name: test_use_load_mdmark_when_unmounted
+        case: 正常
+        summary: 削除した後の結果とタイマーを捨てる
+        condition: 後から解決する `load` で描いて `unmount` し、解決してフェイクタイマーを `LOADING_DELAY_MS` 進める
+        mock: '`load` を代役にする。タイマーをフェイクにする'
+        expected: '`onLoaded`・`onSlow` が呼ばれない'
+    refs:
+      - SCR-472-2#elements[読み込み中の表示]
+    status: planned

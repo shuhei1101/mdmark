@@ -1,3 +1,4 @@
+id: CMP-472-58
 title: 脚注の番号
 lead: 本文の脚注の参照の場所に、マーカーの色で角括弧付きの上付きの番号を配置し、隣に「脚注 {番号}」のタイトルと脚注の中身を持つツールチップを配置する。HTML 文字列を返却し、ブラウザと Node で同じ出力になる。開閉・配置場所・一覧への移動は `mount` の操作が付ける。
 implementation: src/parts/footnote.ts#renderFootnoteRef
@@ -82,8 +83,8 @@ accessibility:
   - 用語の破線の下線と、上付き・角括弧・マーカーの色の構造で見分け、色だけに頼らない
   - フォーカスの枠をマーカーの色の 2px の線で出す
 refs:
-  - dev/設計書/インターフェース定義/ライブラリ本体/文書をHTML文字列にする.ts#constraints[脚注]
-  - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[脚注の操作]
+  - IF-472-34#constraints[脚注]
+  - IF-472-35#constraints[脚注の操作]
 status: planned
 notes:
   出力の構造: '`<sup class="mdmark-fn-ref"><a class="mdmark-fn-link" id="mdmark-fnref-{number}-{refIndex}" href="#mdmark-fn-{number}" aria-describedby|aria-details="mdmark-fn-tip-{number}-{refIndex}"><span class="mdmark-visually-hidden">脚注 </span>{number}</a><span class="mdmark-fn-tip" id="mdmark-fn-tip-{number}-{refIndex}" role="tooltip|group"><span class="mdmark-fn-tip-title">脚注 {number}</span><span class="mdmark-fn-tip-body">{bodies[i]}</span>…</span></sup>`。`bodies` が `a` 要素を持つかで `role` を選ぶ。モックは `dev/mock/components/footnote/`（[確認ログ](../../pr/311/確認ログ.md)）'

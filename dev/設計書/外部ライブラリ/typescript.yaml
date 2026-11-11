@@ -1,3 +1,4 @@
+id: LIB-472-30
 title: typescript
 kind: CLI
 version:
@@ -7,15 +8,15 @@ version:
   source: package.json
   pinning: 完全一致
 catalogs:
-- name: コマンド
-  version: 7.0.2
-  entries:
-  - name: tsc --noEmit
-    kind: コマンド
-    purpose: 型を検査する（変換は esbuild が行う）
-  - name: tsc --noEmit -p vscode
-    kind: コマンド
-    purpose: 'VS Code 拡張機能と Webview（`jsx: react-jsx`）の型を検査する'
+  - name: コマンド
+    version: 7.0.2
+    entries:
+      - name: tsc --noEmit
+        kind: コマンド
+        purpose: 型を検査する（変換は esbuild が行う）
+      - name: tsc --noEmit -p vscode
+        kind: コマンド
+        purpose: 'VS Code 拡張機能と Webview（`jsx: react-jsx`）の型を検査する'
 lead: TypeScript の型検査と変換をするコンパイラ（`tsc`）。
 purl: pkg:npm/typescript@7.0.2
 dependency_scope: 開発のみ
@@ -39,6 +40,6 @@ install: '```bash
 
   `tools/eslint/` には typescript-eslint のために 6.0.3 を入れる（`npm i -D -E --prefix tools/eslint typescript@6.0.3`）。'
 limitations:
-- item: JavaScript の API
-  content: 7.0 は `createProgram` などの JavaScript の API を持たない
-  notes: typescript-eslint の型の情報は `tools/eslint/` の 6.0.3 から取る
+  - item: JavaScript の API
+    content: 7.0 は `createProgram` などの JavaScript の API を持たない
+    notes: typescript-eslint の型の情報は `tools/eslint/` の 6.0.3 から取る

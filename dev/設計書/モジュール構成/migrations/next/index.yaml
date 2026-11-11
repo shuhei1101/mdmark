@@ -1,0 +1,6 @@
+summary: next の設計書
+items:
+  - page: alias-rows.mjs.yaml
+    summary: ライブラリ本体 / バージョンを上げる / alias-rows.mjs
+  - page: drop-tag-vocabulary.mjs.yaml
+    summary: ライブラリ本体 / バージョンを上げる / drop-tag-vocabulary.mjs

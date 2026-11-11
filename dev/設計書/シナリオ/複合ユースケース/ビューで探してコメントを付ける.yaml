@@ -1,3 +1,4 @@
+id: SC-472-90
 title: "ビューで探してコメントを付ける"
 scenarios:
   - name: 正常シナリオ
@@ -14,9 +15,9 @@ scenarios:
       flowchart TD
         A[ビューで項目を確認する:正常シナリオ] --> B[表形式のビューを列で絞り込む:正常シナリオ]
         B --> C[選んだ箇所にコメントする:正常シナリオ]
-        click A "../単一ユースケース/ビューで項目を確認する.yaml#正常シナリオ"
-        click B "../単一ユースケース/表形式のビューを列で絞り込む.yaml#正常シナリオ"
-        click C "../単一ユースケース/選んだ箇所にコメントする.yaml#正常シナリオ"
+        click A "id:SC-472-29#scenarios[正常シナリオ]"
+        click B "id:SC-472-74#scenarios[正常シナリオ]"
+        click C "id:SC-472-80#scenarios[正常シナリオ]"
     expected:
       - ビューのマーカーで囲んだ表が、状態の列の値ごとの 3 つの列に項目を並べたボード表示で描かれる
       - ビューの切り替えで表形式のビューに変わり、5 件の項目が行で並ぶ
@@ -25,9 +26,9 @@ scenarios:
       - マーカーからコメントを開くと、記載したコメントが出る
     test: test_normal
     uses:
-      - dev/設計書/シナリオ/単一ユースケース/ビューで項目を確認する#scenarios[正常シナリオ]
-      - dev/設計書/シナリオ/単一ユースケース/表形式のビューを列で絞り込む#scenarios[正常シナリオ]
-      - dev/設計書/シナリオ/単一ユースケース/選んだ箇所にコメントする#scenarios[正常シナリオ]
+      - SC-472-29#scenarios[正常シナリオ]
+      - SC-472-74#scenarios[正常シナリオ]
+      - SC-472-80#scenarios[正常シナリオ]
   - name: 正常シナリオ（書き出した HTML で探す）
     setup:
       - name: 見本のビューの文書
@@ -40,18 +41,18 @@ scenarios:
       flowchart TD
         A[文書をHTMLに書き出す:正常シナリオ] --> B[ビューで項目を確認する:正常シナリオ]
         B --> C[表形式のビューを列で絞り込む:正常シナリオ]
-        click A "../単一ユースケース/文書をHTMLに書き出す.yaml#正常シナリオ"
-        click B "../単一ユースケース/ビューで項目を確認する.yaml#正常シナリオ"
-        click C "../単一ユースケース/表形式のビューを列で絞り込む.yaml#正常シナリオ"
+        click A "id:SC-472-56#scenarios[正常シナリオ]"
+        click B "id:SC-472-29#scenarios[正常シナリオ]"
+        click C "id:SC-472-74#scenarios[正常シナリオ]"
     expected:
       - '`mdmark export` が終了コード 0 で 1 枚の HTML を書き出す'
       - 書き出した HTML を外への要求を止めて開いても、ボード表示のビューが描かれ、表形式に切り替えられる
       - 表形式のビューで担当の列の絞り込みから名前を選ぶと、その人の項目だけが残る
     test: test_normal_when_exported
     uses:
-      - dev/設計書/シナリオ/単一ユースケース/文書をHTMLに書き出す#scenarios[正常シナリオ]
-      - dev/設計書/シナリオ/単一ユースケース/ビューで項目を確認する#scenarios[正常シナリオ]
-      - dev/設計書/シナリオ/単一ユースケース/表形式のビューを列で絞り込む#scenarios[正常シナリオ]
+      - SC-472-56#scenarios[正常シナリオ]
+      - SC-472-29#scenarios[正常シナリオ]
+      - SC-472-74#scenarios[正常シナリオ]
   - name: 正常シナリオ（利用側の JavaScript から描く）
     setup:
       - name: 利用側のページ
@@ -61,16 +62,16 @@ scenarios:
     flow: |-
       flowchart TD
         A[部品をJavaScriptから使用する:正常シナリオ] --> B[表形式のビューを列で絞り込む:正常シナリオ]
-        click A "../単一ユースケース/部品をJavaScriptから使用する.yaml#正常シナリオ"
-        click B "../単一ユースケース/表形式のビューを列で絞り込む.yaml#正常シナリオ"
+        click A "id:SC-472-81#scenarios[正常シナリオ]"
+        click B "id:SC-472-74#scenarios[正常シナリオ]"
     expected:
       - 利用側のページの要素に、文書のマーカーで描いたものと同じボード表示のビューが描かれる
       - 表形式のビューで担当の列の絞り込みから名前を選ぶと、その人の項目だけが残る
       - 関数が返却した片付けの関数を呼ぶと、要素の中が空になる
     test: test_normal_when_called_from_javascript
     uses:
-      - dev/設計書/シナリオ/単一ユースケース/部品をJavaScriptから使用する#scenarios[正常シナリオ]
-      - dev/設計書/シナリオ/単一ユースケース/表形式のビューを列で絞り込む#scenarios[正常シナリオ]
+      - SC-472-81#scenarios[正常シナリオ]
+      - SC-472-74#scenarios[正常シナリオ]
 lead: 文書の作成者が項目の表をビューのマーカーで囲み、読者がボード表示と表形式のビューを切り替え、表形式のビューを列で絞り込み、本文の選んだ箇所にコメントを付ける。書き出した 1 枚の HTML と、利用側の JavaScript から描いたビューでも同じように探せる。
 issue: 8
 primary_actor: 読者

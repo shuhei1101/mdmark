@@ -1,3 +1,4 @@
+id: CMP-472-5
 title: mapの構成図
 implementation: src/parts/map.ts#renderMapFlow
 story: Parts/MapFlow
@@ -135,11 +136,11 @@ css_properties:
     default: color-mix(in srgb, var(--mdmark-color-muted) 70%, transparent)
     description: 色を持たないグループの枠線の色
 uses:
-  - component: dev/設計書/部品設計/フロー図.ts#
+  - component: CMP-472-28#
     how: ノードと線、線の交差の飛び越え
-  - component: dev/設計書/部品設計/図のツールチップ.ts#
+  - component: CMP-472-38#
     how: 置き場所の無い線のラベル・補足の `notes`・まとめた線の元の線
-  - component: dev/設計書/部品設計/アイコン.ts#
+  - component: CMP-472-8#
     how: ノードの種類の行の Lucide のアイコンと、開閉の山形
 accessibility:
   - グループの開閉のボタンは `aria-expanded` と `aria-label="{タイトル}を開く"`（開いているときは `閉じる`）を持つ。タイトルのボタンは `aria-label="{タイトル}の中へ入る"` を持つ
@@ -149,7 +150,7 @@ accessibility:
   - 強調は薄くするだけで色を変えず、データの印は `aria-hidden`。読者が始めた印は `prefers-reduced-motion` でも流し、配置し直したときのノードとグループの移動は止める
   - 色を持たないグループの枠線は背景とのコントラスト比 3:1 以上
 refs:
-  - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#
+  - IF-472-35#
 status: planned
 introduced:
   pr: 445

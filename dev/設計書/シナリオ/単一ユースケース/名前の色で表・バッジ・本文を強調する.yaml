@@ -1,3 +1,4 @@
+id: SC-472-36
 title: 名前の色で表・バッジ・本文を強調する
 scenarios:
   - name: 正常シナリオ

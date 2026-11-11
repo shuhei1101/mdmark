@@ -1,3 +1,4 @@
+id: CMP-472-28
 title: "フロー図"
 implementation: "src/parts/diagram.ts#renderFlow"
 story: "Parts/FlowDiagram"
@@ -110,9 +111,9 @@ css_properties:
     default: 8%
     description: 層の背景に敷くノードの色の濃さ
 uses:
-  - component: dev/設計書/部品設計/記載の警告.ts#
+  - component: CMP-472-62#
     how: 定義を読み込めないときに図の代わりに配置する
-  - component: dev/設計書/部品設計/用語のツールチップ.ts#
+  - component: CMP-472-53#
     how: ノードの中の `{{単語}}` の下線と意味
 accessibility:
   - ノードの種類は色だけでなく、ノードの左上のアイコンと種類の名前でも示す。データのノードは下の角を丸くし、判定フローチャートの開始は円・質問は菱形・アクションは角の丸くない四角・結果は両端の丸い形状で描く

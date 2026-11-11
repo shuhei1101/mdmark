@@ -1,0 +1,116 @@
+id: MOD-472-176
+title: ライブラリ本体 / 図 / er.ts
+test_files:
+  - tests/unit/src/diagram/er.test.ts
+constants:
+  - name: ER_TABLE_KINDS
+    title: ER 図のテーブルの種類
+    container: src/diagram/er.ts
+    summary: テーブルの `kind` ごとの見出しの札の名前と、`color` を省いたときの色の名前。`readDefinition` の使用できる種類はこの順に `・` でつなぐ
+    entries:
+      - key: master
+        value: '{ label: "マスター", color: "blue" }'
+      - key: transaction
+        value: '{ label: "トランザクション", color: "orange" }'
+    status: planned
+    introduced:
+      pr: 298
+  - name: ER_CARDINALITIES
+    title: ER 図の多重度
+    container: src/diagram/er.ts
+    summary: 関係の端の多重度の値と、凡例に出す名前。`readDefinition` の使用できる多重度はこの順に `・` でつなぐ
+    entries:
+      - key: '1'
+        value: '"1 つ"'
+      - key: 0..1
+        value: '"0 か 1 つ"'
+      - key: 1..n
+        value: '"1 つ以上"'
+      - key: 0..n
+        value: '"0 以上"'
+    status: planned
+    introduced:
+      pr: 298
+  - name: ER_COLUMN_KEYS
+    title: ER 図の列のマーカー
+    container: src/diagram/er.ts
+    summary: 列の `pk`・`fk`・`nn` ごとのマーカーの文字と、`abbr` の `title`・凡例の名前
+    entries:
+      - key: pk
+        value: '{ text: "PK", title: "主キー" }'
+      - key: fk
+        value: '{ text: "FK", title: "外部キー" }'
+      - key: nn
+        value: '{ text: "NN", title: "NOT NULL" }'
+    status: planned
+    introduced:
+      pr: 298
+  - name: ER_METRICS
+    title: ER 図の寸法
+    container: src/diagram/er.ts
+    summary: テーブルの高さと列の行の位置を求める寸法。描いた文書の CSS の `.mdmark-diagram-er-*` と同じ値。CSS を修正したときは合わせて修正する
+    value: 見出しの高さ 44px・列の行の高さ 26px・`非表示 {数} 列` の行の高さ 24px・枠と余白 4px・図の下の余白 32px
+    status: planned
+    introduced:
+      pr: 298
+functions:
+  - name: erTableHeight
+    title: ER 図のテーブルの高さ
+    container: src/diagram/er.ts
+    kind: 関数
+    scope: internal
+    summary: '`ER_METRICS` で、見出し・出している列の行・畳んだときの `非表示 {数} 列` の行・枠と余白を加算した高さを返却する。畳んだテーブルは主キーと外部キーの列だけを数える'
+    args:
+      - name: options
+        type: '{ table: MdmarkErTable; folded: boolean }'
+        required: true
+        description: テーブルと、今畳んでいるか
+    returns:
+      type: number
+      description: 高さ（px）
+    unit_tests:
+      - name: test_er_table_height
+        case: 正常
+        summary: 畳んだときは主キーと外部キーの列と非表示の行だけを数える
+        condition: 列 5 つ（主キー 1 つ・外部キー 1 つ）のテーブルを、`folded` が `false` と `true` で
+        mock: なし
+        expected: '`false` は `44 + 26 × 5 + 4`、`true` は `44 + 26 × 2 + 24 + 4`'
+    status: planned
+    introduced:
+      pr: 298
+  - name: erRelationRoute
+    title: ER 図の関係の線の経路
+    container: src/diagram/er.ts
+    kind: 関数
+    scope: internal
+    summary: 元の列の行の縦の中心から先の列の行の縦の中心へ、横・縦・横の直角の線の経路を求める。縦の線の x は `midX`、省いたときは両端の中間。先が元より右なら元の右の辺から先の左の辺へ、左なら元の左の辺から先の右の辺へ結び、同じ `x` のテーブルどうしは両方の右の辺から出す。列が畳まれて見えないときは、見出しの縦の中ほどに結ぶ
+    args:
+      - name: options
+        type: '{ relation: MdmarkErRelation; from: MdmarkErTable; to: MdmarkErTable; folded: (id: string) => boolean }'
+        required: true
+        description: 関係・元と先のテーブル・テーブルを今畳んでいるか
+    returns:
+      type: '{ d: string; start: { x: number; y: number; dir: 1 | -1 }; end: { x: number; y: number; dir: 1 | -1 }; label: { x: number; y: number } }'
+      description: '`path` の `d`、両端の位置と線がテーブルから出る向き（1 は右、-1 は左）、ラベルの位置（縦の線の中ほど）'
+    unit_tests:
+      - name: test_er_relation_route
+        case: 正常
+        summary: 右のテーブルへ横・縦・横で結ぶ
+        condition: 元が `x` 40・`w` 200、先が `x` 400 の関係。`midX` を省く
+        mock: なし
+        expected: '`d` が `M240,{元の y} H320 V{先の y} H400` で、`start.dir` が `1`、`end.dir` が `-1`'
+      - name: test_er_relation_route_when_stacked
+        case: 正常
+        summary: 同じ x のテーブルどうしは両方の右の辺から出す
+        condition: 元と先の `x` が 40・`w` が 200、`midX` が 300
+        mock: なし
+        expected: '`d` の始点と終点の x が 240 で、縦の線の x が 300、`start.dir` と `end.dir` が `1`'
+      - name: test_er_relation_route_when_folded
+        case: 正常
+        summary: 畳んで見えない列へは見出しの中ほどに結ぶ
+        condition: 先の列が主キーでも外部キーでもなく、`folded` が先のテーブルで `true`
+        mock: なし
+        expected: '`end.y` が先のテーブルの `y + 22`'
+    status: planned
+    introduced:
+      pr: 298

@@ -1,0 +1,87 @@
+id: MOD-472-119
+title: ライブラリ本体 / CLI / bundle-module.ts
+functions:
+  - name: bundleModule
+    title: モジュールを 1 つにまとめる
+    container: src/bundle-module.ts
+    usecase: 共通
+    summary: URL かファイルのモジュールを、import する先も含めて指定した esbuild の `build` で 1 つの ES モジュールのコードにまとめる
+    description: '`bundle: true`・`format: esm`・`write: false`・`minify: true`・`target` は対応ブラウザ。`http:`・`https:` の import は、esbuild のプラグインで `fetch` して読み込み、相対・ルート相対の import はその URL を基準に解く（PoC #35 で確認した jsDelivr の `+esm` の構造）。ファイルは名前空間 `local` のプラグインで `node:fs/promises` の `readFile` で読み込み（esbuild-wasm はファイルシステムを持たず、`file` の名前空間は Windows のパスを拒む）、拡張子が `.ts`・`.mts`・`.cts`・`.tsx` なら `ts`・`tsx` の loader で読み込む。届かない・まとめられないときは例外を投げずに理由を返却する。esbuild を import しないファイルに配置し、CLI はネイティブの esbuild の `build` を、VS Code 拡張機能は esbuild-wasm の `build` を指定する'
+    kind: 関数
+    scope: public
+    is_async: true
+    side_effects: URL の先を読み込む
+    args:
+      - name: entry
+        type: string
+        required: true
+        description: モジュールの URL か、設定ファイルのフォルダからの相対パス（絶対パスも受ける）
+      - name: baseDir
+        type: string
+        required: true
+        description: 相対パスの基準（設定ファイルのフォルダ）
+      - name: fetchText
+        type: '(url: string) => Promise<string>'
+        required: false
+        default: '`fetch` で本文を読み込む'
+        passing: injected
+        description: URL を読み込む関数（テストで差し替える）
+      - name: build
+        type: BuildFunction
+        required: true
+        default: ネイティブの esbuild の `build`（`src/cli/embed.ts` が指定する）
+        passing: injected
+        description: esbuild の `build`。`src/bundle-module.ts` は型だけを import し、CLI（`src/cli/embed.ts`）はネイティブの esbuild の、VS Code 拡張機能は esbuild-wasm の `build` を指定する
+    returns:
+      type: 'Promise<{ code: string } | { error: string }>'
+      description: まとめたコードか、読み込めなかった理由
+    unit_tests:
+      - name: test_bundle_module
+        case: 正常
+        summary: 手元のファイルとその import を 1 つにまとめる
+        condition: '`lib.ts` が `./dep.ts` を import し `draw` を export する'
+        mock: 一時フォルダ
+        expected: '`code` に `import` 文が残らず、`draw` を export する'
+      - name: test_bundle_module_when_url
+        case: 正常
+        summary: URL とそのルート相対の import を fetchText で読み込んでまとめる
+        condition: '`https://cdn.example/npm/a/+esm` が `/npm/b/+esm` を import する'
+        mock: 2 つの URL の本文を返却する `fetchText`
+        expected: '`fetchText` が `https://cdn.example/npm/b/+esm` も読み込み、`code` に `https:` と `/npm/` の import が残らない'
+      - name: test_bundle_module_when_unreachable
+        case: 異常
+        summary: 読み込めないモジュールは理由を返却する
+        condition: 無いファイル `missing.js`
+        mock: 一時フォルダ
+        expected: '`error` に `missing.js` が入り、例外を投げない'
+    status: planned
+    introduced:
+      pr: 32
+  - name: cacheFetchText
+    title: URL を読み込む関数を記録付きにする
+    container: src/bundle-module.ts
+    usecase: 共通
+    summary: 同じ URL を 1 回だけ読み込む `FetchText` を返却する。`prepareEmbeds` の確認と `bundleViewer` が同じ関数を使用し、同じ URL を 2 回読まない
+    description: URL ごとに読み込みの Promise を記録する。拒否した Promise も記録し、再読み込みしない
+    kind: 関数
+    scope: public
+    args:
+      - name: fetchText
+        type: FetchText
+        required: false
+        default: '`fetch` で本文を読み込む'
+        passing: injected
+        description: URL を読み込む関数（テストで差し替える）
+    returns:
+      type: FetchText
+      description: 記録付きの URL を読み込む関数
+    unit_tests:
+      - name: test_cache_fetch_text
+        case: 正常
+        summary: 同じ URL を 1 回だけ読み込む
+        condition: 同じ URL で 2 回、別の URL で 1 回呼ぶ
+        mock: 呼ばれた URL を記録する `fetchText`
+        expected: '`fetchText` が 2 回呼ばれ、同じ URL の 2 回は同じ本文'
+    status: planned
+    introduced:
+      pr: 296

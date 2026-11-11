@@ -1,3 +1,4 @@
+id: SC-472-62
 title: 機能のオン・オフを文書で上書きする
 scenarios:
   - name: 正常シナリオ
@@ -239,7 +240,7 @@ scenarios:
       - 本文にマーカーの文字が出ていない
     test: test_normal_when_back_to_top_disabled
     refs:
-      - dev/設計書/シナリオ/単一ユースケース/文書の先頭へ戻る#scenarios[正常シナリオ]
+      - SC-472-54#scenarios[正常シナリオ]
   - name: 正常シナリオ（色・画像・カードの機能を解除する）
     setup:
       - name: mdmark を読み込むページ
@@ -290,7 +291,7 @@ scenarios:
       - '`<!-- features: -footnotes -->` のマーカーは本文に出ていない'
     test: test_normal_when_footnotes_disabled
     refs:
-      - dev/設計書/シナリオ/単一ユースケース/脚注を確認する#scenarios[正常シナリオ]
+      - SC-472-71#scenarios[正常シナリオ]
   - name: 正常シナリオ（範囲のスクリプトを文書でオンにする）
     setup:
       - name: mdmark を読み込むページ

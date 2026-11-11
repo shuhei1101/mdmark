@@ -1,0 +1,62 @@
+id: MOD-472-262
+title: ライブラリ本体 / 索引と用語 / paths.ts
+test_files:
+  - tests/unit/src/knowledge/paths.test.ts
+functions:
+  - name: resolveLink
+    title: 本文のリンクを索引のパスにする
+    container: src/knowledge/paths.ts
+    kind: 関数
+    scope: internal
+    summary: 文書の `path` を基準に、本文のリンクの `href` を索引のファイルからのパスにする
+    description: '`#` 以降と `?` 以降を除き、`decodeURI` で戻し（戻せなければそのまま）、`.`・`..` を解いて `/` 区切りにする。スキームを持つ URL・`/` で始まるパス・`#` だけのリンク・索引のフォルダの外へ出るパスは `undefined`'
+    args:
+      - name: fromPath
+        type: string
+        required: true
+        description: リンクを持つ文書の `path`
+      - name: href
+        type: string
+        required: true
+        description: リンクの `href`（markdown-it が符号化したもの）
+    returns:
+      type: string | undefined
+      description: 索引のファイルからのパス
+    unit_tests:
+      - name: test_resolve_link
+        case: 正常
+        summary: 符号化・`?`・`#` を持つ相対リンクを解く
+        condition: '`fromPath` が `使い方/guide.md`、`href` が `../%E8%A8%AD%E8%A8%88/arch.md?v=1#top` と `./x.md`'
+        mock: なし
+        expected: '`設計/arch.md` と `使い方/x.md`'
+      - name: test_resolve_link_when_outside
+        case: 正常
+        summary: 索引の外・URL・`#` だけは参照にしない
+        condition: '`href` が `../../a.md`・`https://example.com/a.md`・`#top`・`/a.md`'
+        mock: なし
+        expected: どれも `undefined`
+  - name: relativeHref
+    title: 描く文書からの相対パスを作る
+    container: src/knowledge/paths.ts
+    kind: 関数
+    scope: internal
+    summary: 描く文書の `path` から参照先の `path` を指す相対パスを作る。描く文書の `path` が無いときは参照先の `path` のまま
+    args:
+      - name: fromPath
+        type: string | undefined
+        required: true
+        description: 描く文書の `path`
+      - name: toPath
+        type: string
+        required: true
+        description: 参照先の `path`
+    returns:
+      type: string
+      description: 相対パス（`../api.md` の構造。文字は符号化しない）
+    unit_tests:
+      - name: test_relative_href
+        case: 正常
+        summary: 別のフォルダの文書への相対パスを作る
+        condition: '`設計/arch.md` から `api.md`・`使い方/guide.md`・`設計/b.md`、`undefined` から `api.md`'
+        mock: なし
+        expected: '`../api.md`・`../使い方/guide.md`・`b.md`・`api.md`'

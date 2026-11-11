@@ -1,3 +1,4 @@
+id: CMP-472-13
 title: "グラフ"
 implementation: "src/parts/diagram.ts#renderChart"
 story: "Parts/Chart"
@@ -69,9 +70,9 @@ args:
     required: true
     description: グラフの定義（`MdmarkChartDefinition`。`type`（`line`・`bar`・`pie`・`scatter`・`area`・`stacked-bar`・`stacked-area`・`horizontal-bar`・`donut`・`radar`・`bubble`・`combo`。省いたとき `line`）・`x`（ラベルと目盛り。散布図とバブルは数値の軸、レーダーは目盛りを放射状の軸にする）・`y`（ラベル・最小・最大・刻み。省くとデータから 1・2・5×10 のべき乗の刻みで切る。横棒では横の軸）・`y2`（`combo` の右の縦の軸。`y` と同じ構造）・`size`（`bubble` の 3 つ目の値のラベル）・`series`（`combo` の系列は `as`（`line`・`bar`）と `axis`（`y`・`y2`。省いたとき `y`）を持つ）・`items`・`unit`）。系列と円・ドーナツの項目は 6 つまで
 uses:
-  - component: dev/設計書/部品設計/記載の警告.ts#
+  - component: CMP-472-62#
     how: 定義を読み込めないときに図の代わりに配置する
-  - component: dev/設計書/部品設計/図のツールチップ.ts#
+  - component: CMP-472-38#
     how: '`kind` を `item` にして、項目の系列か項目の名前と値を出す'
 accessibility:
   - グラフの svg は `role="img"` と、題名と系列（円は項目）ごとの値を並べた `aria-label` を持つ

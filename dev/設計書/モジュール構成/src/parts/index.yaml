@@ -1,0 +1,112 @@
+summary: parts の設計書
+items:
+  - page: back-to-top.ts.yaml
+    summary: ライブラリ本体 / 部品 / back-to-top.ts
+  - page: backlinks.ts.yaml
+    summary: ライブラリ本体 / 索引と用語 / backlinks.ts
+  - page: badge.ts.yaml
+    summary: ライブラリ本体 / 部品 / badge.ts
+  - page: callout.ts.yaml
+    summary: ライブラリ本体 / 記法 / callout.ts
+  - page: card-grid.ts.yaml
+    summary: ライブラリ本体 / 部品 / card-grid.ts
+  - page: card.ts.yaml
+    summary: ライブラリ本体 / 部品 / card.ts
+  - page: chart.ts.yaml
+    summary: ライブラリ本体 / 図 / chart.ts
+  - page: code-block.ts.yaml
+    summary: ライブラリ本体 / 部品 / code-block.ts
+  - page: collapsible.ts.yaml
+    summary: ライブラリ本体 / 部品 / collapsible.ts
+  - page: colors.ts.yaml
+    summary: ライブラリ本体 / 部品 / colors.ts
+  - page: comment.ts.yaml
+    summary: ライブラリ本体 / ビューとコメント / comment.ts
+  - page: diagram.ts.yaml
+    summary: ライブラリ本体 / 図 / diagram.ts
+  - page: diff-blocks.ts.yaml
+    summary: ライブラリ本体 / 差分 / diff-blocks.ts
+  - page: diff-html.ts.yaml
+    summary: ライブラリ本体 / 差分 / diff-html.ts
+  - page: diff-lines.ts.yaml
+    summary: ライブラリ本体 / 差分 / diff-lines.ts
+  - page: diff-message.ts.yaml
+    summary: ライブラリ本体 / 差分 / diff-message.ts
+  - page: diff-minimap.ts.yaml
+    summary: ライブラリ本体 / 差分 / diff-minimap.ts
+  - page: diff-toggle.ts.yaml
+    summary: ライブラリ本体 / 差分 / diff-toggle.ts
+  - page: doc-list.ts.yaml
+    summary: ライブラリ本体 / 部品 / doc-list.ts
+  - page: embed.ts.yaml
+    summary: ライブラリ本体 / 部品 / embed.ts
+  - page: er.ts.yaml
+    summary: ライブラリ本体 / 図 / er.ts
+  - page: escape.ts.yaml
+    summary: ライブラリ本体 / 部品 / escape.ts
+  - page: figure.ts.yaml
+    summary: ライブラリ本体 / 部品 / figure.ts
+  - page: footnote.ts.yaml
+    summary: ライブラリ本体 / 部品 / footnote.ts
+  - page: frontmatter.ts.yaml
+    summary: ライブラリ本体 / 部品 / frontmatter.ts
+  - page: gallery.ts.yaml
+    summary: ライブラリ本体 / 部品 / gallery.ts
+  - page: gif.ts.yaml
+    summary: ライブラリ本体 / 部品 / gif.ts
+  - page: highlight.ts.yaml
+    summary: ライブラリ本体 / 部品 / highlight.ts
+  - page: hint.ts.yaml
+    summary: ライブラリ本体 / 図 / hint.ts
+  - page: icons.ts.yaml
+    summary: ライブラリ本体 / 図 / icons.ts
+  - page: image.ts.yaml
+    summary: ライブラリ本体 / 部品 / image.ts
+  - page: inline-icon.ts.yaml
+    summary: ライブラリ本体 / 部品 / inline-icon.ts
+  - page: kbd.ts.yaml
+    summary: ライブラリ本体 / 部品 / kbd.ts
+  - page: layout-columns.ts.yaml
+    summary: ライブラリ本体 / 部品 / layout-columns.ts
+  - page: lightbox.ts.yaml
+    summary: ライブラリ本体 / 部品 / lightbox.ts
+  - page: map.ts.yaml
+    summary: ライブラリ本体 / map / 描画と操作 / map.ts
+  - page: media.ts.yaml
+    summary: ライブラリ本体 / 部品 / media.ts
+  - page: mermaid.ts.yaml
+    summary: ライブラリ本体 / mermaid / mermaid.ts
+  - page: notice.ts.yaml
+    summary: ライブラリ本体 / 部品 / notice.ts
+  - page: own.ts.yaml
+    summary: ライブラリ本体 / 部品 / own.ts
+  - page: param.ts.yaml
+    summary: ライブラリ本体 / 図 / param.ts
+  - page: revision-picker.ts.yaml
+    summary: ライブラリ本体 / 差分 / revision-picker.ts
+  - page: row-detail.ts.yaml
+    summary: ライブラリ本体 / 部品 / row-detail.ts
+  - page: section.ts.yaml
+    summary: ライブラリ本体 / 部品 / section.ts
+  - page: side-toc.ts.yaml
+    summary: ライブラリ本体 / 部品 / side-toc.ts
+  - page: steps.ts.yaml
+    summary: ライブラリ本体 / 部品 / steps.ts
+  - page: syntax-warning.ts.yaml
+    summary: ライブラリ本体 / 部品 / syntax-warning.ts
+  - page: table.ts.yaml
+    summary: ライブラリ本体 / 部品 / table.ts
+  - page: tabs.ts.yaml
+    summary: ライブラリ本体 / 部品 / tabs.ts
+  - page: term-tip.ts.yaml
+    summary: ライブラリ本体 / 索引と用語 / term-tip.ts
+  - page: text-color.ts.yaml
+    summary: ライブラリ本体 / 部品 / text-color.ts
+  - page: toc.ts.yaml
+    summary: ライブラリ本体 / 部品 / toc.ts
+  - page: tree.ts.yaml
+    summary: ライブラリ本体 / 記法 / tree.ts
+  - page: view.ts.yaml
+    summary: ライブラリ本体 / ビューとコメント / view.ts
+  - page: wide.ts.yaml
+    summary: ライブラリ本体 / 部品 / wide.ts

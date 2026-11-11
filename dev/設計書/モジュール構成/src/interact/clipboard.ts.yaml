@@ -1,0 +1,43 @@
+id: MOD-472-232
+title: ライブラリ本体 / 操作 / clipboard.ts
+test_files:
+  - tests/unit/src/interact/clipboard.browser.test.ts
+functions:
+  - name: copyText
+    title: クリップボードへ書き込む
+    container: src/interact/clipboard.ts
+    summary: '`navigator.clipboard.writeText` で文字を書き込み、書き込めたかを返却する。`navigator.clipboard` が無いときと拒まれたときは `false` を返却し、例外を投げない'
+    kind: 関数
+    scope: internal
+    is_async: true
+    side_effects: クリップボードへ書き込む
+    args:
+      - name: text
+        type: string
+        required: true
+        description: 記載する文字
+    returns:
+      type: Promise<boolean>
+      description: 書き込めたか
+    unit_tests:
+      - name: test_copy_text
+        case: 正常
+        summary: 書き込めたら true を返却する
+        condition: '`a\tb`'
+        mock: '`navigator.clipboard.writeText` を記録して解決する関数に差し替える'
+        expected: '`true`。`a\tb` で 1 回呼ばれる'
+      - name: test_copy_text_when_denied
+        case: 正常
+        summary: 拒まれたら false を返却する
+        condition: '`a`'
+        mock: '`navigator.clipboard.writeText` を `NotAllowedError` で拒む関数に差し替える'
+        expected: '`false`。`unhandledrejection` が起きない'
+      - name: test_copy_text_when_unavailable
+        case: 正常
+        summary: クリップボードが無ければ false を返却する
+        condition: '`a`'
+        mock: '`navigator.clipboard` を `undefined` に差し替える'
+        expected: '`false`'
+    status: planned
+    introduced:
+      pr: 151

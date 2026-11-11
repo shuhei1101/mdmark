@@ -1,3 +1,4 @@
+id: SC-472-86
 title: MCPサーバーを起動してプラグインからつなぐ
 scenarios:
   - name: 正常シナリオ
@@ -17,10 +18,10 @@ scenarios:
         A[MCPサーバーを起動・停止する:正常シナリオ（起動する）] --> B[ClaudeCodeにプラグインを入れる:正常シナリオ]
         B --> C[ClaudeCodeから点検と書き出しを呼ぶ:正常シナリオ]
         C --> D[ClaudeCodeから点検と書き出しを呼ぶ:正常シナリオ（ずれがある）]
-        click A "../単一ユースケース/MCPサーバーを起動・停止する.yaml#正常シナリオ起動する"
-        click B "../単一ユースケース/ClaudeCodeにプラグインを入れる.yaml#正常シナリオ"
-        click C "../単一ユースケース/ClaudeCodeから点検と書き出しを呼ぶ.yaml#正常シナリオ"
-        click D "../単一ユースケース/ClaudeCodeから点検と書き出しを呼ぶ.yaml#正常シナリオずれがある"
+        click A "id:SC-472-7#scenarios[正常シナリオ（起動する）]"
+        click B "id:SC-472-4#scenarios[正常シナリオ]"
+        click C "id:SC-472-3#scenarios[正常シナリオ]"
+        click D "id:SC-472-3#scenarios[正常シナリオ（ずれがある）]"
     expected:
       - '`MDMARK_PORT` に指定したポートで待ち受けるプロセスが 1 つだけある'
       - 作業のフォルダ A のクライアントの `check` が、空のずれの一覧を返却する
@@ -29,10 +30,10 @@ scenarios:
       - 2 つのクライアントが送信した引数（フックの記録の `tool_input`）に作業のフォルダの引数が無い
     test: test_normal
     uses:
-      - dev/設計書/シナリオ/単一ユースケース/MCPサーバーを起動・停止する#scenarios[正常シナリオ（起動する）]
-      - dev/設計書/シナリオ/単一ユースケース/ClaudeCodeにプラグインを入れる#scenarios[正常シナリオ]
-      - dev/設計書/シナリオ/単一ユースケース/ClaudeCodeから点検と書き出しを呼ぶ#scenarios[正常シナリオ]
-      - dev/設計書/シナリオ/単一ユースケース/ClaudeCodeから点検と書き出しを呼ぶ#scenarios[正常シナリオ（ずれがある）]
+      - SC-472-7#scenarios[正常シナリオ（起動する）]
+      - SC-472-4#scenarios[正常シナリオ]
+      - SC-472-3#scenarios[正常シナリオ]
+      - SC-472-3#scenarios[正常シナリオ（ずれがある）]
   - name: 異常シナリオ（常駐サーバーが起動していない）
     setup:
       - name: 作業のフォルダ A
@@ -45,17 +46,17 @@ scenarios:
       flowchart TD
         A[ClaudeCodeにプラグインを入れる:異常シナリオ（常駐サーバーが起動していない）] --> B[MCPサーバーを起動・停止する:正常シナリオ（起動する）]
         B --> C[ClaudeCodeから点検と書き出しを呼ぶ:正常シナリオ]
-        click A "../単一ユースケース/ClaudeCodeにプラグインを入れる.yaml#異常シナリオ常駐サーバーが起動していない"
-        click B "../単一ユースケース/MCPサーバーを起動・停止する.yaml#正常シナリオ起動する"
-        click C "../単一ユースケース/ClaudeCodeから点検と書き出しを呼ぶ.yaml#正常シナリオ"
+        click A "id:SC-472-4#scenarios[異常シナリオ（常駐サーバーが起動していない）]"
+        click B "id:SC-472-7#scenarios[正常シナリオ（起動する）]"
+        click C "id:SC-472-3#scenarios[正常シナリオ]"
     expected:
       - 常駐サーバーを起動した後は、同じクライアントがもう一度接続して `check` が作業のフォルダ A の空のずれの一覧を返却する
       - 続けて `build_site` が、作業のフォルダ A の `build.out` に 1 枚の HTML を書き込み、入れた文書の数 1 を返却する
     test: test_error_when_server_not_running
     uses:
-      - dev/設計書/シナリオ/単一ユースケース/ClaudeCodeにプラグインを入れる#scenarios[異常シナリオ（常駐サーバーが起動していない）]
-      - dev/設計書/シナリオ/単一ユースケース/MCPサーバーを起動・停止する#scenarios[正常シナリオ（起動する）]
-      - dev/設計書/シナリオ/単一ユースケース/ClaudeCodeから点検と書き出しを呼ぶ#scenarios[正常シナリオ]
+      - SC-472-4#scenarios[異常シナリオ（常駐サーバーが起動していない）]
+      - SC-472-7#scenarios[正常シナリオ（起動する）]
+      - SC-472-3#scenarios[正常シナリオ]
 lead: 文書の作成者が mdmark の MCP の常駐サーバーを 1 つ起動し、mdmark のプラグインを入れて並行に開いた 2 つのセッションから同じプロセスのツールを呼ぶ。
 issue: 111
 primary_actor: 文書の作成者

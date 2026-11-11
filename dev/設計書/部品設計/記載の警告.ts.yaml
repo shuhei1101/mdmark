@@ -1,3 +1,4 @@
+id: CMP-472-62
 title: "記載の警告"
 implementation: "src/parts/syntax-warning.ts#renderSyntaxWarning"
 story: "Parts/SyntaxWarning"
@@ -149,8 +150,8 @@ accessibility:
   - タイトルのアイコンは CSS で付け、スクリーンリーダーに含めない
   - マーカーは長くても枠の中で折り返し、横スクロールを出さない
 refs:
-  - dev/設計書/インターフェース定義/ライブラリ本体/文書をHTML文字列にする.ts#constraints[作成者の誤り]
-  - dev/設計書/インターフェース定義/ライブラリ本体/拡張を登録する.ts#constraints[引数の検査]
+  - IF-472-34#constraints[作成者の誤り]
+  - IF-472-32#constraints[引数の検査]
 status: planned
 notes:
   HTML: '`<div class="mdmark-syntax-warning" role="note"><p class="mdmark-syntax-warning-title">記載の警告</p><p><code>{mark}</code>{message}</p><ul><li><code>{label}</code>: {message}</li></ul></div>`。呼び名は確認ログの決定（記載方法を誤った箇所に出す枠の呼び名）。モックは `dev/mock/components/syntax-warning/`'

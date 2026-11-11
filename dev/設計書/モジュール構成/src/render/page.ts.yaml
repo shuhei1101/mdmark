@@ -1,0 +1,36 @@
+id: MOD-472-215
+title: ライブラリ本体 / 描画 / page.ts
+test_files:
+  - tests/unit/src/render/page.test.ts
+functions:
+  - name: readPageSettings
+    title: ページの設定のマーカーを読み込む
+    container: src/render/page.ts
+    kind: 関数
+    scope: internal
+    summary: page のマーカーの引数（`キー=値` の並び）から、記載できるキーと値だけを `PageSettings` にし、記載できるキーの知らない値と、知らないキー・`=` を持たない引数を分けて返却する
+    description: '`scheme` は `COLOR_SCHEMES`、`theme` は `COLOR_THEMES`、`toc` は `hover`・`fixed` の値だけを受ける。同じキーが何度も出たら後に記載した値を使用する。`scheme`・`theme`・`toc` の受けない値は `unknown` に、それ以外のキーと `=` を持たない引数は `skipped` に入れる'
+    args:
+      - name: options
+        type: '{ args: string[]; keys: Record<string, string> }'
+        required: true
+        description: '`parseMarkArgs` が返却したマーカーの引数'
+    returns:
+      type: '{ settings: PageSettings; unknown: string[]; skipped: string[] }'
+      description: 読み込めたページの設定と、記載できるキーの知らない値の引数と、知らないキー・指定の引数（キーは `{キー}=`）を、それぞれ記載した順に並べたもの
+    unit_tests:
+      - name: test_read_page_settings
+        case: 正常
+        summary: 記載できるキーと値を読み込む
+        condition: '`scheme=dark theme=theme-slate toc=fixed`'
+        mock: なし
+        expected: '`settings` が `{ scheme: "dark", theme: "theme-slate", toc: "fixed" }`、`unknown` と `skipped` が空'
+      - name: test_read_page_settings_when_unknown
+        case: 異常
+        summary: 知らない値と知らないキーを分ける
+        condition: '`scheme=sepia theme=theme-unknown size=wide toc=fixed toc=hover`'
+        mock: なし
+        expected: '`settings` が `{ toc: "hover" }`、`unknown` が `["scheme=sepia", "theme=theme-unknown"]`、`skipped` が `["size="]`'
+    refs:
+      - IF-472-35#constraints[ページの設定のマーカー]
+    status: planned

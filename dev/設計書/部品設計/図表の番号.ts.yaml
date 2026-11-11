@@ -1,3 +1,4 @@
+id: CMP-472-40
 title: "図表の番号"
 implementation: "src/parts/figure.ts#renderFigure"
 story: "Parts/Figure"
@@ -78,8 +79,8 @@ accessibility:
   - タイトルは `figcaption` で、スクリーンリーダーが図表の名前として読み込む
   - 画像の `alt` は文書に記載したまま残す
 refs:
-  - dev/設計書/インターフェース定義/ライブラリ本体/文書をHTML文字列にする.ts#constraints[図と表の番号]
-  - dev/設計書/インターフェース定義/ライブラリ本体/文書をHTML文字列にする.ts#constraints[ギャラリー]
+  - IF-472-34#constraints[図と表の番号]
+  - IF-472-34#constraints[ギャラリー]
 status: planned
 notes:
   HTML: '`<figure class="mdmark-figure" id="fig-{id}">{画像}<figcaption class="mdmark-figure-caption"><b>図 {number}</b>{caption}</figcaption></figure>`。表は `figcaption`（`<b>表 {number}</b>`）を表の前に配置する。タイトルの構造は確認ログの決定（図表の番号のタイトル）。モックは `dev/mock/components/figure/`'

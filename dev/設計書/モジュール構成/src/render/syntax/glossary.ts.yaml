@@ -1,0 +1,121 @@
+id: MOD-472-259
+title: ライブラリ本体 / 索引と用語 / glossary.ts
+test_files:
+  - tests/unit/src/render/syntax/glossary.test.ts
+data_models:
+  - name: GlossaryRow
+    title: 用語集の表の行
+    container: src/render/syntax/glossary.ts
+    summary: 用語集の表の 1 行から読み込んだ用語と、その行の行番号
+    properties:
+      - name: entry
+        type: MdmarkGlossaryEntry
+        description: 行から読み込んだ用語
+      - name: line
+        type: number
+        description: その行の文書の中の行番号（1 から）
+functions:
+  - name: readGlossaryTable
+    title: 用語集の表を読み込む
+    container: src/render/syntax/glossary.ts
+    kind: 関数
+    scope: internal
+    summary: '`glossary` のマーカーの範囲の中の表のトークンから、用語・意味・別名の列を読み込んで用語を返却する'
+    description: マーカーの引数の `term=`・`meaning=`・`aliases=` で列の見出しの文字を指す。別名のセルは「、」と「,」で区切り、前後の空白を落とす。必須の引数が無いときと、表に無い列名のときは用語を返却せず、記載の警告の項目を返却する。用語か意味が空の行は飛ばす。行は `readGlossaryRows` で読み込み、用語だけを返却する（やめた言い方は用語に入れない）
+    args:
+      - name: options
+        type: '{ args: MarkArgs; tokens: Token[]; docId: string }'
+        required: true
+        description: マーカーの引数・範囲の中のトークン・表を持つ文書の `id`（索引を指定しないときは空文字）
+    returns:
+      type: '{ entries: MdmarkGlossaryEntry[]; warning?: string }'
+      description: 用語と、記載の警告の本文（画面設計『文書』の `用語集の表` のエラーの文言）
+    unit_tests:
+      - name: test_read_glossary_table
+        case: 正常
+        summary: 列を読み込み、別名を「、」「,」で区切る（「・」では区切らない）
+        condition: '`term=用語 aliases=別名 meaning=意味`、行 `マーカー | マーク、オン・オフのマーカー | HTML コメントで記載する指定`'
+        mock: なし
+        expected: '`aliases` が `["マーク", "オン・オフのマーカー"]`、`warning` が無い'
+      - name: test_read_glossary_table_when_unknown_column
+        case: 異常
+        summary: 表に無い列名では用語を返却せず警告を返却する
+        condition: '`term=用語 meaning=説明`、列が `用語`・`意味`'
+        mock: なし
+        expected: '`entries` が空、`warning` に `説明` と列の並び `用語`・`意味`'
+      - name: test_read_glossary_table_when_missing_arg
+        case: 異常
+        summary: 必須の `meaning=` が無ければ警告を返却する
+        condition: '`term=用語`'
+        mock: なし
+        expected: '`entries` が空、`warning` に `meaning=`'
+  - name: glossaryRule
+    title: 用語集の表のコアルール
+    container: src/render/syntax/glossary.ts
+    kind: 関数
+    scope: internal
+    summary: '`glossary` のマーカーの範囲を取り除き、中の表を普通の表として残し、読み込んだ用語を `env.ownGlossary` に追加する'
+    description: '`readGlossaryRows` の行ごとに、行番号を `env.glossaryLines` に `env.ownGlossary` と同じ並びで追加する（やめた言い方は用語の `avoid` が持つ）。表の中のテキストのトークンに照合しないマーカー（`meta.mdmarkNoTerms`）を付ける。警告は表の前に記載の警告を差し込む。`glossary` がオフのときはマーカーを取り除くだけで用語を追加せず、警告も出さない'
+    args:
+      - name: state
+        type: StateCore
+        required: true
+        description: markdown-it のコアの状態（`state.env` は `RenderEnv`）
+    returns:
+      type: void
+      description: トークンの並びと `env` を書き換える
+    callees:
+      - '#functions[readGlossaryTable]'
+    unit_tests:
+      - name: test_glossary_rule
+        case: 正常
+        summary: マーカーを取り除き表を残し、用語を `env` に追加する
+        condition: シナリオ『表から用語集に用語を入れる』の正常シナリオの Markdown
+        mock: なし
+        expected: HTML に `table` があり `<!--` が無く、`env.ownGlossary` に `マーカー` が 1 つ
+      - name: test_glossary_rule_when_disabled
+        case: 正常
+        summary: '`glossary` がオフなら用語を追加しない'
+        condition: '同じ Markdown に `<!-- features: -glossary -->`'
+        mock: なし
+        expected: 表はあり、`env.ownGlossary` が空
+      - name: test_glossary_rule_keeps_avoid
+        case: 正常
+        summary: やめた言い方の列を用語の `avoid` に持たせて `env.ownGlossary` に追加する
+        condition: シナリオ『表から用語集に用語を入れる』の「正常シナリオ（やめた言い方の列がある）」の Markdown
+        mock: なし
+        expected: '`env.ownGlossary` の `ワークスペース` の `avoid` が `["作業場", "ワーク場"]`'
+  - name: readGlossaryRows
+    title: 用語集の表の行を読み込む
+    container: src/render/syntax/glossary.ts
+    summary: '`glossary` のマーカーの範囲の中の表のトークンから、用語・意味・別名・やめた言い方の列を読み込んで行ごとに返却する'
+    description: マーカーの引数の `term=`・`meaning=`・`aliases=`・`avoid=` で列の見出しの文字を指す（`aliases=`・`avoid=` は任意）。別名とやめた言い方のセルは「、」と「,」で区切り、前後の空白を落とし、空のものを除く。必須の引数が無いときと、表に無い列名のときはその表の行を返却せず、最初の誤りを記載の警告の本文にする。用語か意味が空の行は飛ばす
+    kind: 関数
+    scope: internal
+    args:
+      - name: options
+        type: '{ args: MarkArgs; tokens: Token[]; docId: string }'
+        required: true
+        description: マーカーの引数・範囲の中のトークン・表を持つ文書の `id`（索引を指定しないときは空文字）
+    returns:
+      type: '{ rows: GlossaryRow[]; warning?: string }'
+      description: 行ごとの用語・行番号・やめた言い方と、記載の警告の本文
+    unit_tests:
+      - name: test_read_glossary_rows_with_avoid
+        case: 正常
+        summary: やめた言い方の列を「、」「,」で区切って読み込み、用語の別名には入れない
+        condition: '`term=用語 meaning=意味 avoid=やめた言い方`、行 `ワークスペース | 作業の配置場所 | 作業場、ワーク場, `'
+        mock: なし
+        expected: '`entry.avoid` が `["作業場", "ワーク場"]`、`entry.aliases` が `[]`、`warning` が無い'
+      - name: test_read_glossary_rows_without_avoid
+        case: 正常
+        summary: '`avoid=` が無ければやめた言い方を空にする'
+        condition: '`term=用語 aliases=別名 meaning=意味`、行 `マーカー | マーク | HTML コメントで記載する指定`'
+        mock: なし
+        expected: '`entry.avoid` が `[]`、`entry` が `readGlossaryTable` の用語と等しい'
+      - name: test_read_glossary_rows_when_unknown_avoid_column
+        case: 異常
+        summary: '`avoid=` が表に無い列名なら行を返却せず警告を返却する'
+        condition: '`term=用語 meaning=意味 avoid=旧称`、列が `用語`・`意味`'
+        mock: なし
+        expected: '`rows` が空、`warning` に `avoid=` と `旧称` と列の並び `用語`・`意味`'

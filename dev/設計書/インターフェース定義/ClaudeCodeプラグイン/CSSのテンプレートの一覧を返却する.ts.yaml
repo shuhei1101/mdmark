@@ -1,3 +1,4 @@
+id: IF-472-1
 title: CSSのテンプレートの一覧を返却する
 entry:
   kind: mcp_tool
@@ -38,10 +39,10 @@ error_format: 'ツールの結果を `isError: true` にし、内容のテキス
 constraints:
   - item: テンプレートのフォルダ
     constraint: 端末の設定のファイル（`MDMARK_CONFIG`、無ければ `${XDG_CONFIG_HOME:-~/.config}/mdmark/settings.yaml`）と同じフォルダの `templates/css/`。端末の設定のファイルが無くても、このフォルダを読み込む
-    decided_by: dev/設計書/インターフェース定義/ライブラリ本体/設定を重ねて読み込む.ts#constraints[端末の設定のパス]
+    decided_by: IF-472-40#constraints[端末の設定のパス]
   - item: 索引
     constraint: テンプレートのフォルダの `templates.yaml`。スキーマは ER 図『CSSのテンプレート』
-    decided_by: dev/設計書/ER図/CSSのテンプレート#
+    decided_by: ER-472-1#
   - item: annotations
     constraint: '`readOnlyHint: true`'
 flows:

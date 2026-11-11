@@ -1,3 +1,4 @@
+id: IF-472-14
 title: 設定のキーの一覧を返却する
 entry:
   kind: operation
@@ -47,8 +48,8 @@ test_file: tests/integration/ClaudeCodeプラグイン/setup-keys.test.ts
 idempotent: true
 side_effects: なし
 callers:
-  - dev/設計書/シナリオ/単一ユースケース/端末にmdmarkをセットアップする#
-  - dev/設計書/シナリオ/単一ユースケース/文書のフォルダに設定を作る#
+  - SC-472-69#
+  - SC-472-53#
 request:
   - name: --target
     type: '"settings" | "config"'
@@ -89,4 +90,4 @@ constraints:
     constraint: 結果は標準出力に JSON の 1 行で出す。誤りは標準エラーに理由と修正方法を出す
   - item: 動く Node のバージョン
     constraint: Node 24 以降
-    decided_by: dev/設計書/非機能要件/非機能要件#requirements[CLI が動く Node のバージョン]
+    decided_by: NFR-472-1#requirements[CLI が動く Node のバージョン]

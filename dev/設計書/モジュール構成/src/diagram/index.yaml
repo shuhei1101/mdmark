@@ -1,0 +1,12 @@
+summary: diagram の設計書
+items:
+  - page: check.ts.yaml
+    summary: ライブラリ本体 / 図 / check.ts
+  - page: definition.ts.yaml
+    summary: ライブラリ本体 / 図 / definition.ts
+  - page: er.ts.yaml
+    summary: ライブラリ本体 / 図 / er.ts
+  - page: geometry.ts.yaml
+    summary: ライブラリ本体 / 図 / geometry.ts
+  - page: layout.ts.yaml
+    summary: ライブラリ本体 / 図 / layout.ts

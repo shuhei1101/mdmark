@@ -1,3 +1,4 @@
+id: ER-472-1
 title: "ER 図: CSSのテンプレート"
 lead: 端末の設定のフォルダに配置する CSS のテンプレートの索引。行ごとに名前・CSS のファイル名・説明・タグを持つ。
 overview: 原本は、端末の設定のファイルと同じフォルダの `templates/css/templates.yaml`（YAML の 1 ファイル）。最上位は `schema`（索引のバージョン。整数で今は `1`、必須）と `templates`（行の並び、必須）の 2 つのキーを持ち、ほかのキーを拒む。CSS は同じフォルダの、行の `file` のファイル名で配置する。スキーマの正は `schemas/mdmark.templates.schema.json`。MCP の `add_template` が記載し、`list_templates`・`apply_template` が読み込む
@@ -45,6 +46,6 @@ tables:
     introduced:
       pr: 353
 refs:
-  - dev/設計書/インターフェース定義/ClaudeCodeプラグイン/CSSのテンプレートの一覧を返却する.ts#
-  - dev/設計書/インターフェース定義/ClaudeCodeプラグイン/CSSのテンプレートを登録する.ts#
-  - dev/設計書/インターフェース定義/ClaudeCodeプラグイン/CSSのテンプレートを配置する.ts#
+  - IF-472-1#
+  - IF-472-2#
+  - IF-472-3#

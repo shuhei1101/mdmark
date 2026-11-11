@@ -1,3 +1,4 @@
+id: SC-472-32
 title: "プレビューをVSCodeのテーマに合わせる"
 scenarios:
   - name: 正常シナリオ
@@ -20,7 +21,7 @@ scenarios:
       - 本文とスクロールの位置は切り替える前と同じ
     test: test_normal
     refs:
-      - dev/設計書/シナリオ/単一ユースケース/テーマを上書きする#scenarios[正常シナリオ（親の class でダークにする）]
+      - SC-472-25#scenarios[正常シナリオ（親の class でダークにする）]
   - name: 正常シナリオ（配色を固定する）
     setup:
       - name: ダークのテーマで開いたプレビュー
@@ -60,7 +61,7 @@ scenarios:
       - 描く先の要素の地の色の計算値が theme-paper の暗い配色の `--mdmark-color-bg` の値
     test: test_normal_when_config_theme
     refs:
-      - dev/設計書/シナリオ/単一ユースケース/テーマを選ぶ#scenarios[正常シナリオ（ダークの配色）]
+      - SC-472-26#scenarios[正常シナリオ（ダークの配色）]
   - name: 正常シナリオ（VS Code の設定でテーマを選ぶ）
     setup:
       - name: テーマを選んだ設定ファイル
@@ -101,7 +102,7 @@ scenarios:
       - リロードせずに、描く先の要素の地の色の計算値が theme-contrast の暗い配色の `--mdmark-color-bg` の値になる
     test: test_normal_when_config_theme_changed
     refs:
-      - dev/設計書/シナリオ/単一ユースケース/記載した内容をプレビューに映す#
+      - SC-472-77#
   - name: 正常シナリオ（文書のマーカーで明暗を指定する）
     setup:
       - name: 明るい配色に固定したプレビュー
@@ -123,7 +124,7 @@ scenarios:
       - '`mdmark.preview.theme` が `light` でも、描く先の要素の地の色の計算値がダークの `--mdmark-color-bg` の値'
     test: test_normal_when_document_marker
     refs:
-      - dev/設計書/シナリオ/単一ユースケース/ページの設定を文書で指定する#scenarios[正常シナリオ]
+      - SC-472-33#scenarios[正常シナリオ]
   - name: 正常シナリオ（設定ファイルの明暗で描く）
     setup:
       - name: 明暗を記載した設定ファイル

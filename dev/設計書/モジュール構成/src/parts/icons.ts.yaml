@@ -1,0 +1,32 @@
+id: MOD-472-180
+title: ライブラリ本体 / 図 / icons.ts
+test_files:
+  - tests/unit/src/parts/icons.test.ts
+functions:
+  - name: iconSvg
+    title: アイコンの svg
+    container: src/parts/icons.ts
+    kind: 関数
+    scope: internal
+    summary: lucide のアイコンの形状（`lucide` のパッケージから名前付きで import した要素の並び）を、24 の格子・`stroke="currentColor"`・`aria-hidden="true"` の svg の文字にする。図のボタンとノードの種類で使用する
+    args:
+      - name: name
+        type: IconName
+        required: true
+        description: 外部ライブラリ『lucide』の一覧のうち図で使用する名前
+    returns:
+      type: string
+      description: svg の HTML
+    unit_tests:
+      - name: test_icon_svg
+        case: 正常
+        summary: lucide の構造をそのまま出す
+        condition: '`plus`'
+        mock: なし
+        expected: '`viewBox="0 0 24 24"` と lucide@1.59.0 の `plus` の `path` 2 つを持ち、`aria-hidden="true"`'
+      - name: test_icon_svg_when_sanitized
+        case: 正常
+        summary: 使用するアイコンの要素と属性が sanitize で落ちない
+        condition: 外部ライブラリ『lucide』の一覧の全てのアイコンを `data-mdmark-own` を付けて描画の sanitize に経由する
+        mock: なし
+        expected: どのアイコンも経由する前と後で要素と属性が同じ（`database` の `ellipse` と `copy` の `ry` が残る）

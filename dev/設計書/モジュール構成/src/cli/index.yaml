@@ -1,0 +1,50 @@
+summary: cli の設計書
+items:
+  - page: alias-schema.ts.yaml
+    summary: ライブラリ本体 / CLI / alias-schema.ts
+  - page: aliases.ts.yaml
+    summary: ライブラリ本体 / CLI / aliases.ts
+  - page: assets.ts.yaml
+    summary: ライブラリ本体 / CLI / assets.ts
+  - page: backup.ts.yaml
+    summary: ライブラリ本体 / バージョンを上げる / backup.ts
+  - page: build.ts.yaml
+    summary: ライブラリ本体 / CLI / build.ts
+  - page: changelog.ts.yaml
+    summary: ライブラリ本体 / バージョンを上げる / changelog.ts
+  - page: check.ts.yaml
+    summary: ライブラリ本体 / CLI / check.ts
+  - page: config.ts.yaml
+    summary: ライブラリ本体 / CLI / config.ts
+  - page: documents.ts.yaml
+    summary: ライブラリ本体 / CLI / documents.ts
+  - page: embed.ts.yaml
+    summary: ライブラリ本体 / CLI / embed.ts
+  - page: errors.ts.yaml
+    summary: ライブラリ本体 / CLI / errors.ts
+  - page: export.ts.yaml
+    summary: ライブラリ本体 / CLI / export.ts
+  - page: git.ts.yaml
+    summary: ライブラリ本体 / CLI / git.ts
+  - page: html.ts.yaml
+    summary: ライブラリ本体 / CLI / html.ts
+  - page: icons.ts.yaml
+    summary: ライブラリ本体 / CLI / icons.ts
+  - page: includes.ts.yaml
+    summary: ライブラリ本体 / CLI / includes.ts
+  - page: init.ts.yaml
+    summary: ライブラリ本体 / CLI / init.ts
+  - page: issues.ts.yaml
+    summary: ライブラリ本体 / CLI / issues.ts
+  - page: main.ts.yaml
+    summary: ライブラリ本体 / CLI / main.ts
+  - page: markdown-check.ts.yaml
+    summary: ライブラリ本体 / CLI / markdown-check.ts
+  - page: migrations.ts.yaml
+    summary: ライブラリ本体 / バージョンを上げる / migrations.ts
+  - page: prompt.ts.yaml
+    summary: ライブラリ本体 / バージョンを上げる / prompt.ts
+  - page: upgrade.ts.yaml
+    summary: ライブラリ本体 / バージョンを上げる / upgrade.ts
+  - page: versions.ts.yaml
+    summary: ライブラリ本体 / バージョンを上げる / versions.ts

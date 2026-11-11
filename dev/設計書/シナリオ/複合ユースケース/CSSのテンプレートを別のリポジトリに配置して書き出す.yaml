@@ -1,3 +1,4 @@
+id: SC-472-84
 title: CSSのテンプレートを別のリポジトリに配置して書き出す
 scenarios:
   - name: 正常シナリオ
@@ -14,9 +15,9 @@ scenarios:
       flowchart TD
         A[CSSのテンプレートを登録する:正常シナリオ（登録する）] --> B[CSSのテンプレートを配置する:正常シナリオ（一覧から選んで配置する）]
         B --> C[ClaudeCodeから点検と書き出しを呼ぶ:正常シナリオ（1 文書を書き出す）]
-        click A "../単一ユースケース/CSSのテンプレートを登録する.yaml#正常シナリオ登録する"
-        click B "../単一ユースケース/CSSのテンプレートを配置する.yaml#正常シナリオ一覧から選んで配置する"
-        click C "../単一ユースケース/ClaudeCodeから点検と書き出しを呼ぶ.yaml#正常シナリオ1-文書を書き出す"
+        click A "id:SC-472-1#scenarios[正常シナリオ（登録する）]"
+        click B "id:SC-472-2#scenarios[正常シナリオ（一覧から選んで配置する）]"
+        click C "id:SC-472-3#scenarios[正常シナリオ（1 文書を書き出す）]"
     expected:
       - リポジトリ A のクライアントの `add_template` の後、端末の設定のフォルダに `brand.css` と、その名前・説明・タグを持つ索引がある
       - リポジトリ B のクライアントの `list_templates` が、登録した名前・説明・タグを返却する
@@ -25,9 +26,9 @@ scenarios:
       - リポジトリ A の `brand.css` と `mdmark.config.yaml` は書き換わらない
     test: test_normal
     uses:
-      - dev/設計書/シナリオ/単一ユースケース/CSSのテンプレートを登録する#scenarios[正常シナリオ（登録する）]
-      - dev/設計書/シナリオ/単一ユースケース/CSSのテンプレートを配置する#scenarios[正常シナリオ（一覧から選んで配置する）]
-      - dev/設計書/シナリオ/単一ユースケース/ClaudeCodeから点検と書き出しを呼ぶ#scenarios[正常シナリオ（1 文書を書き出す）]
+      - SC-472-1#scenarios[正常シナリオ（登録する）]
+      - SC-472-2#scenarios[正常シナリオ（一覧から選んで配置する）]
+      - SC-472-3#scenarios[正常シナリオ（1 文書を書き出す）]
   - name: 異常シナリオ（同じ名前のテンプレートがある）
     setup:
       - name: 端末の設定
@@ -42,18 +43,18 @@ scenarios:
       flowchart TD
         A[CSSのテンプレートを登録する:異常シナリオ（同じ名前のテンプレートがある）] --> B[CSSのテンプレートを登録する:正常シナリオ（上書きして登録する）]
         B --> C[CSSのテンプレートを配置する:正常シナリオ（一覧から選んで配置する）]
-        click A "../単一ユースケース/CSSのテンプレートを登録する.yaml#異常シナリオ同じ名前のテンプレートがある"
-        click B "../単一ユースケース/CSSのテンプレートを登録する.yaml#正常シナリオ上書きして登録する"
-        click C "../単一ユースケース/CSSのテンプレートを配置する.yaml#正常シナリオ一覧から選んで配置する"
+        click A "id:SC-472-1#scenarios[異常シナリオ（同じ名前のテンプレートがある）]"
+        click B "id:SC-472-1#scenarios[正常シナリオ（上書きして登録する）]"
+        click C "id:SC-472-2#scenarios[正常シナリオ（一覧から選んで配置する）]"
     expected:
       - 上書きを指定しない `add_template` がエラーになり、テンプレートのフォルダの `brand.css` と索引が書き換わらない
       - 上書きを指定した `add_template` の後、テンプレートのフォルダの `brand.css` が書き換えた中身になり、索引の行は 1 つのまま
       - 続けてリポジトリ B で呼んだ `apply_template` が配置した CSS が、書き換えた中身になる
     test: test_error_when_template_name_exists
     uses:
-      - dev/設計書/シナリオ/単一ユースケース/CSSのテンプレートを登録する#scenarios[異常シナリオ（同じ名前のテンプレートがある）]
-      - dev/設計書/シナリオ/単一ユースケース/CSSのテンプレートを登録する#scenarios[正常シナリオ（上書きして登録する）]
-      - dev/設計書/シナリオ/単一ユースケース/CSSのテンプレートを配置する#scenarios[正常シナリオ（一覧から選んで配置する）]
+      - SC-472-1#scenarios[異常シナリオ（同じ名前のテンプレートがある）]
+      - SC-472-1#scenarios[正常シナリオ（上書きして登録する）]
+      - SC-472-2#scenarios[正常シナリオ（一覧から選んで配置する）]
 lead: 文書の作成者が、あるリポジトリで作った CSS を Claude Code から端末の設定のフォルダのテンプレートに登録し、別のリポジトリで一覧から選んで配置し、設定の `theme` に記載して書き出した HTML に適用する。
 issue: 164
 primary_actor: 文書の作成者

@@ -1,3 +1,4 @@
+id: CFG-472-1
 title: '設定: Claude Code プラグイン'
 lead: Claude Code プラグインの MCP サーバー（`mdmark serve`）が待ち受けるポート、Claude Code がつなぐ先、スキルが呼ぶスクリプト（`plugin/bin/setup.js`）と SessionStart のフックが読み込む環境変数の一覧。実装は `src/plugin/http.ts`、つなぐ先は `plugin/.mcp.json`
 files:
@@ -17,7 +18,7 @@ settings:
     reload: restart
     allowed: 1〜65535 の整数。範囲外・整数でない値は `mdmark serve` が起動せず終了コード 1 で終わる
     refs:
-      - dev/設計書/モジュール構成/ClaudeCodeプラグイン/ポート.ts#constants[DEFAULT_PORT]
+      - MOD-472-15#constants[DEFAULT_PORT]
     status: planned
     visibility: user
     implementation: src/plugin/http.ts#readPort
@@ -45,7 +46,7 @@ settings:
     reload: restart
     allowed: '`http://127.0.0.1:${MDMARK_PORT:-8782}/mcp`'
     refs:
-      - dev/設計書/外部ライブラリ/ClaudeCode#
+      - LIB-472-1#
     status: planned
     visibility: developer
     introduced:
@@ -61,7 +62,7 @@ settings:
     status: planned
     visibility: user
     refs:
-      - dev/設計書/インターフェース定義/ClaudeCodeプラグイン/常駐サーバーを起動する.ts#
+      - IF-472-7#
     introduced:
       pr: 354
   - key: MDMARK_LAUNCHER
@@ -75,7 +76,7 @@ settings:
     status: planned
     visibility: developer
     refs:
-      - dev/設計書/インターフェース定義/ClaudeCodeプラグイン/常駐サーバーを起動する.ts#
+      - IF-472-7#
     introduced:
       pr: 444
   - key: MDMARK_CONFIG
@@ -89,7 +90,7 @@ settings:
     status: planned
     visibility: user
     refs:
-      - dev/設計書/設定/ライブラリ本体#files
+      - CFG-472-3#files
     introduced:
       pr: 354
   - key: CLAUDE_CONFIG_DIR
@@ -103,7 +104,7 @@ settings:
     status: planned
     visibility: developer
     refs:
-      - dev/設計書/外部ライブラリ/ClaudeCode#
+      - LIB-472-1#
     introduced:
       pr: 354
   - key: MDMARK_SERVE_COMMAND
@@ -117,7 +118,7 @@ settings:
     status: planned
     visibility: developer
     refs:
-      - dev/設計書/インターフェース定義/ClaudeCodeプラグイン/常駐サーバーを起動する.ts#
+      - IF-472-7#
     introduced:
       pr: 354
   - key: MDMARK_START_TIMEOUT_SEC
@@ -131,6 +132,6 @@ settings:
     status: planned
     visibility: developer
     refs:
-      - dev/設計書/インターフェース定義/ClaudeCodeプラグイン/常駐サーバーを起動する.ts#constraints[待ち]
+      - IF-472-7#constraints[待ち]
     introduced:
       pr: 354

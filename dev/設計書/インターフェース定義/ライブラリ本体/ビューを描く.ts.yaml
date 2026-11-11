@@ -1,3 +1,4 @@
+id: IF-472-30
 title: "ビューを描く"
 entry:
   kind: operation
@@ -149,8 +150,8 @@ lead: 利用側のページと拡張のモジュールが、列名と項目の�
 idempotent: false
 side_effects: '`el` の中身を書き換え、ビューの切り替えと列の絞り込みのイベントを `el` の中に付ける。絞り込みのドロワーを開いている間だけ `document` の `pointerdown`・`keydown` を受け取る。ビューの部品のモジュールをまだ読み込んでいなければ読み込む'
 callers:
-  - dev/設計書/シナリオ/単一ユースケース/部品をJavaScriptから使用する#
-  - dev/設計書/シナリオ/単一ユースケース/表形式のビューを列で絞り込む#
+  - SC-472-81#
+  - SC-472-74#
 exclusivity: 同じ要素へ 2 回目の `mountView` を呼ぶと、前の `mountView` の `destroy` を先に行う。部品のモジュールを読み込む間に `destroy` を呼ぶと、読み込んだ後に描かない
 request:
   - name: el

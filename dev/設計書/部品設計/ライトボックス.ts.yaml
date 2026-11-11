@@ -1,3 +1,4 @@
+id: CMP-472-31
 title: ライトボックス
 implementation: src/parts/lightbox.ts#renderLightbox
 story: Parts/Lightbox
@@ -160,7 +161,7 @@ css_properties:
     default: '#e4e4e7（ダーク #26262b）'
     description: 帯の下端の線とボタンの線の色
 uses:
-  - component: dev/設計書/部品設計/図の枠.ts#
+  - component: CMP-472-39#
     how: 拡大・縮小・倍率・移動のボタンの並び・アイコン・スクリーンリーダー向けの名前を図の全画面と統一する
 accessibility:
   - '`dialog` は `aria-label="画像の拡大"` を持ち、`showModal()` で開いて、中で Tab のフォーカスを循環させる'
@@ -168,8 +169,8 @@ accessibility:
   - 操作のボタンは `role="toolbar"`・`aria-label="画像の拡大の操作"` の中に配置し、スクリーンリーダー向けの名前を `縮小`・`拡大`・`倍率 {今の倍率}。全体が収まる倍率に戻す`・`左へ動かす`・`上へ動かす`・`下へ動かす`・`右へ動かす`・`拡大を閉じる` にする
   - 拡大中の画像の場所は `tabindex="0"` と `拡大した画像。ドラッグか矢印キーで動かす` のスクリーンリーダー向けの名前を持つ
 refs:
-  - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[ライトボックス]
-  - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[ライトボックスの拡大・縮小・移動]
+  - IF-472-35#constraints[ライトボックス]
+  - IF-472-35#constraints[ライトボックスの拡大・縮小・移動]
 status: planned
 notes:
   HTML: '`<dialog class="mdmark-lightbox" aria-label="画像の拡大"><div class="mdmark-lightbox-head"><span class="mdmark-lightbox-nav" role="group" aria-label="画像の切り替え"><button class="mdmark-lightbox-tool" data-tool="prev">…</button><span class="mdmark-lightbox-count">{index} / {total}</span><button class="mdmark-lightbox-tool" data-tool="next">…</button></span><span class="mdmark-lightbox-tools" role="toolbar" aria-label="画像の拡大の操作"><span class="mdmark-lightbox-group" data-group="pan" hidden>{左・上・下・右}</span><span class="mdmark-lightbox-group" data-group="zoom">{縮小・倍率（mdmark-lightbox-zoom）・拡大}</span><span class="mdmark-lightbox-group" data-group="screen">{閉じる}</span></span></div><div class="mdmark-lightbox-stage"><img src alt></div><p class="mdmark-lightbox-caption">{caption}</p></dialog>`。拡大中は `mdmark-lightbox-stage` に `is-zoomed` を付ける。帯の並びは確認ログのモックへの合意。モックは `dev/mock/components/figure/` のライトボックスの場面'

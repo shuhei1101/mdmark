@@ -1,0 +1,8 @@
+summary: 分類 の設計書
+items:
+  - page: ClaudeCodeプラグイン/
+    summary: ClaudeCodeプラグイン の設計書
+  - page: VSCode拡張機能/
+    summary: VSCode拡張機能 の設計書
+  - page: ライブラリ本体/
+    summary: ライブラリ本体 の設計書

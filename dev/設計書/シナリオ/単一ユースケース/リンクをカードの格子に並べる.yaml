@@ -1,3 +1,4 @@
+id: SC-472-35
 title: リンクをカードの格子に並べる
 scenarios:
   - name: 正常シナリオ
@@ -29,7 +30,7 @@ scenarios:
       - '`example.com` への要求が 0 件'
     test: test_normal
     refs:
-      - dev/設計書/シナリオ/単一ユースケース/リンクと添付のカードを配置する#scenarios[正常シナリオ]
+      - SC-472-34#scenarios[正常シナリオ]
   - name: 正常シナリオ（狭い画面）
     setup:
       - name: mdmark を読み込むページ
@@ -95,7 +96,7 @@ scenarios:
       - マーカーの文字と記載の警告が出ていない
     test: test_normal_when_disabled
     refs:
-      - dev/設計書/シナリオ/単一ユースケース/機能のオン・オフを文書で上書きする#
+      - SC-472-62#
   - name: 異常シナリオ（リスト以外の中身）
     setup:
       - name: mdmark を読み込むページ

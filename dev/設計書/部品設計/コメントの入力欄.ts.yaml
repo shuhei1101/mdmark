@@ -1,3 +1,4 @@
+id: CMP-472-16
 title: "コメントの入力欄"
 implementation: "src/parts/comment.ts#renderCommentForm"
 story: "Parts/CommentForm"
@@ -101,8 +102,8 @@ accessibility:
   - 本文の欄は表示の `コメント` をスクリーンリーダー向けの名前に持ち、`aria-describedby` で通知を指す
   - 通知は `role="alert"` でスクリーンリーダー、アイコンと文で示して色だけに頼らない。文言は `empty` が `コメントを記載してから保存してください。`、`failed` が `コメントを保存できませんでした。記載したコメントは残っています。もう一度「コメントを保存」を押してください。`
 refs:
-  - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[コメントの操作]
-  - dev/設計書/インターフェース定義/ライブラリ本体/コメントを付ける.ts#
+  - IF-472-35#constraints[コメントの操作]
+  - IF-472-27#
 status: planned
 notes:
   HTML: '`<div class="mdmark-comment-popover mdmark-comment-form" role="dialog" aria-label="コメント追加"><form novalidate><p class="mdmark-comment-quote">「{quote}」へのコメント</p><label class="mdmark-comment-field">コメント<textarea name="body" rows="3" aria-describedby="{id}-error">{body}</textarea></label><p class="mdmark-comment-error" id="{id}-error" role="alert" hidden>{alert のアイコン}<span>{通知し}</span></p><div class="mdmark-comment-actions"><button class="mdmark-comment-button" type="button" data-action="cancel">キャンセル</button><button class="mdmark-comment-button is-primary" type="submit">コメントを保存</button></div></form></div>`。保存のボタンは差し色で塗る。モックは `dev/mock/components/comment/`'

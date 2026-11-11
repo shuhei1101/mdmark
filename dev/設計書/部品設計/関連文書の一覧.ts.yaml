@@ -1,3 +1,4 @@
+id: CMP-472-66
 title: "関連文書の一覧"
 implementation: "src/parts/backlinks.ts#renderBacklinks"
 story: "Parts/Backlinks"
@@ -37,7 +38,7 @@ accessibility:
   - 一覧は `nav` で、タイトル「関連文書」を `aria-labelledby` でスクリーンリーダー向けの名前にする
   - 文書は `ul` の項目のリンクで、件数をスクリーンリーダーで伝える
 refs:
-  - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[関連文書と被参照の一覧]
+  - IF-472-35#constraints[関連文書と被参照の一覧]
 status: planned
 notes:
   出力の構造: '`<nav class="mdmark-backlinks" aria-labelledby="{id}"><p class="mdmark-backlinks-title" id="{id}">関連文書</p><ul><li><a href="{href}">{title}</a></li>…</ul></nav>`。タイトルの文言は確認ログの決定。モックは `dev/mock/components/backlinks/`'

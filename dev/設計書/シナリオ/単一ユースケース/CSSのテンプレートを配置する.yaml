@@ -1,3 +1,4 @@
+id: SC-472-2
 title: CSSのテンプレートを配置する
 scenarios:
   - name: 正常シナリオ（一覧から選んで配置する）

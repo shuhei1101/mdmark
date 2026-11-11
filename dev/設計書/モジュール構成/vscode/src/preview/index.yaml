@@ -1,0 +1,18 @@
+summary: preview の設計書
+items:
+  - page: assets.ts.yaml
+    summary: VS Code 拡張機能 / プレビュー / assets.ts
+  - page: diff-target.ts.yaml
+    summary: VS Code 拡張機能 / プレビュー / diff-target.ts
+  - page: html.ts.yaml
+    summary: VS Code 拡張機能 / プレビュー / html.ts
+  - page: includes.ts.yaml
+    summary: VS Code 拡張機能 / プレビュー / includes.ts
+  - page: links.ts.yaml
+    summary: VS Code 拡張機能 / プレビュー / links.ts
+  - page: manager.ts.yaml
+    summary: VS Code 拡張機能 / プレビュー / manager.ts
+  - page: panel.ts.yaml
+    summary: VS Code 拡張機能 / プレビュー / panel.ts
+  - page: scroll-guard.ts.yaml
+    summary: VS Code 拡張機能 / プレビュー / scroll-guard.ts

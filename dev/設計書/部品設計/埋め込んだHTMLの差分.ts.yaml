@@ -1,3 +1,4 @@
+id: CMP-472-42
 title: "埋め込んだHTMLの差分"
 implementation: "src/parts/diff-html.ts#renderDiffHtml"
 story: "Parts/DiffHtml"
@@ -56,14 +57,14 @@ events:
     value: 押したボタンの `data-view`
     description: '`mount` が押した見方の中身だけを出し、`aria-pressed` を書き換え、ミニマップのマーカーをもう一度配置する'
 uses:
-  - component: dev/設計書/部品設計/埋め込んだHTML.ts#
+  - component: CMP-472-41#
     how: プレビューの前と後の HTML を今の埋め込んだ HTML の描画で出す
 accessibility:
   - 見方のボタンは `role="group"`・`aria-label="HTML の見方"` の中に配置し、押した状態を `aria-pressed` で伝える
   - 「HTML」のラベルは文字で、色に頼らない
   - 前と後の側は `figure` で、`figcaption` に `前`・`後` とリビジョンの説明を出す
 refs:
-  - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[埋め込んだ HTML の差分]
+  - IF-472-35#constraints[埋め込んだ HTML の差分]
 status: planned
 notes:
   モック: '`dev/mock/components/diff-html-switch/`'

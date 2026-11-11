@@ -1,3 +1,4 @@
+id: CMD-472-1
 title: 開発コマンド
 categories:
   - name: 環境構築（クローン直後）
@@ -109,10 +110,10 @@ categories:
     effects: プラグインの確認は、手元の Claude Code の設定にマーケットプレイスとプラグインを記載し、常駐サーバーは `127.0.0.1` の `MDMARK_PORT`（既定 8782）を待ち受ける。削除するコマンドで戻す。設定を書き換えたくないときは、`CLAUDE_CONFIG_DIR` に空のフォルダを指して実行する
   - name: テスト
     refs:
-      - dev/設計書/テスト/テスト実行方法#
+      - TP-472-1#
   - name: 静的検査
     refs:
-      - dev/設計書/テスト/テスト実行方法#layers[lint]
+      - TP-472-1#layers[lint]
   - name: ビルド・生成
     prerequisites:
       - '`npm ci` で依存を入れてある'

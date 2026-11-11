@@ -5,12 +5,18 @@ description: |-
   全テーブルの一覧と全体図は、各分類のテーブルから横断の一覧として生成する。
 x-kind: er
 x-folder: dev/設計書/ER図
+x-id-prefix: ER
 x-cross: tables
 type: object
 additionalProperties: false
 required:
+- id
 - title
 properties:
+  id:
+    $ref: 共通.schema.yaml#/$defs/id
+    title: ID
+    description: 設計書の変わらない ID。書くツールの `create` が振り、改名・移動でも変わらない。他の設計書からは `{ID}#{項目のパス}` で指す。
   title:
     type: string
     title: タイトル
@@ -21,17 +27,17 @@ properties:
     title: 冒頭リード
     description: |-
       対象を 1〜3 行で説明する。
-      初回に記載した内容のまま保ち、後から情報を追加しない（仕様は各項目に記載する）。
+      初回に書いた内容のまま保ち、後から情報を足さない（仕様は各項目に書く）。
       対象そのものが変わったときだけ書き換える。
   overview:
     $ref: 共通.schema.yaml#/$defs/markdown
     title: 概要
-    description: 索引の設計書だけが持つ。データストアの種別とバージョン・物理名の命名規則・全テーブルの共通カラム。
+    description: 索引の設計書だけが持つ。データストアの種別と版・物理名の命名規則・全テーブルの共通カラム。
     x-heading: 概要
   er:
     $ref: 共通.schema.yaml#/$defs/er
     title: ER 図
-    description: 当該分類のテーブル間の関連。他の分類のテーブルは名前だけで配置する。テーブルが 2 つ以上あるときに持つ。
+    description: 当該分類のテーブル間の関連。他の分類のテーブルは名前だけで置く。テーブルが 2 つ以上あるときに持つ。
     x-heading: ER 図
     x-shape: diagram
     x-diagram: er
@@ -89,7 +95,7 @@ properties:
         access:
           type: string
           title: アクセス方式
-          description: JSON / YAML のとき、全件か キーで参照するか。
+          description: JSON / YAML のとき、全件か キーで引くか。
         description:
           $ref: 共通.schema.yaml#/$defs/markdown
           title: 説明
@@ -169,11 +175,11 @@ properties:
               enum_values:
                 type: string
                 title: 値の選択肢
-                description: '`''a'' / ''b''` の構造で値と意味を並べる。'
+                description: '`''a'' / ''b''` の形で値と意味を並べる。'
               sensitivity:
                 type: string
                 title: 区分
-                description: 個人情報・機密に該当するときだけ記載する。
+                description: 個人情報・機密に当たるときだけ書く。
                 enum:
                 - 個人情報
                 - 機密
@@ -183,7 +189,7 @@ properties:
         indexes:
           type: array
           title: インデックス
-          description: 検索に使用する追加のインデックスだけ。PK / UK はカラムが持つ。
+          description: 検索に使う追加のインデックスだけ。PK / UK はカラムが持つ。
           x-heading: インデックス
           x-shape: table
           x-key: name
@@ -213,6 +219,12 @@ properties:
           title: 関連
           items:
             $ref: 共通.schema.yaml#/$defs/ref
+        decisions:
+          type: array
+          title: 検討事項
+          description: 根拠になった話し合いの記録の検討事項の ID。
+          items:
+            $ref: 共通.schema.yaml#/$defs/decision
         reason:
           $ref: 共通.schema.yaml#/$defs/reason
         status:
@@ -232,26 +244,48 @@ properties:
     title: 関連
     items:
       $ref: 共通.schema.yaml#/$defs/ref
+  decisions:
+    type: array
+    title: 検討事項
+    description: 根拠になった話し合いの記録の検討事項の ID。
+    items:
+      $ref: 共通.schema.yaml#/$defs/decision
   notes:
     $ref: 共通.schema.yaml#/$defs/notes
     x-heading: 補足
     x-shape: sections
 examples:
-- title: 'ER 図: タスク'
+- id: ER-1
+  title: 'ER 図: タスク'
   lead: '`タスク` ドメインに属するデータストア構造。'
   er:
     entities:
     - name: ユーザー
+      columns:
+      - type: uuid
+        name: ID
+        key: PK
     - name: タスク
     - name: コメント
+      columns:
+      - type: uuid
+        name: task_id
+        key: FK
+        comment: '参照: タスク.id'
     relations:
     - from: ユーザー
       to: タスク
-      cardinality: '||--o{'
+      from_column: ID
+      to_column: user_id
+      from_cardinality: '1'
+      to_cardinality: 0..n
       label: 作成
     - from: タスク
       to: コメント
-      cardinality: '||--o{'
+      from_column: id
+      to_column: task_id
+      from_cardinality: '1'
+      to_cardinality: 0..n
       label: 持つ
   tables:
   - name: tasks

@@ -1,3 +1,4 @@
+id: IF-472-21
 title: "プレビューを再描画する"
 entry:
   kind: trigger
@@ -262,7 +263,7 @@ flows:
       - 差分のパネルが 1 つのままで、もう一度開いていない
     test: test_normal_when_diff_modified_side_edited
     refs:
-      - dev/設計書/シナリオ/単一ユースケース/差分ビューの変更をプレビューで確認する#scenarios[正常シナリオ（変更後の側を書き換える）]
+      - SC-472-48#scenarios[正常シナリオ（変更後の側を書き換える）]
   - name: 正常系（差分のパネルが背面から戻る）
     summary: 差分のパネルも、再作成した Webview を背面に回す前の位置へ戻す
     setup:
@@ -305,7 +306,7 @@ flows:
       - 取り込んでいないワークスペースのファイルを保存しても `render` を送信しない
     test: test_normal_when_include_target_saved
     refs:
-      - dev/設計書/シナリオ/単一ユースケース/VSCodeでプレビューを開く#scenarios[正常シナリオ（取り込む文書を描く）]
+      - SC-472-10#scenarios[正常シナリオ（取り込む文書を描く）]
   - name: 正常系（aliases の YAML を保存する）
     summary: '`aliases` の行が指す YAML を保存すると、再作成したエイリアスで再描画する'
     setup:
@@ -329,25 +330,25 @@ flows:
       - Webview のスクロールの位置が保存する前と同じ
     test: test_normal_when_aliases_yaml_saved
     refs:
-      - dev/設計書/シナリオ/単一ユースケース/記載した内容をプレビューに映す#scenarios[正常シナリオ（aliases の YAML を書き換える）]
+      - SC-472-77#scenarios[正常シナリオ（aliases の YAML を書き換える）]
   - name: 正常系（設定ファイルの map で描く）
     summary: 設定ファイルの `map` を `config` に入れ、map の図を設定の種類と線で再描画する
     setup:
-    - name: プレビューを開いたワークスペース
-      description: 正常系と同じ。`mdmark.config.yaml` は `map` を持たず、`guide.md` は `:::store` のノードと `-.->` の線を持つ map の範囲を 1 つ持つ
-    - name: Mock
-      description: 正常系と同じ
+      - name: プレビューを開いたワークスペース
+        description: 正常系と同じ。`mdmark.config.yaml` は `map` を持たず、`guide.md` は `:::store` のノードと `-.->` の線を持つ map の範囲を 1 つ持つ
+      - name: Mock
+        description: 正常系と同じ
     flow: "sequenceDiagram\n  participant U as 文書の作成者\n  participant EX as 拡張機能\n  participant PV as Webview\n  U->>EX: mdmark.config.yaml に map.kinds.store と map.lines の -.-> を記載して保存\n  EX->>EX: features・libraries・map などを取り出す\n  EX->>PV: render（新しい config）\n  PV->>PV: destroy して mount\n  PV->>EX: rendered"
     expected:
-    - '`render` の `config.map` が設定ファイルの `map` と同じ値'
-    - Webview の `:::store` のノードの種類の行に `database` のアイコンと「保存先」があり、`-.->` の線が破線
-    - '`map.kinds.store.shape` を知らない値 `hexagon` にして保存すると、`render` の `config.map` にその値のまま入り、`configError` が送信されず、ノードが角の丸い四角で描かれる'
+      - '`render` の `config.map` が設定ファイルの `map` と同じ値'
+      - Webview の `:::store` のノードの種類の行に `database` のアイコンと「保存先」があり、`-.->` の線が破線
+      - '`map.kinds.store.shape` を知らない値 `hexagon` にして保存すると、`render` の `config.map` にその値のまま入り、`configError` が送信されず、ノードが角の丸い四角で描かれる'
     test: test_normal_when_map_configured
 lead: 開いているプレビューを、Markdown と設定ファイルの最後の内容で再描画する。
 idempotent: true
 side_effects: Webview へ `render`・`configError`・`configOk` を送信する。Markdown と設定ファイルは書き換えない
 callers:
-  - dev/設計書/シナリオ/単一ユースケース/記載した内容をプレビューに映す#
+  - SC-472-77#
 exclusivity: パネルごとに待ちを 1 つだけ持ち、待つ間に変更が来たら待ちをもう一度始める。送信するのは常にその時点の全文
 exceptions:
   - name: なし（正常終了）
@@ -360,7 +361,7 @@ constraints:
     constraint: '`mdmark.preview.liveUpdate` が `true` のときは Markdown の変更から、`false` のときは Markdown の保存から再描画する。重ねた設定ファイル（ワークスペースの外の端末の設定を含む）・`theme` の CSS・`extensions` のファイル・前回 `aliases` を作るときに読み込んだ YAML のファイル（`paths` の glob に該当する新しいファイルは、設定を再読み込みするまで取得しない）の作成・変更・削除、前回送った `includes` のファイルの保存・削除、`mdmark.configPath`・`mdmark.preview.theme`・`mdmark.colorTheme` の変更でも再描画する。保存と設定ファイルは待たずに送信する'
   - item: 再描画するまでの待ち
     constraint: Markdown の最後の変更から `mdmark.preview.updateDelayMs` 待って送信する。範囲の外の値は既定の値として扱う
-    decided_by: dev/設計書/非機能要件/非機能要件#requirements[再描画するまでの待ち]
+    decided_by: NFR-472-1#requirements[再描画するまでの待ち]
   - item: 送信する中身
     constraint: '`TextDocument.getText()` の全文（保存していない書き換えを含む）と、インターフェース定義『設定を重ねて読み込む』を `purpose: preview` で呼んで重ねた設定のうち `mount` の `opts.config` が読み込むキー（`mdmark.colorTheme` が空でないときは `colorTheme` をその値で上書きする）、`mdmark.preview.theme`、インターフェース定義『プレビューを開く』の制約「取り込む文書」のとおり再描画するたびに再読み込みした `includes`、プレビューを開く.ts の制約「エイリアス」のとおり作った `aliases`（設定に `aliases` が無いときは持たない）。差分のパネルは、変更後の文書の全文を `markdown`、その時点の変更前の文書の全文を `previous` に入れる。それ以外のパネルは `previous` を送信しない'
   - item: 背面のパネル

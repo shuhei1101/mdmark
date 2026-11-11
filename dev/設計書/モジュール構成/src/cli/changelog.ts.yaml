@@ -1,0 +1,54 @@
+id: MOD-472-147
+title: ライブラリ本体 / バージョンを上げる / changelog.ts
+test_files:
+  - tests/unit/src/cli/changelog.test.ts
+data_models:
+  - name: ChangelogRow
+    title: 変更履歴の行
+    container: src/cli/changelog.ts
+    usecase: バージョンを上げる
+    summary: 変更履歴の表の 1 行
+    properties:
+      - name: version
+        type: string
+        description: バージョンの列
+      - name: pr
+        type: string
+        description: PR の列のリンクの文字（`#40`）
+      - name: change
+        type: string
+        description: 変更の列
+constants:
+  - name: CHANGELOG_FILE
+    title: 変更履歴のファイル
+    container: src/cli/changelog.ts
+    summary: パッケージの直下からの変更履歴のパス
+    value: '`docs/はじめに/変更履歴.md`'
+functions:
+  - name: changelogRows
+    title: 範囲の変更履歴を抽き出す
+    container: src/cli/changelog.ts
+    usecase: バージョンを上げる
+    summary: 変更履歴の Markdown の表から、バージョンの列が手元のバージョンより新しく目標のバージョン以下の行を、表の並びで返却する
+    description: 表は `| バージョン | PR | 変更 |` の見出しの行の後の行。PR の列は `[#40](...)` のリンクの文字だけを取る。バージョンの列がバージョンの書式に合わない行は飛ばす
+    kind: 関数
+    scope: public
+    is_async: false
+    args:
+      - name: options
+        type: '{ text: string; from: string; to: string }'
+        required: true
+        description: 変更履歴の本文・手元のバージョン・目標のバージョン
+    returns:
+      type: ChangelogRow[]
+      description: 範囲の行
+    unit_tests:
+      - name: test_changelog_rows
+        case: 正常
+        summary: 範囲のバージョンの行だけを表の並びで返却する
+        condition: 'v0.5.0・v0.4.0・v0.4.0・v0.3.0 の 4 行、`from: v0.3.0`・`to: v0.5.0`'
+        mock: なし
+        expected: 先頭から 3 行で、`pr` が `#45` のようなリンクの文字
+    status: planned
+    introduced:
+      pr: 39

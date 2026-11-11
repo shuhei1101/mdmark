@@ -1,3 +1,4 @@
+id: SC-472-26
 title: "テーマを選ぶ"
 scenarios:
   - name: 正常シナリオ
@@ -69,7 +70,7 @@ scenarios:
       - OS の配色がダークでも、mermaid の図のノードの塗りと文字の色が theme-slate の明るい配色の CSS 変数の値と一致する
     test: test_normal_when_parent_class_light
     refs:
-      - dev/設計書/シナリオ/単一ユースケース/テーマを上書きする#scenarios[正常シナリオ（親の class でライトにする）]
+      - SC-472-25#scenarios[正常シナリオ（親の class でライトにする）]
   - name: 正常シナリオ（テーマを選ばない）
     setup:
       - name: テーマを選ばない設定
@@ -112,7 +113,7 @@ scenarios:
       - 本文の段落とリンクが描かれ、例外が出ない
     test: test_normal_when_unknown_theme
     refs:
-      - dev/設計書/シナリオ/単一ユースケース/設定と索引を点検する#scenarios[正常シナリオ（知らないテーマの名前がある）]
+      - SC-472-78#scenarios[正常シナリオ（知らないテーマの名前がある）]
   - name: 正常シナリオ（選んだテーマの色のプリセット）
     setup:
       - name: テーマを選ぶ設定
@@ -149,4 +150,4 @@ success_guarantee: 選んだテーマの配色の値が描いた文書に該当�
 minimal_guarantee: テーマを選ばないときと、知らないテーマの名前を記載したときは、既定のテーマ（dev-swiss）の配色で文書が描かれる。
 test_file: tests/e2e/単一ユースケース/テーマを選ぶ.spec.ts
 refs:
-  - dev/設計書/シナリオ/単一ユースケース/ページの設定を文書で指定する#scenarios[正常シナリオ（文書のマーカーが設定に勝つ）]
+  - SC-472-33#scenarios[正常シナリオ（文書のマーカーが設定に勝つ）]

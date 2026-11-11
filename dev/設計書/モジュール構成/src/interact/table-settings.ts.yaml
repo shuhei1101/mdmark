@@ -1,0 +1,53 @@
+id: MOD-472-240
+title: ライブラリ本体 / 操作 / table-settings.ts
+test_files:
+  - tests/unit/src/interact/table-settings.browser.test.ts
+functions:
+  - name: attachTableSettings
+    title: テーブル設定を付ける
+    container: src/interact/table-settings.ts
+    kind: 関数
+    scope: internal
+    summary: 表の帯のテーブル設定のボタンでパネルを開閉し、目のアイコンで列を隠し、つまみのドラッグ＆ドロップと ↑・↓ キーで列を動かす。列を動かしたら見出し・本文の行・集計の行のセルと一覧をもう一度並べ、隠したらバッジと `aria-label` を書き換えて `onColumnsChange` を呼ぶ
+    description: 並べ替えはセルの並びを DOM の上で入れ替え、列の位置は各セルに描いたときの `data-col` を持たせて数える（並べ替え・絞り込み・コピー・集計は `data-col` で列を参照する）。動かせるかは `canMoveColumn`（`pinned` は `through` の表の `pin=` で留めた列だけを `true` にする）、新しい順は `moveColumn` で決める。`dragover` で動かせない行には `preventDefault` せず線も出さない。列の順は覚えない。受け取りはその表の囲みの中だけで処理する
+    side_effects: 表のセルと一覧の並び・`hidden`・ボタンの属性を書き換える。パネルを開いている間だけ `document` の `pointerdown`・`keydown` を受け取る
+    args:
+      - name: options
+        type: '{ wrapper: HTMLElement; onColumnsChange?: (change: { hidden: string[] }) => void }'
+        required: true
+        description: '`wrapper` は `div.mdmark-table`、`onColumnsChange` は `attachTables` が `tableIndex` を付けて指定する通知し'
+    returns:
+      type: () => void
+      description: 受け取りを解除する関数
+    callees:
+      - 'MOD-472-218#functions[canMoveColumn]'
+      - 'MOD-472-218#functions[moveColumn]'
+      - MOD-472-315#functions[renderTableSettings]
+    unit_tests:
+      - name: test_attach_table_settings_when_dragged
+        case: 正常
+        summary: ドラッグ＆ドロップで列を動かし、全ての行のセルをもう一度並べる
+        condition: '`+reorder +columns` の 4 列 3 行の表。説明のつまみを名前の上へ `dragstart`・`dragover`・`drop`'
+        mock: '`DataTransfer` を作って指定する'
+        expected: 見出しと 3 行のセルの `data-col` が `3,0,1,2` の順で、一覧も同じ順
+      - name: test_attach_table_settings_when_arrow_key
+        case: 正常
+        summary: つまみの ↓ キーで 1 つ動かし、フォーカスを残す
+        condition: 同じ表で型のつまみにフォーカスして `ArrowDown`
+        mock: なし
+        expected: 列が `0,2,1,3` の順で、`document.activeElement` が型のつまみ
+      - name: test_attach_table_settings_when_group_boundary
+        case: 正常
+        summary: 結合した見出しの範囲の外とピン止めの境には動かさず、動かせないつまみを `disabled` にする
+        condition: '`header-rows=2 pin=名前` の表を `pinMode: "through"` で付け、型を備考の下へ `drop`'
+        mock: なし
+        expected: 列の順が変わらず、名前と備考のつまみが `disabled`
+      - name: test_attach_table_settings_when_hidden
+        case: 正常
+        summary: 目のアイコンで列を隠し、バッジとスクリーンリーダー向けの名前を書き換えて通知する
+        condition: 説明の目のアイコンを押す
+        mock: '`onColumnsChange` を見張る'
+        expected: '説明のセルが `hidden`、ボタンのバッジが `1`・`aria-label` が `テーブル設定（1 列を非表示）`、`onColumnsChange` が `{ hidden: ["説明"] }` で 1 回'
+    status: planned
+    introduced:
+      pr: 303

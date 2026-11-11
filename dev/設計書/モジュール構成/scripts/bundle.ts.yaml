@@ -1,0 +1,16 @@
+id: MOD-472-167
+title: ライブラリ本体 / ビルド / bundle.ts
+constants:
+  - name: postcssStubPlugin
+    title: postcss の差し替え
+    container: scripts/bundle.ts
+    summary: esbuild のプラグイン。`postcss` の import を、`parse` を呼ぶと例外を投げる空の部品に差し替える
+    value: '`{ name: "stub-postcss", setup }`。`setup` は `onResolve({ filter: /^postcss$/ })` で名前空間 `stub` に向け、`onLoad` で `module.exports = { parse() { throw new Error("postcss は配布物に含めない") } }` を返却する'
+    reason: 'sanitize-html は `parseStyleAttributes: false` のとき postcss を呼ばないが、import はするため、まとめると配布物が大きくなる'
+  - name: BROWSER_TARGETS
+    title: 出力の対象のブラウザ
+    container: scripts/bundle.ts
+    summary: esbuild の `target` に指定するブラウザのバージョン
+    value: '["chrome99", "firefox98", "safari16.4"]'
+    refs:
+      - NFR-472-1#requirements[対応ブラウザ]

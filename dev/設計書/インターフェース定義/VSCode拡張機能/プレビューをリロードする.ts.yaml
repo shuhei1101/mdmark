@@ -1,3 +1,4 @@
+id: IF-472-20
 title: "プレビューをリロードする"
 entry:
   kind: operation
@@ -68,7 +69,7 @@ lead: プレビューの設定ファイルと読み込むバージョンをも�
 idempotent: true
 side_effects: Webview の HTML をもう一度入れる。`mdmark.version` が `latest` のときはタグ一覧を 1 回取り、`mdmark.lastVersion` を書き換える
 callers:
-  - dev/設計書/シナリオ/単一ユースケース/記載した内容をプレビューに映す#scenarios[正常シナリオ（リロードする）]
+  - SC-472-77#scenarios[正常シナリオ（リロードする）]
 exclusivity: 対象はフォーカスのある mdmark のプレビューか、アクティブなエディタの Markdown のプレビュー。リロードしている間にもう一度呼ばれたら、後の呼び出しで HTML をもう一度入れる
 request:
   - name: uri

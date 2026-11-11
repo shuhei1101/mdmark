@@ -1,0 +1,138 @@
+id: MOD-472-289
+title: ライブラリ本体 / 記法 / html.ts
+test_files:
+  - tests/unit/src/render/syntax/html.test.ts
+functions:
+  - name: buildEmbeddedHtml
+    title: 埋め込んだ HTML を描く
+    container: src/render/syntax/html.ts
+    summary: コアルール。`html` がオンのとき、`<!-- html -->` の範囲ごとに言語 `html` の `fence` を数え、1 つなら範囲のトークンを `html_block` 1 つに置き換える。`html-scripts` がオンのときは、範囲の言語 `css`・`ts`・`js` の `fence` も読み込み（`readRangeScripts`）、`css` を `scopeCss` で根の要素に限った `style.mdmark-html-style` を根の要素の先頭に、`ts`・`js` をエスケープした文字の `template.mdmark-html-script`（`data-lang`）を末尾に配置し、根の要素に文書の中の範囲の通し番号を `data-html-scope` で付ける（どれも `markOwn`）。オフのときは `css`・`ts`・`js` の `fence` を範囲の `html_block` の後ろにそのまま残す。`ts` と `js` を両方持つ範囲と同じ言語を 2 つ持つ範囲は記載の警告を差し込み、`template` を配置しない。0 ・ 2 つ以上なら `pushWarning` で記載の警告を差し込み、範囲の中身はそのまま残す。オフのときは何もしない（マーカーは `dropMarks` が取り除く）
+    description: |-
+      置き換える HTML は次の順で作る。
+
+      1. 中身の `<mdmark-flow>`・`<mdmark-sequence>`・`<mdmark-chart>`・`<mdmark-param>` を正規表現で取得し、中身の文字を `readDefinition` に指定する（`diagrams` がオフなら要素を中身ごと削除する）。読み込めたら図の部品の HTML（`buildDiagrams` と同じ作りで、`renderParam` に `env.labels?.paramCopy` を指定し、`markOwn` を掛ける）、読み込めなければ記載の警告の HTML を、その場所へ一時的なマーカー（`<!--mdmark-part:{n}-->`）で預ける
+      2. 残りを `sanitizeEmbedded` で落とす。`onText` は `buildDictionary`・`findWords`・`renderTermTip` で用語・エイリアス（`env.aliases`。`termsRule` と同じく種類のツールチップにする）・文書の別名に下線を付ける（範囲ごとに単語の最初の 1 回だけ。`glossary` と `backlinks` が両方オフなら文字のまま）
+      3. `hints` がオンなら `data-hint` を持つ要素に `renderHintMarkup` を当て、オフなら `data-hint` を削除する
+      4. 預けたマーカーを図の部品と記載の警告の HTML に戻し、`<div class="mdmark-html">`（`markOwn`）で囲む
+      5. 記載した人の要素にも `markOwn` を掛け、最後の `sanitize` で下線・ヒントの class と `style` を残す（中身は 2. で落とし済み）
+    kind: 関数
+    scope: internal
+    side_effects: '`state.tokens` を書き換える'
+    args:
+      - name: state
+        type: StateCore
+        required: true
+        description: markdown-it の状態（`state.env` は `RenderEnv`）
+    unit_tests:
+      - name: test_build_embedded_html
+        case: 正常
+        summary: 範囲のコードブロックを HTML として描き、範囲の外はコードのままにする
+        condition: '`<!-- html -->` の範囲に `<p>こんにちは</p>` の `html` のコードブロック、範囲の外にもう 1 つ'
+        mock: なし
+        expected: '`div.mdmark-html > p` が 1 つ、`pre > code.language-html` が 1 つ'
+      - name: test_build_embedded_html_when_chart
+        case: 正常
+        summary: 中の custom element を図の部品にする
+        condition: 範囲の HTML に `<mdmark-chart>` と棒のグラフの定義
+        mock: なし
+        expected: '`div.mdmark-html figure.mdmark-diagram[data-diagram="chart"]` があり、出力に `<mdmark-chart` と `"series"` が無い'
+      - name: test_build_embedded_html_when_hint
+        case: 正常
+        summary: data-hint にマーカーとツールチップの中身を配置し、hints がオフなら削除する
+        condition: '`<div data-hint="説明">` と `<span data-hint="分類の説明">`。もう 1 つは同じ文書に `<!-- features: -hints -->`'
+        mock: なし
+        expected: 前者で `div.mdmark-hint-block > button.mdmark-hint-mark` と `span.mdmark-hint-inline[tabindex="0"]` があり、後者で `data-hint` と `mdmark-hint-` が無い
+      - name: test_build_embedded_html_when_terms
+        case: 正常
+        summary: 中の文字の用語に下線を付ける
+        condition: 索引の用語 `索引` と、範囲の HTML の `p` に `索引` が 2 回
+        mock: なし
+        expected: '`div.mdmark-html .mdmark-term-wrap` が 1 つ'
+      - name: test_build_embedded_html_when_blocks_count
+        case: 異常
+        summary: 範囲のコードブロックが 1 つでないときは記載の警告を配置する
+        condition: コードブロックの無い範囲と、2 つある範囲
+        mock: なし
+        expected: どちらも `.mdmark-syntax-warning` の本文が `<!-- html --> の範囲に html のコードブロックを 1 つだけ配置してください` で始まり、2 つある範囲のコードブロックは `pre` で出る
+      - name: test_build_embedded_html_when_disabled
+        case: 正常
+        summary: html がオフならコードブロックのままにする
+        condition: '正常の文書に `<!-- features: -html -->`'
+        mock: なし
+        expected: '`pre > code.language-html` が 2 つで、`mdmark-html` と `<!--` が無い'
+      - name: test_build_embedded_html_when_avoided_term
+        case: 正常
+        summary: 中の文字のやめた言い方にマーカーを付ける
+        condition: 索引の用語 `ワークスペース`（`avoid` に `作業場`）と、範囲の HTML の `p` に `作業場` が 2 回
+        mock: なし
+        expected: '`div.mdmark-html .mdmark-term-avoided` が 1 つ'
+      - name: test_build_embedded_html_when_alias
+        case: 正常
+        summary: 中の文字のエイリアスに下線を付け、種類のツールチップを配置する
+        condition: '`env.aliases` に `url` の `課題の一覧`（URL `https://github.com/shuhei1101/mdmark/issues`）と、範囲の HTML の `p` に `課題の一覧` が 2 回'
+        mock: なし
+        expected: '`div.mdmark-html .mdmark-term-wrap` が 1 つで、中に `a.mdmark-term-tip-link` の `href` がその URL'
+      - name: test_build_embedded_html_when_param_copy_label
+        case: 正常
+        summary: 中の操作できる部品のボタンを `env.labels.paramCopy` の文言で描く
+        condition: '範囲の HTML に `<mdmark-param>` と `strength` の定義、`env.labels` が `{ paramCopy: "コピー" }`'
+        mock: なし
+        expected: '`div.mdmark-html button.mdmark-param-copy` の文字が `コピー`'
+      - name: test_build_embedded_html_when_range_scripts
+        case: 正常
+        summary: '`html-scripts` がオンのとき、`css` を根の要素に限った `style` にし、`ts` を `template` に入れる'
+        condition: '`features` に `{ "html-scripts": true }`。範囲に `html`・`css`（`.box { color: red }`）・`ts` の `fence`'
+        mock: なし
+        expected: '`div.mdmark-html[data-html-scope="0"]` の先頭に `style.mdmark-html-style`（中身が `scopeCss` の戻り）、末尾に `template.mdmark-html-script[data-lang="ts"]` があり、`<pre>` が無い'
+      - name: test_build_embedded_html_when_range_scripts_off
+        case: 正常
+        summary: '`html-scripts` がオフのとき、`css`・`ts` をコードのまま残す'
+        condition: '`features` を指定しない。範囲は上と同じ'
+        mock: なし
+        expected: '`div.mdmark-html` に `style`・`template` が無く、範囲の後ろに `<pre><code class="language-css">` と `<pre><code class="language-ts">`'
+    refs:
+      - MOD-472-214#functions[sanitizeEmbedded]
+      - MOD-472-171#functions[readDefinition]
+      - MOD-472-186#functions[renderHintMarkup]
+      - MOD-472-257#functions[findWords]
+      - 'MOD-472-213#functions[pushWarning]'
+    status: planned
+    introduced:
+      pr: 45
+  - name: readRangeScripts
+    title: 範囲の css・ts・js を読み込む
+    container: src/render/syntax/html.ts
+    kind: 関数
+    scope: internal
+    summary: '`<!-- html -->` の範囲の `fence` を言語ごとに数え、`{ html, css, script, warnings }` を返却する'
+    description: '`html` は 1 つだけ許す。`css`・`ts`・`js` はそれぞれ 1 つまでで、`ts` と `js` はどちらか 1 つ。取れない組み合わせは `warnings` に入れ、`script` を返却しない。これら以外の言語の `fence` は今までどおり範囲の中の Markdown として扱う'
+    args:
+      - name: tokens
+        type: Token[]
+        required: true
+        description: 範囲の中のトークン
+    returns:
+      type: '{ html: Token | undefined; css: string | undefined; script: { lang: "ts" | "js"; code: string } | undefined; warnings: WarningItem[] }'
+      description: 読み込んだ言語ごとの中身と警告
+    unit_tests:
+      - name: test_read_range_scripts
+        case: 正常
+        summary: '`html`・`css`・`ts` を 1 つずつ読み込む'
+        condition: '`html`・`css`・`ts` の `fence` を 1 つずつ持つ範囲'
+        mock: なし
+        expected: '`html` が `fence` のトークン、`css` が中身、`script` が `{ lang: "ts", code }`、`warnings` が空'
+      - name: test_read_range_scripts_when_both_languages
+        case: 異常
+        summary: '`ts` と `js` を両方持つ範囲は警告を返却し `script` を返却しない'
+        condition: '`html`・`ts`・`js` の `fence` を持つ範囲'
+        mock: なし
+        expected: '`script` が `undefined` で、`warnings` に 1 件'
+      - name: test_read_range_scripts_when_duplicate
+        case: 異常
+        summary: 同じ言語を 2 つ持つ範囲は警告を返却する
+        condition: '`html`・`css`・`css` の `fence` を持つ範囲'
+        mock: なし
+        expected: '`warnings` に 1 件'
+    status: planned
+    introduced:
+      pr: 303

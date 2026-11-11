@@ -1,0 +1,111 @@
+id: MOD-472-263
+title: ライブラリ本体 / 索引と用語 / terms.ts
+test_files:
+  - tests/unit/src/render/syntax/terms.test.ts
+functions:
+  - name: termsRule
+    title: 用語の下線のコアルール
+    container: src/render/syntax/terms.ts
+    kind: 関数
+    scope: internal
+    summary: 本文のテキストのトークンを `findWords` で辞書と照合し、該当した単語を単語とツールチップの組（`renderTermTip`）に置き換える
+    description: 辞書は `buildDictionary` で、索引の `terms`・エイリアス（`env.aliases`）・描く文書の用語集の表・他の文書の用語集の表（`references.glossary`、索引の `docs` の順）・文書の `aliases`（`backlinks` がオンのとき）から作る。同じ用語の `id` はセクション（見出しから次の同じか上の階の見出しまで）ごとに最初の 1 回だけ下線を付ける。コード・リンク・見出し・用語集の表・脚注の定義の囲み（`outsideFootnoteDefinitions` で除く）の中は照合しない。テキストのトークンを単語の前後のテキストと、単語の位置の `html_inline`（`renderTermTip` の HTML）に分ける。下線の単語は辞書の単語ではなく、テキストの一致した範囲の本文の表記のまま出す。ツールチップの `id` は文書の中の通し番号で `mdmark-term-{番号}` にする（ページで一意にするのは `attachTermTips`）。やめた言い方は、`words` の後ろに `avoided` の単語を追加した並びで照合する（同じ長さなら用語の単語・別名と文書の別名が先に該当する）。該当した単語は用語 → やめた言い方 → 文書の別名の順に引き、やめた言い方なら `renderTermTip` に `replacement` を指定する（文書の別名と同じ単語でも、関連文書を出さずにやめた言い方にする。点検の `findAvoidedTerms` と統一する）。やめた言い方はセクションごとに言い方ごとの最初の 1 回だけで、用語の下線とは別に数える。辞書の用語が `alias` を持つ単語は `renderTermTip` に `alias` を指定し（`meaning`・`docs` は指定しない。文書の別名と同じ単語でも関連文書を出さない）、辞書の `id`（`alias:{id}`）ごとにセクションごとの最初の 1 回だけ下線を付ける。代わりの用語が `alias` を持つやめた言い方は、`replacement` を `{ term, meaning }`（`avoid` の種類は `meaning` を指定しない）にする。`glossary` と `backlinks` が両方オフのときは何もしない
+    args:
+      - name: state
+        type: StateCore
+        required: true
+        description: markdown-it のコアの状態（`state.env` は `RenderEnv`）
+    returns:
+      type: void
+      description: トークンの並びと `env` を書き換える
+    callees:
+      - 'MOD-472-257#functions[buildDictionary]'
+      - 'MOD-472-257#functions[findWords]'
+      - 'MOD-472-262#functions[relativeHref]'
+      - 'MOD-472-261#functions[renderTermTip]'
+      - MOD-472-274#functions[outsideFootnoteDefinitions]
+    unit_tests:
+      - name: test_terms_rule
+        case: 正常
+        summary: セクションごとに最初の 1 回だけ下線を付ける
+        condition: 索引の用語 `マーカー` と、2 つのセクションにそれぞれ 2 回ずつ `マーカー` が出る本文
+        mock: なし
+        expected: '`mdmark-term-wrap` の要素が 2 つで、各節の最初の単語の位置にあり、単語の直後にツールチップがある'
+      - name: test_terms_rule_skips_code_and_links
+        case: 正常
+        summary: コード・リンク・見出し・用語集の表の中の単語には付けない
+        condition: '`マーカー` が行内のコード・リンクの文字・見出し・用語集の表にだけ出る本文'
+        mock: なし
+        expected: '`mdmark-term-wrap` の要素が無い'
+      - name: test_terms_rule_prefers_longer
+        case: 正常
+        summary: 重なる単語は長い方に付ける
+        condition: 用語 `機能` と `機能のオン・オフ`、本文 `機能のオン・オフを切り替える`
+        mock: なし
+        expected: 下線の単語が `機能のオン・オフ` の 1 つ
+      - name: test_terms_rule_doc_aliases
+        case: 正常
+        summary: 文書の別名に該当した単語に関連文書を付け、描く文書自身は除く
+        condition: '`docId` が `guide`、`api` と `guide` の `aliases` に `公開関数`、本文に `公開関数`'
+        mock: なし
+        expected: ツールチップの関連文書が `api` だけで、`href` が描く文書からの相対パス
+      - name: test_terms_rule_when_backlinks_off
+        case: 正常
+        summary: '`backlinks` がオフなら文書の別名では照合しない'
+        condition: '同じ入力に `<!-- features: -backlinks -->`'
+        mock: なし
+        expected: '`公開関数` に下線が無い'
+      - name: test_terms_rule_avoided
+        case: 正常
+        summary: やめた言い方にセクションごとに最初の 1 回だけマーカーを付け、用語の下線とは別に数える
+        condition: 用語 `ワークスペース`（`avoid` に `作業場`）。1 つ目のセクションの段落に `ワークスペース` 1 回と `作業場` 2 回、2 つ目のセクションの段落に `作業場` 1 回
+        mock: なし
+        expected: '`mdmark-term-avoided` の要素が 2 つで、各節の最初の `作業場` の位置にあり、ツールチップに見出し `代わりの用語` と `ワークスペース` がある。1 つ目のセクションの `ワークスペース` には `mdmark-term-avoided` の無い下線がある'
+      - name: test_terms_rule_avoided_prefers_term_words
+        case: 正常
+        summary: やめた言い方が用語の単語の一部として出たところにはマーカーを付けない
+        condition: 用語 `ワークスペース`（`avoid` なし）と用語 `仕事`（`avoid` に `ワーク`）。本文の 1 つ目の段落が `ワークスペースを開く。`、2 つ目のセクションの段落が `ワークを始める。`
+        mock: なし
+        expected: '`ワークスペース` は用語の下線で、`mdmark-term-avoided` の要素は 2 つ目のセクションの `ワーク` の 1 つだけ'
+      - name: test_terms_rule_avoided_over_doc_alias
+        case: 正常
+        summary: 文書の別名と同じやめた言い方は、関連文書を出さずにやめた言い方にする
+        condition: 用語 `ワークスペース`（`avoid` に `作業場`）と、`aliases` に `作業場` を持つ文書 `old`。`docId` は `guide`、本文に `作業場`
+        mock: なし
+        expected: '`作業場` が `mdmark-term-avoided` の要素で、ツールチップに見出し `関連文書` が無い'
+      - name: test_terms_rule_avoided_when_glossary_off
+        case: 正常
+        summary: '`glossary` がオフならやめた言い方を照合しない'
+        condition: '`test_terms_rule_avoided` と同じ入力に `<!-- features: -glossary -->`'
+        mock: なし
+        expected: '`mdmark-term-avoided` の要素が無い'
+      - name: test_terms_rule_when_notation_differs
+        case: 正常
+        summary: 表記の違う単語に下線を付け、下線の単語は本文の表記のままにする
+        condition: 索引の用語 `ワークスペース` と `MCP`。本文 `ﾜｰｸｽﾍﾟｰｽとｍｃｐを使用する。`
+        mock: なし
+        expected: '`mdmark-term-wrap` の要素が 2 つで、下線の単語が `ﾜｰｸｽﾍﾟｰｽ` と `ｍｃｐ`。ツールチップにそれぞれの用語の意味がある'
+      - name: test_terms_rule_aliases
+        case: 正常
+        summary: エイリアスにセクションごとに最初の 1 回だけ下線を付け、種類のツールチップを配置する
+        condition: '`env.aliases` に `command` の `単体テスト`（別名 `ユニットテスト`、コマンド `npm run test:unit`）。1 つ目のセクションに `単体テスト` と `ユニットテスト`、2 つ目のセクションに `ユニットテスト`'
+        mock: なし
+        expected: '`mdmark-term-wrap` の要素が 2 つで、各節の最初の単語の位置にあり、ツールチップに見出し `コマンド` と `code` の `npm run test:unit` がある'
+      - name: test_terms_rule_aliases_prefer_index_term
+        case: 正常
+        summary: 索引の用語と同じ単語のエイリアスは、索引の用語のツールチップにする
+        condition: 索引の用語 `マーカー`（意味 `HTML コメントで記載する指定`）と、`env.aliases` の `term` の `マーカー`（説明 `別の意味`）。本文に `マーカー`
+        mock: なし
+        expected: ツールチップに `HTML コメントで記載する指定` があり、`別の意味` が無い
+      - name: test_terms_rule_alias_avoid
+        case: 正常
+        summary: avoid の種類のエイリアスにやめた言い方のマーカーを付け、置き換え先だけを出す
+        condition: '`env.aliases` に `avoid` の `作業場`（置き換え先 `ワークスペース`）。本文に `作業場`'
+        mock: なし
+        expected: '`作業場` が `mdmark-term-avoided` の要素で、ツールチップが見出し `代わりの用語` と `ワークスペース` だけを持ち、`mdmark-term-tip-meaning` が無い'
+      - name: test_terms_rule_aliases_when_glossary_off
+        case: 正常
+        summary: glossary がオフならエイリアスを照合しない
+        condition: '`test_terms_rule_aliases` と同じ入力に `<!-- features: -glossary -->`'
+        mock: なし
+        expected: '`mdmark-term-wrap` の要素が無い'

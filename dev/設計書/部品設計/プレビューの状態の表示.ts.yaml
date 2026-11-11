@@ -1,3 +1,4 @@
+id: CMP-472-29
 title: "プレビューの状態の表示"
 implementation: "vscode/src/webview/shared/components/preview-status.tsx#PreviewStatus"
 story: "VSCode/PreviewStatus"
@@ -103,7 +104,7 @@ accessibility:
   - 「リロード」は `button` で、Tab で届き Enter・Space で押せる。フォーカスの輪郭を `--ring` の 2px で出す
   - 描けない理由の文字と地は、エディタの本文の文字と地の色にする（対比はテーマが本文に持たせる対比のまま）。警告の色（`inputValidation.warningBorder`）は線とアイコンだけに使用し、文字の地にしない。ボタンの文字と地（ホバーを含む）はテーマのボタンの色にする
 refs:
-  - dev/設計書/インターフェース定義/VSCode拡張機能/プレビューを開く.ts#constraints[描けない理由の見分け方]
+  - IF-472-22#constraints[描けない理由の見分け方]
 status: planned
 introduced:
   pr: 69

@@ -1,0 +1,8 @@
+summary: integration の設計書
+items:
+  - page: index.ts.yaml
+    summary: VS Code 拡張機能 / ビルドと配布 / index.ts
+  - page: run.ts.yaml
+    summary: VS Code 拡張機能 / ビルドと配布 / run.ts
+  - page: stub-server.ts.yaml
+    summary: VS Code 拡張機能 / ビルドと配布 / stub-server.ts

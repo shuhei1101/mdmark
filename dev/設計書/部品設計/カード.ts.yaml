@@ -1,3 +1,4 @@
+id: CMP-472-9
 title: カード
 implementation: src/parts/card.ts#renderCard
 story: Parts/Card
@@ -129,8 +130,8 @@ accessibility:
   - ホバーとフォーカスでは線の色を変え、フォーカスの枠を見せる
   - 長い URL は省略せず折り返し、横スクロールを出さない
 refs:
-  - dev/設計書/インターフェース定義/ライブラリ本体/文書をHTML文字列にする.ts#constraints[リンクと添付のカード]
-  - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[印刷の画像と動画]
+  - IF-472-34#constraints[リンクと添付のカード]
+  - IF-472-35#constraints[印刷の画像と動画]
 status: planned
 notes:
   HTML: '`<a class="mdmark-card" data-card="{kind}" data-file-kind="{fileKind}" href="{href}"><span class="mdmark-card-icon" aria-hidden="true">{アイコン}</span><span class="mdmark-card-title">{title}</span><span class="mdmark-card-meta"><span class="mdmark-card-domain">{ドメイン}</span><span class="mdmark-card-url">{URL}</span></span></a>`。`iframe` の埋め込みとタイトルの取得はしない（D-39）。モックは `dev/mock/components/link-card/`'

@@ -1,0 +1,165 @@
+id: MOD-472-89
+title: VS Code 拡張機能 / プレビュー / manager.ts
+classes:
+  - name: PreviewManager
+    title: プレビューの管理
+    container: vscode/src/preview/manager.ts
+    usecase: 共通
+    summary: Markdown の URI ごとに 1 つの `PreviewPanel` を持ち、コマンドの対象を決め、エディタ・設定・設定ファイルの変更をパネルへ振り分ける
+    kind: クラス
+    properties:
+      - name: panels
+        type: Map<string, PreviewPanel>
+        access: private
+        description: パネルのキー（パネルのキーを組む）→ パネル。通常のパネルは Markdown の URI、差分のパネルは変更前と変更後の組
+      - name: deps
+        type: ExtensionDeps
+        access: private
+        description: '`ExtensionContext`・配布物の配信元・タグ一覧の取得先・テストか・ログの出力先（`Logger`）。`activate` が `extensionMode` と環境変数から作る'
+    methods:
+      - name: open
+        title: プレビューを開く
+        kind: メソッド
+        summary: '`mdmark.openPreviewToSide`・`mdmark.openPreview` の本体。同じ Markdown のパネルがあれば今の列のまま表に出し、無ければ作って読み込ませる'
+        is_async: true
+        args:
+          - name: options
+            type: '{ uri?: Uri; column: ViewColumn.Beside | ViewColumn.Active }'
+            required: true
+            description: 対象の Markdown（無ければ対象を決める）と開く列
+        returns:
+          type: Promise<void>
+          description: HTML を入れたら解決する
+        process: |-
+          1. アクティブなタブの `TabInputTextDiff` と指定された URI から差分ビューの対象を決める（差分ビューの対象を決める）
+             - 対象がある場合、変更前・変更後の文書を `workspace.openTextDocument` で開く。どちらかの `languageId` が `markdown` でなければ何もしない
+             - 対象が無い場合、対象の Markdown を決める（対象を決める）。無いか `languageId` が `markdown` でない場合、何もしない
+          2. パネルのキーを組み（パネルのキーを組む）、`panels` にあれば `reveal()` して終わる
+          3. `window.createWebviewPanel(VIEW_TYPE, "プレビュー {ファイル名}", column, { enableScripts: true, retainContextWhenHidden: false, localResourceRoots })` で開き、`PreviewPanel` を作って `panels` に入れ、読み込ませる（読み込む）。差分のパネルはタイトルを `差分プレビュー {ファイル名}` にし、`PreviewPanel` に変更前の文書も指定する。`localResourceRoots` は Markdown（差分では変更後の `fsPath`）を含むワークスペースのフォルダ（ワークスペースの外の Markdown は Markdown のフォルダ）と拡張機能の `media/`
+          4. パネルが閉じたら `panels` から削除する
+        callees:
+          - 'MOD-472-90#classes[PreviewPanel]'
+          - 'MOD-472-93#functions[pickDiffTarget]'
+          - 'MOD-472-93#functions[panelKey]'
+        refs:
+          - IF-472-22#constraints[パネル]
+          - IF-472-22#constraints[差分のパネル]
+      - name: refresh
+        title: プレビューをリロードする
+        kind: メソッド
+        summary: '`mdmark.refreshPreview` と Webview の `reload` の本体。フォーカスのあるパネル、無ければ対象の Markdown のパネル（パネルを参照する）を再読み込みする。パネルが無ければ何もしない'
+        is_async: true
+        args:
+          - name: uri
+            type: Uri | undefined
+            required: false
+            description: 対象の Markdown
+        returns:
+          type: Promise<void>
+          description: HTML をもう一度入れたら解決する
+        refs:
+          - IF-472-20#
+      - name: targetUri
+        title: 対象を決める
+        kind: メソッド
+        summary: 指定された URI、無ければフォーカスのある mdmark のプレビューの Markdown、無ければアクティブなエディタの文書を返却する
+        args:
+          - name: uri
+            type: Uri | undefined
+            required: false
+            description: コマンドに指定された URI
+        returns:
+          type: Uri | undefined
+          description: 対象の Markdown
+      - name: handleDocumentChange
+        title: 文書の変更を振り分ける
+        kind: メソッド
+        summary: '`workspace.onDidChangeTextDocument`・`onDidSaveTextDocument` を受け、その Markdown のパネル（パネルを参照する）へ指定する。`liveUpdate` が `true` なら変更で待ちを始め、`false` なら保存で待たずに送信する'
+        args:
+          - name: event
+            type: '{ document: TextDocument; saved: boolean }'
+            required: true
+            description: 変わった文書と、保存か
+        returns:
+          type: void
+          description: '-'
+        refs:
+          - IF-472-21#constraints[再描画するきっかけ]
+      - name: handleConfigChange
+        title: 設定の変更を振り分ける
+        kind: メソッド
+        summary: 見張るファイルの作成・変更・削除（`createFileSystemWatcher`）と、`mdmark.configPath`・`mdmark.preview.theme`・`mdmark.colorTheme` の変更（`onDidChangeConfiguration`）を受け、影響するパネルに設定の変更を当てさせる（`PreviewPanel.applyConfigChange` に変わったファイルを指定する）。影響するのは、パネルの `watched` に入っているファイルか、パネルの Markdown のフォルダから上の `mdmark.config.yaml` が変わったとき。見張るのは、ワークスペースの `**/mdmark.config.yaml`（拡張機能の入口が張る）と、各パネルの `watched` の和（パネルが設定を再読み込みして `watched` が変わるたびに、ファイルごとの `RelativePattern` で張り替える。ワークスペースの外の端末の設定も含む）
+        args:
+          - name: event
+            type: '{ kind: "file"; path: string } | { kind: "setting"; affects: (section: string, scope: Uri) => boolean }'
+            required: true
+            description: 変わった設定ファイルか、設定の変更
+        returns:
+          type: void
+          description: '-'
+      - name: handleVisibleRanges
+        title: エディタのスクロールを振り分ける
+        kind: メソッド
+        summary: '`window.onDidChangeTextEditorVisibleRanges` を受け、その文書のパネル（パネルを参照する）に見えている範囲を指定する'
+        args:
+          - name: event
+            type: TextEditorVisibleRangesChangeEvent
+            required: true
+            description: VS Code の通知
+        returns:
+          type: void
+          description: '-'
+      - name: inspectPreview
+        title: パネルの要素を調べる
+        kind: メソッド
+        summary: テストのときだけ `activate` が戻り値で返却する。最後に表に出たパネルへ `inspect` を送信し、`inspected` の `elements` を返却する
+        is_async: true
+        args:
+          - name: selector
+            type: string
+            required: true
+            description: CSS セレクタ
+          - name: play
+            type: boolean
+            required: false
+            default: 'false'
+            description: 該当した動画・音声を再生してから調べるか（`inspect` の `play` に指定する）
+        returns:
+          type: Promise<InspectedElement[]>
+          description: 該当した要素の様子
+        refs:
+          - IF-472-22#constraints[テストのときの差し替え]
+          - MOD-472-52#data_models[InspectedElement]
+          - IF-472-22#flows[正常系（相対パスとアセットのルートの動画・音声）]
+      - name: findPanels
+        title: パネルを参照する
+        kind: メソッド
+        summary: '`panels` のうち、Markdown（差分のパネルは変更後）の URI が指定した URI と同じパネルを全て返却する。通常のパネルと差分のパネルの両方が該当する'
+        args:
+          - name: uri
+            type: Uri
+            required: true
+            description: 変わった・スクロールした文書の URI
+        returns:
+          type: PreviewPanel[]
+          description: 該当したパネル
+        refs:
+          - IF-472-21#constraints[差分のパネルを再描画するきっかけ]
+      - name: auditPreview
+        title: パネルを axe で検査する
+        kind: メソッド
+        summary: テストのときだけ `activate` が戻り値で返却する。最後に表に出たパネルの `audit` を呼び、`axed` の `violations` を返却する
+        is_async: true
+        returns:
+          type: Promise<AxeViolation[]>
+          description: 違反の並び
+        refs:
+          - IF-472-22#constraints[テストのときの差し替え]
+    status: planned
+constants:
+  - name: VIEW_TYPE
+    title: パネルの種類
+    container: vscode/src/preview/manager.ts
+    summary: '`window.createWebviewPanel` に指定する viewType'
+    value: '"mdmark.preview"'
+    status: planned

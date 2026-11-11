@@ -1,0 +1,66 @@
+id: MOD-472-310
+title: ライブラリ本体 / 部品 / notice.ts
+test_files:
+  - tests/unit/src/parts/notice.test.ts
+constants:
+  - name: NOTICE_TITLES
+    title: 通知ブロックのタイトル
+    container: src/parts/notice.ts
+    summary: 図のマーカーかどうかで分けるタイトル
+    value: '{ figure: "この図を表示できません", block: "この箇所を表示できません", icons: "アイコンを表示できません" }'
+functions:
+  - name: renderNotice
+    title: 通知ブロックを描く
+    container: src/parts/notice.ts
+    kind: 関数
+    scope: public
+    summary: 部品設計『通知ブロック』の HTML を返却する
+    args:
+      - name: options
+        type: '{ name: string; figure?: boolean; source?: "library" | "extension" | "part" | "diff-revisions" | "diff-content" }'
+        required: true
+        description: マーカーの名前、図のマーカーか（既定 `true`）、読み込めなかったもの（既定 `library`。`extension` は本文を `表示に使用する拡張（…）` にする。`part` は本文を `表示に使用する部品（…）` にする。`diff-revisions`・`diff-content` は部品設計のタイトルと本文にし、`figure` を使用しない）
+    returns:
+      type: string
+      description: '`<div class="mdmark-notice" role="status">` で始まる HTML'
+    callees:
+      - 'MOD-472-313#functions[escapeHtml]'
+    refs:
+      - CMP-472-65#
+    unit_tests:
+      - name: test_render_notice
+        case: 正常
+        summary: 図のマーカーのタイトルと、マーカーの名前を入れた本文を返却する
+        condition: '`{ name: "chart" }`'
+        mock: なし
+        expected: タイトルが `この図を表示できません`、本文に `<code>chart</code>` と修正方法が入る
+      - name: test_render_notice_when_block
+        case: 正常
+        summary: 図でないマーカーのタイトルを返却する
+        condition: '`{ name: "tabs", figure: false }`'
+        mock: なし
+        expected: タイトルが `この箇所を表示できません`
+      - name: test_render_notice_when_name_has_html
+        case: 正常
+        summary: マーカーの名前をエスケープする
+        condition: '`{ name: "<b>x</b>" }`'
+        mock: なし
+        expected: '`<code>&lt;b&gt;x&lt;/b&gt;</code>`'
+      - name: test_render_notice_when_extension
+        case: 正常
+        summary: 拡張を読み込めないときの本文を返却する
+        condition: '`{ name: "greet", source: "extension" }`'
+        mock: なし
+        expected: 本文が `表示に使用する拡張（<code>greet</code>）を読み込めませんでした。` で始まる
+      - name: test_render_notice_when_diff
+        case: 正常
+        summary: 差分の取り出し元を読み込めないときのタイトルと本文を返却する
+        condition: '`{ name: "guide", source: "diff-revisions" }` と `{ name: "2026/10/19 16:40 件数を修正する", source: "diff-content" }`'
+        mock: なし
+        expected: 前者のタイトルが `変更の履歴を表示できません`、後者の本文が `「2026/10/19 16:40 件数を修正する」の本文を取り出せませんでした。` で始まる
+      - name: test_render_notice_when_part
+        case: 正常
+        summary: 部品のモジュールを読み込めないときの本文を返却する
+        condition: '`{ name: "view", figure: false, source: "part" }`'
+        mock: なし
+        expected: タイトルが `この箇所を表示できません`、本文が `表示に使用する部品（<code>view</code>）を読み込めませんでした。` で始まる

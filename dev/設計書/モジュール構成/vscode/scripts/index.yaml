@@ -1,0 +1,6 @@
+summary: scripts の設計書
+items:
+  - page: build.ts.yaml
+    summary: VS Code 拡張機能 / ビルドと配布 / build.ts
+  - page: release-check.ts.yaml
+    summary: VS Code 拡張機能 / ビルドと配布 / release-check.ts

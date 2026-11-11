@@ -4,8 +4,19 @@
 
 ## 目次
 
+<!-- table: data -->
+
 | ページ | 概要 |
 | --- | --- |
-| [ライブラリ本体](./ライブラリ本体/) | ライブラリ本体の公開の入口・描く処理・部品と、ビルドと部品の描画のスクリプト |
-| [VSCode拡張機能](./VSCode拡張機能/) | VS Code 拡張機能の入口・プレビュー・Webview・読み込むバージョン・設定・書き出しと、ビルドと配布 |
-| [ClaudeCodeプラグイン](./ClaudeCodeプラグイン/) | Claude Code プラグインの MCP サーバー・フック・ガイドと、プラグインのビルド |
+| [.github](./.github/) | .github の設計書 |
+| [.storybook](./.storybook/) | .storybook の設計書 |
+| [migrations](./migrations/) | migrations の設計書 |
+| [package.json](./package.json.yaml) | ライブラリ本体 / 検査 / package.json |
+| [scripts](./scripts/) | scripts の設計書 |
+| [src](./src/) | src の設計書 |
+| [tests](./tests/) | tests の設計書 |
+| [tools](./tools/) | tools の設計書 |
+| [vscode](./vscode/) | vscode の設計書 |
+| [分類](./分類/) | 分類 の設計書 |
+
+<!-- /table -->

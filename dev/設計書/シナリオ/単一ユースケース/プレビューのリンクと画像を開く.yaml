@@ -1,3 +1,4 @@
+id: SC-472-31
 title: プレビューのリンクと画像を開く
 scenarios:
   - name: 正常シナリオ（外部の URL）

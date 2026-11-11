@@ -5,15 +5,21 @@ description: |-
   1 ファイル = 1 ユースケース = テストの 1 ファイル。外部 API は Mock 前提。
 x-kind: scenario
 x-folder: dev/設計書/シナリオ
+x-id-prefix: SC
 x-cross: scenarios
 x-test-file: test_file
 x-test-file-optional: true
 type: object
 additionalProperties: false
 required:
+- id
 - title
 - scenarios
 properties:
+  id:
+    $ref: 共通.schema.yaml#/$defs/id
+    title: ID
+    description: 設計書の変わらない ID。書くツールの `create` が振り、改名・移動でも変わらない。他の設計書からは `{ID}#{項目のパス}` で指す。
   title:
     type: string
     title: タイトル
@@ -23,7 +29,7 @@ properties:
     title: 冒頭リード
     description: |-
       対象を 1〜3 行で説明する。
-      初回に記載した内容のまま保ち、後から情報を追加しない（仕様は各項目に記載する）。
+      初回に書いた内容のまま保ち、後から情報を足さない（仕様は各項目に書く）。
       対象そのものが変わったときだけ書き換える。
   issue:
     type: integer
@@ -79,9 +85,9 @@ properties:
     title: 優先度
   reading:
     $ref: 共通.schema.yaml#/$defs/markdown
-    title: 解釈し
-    description: 1 ファイルで複数のレイヤー・役割を代表するときの解釈しの表。
-    x-heading: 解釈し
+    title: 読み替え
+    description: 1 ファイルで複数のレイヤー・役割を代表するときの読み替えの表。
+    x-heading: 読み替え
   scenarios:
     type: array
     title: シナリオ
@@ -109,7 +115,7 @@ properties:
           title: セットアップ
           description: |-
             事前に要るデータ・状態と、分岐・異常を決定的に誘発する入力。
-            `Mock` の行（差し替える依存。差し替えないときも `なし（…）`）を必ず配置する。
+            `Mock` の行（差し替える依存。差し替えないときも `なし（…）`）を必ず置く。
           x-heading: セットアップ
           x-shape: table
           minItems: 1
@@ -123,7 +129,7 @@ properties:
               name:
                 type: string
                 title: セットアップ
-                description: 前提を作る Factory 関数名か状態の名前。`Mock` の行を必ず配置する。
+                description: 前提を作る Factory 関数名か状態の名前。`Mock` の行を必ず置く。
               description:
                 type: string
                 title: 説明
@@ -136,14 +142,14 @@ properties:
           $ref: 共通.schema.yaml#/$defs/mermaid
           title: フロー
           description: |-
-            単一ユースケースは `sequenceDiagram`、複合ユースケースは単一ユースケースをノードとして連鎖させる `flowchart TD`。
-            1 図 = 結末 1 本の一本道。ユーザー視点で観測できる境界まで記載する。
-            複合ユースケースのノードのノード名は `{UC名}:{シナリオ名}` にし、`click` で単一ユースケースのセクションへリンクする。
+            単一ユースケースは `sequenceDiagram`、複合ユースケースは単一ユースケースを箱として連鎖させる `flowchart TD`。
+            1 図 = 結末 1 本の一本道。ユーザー視点で観測できる境界まで書く。
+            複合ユースケースの箱のノード名は `{UC名}:{シナリオ名}` にし、`click` で単一ユースケースの節へリンクする。
           x-heading: フロー
         expected:
           type: array
           title: 期待値
-          description: フローの終了時点で外部から観測できる状態・戻り値。1 要素 = 1 つの確認。
+          description: フローの終了時点で外部から観測できる状態・戻り値。1 要素 = 1 つの確かめ。
           x-heading: 期待値
           x-shape: list
           minItems: 1
@@ -155,8 +161,8 @@ properties:
           x-test-function: true
         uses:
           type: array
-          title: 使用する単一ユースケース
-          description: 複合ユースケースのノードが指す単一ユースケースのシナリオ。
+          title: 使う単一ユースケース
+          description: 複合ユースケースの箱が指す単一ユースケースのシナリオ。
           items:
             $ref: 共通.schema.yaml#/$defs/ref
         refs:
@@ -164,6 +170,12 @@ properties:
           title: 関連
           items:
             $ref: 共通.schema.yaml#/$defs/ref
+        decisions:
+          type: array
+          title: 検討事項
+          description: 根拠になった話し合いの記録の検討事項の ID。
+          items:
+            $ref: 共通.schema.yaml#/$defs/decision
         notes:
           $ref: 共通.schema.yaml#/$defs/notes
   refs:
@@ -171,12 +183,19 @@ properties:
     title: 関連
     items:
       $ref: 共通.schema.yaml#/$defs/ref
+  decisions:
+    type: array
+    title: 検討事項
+    description: 根拠になった話し合いの記録の検討事項の ID。
+    items:
+      $ref: 共通.schema.yaml#/$defs/decision
   notes:
     $ref: 共通.schema.yaml#/$defs/notes
     x-heading: 補足
     x-shape: sections
 examples:
-- title: プロフィール編集
+- id: SC-1
+  title: プロフィール編集
   lead: ログイン中のユーザーが自身のプロフィール（氏名・自己紹介・アバター画像）を編集する単一ユースケース。
   issue: 12
   test_file: tests/e2e/単一ユースケース/test_profile_edit.py

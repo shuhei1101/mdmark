@@ -1,3 +1,4 @@
+id: IF-472-24
 title: "設定を開く"
 entry:
   kind: operation
@@ -43,8 +44,8 @@ lead: VS Code の設定画面を、mdmark の拡張機能の項目だけに絞�
 idempotent: true
 side_effects: なし（設定画面を開くだけで、設定も設定ファイルも書き換えない）
 callers:
-  - dev/設計書/シナリオ/単一ユースケース/プレビューから設定を開く#scenarios[正常シナリオ]
-  - dev/設計書/シナリオ/単一ユースケース/プレビューから設定を開く#scenarios[正常シナリオ（コマンドパレットから開く）]
+  - SC-472-30#scenarios[正常シナリオ]
+  - SC-472-30#scenarios[正常シナリオ（コマンドパレットから開く）]
 response:
   - name: '-'
     type: Promise<void>
@@ -55,7 +56,7 @@ exceptions:
 constraints:
   - item: 開き方
     constraint: '`commands.executeCommand("workbench.action.openSettings", "@ext:ShuheiNishikawa.mdmark-vscode")` を呼ぶ。拡張機能の ID は `package.json` の `publisher`.`name` から作る。YAML の設定ファイルは開かない（それは `mdmark.openConfig`）'
-    decided_by: dev/設計書/設定/VSCode拡張機能#
+    decided_by: CFG-472-2#
   - item: 歯車のボタン
     constraint: '`contributes.menus` の `editor/title` に `mdmark.openSettings` を配置し、mdmark のプレビューのパネルがアクティブなときだけ出す（`when` はプレビューの Webview の `activeWebviewPanelId`）。アイコンは `$(gear)`。表示名・ツールチップの文言は画面設計で決める'
     notes: モックの合意で、歯車はプレビューの中でなくエディタのタイトルの帯に配置することに決めた（dev/pr/181/確認ログ.md）

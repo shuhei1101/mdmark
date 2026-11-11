@@ -1,0 +1,91 @@
+id: MOD-472-139
+title: ライブラリ本体 / map / 読み取り / data.ts
+test_files:
+  - tests/unit/src/map/data.test.ts
+data_models:
+  - name: MapData
+    title: 補足
+    container: src/map/data.ts
+    usecase: Mermaidと補足で図を描く
+    role: データモデル
+    summary: '`parseMapData` が読み込んだ補足（ER 図『mapの補足』）'
+    properties:
+      - name: version
+        type: '1'
+        description: 補足のバージョン
+      - name: notes
+        type: 'Record<string, { text: string }>'
+        description: ノード・線の ID ごとの説明
+      - name: walkthroughs
+        type: MapStep[]
+        description: 案内の手順（`title`・`text`・`nodes`・`edges`・`enter`）
+      - name: layout
+        type: Record<string, MapLayoutEntry>
+        description: ID ごとの上書き（`align`・`order`・`pos`・`width`・`color`・`line`・`packet`・`justify`・`ends`・`via`・`collapsed`）
+      - name: plays_over
+        type: number
+        description: シーケンス図の再生を重ねる構成図の番号
+functions:
+  - name: parseMapData
+    title: 補足を読む
+    kind: 関数
+    container: src/map/data.ts
+    usecase: Mermaidと補足で図を描く
+    role: 処理
+    summary: 補足の JSON のオブジェクトを読み込み、スキーマに合う部分を `MapData` にし、合わない箇所を項目にする
+    scope: public
+    args:
+      - name: source
+        type: string | undefined
+        required: true
+        description: '`pre.mdmark-map-data` の文字。無ければ空の補足'
+    returns:
+      type: '{ data: MapData; problems: MapProblem[] }'
+      description: 読み込んだ補足と項目
+    process: |-
+      1. `JSON.parse` で読み込む。読み込めないか最上位がオブジェクトでなければ `map_invalid_value`（JSON のオブジェクトで記載する直し方。読めないときは原因と、エラーの位置から求めた補足の中の行）にして空の補足を返す
+      2. トップレベル・`walkthroughs` の手順・`layout` の値の知らないキーは `map_unknown_key`（使用できるキーの一覧を含む）、型の違う値は `map_invalid_value` にして捨てる
+      3. 文字の値に `--` を含むものは `map_invalid_value`（HTML コメントを閉じてしまうため `--` を含めない直し方）にする
+    unit_tests:
+      - name: test_parse_map_data
+        case: 正常
+        summary: モックの補足
+        condition: モックの `DATA`
+        mock: なし
+        expected: '`notes`（値は `{ text }`）・`walkthroughs`・`layout`（`justify`・`ends`・`via`・`collapsed` を含む）・`plays_over` が読め、`problems` が空'
+      - name: test_parse_map_data_when_empty
+        case: 正常
+        summary: 補足が無い
+        condition: '`undefined`'
+        mock: なし
+        expected: '`version: 1` だけの補足と空の `problems`'
+      - name: test_parse_map_data_when_unknown_key
+        case: 異常
+        summary: 知らないキー
+        condition: '`{"version": 1, "layuot": {}}`'
+        mock: なし
+        expected: '`map_unknown_key` が 1 件で、使用できるキーの一覧を含む'
+      - name: test_parse_map_data_when_double_hyphen
+        case: 異常
+        summary: -- を含む値
+        condition: '`walkthroughs[0].text` が `a -- b`'
+        mock: なし
+        expected: '`map_invalid_value` が 1 件'
+      - name: test_parse_map_data_when_unreadable
+        case: 異常
+        summary: JSON のオブジェクトとして読めない
+        condition: '`{"notes": [` と `[1]`'
+        mock: なし
+        expected: どちらも `map_invalid_value` が 1 件で、補足は空
+      - name: test_parse_map_data_when_invalid_side
+        case: 異常
+        summary: 知らない辺
+        condition: '`layout` の線の `ends.from.side` が `middle`、`justify` が `left`'
+        mock: なし
+        expected: '`map_invalid_value` が 2 件で、`ends` と `justify` を捨てる'
+      - name: test_parse_map_data_when_note_is_string
+        case: 異常
+        summary: 説明が文字
+        condition: '`{"version": 1, "notes": {"mount": "公開関数"}}`'
+        mock: なし
+        expected: '`map_invalid_value` が 1 件で、`notes` に `mount` が無い'

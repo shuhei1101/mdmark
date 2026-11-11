@@ -1,8 +1,22 @@
 summary: クラス / 関数 / 定数をドメイン分類でまとめる（単体テストの元）
 items:
-  - page: ライブラリ本体/
-    summary: ライブラリ本体の公開の入口・描く処理・部品と、ビルドと部品の描画のスクリプト
-  - page: VSCode拡張機能/
-    summary: VS Code 拡張機能の入口・プレビュー・Webview・読み込むバージョン・設定・書き出しと、ビルドと配布
-  - page: ClaudeCodeプラグイン/
-    summary: Claude Code プラグインの MCP サーバー・フック・ガイドと、プラグインのビルド
+  - page: .github/
+    summary: .github の設計書
+  - page: .storybook/
+    summary: .storybook の設計書
+  - page: migrations/
+    summary: migrations の設計書
+  - page: package.json.yaml
+    summary: ライブラリ本体 / 検査 / package.json
+  - page: scripts/
+    summary: scripts の設計書
+  - page: src/
+    summary: src の設計書
+  - page: tests/
+    summary: tests の設計書
+  - page: tools/
+    summary: tools の設計書
+  - page: vscode/
+    summary: vscode の設計書
+  - page: 分類/
+    summary: 分類 の設計書

@@ -1,3 +1,4 @@
+id: SC-472-61
 title: 本文を横に並べる
 scenarios:
   - name: 正常シナリオ

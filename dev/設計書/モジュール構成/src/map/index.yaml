@@ -1,0 +1,30 @@
+summary: map の設計書
+items:
+  - page: band.ts.yaml
+    summary: ライブラリ本体 / map / 描画と操作 / band.ts
+  - page: check.ts.yaml
+    summary: ライブラリ本体 / map / 点検 / check.ts
+  - page: data.ts.yaml
+    summary: ライブラリ本体 / map / 読み取り / data.ts
+  - page: drag.ts.yaml
+    summary: ライブラリ本体 / map / 描画と操作 / drag.ts
+  - page: flow-view.ts.yaml
+    summary: ライブラリ本体 / map / 描画と操作 / flow-view.ts
+  - page: flowchart.ts.yaml
+    summary: ライブラリ本体 / map / 読み取り / flowchart.ts
+  - page: index.ts.yaml
+    summary: ライブラリ本体 / map / 描画と操作 / index.ts
+  - page: layout.ts.yaml
+    summary: ライブラリ本体 / map / 配置 / layout.ts
+  - page: lucide-names.ts.yaml
+    summary: ライブラリ本体 / map / 点検 / lucide-names.ts
+  - page: sequence-rows.ts.yaml
+    summary: ライブラリ本体 / map / 配置 / sequence-rows.ts
+  - page: sequence-view.ts.yaml
+    summary: ライブラリ本体 / map / 描画と操作 / sequence-view.ts
+  - page: sequence.ts.yaml
+    summary: ライブラリ本体 / map / 読み取り / sequence.ts
+  - page: spec.ts.yaml
+    summary: ライブラリ本体 / map / 読み取り / spec.ts
+  - page: state.ts.yaml
+    summary: ライブラリ本体 / map / 描画と操作 / state.ts

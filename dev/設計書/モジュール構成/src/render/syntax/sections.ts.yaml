@@ -1,0 +1,51 @@
+id: MOD-472-280
+title: ライブラリ本体 / 記法 / sections.ts
+test_files:
+  - tests/unit/src/render/syntax/sections.test.ts
+functions:
+  - name: wrapSections
+    title: セクションを囲む
+    container: src/render/syntax/sections.ts
+    kind: 関数
+    scope: internal
+    summary: 'コアルール。`sections` がオンなら h1〜h4 の見出しに class `mdmark-heading` を付け、見出しの後ろから次の同じか上の階層の見出しの前までを部品『セクション』の中身の要素（`toggle: false`）で囲む。部品『タブ』の中身の中で開いたセクションは、次の見出しより前にその中身が終わるときは中身の終わりで閉じる（タブの外で開いたセクションはタブをまたいで続く）。見出しの直後の `section` のマーカーで `data-section` を決め、知らない値は `pushSkippedArgs` でスキップした引数にして `open` にする'
+    args:
+      - name: state
+        type: StateCore
+        required: true
+        description: markdown-it の状態
+    side_effects: '`state.tokens` を書き換える'
+    callees:
+      - MOD-472-320#functions[renderSection]
+      - 'MOD-472-213#functions[pushWarning]'
+    unit_tests:
+      - name: test_wrap_sections
+        case: 正常
+        summary: h2 と h3 のセクションを入れ子に囲み、closed のセクションも中身を隠さない
+        condition: '`## A`・`### B`・直後に `<!-- section: closed -->` を持つ `## C`'
+        mock: なし
+        expected: '`section-a` の中に `section-b`、`section-c` が `data-section="closed"` を持ち `hidden` を持たない'
+      - name: test_wrap_sections_when_unknown_value
+        case: 正常
+        summary: 知らない開閉の指定はスキップし、開いたセクションにする
+        condition: '`<!-- section: hidden -->`'
+        mock: なし
+        expected: 記載の警告が無く、`data-section="open"`、`env.warnings` が `hidden` を含む `unknown_mark_arg` の 1 件
+      - name: test_wrap_sections_when_feature_off
+        case: 正常
+        summary: sections がオフなら見出しに class を付けず、囲まない
+        condition: '`env.features.sections` が `false` で `## A`'
+        mock: なし
+        expected: '`mdmark-heading` と `mdmark-section-body` が無く、`id="a"` はある'
+      - name: test_wrap_sections_when_in_tab
+        case: 正常
+        summary: タブの中身の中で開いたセクションを、その中身の終わりで閉じる
+        condition: '`## 導入` の後に、`### macOS`・`#### macOS の注意`・段落、`### Windows`・`#### Windows の注意`・段落を `tabs` のマーカーで囲んだ範囲（`buildTabs` を先に適用する）'
+        mock: なし
+        expected: '`mdmark-tabs` の直下の中身が 2 つあり、1 つ目の中に `section-macos-の注意`、2 つ目の中に `section-windows-の注意` がある。`section-導入` の中に `mdmark-tabs` がある'
+      - name: test_wrap_sections_when_h1
+        case: 正常
+        summary: h1 のセクションも囲み、h2 のセクションをその入れ子にする
+        condition: '`# 手引き`・段落・`## 導入`・段落・`# 付録`'
+        mock: なし
+        expected: '`h1` が `mdmark-heading` を持ち、`section-手引き` の中に `section-導入` があり、`section-付録` は `section-手引き` の外'

@@ -1,0 +1,26 @@
+id: MOD-472-45
+title: ライブラリ本体 / 設定を重ねて読み込む
+lead: 端末の設定と、起点のフォルダから上のフォルダの `mdmark.config.yaml` を探して重ねる処理。CLI・MCP のツール・VS Code 拡張機能が同じ関数を呼ぶ。
+directory: |-
+  ```text
+  src/
+  └── config-files.ts   # loadLayeredConfig・resolveSettingsPath・findConfigChain・mergeConfigs・absolutizeConfigPaths・displayConfigPath
+  ```
+diagrams:
+  - name: 全体
+    diagram: |-
+      classDiagram
+        direction LR
+        class 設定を重ねて読み込む
+        class 端末の設定のパスを決める
+        class 上のフォルダの設定ファイルを探す
+        class 相対パスを絶対パスにする
+        class 設定を重ねる
+        class 設定の構造を検める
+        設定を重ねて読み込む --> 端末の設定のパスを決める
+        設定を重ねて読み込む --> 上のフォルダの設定ファイルを探す
+        設定を重ねて読み込む --> 設定の構造を検める
+        設定を重ねて読み込む --> 相対パスを絶対パスにする
+        設定を重ねて読み込む --> 設定を重ねる
+notes:
+  配置場所: '`src/config-files.ts` は `node:path`・`yaml`（YAML として読み込む）・`src/cli/alias-schema.ts`（`aliases` の行の検め。ajv の Schema をまとめる）だけを import し、`CliError` など CLI だけの型には依存しない。ファイルの読み取りと有無の確認は引数で受ける。設定の構造を検める `validateConfig` とそれが使用する `schemaIssue`・`validateBuild`・`validateCheck`・`isValid*` は `src/cli/config.ts` からこのファイルへ移し、`src/cli/config.ts` はこのファイルから import する。CLI（`src/cli/`）・MCP（`src/plugin/`）と、esbuild でまとめる VS Code 拡張機能（`vscode/src/`）の両方から import する。配布物（ブラウザ）の入口からは import しない'

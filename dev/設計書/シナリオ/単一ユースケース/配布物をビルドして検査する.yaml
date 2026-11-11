@@ -1,3 +1,4 @@
+id: SC-472-82
 title: "配布物をビルドして検査する"
 scenarios:
   - name: 正常シナリオ

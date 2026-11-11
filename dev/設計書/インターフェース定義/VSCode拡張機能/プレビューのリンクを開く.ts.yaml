@@ -1,3 +1,4 @@
+id: IF-472-19
 title: "プレビューのリンクを開く"
 entry:
   kind: operation
@@ -120,7 +121,7 @@ lead: プレビューで押したリンクを、外部の URL は既定のブラ
 idempotent: true
 side_effects: 既定のブラウザか VS Code のエディタでリンク先を開く。プレビューの文書とスクロールの位置は変えない（`#` のリンクを除く）
 callers:
-  - dev/設計書/シナリオ/単一ユースケース/プレビューのリンクと画像を開く#
+  - SC-472-31#
 request:
   - name: href
     type: string

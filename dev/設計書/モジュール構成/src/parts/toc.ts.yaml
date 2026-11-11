@@ -1,0 +1,28 @@
+id: MOD-472-319
+title: ライブラリ本体 / 部品 / toc.ts
+test_files:
+  - tests/unit/src/parts/toc.test.ts
+functions:
+  - name: renderToc
+    title: 目次を描く
+    container: src/parts/toc.ts
+    kind: 関数
+    scope: internal
+    summary: 部品設計『目次』の HTML を返却する。h3 は直前の h2 の入れ子にする
+    args:
+      - name: options
+        type: '{ headings: Array<{ level: 2 | 3; id: string; text: string }> }'
+        required: true
+        description: h2・h3
+    returns:
+      type: string
+      description: '`<nav class="mdmark-toc" aria-label="目次">` で始まる HTML'
+    callees:
+      - 'MOD-472-313#functions[escapeHtml]'
+    unit_tests:
+      - name: test_render_toc
+        case: 正常
+        summary: h3 を直前の h2 の入れ子にする
+        condition: '`導入`（h2）・`前提`（h3）・`使用方法`（h2）'
+        mock: なし
+        expected: '`導入` の `li` の中の `ul` に `#前提` のリンク'

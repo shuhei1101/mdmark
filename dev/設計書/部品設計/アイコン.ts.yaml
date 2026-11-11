@@ -1,50 +1,51 @@
+id: CMP-472-8
 title: アイコン
 lead: 頭に `icon:` を付けた行内のコードを、文字の高さにそろえた Lucide のアイコンにする。配布物にまとめていない名前は中を空にし、`mount` が読み込んで svg を入れる。HTML 文字列を返却し、ブラウザと Node で同じ出力になる。
 implementation: src/parts/inline-icon.ts#renderInlineIcon
 story: Parts/InlineIcon
 test_file: tests/integration/lib/inline-icon.story.test.ts
 args:
-- name: name
-  type: 文字列
-  required: true
-  description: Lucide のアイコンの名前（英小文字か数字で始まり、英小文字・数字・`-` だけ）。`data-icon` に入れる
-- name: node
-  type: 配列
-  required: false
-  default: なし（中が空の要素）
-  description: アイコンの IconNode（`[要素名, 属性][]`）。配布物にまとめた名前と `opts.icons` にある名前で指定し、`svg` の中身にする
+  - name: name
+    type: 文字列
+    required: true
+    description: Lucide のアイコンの名前（英小文字か数字で始まり、英小文字・数字・`-` だけ）。`data-icon` に入れる
+  - name: node
+    type: 配列
+    required: false
+    default: なし（中が空の要素）
+    description: アイコンの IconNode（`[要素名, 属性][]`）。配布物にまとめた名前と `opts.icons` にある名前で指定し、`svg` の中身にする
 states:
-- name: Bundled
-  description: まとめた名前のアイコンを段落の文字の間に配置した
-  args:
-  - name: name
-    value: check
-  - name: node
-    value: '[["path",{"d":"M20 6 9 17l-5-5"}]]'
-- name: InHeading
-  description: 見出しの文字の前に配置した。見出しの文字の大きさにそろう
-  args:
-  - name: name
-    value: flag
-  - name: node
-    value: '[["path",{"d":"M4 22V4a1 1 0 0 1 .4-.8A6 6 0 0 1 8 2c3 0 5 2 7.333 2q2 0 3.067-.8A1 1 0 0 1 20 4v10a1 1 0 0 1-.4.8A6 6 0 0 1 16 16c-3 0-5-2-8-2a6 6 0 0 0-4 1.528"}]]'
-  notes:
-    定義: ストーリーは h2 の中に描く
-- name: Pending
-  description: まとめていない名前で、`mount` が読み込む前。幅だけを取った空の要素
-  args:
-  - name: name
-    value: sailboat
+  - name: Bundled
+    description: まとめた名前のアイコンを段落の文字の間に配置した
+    args:
+      - name: name
+        value: check
+      - name: node
+        value: '[["path",{"d":"M20 6 9 17l-5-5"}]]'
+  - name: InHeading
+    description: 見出しの文字の前に配置した。見出しの文字の大きさにそろう
+    args:
+      - name: name
+        value: flag
+      - name: node
+        value: '[["path",{"d":"M4 22V4a1 1 0 0 1 .4-.8A6 6 0 0 1 8 2c3 0 5 2 7.333 2q2 0 3.067-.8A1 1 0 0 1 20 4v10a1 1 0 0 1-.4.8A6 6 0 0 1 16 16c-3 0-5-2-8-2a6 6 0 0 0-4 1.528"}]]'
+    notes:
+      定義: ストーリーは h2 の中に描く
+  - name: Pending
+    description: まとめていない名前で、`mount` が読み込む前。幅だけを取った空の要素
+    args:
+      - name: name
+        value: sailboat
 css_properties:
-- name: --mdmark-icon-inline-size
-  syntax: <length>
-  default: 1em
-  description: 行内のアイコンの幅と高さ
+  - name: --mdmark-icon-inline-size
+    syntax: <length>
+    default: 1em
+    description: 行内のアイコンの幅と高さ
 accessibility:
-- アイコンは `aria-hidden="true"` でスクリーンリーダーから除外し、見出しや段落のスクリーンリーダー向けの名前に名前を含めない
+  - アイコンは `aria-hidden="true"` でスクリーンリーダーから除外し、見出しや段落のスクリーンリーダー向けの名前に名前を含めない
 refs:
-- dev/設計書/インターフェース定義/ライブラリ本体/文書をHTML文字列にする.ts#constraints[アイコン]
-- dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[まとめていないアイコンの読み込み]
+  - IF-472-34#constraints[アイコン]
+  - IF-472-35#constraints[まとめていないアイコンの読み込み]
 status: planned
 notes:
   HTML: '`<span class="mdmark-inline-icon" data-icon="{name}" aria-hidden="true"><svg class="mdmark-icon" viewBox="0 0 24 24">…</svg></span>`（`node` が無いときは中を空にする）。モックは `dev/mock/components/icon/`'

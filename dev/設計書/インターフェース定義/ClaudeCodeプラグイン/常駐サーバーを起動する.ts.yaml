@@ -1,3 +1,4 @@
+id: IF-472-7
 title: 常駐サーバーを起動する
 entry:
   kind: operation
@@ -348,7 +349,7 @@ test_file: tests/integration/ClaudeCodeプラグイン/setup-start-server.test.t
 idempotent: true
 side_effects: systemd --user では `~/.config/systemd/user/{unit の名前}.service` を記載して `daemon-reload`・`enable`・起動する。tmux ではセッションを作り、状態の配置場所の `serve.log` に追記する。起動しないほうの方法で動いている常駐サーバー（tmux のセッションか、active か enabled の unit）は止める
 callers:
-  - dev/設計書/シナリオ/単一ユースケース/端末にmdmarkをセットアップする#
+  - SC-472-69#
 request:
   - name: --launcher
     type: '"systemd" | "tmux"'
@@ -428,22 +429,22 @@ exceptions:
 constraints:
   - item: 起動の方法の決め方
     constraint: '`--launcher`、無ければ端末の設定の `serve.launcher`（既定 `auto`）。`auto` は systemd --user が使えれば `systemd`、使えなければ `tmux`'
-    decided_by: dev/設計書/設定/ライブラリ本体#settings[serve.launcher]
+    decided_by: CFG-472-3#settings[serve.launcher]
   - item: systemd --user が使えるか
     constraint: '`PATH` に `systemctl` があり、`systemctl --user is-system-running` の標準出力が `running`・`degraded`・`starting` のどれか。終了コードは見ない'
     notes: '`degraded` はほかの unit が失敗しているだけで、user のマネージャーは動いている。終了コードは `degraded` でも 0 以外になる'
-    decided_by: dev/設計書/外部ライブラリ/systemd#catalogs
+    decided_by: LIB-472-25#catalogs
   - item: unit のファイル
     constraint: "`${XDG_CONFIG_HOME:-~/.config}/systemd/user/{unit の名前}.service`。`[Service]` に `Environment=` で `MDMARK_PORT`・`MDMARK_CONFIG`・`MDMARK_STATE_DIR`・`MDMARK_LAUNCHER=systemd`・`PATH`（呼んだ側の `PATH` で見つかる `node`・`npx` のフォルダと `/usr/local/bin:/usr/bin:/bin`）を、`ExecStart=/bin/sh -c '{起動するコマンド}'`・`Restart=on-failure` を、`[Install]` に `WantedBy=default.target` を記載する"
     notes: user のマネージャーの `PATH` には npx・node が無いことがあるため、`node`・`npx` のフォルダを渡す。呼んだ側の `PATH` をそのまま記載すると、セッションや worktree ごとに中身が変わって呼ぶたびに起動し直し、削除される worktree のパスも残る。`ExecStart` の既定の `npx -y github:…#v{バージョン} serve` は、取得済みのキャッシュがあればネットワークにつながらなくても CLI を起動するが、GitHub への問い合わせの再試行で約 2 分半かかる（2026-11-09 に v0.10.0 で、`HTTPS_PROXY` を使用できないポートにして測った。`npm_config_prefer_offline=true` でも同じ。つながるときは約 10 秒）。端末の起動時にネットワークが無くても、その後に起動する。user のマネージャーからは `network-online.target` を待てない
-    decided_by: dev/設計書/外部ライブラリ/systemd#limitations
+    decided_by: LIB-472-25#limitations
   - item: 終わったことの判定
     constraint: systemd では、待ちの 1 秒ごとに `systemctl --user show -p NRestarts -p ActiveState -p SubState {unit の名前}` の `Key=Value` の行を引き、`NRestarts` が 1 以上か、`SubState` が `auto-restart` か、`ActiveState` が `failed` なら終わったとする。tmux では `has-session` が 0 以外なら終わったとする
     notes: '`Restart=on-failure` の unit は、起動の上限（既定 10 秒に 5 回）を超えるまで `failed` にならず `activating (auto-restart)` と `active` を繰り返す。`NRestarts` は `start`・`restart` で 0 に戻る'
-    decided_by: dev/設計書/外部ライブラリ/systemd#limitations
+    decided_by: LIB-472-25#limitations
   - item: unit の値の書き方
     constraint: '`Environment=` の値は `"` で囲み、`\`・`"` を `\` で、`%` を `%%` で打ち消す。`ExecStart` のコマンドの `%` も `%%` に、`$` を `$$` にする（systemd が `${名前}`・`$名前` を環境変数で置き換えるため）'
-    decided_by: dev/設計書/外部ライブラリ/systemd#limitations
+    decided_by: LIB-472-25#limitations
   - item: unit の書き換え
     constraint: 記載する内容が今のファイルと同じなら記載しない。記載したら `daemon-reload` し、active なら `restart`、active でなければ `enable --now` する。内容が同じで enabled でなければ `enable` する
   - item: 移し替え
@@ -452,21 +453,21 @@ constraints:
   - item: tmux の起動のコマンド
     constraint: "`tmux new-session -d -s {セッション名} -e MDMARK_PORT={ポート} -e MDMARK_CONFIG={パス} -e MDMARK_STATE_DIR={パス} -e MDMARK_LAUNCHER=tmux sh -c '{起動するコマンド} 2>&1 | tee -a {serve.log}'`。環境変数は `-e` で明示して指定し、コマンドは `sh -c` の引数として指定して POSIX の記載方法だけを使用する"
     notes: tmux サーバーが既に動いていると呼んだ側の環境変数は渡らず、1 つの文字列のコマンドは `default-shell` で実行される
-    decided_by: dev/設計書/外部ライブラリ/tmux#limitations
+    decided_by: LIB-472-29#limitations
   - item: セッションの指定
     constraint: '`has-session`・`kill-session` の `-t` は `={セッション名}` の完全一致'
-    decided_by: dev/設計書/外部ライブラリ/tmux#catalogs
+    decided_by: LIB-472-29#catalogs
   - item: 待ち
     constraint: 1 秒ごとにポートへもう一度つなぎ、上限は 120 秒（`MDMARK_START_TIMEOUT_SEC` で変えられる）
-    decided_by: dev/設計書/非機能要件/非機能要件#requirements[MCP サーバーの接続の待ち]
+    decided_by: NFR-472-1#requirements[MCP サーバーの接続の待ち]
     notes: '空の npm のキャッシュから CLI を取得すると 53 秒かかった（PoC #73）。新しい端末とプラグインの更新の後は空のキャッシュからの取得になるため、その 2 倍強を上限にする'
   - item: unit の名前・セッション名
     constraint: 端末の設定の `serve.systemdUnit`・`serve.tmuxSession`、無ければどちらも `mdmark-mcp`
-    decided_by: dev/設計書/設定/ライブラリ本体#settings[serve.systemdUnit]
+    decided_by: CFG-472-3#settings[serve.systemdUnit]
   - item: 常駐の仕方
     constraint: systemd --user の unit と tmux のセッションの外での `nohup`・`setsid`・`&` による常駐はしない
   - item: 出力
     constraint: 結果は標準出力に JSON の 1 行で出す。誤りは標準エラーに理由と修正方法を出す
   - item: 動く Node のバージョン
     constraint: Node 24 以降
-    decided_by: dev/設計書/非機能要件/非機能要件#requirements[CLI が動く Node のバージョン]
+    decided_by: NFR-472-1#requirements[CLI が動く Node のバージョン]

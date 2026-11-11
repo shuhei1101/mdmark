@@ -1,3 +1,4 @@
+id: CMP-472-35
 title: 再生できない動画・音声の通知
 implementation: vscode/src/webview/shared/lib/media-error.ts#renderMediaError
 story: VSCode/MediaError
@@ -60,13 +61,13 @@ css_properties:
     default: '#b45309（ダーク #fbbf24）'
     description: 枠の線の色
 uses:
-  - component: dev/設計書/部品設計/通知ブロック.ts#
+  - component: CMP-472-65#
     how: class `mdmark-notice` とタイトル・本文の並びを通知ブロックと統一する
 accessibility:
   - 枠は `role="status"` を持ち、スクリーンリーダーがタイトルと本文を伝達する
   - パスは長くても枠の中で折り返し、横スクロールを出さない
 refs:
-  - dev/設計書/インターフェース定義/VSCode拡張機能/プレビューを開く.ts#constraints[再生できない動画・音声]
+  - IF-472-22#constraints[再生できない動画・音声]
 status: planned
 notes:
   HTML: '`<div class="mdmark-notice" role="status"><strong class="mdmark-notice-title">{タイトル}</strong><p>VS Code のプレビューは <code>{format}</code> の形式を再生できません。<a href="#">既定のアプリで開く</a>（<code>{path}</code>）</p></div>`。文言は確認ログのモックへの合意。モックは `dev/mock/components/notice/` の再生できない場面'

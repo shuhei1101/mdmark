@@ -1,0 +1,111 @@
+id: MOD-472-11
+title: ClaudeCodeプラグイン / セットアップ / 状態 / status.ts
+lead: '`status` の結果を作る。'
+test_files:
+  - tests/unit/src/plugin/setup/status.test.ts
+functions:
+  - name: readTerminalStatus
+    title: 端末の状態を調べる
+    kind: 関数
+    container: src/plugin/setup/status.ts
+    usecase: 端末の状態を調べる
+    role: 処理
+    summary: '`status` の結果を作る'
+    scope: public
+    is_async: true
+    args:
+      - name: options
+        type: '{ env: NodeJS.ProcessEnv; pluginRoot: string; version: string } & { run: RunCommand }'
+        required: true
+        description: 環境変数・プラグインの直下・プラグインのバージョン・コマンドの実行
+    returns:
+      type: Promise<TerminalStatus>
+      description: インターフェース定義『端末の状態を調べる』のレスポンス
+    process: |-
+      1. パスを決める
+      2. 端末の設定があれば YAML として読み込み（読み込めなければ `SetupError`（1））、`version`・セッション名・unit の名前・起動の方法の設定を取る
+      3. `run("tmux", ["-V"])` が失敗すれば `tmux.available` を偽、成功なら `has-session -t ={セッション名}` の終了コードでセッションの有無を取る
+      4. `hasSystemd` で `systemd.available` を取り、真なら `readUnitState` で `server.unit_active`（`activeState` が `active`）と `server.unit_enabled` を取る。偽ならどちらも偽
+      5. `launcher.resolved` は設定が `systemd`・`tmux` ならその値、`auto` なら `systemd.available` で `systemd`、ほかは `tmux`
+      6. `isPortListening` で待ち受けを確認する
+    callees:
+      - MOD-472-7#functions[resolveSetupPaths]
+      - MOD-472-7#functions[readSessionName]
+      - MOD-472-15#functions[isPortListening]
+      - MOD-472-7#functions[readUnitName]
+      - MOD-472-7#functions[readLauncherSetting]
+      - MOD-472-7#functions[resolveUnitPath]
+      - MOD-472-5#functions[hasSystemd]
+      - MOD-472-5#functions[readUnitState]
+    unit_tests:
+      - name: test_read_terminal_status
+        case: 正常
+        summary: 空の端末
+        condition: 一時フォルダの `MDMARK_CONFIG`（ファイル無し）・空いたポート
+        mock: '`has-session` に 1 を返却する `run`'
+        expected: '`settings.exists` が偽、`server.session` が `mdmark-mcp`、`server.session_exists` と `server.listening` が偽'
+      - name: test_read_terminal_status_when_systemd_available
+        case: 正常
+        summary: systemd が使えれば unit の状態と launcher.resolved を返す
+        condition: '`is-system-running` に `degraded`、`show` に `ActiveState=active`・`UnitFileState=enabled` を返却する `run`'
+        mock: 差し替えた `run`
+        expected: '`systemd.available`・`server.unit_active`・`server.unit_enabled` が真、`launcher.setting` が `auto`、`launcher.resolved` が `systemd`'
+      - name: test_read_terminal_status_when_unreadable
+        case: 異常
+        summary: 読み込めない端末の設定は SetupError
+        condition: 3 行目が YAML として読み込めない端末の設定
+        mock: なし
+        expected: 終了コード 1 の `SetupError` で、メッセージに端末の設定のパスと 3 行目を含む
+    refs:
+      - IF-472-11#
+    status: planned
+    introduced:
+      pr: 354
+  - name: hasTmux
+    title: tmux があるか
+    kind: 関数
+    container: src/plugin/setup/status.ts
+    usecase: 端末の状態を調べる
+    role: 処理
+    summary: '`tmux -V` が成功するか'
+    scope: public
+    is_async: true
+    args:
+      - name: run
+        type: RunCommand
+        required: true
+        description: コマンドの実行
+    returns:
+      type: Promise<boolean>
+      description: 終了コードが 0 か
+    process: 1. tmux -V` が成功するかを終了コードで返却する
+    unit_tests: []
+    refs:
+      - LIB-472-29#catalogs
+    status: planned
+    introduced:
+      pr: 354
+  - name: hasSession
+    title: セッションがあるか
+    kind: 関数
+    container: src/plugin/setup/status.ts
+    usecase: 端末の状態を調べる
+    role: 処理
+    summary: '`tmux has-session -t ={セッション名}` が成功するか'
+    scope: public
+    is_async: true
+    args:
+      - name: options
+        type: '{ run: RunCommand; session: string }'
+        required: true
+        description: コマンドの実行とセッション名
+    returns:
+      type: Promise<boolean>
+      description: 終了コードが 0 か
+    process: 1. tmux has-session -t ={セッション名}` が成功するかを終了コードで返却する
+    unit_tests: []
+    refs:
+      - LIB-472-29#catalogs
+    status: planned
+    introduced:
+      pr: 354

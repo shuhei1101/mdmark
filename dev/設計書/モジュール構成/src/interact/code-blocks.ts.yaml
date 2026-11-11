@@ -1,0 +1,57 @@
+id: MOD-472-233
+title: ライブラリ本体 / 操作 / code-blocks.ts
+test_files:
+  - tests/unit/src/interact/code-blocks.browser.test.ts
+functions:
+  - name: attachCodeCopy
+    title: コードブロックにコピーを付ける
+    container: src/interact/code-blocks.ts
+    summary: 各 `mdmark-code-bar` の末尾に `renderCodeCopy` のボタンを配置し、押すと `copyText` でコードを写す。写す文字は、行に分けたブロックでは `data-kind="del"` の行を除いた `mdmark-code-text` を改行でつないだもの（畳んで `hidden` を持つ行も含め、`⋯` のボタンの文字は含めない）、それ以外は `code` の文字から末尾の改行を 1 つ除いたもの。書き込めたら `data-state="copied"` にして 2 秒で `idle` に戻し、書き込めなければ `failed` にして次に押すまで残す
+    kind: 関数
+    scope: internal
+    side_effects: コードブロックの帯にボタンを配置し、クリップボードへ書き込む
+    args:
+      - name: root
+        type: HTMLElement
+        required: true
+        description: 描いた要素
+    returns:
+      type: () => void
+      description: ボタンとタイマーを取り除く関数
+    unit_tests:
+      - name: test_attach_code_copy
+        case: 正常
+        summary: 押すとコードをコピーして 2 秒でボタンを戻す
+        condition: '`ts` のコードブロック（`const a = 1;\nconst b = 2;\n`）のコピーのボタンを押す'
+        mock: '`navigator.clipboard.writeText` を記録して解決する関数に、時計を偽の時計に差し替える'
+        expected: '`const a = 1;\nconst b = 2;` で 1 回呼ばれ、ボタンが `data-state="copied"`、2 秒進めると `idle`'
+      - name: test_attach_code_copy_when_line_marks
+        case: 正常
+        summary: 削除した行を除いて写す
+        condition: 行のマーカー `[!code --]` の行 `old()`、`[!code ++]` の行 `next()`、マーカーの無い行 `keep()` のコードブロックのボタンを押す
+        mock: '`navigator.clipboard.writeText` を記録して解決する関数に差し替える'
+        expected: '`next()\nkeep()` で呼ばれる'
+      - name: test_attach_code_copy_when_denied
+        case: 正常
+        summary: 拒まれたら失敗の表示を残す
+        condition: コードブロックのボタンを押し、2 秒進め、もう一度押す（2 回目は解決する）
+        mock: '`navigator.clipboard.writeText` を 1 回目は `NotAllowedError` で拒み 2 回目は解決する関数に、時計を偽の時計に差し替える'
+        expected: 1 回目の後と 2 秒後は `data-state="failed"`、2 回目の後は `copied`。`unhandledrejection` が起きない
+      - name: test_attach_code_copy_when_detached
+        case: 正常
+        summary: 削除するとボタンを取り除く
+        condition: コードブロックのボタンを押してすぐ削除し、2 秒進める
+        mock: '`navigator.clipboard.writeText` を記録して解決する関数に、時計を偽の時計に差し替える'
+        expected: 帯に `mdmark-code-meta` が無く、例外が出ない
+      - name: test_attach_code_copy_when_folded
+        case: 正常
+        summary: 畳んだ行もコピーに含める
+        condition: 2 行目と 6 行目を畳んだ 8 行のコードブロック
+        mock: '`navigator.clipboard.writeText` を記録する関数'
+        expected: 記載した文字が 8 行全てを持ち、`⋯` を含まない
+    callees:
+      - 'MOD-472-232#functions[copyText]'
+      - MOD-472-306#functions[renderCodeCopy]
+    status: planned
+    introduced:
+      pr: 151

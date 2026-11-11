@@ -1,0 +1,102 @@
+id: MOD-472-224
+title: ライブラリ本体 / 操作 / lightbox.ts
+test_files:
+  - tests/unit/src/interact/lightbox.browser.test.ts
+constants:
+  - name: LIGHTBOX_IMAGE_SELECTOR
+    title: 拡大できる画像
+    container: src/interact/lightbox.ts
+    summary: ライトボックスで拡大のボタンで包む `img`。リンクの中の画像と文の中の画像は `figure.mdmark-image` の中に無いため該当しない
+    value: '"figure.mdmark-image img:not([data-nolightbox])"'
+    refs:
+      - IF-472-35#constraints[ライトボックス]
+    status: planned
+    introduced:
+      pr: 263
+functions:
+  - name: collectLightboxImages
+    title: 切り替えの並びを集める
+    container: src/interact/lightbox.ts
+    kind: 関数
+    scope: internal
+    summary: '`root` の中の `button.mdmark-image-open` を文書の順に並べ、今の配色で隠れているもの（`getComputedStyle` の `display` が `none` の `figure` の中）を除いて返却する'
+    args:
+      - name: root
+        type: HTMLElement
+        required: true
+        description: 描いた要素
+    returns:
+      type: HTMLButtonElement[]
+      description: 切り替えの並びの拡大のボタン
+    unit_tests:
+      - name: test_collect_lightbox_images
+        case: 正常
+        summary: 隠れている配色の画像を除く
+        condition: 暗い配色で描いた要素に、画像 2 つと `#only-light` の画像 1 つ
+        mock: なし
+        expected: '`#only-light` 以外の 2 つのボタンを文書の順に返却する'
+    status: planned
+    introduced:
+      pr: 263
+  - name: attachLightbox
+    title: 画像を拡大できるようにする
+    container: src/interact/lightbox.ts
+    kind: 関数
+    scope: internal
+    summary: '`LIGHTBOX_IMAGE_SELECTOR` の `img` を `renderImageOpener` のボタンで包む（`img[data-gif]` は `icon: false`）。押すと `collectLightboxImages` の並びで押した画像の位置を求め、`renderLightbox` の `dialog`（`closedby="any"`）を `root` の中に配置して `showModal()` で開き、`attachZoom` で拡大・縮小・移動を付ける。前後のボタンと、全体が収まる倍率のときの左右の矢印キーで送信し（端では切り替えない）、送信するたびに画像・キャプション・枚数・切り替えのボタンの `disabled` を書き換えて `attachZoom` の `reset()` で収まる倍率に戻す。`closedby` を持たないブラウザでは `dialog` 自身を押したときに閉じる。閉じたら `close` で受け取りと `attachZoom` を削除して `dialog` を削除し、フォーカスを押した画像のボタンへ戻し、スクロールの位置を開く前のままにする'
+    args:
+      - name: root
+        type: HTMLElement
+        required: true
+        description: 描いた要素
+    returns:
+      type: () => void
+      description: 包んだボタンを削除して `img` を元に戻し、開いているライトボックスを閉じる関数
+    callees:
+      - '#functions[collectLightboxImages]'
+      - MOD-472-327#functions[renderImageOpener]
+      - MOD-472-329#functions[renderLightbox]
+      - MOD-472-177#functions[attachZoom]
+    refs:
+      - IF-472-35#constraints[ライトボックス]
+      - IF-472-35#constraints[ライトボックスの拡大・縮小・移動]
+    unit_tests:
+      - name: test_attach_lightbox
+        case: 正常
+        summary: 画像を包み、押すと開いて送信する
+        condition: 画像だけの段落 3 つを描いた要素で 2 つ目のボタンを押し、`ArrowRight` を押す
+        mock: なし
+        expected: '`img` が `button.mdmark-image-open` の中にあり、押した後に `dialog.mdmark-lightbox[open]` の枚数が `2 / 3`、`ArrowRight` の後に `3 / 3` で次の画像のボタンが `disabled`'
+      - name: test_attach_lightbox_when_zoomed
+        case: 正常
+        summary: 拡大中の矢印キーは送信せず動かし、送信すると倍率を戻す
+        condition: 幅 3000 の画像を開いて拡大を 2 回押し、`ArrowRight` を押してから次の画像のボタンを押す
+        mock: なし
+        expected: '`ArrowRight` の後も枚数が変わらず `scrollLeft` が 80 増え、次の画像の後に倍率が全体の収まる倍率'
+      - name: test_attach_lightbox_when_closed
+        case: 正常
+        summary: 閉じるとフォーカスを戻す
+        condition: 開いて Esc を押す（Playwright のキー操作）と、開いて背景を押す
+        mock: なし
+        expected: どちらも `dialog` が無く、フォーカスが押した画像のボタンで、`scrollY` が開く前と同じ
+      - name: test_attach_lightbox_when_not_wrapped
+        case: 正常
+        summary: 拡大しない画像は包まない
+        condition: '`{nolightbox}` の画像・リンクの中の画像・文の中の画像を描いた要素'
+        mock: なし
+        expected: '`button.mdmark-image-open` が無い'
+      - name: test_attach_lightbox_when_cleaned_up
+        case: 正常
+        summary: 削除すると元に戻る
+        condition: 1 つ目を開いて戻り値を呼ぶ
+        mock: なし
+        expected: '`dialog` と `button.mdmark-image-open` が無く、`img` が `figure` の直下'
+      - name: test_attach_lightbox_when_gif
+        case: 正常
+        summary: GIF の画像の拡大のボタンにはアイコンを配置しない
+        condition: GIF の画像を描いた要素
+        mock: なし
+        expected: '`img[data-gif]` を包む `button.mdmark-image-open` があり、その中に `mdmark-image-open-icon` が無い'
+    status: planned
+    introduced:
+      pr: 263

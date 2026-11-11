@@ -1,0 +1,51 @@
+id: MOD-472-76
+title: VS Code 拡張機能 / Webview / config-band.tsx
+test_files:
+  - tests/unit/vscode/src/webview/shared/components/config-band.browser.test.tsx
+components:
+  - name: ConfigBand
+    title: 設定ファイルを読み込めない帯
+    container: vscode/src/webview/shared/components/config-band.tsx
+    usecase: 記載した内容をプレビューに映す
+    summary: 部品設計の引数どおりに、Alert の warning の帯と「設定ファイルを開く」（Button の outline）を描く。YAML として読み込めないときは行、設定の構造に合わないときはキーを出す
+    description: 幅の基準の枠は class `mdmark-config-band-frame`（`@container`）、帯は `mdmark-config-band` を持ち、ボタンは `data-action="openConfig"` を持つ。帯の幅が 30rem 以上でボタンを文の右に配置する
+    kind: コンポーネント
+    props:
+      - name: path
+        type: string
+        required: true
+        description: 読み込めない設定ファイルのパス（設定ファイルのパスを表示の構造にしたもの）
+      - name: line
+        type: number
+        required: false
+        description: YAML として読み込めない行（1 始まり）。`settingKey` とどちらか一方だけを指定する
+      - name: settingKey
+        type: string
+        required: false
+        description: 設定の構造に合わない最初のキー。`line` とどちらか一方だけを指定する
+      - name: onOpenConfig
+        type: () => void
+        required: true
+        description: 「設定ファイルを開く」を押したとき
+    unit_tests:
+      - name: test_config_band
+        case: 正常
+        summary: タイトル・パス・行とボタンを出し、パスを文字のまま出す
+        condition: '`path` が `a<b>.yaml`、`line` が 4'
+        mock: なし
+        expected: '`role="status"` の要素に `h2` のタイトル「設定ファイルを読み込めません」、`code` の文字が `a<b>.yaml`、本文に `4 行目を YAML として読み込めないため` と `この設定ファイルを重ねずに表示しています`、`data-action="openConfig"` の `button`'
+      - name: test_config_band_when_clicked
+        case: 正常
+        summary: 設定ファイルを開くを押すと onOpenConfig を呼ぶ
+        condition: 「設定ファイルを開く」を userEvent で押す
+        mock: '`onOpenConfig` を記録する関数にする'
+        expected: '`onOpenConfig` が 1 回呼ばれる'
+      - name: test_config_band_when_setting_key
+        case: 正常
+        summary: 構造に合わないときはキーを出す
+        condition: '`path` が `~/.config/mdmark/settings.yaml`、`settingKey` が `features.callout`'
+        mock: なし
+        expected: '`code` の文字が `~/.config/mdmark/settings.yaml` と `features.callout`、本文に `が設定の構造に合わないため` があり、`行目` が無い'
+    refs:
+      - CMP-472-63#
+    status: planned

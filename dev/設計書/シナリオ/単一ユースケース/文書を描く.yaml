@@ -1,3 +1,4 @@
+id: SC-472-59
 title: "文書を描く"
 scenarios:
   - name: 正常シナリオ
@@ -203,7 +204,7 @@ scenarios:
       - 片付けた後、描く先の要素とページにテーマを示す class か属性が残っていない
     test: test_normal_when_theme_selected
     refs:
-      - dev/設計書/シナリオ/単一ユースケース/テーマを選ぶ#scenarios[正常シナリオ]
+      - SC-472-26#scenarios[正常シナリオ]
   - name: 正常シナリオ（フロントマターを持つ文書）
     setup:
       - name: 配布物を読み込んだページ

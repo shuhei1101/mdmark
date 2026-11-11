@@ -1,3 +1,4 @@
+id: ER-472-6
 title: "ER 図: 索引"
 lead: 利用側が文書のメタデータと用語を記載する YAML の索引。場所は設定の `index` で決め、利用側が読み込んだオブジェクトを `mount`・`render`・`collectReferences`・`checkIndex` に指定する。構造は `schemas/mdmark.index.schema.json`（JSON Schema draft 2020-12）で縛る。
 overview: 'データストアは YAML の 1 ファイル。最上位は `schema`（索引のバージョン。整数で今は `2`、必須）・`docs`（文書の並び、必須）・`terms`（用語の並び、任意）のキーを持ち、ほかのキーは拒む。索引のバージョンを上げる移行は #10 が持つ。v0.9.0 までのバージョン `1` は最上位にタグの語彙 `tags` を持て、`mdmark upgrade` が語彙を削除してバージョンを `2` にする'
@@ -8,7 +9,8 @@ er:
   relations:
     - from: 文書
       to: 文書
-      cardinality: '}o--o{'
+      from_cardinality: 0..n
+      to_cardinality: 0..n
       label: related
 tables:
   - name: docs
@@ -117,4 +119,4 @@ tables:
         example: '[作業場]'
         notes: 要素は空でない文字列
 refs:
-  - dev/設計書/インターフェース定義/ライブラリ本体/索引を点検する.ts#
+  - IF-472-37#

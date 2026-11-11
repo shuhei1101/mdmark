@@ -1,0 +1,153 @@
+id: MOD-472-129
+title: ライブラリ本体 / map / 描画と操作 / state.ts
+test_files:
+  - tests/unit/src/map/state.test.ts
+data_models:
+  - name: MapState
+    title: 図の状態
+    container: src/map/state.ts
+    usecase: 図のグループの中へ入る・開閉する
+    role: データモデル
+    summary: 図ごとに保つ状態
+    properties:
+      - name: collapsed
+        type: string[]
+        description: 閉じたグループの ID かブロックの番号
+      - name: entered
+        type: string | undefined
+        description: 中へ入ったグループの ID か、中だけを描くブロックの番号
+      - name: selected
+        type: string[]
+        description: 選んだノードか参加者の ID
+      - name: positions
+        type: 'Record<string, { x: number; y: number }>'
+        description: 動かしたノード・グループの座標
+      - name: wireShifts
+        type: 'Record<string, Array<{ segment: number; offset: number }>>'
+        description: 動かした線の区間のずらし
+      - name: attachments
+        type: 'Record<string, { from?: "top" | "right" | "bottom" | "left"; to?: "top" | "right" | "bottom" | "left" }>'
+        description: 線をつなぎ替えた端の辺（線の ID ごと。元の端は `from`、先の端は `to`）
+      - name: order
+        type: string[] | undefined
+        description: 参加者の並び順
+      - name: height
+        type: number | undefined
+        description: 表示する枠の高さ
+constants:
+  - name: MAP_STATE_KEY_PREFIX
+    title: 状態のキーの頭
+    container: src/map/state.ts
+    usecase: 図のグループの中へ入る・開閉する
+    role: 定数
+    summary: sessionStorage のキーの頭（`{頭}{pathname}{まとめた HTML の文書の経路}#{図の番号}`。文書の経路はハッシュの `#/{パス}` の部分で、まとめた HTML のほかでは空）
+    value: '"mdmark-map:"'
+  - name: MAP_QUERY_PREFIX
+    title: クエリ文字列のキーの頭
+    container: src/map/state.ts
+    usecase: 図のグループの中へ入る・開閉する
+    role: 定数
+    summary: クエリ文字列のキーの頭（`map-{図の番号}`）
+    value: '"map-"'
+functions:
+  - name: readMapState
+    title: 状態を読む
+    kind: 関数
+    container: src/map/state.ts
+    usecase: 図のグループの中へ入る・開閉する
+    role: 処理
+    summary: クエリ文字列（`url_state` が `true` のとき）→ sessionStorage → 印の `focus` の順に、最初に入るグループかブロックを決め、ほかの状態を sessionStorage から読み、知らない ID・番号を捨てる。sessionStorage に開閉の状態が無いときは、補足の `layout` の `collapsed` が `true` のグループを閉じる
+    scope: public
+    args:
+      - name: options
+        type: '{ index: number; ids: Set<string>; urlState: boolean; focus: string | undefined; collapsed: string[]; storage: Storage | undefined; location: Location }'
+        required: true
+        description: 図の番号・知っている ID・設定・印の `focus`・補足で最初に閉じるグループの ID・保存先
+    returns:
+      type: MapState
+      description: 状態
+    unit_tests:
+      - name: test_read_map_state_when_query
+        case: 正常
+        summary: クエリ文字列を先に読む
+        condition: '`?map-1=read` と sessionStorage の `entered: place`'
+        mock: なし
+        expected: '`entered` が `read`'
+      - name: test_read_map_state_when_url_state_off
+        case: 正常
+        summary: url_state が false
+        condition: '同上で `urlState: false`'
+        mock: なし
+        expected: '`entered` が `place`'
+      - name: test_read_map_state_when_unknown_id
+        case: 正常
+        summary: 知らない ID
+        condition: '`?map-1=ghost`'
+        mock: なし
+        expected: '`entered` が無い'
+      - name: test_read_map_state_when_storage_unavailable
+        case: 正常
+        summary: sessionStorage が無い
+        condition: '`storage: undefined`'
+        mock: なし
+        expected: 空の状態で、例外を投げない
+      - name: test_read_map_state_when_focus
+        case: 正常
+        summary: focus だけ
+        condition: '空のクエリ文字列と sessionStorage・`focus: read`'
+        mock: なし
+        expected: '`entered` が `read`'
+      - name: test_read_map_state_when_layout_collapsed
+        case: 正常
+        summary: 補足で最初に閉じる
+        condition: '`collapsed: [store]` で、sessionStorage が空のときと、sessionStorage の `collapsed` が `[]` のとき'
+        mock: なし
+        expected: 空のときは `collapsed` が `[store]`、sessionStorage があるときは `[]`
+      - name: test_read_map_state_when_saved_over_focus
+        case: 正常
+        summary: 保った状態を優先
+        condition: 'sessionStorage の `entered: place`・`focus: read`'
+        mock: なし
+        expected: '`entered` が `place`'
+      - name: test_read_map_state_when_bundle_route
+        case: 正常
+        summary: まとめた HTML の文書ごと
+        condition: '`mdmark-map:/a.html#/a.md#1` に `entered: place` を入れ、`location.hash` が `#/b.md` と `#/a.md#見出し`'
+        mock: なし
+        expected: '`#/b.md` では `entered` が `undefined`、`#/a.md#見出し` では `place`'
+  - name: writeMapState
+    title: 状態を保つ
+    kind: 関数
+    container: src/map/state.ts
+    usecase: 図のグループの中へ入る・開閉する
+    role: 処理
+    summary: sessionStorage に状態を書き、`url_state` が `true` なら中へ入ったグループ・ブロックを `history.replaceState` でクエリ文字列に書く（無ければキーを消す）
+    scope: public
+    side_effects: sessionStorage と `history` の今の項目の URL を書き換える
+    args:
+      - name: options
+        type: '{ index: number; state: MapState; urlState: boolean; storage: Storage | undefined; history: History; location: Location }'
+        required: true
+        description: 図の番号・状態・設定・保存先
+    returns:
+      type: void
+      description: なし
+    unit_tests:
+      - name: test_write_map_state
+        case: 正常
+        summary: 中へ入る
+        condition: '`entered: read`'
+        mock: '`history`（`replaceState` の呼び出しを記録）'
+        expected: sessionStorage に書き、URL が `?map-1=read`、`history.length` が変わらない
+      - name: test_write_map_state_when_url_state_off
+        case: 正常
+        summary: url_state が false
+        condition: '同上で `urlState: false`'
+        mock: '`history`'
+        expected: '`replaceState` を呼ばない'
+      - name: test_write_map_state_when_left
+        case: 正常
+        summary: 全体に戻る
+        condition: '`entered: undefined`'
+        mock: '`history`'
+        expected: URL から `map-1` が消える

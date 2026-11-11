@@ -1,3 +1,4 @@
+id: IF-472-10
 title: "点検する"
 entry:
   kind: mcp_tool
@@ -120,7 +121,7 @@ flows:
       - 設定・索引・文書が変わらない
     test: test_normal_when_include_targets_missing
     refs:
-      - dev/設計書/シナリオ/単一ユースケース/ClaudeCodeから点検と書き出しを呼ぶ#scenarios[正常シナリオ（取り込み先が無い）]
+      - SC-472-3#scenarios[正常シナリオ（取り込み先が無い）]
   - name: 正常系（文字列と YAML のキーを指定する）
     summary: '`text` と `file`・`key` を指定すると、`mdmark check --text`・`--file --key` と同じずれを返却する'
     setup:
@@ -234,5 +235,5 @@ constraints:
   - item: readOnlyHint
     constraint: 'ツールの annotations に `readOnlyHint: true` を付ける'
 refs:
-  - dev/設計書/インターフェース定義/ライブラリ本体/設定と索引を点検する.ts#
+  - IF-472-39#
 test_file: tests/integration/ClaudeCodeプラグイン/check.test.ts

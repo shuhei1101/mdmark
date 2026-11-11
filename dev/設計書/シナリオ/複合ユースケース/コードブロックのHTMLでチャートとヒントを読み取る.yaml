@@ -1,3 +1,4 @@
+id: SC-472-89
 title: コードブロックのHTMLでチャートとヒントを読み取る
 scenarios:
   - name: 正常シナリオ
@@ -15,12 +16,12 @@ scenarios:
         C --> G[図の要素のツールチップを確認する:正常シナリオ（グラフの項目）]
         G --> D[図の要素のツールチップを確認する:正常シナリオ（埋め込んだ HTML の data-hint）]
         D --> E[用語の意味をツールチップで確認する:正常シナリオ（埋め込んだ HTML の中の用語）]
-        click A "../単一ユースケース/コードブロックのHTMLを描く.yaml#正常シナリオ"
-        click B "../単一ユースケース/チャートを描く.yaml#正常シナリオ"
-        click C "../単一ユースケース/図を拡大・縮小・移動する.yaml#正常シナリオ埋め込んだ-html-の中のチャート"
-        click G "../単一ユースケース/図の要素のツールチップを確認する.yaml#正常シナリオグラフの項目"
-        click D "../単一ユースケース/図の要素のツールチップを確認する.yaml#正常シナリオ埋め込んだ-html-の-data-hint"
-        click E "../単一ユースケース/用語の意味をツールチップで確認する.yaml#正常シナリオ埋め込んだ-html-の中の用語"
+        click A "id:SC-472-16#scenarios[正常シナリオ]"
+        click B "id:SC-472-24#scenarios[正常シナリオ]"
+        click C "id:SC-472-42#scenarios[正常シナリオ（埋め込んだ HTML の中のチャート）]"
+        click G "id:SC-472-40#scenarios[正常シナリオ（グラフの項目）]"
+        click D "id:SC-472-40#scenarios[正常シナリオ（埋め込んだ HTML の data-hint）]"
+        click E "id:SC-472-65#scenarios[正常シナリオ（埋め込んだ HTML の中の用語）]"
     expected:
       - マーカーを付けたコードブロックの HTML が、コードではなくその場の HTML として描かれる
       - マーカーの無い `html` のコードブロックは、コードのまま出る
@@ -31,12 +32,12 @@ scenarios:
       - HTML の中の用語に下線が参照され、フォーカスすると用語集の意味のツールチップが出る
     test: test_normal
     uses:
-      - dev/設計書/シナリオ/単一ユースケース/コードブロックのHTMLを描く#scenarios[正常シナリオ]
-      - dev/設計書/シナリオ/単一ユースケース/チャートを描く#scenarios[正常シナリオ]
-      - dev/設計書/シナリオ/単一ユースケース/図を拡大・縮小・移動する#scenarios[正常シナリオ（埋め込んだ HTML の中のチャート）]
-      - dev/設計書/シナリオ/単一ユースケース/図の要素のツールチップを確認する#scenarios[正常シナリオ（グラフの項目）]
-      - dev/設計書/シナリオ/単一ユースケース/図の要素のツールチップを確認する#scenarios[正常シナリオ（埋め込んだ HTML の data-hint）]
-      - dev/設計書/シナリオ/単一ユースケース/用語の意味をツールチップで確認する#scenarios[正常シナリオ（埋め込んだ HTML の中の用語）]
+      - SC-472-16#scenarios[正常シナリオ]
+      - SC-472-24#scenarios[正常シナリオ]
+      - SC-472-42#scenarios[正常シナリオ（埋め込んだ HTML の中のチャート）]
+      - SC-472-40#scenarios[正常シナリオ（グラフの項目）]
+      - SC-472-40#scenarios[正常シナリオ（埋め込んだ HTML の data-hint）]
+      - SC-472-65#scenarios[正常シナリオ（埋め込んだ HTML の中の用語）]
   - name: 正常シナリオ（書き出した HTML で読み込む）
     setup:
       - name: 見本の HTML の文書
@@ -52,12 +53,12 @@ scenarios:
         G --> C[図の要素のツールチップを確認する:正常シナリオ（埋め込んだ HTML の data-hint）]
         C --> D[図の要素のツールチップを確認する:正常シナリオ（ノードの hint）]
         D --> E[用語の意味をツールチップで確認する:正常シナリオ（埋め込んだ HTML の中の用語）]
-        click A "../単一ユースケース/文書をHTMLに書き出す.yaml#正常シナリオ"
-        click B "../単一ユースケース/図を拡大・縮小・移動する.yaml#正常シナリオ埋め込んだ-html-の中のチャート"
-        click G "../単一ユースケース/図の要素のツールチップを確認する.yaml#正常シナリオグラフの項目"
-        click C "../単一ユースケース/図の要素のツールチップを確認する.yaml#正常シナリオ埋め込んだ-html-の-data-hint"
-        click D "../単一ユースケース/図の要素のツールチップを確認する.yaml#正常シナリオノードの-hint"
-        click E "../単一ユースケース/用語の意味をツールチップで確認する.yaml#正常シナリオ埋め込んだ-html-の中の用語"
+        click A "id:SC-472-56#scenarios[正常シナリオ]"
+        click B "id:SC-472-42#scenarios[正常シナリオ（埋め込んだ HTML の中のチャート）]"
+        click G "id:SC-472-40#scenarios[正常シナリオ（グラフの項目）]"
+        click C "id:SC-472-40#scenarios[正常シナリオ（埋め込んだ HTML の data-hint）]"
+        click D "id:SC-472-40#scenarios[正常シナリオ（ノードの hint）]"
+        click E "id:SC-472-65#scenarios[正常シナリオ（埋め込んだ HTML の中の用語）]"
     expected:
       - '`mdmark export` が終了コード 0 で 1 枚の HTML を書き出す'
       - 書き出した HTML を外への要求を止めて開いても、埋め込んだ HTML とチャートが描かれる
@@ -65,12 +66,12 @@ scenarios:
       - チャートの項目・`data-hint` を付けたノード・図のノードの `hint`・HTML の中の用語に、ツールチップが出る
     test: test_normal_when_exported
     uses:
-      - dev/設計書/シナリオ/単一ユースケース/文書をHTMLに書き出す#scenarios[正常シナリオ]
-      - dev/設計書/シナリオ/単一ユースケース/図を拡大・縮小・移動する#scenarios[正常シナリオ（埋め込んだ HTML の中のチャート）]
-      - dev/設計書/シナリオ/単一ユースケース/図の要素のツールチップを確認する#scenarios[正常シナリオ（グラフの項目）]
-      - dev/設計書/シナリオ/単一ユースケース/図の要素のツールチップを確認する#scenarios[正常シナリオ（埋め込んだ HTML の data-hint）]
-      - dev/設計書/シナリオ/単一ユースケース/図の要素のツールチップを確認する#scenarios[正常シナリオ（ノードの hint）]
-      - dev/設計書/シナリオ/単一ユースケース/用語の意味をツールチップで確認する#scenarios[正常シナリオ（埋め込んだ HTML の中の用語）]
+      - SC-472-56#scenarios[正常シナリオ]
+      - SC-472-42#scenarios[正常シナリオ（埋め込んだ HTML の中のチャート）]
+      - SC-472-40#scenarios[正常シナリオ（グラフの項目）]
+      - SC-472-40#scenarios[正常シナリオ（埋め込んだ HTML の data-hint）]
+      - SC-472-40#scenarios[正常シナリオ（ノードの hint）]
+      - SC-472-65#scenarios[正常シナリオ（埋め込んだ HTML の中の用語）]
   - name: 正常シナリオ（範囲のスクリプトと CSS）
     setup:
       - name: 見本の HTML の文書
@@ -87,10 +88,10 @@ scenarios:
         A[コードブロックのHTMLを描く:正常シナリオ（範囲のスクリプトと CSS）] --> B[チャートを描く:正常シナリオ]
         B --> C[用語の意味をツールチップで確認する:正常シナリオ（埋め込んだ HTML の中の用語）]
         C --> D[文書をHTMLに書き出す:正常シナリオ（範囲のスクリプトと CSS）]
-        click A "../単一ユースケース/コードブロックのHTMLを描く.yaml#正常シナリオ範囲のスクリプトと-css"
-        click B "../単一ユースケース/チャートを描く.yaml#正常シナリオ"
-        click C "../単一ユースケース/用語の意味をツールチップで確認する.yaml#正常シナリオ埋め込んだ-html-の中の用語"
-        click D "../単一ユースケース/文書をHTMLに書き出す.yaml#正常シナリオ範囲のスクリプトと-css"
+        click A "id:SC-472-16#scenarios[正常シナリオ（範囲のスクリプトと CSS）]"
+        click B "id:SC-472-24#scenarios[正常シナリオ]"
+        click C "id:SC-472-65#scenarios[正常シナリオ（埋め込んだ HTML の中の用語）]"
+        click D "id:SC-472-56#scenarios[正常シナリオ（範囲のスクリプトと CSS）]"
     expected:
       - 範囲のノードの背景が `css` の色で描かれ、範囲の外のノードの背景は変わらない
       - 範囲のノードを押すと根の要素に class `is-open` が付き、もう一度押すと削除される
@@ -100,10 +101,10 @@ scenarios:
       - HTML に記載した `script` 要素は、機能がオンでも描いた文書に残らず、実行されない
     test: test_normal_when_range_scripts
     uses:
-      - dev/設計書/シナリオ/単一ユースケース/コードブロックのHTMLを描く#scenarios[正常シナリオ（範囲のスクリプトと CSS）]
-      - dev/設計書/シナリオ/単一ユースケース/チャートを描く#scenarios[正常シナリオ]
-      - dev/設計書/シナリオ/単一ユースケース/用語の意味をツールチップで確認する#scenarios[正常シナリオ（埋め込んだ HTML の中の用語）]
-      - dev/設計書/シナリオ/単一ユースケース/文書をHTMLに書き出す#scenarios[正常シナリオ（範囲のスクリプトと CSS）]
+      - SC-472-16#scenarios[正常シナリオ（範囲のスクリプトと CSS）]
+      - SC-472-24#scenarios[正常シナリオ]
+      - SC-472-65#scenarios[正常シナリオ（埋め込んだ HTML の中の用語）]
+      - SC-472-56#scenarios[正常シナリオ（範囲のスクリプトと CSS）]
 lead: 文書の作成者が、マーカーを付けたコードブロックの HTML にチャートとヒントを記載して描かせ、読者がチャートを拡大・縮小・移動し、ヒントと用語をツールチップで読み込む。書き出した 1 枚の HTML でも同じように読み込める。
 issue: 6
 primary_actor: 文書の作成者（AI を含む）

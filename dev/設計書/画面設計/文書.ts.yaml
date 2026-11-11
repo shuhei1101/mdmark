@@ -1,3 +1,4 @@
+id: SCR-472-4
 title: 文書
 elements:
   - name: 描く先の要素
@@ -7,7 +8,7 @@ elements:
     visible_when: 常時
     source: 文書を描く.request.el
     refs:
-      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#
+      - IF-472-35#
   - name: コードブロック
     id: code-block
     kind: region
@@ -16,7 +17,7 @@ elements:
     visible_when: 文書にコードブロックがあるとき
     tab_order: 0
     reason: キーボードで横スクロールできるように `tabindex="0"` を付ける。スクリーンリーダー向けの名前は情報文字列をそのまま使用し、言語名への対応表は持たない（モックの `TypeScript` は `ts` になる）
-    component: dev/設計書/部品設計/コードブロック.ts#
+    component: CMP-472-18#
     args:
       - name: lines
         value: コードブロックの行（行末のコードの行のマーカーを削除した文字と、マーカーと `highlight=` から決めた行の種類、インデントのレベル、畳む行の数、`fold=` で最初から畳むか）
@@ -33,7 +34,7 @@ elements:
       - name: wrap
         value: '直前の `<!-- code: -->` に `wrap` があるか'
     refs:
-      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[色分けの対象]
+      - IF-472-35#constraints[色分けの対象]
   - name: 表
     id: table
     kind: table
@@ -42,7 +43,7 @@ elements:
     visible_when: 文書に表があるとき
     tab_order: 0
     sorting: 種類と `+機能`・`-機能` で決まる。`data` は並べ替え（降順 → 昇順 → 元の並び）・ピン止め・`filter=` で指定した列の絞り込み・列の幅の変更、既定の種類はピン止めと列の幅の変更、`plain` は無し。件数（`count`）・列の表示（`columns`）・列の並べ替え（`reorder`）・集計の行（`total`）・表のコピー（`copy`）・行へのリンク（`rowlink`）はどの種類の既定にも入らず、`+機能` を記載した表にだけ付く。既定の並びは記載した順
-    component: dev/設計書/部品設計/表.ts#
+    component: CMP-472-61#
     args:
       - name: kind
         value: 表のマーカーの種類（囲まない表と知らない種類は `default`）
@@ -99,7 +100,7 @@ elements:
       - name: resizing
         value: 読者がつまみをドラッグしている列の位置
     action: 'テーブル設定のパネルで列を動かす・隠す（要素「表のテーブル設定のパネル」）。列の見出しの右端のつまみで列の幅を変える（要素「表の列の幅のつまみ」）。`tree=` の表は、行を押して選ぶと同じ親の範囲の縦線を濃くし、もう一度押すと解く。`+columns` の表で列の表示を切り替えるたびに、`opts.onColumnsChange` に表の番号と隠している列の名前を指定する'
-    action_ref: dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[列の表示の通知]
+    action_ref: IF-472-35#constraints[列の表示の通知]
     error_message: 'マーカーの誤りは表の前の記載の警告で通知する。`mark` はそのマーカーの文字。表に無い列名の `tree=`: `{mark} の tree= の列 {列名} が表にありません。表の列は {列の並び} です。階層にせずに描いています。` / `tree=` の無い `type=`・`required=`・`default=`・`example=`: `{mark} の {引数}= は tree= と一緒に記載してください。当てずに描いています。` / 無い見出しの `example=`: `{mark} の example= の見出し {見出し} が文書に無いか、直下にタブがありません。見本を配置せずに描いています。`。文中のマーカー・列名・見出しは行内のコードにする'
   - name: 表のセル
     id: table-cell
@@ -136,7 +137,7 @@ elements:
   - name: 外部ライブラリのマーカーの場所
     id: embed
     kind: region
-    component: dev/設計書/部品設計/読み込み中のブロック.ts#
+    component: CMP-472-64#
     args:
       - name: name
         value: マーカーの名前
@@ -148,7 +149,7 @@ elements:
   - name: 通知ブロック
     id: notice
     kind: label
-    component: dev/設計書/部品設計/通知ブロック.ts#
+    component: CMP-472-65#
     args:
       - name: name
         value: マーカーの名前（拡張は拡張の `name`）
@@ -158,11 +159,11 @@ elements:
     description: 外部ライブラリや拡張のモジュールを読み込めない、`draw` が例外を投げた、または拡張の `schema` の `validate` が失敗したマーカーの場所を置き換える
     visible_when: 外部ライブラリか拡張のモジュールを読み込めないときと、拡張の `validate` が失敗したとき
     refs:
-      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#exceptions[なし（通知ブロック）]
+      - IF-472-35#exceptions[なし（通知ブロック）]
   - name: 見出しとセクション
     id: section
     kind: heading
-    component: dev/設計書/部品設計/セクション.ts#
+    component: CMP-472-21#
     args:
       - name: level
         value: 見出しの階層（1〜4）
@@ -176,13 +177,13 @@ elements:
     initial_value: '開いた状態。見出しの直後に `<!-- section: closed -->` があるセクションは閉じた状態'
     action: 開閉のボタンでセクションを開閉する。Shift を押しながら押す（Shift+Enter・Shift+Space を含む）と、そのセクションと中の入れ子のセクションを全て同じ状態にする。URL の `#ID` が閉じたセクションの中を指すときはそのセクションを開く
     refs:
-      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[セクションと行の詳細の開閉]
-      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[入れ子をまとめて開閉]
+      - IF-472-35#constraints[セクションと行の詳細の開閉]
+      - IF-472-35#constraints[入れ子をまとめて開閉]
     status: planned
   - name: 目次
     id: toc
     kind: nav
-    component: dev/設計書/部品設計/目次.ts#
+    component: CMP-472-55#
     args:
       - name: headings
         value: 文書の h2・h3 の階層・ID・文字
@@ -194,7 +195,7 @@ elements:
   - name: 注意書き
     id: callout
     kind: region
-    component: dev/設計書/部品設計/注意書き.ts#
+    component: CMP-472-52#
     args:
       - name: kind
         value: 引用の 1 行目の種類（知らない種類は `note`）
@@ -211,7 +212,7 @@ elements:
   - name: タブ
     id: tabs
     kind: tabs
-    component: dev/設計書/部品設計/タブ.ts#
+    component: CMP-472-22#
     args:
       - name: titles
         value: 範囲で最初に出る見出しの階層の見出しの文字
@@ -230,13 +231,13 @@ elements:
     initial_value: 1 つ目のタブを選んだ状態。`group` を持ち、localStorage にその組で残したタブ名のタブがあればそのタブを選んだ状態。URL の `#ID` がタブの中の要素を指すときは、localStorage より優先してその要素を含むタブを選んだ状態。`closed` の範囲は見出しだけを出した閉じた状態
     action: タブを押すか矢印キーで中身を切り替える。`group` を持つときは、ページの同じ `group` で同じタブ名を持つタブも切り替え、選んだタブ名を残す。URL の `#ID`（`hashchange` を含む）が選ばれていないタブの中の要素を指すときは、そのタブを選んでから要素へ移る（選んだタブ名は残さず、同じ `group` のほかのタブも切り替えない）
     refs:
-      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[タブの操作]
-      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[URL の ID でタブの中へ移る]
+      - IF-472-35#constraints[タブの操作]
+      - IF-472-35#constraints[URL の ID でタブの中へ移る]
     status: planned
   - name: ステップ
     id: steps
     kind: list
-    component: dev/設計書/部品設計/ステップ.ts#
+    component: CMP-472-20#
     args:
       - name: items
         value: 範囲の最初の番号付きリストの項目
@@ -252,7 +253,7 @@ elements:
   - name: ファイルツリー
     id: file-tree
     kind: tree
-    component: dev/設計書/部品設計/ファイルツリー.ts#
+    component: CMP-472-26#
     args:
       - name: nodes
         value: 言語 `tree` のコードブロックの罫線（`├── `・`└── `・`│   ` と `\|-- `・`` `-- ``・`\|   `）を読み込んだ項目。前に空白がある最初の `#` で名前と注釈を分け、注釈はインラインを描いた HTML
@@ -270,12 +271,12 @@ elements:
     initial_value: '`open=` の階層まで開いた状態（指定が無ければルートだけ開く）。コピーボタンは `コピー`'
     action: フォルダの名前かアイコンを押すか Enter・Space で開閉し、Shift を押しながらなら入れ子のフォルダも同じ状態にする。ページ内検索が閉じたフォルダの中に該当するとそのフォルダを開く。コピーボタンで `source` をクリップボードへ書き込み、書き込めないときはツリーの下に手動でコピーするパネルを出す。印刷の前に閉じたフォルダを開き、後にもう一度閉じる
     refs:
-      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[ファイルツリーの開閉とコピー]
+      - IF-472-35#constraints[ファイルツリーの開閉とコピー]
     status: planned
   - name: バッジ
     id: badge
     kind: label
-    component: dev/設計書/部品設計/バッジ.ts#
+    component: CMP-472-23#
     args:
       - name: label
         value: 行内のコードから頭の `badge:` を削除した文言（頭の後ろの最初の `:` の前が色の名前のときは、2 つ目の `:` の後ろ）
@@ -288,7 +289,7 @@ elements:
   - name: 行の詳細
     id: row-detail
     kind: row
-    component: dev/設計書/部品設計/行の詳細.ts#
+    component: CMP-472-60#
     args:
       - name: row
         value: マーカーの行の位置
@@ -310,7 +311,7 @@ elements:
   - name: 図表の番号
     id: figure
     kind: figure
-    component: dev/設計書/部品設計/図表の番号.ts#
+    component: CMP-472-40#
     args:
       - name: kind
         value: マーカーの直後が画像の段落なら `image`、表なら `table`
@@ -336,7 +337,7 @@ elements:
   - name: 記載の警告
     id: syntax-warning
     kind: label
-    component: dev/設計書/部品設計/記載の警告.ts#
+    component: CMP-472-62#
     args:
       - name: message
         value: 誤りごとの本文（エラーの文言）
@@ -346,13 +347,13 @@ elements:
     error_message: '`mark` はそのマーカーの文字。タブのマーカーの読み込めない指定: `{mark} の読み込めない指定を当てずに描いています。` と、項目 `group=: 組の名前がありません。group=os のように名前を記載してください。組を持たないタブとして描いています` / 知らない絞り込みの種類: `{mark} の絞り込みの種類 {種類} は使用できません。使用できる種類は select・text・date です。{列名}の列には絞り込みを付けずに描いています。` / 表に無い列名: `{mark} の列名 {列名} は表にありません。表の見出しの文字で記載してください。` / 隠せない先頭の列: `{mark} の列 {列名} は先頭の列のため隠せません。先頭の列は行の識別子と行へのリンクの配置場所なので、隠さずに描いています。` / 知らない集計の計算: `{mark} の計算 {計算} は使用できません。total=列名:計算 の構造で記載し、使用できる計算は sum・avg・count です。{列名} の列は集計せずに描いています。` / 集計する列の数として読み込めないセル: `「{列名}」の列に数として読み込めない値 {値の並び} があるため、{計算の名前}を出していません。数を記載するか、セルを空にしてください。`（`{値の並び}` は読み込めない値を `<code>` で囲んで `・` でつなぐ。`{計算の名前}` は `合計`・`平均`。列と計算ごとに 1 つずつの警告にし、表の上に配置する） / 機能を付けていない表のキー: `{mark} の読み込めない指定を当てずに描いています。` と、項目 `{キー}=: +{機能} を記載した表でだけ使用できます。当てずに描いています`（`total=` は `+total`、`hide=` は `+columns`）。表のマーカーの読み込めない列名・計算・先頭の列は、指定ごとに 1 つずつの警告にする / closed と open: `{mark} の closed と open は同時に記載できません。どちらか 1 つにしてください。closed を適用して描いています。` / 閉じのマーカーが無い: `{mark} の閉じのマーカー <!-- /{名前} --> がありません。範囲の終わりに閉じのマーカーを記載してください。マーカーから文書の終わりまでを範囲にして描いています。` / タブ名の見出しが無い: `<!-- tabs --> の範囲に、タブ名にする見出しがありません。タブにしたい中身ごとに見出し（### macOS など）を記載してください。範囲の中身はそのまま描いています。` / 番号付きリストが無い: `<!-- steps --> の範囲に、手順にする番号付きリストがありません。手順を 1. から始まる番号付きリストで記載してください。範囲の中身はそのまま描いています。` / 表に無い行: `{mark} の {n} 行目がありません。表は {m} 行です。行の位置を 1〜{m} で記載してください。詳細は表の後の本文として描いています。` / 切れた参照: `リンク先の #fig-{ID} の図表がありません。<!-- fig: {ID} --> を図か表の直前に記載するか、リンク先を修正してください。` / 重なった ID: `{mark} の ID {ID} は、前の図表と重なっています。別の ID にしてください。この図には番号だけを付け、ID を付けていません。` / 読み込めないファイルツリー: `ファイルツリーの {n} 行目が、上の行より {k} 階層深く記載されていて読み込めません。罫線の階層を 1 階層ずつ深くしてください。コードブロックのまま描いています。` / ビューの `group=` の列が表に無い: `{mark} の列 {列名} は表にありません。表の列は {列の並び} です。ボードにせず、表で描いています。` / ビューの範囲に表が無い: `{mark} の範囲に、項目にする表がありません。範囲の中に Markdown の表を記載してください。範囲の中身はそのまま描いています。` / ビューの使用できないアイコン: `{mark} のアイコン {名前} は使用できません。使用できるアイコンは {並び} です。{値} の列には既定のアイコンを付けています。` / コードブロックのマーカーの読み込めない指定: `{mark} の読み込めない指定を当てずに描いています。` と、項目 `{指定}: 使用できない指定です。使用できる指定は title=・lines・highlight=・fold=・wrap です。マーカーの引数は空白で区切るため、タイトルに空白は記載できません`（`title=` の直後の単語だけ）・`title=: タイトルがありません。title=app.ts のように記載してください`・`{指定}: 読み込めない行の指定です。2・4-6 のように、行の番号と範囲をコンマで並べてください`・`{指定}: コードブロックに無い行の番号です。コードブロックは {m} 行です。行の番号を 1〜{m} で記載してください` / コードブロックのマーカーの直後にコードブロックが無い: `{mark} の直後にコードブロックがありません。マーカーの次の行にコードブロックを記載してください。` / 知らないコードの行のマーカー: `コードの行のマーカー {マーカー} は使用できません。使用できるマーカーは [!code ++]・[!code --]・[!code highlight] です。{n} 行目には当てず、記載した文字のまま描いています。`（知らないマーカー 1 つにつき 1 つの警告） / 拡張の引数: `{mark} の引数が、拡張 {name} の決まりに合いません。修正してから再読み込みしてください。` と、issue ごとの項目（拡張を登録するの制約「引数の検査」） / 図の部品の定義の誤り（`{図}` はマーカーの図の種類の名前（`flow` はフロー図・`sequence` はシーケンス図・`chart` はグラフ・`param` は操作できる部品）、`{呼び名}` はグラフなら「このグラフ」、操作できる部品なら「この部品」、それ以外は「この図」）: JSON のコードブロックが無い・2 つ以上: `{図}の部品の定義を読み込めません。マーカーの範囲に json のコードブロックを 1 つだけ配置してください。{呼び名}は描いていません。` / JSON として読み込めない: `{図}の部品の定義を JSON として読み込めません（{行} 行目の {読み込めた最後の部分} の後に {足りない記号} がありません）。{呼び名}は描いていません。` / 構造に合わない: `{図}の部品の定義を読み込めません。{読み込めない箇所と修正方法の文}。{呼び名}は描いていません。`（例 `系列「担当者」の点が 4 つで、横の目盛り（x.ticks）の 5 つと合いません`・`ノード「分類」の種類 robot は使用できません。使用できる種類は llm・dm・script・mcp・data・external・start・question・action・result です`）。読み込めない箇所が 2 つ以上あるときは、本文に 1 つ目を記載し、残りを項目に並べる。埋め込んだ HTML の中の custom element（`<mdmark-chart>` など）の定義の誤りも同じ文言で、`{図}` はその要素の図の種類 / `<!-- html -->` の範囲に `html` のコードブロックが無い・2 つ以上: `<!-- html --> の範囲に html のコードブロックを 1 つだけ配置してください。範囲の中身はそのまま描いています。` / 拡張のマーカーの部品の定義を JSON として読み込めない: `{mark} の部品の定義を JSON として読み込めません（{行} 行目の {読み込めた最後の部分} の後に {足りない記号} がありません）。拡張 {name} の部品は描いていません。` / 値を持つ `wrap=`: `{mark} の wrap は値を持ちません。wrap=… ではなく wrap と記載してください。折り返さずに描いています。` / フロー図の座標の記載したものと省いたものが混ざる（図の部品の定義の誤りの「構造に合わない」の `{読み込めない箇所と修正方法の文}`）: `座標（x・y・w・h・points・width・height）を記載したものと省いたものが混ざっています。全て記載するか、全て省いてください` / 座標を省けない種類（同じく `{読み込めない箇所と修正方法の文}`）: `ノード「{名前}」の種類 {種類} では座標を省けません。座標を省けるのは、種類が start・question・action・result だけの判定フローチャートです。座標を記載するか、種類を変えてください` / フロー図のノードの許さないリンク先: `フロー図のノードのリンク先に使用できないものがあります。使用できるリンク先は http・https・mailto と相対パスです。このノードはリンクにせずに描いています。` と、ノードごとの項目 `{id}: {記載したリンク先}`（図ごとに 1 つの警告）。記法のマーカーの知らない種類・`+機能`・`-機能`・キー・指定の単語には警告を配置しない / mermaid が解釈できないソース: `mermaid
       の図を描けません（{mermaid のエラーの 1 行目}）。コードブロックのまま表示しています。`（コードブロックの前に配置する）。文中のマーカー・ID・値は行内のコードにする'
     refs:
-      - dev/設計書/インターフェース定義/ライブラリ本体/文書をHTML文字列にする.ts#constraints[作成者の誤り]
-      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#exceptions[なし（mermaid の記法を解釈できない）]
+      - IF-472-34#constraints[作成者の誤り]
+      - IF-472-35#exceptions[なし（mermaid の記法を解釈できない）]
     status: planned
   - name: 用語の下線
     id: term
     kind: tooltip
-    component: dev/設計書/部品設計/用語のツールチップ.ts#
+    component: CMP-472-53#
     args:
       - name: text
         value: 照合した本文の単語
@@ -373,9 +374,9 @@ elements:
     visible_when: 用語・文書の別名・エイリアス・用語のやめた言い方が本文に出て、`glossary`（文書の別名は `backlinks`）がオンのとき。用語は用語の `id`、文書の別名は文書の `id`、エイリアスはエイリアスの `id`、やめた言い方は言い方ごとに、セクションで最初に出たところだけ。コード・リンク・見出し・用語集の表の中には配置しない
     action: ポインターを乗せるかフォーカスすると開き、ツールチップの上へ移っても開いたまま。Esc で閉じてフォーカスを単語に戻す。タッチの端末では単語のタップで開閉を切り替え、ツールチップと単語の外のタップで閉じる（中のリンクとボタンのタップでは閉じない）。関連文書・エイリアスの URL のリンク・コマンドのコピーのボタンのあるときは Tab で中のリンクとボタンへ移る。単語の上に開き、上に収まらなければ下に開く（設定の `tooltips.placement` が `bottom` のときは下に開き、下に収まらなければ上に開く）
     refs:
-      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[用語と文書の別名の下線]
-      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[やめた言い方のマーカー]
-      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[エイリアスのツールチップ]
+      - IF-472-35#constraints[用語と文書の別名の下線]
+      - IF-472-35#constraints[やめた言い方のマーカー]
+      - IF-472-35#constraints[エイリアスのツールチップ]
     status: planned
   - name: 用語集の表
     id: glossary-table
@@ -385,12 +386,12 @@ elements:
     visible_when: 文書に用語集の表のマーカーがあるとき（`glossary` がオフのときも表は描く）
     error_message: 'マーカーの誤りは表の前の記載の警告で通知する。`mark` はそのマーカーの文字。表に無い列名: `{mark} の {引数}= の列 {列名} が表にありません。表の列は {列の並び} です。列名を修正してください。この表からは用語を入れずに描いています。` / 必須の指定が無い: `{mark} に {引数}= がありません。{用語の列か意味の列}を {引数}=列名 で指してください。この表からは用語を入れずに描いています。`。文中のマーカー・列名は行内のコードにする'
     refs:
-      - dev/設計書/部品設計/記載の警告.ts#states[GlossaryColumn]
+      - CMP-472-62#states[GlossaryColumn]
     status: planned
   - name: 関連文書の一覧
     id: backlinks
     kind: nav
-    component: dev/設計書/部品設計/関連文書の一覧.ts#
+    component: CMP-472-66#
     args:
       - name: id
         value: '`render` は `mdmark-backlinks-title`。`mount` はページの中で一意な値（`mdmark-backlinks-title-{mount の通し番号}`）にもう一度振り、一覧の `aria-labelledby` も合わせて修正する'
@@ -402,12 +403,12 @@ elements:
     visible_when: '`opts.docId` を指定し、参照している文書が 1 つ以上あり、`backlinks` がオンのとき'
     action: タイトルを押すとその文書へのリンクを開く。印刷ではリンクの後ろに相対パスを併記する
     refs:
-      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[関連文書と被参照の一覧]
+      - IF-472-35#constraints[関連文書と被参照の一覧]
     status: planned
   - name: 図
     id: diagram
     kind: figure
-    component: dev/設計書/部品設計/図の枠.ts#
+    component: CMP-472-39#
     args:
       - name: kind
         value: マーカーの名前（`flow`・`sequence`・`chart`・`er`）
@@ -431,17 +432,17 @@ elements:
     visible_when: '`diagrams` がオンで、図の部品のマーカーの範囲か、埋め込んだ HTML の中の図の部品の custom element に読み込める定義があるとき'
     action: 右上の縮小・拡大のボタンとキーで拡大・縮小し、倍率のボタンと `0` で開いたときの倍率と位置に戻す、ドラッグ・矢印キー・移動のボタンで動かす、全画面のボタンで全画面のモーダルを開く。フロー図のリンク先を持つノードを動かさずに押すか、フォーカスして Enter で、リンク先を同じタブで開く（ノードの上から図を動かしたときと右上のマーカーを押したときは開かない）。表示する枠の下端のリサイズハンドルのドラッグと `↑`・`↓` で表示する枠の高さを変え、ダブルクリックで倍率を変えずに図の全体が収まる高さにする。フロー図は動かした間、見えているシステムの枠と層のタイトルを上端に留める。ER 図はテーブルの見出しの開閉のボタンで、主キーと外部キー以外の列を畳む・開く
     refs:
-      - dev/設計書/インターフェース定義/ライブラリ本体/文書をHTML文字列にする.ts#constraints[図の部品]
-      - dev/設計書/インターフェース定義/ライブラリ本体/文書をHTML文字列にする.ts#constraints[ER 図]
-      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[図の拡大・縮小]
-      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[ER 図の列の開閉]
-      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[図の高さのリサイズハンドル]
-      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[図の移動]
+      - IF-472-34#constraints[図の部品]
+      - IF-472-34#constraints[ER 図]
+      - IF-472-35#constraints[図の拡大・縮小]
+      - IF-472-35#constraints[ER 図の列の開閉]
+      - IF-472-35#constraints[図の高さのリサイズハンドル]
+      - IF-472-35#constraints[図の移動]
     status: planned
   - name: 図の全画面
     id: diagram-dialog
     kind: dialog
-    component: dev/設計書/部品設計/図の枠.ts#
+    component: CMP-472-39#
     args:
       - name: kind
         value: 開いた図と同じ
@@ -462,12 +463,12 @@ elements:
     visible_when: 図の全画面のボタンを押してから閉じるまで
     action: 閉じるボタンか Esc で閉じ、フォーカスを全画面のボタンへ戻す。ツールチップを開いている間の Esc はツールチップだけを閉じる
     refs:
-      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[図の全画面]
+      - IF-472-35#constraints[図の全画面]
     status: planned
   - name: mermaid の図
     id: mermaid-diagram
     kind: figure
-    component: dev/設計書/部品設計/図の枠.ts#
+    component: CMP-472-39#
     args:
       - name: kind
         value: '`mermaid`'
@@ -487,95 +488,95 @@ elements:
     visible_when: '`mermaid` がオンで、mermaid のコードブロックを mermaid が描けたとき'
     action: 要素「図」と同じ拡大・縮小・移動・全画面・リサイズハンドル
     refs:
-      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[mermaid の描き方]
-      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[mermaid のテーマ]
+      - IF-472-35#constraints[mermaid の描き方]
+      - IF-472-35#constraints[mermaid のテーマ]
     status: planned
   - name: map の構成図
     id: map-flow
     kind: figure
-    component: dev/設計書/部品設計/図の枠.ts#
+    component: CMP-472-39#
     args:
-    - name: kind
-      value: '`map`'
-    - name: title
-      value: map のマーカーの `title`
-    - name: legend
-      value: '`[]`'
-    - name: wide
-      value: '''true'''
-    - name: tools
-      value: 外へ戻る（中へ入っていないときは押せない）・全て開く・全て閉じる・配置と選択を元に戻す（選んだか動かしたときだけ押せる）
-    - name: resizable
-      value: 機能 `diagram-resize` がオンか
-    - name: height
-      value: sessionStorage に保ったその図の高さ（無ければ指定しない）
+      - name: kind
+        value: '`map`'
+      - name: title
+        value: map のマーカーの `title`
+      - name: legend
+        value: '`[]`'
+      - name: wide
+        value: '''true'''
+      - name: tools
+        value: 外へ戻る（中へ入っていないときは押せない）・全て開く・全て閉じる・配置と選択を元に戻す（選んだか動かしたときだけ押せる）
+      - name: resizable
+        value: 機能 `diagram-resize` がオンか
+      - name: height
+        value: sessionStorage に保ったその図の高さ（無ければ指定しない）
     slots:
-    - name: default
-      value: dev/設計書/部品設計/mapの構成図.ts#（`layout` は Mermaid と補足から自動配置した結果、`collapsed`・`entered`・`selected`・位置は sessionStorage とクエリ文字列 `map-{図の番号}` の状態）
+      - name: default
+        value: dev/設計書/部品設計/mapの構成図.ts#（`layout` は Mermaid と補足から自動配置した結果、`collapsed`・`entered`・`selected`・位置は sessionStorage とクエリ文字列 `map-{図の番号}` の状態）
     position: 描く先の要素
     description: map の範囲の `flowchart` を自動配置して描いた構成図。置き場所の幅いっぱいに広げ、倍率 1 で出す。図の枠の下に要素「map の案内の帯」を置く
     visible_when: '`map` がオンで、map の範囲に `flowchart` の mermaid のブロックがあるとき'
     action: 要素「図」と同じ拡大・縮小・移動・全画面・リサイズハンドルに加え、グループの山形で開閉し、タイトルで中へ入り、外へ戻る・Esc で外へ戻る。ノードを押して選び、線を押して両端を選び、Esc か「配置と選択を元に戻す」で解く。ノード・グループのタイトルの行・線の区間をドラッグか Alt + 矢印キーで動かす。線にポインターを当てると強調する
     refs:
-    - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[map の図]
-    - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[map の強調]
-    - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[map の状態の保存]
-    - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[map の操作の分け方]
+      - IF-472-35#constraints[map の図]
+      - IF-472-35#constraints[map の強調]
+      - IF-472-35#constraints[map の状態の保存]
+      - IF-472-35#constraints[map の操作の分け方]
     status: planned
   - name: map のシーケンス図
     id: map-sequence
     kind: figure
-    component: dev/設計書/部品設計/図の枠.ts#
+    component: CMP-472-39#
     args:
-    - name: kind
-      value: '`map`'
-    - name: title
-      value: map のマーカーの `title`
-    - name: legend
-      value: '`[]`'
-    - name: wide
-      value: '''true'''
-    - name: tools
-      value: 外へ戻る（中だけを描いていないときは押せない）・全て開く・全て閉じる・参加者の並び順と選択を元に戻す（選んだか並べ替えたときだけ押せる）
-    - name: resizable
-      value: 機能 `diagram-resize` がオンか
+      - name: kind
+        value: '`map`'
+      - name: title
+        value: map のマーカーの `title`
+      - name: legend
+        value: '`[]`'
+      - name: wide
+        value: '''true'''
+      - name: tools
+        value: 外へ戻る（中だけを描いていないときは押せない）・全て開く・全て閉じる・参加者の並び順と選択を元に戻す（選んだか並べ替えたときだけ押せる）
+      - name: resizable
+        value: 機能 `diagram-resize` がオンか
     slots:
-    - name: default
-      value: dev/設計書/部品設計/mapのシーケンス図.ts#
+      - name: default
+        value: dev/設計書/部品設計/mapのシーケンス図.ts#
     position: 描く先の要素
     description: map の範囲の `sequenceDiagram` を全ての記法で描いたシーケンス図。図の枠の下に要素「map の案内の帯」を再生として置く
     visible_when: '`map` がオンで、map の範囲に `sequenceDiagram` の mermaid のブロックがあるとき'
     action: 要素「map の構成図」と同じ図の枠の操作に加え、ブロックのタブの山形で開閉し、タブの名前で中だけを描く。参加者を押して選び、ドラッグか Alt + 左右の矢印キーで並べ替える
     refs:
-    - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[map の図]
-    - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[map の状態の保存]
+      - IF-472-35#constraints[map の図]
+      - IF-472-35#constraints[map の状態の保存]
     status: planned
   - name: map の案内の帯
     id: map-band
     kind: toolbar
-    component: dev/設計書/部品設計/案内の帯.ts#
+    component: CMP-472-50#
     args:
-    - name: mode
-      value: 構成図は `walkthrough`、シーケンス図は `playback`
-    - name: total
-      value: 補足の `walkthroughs` の手順の数か、表示するメッセージの数
-    - name: title
-      value: 手順の `title` か、メッセージの文
-    - name: text
-      value: 構成図は手順の `text`、シーケンス図は `{送り手} → {受け手}` と補足の `notes` のそのメッセージの説明（改行はそのまま）
-    - name: label
-      value: '`{図のタイトル}の案内`・`{図のタイトル}の再生`'
+      - name: mode
+        value: 構成図は `walkthrough`、シーケンス図は `playback`
+      - name: total
+        value: 補足の `walkthroughs` の手順の数か、表示するメッセージの数
+      - name: title
+        value: 手順の `title` か、メッセージの文
+      - name: text
+        value: 構成図は手順の `text`、シーケンス図は `{送り手} → {受け手}` と補足の `notes` のそのメッセージの説明（改行はそのまま）
+      - name: label
+        value: '`{図のタイトル}の案内`・`{図のタイトル}の再生`'
     position: 描く先の要素 > map の構成図・map のシーケンス図の図の枠の下
     description: 案内と再生の帯。始める前も常に出す
     visible_when: 構成図は補足に `walkthroughs` があるとき、シーケンス図は常時
     action: 前へ・次へで手順を進め（端では反対の端へ回る）、停止で強調を解き、自動で進めるで印の `interval` 秒ごとに進める。シーケンス図の再生は、補足の `plays_over` で指した構成図の上でも強調する。片方の図で案内か再生を始めると、もう片方の強調を解く
     refs:
-    - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[map の強調]
+      - IF-472-35#constraints[map の強調]
     status: planned
   - name: mermaid の読み込み中のブロック
     id: mermaid-loading
     kind: label
-    component: dev/設計書/部品設計/読み込み中のブロック.ts#
+    component: CMP-472-64#
     args:
       - name: name
         value: '`mermaid`'
@@ -583,12 +584,12 @@ elements:
     description: mermaid を読み込んで描き終えるまで、隠した mermaid のコードブロックの場所に配置し、図の高さを取っておく
     visible_when: '`mermaid` がオンで、mermaid のコードブロックがあり、図に置き換える前'
     refs:
-      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[mermaid の読み込み]
+      - IF-472-35#constraints[mermaid の読み込み]
     status: planned
   - name: mermaid の通知ブロック
     id: mermaid-notice
     kind: label
-    component: dev/設計書/部品設計/通知ブロック.ts#
+    component: CMP-472-65#
     args:
       - name: name
         value: '`mermaid`'
@@ -598,12 +599,12 @@ elements:
     description: mermaid を読み込めないとき、mermaid のコードブロックごとに読み込み中のブロックと替える。コードブロックは出して残す
     visible_when: '`mermaid` がオンで、`mermaid.url` のモジュールを読み込めないか、`render` を持たないとき'
     refs:
-      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#exceptions[なし（mermaid を読み込めない）]
+      - IF-472-35#exceptions[なし（mermaid を読み込めない）]
     status: planned
   - name: 図のツールチップ
     id: diagram-tip
     kind: tooltip
-    component: dev/設計書/部品設計/図のツールチップ.ts#
+    component: CMP-472-38#
     args:
       - name: kind
         value: '`tip` を持つ線は `wire`、`io` を持つノードは `io`、`hint` を持つノード・`frame`・`lanes` は `hint`、ER 図の説明のボタンを持つテーブルは `table`、グラフの項目は `item`'
@@ -622,12 +623,12 @@ elements:
     visible_when: '`hints` がオンで、定義の線が `tip`、ノードが `io` か `hint`、`frame`・`lanes` が `hint`、ER 図のテーブルか列が `desc` を持つとき。グラフの項目は `hints` によらず付く'
     action: 線のラベルとノードの右上のマーカーにポインターを乗せるかフォーカスすると開き、上に乗っても閉じず、Esc で閉じる。タッチの端末では持ち主のタップで開閉を切り替え、ツールチップと持ち主の外のタップで閉じる。グループのタイトルのマーカーとグラフの項目も同じ。持ち主の下に開き、下に収まらなければ上に開く（`tooltips.diagramPlacement` に従う）。ノードのマーカーの外では開かず、ポインターの形状は変えない。ER 図のテーブルの説明のボタンでは、テーブルの下に開く。グラフの項目の上で押しても、動いた距離が小さいうちは図を動かさず開いたままにする
     refs:
-      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[図のツールチップ]
+      - IF-472-35#constraints[図のツールチップ]
     status: planned
   - name: 操作できる部品
     id: param
     kind: group
-    component: dev/設計書/部品設計/操作できる部品.ts#
+    component: CMP-472-47#
     args:
       - name: definition
         value: '`<!-- param -->` の範囲の部品の定義'
@@ -639,12 +640,12 @@ elements:
     initial_value: 定義の `knob.value`
     action: スライダーでグラフを再描画し、写すボタンで今の値を JSON にしてクリップボードへ写す
     refs:
-      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[操作できる部品の操作]
+      - IF-472-35#constraints[操作できる部品の操作]
     status: planned
   - name: 埋め込んだ HTML
     id: embedded-html
     kind: region
-    component: dev/設計書/部品設計/埋め込んだHTML.ts#
+    component: CMP-472-41#
     args:
       - name: html
         value: '`<!-- html -->` の範囲の `html` のコードブロックの中身を、許可の検査に合格したもの'
@@ -658,7 +659,7 @@ elements:
     description: 記載した人の HTML をその場に描く。中の `<mdmark-chart>` などは要素「図」、`data-hint` を持つ要素は要素「ヒント」、文字の中の用語は要素「用語の下線」になる
     visible_when: '`html` がオンで、`<!-- html -->` の範囲に `html` のコードブロックが 1 つだけあるとき（`html-scripts` がオンのときは、加えて `css`・`ts`・`js` を 1 つずつまで配置できる。`ts` と `js` はどちらか 1 つ）'
     action: 列より広いときだけ中で横にスクロールする。記載したボタンは、`html-scripts` がオンの文書で範囲の `ts`・`js` が操作を付けたときだけ動き、それ以外は押しても何も起きない。範囲の `css` はその範囲の HTML にだけ該当する
-    action_ref: dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[埋め込んだ HTML の操作]
+    action_ref: IF-472-35#constraints[埋め込んだ HTML の操作]
     status: planned
     introduced:
       pr: 45
@@ -666,7 +667,7 @@ elements:
   - name: ヒント
     id: hint
     kind: tooltip
-    component: dev/設計書/部品設計/ヒント.ts#
+    component: CMP-472-24#
     args:
       - name: text
         value: 要素の `data-hint` の値
@@ -676,14 +677,14 @@ elements:
     description: '`data-hint` を持つ要素に、ブロックは右上の情報のアイコン、行内は破線の下線を付け、図のツールチップと同じ外観で文を出す。描いた直後は閉じている'
     visible_when: '`hints` がオンで、埋め込んだ HTML の要素が `data-hint` を持つとき'
     action: ブロックはマーカー、行内は要素にポインターを乗せるかフォーカスすると開き、上に乗っても閉じず、Esc で閉じる。タッチの端末では持ち主のタップで開閉を切り替え、ツールチップと持ち主の外のタップで閉じる。マーカー・行内の要素の上に開き、上に収まらなければ下に開く（要素「用語の下線」と同じく `tooltips.placement` に従う）。ブロックのマーカーの外では開かず、ポインターの形状は変えない
-    action_ref: dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[ヒントの操作]
+    action_ref: IF-472-35#constraints[ヒントの操作]
     status: planned
     introduced:
       pr: 45
   - name: 差分を開くボタン
     id: diff-toggle
     kind: button
-    component: dev/設計書/部品設計/差分を開くボタン.ts#
+    component: CMP-472-46#
     args:
       - name: controls
         value: 差分の場所の `id`（ページの中で一意な `mdmark-diff-panel-{n}`）
@@ -697,7 +698,7 @@ elements:
     initial_value: 閉じた状態（`aria-expanded="false"`）。`opts.diffMode` が `open` のときは開いた状態（`aria-expanded="true"`）
     action: 押すと、タイトルを残して本文と右側の目次を隠し、差分の場所を開く。差分を開いている間はセクションの開閉で本文を出さない。もう一度押すと差分を片付け、本文（セクションは今の開閉の状態）と右側の目次に戻す
     refs:
-      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[差分を開く UI]
+      - IF-472-35#constraints[差分を開く UI]
     status: planned
   - name: 差分の場所
     id: diff-panel
@@ -707,12 +708,12 @@ elements:
     visible_when: 差分を開いている間
     initial_value: '`hidden`'
     refs:
-      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[差分を開く UI]
+      - IF-472-35#constraints[差分を開く UI]
     status: planned
   - name: リビジョンの選択
     id: revision-picker
     kind: select
-    component: dev/設計書/部品設計/リビジョンの選択.ts#
+    component: CMP-472-32#
     args:
       - name: revisions
         value: DiffSource.revisions の戻り値
@@ -730,12 +731,12 @@ elements:
     source: 文書を描く.request.opts.diffSource
     action: もう一度選ぶと、選んだ 2 つの本文を取り出して差分を再描画する
     refs:
-      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[比べる 2 つのリビジョン]
+      - IF-472-35#constraints[比べる 2 つのリビジョン]
     status: planned
   - name: 差分の行
     id: diff-lines
     kind: region
-    component: dev/設計書/部品設計/差分の行.ts#
+    component: CMP-472-45#
     args:
       - name: blocks
         value: 選んだ 2 つの `DiffSource.content` の戻り値を比べた結果
@@ -747,12 +748,12 @@ elements:
     io: 表示
     visible_when: 選んだ 2 つの本文を取り出せ、変更があるとき
     refs:
-      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[差分の行]
+      - IF-472-35#constraints[差分の行]
     status: planned
   - name: 埋め込んだ HTML の差分
     id: diff-html
     kind: region
-    component: dev/設計書/部品設計/埋め込んだHTMLの差分.ts#
+    component: CMP-472-42#
     args:
       - name: changed
         value: 前か後で範囲の行が変わったか
@@ -764,12 +765,12 @@ elements:
     initial_value: ソース
     action: 「プレビュー」で前と後の描いた結果を並べ、「ソース」で行の色分けに戻す
     refs:
-      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[埋め込んだ HTML の差分]
+      - IF-472-35#constraints[埋め込んだ HTML の差分]
     status: planned
   - name: 差分の状態の文
     id: diff-message
     kind: label
-    component: dev/設計書/部品設計/差分の状態の文.ts#
+    component: CMP-472-44#
     args:
       - name: kind
         value: '`loading`（待ちが 1 秒を過ぎた）・`single`（リビジョンが 1 つ）・`same`（本文が同じ）'
@@ -777,12 +778,12 @@ elements:
     description: 差分の行の代わりに出す短い文
     visible_when: 待ちが 1 秒を過ぎたとき・リビジョンが 1 つのとき・選んだ 2 つの本文が同じとき
     refs:
-      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[差分の待ち]
+      - IF-472-35#constraints[差分の待ち]
     status: planned
   - name: 差分の通知ブロック
     id: diff-notice
     kind: label
-    component: dev/設計書/部品設計/通知ブロック.ts#
+    component: CMP-472-65#
     args:
       - name: name
         value: 取り出せなかったリビジョンの説明（`diff-revisions` のときは文書の `id`）
@@ -792,12 +793,12 @@ elements:
     description: 取り出し元が一覧か本文を返却できないときに出す。一覧のときは差分の場所の全体、本文のときはリビジョンの選択を残して差分の行の場所に配置する
     visible_when: 取り出し元の `revisions`・`content` が reject するか、構造に合わない値を返却したとき
     refs:
-      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[差分の通知ブロック]
+      - IF-472-35#constraints[差分の通知ブロック]
     status: planned
   - name: ミニマップ
     id: diff-minimap
     kind: region
-    component: dev/設計書/部品設計/ミニマップ.ts#
+    component: CMP-472-30#
     args:
       - name: marks
         value: 差分の行の削除した行・追加した行の位置（スクロール先の全体に対する割合）
@@ -808,13 +809,13 @@ elements:
     visible_when: 差分の行を出している間
     action: 帯を押すとその位置へ、押したまま上下に動かすとそれに合わせて差分をスクロールする
     refs:
-      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[ミニマップ]
+      - IF-472-35#constraints[ミニマップ]
     reason: スクロールバーと一体に見せる（確認ログのモックへの合意）
     status: planned
   - name: ビュー
     id: view
     kind: group
-    component: dev/設計書/部品設計/ビュー.ts#
+    component: CMP-472-25#
     args:
       - name: columns
         value: マーカーの範囲の最初の表の見出しの行の文字（`mountView` は ビューを描く.request.opts.columns）
@@ -830,25 +831,25 @@ elements:
     sorting: 表形式だけ。並べ替え（降順 → 昇順 → 元の並び）と、`filter=` で指定した列の絞り込み（`select`・`text`・`date`）。ボードには絞り込みを当てず、全ての項目を出す。既定の並びは記載した順
     action: 切り替えのボタンでボードと表形式を切り替える。表形式の絞り込みはボードへ切り替えても残り、表形式へ戻すと該当している。印刷では今のビューを出し、切り替えと絞り込みのボタンを出さない
     refs:
-      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[ビューの操作]
-      - dev/設計書/インターフェース定義/ライブラリ本体/ビューを描く.ts#
+      - IF-472-35#constraints[ビューの操作]
+      - IF-472-30#
     status: planned
   - name: コメントのボタン
     id: comment-add
     kind: button
-    component: dev/設計書/部品設計/コメントのボタン.ts#
+    component: CMP-472-14#
     position: 描く先の要素 > 選んだ文字のブロックの直後
     description: 本文の文字を 1 つのブロック（段落・リストの項目・表のセル・見出し・引用）の中で選んだとき、選んだ文字の終わりの下（収まらなければ上）に出す
     label: コメント
     visible_when: '`comments` がオンで `opts.commentStore` を指定したか `mountComments` を呼び、文字を選んでいて入力欄を開いていないとき。入力欄・ビューの操作・コード・既にあるマーカーの中の選びでは出さない。コメントの部品のモジュールを読み込めないときは出さない'
     action: 押すと選んだ文字の下にコメントの入力欄を開く
     refs:
-      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[コメントの操作]
+      - IF-472-35#constraints[コメントの操作]
     status: planned
   - name: コメントの入力欄
     id: comment-form
     kind: dialog
-    component: dev/設計書/部品設計/コメントの入力欄.ts#
+    component: CMP-472-16#
     args:
       - name: quote
         value: 選んだ文字（前後の空白を落とす）
@@ -865,14 +866,14 @@ elements:
     error_message: '本文が空: `コメントを記載してから保存してください。` / 保存できない: `コメントを保存できませんでした。記載したコメントは残っています。もう一度「コメントを保存」を押してください。`（理由は `console.error` に出す）'
     target: コメントを付ける.request.opts.store（`save` の `comment.body`。`quote`・`prefix`・`suffix` は選んだ範囲から作る）
     action: 「コメントを保存」で保存し、待つ間は保存のボタンを押せなくして `保存しています…` にする。保存できたら入力欄を閉じ、選んだ文字をマーカーで包んでマーカーへフォーカスを移す。保存できないときは入力欄と本文を残す。キャンセルか Esc で閉じ（本文があるときは `記載したコメントを捨てて閉じますか？` を確認する）、外側の押下では閉じない
-    action_ref: dev/設計書/インターフェース定義/ライブラリ本体/コメントを付ける.ts#
+    action_ref: IF-472-27#
     refs:
-      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[コメントの操作]
+      - IF-472-35#constraints[コメントの操作]
     status: planned
   - name: コメントのマーカー
     id: comment-mark
     kind: button
-    component: dev/設計書/部品設計/コメントのマーカー.ts#
+    component: CMP-472-15#
     args:
       - name: text
         value: '`load` が返却したコメントの `quote` に一致した本文の文字'
@@ -884,13 +885,13 @@ elements:
     source: コメントを付ける.request.opts.store（`load` の戻り値）
     action: 押下・Enter・Space でコメントの吹き出しを開く。`focusComment` で移ると画面に入れてフォーカスを受け、次の `focusComment` かマーカーの再付与まで強調する。印刷では地の色を削除し、下線だけを残す
     refs:
-      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[コメントの箇所]
-      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[コメントの箇所へ移る]
+      - IF-472-35#constraints[コメントの箇所]
+      - IF-472-35#constraints[コメントの箇所へ移る]
     status: planned
   - name: コメントの吹き出し
     id: comment-bubble
     kind: dialog
-    component: dev/設計書/部品設計/コメントの吹き出し.ts#
+    component: CMP-472-17#
     args:
       - name: quote
         value: マーカーの文字
@@ -919,15 +920,15 @@ elements:
     error_message: '修正できない: `コメントを保存できませんでした。記載したコメントは残っています。もう一度「保存」を押してください。` / 削除できない: `コメントを削除できませんでした。もう一度「削除」を押してください。`（理由は `console.error` に出す）'
     target: 文書を描く.request.opts.commentStore（「保存」で `update` の `body`、確認の「削除」で `remove`）
     action: 閉じるボタン・外側の押下・Esc で閉じる。閉じるボタンと Esc ではフォーカスをマーカーへ戻す。「編集」でそのコメントを入力欄に替え、「保存」で `update` を呼ぶ。「削除」でそのコメントの下に削除の確認を出し、確認の「削除」で `remove` を呼ぶ。入力欄・削除の確認を開いている間の Esc は、それだけを閉じる
-    action_ref: dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[コメントの修正と削除]
+    action_ref: IF-472-35#constraints[コメントの修正と削除]
     refs:
-      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[コメントの操作]
-      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[コメントの修正と削除]
+      - IF-472-35#constraints[コメントの操作]
+      - IF-472-35#constraints[コメントの修正と削除]
     status: planned
   - name: 箇所が見つからないコメントの一覧
     id: comment-orphans
     kind: list
-    component: dev/設計書/部品設計/箇所が見つからないコメントの一覧.ts#
+    component: CMP-472-56#
     args:
       - name: comments
         value: コメントを付ける.request.opts.store（`load` が返却したコメントのうち、箇所が見つからないものの `quote`・`body`）
@@ -939,12 +940,12 @@ elements:
     io: 表示
     visible_when: 箇所が見つからないコメントが 1 つ以上あるとき
     refs:
-      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[コメントの箇所]
+      - IF-472-35#constraints[コメントの箇所]
     status: planned
   - name: 余白のマーカー
     id: comment-marker
     kind: button
-    component: dev/設計書/部品設計/余白のマーカー.ts#
+    component: CMP-472-33#
     args:
       - name: quote
         value: 行の最初のマーカーの文字
@@ -960,8 +961,8 @@ elements:
     visible_when: '`comments` がオンで `opts.commentStore` を指定し、箇所が見つかったマーカーが 1 つ以上あるとき。印刷では出さない'
     action: 押下・Enter・Space で、マーカーを包む閉じた要素を開き、マーカーまでスクロールして吹き出しを開く
     refs:
-      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[余白のマーカー]
-      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[余白のマーカーから移る]
+      - IF-472-35#constraints[余白のマーカー]
+      - IF-472-35#constraints[余白のマーカーから移る]
     status: planned
   - name: 表の集計のボタン
     id: table-totals-toggle
@@ -974,7 +975,7 @@ elements:
     initial_value: 閉じた状態（`aria-expanded="false"`）
     action: 押すと表の集計のメニューを開き、もう一度押すと閉じる
     refs:
-      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[表の操作]
+      - IF-472-35#constraints[表の操作]
     status: planned
   - name: 表の集計のメニュー
     id: table-totals-menu
@@ -989,7 +990,7 @@ elements:
     options: マーカーの `total=` に記載した計算（`合計`・`平均`・`件数` の順。複数選べる）
     action: チェックを解除した計算の集計の行を隠し、入れた計算の行を出して、`{計算の名前}の行を出しました`・`{計算の名前}の行を隠しました` をスクリーンリーダーで通知する
     refs:
-      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[表の操作]
+      - IF-472-35#constraints[表の操作]
     status: planned
   - name: 表のコピーの形式のメニュー
     id: table-copy-menu
@@ -1001,7 +1002,7 @@ elements:
     options: '`Markdown の表`（文書に貼るとそのまま表になる）・`TSV`（表計算ソフトに貼るとセルに分かれる）の順'
     action: 形式を押すとメニューを閉じ、表示している行と列をその形式でクリップボードへ写す。書き込めたら `表をコピー` のアイコンを `check`、ツールチップとスクリーンリーダー向けの名前を `コピーしました` にして 2 秒で戻し、`{形式の名前}をコピーしました` をスクリーンリーダーで通知する。書き込めなければ表のコピーできないときのパネルを出す
     refs:
-      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[表の操作]
+      - IF-472-35#constraints[表の操作]
     status: planned
   - name: 表のコピーできないときのパネル
     id: table-copy-panel
@@ -1013,7 +1014,7 @@ elements:
     visible_when: 表のコピーで `navigator.clipboard` が無いか書き込みを拒まれたとき
     action: 閉じるボタンか、パネルの中にフォーカスがある間の Esc で閉じ、フォーカスを `表をコピー` に戻す。もう一度コピーするときは前のパネルを閉じてから記載する
     refs:
-      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[表の操作]
+      - IF-472-35#constraints[表の操作]
     status: planned
   - name: 行の URL の通知
     id: row-link-notice
@@ -1025,7 +1026,7 @@ elements:
     visible_when: 行へのリンクのマーカーを押してから 2 秒の間
     initial_value: 空
     refs:
-      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[表の操作]
+      - IF-472-35#constraints[表の操作]
     status: planned
   - name: 最終列の開閉のボタン
     id: fold-toggle
@@ -1037,7 +1038,7 @@ elements:
     initial_value: 閉じた状態（`aria-expanded="false"`）
     action: 押すと（Enter・Space を含む）行の直後の行に最終列の見出しの文字とその行のセルの中身を出し、もう一度押すと閉じる
     refs:
-      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[最終列を畳む]
+      - IF-472-35#constraints[最終列を畳む]
     status: planned
   - name: コードブロックの言語のラベル
     id: code-lang
@@ -1048,7 +1049,7 @@ elements:
     io: 表示
     visible_when: コードブロックが言語を持つとき
     refs:
-      - dev/設計書/インターフェース定義/ライブラリ本体/文書をHTML文字列にする.ts#constraints[コードブロック]
+      - IF-472-34#constraints[コードブロック]
     status: planned
   - name: コードの行の開閉のボタン
     id: code-fold
@@ -1060,7 +1061,7 @@ elements:
     initial_value: 開いた状態（`aria-expanded="true"`）。`fold=` の行は畳んだ状態
     action: 押すと（Enter・Space を含む）後ろの範囲の行を隠して行の末尾に `⋯` のボタンを配置し、もう一度押すと開く。Shift を押しながらなら範囲の中の畳める行も同じ状態にする。開いたとき、内側で畳んでいた行は畳んだまま残す
     refs:
-      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[コードの折りたたみ]
+      - IF-472-35#constraints[コードの折りたたみ]
     status: planned
   - name: 畳んだ行の展開のボタン
     id: code-fold-more
@@ -1072,7 +1073,7 @@ elements:
     initial_state: 活性
     action: 押すと畳んだ行を開き、ボタンを削除する
     refs:
-      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[コードの折りたたみ]
+      - IF-472-35#constraints[コードの折りたたみ]
     status: planned
   - name: コードのコピーのボタン
     id: code-copy
@@ -1085,7 +1086,7 @@ elements:
     initial_value: '`コピー`（`data-state="idle"`）'
     action: 押すと削除した行を除いたコードの文字をクリップボードへ写す。書き込めたら `コピーしました` にして 2 秒で戻し、書き込めなければ次に押すまで `コピーできませんでした` にする
     refs:
-      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[コードブロックのコピー]
+      - IF-472-35#constraints[コードブロックのコピー]
     status: planned
   - name: 本文の列
     id: content
@@ -1094,14 +1095,14 @@ elements:
     description: 右側の目次を配置するとき、`render` の HTML を入れる `div.mdmark-content`。`--mdmark-content-width` はこの列に適用する。印刷では紙の幅いっぱいに出す
     visible_when: '`side-toc` がオンで、文書に h1〜h3 の見出しが 1 つ以上あるとき（それ以外は描く先の要素に本文を直に入れる）'
     refs:
-      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[右側の目次]
+      - IF-472-35#constraints[右側の目次]
     status: planned
     introduced:
       pr: 166
   - name: 右側の目次
     id: side-toc
     kind: aside
-    component: dev/設計書/部品設計/右側の目次.ts#
+    component: CMP-472-37#
     args:
       - name: headings
         value: 文書の h1・h2・h3 の階層・ID・文字（閉じたセクションと選ばれていないタブの中も含める）
@@ -1117,12 +1118,12 @@ elements:
     initial_value: 目次を出していない・ピン止めしていない状態（`mount` のたびに戻し、`update` では保つ）。今いるセクションは画面の高さの 25% の線より上の最後の見出し
     action: 項目を押すと URL の `#ID` で移るのと同じく、閉じたセクションを開きタブを選んでその見出しへ移る（URL が同じでも移る）。本文に重ねて開いた目次は項目を押すと閉じる。出している目次の中で Esc を押すと隠し、目次を出すボタンへフォーカスを戻す
     refs:
-      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[右側の目次]
-      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[右側の目次の出し方]
-      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[狭い幅の右側の目次]
-      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[今いるセクション]
-      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[右側の目次から移る]
-      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[右側の目次の重なりと留める位置]
+      - IF-472-35#constraints[右側の目次]
+      - IF-472-35#constraints[右側の目次の出し方]
+      - IF-472-35#constraints[狭い幅の右側の目次]
+      - IF-472-35#constraints[今いるセクション]
+      - IF-472-35#constraints[右側の目次から移る]
+      - IF-472-35#constraints[右側の目次の重なりと留める位置]
     status: planned
     introduced:
       pr: 166
@@ -1136,7 +1137,7 @@ elements:
     initial_value: '`aria-expanded="false"`'
     action: 目次を出すか隠すかを切り替える
     refs:
-      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[右側の目次の出し方]
+      - IF-472-35#constraints[右側の目次の出し方]
     status: planned
     introduced:
       pr: 166
@@ -1150,7 +1151,7 @@ elements:
     initial_value: '`aria-pressed="false"`'
     action: ピン止めすると目次を本文の右の列に出したままにし、本文の列をその分狭める。もう一度押すと解除する
     refs:
-      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[右側の目次の出し方]
+      - IF-472-35#constraints[右側の目次の出し方]
     status: planned
     introduced:
       pr: 166
@@ -1164,7 +1165,7 @@ elements:
     action: 文書の全てのセクション（h1〜h4）を開く。フォーカスはこのボタンに残す
     reason: アイコンだけにし、右側の目次の上部に配置するのは確認ログの決定
     refs:
-      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[すべて展開・すべて折りたたむ]
+      - IF-472-35#constraints[すべて展開・すべて折りたたむ]
     status: planned
     introduced:
       pr: 166
@@ -1178,14 +1179,14 @@ elements:
     action: h1 のセクションを開き、h2〜h4 の全てのセクションを閉じて見出しを並べる。フォーカスはこのボタンに残す
     reason: H1 のセクションを閉じないのは確認ログの決定
     refs:
-      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[すべて展開・すべて折りたたむ]
+      - IF-472-35#constraints[すべて展開・すべて折りたたむ]
     status: planned
     introduced:
       pr: 166
   - name: 先頭へ戻るボタン
     id: back-to-top
     kind: button
-    component: dev/設計書/部品設計/先頭へ戻るボタン.ts#
+    component: CMP-472-34#
     args:
       - name: hidden
         value: スクロールする場所の上端から描く先の要素の上端までのスクロールの量が、スクロールする場所の高さ未満か
@@ -1197,7 +1198,7 @@ elements:
     action: 押すとスクロールする場所を描いた文書の先頭へスクロールし（動きを減らす設定では一度に移る）、本文の列へフォーカスを移す
     reason: 出し始める量・回避するときの位置・既定でオンにするのは確認ログの決定
     refs:
-      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[先頭へ戻るボタン]
+      - IF-472-35#constraints[先頭へ戻るボタン]
     status: planned
     introduced:
       pr: 287
@@ -1212,12 +1213,12 @@ elements:
     initial_value: '`コピー`（`data-state="idle"`）'
     action: 押すとエイリアスの `command` の文字をクリップボードへ書き込む。書き込めたら `コピーしました` にして 2 秒で戻し、書き込めなければ次に押すまで `コピーできませんでした` にする。押してもツールチップを閉じない
     refs:
-      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[コマンドのコピー]
+      - IF-472-35#constraints[コマンドのコピー]
     status: planned
   - name: 差分のブロック
     id: diff-block
     kind: region
-    component: dev/設計書/部品設計/差分のブロック.ts#
+    component: CMP-472-43#
     args:
       - name: kind
         value: 追加・変更したブロックは `add`、削除したブロックは `del`
@@ -1231,14 +1232,14 @@ elements:
     visible_when: '`opts.baseMarkdown` が文字列で本文に変更があるときか、`opts.baseMarkdown` を指定せず `opts.diffMode` が `blocks` で、取り出し元が 2 つ以上のリビジョンを返却し、本文に変更があるとき'
     source: 文書を描く.request.opts.baseMarkdown・文書を描く.request.opts.diffSource
     refs:
-      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[比較元の Markdown]
-      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[描いた文書のブロックの色分け]
-      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[色を適用したブロックの要素]
+      - IF-472-35#constraints[比較元の Markdown]
+      - IF-472-35#constraints[描いた文書のブロックの色分け]
+      - IF-472-35#constraints[色を適用したブロックの要素]
     status: planned
   - name: 色分けの通知ブロック
     id: diff-blocks-notice
     kind: label
-    component: dev/設計書/部品設計/通知ブロック.ts#
+    component: CMP-472-65#
     args:
       - name: name
         value: 文書の `id`
@@ -1248,12 +1249,12 @@ elements:
     description: '`opts.diffMode` が `blocks` で、取り出し元が一覧か本文を返却できないときに出す。本文は色を当てずに描いたまま残す'
     visible_when: '`opts.diffMode` が `blocks` で、取り出し元の `revisions`・`content` が reject するか、構造に合わない値を返却したとき'
     refs:
-      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#exceptions[なし（ブロックの色分けを出せない）]
+      - IF-472-35#exceptions[なし（ブロックの色分けを出せない）]
     status: planned
   - name: 本文の文字の色
     id: text-color
     kind: label
-    component: dev/設計書/部品設計/文字の色.ts#
+    component: CMP-472-48#
     args:
       - name: color
         value: '`{color=色}` の色の名前'
@@ -1263,12 +1264,12 @@ elements:
     description: '`[文字]{color=色}` の文字を、色のプリセットの文字の色と太字で強調する。知らない色の名前は色を付けず、段落の前に記載の警告を配置する'
     visible_when: 文書に `[文字]{color=色}` があり、`text-color` がオンのとき
     refs:
-      - dev/設計書/インターフェース定義/ライブラリ本体/文書をHTML文字列にする.ts#constraints[本文の文字の色]
+      - IF-472-34#constraints[本文の文字の色]
     status: planned
   - name: 画像の図
     id: image-figure
     kind: figure
-    component: dev/設計書/部品設計/画像の図.ts#
+    component: CMP-472-54#
     args:
       - name: src
         value: 画像の `src`（フラグメントを含む）
@@ -1290,13 +1291,13 @@ elements:
     tab_order: 0
     action: 拡大のボタンを押すとライトボックスを開く
     refs:
-      - dev/設計書/インターフェース定義/ライブラリ本体/文書をHTML文字列にする.ts#constraints[画像の図とキャプション]
-      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[ライトボックス]
+      - IF-472-34#constraints[画像の図とキャプション]
+      - IF-472-35#constraints[ライトボックス]
     status: planned
   - name: ギャラリー
     id: gallery
     kind: figure
-    component: dev/設計書/部品設計/ギャラリー.ts#
+    component: CMP-472-12#
     args:
       - name: cols
         value: マーカーの `cols=`（省いたときは `2`）
@@ -1307,12 +1308,12 @@ elements:
     description: '`<!-- gallery: cols=N -->` 〜 `<!-- /gallery -->` の中の画像を格子に並べる。`fig` のマーカーの直後なら図表の番号のスロットに入り、中の画像にサブ図の番号（`図 2a`）を付ける'
     visible_when: 文書に `gallery` のマーカーがあり、`gallery` がオンのとき
     refs:
-      - dev/設計書/インターフェース定義/ライブラリ本体/文書をHTML文字列にする.ts#constraints[ギャラリー]
+      - IF-472-34#constraints[ギャラリー]
     status: planned
   - name: ライトボックス
     id: lightbox
     kind: dialog
-    component: dev/設計書/部品設計/ライトボックス.ts#
+    component: CMP-472-31#
     args:
       - name: src
         value: 押した画像の `src`
@@ -1329,13 +1330,13 @@ elements:
     visible_when: 画像の拡大のボタンを押してから閉じるまで
     action: 閉じるボタン・Esc・画像の外の背景で閉じ、フォーカスを押した画像の拡大のボタンへ戻す。文書のスクロールの位置は開く前のまま
     refs:
-      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[ライトボックス]
-      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[ライトボックスの拡大・縮小・移動]
+      - IF-472-35#constraints[ライトボックス]
+      - IF-472-35#constraints[ライトボックスの拡大・縮小・移動]
     status: planned
   - name: 動画・音声
     id: media
     kind: figure
-    component: dev/設計書/部品設計/動画と音声.ts#
+    component: CMP-472-36#
     args:
       - name: kind
         value: '`src` の拡張子が動画なら `video`、音声なら `audio`'
@@ -1360,12 +1361,12 @@ elements:
     visible_when: 文書に拡張子が動画・音声の画像があり、`media` がオンのとき
     tab_order: 0
     refs:
-      - dev/設計書/インターフェース定義/ライブラリ本体/文書をHTML文字列にする.ts#constraints[動画と音声]
+      - IF-472-34#constraints[動画と音声]
     status: planned
   - name: GIF のボタン
     id: gif-toggle
     kind: button
-    component: dev/設計書/部品設計/GIF.ts#
+    component: CMP-472-2#
     args:
       - name: src
         value: GIF の `src`
@@ -1379,12 +1380,12 @@ elements:
     tab_order: 0
     action: 押すと止める・再生するを切り替える
     refs:
-      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[GIF の止める・再生する]
+      - IF-472-35#constraints[GIF の止める・再生する]
     status: planned
   - name: カード
     id: card
     kind: link
-    component: dev/設計書/部品設計/カード.ts#
+    component: CMP-472-9#
     args:
       - name: kind
         value: リンク先の拡張子が添付の拡張子の一覧にあれば `file`、それ以外の `http`・`https` の URL なら `link`
@@ -1400,12 +1401,12 @@ elements:
     tab_order: 0
     action: 押すとリンク先を開く
     refs:
-      - dev/設計書/インターフェース定義/ライブラリ本体/文書をHTML文字列にする.ts#constraints[リンクと添付のカード]
+      - IF-472-34#constraints[リンクと添付のカード]
     status: planned
   - name: 脚注の番号
     id: footnote-ref
     kind: tooltip
-    component: dev/設計書/部品設計/脚注の番号.ts#
+    component: CMP-472-58#
     args:
       - name: number
         value: 本文で最初に参照した順に 1 から振った脚注の番号
@@ -1419,12 +1420,12 @@ elements:
     visible_when: '`footnotes` がオンで、定義のある参照か行内の脚注があるとき'
     action: ポインターを乗せるかフォーカスするとツールチップを出し、Esc で削除する。タッチの端末では、閉じた番号のタップでツールチップを出し（一覧へは移らない）、開いた番号のタップで一覧へ移り、ツールチップと番号の外のタップで削除する（中のリンクのタップでは消えない）。押すと（Enter を含む）閉じた脚注の一覧を開いて該当の項目へフォーカスを移す。印刷ではツールチップを出さず、番号を残す
     refs:
-      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[脚注の操作]
+      - IF-472-35#constraints[脚注の操作]
     status: planned
   - name: 脚注の一覧
     id: footnotes
     kind: details
-    component: dev/設計書/部品設計/脚注の一覧.ts#
+    component: CMP-472-57#
     args:
       - name: items
         value: 参照された脚注を番号の順に並べたもの。`number` は本文の番号、`html` は定義を描いた HTML（用語の下線とやめた言い方のマーカーを付けない）、`refCount` は本文で参照した回数。参照されない定義は入れない
@@ -1434,8 +1435,8 @@ elements:
     visible_when: '`footnotes` がオンで、参照された脚注が 1 つ以上あるとき'
     action: 見出しを押すと開閉する。戻るリンクを押すと本文の参照の番号へフォーカスを移す。印刷では開いて出し、戻るリンクを出さない
     refs:
-      - dev/設計書/インターフェース定義/ライブラリ本体/文書をHTML文字列にする.ts#constraints[脚注]
-      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[脚注の操作]
+      - IF-472-34#constraints[脚注]
+      - IF-472-35#constraints[脚注の操作]
     status: planned
   - name: 表のテーブル設定のボタン
     id: table-settings-toggle
@@ -1448,7 +1449,7 @@ elements:
     initial_value: 閉じた状態（`aria-expanded="false"`）
     action: 押すと表のテーブル設定のパネルを開き、もう一度押すと閉じる
     refs:
-      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[表の操作]
+      - IF-472-35#constraints[表の操作]
     status: planned
     introduced:
       pr: 303
@@ -1465,7 +1466,7 @@ elements:
     action: ドラッグ（マウス・タッチ）か、フォーカスして ←・→ キー（1 回 16px）で、つまみの左の列の幅だけを変える。ダブルクリック・ダブルタップ・Enter で描いた直後の幅に戻す
     constraints: 列の最小幅（セルの `min-width` の 6em）から、表の見えている幅からほかに留めた列の幅の合計を引いた幅までに収める。`aria-valuenow`・`aria-valuetext`（`{幅}px`）・`aria-valuemin`・`aria-valuemax` で示す
     refs:
-      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[列の幅]
+      - IF-472-35#constraints[列の幅]
     status: planned
     introduced:
       pr: 449
@@ -1482,8 +1483,8 @@ elements:
     action: つまみをドラッグ＆ドロップするか、つまみにフォーカスして ↑・↓ キーで列を動かす（同じ範囲の中だけ。`through` の表は同じピン止めの側の中だけで、`each` の表は留めているかを列が持ったまま動く）。目のアイコンで列を隠す・出す。Markdown に記載した先頭の列は隠せない
     error_message: '案内の文言: `つまみをドラッグするか、つまみにフォーカスして ↑・↓ キーで並べ替えます。先頭の列は隠せません`（`+reorder` だけの表は後ろの文を出さない。`+columns` だけの表は `先頭の列は隠せません` だけ）'
     refs:
-      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[列の並べ替え]
-      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[表の操作]
+      - IF-472-35#constraints[列の並べ替え]
+      - IF-472-35#constraints[表の操作]
     status: planned
     introduced:
       pr: 303
@@ -1497,7 +1498,7 @@ elements:
     initial_value: 開いた状態（`aria-expanded="true"`）
     action: 押すと子孫の行を畳み、もう一度押すと子を出す。Shift を押しながら押すと入れ子もまとめて畳む・開く。行の選択は変えない
     refs:
-      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[階層の表の操作]
+      - IF-472-35#constraints[階層の表の操作]
     status: planned
     introduced:
       pr: 303
@@ -1511,7 +1512,7 @@ elements:
     initial_state: 活性
     action: 押すと全体のパスをクリップボードへコピーし、`コピーしました`・`コピーできませんでした` を 2 秒出す。行の選択は変えない
     refs:
-      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[階層の表の操作]
+      - IF-472-35#constraints[階層の表の操作]
     status: planned
     introduced:
       pr: 303
@@ -1523,7 +1524,7 @@ elements:
     visible_when: '`tree=` と `example=` の表で、見本を隠していないとき（印刷では隠していても出す）'
     action: キーを持つ行を押すと、表の同じパスの行を選ぶ
     refs:
-      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[YAML の見本の操作]
+      - IF-472-35#constraints[YAML の見本の操作]
     status: planned
     introduced:
       pr: 303
@@ -1538,14 +1539,14 @@ elements:
     initial_value: 見本を表示した状態（`aria-expanded="true"`）
     action: 押すと見本を隠し、もう一度押すと出す
     refs:
-      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[YAML の見本の操作]
+      - IF-472-35#constraints[YAML の見本の操作]
     status: planned
     introduced:
       pr: 303
   - name: 範囲のスクリプトの通知ブロック
     id: html-scripts-notice
     kind: label
-    component: dev/設計書/部品設計/通知ブロック.ts#
+    component: CMP-472-65#
     args:
       - name: name
         value: '`html-scripts`'
@@ -1556,7 +1557,7 @@ elements:
     visible_when: '`html-scripts` がオンで、`html-scripts.url` のモジュールを読み込めないとき'
     error_message: タイトル `スクリプトを動かせません`・本文 `範囲のスクリプトを変換するライブラリを読み込めませんでした。動きを付けずに表示しています。`
     refs:
-      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#exceptions[なし（変換のライブラリを読み込めない）]
+      - IF-472-35#exceptions[なし（変換のライブラリを読み込めない）]
     status: planned
     introduced:
       pr: 303
@@ -1566,7 +1567,7 @@ elements:
     label: なし（`aria-hidden`）
     description: '`icon:名前` の場所に配置する Lucide のアイコン'
     position: 描く先の要素 > 本文の見出し・段落の中
-    component: dev/設計書/部品設計/アイコン.ts#
+    component: CMP-472-8#
     args:
       - name: name
         value: '`icon:` の後ろの名前'
@@ -1574,7 +1575,7 @@ elements:
         value: まとめた名前と `opts.icons` の名前はその IconNode。まとめていない名前は `mount` が読み込んだ IconNode
     visible_when: '`icon` がオンで、名前が Lucide の名前の記載方法に合うとき'
     refs:
-      - dev/設計書/インターフェース定義/ライブラリ本体/文書をHTML文字列にする.ts#constraints[アイコン]
+      - IF-472-34#constraints[アイコン]
     status: planned
     introduced:
       pr: 307
@@ -1584,13 +1585,13 @@ elements:
     label: キーの文言
     description: '`kbd:` の場所に配置するキーの並び'
     position: 描く先の要素 > 本文の段落・表のセルの中
-    component: dev/設計書/部品設計/キー.ts#
+    component: CMP-472-11#
     args:
       - name: keys
         value: '`kbd:` の後ろを `+` で区切ったキー'
     visible_when: '`kbd` がオンのとき'
     refs:
-      - dev/設計書/インターフェース定義/ライブラリ本体/文書をHTML文字列にする.ts#constraints[キー]
+      - IF-472-34#constraints[キー]
     status: planned
     introduced:
       pr: 307
@@ -1600,7 +1601,7 @@ elements:
     label: マーカーの中身
     description: '`==文字==` の場所に配置する蛍光ペンのマーカー'
     position: 描く先の要素 > 本文の段落の中
-    component: dev/設計書/部品設計/蛍光ペン.ts#
+    component: CMP-472-59#
     args:
       - name: html
         value: '`==` で囲んだ行内の Markdown を描いた HTML'
@@ -1608,7 +1609,7 @@ elements:
         value: 直後の `{color=色}` の色の名前
     visible_when: '`highlight` がオンのとき'
     refs:
-      - dev/設計書/インターフェース定義/ライブラリ本体/文書をHTML文字列にする.ts#constraints[蛍光ペン]
+      - IF-472-34#constraints[蛍光ペン]
     status: planned
     introduced:
       pr: 307
@@ -1620,7 +1621,7 @@ elements:
     position: 描く先の要素 > 本文の段落の中
     visible_when: 文書に `ruby` を記載したとき
     refs:
-      - dev/設計書/インターフェース定義/ライブラリ本体/文書をHTML文字列にする.ts#constraints[ルビ]
+      - IF-472-34#constraints[ルビ]
     status: planned
     introduced:
       pr: 307
@@ -1629,13 +1630,13 @@ elements:
     kind: container
     description: columns の範囲の中身を 2〜3 列に並べる。描く先の要素が狭いときは縦に並べる
     position: 描く先の要素 > 本文の列
-    component: dev/設計書/部品設計/段組み.ts#
+    component: CMP-472-51#
     args:
       - name: columns
         value: '`<!-- column -->` で区切った中身を描いた HTML'
     visible_when: '`columns` がオンで、列の数が 2〜3 のとき'
     refs:
-      - dev/設計書/インターフェース定義/ライブラリ本体/文書をHTML文字列にする.ts#constraints[段組み]
+      - IF-472-34#constraints[段組み]
     status: planned
     introduced:
       pr: 307
@@ -1644,13 +1645,13 @@ elements:
     kind: container
     description: cards の範囲のリストの項目を、アイコン・タイトル・説明のカードにして入るだけ横に並べる。描く先の要素が狭いときは 1 列に追加する。リンクを持つ項目はリンクのカード、持たない項目はリンクではないカード
     position: 描く先の要素 > 本文の列
-    component: dev/設計書/部品設計/カードの格子.ts#
+    component: CMP-472-10#
     args:
       - name: items
         value: 範囲のリストの項目ごとの、最初のリンク先・リンクの文字・前の `icon:` のアイコン・残りの文字の説明
     visible_when: '`card-grid` がオンで、`<!-- cards -->` の範囲の中身がリスト 1 つのとき'
     refs:
-      - dev/設計書/インターフェース定義/ライブラリ本体/文書をHTML文字列にする.ts#constraints[カードの格子]
+      - IF-472-34#constraints[カードの格子]
     status: planned
     introduced:
       pr: 352
@@ -1660,7 +1661,7 @@ elements:
     label: マーカーのタイトル（空のとき `詳細`）
     description: details の範囲をタイトルから開閉する
     position: 描く先の要素 > 本文の列
-    component: dev/設計書/部品設計/detailsの範囲.ts#
+    component: CMP-472-3#
     args:
       - name: title
         value: マーカーのタイトル
@@ -1671,7 +1672,7 @@ elements:
     action: タイトルを押すと開閉する。印刷では開いて出す
     visible_when: '`details` がオンのとき'
     refs:
-      - dev/設計書/インターフェース定義/ライブラリ本体/文書をHTML文字列にする.ts#constraints[details の範囲]
+      - IF-472-34#constraints[details の範囲]
     status: planned
     introduced:
       pr: 307
@@ -1682,7 +1683,7 @@ elements:
     position: 描く先の要素 > 本文の列
     visible_when: '`include` がオンで、取り込み先があるとき'
     refs:
-      - dev/設計書/インターフェース定義/ライブラリ本体/文書をHTML文字列にする.ts#constraints[取り込み]
+      - IF-472-34#constraints[取り込み]
     status: planned
     introduced:
       pr: 307
@@ -1693,7 +1694,7 @@ elements:
     position: 描く先の要素 > 本文の列
     visible_when: 印刷のとき（`pagebreak` がオン）
     refs:
-      - dev/設計書/インターフェース定義/ライブラリ本体/文書をHTML文字列にする.ts#constraints[改ページ]
+      - IF-472-34#constraints[改ページ]
     status: planned
     introduced:
       pr: 307
@@ -1702,7 +1703,7 @@ elements:
     kind: region
     description: wide の範囲を本文の幅を越えて広げる。範囲の上の本文の幅の右端に切り替えのボタンを配置する
     position: 描く先の要素 > 本文の列（広げた幅は右側の目次・文書の一覧の列と右端の線の内側）
-    component: dev/設計書/部品設計/wideの範囲.ts#
+    component: CMP-472-7#
     args:
       - name: html
         value: 範囲の中身を描いた HTML
@@ -1713,7 +1714,7 @@ elements:
     action: 切り替えのボタンを押すと、広げた幅と本文の幅を切り替える。印刷では用紙の幅に収め、ボタンを出さない
     visible_when: '`wide` がオンのとき。ボタンは広げられる幅（右側の目次を付けたときは描く先の要素、付けないときは描く先の要素の親の幅）が本文の幅より広いときだけ'
     refs:
-      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[wide の幅の切り替え]
+      - IF-472-35#constraints[wide の幅の切り替え]
     status: planned
     introduced:
       pr: 307
@@ -1723,7 +1724,7 @@ elements:
     label: なし（スクリーンリーダー向けの名前 `元の CSV を表示`）
     description: CSV の表の帯の右端に配置するコードのアイコンのボタン
     position: 描く先の要素 > CSV の表 > 帯の右端
-    component: dev/設計書/部品設計/表.ts#
+    component: CMP-472-61#
     args:
       - name: rawCsv
         value: 言語 `csv` のコードブロックに記載したとおりの CSV
@@ -1732,7 +1733,7 @@ elements:
     action: 押すと表を隠して元の CSV を出し、もう一度押すと表に戻す
     visible_when: '`csv` がオンで、表が言語 `csv` のコードブロックから作られたとき'
     refs:
-      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[CSV の表と元の CSV の切り替え]
+      - IF-472-35#constraints[CSV の表と元の CSV の切り替え]
     status: planned
     introduced:
       pr: 307

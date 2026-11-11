@@ -1,0 +1,18 @@
+summary: knowledge の設計書
+items:
+  - page: aliases.ts.yaml
+    summary: ライブラリ本体 / 索引と用語 / aliases.ts
+  - page: check.ts.yaml
+    summary: ライブラリ本体 / 索引と用語 / check.ts
+  - page: dictionary.ts.yaml
+    summary: ライブラリ本体 / 索引と用語 / dictionary.ts
+  - page: index-shape.ts.yaml
+    summary: ライブラリ本体 / 索引と用語 / index-shape.ts
+  - page: matches.ts.yaml
+    summary: ライブラリ本体 / 索引と用語 / matches.ts
+  - page: paths.ts.yaml
+    summary: ライブラリ本体 / 索引と用語 / paths.ts
+  - page: positions.ts.yaml
+    summary: ライブラリ本体 / 索引と用語 / positions.ts
+  - page: references.ts.yaml
+    summary: ライブラリ本体 / 索引と用語 / references.ts

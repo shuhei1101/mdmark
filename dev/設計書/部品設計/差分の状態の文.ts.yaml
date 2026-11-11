@@ -1,3 +1,4 @@
+id: CMP-472-44
 title: "差分の状態の文"
 implementation: "src/parts/diff-message.ts#renderDiffMessage"
 story: "Parts/DiffMessage"
@@ -40,8 +41,8 @@ args:
 accessibility:
   - '`loading` の枠はスクリーンリーダーの対象にしない（`role="status"` を持たない）。回る表示は `aria-hidden` にし、`prefers-reduced-motion: reduce` のときは回さない'
 refs:
-  - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[差分の待ち]
-  - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[比べる 2 つのリビジョン]
+  - IF-472-35#constraints[差分の待ち]
+  - IF-472-35#constraints[比べる 2 つのリビジョン]
 status: planned
 notes:
   モック: '`dev/mock/components/diff-lines/` の「変更が無い」「比較対象のリビジョンが無い」「読み込み中」'

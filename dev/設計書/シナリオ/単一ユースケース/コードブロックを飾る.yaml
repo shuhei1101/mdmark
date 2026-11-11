@@ -1,3 +1,4 @@
+id: SC-472-17
 title: コードブロックを飾る
 scenarios:
   - name: 正常シナリオ

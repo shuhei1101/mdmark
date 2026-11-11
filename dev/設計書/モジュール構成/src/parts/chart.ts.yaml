@@ -1,0 +1,152 @@
+id: MOD-472-174
+title: ライブラリ本体 / 図 / chart.ts
+test_files:
+  - tests/unit/src/parts/chart.test.ts
+constants:
+  - name: SERIES_STYLES
+    title: 系列の外観の組
+    container: src/parts/chart.ts
+    summary: 系列と項目の位置ごとの、色・線の模様・点の形状・塗りの模様の組。5・6 つ目を追加する
+    value: 6 つの組。5 つ目は `stroke-dasharray` `9 3 1 3 1 3`・逆三角形・縦線の模様、6 つ目は `3 2`・十字・横線の模様
+    status: planned
+    introduced:
+      pr: 275
+  - name: ITEM_HIT_RADIUS
+    title: グラフの点のクリックを受ける半径
+    container: src/parts/chart.ts
+    summary: 点の形状より広い、ツールチップを取得する透明の円の半径（px）
+    value: '12'
+    status: planned
+    introduced:
+      pr: 308
+functions:
+  - name: renderChart
+    title: グラフを描く
+    container: src/parts/chart.ts
+    kind: 関数
+    scope: internal
+    summary: '`type` ごとに svg に描く。`line` は軸・目盛り・系列の折れ線と点、`bar` は目盛りごとに系列の棒を並べ、`scatter` は横と縦の数値の軸に点を配置し、`pie` は 12 時から時計回りに扇形を並べて扇形の外に整数の割合（合計が 100 になるよう最大剰余法で丸める）を配置する。`area` は折れ線の下を系列の塗りで塗り、`stacked-bar`・`stacked-area` は `stackSeries` で積み上げ（負の値は 0 から下へ追加し、`stacked-bar` は棒の上に合計を配置する）、`horizontal-bar` は項目を縦に並べて値を横の長さにし、`donut` は `pie` の中を空けて中央に合計と `合計{unit}` を配置し、`radar` は `x.ticks` の軸を放射状に並べて系列を多角形にし、`bubble` は `size` の値を円の面積にし、`combo` は系列ごとに `as` の描き方で重ね、`axis` が `y2` の系列を右の軸で描く。系列と円の項目は位置で `SERIES_STYLES` の色（`--mdmark-color-series-{n}`）と、線の模様・塗りの模様（svg の `pattern`）・点の形状の組を決める。縦の軸の範囲を省いた定義は `niceTicks` で切る。点・棒・扇形・バブルの項目ごとに、`chartItemText` の文で `renderDiagramTip`（`kind: item`）の中身を `tips` に追加し、項目に `tabindex="0"`・`aria-describedby`・`data-tip-owner` を付ける。点は点の形状の上に半径 `ITEM_HIT_RADIUS` の透明の `circle.mdmark-diagram-item-hit` を重ね、そちらに属性を付ける。項目はどれも Tab で止まる（矢印キーは図の移動に使用するため、ロービング tabindex にしない）'
+    args:
+      - name: definition
+        type: MdmarkChartDefinition
+        required: true
+        description: 読み込めた定義
+      - name: id
+        type: string
+        required: true
+        description: 塗りの模様の `pattern` の `id` の頭
+    returns:
+      type: '{ html: string; width: number; height: number; tips: string }'
+      description: 図の中身。`tips` は項目のツールチップの中身
+    unit_tests:
+      - name: test_render_chart
+        case: 正常
+        summary: 系列ごとに線と点を描き、スクリーンリーダーに値を記載する
+        condition: '`reply-time` の定義'
+        mock: なし
+        expected: '`data-series` が 1・2 の線があり、点が 5 つずつ、svg の `aria-label` が `返信までの時間。自動返信: 12・9・14・8・10。担当者: 42・38・51・35・44`'
+      - name: test_render_chart_when_bar
+        case: 正常
+        summary: 棒を系列ごとの塗りの模様で描き、縦の軸をデータから切る
+        condition: '`inquiry-count` の定義'
+        mock: なし
+        expected: '`rect` の棒が 8 本で、系列 2 の棒の `fill` が斜線の `pattern` を指し、縦の軸の目盛りが `0`・`50`・`100`・`150`'
+      - name: test_render_chart_when_pie
+        case: 正常
+        summary: 扇形の外に合計 100 の整数の割合を配置し、凡例に名前と値を出す
+        condition: '`reply-kind` の定義（186・92・22）'
+        mock: なし
+        expected: '扇形の `path` が 3 つ、割合の文字が `62%`・`31%`・`7%`、svg の `aria-label` に `よくある質問で回答した: 186 件` がある'
+      - name: test_render_chart_when_scatter
+        case: 正常
+        summary: 横と縦を数値の軸にして系列ごとの構造の点を配置する
+        condition: '`length-time` の定義'
+        mock: なし
+        expected: 系列 1 の点が `circle` 6 つ、系列 2 の点が四角の `rect` 6 つで、横の軸も数値の目盛りを持つ
+      - name: test_render_chart_when_stacked_bar
+        case: 正常
+        summary: 系列を積み上げ、棒の上に合計を配置する
+        condition: 項目 2 つで、系列の値が 1 つ目の項目で `3`・`4` の `stacked-bar`
+        mock: なし
+        expected: 1 つ目の項目で、系列 2 の `rect` の下端が系列 1 の `rect` の上端と同じ高さで、2 つの高さの和が値 `7` の高さ。棒の上に `7` の文字がある
+      - name: test_render_chart_when_stacked_negative
+        case: 正常
+        summary: 負の値を 0 から下へ追加する
+        condition: 1 つ目の項目の系列の値が `3`・`-2` の `stacked-bar`
+        mock: なし
+        expected: 系列 2 の `rect` の上端が 0 の高さで、系列 1 の `rect` の下端も 0 の高さ
+      - name: test_render_chart_when_area
+        case: 正常
+        summary: 面と積み上げの面を塗る
+        condition: 系列 2 つの `area` と `stacked-area`
+        mock: なし
+        expected: どちらも系列ごとに塗りの `path` があり、`stacked-area` の系列 2 の面の下端が系列 1 の面の上端
+      - name: test_render_chart_when_horizontal_bar
+        case: 正常
+        summary: 項目を縦に並べて値を横の長さにする
+        condition: 系列 1 つで値が `2`・`5` の `horizontal-bar`
+        mock: なし
+        expected: 2 つの `rect` の `y` が違い、値 `5` の `rect` の幅が値 `2` の幅より広い
+      - name: test_render_chart_when_donut
+        case: 正常
+        summary: 中を空けた扇形と中央の合計を描く
+        condition: 項目が `186`・`92`・`22`、`unit` が ` 件` の `donut`
+        mock: なし
+        expected: 扇形の `path` が外と内の 2 つの弧を持ち、中央に `300` と `合計 件` の文字がある
+      - name: test_render_chart_when_radar
+        case: 正常
+        summary: 軸を放射状に並べて系列を多角形にする
+        condition: '`x.ticks` が 5 つ、系列 2 つの `radar`'
+        mock: なし
+        expected: 軸の `line` が 5 本、系列ごとに頂点 5 つの多角形の `path` がある
+      - name: test_render_chart_when_bubble
+        case: 正常
+        summary: size の値を円の面積にする
+        condition: 点が `[1, 2, 4]`・`[3, 4, 16]` の `bubble`
+        mock: なし
+        expected: 2 つ目の `circle` の `r` が 1 つ目の 2 倍
+      - name: test_render_chart_when_combo
+        case: 正常
+        summary: 系列を as の描き方で重ね、y2 の系列を右の軸で描く
+        condition: 1 つ目の系列の `as` が `bar`、2 つ目が `line` で `axis` が `y2` の `combo`
+        mock: なし
+        expected: 1 つ目の系列が `rect`、2 つ目が折れ線の `path` で、右の縦の軸の目盛りがある
+      - name: test_render_chart_when_six_series
+        case: 正常
+        summary: 6 つの系列を色・線の模様・点の形状の組で分ける
+        condition: 系列 6 つの `line`
+        mock: なし
+        expected: '`data-series` が `1`〜`6` の線があり、系列 5 の線の `stroke-dasharray` が `9 3 1 3 1 3`、系列 6 が `3 2`、系列 5 の点が逆三角形、系列 6 の点が十字'
+      - name: test_render_chart_when_item_tips
+        case: 正常
+        summary: 項目ごとにツールチップの中身とクリックを受ける円を配置する
+        condition: '`reply-time`（折れ線・系列 2 つ・点 5 つずつ）と `reply-kind`（円・項目 3 つ）の定義'
+        mock: なし
+        expected: 折れ線は `circle.mdmark-diagram-item-hit` が 10 つで `r="12"`・`tabindex="0"`・`aria-describedby` を持ち、`tips` に `role="tooltip"` が 10 つ。円は扇形の `path` が `tabindex="0"` を持ち、ツールチップの本文が `186 件（62%）` の構造
+    callees:
+      - 'MOD-472-173#functions[stackSeries]'
+      - '#constants[SERIES_STYLES]'
+  - name: chartItemText
+    title: グラフの項目の値の文
+    container: src/parts/chart.ts
+    kind: 関数
+    scope: internal
+    summary: '部品設計『図のツールチップ』の `value` の文を返却する。折れ線・面・棒・積み上げ・横棒・レーダー・組み合わせは `{横の目盛り}: {値}`、散布図は `{x のラベル} {x}・{y のラベル} {y}`、バブルはその後ろに `・{size.label（無ければ「大きさ」）} {値}`、円とドーナツは `{値}{unit}（{割合}）`（割合は扇形の外と同じ整数の %）'
+    args:
+      - name: item
+        type: '{ type: MdmarkChartType; tick?: string; value?: number; point?: number[]; percent?: number; definition: MdmarkChartDefinition }'
+        required: true
+        description: グラフの種類と、項目の目盛り・値・点・割合と定義
+    returns:
+      type: string
+      description: 値の文
+    unit_tests:
+      - name: test_chart_item_text
+        case: 正常
+        summary: 種類ごとの値の文を返却する
+        condition: '`line` の `2月`・`38`、`scatter` の点 `[3, 40]`（`x.label` が `文字数`、`y.label` が `分`）、`bubble` の点 `[3, 40, 16]`（`size.label` が `件数`）、`pie` の値 `50`・割合 `50`（`unit` が ` 件`）'
+        mock: なし
+        expected: '`2月: 38`・`文字数 3・分 40`・`文字数 3・分 40・件数 16`・`50 件（50%）`'
+    status: planned
+    introduced:
+      pr: 308

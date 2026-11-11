@@ -1,3 +1,4 @@
+id: CFG-472-3
 title: '設定: ライブラリ本体'
 lead: 利用側が `mdmark.config.yaml` に書き込む設定のキー。利用側のサーバーが読み込んだオブジェクトを `mount`・`render` の `opts.config` に指定するか、mdmark の CLI が読み込んで書き出しに使用する。この一覧はライブラリ本体と CLI が読み込むキーを持ち、構造の正を JSON Schema `schemas/mdmark.config.schema.json` に配置する。
 files:
@@ -44,7 +45,7 @@ settings:
     reload: reload
     implementation: src/config.ts#resolveConfig
     refs:
-      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#request[opts.config.libraries]
+      - IF-472-35#request[opts.config.libraries]
   - key: features.table
     title: 表の機能
     file: mdmark.config.yaml
@@ -154,7 +155,7 @@ settings:
     reload: reload
     status: planned
     refs:
-      - dev/設計書/モジュール構成/ライブラリ本体/索引と用語.ts#functions[termsRule]
+      - MOD-472-263#functions[termsRule]
   - key: features.backlinks
     title: 被参照の機能
     file: mdmark.config.yaml
@@ -165,7 +166,7 @@ settings:
     reload: reload
     status: planned
     refs:
-      - dev/設計書/モジュール構成/ライブラリ本体/索引と用語.ts#functions[backlinksRule]
+      - MOD-472-264#functions[backlinksRule]
   - key: features.text-color
     title: 本文の文字の色の機能
     file: mdmark.config.yaml
@@ -176,7 +177,7 @@ settings:
     reload: reload
     status: planned
     refs:
-      - dev/設計書/インターフェース定義/ライブラリ本体/文書をHTML文字列にする.ts#constraints[本文の文字の色]
+      - IF-472-34#constraints[本文の文字の色]
   - key: features.images
     title: 画像の属性とキャプションの機能
     file: mdmark.config.yaml
@@ -187,7 +188,7 @@ settings:
     reload: reload
     status: planned
     refs:
-      - dev/設計書/インターフェース定義/ライブラリ本体/文書をHTML文字列にする.ts#constraints[画像の属性]
+      - IF-472-34#constraints[画像の属性]
   - key: features.gallery
     title: ギャラリーの機能
     file: mdmark.config.yaml
@@ -198,7 +199,7 @@ settings:
     reload: reload
     status: planned
     refs:
-      - dev/設計書/インターフェース定義/ライブラリ本体/文書をHTML文字列にする.ts#constraints[ギャラリー]
+      - IF-472-34#constraints[ギャラリー]
   - key: features.lightbox
     title: ライトボックスの機能
     file: mdmark.config.yaml
@@ -209,7 +210,7 @@ settings:
     reload: reload
     status: planned
     refs:
-      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[ライトボックス]
+      - IF-472-35#constraints[ライトボックス]
   - key: features.media
     title: 動画と音声の機能
     file: mdmark.config.yaml
@@ -220,7 +221,7 @@ settings:
     reload: reload
     status: planned
     refs:
-      - dev/設計書/インターフェース定義/ライブラリ本体/文書をHTML文字列にする.ts#constraints[動画と音声]
+      - IF-472-34#constraints[動画と音声]
   - key: features.gif
     title: GIF の止める・再生するボタンの機能
     file: mdmark.config.yaml
@@ -231,7 +232,7 @@ settings:
     reload: reload
     status: planned
     refs:
-      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[GIF の止める・再生する]
+      - IF-472-35#constraints[GIF の止める・再生する]
   - key: features.cards
     title: リンクと添付のカードの機能
     file: mdmark.config.yaml
@@ -242,7 +243,7 @@ settings:
     reload: reload
     status: planned
     refs:
-      - dev/設計書/インターフェース定義/ライブラリ本体/文書をHTML文字列にする.ts#constraints[リンクと添付のカード]
+      - IF-472-34#constraints[リンクと添付のカード]
   - key: index
     title: 索引の場所
     file: mdmark.config.yaml
@@ -253,7 +254,7 @@ settings:
     reload: reload
     status: planned
     refs:
-      - dev/設計書/ER図/索引#
+      - ER-472-6#
   - key: theme
     title: 利用側の CSS
     file: mdmark.config.yaml
@@ -266,7 +267,7 @@ settings:
     introduced:
       pr: 32
     refs:
-      - dev/設計書/インターフェース定義/ライブラリ本体/文書をHTMLに書き出す.ts#
+      - IF-472-33#
   - key: extensions
     title: 拡張のモジュール
     file: mdmark.config.yaml
@@ -277,7 +278,7 @@ settings:
     reload: reload
     allowed: TypeScript か JavaScript のファイルのパス。読み込めない・まとめられないものは書き出しを止めず警告に出す
     refs:
-      - dev/設計書/インターフェース定義/ライブラリ本体/拡張を登録する.ts#
+      - IF-472-32#
     status: planned
     introduced:
       pr: 32
@@ -292,7 +293,7 @@ settings:
     introduced:
       pr: 32
     refs:
-      - dev/設計書/インターフェース定義/ライブラリ本体/複数の文書を1枚のHTMLにまとめる.ts#
+      - IF-472-38#
   - key: build.include
     title: まとめる文書
     file: mdmark.config.yaml
@@ -361,7 +362,7 @@ settings:
     reload: reload
     allowed: '`^v\d+\.\d+\.\d+$`。合わないと `mdmark check` は `schema` のずれにする'
     refs:
-      - dev/設計書/インターフェース定義/ライブラリ本体/バージョンを上げる.ts#
+      - IF-472-28#
     status: planned
     introduced:
       pr: 39
@@ -409,7 +410,7 @@ settings:
     reload: reload
     allowed: マーカーの名前の書式（英小文字で始まり、英小文字・数字・`-` が続く）の文字列。合わないと `mdmark check` は `schema` のずれにする
     refs:
-      - dev/設計書/インターフェース定義/ライブラリ本体/設定と索引を点検する.ts#
+      - IF-472-39#
     status: planned
     introduced:
       pr: 64
@@ -457,7 +458,7 @@ settings:
     reload: reload
     allowed: '`top` / `bottom`。`mount` は他の値を無視して `top` にし、CLI は他の値を設定ファイルの誤りにする'
     refs:
-      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#request[opts.config.tooltips.placement]
+      - IF-472-35#request[opts.config.tooltips.placement]
     implementation: src/config.ts#resolveConfig
     introduced:
       pr: 83
@@ -469,7 +470,7 @@ settings:
     description: 情報文字列の言語が色分けの対応表にあるコードブロックを、描いた後に言語に応じて色分けする。オフのときは色分けのライブラリを読み込まず、コードブロックを色分けせずに描く
     reload: reload
     refs:
-      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[色分けの対象]
+      - IF-472-35#constraints[色分けの対象]
     status: planned
     introduced:
       pr: 97
@@ -483,8 +484,8 @@ settings:
     reload: reload
     allowed: 末尾が `/` の URL かパス。`mount` は文字列でない値を無視して既定を当て、CLI は文字列でない値を設定ファイルの誤りにする
     refs:
-      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#request[opts.config.syntax.url]
-      - dev/設計書/外部ライブラリ/highlight.js#
+      - IF-472-35#request[opts.config.syntax.url]
+      - LIB-472-14#
     reason: マーカーの名前の対応表 `libraries` と分け、文書に色分けのマーカーを記載させない。本体と言語のモジュールは同じフォルダに並ぶため、URL は 1 つで足りる
     status: planned
     introduced:
@@ -498,7 +499,7 @@ settings:
     description: 描いた文書の右側に h1〜h3 の目次を配置する。見出しが無い文書には配置しない。文書の `features` のマーカーでその文書だけオン・オフできる
     reload: reload
     refs:
-      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[右側の目次]
+      - IF-472-35#constraints[右側の目次]
     implementation: src/config.ts#DEFAULT_FEATURES
     status: planned
     introduced:
@@ -512,7 +513,7 @@ settings:
     description: 描いた文書をスクロールする場所の高さ分スクロールしたら、スクロールする場所の右下に先頭へ戻るボタンを出す。文書の `features` のマーカーでその文書だけオン・オフできる
     reload: reload
     refs:
-      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[先頭へ戻るボタン]
+      - IF-472-35#constraints[先頭へ戻るボタン]
     implementation: src/config.ts#DEFAULT_FEATURES
     status: planned
     introduced:
@@ -527,7 +528,7 @@ settings:
     reload: reload
     allowed: '`hover` / `fixed`。`mount` は他の値を無視して `hover` にし、CLI は他の値を設定ファイルの誤りにする'
     refs:
-      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[右側の目次の出し方]
+      - IF-472-35#constraints[右側の目次の出し方]
     implementation: src/config.ts#resolveConfig
     status: planned
     introduced:
@@ -546,8 +547,8 @@ settings:
     introduced:
       pr: 176
     refs:
-      - dev/設計書/ER図/エイリアス#tables[aliases]
-      - dev/設計書/インターフェース定義/ライブラリ本体/エイリアスを作る.ts#
+      - ER-472-3#tables[aliases]
+      - IF-472-26#
   - key: colorTheme
     title: 選ぶテーマ
     file: mdmark.config.yaml
@@ -559,7 +560,7 @@ settings:
     reload: reload
     allowed: '`dev-swiss`・`theme-paper`・`theme-slate`・`theme-contrast`。Schema の型は文字列で、知らない名前は既定のテーマで描き、`mdmark check` が `unknown_color_theme` のずれにする'
     refs:
-      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#request[opts.config.colorTheme]
+      - IF-472-35#request[opts.config.colorTheme]
     status: planned
     introduced:
       pr: 181
@@ -574,8 +575,8 @@ settings:
     reload: reload
     allowed: '`light`・`dark`・`auto`。Schema の型は文字列で、知らない値は `auto` として描き、`mdmark check` が `unknown_color_scheme` のずれにする'
     refs:
-      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#request[opts.config.colorScheme]
-      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[ページの設定のマーカー]
+      - IF-472-35#request[opts.config.colorScheme]
+      - IF-472-35#constraints[ページの設定のマーカー]
     status: planned
   - key: features.card-grid
     title: カードの格子の機能
@@ -587,7 +588,7 @@ settings:
     reload: reload
     status: planned
     refs:
-      - dev/設計書/インターフェース定義/ライブラリ本体/文書をHTML文字列にする.ts#constraints[カードの格子]
+      - IF-472-34#constraints[カードの格子]
   - key: labels.paramCopy
     title: 今の値をコピーするボタンの文言
     file: mdmark.config.yaml
@@ -598,7 +599,7 @@ settings:
     reload: reload
     allowed: 空でない文字列。`mount` は空文字と文字列でない値を無視して既定の文言にし、CLI は設定ファイルの誤りにする
     refs:
-      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#request[opts.config.labels.paramCopy]
+      - IF-472-35#request[opts.config.labels.paramCopy]
     implementation: src/config.ts#resolveConfig
     status: implemented
   - key: assets
@@ -621,8 +622,8 @@ settings:
     allowed: フォルダのパス。無いフォルダは `mdmark check` が `schema` のずれにし、書き出しは警告に出して文書のフォルダだけで探す
     reason: 画像・動画を文書ごとのフォルダに配置せず、リポジトリの 1 か所にまとめて配置する使用方法に合わせるため（#199）
     refs:
-      - dev/設計書/インターフェース定義/ライブラリ本体/文書をHTMLに書き出す.ts#constraints[アセットのルート]
-      - dev/設計書/インターフェース定義/ライブラリ本体/設定と索引を点検する.ts#constraints[見つからないファイルの点検]
+      - IF-472-33#constraints[アセットのルート]
+      - IF-472-39#constraints[見つからないファイルの点検]
     status: planned
     notes:
       Schema の変更: '`schemas/mdmark.config.schema.json` にキーを追加するので、`migrations/no-steps.yaml` に行を配置する（記載していない設定はそのまま読み込める）'
@@ -647,7 +648,7 @@ settings:
     reason: 文書に記載したコードを動かすため、利用側が許したときだけ動かす。範囲ごとには許さない（シナリオ『コードブロックのHTMLを描く』）
     reload: reload
     refs:
-      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[範囲のスクリプト]
+      - IF-472-35#constraints[範囲のスクリプト]
     status: planned
     introduced:
       pr: 303
@@ -660,7 +661,7 @@ settings:
     description: 言語 `mermaid` のコードブロックを図にする。オフのときはコードブロックのまま描き、mermaid を読み込まない。文書の `features` のマーカーでその文書だけオン・オフできる
     reload: reload
     refs:
-      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[mermaid の対象]
+      - IF-472-35#constraints[mermaid の対象]
     status: planned
     introduced:
       pr: 382
@@ -674,8 +675,8 @@ settings:
     reload: reload
     allowed: URL かパス。`mount` は文字列でない値を無視して既定を当て、CLI は文字列でない値を設定ファイルの誤りにする
     refs:
-      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#request[opts.config.mermaid.url]
-      - dev/設計書/外部ライブラリ/mermaid#
+      - IF-472-35#request[opts.config.mermaid.url]
+      - LIB-472-17#
     reason: '`syntax.url`・`html-scripts.url` と同じく、マーカーの名前の対応表 `libraries` と分ける'
     status: planned
     introduced:
@@ -690,7 +691,7 @@ settings:
     reload: reload
     allowed: '`mdmark`・`default`・`neutral`・`dark`・`forest`・`base`。`mount` は知らない値を無視して `mdmark` にし、CLI は知らない値を設定ファイルの誤りにする'
     refs:
-      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#request[opts.config.mermaid.theme]
+      - IF-472-35#request[opts.config.mermaid.theme]
     status: planned
     introduced:
       pr: 382
@@ -704,7 +705,7 @@ settings:
     reload: reload
     allowed: 値が文字列のキー。`mount` はほかの値を無視し、CLI は文字列でない値を設定ファイルの誤りにする
     refs:
-      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#request[opts.config.mermaid.themeVariables]
+      - IF-472-35#request[opts.config.mermaid.themeVariables]
     status: planned
     introduced:
       pr: 382
@@ -718,8 +719,8 @@ settings:
     reload: reload
     allowed: URL かパス。`mount` は文字列でない値を無視して既定を当て、CLI は文字列でない値を設定ファイルの誤りにする
     refs:
-      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#request[opts.config.html-scripts.url]
-      - dev/設計書/外部ライブラリ/babel-standalone#
+      - IF-472-35#request[opts.config.html-scripts.url]
+      - LIB-472-6#
     reason: '`syntax.url` と同じく、マーカーの名前の対応表 `libraries` と分ける（`libraries` はマーカーの名前から `draw` を持つモジュールを参照する表）'
     status: planned
     introduced:
@@ -736,7 +737,7 @@ settings:
       pr: 307
     description: 頭に `icon:` を付けた行内のコードを Lucide のアイコンにし、配布物にまとめていない名前は使用する文書でだけ jsDelivr から読み込む。オフのときは行内のコードのまま描く
     refs:
-      - dev/設計書/インターフェース定義/ライブラリ本体/文書をHTML文字列にする.ts#constraints[アイコン]
+      - IF-472-34#constraints[アイコン]
   - key: features.columns
     title: 段組みの機能
     type: boolean
@@ -749,7 +750,7 @@ settings:
       pr: 307
     description: '`<!-- columns -->` の範囲を `<!-- column -->` で区切った中身を 2〜3 列に横に並べる。オフのときはマーカーを取り除き、中身を順に描く'
     refs:
-      - dev/設計書/インターフェース定義/ライブラリ本体/文書をHTML文字列にする.ts#constraints[段組み]
+      - IF-472-34#constraints[段組み]
   - key: features.highlight
     title: 蛍光ペンの機能
     type: boolean
@@ -762,7 +763,7 @@ settings:
       pr: 307
     description: '`==文字==` を蛍光ペンのマーカーにし、直後の `{color=色}` でその色にする。オフのときは記載した文字のまま描く'
     refs:
-      - dev/設計書/インターフェース定義/ライブラリ本体/文書をHTML文字列にする.ts#constraints[蛍光ペン]
+      - IF-472-34#constraints[蛍光ペン]
   - key: features.kbd
     title: キーの機能
     type: boolean
@@ -775,7 +776,7 @@ settings:
       pr: 307
     description: 頭に `kbd:` を付けた行内のコードを、`+` で区切ったキーの外観にする。オフのときは行内のコードのまま描く
     refs:
-      - dev/設計書/インターフェース定義/ライブラリ本体/文書をHTML文字列にする.ts#constraints[キー]
+      - IF-472-34#constraints[キー]
   - key: features.details
     title: details の範囲の機能
     type: boolean
@@ -788,7 +789,7 @@ settings:
       pr: 307
     description: '`<!-- details: タイトル -->` の範囲を、タイトルから開閉する折りたたみにする。オフのときはマーカーを取り除き、中身を順に描く'
     refs:
-      - dev/設計書/インターフェース定義/ライブラリ本体/文書をHTML文字列にする.ts#constraints[details の範囲]
+      - IF-472-34#constraints[details の範囲]
   - key: features.pagebreak
     title: 改ページの機能
     type: boolean
@@ -801,7 +802,7 @@ settings:
       pr: 307
     description: '`<!-- pagebreak -->` の場所で、印刷のときに改ページする。オフのときはマーカーを取り除く'
     refs:
-      - dev/設計書/インターフェース定義/ライブラリ本体/文書をHTML文字列にする.ts#constraints[改ページ]
+      - IF-472-34#constraints[改ページ]
   - key: features.include
     title: 取り込みの機能
     type: boolean
@@ -814,7 +815,7 @@ settings:
       pr: 307
     description: '`<!-- include: パス -->` の場所に、利用側が指定した取り込む文書の全体・見出しの中・行の範囲を描く。オフのときはマーカーを取り除き、取り込まない'
     refs:
-      - dev/設計書/インターフェース定義/ライブラリ本体/文書をHTML文字列にする.ts#constraints[取り込み]
+      - IF-472-34#constraints[取り込み]
   - key: features.wide
     title: wide の範囲の機能
     type: boolean
@@ -827,7 +828,7 @@ settings:
       pr: 307
     description: '`<!-- wide -->` の範囲を本文の幅を越えて広げ、範囲の上のボタンで本文の幅と切り替える。オフのときはマーカーを取り除き、本文の幅で描く'
     refs:
-      - dev/設計書/インターフェース定義/ライブラリ本体/文書をHTML文字列にする.ts#constraints[wide の範囲]
+      - IF-472-34#constraints[wide の範囲]
   - key: features.csv
     title: CSV の表の機能
     type: boolean
@@ -840,7 +841,7 @@ settings:
       pr: 307
     description: 言語 `csv` のコードブロックを表にし、表の右端のボタンで元の CSV と切り替える。オフのときはコードブロックのまま描く
     refs:
-      - dev/設計書/インターフェース定義/ライブラリ本体/文書をHTML文字列にする.ts#constraints[CSV の表]
+      - IF-472-34#constraints[CSV の表]
   - key: features.diagram-resize
     title: 図のリサイズハンドルの機能
     file: mdmark.config.yaml
@@ -850,7 +851,7 @@ settings:
     description: 図の部品の表示する枠の右下に、高さを変えるリサイズハンドルを配置する。オフのときは配置せず、表示する枠は定義から決まる高さのままにする
     reload: reload
     refs:
-      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[図の高さのリサイズハンドル]
+      - IF-472-35#constraints[図の高さのリサイズハンドル]
     status: planned
     introduced:
       pr: 308
@@ -864,7 +865,7 @@ settings:
     reload: reload
     allowed: '`top` / `bottom`。`mount` は他の値を無視して `bottom` にし、CLI は他の値を設定ファイルの誤りにする'
     refs:
-      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#request[opts.config.tooltips.diagramPlacement]
+      - IF-472-35#request[opts.config.tooltips.diagramPlacement]
     status: planned
     introduced:
       pr: 308
@@ -879,7 +880,7 @@ settings:
     reload: reload
     implementation: src/config-files.ts#loadLayeredConfig
     refs:
-      - dev/設計書/インターフェース定義/ライブラリ本体/設定を重ねて読み込む.ts#
+      - IF-472-40#
   - key: config.cascade
     title: 上のフォルダの設定を重ねるか
     file: settings.yaml
@@ -911,7 +912,7 @@ settings:
     required: false
     status: planned
     refs:
-      - dev/設計書/インターフェース定義/ClaudeCodeプラグイン/常駐サーバーを起動する.ts#
+      - IF-472-7#
     introduced:
       pr: 354
   - key: serve.launcher
@@ -925,7 +926,7 @@ settings:
     required: false
     status: planned
     refs:
-      - dev/設計書/インターフェース定義/ClaudeCodeプラグイン/常駐サーバーを起動する.ts#
+      - IF-472-7#
     introduced:
       pr: 444
   - key: serve.systemdUnit
@@ -939,7 +940,7 @@ settings:
     required: false
     status: planned
     refs:
-      - dev/設計書/インターフェース定義/ClaudeCodeプラグイン/常駐サーバーを起動する.ts#
+      - IF-472-7#
     introduced:
       pr: 444
   - key: table.pin
@@ -952,7 +953,7 @@ settings:
     reload: reload
     allowed: '`each` / `through`。`mount` は他の値を無視して `each` にし、CLI は他の値を設定ファイルの誤りにする'
     refs:
-      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[表の操作]
+      - IF-472-35#constraints[表の操作]
     implementation: src/config.ts#resolveConfig
     status: planned
     introduced:
@@ -968,7 +969,7 @@ settings:
     reload: reload
     status: planned
     refs:
-      - dev/設計書/インターフェース定義/ライブラリ本体/文書をHTML文字列にする.ts#constraints[フロントマター]
+      - IF-472-34#constraints[フロントマター]
   - key: features.map
     title: map の図の機能
     type: boolean
@@ -978,7 +979,7 @@ settings:
     required: false
     reload: reload
     refs:
-    - dev/設計書/インターフェース定義/ライブラリ本体/文書をHTML文字列にする.ts#constraints[map の範囲]
+      - IF-472-34#constraints[map の範囲]
     status: planned
     introduced:
       pr: 445
@@ -993,7 +994,7 @@ settings:
     required: false
     reload: reload
     refs:
-    - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#request[opts.config.map.node_fit]
+      - IF-472-35#request[opts.config.map.node_fit]
     status: planned
     introduced:
       pr: 445
@@ -1007,7 +1008,7 @@ settings:
     required: false
     reload: reload
     refs:
-    - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#request[opts.config.map.url_state]
+      - IF-472-35#request[opts.config.map.url_state]
     status: planned
     introduced:
       pr: 445
@@ -1022,7 +1023,7 @@ settings:
     required: false
     reload: reload
     refs:
-    - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#request[opts.config.map.kinds]
+      - IF-472-35#request[opts.config.map.kinds]
     status: planned
     introduced:
       pr: 445
@@ -1037,9 +1038,9 @@ settings:
     required: false
     reload: reload
     refs:
-    - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#request[opts.config.map.lines]
+      - IF-472-35#request[opts.config.map.lines]
     status: planned
     introduced:
       pr: 445
 refs:
-  - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#
+  - IF-472-35#

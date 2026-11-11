@@ -1,3 +1,4 @@
+id: SC-472-94
 title: 端末の設定を重ねてプレビューと書き出しをそろえる
 scenarios:
   - name: 正常シナリオ
@@ -13,10 +14,10 @@ scenarios:
         A[VSCodeでプレビューを開く:正常シナリオ（設定を重ねる）] --> B[記載した内容をプレビューに映す:正常シナリオ（theme の CSS を書き換える）]
         B --> C[文書をHTMLに書き出す:正常シナリオ（設定を重ねる）]
         C --> D[ClaudeCodeから点検と書き出しを呼ぶ:正常シナリオ（設定を重ねる）]
-        click A "../単一ユースケース/VSCodeでプレビューを開く.yaml#正常シナリオ設定を重ねる"
-        click B "../単一ユースケース/記載した内容をプレビューに映す.yaml#正常シナリオtheme-の-css-を書き換える"
-        click C "../単一ユースケース/文書をHTMLに書き出す.yaml#正常シナリオ設定を重ねる"
-        click D "../単一ユースケース/ClaudeCodeから点検と書き出しを呼ぶ.yaml#正常シナリオ設定を重ねる"
+        click A "id:SC-472-10#scenarios[正常シナリオ（設定を重ねる）]"
+        click B "id:SC-472-77#scenarios[正常シナリオ（theme の CSS を書き換える）]"
+        click C "id:SC-472-56#scenarios[正常シナリオ（設定を重ねる）]"
+        click D "id:SC-472-3#scenarios[正常シナリオ（設定を重ねる）]"
     expected:
       - プレビューで、注意書きと表の機能がオフで描かれ、固有の部品が描かれ、`theme.css` の規則が該当する
       - '`theme.css` を書き換えて保存すると、エディタの Markdown を書き換えずに、プレビューに書き換えた規則が該当する'
@@ -25,10 +26,10 @@ scenarios:
       - 端末の設定と 2 つの `mdmark.config.yaml` は書き換わらない
     test: test_normal
     uses:
-      - dev/設計書/シナリオ/単一ユースケース/VSCodeでプレビューを開く#scenarios[正常シナリオ（設定を重ねる）]
-      - dev/設計書/シナリオ/単一ユースケース/記載した内容をプレビューに映す#scenarios[正常シナリオ（theme の CSS を書き換える）]
-      - dev/設計書/シナリオ/単一ユースケース/文書をHTMLに書き出す#scenarios[正常シナリオ（設定を重ねる）]
-      - dev/設計書/シナリオ/単一ユースケース/ClaudeCodeから点検と書き出しを呼ぶ#scenarios[正常シナリオ（設定を重ねる）]
+      - SC-472-10#scenarios[正常シナリオ（設定を重ねる）]
+      - SC-472-77#scenarios[正常シナリオ（theme の CSS を書き換える）]
+      - SC-472-56#scenarios[正常シナリオ（設定を重ねる）]
+      - SC-472-3#scenarios[正常シナリオ（設定を重ねる）]
   - name: 正常シナリオ（最初の 1 つだけを読み込む）
     setup:
       - name: 端末の設定
@@ -40,15 +41,15 @@ scenarios:
     flow: |-
       flowchart TD
         A[VSCodeでプレビューを開く:正常シナリオ（最初の 1 つだけを読み込む）] --> B[文書をHTMLに書き出す:正常シナリオ（最初の 1 つだけを読み込む）]
-        click A "../単一ユースケース/VSCodeでプレビューを開く.yaml#正常シナリオ最初の-1-つだけを読み込む"
-        click B "../単一ユースケース/文書をHTMLに書き出す.yaml#正常シナリオ最初の-1-つだけを読み込む"
+        click A "id:SC-472-10#scenarios[正常シナリオ（最初の 1 つだけを読み込む）]"
+        click B "id:SC-472-56#scenarios[正常シナリオ（最初の 1 つだけを読み込む）]"
     expected:
       - プレビューと書き出した HTML の両方で、注意書きと表の機能がオフで描かれる（端末の設定と下のフォルダの設定だけが有効になる）
       - 上のフォルダの設定の `theme.css` の規則と固有の部品は、両方とも該当しない
     test: test_normal_when_first_only
     uses:
-      - dev/設計書/シナリオ/単一ユースケース/VSCodeでプレビューを開く#scenarios[正常シナリオ（最初の 1 つだけを読み込む）]
-      - dev/設計書/シナリオ/単一ユースケース/文書をHTMLに書き出す#scenarios[正常シナリオ（最初の 1 つだけを読み込む）]
+      - SC-472-10#scenarios[正常シナリオ（最初の 1 つだけを読み込む）]
+      - SC-472-56#scenarios[正常シナリオ（最初の 1 つだけを読み込む）]
   - name: 異常シナリオ（端末の設定を読み込めない）
     setup:
       - name: 端末の設定
@@ -63,9 +64,9 @@ scenarios:
       flowchart TD
         A[VSCodeでプレビューを開く:異常シナリオ（設定ファイルを読み込めない）] --> B[文書をHTMLに書き出す:異常シナリオ（設定ファイルを読み込めない）]
         B --> C[文書をHTMLに書き出す:正常シナリオ（設定を重ねる）]
-        click A "../単一ユースケース/VSCodeでプレビューを開く.yaml#異常シナリオ設定ファイルを読み込めない"
-        click B "../単一ユースケース/文書をHTMLに書き出す.yaml#異常シナリオ設定ファイルを読み込めない"
-        click C "../単一ユースケース/文書をHTMLに書き出す.yaml#正常シナリオ設定を重ねる"
+        click A "id:SC-472-10#scenarios[異常シナリオ（設定ファイルを読み込めない）]"
+        click B "id:SC-472-56#scenarios[異常シナリオ（設定ファイルを読み込めない）]"
+        click C "id:SC-472-56#scenarios[正常シナリオ（設定を重ねる）]"
     expected:
       - プレビューの先頭に、端末の設定を読み込めないことを示す帯が出る
       - '`mdmark export` が端末の設定のパスと読み込めない行と修正方法を標準エラーに出し、終了コード 1 で HTML を書き込まない'
@@ -73,9 +74,9 @@ scenarios:
       - 端末の設定と 2 つの `mdmark.config.yaml` は書き換わらない
     test: test_error_when_settings_unreadable
     uses:
-      - dev/設計書/シナリオ/単一ユースケース/VSCodeでプレビューを開く#scenarios[異常シナリオ（設定ファイルを読み込めない）]
-      - dev/設計書/シナリオ/単一ユースケース/文書をHTMLに書き出す#scenarios[異常シナリオ（設定ファイルを読み込めない）]
-      - dev/設計書/シナリオ/単一ユースケース/文書をHTMLに書き出す#scenarios[正常シナリオ（設定を重ねる）]
+      - SC-472-10#scenarios[異常シナリオ（設定ファイルを読み込めない）]
+      - SC-472-56#scenarios[異常シナリオ（設定ファイルを読み込めない）]
+      - SC-472-56#scenarios[正常シナリオ（設定を重ねる）]
 lead: 文書の作成者が、端末の設定と、文書のフォルダから上のフォルダの `mdmark.config.yaml` を重ねた設定で、VS Code のプレビュー・CLI の書き出し・Claude Code から呼んだ書き出しを同じ外観にそろえる。
 issue: 163
 primary_actor: 文書の作成者

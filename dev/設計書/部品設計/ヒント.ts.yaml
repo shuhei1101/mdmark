@@ -1,3 +1,4 @@
+id: CMP-472-24
 title: "ヒント"
 implementation: "src/parts/hint.ts#renderHint"
 story: "Parts/Hint"
@@ -56,7 +57,7 @@ events:
     value: ツールチップの `hidden`
     description: '`mount` が 1 つだけ開き、ツールチップの上では閉じず、Esc で閉じてフォーカスを持ち主に残す'
 uses:
-  - component: dev/設計書/部品設計/図のツールチップ.ts#
+  - component: CMP-472-38#
     how: '`kind` を `hint` にして文を出す'
 accessibility:
   - ブロックのマーカーは `<button type="button" aria-label="説明">` で、行内の要素は `tabindex="0"` を持ち、どちらも `aria-describedby` でツールチップを指す
@@ -66,5 +67,5 @@ status: planned
 introduced:
   pr: 45
 refs:
-  - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[ヒントの操作]
+  - IF-472-35#constraints[ヒントの操作]
 test_file: tests/integration/lib/hint.story.test.ts

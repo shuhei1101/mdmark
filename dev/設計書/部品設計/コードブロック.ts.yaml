@@ -1,3 +1,4 @@
+id: CMP-472-18
 title: "コードブロック"
 implementation: "src/parts/code-block.ts#renderCodeBlock"
 story: "Parts/CodeBlock"
@@ -338,8 +339,8 @@ accessibility:
   - 色分けは外観だけで、スクリーンリーダー向けの名前とコードの文字は変わらない。コメントは色に加えて斜体でも示す。色分けの 6 色は、地（`--mdmark-color-surface` と、追加した行・削除した行・強調した行の半透明の地を混ぜた色）に対して明るい配色で 5.21〜7.03、ダークで 6.56〜10.64（WCAG の相対輝度で計算）
   - '印刷ではダークを解除した明るい配色の色分けの色を、`print-color-adjust: exact` で色を省くブラウザの設定でも紙に出す'
 refs:
-  - dev/設計書/インターフェース定義/ライブラリ本体/文書をHTML文字列にする.ts#constraints[コードブロック]
-  - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[色分けの当て方]
+  - IF-472-34#constraints[コードブロック]
+  - IF-472-35#constraints[色分けの当て方]
 status: planned
 introduced:
   pr: 65

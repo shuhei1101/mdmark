@@ -1,3 +1,4 @@
+id: CMP-472-14
 title: "コメントのボタン"
 implementation: "src/parts/comment.ts#renderCommentButton"
 story: "Parts/CommentButton"
@@ -13,7 +14,7 @@ accessibility:
   - '`button` で、スクリーンリーダー向けの名前は表示の文字 `コメント`。アイコンは `aria-hidden`'
   - DOM は選んだ文字のブロックの直後に配置し、選んだ後の Tab で届く
 refs:
-  - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[コメントの操作]
+  - IF-472-35#constraints[コメントの操作]
 status: planned
 notes:
   HTML: '`<button class="mdmark-comment-add" type="button">{message-square-plus のアイコン}コメント</button>`。モックは `dev/mock/components/comment/`'

@@ -1,0 +1,4 @@
+summary: workflows の設計書
+items:
+  - page: vscode-release.yml.yaml
+    summary: VS Code 拡張機能 / ビルドと配布 / vscode-release.yml

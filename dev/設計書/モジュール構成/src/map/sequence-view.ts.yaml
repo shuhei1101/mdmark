@@ -1,0 +1,82 @@
+id: MOD-472-131
+title: ライブラリ本体 / map / 描画と操作 / sequence-view.ts
+test_files:
+  - tests/unit/src/map/sequence-view.browser.test.ts
+data_models:
+  - name: MapSequenceHandle
+    title: シーケンス図の操作の口
+    container: src/map/sequence-view.ts
+    usecase: Mermaidと補足で図を描く
+    role: データモデル
+    summary: '`attachMapSequence` の戻り値'
+    properties:
+      - name: playsOver
+        type: number | undefined
+        description: 補足の `plays_over`（再生を重ねる構成図の番号）
+      - name: clear
+        type: () => void
+        description: 再生を止めて強調を解く（構成図の案内を始めたとき）
+      - name: destroy
+        type: () => void
+        description: 時計と操作を外す
+functions:
+  - name: attachMapSequence
+    title: シーケンス図を付ける
+    kind: 関数
+    container: src/map/sequence-view.ts
+    usecase: シーケンス図の参加者を選んで強調する
+    role: 処理
+    summary: シーケンス図を読み取り、状態を読んで表示する行を決めて描き、ブロックの開閉・中だけを描く・参加者の選択と並べ替えを付ける
+    scope: public
+    callees:
+      - MOD-472-138#functions[parseSequence]
+      - MOD-472-142#functions[sequenceRows]
+      - MOD-472-132#functions[attachBand]
+      - MOD-472-133#functions[renderMapSequence]
+    args:
+      - name: range
+        type: HTMLElement
+        required: true
+        description: '`div.mdmark-map`'
+      - name: config
+        type: ResolvedConfig
+        required: true
+        description: 既定を当てた設定
+      - name: args
+        type: MapArgs
+        required: true
+        description: 印の引数
+      - name: onStep
+        type: '(message: number | undefined) => void'
+        required: false
+        description: 再生で進めたメッセージの番号を受け取る関数（止めたときは `undefined`）
+      - name: follow
+        type: '{ start: () => void; step: (message: number) => void }'
+        required: false
+        description: 再生を自動で進め始めたとき（`start`）と、自動で次のメッセージへ進めたとき（`step`。メッセージの番号）に呼ぶ関数
+    returns:
+      type: MapSequenceHandle
+      description: 再生の強調を外から受け取る関数と片付ける関数
+    process: |-
+      1. `parseSequence`・`parseMapData` で読み、`readMapState` で状態を読んで `sequenceRows` で表示する行を決め、`renderMapSequence` で描く
+      2. 表示する行のメッセージを `attachBand`（モード `playback`）の手順にする。開閉・中だけを描くで表示するメッセージが変わったら `update` で手順を差し替え、再生していれば `onStep(undefined)` を呼ぶ。`follow` を `attachBand` の `follow` にし、`step` には手順のメッセージの番号を指定する
+      3. 参加者の箱の名前の文字の外を押すと選び、4px 動かすと並べ替えのドラッグにして、移す先の列に縦の線（`.map-insert-line`）を出し、離した位置に最も近い列へ移す。ドラッグの直後の押した扱いは選ばない
+    unit_tests:
+      - name: test_attach_map_sequence_when_reorder
+        case: 正常
+        summary: Alt + →
+        condition: 1 人目の参加者にフォーカスして Alt + →
+        mock: '`writeMapState`'
+        expected: '`order` の 1 人目と 2 人目が入れ替わる'
+      - name: test_attach_map_sequence_when_enter_block
+        case: 正常
+        summary: 中だけを描く
+        condition: '`loop` のタブの名前を押す'
+        mock: '`writeMapState`'
+        expected: '`entered` が `1` で、`loop` の中の参加者だけを描く'
+      - name: test_attach_map_sequence_when_packets
+        case: 正常
+        summary: 選んだ参加者の印
+        condition: '`mount` の参加者の箱の名前の外を押す'
+        mock: なし
+        expected: '`mount` が送る・受けるメッセージの線の上に `.map-packet` があり、ほかのメッセージの線の上には無い'

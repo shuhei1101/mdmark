@@ -1,3 +1,4 @@
+id: SC-472-77
 title: "記載した内容をプレビューに映す"
 scenarios:
   - name: 正常シナリオ

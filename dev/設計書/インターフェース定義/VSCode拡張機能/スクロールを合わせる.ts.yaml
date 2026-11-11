@@ -1,3 +1,4 @@
+id: IF-472-17
 title: "スクロールを合わせる"
 entry:
   kind: trigger
@@ -99,7 +100,7 @@ flows:
       - 5 番目のセクションの削除したブロックが `data-source-line` を持たない
     test: test_normal_when_diff_preview
     refs:
-      - dev/設計書/シナリオ/単一ユースケース/エディタとプレビューのスクロールを合わせる#scenarios[正常シナリオ（差分で描いたプレビュー）]
+      - SC-472-14#scenarios[正常シナリオ（差分で描いたプレビュー）]
   - name: 正常系（閉じたセクションの中の行）
     summary: エディタを閉じたセクションの中の行へ動かすと、そのセクションの見出しを先頭に配置し、セクションは閉じたまま
     setup:
@@ -127,12 +128,12 @@ flows:
       - その後 200 ms の間にエディタの `visibleRanges[0].start.line` が変わらない
     test: test_normal_when_in_closed_section
     refs:
-      - dev/設計書/シナリオ/単一ユースケース/エディタとプレビューのスクロールを合わせる#scenarios[正常シナリオ（折りたたんだセクションの中を編集する）]
+      - SC-472-14#scenarios[正常シナリオ（折りたたんだセクションの中を編集する）]
 lead: エディタとプレビューのどちらかをスクロールすると、ブロックの元の行番号を手がかりにもう片方を同じ箇所まで動かす。
 idempotent: true
 side_effects: Webview へ `scrollToLine` を送信する。エディタを `revealRange` で動かす。カーソルの位置と文書は変えない
 callers:
-  - dev/設計書/シナリオ/単一ユースケース/エディタとプレビューのスクロールを合わせる#
+  - SC-472-14#
 exclusivity: 片方に合わせて動かした直後に、動かした側から届く逆向きの通知は捨てる（制約「往復の止め方」）
 exceptions:
   - name: なし（正常終了）

@@ -1,3 +1,4 @@
+id: SC-472-33
 title: ページの設定を文書で指定する
 scenarios:
   - name: 正常シナリオ
@@ -45,7 +46,7 @@ scenarios:
       - OS の配色と祖先の class がライトでも、描く先の要素の地の色の計算値が dev-swiss の暗い配色の `--mdmark-color-bg` の値
     test: test_normal_when_config_default
     refs:
-      - dev/設計書/シナリオ/単一ユースケース/テーマを上書きする#scenarios[正常シナリオ（親の class でライトにする）]
+      - SC-472-25#scenarios[正常シナリオ（親の class でライトにする）]
   - name: 正常シナリオ（文書のマーカーが設定に勝つ）
     setup:
       - name: mdmark を読み込むページ
@@ -69,8 +70,8 @@ scenarios:
       - 目次を出すボタンがあり `aria-expanded` が `false` で、右端にポインターを配置しても右側の目次が表示されていない（`side-toc.mode` の `fixed` と同じ）
     test: test_normal_when_marker_overrides_config
     refs:
-      - dev/設計書/シナリオ/単一ユースケース/目次と見出しのアンカーでセクションへ移る#scenarios[正常シナリオ（右側の目次をサイドバーで出す）]
-      - dev/設計書/シナリオ/単一ユースケース/テーマを選ぶ#scenarios[正常シナリオ]
+      - SC-472-68#scenarios[正常シナリオ（右側の目次をサイドバーで出す）]
+      - SC-472-26#scenarios[正常シナリオ]
   - name: 正常シナリオ（OS の設定に合わせる）
     setup:
       - name: mdmark を読み込むページ
@@ -130,7 +131,7 @@ scenarios:
       - 印刷のメディアで、描く先の要素の地の色の計算値が dev-swiss の明るい配色の `--mdmark-color-bg` の値
     test: test_normal_when_printed
     refs:
-      - dev/設計書/シナリオ/単一ユースケース/文書を印刷する#
+      - SC-472-58#
   - name: 異常シナリオ（知らないキーと値）
     setup:
       - name: mdmark を読み込むページ

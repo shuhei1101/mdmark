@@ -1,3 +1,4 @@
+id: SC-472-10
 title: VSCodeでプレビューを開く
 scenarios:
   - name: 正常シナリオ

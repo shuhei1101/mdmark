@@ -1,0 +1,76 @@
+id: MOD-472-208
+title: ライブラリ本体 / 描く / print.ts
+test_files:
+  - tests/unit/src/print.browser.test.ts
+functions:
+  - name: attachPrint
+    title: 印刷の前後で折り畳みと記法を開く
+    container: src/print.ts
+    kind: 関数
+    scope: internal
+    summary: '`beforeprint` で要素の中の閉じた `details`・閉じたセクション・行の詳細・ファイルツリーの閉じたフォルダ・コードブロックの畳んだ行・列を畳んだ ER 図のテーブル・畳んだ階層の表の行・隠した YAML の見本を開き、タブの全ての中身を出し、`afterprint` で開いたものだけを戻す受け取りを `window` に付け、削除する関数を返却する'
+    side_effects: '`window` に受け取りを付ける。`details` の `open` を書き換える'
+    args:
+      - name: options
+        type: '{ root: HTMLElement; isEnabled: () => boolean }'
+        required: true
+        description: '`root` は描いた要素、`isEnabled` は印刷の機能がオンか（印刷のたびに読み込む）'
+    returns:
+      type: () => void
+      description: 受け取りを解除する関数
+    process: |-
+      1. `beforeprint` を受けたとき、`isEnabled()` が `true` なら、次の処理をし、変えたものを記録する
+         - `open` を持たない `details` を開く
+         - `hidden` を持つ `mdmark-section-body`・`mdmark-row-detail`・`div.mdmark-tree` の入れ子の `ul` の `hidden` を削除する（ツリーの `ul` は、そのフォルダの `mdmark-tree-toggle` を `aria-expanded="true"` にする）
+         - `aria-expanded="false"` の `mdmark-code-fold` を `setCodeFoldOpen` で開く
+         - `aria-expanded="false"` の `mdmark-diagram-er-fold` のテーブルを `setErTableFolded` で開く（関係の線をもう一度結ぶ）
+         - `role="tabpanel"` の `hidden` を削除し、`mdmark-tabs` に `data-printing` を付ける（印刷の CSS がタブの並びを隠し、タブ名のタイトルを出す）
+      2. `afterprint` を受けたとき、記録したものを元に戻し（セクションとツリーの入れ子の `ul` は `hidden="until-found"`、ツリーの開閉のボタンは `aria-expanded="false"`、行の詳細とタブの中身は `hidden`、コードブロックの行は `setCodeFoldOpen` で、ER 図のテーブルは `setErTableFolded` でもう一度畳む、`data-printing` を削除する）、記録を空にする
+      3. 削除する関数は、2 つの受け取りを `window` から除外する
+    unit_tests:
+      - name: test_attach_print
+        case: 正常
+        summary: 印刷の前に閉じた折り畳みを開き、後に開いたものだけをもう一度閉じる
+        condition: 閉じた `details` と開いた `details`。`isEnabled` は `true`
+        mock: なし
+        expected: '`beforeprint` の後に 2 つとも `open` を持ち、`afterprint` の後に初めに閉じていた方だけが `open` を持たない'
+      - name: test_attach_print_when_disabled
+        case: 正常
+        summary: 印刷の機能がオフなら開かない
+        condition: 閉じた `details`。`isEnabled` は `false`
+        mock: なし
+        expected: '`beforeprint` の後も `open` を持たない'
+      - name: test_attach_print_when_detached
+        case: 正常
+        summary: 削除した後は受け取らない
+        condition: 削除する関数を呼んだ後に `beforeprint` を送信する
+        mock: なし
+        expected: '`details` が `open` を持たない'
+      - name: test_attach_print_when_syntax
+        case: 正常
+        summary: 印刷の前に閉じたセクション・行の詳細・タブの中身を出し、後に戻す
+        condition: 操作を付けた、閉じたセクション・閉じた行の詳細・2 つ目を選んだタブ
+        mock: なし
+        expected: '`beforeprint` の後にどれも `hidden` を持たず、`afterprint` の後にセクションが `hidden="until-found"`、行の詳細が `hidden`、1 つ目のタブの中身が `hidden`'
+      - name: test_attach_print_when_tree
+        case: 正常
+        summary: 印刷の前にファイルツリーの閉じたフォルダを開き、後にもう一度閉じる
+        condition: 操作を付けた、`src/` が閉じたファイルツリー。`isEnabled` は `true`
+        mock: なし
+        expected: '`beforeprint` の後に `src/` の入れ子の `ul` が `hidden` を持たず `src/` のボタンが `aria-expanded="true"`、`afterprint` の後に `ul` が `hidden="until-found"` を持ちボタンが `aria-expanded="false"`'
+      - name: test_attach_print_when_code_folded
+        case: 正常
+        summary: 印刷の前にコードブロックの畳んだ行を開き、後にもう一度畳む
+        condition: 操作を付けた、2 行目を畳んだコードブロックと、入れ子の注意書きを閉じた `details`。`isEnabled` は `true`
+        mock: なし
+        expected: '`beforeprint` の後に 3 行目以降が `hidden` を持たず、内側の注意書きの `details` も `open` を持つ。`afterprint` の後に 2 行目のボタンが `aria-expanded="false"` で後ろの行が `hidden`、内側の `details` が `open` を持たない'
+      - name: test_attach_print_when_er_folded
+        case: 正常
+        summary: 印刷の前に ER 図の畳んだテーブルを開き、後にもう一度畳む
+        condition: 操作を付けた、モックの `shop-er-folded` の ER 図。`isEnabled` は `true`
+        mock: なし（Chromium）
+        expected: '`beforeprint` の後に注文のテーブルの全ての列の行が `hidden` を持たず開閉のボタンが `aria-expanded="true"`、`afterprint` の後に主キーと外部キー以外の列の行が `hidden` を持ちボタンが `aria-expanded="false"`'
+    callees:
+      - MOD-472-235#functions[setFolderOpen]
+      - MOD-472-225#functions[setCodeFoldOpen]
+      - MOD-472-188#functions[setErTableFolded]

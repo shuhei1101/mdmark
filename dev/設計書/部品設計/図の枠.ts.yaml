@@ -1,3 +1,4 @@
+id: CMP-472-39
 title: "図の枠"
 implementation: "src/parts/diagram.ts#renderDiagramFrame"
 story: "Parts/DiagramFrame"
@@ -143,13 +144,13 @@ slots:
   - name: default
     description: 表示する枠の中に配置する図の本体
     accepts:
-      - dev/設計書/部品設計/フロー図.ts#
-      - dev/設計書/部品設計/シーケンス図.ts#
-      - dev/設計書/部品設計/グラフ.ts#
-      - dev/設計書/部品設計/ER図.ts#
-      - dev/設計書/部品設計/mermaidの図.ts#
-      - dev/設計書/部品設計/mapの構成図.ts#
-      - dev/設計書/部品設計/mapのシーケンス図.ts#
+      - CMP-472-28#
+      - CMP-472-19#
+      - CMP-472-13#
+      - CMP-472-1#
+      - CMP-472-6#
+      - CMP-472-5#
+      - CMP-472-4#
 events:
   - name: 拡大・縮小する
     when: 拡大・縮小・倍率のボタンを押すか、表示する枠にフォーカスして `+`・`-`・`0` を押す

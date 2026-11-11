@@ -1,3 +1,4 @@
+id: CMP-472-20
 title: "ステップ"
 implementation: "src/parts/steps.ts#renderSteps"
 story: "Parts/Steps"
@@ -68,7 +69,7 @@ accessibility:
   - 手順は `ol` のままで、スクリーンリーダーが項目の数と番号を伝達する
   - 番号の丸と線は CSS で描き、スクリーンリーダーに含めない
 refs:
-  - dev/設計書/インターフェース定義/ライブラリ本体/文書をHTML文字列にする.ts#constraints[ステップ・ファイルツリー・バッジ]
+  - IF-472-34#constraints[ステップ・ファイルツリー・バッジ]
 status: planned
 notes:
   HTML: '`<ol class="mdmark-steps" start="{start}"><li>{項目}</li></ol>`（`start` が 1 のときは属性を省く）。`collapse` が `closed`・`open` のときは `ol` を `<details class="mdmark-collapsible"><summary>{title}</summary>` に入れる（`open` のときは `details` に `open` を付ける）。見出しの外観は表の `mdmark-table-details` と同じ。モックは `dev/mock/components/steps/`'

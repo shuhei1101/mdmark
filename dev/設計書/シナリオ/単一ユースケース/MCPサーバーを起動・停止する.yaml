@@ -1,3 +1,4 @@
+id: SC-472-7
 title: MCPサーバーを起動・停止する
 scenarios:
   - name: 正常シナリオ（起動する）

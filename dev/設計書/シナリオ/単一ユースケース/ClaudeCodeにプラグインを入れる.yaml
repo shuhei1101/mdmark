@@ -1,3 +1,4 @@
+id: SC-472-4
 title: ClaudeCodeにプラグインを入れる
 scenarios:
   - name: 正常シナリオ

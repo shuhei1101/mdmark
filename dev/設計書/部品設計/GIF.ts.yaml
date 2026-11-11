@@ -1,3 +1,4 @@
+id: CMP-472-2
 title: GIF
 implementation: src/parts/gif.ts#renderGif
 story: Parts/Gif
@@ -67,8 +68,8 @@ accessibility:
   - '`prefers-reduced-motion: reduce` のときは止めた状態で始める'
   - 止めたときの `canvas` は `aria-hidden` で、`img` の `alt` が名前を持つ
 refs:
-  - dev/設計書/インターフェース定義/ライブラリ本体/文書をHTML文字列にする.ts#constraints[GIF]
-  - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[GIF の止める・再生する]
+  - IF-472-34#constraints[GIF]
+  - IF-472-35#constraints[GIF の止める・再生する]
 status: planned
 notes:
   HTML: '`<span class="mdmark-gif">{画像の図の拡大のボタンで包んだ img}<canvas aria-hidden="true" hidden></canvas><button class="mdmark-gif-toggle" type="button" aria-pressed="false" aria-label="GIF を停止" title="GIF を停止">{lucide の pause}</button></span>`。止め方は PoC 検証の案 A（止めると最初のフレームに戻る）。モックは `dev/mock/components/media/` の GIF の場面'

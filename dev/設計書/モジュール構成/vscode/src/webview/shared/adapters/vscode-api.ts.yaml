@@ -1,0 +1,56 @@
+id: MOD-472-54
+title: VS Code 拡張機能 / Webview / vscode-api.ts
+test_files:
+  - tests/unit/vscode/src/webview/shared/adapters/vscode-api.test.ts
+data_models:
+  - name: PreviewState
+    title: Webview の状態
+    container: vscode/src/webview/shared/adapters/vscode-api.ts
+    usecase: 共通
+    role: DTO
+    summary: '`acquireVsCodeApi().setState` で保存し、再作成した Webview が `getState` で読み込む値'
+    properties:
+      - name: line
+        type: number
+        description: 見えている先頭の元の行番号（0 始まり）。整数に切り捨てず、小数部で行の途中の割合を持つ
+    refs:
+      - IF-472-21#constraints[背面のパネル]
+    status: planned
+    introduced:
+      pr: 243
+  - name: VsCodeApi
+    title: VS Code の Webview の API
+    container: vscode/src/webview/shared/adapters/vscode-api.ts
+    usecase: 共通
+    role: アダプター
+    summary: '`acquireVsCodeApi()` が返却する API のうち、Webview が使用するもの'
+    properties:
+      - name: postMessage
+        type: '(message: WebviewMessage) => void'
+        description: 拡張機能へ送信する
+      - name: getState
+        type: (() => unknown) | undefined
+        description: 保存した状態を読み込む。持たない代役では行を戻さない
+      - name: setState
+        type: '((state: PreviewState) => void) | undefined'
+        description: 状態を保存する。持たない代役では行を保存しない
+    status: planned
+functions:
+  - name: getVsCodeApi
+    title: VS Code の API を取る
+    kind: 関数
+    container: vscode/src/webview/shared/adapters/vscode-api.ts
+    usecase: 共通
+    summary: '`acquireVsCodeApi()` を初回だけ呼んで覚え、2 回目からは同じ値を返却する（VS Code は 2 回目の呼び出しで例外を投げる）'
+    scope: public
+    returns:
+      type: VsCodeApi
+      description: VS Code の Webview の API
+    unit_tests:
+      - name: test_get_vs_code_api
+        case: 正常
+        summary: 2 回呼んでも acquireVsCodeApi は 1 回
+        condition: 2 回呼ぶ
+        mock: '`acquireVsCodeApi` を呼ばれた数を記録する代役にする'
+        expected: 同じ値で、`acquireVsCodeApi` が 1 回
+    status: planned

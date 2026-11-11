@@ -1,0 +1,20 @@
+summary: render の設計書
+items:
+  - page: frontmatter.ts.yaml
+    summary: ライブラリ本体 / 描画 / frontmatter.ts
+  - page: index.ts.yaml
+    summary: ライブラリ本体 / 描画 / index.ts
+  - page: marks.ts.yaml
+    summary: ライブラリ本体 / 描画 / marks.ts
+  - page: page.ts.yaml
+    summary: ライブラリ本体 / 描画 / page.ts
+  - page: parser.ts.yaml
+    summary: ライブラリ本体 / 描画 / parser.ts
+  - page: sanitize.ts.yaml
+    summary: ライブラリ本体 / 描画 / sanitize.ts
+  - page: scope-css.ts.yaml
+    summary: ライブラリ本体 / 描画 / scope-css.ts
+  - page: syntax/
+    summary: syntax の設計書
+  - page: used.ts.yaml
+    summary: ライブラリ本体 / CLI / used.ts

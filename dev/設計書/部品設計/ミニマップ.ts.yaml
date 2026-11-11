@@ -1,3 +1,4 @@
+id: CMP-472-30
 title: "ミニマップ"
 implementation: "src/parts/diff-minimap.ts#renderDiffMinimap"
 story: "Parts/DiffMinimap"
@@ -50,7 +51,7 @@ accessibility:
   - 帯は `aria-hidden` にし、スクリーンリーダーとキーで辿る対象にしない。同じ行へはページのスクロールで移れる
   - 削除と追加は帯の左右の位置でも分け、色だけに頼らない
 refs:
-  - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[ミニマップ]
+  - IF-472-35#constraints[ミニマップ]
 status: planned
 notes:
   帯の本数: スクロール先のスクロールごとに 1 本だけ配置し、同じスクロール先で開いている差分が 2 つ以上あれば、そのマーカーをまとめて写す。最後の差分を閉じたら帯を削除する（計画書のミニマップの行・レビューの引き継ぎ）

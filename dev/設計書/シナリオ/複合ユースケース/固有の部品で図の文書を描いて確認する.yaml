@@ -1,3 +1,4 @@
+id: SC-472-93
 title: 固有の部品で図の文書を描いて確認する
 scenarios:
   - name: 正常シナリオ
@@ -20,15 +21,15 @@ scenarios:
         E --> F[図を拡大・縮小・移動する:正常シナリオ]
         F --> H[図を拡大・縮小・移動する:正常シナリオ（グループのタイトルを留める）]
         H --> I[図を拡大・縮小・移動する:正常シナリオ（リサイズハンドルで高さを変える）]
-        click A "../単一ユースケース/雛形を配置する.yaml#正常シナリオjavascript-の雛形を配置する"
-        click B "../単一ユースケース/追加するJavaScriptを型で点検する.yaml#正常シナリオ"
-        click C "../単一ユースケース/固有の部品とCSSを適用する.yaml#正常シナリオ"
-        click G "../単一ユースケース/設定と索引を点検する.yaml#正常シナリオ"
-        click D "../単一ユースケース/図を描く.yaml#正常シナリオ"
-        click E "../単一ユースケース/図の要素のツールチップを確認する.yaml#正常シナリオ"
-        click F "../単一ユースケース/図を拡大・縮小・移動する.yaml#正常シナリオ"
-        click H "../単一ユースケース/図を拡大・縮小・移動する.yaml#正常シナリオグループのタイトルを留める"
-        click I "../単一ユースケース/図を拡大・縮小・移動する.yaml#正常シナリオリサイズハンドルで高さを変える"
+        click A "id:SC-472-83#scenarios[正常シナリオ（JavaScript の雛形を配置する）]"
+        click B "id:SC-472-79#scenarios[正常シナリオ]"
+        click C "id:SC-472-44#scenarios[正常シナリオ]"
+        click G "id:SC-472-78#scenarios[正常シナリオ]"
+        click D "id:SC-472-43#scenarios[正常シナリオ]"
+        click E "id:SC-472-40#scenarios[正常シナリオ]"
+        click F "id:SC-472-42#scenarios[正常シナリオ]"
+        click H "id:SC-472-42#scenarios[正常シナリオ（グループのタイトルを留める）]"
+        click I "id:SC-472-42#scenarios[正常シナリオ（リサイズハンドルで高さを変える）]"
     expected:
       - '`mdmark init` が JavaScript の雛形と、JavaScript も点検する tsconfig を配置する'
       - 固有の部品を追記した後の `tsc --noEmit` が誤り 0 件で終了コード 0 を返却する
@@ -39,15 +40,15 @@ scenarios:
       - 図は全体が収まる倍率で開き、右上のボタンとキーの `+`・`-`・`0` で拡大・縮小でき、ドラッグと矢印キーで動かせる。拡大して下へ動かしても、表示する枠に見えているシステムの枠と層のタイトルが上端に留まる。右下のリサイズハンドルで表示する枠の高さを変えられる
     test: test_normal
     uses:
-      - dev/設計書/シナリオ/単一ユースケース/雛形を配置する#scenarios[正常シナリオ（JavaScript の雛形を配置する）]
-      - dev/設計書/シナリオ/単一ユースケース/追加するJavaScriptを型で点検する#scenarios[正常シナリオ]
-      - dev/設計書/シナリオ/単一ユースケース/固有の部品とCSSを適用する#scenarios[正常シナリオ]
-      - dev/設計書/シナリオ/単一ユースケース/設定と索引を点検する#scenarios[正常シナリオ]
-      - dev/設計書/シナリオ/単一ユースケース/図を描く#scenarios[正常シナリオ]
-      - dev/設計書/シナリオ/単一ユースケース/図の要素のツールチップを確認する#scenarios[正常シナリオ]
-      - dev/設計書/シナリオ/単一ユースケース/図を拡大・縮小・移動する#scenarios[正常シナリオ]
-      - dev/設計書/シナリオ/単一ユースケース/図を拡大・縮小・移動する#scenarios[正常シナリオ（グループのタイトルを留める）]
-      - dev/設計書/シナリオ/単一ユースケース/図を拡大・縮小・移動する#scenarios[正常シナリオ（リサイズハンドルで高さを変える）]
+      - SC-472-83#scenarios[正常シナリオ（JavaScript の雛形を配置する）]
+      - SC-472-79#scenarios[正常シナリオ]
+      - SC-472-44#scenarios[正常シナリオ]
+      - SC-472-78#scenarios[正常シナリオ]
+      - SC-472-43#scenarios[正常シナリオ]
+      - SC-472-40#scenarios[正常シナリオ]
+      - SC-472-42#scenarios[正常シナリオ]
+      - SC-472-42#scenarios[正常シナリオ（グループのタイトルを留める）]
+      - SC-472-42#scenarios[正常シナリオ（リサイズハンドルで高さを変える）]
   - name: 正常シナリオ（操作できる部品を配置する）
     setup:
       - name: 空のフォルダ
@@ -60,18 +61,18 @@ scenarios:
       flowchart TD
         A[雛形を配置する:正常シナリオ] --> B[図を描く:正常シナリオ（グラフ）]
         B --> C[操作できる部品で値を変えて写す:正常シナリオ]
-        click A "../単一ユースケース/雛形を配置する.yaml#正常シナリオ"
-        click B "../単一ユースケース/図を描く.yaml#正常シナリオグラフ"
-        click C "../単一ユースケース/操作できる部品で値を変えて写す.yaml#正常シナリオ"
+        click A "id:SC-472-83#scenarios[正常シナリオ]"
+        click B "id:SC-472-43#scenarios[正常シナリオ（グラフ）]"
+        click C "id:SC-472-51#scenarios[正常シナリオ]"
     expected:
       - 見本の操作の文書を描くと、スライダー・グラフ・今の値を写すボタンが描かれる
       - スライダーを動かすとグラフが新しい値で再描画される
       - 今の値を写すボタンを押すと、スライダーの今の値を JSON にした文字列がクリップボードに入る
     test: test_normal_when_interactive
     uses:
-      - dev/設計書/シナリオ/単一ユースケース/雛形を配置する#scenarios[正常シナリオ]
-      - dev/設計書/シナリオ/単一ユースケース/図を描く#scenarios[正常シナリオ（グラフ）]
-      - dev/設計書/シナリオ/単一ユースケース/操作できる部品で値を変えて写す#scenarios[正常シナリオ]
+      - SC-472-83#scenarios[正常シナリオ]
+      - SC-472-43#scenarios[正常シナリオ（グラフ）]
+      - SC-472-51#scenarios[正常シナリオ]
   - name: 異常シナリオ（追加した JavaScript の型が合わない）
     setup:
       - name: 空のフォルダ
@@ -87,20 +88,20 @@ scenarios:
         A[雛形を配置する:正常シナリオ（JavaScript の雛形を配置する）] --> B[追加するJavaScriptを型で点検する:異常シナリオ（型が合わない）]
         B --> C[追加するJavaScriptを型で点検する:正常シナリオ]
         C --> D[固有の部品とCSSを適用する:正常シナリオ]
-        click A "../単一ユースケース/雛形を配置する.yaml#正常シナリオjavascript-の雛形を配置する"
-        click B "../単一ユースケース/追加するJavaScriptを型で点検する.yaml#異常シナリオ型が合わない"
-        click C "../単一ユースケース/追加するJavaScriptを型で点検する.yaml#正常シナリオ"
-        click D "../単一ユースケース/固有の部品とCSSを適用する.yaml#正常シナリオ"
+        click A "id:SC-472-83#scenarios[正常シナリオ（JavaScript の雛形を配置する）]"
+        click B "id:SC-472-79#scenarios[異常シナリオ（型が合わない）]"
+        click C "id:SC-472-79#scenarios[正常シナリオ]"
+        click D "id:SC-472-44#scenarios[正常シナリオ]"
     expected:
       - 1 回目の `tsc --noEmit` が誤りのファイルと行を出し、終了コード 0 以外を返却する
       - 修正した後の 2 回目の `tsc --noEmit` が誤り 0 件で終了コード 0 を返却する
       - その後に描いた文書に、固有の部品が描かれる
     test: test_error_when_type_mismatch
     uses:
-      - dev/設計書/シナリオ/単一ユースケース/雛形を配置する#scenarios[正常シナリオ（JavaScript の雛形を配置する）]
-      - dev/設計書/シナリオ/単一ユースケース/追加するJavaScriptを型で点検する#scenarios[異常シナリオ（型が合わない）]
-      - dev/設計書/シナリオ/単一ユースケース/追加するJavaScriptを型で点検する#scenarios[正常シナリオ]
-      - dev/設計書/シナリオ/単一ユースケース/固有の部品とCSSを適用する#scenarios[正常シナリオ]
+      - SC-472-83#scenarios[正常シナリオ（JavaScript の雛形を配置する）]
+      - SC-472-79#scenarios[異常シナリオ（型が合わない）]
+      - SC-472-79#scenarios[正常シナリオ]
+      - SC-472-44#scenarios[正常シナリオ]
   - name: 異常シナリオ（図の定義にずれがある）
     setup:
       - name: 空のフォルダ
@@ -116,10 +117,10 @@ scenarios:
         A[雛形を配置する:正常シナリオ] --> B[設定と索引を点検する:正常シナリオ（図の定義にずれがある）]
         B --> C[設定と索引を点検する:正常シナリオ]
         C --> D[図を描く:正常シナリオ]
-        click A "../単一ユースケース/雛形を配置する.yaml#正常シナリオ"
-        click B "../単一ユースケース/設定と索引を点検する.yaml#正常シナリオ図の定義にずれがある"
-        click C "../単一ユースケース/設定と索引を点検する.yaml#正常シナリオ"
-        click D "../単一ユースケース/図を描く.yaml#正常シナリオ"
+        click A "id:SC-472-83#scenarios[正常シナリオ]"
+        click B "id:SC-472-78#scenarios[正常シナリオ（図の定義にずれがある）]"
+        click C "id:SC-472-78#scenarios[正常シナリオ]"
+        click D "id:SC-472-43#scenarios[正常シナリオ]"
     expected:
       - 1 回目の `mdmark check` が、ずれを持つ図の文書と図の場所を指すノードの重なりとラベルの長さのずれを出し、終了コード 0 以外を返却する
       - 修正した後の 2 回目の `mdmark check` がずれ 0 件で終了コード 0 を返却する
@@ -127,10 +128,10 @@ scenarios:
       - 点検は文書を書き換えない
     test: test_error_when_diagram_drift
     uses:
-      - dev/設計書/シナリオ/単一ユースケース/雛形を配置する#scenarios[正常シナリオ]
-      - dev/設計書/シナリオ/単一ユースケース/設定と索引を点検する#scenarios[正常シナリオ（図の定義にずれがある）]
-      - dev/設計書/シナリオ/単一ユースケース/設定と索引を点検する#scenarios[正常シナリオ]
-      - dev/設計書/シナリオ/単一ユースケース/図を描く#scenarios[正常シナリオ]
+      - SC-472-83#scenarios[正常シナリオ]
+      - SC-472-78#scenarios[正常シナリオ（図の定義にずれがある）]
+      - SC-472-78#scenarios[正常シナリオ]
+      - SC-472-43#scenarios[正常シナリオ]
 lead: 利用側（ワークスペースの持ち主と、その場所で HTML を作る AI）が、雛形に固有の部品と CSS を追加して型で点検し、共通の図の部品と固有の部品で文書を描き、読者の操作で確認する。
 issue: 21
 primary_actor: 利用側

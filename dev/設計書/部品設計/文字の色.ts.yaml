@@ -1,3 +1,4 @@
+id: CMP-472-48
 title: 文字の色
 implementation: src/parts/text-color.ts#renderTextColor
 story: Parts/TextColor
@@ -53,8 +54,8 @@ accessibility:
   - '文字の色に加えて太字（`font-weight: 700`）にし、色だけで意味を伝えない'
   - 文字と地の色のコントラストを 4.5:1 以上にする
 refs:
-  - dev/設計書/インターフェース定義/ライブラリ本体/文書をHTML文字列にする.ts#constraints[本文の文字の色]
-  - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[色のプリセット]
+  - IF-472-34#constraints[本文の文字の色]
+  - IF-472-35#constraints[色のプリセット]
 status: planned
 notes:
   HTML: '`<span class="mdmark-color" data-color="{color}">{text}</span>`。色と太字は確認ログの決定（案 A）。モックは `dev/mock/components/color-preset/`'

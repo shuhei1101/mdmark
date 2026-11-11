@@ -3,15 +3,21 @@ title: 画面設計
 description: 1 画面の要素の仕様（表示条件・活性条件・制限・初期値・取得元・送信先・アクション）と入力チェック。1 ファイル = 1 画面。
 x-kind: screen
 x-folder: dev/設計書/画面設計
+x-id-prefix: SCR
 x-cross: elements
 x-test-file: test_file
 x-test-file-optional: true
 type: object
 additionalProperties: false
 required:
+- id
 - title
 - elements
 properties:
+  id:
+    $ref: 共通.schema.yaml#/$defs/id
+    title: ID
+    description: 設計書の変わらない ID。書くツールの `create` が振り、改名・移動でも変わらない。他の設計書からは `{ID}#{項目のパス}` で指す。
   title:
     type: string
     title: タイトル
@@ -23,13 +29,13 @@ properties:
   mock:
     type: string
     title: モック
-    description: 採用したモックの配置場所。
+    description: 採用したモックの置き場所。
   lead:
     $ref: 共通.schema.yaml#/$defs/markdown
     title: 冒頭リード
     description: |-
       対象を 1〜3 行で説明する。
-      初回に記載した内容のまま保ち、後から情報を追加しない（仕様は各項目に記載する）。
+      初回に書いた内容のまま保ち、後から情報を足さない（仕様は各項目に書く）。
       対象そのものが変わったときだけ書き換える。
   test_file:
     type: string
@@ -40,8 +46,8 @@ properties:
     type: array
     title: 要素一覧
     description: |-
-      画面の要素 1 つ = 1 要素。ダイアログの中の要素も並べ、位置の先頭にダイアログ名を記載する。
-      列の表示・非表示は開発ドキュメントサーバーのユーザーごとの設定で切り替える。
+      画面の要素 1 つ = 1 要素。ダイアログの中の要素も並べ、位置の先頭にダイアログ名を書く。
+      列の表示・非表示は dev-docs の画面の表の列の設定で切り替える。
     x-heading: 要素一覧
     x-shape: table
     x-key: name
@@ -61,7 +67,7 @@ properties:
         id:
           type: string
           title: 項目 ID
-          description: 画面の中で一意な識別子。テスト・実装から参照する。
+          description: 画面の中で一意な識別子。テスト・実装から引く。
         kind:
           type: string
           title: 種類
@@ -69,14 +75,14 @@ properties:
         component:
           $ref: 共通.schema.yaml#/$defs/ref
           title: 部品
-          description: 使用する部品の部品設計（`dev/設計書/部品設計/...#`）。部品を使用しない要素は記載しない。
+          description: 使う部品の部品設計（`dev/設計書/部品設計/...#`）。部品を使わない要素は書かない。
           examples:
           - "dev/設計書/部品設計/計画画面/状態のバッジ.html#"
           - "dev/設計書/部品設計/計画画面/列見出し.html#"
         args:
           type: array
-          title: 部品へ指定する引数
-          description: 部品設計の引数へ指定する値。`component` を持つ要素だけが持ち、部品設計の必須の引数を全て並べる。
+          title: 部品へ渡す引数
+          description: 部品設計の引数へ渡す値。`component` を持つ要素だけが持ち、部品設計の必須の引数を全て並べる。
           x-shape: table
           x-key: name
           items:
@@ -95,7 +101,7 @@ properties:
                 - "filterable"
               value:
                 type: string
-                title: 指定する値
+                title: 渡す値
                 description: 固定の値か取得元（`{インターフェース定義の論理名}.{フィールドのパス}`）。
                 examples:
                 - "`計画画面.行の材料[].status`"
@@ -205,7 +211,7 @@ properties:
         display_format:
           type: string
           title: 表示形式
-          description: 日付・時刻・数値の表示の構造と、表示の例。
+          description: 日付・時刻・数値の表示の形と、表示の例。
         align:
           type: string
           title: 文字揃え
@@ -237,7 +243,7 @@ properties:
         error_message:
           type: string
           title: エラーの文言
-          description: 項目ごとの誤りと修正方法。
+          description: 項目ごとの誤りと直し方。
         autocomplete:
           type: string
           title: 入力の目的
@@ -273,7 +279,7 @@ properties:
         action:
           type: string
           title: アクション
-          description: 画面の中で閉じる動きは日本語で記載する。送信・画面遷移は `action_ref` に参照で持つ。
+          description: 画面の中で閉じる動きは日本語で書く。送信・画面遷移は `action_ref` に参照で持つ。
         action_ref:
           $ref: 共通.schema.yaml#/$defs/ref
           title: アクションの参照
@@ -283,6 +289,12 @@ properties:
           title: 関連
           items:
             $ref: 共通.schema.yaml#/$defs/ref
+        decisions:
+          type: array
+          title: 検討事項
+          description: 根拠になった話し合いの記録の検討事項の ID。
+          items:
+            $ref: 共通.schema.yaml#/$defs/decision
         reason:
           $ref: 共通.schema.yaml#/$defs/reason
         status:
@@ -324,7 +336,7 @@ properties:
         trigger:
           type: string
           title: 検証の契機
-          description: 入力のたび / フォーカスが離れたとき / 送信ボタンのクリック 等。
+          description: 入力のたび / フォーカスが外れたとき / 送信ボタンのクリック 等。
         message:
           type: string
           title: エラー文言
@@ -337,12 +349,19 @@ properties:
     title: 関連
     items:
       $ref: 共通.schema.yaml#/$defs/ref
+  decisions:
+    type: array
+    title: 検討事項
+    description: 根拠になった話し合いの記録の検討事項の ID。
+    items:
+      $ref: 共通.schema.yaml#/$defs/decision
   notes:
     $ref: 共通.schema.yaml#/$defs/notes
     x-heading: 補足
     x-shape: sections
 examples:
-- title: タスク作成画面
+- id: SCR-1
+  title: タスク作成画面
   screen: app/(authenticated)/tasks/new/page.tsx
   mock: dev/mock/pages/タスク作成/12/a-plan/
   lead: タスクの新規作成フォーム画面。タスク名・優先度を入力して登録する。

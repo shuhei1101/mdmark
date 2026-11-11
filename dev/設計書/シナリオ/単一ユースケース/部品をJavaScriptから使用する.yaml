@@ -1,3 +1,4 @@
+id: SC-472-81
 title: "部品をJavaScriptから使用する"
 scenarios:
   - name: 正常シナリオ

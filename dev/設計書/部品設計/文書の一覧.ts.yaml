@@ -1,3 +1,4 @@
+id: CMP-472-49
 title: "文書の一覧"
 implementation: "src/parts/doc-list.ts#renderDocList"
 story: "Parts/DocList"

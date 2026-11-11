@@ -1,0 +1,35 @@
+id: MOD-472-29
+title: "ライブラリ本体 / mermaid"
+lead: '`mount` が描いた mermaid のコードブロックを、mermaid で描いた SVG の図の枠に置き換える処理。描く先の CSS 変数から mermaid のテーマの変数を作り、配色の明暗が変わったら再描画する。ソースの読み取りと図の部品の HTML は DOM を使用せず、読み込みと描画はブラウザでだけ動く。'
+directory: |-
+  ```tree
+  src/
+  ├── mermaid.ts          # mermaid を読み込んで図にする attachMermaid と、埋めたモジュールの記録・テーマの変数の解決・actor のアイコンの置き換え
+  ├── mermaid-source.ts   # ソースのタイトルの取り出し・図の種類の名前・テーマの変数の対応表（DOM を使用しない）
+  └── parts/
+      └── mermaid.ts      # 部品『mermaid の図』の renderMermaidDiagram
+  ```
+diagrams:
+  - name: 全体
+    diagram: |-
+      ```mermaid
+      classDiagram
+        direction LR
+        class mermaidの図を付ける
+        class テーマの変数を作る
+        class 色をhexにする
+        class タイトルを取り出す
+        class 図の種類の名前を参照する
+        class actorのアイコンを替える
+        class mermaidの図を描く
+        class 図の枠を描く
+        mermaidの図を付ける --> テーマの変数を作る : 描くたびに呼ぶ
+        テーマの変数を作る --> 色をhexにする
+        mermaidの図を付ける --> タイトルを取り出す
+        mermaidの図を付ける --> 図の種類の名前を参照する : タイトルが無いとき
+        mermaidの図を付ける --> actorのアイコンを替える
+        mermaidの図を付ける --> mermaidの図を描く
+        mermaidの図を付ける --> 図の枠を描く
+      ```
+notes:
+  他の分類への変更: '`mount` は記法の操作と外部ライブラリの後に `attachMermaid` を呼ぶ（分類『描く』）。`render` は機能 `mermaid` がオンなら言語 `mermaid` のコードブロックに `data-mdmark-mermaid` を付ける（分類『記法』『部品』）。図の枠は種類 `mermaid` と倍率の下限を持ち、`attachDiagrams` は指定した図だけに付けられる（分類『図』）。書き出しは mermaid をまとめ、起動の処理が `setEmbeddedMermaid` で指定する（分類『CLI』『書き出したHTMLの起動』）'

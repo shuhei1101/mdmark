@@ -1,3 +1,4 @@
+id: CMP-472-15
 title: "コメントのマーカー"
 implementation: "src/parts/comment.ts#renderCommentMark"
 story: "Parts/CommentMark"
@@ -55,9 +56,9 @@ accessibility:
   - マーカーは地の色と下線で示し、色だけに頼らない
   - 強調は全周の線でも示し、地の色だけに頼らない。吹き出しを開いているマーカー（`aria-expanded="true"`）の線より目立たせる
 refs:
-  - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[コメントの操作]
-  - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[コメントの箇所]
-  - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[コメントの箇所へ移る]
+  - IF-472-35#constraints[コメントの操作]
+  - IF-472-35#constraints[コメントの箇所]
+  - IF-472-35#constraints[コメントの箇所へ移る]
 status: planned
 notes:
   HTML: '`<mark class="mdmark-comment-mark" tabindex="0" role="button" aria-haspopup="dialog" aria-expanded="false" aria-describedby="mdmark-comment-hint">{text}</mark>`。モックは `dev/mock/components/comment/`'

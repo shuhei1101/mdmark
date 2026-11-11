@@ -1,0 +1,33 @@
+id: MOD-472-339
+title: ライブラリ本体 / 部品 / frontmatter.ts
+test_files:
+  - tests/unit/src/parts/frontmatter.test.ts
+functions:
+  - name: renderFrontmatter
+    title: フロントマターの表示を描く
+    container: src/parts/frontmatter.ts
+    kind: 関数
+    scope: internal
+    summary: 見出し `フロントマター` の閉じた折りたたみ（`renderCollapsible`、class `mdmark-frontmatter` を加える）に、中身の HTML を入れて返却する
+    args:
+      - name: options
+        type: '{ body: string; open?: boolean }'
+        required: true
+        description: 中身の HTML（`insertFrontmatter` は `SLOT_MARKER` を指定し、前後に分けて fence のトークンを挟む）、開いた状態から始めるか（省くと `false`。`renderCollapsible` の `open` に指定する。`insertFrontmatter` は指定しない）
+    returns:
+      type: string
+      description: '`<details class="mdmark-collapsible mdmark-frontmatter">` で始まる HTML'
+    callees:
+      - 'MOD-472-325#functions[renderCollapsible]'
+    refs:
+      - CMP-472-27#
+    unit_tests:
+      - name: test_render_frontmatter
+        case: 正常
+        summary: 閉じた折りたたみに中身を入れる
+        condition: '`body: "<pre></pre>"`'
+        mock: なし
+        expected: '`<details class="mdmark-collapsible mdmark-frontmatter"><summary>フロントマター</summary><pre></pre></details>`（`open` を持たない）'
+    status: planned
+    introduced:
+      pr: 422

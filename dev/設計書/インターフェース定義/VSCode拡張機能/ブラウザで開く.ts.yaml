@@ -1,3 +1,4 @@
+id: IF-472-18
 title: "ブラウザで開く"
 entry:
   kind: operation
@@ -44,7 +45,7 @@ lead: 開いている Markdown を HTML にもう一度書き出して、既定�
 idempotent: true
 side_effects: HTMLに書き出す.ts と同じファイルを書き込み、`env.openExternal` で開く。書き出した通知は出さない
 callers:
-  - dev/設計書/シナリオ/単一ユースケース/HTMLに書き出す#scenarios[正常シナリオ（ブラウザで開く）]
+  - SC-472-6#scenarios[正常シナリオ（ブラウザで開く）]
 request:
   - name: uri
     type: vscode.Uri

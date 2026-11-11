@@ -1,3 +1,4 @@
+id: CFG-472-2
 title: "設定: VS Code 拡張機能"
 lead: VS Code 拡張機能が読み込む設定のキー。VS Code の設定（`settings.json`）の `mdmark.*` と、`mdmark.config.yaml` のうち拡張機能が取り出すキーを持つ。`settings.json` のキーの構造の正は `vscode/package.json` の `contributes.configuration` に配置する。
 files:
@@ -21,7 +22,7 @@ settings:
     reload: reload
     allowed: '`latest` か `v{X}.{Y}.{Z}`（`package.json` の `pattern`）'
     refs:
-      - dev/設計書/インターフェース定義/VSCode拡張機能/プレビューを開く.ts#constraints[バージョンの決め方]
+      - IF-472-22#constraints[バージョンの決め方]
     status: planned
     visibility: user
     introduced:
@@ -61,7 +62,7 @@ settings:
     reload: immediate
     allowed: 0〜5000
     refs:
-      - dev/設計書/非機能要件/非機能要件#requirements[再描画するまでの待ち]
+      - NFR-472-1#requirements[再描画するまでの待ち]
     status: planned
     visibility: user
     introduced:
@@ -99,7 +100,7 @@ settings:
     description: '`auto` は設定ファイルの `colorScheme`、無ければ VS Code のテーマの明暗に合わせ、`light`・`dark` はその配色に固定する。文書の先頭の `<!-- page: scheme=… -->` はこの設定より優先する'
     reload: immediate
     refs:
-      - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[配色の切り替え]
+      - IF-472-35#constraints[配色の切り替え]
     status: planned
     visibility: user
     introduced:
@@ -114,7 +115,7 @@ settings:
     reload: immediate
     allowed: 空・相対パス・絶対パス
     refs:
-      - dev/設計書/インターフェース定義/VSCode拡張機能/HTMLに書き出す.ts#constraints[書き出す先]
+      - IF-472-15#constraints[書き出す先]
     status: planned
     visibility: user
     introduced:
@@ -128,7 +129,7 @@ settings:
     description: 拡張機能は記載した値をそのまま `mount` の `opts.config.features` に指定する。フロントマターの表示（`frontmatter`）もこのキーで切り替え、`settings.json` にはキーを持たない
     reload: immediate
     refs:
-      - dev/設計書/設定/ライブラリ本体#settings[features]
+      - CFG-472-3#settings[features]
     status: planned
     visibility: user
     introduced:
@@ -142,7 +143,7 @@ settings:
     description: 相対 URL は設定ファイルのあるフォルダを基準に解決し、プレビューでは Webview で読み込める URL、書き出した HTML では文書にマーカーがあるモジュールをまとめた `data:` の URL にして `mount` の `opts.config.libraries` に指定する。`http:`・`https:` の URL はそのまま指定する
     reload: immediate
     refs:
-      - dev/設計書/設定/ライブラリ本体#settings[libraries]
+      - CFG-472-3#settings[libraries]
     reason: Webview で読み込める URL への修正方法（`asWebviewUri`）は拡張機能にしかできず、mdmark に基準を指定するインターフェースを追加しても拡張機能が URL を修正する処理を持つことは変わらないため（要件.md の推奨案 B）
     status: planned
     visibility: user
@@ -185,7 +186,7 @@ settings:
     description: 拡張機能は記載した値をそのまま `mount` の `opts.config["side-toc"]` に指定する。プレビューと書き出した HTML の右側の目次の出し方になる
     reload: immediate
     refs:
-      - dev/設計書/設定/ライブラリ本体#settings[side-toc.mode]
+      - CFG-472-3#settings[side-toc.mode]
     status: planned
     visibility: user
     introduced:
@@ -199,7 +200,7 @@ settings:
     description: 拡張機能は値がマップのときだけ、記載した値をそのまま `mount` の `opts.config.labels` に指定する。プレビューと書き出した HTML の操作できる部品の今の値をコピーするボタンの文言になる
     reload: immediate
     refs:
-      - dev/設計書/設定/ライブラリ本体#settings[labels.paramCopy]
+      - CFG-472-3#settings[labels.paramCopy]
     status: planned
     visibility: user
     introduced:
@@ -214,8 +215,8 @@ settings:
     reload: immediate
     allowed: '`package.json` の `enum` の値だけ'
     refs:
-      - dev/設計書/インターフェース定義/VSCode拡張機能/プレビューを再描画する.ts#constraints[設定の取り出し方]
-      - dev/設計書/設定/ライブラリ本体#settings[colorTheme]
+      - IF-472-21#constraints[設定の取り出し方]
+      - CFG-472-3#settings[colorTheme]
     reason: 選んだテーマは書き出す HTML にも該当するため、`mdmark.preview.*` の下に配置しない（確認ログ「テーマの設定のキーと設定画面の表示名」）
     status: planned
     visibility: user
@@ -230,7 +231,7 @@ settings:
     description: '`mdmark.colorTheme` が空のときだけ、拡張機能は記載した値をそのまま `mount` の `opts.config.colorTheme` に指定する。`mdmark.colorTheme` が空でないときはその値で置き換える'
     reload: immediate
     refs:
-      - dev/設計書/設定/ライブラリ本体#settings[colorTheme]
+      - CFG-472-3#settings[colorTheme]
     status: planned
     visibility: user
     introduced:
@@ -244,7 +245,7 @@ settings:
     description: '`mdmark.preview.theme` が `auto` のときだけ、拡張機能は記載した値をそのまま `mount` の `opts.config.colorScheme` に指定する。`light`・`dark` のときは指定しない'
     reload: immediate
     refs:
-      - dev/設計書/設定/ライブラリ本体#settings[colorScheme]
+      - CFG-472-3#settings[colorScheme]
     status: planned
     visibility: user
   - key: assets.root
@@ -256,8 +257,8 @@ settings:
     description: プレビューで、Markdown のフォルダからの相対パスに無い画像・動画・音声を、設定ファイルのあるフォルダからのこのフォルダを基準に同じ相対パスで探す。`mount` には指定しない
     reload: immediate
     refs:
-      - dev/設計書/設定/ライブラリ本体#settings[assets.root]
-      - dev/設計書/インターフェース定義/VSCode拡張機能/プレビューを開く.ts#constraints[動画・音声とアセットのルートの解決]
+      - CFG-472-3#settings[assets.root]
+      - IF-472-22#constraints[動画・音声とアセットのルートの解決]
     status: planned
     visibility: user
   - key: html-scripts.url
@@ -269,8 +270,8 @@ settings:
     description: '`libraries` と同じく、相対 URL は設定ファイルのあるフォルダを基準に解決し、プレビューでは Webview で読み込める URL、書き出した HTML では変換のライブラリをまとめた `data:` の URL にして `mount` の `opts.config.html-scripts.url` に指定する。`http:`・`https:` の URL はそのまま指定し、その origin を CSP の `script-src` に含める'
     reload: immediate
     refs:
-      - dev/設計書/設定/ライブラリ本体#settings[html-scripts.url]
-      - dev/設計書/インターフェース定義/VSCode拡張機能/プレビューを開く.ts#constraints[CSP]
+      - CFG-472-3#settings[html-scripts.url]
+      - IF-472-22#constraints[CSP]
     status: planned
     visibility: user
     introduced:
@@ -284,8 +285,8 @@ settings:
     description: '`url`・`theme`・`themeVariables` を `mount` の `opts.config.mermaid` に指定する。相対の `url` は `html-scripts.url` と同じく、設定ファイルのあるフォルダを基準に解決し、プレビューでは Webview で読み込める URL、書き出した HTML では本体と chunk をまとめた `data:` の URL にする。`http:`・`https:` の `url` はそのまま指定し、その origin（`url` が無いときは既定の jsDelivr の origin）を CSP の `script-src` に含める'
     reload: immediate
     refs:
-      - dev/設計書/設定/ライブラリ本体#settings[mermaid.url]
-      - dev/設計書/インターフェース定義/VSCode拡張機能/プレビューを開く.ts#constraints[CSP]
+      - CFG-472-3#settings[mermaid.url]
+      - IF-472-22#constraints[CSP]
     status: planned
     visibility: user
     introduced:
@@ -299,8 +300,8 @@ settings:
     description: プレビューで、重ねた設定の行の `paths` の YAML を CLI と同じく読み込んでエイリアスを作り、`mount` の `opts.aliases` に指定する。行の `paths` はその値を記載した設定ファイルのフォルダから解決する。使用できない行・レコードは除き、出力チャネルに警告を記載する。行の `paths` に該当した YAML を保存すると再描画する。書き出した HTML には指定しない
     reload: immediate
     refs:
-      - dev/設計書/設定/ライブラリ本体#settings[aliases]
-      - dev/設計書/インターフェース定義/VSCode拡張機能/プレビューを開く.ts#constraints[エイリアス]
+      - CFG-472-3#settings[aliases]
+      - IF-472-22#constraints[エイリアス]
     status: planned
     visibility: user
     introduced:
@@ -314,7 +315,7 @@ settings:
     description: 拡張機能は記載した値をそのまま `mount` の `opts.config.table` に指定する。プレビューと書き出した HTML の表のピン止めの動きになる
     reload: immediate
     refs:
-      - dev/設計書/設定/ライブラリ本体#settings[table.pin]
+      - CFG-472-3#settings[table.pin]
     status: planned
     visibility: user
     introduced:

@@ -1,3 +1,4 @@
+id: IF-472-23
 title: "拡張機能の配布物を作る"
 entry:
   kind: trigger
@@ -45,7 +46,7 @@ idempotent: false
 permissions: 'ワークフローの `GITHUB_TOKEN` に `contents: write`'
 side_effects: タグの GitHub Release を作り（あれば使用する）、`mdmark-{バージョン}.vsix` を添える。Marketplace・Open VSX へは登録しない
 callers:
-  - dev/設計書/シナリオ/単一ユースケース/拡張機能の配布物を作る#
+  - SC-472-50#
 exclusivity: 同じタグのワークフローは `concurrency` で 1 つずつ実行する
 exceptions:
   - name: なし（正常終了）

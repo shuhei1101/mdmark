@@ -1,0 +1,51 @@
+id: MOD-472-151
+title: ライブラリ本体 / バージョンを上げる / prompt.ts
+test_files:
+  - tests/unit/src/cli/prompt.test.ts
+functions:
+  - name: createLinePrompter
+    title: 標準入力の質問を作る
+    container: src/cli/prompt.ts
+    usecase: バージョンを上げる
+    summary: 質問の文を書き出し、入力の次の 1 行を回答にする `Prompter` を返却する
+    description: '`node:readline` で入力を行ごとに読み込み、質問ごとに 1 行を指定する。入力が終わっていれば `undefined` を返却する。質問が無いまま終わるときは入力を読み込まない'
+    kind: 関数
+    scope: public
+    is_async: false
+    args:
+      - name: options
+        type: '{ input: NodeJS.ReadableStream; write: (line: string) => void }'
+        required: true
+        description: 回答を読み込む入力・質問を記載する先（標準エラー）
+    returns:
+      type: Prompter
+      description: 質問
+    unit_tests:
+      - name: test_create_line_prompter
+        case: 正常
+        summary: 質問ごとに 1 行ずつ返却する
+        condition: '`v0.3.0\ny\n` を実行する入力で 2 回問う'
+        mock: '`Readable.from` の入力'
+        expected: '`v0.3.0`・`y` を返却し、質問の文が 2 つ記載される'
+      - name: test_create_line_prompter_when_ended
+        case: 異常
+        summary: 入力が終わっていれば undefined
+        condition: 空の入力で問う
+        mock: '`Readable.from([])`'
+        expected: '`undefined`'
+    status: planned
+    introduced:
+      pr: 39
+function_types:
+  - name: Prompter
+    title: 質問
+    container: src/cli/prompt.ts
+    summary: 質問の文を出し、回答の 1 行を返却する。回答する前に入力が終わったら `undefined` を返却する
+    args:
+      - name: question
+        type: string
+        required: true
+        description: 質問の文
+    returns:
+      type: Promise<string | undefined>
+      description: 前後の空白を落とした回答し、入力が終わっていれば `undefined`

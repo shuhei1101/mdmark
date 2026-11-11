@@ -1,0 +1,58 @@
+id: MOD-472-291
+title: ライブラリ本体 / 記法 / text-color.ts
+test_files:
+  - tests/unit/src/render/syntax/text-color.test.ts
+functions:
+  - name: buildTextColors
+    title: 本文の文字に色を付ける
+    container: src/render/syntax/text-color.ts
+    kind: 関数
+    scope: internal
+    summary: コアルール。`text-color` がオンなら、`inline` の子のトークンで、同じ入れ子の深さの `[` で始まる `text` から `]{color=色}` で始まる `text` までを、部品『文字の色』の開きと閉じの `html_inline` で挟み、`[` と `]{color=色}` を削除する。リンクの中と、`]` の直後が `(` のものは適用しない。知らない色の名前は `[` と `]{color=色}` だけを削除して色を付けず、段落の前に記載の警告を差し込む
+    description: 部品の HTML は `SLOT_MARKER` を中身にして作り、`markOwn` を掛けてから前後に分ける（記法の「部品の差し込み方」）
+    args:
+      - name: state
+        type: StateCore
+        required: true
+        description: markdown-it の状態
+    side_effects: '`state.tokens` を書き換える'
+    callees:
+      - MOD-472-326#functions[renderTextColor]
+      - MOD-472-312#functions[isColorName]
+      - 'MOD-472-213#functions[pushWarning]'
+    refs:
+      - IF-472-34#constraints[本文の文字の色]
+    unit_tests:
+      - name: test_build_text_colors
+        case: 正常
+        summary: 角括弧の文字を文字の色の部品にする
+        condition: '`押す前に [決め手の 1 文]{color=blue} を読み込む。`'
+        mock: なし
+        expected: '`<span class="mdmark-color" data-color="blue">決め手の 1 文</span>` があり、`{color=` と `[決め手` が無い'
+      - name: test_build_text_colors_when_nested
+        case: 正常
+        summary: 角括弧の中の行内の Markdown を描く
+        condition: '`[**重要** な文]{color=red}`'
+        mock: なし
+        expected: '`mdmark-color` の中に `<strong>重要</strong> な文`'
+      - name: test_build_text_colors_when_link
+        case: 正常
+        summary: リンクには適用しない
+        condition: '`[資料](https://example.com){color=blue}`'
+        mock: なし
+        expected: '`<a href="https://example.com">資料</a>{color=blue}` で、`mdmark-color` が無い'
+      - name: test_build_text_colors_when_unknown
+        case: 異常
+        summary: 知らない色の名前は色を付けずに警告にする
+        condition: '`[決め手の 1 文]{color=pink}`'
+        mock: なし
+        expected: 段落の前に記載の警告があり本文に `pink` と色の名前の一覧があり、段落の文字が `決め手の 1 文` で `mdmark-color` が無い
+      - name: test_build_text_colors_when_feature_off
+        case: 正常
+        summary: text-color がオフなら記載した文字のまま
+        condition: '`env.features["text-color"]` が `false` で `[決め手]{color=blue}`'
+        mock: なし
+        expected: 段落の文字が `[決め手]{color=blue}`
+    status: planned
+    introduced:
+      pr: 263

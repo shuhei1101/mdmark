@@ -1,0 +1,76 @@
+id: MOD-472-128
+title: ライブラリ本体 / map / 描画と操作 / index.ts
+test_files:
+  - tests/unit/src/map/index.browser.test.ts
+data_models:
+  - name: MapPartModule
+    title: mapの部品のモジュール
+    container: src/map/index.ts
+    usecase: Mermaidと補足で図を描く
+    role: データモデル
+    summary: '`dist/map.js` が export する関数'
+    properties:
+      - name: attachMap
+        type: '(root: HTMLElement, config: ResolvedConfig) => () => void'
+        description: '`root` の中の `div.mdmark-map` を全て図にし、片付ける関数を返す'
+functions:
+  - name: attachMap
+    title: mapを付ける
+    kind: 関数
+    container: src/map/index.ts
+    usecase: Mermaidと補足で図を描く
+    role: 処理
+    summary: '`root` の中の `div.mdmark-map` ごとに、種類で構成図かシーケンス図を付け、案内と再生をつなぎ、片付ける関数を返す'
+    scope: public
+    callees:
+      - MOD-472-130#functions[attachMapFlow]
+      - MOD-472-131#functions[attachMapSequence]
+      - MOD-472-140#functions[parseMapArgs]
+      - MOD-472-135#functions[collectMapProblems]
+    args:
+      - name: root
+        type: HTMLElement
+        required: true
+        description: '`mount` が描いた要素'
+      - name: config
+        type: ResolvedConfig
+        required: true
+        description: 既定を当てた設定
+    returns:
+      type: () => void
+      description: 付けた操作と観察を外す関数
+    process: |-
+      1. `div.mdmark-map` ごとに `data-map-args` を `parseMapArgs` で読み、`data-map-kind` で `attachMapFlow` か `attachMapSequence` に引数と一緒に指定する。`collapse` があれば図の枠を `details`（`open` は `collapse.open`、見出しは `collapse.title` か `title`）で包む
+      2. 範囲ごとに `collectMapProblems`（`includeUnknownKeys: false`）から `collectMapStructure` の項目を除いた項目があれば、`render` の記載の警告に足すか、無ければ図の枠の前に部品『書き方の警告』を配置する
+      3. シーケンス図の補足の `plays_over` が指す構成図を探し、再生の強調を構成図にも当てる。片方の図で案内か再生を始めたら、もう片方の強調を解く。再生を自動で進め始めたら構成図の `resumeFollow`、自動で進めたら構成図の `follow` で送り手と受け手のノードへ構成図の表示する枠をスクロールする（構成図に無い相手のメッセージではスクロールしない）
+    unit_tests:
+      - name: test_attach_map
+        case: 正常
+        summary: 構成図とシーケンス図
+        condition: 2 つの `div.mdmark-map`
+        mock: なし（jsdom）
+        expected: '`figure.mdmark-diagram[data-diagram=map]` が 2 つになり、返した関数で操作が外れる'
+      - name: test_attach_map_when_collapse
+        case: 正常
+        summary: 折りたたみ
+        condition: '`data-map-args` が `{"title":"全体","collapse":{"open":false}}`'
+        mock: なし（jsdom）
+        expected: 図の枠が `open` を持たない `details` に入り、`summary` の文字が `全体`
+      - name: test_attach_map_when_problems
+        case: 異常
+        summary: 書き方の誤り
+        condition: 読めない Mermaid の行と知らない補足のキー `layuot` を持つ範囲
+        mock: なし（jsdom）
+        expected: 図の枠の前の記載の警告が 1 つで、読めない行と `layuot` を含む
+      - name: test_attach_map_when_missing_participant
+        case: 正常
+        summary: 構成図に無い再生の相手
+        condition: '構成図と、`plays_over: 1` で構成図に無い参加者 `ghost` を持つシーケンス図'
+        mock: なし（jsdom）
+        expected: シーケンス図の図の枠の前の記載の警告に `ghost` がある
+      - name: test_attach_map_when_auto_follow
+        case: 正常
+        summary: 再生で構成図をスクロールする
+        condition: '構成図と `plays_over: 1` のシーケンス図で、シーケンス図の自動で進めるを押し、時計を 2 秒進める。次に構成図の表示する枠でホイールを回して時計を 2 秒進める'
+        mock: 時計・構成図の表示する枠の `scrollTo`
+        expected: 最初の 2 秒で構成図の `scrollTo` を 1 回呼び、ホイールの後は呼ばない

@@ -1,0 +1,80 @@
+id: MOD-472-53
+title: VS Code 拡張機能 / Webview / boot.ts
+test_files:
+  - tests/unit/vscode/src/webview/features/preview/panel/boot.browser.test.ts
+data_models:
+  - name: PreviewBoot
+    title: パネルの始め方
+    container: vscode/src/webview/features/preview/panel/boot.ts
+    usecase: VSCodeでプレビューを開く
+    summary: 拡張機能が HTML の描く先を包む要素（`#mdmark-preview`）の `data-*` に配置し、入口が読み込む値
+    properties:
+      - name: root
+        type: HTMLElement
+        description: 描く先を包む要素。React の木を描く場所で、配色の class を付ける
+      - name: distJs
+        type: string | undefined
+        description: '`data-dist-js`。読み込む配布物の `index.js` の URL。バージョンを決められないときは持たない'
+      - name: version
+        type: string | undefined
+        description: '`data-version`。読み込むバージョン（描けない理由に出す）'
+      - name: status
+        type: '"versionUndecidable" | undefined'
+        description: '`data-status`。配布物を読み込まずに出す状態'
+      - name: configPath
+        type: string
+        description: '`data-config-path`。`mdmark.configPath` の記載したままの値（帯に出す）'
+      - name: test
+        type: boolean
+        description: '`data-test` を持つか。`inspect`・`axe` を受けるのは `true` のときだけ'
+      - name: extensions
+        type: string[]
+        description: '`data-extensions`（JSON の配列）。重ねた設定の `extensions` の Webview で読み込める URL。無い・文字列の配列でないときは空'
+    status: planned
+functions:
+  - name: readBoot
+    title: 始め方を読み込む
+    kind: 関数
+    container: vscode/src/webview/features/preview/panel/boot.ts
+    usecase: VSCodeでプレビューを開く
+    summary: 描く先を包む要素の `data-*` から `PreviewBoot` を読み込む
+    scope: public
+    args:
+      - name: root
+        type: HTMLElement
+        required: true
+        description: '`#mdmark-preview`'
+    returns:
+      type: PreviewBoot
+      description: 始め方
+    unit_tests:
+      - name: test_read_boot
+        case: 正常
+        summary: data-* を読み込み、知らない status と配列でない data-extensions は持たない
+        condition: '`data-dist-js`・`data-version`・`data-config-path`・`data-extensions`（`["web:/w/e.js"]`）・`data-test` を持つ要素と、`data-status="other"` と `data-extensions="x"` だけを持つ要素'
+        mock: なし
+        expected: '1 つ目は全ての値と `extensions: ["web:/w/e.js"]`・`test: true`、2 つ目は `status` が `undefined`・`configPath` が空・`extensions` が空・`test` が `false`'
+    status: planned
+  - name: savedLineFrom
+    title: 保存した行を読み込む
+    kind: 関数
+    container: vscode/src/webview/features/preview/panel/boot.ts
+    usecase: 共通
+    summary: '`getState` で読み込んだ値が `PreviewState` なら、その行を返却する'
+    scope: public
+    args:
+      - name: state
+        type: unknown
+        required: true
+        description: '`getState` の値'
+    returns:
+      type: number | undefined
+      description: 保存した行
+    unit_tests:
+      - name: test_saved_line_from
+        case: 正常
+        summary: line が数のときだけ返却する
+        condition: '`{ line: 20.5 }`・`{ line: "20" }`・`undefined`・`null`'
+        mock: なし
+        expected: '`20.5`・`undefined`・`undefined`・`undefined`'
+    status: planned

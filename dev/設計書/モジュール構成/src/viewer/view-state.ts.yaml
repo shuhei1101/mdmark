@@ -1,0 +1,211 @@
+id: MOD-472-245
+title: ライブラリ本体 / 書き出したHTMLの起動 / view-state.ts
+test_files:
+  - tests/unit/src/viewer/view-state.browser.test.ts
+data_models:
+  - name: ViewState
+    title: 表示の状態
+    container: src/viewer/view-state.ts
+    usecase: まとめたHTMLで文書を行き来する
+    summary: 履歴の項目を離れたときの表示の状態。sessionStorage に JSON で保存する
+    properties:
+      - name: path
+        type: string
+        description: 状態を取り出した文書のパス。戻した文書のパスと違うときは状態を使わない
+      - name: x
+        type: number
+        description: '`scrollX`'
+      - name: y
+        type: number
+        description: '`scrollY`'
+      - name: folds
+        type: boolean[]
+        description: '`RESTORABLE_FOLDS` に当たる要素の、文書の中の出現順の開閉（`details` は `open`、ボタンは `aria-expanded` が `"true"`）'
+      - name: tabs
+        type: number[]
+        description: '`data-group` を持たない `.mdmark-tabs` の、文書の中の出現順の選んだタブの番号（0 から）'
+    refs:
+      - IF-472-38#constraints[戻る・進む・再読み込みの表示の状態]
+    status: planned
+    introduced:
+      pr: 428
+constants:
+  - name: VIEW_STATE_KEY_PREFIX
+    title: 表示の状態を保存するキーの頭
+    container: src/viewer/view-state.ts
+    summary: sessionStorage のキーの頭。キーは `{頭}{履歴の項目の ID}`
+    value: '"mdmark-bundle-view:"'
+    refs:
+      - IF-472-38#constraints[表示の状態の保存先]
+  - name: HISTORY_ENTRY_FIELD
+    title: 履歴の項目の ID を持つフィールド
+    container: src/viewer/view-state.ts
+    summary: '`history.state` の中で、履歴の項目の ID を持つフィールドの名前'
+    value: '"mdmarkEntry"'
+  - name: RESTORABLE_FOLDS
+    title: 戻す開閉のセレクタ
+    container: src/viewer/view-state.ts
+    summary: 戻す本文の開閉の要素のセレクタ。`details`・セクション・行の詳細と最終列の畳み・コードの行の畳み・ER 図の畳み・ファイルツリーと表のツリーのフォルダ・表のツリーの見本。表のメニュー・ドロワー・絞り込み、右側の目次、差分のパネル、コメントの吹き出しの開閉は含めない
+    value: '"details, .mdmark-section-toggle, .mdmark-row-toggle, .mdmark-code-fold, .mdmark-diagram-er-fold, .mdmark-tree-toggle, .mdmark-tree-example-toggle"'
+    refs:
+      - IF-472-38#constraints[戻る・進む・再読み込みの表示の状態]
+  - name: SCROLL_SAVE_INTERVAL_MS
+    title: スクロール中の保存の間隔
+    container: src/viewer/view-state.ts
+    summary: スクロールしている間、表示の状態を保存する最短の間隔（ミリ秒）。規約『入力と文言』の「スクロールのたびに書き込むときは間引く」と、出典の TanStack Router の scroll restoration の間引きの値に合わせる
+    value: "100"
+functions:
+  - name: ensureEntryId
+    title: 履歴の項目の ID を取る
+    container: src/viewer/view-state.ts
+    usecase: まとめたHTMLで文書を行き来する
+    summary: '`history.state` の `HISTORY_ENTRY_FIELD` を返し、無ければ新しい ID を振って今の `history.state` に加えて `replaceState` する'
+    kind: 関数
+    scope: public
+    side_effects: 'ID が無いとき `history.replaceState` を呼ぶ（URL は変えない）'
+    args:
+      - name: win
+        type: Window
+        required: true
+        description: ページの `window`
+    returns:
+      type: string
+      description: 今の履歴の項目の ID（時刻と乱数の 36 進の文字）
+    unit_tests:
+      - name: test_ensure_entry_id
+        case: 正常
+        summary: ID が無ければ振り、2 回目は同じ ID を返す
+        condition: '`history.replaceState({ other: 1 }, "")` の後に 2 回呼ぶ'
+        mock: Chromium の `window`（`.browser.test.ts` で実行する）
+        expected: '2 回とも同じ空でない文字を返し、`history.state` が `{ other: 1, mdmarkEntry: その文字 }`'
+    status: planned
+    introduced:
+      pr: 428
+  - name: captureViewState
+    title: 表示の状態を取り出す
+    container: src/viewer/view-state.ts
+    usecase: まとめたHTMLで文書を行き来する
+    summary: 描いた文書の要素から、位置・`RESTORABLE_FOLDS` の開閉・`group=` の無いタブの選択を取り出す
+    kind: 関数
+    scope: public
+    args:
+      - name: target
+        type: '{ view: HTMLElement; path: string }'
+        required: true
+        description: 描く先の要素と、描いている文書のパス
+    returns:
+      type: ViewState
+      description: 表示の状態
+    unit_tests:
+      - name: test_capture_view_state
+        case: 正常
+        summary: 開閉とタブの選択を出現順に取り出す
+        condition: 閉じた `details`・開いたセクション・`group=` の無いタブ群（2 つ目を選択）・`group=os` のタブ群を描いた要素
+        mock: Chromium の `document`（`.browser.test.ts` で実行する）に `mount` で描く
+        expected: '`folds` が `[false, true]`、`tabs` が `[1]`（`group=os` のタブ群を含まない）、`path` が指定したパス'
+    status: planned
+    introduced:
+      pr: 428
+  - name: applyViewState
+    title: 表示の状態を戻す
+    container: src/viewer/view-state.ts
+    usecase: まとめたHTMLで文書を行き来する
+    summary: 開閉を戻し、タブを選び直してから、位置へスクロールする。描いた後に高さが変わって位置がずれたら、読む人がスクロールの操作をするまで位置へ合わせ直す
+    description: '開閉は今の状態と違う要素だけ、`details` は `open` を変え、ボタンは `click()` で切り替える。タブは選ぶ番号のタブのボタンを `click()` する。数が合わない要素とタブ群は飛ばす。`keepFocus` が `true` のときは、`click()` で移ったフォーカスを、戻す前の `document.activeElement` へ `preventScroll` で戻す。合わせ直しは描く先の要素の `ResizeObserver` で行い、`wheel`・`touchstart`・`keydown`・`pointerdown` のどれかが起きたら止める'
+    kind: 関数
+    scope: public
+    side_effects: 描いた文書の開閉・タブ・ページのスクロール位置を変える
+    args:
+      - name: target
+        type: '{ view: HTMLElement; state: ViewState; keepFocus: boolean }'
+        required: true
+        description: 描く先の要素・戻す表示の状態・開閉を戻した後にフォーカスを元の要素へ戻すか（`startBundle` は、部品のボタンへ移ったフォーカスを残さないよう常に `true` で呼ぶ）
+    returns:
+      type: () => void
+      description: 合わせ直しを止める関数（文書を差し替える前に呼ぶ）
+    unit_tests:
+      - name: test_apply_view_state
+        case: 正常
+        summary: 開閉とタブを戻してから位置へスクロールする
+        condition: 'test_capture_view_state と同じ文書を新しく描き、そこで取り出した状態と `y: 1200` を戻す'
+        mock: Chromium の `document`（`.browser.test.ts` で実行する）に `mount` で描く
+        expected: '`details` が `open` を持たず、セクションの `aria-expanded` が `true`、2 つ目のタブの `aria-selected` が `true`、`scrollY` が 1200（±1px）'
+      - name: test_apply_view_state_when_counts_differ
+        case: 正常
+        summary: 数が合わない開閉は飛ばし、例外を出さない
+        condition: '`folds` が要素より 1 つ多い状態'
+        mock: Chromium の `document`（`.browser.test.ts` で実行する）に `mount` で描く
+        expected: 例外が出ず、要素のある分だけ開閉が戻る
+      - name: test_apply_view_state_when_keep_focus
+        case: 正常
+        summary: keepFocus のときは、ボタンを押して移ったフォーカスを元へ戻す
+        condition: 'コードの行の畳みを持つ文書を描き、`body` にフォーカスがある状態で、畳みを開いた状態を `keepFocus: true` で戻す'
+        mock: Chromium の `document`（`.browser.test.ts` で実行する）に `mount` で描く
+        expected: 畳みのボタンの `aria-expanded` が `true` で、`document.activeElement` が `body`
+    status: planned
+    introduced:
+      pr: 428
+  - name: readViewState
+    title: 保存した表示の状態を読み込む
+    container: src/viewer/view-state.ts
+    usecase: まとめたHTMLで文書を行き来する
+    summary: sessionStorage の `{VIEW_STATE_KEY_PREFIX}{ID}` を読み込み、`ViewState` の構造なら返す
+    description: 値が無い・JSON でない・構造が合わないときは `undefined`。sessionStorage を取り出せない・読み込めないときは `console.warn` に出して `undefined`
+    kind: 関数
+    scope: public
+    args:
+      - name: entry
+        type: '{ win: Window; id: string }'
+        required: true
+        description: ページの `window` と履歴の項目の ID
+    returns:
+      type: ViewState | undefined
+      description: 保存した表示の状態
+    unit_tests:
+      - name: test_read_view_state_when_broken
+        case: 異常
+        summary: 壊れた値は使わない
+        condition: キーに `"{"` を入れておく
+        mock: Chromium の `window`（`.browser.test.ts` で実行する）
+        expected: '`undefined` を返し、例外が出ない'
+      - name: test_read_view_state_when_storage_unavailable
+        case: 異常
+        summary: sessionStorage を取り出せないと警告して使わない
+        condition: '`window.sessionStorage` を読むと `SecurityError` を投げる'
+        mock: '`window` の `sessionStorage` の getter を差し替える'
+        expected: '`undefined` を返し、`console.warn` が 1 回呼ばれる'
+    status: planned
+    introduced:
+      pr: 428
+  - name: writeViewState
+    title: 表示の状態を保存する
+    container: src/viewer/view-state.ts
+    usecase: まとめたHTMLで文書を行き来する
+    summary: sessionStorage の `{VIEW_STATE_KEY_PREFIX}{ID}` へ JSON で保存する。取り出せない・書き込めないときは `console.warn` に出して続ける
+    kind: 関数
+    scope: public
+    side_effects: sessionStorage に書き込む
+    args:
+      - name: entry
+        type: '{ win: Window; id: string; state: ViewState }'
+        required: true
+        description: ページの `window`・履歴の項目の ID・保存する表示の状態
+    returns:
+      type: void
+      description: なし
+    unit_tests:
+      - name: test_write_view_state
+        case: 正常
+        summary: 保存した値を読み込める
+        condition: '`writeViewState` の後に `readViewState`'
+        mock: Chromium の `window`（`.browser.test.ts` で実行する）
+        expected: 保存した値と同じ `ViewState` が返る
+      - name: test_write_view_state_when_quota_exceeded
+        case: 異常
+        summary: 書き込めないと警告して続ける
+        condition: '`Storage.prototype.setItem` が `QuotaExceededError` を投げる'
+        mock: '`Storage.prototype.setItem` を差し替える'
+        expected: 例外が出ず、`console.warn` が 1 回呼ばれる
+    status: planned
+    introduced:
+      pr: 428

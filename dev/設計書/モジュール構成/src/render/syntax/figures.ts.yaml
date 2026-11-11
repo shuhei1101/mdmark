@@ -1,0 +1,46 @@
+id: MOD-472-287
+title: ライブラリ本体 / 記法 / figures.ts
+test_files:
+  - tests/unit/src/render/syntax/figures.test.ts
+functions:
+  - name: numberFigures
+    title: 図表に番号を付ける
+    container: src/render/syntax/figures.ts
+    kind: 関数
+    scope: internal
+    summary: 'コアルール。`figures` がオンなら、`fig` のマーカーの直後の画像の段落と表を部品『図表の番号』で囲み、種類ごとに番号を付ける。`#fig-{ID}` へのリンクの文字を番号に替える。切れた参照と重なった ID（2 つ目に ID を付けない）は警告を差し込む。囲む表の終わりは、表の囲みの `table-open`・`table-close`（`table` がオフなら `table_open`・`table_close`）の入れ子の数を数え、自分の開きに対応する閉じにする。`images` がオンなら、`fig` のマーカーの直後の画像の段落を部品『図表の番号』の代わりに部品『画像の図』（`opener: false`、`id` は `fig-{ID}`、`label` は `図 {番号}`）にし、`meta.mdmarkImage` の属性を適用する。`fig` のマーカーの直後がギャラリーの開きのマーカーなら、`図` の番号を付けて開きのマーカーの `meta.figure` に `{ id, number }` を配置し、囲むのは `buildGallery` に任せる'
+    args:
+      - name: state
+        type: StateCore
+        required: true
+        description: markdown-it の状態
+    side_effects: '`state.tokens` を書き換える'
+    callees:
+      - MOD-472-322#functions[renderFigure]
+      - 'MOD-472-213#functions[pushWarning]'
+      - MOD-472-327#functions[renderImageFigure]
+    unit_tests:
+      - name: test_number_figures
+        case: 正常
+        summary: 種類ごとに番号を付け、リンクの文字を番号にする
+        condition: '`fig: arch`（画像）・`fig: flow`（画像）・`fig: list`（表）と `[図](#fig-flow)`・`[表](#fig-list)`'
+        mock: なし
+        expected: '`図 1`・`図 2`・`表 1` のタイトルと `id`、リンクの文字が `図 2`・`表 1`'
+      - name: test_number_figures_when_broken_or_duplicated
+        case: 正常
+        summary: 切れた参照と重なった ID を警告にする
+        condition: '`[図](#fig-missing)` と、`fig: arch` を 2 回'
+        mock: なし
+        expected: リンクの文字は `図` のままで警告があり、2 つ目の図は `図 2` で `id` を持たず、警告がある
+      - name: test_number_figures_when_table_has_nested_table
+        case: 正常
+        summary: fig を付けた表の行の詳細に表があっても、親の表の全ての行を図表の囲みに入れる
+        condition: '`fig: list` の直後の表（列 `名前`・`説明`、名前 `Todo`・`Done`）と、その直後の `<!-- row-detail: 1 -->` 〜 `<!-- /row-detail -->` の中の表。`env.features.table` が `true` の場合と `false` の場合'
+        mock: なし
+        expected: どちらの場合も、`表 1` の図表の囲みが親の表の `</table>`（`true` では親の表の囲みの閉じ）の後ろで閉じ、`Done` の行が図表の囲みの中にある。中の表に番号を付けない
+      - name: test_number_figures_when_image_figure
+        case: 正常
+        summary: fig の画像を画像の図にし、ギャラリーに番号を指定する
+        condition: '`fig: arch` の後ろの `![構成](arch.png "全体"){width=300}` だけの段落と、`fig: shots` の後ろのギャラリーの開きのマーカー、本文の `[図](#fig-shots)`'
+        mock: なし
+        expected: '1 つ目が `<figure class="mdmark-figure mdmark-image" id="fig-arch" style="--mdmark-image-width: 300px">` と `<b>図 1</b>全体`、ギャラリーの開きのマーカーの `meta.figure` が `{ id: "shots", number: 2 }`、リンクの文字が `図 2`'

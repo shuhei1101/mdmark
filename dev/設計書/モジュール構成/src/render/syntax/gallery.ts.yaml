@@ -1,0 +1,94 @@
+id: MOD-472-277
+title: ライブラリ本体 / 記法 / gallery.ts
+test_files:
+  - tests/unit/src/render/syntax/gallery.test.ts
+constants:
+  - name: GALLERY_COLS
+    title: ギャラリーの列の数
+    container: src/render/syntax/gallery.ts
+    summary: '`cols=` に記載できる列の数の範囲と、省いたときの数'
+    value: '{ min: 1, max: 6, default: 2 }'
+    status: planned
+    introduced:
+      pr: 263
+  - name: SUBFIGURE_LETTERS
+    title: サブ図の番号の文字
+    container: src/render/syntax/gallery.ts
+    summary: 番号を付けたギャラリーの画像に、範囲の中の順に付ける文字。27 枚目からは番号を付けない
+    value: '"abcdefghijklmnopqrstuvwxyz"'
+    status: planned
+    introduced:
+      pr: 263
+functions:
+  - name: readGalleryOptions
+    title: ギャラリーのマーカーの指定を読み込む
+    container: src/render/syntax/gallery.ts
+    kind: 関数
+    scope: internal
+    summary: ギャラリーのマーカーの `cols=` を読み込む。`GALLERY_COLS` の範囲の整数でない値は読み込めない指定の項目にして列の数を既定にし、`cols=` 以外の指定は `skipped` に入れる
+    args:
+      - name: mark
+        type: Mark
+        required: true
+        description: ギャラリーの開きのマーカー
+    returns:
+      type: '{ cols: number; items: WarningItem[]; skipped: SkippedArg[] }'
+      description: 列の数と、読み込めない指定と、スキップした引数
+    unit_tests:
+      - name: test_read_gallery_options
+        case: 正常
+        summary: 列の数を読み込み、省けば既定にする
+        condition: '`<!-- gallery: cols=3 -->` と `<!-- gallery -->`'
+        mock: なし
+        expected: '`cols` が `3`・`2` で、どちらも `items` が空'
+      - name: test_read_gallery_options_when_unreadable
+        case: 異常
+        summary: 読み込めない列の数を項目にし、知らない指定をスキップする
+        condition: '`<!-- gallery: cols=7 wide -->`'
+        mock: なし
+        expected: '`cols` が `2`、`items` の項目が `cols=7` の 1 つ、`skipped` の `arg` が `wide`'
+    status: planned
+    introduced:
+      pr: 263
+  - name: buildGallery
+    title: ギャラリーにする
+    container: src/render/syntax/gallery.ts
+    kind: 関数
+    scope: internal
+    summary: 'コアルール。`gallery` がオンなら、ギャラリーのマーカーの範囲を部品『ギャラリー』の開きと閉じで挟み、範囲の中の画像をそれぞれ部品『画像の図』（`opener: false`）の `html_block` にして、画像以外のトークンを除く。開きのマーカーの `meta.figure`（`numberFigures` が配置する `{ id, number }`）があれば、範囲を部品『図表の番号』で囲み、中の画像に `id="fig-{ID}-{文字}"` と `label` の `図 {番号}{文字}` を `SUBFIGURE_LETTERS` の順に付ける。画像が 0 枚・27 枚以上、読み込めない指定は範囲の前に 1 つの記載の警告を差し込み、`readGalleryOptions` の `skipped` は `pushSkippedArgs` で同じ場所に差し込む。閉じのマーカーが無ければ文書の終わりまでを範囲にして警告を差し込む'
+    args:
+      - name: state
+        type: StateCore
+        required: true
+        description: markdown-it の状態
+    side_effects: '`state.tokens` を書き換える'
+    callees:
+      - '#functions[readGalleryOptions]'
+      - MOD-472-328#functions[renderGallery]
+      - MOD-472-327#functions[renderImageFigure]
+      - MOD-472-322#functions[renderFigure]
+      - 'MOD-472-213#functions[pushWarning]'
+    refs:
+      - IF-472-34#constraints[ギャラリー]
+    unit_tests:
+      - name: test_build_gallery
+        case: 正常
+        summary: 範囲の画像を格子に並べる
+        condition: '`<!-- gallery: cols=3 -->` 〜 `<!-- /gallery -->` で 2 つの画像と 1 つの段落の文字を囲む'
+        mock: なし
+        expected: '`<div class="mdmark-gallery" style="--mdmark-gallery-cols: 3">` と `<div class="mdmark-gallery-grid">` の中に `figure.mdmark-image` が 2 つあり、段落の文字が無い'
+      - name: test_build_gallery_when_numbered
+        case: 正常
+        summary: 番号を付けたギャラリーの画像にサブ図の番号を付ける
+        condition: '`meta.figure` が `{ id: "shots", number: 1 }` の開きのマーカーと、title `開く`・`記載する` の 2 つの画像'
+        mock: なし
+        expected: 外の `<figure class="mdmark-figure" id="fig-shots">` が `<b>図 1</b>` のキャプションを持ち、中の `figure` が `id="fig-shots-a"`・`id="fig-shots-b"` と `<b>図 1a</b>開く`・`<b>図 1b</b>記載する`
+      - name: test_build_gallery_when_empty_or_too_many
+        case: 異常
+        summary: 画像が 0 枚と 27 枚以上を警告にする
+        condition: 画像の無い範囲と、`meta.figure` を持つ 27 枚の画像の範囲
+        mock: なし
+        expected: どちらの範囲の前にも記載の警告があり、2 つ目は 27 枚目の `figure` が `id` とサブ図の番号を持たない
+    status: planned
+    introduced:
+      pr: 263

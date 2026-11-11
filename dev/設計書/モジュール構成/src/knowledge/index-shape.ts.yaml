@@ -1,0 +1,225 @@
+id: MOD-472-254
+title: ライブラリ本体 / 索引と用語 / index-shape.ts
+test_files:
+  - tests/unit/src/knowledge/index-shape.test.ts
+data_models:
+  - name: MdmarkIndex
+    title: 索引
+    container: src/knowledge/index-shape.ts
+    role: DTO
+    summary: 利用側が索引の YAML を読み込んだ値の型（公開の型）。構造は ER 図『索引』
+    properties:
+      - name: schema
+        type: '2'
+        description: 索引のバージョン
+      - name: docs
+        type: MdmarkIndexDoc[]
+        description: 文書（`id`・`path`・`title` が必須、`description`・`aliases`・`tags`・`related` が任意。`tags` の要素は文字列か `MdmarkIndexDocTag`、`related` の要素は文字列か `MdmarkIndexRelated`）
+      - name: terms
+        type: MdmarkIndexTerm[] | undefined
+        description: 用語（`id`・`term`・`meaning` が必須、`aliases`・`avoid` が任意）
+  - name: MdmarkIndexDocTag
+    title: 文書のタグ
+    container: src/knowledge/index-shape.ts
+    role: DTO
+    summary: '`docs[].tags` の要素のうち、主題のタグかを持つオブジェクト（公開の型）。要素は文字列かこの型'
+    properties:
+      - name: name
+        type: string
+        description: タグの名前（空でない文字列）
+      - name: main
+        type: boolean | undefined
+        description: 主題のタグか。無いときは `false` として扱う
+    status: planned
+    introduced:
+      pr: 114
+  - name: MdmarkIndexRelated
+    title: 文書の関連
+    container: src/knowledge/index-shape.ts
+    role: DTO
+    summary: '`docs[].related` の要素のうち、関係の種類といつ読み込むかを持つオブジェクト（公開の型）。要素は文字列かこの型'
+    properties:
+      - name: to
+        type: string
+        description: 相手の文書の `id`
+      - name: type
+        type: MdmarkRelationType
+        description: 関係の種類
+      - name: when
+        type: string
+        description: いつ読み込むかの 1 文（空でない文字列）
+      - name: paths
+        type: string[] | undefined
+        description: 関連が該当するファイルの glob の並び
+    refs:
+      - ER-472-6#tables[docs].columns[related]
+    status: planned
+    introduced:
+      pr: 127
+enums:
+  - name: MdmarkRelationType
+    title: 関係の種類
+    container: src/knowledge/index-shape.ts
+    role: DTO
+    summary: '`MdmarkIndexRelated` の `type` に記載できる値（公開の型）'
+    values:
+      - value: requires
+        title: 前提
+        description: 相手を先に読み込まないと分からない
+      - value: references
+        title: 参照
+        description: 相手を必要なときに参照する
+      - value: replaces
+        title: 置き換え
+        description: 相手を置き換えた
+      - value: part_of
+        title: 一部
+        description: 相手の一部をなす
+      - value: change_together
+        title: 一緒に修正する
+        description: 片方を修正したらもう片方も修正する。両側に記載する
+    refs:
+      - ER-472-6#tables[docs].columns[related]
+    status: planned
+    introduced:
+      pr: 127
+constants:
+  - name: INDEX_SHAPE
+    title: 索引の構造
+    container: src/knowledge/index-shape.ts
+    summary: 索引の最上位・`docs` の要素・`terms` の要素ごとの、キーと型（`string`・`string[]`・`integer`・`array`・`doc_tags`・`doc_related`）と必須か。`doc_tags` は、空でない文字列か、`name`（必須・空でない文字列）と `main`（真偽値）だけを持つオブジェクトの並び。`doc_related` は、空でない文字列か、`to`（必須・空でない文字列）・`type`（必須・`MdmarkRelationType` の値）・`when`（必須・空でない文字列）・`paths`（空でない文字列の並び）だけを持つオブジェクトの並びで、件数の上限を配置しない。`normalizeIndex` がこれで検査する
+    value: '{ root: { schema: { type: "integer", required: true }, docs: { type: "array", required: true }, terms: { type: "array", required: false } }, doc: { id: { type: "string", required: true }, path: { type: "string", required: true }, title: { type: "string", required: true }, description: { type: "string", required: false }, aliases: { type: "string[]", required: false }, tags: { type: "doc_tags", required: false }, related: { type: "doc_related", required: false } }, term: { id: { type: "string", required: true }, term: { type: "string", required: true }, meaning: { type: "string", required: true }, aliases: { type: "string[]", required: false }, avoid: { type: "string[]", required: false } } }'
+    refs:
+      - ER-472-6#
+  - name: RELATION_TYPES
+    title: 関係の種類の並び
+    container: src/knowledge/index-shape.ts
+    summary: '`MdmarkRelationType` の値を記載できる順に並べたもの。`normalizeIndex` が `type` の検査と誤りの文に使用する'
+    entries:
+      - key: '0'
+        value: requires
+      - key: '1'
+        value: references
+      - key: '2'
+        value: replaces
+      - key: '3'
+        value: part_of
+      - key: '4'
+        value: change_together
+    status: planned
+    introduced:
+      pr: 127
+functions:
+  - name: normalizeIndex
+    title: 索引の構造を検査する
+    container: src/knowledge/index-shape.ts
+    kind: 関数
+    scope: internal
+    summary: 値を ER 図『索引』の構造で検査し、合う文書・用語だけの索引と、合わない場所の一覧を返却する
+    description: 検査のライブラリを使用せず、`INDEX_SHAPE` で TypeScript の検査を記載する（配布物のサイズを検査のライブラリに割かない）。`schemas/mdmark.index.schema.json` と食い違わないことは、単体テストが Schema の `properties`・`required`・`type` を `INDEX_SHAPE` と突き合わせて確認する。必須のキーの欠け・型の違い・`docs[].id`・`docs[].path`・`terms[].id` の重なり・知らないキー（v0.9.0 までの最上位の `tags` を含む）を合わない場所にする。重なった要素は先の 1 つを残す。`schema` が `CURRENT_SCHEMA`（`2`）でない整数のときは、`message` に `mdmark upgrade` で移す修正方法を記載し、文書・用語はそのまま検査して使用する。`docs[].related` の要素は `doc_related` で検査し、合わない要素を持つ文書を除く（`where` は `docs[0].related[1].when` の構造。`type` が `MdmarkRelationType` の値でないときは、`message` に許す 5 つの値を並べる）
+    args:
+      - name: value
+        type: unknown
+        required: true
+        description: 索引の YAML を読み込んだ値
+    returns:
+      type: '{ index: MdmarkIndex; problems: Array<{ where: string; message: string }> }'
+      description: 合う要素だけの索引（最上位が壊れていれば `docs`・`terms` が空）と、合わない場所（`where` は `docs[1].path` の構造）
+    unit_tests:
+      - name: test_normalize_index
+        case: 正常
+        summary: 合う索引をそのまま返却し、合わない場所が無い
+        condition: ER 図『索引』の例の索引
+        mock: なし
+        expected: '`problems` が空で、`index` が入力と等しい'
+      - name: test_normalize_index_when_invalid_item
+        case: 異常
+        summary: 構造の合わない文書・用語を除き、場所を返却する
+        condition: '`schema` が無く、`docs[1]` が `path` を持たず、`terms[0]` が `meaning` を持たず、`docs[2].id` が `docs[0].id` と重なる'
+        mock: なし
+        expected: '`problems` の `where` が `schema`・`docs[1].path`・`docs[2].id`・`terms[0].meaning`、`index.docs` は `docs[0]` だけ、`index.terms` が空'
+      - name: test_normalize_index_when_not_object
+        case: 異常
+        summary: オブジェクトでない値でも例外を投げない
+        condition: '`null`・文字列・配列'
+        mock: なし
+        expected: '`index.docs` と `index.terms` が空で、`problems` に `where` が空文字の 1 件'
+      - name: test_normalize_index_matches_json_schema
+        case: 正常
+        summary: '`schemas/mdmark.index.schema.json` が `INDEX_SHAPE` と同じキー・型・必須を持つ'
+        condition: Schema の JSON を読み込み、最上位・`docs.items`・`terms.items` の `properties`・`required`・`additionalProperties` と、`docs.items.properties.tags.items`・`docs.items.properties.related.items` を取る
+        mock: なし
+        expected: キーの並び・型・必須が `INDEX_SHAPE` と等しく、`additionalProperties` が全て `false`。`docs.items.properties.tags.items` が文字列と、`name` が必須で `main` を持ち `additionalProperties` が `false` のオブジェクトの `anyOf`。`docs.items.properties.related.items` が文字列と、`to`・`type`・`when` が必須で `paths` を持ち `additionalProperties` が `false`、`type` の `enum` が `MdmarkRelationType` の 5 つの値のオブジェクトの `anyOf` で、`docs.items.properties.related` が `maxItems` を持たない
+      - name: test_normalize_index_when_invalid_avoid
+        case: 異常
+        summary: 空の要素を持つ `avoid` の用語を除き、場所を返却する
+        condition: '`terms[0].avoid` が `[""]`、`terms[1].avoid` が `["作業場"]` の索引'
+        mock: なし
+        expected: '`problems` が `where` が `terms[0].avoid` の 1 件だけで、`index.terms` が `terms[1]` だけ'
+      - name: test_normalize_index_when_doc_tags
+        case: 正常
+        summary: 文字列・オブジェクトの文書のタグをそのまま返却する
+        condition: '`docs[0].tags` が `["設計", { name: "topic:mcp", main: true }]` の索引'
+        mock: なし
+        expected: '`problems` が空で、`index.docs[0].tags` が入力と等しい'
+      - name: test_normalize_index_when_invalid_doc_tags
+        case: 異常
+        summary: 構造の合わない文書のタグを持つ文書を、場所を返却して除く
+        condition: '`docs[0].tags[0]` が `{ main: true }`（`name` が無い）の索引'
+        mock: なし
+        expected: '`problems` の `where` が `docs[0].tags[0].name` だけで、`index.docs` から `docs[0]` が除かれる'
+      - name: test_normalize_index_when_related
+        case: 正常
+        summary: 文字列とオブジェクトの関連をそのまま返却する
+        condition: '`docs[0].related` が `["b", { to: "b", type: "change_together", when: "公開関数を変えるとき", paths: ["src/**"] }]`、`docs[1]`（`b`）の `related` が要素 9 つの索引'
+        mock: なし
+        expected: '`problems` が空で、`index.docs` が入力と等しい'
+      - name: test_normalize_index_when_invalid_related
+        case: 異常
+        summary: 構造の合わない関連を持つ文書を、場所を返却して除く
+        condition: '`docs[0].related[0]` が `when` を持たず、`docs[1].related[0].type` が `depends_on`、`docs[2].related[0]` が知らないキー `note` を持ち、`docs[3].related[0].when` が空文字の索引'
+        mock: なし
+        expected: '`problems` の `where` が `docs[0].related[0].when`・`docs[1].related[0].type`・`docs[2].related[0].note`・`docs[3].related[0].when` で、`docs[1].related[0].type` の `message` が `requires`・`references`・`replaces`・`part_of`・`change_together` を含み、`index.docs` から 4 つとも除かれる'
+      - name: test_normalize_index_when_old_schema
+        case: 異常
+        summary: 'v0.9.0 までの `schema: 1` と最上位の `tags` を合わない場所にし、文書・用語は使用する'
+        condition: '`schema` が `1`、最上位の `tags` が `[{ name: "topic:mcp" }]`、`docs[0]` が合う文書の索引'
+        mock: なし
+        expected: '`problems` の `where` が `schema`・`tags` の 2 件で、`schema` の `message` に `mdmark upgrade` があり、`index.docs` が `docs[0]` を持ち、`"tags" in index` が `false`'
+    refs:
+      - ER-472-6#
+  - name: readRelated
+    title: 文書の関連を読み込む
+    kind: 関数
+    container: src/knowledge/index-shape.ts
+    usecase: 共通
+    role: 変換
+    summary: '`docs[].related` の要素を `to`・`type`・`when` を持つオブジェクトにそろえる'
+    description: 文字列の要素は `to` がその文字列で `type` と `when` が null のオブジェクトにし、オブジェクトの要素はそのままのキー（`paths` は持つときだけ）で返却する
+    scope: internal
+    args:
+      - name: item
+        type: string | MdmarkIndexRelated
+        required: true
+        description: '`docs[].related` の要素 1 つ'
+    returns:
+      type: '{ to: string; type: MdmarkRelationType | null; when: string | null; paths?: string[] }'
+      description: そろえた関連
+    unit_tests:
+      - name: test_read_related
+        case: 正常
+        summary: 文字列の要素を `type` と `when` が null のオブジェクトにする
+        condition: '`"arch"`'
+        mock: なし
+        expected: '`{ to: "arch", type: null, when: null }` で、`paths` のキーを持たない'
+      - name: test_read_related_when_object
+        case: 正常
+        summary: オブジェクトの要素をそのままのキーで返却する
+        condition: '`{ to: "arch", type: "requires", when: "前提を確認するとき", paths: ["src/**"] }`'
+        mock: なし
+        expected: 入力と等しい
+    refs:
+      - ER-472-6#tables[docs].columns[related]
+    status: planned
+    introduced:
+      pr: 127

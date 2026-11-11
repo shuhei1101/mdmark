@@ -1,0 +1,26 @@
+id: MOD-472-335
+title: ライブラリ本体 / 部品 / kbd.ts
+test_files:
+  - tests/unit/src/parts/kbd.test.ts
+functions:
+  - name: renderKbd
+    title: キーを描く
+    container: src/parts/kbd.ts
+    summary: 部品設計『キー』の HTML を返却する。キーごとの `kbd.mdmark-kbd` を `span.mdmark-kbd-join` の `+` でつなぐ
+    kind: 関数
+    scope: internal
+    args:
+      - name: options
+        type: '{ keys: string[] }'
+        required: true
+        description: キーの並び
+    returns:
+      type: string
+      description: 部品の HTML
+    unit_tests:
+      - name: test_render_kbd
+        case: 正常
+        condition: '`{ keys: ["Ctrl","+"] }`'
+        expected: '`<span class="mdmark-kbd-group"><kbd class="mdmark-kbd">Ctrl</kbd><span class="mdmark-kbd-join">+</span><kbd class="mdmark-kbd">+</kbd></span>`'
+        mock: なし
+        summary: キーを `+` でつなぐ

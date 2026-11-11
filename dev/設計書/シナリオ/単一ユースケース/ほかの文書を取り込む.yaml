@@ -1,3 +1,4 @@
+id: SC-472-12
 title: ほかの文書を取り込む
 scenarios:
   - name: 正常シナリオ

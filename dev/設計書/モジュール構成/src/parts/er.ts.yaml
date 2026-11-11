@@ -1,0 +1,65 @@
+id: MOD-472-187
+title: ライブラリ本体 / 図 / er.ts
+test_files:
+  - tests/unit/src/parts/er.test.ts
+functions:
+  - name: renderErTable
+    title: ER 図のテーブルを描く
+    container: src/parts/er.ts
+    kind: 関数
+    scope: internal
+    summary: テーブルの `div.mdmark-diagram-er-table`（`data-node`・`data-color`・`left`・`top`・`width` の位置）に、見出し（lucide の `table` のアイコンと物理名、論理名と種類の札、列の開閉のボタン、説明のボタン）と列の `ul`（列ごとに `data-column` を持つ `li`。マーカーは `ER_COLUMN_KEYS` の `abbr`）を配置する。全ての列の行を出し、畳んだテーブルは主キーでも外部キーでもない列の行に `hidden` を付けて `非表示 {数} 列` の行を出す。色は `color`、無ければ `ER_TABLE_KINDS` の既定の色にする
+    args:
+      - name: options
+        type: '{ table: MdmarkErTable; tipId: string | undefined; text: (value: string) => string }'
+        required: true
+        description: テーブルと、説明のボタンが指すツールチップの `id`（`hints` がオフか、テーブルと列のどれも `desc` を持たないときは `undefined`）と、定義の文字（物理名・論理名・列の名前と型）を HTML にする関数（`renderEr` が `renderText` で `{{単語}}` を用語の下線にする関数を指定する）。スクリーンリーダー向けの名前（`aria-label`）は `{{` と `}}` を除いた論理名で作る
+    returns:
+      type: string
+      description: テーブルの HTML
+    unit_tests:
+      - name: test_render_er_table
+        case: 正常
+        summary: 見出しと列の行を出す
+        condition: モックの `shop-er` の注文のテーブル。`text` は文字を逃がすだけの関数
+        mock: なし
+        expected: 見出しに物理名 `orders`・論理名・札 `トランザクション`、`data-color="orange"`、列の行が定義の順で、主キーの列に `abbr[title="主キー"]` の `PK`
+      - name: test_render_er_table_when_folded
+        case: 正常
+        summary: 畳んだテーブルは主キーと外部キー以外の列の行を隠す
+        condition: モックの `shop-er-folded` の注文のテーブル
+        mock: なし
+        expected: 主キーと外部キー以外の列の行が `hidden` を持ち、`非表示 {数} 列` の行があり、開閉のボタンが `aria-expanded="false"`
+      - name: test_render_er_table_when_no_kind
+        case: 正常
+        summary: 種類と色の無いテーブルは札と `data-color` を持たない
+        condition: '`kind` と `color` を持たず、主キーと外部キーの列だけのテーブル'
+        mock: なし
+        expected: 札と `data-color` が無く、開閉のボタンが無い
+    status: planned
+    introduced:
+      pr: 298
+  - name: erEndSvg
+    title: ER 図の多重度の記号
+    container: src/parts/er.ts
+    kind: 関数
+    scope: internal
+    summary: 線の端の位置と向きから、多重度の記号（`1` は縦線 2 本、`0..1` は縦線と丸、`1..n` は鳥の足と縦線、`0..n` は鳥の足と丸）の svg の要素を返却する。丸は `data-ring` を持つ
+    args:
+      - name: options
+        type: '{ x: number; y: number; dir: 1 | -1; card: MdmarkErRelation["fromCard"] }'
+        required: true
+        description: 端の位置・線がテーブルから出る向き・多重度
+    returns:
+      type: string
+      description: svg の要素の HTML
+    unit_tests:
+      - name: test_er_end_svg
+        case: 正常
+        summary: 多重度ごとの記号を出す
+        condition: '`card` が `1`・`0..1`・`1..n`・`0..n`'
+        mock: なし
+        expected: '`1` は `line` 2 つ、`0..1` は `line` と `circle[data-ring]`、`1..n` は鳥の足の `path` と `line`、`0..n` は鳥の足の `path` と `circle[data-ring]`'
+    status: planned
+    introduced:
+      pr: 298

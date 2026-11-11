@@ -1,3 +1,4 @@
+id: IF-472-35
 title: 文書を描く
 entry:
   kind: operation
@@ -1638,7 +1639,7 @@ flows:
       - 印刷のメディアでは余白の列の `display` の計算値が `none`
     test: test_normal_when_jumped_from_margin_marker
     refs:
-      - dev/設計書/シナリオ/単一ユースケース/選んだ箇所にコメントする#scenarios[正常シナリオ（余白のマーカーから移る）]
+      - SC-472-80#scenarios[正常シナリオ（余白のマーカーから移る）]
   - name: 正常系（閉じた中の箇所の余白のマーカー）
     summary: 閉じたセクション・選ばれていないタブ・閉じた行の詳細の中のマーカーは、開くボタンの行に破線のマーカーを配置し、押すと開いてからマーカーへ移る
     setup:
@@ -1671,7 +1672,7 @@ flows:
       - 2 つ目のタブを選ぶと、`タブの箇所` のマーカーが `data-closed` を持たず、縦の中ほどがマーカーの行の縦の中ほどと 1px 以内
     test: test_normal_when_margin_marker_in_closed
     refs:
-      - dev/設計書/シナリオ/単一ユースケース/選んだ箇所にコメントする#scenarios[正常シナリオ（余白のマーカーから移る）]
+      - SC-472-80#scenarios[正常シナリオ（余白のマーカーから移る）]
   - name: 正常系（コメントの機能を解除する）
     summary: '`comments` が既定のオフのときは、読み込みと保存の関数を指定しても呼ばず、ボタンを出さない'
     setup:
@@ -1809,7 +1810,7 @@ flows:
       - 各要素の位置と色の計算値が、属性を取り除いた同じ HTML と同じ
     test: test_normal_when_source_lines
     refs:
-      - dev/設計書/シナリオ/単一ユースケース/文書を描く#scenarios[正常シナリオ（元の行番号を出す）]
+      - SC-472-59#scenarios[正常シナリオ（元の行番号を出す）]
   - name: 正常系（親の class でダークにする）
     summary: OS の配色がライトでも、祖先の `vscode-dark` でダークの値を当て、class を削除すると戻す
     setup:
@@ -1834,7 +1835,7 @@ flows:
       - '`body` を `vscode-high-contrast` に替えるとダーク、`vscode-high-contrast vscode-high-contrast-light` に替えるとライトの値になる'
     test: test_normal_when_parent_class_dark
     refs:
-      - dev/設計書/シナリオ/単一ユースケース/テーマを上書きする#scenarios[正常シナリオ（親の class でダークにする）]
+      - SC-472-25#scenarios[正常シナリオ（親の class でダークにする）]
   - name: 正常系（親の class でライトにする）
     summary: OS の配色がダークでも、祖先の `vscode-light` でライトにし、`mdmark-theme-light` は `vscode-dark` に勝つ
     setup:
@@ -1860,7 +1861,7 @@ flows:
       - '`body` が `vscode-dark` でも、包みが `mdmark-theme-light` を持つ間はライトの値'
     test: test_normal_when_parent_class_light
     refs:
-      - dev/設計書/シナリオ/単一ユースケース/テーマを上書きする#scenarios[正常シナリオ（親の class でライトにする）]
+      - SC-472-25#scenarios[正常シナリオ（親の class でライトにする）]
   - name: 正常系（親の class でダークにした文書を印刷する）
     summary: 祖先の class でダークにしても、印刷では明るい配色にする
     setup:
@@ -1881,7 +1882,7 @@ flows:
       - 印刷の media の間、`el` の `--mdmark-color-bg` の計算値がライトの値
     test: test_normal_when_parent_class_dark_printed
     refs:
-      - dev/設計書/シナリオ/単一ユースケース/文書を印刷する#
+      - SC-472-58#
   - name: 正常系（やめた言い方のマーカー）
     summary: 索引の用語のやめた言い方に波線のマーカーを付け、フォーカスで代わりの用語のツールチップを出す
     setup:
@@ -2772,8 +2773,8 @@ flows:
       - 押した後、`document.activeElement` が `div.mdmark-content` で `tabindex="-1"` を持ち、続けて Tab を押すと、本文の列の中で最初にフォーカスできる要素（`## 導入` の段落のリンクか、それより前の `## 導入` の見出しの要素）へ移る
     test: test_normal_when_back_to_top_pressed
     refs:
-      - dev/設計書/シナリオ/単一ユースケース/文書の先頭へ戻る#scenarios[正常シナリオ]
-      - dev/設計書/シナリオ/単一ユースケース/文書の先頭へ戻る#scenarios[正常シナリオ（先頭の近くでは出さない）]
+      - SC-472-54#scenarios[正常シナリオ]
+      - SC-472-54#scenarios[正常シナリオ（先頭の近くでは出さない）]
   - name: 正常系（スクロールする祖先の要素の中で先頭へ戻る）
     summary: 描く先の要素の祖先の要素がスクロールするとき、その要素の右下にボタンを出し、その要素を先頭へスクロールする
     setup:
@@ -2809,7 +2810,7 @@ flows:
       - 押してスクロールが終わった後、祖先の要素の `scrollTop` が描いた文書の上端の位置で、`window.scrollY` が押す前と同じ
     test: test_normal_when_back_to_top_in_scroll_container
     refs:
-      - dev/設計書/シナリオ/単一ユースケース/文書の先頭へ戻る#scenarios[正常シナリオ（スクロールする祖先の要素の中に描いた文書）]
+      - SC-472-54#scenarios[正常シナリオ（スクロールする祖先の要素の中に描いた文書）]
   - name: 正常系（先頭へ戻るボタンが右側の部品を回避する）
     summary: ボタンをミニマップと余白の列の左へずらし、右側の目次のパネルをボタンの上で終わらせる
     setup:
@@ -2843,9 +2844,9 @@ flows:
       - 右側の目次のページで、パネルの下端がボタンの上端より上にあり、パネルの最後の項目を押せる
     test: test_normal_when_back_to_top_avoids_side_parts
     refs:
-      - dev/設計書/シナリオ/単一ユースケース/文書の先頭へ戻る#scenarios[正常シナリオ（右側の目次と重ならない）]
-      - dev/設計書/シナリオ/単一ユースケース/文書の先頭へ戻る#scenarios[正常シナリオ（差分のミニマップと重ならない）]
-      - dev/設計書/シナリオ/単一ユースケース/文書の先頭へ戻る#scenarios[正常シナリオ（余白のマーカーと重ならない）]
+      - SC-472-54#scenarios[正常シナリオ（右側の目次と重ならない）]
+      - SC-472-54#scenarios[正常シナリオ（差分のミニマップと重ならない）]
+      - SC-472-54#scenarios[正常シナリオ（余白のマーカーと重ならない）]
   - name: 正常系（動きを減らす設定で先頭へ戻る）
     summary: 利用者の環境が動きを減らす設定のとき、押すと一度に先頭へ移る
     setup:
@@ -2899,7 +2900,7 @@ flows:
       - '`destroy` の後、`el3` の中が空で、`window` をスクロールしても例外が出ない'
     test: test_normal_when_back_to_top_not_placed
     refs:
-      - dev/設計書/シナリオ/単一ユースケース/機能のオン・オフを文書で上書きする#
+      - SC-472-62#
   - name: 正常系（エイリアス）
     summary: 指定したエイリアスの名前と別名に下線を付け、種類ごとのツールチップを出す。env は照合しない
     setup:
@@ -2931,7 +2932,7 @@ flows:
       - '`課題の一覧` から Tab でツールチップのリンクへフォーカスが移り、Esc でツールチップが消えてフォーカスが `課題の一覧` に戻る'
     test: test_normal_when_aliases
     refs:
-      - dev/設計書/シナリオ/単一ユースケース/用語の意味をツールチップで確認する#scenarios[正常シナリオ（エイリアスを指定する）]
+      - SC-472-65#scenarios[正常シナリオ（エイリアスを指定する）]
   - name: 正常系（エイリアスのコマンドをコピーする）
     summary: コマンドのツールチップのコピーのボタンで、コマンドをクリップボードへ書き込み、ボタンで通知する
     setup:
@@ -2960,7 +2961,7 @@ flows:
       - 押した後もツールチップが出たまま
     test: test_normal_when_copy_command
     refs:
-      - dev/設計書/シナリオ/単一ユースケース/用語の意味をツールチップで確認する#scenarios[正常シナリオ（コマンドをコピーする）]
+      - SC-472-65#scenarios[正常シナリオ（コマンドをコピーする）]
   - name: 正常系（エイリアスのコマンドをコピーできない）
     summary: クリップボードへの書き込みが拒まれたら、ボタンで通知して次に押すまで残す
     setup:
@@ -3008,7 +3009,7 @@ flows:
       - '`枝` のツールチップの「代わりの用語」の下に `ブランチ` と `作業を分ける線` がある'
     test: test_normal_when_avoid_alias
     refs:
-      - dev/設計書/シナリオ/単一ユースケース/用語の意味をツールチップで確認する#scenarios[正常シナリオ（やめた言い方のエイリアス）]
+      - SC-472-65#scenarios[正常シナリオ（やめた言い方のエイリアス）]
   - name: 正常系（索引とエイリアスと表に同じ単語がある）
     summary: 同じ単語が索引・エイリアス・表にあるとき、索引 → エイリアス → 描く文書の表の順で先の意味を出す
     setup:
@@ -3036,7 +3037,7 @@ flows:
       - 段落の `オン・オフのマーカー` のツールチップが `HTML コメントで記載する指定`
     test: test_normal_when_aliases_have_same_term
     refs:
-      - dev/設計書/シナリオ/単一ユースケース/表から用語集に用語を入れる#scenarios[正常シナリオ（索引とエイリアスと表に同じ単語がある）]
+      - SC-472-72#scenarios[正常シナリオ（索引とエイリアスと表に同じ単語がある）]
   - name: 正常系（文書のマーカーでエイリアスを削除する）
     summary: 文書のマーカーで glossary をオフにした文書では、指定したエイリアスを照合しない
     setup:
@@ -3060,7 +3061,7 @@ flows:
       - '`el` の中に `role="tooltip"` の要素が無く、`npm run test:unit` の文字が段落の外に無い'
     test: test_normal_when_aliases_glossary_disabled
     refs:
-      - dev/設計書/シナリオ/単一ユースケース/機能のオン・オフを文書で上書きする#scenarios[正常シナリオ（用語と被参照の機能を解除する）]
+      - SC-472-62#scenarios[正常シナリオ（用語と被参照の機能を解除する）]
   - name: 正常系（エイリアスを指定して本文を差し替える）
     summary: update で本文を差し替えても、描いたときのエイリアスでもう一度照合する
     setup:
@@ -3085,7 +3086,7 @@ flows:
       - '`update` の後、差し替え先の段落の `ワークスペース` が class `mdmark-term` の要素で、ツールチップが同じ説明を持つ'
     test: test_normal_when_aliases_updated
     refs:
-      - dev/設計書/シナリオ/単一ユースケース/文書を描く#scenarios[正常シナリオ（エイリアスを指定する）]
+      - SC-472-59#scenarios[正常シナリオ（エイリアスを指定する）]
   - name: 異常系（使用できないエイリアス・照合しない）
     summary: 必須のキーが空・知らない種類・重なった ID のエイリアスを除いて描き、http・https でない URL はリンクにしない
     setup:
@@ -3112,7 +3113,7 @@ flows:
       - '`危ないリンク` のツールチップに `javascript:alert(1)` が文字で出て、ツールチップの中に `a` 要素が無い'
     test: test_error_when_invalid_alias
     refs:
-      - dev/設計書/シナリオ/単一ユースケース/用語の意味をツールチップで確認する#scenarios[異常シナリオ（使用できないエイリアス）]
+      - SC-472-65#scenarios[異常シナリオ（使用できないエイリアス）]
   - name: 正常系（テーマを選ぶ）
     summary: '`opts.config.colorTheme` で選んだテーマの明るい配色で描き、`destroy` でテーマを解除する'
     setup:
@@ -3209,7 +3210,7 @@ flows:
       - 本文にマーカーの文字が無く、記載の警告が無い
     test: test_normal_when_page_marker
     refs:
-      - dev/設計書/シナリオ/単一ユースケース/ページの設定を文書で指定する#scenarios[正常シナリオ（文書のマーカーが設定に勝つ）]
+      - SC-472-33#scenarios[正常シナリオ（文書のマーカーが設定に勝つ）]
   - name: 正常系（設定の明暗）
     summary: '`opts.config.colorScheme` の明暗を、祖先の class と OS の配色より優先して適用する'
     setup:
@@ -3235,7 +3236,7 @@ flows:
       - '`destroy` の後、el が class `mdmark-theme-dark`・`mdmark-theme-light` を持たない'
     test: test_normal_when_config_color_scheme
     refs:
-      - dev/設計書/シナリオ/単一ユースケース/ページの設定を文書で指定する#scenarios[正常シナリオ（設定で全文書の既定にする）]
+      - SC-472-33#scenarios[正常シナリオ（設定で全文書の既定にする）]
   - name: 正常系（明暗を OS の設定に戻す）
     summary: マーカーの `scheme=auto` は設定の明暗だけを解除し、祖先の class → OS の配色の順で決める。`update` でもう一度決める
     setup:
@@ -3263,8 +3264,8 @@ flows:
       - '`update` の後、el が class `mdmark-theme-light` を持ち、地の色の計算値が dev-swiss の明るい配色の `--mdmark-color-bg` の値'
     test: test_normal_when_color_scheme_auto
     refs:
-      - dev/設計書/シナリオ/単一ユースケース/ページの設定を文書で指定する#scenarios[正常シナリオ（OS の設定に合わせる）]
-      - dev/設計書/シナリオ/単一ユースケース/ページの設定を文書で指定する#scenarios[正常シナリオ（本文を差し替える）]
+      - SC-472-33#scenarios[正常シナリオ（OS の設定に合わせる）]
+      - SC-472-33#scenarios[正常シナリオ（本文を差し替える）]
   - name: 正常系（ページの設定のマーカーの記載方法の誤り）
     summary: 記載できるキーの知らない値と、先頭に無い page のマーカーは記載の警告にして使用せず、知らないキーはスキップし、例外を投げない
     setup:
@@ -3294,8 +3295,8 @@ flows:
       - el2 のマーカーの場所に、page のマーカーは文書の先頭に記載することを記載した記載の警告があり、el2 が class `mdmark-theme-dark` を持つ
     test: test_normal_when_page_marker_invalid
     refs:
-      - dev/設計書/シナリオ/単一ユースケース/ページの設定を文書で指定する#scenarios[異常シナリオ（知らないキーと値）]
-      - dev/設計書/シナリオ/単一ユースケース/ページの設定を文書で指定する#scenarios[異常シナリオ（文書の先頭に無いマーカー）]
+      - SC-472-33#scenarios[異常シナリオ（知らないキーと値）]
+      - SC-472-33#scenarios[異常シナリオ（文書の先頭に無いマーカー）]
   - name: 正常系（カードの格子）
     summary: '`<!-- cards -->` で囲んだリストの項目を、最初のリンク・前の `icon:`・残りの説明のカードにして格子に並べる'
     setup:
@@ -3320,8 +3321,8 @@ flows:
       - 本文にマーカーの文字が無く、記載の警告が無い
     test: test_normal_when_card_grid
     refs:
-      - dev/設計書/シナリオ/単一ユースケース/リンクをカードの格子に並べる#scenarios[正常シナリオ]
-      - dev/設計書/シナリオ/単一ユースケース/リンクをカードの格子に並べる#scenarios[正常シナリオ（リンクを持たない項目）]
+      - SC-472-35#scenarios[正常シナリオ]
+      - SC-472-35#scenarios[正常シナリオ（リンクを持たない項目）]
   - name: 正常系（カードの格子の機能を解除する）
     summary: '`card-grid` がオフの文書は、囲んだリストをリストのまま描き、URL だけの項目はリンクと添付のカードにする'
     setup:
@@ -3343,7 +3344,7 @@ flows:
       - マーカーの文字と記載の警告が無い
     test: test_normal_when_card_grid_disabled
     refs:
-      - dev/設計書/シナリオ/単一ユースケース/リンクをカードの格子に並べる#scenarios[正常シナリオ（機能を解除する）]
+      - SC-472-35#scenarios[正常シナリオ（機能を解除する）]
   - name: 正常系（カードの格子にリスト以外の中身）
     summary: cards の範囲の中身がリスト 1 つでないときは、記載の警告を配置して中身を記載したとおりに描く
     setup:
@@ -3365,7 +3366,7 @@ flows:
       - '`.mdmark-card-grid` が無く、段落とリストが記載したとおりにある'
     test: test_normal_when_card_grid_not_list
     refs:
-      - dev/設計書/シナリオ/単一ユースケース/リンクをカードの格子に並べる#scenarios[異常シナリオ（リスト以外の中身）]
+      - SC-472-35#scenarios[異常シナリオ（リスト以外の中身）]
   - name: 正常系（地を透明にして不透明な地を指定する）
     summary: 利用側が `--mdmark-color-bg` を透明にし `--mdmark-color-bg-opaque` に周りの面の色を指定すると、本文の地は透け、浮く部品と覆いはその色で描く
     setup:
@@ -3396,7 +3397,7 @@ flows:
       - 全画面の dialog（`.mdmark-diagram-dialog`）の地の色の計算値が `rgb(240, 240, 240)`
     test: test_normal_when_bg_transparent_with_opaque
     refs:
-      - dev/設計書/シナリオ/単一ユースケース/テーマを上書きする#scenarios[正常シナリオ（地を透明にして周りの面の色を指定する）]
+      - SC-472-25#scenarios[正常シナリオ（地を透明にして周りの面の色を指定する）]
   - name: 正常系（地を不透明な色で上書きする）
     summary: 利用側が `--mdmark-color-bg` だけを不透明な色で上書きすると、`--mdmark-color-bg-opaque` もその色になり、浮く部品と覆いの色が今と変わらない
     setup:
@@ -3475,7 +3476,7 @@ flows:
       - 「変更表示」を押すと、差分の場所が隠れ、本文と右側の目次が戻る
     test: test_normal_when_diff_opened_on_mount
     refs:
-      - dev/設計書/シナリオ/単一ユースケース/差分の取り出し元を指定する#scenarios[正常シナリオ（開いた状態で描く）]
+      - SC-472-47#scenarios[正常シナリオ（開いた状態で描く）]
   - name: 正常系（描いた文書のブロックを色分けする）
     summary: '`diffMode: "blocks"` で、後のリビジョンを描いた文書のブロックを追加と削除の色で塗り分ける'
     setup:
@@ -3510,7 +3511,7 @@ flows:
       - 追加のブロックの背景色の計算値が `--mdmark-color-diff-add-bg`、削除のブロックが `--mdmark-color-diff-del-bg` の値
     test: test_normal_when_diff_blocks
     refs:
-      - dev/設計書/シナリオ/単一ユースケース/文書の差分を確認する#scenarios[正常シナリオ（描いた結果の上で色分けする）]
+      - SC-472-55#scenarios[正常シナリオ（描いた結果の上で色分けする）]
   - name: 正常系（ブロックの色分けでリストの項目と表の行）
     summary: リストと表は項目・行の単位で色を当て、削除した項目は番号を使用しない
     setup:
@@ -3776,8 +3777,8 @@ flows:
       - ダイアログの前の画像・次の画像・閉じるのボタンがスクリーンリーダー向けの名前を持つ
     test: test_normal_when_lightbox_opened
     refs:
-      - dev/設計書/シナリオ/単一ユースケース/画像をライトボックスで拡大する#scenarios[正常シナリオ]
-      - dev/設計書/シナリオ/単一ユースケース/画像をライトボックスで拡大する#scenarios[正常シナリオ（キーで開く）]
+      - SC-472-66#scenarios[正常シナリオ]
+      - SC-472-66#scenarios[正常シナリオ（キーで開く）]
   - name: 正常系（ライトボックスで拡大・移動する）
     summary: ライトボックスの画像を図の全画面と同じボタンとキーで拡大・縮小し、拡大中は矢印キーで動かす
     setup:
@@ -3806,7 +3807,7 @@ flows:
       - '`0` の後の右の矢印キーで `b.png` に送信され、倍率が収まる倍率に戻っている'
     test: test_normal_when_lightbox_zoomed
     refs:
-      - dev/設計書/シナリオ/単一ユースケース/画像をライトボックスで拡大する#scenarios[正常シナリオ]
+      - SC-472-66#scenarios[正常シナリオ]
   - name: 正常系（拡大しない画像）
     summary: '`nolightbox` の画像を拡大のボタンで包まず、切り替えの並びから除外する'
     setup:
@@ -3828,7 +3829,7 @@ flows:
       - 右の矢印キーの後に `c.png` が出て、枚数の表示が `2 / 2`
     test: test_normal_when_nolightbox
     refs:
-      - dev/設計書/シナリオ/単一ユースケース/画像をライトボックスで拡大する#scenarios[正常シナリオ（拡大しない画像）]
+      - SC-472-66#scenarios[正常シナリオ（拡大しない画像）]
   - name: 正常系（GIF を止める・再生する）
     summary: GIF に止める・再生するボタンを付け、押すたびに最初のフレームで止めるか動かす
     setup:
@@ -3856,7 +3857,7 @@ flows:
       - 止める・再生するで外への要求が増えない
     test: test_normal_when_gif_toggled
     refs:
-      - dev/設計書/シナリオ/単一ユースケース/画像・動画・音声を配置する#scenarios[正常シナリオ（GIF を止める・再生する）]
+      - SC-472-67#scenarios[正常シナリオ（GIF を止める・再生する）]
   - name: 正常系（動きを減らす設定の GIF）
     summary: '`prefers-reduced-motion: reduce` のとき、GIF を止めた状態で描く'
     setup:
@@ -3877,7 +3878,7 @@ flows:
       - ボタンが `aria-pressed="true"`・`aria-label="GIF を再生"` を持つ
     test: test_normal_when_gif_reduced_motion
     refs:
-      - dev/設計書/シナリオ/単一ユースケース/画像・動画・音声を配置する#scenarios[正常シナリオ（動きを減らす設定の GIF）]
+      - SC-472-67#scenarios[正常シナリオ（動きを減らす設定の GIF）]
   - name: 正常系（名前の色とテーマごとの画像の配色）
     summary: 色の名前の要素に今の配色の色のプリセットを当て、今の配色に合わない画像を隠す
     setup:
@@ -3902,8 +3903,8 @@ flows:
       - 色を付けた文字とその面の色のコントラストが、どちらの配色でも 4.5:1 以上
     test: test_normal_when_color_preset_and_theme_images
     refs:
-      - dev/設計書/シナリオ/単一ユースケース/名前の色で表・バッジ・本文を強調する#scenarios[正常シナリオ（ダークの配色）]
-      - dev/設計書/シナリオ/単一ユースケース/画像・動画・音声を配置する#scenarios[正常シナリオ（テーマごとの画像）]
+      - SC-472-36#scenarios[正常シナリオ（ダークの配色）]
+      - SC-472-67#scenarios[正常シナリオ（テーマごとの画像）]
   - name: 正常系（色・画像・動画・カードを印刷する）
     summary: 印刷では明るい配色の色のプリセットで色を残し、明るい配色の画像・動画の `poster`・カードの URL を出し、操作のボタンを出さない
     setup:
@@ -3929,7 +3930,7 @@ flows:
       - リンクのカードと添付のカードに、リンク先の URL の文字が出ている
     test: test_normal_when_colors_and_media_printed
     refs:
-      - dev/設計書/シナリオ/単一ユースケース/文書を印刷する#scenarios[正常シナリオ（色・画像・動画・カードを印刷に出す）]
+      - SC-472-58#scenarios[正常シナリオ（色・画像・動画・カードを印刷に出す）]
   - name: 正常系（選んだテーマの色のプリセット）
     summary: '`opts.config.colorTheme` で選んだテーマの色のプリセットで色の名前の要素を描く'
     setup:
@@ -3951,7 +3952,7 @@ flows:
       - 色を付けた文字とその面の色のコントラストが 4.5:1 以上
     test: test_normal_when_color_preset_in_theme
     refs:
-      - dev/設計書/シナリオ/単一ユースケース/テーマを選ぶ#scenarios[正常シナリオ（選んだテーマの色のプリセット）]
+      - SC-472-26#scenarios[正常シナリオ（選んだテーマの色のプリセット）]
   - name: 正常系（色のプリセットを上書きする）
     summary: 利用側が層の外で記載した色のプリセットの CSS 変数が、色の名前の要素に該当する
     setup:
@@ -3973,7 +3974,7 @@ flows:
       - バッジの面の色の計算値が `rgb(230, 240, 255)`
     test: test_normal_when_color_preset_overridden
     refs:
-      - dev/設計書/シナリオ/単一ユースケース/テーマを上書きする#scenarios[正常シナリオ（色のプリセットを上書きする）]
+      - SC-472-25#scenarios[正常シナリオ（色のプリセットを上書きする）]
   - name: 正常系（結合した表を並べ替えて絞り込む）
     summary: 多段の見出しの最下段にボタンを配置し、並べ替え・絞り込みの後に隣り合う同じ値のセルをもう一度結合する
     setup:
@@ -4002,8 +4003,8 @@ flows:
       - '`navigator.clipboard.writeText` の中身の各行の分類が `A` で、`^^`・`<<` を含まない'
     test: test_normal_when_merged_table_sorted
     refs:
-      - dev/設計書/シナリオ/単一ユースケース/表を操作する#scenarios[正常シナリオ（多段の見出しと行見出し）]
-      - dev/設計書/シナリオ/単一ユースケース/表を操作する#scenarios[正常シナリオ（並べ替えの後にもう一度結合する）]
+      - SC-472-73#scenarios[正常シナリオ（多段の見出しと行見出し）]
+      - SC-472-73#scenarios[正常シナリオ（並べ替えの後にもう一度結合する）]
   - name: 正常系（行見出しの列までを留める）
     summary: '`row-header=` を持つはみ出す表を、描いた直後に行見出しの全ての列を留めた状態にする'
     setup:
@@ -4024,7 +4025,7 @@ flows:
       - 表を横に端までスクロールした後も、1・2 列目のセルの左端が表の左端と同じ位置にある
     test: test_normal_when_row_header_pinned
     refs:
-      - dev/設計書/シナリオ/単一ユースケース/表を操作する#scenarios[正常シナリオ（はみ出す表で行見出しの列までを留める）]
+      - SC-472-73#scenarios[正常シナリオ（はみ出す表で行見出しの列までを留める）]
   - name: 正常系（入れ子のタブを切り替える）
     summary: 内側と外側のタブをそれぞれの並びで切り替え、内側を選んでも外側の選択を変えない
     setup:
@@ -4052,8 +4053,8 @@ flows:
       - '`Windows` を押した後、`Windows` の中身だけが表示され、`macOS` の中身（内側のタブを含む）が `hidden` を持つ'
     test: test_normal_when_nested_tabs_switched
     refs:
-      - dev/設計書/シナリオ/単一ユースケース/タブを切り替える#scenarios[正常シナリオ（入れ子のタブ）]
-      - dev/設計書/シナリオ/単一ユースケース/タブを切り替える#scenarios[正常シナリオ（太字のタブ名）]
+      - SC-472-23#scenarios[正常シナリオ（入れ子のタブ）]
+      - SC-472-23#scenarios[正常シナリオ（太字のタブ名）]
   - name: 正常系（focus の行のほかを薄くする）
     summary: focus の行のほかを薄くし、error・warning の行に地の色を付け、コピーにはマーカーの無い全ての行を記載する
     setup:
@@ -4077,7 +4078,7 @@ flows:
       - '`navigator.clipboard.writeText` の中身が 4 行全てを持ち、`[!code` を含まない'
     test: test_normal_when_code_focused
     refs:
-      - dev/設計書/シナリオ/単一ユースケース/コードブロックを飾る#scenarios[正常シナリオ（focus・error・warning の行）]
+      - SC-472-17#scenarios[正常シナリオ（focus・error・warning の行）]
   - name: 正常系（コードの行を畳む・開く）
     summary: 畳める行のボタンで深い行を畳み、⋯ で開き、Shift を押しながらで入れ子もまとめて開閉する
     setup:
@@ -4109,7 +4110,7 @@ flows:
       - '`tree` のコードブロックにコードの開閉のボタンが無い'
     test: test_normal_when_code_folded
     refs:
-      - dev/設計書/シナリオ/単一ユースケース/コードブロックを飾る#scenarios[正常シナリオ（インデントで畳む・開く）]
+      - SC-472-17#scenarios[正常シナリオ（インデントで畳む・開く）]
   - name: 正常系（インデントの縦線を濃くする）
     summary: インデントの縦線を描き、ポインターを乗せた行のブロックの縦線だけを濃くする
     setup:
@@ -4134,7 +4135,7 @@ flows:
       - コードブロックの文字を全て選んだ `getSelection().toString()` に、縦線の文字が入っていない
     test: test_normal_when_code_guide_hovered
     refs:
-      - dev/設計書/シナリオ/単一ユースケース/コードブロックを飾る#scenarios[正常シナリオ（インデントの縦線）]
+      - SC-472-17#scenarios[正常シナリオ（インデントの縦線）]
   - name: 正常系（fold= で畳んで描く）
     summary: '`fold=` の行を畳んだ状態で描き、コピーには畳んだ行も記載し、再描画すると `fold=` のとおりに戻す'
     setup:
@@ -4160,7 +4161,7 @@ flows:
       - '`update` の後、2 行目のボタンの `aria-expanded` が `false` に戻っている'
     test: test_normal_when_code_fold_initial
     refs:
-      - dev/設計書/シナリオ/単一ユースケース/コードブロックを飾る#scenarios[正常シナリオ（最初から畳む行を指定する）]
+      - SC-472-17#scenarios[正常シナリオ（最初から畳む行を指定する）]
   - name: 正常系（印刷の前に畳んだコードを開く）
     summary: 印刷の前に畳んだコードの行と入れ子の閉じた注意書きを開き、印刷の後に戻す
     setup:
@@ -4185,7 +4186,7 @@ flows:
       - '`afterprint` の後、2 行目の下の深い行が `hidden` を持ち、入れ子の `details` が `open` を持たず、外側の `details` は `open` のまま'
     test: test_normal_when_code_folds_printed
     refs:
-      - dev/設計書/シナリオ/単一ユースケース/文書を印刷する#scenarios[正常シナリオ（畳んだコードと入れ子の注意書きを開いて出す）]
+      - SC-472-58#scenarios[正常シナリオ（畳んだコードと入れ子の注意書きを開いて出す）]
   - name: 正常系（比較元の Markdown で強調する）
     summary: '`opts.baseMarkdown` を指定すると、取り出し元を使用せずに本文の中のブロックを追加と削除の色で塗り分ける'
     setup:
@@ -4550,8 +4551,8 @@ flows:
       - 番号・ツールチップ・一覧の項目の `id` がページの中で一意な値にもう一度振られ、`aria-describedby`・`aria-details`・`href` がもう一度振った `id` を指す
     test: test_normal_when_footnote_tooltip
     refs:
-      - dev/設計書/シナリオ/単一ユースケース/脚注を確認する#scenarios[正常シナリオ]
-      - dev/設計書/シナリオ/単一ユースケース/脚注を確認する#scenarios[正常シナリオ（キーボードで読み込む）]
+      - SC-472-71#scenarios[正常シナリオ]
+      - SC-472-71#scenarios[正常シナリオ（キーボードで読み込む）]
   - name: 正常系（脚注の番号と一覧を行き来する）
     summary: 番号を押すと閉じた一覧を開いて項目へ移り、戻るリンクで番号へ戻る
     setup:
@@ -4575,8 +4576,8 @@ flows:
       - どちらの後も `location.hash` が変わっていない
     test: test_normal_when_footnote_jump
     refs:
-      - dev/設計書/シナリオ/単一ユースケース/脚注を確認する#scenarios[正常シナリオ（番号から末尾の一覧へ移る）]
-      - dev/設計書/シナリオ/単一ユースケース/脚注を確認する#scenarios[正常シナリオ（末尾の一覧から本文へ戻る）]
+      - SC-472-71#scenarios[正常シナリオ（番号から末尾の一覧へ移る）]
+      - SC-472-71#scenarios[正常シナリオ（末尾の一覧から本文へ戻る）]
   - name: 正常系（印刷の前に脚注の一覧を開く）
     summary: 印刷の前に閉じた脚注の一覧を開き、印刷の後にもう一度閉じる
     setup:
@@ -4601,7 +4602,7 @@ flows:
       - '`afterprint` の後、`details.mdmark-footnotes` が `open` を持たない'
     test: test_normal_when_footnotes_printed
     refs:
-      - dev/設計書/シナリオ/単一ユースケース/文書を印刷する#scenarios[正常シナリオ（脚注の一覧を開いて出す）]
+      - SC-472-58#scenarios[正常シナリオ（脚注の一覧を開いて出す）]
   - name: 正常系（表と重なる位置で右側の目次を出す）
     summary: 表の見出し行を画面の上端に留めた位置で、hover で開いた右側の目次を表より手前に出す
     setup:
@@ -4686,7 +4687,7 @@ flows:
       - スクロールせずに別の要素で差分を開いた後、右端の線とパネルの `getBoundingClientRect().right` が、どちらもミニマップの帯の左端から 8px を減算した値と 1px 以内で等しい。スクロールせずに差分を閉じて帯が削除された後、右端の線の `getBoundingClientRect().right` が `document.documentElement.clientWidth` から 1rem を減算した値と 1px 以内で等しい
     test: test_normal_when_side_toc_at_scroll_edge
     refs:
-      - dev/設計書/シナリオ/単一ユースケース/目次と見出しのアンカーでセクションへ移る#scenarios[正常シナリオ（描く先の要素が画面より狭いときも右側の目次を画面の右端に出す）]
+      - SC-472-68#scenarios[正常シナリオ（描く先の要素が画面より狭いときも右側の目次を画面の右端に出す）]
   - name: 正常系（列を並べ替える）
     summary: テーブル設定の一覧のつまみで列を動かし、目のアイコンで列を隠す
     setup:
@@ -4724,7 +4725,7 @@ flows:
       - '`update` で同じ Markdown を再描画すると、列が `名前`・`型`・`既定`・`説明` の順に戻る'
     test: test_normal_when_columns_reordered
     refs:
-      - dev/設計書/シナリオ/単一ユースケース/表を操作する#scenarios[正常シナリオ（列を並べ替える）]
+      - SC-472-73#scenarios[正常シナリオ（列を並べ替える）]
   - name: 正常系（結合した見出しとピン止めの列を並べ替える）
     summary: 結合した見出しの範囲の中だけで列を動かし、ピン止めの境をまたがせない
     setup:
@@ -4752,7 +4753,7 @@ flows:
       - 横にスクロールしても名前の列が左端に留まっている
     test: test_normal_when_reordered_within_groups
     refs:
-      - dev/設計書/シナリオ/単一ユースケース/表を操作する#scenarios[正常シナリオ（結合した見出しとピン止めの列を並べ替える）]
+      - SC-472-73#scenarios[正常シナリオ（結合した見出しとピン止めの列を並べ替える）]
   - name: 正常系（階層の表のツールチップとコピー）
     summary: 階層の表のキーに全体のパスのツールチップとコピーのボタンを付ける
     setup:
@@ -4778,7 +4779,7 @@ flows:
       - 見出しに行の並べ替えのボタンが無い
     test: test_normal_when_tree
     refs:
-      - dev/設計書/シナリオ/単一ユースケース/表を操作する#scenarios[正常シナリオ（キーの列を階層で描く）]
+      - SC-472-73#scenarios[正常シナリオ（キーの列を階層で描く）]
   - name: 正常系（階層を畳む・開く）
     summary: 開閉のボタンで子孫を畳み、Shift で入れ子をまとめて開閉する
     setup:
@@ -4807,7 +4808,7 @@ flows:
       - 畳んだままコピーした文字に `aliases[].id` の行がある
     test: test_normal_when_tree_folded
     refs:
-      - dev/設計書/シナリオ/単一ユースケース/表を操作する#scenarios[正常シナリオ（階層を畳む・開く）]
+      - SC-472-73#scenarios[正常シナリオ（階層を畳む・開く）]
   - name: 正常系（階層の表を絞り込む）
     summary: 末尾の名前で照合し、該当した行の祖先を残す
     setup:
@@ -4832,7 +4833,7 @@ flows:
       - 絞り込みを解くと、絞り込む前の開閉の状態に戻る
     test: test_normal_when_tree_filtered
     refs:
-      - dev/設計書/シナリオ/単一ユースケース/表を操作する#scenarios[正常シナリオ（階層の表を絞り込む）]
+      - SC-472-73#scenarios[正常シナリオ（階層の表を絞り込む）]
   - name: 正常系（階層の行を選ぶ）
     summary: 行を押すと同じ親の範囲の縦線を濃くし、もう一度押すと解く
     setup:
@@ -4857,7 +4858,7 @@ flows:
       - コピー・開閉のボタンを押しても選択が変わらない
     test: test_normal_when_tree_row_selected
     refs:
-      - dev/設計書/シナリオ/単一ユースケース/表を操作する#scenarios[正常シナリオ（階層の行を選ぶ）]
+      - SC-472-73#scenarios[正常シナリオ（階層の行を選ぶ）]
   - name: 正常系（YAML の見本と連動する）
     summary: 表の行と見本の行を互いに強調し、見本の表示を切り替える
     setup:
@@ -4886,7 +4887,7 @@ flows:
       - '`見本を隠す` を押すと見本が隠れ、ボタンが `aria-expanded="false"` で文字が `見本を表示`'
     test: test_normal_when_tree_linked_to_example
     refs:
-      - dev/設計書/シナリオ/単一ユースケース/表を操作する#scenarios[正常シナリオ（YAML の見本と連動する）]
+      - SC-472-73#scenarios[正常シナリオ（YAML の見本と連動する）]
   - name: 正常系（印刷の前に階層の行と見本を開く）
     summary: 印刷の前に畳んだ階層の行と隠した見本を開き、印刷の後に戻す
     setup:
@@ -4911,7 +4912,7 @@ flows:
       - '`afterprint` の後、`aliases[]` の子孫が `hidden` で、見本が隠れている'
     test: test_normal_when_printed_tree
     refs:
-      - dev/設計書/シナリオ/単一ユースケース/文書を印刷する#scenarios[正常シナリオ（畳んだ階層の行と隠した見本を開いて出す）]
+      - SC-472-58#scenarios[正常シナリオ（畳んだ階層の行と隠した見本を開いて出す）]
   - name: 正常系（範囲のスクリプトと CSS）
     summary: '`html-scripts` がオンのとき、範囲の `ts` を変換して根の要素で呼び、再描画する前に `destroy` を呼ぶ'
     setup:
@@ -4942,7 +4943,7 @@ flows:
       - '`update` の後、`window.__mdmarkDestroyed` が 1'
     test: test_normal_when_range_scripts
     refs:
-      - dev/設計書/シナリオ/単一ユースケース/コードブロックのHTMLを描く#scenarios[正常シナリオ（範囲のスクリプトと CSS）]
+      - SC-472-16#scenarios[正常シナリオ（範囲のスクリプトと CSS）]
   - name: 正常系（範囲のスクリプトの機能がオフ）
     summary: '`html-scripts` がオフのとき、範囲のスクリプトを動かさず、変換のライブラリを読み込まない'
     setup:
@@ -4964,7 +4965,7 @@ flows:
       - 変換のライブラリへの要求が 0 件
     test: test_normal_when_range_scripts_off
     refs:
-      - dev/設計書/シナリオ/単一ユースケース/コードブロックのHTMLを描く#scenarios[正常シナリオ（範囲のスクリプトの機能がオフ）]
+      - SC-472-16#scenarios[正常シナリオ（範囲のスクリプトの機能がオフ）]
   - name: 正常系（文書のマーカーで範囲のスクリプトをオンにする）
     summary: 設定でオフの `html-scripts` を、文書のマーカーでその文書だけオンにする
     setup:
@@ -4986,7 +4987,7 @@ flows:
       - '`el` の中にマーカーの文字が無い'
     test: test_normal_when_range_scripts_enabled_by_mark
     refs:
-      - dev/設計書/シナリオ/単一ユースケース/機能のオン・オフを文書で上書きする#scenarios[正常シナリオ（範囲のスクリプトを文書でオンにする）]
+      - SC-472-62#scenarios[正常シナリオ（範囲のスクリプトを文書でオンにする）]
   - name: 異常系（範囲のスクリプトを動かせない・記載の警告）
     summary: 既定のエクスポートが関数でない範囲と例外を投げる範囲の前に記載の警告を配置し、ほかは描く
     setup:
@@ -5010,7 +5011,7 @@ flows:
       - 閉じ括弧の足りない `js` の範囲の前の記載の警告に、スクリプトを読み込めない（構文エラー）ことが記載され、範囲の `html` が描かれている
     test: test_error_when_range_script_invalid
     refs:
-      - dev/設計書/シナリオ/単一ユースケース/コードブロックのHTMLを描く#scenarios[異常シナリオ（範囲のスクリプトを動かせない）]
+      - SC-472-16#scenarios[異常シナリオ（範囲のスクリプトを動かせない）]
   - name: 異常系（変換のライブラリを読み込めない・通知ブロック）
     summary: 変換のライブラリを読み込めないとき、`ts`・`js` の範囲に通知ブロックを配置し、範囲の `html`・`css` と本文は描く
     setup:
@@ -5035,7 +5036,7 @@ flows:
       - 段落があり、`console.error` に URL が出る
     test: test_error_when_transpiler_unavailable
     refs:
-      - dev/設計書/シナリオ/単一ユースケース/コードブロックのHTMLを描く#scenarios[異常シナリオ（変換のライブラリを読み込めない）]
+      - SC-472-16#scenarios[異常シナリオ（変換のライブラリを読み込めない）]
   - name: 正常系（まとめていない名前のアイコンを読み込む）
     summary: まとめていない名前のアイコンだけを、使用する名前の分だけ jsDelivr から読み込んで描く
     setup:
@@ -5063,7 +5064,7 @@ flows:
       - まとめていない名前の `icon:` を持たない文書では、Lucide への要求が 0 件
     test: test_normal_when_unbundled_icons
     refs:
-      - dev/設計書/シナリオ/単一ユースケース/外部ライブラリを使用するときだけ読み込む#scenarios[正常シナリオ（まとめていない名前のアイコン）]
+      - SC-472-46#scenarios[正常シナリオ（まとめていない名前のアイコン）]
   - name: 異常系（Lucide に無いアイコンの名前）
     summary: Lucide に無い名前の場所を行内のコードに戻し、記載の警告を配置する
     setup:
@@ -5090,7 +5091,7 @@ flows:
       - 通知ブロックが無い
     test: test_error_when_icon_not_in_lucide
     refs:
-      - dev/設計書/シナリオ/単一ユースケース/外部ライブラリを使用するときだけ読み込む#scenarios[異常シナリオ（Lucide に無いアイコンの名前）]
+      - SC-472-46#scenarios[異常シナリオ（Lucide に無いアイコンの名前）]
   - name: 異常系（Lucide のアイコンを読み込めない・通知ブロック）
     summary: アイコンを読み込めないとき、場所を行内のコードに戻し、通知ブロックを 1 つだけ配置する
     setup:
@@ -5118,7 +5119,7 @@ flows:
       - '`console.error` に URL が出る'
     test: test_error_when_icons_unreachable
     refs:
-      - dev/設計書/シナリオ/単一ユースケース/外部ライブラリを使用するときだけ読み込む#scenarios[異常シナリオ（Lucide を読み込めない）]
+      - SC-472-46#scenarios[異常シナリオ（Lucide を読み込めない）]
   - name: 正常系（wide の範囲の幅を切り替える）
     summary: wide の範囲を広げて描き、範囲の上のボタンで本文の幅と切り替える
     setup:
@@ -5147,9 +5148,9 @@ flows:
       - 画面と描く先の要素の幅を 390px にすると、ボタンが表示されず、範囲の幅が段落の幅と等しく、文書に横のスクロールが無い
     test: test_normal_when_wide_toggled
     refs:
-      - dev/設計書/シナリオ/単一ユースケース/図と表を本文の幅より広げる#scenarios[正常シナリオ（広げた幅と本文の幅を切り替える）]
-      - dev/設計書/シナリオ/単一ユースケース/図と表を本文の幅より広げる#scenarios[正常シナリオ（本文の幅から始める）]
-      - dev/設計書/シナリオ/単一ユースケース/図と表を本文の幅より広げる#scenarios[正常シナリオ（狭い画面）]
+      - SC-472-38#scenarios[正常シナリオ（広げた幅と本文の幅を切り替える）]
+      - SC-472-38#scenarios[正常シナリオ（本文の幅から始める）]
+      - SC-472-38#scenarios[正常シナリオ（狭い画面）]
   - name: 正常系（wide の範囲と右側の目次）
     summary: 右側の目次を出し続けるとき、wide の範囲を目次の列の内側に収める
     setup:
@@ -5171,7 +5172,7 @@ flows:
       - '`side-toc.mode` を `hover` にし、描く先の要素を画面いっぱいにしたとき、ピン止めしていない間の wide の範囲の右端が右端の線の左端以下'
     test: test_normal_when_wide_with_side_toc
     refs:
-      - dev/設計書/シナリオ/単一ユースケース/図と表を本文の幅より広げる#scenarios[正常シナリオ（右側の目次と並ぶ）]
+      - SC-472-38#scenarios[正常シナリオ（右側の目次と並ぶ）]
   - name: 正常系（CSV の表と元の CSV を切り替える）
     summary: CSV の表の右端のボタンで、記載したとおりの CSV と表を切り替える
     setup:
@@ -5199,7 +5200,7 @@ flows:
       - 言語 `csv` でない表に RAW のボタンが無い
     test: test_normal_when_csv_raw_toggled
     refs:
-      - dev/設計書/シナリオ/単一ユースケース/表を操作する#scenarios[正常シナリオ（CSV の表と元の CSV を切り替える）]
+      - SC-472-73#scenarios[正常シナリオ（CSV の表と元の CSV を切り替える）]
   - name: 正常系（改ページと details の範囲を印刷する）
     summary: 印刷の前に details の範囲を開き、改ページの場所で用紙を分ける
     setup:
@@ -5226,8 +5227,8 @@ flows:
       - '`afterprint` の後、`補足` の `details` が `open` を持たない'
     test: test_normal_when_pagebreak_and_details_printed
     refs:
-      - dev/設計書/シナリオ/単一ユースケース/文書を印刷する#scenarios[正常シナリオ（改ページと details の範囲と wide の範囲）]
-      - dev/設計書/シナリオ/単一ユースケース/セクションと行の詳細を開閉する#scenarios[正常シナリオ（details の範囲）]
+      - SC-472-58#scenarios[正常シナリオ（改ページと details の範囲と wide の範囲）]
+      - SC-472-21#scenarios[正常シナリオ（details の範囲）]
   - name: 正常系（取り込む文書を差し替える）
     summary: '`update` の `options.includes` で取り込む文書の表を差し替えて再描画する'
     setup:
@@ -5251,8 +5252,8 @@ flows:
       - '`options.includes` を省いた `update` の後も、前の表の中身で描かれる'
     test: test_normal_when_includes_updated
     refs:
-      - dev/設計書/シナリオ/単一ユースケース/ほかの文書を取り込む#scenarios[正常シナリオ]
-      - dev/設計書/シナリオ/単一ユースケース/VSCodeでプレビューを開く#scenarios[正常シナリオ（取り込む文書を描く）]
+      - SC-472-12#scenarios[正常シナリオ]
+      - SC-472-10#scenarios[正常シナリオ（取り込む文書を描く）]
   - name: 正常系（蛍光ペンとコメント）
     summary: 蛍光ペンの `mark` を、コメントのマーカーと分けて描く
     setup:
@@ -5277,7 +5278,7 @@ flows:
       - 蛍光ペンのマーカーの文字と面の色のコントラストが 4.5:1 以上
     test: test_normal_when_highlight_with_comments
     refs:
-      - dev/設計書/シナリオ/単一ユースケース/名前の色で表・バッジ・本文を強調する#scenarios[正常シナリオ（蛍光ペンのマーカー）]
+      - SC-472-36#scenarios[正常シナリオ（蛍光ペンのマーカー）]
   - name: 正常系（リンク先を持つノードを開く）
     summary: リンク先を持つノードをクリックと Enter で開き、ノードの上から始めたドラッグでは図を動かすだけにする
     setup:
@@ -5580,7 +5581,7 @@ flows:
       - 開いた番号 1 のタップの後、`sup.mdmark-fn-ref` が `is-open` を持たず、`details.mdmark-footnotes` が `open` を持ち、脚注 1 の項目にフォーカスがあり、`location.hash` が変わっていない
     test: test_normal_when_footnote_touch
     refs:
-      - dev/設計書/シナリオ/単一ユースケース/脚注を確認する#scenarios[正常シナリオ（タッチ）]
+      - SC-472-71#scenarios[正常シナリオ（タッチ）]
   - name: 正常系（mermaid のコードブロックを描く）
     summary: mermaid のコードブロックがあるときだけ mermaid を読み込み、描く先の要素の CSS 変数から作ったテーマで図にして図の枠に入れる
     setup:
@@ -5777,7 +5778,7 @@ flows:
       - もう一度押した後、全てのボタンの `aria-pressed` が `false` で、1〜3 列目のセルが `sticky` でない
     test: test_normal_when_table_pinned_through
     refs:
-      - dev/設計書/シナリオ/単一ユースケース/表を操作する#scenarios[正常シナリオ（押した列までを留める設定）]
+      - SC-472-73#scenarios[正常シナリオ（押した列までを留める設定）]
   - name: 正常系（留めた列ごと列を並べ替える）
     summary: '`each` の表は、留めているかを列が持ったまま動かし、テーブル設定の一覧を留めた列で分けない'
     setup:
@@ -5803,7 +5804,7 @@ flows:
       - 右端までスクロールした後、`名前` の列のセルの左端が表の見えている範囲の左端と同じ位置にある
     test: test_normal_when_reordered_with_pinned_columns
     refs:
-      - dev/設計書/シナリオ/単一ユースケース/表を操作する#scenarios[正常シナリオ（留めた列ごと列を並べ替える）]
+      - SC-472-73#scenarios[正常シナリオ（留めた列ごと列を並べ替える）]
   - name: 正常系（結合した見出しの下の列を留める）
     summary: '`each` の表で結合した見出しの下の 1 列だけを留めると、結合したセルは留めず、最下段の見出しと本文のセルだけを留める'
     setup:
@@ -5827,7 +5828,7 @@ flows:
       - 既定のボタンの `aria-pressed` が `true` で、型・必須のボタンは `false`
     test: test_normal_when_pinned_under_merged_header
     refs:
-      - dev/設計書/シナリオ/単一ユースケース/表を操作する#scenarios[正常シナリオ（結合した見出しの下の列を留める）]
+      - SC-472-73#scenarios[正常シナリオ（結合した見出しの下の列を留める）]
   - name: 正常系（フロントマターを除外する）
     summary: 文書の先頭の YAML のフロントマターを本文・見出し・右側の目次に出さず、本文の元の行番号は元の Markdown のままにする
     setup:
@@ -5906,7 +5907,7 @@ flows:
       - '`-resize` の表と `plain` の表に `span.mdmark-col-resize` が無い'
     test: test_normal_when_column_resized
     refs:
-      - dev/設計書/シナリオ/単一ユースケース/表を操作する#scenarios[正常シナリオ（列の幅を変える）]
+      - SC-472-73#scenarios[正常シナリオ（列の幅を変える）]
   - name: 正常系（キーボードで列の幅を変える）
     summary: つまみにフォーカスした ←・→ キーで 16px ずつ幅を変え、Enter で描いた直後の幅に戻し、つまみの値を今の幅にする
     setup:
@@ -5933,7 +5934,7 @@ flows:
       - →・← キーで表の `scrollLeft` と `window.scrollX` が変わらない
     test: test_normal_when_column_resized_by_keyboard
     refs:
-      - dev/設計書/シナリオ/単一ユースケース/表を操作する#scenarios[正常シナリオ（キーボードで列の幅を変える）]
+      - SC-472-73#scenarios[正常シナリオ（キーボードで列の幅を変える）]
   - name: 正常系（留めた列の幅を変える）
     summary: 留めた列の幅を変えるたびに留める位置を計算し直し、留めた列の幅の合計が見えている幅に収まる幅で止める
     setup:
@@ -5962,7 +5963,7 @@ flows:
       - 1 列目・3 列目・9 列目のピン止めのボタンの `aria-pressed` が `true` のまま
     test: test_normal_when_pinned_column_resized
     refs:
-      - dev/設計書/シナリオ/単一ユースケース/表を操作する#scenarios[正常シナリオ（留めた列の幅を変える）]
+      - SC-472-73#scenarios[正常シナリオ（留めた列の幅を変える）]
   - name: 正常系（タッチで列の幅を変える）
     summary: タッチのドラッグで幅を変え、ダブルタップで描いた直後の幅に戻し、ポインターが粗い画面ではつまみを常に出す
     setup:
@@ -5988,7 +5989,7 @@ flows:
       - 2 回タップした後、名前の列の `th` の `offsetWidth` が描いた直後と同じ
     test: test_normal_when_column_resized_by_touch
     refs:
-      - dev/設計書/シナリオ/単一ユースケース/表を操作する#scenarios[正常シナリオ（タッチで列の幅を変える）]
+      - SC-472-73#scenarios[正常シナリオ（タッチで列の幅を変える）]
   - name: 正常系（狭い幅で列の幅を変える）
     summary: 列の幅を変えても、最終列を畳むかは決め直さない
     setup:
@@ -6013,7 +6014,7 @@ flows:
       - 説明の列を狭めた後、説明の列のセルの中身の高さが `line-height` の 1.5 倍を超えるセルがあり（折り返している）、説明の列の `th` が `hidden` でなく、行に開閉のボタンが無い
     test: test_normal_when_column_resized_in_narrow_width
     refs:
-      - dev/設計書/シナリオ/単一ユースケース/表を操作する#scenarios[正常シナリオ（狭い幅で列の幅を変える）]
+      - SC-472-73#scenarios[正常シナリオ（狭い幅で列の幅を変える）]
   - name: 正常系（map の構成図を描く）
     summary: map の場所の `flowchart` を、入れ子のグループを内側から自動配置したフロー図にして、置き場所の幅いっぱいの図の枠に描く
     setup:
@@ -6373,33 +6374,33 @@ lead: 利用側のページが、要素と Markdown と設定を指定し、要�
 idempotent: false
 side_effects: '`el` の中身と class を書き換え、記法の操作のイベントを `el` の中に付ける。まとめていない名前の `icon:` があるとき、jsDelivr の Lucide のアイコンのモジュールを名前ごとに `import()` し、読み込めなかった名前だけ同じ URL へ `HEAD` の `fetch` を送信する。`side-toc` がオンで見出しがあるとき、`el` の中を本文の列と右側の目次に分け、見出しの位置を `IntersectionObserver` で確認する。出し方が `hover` のときは、右端の線とパネルの位置を決めるため、`window` の `scroll`・`resize` と、`el` に最も近いスクロールする祖先の要素があればその `scroll` を受け取り、`document.body` の子の追加・削除を `MutationObserver` で確認する。`back-to-top` がオンのとき、`el` の子に先頭へ戻るボタンを配置し、スクロールする場所が画面全体なら `window` の `scroll`、`el` に最も近いスクロールする祖先の要素なら `document` の `scroll`（キャプチャーフェーズ）と、`window` の `resize` を受け取り、`document.body` と `el` の子の追加・削除を `MutationObserver` で確認する。`window` の `beforeprint`・`afterprint`・`hashchange` と、絞り込みのドロワーを開いている間だけ `document` の `pointerdown`・`keydown` を受け取る。図の部品か埋め込んだ HTML があるとき、図の表示する枠と埋め込んだ HTML の大きさを `ResizeObserver` で見、ツールチップを開いている間だけ `document` の `keydown`・`pointerdown` と `window` の `scroll`・`resize` を受け取り、全画面の間だけ `el` の中に `dialog` を配置する。リンク先を持つフロー図のノードの上から図を動かしたとき、次の 1 回の `click` まで `window` の `click`（キャプチャーフェーズ）を受け取る。`diagram-resize` がオンのとき、リサイズハンドルで変えた図の高さを sessionStorage に書き込み、描くたびに読み込む（ダブルクリックで今の倍率の図の全体が収まる高さを書き込む）。操作できる部品の写すボタン・表のコピー・行の URL のコピー・コードブロックのコピー・ファイルツリーのコピーでクリップボードに書き込む。表があるとき、表の大きさと描く先の要素の幅を `ResizeObserver` で見、`animation-timeline` を持たないブラウザでは `window` と文書の中の `scroll` と `window` の `resize` を受け取る。`data-group` を持つタブがあるとき、localStorage の `mdmark-tabs:{group}` を描くたびに読み込み、読者がタブを選ぶと書き込む。そのとき、ページの中の `el` の外にある同じ `group` のタブ群の選択も書き換える。文書に外部ライブラリか拡張のマーカーがあるとき、そのモジュールを読み込む。色分けの対象のコードブロックがあるとき、`syntax.url` の先の core と、使用する言語のモジュールを読み込む。`mermaid` がオンの文書に mermaid のコードブロックがあるとき、`mermaid.url` の先のモジュールを読み込み、描く先の配色の明暗の変化を確認して再描画する。`html-scripts` がオンの文書に範囲の `ts`・`js` があるとき、`html-scripts.url` の先の変換のライブラリを読み込み、範囲ごとに `document.head` へ `script` 要素を 1 つ配置してすぐ削除し、範囲の関数を呼ぶ。`opts.diffSource` を指定したとき、読者が差分を開くと（`opts.diffMode` が `open` なら描いた時点、`blocks` なら描くたびに）取り出し元の `revisions`・`content` を呼び、差分の行を出している間だけミニマップの帯を配置し、スクロール先のスクロールの `scroll` と `window` の `resize` を受け取る。文書にビューのマーカーがあるとき、ビューの部品のモジュールを読み込む。`comments` がオンで `opts.commentStore` を指定したとき、コメントの部品のモジュールを読み込み、`load` を描くたびに 1 回呼び、保存で `save`、読み込みと保存の関数が持つときは吹き出しの修正で `update`・削除で `remove`、`reloadComments` で `load` を呼ぶ。その間は `document` の `selectionchange` を受け取り、コメントのボタン・入力欄・吹き出しを `document.body` に配置する。あわせて本文の列の右に余白の列を配置し、描く先の要素の大きさを `ResizeObserver`、描く先の要素の中の開閉・切り替えを `MutationObserver` で確認する。map の範囲があるとき、図ごとの開閉・中へ入ったグループ・動かした位置・参加者の並び順を sessionStorage に記載し、`map.url_state` が `false` でなければ中へ入ったグループと中だけを描くブロックを `history.replaceState` でクエリ文字列の `map-{図の番号}` に記載する。ノードの大きさの変化を `ResizeObserver` で確認する。map の部品のモジュール（`dist/map.js`）を読み込む。印の引数が `{"play": "autoplay"}` の図は、画面に入ったかを `IntersectionObserver` で確認し、自動で進めている間は印の `interval` 秒ごとの時計を持つ'
 callers:
-  - dev/設計書/シナリオ/単一ユースケース/文書を描く#
-  - dev/設計書/シナリオ/単一ユースケース/テーマを上書きする#
-  - dev/設計書/シナリオ/単一ユースケース/機能のオン・オフを文書で上書きする#
-  - dev/設計書/シナリオ/単一ユースケース/外部ライブラリを使用するときだけ読み込む#
-  - dev/設計書/シナリオ/単一ユースケース/文書を印刷する#
-  - dev/設計書/シナリオ/単一ユースケース/表を操作する#
-  - dev/設計書/シナリオ/単一ユースケース/注意書きを記載する#
-  - dev/設計書/シナリオ/単一ユースケース/タブを切り替える#
-  - dev/設計書/シナリオ/単一ユースケース/ステップ・ファイルツリー・バッジで本文を組む#
-  - dev/設計書/シナリオ/単一ユースケース/コードブロックを飾る#
-  - dev/設計書/シナリオ/単一ユースケース/目次と見出しのアンカーでセクションへ移る#
-  - dev/設計書/シナリオ/単一ユースケース/セクションと行の詳細を開閉する#
-  - dev/設計書/シナリオ/単一ユースケース/図と表に番号を付けて参照する#
-  - dev/設計書/シナリオ/単一ユースケース/拡張を登録してマーカーを追加する#
-  - dev/設計書/シナリオ/単一ユースケース/図を描く#
-  - dev/設計書/シナリオ/単一ユースケース/図を拡大・縮小・移動する#
-  - dev/設計書/シナリオ/単一ユースケース/図の要素のツールチップを確認する#
-  - dev/設計書/シナリオ/単一ユースケース/操作できる部品で値を変えて写す#
-  - dev/設計書/シナリオ/単一ユースケース/固有の部品とCSSを適用する#
-  - dev/設計書/シナリオ/単一ユースケース/差分の取り出し元を指定する#
-  - dev/設計書/シナリオ/単一ユースケース/文書の差分を確認する#
-  - dev/設計書/シナリオ/単一ユースケース/埋め込んだHTMLの差分を切り替える#
-  - dev/設計書/シナリオ/単一ユースケース/ビューで項目を確認する#
-  - dev/設計書/シナリオ/単一ユースケース/表形式のビューを列で絞り込む#
-  - dev/設計書/シナリオ/単一ユースケース/選んだ箇所にコメントする#
-  - dev/設計書/シナリオ/単一ユースケース/文書の先頭へ戻る#
-  - dev/設計書/シナリオ/単一ユースケース/コードブロックのHTMLを描く#
+  - SC-472-59#
+  - SC-472-25#
+  - SC-472-62#
+  - SC-472-46#
+  - SC-472-58#
+  - SC-472-73#
+  - SC-472-64#
+  - SC-472-23#
+  - SC-472-20#
+  - SC-472-17#
+  - SC-472-68#
+  - SC-472-21#
+  - SC-472-37#
+  - SC-472-49#
+  - SC-472-43#
+  - SC-472-42#
+  - SC-472-40#
+  - SC-472-51#
+  - SC-472-44#
+  - SC-472-47#
+  - SC-472-55#
+  - SC-472-45#
+  - SC-472-29#
+  - SC-472-74#
+  - SC-472-80#
+  - SC-472-54#
+  - SC-472-16#
 exclusivity: 同じ要素へ 2 回目の `mount` を呼ぶと、前の `mount` の `destroy` を先に行う。`update`・`destroy` の後に、前の描画で始めた外部ライブラリの読み込みが終わっても、その結果は描かない
 request:
   - name: el
@@ -6763,7 +6764,7 @@ constraints:
     notes: 層の外で読み込むことが上書きの条件で、ページの `<link>` なら利用側がその条件を直に満たせ、`render` の出力にも同じ記載方法で該当する
   - item: 対応ブラウザ
     constraint: Chrome 99・Firefox 98・Safari 16.4 以上
-    decided_by: dev/設計書/非機能要件/非機能要件#
+    decided_by: NFR-472-1#
   - item: 表の操作
     constraint: '`data-features` の機能だけを付ける。並べ替えは各列の見出しをボタンにし、押すたびに降順 → 昇順 → 元の並びを繰り返す（数値だけの列は数の大きさ、それ以外は文字の順）。並べた列の `th` に `aria-sort` を付ける。ピン止めは、表が幅からはみ出すときだけ各列の見出しに `aria-pressed` を持つボタンを出す。`opts.config.table.pin` が `each` のときは、押した列だけを留め（ボタンの `aria-label` は `「{列名}」の列をピン止め`）、もう一度押すとその列だけを解除する。留めた列のセルは `position: sticky` にし、それより左で留めた列の幅の合計を `left`、右で留めた列の幅の合計を `right` に入れて、その列より左を表示している間は表の右端に、過ぎた後は左端に留める（幅はセルの `offsetWidth` の整数で足し合わせ、留めた列の間に隙間を出さない）。境の線は、左端に留まった最も右の列の右と、右端に留まった最も左の列の左にだけ引く。留めた列の幅の合計が見えている幅を超えるときは `left` を優先し、右端に留める列は見えている幅の外へ押し出す。描いた直後は `data-pin` の全ての列（無ければ `th scope="row"` の行見出しの全ての列、行見出しも無ければ先頭の列）を留め、留めた列のボタンの `aria-pressed` を `true` にする。`through` のときは、押した列までを左端に留め（ボタンの `aria-label` は `「{列名}」の列までピン止め`）、もう一度押すと解除する。描いた直後は `data-pin` の最も右の列（無ければ行見出しの最後の列、行見出しも無ければ先頭の列）までを留め、その列のボタンの `aria-pressed` を `true` にする。結合した見出しのセルは、またぐ列が全て留まっているときだけ留める。留める列は表がはみ出す間だけ当て、はみ出さない間は留めない。`data-check` の列は、並べ替え・絞り込み（候補を含む）・コピー・集計でセルの `data-value`（無いセルは文字）を値にする。絞り込みは `data-filter` の列の見出しにだけ `aria-expanded`・`aria-controls` を持つボタンを出し、`hidden` で開閉するドロワー（`select` は値のチェックボックスと候補の検索欄、`text` はキーワードの欄、`date` は開始日と終了日の欄と、どれも「絞り込みを解除」）を開く。ドロワーは同時に 1 つだけ開き、開いたら最初の入力欄へフォーカスを移し、外を押すか Esc で閉じる（Esc はボタンへフォーカスを戻す）。列ごとの絞り込みは重ねて当て、一致する行が無いときは「一致する行がありません」の行を出す。並べ替え・絞り込みで行の詳細はその行に付いて動く。`count`・`columns`・`reorder`・`total`・`copy` の表は、表の上に `mdmark-table-bar` の帯を配置する。件数は `aria-live="polite"` の要素に `{表示している行の数} / {全ての行の数} 件`（スクリーンリーダーは `{全ての行の数} 件中 {表示している行の数} 件を表示`）を出し、絞り込みのたびに書き換える。列の表示と並び順は、`columns`・`reorder` のどちらかを持つ表の帯に配置するアイコンだけのボタン（`aria-label` とツールチップが `テーブル設定`。`aria-expanded`・`aria-controls` を持つ）で、`role="dialog"` のテーブル設定のパネル（絞り込みのドロワーと同じ開閉の作法）を開く。パネルは、タイトル（`columns` があれば `表示と並び順`、`reorder` だけなら `並び順`）・列名の一覧・操作の案内を持つ。一覧の各行は、`reorder` の表では並べ替えのつまみ（`aria-label` が `「{列名}」の列を並べ替える`）を、`columns` の表では表示・非表示の目のアイコン（`aria-pressed` を持ち、`aria-label` が `「{列名}」を隠す`・隠した後は `「{列名}」を表示`）を持つ。描いた直後は `data-hide` の列の見出しとセルを `hidden` にし、Markdown に記載した先頭の列の目のアイコンは並べ替えた後も `disabled` にして、案内に `先頭の列は隠せません` を出す。隠した列があるときは、ボタンに隠した列の数のバッジを出し、`aria-label` を `テーブル設定（{隠した列の数} 列を非表示）` にする。`total` の表は、`data-total` に記載した計算ごとに 1 行ずつ、`合計`（`sum`）・`平均`（`avg`）・`件数`（`count`）の順に `tfoot` の行（`data-total-kind="{計算}"`）を配置する。各行の先頭のセルに計算の名前を、その計算を持つ列のセルに表示している行で集計した値を出し、ほかのセルは空にする（先頭の列を集計する行は、名前を左、値をセルの末尾に配置する）。絞り込みのたびにもう一度計算する。`sum`・`avg` は空のセルを除いて計算し、桁区切りを付けて小数は 2 桁までに丸める（平均する値が無いときは `—`）。`count` は空でないセルの数。`sum`・`avg` の列の本文の行（絞り込みに関わらず全ての行）に数として読み込めないセル（空のセルは数えない）が 1 つでもあれば、その列のその計算のセルを空にする（警告は `render` が表の上に配置する）。帯に `aria-expanded`・`aria-controls` を持つ `集計` のボタンを配置し、`表示する集計` のメニュー（`data-total` に記載した計算の名前のチェックボックス。開閉の作法はテーブル設定のパネルと同じ）で出す行を選ばせる。描いたときは全ての計算にチェックを入れ、チェックを解除した計算の行を `hidden` にし、出したこと・隠したことをスクリーンリーダーで通知する。選択は覚えず、再描画すると全ての計算に戻す。列を隠すと、その列の `tfoot` のセルも `hidden` にする。並べ替えで `tfoot` は動かない。`copy` の帯の `表をコピー` のボタンは lucide の `copy` のアイコンだけで文字を持たず、ツールチップ（`title`）とスクリーンリーダー向けの名前を `表をコピー` にし、`aria-expanded`・`aria-controls` を持ち、`コピーの形式` のメニュー（`Markdown の表`・`TSV` のボタン。開閉の作法はテーブル設定のパネルと同じ）を開く。形式を押すとメニューを閉じてフォーカスを `表をコピー` に戻し、見出しの行と表示している行の、表示している列のセルの文字を、選んだ形式で `navigator.clipboard.writeText` に書き込む（集計の行・行の詳細・畳んだ最終列の開閉の行は含めない）。Markdown の表は見出しの行・`| --- |` の区切りの行・本文の行を `| セル | セル |` の構造で改行で並べ、セルの中の `|` を `\|` にする。TSV はセルをタブで、行を改行で区切る。書き込めたらボタンのツールチップとスクリーンリーダー向けの名前を `コピーしました` にして 2 秒で戻し、コピーした形式をスクリーンリーダーで通知する。記載できないとき（`navigator.clipboard` が無いか拒まれた）は、帯の直後に `role="group"` のパネル（タイトル・手動でコピーする案内・コピーする中身を入れた読み取り専用の `textarea`・閉じるボタン）を出し、`textarea` へフォーカスを移して中身を全て選択し、書き込めなかったことと手動でコピーできることをスクリーンリーダーで通知する。パネルは閉じるボタンか、パネルの中にフォーカスがある間の Esc で閉じ、フォーカスを `表をコピー` に戻す。もう一度コピーするときは前のパネルを閉じてから記載する。どちらも例外を外へ出さない。`rowlink` の表は、URL の `#` の後ろ（`#` が 2 つあれば最後の `#` の後ろ）を `decodeURIComponent` したもの（読み込めないときはそのまま）が行の `id` を指すとき（描いたときと `hashchange`）、その行を囲む閉じた表・閉じたセクションを開き、行が絞り込みで隠れていればその表の絞り込みを解除してから行へ移り、その行だけに `data-target` を付けて強調する。行へのリンクのマーカーは、行を指したとき・フォーカスしたとき・`data-target` の行で出し、指せない端末では常に薄く出す。マーカーを押すと、移る動き（アドレスバーの URL を行を指す URL にする）はそのままに、マーカーの解決済みの `href`（`rewriteLinks` が書き換えた後の値をページの URL で解決した絶対 URL）を `navigator.clipboard.writeText` に書き込み、描くときにマーカーの横へ配置しておいた空の `role="status"` の要素の文字を、書き込めたら `リンクをコピーしました`、書き込めなければ
       `リンクをコピーできませんでした` に書き換え、2 秒後に空に戻す（例外を外へ出さない）。印刷では表の上のボタンと行へのリンクのマーカーを出さず、件数と出している集計の行を出し、隠した列は隠したままにする。`thead` が複数の行を持つ表は、並べ替え・ピン止め・絞り込みのボタンを、列ごとにその列だけを覆う最下段の見出しのセル（上の行から縦に結合したセルを含む）に配置する。`data-merge-columns` の表は、並べ替え・絞り込みのたびにその列の結合を解き、表示している行の隣り合う同じ値のセルをもう一度結合する（始まりのセルに `rowspan`、続くセルに `hidden`）。並べ替え・絞り込み・コピー・集計は、`data-merge` のセルも値を持つセルとして扱う'
@@ -6884,7 +6885,7 @@ constraints:
     notes: '対応表（情報文字列の単語 → 言語のモジュール）: `typescript`・`ts`・`tsx` → typescript／`javascript`・`js`・`jsx`・`mjs`・`cjs` → javascript／`json` → json／`yaml`・`yml` → yaml／`python`・`py` → python／`bash`・`sh`・`shell`・`zsh` → bash／`html`・`xml` → xml／`css` → css／`markdown`・`md` → markdown／`sql` → sql／`dockerfile`・`docker` → dockerfile／`diff`・`patch` → diff。単語は大文字と小文字を区別しない'
   - item: 色分けの読み込み
     constraint: 描いた後に、色分けの対象が 1 つ以上あるときだけ、`syntax.url` の本体と文書が使用する言語のモジュールを `import()` で読み込む。言語のモジュールは並べて読み込み、読み込めたものだけを登録する。同じ `mount` の中で同じモジュールは 1 回だけ読み込む。読み込み終わる前に `update`・`destroy` したときは、前の描画に色を適用しない。読み込みの完了は待たずに `mount` を返却する
-    decided_by: dev/設計書/非機能要件/非機能要件#
+    decided_by: NFR-472-1#
     notes: 配布物 `dist/index.js` に色分けのライブラリをまとめない（非機能要件『配布ファイル 1 つのサイズ』）
   - item: 色分けの当て方
     constraint: 行に分けたコードブロック（`mdmark-code-line` を持つ）は各 `mdmark-code-text` の中を、分けないものは `code` の中を、highlight.js の `highlight` が返却する HTML に置き換える。行をまたいで開いている `span` は行末で閉じ、次の行の頭でもう一度開く。`pre`・`code`・`mdmark-code-line` の属性と `code` の `textContent` は変えない。色は `hljs-*` の class に CSS 変数 `--mdmark-color-syntax-{keyword,string,number,type,name,comment}` を適用する。`diff` の `hljs-addition`・`hljs-deletion` には、差分の行と同じ `--mdmark-color-diff-add-sign`・`--mdmark-color-diff-del-sign` を適用する。`[!code ++]`・`[!code --]` の行は、行の地の色と行頭の `+`・`-` を保ったまま行の中の文字を色分けする
@@ -7006,7 +7007,7 @@ constraints:
     notes: 実行の経路は PoC 検証（#306）で成立を確認した。変換のライブラリは外部ライブラリ『@babel/standalone』
   - item: 変換のライブラリの読み込み
     constraint: 描いた後に `ts`・`js` の範囲が 1 つ以上あるときだけ、`html-scripts.url` を `import()` で読み込み、既定のエクスポート（無ければモジュール）の `disableScriptTags` を呼んでから `transform` を使用する。同じ `mount` の中では 1 回だけ読み込む。読み込み終わる前に `update`・`destroy` したときは、前の描画の範囲を動かさない。読み込みの完了は待たずに `mount` を返却する。読み込めないときは `ts`・`js` の範囲の前に通知ブロック（本文の文言は画面設計『文書』）を配置する
-    decided_by: dev/設計書/外部ライブラリ/babel-standalone#
+    decided_by: LIB-472-6#
   - item: 列の並べ替え
     constraint: '`reorder` の表は、テーブル設定の一覧のつまみのドラッグ＆ドロップと、つまみにフォーカスした↑・↓ キー（1 つずつ動かし、フォーカスをつまみに残す）で列を動かし、一覧の順に見出しと全ての本文の行・集計の行のセルをもう一度並べる。一覧は結合した見出しの範囲（`data-group`）ごと・範囲の外の列に分け、同じ範囲の中だけで動かす。`table.pin` が `each` のときは、留めているかを列が持ったまま動かし、一覧を留めた列で分けない。`through` のときは、一覧の先頭に `pin=` で留めた列を分け（`pin=` が無い表の既定の先頭の列の留めでは分けない）、同じピン止めの側の中だけで動かす。範囲の外や `through` のピン止めの境をまたぐ位置にはドロップできる位置の線を出さず、どちらの向きにも動かせない列のつまみを `disabled` にする。見出しの並べ替え・ピン止め・絞り込みのボタンでは列を動かさない。行の並べ替え・絞り込み・再結合の後も動かした列の順を保ち、コピーは今の列の順で記載する。列の順は覚えず、再描画すると Markdown に記載した順に戻す'
   - item: 列の幅
@@ -7026,7 +7027,7 @@ constraints:
     notes: 外観は確認ログの案 C。モック `dev/mock/components/csv-table/`
   - item: コードブロックとファイルツリーの折り返し
     constraint: '配布物の CSS は、コードブロック（`.mdmark-code` の中の `pre`）とファイルツリーのリストを既定で折り返さず（`white-space` が `pre`・`nowrap`）、枠の中で横にスクロールさせる。この既定は mdmark の層の外に `.mdmark .mdmark-code pre` 以上の詳細度で配置し、利用側の要素名だけ・クラス 1 つの `pre` への汎用の CSS（`white-space: pre-wrap` など）で変えない。`mdmark-code-wrap` の `pre` は行を枠の幅で折り返し、行番号と行頭の `+`・`-` は折り返した行の 1 行目にだけ出し、インデントの縦線と折りたたみのボタンをずらさない。コピーの文字に折り返しの改行を入れない。`mdmark-tree-wrap` のツリーは、長い名前をアイコンの右の名前の列の中で折り返し、注釈は名前の下の行に名前の頭から出す。罫線と入れ子の位置は `wrap` の無いツリーと同じにする'
-    decided_by: dev/設計書/シナリオ/単一ユースケース/テーマを上書きする#scenarios[正常シナリオ（利用側の pre への汎用の CSS）]
+    decided_by: SC-472-25#scenarios[正常シナリオ（利用側の pre への汎用の CSS）]
     notes: 優先のさせ方は確認ログの決定（層の外に詳細度の高いセレクタ、推奨案 A）。外観はモック `dev/mock/refs/328/assets/wrap.css`
   - item: 図の高さのリサイズハンドル
     constraint: '`diagram-resize` がオンのとき、文書の中の図の部品（埋め込んだ HTML の中のチャートを含む）の表示する枠の右下に、`role="separator"`・`aria-orientation="horizontal"`・`tabindex="0"`・スクリーンリーダー向けの名前 `「{図の題名}」の表示の高さ` と、`aria-valuenow`・`aria-valuemin`・`aria-valuemax`（表示する枠の高さの px）を持つリサイズハンドルを配置する。ドラッグした分だけ表示する枠の高さを変え（幅は変えない）、フォーカスの間は `↑` で 32px 低く、`↓` で 32px 高くする。高さは 120px 以上、図の全体が今の倍率で収まる高さ以下にする。高さを変えたら今の倍率と位置は保ち、全体が収まる倍率（下限と倍率のボタンの戻し先）をもう一度求める。文書の中の図のこの倍率は、高さを変える前は幅だけ、変えた後は幅と変えた高さで決める。ダブルクリックで定義と `--mdmark-diagram-max-height` から決まる高さに戻す。変えた高さを図ごとのキーで sessionStorage に記載し、描くときに読み込んでその高さで開き、戻したらキーを削除する。sessionStorage を使用できないときは例外を外へ出さず、高さを保たない。全画面のモーダルの中と印刷では出さない。`update` でもう一度付け、`destroy` で受け取りを解除する'

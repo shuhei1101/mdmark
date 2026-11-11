@@ -1,3 +1,4 @@
+id: SC-472-55
 title: "文書の差分を確認する"
 scenarios:
   - name: 正常シナリオ

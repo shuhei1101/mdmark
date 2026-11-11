@@ -1,3 +1,4 @@
+id: IF-472-38
 title: "複数の文書を1枚のHTMLにまとめる"
 entry:
   kind: operation
@@ -196,7 +197,7 @@ flows:
       - 外への要求が 0 件
     test: test_normal_when_page_settings_per_document
     refs:
-      - dev/設計書/シナリオ/単一ユースケース/まとめたHTMLで文書を行き来する#scenarios[正常シナリオ（文書ごとのページの設定）]
+      - SC-472-13#scenarios[正常シナリオ（文書ごとのページの設定）]
   - name: 正常系（画像・動画・音声を埋める）
     summary: 2 つの文書が指す同じ画像を 1 回だけ埋め、動画・音声を出力の隣のフォルダへコピーする
     setup:
@@ -221,7 +222,7 @@ flows:
       - '`docs.html` と `docs_files/` だけを空のフォルダへコピーして file:// で開き、文書を移っても、ページ自身・`docs_files/` の下のファイルと画像の `data:` のほかの要求が 0 件'
     test: test_normal_when_media_embedded
     refs:
-      - dev/設計書/シナリオ/単一ユースケース/複数の文書を1枚のHTMLにまとめる#scenarios[正常シナリオ（画像・動画・音声を埋める）]
+      - SC-472-76#scenarios[正常シナリオ（画像・動画・音声を埋める）]
   - name: '正常系（blob: と動的 import を許さない環境で開く）'
     summary: 'まとめる全ての文書が使用するモジュールを 1 つのスクリプトにまとめて埋め、blob: と動的 import を許さない環境でも文書を移って描く'
     setup:
@@ -248,7 +249,7 @@ flows:
       - 開いてから文書を移った後までに、CSP の違反（`securitypolicyviolation`）が 0 件で、`blob:`・`data:` の URL のスクリプトへの要求が 0 件
     test: test_normal_when_blob_and_dynamic_import_blocked
     refs:
-      - 'dev/設計書/シナリオ/単一ユースケース/複数の文書を1枚のHTMLにまとめる#scenarios[正常シナリオ（blob: と動的 import を許さない環境で開く）]'
+      - 'SC-472-76#scenarios[正常シナリオ（blob: と動的 import を許さない環境で開く）]'
   - name: 正常系（範囲のスクリプトと CSS）
     summary: 範囲の `ts` を変換してまとめ、文書を移るときに範囲の `destroy` を呼ぶ
     setup:
@@ -273,7 +274,7 @@ flows:
       - 開いてから文書を移り終えるまでに、CSP の違反が 0 件で、`blob:` の URL への要求が 0 件
     test: test_normal_when_range_scripts
     refs:
-      - dev/設計書/シナリオ/単一ユースケース/複数の文書を1枚のHTMLにまとめる#scenarios[正常シナリオ（範囲のスクリプトと CSS）]
+      - SC-472-76#scenarios[正常シナリオ（範囲のスクリプトと CSS）]
   - name: 正常系（取り込みとアイコンを埋める）
     summary: まとめる文書の取り込み先とまとめていない名前のアイコンの形状を埋め、外へ要求せずに描く
     setup:
@@ -298,7 +299,7 @@ flows:
       - 描き終えるまでに外への要求が 0 件
     test: test_normal_when_includes_and_icons
     refs:
-      - dev/設計書/シナリオ/単一ユースケース/複数の文書を1枚のHTMLにまとめる#scenarios[正常シナリオ（取り込みとアイコンを埋める）]
+      - SC-472-76#scenarios[正常シナリオ（取り込みとアイコンを埋める）]
   - name: 正常系（mermaid のコードブロック）
     summary: まとめる文書のどれかに mermaid のコードブロックがあるときだけ mermaid を 1 回まとめて埋める
     setup:
@@ -353,7 +354,7 @@ flows:
       - 外への要求が 0 件
     test: test_normal_when_back_forward_restore_scroll
     refs:
-      - dev/設計書/シナリオ/単一ユースケース/まとめたHTMLで文書を行き来する#scenarios[正常シナリオ（戻る・進むで離れたときの位置に戻る）]
+      - SC-472-13#scenarios[正常シナリオ（戻る・進むで離れたときの位置に戻る）]
   - name: 正常系（再読み込みで離れたときの位置に戻る）
     summary: 開いている文書をスクロールして再読み込みすると、再読み込みの前の位置で描く
     setup:
@@ -374,7 +375,7 @@ flows:
       - 再読み込みの後、a.md が描かれ、`scrollY` が 3000（±1px）
     test: test_normal_when_reload_restore_scroll
     refs:
-      - dev/設計書/シナリオ/単一ユースケース/まとめたHTMLで文書を行き来する#scenarios[正常シナリオ（再読み込みで離れたときの位置に戻る）]
+      - SC-472-13#scenarios[正常シナリオ（再読み込みで離れたときの位置に戻る）]
   - name: 正常系（戻るで開閉と選んだタブを戻す）
     summary: 開閉と group= の無いタブを変えてから移り、戻ると開閉とタブを戻してから位置を戻す
     setup:
@@ -403,7 +404,7 @@ flows:
       - localStorage に `mdmark-tabs:` で始まるキーが無い
     test: test_normal_when_back_restore_folds_and_tabs
     refs:
-      - dev/設計書/シナリオ/単一ユースケース/まとめたHTMLで文書を行き来する#scenarios[正常シナリオ（戻る・進むで開閉と選んだタブを戻す）]
+      - SC-472-13#scenarios[正常シナリオ（戻る・進むで開閉と選んだタブを戻す）]
   - name: 正常系（sessionStorage が使えない）
     summary: sessionStorage を取り出せないページでは、戻るで文書の頭から描き、例外を出さない
     setup:
@@ -426,7 +427,7 @@ flows:
       - '`pageerror` が 0 件で、`console.warn` に表示の状態を保存できなかった旨が出る'
     test: test_normal_when_session_storage_unavailable
     refs:
-      - dev/設計書/シナリオ/単一ユースケース/まとめたHTMLで文書を行き来する#scenarios[異常シナリオ（sessionStorage が使えない）]
+      - SC-472-13#scenarios[異常シナリオ（sessionStorage が使えない）]
   - name: 正常系（文書を切り替えると map のクエリ文字列を消す）
     summary: map のグループの中へ入った文書から文書の一覧で別の文書へ移ると、クエリ文字列の `map-*` を消し、移った先の図を全体から描く
     setup:
@@ -450,24 +451,24 @@ flows:
       - '`map-` 以外のクエリ文字列のキーは変わらない'
     test: test_normal_when_switch_clears_map_query
     refs:
-      - dev/設計書/シナリオ/単一ユースケース/図のグループの中へ入る・開閉する#scenarios
+      - SC-472-39#scenarios
   - name: 正常系（map の設定）
     summary: 設定の `map` を埋める設定にコピーし、まとめた全ての文書の map の図を設定の種類と線で描く
     setup:
-    - name: map の設定
-      description: '`map.kinds` に `store`（`label: 保存先`・`icon: database`・`shape: rect`・`color: purple`）、`map.lines` に `-.->`（`dash: dashed`）、`map.node_fit: width` を持つ設定と、`entry` の `a.md` と `b.md` がそれぞれ `:::store` のノードを持つ map の範囲を 1 つ持つフォルダ'
-    - name: Mock
-      description: 正常系と同じ
+      - name: map の設定
+        description: '`map.kinds` に `store`（`label: 保存先`・`icon: database`・`shape: rect`・`color: purple`）、`map.lines` に `-.->`（`dash: dashed`）、`map.node_fit: width` を持つ設定と、`entry` の `a.md` と `b.md` がそれぞれ `:::store` のノードを持つ map の範囲を 1 つ持つフォルダ'
+      - name: Mock
+        description: 正常系と同じ
     flow: "sequenceDiagram\n  actor W as 文書の作成者\n  participant C as mdmark CLI\n  participant H as まとめた HTML\n  W->>C: mdmark build\n  C->>H: map をコピーした設定を埋めて 1 枚の HTML を書き込む\n  W->>H: a.md を開き、文書の一覧で b.md へ移る\n  H-->>W: どちらの文書も設定の種類と線で map の図を描く"
     expected:
-    - 終了コードが 0
-    - a.md と b.md のどちらでも、`:::store` のノードの種類の行に `database` のアイコンと「保存先」がある
+      - 終了コードが 0
+      - a.md と b.md のどちらでも、`:::store` のノードの種類の行に `database` のアイコンと「保存先」がある
     test: test_normal_when_map_config
 lead: 文書の作成者が設定の `build` で決めた文書を、参照・被参照・用語のツールチップが有効になり、文書を行き来できる 1 枚の HTML にまとめる。埋めるものと外へ要求しないことはインターフェース定義『文書をHTMLに書き出す』と同じ。
 idempotent: true
 side_effects: '`build.out` に HTML を書き込む（既にあれば上書きする）。文書が指す動画・音声を、`build.out` の隣の `_files/` のフォルダへコピーする。文書が使用する外部ライブラリの URL の先を読み込む。書き出した HTML を開いたページでは、`history.scrollRestoration` を `manual` にし、履歴の項目ごとの表示の状態を sessionStorage に記載する'
 callers:
-  - dev/設計書/シナリオ/単一ユースケース/複数の文書を1枚のHTMLにまとめる#
+  - SC-472-76#
 request:
   - name: --config
     type: string
@@ -513,48 +514,48 @@ exceptions:
 constraints:
   - item: まとめる文書
     constraint: '`build.include` の glob に該当し `build.exclude` に該当しない `.md` のファイル。並びは glob の並び、同じ glob の中はパスの順で、重なりは最初の 1 つだけを残す。文書のパスは設定ファイルのあるフォルダからの相対パス（区切りは `/`）'
-    decided_by: dev/設計書/設定/ライブラリ本体#settings[build.include]
+    decided_by: CFG-472-3#settings[build.include]
   - item: 文書間のリンク
     constraint: まとめる文書への相対リンク（フロー図のノードのリンク先を含む）は、開いたとき 1 枚の中の文書へ移る。それ以外の文書への相対リンクは記載したままの `href` で残し、リンクを持つ文書とリンク先を警告に出す
     notes: 1 枚の中の文書を指す URL の記載方法は画面設計で決める
   - item: 参照の表
     constraint: 設定に `index` があるとき、索引と索引の `docs` の文書を `collectReferences` に指定して作った参照の表を埋め、索引にある文書はその `id` を `mount` の `docId` に指定する
-    decided_by: dev/設計書/インターフェース定義/ライブラリ本体/参照の表を作る.ts#
+    decided_by: IF-472-31#
   - item: 用語集の文書
     constraint: '`build.glossary` の文書の用語集の表の用語を、まとめた全ての文書で有効にしる（索引が無いときも）。まとめる文書に該当しないパスは飛ばして警告に出す'
-    decided_by: dev/設計書/設定/ライブラリ本体#settings[build.glossary]
+    decided_by: CFG-472-3#settings[build.glossary]
   - item: 最初に開く文書
     constraint: '`build.entry`。無いかまとめる文書に該当しないときは、まとめる文書の最初の 1 つ（該当しないときは警告に出す）'
-    decided_by: dev/設計書/設定/ライブラリ本体#settings[build.entry]
+    decided_by: CFG-472-3#settings[build.entry]
   - item: 埋めるもの
     constraint: インターフェース定義『文書をHTMLに書き出す』と同じ。外部ライブラリ・部品・色分けの言語はまとめる文書のどれかが使用するものだけを、同じものは 1 つだけ、1 つのスクリプトにまとめて埋める。画像・動画・音声はそれぞれの文書のフォルダを基準に探し、無ければ `assets.root` で探す。複数の文書が指す同じ画像は 1 回だけ埋め、文書からは同じ埋めた画像を指す。動画・音声は `build.out` と同じフォルダの `{build.out のファイル名から拡張子を除いた名前}_files/` へ、同じファイルを 1 回だけ、HTML を書き込む前にコピーする
-    decided_by: dev/設計書/インターフェース定義/ライブラリ本体/文書をHTMLに書き出す.ts#
+    decided_by: IF-472-33#
   - item: 外部への要求
     constraint: 開いてから、文書を移っても、ページ自身・`_files/` の下にコピーした動画と音声と画像の `data:` のほかへ要求しない
-    decided_by: dev/設計書/非機能要件/非機能要件#requirements[書き出した HTML の外部への要求]
+    decided_by: NFR-472-1#requirements[書き出した HTML の外部への要求]
   - item: 文書の数
     constraint: 制限なし
   - item: 動く Node のバージョン
     constraint: Node 24 以降
-    decided_by: dev/設計書/非機能要件/非機能要件#requirements[CLI が動く Node のバージョン]
+    decided_by: NFR-472-1#requirements[CLI が動く Node のバージョン]
   - item: 取り込みとアイコン
     constraint: インターフェース定義『文書をHTMLに書き出す』の制約「埋める取り込み」「埋めるアイコン」と同じ。取り込む文書の表はまとめる文書ごとに、その文書のフォルダからのパスをキーにして作る。取り込み先が `build` の対象外のファイルでも、設定ファイルのフォルダの中なら読み込んで埋め、文書の一覧には出さない。同じファイルの本文と同じ名前のアイコンの形状は 1 回だけ埋める
   - item: 文書ごとのページの設定
     constraint: 文書の page のマーカーは各文書の本文に残して埋め、開いた文書を `mount`（`update`）で描くときにその文書のマーカーで明暗・テーマ・右側の目次の出し方をもう一度決める。マーカーを持たない文書は、埋めた設定の `colorScheme`・`colorTheme`・`side-toc.mode` で描く
-    decided_by: dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[ページの設定のマーカー]
+    decided_by: IF-472-35#constraints[ページの設定のマーカー]
   - item: 埋める mermaid
     constraint: 文書をHTMLに書き出す.ts の制約「埋める mermaid」と同じ。まとめる文書のどれかに mermaid のコードブロックがあるときだけ、mermaid を 1 回埋める
-    decided_by: dev/設計書/非機能要件/非機能要件#requirements[mermaid を埋めた書き出しの HTML のサイズ]
+    decided_by: NFR-472-1#requirements[mermaid を埋めた書き出しの HTML のサイズ]
   - item: 戻る・進む・再読み込みの表示の状態
     constraint: 書き出した HTML は開いたとき `history.scrollRestoration` を `manual` にし、履歴の項目ごとに、縦横のスクロール位置・本文の開閉（`<details>`・セクション・行の詳細・最終列の畳み・コードの行の畳み・ER 図の畳み・ファイルツリーのフォルダ・表のツリーと見本）・`group=` の無いタブで選んだタブを保存する。保存するのは `popstate`・文書の一覧と文書間のリンクのクリック・`pagehide`・間引いたスクロールのとき。戻る・進む・再読み込みで保存した状態を持つ項目へ戻ったときは、文書を描いた後に開閉とタブを戻してから位置を戻す。保存した状態を持たない項目（文書の一覧・文書間のリンクで新しく移った項目）は、今どおり見出しか文書の頭から描く
     notes: 表のメニュー・ドロワー・絞り込み、右側の目次、差分のパネル、コメントの吹き出しは戻さない。位置は URL に出さない
   - item: 表示の状態の保存先
     constraint: sessionStorage。キーは履歴の項目ごとに振る ID（`history.state` に持たせる）を含む。sessionStorage を取り出せない・書き込めないときは `console.warn` に出し、保存した状態を持たない項目と同じく描く
-    decided_by: dev/設計書/シナリオ/単一ユースケース/まとめたHTMLで文書を行き来する#scenarios[異常シナリオ（sessionStorage が使えない）]
+    decided_by: SC-472-13#scenarios[異常シナリオ（sessionStorage が使えない）]
   - item: map のクエリ文字列
     constraint: 文書の一覧と文書間のリンクで別の文書へ移るときは、クエリ文字列から `map-` で始まるキーを消してから移る。戻る・進む・再読み込みでは消さず、移った先の文書の map の図は sessionStorage の状態で描く
-    decided_by: dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[map の状態の保存]
+    decided_by: IF-472-35#constraints[map の状態の保存]
   - item: map の設定
     constraint: 文書をHTMLに書き出す.ts の制約「map の設定」と同じ
-    decided_by: dev/設計書/インターフェース定義/ライブラリ本体/文書をHTMLに書き出す.ts#constraints[map の設定]
+    decided_by: IF-472-33#constraints[map の設定]
 test_file: tests/integration/lib/bundle.test.ts

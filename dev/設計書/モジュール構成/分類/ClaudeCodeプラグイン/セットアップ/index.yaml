@@ -1,0 +1,4 @@
+summary: セットアップ の設計書
+items:
+  - page: 全体.yaml
+    summary: '`global-setup`・`setup` のスキルが Bash で呼ぶ `plugin/bin/setup.js` のサブコマンド（`status`・`keys`・`write-settings`・`start-server`・`write-config`）と、スキルの本文。'

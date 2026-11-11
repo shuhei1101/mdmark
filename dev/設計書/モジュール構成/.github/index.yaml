@@ -1,0 +1,4 @@
+summary: .github の設計書
+items:
+  - page: workflows/
+    summary: workflows の設計書

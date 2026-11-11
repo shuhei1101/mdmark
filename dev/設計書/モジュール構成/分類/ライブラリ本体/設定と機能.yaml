@@ -1,0 +1,13 @@
+id: MOD-472-44
+title: ライブラリ本体 / 設定と機能
+lead: 利用側が指定する設定に既定を適用する処理と、設定の `features` に文書の `features` のマーカーを重ねて機能のオン・オフを決める処理。どちらも DOM に頼らず、ブラウザと Node で動く。
+directory: |-
+  ```tree
+  src/
+  ├── config.ts    # 設定の型・既定・既定を適用する resolveConfig・ページの設定を重ねる applyPageSettings
+  └── features.ts  # 文書のマーカーを重ねる resolveFeatures
+  schemas/
+  └── mdmark.config.schema.json  # 設定の JSON Schema
+  ```
+notes:
+  設定の Schema: '`schemas/mdmark.config.schema.json`（draft 2020-12）は設定の設計書の `settings` と同じキーと型を持つ。`features` は値が真偽値のオブジェクト、`libraries` はキーが `MARK_NAME_PATTERN`（`propertyNames.pattern`）で値が文字列のオブジェクト。`features.syntax` は真偽値、`syntax` は `url`（文字列）を持つオブジェクト。`side-toc` は `mode`（`hover` / `fixed` の列挙）を持つオブジェクト。`colorTheme` は文字列（知らない名前は Schema で拒まず、`mdmark check` が `unknown_color_theme` で返却する）。`colorScheme` も文字列（知らない値は `unknown_color_scheme` で返却する）。`labels` は `paramCopy`（`minLength: 1` の文字列）を持つオブジェクト。Schema を変えたら `migrations/no-steps.yaml` に `version: next` の行を配置する。他の Issue が追加するキーを拒まないよう、最上位は `additionalProperties` を許す'

@@ -1,0 +1,17 @@
+id: MOD-472-342
+title: ライブラリ本体 / 部品の描画 / preview.tsx
+constants:
+  - name: previewConfig
+    title: ストーリーの既定
+    container: .storybook/preview.tsx
+    summary: '`export default` する `Preview`'
+    value: '`{ server: { url, fetchStoryHtml } }`'
+    entries:
+      - key: decorators
+        value: '`[withServerHtml, withVsCodeTheme]`'
+      - key: loaders
+        value: '`[mswLoader(startWorker)]`（`msw-storybook-addon/csf3` の `mswLoader`。`startWorker` は `msw/browser` の `setupWorker()` を `start({ quiet: true, onUnhandledFrame: "bypass" })` で始めて返却する）'
+      - key: globalTypes.scheme
+        value: '`light`・`dark`（既定 `light`。`VSCode/*` のストーリーの配色）'
+      - key: parameters.a11y
+        value: '`{ test: "error" }`（addon-a11y の違反をストーリーの失敗にする）'

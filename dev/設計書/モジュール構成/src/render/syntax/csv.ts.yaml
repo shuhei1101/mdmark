@@ -1,0 +1,60 @@
+id: MOD-472-301
+title: ライブラリ本体 / 記法 / csv.ts
+test_files:
+  - tests/unit/src/render/syntax/csv.test.ts
+functions:
+  - name: parseCsv
+    title: CSV を読み込む
+    container: src/render/syntax/csv.ts
+    kind: 関数
+    scope: internal
+    summary: RFC 4180 の決まり（区切り `,`、`"` で囲んだ値の中の `,` と改行、`""` は `"`、改行は LF か CRLF）で 1 回走査して行と値に分ける。末尾の改行は行にしない
+    args:
+      - name: text
+        type: string
+        required: true
+        description: コードブロックの中身
+    returns:
+      type: string[][]
+      description: 行ごとの値の並び
+    unit_tests:
+      - name: test_parse_csv
+        case: 正常
+        condition: '`a,"b, c","d""e"` と CRLF と `x,"y\nz",1` と末尾の改行'
+        expected: '`[["a","b, c","d\"e"],["x","y\nz","1"]]`'
+        mock: なし
+        summary: 引用符の中の区切り・改行・`""` を読み込む
+      - name: test_parse_csv_when_empty_values
+        case: 正常
+        condition: '`a,,c` と `,` だけの行'
+        expected: '`[["a","","c"],["",""]]`'
+        mock: なし
+        summary: 空の値を残す
+  - name: buildCsvTables
+    title: CSV の表にする
+    container: src/render/syntax/csv.ts
+    kind: 関数
+    scope: internal
+    summary: コアルール（表のマーカーのルールより前）。`csv` がオンなら、情報文字列の最初の単語がちょうど `csv` で中身が空でない `fence` を `parseCsv` で読み込み、1 行目を見出しにした表のトークン（値は `text`）に置き換え、元の CSV を `rawCsv` として表のマーカーの処理へ指定する。列の数が見出しと違う行はそろえて、その行番号の記載の警告を表の前に差し込む
+    args:
+      - name: state
+        type: StateCore
+        required: true
+        description: markdown-it の状態
+    side_effects: '`state.tokens` を書き換える'
+    callees:
+      - '#functions[parseCsv]'
+      - 'MOD-472-268#functions[decorateTables]'
+    unit_tests:
+      - name: test_build_csv_tables
+        case: 正常
+        condition: 表のマーカー `data` で囲んだ `csv` と、囲まない `csv` と、`text` と、空の `csv`
+        expected: '`data-kind="data"` と `data-kind="default"` の `data-source="csv"` の表とその後ろの `pre.mdmark-raw[hidden]`、`text` と空の `csv` はコードブロック'
+        mock: なし
+        summary: csv だけを表にし、元の CSV を添える
+      - name: test_build_csv_tables_when_columns_mismatch
+        case: 異常
+        condition: 見出しが 3 列、2 行目が 2 列、3 行目が 4 列
+        expected: 表の前に行番号 `2`・`3` の記載の警告があり、表は 3 列で 2 行目の 3 列目が空
+        mock: なし
+        summary: 列の数を見出しにそろえて警告する

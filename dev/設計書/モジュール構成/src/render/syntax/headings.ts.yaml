@@ -1,0 +1,86 @@
+id: MOD-472-279
+title: ライブラリ本体 / 記法 / headings.ts
+test_files:
+  - tests/unit/src/render/syntax/headings.test.ts
+functions:
+  - name: slugify
+    title: 見出しの ID を作る
+    container: src/render/syntax/headings.ts
+    kind: 関数
+    scope: internal
+    summary: '`slugBase`（作れないときは `heading`）で見出しの文字から ID を作り、使用済みの ID には `-1`・`-2` を付ける'
+    args:
+      - name: text
+        type: string
+        required: true
+        description: 見出しの文字（タグを除いたもの）
+      - name: used
+        type: Map<string, number>
+        required: true
+        description: 文書の中で使用した ID と回数
+    returns:
+      type: string
+      description: 見出しの ID
+    side_effects: '`used` を書き換える'
+    unit_tests:
+      - name: test_slugify
+        case: 正常
+        summary: 小文字にし、記号を落とし、空白を `-` にする
+        condition: '`Hello, World!` と `使用方法`'
+        mock: なし
+        expected: '`hello-world` と `使用方法`'
+      - name: test_slugify_when_duplicated
+        case: 正常
+        summary: 同じ ID の 2 つ目から番号を付ける
+        condition: '`使用方法` を 3 回'
+        mock: なし
+        expected: '`使用方法`・`使用方法-1`・`使用方法-2`'
+  - name: assignHeadingIds
+    title: 見出しに ID とアンカーを付ける
+    container: src/render/syntax/headings.ts
+    kind: 関数
+    scope: internal
+    summary: コアルール。脚注の定義の囲みの外（`outsideFootnoteDefinitions`。定義の中の見出しを目次と右側の目次に記載しないため）の全ての `heading_open` に `slugify` の ID を付け、`anchors` がオンなら見出しの中にアンカーを追加する。見出しの ID と文字を `env.headings` に追加する。class `mdmark-heading` は `wrapSections` が h2〜h4 に付ける
+    args:
+      - name: state
+        type: StateCore
+        required: true
+        description: markdown-it の状態（`state.env` は `RenderEnv`）
+    side_effects: '`state.tokens` と `env.headings` を書き換える'
+    callees:
+      - '#functions[slugify]'
+      - 'MOD-472-274#functions[outsideFootnoteDefinitions]'
+    unit_tests:
+      - name: test_assign_heading_ids
+        case: 正常
+        summary: 見出しに ID とアンカーを付ける
+        condition: '`# Hello, World!` と `## 使用方法` を 2 つ'
+        mock: なし
+        expected: '`id` が `hello-world`・`使用方法`・`使用方法-1` で、各見出しに `<a class="mdmark-anchor" href="#{ID}" aria-label="「{文字}」へのリンク">`'
+      - name: test_assign_heading_ids_when_anchors_off
+        case: 正常
+        summary: anchors がオフでも ID は付け、アンカーは付けない
+        condition: '`env.features.anchors` が `false`'
+        mock: なし
+        expected: '`id` があり、`mdmark-anchor` が無い'
+  - name: slugBase
+    title: ID の元を作る
+    container: src/render/syntax/headings.ts
+    kind: 関数
+    scope: internal
+    summary: GitHub と同じ規則で文字を ID の元にする（小文字にし、英数字・`-`・`_`・空白と英字以外の文字のほかを落とし、空白を `-` にする）。`slugify` と `rowIdOf` が使用する
+    args:
+      - name: text
+        type: string
+        required: true
+        description: 文字（タグを除いたもの）
+    returns:
+      type: string
+      description: ID の元。作れないときは空文字
+    unit_tests:
+      - name: test_slug_base
+        case: 正常
+        summary: 見出しと同じ規則で ID の元にする
+        condition: '`Hello, World!`・`使用方法`・`!!!`'
+        mock: なし
+        expected: '`hello-world`・`使用方法`・空文字'

@@ -1,3 +1,4 @@
+id: SC-472-63
 title: "比較元のMarkdownを指定して変更を強調する"
 scenarios:
   - name: 正常シナリオ

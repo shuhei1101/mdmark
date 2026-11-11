@@ -1,3 +1,4 @@
+id: IF-472-42
 title: "雛形を配置する"
 entry:
   kind: operation
@@ -91,8 +92,8 @@ lead: 文書の作成者が、設定・利用側の CSS・索引・拡張の雛�
 idempotent: true
 side_effects: 配置先のフォルダに、無い雛形のファイルとフォルダを書き込む
 callers:
-  - dev/設計書/シナリオ/単一ユースケース/雛形を配置する#
-  - dev/設計書/シナリオ/単一ユースケース/追加するJavaScriptを型で点検する#
+  - SC-472-83#
+  - SC-472-79#
 request:
   - name: '{配置先のフォルダ}'
     type: string
@@ -141,8 +142,8 @@ constraints:
     constraint: 配置した `mdmark.config.yaml` と `index.yaml` は、`schemas/mdmark.config.schema.json` と `schemas/mdmark.index.schema.json` に合う
   - item: 動く Node のバージョン
     constraint: Node 24 以降
-    decided_by: dev/設計書/非機能要件/非機能要件#requirements[CLI が動く Node のバージョン]
+    decided_by: NFR-472-1#requirements[CLI が動く Node のバージョン]
   - item: 設定のバージョン
     constraint: 配置する `mdmark.config.yaml` の `version` は、ビルドが呼んだ CLI に埋めたバージョン。`templates/mdmark.config.yaml` の `version` の値を配置するときに置き換える
-    decided_by: dev/設計書/設定/ライブラリ本体#settings[version]
+    decided_by: CFG-472-3#settings[version]
 test_file: tests/integration/lib/init.test.ts

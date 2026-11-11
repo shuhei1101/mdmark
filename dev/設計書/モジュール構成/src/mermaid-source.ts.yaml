@@ -1,0 +1,242 @@
+id: MOD-472-144
+title: ライブラリ本体 / mermaid / mermaid-source.ts
+test_files:
+  - tests/unit/src/mermaid-source.test.ts
+data_models:
+  - name: MermaidSource
+    title: mermaid のソースの読み取り
+    container: src/mermaid-source.ts
+    usecase: mermaidの図を描く
+    summary: '`splitMermaidTitle` の戻り値'
+    properties:
+      - name: title
+        type: string | undefined
+        description: front matter の `title`、無ければ `accTitle` の値。どちらも無ければ持たない
+      - name: body
+        type: string
+        description: mermaid の `render` に指定するソース。front matter から `title` の行を除き、ほかの行が無ければ front matter ごと除く
+      - name: kind
+        type: string
+        description: 図の種類の行の最初の単語（`flowchart`・`sequenceDiagram` など）。無ければ空
+constants:
+  - name: MERMAID_KIND_NAMES
+    title: 図の種類の名前
+    container: src/mermaid-source.ts
+    summary: タイトルが無いときに図の枠のタイトルにする、図の種類の行の最初の単語から参照する名前。表に無い単語は `図`
+    entries:
+      - key: flowchart
+        value: フローチャート
+      - key: graph
+        value: フローチャート
+      - key: sequenceDiagram
+        value: シーケンス図
+      - key: classDiagram
+        value: クラス図
+      - key: stateDiagram
+        value: 状態遷移図
+      - key: stateDiagram-v2
+        value: 状態遷移図
+      - key: erDiagram
+        value: ER 図
+      - key: gantt
+        value: ガントチャート
+      - key: pie
+        value: 円グラフ
+    refs:
+      - IF-472-35#constraints[mermaid の描き方]
+  - name: MERMAID_THEME_COLORS
+    title: テーマの変数と CSS 変数の対応表
+    container: src/mermaid-source.ts
+    summary: テーマ `mdmark` で、mermaid の `base` テーマの変数ごとに元にする mdmark の CSS 変数。値はモック `dev/mock/refs/382/assets/mermaid.js` の `COLOR_VARIABLES`（確認ログのモックへの合意）
+    entries:
+      - key: background
+        value: --mdmark-color-bg
+      - key: primaryColor
+        value: --mdmark-color-surface
+      - key: primaryTextColor
+        value: --mdmark-color-text
+      - key: primaryBorderColor
+        value: --mdmark-color-border
+      - key: secondaryColor
+        value: --mdmark-color-surface
+      - key: tertiaryColor
+        value: --mdmark-color-bg
+      - key: lineColor
+        value: --mdmark-color-diagram-line
+      - key: textColor
+        value: --mdmark-color-text
+      - key: noteBkgColor
+        value: --mdmark-color-surface
+      - key: noteTextColor
+        value: --mdmark-color-text
+      - key: noteBorderColor
+        value: --mdmark-color-border
+      - key: actorBkg
+        value: --mdmark-color-surface
+      - key: actorBorder
+        value: --mdmark-color-border
+      - key: actorTextColor
+        value: --mdmark-color-text
+      - key: actorLineColor
+        value: --mdmark-color-border
+      - key: signalColor
+        value: --mdmark-color-text
+      - key: signalTextColor
+        value: --mdmark-color-text
+      - key: edgeLabelBackground
+        value: --mdmark-color-bg
+      - key: titleColor
+        value: --mdmark-color-heading
+      - key: pie1〜pie6
+        value: --mdmark-color-series-1〜--mdmark-color-series-6
+        description: 円グラフの扇形をグラフの系列の色で分ける
+      - key: pieStrokeColor
+        value: --mdmark-color-bg
+      - key: pieOuterStrokeColor
+        value: --mdmark-color-border
+      - key: pieTitleTextColor
+        value: --mdmark-color-heading
+      - key: pieSectionTextColor
+        value: --mdmark-color-bg
+      - key: pieLegendTextColor
+        value: --mdmark-color-text
+      - key: mainBkg
+        value: --mdmark-color-surface
+      - key: nodeBorder
+        value: --mdmark-color-border
+      - key: clusterBkg
+        value: --mdmark-color-surface
+      - key: clusterBorder
+        value: --mdmark-color-border
+      - key: stateBkg
+        value: --mdmark-color-surface
+      - key: stateBorder
+        value: --mdmark-color-border
+      - key: stateLabelColor
+        value: --mdmark-color-text
+      - key: transitionColor
+        value: --mdmark-color-diagram-line
+      - key: specialStateColor
+        value: --mdmark-color-text
+        description: 状態遷移図の開始と終了のマーカーを本文の色にする
+      - key: innerEndBackground
+        value: --mdmark-color-text
+      - key: labelBackgroundColor
+        value: --mdmark-color-bg
+      - key: compositeBackground
+        value: --mdmark-color-bg
+      - key: attributeBackgroundColorOdd
+        value: --mdmark-color-bg
+      - key: attributeBackgroundColorEven
+        value: --mdmark-color-surface
+      - key: rowOdd
+        value: --mdmark-color-bg
+        description: ER 図の属性の行を地と面の色で交互に塗る
+      - key: rowEven
+        value: --mdmark-color-surface
+      - key: relationColor
+        value: --mdmark-color-diagram-line
+      - key: relationLabelBackground
+        value: --mdmark-color-bg
+      - key: relationLabelColor
+        value: --mdmark-color-text
+      - key: todayLineColor
+        value: --mdmark-color-link
+        description: ガントチャートの今日の線は、リンクと同じ強い色の 1 色
+      - key: gridColor
+        value: --mdmark-color-border
+      - key: sectionBkgColor
+        value: --mdmark-color-surface
+      - key: sectionBkgColor2
+        value: --mdmark-color-bg
+      - key: altSectionBkgColor
+        value: --mdmark-color-bg
+      - key: taskBkgColor
+        value: --mdmark-color-surface
+      - key: taskBorderColor
+        value: --mdmark-color-border
+      - key: taskTextColor・taskTextDarkColor・taskTextLightColor・taskTextOutsideColor
+        value: --mdmark-color-text
+      - key: activeTaskBkgColor
+        value: --mdmark-color-bg
+      - key: activeTaskBorderColor
+        value: --mdmark-color-link
+      - key: doneTaskBkgColor
+        value: --mdmark-color-border
+      - key: doneTaskBorderColor
+        value: --mdmark-color-border
+      - key: critBkgColor
+        value: --mdmark-color-bg
+      - key: critBorderColor
+        value: --mdmark-color-callout-caution
+    refs:
+      - IF-472-35#constraints[mermaid のテーマ]
+  - name: MERMAID_FIXED_THEME_VARIABLES
+    title: どのテーマでも固定する変数
+    container: src/mermaid-source.ts
+    summary: 'どのテーマでも `themeVariables` の最後に重ね、設定の `themeVariables` でも変えさせない値。`{ useGradient: false, dropShadow: "none" }`。テーマ `mdmark` だけはさらに `pieOpacity: "1"`（円グラフの扇形を凡例と同じ不透明な色で塗る）を対応表の値に追加する'
+    value: '{ useGradient: false, dropShadow: "none" }'
+    reason: デザイン方針の「使用しないもの」（影・グラデーション）
+functions:
+  - name: splitMermaidTitle
+    title: タイトルを取り出す
+    container: src/mermaid-source.ts
+    kind: 関数
+    scope: internal
+    usecase: mermaidの図を描く
+    summary: 'ソースの先頭の front matter（`---` の行で囲んだ範囲）の `title:` の値を取り出してその行を除く。front matter に `title` が無ければ、`accTitle:` の行の値を取る（`accTitle` の行は残す）。図の種類の行の最初の単語を `kind` にする'
+    args:
+      - name: source
+        type: string
+        required: true
+        description: mermaid のコードブロックの中身
+    returns:
+      type: MermaidSource
+      description: タイトル・`render` に指定するソース・図の種類の単語
+    unit_tests:
+      - name: test_split_mermaid_title
+        case: 正常
+        summary: front matter の title を取り出し、ほかの行が無ければ front matter ごと除く
+        condition: "`---\\ntitle: 問い合わせの受付\\n---\\nflowchart LR\\n  A --> B`"
+        mock: なし
+        expected: "`{ title: \"問い合わせの受付\", body: \"flowchart LR\\n  A --> B\", kind: \"flowchart\" }`"
+      - name: test_split_mermaid_title_when_other_keys
+        case: 正常
+        summary: title のほかの front matter の行は残す
+        condition: "`---\\ntitle: 受付\\nconfig:\\n  look: classic\\n---\\nflowchart LR`"
+        mock: なし
+        expected: "`body` が `---\\nconfig:\\n  look: classic\\n---\\nflowchart LR`"
+      - name: test_split_mermaid_title_when_acc_title
+        case: 正常
+        summary: front matter が無ければ accTitle の値を取り、行は残す
+        condition: "`sequenceDiagram\\n  accTitle: 文書を描く\\n  A->>B: x`"
+        mock: なし
+        expected: '`title` が `文書を描く`、`body` が指定したソースのまま、`kind` が `sequenceDiagram`'
+      - name: test_split_mermaid_title_when_none
+        case: 正常
+        summary: どちらも無ければ title を持たない
+        condition: "`classDiagram\\n  class A`"
+        mock: なし
+        expected: '`title` が `undefined`、`kind` が `classDiagram`'
+  - name: mermaidKindName
+    title: 図の種類の名前を参照する
+    container: src/mermaid-source.ts
+    kind: 関数
+    scope: internal
+    usecase: mermaidの図を描く
+    summary: '`MERMAID_KIND_NAMES` を `Object.hasOwn` で引き、無ければ `図` を返却する'
+    args:
+      - name: kind
+        type: string
+        required: true
+        description: '`splitMermaidTitle` の `kind`'
+    returns:
+      type: string
+      description: 図の種類の名前
+    unit_tests:
+      - name: test_mermaid_kind_name
+        case: 正常
+        summary: 表の単語は名前に、表に無い単語と継承した名前は `図` にする
+        condition: '`stateDiagram-v2`・`journey`・`constructor`'
+        mock: なし
+        expected: '`状態遷移図`・`図`・`図`'

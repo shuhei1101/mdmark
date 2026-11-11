@@ -1,3 +1,4 @@
+id: CMP-472-25
 title: "ビュー"
 implementation: "src/parts/view.ts#renderView"
 story: "Parts/View"
@@ -220,7 +221,7 @@ css_properties:
     default: 12rem
     description: ボードの列の最小の幅。描く先の幅に収まらない列はボードの中で横にスクロールする
 uses:
-  - component: dev/設計書/部品設計/表.ts#
+  - component: CMP-472-61#
     how: 表形式。`kind` は `data`、`features` は `sort` と、`filters` があれば `filter`
 accessibility:
   - 切り替えは `role="group"`・`aria-label="ビューの表示"` の中の `button` で、選んだボタンを `aria-pressed="true"` で示す。選んだボタンは濃い地で塗り、色だけに頼らない
@@ -230,9 +231,9 @@ accessibility:
   - ボードにできないとき、ボードのボタンは `disabled` で、`aria-describedby` で理由の記載の警告を指す
   - 表形式のアクセシビリティは表の部品のとおり
 refs:
-  - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[ビューの操作]
-  - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[ボードの列の見出しのアイコン]
-  - dev/設計書/インターフェース定義/ライブラリ本体/ビューを描く.ts#
+  - IF-472-35#constraints[ビューの操作]
+  - IF-472-35#constraints[ボードの列の見出しのアイコン]
+  - IF-472-30#
 status: planned
 notes:
   HTML: '`<div class="mdmark-view"><div class="mdmark-view-switch" role="group" aria-label="ビューの表示"><button class="mdmark-view-switch-item" type="button" data-mode="board" aria-pressed="true">{board のアイコン}ボード</button><button class="mdmark-view-switch-item" type="button" data-mode="table" aria-pressed="false">{table のアイコン}表</button></div><div class="mdmark-view-board" role="group" aria-label="ボード" tabindex="0"><div class="mdmark-view-column"><p class="mdmark-view-column-head">{値のアイコン}<span class="mdmark-view-column-name">{値}</span><span class="mdmark-view-column-count">{項目の数}</span></p><ul class="mdmark-view-cards" aria-label="{値}"><li class="mdmark-view-card"><p class="mdmark-view-card-title">{先頭の列の値}</p><dl class="mdmark-view-fields"><div><dt>{列名}</dt><dd>{値}</dd></div></dl></li></ul></div></div><div class="mdmark-view-table" hidden>{表の部品}</div></div>`。ボードの列は値が表に出た順、項目は表の行の順。`group` の列と空の値は項目に出さない。外観は確認ログの決定（ビューの切り替えとボードの外観・ボードの列の見出しの既定のアイコン）。モックは `dev/mock/components/view/`'

@@ -1,3 +1,4 @@
+id: SC-472-9
 title: "PDFに印刷する"
 scenarios:
   - name: 正常シナリオ
@@ -22,7 +23,7 @@ scenarios:
       - 印刷の間は閉じた折り畳みが開いている（mdmark の印刷の機能）
     test: test_normal
     refs:
-      - dev/設計書/シナリオ/単一ユースケース/文書を印刷する#
+      - SC-472-58#
   - name: 異常シナリオ（書き出せない）
     setup:
       - name: 見本のワークスペース
@@ -60,7 +61,7 @@ scenarios:
       - 印刷の間、描く先の要素のリンクの色の計算値が theme-slate の明るい配色の `--mdmark-color-link` の値
     test: test_normal_when_theme_selected
     refs:
-      - dev/設計書/シナリオ/単一ユースケース/文書を印刷する#scenarios[正常シナリオ（テーマを選んだ文書）]
+      - SC-472-58#scenarios[正常シナリオ（テーマを選んだ文書）]
 lead: 文書の作成者が、開いている Markdown をコマンドパレットから印刷する。拡張機能は HTML を書き出して既定のブラウザで開き、ブラウザの印刷のダイアログを出す。PDF はそのダイアログで作る。
 issue: 22
 primary_actor: 文書の作成者

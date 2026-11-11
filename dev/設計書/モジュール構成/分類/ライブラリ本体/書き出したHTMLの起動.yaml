@@ -1,0 +1,13 @@
+id: MOD-472-40
+title: "ライブラリ本体 / 書き出したHTMLの起動"
+lead: CLI が書き出した HTML に埋める起動の処理。ライブラリ本体と一緒に `dist/viewer.js` にまとめ、書き出しのときに CLI が埋めるモジュールと 1 つのスクリプトにまとめる。開いたときに埋めた中身を読み込んで、読み込み済みのモジュールを指定し、拡張を登録して `mount` で描く。まとめた HTML では URL の `#` で文書を行き来する。
+directory: |-
+  ```tree
+  src/viewer/
+  ├── index.ts   # startViewer を export する。CLI がまとめる入口から呼ばれ、埋めた中身を読み込んで 1 文書かまとめた HTML を起動する
+  ├── modules.ts # 読み込み済みのモジュールの指定と拡張の登録
+  ├── route.ts   # URL の # の読み取りと、描いた文書のリンクの書き換え
+  ├── bundle.ts  # まとめた HTML の文書の行き来と一覧のパネル
+  ├── view-state.ts # まとめた HTML の履歴の項目ごとの表示の状態（位置・開閉・タブ）の取り出し・保存・復元
+  └── viewer.css # まとめた HTML の画面と印刷の規則（層 mdmark）。画面全体の地は --mdmark-color-bg、上の帯・ボタン・一覧のパネルの地は --mdmark-color-bg-opaque。60rem 未満では開いている文書に --mdmark-sticky-top: calc(3.25rem + 1px) を指定し、右側の目次の帯と表の見出し行を上の帯の下に留める
+  ```

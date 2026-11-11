@@ -1,3 +1,4 @@
+id: CMP-472-32
 title: "リビジョンの選択"
 implementation: "src/parts/revision-picker.ts#renderRevisionPicker"
 story: "Parts/RevisionPicker"
@@ -72,7 +73,7 @@ accessibility:
   - 削除した行と追加した行の数は `role="status"` に出し、もう一度選んで変わった数をスクリーンリーダーに伝える
   - 前と後の間の矢印のアイコンは `aria-hidden`
 refs:
-  - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[比べる 2 つのリビジョン]
+  - IF-472-35#constraints[比べる 2 つのリビジョン]
 status: planned
 notes:
   項目の文字: 日時を JST の `YYYY/MM/DD HH:mm` にし、`label` を空白の後に、`author` を全角の括弧で続ける。無いものは出さない

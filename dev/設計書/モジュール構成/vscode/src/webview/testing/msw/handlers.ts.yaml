@@ -1,0 +1,23 @@
+id: MOD-472-73
+title: VS Code 拡張機能 / Webview / handlers.ts
+functions:
+  - name: handlers
+    title: MSW のハンドラ
+    kind: 関数
+    container: vscode/src/webview/testing/msw/handlers.ts
+    usecase: 共通
+    role: テストの道具
+    summary: 読み込めなかった配布物の `HEAD` に回答するハンドラを、状態ごと（`ok`・`versionMissing`（404）・`offline`（ネットワークのエラー）・`slow`（遅延））に返却する。ストーリーと単体テストが同じハンドラを使用する
+    scope: public
+    args:
+      - name: kind
+        type: '"ok" | "versionMissing" | "offline" | "slow"'
+        required: true
+        description: 応答の種類
+    returns:
+      type: HttpHandler[]
+      description: '`https://cdn.jsdelivr.net/gh/shuhei1101/mdmark@*/dist/index.js` の `HEAD` のハンドラ'
+    refs:
+      - LIB-472-19#
+      - API-472-2#
+    status: planned

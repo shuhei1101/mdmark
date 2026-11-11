@@ -1,0 +1,26 @@
+id: MOD-472-338
+title: ライブラリ本体 / 部品 / wide.ts
+test_files:
+  - tests/unit/src/parts/wide.test.ts
+functions:
+  - name: renderWide
+    title: wide の範囲を描く
+    container: src/parts/wide.ts
+    summary: 部品設計『wide の範囲』の HTML を返却する。`toggle` のときは直前に帯と切り替えのボタンを配置する。2 つのアイコンは `src/parts/icons.ts` の `ICONS` に Lucide と同じ IconNode の構造で追加する `WideExpand`（`|←→|`）・`WideShrink`（`→|←`）
+    kind: 関数
+    scope: internal
+    args:
+      - name: options
+        type: '{ body: string; state: "wide" | "narrow"; toggle: boolean }'
+        required: true
+        description: 中身・状態・ボタンを配置するか
+    returns:
+      type: string
+      description: 部品の HTML
+    unit_tests:
+      - name: test_render_wide
+        case: 正常
+        condition: '`{ state: "wide", toggle: true }` と `{ state: "narrow", toggle: false }`'
+        expected: 1 つ目は `div.mdmark-wide-bar` の `button.mdmark-wide-toggle[aria-pressed="true"][aria-label="広げて表示"]` と `<div class="mdmark-wide-range" data-state="wide">`、2 つ目は帯が無い `data-state="narrow"` の範囲
+        mock: なし
+        summary: ボタンの有無と状態を描く

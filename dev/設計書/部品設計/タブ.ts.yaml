@@ -1,3 +1,4 @@
+id: CMP-472-22
 title: "タブ"
 implementation: "src/parts/tabs.ts#renderTabs"
 story: "Parts/Tabs"
@@ -144,8 +145,8 @@ accessibility:
   - 選んだタブだけが `tabindex="0"`、ほかは `-1`。左右の矢印・Home・End で移って選ぶ。入れ子のタブはそれぞれ別の `tablist` で、矢印・Home・End はフォーカスのある並びの中だけで移り、内側を選んでも外側の選択を変えない
   - 選んだタブは線で囲んで中身の地とつなぎ、形状と地の色でも示し、色だけに頼らない
 refs:
-  - dev/設計書/インターフェース定義/ライブラリ本体/文書をHTML文字列にする.ts#constraints[タブ]
-  - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[タブの操作]
+  - IF-472-34#constraints[タブ]
+  - IF-472-35#constraints[タブの操作]
 status: planned
 notes:
   HTML: '`render` は `<div class="mdmark-tabs"><div class="mdmark-tab-panel"><p class="mdmark-tab-title">{タブ名}</p>{中身}</div>…</div>` を出し、`group` を指定すると外側の `div` に `data-group="{group}"` を付ける。`selected` を指定すると頭に `<div class="mdmark-tablist" role="tablist"><button class="mdmark-tab" type="button" role="tab">{タブ名}</button>…</div>` を配置し、中身を `role="tabpanel"` にして選んだもの以外に `hidden` を付ける。`collapse` が `closed`・`open` のときは `mdmark-tabs` を `<details class="mdmark-collapsible"><summary>{title}</summary>` に入れる（`open` のときは `details` に `open` を付ける）。見出しの外観は表の `mdmark-table-details` と同じ。モックは `dev/mock/components/tabs/`'

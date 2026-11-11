@@ -1,0 +1,26 @@
+summary: src の設計書
+items:
+  - page: config-file.ts.yaml
+    summary: VS Code 拡張機能 / 設定 / config-file.ts
+  - page: config.ts.yaml
+    summary: VS Code 拡張機能 / 設定 / config.ts
+  - page: deps.ts.yaml
+    summary: VS Code 拡張機能 / 拡張機能の入口 / deps.ts
+  - page: export/
+    summary: export の設計書
+  - page: extension.ts.yaml
+    summary: VS Code 拡張機能 / 拡張機能の入口 / extension.ts
+  - page: extensions-bundle.ts.yaml
+    summary: VS Code 拡張機能 / 設定 / extensions-bundle.ts
+  - page: log.ts.yaml
+    summary: VS Code 拡張機能 / 拡張機能の入口 / log.ts
+  - page: messages.ts.yaml
+    summary: VS Code 拡張機能 / Webview / messages.ts
+  - page: preview/
+    summary: preview の設計書
+  - page: settings.ts.yaml
+    summary: VS Code 拡張機能 / 設定 / settings.ts
+  - page: version.ts.yaml
+    summary: プレビューと書き出しが読み込む mdmark のバージョンを、設定 `mdmark.version` と GitHub のタグ一覧と前回のバージョンから決める。`vscode` を import しない。
+  - page: webview/
+    summary: webview の設計書

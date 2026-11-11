@@ -1,0 +1,10 @@
+summary: shared の設計書
+items:
+  - page: adapters/
+    summary: adapters の設計書
+  - page: components/
+    summary: components の設計書
+  - page: lib/
+    summary: lib の設計書
+  - page: styles/
+    summary: styles の設計書

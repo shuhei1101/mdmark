@@ -1,0 +1,62 @@
+id: MOD-472-217
+title: ライブラリ本体 / 描画 / frontmatter.ts
+test_files:
+  - tests/unit/src/render/frontmatter.test.ts
+functions:
+  - name: splitFrontmatter
+    title: フロントマターを分ける
+    container: src/render/frontmatter.ts
+    kind: 関数
+    scope: internal
+    summary: Markdown の先頭のフロントマターを判定し、その範囲の改行以外の文字を空白に置き換えた本文と、フロントマターの中身（開く行と閉じる行を除いた行）を返却する。フロントマターが無ければ、本文はそのままで中身は `undefined`
+    description: 判定はインターフェース定義『文書をHTML文字列にする』の制約「フロントマター」のとおり（1 行目が `---`、2 行目以降の最初の `---` か `...` の行まで。行末の空白と CR を許し、先頭の BOM は判定の前に除く）。改行以外を空白にするため、後ろの行の行番号と文字の位置は元の Markdown と同じになり、空白だけの行は markdown-it が段落にしない。描く処理（`renderDocument`・`expandIncludes`）と、本文を読む `parseDocument`（参照の表・本文の参照の取り出し・索引の点検）が共通で呼ぶ
+    args:
+      - name: markdown
+        type: string
+        required: true
+        description: 文書の Markdown
+    returns:
+      type: '{ body: string; content: string | undefined; endLine: number | undefined }'
+      description: '`body` はフロントマターを空白にした Markdown、`content` はフロントマターの中身（行の間は `\n`）、`endLine` は閉じる行の 0 始まりの行番号（フロントマターが無ければ `content` と `endLine` は `undefined`）'
+    refs:
+      - IF-472-34#constraints[フロントマター]
+    unit_tests:
+      - name: test_split_frontmatter
+        case: 正常
+        summary: 先頭のフロントマターを空白にし、中身を返却する
+        condition: '`---\ntitle: a\ntags: [b]\n---\n\n# 見出し`'
+        mock: なし
+        expected: '`content` が `title: a\ntags: [b]`、`body` の 1〜4 行目が空白だけで、行の数と長さが元と同じ、6 行目が `# 見出し`'
+      - name: test_split_frontmatter_when_dots_close
+        case: 正常
+        summary: '`...` の行でも閉じる'
+        condition: '`---\ntitle: a\n...\n本文`'
+        mock: なし
+        expected: '`content` が `title: a`、`body` の 4 行目が `本文`'
+      - name: test_split_frontmatter_when_crlf_and_bom
+        case: 正常
+        summary: CRLF と先頭の BOM と行末の空白を許す
+        condition: '`\uFEFF---  \r\ntitle: a\r\n--- \r\n本文`'
+        mock: なし
+        expected: '`content` が `title: a`、`body` の長さが元と同じで、`本文` の位置が元と同じ'
+      - name: test_split_frontmatter_when_unclosed
+        case: 正常
+        summary: 閉じる行が無ければフロントマターとしない
+        condition: '`---\n段落\n\n## 見出し`'
+        mock: なし
+        expected: '`content` が `undefined`、`body` が元と同じ'
+      - name: test_split_frontmatter_when_not_first_line
+        case: 正常
+        summary: 1 行目が `---` でなければフロントマターとしない
+        condition: '`\n---\ntitle: a\n---`'
+        mock: なし
+        expected: '`content` が `undefined`、`body` が元と同じ'
+      - name: test_split_frontmatter_when_empty
+        case: 正常
+        summary: 中身が空の行だけのフロントマターも除外し、中身は空の文字列にする
+        condition: '`---\n\n---\n本文`'
+        mock: なし
+        expected: '`content` が `""`（空白だけ）、`body` の 1〜3 行目が空白だけ'
+    status: planned
+    introduced:
+      pr: 422

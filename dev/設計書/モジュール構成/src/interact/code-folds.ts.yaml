@@ -1,0 +1,90 @@
+id: MOD-472-225
+title: ライブラリ本体 / 操作 / code-folds.ts
+test_files:
+  - tests/unit/src/interact/code-folds.browser.test.ts
+constants:
+  - name: codeFoldSetters
+    title: コードの行の開閉の関数の記録
+    container: src/interact/code-folds.ts
+    summary: '`attachCodeFolds` が開閉のボタンごとに登録する、行を開くか畳む関数。削除する関数が取り除く'
+    value: '`new WeakMap<Element, (open: boolean) => void>()`'
+    status: planned
+    introduced:
+      pr: 275
+functions:
+  - name: attachCodeFolds
+    title: コードの行に畳む・開くを付ける
+    container: src/interact/code-folds.ts
+    kind: 関数
+    scope: internal
+    summary: '`data-fold-lines` の行に `renderCodeFoldToggle` のボタンを配置し（`data-folded` の行は畳んだ状態）、押すと行の畳んだ状態を切り替えて `hiddenLinesOf` の行に `hidden` を付与・解除し、畳んだ行の末尾に `renderCodeFoldMore` を配置する。Shift を押しながらの押下（Enter・Space を含む）は範囲の中の畳める行も同じ状態にする。`⋯` を押すとその行を開く。`pointerover`・`pointerout` で `guideRangeOf` の範囲の行に `data-guide-active` を付与・解除する。開閉を切り替える関数を `codeFoldSetters` に登録する'
+    args:
+      - name: root
+        type: HTMLElement
+        required: true
+        description: 描いた要素
+    returns:
+      type: () => void
+      description: ボタン・`⋯`・`hidden`・`data-guide-active`・受け取りを取り除き、`codeFoldSetters` から除外する関数
+    side_effects: コードブロックの行に開閉のボタンを配置し、行の `hidden` を書き換える
+    callees:
+      - 'MOD-472-237#functions[hiddenLinesOf]'
+      - 'MOD-472-237#functions[guideRangeOf]'
+      - MOD-472-306#functions[renderCodeFoldToggle]
+      - MOD-472-306#functions[renderCodeFoldMore]
+    unit_tests:
+      - name: test_attach_code_folds
+        case: 正常
+        summary: 畳む・⋯ で開く・入れ子の状態を残す
+        condition: インターフェース定義『文書を描く』の「正常系（コードの行を畳む・開く）」の yaml のコードブロック
+        mock: なし
+        expected: 1・2 行目にだけ `aria-expanded="true"` のボタン。1 行目を押すと 2〜4 行目が `hidden` で末尾に `⋯`、`⋯` を押すと戻る。2 行目を畳んでから 1 行目を畳んで開くと 3 行目が隠れたまま
+      - name: test_attach_code_folds_when_shift
+        case: 正常
+        summary: Shift を押しながらで入れ子もまとめて開閉する
+        condition: 同じコードブロックで、Shift を押しながら 1 行目のボタンを 2 回押す
+        mock: なし
+        expected: 1 回目の後に 1・2 行目のボタンが `false`、2 回目の後に両方が `true` で 2〜4 行目が `hidden` を持たない
+      - name: test_attach_code_folds_when_initial
+        case: 正常
+        summary: fold= の行を畳んだ状態にし、削除すると戻す
+        condition: 2 行目と 6 行目が `data-folded` の 8 行のコードブロック
+        mock: なし
+        expected: 2・6 行目のボタンが `false` で後ろの行が `hidden`。削除した後はボタンと `⋯` が無く、どの行も `hidden` を持たない
+      - name: test_attach_code_folds_when_hovered
+        case: 正常
+        summary: ポインターを乗せた行の範囲の縦線を濃くする
+        condition: 同じ yaml のコードブロックの 3 行目に `pointerover`、続けて `pointerout`
+        mock: なし
+        expected: '`pointerover` の後に 3 行目だけが `data-guide-active` を持ち、`pointerout` の後は持つ行が無い'
+    status: planned
+    introduced:
+      pr: 275
+  - name: setCodeFoldOpen
+    title: コードの行の開閉を切り替える
+    container: src/interact/code-folds.ts
+    kind: 関数
+    scope: internal
+    summary: 開閉のボタンから `codeFoldSetters` の関数を参照して、その行を開くか畳む。登録の無いボタンは何もしない。印刷の前後に使用する
+    args:
+      - name: toggle
+        type: Element
+        required: true
+        description: 開閉のボタン
+      - name: open
+        type: boolean
+        required: true
+        description: 開くか
+    returns:
+      type: void
+      description: なし
+    unit_tests:
+      - name: test_set_code_fold_open
+        case: 正常
+        summary: 畳んだ行を開き、もう一度畳む
+        condition: '`attachCodeFolds` を付けた、2 行目を畳んだコードブロックの 2 行目のボタンで `true`、続けて `false`'
+        mock: なし
+        expected: '`true` の後に後ろの行が `hidden` を持たず `⋯` が無い。`false` の後に `hidden` と `⋯` が戻る'
+    status: planned
+    introduced:
+      pr: 275

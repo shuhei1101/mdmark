@@ -3,12 +3,18 @@ title: テスト実行方法
 description: テスト種別ごとの実行コマンドと前提。1 プロジェクト 1 ファイル。
 x-kind: test_procedure
 x-folder: dev/設計書/テスト
+x-id-prefix: TP
 type: object
 additionalProperties: false
 required:
+- id
 - title
 - layers
 properties:
+  id:
+    $ref: 共通.schema.yaml#/$defs/id
+    title: ID
+    description: 設計書の変わらない ID。書くツールの `create` が振り、改名・移動でも変わらない。他の設計書からは `{ID}#{項目のパス}` で指す。
   title:
     type: string
     title: タイトル
@@ -18,7 +24,7 @@ properties:
     title: 冒頭リード
     description: |-
       対象を 1〜3 行で説明する。
-      初回に記載した内容のまま保ち、後から情報を追加しない（仕様は各項目に記載する）。
+      初回に書いた内容のまま保ち、後から情報を足さない（仕様は各項目に書く）。
       対象そのものが変わったときだけ書き換える。
   prerequisites:
     type: array
@@ -33,8 +39,8 @@ properties:
     title: テスト種別
     description: |-
       テスト種別ごとの実行コマンド。初期構築では種別だけを作り、コマンドはテストを作る担当が確定させる（確定させるまでは `run_all` を `未確定`）。
-      `lint` 層は、プロジェクトの言語に応じて linter・formatter の check・型検査・構造と依存の向きの検査を統一する（コンパイラが担う検査は除く）。
-      CI・pre-commit・マニフェストのスクリプト・コーディング規約で使用すると決めたツールが持つ検査は `lint` 層へコピーし、`lint` 層に無い検査を残さない。
+      `lint` 層は、プロジェクトの言語に応じて linter・formatter の check・型検査・構造と依存の向きの検査を揃える（コンパイラが担う検査は除く）。
+      CI・pre-commit・マニフェストのスクリプト・コーディング規約で使うと決めたツールが持つ検査は `lint` 層へ写し、`lint` 層に無い検査を残さない。
       型検査と構造の検査は、変更ファイルだけでなくプロジェクト全体に回す。
       全件実行は、どれかが失敗しても全ての検査を最後まで回し、1 つでも失敗したら失敗で終える 1 コマンドにまとめる（task runner・スクリプト・終了コードを集約するサブシェル 等）。
     x-shape: sections
@@ -45,9 +51,19 @@ properties:
       type: object
       additionalProperties: false
       required:
+      - id
       - name
       - run_all
       properties:
+        id:
+          type: string
+          title: ID
+          description: |-
+            設計書の中で一意な要素の ID。1 要素 1 ページにするときのページの ID になる。
+            並びの順に `TL-{番号}` を振り、新しく足す要素は既にある番号の最大の次を振る。並べ替えても変えない。
+          pattern: "^[A-Za-z0-9_-]+$"
+          examples:
+          - TL-1
         name:
           type: string
           title: 種別
@@ -63,11 +79,11 @@ properties:
         description:
           $ref: 共通.schema.yaml#/$defs/markdown
           title: 説明
-          description: 使用するツールと実行の方式。
+          description: 使うツールと実行の方式。
         prerequisites:
           type: array
           title: 前提
-          description: 種別に固有の前提（起動しておくもの・Mock の状況・誤実行を防ぐフラグ）。料金・副作用のある種別は必ず記載する。
+          description: 種別に固有の前提（起動しておくもの・Mock の状況・誤実行を防ぐフラグ）。料金・副作用のある種別は必ず書く。
           x-shape: list
           items:
             type: string
@@ -90,10 +106,10 @@ properties:
             command:
               $ref: 共通.schema.yaml#/$defs/markdown
               title: コマンド
-              description: プレースホルダの構造（`{シナリオファイルパス}`）の 1 コマンドのコードブロック。
+              description: プレースホルダの形（`{シナリオファイルパス}`）の 1 コマンドのコードブロック。
         carry_over:
           $ref: 共通.schema.yaml#/$defs/markdown
-          title: セッションを跨いで走らせる構造の実行
+          title: セッションを跨いで走らせる形の実行
           description: E2E テストだけが持つ。`RUN_DIR` 配下の `results.jsonl` / `done` / `release_head` / `abort` の名前は変えない。
         monitoring:
           $ref: 共通.schema.yaml#/$defs/markdown
@@ -114,7 +130,7 @@ properties:
           title: 外部への依存と費用
         results:
           type: string
-          title: 結果の配置場所
+          title: 結果の置き場所
         notes:
           $ref: 共通.schema.yaml#/$defs/notes
   refs:
@@ -122,18 +138,26 @@ properties:
     title: 関連
     items:
       $ref: 共通.schema.yaml#/$defs/ref
+  decisions:
+    type: array
+    title: 検討事項
+    description: 根拠になった話し合いの記録の検討事項の ID。
+    items:
+      $ref: 共通.schema.yaml#/$defs/decision
   notes:
     $ref: 共通.schema.yaml#/$defs/notes
     x-heading: 補足
     x-shape: sections
 examples:
-- title: テスト実行方法
+- id: TP-1
+  title: テスト実行方法
   lead: テスト種別ごとの実行コマンドと前提。
   prerequisites:
   - Python 3.12 と uv
   - 'DB: PostgreSQL 16 のローカル起動（`docker compose up -d postgres`）'
   layers:
-  - name: 単体テスト（バック）
+  - id: TL-1
+    name: 単体テスト（バック）
     description: pytest で実行する。DB / API に依存しない。
     prerequisites:
     - 外部依存なし（純粋関数と Mock だけ）
@@ -148,8 +172,9 @@ examples:
         uv run pytest {単体テストファイルパス}
         ```
     parallel: true
-  - name: 外部疎通テスト
-    description: 実 API に繋いで疎通を確認する。
+  - id: TL-2
+    name: 外部疎通テスト
+    description: 実 API に繋いで疎通を確かめる。
     prerequisites:
     - 実 API の認証情報を環境変数に設定する
     - 料金と副作用が出ることを認識した上で実行する
@@ -164,8 +189,9 @@ examples:
         ```bash
         uv run pytest {外部疎通テストファイルパス} --run-external
         ```
-    external_cost: テストごとの料金は外部API の設計書の料金を確認する
-  - name: lint
+    external_cost: テストごとの料金は外部API の設計書の料金を見る
+  - id: TL-3
+    name: lint
     description: ruff で linter・formatter の check を、mypy で型検査を、import-linter で依存の向きを検査する。型検査と依存の向きの検査はプロジェクト全体に回す。
     prerequisites:
     - 検査の設定は `pyproject.toml` が持つ

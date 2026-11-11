@@ -1,3 +1,4 @@
+id: SC-472-44
 title: "固有の部品とCSSを適用する"
 scenarios:
   - name: 正常シナリオ

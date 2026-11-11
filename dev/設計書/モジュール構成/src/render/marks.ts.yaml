@@ -1,0 +1,237 @@
+id: MOD-472-210
+title: ライブラリ本体 / 描画 / marks.ts
+test_files:
+  - tests/unit/src/render/marks.test.ts
+data_models:
+  - name: Mark
+    title: マーカー
+    container: src/render/marks.ts
+    usecase: 共通
+    summary: 文書から取得したマーカー 1 つ
+    properties:
+      - name: name
+        type: string
+        description: マーカーの名前
+      - name: args
+        type: MdmarkMarkArgs
+        description: 判別した引数（`parseMarkArgs`）
+      - name: raw
+        type: string
+        description: マーカーの文字のまま（記載の警告に出す）
+      - name: closing
+        type: boolean
+        description: 閉じのマーカー（`<!-- /名前 -->`）か
+constants:
+  - name: MARK_PATTERN
+    title: マーカーの書式
+    container: src/render/marks.ts
+    summary: '生の HTML の中のマーカー（`<!-- 名前: 引数 -->`・`<!-- 名前 -->`・`<!-- /名前 -->`）を取得する正規表現'
+    value: /<!--\s*(\/)?([a-z][a-z0-9-]*)(?::\s*(.*?))?\s*-->/gs
+  - name: FEATURES_MARK
+    title: 機能のマーカーの名前
+    container: src/render/marks.ts
+    summary: 機能のオン・オフを記載するマーカーの名前
+    value: '"features"'
+  - name: PAGE_MARK
+    title: ページの設定のマーカーの名前
+    container: src/render/marks.ts
+    summary: 明暗・テーマ・右側の目次の出し方を記載するマーカーの名前
+    value: '"page"'
+    status: planned
+  - name: SYNTAX_MARKS
+    title: 記法のマーカーと機能
+    container: src/render/marks.ts
+    summary: 記法のマーカーの名前から、その記法の機能の名前を参照する
+    entries:
+      - key: table
+        value: table
+      - key: tabs
+        value: tabs
+      - key: steps
+        value: steps
+      - key: section
+        value: sections
+      - key: row-detail
+        value: row-details
+      - key: fig
+        value: figures
+      - key: toc
+        value: toc
+      - key: glossary
+        value: glossary
+      - key: flow
+        value: diagrams
+      - key: sequence
+        value: diagrams
+      - key: chart
+        value: diagrams
+      - key: param
+        value: diagrams
+      - key: er
+        value: diagrams
+      - key: html
+        value: html
+      - key: view
+        value: views
+      - key: code
+        value: code
+      - key: gallery
+        value: gallery
+      - key: columns
+        value: columns
+      - key: column
+        value: columns
+      - key: details
+        value: details
+      - key: pagebreak
+        value: pagebreak
+      - key: include
+        value: include
+      - key: wide
+        value: wide
+functions:
+  - name: takeMarks
+    title: マーカーを取得して置き換える
+    container: src/render/marks.ts
+    kind: 関数
+    scope: internal
+    summary: コアルール。`html_block`・`html_inline` のトークンのマーカーを取得し、`features` は引数を `env.featureArgs` へ追加し、`page` は文書の先頭（それより前のトークンがマーカーか空のときだけ）なら引数を `env.pageArgs` へ追加し、先頭に無ければマーカーの場所に記載の警告を差し込み、対応表と登録した拡張の名前は `renderEmbed` の HTML（`markOwn` を掛ける）に置き換え、マーカーだけの `html_block` の記法のマーカーはマーカーのトークン（type `mdmark_mark`、`meta` に `Mark`）に替え、それ以外は取り除く
+    description: コードブロックと行内のコードは `html_*` のトークンにならないため、中のマーカーのような文字はそのまま残る。記法のマーカーは機能のオン・オフによらずマーカーのトークンにし、オフの記法のマーカーは `dropMarks` が取り除く
+    args:
+      - name: state
+        type: StateCore
+        required: true
+        description: markdown-it の状態（`state.env` は `RenderEnv`）
+    side_effects: '`state.tokens` の中身と `state.env.featureArgs`・`state.env.pageArgs` を書き換える'
+    callees:
+      - MOD-472-309#functions[renderEmbed]
+      - MOD-472-311#functions[markOwn]
+      - MOD-472-201#functions[extensionFor]
+      - '#functions[parseMarkArgs]'
+    unit_tests:
+      - name: test_take_marks
+        case: 正常
+        summary: 機能のマーカーの引数を記載した順に取得し、本文から取り除く
+        condition: '行頭の `<!-- features: +a -b -->` と、文中の `<!-- features: +c -->`'
+        mock: なし
+        expected: '`env.featureArgs` が `["+a", "-b", "+c"]`、描いた HTML にマーカーが無い'
+      - name: test_take_marks_when_library_mark
+        case: 正常
+        summary: 対応表にあるマーカーをマーカーの場所の要素にする
+        condition: '`<!-- test-lib: a b -->`、対応表に `test-lib`'
+        mock: なし
+        expected: '`renderEmbed({ name: "test-lib", args: ["a", "b"] })` の HTML が入る'
+      - name: test_take_marks_when_unknown_mark
+        case: 正常
+        summary: 未知のマーカーを取り除き、マーカーでないコメントとコードの中はそのままにする
+        condition: '`<!-- unknown: 1 -->`・`<!-- ただのコメント -->`・コードブロックの中の `<!-- features: -print -->`'
+        mock: なし
+        expected: '`unknown` が消え、コードブロックの中は文字として残り、`env.featureArgs` は空'
+      - name: test_take_marks_when_syntax_mark
+        case: 正常
+        summary: 記法のマーカーと閉じのマーカー、コロンの無いマーカーをマーカーのトークンにする
+        condition: '行に `<!-- table: data -->`・`<!-- /table -->`・`<!-- tabs -->`'
+        mock: なし
+        expected: 'マーカーのトークンが 3 つで、`meta` が `{ name: "table", closing: false }`・`{ name: "table", closing: true }`・`{ name: "tabs", args: { args: [], keys: {} } }`'
+      - name: test_take_marks_when_extension_mark
+        case: 正常
+        summary: 登録した拡張のマーカーをマーカーの場所の要素にする
+        condition: '`greet` を登録し、`<!-- greet: world lang=ja -->`'
+        mock: なし（テストの前後で `resetExtensions`）
+        expected: '`renderEmbed({ name: "greet", args: ["world", "lang=ja"] })` の HTML が入る'
+  - name: parseMarkArgs
+    title: マーカーの引数を判別しる
+    container: src/render/marks.ts
+    kind: 関数
+    scope: internal
+    summary: 引数の文字を空白で区切り、`キー=値` を `keys`（同じキーは後の値）、それ以外を記載した順に `args` に入れる
+    args:
+      - name: text
+        type: string
+        required: true
+        description: マーカーの `:` の後ろの文字（無ければ空）
+    returns:
+      type: MdmarkMarkArgs
+      description: 判別した引数
+    unit_tests:
+      - name: test_parse_mark_args
+        case: 正常
+        summary: 種類・機能・キー・開閉を判別しる
+        condition: '`data +sort -pin filter=名前:text closed`'
+        mock: なし
+        expected: '`{ args: ["data", "+sort", "-pin", "closed"], keys: { filter: "名前:text" } }`'
+      - name: test_parse_mark_args_when_empty
+        case: 正常
+        summary: 引数が無ければ空
+        condition: 空の文字
+        mock: なし
+        expected: '`{ args: [], keys: {} }`'
+  - name: resolveDocumentFeatures
+    title: 文書の機能を決める
+    container: src/render/marks.ts
+    kind: 関数
+    scope: internal
+    summary: コアルール。`takeMarks` の後に `resolveFeatures` で `env.defaults` に `env.featureArgs` を重ね、`env.features` に入れる
+    args:
+      - name: state
+        type: StateCore
+        required: true
+        description: markdown-it の状態
+    side_effects: '`env.features` を書き換える'
+    callees:
+      - MOD-472-305#functions[resolveFeatures]
+  - name: resolvePageSettings
+    title: 文書のページの設定を決める
+    container: src/render/marks.ts
+    kind: 関数
+    scope: internal
+    summary: コアルール。`takeMarks` が取得した先頭の page のマーカーを `readPageSettings` で読み込んで `env.page` に入れ、記載できるキーの知らない値があれば文書の先頭に記載の警告を差し込み、`skipped` は `pushSkippedArgs`（使用できるのは `scheme=`・`theme=`・`toc=`）で文書の先頭に差し込む
+    args:
+      - name: state
+        type: StateCore
+        required: true
+        description: markdown-it の状態
+    side_effects: '`env.page` と `state.tokens` を書き換える'
+    callees:
+      - 'MOD-472-215#functions[readPageSettings]'
+    unit_tests:
+      - name: test_resolve_page_settings
+        case: 正常
+        summary: 先頭のマーカーを読み込み、本文にマーカーを残さない
+        condition: '先頭の行に `<!-- features: -toc -->`、次の行に `<!-- page: scheme=dark -->`、その後に段落'
+        mock: なし
+        expected: '`renderDocument` の `page` が `{ scheme: "dark" }`、HTML にマーカーと記載の警告が無い'
+      - name: test_resolve_page_settings_when_not_at_top
+        case: 異常
+        summary: 先頭に無いマーカーは読み込まずに警告を配置する
+        condition: '段落の後に `<!-- page: scheme=dark -->`'
+        mock: なし
+        expected: '`page` が `{}`、マーカーの場所に page のマーカーは文書の先頭に記載することを記載した記載の警告がある'
+      - name: test_resolve_page_settings_when_unknown
+        case: 異常
+        summary: 知らない値を文書の先頭の警告にまとめ、知らないキーをスキップする
+        condition: '先頭の行に `<!-- page: scheme=sepia size=wide toc=fixed -->`'
+        mock: なし
+        expected: '`page` が `{ toc: "fixed" }`、文書の先頭に `scheme=sepia` を挙げ `size=wide` を挙げない記載の警告が 1 つ、`warnings` に `size=` の `unknown_mark_arg` が 1 件'
+    refs:
+      - IF-472-34#constraints[ページの設定のマーカー]
+    status: planned
+  - name: dropMarks
+    title: 残ったマーカーを取り除く
+    container: src/render/marks.ts
+    kind: 関数
+    scope: internal
+    summary: コアルール。最後に、記法が使用しなかったマーカーのトークン（オフの記法のマーカーを含む）を取り除く
+    args:
+      - name: state
+        type: StateCore
+        required: true
+        description: markdown-it の状態
+    side_effects: '`state.tokens` を書き換える'
+    unit_tests:
+      - name: test_drop_marks
+        case: 正常
+        summary: オフの記法のマーカーを取り除き、囲んだ Markdown は残す
+        condition: '`<!-- features: -tabs -->` と、段落を囲んだ `<!-- tabs -->` 〜 `<!-- /tabs -->`'
+        mock: なし
+        expected: 段落があり、マーカーのトークンと `<!--` が無い

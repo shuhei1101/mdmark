@@ -1,3 +1,4 @@
+id: CMP-472-37
 title: 右側の目次
 implementation: src/parts/side-toc.ts#renderSideToc
 story: Parts/SideToc
@@ -139,12 +140,12 @@ accessibility:
   - 右端の線は `aria-hidden="true"` でスクリーンリーダーに伝えない。hover の出し方でも、キーボードのフォーカス（`:focus-visible` の要素）が目次の中に入れば目次を出す。ポインターで押したボタンに残るフォーカスでは出し続けない
   - 出している目次の中で Esc を押すと目次を隠し、目次を出すボタンへフォーカスを戻す
 refs:
-  - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[右側の目次]
-  - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[右側の目次の出し方]
-  - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[狭い幅の右側の目次]
-  - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[今いるセクション]
-  - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[すべて展開・すべて折りたたむ]
-  - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[右側の目次の重なりと留める位置]
+  - IF-472-35#constraints[右側の目次]
+  - IF-472-35#constraints[右側の目次の出し方]
+  - IF-472-35#constraints[狭い幅の右側の目次]
+  - IF-472-35#constraints[今いるセクション]
+  - IF-472-35#constraints[すべて展開・すべて折りたたむ]
+  - IF-472-35#constraints[右側の目次の重なりと留める位置]
 status: planned
 introduced:
   pr: 166

@@ -1,3 +1,4 @@
+id: SC-472-87
 title: Mermaidと補足で書いた図を辿って読む
 lead: 文書の作成者が Mermaid と補足で図を記載して点検し、読者が自動配置で描いた図を、グループの中へ入る・開閉・巡回・シーケンスの再生で辿って読む。
 issue: 324
@@ -33,14 +34,14 @@ scenarios:
         E --> H[図を巡回する:正常シナリオ]
         H --> I[シーケンスを構成図の上で再生する:正常シナリオ]
         I --> J[シーケンス図の参加者を選んで強調する:正常シナリオ]
-        click A "../単一ユースケース/雛形を配置する.yaml#正常シナリオ"
-        click B "../単一ユースケース/設定と索引を点検する.yaml#正常シナリオ"
-        click C "../単一ユースケース/Mermaidと補足で図を描く.yaml#正常シナリオ"
-        click D "../単一ユースケース/図のグループの中へ入る・開閉する.yaml#正常シナリオ"
-        click E "../単一ユースケース/図のグループの中へ入る・開閉する.yaml#正常シナリオグループを閉じる"
-        click H "../単一ユースケース/図を巡回する.yaml#正常シナリオ"
-        click I "../単一ユースケース/シーケンスを構成図の上で再生する.yaml#正常シナリオ"
-        click J "../単一ユースケース/シーケンス図の参加者を選んで強調する.yaml#正常シナリオ"
+        click A "id:SC-472-83#scenarios[正常シナリオ]"
+        click B "id:SC-472-78#scenarios[正常シナリオ]"
+        click C "id:SC-472-8#scenarios[正常シナリオ]"
+        click D "id:SC-472-39#scenarios[正常シナリオ]"
+        click E "id:SC-472-39#scenarios[正常シナリオ（グループを閉じる）]"
+        click H "id:SC-472-41#scenarios[正常シナリオ]"
+        click I "id:SC-472-18#scenarios[正常シナリオ]"
+        click J "id:SC-472-19#scenarios[正常シナリオ]"
     expected:
       - '`mdmark check` が map の補足のずれを含めてずれ 0 件で、終了コード 0 を返却する'
       - 構成図が、入れ子のグループを自動配置した図に描かれ、ノードとグループが重ならず、線が端点とその祖先以外のノード・グループを横切らない。クラスのノードが、使う側の設定の種類の名前・アイコン・形・色で描かれる
@@ -54,14 +55,14 @@ scenarios:
       - mermaid のライブラリへの要求が 0 件（map の範囲の中の mermaid のブロックを mermaid のライブラリで描かない）
     test: test_normal
     uses:
-      - dev/設計書/シナリオ/単一ユースケース/雛形を配置する#scenarios[正常シナリオ]
-      - dev/設計書/シナリオ/単一ユースケース/設定と索引を点検する#scenarios[正常シナリオ]
-      - dev/設計書/シナリオ/単一ユースケース/Mermaidと補足で図を描く#scenarios[正常シナリオ]
-      - dev/設計書/シナリオ/単一ユースケース/図のグループの中へ入る・開閉する#scenarios[正常シナリオ]
-      - dev/設計書/シナリオ/単一ユースケース/図のグループの中へ入る・開閉する#scenarios[正常シナリオ（グループを閉じる）]
-      - dev/設計書/シナリオ/単一ユースケース/図を巡回する#scenarios[正常シナリオ]
-      - dev/設計書/シナリオ/単一ユースケース/シーケンスを構成図の上で再生する#scenarios[正常シナリオ]
-      - dev/設計書/シナリオ/単一ユースケース/シーケンス図の参加者を選んで強調する#scenarios[正常シナリオ]
+      - SC-472-83#scenarios[正常シナリオ]
+      - SC-472-78#scenarios[正常シナリオ]
+      - SC-472-8#scenarios[正常シナリオ]
+      - SC-472-39#scenarios[正常シナリオ]
+      - SC-472-39#scenarios[正常シナリオ（グループを閉じる）]
+      - SC-472-41#scenarios[正常シナリオ]
+      - SC-472-18#scenarios[正常シナリオ]
+      - SC-472-19#scenarios[正常シナリオ]
   - name: 正常シナリオ（書き出した HTML で辿る）
     setup:
       - name: 空のフォルダ
@@ -76,11 +77,11 @@ scenarios:
         B --> C[Mermaidと補足で図を描く:正常シナリオ]
         C --> D[図のグループの中へ入る・開閉する:正常シナリオ]
         D --> F[シーケンスを構成図の上で再生する:正常シナリオ]
-        click A "../単一ユースケース/雛形を配置する.yaml#正常シナリオ"
-        click B "../単一ユースケース/文書をHTMLに書き出す.yaml#正常シナリオ"
-        click C "../単一ユースケース/Mermaidと補足で図を描く.yaml#正常シナリオ"
-        click D "../単一ユースケース/図のグループの中へ入る・開閉する.yaml#正常シナリオ"
-        click F "../単一ユースケース/シーケンスを構成図の上で再生する.yaml#正常シナリオ"
+        click A "id:SC-472-83#scenarios[正常シナリオ]"
+        click B "id:SC-472-56#scenarios[正常シナリオ]"
+        click C "id:SC-472-8#scenarios[正常シナリオ]"
+        click D "id:SC-472-39#scenarios[正常シナリオ]"
+        click F "id:SC-472-18#scenarios[正常シナリオ]"
     expected:
       - '`mdmark export` が終了コード 0 を返却し、1 枚の HTML を書き出す'
       - 書き出した HTML を開いてから操作を終えるまで、外への要求が 0 件
@@ -89,11 +90,11 @@ scenarios:
       - シーケンスを再生すると、構成図の上で今のメッセージの線の上をデータの印が流れる
     test: test_normal_when_exported
     uses:
-      - dev/設計書/シナリオ/単一ユースケース/雛形を配置する#scenarios[正常シナリオ]
-      - dev/設計書/シナリオ/単一ユースケース/文書をHTMLに書き出す#scenarios[正常シナリオ]
-      - dev/設計書/シナリオ/単一ユースケース/Mermaidと補足で図を描く#scenarios[正常シナリオ]
-      - dev/設計書/シナリオ/単一ユースケース/図のグループの中へ入る・開閉する#scenarios[正常シナリオ]
-      - dev/設計書/シナリオ/単一ユースケース/シーケンスを構成図の上で再生する#scenarios[正常シナリオ]
+      - SC-472-83#scenarios[正常シナリオ]
+      - SC-472-56#scenarios[正常シナリオ]
+      - SC-472-8#scenarios[正常シナリオ]
+      - SC-472-39#scenarios[正常シナリオ]
+      - SC-472-18#scenarios[正常シナリオ]
   - name: 異常シナリオ（補足にずれがある）
     setup:
       - name: 空のフォルダ
@@ -110,10 +111,10 @@ scenarios:
         A[雛形を配置する:正常シナリオ] --> B[設定と索引を点検する:正常シナリオ（map の補足にずれがある）]
         B --> C[設定と索引を点検する:正常シナリオ]
         C --> D[Mermaidと補足で図を描く:正常シナリオ]
-        click A "../単一ユースケース/雛形を配置する.yaml#正常シナリオ"
-        click B "../単一ユースケース/設定と索引を点検する.yaml#正常シナリオmap-の補足にずれがある"
-        click C "../単一ユースケース/設定と索引を点検する.yaml#正常シナリオ"
-        click D "../単一ユースケース/Mermaidと補足で図を描く.yaml#正常シナリオ"
+        click A "id:SC-472-83#scenarios[正常シナリオ]"
+        click B "id:SC-472-78#scenarios[正常シナリオ（map の補足にずれがある）]"
+        click C "id:SC-472-78#scenarios[正常シナリオ]"
+        click D "id:SC-472-8#scenarios[正常シナリオ]"
     expected:
       - 1 回目の `mdmark check` が、ずれを持つ図の文書と図の場所を指す 3 件のずれ（無いノード・線への参照・知らないキー・`--` を含む値）を出し、終了コード 0 以外を返却する
       - 修正した後の 2 回目の `mdmark check` がずれ 0 件で終了コード 0 を返却する
@@ -121,7 +122,7 @@ scenarios:
       - 点検は文書を書き換えない
     test: test_error_when_map_data_drift
     uses:
-      - dev/設計書/シナリオ/単一ユースケース/雛形を配置する#scenarios[正常シナリオ]
-      - dev/設計書/シナリオ/単一ユースケース/設定と索引を点検する#scenarios[正常シナリオ]
-      - dev/設計書/シナリオ/単一ユースケース/設定と索引を点検する#scenarios[正常シナリオ（map の補足にずれがある）]
-      - dev/設計書/シナリオ/単一ユースケース/Mermaidと補足で図を描く#scenarios[正常シナリオ]
+      - SC-472-83#scenarios[正常シナリオ]
+      - SC-472-78#scenarios[正常シナリオ]
+      - SC-472-78#scenarios[正常シナリオ（map の補足にずれがある）]
+      - SC-472-8#scenarios[正常シナリオ]

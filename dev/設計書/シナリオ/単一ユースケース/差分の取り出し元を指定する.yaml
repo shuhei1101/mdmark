@@ -1,3 +1,4 @@
+id: SC-472-47
 title: "差分の取り出し元を指定する"
 scenarios:
   - name: 正常シナリオ

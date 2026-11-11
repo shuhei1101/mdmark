@@ -1,3 +1,4 @@
+id: ER-472-3
 title: "ER 図: エイリアス"
 lead: 利用側が設定の `aliases` に並べるエイリアスの元の行と、その行と元の YAML から作ったエイリアス。元の行の構造は alias-inject v0.3.0 の `schemas/aliases.schema.yaml` を取り込んで縛り、作ったエイリアスを `mount`・`render`・`collectMatches` に指定する。
 er:
@@ -7,7 +8,8 @@ er:
   relations:
     - from: エイリアスの元の行
       to: エイリアス
-      cardinality: '||--o{'
+      from_cardinality: '1'
+      to_cardinality: 0..n
       label: paths と records から作る
 tables:
   - name: aliases
@@ -66,7 +68,7 @@ tables:
         example: '{name: term, description: meta.meaning}'
         notes: キーは `id`・`name`・`aliases`・`description`・`related`・`command`・`cwd`・`url`・`avoid`・`skill`・`tool`・`path`・`port`・`replacement`。行と `metadata` のほかのキーは拒まず使用しない
     refs:
-      - dev/設計書/設定/ライブラリ本体#settings[aliases]
+      - CFG-472-3#settings[aliases]
     reason: 構造の正は alias-inject が持つ（D-120）。mdmark は取り込んだタグのスキーマで検証し、この表は読み込む側の使用方法を記載する
   - name: MdmarkAlias
     title: エイリアス
@@ -158,6 +160,6 @@ tables:
         description: '`avoid` の種類の置き換え先の単語'
         example: ワークスペース
     refs:
-      - dev/設計書/インターフェース定義/ライブラリ本体/エイリアスを作る.ts#response[aliases]
+      - IF-472-26#response[aliases]
     notes:
       種類ごとの必須のキー: '`term`・`doc`: `id`・`name`・`description`。`command`: `id`・`name`・`command`。`url`: `id`・`name`・`url`。`skill`: `id`・`name`・`skill`。`tool`: `id`・`name`・`tool`。`path`: `id`・`name`・`path`。`avoid`: `id`・`name`・`replacement`（alias-inject の定義のとおり）。必須のキーが空のエイリアスは照合しない'

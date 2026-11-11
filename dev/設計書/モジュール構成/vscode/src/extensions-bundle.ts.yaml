@@ -1,0 +1,48 @@
+id: MOD-472-106
+title: VS Code 拡張機能 / 設定 / extensions-bundle.ts
+test_files:
+  - tests/unit/vscode/src/extensions-bundle.test.ts
+functions:
+  - name: bundleExtensions
+    title: 拡張をまとめる
+    kind: 関数
+    container: vscode/src/extensions-bundle.ts
+    usecase: 共通
+    summary: 重ねた設定の `extensions` を esbuild-wasm で 1 つずつ ES モジュールにまとめる（`.ts` も読み込み、URL の import はまとめに取り込む）
+    description: プレビューは設定を再読み込みして `extensions` の並びかそのファイルが変わったときだけ、書き出しは書き出すたびに呼ぶ（esbuild-wasm はまとめた結果をメモリから解放しないため、Markdown の書き換えでは呼ばない）
+    scope: public
+    is_async: true
+    side_effects: URL の先を読み込む。初めて呼んだときだけ esbuild-wasm を初期化する
+    args:
+      - name: options
+        type: '{ paths: string[]; extensionPath: string; fetchText?: (url: string) => Promise<string> }'
+        required: true
+        description: '`ConfigLoad` の `extensions`（絶対パス）・拡張機能のフォルダ（`dist/esbuild.wasm` を `node:fs/promises` で読み込む）・URL を読み込む関数'
+    returns:
+      type: 'Promise<Array<{ path: string; code: string } | { path: string; error: string }>>'
+      description: '`paths` の順の、まとめたコードかまとめられない理由'
+    process: |-
+      1. 初めて呼んだときだけ、`{extensionPath}/dist/esbuild.wasm` を読み込んで `WebAssembly.compile` し、`initialize({ wasmModule, worker: false })` を呼ぶ（初期化の Promise を使い回す）
+      2. URL を読み込む関数を記録付きにし（URL を読み込む関数を記録付きにする）、`paths` の各パスをモジュールを 1 つにまとめる（`build` は esbuild-wasm の `build`）
+         - `error` の場合、そのパスと理由を返却し、次のパスへ進む
+    unit_tests:
+      - name: test_bundle_extensions
+        case: 正常
+        summary: .ts とその相対パス・URL の import を 1 つにまとめる
+        condition: 型注釈を持ち `./lib.ts` と `https://cdn.example/a.js` を import する `entry.ts`
+        mock: 一時フォルダ。`fetchText` を URL の本文を返却する代役にする。`extensionPath` は `vscode/node_modules/esbuild-wasm` の `esbuild.wasm` を配置した一時フォルダ
+        expected: '`code` に `import` 文と型注釈が残らず、既定の export を持つ'
+      - name: test_bundle_extensions_when_error
+        case: 異常
+        summary: まとめられない拡張は理由を返却して次へ進む
+        condition: '`paths` が無いファイルと `entry.ts` の順'
+        mock: 一時フォルダ
+        expected: 1 つ目が `error`、2 つ目が `code`
+    callees:
+      - MOD-472-119#functions[bundleModule]
+      - MOD-472-119#functions[cacheFetchText]
+    refs:
+      - LIB-472-11#
+    status: planned
+    introduced:
+      pr: 347

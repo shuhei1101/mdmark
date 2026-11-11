@@ -1,3 +1,4 @@
+id: SC-472-56
 title: 文書をHTMLに書き出す
 scenarios:
   - name: 正常シナリオ
@@ -172,7 +173,7 @@ scenarios:
       - 外への要求が 0 件
     test: test_normal_when_theme_selected
     refs:
-      - dev/設計書/シナリオ/単一ユースケース/テーマを選ぶ#scenarios[正常シナリオ]
+      - SC-472-26#scenarios[正常シナリオ]
   - name: 正常シナリオ（画像・動画・音声を埋める）
     setup:
       - name: 書き出す文書と画像・動画・音声のファイル
@@ -252,7 +253,7 @@ scenarios:
       - 外への要求が 0 件
     test: test_normal_when_footnotes
     refs:
-      - dev/設計書/シナリオ/単一ユースケース/脚注を確認する#scenarios[正常シナリオ]
+      - SC-472-71#scenarios[正常シナリオ]
   - name: 正常シナリオ（範囲のスクリプトと CSS）
     setup:
       - name: 範囲のスクリプトを持つ文書
@@ -415,7 +416,7 @@ scenarios:
       - 外への要求が 0 件
     test: test_normal_when_page_marker
     refs:
-      - dev/設計書/シナリオ/単一ユースケース/ページの設定を文書で指定する#scenarios[正常シナリオ]
+      - SC-472-33#scenarios[正常シナリオ]
 lead: 文書の作成者が `mdmark export` で Markdown を 1 つ、配布物・利用側の CSS・外部ライブラリのモジュール・画像を埋めた 1 枚の HTML に書き出し、読者は file:// で開いて外を読み込まずに読み込む。
 issue: 9
 primary_actor: 文書の作成者

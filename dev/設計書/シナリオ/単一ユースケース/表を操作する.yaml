@@ -1,3 +1,4 @@
+id: SC-472-73
 title: 表を操作する
 scenarios:
   - name: 正常シナリオ

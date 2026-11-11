@@ -1,3 +1,4 @@
+id: LIB-472-3
 title: Storybook
 kind: ライブラリ
 version:
@@ -7,46 +8,46 @@ version:
   source: package.json
   pinning: 3 パッケージを完全一致で固定する（10.6.2 より前は未公開の勧告 2 件の修正前）
 catalogs:
-- name: コマンド
-  version: '`storybook==10.6.2`'
-  entries:
-  - name: storybook dev
-    kind: コマンド
-    purpose: 開発サーバーを起動してストーリーを配信する
-    description: '`--ci --no-open --host 127.0.0.1 -p {ポート}` で発生させる。環境変数 `RENDER_ORIGIN` に描画のインターフェースの origin を指定する（無ければ設定の読み込みで止まる）。撮影と結合テストは `storybook dev` に向ける'
-- name: ファイル
-  version: '`storybook==10.6.2`'
-  entries:
-  - name: .storybook/main.ts
-    kind: 設定ファイル
-    purpose: framework（`@storybook/react-vite`）・ストーリーの場所・`addon-a11y`・`staticDirs`・`viteFinal` を決める
-    description: '`viteFinal` で Tailwind の plugin・`/render` の描画のインターフェースへの中継（`server.proxy`）・`@` の別名・React の `dedupe` を追加する'
-  - name: .storybook/preview.tsx
-    kind: 設定ファイル
-    purpose: 全ストーリーに共通のデコレーター・`loaders`（`mswLoader`）・`globalTypes`・`parameters.a11y.test` を決める
-  - name: '*.stories.ts / *.stories.tsx'
-    kind: ストーリー
-    purpose: CSF（`export default meta` と名前付き export のストーリー）で記載する
-    description: 部品の HTML のストーリーは `parameters.server.id` と `args` を持ち、デコレーターが描画のインターフェースの HTML を描く。id は `title` と export の名前を整えたもの（`Parts/Notice` と `Block` → `parts-notice--block`）
-- name: API
-  version: '`@storybook/react-vite==10.6.2`'
-  entries:
-  - name: Meta・StoryObj
-    kind: 型
-    purpose: ストーリーの型（部品の HTML のストーリーは `Meta<Record<string, unknown>>`）
-  - name: Decorator
-    kind: 型
-    purpose: ストーリーを包んで描く関数（`(Story, context) => ReactNode`）
-  - name: parameters.a11y.test
-    kind: パラメータ
-    purpose: '`addon-a11y` の違反を `error` にする（Vitest の addon のテストを失敗にする）'
-  - name: /index.json
-    kind: エンドポイント
-    purpose: ストーリーの索引
-  - name: iframe.html?id={ストーリーの id}
-    kind: エンドポイント
-    purpose: ストーリーを単独で開くプレビュー
-    description: 描いた要素は `#storybook-root` に入る
+  - name: コマンド
+    version: '`storybook==10.6.2`'
+    entries:
+      - name: storybook dev
+        kind: コマンド
+        purpose: 開発サーバーを起動してストーリーを配信する
+        description: '`--ci --no-open --host 127.0.0.1 -p {ポート}` で発生させる。環境変数 `RENDER_ORIGIN` に描画のインターフェースの origin を指定する（無ければ設定の読み込みで止まる）。撮影と結合テストは `storybook dev` に向ける'
+  - name: ファイル
+    version: '`storybook==10.6.2`'
+    entries:
+      - name: .storybook/main.ts
+        kind: 設定ファイル
+        purpose: framework（`@storybook/react-vite`）・ストーリーの場所・`addon-a11y`・`staticDirs`・`viteFinal` を決める
+        description: '`viteFinal` で Tailwind の plugin・`/render` の描画のインターフェースへの中継（`server.proxy`）・`@` の別名・React の `dedupe` を追加する'
+      - name: .storybook/preview.tsx
+        kind: 設定ファイル
+        purpose: 全ストーリーに共通のデコレーター・`loaders`（`mswLoader`）・`globalTypes`・`parameters.a11y.test` を決める
+      - name: '*.stories.ts / *.stories.tsx'
+        kind: ストーリー
+        purpose: CSF（`export default meta` と名前付き export のストーリー）で記載する
+        description: 部品の HTML のストーリーは `parameters.server.id` と `args` を持ち、デコレーターが描画のインターフェースの HTML を描く。id は `title` と export の名前を整えたもの（`Parts/Notice` と `Block` → `parts-notice--block`）
+  - name: API
+    version: '`@storybook/react-vite==10.6.2`'
+    entries:
+      - name: Meta・StoryObj
+        kind: 型
+        purpose: ストーリーの型（部品の HTML のストーリーは `Meta<Record<string, unknown>>`）
+      - name: Decorator
+        kind: 型
+        purpose: ストーリーを包んで描く関数（`(Story, context) => ReactNode`）
+      - name: parameters.a11y.test
+        kind: パラメータ
+        purpose: '`addon-a11y` の違反を `error` にする（Vitest の addon のテストを失敗にする）'
+      - name: /index.json
+        kind: エンドポイント
+        purpose: ストーリーの索引
+      - name: iframe.html?id={ストーリーの id}
+        kind: エンドポイント
+        purpose: ストーリーを単独で開くプレビュー
+        description: 描いた要素は `#storybook-root` に入る
 lead: UI の部品を状態ごとのストーリーとして並べ、ブラウザで開いて確認する開発サーバー。
 purl: pkg:npm/storybook@10.6.2
 dependency_scope: 開発のみ

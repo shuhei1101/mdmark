@@ -1,3 +1,4 @@
+id: SC-472-15
 title: "ガイドを参照する"
 scenarios:
   - name: 正常シナリオ
@@ -55,5 +56,5 @@ success_guarantee: dev-docs の `search_docs` で、mdmark の配信元のガイ
 minimal_guarantee: dev-docs が無いときも、mdmark の MCP の instructions から「dev-docs が無いので見つかりません」と分かる。mdmark は dev-docs の端末の設定を作らない。
 test_file: tests/e2e/単一ユースケース/ガイドを参照する.spec.ts
 refs:
-  - dev/設計書/シナリオ/単一ユースケース/名前の色で表・バッジ・本文を強調する#
-  - dev/設計書/シナリオ/単一ユースケース/画像・動画・音声を配置する#
+  - SC-472-36#
+  - SC-472-67#

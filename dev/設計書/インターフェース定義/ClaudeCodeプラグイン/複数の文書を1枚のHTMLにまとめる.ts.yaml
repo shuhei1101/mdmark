@@ -1,3 +1,4 @@
+id: IF-472-13
 title: "複数の文書を1枚のHTMLにまとめる"
 entry:
   kind: mcp_tool
@@ -110,5 +111,5 @@ constraints:
   - item: 書き出す中身
     constraint: プラグインに同梱した配布物を埋める。配布物のバージョンはプラグインのバージョンと同じ
 refs:
-  - dev/設計書/インターフェース定義/ライブラリ本体/複数の文書を1枚のHTMLにまとめる.ts#
+  - IF-472-38#
 test_file: tests/integration/ClaudeCodeプラグイン/build-site.test.ts

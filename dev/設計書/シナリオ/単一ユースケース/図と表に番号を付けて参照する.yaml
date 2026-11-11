@@ -1,3 +1,4 @@
+id: SC-472-37
 title: "図と表に番号を付けて参照する"
 scenarios:
   - name: 正常シナリオ

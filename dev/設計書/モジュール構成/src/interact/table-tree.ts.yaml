@@ -1,0 +1,58 @@
+id: MOD-472-241
+title: ライブラリ本体 / 操作 / table-tree.ts
+test_files:
+  - tests/unit/src/interact/table-tree.browser.test.ts
+functions:
+  - name: attachTableTree
+    title: 階層の表の操作を付ける
+    container: src/interact/table-tree.ts
+    kind: 関数
+    scope: internal
+    summary: '`data-tree` の表の子を持つ行に開閉のボタン、各行にパスのコピーのボタンと全体のパスのツールチップを配置し、開閉・行の選択・キーの列の絞り込み・見本との連動と見本の表示の切り替えを付ける'
+    description: 開閉の作法はコードの折りたたみと同じ（Shift で子孫をまとめて開閉する）。ツールチップは用語のツールチップと同じ開閉の処理を使用する。絞り込みは `attachTables` のキーの列の `text` の絞り込みの代わりに `filterTreeRows` で当て、件数を書き換える。絞り込む前の開閉を記録し、解くと戻す。コピーは `writeClipboard` を使用し、結果を 2 秒出す。印刷の前後の開閉は `attachPrint` が扱う
+    side_effects: 表の行の `hidden`・`aria-selected`・縦線の class・見本の行の class を書き換える。クリップボードに書き込む
+    args:
+      - name: options
+        type: '{ wrapper: HTMLElement; placement: TooltipPlacement }'
+        required: true
+        description: '`wrapper` は `div.mdmark-table[data-tree]`、`placement` はツールチップを出す場所'
+    returns:
+      type: () => void
+      description: 受け取りを解除する関数
+    callees:
+      - 'MOD-472-239#functions[filterTreeRows]'
+      - MOD-472-315#functions[renderTreeTools]
+    unit_tests:
+      - name: test_attach_table_tree_when_folded
+        case: 正常
+        summary: 開閉のボタンで子孫を畳み、Shift で入れ子もまとめて開閉する
+        condition: 階層の表で `aliases[]` のボタンを押し、次に Shift を押しながら押す
+        mock: なし
+        expected: 1 回目で子孫 4 行が `hidden`、2 回目で全ての行が出て入れ子のボタンも `aria-expanded="true"`
+      - name: test_attach_table_tree_when_selected
+        case: 正常
+        summary: 行を選ぶと同じ親の範囲の縦線を濃くし、見本の同じパスの行に色を付ける
+        condition: 見本を結んだ階層の表で `features.table` の行を押す
+        mock: なし
+        expected: 行が `aria-selected="true"`、`features.table`・`features.html` の 1 つ目の縦線が `is-active`、開いているタブの `data-path="features.table"` の行が `is-linked`
+      - name: test_attach_table_tree_when_filtered
+        case: 正常
+        summary: 末尾の名前で絞り込み、祖先を残して件数を書き換える
+        condition: '`+count filter=キー:text` の階層の表で、絞り込みの欄に `id`'
+        mock: なし
+        expected: '`aliases[]`・`aliases[].id` だけが出て、`mark.mdmark-tree-hit` が 1 つ、件数が `1 / 4 件`'
+      - name: test_attach_table_tree_when_copied
+        case: 正常
+        summary: コピーのボタンで全体のパスを記載し、行の選択を変えない
+        condition: '`aliases[].id` の行のコピーのボタンを押す'
+        mock: '`navigator.clipboard.writeText` を見張る'
+        expected: '`writeText` が `aliases[].id` で 1 回、どの行も `aria-selected="true"` でない'
+      - name: test_attach_table_tree_when_example_hidden
+        case: 正常
+        summary: 見本の表示を切り替える
+        condition: '`見本を隠す` を押す'
+        mock: なし
+        expected: '`mdmark-tree-layout` が `is-example-hidden` を持ち、ボタンが `aria-expanded="false"`・文字 `見本を表示`'
+    status: planned
+    introduced:
+      pr: 303

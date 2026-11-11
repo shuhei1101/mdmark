@@ -1,3 +1,4 @@
+id: IF-472-16
 title: "PDFに印刷する"
 entry:
   kind: operation
@@ -26,7 +27,7 @@ flows:
       - 続けて `mdmark.openInBrowser` を呼ぶと、もう一度書き出した HTML を開いても `window.print` が呼ばれない
     test: test_normal
     refs:
-      - dev/設計書/シナリオ/単一ユースケース/文書を印刷する#
+      - SC-472-58#
   - name: 正常系（待ちの上限を超える）
     summary: 外部ライブラリが待ちの上限まで読み込み終わらなければ、そのまま印刷する
     setup:
@@ -84,7 +85,7 @@ lead: 開いている Markdown を、描き終えた後に印刷のダイアロ�
 idempotent: true
 side_effects: HTMLに書き出す.ts と同じ場所に、印刷のダイアログを出す処理を追加した HTML を書き込み、`env.openExternal` で開く
 callers:
-  - dev/設計書/シナリオ/単一ユースケース/PDFに印刷する#
+  - SC-472-9#
 request:
   - name: uri
     type: vscode.Uri
@@ -108,5 +109,5 @@ constraints:
     notes: 書き出せないときの扱いと書き出す先を HTMLに書き出す.ts と統一するため、別のファイルにしない
   - item: 印刷する時
     constraint: '`mount` を呼んだ後、外部ライブラリのマーカーの場所（class `mdmark-embed` と `role="status"` の要素）が無くなり、`document.fonts.ready` が解決したら `window.print()` を 1 回呼ぶ。待ちの上限を超えたらそのまま呼ぶ'
-    decided_by: dev/設計書/非機能要件/非機能要件#requirements[印刷のダイアログを出すまでの待ちの上限]
+    decided_by: NFR-472-1#requirements[印刷のダイアログを出すまでの待ちの上限]
     notes: マーカーの場所の要素は文書を描く.ts の制約「外部ライブラリのマーカーの場所」。折り畳みを開くのは mdmark の印刷の機能（`beforeprint`）

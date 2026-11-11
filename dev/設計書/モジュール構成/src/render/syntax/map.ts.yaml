@@ -1,0 +1,54 @@
+id: MOD-472-303
+title: ライブラリ本体 / 記法 / map.ts
+test_files:
+  - tests/unit/src/render/syntax/map.test.ts
+functions:
+  - name: buildMapRanges
+    title: mapの範囲を組み立てる
+    container: src/render/syntax/map.ts
+    usecase: Mermaidと補足で図を描く
+    kind: 関数
+    scope: internal
+    summary: 'コアルール。`map` がオンのとき、`<!-- map -->` 〜 `<!-- /map -->` の範囲ごとに mermaid のブロックと補足の HTML コメントを数え、範囲を `div.mdmark-map` の開きと閉じのトークンで囲み、補足を `pre.mdmark-map-data[hidden]` にし、`collectMapStructure` の項目があれば範囲の前に記載の警告（`kind: map`）を差し込む（Mermaid と補足の中身の警告は `dist/map.js` が足す）'
+    description: 印の引数は `parseMapArgs` で読み、`data-map-args` に `normalized` を入れる（知らないキーは警告にせず落とす）。`pre.mdmark-map-data` の中身は補足のマーカーの引数の文字（`map-data:` の後ろから `-->` の前まで）を JSON のまま入れる。`glossary` がオンのとき、`buildDictionary` の辞書で範囲の Mermaid と補足の文字を `findWords` で照合し、意味を持つ用語（エイリアスを除く）を、文字に出たままの用語から意味への JSON にして `data-map-terms` に入れる（該当が無ければ付けない）。図の番号は文書の中の map の範囲の順に 1 から振る（描かない範囲も数える）。範囲の中の mermaid のブロックには `data-mdmark-mermaid` と色分けの属性を付けない（`attachMermaid` の対象から外れる）。描かない範囲（mermaid のブロックが無い・2 つ以上・補足が 2 つ以上・描けない種類）は `div.mdmark-map` で囲まず、警告だけを差し込む。`map` がオフの文書では範囲のマーカーと補足のコメントを落とし、mermaid のブロックは普通の mermaid のコードブロックにする
+    args:
+      - name: state
+        type: StateCore
+        required: true
+        description: markdown-it の状態
+    returns:
+      type: void
+      description: なし
+    callees:
+      - MOD-472-135#functions[collectMapStructure]
+    unit_tests:
+      - name: test_build_map_ranges
+        case: 正常
+        summary: 2 つの範囲
+        condition: 構成図とシーケンス図の範囲
+        mock: なし
+        expected: '`div.mdmark-map` が 2 つで `data-map` が `1`・`2`、`data-map-kind` が `flowchart`・`sequenceDiagram`、mermaid のブロックが `data-mdmark-mermaid` を持たない'
+      - name: test_build_map_ranges_when_problems
+        case: 異常
+        summary: 範囲の形の誤り
+        condition: 'JSON として読めない引数 `{title: 全体}` と、読めない Mermaid の行と知らない補足のキーを持つ範囲'
+        mock: なし
+        expected: 範囲の前に記載の警告が 1 つで、引数を JSON で記載する直し方を含み、Mermaid の行と `layuot` は含まない。`div.mdmark-map` がある
+      - name: test_build_map_ranges_when_no_mermaid
+        case: 異常
+        summary: mermaid のブロックが無い
+        condition: 補足だけの範囲
+        mock: なし
+        expected: 記載の警告だけで `div.mdmark-map` が無い
+      - name: test_build_map_ranges_when_disabled
+        case: 正常
+        summary: 機能を外した
+        condition: '`features: -map` の文書'
+        mock: なし
+        expected: '`div.mdmark-map` が無く、mermaid のブロックが `data-mdmark-mermaid` を持つ'
+      - name: test_build_map_ranges_when_terms
+        case: 正常
+        summary: 用語
+        condition: 索引に意味を持つ用語 `補足` と意味の無い用語 `図` を持ち、Mermaid のノードの名前が「補足の検査」の範囲
+        mock: なし
+        expected: '`data-map-terms` が `{"補足": "{意味}"}` で、`図` を含まない。`glossary` をオフにすると `data-map-terms` が無い'

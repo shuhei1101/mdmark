@@ -1,0 +1,153 @@
+id: MOD-472-75
+title: VS Code 拡張機能 / Webview / panel-screen.tsx
+test_files:
+  - tests/unit/vscode/src/webview/features/preview/panel/panel-screen.browser.test.tsx
+components:
+  - name: PanelScreen
+    title: プレビューのパネル
+    container: vscode/src/webview/features/preview/panel/panel-screen.tsx
+    usecase: 共通
+    summary: 画面設計『VSCodeのプレビュー』の要素を並べ、配布物の読み込み・拡張機能のメッセージ・スクロール・リンクを hook でつなぐ
+    description: |-
+      描く順は 状態の表示（`status` があるとき）→ 帯（`configError` があるとき）→ 描く先の要素（`status` があるときは `hidden`）。描く先の要素は子を持たない `div` で、中身は `DocumentView` が mdmark で描く。配布物を読み込んだ後、`boot.extensions` を登録してから（拡張を登録する）`ready` を送信する。メッセージは `type` ごとに次のとおり処理する（`settled`・`assetsId` は ref に持つ）
+
+      - `render`: `previous` を持ち `view.supportsDiff()` が false なら、描かずに `status` を `diffUnsupported` にして `loadFailed`（`diffUnsupported`）を送信する。それ以外は `view.render` の後に `status` を削除して `rendered` を送信し、`currentPosition()` が数なら `setState({ line })` で保存する。`collectAssetPaths` が 1 つ以上返せば `assetsId` を増やして `resolveAssets` を送信する
+      - `assetsResolved`: `id` が `assetsId` と同じときだけ `applyAssetUrls` を呼ぶ
+      - `scrollToLine`: `view.scrollToLine`
+      - `configError`・`configOk`: `configError` を受けた `path`・`line`・`settingKey` にする・削除する
+      - `theme`: `#mdmark-theme` の `link` の `href` を替える（再描画しない）
+      - `inspect`・`axe`: `boot.test` のときだけ `view.inspect`・`view.audit` の結果を `inspected`・`axed` で同じ `id` で送信する
+      - `boot.test` のときだけ、描き始める前から `document` の `securitypolicyviolation` を数え、`document.documentElement` の `data-mdmark-csp-violations` に件数（最初は `0`）を記載する（結合テストが `inspect` で読み込む）
+      - 上の `type` 以外: 処理しない（`window` の `message` には、MSW の Service Worker など拡張機能以外が送信するものも届く）
+
+      メッセージの処理と配布物の読み込みの結果の処理で投げた例外（`view.render` の例外など）は、state に入れて次の描画で投げ、`App` の Error Boundary に描画の失敗（`unexpected`）を出させる（`useErrorBoundary` は Error Boundary の外で描くと例外を投げ、画面を単独で描く単体テストとストーリーで使用できない）
+    kind: 画面
+    props:
+      - name: boot
+        type: PreviewBoot
+        required: true
+        description: パネルの始め方
+      - name: api
+        type: VsCodeApi
+        required: true
+        description: VS Code の Webview の API
+      - name: savedLine
+        type: number | undefined
+        required: false
+        description: 保存した行。最初の `render` でその行へ戻す
+      - name: load
+        type: '(url: string) => Promise<Mdmark>'
+        required: false
+        default: '`loadMdmark`'
+        description: 配布物を読み込む関数。ストーリーと単体テストが代役を指定する
+      - name: importModule
+        type: '(url: string) => Promise<{ default?: unknown }>'
+        required: false
+        default: '`import(/* @vite-ignore */ url)`'
+        description: 拡張を読み込む関数（拡張を登録するに指定する）。単体テストが代役を指定する
+    state:
+      - name: status
+        type: '{ state: PreviewStatusState; version?: string } | undefined'
+        initial: '`boot.status` が `versionUndecidable` か `boot.distJs` が無いとき `{ state: "versionUndecidable" }`、それ以外は `undefined`'
+        description: 文書の代わりに出す状態の表示
+        notes: '`useState`'
+      - name: configError
+        type: '{ path: string; line?: number; settingKey?: string } | undefined'
+        initial: '`undefined`'
+        description: 帯に出す読み込めない設定ファイル。あるときだけ帯を出す
+        notes: '`useState`'
+    unit_tests:
+      - name: test_panel_screen_when_rendered
+        case: 正常
+        summary: 配布物を読み込み終えたら ready を送信し、render で描いて rendered を送信する
+        condition: 代役の `load` を指定して描き、`ready` を待って `render` を送信する
+        mock: '`api` を送信したメッセージと状態を記録する代役にする。`load` を mdmark の代役を返却する関数にする'
+        expected: '`ready`・`rendered` の順に送信され、描く先の要素に代役が描いた本文がある。状態の表示が無い'
+      - name: test_panel_screen_when_slow
+        case: 正常
+        summary: 1 秒経っても描けていなければ読み込み中を出し、render で削除する
+        condition: 解決しない `load` を指定して描き、フェイクタイマーで `LOADING_DELAY_MS` 進める。続けて `load` を解決して `render` を送信する
+        mock: '`api` を代役にする。`load` を後から解決できる代役にする。タイマーをフェイクにする'
+        expected: 進めた後にタイトル「mdmark を読み込んでいます」がある。`render` の後に無い
+      - name: test_panel_screen_when_load_failed
+        case: 異常
+        summary: 配布物を読み込めなければ理由とバージョンを出し、loadFailed を送信する
+        condition: '`data-version="v0.7.0"` の `boot` と reject する `load` を指定し、MSW で HEAD をネットワークのエラーにする'
+        mock: '`api` を代役にする。`load` を reject する代役にする。MSW の `offline` のハンドラ'
+        expected: '`loadFailed`（`offline`）が送信され、状態の表示に `v0.7.0` と `data-action="reload"` のボタンがある。読み込み中は出ない'
+      - name: test_panel_screen_when_version_undecidable
+        case: 正常
+        summary: バージョンを決められないときは配布物を読み込まずに理由を出す
+        condition: '`status` が `versionUndecidable` の `boot` で描く'
+        mock: '`api` を代役にする。`load` を呼ばれたかを記録する代役にする'
+        expected: '`load` が呼ばれず、`ready` が送信されない。状態の表示にバージョンを決められない文言がある'
+      - name: test_panel_screen_when_diff_unsupported
+        case: 異常
+        summary: 差分に対応しない配布物で previous つきの render を受けると、描かずに理由を出す
+        condition: '`data-version="v0.8.0"` の `boot` で、`diffModes` を持たない配布物を読み込んだ後に `previous` つきの `render` を送信する'
+        mock: '`api` を代役にする。`load` を `mount` だけを持つ代役を返却する関数にする'
+        expected: '`mount` が呼ばれず、`loadFailed`（`diffUnsupported`）が送信され `rendered` は送信されない。状態の表示に `v0.8.0` と `data-action="reload"` のボタンがある'
+      - name: test_panel_screen_when_reload_clicked
+        case: 正常
+        summary: 「リロード」で reload を送信する
+        condition: 読み込めない状態で「リロード」を userEvent で押す
+        mock: '`api` を代役にする'
+        expected: '`reload` が 1 回送られる'
+      - name: test_panel_screen_when_config_error
+        case: 正常
+        summary: configError で帯を文書の前に 1 つだけ出し、configOk で削除する
+        condition: '描いた後に `configError`（`path: "mdmark.config.yaml"`・`line: 4`）、`configError`（`path: "~/.config/mdmark/settings.yaml"`・`settingKey: "features.callout"`）、`configOk` の順に送信し、2 回目の後に「設定ファイルを開く」を押す'
+        mock: '`api` を代役にする'
+        expected: 1 回目の後は帯に `mdmark.config.yaml` と `4 行目`、2 回目の後は帯が 1 つで `~/.config/mdmark/settings.yaml` と `features.callout` を出し、描く先の要素より前にある。`openConfig` が送信される。`configOk` の後は帯が無い
+      - name: test_panel_screen_when_state_saved
+        case: 正常
+        summary: 保存した行の途中の位置を持つ状態で始めると、最初の render の後にその位置へ戻してから保存し、revealLine を送信しない
+        condition: '`savedLine` を 20.5 で描き、見出しを `data-source-line` つきで並べた長い文書の `render` を送信し、次のフレームまで待つ'
+        mock: '`api` を `postMessage`・`setState` を記録する代役にする。mdmark を代役にする'
+        expected: '`setState` が最初に呼ばれた引数の `line` が 20.5 との差が 0.05 未満で、`{ line: 0 }`・`{ line: 20 }` では呼ばれない。`revealLine` が送信されない'
+      - name: test_panel_screen_when_assets
+        case: 正常
+        summary: 描いた後に相対パスを問い合わせ、返った URL に替える
+        condition: '`![操作](m/demo.mp4)` を描く代役の `render` を送信し、送信された `id` で `assetsResolved` を返却する'
+        mock: '`api` を代役にする。mdmark を代役にする'
+        expected: '`resolveAssets` が `paths: ["m/demo.mp4"]` で送信され、`video` の `src` が返却した URL'
+      - name: test_panel_screen_when_inspect
+        case: 正常
+        summary: テストのときだけ inspect と axe に回答する
+        condition: '`test` が `true` と `false` の `boot` で、それぞれ `inspect` を送信する'
+        mock: '`api` を代役にする'
+        expected: '`true` のときだけ同じ `id` の `inspected` が送信される'
+      - name: test_panel_screen_when_csp_violation
+        case: 正常
+        summary: テストのときだけ CSP の違反の件数を html 要素に記載する
+        condition: '`test` が `true` と `false` の `boot` で描き、それぞれ `document` に `securitypolicyviolation` を 2 回送る'
+        mock: '`api` を代役にする'
+        expected: '`true` のときだけ `document.documentElement` の `data-mdmark-csp-violations` が `2`（描いた直後は `0`）。`false` のときは属性を持たない'
+      - name: test_panel_screen_when_unknown_message
+        case: 正常
+        summary: 拡張機能のメッセージでない `message` を処理しない
+        condition: '`App` で描いて `ready` を待った後、`{ type: "msw/worker:stop" }` と、`type` を持たない値を送信し、続けて `render` を送信する'
+        mock: '`api` を代役にする'
+        expected: 状態の表示が出ず、`render` の後に `rendered` が 1 回送られる
+      - name: test_panel_screen_when_handler_throws
+        case: 異常
+        summary: メッセージの処理で投げた例外を Error Boundary へ指定する
+        condition: '`App` で描き、`mount` が例外を投げる代役の配布物を読み込んだ後に `render` を送信する'
+        mock: '`api` を代役にする。`load` を `mount` が例外を投げる代役を返却する関数にする'
+        expected: 状態の表示に描画の失敗の文言と `data-action="reload"` のボタンがあり、`rendered` が送信されない
+      - name: test_panel_screen_when_extensions
+        case: 正常
+        summary: 配布物を読み込んだ後、extensions を登録してから ready を送信する
+        condition: '`extensions` が `["a.js", "b.js"]` の `boot` と、`a.js` だけ reject する拡張を読み込む関数を指定して描く'
+        mock: '`api` を代役にする。`load` を `registerExtension` を記録する mdmark の代役を返却する関数にする。拡張を読み込む関数を代役にする'
+        expected: '`registerExtension` が `b.js` の `default` で 1 回だけ呼ばれ、その後に `ready` が送信される'
+      - name: test_panel_screen_when_theme
+        case: 正常
+        summary: theme で theme の CSS の link の href を替える
+        condition: '`<link id="mdmark-theme" href="t.css">` を配置したページで描き、`{ type: "theme", href: "t.css?v=1" }` を送信する'
+        mock: '`api` を代役にする'
+        expected: '`#mdmark-theme` の `href` が `t.css?v=1` で、`render` を受けずに描いた文書がそのまま'
+    refs:
+      - SCR-472-2#
+      - IF-472-22#constraints[Webview とのメッセージ]
+    status: planned

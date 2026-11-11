@@ -1,3 +1,4 @@
+id: IF-472-28
 title: バージョンを上げる
 entry:
   kind: operation
@@ -278,7 +279,7 @@ flows:
       - 設定・索引・文書が適用する前と同じ中身で、設定の `version` が `v0.3.0` のまま
     test: test_error_when_diagram_drift
     refs:
-      - dev/設計書/シナリオ/単一ユースケース/バージョンを上げる#scenarios[異常シナリオ（適用した後の点検で図の定義にずれがある）]
+      - SC-472-27#scenarios[異常シナリオ（適用した後の点検で図の定義にずれがある）]
   - name: 異常系（手元のバージョンが新しい・終了コード 1）
     summary: 手元のバージョンが呼んだ CLI のバージョンより新しいと、もう一度呼ぶ方法を示して終わる
     setup:
@@ -409,9 +410,9 @@ idempotent: true
 side_effects: 設定・索引・文書を書き換え、設定ファイルのあるフォルダの `.mdmark/backup/{日時}/` にコピーを配置する。`--plan` は何も書き換えない
 exclusivity: 排他しない。同じフォルダで同時に実行しないことを前提にする
 refs:
-  - dev/設計書/シナリオ/単一ユースケース/バージョンを上げる#
-  - dev/設計書/ER図/移行の手順#
-  - dev/設計書/インターフェース定義/ライブラリ本体/設定と索引を点検する.ts#
+  - SC-472-27#
+  - ER-472-5#
+  - IF-472-39#
 request:
   - name: --plan
     type: boolean
@@ -504,12 +505,12 @@ constraints:
     notes: hotfix のビルドは `version.ini` を上げず `--version` で打つタグのバージョンを埋める。引数で古いバージョンを受けると、呼んだ CLI の構造で点検して目標のバージョンでは正しい設定を戻してしまう
   - item: 手元のバージョン
     constraint: 設定の `version`。無ければ標準エラーに `手元のバージョン（v{MAJOR}.{MINOR}.{PATCH}）を入れてください:` を出し、標準入力の 1 行を手元のバージョンにする（`--plan` のときも聞く）
-    decided_by: dev/設計書/設定/ライブラリ本体#settings[version]
+    decided_by: CFG-472-3#settings[version]
   - item: バージョンの比較
     constraint: '`v{MAJOR}.{MINOR}.{PATCH}` の 3 つの数を左から数として比べる'
   - item: 適用するバージョン
     constraint: パッケージの `migrations/` の直下の `v{バージョン}` のフォルダのうち、手元のバージョンより新しく目標のバージョン以下のものをバージョンの昇順に適用する。`migrations/next/` は読み込まない
-    decided_by: dev/設計書/ER図/移行の手順#tables[migrations/{バージョン}/steps.yaml]
+    decided_by: ER-472-5#tables[migrations/{バージョン}/steps.yaml]
   - item: 手順の検め
     constraint: 適用する全てのバージョンの `steps.yaml` を、質問と書き換えの前に `schemas/mdmark.steps.schema.json` で検める。1 つでも合わなければ何も書き換えない
   - item: 質問の順
@@ -521,11 +522,11 @@ constraints:
     constraint: 手順の失敗か点検のずれで、コピーの全てのファイルを元の場所へ書き込んで戻す。`call` のスクリプトは `files` に挙げたものだけを書き換える
   - item: 再適用
     constraint: '`rename_key` は元のキーがあり新しいキーが無いときだけ名前を変え、他は何もしない。`set_default` はキーが無いときだけ追加する。`map_values` は値が解釈しの表の元の値のときだけ替える。`replace_mark` は `from` を `to` に書き換える（`to` は `from` を含まない）。`call` のスクリプトはもう一度適用しても結果が変わらないように記載する'
-    decided_by: dev/設計書/ER図/移行の手順#tables[migrations/{バージョン}/steps.yaml]
+    decided_by: ER-472-5#tables[migrations/{バージョン}/steps.yaml]
     notes: コピーから戻せずに止まっても（Ctrl-C など）、次の `upgrade` が同じ手元のバージョンからもう一度適用できる
   - item: YAML の書き換え
     constraint: 設定と索引はコメント・キーの並び・触らないキーの記載方法を残して書き換える
-    decided_by: dev/設計書/外部ライブラリ/yaml#
+    decided_by: LIB-472-36#
   - item: 文書
     constraint: '`replace_mark` と `files` の `documents` が指す文書は、設定の `build` の対象（`include` に該当し `exclude` に該当しないもの）と索引の文書。同じ文書は 1 回だけ扱う'
   - item: スクリプトの呼び方
@@ -533,12 +534,12 @@ constraints:
     notes: スクリプトは同じバージョンの mdmark の開発者が記載し、利用者が Ctrl-C で止められる。`npx` が入れたパッケージは `node_modules` の下にあり、Node はそこの `.ts` の型を落とさない（`ERR_UNSUPPORTED_NODE_MODULES_TYPE_STRIPPING`）ため `.ts` は受けない
   - item: 点検
     constraint: 全ての手順を適用した後に、`mdmark check` と同じ点検（呼んだ CLI の構造）を実行する。文書の本文の知らないマーカー（`unknown_mark`）は点検しない。図の定義の点検（`diagram_*`）は実行する。ずれが 0 件のときだけバージョンを書き換える
-    decided_by: dev/設計書/インターフェース定義/ライブラリ本体/設定と索引を点検する.ts#
+    decided_by: IF-472-39#
   - item: バージョンの書き換え
     constraint: 設定の `version` を目標のバージョンにする。無ければ最上位の先頭に追加する
   - item: 変更履歴
     constraint: パッケージの `docs/はじめに/変更履歴.md` の表のうち、バージョンの列が手元のバージョンより新しく目標のバージョン以下の行を、表の並びで出す。PR の列はリンクの文字（`#40`）だけを出す
   - item: 動く Node のバージョン
     constraint: Node 24 以降
-    decided_by: dev/設計書/非機能要件/非機能要件#requirements[CLI が動く Node のバージョン]
+    decided_by: NFR-472-1#requirements[CLI が動く Node のバージョン]
 test_file: tests/integration/lib/upgrade.test.ts

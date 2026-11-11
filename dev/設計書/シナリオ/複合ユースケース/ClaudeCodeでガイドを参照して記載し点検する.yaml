@@ -1,3 +1,4 @@
+id: SC-472-85
 title: "ClaudeCodeでガイドを参照して記載し点検する"
 scenarios:
   - name: 正常シナリオ
@@ -14,10 +15,10 @@ scenarios:
         A[ClaudeCodeにプラグインを入れる:正常シナリオ] --> C[ガイドを参照する:正常シナリオ]
         C --> D[ClaudeCodeから点検と書き出しを呼ぶ:正常シナリオ（ずれがある）]
         D --> E[ClaudeCodeから点検と書き出しを呼ぶ:正常シナリオ]
-        click A "../単一ユースケース/ClaudeCodeにプラグインを入れる.yaml#正常シナリオ"
-        click C "../単一ユースケース/ガイドを参照する.yaml#正常シナリオ"
-        click D "../単一ユースケース/ClaudeCodeから点検と書き出しを呼ぶ.yaml#正常シナリオずれがある"
-        click E "../単一ユースケース/ClaudeCodeから点検と書き出しを呼ぶ.yaml#正常シナリオ"
+        click A "id:SC-472-4#scenarios[正常シナリオ]"
+        click C "id:SC-472-15#scenarios[正常シナリオ]"
+        click D "id:SC-472-3#scenarios[正常シナリオ（ずれがある）]"
+        click E "id:SC-472-3#scenarios[正常シナリオ]"
     expected:
       - mdmark の MCP の instructions に、記載する前に dev-docs の `search_docs` で mdmark の配信元のガイドを参照し、記載した後に `check` で点検する動線がある
       - dev-docs の `search_docs` で mdmark の配信元の `docs` の行をタグ `topic:ガイド` で絞って参照すると、`guide/index.yaml` の全ての `page` のページが返り、`writing` の `page`（`docs/使用方法/記載する/文書の記載方法.md`）の本文がリポジトリのそのファイルと一致する
@@ -25,10 +26,10 @@ scenarios:
       - mdmark の MCP のツールの一覧に `read_guide` が無い
     test: test_normal
     uses:
-      - dev/設計書/シナリオ/単一ユースケース/ClaudeCodeにプラグインを入れる#scenarios[正常シナリオ]
-      - dev/設計書/シナリオ/単一ユースケース/ガイドを参照する#scenarios[正常シナリオ]
-      - dev/設計書/シナリオ/単一ユースケース/ClaudeCodeから点検と書き出しを呼ぶ#scenarios[正常シナリオ（ずれがある）]
-      - dev/設計書/シナリオ/単一ユースケース/ClaudeCodeから点検と書き出しを呼ぶ#scenarios[正常シナリオ]
+      - SC-472-4#scenarios[正常シナリオ]
+      - SC-472-15#scenarios[正常シナリオ]
+      - SC-472-3#scenarios[正常シナリオ（ずれがある）]
+      - SC-472-3#scenarios[正常シナリオ]
   - name: 異常シナリオ（dev-docs が無い）
     setup:
       - name: 作業のフォルダ
@@ -41,18 +42,18 @@ scenarios:
       flowchart TD
         A[ClaudeCodeにプラグインを入れる:正常シナリオ] --> B[ガイドを参照する:異常シナリオ（dev-docs が無い）]
         B --> C[ClaudeCodeから点検と書き出しを呼ぶ:正常シナリオ（ずれがある）]
-        click A "../単一ユースケース/ClaudeCodeにプラグインを入れる.yaml#正常シナリオ"
-        click B "../単一ユースケース/ガイドを参照する.yaml#異常シナリオdev-docs-が無い"
-        click C "../単一ユースケース/ClaudeCodeから点検と書き出しを呼ぶ.yaml#正常シナリオずれがある"
+        click A "id:SC-472-4#scenarios[正常シナリオ]"
+        click B "id:SC-472-15#scenarios[異常シナリオ（dev-docs が無い）]"
+        click C "id:SC-472-3#scenarios[正常シナリオ（ずれがある）]"
     expected:
       - mdmark の MCP の instructions に、dev-docs が無い、または mdmark の配信元が登録されていないときは「dev-docs が無いので見つかりません」とある
       - dev-docs の端末の設定のファイルが作られていない
       - 知らないマーカーを記載した文書で `check` がずれを 1 件返す
     test: test_error_when_dev_docs_missing
     uses:
-      - dev/設計書/シナリオ/単一ユースケース/ClaudeCodeにプラグインを入れる#scenarios[正常シナリオ]
-      - dev/設計書/シナリオ/単一ユースケース/ガイドを参照する#scenarios[異常シナリオ（dev-docs が無い）]
-      - dev/設計書/シナリオ/単一ユースケース/ClaudeCodeから点検と書き出しを呼ぶ#scenarios[正常シナリオ（ずれがある）]
+      - SC-472-4#scenarios[正常シナリオ]
+      - SC-472-15#scenarios[異常シナリオ（dev-docs が無い）]
+      - SC-472-3#scenarios[正常シナリオ（ずれがある）]
 lead: 文書の作成者が mdmark のプラグインを入れ、Claude Code が記載する前に dev-docs でガイドを参照し、記載した後に mdmark の `check` で点検する。
 issue: 186
 primary_actor: 文書の作成者

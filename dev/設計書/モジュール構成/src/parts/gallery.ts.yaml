@@ -1,0 +1,31 @@
+id: MOD-472-328
+title: ライブラリ本体 / 部品 / gallery.ts
+test_files:
+  - tests/unit/src/parts/gallery.test.ts
+functions:
+  - name: renderGallery
+    title: ギャラリーを描く
+    container: src/parts/gallery.ts
+    kind: 関数
+    scope: internal
+    summary: 部品設計『ギャラリー』の HTML を返却する。`cols` を `style` の `--mdmark-gallery-cols` にし、`body`（画像の図の並び。`SLOT_MARKER` を指定できる）を格子の `div` に入れる
+    args:
+      - name: options
+        type: '{ cols?: number; body: string }'
+        required: true
+        description: 列の数（既定 `2`）と中身の HTML
+    returns:
+      type: string
+      description: '`<div class="mdmark-gallery"` で始まる HTML'
+    refs:
+      - CMP-472-12#
+    unit_tests:
+      - name: test_render_gallery
+        case: 正常
+        summary: 列の数を style に配置し、中身を格子に入れる
+        condition: '`cols: 3`、`body: SLOT_MARKER`'
+        mock: なし
+        expected: '`<div class="mdmark-gallery" style="--mdmark-gallery-cols: 3"><div class="mdmark-gallery-grid">` の中に `SLOT_MARKER`'
+    status: planned
+    introduced:
+      pr: 263

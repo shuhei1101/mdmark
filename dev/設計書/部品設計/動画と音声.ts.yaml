@@ -1,3 +1,4 @@
+id: CMP-472-36
 title: 動画と音声
 implementation: src/parts/media.ts#renderMedia
 story: Parts/Media
@@ -131,8 +132,8 @@ accessibility:
   - 自動で再生する動画は `muted` で始め、音を出さない
   - 印刷用の `poster` の画像は `alt=""` で、キャプションが名前を持つ
 refs:
-  - dev/設計書/インターフェース定義/ライブラリ本体/文書をHTML文字列にする.ts#constraints[動画と音声]
-  - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[印刷の画像と動画]
+  - IF-472-34#constraints[動画と音声]
+  - IF-472-35#constraints[印刷の画像と動画]
 status: planned
 notes:
   HTML: '`<figure class="mdmark-figure mdmark-media" style="--mdmark-image-width: {width}"><video src="{src}" controls preload="metadata" playsinline aria-label="{alt}" poster="{poster}"></video><img class="mdmark-media-print" src="{poster}" alt=""><figcaption class="mdmark-figure-caption">{caption}</figcaption></figure>`。音声は `audio`（`playsinline` を持たない）。モックは `dev/mock/components/media/`'

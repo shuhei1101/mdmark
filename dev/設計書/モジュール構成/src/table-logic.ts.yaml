@@ -1,0 +1,593 @@
+id: MOD-472-218
+title: ライブラリ本体 / 操作 / table-logic.ts
+data_models:
+  - name: FilterValue
+    title: 適用した絞り込み
+    container: src/table-logic.ts
+    summary: 列 1 つに適用した絞り込み（部品『表』の `filterValues` の要素と同じ構造）
+    properties:
+      - name: column
+        type: number
+        description: 列の位置
+      - name: values
+        type: string[] | undefined
+        description: '`select` の選んだ値'
+      - name: text
+        type: string | undefined
+        description: '`text` のキーワード'
+      - name: from
+        type: string | undefined
+        description: '`date` の開始日（`YYYY-MM-DD`）'
+      - name: to
+        type: string | undefined
+        description: '`date` の終了日（`YYYY-MM-DD`）'
+constants:
+  - name: FOLD_MAX_WIDTH
+    title: 最終列を畳む幅
+    container: src/table-logic.ts
+    summary: 描く先の要素の中身の幅がこの値（px）未満のときだけ最終列を畳む
+    value: '720'
+    refs:
+      - IF-472-35#constraints[最終列を畳む]
+    status: planned
+    introduced:
+      pr: 151
+  - name: FILTER_KINDS
+    title: 絞り込みの種類
+    container: src/table-logic.ts
+    summary: '`filter=` に記載できる種類。省いたときは先頭'
+    value: '["select", "text", "date"]'
+  - name: TOTAL_CALCS
+    title: 集計の計算
+    container: src/table-logic.ts
+    summary: '`total=列名:計算` に記載できる計算。集計の行のタイトルはそれぞれ `合計`・`平均`・`件数`'
+    value: '["sum", "avg", "count"]'
+functions:
+  - name: compareCells
+    title: セルを比べる
+    container: src/table-logic.ts
+    kind: 関数
+    scope: internal
+    summary: 並べ替えの比較。両方が数値（`,` を除いて数になる）なら数の大きさ、それ以外は `Intl.Collator`（`ja`・数字を数として）の順で比べる
+    args:
+      - name: a
+        type: string
+        required: true
+        description: セルの文字
+      - name: b
+        type: string
+        required: true
+        description: セルの文字
+    returns:
+      type: number
+      description: '`a` が前なら負、後なら正、同じなら 0'
+    unit_tests:
+      - name: test_compare_cells
+        case: 正常
+        summary: 数値は数の大きさで比べる
+        condition: '`10` と `2`、`1,022` と `227`'
+        mock: なし
+        expected: どちらも正
+      - name: test_compare_cells_when_text
+        case: 正常
+        summary: 文字は辞書の順で比べる
+        condition: '`みかん` と `りんご`'
+        mock: なし
+        expected: 負
+  - name: matchesFilter
+    title: セルが絞り込みに合うか
+    container: src/table-logic.ts
+    kind: 関数
+    scope: internal
+    summary: '`select` は選んだ値のどれかと等しい、`text` は大文字と小文字を区別せずに含む、`date` は開始日以降かつ終了日以前（片方だけも可。日付として読み込めないセルは合わない）。値が空の絞り込みは全てに合う'
+    args:
+      - name: cell
+        type: string
+        required: true
+        description: セルの文字
+      - name: kind
+        type: '"select" | "text" | "date"'
+        required: true
+        description: 絞り込みの種類
+      - name: value
+        type: FilterValue
+        required: true
+        description: 適用した絞り込み
+    returns:
+      type: boolean
+      description: 合うか
+    unit_tests:
+      - name: test_matches_filter
+        case: 正常
+        summary: 3 種類を判定する
+        condition: '`select` の `["りんご"]` と `りんご`・`りんご飴`、`text` の `描画` と `描画を速くする`、`date` の `2026-10-05`〜`2026-10-15` と `2026-10-10`・`2026-10-20`'
+        mock: なし
+        expected: '`りんご` が合い `りんご飴` が合わない、`描画を速くする` が合う、`2026-10-10` が合い `2026-10-20` が合わない'
+      - name: test_matches_filter_when_open_range
+        case: 正常
+        summary: 開始日だけのときはその日以降に合う
+        condition: '`date` の `from` だけ `2026-10-10` と `2026-10-01`・`2026-10-10`'
+        mock: なし
+        expected: '`2026-10-01` が合わず、`2026-10-10` が合う'
+  - name: computeTotal
+    title: 列を集計する
+    container: src/table-logic.ts
+    kind: 関数
+    scope: internal
+    summary: セルの文字を集計して表示する文字にする。`sum`・`avg` は `parseNumberCell` で数として読み込めるセルだけ（空のセルと読み込めないセルを除く）、`count` は空でないセルを数える。値は `Intl.NumberFormat`（`ja`、小数は 2 桁まで）で整え、平均する値が無いときは `—`。読み込めないセルを持つ列のセルを空にするのは呼ぶ側（`findUnreadableTotals`）
+    args:
+      - name: cells
+        type: string[]
+        required: true
+        description: 表示している行のその列のセルの文字
+      - name: calc
+        type: '"sum" | "avg" | "count"'
+        required: true
+        description: 計算
+    returns:
+      type: string
+      description: 集計の行に出す値
+    unit_tests:
+      - name: test_compute_total
+        case: 正常
+        summary: 空のセルを除いて合計・平均し、空でないセルを数える
+        condition: '`["10", "2", "33", ""]` の `sum`、`["100", "", "400"]` の `avg`、`["りんご", "", "ぶどう"]` の `count`'
+        mock: なし
+        expected: '`45`・`250`・`2`'
+      - name: test_compute_total_when_rounded
+        case: 正常
+        summary: 桁区切りを付け、小数を 2 桁までに丸める
+        condition: '`["1,000", "2,001"]` の `sum` と `["1", "2", "2"]` の `avg`'
+        mock: なし
+        expected: '`3,001` と `1.67`'
+      - name: test_compute_total_when_empty
+        case: 正常
+        summary: 行が無いとき
+        condition: '`[]` の `sum`・`avg`・`count`'
+        mock: なし
+        expected: '`0`・`—`・`0`'
+    callees:
+      - '#functions[parseNumberCell]'
+  - name: tableToTsv
+    title: 表を TSV にする
+    container: src/table-logic.ts
+    kind: 関数
+    scope: internal
+    summary: 行ごとのセルの文字を、セルをタブで、行を改行で区切った文字にする。セルの中のタブと改行は空白 1 つにする
+    args:
+      - name: rows
+        type: string[][]
+        required: true
+        description: 見出しの行を先頭にした、表示している行と列のセルの文字
+    returns:
+      type: string
+      description: TSV
+    unit_tests:
+      - name: test_table_to_tsv
+        case: 正常
+        summary: セルをタブで、行を改行で区切る
+        condition: '`[["名前", "更新日"], ["りんご", "2026-10-01"], ["りんご飴", "2026-10-20"]]`'
+        mock: なし
+        expected: '`名前\t更新日\nりんご\t2026-10-01\nりんご飴\t2026-10-20`'
+      - name: test_table_to_tsv_when_cell_has_tab
+        case: 正常
+        summary: セルの中のタブと改行を空白にする
+        condition: '`[["a\tb", "c\nd"]]`'
+        mock: なし
+        expected: '`a b\tc d`'
+  - name: rowIdFromHash
+    title: 'URL の # から行の ID を読み込む'
+    container: src/table-logic.ts
+    kind: 関数
+    scope: internal
+    summary: '`location.hash` の最後の `#` の後ろを `decodeURIComponent` して返却する（読み込めないときはそのまま）。まとめた HTML の `#/{文書のパス}#{ID}` も同じように読み込む'
+    args:
+      - name: hash
+        type: string
+        required: true
+        description: '`location.hash`'
+    returns:
+      type: string
+      description: 行の ID（`#` が無ければ空文字）
+    unit_tests:
+      - name: test_row_id_from_hash
+        case: 正常
+        summary: '最後の # の後ろを戻した文字を返却する'
+        condition: '`#%E3%81%BF%E3%81%8B%E3%82%93`・`#/a.md#%E3%81%BF%E3%81%8B%E3%82%93`・`#%E3%81`・空文字'
+        mock: なし
+        expected: '`みかん`・`みかん`・`%E3%81`・空文字'
+  - name: parseNumberCell
+    title: セルを数として読み込む
+    container: src/table-logic.ts
+    summary: セルの文字の前後の空白と `,` を除いて数にする。空か、数として読み込めなければ `undefined`。今の内部の `toNumber` をこの名前で公開し、`compareCells` もこれを使用する
+    kind: 関数
+    scope: internal
+    args:
+      - name: text
+        type: string
+        required: true
+        description: セルの文字
+    returns:
+      type: number | undefined
+      description: 読み込めた数
+    unit_tests:
+      - name: test_parse_number_cell
+        case: 正常
+        summary: 桁区切りと小数と負の数を読み込み、空と読み込めない文字を読み込まない
+        condition: '`1,000`・` 2.5 `・`-3`・空・`-`・`約 3`'
+        mock: なし
+        expected: '`1000`・`2.5`・`-3`・`undefined`・`undefined`・`undefined`'
+    status: planned
+    introduced:
+      pr: 151
+  - name: findUnreadableTotals
+    title: 集計できない列を探す
+    container: src/table-logic.ts
+    summary: 集計する列のうち `sum`・`avg` の列ごとに、空でなく `parseNumberCell` で読み込めないセルの文字を、重なりを除いて現れた順に集める。読み込めないセルが無い列と計算は返却しない。`render` の警告と、部品と `mount` の集計のセルを空にする処理が使用する
+    kind: 関数
+    scope: internal
+    args:
+      - name: options
+        type: '{ rows: string[][]; totals: Array<{ column: number; calc: TotalCalc }> }'
+        required: true
+        description: 全ての本文の行のセルの文字と、集計する列と計算
+    returns:
+      type: 'Array<{ column: number; calc: "sum" | "avg"; values: string[] }>'
+      description: 集計できない列と計算と、読み込めない値（`totals` の順）
+    unit_tests:
+      - name: test_find_unreadable_totals
+        case: 正常
+        summary: sum・avg の列の読み込めない値を重なりを除いて返却し、count と空のセルは数えない
+        condition: '`rows` が `[["a", "10", "x"], ["b", "-", "1"], ["c", "", "2"], ["d", "-", "3"]]`、`totals` が `[{1, sum}, {1, avg}, {1, count}, {2, sum}, {0, count}]`'
+        mock: なし
+        expected: '`[{ column: 1, calc: "sum", values: ["-"] }, { column: 1, calc: "avg", values: ["-"] }, { column: 2, calc: "sum", values: ["x"] }]`'
+      - name: test_find_unreadable_totals_when_all_readable
+        case: 正常
+        summary: 全て読み込めれば空を返却する
+        condition: '`rows` が `[["1,000"], [""]]`、`totals` が `[{0, sum}]`'
+        mock: なし
+        expected: '`[]`'
+    status: planned
+    introduced:
+      pr: 151
+  - name: tableToMarkdown
+    title: 表を Markdown の表にする
+    container: src/table-logic.ts
+    summary: 行ごとのセルの文字を、先頭の行を見出しの行にした `| セル | セル |` の構造の行と、見出しの行の後ろの `| --- | --- |` の区切りの行を改行でつなぐ。セルの中の `|` は `\|` にし、改行は空白 1 つにする
+    kind: 関数
+    scope: internal
+    args:
+      - name: rows
+        type: string[][]
+        required: true
+        description: 見出しの行を先頭にした、表示している行と列のセルの文字
+    returns:
+      type: string
+      description: Markdown の表
+    unit_tests:
+      - name: test_table_to_markdown
+        case: 正常
+        summary: 見出しの行・区切りの行・本文の行を並べ、セルの `|` と改行を替える
+        condition: '`[["名前", "式"], ["a", "x | y"], ["b", "1\n2"]]`'
+        mock: なし
+        expected: '`| 名前 | 式 |\n| --- | --- |\n| a | x \| y |\n| b | 1 2 |`'
+    status: planned
+    introduced:
+      pr: 151
+  - name: shouldFold
+    title: 最終列を畳むかを決める
+    container: src/table-logic.ts
+    summary: 描く先の要素の中身の幅が `FOLD_MAX_WIDTH` 未満で、表示している最終列が先頭の列でなく、そのセルのどれかが 1 行に収まらないときだけ `true` を返却する
+    kind: 関数
+    scope: internal
+    args:
+      - name: options
+        type: '{ width: number; lastColumn: number; wraps: boolean }'
+        required: true
+        description: 描く先の要素の中身の幅（px）、表示している最終列の位置、その列のセルが 1 行に収まらないか
+    returns:
+      type: boolean
+      description: 畳むか
+    unit_tests:
+      - name: test_should_fold
+        case: 正常
+        summary: 幅と折り返しと列の位置で決める
+        condition: '`{390, 2, true}`・`{719, 2, true}`・`{720, 2, true}`・`{390, 2, false}`・`{390, 0, true}`'
+        mock: なし
+        expected: '`true`・`true`・`false`・`false`・`false`'
+    status: planned
+    introduced:
+      pr: 151
+  - name: stickyShift
+    title: 行をずらす量を求める
+    container: src/table-logic.ts
+    summary: '`animation-timeline` を持たないブラウザで、見出し行と集計の行をずらす量を画面の中の位置から求める（`dev/mock/refs/151/assets/table.js` の案 C）。見出し行は `stickyTop - headTop` を 0 以上、`bodyBottom - headBottom`（負なら 0）以下に収めた量だけ下げ、集計の行は `viewportBottom - footBottom` を 0 以下、`bodyTop - footTop` 以上に収めた量だけ上げる（値はずらす前の位置）'
+    kind: 関数
+    scope: internal
+    args:
+      - name: options
+        type: '{ stickyTop: number; viewportBottom: number; headTop: number; headBottom: number; bodyTop: number; bodyBottom: number; footTop?: number; footBottom?: number }'
+        required: true
+        description: 留める上端（`--mdmark-sticky-top` の計算値）、画面の下端、ずらす前の見出し行・本文の行のまとまり（`tBodies[0]`）・集計の行の上端と下端（集計の行が無ければ `footTop`・`footBottom` を省く）。どれも `getBoundingClientRect` の丸めない px
+    returns:
+      type: '{ head: number; foot: number }'
+      description: 見出し行を下げる量（0 以上）と集計の行を動かす量（0 以下。集計の行が無ければ 0）
+    unit_tests:
+      - name: test_sticky_shift
+        case: 正常
+        summary: 表が画面に収まるときはずらさず、上へ流れたときは見出し行を下げ、集計の行を上げる
+        condition: '`stickyTop: 0`、`viewportBottom: 800`。収まる: `headTop: 100, headBottom: 140, bodyTop: 140, bodyBottom: 500, footTop: 500, footBottom: 540`。流れた: `headTop: -300, headBottom: -260, bodyTop: -260, bodyBottom: 1200, footTop: 1200, footBottom: 1240`'
+        mock: なし
+        expected: '収まるとき `{ head: 0, foot: 0 }`、流れたとき `{ head: 300, foot: -440 }`'
+      - name: test_sticky_shift_when_at_edge
+        case: 正常
+        summary: 見出し行は本文の下端を、集計の行は本文の上端を越えない
+        condition: '`stickyTop: 0`、`viewportBottom: 800`。上へ流れ切る: `headTop: -2000, headBottom: -1960, bodyTop: -1960, bodyBottom: 20, footTop: 20, footBottom: 60`。下の端にかかる: `headTop: 760, headBottom: 800, bodyTop: 800, bodyBottom: 840, footTop: 840, footBottom: 880`'
+        mock: なし
+        expected: '1 つ目は `{ head: 1980, foot: 0 }`（`bodyBottom - headBottom`）、2 つ目は `{ head: 0, foot: -40 }`（`bodyTop - footTop`）'
+      - name: test_sticky_shift_when_no_foot
+        case: 正常
+        summary: 集計の行が無ければ foot は 0
+        condition: '`footTop`・`footBottom` を省き、ほかは `test_sticky_shift` の流れたときと同じ'
+        mock: なし
+        expected: '`{ head: 300, foot: 0 }`'
+    status: planned
+    introduced:
+      pr: 151
+  - name: stickyRange
+    title: 行をずらせる範囲を求める
+    container: src/table-logic.ts
+    summary: '`animation-timeline` を持つブラウザで、CSS のアニメーションが使用する動く範囲を求める（`dev/mock/refs/151/assets/table.js` の案 D）。`headStart` は表の上端から見出し行の上端まで、`headMax` は見出し行の下端から本文の行のまとまりの下端まで（負なら 0）、`footMax` は本文の行のまとまりの上端から集計の行の上端まで、`footEnd` は集計の行の下端から表の下端まで'
+    kind: 関数
+    scope: internal
+    args:
+      - name: options
+        type: '{ tableTop: number; tableBottom: number; headTop: number; headBottom: number; bodyTop: number; bodyBottom: number; footTop?: number; footBottom?: number }'
+        required: true
+        description: 表・見出し行・本文の行のまとまり・集計の行の上端と下端（`getBoundingClientRect` の丸めない px。集計の行が無ければ `footTop`・`footBottom` を省く）
+    returns:
+      type: '{ headStart: number; headMax: number; footMax: number; footEnd: number }'
+      description: '`--mdmark-sticky-head-start`・`--mdmark-sticky-head-max`・`--mdmark-sticky-foot-max`・`--mdmark-sticky-foot-end` に入れる値（px。集計の行が無ければ `footMax`・`footEnd` は 0）'
+    unit_tests:
+      - name: test_sticky_range
+        case: 正常
+        summary: 見出し行と集計の行が動ける範囲を返却する
+        condition: '`tableTop: 0, tableBottom: 1242, headTop: 1, headBottom: 41, bodyTop: 41, bodyBottom: 1201, footTop: 1201, footBottom: 1241`。もう 1 つは `footTop`・`footBottom` を省く'
+        mock: なし
+        expected: '`{ headStart: 1, headMax: 1160, footMax: 1160, footEnd: 1 }` と `{ headStart: 1, headMax: 1160, footMax: 0, footEnd: 0 }`'
+    status: planned
+    introduced:
+      pr: 151
+  - name: bottomHeadCells
+    title: 列ごとの最下段の見出しのセルを決める
+    container: src/table-logic.ts
+    kind: 関数
+    scope: internal
+    summary: 見出しの行ごとのセルの `rowspan`・`colspan` から格子を作り、列ごとに、その列だけを覆い最下段まで届くセルの位置を返却する（上の行から縦に結合したセルを含む）。複数の列をまたぐセルしか無い列は `undefined`
+    args:
+      - name: rows
+        type: 'Array<Array<{ rowSpan: number; colSpan: number }>>'
+        required: true
+        description: 見出しの行ごとのセル
+    returns:
+      type: 'Array<{ row: number; cell: number } | undefined>'
+      description: 列の位置ごとの、ボタンを配置するセルの行と行の中の位置
+    unit_tests:
+      - name: test_bottom_head_cells
+        case: 正常
+        summary: 縦に結合したセルと 2 行目のセルを選ぶ
+        condition: 1 行目 `地域`（rowSpan 2）・`上期`（colSpan 2）、2 行目 `売上`・`件数`
+        mock: なし
+        expected: '`[{0, 0}, {1, 0}, {1, 1}]`'
+      - name: test_bottom_head_cells_when_spanning
+        case: 正常
+        summary: またぐセルしか無い列を undefined にする
+        condition: 見出しが 1 行だけで、`名前`・`期間`（colSpan 2）
+        mock: なし
+        expected: '`[{0, 0}, undefined, undefined]`'
+    status: planned
+    introduced:
+      pr: 275
+  - name: mergeSpans
+    title: 隣り合う同じ値の結合を決める
+    container: src/table-logic.ts
+    kind: 関数
+    scope: internal
+    summary: 表示している行の結合する列の値から、列ごとに隣り合う同じ値の範囲を決める。左にある結合する列の範囲の切れ目でも切る
+    args:
+      - name: options
+        type: '{ values: string[][]; columns: number[] }'
+        required: true
+        description: '`values` は表示している行ごとの、`columns` の列の値（`columns` と同じ順）。`columns` は結合する列の位置（小さい順）'
+    returns:
+      type: number[][]
+      description: 行と `columns` の順ごとの `rowspan`。範囲の始まりは覆う行の数、続く行は 0
+    unit_tests:
+      - name: test_merge_spans
+        case: 正常
+        summary: 隣り合う同じ値だけを結合する
+        condition: 1 列の値 `A`・`A`・`B`・`A`
+        mock: なし
+        expected: '`[[2], [0], [1], [1]]`'
+      - name: test_merge_spans_when_left_breaks
+        case: 正常
+        summary: 左の列の切れ目で右の列も切る
+        condition: 2 列の値 `[東, 札幌]`・`[東, 札幌]`・`[西, 札幌]`
+        mock: なし
+        expected: '`[[2, 2], [0, 0], [1, 1]]`'
+    status: planned
+    introduced:
+      pr: 275
+  - name: canMoveColumn
+    title: 列を動かせるかを決める
+    container: src/table-logic.ts
+    kind: 関数
+    scope: internal
+    summary: 動かす列と動かす先の列が同じ結合した見出しの範囲で、ピン止めの同じ側にあるとき `true` を返却する。`each` の表は呼ぶ側が全ての列の `pinned` を `false` にして渡し、ピン止めの側で分けない
+    args:
+      - name: options
+        type: '{ from: ColumnPlace; to: ColumnPlace }'
+        required: true
+        description: '`ColumnPlace` は `{ group: string | undefined; pinned: boolean }`'
+    returns:
+      type: boolean
+      description: 動かせるか
+    unit_tests:
+      - name: test_can_move_column
+        case: 正常
+        summary: 同じ範囲と同じピン止めの側だけを許す
+        condition: '`{ group: "0:1", pinned: false }` 同士、`"0:1"` と `undefined`、`pinned` が `true` と `false`'
+        mock: なし
+        expected: '`true`・`false`・`false`'
+    status: planned
+    introduced:
+      pr: 303
+  - name: moveColumn
+    title: 列の順を入れ替える
+    container: src/table-logic.ts
+    kind: 関数
+    scope: internal
+    summary: 列の順（元の列の位置の並び）の `column` を `target` の前か後ろへ動かした新しい並びを返却する
+    args:
+      - name: options
+        type: '{ order: number[]; column: number; target: number; side: "before" | "after" }'
+        required: true
+        description: '`column`・`target` は元の列の位置'
+    returns:
+      type: number[]
+      description: 新しい列の順（指定した配列は書き換えない）
+    unit_tests:
+      - name: test_move_column
+        case: 正常
+        summary: 列を前と後ろへ動かす
+        condition: '`order` が `[0,1,2,3]`。`column: 3, target: 0, side: "before"` と `column: 1, target: 2, side: "after"`'
+        mock: なし
+        expected: '`[3,0,1,2]` と `[0,2,1,3]`'
+    status: planned
+    introduced:
+      pr: 303
+  - name: initialPinnedColumns
+    title: 描いた直後に留める列を決める
+    container: src/table-logic.ts
+    kind: 関数
+    scope: internal
+    summary: '`data-pin` の位置・行見出しの列の数・ピン止めの動きから、描いた直後に留める列の位置を小さい順に返却する'
+    description: 留める元の列は `pin` があればその列、無ければ行見出しの全ての列、行見出しも無ければ先頭の列。`each` はそのまま、`through` は先頭からその最も右の列までの全ての列にする
+    args:
+      - name: options
+        type: '{ pin: number[]; rowHeadCount: number; mode: TablePinMode }'
+        required: true
+        description: '`data-pin` の位置（無ければ空）、`th scope="row"` の行見出しの列の数、ピン止めの動き'
+    returns:
+      type: number[]
+      description: 留める列の位置
+    unit_tests:
+      - name: test_initial_pinned_columns
+        case: 正常
+        summary: pin・行見出し・先頭の列の順に決め、through は最も右の列まで広げる
+        condition: '`{ pin: [0, 2], rowHeadCount: 0, mode: each }`・`{ pin: [], rowHeadCount: 2, mode: each }`・`{ pin: [], rowHeadCount: 0, mode: each }`・`{ pin: [2], rowHeadCount: 0, mode: through }`'
+        mock: なし
+        expected: '`[0, 2]`・`[0, 1]`・`[0]`・`[0, 1, 2]`'
+    status: planned
+    introduced:
+      pr: 438
+  - name: togglePinnedColumn
+    title: 押した列で留める列を切り替える
+    container: src/table-logic.ts
+    kind: 関数
+    scope: internal
+    summary: ピン止めのボタンを押した列と今の留める列から、新しい留める列の位置を小さい順に返却する
+    description: '`each` は押した列が留める列にあれば除き、無ければ加える。`through` は押した列が留める列の最も右なら空にし、それ以外は先頭から押した列までの全ての列にする。指定された配列は書き換えない'
+    args:
+      - name: options
+        type: '{ pinned: number[]; column: number; mode: TablePinMode }'
+        required: true
+        description: 今の留める列、押した列の位置、ピン止めの動き
+    returns:
+      type: number[]
+      description: 新しい留める列の位置
+    unit_tests:
+      - name: test_toggle_pinned_column
+        case: 正常
+        summary: each は押した列だけを出し入れし、through は押した列までにするか解除する
+        condition: '`{ pinned: [0], column: 2, mode: each }`・`{ pinned: [0, 2], column: 2, mode: each }`・`{ pinned: [0], column: 2, mode: through }`・`{ pinned: [0, 1, 2], column: 2, mode: through }`'
+        mock: なし
+        expected: '`[0, 2]`・`[0]`・`[0, 1, 2]`・`[]`'
+    status: planned
+    introduced:
+      pr: 438
+  - name: pinOffsets
+    title: 留める列の左右の位置を求める
+    container: src/table-logic.ts
+    kind: 関数
+    scope: internal
+    summary: 列ごとの幅と留める列から、留める列ごとにそれより左で留めた列の幅の合計（`start`）と右で留めた列の幅の合計（`end`）を返却する
+    description: 幅は整数（`offsetWidth`）をそのまま足し合わせ、留めた列の間に隙間を出さない。留めない列の位置には値を入れない
+    args:
+      - name: options
+        type: '{ widths: number[]; pinned: number[] }'
+        required: true
+        description: 列ごとの幅（隠した列は 0）と留める列の位置
+    returns:
+      type: 'Map<number, { start: number; end: number }>'
+      description: 留める列の位置から左右の位置
+    unit_tests:
+      - name: test_pin_offsets
+        case: 正常
+        summary: 左右で留めた列の幅だけを足し合わせる
+        condition: '`widths` が `[100, 80, 60, 40, 30]`、`pinned` が `[0, 2, 4]`'
+        mock: なし
+        expected: '0 が `{ start: 0, end: 90 }`、2 が `{ start: 100, end: 30 }`、4 が `{ start: 160, end: 0 }`、1・3 は値を持たない'
+    status: planned
+    introduced:
+      pr: 438
+  - name: clampColumnWidth
+    title: 列の幅を範囲に収める
+    container: src/table-logic.ts
+    kind: 関数
+    scope: internal
+    summary: 列の幅を、列の最小幅から上限までに収めた値を返却する
+    description: 上限が最小幅より小さいときは最小幅を返す
+    args:
+      - name: options
+        type: '{ width: number; min: number; max: number }'
+        required: true
+        description: 指定したい幅・列の最小幅・上限（px）
+    returns:
+      type: number
+      description: 収めた幅（px）
+    unit_tests:
+      - name: test_clamp_column_width
+        case: 正常
+        summary: 最小幅と上限の間に収める
+        condition: '`{ width: 50, min: 100, max: 300 }`・`{ width: 200, min: 100, max: 300 }`・`{ width: 400, min: 100, max: 300 }`・`{ width: 200, min: 100, max: 80 }`'
+        mock: なし
+        expected: '`100`・`200`・`300`・`100`'
+    status: planned
+    introduced:
+      pr: 449
+  - name: columnWidthLimit
+    title: 列の幅の上限を求める
+    container: src/table-logic.ts
+    kind: 関数
+    scope: internal
+    summary: 表の見えている幅から、ほかに留めている列の幅の合計を引いた幅を返却する
+    description: 表がはみ出していないときは、留める列を当てていないので表の見えている幅をそのまま返す
+    args:
+      - name: options
+        type: '{ visibleWidth: number; overflowing: boolean; widths: number[]; pinned: number[]; column: number }'
+        required: true
+        description: 表を包む要素の `clientWidth`、はみ出しているか、列ごとの幅（隠した列は 0）、留めている列の位置、幅を変える列の位置
+    returns:
+      type: number
+      description: 上限の幅（px）
+    unit_tests:
+      - name: test_column_width_limit
+        case: 正常
+        summary: ほかに留めた列の幅だけを引く
+        condition: '`visibleWidth: 300`・`widths: [100, 80, 60]`・`pinned: [0, 2]` で、`column` が `0` と `1`、はみ出しているときといないとき'
+        mock: なし
+        expected: 'はみ出しているとき、`column: 0` は `240`（2 列目の 60 を引く）、`column: 1` は `140`。はみ出していないときはどちらも `300`'
+    status: planned
+    introduced:
+      pr: 449

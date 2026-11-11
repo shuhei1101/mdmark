@@ -1,0 +1,228 @@
+id: MOD-472-133
+title: ライブラリ本体 / map / 描画と操作 / map.ts
+test_files:
+  - tests/unit/src/parts/map.test.ts
+data_models:
+  - name: MapFlowArgs
+    title: mapの構成図の引数
+    container: src/parts/map.ts
+    usecase: Mermaidと補足で図を描く
+    role: データモデル
+    summary: 部品設計『mapの構成図』の引数（`layout`・`collapsed`・`entered`・`selected`・`focus`・`packets`・`dragging`）
+    properties:
+      - name: layout
+        type: MapLayout
+        description: 配置の結果
+      - name: collapsed
+        type: string[]
+        description: 閉じたグループ
+      - name: entered
+        type: string | undefined
+        description: 中へ入ったグループ
+      - name: selected
+        type: string[]
+        description: 選んだノード
+      - name: focus
+        type: '{ nodes: string[]; wires: string[] } | undefined'
+        description: 強調
+      - name: packets
+        type: MapPacket[]
+        description: データの印
+      - name: dragging
+        type: string | undefined
+        description: 動かしている要素
+  - name: MapSequenceArgs
+    title: mapのシーケンス図の引数
+    container: src/parts/map.ts
+    usecase: Mermaidと補足で図を描く
+    role: データモデル
+    summary: 部品設計『mapのシーケンス図』の引数
+    properties:
+      - name: sequence
+        type: Sequence
+        description: 読み取り結果
+      - name: rows
+        type: SequenceRow[]
+        description: '`sequenceRows` の行'
+      - name: participants
+        type: string[]
+        description: 表示する参加者の順
+      - name: collapsed
+        type: number[]
+        description: 閉じたブロック
+      - name: entered
+        type: number | undefined
+        description: 中だけを描くブロック
+      - name: selected
+        type: string[]
+        description: 選んだ参加者
+      - name: focus
+        type: '{ message: number } | undefined'
+        description: 再生の強調
+  - name: MapBandArgs
+    title: 案内の帯の引数
+    container: src/parts/map.ts
+    usecase: Mermaidと補足で図を描く
+    role: データモデル
+    summary: 部品設計『案内の帯』の引数
+    properties:
+      - name: mode
+        type: '"walkthrough" | "playback"'
+        description: モード
+      - name: total
+        type: number
+        description: 手順の数
+      - name: index
+        type: number | undefined
+        description: 今の番号
+      - name: title
+        type: string
+        description: タイトル
+      - name: text
+        type: string
+        description: 説明の文
+      - name: auto
+        type: boolean
+        description: 自動で進めているか
+      - name: label
+        type: string
+        description: 帯の名前
+functions:
+  - name: renderMapFlow
+    title: mapの構成図のHTML
+    kind: 関数
+    container: src/parts/map.ts
+    usecase: Mermaidと補足で図を描く
+    role: 処理
+    summary: 部品設計『mapの構成図』の HTML。フロー図の部品の定義にしたノードと線を `renderFlow` で描き、グループの面とタイトルの行・開閉と中へ入るボタン・閉じたグループを重ねる。ノードと線を押す場所はフォーカスできるボタンにし、中へ入ったグループと薄く残したグループのほかは、タイトルの行に動かす帯（`.map-group-bar`）を置く
+    scope: public
+    callees:
+      - MOD-472-172#functions[renderFlow]
+    args:
+      - name: args
+        type: MapFlowArgs
+        required: true
+        description: 部品の引数
+    returns:
+      type: '{ html: string; tips: string }'
+      description: 図の HTML（`html`）と、ノードの説明と用語のツールチップの HTML（`tips`。図の枠の `.mdmark-diagram-box` に配置する）
+    unit_tests:
+      - name: test_render_map_flow
+        case: 正常
+        summary: グループとノード
+        condition: 部品の Default の引数
+        mock: なし
+        expected: '`[data-group]` が 4 つ、`[data-node]` が 10 で、凡例が無い'
+      - name: test_render_map_flow_when_keyboard
+        case: 正常
+        summary: キーで操作する場所
+        condition: '`entered: read` と、`entered` なし'
+        mock: なし
+        expected: '配置した全てのノードと線を押す場所が `tabindex="0"`・`role="button"` を持ち、`read` の `.map-group-bar` が `entered: read` では無く、`entered` なしではある'
+      - name: test_render_map_flow_when_entered
+        case: 正常
+        summary: 中へ入った
+        condition: '`entered: read`'
+        mock: なし
+        expected: '`read` の外の要素が `map-faded` を持ち、`read` のタイトルが `button` でない'
+      - name: test_render_map_flow_when_packets
+        case: 正常
+        summary: データの印
+        condition: '`mount->marker` に `{ direction: both, color: orange, shape: square }`、`marker->data` に `{ direction: forward }` の印'
+        mock: なし
+        expected: '`mount->marker` の印は四角でオレンジの塗りを持ち、逆向き（`keyPoints="1;0"`）を含む両方向へ流れる。`marker->data` の印は丸で線の色、逆向きを含まない。どの印も `animateMotion` を `repeatCount="indefinite"` で持つ'
+      - name: test_render_map_flow_when_unknown_color
+        case: 異常
+        summary: 知らない色の名前
+        condition: '印の `color` が `red;x:y`、グループの色が `blue;x`'
+        mock: なし
+        expected: 印が線の色で塗られ、グループが色を持たず、出力に `;x:y` と `;x` が無い
+      - name: test_render_map_flow_when_terms
+        case: 正常
+        summary: 用語の下線
+        condition: '`terms` が `{"補足": "意味"}` で、ノード `data` の名前が `<b>補足</b>の検査`'
+        mock: なし
+        expected: ノード `data` の `.mdmark-diagram-node-name` の中に `span.mdmark-term` が 1 つで文字が `補足`、`<b>` は逃がした文字で、`tips` に意味のツールチップと、`notes` の説明のツールチップがある。グループのタイトルに `mdmark-term` が無い
+      - name: test_render_map_flow_when_note_terms
+        case: 正常
+        summary: 説明の中の用語
+        condition: '`terms` が `{"補足": "意味"}` で、ノード `layout` と線 `mount->marker` の `notes` が「補足を当てる」'
+        mock: なし
+        expected: '`tips` の 2 つの説明のツールチップのそれぞれに、`tabindex` を持たない `<span class="mdmark-term">補足</span>` と、末尾の「補足：意味」の行がある'
+      - name: test_render_map_flow_when_collapsed_count
+        case: 正常
+        summary: 閉じたグループのノードの数
+        condition: '`collapsed: ["read"]`'
+        mock: なし
+        expected: '`.map-closed-group[data-group="read"]` の中に「ノード 3 件」がある'
+      - name: test_render_map_flow_when_merged_notes
+        case: 正常
+        summary: まとめた線の説明
+        condition: '`collapsed: ["read"]` で、`notes` が `{"data->layout": "上書きを当てる"}`'
+        mock: なし
+        expected: '`read->layout` のツールチップが「補足の検査 → 入れ子のグループの自動配置：上書きを当てる」だけを持ち、説明を持たない元の線（`mermaid->layout`）を含まない。`notes` が空なら `read->layout` の押せる帯は `data-tip-owner` を持たない'
+  - name: renderMapSequence
+    title: mapのシーケンス図のHTML
+    kind: 関数
+    container: src/parts/map.ts
+    usecase: Mermaidと補足で図を描く
+    role: 処理
+    summary: 部品設計『mapのシーケンス図』の HTML。参加者の箱・ライフライン・メッセージの線とラベルを今のシーケンス図の部品と同じ class で描き、ブロックの枠とタブの開閉と名前のボタン・区間・注記・活性化の帯・参加者の選択を重ねる
+    description: 今の `renderSequence` は全てのメッセージに番号を付け、複合フラグメント・注記・活性化・矢印の種類を持たないため、図の部品の HTML は使わず同じ class と寸法（`MAP_SEQ`）で描く
+    scope: public
+    args:
+      - name: args
+        type: MapSequenceArgs
+        required: true
+        description: 部品の引数
+    returns:
+      type: '{ html: string; tips: string }'
+      description: 図の HTML（`html`）と、用語のツールチップの HTML（`tips`）
+    unit_tests:
+      - name: test_render_map_sequence
+        case: 正常
+        summary: 全ての記法
+        condition: 部品の Default の引数
+        mock: なし
+        expected: ブロックのタブが 3 つで、それぞれ開閉と名前のボタンを持つ
+      - name: test_render_map_sequence_when_terms
+        case: 正常
+        summary: 用語の下線
+        condition: '`terms` が `{"補足": "意味"}` で、メッセージの文の 1 つが「補足を読む」'
+        mock: なし
+        expected: そのメッセージのラベルの中に `span.mdmark-term` があり、`tips` に意味のツールチップがある
+      - name: test_render_map_sequence_when_notes
+        case: 正常
+        summary: メッセージの説明
+        condition: '`notes` が `{"2": "補足を渡す"}`、`terms` が `{"補足": "意味"}`'
+        mock: なし
+        expected: 2 つ目のメッセージ（`data-message="1"`）の `.map-wire-hit` だけが `data-tip-owner` を持ち、`tips` にその持ち主のツールチップがあり、説明の中の `補足` が `tabindex` を持たない `span.mdmark-term` で、末尾に「補足：意味」の行がある
+  - name: renderMapBand
+    title: 案内の帯のHTML
+    kind: 関数
+    container: src/parts/map.ts
+    usecase: Mermaidと補足で図を描く
+    role: 処理
+    summary: 部品設計『案内の帯』の HTML
+    scope: public
+    args:
+      - name: args
+        type: MapBandArgs
+        required: true
+        description: 部品の引数
+    returns:
+      type: string
+      description: HTML
+    unit_tests:
+      - name: test_render_map_band
+        case: 正常
+        summary: 始める前
+        condition: '`total: 4`'
+        mock: なし
+        expected: 番号が `–/4` で、停止の `button` が `disabled`
+      - name: test_render_map_band_when_playback
+        case: 正常
+        summary: 再生
+        condition: '`mode: playback`'
+        mock: なし
+        expected: ボタンの名前が `前のメッセージ`・`再生をやめる`・`自動で進める`・`次のメッセージ`

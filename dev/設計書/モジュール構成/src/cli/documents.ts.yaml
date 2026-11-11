@@ -1,0 +1,122 @@
+id: MOD-472-117
+title: ライブラリ本体 / CLI / documents.ts
+test_files:
+  - tests/unit/src/cli/documents.test.ts
+functions:
+  - name: collectBuildDocuments
+    title: まとめる文書を集める
+    container: src/cli/documents.ts
+    usecase: 複数の文書を1枚のHTMLにまとめる
+    summary: '`build.include` の glob に該当し `build.exclude` に該当しない `.md` のパスを、glob の並び・同じ glob の中はパスの順で、重なりを除いて返却する'
+    description: glob は Node の `fs.glob`（`cwd` に設定ファイルのフォルダ、`exclude` に `build.exclude`）で参照する。パスは区切りを `/` に統一する
+    kind: 関数
+    scope: public
+    is_async: true
+    args:
+      - name: dir
+        type: string
+        required: true
+        description: 設定ファイルのあるフォルダ
+      - name: build
+        type: '{ include: string[]; exclude?: string[] }'
+        required: true
+        description: 設定の `build`
+    returns:
+      type: Promise<string[]>
+      description: まとめる文書のパス（設定ファイルのフォルダからの相対。無ければ空）
+    unit_tests:
+      - name: test_collect_build_documents
+        case: 正常
+        summary: glob の並びとパスの順に並べ、重なりを除く
+        condition: '`include: ["README.md", "**/*.md"]`、フォルダに `README.md`・`b/y.md`・`a/x.md`・`a/x.txt`'
+        mock: 一時フォルダ
+        expected: '`["README.md", "a/x.md", "b/y.md"]`'
+      - name: test_collect_build_documents_when_excluded
+        case: 正常
+        summary: exclude に該当する文書を除外する
+        condition: '`include: ["**/*.md"]`・`exclude: ["下書き/**"]`、`下書き/メモ.md` と `a.md`'
+        mock: 一時フォルダ
+        expected: '`["a.md"]`'
+    status: planned
+    introduced:
+      pr: 32
+  - name: readIndexWithDocuments
+    title: 索引と索引の文書を読み込む
+    container: src/cli/documents.ts
+    usecase: 共通
+    summary: 設定の `index` の YAML と、索引のフォルダの下の `.md`（`build.exclude` に該当しないもの）を読み込む
+    kind: 関数
+    scope: public
+    is_async: true
+    args:
+      - name: loaded
+        type: LoadedConfig
+        required: true
+        description: 読み込んだ設定
+    returns:
+      type: 'Promise<{ indexFile: string; indexDir: string; raw: unknown; documents: Record<string, string> } | undefined>'
+      description: 索引のファイル（設定ファイルのフォルダからの相対）、索引のフォルダ、読み込んだ値、索引のフォルダからのパスで参照する文書。設定に `index` が無ければ `undefined`
+    exceptions:
+      - name: CliError
+        condition: 索引のファイルが無い・YAML として読み込めない
+        message: 索引 {ファイル} を読み込めません（{理由}）。設定の index のパスを修正するか、索引を配置してください。
+    unit_tests:
+      - name: test_read_index_with_documents
+        case: 正常
+        summary: 索引と索引のフォルダの文書を読み込む
+        condition: '`index: docs/index.yaml`、`docs/a.md` と `docs/sub/b.md` と `docs/c.txt`'
+        mock: 一時フォルダ
+        expected: '`indexFile` が `docs/index.yaml`、`documents` のキーが `a.md`・`sub/b.md`'
+      - name: test_read_index_with_documents_when_no_index
+        case: 正常
+        summary: 設定に index が無ければ undefined
+        condition: '`index` の無い設定'
+        mock: なし
+        expected: '`undefined`'
+      - name: test_read_index_with_documents_when_missing
+        case: 異常
+        summary: 索引のファイルが無いと CliError
+        condition: '`index: docs/index.yaml` でファイルが無い'
+        mock: 一時フォルダ
+        expected: '`CliError` を投げ、メッセージに `docs/index.yaml` が入る'
+        exception: CliError
+    status: planned
+    introduced:
+      pr: 32
+  - name: documentTitle
+    title: 文書のタイトルを決める
+    container: src/cli/documents.ts
+    usecase: 共通
+    summary: 索引に文書があればその `title`、無ければ本文の最初の h1 の文字、無ければ拡張子を落としたファイル名を返却する
+    kind: 関数
+    scope: public
+    args:
+      - name: doc
+        type: '{ path: string; markdown: string; indexTitle?: string }'
+        required: true
+        description: 文書のパス・本文・索引のタイトル
+    returns:
+      type: string
+      description: 文書のタイトル
+    unit_tests:
+      - name: test_document_title
+        case: 正常
+        summary: 索引のタイトルを優先する
+        condition: '`indexTitle: "API"`、本文の h1 は `公開関数`'
+        mock: なし
+        expected: '`API`'
+      - name: test_document_title_when_no_index
+        case: 正常
+        summary: 索引のタイトルが無ければ最初の h1
+        condition: 本文が `# 使用方法` で始まる
+        mock: なし
+        expected: '`使用方法`'
+      - name: test_document_title_when_no_heading
+        case: 正常
+        summary: h1 も無ければファイル名
+        condition: '`path: "使い方/guide.md"`、本文に h1 が無い'
+        mock: なし
+        expected: '`guide`'
+    status: planned
+    introduced:
+      pr: 32

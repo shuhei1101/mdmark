@@ -1,3 +1,4 @@
+id: LIB-472-6
 title: '@babel/standalone'
 kind: CDN の JS
 version:
@@ -7,76 +8,76 @@ version:
   source: 既定の URL（`https://cdn.jsdelivr.net/npm/@babel/standalone@8.1.1/+esm`）
   pinning: 完全一致。上げるときは範囲の `ts` の変換の結合テストを実行する
 catalogs:
-- name: API
-  version: 8.1.1
-  entries:
-  - name: transform
-    kind: 関数
-    purpose: コードの文字列をプリセット・プラグインで変換し、`.code` に出力のコードを返却する
-    params:
-    - name: code
-      type: string
-      required: true
-      description: 変換するコード
-    - name: options.filename
-      type: string
-      required: false
-      description: ファイル名。preset `typescript` は拡張子 `.ts` で TypeScript として読み込む
-    - name: options.sourceType
-      type: '"module" | "script"'
-      required: false
-      description: '`module` で ES モジュールとして読み込む'
-    - name: options.presets
-      type: string[]
-      required: false
-      description: 使用するプリセット。`typescript` で型の注釈・interface・type・`as` を削除し、enum・namespace を変換する
-    - name: options.plugins
-      type: string[]
-      required: false
-      description: 使用するプラグイン。`transform-modules-commonjs` で `export default` を `exports.default` への代入にする
-    - name: options.babelrc
-      type: boolean
-      required: false
-      description: '`false` で設定ファイルを探さない'
-    - name: options.configFile
-      type: boolean | string
-      required: false
-      description: '`false` で設定ファイルを探さない'
-    params_example: |-
-      ```js
-      const Babel = (await import("https://cdn.jsdelivr.net/npm/@babel/standalone@8.1.1/+esm")).default;
-      Babel.disableScriptTags();
-      const { code } = Babel.transform(source, {
-        filename: "range.ts",
-        sourceType: "module",
-        babelrc: false,
-        configFile: false,
-        presets: ["typescript"],
-        plugins: ["transform-modules-commonjs"],
-      });
-      ```
-    returns:
-    - name: code
-      type: string
-      description: 変換後のコード
-    status: planned
-    introduced:
-      pr: 303
-  - name: disableScriptTags
-    kind: 関数
-    purpose: ページの `type="text/babel"` の `script` 要素を自動で変換して実行する処理を止める
-    status: planned
-    introduced:
-      pr: 303
-- name: ファイル
-  version: 8.1.1
-  entries:
-  - name: +esm
-    kind: ES モジュール
-    purpose: jsDelivr が `babel.js` を 1 ファイルにまとめた ES モジュール（2,349,009 バイト、gzip 後 572,476 バイト）。他の URL を読み込まない
-    status: planned
-    introduced:
-      pr: 303
+  - name: API
+    version: 8.1.1
+    entries:
+      - name: transform
+        kind: 関数
+        purpose: コードの文字列をプリセット・プラグインで変換し、`.code` に出力のコードを返却する
+        params:
+          - name: code
+            type: string
+            required: true
+            description: 変換するコード
+          - name: options.filename
+            type: string
+            required: false
+            description: ファイル名。preset `typescript` は拡張子 `.ts` で TypeScript として読み込む
+          - name: options.sourceType
+            type: '"module" | "script"'
+            required: false
+            description: '`module` で ES モジュールとして読み込む'
+          - name: options.presets
+            type: string[]
+            required: false
+            description: 使用するプリセット。`typescript` で型の注釈・interface・type・`as` を削除し、enum・namespace を変換する
+          - name: options.plugins
+            type: string[]
+            required: false
+            description: 使用するプラグイン。`transform-modules-commonjs` で `export default` を `exports.default` への代入にする
+          - name: options.babelrc
+            type: boolean
+            required: false
+            description: '`false` で設定ファイルを探さない'
+          - name: options.configFile
+            type: boolean | string
+            required: false
+            description: '`false` で設定ファイルを探さない'
+        params_example: |-
+          ```js
+          const Babel = (await import("https://cdn.jsdelivr.net/npm/@babel/standalone@8.1.1/+esm")).default;
+          Babel.disableScriptTags();
+          const { code } = Babel.transform(source, {
+            filename: "range.ts",
+            sourceType: "module",
+            babelrc: false,
+            configFile: false,
+            presets: ["typescript"],
+            plugins: ["transform-modules-commonjs"],
+          });
+          ```
+        returns:
+          - name: code
+            type: string
+            description: 変換後のコード
+        status: planned
+        introduced:
+          pr: 303
+      - name: disableScriptTags
+        kind: 関数
+        purpose: ページの `type="text/babel"` の `script` 要素を自動で変換して実行する処理を止める
+        status: planned
+        introduced:
+          pr: 303
+  - name: ファイル
+    version: 8.1.1
+    entries:
+      - name: +esm
+        kind: ES モジュール
+        purpose: jsDelivr が `babel.js` を 1 ファイルにまとめた ES モジュール（2,349,009 バイト、gzip 後 572,476 バイト）。他の URL を読み込まない
+        status: planned
+        introduced:
+          pr: 303
 lead: Babel のコンパイラと既定のプラグイン・プリセットを 1 ファイルにまとめ、ブラウザなど Node 以外の環境で `transform` を呼べるようにしたパッケージ。
 purl: pkg:npm/%40babel/standalone@8.1.1
 supplier: Babel の保守者

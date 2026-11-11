@@ -1,3 +1,4 @@
+id: CMP-472-26
 title: "ファイルツリー"
 implementation: "src/parts/tree.ts#renderTree"
 story: "Parts/FileTree"
@@ -260,7 +261,7 @@ accessibility:
   - 「ほかにもある」の項目はアイコンにスクリーンリーダーの文 `ほかにもあります` を添える
   - コピーの結果はボタンの文言と `role="status"` の要素で通知する
 refs:
-  - dev/設計書/インターフェース定義/ライブラリ本体/文書をHTML文字列にする.ts#constraints[ステップ・ファイルツリー・バッジ]
+  - IF-472-34#constraints[ステップ・ファイルツリー・バッジ]
 status: planned
 notes:
   HTML: '`<div class="mdmark-tree" data-open="{open}" data-source="{source}"><ul class="mdmark-tree-list" aria-label="ファイルツリー"><li class="mdmark-tree-folder"><span class="mdmark-tree-row"><span class="mdmark-tree-name">{name}</span><span class="mdmark-tree-note">{note}</span></span><ul>…</ul></li><li class="mdmark-tree-file" data-file-icon="{アイコン}">…</li><li class="mdmark-tree-more">…<span class="mdmark-visually-hidden">ほかにもあります</span></li></ul></div>`。`interactive` のときは `ul` の前に `<div class="mdmark-tree-bar"><span class="mdmark-tree-kind" aria-hidden="true">tree</span><button class="mdmark-tree-copy" type="button" data-state>…</button><span class="mdmark-visually-hidden mdmark-tree-status" role="status"></span></div>` を配置し、子を持つフォルダの名前を `<button class="mdmark-tree-toggle" type="button" aria-expanded aria-controls>` で包む。アイコンは CSS で付ける（フォルダは `aria-expanded` で開いた形状・閉じた形状、ファイルは `data-file-icon`。`render` だけのフォルダは開いた形状）。アイコンの種類は lucide の `file-text`（md・mdx・txt・rst、名前 LICENSE）・`file-code`（ts・tsx・mts・cts・js・jsx・mjs・cjs・py・rb・go・rs・java・kt・swift・c・h・cpp・cs・php・css・scss・html・vue・svelte）・`file-json`（json・jsonc・yaml・yml・toml・xml・ini・env・lock）・`file-image`（png・jpg・jpeg・gif・svg・webp・avif・ico）・`file-spreadsheet`（csv・tsv・xlsx）・`file-archive`（zip・gz・tgz・tar・vsix）・`file-terminal`（sh・bash・zsh・ps1・bat、名前 Dockerfile・Makefile）、それ以外は `file`。拡張子は最後の `.` の後ろを小文字にして参照する。注釈の列は `mount` が名前の幅を測って `--mdmark-tree-note-start` で統一する。印刷では帯とパネルを出さない。読み込めない行があるときはこの部品を使用せず、記載の警告と元のコードブロックを出す。外観は確認ログの注釈・開閉の示し方・コピーボタン・アイコンの色の決定。モックは `dev/mock/components/file-tree/`'

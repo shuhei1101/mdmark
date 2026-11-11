@@ -1,3 +1,4 @@
+id: CMP-472-54
 title: 画像の図
 implementation: src/parts/image.ts#renderImageFigure
 story: Parts/ImageFigure
@@ -208,17 +209,17 @@ css_properties:
     default: '#52525b（ダーク #b4b4bc）'
     description: キャプションの文字の色
 uses:
-  - component: dev/設計書/部品設計/図表の番号.ts#
+  - component: CMP-472-40#
     how: '`fig` のマーカーの直後の画像は、図表の番号のスロットにこの部品を入れる'
 accessibility:
   - '拡大のボタンは `画像を拡大: {alt}` をスクリーンリーダー向けの名前に持ち、フォーカスの枠を見せる。右上の拡大のアイコンは `aria-hidden`'
   - 画像の `alt` は文書に記載したまま残し、キャプションは `figcaption` でスクリーンリーダーに伝える
   - 'テーマで隠す画像は `display: none` で、スクリーンリーダーにも含めない'
 refs:
-  - dev/設計書/インターフェース定義/ライブラリ本体/文書をHTML文字列にする.ts#constraints[画像の属性]
-  - dev/設計書/インターフェース定義/ライブラリ本体/文書をHTML文字列にする.ts#constraints[画像の図とキャプション]
-  - dev/設計書/インターフェース定義/ライブラリ本体/文書をHTML文字列にする.ts#constraints[テーマごとの画像]
-  - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[ライトボックス]
+  - IF-472-34#constraints[画像の属性]
+  - IF-472-34#constraints[画像の図とキャプション]
+  - IF-472-34#constraints[テーマごとの画像]
+  - IF-472-35#constraints[ライトボックス]
 status: planned
 notes:
   HTML: '`<figure class="mdmark-figure mdmark-image" data-align="{align}" style="--mdmark-image-width: {width}"><button class="mdmark-image-open" type="button" aria-label="画像を拡大: {alt}"><img src="{src}" alt="{alt}"><span class="mdmark-image-open-icon" aria-hidden="true">{lucide の maximize-2}</span></button><figcaption class="mdmark-figure-caption">{caption}</figcaption></figure>`。拡大のボタンは `mount` が付ける（`render` は `img` だけを出す）。モックは `dev/mock/components/figure/`'

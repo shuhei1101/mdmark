@@ -1,0 +1,164 @@
+id: MOD-472-269
+title: ライブラリ本体 / 記法 / tree.ts
+test_files:
+  - tests/unit/src/parts/tree.test.ts
+data_models:
+  - name: TreeNode
+    title: ツリーの項目
+    container: src/parts/tree.ts
+    summary: 罫線を読み込んだ 1 項目（部品『ファイルツリー』の `nodes` の要素）
+    properties:
+      - name: name
+        type: string
+        description: 項目の名前
+      - name: children
+        type: TreeNode[] | undefined
+        description: 子の項目
+      - name: note
+        type: string | undefined
+        description: 注釈の HTML（区切りの `#` の後ろのインラインを描いたもの）。注釈の無い項目は持たない
+functions:
+  - name: renderTree
+    title: ファイルツリーを描く
+    container: src/parts/tree.ts
+    kind: 関数
+    scope: internal
+    summary: 部品設計『ファイルツリー』の HTML を返却する。`div.mdmark-tree` に `open` を `data-open`、`source` を `data-source` で持たせ、名前が `...` の項目を `mdmark-tree-more`、ファイルを `fileIconOf` の `data-file-icon` で描き、`note` を `mdmark-tree-note` に入れる。`interactive` のときは `renderTreeBar` の帯を配置し、子を持つフォルダの名前を開閉のボタンにし、`folderOpenByDefault` で開かないフォルダの入れ子の `ul` を `hidden="until-found"` にし、`copyFallback` ならツリーの下に `renderCopyPanel` のパネルを配置する
+    args:
+      - name: options
+        type: '{ nodes: TreeNode[]; source: string; open?: string; wrap?: boolean; interactive?: boolean; copyState?: "idle" | "copied"; copyFallback?: boolean; id?: string }'
+        required: true
+        description: 部品設計の引数と、`aria-controls` の id の頭（既定 `mdmark-tree`。`interactive` のときだけ使用する）
+    returns:
+      type: string
+      description: '`<div class="mdmark-tree"` で始まる HTML'
+    callees:
+      - 'MOD-472-313#functions[escapeHtml]'
+      - '#functions[fileIconOf]'
+      - '#functions[folderOpenByDefault]'
+      - '#functions[renderTreeBar]'
+      - 'MOD-472-315#functions[renderCopyPanel]'
+    unit_tests:
+      - name: test_render_tree
+        case: 正常
+        summary: フォルダとファイルを分け、名前と元のテキストをエスケープする
+        condition: '`src/` の子に `a<b>.ts`、`source: "src/\n└── a<b>.ts"`'
+        mock: なし
+        expected: '`<div class="mdmark-tree" data-source="src/\n└── a&lt;b&gt;.ts">` の中に `<ul class="mdmark-tree-list" aria-label="ファイルツリー">`、`src/` が `mdmark-tree-folder`、`a&lt;b&gt;.ts` が `mdmark-tree-file`。`data-open`・`mdmark-tree-note`・`<button` が無い'
+      - name: test_render_tree_when_items
+        case: 正常
+        summary: 注釈・アイコンの種類・ほかにもある項目を描く
+        condition: 部品設計の `Notes` と `More`
+        mock: なし
+        expected: '`src/` と `index.ts` の行の `mdmark-tree-note` が注釈の HTML をそのまま持ち、`mdmark/` の行は `mdmark-tree-note` を持たない。`index.ts` の `li` が `data-file-icon="file-code"`。`...` が `<li class="mdmark-tree-more">` で `ほかにもあります` を持つ'
+      - name: test_render_tree_when_interactive
+        case: 正常
+        summary: 帯と開閉のボタンを配置し、開く階層より深いフォルダを閉じる
+        condition: '部品設計の `Interactive` と `OpenLevels`（`open: 2`）'
+        mock: なし
+        expected: どちらも `ul` の前に `mdmark-tree-bar`（`tree` と `data-state="idle"` の `mdmark-tree-copy`）がある。1 つ目は `mdmark/` の `mdmark-tree-toggle` が `aria-expanded="true"`、`src/` が `aria-expanded="false"` でその入れ子の `ul` が `hidden="until-found"`、`aria-controls` がその `ul` の id。2 つ目は `app/`・`src/` が `aria-expanded="true"`、`parts/` が `aria-expanded="false"`
+      - name: test_render_tree_when_copy_fallback
+        case: 正常
+        summary: コピーできないときのパネルをツリーの下に配置する
+        condition: 部品設計の `CopyFailed`
+        mock: なし
+        expected: '`mdmark-tree-list` の後ろに `mdmark-copy-panel` があり、案内が `ツリーのテキストを選択しています。` で始まり、`textarea` の中身が `source`'
+      - name: test_render_tree_when_wrap
+        case: 正常
+        summary: wrap のツリーに折り返す class を付ける
+        condition: 部品設計『ファイルツリー』の状態 `Wrap` の引数
+        mock: なし
+        expected: '`div.mdmark-tree` が `mdmark-tree-wrap` と `data-open="all"` を持ち、`wrap` を指定しないと `mdmark-tree-wrap` を持たない'
+  - name: fileIconOf
+    title: ファイルのアイコンの種類を決める
+    container: src/parts/tree.ts
+    summary: ファイル名から、部品設計『ファイルツリー』のアイコンの種類（lucide の名前）を返却する。名前そのもの（`LICENSE`・`Dockerfile`・`Makefile`）を先に引き、次に最後の `.` の後ろを小文字にした拡張子で参照する。どれにも該当しなければ `file`
+    kind: 関数
+    scope: internal
+    args:
+      - name: name
+        type: string
+        required: true
+        description: ファイルの名前
+    returns:
+      type: '"file-text" | "file-code" | "file-json" | "file-image" | "file-spreadsheet" | "file-archive" | "file-terminal" | "file"'
+      description: アイコンの種類
+    unit_tests:
+      - name: test_file_icon_of
+        case: 正常
+        summary: 名前と拡張子から種類を決める
+        condition: '`README.md`・`index.ts`・`package.json`・`photo.PNG`・`data.csv`・`dist.tar.gz`・`run.sh`・`Dockerfile`・`LICENSE`・`font.woff2`・`Makefile.bak`'
+        mock: なし
+        expected: 順に `file-text`・`file-code`・`file-json`・`file-image`・`file-spreadsheet`・`file-archive`・`file-terminal`・`file-terminal`・`file-text`・`file`・`file`
+    status: planned
+    introduced:
+      pr: 225
+  - name: renderTreeBar
+    title: ファイルツリーの帯を描く
+    container: src/parts/tree.ts
+    summary: ツリーの上に配置する `<div class="mdmark-tree-bar">`（種類 `tree`・`mdmark-tree-copy` のボタン・`role="status"` の `mdmark-tree-status`）を返却する。ボタンは `copyState` を `data-state` に持ち、`idle` は `copy` のアイコンと `コピー`、`copied` は `check` のアイコンと `コピーしました`。`mount` が描いたツリーに追加するのにも使用する
+    kind: 関数
+    scope: internal
+    args:
+      - name: options
+        type: '{ copyState?: "idle" | "copied" }'
+        required: true
+        description: コピーボタンの状態（既定 `idle`）
+    returns:
+      type: string
+      description: '`<div class="mdmark-tree-bar"` で始まる HTML'
+    unit_tests:
+      - name: test_render_tree_bar
+        case: 正常
+        summary: コピーボタンの状態で文言を切り替える
+        condition: '`copyState` を省いたものと `copied`'
+        mock: なし
+        expected: 1 つ目は `<button class="mdmark-tree-copy" type="button" data-state="idle">` と `コピー`、2 つ目は `data-state="copied"` と `コピーしました`。どちらも `aria-hidden="true"` の `tree` と `role="status"` の要素を持つ
+    status: planned
+    introduced:
+      pr: 225
+  - name: folderOpenByDefault
+    title: フォルダを既定で開くかを決める
+    container: src/parts/tree.ts
+    summary: ルートを 0 としたフォルダの深さと `data-open` の値から、既定で開くかを返却する。`all` は常に開き、数は深さがその数より浅いとき、値が無ければルートだけを開く。部品のツリーと操作が使用する
+    kind: 関数
+    scope: internal
+    args:
+      - name: depth
+        type: number
+        required: true
+        description: ルートを 0 としたフォルダの深さ
+      - name: open
+        type: string | undefined
+        required: false
+        description: '`data-open` の値（`all` か 1 以上の整数の文字）'
+    returns:
+      type: boolean
+      description: 既定で開くか
+    unit_tests:
+      - name: test_folder_open_by_default
+        case: 正常
+        summary: 指定ごとに開く深さを決める
+        condition: 深さ 0・1・2 を、`open` が無い・`all`・`2` のそれぞれで指定する
+        mock: なし
+        expected: 無いときは `true`・`false`・`false`、`all` は全て `true`、`2` は `true`・`true`・`false`
+    status: planned
+    introduced:
+      pr: 225
+  - name: renderTreeCopyContent
+    title: ツリーのコピーボタンの中身を描く
+    container: src/parts/tree.ts
+    summary: コピーボタンの中身を状態ごとに返却する（`idle` は `copy` のアイコンと `コピー`、`copied` は `check` のアイコンと `コピーしました`）。`renderTreeBar` と、コピーの後にボタンを書き換える `attachFileTrees` が使用する
+    kind: 関数
+    scope: internal
+    args:
+      - name: state
+        type: '"idle" | "copied"'
+        required: true
+        description: コピーボタンの状態
+    returns:
+      type: string
+      description: アイコンの SVG と文言の HTML
+    status: planned
+    introduced:
+      pr: 225

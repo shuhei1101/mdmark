@@ -1,0 +1,42 @@
+id: MOD-472-264
+title: ライブラリ本体 / 索引と用語 / backlinks.ts
+test_files:
+  - tests/unit/src/render/syntax/backlinks.test.ts
+functions:
+  - name: backlinksRule
+    title: 関連文書の一覧のコアルール
+    container: src/render/syntax/backlinks.ts
+    kind: 関数
+    scope: internal
+    summary: 描く文書の被参照を、本文の末尾に関連文書の一覧として追加する
+    description: '`references.backlinks[docId]`（参照の表が無ければ、索引の `related` の要素のうち `readRelated` の `to` が `docId` の要素を持つ文書）から描く文書自身を除き、`renderBacklinks`（`id` は `mdmark-backlinks-title`。ページで一意にするのは `attachTermTips`）の HTML を末尾に追加する。リンクの `href` は `relativeHref` で描く文書からの相対パスにする。`docId` が無いとき・被参照が 0 件のとき・`backlinks` がオフのときは追加しない'
+    args:
+      - name: state
+        type: StateCore
+        required: true
+        description: markdown-it のコアの状態（`state.env` は `RenderEnv`）
+    returns:
+      type: void
+      description: トークンの並びの末尾に一覧を追加する
+    callees:
+      - 'MOD-472-262#functions[relativeHref]'
+      - 'MOD-472-265#functions[renderBacklinks]'
+    unit_tests:
+      - name: test_backlinks_rule
+        case: 正常
+        summary: 被参照を末尾の一覧に追加する
+        condition: '`docId` が `arch`、`backlinks.arch` に `api`・`guide`'
+        mock: なし
+        expected: 末尾にタイトル `関連文書` の一覧があり、項目が `api`・`guide` の順
+      - name: test_backlinks_rule_when_empty
+        case: 正常
+        summary: 被参照が無ければ追加しない
+        condition: '`backlinks.arch` が空'
+        mock: なし
+        expected: 一覧が無い
+      - name: test_backlinks_rule_without_references
+        case: 正常
+        summary: 参照の表が無ければ、文字列とオブジェクトの関連の相手から一覧を作る
+        condition: '`docId` が `arch`、参照の表が無く、索引の `api` の `related` が `[{ to: "arch", type: "requires", when: "前提を確認するとき" }]`、`guide` の `related` が `["arch"]`'
+        mock: なし
+        expected: 末尾の一覧の項目が `api`・`guide` の順

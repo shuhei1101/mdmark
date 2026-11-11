@@ -1,0 +1,23 @@
+id: MOD-472-341
+title: ライブラリ本体 / 部品の描画 / main.ts
+constants:
+  - name: storybookConfig
+    title: Storybook の設定
+    container: .storybook/main.ts
+    summary: '`export default` する設定'
+    value: '`framework: { name: "@storybook/server-webpack5", options: {} }`・`stories: ["../src/**/*.stories.yaml", "../vscode/src/**/*.stories.yaml"]`・`core: { disableTelemetry: true, allowedHosts }`。`allowedHosts` は環境変数 `STORYBOOK_ALLOWED_HOSTS` をカンマで区切ったもの（無ければ持たない）'
+    entries:
+      - key: framework
+        value: '`@storybook/react-vite`'
+      - key: stories
+        value: '`["../src/**/*.stories.ts", "../vscode/src/**/*.stories.@(ts|tsx)"]`'
+      - key: addons
+        value: '`["@storybook/addon-a11y"]`'
+      - key: staticDirs
+        value: '`["./public", { from: "../dist", to: "/mdmark-dist" }]`（MSW の Service Worker と、パネルのストーリーが読み込むこのブランチの配布物）'
+      - key: core
+        value: '`{ disableTelemetry: true, allowedHosts }`。`allowedHosts` は環境変数 `STORYBOOK_ALLOWED_HOSTS` をカンマで区切ったもの（無ければ持たない）'
+      - key: viteFinal
+        value: '`server.proxy["/render"]` を環境変数 `RENDER_ORIGIN` の描画のインターフェースへ向け（`RENDER_ORIGIN` が無ければ例外で起動しない）、`@tailwindcss/vite` を追加し、`resolve.alias` の `@` を `vscode/src/webview` に、`resolve.dedupe` を `["react", "react-dom"]` にする'
+    refs:
+      - LIB-472-3#

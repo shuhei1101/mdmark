@@ -1,3 +1,4 @@
+id: SC-472-8
 title: Mermaidと補足で図を描く
 lead: 文書の map の範囲の Mermaid と補足を、mdmark が入れ子のグループを自動配置した図にして図の枠に描く。補足の layout で、配置と見た目を必要な箇所だけ上書きする。
 issue: 324

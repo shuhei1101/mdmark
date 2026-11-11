@@ -1,3 +1,4 @@
+id: SC-472-76
 title: 複数の文書を1枚のHTMLにまとめる
 scenarios:
   - name: 正常シナリオ
@@ -142,7 +143,7 @@ scenarios:
       - 外への要求が 0 件
     test: test_normal_when_theme_selected
     refs:
-      - dev/設計書/シナリオ/単一ユースケース/テーマを選ぶ#scenarios[正常シナリオ（ダークの配色）]
+      - SC-472-26#scenarios[正常シナリオ（ダークの配色）]
   - name: 正常シナリオ（画像・動画・音声を埋める）
     setup:
       - name: まとめる文書と画像・動画・音声のファイル
@@ -218,7 +219,7 @@ scenarios:
       - 外への要求が 0 件
     test: test_normal_when_footnotes
     refs:
-      - dev/設計書/シナリオ/単一ユースケース/脚注を確認する#scenarios[正常シナリオ（末尾の一覧から本文へ戻る）]
+      - SC-472-71#scenarios[正常シナリオ（末尾の一覧から本文へ戻る）]
   - name: 正常シナリオ（範囲のスクリプトと CSS）
     setup:
       - name: 範囲のスクリプトを持つ文書

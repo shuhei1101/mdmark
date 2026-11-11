@@ -1,0 +1,4 @@
+summary: tests の設計書
+items:
+  - page: integration/
+    summary: integration の設計書

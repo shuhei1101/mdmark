@@ -1,0 +1,89 @@
+id: MOD-472-52
+title: VS Code 拡張機能 / Webview / messages.ts
+data_models:
+  - name: HostMessage
+    title: 拡張機能から Webview へのメッセージ
+    container: vscode/src/messages.ts
+    usecase: 共通
+    role: DTO
+    summary: '`type` で見分ける判別付きの型'
+    description: '`{ type: "render"; markdown: string; previous?: string; config: PreviewConfig; theme: "auto" | "light" | "dark"; includes?: Record<string, string>; aliases?: MdmarkAlias[] }`・`{ type: "scrollToLine"; line: number }`・`{ type: "configError"; path: string; line?: number; settingKey?: string }`・`{ type: "configOk" }`・`{ type: "theme"; href: string }`・`{ type: "assetsResolved"; id: number; urls: Record<string, string | null> }`・`{ type: "inspect"; id: number; selector: string; play?: boolean }`・`{ type: "axe"; id: number }`。`configError` は `line` と `settingKey` のどちらか一方を持つ。`inspect`・`axe` はテストのときだけ送信する'
+    properties:
+      - name: type
+        type: '"render" | "scrollToLine" | "configError" | "configOk" | "theme" | "assetsResolved" | "inspect" | "axe"'
+        description: メッセージの種類
+    refs:
+      - IF-472-22#constraints[Webview とのメッセージ]
+      - MOD-472-104#data_models[PreviewConfig]
+      - IF-472-22#constraints[動画・音声とアセットのルートの解決]
+      - IF-472-22#constraints[テストのときの差し替え]
+    status: planned
+  - name: WebviewMessage
+    title: Webview から拡張機能へのメッセージ
+    container: vscode/src/messages.ts
+    usecase: 共通
+    role: DTO
+    summary: '`type` で見分ける判別付きの型'
+    description: '`{ type: "ready" }`・`{ type: "rendered" }`・`{ type: "loadFailed"; reason: "offline" | "versionMissing" | "diffUnsupported" }`・`{ type: "openLink"; href: string }`・`{ type: "revealLine"; line: number }`・`{ type: "reload" }`・`{ type: "openConfig" }`・`{ type: "resolveAssets"; id: number; paths: string[] }`・`{ type: "openAsset"; path: string }`・`{ type: "inspected"; id: number; elements: InspectedElement[] }`・`{ type: "axed"; id: number; violations: AxeViolation[] }`'
+    properties:
+      - name: type
+        type: '"ready" | "rendered" | "loadFailed" | "openLink" | "revealLine" | "reload" | "openConfig" | "resolveAssets" | "openAsset" | "inspected" | "axed"'
+        description: メッセージの種類
+    refs:
+      - IF-472-22#constraints[Webview とのメッセージ]
+      - IF-472-22#constraints[動画・音声とアセットのルートの解決]
+      - IF-472-22#constraints[再生できない動画・音声]
+      - IF-472-22#constraints[テストのときの差し替え]
+    status: planned
+  - name: InspectedElement
+    title: 調べた要素
+    container: vscode/src/messages.ts
+    usecase: 共通
+    role: DTO
+    summary: 結合テストが Webview の DOM の期待値を確認するために返却する要素 1 つの様子
+    properties:
+      - name: tagName
+        type: string
+        description: 小文字のタグ名
+      - name: className
+        type: string
+        description: '`class` の値'
+      - name: attributes
+        type: Record<string, string>
+        description: 全ての属性
+      - name: text
+        type: string
+        description: '`textContent`'
+      - name: naturalWidth
+        type: number | undefined
+        description: '`img` のときだけ'
+      - name: top
+        type: number
+        description: 見えている範囲の先頭からの位置（px。`getBoundingClientRect().top`）
+      - name: height
+        type: number
+        description: 高さ（px）
+      - name: currentTime
+        type: number | undefined
+        description: '`video`・`audio` のときだけ。`play` を受けたときは、`play()` から 1 秒後の値'
+      - name: readyState
+        type: number | undefined
+        description: '`video`・`audio` のときだけ。要素の `readyState`（4 は再生に足りるデータを読み込めた）'
+    status: planned
+  - name: AxeViolation
+    title: axe の違反
+    container: vscode/src/messages.ts
+    usecase: 共通
+    role: DTO
+    summary: 結合テストが受け取る axe-core の違反 1 件
+    properties:
+      - name: id
+        type: string
+        description: axe-core の規則の ID（`color-contrast` など）
+      - name: impact
+        type: string | null
+        description: axe-core の影響度
+      - name: targets
+        type: string[]
+        description: 違反した要素のセレクタ
+    status: planned

@@ -1,3 +1,4 @@
+id: CMP-472-38
 title: "図のツールチップ"
 implementation: "src/parts/diagram.ts#renderDiagramTip"
 story: "Parts/DiagramTooltip"
@@ -59,10 +60,10 @@ states:
   - name: Merged
     description: map の構成図で閉じたグループへまとめた線を開いた。元の線を 1 行ずつ並べる
     args:
-    - name: kind
-      value: merged
-    - name: open
-      value: '''true'''
+      - name: kind
+        value: merged
+      - name: open
+        value: '''true'''
     notes:
       定義: 部品設計『mapの構成図』の Collapsed
 lead: 図の線のラベル・ノードのマーカー・グループのタイトルのマーカー・グラフの項目に付くツールチップ。線は入力の詳細を、LLM・スクリプトなどのノードは入力・処理・出力を、ER 図のテーブルの説明のボタンはテーブルの概要と列の説明を出す。ノードの中の用語は用語のツールチップを使用する。
@@ -114,7 +115,7 @@ events:
     value: ツールチップの `hidden`
     description: '`mount` が 1 つだけ開き、ツールチップの上では閉じず、Esc で閉じてフォーカスを持ち主に残す'
 uses:
-  - component: dev/設計書/部品設計/用語のツールチップ.ts#
+  - component: CMP-472-53#
     how: ノードの中の用語の下線と意味はこの部品ではなく用語のツールチップで出す
 accessibility:
   - ツールチップは `role="tooltip"` で、持ち主（線のラベルのボタン・ノードの右上のマーカーのボタン・グループのタイトルの右のマーカーのボタン・`tabindex="0"` を持つグラフの項目・ER 図のテーブルの説明のボタン）は `aria-describedby` でそれを指す。ノードのマーカーの外では開かない

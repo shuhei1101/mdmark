@@ -1,0 +1,116 @@
+id: MOD-472-239
+title: ライブラリ本体 / 操作 / tree-logic.ts
+test_files:
+  - tests/unit/src/tree-logic.test.ts
+functions:
+  - name: splitKeyPath
+    title: キーのパスを分ける
+    container: src/tree-logic.ts
+    kind: 関数
+    scope: internal
+    summary: '`aliases[].metadata.type` の構造のパスを `.` で分け、`[]` を前の名前に付けたままの名前の並びと、親のパスの並びを返却する'
+    args:
+      - name: path
+        type: string
+        required: true
+        description: キーの列の文字（前後の空白と行内のコードの `` ` `` は除いたもの）
+    returns:
+      type: '{ names: string[]; parents: string[] }'
+      description: '`names` は末尾までの名前（`aliases[]` の構造を含む）、`parents` は根からの親の全体のパス'
+    unit_tests:
+      - name: test_split_key_path
+        case: 正常
+        summary: '`.` で分け、`[]` を名前に残す'
+        condition: '`aliases[].metadata.alias_type.type`'
+        mock: なし
+        expected: '`names` が `["aliases[]","metadata","alias_type","type"]`、`parents` が `["aliases[]","aliases[].metadata","aliases[].metadata.alias_type"]`'
+    status: planned
+    introduced:
+      pr: 303
+  - name: planTreeRows
+    title: 階層の行を計画する
+    container: src/tree-logic.ts
+    kind: 関数
+    scope: internal
+    summary: 表の行のキーの並びから、表に無い親を子の最初の行の前に補った行の並び（`{ path, parent, depth, name, virtual, hasChildren, source }`）を返却する
+    description: '`source` は元の行の位置（補った行は `undefined`）。同じパスの行が後ろにあるときは補わず、その行の場所で親にする。空のキーの行は深さ 0 の行としてそのまま残す'
+    args:
+      - name: keys
+        type: string[]
+        required: true
+        description: 本文の行ごとのキーの列の文字
+    returns:
+      type: TreeRowPlan[]
+      description: 描く順の行
+    unit_tests:
+      - name: test_plan_tree_rows
+        case: 正常
+        summary: 表に無い親を補い、深さと子の有無を付ける
+        condition: '`["features.table","features.html","aliases[].id","aliases[].metadata.alias_type.type"]`'
+        mock: なし
+        expected: パスが `features`（virtual）・`features.table`・`features.html`・`aliases[]`（virtual）・`aliases[].id`・`aliases[].metadata`（virtual）・`aliases[].metadata.alias_type`（virtual）・`aliases[].metadata.alias_type.type` の順で、最後の `depth` が 3
+      - name: test_plan_tree_rows_when_parent_written_later
+        case: 正常
+        summary: 後ろに記載した親の行は補わず、その行を親にする
+        condition: '`["a.b","a"]`'
+        mock: なし
+        expected: パスが `a`（`source` 1、virtual でない）・`a.b`（`source` 0）の順
+    status: planned
+    introduced:
+      pr: 303
+  - name: yamlLinePaths
+    title: YAML の行のパスを求める
+    container: src/tree-logic.ts
+    kind: 関数
+    scope: internal
+    summary: YAML の行ごとに、インデントと `- ` から求めたキーのパス（表の `data-path` と同じ記載方法。キーを持たない行は `undefined`）を返却する
+    description: YAML を解析せず、行の先頭の空白と `- `・`キー:` だけを確認する。配列の要素のキーは親のキーに `[]` を付けたパスの下にする。コメントと空の行、複数行の文字列の中はキーを持たない行にする
+    args:
+      - name: lines
+        type: string[]
+        required: true
+        description: 見本のコードブロックの行
+    returns:
+      type: Array<string | undefined>
+      description: 行ごとのパス
+    unit_tests:
+      - name: test_yaml_line_paths
+        case: 正常
+        summary: 入れ子のキーと配列の要素のキーにパスを付ける
+        condition: '`aliases:`・`  - id: terms`・`    paths:`・`      - dev/*.yaml`・`    metadata:`・`      alias_type:`・`        type: custom`'
+        mock: なし
+        expected: '`aliases[]`・`aliases[].id`・`aliases[].paths`・`undefined`・`aliases[].metadata`・`aliases[].metadata.alias_type`・`aliases[].metadata.alias_type.type`'
+      - name: test_yaml_line_paths_when_comments
+        case: 正常
+        summary: コメント・空の行・複数行の文字列の中はパスを持たない
+        condition: '`# 説明`・``・`note: |`・`  a: b`・`next: 1`'
+        mock: なし
+        expected: '`undefined`・`undefined`・`note`・`undefined`・`next`'
+    status: planned
+    introduced:
+      pr: 303
+  - name: filterTreeRows
+    title: 階層の行を絞り込む
+    container: src/tree-logic.ts
+    kind: 関数
+    scope: internal
+    summary: 末尾の名前に単語を含む行とその祖先の行のパスの集まりと、該当した行のうち補った行でないものの数を返却する
+    description: 照合は大文字小文字を区別しない。単語が空なら全ての行を残し、数は補った行でない行の数
+    args:
+      - name: options
+        type: '{ rows: TreeRowPlan[]; word: string }'
+        required: true
+        description: '`rows` は `planTreeRows` の行、`word` は絞り込みの単語'
+    returns:
+      type: '{ keep: Set<string>; hits: Set<string>; count: number }'
+      description: '`keep` は残す行、`hits` は該当した行のパス、`count` は件数'
+    unit_tests:
+      - name: test_filter_tree_rows
+        case: 正常
+        summary: 該当した行の祖先を残し、補った行を数えない
+        condition: test_plan_tree_rows の行で `id` と `metadata`
+        mock: なし
+        expected: '`id` は `keep` が `aliases[]`・`aliases[].id`、`count` が 1。`metadata` は `keep` が `aliases[]`・`aliases[].metadata`、`count` が 0'
+    status: planned
+    introduced:
+      pr: 303

@@ -1,0 +1,12 @@
+summary: comments の設計書
+items:
+  - page: anchor.ts.yaml
+    summary: ライブラリ本体 / ビューとコメント / anchor.ts
+  - page: bubble.ts.yaml
+    summary: ライブラリ本体 / ビューとコメント / bubble.ts
+  - page: index.ts.yaml
+    summary: ライブラリ本体 / ビューとコメント / index.ts
+  - page: margin.ts.yaml
+    summary: ライブラリ本体 / ビューとコメント / margin.ts
+  - page: spec.ts.yaml
+    summary: ライブラリ本体 / ビューとコメント / spec.ts

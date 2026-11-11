@@ -1,0 +1,154 @@
+id: MOD-472-155
+title: ライブラリ本体 / ビューとコメント / spec.ts
+test_files:
+  - tests/unit/src/comments/spec.test.ts
+data_models:
+  - name: MdmarkCommentDraft
+    title: コメントの下書き
+    container: src/comments/spec.ts
+    role: 公開の型
+    summary: '`save` に指定する、まだ `id` の無いコメント'
+    properties:
+      - name: quote
+        type: string
+        description: 選んだ文字（前後の空白を落とす）
+      - name: prefix
+        type: string
+        description: 選んだ文字の直前の本文の文字。`CONTEXT_CHARS` 文字まで
+      - name: suffix
+        type: string
+        description: 選んだ文字の直後の本文の文字。`CONTEXT_CHARS` 文字まで
+      - name: body
+        type: string
+        description: コメントの本文（前後の空白を落とす）
+  - name: MdmarkComment
+    title: コメント
+    container: src/comments/spec.ts
+    role: 公開の型
+    summary: 保存したコメント。`MdmarkCommentDraft` に `id` を追加したもの
+    inherits: MdmarkCommentDraft
+    properties:
+      - name: id
+        type: string
+        description: 保存先が付けた ID
+  - name: MdmarkCommentStore
+    title: コメントの読み込みと保存の関数
+    container: src/comments/spec.ts
+    role: 公開の型
+    summary: 利用側が記載する、コメントの読み込みと保存
+    properties:
+      - name: load
+        type: '(target: { docId: string }) => Promise<MdmarkComment[]>'
+        description: 対象のコメントを返却する
+      - name: save
+        type: '(target: { docId: string; comment: MdmarkCommentDraft }) => Promise<MdmarkComment>'
+        description: 下書きを保存し、`id` を付けたコメントを返却する
+      - name: update
+        type: '((target: { docId: string; id: string; body: string }) => Promise<void>) | undefined'
+        description: コメントの本文を書き換える。持つときだけ吹き出しに「編集」を出す
+      - name: remove
+        type: '((target: { docId: string; id: string }) => Promise<void>) | undefined'
+        description: コメントを削除する。持つときだけ吹き出しに「削除」を出す
+  - name: MdmarkCommentsHandle
+    title: コメントの片付け
+    container: src/comments/spec.ts
+    role: 公開の型
+    summary: '`mountComments` の Promise の値'
+    properties:
+      - name: destroy
+        type: () => void
+        description: マーカーを削除して文字を元の並びに戻し、ボタン・入力欄・吹き出し・一覧と `document` の受け取りを解除する。2 回目以降は何もしない
+functions:
+  - name: checkCommentOptions
+    title: コメントの引数を検める
+    container: src/comments/spec.ts
+    summary: '`mountComments` の引数を確認し、合わなければ誤った引数の名前を含む `TypeError` を投げる。`mount` の `commentStore` の確認にも使用する'
+    kind: 関数
+    scope: internal
+    args:
+      - name: el
+        type: unknown
+        required: true
+        description: 範囲の要素
+      - name: opts
+        type: unknown
+        required: true
+        description: '`{ store, docId }`'
+    returns:
+      type: 'asserts opts is { store: MdmarkCommentStore; docId: string }'
+      description: 合えば何も返却しない
+    process: |-
+      1. `el` が `HTMLElement` でなければ投げる（`el`）
+      2. `checkCommentStore(store, "opts.store")` を呼ぶ
+      3. `docId` が空でない文字列でなければ投げる（`opts.docId`）
+    unit_tests:
+      - name: test_check_comment_options_when_invalid
+        case: 異常
+        summary: 合わない引数ごとに名前を含めて投げる
+        condition: '`el` に `{}`・`save` の無い `store`・`docId: ""` をそれぞれ指定する'
+        mock: なし
+        expected: それぞれ `el`・`opts.store`・`opts.docId` を含む `TypeError`
+    refs:
+      - IF-472-27#exceptions[TypeError]
+  - name: checkCommentStore
+    title: コメントの読み込みと保存の関数を検める
+    container: src/comments/spec.ts
+    summary: 読み込みと保存の関数が `load`・`save` の関数を持ち、`update`・`remove` を持つなら関数かを確認し、合わなければ `name` を含む `TypeError` を投げる。`checkCommentOptions` と `mount` の `commentStore` の確認に使用する
+    kind: 関数
+    scope: internal
+    args:
+      - name: store
+        type: unknown
+        required: true
+        description: 読み込みと保存の関数
+      - name: name
+        type: string
+        required: true
+        description: '`TypeError` のメッセージに入れる引数の名前（`opts.store` か `commentStore`）'
+    returns:
+      type: asserts store is MdmarkCommentStore
+      description: 合えば何も返却しない
+    process: |-
+      1. `store` が `load`・`save` の関数を持たなければ、`{name} は load と save の関数を持つオブジェクトで指定してください` で投げる
+      2. `update`・`remove` のどちらかを、`undefined` でも関数でもない値で持てば、`{name} の update と remove は関数で指定してください` で投げる
+    unit_tests:
+      - name: test_check_comment_store
+        case: 正常
+        summary: update・remove を持たないか関数で持てば経由する
+        condition: '`load`・`save` だけの値と、`update`・`remove` も関数で持つ値'
+        mock: なし
+        expected: どちらも投げない
+      - name: test_check_comment_store_when_invalid
+        case: 異常
+        summary: 合わない関数ごとに名前を含めて投げる
+        condition: '`name` を `commentStore` にし、`save` の無い値・`update: 1` の値・`remove: "x"` の値をそれぞれ指定する'
+        mock: なし
+        expected: どれも `commentStore` を含む `TypeError`
+    refs:
+      - IF-472-35#exceptions[TypeError（コメント）]
+      - IF-472-27#exceptions[TypeError]
+    status: planned
+    introduced:
+      pr: 280
+  - name: isComment
+    title: コメントの構造か
+    container: src/comments/spec.ts
+    summary: '`load`・`save` が返却した値が `MdmarkComment` の構造かを返却する'
+    kind: 関数
+    scope: internal
+    args:
+      - name: value
+        type: unknown
+        required: true
+        description: 返却した値
+    returns:
+      type: value is MdmarkComment
+      description: '`id`・`quote` が空でない文字列で、`prefix`・`suffix`・`body` が文字列なら `true`'
+    process: 1. オブジェクトで、`id`・`quote` が空でない文字列、`prefix`・`suffix`・`body` が文字列かを返却する
+    unit_tests:
+      - name: test_is_comment
+        case: 正常
+        summary: 構造の合う値と合わない値を見分ける
+        condition: 一致した値・`id` の無い値・`body` が数の値
+        mock: なし
+        expected: '`true`・`false`・`false`'

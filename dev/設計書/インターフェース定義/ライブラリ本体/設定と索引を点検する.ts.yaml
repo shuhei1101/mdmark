@@ -1,3 +1,4 @@
+id: IF-472-39
 title: "設定と索引を点検する"
 entry:
   kind: operation
@@ -301,7 +302,7 @@ flows:
       - 記載できる値のフォルダでは、終了コードが 0 で `unknown_color_scheme` の行が無い
     test: test_normal_when_unknown_color_scheme
     refs:
-      - dev/設計書/シナリオ/単一ユースケース/設定と索引を点検する#scenarios[正常シナリオ（知らない明暗の値がある）]
+      - SC-472-78#scenarios[正常シナリオ（知らない明暗の値がある）]
   - name: 正常系（見つからないファイルがある）
     summary: 文書からの相対パスにもアセットのルートにも無い画像・動画・音声・添付のファイルを `missing_file` のずれにする
     setup:
@@ -324,7 +325,7 @@ flows:
       - 設定・文書が変わらず、書き出しのファイルが無い
     test: test_normal_when_files_missing
     refs:
-      - dev/設計書/シナリオ/単一ユースケース/設定と索引を点検する#scenarios[正常シナリオ（見つからないファイルがある）]
+      - SC-472-78#scenarios[正常シナリオ（見つからないファイルがある）]
   - name: 正常系（図の定義にずれがある）
     summary: 文書の図の部品の定義を読み込み、定義の誤りと、フロー図のノードの重なり・はみ出し・線の横切り・ラベルの長さをずれにする
     setup:
@@ -352,7 +353,7 @@ flows:
       - 設定・索引・文書が変わっていない
     test: test_normal_when_diagram_drift
     refs:
-      - dev/設計書/シナリオ/単一ユースケース/設定と索引を点検する#scenarios[正常シナリオ（図の定義にずれがある）]
+      - SC-472-78#scenarios[正常シナリオ（図の定義にずれがある）]
   - name: 正常系（取り込み先が無い）
     summary: include のマーカーが指すファイル・見出し・行の範囲が無いものを `include_target_missing` のずれにする
     setup:
@@ -375,7 +376,7 @@ flows:
       - 設定・索引・文書が変わらない
     test: test_normal_when_include_targets_missing
     refs:
-      - dev/設計書/シナリオ/単一ユースケース/設定と索引を点検する#scenarios[正常シナリオ（取り込み先が無い）]
+      - SC-472-78#scenarios[正常シナリオ（取り込み先が無い）]
   - name: 正常系（取り込みが循環する・フォルダの外を指す）
     summary: 循環する取り込みを `include_circular`、設定ファイルのフォルダの外を指す取り込みを `include_target_missing` のずれにする
     setup:
@@ -398,7 +399,7 @@ flows:
       - 設定・索引・文書が変わらない
     test: test_normal_when_include_circular_or_outside
     refs:
-      - dev/設計書/シナリオ/単一ユースケース/設定と索引を点検する#scenarios[正常シナリオ（取り込み先が無い）]
+      - SC-472-78#scenarios[正常シナリオ（取り込み先が無い）]
   - name: 正常系（文字列の記法を点検する）
     summary: 記載の警告を持たない Markdown の文字列で 0 件を返却する
     setup:
@@ -552,7 +553,7 @@ flows:
       - 設定・索引・文書が変わっていない
     test: test_normal_when_diagram_placement_invalid
     refs:
-      - dev/設計書/シナリオ/単一ユースケース/設定と索引を点検する#scenarios[正常シナリオ（図のツールチップの位置に誤った値がある）]
+      - SC-472-78#scenarios[正常シナリオ（図のツールチップの位置に誤った値がある）]
   - name: 正常系（グループの項目に誤った値がある）
     summary: フロー図の定義の `frame.hint` が文字でないことと `stickyTitles` が真偽値でないことを、1 件の `diagram_invalid` のずれにまとめる
     setup:
@@ -573,7 +574,7 @@ flows:
       - 設定・索引・文書が変わっていない
     test: test_normal_when_group_options_invalid
     refs:
-      - dev/設計書/シナリオ/単一ユースケース/設定と索引を点検する#scenarios[正常シナリオ（グループの項目に誤った値がある）]
+      - SC-472-78#scenarios[正常シナリオ（グループの項目に誤った値がある）]
   - name: 正常系（文字列の記法のマーカーに知らない引数がある）
     summary: 描くときにスキップする記法のマーカーの知らない機能・キー・指定を、行を指す `unknown_mark_arg` のずれにして終了コード 1 で終わる
     setup:
@@ -598,7 +599,7 @@ flows:
       - 最後の行が `ずれ 3 件`
     test: test_normal_when_text_unknown_mark_args
     refs:
-      - dev/設計書/シナリオ/単一ユースケース/文字列とYAMLのキーの記法を点検する#scenarios[正常シナリオ（知らないキー・機能・指定）]
+      - SC-472-52#scenarios[正常シナリオ（知らないキー・機能・指定）]
   - name: 正常系（map の補足にずれがある）
     summary: 文書の map の範囲の Mermaid と補足を読み込み、補足が指す無い ID・知らないキー・`--` を含む値を補足の行を、印の知らないキーを印の行を指すずれにする
     setup:
@@ -623,7 +624,7 @@ flows:
       - 設定・索引・文書が変わっていない
     test: test_normal_when_map_data_drift
     refs:
-      - dev/設計書/シナリオ/単一ユースケース/設定と索引を点検する#scenarios[正常シナリオ（map の補足にずれがある）]
+      - SC-472-78#scenarios[正常シナリオ（map の補足にずれがある）]
   - name: 正常系（文字列の map の書き方の警告）
     summary: '`--text` の Markdown の map の範囲の書き方の警告を、警告の項目ごとのずれにする'
     setup:
@@ -647,28 +648,28 @@ flows:
       - 最後の行が `ずれ 2 件`
     test: test_normal_when_text_map_warnings
     refs:
-      - dev/設計書/シナリオ/単一ユースケース/文字列とYAMLのキーの記法を点検する#scenarios[正常シナリオ（map の書き方の警告がある）]
+      - SC-472-52#scenarios[正常シナリオ（map の書き方の警告がある）]
   - name: 正常系（map の設定にずれがある）
     summary: 設定の `map` の Schema に合わない値と Lucide に無いアイコンの名前、文書の map の範囲の `map.kinds` に無いクラスと `map.lines` に無い線の名前をずれにする
     setup:
-    - name: map の設定と文書にずれを持つフォルダ
-      description: '設定の `map` に `node_fit: tall`・`kinds.store.shape: hexagon`・`kinds.store.icon: no-such-icon` を持ち、`build.include` が該当する `docs/a.md` の 3 行目の `<!-- map -->` の範囲に、`:::queue` のノード（`map.kinds` に `queue` が無い）と、補足の `layout` の `line: back` の線（`map.lines` に `back` が無い）を持つフォルダ'
-    - name: Mock
-      description: 差し替える依存は無い。点検はブラウザを使用しない
+      - name: map の設定と文書にずれを持つフォルダ
+        description: '設定の `map` に `node_fit: tall`・`kinds.store.shape: hexagon`・`kinds.store.icon: no-such-icon` を持ち、`build.include` が該当する `docs/a.md` の 3 行目の `<!-- map -->` の範囲に、`:::queue` のノード（`map.kinds` に `queue` が無い）と、補足の `layout` の `line: back` の線（`map.lines` に `back` が無い）を持つフォルダ'
+      - name: Mock
+        description: 差し替える依存は無い。点検はブラウザを使用しない
     flow: "sequenceDiagram\n  actor W as 文書の作成者\n  participant C as mdmark CLI\n  W->>C: mdmark check\n  C->>C: 設定の Schema と map のアイコンの名前を確認する\n  C->>C: 文書の map の範囲のクラスと線の名前を設定の map と照らす\n  C-->>W: ずれ 5 行・終了コード 1"
     expected:
-    - 終了コードが 1
-    - '`mdmark.config.yaml` を指す `schema` の行が `map.node_fit` と `map.kinds.store.shape` で 1 つずつあり、内容に記載できる値の一覧がある'
-    - '`mdmark.config.yaml` を指す `map_unknown_icon` の行が 1 つあり、内容に `no-such-icon` と Lucide のアイコンの名前にする修正方法がある'
-    - '`docs/a.md` を指す `map_unknown_class`（内容に `queue` と、`map.kinds` に記載するかクラスを修正する修正方法）と `map_unknown_line`（内容に `back` と、`map.lines` に記載するか名前を修正する修正方法）の行が 1 つずつある'
-    - 最後の行が `ずれ 5 件`
-    - 設定・索引・文書が変わっていない
+      - 終了コードが 1
+      - '`mdmark.config.yaml` を指す `schema` の行が `map.node_fit` と `map.kinds.store.shape` で 1 つずつあり、内容に記載できる値の一覧がある'
+      - '`mdmark.config.yaml` を指す `map_unknown_icon` の行が 1 つあり、内容に `no-such-icon` と Lucide のアイコンの名前にする修正方法がある'
+      - '`docs/a.md` を指す `map_unknown_class`（内容に `queue` と、`map.kinds` に記載するかクラスを修正する修正方法）と `map_unknown_line`（内容に `back` と、`map.lines` に記載するか名前を修正する修正方法）の行が 1 つずつある'
+      - 最後の行が `ずれ 5 件`
+      - 設定・索引・文書が変わっていない
     test: test_normal_when_map_config_drift
 lead: 文書の作成者が、設定ファイルの構造・索引と文書のずれ（`checkIndex`）・`build` の対象の有無・文書の本文にある知らないマーカー・文書が指す見つからないファイル・文書の図の部品の定義を点検し、ファイル・場所・種類・内容の一覧を受け取る。`--text` か `--file` と `--key` を指定したときは、設定と索引の点検の代わりに、指定した Markdown を描いたときの記載の警告と図の定義のずれを同じ一覧で受け取る。点検は設定・索引・文書を書き換えない。
 idempotent: true
 side_effects: なし（設定・索引・文書を書き換えない）
 callers:
-  - dev/設計書/シナリオ/単一ユースケース/設定と索引を点検する#
+  - SC-472-78#
 request:
   - name: --config
     type: string
@@ -754,14 +755,14 @@ constraints:
     constraint: '`schemas/mdmark.config.schema.json` に合わないところごとに `schema` のずれにする。空の設定ファイル（読み込んだ値がオブジェクトでない）も `schema` のずれにする。`build.glossary`・`build.entry` がまとめる文書に該当しないものも `schema` のずれにする。`theme`・`extensions` のファイルが無いものも `schema` のずれにする'
   - item: 索引の点検
     constraint: 設定に `index` があるときだけ行う。索引のフォルダの下の拡張子 `.md` のファイルのうち `build.exclude` に該当しないものを文書として `checkIndex` に指定し、返ったずれをそのまま出す。索引のファイルを読み込めないときは、索引を指す `schema` のずれにする
-    decided_by: dev/設計書/インターフェース定義/ライブラリ本体/索引を点検する.ts#
+    decided_by: IF-472-37#
   - item: build の対象
     constraint: 設定に `build` があるときだけ行う。`include` に該当し `exclude` に該当しない文書が 0 件なら `no_documents` のずれにする
   - item: 内容の文
     constraint: ずれごとに、何が合わないかと修正方法を日本語の 1 文で記載する
   - item: 動く Node のバージョン
     constraint: Node 24 以降
-    decided_by: dev/設計書/非機能要件/非機能要件#requirements[CLI が動く Node のバージョン]
+    decided_by: NFR-472-1#requirements[CLI が動く Node のバージョン]
   - item: 知らないマーカーの点検
     constraint: '点検する文書ごとに、描く処理と同じ記載方法のマーカー（`<!-- 名前 -->`・`<!-- 名前: 引数 -->`・`<!-- /名前 -->`）を、描く処理と同じく生の HTML のブロックと行内の HTML からだけ取得する（コードブロックとインラインコードの中は取得しない）。名前が知っているマーカーに該当しないマーカーを、1 つにつき 1 件の `unknown_mark` のずれにする。ファイルは設定ファイルのフォルダからの文書の相対パス、場所はマーカーのある行の番号（1 から）、内容はマーカーの名前と、名前を修正するか、拡張・対応表・`check.ignore` に追加するかの修正方法の 1 文'
   - item: 知っているマーカー
@@ -770,19 +771,19 @@ constraints:
     constraint: 索引の点検に指定する文書（設定に `index` があるとき）と、`build` の対象の文書（設定に `build` があるとき）を合わせ、同じファイルは 1 回だけ点検する。どちらも無い設定では知らないマーカーを点検しない
   - item: 変わった文書
     constraint: '`--base` を指定したときだけ、設定ファイルのフォルダで `--base` と HEAD の merge-base を引き、merge-base から作業ツリーまでに変わったファイルと、git が管理していない新しいファイル（無視するファイルを除く）を、索引のファイルからの相対パスにして `checkIndex` の `changedPaths` に指定する。設定に `index` が無いときは `--base` を使用しない'
-    decided_by: dev/設計書/インターフェース定義/ライブラリ本体/索引を点検する.ts#constraints[修正漏れ]
+    decided_by: IF-472-37#constraints[修正漏れ]
   - item: エイリアスの点検
     constraint: 設定に `aliases` があるときだけ行う。Schema に合う行だけを使用し、行の `paths` を設定ファイルのフォルダから参照して YAML として読み込み、`buildAliases` に指定して返った `problems` をそのまま出す。`enabled` が `false` の行は読み込まない。`paths` に該当するファイルが 0 件の行は `alias_no_files`、YAML として読み込めないファイルは `alias_unreadable` のずれにする
-    decided_by: dev/設計書/インターフェース定義/ライブラリ本体/エイリアスを作る.ts#
+    decided_by: IF-472-26#
   - item: テーマの名前の点検
     constraint: 設定に `colorTheme` があり、その値が `dev-swiss`・`theme-paper`・`theme-slate`・`theme-contrast` のどれでもないとき、`unknown_color_theme` のずれを 1 つ出す。場所は `colorTheme`、内容には記載した名前と選べるテーマの名前の一覧を入れる。文字列でない値は `schema` のずれにする
-    decided_by: dev/設計書/設定/ライブラリ本体#settings[colorTheme]
+    decided_by: CFG-472-3#settings[colorTheme]
   - item: 明暗の値の点検
     constraint: 設定に `colorScheme` があり、その値が `light`・`dark`・`auto` のどれでもないとき、`unknown_color_scheme` のずれを 1 つ出す。場所は `colorScheme`、内容には記載した値と記載できる値の一覧を入れる。文字列でない値は `schema` のずれにする
-    decided_by: dev/設計書/設定/ライブラリ本体#settings[colorScheme]
+    decided_by: CFG-472-3#settings[colorScheme]
   - item: 見つからないファイルの点検
     constraint: '制約「点検する文書」の文書ごとに、相対パスで指す画像（動画の `poster` を含む）・動画・音声と、添付のカードにするリンク（インターフェース定義『文書をHTML文字列にする』の制約「リンクと添付のカード」の添付の拡張子）のファイルを、インターフェース定義『文書をHTMLに書き出す』の制約「アセットのルート」と同じ順に探し、どちらにも無いものを 1 つにつき 1 件の `missing_file` のずれにする。ファイルは文書の相対パス、場所は記載した行の番号（1 から）、内容は記載したパスと種類（画像・動画・音声・添付）と、パスを修正するかファイルを配置するか `assets.root` を確認する修正方法の 1 文。コードブロックとインラインコードの中、絶対 URL、`#` で始まるリンクは点検しない。設定の `assets.root` のフォルダが無いときは `assets.root` を指す `schema` のずれにする'
-    decided_by: dev/設計書/設定/ライブラリ本体#settings[assets.root]
+    decided_by: CFG-472-3#settings[assets.root]
   - item: 図の定義の点検
     constraint: '制約「点検する文書」の文書ごとに、`<!-- flow -->`・`<!-- sequence -->`・`<!-- chart -->`・`<!-- param -->`・`<!-- er -->` の範囲の `json` のコードブロック（インターフェース定義『文書をHTML文字列にする』の制約「図の部品」と同じ読み込み方。埋め込んだ HTML の中の custom element は点検しない）を読み込む。描く処理と同じ確認で読み込めない定義は、1 つの定義につき 1 件の `diagram_invalid` のずれにし、内容は記載の警告と同じ文にする。読み込めたフロー図の定義は（座標を省いた判定フローチャートは、インターフェース定義『文書をHTML文字列にする』の制約「自動の配置」を適用した後の座標で）、ノードの矩形の重なり（辺が接するだけは重ならない）・`width`・`height` の外へのはみ出しと `frame` の縁をまたぐノード・線の各線分（`points` を含む）と `from`・`to` でないノードの矩形の交わり・ラベルの長さを点検し、ずれ 1 つにつき 1 件にする（同じノードの組・ノードと線の組は 1 件）。シーケンス図・グラフ・操作できる部品・ER 図の配置は点検しない。ファイルは文書の相対パス、場所は図の部品の開きのマーカーの行の番号（1 から）、内容は図のタイトル（無ければマーカーの名前）・対象のノードか線の `id`・修正方法の 1 文。点検はブラウザを使用しない'
   - item: ラベルの長さの目安
@@ -803,5 +804,5 @@ constraints:
     notes: '`--text`・`--file` の点検でも同じ種類にする（制約「記法の点検」の `syntax_warning` にしない）'
   - item: map の設定の点検
     constraint: 設定の `map.node_fit`・`map.url_state`・`map.kinds`・`map.lines` は、制約「設定の点検」の Schema で検査し、`node_fit` の知らない値・`url_state` が真偽値でない値・知らない形・模様・太さ・矢じり・色の名前を `schema` のずれにする。`map.kinds` の `icon` が Lucide に無い名前のものは、1 つにつき 1 件の `map_unknown_icon` のずれにする。ファイルは設定ファイル、場所はキーのパス（`map.kinds.store.icon`）、内容は記載した名前と、Lucide のアイコンの名前にする修正方法の 1 文。Lucide の名前の一覧は、外部ライブラリ『lucide』の採用バージョンのパッケージのアイコンの名前を使用する
-    decided_by: dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#request[opts.config.map.kinds]
+    decided_by: IF-472-35#request[opts.config.map.kinds]
 test_file: tests/integration/lib/check-config.test.ts

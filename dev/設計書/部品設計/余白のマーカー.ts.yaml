@@ -1,3 +1,4 @@
+id: CMP-472-33
 title: "余白のマーカー"
 implementation: "src/parts/comment.ts#renderCommentMarker"
 story: "Parts/CommentMarginMarker"
@@ -78,8 +79,8 @@ accessibility:
   - 開いている箇所は地と文字の色の反転、閉じた中の箇所は破線で示し、色だけに頼らない
   - 押せる範囲は外観の 1.5rem の四方から 0.375rem ずつ広げる。`:focus-visible` でリンクの色の輪郭を出す
 refs:
-  - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[余白のマーカー]
-  - dev/設計書/インターフェース定義/ライブラリ本体/文書を描く.ts#constraints[余白のマーカーから移る]
+  - IF-472-35#constraints[余白のマーカー]
+  - IF-472-35#constraints[余白のマーカーから移る]
 status: planned
 notes:
   HTML: '`<button class="mdmark-comment-marker" type="button" aria-label="…" title="…" data-closed="…" data-current>{アイコン}<span>{count}</span></button>`。縦の位置（`style` の `top`）は `mount` が入れる。モックは `dev/mock/components/comment-margin-marker/`'

@@ -1,3 +1,4 @@
+id: IF-472-6
 title: 常駐サーバーの状態を伝える
 entry:
   kind: trigger
@@ -47,7 +48,7 @@ test_file: tests/integration/ClaudeCodeプラグイン/session-start.test.ts
 idempotent: true
 side_effects: なし
 callers:
-  - dev/設計書/シナリオ/単一ユースケース/セッションの開始で常駐サーバーの状態を受け取る#
+  - SC-472-22#
 request:
   - name: MDMARK_PORT
     type: string
@@ -70,6 +71,6 @@ constraints:
     constraint: '`127.0.0.1:{ポート}` への TCP の接続の待ちは 1 秒。超えたら待ち受けていないとする'
   - item: 出す文
     constraint: 待ち受けているときは何も出さない
-    decided_by: dev/設計書/シナリオ/単一ユースケース/セッションの開始で常駐サーバーの状態を受け取る#
+    decided_by: SC-472-22#
   - item: 終了コード
     constraint: '`MDMARK_PORT` が使用できない値でも 0 で終わり、使用できない値であることを 1 行で出す'

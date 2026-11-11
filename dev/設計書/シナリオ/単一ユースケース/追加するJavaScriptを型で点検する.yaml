@@ -1,3 +1,4 @@
+id: SC-472-79
 title: "追加するJavaScriptを型で点検する"
 scenarios:
   - name: 正常シナリオ

@@ -1,0 +1,130 @@
+id: MOD-472-92
+title: VS Code 拡張機能 / プレビュー / html.ts
+test_files:
+  - tests/unit/vscode/src/preview/html.test.ts
+constants:
+  - name: DIST_BASE
+    title: 配布物の配信元
+    container: vscode/src/preview/html.ts
+    summary: テストで差し替えないときの jsDelivr の配信元（末尾の `/` を持たない）
+    value: '"https://cdn.jsdelivr.net/gh/shuhei1101/mdmark"'
+    refs:
+      - API-472-2#
+    status: planned
+functions:
+  - name: distUrl
+    title: 配布物の URL を組む
+    kind: 関数
+    container: vscode/src/preview/html.ts
+    usecase: 共通
+    summary: '`{配信元}@{バージョン}/dist/{ファイル}` を返却する'
+    scope: public
+    args:
+      - name: options
+        type: '{ base: string; version: string; file: "index.js" | "index.css" }'
+        required: true
+        description: 配信元（`DIST_BASE` か `MDMARK_VSCODE_DIST_BASE`）・バージョン・ファイル
+    returns:
+      type: string
+      description: URL
+    unit_tests:
+      - name: test_dist_url
+        case: 正常
+        summary: バージョン付きの URL を組む
+        condition: '`DIST_BASE`、`v0.10.0`、`index.js`'
+        mock: なし
+        expected: '`https://cdn.jsdelivr.net/gh/shuhei1101/mdmark@v0.10.0/dist/index.js`'
+    refs:
+      - IF-472-22#constraints[配布物の URL]
+    status: planned
+  - name: buildCsp
+    title: CSP を組む
+    kind: 関数
+    container: vscode/src/preview/html.ts
+    usecase: VSCodeでプレビューを開く
+    summary: 'インターフェース定義の制約「CSP」のとおりの `Content-Security-Policy` の値を組む。`script-src` には `libraryOrigins` が返却する `libraries` と `html-scripts.url`・`mermaid.url` の origin を含め、`blob:`・`''unsafe-inline''`・`''unsafe-eval''` は含めない。`media-src` は `img-src` と同じ `{cspSource} https: data:`'
+    scope: public
+    args:
+      - name: options
+        type: '{ nonce: string; distOrigin: string; libraryOrigins: string[]; cspSource: string }'
+        required: true
+        description: nonce・配布物の origin・`libraries` の origin・`Webview.cspSource`
+    returns:
+      type: string
+      description: '`;` で区切った CSP'
+    unit_tests:
+      - name: test_build_csp
+        case: 正常
+        summary: スクリプトは nonce と配信元だけ、スタイルに unsafe-inline を追加する
+        condition: '`nonce` が `abc`、`distOrigin` が `https://cdn.jsdelivr.net`、`libraryOrigins` が `["https://cdn.example.com"]`、`cspSource` が `https://*.vscode-cdn.net`'
+        mock: なし
+        expected: "`default-src 'none'; script-src 'nonce-abc' https://cdn.jsdelivr.net https://cdn.example.com https://*.vscode-cdn.net; style-src https://cdn.jsdelivr.net https://*.vscode-cdn.net 'unsafe-inline'; img-src https://*.vscode-cdn.net https: data:; media-src https://*.vscode-cdn.net https: data:; font-src https://cdn.jsdelivr.net https://*.vscode-cdn.net; connect-src https://cdn.jsdelivr.net`"
+    refs:
+      - IF-472-22#constraints[CSP]
+    status: planned
+  - name: buildPreviewHtml
+    title: Webview の HTML を組む
+    kind: 関数
+    container: vscode/src/preview/html.ts
+    usecase: VSCodeでプレビューを開く
+    summary: CSP・`<base>`・配布物の CSS・`theme` の CSS・パネルの CSS・描く先を包む要素（`PreviewBoot` の `data-*`）・nonce 付きのパネルのスクリプトを持つ HTML を組む
+    description: 属性に入れる値は HTML として特別な文字をエスケープする。`themeHref` があれば配布物の CSS の後に `<link id="mdmark-theme" rel="stylesheet">` で読み込み、`extensions` は JSON の配列にして `data-extensions` に入れる（空なら持たない）。バージョンを決められないときは配布物の `link` と `data-dist-js` を持たず `data-status="versionUndecidable"` を持つ。テストのときだけ `data-test` を持つ
+    scope: public
+    args:
+      - name: options
+        type: '{ nonce: string; csp: string; baseHref: string; distJs?: string; distCss?: string; version?: string; scriptUri: string; styleUri: string; configPath: string; themeHref?: string; extensions: string[]; test: boolean }'
+        required: true
+        description: 組むのに要る値。`baseHref` は Markdown のフォルダの `asWebviewUri` に `/` を付けたもの、`scriptUri`・`styleUri` は `media/preview.js`・`media/preview.css` の `asWebviewUri`、`themeHref`・`extensions` は重ねた設定の `theme`・`extensions` の `asWebviewUri`
+    returns:
+      type: string
+      description: HTML 文字列
+    unit_tests:
+      - name: test_build_preview_html
+        case: 正常
+        summary: CSP・base・配布物・スクリプトの nonce を持つ
+        condition: '`distJs`・`distCss`・`version` を指定し、`test` が `false`'
+        mock: なし
+        expected: '`<meta http-equiv="Content-Security-Policy" content="{csp}">`、`<base href="{baseHref}">`、`<link rel="stylesheet" href="{distCss}">`、`#mdmark-preview` が `data-dist-js` と `data-version` を持ち `data-test` を持たない、全ての `script` が `nonce="{nonce}"` を持つ'
+      - name: test_build_preview_html_when_undecidable
+        case: 正常
+        summary: バージョンを決められないときは配布物を読み込まない
+        condition: '`distJs`・`distCss`・`version` を指定せず、`test` が `true`'
+        mock: なし
+        expected: 配布物の `link` が無く、`#mdmark-preview` が `data-status="versionUndecidable"` と `data-test` を持つ
+      - name: test_build_preview_html_when_special_chars
+        case: 正常
+        summary: 属性の値をエスケープする
+        condition: '`configPath` が `a"><script>x</script>.yaml`'
+        mock: なし
+        expected: '`data-config-path="a&quot;&gt;&lt;script&gt;x&lt;/script&gt;.yaml"`、nonce を持たない `script` が無い'
+      - name: test_build_preview_html_when_theme_and_extensions
+        case: 正常
+        summary: theme の CSS を配布物の CSS の後に読み込み、extensions を data-extensions に入れる
+        condition: '`themeHref` が `web:/w/t.css`、`extensions` が `["web:/w/e.js"]`'
+        mock: なし
+        expected: '`<link id="mdmark-theme" rel="stylesheet" href="web:/w/t.css">` が配布物の `link` の後にあり、`#mdmark-preview` の `data-extensions` が `["web:/w/e.js"]` の JSON。`extensions` が空のときは `data-extensions` を持たず、`themeHref` が無いときは `#mdmark-theme` が無い'
+    callees:
+      - '#functions[buildCsp]'
+      - '#functions[distUrl]'
+    refs:
+      - IF-472-22#constraints[相対パスの基準]
+      - MOD-472-53#data_models[PreviewBoot]
+    status: planned
+  - name: createNonce
+    title: nonce を作る
+    kind: 関数
+    container: vscode/src/preview/html.ts
+    usecase: VSCodeでプレビューを開く
+    summary: '`crypto.getRandomValues` の 16 バイトを base64url にした文字列を返却する（HTML を入れるたびに再作成する）'
+    scope: public
+    returns:
+      type: string
+      description: nonce
+    unit_tests:
+      - name: test_create_nonce
+        case: 正常
+        summary: 呼ぶたびに違う base64url の文字列を返却する
+        condition: 2 回呼ぶ
+        mock: なし
+        expected: どちらも `^[A-Za-z0-9_-]{22}$` に合い、等しくない
+    status: planned
