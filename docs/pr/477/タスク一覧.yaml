@@ -20,7 +20,9 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-11T12:00:30.162448+00:00'
   - process: 複合ユースケース設計
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-11T12:15:58.779400+00:00'
   - process: デザインスタイル選定
     status: skipped
     reason: 'モック要否: 描いた文書の見た目は変わらない（記載の警告は既存の枠を使う）'
