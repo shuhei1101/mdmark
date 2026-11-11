@@ -717,6 +717,12 @@ functions:
         condition: '`terms` が `{"補足": "意味"}` で、ノード `data` の名前が `<b>補足</b>の検査`'
         mock: なし
         expected: ノード `data` の `.mdmark-diagram-node-name` の中に `span.mdmark-term` が 1 つで文字が `補足`、`<b>` は逃がした文字で、`tips` に意味のツールチップと、`notes` の説明のツールチップがある。グループのタイトルに `mdmark-term` が無い
+      - name: test_render_map_flow_when_note_terms
+        case: 正常
+        summary: 説明の中の用語
+        condition: '`terms` が `{"補足": "意味"}` で、ノード `layout` と線 `mount->marker` の `notes` が「補足を当てる」'
+        mock: なし
+        expected: '`tips` の 2 つの説明のツールチップのそれぞれに、`tabindex` を持たない `<span class="mdmark-term">補足</span>` と、末尾の「補足：意味」の行がある'
   - name: renderMapSequence
     title: mapのシーケンス図のHTML
     kind: 関数
