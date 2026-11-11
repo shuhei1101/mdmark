@@ -16,6 +16,8 @@ import {
   writeMapState,
 } from "./state.ts";
 
+/** 線を指している間だけ薄くした要素の class（離すと外す） */
+const HOVER_DIM_CLASS = "map-hover-dim";
 /** attachMapSequence の戻り値 */
 export type MapSequenceHandle = {
   /** 補足の plays_over（再生を重ねる構成図の番号） */
@@ -426,12 +428,30 @@ export const attachMapSequence = (
       },
     ]);
     svg.append(layer);
+    // 選択と再生の強調が無いときは、その線と送り手・受け手のほかを薄くする
+    if (state.selected.length > 0 || current !== undefined) return;
+    const kept = (element: Element): boolean => {
+      const own = element.getAttribute("data-message");
+      if (own !== null) return Number(own) === at;
+      const name =
+        element.getAttribute("data-participant") ??
+        element.getAttribute("data-lifeline");
+      return name === message.from || name === message.to;
+    };
+    for (const element of figure.querySelectorAll(
+      ".mdmark-diagram-stage :is(.mdmark-diagram-wire[data-message], .mdmark-diagram-label[data-message], .map-participant, .mdmark-diagram-lifeline)",
+    )) {
+      if (kept(element) || element.classList.contains("map-dim")) continue;
+      element.classList.add("map-dim", HOVER_DIM_CLASS);
+    }
   };
   const onPointerOut = (event: PointerEvent) => {
     const target = event.target instanceof Element ? event.target : undefined;
     if (!target?.closest(".map-wire-hit")) return;
     for (const layer of figure.querySelectorAll(".map-packets-hover"))
       layer.remove();
+    for (const element of figure.querySelectorAll(`.${HOVER_DIM_CLASS}`))
+      element.classList.remove("map-dim", HOVER_DIM_CLASS);
   };
   figure.addEventListener("click", onClick);
   figure.addEventListener("pointerdown", onPointerDown);
