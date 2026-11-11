@@ -75,6 +75,9 @@ export type MergedWire = {
   from: string;
   to: string;
   label: string | undefined;
+  /** 元の線の端のノードの名前（閉じたグループの中のノードは描かないため、名前を持たせる） */
+  fromLabel: string;
+  toLabel: string;
 };
 
 /** 配置したノード。ancestors は内側から */
@@ -258,10 +261,14 @@ const buildView = (
     const toClosed = from.id !== edge.from || to.id !== edge.to;
     const key = toClosed ? `${from.id}->${to.id}` : edge.id;
     const found = merged.get(key);
+    const labelOf = (id: string): string =>
+      chart.nodes.find((node) => node.id === id)?.label ?? id;
     const original: MergedWire = {
       from: edge.from,
       to: edge.to,
       label: edge.label,
+      fromLabel: labelOf(edge.from),
+      toLabel: labelOf(edge.to),
     };
     if (found) {
       found.merged?.push(original);

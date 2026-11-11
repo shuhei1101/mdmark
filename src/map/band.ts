@@ -70,6 +70,12 @@ export const attachBand = (options: {
 
   const render = () => {
     const step = index === undefined ? undefined : steps[index];
+    // 描き直す前にフォーカスしていたボタンへ、描き直した後もフォーカスを戻す
+    const focused =
+      document.activeElement instanceof HTMLElement &&
+      holder.contains(document.activeElement)
+        ? document.activeElement.dataset.band
+        : undefined;
     holder.innerHTML = renderMapBand({
       mode,
       total: steps.length,
@@ -79,6 +85,10 @@ export const attachBand = (options: {
       auto,
       label,
     });
+    if (focused !== undefined)
+      holder
+        .querySelector<HTMLElement>(`[data-band="${CSS.escape(focused)}"]`)
+        ?.focus();
   };
   /** 強調するノードの中心へ、表示する枠の中をスクロールする（倍率と文書のスクロールは変えない） */
   const reveal = () => {

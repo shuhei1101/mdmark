@@ -360,11 +360,14 @@ export const renderMapFlow = (args: MapFlowArgs): MapPart => {
       (named === undefined ? undefined : args.lines[named]) ??
       args.lines[wire.arrow ?? "-->"] ??
       {};
+    // まとめた線は、補足の notes に説明を持つ元の線だけを並べる
     const tip = [
-      ...(wire.merged ?? []).map(
-        (item) =>
-          `${nameOf(item.from)} → ${nameOf(item.to)}${item.label ? `：${item.label}` : ""}`,
-      ),
+      ...(wire.merged ?? []).flatMap((item) => {
+        const note = args.notes?.[`${item.from}->${item.to}`];
+        return note === undefined || note === ""
+          ? []
+          : [`${item.fromLabel} → ${item.toLabel}：${note}`];
+      }),
       ...(args.notes?.[wire.id] === undefined ? [] : [args.notes[wire.id]]),
     ].join("\n");
     return {
