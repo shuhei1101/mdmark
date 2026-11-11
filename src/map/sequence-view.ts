@@ -73,6 +73,9 @@ export const attachMapSequence = (
   );
   const frameId = `map-${index}`;
   const terms = termsOf(range);
+  const notes = Object.fromEntries(
+    Object.entries(data.notes).map(([key, note]) => [key, note.text]),
+  );
   const view = () => {
     const rows = sequenceRows(sequence, {
       order: order(),
@@ -90,6 +93,7 @@ export const attachMapSequence = (
       kinds,
       id: frameId,
       terms,
+      notes,
     });
     return { html: part.html, tips: part.tips, rows };
   };

@@ -557,6 +557,8 @@ export type MapSequenceArgs = {
   sequence: Sequence;
   /** 用語から意味（`data-map-terms`）。参加者の名前・メッセージの文・注記の文の中の用語に下線を付ける */
   terms?: Record<string, string> | undefined;
+  /** 補足の notes（記載の順に 1 からのメッセージの番号から説明）。説明を持つメッセージの線にツールチップを付ける */
+  notes?: Record<string, string> | undefined;
   rows: SequenceRow[];
   participants: string[];
   collapsed: number[];
@@ -588,6 +590,7 @@ const fragmentTitle = (fragment: SequenceFragment): string =>
 /** 部品『mapのシーケンス図』の HTML。参加者・ライフライン・メッセージに、ブロックのタブの開閉と名前のボタン・区間・注記・活性化の帯・参加者の選択を重ねる */
 export const renderMapSequence = (args: MapSequenceArgs): MapPart => {
   const marker = termMarker(args.terms, `${args.id ?? "map"}-seq`);
+  const noteTips = createTips(`${args.id ?? "map"}-seq-note`);
   const { sequence, rows, participants } = args;
   const id = args.id ?? "map-seq";
   const x = new Map(
@@ -749,6 +752,8 @@ export const renderMapSequence = (args: MapSequenceArgs): MapPart => {
     if (depths.length === 0) return at;
     return towards > at ? at + 5 + Math.max(...depths) * 6 : at - 5;
   };
+  const labelOf = (name: string) =>
+    sequence.participants.find((item) => item.id === name)?.label ?? name;
   const wires: string[] = [];
   const labels: string[] = [];
   const packetPaths: PacketPath[] = [];
@@ -779,8 +784,21 @@ export const renderMapSequence = (args: MapSequenceArgs): MapPart => {
     const both = style.both
       ? ` marker-start="url(#${id}-head-${style.head})"`
       : "";
+    // 補足の notes に説明があるメッセージは、線の押せる帯を持ち主にしたツールチップを持つ
+    const note = args.notes?.[String(message + 1)];
+    const noteOwner =
+      note === undefined || note === ""
+        ? ""
+        : ` data-tip-owner="${escapeHtml(`message:${message}`)}"`;
+    if (noteOwner !== "")
+      noteTips.add({
+        kind: "wire",
+        label: `${labelOf(item.from)} → ${labelOf(item.to)}`,
+        tip: note,
+        owner: `message:${message}`,
+      });
     wires.push(
-      `<path class="mdmark-diagram-wire${dim}" data-line="map" data-message="${message}" d="${d}"${style.dotted ? ' stroke-dasharray="6 4"' : ""} stroke-width="1.5" style="stroke:var(--mdmark-color-diagram-line)"${head}${both}></path><path class="map-wire-hit" data-message="${message}" d="${d}"></path>`,
+      `<path class="mdmark-diagram-wire${dim}" data-line="map" data-message="${message}" d="${d}"${style.dotted ? ' stroke-dasharray="6 4"' : ""} stroke-width="1.5" style="stroke:var(--mdmark-color-diagram-line)"${head}${both}></path><path class="map-wire-hit" data-message="${message}"${noteOwner} d="${d}"></path>`,
     );
     // 選んだ参加者のメッセージと再生している今のメッセージの線に、データの印を送り手から受け手へ流す
     if (hit === true || message === args.focus?.message) {
@@ -826,8 +844,6 @@ export const renderMapSequence = (args: MapSequenceArgs): MapPart => {
       return `<marker id="${id}-head-${head}" class="mdmark-diagram-arrowhead" data-head="${head}" viewBox="0 0 9 9" refX="8.5" refY="4.5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto-start-reverse">${shape}</marker>`;
     })
     .join("");
-  const labelOf = (name: string) =>
-    sequence.participants.find((item) => item.id === name)?.label ?? name;
   const heads = participants
     .map((name) => {
       const kind = args.kinds?.[name];
@@ -856,5 +872,8 @@ export const renderMapSequence = (args: MapSequenceArgs): MapPart => {
     overlay.join(""),
     `<div class="mdmark-diagram-seq-heads" style="width:${width}px;height:${MAP_SEQ.headTop + MAP_SEQ.headH + 8}px">${heads}</div>`,
   ].join("");
-  return { html, tips: marker.tips.html() };
+  return {
+    html,
+    tips: `${markTipTerms(noteTips.html(), args.terms)}${marker.tips.html()}`,
+  };
 };
