@@ -10486,6 +10486,10 @@
   .mdmark-diagram[data-diagram="map"] .mdmark-diagram-node.map-closed-group {
     border: 3px double var(--mdmark-color-border);
   }
+  .map-closed-count {
+    font-size: 12px;
+    color: var(--mdmark-color-muted);
+  }
   /* 閉じたグループは処理のノードと見分けるため、種類のアイコンを出さない */
   .map-closed-group .mdmark-diagram-node-kind svg {
     display: none;

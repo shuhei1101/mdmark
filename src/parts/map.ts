@@ -481,7 +481,7 @@ export const renderMapFlow = (args: MapFlowArgs): MapPart => {
   const closedHtml = closed
     .map(
       (group) =>
-        `<div class="mdmark-diagram-node map-closed-group${group.faded ? " map-faded" : ""}" data-group="${escapeHtml(group.id)}" style="left:${group.x}px;top:${group.y}px;width:${group.w}px;height:${group.h}px"><div class="map-group-head">${disclosure(group.id, group.title, false)}${groupTitle(group.id, group.title, false)}</div></div>`,
+        `<div class="mdmark-diagram-node map-closed-group${group.faded ? " map-faded" : ""}" data-group="${escapeHtml(group.id)}" style="left:${group.x}px;top:${group.y}px;width:${group.w}px;height:${group.h}px"><div class="map-group-head">${disclosure(group.id, group.title, false)}${groupTitle(group.id, group.title, false)}</div>${group.count === undefined ? "" : `<span class="map-closed-count">ノード ${group.count} 件</span>`}</div>`,
     )
     .join("");
   const packets = `<svg class="map-packets" width="${layout.width}" height="${layout.height}" aria-hidden="true">${renderMapPackets(args, args.packets)}</svg>`;

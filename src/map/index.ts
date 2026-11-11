@@ -2,6 +2,7 @@ import type { ResolvedConfig } from "../config.ts";
 import { renderSyntaxWarning } from "../parts/syntax-warning.ts";
 import { collectMapProblems } from "./check.ts";
 import { attachMapFlow, type MapFlowHandle } from "./flow-view.ts";
+import { parseFlowchart } from "./flowchart.ts";
 import { parseSequence } from "./sequence.ts";
 import { attachMapSequence } from "./sequence-view.ts";
 import { parseMapArgs } from "./spec.ts";
@@ -58,6 +59,7 @@ export const attachMap = (
   const destroyers: Array<() => void> = [];
   const flows = new Map<number, MapFlowHandle>();
   const sequences: Array<{
+    range: HTMLElement;
     playsOver: number | undefined;
     source: string;
     attach: (onStep: (message: number | undefined) => void) => void;
@@ -65,6 +67,8 @@ export const attachMap = (
     driving: boolean;
     clear: () => void;
   }> = [];
+  /** 構成図の番号から、その構成図のノードの ID */
+  const flowIds = new Map<number, Set<string>>();
   for (const range of root.querySelectorAll<HTMLElement>("div.mdmark-map")) {
     const source = sourceOf(range);
     const structure = collectMapStructure(source);
@@ -89,6 +93,7 @@ export const attachMap = (
     if (range.dataset.mapKind === "sequenceDiagram") {
       const mermaid = source.mermaid ?? "";
       const entry: (typeof sequences)[number] = {
+        range,
         playsOver: undefined,
         source: mermaid,
         driving: false,
@@ -111,6 +116,12 @@ export const attachMap = (
         }
       });
       flows.set(number, handle);
+      flowIds.set(
+        number,
+        new Set(
+          parseFlowchart(source.mermaid ?? "").nodes.map((node) => node.id),
+        ),
+      );
       destroyers.push(handle.destroy);
     }
   }
@@ -118,13 +129,19 @@ export const attachMap = (
   for (const entry of sequences) {
     const sequence = parseSequence(entry.source);
     let target: MapFlowHandle | undefined;
+    let missing = new Set<string>();
     entry.attach((message) => {
       target ??=
         entry.playsOver === undefined ? undefined : flows.get(entry.playsOver);
       if (!target) return;
       const item =
         message === undefined ? undefined : sequence.messages[message];
-      if (item === undefined) {
+      // 構成図に無い相手のメッセージでは、構成図の強調を解く
+      if (
+        item === undefined ||
+        missing.has(item.from) ||
+        missing.has(item.to)
+      ) {
         if (entry.driving) target.clearFocus();
         entry.driving = false;
       } else {
@@ -132,6 +149,20 @@ export const attachMap = (
         target.focus({ nodes: [item.from, item.to], wires: [] });
       }
     });
+    // plays_over で指した構成図に無い参加者を、シーケンス図の前の書き方の警告にする
+    const ids =
+      entry.playsOver === undefined ? undefined : flowIds.get(entry.playsOver);
+    if (ids !== undefined) {
+      missing = new Set(
+        sequence.participants
+          .map((item) => item.id)
+          .filter((id) => !ids.has(id)),
+      );
+      if (missing.size > 0)
+        addWarnings(entry.range, [
+          `構成図に無い相手 ${[...missing].map((id) => `\`${id}\``).join("・")} のメッセージは、構成図の上では強調しません。構成図のノードの ID にそろえてください。`,
+        ]);
+    }
   }
   return () => {
     for (const destroy of destroyers.splice(0)) destroy();

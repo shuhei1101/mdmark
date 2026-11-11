@@ -95,6 +95,8 @@ export type PlacedGroup = Rect & {
   ancestors: string[];
   collapsed: boolean;
   faded: boolean;
+  /** 閉じたグループの中（入れ子のグループの中を含む）のノードの数。開いたグループは持たない */
+  count?: number;
 };
 /** 配置した線 */
 export type PlacedWire = {
@@ -1066,6 +1068,16 @@ export const layoutMap = (
   });
   const nodes: PlacedNode[] = [];
   const groups: PlacedGroup[] = [...boxes];
+  const groupParent = new Map(
+    chart.groups.map((group) => [group.id, group.parent]),
+  );
+  /** グループの中（入れ子のグループの中を含む）のノードの数 */
+  const countIn = (id: string): number =>
+    chart.nodes.filter((item) => {
+      for (let at = item.parent; at !== undefined; at = groupParent.get(at))
+        if (at === id) return true;
+      return false;
+    }).length;
   for (const leaf of leaves) {
     const { collapsed, title, ...node } = leaf;
     if (collapsed)
@@ -1079,6 +1091,7 @@ export const layoutMap = (
         ancestors: node.ancestors,
         collapsed: true,
         faded: node.faded,
+        count: countIn(node.id),
       });
     else
       nodes.push({
