@@ -47,7 +47,9 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-11T13:23:28.165649+00:00'
   - process: 部品設計
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-11T13:40:41.752016+00:00'
   - process: 画面設計
     status: skipped
     reason: '画面設計要否: UI 項目と操作は増えも変わりもしない。SCR-472-4 のマーカーの記載例はドキュメント修正で直す'
