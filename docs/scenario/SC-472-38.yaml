@@ -121,7 +121,7 @@ scenarios:
         description: 正常シナリオと同じ
       - name: 本文の幅から始める wide の範囲を持つ Markdown
         description: 正常シナリオの文書の 8 列の表を、本文の幅から始める指定の wide のマーカーで囲んだ文書
-        notes: '指定の記載方法（モックでは `<!-- wide: closed -->`）はインターフェース定義で決める'
+        notes: '指定の記載方法（モックでは `<!-- wide: {"open": false} -->`）はインターフェース定義で決める'
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-

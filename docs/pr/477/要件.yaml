@@ -2,7 +2,7 @@ use_cases:
   - kind: single
     scenario: docs/scenario/SC-472-73.yaml
     impact: changed
-    detail: 表のマーカーを JSON のオブジェクトで記載し、列の設定（絞り込み・隠す列・ピン止め・集計）を記載するとその機能が付き、機能ごとの設定は features の機能のオブジェクトに持つ
+    detail: 表のマーカーを JSON のオブジェクトで記載し、列の設定（絞り込み・隠す列・ピン止め・集計）を記載するとその機能が付き、機能ごとの設定は features の機能のオブジェクトに持つ。知らない種類は型の誤りとして記載の警告を出し、削除した機能の列の設定は適用せず点検が通知する
     depends_on: []
   - kind: single
     scenario: docs/scenario/SC-472-36.yaml
@@ -106,13 +106,13 @@ use_cases:
     depends_on: []
   - kind: single
     scenario: docs/scenario/SC-472-83.yaml
-    impact: changed
-    detail: mdmark init が配置する拡張の雛形を、options と definition を受け取る形にする
+    impact: run_only
+    detail: 雛形の配置は拡張の引数の受け取り方を指定しておらず記載は変わらない。雛形の拡張が options を受け取るようになっても配置できることを確かめる
     depends_on: []
   - kind: single
     scenario: docs/scenario/SC-472-44.yaml
-    impact: changed
-    detail: 自分の場所だけの部品を追加する拡張が、マーカーの JSON のオブジェクトを options で受け取る
+    impact: run_only
+    detail: 固有の部品の拡張は引数の受け取り方を指定しておらず記載は変わらない。options を受け取るようになっても同じに描かれることを確かめる
     depends_on: []
   - kind: single
     scenario: docs/scenario/SC-472-57.yaml
@@ -127,7 +127,7 @@ use_cases:
   - kind: single
     scenario: docs/scenario/SC-472-59.yaml
     impact: changed
-    detail: 記載例の知らないマーカーの引数を JSON のオブジェクトに書き換える
+    detail: 今の書き方のマーカーを JSON の記載と同じに描き、JSON として読めない・型の合わない引数はその場所に記載の警告を出す。記載例の知らないマーカーの引数を JSON のオブジェクトに書き換える
     depends_on: []
   - kind: single
     scenario: docs/scenario/SC-472-60.yaml

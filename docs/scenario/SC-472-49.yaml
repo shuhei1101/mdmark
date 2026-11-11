@@ -8,9 +8,9 @@ scenarios:
         description: バージョンを固定した URL で `dist/index.js` と `dist/index.css` を読み込み、`registerExtension` で拡張を登録してから文書を描く HTML
         notes: '`directive` は `greet`。`load` は手元の代役のモジュールを `import()` で読み込む'
       - name: 拡張のマーカーを持つ Markdown
-        description: '段落の間に `<!-- greet: world -->` を持つ文書'
+        description: '段落の間に `<!-- greet: {"target": "world"} -->` を持つ文書'
       - name: Mock
-        description: jsDelivr を、ビルドした `dist/` を同じパスで返却する手元の応答に差し替える。拡張の代役は、マーカーの引数をマーカーの場所に記載するモジュールを返却し、受けた要求を数える
+        description: jsDelivr を、ビルドした `dist/` を同じパスで返却する手元の応答に差し替える。拡張の代役は、`draw` が受けた `options` の `target` をマーカーの場所に記載するモジュールを返却し、受けた要求を数える
     flow: |-
       sequenceDiagram
         actor U as 利用者
@@ -22,11 +22,13 @@ scenarios:
         M->>M: 拡張のマーカーをマーカーの場所に置き換える
         M->>X: load でモジュールを読み込む
         X-->>M: モジュール
+        M->>X: draw(slot, {options: {target: "world"}, definition: undefined})
         M-->>P: マーカーの場所に拡張が描く
         P-->>U: 文書を表示
     expected:
       - 拡張の代役への要求が 1 件
       - マーカーの場所に `world` が描かれている
+      - '`draw` が受けた値が `options` と `definition` だけを持ち、`args`・`keys` を持たない'
       - マーカーの前後の段落が描かれている
     test: test_normal
   - name: 正常シナリオ（マーカーが無い）
@@ -54,9 +56,9 @@ scenarios:
     setup:
       - name: 拡張を登録するページ
         description: 正常シナリオと同じ
-        notes: '`schema` は引数を 1 つだけ、英小文字で許す'
+        notes: '`schema` は `options` の `target` を英小文字の文字列だけで許す'
       - name: 合わない引数のマーカーを持つ Markdown
-        description: '段落の間に `<!-- greet: World 2 -->` を持つ文書'
+        description: '段落の間に `<!-- greet: {"target": 2} -->` を持つ文書'
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
@@ -66,7 +68,7 @@ scenarios:
         participant M as mdmark
         P->>M: registerExtension で拡張を登録する
         P->>M: 設定と Markdown を指定して描かせる
-        M->>M: マーカーの引数を schema で確認する
+        M->>M: マーカーの JSON のオブジェクトを options にして schema で確認する
         M-->>P: マーカーの場所に合わない項目を記載した枠、ほかは本文を描く
         P-->>U: 枠と本文を表示
     expected:
@@ -74,6 +76,29 @@ scenarios:
       - 拡張の代役はマーカーの場所に描いていない
       - マーカーの前後の段落が描かれている
     test: test_error_when_args_invalid
+  - name: 異常シナリオ（今の書き方の拡張のマーカー）
+    setup:
+      - name: 拡張を登録するページ
+        description: 正常シナリオと同じ
+      - name: 今の書き方の拡張のマーカーを持つ Markdown
+        description: '段落の間に、JSON のオブジェクトでない引数の `<!-- greet: world -->` を持つ文書'
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 利用側のページ
+        participant M as mdmark
+        P->>M: registerExtension で拡張を登録する
+        P->>M: 設定と Markdown を指定して描かせる
+        M->>M: 拡張のマーカーの引数が JSON のオブジェクトでない
+        M-->>P: マーカーの場所に移行を案内する記載の警告、ほかは本文を描く
+        P-->>U: 記載の警告と本文を表示
+    expected:
+      - マーカーの場所に、拡張のマーカーの引数は JSON のオブジェクトで記載することと、`mdmark upgrade` の移行の報告で記載し直す箇所を確かめられることを記載した記載の警告がある
+      - 拡張の代役への要求が 0 件で、マーカーの場所に `world` が描かれていない
+      - マーカーの前後の段落が描かれている
+    test: test_error_when_legacy_args
   - name: 異常シナリオ（モジュールを読み込めない）
     setup:
       - name: 拡張を登録するページ
@@ -116,14 +141,14 @@ scenarios:
         P->>M: 設定と Markdown を指定して描かせる
         M->>X: load でモジュールを読み込む
         X-->>M: モジュール
-        M->>X: マーカーの引数と部品の定義を指定して描かせる
+        M->>X: マーカーの JSON のオブジェクトを options、部品の定義を definition に指定して描かせる
         M-->>P: マーカーの場所に拡張が描く
         P-->>U: 文書を表示
     expected:
       - マーカーの場所に、定義のタイトルと項目の数 3 が描かれている
       - 部品の定義の JSON は本文にそのまま出ていない
     test: test_normal_when_definition
-lead: 利用側が `registerExtension({ name, directive, load, schema })` で自分のマーカーを追加する。mdmark は文書にそのマーカーがあるときだけ `load` でモジュールを読み込み、マーカーの場所に描かせる。
+lead: 利用側が `registerExtension({ name, directive, load, schema })` で自分のマーカーを追加する。mdmark は文書にそのマーカーがあるときだけ `load` でモジュールを読み込み、マーカーの JSON のオブジェクトを `options` に、部品の定義を `definition` にしてマーカーの場所に描かせる。
 issue: 4
 primary_actor: 利用側のアプリの開発者
 stakeholders:
@@ -136,5 +161,5 @@ preconditions:
   - ページがバージョンを固定した URL で mdmark の JavaScript と CSS を読み込んでいる
   - 拡張のモジュールは、利用側が TypeScript か JavaScript で記載し、JavaScript として配っている
 success_guarantee: 文書に拡張のマーカーがあるときだけモジュールが 1 回読まれ、マーカーの場所に描かれる。
-minimal_guarantee: モジュールを読み込めない、または引数が Schema に合わないマーカーの場所には枠が出て、ほかの本文は描かれる。
+minimal_guarantee: モジュールを読み込めない、または引数が Schema に合わないマーカーの場所には枠が出て、引数が JSON のオブジェクトでないマーカーの場所には移行を案内する記載の警告が出て、ほかの本文は描かれる。
 test_file: tests/e2e/単一ユースケース/拡張を登録してマーカーを追加する.spec.ts

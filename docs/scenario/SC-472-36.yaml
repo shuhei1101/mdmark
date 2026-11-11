@@ -7,8 +7,8 @@ scenarios:
       - name: mdmark を読み込むページ
         description: バージョンを固定した URL で `dist/index.js` と `dist/index.css` を読み込み、設定を指定して文書を描く HTML
       - name: 色の名前を記載した Markdown
-        description: '`<!-- table: data highlight=金額 row-color=状態:完了=green,保留=yellow -->` 〜 `<!-- /table -->` で、名前・状態・金額の 3 列 3 行（状態は 完了・保留・未着手）の表を囲み、行内のコード `` `badge:red:要確認` `` と、本文の `[決め手の 1 文]{color=blue}` を持つ文書'
-        notes: 引数名 `highlight=`・`row-color=` と本文の記載方法は参考（インターフェース定義で決める）
+        description: '`<!-- table: {"kind": "data", "columns": {"金額": {"highlight": {}}}, "rows": {"colors": [{"column": "状態", "value": "完了", "color": "green"}, {"column": "状態", "value": "保留", "color": "yellow"}]}} -->` 〜 `<!-- /table -->` で、名前・状態・金額の 3 列 3 行（状態は 完了・保留・未着手）の表を囲み、行内のコード `` `badge:red:要確認` `` と、本文の `[決め手の 1 文]{color=blue}` を持つ文書'
+        notes: 本文の記載方法は参考（インターフェース定義で決める）
       - name: Mock
         description: jsDelivr を、ビルドした `dist/` を同じパスで返却する手元の応答に差し替える
     flow: |-
@@ -97,7 +97,7 @@ scenarios:
       - name: mdmark を読み込むページ
         description: 正常シナリオと同じ
       - name: 知らない色の名前を記載した Markdown
-        description: '`<!-- table: data row-color=状態:完了=pink -->` で囲んだ表と、本文の `[決め手の 1 文]{color=pink}` を持つ文書'
+        description: '`<!-- table: {"kind": "data", "rows": {"colors": [{"column": "状態", "value": "完了", "color": "pink"}]}} -->` で囲んだ表と、本文の `[決め手の 1 文]{color=pink}` を持つ文書'
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-

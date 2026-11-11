@@ -244,7 +244,7 @@ scenarios:
       - name: コメントの読み込みと保存の関数
         description: 1 回目の読み込みで `テーマの変数` のコメント 1 件、2 回目以降で `テーマの変数` と `CSS` のコメント 2 件を返却する手元の関数
       - name: 段落と表を持つ Markdown
-        description: '正常シナリオ（コメントを修正・削除する）の段落の後に、`<!-- table: data +sort -->` で囲んだ名前の列の表（行は `b`・`a`・`c` の順）を配置した文書'
+        description: '正常シナリオ（コメントを修正・削除する）の段落の後に、`<!-- table: {"kind": "data", "features": {"sort": {}}} -->` で囲んだ名前の列の表（行は `b`・`a`・`c` の順）を配置した文書'
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-

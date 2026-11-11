@@ -1388,7 +1388,7 @@ flows:
       - コードの 5 行が全て文字列にある
     test: test_normal_when_code_fold_invalid
     refs:
-      - SC-472-17#scenarios[異常シナリオ（畳めない行の fold=）]
+      - SC-472-17#scenarios[異常シナリオ（畳めない行の fold）]
   - name: 正常系（脚注）
     summary: '`[^ラベル]`・定義・行内の `^[中身]` を、番号・ツールチップ・末尾の閉じた一覧にする'
     setup:

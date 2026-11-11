@@ -7,7 +7,7 @@ scenarios:
       - name: 配布物を読み込む Node の処理
         description: ビルドした `dist/index.js` を読み込む Node のスクリプト。DOM を持たない
       - name: 見本の Markdown
-        description: '見出し・段落・リスト・表・コードブロック・リンク・折り畳み（`details`）・`<!-- features: +a -b -->`・`script` 要素を持つ文書'
+        description: '見出し・段落・リスト・表・コードブロック・リンク・折り畳み（`details`）・`<!-- features: {"a": true, "b": false} -->`・`script` 要素を持つ文書'
       - name: Mock
         description: 差し替える依存は無い（手元の `dist/` を読み込む）
     flow: |-
@@ -45,7 +45,7 @@ scenarios:
       - name: 配布物を読み込む Node の処理
         description: 正常シナリオと同じ
       - name: 記法を持つ Markdown
-        description: '表のマーカーで囲んだ表、2 つの中身を持つタブの範囲、`> [!WARNING]` の注意書き、`<!-- section: closed -->` のセクション、`<!-- fig: arch -->` の図と `[図](#fig-arch)` のリンク、`script` 要素を持つ文書'
+        description: '表のマーカーで囲んだ表、2 つの中身を持つタブの範囲、`> [!WARNING]` の注意書き、`<!-- section: {"open": false} -->` のセクション、`<!-- fig: {"id": "arch"} -->` の図と `[図](#fig-arch)` のリンク、`script` 要素を持つ文書'
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
@@ -132,7 +132,7 @@ scenarios:
         description: '`共通/手順.md`（`## 準備` と `## 実行` の見出しと段落）を持つ、パスから本文を参照する表'
         notes: 表の指定方法はインターフェース定義で決める
       - name: include のマーカーを持つ Markdown
-        description: '段落の間に `<!-- include: 共通/手順.md#実行 -->` を持つ文書'
+        description: '段落の間に `<!-- include: {"path": "共通/手順.md", "heading": "実行"} -->` を持つ文書'
       - name: Mock
         description: 差し替える依存は無い（画面を持たない）
     flow: |-

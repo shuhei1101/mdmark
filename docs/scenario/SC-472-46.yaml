@@ -8,9 +8,9 @@ scenarios:
         description: バージョンを固定した URL で `dist/index.js` と `dist/index.css` を読み込み、設定を指定して文書を描く HTML
         notes: 設定の `libraries` で、テスト用のマーカーの読み込み先を手元の代役の URL へ向ける
       - name: 外部ライブラリのマーカーを持つ Markdown
-        description: 段落の間にテスト用のマーカーを持つ文書
+        description: '段落の間に、JSON のオブジェクトの引数 `{"label": "売上"}` を持つテスト用のマーカーを持つ文書'
       - name: Mock
-        description: jsDelivr を、ビルドした `dist/` を同じパスで返却する手元の応答に差し替える。外部ライブラリの代役は、関数を 1 つ持つモジュールを返却し、受けた要求を数える
+        description: jsDelivr を、ビルドした `dist/` を同じパスで返却する手元の応答に差し替える。外部ライブラリの代役は、`draw(slot, options)` が受けた `options` の `label` をマーカーの場所に記載するモジュールを返却し、受けた要求を数える
         notes: テスト用のマーカーは、設定の `libraries` で対応表に追加する
     flow: |-
       sequenceDiagram
@@ -22,13 +22,36 @@ scenarios:
         M->>M: マーカーから対応表のモジュールの URL を参照する
         M->>X: モジュールを要求
         X-->>M: モジュール
+        M->>X: draw(slot, {label: "売上"})
         M-->>P: マーカーの場所に外部ライブラリが描く
         P-->>U: 文書を表示
     expected:
       - 外部ライブラリの代役への要求が 1 件
-      - マーカーの場所に、代役のモジュールが描いた中身がある
+      - マーカーの場所に、代役のモジュールが描いた `売上` がある
       - マーカーの前後の段落が描かれている
     test: test_normal
+  - name: 異常シナリオ（今の書き方の外部ライブラリのマーカー）
+    setup:
+      - name: mdmark を読み込むページ
+        description: 正常シナリオと同じ
+      - name: 今の書き方の外部ライブラリのマーカーを持つ Markdown
+        description: 段落の間に、JSON のオブジェクトでない引数 `売上` を持つテスト用のマーカーを持つ文書
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 利用側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を指定して描かせる
+        M->>M: 外部ライブラリのマーカーの引数が JSON のオブジェクトでない
+        M-->>P: マーカーの場所に移行を案内する記載の警告、ほかは本文を描く
+        P-->>U: 記載の警告と本文を表示
+    expected:
+      - マーカーの場所に、外部ライブラリのマーカーの引数は JSON のオブジェクトで記載することと、`mdmark upgrade` の移行の報告で記載し直す箇所を確かめられることを記載した記載の警告がある
+      - 外部ライブラリの代役への要求が 0 件
+      - マーカーの前後の段落が描かれている
+    test: test_error_when_legacy_args
   - name: 正常シナリオ（マーカーが無い）
     setup:
       - name: mdmark を読み込むページ
@@ -189,5 +212,5 @@ trigger: 利用側のページが、外部ライブラリを使用するマー�
 preconditions:
   - ページがバージョンを固定した URL で mdmark の JavaScript と CSS を読み込んでいる
 success_guarantee: 文書が使用する外部ライブラリだけが読み込まれ、マーカーの場所に描かれる。
-minimal_guarantee: 外部ライブラリを読み込めなくても、その場所に通知ブロックが出て、ほかの本文は描かれる。
+minimal_guarantee: 外部ライブラリを読み込めなくても、その場所に通知ブロックが出て、ほかの本文は描かれる。引数が JSON のオブジェクトでないマーカーの場所には、移行を案内する記載の警告が出る。
 test_file: tests/e2e/単一ユースケース/外部ライブラリを使用するときだけ読み込む.spec.ts

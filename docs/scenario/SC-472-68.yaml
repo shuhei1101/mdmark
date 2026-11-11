@@ -70,7 +70,7 @@ scenarios:
         description: 正常シナリオと同じ
         notes: ページの URL の末尾に `#windows-の注意` を付けて開く
       - name: タブの中に見出しを持つ Markdown
-        description: '長い段落の後に、`## 導入` とその直後の `<!-- section: closed -->` を持ち、そのセクションの中に `<!-- tabs -->` 〜 `<!-- /tabs -->` で `### macOS`・`### Windows` を囲んだ文書'
+        description: '長い段落の後に、`## 導入` とその直後の `<!-- section: {"open": false} -->` を持ち、そのセクションの中に `<!-- tabs -->` 〜 `<!-- /tabs -->` で `### macOS`・`### Windows` を囲んだ文書'
         notes: '`macOS` の中身は `#### macOS の注意` と段落、`Windows` の中身は `#### Windows の注意` と段落'
       - name: Mock
         description: 正常シナリオと同じ
@@ -253,7 +253,7 @@ scenarios:
       - name: mdmark を読み込むページ
         description: 正常シナリオ（右側の目次をホバーで出す）と同じ
       - name: 閉じたセクションの中に見出しを持つ Markdown
-        description: '長い段落の後に、`## 補足` とその直後の `<!-- section: closed -->`、そのセクションの中の `### 注意` と段落を持つ文書'
+        description: '長い段落の後に、`## 補足` とその直後の `<!-- section: {"open": false} -->`、そのセクションの中の `### 注意` と段落を持つ文書'
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
@@ -350,7 +350,7 @@ scenarios:
       - name: mdmark を読み込むページ
         description: 正常シナリオ（右側の目次をホバーで出す）と同じ
       - name: 幅の広い表を持つ Markdown
-        description: '`## 導入`・`## 使用方法` の見出しの間に、`<!-- table: data +total total=数量:sum pin=名前 -->` 〜 `<!-- /table -->` で囲んだ、描く先の要素の幅を越える列を持ち、画面より長い表を配置した文書'
+        description: '`## 導入`・`## 使用方法` の見出しの間に、`<!-- table: {"kind": "data", "columns": {"数量": {"total": [{"calc": "sum"}]}, "名前": {"pinned": true}}} -->` 〜 `<!-- /table -->` で囲んだ、描く先の要素の幅を越える列を持ち、画面より長い表を配置した文書'
         notes: 表は先頭の列 `名前` と数値の列 `数量` を含む 10 列と 30 行を持ち、見出し行と集計の行の右側のセルが右側の目次の枠の下に重なる。ピン止めした列（`名前`）は表の左端に留まり、右端の枠の下には重ならないため、重なりの順の比較で確認する
       - name: Mock
         description: 正常シナリオと同じ

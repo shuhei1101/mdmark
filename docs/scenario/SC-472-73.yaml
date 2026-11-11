@@ -7,7 +7,7 @@ scenarios:
       - name: mdmark を読み込むページ
         description: バージョンを固定した URL で `dist/index.js` と `dist/index.css` を読み込み、設定を指定して文書を描く HTML
       - name: 並べ替えの表を持つ Markdown
-        description: '`<!-- table: data -->` 〜 `<!-- /table -->` で、数値の列を持つ 3 行の表を囲んだ文書'
+        description: '`<!-- table: {"kind": "data"} -->` 〜 `<!-- /table -->` で、数値の列を持つ 3 行の表を囲んだ文書'
         notes: 数値の列の値は上から `10`・`2`・`33`
       - name: Mock
         description: jsDelivr を、ビルドした `dist/` を同じパスで返却する手元の応答に差し替える
@@ -36,8 +36,8 @@ scenarios:
       - name: mdmark を読み込むページ
         description: 正常シナリオと同じ
       - name: 値で絞り込む列を持つ Markdown
-        description: '`<!-- table: data filter=名前 -->` 〜 `<!-- /table -->` で、名前の列に `りんご`・`みかん`・`りんご飴` を持つ表を囲んだ文書'
-        notes: '`filter=` に種類を記載しない列は、値を選んで絞り込む（`select`）'
+        description: '`<!-- table: {"kind": "data", "columns": {"名前": {"filter": {}}}} -->` 〜 `<!-- /table -->` で、名前の列に `りんご`・`みかん`・`りんご飴` を持つ表を囲んだ文書'
+        notes: '`filter` に `type` を記載しない列は、値を選んで絞り込む（`select`）'
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
@@ -67,7 +67,7 @@ scenarios:
       - name: mdmark を読み込むページ
         description: 正常シナリオと同じ
       - name: 文字で絞り込む列を持つ Markdown
-        description: '`<!-- table: data filter=説明:text -->` 〜 `<!-- /table -->` で、説明の列に `描画を速くする`・`印刷を修正する`・`描画の崩れを修正する` を持つ表を囲んだ文書'
+        description: '`<!-- table: {"kind": "data", "columns": {"説明": {"filter": {"type": "text"}}}} -->` 〜 `<!-- /table -->` で、説明の列に `描画を速くする`・`印刷を修正する`・`描画の崩れを修正する` を持つ表を囲んだ文書'
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
@@ -90,7 +90,7 @@ scenarios:
       - name: mdmark を読み込むページ
         description: 正常シナリオと同じ
       - name: 日付で絞り込む列を持つ Markdown
-        description: '`<!-- table: data filter=更新日:date -->` 〜 `<!-- /table -->` で、更新日の列に `2026-10-01`・`2026-10-10`・`2026-10-20` を持つ表を囲んだ文書'
+        description: '`<!-- table: {"kind": "data", "columns": {"更新日": {"filter": {"type": "date"}}}} -->` 〜 `<!-- /table -->` で、更新日の列に `2026-10-01`・`2026-10-10`・`2026-10-20` を持つ表を囲んだ文書'
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
@@ -148,7 +148,7 @@ scenarios:
       - name: mdmark を読み込むページ
         description: 正常シナリオと同じ
       - name: 閉じた表を持つ Markdown
-        description: '`<!-- table: data closed -->` 〜 `<!-- /table -->` で 3 行の表を囲み、続けて `<!-- table: data open title=リリースの一覧 -->` 〜 `<!-- /table -->` で 2 行の表を囲んだ文書'
+        description: '`<!-- table: {"kind": "data", "collapse": {"open": false}} -->` 〜 `<!-- /table -->` で 3 行の表を囲み、続けて `<!-- table: {"kind": "data", "collapse": {"open": true, "title": "リリースの一覧"}} -->` 〜 `<!-- /table -->` で 2 行の表を囲んだ文書'
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
@@ -162,7 +162,7 @@ scenarios:
         P-->>U: 開いた表
     expected:
       - 描いた直後、1 つ目の表が閉じた折りたたみの中にあり、表の行が表示されていない
-      - 1 つ目の折りたたみの見出しが「表（3 行）」で、2 つ目の折りたたみの見出しが `title=` の「リリースの一覧」
+      - 1 つ目の折りたたみの見出しが「表（3 行）」で、2 つ目の折りたたみの見出しが `collapse.title` の「リリースの一覧」
       - 2 つ目の表は描いた直後から 2 行が表示されている
       - 1 つ目の見出しを押した後、表の 3 行が表示されている
     test: test_normal_when_closed
@@ -171,7 +171,7 @@ scenarios:
       - name: mdmark を読み込むページ
         description: 正常シナリオと同じ
       - name: 機能を解除した表を持つ Markdown
-        description: '`<!-- table: data -sort -->` 〜 `<!-- /table -->` で表を囲んだ文書'
+        description: '`<!-- table: {"kind": "data", "features": {"sort": {"enabled": false}}} -->` 〜 `<!-- /table -->` で表を囲んだ文書'
         notes: 表は 10 列 30 行で、描く先の要素からはみ出す大きさ（ピン止めのボタンは、はみ出す表にだけ出る）
       - name: Mock
         description: 正常シナリオと同じ
@@ -187,12 +187,12 @@ scenarios:
       - 表の見出しに並べ替えのボタンが無い
       - 表の見出しにピン止めのボタンがある
     test: test_normal_when_feature_removed
-  - name: 正常シナリオ（知らない種類）
+  - name: 異常シナリオ（知らない種類）
     setup:
       - name: mdmark を読み込むページ
         description: 正常シナリオと同じ
       - name: 知らない種類を記載した Markdown
-        description: '`<!-- table: unknown +sort -->` 〜 `<!-- /table -->` で表を囲み、表の後に段落を持つ文書'
+        description: '`<!-- table: {"kind": "unknown", "features": {"sort": {}}} -->` 〜 `<!-- /table -->` で表を囲み、表の後に段落を持つ文書'
         notes: 表は 10 列 30 行で、描く先の要素からはみ出す大きさ（ピン止めのボタンは、はみ出す表にだけ出る）
       - name: Mock
         description: 正常シナリオと同じ
@@ -202,20 +202,20 @@ scenarios:
         participant P as 利用側のページ
         participant M as mdmark
         P->>M: 設定と Markdown を指定して描かせる
-        M->>M: 知らない種類をスキップし、既定の種類にする
-        M-->>P: 既定の種類に +sort を適用した表を描く
-        P-->>U: 表を表示
+        M->>M: kind の値が選べる値に無いため kind を適用せず、既定の種類にする
+        M-->>P: 記載の警告と、既定の種類に features の sort を適用した表を描く
+        P-->>U: 記載の警告と表を表示
     expected:
-      - 表の上に記載の警告が無い
+      - 表の上に、`kind` の `unknown` が選べる値に無いことと、選べる値（`data`・`plain`）を記載した記載の警告がある
       - 表にピン止めと並べ替えのボタンがある
       - 表の後の段落が描かれている
-    test: test_normal_when_unknown_kind
+    test: test_error_when_unknown_kind
   - name: 異常シナリオ（閉じのマーカーが無い）
     setup:
       - name: mdmark を読み込むページ
         description: 正常シナリオと同じ
       - name: 閉じのマーカーの無い Markdown
-        description: '`<!-- table: data -->` の後に表を 2 つ持ち、`<!-- /table -->` を持たない文書'
+        description: '`<!-- table: {"kind": "data"} -->` の後に表を 2 つ持ち、`<!-- /table -->` を持たない文書'
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
@@ -236,7 +236,8 @@ scenarios:
       - name: mdmark を読み込むページ
         description: 正常シナリオと同じ
       - name: 知らない機能とキーを記載した Markdown
-        description: '`<!-- table: data +unknown size=2 -->` 〜 `<!-- /table -->` で表を囲んだ文書'
+        description: '`<!-- table: {"kind": "data", "features": {"unknown": {}}, "size": 2} -->` 〜 `<!-- /table -->` で表を囲んだ文書'
+        notes: 知らない機能 `features.unknown` と知らないキー `size` は、描くときは無視し、点検（`mdmark check`）が通知する
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
@@ -257,7 +258,7 @@ scenarios:
       - name: mdmark を読み込むページ
         description: 正常シナリオと同じ
       - name: 知らない絞り込みの種類を記載した Markdown
-        description: '`<!-- table: data filter=名前:range,説明:text -->` 〜 `<!-- /table -->` で表を囲んだ文書'
+        description: '`<!-- table: {"kind": "data", "columns": {"名前": {"filter": {"type": "range"}}, "説明": {"filter": {"type": "text"}}}} -->` 〜 `<!-- /table -->` で表を囲んだ文書'
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
@@ -270,7 +271,7 @@ scenarios:
         M-->>P: 記載の警告と、説明の列だけに絞り込みのボタンを付けた表を描く
         P-->>U: 記載の警告と表を表示
     expected:
-      - 表の上に、`range` が使用できない絞り込みの種類であることと、使用できる種類（`select`・`text`・`date`）を記載した記載の警告がある
+      - 表の上に、`columns.名前.filter.type` の `range` が選べる値に無いことと、選べる値（`select`・`text`・`date`）を記載した記載の警告がある
       - 説明の列の見出しに絞り込みのボタンがあり、名前の列の見出しには無い
     test: test_error_when_unknown_filter_kind
   - name: 正常シナリオ（件数を確認する）
@@ -278,7 +279,7 @@ scenarios:
       - name: mdmark を読み込むページ
         description: 正常シナリオと同じ
       - name: 件数を出す表を持つ Markdown
-        description: '`<!-- table: data +count filter=説明:text -->` 〜 `<!-- /table -->` で、説明の列に `描画を速くする`・`印刷を修正する`・`描画の崩れを修正する` を持つ 3 行の表を囲んだ文書'
+        description: '`<!-- table: {"kind": "data", "features": {"count": {}}, "columns": {"説明": {"filter": {"type": "text"}}}} -->` 〜 `<!-- /table -->` で、説明の列に `描画を速くする`・`印刷を修正する`・`描画の崩れを修正する` を持つ 3 行の表を囲んだ文書'
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
@@ -301,7 +302,7 @@ scenarios:
       - name: mdmark を読み込むページ
         description: 正常シナリオと同じ
       - name: 列を隠した表を持つ Markdown
-        description: '`<!-- table: data +columns hide=説明 -->` 〜 `<!-- /table -->` で、名前・説明・更新日の 3 列 3 行の表を囲んだ文書'
+        description: '`<!-- table: {"kind": "data", "columns": {"説明": {"hidden": true}}} -->` 〜 `<!-- /table -->` で、名前・説明・更新日の 3 列 3 行の表を囲んだ文書'
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
@@ -332,8 +333,8 @@ scenarios:
       - name: mdmark を読み込むページ
         description: 正常シナリオと同じページで、受けた引数を配列に記録する `onColumnsChange` を指定して文書を描く
       - name: 列を隠す表を 2 つ持つ Markdown
-        description: '表のマーカーで囲まない表を 1 つ配置し、続けて `<!-- table: data +columns -->` で名前・説明・更新日の 3 列の表と、`<!-- table: data +columns hide=備考 -->` で名前・備考の 2 列の表を囲んだ文書'
-        notes: 表の番号は `+columns` の表だけを数え、1 つ目が `0`、2 つ目が `1`
+        description: '表のマーカーで囲まない表を 1 つ配置し、続けて `<!-- table: {"kind": "data", "features": {"columns": {}}} -->` で名前・説明・更新日の 3 列の表と、`<!-- table: {"kind": "data", "columns": {"備考": {"hidden": true}}} -->` で名前・備考の 2 列の表を囲んだ文書'
+        notes: 表の番号は列の表示・非表示の機能（`features.columns` か `columns.{列名}.hidden`）を持つ表だけを数え、1 つ目が `0`、2 つ目が `1`
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
@@ -343,11 +344,11 @@ scenarios:
         participant M as mdmark
         P->>M: 設定・onColumnsChange・Markdown を指定して描かせる
         M-->>P: 2 つ目の表の備考の列を隠した文書
-        U->>P: 1 つ目の +columns の表のテーブル設定で説明を隠す
+        U->>P: 1 つ目の列の表示・非表示の機能を持つ表のテーブル設定で説明を隠す
         M->>P: onColumnsChange({tableIndex: 0, hidden: [説明]})
         U->>P: 1 つ目の表のテーブル設定で説明を表示し、更新日・説明の順に隠す
         M->>P: onColumnsChange({tableIndex: 0, hidden: [説明, 更新日]})
-        U->>P: 2 つ目の +columns の表のテーブル設定で備考を表示する
+        U->>P: 2 つ目の列の表示・非表示の機能を持つ表のテーブル設定で備考を表示する
         M->>P: onColumnsChange({tableIndex: 1, hidden: []})
         U->>P: 2 つ目の表のテーブル設定で備考をもう一度隠す
         M->>P: onColumnsChange({tableIndex: 1, hidden: [備考]})
@@ -364,7 +365,7 @@ scenarios:
         description: 正常シナリオと同じ
         notes: '-'
       - name: 集計の行を持つ表の Markdown
-        description: '`<!-- table: data +total total=数量:sum,単価:avg,産地:count filter=名前:text -->` 〜 `<!-- /table -->` で、名前・数量・単価・産地の 4 列 4 行の表を囲んだ文書'
+        description: '`<!-- table: {"kind": "data", "columns": {"数量": {"total": [{"calc": "sum"}]}, "単価": {"total": [{"calc": "avg"}]}, "産地": {"total": [{"calc": "count"}]}, "名前": {"filter": {"type": "text"}}}} -->` 〜 `<!-- /table -->` で、名前・数量・単価・産地の 4 列 4 行の表を囲んだ文書'
         notes: 数量は上から `10`・`2`・`33`・空、単価は `100`・`200`・`300`・`400`、産地は `青森`・`愛媛`・`青森`・空、名前は `りんご`・`みかん`・`りんご飴`・`ぶどう`
       - name: Mock
         description: 正常シナリオと同じ
@@ -392,7 +393,7 @@ scenarios:
       - name: mdmark を読み込むページ
         description: 正常シナリオと同じ
       - name: コピーできる表を持つ Markdown
-        description: '`<!-- table: data +copy +columns hide=説明 filter=名前:text -->` 〜 `<!-- /table -->` で、名前・説明・更新日の 3 列 3 行の表を囲んだ文書'
+        description: '`<!-- table: {"kind": "data", "features": {"copy": {}}, "columns": {"説明": {"hidden": true}, "名前": {"filter": {"type": "text"}}}} -->` 〜 `<!-- /table -->` で、名前・説明・更新日の 3 列 3 行の表を囲んだ文書'
         notes: 名前は上から `りんご`・`みかん`・`りんご飴`、説明は `描画を速くする`・`印刷を修正する`・`描画の崩れを修正する`、更新日は `2026-10-01`・`2026-10-10`・`2026-10-20`
       - name: クリップボードの権限
         description: ページにクリップボードへの書き込みを許す
@@ -419,7 +420,7 @@ scenarios:
       - name: mdmark を読み込むページ
         description: 正常シナリオと同じ
       - name: 行へのリンクを持つ表の Markdown
-        description: '見出し・長い段落の後に、`<!-- table: data +rowlink closed -->` 〜 `<!-- /table -->` の表 A と、`<!-- section: closed -->` のセクションの中に `<!-- table: data +rowlink filter=名前:text -->` 〜 `<!-- /table -->` の表 B を持つ文書'
+        description: '見出し・長い段落の後に、`<!-- table: {"kind": "data", "features": {"rowlink": {}}, "collapse": {"open": false}} -->` 〜 `<!-- /table -->` の表 A と、`<!-- section: {"open": false} -->` のセクションの中に `<!-- table: {"kind": "data", "features": {"rowlink": {}}, "columns": {"名前": {"filter": {"type": "text"}}}} -->` 〜 `<!-- /table -->` の表 B を持つ文書'
         notes: 表 A・表 B とも名前の列を先頭に持つ 3 行の表。表 A の名前は `りんご`・`みかん`・`りんご飴`、表 B の名前は `ぶどう`・`もも`・`なし`
       - name: 行を指す URL
         description: ページの URL の末尾に、表 A の `みかん` の行を指す `#ID` を付ける
@@ -451,7 +452,7 @@ scenarios:
       - name: mdmark を読み込むページ
         description: 正常シナリオと同じ
       - name: 読み込めない集計と隠す列を記載した Markdown
-        description: '`<!-- table: data +total +columns total=数量:max,価格:sum,単価:avg hide=備考,名前 -->` 〜 `<!-- /table -->` の表 A、`<!-- table: data total=数量:sum hide=名前 -->` 〜 `<!-- /table -->` の表 B、`<!-- table: data +total -->` 〜 `<!-- /table -->` の表 C を持つ文書'
+        description: '`<!-- table: {"kind": "data", "columns": {"数量": {"total": [{"calc": "max"}]}, "価格": {"total": [{"calc": "sum"}]}, "単価": {"total": [{"calc": "avg"}]}, "備考": {"hidden": true}, "名前": {"hidden": true}}} -->` 〜 `<!-- /table -->` の表 A、`<!-- table: {"kind": "data", "features": {"total": {"enabled": false}, "columns": {"enabled": false}}, "columns": {"数量": {"total": [{"calc": "sum"}]}, "単価": {"hidden": true}}} -->` 〜 `<!-- /table -->` の表 B、`<!-- table: {"kind": "data", "features": {"total": {}}} -->` 〜 `<!-- /table -->` の表 C を持つ文書'
         notes: 3 つの表とも名前・数量・単価の 3 列の表（先頭の列は名前）
       - name: Mock
         description: 正常シナリオと同じ
@@ -461,21 +462,21 @@ scenarios:
         participant P as 利用側のページ
         participant M as mdmark
         P->>M: 設定と Markdown を指定して描かせる
-        M->>M: 知らない計算・表に無い列・機能を付けていないキーの指定を適用しない
+        M->>M: 選べる値に無い計算・表に無い列・削除した機能の列の設定を適用しない
         M-->>P: 記載の警告と、読み込めた指定だけを適用した表を描く
         P-->>U: 記載の警告と表を表示
     expected:
-      - 表 A の上に、読み込めない指定ごとに 1 つずつ、`max` が使用できない計算であることと使用できる計算（`sum`・`avg`・`count`）、`価格` が表に無い列名であること、`備考` が表に無い列名であること、`名前` は先頭の列で隠せないことを記載した記載の警告が 4 つある
+      - 表 A の上に、読み込めない指定ごとに 1 つずつ、`calc` の `max` が選べる値に無いことと選べる値（`sum`・`avg`・`count`）、`価格` が表に無い列名であること、`備考` が表に無い列名であること、`名前` は先頭の列で隠せないことを記載した記載の警告が 4 つある
       - 表 A の集計の行は平均の 1 行だけで、単価の列にだけ値を持ち、数量の列は空で、表 A の名前の列を含む全ての列が表示されている
-      - 表 B の上に、`total=` は `+total`、`hide=` は `+columns` を記載した表でだけ使用できることを記載した記載の警告があり、表 B は集計の行を持たず、名前の列が表示されている
-      - 表 C は記載の警告も集計の行も持たない（`total=` の無い `+total` は集計する列が無い）
+      - 表 B の上に記載の警告が無く、表 B は集計の行を持たず、単価の列が表示されている（`enabled` を `false` にした機能の列の設定は適用せず、点検（`mdmark check`）が通知する）
+      - 表 C は記載の警告も集計の行も持たない（`columns.{列名}.total` の無い `features.total` は集計する列が無い）
     test: test_error_when_unknown_total_or_hidden_column
   - name: 異常シナリオ（クリップボードに書き込めない）
     setup:
       - name: mdmark を読み込むページ
         description: 正常シナリオと同じ
       - name: コピーできる表を持つ Markdown
-        description: '`<!-- table: data +copy -->` 〜 `<!-- /table -->` で 3 行の表を囲んだ文書'
+        description: '`<!-- table: {"kind": "data", "features": {"copy": {}}} -->` 〜 `<!-- /table -->` で 3 行の表を囲んだ文書'
       - name: クリップボードの権限
         description: ページにクリップボードへの書き込みを許さない
       - name: Mock
@@ -504,7 +505,7 @@ scenarios:
         description: 正常シナリオと同じ
         notes: 描く先の要素の幅は表が横にスクロールする幅で、高さは決めずページがスクロールする
       - name: 大きい表を持つ Markdown
-        description: '長い段落の後に、`<!-- table: data +total total=数量:sum -->` 〜 `<!-- /table -->` で 10 列 60 行の表を囲み、表の後に長い段落を持つ文書'
+        description: '長い段落の後に、`<!-- table: {"kind": "data", "columns": {"数量": {"total": [{"calc": "sum"}]}}} -->` 〜 `<!-- /table -->` で 10 列 60 行の表を囲み、表の後に長い段落を持つ文書'
         notes: 1 列目は名前、2 列目は数量（全て数）
       - name: Mock
         description: 正常シナリオと同じ
@@ -539,7 +540,7 @@ scenarios:
         description: 正常シナリオと同じ
         notes: 画面と描く先の要素の幅を 390px にして開き、後で 1280px に広げる
       - name: 最終列の長い表を持つ Markdown
-        description: '`<!-- table: data -->` 〜 `<!-- /table -->` で、名前・状態・説明の 3 列 3 行の表を囲んだ文書'
+        description: '`<!-- table: {"kind": "data"} -->` 〜 `<!-- /table -->` で、名前・状態・説明の 3 列 3 行の表を囲んだ文書'
         notes: 最終列の説明は、どの行も 390px の幅で 1 行に収まらない長さ
       - name: Mock
         description: 正常シナリオと同じ
@@ -587,7 +588,7 @@ scenarios:
         U->>P: 平均にチェックを入れる
         P-->>U: 平均の行を戻した表
     expected:
-      - メニューに `合計`・`平均`・`件数` のチェックボックスが並び、全てチェックが入っている（既定は `total=` に記載した全ての計算）
+      - メニューに `合計`・`平均`・`件数` のチェックボックスが並び、全てチェックが入っている（既定は `columns.{列名}.total` に記載した全ての計算）
       - 平均のチェックを解除した後、集計の行が `合計`・`件数` の 2 行だけになる
       - 平均にチェックを入れた後、集計の行が `合計`・`平均`・`件数` の 3 行に戻る
       - 「集計」ボタンとチェックボックスはキーボードで操作でき、Esc でメニューが閉じてフォーカスが「集計」ボタンへ戻る
@@ -598,7 +599,7 @@ scenarios:
         description: 正常シナリオと同じ
         notes: '-'
       - name: 読み込めないセルを持つ表の Markdown
-        description: '`<!-- table: data +total total=数量:sum,単価:avg -->` 〜 `<!-- /table -->` で、名前・数量・単価の 3 列 3 行の表を囲んだ文書'
+        description: '`<!-- table: {"kind": "data", "columns": {"数量": {"total": [{"calc": "sum"}]}, "単価": {"total": [{"calc": "avg"}]}}} -->` 〜 `<!-- /table -->` で、名前・数量・単価の 3 列 3 行の表を囲んだ文書'
         notes: 数量は上から `10`・`2`・`-`、単価は `100`・`200`・`300`
       - name: Mock
         description: 正常シナリオと同じ
@@ -649,7 +650,7 @@ scenarios:
         description: 正常シナリオと同じ
         notes: '-'
       - name: 行へのリンクを持つ表の Markdown
-        description: '`<!-- table: data +rowlink -->` 〜 `<!-- /table -->` で、名前の列を先頭に持つ 3 行の表を囲んだ文書'
+        description: '`<!-- table: {"kind": "data", "features": {"rowlink": {}}} -->` 〜 `<!-- /table -->` で、名前の列を先頭に持つ 3 行の表を囲んだ文書'
         notes: 名前は上から `りんご`・`みかん`・`りんご飴`
       - name: クリップボードの権限
         description: ページにクリップボードへの書き込みを許す
@@ -677,7 +678,7 @@ scenarios:
       - name: mdmark を読み込むページ
         description: 正常シナリオと同じ
       - name: セルを結合した表を持つ Markdown
-        description: '`<!-- table: data +copy header-rows=2 row-header=1 filter=分類,件数,時間,メモ -->` 〜 `<!-- /table -->` で囲んだ表と、マーカーで囲まない表を 1 つずつ持つ文書'
+        description: '`<!-- table: {"kind": "data", "features": {"copy": {}}, "columns": {"分類": {"filter": {}}, "件数": {"filter": {}}, "時間": {"filter": {}}, "メモ": {"filter": {}}}, "header": {"rows": 2, "columns": 1}} -->` 〜 `<!-- /table -->` で囲んだ表と、マーカーで囲まない表を 1 つずつ持つ文書'
         notes: 囲んだ表は、見出しの 1 行目の 3 列目に `<<`、データの 2 行目と 3 行目の 1 列目に `^^` を持つ。囲まない表は、データのセルに `^^` と `<<` を持つ
       - name: Mock
         description: 正常シナリオと同じ
@@ -702,7 +703,7 @@ scenarios:
       - name: mdmark を読み込むページ
         description: 正常シナリオと同じ
       - name: 分類の列を結合した表を持つ Markdown
-        description: '`<!-- table: data filter=分類 -->` で囲み、1 列目の分類が `A`・`^^`・`B`・`^^` で、2 列目の数値が `3`・`1`・`4`・`2` の 4 行の表を持つ文書'
+        description: '`<!-- table: {"kind": "data", "columns": {"分類": {"filter": {}}}} -->` で囲み、1 列目の分類が `A`・`^^`・`B`・`^^` で、2 列目の数値が `3`・`1`・`4`・`2` の 4 行の表を持つ文書'
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
@@ -727,7 +728,7 @@ scenarios:
       - name: mdmark を読み込むページ
         description: 正常シナリオと同じ
       - name: 読み込めない結合を持つ Markdown
-        description: '`<!-- table: data header-rows=5 filter=列B -->` で 3 行の表を囲み、データの 1 行目の 2 列目に `^^`、見出しの 1 列目に `<<` を持つ文書'
+        description: '`<!-- table: {"kind": "data", "columns": {"列B": {"filter": {}}}, "header": {"rows": 5}} -->` で 3 行の表を囲み、データの 1 行目の 2 列目に `^^`、見出しの 1 列目に `<<` を持つ文書'
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
@@ -740,9 +741,9 @@ scenarios:
         M-->>P: 記載の警告と、読み込めた指定だけを適用した表を描く
         P-->>U: 文書を表示
     expected:
-      - 表の上に記載の警告があり、表の行数を超える `header-rows=5`、上に結合するセルの無い `^^`、左に結合するセルの無い `<<` が記載されている
+      - 表の上に記載の警告があり、表の行数を超える `header.rows` の `5`、上に結合するセルの無い `^^`、左に結合するセルの無い `<<` が記載されている
       - 表は描かれ、読み込めなかった `^^` と `<<` は記載したとおりの文字で出ている
-      - 並べ替えのボタンが見出しの各列にあり、絞り込みのボタンが `filter=` で指定した `列B` の見出しにある
+      - 並べ替えのボタンが見出しの各列にあり、絞り込みのボタンが `columns.列B.filter` で指定した `列B` の見出しにある
     test: test_error_when_merge_invalid
   - name: 正常シナリオ（はみ出す表で先頭の列を留める）
     setup:
@@ -750,7 +751,7 @@ scenarios:
         description: 正常シナリオと同じ
         notes: 描く先の要素の幅は、表が横にスクロールする幅
       - name: はみ出す表を持つ Markdown
-        description: 'マーカーで囲まない 10 列 30 行の表と、`<!-- table: -pin -->` で囲んだ 10 列の表を持つ文書'
+        description: 'マーカーで囲まない 10 列 30 行の表と、`<!-- table: {"features": {"pin": {"enabled": false}}} -->` で囲んだ 10 列の表を持つ文書'
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
@@ -764,7 +765,7 @@ scenarios:
         P-->>U: 留めた列が左端に残った表
     expected:
       - 囲まない表は、ボタンを押さなくても 1 列目が左端に見えていて、1 列目のピン止めのボタンの `aria-pressed` が `true`
-      - '`-pin` の表には、ピン止めのボタンが無く、横にスクロールすると 1 列目が見えなくなる'
+      - '`features.pin.enabled` を `false` にした表には、ピン止めのボタンが無く、横にスクロールすると 1 列目が見えなくなる'
       - 囲まない表の 1 列目のピン止めのボタンを押すと、留めた列が削除される
     test: test_normal_when_pinned_by_default
   - name: 正常シナリオ（留める列と広く取る列を指定する）
@@ -773,7 +774,7 @@ scenarios:
         description: 正常シナリオと同じ
         notes: 描く先の要素の幅は、表が横にスクロールする幅
       - name: 列を指定した表を持つ Markdown
-        description: '`<!-- table: data pin=物理名 wide=説明 -->` で、1 列目 `No`・2 列目 `物理名`・長い文の `説明` の列を含む 8 列の表を囲み、続けて `<!-- table: data pin=No,物理名 -->` で同じ 8 列の表を囲んだ文書'
+        description: '`<!-- table: {"kind": "data", "columns": {"物理名": {"pinned": true}, "説明": {"width": {"mode": "nowrap"}}}} -->` で、1 列目 `No`・2 列目 `物理名`・長い文の `説明` の列を含む 8 列の表を囲み、続けて `<!-- table: {"kind": "data", "columns": {"No": {"pinned": true}, "物理名": {"pinned": true}}} -->` で同じ 8 列の表を囲んだ文書'
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
@@ -796,7 +797,7 @@ scenarios:
       - name: mdmark を読み込むページ
         description: 正常シナリオと同じ
       - name: 真偽値の列を持つ Markdown
-        description: '`<!-- table: data check=必須 -->` で、`必須` と `既定` の 2 つの列のセルが `true` か `false` の 3 行の表を囲んだ文書'
+        description: '`<!-- table: {"kind": "data", "columns": {"必須": {"format": {"type": "check"}}}} -->` で、`必須` と `既定` の 2 つの列のセルが `true` か `false` の 3 行の表を囲んだ文書'
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
@@ -810,7 +811,7 @@ scenarios:
         P-->>U: 絞り込んだ表
     expected:
       - '`必須` の列の `true` のセルに ✓ が出て、スクリーンリーダーで「はい」に該当する名前を持ち、`false` のセルは空欄'
-      - '`check=` で指定しない `既定` の列は、`true`・`false` の文字のまま出ている'
+      - '`format` を指定しない `既定` の列は、`true`・`false` の文字のまま出ている'
       - '`必須` の列の絞り込みの選択肢と並べ替えは `true`・`false` の値で動き、絞り込んだ後は ✓ の行だけが出る'
       - 表をコピーした中身では、`必須` の列が `true`・`false` の値を持つ
     test: test_normal_when_check_column
@@ -819,7 +820,7 @@ scenarios:
       - name: mdmark を読み込むページ
         description: 正常シナリオと同じ
       - name: 知らない列名を指定した Markdown
-        description: '`<!-- table: data pin=無い列 wide=説明 check=無い列 -->` で、`説明` の列を持つ表を囲み、続けて `<!-- table: data pin=物理名,無い列 -->` で `物理名` の列を持つはみ出す表を囲んだ文書'
+        description: '`<!-- table: {"kind": "data", "columns": {"無い列": {"pinned": true, "format": {"type": "check"}}, "説明": {"width": {"mode": "nowrap"}}}} -->` で、`説明` の列を持つ表を囲み、続けて `<!-- table: {"kind": "data", "columns": {"物理名": {"pinned": true}, "無い列": {"pinned": true}}} -->` で `物理名` の列を持つはみ出す表を囲んだ文書'
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
@@ -832,7 +833,7 @@ scenarios:
         M-->>P: 記載の警告と、読み込めた指定だけを適用した表を描く
         P-->>U: 文書を表示
     expected:
-      - 表の上に記載の警告があり、`pin=` と `check=` の列名 `無い列` が見出しに無いことが記載されている
+      - 表の上に記載の警告があり、`columns` の列名 `無い列` が見出しに無いことが記載されている
       - "`説明` の列は広く取られている"
       - 表は描かれ、並べ替えと絞り込みのボタンが見出しにある
       - 2 つ目の表の上の記載の警告には `無い列` だけが記載されていて、2 つ目の表を横にスクロールすると `物理名` の列が左端に見えている
@@ -843,7 +844,7 @@ scenarios:
         description: 正常シナリオと同じ
         notes: 描く先の要素の幅は、表が横にスクロールする幅
       - name: 行見出しを持つはみ出す表の Markdown
-        description: '`<!-- table: data row-header=2 -->` で囲んだ 10 列の表を持つ文書'
+        description: '`<!-- table: {"kind": "data", "header": {"columns": 2}} -->` で囲んだ 10 列の表を持つ文書'
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
@@ -863,7 +864,7 @@ scenarios:
       - name: mdmark を読み込むページ
         description: 正常シナリオと同じ
       - name: 列の並べ替えを付けた表を持つ Markdown
-        description: '`<!-- table: data +reorder +columns filter=名前:text -->` 〜 `<!-- /table -->` で囲んだ 4 列 3 行の表と、`+reorder` だけを付けた表と、`+reorder` も `+columns` も付けない `<!-- table: data -->` の表を 1 つずつ持つ文書'
+        description: '`<!-- table: {"kind": "data", "features": {"reorder": {}, "columns": {}}, "columns": {"名前": {"filter": {"type": "text"}}}} -->` 〜 `<!-- /table -->` で囲んだ 4 列 3 行の表と、`features` に `reorder` だけを記載した表と、`reorder` も `columns` も記載しない `<!-- table: {"kind": "data"} -->` の表を 1 つずつ持つ文書'
         notes: 列は左から `名前`・`型`・`既定`・`説明`
       - name: Mock
         description: 正常シナリオと同じ
@@ -886,14 +887,14 @@ scenarios:
         U->>P: 名前の列の見出しの並べ替えのボタンを押す
         P-->>U: 行を並べ替えた表（列の順は変わらない）
     expected:
-      - 見出しには行の並べ替えのボタンと、`filter=` で指定した `名前` の絞り込みのボタンだけがあり、列を動かすつまみと列のメニューが無い
+      - 見出しには行の並べ替えのボタンと、`columns.名前.filter` で指定した `名前` の絞り込みのボタンだけがあり、列を動かすつまみと列のメニューが無い
       - 表の上の帯に、アイコンだけで `aria-label` とツールチップが「テーブル設定」のボタンがあり、押すと列の一覧が開き、`aria-expanded` が `true` になる
       - 一覧の各行に、並べ替えのつまみと、表示・非表示の目のアイコンがある。Markdown に記載した先頭の列（`名前`）の目のアイコンは、並べ替えて先頭でなくなった後も `disabled` で、一覧の下の案内に「先頭の列は隠せません」の理由を出す
       - ドラッグの後、表の列が `説明`・`名前`・`型`・`既定` の順で、全ての行のセルが見出しと同じ順に動き、一覧も同じ順になっている
       - 型のつまみで ↓ キーを押した後、列が `説明`・`名前`・`既定`・`型` の順になり、フォーカスが型のつまみに残る
       - 説明の目のアイコンを押すと、説明の列が隠れ、アイコンの `aria-pressed` が `true`、`aria-label` が「「説明」を表示」になる。テーブル設定のボタンに、隠した列の数 `1` のバッジが出る
       - 見出しの並べ替えのボタンを押しても列は動かず、行だけが並べ替わる。行を並べ替えた後と絞り込んだ後も、動かした列の順が保たれている
-      - '`+reorder` だけの表の一覧にはつまみだけがあり、目のアイコンが無い。`+reorder` も `+columns` も付けない表にはテーブル設定のボタンが無い'
+      - '`features` に `reorder` だけを記載した表の一覧にはつまみだけがあり、目のアイコンが無い。`reorder` も `columns` も記載しない表にはテーブル設定のボタンが無い'
       - ページをもう一度開くと、列は Markdown に記載した順に戻る
     test: test_normal_when_columns_reordered
   - name: 正常シナリオ（結合した見出しとピン止めの列を並べ替える）
@@ -902,7 +903,7 @@ scenarios:
         description: 正常シナリオと同じ
         notes: '描く先の要素の幅は、表が横にスクロールする幅。設定に `table.pin: through` を指定する'
       - name: 結合した見出しとピン止めを持つ Markdown
-        description: '`<!-- table: data +reorder +columns header-rows=2 pin=名前 -->` で囲んだ表を持つ文書'
+        description: '`<!-- table: {"kind": "data", "features": {"reorder": {}, "columns": {}}, "columns": {"名前": {"pinned": true}}, "header": {"rows": 2}} -->` で囲んだ表を持つ文書'
         notes: 1 行目は `名前`・`設定`（`<<` で 3 列にまたがる）・`備考`。2 行目は `名前`・`型`・`既定`・`必須`・`備考`
       - name: Mock
         description: 正常シナリオと同じ
@@ -931,7 +932,7 @@ scenarios:
       - name: mdmark を読み込むページ
         description: 正常シナリオと同じ
       - name: 階層の表を持つ Markdown
-        description: '`<!-- table: data tree=キー type=型 required=必須 default=既定 -->` で囲み、キー・型・必須・既定・説明の列を持つ表の文書'
+        description: '`<!-- table: {"kind": "data", "tree": {"key": {"column": "キー"}, "type": {"column": "型"}, "required": {"column": "必須"}, "default": {"column": "既定"}}} -->` で囲み、キー・型・必須・既定・説明の列を持つ表の文書'
         notes: キーは `features.table`・`features.html`・`aliases[].id`・`aliases[].metadata.alias_type.type`。`features`・`aliases[]`・`aliases[].metadata`・`aliases[].metadata.alias_type` の行は無い。型は `bool`・`string`・`a \| b` の値、必須は `features.table` だけ `✓`、既定は `features.table` だけ `true`
       - name: Mock
         description: 正常シナリオと同じ
@@ -994,7 +995,7 @@ scenarios:
       - name: mdmark を読み込むページ
         description: 正常シナリオと同じ
       - name: 階層の表を持つ Markdown
-        description: 正常シナリオ（キーの列を階層で描く）の表のマーカーに `filter=キー:text` を加えた文書
+        description: '正常シナリオ（キーの列を階層で描く）の表のマーカーに `"columns": {"キー": {"filter": {"type": "text"}}}` を加えた文書'
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
@@ -1045,7 +1046,7 @@ scenarios:
       - name: mdmark を読み込むページ
         description: 正常シナリオと同じ
       - name: 見本を結んだ階層の表を持つ Markdown
-        description: 正常シナリオ（キーの列を階層で描く）の表のマーカーに `example=設定の見本` を加え、見出し `設定の見本` の下に `<!-- tabs -->` で囲んだ `最小`・`エイリアス` の 2 つのタブを配置し、それぞれに `yaml` のコードブロックを 1 つ持つ文書
+        description: '正常シナリオ（キーの列を階層で描く）の表のマーカーの `tree` に `"example": {"heading": "設定の見本"}` を加え、見出し `設定の見本` の下に `<!-- tabs -->` で囲んだ `最小`・`エイリアス` の 2 つのタブを配置し、それぞれに `yaml` のコードブロックを 1 つ持つ文書'
         notes: '`最小` の見本は `features.table` だけ、`エイリアス` の見本は `aliases[].id` と `aliases[].metadata.alias_type.type` を持つ'
       - name: Mock
         description: 正常シナリオと同じ
@@ -1075,7 +1076,7 @@ scenarios:
       - name: mdmark を読み込むページ
         description: 正常シナリオと同じ
       - name: 読み込めない指定の階層の表を持つ Markdown
-        description: 表に無い列名の `tree=キー名`・`tree=` の無い `type=型`・文書に無い見出しの `example=見本` を、表のマーカーごとに 1 つずつ持つ 3 つの表の文書
+        description: 表に無い列名の `tree.key.column` の `キー名`・`tree.key` の無い `tree.type`・文書に無い見出しの `tree.example.heading` の `見本` を、表のマーカーごとに 1 つずつ持つ 3 つの表の文書
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
@@ -1084,21 +1085,21 @@ scenarios:
         participant P as 利用側のページ
         participant M as mdmark
         P->>M: 設定と Markdown を指定して描かせる
-        M->>M: 表に無い列名・tree= の無い引数・無い見出しを見つける
+        M->>M: 表に無い列名・必須の tree.key の欠け・無い見出しを見つける
         M-->>P: 表の上に記載の警告、表は読み込めた指定だけで描く
         P-->>U: 警告と表を表示
     expected:
       - 3 つの表の上に、それぞれ読み込めなかった指定を挙げた記載の警告がある
-      - '`tree=` に表に無い列名を指定した表は、階層にせず普通の表で描かれている'
-      - '`tree=` の無い `type=` の表は、型の列をバッジにせず文字のまま出している'
-      - 見出しが無い `example=` の表は、階層では描かれ、見本と表示を切り替えるボタンが無い
+      - '`tree.key.column` に表に無い列名を指定した表は、階層にせず普通の表で描かれている'
+      - '`tree.key` の無い表は、`tree` を適用せず、型の列をバッジにせず文字のまま出している'
+      - 見出しが無い `tree.example` の表は、階層では描かれ、見本と表示を切り替えるボタンが無い
     test: test_error_when_tree_options_invalid
   - name: 正常シナリオ（CSV の表）
     setup:
       - name: mdmark を読み込むページ
         description: バージョンを固定した URL で `dist/index.js` と `dist/index.css` を読み込み、設定を指定して文書を描く HTML
       - name: CSV のコードブロックを持つ Markdown
-        description: '`<!-- table: data -->` 〜 `<!-- /table -->` で、見出しの行 `名前,拠点,金額` と 3 行の値を記載した言語 `csv` のコードブロックを囲み、マーカーの無い言語 `csv` のコードブロックと、同じ中身の言語 `text` のコードブロックも 1 つずつ持つ文書'
+        description: '`<!-- table: {"kind": "data"} -->` 〜 `<!-- /table -->` で、見出しの行 `名前,拠点,金額` と 3 行の値を記載した言語 `csv` のコードブロックを囲み、マーカーの無い言語 `csv` のコードブロックと、同じ中身の言語 `text` のコードブロックも 1 つずつ持つ文書'
         notes: 値の 1 つは `"東京, 本社"` のように引用符で囲んだ区切りを含み、1 つは引用符の中に改行を含む
       - name: Mock
         description: jsDelivr を、ビルドした `dist/` を同じパスで返却する手元の応答に差し替える
@@ -1172,7 +1173,7 @@ scenarios:
         description: 正常シナリオと同じ
         notes: 描く先の要素の幅は 1000px
       - name: 列の少ない表と列の多い表を持つ Markdown
-        description: '`<!-- table: data -->` 〜 `<!-- /table -->` で、名前・数量の 2 列 3 行の表を囲み、続けて同じマーカーで 12 列 3 行の表を囲んだ文書'
+        description: '`<!-- table: {"kind": "data"} -->` 〜 `<!-- /table -->` で、名前・数量の 2 列 3 行の表を囲み、続けて同じマーカーで 12 列 3 行の表を囲んだ文書'
         notes: 12 列の表は、列の最小幅の合計が描く先の要素の幅を超える
       - name: Mock
         description: 正常シナリオと同じ
@@ -1225,7 +1226,7 @@ scenarios:
         description: 正常シナリオと同じ
         notes: 描く先の要素の幅は、表が横にスクロールする幅
       - name: 留めた列と列の並べ替えを持つ Markdown
-        description: '`<!-- table: data +reorder pin=名前 -->` で囲んだ 8 列の表を持つ文書'
+        description: '`<!-- table: {"kind": "data", "features": {"reorder": {}}, "columns": {"名前": {"pinned": true}}} -->` で囲んだ 8 列の表を持つ文書'
         notes: 列は左から `名前`・`型` と続く
       - name: Mock
         description: 正常シナリオと同じ
@@ -1253,7 +1254,7 @@ scenarios:
         description: 正常シナリオと同じ
         notes: 描く先の要素の幅は、表が横にスクロールする幅
       - name: 結合した見出しを持つ Markdown
-        description: '`<!-- table: data header-rows=2 -->` で囲んだ、各列に長い値を持ち描く先の要素からはみ出す表を持つ文書'
+        description: '`<!-- table: {"kind": "data", "header": {"rows": 2}} -->` で囲んだ、各列に長い値を持ち描く先の要素からはみ出す表を持つ文書'
         notes: 1 行目は `名前`・`設定`（`<<` で 3 列にまたがる）・`備考`。2 行目は `名前`・`型`・`既定`・`必須`・`備考`
       - name: Mock
         description: 正常シナリオと同じ
@@ -1277,8 +1278,8 @@ scenarios:
       - name: mdmark を読み込むページ
         description: 正常シナリオと同じ
       - name: 幅を変える表を持つ Markdown
-        description: '`<!-- table: data wide=説明 -->` で、名前・説明・更新日の 3 列 3 行の表を囲み、続けて `<!-- table: data -resize -->` で同じ 3 列の表を囲み、続けて `<!-- table: plain -->` で同じ 3 列の表を囲んだ文書'
-        notes: 説明の列は長い文を持ち、`wide=` で折り返さずに広く取る
+        description: '`<!-- table: {"kind": "data", "columns": {"説明": {"width": {"mode": "nowrap"}}}} -->` で、名前・説明・更新日の 3 列 3 行の表を囲み、続けて `<!-- table: {"kind": "data", "features": {"resize": {"enabled": false}}} -->` で同じ 3 列の表を囲み、続けて `<!-- table: {"kind": "plain"} -->` で同じ 3 列の表を囲んだ文書'
+        notes: 説明の列は長い文を持ち、`width.mode` の `nowrap` で折り返さずに広く取る
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
@@ -1301,8 +1302,8 @@ scenarios:
       - つまみを右へ 80px ドラッグした後、名前の列の幅がドラッグの前より 80px 広く、説明・更新日の列の幅はドラッグの前と同じ
       - ドラッグの後も、名前の列の見出しの `aria-sort` は変わらず、行の並びも変わらない（並べ替えの操作と取り違えない）
       - 説明の列を列の最小幅より狭くなるまでドラッグした後、説明の列の幅は列の最小幅で止まり、説明のセルの文が折り返して出る
-      - ダブルクリックした後、名前の列の幅が描いた直後の幅に戻り、説明の列は `wide=` の幅（折り返さず 1 行で出る幅）に戻る
-      - 2 つ目の `-resize` の表と 3 つ目の `plain` の表の見出しには、つまみが無い
+      - ダブルクリックした後、名前の列の幅が描いた直後の幅に戻り、説明の列は `nowrap` の幅（折り返さず 1 行で出る幅）に戻る
+      - 2 つ目の `features.resize.enabled` を `false` にした表と 3 つ目の `plain` の表の見出しには、つまみが無い
     test: test_normal_when_column_resized
   - name: 正常シナリオ（留めた列の幅を変える）
     setup:
@@ -1341,7 +1342,7 @@ scenarios:
         description: 正常シナリオと同じ
         notes: スマホの画面幅（390px）で、タッチで操作する
       - name: 幅を変える表を持つ Markdown
-        description: '`<!-- table: data -->` で、名前・説明・更新日の 3 列 3 行の表を囲んだ文書'
+        description: '`<!-- table: {"kind": "data"} -->` で、名前・説明・更新日の 3 列 3 行の表を囲んだ文書'
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
@@ -1367,7 +1368,7 @@ scenarios:
       - name: mdmark を読み込むページ
         description: 正常シナリオと同じ
       - name: 幅を変える表を持つ Markdown
-        description: '`<!-- table: data -->` で、名前・説明・更新日の 3 列 3 行の表を囲んだ文書'
+        description: '`<!-- table: {"kind": "data"} -->` で、名前・説明・更新日の 3 列 3 行の表を囲んだ文書'
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
@@ -1399,7 +1400,7 @@ scenarios:
         description: 正常シナリオと同じ
         notes: 画面と描く先の要素の幅は 600px（最終列を畳む幅）
       - name: 最終列の短い表を持つ Markdown
-        description: '`<!-- table: data -->` 〜 `<!-- /table -->` で、名前・状態・説明の 3 列 3 行の表を囲んだ文書'
+        description: '`<!-- table: {"kind": "data"} -->` 〜 `<!-- /table -->` で、名前・状態・説明の 3 列 3 行の表を囲んだ文書'
         notes: 説明はどの行も 600px の幅で 1 行に収まり、描いた直後は最終列を畳まない
       - name: Mock
         description: 正常シナリオと同じ
@@ -1419,7 +1420,7 @@ scenarios:
       - 名前の列を広げて離した後、表が横にスクロールでき、ページ全体は横にスクロールしない
       - 説明の列を狭めて離した後も、説明の列は畳まれず、説明のセルが折り返して出ていて、行に開閉のボタンが無い（列の幅を変えても、最終列を畳むかは変えない）
     test: test_normal_when_column_resized_in_narrow_width
-lead: '文書の作成者が `<!-- table: 種類 +機能 -機能 -->` 〜 `<!-- /table -->` で表を囲み、読者が描かれた表を見出し行を見ながらページのスクロールで読み込み、列で並べ替え・絞り込み・ピン止めし、閉じた表を開き、表と行の URL をコピーする。'
+lead: '文書の作成者が `<!-- table: {JSON のオブジェクト} -->` 〜 `<!-- /table -->` で表を囲み、読者が描かれた表を見出し行を見ながらページのスクロールで読み込み、列で並べ替え・絞り込み・ピン止めし、閉じた表を開き、表と行の URL をコピーする。'
 issue: 4
 primary_actor: 読者
 stakeholders:

@@ -7,7 +7,7 @@ scenarios:
       - name: mdmark を読み込むページ
         description: バージョンを固定した URL で `dist/index.js` と `dist/index.css` を読み込み、設定を指定して文書を描く HTML
       - name: 閉じたセクションを持つ Markdown
-        description: '`## 概要` と段落、`## 補足` とその直後の `<!-- section: closed -->` と段落を持つ文書'
+        description: '`## 概要` と段落、`## 補足` とその直後の `<!-- section: {"open": false} -->` と段落を持つ文書'
       - name: Mock
         description: jsDelivr を、ビルドした `dist/` を同じパスで返却する手元の応答に差し替える
     flow: |-
@@ -33,7 +33,7 @@ scenarios:
         description: 正常シナリオと同じ
         notes: ページの URL の末尾に `#注意` を付けて開く
       - name: 閉じたセクションの中に見出しを持つ Markdown
-        description: '`## 補足` とその直後の `<!-- section: closed -->`、そのセクションの中の `### 注意` と段落を持つ文書'
+        description: '`## 補足` とその直後の `<!-- section: {"open": false} -->`、そのセクションの中の `### 注意` と段落を持つ文書'
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
@@ -53,7 +53,7 @@ scenarios:
       - name: mdmark を読み込むページ
         description: 正常シナリオと同じ
       - name: 行の詳細を持つ Markdown
-        description: '3 行の表と、その直後の `<!-- row-detail: 2 -->` 〜 `<!-- /row-detail -->` で囲んだ段落とリストを持つ文書'
+        description: '3 行の表と、その直後の `<!-- row-detail: {"at": 2} -->` 〜 `<!-- /row-detail -->` で囲んだ段落とリストを持つ文書'
         notes: 行の位置は見出し行を除いて 1 から数える
       - name: Mock
         description: 正常シナリオと同じ
@@ -71,12 +71,12 @@ scenarios:
       - 開閉を押した後、表の 2 行目の直後に詳細の段落とリストを持つ行があり、ボタンの `aria-expanded` が `true`
       - 表の後に詳細の段落が残っていない
     test: test_normal_when_row_detail
-  - name: 正常シナリオ（知らない開閉の指定）
+  - name: 異常シナリオ（型の合わない開閉の指定）
     setup:
       - name: mdmark を読み込むページ
         description: 正常シナリオと同じ
-      - name: 知らない指定を記載した Markdown
-        description: '`## 補足` とその直後の `<!-- section: hidden -->` と段落を持つ文書'
+      - name: 型の合わない指定を記載した Markdown
+        description: '`## 補足` とその直後の `<!-- section: {"open": "hidden"} -->` と段落を持つ文書'
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
@@ -85,19 +85,19 @@ scenarios:
         participant P as 利用側のページ
         participant M as mdmark
         P->>M: 設定と Markdown を指定して描かせる
-        M->>M: 知らない開閉の指定をスキップする
-        M-->>P: 開いたセクションを描く
-        P-->>U: セクションを表示
+        M->>M: open の型が合わない指定を適用しない
+        M-->>P: 記載の警告と、開いたセクションを描く
+        P-->>U: 記載の警告とセクションを表示
     expected:
-      - 見出しの下に記載の警告が無い
+      - 見出しの下に、`open` には真偽（`true`・`false`）を記載することを記載した記載の警告がある
       - '`補足` の段落が表示されている'
-    test: test_normal_when_unknown_section_value
+    test: test_error_when_section_open_invalid
   - name: 異常シナリオ（行の位置が表に無い）
     setup:
       - name: mdmark を読み込むページ
         description: 正常シナリオと同じ
       - name: 範囲外の行を指す Markdown
-        description: '3 行の表と、その直後の `<!-- row-detail: 5 -->` 〜 `<!-- /row-detail -->` で囲んだ段落を持つ文書'
+        description: '3 行の表と、その直後の `<!-- row-detail: {"at": 5} -->` 〜 `<!-- /row-detail -->` で囲んだ段落を持つ文書'
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
@@ -120,7 +120,7 @@ scenarios:
         description: 正常シナリオと同じ
         notes: 画面と描く先の要素の幅は 390px
       - name: 最終列の長い表と行の詳細を持つ Markdown
-        description: '名前・状態・説明の 3 列 3 行の表と、その直後の `<!-- row-detail: 2 -->` 〜 `<!-- /row-detail -->` で囲んだ段落を持つ文書'
+        description: '名前・状態・説明の 3 列 3 行の表と、その直後の `<!-- row-detail: {"at": 2} -->` 〜 `<!-- /row-detail -->` で囲んだ段落を持つ文書'
         notes: 最終列の説明は、どの行も 390px の幅で 1 行に収まらない長さ
       - name: Mock
         description: 正常シナリオと同じ
@@ -144,7 +144,7 @@ scenarios:
       - name: mdmark を読み込むページ
         description: 正常シナリオと同じ
       - name: H1 のセクションを持つ Markdown
-        description: '`# 手引き` と段落、`# 付録` とその直後の `<!-- section: closed -->` と段落を持つ文書'
+        description: '`# 手引き` と段落、`# 付録` とその直後の `<!-- section: {"open": false} -->` と段落を持つ文書'
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
@@ -167,7 +167,7 @@ scenarios:
       - name: mdmark を読み込むページ
         description: 正常シナリオと同じ
       - name: 入れ子のセクションを持つ Markdown
-        description: '`# 手引き`、`## 概要` と段落、`## 補足` とその直後の `<!-- section: closed -->`、そのセクションの中の `### 注意` とその直後の `<!-- section: closed -->` と段落を持つ文書'
+        description: '`# 手引き`、`## 概要` と段落、`## 補足` とその直後の `<!-- section: {"open": false} -->`、そのセクションの中の `### 注意` とその直後の `<!-- section: {"open": false} -->` と段落を持つ文書'
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
@@ -191,7 +191,7 @@ scenarios:
       - name: mdmark を読み込むページ
         description: 正常シナリオと同じ
       - name: 入れ子の閉じたセクションを持つ Markdown
-        description: '`## 概要` と段落、`## 補足` とその直後の `<!-- section: closed -->`、そのセクションの中の `### 注意` とその直後の `<!-- section: closed -->`、さらにその中の `#### 例` とその直後の `<!-- section: closed -->` と段落を持つ文書'
+        description: '`## 概要` と段落、`## 補足` とその直後の `<!-- section: {"open": false} -->`、そのセクションの中の `### 注意` とその直後の `<!-- section: {"open": false} -->`、さらにその中の `#### 例` とその直後の `<!-- section: {"open": false} -->` と段落を持つ文書'
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
@@ -214,8 +214,7 @@ scenarios:
       - name: mdmark を読み込むページ
         description: 正常シナリオと同じ
       - name: details の範囲を持つ Markdown
-        description: '`<!-- details: 補足の手順 -->` 〜 `<!-- /details -->` で段落とリストを囲んだ範囲と、開いた状態を指定した `<!-- details: 実行の例 -->` 〜 `<!-- /details -->` で段落を囲んだ範囲を並べた文書'
-        notes: '`open` の記載方法はインターフェース定義で決める'
+        description: '`<!-- details: {"title": "補足の手順"} -->` 〜 `<!-- /details -->` で段落とリストを囲んだ範囲と、開いた状態を指定した `<!-- details: {"title": "実行の例", "open": true} -->` 〜 `<!-- /details -->` で段落を囲んだ範囲を並べた文書'
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
@@ -239,7 +238,7 @@ scenarios:
       - name: mdmark を読み込むページ
         description: 正常シナリオと同じ
       - name: 閉じのマーカーの無い Markdown
-        description: '`<!-- details: 補足 -->` の後に段落を持ち、`<!-- /details -->` を持たない文書'
+        description: '`<!-- details: {"title": "補足"} -->` の後に段落を持ち、`<!-- /details -->` を持たない文書'
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
@@ -255,7 +254,7 @@ scenarios:
       - マーカーの場所に、閉じのマーカー `<!-- /details -->` が無いことを記載した記載の警告がある
       - 段落が折りたたまれずに表示されている
     test: test_error_when_details_unclosed
-lead: '読者が、見出し（h1〜h4）のセクションと、表の行の下に出す行の詳細を開閉し、全てのセクションや入れ子のセクションをまとめて開閉する。文書の作成者は見出しの直後の `<!-- section: closed -->` でセクションを閉じた状態で始め、表の後の `<!-- row-detail: 行の位置 -->` 〜 `<!-- /row-detail -->` で行の詳細を記載する。'
+lead: '読者が、見出し（h1〜h4）のセクションと、表の行の下に出す行の詳細を開閉し、全てのセクションや入れ子のセクションをまとめて開閉する。文書の作成者は見出しの直後の `<!-- section: {"open": false} -->` でセクションを閉じた状態で始め、表の後の `<!-- row-detail: {"at": 行の位置} -->` 〜 `<!-- /row-detail -->` で行の詳細を記載する。'
 issue: 4
 primary_actor: 読者
 stakeholders:
@@ -269,5 +268,5 @@ success_guarantee: |-
   セクションと行の詳細がマーカーのとおりの開閉で始まり、押すたびに開閉し、開閉の状態がボタンの `aria-expanded` に出る。
 
   すべて展開・すべて折りたたむは文書の全てのセクションを、Shift を押しながらの開閉はそのセクションと中の入れ子のセクションを同じ状態にする。
-minimal_guarantee: 読み込めないマーカーを記載しても、セクションは開いた状態、行の詳細は記載した場所の本文として描かれる。行の位置が表に無い行の詳細と、閉じのマーカーが無い details には記載の警告が出て、セクションの知らない開閉の指定には警告を出さない。
+minimal_guarantee: 読み込めないマーカーを記載しても、セクションは開いた状態、行の詳細は記載した場所の本文として描かれる。行の位置が表に無い行の詳細、型の合わない開閉の指定と、閉じのマーカーが無い details には記載の警告が出る。知らないキーには警告を出さない。
 test_file: tests/e2e/単一ユースケース/セクションと行の詳細を開閉する.spec.ts

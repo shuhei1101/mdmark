@@ -301,6 +301,64 @@ scenarios:
       - 設定の `version` が目標のバージョン
       - 終了コードが 0
     test: test_normal_when_aliases_rows
+  - name: 正常シナリオ（文書のマーカーを JSON の記載へ書き換える）
+    setup:
+      - name: 今の書き方のマーカーを持つフォルダ
+        description: |-
+          手元のバージョンを 1 つ前のマイナーバージョンにした設定・索引と、文書 2 つを持つフォルダ。
+          1 つ目の文書は `<!-- table: data +count total=数量:sum filter=名前,更新日:date closed -->` 〜 `<!-- /table -->` で囲んだ表と、`<!-- code: title=app.ts lines highlight=2,4-6 -->` の直後のコードブロックを持つ。
+          2 つ目の文書は `<!-- details: 実行の例 open -->` 〜 `<!-- /details -->` の範囲、`<!-- fig: arch -->`、`<!-- include: src/app.ts#L3-L5 -->`、引数の無い `<!-- toc -->` と、`markdown` のコードブロックの中に記載した `<!-- section: closed -->` を持つ
+        notes: 表の `+total` が無いため `total=` は今の実装が適用していない記載。それ以外の記載は今の実装が適用している
+      - name: Mock
+        description: 呼んだ CLI のバージョンを目標のバージョンにし、リポジトリの `migrations/next/` の移行の手順を目標のバージョンの手順として使用する
+        notes: '`--yes` を付ける'
+    flow: |-
+      sequenceDiagram
+        actor W as 文書の作成者
+        participant C as mdmark CLI
+        participant F as フォルダ
+        W->>C: mdmark upgrade --yes
+        C->>F: 書き換えうるファイルをコピーのフォルダへ写す
+        C->>F: 文書のマーカーの今の書き方を、今の実装が適用している設定だけの JSON のオブジェクトへ書き換える
+        C->>C: mdmark check と同じ点検を実行する（ずれ 0 件）
+        C->>F: 設定の version を目標のバージョンにする
+        C-->>W: 適用した手順・移行の報告・コピーのフォルダの場所・終了コード 0
+    expected:
+      - '表のマーカーが `<!-- table: {"kind": "data", "features": {"count": {}}, "columns": {"名前": {"filter": {}}, "更新日": {"filter": {"type": "date"}}}, "collapse": {"open": false}} -->` になり、`total` を持たない'
+      - 'code のマーカーが `<!-- code: {"title": "app.ts", "lines": {}, "highlight": [2, {"from": 4, "to": 6}]} -->` になる'
+      - 'details・fig・include のマーカーが `{"title": "実行の例", "open": true}`・`{"id": "arch"}`・`{"path": "src/app.ts", "lines": {"from": 3, "to": 5}}` の JSON のオブジェクトになる'
+      - '`<!-- toc -->`・閉じのマーカー・コードブロックの中の `<!-- section: closed -->`・マーカーの外の本文が変わっていない'
+      - 出力の移行の報告に、適用されていない `total=数量:sum` の記載が、文書のファイルと行と理由（`+total` が無い）つきで挙がる
+      - 設定の `version` が目標のバージョンで、終了コードが 0
+    test: test_normal_when_document_marks
+  - name: 正常シナリオ（書き換えない記載を移行の報告に挙げる）
+    setup:
+      - name: 書き換えない記載を持つフォルダ
+        description: |-
+          手元のバージョンを 1 つ前のマイナーバージョンにした設定・索引と、文書 1 つを持つフォルダ。
+          文書は、拡張のマーカーの今の書き方の記載 `<!-- greet: world -->`、設定の `libraries` のマーカーの今の書き方の記載、読み込めない記載 `<!-- table: data filter=名前:range -->` 〜 `<!-- /table -->`、今の書き方の `<!-- section: closed -->` を持つ。設定の `extensions` と `libraries` にそれぞれのマーカーを記載する
+      - name: Mock
+        description: 正常シナリオ（文書のマーカーを JSON の記載へ書き換える）と同じ
+        notes: '`--yes` を付ける'
+    flow: |-
+      sequenceDiagram
+        actor W as 文書の作成者
+        participant C as mdmark CLI
+        participant F as フォルダ
+        W->>C: mdmark upgrade --yes
+        C->>F: 書き換えうるファイルをコピーのフォルダへ写す
+        C->>F: 書き換えられるマーカーだけを JSON のオブジェクトへ書き換える
+        C->>C: mdmark check と同じ点検を実行する（残った今の書き方のマーカーは移行の報告に挙げたもので、点検の失敗に数えない）
+        C->>F: 設定の version を目標のバージョンにする
+        C-->>W: 適用した手順・移行の報告・コピーのフォルダの場所・終了コード 0
+    expected:
+      - '`<!-- section: closed -->` が `<!-- section: {"open": false} -->` に書き換わっている'
+      - '表のマーカーが `<!-- table: {"kind": "data"} -->` になり、読み込めない `filter=名前:range` を持たない'
+      - 拡張のマーカーと `libraries` のマーカーは書き換わっていない
+      - 出力の移行の報告に、拡張のマーカーと `libraries` のマーカーが引数をキーへ移す対応を持たない理由で、`filter=名前:range` が読み込めない理由で、それぞれ文書のファイルと行つきで挙がる
+      - 適用した後の点検は、移行の報告に挙げた今の書き方のマーカーを失敗に数えず、ほかのずれが 0 件で通る
+      - 設定の `version` が目標のバージョンで、終了コードが 0
+    test: test_normal_when_unconverted_marks
   - name: 異常シナリオ（エイリアスの元の行の種類が 1 つに決まらない）
     setup:
       - name: 種類を混ぜた行を持つフォルダ

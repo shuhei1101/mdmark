@@ -30,7 +30,7 @@ scenarios:
       - name: mdmark を読み込むページ
         description: 正常シナリオと同じ。画面の幅は 1280px
       - name: ギャラリーの Markdown
-        description: '`<!-- fig: shots -->` の後ろに、`<!-- gallery: cols=3 -->` 〜 `<!-- /gallery -->` で 6 つの画像を囲んだ文書'
+        description: '`<!-- fig: {"id": "shots"} -->` の後ろに、`<!-- gallery: {"columns": 3} -->` 〜 `<!-- /gallery -->` で 6 つの画像を囲んだ文書'
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-

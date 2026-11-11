@@ -109,7 +109,7 @@ scenarios:
       - name: 明るい配色に固定したプレビュー
         description: VS Code のテーマが Default Light Modern で、`mdmark.preview.theme` を `light` にしてプレビューを開いた状態
       - name: ダークを指定した Markdown
-        description: '先頭の行に `<!-- page: scheme=dark -->` を持つ文書をエディタで開いている'
+        description: '先頭の行に `<!-- page: {"scheme": "dark"} -->` を持つ文書をエディタで開いている'
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-

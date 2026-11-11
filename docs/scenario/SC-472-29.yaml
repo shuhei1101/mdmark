@@ -7,7 +7,7 @@ scenarios:
       - name: mdmark を読み込むページ
         description: バージョンを固定した URL で `dist/index.js` と `dist/index.css` を読み込み、設定を指定して文書を描く HTML
       - name: ビューのマーカーを持つ Markdown
-        description: '`<!-- view: group=状態 -->` 〜 `<!-- /view -->` で、タイトル・状態・担当の列と 5 行を持つ表を囲んだ文書'
+        description: '`<!-- view: {"board": {"group": {"column": "状態"}}} -->` 〜 `<!-- /view -->` で、タイトル・状態・担当の列と 5 行を持つ表を囲んだ文書'
         notes: 状態の列の値は上から `未着手`・`進行中`・`未着手`・`完了`・`進行中`
       - name: Mock
         description: jsDelivr を、ビルドした `dist/` を同じパスで返却する手元の応答に差し替える
@@ -24,7 +24,7 @@ scenarios:
         P-->>U: ボード表示
     expected:
       - ボード表示に、表に出た順の `未着手`・`進行中`・`完了` の 3 つの列があり、列の見出しに値ごとのアイコン・値・項目の数（2・2・1）が出る。アイコンは既定の対応から該当し、マーカーの引数で値ごとに上書きできる
-      - 各列の項目は表の行の順で並び、項目に先頭の列（タイトル）の値と、残りの列（担当）の値が出る。`group=` の列（状態）の値は項目に出ない
+      - 各列の項目は表の行の順で並び、項目に先頭の列（タイトル）の値と、残りの列（担当）の値が出る。`board.group` の列（状態）の値は項目に出ない
       - 表形式を選ぶと、5 行の項目が表の列の順で並び、ボード表示は隠れる
       - 切り替えの今の選択が `aria-pressed` でスクリーンリーダーに伝えられる
       - ビューの前後にマーカーの文字が出ていない
@@ -34,7 +34,7 @@ scenarios:
       - name: mdmark を読み込むページ
         description: 正常シナリオと同じ
       - name: 表形式で開く Markdown
-        description: '`<!-- view: group=状態 default=table -->` 〜 `<!-- /view -->` で、正常シナリオと同じ表を囲んだ文書'
+        description: '`<!-- view: {"board": {"group": {"column": "状態"}}, "initial": "table"} -->` 〜 `<!-- /view -->` で、正常シナリオと同じ表を囲んだ文書'
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
@@ -74,7 +74,7 @@ scenarios:
       - name: mdmark を読み込むページ
         description: 正常シナリオと同じ
       - name: 表に無い列を指す Markdown
-        description: '`<!-- view: group=優先度 -->` 〜 `<!-- /view -->` で、正常シナリオと同じ表（優先度の列を持たない）を囲んだ文書'
+        description: '`<!-- view: {"board": {"group": {"column": "優先度"}}} -->` 〜 `<!-- /view -->` で、正常シナリオと同じ表（優先度の列を持たない）を囲んだ文書'
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
@@ -96,7 +96,7 @@ scenarios:
       - name: mdmark を読み込むページ
         description: 正常シナリオと同じ
       - name: 表の無い範囲の Markdown
-        description: '`<!-- view: group=状態 -->` 〜 `<!-- /view -->` で、段落だけを囲んだ文書'
+        description: '`<!-- view: {"board": {"group": {"column": "状態"}}} -->` 〜 `<!-- /view -->` で、段落だけを囲んだ文書'
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
@@ -109,7 +109,7 @@ scenarios:
       - 範囲の上に、範囲に表が無いことを記載した記載の警告がある
       - 範囲の段落がそのまま描かれ、ビューの切り替えが出ない
     test: test_error_when_no_table
-lead: '文書の作成者が `<!-- view: group=列名 -->` 〜 `<!-- /view -->` で項目の表を囲み、読者が描かれた項目をボード表示と表形式のビューで切り替えて確認する。'
+lead: '文書の作成者が `<!-- view: {"board": {"group": {"column": "列名"}}} -->` 〜 `<!-- /view -->` で項目の表を囲み、読者が描かれた項目をボード表示と表形式のビューで切り替えて確認する。'
 issue: 8
 primary_actor: 読者
 stakeholders:
@@ -121,6 +121,6 @@ trigger: 読者が、ビューのマーカーを持つ文書を描いたペー�
 preconditions:
   - ページがバージョンを固定した URL で mdmark の JavaScript と CSS を読み込み、`mount` で文書を描いている
   - ビューの機能（`views`）がオン（既定）
-success_guarantee: マーカーで囲んだ表の行が項目になり、`group=` の列の値ごとの列に並んだボード表示で描かれる。ビューの上の切り替えで表形式のビューと行き来できる。
+success_guarantee: マーカーで囲んだ表の行が項目になり、`board.group` の列の値ごとの列に並んだボード表示で描かれる。ビューの上の切り替えで表形式のビューと行き来できる。
 minimal_guarantee: マーカーに読み込めない指定があっても、表は描かれる。表に無い列などの知っているキーの誤った値には範囲の上に記載の警告が出て、知らないキーは警告を出さずにスキップする。
 test_file: tests/e2e/単一ユースケース/ビューで項目を確認する.spec.ts

@@ -7,7 +7,7 @@ scenarios:
       - name: mdmark を読み込むページ
         description: バージョンを固定した URL で `dist/index.js` と `dist/index.css` を読み込み、設定を指定して文書を描く HTML
       - name: 図表のマーカーを持つ Markdown
-        description: '`<!-- fig: arch -->` の後に画像 1 つの段落、`<!-- fig: flow -->` の後に画像 1 つの段落、`<!-- fig: list -->` の後に表を持ち、本文に `[図](#fig-flow)` と `[表](#fig-list)` のリンクを持つ文書'
+        description: '`<!-- fig: {"id": "arch"} -->` の後に画像 1 つの段落、`<!-- fig: {"id": "flow"} -->` の後に画像 1 つの段落、`<!-- fig: {"id": "list"} -->` の後に表を持ち、本文に `[図](#fig-flow)` と `[表](#fig-list)` のリンクを持つ文書'
       - name: Mock
         description: jsDelivr を、ビルドした `dist/` を同じパスで返却する手元の応答に差し替える。画像は手元の応答で返却する
     flow: |-
@@ -31,7 +31,7 @@ scenarios:
       - name: mdmark を読み込むページ
         description: 正常シナリオと同じ
       - name: 無い ID を指す Markdown
-        description: '`<!-- fig: arch -->` の後に画像を持ち、本文に `[図](#fig-missing)` のリンクを持つ文書'
+        description: '`<!-- fig: {"id": "arch"} -->` の後に画像を持ち、本文に `[図](#fig-missing)` のリンクを持つ文書'
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
@@ -53,7 +53,7 @@ scenarios:
       - name: mdmark を読み込むページ
         description: 正常シナリオと同じ
       - name: 同じ ID を 2 回書いた Markdown
-        description: '`<!-- fig: arch -->` の後に画像を持つ段落を 2 つ持つ文書'
+        description: '`<!-- fig: {"id": "arch"} -->` の後に画像を持つ段落を 2 つ持つ文書'
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
@@ -75,7 +75,7 @@ scenarios:
       - name: mdmark を読み込むページ
         description: 正常シナリオと同じ
       - name: ギャラリーとキャプションを持つ Markdown
-        description: '`<!-- fig: shots -->` の後ろに `<!-- gallery: cols=2 -->` 〜 `<!-- /gallery -->` で 2 つの画像を囲んだ範囲、`<!-- fig: arch -->` の後ろに title `構成` を持つ画像だけの段落、マーカーの無い title `写真` を持つ画像だけの段落を並べ、本文に `[図](#fig-shots)` のリンクを持つ文書'
+        description: '`<!-- fig: {"id": "shots"} -->` の後ろに `<!-- gallery: {"columns": 2} -->` 〜 `<!-- /gallery -->` で 2 つの画像を囲んだ範囲、`<!-- fig: {"id": "arch"} -->` の後ろに title `構成` を持つ画像だけの段落、マーカーの無い title `写真` を持つ画像だけの段落を並べ、本文に `[図](#fig-shots)` のリンクを持つ文書'
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
@@ -93,7 +93,7 @@ scenarios:
       - マーカーの無い画像のキャプションが `写真` だけで、番号を持たない
       - 本文のリンクの文字が `図 1` になっている
     test: test_normal_when_gallery_and_caption
-lead: '文書の作成者が図・表の直前に `<!-- fig: ID -->` を記載すると、mdmark が種類ごとの通し番号（`図 1`・`表 1`）を付け、本文の `#fig-ID` へのリンクの文字をその番号にする。'
+lead: '文書の作成者が図・表の直前に `<!-- fig: {"id": "ID"} -->` を記載すると、mdmark が種類ごとの通し番号（`図 1`・`表 1`）を付け、本文の `#fig-ID` へのリンクの文字をその番号にする。'
 issue: 4
 primary_actor: 文書の作成者
 stakeholders:
