@@ -191,30 +191,28 @@ use_cases:
     depends_on: []
   - kind: composite
     scenario: docs/scenario/SC-472-95.yaml
-    impact: changed
-    detail: 見本の文書の取り込み・外部ライブラリのマーカーを JSON のオブジェクトで記載し、点検してまとめる
-    depends_on:
-      - docs/scenario/SC-472-12.yaml
-      - docs/scenario/SC-472-46.yaml
-      - docs/scenario/SC-472-78.yaml
+    impact: run_only
+    detail: 見本の文書の取り込み・外部ライブラリのマーカーは書き方を指定しておらず記載は変わらない。JSON の記載で点検してまとめられることを確かめる
+    depends_on: []
   - kind: composite
     scenario: docs/scenario/SC-472-93.yaml
-    impact: changed
-    detail: 雛形に追加した固有の部品の拡張が、マーカーの JSON のオブジェクトを options で受け取る
-    depends_on:
-      - docs/scenario/SC-472-44.yaml
-      - docs/scenario/SC-472-83.yaml
+    impact: run_only
+    detail: 固有の部品の拡張は引数の受け取り方を指定しておらず記載は変わらない。拡張が options を受け取るようになっても同じに描かれることを確かめる
+    depends_on: []
   - kind: composite
     scenario: docs/scenario/SC-472-90.yaml
-    impact: following
-    detail: ビューのマーカーと絞り込みの記載が JSON のオブジェクトになることに追随する
-    depends_on:
-      - docs/scenario/SC-472-29.yaml
-      - docs/scenario/SC-472-74.yaml
+    impact: changed
+    detail: 見本のビューの文書の絞り込みを、今の書き方の記載ではなく担当の列に付ける設定として記載する
+    depends_on: []
   - kind: composite
     scenario: docs/scenario/SC-472-87.yaml
     impact: run_only
     detail: map の図の記載と点検が、マーカーごとの JSON Schema の検証へ寄せた後も同じに動くことを確かめる
+    depends_on: []
+  - kind: composite
+    scenario: docs/scenario/SC-477-1.yaml
+    impact: new
+    detail: 今の書き方のマーカーを点検の案内で移行の手順へかけ、移行の報告に挙がった記載を手で修正して、描画を変えずに JSON の記載で書き出す業務フローを新設する
     depends_on: []
 docs:
   - page: docs/guide/記法.md
