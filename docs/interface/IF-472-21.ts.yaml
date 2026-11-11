@@ -195,7 +195,7 @@ flows:
     summary: 開いたまま設定ファイルにまだ CSP に無い origin の `libraries` を追加して保存すると、HTML をもう一度入れてそのモジュールを読み込む
     setup:
       - name: 見本のワークスペース
-        description: '`<!-- my-chart: a -->` のマーカーを持つ `guide.md` と、`libraries` を持たない `mdmark.config.yaml` を配置したフォルダ。プレビューを開いて `rendered` を受けてある'
+        description: '`<!-- my-chart: {"label": "a"} -->` のマーカーを持つ `guide.md` と、`libraries` を持たない `mdmark.config.yaml` を配置したフォルダ。プレビューを開いて `rendered` を受けてある'
       - name: Mock
         description: 配布物とタグ一覧の代役の配信とは別の origin（別のポート）で、`draw` がマーカーの場所に `data-drawn` を付けるモジュール `my-chart.js` を配る手元のサーバー
     flow: |-

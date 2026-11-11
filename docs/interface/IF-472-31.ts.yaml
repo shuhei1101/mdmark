@@ -34,7 +34,7 @@ flows:
       - name: 配布物を読み込む Node の処理
         description: 正常系と同じ
       - name: 用語集のページを持つ索引と本文
-        description: '文書 `glossary`（`path` は `用語集.md`）と `guide` を持つ索引。`用語集.md` の本文が `<!-- glossary: term=用語 aliases=別名 meaning=意味 avoid=やめた言い方 -->` で、用語 `マーカー`（別名 `マーク、オン・オフのマーカー`、やめた言い方 `しるし`）の行を持つ表を囲む'
+        description: '文書 `glossary`（`path` は `用語集.md`）と `guide` を持つ索引。`用語集.md` の本文が `<!-- glossary: {"term": {"column": "用語"}, "aliases": {"column": "別名"}, "meaning": {"column": "意味"}, "avoid": {"column": "やめた言い方"}} -->` で、用語 `マーカー`（別名 `マーク、オン・オフのマーカー`、やめた言い方 `しるし`）の行を持つ表を囲む'
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
@@ -149,7 +149,7 @@ request:
     required: false
     default: なし（全てのキーに既定を適用する）
     location: argument
-    description: '`mount` の `opts.config` と同じ。読み込むのは `features`（文書ごとの `<!-- features: … -->` を重ねて、`backlinks`・`glossary` がオフの文書を算出から除外する）だけ'
+    description: '`mount` の `opts.config` と同じ。読み込むのは `features`（文書ごとの `<!-- features: {…} -->` を重ねて、`backlinks`・`glossary` がオフの文書を算出から除外する）だけ'
 request_example: |-
   ```json
   {

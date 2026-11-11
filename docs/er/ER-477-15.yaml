@@ -1,0 +1,37 @@
+id: ER-477-15
+visibility: internal
+title: 'ER 図: 機能のオン・オフのマーカーの設定'
+lead: '`<!-- features: {JSON のオブジェクト} -->` の名前の後ろに記載する、機能のオン・オフのマーカーの設定の構造。'
+tables:
+- name: features
+  title: 機能のオン・オフ
+  datastore: JSON
+  access: 全件
+  scale: ~1
+  summary: 機能のオン・オフのマーカー 1 つの設定
+  columns:
+  - name: '{機能}'
+    title: 文書の機能を `true` でオン、`false` でオフにする
+    type: boolean
+    description: 文書の機能を `true` でオン、`false` でオフにする。キーは設定の `features` の機能名（`side-toc`・`back-to-top` など）
+    example: 'false'
+  description: '`features` を複数記載したときは、記載した順に重ね、同じ機能は後の値を使用する。'
+notes:
+  見本: |-
+    ```html
+    <!-- features: {"side-toc": false, "back-to-top": false} -->
+    ```
+  今の引数との対応: |-
+    | 今の引数 | JSON のキー |
+    | --- | --- |
+    | `+機能`・`-機能` | `{機能}` の `true`・`false` |
+refs:
+- ER-477-1#
+decisions:
+- D-312
+- D-334
+- D-336
+- D-337
+- D-338
+- D-344
+- D-345

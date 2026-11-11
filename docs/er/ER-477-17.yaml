@@ -1,0 +1,88 @@
+id: ER-477-17
+visibility: internal
+title: 'ER 図: ビューのマーカーの設定'
+lead: '`<!-- view: {JSON のオブジェクト} -->` の名前の後ろに記載する、ビューのマーカーの設定の構造。'
+tables:
+- name: view
+  title: ビュー
+  datastore: JSON
+  access: 全件
+  scale: ~1
+  summary: ビューのマーカー 1 つの設定
+  columns:
+  - name: board
+    title: ボード表示
+    type: object
+    description: ボード表示。省くと表形式だけを描く
+    example: '{"group": {"column": "状態"}}'
+  - name: board.group
+    title: ボード表示で列に分ける列
+    type: object
+    description: ボード表示で列に分ける列
+    not_null: true
+    example: '{"column": "状態"}'
+  - name: board.group.column
+    title: 列の見出しの文字
+    type: string
+    description: 列の見出しの文字
+    not_null: true
+    example: '"状態"'
+  - name: board.values
+    title: '`group` の列の値ごとの設定'
+    type: object
+    description: '`group` の列の値ごとの設定。キーは `group` の列の値'
+    example: '{"完了": {"icon": "inbox"}}'
+  - name: board.values.{値}.icon
+    title: ボードの列の見出しのアイコンの名前
+    type: string
+    description: ボードの列の見出しのアイコンの名前
+    enum_values: '`circle-dashed` / `circle-dot` / `circle-pause` / `circle-check` / `circle-x` / `circle` / `inbox` / `archive` / `clock` / `flag` / `star` / `bug` / `eye` / `lock` / `zap` / `ban`'
+    example: '"check"'
+  - name: initial
+    title: 描いた直後に出すビュー
+    type: string
+    description: 描いた直後に出すビュー。省くと、`board` があれば `"board"`
+    enum_values: '`board` / `table`'
+    example: '"table"'
+  - name: columns
+    title: 表形式のビューの列ごとの設定
+    type: object
+    description: 表形式のビューの列ごとの設定。キーは表の見出しの文字。記載できるのは `filter` だけ
+    example: '{"担当": {"filter": {}}}'
+  - name: columns.{列名}.filter
+    title: この列に絞り込みを付ける
+    type: object
+    description: この列に絞り込みを付ける
+    example: '{"type": "text"}'
+  - name: columns.{列名}.filter.type
+    title: 絞り込みの種類
+    type: string
+    description: 絞り込みの種類。省くと `"select"`
+    default: '`"select"`'
+    enum_values: '`select` / `text` / `date`'
+    example: '"text"'
+notes:
+  見本: |-
+    ```html
+    <!-- view: {
+      "board": {"group": {"column": "状態"}, "values": {"完了": {"icon": "inbox"}}},
+      "initial": "board",
+      "columns": {"担当": {"filter": {}}, "タイトル": {"filter": {"type": "text"}}}
+    } -->
+    ```
+  今の引数との対応: |-
+    | 今の引数 | JSON のキー |
+    | --- | --- |
+    | `group=列名`・`icons=値:アイコンの名前` | `board.group.column`・`board.values.{値}.icon` |
+    | `default=board`・`default=table` | `initial` |
+    | `filter=列名:種類` | `columns.{列名}.filter.type` |
+refs:
+- ER-477-1#
+decisions:
+- D-312
+- D-334
+- D-336
+- D-337
+- D-338
+- D-344
+- D-345

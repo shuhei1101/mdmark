@@ -1,0 +1,43 @@
+id: ER-477-8
+visibility: internal
+title: 'ER 図: details の範囲のマーカーの設定'
+lead: '`<!-- details: {JSON のオブジェクト} -->` の名前の後ろに記載する、details の範囲のマーカーの設定の構造。'
+tables:
+- name: details
+  title: details の範囲
+  datastore: JSON
+  access: 全件
+  scale: ~1
+  summary: details の範囲のマーカー 1 つの設定
+  columns:
+  - name: title
+    title: 開閉するタイトル
+    type: string
+    description: 開閉するタイトル。行内の Markdown を記載できる。省くと `詳細`
+    default: '`詳細`'
+    example: '"補足の手順"'
+  - name: open
+    title: 開いた状態で始めるか
+    type: boolean
+    description: 開いた状態で始めるか。省くと `false`
+    default: '`false`'
+    example: 'true'
+notes:
+  見本: |-
+    ```html
+    <!-- details: {"title": "補足の手順", "open": true} -->
+    ```
+  今の引数との対応: |-
+    | 今の引数 | JSON のキー |
+    | --- | --- |
+    | タイトル・`open` | `title`・`open` の `true` |
+refs:
+- ER-477-1#
+decisions:
+- D-312
+- D-334
+- D-336
+- D-337
+- D-338
+- D-344
+- D-345

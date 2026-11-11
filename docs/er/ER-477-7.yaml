@@ -1,0 +1,37 @@
+id: ER-477-7
+visibility: internal
+title: 'ER 図: セクションの開閉のマーカーの設定'
+lead: '`<!-- section: {JSON のオブジェクト} -->` の名前の後ろに記載する、セクションの開閉のマーカーの設定の構造。'
+tables:
+- name: section
+  title: セクションの開閉
+  datastore: JSON
+  access: 全件
+  scale: ~1
+  summary: セクションの開閉のマーカー 1 つの設定
+  columns:
+  - name: open
+    title: セクションを開いた状態で始めるか
+    type: boolean
+    description: セクションを開いた状態で始めるか。省くと `true`
+    default: '`true`'
+    example: 'false'
+notes:
+  見本: |-
+    ```html
+    <!-- section: {"open": false} -->
+    ```
+  今の引数との対応: |-
+    | 今の引数 | JSON のキー |
+    | --- | --- |
+    | `closed`・`open` | `open` の `false`・`true` |
+refs:
+- ER-477-1#
+decisions:
+- D-312
+- D-334
+- D-336
+- D-337
+- D-338
+- D-344
+- D-345

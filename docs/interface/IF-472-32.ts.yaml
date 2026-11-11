@@ -14,7 +14,7 @@ flows:
         description: '`name` と `directive` が `greet`、`load` が `() => import("/fixtures/greet.js")` の拡張'
         notes: '`schema` は指定しない'
       - name: 拡張のマーカーを持つ Markdown
-        description: '段落の間に `<!-- greet: world lang=ja -->` を 2 つ持つ文書'
+        description: '段落の間に `<!-- greet: {"target": "world", "lang": "ja"} -->` を 2 つ持つ文書'
       - name: Mock
         description: 拡張のモジュールの代役として、`draw(slot, value)` で `slot` の文字を `value` の JSON にするモジュールを、手元の開発サーバーが `/fixtures/greet.js` で配る。`load` は呼ばれた回数を数える関数で包む
     flow: |-
@@ -27,11 +27,11 @@ flows:
         M->>P: マーカーの場所に読み込み中のブロックを描く
         M->>X: load()
         X-->>M: モジュール
-        M->>X: draw(マーカーの場所の要素, { args, keys })
+        M->>X: draw(マーカーの場所の要素, { options })
         X->>P: マーカーの場所に描く
     expected:
       - '`load` が 1 回だけ呼ばれる'
-      - 2 つのマーカーの場所の文字がどちらも `{"args":["world"],"keys":{"lang":"ja"}}`
+      - '2 つのマーカーの場所の文字がどちらも `{"options":{"target":"world","lang":"ja"}}`（範囲の無いマーカーは `definition` を持たない）'
       - マーカーの前後の段落がある
       - '`registerExtension` の戻り値が `undefined`'
     test: test_normal
@@ -63,10 +63,10 @@ flows:
       - name: 配布物を読み込んだページ
         description: 正常系と同じ
       - name: 拡張
-        description: 正常系の拡張に、引数を 1 つだけ英小文字で許す `schema` を追加したもの
-        notes: '`schema` は valibot 1.5.0 の `v.object({ args: v.strictTuple([v.pipe(v.string(), v.regex(/^[a-z]+$/))]), keys: v.record(v.string(), v.string()) })`。valibot は結合テストの開発用の依存に入れる'
+        description: 正常系の拡張に、`options.target` を英小文字の文字列だけで、`options.count` を数だけで許す `schema` を追加したもの
+        notes: '`schema` は valibot 1.5.0 の `v.object({ options: v.object({ target: v.pipe(v.string(), v.regex(/^[a-z]+$/)), count: v.optional(v.number()) }) })`。valibot は結合テストの開発用の依存に入れる'
       - name: 合わない引数のマーカーを持つ Markdown
-        description: '段落の間に `<!-- greet: World 2 -->` を持つ文書'
+        description: '段落の間に `<!-- greet: {"target": "World", "count": "2"} -->` を持つ文書'
       - name: Mock
         description: 正常系と同じ
     flow: |-
@@ -75,14 +75,40 @@ flows:
         participant M as mdmark
         P->>M: registerExtension({ name, directive, load, schema })
         P->>M: mount(el, { markdown })
-        M->>M: schema["~standard"].validate({ args, keys })
+        M->>M: schema["~standard"].validate({ options })
         M->>P: マーカーの場所を記載の警告に替える
     expected:
       - マーカーの場所の要素が class `mdmark-syntax-warning` を持ち、タイトルが `記載の警告`
-      - '警告の本文に `<!-- greet: World 2 -->` と拡張の名前 `greet` があり、項目が 2 つで、`1 つ目の World:` と `2 つ目の 2:` で始まる'
+      - '警告の本文にマーカーの記載と拡張の名前 `greet` があり、項目が 2 つで、`target:` と `count:` で始まる'
       - '`load` が 1 回も呼ばれていない'
       - マーカーの前後の段落があり、`mount` が例外を投げない
     test: test_error_when_args_invalid
+  - name: 異常系（今の書き方の拡張のマーカー・記載の警告）
+    summary: 引数が JSON のオブジェクトでない拡張のマーカーの場所を、移行を案内する記載の警告にし、検査もモジュールの読み込みもしない
+    setup:
+      - name: 配布物を読み込んだページ
+        description: 正常系と同じ
+      - name: 拡張
+        description: 異常系（引数が Schema に合わない・記載の警告）と同じ
+      - name: 今の書き方の拡張のマーカーを持つ Markdown
+        description: '段落の間に `<!-- greet: world lang=ja -->` を持つ文書'
+      - name: Mock
+        description: 正常系と同じ。`schema` の `validate` は呼ばれた回数を数える関数で包む
+    flow: |-
+      sequenceDiagram
+        participant P as 利用側のページ
+        participant M as mdmark
+        P->>M: registerExtension({ name, directive, load, schema })
+        P->>M: mount(el, { markdown })
+        M->>M: マーカーの引数が JSON のオブジェクトでない
+        M->>P: マーカーの場所を記載の警告に替える
+    expected:
+      - マーカーの場所の要素が class `mdmark-syntax-warning` を持ち、本文に、拡張の名前 `greet`・引数を JSON のオブジェクトで記載すること・`mdmark upgrade` の移行の報告で記載し直す箇所を確かめられることがある
+      - '`validate` と `load` が 1 回も呼ばれていない'
+      - マーカーの前後の段落があり、`mount` が例外を投げない
+    test: test_error_when_legacy_args
+    refs:
+      - SC-472-49#scenarios[異常シナリオ（今の書き方の拡張のマーカー）]
   - name: 異常系（モジュールを読み込めない・通知ブロック）
     summary: 拡張のモジュールを読み込めないマーカーの場所だけを通知ブロックにし、ほかは描く
     setup:
@@ -128,7 +154,7 @@ flows:
         participant M as mdmark
         P->>M: registerExtension({ name, directive, load, schema })
         P->>M: mount(el, { markdown })
-        M->>M: schema["~standard"].validate({ args, keys })
+        M->>M: schema["~standard"].validate({ options })
         M-->>M: 拒否
         M->>P: マーカーの場所を通知ブロックに替える
     expected:
@@ -156,7 +182,7 @@ flows:
         M-->>P: TypeError
     expected:
       - どちらの呼び出しも `TypeError` を投げ、メッセージに `directive`・`schema` を含む
-      - 'その後 `<!-- greet: world -->` を `mount` しても、マーカーの場所が配置されない（未知のマーカーとして取り除かれる）'
+      - 'その後 `<!-- greet: {"target": "world"} -->` を `mount` しても、マーカーの場所が配置されない（未知のマーカーとして取り除かれる）'
     test: test_error_when_extension_invalid
   - name: 異常系（名前の重なり・Error）
     summary: 記法のマーカーや登録済みの拡張と同じ directive は登録せずに Error を投げる
@@ -177,7 +203,7 @@ flows:
         M-->>P: Error
     expected:
       - どちらの呼び出しも `Error` を投げ、メッセージに重なった名前を含む
-      - 'その後 `<!-- greet: world -->` を `mount` すると、最初に登録した拡張の `load` が呼ばれる'
+      - 'その後 `<!-- greet: {"target": "world"} -->` を `mount` すると、最初に登録した拡張の `load` が呼ばれる'
     test: test_error_when_directive_taken
   - name: 正常系（部品の定義を指定する）
     summary: 範囲で記載した拡張のマーカーの `json` のコードブロックを、`definition` として `schema` と `draw` へ指定する
@@ -186,7 +212,7 @@ flows:
         description: 正常系と同じ
       - name: 拡張
         description: 正常系の拡張に、`definition` が `title`（文字）と `items`（文字の配列）を持つことを確認する `schema` を追加したもの
-        notes: '`schema` は valibot 1.5.0 の `v.object({ args: v.array(v.string()), keys: v.record(v.string(), v.string()), definition: v.object({ title: v.string(), items: v.array(v.string()) }) })`'
+        notes: '`schema` は valibot 1.5.0 の `v.object({ options: v.record(v.string(), v.unknown()), definition: v.object({ title: v.string(), items: v.array(v.string()) }) })`'
       - name: 部品の定義を持つマーカーの Markdown
         description: '`<!-- greet -->` 〜 `<!-- /greet -->` に `{"title": "段取り", "items": ["a", "b", "c"]}` の `json` のコードブロックを配置した文書'
       - name: Mock
@@ -200,7 +226,7 @@ flows:
         P->>M: mount(el, { markdown })
         M->>M: 範囲の json を読み込み、schema で確認する
         M->>X: load()
-        M->>X: draw(マーカーの場所の要素, { args, keys, definition })
+        M->>X: draw(マーカーの場所の要素, { options, definition })
         X->>P: マーカーの場所に描く
     expected:
       - マーカーの場所の文字が `段取り 3`
@@ -239,7 +265,7 @@ flows:
       - name: 拡張
         description: '`directive` が `flow` のほかは正常系と同じ拡張'
       - name: マーカーを持つ Markdown
-        description: '段落の間に `<!-- flow: world -->` を持つ文書'
+        description: '段落の間に `<!-- flow: {"target": "world"} -->` を持つ文書'
       - name: Mock
         description: 正常系と同じ
     flow: |-
@@ -250,10 +276,10 @@ flows:
         P->>M: registerExtension({ directive: "flow", ... })
         P->>M: mount(el, { markdown })
         M->>X: load()
-        M->>X: draw(マーカーの場所の要素, { args, keys })
+        M->>X: draw(マーカーの場所の要素, { options })
     expected:
       - '`registerExtension` が例外を投げない'
-      - マーカーの場所の文字が `{"args":["world"],"keys":{}}` で、`figure.mdmark-diagram` が無い
+      - 'マーカーの場所の文字が `{"options":{"target":"world"}}` で、`figure.mdmark-diagram` が無い'
     test: test_normal_when_directive_is_diagram_name
 lead: 利用側が、自分のマーカーの名前と、そのマーカーを描くモジュールの読み込み方を mdmark へ登録する。`mount` は文書にそのマーカーがあるときだけ、引数を検査してからモジュールを読み込んで描かせる。
 test_file: tests/integration/lib/register-extension.browser.test.ts
@@ -275,7 +301,7 @@ request:
     type: string
     required: true
     location: argument
-    description: '拡張のマーカーの名前（`<!-- {directive}: {引数} -->`）'
+    description: '拡張のマーカーの名前（`<!-- {directive}: {JSON のオブジェクト} -->`）'
     constraints: 英小文字で始まり、英小文字・数字・`-` だけ。`features` と記法のマーカー（`table`・`tabs`・`steps`・`section`・`row-detail`・`fig`・`toc`）と登録済みの拡張の `directive` は使用できない
     example: greet
     notes: 設定の `libraries` や図の部品のマーカー（`flow`・`sequence`・`chart`・`param`）と同じ名前のときは、拡張を優先する。v0.4.0 までにこの 4 つの名前で登録した拡張はそのまま動き、そのページではその名前の図の部品を描かない
@@ -290,7 +316,7 @@ request:
     required: false
     default: なし（引数を検査しない）
     location: argument
-    description: マーカーの引数を検査する Standard Schema。zod・valibot など、`~standard` を持つ検査ライブラリの schema をそのまま指定できる
+    description: '`{ options, definition }` を検査する Standard Schema。zod・valibot など、`~standard` を持つ検査ライブラリの schema をそのまま指定できる'
 request_example: |-
   ```ts
   import { registerExtension } from "https://cdn.jsdelivr.net/gh/shuhei1101/mdmark@v0.2.0/dist/index.js";
@@ -301,8 +327,7 @@ request_example: |-
     directive: "greet",
     load: () => import("/extensions/greet.js"),
     schema: v.object({
-      args: v.strictTuple([v.pipe(v.string(), v.regex(/^[a-z]+$/))]),
-      keys: v.record(v.string(), v.string()),
+      options: v.object({ target: v.pipe(v.string(), v.regex(/^[a-z]+$/)) }),
     }),
   });
   ```
@@ -314,7 +339,7 @@ exceptions:
   - name: なし（正常終了）
     condition: 拡張を登録表に追加する
   - name: なし（記載の警告）
-    condition: '`mount`・`update` で、マーカーの引数が `schema` に合わない、または範囲の部品の定義を JSON として読み込めない'
+    condition: '`mount`・`update` で、マーカーの引数が JSON のオブジェクトでない、`schema` に合わない、または範囲の部品の定義を JSON として読み込めない'
     notes: 例外を投げず、そのマーカーの場所だけを記載の警告に替える
   - name: なし（通知ブロック）
     condition: '`mount`・`update` で、`load` が拒否されるか `draw` が例外を投げる'
@@ -330,15 +355,15 @@ exceptions:
     notes: 登録しない。ビューのマーカー `view` も記法のマーカーとして予約する。メッセージに重なった名前を含める
 constraints:
   - item: マーカーの引数の構造
-    constraint: '`MdmarkMarkArgs` は `{ args: string[]; keys: Record<string, string>; definition?: unknown }`。マーカーの引数を空白で区切り、`キー=値` を `keys` に、それ以外を記載した順に `args` に入れる。マーカーを範囲（`<!-- {directive}: {引数} -->` 〜 `<!-- /{directive} -->`）で記載し、範囲に言語 `json` のコードブロックを 1 つ配置したときは、その JSON を読み込んだ値を `definition` に入れる（範囲が無いマーカーでは持たない）。`schema` の検査と `draw` は同じ値を受け取る'
+    constraint: '`MdmarkMarkArgs` は `{ options: Record<string, unknown>; definition?: unknown }`。`options` はマーカーの名前の後ろの JSON のオブジェクト（真偽・数・配列・オブジェクトの型を保つ。引数の無いマーカーは `{}`）。引数が `{` で始まらない（今の書き方の）拡張のマーカーは `MdmarkMarkArgs` を作らず、記載の警告に替える（インターフェース定義『文書をHTML文字列にする』の制約「マーカーの場所の要素」）。マーカーを範囲（`<!-- {directive}: {JSON のオブジェクト} -->` 〜 `<!-- /{directive} -->`）で記載し、範囲に言語 `json` のコードブロックを 1 つ配置したときは、その JSON を読み込んだ値を `definition` に入れる（範囲が無いマーカーでは持たない）。`schema` の検査と `draw` は同じ値を受け取る'
   - item: 拡張のモジュールの構造
     constraint: '`draw(slot: HTMLElement, value: MdmarkMarkArgs): void | Promise<void>` を名前付きで export する。`slot` はマーカーの場所の要素'
   - item: 引数の検査
-    constraint: '`schema` を持つ拡張のマーカーは、`mount`・`update` が `load` の前に `schema["~standard"].validate(value)` を呼んで待つ。結果が `issues` を持つときは `load` を呼ばず、マーカーの場所を記載の警告に替える。警告の項目は issue ごとに 1 つで、`path` の要素は `{ key }` のオブジェクトなら `key` を読み込む。`path` が `args` と位置まで届く issue は `{位置+1} つ目の {値}: {message}`、`keys` とキーまで届く issue は `{キー}=: {message}`、`path` が無いか `args`・`keys` で止まる issue は `{message}` だけの項目にする。`validate` が例外を投げるか拒否されるときは、`load` を呼ばず、`load` の失敗と同じ通知ブロックに替え、`name` と元のエラーを `console.error` に出す。`render` は検査しない'
+    constraint: '`schema` を持つ拡張のマーカーは、`mount`・`update` が `load` の前に `schema["~standard"].validate(value)` を呼んで待つ。結果が `issues` を持つときは `load` を呼ばず、マーカーの場所を記載の警告に替える。警告の項目は issue ごとに 1 つで、`path` の要素は `{ key }` のオブジェクトなら `key` を読み込む。`path` が `options` とキーまで届く issue は `options` の後ろのキーを `.`（配列の要素は `[位置]`）でつないだ `{キーのパス}: {message}`、`definition` の中まで届く issue は `definition.{キーのパス}: {message}`、`path` が無いか `options`・`definition` で止まる issue は `{message}` だけの項目にする。`validate` が例外を投げるか拒否されるときは、`load` を呼ばず、`load` の失敗と同じ通知ブロックに替え、`name` と元のエラーを `console.error` に出す。`render` は検査しない'
     notes: 警告の文言は画面設計『文書』
   - item: Standard Schema の確認
     constraint: zod 4.6.7 と valibot 1.5.0 の schema の `~standard.validate` が、合わない値に `issues`（`message` と `path`）を、合う値に `value` を返却することを確認した（2026-10-14）
-    notes: valibot の `tuple` は余る要素を許すため、引数の数を限るときは `strictTuple` を使用する。valibot の `strictTuple` は余る引数にも位置を持つ `path` を返却するが、zod の `z.tuple` の数の超過は `path` が `["args"]` で止まる。仕様は https://standardschema.dev/
+    notes: 知らないキーを許さないときは、valibot の `strictObject`・zod の `z.strictObject` を使用する。仕様は https://standardschema.dev/
   - item: 読み込み
     constraint: 同じ文書の同じ拡張のマーカーは 1 回だけ `load` を呼ぶ。読み込みの間は外部ライブラリのマーカーと同じ読み込み中のマーカーの場所を配置する。通知ブロックはタイトル `この図を表示できません`、本文 `表示に使用する拡張（{name}）を読み込めませんでした。ネットワークにつながっているかを確認して、ページを再読み込みしてください。` で、`name` と元のエラーを `console.error` に出す
   - item: 型の配布

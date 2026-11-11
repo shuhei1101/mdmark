@@ -1,0 +1,37 @@
+id: ER-477-12
+visibility: internal
+title: 'ER 図: ギャラリーのマーカーの設定'
+lead: '`<!-- gallery: {JSON のオブジェクト} -->` の名前の後ろに記載する、ギャラリーのマーカーの設定の構造。'
+tables:
+- name: gallery
+  title: ギャラリー
+  datastore: JSON
+  access: 全件
+  scale: ~1
+  summary: ギャラリーのマーカー 1 つの設定
+  columns:
+  - name: columns
+    title: 列の数
+    type: integer
+    description: 列の数（1〜6）。省くと 2
+    default: '2'
+    example: '3'
+notes:
+  見本: |-
+    ```html
+    <!-- gallery: {"columns": 3} -->
+    ```
+  今の引数との対応: |-
+    | 今の引数 | JSON のキー |
+    | --- | --- |
+    | `cols=列の数` | `columns` |
+refs:
+- ER-477-1#
+decisions:
+- D-312
+- D-334
+- D-336
+- D-337
+- D-338
+- D-344
+- D-345
