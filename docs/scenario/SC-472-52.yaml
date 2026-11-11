@@ -186,6 +186,29 @@ scenarios:
       - details のマーカーを指す行が無い（`\u003e` で記載した `>` は値の `-->` として読む）
       - 終了コードが 0 以外
     test: test_normal_when_mark_args_not_json
+  - name: 正常シナリオ（値に --> を記載した引数）
+    setup:
+      - name: 作業のフォルダ
+        description: 正常シナリオと同じ
+      - name: 値に --> を持つ文字列
+        description: '段落の後に、値に `-->` をそのまま記載した `<!-- details: {"title": "a --> b"} -->` と段落と `<!-- /details -->` を持つ Markdown の文字列'
+        notes: 'HTML コメントは最初の `-->` で閉じるため、マーカーの引数は `{"title": "a ` までになり、残りの ` b"} -->` はコメントの外の文字になる。同じ文字列を `render` で描くと、details のマーカーの場所に JSON として読めない引数の記載の警告が出て、範囲は既定の見出し `詳細` の閉じた折り畳みで描かれ、` b"} -->` は本文の文字として出る'
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor W as 文書の作成者
+        participant C as mdmark CLI
+        participant R as mdmark の描画の処理
+        W->>C: mdmark check（Markdown の文字列）
+        C->>R: 文字列を描くときと同じ読み取りで、記載の警告を集める
+        R-->>C: details のマーカーの JSON として読めない引数の記載の警告
+        C-->>W: 場所・種類・内容の一覧・終了コード 0 以外
+    expected:
+      - ずれの行が details のマーカーの行を指し、種類が記載の警告
+      - 行の内容が、JSON として読めない位置と理由に加えて、値に `-->` を記載するとコメントがそこで閉じることと、`>` を `\u003e` にした `--\u003e` で記載する方法を挙げる
+      - 終了コードが 0 以外
+    test: test_normal_when_comment_end_in_value
   - name: 正常シナリオ（map の書き方の警告がある）
     setup:
       - name: 作業のフォルダ

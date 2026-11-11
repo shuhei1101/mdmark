@@ -50,6 +50,47 @@ scenarios:
       - 描いた時点で表形式のビューが出ていて、切り替えの表形式が選ばれている
       - ボード表示を選ぶと、正常シナリオと同じ 3 つの列のボード表示が出る
     test: test_normal_when_opened_as_table
+  - name: 正常シナリオ（値ごとのアイコンを指定する）
+    setup:
+      - name: mdmark を読み込むページ
+        description: 正常シナリオと同じ
+      - name: 値ごとのアイコンを指定した Markdown
+        description: '`<!-- view: {"board": {"group": {"column": "状態"}, "values": {"未着手": {"icon": "inbox"}}}} -->` 〜 `<!-- /view -->` で、正常シナリオと同じ表を囲んだ文書'
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 読者
+        participant P as 利用側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を指定して描かせる
+        M-->>P: 未着手の列の見出しのアイコンを上書きしたボード表示
+        P-->>U: ボード表示
+    expected:
+      - '`未着手` の列の見出しのアイコンが `inbox` のアイコンで、`進行中`・`完了` の列は既定の対応のアイコンのまま'
+      - 範囲の上に記載の警告が無い
+    test: test_normal_when_value_icon
+  - name: 異常シナリオ（列に無い値のアイコン）
+    setup:
+      - name: mdmark を読み込むページ
+        description: 正常シナリオと同じ
+      - name: 列に無い値を指定した Markdown
+        description: '`<!-- view: {"board": {"group": {"column": "状態"}, "values": {"保留": {"icon": "inbox"}}}} -->` 〜 `<!-- /view -->` で、正常シナリオと同じ表（状態の列に `保留` を持たない）を囲んだ文書'
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 読者
+        participant P as 利用側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を指定して描かせる
+        M->>M: board.values の値 保留 が状態の列に無い
+        M-->>P: 記載の警告と、既定のアイコンのボード表示
+        P-->>U: 記載の警告とボード表示
+    expected:
+      - 範囲の上に、`board.values` の `保留` が状態の列に無い値であることと、列の値（`未着手`・`進行中`・`完了`）を記載した記載の警告がある
+      - ボード表示の 3 つの列の見出しのアイコンが、どれも既定の対応のアイコン
+    test: test_error_when_value_missing
   - name: 正常シナリオ（機能を解除する）
     setup:
       - name: mdmark を読み込むページ

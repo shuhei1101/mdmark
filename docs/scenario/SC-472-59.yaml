@@ -112,6 +112,30 @@ scenarios:
       - 2 つの文書の details の範囲が、どちらも見出し `実行の例` の開いた状態で描かれている
       - 今の書き方の文書にも記載の警告が出ていない（今の書き方は点検（`mdmark check`）が通知する）
     test: test_normal_when_legacy_mark_args
+  - name: 正常シナリオ（複数行にまたがる JSON のマーカー）
+    setup:
+      - name: mdmark を読み込むページ
+        description: 正常シナリオと同じ
+      - name: 複数行の JSON のマーカーを持つ Markdown
+        description: '1 行目に `<!-- table: {`、2〜4 行目に `"kind": "data",`・`"columns": {"数量": {"total": [{"calc": "sum"}]}},`・`"collapse": {"open": false, "title": "明細"}`、5 行目に `} -->` を記載した表のマーカーで、名前・数量の 2 列 3 行の表を `<!-- /table -->` まで囲んだ文書と、同じ JSON のオブジェクトを 1 行で記載した文書'
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 利用側のページ
+        participant M as mdmark
+        P->>M: 要素と複数行の JSON のマーカーの Markdown を指定して描かせる
+        M->>M: マーカーの名前の後ろから --> の前までを、改行を含めて 1 つの JSON のオブジェクトとして参照する
+        M-->>P: 要素の中に本文を描く
+        P->>M: 別の要素と 1 行で記載した Markdown を指定して描かせる
+        M-->>P: 要素の中に本文を描く
+        P-->>U: 2 つの文書を表示
+    expected:
+      - 2 つの文書の表が、どちらも見出し `明細` の閉じた折り畳みに入り、開くと数量の合計の行を持つ同じ表で描かれている
+      - どちらの文書にも記載の警告が無い
+      - 本文にマーカーの文字（`<!--`・`"kind"`・`} -->`）が出ていない
+    test: test_normal_when_multiline_mark_args
   - name: 異常シナリオ（JSON として読めないマーカーの引数）
     setup:
       - name: mdmark を読み込むページ

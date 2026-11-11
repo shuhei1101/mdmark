@@ -119,7 +119,7 @@ scenarios:
         description: 正常シナリオと同じ
       - name: 空白を含むタイトルと開始の番号を持つ Markdown
         description: '`<!-- code: {"title": "src/app.ts の抜粋", "lines": {"start": 10}, "highlight": [{"from": 11, "to": 12}]} -->` の直後に、3 行の言語 `ts` のコードブロックを配置した文書'
-        notes: '`highlight` の行は、コードブロックの 1 行目を `lines.start` の番号として数える'
+        notes: '`highlight`・`fold` の行と、コードブロックに無い行の判定は、コードブロックの 1 行目を `lines.start` の番号として数える'
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
