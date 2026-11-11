@@ -310,3 +310,26 @@ test("test_render_map_sequence_when_terms", async () => {
   expect(label).toContain(">補足</span>を読む");
   expect(tips).toContain("map の範囲の上書きと説明");
 });
+
+// 説明の中の用語（正常系）
+test("test_render_map_flow_when_note_terms", async () => {
+  // 準備
+  const { renderMapFlow } = await loadParts();
+  // 実行
+  const { tips } = renderMapFlow({
+    ...(await flowArgs()),
+    notes: { layout: "補足を当てる", "mount->marker": "補足を当てる" },
+    terms: { 補足: "意味" },
+  });
+  // 検証
+  const noteTips = matches(
+    tips,
+    /<(?:span|div) class="mdmark-diagram-tip[^"]*"[^>]*data-tip-for="(?:node:layout|mount-&gt;marker)"[^>]*>[\s\S]*?<\/(?:span|div)><\/(?:span|div)>(?=<|$)/g,
+  );
+  expect(noteTips).toHaveLength(2);
+  for (const tip of noteTips) {
+    expect(tip).toContain('<span class="mdmark-term">補足</span>を当てる');
+    expect(tip).toContain("補足</span>：意味");
+    expect(tip).not.toMatch(/mdmark-term"[^>]*tabindex/);
+  }
+});

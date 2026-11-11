@@ -15269,7 +15269,11 @@ test("test_normal_when_map_terms", async () => {
     "mount->>marker: map の範囲",
     "mount->>marker: 補足を読む",
   );
-  const markdown = `${mapRange({ mermaid: MAP_FLOW, data: MAP_DATA })}\n${mapRange({ mermaid: sequence })}`;
+  const data = MAP_DATA.replace(
+    "内側のグループから配置し、グループの大きさを決めてから外側を配置する",
+    "補足の上書きを当てて、内側のグループから配置する",
+  );
+  const markdown = `${mapRange({ mermaid: MAP_FLOW, data })}\n${mapRange({ mermaid: sequence })}`;
   // 実行
   await mountTracked(el, {
     markdown,
@@ -15319,10 +15323,19 @@ test("test_normal_when_map_terms", async () => {
     expect(
       [...flow.querySelectorAll<HTMLElement>(".mdmark-diagram-tip")].some(
         (tip) =>
-          !tip.hidden && tip.textContent?.includes("内側のグループから配置し"),
+          !tip.hidden &&
+          tip.textContent?.includes("内側のグループから配置する"),
       ),
     ).toBe(true),
   );
+  // 検証: 説明の中の用語は、フォーカスを持たない下線と、末尾の意味の行
+  const noteTip = [
+    ...flow.querySelectorAll<HTMLElement>(".mdmark-diagram-tip"),
+  ].find((tip) => tip.dataset.tipFor === "node:layout") as HTMLElement;
+  const plain = find<HTMLElement>(noteTip, ".mdmark-term");
+  expect(plain.textContent).toBe("補足");
+  expect(plain.hasAttribute("tabindex")).toBe(false);
+  expect(noteTip.textContent).toContain("補足：map の範囲の上書きと説明");
   // 検証: シーケンス図のメッセージの文の中の用語
   expect(
     find<HTMLElement>(
