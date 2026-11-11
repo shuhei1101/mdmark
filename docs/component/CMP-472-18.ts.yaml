@@ -15,6 +15,19 @@ states:
         value: 'true'
       - name: lines
         value: '[{"text":"import { mount } from \"mdmark\";"},{"text":"const doc = await fetch(\"/README.md\");","kind":"highlight"},{"text":"mount(document.querySelector(\"#doc\"), await doc.text());"}]'
+  - name: LineStart
+    description: '`lineStart` が 10 の行番号。行番号が 10〜12 で、11〜12 行目を強調し、桁の数の幅を 2 桁で取る'
+    args:
+      - name: language
+        value: ts
+      - name: title
+        value: src/app.ts の抜粋
+      - name: lineNumbers
+        value: 'true'
+      - name: lineStart
+        value: '10'
+      - name: lines
+        value: '[{"text":"import { mount } from \"mdmark\";"},{"text":"const doc = await fetch(\"/README.md\");","kind":"highlight"},{"text":"mount(document.querySelector(\"#doc\"), await doc.text());","kind":"highlight"}]'
   - name: LineMarks
     description: 削除した行・追加した行・強調・マーカーの無い行。マーカーの無い行もマーカーの列の幅を空けて文字の頭の位置を合わせる
     args:
@@ -181,7 +194,7 @@ states:
       - name: lines
         value: '[{"text":"export function mount(element, markdown, options = {}) {","foldLines":10},{"text":"  const config = withDefaults(options);","indent":1},{"text":"  for (const block of parse(markdown)) {","indent":1,"foldLines":4},{"text":"    if (block.kind === \"table\") {","indent":2,"foldLines":1},{"text":"      attachTable(block, config.features);","indent":3},{"text":"    }","indent":2},{"text":"    element.append(render(block));","indent":2},{"text":"  }","indent":1},{"text":"  return () => {","indent":1,"foldLines":1},{"text":"    element.replaceChildren();","indent":2},{"text":"  };","indent":1},{"text":"}"}]'
   - name: Folded
-    description: '`fold=3` で 3 行目を畳んだ状態。3 行目の開閉のボタンを常に出し、行の後ろに `⋯` のボタン。閉じ括弧の 8 行目は残す'
+    description: '`fold` の `[3]` で 3 行目を畳んだ状態。3 行目の開閉のボタンを常に出し、行の後ろに `⋯` のボタン。閉じ括弧の 8 行目は残す'
     args:
       - name: language
         value: ts
@@ -234,7 +247,14 @@ args:
     type: 真偽値
     required: false
     default: 'false'
-    description: 行の左に 1 から始まる行番号を出すか
+    description: 行の左に `lineStart` から始まる行番号を出すか
+  - name: lineStart
+    type: 整数
+    required: false
+    default: '1'
+    enabled_when: '`lineNumbers` が `true` のとき'
+    description: 最初の行の番号（マーカーの `lines.start`）。`data-line` と、行番号の桁の数（`--mdmark-code-digits`。最後の行の番号の桁の数）に使用する
+    status: planned
   - name: lines
     type: オブジェクトの配列
     required: true
@@ -264,7 +284,7 @@ args:
     type: 真偽値
     required: false
     default: 'false'
-    description: '`<!-- code: wrap -->` を持つか。`true` のとき `pre` に class `mdmark-code-lines mdmark-code-wrap` を付け、長い行を枠の幅で折り返す。行番号と行頭の `+`・`-` は折り返した行の 1 行目にだけ出す。`false` のときは折り返さず、利用側の `pre` への汎用の CSS でも折り返さない'
+    description: '`<!-- code: {"wrap": true} -->` を持つか。`true` のとき `pre` に class `mdmark-code-lines mdmark-code-wrap` を付け、長い行を枠の幅で折り返す。行番号と行頭の `+`・`-` は折り返した行の 1 行目にだけ出す。`false` のときは折り返さず、利用側の `pre` への汎用の CSS でも折り返さない'
 css_properties:
   - name: --mdmark-color-code-highlight-bg
     syntax: <color>

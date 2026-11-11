@@ -5,76 +5,97 @@ implementation: "src/parts/syntax-warning.ts#renderSyntaxWarning"
 story: "Parts/SyntaxWarning"
 test_file: tests/integration/lib/syntax-warning.story.test.ts
 states:
-  - name: ClosedAndOpen
-    description: 表のマーカーに `closed` と `open` を両方書いた。本文だけを出す
+  - name: TypeMismatch
+    description: マーカーの値の型が合わない。本文だけを出す
     args:
       - name: mark
-        value: '<!-- table: data closed open -->'
+        value: '<!-- tabs: {"collapse": "closed"} -->'
       - name: message
-        value: の `closed` と `open` は同時に記載できません。どちらか 1 つにしてください。`closed` を適用して描いています。
-  - name: Items
-    description: 表のマーカーに、機能を追加していない表では使用できないキーを記載した。本文の後に項目を並べる
+        value: 'の `collapse` には `open`・`title` を持つオブジェクトを記載してください（例 `{"open": false}`）。折り畳みに入れずに描いています。'
+  - name: InvalidJson
+    description: マーカーの引数を JSON として読めない
     args:
       - name: mark
-        value: '<!-- table: data hide=備考 total=価格:sum -->'
+        value: '<!-- details: {"title": 補足} -->'
+      - name: message
+        value: の引数を JSON として読めません（11 文字目の `補` で、値の文字を `"` で囲んでいません）。値の文字は `"` で囲んでください。既定の設定で描いています。
+  - name: CommentEndInValue
+    description: 値に `-->` を記載し、コメントがそこで閉じた
+    args:
+      - name: mark
+        value: '<!-- details: {"title": "a -->'
+      - name: message
+        value: の引数を JSON として読めません（文字の値が閉じていません）。値に `-->` を記載すると、コメントがそこで閉じます。`>` を `\u003e` にした `--\u003e` で記載してください。既定の設定で描いています。
+  - name: LegacyExtension
+    description: 拡張のマーカーの引数が今の書き方（JSON のオブジェクトでない）
+    args:
+      - name: mark
+        value: '<!-- greet: world -->'
+      - name: message
+        value: 'の引数は JSON のオブジェクトで記載してください（例: `<!-- greet: {"target": "world"} -->`）。拡張 `greet` の部品は描いていません。`mdmark upgrade` の移行の報告で、記載し直す箇所を確かめられます。'
+  - name: Items
+    description: 表のマーカーに、読み込めない指定を複数記載した。本文の後に項目を並べる
+    args:
+      - name: mark
+        value: '<!-- table: {"kind": "data", "columns": {"数量": {"total": [{"calc": "max"}]}, "名前": {"hidden": true}}} -->'
       - name: message
         value: の読み込めない指定を当てずに描いています。
       - name: items
-        value: '[{"label":"hide=","message":"`+columns` を記載した表でだけ使用できます。当てずに描いています"},{"label":"total=","message":"`+total` を記載した表でだけ使用できます。当てずに描いています"}]'
+        value: '[{"label":"columns.数量.total[0].calc","message":"`max` は選べる値にありません。選べる値は `sum`・`avg`・`count` です"},{"label":"columns.名前.hidden","message":"先頭の列は隠せません。当てずに描いています"}]'
   - name: BrokenReference
     description: 切れた図表の参照。マーカーを持たず本文だけを出す
     args:
       - name: message
-        value: 'リンク先の `#fig-missing` の図表がありません。`<!-- fig: missing -->` を図か表の直前に記載するか、リンク先を修正してください。'
+        value: 'リンク先の `#fig-missing` の図表がありません。`<!-- fig: {"id": "missing"} -->` を図か表の直前に記載するか、リンク先を修正してください。'
   - name: ExtensionSchema
     description: 拡張の引数が Schema に合わない。issue ごとの項目を並べる
     args:
       - name: mark
-        value: '<!-- greet: World 2 -->'
+        value: '<!-- greet: {"target": "World", "count": "2"} -->'
       - name: message
         value: の引数が、拡張 `greet` の決まりに合いません。修正してから再読み込みしてください。
       - name: items
-        value: '[{"label":"1 つ目の World","message":"Invalid format: Expected /^[a-z]+$/ but received \"World\""},{"label":"2 つ目の 2","message":"Invalid type: Expected never but received \"2\""}]'
+        value: '[{"label":"target","message":"Invalid format: Expected /^[a-z]+$/ but received \"World\""},{"label":"count","message":"Invalid type: Expected number but received \"2\""}]'
   - name: LongMark
     description: マーカーが長く枠の幅を超える。マーカーが枠の中で折り返す
     args:
       - name: mark
-        value: '<!-- table: data filter=とても長い列の名前:range,もう一つの長い列の名前:text,更新日:date -->'
+        value: '<!-- table: {"kind": "data", "columns": {"とても長い列の名前": {"filter": {"type": "range"}}, "もう一つの長い列の名前": {"filter": {"type": "text"}}, "更新日": {"filter": {"type": "date"}}}} -->'
       - name: message
-        value: の絞り込みの種類 `range` は使用できません。使用できる種類は `select`・`text`・`date` です。
+        value: の `filter.type` の `range` は選べる値にありません。選べる値は `select`・`text`・`date` です。
   - name: GlossaryColumn
     description: 用語集の表のマーカーに、表に無い列名を記載した
     args:
       - name: mark
-        value: '<!-- glossary: term=用語 meaning=説明 -->'
+        value: '<!-- glossary: {"term": {"column": "用語"}, "meaning": {"column": "説明"}} -->'
       - name: message
-        value: の `meaning=` の列 `説明` が表にありません。表の列は `用語`・`意味` です。列名を修正してください。この表からは用語を入れずに描いています。
+        value: の `meaning.column` の列 `説明` が表にありません。表の列は `用語`・`意味` です。列名を修正してください。この表からは用語を入れずに描いています。
   - name: GlossaryMissingArg
-    description: 用語集の表のマーカーに、必須の `meaning=` を記載していない
+    description: 用語集の表のマーカーに、必須の `meaning` を記載していない
     args:
       - name: mark
-        value: '<!-- glossary: term=用語 -->'
+        value: '<!-- glossary: {"term": {"column": "用語"}} -->'
       - name: message
-        value: に `meaning=` がありません。意味の列を `meaning=列名` で指してください。この表からは用語を入れずに描いています。
+        value: 'に必須の `meaning` がありません。意味の列を `"meaning": {"column": "列名"}` で指してください。この表からは用語を入れずに描いています。'
   - name: ViewGroupColumn
-    description: ビューのマーカーの `group=` に、表に無い列名を記載した
+    description: ビューのマーカーの `board.group.column` に、表に無い列名を記載した
     args:
       - name: mark
-        value: '<!-- view: group=優先度 -->'
+        value: '<!-- view: {"board": {"group": {"column": "優先度"}}} -->'
       - name: message
         value: の列 `優先度` は表にありません。表の列は `タイトル`・`状態`・`担当` です。ボードにせず、表で描いています。
   - name: ViewNoTable
     description: ビューのマーカーの範囲に表が無い
     args:
       - name: mark
-        value: '<!-- view: group=状態 -->'
+        value: '<!-- view: {"board": {"group": {"column": "状態"}}} -->'
       - name: message
         value: の範囲に、項目にする表がありません。範囲の中に Markdown の表を記載してください。範囲の中身はそのまま描いています。
   - name: ViewUnknownIcon
-    description: ビューのマーカーの `icons=` に、使用できないアイコンの名前を記載した
+    description: ビューのマーカーの `board.values.{値}.icon` に、使用できないアイコンの名前を記載した
     args:
       - name: mark
-        value: '<!-- view: group=状態 icons=完了:rocket -->'
+        value: '<!-- view: {"board": {"group": {"column": "状態"}, "values": {"完了": {"icon": "rocket"}}}} -->'
       - name: message
         value: のアイコン `rocket` は使用できません。使用できるアイコンは `circle`・`circle-dashed`・`circle-dot`・`circle-pause`・`circle-check`・`circle-x`・`inbox`・`archive`・`clock`・`flag`・`star`・`bug`・`eye`・`lock`・`zap`・`ban` です。`完了` の列には既定のアイコンを付けています。
   - name: IconName
@@ -102,14 +123,14 @@ states:
     description: include の取り込み先の行の範囲が無い
     args:
       - name: mark
-        value: '<!-- include: src/app.ts#L20-L22 -->'
+        value: '<!-- include: {"path": "src/app.ts", "lines": {"from": 20, "to": 22}} -->'
       - name: message
         value: の `src/app.ts` は 12 行で、20〜22 行目がありません。行の範囲を修正してください。
   - name: IncludeCircular
     description: include の取り込みが循環する
     args:
       - name: mark
-        value: '<!-- include: a.md -->'
+        value: '<!-- include: {"path": "a.md"} -->'
       - name: message
         value: の取り込みが循環しています（`a.md` → `b.md` → `a.md`）。この場所では取り込んでいません。
   - name: CsvColumns
@@ -123,7 +144,7 @@ args:
     type: 文字列
     required: false
     default: '""'
-    description: '読み込めない指定を記載したマーカーの文字（`<!-- table: data closed open -->` など）。本文の頭の `code` に入れる（HTML として特別な文字はエスケープする）。空ならマーカーを出さない'
+    description: '読み込めない指定を記載したマーカーの文字（`<!-- tabs: {"collapse": "closed"} -->` など）。本文の頭の `code` に入れる（HTML として特別な文字はエスケープする）。空ならマーカーを出さない'
   - name: message
     type: 文字列
     required: true

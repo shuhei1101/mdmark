@@ -16,7 +16,7 @@ states:
       - name: id
         value: story-view
   - name: Table
-    description: 表形式で開いた（`default=table`）。担当の列にだけ絞り込みのボタンを出す
+    description: 表形式で開いた（`initial` の `table`）。担当の列にだけ絞り込みのボタンを出す
     args:
       - name: columns
         value: '["タイトル","状態","担当"]'
@@ -110,7 +110,7 @@ states:
       - name: id
         value: story-view
   - name: OverriddenIcons
-    description: '`icons=未着手:inbox,完了:archive` でアイコンを上書きした'
+    description: '`board.values` の `未着手` に `inbox`、`完了` に `archive` を指定してアイコンを上書きした'
     args:
       - name: columns
         value: '["タイトル","状態","担当"]'
@@ -145,7 +145,7 @@ states:
       - name: id
         value: story-view
   - name: BoardDisabled
-    description: '`group=` の列が表に無く、ボードのボタンを押せない。表形式を出す'
+    description: '`board.group.column` の列が表に無く、ボードのボタンを押せない。表形式を出す'
     args:
       - name: columns
         value: '["タイトル","状態","担当"]'

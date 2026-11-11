@@ -28,7 +28,7 @@ states:
       - name: collapse
         value: closed
   - name: OpenTitle
-    description: 開いたステップと `title=`。見出し `準備` の下に番号と項目が見える
+    description: 開いたステップと `collapse.title`。見出し `準備` の下に番号と項目が見える
     args:
       - name: items
         value: '["配布物を読み込む","描く先の要素を用意する","mount を呼ぶ"]'
@@ -59,7 +59,7 @@ args:
     required: false
     default: なし（`手順（{手順の数} ステップ）`）
     enabled_when: '`collapse` が `closed`・`open` のとき'
-    description: 折り畳みの見出し（`title=` の値）。`summary` の文字にする
+    description: 折り畳みの見出し（`collapse.title` の値）。`summary` の文字にする
     status: planned
 css_properties:
   - name: --mdmark-color-border

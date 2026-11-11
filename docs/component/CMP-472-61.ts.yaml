@@ -157,7 +157,7 @@ states:
       - name: rows
         value: '[["マーカー","HTML コメントで記載する目印"]]'
   - name: NoPin
-    description: '`-pin` ではみ出す表。ピン止めのボタンを出さず、どの列も留めない'
+    description: '`pin` を削除したはみ出す表。ピン止めのボタンを出さず、どの列も留めない'
     args:
       - name: features
         value: '[]'
@@ -185,7 +185,7 @@ states:
       - name: wide
         value: '[2]'
   - name: Check
-    description: '`check=必須`。必須の列の `true` を ✓、`false` を空欄で出し、既定の列は文字のまま'
+    description: '`必須` の列の `format.type` が `check`。必須の列の `true` を ✓、`false` を空欄で出し、既定の列は文字のまま'
     args:
       - name: kind
         value: data
@@ -263,7 +263,7 @@ states:
       - name: filterValues
         value: '[{"column":1,"text":"描画"}]'
   - name: ColumnsHidden
-    description: '`hide=説明` で説明の列を隠した。帯にテーブル設定のアイコンだけのボタンと、隠した列の数 `1` のバッジ'
+    description: '`説明` の列の `hidden` が `true` で説明の列を隠した。帯にテーブル設定のアイコンだけのボタンと、隠した列の数 `1` のバッジ'
     args:
       - name: kind
         value: data
@@ -383,7 +383,7 @@ states:
       - name: targetRow
         value: '1'
   - name: AllFeatures
-    description: 5 つの機能を全て付けた表（`hide=説明`・`total=数量:sum`）
+    description: 5 つの機能を全て付けた表（`説明` の列の `hidden`・`数量` の列の `total` の `sum`）
     args:
       - name: kind
         value: data
@@ -549,7 +549,7 @@ states:
       - name: totals
         value: '[{"column":1,"calc":"sum"}]'
   - name: ClosedTitle
-    description: 閉じた表と `title=`。見出し `リリースの一覧` だけが見える
+    description: 閉じた表と `collapse.title`。見出し `リリースの一覧` だけが見える
     args:
       - name: kind
         value: data
@@ -564,7 +564,7 @@ states:
       - name: title
         value: リリースの一覧
   - name: OpenTitle
-    description: 開いた表と `title=`。見出し `リリースの一覧` の下に表が見える
+    description: 開いた表と `collapse.title`。見出し `リリースの一覧` の下に表が見える
     args:
       - name: kind
         value: data
@@ -579,7 +579,7 @@ states:
       - name: title
         value: リリースの一覧
   - name: Highlighted
-    description: '`highlight=金額（円）`。強調した列のセルを blue の面の薄い色にし、見出しのセルの下端に線を付ける'
+    description: '`金額（円）` の列の `highlight`。強調した列のセルを blue の面の薄い色にし、見出しのセルの下端に線を付ける'
     args:
       - name: kind
         value: data
@@ -592,7 +592,7 @@ states:
       - name: highlight
         value: '[{"column":2,"color":"blue"}]'
   - name: RowColors
-    description: '`row-color=状態:完了=green,保留=yellow`。色を付けた行を面の薄い色にし、行の上下に線を付ける'
+    description: '`rows.colors` の `状態` が `完了` の行に `green`、`保留` の行に `yellow`。色を付けた行を面の薄い色にし、行の上下に線を付ける'
     args:
       - name: kind
         value: data
@@ -709,7 +709,7 @@ states:
       - name: filterValues
         value: '[{"column":0,"values":["東日本"]}]'
   - name: RowHeaderPinned
-    description: '`row-header=2` のはみ出す表。描いた直後に 1・2 列目を留め、1・2 列目のピン止めのボタンが押された状態'
+    description: '`header.columns` が `2` のはみ出す表。描いた直後に 1・2 列目を留め、1・2 列目のピン止めのボタンが押された状態'
     args:
       - name: kind
         value: data
@@ -739,7 +739,7 @@ states:
       - name: rows
         value: '[["^^","札幌","120"],["<<","仙台","98"],["東日本","東京","310"]]'
   - name: SettingsOpenReorder
-    description: '`+reorder +columns` の表でテーブル設定のパネルを開いた。各行につまみと目のアイコンがある'
+    description: '`features` に `reorder`・`columns` を記載した表でテーブル設定のパネルを開いた。各行につまみと目のアイコンがある'
     args:
       - name: kind
         value: data
@@ -752,7 +752,7 @@ states:
       - name: openColumns
         value: 'true'
   - name: SettingsReorderOnly
-    description: '`+reorder` だけの表でパネルを開いた。タイトルは `並び順` で、目のアイコンを出さない'
+    description: '`features` に `reorder` だけを記載した表でパネルを開いた。タイトルは `並び順` で、目のアイコンを出さない'
     args:
       - name: kind
         value: data
@@ -1036,7 +1036,7 @@ states:
       - name: widths
         value: '[{"column":0,"width":200}]'
   - name: WideResized
-    description: '`wide=説明` の説明の列を列の最小幅まで狭めた。幅を指定した `wide=` の列は折り返す'
+    description: '`width.mode` が `nowrap` の説明の列を列の最小幅まで狭めた。幅を指定した `nowrap` の列は折り返す'
     args:
       - name: kind
         value: data
@@ -1125,7 +1125,7 @@ args:
     type: 配列
     required: false
     default: '[]'
-    description: 広く取る列の位置（`wide=`）。列の `th`・`td` に class `mdmark-wide` を付け、セルを折り返さずに値の長さの幅を取る
+    description: 広く取る列の位置（`width.mode` が `nowrap` の列）。列の `th`・`td` に class `mdmark-wide` を付け、セルを折り返さずに値の長さの幅を取る
   - name: check
     type: 配列
     required: false
@@ -1224,7 +1224,7 @@ args:
     required: false
     default: なし（`表（{本文の行の数} 行）`）
     enabled_when: '`collapse` が `closed`・`open` のとき'
-    description: 折り畳みの見出し（`title=` の値）。`summary` の文字にする
+    description: 折り畳みの見出し（`collapse.title` の値）。`summary` の文字にする
   - name: highlight
     type: オブジェクトの配列
     required: false
@@ -1376,7 +1376,7 @@ events:
   - name: 列の幅を戻す
     when: つまみをダブルクリック・ダブルタップするか、つまみにフォーカスして Enter を押す
     value: 列の位置
-    description: '`mount` がその列の幅の指定を解除し、描いた直後の幅（`wide` の列は `wide=` の幅）に戻す'
+    description: '`mount` がその列の幅の指定を解除し、描いた直後の幅（`nowrap` の列は折り返さない幅）に戻す'
   - name: 階層を開閉する
     when: 階層の行の開閉のボタンを押す（Shift を押しながら押す、Enter・Space を含む）
     value: ボタンの `aria-expanded`
