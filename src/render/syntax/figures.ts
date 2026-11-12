@@ -168,8 +168,12 @@ export function numberFigures(state: StateCore): void {
   for (let index = 0; index < tokens.length; index++) {
     const token = tokens[index];
     const mark = markOf(token);
+    // 文字の ID を持たない fig のマーカーは記載の警告だけを出し、図表に番号を付けない
     const target =
-      mark?.name === "fig" && !mark.closing
+      mark?.name === "fig" &&
+      !mark.closing &&
+      typeof mark.options.id === "string" &&
+      mark.options.id !== ""
         ? figureTarget(state, index + 1)
         : undefined;
     if (!token || !mark || !target) {
@@ -178,7 +182,7 @@ export function numberFigures(state: StateCore): void {
       }
       continue;
     }
-    const id = typeof mark.options.id === "string" ? mark.options.id : "";
+    const id = String(mark.options.id);
     counts[target.kind] += 1;
     const number = counts[target.kind];
     const duplicated = figures.has(id);

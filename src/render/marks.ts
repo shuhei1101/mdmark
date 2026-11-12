@@ -5,7 +5,11 @@ import { resolveFeatures } from "../features.ts";
 import { renderEmbed } from "../parts/embed.ts";
 import { markOwn } from "../parts/own.ts";
 import { convertLegacyArgs } from "./legacy-marks.ts";
-import { type MarkOptions, readMarkArgs } from "./mark-options.ts";
+import {
+  hasUnclosedString,
+  type MarkOptions,
+  readMarkArgs,
+} from "./mark-options.ts";
 import {
   type MarkNote,
   type MarkProblem,
@@ -549,8 +553,40 @@ function takePageMarks(state: StateCore): void {
 }
 
 /** マーカーを取得し、`features` は設定を環境へ追加し、`page` は文書の先頭なら環境へ追加し、対応表と拡張の名前はマーカーの場所の要素にし、記法のマーカーはマーカーのトークンにし、それ以外は取り除く。引数の誤りは記載の警告にしてマーカーの前に差し込み、注記を記録する */
+/** 値の `-->` でコメントが閉じたマーカー（`<!-- 名前: {"title": "a -->` の後ろに文字が続く `html_block`）を、マーカーだけの `html_block` と、続く文字の段落に分ける */
+function splitEarlyClosedMarks(state: StateCore): void {
+  const out: Token[] = [];
+  for (const token of state.tokens) {
+    const match =
+      token.type === "html_block"
+        ? /^(<!--\s*[a-z][a-z0-9-]*:\s*(\{.*?)-->)(.*\S.*)$/s.exec(
+            token.content.trimEnd(),
+          )
+        : null;
+    const [, mark = "", args = "", rest = ""] = match ?? [];
+    if (!match || !hasUnclosedString(args)) {
+      out.push(token);
+      continue;
+    }
+    token.content = `${mark}\n`;
+    out.push(token);
+    const open = new state.Token("paragraph_open", "p", 1);
+    const inline = new state.Token("inline", "", 0);
+    const text = new state.Token("text", "", 0);
+    const close = new state.Token("paragraph_close", "p", -1);
+    open.map = token.map;
+    inline.map = token.map;
+    inline.content = rest;
+    text.content = rest;
+    inline.children = [text];
+    out.push(open, inline, close);
+  }
+  state.tokens = out;
+}
+
 export function takeMarks(state: StateCore): void {
   const env = state.env as RenderEnv;
+  splitEarlyClosedMarks(state);
   takeDefinitionRanges(state);
   takePageMarks(state);
   const out: Token[] = [];

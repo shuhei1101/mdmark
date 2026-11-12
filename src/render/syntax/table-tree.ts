@@ -348,7 +348,7 @@ export function linkTreeExamples(state: StateCore): void {
     if (!tabs || wrapperOpen < 0 || wrapperClose < 0) {
       const warning = warningBlock(state, {
         mark: meta?.treeMark,
-        message: `の example= の見出し \`${example}\` が文書に無いか、直下にタブがありません。見本を配置せずに描いています。`,
+        message: `の \`tree.example.heading\` の見出し \`${example}\` が文書に無いか、直下にタブがありません。見本を配置せずに描いています。`,
       });
       tokens.splice(Math.max(wrapperOpen, index), 0, warning);
       index += 1;

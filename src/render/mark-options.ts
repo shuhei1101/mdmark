@@ -120,7 +120,7 @@ const isUnquotedValue = (text: string, position: number): boolean => {
 };
 
 /** 閉じていない文字の値があるか（`"` の数が奇数） */
-const hasUnclosedString = (text: string): boolean => {
+export const hasUnclosedString = (text: string): boolean => {
   let quotes = 0;
   for (let index = 0; index < text.length; index++) {
     if (text[index] === "\\") {

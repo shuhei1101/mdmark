@@ -349,7 +349,7 @@ function readTree(options: {
         key === "key"
           ? {
               label: "tree.key.column",
-              message: `の列 \`${name}\` が表にありません。表の列は ${codes(headers)} です。階層にせずに描いています。`,
+              message: `の \`tree.key.column\` の列 \`${name}\` が表にありません。表の列は ${codes(headers)} です。階層にせずに描いています。`,
             }
           : unknownColumn(`tree.${key}.column`, name, headers),
       );
