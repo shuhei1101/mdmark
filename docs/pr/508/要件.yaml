@@ -1,10 +1,5 @@
 use_cases:
   - kind: single
-    scenario: docs/scenario/SC-472-19.yaml
-    impact: changed
-    detail: 読者が map のシーケンス図の参加者の表示と非表示を切り替え、非表示にした参加者が送る・受けるメッセージを全て隠す（#404 の残り）
-    depends_on: []
-  - kind: single
     scenario: docs/scenario/SC-472-42.yaml
     impact: changed
     detail: 読者が図をタップしてから、スマホの指のドラッグで図を縦にも動かせる。タップする前の縦のドラッグは文書のスクロールにする（#357。共通の図の枠のため、map・フロー図・シーケンス図・グラフ・ER 図・mermaid の図・埋め込んだ HTML のチャートの全てに当たる）
@@ -37,7 +32,7 @@ use_cases:
   - kind: composite
     scenario: docs/scenario/SC-472-87.yaml
     impact: run_only
-    detail: 流れは変わらないが、シーケンス図の参加者の操作と図の枠のタッチの変更が壊しうる
+    detail: 流れは変わらないが、図の枠のタッチの変更が壊しうる
     depends_on: []
   - kind: composite
     scenario: docs/scenario/SC-472-85.yaml
@@ -53,7 +48,7 @@ use_cases:
 docs:
   - page: docs/guide/図を描く-Mermaidと補足で図を描く.md
     new: false
-    change: map のシーケンス図の参加者の表示と非表示の操作と、スマホの指で図を動かす操作を追加する
+    change: スマホの指で図を動かす操作（図をタップしてから動かす）を追加する
     status: todo
   - page: docs/guide/記載する-本文を部品で組む.md
     new: false
@@ -79,9 +74,9 @@ scope_out:
   - item: 今の flow（座標の JSON のフロー図）の箱の種類 dm の表示名「意思決定モデル」
     reason: 'map は固定のノードの種類を持たず、表示名は使う側の設定 map.kinds の label で決まるため、#464 の #333 の要件は develop で満たされている。今の flow の固定の種類を設定で作る形にするのは #470 が扱う'
     plan: '#470'
-  - item: 今の sequence（座標の JSON のシーケンス図）での参加者の表示と非表示
-    reason: '#464 は map への追加で、今の sequence は map へ移してから廃止する（#467）。図の枠のタッチでのドラッグは、図の枠が共通の部品のため今の図にも当て、この PR に含める'
-    plan: '#467'
+  - item: map・今の sequence のシーケンス図での参加者の表示と非表示（#404 の残り）
+    reason: ユーザーが参加者の非表示の機能は不要と判断した（https://github.com/shuhei1101/mdmark/pull/508#discussion_r4555259514 ）。図の枠のタッチでのドラッグは、図の枠が共通の部品のため今の図にも当て、この PR に含める
+    plan: none
   - item: mdmark check を引数なしで実行するフォルダの点検での、罫線のコードブロックの警告
     reason: フォルダの点検は描いたときの記載の警告を集めず（知らないマーカー・図の定義・map の補足などだけ）、記載した後の点検は --text・--file（MCP の check）で行うため。記載の警告をフォルダの点検へ広げるのは警告全体に関わる別の題材
     plan: none
