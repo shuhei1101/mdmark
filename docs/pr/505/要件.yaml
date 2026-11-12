@@ -1,0 +1,75 @@
+use_cases:
+  - kind: single
+    scenario: docs/scenario/SC-472-73.yaml
+    impact: changed
+    detail: '#458: 列の幅の指定が無い表で、列ごとにセルの文字の量と改行から、折り返すか・列の幅・折り返す列の最小と最大の幅を決めて描く。余白が多いときに表を最大の幅にしない・見える幅が狭いときに折り返すか横スクロールにするかの判定も加える'
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-20.yaml
+    impact: changed
+    detail: '#459: 開く階層を記載しないファイルツリーを、全てのフォルダを開いた状態で描く'
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-17.yaml
+    impact: changed
+    detail: '#460: コードブロックの言語のラベルの帯と本文の間の線を出さない（タイトルを持つコードブロック・ダークの配色・印刷でも同じ）'
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-68.yaml
+    impact: changed
+    detail: '#501: 右側の目次の項目を押したとき、見出しを囲む閉じたセクションに加えて、押した見出し自身の閉じたセクションも開く'
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-21.yaml
+    impact: following
+    detail: '#501: URL の #ID で閉じたセクションの見出しへ移るとき、見出し自身のセクションも開くかを目次と合わせて決め、決めた扱いに記述を追随させる'
+    depends_on:
+      - docs/scenario/SC-472-68.yaml
+  - kind: single
+    scenario: docs/scenario/SC-472-58.yaml
+    impact: run_only
+    detail: 印刷で、全て開いたファイルツリー・帯と本文の間の線が無いコードブロック・自動で決めた幅の表が崩れないかを確かめる
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-31.yaml
+    impact: run_only
+    detail: VS Code のプレビューで右側の目次の項目を押したとき、押した見出し自身の閉じたセクションも開くかを確かめる
+    depends_on: []
+docs:
+  - page: docs/guide/記法.md
+    new: false
+    change: 表の `columns.{列名}.width`（`mode`・`min`・`max`）と指定が無いときの自動の列の幅、ファイルツリーの `depth` を省いたときの既定（全て開く。読み込めない値のときの描き方を含む）、目次の項目を押したときに開くセクションを修正する
+    status: todo
+  - page: docs/guide/記載する-表に機能を付ける.md
+    new: false
+    change: 列の幅を自動で決めること、`width.min`・`width.max` の記載、列の幅のつまみで狭められる下限（今の 6em）と描いた直後の幅に戻すときの幅を修正する
+    status: todo
+  - page: docs/guide/記載する-本文を部品で組む.md
+    new: false
+    change: ファイルツリーの既定を全て開く描き方に、目次の項目を押したときに開くセクションを押した見出し自身までに修正する
+    status: todo
+  - page: docs/guide/API.md
+    new: false
+    change: 表の列の幅の CSS 変数（`--mdmark-column-min-width` 等）を、自動の列の幅で決めた値と合わせて修正する（変数を変えないと設計で決まれば修正しない）
+    status: todo
+  - page: docs/er/ER-477-2.yaml
+    new: false
+    change: '`columns.{列名}.width.min`・`width.max` の単位と、省いたときの自動の計算の説明を、部品設計『表』の判定フローチャートと合わせる'
+    status: todo
+  - page: docs/er/ER-477-5.yaml
+    new: false
+    change: '`depth` の説明の「#459 に合わせる」の注記を、既定が全て開くことの記述に修正する'
+    status: todo
+scope_out:
+  - item: 表の留めた列の幅の合計が見える幅を超えるときに留めた列が重なる事象
+    reason: '列の幅の決め方ではなく留めた列の配置の事象で、計画で #458 の後ろへ回している'
+    plan: '#453'
+  - item: ファイルツリーの手で開閉した状態を、編集で描き直した後も保つこと
+    reason: 既定の開き方ではなく描き直しをまたいだ開閉の引き継ぎで、別の Issue が扱う
+    plan: '#498'
+  - item: E2E のテスト（tests/e2e）の既定の値・期待値の修正
+    reason: '開発の間は E2E を作らず修正もしない決定（#450 の D-307 A）で、今ある E2E は #450 が削除する'
+    plan: '#450'
+  - item: ファイルツリーの既定の開き方を設定ファイルで変えるキー
+    reason: '#459 の受付判断で設定のキーは追加しないと決めた。閉じて始める文書はマーカーの `depth` を記載すれば足りる'
+    plan: none
