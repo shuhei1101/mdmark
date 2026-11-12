@@ -1,0 +1,448 @@
+$ npm run test:unit
+
+> test:unit
+> vitest run --project 'unit*'
+
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-syntax-map-sequence-touch-and-tree-warning
+
+ ❯ |unit| tests/unit/src/render/mark-schema.test.ts (8 tests | 1 failed) 1248ms
+   × test_mark_schemas_match_er 167ms
+5:34:20 AM [vite] Internal server error: Failed to resolve import "../../../../src/interact/diagram-touch.ts" from "tests/unit/src/interact/diagram-touch.browser.test.ts". Does the file exist?
+  Plugin: vite:import-analysis
+  File: /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-syntax-map-sequence-touch-and-tree-warning/tests/unit/src/interact/diagram-touch.browser.test.ts:5:31
+  2  |  import { createRootFromHtml, removeRoots } from "../../helpers/dom.ts";
+  3  |  /** 指で図を動かす操作中の処理を読み込む（実装が無い間は各テストが個別に失敗する） */
+  4  |  const loadTouch = () => import("../../../../src/interact/diagram-touch.ts");
+     |                                 ^
+  5  |  const detachers = [];
+  6  |  afterEach(() => {
+      at TransformPluginContext._formatLog (file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-syntax-map-sequence-touch-and-tree-warning/node_modules/vite/dist/node/chunks/node.js:8861:39)
+      at TransformPluginContext.error (file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-syntax-map-sequence-touch-and-tree-warning/node_modules/vite/dist/node/chunks/node.js:8858:14)
+      at resolveId (file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-syntax-map-sequence-touch-and-tree-warning/node_modules/vite/dist/node/chunks/node.js:26533:18)
+      at async file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-syntax-map-sequence-touch-and-tree-warning/node_modules/vite/dist/node/chunks/node.js:26632:23
+      at async Promise.all (index 2)
+      at async TransformPluginContext.transform (file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-syntax-map-sequence-touch-and-tree-warning/node_modules/vite/dist/node/chunks/node.js:26605:4)
+      at async EnvironmentPluginContainer.transform (file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-syntax-map-sequence-touch-and-tree-warning/node_modules/vite/dist/node/chunks/node.js:8632:14)
+      at async loadAndTransform (file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-syntax-map-sequence-touch-and-tree-warning/node_modules/vite/dist/node/chunks/node.js:20108:26)
+ ❯ |unit-browser (chromium)| tests/unit/src/interact/diagram-touch.browser.test.ts (0 test)
+ ❯ |unit-browser (chromium)| tests/unit/src/map/drag.browser.test.ts (8 tests | 1 failed) 2101ms
+   × test_start_drag_when_cancelled 175ms
+ ❯ |unit-browser (chromium)| tests/unit/src/map/sequence-view.browser.test.ts (4 tests | 1 failed) 3335ms
+   × test_attach_map_sequence_when_reorder_cancelled 233ms
+ ❯ |unit-browser (chromium)| tests/unit/src/map/flow-view.browser.test.ts (7 tests | 1 failed) 3415ms
+   × test_attach_map_flow_when_drag_cancelled 206ms
+ ❯ |unit| tests/unit/src/render/syntax/code-blocks.test.ts (38 tests | 4 failed) 98ms
+   × test_read_code_spec_when_tree_warning 8ms
+   × test_count_tree_lines 1ms
+   × test_count_tree_lines_when_not_tree 0ms
+   × test_build_code_blocks_when_tree_lines 6ms
+ ❯ |unit-browser (chromium)| tests/unit/src/interact/er-folds.browser.test.ts (2 tests | 1 failed) 15442ms
+   × test_attach_er_folds 15382ms
+ ❯ |unit-browser (chromium)| tests/unit/src/interact/diagrams.browser.test.ts (13 tests | 1 failed) 15339ms
+   × test_open_diagram_dialog_when_tip_open 15048ms
+ ❯ |unit-browser (chromium)| tests/unit/src/interact/lightbox.browser.test.ts (7 tests | 1 failed) 15291ms
+   × test_attach_lightbox_when_closed 15067ms
+ ❯ |unit-browser (chromium)| tests/unit/vscode/src/webview/features/preview/panel/panel-screen.browser.test.tsx (15 tests | 2 failed) 33305ms
+   × test_panel_screen_when_reload_clicked 15049ms
+   × test_panel_screen_when_config_error 15069ms
+
+⎯⎯⎯⎯⎯⎯ Failed Suites 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/interact/diagram-touch.browser.test.ts [ tests/unit/src/interact/diagram-touch.browser.test.ts ]
+Error: Failed to import test file /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-syntax-map-sequence-touch-and-tree-warning/tests/unit/src/interact/diagram-touch.browser.test.ts
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=7018f016:5843:5
+ ❯ collectTests node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=7018f016:5819:3
+ ❯ startTests node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=7018f016:6503:17
+
+Caused by: TypeError: Failed to fetch dynamically imported module: http://localhost:63315/mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-syntax-map-sequence-touch-and-tree-warning/tests/unit/src/interact/diagram-touch.browser.test.ts?import&browserv=1794515660295
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/14]⎯
+
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 13 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit| tests/unit/src/render/mark-schema.test.ts > test_mark_schemas_match_er
+AssertionError: expected [ 'code: tree_warning がスキーマにありません' ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   "code: tree_warning がスキーマにありません",
++ ]
+
+ ❯ tests/unit/src/render/mark-schema.test.ts:305:22
+    303|   // 検証
+    304|   expect(Object.keys(schemas).length).toBeGreaterThan(0);
+    305|   expect(mismatches).toEqual([]);
+       |                      ^
+    306|   expect(unknownKeywords).toEqual([]);
+    307| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/14]⎯
+
+ FAIL  |unit| tests/unit/src/render/syntax/code-blocks.test.ts > test_read_code_spec_when_tree_warning
+AssertionError: expected undefined to be false // Object.is equality
+
+- Expected:
+false
+
++ Received:
+undefined
+
+ ❯ tests/unit/src/render/syntax/code-blocks.test.ts:722:27
+    720|   const omitted = readCodeSpec({ options: {}, lineCount: 3 });
+    721|   // 検証
+    722|   expect(off.treeWarning).toBe(false);
+       |                           ^
+    723|   expect(on.treeWarning).toBe(true);
+    724|   expect(omitted.treeWarning).toBe(true);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/14]⎯
+
+ FAIL  |unit| tests/unit/src/render/syntax/code-blocks.test.ts > test_count_tree_lines
+TypeError: countTreeLines is not a function
+ ❯ tests/unit/src/render/syntax/code-blocks.test.ts:743:17
+    741|   ].join("\n");
+    742|   // 実行
+    743|   const count = countTreeLines(source);
+       |                 ^
+    744|   // 検証
+    745|   expect(count).toBe(7);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/14]⎯
+
+ FAIL  |unit| tests/unit/src/render/syntax/code-blocks.test.ts > test_count_tree_lines_when_not_tree
+TypeError: countTreeLines is not a function
+ ❯ tests/unit/src/render/syntax/code-blocks.test.ts:756:17
+    754|   );
+    755|   // 実行
+    756|   const count = countTreeLines(source);
+       |                 ^
+    757|   // 検証
+    758|   expect(count).toBe(0);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/14]⎯
+
+ FAIL  |unit| tests/unit/src/render/syntax/code-blocks.test.ts > test_build_code_blocks_when_tree_lines
+AssertionError: expected [ Array(6) ] to deeply equal [ 'tree-warning', 'code', …(8) ]
+
+- Expected
++ Received
+
+  [
+-   "tree-warning",
+    "code",
+-   "tree-warning",
+    "code",
+    "code",
+    "code",
+    "tree",
+-   "warning",
+-   "tree-warning",
+    "code",
+  ]
+
+ ❯ tests/unit/src/render/syntax/code-blocks.test.ts:815:52
+    813|           : "other",
+    814|   );
+    815|   expect(kinds.filter((kind) => kind !== "other")).toEqual([
+       |                                                    ^
+    816|     "tree-warning",
+    817|     "code",
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/14]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/interact/diagrams.browser.test.ts > test_open_diagram_dialog_when_tip_open
+TimeoutError: locator.hover: Timeout 14861ms exceeded.
+Call log:
+  - waiting for locator('[data-vitest="true"]').contentFrame().getByRole('dialog').getByLabel('問い合わせへの自動返信の構成範囲: メールを受け取ってから返信するまで・更新日: 2026-10-').getByText('メール', { exact: true })
+    - locator resolved to <span tabindex="0" data-line="flow" data-wire="w-mail" data-tip-owner="w-mail" class="mdmark-diagram-label has-tip" aria-describedby="mdmark-diagram-10-0-modal-tip-5">メール</span>
+  - attempting hover action
+    2 × waiting for element to be visible and stable
+      - element is visible and stable
+      - scrolling into view if needed
+      - done scrolling
+      - <vite-error-overlay></vite-error-overlay> intercepts pointer events
+    - retrying hover action
+    - waiting 20ms
+    2 × waiting for element to be visible and stable
+      - element is visible and stable
+      - scrolling into view if needed
+      - done scrolling
+      - <vite-error-overlay></vite-error-overlay> intercepts pointer events
+    - retrying hover action
+      - waiting 100ms
+    26 × waiting for element to be visible and stable
+       - element is visible and stable
+       - scrolling into view if needed
+       - done scrolling
+       - <vite-error-overlay></vite-error-overlay> intercepts pointer events
+     - retrying hover action
+       - waiting 500ms
+    - waiting for element to be visible and stable
+    - element is visible and stable
+    - scrolling into view if needed
+    - done scrolling
+
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/diagrams.browser.test.ts/test_open_diagram_dialog_when_tip_open.png
+
+ ❯ tests/unit/src/interact/diagrams.browser.test.ts:284:21
+    282|   // 実行・検証
+    283|   for (const owner of owners.slice(0, 2)) {
+    284|     await userEvent.hover(owner);
+       |                     ^
+    285|     const tip = document.getElementById(
+    286|       owner.getAttribute("aria-describedby") ?? "",
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=7018f016:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/14]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/interact/er-folds.browser.test.ts > test_attach_er_folds
+TimeoutError: locator.click: Timeout 13547ms exceeded.
+Call log:
+  - waiting for locator('[data-vitest="true"]').contentFrame().getByLabel('「注文」の主キーと外部キー以外の列')
+    - locator resolved to <button type="button" aria-expanded="true" data-er-fold="orders" class="mdmark-diagram-er-fold" aria-label="「注文」の主キーと外部キー以外の列">…</button>
+  - attempting click action
+    2 × waiting for element to be visible, enabled and stable
+      - element is visible, enabled and stable
+      - scrolling into view if needed
+      - done scrolling
+      - <vite-error-overlay></vite-error-overlay> intercepts pointer events
+    - retrying click action
+    - waiting 20ms
+    2 × waiting for element to be visible, enabled and stable
+      - element is visible, enabled and stable
+      - scrolling into view if needed
+      - done scrolling
+      - <vite-error-overlay></vite-error-overlay> intercepts pointer events
+    - retrying click action
+      - waiting 100ms
+    20 × waiting for element to be visible, enabled and stable
+       - element is visible, enabled and stable
+       - scrolling into view if needed
+       - done scrolling
+       - <vite-error-overlay></vite-error-overlay> intercepts pointer events
+     - retrying click action
+       - waiting 500ms
+
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/er-folds.browser.test.ts/test_attach_er_folds.png
+
+ ❯ tests/unit/src/interact/er-folds.browser.test.ts:83:19
+     81|   const before = endY(figure);
+     82|   // 実行
+     83|   await userEvent.click(button);
+       |                   ^
+     84|   const folded = endY(figure);
+     85|   const foldedRows = otherRows(orders).map((row) => row.hidden);
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=7018f016:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/14]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/interact/lightbox.browser.test.ts > test_attach_lightbox_when_closed
+TimeoutError: locator.click: Timeout 14845ms exceeded.
+Call log:
+  - waiting for locator('[data-vitest="true"]').contentFrame().getByLabel('拡大した画像。ドラッグか矢印キーで動かす')
+    - locator resolved to <div tabindex="0" class="mdmark-lightbox-stage" aria-label="拡大した画像。ドラッグか矢印キーで動かす">…</div>
+  - attempting click action
+    2 × waiting for element to be visible, enabled and stable
+      - element is visible, enabled and stable
+      - scrolling into view if needed
+      - done scrolling
+      - <vite-error-overlay></vite-error-overlay> intercepts pointer events
+    - retrying click action
+    - waiting 20ms
+    2 × waiting for element to be visible, enabled and stable
+      - element is visible, enabled and stable
+      - scrolling into view if needed
+      - done scrolling
+      - <vite-error-overlay></vite-error-overlay> intercepts pointer events
+    - retrying click action
+      - waiting 100ms
+    27 × waiting for element to be visible, enabled and stable
+       - element is visible, enabled and stable
+       - scrolling into view if needed
+       - done scrolling
+       - <vite-error-overlay></vite-error-overlay> intercepts pointer events
+     - retrying click action
+       - waiting 500ms
+
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/lightbox.browser.test.ts/test_attach_lightbox_when_closed.png
+
+ ❯ tests/unit/src/interact/lightbox.browser.test.ts:198:19
+    196|     throw new Error("画像の場所が無い");
+    197|   }
+    198|   await userEvent.click(stage, { position: { x: 2, y: 2 } });
+       |                   ^
+    199|   // 検証
+    200|   await vi.waitFor(() => {
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=7018f016:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/14]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/map/drag.browser.test.ts > test_start_drag_when_cancelled
+AssertionError: expected 1 to be greater than or equal to 2
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/drag.browser.test.ts/test_start_drag_when_cancelled.png
+
+ ❯ tests/unit/src/map/drag.browser.test.ts:267:17
+    265|   );
+    266|   // 検証: pointercancel で押した時点の状態に戻り、その後は onMove を呼ばない
+    267|   expect(count).toBeGreaterThanOrEqual(2);
+       |                 ^
+    268|   expect(moves.at(-1)).toBe(STATE);
+    269|   expect(moves).toHaveLength(count);
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=7018f016:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/14]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/map/flow-view.browser.test.ts > test_attach_map_flow_when_drag_cancelled
+AssertionError: expected 'left: 466px; top: 230px; width: 120px…' to be 'left: 466px; top: 189.5px; width: 120…' // Object.is equality
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/flow-view.browser.test.ts/test_attach_map_flow_when_drag_cancelled.png
+
+Expected: "left: 466px; top: 189.5px; width: 120px; height: 63px;"
+Received: "left: 466px; top: 230px; width: 120px; height: 63px;"
+
+ ❯ tests/unit/src/map/flow-view.browser.test.ts:216:23
+    214|   // 検証
+    215|   expect(saved().positions?.mount).toBeUndefined();
+    216|   expect(afterCancel).toBe(before);
+       |                       ^
+    217|   expect(
+    218|     root.querySelector<HTMLElement>('[data-node="mount"]')?.style.cssT…
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=7018f016:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/14]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/map/sequence-view.browser.test.ts > test_attach_map_sequence_when_reorder_cancelled
+AssertionError: expected [ 'mount', 'marker', 'mermaid', …(2) ] to be undefined
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/sequence-view.browser.test.ts/test_attach_map_sequence_when_reorder_cancelled.png
+
+- Expected:
+undefined
+
++ Received:
+[
+  "mount",
+  "marker",
+  "mermaid",
+  "user",
+  "layout",
+]
+
+ ❯ tests/unit/src/map/sequence-view.browser.test.ts:135:25
+    133|   );
+    134|   // 検証
+    135|   expect(saved().order).toBeUndefined();
+       |                         ^
+    136|   expect(root.querySelector(".map-insert-line")).toBeNull();
+    137|   expect(
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=7018f016:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[12/14]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/vscode/src/webview/features/preview/panel/panel-screen.browser.test.tsx > test_panel_screen_when_reload_clicked
+TimeoutError: locator.click: Timeout 14891ms exceeded.
+Call log:
+  - waiting for locator('[data-vitest="true"]').contentFrame().getByRole('button', { name: 'リロード' })
+    - locator resolved to <button type="button" data-slot="button" data-action="reload" class="inline-flex h-9 min-w-9 cursor-pointer touch-manipulation items-center justify-center gap-2 rounded-md border px-4 text-sm font-medium whitespace-nowrap focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring border-transparent bg-primary text-primary-foreground hover:bg-primary-hover">リロード</button>
+  - attempting click action
+    2 × waiting for element to be visible, enabled and stable
+      - element is visible, enabled and stable
+      - scrolling into view if needed
+      - done scrolling
+      - <vite-error-overlay></vite-error-overlay> intercepts pointer events
+    - retrying click action
+    - waiting 20ms
+    2 × waiting for element to be visible, enabled and stable
+      - element is visible, enabled and stable
+      - scrolling into view if needed
+      - done scrolling
+      - <vite-error-overlay></vite-error-overlay> intercepts pointer events
+    - retrying click action
+      - waiting 100ms
+    23 × waiting for element to be visible, enabled and stable
+       - element is visible, enabled and stable
+       - scrolling into view if needed
+       - done scrolling
+       - <vite-error-overlay></vite-error-overlay> intercepts pointer events
+     - retrying click action
+       - waiting 500ms
+
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/panel-screen.browser.test.tsx/test_panel_screen_when_reload_clicked.png
+
+ ❯ tests/unit/vscode/src/webview/features/preview/panel/panel-screen.browser.test.tsx:239:19
+    237|   const button = await screen.findByRole("button", { name: "リロード" });
+    238|   // 実行
+    239|   await userEvent.click(button);
+       |                   ^
+    240|   // 検証
+    241|   expect(postedOf(api.posted, "reload")).toEqual([{ type: "reload" }]);
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=7018f016:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[13/14]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/vscode/src/webview/features/preview/panel/panel-screen.browser.test.tsx > test_panel_screen_when_config_error
+TimeoutError: locator.click: Timeout 14835ms exceeded.
+Call log:
+  - waiting for locator('[data-vitest="true"]').contentFrame().getByRole('button', { name: '設定ファイルを開く' })
+    - locator resolved to <button type="button" data-slot="button" data-action="openConfig" class="inline-flex h-9 min-w-9 cursor-pointer touch-manipulation items-center justify-center gap-2 rounded-md border px-4 text-sm font-medium whitespace-nowrap focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring border-warning-border bg-background text-foreground hover:bg-secondary">設定ファイルを開く</button>
+  - attempting click action
+    2 × waiting for element to be visible, enabled and stable
+      - element is visible, enabled and stable
+      - scrolling into view if needed
+      - done scrolling
+      - <vite-error-overlay></vite-error-overlay> intercepts pointer events
+    - retrying click action
+    - waiting 20ms
+    2 × waiting for element to be visible, enabled and stable
+      - element is visible, enabled and stable
+      - scrolling into view if needed
+      - done scrolling
+      - <vite-error-overlay></vite-error-overlay> intercepts pointer events
+    - retrying click action
+      - waiting 100ms
+    26 × waiting for element to be visible, enabled and stable
+       - element is visible, enabled and stable
+       - scrolling into view if needed
+       - done scrolling
+       - <vite-error-overlay></vite-error-overlay> intercepts pointer events
+     - retrying click action
+       - waiting 500ms
+
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/panel-screen.browser.test.tsx/test_panel_screen_when_config_error.png
+
+ ❯ tests/unit/vscode/src/webview/features/preview/panel/panel-screen.browser.test.tsx:287:19
+    285|       0,
+    286|   };
+    287|   await userEvent.click(
+       |                   ^
+    288|     screen.getByRole("button", { name: "設定ファイルを開く" }),
+    289|   );
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=7018f016:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[14/14]⎯
+
+
+ Test Files  10 failed | 275 passed (285)
+      Tests  13 failed | 2055 passed (2068)
+   Start at  05:34:11
+   Duration  120.40s (worker 69%, tests 20%, import 9%, transform 2%)
+
+exit 1
