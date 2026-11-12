@@ -67,7 +67,10 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-12T15:24:43.886265+00:00'
   - process: 単体テスト作成
-    status: todo
+    status: done
+    note: 廃止する writePluginManifest の単体テスト test_write_plugin_manifest を削除しただけで、新しい単体テストは無いため Red は出ない
+    updated_by: planner
+    updated_at: '2026-11-12T15:56:23.070524+00:00'
   - process: 実装
     status: todo
   - process: 結合テスト作成
