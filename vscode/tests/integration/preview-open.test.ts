@@ -562,8 +562,16 @@ suite("プレビューを開く", () => {
     );
     const elapsed = Date.now() - start;
     await waitForRendered(record);
-    // 検証: 待ちの上限（3 秒）を少し過ぎたところで要求される
-    if (!(elapsed >= 2800 && elapsed < 6000)) {
+    // 検証: 待ちの上限（3 秒）より前には要求せず、/tags の要求を打ち切ってから要求する（負荷で遅れる経過時間には上限を置かない）
+    const tagsClosed = async () => {
+      const tagRequests = await stub.tagRequests();
+      return (
+        tagRequests.length > 0 &&
+        tagRequests.every(({ closedAt }) => closedAt !== null)
+      );
+    };
+    await waitFor(tagsClosed, { timeout: 5000 }).catch(() => undefined);
+    if (!(elapsed >= 2800 && (await tagsClosed()))) {
       // 出力チャネルがログファイルへ書き込み終えるのを待つ
       await sleep(1000);
       const timings = (await stub.tagRequests()).map(
@@ -634,11 +642,23 @@ suite("プレビューを開く", () => {
     assert.ok(light?.className.split(" ").includes("mdmark-theme-light"));
     // 実行: preview.theme を dark にする
     await setSetting("preview.theme", "dark");
-    await waitForRendered(record, 2);
     // 検証: 設定ファイルの明暗を指定せず、包む要素を dark にする
-    assert.ok(!("colorScheme" in (renders(record).at(-1)?.config ?? {})));
-    const [wrapper] = await inspect("#mdmark-preview");
-    assert.ok(wrapper?.className.split(" ").includes("mdmark-theme-dark"));
+    await waitFor(
+      () =>
+        renders(record).some(
+          (message) =>
+            message.theme === "dark" && !("colorScheme" in message.config),
+        ),
+      { message: "dark で colorScheme を除いた config を送っていない" },
+    );
+    await waitForRendered(record, renders(record).length);
+    await waitFor(
+      async () =>
+        (await inspect("#mdmark-preview"))[0]?.className
+          .split(" ")
+          .includes("mdmark-theme-dark") ?? false,
+      { message: "包む要素が mdmark-theme-dark を持たない" },
+    );
     // 実行: b.md を開き、preview.theme を light にする
     await openMarkdown("b.md");
     await vscode.commands.executeCommand("mdmark.openPreviewToSide");
