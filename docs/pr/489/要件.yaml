@@ -1,0 +1,7 @@
+docs:
+  - page: src/files.yaml
+    new: false
+    change: '#352 の render/syntax/card-grid.ts・render/page.ts、#354 の plugin/ の 8 ファイル、#444 の plugin/setup/systemd.ts の行を追加する（description はモジュール構成の受け持ち、related はモジュール構成への implements）'
+    status: todo
+use_cases: []
+scope_out: []
