@@ -588,7 +588,7 @@ flows:
       - name: 配布物を読み込んだ Node の処理
         description: 正常系と同じ
       - name: 列の指定を誤った Markdown
-        description: '`<!-- table: {"kind": "data", "columns": {"無い列": {"pinned": true, "format": {"type": "check"}}, "説明": {"width": {"mode": "nowrap"}}}} -->` 〜 `<!-- /table -->` の表 A と、`<!-- table: {"kind": "data", "features": {"pin": {"enabled": false}}, "columns": {"名前": {"pinned": true}}} -->` 〜 `<!-- /table -->` の表 B と、`<!-- table: {"kind": "data", "columns": {"名前": {"pinned": true}, "無い列": {"pinned": true}}} -->` 〜 `<!-- /table -->` の表 C を持つ文書'
+        description: '`<!-- table: {"kind": "data", "columns": {"無い列": {"pinned": true, "format": {"type": "check"}}, "説明": {"width": {"mode": "nowrap"}}}} -->` 〜 `<!-- /table -->` の表 A と、`<!-- table: {"kind": "data", "features": {"pin": {"enabled": false}}, "columns": {"名前": {"pinned": true}}} -->` 〜 `<!-- /table -->` の表 B と、`<!-- table: {"kind": "data", "columns": {"名前": {"pinned": true}, "無い列": {"pinned": true}}} -->` 〜 `<!-- /table -->` の表 C と、`<!-- table: {"kind": "data", "columns": {"名前": {"filter": {"type": "range"}}, "説明": {"filter": {}}}} -->` 〜 `<!-- /table -->` の表 D を持つ文書'
         notes: 3 つの表とも列 `名前`・`説明`
       - name: Mock
         description: 差し替える依存は無い
@@ -603,8 +603,9 @@ flows:
     expected:
       - 表 A の `説明` の列の `th`・`td` が class `mdmark-wide` を持ち、表 A が `data-pin`・`data-check` を持たない。表 A の前に記載の警告が 1 つあり、本文に表に無い列名 `無い列` がある
       - 表 B の `data-features` に `pin` が無く、表 B が `data-pin` を持たず、表 B の前に記載の警告が無い
-      - '`<div class="mdmark-syntax-warning" role="note">` が 2 つだけある'
+      - '`<div class="mdmark-syntax-warning" role="note">` が 3 つだけある'
       - 表 C が `data-pin="0"` を持ち、表 C の前の 1 つの記載の警告の本文に表に無い列名として `無い列` だけがある
+      - '表 D が `data-filter="1:select"` を持ち（選べる値に無い種類の `名前` の列には絞り込みを付けない）、表 D の前の 1 つの記載の警告の本文に `columns.名前.filter.type` の `range` と選べる値 `select`・`text`・`date` がある'
     test: test_normal_when_table_column_errors
   - name: 正常系（ビューのマーカー）
     summary: ビューのマーカーの範囲を、引数を持つ `mdmark-view` の中に表を残した HTML にする
