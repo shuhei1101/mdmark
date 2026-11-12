@@ -2274,6 +2274,87 @@ test("test_normal_when_sections_and_row_details_toggled", async () => {
   }
 });
 
+// 読者が開閉したセクションを update の後も同じ開閉で描き、マーカーを変えたセクションと新しいセクションはマーカーのとおりに描く（正常系）
+test("test_normal_when_sections_kept_on_update", async () => {
+  // 準備
+  history.replaceState(null, "", "#注意");
+  const el = createElement();
+  const markdown = [
+    "## 概要",
+    "",
+    "概要の段落",
+    "",
+    "## 補足",
+    "",
+    '<!-- section: {"open": false} -->',
+    "",
+    "補足の段落",
+    "",
+    "### 注意",
+    "",
+    "注意の段落",
+    "",
+    "## 参考",
+    "",
+    "参考の段落",
+    "",
+  ].join("\n");
+  const updated = [
+    "## 概要",
+    "",
+    "書き換えた概要の段落",
+    "",
+    "## 補足",
+    "",
+    '<!-- section: {"open": false} -->',
+    "",
+    "書き換えた補足の段落",
+    "",
+    "### 注意",
+    "",
+    "書き換えた注意の段落",
+    "",
+    "## 参考",
+    "",
+    '<!-- section: {"open": false} -->',
+    "",
+    "書き換えた参考の段落",
+    "",
+    "## 付録",
+    "",
+    "付録の段落",
+    "",
+  ].join("\n");
+  const toggleOf = (id: string) =>
+    find<HTMLButtonElement>(el, `[aria-controls="section-${id}"]`);
+  const bodyOf = (id: string) => find<HTMLElement>(el, `[id="section-${id}"]`);
+  try {
+    const handle = await mountTracked(el, { markdown });
+    expect(bodyOf("補足").hasAttribute("hidden")).toBe(false);
+    toggleOf("概要").click();
+    toggleOf("補足").click();
+    toggleOf("参考").click();
+    toggleOf("参考").click();
+    // 実行
+    handle.update(updated);
+    // 検証: 覚えた開閉で概要と補足を閉じ、URL が #注意 のままでも補足を開き直さない
+    for (const id of ["概要", "補足"]) {
+      expect(bodyOf(id).getAttribute("hidden")).toBe("until-found");
+      expect(toggleOf(id).getAttribute("aria-expanded")).toBe("false");
+    }
+    // 検証: マーカーを追加した参考は閉じ、追加した付録は開く
+    expect(bodyOf("参考").getAttribute("hidden")).toBe("until-found");
+    expect(bodyOf("付録").hasAttribute("hidden")).toBe(false);
+    // 実行・検証: もう一度 mount すると、概要は開き、補足は #注意 で開く
+    handle.destroy();
+    await mountTracked(el, { markdown: updated });
+    expect(bodyOf("概要").hasAttribute("hidden")).toBe(false);
+    expect(bodyOf("補足").hasAttribute("hidden")).toBe(false);
+  } finally {
+    history.replaceState(null, "", location.pathname);
+  }
+});
+
 // 印刷の前にタブの全ての中身と閉じた記法を開き、印刷の後に戻す（正常系）
 test("test_normal_when_printed_with_syntax", async () => {
   // 準備

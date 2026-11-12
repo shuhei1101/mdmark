@@ -254,6 +254,36 @@ scenarios:
       - マーカーの場所に、閉じのマーカー `<!-- /details -->` が無いことを記載した記載の警告がある
       - 段落が折りたたまれずに表示されている
     test: test_error_when_details_unclosed
+  - name: 正常シナリオ（描き直しても手で変えた開閉を保つ）
+    setup:
+      - name: mdmark を読み込むページ
+        description: 正常シナリオと同じ
+        notes: '`mount` の戻り値の `update` で、本文を差し替えて描き直す'
+      - name: 開いたセクションと閉じたセクションを持つ Markdown
+        description: '`## 概要` と段落、`## 補足` とその直後の `<!-- section: {"open": false} -->` と段落を持つ文書'
+      - name: 描き直す Markdown
+        description: '`概要`・`補足` の段落の文字を書き換え、末尾に `## 付録` と段落を足した文書'
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 利用側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を指定して描かせる
+        M-->>P: 概要のセクションを開き、補足のセクションを閉じて描く
+        U->>P: 「概要」の見出しの開閉を押す
+        P-->>U: 概要のセクションを閉じる
+        U->>P: 「補足」の見出しの開閉を押す
+        P-->>U: 補足のセクションを開いて表示
+        P->>M: 書き換えた Markdown で描き直させる
+        M-->>P: 手で変えた開閉のまま、概要を閉じ、補足を開いて描く
+        P-->>U: 書き換えた本文を表示
+    expected:
+      - 描き直した後、`概要` の段落が表示されず、開閉のボタンの `aria-expanded` が `false`
+      - 描き直した後、`補足` の書き換えた段落が表示され、開閉のボタンの `aria-expanded` が `true`
+      - 描き直した後、足した `付録` の段落が表示され、開閉のボタンの `aria-expanded` が `true`
+    test: test_normal_when_updated_after_toggle
 lead: '読者が、見出し（h1〜h4）のセクションと、表の行の下に出す行の詳細を開閉し、全てのセクションや入れ子のセクションをまとめて開閉する。文書の作成者は見出しの直後の `<!-- section: {"open": false} -->` でセクションを閉じた状態で始め、表の後の `<!-- row-detail: {"at": 行の位置} -->` 〜 `<!-- /row-detail -->` で行の詳細を記載する。'
 issue: 4
 primary_actor: 読者
@@ -266,6 +296,7 @@ preconditions:
   - セクションの開閉と行の詳細の機能（`sections`・`row-details`）がオン（既定）
 success_guarantee: |-
   セクションと行の詳細がマーカーのとおりの開閉で始まり、押すたびに開閉し、開閉の状態がボタンの `aria-expanded` に出る。
+  利用側のページが本文を描き直しても、読者が手で変えたセクションの開閉は保たれる。
 
   すべて展開・すべて折りたたむは文書の全てのセクションを、Shift を押しながらの開閉はそのセクションと中の入れ子のセクションを同じ状態にする。
 minimal_guarantee: 読み込めないマーカーを記載しても、セクションは開いた状態、行の詳細は記載した場所の本文として描かれる。行の位置が表に無い行の詳細、型の合わない開閉の指定と、閉じのマーカーが無い details には記載の警告が出る。知らないキーには警告を出さない。
