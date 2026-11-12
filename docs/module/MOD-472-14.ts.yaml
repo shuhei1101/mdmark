@@ -246,13 +246,6 @@ functions:
     process: |-
       1. `PLUGIN_MANIFEST` を JSON として読み込み、`version` を置き換える
       2. 2 字下げと末尾の改行で記載する
-    unit_tests:
-      - name: test_write_plugin_manifest
-        case: 正常
-        summary: version だけを書き換える
-        condition: '`name`・`version: v0.0.0`・`description` の plugin.json に `version: v0.0.1`'
-        mock: なし（一時フォルダ）
-        expected: '`version` が `v0.0.1`、他のキーと並びが同じ'
     status: removed
     introduced:
       pr: 72
