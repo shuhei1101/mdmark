@@ -1,0 +1,1 @@
+# プラグインの plugin.json から version を外し、develop に打ったタグで jsDelivr と VS Code 拡張機能を配る
