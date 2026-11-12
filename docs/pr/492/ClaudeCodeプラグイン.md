@@ -72,4 +72,15 @@ diff の見どころは、`plugin.json` の `version` の有無だけを変え�
 
 ## テスト結果
 
-なし（テスト作成・実装で記入する）
+### 単体
+
+| ファイル | メソッド | 変更種別 | 結果 | 補足 |
+| --- | --- | --- | --- | --- |
+| [tests/unit/scripts/build-plugin.test.ts](https://github.com/shuhei1101/mdmark/blob/62eb7a86/tests/unit/scripts/build-plugin.test.ts) | `writePluginManifest` のテスト | 削除 | - | 関数の廃止に合わせて削除 |
+| 単体テストの全件 | 全実行 | 実行のみ | ✅ | 2067 テスト中 2064 pass。時間切れの 3 件（`test_take_backup_when_outside`・`test_run_check`・`test_prepare_embeds`）は load average 40 の負荷によるもので、時間切れの上限を延ばした個別実行で 62 テスト pass<br>`テスト結果/20261113040426_66ac56cd_単体テスト.log` |
+
+lint は違反なし（`テスト結果/20261113040426_66ac56cd_lint.log`。警告は base にもある `plugin/bin/setup.js` のサイズの 1 件）。
+
+### 結合
+
+なし（結合テスト作成で記入する）

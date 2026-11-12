@@ -1,0 +1,76 @@
+$ npm run test:unit
+
+> test:unit
+> vitest run --project 'unit*'
+
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/chore-release-distribute-from-develop-tags
+
+ ❯ |unit| tests/unit/src/cli/backup.test.ts (4 tests | 1 failed) 30192ms
+   × test_take_backup_when_outside 30026ms
+ ❯ |unit| tests/unit/src/cli/check.test.ts (33 tests | 1 failed) 45699ms
+   × test_run_check 30009ms
+ ❯ |unit| tests/unit/src/cli/export.test.ts (25 tests | 1 failed) 58662ms
+   × test_prepare_embeds 30008ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit| tests/unit/src/cli/backup.test.ts > test_take_backup_when_outside
+Error: Test timed out in 30000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/unit/src/cli/backup.test.ts:59:1
+     57|
+     58| // 設定ファイルのフォルダの外のファイルは拒む（異常系）
+     59| test("test_take_backup_when_outside", async () => {
+       | ^
+     60|   // 準備
+     61|   const { takeBackup } = await loadModule();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯
+
+ FAIL  |unit| tests/unit/src/cli/check.test.ts > test_run_check
+Error: Test timed out in 30000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/unit/src/cli/check.test.ts:46:1
+     44|
+     45| // ずれの無いフォルダで 0 件（正常系）
+     46| test("test_run_check", async () => {
+       | ^
+     47|   // 準備
+     48|   const { runCheck } = await loadCheck();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/3]⎯
+
+ FAIL  |unit| tests/unit/src/cli/export.test.ts > test_prepare_embeds
+Error: Test timed out in 30000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/unit/src/cli/export.test.ts:31:1
+     29|
+     30| // マーカーのあるモジュールだけをまとめ、拡張と theme を読み込む（正常系）
+     31| test("test_prepare_embeds", async () => {
+       | ^
+     32|   // 準備
+     33|   const { prepareEmbeds } = await loadExport();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/3]⎯
+
+
+ Test Files  3 failed | 281 passed (284)
+      Tests  3 failed | 2064 passed (2067)
+   Start at  03:47:03
+   Duration  237.57s (worker 65%, tests 21%, import 12%, transform 1%)
+
+exit=1
+
+# 上の 3 件は load average 40（8 コア）の負荷での時間切れ。テストコードは変えず、時間切れの上限だけを延ばして流し直した
+$ npx vitest run --project 'unit*' --testTimeout=180000 tests/unit/src/cli/backup.test.ts tests/unit/src/cli/check.test.ts tests/unit/src/cli/export.test.ts
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/chore-release-distribute-from-develop-tags
+
+
+ Test Files  3 passed (3)
+      Tests  62 passed (62)
+   Start at  04:03:43
+   Duration  37.30s (tests 96%, transform 2%, import 2%)
+
+exit=0
