@@ -65,8 +65,10 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-12T12:47:48.830524+00:00'
   - process: ドキュメント修正
-    status: todo
+    status: done
     note: docs/mock/components/code-block/index.html・docs/screen/SCR-472-4.ts.yaml
+    updated_by: planner
+    updated_at: '2026-11-12T13:00:58.656012+00:00'
   - process: 単体テスト作成
     status: skipped
     reason: 実装を変更しないため対象外

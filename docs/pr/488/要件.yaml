@@ -8,11 +8,15 @@ docs:
   - page: docs/mock/components/code-block/index.html
     new: false
     change: 知らないコードの行のマーカーの異常シナリオの例を [!code blink] にし、記載の警告の使用できるマーカーを 6 種類、当てなかった行を 1 行目にする
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-12T13:00:53.310576+00:00'
   - page: docs/screen/SCR-472-4.ts.yaml
     new: false
     change: 記載の警告の error_message の「知らないコードの行のマーカー」の文言の使用できるマーカーを 6 種類にする
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-12T13:00:53.310576+00:00'
 scope_out:
   - item: コードブロックのモックの書き方の警告の段落が狭い幅で画面の端に寄る
     reason: 同じモックの警告の段落の配置で、例と文言の食い違いとは目的が別
