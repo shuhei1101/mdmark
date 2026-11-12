@@ -45,6 +45,14 @@ docs:
     new: false
     change: aliases を読み込む側に VS Code 拡張機能の書き出しを追加
     status: todo
+  - page: docs/guide/記載する-索引と用語集を記載する.md
+    new: false
+    change: aliases のエイリアスを書き出す HTML に埋める側に、VS Code 拡張機能の書き出しとプレビューを追加
+    status: todo
+  - page: docs/guide/コアコンセプト-索引と被参照.md
+    new: false
+    change: aliases のエイリアスを書き出す HTML に埋める側に、VS Code 拡張機能の書き出しとプレビューを追加
+    status: todo
 scope_out:
   - item: 書き出す HTML への索引（index）と参照の表（references）の指定
     reason: Issue の要望はエイリアスに限る。被参照・索引の用語は別の機能
