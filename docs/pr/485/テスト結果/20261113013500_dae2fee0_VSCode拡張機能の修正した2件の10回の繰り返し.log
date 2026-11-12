@@ -1,0 +1,191 @@
+$ for i in $(seq 10); do xvfb-run -a npm --prefix vscode run test:integration; done（test_normal_when_color_scheme・test_normal_when_tags_unreachable だけを test.only にした作業ツリー）
+=== 1 回目
+[91m[main 2026-11-12T16:46:34.127Z][0m [AgentHost:stderr] (node:83916) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+(node:83967) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+Extension host (LocalProcess pid: 83967) is unresponsive.
+Extension host (LocalProcess pid: 83967) is responsive.
+    ✔ test_normal_when_tags_unreachable (10537ms)
+    ✔ test_normal_when_color_scheme (513ms)
+  2 passing (14s)
+[AgentHostCustomizationMarketplace] Unable to load session-bound SDK installation receipts { name: 'Error' }
+[AgentHostCustomizationMarketplace] Unable to load session-bound SDK installation receipts { name: 'Error' }
+[AgentHostCustomizationMarketplace] Unable to load session-bound SDK installation receipts { name: 'Error' }
+[AgentHostCustomizationMarketplace] Unable to load session-bound SDK installation receipts { name: 'Error' }
+[AgentHostCustomizationMarketplace] Unable to load session-bound SDK installation receipts { name: 'Error' }
+[AgentHostCustomizationMarketplace] Unable to load session-bound SDK installation receipts { name: 'Error' }
+[91m[main 2026-11-12T16:47:00.857Z][0m [AgentHost:stderr] (node:85685) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+(node:85738) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+    ✔ test_normal_when_tags_unreachable (4981ms)
+    ✔ test_normal_when_color_scheme (728ms)
+  2 passing (7s)
+exit 0
+=== 2 回目
+[91m[main 2026-11-12T16:49:03.369Z][0m [AgentHost:stderr] (node:91918) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+(node:91988) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+    ✔ test_normal_when_tags_unreachable (7646ms)
+    ✔ test_normal_when_color_scheme (682ms)
+  2 passing (11s)
+Extension host (LocalProcess pid: 93993) is unresponsive.
+Extension host (LocalProcess pid: 93993) is responsive.
+[AgentHostCustomizationMarketplace] Unable to load session-bound SDK installation receipts { name: 'Error' }
+[AgentHostCustomizationMarketplace] Unable to load session-bound SDK installation receipts { name: 'Error' }
+[AgentHostCustomizationMarketplace] Unable to load session-bound SDK installation receipts { name: 'Error' }
+[AgentHostCustomizationMarketplace] Unable to load session-bound SDK installation receipts { name: 'Error' }
+[AgentHostCustomizationMarketplace] Unable to load session-bound SDK installation receipts { name: 'Error' }
+[AgentHostCustomizationMarketplace] Unable to load session-bound SDK installation receipts { name: 'Error' }
+[91m[main 2026-11-12T16:49:30.493Z][0m [AgentHost:stderr] (node:93918) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+(node:93993) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+    ✔ test_normal_when_tags_unreachable (7517ms)
+    ✔ test_normal_when_color_scheme (701ms)
+  2 passing (12s)
+exit 0
+=== 3 回目
+[91m[main 2026-11-12T16:51:54.163Z][0m [AgentHost:stderr] (node:5403) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+Extension host (LocalProcess pid: 5404) is unresponsive.
+Extension host (LocalProcess pid: 5404) is responsive.
+(node:5404) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+    1) test_normal_when_tags_unreachable
+Extension host (LocalProcess pid: 5404) is unresponsive.
+Extension host (LocalProcess pid: 5404) is responsive.
+    ✔ test_normal_when_color_scheme (618ms)
+  1 passing (10s)
+  1 failing
+  1) プレビューを開く
+     AssertionError [ERR_ASSERTION]: 要求まで 335 ms ["/tags","/mdmark@v0.6.0/dist/index.css","/mdmark@v0.6.0/dist/index.js"]
+/tags の要求（開いた時刻から）: 受けた +2 ms・閉じられた +276 ms
+拡張機能のログ: 2026-11-13 01:52:00.359 [warning] タグ一覧を取れない http://127.0.0.1:58690/tags TimeoutError The operation was aborted due to timeout
+Error: 1 tests failed
+TestRunFailedError: Test run failed with code 1
+    at ChildProcess._handle.onexit (node:internal/child_process:294:12) {
+exit 1
+=== 4 回目
+[91m[main 2026-11-12T16:53:40.260Z][0m [AgentHost:stderr] (node:10473) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+(node:10534) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+    ✔ test_normal_when_tags_unreachable (6662ms)
+    ✔ test_normal_when_color_scheme (591ms)
+  2 passing (6s)
+[AgentHostCustomizationMarketplace] Unable to load session-bound SDK installation receipts { name: 'Error' }
+[AgentHostCustomizationMarketplace] Unable to load session-bound SDK installation receipts { name: 'Error' }
+[AgentHostCustomizationMarketplace] Unable to load session-bound SDK installation receipts { name: 'Error' }
+[AgentHostCustomizationMarketplace] Unable to load session-bound SDK installation receipts { name: 'Error' }
+[AgentHostCustomizationMarketplace] Unable to load session-bound SDK installation receipts { name: 'Error' }
+[AgentHostCustomizationMarketplace] Unable to load session-bound SDK installation receipts { name: 'Error' }
+[91m[main 2026-11-12T16:53:59.663Z][0m [AgentHost:stderr] (node:11600) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+(node:11675) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+    ✔ test_normal_when_tags_unreachable (6516ms)
+    ✔ test_normal_when_color_scheme (567ms)
+  2 passing (9s)
+exit 0
+=== 5 回目
+[91m[main 2026-11-12T16:55:36.061Z][0m [AgentHost:stderr] (node:16173) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+(node:16239) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+    ✔ test_normal_when_tags_unreachable (3878ms)
+    ✔ test_normal_when_color_scheme (551ms)
+  2 passing (6s)
+[AgentHostCustomizationMarketplace] Unable to load session-bound SDK installation receipts { name: 'Error' }
+[AgentHostCustomizationMarketplace] Unable to load session-bound SDK installation receipts { name: 'Error' }
+[AgentHostCustomizationMarketplace] Unable to load session-bound SDK installation receipts { name: 'Error' }
+[AgentHostCustomizationMarketplace] Unable to load session-bound SDK installation receipts { name: 'Error' }
+[AgentHostCustomizationMarketplace] Unable to load session-bound SDK installation receipts { name: 'Error' }
+[AgentHostCustomizationMarketplace] Unable to load session-bound SDK installation receipts { name: 'Error' }
+[91m[main 2026-11-12T16:55:55.338Z][0m [AgentHost:stderr] (node:17560) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+(node:17655) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+    ✔ test_normal_when_tags_unreachable (6796ms)
+    ✔ test_normal_when_color_scheme (616ms)
+  2 passing (9s)
+exit 0
+=== 6 回目
+[91m[main 2026-11-12T16:57:40.081Z][0m [AgentHost:stderr] (node:23464) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+(node:23558) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+    ✔ test_normal_when_tags_unreachable (7213ms)
+    ✔ test_normal_when_color_scheme (604ms)
+  2 passing (10s)
+[AgentHostCustomizationMarketplace] Unable to load session-bound SDK installation receipts { name: 'Error' }
+[AgentHostCustomizationMarketplace] Unable to load session-bound SDK installation receipts { name: 'Error' }
+[AgentHostCustomizationMarketplace] Unable to load session-bound SDK installation receipts { name: 'Error' }
+[AgentHostCustomizationMarketplace] Unable to load session-bound SDK installation receipts { name: 'Error' }
+[AgentHostCustomizationMarketplace] Unable to load session-bound SDK installation receipts { name: 'Error' }
+[AgentHostCustomizationMarketplace] Unable to load session-bound SDK installation receipts { name: 'Error' }
+[91m[main 2026-11-12T16:58:07.434Z][0m [AgentHost:stderr] (node:25147) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+(node:25211) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+    ✔ test_normal_when_tags_unreachable (7536ms)
+    ✔ test_normal_when_color_scheme (686ms)
+  2 passing (11s)
+exit 0
+=== 7 回目
+[91m[main 2026-11-12T17:00:42.551Z][0m [AgentHost:stderr] (node:31787) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+(node:31849) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+    ✔ test_normal_when_tags_unreachable (7954ms)
+    ✔ test_normal_when_color_scheme (818ms)
+  2 passing (12s)
+[AgentHostCustomizationMarketplace] Unable to load session-bound SDK installation receipts { name: 'Error' }
+[AgentHostCustomizationMarketplace] Unable to load session-bound SDK installation receipts { name: 'Error' }
+[AgentHostCustomizationMarketplace] Unable to load session-bound SDK installation receipts { name: 'Error' }
+[AgentHostCustomizationMarketplace] Unable to load session-bound SDK installation receipts { name: 'Error' }
+[AgentHostCustomizationMarketplace] Unable to load session-bound SDK installation receipts { name: 'Error' }
+[AgentHostCustomizationMarketplace] Unable to load session-bound SDK installation receipts { name: 'Error' }
+[91m[main 2026-11-12T17:01:09.646Z][0m [AgentHost:stderr] (node:33244) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+(node:33310) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+    ✔ test_normal_when_tags_unreachable (7517ms)
+    ✔ test_normal_when_color_scheme (648ms)
+  2 passing (11s)
+exit 0
+=== 8 回目
+[91m[main 2026-11-12T17:03:14.274Z][0m [AgentHost:stderr] (node:40046) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+(node:40115) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+    ✔ test_normal_when_tags_unreachable (4412ms)
+    ✔ test_normal_when_color_scheme (659ms)
+  2 passing (8s)
+[AgentHostCustomizationMarketplace] Unable to load session-bound SDK installation receipts { name: 'Error' }
+[AgentHostCustomizationMarketplace] Unable to load session-bound SDK installation receipts { name: 'Error' }
+[AgentHostCustomizationMarketplace] Unable to load session-bound SDK installation receipts { name: 'Error' }
+[AgentHostCustomizationMarketplace] Unable to load session-bound SDK installation receipts { name: 'Error' }
+[AgentHostCustomizationMarketplace] Unable to load session-bound SDK installation receipts { name: 'Error' }
+[AgentHostCustomizationMarketplace] Unable to load session-bound SDK installation receipts { name: 'Error' }
+[91m[main 2026-11-12T17:03:35.870Z][0m [AgentHost:stderr] (node:41414) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+(node:41471) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+    ✔ test_normal_when_tags_unreachable (7287ms)
+    ✔ test_normal_when_color_scheme (576ms)
+  2 passing (10s)
+exit 0
+=== 9 回目
+[91m[main 2026-11-12T17:05:25.446Z][0m [AgentHost:stderr] (node:47240) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+(node:47313) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+    ✔ test_normal_when_tags_unreachable (6777ms)
+    ✔ test_normal_when_color_scheme (724ms)
+  2 passing (10s)
+[AgentHostCustomizationMarketplace] Unable to load session-bound SDK installation receipts { name: 'Error' }
+[AgentHostCustomizationMarketplace] Unable to load session-bound SDK installation receipts { name: 'Error' }
+[AgentHostCustomizationMarketplace] Unable to load session-bound SDK installation receipts { name: 'Error' }
+[AgentHostCustomizationMarketplace] Unable to load session-bound SDK installation receipts { name: 'Error' }
+[AgentHostCustomizationMarketplace] Unable to load session-bound SDK installation receipts { name: 'Error' }
+[AgentHostCustomizationMarketplace] Unable to load session-bound SDK installation receipts { name: 'Error' }
+[91m[main 2026-11-12T17:05:47.014Z][0m [AgentHost:stderr] (node:48501) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+(node:48559) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+    ✔ test_normal_when_tags_unreachable (7298ms)
+    ✔ test_normal_when_color_scheme (592ms)
+  2 passing (10s)
+exit 0
+=== 10 回目
+[91m[main 2026-11-12T17:07:41.271Z][0m [AgentHost:stderr] (node:54106) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+(node:54173) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+    ✔ test_normal_when_tags_unreachable (7384ms)
+Extension host (LocalProcess pid: 54173) is unresponsive.
+Extension host (LocalProcess pid: 54173) is responsive.
+    ✔ test_normal_when_color_scheme (790ms)
+  2 passing (13s)
+Extension host (LocalProcess pid: 55915) is unresponsive.
+Extension host (LocalProcess pid: 55915) is responsive.
+[AgentHostCustomizationMarketplace] Unable to load session-bound SDK installation receipts { name: 'Error' }
+[AgentHostCustomizationMarketplace] Unable to load session-bound SDK installation receipts { name: 'Error' }
+[AgentHostCustomizationMarketplace] Unable to load session-bound SDK installation receipts { name: 'Error' }
+[AgentHostCustomizationMarketplace] Unable to load session-bound SDK installation receipts { name: 'Error' }
+[AgentHostCustomizationMarketplace] Unable to load session-bound SDK installation receipts { name: 'Error' }
+[AgentHostCustomizationMarketplace] Unable to load session-bound SDK installation receipts { name: 'Error' }
+[91m[main 2026-11-12T17:08:13.836Z][0m [AgentHost:stderr] (node:55855) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+(node:55915) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+    ✔ test_normal_when_tags_unreachable (7537ms)
+    ✔ test_normal_when_color_scheme (685ms)
+  2 passing (8s)
+exit 0
+done

@@ -21,4 +21,12 @@
 
 ## テスト結果
 
-（テスト作成・実装で記入する）
+### 結合
+
+| ファイル | メソッド | 変更種別 | 結果 | 補足 |
+| --- | --- | --- | --- | --- |
+| [vscode/tests/integration/preview-open.test.ts](https://github.com/shuhei1101/mdmark/blob/test/integration/shorten-duration-and-fix-flaky/vscode/tests/integration/preview-open.test.ts) | `test_normal_when_color_scheme` | 変更 | ✅ | `preview.theme` を `dark` にした後、`colorScheme` を除いた `config` の描画が届くまで待ち、包む要素の class も待ってから確かめる。2 件だけを 10 回繰り返して全 pass<br>`テスト結果/20261113013500_dae2fee0_VSCode拡張機能の修正した2件の10回の繰り返し.log` |
+| [vscode/tests/integration/preview-open.test.ts](https://github.com/shuhei1101/mdmark/blob/test/integration/shorten-duration-and-fix-flaky/vscode/tests/integration/preview-open.test.ts) | `test_normal_when_tags_unreachable` | 変更 | ✅ | 経過時間の上限（6000 ms）を外し、`/tags` の要求を拡張機能が打ち切ったことで確かめる。下限（2800 ms）は残す。10 回の繰り返しの 1 回は下限で fail し、拡張機能の中断が 276 ms で発火していたため #504 に切り出した<br>`テスト結果/20261113013500_dae2fee0_VSCode拡張機能の修正した2件の10回の繰り返し.log` |
+| 上記以外の `vscode/tests/integration/` | 全実行 | 実行のみ | ✅ | VS Code 1.141.0 と stable の両方で 80 件が pass。#496 の `test_normal_when_library_origin_added` は作業ツリーだけで `test.skip` にした（commit していない）<br>`テスト結果/20261113012010_e4879428_VSCode拡張機能の結合テスト.log` |
+
+VS Code 拡張機能の結合テストの所要時間は、1.141.0 で修正前・修正後とも約 3 分で変わらない。
