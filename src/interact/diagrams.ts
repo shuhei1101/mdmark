@@ -7,6 +7,7 @@ import {
 import { iconSvg } from "../parts/icons.ts";
 import { attachDiagramResize, diagramHeightKey } from "./diagram-resize.ts";
 import { attachDiagramTips } from "./diagram-tips.ts";
+import { attachDiagramTouch } from "./diagram-touch.ts";
 import { attachErFolds } from "./er-folds.ts";
 import { attachZoom } from "./zoom.ts";
 
@@ -364,6 +365,13 @@ export function attachDiagrams(options: {
       figure.removeEventListener(DIAGRAM_REDRAW_EVENT, onRedraw);
       tips.detach();
     });
+    const box = figure.querySelector<HTMLElement>(".mdmark-diagram-box");
+    const viewport = figure.querySelector<HTMLElement>(
+      ".mdmark-diagram-viewport",
+    );
+    if (box && viewport) {
+      detachers.push(attachDiagramTouch({ box, viewport }));
+    }
     if (figure.dataset.diagram === "er") {
       detachers.push(attachErFolds(figure));
     }

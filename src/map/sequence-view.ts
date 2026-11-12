@@ -390,14 +390,20 @@ export const attachMapSequence = (
       marker.style.left = `${(edge - base.left) / (scale || 1)}px`;
       marker.hidden = false;
     };
-    const onUp = () => {
+    const release = () => {
       window.removeEventListener("pointermove", onMove);
       window.removeEventListener("pointerup", onUp);
-      if (!dragging) return;
-      suppressClick = true;
+      window.removeEventListener("pointercancel", onCancel);
       head.style.translate = "";
       head.classList.remove("is-dragging");
       marker?.remove();
+    };
+    // ブラウザが指のドラッグを文書のスクロールに切り替えたときは、並び順を変えずに戻す
+    const onCancel = () => release();
+    const onUp = () => {
+      release();
+      if (!dragging) return;
+      suppressClick = true;
       if (to === at) return;
       const next = [...list];
       next.splice(at, 1);
@@ -406,6 +412,7 @@ export const attachMapSequence = (
     };
     window.addEventListener("pointermove", onMove);
     window.addEventListener("pointerup", onUp);
+    window.addEventListener("pointercancel", onCancel);
   };
   // メッセージの線を指している間は、その線にデータの印を流す（選択・再生で流している線には重ねない）
   const onPointerOver = (event: PointerEvent) => {

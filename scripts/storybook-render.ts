@@ -577,9 +577,11 @@ function diagramArgs(args: PartArgs): {
   fit?: number;
   modal?: boolean;
   resizable?: boolean;
+  touchActive?: boolean;
 } {
   return {
     ...(args.resizable === false ? { resizable: false } : {}),
+    ...(args.touchActive === true ? { touchActive: true } : {}),
     ...(typeof args.zoom === "number" ? { zoom: args.zoom } : {}),
     ...(typeof args.fit === "number" ? { fit: args.fit } : {}),
     ...(args.modal === true ? { modal: true } : {}),

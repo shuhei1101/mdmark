@@ -200,7 +200,7 @@ export const applyWireShifts = (
   return { wires, attachments, wireShifts };
 };
 
-/** 押した場所（ノード・グループのタイトルの行・線の区間）からドラッグを始める。4px 動くまでは押した扱い */
+/** 押した場所（ノード・グループのタイトルの行・線の区間）からドラッグを始める。4px 動くまでは押した扱い。`pointercancel` で動かした分を戻す */
 export const startDrag = (options: {
   event: PointerEvent;
   layout: MapLayout;
@@ -283,13 +283,23 @@ export const startDrag = (options: {
     }
     onMove(state);
   };
-  const up = () => {
+  const release = () => {
     window.removeEventListener("pointermove", move);
     window.removeEventListener("pointerup", up);
+    window.removeEventListener("pointercancel", cancel);
+  };
+  const up = () => {
+    release();
     if (!moved) onClick();
+  };
+  // ブラウザが指のドラッグを文書のスクロールに切り替えたときは、動かした分を押した時点の状態に戻す
+  const cancel = () => {
+    release();
+    if (moved) onMove(options.state);
   };
   window.addEventListener("pointermove", move);
   window.addEventListener("pointerup", up);
+  window.addEventListener("pointercancel", cancel);
 };
 
 /** フォーカスしたノード・グループを (dx, dy) だけ、線は真ん中の区間を区間と直角の向きへ動かした状態を返す。動かせないときは undefined */

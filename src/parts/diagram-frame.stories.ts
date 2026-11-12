@@ -78,3 +78,9 @@ export const Mermaid: Story = {
   parameters: { server: { id: "diagram-frame" } },
   args: { kind: "mermaid", title: "問い合わせの受付", legend: "[]" },
 };
+
+export const TouchActive: Story = {
+  name: "TouchActive",
+  parameters: { server: { id: "diagram-frame" } },
+  args: { zoom: 1.25, touchActive: true },
+};
