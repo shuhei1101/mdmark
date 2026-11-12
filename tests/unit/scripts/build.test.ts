@@ -458,7 +458,7 @@ test("test_build_legacy_marks", async () => {
   await mkdir(join(root, "src", "render"), { recursive: true });
   await writeFile(
     join(root, "src", "render", "legacy-marks.ts"),
-    "export const rewriteLegacyMarks = (markdown: string): string => markdown + \"!\";\n",
+    'export const rewriteLegacyMarks = (markdown: string): string => markdown + "!";\n',
   );
   await mkdir(join(root, "migrations", "next"), { recursive: true });
   await mkdir(join(root, "migrations", "v0.1.0"), { recursive: true });
