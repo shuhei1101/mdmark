@@ -44,7 +44,9 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-12T22:02:52.999628+00:00'
   - process: インターフェース定義設計
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-12T22:12:38.869059+00:00'
   - process: 部品設計
     status: skipped
     reason: 部品を追加・変更しない
