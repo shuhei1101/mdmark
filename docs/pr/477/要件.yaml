@@ -298,15 +298,21 @@ docs:
   - page: docs/screen/SCR-472-4.ts.yaml
     new: false
     change: 記載例のマーカーを JSON のオブジェクトに書き換える
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-12T00:58:32.904771+00:00'
   - page: docs/config/CFG-472-3.yaml
     new: false
     change: libraries の draw に渡す値と、記載例のマーカーを書き換える
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-12T00:58:32.904771+00:00'
   - page: docs/config/CFG-472-2.yaml
     new: false
     change: 記載例のマーカーを JSON のオブジェクトに書き換える
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-12T00:58:32.904771+00:00'
   - page: docs/er/ER-477-1.yaml
     new: true
     change: マーカーの設定の共通の決まり・共通のオブジェクト（折り畳み・行の範囲・列を指す値）・今の引数との対応の ER 図を新設する
