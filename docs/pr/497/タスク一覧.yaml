@@ -62,8 +62,10 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-12T16:09:04.481439+00:00'
   - process: ドキュメント修正
-    status: todo
+    status: done
     note: docs/guide/導入-文書を描く.md・docs/guide/API.md の update の説明
+    updated_by: planner
+    updated_at: '2026-11-12T16:19:13.827043+00:00'
   - process: 単体テスト作成
     status: todo
   - process: 実装
