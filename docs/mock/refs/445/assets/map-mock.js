@@ -1337,7 +1337,10 @@ const sequenceRows = (sequence, view = { collapsed: new Set(), enter: undefined,
       fragments.forEach((fragment, at) => {
         if (!shown(fragment, at) || view.collapsed.has(at)) return;
         fragment.sections.forEach((section, number) => {
-          if (number > 0 && section.start === index) rows.push({ fragment, fragmentAt: at, section: number });
+          // 区間のメッセージが全て非表示の参加者のものなら、区間の見出しも出さない（#508）
+          const sectionEnd = fragment.sections[number + 1]?.start ?? fragment.end;
+          const sectionShown = sequence.messages.slice(section.start, sectionEnd).some((_, offset) => !hiddenMessage(section.start + offset));
+          if (number > 0 && section.start === index && sectionShown) rows.push({ fragment, fragmentAt: at, section: number });
         });
       });
     }
@@ -1914,6 +1917,8 @@ export const createSequence = (host, spec, kinds, onStep) => {
     const panelId = `map-participants-${spec.id}`;
     const button = toolButton("users", `参加者の表示と非表示${state.hidden.size ? `（非表示 ${state.hidden.size} 人）` : ""}`, () => {});
     button.setAttribute("popovertarget", panelId);
+    // ポップオーバーをボタンの下に出す（CSS のアンカーの位置）
+    button.style.anchorName = `--${panelId}`;
     if (state.hidden.size) {
       const count = document.createElement("span");
       count.className = "map-participants-count";
@@ -1926,6 +1931,7 @@ export const createSequence = (host, spec, kinds, onStep) => {
     panel.id = panelId;
     panel.popover = "auto";
     panel.className = "map-participants-panel";
+    panel.style.positionAnchor = `--${panelId}`;
     const heading = document.createElement("p");
     heading.className = "map-participants-heading";
     heading.textContent = "表示する参加者";

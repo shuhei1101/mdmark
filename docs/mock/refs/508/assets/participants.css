@@ -28,12 +28,14 @@
   font-variant-numeric: tabular-nums;
   text-align: center;
 }
-/* ポップオーバー: ボタンの下に出す。position-anchor を使えないブラウザでも、画面の中に収まる位置に出す */
+/* ポップオーバー: ボタンの下に出し、右端で切れるときは左右を入れ替える */
 .map-participants-panel {
   margin: 0;
   inset: auto;
   position-area: bottom span-left;
-  position-try-fallbacks: flip-block, flip-inline;
+  position-try-fallbacks: flip-inline;
+  /* ボタンが画面の外へスクロールしたら、ポップオーバーも隠す */
+  position-visibility: anchors-visible;
   min-width: 14rem;
   max-width: min(20rem, calc(100% - 16px));
   padding: 8px 4px;

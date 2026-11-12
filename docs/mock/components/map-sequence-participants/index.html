@@ -56,13 +56,19 @@
       const id = `participants-${index}`;
       index += 1;
       createSequence(host, { ...SEQUENCE, id, queryKey: id, ...spec }, KINDS, () => {});
-      // 開いた状態を並べて見せるため、モックでは開いた一覧どうしが閉じ合わないようにする
-      if (open) requestAnimationFrame(() => {
-        const panel = host.querySelector(".map-participants-panel");
-        if (!panel) return;
-        panel.popover = "manual";
-        panel.showPopover();
-      });
+      // 開いた状態を並べて見せるため、モックでは開いた一覧どうしが閉じ合わないようにする。
+      // 図が画面に入ってから開き、ボタンの下に出す位置を見えている状態で決める
+      if (open) {
+        const observer = new IntersectionObserver((entries) => {
+          if (!entries[0].isIntersecting) return;
+          const panel = host.querySelector(".map-participants-panel");
+          if (!panel) return;
+          panel.popover = "manual";
+          panel.showPopover();
+          observer.disconnect();
+        }, { threshold: 0.3 });
+        observer.observe(host);
+      }
     };
     for (const [title, states] of SECTIONS) {
       catalog.append(Object.assign(document.createElement("h2"), { textContent: title }));
