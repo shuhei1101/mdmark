@@ -1,9 +1,9 @@
 import { pathToFileURL } from "node:url";
-import { usedSyntaxLanguages } from "../../../src/cli/embed.ts";
 import type { MdmarkConfig } from "../../../src/config.ts";
 import {
   collectRangeScripts,
   usedLibraryMarks,
+  usedSyntaxLanguages,
   usesMermaid,
 } from "../../../src/render/used.ts";
 import { moduleDataUrl } from "./html.ts";
