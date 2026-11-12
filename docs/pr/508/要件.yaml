@@ -46,26 +46,42 @@ use_cases:
     depends_on:
       - docs/scenario/SC-472-20.yaml
 docs:
-  - page: docs/guide/図を描く-Mermaidと補足で図を描く.md
-    new: false
-    change: スマホの指で図を動かす操作（図をタップしてから動かす）を追加する
-    status: todo
   - page: docs/guide/記載する-本文を部品で組む.md
     new: false
-    change: ファイルツリーの節を「フォルダ構成」の語でも引けるようにし、罫線のコードブロックの書き方の警告と警告を止める指定を追加する
-    status: todo
+    change: ファイルツリーの節に、フォルダ構成は言語 tree で記載することと、罫線のコードブロックの記載の警告と止める指定を追加する。罫線の記載方法を説明する言語 markdown の例 4 つの直前に tree_warning の false を記載する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-12T20:18:25.028567+00:00'
   - page: docs/guide/記法.md
     new: false
-    change: code のマーカーのキーに tree_warning（false で罫線のフォルダ構成の記載の警告を止める）を追加する
-    status: todo
+    change: code のマーカーの引数の表に tree_warning を追加する。罫線の記載方法を説明する言語 markdown の例の直前に tree_warning の false を記載する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-12T20:18:25.028567+00:00'
   - page: guide/index.yaml
     new: false
     change: components の when に、フォルダ構成・ファイルツリーを記載するときを追加する
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-12T20:18:25.028567+00:00'
   - page: docs/guide/files.yml
     new: false
     change: 記載する-本文を部品で組む.md の description に、フォルダ構成・ファイルツリーを記載するときに参照する旨を追加する（dev-docs のガイドの検索で行き着く）
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-12T20:18:25.028567+00:00'
+  - page: docs/guide/図を描く-図を描く.md
+    new: false
+    change: 「読者ができること」に、タッチの端末で余白をタップしてから指で縦にも横にも図を動かす操作を追加する（図の枠を共有する全ての図の操作。map のページはこの節を参照する）
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-12T20:18:25.028567+00:00'
+  - page: docs/guide/書き出す-文書を書き出す.md
+    new: false
+    change: 動画と音声のコピーのフォルダ構成を言語 text から tree にする（罫線のフォルダ構成の記載の警告の対象）
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-12T20:18:25.028567+00:00'
 scope_out:
   - item: 今の flow（座標の JSON のフロー図）の箱の種類 dm の表示名「意思決定モデル」
     reason: 'map は固定のノードの種類を持たず、表示名は使う側の設定 map.kinds の label で決まるため、#464 の #333 の要件は develop で満たされている。今の flow の固定の種類を設定で作る形にするのは #470 が扱う'
