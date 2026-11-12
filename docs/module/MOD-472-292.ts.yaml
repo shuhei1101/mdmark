@@ -28,13 +28,13 @@ functions:
       - name: test_decorate_tree_table
         case: 正常
         summary: 表に無い親の行を補い、行にパスと深さを付ける
-        condition: '`<!-- table: data tree=キー -->` の表。キーは `features.table`・`features.html`・`aliases[].id`'
+        condition: '`<!-- table: {"kind": "data", "tree": {"key": {"column": "キー"}}} -->` の表。キーは `features.table`・`features.html`・`aliases[].id`'
         mock: なし
         expected: '`render` の HTML の `tr.mdmark-tree-row` の `data-path` が `features`・`features.table`・`features.html`・`aliases[]`・`aliases[].id` の順で、`features`・`aliases[]` が `is-virtual has-children`、`aliases[].id` が `data-depth="1"`・`data-parent="aliases[]"`'
       - name: test_decorate_tree_table_when_columns
         case: 正常
         summary: 型をバッジとチップにし、必須の列を出さず * にし、既定を囲む
-        condition: '`tree=キー type=型 required=必須 default=既定` の表。`features.table` は `bool`・`✓`・`true`、`aliases[].type` は `ref \| custom`'
+        condition: '`tree` の `key`・`type`・`required`・`default` が `キー`・`型`・`必須`・`既定` の列の表。`features.table` は `bool`・`✓`・`true`、`aliases[].type` は `ref \| custom`'
         mock: なし
         expected: '`mdmark-type-badge` の `data-type="bool"`、`ref`・`custom` の `mdmark-type-chip` があり、`必須` の `th` が無く、`features.table` の行だけに `mdmark-tree-required`、`<span class="mdmark-tree-default">true</span>` がある'
     status: planned
@@ -63,13 +63,13 @@ functions:
       - name: test_link_tree_examples
         case: 正常
         summary: 見出しの下のタブを表の下へ移し、見本の行にパスを付ける
-        condition: '`tree=キー example=設定の見本` の表と、見出し `設定の見本` の下の `最小`・`エイリアス` のタブ'
+        condition: '`tree` の `key` が `キー`、`example.heading` が `設定の見本` の表と、見出し `設定の見本` の下の `最小`・`エイリアス` のタブ'
         mock: なし
         expected: '表の直後に `aside.mdmark-tree-example` があり 2 つのタブを持ち、見出しが元の場所にある。`  - id: terms` の行が `data-path="aliases[].id"` を持つ'
       - name: test_link_tree_examples_when_heading_missing
         case: 異常
-        summary: 見出しが無い `example=` は記載の警告にし、見本を配置しない
-        condition: '`tree=キー example=見本` の表だけの文書'
+        summary: 見出しが無い `example.heading` は記載の警告にし、見本を配置しない
+        condition: '`tree` の `key` が `キー`、`example.heading` が `見本` の表だけの文書'
         mock: なし
         expected: 表の前に `mdmark-syntax-warning` があり、`mdmark-tree-example` が無い
     status: planned

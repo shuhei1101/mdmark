@@ -183,7 +183,7 @@ functions:
       - name: test_collect_footnotes_when_mark_in_code
         case: 正常
         summary: コードブロックの中のマーカーは数えない
-        condition: '`md` のコードブロックの中に `<!-- features: -footnotes -->` を持ち、本文に脚注を持つ文書'
+        condition: '`md` のコードブロックの中に `<!-- features: {"footnotes": false} -->` を持ち、本文に脚注を持つ文書'
         mock: なし
         expected: 脚注が番号になる
       - name: test_collect_footnotes_when_terms

@@ -75,7 +75,7 @@ functions:
       - name: test_start_bundle_when_back_focuses_title
         case: 正常
         summary: 戻るで開閉とタブを戻した後、フォーカスを h1 へ移す
-        condition: '`a.md` の `group=` の無いタブで 2 つ目を選び、その中の `b.md` へのリンクを押してから `history.back()` する'
+        condition: '`a.md` の `group` の無いタブで 2 つ目を選び、その中の `b.md` へのリンクを押してから `history.back()` する'
         mock: Chromium の `document`（`.browser.test.ts` で実行する）に画面の骨組みを配置する
         expected: 2 つ目のタブの `aria-selected` が `true` で、`document.activeElement` が `a.md` の h1
       - name: test_start_bundle_when_heading_link_keeps_entry_id

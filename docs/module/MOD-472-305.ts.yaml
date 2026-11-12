@@ -9,13 +9,13 @@ functions:
     container: src/features.ts
     kind: 関数
     scope: public
-    summary: 設定の `features` に、文書の `features` のマーカーの引数（`+名前`・`-名前`）を記載した順に重ねる
-    description: 既定に無い名前と、`+`・`-` で始まらない引数は無視する。同じ名前が何度も出たら後のものが勝つ。機能を作る Issue は、この戻り値を読み込んで機能を出すかを決める
+    summary: 設定の `features` に、文書の `features` のマーカーの JSON のオブジェクト（機能名から真偽）を記載した順に重ねる
+    description: 既定に無い名前は無視する（知らない機能名は、点検が `unknown_mark_arg` で通知する）。同じ名前が何度も出たら後のものが勝つ。機能を作る Issue は、この戻り値を読み込んで機能を出すかを決める
     args:
       - name: options
-        type: '{ defaults: Record<string, boolean>; args: string[] }'
+        type: '{ defaults: Record<string, boolean>; marks: Array<Record<string, boolean>> }'
         required: true
-        description: '`defaults` は既定を適用した設定の `features`、`args` は文書の `features` のマーカーの引数を記載した順に並べたもの'
+        description: '`defaults` は既定を適用した設定の `features`、`marks` は文書の `features` のマーカーの JSON のオブジェクトを記載した順に並べたもの'
     returns:
       type: Record<string, boolean>
       description: 決まったオン・オフ（`defaults` は書き換えない）
@@ -23,24 +23,24 @@ functions:
       - name: test_resolve_features
         case: 正常
         summary: マーカーが無ければ設定のまま
-        condition: '`defaults` が `{ print: true }`、`args` が `[]`'
+        condition: '`defaults` が `{ print: true }`、`marks` が `[]`'
         mock: なし
         expected: '`{ print: true }`'
       - name: test_resolve_features_when_disabled
         case: 正常
-        summary: '`-名前` でオフにする'
-        condition: '`defaults` が `{ print: true }`、`args` が `["-print"]`'
+        summary: '`false` でオフにする'
+        condition: '`defaults` が `{ print: true }`、`marks` が `[{ print: false }]`'
         mock: なし
         expected: '`{ print: false }`'
       - name: test_resolve_features_when_enabled
         case: 正常
-        summary: '`+名前` でオンにし、知らない名前と符号の無い引数を無視する'
-        condition: '`defaults` が `{ print: false }`、`args` が `["+print", "+unknown", "print"]`'
+        summary: '`true` でオンにし、知らない名前を無視する'
+        condition: '`defaults` が `{ print: false }`、`marks` が `[{ print: true, unknown: true }]`'
         mock: なし
         expected: '`{ print: true }`'
       - name: test_resolve_features_when_repeated
         case: 正常
         summary: 同じ名前は後のものが勝つ
-        condition: '`defaults` が `{ print: true }`、`args` が `["-print", "+print"]`'
+        condition: '`defaults` が `{ print: true }`、`marks` が `[{ print: false }, { print: true }]`'
         mock: なし
         expected: '`{ print: true }`'

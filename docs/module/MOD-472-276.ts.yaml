@@ -37,46 +37,46 @@ functions:
     container: src/render/syntax/code-blocks.ts
     kind: 関数
     scope: internal
-    summary: '`code` のマーカーの引数を、タイトル・行番号の有無・強調する行・最初から畳む行・折り返すか（`wrap`。値を持つ `wrap=` は当てずに警告にする）に読み込む。`title=` の値の空白の後ろの単語（`titleTailOf` で参照する）、読み込めない `highlight=`・`fold=` の番号、コードブロックの行の数を超える行の番号は、当てずに警告にする。それ以外の知らないキー・指定は `skipped` に入れる。`fold=` は `highlight=` と同じ記載方法で読み取る'
+    summary: '`code` のマーカーの設定（`validateMarkOptions` を経た値）を、タイトル（`title`。空白を含められる）・行番号の有無と最初の行の番号（`lines`・`lines.start`）・強調する行（`highlight`）・最初から畳む行（`fold`）・折り返すか（`wrap`）に読み込む。`highlight`・`fold` の要素は行の番号か行の範囲（`from`〜`to`。`to` を省くと `from` の 1 行）で、`lines.start` から数えた行の番号として読み、コードブロックの行に無い番号と `from` より小さい `to` は当てずに警告にする'
     args:
       - name: options
-        type: '{ args: MdmarkMarkArgs; text: string; lineCount: number }'
+        type: '{ options: MarkOptions; lineCount: number }'
         required: true
-        description: '`args` は `parseMarkArgs` が読み込んだマーカーの引数、`text` はマーカーの引数の文字（`Mark` の `rest`）、`lineCount` はマーカーを削除した後のコードブロックの行の数'
+        description: '`options` はマーカーの設定、`lineCount` はマーカーを削除した後のコードブロックの行の数'
     returns:
-      type: '{ title: string; lineNumbers: boolean; highlights: Set<number>; folds: Set<number>; wrap: boolean; warnings: WarningItem[]; skipped: SkippedArg[] }'
-      description: タイトル（無ければ空）・行番号を出すか・強調する行の番号（1 から）・最初から畳む行の番号（1 から）・読み込めなかった指定・スキップした引数
+      type: '{ title: string; lineNumbers: boolean; lineStart: number; highlights: Set<number>; folds: Set<number>; wrap: boolean; warnings: WarningItem[] }'
+      description: タイトル（無ければ空）・行番号を出すか・最初の行の番号・強調する行と最初から畳む行の位置（1 から）・折り返すか・読み込めなかった指定
     unit_tests:
       - name: test_read_code_spec
         case: 正常
         summary: タイトル・行番号・行と範囲の強調を読み込む
-        condition: '`title=app.ts lines highlight=2,4-6`、`lineCount` が 6'
+        condition: '`{"title": "My App.ts", "lines": {}, "highlight": [2, {"from": 4, "to": 6}]}`、`lineCount` が 6'
         mock: なし
-        expected: '`title` が `app.ts`、`lineNumbers` が `true`、`highlights` が 2・4・5・6、`warnings` が空'
-      - name: test_read_code_spec_when_unknown_key
-        case: 異常
-        summary: 空白の後ろの指定を警告にし、知らないキーをスキップして、読み込めたタイトルを適用する
-        condition: '`title=My App.ts color=red debug`'
+        expected: '`title` が `My App.ts`、`lineNumbers` が `true`、`lineStart` が 1、`highlights` が 2・4・5・6、`warnings` が空'
+      - name: test_read_code_spec_when_line_start
+        case: 正常
+        summary: 最初の行の番号から数えて強調する行を読む
+        condition: '`{"lines": {"start": 10}, "highlight": [11, {"from": 13}]}`、`lineCount` が 5'
         mock: なし
-        expected: '`title` が `My`、`warnings` が `App.ts` の 1 つ、`skipped` の `arg` が `color=`・`debug`'
+        expected: '`lineStart` が 10、`highlights` が 2・4、`warnings` が空'
       - name: test_read_code_spec_when_line_missing
         case: 異常
-        summary: 行の数を超える番号と読み込めない番号を削除して警告にする
-        condition: '`highlight=2,5,x,3-1`、`lineCount` が 3'
+        summary: 行に無い番号と逆の範囲を削除して警告にする
+        condition: '`{"highlight": [2, 5, {"from": 3, "to": 1}]}`、`lineCount` が 3'
         mock: なし
-        expected: '`highlights` が 2 だけ、`warnings` に `5`・`x`・`3-1` がある'
+        expected: '`highlights` が 2 だけ、`warnings` に `5` と `{"from": 3, "to": 1}` の項目がある'
       - name: test_read_code_spec_when_fold
         case: 正常
         summary: 最初から畳む行を読み取り、無い行を警告にする
-        condition: '`fold=2,4-5,99`、`lineCount` が 6'
+        condition: '`{"fold": [2, {"from": 4, "to": 5}, 99]}`、`lineCount` が 6'
         mock: なし
         expected: '`folds` が 2・4・5、`warnings` に `99` の項目がある'
       - name: test_read_code_spec_when_wrap
         case: 正常
-        summary: wrap を読み込み、値を持つ wrap= を警告にする
-        condition: '`lines wrap` と `wrap=yes`、`lineCount` が 3'
+        summary: wrap を読み込む
+        condition: '`{"lines": {}, "wrap": true}` と `{}`、`lineCount` が 3'
         mock: なし
-        expected: 1 つ目は `wrap` が `true` で `warnings` が空。2 つ目は `wrap` が `false` で、`warnings` に `wrap=yes` と `wrap` と記載する修正方法の項目がある
+        expected: 1 つ目は `wrap` が `true`、2 つ目は `wrap` が `false` で `lineNumbers` が `false`。どちらも `warnings` が空
   - name: readLineMarks
     title: コードの行のマーカーを読み込む
     container: src/render/syntax/code-blocks.ts
@@ -121,7 +121,7 @@ functions:
     container: src/render/syntax/code-blocks.ts
     kind: 関数
     scope: internal
-    summary: 'コアルール。残っている `fence` のトークンごとに、情報文字列を `splitInfoString` で言語とファイル名に分けてから次の処理をする。`code` がオンのときは `readLineMarks` で行を読み込み、直前のトークンが `code` のマーカーなら `readCodeSpec` で指定を読み込み、全てのコードブロックを部品『コードブロック』（言語・ファイル名・タイトル・行番号・`wrap`・行と、`syntax` がオンなら言語を `syntaxLanguageOf` で参照した色分けの言語。`copyState` は指定しない）の `ownBlock` に置き換える。帯の右端のコピーのボタンは `mount` が付ける。`code` がオフのときは行のマーカーを削除せず中身の行をそのまま使用し、`syntax` がオンで色分けの言語を持つコードブロックだけを帯を持たない部品（`bar: false`）に置き換え、それ以外は `fence` のまま情報文字列の最初の単語を言語に書き換える（`ts:app.ts` の `code` の class を `language-ts` にし、`:` の前が空なら最初の単語を削除する）。`mermaid` がオンで情報文字列の最初の単語がちょうど `mermaid` のコードブロックは、`code` のオン・オフによらず部品に置き換え（`code` がオフなら `bar: false`）、`mermaid: true` を指定し、色分けの言語を指定しない。`code` がオンのときは、`readFolds` で行にインデントのレベル・畳む行の数・`fold=` の畳んだ状態を付けてから部品へ指定する。`readCodeSpec`（`text` にマーカーの `rest` を指定する）と `readLineMarks` と `readFolds` の読み込めない指定はコードブロックの前に警告を差し込み、`readCodeSpec` の `skipped` は `pushSkippedArgs` で同じ場所に差し込む。後ろが `fence` でない `code` のマーカーの場所にも警告を差し込む（`code` がオンのときだけ）。言語 `tree`・図の部品・埋め込んだ HTML のコードブロックは、先のコアルールが最初の単語との一致で `fence` でなくしているため該当せず、`tree:src` のように `:ファイル名` を付けたものはここで普通のコードブロックとして描く'
+    summary: 'コアルール。残っている `fence` のトークンごとに、情報文字列を `splitInfoString` で言語とファイル名に分けてから次の処理をする。`code` がオンのときは `readLineMarks` で行を読み込み、直前のトークンが `code` のマーカーなら `readCodeSpec` で指定を読み込み、全てのコードブロックを部品『コードブロック』（言語・ファイル名・タイトル・行番号と最初の行の番号・`wrap`・行と、`syntax` がオンなら言語を `syntaxLanguageOf` で参照した色分けの言語。`copyState` は指定しない）の `ownBlock` に置き換える。帯の右端のコピーのボタンは `mount` が付ける。`code` がオフのときは行のマーカーを削除せず中身の行をそのまま使用し、`syntax` がオンで色分けの言語を持つコードブロックだけを帯を持たない部品（`bar: false`）に置き換え、それ以外は `fence` のまま情報文字列の最初の単語を言語に書き換える（`ts:app.ts` の `code` の class を `language-ts` にし、`:` の前が空なら最初の単語を削除する）。`mermaid` がオンで情報文字列の最初の単語がちょうど `mermaid` のコードブロックは、`code` のオン・オフによらず部品に置き換え（`code` がオフなら `bar: false`）、`mermaid: true` を指定し、色分けの言語を指定しない。`code` がオンのときは、`readFolds` で行にインデントのレベル・畳む行の数・`fold` の畳んだ状態を付けてから部品へ指定する。`readCodeSpec` と `readLineMarks` と `readFolds` の読み込めない指定はコードブロックの前に警告を差し込む。後ろが `fence` でない `code` のマーカーの場所にも警告を差し込む（`code` がオンのときだけ）。言語 `tree`・図の部品・埋め込んだ HTML のコードブロックは、先のコアルールが最初の単語との一致で `fence` でなくしているため該当せず、`tree:src` のように `:ファイル名` を付けたものはここで普通のコードブロックとして描く'
     args:
       - name: state
         type: StateCore
@@ -140,7 +140,7 @@ functions:
       - name: test_build_code_blocks
         case: 正常
         summary: マーカーと行のマーカーを持つコードブロックも何も持たないコードブロックも帯を持つ部品にする
-        condition: '`<!-- code: title=app.ts lines -->` の直後の 2 行の言語 `ts` のコードブロックと、マーカーも行のマーカーも持たない言語 `text` のコードブロック。`syntax` はオフ'
+        condition: '`<!-- code: {"title": "app.ts", "lines": {}} -->` の直後の 2 行の言語 `ts` のコードブロックと、マーカーも行のマーカーも持たない言語 `text` のコードブロック。`syntax` はオフ'
         mock: なし
         expected: 1 つ目が `<figure class="mdmark-code">` と `<figcaption class="mdmark-code-title mdmark-code-bar">` を持つ `html_block`、2 つ目が `<div class="mdmark-code">` と `<div class="mdmark-code-bar">` の中の `mdmark-code-lang-name` が `text` の `html_block`。どちらも `mdmark-code-copy` を持たない
       - name: test_build_code_blocks_when_file_name
@@ -170,7 +170,7 @@ functions:
       - name: test_build_code_blocks_when_no_fence
         case: 異常
         summary: 後ろにコードブロックの無いマーカーを警告にする
-        condition: '`<!-- code: title=app.ts -->` の直後が段落'
+        condition: '`<!-- code: {"title": "app.ts"} -->` の直後が段落'
         mock: なし
         expected: マーカーの場所に警告があり、段落が残る
       - name: test_build_code_blocks_when_disabled
@@ -188,7 +188,7 @@ functions:
       - name: test_build_code_blocks_when_syntax_disabled
         case: 正常
         summary: '`syntax` がオフなら色分けの属性を付けない'
-        condition: '`<!-- features: -syntax -->` と、マーカーも行のマーカーも持たない言語 `ts` のコードブロックと、`<!-- code: lines -->` の直後の言語 `ts` のコードブロック'
+        condition: '`<!-- features: {"syntax": false} -->` と、マーカーも行のマーカーも持たない言語 `ts` のコードブロックと、`<!-- code: {"lines": {}} -->` の直後の言語 `ts` のコードブロック'
         mock: なし
         expected: 1 つ目は帯を持つ部品、2 つ目は行番号を持つ部品で、どちらにも `data-mdmark-syntax` が無い
       - name: test_build_code_blocks_when_code_disabled_with_syntax
@@ -212,7 +212,7 @@ functions:
       - name: test_build_code_blocks_when_mermaid_disabled
         case: 正常
         summary: '`mermaid` がオフなら、ほかの言語と同じコードブロックにする'
-        condition: '`<!-- features: -mermaid -->` と言語 `mermaid` のコードブロック。`code` はオン'
+        condition: '`<!-- features: {"mermaid": false} -->` と言語 `mermaid` のコードブロック。`code` はオン'
         mock: なし
         expected: 帯を持つ部品で、`data-mdmark-mermaid` が無い
       - name: test_build_code_blocks_when_mermaid_without_code
@@ -223,14 +223,14 @@ functions:
         expected: '`<pre data-mdmark-mermaid` で始まる `html_block` で、`mdmark-code-bar` が無い'
       - name: test_build_code_blocks_when_foldable
         case: 正常
-        summary: インデントのある行と畳める行を行に分け、fold= の行を畳んだ状態にする
+        summary: インデントのある行と畳める行を行に分け、fold の行を畳んだ状態にする
         condition: インターフェース定義『文書をHTML文字列にする』の「正常系（畳める行とインデント）」の文書
         mock: なし
         expected: yaml の 1 行目が `data-fold-lines="3"`、2 行目が `data-indent="1"`・`data-fold-lines="1"`・`data-folded`、3 行目が `data-indent="2"`。json のオブジェクトを開く行の `data-fold-lines` が閉じ括弧の行を含まない。`tree` のコードブロックが `mdmark-code-line` を持たない
       - name: test_build_code_blocks_when_fold_invalid
         case: 異常
-        summary: 畳めない fold= の行を警告にする
-        condition: インターフェース定義『文書をHTML文字列にする』の「正常系（畳めない行の fold=）」の文書
+        summary: 畳めない fold の行を警告にする
+        condition: インターフェース定義『文書をHTML文字列にする』の「正常系（畳めない行の fold）」の文書
         mock: なし
         expected: コードブロックの前の警告が 1 つで、項目に `3` と `99` があり、1 行目だけが `data-folded` を持つ
       - name: test_build_code_blocks_when_focus

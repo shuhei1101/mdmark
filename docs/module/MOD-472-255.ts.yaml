@@ -68,7 +68,7 @@ functions:
       - name: test_collect_references_when_disabled
         case: 正常
         summary: '`backlinks` がオフの文書は参照元にも参照先にもならず、`glossary` がオフの文書の表は入れない'
-        condition: '`guide` の本文に `<!-- features: -backlinks -glossary -->` と用語集の表'
+        condition: '`guide` の本文に `<!-- features: {"backlinks": false, "glossary": false} -->` と用語集の表'
         mock: なし
         expected: '`backlinks.arch` に `guide` が無く、`glossary` が空'
       - name: test_collect_references_ignores_code_and_headings

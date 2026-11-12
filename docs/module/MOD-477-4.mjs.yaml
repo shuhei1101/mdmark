@@ -1,0 +1,42 @@
+id: MOD-477-4
+visibility: internal
+title: ライブラリ本体 / バージョンを上げる / marker-json.mjs
+test_files:
+  - tests/unit/migrations/marker-json.test.ts
+functions:
+  - name: migrateDocumentMarks
+    title: 文書のマーカーを JSON の記載へ書き換える
+    container: migrations/next/marker-json.mjs
+    usecase: バージョンを上げる
+    kind: 関数
+    scope: public
+    is_async: true
+    summary: 文書のマーカーの今の書き方の引数を JSON のオブジェクトへ書き換える移行の手順のスクリプトの処理
+    description: '`steps.yaml` の `call`（`destructive: true`・`files: [documents]`。`description` は ``文書のマーカーの今の書き方の引数を JSON のオブジェクトへ書き換える（書き出さない記載と拡張・`libraries` のマーカーは移行の報告に挙げる）``）が実行する。スクリプトとして呼ばれると、`--config` の設定ファイルを `yaml` の `parse` で読み込み、この関数を呼ぶ。文書はインターフェース定義『バージョンを上げる』の制約「文書」のとおり、設定の `build.include` に該当し `build.exclude` に該当しないファイル（設定ファイルのフォルダから `node:fs/promises` の `glob` で参照する）と、設定の `index` の索引の文書の `path` を、重ねずに設定ファイルのフォルダからの相対パスの順に並べる。文書ごとに、スクリプトのフォルダから 2 つ上の `dist/legacy-marks.js` の `rewriteLegacyMarks` で書き換え、変わった文書だけを書き込む。`report` を `{文書の相対パス}:{行}: {マーカーの名前}: {記載}: {理由}` の行にして標準出力へ 1 行ずつ書き込み、行が無ければ `{書き換えた文書の数} 件の文書のマーカーを書き換えました。` を書き込んで 0 で終わる。読み込めない文書があれば書き込まずに標準エラーへ書き込んで 1 で終わる。単体テストは `migrations/*/marker-json.mjs` を探して import し、release で `next/` をバージョンのフォルダへ移した後も同じテストで読み込む'
+    args:
+      - name: options
+        type: '{ config: unknown; configDir: string }'
+        required: true
+        description: 設定ファイルを読み込んだ値と、設定ファイルのあるフォルダの絶対パス
+    returns:
+      type: 'Promise<{ changed: string[]; report: string[]; problems: string[] }>'
+      description: 書き換えた文書の相対パス・移行の報告の行・読み込めない文書の修正方法
+    side_effects: 文書を書き換える
+    callees:
+      - MOD-477-3#functions[rewriteLegacyMarks]
+    refs:
+      - IF-472-28#constraints[スクリプトの呼び方]
+      - IF-472-28#constraints[文書のマーカーの移行]
+    unit_tests:
+      - name: test_migrate_document_marks
+        case: 正常
+        summary: build の対象と索引の文書を書き換えて報告の行を出す
+        condition: 'シナリオ『バージョンを上げる』の 2 つのシナリオの文書を、`build.include` の文書と索引だけの文書に分けて持つ一時フォルダ'
+        mock: 一時フォルダ
+        expected: 両方の文書がシナリオの期待値のとおりになり、`report` が文書と行の順で、`changed` が 2 つ
+      - name: test_migrate_document_marks_when_rerun
+        case: 正常
+        summary: もう一度適用しても文書を書き換えない
+        condition: 1 つ目のテストの後の一時フォルダ
+        mock: 一時フォルダ
+        expected: '`changed` が空で、文書の更新日時が変わらない'

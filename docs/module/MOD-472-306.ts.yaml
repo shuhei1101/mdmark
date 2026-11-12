@@ -23,7 +23,7 @@ data_models:
         description: 畳める行の後ろの畳む行の数（`data-fold-lines`）。無ければ畳めない行
       - name: folded
         type: boolean | undefined
-        description: 最初から畳んだ状態か（`fold=` の行。`data-folded`）
+        description: 最初から畳んだ状態か（`fold` の行。`data-folded`）
 constants:
   - name: SYNTAX_ATTRIBUTE
     title: 色分けの対象の属性

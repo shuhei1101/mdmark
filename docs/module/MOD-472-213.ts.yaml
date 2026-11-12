@@ -13,23 +13,22 @@ data_models:
         type: number
         description: 警告の元になったマーカー（範囲なら開きのマーカー）の元の行番号（1 から）。マーカーを持たない警告は、警告のトークンの後ろで最初に `map` を持つトークンの開始の行（無ければ前で最後に `map` を持つトークンの終わりの行）
       - name: kind
-        type: '"diagram_invalid" | "syntax_warning" | "unknown_mark_arg" | MapProblem["kind"]'
-        description: map の書き方の警告は項目ごとに 1 件で、項目の `kind`（`line` は範囲の開きのマーカーの行に項目の `line` を足した行）。図の部品の定義の警告は `diagram_invalid`、スキップした記法のマーカーの引数（画面には出さない）は `unknown_mark_arg`、ほかは `syntax_warning`（`render` は知らないマーカーに警告を配置しない）
+        type: '"diagram_invalid" | "syntax_warning" | MarkNote["kind"] | MapProblem["kind"]'
+        description: map の書き方の警告は項目ごとに 1 件で、項目の `kind`（`line` は範囲の開きのマーカーの行に項目の `line` を足した行）。図の部品の定義の警告は `diagram_invalid`、画面には出さない記法のマーカーの注記は `MarkNote` の `kind`（`unknown_mark_arg`・`legacy_mark`・`mark_option_unapplied`）、ほかは `syntax_warning`（`render` は知らないマーカーに警告を配置しない）
       - name: message
         type: string
         description: 警告の本文と項目を、HTML のタグを除いた文字にして空白 1 つでつないだもの（画面で読み込む文と同じ順）
-  - name: SkippedArg
-    title: スキップした引数
+  - name: MarkNote
+    title: マーカーの注記
     container: src/render/syntax/warnings.ts
-    summary: 記法のマーカーの知らない種類・`+機能`・`-機能`・キー・指定の単語 1 つと、そのマーカーで使用できるもの
+    summary: 描くときは画面に出さず、点検だけがずれにする記法のマーカーの注記 1 つ
     properties:
-      - name: arg
+      - name: kind
+        type: '"unknown_mark_arg" | "legacy_mark" | "mark_option_unapplied"'
+        description: '知らないキー（`validateMarkOptions` の `unknownKeys`）・今の書き方の引数（`Mark.source` が `legacy`）・`enabled` を `false` にした機能の列の設定'
+      - name: message
         type: string
-        description: 記載した引数の文字（`+foo`・`size=`・`fold`）。キーは `{キー}=`
-      - name: usable
-        type: string
-        description: そのマーカーで使用できる種類・機能・キー・指定を行内のコードにして `・` でつないだ文字（今の警告の「使用できる…は」の並び）
-    status: planned
+        description: 'インターフェース定義『設定と索引を点検する』の制約「マーカーの設定の点検」の内容の文（HTML のタグと `` ` `` を除いた文字）'
 functions:
   - name: pushWarning
     title: 記載の警告を差し込む
@@ -63,7 +62,7 @@ functions:
     container: src/render/syntax/warnings.ts
     kind: 関数
     scope: internal
-    summary: markdown-it のコアルール（最後に走る）。`meta.warning` を持つトークン（埋め込んだ HTML の範囲の `html_block` は `meta.warnings` の並び）ごとに、`meta.warning.line`（マーカーの行）を、無ければ後ろで最初に `map` を持つトークンの開始の行（それも無ければ前で最後に `map` を持つトークンの終わりの行）を 1 からの行番号にし、`env.warnings` に `CollectedWarning` を追加する
+    summary: markdown-it のコアルール（最後に走る）。`meta.warning` を持つトークン（埋め込んだ HTML の範囲の `html_block` は `meta.warnings` の並び）ごとに、`meta.warning.line`（マーカーの行）を、無ければ後ろで最初に `map` を持つトークンの開始の行（それも無ければ前で最後に `map` を持つトークンの終わりの行）を 1 からの行番号にし、`env.warnings` に `CollectedWarning` を追加する。続けて `env.markNotes` の注記を `CollectedWarning` にし、同じ行は警告の後ろになるよう行の順に合わせる
     args:
       - name: state
         type: StateCore
@@ -78,82 +77,49 @@ functions:
       - name: test_collect_warnings_rule
         case: 正常
         summary: マーカーの行を場所にし、マーカーを持たない警告は後ろのブロックの行にする
-        condition: '3 行目の `<!-- code: highlight=9 -->` と直後のコードブロック、10 行目の開きのマーカーから続く読み込めない `<!-- flow -->` の範囲、20 行目の、上の行より 2 階層深い行を持つ `tree` のコードブロック（マーカーを持たない警告）'
+        condition: '3 行目の `<!-- code: {"highlight": [9]} -->` と直後のコードブロック、10 行目の開きのマーカーから続く読み込めない `<!-- flow -->` の範囲、20 行目の、上の行より 2 階層深い行を持つ `tree` のコードブロック（マーカーを持たない警告）'
         mock: なし
         expected: '`env.warnings` が 3 件で、`line` が `3`・`10`・`20`、`kind` が `syntax_warning`・`diagram_invalid`・`syntax_warning`'
       - name: test_collect_warnings_rule_when_marks
         case: 正常
         summary: 表・ファイルツリー・タブのマーカーの警告を、マーカーの行にする
-        condition: '3 行目 `<!-- table: foo -->` と表と閉じのマーカー、11 行目 `<!-- tree: wrap=1 -->` と `tree` のコードブロック、20 行目 `<!-- tabs: x=1 -->` の範囲'
+        condition: '3 行目 `<!-- table: {"kind": "foo"} -->` と表と閉じのマーカー、11 行目 `<!-- tree: {"wrap": 1} -->` と `tree` のコードブロック、20 行目 `<!-- tabs: {"collapse": 1} -->` の範囲'
         mock: なし
         expected: '`env.warnings` の `line` が `3`・`11`・`20`'
-      - name: test_collect_warnings_rule_when_skipped_args
+      - name: test_collect_warnings_rule_when_mark_notes
         case: 正常
-        summary: スキップした引数を、マーカーの行で unknown_mark_arg にして集める
-        condition: '5 行目の `<!-- tabs: grop=os -->` と `### macOS`・`### Windows` の範囲'
+        summary: マーカーの注記を、マーカーの行でその種類にして集める
+        condition: '5 行目の `<!-- tabs: {"grop": "os"} -->` と `### macOS`・`### Windows` の範囲、9 行目の `<!-- section: {"open": false} -->`'
         mock: なし
-        expected: '`env.warnings` が `{ line: 5, kind: "unknown_mark_arg" }` の 1 件で、`message` に `grop=` と `group=`・`title=` を含む'
+        expected: '`env.warnings` が `{ line: 5, kind: "unknown_mark_arg" }`（`message` に `grop` と `group`・`collapse` を含む）と `{ line: 9, kind: "legacy_mark" }` の 2 件'
     status: planned
     introduced:
       pr: 328
-  - name: pushSkippedArgs
-    title: スキップした引数を差し込む
+  - name: recordMarkNotes
+    title: マーカーの注記を記録する
     container: src/render/syntax/warnings.ts
     kind: 関数
     scope: internal
-    summary: スキップした引数 1 つにつき、中身が空の `html_block` のトークン（画面には何も出さない）を作り、`meta.warning` に種類 `unknown_mark_arg`・文・`source` の `map[0]` を入れて、指定の位置に記載した順に差し込む。文は `{mark} の {arg} はこのバージョンの mdmark が知らない指定で、描くときはスキップしています。使用できるのは {usable} です。誤記なら名前を修正し、新しいバージョンの指定なら mdmark のバージョンを上げてください。`（HTML のタグと `` ` `` を除いた文字）。`collectWarningsRule` が `env.warnings` に集め、`mdmark check` の `--text`・`--file` だけがずれにする
+    summary: 注記を、マーカーの行（1 から）と一緒に `env.markNotes` に記載した順に追加する。トークンは差し込まない（マーカーと直後のブロックの並びを変えない）。`collectWarningsRule` が `env.warnings` に行の順で合わせ、`mdmark check` がずれにする
     args:
-      - name: state
-        type: StateCore
+      - name: env
+        type: RenderEnv
         required: true
-        description: markdown-it の状態
-      - name: index
-        type: number
-        required: true
-        description: 差し込むトークンの位置
+        description: 描くときの環境
       - name: options
-        type: '{ mark: string; skipped: SkippedArg[] }'
+        type: '{ notes: MarkNote[]; line: number }'
         required: true
-        description: '`mark` はマーカーの文字、`skipped` はスキップした引数（空なら何も差し込まない）'
-      - name: source
-        type: Token | undefined
-        required: false
-        description: マーカーのトークン（範囲なら開きのマーカー）。その `map[0]` を場所にする
-    side_effects: '`state.tokens` に追加する'
+        description: '`notes` は追加する注記（空なら何もしない）、`line` はマーカーのトークン（範囲なら開きのマーカー）の `map[0]` に 1 を足した行'
+    side_effects: '`env.markNotes` に追加する'
     unit_tests:
-      - name: test_push_skipped_args
+      - name: test_record_mark_notes
         case: 正常
-        summary: スキップした引数ごとに中身の空のトークンを差し込み、画面には出さない
-        condition: '3 行目の `<!-- table: data +foo size=2 -->` と表と閉じのマーカーを `renderDocument` に経由する'
+        summary: 注記を記録し、画面には出さない
+        condition: '3 行目の `<!-- table: {"kind": "data", "features": {"foo": {}}, "size": 2} -->` と表と閉じのマーカーを `renderDocument` に経由する'
         mock: なし
-        expected: HTML に `mdmark-syntax-warning`・`+foo`・`size=` が無く、`warnings` が `kind` が `unknown_mark_arg`・`line` が `3` の 2 件で、`message` が `+foo`・`size=` と使用できる機能・キーを含む
+        expected: HTML に `mdmark-syntax-warning`・`foo`・`size` が無く、`warnings` が `kind` が `unknown_mark_arg`・`line` が `3` の 2 件で、`message` が `features.foo`・`size` とその場所で使用できるキーを含む
     callees:
       - '#functions[collectWarningsRule]'
     refs:
-      - IF-472-39#constraints[記法の点検]
-    status: planned
-  - name: skippedArgBlocks
-    title: スキップした引数のトークンを作る
-    container: src/render/syntax/warnings.ts
-    kind: 関数
-    scope: internal
-    summary: '`pushSkippedArgs` と同じトークンを、差し込まずに記載した順の並びで返却する（トークンの並びを再作成するコアルールが、警告の `warningBlock` と同じく差し込む位置を決めるときに使用する）。`pushSkippedArgs` はこの並びを `index` の位置に差し込む'
-    args:
-      - name: state
-        type: StateCore
-        required: true
-        description: markdown-it の状態
-      - name: options
-        type: '{ mark: string; skipped: SkippedArg[] }'
-        required: true
-        description: '`pushSkippedArgs` と同じ'
-      - name: source
-        type: Token | undefined
-        required: false
-        description: '`pushSkippedArgs` と同じ'
-    returns:
-      type: Token[]
-      description: スキップした引数 1 つにつき 1 つのトークン
-    callees:
-      - '#functions[collectWarningsRule]'
+      - IF-472-39#constraints[マーカーの設定の点検]
     status: planned

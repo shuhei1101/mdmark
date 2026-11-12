@@ -11,8 +11,8 @@ functions:
     kind: 関数
     scope: public
     is_async: true
-    summary: Markdown の文字列か、YAML のファイルのキーの値を、描いたときの記載の警告・スキップした記法のマーカーの引数・知らないマーカー・図の配置のずれにして返却する。`runCheck` と MCP の `runCheckTool` が呼ぶ
-    description: 設定ファイルは `config` か、`cwd` から上へ `CONFIG_FILE` を探して見つかったものを使用し、見つからなければ既定の設定で点検する（`config` を指定して無いときだけ `CliError`）。`file` のときは `readYamlKey` で値と行の置き換えを得る。ずれは `collectWarnings` の警告（設定の `features`・`libraries` を適用する。include の取り込み先が無い警告（`includeTarget` を持つもの）と、種類が `map` の警告は除く）、`checkMaps`（map の範囲の項目ごとのずれ）、`checkUnknownMarks`（`loadExtensionDirectives` の `directive` と `check.ignore` を知っているマーカーに入れる）、`checkDiagrams` のうち `diagram_invalid` でないずれ（定義の誤りは `collectWarnings` が返却するため）を合わせ、行の順（同じ行は警告・知らないマーカーとスキップした引数・配置のずれの順）に並べる。`collectWarnings` の `unknown_mark_arg` はそのまま `unknown_mark_arg` のずれにする。`file` は `text` のとき `-`、`file` のとき設定ファイルのフォルダ（無ければ `cwd`）からの相対パス。`where` は文字列の行を `file` のとき `readYamlKey` の `lineOf` で YAML のファイルの行に置き換えた番号の文字
+    summary: Markdown の文字列か、YAML のファイルのキーの値を、描いたときの記載の警告・記法のマーカーの注記（知らないキー・今の書き方・適用しない列の設定）・知らないマーカー・図の配置のずれにして返却する。`runCheck` と MCP の `runCheckTool` が呼ぶ
+    description: 設定ファイルは `config` か、`cwd` から上へ `CONFIG_FILE` を探して見つかったものを使用し、見つからなければ既定の設定で点検する（`config` を指定して無いときだけ `CliError`）。`file` のときは `readYamlKey` で値と行の置き換えを得る。ずれは `collectWarnings` の警告（設定の `features`・`libraries` を適用する。include の取り込み先が無い警告（`includeTarget` を持つもの）と、種類が `map` の警告は除く）、`checkMaps`（map の範囲の項目ごとのずれ）、`checkUnknownMarks`（`loadExtensionDirectives` の `directive` と `check.ignore` を知っているマーカーに入れる）、`checkDiagrams` のうち `diagram_invalid` でないずれ（定義の誤りは `collectWarnings` が返却するため）を合わせ、行の順（同じ行は警告・知らないマーカーと注記・配置のずれの順）に並べる。`collectWarnings` の `unknown_mark_arg`・`legacy_mark`・`mark_option_unapplied` はそのままその種類のずれにする。`file` は `text` のとき `-`、`file` のとき設定ファイルのフォルダ（無ければ `cwd`）からの相対パス。`where` は文字列の行を `file` のとき `readYamlKey` の `lineOf` で YAML のファイルの行に置き換えた番号の文字
     args:
       - name: options
         type: '{ cwd: string; config?: string; text?: string; file?: string; key?: string; importCode: (code: string) => Promise<unknown> }'
@@ -61,16 +61,22 @@ functions:
         expected: 例外を投げず、`unknown_mark` の 1 件
       - name: test_check_markdown_source_when_include
         case: 正常
-        condition: '`text` に `<!-- include: missing.md -->` と `<!-- tabz -->` を持つ Markdown'
+        condition: '`text` に `<!-- include: {"path": "missing.md"} -->` と `<!-- tabz -->` を持つ Markdown'
         expected: ずれが `unknown_mark` の 1 件だけで、`missing.md` の `syntax_warning` が無い
         mock: なし
         summary: 取り込み先が無い警告を出さない
-      - name: test_check_markdown_source_when_unknown_mark_args
+      - name: test_check_markdown_source_when_unknown_mark_keys
         case: 正常
-        summary: 描くときにスキップするマーカーの引数を unknown_mark_arg にする
+        summary: 描くときに無視するマーカーの知らないキーを unknown_mark_arg にする
         condition: 「正常系（文字列の記法のマーカーに知らない引数がある）」の文字列を `text` で指定する
         mock: 一時フォルダ
         expected: '`kind` がどれも `unknown_mark_arg` の 3 件で、`where` が `1`・`1`・`8`、`syntax_warning` が無い'
+      - name: test_check_markdown_source_when_legacy_mark
+        case: 正常
+        summary: 今の書き方のマーカーを legacy_mark にし、記載の警告にしない
+        condition: 「正常系（文字列に今の書き方のマーカーがある）」の文字列を `text` で指定する
+        mock: 一時フォルダ
+        expected: '`kind` が `legacy_mark` の 2 件で、`where` が `1`・`7`、`syntax_warning` が無い'
     status: planned
     introduced:
       pr: 328

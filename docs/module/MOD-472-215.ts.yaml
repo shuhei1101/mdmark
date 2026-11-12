@@ -9,29 +9,29 @@ functions:
     container: src/render/page.ts
     kind: 関数
     scope: internal
-    summary: page のマーカーの引数（`キー=値` の並び）から、記載できるキーと値だけを `PageSettings` にし、記載できるキーの知らない値と、知らないキー・`=` を持たない引数を分けて返却する
-    description: '`scheme` は `COLOR_SCHEMES`、`theme` は `COLOR_THEMES`、`toc` は `hover`・`fixed` の値だけを受ける。同じキーが何度も出たら後に記載した値を使用する。`scheme`・`theme`・`toc` の受けない値は `unknown` に、それ以外のキーと `=` を持たない引数は `skipped` に入れる'
+    summary: page のマーカーの JSON のオブジェクト（マーカーの JSON Schema に通した後のもの）を記載した順に重ね、`PageSettings` にする
+    description: 'page のマーカーを複数記載したときと同じキーが何度も出たときは、後に記載した値を使用する。`scheme`・`theme`・`toc.mode` の選べる値に無い値と知らないキーは、`validateMarkOptions` が `problems`・`unknownKeys` に分けて取り除いた後のため、ここでは扱わない'
     args:
       - name: options
-        type: '{ args: string[]; keys: Record<string, string> }'
+        type: MarkOptions[]
         required: true
-        description: '`parseMarkArgs` が返却したマーカーの引数'
+        description: 文書の先頭の page のマーカーの `options` を記載した順に並べたもの
     returns:
-      type: '{ settings: PageSettings; unknown: string[]; skipped: string[] }'
-      description: 読み込めたページの設定と、記載できるキーの知らない値の引数と、知らないキー・指定の引数（キーは `{キー}=`）を、それぞれ記載した順に並べたもの
+      type: PageSettings
+      description: '`{ scheme?, theme?, toc? }`（`toc` は `toc.mode` の値）'
     unit_tests:
       - name: test_read_page_settings
         case: 正常
         summary: 記載できるキーと値を読み込む
-        condition: '`scheme=dark theme=theme-slate toc=fixed`'
+        condition: '`[{ scheme: "dark", theme: "theme-slate", toc: { mode: "fixed" } }]`'
         mock: なし
-        expected: '`settings` が `{ scheme: "dark", theme: "theme-slate", toc: "fixed" }`、`unknown` と `skipped` が空'
-      - name: test_read_page_settings_when_unknown
-        case: 異常
-        summary: 知らない値と知らないキーを分ける
-        condition: '`scheme=sepia theme=theme-unknown size=wide toc=fixed toc=hover`'
+        expected: '`{ scheme: "dark", theme: "theme-slate", toc: "fixed" }`'
+      - name: test_read_page_settings_when_repeated
+        case: 正常
+        summary: 後に記載した値を使用する
+        condition: '`[{ scheme: "dark", toc: { mode: "fixed" } }, { toc: { mode: "hover" } }]`'
         mock: なし
-        expected: '`settings` が `{ toc: "hover" }`、`unknown` が `["scheme=sepia", "theme=theme-unknown"]`、`skipped` が `["size="]`'
+        expected: '`{ scheme: "dark", toc: "hover" }`'
     refs:
       - IF-472-35#constraints[ページの設定のマーカー]
     status: planned

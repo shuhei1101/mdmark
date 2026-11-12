@@ -36,7 +36,7 @@ functions:
       - name: test_number_figures_when_table_has_nested_table
         case: 正常
         summary: fig を付けた表の行の詳細に表があっても、親の表の全ての行を図表の囲みに入れる
-        condition: '`fig: list` の直後の表（列 `名前`・`説明`、名前 `Todo`・`Done`）と、その直後の `<!-- row-detail: 1 -->` 〜 `<!-- /row-detail -->` の中の表。`env.features.table` が `true` の場合と `false` の場合'
+        condition: '`fig: list` の直後の表（列 `名前`・`説明`、名前 `Todo`・`Done`）と、その直後の `<!-- row-detail: {"at": 1} -->` 〜 `<!-- /row-detail -->` の中の表。`env.features.table` が `true` の場合と `false` の場合'
         mock: なし
         expected: どちらの場合も、`表 1` の図表の囲みが親の表の `</table>`（`true` では親の表の囲みの閉じ）の後ろで閉じ、`Done` の行が図表の囲みの中にある。中の表に番号を付けない
       - name: test_number_figures_when_image_figure

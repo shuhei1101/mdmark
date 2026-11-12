@@ -97,7 +97,7 @@ functions:
       - name: test_attach_tables_when_cell_has_term
         case: 正常
         summary: セルに用語の下線があっても、絞り込みの値の候補と見出しのボタンの名前にツールチップの文字を含めない
-        condition: '`<!-- table: data filter=名前 -->` の表（列 `名前`・`値`、行 `マーカー`・`表`）と、`マーカー`・`名前` を入れた用語集の表を `mount` で描く'
+        condition: '`<!-- table: {"kind": "data", "columns": {"名前": {"filter": {}}}} -->` の表（列 `名前`・`値`、行 `マーカー`・`表`）と、`マーカー`・`名前` を入れた用語集の表を `mount` で描く'
         mock: なし
         expected: 絞り込みの値の候補が `["マーカー", "表"]`、見出しのボタンの名前が `名前` と `値`、`マーカー` のセルに用語の下線が残る
       - name: test_attach_tables_when_counted
@@ -193,7 +193,7 @@ functions:
       - name: test_attach_tables_when_row_header_pinned
         case: 正常
         summary: 行見出しを持つはみ出す表を、描いた直後に行見出しの全ての列を留める
-        condition: 幅 320px の要素に、`row-header=2` の 10 列 5 行の表
+        condition: 幅 320px の要素に、`header.columns` が 2 の 10 列 5 行の表
         mock: なし
         expected: 1・2 列目のピン止めのボタンが `aria-pressed="true"`、1・2 列目のセルの `position` が `sticky`、3 列目は `sticky` でない
       - name: test_attach_tables_when_tree_copied

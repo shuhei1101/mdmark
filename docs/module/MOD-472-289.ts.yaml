@@ -40,7 +40,7 @@ functions:
       - name: test_build_embedded_html_when_hint
         case: 正常
         summary: data-hint にマーカーとツールチップの中身を配置し、hints がオフなら削除する
-        condition: '`<div data-hint="説明">` と `<span data-hint="分類の説明">`。もう 1 つは同じ文書に `<!-- features: -hints -->`'
+        condition: '`<div data-hint="説明">` と `<span data-hint="分類の説明">`。もう 1 つは同じ文書に `<!-- features: {"hints": false} -->`'
         mock: なし
         expected: 前者で `div.mdmark-hint-block > button.mdmark-hint-mark` と `span.mdmark-hint-inline[tabindex="0"]` があり、後者で `data-hint` と `mdmark-hint-` が無い
       - name: test_build_embedded_html_when_terms
@@ -58,7 +58,7 @@ functions:
       - name: test_build_embedded_html_when_disabled
         case: 正常
         summary: html がオフならコードブロックのままにする
-        condition: '正常の文書に `<!-- features: -html -->`'
+        condition: '正常の文書に `<!-- features: {"html": false} -->`'
         mock: なし
         expected: '`pre > code.language-html` が 2 つで、`mdmark-html` と `<!--` が無い'
       - name: test_build_embedded_html_when_avoided_term

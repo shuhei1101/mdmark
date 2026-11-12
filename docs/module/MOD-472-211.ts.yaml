@@ -18,18 +18,18 @@ data_models:
       - name: labels
         type: '{ paramCopy: string } | undefined'
         description: 既定を適用した設定の `labels`（部品の文言。`renderDocument` が入れ、図の部品・埋め込んだ HTML のコアルールが `env.labels?.paramCopy` を `renderParam` に指定する）
-      - name: featureArgs
-        type: string[]
-        description: '`features` のマーカーの引数を記載した順に並べたもの（コアルールが追加する）'
+      - name: featureOptions
+        type: Array<Record<string, boolean>>
+        description: '`features` のマーカーの JSON のオブジェクトを記載した順に並べたもの（コアルールが追加する）'
       - name: features
         type: Record<string, boolean>
-        description: '`defaults` に `featureArgs` を重ねたもの（`resolveDocumentFeatures` が入れる。記法のコアルールが読み込む）'
-      - name: pageArgs
-        type: 'Array<{ args: string[]; keys: Record<string, string> }>'
-        description: 文書の先頭の page のマーカーの引数を記載した順に並べたもの（`takeMarks` が追加する）
+        description: '`defaults` に `featureOptions` を重ねたもの（`resolveDocumentFeatures` が入れる。記法のコアルールが読み込む）'
+      - name: pageOptions
+        type: MarkOptions[]
+        description: 文書の先頭の page のマーカーの JSON のオブジェクトを記載した順に並べたもの（`takeMarks` が追加する）
       - name: page
         type: PageSettings
-        description: '`pageArgs` を読み込んだページの設定（`resolvePageSettings` が入れる）'
+        description: '`pageOptions` を読み込んだページの設定（`resolvePageSettings` が入れる）'
       - name: headings
         type: 'Array<{ level: number; id: string; text: string }>'
         description: 見出しの ID と文字（`assignHeadingIds` が追加する）
@@ -63,6 +63,9 @@ data_models:
       - name: warnings
         type: CollectedWarning[]
         description: 記載の警告（`collectWarningsRule` が最後に集める）
+      - name: markNotes
+        type: 'Array<MarkNote & { line: number }>'
+        description: 画面に出さないマーカーの注記（`recordMarkNotes` が追加し、`collectWarningsRule` が `warnings` に合わせる）
 functions:
   - name: createParser
     title: 解析器を作る
@@ -205,7 +208,7 @@ functions:
       - name: test_mark_source_lines_when_mark_range
         case: 正常
         summary: マーカーの範囲を囲む要素と注意書きに開きのマーカーの行を付け、中のブロックにもそれぞれの行を付ける
-        condition: '1 行目 `<!-- table: data -->`、3 行目から表、6 行目 `<!-- /table -->`、8 行目から `> [!NOTE]` の注意書き'
+        condition: '1 行目 `<!-- table: {"kind": "data"} -->`、3 行目から表、6 行目 `<!-- /table -->`、8 行目から `> [!NOTE]` の注意書き'
         mock: なし
         expected: 表を囲む要素が `data-source-line="0"`、中の `table` が `data-source-line="2"`、注意書きの外側の要素が `data-source-line="7"`
       - name: test_mark_source_lines_when_raw_html

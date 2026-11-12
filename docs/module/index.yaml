@@ -690,3 +690,11 @@ items:
   summary: 文書の中に mdmark が配置する UI の部品を HTML 文字列で返却する関数と、Storybook のストーリー。DOM に頼らず、ブラウザと Node で同じ出力になる。
 - page: MOD-472-47.yaml
   summary: Storybook（`@storybook/react-vite`）のストーリーに部品の HTML を出す仕組み。部品の HTML を返却する描画のインターフェース（Node の HTTP サーバー）と、Storybook の設定・描画のインターフェースの HTML を描くデコレーター・VS Code の配色を与えるデコレーターを持つ。配布物には入らない。
+- page: MOD-477-1.ts.yaml
+  summary: ライブラリ本体 / 描画 / mark-options.ts
+- page: MOD-477-2.ts.yaml
+  summary: ライブラリ本体 / 描画 / mark-schema.ts
+- page: MOD-477-3.ts.yaml
+  summary: ライブラリ本体 / 描画 / legacy-marks.ts
+- page: MOD-477-4.mjs.yaml
+  summary: ライブラリ本体 / バージョンを上げる / marker-json.mjs

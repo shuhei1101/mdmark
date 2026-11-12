@@ -53,7 +53,7 @@ functions:
       - name: test_terms_rule_when_backlinks_off
         case: 正常
         summary: '`backlinks` がオフなら文書の別名では照合しない'
-        condition: '同じ入力に `<!-- features: -backlinks -->`'
+        condition: '同じ入力に `<!-- features: {"backlinks": false} -->`'
         mock: なし
         expected: '`公開関数` に下線が無い'
       - name: test_terms_rule_avoided
@@ -77,7 +77,7 @@ functions:
       - name: test_terms_rule_avoided_when_glossary_off
         case: 正常
         summary: '`glossary` がオフならやめた言い方を照合しない'
-        condition: '`test_terms_rule_avoided` と同じ入力に `<!-- features: -glossary -->`'
+        condition: '`test_terms_rule_avoided` と同じ入力に `<!-- features: {"glossary": false} -->`'
         mock: なし
         expected: '`mdmark-term-avoided` の要素が無い'
       - name: test_terms_rule_when_notation_differs
@@ -107,6 +107,6 @@ functions:
       - name: test_terms_rule_aliases_when_glossary_off
         case: 正常
         summary: glossary がオフならエイリアスを照合しない
-        condition: '`test_terms_rule_aliases` と同じ入力に `<!-- features: -glossary -->`'
+        condition: '`test_terms_rule_aliases` と同じ入力に `<!-- features: {"glossary": false} -->`'
         mock: なし
         expected: '`mdmark-term-wrap` の要素が無い'

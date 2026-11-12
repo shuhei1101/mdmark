@@ -8,6 +8,9 @@ directory: |-
   ├── index.ts     # render と renderDocument
   ├── parser.ts    # markdown-it の解析器と、追加するコアルール
   ├── marks.ts     # マーカーを読み込み、置き換えるコアルール
+  ├── mark-options.ts # マーカーの引数の JSON の読み取りと、読めない JSON の警告の文
+  ├── mark-schema.ts  # マーカーごとの JSON Schema での設定の検証と、点検だけが通知する注記
+  ├── legacy-marks.ts # 今の書き方の引数の JSON のオブジェクトへの変換と、文書の書き換え（dist/legacy-marks.js にもまとめる）
   ├── page.ts      # ページの設定のマーカーの読み取り
   ├── frontmatter.ts # 文書の先頭のフロントマターの判定と、本文からの除外（DOM を使用しない）
   ├── sanitize.ts  # sanitize-html の設定と sanitize

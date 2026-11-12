@@ -24,9 +24,9 @@ functions:
       - name: test_render_syntax_warning
         case: 正常
         summary: タイトル・マーカー・本文・項目を出し、マーカーをエスケープする
-        condition: '`mark` が `<!-- table: data +x -->`、項目が 1 つ'
+        condition: '`mark` が `<!-- table: {"kind": "x"} -->`、項目が 1 つ'
         mock: なし
-        expected: 'タイトル `記載の警告`、`<code>&lt;!-- table: data +x --&gt;</code>`、`<ul>` に 1 項目'
+        expected: 'タイトル `記載の警告`、`<code>&lt;!-- table: {&quot;kind&quot;: &quot;x&quot;} --&gt;</code>`、`<ul>` に 1 項目'
       - name: test_render_syntax_warning_without_mark
         case: 正常
         summary: マーカーと項目が無ければ本文だけ

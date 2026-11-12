@@ -261,7 +261,7 @@ functions:
       - name: test_used_parts
         case: 正常
         summary: ビューのマーカーがあるときだけ部品をまとめる
-        condition: '`<!-- view: group=状態 -->` を持つ文書と、マーカーの無い文書だけ'
+        condition: '`<!-- view: {"board": {"group": {"column": "状態"}}} -->` を持つ文書と、マーカーの無い文書だけ'
         mock: なし
         expected: 前者は `true`、後者は `false`
     refs:
@@ -272,7 +272,7 @@ functions:
     kind: 関数
     scope: public
     summary: 文書ごとに `render` を設定と一緒に呼び、返った HTML の `data-mdmark-syntax` の値を重なりなく取得する
-    description: '`mount` と同じ色分けの対象（機能 `syntax` と文書の `<!-- features: -syntax -->`、生の HTML の `code` を削除することを含む）を、同じ処理から得るために `render` を経由する'
+    description: '`mount` と同じ色分けの対象（機能 `syntax` と文書の `<!-- features: {"syntax": false} -->`、生の HTML の `code` を削除することを含む）を、同じ処理から得るために `render` を経由する'
     args:
       - name: options
         type: '{ markdowns: string[]; config: MdmarkConfig }'
@@ -287,7 +287,7 @@ functions:
       - name: test_used_syntax_languages
         case: 正常
         summary: 色分けの対象の言語だけを取得し、機能を解除した文書は取得しない
-        condition: '文書 1 が `ts`・`yml`・`text` のコードブロックと生の HTML `<pre><code class="language-python">x</code></pre>`、文書 2 が `<!-- features: -syntax -->` と `sql` のコードブロック。設定は空'
+        condition: '文書 1 が `ts`・`yml`・`text` のコードブロックと生の HTML `<pre><code class="language-python">x</code></pre>`、文書 2 が `<!-- features: {"syntax": false} -->` と `sql` のコードブロック。設定は空'
         mock: なし
         expected: '`["typescript", "yaml"]`'
       - name: test_used_syntax_languages_when_disabled

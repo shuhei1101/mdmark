@@ -36,12 +36,12 @@ constants:
   - name: FILTER_KINDS
     title: 絞り込みの種類
     container: src/table-logic.ts
-    summary: '`filter=` に記載できる種類。省いたときは先頭'
+    summary: '`columns.{列名}.filter.type` に記載できる種類。省いたときは先頭'
     value: '["select", "text", "date"]'
   - name: TOTAL_CALCS
     title: 集計の計算
     container: src/table-logic.ts
-    summary: '`total=列名:計算` に記載できる計算。集計の行のタイトルはそれぞれ `合計`・`平均`・`件数`'
+    summary: '`columns.{列名}.total[].calc` に記載できる計算。集計の行のタイトルはそれぞれ `合計`・`平均`・`件数`'
     value: '["sum", "avg", "count"]'
 functions:
   - name: compareCells

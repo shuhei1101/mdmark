@@ -1,0 +1,117 @@
+id: MOD-477-2
+visibility: internal
+title: ライブラリ本体 / 描画 / mark-schema.ts
+lead: マーカーの設定を、マーカーごとの JSON Schema で確かめ、型と選べる値と必須の誤り・知らないキーを分け、誤りの値を除いた設定を返却する。配布物に検査のライブラリを入れず、使用する JSON Schema の範囲だけを読む。
+test_files:
+  - tests/unit/src/render/mark-schema.test.ts
+data_models:
+  - name: MarkSchema
+    title: マーカーの JSON Schema
+    container: src/render/mark-schema.ts
+    usecase: 共通
+    summary: '使用する JSON Schema の範囲（`type`・`enum`・`const`・`properties`・`required`・`additionalProperties`・`items`・`anyOf`・`minimum`・`maximum`・`minLength`・`$ref` の `#/$defs/`）だけを持つ型'
+    description: 'これ以外のキーワードを持つスキーマは、`MARK_SCHEMAS` の単体テストで誤りにする（読まないキーワードを使用しない）'
+  - name: MarkProblem
+    title: マーカーの設定の誤り
+    container: src/render/mark-schema.ts
+    usecase: 共通
+    summary: 記載の警告にする誤り 1 つ
+    properties:
+      - name: path
+        type: string
+        description: 'キーのパス（オブジェクトの中は `.`、配列の要素は `[位置]`。`columns.数量.total[0].calc`）。引数そのもののときは空'
+      - name: message
+        type: string
+        description: '記載の警告の本文（部品設計『記載の警告』の `TypeMismatch` と同じ構成の文：{キー} には {型と持てるキーか選べる値} を記載してください・例・どう描いたか）'
+constants:
+  - name: MARK_SCHEMAS
+    title: マーカーの JSON Schema の表
+    container: src/render/mark-schema.ts
+    summary: 'マーカーの名前から `schemas/marks/{名前}.schema.json` を参照する表（ビルドが JSON を配布物にまとめる）。ER 図『マーカーの設定の共通の決まり』から辿るマーカーごとの ER 図と同じ内容で、共通のオブジェクトは `schemas/marks/common.schema.json` の `$defs`'
+    description: '単体テストで、各 ER 図のテーブルの列（キーのパス・型・必須・選べる値）とスキーマが一致することを確かめる'
+functions:
+  - name: validateMarkOptions
+    title: マーカーの設定を確かめる
+    container: src/render/mark-schema.ts
+    kind: 関数
+    scope: internal
+    summary: '`MARK_SCHEMAS` の名前のスキーマで `options` を確かめ、型・選べる値・必須に合わない値を `problems`、スキーマに無いキーを `unknownKeys` にし、どちらも除いた設定を返却する'
+    description: 'スキーマの無い名前（拡張・`libraries`・`map`・`map-data`）は確かめずにそのまま返却する。必須のキーが欠けたオブジェクトはオブジェクトごと除く。`additionalProperties` がスキーマのとき（`columns.{列名}`・`board.values.{値}`）は、キーを任意の文字として値だけを確かめる'
+    args:
+      - name: options
+        type: '{ name: string; options: MarkOptions }'
+        required: true
+        description: マーカーの名前と設定
+    returns:
+      type: '{ options: MarkOptions; problems: MarkProblem[]; unknownKeys: string[] }'
+      description: 誤りの値と知らないキーを除いた設定と、記載した順の誤りと知らないキーのパス
+    unit_tests:
+      - name: test_validate_mark_options
+        case: 正常
+        summary: スキーマに合う設定はそのまま返却する
+        condition: '`table` と `{ kind: "data", columns: { 数量: { total: [{ calc: "sum" }] } }, collapse: { open: false } }`'
+        mock: なし
+        expected: '`options` が同じ値、`problems` と `unknownKeys` が空'
+      - name: test_validate_mark_options_when_invalid
+        case: 異常
+        summary: 型と選べる値の誤りを除いて問題にする
+        condition: '`table` と `{ kind: "unknown", columns: { 数量: { total: [{ calc: "max" }] } }, collapse: "closed" }`'
+        mock: なし
+        expected: '`options` が `{ columns: { 数量: { total: [] } } }`、`problems` の `path` が `kind`・`columns.数量.total[0].calc`・`collapse` の 3 件'
+      - name: test_validate_mark_options_when_unknown_key
+        case: 正常
+        summary: 知らないキーを除いてパスを返却する
+        condition: '`table` と `{ kind: "data", features: { foo: {} }, size: 2 }`'
+        mock: なし
+        expected: '`options` が `{ kind: "data", features: {} }`、`unknownKeys` が `["features.foo", "size"]`'
+      - name: test_validate_mark_options_when_required_missing
+        case: 異常
+        summary: 必須のキーが欠けたオブジェクトを除く
+        condition: '`table` と `{ tree: { type: { column: "型" } } }`、`glossary` と `{ term: { column: "用語" } }`'
+        mock: なし
+        expected: '`table` は `tree` を除いて `problems` に `tree.key` が 1 件、`glossary` は `problems` に `meaning` が 1 件'
+      - name: test_validate_mark_options_when_no_schema
+        case: 正常
+        summary: スキーマの無い名前は確かめない
+        condition: '`greet` と `{ target: 1 }`'
+        mock: なし
+        expected: '`options` が同じ値、`problems` と `unknownKeys` が空'
+      - name: test_mark_schemas_match_er
+        case: 正常
+        summary: 全てのマーカーのスキーマが ER 図と一致し、読まないキーワードを持たない
+        condition: リポジトリの `docs/er/ER-477-*.yaml` のテーブルの列（キーのパス・型・必須・選べる値）と `MARK_SCHEMAS`
+        mock: なし
+        expected: 食い違いと、`MarkSchema` に無いキーワードが 0 件
+  - name: markOptionNotes
+    title: マーカーの注記を作る
+    container: src/render/mark-schema.ts
+    kind: 関数
+    scope: internal
+    summary: 描くときは画面に出さず点検だけがずれにする注記を作る。今の書き方の引数は `legacy_mark` の 1 つ、`unknownKeys` は 1 つにつき `unknown_mark_arg`、表のマーカーの `features.{機能}.enabled` が `false` の機能の列の設定（`filter`・`hidden`・`pinned`・`total`）と、`rows.colors` の `column` と `value` の片方だけの要素・`column`・`at` のどちらも無い要素は 1 つにつき `mark_option_unapplied` にする
+    description: 文はインターフェース定義『設定と索引を点検する』の制約「マーカーの設定の点検」の内容（使用できるキーは `MARK_SCHEMAS` の、そのパスの場所のキー）。拡張・`libraries` のマーカーは `legacy_mark` だけを作る
+    args:
+      - name: options
+        type: '{ name: string; source: Mark["source"]; options: MarkOptions; unknownKeys: string[]; isExtension: boolean }'
+        required: true
+        description: マーカーの名前・引数の記載方法・`validateMarkOptions` を経た設定と知らないキー・拡張か `libraries` のマーカーか
+    returns:
+      type: MarkNote[]
+      description: 記載した順の注記
+    unit_tests:
+      - name: test_mark_option_notes
+        case: 正常
+        summary: 知らないキーと適用しない列の設定を注記にする
+        condition: '`table` の `{ features: { total: { enabled: false } }, columns: { 数量: { total: [{ calc: "sum" }] } }, rows: { colors: [{ column: "状態", color: "green" }] } }` と `unknownKeys` の `["size"]`'
+        mock: なし
+        expected: '`unknown_mark_arg`（`size` と使用できるキー）・`mark_option_unapplied`（`columns.数量.total`）・`mark_option_unapplied`（`rows.colors[0]`）の 3 つ'
+      - name: test_mark_option_notes_when_legacy
+        case: 正常
+        summary: 今の書き方の引数を 1 つの legacy_mark にする
+        condition: '`source` が `legacy` の `tabs` と、`isExtension` が `true` の `greet`'
+        mock: なし
+        expected: どちらも `legacy_mark` の 1 つで、`greet` の文に描かないことと移行の報告に挙がることがある
+refs:
+  - IF-472-34#constraints[作成者の誤り]
+  - ER-477-1#
+decisions:
+  - D-312
