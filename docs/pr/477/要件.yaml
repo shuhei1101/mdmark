@@ -469,16 +469,16 @@ docs:
 scope_out:
   - item: ほかのリポジトリ（ai-monitor・mindstella・dev-docs など）と MindStella のワークスペースの文書の移行
     reason: Issue の「後続」。この PR のリリースの後に、リポジトリごとに mdmark の移行の手順を当てる Issue を起票する（完了したら起点 Issue にその旨をコメントし、確認:task-planner を付ける）
-    plan: to_file
+    plan: '#478'
   - item: mdmark のリポジトリの、設計書・使い方集・雛形のほかの文書（docs/mock の部品のモックの本文のマーカー）の移行
     reason: 今の書き方を 1 つのマイナーバージョンの間は読むため、この PR で書き換えなくても描ける。リポジトリごとの移行の Issue にまとめる
-    plan: to_file
+    plan: '#481'
   - item: docs/pr の過去の PR ドキュメントの本文のマーカーの書き換え
     reason: マージ済みの作業の記録で、書き換えると当時の記載と食い違う
     plan: none
   - item: 今の書き方（キー=値・+機能・位置の値）を読む処理の削除
     reason: D-312 で 1 つのマイナーバージョンの間は読むと決めた。削除は次のマイナーバージョンの破壊的変更で行う
-    plan: to_file
+    plan: '#479'
   - item: 列の幅 columns.{列名}.width.min・width.max を使った自動計算
     reason: 'この PR はキーとスキーマだけを持ち、幅の計算は #458 で行う'
     plan: '#458'
@@ -490,7 +490,7 @@ scope_out:
     plan: none
   - item: 'ai-monitor の design_docs publish が作る設計書・使い方集の README の目次の表のマーカー（<!-- table: data -->）'
     reason: ai-monitor の生成の雛形が今の書き方で書くため、この PR で書き換えても publish のたびに今の書き方に戻る。今の書き方は 1 つのマイナーバージョンの間は読むため描ける。生成の雛形を JSON の書き方にするのは ai-monitor 側の変更で、リポジトリごとの移行の Issue と一緒に起票する
-    plan: to_file
+    plan: shuhei1101/ai-monitor#3389
   - item: migrations/next/legacy-marks.js にまとめた依存のライセンスの表記（同じフォルダへのライセンスのファイルの書き込みか、buildLegacyMarks の metafile のライセンスの集計への追加）
     reason: レビューの任意の指摘。今は dist/THIRD_PARTY_LICENSES.txt が同じ依存を挙げており、表記が欠けるのは後のバージョンで dist/ の依存が変わったとき。移行の手順のフォルダを v{バージョン}/ に移す release の前に別の Issue で行う
-    plan: to_file
+    plan: '#480'
