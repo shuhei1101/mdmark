@@ -149,3 +149,32 @@ test("test_migrate_document_marks_when_rerun", async () => {
   expect(result.changed).toEqual([]);
   expect(after.mtimeMs).toBe(before.mtimeMs);
 });
+
+// 移行の手順のフォルダにまとめた書き換えの処理で、ソースの処理と同じに書き換える（正常系）
+test("test_migrate_document_marks_when_bundled", async () => {
+  // 準備
+  const migrateDocumentMarks = await loadMigrateDocumentMarks();
+  const bundled = (await import(
+    /* @vite-ignore */ pathToFileURL(
+      join(migrationsDirOf(SCRIPT), "legacy-marks.js"),
+    ).href
+  )) as { rewriteLegacyMarks: typeof rewriteLegacyMarks };
+  const fromSource = await createFolder();
+  const fromBundle = await createFolder();
+  // 実行
+  const expected = await migrateDocumentMarks({
+    ...fromSource,
+    rewrite: rewriteLegacyMarks,
+  });
+  const result = await migrateDocumentMarks({
+    ...fromBundle,
+    rewrite: bundled.rewriteLegacyMarks,
+  });
+  // 検証
+  expect(result).toEqual(expected);
+  for (const path of ["docs/stock.md", "notes/extra.md"]) {
+    expect(await readFile(join(fromBundle.configDir, path), "utf8")).toBe(
+      await readFile(join(fromSource.configDir, path), "utf8"),
+    );
+  }
+});

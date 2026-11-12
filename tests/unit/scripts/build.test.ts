@@ -13,6 +13,7 @@ import {
 } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
+import { pathToFileURL } from "node:url";
 import { promisify } from "node:util";
 import type { Metafile } from "esbuild";
 import { afterEach, expect, test, vi } from "vitest";
@@ -434,21 +435,11 @@ test("test_build_dist_when_cli_and_viewer", async () => {
     join(root, "src", "viewer", "viewer.css"),
     ".a { color: red }\n",
   );
-  await mkdir(join(root, "src", "render"), { recursive: true });
-  await writeFile(
-    join(root, "src", "render", "legacy-marks.ts"),
-    "export const rewriteLegacyMarks = (markdown: string): string => markdown;\n",
-  );
   // 実行
   const outputs = await buildDist("v0.0.1", root);
   // 検証
   const paths = Object.keys(outputs);
-  for (const name of [
-    "dist/cli.js",
-    "dist/viewer.js",
-    "dist/viewer.css",
-    "dist/legacy-marks.js",
-  ]) {
+  for (const name of ["dist/cli.js", "dist/viewer.js", "dist/viewer.css"]) {
     expect(paths.some((path) => path.endsWith(name))).toBe(true);
   }
   const cli = await readFile(join(root, "dist", "cli.js"), "utf8");
@@ -457,6 +448,61 @@ test("test_build_dist_when_cli_and_viewer", async () => {
   const viewer = await readFile(join(root, "dist", "viewer.js"), "utf8");
   expect(viewer).toContain("<\\/script>");
   expect(viewer).not.toContain("</script>");
+});
+
+// 書き換えの処理を、移行のスクリプトを持つフォルダにだけまとめる（正常系）
+test("test_build_legacy_marks", async () => {
+  // 準備
+  const { buildLegacyMarks } = await loadBuild();
+  const root = await createRoot("v0.0.0\n");
+  await mkdir(join(root, "src", "render"), { recursive: true });
+  await writeFile(
+    join(root, "src", "render", "legacy-marks.ts"),
+    "export const rewriteLegacyMarks = (markdown: string): string => markdown + \"!\";\n",
+  );
+  await mkdir(join(root, "migrations", "next"), { recursive: true });
+  await mkdir(join(root, "migrations", "v0.1.0"), { recursive: true });
+  await writeFile(join(root, "migrations", "next", "marker-json.mjs"), "\n");
+  await writeFile(
+    join(root, "migrations", "v0.1.0", "steps.yaml"),
+    "steps: []\n",
+  );
+  // 実行
+  const written = await buildLegacyMarks("v0.0.1", root);
+  // 検証
+  expect(written).toEqual(["migrations/next/legacy-marks.js"]);
+  const module = (await import(
+    /* @vite-ignore */ pathToFileURL(
+      join(root, "migrations", "next", "legacy-marks.js"),
+    ).href
+  )) as { rewriteLegacyMarks: (markdown: string) => string };
+  expect(module.rewriteLegacyMarks("a")).toBe("a!");
+  expect(
+    existsSync(join(root, "migrations", "v0.1.0", "legacy-marks.js")),
+  ).toBe(false);
+});
+
+// ソースの無いときは何も書き込まない（正常系）
+test("test_build_legacy_marks_when_source_removed", async () => {
+  // 準備
+  const { buildLegacyMarks } = await loadBuild();
+  const root = await createRoot("v0.0.0\n");
+  await mkdir(join(root, "migrations", "v0.11.0"), { recursive: true });
+  await writeFile(join(root, "migrations", "v0.11.0", "marker-json.mjs"), "\n");
+  await writeFile(
+    join(root, "migrations", "v0.11.0", "legacy-marks.js"),
+    "// 書き込み済み\n",
+  );
+  // 実行
+  const written = await buildLegacyMarks("v0.0.1", root);
+  // 検証
+  expect(written).toEqual([]);
+  expect(
+    await readFile(
+      join(root, "migrations", "v0.11.0", "legacy-marks.js"),
+      "utf8",
+    ),
+  ).toBe("// 書き込み済み\n");
 });
 
 // CLI にまとめたパッケージのライセンスも記載する（正常系）
