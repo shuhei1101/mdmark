@@ -920,6 +920,18 @@ files:
   - path: refs/449/index.md
     description: '#449（表の列の幅を、見出しの右端をドラッグして変えられるようにし、ダブルクリックで元の幅に戻す）の PR のモックへのリンク集。この PR で作ったモックを探すときに参照する。'
     tags: [topic:モック]
+  - path: refs/505/assets/code-block.css
+    description: '#505 のモックが共通で読み込む素材: コードブロックの帯（言語のラベル・タイトル）に続く pre の上の枠線を削除する規則と、帯の背景を本文と同じ色にする案 B の規則。複数のモックに有効になる外観や動きを変えるときに参照する。'
+    tags: [topic:モック, tool:css]
+  - path: refs/505/assets/table-width.css
+    description: '#505 のモックが共通で読み込む素材: 表を本文の幅まで広げず列の幅の合計で描き、折り返さない列を 1 行で出す規則と、描く先の幅の見本。複数のモックに有効になる外観や動きを変えるときに参照する。'
+    tags: [topic:モック, tool:css]
+  - path: refs/505/assets/table-width.js
+    description: '#505 のモックが共通で読み込む素材: 列ごとにセルの中身の種類と改行で分けた行の幅から、折り返すかと列の幅を決め、表を包む要素の幅が変わったときだけ決め直す。複数のモックに有効になる外観や動きを変えるときに参照する。'
+    tags: [topic:モック, tool:javascript]
+  - path: refs/505/index.md
+    description: '#505（表の列の幅の自動計算・ファイルツリーの既定の全開き・コードブロックの帯の線の削除・目次で押した見出しのセクションを開く）の PR のモックへのリンク集。この PR で作ったモックを探すときに参照する。'
+    tags: [topic:モック]
   - path: refs/45/assets/embed.css
     id: docs/mock/refs/45/assets/embed.css
     description: '#45 のモックが共通で読み込む素材: 埋め込んだ HTML と data-hint のヒント: マーカーを付けたコードブロックの HTML を描いた場所と、data-hint を持つ要素のマーカー・下線・ツールチップ。複数のモックに有効になる外観や動きを変えるときに参照する。'

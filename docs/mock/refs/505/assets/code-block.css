@@ -1,0 +1,14 @@
+/* #505 のコードブロックの追加分: 帯（言語のラベル・タイトル）と本文の間の線を削除する。
+   refs/65・151 の code-block.css の後に読む。実装では src/index.css の mdmark の層の、帯に続く pre の規則に足す */
+
+@layer mdmark {
+  /* 帯に続く pre: 上の枠線を削除し、帯と本文を 1 つの枠線で囲む（外側の枠線と下の角丸は残す） */
+  .mdmark .mdmark-code :is(.mdmark-code-title, .mdmark-code-bar) + pre {
+    border-block-start: 0;
+  }
+
+  /* 案 B: 帯の背景を本文と同じ色にする（[data-mock-505-variant="b"] の場面だけ） */
+  [data-mock-505-variant="b"] .mdmark :is(.mdmark-code-title, .mdmark-code-bar) {
+    background: var(--mdmark-color-surface);
+  }
+}
