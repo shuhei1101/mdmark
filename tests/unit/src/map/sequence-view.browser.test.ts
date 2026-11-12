@@ -1,5 +1,5 @@
 import { afterEach, expect, test } from "vitest";
-import { createRootFromHtml, removeRoots } from "../../helpers/dom.ts";
+import { addStyles, createRootFromHtml, removeRoots } from "../../helpers/dom.ts";
 import { CONFIG, mapRange, SEQUENCE } from "../../helpers/map.ts";
 import { renderDoc } from "../../helpers/render.ts";
 
@@ -104,7 +104,8 @@ test("test_attach_map_sequence_when_packets", async () => {
 
 // 並べ替えのドラッグを pointercancel で止めたとき、並び順を変えない（正常系）
 test("test_attach_map_sequence_when_reorder_cancelled", async () => {
-  // 準備
+  // 準備: 参加者を列に並べるため、描いた文書の CSS を読み込む
+  addStyles();
   const root = await setUp();
   const heads = [...root.querySelectorAll<HTMLElement>(".map-participant")];
   const first = heads[0] as HTMLElement;
