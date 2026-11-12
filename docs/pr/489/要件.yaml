@@ -10,3 +10,6 @@ scope_out:
   - item: src/files.yaml の config-files.ts の行の related に同じ MOD-472-116 への implements が 2 つ並んでいる
     reason: 規約『ドキュメント管理』の files.yaml の関連が受け持つ設計書を正しく指していない。今回の要望（行の無いファイルの行の追加）に含まれない
     plan: '#490'
+  - item: src/ 以外の管理用の YAML（tests/files.yaml・docs/mock/files.yml・scripts/files.yaml・docs/guide/files.yml・plugin/files.yaml・vscode/files.yaml）に、フォルダの中にあるのに行の無いファイルがある
+    reason: '規約『ドキュメント管理』の files.yaml の同じ型の欠けだが、今回の要望（src/files.yaml）の外。まとめた配布物・ライセンスのコピー・lock ファイルなど行を持たせるかの判断が要るファイルを含み、tests/e2e/ の分は #450 と対象が重なるため、別の Issue で扱う'
+    plan: '#491'
