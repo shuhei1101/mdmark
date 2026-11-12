@@ -39,19 +39,27 @@ docs:
   - page: docs/dev-command/CMD-472-1.yaml
     new: false
     change: 管理作業を、master へマージする前ではなくスプリントの区切りに develop で行い develop の commit へタグを打つ手順にする。VS Code 拡張機能のタグも develop に入った commit へ打つ
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-12T15:04:02.580170+00:00'
   - page: docs/architecture/ARCH-472-1.yaml
     new: false
     change: 配布の経路（vscode-v* のタグ・`plugin/` の届き方）を develop に打ったタグと develop の commit で届くプラグインに合わせる
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-12T15:04:02.580170+00:00'
   - page: docs/library/LIB-472-1.yaml
     new: false
     change: 制約「プラグインの更新」を、version が無いとき commit で更新する振る舞いに合わせ、PoC の結果を検証に書き足す
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-12T15:04:02.580170+00:00'
   - page: docs/config/CFG-472-1.yaml
     new: false
     change: 既定の起動コマンドの `v{プラグインのバージョン}` を、ビルドで埋めた mdmark のバージョンの呼び名に合わせる
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-12T15:04:02.580170+00:00'
   - page: docs/guide/ClaudeCodeで使用する-プラグインを入れる.md
     new: false
     change: プラグインが develop の最新を読み、更新で develop へ入った変更が届くことと、バージョンを固定するときのタグの書き方を合わせる
