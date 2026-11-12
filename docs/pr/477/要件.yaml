@@ -488,3 +488,6 @@ scope_out:
   - item: 'HTML コメントでない記法（画像の {width=…}・[!NOTE]・badge: など）と設定ファイルの書き方'
     reason: A-128 の対象外（HTML コメントのマーカーの引数だけを JSON にする）
     plan: none
+  - item: 'ai-monitor の design_docs publish が作る設計書・使い方集の README の目次の表のマーカー（<!-- table: data -->）'
+    reason: ai-monitor の生成の雛形が今の書き方で書くため、この PR で書き換えても publish のたびに今の書き方に戻る。今の書き方は 1 つのマイナーバージョンの間は読むため描ける。生成の雛形を JSON の書き方にするのは ai-monitor 側の変更で、リポジトリごとの移行の Issue と一緒に起票する
+    plan: to_file
