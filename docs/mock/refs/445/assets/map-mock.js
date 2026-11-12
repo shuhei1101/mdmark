@@ -1550,6 +1550,8 @@ export const createSequence = (host, spec, kinds, onStep) => {
     collapsed: new Set(),
     /** 非表示の参加者の ID（#508） */
     hidden: new Set(spec.hidden ?? []),
+    /** 案 A の参加者の一覧のパネルを開いているか（#508） */
+    panelOpen: Boolean(spec.panelOpen),
     /** 参加者の箱が既定より高いとき、最初の行の前に空ける行の数（一番高い箱の下端から行を始める） */
     headRows: 0,
     /** 中だけを見ている複合フラグメントの番号（URL のクエリ文字列から読む） */
@@ -1777,6 +1779,7 @@ export const createSequence = (host, spec, kinds, onStep) => {
     );
     tools.prepend(group);
     if (spec.hideUi === "box") addBoxHide(figure, visible, heads);
+    if (spec.hideUi === "list") participantsPanel(figure);
 
     // 図の枠の下の帯: メッセージを 1 通ずつ進め、構成図の上でも同じメッセージを強調してデータを流す
     state.shownIndexes = shown.map(({ index }) => index);
@@ -1908,59 +1911,91 @@ export const createSequence = (host, spec, kinds, onStep) => {
   };
 
   /**
-   * 案 A: 右上のツールの「参加者の表示と非表示」。押すとポップオーバーで参加者のチェックボックスの一覧を開く。
-   * 非表示の参加者がいるときは、ボタンに非表示の人数を出す。表示している参加者が 1 人のときは、その 1 人のチェックを外せない
+   * 案 A: 右上のツールの「参加者の表示と非表示」。表の「テーブル設定」と同じく、aria-expanded のボタンで図の枠の中のパネルを開き、
+   * 参加者ごとの目のボタン（aria-pressed）で表示と非表示を切り替える。隠した人数はボタンの右上のバッジに出す。
+   * パネルは Popover と CSS のアンカーの位置を使わず、図の枠（.mdmark-diagram-box）の中の position: absolute で右上に出す（Chrome 99・Firefox 98・Safari 16.4 で開ける）。
+   * 表示している参加者が 1 人のときは、その 1 人の目のボタンを押せない。外側を押すか Esc で閉じ、閉じたらボタンへフォーカスを戻す
    */
   const participantsButton = () => {
-    const wrap = document.createElement("span");
-    wrap.className = "map-participants-tool";
     const panelId = `map-participants-${spec.id}`;
-    const button = toolButton("users", `参加者の表示と非表示${state.hidden.size ? `（非表示 ${state.hidden.size} 人）` : ""}`, () => {});
-    button.setAttribute("popovertarget", panelId);
-    // ポップオーバーをボタンの下に出す（CSS のアンカーの位置）
-    button.style.anchorName = `--${panelId}`;
-    if (state.hidden.size) {
-      const count = document.createElement("span");
-      count.className = "map-participants-count";
-      count.textContent = String(state.hidden.size);
-      count.setAttribute("aria-hidden", "true");
-      button.append(count);
-      button.classList.add("is-active");
-    }
+    const label = state.hidden.size ? `参加者の表示と非表示（${state.hidden.size} 人を非表示）` : "参加者の表示と非表示";
+    const button = toolButton("users", label, () => {
+      state.panelOpen = !state.panelOpen;
+      render();
+      host.querySelector(state.panelOpen ? `#${CSS.escape(panelId)} .map-participants-eye:not(:disabled)` : ".map-participants-toggle")?.focus();
+    });
+    button.classList.add("map-participants-toggle");
+    button.title = "参加者の表示と非表示";
+    button.setAttribute("aria-expanded", String(Boolean(state.panelOpen)));
+    button.setAttribute("aria-controls", panelId);
+    button.classList.toggle("is-active", state.hidden.size > 0);
+    const badge = document.createElement("span");
+    badge.className = "map-participants-count";
+    badge.setAttribute("aria-hidden", "true");
+    badge.textContent = String(state.hidden.size);
+    badge.hidden = state.hidden.size === 0;
+    button.append(badge);
+    return button;
+  };
+  const participantsPanel = (figure) => {
+    if (!state.panelOpen) return;
+    const panelId = `map-participants-${spec.id}`;
     const panel = document.createElement("div");
     panel.id = panelId;
-    panel.popover = "auto";
     panel.className = "map-participants-panel";
-    panel.style.positionAnchor = `--${panelId}`;
-    const heading = document.createElement("p");
-    heading.className = "map-participants-heading";
-    heading.textContent = "表示する参加者";
+    panel.setAttribute("role", "dialog");
+    panel.setAttribute("aria-label", "参加者の表示と非表示");
+    const title = document.createElement("p");
+    title.className = "map-participants-title";
+    title.textContent = "表示する参加者";
     const list = document.createElement("ul");
+    list.className = "map-participants-list";
     const shownCount = state.order.length - state.hidden.size;
     for (const id of state.order) {
+      const hidden = state.hidden.has(id);
       const item = document.createElement("li");
-      const label = document.createElement("label");
-      const box = document.createElement("input");
-      box.type = "checkbox";
-      box.checked = !state.hidden.has(id);
-      if (box.checked && shownCount <= 1) {
-        box.disabled = true;
-        label.title = "全ての参加者は非表示にできません";
-      }
-      box.addEventListener("change", () => {
-        setHidden(id, !box.checked);
-        host.querySelector(`#${CSS.escape(panelId)}`)?.showPopover();
-        host.querySelector(`#${CSS.escape(panelId)} input[data-id="${CSS.escape(id)}"]`)?.focus();
+      item.className = `map-participants-item${hidden ? " is-hidden" : ""}`;
+      const name = document.createElement("span");
+      name.className = "map-participants-name";
+      name.textContent = labelOf(id);
+      const eye = document.createElement("button");
+      eye.type = "button";
+      eye.className = "map-participants-eye";
+      eye.dataset.id = id;
+      eye.setAttribute("aria-pressed", String(hidden));
+      eye.setAttribute("aria-label", `「${labelOf(id)}」を${hidden ? "表示" : "隠す"}`);
+      eye.innerHTML = icon(hidden ? "eyeOff" : "eye");
+      if (!hidden && shownCount <= 1) eye.disabled = true;
+      eye.addEventListener("click", () => {
+        setHidden(id, !hidden);
+        host.querySelector(`#${CSS.escape(panelId)} .map-participants-eye[data-id="${CSS.escape(id)}"]`)?.focus();
       });
-      box.dataset.id = id;
-      label.append(box, document.createTextNode(labelOf(id)));
-      item.append(label);
+      item.append(name, eye);
       list.append(item);
     }
-    panel.append(heading, list);
-    wrap.append(button, panel);
-    return wrap;
+    const note = document.createElement("p");
+    note.className = "map-participants-note";
+    note.textContent = "最後の 1 人は隠せません";
+    panel.append(title, list, note);
+    figure.querySelector(".mdmark-diagram-box").append(panel);
   };
+  // パネルの外側を押すか Esc で閉じ、ボタンへフォーカスを戻す
+  const closePanel = () => {
+    if (!state.panelOpen) return;
+    state.panelOpen = false;
+    render();
+    host.querySelector(".map-participants-toggle")?.focus();
+  };
+  document.addEventListener("pointerdown", (event) => {
+    if (state.panelOpen && !event.target.closest(".map-participants-panel, .map-participants-toggle")) closePanel();
+  });
+  host.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && state.panelOpen) {
+      // 参加者の選択を解く Esc より先に、パネルだけを閉じる
+      event.stopImmediatePropagation();
+      closePanel();
+    }
+  });
 
   /**
    * 案 B: 参加者の箱の右上の目のボタンで非表示にし、非表示の参加者は図の左上の帯にチップで並べて、チップから表示に戻す
