@@ -2,12 +2,12 @@ use_cases:
   - kind: single
     scenario: docs/scenario/SC-472-19.yaml
     impact: changed
-    detail: 読者が map のシーケンス図の参加者の表示と非表示を切り替え、非表示にした参加者だけに関わるメッセージを隠す（#404 の残り）
+    detail: 読者が map のシーケンス図の参加者の表示と非表示を切り替え、非表示にした参加者が送る・受けるメッセージを全て隠す（#404 の残り）
     depends_on: []
   - kind: single
     scenario: docs/scenario/SC-472-42.yaml
     impact: changed
-    detail: 読者が図をタップしてから、スマホの指のドラッグで図を縦にも動かせる。タップする前の縦のドラッグは文書のスクロールにする（#357。共通の図の枠のため今の図にも当たる）
+    detail: 読者が図をタップしてから、スマホの指のドラッグで図を縦にも動かせる。タップする前の縦のドラッグは文書のスクロールにする（#357。共通の図の枠のため、map・フロー図・シーケンス図・グラフ・ER 図・mermaid の図・埋め込んだ HTML のチャートの全てに当たる）
     depends_on: []
   - kind: single
     scenario: docs/scenario/SC-472-20.yaml
