@@ -1,0 +1,1 @@
+# VS Code 拡張機能を vscode-v* のタグで Open VSX へ公開する
