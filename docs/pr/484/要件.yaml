@@ -24,11 +24,15 @@ docs:
   - page: docs/config/CFG-472-2.yaml
     new: false
     change: 拡張機能が読み込む mdmark.config.yaml のキーに tooltips と syntax.url を追加する（syntax.url の相対パスの解決・CSP の origin・書き出す HTML での埋め方）
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-12T12:48:54.675891+00:00'
   - page: docs/guide/VSCode拡張機能.md
     new: false
     change: 設定ファイルのキーの表に tooltips と syntax.url の行を追加する
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-12T12:48:54.675891+00:00'
 scope_out:
   - item: 「HTML に書き出す」での設定 aliases のエイリアスのツールチップ
     reason: 同じ設定の取り出しの近くを変えるが要望に含まれない
