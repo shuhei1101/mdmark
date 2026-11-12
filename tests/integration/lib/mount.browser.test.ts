@@ -4898,11 +4898,7 @@ test("test_normal_when_view_syntax_invalid", async () => {
   expect(el.querySelector(`#${CSS.escape(reason)}`)?.textContent).toContain(
     "優先度",
   );
-  // 選べる値に無い種類は当てず、既定の select の絞り込みを付ける
-  expect(view.querySelectorAll("button.mdmark-filter")).toHaveLength(1);
-  expect(
-    find(view, ".mdmark-filter-drawer").getAttribute("data-filter-kind"),
-  ).toBe("select");
+  expect(view.querySelectorAll("button.mdmark-filter")).toHaveLength(0);
 });
 
 // views がオフのときは、マーカーの範囲の表を普通の表で描き、ビューの部品のモジュールを読み込まない（正常系）

@@ -740,13 +740,16 @@ test("test_normal_when_table_column_errors", async () => {
     '<!-- table: {"kind": "data", "columns": {"名前": {"pinned": true}, "無い列": {"pinned": true}}} -->',
     "",
     ...table,
+    '<!-- table: {"kind": "data", "columns": {"名前": {"filter": {"type": "range"}}, "説明": {"filter": {}}}} -->',
+    "",
+    ...table,
   ].join("\n");
   // 実行
   const html = render(markdown);
   // 検証
   const wrappers = html.split('<div class="mdmark-table"').slice(1);
-  expect(wrappers).toHaveLength(3);
-  const [a, b, c] = wrappers as [string, string, string];
+  expect(wrappers).toHaveLength(4);
+  const [a, b, c, d] = wrappers as [string, string, string, string];
   const wrapperTag = (part: string): string => part.slice(0, part.indexOf(">"));
   // 表 A: 広く取る列だけを当て、表に無い列名を 1 つの警告に出す
   expect(findTags(a, "mdmark-wide")).toHaveLength(2);
@@ -775,9 +778,23 @@ test("test_normal_when_table_column_errors", async () => {
   expect(warningsC).toHaveLength(1);
   expect(warningsC[0]).toContain("無い列");
   expect(plainText(warningsC[0] ?? "")).not.toContain("columns.名前");
+  // 表 D: 選べる値に無い種類の列には絞り込みを付けず、ほかの列の絞り込みは付ける
+  expect(wrapperTag(d)).toContain('data-filter="1:select"');
+  const filterWarnings = (
+    html.match(/<div class="mdmark-syntax-warning"[\s\S]*?<\/div>/g) ?? []
+  ).filter((warning) => warning.includes("filter.type"));
+  expect(filterWarnings).toHaveLength(1);
+  const tables = [...html.matchAll(/<div class="mdmark-table"/g)];
+  const warningAt = html.indexOf(filterWarnings[0] ?? "@");
+  expect(warningAt).toBeGreaterThan(tables[2]?.index ?? -1);
+  expect(warningAt).toBeLessThan(tables[3]?.index ?? -1);
+  const textD = plainText(filterWarnings[0] ?? "");
+  expect(textD).toContain("columns.名前.filter.type");
+  expect(textD).toContain("range は選べる値にありません");
+  expect(textD).toContain("選べる値は select・text・date です");
   expect(
     html.match(/<div class="mdmark-syntax-warning" role="note">/g),
-  ).toHaveLength(2);
+  ).toHaveLength(3);
 });
 
 // 文書に生の HTML で記載した記法の class・data-*・id を落とす（正常系）
