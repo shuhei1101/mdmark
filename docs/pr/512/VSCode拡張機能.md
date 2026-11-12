@@ -19,7 +19,7 @@
 | 対象 | 方針 | 補足 |
 | --- | --- | --- |
 | 公開の工程 | Release に添えた後、同じ .vsix を `ovsx publish {.vsix}` で Open VSX へ公開する | 認証の渡し方は PoC 検証で確かめる |
-| 認証 | trusted publisher（OIDC）。`permissions` に `id-token: write` を加え、シークレットを使わない | trusted publisher の登録はユーザーの操作 |
+| 認証 | trusted publisher（OIDC）。`permissions` に `id-token: write` を加え、シークレットを使わない | 前提はユーザーの操作（所有権の申請 → Publisher Agreement の署名の確認 → 初回の手動の公開 → trusted publisher の登録。要件.md の `## 要望`） |
 | 工程の並び | バージョンの比較 → 依存 → .vsix → Release に添える → Open VSX へ公開 | Release に添えてから公開し、公開の失敗で Release の .vsix を消さない |
 | 異常系 | バージョンが合わないときは公開しない。公開済みのバージョン・認証の失敗はワークフローを失敗させ、ログに Open VSX の応答を出す | - |
 | Marketplace | この PR では公開しない | 要件.md の `未確定` |
