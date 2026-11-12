@@ -101,7 +101,7 @@ test("test_normal_when_glossary_table", async () => {
   };
   const documents = {
     "用語集.md": [
-      "<!-- glossary: term=用語 aliases=別名 meaning=意味 avoid=やめた言い方 -->",
+      '<!-- glossary: {"term": {"column": "用語"}, "aliases": {"column": "別名"}, "meaning": {"column": "意味"}, "avoid": {"column": "やめた言い方"}} -->',
       "",
       "| 用語 | 別名 | 意味 | やめた言い方 |",
       "| --- | --- | --- | --- |",

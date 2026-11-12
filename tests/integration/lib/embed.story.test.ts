@@ -17,7 +17,9 @@ test("test_loading", async () => {
   const embed = page.locator(".mdmark-embed");
   await expect(embed.getAttribute("role")).resolves.toBe("status");
   await expect(embed.getAttribute("data-mdmark-slot")).resolves.toBe("chart");
-  await expect(embed.getAttribute("data-mdmark-args")).resolves.toBe("a b");
+  await expect(embed.getAttribute("data-mdmark-args")).resolves.toBe(
+    '{"items":["a","b"]}',
+  );
   await expect(embed.innerText()).resolves.toBe("図を読み込んでいます");
   const style = await embed.evaluate((element) => {
     const computed = getComputedStyle(element);

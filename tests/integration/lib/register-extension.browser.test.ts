@@ -13,7 +13,7 @@ const GREET_PATH = "/fixtures/greet.js";
 const DEFINITION_PATH = "/fixtures/definition.js";
 const MISSING_PATH = "/fixtures/missing.js";
 // 拡張のモジュールの代役が `slot` に記載する、引数の判別した値
-const GREET_TEXT = '{"args":["world"],"keys":{"lang":"ja"}}';
+const GREET_TEXT = '{"options":{"target":"world","lang":"ja"}}';
 
 const elements: HTMLElement[] = [];
 const handles: MountHandle[] = [];
@@ -100,8 +100,16 @@ function spyConsoleError() {
   return vi.spyOn(console, "error").mockImplementation(() => {});
 }
 
+// options.target を英小文字の文字列だけで、options.count を数だけで許す schema
+const INVALID_ARGS_SCHEMA = v.object({
+  options: v.object({
+    target: v.pipe(v.string(), v.regex(/^[a-z]+$/)),
+    count: v.optional(v.number()),
+  }),
+});
+
 const MARK_MARKDOWN =
-  "前の段落\n\n<!-- greet: world lang=ja -->\n\n中の段落\n\n<!-- greet: world lang=ja -->\n\n後の段落\n";
+  '前の段落\n\n<!-- greet: {"target": "world", "lang": "ja"} -->\n\n中の段落\n\n<!-- greet: {"target": "world", "lang": "ja"} -->\n\n後の段落\n';
 
 afterEach(() => {
   for (const handle of handles.splice(0)) {
@@ -157,10 +165,7 @@ test("test_error_when_args_invalid", async () => {
   const built = await loadBuilt();
   const el = createElement();
   const { extension, load } = createGreet({
-    schema: v.object({
-      args: v.strictTuple([v.pipe(v.string(), v.regex(/^[a-z]+$/))]),
-      keys: v.record(v.string(), v.string()),
-    }),
+    schema: INVALID_ARGS_SCHEMA,
   });
   built.registerExtension(extension);
   // 実行
@@ -168,7 +173,7 @@ test("test_error_when_args_invalid", async () => {
     mountTracked(
       built,
       el,
-      "前の段落\n\n<!-- greet: World 2 -->\n\n後の段落\n",
+      '前の段落\n\n<!-- greet: {"target": "World", "count": "2"} -->\n\n後の段落\n',
     ),
   ).not.toThrow();
   // 検証
@@ -178,14 +183,51 @@ test("test_error_when_args_invalid", async () => {
   expect(find(warning, ".mdmark-syntax-warning-title").textContent).toBe(
     "記載の警告",
   );
-  expect(warning.textContent).toContain("<!-- greet: World 2 -->");
+  expect(warning.textContent).toContain(
+    '<!-- greet: {"target":"World","count":"2"} -->',
+  );
   expect(warning.textContent).toContain("greet");
   const items = [...warning.querySelectorAll("li")].map(
     (item) => item.textContent ?? "",
   );
   expect(items).toHaveLength(2);
-  expect(items[0]?.startsWith("1 つ目の World:")).toBe(true);
-  expect(items[1]?.startsWith("2 つ目の 2:")).toBe(true);
+  expect(items[0]?.startsWith("target:")).toBe(true);
+  expect(items[1]?.startsWith("count:")).toBe(true);
+  expect(load).not.toHaveBeenCalled();
+  expect(paragraphTexts(el)).toEqual(["前の段落", "後の段落"]);
+});
+
+// 引数が JSON のオブジェクトでない拡張のマーカーの場所を、移行を案内する記載の警告にし、検査もモジュールの読み込みもしない（異常系）
+test("test_error_when_legacy_args", async () => {
+  // 準備
+  const built = await loadBuilt();
+  const el = createElement();
+  const validate = vi.fn(INVALID_ARGS_SCHEMA["~standard"].validate);
+  const { extension, load } = createGreet({
+    schema: {
+      "~standard": { ...INVALID_ARGS_SCHEMA["~standard"], validate },
+    } as unknown as MdmarkExtension["schema"],
+  });
+  built.registerExtension(extension);
+  // 実行
+  expect(() =>
+    mountTracked(
+      built,
+      el,
+      "前の段落\n\n<!-- greet: world lang=ja -->\n\n後の段落\n",
+    ),
+  ).not.toThrow();
+  // 検証
+  const warning = await vi.waitFor(() =>
+    find<HTMLElement>(el, ".mdmark-syntax-warning"),
+  );
+  const text = warning.textContent ?? "";
+  expect(text).toContain("greet");
+  expect(text).toContain("JSON のオブジェクト");
+  expect(text).toContain("mdmark upgrade");
+  expect(text).toContain("移行の報告");
+  await new Promise((resolve) => setTimeout(resolve, 200));
+  expect(validate).not.toHaveBeenCalled();
   expect(load).not.toHaveBeenCalled();
   expect(paragraphTexts(el)).toEqual(["前の段落", "後の段落"]);
 });
@@ -203,7 +245,11 @@ test("test_error_when_module_not_found", async () => {
   });
   // 実行
   expect(() =>
-    mountTracked(built, el, "前の段落\n\n<!-- greet: world -->\n\n後の段落\n"),
+    mountTracked(
+      built,
+      el,
+      '前の段落\n\n<!-- greet: {"target": "world"} -->\n\n後の段落\n',
+    ),
   ).not.toThrow();
   // 検証
   const notice = await vi.waitFor(() =>
@@ -242,7 +288,11 @@ test("test_error_when_validate_fails", async () => {
   built.registerExtension(extension);
   // 実行
   expect(() =>
-    mountTracked(built, el, "前の段落\n\n<!-- greet: world -->\n\n後の段落\n"),
+    mountTracked(
+      built,
+      el,
+      '前の段落\n\n<!-- greet: {"target": "world"} -->\n\n後の段落\n',
+    ),
   ).not.toThrow();
   // 検証
   const notice = await vi.waitFor(() =>
@@ -275,7 +325,11 @@ test("test_error_when_extension_invalid", async () => {
   expect(badDirective).toThrow("directive");
   expect(badSchema).toThrow(TypeError);
   expect(badSchema).toThrow("schema");
-  mountTracked(built, el, "前の段落\n\n<!-- greet: world -->\n\n後の段落\n");
+  mountTracked(
+    built,
+    el,
+    '前の段落\n\n<!-- greet: {"target": "world"} -->\n\n後の段落\n',
+  );
   expect(el.querySelector("[data-mdmark-slot]")).toBeNull();
   expect(paragraphTexts(el)).toEqual(["前の段落", "後の段落"]);
 });
@@ -296,7 +350,7 @@ test("test_error_when_directive_taken", async () => {
   expect(reserved).toThrow("table");
   expect(duplicated).toThrow(Error);
   expect(duplicated).toThrow("greet");
-  mountTracked(built, el, "<!-- greet: world -->\n");
+  mountTracked(built, el, '<!-- greet: {"target": "world"} -->\n');
   await vi.waitFor(() => {
     expect(load).toHaveBeenCalledTimes(1);
   });
@@ -326,8 +380,7 @@ test("test_normal_when_definition", async () => {
   const el = createElement();
   const load = vi.fn(() => importFixture(DEFINITION_PATH));
   const schema = v.object({
-    args: v.array(v.string()),
-    keys: v.record(v.string(), v.string()),
+    options: v.record(v.string(), v.unknown()),
     definition: v.object({ title: v.string(), items: v.array(v.string()) }),
   });
   built.registerExtension({
@@ -397,10 +450,14 @@ test("test_normal_when_directive_is_diagram_name", async () => {
   const { extension } = createGreet({ directive: "flow" });
   // 実行・検証
   expect(() => built.registerExtension(extension)).not.toThrow();
-  mountTracked(built, el, "前の段落\n\n<!-- flow: world -->\n\n後の段落\n");
+  mountTracked(
+    built,
+    el,
+    '前の段落\n\n<!-- flow: {"target": "world"} -->\n\n後の段落\n',
+  );
   await vi.waitFor(() => {
     expect(find(el, "[data-mdmark-slot]").textContent).toBe(
-      '{"args":["world"],"keys":{}}',
+      '{"options":{"target":"world"}}',
     );
   });
   expect(el.querySelector("figure.mdmark-diagram")).toBeNull();

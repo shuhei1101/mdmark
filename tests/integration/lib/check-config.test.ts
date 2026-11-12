@@ -189,7 +189,8 @@ test("test_normal_when_known_extension_and_ignored_mark", async () => {
     "  ignore: [prettier-ignore]",
   ]);
   await writeFiles(dir, {
-    "a.md": "# A\n\n<!-- greet: 太郎 -->\n\n<!-- prettier-ignore -->\n",
+    "a.md":
+      '# A\n\n<!-- greet: {"name": "太郎"} -->\n\n<!-- prettier-ignore -->\n',
   });
   // 実行
   const result = await runCli(["check"], dir);
@@ -689,7 +690,7 @@ test("test_normal_when_text", async () => {
   const markdown = [
     ...flowLines(CLEAN_FLOW),
     "",
-    "<!-- table: data -->",
+    '<!-- table: {"kind": "data"} -->',
     "",
     "| 列 | 値 |",
     "| --- | --- |",
@@ -731,20 +732,20 @@ test("test_normal_when_text_warnings", async () => {
   }
 });
 
-// 描くときにスキップする記法のマーカーの知らない機能・キー・指定を、行を指す unknown_mark_arg のずれにして終了コード 1 で終わる（正常系（文字列の記法のマーカーに知らない引数がある））
+// 描くときに無視する記法のマーカーの知らないキー（知らない機能名を含む）を、行を指す unknown_mark_arg のずれにして終了コード 1 で終わる（正常系（文字列の記法のマーカーに知らない引数がある））
 test("test_normal_when_text_unknown_mark_args", async () => {
   // 準備
   const dir = await createTempDir();
   await runCli(["init", dir], dir);
   const markdown = [
-    "<!-- table: data +unknown widht=説明 -->",
+    '<!-- table: {"kind": "data", "features": {"unknown": {}}, "widht": {"説明": {}}} -->',
     "",
     "| 名前 | 説明 |",
     "| --- | --- |",
     "| a | 1 |",
     "",
     "<!-- /table -->",
-    "<!-- tabs: grop=os -->",
+    '<!-- tabs: {"grop": "os"} -->',
     "",
     "### macOS",
     "",
@@ -767,15 +768,15 @@ test("test_normal_when_text_unknown_mark_args", async () => {
     line.startsWith("-:1: unknown_mark_arg: "),
   );
   expect(first).toHaveLength(2);
-  expect(first.join("\n")).toContain("+unknown");
+  expect(first.join("\n")).toContain("features.unknown");
   expect(first.join("\n")).toContain("sort");
-  expect(first.join("\n")).toContain("widht=");
-  expect(first.join("\n")).toContain("filter=");
+  expect(first.join("\n")).toContain("widht");
+  expect(first.join("\n")).toContain("columns");
   const eighth = lines.filter((line) =>
     line.startsWith("-:8: unknown_mark_arg: "),
   );
   expect(eighth).toHaveLength(1);
-  expect(eighth[0]).toContain("grop=");
+  expect(eighth[0]).toContain("grop");
   expect(lines.some((line) => line.includes("syntax_warning"))).toBe(false);
   expect(lines.at(-1)).toBe("ずれ 3 件");
 });
@@ -913,16 +914,16 @@ test("test_normal_when_include_targets_missing", async () => {
     "docs/a.md": [
       "# A",
       "",
-      "<!-- include: missing.md -->",
+      '<!-- include: {"path": "missing.md"} -->',
       "",
-      "<!-- include: 共通/手順.md#実行 -->",
+      '<!-- include: {"path": "共通/手順.md", "heading": "実行"} -->',
       "",
     ].join("\n"),
     "docs/b.md": [
       "# B",
-      "<!-- include: 共通/手順.md#無い見出し -->",
+      '<!-- include: {"path": "共通/手順.md", "heading": "無い見出し"} -->',
       "",
-      "<!-- include: ../src/app.ts#L8-L10 -->",
+      '<!-- include: {"path": "../src/app.ts", "lines": {"from": 8, "to": 10}} -->',
       "",
     ].join("\n"),
     "docs/共通/手順.md": "## 実行\n\n実行の段落\n",
@@ -969,13 +970,13 @@ test("test_normal_when_include_circular_or_outside", async () => {
     "root/docs/a.md": [
       "# A",
       "",
-      "<!-- include: b.md -->",
+      '<!-- include: {"path": "b.md"} -->',
       "",
-      "<!-- include: ../../outside.md -->",
+      '<!-- include: {"path": "../../outside.md"} -->',
       "",
     ].join("\n"),
-    "root/docs/b.md": "# B\n<!-- include: a.md -->\n",
-    "outside.md": "<!-- include: nowhere.md -->\n",
+    "root/docs/b.md": '# B\n<!-- include: {"path": "a.md"} -->\n',
+    "outside.md": '<!-- include: {"path": "nowhere.md"} -->\n',
   };
   await writeFiles(parent, files);
   const before = await snapshotFiles(parent, Object.keys(files));

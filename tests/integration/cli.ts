@@ -54,25 +54,25 @@ export async function readMediaSamples(): Promise<{
   return { mp4: mp4 as Buffer, mp3: mp3 as Buffer, gif: gif as Buffer };
 }
 
-/** 外部ライブラリの代役: `draw` でマーカーの場所の文字を `drawn:` と引数を `,` で結んだものにする */
-export const TEST_LIB_SOURCE = `export function draw(slot, args) {
-  slot.textContent = "drawn:" + args.join(",");
+/** 外部ライブラリの代役: `draw` でマーカーの場所の文字を `drawn:` と `options.items` を `,` で結んだものにする */
+export const TEST_LIB_SOURCE = `export function draw(slot, options) {
+  slot.textContent = "drawn:" + options.items.join(",");
 }
 `;
 
-/** 拡張の代役: `draw` でマーカーの場所の文字を `greet:` と引数を `,` で結んだものにする */
+/** 拡張の代役: `draw` でマーカーの場所の文字を `greet:` と `options.target` にする */
 export const GREET_SOURCE = `export default {
   name: "greet",
   directive: "greet",
   load: async () => ({
     draw(slot, value) {
-      slot.textContent = "greet:" + value.args.join(",");
+      slot.textContent = "greet:" + value.options.target;
     },
   }),
 };
 `;
 
-/** 拡張の代役: `load` の中で同じフォルダの `greet-text.js` を動的 `import()` で読み込み、マーカーの場所の文字を `greet:` と読み込んだ文字と引数にする */
+/** 拡張の代役: `load` の中で同じフォルダの `greet-text.js` を動的 `import()` で読み込み、マーカーの場所の文字を `greet:` と読み込んだ文字と `options.target` にする */
 export const GREET_WITH_IMPORT_SOURCE = `export default {
   name: "greet",
   directive: "greet",
@@ -80,7 +80,7 @@ export const GREET_WITH_IMPORT_SOURCE = `export default {
     const { TEXT } = await import("./greet-text.js");
     return {
       draw(slot, value) {
-        slot.textContent = "greet:" + TEXT + ":" + value.args.join(",");
+        slot.textContent = "greet:" + TEXT + ":" + value.options.target;
       },
     };
   },
@@ -89,7 +89,7 @@ export const GREET_WITH_IMPORT_SOURCE = `export default {
 
 /** 項目の表をビューのマーカーで囲んだ本文 */
 export const VIEW_SOURCE = [
-  "<!-- view: group=状態 -->",
+  '<!-- view: {"board": {"group": {"column": "状態"}}} -->',
   "",
   "| タイトル | 状態 |",
   "| --- | --- |",
