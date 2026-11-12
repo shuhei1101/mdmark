@@ -13,7 +13,7 @@ Claude Code のプラグイン `mdmark` の MCP サーバー（`plugin:mdmark:md
 
 ## 一覧
 
-<!-- table: data -->
+<!-- table: {"kind": "data"} -->
 
 | 名前 | ツール | 説明 |
 | --- | --- | --- |

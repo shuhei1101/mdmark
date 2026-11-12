@@ -31,6 +31,24 @@ const MARKER_PATTERN = /^\s{0,3}<!--\s*include:\s*(.*?)\s*-->/;
 /** コードブロックの開きと閉じの行 */
 const FENCE_PATTERN = /^\s{0,3}(`{3,}|~{3,})/;
 
+/** マーカーの引数から取り込み先のパスを取り出す。JSON のオブジェクトは `path`、今の書き方は引数の文字のまま */
+const targetOf = (written: string): string | undefined => {
+  if (!written.startsWith("{")) {
+    return written;
+  }
+  try {
+    const value: unknown = JSON.parse(written);
+    const path =
+      typeof value === "object" && value !== null
+        ? (value as { path?: unknown }).path
+        : undefined;
+    return typeof path === "string" ? path : undefined;
+  } catch {
+    // 読めない引数は、描くときに記載の警告になり取り込まない
+    return undefined;
+  }
+};
+
 /** 本文の include のマーカー（コードブロックの中を除く）に記載した取り込み先を返却する */
 const findMarkers = (markdown: string): string[] => {
   const found: string[] = [];
@@ -47,8 +65,9 @@ const findMarkers = (markdown: string): string[] => {
     }
     const written =
       fence === undefined ? MARKER_PATTERN.exec(line)?.[1] : undefined;
-    if (written) {
-      found.push(written);
+    const target = written === undefined ? undefined : targetOf(written);
+    if (target) {
+      found.push(target);
     }
   }
   return found;

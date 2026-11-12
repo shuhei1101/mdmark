@@ -179,7 +179,7 @@ flows:
     summary: page のマーカーを持つ文書と持たない文書を行き来すると、開いた文書の明暗で再描画する
     setup:
       - name: ページの設定を持つフォルダ
-        description: '正常系のフォルダで、`entry` の文書の先頭の行に `<!-- page: scheme=dark theme=theme-slate -->` を記載し、もう 1 つの文書はマーカーを持たない'
+        description: '正常系のフォルダで、`entry` の文書の先頭の行に `<!-- page: {"scheme": "dark", "theme": "theme-slate"} -->` を記載し、もう 1 つの文書はマーカーを持たない'
         notes: 設定は `colorScheme` を持たない。開くブラウザの配色はライト
       - name: Mock
         description: 差し替える依存は無い（記載した HTML だけを空のフォルダへコピーして file:// で開く）
@@ -280,7 +280,7 @@ flows:
     summary: まとめる文書の取り込み先とまとめていない名前のアイコンの形状を埋め、外へ要求せずに描く
     setup:
       - name: 取り込みとアイコンを持つ文書群
-        description: '設定の `build.include` が `docs/a.md` と `docs/b.md` に該当する。`a.md` が `<!-- include: b.md#使い方 -->`・`<!-- include: ../共通/手順.md -->`・段落の `` `icon:sailboat` `` を持ち、`b.md` が `## 使用方法` を持つ。`共通/手順.md` は `build.include` に該当しない'
+        description: '設定の `build.include` が `docs/a.md` と `docs/b.md` に該当する。`a.md` が `<!-- include: {"path": "b.md", "heading": "使い方"} -->`・`<!-- include: {"path": "../共通/手順.md"} -->`・段落の `` `icon:sailboat` `` を持ち、`b.md` が `## 使用方法` を持つ。`共通/手順.md` は `build.include` に該当しない'
       - name: Mock
         description: 差し替える依存は無い。書き出した HTML は Playwright の Chromium で file:// で開き、要求を記録する
     flow: |-
@@ -378,10 +378,10 @@ flows:
     refs:
       - SC-472-13#scenarios[正常シナリオ（再読み込みで離れたときの位置に戻る）]
   - name: 正常系（戻るで開閉と選んだタブを戻す）
-    summary: 開閉と group= の無いタブを変えてから移り、戻ると開閉とタブを戻してから位置を戻す
+    summary: 開閉と group の無いタブを変えてから移り、戻ると開閉とタブを戻してから位置を戻す
     setup:
       - name: 開閉とタブを持つフォルダ
-        description: '`entry` の `a.md` は、`<!-- section: closed -->` の h2 のセクション（中に `group=` の無い 2 つのタブ。2 つ目のタブに段落 100 個と `b.md` へのリンク）、閉じた表（`<!-- table: data closed -->`）、フォルダを持つファイルツリーを持つ。`b.md` は 1 段落'
+        description: '`entry` の `a.md` は、`<!-- section: {"open": false} -->` の h2 のセクション（中に `group` の無い 2 つのタブ。2 つ目のタブに段落 100 個と `b.md` へのリンク）、閉じた表（`<!-- table: {"kind": "data", "collapse": {"open": false}} -->`）、フォルダを持つファイルツリーを持つ。`b.md` は 1 段落'
       - name: Mock
         description: 正常系（戻る・進むで離れたときの位置に戻る）と同じ
     flow: |-
@@ -548,7 +548,7 @@ constraints:
     constraint: 文書をHTMLに書き出す.ts の制約「埋める mermaid」と同じ。まとめる文書のどれかに mermaid のコードブロックがあるときだけ、mermaid を 1 回埋める
     decided_by: NFR-472-1#requirements[mermaid を埋めた書き出しの HTML のサイズ]
   - item: 戻る・進む・再読み込みの表示の状態
-    constraint: 書き出した HTML は開いたとき `history.scrollRestoration` を `manual` にし、履歴の項目ごとに、縦横のスクロール位置・本文の開閉（`<details>`・セクション・行の詳細・最終列の畳み・コードの行の畳み・ER 図の畳み・ファイルツリーのフォルダ・表のツリーと見本）・`group=` の無いタブで選んだタブを保存する。保存するのは `popstate`・文書の一覧と文書間のリンクのクリック・`pagehide`・間引いたスクロールのとき。戻る・進む・再読み込みで保存した状態を持つ項目へ戻ったときは、文書を描いた後に開閉とタブを戻してから位置を戻す。保存した状態を持たない項目（文書の一覧・文書間のリンクで新しく移った項目）は、今どおり見出しか文書の頭から描く
+    constraint: 書き出した HTML は開いたとき `history.scrollRestoration` を `manual` にし、履歴の項目ごとに、縦横のスクロール位置・本文の開閉（`<details>`・セクション・行の詳細・最終列の畳み・コードの行の畳み・ER 図の畳み・ファイルツリーのフォルダ・表のツリーと見本）・`group` の無いタブで選んだタブを保存する。保存するのは `popstate`・文書の一覧と文書間のリンクのクリック・`pagehide`・間引いたスクロールのとき。戻る・進む・再読み込みで保存した状態を持つ項目へ戻ったときは、文書を描いた後に開閉とタブを戻してから位置を戻す。保存した状態を持たない項目（文書の一覧・文書間のリンクで新しく移った項目）は、今どおり見出しか文書の頭から描く
     notes: 表のメニュー・ドロワー・絞り込み、右側の目次、差分のパネル、コメントの吹き出しは戻さない。位置は URL に出さない
   - item: 表示の状態の保存先
     constraint: sessionStorage。キーは履歴の項目ごとに振る ID（`history.state` に持たせる）を含む。sessionStorage を取り出せない・書き込めないときは `console.warn` に出し、保存した状態を持たない項目と同じく描く

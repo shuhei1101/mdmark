@@ -9,19 +9,19 @@ states:
     args:
       - name: name
         value: chart
-      - name: args
-        value: a,b
+      - name: options
+        value: '{"items":["a","b"]}'
 lead: 外部ライブラリのマーカーの場所に配置し、読み込んだモジュールが描くまで図の高さを先に取っておく枠。マーカーの名前と引数を属性で持ち、`mount` がその要素を描く場所としてモジュールに指定する。HTML 文字列を返却し、ブラウザと Node で同じ出力になる。
 args:
   - name: name
     type: 文字列
     required: true
     description: マーカーの名前。`data-mdmark-slot` に入れる
-  - name: args
-    type: 配列
+  - name: options
+    type: オブジェクト
     required: false
-    default: '[]'
-    description: マーカーの引数。空白で結んで `data-mdmark-args` に入れる
+    default: '{}'
+    description: マーカーの引数の JSON のオブジェクト。空白なしの JSON にして `data-mdmark-args` に入れる
 css_properties:
   - name: --mdmark-color-border
     syntax: <color>
@@ -40,5 +40,5 @@ accessibility:
 refs:
   - IF-472-34#constraints[マーカーの場所の要素]
 notes:
-  出力: '`<div class="mdmark-embed" data-mdmark-slot="{name}" data-mdmark-args="{args を空白で結んだもの}" role="status">図を読み込んでいます</div>`。高さは 12rem。文言と高さは確認ログの決定（外部ライブラリを読み込んでいる間の見え方）。モックは `docs/mock/components/notice/` の「読み込み中」'
+  出力: '`<div class="mdmark-embed" data-mdmark-slot="{name}" data-mdmark-args="{options の空白なしの JSON}" role="status">図を読み込んでいます</div>`。高さは 12rem。文言と高さは確認ログの決定（外部ライブラリを読み込んでいる間の見え方）。モックは `docs/mock/components/notice/` の「読み込み中」'
 test_file: tests/integration/lib/embed.story.test.ts

@@ -65,7 +65,7 @@ test("test_normal_when_syntax", async () => {
   const markdown = [
     "## Hello, World!",
     "",
-    "<!-- table: data -->",
+    '<!-- table: {"kind": "data"} -->',
     "",
     "| 名前 | 数 |",
     "| --- | --- |",
@@ -89,11 +89,11 @@ test("test_normal_when_syntax", async () => {
     "> 注意の本文",
     "",
     "## 補足",
-    "<!-- section: closed -->",
+    '<!-- section: {"open": false} -->',
     "",
     "閉じた節の中身",
     "",
-    "<!-- fig: arch -->",
+    '<!-- fig: {"id": "arch"} -->',
     "![構成](https://img.example.test/arch.svg)",
     "",
     "本文の [図](#fig-arch) を見る。",
@@ -221,7 +221,8 @@ function matchAll(text: string, pattern: RegExp): string[] {
 // 取り込む文書の表を指定すると、マーカーの場所に見出しの中を描く（正常シナリオ（取り込む文書を指定する））
 test("test_normal_when_includes_given", async () => {
   // 準備
-  const markdown = "# 案内\n\n<!-- include: 共通/手順.md#実行 -->\n";
+  const markdown =
+    '# 案内\n\n<!-- include: {"path": "共通/手順.md", "heading": "実行"} -->\n';
   const includes = {
     "共通/手順.md": "## 準備\n\n準備の段落\n\n## 実行\n\n実行の段落\n",
   };

@@ -265,7 +265,7 @@ scenarios:
         description: mdmark の CSS の後に、利用側の CSS を読み込み、文書を描く HTML
         notes: '利用側の CSS は層の外に `pre { white-space: pre-wrap; overflow-wrap: anywhere; }` を持つ。画面の幅は 390px'
       - name: コードブロックとファイルツリーを持つ Markdown
-        description: '表示の幅より長い行とインデントを持つマーカーの無い言語 `json` のコードブロック、表示の幅より長い名前を持つマーカーの無い言語 `tree` のコードブロック、`<!-- code: wrap -->` の直後の長い行を持つ言語 `ts` のコードブロックの文書'
+        description: '表示の幅より長い行とインデントを持つマーカーの無い言語 `json` のコードブロック、表示の幅より長い名前を持つマーカーの無い言語 `tree` のコードブロック、`<!-- code: {"wrap": true} -->` の直後の長い行を持つ言語 `ts` のコードブロックの文書'
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-

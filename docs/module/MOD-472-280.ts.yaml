@@ -9,7 +9,7 @@ functions:
     container: src/render/syntax/sections.ts
     kind: 関数
     scope: internal
-    summary: 'コアルール。`sections` がオンなら h1〜h4 の見出しに class `mdmark-heading` を付け、見出しの後ろから次の同じか上の階層の見出しの前までを部品『セクション』の中身の要素（`toggle: false`）で囲む。部品『タブ』の中身の中で開いたセクションは、次の見出しより前にその中身が終わるときは中身の終わりで閉じる（タブの外で開いたセクションはタブをまたいで続く）。見出しの直後の `section` のマーカーで `data-section` を決め、知らない値は `pushSkippedArgs` でスキップした引数にして `open` にする'
+    summary: 'コアルール。`sections` がオンなら h1〜h4 の見出しに class `mdmark-heading` を付け、見出しの後ろから次の同じか上の階層の見出しの前までを部品『セクション』の中身の要素（`toggle: false`）で囲む。部品『タブ』の中身の中で開いたセクションは、次の見出しより前にその中身が終わるときは中身の終わりで閉じる（タブの外で開いたセクションはタブをまたいで続く）。見出しの直後の `section` のマーカーの `open`（省くと `true`）で `data-section` を `open`・`closed` にする'
     args:
       - name: state
         type: StateCore
@@ -23,15 +23,15 @@ functions:
       - name: test_wrap_sections
         case: 正常
         summary: h2 と h3 のセクションを入れ子に囲み、closed のセクションも中身を隠さない
-        condition: '`## A`・`### B`・直後に `<!-- section: closed -->` を持つ `## C`'
+        condition: '`## A`・`### B`・直後に `<!-- section: {"open": false} -->` を持つ `## C`'
         mock: なし
         expected: '`section-a` の中に `section-b`、`section-c` が `data-section="closed"` を持ち `hidden` を持たない'
-      - name: test_wrap_sections_when_unknown_value
+      - name: test_wrap_sections_when_unknown_key
         case: 正常
-        summary: 知らない開閉の指定はスキップし、開いたセクションにする
-        condition: '`<!-- section: hidden -->`'
+        summary: 知らないキーは無視し、開いたセクションにする
+        condition: '`<!-- section: {"state": "hidden"} -->`'
         mock: なし
-        expected: 記載の警告が無く、`data-section="open"`、`env.warnings` が `hidden` を含む `unknown_mark_arg` の 1 件
+        expected: 記載の警告が無く、`data-section="open"`、`env.warnings` が `state` を含む `unknown_mark_arg` の 1 件
       - name: test_wrap_sections_when_feature_off
         case: 正常
         summary: sections がオフなら見出しに class を付けず、囲まない

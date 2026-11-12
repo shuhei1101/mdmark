@@ -178,21 +178,21 @@ request:
     required: false
     default: なし（ボード表示を持たず、表形式のビューだけを描く）
     location: argument
-    description: ボード表示で列に分ける列名。文書のマーカーの `group=` に該当する
+    description: ボード表示で列に分ける列名。文書のマーカーの `board.group.column` に該当する
     constraints: '`opts.columns` のどれか'
   - name: opts.default
     type: '"board" | "table"'
     required: false
     default: '`opts.group` があれば `"board"`、無ければ `"table"`'
     location: argument
-    description: 描いた直後に出すビュー。文書のマーカーの `default=` に該当する
+    description: 描いた直後に出すビュー。文書のマーカーの `initial` に該当する
     constraints: '`opts.group` が無いときは `"table"` だけ'
   - name: opts.filter
     type: Record<string, "select" | "text" | "date">
     required: false
     default: '`{}`（どの列にも絞り込みを付けない）'
     location: argument
-    description: 表形式のビューで絞り込みを付ける列と種類。文書のマーカーの `filter=` に該当する
+    description: 表形式のビューで絞り込みを付ける列と種類。文書のマーカーの `columns.{列名}.filter` に該当する
     constraints: キーは `opts.columns` のどれか
     example: '{ "担当": "select" }'
   - name: opts.icons
@@ -200,7 +200,7 @@ request:
     required: false
     default: '`{}`（既定の対応だけを使用する）'
     location: argument
-    description: ボードの列の見出しの値からアイコンの名前を参照する対応。既定の対応に重ね、同じ値は上書きする。文書のマーカーの `icons=` に該当する
+    description: ボードの列の見出しの値からアイコンの名前を参照する対応。既定の対応に重ね、同じ値は上書きする。文書のマーカーの `board.values.{値}.icon` に該当する
     constraints: アイコンの名前はインターフェース定義『文書を描く』の制約の「ボードの列の見出しのアイコン」の使用できるアイコンのどれか
     example: '{ "未着手": "inbox", "完了": "archive" }'
 request_example: |-

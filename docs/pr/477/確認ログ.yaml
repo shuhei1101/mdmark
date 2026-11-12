@@ -1,0 +1,31 @@
+confirmations:
+  - topic: 記載の警告 TypeMismatch（値の型が合わない）の文言
+    decision: 持てるキーと例を示す文言（推奨案 A）
+    decided_by: thumbs_up
+    approver: shuhei1101
+    commit:
+    thread: https://github.com/shuhei1101/mdmark/pull/477#discussion_r4538663917
+  - topic: 記載の警告 InvalidJson（JSON として読めない引数）の文言
+    decision: 読めない位置の文字と原因を示す文言（推奨案 A）
+    decided_by: thumbs_up
+    approver: shuhei1101
+    commit:
+    thread: https://github.com/shuhei1101/mdmark/pull/477#discussion_r4538665044
+  - topic: 記載の警告 CommentEndInValue（値の --> でコメントが閉じた）の文言
+    decision: コメントが閉じる理由と --> の記載方法を示す文言（推奨案 A）
+    decided_by: thumbs_up
+    approver: shuhei1101
+    commit:
+    thread: https://github.com/shuhei1101/mdmark/pull/477#discussion_r4538665932
+  - topic: 記載の警告 LegacyExtension（今の書き方の拡張のマーカー）の文言
+    decision: 例と mdmark upgrade の移行の報告を示す文言（推奨案 A）
+    decided_by: thumbs_up
+    approver: shuhei1101
+    commit:
+    thread: https://github.com/shuhei1101/mdmark/pull/477#discussion_r4538667036
+  - topic: 既にある記載の警告の文言でマーカーの設定を指す書き方
+    decision: キーのパス（meaning.column・filter.type）で指す（推奨案 A）
+    decided_by: thumbs_up
+    approver: shuhei1101
+    commit:
+    thread: https://github.com/shuhei1101/mdmark/pull/477#discussion_r4538667765

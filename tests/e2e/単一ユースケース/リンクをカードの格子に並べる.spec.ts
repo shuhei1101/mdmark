@@ -196,7 +196,7 @@ test("test_normal_when_disabled", async ({ page }) => {
   await openPage(page, builtRoot);
   // 実行
   await mountDocument(page, {
-    markdown: `<!-- features: -card-grid -->\n\n${CARDS_MARKDOWN}`,
+    markdown: `<!-- features: {"card-grid": false} -->\n\n${CARDS_MARKDOWN}`,
   });
   // 検証
   await expect(page.locator("#doc .mdmark-card-grid")).toHaveCount(0);

@@ -213,17 +213,17 @@ export const PNG_BYTES = Buffer.from(
 );
 
 /** Chart.js の代役のモジュール: マーカーの場所に `canvas` を描く */
-export const CHART_SOURCE = `export function draw(slot, args) {
+export const CHART_SOURCE = `export function draw(slot, options) {
   const canvas = document.createElement("canvas");
   canvas.width = 80;
   canvas.height = 40;
   canvas.getContext("2d").fillRect(0, 0, 20, 20);
-  canvas.dataset.args = args.join(",");
+  canvas.dataset.options = JSON.stringify(options);
   slot.replaceChildren(canvas);
 }
 `;
 
-/** 拡張の代役: `load` の中で同じフォルダの `greet-text.js` を動的 `import()` で読み込み、マーカーの場所の文字を `greet:` と読み込んだ文字と引数にする */
+/** 拡張の代役: `load` の中で同じフォルダの `greet-text.js` を動的 `import()` で読み込み、マーカーの場所の文字を `greet:` と読み込んだ文字と `options.target` にする */
 export const GREET_WITH_IMPORT_SOURCE = `export default {
   name: "greet",
   directive: "greet",
@@ -231,7 +231,7 @@ export const GREET_WITH_IMPORT_SOURCE = `export default {
     const { TEXT } = await import("./greet-text.js");
     return {
       draw(slot, value) {
-        slot.textContent = "greet:" + TEXT + ":" + value.args.join(",");
+        slot.textContent = "greet:" + TEXT + ":" + value.options.target;
       },
     };
   },
@@ -243,7 +243,7 @@ export const GREET_TEXT_SOURCE = 'export const TEXT = "読んだ";\n';
 
 /** 項目の表をビューのマーカーで囲んだ本文 */
 export const VIEW_SOURCE = [
-  "<!-- view: group=状態 -->",
+  '<!-- view: {"board": {"group": {"column": "状態"}}} -->',
   "",
   "| 題 | 状態 |",
   "| --- | --- |",
@@ -318,7 +318,7 @@ export const THEME_SOURCE = ".mdmark { --mdmark-radius: 0px; }\n";
 export const GLOSSARY_DOCUMENT = [
   "# 用語集",
   "",
-  "<!-- glossary: term=用語 meaning=意味 -->",
+  '<!-- glossary: {"term": {"column": "用語"}, "meaning": {"column": "意味"}} -->',
   "",
   "| 用語 | 意味 |",
   "| --- | --- |",
@@ -372,7 +372,7 @@ export async function writeSampleDocs(
       "# 入口\n\n[使い方](使い方/guide.md) を読む。\n\n印を書く。\n",
     "用語集.md": GLOSSARY_DOCUMENT,
     "使い方/guide.md":
-      "# 使い方\n\n<!-- chart: a -->\n\n![図](../img/a.png)\n\n[入口へ](../README.md)\n",
+      "# 使い方\n\n<!-- chart -->\n\n![図](../img/a.png)\n\n[入口へ](../README.md)\n",
     "lib/chart.js": CHART_SOURCE,
     "img/a.png": PNG_BYTES,
   });
@@ -472,16 +472,16 @@ export const INCLUDE_MISSING_FILES: Record<string, string> = {
   "docs/a.md": [
     "# A",
     "",
-    "<!-- include: missing.md -->",
+    '<!-- include: {"path": "missing.md"} -->',
     "",
-    "<!-- include: 共通/手順.md#実行 -->",
+    '<!-- include: {"path": "共通/手順.md", "heading": "実行"} -->',
     "",
   ].join("\n"),
   "docs/b.md": [
     "# B",
-    "<!-- include: 共通/手順.md#無い見出し -->",
+    '<!-- include: {"path": "共通/手順.md", "heading": "無い見出し"} -->',
     "",
-    "<!-- include: ../src/app.ts#L8-L10 -->",
+    '<!-- include: {"path": "../src/app.ts", "lines": {"from": 8, "to": 10}} -->',
     "",
   ].join("\n"),
   "docs/共通/手順.md": "## 実行\n\n実行の段落\n",

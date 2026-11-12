@@ -101,7 +101,7 @@ test("test_normal_when_syntax_expanded", async ({ page }) => {
       "<!-- /tabs -->",
       "",
       "## 補足",
-      "<!-- section: closed -->",
+      '<!-- section: {"open": false} -->',
       "",
       "閉じた節の中身",
       "",
@@ -109,13 +109,13 @@ test("test_normal_when_syntax_expanded", async ({ page }) => {
       "| --- | --- |",
       "| a | 1 |",
       "",
-      "<!-- row-detail: 1 -->",
+      '<!-- row-detail: {"at": 1} -->',
       "",
       "行の詳細の中身",
       "",
       "<!-- /row-detail -->",
       "",
-      "<!-- table: data closed -->",
+      '<!-- table: {"kind": "data", "collapse": {"open": false}} -->',
       "",
       "| 名前 |",
       "| --- |",
@@ -126,7 +126,7 @@ test("test_normal_when_syntax_expanded", async ({ page }) => {
       "> [!NOTE]-",
       "> 閉じた注意書きの中身",
       "",
-      "<!-- tabs: closed -->",
+      '<!-- tabs: {"collapse": {"open": false}} -->',
       "",
       "### uv",
       "",
@@ -138,7 +138,7 @@ test("test_normal_when_syntax_expanded", async ({ page }) => {
       "",
       "<!-- /tabs -->",
       "",
-      "<!-- steps: closed -->",
+      '<!-- steps: {"collapse": {"open": false}} -->',
       "",
       "1. 閉じたステップの中身",
       "2. 二つ目の手順",
@@ -261,7 +261,7 @@ test("test_normal_when_table_features_printed", async ({ page }) => {
   await openPage(page, builtRoot);
   await mountDocument(page, {
     markdown: [
-      "<!-- table: data +count +columns +total +copy +rowlink total=数量:sum hide=説明 -->",
+      '<!-- table: {"kind": "data", "features": {"count": {}, "copy": {}, "rowlink": {}}, "columns": {"数量": {"total": [{"calc": "sum"}]}, "説明": {"hidden": true}}} -->',
       "",
       "| 名前 | 説明 | 数量 |",
       "| --- | --- | --- |",
@@ -302,7 +302,7 @@ test("test_normal_when_code_block_printed", async ({ page }) => {
   await openPage(page, builtRoot);
   await mountDocument(page, {
     markdown: [
-      "<!-- code: title=app.ts lines highlight=1 -->",
+      '<!-- code: {"title": "app.ts", "lines": {}, "highlight": [1]} -->',
       "",
       "```ts",
       "const a = 1;",
@@ -363,7 +363,7 @@ test("test_normal_when_code_block_printed", async ({ page }) => {
 
 /** 390px の幅で 1 行に収まらない説明を最終列に持つ、3 列 3 行の表の Markdown */
 const FOLD_TABLE = [
-  "<!-- table: data -->",
+  '<!-- table: {"kind": "data"} -->',
   "",
   "| 名前 | 状態 | 説明 |",
   "| --- | --- | --- |",
@@ -421,7 +421,7 @@ test("test_normal_when_side_toc_hidden_in_print", async ({ page }) => {
   await openPage(page, builtRoot);
   await mountDocument(page, {
     markdown:
-      "# 手引き\n\n手引きの段落\n\n# 付録\n<!-- section: closed -->\n\n付録の段落\n",
+      '# 手引き\n\n手引きの段落\n\n# 付録\n<!-- section: {"open": false} -->\n\n付録の段落\n',
     config: { "side-toc": { mode: "fixed" } },
   });
   const doc = page.locator("#doc");
@@ -489,7 +489,7 @@ test("test_normal_when_colors_and_media_printed", async ({ page }) => {
   });
   await mountDocument(page, {
     markdown: [
-      "<!-- table: data row-color=状態:完了=green -->",
+      '<!-- table: {"kind": "data", "rows": {"colors": [{"column": "状態", "value": "完了", "color": "green"}]}} -->',
       "",
       "| 案件 | 状態 |",
       "| --- | --- |",
@@ -620,7 +620,7 @@ test("test_normal_when_code_folded", async ({ page }) => {
   await openPage(page, builtRoot);
   await mountDocument(page, {
     markdown: [
-      "<!-- code: fold=2 -->",
+      '<!-- code: {"fold": [2]} -->',
       "",
       "```yaml",
       "a:",
@@ -708,7 +708,7 @@ test("test_normal_when_pagebreak_details_wide", async ({ page }) => {
       "",
       "<!-- pagebreak -->",
       "",
-      "<!-- details: 補足 -->",
+      '<!-- details: {"title": "補足"} -->',
       "",
       "補足の段落",
       "",

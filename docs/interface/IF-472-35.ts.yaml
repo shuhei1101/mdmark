@@ -98,7 +98,7 @@ flows:
       - name: 配布物を読み込んだページ
         description: 正常系と同じ
       - name: 未知のマーカーを持つ Markdown
-        description: '段落の間に `<!-- unknown: 1 -->` を持つ文書'
+        description: '段落の間に `<!-- unknown: {"size": 1} -->` を持つ文書'
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
@@ -142,12 +142,12 @@ flows:
       - name: 配布物を読み込んだページ
         description: 正常系と同じ
       - name: 外部ライブラリのマーカーを持つ Markdown
-        description: '段落の間に `<!-- test-lib: a b -->` を持つ文書'
+        description: '段落の間に `<!-- test-lib: {"items": ["a", "b"]} -->` を持つ文書'
       - name: 設定
         description: '`opts.config.libraries` に `{ "test-lib": "/fixtures/test-lib.js" }`'
         notes: ページの URL を基準にした相対 URL
       - name: Mock
-        description: 外部ライブラリの代役として、`draw(slot, args)` で `slot` の文字を `drawn:` と引数を `,` で結んだものにするモジュールを、手元の開発サーバーが `/fixtures/test-lib.js` で配る。要求の件数は `performance.getEntriesByType("resource")` で数える
+        description: 外部ライブラリの代役として、`draw(slot, options)` で `slot` の文字を `drawn:` と `options.items` を `,` で結んだものにするモジュールを、手元の開発サーバーが `/fixtures/test-lib.js` で配る。要求の件数は `performance.getEntriesByType("resource")` で数える
     flow: |-
       sequenceDiagram
         participant P as 利用側のページ
@@ -157,7 +157,7 @@ flows:
         M->>P: マーカーの場所に読み込み中のブロックを描く
         M->>X: import(URL)
         X-->>M: モジュール
-        M->>X: draw(マーカーの場所の要素, ["a", "b"])
+        M->>X: draw(マーカーの場所の要素, {items: ["a", "b"]})
         X->>P: マーカーの場所に描く
     expected:
       - '`/fixtures/test-lib.js` への要求が 1 件'
@@ -165,6 +165,31 @@ flows:
       - 読み込んだ後、マーカーの場所の要素の文字が `drawn:a,b`
       - マーカーの前後の段落がある
     test: test_normal_when_library_mark
+  - name: 正常系（今の書き方の外部ライブラリのマーカー）
+    summary: 引数が JSON のオブジェクトでない外部ライブラリのマーカーは、モジュールを読み込まずに記載の警告を描く
+    setup:
+      - name: 配布物を読み込んだページ
+        description: 正常系と同じ
+      - name: 今の書き方の外部ライブラリのマーカーを持つ Markdown
+        description: '段落の間に `<!-- test-lib: a b -->` を持つ文書'
+      - name: 設定
+        description: 正常系（外部ライブラリのマーカー）と同じ
+      - name: Mock
+        description: 正常系（外部ライブラリのマーカー）と同じ
+    flow: |-
+      sequenceDiagram
+        participant P as 利用側のページ
+        participant M as mdmark
+        P->>M: mount(el, { markdown, config })
+        M->>M: マーカーの引数が JSON のオブジェクトでない
+        M->>P: マーカーの場所に記載の警告を描く
+    expected:
+      - '`/fixtures/test-lib.js` への要求が 0 件'
+      - マーカーの場所に記載の警告があり、本文に、引数を JSON のオブジェクトで記載することと `mdmark upgrade` がある
+      - マーカーの前後の段落がある
+    test: test_normal_when_legacy_library_args
+    refs:
+      - SC-472-46#scenarios[異常シナリオ（今の書き方の外部ライブラリのマーカー）]
   - name: 正常系（外部ライブラリのマーカーが無い）
     summary: マーカーの無い文書では外部ライブラリを読み込まない
     setup:
@@ -215,7 +240,7 @@ flows:
       - name: 配布物を読み込んだページ
         description: 正常系と同じ
       - name: 機能を解除する Markdown
-        description: '先頭に `<!-- features: -print -->` を持ち、閉じた `details` を持つ文書'
+        description: '先頭に `<!-- features: {"print": false} -->` を持ち、閉じた `details` を持つ文書'
       - name: 設定
         description: '`opts.config.features` に `{ print: true }`'
       - name: Mock
@@ -238,7 +263,7 @@ flows:
       - name: 配布物を読み込んだページ
         description: 正常系と同じ
       - name: 機能を追加する Markdown
-        description: '先頭に `<!-- features: +print +unknown -->` を持ち、閉じた `details` を持つ文書'
+        description: '先頭に `<!-- features: {"print": true, "unknown": true} -->` を持ち、閉じた `details` を持つ文書'
       - name: 設定
         description: '`opts.config.features` に `{ print: false }`'
       - name: Mock
@@ -310,7 +335,7 @@ flows:
       - name: 配布物を読み込んだページ
         description: 正常系と同じ
       - name: 表を持つ Markdown
-        description: '`<!-- table: data filter=名前 -->` 〜 `<!-- /table -->` で、列 `名前`・`値` に `りんご`/`10`・`みかん`/`2`・`りんご飴`/`33` の 3 行を持つ表を囲んだ文書'
+        description: '`<!-- table: {"kind": "data", "columns": {"名前": {"filter": {}}}} -->` 〜 `<!-- /table -->` で、列 `名前`・`値` に `りんご`/`10`・`みかん`/`2`・`りんご飴`/`33` の 3 行を持つ表を囲んだ文書'
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
@@ -367,12 +392,12 @@ flows:
       - 10 列の表の `mdmark-table` の `max-height` の計算値が `none` で、表の中で縦にスクロールしない（`scrollHeight` と `clientHeight` が等しい）
     test: test_normal_when_table_pinned
   - name: 正常系（留める列と広く取る列を指定する）
-    summary: '`-pin` の表は留めず、`pin=` の表は記載した列だけを留め、`wide=` の列を折り返さずに広く取る'
+    summary: '`pin` を削除した表は留めず、`pinned` を記載した表は記載した列だけを留め、`width.mode` が `nowrap` の列を折り返さずに広く取る'
     setup:
       - name: 配布物を読み込んだページ
         description: 正常系と同じ。描く先の `div` の幅は 320px
       - name: 列を指定した表を持つ Markdown
-        description: '`<!-- table: -pin -->` で囲んだ 10 列 30 行の表と、`<!-- table: data pin=物理名 wide=説明 -->` で、1 列目 `No`・2 列目 `物理名`・長い文の `説明` の列を含む 8 列 3 行の表と、`<!-- table: data pin=No,物理名 -->` で同じ 8 列の表を囲んだ文書'
+        description: '`<!-- table: {"features": {"pin": {"enabled": false}}} -->` で囲んだ 10 列 30 行の表と、`<!-- table: {"kind": "data", "columns": {"物理名": {"pinned": true}, "説明": {"width": {"mode": "nowrap"}}}} -->` で、1 列目 `No`・2 列目 `物理名`・長い文の `説明` の列を含む 8 列 3 行の表と、`<!-- table: {"kind": "data", "columns": {"No": {"pinned": true}, "物理名": {"pinned": true}}} -->` で同じ 8 列の表を囲んだ文書'
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
@@ -380,24 +405,24 @@ flows:
         participant P as 利用側のページ
         participant M as mdmark
         P->>M: mount(el, { markdown })
-        M->>P: -pin の表は留めず、pin=物理名 の表は物理名の列だけ、pin=No,物理名 の表は 2 つの列を左端に留める
-        P->>M: pin= の表を横にスクロールする
+        M->>P: pin を削除した表は留めず、物理名だけ pinned の表は物理名の列だけ、No と物理名が pinned の表は 2 つの列を左端に留める
+        P->>M: pinned を記載した表を横にスクロールする
         M->>P: 留めた列を左端に残す
     expected:
-      - '`-pin` の表にピン止めのボタンが無く、1 列目のセルの `position` の計算値が `sticky` でない'
-      - '`pin=物理名` の表の `物理名` の列のボタンだけの `aria-pressed` が `true` で、`物理名` の列のセルの `position` の計算値が `sticky`、`No` と 3 列目は `sticky` でない'
-      - '`pin=No,物理名` の表の `No`・`物理名` の列のボタンの `aria-pressed` が `true` で、両方の列のセルの `position` の計算値が `sticky`'
+      - '`pin` を削除した表にピン止めのボタンが無く、1 列目のセルの `position` の計算値が `sticky` でない'
+      - '`物理名` だけに `pinned` を記載した表の `物理名` の列のボタンだけの `aria-pressed` が `true` で、`物理名` の列のセルの `position` の計算値が `sticky`、`No` と 3 列目は `sticky` でない'
+      - '`No`・`物理名` に `pinned` を記載した表の `No`・`物理名` の列のボタンの `aria-pressed` が `true` で、両方の列のセルの `position` の計算値が `sticky`'
       - 横に最後までスクロールした後も、留めた列の見出しが表の見えている範囲の左端に並んでいる
       - '`説明` の列のセルの `white-space` の計算値が `nowrap` で、`説明` の列の幅がほかのどの列の幅より広い'
-      - '`pin=` の表の `scrollWidth` が `clientWidth` より大きく、ページの `scrollWidth` は `clientWidth` を超えない'
+      - '`pinned` を記載した表の `scrollWidth` が `clientWidth` より大きく、ページの `scrollWidth` は `clientWidth` を超えない'
     test: test_normal_when_table_pin_and_wide
   - name: 正常系（真偽値の列で並べ替え・絞り込み・コピーする）
-    summary: '`check=` の列を、出している ✓ と空欄ではなく `true`・`false` の値で並べ替え・絞り込み・コピーする'
+    summary: '`format.type` が `check` の列を、出している ✓ と空欄ではなく `true`・`false` の値で並べ替え・絞り込み・コピーする'
     setup:
       - name: 配布物を読み込んだページ
         description: 正常系と同じ
       - name: 真偽値の列を持つ Markdown
-        description: '`<!-- table: data +copy check=必須 filter=必須 -->` で、列 `名前`・`必須`・`既定` に `a`/`true`/`true`・`b`/`false`/`false`・`c`/`true`/`false` の 3 行を持つ表を囲んだ文書'
+        description: '`<!-- table: {"kind": "data", "features": {"copy": {}}, "columns": {"必須": {"format": {"type": "check"}, "filter": {}}}} -->` で、列 `名前`・`必須`・`既定` に `a`/`true`/`true`・`b`/`false`/`false`・`c`/`true`/`false` の 3 行を持つ表を囲んだ文書'
       - name: Mock
         description: '`navigator.clipboard.writeText` を、指定した文字を記録して解決する関数に差し替える'
     flow: |-
@@ -449,7 +474,7 @@ flows:
       - name: 配布物を読み込んだページ
         description: 正常系と同じ
       - name: セクションと行の詳細を持つ Markdown
-        description: '`## 概要` と段落、直後に `<!-- section: closed -->` を持つ `## 補足` と段落と `### 注意`、直後に `<!-- row-detail: 2 -->` 〜 `<!-- /row-detail -->` を持つ 3 行の表を持つ文書'
+        description: '`## 概要` と段落、直後に `<!-- section: {"open": false} -->` を持つ `## 補足` と段落と `### 注意`、直後に `<!-- row-detail: {"at": 2} -->` 〜 `<!-- /row-detail -->` を持つ 3 行の表を持つ文書'
       - name: Mock
         description: 差し替える依存は無い。URL の変更は `location.hash` を `#注意` にして `hashchange` を発生させる
     flow: |-
@@ -476,7 +501,7 @@ flows:
       - name: 配布物を読み込んだページ
         description: 正常系と同じ
       - name: 記法を持つ Markdown
-        description: '2 つの中身を持つタブの範囲、`<!-- section: closed -->` のセクション、行の詳細、`<!-- table: data closed -->` の表、`> [!NOTE]-` の注意書き、`<!-- tabs: closed -->` のタブの範囲、`<!-- steps: closed -->` のステップの範囲、`folded` が `true` のテーブルを持つ ER 図、`app/` の下に `src/`、その下に `parts/`、その下に `tree.ts` を持つ言語 `tree` のコードブロックを持つ文書'
+        description: '2 つの中身を持つタブの範囲、`<!-- section: {"open": false} -->` のセクション、行の詳細、`<!-- table: {"kind": "data", "collapse": {"open": false}} -->` の表、`> [!NOTE]-` の注意書き、`<!-- tabs: {"collapse": {"open": false}} -->` のタブの範囲、`<!-- steps: {"collapse": {"open": false}} -->` のステップの範囲、`folded` が `true` のテーブルを持つ ER 図、`app/` の下に `src/`、その下に `parts/`、その下に `tree.ts` を持つ言語 `tree` のコードブロックを持つ文書'
         notes: '`opts.config` は指定しない。印刷の前に 2 つ目のタブを選んでおく。ツリーは既定の開き方（ルートだけ開く）で、`src/`・`parts/` が閉じている'
       - name: Mock
         description: 印刷は `window` へ `beforeprint`・`afterprint` のイベントを送信することで代える
@@ -1228,7 +1253,7 @@ flows:
       - name: 配布物を読み込んだページ
         description: 正常系と同じ
       - name: 件数と列の表示の表を持つ Markdown
-        description: '`<!-- table: data +count +columns hide=説明 filter=名前:text -->` 〜 `<!-- /table -->` で、列 `名前`・`説明`・`更新日` に `りんご`・`みかん`・`りんご飴` の 3 行を持つ表を囲んだ文書'
+        description: '`<!-- table: {"kind": "data", "features": {"count": {}}, "columns": {"説明": {"hidden": true}, "名前": {"filter": {"type": "text"}}}} -->` 〜 `<!-- /table -->` で、列 `名前`・`説明`・`更新日` に `りんご`・`みかん`・`りんご飴` の 3 行を持つ表を囲んだ文書'
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
@@ -1258,7 +1283,7 @@ flows:
       - name: 配布物を読み込んだページ
         description: 正常系と同じ
       - name: 集計の行の表を持つ Markdown
-        description: '`<!-- table: data +total +columns total=数量:sum,単価:avg,名前:count filter=名前:text -->` 〜 `<!-- /table -->` で、列 `名前`・`数量`・`単価` の 4 行の表を囲んだ文書'
+        description: '`<!-- table: {"kind": "data", "features": {"columns": {}}, "columns": {"数量": {"total": [{"calc": "sum"}]}, "単価": {"total": [{"calc": "avg"}]}, "名前": {"total": [{"calc": "count"}], "filter": {"type": "text"}}}} -->` 〜 `<!-- /table -->` で、列 `名前`・`数量`・`単価` の 4 行の表を囲んだ文書'
         notes: 名前は `りんご`・`みかん`・`りんご飴`・`ぶどう`、数量は `10`・`2`・`33`・空、単価は `100`・`200`・`300`・`400`
       - name: Mock
         description: 差し替える依存は無い
@@ -1289,7 +1314,7 @@ flows:
       - name: 配布物を読み込んだページ
         description: 正常系と同じ
       - name: コピーできる表を持つ Markdown
-        description: '`<!-- table: data +copy +columns hide=説明 filter=名前:text -->` 〜 `<!-- /table -->` で、列 `名前`・`説明`・`更新日` の 3 行の表を囲んだ文書'
+        description: '`<!-- table: {"kind": "data", "features": {"copy": {}}, "columns": {"説明": {"hidden": true}, "名前": {"filter": {"type": "text"}}}} -->` 〜 `<!-- /table -->` で、列 `名前`・`説明`・`更新日` の 3 行の表を囲んだ文書'
         notes: 名前は `りんご`・`みかん`・`りんご飴`、更新日は `2026-10-01`・`2026-10-10`・`2026-10-20`
       - name: Mock
         description: '`navigator.clipboard.writeText` を、指定された文字を記録して解決する関数に差し替える'
@@ -1315,7 +1340,7 @@ flows:
       - name: 配布物を読み込んだページ
         description: 正常系と同じ
       - name: コピーできる表を持つ Markdown
-        description: '`<!-- table: data +copy -->` 〜 `<!-- /table -->` で、列 `名前`・`更新日` の 3 行の表を囲んだ文書'
+        description: '`<!-- table: {"kind": "data", "features": {"copy": {}}} -->` 〜 `<!-- /table -->` で、列 `名前`・`更新日` の 3 行の表を囲んだ文書'
       - name: Mock
         description: '`navigator.clipboard.writeText` を、`NotAllowedError` で拒む関数に差し替える'
     flow: |-
@@ -1341,7 +1366,7 @@ flows:
       - name: 配布物を読み込んだページ
         description: 正常系と同じ
       - name: 行へのリンクの表を持つ Markdown
-        description: '`<!-- table: data +rowlink closed -->` 〜 `<!-- /table -->` の表 A（名前 `りんご`・`みかん`・`りんご飴`）と、`<!-- section: closed -->` のセクションの中の `<!-- table: data +rowlink filter=名前:text -->` 〜 `<!-- /table -->` の表 B（名前 `ぶどう`・`もも`・`なし`）を持つ文書'
+        description: '`<!-- table: {"kind": "data", "features": {"rowlink": {}}, "collapse": {"open": false}} -->` 〜 `<!-- /table -->` の表 A（名前 `りんご`・`みかん`・`りんご飴`）と、`<!-- section: {"open": false} -->` のセクションの中の `<!-- table: {"kind": "data", "features": {"rowlink": {}}, "columns": {"名前": {"filter": {"type": "text"}}}} -->` 〜 `<!-- /table -->` の表 B（名前 `ぶどう`・`もも`・`なし`）を持つ文書'
       - name: 行を指す URL
         description: '`mount` の前に `location.hash` を `#みかん` にする'
       - name: Mock
@@ -1368,7 +1393,7 @@ flows:
       - name: 配布物を読み込んだページ
         description: 正常系と同じ。localStorage は空
       - name: 同じ組のタブを持つ Markdown
-        description: '`<!-- tabs: group=os -->` で `### macOS`・`### Windows` を囲んだ範囲を 2 つ、`<!-- tabs: group=os -->` で `### macOS`・`### Linux` を囲んだ範囲、`<!-- tabs -->` で `### macOS`・`### Windows` を囲んだ範囲を並べた文書'
+        description: '`<!-- tabs: {"group": "os"} -->` で `### macOS`・`### Windows` を囲んだ範囲を 2 つ、`<!-- tabs: {"group": "os"} -->` で `### macOS`・`### Linux` を囲んだ範囲、`<!-- tabs -->` で `### macOS`・`### Windows` を囲んだ範囲を並べた文書'
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
@@ -1381,7 +1406,7 @@ flows:
         S-->>M: 無い
         M->>P: 4 つのタブ群で最初のタブを選ぶ
         P->>M: 1 つ目のタブ群の Windows のタブを押す
-        M->>P: group=os で Windows を持つタブ群を Windows に切り替える
+        M->>P: group が os で Windows を持つタブ群を Windows に切り替える
         M->>S: mdmark-tabs:os に Windows を残す
     expected:
       - 押す前、localStorage の `mdmark-tabs:os` が無い（描いたときの選択は残さない）
@@ -1399,7 +1424,7 @@ flows:
         description: localStorage の `mdmark-tabs:os` に `Windows`、`mdmark-tabs:lang` に `Go` を入れておく
         notes: '`Go` は文書のどのタブにも無いタブ名'
       - name: 組のタブを持つ Markdown
-        description: '`<!-- tabs: group=os -->` で `### macOS`・`### Windows` を囲んだ範囲、`<!-- tabs: group=lang -->` で `### Python`・`### TypeScript` を囲んだ範囲、`<!-- tabs -->` で `### macOS`・`### Windows` を囲んだ範囲を並べた文書'
+        description: '`<!-- tabs: {"group": "os"} -->` で `### macOS`・`### Windows` を囲んだ範囲、`<!-- tabs: {"group": "lang"} -->` で `### Python`・`### TypeScript` を囲んだ範囲、`<!-- tabs -->` で `### macOS`・`### Windows` を囲んだ範囲を並べた文書'
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
@@ -1415,9 +1440,9 @@ flows:
         M->>S: mdmark-tabs:os を読み込む
         M->>P: os のタブ群を Windows を選んで再描画する
     expected:
-      - 描いた直後、`group=os` のタブ群の `Windows` のタブの `aria-selected` が `true` で、`Windows` の中身だけが `hidden` を持たない
-      - '`group=lang` のタブ群は `Python`、`group` の無いタブ群は `macOS` を選んでいる'
-      - '`update` の後も `group=os` のタブ群は `Windows` を選んでいる'
+      - 描いた直後、`group` が `os` のタブ群の `Windows` のタブの `aria-selected` が `true` で、`Windows` の中身だけが `hidden` を持たない
+      - '`group` が `lang` のタブ群は `Python`、`group` の無いタブ群は `macOS` を選んでいる'
+      - '`update` の後も `group` が `os` のタブ群は `Windows` を選んでいる'
       - localStorage の `mdmark-tabs:lang` は `Go` のまま
     test: test_normal_when_tab_choice_restored
   - name: 正常系（localStorage が使用できない）
@@ -1428,7 +1453,7 @@ flows:
       - name: localStorage が使用できないページ
         description: '`mount` の前に、`window.localStorage` を読み込むと `SecurityError` を投げるように差し替える'
       - name: 同じ組のタブを持つ Markdown
-        description: '`<!-- tabs: group=os -->` で `### macOS`・`### Windows` を囲んだ範囲を 2 つ並べた文書'
+        description: '`<!-- tabs: {"group": "os"} -->` で `### macOS`・`### Windows` を囲んだ範囲を 2 つ並べた文書'
       - name: Mock
         description: '`console.warn` を記録する関数に差し替える'
     flow: |-
@@ -1455,7 +1480,7 @@ flows:
       - name: 配布物を読み込んだページ
         description: 正常系と同じ
       - name: ビューのマーカーを持つ Markdown
-        description: '`<!-- view: group=状態 -->` 〜 `<!-- /view -->` で、タイトル・状態・担当の列と 5 行を持つ表を囲んだ文書'
+        description: '`<!-- view: {"board": {"group": {"column": "状態"}}} -->` 〜 `<!-- /view -->` で、タイトル・状態・担当の列と 5 行を持つ表を囲んだ文書'
         notes: 状態は上から `未着手`・`進行中`・`未着手`・`完了`・`進行中`
       - name: Mock
         description: 正常系と同じ
@@ -1476,12 +1501,12 @@ flows:
       - ビューの上に検索欄と件数が無い
     test: test_normal_when_view_drawn
   - name: 正常系（ビューの表形式を列で絞り込む）
-    summary: '`filter=` の列だけを絞り込み、ボードには当てず、表形式に戻すと絞り込みが残る'
+    summary: '`columns.{列名}.filter` の列だけを絞り込み、ボードには当てず、表形式に戻すと絞り込みが残る'
     setup:
       - name: 配布物を読み込んだページ
         description: 正常系と同じ
       - name: 絞り込む列を指定した Markdown
-        description: '`<!-- view: group=状態 default=table filter=担当 -->` 〜 `<!-- /view -->` で、正常系（ビューを描く）と同じ表を囲んだ文書'
+        description: '`<!-- view: {"board": {"group": {"column": "状態"}}, "initial": "table", "columns": {"担当": {"filter": {}}}} -->` 〜 `<!-- /view -->` で、正常系（ビューを描く）と同じ表を囲んだ文書'
         notes: 担当は上から `佐藤`・`鈴木`・`佐藤`・`田中`・`鈴木`
       - name: Mock
         description: 正常系と同じ
@@ -1502,12 +1527,12 @@ flows:
       - 表に戻すと `佐藤` の 2 行だけが表示される
     test: test_normal_when_view_filtered
   - name: 正常系（ビューの記載方法の誤り）
-    summary: 表に無い `group=` の列と知らない絞り込みの種類に記載の警告を出し、表形式で描く
+    summary: 表に無い `board.group.column` の列と選べる値に無い絞り込みの種類に記載の警告を出し、表形式で描く
     setup:
       - name: 配布物を読み込んだページ
         description: 正常系と同じ
       - name: 誤ったマーカーを持つ Markdown
-        description: '`<!-- view: group=優先度 filter=担当:range -->` 〜 `<!-- /view -->` で、正常系（ビューを描く）と同じ表を囲んだ文書'
+        description: '`<!-- view: {"board": {"group": {"column": "優先度"}}, "columns": {"担当": {"filter": {"type": "range"}}}} -->` 〜 `<!-- /view -->` で、正常系（ビューを描く）と同じ表を囲んだ文書'
       - name: Mock
         description: 正常系と同じ
     flow: |-
@@ -1517,7 +1542,7 @@ flows:
         P->>M: mount(el, { markdown })
         M->>P: 記載の警告と表形式のビュー
     expected:
-      - 範囲の上の記載の警告に、`優先度` が表に無い列であることと、`range` が使用できない絞り込みの種類であることの 2 項目がある
+      - 範囲の上に、`優先度` が表に無い列であることの記載の警告と、`columns.担当.filter.type` の `range` が選べる値に無いことの記載の警告がある
       - 5 行の表形式のビューで描かれ、「ボード」が押せない
       - 担当の列に絞り込みのボタンが無い
       - 例外を投げない
@@ -1649,7 +1674,7 @@ flows:
       - name: コメントの読み込みと保存の関数
         description: '`load` が、`quote` が `閉じた箇所`・`タブの箇所`・`行の箇所` のコメントを 1 件ずつ返却する'
       - name: 閉じた中を持つ Markdown
-        description: '`<!-- section: closed -->` で閉じた h2 `補足` のセクションの中に `閉じた箇所`、2 つのタブを持つ範囲の 2 つ目のタブの中に `タブの箇所`、行の詳細を持つ表の 1 行目の詳細の中に `行の箇所` を配置した文書'
+        description: '`<!-- section: {"open": false} -->` で閉じた h2 `補足` のセクションの中に `閉じた箇所`、2 つのタブを持つ範囲の 2 つ目のタブの中に `タブの箇所`、行の詳細を持つ表の 1 行目の詳細の中に `行の箇所` を配置した文書'
       - name: Mock
         description: 正常系（コメントを付ける）と同じ
     flow: |-
@@ -1978,10 +2003,10 @@ flows:
         description: 文書 `glossary`（`glossary.md`）と描く文書 `guide`（`guide.md`）をこの順で持ち、用語 `フォルダ`（意味 `ファイルの入れ物`、`avoid` に `作業場`）を持つ索引
         notes: '`opts.docId` は `guide`'
       - name: 参照の表
-        description: '`glossary.md` の本文から `collectReferences` が作った参照の表。`glossary.md` は `<!-- glossary: term=用語 meaning=意味 avoid=やめた言い方 -->` で、用語 `ワークスペース`（意味 `作業の配置場所`、やめた言い方 `作業場、ワーク場`）の行を持つ表だけを持つ'
+        description: '`glossary.md` の本文から `collectReferences` が作った参照の表。`glossary.md` は `<!-- glossary: {"term": {"column": "用語"}, "meaning": {"column": "意味"}, "avoid": {"column": "やめた言い方"}} -->` で、用語 `ワークスペース`（意味 `作業の配置場所`、やめた言い方 `作業場、ワーク場`）の行を持つ表だけを持つ'
         notes: '`作業場` を索引の用語と表の両方に持たせ、索引が先になることを決定的に発生させる'
       - name: 用語集の表とやめた言い方が出る Markdown
-        description: '`guide.md` の本文。`<!-- glossary: term=用語 meaning=意味 avoid=やめた言い方 -->` で用語 `下書き`（意味 `公開前の文書`、やめた言い方 `草稿、ワーク場`）の行を持つ表を囲み、表の後の段落に `作業場`・`ワーク場`・`草稿` が出る'
+        description: '`guide.md` の本文。`<!-- glossary: {"term": {"column": "用語"}, "meaning": {"column": "意味"}, "avoid": {"column": "やめた言い方"}} -->` で用語 `下書き`（意味 `公開前の文書`、やめた言い方 `草稿、ワーク場`）の行を持つ表を囲み、表の後の段落に `作業場`・`ワーク場`・`草稿` が出る'
         notes: '`ワーク場` を描く文書の表とほかの文書の表の両方に持たせ、索引の `docs` で先に並ぶ `glossary` の表が先になることを決定的に発生させる'
       - name: Mock
         description: 差し替える依存は無い
@@ -2005,7 +2030,7 @@ flows:
       - name: 配布物を読み込んだページ
         description: 正常系と同じ
       - name: 色分けするコードブロックを持つ Markdown
-        description: 'マーカーを持たない言語 `ts` のコードブロックと、`<!-- code: lines -->` の直後に 3 行のブロックスカラー（`|`）の文字列を持つ言語 `yml` のコードブロックと、言語 `text` のコードブロックを持つ文書'
+        description: 'マーカーを持たない言語 `ts` のコードブロックと、`<!-- code: {"lines": {}} -->` の直後に 3 行のブロックスカラー（`|`）の文字列を持つ言語 `yml` のコードブロックと、言語 `text` のコードブロックを持つ文書'
         notes: '`yml` は別名で yaml のモジュールを読み込む。ブロックスカラーは行をまたぐ `hljs-string` の `span` になる'
       - name: 設定
         description: '`opts.config.syntax.url` に `/fixtures/highlightjs/{名前}/es/`'
@@ -2033,7 +2058,7 @@ flows:
       - name: 配布物を読み込んだページ
         description: 正常系と同じ
       - name: 色分けの対象が無い Markdown
-        description: '言語の無いコードブロックと言語 `tree` のコードブロックを持つ文書と、`<!-- features: -syntax -->` を記載して言語 `ts` のコードブロックを持つ文書の 2 つ'
+        description: '言語の無いコードブロックと言語 `tree` のコードブロックを持つ文書と、`<!-- features: {"syntax": false} -->` を記載して言語 `ts` のコードブロックを持つ文書の 2 つ'
         notes: 2 つの文書をそれぞれ別の `mount` で描く
       - name: 設定
         description: コードブロックを色分けする正常系と同じ
@@ -2183,7 +2208,7 @@ flows:
       - name: 配布物を読み込んだページ
         description: 正常系と同じ
       - name: 読み込めないセルを持つ表の Markdown
-        description: '`<!-- table: data +total total=数量:sum,単価:avg filter=名前:text -->` 〜 `<!-- /table -->` で、列 `名前`・`数量`・`単価` の 3 行の表を囲んだ文書'
+        description: '`<!-- table: {"kind": "data", "columns": {"数量": {"total": [{"calc": "sum"}]}, "単価": {"total": [{"calc": "avg"}]}, "名前": {"filter": {"type": "text"}}}} -->` 〜 `<!-- /table -->` で、列 `名前`・`数量`・`単価` の 3 行の表を囲んだ文書'
         notes: 名前は `りんご`・`みかん`・`ぶどう`、数量は `10`・`2`・`-`、単価は `100`・`200`・`300`
       - name: Mock
         description: 差し替える依存は無い
@@ -2208,7 +2233,7 @@ flows:
       - name: 配布物を読み込んだページ
         description: 正常系と同じ
       - name: 行へのリンクの表を持つ Markdown
-        description: '`<!-- table: data +rowlink -->` 〜 `<!-- /table -->` で、名前 `りんご`・`みかん`・`りんご飴` の 3 行の表を囲んだ文書'
+        description: '`<!-- table: {"kind": "data", "features": {"rowlink": {}}} -->` 〜 `<!-- /table -->` で、名前 `りんご`・`みかん`・`りんご飴` の 3 行の表を囲んだ文書'
       - name: Mock
         description: '`navigator.clipboard.writeText` を、指定された文字を記録して解決する関数に差し替える。時計をテストの時計に差し替える'
     flow: |-
@@ -2258,7 +2283,7 @@ flows:
       - name: 留める位置のずれ
         description: '描く先の `div` に `--mdmark-sticky-top: 48px` を適用する'
       - name: 大きい表を持つ Markdown
-        description: '長い段落の後に `<!-- table: data +total total=数量:sum -->` 〜 `<!-- /table -->` で 10 列 60 行の表を囲み、表の後に長い段落を持つ文書'
+        description: '長い段落の後に `<!-- table: {"kind": "data", "columns": {"数量": {"total": [{"calc": "sum"}]}}} -->` 〜 `<!-- /table -->` で 10 列 60 行の表を囲み、表の後に長い段落を持つ文書'
         notes: 1 列目は名前、2 列目は数量（全て数）
       - name: Mock
         description: 差し替える依存は無い
@@ -2289,7 +2314,7 @@ flows:
       - name: 配布物を読み込んだページ
         description: 正常系と同じ。描く先の `div` の幅は 390px
       - name: 最終列の長い表を持つ Markdown
-        description: '`<!-- table: data -->` 〜 `<!-- /table -->` で、名前・状態・説明の 3 列 3 行の表と、名前・状態の 2 列で短い文字の表を囲んだ文書'
+        description: '`<!-- table: {"kind": "data"} -->` 〜 `<!-- /table -->` で、名前・状態・説明の 3 列 3 行の表と、名前・状態の 2 列で短い文字の表を囲んだ文書'
         notes: 説明は、どの行も 390px の幅で 1 行に収まらない長さ
       - name: Mock
         description: 差し替える依存は無い
@@ -2324,7 +2349,7 @@ flows:
       - name: 配布物を読み込んだページ
         description: 正常系と同じ。描く先の `div` の幅は 390px
       - name: 最終列の長い表と行の詳細を持つ Markdown
-        description: '正常系（最終列を畳む）の 3 列 3 行の表と、その直後の `<!-- row-detail: 2 -->` 〜 `<!-- /row-detail -->` で囲んだ段落を持つ文書'
+        description: '正常系（最終列を畳む）の 3 列 3 行の表と、その直後の `<!-- row-detail: {"at": 2} -->` 〜 `<!-- /row-detail -->` で囲んだ段落を持つ文書'
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
@@ -2397,7 +2422,7 @@ flows:
       - name: 配布物を読み込んだページ
         description: 正常系と同じ
       - name: タブの中に見出しを持つ Markdown
-        description: '長い段落の後に、`## 導入` とその直後の `<!-- section: closed -->` を持ち、そのセクションの中に `<!-- tabs: group=os -->` 〜 `<!-- /tabs -->` で `### macOS`・`### Windows` を囲んだ文書'
+        description: '長い段落の後に、`## 導入` とその直後の `<!-- section: {"open": false} -->` を持ち、そのセクションの中に `<!-- tabs: {"group": "os"} -->` 〜 `<!-- /tabs -->` で `### macOS`・`### Windows` を囲んだ文書'
         notes: '`macOS` の中身は `#### macOS の注意` と段落、`Windows` の中身は `#### Windows の注意` と段落'
       - name: 残したタブ名
         description: '`mount` の前に localStorage の `mdmark-tabs:os` を `macOS` にし、`location.hash` を `#windows-の注意` にする'
@@ -2563,7 +2588,7 @@ flows:
       - name: 配布物を読み込んだページ
         description: 正常系（右側の目次をホバーで出してピン止めする）と同じ
       - name: 閉じたセクションの中に見出しを持つ Markdown
-        description: '`## 概要` と画面の高さより長い段落、`## 補足` とその直後の `<!-- section: closed -->`、そのセクションの中の `### 注意` と段落を持つ文書'
+        description: '`## 概要` と画面の高さより長い段落、`## 補足` とその直後の `<!-- section: {"open": false} -->`、そのセクションの中の `### 注意` と段落を持つ文書'
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
@@ -2587,7 +2612,7 @@ flows:
         description: 正常系（右側の目次をホバーで出してピン止めする）と同じ
         notes: ボタンを押す前に、右端の線にポインターを乗せてパネルを出す
       - name: 入れ子のセクションを持つ Markdown
-        description: '`# 手引き`、`## 概要` と段落、`## 補足` とその直後の `<!-- section: closed -->`、そのセクションの中の `### 注意` とその直後の `<!-- section: closed -->` と段落、`# 付録` とその直後の `<!-- section: closed -->` と段落を持つ文書'
+        description: '`# 手引き`、`## 概要` と段落、`## 補足` とその直後の `<!-- section: {"open": false} -->`、そのセクションの中の `### 注意` とその直後の `<!-- section: {"open": false} -->` と段落、`# 付録` とその直後の `<!-- section: {"open": false} -->` と段落を持つ文書'
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
@@ -2613,7 +2638,7 @@ flows:
       - name: 配布物を読み込んだページ
         description: 正常系と同じ
       - name: 入れ子の閉じたセクションを持つ Markdown
-        description: '`## 概要` と段落、`## 補足` とその直後の `<!-- section: closed -->`、そのセクションの中の `### 注意` とその直後の `<!-- section: closed -->`、さらにその中の `#### 例` とその直後の `<!-- section: closed -->` と段落を持つ文書'
+        description: '`## 概要` と段落、`## 補足` とその直後の `<!-- section: {"open": false} -->`、そのセクションの中の `### 注意` とその直後の `<!-- section: {"open": false} -->`、さらにその中の `#### 例` とその直後の `<!-- section: {"open": false} -->` と段落を持つ文書'
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
@@ -2695,9 +2720,9 @@ flows:
       - name: 見出しの無い Markdown
         description: 段落だけを持つ文書
       - name: 右側の目次を削除する Markdown
-        description: '先頭に `<!-- features: -side-toc -->` を持ち、`## 導入`・`## 使用方法` と段落を持つ文書'
+        description: '先頭に `<!-- features: {"side-toc": false} -->` を持ち、`## 導入`・`## 使用方法` と段落を持つ文書'
       - name: 右側の目次を追加する Markdown
-        description: '先頭に `<!-- features: +side-toc -->` を持ち、`## 導入`・`## 使用方法` と段落を持つ文書'
+        description: '先頭に `<!-- features: {"side-toc": true} -->` を持ち、`## 導入`・`## 使用方法` と段落を持つ文書'
         notes: '`opts.config` は `{ "features": { "side-toc": false } }`'
       - name: Mock
         description: 差し替える依存は無い
@@ -2874,7 +2899,7 @@ flows:
       - name: 配布物を読み込んだページ
         description: 正常系と同じ。文書ごとに別の要素へ描く
       - name: ボタンを削除する Markdown
-        description: '先頭に `<!-- features: -back-to-top -->` を持つ、正常系（先頭へ戻るボタンを出して押す）と同じ文書'
+        description: '先頭に `<!-- features: {"back-to-top": false} -->` を持つ、正常系（先頭へ戻るボタンを出して押す）と同じ文書'
       - name: 設定でオフにした文書
         description: '正常系（先頭へ戻るボタンを出して押す）と同じ文書。`opts.config` は `{ features: { "back-to-top": false } }`'
       - name: 長い Markdown
@@ -3022,7 +3047,7 @@ flows:
       - name: 同じ単語を持つエイリアス
         description: '`term` の `マーカー`（説明 `エイリアスに記載した意味`）と `term` の `マーク`（説明 `エイリアスに記載したマークの意味`）'
       - name: 用語集の表を持つ Markdown
-        description: '`<!-- glossary: term=用語 aliases=別名 meaning=意味 -->` で、用語 `マーカー`（別名 `マーク、オン・オフのマーカー`、意味 `HTML コメントで記載する指定`）の行を持つ表を囲み、表の後の段落に `マーカー`・`マーク`・`オン・オフのマーカー` が出る文書'
+        description: '`<!-- glossary: {"term": {"column": "用語"}, "aliases": {"column": "別名"}, "meaning": {"column": "意味"}} -->` で、用語 `マーカー`（別名 `マーク、オン・オフのマーカー`、意味 `HTML コメントで記載する指定`）の行を持つ表を囲み、表の後の段落に `マーカー`・`マーク`・`オン・オフのマーカー` が出る文書'
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
@@ -3047,7 +3072,7 @@ flows:
       - name: エイリアス
         description: '`command` の `単体テスト`（コマンド `npm run test:unit`）と `avoid` の `作業場`（置き換え先 `ワークスペース`）'
       - name: 機能を解除する Markdown
-        description: '先頭に `<!-- features: -glossary -->` を持ち、段落に `単体テスト` と `作業場` が出る文書'
+        description: '先頭に `<!-- features: {"glossary": false} -->` を持ち、段落に `単体テスト` と `作業場` が出る文書'
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
@@ -3185,7 +3210,7 @@ flows:
       - el の地の色の計算値が dev-swiss の明るい配色の `--mdmark-color-bg` の値
     test: test_normal_when_color_theme_unknown
   - name: 正常系（ページの設定のマーカー）
-    summary: '文書の先頭の `<!-- page: … -->` の明暗・テーマ・右側の目次の出し方を、`opts.config` より優先して適用する'
+    summary: '文書の先頭の `<!-- page: {JSON のオブジェクト} -->` の明暗・テーマ・右側の目次の出し方を、`opts.config` より優先して適用する'
     setup:
       - name: 配布物を読み込んだページ
         description: 正常系と同じ
@@ -3193,7 +3218,7 @@ flows:
       - name: 設定
         description: '`opts.config` は `{ colorScheme: "dark", colorTheme: "theme-paper", "side-toc": { mode: "hover" } }`'
       - name: ページの設定を記載した Markdown
-        description: '先頭の行に `<!-- page: scheme=light theme=theme-slate toc=fixed -->` を持ち、h2 を 3 つと段落を持つ文書'
+        description: '先頭の行に `<!-- page: {"scheme": "light", "theme": "theme-slate", "toc": {"mode": "fixed"}} -->` を持ち、h2 を 3 つと段落を持つ文書'
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
@@ -3239,7 +3264,7 @@ flows:
     refs:
       - SC-472-33#scenarios[正常シナリオ（設定で全文書の既定にする）]
   - name: 正常系（明暗を OS の設定に戻す）
-    summary: マーカーの `scheme=auto` は設定の明暗だけを解除し、祖先の class → OS の配色の順で決める。`update` でもう一度決める
+    summary: マーカーの `scheme` の `auto` は設定の明暗だけを解除し、祖先の class → OS の配色の順で決める。`update` でもう一度決める
     setup:
       - name: 配布物を読み込んだページ
         description: 正常系と同じ。`body` に class `mdmark-theme-dark` を付ける
@@ -3247,7 +3272,7 @@ flows:
       - name: 設定
         description: '`opts.config` は `{ colorScheme: "light" }`'
       - name: auto を記載した Markdown
-        description: '先頭の行に `<!-- page: scheme=auto -->` を持つ文書'
+        description: '先頭の行に `<!-- page: {"scheme": "auto"} -->` を持つ文書'
       - name: マーカーを持たない Markdown
         description: page のマーカーを持たない文書
       - name: Mock
@@ -3276,9 +3301,9 @@ flows:
       - name: 設定
         description: '`opts.config` は `{ colorScheme: "dark" }`'
       - name: 知らないキーと値を記載した Markdown
-        description: '先頭の行に `<!-- page: scheme=sepia theme=theme-unknown size=wide toc=fixed -->` を持ち、h2 を 3 つ持つ文書'
+        description: '先頭の行に `<!-- page: {"scheme": "sepia", "theme": "theme-unknown", "size": "wide", "toc": {"mode": "fixed"}} -->` を持ち、h2 を 3 つ持つ文書'
       - name: 途中にマーカーを記載した Markdown
-        description: '最初の段落の後に `<!-- page: scheme=light -->` を記載した文書'
+        description: '最初の段落の後に `<!-- page: {"scheme": "light"} -->` を記載した文書'
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
@@ -3291,8 +3316,8 @@ flows:
         M->>P: マーカーの場所に記載の警告を配置し、設定の明暗で描く
     expected:
       - どちらの `mount` も例外を投げない
-      - el1 の先頭に記載の警告が 1 つあり、`scheme=sepia`・`theme=theme-unknown` と記載できるキーと値が記載され、知らないキー `size=wide` は記載されていない
-      - el1 が class `mdmark-theme-dark` を持ち、属性 `data-mdmark-color-theme` が `dev-swiss` で、目次を出すボタンがある（`toc=fixed` は該当する）
+      - el1 の先頭に記載の警告が 1 つあり、`scheme` の `sepia`・`theme` の `theme-unknown` と記載できるキーと値が記載され、知らないキー `size` は記載されていない
+      - el1 が class `mdmark-theme-dark` を持ち、属性 `data-mdmark-color-theme` が `dev-swiss` で、目次を出すボタンがある（`toc.mode` の `fixed` は該当する）
       - el2 のマーカーの場所に、page のマーカーは文書の先頭に記載することを記載した記載の警告があり、el2 が class `mdmark-theme-dark` を持つ
     test: test_normal_when_page_marker_invalid
     refs:
@@ -3330,7 +3355,7 @@ flows:
       - name: 配布物を読み込んだページ
         description: 正常系と同じ
       - name: 機能を解除した Markdown
-        description: '先頭に `<!-- features: -card-grid -->` を持ち、正常系（カードの格子）と同じ cards の範囲を持つ文書'
+        description: '先頭に `<!-- features: {"card-grid": false} -->` を持ち、正常系（カードの格子）と同じ cards の範囲を持つ文書'
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
@@ -3614,7 +3639,7 @@ flows:
       - name: 配布物を読み込んだページ
         description: 正常系と同じ
       - name: ファイルツリーを持つ Markdown
-        description: 'マーカーの無い言語 `tree` のコードブロックと、`<!-- tree: open=2 -->` の後ろの言語 `tree` のコードブロックを並べた文書。どちらも `app/` の下に `src/`、その下に `parts/`、その下に `tree.ts` を持つ'
+        description: 'マーカーの無い言語 `tree` のコードブロックと、`<!-- tree: {"depth": 2} -->` の後ろの言語 `tree` のコードブロックを並べた文書。どちらも `app/` の下に `src/`、その下に `parts/`、その下に `tree.ts` を持つ'
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
@@ -3699,7 +3724,7 @@ flows:
       - name: 配布物を読み込んだページ
         description: 正常系と同じ
       - name: 折りたたみを持つ Markdown
-        description: '`<!-- tabs: closed -->` で `### uv`・`### pip` のタブの範囲と、`<!-- steps: closed title=準備 -->` で 2 項目の番号付きリストを囲んだ範囲を持つ文書'
+        description: '`<!-- tabs: {"collapse": {"open": false}} -->` で `### uv`・`### pip` のタブの範囲と、`<!-- steps: {"collapse": {"open": false, "title": "準備"}} -->` で 2 項目の番号付きリストを囲んだ範囲を持つ文書'
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
@@ -3912,7 +3937,7 @@ flows:
       - name: 配布物を読み込んだページ
         description: '正常系と同じ。`prefers-color-scheme: dark` で描く'
       - name: 色・画像・動画・カードの Markdown
-        description: '`row-color=` で行に色を付けた表・`` `badge:green:完了` ``・`[決め手の 1 文]{color=red}`、`![構成](arch-dark.png#only-dark)`・`![構成](arch-light.png#only-light)`、GIF の画像、`poster=poster.png` を持つ動画、URL だけの段落、`[仕様書](files/spec.pdf)` だけの段落を持つ文書'
+        description: '`rows.colors` で行に色を付けた表・`` `badge:green:完了` ``・`[決め手の 1 文]{color=red}`、`![構成](arch-dark.png#only-dark)`・`![構成](arch-light.png#only-light)`、GIF の画像、`poster=poster.png` を持つ動画、URL だけの段落、`[仕様書](files/spec.pdf)` だけの段落を持つ文書'
       - name: Mock
         description: '画像・動画は手元のファイル。印刷は Playwright の `emulateMedia({ media: "print" })` で代える'
     flow: |-
@@ -3982,7 +4007,7 @@ flows:
       - name: 配布物を読み込んだページ
         description: 正常系と同じ
       - name: 分類の列を結合した表を持つ Markdown
-        description: '`<!-- table: data header-rows=2 filter=分類 +copy -->` 〜 `<!-- /table -->` で囲み、見出しの 1 行目の 2 列目が `<<`、本文の 1 列目の分類が `A`・`^^`・`B`・`^^`、2 列目の数値が `3`・`1`・`4`・`2` の 4 行の表を持つ文書'
+        description: '`<!-- table: {"kind": "data", "features": {"copy": {}}, "columns": {"分類": {"filter": {}}}, "header": {"rows": 2}} -->` 〜 `<!-- /table -->` で囲み、見出しの 1 行目の 2 列目が `<<`、本文の 1 列目の分類が `A`・`^^`・`B`・`^^`、2 列目の数値が `3`・`1`・`4`・`2` の 4 行の表を持つ文書'
       - name: Mock
         description: '`navigator.clipboard.writeText` を、指定された文字を記録して解決する関数に差し替える'
     flow: |-
@@ -4007,12 +4032,12 @@ flows:
       - SC-472-73#scenarios[正常シナリオ（多段の見出しと行見出し）]
       - SC-472-73#scenarios[正常シナリオ（並べ替えの後にもう一度結合する）]
   - name: 正常系（行見出しの列までを留める）
-    summary: '`row-header=` を持つはみ出す表を、描いた直後に行見出しの全ての列を留めた状態にする'
+    summary: '`header.columns` を持つはみ出す表を、描いた直後に行見出しの全ての列を留めた状態にする'
     setup:
       - name: 配布物を読み込んだページ
         description: 正常系と同じ。描く先の `div` の幅は 320px
       - name: 行見出しを持つはみ出す表の Markdown
-        description: '`<!-- table: data row-header=2 -->` で囲んだ 10 列 5 行の表を持つ文書'
+        description: '`<!-- table: {"kind": "data", "header": {"columns": 2}} -->` で囲んだ 10 列 5 行の表を持つ文書'
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
@@ -4137,13 +4162,13 @@ flows:
     test: test_normal_when_code_guide_hovered
     refs:
       - SC-472-17#scenarios[正常シナリオ（インデントの縦線）]
-  - name: 正常系（fold= で畳んで描く）
-    summary: '`fold=` の行を畳んだ状態で描き、コピーには畳んだ行も記載し、再描画すると `fold=` のとおりに戻す'
+  - name: 正常系（fold で畳んで描く）
+    summary: '`fold` の行を畳んだ状態で描き、コピーには畳んだ行も記載し、再描画すると `fold` のとおりに戻す'
     setup:
       - name: 配布物を読み込んだページ
         description: 正常系と同じ
-      - name: fold= を持つ Markdown
-        description: '`<!-- code: lines fold=2,6 -->` の後に、2 行目と 6 行目が畳める行の 8 行の言語 `yaml` のコードブロックを配置した文書'
+      - name: fold を持つ Markdown
+        description: '`<!-- code: {"lines": {}, "fold": [2, 6]} -->` の後に、2 行目と 6 行目が畳める行の 8 行の言語 `yaml` のコードブロックを配置した文書'
       - name: Mock
         description: '`navigator.clipboard.writeText` を、指定された文字を記録して解決する関数に差し替える'
     flow: |-
@@ -4169,7 +4194,7 @@ flows:
       - name: 配布物を読み込んだページ
         description: 正常系と同じ
       - name: 畳んだコードと閉じた注意書きを持つ Markdown
-        description: '`<!-- code: fold=2 -->` で 2 行目を畳んだ言語 `yaml` のコードブロックと、`> [!NOTE]+` の注意書きの中に `> > [!TIP]-` の閉じた注意書きを入れ子にした文書'
+        description: '`<!-- code: {"fold": [2]} -->` で 2 行目を畳んだ言語 `yaml` のコードブロックと、`> [!NOTE]+` の注意書きの中に `> > [!TIP]-` の閉じた注意書きを入れ子にした文書'
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
@@ -4282,12 +4307,12 @@ flows:
       - '`update` が、メッセージに `baseMarkdown` を含む `TypeError` を投げ、`el` の中が前に描いた本文のまま'
     test: test_error_when_base_not_string
   - name: 正常系（列の表示を通知する）
-    summary: '`+columns` の表で列を出し入れするたびに、表の番号と隠している列の名前を `opts.onColumnsChange` に指定する'
+    summary: '列の表示・非表示の機能を持つ表で列を出し入れするたびに、表の番号と隠している列の名前を `opts.onColumnsChange` に指定する'
     setup:
       - name: 配布物を読み込んだページ
         description: 正常系と同じ。受けた引数を配列に記録する `onColumnsChange` を指定する
       - name: 列を隠す表を 2 つ持つ Markdown
-        description: '表のマーカーで囲まない表を 1 つ配置し、続けて `<!-- table: data +columns -->` で名前・説明・更新日の 3 列の表と、`<!-- table: data +columns hide=備考 -->` で名前・備考の 2 列の表を囲んだ文書'
+        description: '表のマーカーで囲まない表を 1 つ配置し、続けて `<!-- table: {"kind": "data", "features": {"columns": {}}} -->` で名前・説明・更新日の 3 列の表と、`<!-- table: {"kind": "data", "columns": {"備考": {"hidden": true}}} -->` で名前・備考の 2 列の表を囲んだ文書'
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
@@ -4295,7 +4320,7 @@ flows:
         participant P as 利用側のページ
         participant M as mdmark
         P->>M: mount(el, { markdown, onColumnsChange })
-        M->>P: 2 つ目の +columns の表の備考を隠して描く
+        M->>P: 2 つ目の列の表示・非表示の機能を持つ表の備考を隠して描く
         P->>M: 1 つ目の表で更新日、説明の順に目のアイコンで隠す
         M->>P: onColumnsChange({ tableIndex: 0, hidden: [説明, 更新日] })
         P->>M: 2 つ目の表で備考の目のアイコンを押して表示し、もう一度押して隠す
@@ -4438,7 +4463,7 @@ flows:
       - name: コメントの読み込みと保存の関数
         description: 1 回目の `load` は `テーマの変数` のコメント 1 件、2 回目は `テーマの変数` と `CSS` のコメント 2 件を返却する
       - name: 段落と表を持つ Markdown
-        description: '正常系（コメントを修正・削除する）の段落の後に、`<!-- table: data +sort -->` で囲んだ名前の列の表（行は `b`・`a`・`c` の順）を配置した文書'
+        description: '正常系（コメントを修正・削除する）の段落の後に、`<!-- table: {"kind": "data", "features": {"sort": {}}} -->` で囲んだ名前の列の表（行は `b`・`a`・`c` の順）を配置した文書'
       - name: Mock
         description: 正常系（コメントを付ける）と同じ
     flow: |-
@@ -4610,7 +4635,7 @@ flows:
       - name: 配布物を読み込んだページ
         description: 正常系（右側の目次をホバーで出してピン止めする）と同じ
       - name: 幅の広い表を持つ Markdown
-        description: '`## 導入`・`## 使用方法` の見出しの間に、`<!-- table: data +total total=数量:sum pin=名前 -->` 〜 `<!-- /table -->` で囲んだ 10 列 30 行の表を配置した文書'
+        description: '`## 導入`・`## 使用方法` の見出しの間に、`<!-- table: {"kind": "data", "columns": {"数量": {"total": [{"calc": "sum"}]}, "名前": {"pinned": true}}} -->` 〜 `<!-- /table -->` で囲んだ 10 列 30 行の表を配置した文書'
         notes: 表は描く先の要素の幅を越え、見出し行と集計の行の右側のセルが右側の目次のパネルの下に重なる
       - name: Mock
         description: 差し替える依存は無い
@@ -4695,7 +4720,7 @@ flows:
       - name: 配布物を読み込んだページ
         description: 正常系と同じ
       - name: 列の並べ替えを付けた表を持つ Markdown
-        description: '`<!-- table: data +reorder +columns -->` で囲んだ 4 列 3 行の表と、`+reorder` だけの表と、`<!-- table: data -->` の表を 1 つずつ持つ文書'
+        description: '`<!-- table: {"kind": "data", "features": {"reorder": {}, "columns": {}}} -->` で囲んだ 4 列 3 行の表と、`features` に `reorder` だけを記載した表と、`<!-- table: {"kind": "data"} -->` の表を 1 つずつ持つ文書'
         notes: 列は左から `名前`・`型`・`既定`・`説明`
       - name: Mock
         description: 差し替える依存は無い。ドラッグは Playwright の `dragTo` で動かす
@@ -4722,7 +4747,7 @@ flows:
       - 説明の列のセルが `hidden` で、目のアイコンが `aria-pressed="true"`・`aria-label="「説明」を表示"` を持ち、ボタンのバッジの文字が `1`
       - 名前の目のアイコンが、先頭でなくなった後も `disabled`
       - 行の並べ替えの後も列の順が変わらない
-      - '`+reorder` だけの表のパネルのタイトルが `並び順` で目のアイコンが無く、`<!-- table: data -->` の表にテーブル設定のボタンが無い'
+      - '`features` に `reorder` だけを記載した表のパネルのタイトルが `並び順` で目のアイコンが無く、`<!-- table: {"kind": "data"} -->` の表にテーブル設定のボタンが無い'
       - '`update` で同じ Markdown を再描画すると、列が `名前`・`型`・`既定`・`説明` の順に戻る'
     test: test_normal_when_columns_reordered
     refs:
@@ -4733,7 +4758,7 @@ flows:
       - name: 配布物を読み込んだページ
         description: '正常系と同じ。描く先の `div` の幅は表がはみ出す幅。`opts.config` は `{ table: { pin: "through" } }`'
       - name: 結合した見出しとピン止めを持つ Markdown
-        description: '`<!-- table: data +reorder +columns header-rows=2 pin=名前 -->` で囲んだ表を持つ文書'
+        description: '`<!-- table: {"kind": "data", "features": {"reorder": {}, "columns": {}}, "columns": {"名前": {"pinned": true}}, "header": {"rows": 2}} -->` で囲んだ表を持つ文書'
         notes: 1 行目は `名前`・`設定`（`<<` で 3 列）・`備考`。2 行目は `名前`・`型`・`既定`・`必須`・`備考`
       - name: Mock
         description: 正常系（列を並べ替える）と同じ
@@ -4787,7 +4812,7 @@ flows:
       - name: 配布物を読み込んだページ
         description: 正常系と同じ
       - name: 階層の表を持つ Markdown
-        description: 正常系（階層の表のツールチップとコピー）と同じ。表のマーカーに `+copy` を加える
+        description: '正常系（階層の表のツールチップとコピー）と同じ。表のマーカーの `features` に `"copy": {}` を加える'
       - name: Mock
         description: 正常系（階層の表のツールチップとコピー）と同じ
     flow: |-
@@ -4816,7 +4841,7 @@ flows:
       - name: 配布物を読み込んだページ
         description: 正常系と同じ
       - name: 階層の表を持つ Markdown
-        description: 正常系（階層の表のツールチップとコピー）の表のマーカーに `+count filter=キー:text` を加えた文書
+        description: '正常系（階層の表のツールチップとコピー）の表のマーカーに `"features": {"count": {}}` と `"columns": {"キー": {"filter": {"type": "text"}}}` を加えた文書'
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
@@ -4973,7 +4998,7 @@ flows:
       - name: 配布物を読み込んだページ
         description: 正常系（範囲のスクリプトの機能がオフ）と同じ
       - name: 範囲のスクリプトをオンにする Markdown
-        description: '先頭に `<!-- features: +html-scripts -->` を持ち、正常系（範囲のスクリプトと CSS）と同じ範囲を持つ文書'
+        description: '先頭に `<!-- features: {"html-scripts": true} -->` を持ち、正常系（範囲のスクリプトと CSS）と同じ範囲を持つ文書'
       - name: Mock
         description: 正常系（範囲のスクリプトと CSS）と同じ
     flow: |-
@@ -5127,7 +5152,7 @@ flows:
       - name: 配布物を読み込んだページ
         description: 正常系と同じ。画面と描く先の要素の幅は 1280px、`--mdmark-content-width` は `640px`
       - name: wide の範囲を持つ Markdown
-        description: '段落、`<!-- wide -->` で 8 列の表を囲んだ範囲、`<!-- wide: closed -->` で 8 列の表を囲んだ範囲、段落を持つ文書'
+        description: '段落、`<!-- wide -->` で 8 列の表を囲んだ範囲、`<!-- wide: {"open": false} -->` で 8 列の表を囲んだ範囲、段落を持つ文書'
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
@@ -5180,7 +5205,7 @@ flows:
       - name: 配布物を読み込んだページ
         description: 正常系と同じ
       - name: CSV のコードブロックを持つ Markdown
-        description: '`<!-- table: data -->` 〜 `<!-- /table -->` で囲んだ言語 `csv` のコードブロック（見出しの行 `名前,拠点,金額` と 3 行）を持つ文書'
+        description: '`<!-- table: {"kind": "data"} -->` 〜 `<!-- /table -->` で囲んだ言語 `csv` のコードブロック（見出しの行 `名前,拠点,金額` と 3 行）を持つ文書'
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
@@ -5208,7 +5233,7 @@ flows:
       - name: 配布物を読み込んだページ
         description: 正常系と同じ。`--mdmark-content-width` は `640px`
       - name: 改ページと範囲を持つ Markdown
-        description: '段落の間に `<!-- pagebreak -->`、閉じた `<!-- details: 補足 -->` 〜 `<!-- /details -->`、`<!-- wide -->` で 8 列の表を囲んだ範囲を持つ文書'
+        description: '段落の間に `<!-- pagebreak -->`、閉じた `<!-- details: {"title": "補足"} -->` 〜 `<!-- /details -->`、`<!-- wide -->` で 8 列の表を囲んだ範囲を持つ文書'
         notes: '`opts.config` は指定しない（`print` は既定のオン）'
       - name: Mock
         description: 印刷は媒体を `print` にして `window` へ `beforeprint` を送信し、印刷の終わりは媒体を `screen` に戻して `afterprint` を送信することで代える
@@ -5236,7 +5261,7 @@ flows:
       - name: 配布物を読み込んだページ
         description: 正常系と同じ
       - name: include のマーカーを持つ Markdown
-        description: '`<!-- include: 共通/手順.md#実行 -->` を持ち、`共通/手順.md` の `## 実行` の下に `<!-- table: data -->` で囲んだ表を持つ取り込む文書の表を `opts.includes` に指定する'
+        description: '`<!-- include: {"path": "共通/手順.md", "heading": "実行"} -->` を持ち、`共通/手順.md` の `## 実行` の下に `<!-- table: {"kind": "data"} -->` で囲んだ表を持つ取り込む文書の表を `opts.includes` に指定する'
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
@@ -5310,7 +5335,7 @@ flows:
       - name: 配布物を読み込んだページ
         description: '正常系と同じ。画面の幅は 390px。配布物の CSS の後に、層の外の `pre { white-space: pre-wrap; overflow-wrap: anywhere; }` を読み込む'
       - name: 折り返すマーカーを持つ Markdown
-        description: '`<!-- code: lines wrap -->` の直後に 2 行目だけが表示の幅より長い 3 行の言語 `ts` のコードブロック、`<!-- code: lines -->` の直後の同じコードブロック、インデントと長い行を持つマーカーの無い言語 `json` のコードブロック、`<!-- tree: open=all wrap -->` と `<!-- tree: open=all -->` の直後の、長い名前と注釈を入れ子の中に持つ同じ言語 `tree` のコードブロックを持つ文書'
+        description: '`<!-- code: {"lines": {}, "wrap": true} -->` の直後に 2 行目だけが表示の幅より長い 3 行の言語 `ts` のコードブロック、`<!-- code: {"lines": {}} -->` の直後の同じコードブロック、インデントと長い行を持つマーカーの無い言語 `json` のコードブロック、`<!-- tree: {"depth": "all", "wrap": true} -->` と `<!-- tree: {"depth": "all"} -->` の直後の、長い名前と注釈を入れ子の中に持つ同じ言語 `tree` のコードブロックを持つ文書'
       - name: Mock
         description: '`navigator.clipboard.writeText` を、記載した文字を記録する関数に差し替える'
     flow: |-
@@ -5323,7 +5348,7 @@ flows:
         M-->>P: 折り返しの改行を含まない文字
     expected:
       - '`wrap` のコードブロックの `pre` の `scrollWidth` が `clientWidth` を超えず、2 行目の高さが 1 行目の 2 倍以上、3 の行番号が 3 行目の頭の高さにある'
-      - '`<!-- code: lines -->` のコードブロックと `json` のコードブロックの `white-space` の計算値が `pre` で、`scrollWidth` が `clientWidth` を超える'
+      - '`<!-- code: {"lines": {}} -->` のコードブロックと `json` のコードブロックの `white-space` の計算値が `pre` で、`scrollWidth` が `clientWidth` を超える'
       - '`json` の各行の左端の位置が、利用側の CSS を読み込まないときと同じ'
       - '`wrap` のツリーのリストの `scrollWidth` が `clientWidth` を超えず、折り返した名前の 2 行目の左端と注釈の左端が、その項目の名前の 1 行目の左端と同じ'
       - '`wrap` の無いツリーのリストは `scrollWidth` が `clientWidth` を超え、入れ子の縦線の左端の位置が `wrap` のツリーと同じ'
@@ -5482,7 +5507,7 @@ flows:
       - name: 配布物を読み込んだページ
         description: 正常系と同じ
       - name: リサイズハンドルを削除する Markdown
-        description: '先頭に `<!-- features: -diagram-resize -->` を持ち、フロー図の定義 1 つを持つ文書と、先頭のマーカーを持たない同じ文書'
+        description: '先頭に `<!-- features: {"diagram-resize": false} -->` を持ち、フロー図の定義 1 つを持つ文書と、先頭のマーカーを持たない同じ文書'
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
@@ -5507,7 +5532,7 @@ flows:
       - name: 配布物を読み込んだページ
         description: 正常系と同じ。描く先の `div` の幅は 1000px
       - name: 列の少ない表と列の多い表を持つ Markdown
-        description: '`<!-- table: data -->` 〜 `<!-- /table -->` で、名前・数量の 2 列 3 行の表と、12 列 3 行の表をそれぞれ囲んだ文書'
+        description: '`<!-- table: {"kind": "data"} -->` 〜 `<!-- /table -->` で、名前・数量の 2 列 3 行の表と、12 列 3 行の表をそれぞれ囲んだ文書'
         notes: 12 列の表は、列の最小幅の合計が 1000px を超える
       - name: Mock
         description: 差し替える依存は無い
@@ -5684,7 +5709,7 @@ flows:
       - name: 配布物を読み込んだページ
         description: 正常系と同じ
       - name: 2 つの Markdown
-        description: '言語 `ts` のコードブロックだけを持つ文書と、`<!-- features: -mermaid -->` を記載して言語 `mermaid` のコードブロックを持つ文書の 2 つ'
+        description: '言語 `ts` のコードブロックだけを持つ文書と、`<!-- features: {"mermaid": false} -->` を記載して言語 `mermaid` のコードブロックを持つ文書の 2 つ'
         notes: 2 つの文書をそれぞれ別の `mount` で描く
       - name: 設定
         description: 正常系（mermaid のコードブロックを描く）と同じ
@@ -5786,7 +5811,7 @@ flows:
       - name: 配布物を読み込んだページ
         description: 正常系と同じ。描く先の `div` の幅は表がはみ出す幅
       - name: 留めた列と列の並べ替えを持つ Markdown
-        description: '`<!-- table: data +reorder pin=名前 -->` で囲んだ 8 列の表を持つ文書'
+        description: '`<!-- table: {"kind": "data", "features": {"reorder": {}}, "columns": {"名前": {"pinned": true}}} -->` で囲んだ 8 列の表を持つ文書'
         notes: 列は左から `名前`・`型` と続く
       - name: Mock
         description: 正常系（列を並べ替える）と同じ
@@ -5812,7 +5837,7 @@ flows:
       - name: 配布物を読み込んだページ
         description: 正常系と同じ。描く先の `div` の幅は表がはみ出す幅
       - name: 結合した見出しを持つ Markdown
-        description: '`<!-- table: data header-rows=2 wide=備考 -->` で囲んだ表を持つ文書'
+        description: '`<!-- table: {"kind": "data", "columns": {"備考": {"width": {"mode": "nowrap"}}}, "header": {"rows": 2}} -->` で囲んだ表を持つ文書'
         notes: 1 行目は `名前`・`設定`（`<<` で 3 列）・`備考`。2 行目は `名前`・`型`・`既定`・`必須`・`備考`
       - name: Mock
         description: 差し替える依存は無い
@@ -5859,7 +5884,7 @@ flows:
       - name: 配布物を読み込んだページ
         description: 正常系と同じ
       - name: フロントマターとマーカーを持つ Markdown
-        description: '正常系（フロントマターを除外する）の文書の 5 行目に `<!-- features: +frontmatter -->` を配置した文書'
+        description: '正常系（フロントマターを除外する）の文書の 5 行目に `<!-- features: {"frontmatter": true} -->` を配置した文書'
         notes: '`opts.config` は指定しない'
       - name: Mock
         description: 正常系と同じ
@@ -5885,7 +5910,7 @@ flows:
       - name: 配布物を読み込んだページ
         description: 正常系と同じ
       - name: 幅を変える表を持つ Markdown
-        description: '`<!-- table: data wide=説明 -->` の表、`<!-- table: data -resize -->` の表、`<!-- table: plain -->` の表を持ち、どれも名前・説明・更新日の 3 列 3 行の文書'
+        description: '`<!-- table: {"kind": "data", "columns": {"説明": {"width": {"mode": "nowrap"}}}} -->` の表、`<!-- table: {"kind": "data", "features": {"resize": {"enabled": false}}} -->` の表、`<!-- table: {"kind": "plain"} -->` の表を持ち、どれも名前・説明・更新日の 3 列 3 行の文書'
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
@@ -5905,7 +5930,7 @@ flows:
       - ドラッグの後も、名前の列の `th` の `aria-sort` が変わらず、行の並びが変わらない
       - '説明の列を列の最小幅より狭くなるまでドラッグした後、説明の列の `th` の `offsetWidth` がつまみの `aria-valuemin` と同じで、説明の列のセルの `white-space` の計算値が `nowrap` でない'
       - ダブルクリックした後、名前の列と説明の列の `th` の `offsetWidth` が描いた直後と同じ
-      - '`-resize` の表と `plain` の表に `span.mdmark-col-resize` が無い'
+      - '`resize` を削除した表と `plain` の表に `span.mdmark-col-resize` が無い'
     test: test_normal_when_column_resized
     refs:
       - SC-472-73#scenarios[正常シナリオ（列の幅を変える）]
@@ -5915,7 +5940,7 @@ flows:
       - name: 配布物を読み込んだページ
         description: 正常系と同じ
       - name: 幅を変える表を持つ Markdown
-        description: '`<!-- table: data -->` で、名前・説明・更新日の 3 列 3 行の表を囲んだ文書'
+        description: '`<!-- table: {"kind": "data"} -->` で、名前・説明・更新日の 3 列 3 行の表を囲んだ文書'
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
@@ -5971,7 +5996,7 @@ flows:
       - name: 配布物を読み込んだページ
         description: '正常系と同じ。画面の幅は 390px で、ポインターが粗い画面（`(pointer: coarse)`）'
       - name: 幅を変える表を持つ Markdown
-        description: '`<!-- table: data -->` で、名前・説明・更新日の 3 列 3 行の表を囲んだ文書'
+        description: '`<!-- table: {"kind": "data"} -->` で、名前・説明・更新日の 3 列 3 行の表を囲んだ文書'
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
@@ -5997,7 +6022,7 @@ flows:
       - name: 配布物を読み込んだページ
         description: 正常系と同じ。描く先の `div` の幅は 600px（最終列を畳む幅）
       - name: 幅を変える表を持つ Markdown
-        description: '`<!-- table: data -->` で、名前・状態・説明の 3 列 3 行の表を囲み、説明はどの行も 600px の幅で 1 行に収まる文書'
+        description: '`<!-- table: {"kind": "data"} -->` で、名前・状態・説明の 3 列 3 行の表を囲み、説明はどの行も 600px の幅で 1 行に収まる文書'
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
@@ -6246,7 +6271,7 @@ flows:
       - name: 配布物を読み込んだページ
         description: 正常系と同じ
       - name: map の機能を解除する Markdown
-        description: '先頭に `<!-- features: -map -->` を持ち、map の範囲を 1 つ持つ文書'
+        description: '先頭に `<!-- features: {"map": false} -->` を持ち、map の範囲を 1 つ持つ文書'
       - name: Mock
         description: 正常系（mermaid のコードブロックを描く）と同じ。mermaid の本体と chunk も jsDelivr と同じパスで返却する
     flow: |-
@@ -6425,7 +6450,7 @@ request:
     required: false
     default: '`comments`・`html-scripts`・`frontmatter` を除く全ての機能が `true`'
     location: argument
-    description: '機能のオン・オフの既定。文書の `<!-- features: +機能 -機能 -->` がその文書だけ上書きする'
+    description: '機能のオン・オフの既定。文書の `<!-- features: {"機能": false} -->` がその文書だけ上書きする'
     notes: 知らない機能名は無視する。機能は `print`（印刷の前に折り畳みと記法を開く）と、記法ごとの `table`・`callout`・`tabs`・`steps`・`tree`・`badge`・`code`・`toc`・`side-toc`（右側の目次）・`anchors`・`sections`・`row-details`・`figures`、先頭へ戻るボタンの `back-to-top`、図の部品の `diagrams`、図の表示する枠の高さを変えるリサイズハンドルの `diagram-resize`、埋め込んだ HTML の `html`、図と埋め込んだ HTML のヒント（`data-hint`・`hint`・`io`・線の `tip`・`frame` と `lanes` の `hint`）のツールチップの `hints`、用語のツールチップの `glossary`、被参照の一覧と文書の別名の `backlinks`、ビューのマーカーの `views`、脚注の `footnotes`、選んだ箇所へのコメントの `comments`、埋め込んだ HTML の範囲の `css`・`ts`・`js` の `html-scripts`、文書の先頭のフロントマターの表示の `frontmatter`（`comments`・`html-scripts`・`frontmatter` だけ既定は `false`）、アイコンの `icon`・段組みの `columns`・蛍光ペンの `highlight`・キーの `kbd`・details の範囲の `details`・改ページの `pagebreak`・取り込みの `include`・wide の範囲の `wide`・CSV の表の `csv`・カードの格子の `card-grid`・mermaid のコードブロックを図にする `mermaid`
   - name: opts.config.libraries
     type: Record<string, string>
@@ -6487,9 +6512,9 @@ request:
     required: false
     default: なし（通知しない）
     location: argument
-    description: '`+columns` の表で列の表示を切り替えるたびに呼ぶ関数。`MdmarkColumnsChange` は `tableIndex`（本文の中の `+columns` の表の出現順の番号。0 から）と `hidden`（隠している列の見出しの文字の並び。表の列の順）'
+    description: '列の表示・非表示の機能（`features.columns` か `columns.{列名}.hidden`）を持つ表で列の表示を切り替えるたびに呼ぶ関数。`MdmarkColumnsChange` は `tableIndex`（本文の中のその機能を持つ表の出現順の番号。0 から）と `hidden`（隠している列の見出しの文字の並び。表の列の順）'
     constraints: 関数。それ以外は `TypeError`
-    notes: 描いた直後の `hide=` の状態と、`update` で再描画したときは呼ばない
+    notes: 描いた直後の `columns.{列名}.hidden` の状態と、`update` で再描画したときは呼ばない
   - name: opts.config.tooltips.placement
     type: '"top" | "bottom"'
     required: false
@@ -6653,7 +6678,7 @@ request:
 request_example: |-
   ```json
   {
-    "markdown": "# 見出し\n\n<!-- features: -print -->\n\n本文",
+    "markdown": "# 見出し\n\n<!-- features: {"print": false} -->\n\n本文",
     "config": {
       "features": { "print": true },
       "libraries": { "test-lib": "/fixtures/test-lib.js" }
@@ -6751,7 +6776,7 @@ constraints:
     constraint: '`render(markdown, { config })` が返却する HTML 文字列と同じ'
     notes: docs/interface/IF-472-34.ts
   - item: 外部ライブラリのモジュールの構造
-    constraint: '`draw(slot: HTMLElement, args: string[]): void | Promise<void>` を名前付きで export する。`slot` はマーカーの場所の要素、`args` はマーカーの引数を空白で区切ったもの'
+    constraint: '`draw(slot: HTMLElement, options: Record<string, unknown>): void | Promise<void>` を名前付きで export する。`slot` はマーカーの場所の要素、`options` はマーカーの引数の JSON のオブジェクト（引数の無いマーカーは `{}`）。引数が JSON のオブジェクトでない（今の書き方の）マーカーは読み込まず、`render` と同じ記載の警告をその場所に描く'
   - item: 外部ライブラリの読み込み
     constraint: 対応表の URL を `import()` に指定する。import map は使用しない。同じ文書の同じ名前のマーカーは 1 回だけ読み込む
   - item: 外部ライブラリのマーカーの場所
@@ -6776,7 +6801,7 @@ constraints:
   - item: 印刷で記法を開く
     constraint: '`print` がオンのとき、`beforeprint` で閉じた `details`（閉じた表・閉じた注意書きと入れ子の注意書きを含む）・閉じたセクション・行の詳細・閉じたツリーのフォルダ・畳んだコードの行・列を畳んだ ER 図のテーブル（全ての列を出し、関係の線をもう一度結ぶ）・閉じた脚注の一覧・畳んだ階層の表の行・隠した YAML の見本を開き、タブの全ての中身をタブ名をタイトルにして縦に並べる。`afterprint` で、開いたものだけをもう一度閉じ、印刷の前に選んでいたタブだけを出す'
   - item: 拡張のマーカー
-    constraint: 登録した拡張のマーカーの場所は、拡張の `schema` で引数を検査し、合えば `load` で読み込んだモジュールの `draw` に描かせる。合わなければ記載の警告、読み込めなければ通知ブロックに替える
+    constraint: 登録した拡張のマーカーの場所は、拡張の `schema` で `{ options, definition }`（`options` はマーカーの引数の JSON のオブジェクト、`definition` は範囲の中の部品の定義）を検査し、合えば `load` で読み込んだモジュールの `draw` に同じ値で描かせる。引数が JSON のオブジェクトでない（今の書き方の）拡張のマーカーは `schema` も `load` も呼ばず、`render` と同じ記載の警告をその場所に描く。合わなければ記載の警告、読み込めなければ通知ブロックに替える
     notes: docs/interface/IF-472-32.ts
   - item: 用語と文書の別名の下線
     constraint: 本文の文字を `Intl.Segmenter`（`ja`・`word`）で区切り（`Intl.Segmenter` を持たない環境では、英数字の連なりを 1 単語とし、それ以外の文字を 1 文字ずつ区切る）、始まりと終わりが区切りに一致する用語の単語・別名と文書の `aliases` を、長い単語を先に照合する。照合の前に、単語と本文の文字の両方を NFKC・英字の小文字化・前後の空白の除去で正規化し、下線は本文に記載したままの文字に付ける。図の部品の `{{単語}}` も同じ正規化で用語を参照する。用語は用語の `id`、文書の別名は文書の `id` ごとに、セクション（h2〜h4）ごとに最初に出たところだけを class `mdmark-term` の要素にし、破線の下線を付ける。コード・リンク・見出し・用語集の表の中は照合しない。正規化した後に同じになる単語が複数の用語に該当するときは、索引の `terms`・`opts.aliases`（並びの順）・描く文書の表・ほかの文書の表（索引の `docs` の順）の順で 1 つを選ぶ
@@ -6843,14 +6868,14 @@ constraints:
     constraint: 差分の行を出している間、スクロール先のスクロールの右端に、その高さいっぱいの帯（`aria-hidden`）を貼り付ける。スクロール先は差分の行の一番近いスクロールする祖先で、無ければ画面。帯はスクロール先の全体を表し、削除した行は左半分の赤・追加した行は右半分の緑のマーカー（続いた同じ種類の行は 1 つのマーカーにまとめ、プレビューに切り替えた範囲は範囲ごと 1 つのマーカー）にし、今見えている範囲を枠で示す。帯を押すとその位置がスクロール先の中ほどに来るようスクロールし、押したまま上下に動かすとそれに合わせてスクロールする。差分を閉じる・もう一度選ぶ・`destroy` で帯と受け取りを解除する
     notes: '確認ログのモックへの合意（画面の右端）。帯の本数と `position: fixed` の基準は部品設計とモジュール構成設計（計画書）'
   - item: ビューのマーカー
-    constraint: '`<!-- view: 引数 -->` 〜 `<!-- /view -->` の範囲の最初の表を項目にする（見出しの行が列名、本文の行が項目、セルの文字が値）。引数は `group=列名`（ボードで分ける列）・`default=board|table`（描いた直後のビュー。既定は `group=` があれば `board`）・`filter=列名:種類,…`（記法の表と同じ記載方法）・`icons=値:アイコンの名前,…`。`render` は範囲を class `mdmark-view` の要素にし、中に表を残す（ビューの機能がオフのときは表だけを出す）。記載方法の誤り（範囲に表が無い・`group=`・`filter=` の列が表に無い・知らない絞り込みの種類・使用できないアイコンの名前・閉じのマーカーが無い）は、範囲の上に記載の警告を出し、読み込めた指定だけを適用する。知らないキーは警告を出さずにスキップする。`group=` が該当しないときはボードを押せなくし、表が無いときは範囲の中身をそのまま描く'
+    constraint: '`<!-- view: {JSON のオブジェクト} -->` 〜 `<!-- /view -->` の範囲の最初の表を項目にする（見出しの行が列名、本文の行が項目、セルの文字が値）。キーは ER 図『ビューのマーカーの設定』に従い、`board.group.column`（ボードで分ける列）・`initial`（描いた直後のビュー `board`・`table`。既定は `board` があれば `board`）・`columns.{列名}.filter`（記法の表と同じ記載方法）・`board.values.{値}.icon`。`render` は範囲を class `mdmark-view` の要素にし、中に表を残す（ビューの機能がオフのときは表だけを出す）。記載方法の誤り（範囲に表が無い・`board.group.column`・`columns.{列名}` の列が表に無い・`board.values.{値}` の値が列に無い・選べる値に無い絞り込みの種類・使用できないアイコンの名前・閉じのマーカーが無い）は、範囲の上に記載の警告を出し、読み込めた指定だけを適用する。知らないキーは警告を出さずに無視する。`board.group.column` が該当しないときはボードを押せなくし、表が無いときは範囲の中身をそのまま描く'
     notes: マーカーの名前 `view` は記法のマーカーとして予約する（インターフェース定義『拡張を登録する』）。警告の文言は画面設計『文書』
   - item: ビューの操作
-    constraint: '`mdmark-view` の頭に、`role="group"`・`aria-label="ビューの表示"` の中に `aria-pressed` を持つ「ボード」「表」のボタンを配置する（`group=` が無いときは配置しない）。ボードは `group=` の列の値ごとの列を表に出た順に横に並べ、列の見出しにアイコン・値・項目の数を出し、項目は表の行の順に、先頭の列の値をタイトルに、`group=` の列を除く残りの列を列名と値の組で出す。描く先の幅に収まらない列はボードの中で横にスクロールさせる。表形式は範囲の表をそのまま使用し、記法の表の並べ替えと、`filter=` の列にだけ記法の表と同じ絞り込みを付ける（制約の「表の操作」）。絞り込みは表形式にだけ当て、ボードは常に全ての項目を出し、表形式に戻すと絞り込みは残っている。ビューの上に検索欄と件数は配置しない。印刷では今のビューを出し、切り替えと絞り込みのボタンは出さない。`update` でもう一度付け、`destroy` で削除する'
+    constraint: '`mdmark-view` の頭に、`role="group"`・`aria-label="ビューの表示"` の中に `aria-pressed` を持つ「ボード」「表」のボタンを配置する（`board` が無いときは配置しない）。ボードは `board.group.column` の列の値ごとの列を表に出た順に横に並べ、列の見出しにアイコン・値・項目の数を出し、項目は表の行の順に、先頭の列の値をタイトルに、`board.group.column` の列を除く残りの列を列名と値の組で出す。描く先の幅に収まらない列はボードの中で横にスクロールさせる。表形式は範囲の表をそのまま使用し、記法の表の並べ替えと、`columns.{列名}.filter` の列にだけ記法の表と同じ絞り込みを付ける（制約の「表の操作」）。絞り込みは表形式にだけ当て、ボードは常に全ての項目を出し、表形式に戻すと絞り込みは残っている。ビューの上に検索欄と件数は配置しない。印刷では今のビューを出し、切り替えと絞り込みのボタンは出さない。`update` でもう一度付け、`destroy` で削除する'
     notes: 検索欄を持たず、絞り込みを表形式だけに適用するのは確認ログの決定。外観は部品設計と画面設計『文書』
   - item: ボードの列の見出しのアイコン
-    constraint: 列の値から lucide のアイコンを参照する。既定の対応は `未着手` → `circle-dashed`・`進行中` → `circle-dot`・`保留` → `circle-pause`・`完了` → `circle-check`・`中止` → `circle-x` で、対応に無い値は `circle`。マーカーの `icons=` は既定の対応に重ねて値ごとに上書きする。使用できるアイコンは mdmark がまとめるものに限り、既定の 6 つと `inbox`・`archive`・`clock`・`flag`・`star`・`bug`・`eye`・`lock`・`zap`・`ban`。アイコンは `aria-hidden` を持ち、列の見出しのスクリーンリーダーは値と項目の数だけにする
-    notes: 既定の対応と `icons=` の記載方法は確認ログの決定。lucide の全てのアイコンをまとめると配布ファイルのサイズの上限を超えるため、使用できるアイコンを限る
+    constraint: 列の値から lucide のアイコンを参照する。既定の対応は `未着手` → `circle-dashed`・`進行中` → `circle-dot`・`保留` → `circle-pause`・`完了` → `circle-check`・`中止` → `circle-x` で、対応に無い値は `circle`。マーカーの `board.values.{値}.icon` は既定の対応に重ねて値ごとに上書きする。使用できるアイコンは mdmark がまとめるものに限り、既定の 6 つと `inbox`・`archive`・`clock`・`flag`・`star`・`bug`・`eye`・`lock`・`zap`・`ban`。アイコンは `aria-hidden` を持ち、列の見出しのスクリーンリーダーは値と項目の数だけにする
+    notes: 既定の対応とアイコンを値ごとに上書きする指定は確認ログの決定。lucide の全てのアイコンをまとめると配布ファイルのサイズの上限を超えるため、使用できるアイコンを限る
   - item: コメントの読み込みと保存の関数
     constraint: '`load({ docId }: { docId: string }): Promise<MdmarkComment[]>` と `save({ docId, comment }: { docId: string; comment: MdmarkCommentDraft }): Promise<MdmarkComment>` を持つ。`MdmarkCommentDraft` は `quote`（選んだ文字）・`prefix`（選んだ文字の前の最大 32 文字）・`suffix`（後の最大 32 文字）・`body`（コメントの本文）の文字列。`MdmarkComment` はそれに `id`（空でない文字列）を追加したもの。`load` が配列でない・要素の構造が合わない、`save` が構造の合わない値を返却するときは reject と同じに扱う。mdmark はコメントを保存せず、利用側の保存先に任せる'
     notes: 差分の取り出し元と同じく、読み込みと保存は利用側の関数に任せる（D-17・要件『コメントの保存』）
@@ -6947,8 +6972,8 @@ constraints:
     constraint: '`opts.config.colorTheme` のテーマの `--mdmark-color-*` の値の組を、ページ全体（`:root`）に適用する。同じページに別のテーマの文書を並べたときは、`theme-paper`・`theme-slate`・`theme-contrast` の並びで後のテーマが全ての文書に該当する（`dev-swiss` は他のテーマに負ける）。値の組はテーマごとに明るい配色と暗い配色を持ち、どちらを使用するかは制約「配色の切り替え」で決める。印刷では選んだテーマの明るい配色にする。値の組は `@layer mdmark` の中に配置し、利用側が層の外で上書きした変数は選んだテーマに勝つ。`destroy` で適用したテーマを解除する。`update` は差し替えた本文の page のマーカーの `theme` でもう一度決め、マーカーが無ければ `mount` に指定したテーマで描く'
     notes: テーマの値はデザイン方針の `## 採用スタイル`。描く先に属性 `data-mdmark-color-theme` を付け、`:root:has()` で適用する（モジュール構成『描く』の `COLOR_THEME_ATTRIBUTE`）
   - item: ページの設定のマーカー
-    constraint: '文書の先頭（最初の見出し・段落・表・リスト・コードブロック・HTML のブロックより前。空の行とほかのマーカーは前にあってよい）の `<!-- page: キー=値 … -->` を読み込み、`scheme` を `opts.config.colorScheme`、`theme` を `opts.config.colorTheme`、`toc` を `opts.config.side-toc.mode` より優先して適用する（制約「配色の切り替え」「選んだテーマ」と右側の目次の出し方）。記載できるのは `scheme`（`light`・`dark`・`auto`）・`theme`（`opts.config.colorTheme` と同じ名前）・`toc`（`hover`・`fixed`）で、同じキーが何度も出たら後に記載した値を使用する。記載できるキーの知らない値は使用せず、それらを並べた記載の警告を文書の先頭に 1 つ配置する。知らないキーは使用せず、警告も配置しない。先頭に無い page のマーカーは使用せず、その場所に記載の警告を配置する。マーカーは本文に出さない。`update` は差し替えた本文のマーカーでもう一度決める'
-    notes: '機能のオン・オフは page のマーカーに記載せず `<!-- features: … -->` で記載する（確認ログ）。`render` も同じマーカーを本文に出さず、同じ記載の警告を出す'
+    constraint: '文書の先頭（最初の見出し・段落・表・リスト・コードブロック・HTML のブロックより前。空の行とほかのマーカーは前にあってよい）の `<!-- page: {JSON のオブジェクト} -->` を読み込み、`scheme` を `opts.config.colorScheme`、`theme` を `opts.config.colorTheme`、`toc.mode` を `opts.config.side-toc.mode` より優先して適用する（制約「配色の切り替え」「選んだテーマ」と右側の目次の出し方）。記載できるのは `scheme`（`light`・`dark`・`auto`）・`theme`（`opts.config.colorTheme` と同じ名前）・`toc.mode`（`hover`・`fixed`）で、page のマーカーを複数記載したときと同じキーが何度も出たときは後に記載した値を使用する。記載できるキーの選べる値に無い値は使用せず、それらを並べた記載の警告を文書の先頭に 1 つ配置する。知らないキーは無視し、警告も配置しない。先頭に無い page のマーカーは使用せず、その場所に記載の警告を配置する。マーカーは本文に出さない。`update` は差し替えた本文のマーカーでもう一度決める'
+    notes: '機能のオン・オフは page のマーカーに記載せず `<!-- features: {JSON のオブジェクト} -->` で記載する（確認ログ）。`render` も同じマーカーを本文に出さず、同じ記載の警告を出す'
   - item: 明暗の当て方
     constraint: page のマーカーの `scheme`、無ければ `opts.config.colorScheme` が `light`・`dark` のとき、描く先の要素に class `mdmark-theme-light`・`mdmark-theme-dark` を付ける（制約「配色の切り替え」で最も近い class として祖先の class に勝つ）。`auto` のときと、どちらも無いときは付けない。`update` でもう一度付け、`destroy` で mount が付けた class だけを削除する
   - item: カードの格子
@@ -6969,7 +6994,7 @@ constraints:
     constraint: '`opts.baseMarkdown` が文字列のとき、取り出し元を呼ばずに、前を `opts.baseMarkdown`、後を `opts.markdown` として制約「描いた文書のブロックの色分け」のとおり本文を描く。`opts.diffSource` も指定したときは、本文の中の色分けに比較元を使用し、取り出し元は差分を開く UI（`opts.diffMode` が `button`・`open`）にだけ使用する。`opts.diffMode` が `blocks` のときは取り出し元の `revisions`・`content` を呼ばない。`update` で比較元を差し替えたときと、比較元のまま本文を差し替えたときは、色分けをもう一度計算する'
     notes: 取り出し元との優先はシナリオ『比較元のMarkdownを指定して変更を強調する』の決定。比較元で色を適用した本文は、制約「描く本文」の `render` の出力と同じではない
   - item: 列の表示の通知
-    constraint: '`+columns` の表のテーブル設定の目のアイコンを押したときに、表示を切り替えた後で `opts.onColumnsChange({ tableIndex, hidden })` を 1 回呼ぶ。`tableIndex` は本文の中の `+columns` の表の出現順（削除したブロックの中の表は数えない）。`hidden` は `hidden` にした列の見出しの文字（`textContent` の前後の空白を除いたもの）を表の列の順に並べた新しい配列'
+    constraint: '列の表示・非表示の機能を持つ表のテーブル設定の目のアイコンを押したときに、表示を切り替えた後で `opts.onColumnsChange({ tableIndex, hidden })` を 1 回呼ぶ。`tableIndex` は本文の中の列の表示・非表示の機能を持つ表の出現順（削除したブロックの中の表は数えない）。`hidden` は `hidden` にした列の見出しの文字（`textContent` の前後の空白を除いたもの）を表の列の順に並べた新しい配列'
   - item: 書き換えと入れ替えの見分け
     constraint: 同じ変えた塊の中で、削除の候補と追加の色を適用した後のブロックを前から順に対にし、対のブロックの文字を単語ごとに比べる。同じ文字の数が長い方の文字の数の半分以上なら書き換えとして削除を出さず、半分未満なら入れ替えとして削除と追加の両方を出す。対にならない削除の候補は削除したブロックにする
     notes: 確認ログのモックへの合意（単語を書き換えた段落は追加だけ、別の段落に入れ替えたときは削除と追加が並ぶ）

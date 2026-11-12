@@ -145,7 +145,7 @@ test("test_normal_when_document_marker", async () => {
   // 準備
   const session = await e2e.launch({
     files: {
-      "dark.md": `<!-- page: scheme=dark -->\n\n${longDocument()}`,
+      "dark.md": `<!-- page: {"scheme": "dark"} -->\n\n${longDocument()}`,
     },
     settings: {
       "workbench.colorTheme": "Default Light Modern",

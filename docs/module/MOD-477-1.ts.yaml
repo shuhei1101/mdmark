@@ -1,0 +1,113 @@
+id: MOD-477-1
+visibility: internal
+title: ライブラリ本体 / 描画 / mark-options.ts
+lead: マーカーの名前の後ろの引数の文字を、JSON のオブジェクト・今の書き方・読めない引数に分けて読み、読めない理由を記載の警告の文にする。
+test_files:
+  - tests/unit/src/render/mark-options.test.ts
+data_models:
+  - name: MarkOptions
+    title: マーカーの設定
+    container: src/render/mark-options.ts
+    usecase: 共通
+    summary: マーカーの引数の JSON のオブジェクト（`Record<string, unknown>`）
+  - name: MarkArgs
+    title: 読んだマーカーの引数
+    container: src/render/mark-options.ts
+    usecase: 共通
+    summary: '引数の記載方法ごとの判別できる union。`{ kind: "none" }`・`{ kind: "json"; options: MarkOptions }`・`{ kind: "legacy"; text: string }`・`{ kind: "invalid"; message: string }`'
+    properties:
+      - name: kind
+        type: '"none" | "json" | "legacy" | "invalid"'
+        description: '`none` は引数が無い、`json` は `{` で始まり JSON のオブジェクトとして読めた、`legacy` は `{` で始まらない（今の書き方）、`invalid` は `{` で始まるのに JSON として読めないかオブジェクトでない'
+      - name: options
+        type: MarkOptions
+        description: '`kind` が `json` のときの JSON のオブジェクト'
+      - name: text
+        type: string
+        description: '`kind` が `legacy` のときの引数の文字（`convertLegacyArgs` に指定する）'
+      - name: message
+        type: string
+        description: '`kind` が `invalid` のときの記載の警告の本文（`jsonErrorMessage` の文）'
+functions:
+  - name: readMarkArgs
+    title: マーカーの引数を読む
+    container: src/render/mark-options.ts
+    kind: 関数
+    scope: internal
+    summary: '`MARK_PATTERN` の引数の文字（前後の空白を除く）を、空なら `none`、`{` で始まれば `JSON.parse` してオブジェクトなら `json`・それ以外は `invalid`、`{` で始まらなければ `legacy` にする'
+    args:
+      - name: text
+        type: string
+        required: true
+        description: マーカーの `:` の後ろから `-->` の前までの文字（無ければ空）
+    returns:
+      type: MarkArgs
+      description: 読んだ引数
+    callees:
+      - '#functions[jsonErrorMessage]'
+    unit_tests:
+      - name: test_read_mark_args
+        case: 正常
+        summary: JSON のオブジェクトを型を保って読む
+        condition: '`{"kind": "data", "header": {"rows": 2}, "closed": true}`'
+        mock: なし
+        expected: '`{ kind: "json", options: { kind: "data", header: { rows: 2 }, closed: true } }`'
+      - name: test_read_mark_args_when_multiline
+        case: 正常
+        summary: 改行を含む JSON のオブジェクトを 1 つとして読む
+        condition: '`{\n  "kind": "data",\n  "collapse": {"open": false}\n}`'
+        mock: なし
+        expected: '`{ kind: "json", options: { kind: "data", collapse: { open: false } } }`'
+      - name: test_read_mark_args_when_empty
+        case: 正常
+        summary: 引数が無ければ none
+        condition: 空の文字と空白だけの文字
+        mock: なし
+        expected: 'どちらも `{ kind: "none" }`'
+      - name: test_read_mark_args_when_legacy
+        case: 正常
+        summary: '`{` で始まらない引数は今の書き方'
+        condition: '`data +total total=数量:sum`'
+        mock: なし
+        expected: '`{ kind: "legacy", text: "data +total total=数量:sum" }`'
+      - name: test_read_mark_args_when_invalid
+        case: 異常
+        summary: 読めない JSON とオブジェクトでない値は invalid
+        condition: '`{"title": 補足}` と `{"a": 1,}`'
+        mock: なし
+        expected: どちらも `kind` が `invalid` で、`message` に読めない位置（何文字目）と理由がある
+  - name: jsonErrorMessage
+    title: 読めない JSON の警告の文を作る
+    container: src/render/mark-options.ts
+    kind: 関数
+    scope: internal
+    summary: '`JSON.parse` が投げたエラーの位置と、引数の文字から、記載の警告の本文（部品設計『記載の警告』の `InvalidJson`・`CommentEndInValue` の文言）を作る'
+    description: '位置は 1 から数えた文字の位置。原因を言い当てられるもの（引用符で囲んでいない文字・末尾のカンマ・閉じていない文字の値）は原因と直し方を添え、言い当てられないものは位置と文字だけにする。閉じていない文字の値のときは、値に `-->` を記載するとコメントがそこで閉じることと `-->` の記載方法を添える'
+    args:
+      - name: options
+        type: '{ text: string; error: unknown }'
+        required: true
+        description: '`text` は引数の文字、`error` は `JSON.parse` が投げた値'
+    returns:
+      type: string
+      description: 記載の警告の本文（マーカーの文字は含まない）
+    unit_tests:
+      - name: test_json_error_message
+        case: 正常
+        summary: 引用符で囲んでいない文字の位置と直し方を出す
+        condition: '`{"title": 補足}`'
+        mock: なし
+        expected: '`11 文字目の `補`` と、値の文字を `"` で囲む直し方を含む'
+      - name: test_json_error_message_when_comment_end
+        case: 正常
+        summary: 閉じていない文字の値は、値の `-->` で閉じたことと記載方法を出す
+        condition: '`{"title": "a `（`-->` で閉じたマーカーの引数）'
+        mock: なし
+        expected: '`-->` を記載するとコメントがそこで閉じることと `-->` を含む'
+refs:
+  - IF-472-34#constraints[マーカーの書式]
+  - CMP-472-62#
+  - ER-477-1#
+decisions:
+  - D-312
+  - D-338

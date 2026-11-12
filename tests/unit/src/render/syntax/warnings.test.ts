@@ -19,7 +19,7 @@ function markdownAt(blocks: Record<number, string[]>): string {
 test("test_collect_warnings_rule", () => {
   // 準備
   const markdown = markdownAt({
-    3: ["<!-- code: highlight=9 -->", "```ts", "const a = 1;", "```"],
+    3: ['<!-- code: {"highlight": [9]} -->', "```ts", "const a = 1;", "```"],
     10: [
       "<!-- flow -->",
       "",
@@ -46,7 +46,7 @@ test("test_collect_warnings_rule_when_marks", () => {
   // 準備
   const markdown = markdownAt({
     3: [
-      "<!-- table: foo -->",
+      '<!-- table: {"kind": "foo"} -->',
       "",
       "| 列 | 値 |",
       "| --- | --- |",
@@ -54,9 +54,16 @@ test("test_collect_warnings_rule_when_marks", () => {
       "",
       "<!-- /table -->",
     ],
-    11: ["<!-- tree: wrap=1 -->", "", "```tree", "src/", "└── a.ts", "```"],
+    11: [
+      '<!-- tree: {"wrap": 1} -->',
+      "",
+      "```tree",
+      "src/",
+      "└── a.ts",
+      "```",
+    ],
     20: [
-      "<!-- tabs: x=1 -->",
+      '<!-- tabs: {"collapse": 1} -->',
       "",
       "### macOS",
       "",
@@ -71,12 +78,12 @@ test("test_collect_warnings_rule_when_marks", () => {
   expect(warnings.map(({ line }) => line)).toEqual([3, 11, 20]);
 });
 
-// スキップした引数を、マーカーの行で unknown_mark_arg にして集める（正常系）
-test("test_collect_warnings_rule_when_skipped_args", () => {
+// マーカーの注記を、マーカーの行でその種類にして集める（正常系）
+test("test_collect_warnings_rule_when_mark_notes", () => {
   // 準備
   const markdown = markdownAt({
     5: [
-      "<!-- tabs: grop=os -->",
+      '<!-- tabs: {"grop": "os"} -->',
       "",
       "### macOS",
       "",
@@ -88,24 +95,26 @@ test("test_collect_warnings_rule_when_skipped_args", () => {
       "",
       "<!-- /tabs -->",
     ],
+    17: ["<!-- section: closed -->"],
   });
   // 実行
   const { warnings } = renderDoc(markdown);
   // 検証
   expect(warnings.map(({ line, kind }) => ({ line, kind }))).toEqual([
     { line: 5, kind: "unknown_mark_arg" },
+    { line: 17, kind: "legacy_mark" },
   ]);
-  expect(warnings[0]?.message).toContain("grop=");
-  expect(warnings[0]?.message).toContain("group=");
-  expect(warnings[0]?.message).toContain("title=");
+  expect(warnings[0]?.message).toContain("grop");
+  expect(warnings[0]?.message).toContain("group");
+  expect(warnings[0]?.message).toContain("collapse");
 });
 
-// スキップした引数ごとに中身の空のトークンを差し込み、画面には出さない（正常系）
-test("test_push_skipped_args", () => {
+// 注記を記録し、画面には出さない（正常系）
+test("test_record_mark_notes", () => {
   // 準備
   const markdown = markdownAt({
     3: [
-      "<!-- table: data +foo size=2 -->",
+      '<!-- table: {"kind": "data", "features": {"foo": {}}, "size": 2} -->',
       "",
       "| 列 | 値 |",
       "| --- | --- |",
@@ -118,15 +127,17 @@ test("test_push_skipped_args", () => {
   const { html, warnings } = renderDoc(markdown);
   // 検証
   expect(html).not.toContain("mdmark-syntax-warning");
-  expect(html).not.toContain("+foo");
-  expect(html).not.toContain("size=");
+  expect(html).not.toContain("foo");
+  // 機能の名前の `resize` が `size` を含むため、マーカーの文字が残らないことで確かめる
+  expect(html).not.toContain('"size"');
+  expect(html).not.toContain("<!--");
   expect(warnings.map(({ line, kind }) => ({ line, kind }))).toEqual([
     { line: 3, kind: "unknown_mark_arg" },
     { line: 3, kind: "unknown_mark_arg" },
   ]);
   const messages = warnings.map((warning) => warning.message).join("\n");
-  expect(messages).toContain("+foo");
+  expect(messages).toContain("features.foo");
   expect(messages).toContain("sort");
-  expect(messages).toContain("size=");
-  expect(messages).toContain("filter=");
+  expect(messages).toContain("size");
+  expect(messages).toContain("columns");
 });

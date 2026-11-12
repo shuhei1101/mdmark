@@ -27,9 +27,9 @@ const TREE_ROWS = [
 ];
 
 /** 表のマーカーで囲んだ階層の表の Markdown */
-function treeTable(mark: string): string {
+function treeTable(mark: Record<string, unknown>): string {
   return [
-    `<!-- table: ${mark} -->`,
+    `<!-- table: ${JSON.stringify(mark)} -->`,
     "",
     ...TREE_ROWS,
     "",
@@ -40,7 +40,10 @@ function treeTable(mark: string): string {
 
 /** 見本を結んだ階層の表と、見出し `設定の見本` の下の 2 つのタブを持つ文書 */
 const EXAMPLE_DOC = [
-  treeTable("data tree=キー example=設定の見本"),
+  treeTable({
+    kind: "data",
+    tree: { key: { column: "キー" }, example: { heading: "設定の見本" } },
+  }),
   "## 設定の見本",
   "",
   "<!-- tabs -->",
@@ -94,7 +97,9 @@ function shownPaths(root: HTMLElement): string[] {
 // 開閉のボタンで子孫を畳み、Shift で入れ子もまとめて開閉する（正常系）
 test("test_attach_table_tree_when_folded", async () => {
   // 準備
-  const root = await attach(treeTable("data tree=キー"));
+  const root = await attach(
+    treeTable({ kind: "data", tree: { key: { column: "キー" } } }),
+  );
   const toggle = rowOf(root, "aliases[]").querySelector<HTMLButtonElement>(
     "button.mdmark-tree-toggle",
   );
@@ -149,7 +154,12 @@ test("test_attach_table_tree_when_selected", async () => {
 test("test_attach_table_tree_when_filtered", async () => {
   // 準備
   const root = await attach(
-    treeTable("data tree=キー +count filter=キー:text"),
+    treeTable({
+      kind: "data",
+      features: { count: {} },
+      columns: { キー: { filter: { type: "text" } } },
+      tree: { key: { column: "キー" } },
+    }),
   );
   root.querySelector<HTMLButtonElement>("button.mdmark-filter")?.click();
   const input = root.querySelector<HTMLInputElement>(
@@ -174,7 +184,9 @@ test("test_attach_table_tree_when_copied", async () => {
   // 準備
   const writeText = vi.fn(async () => {});
   stubClipboard(writeText);
-  const root = await attach(treeTable("data tree=キー"));
+  const root = await attach(
+    treeTable({ kind: "data", tree: { key: { column: "キー" } } }),
+  );
   const copy = rowOf(root, "aliases[].id").querySelector<HTMLButtonElement>(
     "button.mdmark-tree-copy",
   );

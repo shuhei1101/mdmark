@@ -48,7 +48,7 @@ functions:
         expected: 1 回目の後に 1・2 行目のボタンが `false`、2 回目の後に両方が `true` で 2〜4 行目が `hidden` を持たない
       - name: test_attach_code_folds_when_initial
         case: 正常
-        summary: fold= の行を畳んだ状態にし、削除すると戻す
+        summary: fold の行を畳んだ状態にし、削除すると戻す
         condition: 2 行目と 6 行目が `data-folded` の 8 行のコードブロック
         mock: なし
         expected: 2・6 行目のボタンが `false` で後ろの行が `hidden`。削除した後はボタンと `⋯` が無く、どの行も `hidden` を持たない

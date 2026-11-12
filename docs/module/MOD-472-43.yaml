@@ -10,8 +10,8 @@ directory: |-
   ├── sections.ts     # セクションの囲み
   ├── tables.ts       # 表の種類・機能・絞り込みと、表の属性・列と行の色・多段の見出しと行見出しとセルの結合
   ├── table-cells.ts  # 表の `^^`・`<<` のセルの結合の計画（トークンを使用しない）
-  ├── table-tree.ts   # `tree=` の表の階層の行・型・必須・既定のセルと、`example=` の見本を表の下へ移す処理
-  ├── collapse.ts     # 表・タブ・ステップの折り畳みの指定（closed・open・title=）の読み取り
+  ├── table-tree.ts   # `tree` の表の階層の行・型・必須・既定のセルと、`tree.example` の見本を表の下へ移す処理
+  ├── collapse.ts     # 表・タブ・ステップの折り畳みの指定（collapse）の読み取り
   ├── views.ts        # ビューのマーカーの囲み
   ├── row-details.ts  # 行の詳細
   ├── tabs.ts         # タブと、入れ子のタブの開きと閉じの対応

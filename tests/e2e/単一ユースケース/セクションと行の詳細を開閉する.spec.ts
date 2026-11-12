@@ -26,7 +26,7 @@ test("test_normal", async ({ page }) => {
   await openPage(page, builtRoot);
   await mountDocument(page, {
     markdown:
-      "## 概要\n\n概要の段落\n\n## 補足\n<!-- section: closed -->\n\n補足の段落\n",
+      '## 概要\n\n概要の段落\n\n## 補足\n<!-- section: {"open": false} -->\n\n補足の段落\n',
   });
   const overview = page.getByRole("button", { name: "概要" });
   const note = page.getByRole("button", { name: "補足" });
@@ -53,7 +53,7 @@ test("test_normal_when_fragment_in_closed_section", async ({ page }) => {
   // 実行
   await mountDocument(page, {
     markdown:
-      "## 補足\n<!-- section: closed -->\n\n### 注意\n\n注意の段落\n\n" +
+      '## 補足\n<!-- section: {"open": false} -->\n\n### 注意\n\n注意の段落\n\n' +
       "余白\n\n".repeat(30),
   });
   // 検証
@@ -69,7 +69,7 @@ test("test_normal_when_row_detail", async ({ page }) => {
   // 準備
   await openPage(page, builtRoot);
   await mountDocument(page, {
-    markdown: `${TABLE}\n<!-- row-detail: 2 -->\n\n詳細の段落\n\n- 詳細の項目\n\n<!-- /row-detail -->\n`,
+    markdown: `${TABLE}\n<!-- row-detail: {"at": 2} -->\n\n詳細の段落\n\n- 詳細の項目\n\n<!-- /row-detail -->\n`,
   });
   const toggle = page.locator("#doc button.mdmark-row-toggle");
   // 検証: 描いた直後
@@ -91,16 +91,20 @@ test("test_normal_when_row_detail", async ({ page }) => {
   await expect(page.locator("#doc > p")).toHaveCount(0);
 });
 
-// 知らない開閉の指定はスキップし、記載の警告を出さずに開いたセクションとして描く（正常シナリオ（知らない開閉の指定））
-test("test_normal_when_unknown_section_value", async ({ page }) => {
+// 型の合わない開閉の指定に記載の警告を出し、開いたセクションとして描く（異常シナリオ（型の合わない開閉の指定））
+test("test_error_when_section_open_invalid", async ({ page }) => {
   // 準備
   await openPage(page, builtRoot);
   // 実行
   await mountDocument(page, {
-    markdown: "## 補足\n<!-- section: hidden -->\n\n補足の段落\n",
+    markdown: '## 補足\n<!-- section: {"open": "hidden"} -->\n\n補足の段落\n',
   });
   // 検証
-  await expect(page.locator("#doc .mdmark-syntax-warning")).toHaveCount(0);
+  const warning = page.locator("#doc .mdmark-syntax-warning");
+  await expect(warning).toHaveCount(1);
+  await expect(warning).toContainText("open");
+  await expect(warning).toContainText("true");
+  await expect(warning).toContainText("false");
   await expect(page.getByText("補足の段落")).toBeVisible();
 });
 
@@ -110,7 +114,7 @@ test("test_error_when_row_out_of_range", async ({ page }) => {
   await openPage(page, builtRoot);
   // 実行
   await mountDocument(page, {
-    markdown: `${TABLE}\n<!-- row-detail: 5 -->\n\n詳細の段落\n\n<!-- /row-detail -->\n`,
+    markdown: `${TABLE}\n<!-- row-detail: {"at": 5} -->\n\n詳細の段落\n\n<!-- /row-detail -->\n`,
   });
   // 検証
   const warning = page.locator("#doc .mdmark-syntax-warning");
@@ -136,7 +140,7 @@ test("test_normal_when_row_detail_with_collapsed_column", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await openPage(page, builtRoot, { hostCss: "body { margin: 0 }" });
   await mountDocument(page, {
-    markdown: `${FOLD_TABLE}\n<!-- row-detail: 2 -->\n\nみかんの詳細\n\n<!-- /row-detail -->\n`,
+    markdown: `${FOLD_TABLE}\n<!-- row-detail: {"at": 2} -->\n\nみかんの詳細\n\n<!-- /row-detail -->\n`,
   });
   const rows = page.locator(
     "#doc tbody tr:not(.mdmark-row-detail):not(.mdmark-table-empty)",
@@ -184,7 +188,7 @@ test("test_normal_when_h1_section", async ({ page }) => {
   await openPage(page, builtRoot);
   await mountDocument(page, {
     markdown:
-      "# 手引き\n\n手引きの段落\n\n# 付録\n<!-- section: closed -->\n\n付録の段落\n",
+      '# 手引き\n\n手引きの段落\n\n# 付録\n<!-- section: {"open": false} -->\n\n付録の段落\n',
   });
   const appendix = page.getByRole("button", { name: "付録" });
   // 検証: 描いた直後
@@ -214,12 +218,12 @@ test("test_normal_when_all_toggled", async ({ page }) => {
       "概要の段落",
       "",
       "## 補足",
-      "<!-- section: closed -->",
+      '<!-- section: {"open": false} -->',
       "",
       "補足の段落",
       "",
       "### 注意",
-      "<!-- section: closed -->",
+      '<!-- section: {"open": false} -->',
       "",
       "注意の段落",
       "",
@@ -264,13 +268,13 @@ test("test_normal_when_nested_toggled_with_shift", async ({ page }) => {
       "概要の段落",
       "",
       "## 補足",
-      "<!-- section: closed -->",
+      '<!-- section: {"open": false} -->',
       "",
       "### 注意",
-      "<!-- section: closed -->",
+      '<!-- section: {"open": false} -->',
       "",
       "#### 例",
-      "<!-- section: closed -->",
+      '<!-- section: {"open": false} -->',
       "",
       "例の段落",
       "",
@@ -303,7 +307,7 @@ test("test_normal_when_details_range", async ({ page }) => {
     markdown: [
       "## 概要",
       "",
-      "<!-- details: 補足の手順 -->",
+      '<!-- details: {"title": "補足の手順"} -->',
       "",
       "補足の段落",
       "",
@@ -311,7 +315,7 @@ test("test_normal_when_details_range", async ({ page }) => {
       "",
       "<!-- /details -->",
       "",
-      "<!-- details: 実行の例 open -->",
+      '<!-- details: {"title": "実行の例", "open": true} -->',
       "",
       "例の段落",
       "",
@@ -352,7 +356,7 @@ test("test_error_when_details_unclosed", async ({ page }) => {
   await openPage(page, builtRoot);
   // 実行
   await mountDocument(page, {
-    markdown: "<!-- details: 補足 -->\n\n補足の段落\n",
+    markdown: '<!-- details: {"title": "補足"} -->\n\n補足の段落\n',
   });
   // 検証
   await expect(page.locator("#doc .mdmark-syntax-warning")).toContainText(

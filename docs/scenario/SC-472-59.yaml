@@ -71,7 +71,7 @@ scenarios:
       - name: mdmark を読み込むページ
         description: 正常シナリオと同じ
       - name: 未知のマーカーを持つ Markdown
-        description: '段落の間に `<!-- unknown: 1 -->` を持つ文書'
+        description: '段落の間に `<!-- unknown: {"size": 1} -->` を持つ文書'
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
@@ -87,6 +87,77 @@ scenarios:
       - マーカーの前後の段落が描かれている
       - 本文にマーカーの文字（`<!--`・`unknown`）が出ていない
     test: test_normal_when_unknown_mark
+  - name: 正常シナリオ（今の書き方のマーカー）
+    setup:
+      - name: mdmark を読み込むページ
+        description: 正常シナリオと同じ
+      - name: 今の書き方のマーカーを持つ Markdown
+        description: '`<!-- table: data +total total=数量:sum -->` 〜 `<!-- /table -->` で囲んだ表と、`<!-- details: 実行の例 open -->` 〜 `<!-- /details -->` の範囲を持つ文書と、同じ中身を `<!-- table: {"kind": "data", "columns": {"数量": {"total": [{"calc": "sum"}]}}} -->`・`<!-- details: {"title": "実行の例", "open": true} -->` で記載した文書'
+        notes: 今の書き方は、この記載方法を入れたマイナーバージョンの間だけ参照する
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 利用側のページ
+        participant M as mdmark
+        P->>M: 要素と今の書き方の Markdown を指定して描かせる
+        M->>M: JSON のオブジェクトでない引数を今の書き方として参照し、JSON の記載と同じ設定にする
+        M-->>P: 要素の中に本文を描く
+        P->>M: 別の要素と JSON の記載の Markdown を指定して描かせる
+        M-->>P: 要素の中に本文を描く
+        P-->>U: 2 つの文書を表示
+    expected:
+      - 2 つの文書の表が、どちらも数量の合計の行を持つ同じ表で描かれている
+      - 2 つの文書の details の範囲が、どちらも見出し `実行の例` の開いた状態で描かれている
+      - 今の書き方の文書にも記載の警告が出ていない（今の書き方は点検（`mdmark check`）が通知する）
+    test: test_normal_when_legacy_mark_args
+  - name: 正常シナリオ（複数行にまたがる JSON のマーカー）
+    setup:
+      - name: mdmark を読み込むページ
+        description: 正常シナリオと同じ
+      - name: 複数行の JSON のマーカーを持つ Markdown
+        description: '1 行目に `<!-- table: {`、2〜4 行目に `"kind": "data",`・`"columns": {"数量": {"total": [{"calc": "sum"}]}},`・`"collapse": {"open": false, "title": "明細"}`、5 行目に `} -->` を記載した表のマーカーで、名前・数量の 2 列 3 行の表を `<!-- /table -->` まで囲んだ文書と、同じ JSON のオブジェクトを 1 行で記載した文書'
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 利用側のページ
+        participant M as mdmark
+        P->>M: 要素と複数行の JSON のマーカーの Markdown を指定して描かせる
+        M->>M: マーカーの名前の後ろから --> の前までを、改行を含めて 1 つの JSON のオブジェクトとして参照する
+        M-->>P: 要素の中に本文を描く
+        P->>M: 別の要素と 1 行で記載した Markdown を指定して描かせる
+        M-->>P: 要素の中に本文を描く
+        P-->>U: 2 つの文書を表示
+    expected:
+      - 2 つの文書の表が、どちらも見出し `明細` の閉じた折り畳みに入り、開くと数量の合計の行を持つ同じ表で描かれている
+      - どちらの文書にも記載の警告が無い
+      - 本文にマーカーの文字（`<!--`・`"kind"`・`} -->`）が出ていない
+    test: test_normal_when_multiline_mark_args
+  - name: 異常シナリオ（JSON として読めないマーカーの引数）
+    setup:
+      - name: mdmark を読み込むページ
+        description: 正常シナリオと同じ
+      - name: 読めない引数を持つ Markdown
+        description: '`<!-- details: {"title": 補足} -->` 〜 `<!-- /details -->` で段落を囲んだ範囲と、型の合わない `<!-- fig: {"id": 1} -->` の後の画像を持つ文書'
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 利用側のページ
+        participant M as mdmark
+        P->>M: 要素と Markdown を指定して描かせる
+        M->>M: マーカーの引数が JSON として読めない・JSON Schema の型に合わない
+        M-->>P: マーカーの場所に記載の警告と、設定を適用しない範囲と画像を描く
+        P-->>U: 記載の警告と本文を表示
+    expected:
+      - details のマーカーの場所に、引数を JSON として読めない位置と理由を記載した記載の警告があり、範囲は既定の見出し `詳細` の閉じた折り畳みで描かれている
+      - fig のマーカーの場所に、`id` には文字列を記載することを記載した記載の警告があり、画像に番号が付いていない
+      - 範囲の中の段落と画像は欠けずに描かれている
+    test: test_error_when_mark_args_not_json
   - name: 正常シナリオ（文書にスクリプトがある）
     setup:
       - name: mdmark を読み込むページ

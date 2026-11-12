@@ -37,7 +37,7 @@ test("test_normal", async ({ page }) => {
   await page.emulateMedia({ media: "print" });
   await openPage(page, builtRoot);
   await mountDocument(page, {
-    markdown: `<!-- features: -print -->\n\n${DETAILS}`,
+    markdown: `<!-- features: {"print": false} -->\n\n${DETAILS}`,
     config: { features: { print: true } },
   });
   // 実行
@@ -52,7 +52,7 @@ test("test_normal_when_enabled_by_mark", async ({ page }) => {
   await page.emulateMedia({ media: "print" });
   await openPage(page, builtRoot);
   await mountDocument(page, {
-    markdown: `<!-- features: +print -->\n\n${DETAILS}`,
+    markdown: `<!-- features: {"print": true} -->\n\n${DETAILS}`,
     config: { features: { print: false } },
   });
   // 実行
@@ -82,7 +82,7 @@ test("test_normal_when_unknown_feature", async ({ page }) => {
   await openPage(page, builtRoot);
   // 実行
   await mountDocument(page, {
-    markdown: "<!-- features: +unknown -->\n\n段落\n",
+    markdown: '<!-- features: {"unknown": true} -->\n\n段落\n',
   });
   // 検証
   const doc = page.locator("#doc");
@@ -99,9 +99,9 @@ test("test_normal_when_syntax_disabled", async ({ page }) => {
   // 実行
   await mountDocument(page, {
     markdown: [
-      "<!-- features: -table -callout -->",
+      '<!-- features: {"table": false, "callout": false} -->',
       "",
-      "<!-- table: data -->",
+      '<!-- table: {"kind": "data"} -->',
       "",
       "| 名前 | 数 |",
       "| --- | --- |",
@@ -151,11 +151,11 @@ const DOCUMENTS = { "設計/arch.md": "", "api.md": "# API\n" };
 test("test_normal_when_glossary_disabled", async ({ page }) => {
   // 準備
   const markdown = [
-    "<!-- features: -glossary -backlinks -->",
+    '<!-- features: {"glossary": false, "backlinks": false} -->',
     "",
     "ワークスペースと作業場と単体テストを置く。",
     "",
-    "<!-- glossary: term=用語 meaning=意味 -->",
+    '<!-- glossary: {"term": {"column": "用語"}, "meaning": {"column": "意味"}} -->',
     "",
     "| 用語 | 意味 |",
     "| --- | --- |",
@@ -225,7 +225,8 @@ test("test_normal_when_backlinks_disabled", async ({ page }) => {
   await openPage(page, builtRoot);
   // 実行
   await mountDocument(page, {
-    markdown: "<!-- features: -backlinks -->\n\n索引と公開関数を読む。\n",
+    markdown:
+      '<!-- features: {"backlinks": false} -->\n\n索引と公開関数を読む。\n',
     index,
     docId: "arch",
     documents: { ...DOCUMENTS, "索引.md": "# 索引\n" },
@@ -251,7 +252,7 @@ test("test_normal_when_side_toc_disabled", async ({ page }) => {
   await openPage(page, builtRoot);
   // 実行
   await mountDocument(page, {
-    markdown: `<!-- features: -side-toc -->\n\n${SIDE_TOC_BODY}`,
+    markdown: `<!-- features: {"side-toc": false} -->\n\n${SIDE_TOC_BODY}`,
   });
   // 検証
   const doc = page.locator("#doc");
@@ -273,7 +274,7 @@ test("test_normal_when_side_toc_enabled_by_mark", async ({ page }) => {
   await openPage(page, builtRoot);
   // 実行
   await mountDocument(page, {
-    markdown: `<!-- features: +side-toc -->\n\n${SIDE_TOC_BODY}`,
+    markdown: `<!-- features: {"side-toc": true} -->\n\n${SIDE_TOC_BODY}`,
     config: { features: { "side-toc": false } },
   });
   // 検証
@@ -297,7 +298,7 @@ test("test_normal_when_media_features_disabled", async ({ page }) => {
   // 実行
   await mountDocument(page, {
     markdown: [
-      "<!-- features: -text-color -images -lightbox -cards -->",
+      '<!-- features: {"text-color": false, "images": false, "lightbox": false, "cards": false} -->',
       "",
       "[決め手の 1 文]{color=blue}",
       "",
@@ -341,7 +342,7 @@ test("test_normal_when_back_to_top_disabled", async ({ page }) => {
   ).join("\n");
   await openPage(page, builtRoot);
   await mountDocument(page, {
-    markdown: `<!-- features: -back-to-top -->\n\n${paragraphs}`,
+    markdown: `<!-- features: {"back-to-top": false} -->\n\n${paragraphs}`,
   });
   // 実行: 文書の末尾までスクロールする
   await page.evaluate(() =>
@@ -360,7 +361,7 @@ test("test_normal_when_footnotes_disabled", async ({ page }) => {
   // 実行
   await mountDocument(page, {
     markdown:
-      "<!-- features: -footnotes -->\n\n出典がある[^src]。\n\n[^src]: 出典の説明\n",
+      '<!-- features: {"footnotes": false} -->\n\n出典がある[^src]。\n\n[^src]: 出典の説明\n',
   });
   // 検証
   const doc = page.locator("#doc");
@@ -377,7 +378,7 @@ test("test_normal_when_new_syntax_disabled", async ({ page }) => {
   // 実行
   await mountDocument(page, {
     markdown: [
-      "<!-- features: -icon -columns -highlight -kbd -details -pagebreak -include -wide -csv -->",
+      '<!-- features: {"icon": false, "columns": false, "highlight": false, "kbd": false, "details": false, "pagebreak": false, "include": false, "wide": false, "csv": false} -->',
       "",
       "`icon:check` と `kbd:Ctrl+C` と ==決め手==",
       "",
@@ -391,7 +392,7 @@ test("test_normal_when_new_syntax_disabled", async ({ page }) => {
       "",
       "<!-- /columns -->",
       "",
-      "<!-- details: 補足 -->",
+      '<!-- details: {"title": "補足"} -->',
       "",
       "補足の中身",
       "",
@@ -399,7 +400,7 @@ test("test_normal_when_new_syntax_disabled", async ({ page }) => {
       "",
       "<!-- pagebreak -->",
       "",
-      "<!-- include: part.md -->",
+      '<!-- include: {"path": "part.md"} -->',
       "",
       "<!-- wide -->",
       "",
@@ -450,7 +451,7 @@ test("test_normal_when_range_scripts_enabled_by_document", async ({ page }) => {
   await routeTranspiler(page);
   await openPage(page, builtRoot);
   const markdown = [
-    "<!-- features: +html-scripts -->",
+    '<!-- features: {"html-scripts": true} -->',
     "",
     rangeMarkdown({
       css: RANGE_CSS,
@@ -492,7 +493,7 @@ test("test_normal_when_diagram_resize_disabled", async ({ page }) => {
   const flow = await flowMarkdown();
   // 実行
   await mountDocument(page, {
-    markdown: `<!-- features: -diagram-resize -->\n\n${flow}`,
+    markdown: `<!-- features: {"diagram-resize": false} -->\n\n${flow}`,
   });
   // 検証: 右下にリサイズハンドルが無く、右上の拡大・縮小のボタンはある
   await expect(page.locator("#doc figure.mdmark-diagram")).toHaveCount(1);
@@ -557,7 +558,7 @@ test("test_normal_when_frontmatter_enabled_by_mark", async ({ page }) => {
   await openPage(page, builtRoot);
   // 実行: 設定を指定せず、マーカーでオンにする
   await mountDocument(page, {
-    markdown: frontmatterMarkdown("<!-- features: +frontmatter -->"),
+    markdown: frontmatterMarkdown('<!-- features: {"frontmatter": true} -->'),
   });
   // 検証
   const content = page.locator("#doc .mdmark-content");
@@ -567,7 +568,7 @@ test("test_normal_when_frontmatter_enabled_by_mark", async ({ page }) => {
   );
   // 実行: 設定でオンにし、マーカーでオフにする
   await mountDocument(page, {
-    markdown: frontmatterMarkdown("<!-- features: -frontmatter -->"),
+    markdown: frontmatterMarkdown('<!-- features: {"frontmatter": false} -->'),
     config: { features: { frontmatter: true } },
   });
   // 検証
@@ -583,7 +584,7 @@ test("test_normal_when_map_disabled", async ({ page }) => {
   await openPage(page, builtRoot);
   // 実行
   await mountDocument(page, {
-    markdown: `<!-- features: -map -->\n\n${mapRange({ args: '{"title": "全体の構成"}', mermaid: MAP_FLOW, data: MAP_DATA })}`,
+    markdown: `<!-- features: {"map": false} -->\n\n${mapRange({ args: '{"title": "全体の構成"}', mermaid: MAP_FLOW, data: MAP_DATA })}`,
   });
   // 検証
   const doc = page.locator("#doc");

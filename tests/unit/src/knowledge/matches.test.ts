@@ -204,7 +204,8 @@ test("test_collect_matches_when_avoided_contains_term", async () => {
 test("test_collect_matches_when_avoided_and_glossary_disabled", async () => {
   // 準備
   const { collectMatches } = await loadMatches();
-  const guideBody = "<!-- features: -glossary -->\n\n作業場を使う。\n";
+  const guideBody =
+    '<!-- features: {"glossary": false} -->\n\n作業場を使う。\n';
   // 実行
   const result = collectMatches({
     index: avoidIndex(["作業場"]),
@@ -383,8 +384,8 @@ test("test_collect_matches_when_disabled", async () => {
     docs: [...MATCH_INDEX.docs, { id: "memo", path: "memo.md", title: "メモ" }],
   };
   const paragraph = "ワークスペースと公開関数を使う。";
-  const guide = `<!-- features: -glossary -->\n\n${paragraph}\n`;
-  const memo = `<!-- features: -glossary -backlinks -->\n\n${paragraph}\n`;
+  const guide = `<!-- features: {"glossary": false} -->\n\n${paragraph}\n`;
+  const memo = `<!-- features: {"glossary": false, "backlinks": false} -->\n\n${paragraph}\n`;
   // 実行
   const matches = collectMatches({
     index,

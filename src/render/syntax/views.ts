@@ -1,34 +1,27 @@
 import type { StateCore, Token } from "markdown-it";
 import type { WarningItem } from "../../extensions.ts";
 import { escapeHtml } from "../../parts/escape.ts";
-import {
-  isViewIconName,
-  VIEW_ICON_NAMES,
-  type ViewIconName,
-  type ViewSpec,
-} from "../../views/spec.ts";
+import type { TableFilter } from "../../parts/table.ts";
+import type { FilterKind } from "../../table-logic.ts";
+import type { ViewIconName, ViewSpec } from "../../views/spec.ts";
 import type { Mark } from "../marks.ts";
 import {
+  bodyCellsOf,
   codes,
   headersOf,
-  readFilters,
   type TableSpec,
   warningsOf,
 } from "./tables.ts";
 import { envOf, featureOn, findClose, markOf, ownBlock } from "./tokens.ts";
 import {
-  pushSkippedArgs,
   pushWarning,
-  type SkippedArg,
   type SyntaxWarning,
   unclosedWarning,
 } from "./warnings.ts";
 
-/** ビューのマーカーに記載できるキー */
-const VIEW_KEYS = ["group", "default", "filter", "icons"];
-
-/** `default=` に記載できる値 */
-const VIEW_MODES = ["board", "table"];
+/** 値がオブジェクト（配列を除く）か */
+const isObject = (value: unknown): value is Record<string, unknown> =>
+  typeof value === "object" && value !== null && !Array.isArray(value);
 
 /** ビューのマーカーを読み込んだ結果 */
 type ViewReading = {
@@ -36,58 +29,26 @@ type ViewReading = {
   tableSpec: TableSpec;
   /** `data-view` に記載する指定 */
   viewSpec: ViewSpec;
-  /** 読み込めなかった指定の警告（範囲の前に差し込む） */
+  /** 表に照らして読み込めなかった設定の警告（範囲の前に差し込む） */
   warnings: SyntaxWarning[];
-  /** スキップした知らないキー */
-  skipped: SkippedArg[];
 };
 
-/** `icons=` の値を `値:アイコンの名前` の組に分け、使用できるアイコンだけを対応にする。使用できない名前は警告にする */
-function readIcons(
-  value: string,
-  warnings: WarningItem[],
-): Record<string, ViewIconName> {
-  const icons: Record<string, ViewIconName> = {};
-  for (const pair of value.split(",").map((part) => part.trim())) {
-    const colon = pair.lastIndexOf(":");
-    if (pair === "" || colon <= 0) {
-      if (pair !== "") {
-        warnings.push({
-          label: pair,
-          message: `の \`icons=\` の \`${pair}\` は読み込めません。\`値:アイコンの名前\` で記載してください。`,
-        });
-      }
-      continue;
-    }
-    const target = pair.slice(0, colon);
-    const name = pair.slice(colon + 1);
-    if (isViewIconName(name)) {
-      icons[target] = name;
-    } else {
-      warnings.push({
-        label: name,
-        message: `のアイコン \`${name}\` は使用できません。使用できるアイコンは ${codes(VIEW_ICON_NAMES)} です。\`${target}\` の列には既定のアイコンを付けています。`,
-      });
-    }
-  }
-  return icons;
-}
-
-/** ビューのマーカーの引数と表の見出しから、表の指定・`data-view` の指定・警告を作る */
+/** ビューのマーカーの設定（マーカーの JSON Schema に通した後のもの）と表の見出しとセルから、表の指定・`data-view` の指定・警告を作る */
 function readView(options: {
   state: StateCore;
   mark: Mark;
   headers: string[];
+  cells: string[][];
 }): ViewReading {
-  const { state, mark, headers } = options;
+  const { state, mark, headers, cells } = options;
   const env = envOf(state);
-  const sentences: WarningItem[] = [];
+  const items: WarningItem[] = [];
   const warnings: SyntaxWarning[] = [];
+  const board = isObject(mark.options.board) ? mark.options.board : undefined;
+  const groupName = (board?.group as { column?: unknown } | undefined)?.column;
   let group: number | null = null;
   let boardDisabled = "";
-  const { keys } = mark.args;
-  const groupName = keys.group;
-  if (groupName !== undefined) {
+  if (typeof groupName === "string") {
     group = headers.indexOf(groupName);
     if (group < 0) {
       group = null;
@@ -100,25 +61,51 @@ function readView(options: {
       });
     }
   }
-  const items: WarningItem[] = [];
-  const usable = codes(VIEW_KEYS.map((name) => `${name}=`));
-  const skipped: SkippedArg[] = Object.keys(keys)
-    .filter((key) => !VIEW_KEYS.includes(key))
-    .map((key) => ({ arg: `${key}=`, usable }));
-  const requested = keys.default;
-  if (requested !== undefined && !VIEW_MODES.includes(requested)) {
-    items.push({
-      label: "default=",
-      message: `使用できない値です。使用できる値は ${codes(VIEW_MODES)} です`,
+  const icons: Record<string, ViewIconName> = {};
+  const values = isObject(board?.values) ? board.values : {};
+  if (group !== null) {
+    const column = group;
+    const present = [
+      ...new Set(cells.map((row) => (row[column] ?? "").trim())),
+    ];
+    for (const [value, settings] of Object.entries(values)) {
+      const icon = isObject(settings) ? settings.icon : undefined;
+      if (!present.includes(value)) {
+        items.push({
+          label: `board.values.${value}`,
+          message: `\`${value}\` は \`${String(groupName)}\` の列にありません。列の値は ${codes(present)} です。当てずに描いています。`,
+        });
+      } else if (typeof icon === "string") {
+        icons[value] = icon as ViewIconName;
+      }
+    }
+  }
+  const filters: TableFilter[] = [];
+  const columns = isObject(mark.options.columns) ? mark.options.columns : {};
+  for (const [name, settings] of Object.entries(columns)) {
+    const filter = isObject(settings) ? settings.filter : undefined;
+    if (!isObject(filter)) {
+      continue;
+    }
+    const column = headers.indexOf(name);
+    if (column < 0) {
+      items.push({
+        label: `columns.${name}`,
+        message: `の列 \`${name}\` は表にありません。表の列は ${codes(headers)} です。列名を修正してください。当てずに描いています。`,
+      });
+      continue;
+    }
+    filters.push({
+      column,
+      kind:
+        typeof filter.type === "string"
+          ? (filter.type as FilterKind)
+          : "select",
     });
   }
-  const filters = readFilters(keys.filter ?? "", headers, sentences);
-  const icons = readIcons(keys.icons ?? "", sentences);
-  const mode =
-    group !== null && (requested === undefined || requested !== "table")
-      ? "board"
-      : "table";
-  warnings.push(...warningsOf(mark.raw, [...sentences, ...items]));
+  const requested = mark.options.initial;
+  const mode = group !== null && requested !== "table" ? "board" : "table";
+  warnings.push(...warningsOf(mark.raw, items));
   return {
     tableSpec: {
       kind: "data",
@@ -127,17 +114,16 @@ function readView(options: {
       // ビューの表には件数・列の表示の切り替え・集計を付けない
       hide: [],
       totals: [],
-      wide: [],
+      unpinned: [],
+      widths: [],
       check: [],
       collapse: "none",
       warnings: [],
-      skipped: [],
       headRows: 1,
       rowHeader: 0,
     },
     viewSpec: { group, mode, boardDisabled, icons },
     warnings,
-    skipped,
   };
 }
 
@@ -151,7 +137,7 @@ function firstTable(tokens: Token[], from: number, to: number): number {
   return -1;
 }
 
-/** `views` がオンのとき、`<!-- view: 引数 -->` の範囲を `div.mdmark-view` の囲みにし、範囲の最初の表に表の部品の指定を当て、記載方法の誤りを警告にする */
+/** `views` がオンのとき、`<!-- view: {…} -->` の範囲を `div.mdmark-view` の囲みにし、範囲の最初の表に表の部品の指定を当て、記載方法の誤りを警告にする */
 export function buildViews(state: StateCore): void {
   if (!featureOn(state, "views")) {
     return;
@@ -166,7 +152,6 @@ export function buildViews(state: StateCore): void {
     const close = findClose(tokens, open, "view");
     const end = close < 0 ? tokens.length : close;
     const warnings: SyntaxWarning[] = [];
-    let skipped: SkippedArg[] = [];
     if (close < 0) {
       warnings.push(unclosedWarning(mark));
     }
@@ -183,9 +168,9 @@ export function buildViews(state: StateCore): void {
         state,
         mark,
         headers: headersOf(tokens, table),
+        cells: bodyCellsOf(tokens, table),
       });
       warnings.unshift(...reading.warnings);
-      skipped = reading.skipped;
       tableOpen.meta = {
         ...(tableOpen.meta ?? {}),
         tableSpec: reading.tableSpec,
@@ -199,11 +184,5 @@ export function buildViews(state: StateCore): void {
     for (const [offset, warning] of warnings.entries()) {
       pushWarning(state, open + offset, warning, source);
     }
-    pushSkippedArgs(
-      state,
-      open + warnings.length,
-      { mark: mark.raw, skipped },
-      source,
-    );
   }
 }

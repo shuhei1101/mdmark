@@ -5,7 +5,7 @@ import { renderDoc } from "../../../helpers/render.ts";
 /** 2 列の表 */
 const TABLE = "| a | b |\n| --- | --- |\n| 1 | 2 |\n";
 
-// 範囲を囲み、`closed` を `narrow` にする（正常系）
+// 範囲を囲み、`open` の `false` を `narrow` にする（正常系）
 test("test_build_wide_ranges", () => {
   // 準備
   const markdown = [
@@ -14,7 +14,7 @@ test("test_build_wide_ranges", () => {
     TABLE,
     "<!-- /wide -->",
     "",
-    "<!-- wide: closed -->",
+    '<!-- wide: {"open": false} -->',
     "",
     TABLE,
     "<!-- /wide -->",
@@ -45,10 +45,10 @@ test("test_build_wide_ranges_when_unclosed", () => {
   );
 });
 
-// closed 以外の引数は警告にせずスキップする（正常系）
-test("test_build_wide_ranges_when_unknown_args", () => {
+// 知らないキーは警告にせず無視する（正常系）
+test("test_build_wide_ranges_when_unknown_keys", () => {
   // 準備
-  const markdown = `<!-- wide: narrow size=2 -->\n\n${TABLE}\n<!-- /wide -->\n`;
+  const markdown = `<!-- wide: {"state": "narrow", "size": 2} -->\n\n${TABLE}\n<!-- /wide -->\n`;
   // 実行
   const { html, warnings } = renderDoc(markdown);
   // 検証
@@ -61,6 +61,6 @@ test("test_build_wide_ranges_when_unknown_args", () => {
     "unknown_mark_arg",
   ]);
   const messages = warnings.map((warning) => warning.message).join("\n");
-  expect(messages).toContain("narrow");
-  expect(messages).toContain("size=");
+  expect(messages).toContain("state");
+  expect(messages).toContain("size");
 });

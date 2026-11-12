@@ -73,7 +73,7 @@ scenarios:
       - name: mdmark を読み込むページ
         description: 正常シナリオと同じ
       - name: 同じ組のタブを持つ Markdown
-        description: '`<!-- tabs: group=os -->` 〜 `<!-- /tabs -->` で `### macOS`・`### Windows` を囲んだ範囲を 2 つと、`<!-- tabs: group=os -->` で `### macOS`・`### Linux` を囲んだ範囲を 1 つ、`group` の無い `<!-- tabs -->` で `### macOS`・`### Windows` を囲んだ範囲を 1 つ並べた文書'
+        description: '`<!-- tabs: {"group": "os"} -->` 〜 `<!-- /tabs -->` で `### macOS`・`### Windows` を囲んだ範囲を 2 つと、`<!-- tabs: {"group": "os"} -->` で `### macOS`・`### Linux` を囲んだ範囲を 1 つ、`group` の無い `<!-- tabs -->` で `### macOS`・`### Windows` を囲んだ範囲を 1 つ並べた文書'
         notes: 3 つ目は `Windows` のタブ名を持たない組の仲間、4 つ目は組に入らないタブ
       - name: Mock
         description: 正常シナリオと同じ
@@ -99,7 +99,7 @@ scenarios:
       - name: mdmark を読み込むページ
         description: 正常シナリオと同じ
       - name: 同じ組のタブを持つ Markdown
-        description: '`<!-- tabs: group=os -->` で `### macOS`・`### Windows` を囲んだ範囲と、`group` の無い `<!-- tabs -->` で `### macOS`・`### Windows` を囲んだ範囲を並べた文書。`group=os` の `macOS` の中身は `#### macOS の注意` と段落を持つ'
+        description: '`<!-- tabs: {"group": "os"} -->` で `### macOS`・`### Windows` を囲んだ範囲と、`group` の無い `<!-- tabs -->` で `### macOS`・`### Windows` を囲んだ範囲を並べた文書。`group` が `os` の `macOS` の中身は `#### macOS の注意` と段落を持つ'
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
@@ -110,21 +110,21 @@ scenarios:
         participant S as localStorage
         P->>M: 設定と Markdown を指定して描かせる
         M-->>P: タブを描く
-        U->>P: group=os のタブ群の Windows のタブを押す
+        U->>P: group が os のタブ群の Windows のタブを押す
         M->>S: os の組に Windows を残す
         U->>P: ページを再読み込みする
         P->>M: 同じ Markdown を指定して描かせる
         M->>S: os の組に残したタブ名を読み込む
-        M-->>P: group=os のタブ群を Windows を選んで描く
+        M-->>P: group が os のタブ群を Windows を選んで描く
         P-->>U: Windows の中身を表示
         U->>P: URL の末尾に #macos-の注意 を付けて再読み込みする
         P->>M: 同じ Markdown を指定して描かせる
         M-->>P: URL の ID を優先して macOS のタブを選び、見出しへ移る
         P-->>U: macOS の中身を表示
     expected:
-      - 再読み込みした後、`group=os` のタブ群の `Windows` のタブの `aria-selected` が `true` で、`Windows` の段落だけが表示されている
+      - 再読み込みした後、`group` が `os` のタブ群の `Windows` のタブの `aria-selected` が `true` で、`Windows` の段落だけが表示されている
       - '`group` の無いタブ群は、再読み込みした後に `macOS` を選んでいる'
-      - '`#macos-の注意` を付けて再読み込みした後、覚えた `Windows` より URL の ID を優先し、`group=os` のタブ群の `macOS` のタブの `aria-selected` が `true` で、`macOS の注意` の見出しが画面に入っている'
+      - '`#macos-の注意` を付けて再読み込みした後、覚えた `Windows` より URL の ID を優先し、`group` が `os` のタブ群の `macOS` のタブの `aria-selected` が `true` で、`macOS の注意` の見出しが画面に入っている'
     test: test_normal_when_reloaded
   - name: 異常シナリオ（選んだタブを覚えられない）
     setup:
@@ -134,7 +134,7 @@ scenarios:
         description: ページを開く前に、`window.localStorage` を読み込むと `SecurityError` を投げるように差し替える
         notes: ブラウザの設定でサイトのデータを拒んだときの状態に該当する
       - name: 同じ組のタブを持つ Markdown
-        description: '`<!-- tabs: group=os -->` で `### macOS`・`### Windows` を囲んだ範囲を 2 つ並べた文書'
+        description: '`<!-- tabs: {"group": "os"} -->` で `### macOS`・`### Windows` を囲んだ範囲を 2 つ並べた文書'
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
@@ -162,7 +162,7 @@ scenarios:
       - name: mdmark を読み込むページ
         description: 正常シナリオと同じ
       - name: 値の無い group を持つ Markdown
-        description: '`<!-- tabs: group= -->` で `### macOS`・`### Windows` を囲んだ範囲と、`<!-- tabs -->` で `### macOS`・`### Windows` を囲んだ範囲を並べた文書'
+        description: '`<!-- tabs: {"group": ""} -->` で `### macOS`・`### Windows` を囲んだ範囲と、`<!-- tabs -->` で `### macOS`・`### Windows` を囲んだ範囲を並べた文書'
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
@@ -176,7 +176,7 @@ scenarios:
         U->>P: 1 つ目のタブ群の Windows のタブを押す
         P-->>U: 1 つ目のタブ群だけ Windows の中身を表示
     expected:
-      - 1 つ目のタブ群の上に、`group` の値が無いことを記載した記載の警告がある
+      - 1 つ目のタブ群の上に、`group` には 1 文字以上の文字を記載することを記載した記載の警告がある
       - 1 つ目のタブ群は `Windows` を選び、2 つ目のタブ群は `macOS` を選んだまま
     test: test_error_when_empty_group
   - name: 正常シナリオ（知らないタブの指定）
@@ -184,8 +184,8 @@ scenarios:
       - name: mdmark を読み込むページ
         description: 正常シナリオと同じ
       - name: 知らない指定を持つ Markdown
-        description: '`<!-- tabs: grop=os -->` で `### macOS`・`### Windows` を囲んだ範囲と、`<!-- tabs: group=os fold -->` で `### macOS`・`### Windows` を囲んだ範囲を並べた文書'
-        notes: 1 つ目は `group` の記載を誤ったキー、2 つ目は `キー=値` の構造でない指定
+        description: '`<!-- tabs: {"grop": "os"} -->` で `### macOS`・`### Windows` を囲んだ範囲と、`<!-- tabs: {"group": "os", "fold": true} -->` で `### macOS`・`### Windows` を囲んだ範囲を並べた文書'
+        notes: 1 つ目は `group` の記載を誤ったキー、2 つ目は知らないキー `fold` を持つ。知らないキーは、描くときは無視し、点検（`mdmark check`）が通知する
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
@@ -194,7 +194,7 @@ scenarios:
         participant P as 利用側のページ
         participant M as mdmark
         P->>M: 設定と Markdown を指定して描かせる
-        M->>M: 知らないキーと指定をスキップする
+        M->>M: 知らないキーを無視する
         M-->>P: 読み込めた指定だけを適用したタブ群を描く
         U->>P: 1 つ目のタブ群の Windows のタブを押す
         P-->>U: 1 つ目のタブ群だけ Windows の中身を表示
@@ -208,7 +208,7 @@ scenarios:
       - name: mdmark を読み込むページ
         description: 正常シナリオと同じ
       - name: 折りたたみのタブを持つ Markdown
-        description: '`<!-- tabs: closed -->` で `### uv`・`### pip` を囲んだ範囲と、`<!-- tabs: open title=入れ方 -->` で `### macOS`・`### Windows` を囲んだ範囲を並べた文書'
+        description: '`<!-- tabs: {"collapse": {"open": false}} -->` で `### uv`・`### pip` を囲んだ範囲と、`<!-- tabs: {"collapse": {"open": true, "title": "入れ方"}} -->` で `### macOS`・`### Windows` を囲んだ範囲を並べた文書'
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
@@ -224,16 +224,16 @@ scenarios:
         P-->>U: pip の中身を表示
     expected:
       - 1 つ目の折りたたみの見出しが `タブ（uv・pip）` で、描いた直後はタブの並びと中身が表示されていない
-      - 2 つ目の折りたたみの見出しが `title=` の「入れ方」で、描いた直後から `macOS` の中身が表示されている
+      - 2 つ目の折りたたみの見出しが `collapse.title` の「入れ方」で、描いた直後から `macOS` の中身が表示されている
       - 1 つ目の見出しを押した後、`uv` のタブが選ばれ、`pip` のタブを押すと `pip` の中身だけが表示される
       - 記載の警告は出ていない
     test: test_normal_when_folded
-  - name: 異常シナリオ（closed と open を両方書いたタブ）
+  - name: 異常シナリオ（オブジェクトでない折りたたみの指定）
     setup:
       - name: mdmark を読み込むページ
         description: 正常シナリオと同じ
-      - name: closed と open を両方持つ Markdown
-        description: '`<!-- tabs: closed open -->` で `### macOS`・`### Windows` を囲んだ文書'
+      - name: オブジェクトでない collapse を持つ Markdown
+        description: '`<!-- tabs: {"collapse": "closed"} -->` で `### macOS`・`### Windows` を囲んだ文書'
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
@@ -242,13 +242,13 @@ scenarios:
         participant P as 利用側のページ
         participant M as mdmark
         P->>M: 設定と Markdown を指定して描かせる
-        M->>M: closed と open が両方ある
-        M-->>P: 記載の警告と、閉じた折りたたみのタブ群を描く
-        P-->>U: 記載の警告と閉じたタブ群を表示
+        M->>M: collapse がオブジェクトでないため適用しない
+        M-->>P: 記載の警告と、折りたたみに入れないタブ群を描く
+        P-->>U: 記載の警告とタブ群を表示
     expected:
-      - 範囲の上に、`closed` と `open` を同時に記載できないことを記載した記載の警告がある
-      - タブ群は `closed` を適用した閉じた折りたたみに入り、見出しが `タブ（macOS・Windows）`
-    test: test_error_when_closed_and_open
+      - 範囲の上に、`collapse` には `open`・`title` を持つオブジェクトを記載することを記載した記載の警告がある
+      - タブ群は折りたたみに入らずに描かれ、`macOS` の中身が表示されている
+    test: test_error_when_collapse_not_object
   - name: 正常シナリオ（入れ子のタブ）
     setup:
       - name: mdmark を読み込むページ
@@ -317,7 +317,7 @@ scenarios:
       - 外側のタブの開きの位置に記載の警告があり、閉じが無いことが記載されている
       - 外側の範囲の中のタブのマーカーは全てタブにならず、4 つの見出しと中身の段落が全て表示されている
     test: test_error_when_nested_unclosed
-lead: '文書の作成者が `<!-- tabs -->` 〜 `<!-- /tabs -->` で見出しごとのセクションを囲むと、mdmark が見出しの文字をタブ名にしたタブに描き、読者がタブを切り替えて 1 つの中身を読み込む。`<!-- tabs: group=名前 -->` で同じ組にしたタブは選択が一致し、選んだタブ名を覚えて再読み込みしても同じタブで開く。`closed`・`open` を記載したタブは、見出し付きの折りたたみに入る。'
+lead: '文書の作成者が `<!-- tabs -->` 〜 `<!-- /tabs -->` で見出しごとのセクションを囲むと、mdmark が見出しの文字をタブ名にしたタブに描き、読者がタブを切り替えて 1 つの中身を読み込む。`<!-- tabs: {"group": "名前"} -->` で同じ組にしたタブは選択が一致し、選んだタブ名を覚えて再読み込みしても同じタブで開く。`collapse` を記載したタブは、見出し付きの折りたたみに入る。'
 issue: 4
 primary_actor: 読者
 stakeholders:

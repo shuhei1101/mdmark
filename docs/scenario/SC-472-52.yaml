@@ -7,7 +7,7 @@ scenarios:
       - name: 作業のフォルダ
         description: '`mdmark init` の後のフォルダ'
       - name: 点検する文字列
-        description: '正しいフロー図の部品の定義と、`<!-- table: data -->` で囲んだ表を持つ Markdown の文字列'
+        description: '正しいフロー図の部品の定義と、`<!-- table: {"kind": "data"} -->` で囲んだ表を持つ Markdown の文字列'
       - name: Mock
         description: 差し替える依存は無い。点検はブラウザを使用しない
     flow: |-
@@ -29,7 +29,7 @@ scenarios:
       - name: 作業のフォルダ
         description: 正常シナリオと同じ
       - name: 記載の警告を持つ文字列
-        description: 'ノードの種類に無い `begin` を記載したフロー図の定義、知らないマーカー `<!-- tabz -->`、`<!-- code: highlight=9 -->` の直後の 3 行のコードブロックを持つ Markdown の文字列'
+        description: 'ノードの種類に無い `begin` を記載したフロー図の定義、知らないマーカー `<!-- tabz -->`、`<!-- code: {"highlight": [9]} -->` の直後の 3 行のコードブロックを持つ Markdown の文字列'
         notes: 同じ文字列を `render` で描いたときに、記載の警告が 3 つ出る
       - name: Mock
         description: 正常シナリオと同じ
@@ -43,7 +43,7 @@ scenarios:
         R-->>C: 記載の警告の一覧
         C-->>W: 場所・種類・内容の一覧・終了コード 0 以外
     expected:
-      - 'ずれの行が 3 つあり、それぞれが文字列の中のフロー図の定義・`<!-- tabz -->`・`<!-- code: highlight=9 -->` の行を指す'
+      - 'ずれの行が 3 つあり、それぞれが文字列の中のフロー図の定義・`<!-- tabz -->`・`<!-- code: {"highlight": [9]} -->` の行を指す'
       - 各行の内容が、同じ文字列を `render` で描いたときの記載の警告の文言と同じ
       - 終了コードが 0 以外
     test: test_normal_when_warnings
@@ -121,7 +121,7 @@ scenarios:
       - name: 作業のフォルダ
         description: 正常シナリオと同じ
       - name: 知らないキー・機能・指定を持つ文字列
-        description: '`<!-- table: data +unknown widht=説明 -->` で囲んだ表と、`<!-- tabs: grop=os -->` で `### macOS`・`### Windows` を囲んだ範囲を持つ Markdown の文字列'
+        description: '`<!-- table: {"kind": "data", "features": {"unknown": {}}, "widht": {"説明": {}}} -->` で囲んだ表と、`<!-- tabs: {"grop": "os"} -->` で `### macOS`・`### Windows` を囲んだ範囲を持つ Markdown の文字列'
         notes: 同じ文字列を `render` で描いたときに、記載の警告は出ない
       - name: Mock
         description: 正常シナリオと同じ
@@ -131,15 +131,84 @@ scenarios:
         participant C as mdmark CLI
         participant R as mdmark の描画の処理
         W->>C: mdmark check（Markdown の文字列）
-        C->>R: 文字列を描くときと同じ読み取りで、記載の警告とスキップしたキー・機能・指定を集める
-        R-->>C: 空の警告の一覧と、スキップしたキー・機能・指定の一覧
+        C->>R: 文字列を描くときと同じ読み取りとマーカーの JSON Schema の検証で、記載の警告と無視したキーを集める
+        R-->>C: 空の警告の一覧と、無視したキーの一覧
         C-->>W: 場所・種類・内容の一覧・終了コード 0 以外
     expected:
-      - ずれの行が 3 つあり、`+unknown`・`widht=` の 2 つが表のマーカーの行を、`grop=` がタブのマーカーの行を指す
-      - 各行の種類が記載の警告でも知らないマーカーでもない、知らないキー・機能・指定の種類
-      - 各行の内容が、スキップしたキー・機能・指定と、そのマーカーで使用できるキー・機能・指定を挙げる
+      - ずれの行が 3 つあり、`features.unknown`・`widht` の 2 つが表のマーカーの行を、`grop` がタブのマーカーの行を指す
+      - 各行の種類が記載の警告でも知らないマーカーでもない、知らないキーの種類
+      - 各行の内容が、無視したキーの場所（`features.unknown` など）と、その場所で使用できるキーを挙げる
       - 終了コードが 0 以外
     test: test_normal_when_unknown_mark_args
+  - name: 正常シナリオ（今の書き方のマーカーがある）
+    setup:
+      - name: 作業のフォルダ
+        description: 正常シナリオと同じ
+      - name: 今の書き方のマーカーを持つ文字列
+        description: '`<!-- table: data +total total=数量:sum -->` で囲んだ表と、`<!-- details: 補足 open -->` 〜 `<!-- /details -->` の範囲を持つ Markdown の文字列'
+        notes: 同じ文字列を `render` で描くと、表と範囲は今の書き方のとおりに描かれ、記載の警告は出ない
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor W as 文書の作成者
+        participant C as mdmark CLI
+        participant R as mdmark の描画の処理
+        W->>C: mdmark check（Markdown の文字列）
+        C->>R: 文字列を描くときと同じ読み取りで、記載の警告と今の書き方のマーカーを集める
+        R-->>C: 空の警告の一覧と、今の書き方のマーカーの一覧
+        C-->>W: 場所・種類・内容の一覧・終了コード 0 以外
+    expected:
+      - ずれの行が 2 つあり、表のマーカーの行と details のマーカーの行を指す
+      - 各行の種類が今の書き方のマーカーの種類
+      - 各行の内容が、マーカーの引数を JSON のオブジェクトで記載することと、`mdmark upgrade` で書き換えられることを挙げる
+      - 終了コードが 0 以外
+    test: test_normal_when_legacy_mark_args
+  - name: 正常シナリオ（JSON として読めない引数）
+    setup:
+      - name: 作業のフォルダ
+        description: 正常シナリオと同じ
+      - name: 読めない引数を持つ文字列
+        description: '末尾のカンマを持つ `<!-- code: {"title": "app.ts",} -->` の直後のコードブロックと、値に `--\u003e` を記載した `<!-- details: {"title": "a --\u003e b"} -->` 〜 `<!-- /details -->` の範囲を持つ Markdown の文字列'
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor W as 文書の作成者
+        participant C as mdmark CLI
+        participant R as mdmark の描画の処理
+        W->>C: mdmark check（Markdown の文字列）
+        C->>R: 文字列を描くときと同じ読み取りで、記載の警告を集める
+        R-->>C: code のマーカーの JSON として読めない引数の記載の警告
+        C-->>W: 場所・種類・内容の一覧・終了コード 0 以外
+    expected:
+      - ずれの行が 1 つだけで、code のマーカーの行を指し、種類が記載の警告、内容が JSON として読めない位置と理由を挙げる
+      - details のマーカーを指す行が無い（`\u003e` で記載した `>` は値の `-->` として読む）
+      - 終了コードが 0 以外
+    test: test_normal_when_mark_args_not_json
+  - name: 正常シナリオ（値に --> を記載した引数）
+    setup:
+      - name: 作業のフォルダ
+        description: 正常シナリオと同じ
+      - name: 値に --> を持つ文字列
+        description: '段落の後に、値に `-->` をそのまま記載した `<!-- details: {"title": "a --> b"} -->` と段落と `<!-- /details -->` を持つ Markdown の文字列'
+        notes: 'HTML コメントは最初の `-->` で閉じるため、マーカーの引数は `{"title": "a ` までになり、残りの ` b"} -->` はコメントの外の文字になる。同じ文字列を `render` で描くと、details のマーカーの場所に JSON として読めない引数の記載の警告が出て、範囲は既定の見出し `詳細` の閉じた折り畳みで描かれ、` b"} -->` は本文の文字として出る'
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor W as 文書の作成者
+        participant C as mdmark CLI
+        participant R as mdmark の描画の処理
+        W->>C: mdmark check（Markdown の文字列）
+        C->>R: 文字列を描くときと同じ読み取りで、記載の警告を集める
+        R-->>C: details のマーカーの JSON として読めない引数の記載の警告
+        C-->>W: 場所・種類・内容の一覧・終了コード 0 以外
+    expected:
+      - ずれの行が details のマーカーの行を指し、種類が記載の警告
+      - 行の内容が、JSON として読めない位置と理由に加えて、値に `-->` を記載するとコメントがそこで閉じることと、`>` を `\u003e` にした `--\u003e` で記載する方法を挙げる
+      - 終了コードが 0 以外
+    test: test_normal_when_comment_end_in_value
   - name: 正常シナリオ（map の書き方の警告がある）
     setup:
       - name: 作業のフォルダ

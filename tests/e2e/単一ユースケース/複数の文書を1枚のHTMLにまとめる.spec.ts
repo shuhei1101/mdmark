@@ -358,14 +358,14 @@ test("test_normal_when_blob_and_dynamic_import_blocked", async ({
       "",
       "[ガイド](guide.md) を読む。",
       "",
-      "<!-- greet: 世界 -->",
+      '<!-- greet: {"target": "世界"} -->',
       "",
       "```ts",
       "const count: number = 1;",
       "```",
       "",
     ].join("\n"),
-    "guide.md": ["# ガイド", "", VIEW_SOURCE, "", "<!-- chart: a -->", ""].join(
+    "guide.md": ["# ガイド", "", VIEW_SOURCE, "", "<!-- chart -->", ""].join(
       "\n",
     ),
     ...vendor,
@@ -450,7 +450,7 @@ test("test_normal_when_includes_and_icons_embedded", async ({
       "",
     ].join("\n"),
     "docs/a.md":
-      "# A\n\n<!-- include: b.md#使い方 -->\n\n<!-- include: ../共通/手順.md -->\n\n`icon:sailboat` の段落\n",
+      '# A\n\n<!-- include: {"path": "b.md", "heading": "使い方"} -->\n\n<!-- include: {"path": "../共通/手順.md"} -->\n\n`icon:sailboat` の段落\n',
     "docs/b.md": "# B\n\n## 使い方\n\n使い方の段落\n",
     "共通/手順.md": "手順の段落\n",
   });

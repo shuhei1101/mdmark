@@ -85,7 +85,7 @@ test("test_normal", async ({ page }) => {
   // 実行
   await mountDocument(page, {
     markdown: [
-      "<!-- code: title=app.ts lines highlight=2 -->",
+      '<!-- code: {"title": "app.ts", "lines": {}, "highlight": [2]} -->',
       "",
       ...THREE_LINES,
       "",
@@ -182,9 +182,9 @@ test("test_normal_when_feature_off", async ({ page }) => {
   // 実行
   await mountDocument(page, {
     markdown: [
-      "<!-- features: -code -->",
+      '<!-- features: {"code": false} -->',
       "",
-      "<!-- code: title=app.ts lines highlight=2 -->",
+      '<!-- code: {"title": "app.ts", "lines": {}, "highlight": [2]} -->',
       "",
       ...THREE_LINES,
       "",
@@ -211,7 +211,7 @@ test("test_normal_when_unknown_key", async ({ page }) => {
   // 実行
   await mountDocument(page, {
     markdown: [
-      "<!-- code: title=app.ts color=red -->",
+      '<!-- code: {"title": "app.ts", "color": "red"} -->',
       "",
       ...THREE_LINES,
       "",
@@ -223,15 +223,50 @@ test("test_normal_when_unknown_key", async ({ page }) => {
   await expect(doc.locator(".mdmark-code-title")).toContainText("app.ts");
 });
 
+// 空白を含むタイトルを出し、行番号を lines.start の番号から始めて強調の行を合わせる（正常シナリオ（空白を含むタイトルと行番号の開始の番号））
+test("test_normal_when_title_with_space_and_line_start", async ({ page }) => {
+  // 準備
+  await openPage(page, builtRoot);
+  // 実行
+  await mountDocument(page, {
+    markdown: [
+      '<!-- code: {"title": "src/app.ts の抜粋", "lines": {"start": 10}, "highlight": [{"from": 11, "to": 12}]} -->',
+      "",
+      ...THREE_LINES,
+      "",
+    ].join("\n"),
+  });
+  // 検証
+  const doc = page.locator("#doc");
+  await expect(doc.locator(".mdmark-code-title")).toContainText(
+    "src/app.ts の抜粋",
+  );
+  const lines = doc.locator(".mdmark-code-line");
+  await expect(lines).toHaveCount(3);
+  for (const [index, number] of ["10", "11", "12"].entries()) {
+    const content = await lines
+      .nth(index)
+      .evaluate((element) => getComputedStyle(element, "::before").content);
+    expect(content).toContain(number);
+  }
+  expect(await hasBackground(lines.nth(0))).toBe(false);
+  expect(await hasBackground(lines.nth(1))).toBe(true);
+  expect(await hasBackground(lines.nth(2))).toBe(true);
+  await expect(doc.locator(".mdmark-syntax-warning")).toHaveCount(0);
+});
+
 // コードブロックに無い行の番号は当てずに警告にし、ある行だけを強調する（異常シナリオ（コードブロックに無い行の番号））
 test("test_error_when_highlight_line_missing", async ({ page }) => {
   // 準備
   await openPage(page, builtRoot);
   // 実行
   await mountDocument(page, {
-    markdown: ["<!-- code: highlight=2,5 -->", "", ...THREE_LINES, ""].join(
-      "\n",
-    ),
+    markdown: [
+      '<!-- code: {"highlight": [2, 5]} -->',
+      "",
+      ...THREE_LINES,
+      "",
+    ].join("\n"),
   });
   // 検証
   const doc = page.locator("#doc");
@@ -274,7 +309,9 @@ test("test_error_when_no_code_block", async ({ page }) => {
   await openPage(page, builtRoot);
   // 実行
   await mountDocument(page, {
-    markdown: ["<!-- code: title=app.ts -->", "", "直後の段落", ""].join("\n"),
+    markdown: ['<!-- code: {"title": "app.ts"} -->', "", "直後の段落", ""].join(
+      "\n",
+    ),
   });
   // 検証
   const doc = page.locator("#doc");
@@ -380,7 +417,7 @@ test("test_normal_when_highlighted_with_line_marks", async ({ page }) => {
   // 実行
   await mountDocument(page, {
     markdown: [
-      "<!-- code: title=app.ts lines highlight=4 -->",
+      '<!-- code: {"title": "app.ts", "lines": {}, "highlight": [4]} -->',
       "",
       "```ts",
       "/*",
@@ -469,7 +506,7 @@ test("test_normal_when_syntax_feature_off", async ({ page }) => {
   // 実行
   await mountDocument(page, {
     markdown: [
-      "<!-- features: -syntax -->",
+      '<!-- features: {"syntax": false} -->',
       "",
       "```ts",
       "let count = 1; // [!code ++]",
@@ -1018,7 +1055,7 @@ test("test_normal_when_indent_guides", async ({ page }) => {
 
 /** 2 行目と 6 行目が畳める行の 8 行の yaml を、`fold=2,6` で畳んで描く文書 */
 const FOLD_OPTION_MARKDOWN = [
-  "<!-- code: lines fold=2,6 -->",
+  '<!-- code: {"lines": {}, "fold": [2, 6]} -->',
   "",
   "```yaml",
   "root:",
@@ -1094,7 +1131,7 @@ test("test_error_when_fold_line_invalid", async ({ page }) => {
   // 実行
   await mountDocument(page, {
     markdown: [
-      "<!-- code: fold=1,3,99 -->",
+      '<!-- code: {"fold": [1, 3, 99]} -->',
       "",
       "```yaml",
       "a:",
@@ -1137,9 +1174,14 @@ test("test_normal_when_wrap", async ({ page }) => {
   const code = ["```ts", "const a = 1;", WRAP_LONG_LINE, "const c = 3;", "```"];
   // 実行
   await mountDocument(page, {
-    markdown: ["<!-- code: lines wrap -->", "", ...code, "", ...code, ""].join(
-      "\n",
-    ),
+    markdown: [
+      '<!-- code: {"lines": {}, "wrap": true} -->',
+      "",
+      ...code,
+      "",
+      ...code,
+      "",
+    ].join("\n"),
   });
   // 検証
   const [wrapped, plain] = [

@@ -134,6 +134,8 @@ export function renderCodeBlock(options: {
   title: string;
   /** 行番号を出すか */
   lineNumbers: boolean;
+  /** 最初の行の番号（既定 1） */
+  lineStart?: number | undefined;
   /** 長い行を折り返すか（既定 `false`。折り返すときは行に分ける） */
   wrap?: boolean | undefined;
   /** コードの行 */
@@ -152,6 +154,7 @@ export function renderCodeBlock(options: {
   const { language, title, lineNumbers, lines, syntax } = options;
   const { fileName = "", bar = true, copyState, foldButtons } = options;
   const wrap = options.wrap === true;
+  const lineStart = options.lineStart ?? 1;
   const mermaidAttribute =
     options.mermaid === true ? ` ${MERMAID_ATTRIBUTE}` : "";
   const split =
@@ -186,7 +189,7 @@ export function renderCodeBlock(options: {
     language ? `class="language-${escapeHtml(language)}"` : "",
     syntax ? `${SYNTAX_ATTRIBUTE}="${escapeHtml(syntax)}"` : "",
     lineNumbers
-      ? `style="--mdmark-code-digits: ${String(lines.length).length}"`
+      ? `style="--mdmark-code-digits: ${String(lineStart + lines.length - 1).length}"`
       : "",
   ]
     .filter(Boolean)
@@ -227,7 +230,7 @@ export function renderCodeBlock(options: {
         .map((line, index) =>
           renderLine({
             line,
-            number: lineNumbers ? index + 1 : undefined,
+            number: lineNumbers ? lineStart + index : undefined,
             fold: foldOf(line, index),
           }),
         )

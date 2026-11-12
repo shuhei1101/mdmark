@@ -137,7 +137,8 @@ test("test_start_bundle_when_side_toc_link_into_closed_section", async () => {
       {
         path: "b.md",
         title: "B",
-        markdown: "## 導入\n\n<!-- section: closed -->\n\n### 注意\n\n本文\n",
+        markdown:
+          '## 導入\n\n<!-- section: {"open": false} -->\n\n### 注意\n\n本文\n',
       },
     ],
   };

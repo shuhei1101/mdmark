@@ -208,7 +208,7 @@ test("test_normal_when_starts_narrow", async ({ page }) => {
   await openPage(page, builtRoot, { hostCss: HOST_CSS });
   // 実行
   await mountDocument(page, {
-    markdown: wideMarkdown("<!-- wide: closed -->"),
+    markdown: wideMarkdown('<!-- wide: {"open": false} -->'),
   });
   // 検証
   const button = page.locator("#doc .mdmark-wide-toggle");

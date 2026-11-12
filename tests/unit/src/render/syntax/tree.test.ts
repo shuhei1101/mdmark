@@ -1,21 +1,10 @@
 import { expect, test } from "vitest";
-import { type Mark, parseMarkArgs } from "../../../../../src/render/marks.ts";
 import { matches } from "../../../helpers/html.ts";
+import { jsonMark } from "../../../helpers/marks.ts";
 import { renderDoc } from "../../../helpers/render.ts";
 
 /** ファイルツリーの処理を読み込む（実装が無い間は各テストが個別に失敗する） */
 const loadTree = () => import("../../../../../src/render/syntax/tree.ts");
-
-/** `<!-- tree: {rest} -->` のマーカー */
-function treeMark(rest: string): Mark {
-  return {
-    name: "tree",
-    args: parseMarkArgs(rest),
-    raw: `<!-- tree: ${rest} -->`,
-    closing: false,
-    rest,
-  };
-}
 
 /** 読み込めるツリーの行 */
 const VALID_TREE = [
@@ -144,11 +133,11 @@ test("test_parse_tree_when_ascii", async () => {
   });
 });
 
-// マーカーの open= を部品へ指定し、注釈のインラインを描く（正常系）
+// マーカーの depth を部品へ指定し、注釈のインラインを描く（正常系）
 test("test_build_file_trees_when_mark", () => {
   // 準備
   const markdown = [
-    "<!-- tree: open=2 -->",
+    '<!-- tree: {"depth": 2} -->',
     "",
     "```tree",
     "src/ # **ソース**",
@@ -166,11 +155,11 @@ test("test_build_file_trees_when_mark", () => {
   expect(html).not.toContain("<!-- tree");
 });
 
-// 読み込めない open= は警告にして既定の開き方のツリーにする（異常系）
+// 読み込めない depth は警告にして既定の開き方のツリーにする（異常系）
 test("test_build_file_trees_when_mark_unreadable", () => {
   // 準備
   const markdown = [
-    "<!-- tree: open=deep -->",
+    '<!-- tree: {"depth": "deep"} -->',
     "",
     "```tree",
     ...VALID_TREE,
@@ -182,8 +171,9 @@ test("test_build_file_trees_when_mark_unreadable", () => {
   // 検証
   const warning = html.indexOf("mdmark-syntax-warning");
   expect(warning).toBeGreaterThan(-1);
-  expect(html).toContain("<code>open=deep</code>");
-  expect(warning).toBeLessThan(html.indexOf('<div class="mdmark-tree"'));
+  const text = html.slice(warning, html.indexOf('<div class="mdmark-tree"'));
+  expect(text).toContain("depth");
+  expect(text).toContain("all");
   expect(html).toContain('<div class="mdmark-tree"');
   expect(html).not.toContain("data-open");
 });
@@ -193,50 +183,20 @@ test("test_read_tree_options", async () => {
   // 準備
   const { readTreeOptions } = await loadTree();
   // 実行
-  const all = readTreeOptions(treeMark("open=all"));
-  const levels = readTreeOptions(treeMark("open=2"));
+  const all = readTreeOptions(jsonMark("tree", { depth: "all" }));
+  const levels = readTreeOptions(jsonMark("tree", { depth: 2, wrap: true }));
   // 検証
-  expect(all.open).toBe("all");
-  expect(all.warning).toBeUndefined();
-  expect(levels.open).toBe("2");
-  expect(levels.warning).toBeUndefined();
+  expect(all).toEqual({ open: "all", wrap: false });
+  expect(levels).toEqual({ open: "2", wrap: true });
 });
 
-// 読み込めない値を警告にし、知らないキーと指定をスキップする（異常系）
-test("test_read_tree_options_when_unreadable", async () => {
+// depth を省けば開く階層を入れない（正常系）
+test("test_read_tree_options_when_none", async () => {
   // 準備
   const { readTreeOptions } = await loadTree();
   // 実行
-  const mixed = readTreeOptions(treeMark("open=deep depth=2 closed"));
-  const zero = readTreeOptions(treeMark("open=0"));
+  const options = readTreeOptions(jsonMark("tree"));
   // 検証
-  expect(mixed.open).toBeUndefined();
-  const items = mixed.warning?.items ?? [];
-  expect(items.map((item) => item.label)).toEqual(["open=deep"]);
-  expect(items[0]?.message).toContain("all");
-  expect(items[0]?.message).toContain("階層の数");
-  expect(mixed.skipped.map((skipped) => skipped.arg).sort()).toEqual(
-    ["closed", "depth="].sort(),
-  );
-  expect(zero.open).toBeUndefined();
-  expect((zero.warning?.items ?? []).map((item) => item.label)).toEqual([
-    "open=0",
-  ]);
-});
-
-// open= と並べた wrap を読み込む（正常系）
-test("test_read_tree_options_when_wrap", async () => {
-  // 準備
-  const { readTreeOptions } = await loadTree();
-  // 実行
-  const wrapped = readTreeOptions(treeMark("open=all wrap"));
-  const valued = readTreeOptions(treeMark("wrap=1"));
-  // 検証
-  expect(wrapped.open).toBe("all");
-  expect(wrapped.wrap).toBe(true);
-  expect(wrapped.warning).toBeUndefined();
-  expect(valued.wrap).toBe(false);
-  expect((valued.warning?.items ?? []).map((item) => item.label)).toEqual([
-    "wrap=1",
-  ]);
+  expect(options.open).toBeUndefined();
+  expect(options.wrap).toBe(false);
 });

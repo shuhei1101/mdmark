@@ -4,9 +4,9 @@ import { basename, extname, join, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 import type { Plugin } from "vite";
 
-// 外部ライブラリの代役のモジュール: `draw(slot, args)` で `slot` の文字を `drawn:` と引数を `,` で結んだものにする
-const TEST_LIB_SOURCE = `export function draw(slot, args) {
-  slot.textContent = "drawn:" + args.join(",");
+// 外部ライブラリの代役のモジュール: `draw(slot, options)` で `slot` の文字を `drawn:` と `options.items` を `,` で結んだものにする
+const TEST_LIB_SOURCE = `export function draw(slot, options) {
+  slot.textContent = "drawn:" + options.items.join(",");
 }
 `;
 

@@ -202,7 +202,7 @@ test("test_read_inline_footnote", () => {
 test("test_collect_footnotes_when_disabled_by_mark", () => {
   // 準備
   const markdown = [
-    "<!-- features: -footnotes -->",
+    '<!-- features: {"footnotes": false} -->',
     "",
     "出典がある[^src] と ^[補足]。",
     "",
@@ -240,7 +240,7 @@ test("test_collect_footnotes_when_mark_in_code", () => {
   // 準備
   const markdown = [
     "```md",
-    "<!-- features: -footnotes -->",
+    '<!-- features: {"footnotes": false} -->',
     "```",
     "",
     "本文[^1]。",

@@ -135,7 +135,7 @@ scenarios:
   - name: 正常シナリオ（文書ごとのページの設定）
     setup:
       - name: まとめた HTML
-        description: '先頭の行に `<!-- page: scheme=dark -->` を持つ文書 A（`entry`）と、マーカーを持たない文書 B をまとめた HTML'
+        description: '先頭の行に `<!-- page: {"scheme": "dark"} -->` を持つ文書 A（`entry`）と、マーカーを持たない文書 B をまとめた HTML'
         notes: 設定ファイルは明暗のキーを持たない。ブラウザの配色はライト
       - name: Mock
         description: 差し替える依存は無い（HTML だけを空のフォルダへコピーして file:// で開く）
@@ -204,7 +204,7 @@ scenarios:
   - name: 正常シナリオ（戻る・進むで開閉と選んだタブを戻す）
     setup:
       - name: まとめた HTML
-        description: '文書 A（`entry`）が、`<!-- section: closed -->` で既定で閉じた h2 のセクションと、その中の `group=` の無い 2 つのタブを持ち、2 つ目のタブの中に B へのリンクを持つ、文書 A・B をまとめた HTML'
+        description: '文書 A（`entry`）が、`<!-- section: {"open": false} -->` で既定で閉じた h2 のセクションと、その中の `group` の無い 2 つのタブを持ち、2 つ目のタブの中に B へのリンクを持つ、文書 A・B をまとめた HTML'
         notes: セクションの中身は画面の高さより長い
       - name: Mock
         description: 差し替える依存は無い（HTML だけを空のフォルダへコピーして file:// で開く）

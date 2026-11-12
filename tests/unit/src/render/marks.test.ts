@@ -20,6 +20,9 @@ const loadOwn = () => import("../../../../src/parts/own.ts");
 /** 拡張の処理を読み込む */
 const loadExtensions = () => import("../../../../src/extensions.ts");
 
+/** 機能を重ねた設定で文書を描く助け */
+const loadRenderHelper = () => import("../../helpers/render.ts");
+
 /** マーカーを取得する規則を持つ解析器で Markdown を HTML にし、取得したマーカーを入れた環境と一緒に返却する */
 async function parse(
   markdown: string,
@@ -31,15 +34,15 @@ async function parse(
   return { html, env };
 }
 
-// 機能のマーカーの引数を記載した順に取得し、本文から取り除く（正常系）
+// 機能のマーカーの JSON のオブジェクトを記載した順に取得し、本文から取り除く（正常系）
 test("test_take_marks", async () => {
   // 準備
   const markdown =
-    "<!-- features: +a -b -->\n\n段落 <!-- features: +c --> の続き\n";
+    '<!-- features: {"a": true, "b": false} -->\n\n段落 <!-- features: {"c": true} --> の続き\n';
   // 実行
   const { html, env } = await parse(markdown);
   // 検証
-  expect(env.featureArgs).toEqual(["+a", "-b", "+c"]);
+  expect(env.featureOptions).toEqual([{ a: true, b: false }, { c: true }]);
   expect(html).not.toContain("<!--");
 });
 
@@ -48,7 +51,7 @@ test("test_take_marks_when_library_mark", async () => {
   // 準備
   const { renderEmbed } = await loadEmbed();
   const { markOwn } = await loadOwn();
-  const markdown = "前\n\n<!-- test-lib: a b -->\n\n後\n";
+  const markdown = '前\n\n<!-- test-lib: {"items": ["a", "b"]} -->\n\n後\n';
   const libraries = {
     "test-lib": { url: "/fixtures/test-lib.js", figure: true },
   };
@@ -56,20 +59,51 @@ test("test_take_marks_when_library_mark", async () => {
   const { html, env } = await parse(markdown, libraries);
   // 検証
   expect(html).toContain(
-    markOwn(renderEmbed({ name: "test-lib", args: ["a", "b"] }), env.nonce),
+    markOwn(
+      renderEmbed({ name: "test-lib", options: { items: ["a", "b"] } }),
+      env.nonce,
+    ),
   );
+});
+
+// 今の書き方の対応表と拡張のマーカーを、マーカーの場所の要素にせず記載の警告にする（異常系）
+test("test_take_marks_when_legacy_embed", async () => {
+  // 準備
+  const { registerExtension, resetExtensions } = await loadExtensions();
+  resetExtensions();
+  registerExtension({
+    name: "greet",
+    directive: "greet",
+    load: async () => ({ draw: () => {} }),
+  });
+  const markdown = "<!-- test-lib: a b -->\n\n<!-- greet: world -->\n";
+  const libraries = {
+    "test-lib": { url: "/fixtures/test-lib.js", figure: true },
+  };
+  try {
+    // 実行
+    const { html } = await parse(markdown, libraries);
+    // 検証
+    expect(html).not.toContain("mdmark-embed");
+    const warnings = html.match(/mdmark-syntax-warning"/g) ?? [];
+    expect(warnings).toHaveLength(2);
+    expect(html).toContain("JSON のオブジェクトで記載");
+    expect(html).toContain("mdmark upgrade");
+  } finally {
+    resetExtensions();
+  }
 });
 
 // 未知のマーカーを取り除き、マーカーでないコメントとコードの中はそのままにする（正常系）
 test("test_take_marks_when_unknown_mark", async () => {
   // 準備
   const markdown = [
-    "<!-- unknown: 1 -->",
+    '<!-- unknown: {"size": 1} -->',
     "",
     "<!-- ただのコメント -->",
     "",
     "```md",
-    "<!-- features: -print -->",
+    '<!-- features: {"print": false} -->',
     "```",
     "",
   ].join("\n");
@@ -78,8 +112,8 @@ test("test_take_marks_when_unknown_mark", async () => {
   // 検証
   expect(html).not.toContain("unknown");
   expect(html).toContain("<!-- ただのコメント -->");
-  expect(html).toContain("&lt;!-- features: -print --&gt;");
-  expect(env.featureArgs).toEqual([]);
+  expect(html).toContain("&lt;!-- features: {&quot;print&quot;: false} --&gt;");
+  expect(env.featureOptions).toEqual([]);
 });
 
 // 記法のマーカーと閉じのマーカー、コロンの無いマーカーをマーカーのトークンにする（正常系）
@@ -88,16 +122,91 @@ test("test_take_marks_when_syntax_mark", async () => {
   const { takeMarks } = await loadMarks();
   const parser = new MarkdownIt({ html: true });
   parser.core.ruler.push("take_marks", takeMarks);
-  const markdown = "<!-- table: data -->\n<!-- /table -->\n<!-- tabs -->\n";
+  const markdown =
+    '<!-- table: {"kind": "data"} -->\n<!-- /table -->\n<!-- tabs -->\n';
   // 実行
   const tokens = parser.parse(markdown, createEnv());
   // 検証
   const marks = tokens.filter((token) => token.type === "mdmark_mark");
   expect(marks.map((token) => token.meta)).toMatchObject([
-    { name: "table", closing: false },
+    {
+      name: "table",
+      closing: false,
+      options: { kind: "data" },
+      source: "json",
+    },
     { name: "table", closing: true },
-    { name: "tabs", args: { args: [], keys: {} } },
+    { name: "tabs", options: {}, source: "none" },
   ]);
+});
+
+// 今の書き方の記法のマーカーを、同じ JSON のオブジェクトにしたマーカーのトークンにする（正常系）
+test("test_take_marks_when_legacy_syntax_mark", async () => {
+  // 準備
+  const { takeMarks } = await loadMarks();
+  const { renderDoc } = await loadRenderHelper();
+  const markdown = "<!-- table: data +total total=数量:sum closed -->\n";
+  // マーカーのトークンは最後のコアルールが取り除くため、マーカーを取得するルールだけで解析する
+  const parser = new MarkdownIt({ html: true });
+  parser.core.ruler.push("take_marks", takeMarks);
+  // 実行
+  const tokens = parser.parse(markdown, createEnv());
+  const { html } = renderDoc(markdown);
+  // 検証
+  const marks = tokens.filter((token) => token.type === "mdmark_mark");
+  expect(marks.map((token) => token.meta)).toMatchObject([
+    {
+      name: "table",
+      source: "legacy",
+      options: {
+        kind: "data",
+        columns: { 数量: { total: [{ calc: "sum" }] } },
+        collapse: { open: false },
+      },
+    },
+  ]);
+  expect(html).not.toContain("mdmark-syntax-warning");
+});
+
+// JSON として読めない引数と型の合わない値を記載の警告にし、知らないキーを空のトークンにする（異常系）
+test("test_take_marks_when_invalid_options", async () => {
+  // 準備
+  const { renderDoc } = await loadRenderHelper();
+  const { takeMarks } = await loadMarks();
+  const markdown = [
+    '<!-- details: {"title": 補足} -->',
+    "",
+    "中身",
+    "",
+    "<!-- /details -->",
+    "",
+    '<!-- section: {"open": "no", "size": 1} -->',
+    "",
+  ].join("\n");
+  const parser = new MarkdownIt({ html: true });
+  parser.core.ruler.push("take_marks", takeMarks);
+  // 実行
+  const rendered = renderDoc(markdown);
+  const tokens = parser.parse(markdown, createEnv());
+  // 検証
+  const shown = rendered.warnings.filter(
+    (warning) => warning.kind === "syntax_warning",
+  );
+  expect(shown.map((warning) => warning.line)).toEqual([1, 7]);
+  expect(shown[0]?.message).toMatch(/\d+ 文字目/);
+  expect(shown[1]?.message).toContain("open");
+  const unknown = rendered.warnings.filter(
+    (warning) => warning.kind === "unknown_mark_arg",
+  );
+  expect(unknown).toHaveLength(1);
+  expect(unknown[0]?.message).toContain("size");
+  const section = tokens.find(
+    (token) =>
+      token.type === "mdmark_mark" &&
+      (token.meta as { name?: string }).name === "section",
+  );
+  const meta = section?.meta as { options?: unknown } | undefined;
+  expect(meta?.options).toEqual({});
 });
 
 // 登録した拡張のマーカーをマーカーの場所の要素にする（正常系）
@@ -112,14 +221,17 @@ test("test_take_marks_when_extension_mark", async () => {
     directive: "greet",
     load: async () => ({ draw: () => {} }),
   });
-  const markdown = "<!-- greet: world lang=ja -->\n";
+  const markdown = '<!-- greet: {"target": "world", "lang": "ja"} -->\n';
   try {
     // 実行
     const { html, env } = await parse(markdown);
     // 検証
     expect(html).toContain(
       markOwn(
-        renderEmbed({ name: "greet", args: ["world", "lang=ja"] }),
+        renderEmbed({
+          name: "greet",
+          options: { target: "world", lang: "ja" },
+        }),
         env.nonce,
       ),
     );
@@ -156,7 +268,7 @@ test("test_drop_marks", async () => {
   // 準備
   const { createParser } = await loadParser();
   const markdown =
-    "<!-- features: -tabs -->\n\n<!-- tabs -->\n\n段落\n\n<!-- /tabs -->\n";
+    '<!-- features: {"tabs": false} -->\n\n<!-- tabs -->\n\n段落\n\n<!-- /tabs -->\n';
   const env = createEnv();
   const parser = createParser();
   // 実行
@@ -232,16 +344,13 @@ test("test_take_marks_when_unknown_range_with_json", async () => {
   expect(html).toContain("<p>後</p>");
 });
 
-/** 機能を重ねた設定で文書を描く助け */
-const loadRenderHelper = () => import("../../helpers/render.ts");
-
 // 先頭のマーカーを読み込み、本文にマーカーを残さない（正常系）
 test("test_resolve_page_settings", async () => {
   // 準備
   const { renderDoc } = await loadRenderHelper();
   const markdown = [
-    "<!-- features: -toc -->",
-    "<!-- page: scheme=dark -->",
+    '<!-- features: {"toc": false} -->',
+    '<!-- page: {"scheme": "dark"} -->',
     "",
     "段落",
   ].join("\n");
@@ -258,7 +367,9 @@ test("test_resolve_page_settings", async () => {
 test("test_resolve_page_settings_when_not_at_top", async () => {
   // 準備
   const { renderDoc } = await loadRenderHelper();
-  const markdown = ["段落", "", "<!-- page: scheme=dark -->", ""].join("\n");
+  const markdown = ["段落", "", '<!-- page: {"scheme": "dark"} -->', ""].join(
+    "\n",
+  );
   // 実行
   const rendered = renderDoc(markdown);
   // 検証
@@ -268,15 +379,13 @@ test("test_resolve_page_settings_when_not_at_top", async () => {
   expect(rendered.html).toContain("mdmark-syntax-warning");
 });
 
-// 知らない値を文書の先頭の警告にまとめ、知らないキーをスキップする（異常系）
+// 選べる値に無い値を文書の先頭の警告にまとめ、知らないキーを無視する（異常系）
 test("test_resolve_page_settings_when_unknown", async () => {
   // 準備
   const { renderDoc } = await loadRenderHelper();
-  const markdown = [
-    "<!-- page: scheme=sepia size=wide toc=fixed -->",
-    "",
-    "段落",
-  ].join("\n");
+  const mark =
+    '<!-- page: {"scheme": "sepia", "size": "wide", "toc": {"mode": "fixed"}} -->';
+  const markdown = [mark, "", "段落"].join("\n");
   // 実行
   const rendered = renderDoc(markdown);
   // 検証
@@ -285,18 +394,16 @@ test("test_resolve_page_settings_when_unknown", async () => {
     (warning) => warning.kind === "syntax_warning",
   );
   expect(shown).toHaveLength(1);
-  expect(shown[0]?.message).toContain("scheme=sepia");
-  // 本文の頭はマーカーの文字のため、マーカーの後ろの挙げた指定だけを確認する
-  const listed = (shown[0]?.message ?? "").replace(
-    "<!-- page: scheme=sepia size=wide toc=fixed -->",
-    "",
-  );
-  expect(listed).not.toContain("size=wide");
-  const skipped = rendered.warnings.filter(
+  // 本文の頭はマーカーの文字のため、マーカーの後ろの文だけを確認する
+  const listed = (shown[0]?.message ?? "").replace(mark, "");
+  expect(listed).toContain("scheme");
+  expect(listed).toContain("sepia");
+  expect(listed).not.toContain("size");
+  const unknown = rendered.warnings.filter(
     (warning) => warning.kind === "unknown_mark_arg",
   );
-  expect(skipped).toHaveLength(1);
-  expect(skipped[0]?.message).toContain("size=");
+  expect(unknown).toHaveLength(1);
+  expect(unknown[0]?.message).toContain("size");
   expect(rendered.html.indexOf("mdmark-syntax-warning")).toBeLessThan(
     rendered.html.indexOf("段落"),
   );

@@ -34,7 +34,7 @@ export function attachView(view) {
 
 /** ビューのマーカーを持つ文書 */
 const VIEW_MARKDOWN = [
-  "<!-- view: group=状態 -->",
+  '<!-- view: {"board": {"group": {"column": "状態"}}} -->',
   "",
   "| タイトル | 状態 |",
   "| --- | --- |",

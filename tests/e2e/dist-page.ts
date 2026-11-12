@@ -49,17 +49,17 @@ export const SYNTAX_ES_ROOT = resolve(
 const BUILT_VERSION = "v0.0.1";
 // リポジトリの直下
 const REPO_ROOT = resolve(import.meta.dirname, "../..");
-// 外部ライブラリの代役: `draw` でマーカーの場所の文字を `drawn:` と引数を `,` で結んだものにする
+// 外部ライブラリの代役: `draw` でマーカーの場所の文字を、受けた `options` の `label` にする
 const TEST_LIB_SOURCE =
-  'export function draw(slot, args) { slot.textContent = "drawn:" + args.join(","); }\n';
+  "export function draw(slot, options) { slot.textContent = options.label; }\n";
 
-// 拡張の代役: `draw` でマーカーの場所の文字を `greet:` と引数を `,` で結んだものにする
+// 拡張の代役: `draw` でマーカーの場所の文字を `greet:` と受けた `options` の `target` にし、受けた値のキーを `data-keys` に記録する
 const EXTENSION_SOURCE =
-  'export function draw(slot, value) { slot.textContent = "greet:" + value.args.join(","); }\n';
+  'export function draw(slot, value) { slot.textContent = "greet:" + value.options.target; slot.dataset.keys = Object.keys(value).sort().join(","); }\n';
 
 /** 見本の Markdown: 見出し・段落・リスト・表・コードブロック・リンク・折り畳み・機能のマーカー・スクリプト */
 export const SAMPLE_MARKDOWN = [
-  "<!-- features: +a -b -->",
+  '<!-- features: {"a": true, "b": false} -->',
   "",
   "# 見出し",
   "",
@@ -388,7 +388,7 @@ export async function routeExtension(
   return () => requests;
 }
 
-/** ページから、`greet` のマーカーの拡張を登録する。`strict` が真なら引数を 1 つだけ、英小文字で許す schema を付ける */
+/** ページから、`greet` のマーカーの拡張を登録する。`strict` が真なら `options.target` を英小文字の文字列だけで許す schema を付ける */
 export async function registerGreet(
   page: Page,
   options: { strict?: boolean } = {},
@@ -413,23 +413,20 @@ export async function registerGreet(
                 version: 1,
                 vendor: "e2e",
                 validate: (value) => {
-                  const { args } = value as { args: string[] };
-                  const issues = args.flatMap((arg, index) =>
-                    index === 0 && /^[a-z]+$/.test(arg)
-                      ? []
-                      : [
+                  const { options } = value as {
+                    options: Record<string, unknown>;
+                  };
+                  const target = options.target;
+                  return typeof target === "string" && /^[a-z]+$/.test(target)
+                    ? { value }
+                    : {
+                        issues: [
                           {
-                            message:
-                              index === 0
-                                ? "英小文字だけで書いてください"
-                                : "引数は 1 つだけです",
-                            path: ["args", index],
+                            message: "英小文字の文字列で書いてください",
+                            path: ["options", "target"],
                           },
                         ],
-                  );
-                  return issues.length > 0
-                    ? { issues }
-                    : { value: value as { args: string[] } };
+                      };
                 },
               },
             }
@@ -969,10 +966,12 @@ const TREE_ROWS = [
   "| aliases[].metadata.alias_type.type | ref \\| custom |  |  | 別名の種類 |",
 ];
 
-/** 表のマーカーに `extra` を加えた、キーの列を階層で描く表の Markdown */
-export function treeMarkdown(extra = ""): string {
+/** 表のマーカーの `tree` に `extra.tree` のキーを、最上位に `extra.top` のキーを加えた、キーの列を階層で描く表の Markdown */
+export function treeMarkdown(
+  extra: { tree?: string; top?: string } = {},
+): string {
   return [
-    `<!-- table: data tree=キー type=型 required=必須 default=既定${extra} -->`,
+    `<!-- table: {"kind": "data", "tree": {"key": {"column": "キー"}, "type": {"column": "型"}, "required": {"column": "必須"}, "default": {"column": "既定"}${extra.tree ?? ""}}${extra.top ?? ""}} -->`,
     "",
     ...TREE_ROWS,
     "",
@@ -983,7 +982,7 @@ export function treeMarkdown(extra = ""): string {
 
 /** 見本を結んだ階層の表と、見出し `設定の見本` の下の `最小`・`エイリアス` のタブを持つ Markdown */
 export const TREE_EXAMPLE_MARKDOWN = [
-  treeMarkdown(" example=設定の見本"),
+  treeMarkdown({ tree: ', "example": {"heading": "設定の見本"}' }),
   "## 設定の見本",
   "",
   "<!-- tabs -->",

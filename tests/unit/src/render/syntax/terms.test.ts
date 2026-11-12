@@ -167,7 +167,7 @@ test("test_terms_rule_when_backlinks_off", () => {
   // 実行
   const on = renderDoc(body, {}, indexOptions);
   const off = renderDoc(
-    `<!-- features: -backlinks -->\n\n${body}`,
+    `<!-- features: {"backlinks": false} -->\n\n${body}`,
     {},
     indexOptions,
   );
@@ -308,7 +308,7 @@ test("test_terms_rule_avoided_when_glossary_off", () => {
   // 実行
   const on = renderDoc(body, {}, indexOptions);
   const off = renderDoc(
-    `<!-- features: -glossary -->\n\n${body}`,
+    `<!-- features: {"glossary": false} -->\n\n${body}`,
     {},
     indexOptions,
   );
@@ -428,7 +428,7 @@ test("test_terms_rule_aliases_when_glossary_off", () => {
   // 実行
   const on = renderDoc(ALIAS_MARKDOWN, {}, { aliases: [UNIT_TEST_ALIAS] });
   const off = renderDoc(
-    `<!-- features: -glossary -->\n\n${ALIAS_MARKDOWN}`,
+    `<!-- features: {"glossary": false} -->\n\n${ALIAS_MARKDOWN}`,
     {},
     { aliases: [UNIT_TEST_ALIAS] },
   );

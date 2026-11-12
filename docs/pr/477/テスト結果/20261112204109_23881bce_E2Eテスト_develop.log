@@ -1,0 +1,585 @@
+$ npx playwright test --project=chromium -g "<develop と同じテスト>" <ファイル>（develop 23881bce で実行）
+- Resolving version...
+✔ Validated version: 1.141.0
+✔ Found existing install in /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/develop/vscode/.vscode-test/vscode-linux-x64-1.141.0
+
+Running 49 tests using 4 workers
+
+[1/49] [chromium] › tests/e2e/単一ユースケース/コードブロックを飾る.spec.ts:82:1 › test_normal
+[2/49] [chromium] › tests/e2e/単一ユースケース/チャートを描く.spec.ts:42:1 › test_normal
+[3/49] [chromium] › tests/e2e/単一ユースケース/VSCodeでプレビューを開く.spec.ts:70:1 › test_normal
+[4/49] [chromium] › tests/e2e/単一ユースケース/エディタとプレビューのスクロールを合わせる.spec.ts:77:1 › test_normal
+[5/49] [chromium] › tests/e2e/単一ユースケース/コードブロックを飾る.spec.ts:733:1 › test_error_when_clipboard_denied
+[6/49] [chromium] › tests/e2e/単一ユースケース/チャートを描く.spec.ts:90:1 › test_error_when_definition_invalid
+[7/49] [chromium] › tests/e2e/単一ユースケース/ビューで項目を確認する.spec.ts:28:1 › test_normal
+[8/49] [chromium] › tests/e2e/単一ユースケース/エディタとプレビューのスクロールを合わせる.spec.ts:251:1 › test_normal_when_in_closed_section
+[9/49] [chromium] › tests/e2e/単一ユースケース/VSCodeでプレビューを開く.spec.ts:245:1 › test_normal_when_includes
+  1) [chromium] › tests/e2e/単一ユースケース/チャートを描く.spec.ts:90:1 › test_error_when_definition_invalid ─────
+
+    Error: expect(locator).toContainText(expected) failed
+
+    Locator: locator('#doc .mdmark-syntax-warning')
+    Expected substring: "グラフの部品の定義を JSON として読めません"
+    Received string:    "記載の警告グラフの部品の定義を JSON として読み込めません（1 行目の {\"title\": \"a\", の後に } がありません）。このグラフは描いていません。"
+    Timeout: 30000ms
+
+    Call log:
+      - Expect "toContainText" locator('#doc .mdmark-syntax-warning') with timeout 30000ms
+      - waiting for locator('#doc .mdmark-syntax-warning')
+        63 × locator resolved to <div role="note" class="mdmark-syntax-warning">…</div>
+           - unexpected value "記載の警告グラフの部品の定義を JSON として読み込めません（1 行目の {"title": "a", の後に } がありません）。このグラフは描いていません。"
+
+
+      103 |   const warning = page.locator("#doc .mdmark-syntax-warning");
+      104 |   await expect(warning).toHaveCount(1);
+    > 105 |   await expect(warning).toContainText(
+          |                         ^
+      106 |     "グラフの部品の定義を JSON として読めません",
+      107 |   );
+      108 |   await expect(warning).toContainText("行目");
+        at /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/develop/tests/e2e/単一ユースケース/チャートを描く.spec.ts:105:25
+
+    Error Context: test-results/単一ユースケース-チャートを描く-test-error-when-definition-invalid-chromium/error-context.md
+
+    Error Context: test-results/単一ユースケース-チャートを描く-test-error-when-definition-invalid-chromium/error-context.md
+
+
+[10/49] [chromium] › tests/e2e/単一ユースケース/図を拡大・縮小・移動する.spec.ts:93:1 › test_normal
+[11/49] [chromium] › tests/e2e/単一ユースケース/図を描く.spec.ts:106:1 › test_normal
+  2) [chromium] › tests/e2e/単一ユースケース/エディタとプレビューのスクロールを合わせる.spec.ts:251:1 › test_normal_when_in_closed_section 
+
+    Error: expect(received).toBe(expected) // Object.is equality
+
+    Expected: true
+    Received: false
+
+    Call Log:
+    - Timeout 30000ms exceeded while waiting on the predicate
+
+      267 |   await expect
+      268 |     .poll(() => closedHeadingPlaced(frame, heading, nextHeading))
+    > 269 |     .toBe(true);
+          |      ^
+      270 |   const toggle = frame.locator(
+      271 |     `h2[data-source-line="${heading - 1}"] .mdmark-section-toggle`,
+      272 |   );
+        at /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/develop/tests/e2e/単一ユースケース/エディタとプレビューのスクロールを合わせる.spec.ts:269:6
+
+    Error Context: test-results/単一ユースケース-エディタとプレビューのスクロールを-3a73b-rmal-when-in-closed-section-chromium/error-context.md
+
+    Error Context: test-results/単一ユースケース-エディタとプレビューのスクロールを-3a73b-rmal-when-in-closed-section-chromium/error-context.md
+
+
+[12/49] [chromium] › tests/e2e/単一ユースケース/拡張機能の配布物を作る.spec.ts:175:1 › test_normal
+[13/49] [chromium] › tests/e2e/単一ユースケース/操作できる部品で値を変えて写す.spec.ts:49:1 › test_normal
+[14/49] [chromium] › tests/e2e/単一ユースケース/図を拡大・縮小・移動する.spec.ts:757:1 › test_normal_when_resized
+[15/49] [chromium] › tests/e2e/単一ユースケース/図を描く.spec.ts:439:1 › test_error_when_definition_invalid
+[16/49] [chromium] › tests/e2e/単一ユースケース/図を描く.spec.ts:876:1 › test_error_when_er_definition_invalid
+  3) [chromium] › tests/e2e/単一ユースケース/図を拡大・縮小・移動する.spec.ts:757:1 › test_normal_when_resized ─────────
+
+    Error: expect(received).toBeLessThanOrEqual(expected)
+
+    Expected: <= 2
+    Received:    200
+
+      819 |   // 実行・検証: ダブルクリックで定義から決まる高さに戻り、再読み込みしても戻した高さのまま
+      820 |   await handle.dblclick();
+    > 821 |   expect(Math.abs((await heightOf(page)) - opened)).toBeLessThanOrEqual(2);
+          |                                                     ^
+      822 |   await page.reload();
+      823 |   await page.waitForFunction(() => "mdmark" in window);
+      824 |   await mountTall(page);
+        at /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/develop/tests/e2e/単一ユースケース/図を拡大・縮小・移動する.spec.ts:821:53
+
+    Error Context: test-results/単一ユースケース-図を拡大・縮小・移動する-test-normal-when-resized-chromium/error-context.md
+
+    Error Context: test-results/単一ユースケース-図を拡大・縮小・移動する-test-normal-when-resized-chromium/error-context.md
+
+
+[17/49] [chromium] › tests/e2e/単一ユースケース/文書を描く.spec.ts:25:1 › test_normal
+  4) [chromium] › tests/e2e/単一ユースケース/図を描く.spec.ts:876:1 › test_error_when_er_definition_invalid ────
+
+    Error: expect(locator).toContainText(expected) failed
+
+    Locator: locator('#doc .mdmark-syntax-warning')
+    Expected substring: "ER 図の部品の定義を読めません"
+    Received string:    "記載の警告ER 図の部品の定義を読み込めません。関係「注文する」の先のテーブル payments がありません。テーブルの id で記載してください。この ER 図は描いていません。"
+    Timeout: 30000ms
+
+    Call log:
+      - Expect "toContainText" locator('#doc .mdmark-syntax-warning') with timeout 30000ms
+      - waiting for locator('#doc .mdmark-syntax-warning')
+        63 × locator resolved to <div role="note" class="mdmark-syntax-warning">…</div>
+           - unexpected value "記載の警告ER 図の部品の定義を読み込めません。関係「注文する」の先のテーブル payments がありません。テーブルの id で記載してください。この ER 図は描いていません。"
+
+
+      892 |   const warning = page.locator("#doc .mdmark-syntax-warning");
+      893 |   await expect(warning).toHaveCount(1);
+    > 894 |   await expect(warning).toContainText("ER 図の部品の定義を読めません");
+          |                         ^
+      895 |   await expect(warning).toContainText("payments");
+      896 |   await expect(
+      897 |     page.locator('#doc figure.mdmark-diagram[data-diagram="er"]'),
+        at /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/develop/tests/e2e/単一ユースケース/図を描く.spec.ts:894:25
+
+    Error Context: test-results/単一ユースケース-図を描く-test-error-when-er-definition-invalid-chromium/error-context.md
+
+    Error Context: test-results/単一ユースケース-図を描く-test-error-when-er-definition-invalid-chromium/error-context.md
+
+
+[18/49] [chromium] › tests/e2e/単一ユースケース/表を操作する.spec.ts:57:1 › test_normal
+[19/49] [chromium] › tests/e2e/単一ユースケース/文書を描く.spec.ts:50:1 › test_normal_when_updated
+[20/49] [chromium] › tests/e2e/単一ユースケース/記載した内容をプレビューに映す.spec.ts:50:1 › test_normal
+[21/49] [chromium] › tests/e2e/単一ユースケース/表を操作する.spec.ts:810:1 › test_error_when_unknown_total_or_hidden_column
+[22/49] [chromium] › tests/e2e/単一ユースケース/表を操作する.spec.ts:872:1 › test_error_when_clipboard_denied
+[23/49] [chromium] › tests/e2e/単一ユースケース/表を操作する.spec.ts:1481:1 › test_error_when_unknown_column
+[24/49] [chromium] › tests/e2e/単一ユースケース/表を操作する.spec.ts:1672:1 › test_error_when_merge_invalid
+[25/49] [chromium] › tests/e2e/単一ユースケース/表を操作する.spec.ts:1946:1 › test_normal_when_columns_reordered
+  5) [chromium] › tests/e2e/単一ユースケース/表を操作する.spec.ts:1946:1 › test_normal_when_columns_reordered ────
+
+    Error: expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 1
+    + Received  + 2
+
+      Array [
+    -   "名前",
+    +   "名前
+    + （絞り込み中）",
+        "既定",
+        "型",
+      ]
+
+      2000 |     .locator('input[type="text"]')
+      2001 |     .fill("html");
+    > 2002 |   expect(await headNames(page)).toEqual(["名前", "既定", "型"]);
+           |                                 ^
+      2003 |   // 検証: ほかの表
+      2004 |   await page
+      2005 |     .locator("#doc .mdmark-table")
+        at /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/develop/tests/e2e/単一ユースケース/表を操作する.spec.ts:2002:33
+
+    Error Context: test-results/単一ユースケース-表を操作する-test-normal-when-columns-reordered-chromium/error-context.md
+
+    Error Context: test-results/単一ユースケース-表を操作する-test-normal-when-columns-reordered-chromium/error-context.md
+
+
+[26/49] [chromium] › tests/e2e/単一ユースケース/表を操作する.spec.ts:2647:1 › test_normal_when_pinned_under_merged_header
+[chromium] › tests/e2e/単一ユースケース/記載した内容をプレビューに映す.spec.ts:50:1 › test_normal
+Build failed with 7 errors:
+error: Cannot read directory "../../mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/develop/node_modules/domhandler/dist": cannot allocate memory
+../../mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/develop/node_modules/domutils/dist/helpers.js:1:28: ERROR: Could not resolve "domhandler"
+../../mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/develop/node_modules/domutils/dist/legacy.js:1:30: ERROR: Could not resolve "domhandler"
+../../mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/develop/node_modules/domutils/dist/querying.js:1:36: ERROR: Could not resolve "domhandler"
+../../mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/develop/node_modules/domutils/dist/stringify.js:3:64: ERROR: Could not resolve "domhandler"
+...
+
+  6) [chromium] › tests/e2e/単一ユースケース/記載した内容をプレビューに映す.spec.ts:50:1 › test_normal ────────────────────
+
+    Error: 結合テスト用の配布物をビルドできなかった
+
+       at ../integration/built-root.ts:63
+
+      61 |   const code = await main([], { root, maxBytes: MAX_BYTES });
+      62 |   if (code !== 0) {
+    > 63 |     throw new Error("結合テスト用の配布物をビルドできなかった");
+         |           ^
+      64 |   }
+      65 |   return {
+      66 |     root,
+        at createBuiltRoot (/mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/develop/tests/integration/built-root.ts:63:11)
+        at buildExtensionAndDist (/mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/develop/tests/e2e/vscode.ts:85:17)
+        at /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/develop/tests/e2e/vscode.ts:664:13
+
+    Error Context: test-results/単一ユースケース-記載した内容をプレビューに映す-test-normal-chromium/error-context.md
+
+    Error Context: test-results/単一ユースケース-記載した内容をプレビューに映す-test-normal-chromium/error-context.md
+
+
+[27/49] [chromium] › tests/e2e/単一ユースケース/記載した内容をプレビューに映す.spec.ts:413:1 › test_normal_when_aliases_yaml_saved
+[28/49] [chromium] › tests/e2e/単一ユースケース/選んだ箇所にコメントする.spec.ts:82:1 › test_normal
+  7) [chromium] › tests/e2e/単一ユースケース/拡張機能の配布物を作る.spec.ts:175:1 › test_normal ───────────────────────
+
+    Error: Error: Build failed with 10 errors:
+    ../src/cli/alias-schema.ts:5:7: ERROR: Could not resolve "ajv/dist/2020.js"
+    ../src/cli/aliases.ts:3:38: ERROR: Could not resolve "yaml"
+    ../src/cli/documents.ts:11:22: ERROR: Could not resolve "yaml"
+    ../src/config-files.ts:2:38: ERROR: Could not resolve "yaml"
+    ../src/parts/icons.ts:62:7: ERROR: Could not resolve "lucide"
+    ...
+        at failureErrorWithLog (/tmp/mdmark-e2e-release-egTryb/vscode/node_modules/esbuild/lib/main.js:1752:15)
+        at /tmp/mdmark-e2e-release-egTryb/vscode/node_modules/esbuild/lib/main.js:1211:25
+        at runOnEndCallbacks (/tmp/mdmark-e2e-release-egTryb/vscode/node_modules/esbuild/lib/main.js:1592:45)
+        at buildResponseToResult (/tmp/mdmark-e2e-release-egTryb/vscode/node_modules/esbuild/lib/main.js:1209:7)
+        at /tmp/mdmark-e2e-release-egTryb/vscode/node_modules/esbuild/lib/main.js:1236:16
+        at responseCallbacks.<computed> (/tmp/mdmark-e2e-release-egTryb/vscode/node_modules/esbuild/lib/main.js:886:9)
+        at handleIncomingPacket (/tmp/mdmark-e2e-release-egTryb/vscode/node_modules/esbuild/lib/main.js:941:12)
+        at Socket.readFromStdout (/tmp/mdmark-e2e-release-egTryb/vscode/node_modules/esbuild/lib/main.js:864:7)
+        at Socket.emit (node:events:508:28)
+        at addChunk (node:internal/streams/readable:563:12) {
+      errors: [Getter/Setter],
+      warnings: [Getter/Setter]
+    }
+     ERROR  npm failed with exit code 1
+
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 0
+    Received: 1
+        at /tmp/mdmark-e2e-release-egTryb/vscode/node_modules/esbuild/lib/main.js:1211:25
+        at /tmp/mdmark-e2e-release-egTryb/vscode/node_modules/esbuild/lib/main.js:1236:16
+        at /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/develop/tests/e2e/単一ユースケース/拡張機能の配布物を作る.spec.ts:183:38
+
+    Error Context: test-results/単一ユースケース-拡張機能の配布物を作る-test-normal-chromium/error-context.md
+
+    Error Context: test-results/単一ユースケース-拡張機能の配布物を作る-test-normal-chromium/error-context.md
+
+
+  8) [chromium] › tests/e2e/単一ユースケース/表を操作する.spec.ts:2647:1 › test_normal_when_pinned_under_merged_header 
+
+    Error: expect(received).toBeLessThanOrEqual(expected)
+
+    Expected: <= 1
+    Received:    30.1875
+
+      2672 |   expect(
+      2673 |     Math.abs(valueBox.x - (nameBox.x + nameBox.width)),
+    > 2674 |   ).toBeLessThanOrEqual(1);
+           |     ^
+      2675 |   expect(Math.abs(headBox.x - valueBox.x)).toBeLessThanOrEqual(1);
+      2676 |   // 検証: 1 行目の設定のセルは留まらず、型・必須の列と一緒に見えなくなる
+      2677 |   expect(await offsetInTable(scroller, headOf("設定"))).toBeLessThan(-8);
+        at /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/develop/tests/e2e/単一ユースケース/表を操作する.spec.ts:2674:5
+
+    Error Context: test-results/単一ユースケース-表を操作する-test-normal-when-pinned-under-merged-header-chromium/error-context.md
+
+    Error Context: test-results/単一ユースケース-表を操作する-test-normal-when-pinned-under-merged-header-chromium/error-context.md
+
+
+[29/49] [chromium] › tests/e2e/単一ユースケース/文字列とYAMLのキーの記法を点検する.spec.ts:82:1 › test_normal
+[30/49] [chromium] › tests/e2e/単一ユースケース/配布物をビルドして検査する.spec.ts:110:1 › test_normal
+[31/49] [chromium] › tests/e2e/単一ユースケース/選んだ箇所にコメントする.spec.ts:160:1 › test_normal_when_updated
+  9) [chromium] › tests/e2e/単一ユースケース/選んだ箇所にコメントする.spec.ts:160:1 › test_normal_when_updated ─────────
+
+    Error: expect(received).toContain(expected) // indexOf
+
+    Expected substring: "mdmark-comment-orphans"
+    Received string:    "mdmark-comment-margin"
+
+      192 |             .at(-1)?.className ?? "",
+      193 |       ),
+    > 194 |   ).toContain("mdmark-comment-orphans");
+          |     ^
+      195 | });
+      196 |
+      197 | // comments を指定しない設定では、読み込みと保存の関数を指定してもボタンを出さず、読み込みも呼ばない（正常シナリオ（機能を解除する））
+        at /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/develop/tests/e2e/単一ユースケース/選んだ箇所にコメントする.spec.ts:194:5
+
+    Error Context: test-results/単一ユースケース-選んだ箇所にコメントする-test-normal-when-updated-chromium/error-context.md
+
+    Error Context: test-results/単一ユースケース-選んだ箇所にコメントする-test-normal-when-updated-chromium/error-context.md
+
+
+[32/49] [chromium] › tests/e2e/単一ユースケース/文書をHTMLに書き出す.spec.ts:107:1 › test_normal
+[33/49] [chromium] › tests/e2e/単一ユースケース/文字列とYAMLのキーの記法を点検する.spec.ts:107:1 › test_normal_when_warnings
+  10) [chromium] › tests/e2e/単一ユースケース/操作できる部品で値を変えて写す.spec.ts:49:1 › test_normal ───────────────────
+
+    Test timeout of 300000ms exceeded.
+
+    Error: locator.click: Test timeout of 300000ms exceeded.
+    Call log:
+      - waiting for getByRole('button', { name: '今の値を写す' })
+
+
+      65 |   );
+      66 |   // 実行: 今の値を写すボタンを押す
+    > 67 |   await page.getByRole("button", { name: "今の値を写す" }).click();
+         |                                                      ^
+      68 |   // 検証: コピーしたことがボタンのそばに出て、クリップボードの中身が JSON として読み込める
+      69 |   await expect(
+      70 |     page.locator('#doc .mdmark-param [role="status"]'),
+        at /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/develop/tests/e2e/単一ユースケース/操作できる部品で値を変えて写す.spec.ts:67:54
+
+    Error Context: test-results/単一ユースケース-操作できる部品で値を変えて写す-test-normal-chromium/error-context.md
+
+    Error Context: test-results/単一ユースケース-操作できる部品で値を変えて写す-test-normal-chromium/error-context.md
+
+
+[34/49] [chromium] › tests/e2e/単一ユースケース/操作できる部品で値を変えて写す.spec.ts:80:1 › test_error_when_clipboard_denied
+  11) [chromium] › tests/e2e/単一ユースケース/文字列とYAMLのキーの記法を点検する.spec.ts:107:1 › test_normal_when_warnings 
+
+    Error: expect(received).toContain(expected) // indexOf
+
+    Expected substring: "<!--code:highlight=9-->の読み込めない指定を当てずに描いています。9:コードブロックに無い行の番号です。コードブロックは3行です。行の番号を1〜3で記載してください。"
+    Received string:    "記載の警告フロー図の部品の定義を読み込めません。ノード「始める」の種類beginは使用できません。使用できる種類はllm・dm・script・mcp・data・external・start・question・action・resultです。この図は描いていません。本文記載の警告!--code:highlight=9--の読み込めない指定を当てずに描いています。9:コードブロックに無い行の番号です。コードブロックは3行です。行の番号を1〜3で記載してください。tsconsta=1;constb=2;constc=3;"
+
+      132 |   for (const line of [lines[0], lines[2]]) {
+      133 |     const message = (line ?? "").replace(/^-:\d+: \w+: /, "");
+    > 134 |     expect(rendered).toContain(message.replace(/\s+/g, ""));
+          |                      ^
+      135 |   }
+      136 | });
+      137 |
+        at /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/develop/tests/e2e/単一ユースケース/文字列とYAMLのキーの記法を点検する.spec.ts:134:22
+
+    Error Context: test-results/単一ユースケース-文字列とYAMLのキーの記法を点検する-test-normal-when-warnings-chromium/error-context.md
+
+
+
+
+[35/49] [chromium] › tests/e2e/単一ユースケース/端末にmdmarkをセットアップする.spec.ts:124:1 › test_normal
+[36/49] [chromium] › tests/e2e/単一ユースケース/文書をHTMLに書き出す.spec.ts:615:1 › test_normal_when_includes_and_icons_embedded
+  12) [chromium] › tests/e2e/単一ユースケース/文書をHTMLに書き出す.spec.ts:615:1 › test_normal_when_includes_and_icons_embedded 
+
+    Error: expect(locator).toContainText(expected) failed
+
+    Locator: locator('article .mdmark-include').first()
+    Expected substring: "実行の段落"
+    Received string:    ""
+    Timeout: 30000ms
+
+    Call log:
+      - Expect "toContainText" locator('article .mdmark-include').first() with timeout 30000ms
+      - waiting for locator('article .mdmark-include').first()
+        63 × locator resolved to <div data-source-line="4" class="mdmark-include" data-include="共通/手順.md#実行"></div>
+           - unexpected value ""
+
+
+      645 |     page.locator('article .mdmark-inline-icon[data-icon="sailboat"] svg'),
+      646 |   ).toHaveCount(1);
+    > 647 |   await expect(page.locator("article .mdmark-include").first()).toContainText(
+          |                                                                 ^
+      648 |     "実行の段落",
+      649 |   );
+      650 |   await expect(page.locator("article")).not.toContainText("準備の段落");
+        at /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/develop/tests/e2e/単一ユースケース/文書をHTMLに書き出す.spec.ts:647:65
+
+    Error Context: test-results/単一ユースケース-文書をHTMLに書き出す-test-14339-includes-and-icons-embedded-chromium/error-context.md
+
+
+[37/49] [chromium] › tests/e2e/単一ユースケース/設定と索引を点検する.spec.ts:58:1 › test_normal
+[38/49] [chromium] › tests/e2e/単一ユースケース/追加するJavaScriptを型で点検する.spec.ts:24:1 › test_normal
+[39/49] [chromium] › tests/e2e/単一ユースケース/追加するJavaScriptを型で点検する.spec.ts:37:1 › test_error_when_type_mismatch
+[40/49] [chromium] › tests/e2e/複合ユースケース/プラグインを入れて端末と文書のフォルダをセットアップする.spec.ts:107:1 › test_normal
+  13) [chromium] › tests/e2e/単一ユースケース/配布物をビルドして検査する.spec.ts:110:1 › test_normal ────────────────────
+
+    Error: expect(received).toBe(expected) // Object.is equality
+
+    Expected: 0
+    Received: 1
+
+      119 |   ).toBe(0);
+      120 |   expect((await run("npm", ["run", "lint"])).code).toBe(0);
+    > 121 |   expect((await run("npm", ["run", "typecheck"])).code).toBe(0);
+          |                                                         ^
+      122 |   expect((await run("npm", ["run", "build"])).code).toBe(0);
+      123 |   expect(existsSync(join(root, "dist", "index.js"))).toBe(true);
+      124 |   expect(existsSync(join(root, "dist", "index.css"))).toBe(true);
+        at /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/develop/tests/e2e/単一ユースケース/配布物をビルドして検査する.spec.ts:121:57
+
+    Error Context: test-results/単一ユースケース-配布物をビルドして検査する-test-normal-chromium/error-context.md
+
+    Error Context: test-results/単一ユースケース-配布物をビルドして検査する-test-normal-chromium/error-context.md
+
+
+[41/49] [chromium] › tests/e2e/複合ユースケース/固有の部品で図の文書を描いて確認する.spec.ts:42:1 › test_normal
+  14) [chromium] › tests/e2e/複合ユースケース/プラグインを入れて端末と文書のフォルダをセットアップする.spec.ts:107:1 › test_normal ─────
+
+    Error: expect(received).toBe(expected) // Object.is equality
+
+    Expected: "systemd"
+    Received: undefined
+
+      145 |   expect(notListening).toContain(`127.0.0.1:${terminal.port}`);
+      146 |   expect(notListening).toContain("/mdmark:global-setup");
+    > 147 |   expect(globalReport.start.started?.launcher).toBe("systemd");
+          |                                                ^
+      148 |   expect(globalReport.start.started?.unit).toBe(terminal.unit);
+      149 |   const settings = parse(await readFile(terminal.settingsPath, "utf8"));
+      150 |   expect(settings.features.table).toBe(false);
+        at /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/develop/tests/e2e/複合ユースケース/プラグインを入れて端末と文書のフォルダをセットアップする.spec.ts:147:48
+
+    Error Context: test-results/複合ユースケース-プラグインを入れて端末と文書のフォルダをセットアップする-test-normal-chromium/error-context.md
+
+
+[42/49] [chromium] › tests/e2e/単一ユースケース/設定と索引を点検する.spec.ts:71:1 › test_normal_when_drift
+[43/49] [chromium] › tests/e2e/複合ユースケース/端末の設定を重ねてプレビューと書き出しをそろえる.spec.ts:40:1 › test_normal
+  15) [chromium] › tests/e2e/単一ユースケース/設定と索引を点検する.spec.ts:71:1 › test_normal_when_drift ─────────────
+
+    Error: expect(received).toContain(expected) // indexOf
+
+    Expected substring: "書いてください"
+    Received string:    "mdmark.config.yaml:build: schema: `build.out` がありません。書き出す HTML のパスを記載してください。"
+
+      92 |   expect(missing).toMatch(/^index\.yaml:docs\[\d+\]\.path: missing_doc: /);
+      93 |   // 内容に修正方法が記載されている
+    > 94 |   expect(schema).toContain("書いてください");
+         |                  ^
+      95 |   expect(missing).toContain("ください");
+      96 |   expect(await snapshot(dir)).toEqual(before);
+      97 | });
+        at /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/develop/tests/e2e/単一ユースケース/設定と索引を点検する.spec.ts:94:18
+
+    Error Context: test-results/単一ユースケース-設定と索引を点検する-test-normal-when-drift-chromium/error-context.md
+
+
+[44/49] [chromium] › tests/e2e/単一ユースケース/設定と索引を点検する.spec.ts:611:1 › test_normal_when_cascaded_config_drift
+[45/49] [chromium] › tests/e2e/複合ユースケース/固有の部品で図の文書を描いて確認する.spec.ts:240:1 › test_normal_when_interactive
+  16) [chromium] › tests/e2e/単一ユースケース/設定と索引を点検する.spec.ts:611:1 › test_normal_when_cascaded_config_drift 
+
+    Error: expect(received).toMatch(expected)
+
+    Expected pattern: /^\.\.\/mdmark\.config\.yaml:/
+    Received string:  "/tmp/mdmark-e2e-cli-6pUbwr/mdmark.config.yaml:side-toc.mode: schema: `side-toc.mode` は `hover` か `fixed` で記載してください。"
+
+      647 |   expect(callout[0]).toContain("settings.yaml");
+      648 |   expect(sideToc).toHaveLength(1);
+    > 649 |   expect(sideToc[0]).toMatch(/^\.\.\/mdmark\.config\.yaml:/);
+          |                      ^
+      650 |   const after = await Promise.all(
+      651 |     [settings, ...Object.keys(files).map((file) => join(dir, file))].map(
+      652 |       (path) => readFile(path, "utf8"),
+        at /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/develop/tests/e2e/単一ユースケース/設定と索引を点検する.spec.ts:649:22
+
+    Error Context: test-results/単一ユースケース-設定と索引を点検する-test-normal-when-cascaded-config-drift-chromium/error-context.md
+
+
+[46/49] [chromium] › tests/e2e/複合ユースケース/雛形から1枚のHTMLを配る.spec.ts:40:1 › test_normal
+  17) [chromium] › tests/e2e/複合ユースケース/固有の部品で図の文書を描いて確認する.spec.ts:240:1 › test_normal_when_interactive 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: locator('#doc .mdmark-param').getByRole('button', { name: '今の値を写す' })
+    Expected: visible
+    Timeout: 30000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" locator('#doc .mdmark-param').getByRole('button', { name: '今の値を写す' }) with timeout 30000ms
+      - waiting for locator('#doc .mdmark-param').getByRole('button', { name: '今の値を写す' })
+
+
+      256 |   await expect(
+      257 |     param.getByRole("button", { name: "今の値を写す" }),
+    > 258 |   ).toBeVisible();
+          |     ^
+      259 |   // スライダーを動かすと、グラフが新しい値で再描画される
+      260 |   await slider.fill("8");
+      261 |   await expect(param.locator("svg[role=img]")).toHaveAttribute(
+        at /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/develop/tests/e2e/複合ユースケース/固有の部品で図の文書を描いて確認する.spec.ts:258:5
+
+    Error Context: test-results/複合ユースケース-固有の部品で図の文書を描いて確認する-test-normal-when-interactive-chromium/error-context.md
+
+
+[47/49] [chromium] › tests/e2e/複合ユースケース/固有の部品で図の文書を描いて確認する.spec.ts:274:1 › test_error_when_type_mismatch
+  18) [chromium] › tests/e2e/複合ユースケース/雛形から1枚のHTMLを配る.spec.ts:40:1 › test_normal ────────────────────
+
+    Error: expect(received).toBe(expected) // Object.is equality
+
+    Expected: 0
+    Received: 1
+
+      46 |   await writeDocuments(dir);
+      47 |   const check = await runCli(builtRoot, ["check"], dir);
+    > 48 |   expect(check.code).toBe(0);
+         |                      ^
+      49 |   expect(linesOf(check.stdout)).toEqual(["ずれ 0 件"]);
+      50 |   const build = await runCli(builtRoot, ["build"], dir);
+      51 |   expect(build.code).toBe(0);
+        at /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/develop/tests/e2e/複合ユースケース/雛形から1枚のHTMLを配る.spec.ts:48:22
+
+    Error Context: test-results/複合ユースケース-雛形から1枚のHTMLを配る-test-normal-chromium/error-context.md
+
+
+[48/49] [chromium] › tests/e2e/複合ユースケース/雛形から1枚のHTMLを配る.spec.ts:128:1 › test_error_when_drift
+  19) [chromium] › tests/e2e/単一ユースケース/操作できる部品で値を変えて写す.spec.ts:80:1 › test_error_when_clipboard_denied 
+
+    Test timeout of 300000ms exceeded.
+
+    Error: locator.click: Test timeout of 300000ms exceeded.
+    Call log:
+      - waiting for getByRole('button', { name: '今の値を写す' })
+
+
+      84 |   await slider.fill("8");
+      85 |   // 実行
+    > 86 |   await page.getByRole("button", { name: "今の値を写す" }).click();
+         |                                                      ^
+      87 |   // 検証: 書き込めなかったことと、写すはずだった JSON が選んで写せる文字として出る
+      88 |   await expect(
+      89 |     page.locator('#doc .mdmark-param [role="status"]'),
+        at /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/develop/tests/e2e/単一ユースケース/操作できる部品で値を変えて写す.spec.ts:86:54
+
+    Error Context: test-results/単一ユースケース-操作できる部品で値を変えて写す-test-error-when-clipboard-denied-chromium/error-context.md
+
+    Error Context: test-results/単一ユースケース-操作できる部品で値を変えて写す-test-error-when-clipboard-denied-chromium/error-context.md
+
+
+[49/49] [chromium] › tests/e2e/複合ユースケース/端末の設定を重ねてプレビューと書き出しをそろえる.spec.ts:133:1 › test_error_when_settings_unreadable
+  20) [chromium] › tests/e2e/複合ユースケース/端末の設定を重ねてプレビューと書き出しをそろえる.spec.ts:133:1 › test_error_when_settings_unreadable 
+
+    Error: expect(received).toContain(expected) // indexOf
+
+    Expected substring: "3 行目"
+    Received string:    "/tmp/mdmark-e2e-settings-E5hEwV/settings.yaml の 4 行目を YAML として読み込めません（Flow sequence in block collection must be sufficiently indented and end with a ] at line 4, column 17:）。字下げと記載方法を修正してください。
+    "
+
+      158 |   expect(failed.code).toBe(1);
+      159 |   expect(failed.stderr).toContain("settings.yaml");
+    > 160 |   expect(failed.stderr).toContain("3 行目");
+          |                         ^
+      161 |   expect(failed.stderr).toContain("字下げと記載方法を修正してください");
+      162 |   expect(existsSync(html)).toBe(false);
+      163 |   expect(await opened.configs()).toEqual(opened.before);
+        at /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/develop/tests/e2e/複合ユースケース/端末の設定を重ねてプレビューと書き出しをそろえる.spec.ts:160:25
+
+    Error Context: test-results/複合ユースケース-端末の設定を重ねてプレビューと書き-21f43-or-when-settings-unreadable-chromium/error-context.md
+
+    Error Context: test-results/複合ユースケース-端末の設定を重ねてプレビューと書き-21f43-or-when-settings-unreadable-chromium/error-context.md
+
+
+  21) [chromium] › tests/e2e/複合ユースケース/雛形から1枚のHTMLを配る.spec.ts:128:1 › test_error_when_drift ─────────
+
+    Error: expect(received).toBe(expected) // Object.is equality
+
+    Expected: 0
+    Received: 1
+
+      146 |   await writeFiles(dir, { "index.yaml": index });
+      147 |   const second = await runCli(builtRoot, ["check"], dir);
+    > 148 |   expect(second.code).toBe(0);
+          |                       ^
+      149 |   expect(linesOf(second.stdout)).toEqual(["ずれ 0 件"]);
+      150 |   const build = await runCli(builtRoot, ["build"], dir);
+      151 |   expect(build.code).toBe(0);
+        at /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/develop/tests/e2e/複合ユースケース/雛形から1枚のHTMLを配る.spec.ts:148:23
+
+    Error Context: test-results/複合ユースケース-雛形から1枚のHTMLを配る-test-error-when-drift-chromium/error-context.md
+
+
+  21 failed
+    [chromium] › tests/e2e/単一ユースケース/エディタとプレビューのスクロールを合わせる.spec.ts:251:1 › test_normal_when_in_closed_section 
+    [chromium] › tests/e2e/単一ユースケース/チャートを描く.spec.ts:90:1 › test_error_when_definition_invalid ──────
+    [chromium] › tests/e2e/単一ユースケース/図を拡大・縮小・移動する.spec.ts:757:1 › test_normal_when_resized ──────────
+    [chromium] › tests/e2e/単一ユースケース/図を描く.spec.ts:876:1 › test_error_when_er_definition_invalid ─────
+    [chromium] › tests/e2e/単一ユースケース/拡張機能の配布物を作る.spec.ts:175:1 › test_normal ────────────────────────
+    [chromium] › tests/e2e/単一ユースケース/操作できる部品で値を変えて写す.spec.ts:49:1 › test_normal ─────────────────────
+    [chromium] › tests/e2e/単一ユースケース/操作できる部品で値を変えて写す.spec.ts:80:1 › test_error_when_clipboard_denied 
+    [chromium] › tests/e2e/単一ユースケース/文字列とYAMLのキーの記法を点検する.spec.ts:107:1 › test_normal_when_warnings ──
+    [chromium] › tests/e2e/単一ユースケース/文書をHTMLに書き出す.spec.ts:615:1 › test_normal_when_includes_and_icons_embedded 
+    [chromium] › tests/e2e/単一ユースケース/表を操作する.spec.ts:1946:1 › test_normal_when_columns_reordered ─────
+    [chromium] › tests/e2e/単一ユースケース/表を操作する.spec.ts:2647:1 › test_normal_when_pinned_under_merged_header 
+    [chromium] › tests/e2e/単一ユースケース/記載した内容をプレビューに映す.spec.ts:50:1 › test_normal ─────────────────────
+    [chromium] › tests/e2e/単一ユースケース/設定と索引を点検する.spec.ts:71:1 › test_normal_when_drift ───────────────
+    [chromium] › tests/e2e/単一ユースケース/設定と索引を点検する.spec.ts:611:1 › test_normal_when_cascaded_config_drift 
+    [chromium] › tests/e2e/単一ユースケース/選んだ箇所にコメントする.spec.ts:160:1 › test_normal_when_updated ──────────
+    [chromium] › tests/e2e/単一ユースケース/配布物をビルドして検査する.spec.ts:110:1 › test_normal ──────────────────────
+    [chromium] › tests/e2e/複合ユースケース/プラグインを入れて端末と文書のフォルダをセットアップする.spec.ts:107:1 › test_normal ───────
+    [chromium] › tests/e2e/複合ユースケース/固有の部品で図の文書を描いて確認する.spec.ts:240:1 › test_normal_when_interactive 
+    [chromium] › tests/e2e/複合ユースケース/端末の設定を重ねてプレビューと書き出しをそろえる.spec.ts:133:1 › test_error_when_settings_unreadable 
+    [chromium] › tests/e2e/複合ユースケース/雛形から1枚のHTMLを配る.spec.ts:40:1 › test_normal ──────────────────────
+    [chromium] › tests/e2e/複合ユースケース/雛形から1枚のHTMLを配る.spec.ts:128:1 › test_error_when_drift ───────────
+  1 did not run
+  27 passed (18.8m)
+exit=1

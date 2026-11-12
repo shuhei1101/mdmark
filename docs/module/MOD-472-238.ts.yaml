@@ -45,7 +45,7 @@ functions:
       - name: test_attach_footnotes_when_back_into_closed_section
         case: 正常
         summary: 閉じたセクションの中の番号へ、戻るリンクでセクションを開いて移る
-        condition: '`<!-- section: closed -->` のセクションの中に `[^a]` を持つ文書を描き、`attachSections` と一緒に付け、一覧を開いて戻るリンクを押す'
+        condition: '`<!-- section: {"open": false} -->` のセクションの中に `[^a]` を持つ文書を描き、`attachSections` と一緒に付け、一覧を開いて戻るリンクを押す'
         mock: なし（Chromium）
         expected: セクションの中身が `hidden` を持たず、番号のリンクがフォーカスを持つ
       - name: test_attach_footnotes_when_touch_tapped

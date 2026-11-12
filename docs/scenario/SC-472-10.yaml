@@ -211,7 +211,7 @@ scenarios:
   - name: 正常シナリオ（取り込む文書を描く）
     setup:
       - name: 取り込みを持つワークスペース
-        description: '`<!-- include: 共通/手順.md#実行 -->` を持つ Markdown と、その Markdown からの相対パスに `共通/手順.md` を配置したフォルダ'
+        description: '`<!-- include: {"path": "共通/手順.md", "heading": "実行"} -->` を持つ Markdown と、その Markdown からの相対パスに `共通/手順.md` を配置したフォルダ'
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-

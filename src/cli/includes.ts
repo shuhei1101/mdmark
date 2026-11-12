@@ -9,12 +9,14 @@ import {
 } from "node:path";
 import type { Token } from "markdown-it";
 import MarkdownIt from "markdown-it";
-import { MARK_PATTERN, parseMarkArgs } from "../render/marks.ts";
+import { readMarkArgs } from "../render/mark-options.ts";
+import { MARK_PATTERN } from "../render/marks.ts";
 import {
   isMarkdownPath,
   resolveIncludePath,
   selectHeadingSection,
   selectLines,
+  writtenOf,
 } from "../render/syntax/includes.ts";
 
 /** 取り込めない include のマーカー 1 つ */
@@ -50,8 +52,14 @@ export const findIncludeMarkers = (
         continue;
       }
       const before = token.content.slice(0, match.index);
+      const args = readMarkArgs(match[3] ?? "");
       found.push({
-        written: (match[3] ?? "").trim(),
+        written:
+          args.kind === "json"
+            ? writtenOf(args.options)
+            : args.kind === "legacy"
+              ? args.text
+              : "",
         line: token.map[0] + 1 + (before.split("\n").length - 1),
       });
     }
@@ -59,16 +67,22 @@ export const findIncludeMarkers = (
   return found;
 };
 
-/** 文書が `<!-- features: -include -->` で取り込みを削除しているか */
+/** 文書が `<!-- features: {"include": false} -->`（今の書き方の `-include`）で取り込みを削除しているか */
 const includeDisabled = (markdown: string): boolean => {
   let disabled = false;
   for (const match of markdown.matchAll(MARK_PATTERN)) {
     if (match[1] === undefined && match[2] === "features") {
-      for (const arg of parseMarkArgs(match[3] ?? "").args) {
-        if (arg === "-include") {
-          disabled = true;
-        } else if (arg === "+include") {
-          disabled = false;
+      const args = readMarkArgs(match[3] ?? "");
+      if (args.kind === "json" && typeof args.options.include === "boolean") {
+        disabled = !args.options.include;
+      }
+      if (args.kind === "legacy") {
+        for (const arg of args.text.split(/\s+/)) {
+          if (arg === "-include") {
+            disabled = true;
+          } else if (arg === "+include") {
+            disabled = false;
+          }
         }
       }
     }

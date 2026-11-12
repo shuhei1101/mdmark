@@ -21,7 +21,7 @@ async function loadBuilt(): Promise<Built> {
 /** 用語集の表を 1 つ持つ本文。`rows` は `[用語, 意味]` の並びで、最初の行が 5 行目になる */
 function glossaryDocument(rows: Array<[string, string]>): string {
   return [
-    "<!-- glossary: term=用語 meaning=意味 -->",
+    '<!-- glossary: {"term": {"column": "用語"}, "meaning": {"column": "意味"}} -->',
     "",
     "| 用語 | 意味 |",
     "| --- | --- |",
@@ -231,7 +231,7 @@ test("test_normal_when_glossary_avoided_term", async () => {
   };
   // glossary.md は表の中に 作業場・ワーク場 を持つ。guide.md は 1 行目に 作業場、3 行目に ワーク場、5 行目に ワークスペース
   const glossary = [
-    "<!-- glossary: term=用語 meaning=意味 avoid=やめた言い方 -->",
+    '<!-- glossary: {"term": {"column": "用語"}, "meaning": {"column": "意味"}, "avoid": {"column": "やめた言い方"}} -->',
     "",
     "| 用語 | 意味 | やめた言い方 |",
     "| --- | --- | --- |",

@@ -51,7 +51,7 @@ states:
       - name: collapse
         value: closed
   - name: OpenTitle
-    description: 開いたタブと `title=`。見出し `入れ方` の下にタブの並びと 1 つ目の中身が見える
+    description: 開いたタブと `collapse.title`。見出し `入れ方` の下にタブの並びと 1 つ目の中身が見える
     args:
       - name: titles
         value: '["macOS","Windows"]'
@@ -105,7 +105,7 @@ args:
     required: false
     default: なし（`タブ（{タブ名を・で並べたもの}）`）
     enabled_when: '`collapse` が `closed`・`open` のとき'
-    description: 折り畳みの見出し（`title=` の値）。`summary` の文字にする
+    description: 折り畳みの見出し（`collapse.title` の値）。`summary` の文字にする
     status: planned
 slots:
   - name: default

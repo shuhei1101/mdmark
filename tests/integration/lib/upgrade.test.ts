@@ -12,11 +12,19 @@ import {
 } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
+import { pathToFileURL } from "node:url";
 import { afterAll, beforeAll, expect, test } from "vitest";
 import { parse } from "yaml";
 import { main as buildMain } from "../../../scripts/build.ts";
 import { migrationsDirOf } from "../../migrations-dir.ts";
-import { type CliResult, linesOf, useTempDirs, writeFiles } from "../cli.ts";
+import {
+  type CliResult,
+  GREET_SOURCE,
+  linesOf,
+  TEST_LIB_SOURCE,
+  useTempDirs,
+  writeFiles,
+} from "../cli.ts";
 import { copyPluginInputs, writeRootPackageJson } from "../plugin-inputs.ts";
 
 // リポジトリの直下
@@ -704,4 +712,169 @@ test("test_error_when_diagram_drift", async () => {
   expect(parse(work.config).version).toBe("v0.3.0");
   expect(work.a).toBe(a);
   expect(work.b).toBe(WORK_FILES["docs/b.md"]);
+});
+
+/** 文書のマーカーを JSON の記載へ書き換える移行の、書き換える前の文書（シナリオ『バージョンを上げる』の 2 つの正常シナリオの文書） */
+const LEGACY_MARK_DOCS = {
+  "docs/a.md": [
+    "# A",
+    "",
+    "<!-- table: data +count total=数量:sum filter=名前,更新日:date closed -->",
+    "",
+    "| 名前 | 数量 | 更新日 |",
+    "| --- | --- | --- |",
+    "| a | 1 | 2026-10-01 |",
+    "",
+    "<!-- /table -->",
+    "",
+    "<!-- code: title=app.ts lines highlight=2,4-6 -->",
+    "",
+    "```ts",
+    ...Array.from({ length: 6 }, (_, index) => `const v${index} = ${index};`),
+    "```",
+    "",
+  ].join("\n"),
+  "docs/b.md": [
+    "# B",
+    "",
+    "<!-- toc -->",
+    "",
+    "<!-- details: 実行の例 open -->",
+    "",
+    "段落",
+    "",
+    "<!-- /details -->",
+    "",
+    "<!-- fig: arch -->",
+    "",
+    '![構成](arch.png "全体の構成")',
+    "",
+    "<!-- include: src/app.ts#L3-L5 -->",
+    "",
+    "```markdown",
+    "<!-- section: closed -->",
+    "```",
+    "",
+  ].join("\n"),
+  "docs/c.md": [
+    "<!-- section: closed -->",
+    "",
+    "# C",
+    "",
+    "<!-- greet: world -->",
+    "",
+    "<!-- test-lib: a b -->",
+    "",
+    "<!-- table: data filter=名前:range -->",
+    "",
+    "| 名前 |",
+    "| --- |",
+    "| a |",
+    "",
+    "<!-- /table -->",
+    "",
+  ].join("\n"),
+};
+
+// 文書のマーカーを書き換える call の手順を当て、今の書き方のマーカーを JSON のオブジェクトにし、書き換えない記載を移行の報告に出す（正常系（文書のマーカーを JSON の記載へ書き換える））
+test("test_normal_when_document_marks_migrated", async () => {
+  // 準備
+  const pkg = packageOf("v0.5.0");
+  const next = migrationsDirOf("marker-json.mjs");
+  const files: Record<string, string> = {};
+  for (const name of await readdir(next)) {
+    files[`migrations/v0.5.0/${name}`] = await readFile(
+      join(next, name),
+      "utf8",
+    );
+  }
+  await setMigrations(pkg, { ...files, "docs/guide/変更履歴.md": CHANGELOG });
+  const dir = await createWork(
+    `${OLD_CONFIG}extensions: [extensions/greet.js]\nlibraries:\n  test-lib: lib/test-lib.js\n`,
+  );
+  await writeFiles(dir, {
+    ...LEGACY_MARK_DOCS,
+    "docs/index.yaml": [
+      "schema: 2",
+      "docs:",
+      ...["a", "b", "c"].flatMap((id) => [
+        `  - id: ${id}`,
+        `    path: ${id}.md`,
+        `    title: ${id.toUpperCase()}`,
+      ]),
+      "",
+    ].join("\n"),
+    "docs/src/app.ts": Array.from(
+      { length: 6 },
+      (_, index) => `const v${index} = ${index};`,
+    ).join("\n"),
+    "docs/arch.png": "",
+    "extensions/greet.js": GREET_SOURCE,
+    "lib/test-lib.js": TEST_LIB_SOURCE,
+  });
+  const { render } = (await import(
+    pathToFileURL(join(pkg, "dist", "index.js")).href
+  )) as {
+    render: (markdown: string, opts?: { config?: unknown }) => string;
+  };
+  const config = { libraries: { "test-lib": "lib/test-lib.js" } };
+  /** 記載の警告を除いた描いた文字列 */
+  const rendered = (markdown: string): string =>
+    render(markdown, { config }).replace(
+      /<div[^>]*class="mdmark-syntax-warning"[\s\S]*?<\/div>/g,
+      "",
+    );
+  // 実行
+  const result = await runUpgrade(pkg, { args: ["--yes"], cwd: dir });
+  // 検証
+  expect(result.code).toBe(0);
+  const read = (path: string) => readFile(join(dir, path), "utf8");
+  const [a, b, c] = await Promise.all([
+    read("docs/a.md"),
+    read("docs/b.md"),
+    read("docs/c.md"),
+  ]);
+  expect(a).toContain(
+    '<!-- table: {"kind": "data", "features": {"count": {}}, "columns": {"名前": {"filter": {}}, "更新日": {"filter": {"type": "date"}}}, "collapse": {"open": false}} -->',
+  );
+  expect(a).not.toContain("total");
+  expect(a).toContain(
+    '<!-- code: {"title": "app.ts", "lines": {}, "highlight": [2, {"from": 4, "to": 6}]} -->',
+  );
+  expect(b).toContain('<!-- details: {"title": "実行の例", "open": true} -->');
+  expect(b).toContain('<!-- fig: {"id": "arch"} -->');
+  expect(b).toContain(
+    '<!-- include: {"path": "src/app.ts", "lines": {"from": 3, "to": 5}} -->',
+  );
+  expect(b).toContain("<!-- toc -->");
+  expect(b).toContain("```markdown\n<!-- section: closed -->\n```");
+  expect(a.replace(/<!-- (table|code): .*-->/g, "")).toBe(
+    LEGACY_MARK_DOCS["docs/a.md"].replace(/<!-- (table|code): .*-->/g, ""),
+  );
+  expect(c).toContain('<!-- section: {"open": false} -->');
+  expect(c).toContain('<!-- table: {"kind": "data"} -->');
+  expect(c).toContain("<!-- greet: world -->");
+  expect(c).toContain("<!-- test-lib: a b -->");
+  const report = linesOf(result.stdout).map((line) => line.trim());
+  for (const [file, name, text] of [
+    ["docs/a.md", "table", "total=数量:sum"],
+    ["docs/c.md", "greet", "world"],
+    ["docs/c.md", "test-lib", "a b"],
+    ["docs/c.md", "table", "filter=名前:range"],
+  ] as const) {
+    expect(
+      report.filter((line) =>
+        new RegExp(
+          `^${file}:\\d+: ${name}: [^:]*${text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}[^:]*: .+`,
+        ).test(line),
+      ),
+      `${file} ${name} ${text}`,
+    ).toHaveLength(1);
+  }
+  for (const path of ["docs/a.md", "docs/b.md", "docs/c.md"] as const) {
+    expect(rendered(await read(path)), path).toBe(
+      rendered(LEGACY_MARK_DOCS[path]),
+    );
+  }
+  expect(parse(await read("mdmark.config.yaml")).version).toBe("v0.5.0");
 });

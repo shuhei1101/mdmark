@@ -16,7 +16,8 @@ export function createEnv(overrides: Partial<RenderEnv> = {}): RenderEnv {
   return {
     libraries: {},
     defaults: { ...DEFAULT_FEATURES },
-    featureArgs: [],
+    featureOptions: [],
+    markNotes: [],
     features: {},
     headings: [],
     nonce: NONCE,

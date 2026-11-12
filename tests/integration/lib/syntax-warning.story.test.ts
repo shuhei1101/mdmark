@@ -25,26 +25,71 @@ async function expectFrame(
   ).resolves.toBe("dashed");
 }
 
-// 表のマーカーに closed と open を両方書いたときは、マーカーと本文だけを出す（ClosedAndOpen）
-test("test_closed_and_open", async () => {
+// マーカーの値の型が合わないときは、マーカーと本文だけを出す（TypeMismatch）
+test("test_type_mismatch", async () => {
   // 準備・実行
-  const { warning } = await open("closed-and-open");
+  const { warning } = await open("type-mismatch");
   // 検証
   await expectFrame(warning);
   await expect(warning.locator("p code").first().innerText()).resolves.toBe(
-    "<!-- table: data closed open -->",
+    '<!-- tabs: {"collapse": "closed"} -->',
   );
+  await expect(warning.innerText()).resolves.toContain("collapse");
   await expect(warning.locator("ul").count()).resolves.toBe(0);
 });
 
-// 機能を追加していない表でだけ使用できないキーを記載したときは、本文の後に項目を並べる（Items）
+// マーカーの引数を JSON として読めないときは、読めない位置の文字と原因を出す（InvalidJson）
+test("test_invalid_json", async () => {
+  // 準備・実行
+  const { page, warning } = await open("invalid-json");
+  // 検証
+  await expectFrame(warning);
+  await expect(warning.locator("p code").first().innerText()).resolves.toBe(
+    '<!-- details: {"title": 補足} -->',
+  );
+  const text = await warning.innerText();
+  expect(text).toContain("11 文字目");
+  expect(text).toContain("既定の設定で描いています");
+  await expect(warning.locator("ul").count()).resolves.toBe(0);
+  await expect(pageOverflows(page)).resolves.toBe(false);
+});
+
+// 値の --> でコメントが閉じたときは、閉じる理由と --\u003e の記載方法を出す（CommentEndInValue）
+test("test_comment_end_in_value", async () => {
+  // 準備・実行
+  const { page, warning } = await open("comment-end-in-value");
+  // 検証
+  await expectFrame(warning);
+  const text = await warning.innerText();
+  expect(text).toContain("コメントがそこで閉じます");
+  expect(text).toContain("--\\u003e");
+  await expect(pageOverflows(page)).resolves.toBe(false);
+});
+
+// 拡張のマーカーの引数が今の書き方のときは、例と mdmark upgrade の移行の報告を出す（LegacyExtension）
+test("test_legacy_extension", async () => {
+  // 準備・実行
+  const { page, warning } = await open("legacy-extension");
+  // 検証
+  await expectFrame(warning);
+  await expect(warning.locator("p code").first().innerText()).resolves.toBe(
+    "<!-- greet: world -->",
+  );
+  const text = await warning.innerText();
+  expect(text).toContain('<!-- greet: {"target": "world"} -->');
+  expect(text).toContain("mdmark upgrade");
+  await expect(warning.locator("ul").count()).resolves.toBe(0);
+  await expect(pageOverflows(page)).resolves.toBe(false);
+});
+
+// 表のマーカーに読み込めない指定を複数記載したときは、本文の後に項目を並べる（Items）
 test("test_items", async () => {
   // 準備・実行
   const { warning } = await open("items");
   // 検証
   await expectFrame(warning);
   const labels = await warning.locator("li > code:first-child").allInnerTexts();
-  expect(labels).toEqual(["hide=", "total="]);
+  expect(labels).toEqual(["columns.数量.total[0].calc", "columns.名前.hidden"]);
 });
 
 // 切れた図表の参照は、マーカーを持たず本文だけを出す（BrokenReference）
@@ -67,8 +112,8 @@ test("test_extension_schema", async () => {
   await expectFrame(warning);
   const items = await warning.locator("li").allInnerTexts();
   expect(items).toHaveLength(2);
-  expect(items[0]?.startsWith("1 つ目の World:")).toBe(true);
-  expect(items[1]?.startsWith("2 つ目の 2:")).toBe(true);
+  expect(items[0]?.startsWith("target:")).toBe(true);
+  expect(items[1]?.startsWith("count:")).toBe(true);
 });
 
 // マーカーが長く枠の幅を超えても、マーカーが枠の中で折り返し、横スクロールを出さない（LongMark）
@@ -91,7 +136,7 @@ test("test_glossary_column", async () => {
   // 検証
   await expectFrame(warning);
   await expect(warning.locator("p code").first().innerText()).resolves.toBe(
-    "<!-- glossary: term=用語 meaning=説明 -->",
+    '<!-- glossary: {"term": {"column": "用語"}, "meaning": {"column": "説明"}} -->',
   );
   const text = await warning.innerText();
   expect(text).toContain("説明");
@@ -100,29 +145,29 @@ test("test_glossary_column", async () => {
   await expect(pageOverflows(page)).resolves.toBe(false);
 });
 
-// 用語集の表のマーカーに必須の meaning= を記載していないときは、指し方を出す（GlossaryMissingArg）
+// 用語集の表のマーカーに必須の meaning を記載していないときは、指し方を出す（GlossaryMissingArg）
 test("test_glossary_missing_arg", async () => {
   // 準備・実行
   const { page, warning } = await open("glossary-missing-arg");
   // 検証
   await expectFrame(warning);
   await expect(warning.locator("p code").first().innerText()).resolves.toBe(
-    "<!-- glossary: term=用語 -->",
+    '<!-- glossary: {"term": {"column": "用語"}} -->',
   );
   const text = await warning.innerText();
-  expect(text).toContain("meaning=");
+  expect(text).toContain('"meaning": {"column": "列名"}');
   expect(text).toContain("この表からは用語を入れずに描いています");
   await expect(pageOverflows(page)).resolves.toBe(false);
 });
 
-// ビューのマーカーの group= が表に無い列を指すときは、表の列を並べて表で描くことを伝える（ViewGroupColumn）
+// ビューのマーカーの board.group.column が表に無い列を指すときは、表の列を並べて表で描くことを伝える（ViewGroupColumn）
 test("test_view_group_column", async () => {
   // 準備・実行
   const { page, warning } = await open("view-group-column");
   // 検証
   await expectFrame(warning);
   await expect(warning.locator("p code").first().innerText()).resolves.toBe(
-    "<!-- view: group=優先度 -->",
+    '<!-- view: {"board": {"group": {"column": "優先度"}}} -->',
   );
   const text = await warning.innerText();
   expect(text).toContain("優先度");
@@ -137,7 +182,7 @@ test("test_view_no_table", async () => {
   // 検証
   await expectFrame(warning);
   await expect(warning.locator("p code").first().innerText()).resolves.toBe(
-    "<!-- view: group=状態 -->",
+    '<!-- view: {"board": {"group": {"column": "状態"}}} -->',
   );
   const text = await warning.innerText();
   expect(text).toContain("項目にする表がありません");
@@ -145,14 +190,14 @@ test("test_view_no_table", async () => {
   await expect(pageOverflows(page)).resolves.toBe(false);
 });
 
-// ビューのマーカーの icons= に使用できないアイコンを記載したときは、使用できるアイコンを並べる（ViewUnknownIcon）
+// ビューのマーカーの board.values.{値}.icon に使用できないアイコンを記載したときは、使用できるアイコンを並べる（ViewUnknownIcon）
 test("test_view_unknown_icon", async () => {
   // 準備・実行
   const { page, warning } = await open("view-unknown-icon");
   // 検証
   await expectFrame(warning);
   await expect(warning.locator("p code").first().innerText()).resolves.toBe(
-    "<!-- view: group=状態 icons=完了:rocket -->",
+    '<!-- view: {"board": {"group": {"column": "状態"}, "values": {"完了": {"icon": "rocket"}}}} -->',
   );
   const text = await warning.innerText();
   expect(text).toContain("rocket");

@@ -1,0 +1,50 @@
+id: ER-477-18
+visibility: internal
+title: 'ER 図: map のマーカーの設定'
+lead: '`<!-- map: {JSON のオブジェクト} -->` の名前の後ろに記載する、map のマーカーの設定の構造。'
+tables:
+- name: map
+  title: map
+  datastore: JSON
+  access: 全件
+  scale: ~1
+  summary: map のマーカー 1 つの設定
+  description: 見せ方の初期値だけを持つ。図の定義は範囲の中の `mermaid` のブロック、補足は `map-data` のマーカーが持つ
+  columns:
+  - name: title
+    title: 図の枠と折りたたみの見出し
+    type: string
+    description: 図の枠と折りたたみの見出し
+    example: '"全体の構成"'
+  - name: focus
+    title: 最初に入るグループの ID
+    type: string
+    description: 最初に入るグループの ID。クエリ文字列の `map-{図の番号}` と sessionStorage に記録があれば、そちらを先に使用する。無いグループの ID は飛ばす
+    example: '"app"'
+  - name: play
+    title: 再生か案内を自動で始めるか
+    type: string
+    description: '`"autoplay"` で、図が画面に入ったら押さずに再生か案内を始める。動きを減らす設定では始めず止めた帯で出す'
+    enum_values: '`autoplay`'
+    example: '"autoplay"'
+  - name: interval
+    title: 自動で進める間隔の秒
+    type: number
+    description: 自動で進める間隔の秒。正の数。省くと 2
+    default: '2'
+    example: '3'
+  - name: collapse
+    title: 図を折り畳みに入れる
+    type: object
+    description: 共通のオブジェクトの折り畳み
+    example: '{"open": false}'
+notes:
+  見本: |-
+    ```html
+    <!-- map: {"title": "全体の構成", "focus": "app", "play": "autoplay", "interval": 3, "collapse": {"open": false}} -->
+    ```
+refs:
+- ER-477-1#
+- ER-472-2#
+decisions:
+- D-338

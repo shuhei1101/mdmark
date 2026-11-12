@@ -189,7 +189,8 @@ test("test_normal_when_known_extension_and_ignored_mark", async () => {
     "  ignore: [prettier-ignore]",
   ]);
   await writeFiles(dir, {
-    "a.md": "# A\n\n<!-- greet: 太郎 -->\n\n<!-- prettier-ignore -->\n",
+    "a.md":
+      '# A\n\n<!-- greet: {"name": "太郎"} -->\n\n<!-- prettier-ignore -->\n',
   });
   // 実行
   const result = await runCli(["check"], dir);
@@ -689,7 +690,7 @@ test("test_normal_when_text", async () => {
   const markdown = [
     ...flowLines(CLEAN_FLOW),
     "",
-    "<!-- table: data -->",
+    '<!-- table: {"kind": "data"} -->',
     "",
     "| 列 | 値 |",
     "| --- | --- |",
@@ -731,20 +732,20 @@ test("test_normal_when_text_warnings", async () => {
   }
 });
 
-// 描くときにスキップする記法のマーカーの知らない機能・キー・指定を、行を指す unknown_mark_arg のずれにして終了コード 1 で終わる（正常系（文字列の記法のマーカーに知らない引数がある））
+// 描くときに無視する記法のマーカーの知らないキー（知らない機能名を含む）を、行を指す unknown_mark_arg のずれにして終了コード 1 で終わる（正常系（文字列の記法のマーカーに知らない引数がある））
 test("test_normal_when_text_unknown_mark_args", async () => {
   // 準備
   const dir = await createTempDir();
   await runCli(["init", dir], dir);
   const markdown = [
-    "<!-- table: data +unknown widht=説明 -->",
+    '<!-- table: {"kind": "data", "features": {"unknown": {}}, "widht": {"説明": {}}} -->',
     "",
     "| 名前 | 説明 |",
     "| --- | --- |",
     "| a | 1 |",
     "",
     "<!-- /table -->",
-    "<!-- tabs: grop=os -->",
+    '<!-- tabs: {"grop": "os"} -->',
     "",
     "### macOS",
     "",
@@ -767,15 +768,15 @@ test("test_normal_when_text_unknown_mark_args", async () => {
     line.startsWith("-:1: unknown_mark_arg: "),
   );
   expect(first).toHaveLength(2);
-  expect(first.join("\n")).toContain("+unknown");
+  expect(first.join("\n")).toContain("features.unknown");
   expect(first.join("\n")).toContain("sort");
-  expect(first.join("\n")).toContain("widht=");
-  expect(first.join("\n")).toContain("filter=");
+  expect(first.join("\n")).toContain("widht");
+  expect(first.join("\n")).toContain("columns");
   const eighth = lines.filter((line) =>
     line.startsWith("-:8: unknown_mark_arg: "),
   );
   expect(eighth).toHaveLength(1);
-  expect(eighth[0]).toContain("grop=");
+  expect(eighth[0]).toContain("grop");
   expect(lines.some((line) => line.includes("syntax_warning"))).toBe(false);
   expect(lines.at(-1)).toBe("ずれ 3 件");
 });
@@ -913,16 +914,16 @@ test("test_normal_when_include_targets_missing", async () => {
     "docs/a.md": [
       "# A",
       "",
-      "<!-- include: missing.md -->",
+      '<!-- include: {"path": "missing.md"} -->',
       "",
-      "<!-- include: 共通/手順.md#実行 -->",
+      '<!-- include: {"path": "共通/手順.md", "heading": "実行"} -->',
       "",
     ].join("\n"),
     "docs/b.md": [
       "# B",
-      "<!-- include: 共通/手順.md#無い見出し -->",
+      '<!-- include: {"path": "共通/手順.md", "heading": "無い見出し"} -->',
       "",
-      "<!-- include: ../src/app.ts#L8-L10 -->",
+      '<!-- include: {"path": "../src/app.ts", "lines": {"from": 8, "to": 10}} -->',
       "",
     ].join("\n"),
     "docs/共通/手順.md": "## 実行\n\n実行の段落\n",
@@ -969,13 +970,13 @@ test("test_normal_when_include_circular_or_outside", async () => {
     "root/docs/a.md": [
       "# A",
       "",
-      "<!-- include: b.md -->",
+      '<!-- include: {"path": "b.md"} -->',
       "",
-      "<!-- include: ../../outside.md -->",
+      '<!-- include: {"path": "../../outside.md"} -->',
       "",
     ].join("\n"),
-    "root/docs/b.md": "# B\n<!-- include: a.md -->\n",
-    "outside.md": "<!-- include: nowhere.md -->\n",
+    "root/docs/b.md": '# B\n<!-- include: {"path": "a.md"} -->\n',
+    "outside.md": '<!-- include: {"path": "nowhere.md"} -->\n',
   };
   await writeFiles(parent, files);
   const before = await snapshotFiles(parent, Object.keys(files));
@@ -1243,4 +1244,169 @@ test("test_normal_when_map_config_drift", async () => {
   expect(doc("map_unknown_line")[0]).toContain("map.lines");
   expect(lines.at(-1)).toBe("ずれ 5 件");
   expect(await snapshotFiles(dir, MAP_FILES)).toEqual(before);
+});
+
+// 文書の今の書き方のマーカーを、文書と行を指す legacy_mark の行にして終了コード 1 で終わる（正常系（今の書き方のマーカーがある））
+test("test_normal_when_legacy_mark", async () => {
+  // 準備
+  const dir = await createCleanDir({ js: true });
+  await appendConfig(dir, ["extensions: [extensions/example.js]"]);
+  await writeFiles(dir, {
+    "a.md": [
+      "# A",
+      "",
+      "<!-- table: data filter=名前 -->",
+      "",
+      "| 名前 |",
+      "| --- |",
+      "| a |",
+      "",
+      "<!-- /table -->",
+      "",
+    ].join("\n"),
+    "b.md": [
+      "<!-- section: closed -->",
+      "",
+      "# B",
+      "",
+      "<!-- greet: 太郎 -->",
+      "",
+    ].join("\n"),
+  });
+  const before = await snapshot(dir);
+  // 実行
+  const result = await runCli(["check"], dir);
+  // 検証
+  expect(result.code).toBe(1);
+  const lines = linesOf(result.stdout);
+  for (const head of [
+    "a.md:3: legacy_mark:",
+    "b.md:1: legacy_mark:",
+    "b.md:5: legacy_mark:",
+  ]) {
+    const found = lines.filter((line) => line.startsWith(head));
+    expect(found, head).toHaveLength(1);
+    expect(found[0]).toContain("mdmark upgrade");
+  }
+  expect(lines.find((line) => line.startsWith("b.md:5:"))).toContain(
+    "描くときに描きません",
+  );
+  expect(lines.at(-1)).toBe("ずれ 3 件");
+  expect(await snapshot(dir)).toEqual(before);
+});
+
+// 文書のマーカーの知らないキー・型の誤り・削除した機能の列の設定を、文書と行を指す行にして終了コード 1 で終わる（正常系（マーカーの設定にずれがある））
+test("test_normal_when_mark_options_drift", async () => {
+  // 準備
+  const dir = await createCleanDir();
+  await writeFiles(dir, {
+    "a.md": [
+      '<!-- code: {"title": "app.ts", "color": "red"} -->',
+      "```ts",
+      "const a = 1;",
+      "```",
+      '<!-- section: {"open": "no"} -->',
+      "",
+      "# A",
+      "",
+      '<!-- table: {"features": {"total": {"enabled": false}}, "columns": {"数量": {"total": [{"calc": "sum"}]}}} -->',
+      "",
+      "| 名前 | 数量 |",
+      "| --- | --- |",
+      "| a | 1 |",
+      "",
+      "<!-- /table -->",
+      "",
+    ].join("\n"),
+  });
+  // 実行
+  const result = await runCli(["check"], dir);
+  // 検証
+  expect(result.code).toBe(1);
+  const lines = linesOf(result.stdout);
+  const unknown = lines.filter((line) =>
+    line.startsWith("a.md:1: unknown_mark_arg:"),
+  );
+  expect(unknown).toHaveLength(1);
+  expect(unknown[0]).toContain("color");
+  const invalid = lines.filter((line) =>
+    line.startsWith("a.md:5: mark_option_invalid:"),
+  );
+  expect(invalid).toHaveLength(1);
+  expect(invalid[0]).toContain("open");
+  const unapplied = lines.filter((line) =>
+    line.startsWith("a.md:9: mark_option_unapplied:"),
+  );
+  expect(unapplied).toHaveLength(1);
+  expect(unapplied[0]).toContain("columns.数量.total");
+  expect(lines.at(-1)).toBe("ずれ 3 件");
+});
+
+// 文字列の今の書き方のマーカーを、行を指す legacy_mark のずれにして終了コード 1 で終わる（正常系（文字列に今の書き方のマーカーがある））
+test("test_normal_when_text_legacy_mark", async () => {
+  // 準備
+  const dir = await createTempDir();
+  await runCli(["init", dir], dir);
+  const markdown = [
+    "<!-- table: data +total total=数量:sum -->",
+    "",
+    "| 名前 | 数量 |",
+    "| --- | --- |",
+    "<!-- /table -->",
+    "",
+    "<!-- details: 補足 open -->",
+    "",
+    "段落",
+    "",
+    "<!-- /details -->",
+    "",
+  ].join("\n");
+  // 実行
+  const result = await runCli(["check", "--text", markdown], dir);
+  // 検証
+  expect(result.code).toBe(1);
+  const lines = linesOf(result.stdout);
+  for (const head of ["-:1: legacy_mark:", "-:7: legacy_mark:"]) {
+    const found = lines.filter((line) => line.startsWith(head));
+    expect(found, head).toHaveLength(1);
+    expect(found[0]).toContain("mdmark upgrade");
+  }
+  expect(lines.some((line) => line.includes("syntax_warning"))).toBe(false);
+});
+
+// 文字列の JSON として読めない引数と値の --> で閉じた引数を、syntax_warning のずれにして終了コード 1 で終わる（正常系（文字列に JSON として読めない引数がある））
+test("test_normal_when_text_mark_args_not_json", async () => {
+  // 準備
+  const dir = await createTempDir();
+  await runCli(["init", dir], dir);
+  const markdown = [
+    '<!-- code: {"title": "app.ts",} -->',
+    "```ts",
+    "const a = 1;",
+    "```",
+    "",
+    "",
+    '<!-- details: {"title": "a --\\u003e b"} -->',
+    "",
+    "段落",
+    "<!-- /details -->",
+    '<!-- details: {"title": "a --> b"} -->',
+    "",
+    "段落",
+    "",
+    "<!-- /details -->",
+    "",
+  ].join("\n");
+  // 実行
+  const result = await runCli(["check", "--text", markdown], dir);
+  // 検証
+  expect(result.code).toBe(1);
+  const lines = linesOf(result.stdout);
+  const first = lines.find((line) => line.startsWith("-:1: syntax_warning:"));
+  expect(first).toContain("JSON として読めません");
+  expect(first).toContain("文字目");
+  const closed = lines.find((line) => line.startsWith("-:11: syntax_warning:"));
+  expect(closed).toContain("コメントがそこで閉じます");
+  expect(closed).toContain("--\\u003e");
+  expect(lines.some((line) => line.startsWith("-:7:"))).toBe(false);
 });

@@ -193,7 +193,7 @@ test("test_attach_footnotes_when_back_into_closed_section", async () => {
   const { attachFootnotes } = await loadFootnotes();
   const { attachSections } = await loadSections();
   const { root } = createRoot(
-    "## セクション\n\n<!-- section: closed -->\n\n本文[^a]。\n\n[^a]: 補足\n",
+    '## セクション\n\n<!-- section: {"open": false} -->\n\n本文[^a]。\n\n[^a]: 補足\n',
   );
   detachers.push(attachSections({ root, sections: true, rowDetails: false }));
   detachers.push(attachFootnotes({ root, placement: "top" }));

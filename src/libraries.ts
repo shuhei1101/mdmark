@@ -8,12 +8,15 @@ import {
 } from "./extensions.ts";
 import { renderNotice } from "./parts/notice.ts";
 import { renderSyntaxWarning } from "./parts/syntax-warning.ts";
-import { parseMarkArgs } from "./render/marks.ts";
+import { isMarkOptions } from "./render/mark-options.ts";
 
 /** `import()` で読み込んだモジュールが名前付きで export する構造 */
 export type LibraryModule = {
-  /** マーカーの場所の要素と、マーカーの引数を受けて描く */
-  draw: (slot: HTMLElement, args: string[]) => void | Promise<void>;
+  /** マーカーの場所の要素と、マーカーの引数の JSON のオブジェクトを受けて描く */
+  draw: (
+    slot: HTMLElement,
+    options: Record<string, unknown>,
+  ) => void | Promise<void>;
 };
 
 /** URL のモジュールを読み込む関数 */
@@ -65,10 +68,11 @@ export async function loadLibraries(options: {
     slots.map(async (slot) => {
       const name = slot.getAttribute("data-mdmark-slot") ?? "";
       const argsText = slot.getAttribute("data-mdmark-args") ?? "";
+      const options = optionsOf(argsText);
       // 設定の対応表より登録した拡張を優先する
       const extension = extensionFor(name);
       if (extension) {
-        await drawExtension({ slot, root, extension, argsText });
+        await drawExtension({ slot, root, extension, argsText, options });
         return;
       }
       // 対応表に無い名前は、文書に生の HTML で記載された要素なので取り除く
@@ -100,7 +104,7 @@ export async function loadLibraries(options: {
         if (typeof draw !== "function") {
           throw new Error("モジュールが draw を export していない");
         }
-        await draw(slot, argsText.split(/\s+/).filter(Boolean));
+        await draw(slot, options);
         // 待っている間に再描画された文書のマーカーの場所には手を付けない
         if (!isCurrent()) {
           return;
@@ -126,9 +130,10 @@ export async function loadLibraries(options: {
     root: HTMLElement;
     extension: MdmarkExtension;
     argsText: string;
+    options: Record<string, unknown>;
   }): Promise<void> {
-    const { slot, extension, argsText } = target;
-    const value: MdmarkMarkArgs = parseMarkArgs(argsText);
+    const { slot, extension, argsText, options } = target;
+    const value: MdmarkMarkArgs = { options };
     // 範囲で記載したマーカーだけが部品の定義を持つ
     const definitionIndex = slot.getAttribute("data-mdmark-definition");
     if (definitionIndex !== null && Number(definitionIndex) in definitions) {
@@ -140,7 +145,7 @@ export async function loadLibraries(options: {
         if (items.length > 0) {
           if (isCurrent() && root.contains(slot)) {
             slot.outerHTML = renderSyntaxWarning({
-              mark: `<!-- ${extension.directive}${argsText ? `: ${argsText}` : ""} -->`,
+              mark: `<!-- ${extension.directive}${argsText && argsText !== "{}" ? `: ${argsText}` : ""} -->`,
               message: `の引数が、拡張 \`${extension.name}\` の決まりに合いません。修正してから再読み込みしてください。`,
               items,
             });
@@ -175,5 +180,19 @@ export async function loadLibraries(options: {
         });
       }
     }
+  }
+}
+
+/** マーカーの場所の `data-mdmark-args` の JSON を読み込む。属性が無いか読めなければ `{}` */
+function optionsOf(text: string): Record<string, unknown> {
+  if (text === "") {
+    return {};
+  }
+  try {
+    const value: unknown = JSON.parse(text);
+    return isMarkOptions(value) ? value : {};
+  } catch {
+    // `render` が書いた属性は読める JSON で、読めないのは文書に生の HTML で記載した要素だけ
+    return {};
   }
 }

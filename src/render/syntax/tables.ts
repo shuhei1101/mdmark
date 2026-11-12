@@ -1,10 +1,6 @@
 import type { StateCore, Token } from "markdown-it";
-import type { MdmarkMarkArgs, WarningItem } from "../../extensions.ts";
-import {
-  COLOR_NAMES,
-  type ColorName,
-  isColorName,
-} from "../../parts/colors.ts";
+import type { WarningItem } from "../../extensions.ts";
+import type { ColorName } from "../../parts/colors.ts";
 import { markOwn, SLOT_MARKER } from "../../parts/own.ts";
 import {
   isCheckValue,
@@ -20,12 +16,12 @@ import {
   FILTER_KINDS,
   type FilterKind,
   findUnreadableTotals,
-  TOTAL_CALCS,
   TOTAL_LABELS,
   type TotalCalc,
 } from "../../table-logic.ts";
+import type { MarkOptions } from "../mark-options.ts";
 import type { Mark } from "../marks.ts";
-import { readCollapse, titleTailItem } from "./collapse.ts";
+import { readCollapse } from "./collapse.ts";
 import type { CsvTableMeta } from "./csv.ts";
 import { slugBase } from "./headings.ts";
 import {
@@ -45,9 +41,7 @@ import {
   textOf,
 } from "./tokens.ts";
 import {
-  type SkippedArg,
   type SyntaxWarning,
-  skippedArgBlocks,
   unclosedWarning,
   warningBlock,
 } from "./warnings.ts";
@@ -76,53 +70,52 @@ export const TABLE_FEATURES: readonly TableFeature[] = [
   "rowlink",
 ];
 
-/** 表のマーカーに記載できる種類（`default` はマーカーを記載しない表の種類） */
-const WRITABLE_KINDS = ["data", "plain"];
-
 /** 表のマーカーを読み込んだ結果 */
 export type TableSpec = {
-  /** 種類。知らない種類は `default` */
+  /** 種類（省くと `default`） */
   kind: TableKind;
-  /** 種類の機能に `+機能`・`-機能` を適用したもの */
+  /** 種類の機能に、`features` と列の設定の機能を適用したもの */
   features: TableFeature[];
-  /** 絞り込む列。表に無い列名・知らない種類は入れない */
+  /** 絞り込む列。表に無い列名は入れない */
   filters: TableFilter[];
-  /** 折り畳み。`closed` と `open` を両方書いたら `closed` */
+  /** 折り畳み */
   collapse: "none" | "closed" | "open";
-  /** 折り畳みの見出し（`title=` の値）。`collapse` が `none` のときと、値の無い `title=` では入れない */
+  /** 折り畳みの見出し（`collapse.title`） */
   title?: string | undefined;
-  /** 読み込めなかった指定 */
+  /** 表に照らして読み込めなかった設定 */
   warnings: WarningItem[];
-  /** スキップした知らない種類・`+機能`・`-機能`・キー */
-  skipped: SkippedArg[];
-  /** `hide=` で既定で隠す列の位置。`columns` の無い表・先頭の列・表に無い列名は入れない */
+  /** 既定で隠す列の位置。先頭の列と表に無い列名は入れない */
   hide: number[];
-  /** `total=` で集計する列。`total` の無い表・表に無い列名・知らない計算は入れない */
+  /** 集計する列と計算 */
   totals: TableTotal[];
-  /** `header-rows=` で `thead` にする表の先頭の行の数（既定 1）。数でない値と、表の行の数以上の値は 1 にする */
+  /** `thead` にする表の先頭の行の数（既定 1） */
   headRows: number;
-  /** `row-header=` で `<th scope="row">` にする本文の各行の先頭の列の数（既定 0）。数でない値と、表の列の数以上の値は 0 にする */
+  /** `<th scope="row">` にする本文の各行の先頭の列の数（既定 0） */
   rowHeader: number;
-  /** `pin=` で留める列の位置（`,` で区切った列名のうち表にあるものを小さい順に並べる）。`pin` の無い表・表にある列名が 1 つも無いときは入れない */
+  /** 留める列の位置（小さい順）。`pin` の無い表・`true` の列が無いときは入れない */
   pin?: number[] | undefined;
-  /** `wide=` で広く取る列の位置。表に無い列名は入れない */
-  wide: number[];
-  /** `check=` で真偽値を ✓ と空欄で出す列の位置。表に無い列名は入れない */
+  /** 既定で留める列から除く列の位置（`pinned` の `false`） */
+  unpinned: number[];
+  /** 列の幅 */
+  widths: Array<{
+    column: number;
+    mode: "auto" | "nowrap";
+    min?: number;
+    max?: number;
+  }>;
+  /** 真偽値を ✓ と空欄で出す列の位置 */
   check: number[];
-  /** `tree=` で階層にするキーの列の位置。表に無い列名では入れない */
+  /** 階層にするキーの列の位置 */
   tree?: number | undefined;
-  /** `type=` の列の位置。`tree` の無い表・表に無い列名では入れない */
+  /** 型の列の位置 */
   treeType?: number | undefined;
-  /** `required=` の列の位置。`tree` の無い表・表に無い列名では入れない */
+  /** 必須の列の位置 */
   treeRequired?: number | undefined;
-  /** `default=` の列の位置。`tree` の無い表・表に無い列名では入れない */
+  /** 既定の列の位置 */
   treeDefault?: number | undefined;
-  /** `example=` の見出しの文字。`tree` の無い表では入れない */
+  /** YAML の見本にするタブの範囲の見出し */
   example?: string | undefined;
 };
-
-/** `tree=` と一緒に記載するキー */
-const TREE_KEYS = ["type", "required", "default", "example"];
 
 /** 表の色の指定を読み込んだ結果 */
 export type TableColors = {
@@ -134,9 +127,6 @@ export type TableColors = {
   warnings: WarningItem[];
 };
 
-/** 表の色を指定するキー */
-const COLOR_KEYS = ["highlight", "row-color", "row-at"];
-
 /** `highlight=` で色を省いた列の色 */
 const DEFAULT_HIGHLIGHT_COLOR: ColorName = "blue";
 
@@ -145,277 +135,162 @@ export function codes(values: readonly string[]): string {
   return values.map((value) => `\`${value}\``).join("・");
 }
 
-/** `filter=` の値を、表の見出しの文字と照らして読み込む */
-export function readFilters(
-  value: string,
+/** 列名が表に無いときの警告の項目。`path` は列名を記載したキーのパス */
+function unknownColumn(
+  path: string,
+  name: string,
   headers: string[],
-  warnings: WarningItem[],
-): TableFilter[] {
-  const filters: TableFilter[] = [];
-  for (const item of value.split(",").map((part) => part.trim())) {
-    if (!item) {
-      continue;
-    }
-    // 列名に `:` を含む表もあるため、見出しの文字と一致するときは丸ごと列名にする
-    const colon = headers.includes(item) ? -1 : item.lastIndexOf(":");
-    const name = colon > 0 ? item.slice(0, colon) : item;
-    const kind = colon > 0 ? item.slice(colon + 1) : "select";
-    const column = headers.indexOf(name);
-    if (column < 0) {
-      warnings.push({
-        label: name,
-        message: `の列名 \`${name}\` は表にありません。表の見出しの文字で記載してください。`,
-      });
-    } else if (!FILTER_KINDS.includes(kind as FilterKind)) {
-      warnings.push({
-        label: kind,
-        message: `の絞り込みの種類 \`${kind}\` は使用できません。使用できる種類は ${codes(FILTER_KINDS)} です。\`${name}\` の列には絞り込みを付けずに描いています。`,
-      });
-    } else {
-      filters.push({ column, kind: kind as FilterKind });
-    }
-  }
-  return filters;
+): WarningItem {
+  return {
+    label: path,
+    message: `の列 \`${name}\` は表にありません。表の列は ${codes(headers)} です。列名を修正してください。当てずに描いています。`,
+  };
 }
 
-/** `hide=` の値を、表の見出しの文字と照らして読み込む。先頭の列は隠せない */
-function readHide(
-  value: string,
-  headers: string[],
-  warnings: WarningItem[],
-): number[] {
-  const hide: number[] = [];
-  for (const name of value.split(",").map((part) => part.trim())) {
-    if (!name) {
-      continue;
-    }
-    const column = headers.indexOf(name);
-    if (column < 0) {
-      warnings.push({
-        label: name,
-        message: `の列名 \`${name}\` は表にありません。表の見出しの文字で記載してください。`,
-      });
-    } else if (column === 0) {
-      warnings.push({
-        label: name,
-        message: `の列 \`${name}\` は先頭の列のため隠せません。先頭の列は行の識別子と行へのリンクの配置場所なので、隠さずに描いています。`,
-      });
-    } else if (!hide.includes(column)) {
-      hide.push(column);
-    }
-  }
-  return hide;
-}
+/** 列の設定のキーから、その設定が付ける機能の名前を参照する */
+const COLUMN_FEATURES: Readonly<Record<string, TableFeature>> = {
+  filter: "filter",
+  hidden: "columns",
+  pinned: "pin",
+  total: "total",
+};
 
-/** `wide=`・`check=` の値を、表の見出しの文字と照らして列の位置にする */
-function readColumns(
-  value: string,
-  headers: string[],
-  warnings: WarningItem[],
-): number[] {
-  const columns: number[] = [];
-  for (const name of value.split(",").map((part) => part.trim())) {
-    if (!name) {
-      continue;
-    }
-    const column = headers.indexOf(name);
-    if (column < 0) {
-      warnings.push(unknownColumn(name));
-    } else if (!columns.includes(column)) {
-      columns.push(column);
-    }
-  }
-  return columns;
-}
+/** 値がオブジェクト（配列を除く）か */
+const isObject = (value: unknown): value is Record<string, unknown> =>
+  typeof value === "object" && value !== null && !Array.isArray(value);
 
-/** `total=` の値を、表の見出しの文字と照らして読み込む */
-function readTotals(
-  value: string,
-  headers: string[],
-  warnings: WarningItem[],
-): TableTotal[] {
-  const totals: TableTotal[] = [];
-  for (const item of value.split(",").map((part) => part.trim())) {
-    if (!item) {
-      continue;
-    }
-    // 列名に `:` を含む表もあるため、`filter=` と同じく見出しの文字と一致するときは丸ごと列名にする
-    const colon = headers.includes(item) ? -1 : item.lastIndexOf(":");
-    const name = colon > 0 ? item.slice(0, colon) : item;
-    const calc = colon > 0 ? item.slice(colon + 1) : "";
-    const column = headers.indexOf(name);
-    if (column < 0) {
-      warnings.push({
-        label: name,
-        message: `の列名 \`${name}\` は表にありません。表の見出しの文字で記載してください。`,
-      });
-    } else if (!TOTAL_CALCS.includes(calc as TotalCalc)) {
-      warnings.push({
-        label: calc || item,
-        message: `の計算 \`${calc}\` は使用できません。\`total=列名:計算\` の構造で記載し、使用できる計算は ${codes(TOTAL_CALCS)} です。\`${name}\` の列は集計せずに描いています。`,
-      });
-    } else {
-      // 同じ列に別の計算を記載できるため、列と計算が同じ指定だけを重ねない
-      const duplicated = totals.some(
-        (total) => total.column === column && total.calc === calc,
-      );
-      if (!duplicated) {
-        totals.push({ column, calc: calc as TotalCalc });
-      }
-    }
-  }
-  return totals;
-}
-
-/** `header-rows=`・`row-header=` の値を、`limit` 未満の正の整数として読み込む。読み込めないときは警告を追加して `fallback` を返却する */
-function readHeaderCount(options: {
-  key: string;
-  value: string;
-  limit: number;
-  unit: string;
-  fallback: number;
-  warnings: WarningItem[];
-}): number {
-  const { key, value, limit, unit, fallback, warnings } = options;
-  const count = /^\d+$/.test(value) ? Number(value) : 0;
-  if (count >= 1 && count < limit) {
-    return count;
-  }
-  warnings.push({
-    label: `${key}=`,
-    message: `\`${value}\` は使用できません。1 以上で表の${unit}の数（${limit}）より小さい整数を指定してください。既定の ${fallback} で描いています`,
-  });
-  return fallback;
-}
-
-/** 表のマーカーの引数と表の見出しから `TableSpec` を作る。マーカーが無い表は `default`。知らない種類・`+機能`・`-機能`・キーは `skipped` に入れる。`text` はマーカーの引数の文字 */
+/** 表のマーカーの設定と表の見出しから `TableSpec` を作る。マーカーが無い表は `default` */
 export function readTableSpec(
-  args: MdmarkMarkArgs | undefined,
+  options: MarkOptions | undefined,
   headers: string[],
   rowCount: number,
-  text = "",
 ): TableSpec {
+  const spec = options ?? {};
   const warnings: WarningItem[] = [];
-  const skipped: SkippedArg[] = [];
-  let kind: TableKind = "default";
-  const featureArgs: string[] = [];
-  const unknownKinds: string[] = [];
-  const { collapse, title, items, titleTail, rest } = readCollapse(
-    args ?? { args: [], keys: {} },
-    text,
+  const kind: TableKind =
+    spec.kind === "data" || spec.kind === "plain" ? spec.kind : "default";
+  const featureSettings = isObject(spec.features) ? spec.features : {};
+  const disabled = new Set(
+    Object.entries(featureSettings)
+      .filter(([, value]) => isObject(value) && value.enabled === false)
+      .map(([name]) => name),
   );
-  for (const arg of rest.args) {
-    if (arg.startsWith("+") || arg.startsWith("-")) {
-      featureArgs.push(arg);
-    } else if (WRITABLE_KINDS.includes(arg) && kind === "default") {
-      kind = arg as TableKind;
-    } else if (arg === titleTail) {
-      warnings.push(titleTailItem(arg));
-    } else {
-      unknownKinds.push(arg);
+  const features: TableFeature[] = TABLE_KINDS[kind].filter(
+    (name) => !disabled.has(name),
+  );
+  const add = (name: TableFeature): void => {
+    if (!disabled.has(name) && !features.includes(name)) {
+      features.push(name);
+    }
+  };
+  for (const name of Object.keys(featureSettings)) {
+    if (TABLE_FEATURES.includes(name as TableFeature)) {
+      add(name as TableFeature);
     }
   }
-  // 種類の機能に、`+機能`・`-機能` を記載した順に適用する
-  const features: TableFeature[] = [...TABLE_KINDS[kind]];
-  const unknownFeatures: string[] = [];
-  for (const arg of featureArgs) {
-    const name = arg.slice(1) as TableFeature;
-    if (!TABLE_FEATURES.includes(name)) {
-      unknownFeatures.push(arg);
+  const filters: TableFilter[] = [];
+  const hide: number[] = [];
+  const totals: TableTotal[] = [];
+  const pinned: number[] = [];
+  const unpinned: number[] = [];
+  const widths: TableSpec["widths"] = [];
+  const check: number[] = [];
+  const columns = isObject(spec.columns) ? spec.columns : {};
+  for (const [name, settings] of Object.entries(columns)) {
+    if (!isObject(settings)) {
       continue;
     }
-    const position = features.indexOf(name);
-    if (arg.startsWith("+") && position < 0) {
-      features.push(name);
-    } else if (arg.startsWith("-") && position >= 0) {
-      features.splice(position, 1);
+    const column = headers.indexOf(name);
+    if (column < 0) {
+      warnings.push(unknownColumn(`columns.${name}`, name, headers));
+      continue;
+    }
+    for (const key of Object.keys(settings)) {
+      const feature = COLUMN_FEATURES[key];
+      if (feature !== undefined && key !== "pinned") {
+        add(feature);
+      }
+    }
+    // 機能を削除した表の列の設定は当てない（注記は `takeMarks` が記録する）
+    const on = (key: string): boolean => {
+      const feature = COLUMN_FEATURES[key];
+      return feature === undefined || !disabled.has(feature);
+    };
+    if (isObject(settings.filter) && on("filter")) {
+      const type = settings.filter.type;
+      filters.push({
+        column,
+        kind: typeof type === "string" ? (type as FilterKind) : "select",
+      });
+    }
+    if (settings.hidden === true && on("hidden")) {
+      if (column === 0) {
+        warnings.push({
+          label: `columns.${name}.hidden`,
+          message: `の列 \`${name}\` は先頭の列のため隠せません。先頭の列は行の識別子と行へのリンクの配置場所なので、隠さずに描いています。`,
+        });
+      } else {
+        hide.push(column);
+      }
+    }
+    if (Array.isArray(settings.total) && on("total")) {
+      for (const item of settings.total) {
+        const calc = isObject(item) ? item.calc : undefined;
+        const duplicated = totals.some(
+          (total) => total.column === column && total.calc === calc,
+        );
+        if (typeof calc === "string" && !duplicated) {
+          totals.push({ column, calc: calc as TotalCalc });
+        }
+      }
+    }
+    if (settings.pinned === true && on("pinned")) {
+      add("pin");
+      pinned.push(column);
+    } else if (settings.pinned === false) {
+      unpinned.push(column);
+    }
+    if (isObject(settings.width)) {
+      const { mode, min, max } = settings.width;
+      widths.push({
+        column,
+        mode: mode === "nowrap" ? "nowrap" : "auto",
+        ...(typeof min === "number" ? { min } : {}),
+        ...(typeof max === "number" ? { max } : {}),
+      });
+    }
+    if (isObject(settings.format) && settings.format.type === "check") {
+      check.push(column);
     }
   }
-  for (const unknown of unknownKinds) {
-    skipped.push({ arg: unknown, usable: codes(WRITABLE_KINDS) });
-  }
-  for (const arg of unknownFeatures) {
-    skipped.push({ arg, usable: codes(TABLE_FEATURES) });
-  }
-  let filters: TableFilter[] = [];
-  let hide: number[] = [];
-  let totals: TableTotal[] = [];
+  const header = isObject(spec.header) ? spec.header : {};
   let headRows = 1;
-  let rowHeader = 0;
-  let pin: number[] | undefined;
-  let wide: number[] = [];
-  let check: number[] = [];
-  const treeValues: Record<string, string> = {};
-  // `hide=` は `columns`、`total=` は `total`、`pin=` は `pin` を付けた表でだけ読み込む
-  const keyFeatures: Record<string, TableFeature> = {
-    hide: "columns",
-    total: "total",
-    pin: "pin",
-  };
-  for (const [key, value] of Object.entries(rest.keys)) {
-    const needed = keyFeatures[key];
-    if (needed && !features.includes(needed)) {
-      warnings.push({
-        label: `${key}=`,
-        message: `\`+${needed}\` を記載した表でだけ使用できます。当てずに描いています`,
-      });
-    } else if (key === "filter") {
-      filters = readFilters(value, headers, warnings);
-    } else if (key === "hide") {
-      hide = readHide(value, headers, warnings);
-    } else if (key === "total") {
-      totals = readTotals(value, headers, warnings);
-    } else if (key === "header-rows") {
-      headRows = readHeaderCount({
-        key,
-        value,
-        limit: rowCount,
-        unit: "行",
-        fallback: 1,
-        warnings,
-      });
-    } else if (key === "row-header") {
-      rowHeader = readHeaderCount({
-        key,
-        value,
-        limit: headers.length,
-        unit: "列",
-        fallback: 0,
-        warnings,
-      });
-    } else if (key === "pin") {
-      const columns = readColumns(value, headers, warnings).sort(
-        (a, b) => a - b,
-      );
-      pin = columns.length > 0 ? columns : undefined;
-    } else if (key === "wide") {
-      wide = readColumns(value, headers, warnings);
-    } else if (key === "check") {
-      check = readColumns(value, headers, warnings);
-    } else if (COLOR_KEYS.includes(key)) {
-      // 色の指定は `readTableColors` が読み込む
-    } else if (key === "tree" || TREE_KEYS.includes(key)) {
-      treeValues[key] = value.trim();
+  if (typeof header.rows === "number") {
+    if (header.rows < rowCount) {
+      headRows = header.rows;
     } else {
-      skipped.push({
-        arg: `${key}=`,
-        usable: codes([
-          "filter=",
-          "hide=",
-          "total=",
-          "pin=",
-          "wide=",
-          "check=",
-          "header-rows=",
-          "row-header=",
-          "tree=",
-          ...TREE_KEYS.map((name) => `${name}=`),
-          ...COLOR_KEYS.map((name) => `${name}=`),
-        ]),
+      warnings.push({
+        label: "header.rows",
+        message: `\`${header.rows}\` は使用できません。1 以上で表の行の数（${rowCount}）より小さい整数を指定してください。既定の 1 で描いています`,
       });
     }
   }
-  const tree = readTree({ values: treeValues, headers, warnings });
+  let rowHeader = 0;
+  if (typeof header.columns === "number") {
+    if (header.columns < headers.length) {
+      rowHeader = header.columns;
+    } else {
+      warnings.push({
+        label: "header.columns",
+        message: `\`${header.columns}\` は使用できません。0 以上で表の列の数（${headers.length}）より小さい整数を指定してください。既定の 0 で描いています`,
+      });
+    }
+  }
+  const tree = readTree({
+    tree: isObject(spec.tree) ? spec.tree : undefined,
+    headers,
+    warnings,
+  });
   if (tree.tree !== undefined) {
     // 階層の表は行の順を Markdown に記載した順のまま保つため、並べ替えを付けない
     const sort = features.indexOf("sort");
@@ -423,7 +298,11 @@ export function readTableSpec(
       features.splice(sort, 1);
     }
   }
-  warnings.push(...items);
+  const { collapse, title } = readCollapse(spec);
+  // 機能は名前の一覧の順に並べる
+  features.sort(
+    (a, b) => TABLE_FEATURES.indexOf(a) - TABLE_FEATURES.indexOf(b),
+  );
   return {
     ...tree,
     kind,
@@ -432,234 +311,146 @@ export function readTableSpec(
     collapse,
     title,
     warnings,
-    skipped,
     hide,
     totals,
     headRows,
     rowHeader,
-    pin,
-    wide,
+    pin:
+      features.includes("pin") && pinned.length > 0
+        ? [...pinned].sort((a, b) => a - b)
+        : undefined,
+    unpinned,
+    widths,
     check,
   };
 }
 
-/** `tree=`・`type=`・`required=`・`default=`・`example=` を、表の見出しの文字と照らして読み込む */
+/** `tree` の列を、表の見出しの文字と照らして読み込む */
 function readTree(options: {
-  values: Record<string, string>;
+  tree: Record<string, unknown> | undefined;
   headers: string[];
   warnings: WarningItem[];
 }): Pick<
   TableSpec,
   "tree" | "treeType" | "treeRequired" | "treeDefault" | "example"
 > {
-  const { values, headers, warnings } = options;
-  let tree: number | undefined;
-  if (values.tree !== undefined) {
-    const column = headers.indexOf(values.tree);
-    if (column < 0) {
-      warnings.push({
-        label: "tree=",
-        message: `の列 \`${values.tree}\` が表にありません。表の列は ${codes(headers)} です。階層にせずに描いています。`,
-      });
-    } else {
-      tree = column;
-    }
+  const { tree: spec, headers, warnings } = options;
+  if (spec === undefined) {
+    return {};
   }
   const columnOf = (key: string): number | undefined => {
-    const name = values[key];
-    if (name === undefined || tree === undefined) {
+    const name = (spec[key] as { column?: unknown } | undefined)?.column;
+    if (typeof name !== "string") {
       return undefined;
     }
     const column = headers.indexOf(name);
     if (column < 0) {
-      warnings.push(unknownColumn(name));
+      warnings.push(
+        key === "key"
+          ? {
+              label: "tree.key.column",
+              message: `の \`tree.key.column\` の列 \`${name}\` が表にありません。表の列は ${codes(headers)} です。階層にせずに描いています。`,
+            }
+          : unknownColumn(`tree.${key}.column`, name, headers),
+      );
       return undefined;
     }
     return column;
   };
-  for (const key of TREE_KEYS) {
-    if (values[key] !== undefined && tree === undefined) {
-      warnings.push({
-        label: `${key}=`,
-        message: "は tree= と一緒に記載してください。当てずに描いています。",
-      });
-    }
+  const tree = columnOf("key");
+  if (tree === undefined) {
+    return {};
   }
+  const heading = (spec.example as { heading?: unknown } | undefined)?.heading;
   return {
     tree,
     treeType: columnOf("type"),
     treeRequired: columnOf("required"),
     treeDefault: columnOf("default"),
-    example:
-      tree !== undefined && values.example !== undefined
-        ? values.example
-        : undefined,
+    example: typeof heading === "string" ? heading : undefined,
   };
 }
 
-/** 列名が表に無いときの警告の項目 */
-function unknownColumn(name: string): WarningItem {
-  return {
-    label: name,
-    message: `の列名 \`${name}\` は表にありません。表の見出しの文字で記載してください。`,
-  };
-}
-
-/** 色の名前が一覧に無いときの警告の項目 */
-function unknownColor(name: string): WarningItem {
-  return {
-    label: name,
-    message: `の \`${name}\` は色の名前ではありません。使用できる色の名前は ${codes(COLOR_NAMES)} です。色を付けずに描いています。`,
-  };
-}
-
-/** `=` の無い項目の警告の項目 */
-function missingEquals(item: string, form: string): WarningItem {
-  return {
-    label: item,
-    message: `の \`${item}\` に \`=\` がありません。\`${form}\` の構造で記載してください。`,
-  };
-}
-
-/** `highlight=` の値を、表の見出しの文字と照らして読み込む */
-function readHighlight(
-  value: string,
-  headers: string[],
-  warnings: WarningItem[],
-): TableColors["highlight"] {
-  const highlight: TableColors["highlight"] = [];
-  for (const item of value.split(",").map((part) => part.trim())) {
-    if (!item) {
-      continue;
-    }
-    // 列名に `:` を含む表もあるため、見出しの文字と一致するときは丸ごと列名にする
-    const colon = headers.includes(item) ? -1 : item.lastIndexOf(":");
-    const name = colon > 0 ? item.slice(0, colon) : item;
-    const color = colon > 0 ? item.slice(colon + 1) : DEFAULT_HIGHLIGHT_COLOR;
-    const column = headers.indexOf(name);
-    if (column < 0) {
-      warnings.push(unknownColumn(name));
-    } else if (!isColorName(color)) {
-      warnings.push(unknownColor(color));
-    } else {
-      highlight.push({ column, color });
-    }
-  }
-  return highlight;
-}
-
-/** 項目の頭の `列名:` が表の見出しに該当すれば、列の位置と残りの文字を返却する */
-function splitColumnHead(
-  item: string,
-  headers: string[],
-): { column: number; rest: string } | undefined {
-  for (
-    let colon = item.indexOf(":");
-    colon > 0;
-    colon = item.indexOf(":", colon + 1)
-  ) {
-    const column = headers.indexOf(item.slice(0, colon));
-    if (column >= 0) {
-      return { column, rest: item.slice(colon + 1) };
-    }
-  }
-  return undefined;
-}
-
-/** `row-color=` の値を、見出しと本文のセルの文字と照らして読み込み、行の色を `rows` に記載する */
-function readRowColor(
-  value: string,
-  headers: string[],
-  cells: string[][],
-  rows: TableColors["rows"],
-  warnings: WarningItem[],
-): void {
-  let column: number | undefined;
-  for (const item of value.split(",").map((part) => part.trim())) {
-    if (!item) {
-      continue;
-    }
-    const head = splitColumnHead(item, headers);
-    let pair = item;
-    if (head) {
-      column = head.column;
-      pair = head.rest;
-    } else if (column === undefined) {
-      const colon = item.indexOf(":");
-      warnings.push(unknownColumn(colon > 0 ? item.slice(0, colon) : item));
-      continue;
-    }
-    const equals = pair.lastIndexOf("=");
-    if (equals < 0) {
-      warnings.push(missingEquals(pair, "列名:値=色"));
-      continue;
-    }
-    const color = pair.slice(equals + 1);
-    if (!isColorName(color)) {
-      warnings.push(unknownColor(color));
-      continue;
-    }
-    const cell = pair.slice(0, equals);
-    for (const [row, values] of cells.entries()) {
-      if (values[column]?.trim() === cell) {
-        rows[row] = color;
-      }
-    }
-  }
-}
-
-/** `row-at=` の値を、本文の行の数と照らして読み込み、行の色を `rows` に記載する */
-function readRowAt(
-  value: string,
-  rows: TableColors["rows"],
-  warnings: WarningItem[],
-): void {
-  for (const item of value.split(",").map((part) => part.trim())) {
-    if (!item) {
-      continue;
-    }
-    const equals = item.indexOf("=");
-    if (equals < 0) {
-      warnings.push(missingEquals(item, "位置=色"));
-      continue;
-    }
-    const position = item.slice(0, equals);
-    const color = item.slice(equals + 1);
-    const range = /^(\d+)(?:-(\d+))?$/.exec(position);
-    const first = Number(range?.[1]);
-    const last = Number(range?.[2] ?? range?.[1]);
-    if (!range || first < 1 || last < first || last > rows.length) {
-      warnings.push({
-        label: position,
-        message: `の行の位置 \`${position}\` は表にありません。表の本文は ${rows.length} 行です。行の位置を 1〜${rows.length} で記載してください。`,
-      });
-    } else if (!isColorName(color)) {
-      warnings.push(unknownColor(color));
-    } else {
-      rows.fill(color, first - 1, last);
-    }
-  }
-}
-
-/** 表のマーカーの `highlight=`・`row-color=`・`row-at=` を、表の見出しと本文の行のセルの文字で照らして読み込む */
+/** 表のマーカーの `columns.{列名}.highlight` と `rows.colors` を、表の見出しと本文の行のセルの文字で照らして読み込む */
 export function readTableColors(
-  args: MdmarkMarkArgs | undefined,
+  options: MarkOptions | undefined,
   headers: string[],
   cells: string[][],
 ): TableColors {
+  const spec = options ?? {};
   const warnings: WarningItem[] = [];
-  const keys = args?.keys ?? {};
-  const highlight =
-    keys.highlight === undefined
-      ? []
-      : readHighlight(keys.highlight, headers, warnings);
-  const rows: TableColors["rows"] = cells.map(() => null);
-  if (keys["row-color"] !== undefined) {
-    readRowColor(keys["row-color"], headers, cells, rows, warnings);
+  const highlight: TableColors["highlight"] = [];
+  const columns = isObject(spec.columns) ? spec.columns : {};
+  for (const [name, settings] of Object.entries(columns)) {
+    if (!isObject(settings) || !isObject(settings.highlight)) {
+      continue;
+    }
+    const column = headers.indexOf(name);
+    if (column < 0) {
+      warnings.push({
+        ...unknownColumn(`columns.${name}`, name, headers),
+        label: name,
+      });
+      continue;
+    }
+    const color = settings.highlight.color;
+    highlight.push({
+      column,
+      color:
+        typeof color === "string"
+          ? (color as ColorName)
+          : DEFAULT_HIGHLIGHT_COLOR,
+    });
   }
-  // `row-at=` は `row-color=` の後に読み込み、両方が該当する行を `row-at=` の色にする
-  if (keys["row-at"] !== undefined) {
-    readRowAt(keys["row-at"], rows, warnings);
+  const rows: TableColors["rows"] = cells.map(() => null);
+  const rowSpec = isObject(spec.rows) ? spec.rows : {};
+  const colors = Array.isArray(rowSpec.colors) ? rowSpec.colors : [];
+  for (const item of colors) {
+    if (!isObject(item) || typeof item.color !== "string") {
+      continue;
+    }
+    const color = item.color as ColorName;
+    const hasColumn = typeof item.column === "string";
+    if (hasColumn !== (typeof item.value === "string")) {
+      // `column` と `value` の片方だけの要素は当てない（注記は `takeMarks` が記録する）
+      continue;
+    }
+    let position: number | undefined;
+    if (hasColumn) {
+      position = headers.indexOf(item.column as string);
+      if (position < 0) {
+        warnings.push({
+          ...unknownColumn("rows.colors", item.column as string, headers),
+          label: item.column as string,
+        });
+        continue;
+      }
+    }
+    let range: [number, number] | undefined;
+    if (item.at !== undefined) {
+      const at = item.at as number | { from: number; to?: number };
+      const [from, to] =
+        typeof at === "number" ? [at, at] : [at.from, at.to ?? at.from];
+      if (from < 1 || to < from || to > rows.length) {
+        warnings.push({
+          label: String(typeof at === "number" ? at : `${from}-${to}`),
+          message: `の行の位置 \`${typeof at === "number" ? at : `${from}-${to}`}\` は表にありません。表の本文は ${rows.length} 行です。行の位置を 1〜${rows.length} で記載してください。`,
+        });
+        continue;
+      }
+      range = [from, to];
+    } else if (!hasColumn) {
+      continue;
+    }
+    cells.forEach((row, index) => {
+      const inRange =
+        range === undefined || (index + 1 >= range[0] && index + 1 <= range[1]);
+      const matches =
+        position === undefined || (row[position] ?? "").trim() === item.value;
+      if (inRange && matches) {
+        rows[index] = color;
+      }
+    });
   }
   return { highlight, rows, warnings };
 }
@@ -709,9 +500,12 @@ function applyTableColors(
 function applyColumnStyles(
   state: StateCore,
   tableOpen: number,
-  spec: Pick<TableSpec, "wide" | "check">,
+  spec: Pick<TableSpec, "widths" | "check">,
 ): void {
-  if (spec.wide.length === 0 && spec.check.length === 0) {
+  const wide = spec.widths
+    .filter((width) => width.mode === "nowrap")
+    .map((width) => width.column);
+  if (wide.length === 0 && spec.check.length === 0) {
     return;
   }
   const tokens = state.tokens;
@@ -729,7 +523,7 @@ function applyColumnStyles(
       column = 0;
     } else if (token.type === "th_open" || token.type === "td_open") {
       const checking = spec.check.includes(column);
-      if (spec.wide.includes(column)) {
+      if (wide.includes(column)) {
         token.attrJoin("class", "mdmark-wide");
         token.attrSet("data-mdmark-own", nonce);
       }
@@ -840,11 +634,11 @@ function linkRows(
   }
 }
 
-/** 項目の構造（`+機能`・`キー=`・結合できない `^^`・`<<`）の警告か、1 文の警告かを見分ける */
+/** 項目の構造（キーのパス・結合できない `^^`・`<<`）の警告か、1 文の警告かを見分ける */
 function isItemWarning(item: WarningItem): boolean {
+  // マーカーの文字に続けて読む文（`の` で始まる）は 1 つずつの警告にする
   return (
-    /^[+-]/.test(item.label) ||
-    item.label.endsWith("=") ||
+    !item.message.startsWith("の") ||
     item.label === MERGE_UP ||
     item.label === MERGE_LEFT
   );
@@ -918,7 +712,7 @@ function decorateAttributes(state: StateCore): void {
 }
 
 /** 表の本文の各行のセルの文字を集める */
-function bodyCellsOf(tokens: Token[], tableOpen: number): string[][] {
+export function bodyCellsOf(tokens: Token[], tableOpen: number): string[][] {
   const rows: string[][] = [];
   let inBody = false;
   for (const index of ownTokenIndexes(tokens, tableOpen)) {
@@ -1238,12 +1032,7 @@ export function decorateTables(state: StateCore): void {
     const rowCount = bodyRowCount(tokens, index) + 1;
     let spec =
       viewSpec ??
-      readTableSpec(
-        range?.mark.args,
-        headersOf(tokens, index),
-        rowCount,
-        range?.mark.rest,
-      );
+      readTableSpec(range?.mark.options, headersOf(tokens, index), rowCount);
     let mergeColumns: number[] = [];
     if (range && !viewSpec) {
       if (spec.headRows > 1) {
@@ -1252,12 +1041,7 @@ export function decorateTables(state: StateCore): void {
           headersOf(tokens, index),
           ...bodyCellsOf(tokens, index).slice(0, spec.headRows - 1),
         ];
-        spec = readTableSpec(
-          range.mark.args,
-          headLabelsOf(head),
-          rowCount,
-          range.mark.rest,
-        );
+        spec = readTableSpec(range.mark.options, headLabelsOf(head), rowCount);
       }
       const merged = mergeTableCells({
         state,
@@ -1280,6 +1064,7 @@ export function decorateTables(state: StateCore): void {
       totals: spec.totals,
       mergeColumns,
       pin: spec.pin,
+      unpin: spec.unpinned,
       check: spec.check,
       tree: spec.tree,
       body: SLOT_MARKER,
@@ -1289,7 +1074,7 @@ export function decorateTables(state: StateCore): void {
       linkRows(state, tokens, index, taken);
     }
     const colors = readTableColors(
-      range?.mark.args,
+      range?.mark.options,
       headersOf(tokens, index),
       bodyCellsOf(tokens, index),
     );
@@ -1331,15 +1116,6 @@ export function decorateTables(state: StateCore): void {
     for (const warning of warnings) {
       out.push(
         warningBlock(state, warning, range ? tokens[range.open] : undefined),
-      );
-    }
-    if (range) {
-      out.push(
-        ...skippedArgBlocks(
-          state,
-          { mark: range.mark.raw, skipped: spec.skipped },
-          tokens[range.open],
-        ),
       );
     }
     out.push(ownBlock(state, head.slice(divEnd)));

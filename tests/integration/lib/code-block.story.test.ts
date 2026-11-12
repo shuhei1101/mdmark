@@ -127,6 +127,27 @@ test("test_two_digits", async () => {
   );
 });
 
+// lineStart が 10 の行番号を 10〜12 にし、11〜12 行目を強調して、桁の数の幅を 2 桁で取る（LineStart）
+test("test_line_start", async () => {
+  // 準備・実行
+  const page = await holder.openStory("parts-codeblock--line-start");
+  // 検証
+  const lines = page.locator(".mdmark-code-line");
+  const layout = await lines.evaluateAll((elements) =>
+    elements.map((element) => ({
+      line: element.getAttribute("data-line"),
+      kind: element.getAttribute("data-kind"),
+    })),
+  );
+  expect(layout.map((item) => item.line)).toEqual(["10", "11", "12"]);
+  expect(
+    layout.flatMap((item) => (item.kind === "highlight" ? [item.line] : [])),
+  ).toEqual(["11", "12"]);
+  await expect(
+    page.locator("#storybook-root pre code").getAttribute("style"),
+  ).resolves.toContain("--mdmark-code-digits: 2");
+});
+
 // 幅を超えるタイトルは帯の中で折り返し、行はブロックの中で横にスクロールして行の地を右端まで敷く（LongLineAndTitle）
 test("test_long_line_and_title", async () => {
   // 準備・実行

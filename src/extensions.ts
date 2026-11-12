@@ -1,12 +1,10 @@
 import { MARK_NAME_PATTERN } from "./config.ts";
 import type { StandardSchemaV1 } from "./standard-schema.ts";
 
-/** マーカーの引数を判別した値。拡張の `schema` と `draw` が受け取る */
+/** マーカーの引数。拡張の `schema` と `draw` が受け取る */
 export type MdmarkMarkArgs = {
-  /** `キー=値` でない引数を記載した順に */
-  args: string[];
-  /** `キー=値` の引数。同じキーは後に記載した値 */
-  keys: Record<string, string>;
+  /** マーカーの名前の後ろの JSON のオブジェクト（引数の無いマーカーは `{}`） */
+  options: Record<string, unknown>;
   /** マーカーを範囲で記載し、範囲に `json` のコードブロックを 1 つ配置したときの、その JSON を読み込んだ値。範囲が無いマーカーでは持たない */
   definition?: unknown;
 };
@@ -99,19 +97,28 @@ function keyOf(segment: PropertyKey | StandardSchemaV1.PathSegment): unknown {
   return typeof segment === "object" ? segment.key : segment;
 }
 
-/** issue の `path` が `args` と位置、`keys` とキーに届けばそれを示すラベルにし、`message` を本文にする */
+/** キーの並びを `.`（数の要素は `[位置]`）でつないだパスにする */
+function pathOf(keys: unknown[]): string {
+  return keys
+    .map((key, index) =>
+      typeof key === "number" || /^\d+$/.test(String(key))
+        ? `[${String(key)}]`
+        : `${index === 0 ? "" : "."}${String(key)}`,
+    )
+    .join("");
+}
+
+/** issue の `path` が `options` の中のキーに届けば `options` の後ろのキーのパス、`definition` の中に届けば `definition.{パス}` をラベルにし、`message` を本文にする */
 export function formatIssue(
   issue: StandardSchemaV1.Issue,
-  value: MdmarkMarkArgs,
+  _value: MdmarkMarkArgs,
 ): WarningItem {
-  const [group, key] = (issue.path ?? []).map(keyOf);
+  const [group, ...keys] = (issue.path ?? []).map(keyOf);
   let label = "";
-  if (group === "args" && key !== undefined) {
-    const position = Number(key);
-    const text = value.args[position];
-    label = `${position + 1} つ目${text === undefined ? "" : `の ${text}`}`;
-  } else if (group === "keys" && key !== undefined) {
-    label = `${String(key)}=`;
+  if (group === "options" && keys.length > 0) {
+    label = pathOf(keys);
+  } else if (group === "definition" && keys.length > 0) {
+    label = `definition.${pathOf(keys)}`;
   }
   return { label, message: issue.message };
 }

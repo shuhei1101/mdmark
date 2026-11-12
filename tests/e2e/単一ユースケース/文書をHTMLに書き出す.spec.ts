@@ -57,7 +57,7 @@ const SYNTAX_FILES = [
 const GUIDE = [
   "# ガイド",
   "",
-  "<!-- table: data -->",
+  '<!-- table: {"kind": "data"} -->',
   "",
   "| 名前 | 数 |",
   "| --- | --- |",
@@ -66,7 +66,7 @@ const GUIDE = [
   "",
   "<!-- /table -->",
   "",
-  "<!-- glossary: term=用語 meaning=意味 -->",
+  '<!-- glossary: {"term": {"column": "用語"}, "meaning": {"column": "意味"}} -->',
   "",
   "| 用語 | 意味 |",
   "| --- | --- |",
@@ -76,7 +76,7 @@ const GUIDE = [
   "",
   "本文に印を書く。",
   "",
-  "<!-- chart: a b -->",
+  "<!-- chart -->",
   "",
   "![図](img/a.png)",
   "",
@@ -160,7 +160,7 @@ test("test_normal_when_unreadable_assets", async ({
   await writeFiles(dir, {
     "mdmark.config.yaml": "libraries:\n  chart: lib/missing.js\n",
     "guide.md":
-      "# ガイド\n\n<!-- chart: a -->\n\n![図](img/missing.png)\n\n本文のほかの部分\n",
+      "# ガイド\n\n<!-- chart -->\n\n![図](img/missing.png)\n\n本文のほかの部分\n",
   });
   // 実行
   const result = await runCli(builtRoot, ["export", "guide.md"], dir);
@@ -392,7 +392,7 @@ test("test_normal_when_page_marker", async ({ builtRoot, tempDir, page }) => {
       "\n",
     ),
     "lib/chart.js": CHART_SOURCE,
-    "guide.md": `<!-- page: scheme=dark theme=theme-paper -->\n\n${GUIDE}`,
+    "guide.md": `<!-- page: {"scheme": "dark", "theme": "theme-paper"} -->\n\n${GUIDE}`,
     "api.md": "# API\n",
     "img/a.png": PNG_BYTES,
   });
@@ -534,13 +534,13 @@ test("test_normal_when_blob_and_dynamic_import_blocked", async ({
     "guide.md": [
       "# ガイド",
       "",
-      "<!-- greet: 世界 -->",
+      '<!-- greet: {"target": "世界"} -->',
       "",
       VIEW_SOURCE,
       "",
-      "<!-- chart: a b -->",
+      "<!-- chart -->",
       "",
-      "<!-- missing-lib: c -->",
+      '<!-- missing-lib: {"items": ["c"]} -->',
       "",
       "```ts",
       "const count: number = 1;",
@@ -626,9 +626,9 @@ test("test_normal_when_includes_and_icons_embedded", async ({
       "",
       "## `icon:sailboat` 航海",
       "",
-      "<!-- include: 共通/手順.md#実行 -->",
+      '<!-- include: {"path": "共通/手順.md", "heading": "実行"} -->',
       "",
-      "<!-- include: ../src/app.ts#L3-L5 -->",
+      '<!-- include: {"path": "../src/app.ts", "lines": {"from": 3, "to": 5}} -->',
       "",
     ].join("\n"),
     "docs/共通/手順.md": "## 準備\n\n準備の段落\n\n## 実行\n\n実行の段落\n",

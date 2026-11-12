@@ -35,7 +35,7 @@ test("test_parse_csv_when_empty_values", async () => {
 test("test_build_csv_tables", () => {
   // 準備
   const markdown = [
-    "<!-- table: data -->",
+    '<!-- table: {"kind": "data"} -->',
     "",
     "```csv",
     "名前,値",

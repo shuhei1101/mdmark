@@ -1,0 +1,1593 @@
+$ npx playwright test --project=chromium
+- Resolving version...
+✔ Validated version: 1.141.0
+- Found at https://update.code.visualstudio.com/1.141.0/linux-x64/stable?released=true
+✔ Found at https://update.code.visualstudio.com/1.141.0/linux-x64/stable?released=true
+- Downloading (343.79 MB)
+✔ Downloaded VS Code (b224f6bf5a4fcad5fa4c640ed10f179c3b613e48) into /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-render-marker-json-options/vscode/.vscode-test/vscode-linux-x64-1.141.0
+
+Running 724 tests using 4 workers
+
+[1/724] [chromium] › tests/e2e/単一ユースケース/ClaudeCodeから点検と書き出しを呼ぶ.spec.ts:53:1 › test_normal
+[2/724] [chromium] › tests/e2e/単一ユースケース/CSSのテンプレートを配置する.spec.ts:52:1 › test_normal_when_applying_from_list
+[3/724] [chromium] › tests/e2e/単一ユースケース/ClaudeCodeにプラグインを入れる.spec.ts:23:1 › test_normal
+[4/724] [chromium] › tests/e2e/単一ユースケース/CSSのテンプレートを登録する.spec.ts:48:1 › test_normal_when_registering
+[5/724] [chromium] › tests/e2e/単一ユースケース/CSSのテンプレートを配置する.spec.ts:79:1 › test_normal_when_no_templates
+[6/724] [chromium] › tests/e2e/単一ユースケース/CSSのテンプレートを配置する.spec.ts:96:1 › test_normal_when_overwriting
+[7/724] [chromium] › tests/e2e/単一ユースケース/ClaudeCodeから点検と書き出しを呼ぶ.spec.ts:82:1 › test_normal_when_drift
+[8/724] [chromium] › tests/e2e/単一ユースケース/CSSのテンプレートを配置する.spec.ts:112:1 › test_error_when_css_exists
+[9/724] [chromium] › tests/e2e/単一ユースケース/ClaudeCodeから点検と書き出しを呼ぶ.spec.ts:116:1 › test_normal_when_single_document
+[10/724] [chromium] › tests/e2e/単一ユースケース/CSSのテンプレートを配置する.spec.ts:129:1 › test_error_when_config_missing
+[11/724] [chromium] › tests/e2e/単一ユースケース/GitHubの参照から入れてCLIを起動する.spec.ts:169:1 › test_normal
+[12/724] [chromium] › tests/e2e/単一ユースケース/ClaudeCodeから点検と書き出しを呼ぶ.spec.ts:139:1 › test_error_when_config_missing
+[13/724] [chromium] › tests/e2e/単一ユースケース/ClaudeCodeから点検と書き出しを呼ぶ.spec.ts:154:1 › test_normal_when_base_given
+[14/724] [chromium] › tests/e2e/単一ユースケース/ClaudeCodeから点検と書き出しを呼ぶ.spec.ts:185:1 › test_normal_when_text_and_key
+[15/724] [chromium] › tests/e2e/単一ユースケース/ClaudeCodeから点検と書き出しを呼ぶ.spec.ts:250:1 › test_normal_when_include_missing
+[16/724] [chromium] › tests/e2e/単一ユースケース/ClaudeCodeから点検と書き出しを呼ぶ.spec.ts:293:1 › test_normal_when_cascaded
+[17/724] [chromium] › tests/e2e/単一ユースケース/MCPサーバーを起動・停止する.spec.ts:28:1 › test_normal_when_start
+[18/724] [chromium] › tests/e2e/単一ユースケース/MCPサーバーを起動・停止する.spec.ts:53:1 › test_normal_when_stop
+[19/724] [chromium] › tests/e2e/単一ユースケース/CSSのテンプレートを登録する.spec.ts:82:1 › test_normal_when_overwriting
+[20/724] [chromium] › tests/e2e/単一ユースケース/MCPサーバーを起動・停止する.spec.ts:73:1 › test_error_when_port_in_use
+[21/724] [chromium] › tests/e2e/単一ユースケース/CSSのテンプレートを登録する.spec.ts:113:1 › test_error_when_template_name_exists
+[22/724] [chromium] › tests/e2e/単一ユースケース/MCPサーバーを起動・停止する.spec.ts:102:1 › test_error_when_port_invalid
+
+
+[23/724] [chromium] › tests/e2e/単一ユースケース/セッションの開始で常駐サーバーの状態を受け取る.spec.ts:52:32 › test_normal
+[24/724] [chromium] › tests/e2e/単一ユースケース/ガイドを参照する.spec.ts:36:1 › test_normal
+[25/724] [chromium] › tests/e2e/単一ユースケース/セッションの開始で常駐サーバーの状態を受け取る.spec.ts:74:1 › test_normal_when_running_in_tmux
+[26/724] [chromium] › tests/e2e/単一ユースケース/セッションの開始で常駐サーバーの状態を受け取る.spec.ts:98:1 › test_error_when_server_not_running
+[27/724] [chromium] › tests/e2e/単一ユースケース/まとめたHTMLで文書を行き来する.spec.ts:46:1 › test_normal
+[28/724] [chromium] › tests/e2e/単一ユースケース/まとめたHTMLで文書を行き来する.spec.ts:75:1 › test_normal_when_page_settings_per_document
+[29/724] [chromium] › tests/e2e/単一ユースケース/まとめたHTMLで文書を行き来する.spec.ts:120:1 › test_normal_when_url_points_heading
+[30/724] [chromium] › tests/e2e/単一ユースケース/まとめたHTMLで文書を行き来する.spec.ts:138:1 › test_normal_when_narrow
+[31/724] [chromium] › tests/e2e/単一ユースケース/まとめたHTMLで文書を行き来する.spec.ts:168:1 › test_error_when_url_points_missing_document
+[32/724] [chromium] › tests/e2e/単一ユースケース/ClaudeCodeにプラグインを入れる.spec.ts:69:1 › test_error_when_server_not_running
+[33/724] [chromium] › tests/e2e/単一ユースケース/まとめたHTMLで文書を行き来する.spec.ts:190:1 › test_normal_when_flow_node_link
+[34/724] [chromium] › tests/e2e/単一ユースケース/まとめたHTMLで文書を行き来する.spec.ts:253:1 › test_normal_when_wide_range
+[35/724] [chromium] › tests/e2e/単一ユースケース/まとめたHTMLで文書を行き来する.spec.ts:322:1 › test_normal_when_back_forward_restore_scroll
+[36/724] [chromium] › tests/e2e/単一ユースケース/まとめたHTMLで文書を行き来する.spec.ts:364:1 › test_normal_when_reload_restore_scroll
+[37/724] [chromium] › tests/e2e/単一ユースケース/まとめたHTMLで文書を行き来する.spec.ts:388:1 › test_normal_when_back_restore_folds_and_tabs
+[38/724] [chromium] › tests/e2e/単一ユースケース/まとめたHTMLで文書を行き来する.spec.ts:463:1 › test_error_when_session_storage_unavailable
+[39/724] [chromium] › tests/e2e/単一ユースケース/図のグループの中へ入る・開閉する.spec.ts:45:1 › test_normal
+[40/724] [chromium] › tests/e2e/単一ユースケース/図のグループの中へ入る・開閉する.spec.ts:122:1 › test_normal_when_collapsed
+[41/724] [chromium] › tests/e2e/単一ユースケース/図のグループの中へ入る・開閉する.spec.ts:193:1 › test_normal_when_nested_toggle
+[42/724] [chromium] › tests/e2e/単一ユースケース/図のグループの中へ入る・開閉する.spec.ts:229:1 › test_normal_when_initial_focus
+[43/724] [chromium] › tests/e2e/単一ユースケース/図のグループの中へ入る・開閉する.spec.ts:253:1 › test_normal_when_url_state_disabled_or_document_switched
+[44/724] [chromium] › tests/e2e/単一ユースケース/図のグループの中へ入る・開閉する.spec.ts:311:1 › test_normal_when_sequence_blocks
+[45/724] [chromium] › tests/e2e/単一ユースケース/文字列とYAMLのキーの記法を点検する.spec.ts:82:1 › test_normal
+[46/724] [chromium] › tests/e2e/単一ユースケース/文字列とYAMLのキーの記法を点検する.spec.ts:107:1 › test_normal_when_warnings
+  1) [chromium] › tests/e2e/単一ユースケース/文字列とYAMLのキーの記法を点検する.spec.ts:107:1 › test_normal_when_warnings ─
+
+    Error: expect(received).toContain(expected) // indexOf
+
+    Expected substring: "<!--code:{\"highlight\":[9]}-->の読み込めない指定を当てずに描いています。highlight[0]:コードブロックに無い行の番号9です。コードブロックは1〜3行目です。"
+    Received string:    "記載の警告フロー図の部品の定義を読み込めません。ノード「始める」の種類beginは使用できません。使用できる種類はllm・dm・script・mcp・data・external・start・question・action・resultです。この図は描いていません。本文記載の警告!--code:{\"highlight\":[9]}--の読み込めない指定を当てずに描いています。highlight[0]:コードブロックに無い行の番号9です。コードブロックは1〜3行目です。tsconsta=1;constb=2;constc=3;"
+
+      132 |   for (const line of [lines[0], lines[2]]) {
+      133 |     const message = (line ?? "").replace(/^-:\d+: \w+: /, "");
+    > 134 |     expect(rendered).toContain(message.replace(/\s+/g, ""));
+          |                      ^
+      135 |   }
+      136 | });
+      137 |
+        at /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-render-marker-json-options/tests/e2e/単一ユースケース/文字列とYAMLのキーの記法を点検する.spec.ts:134:22
+
+    Error Context: test-results/単一ユースケース-文字列とYAMLのキーの記法を点検する-test-normal-when-warnings-chromium/error-context.md
+
+
+[47/724] [chromium] › tests/e2e/単一ユースケース/固有の部品とCSSを適用する.spec.ts:26:1 › test_normal
+[48/724] [chromium] › tests/e2e/単一ユースケース/固有の部品とCSSを適用する.spec.ts:50:1 › test_normal_when_export
+[49/724] [chromium] › tests/e2e/単一ユースケース/文字列とYAMLのキーの記法を点検する.spec.ts:139:1 › test_normal_when_unknown_mark_args
+[50/724] [chromium] › tests/e2e/単一ユースケース/固有の部品とCSSを適用する.spec.ts:86:1 › test_normal_when_other_place
+[51/724] [chromium] › tests/e2e/単一ユースケース/固有の部品とCSSを適用する.spec.ts:108:3 › VS Code のプレビュー › test_normal_when_vscode_preview
+[52/724] [chromium] › tests/e2e/単一ユースケース/文字列とYAMLのキーの記法を点検する.spec.ts:196:1 › test_normal_when_yaml_key
+[53/724] [chromium] › tests/e2e/単一ユースケース/文字列とYAMLのキーの記法を点検する.spec.ts:217:1 › test_normal_when_extension_mark
+[54/724] [chromium] › tests/e2e/単一ユースケース/文字列とYAMLのキーの記法を点検する.spec.ts:246:1 › test_error_when_key_missing
+[55/724] [chromium] › tests/e2e/単一ユースケース/文字列とYAMLのキーの記法を点検する.spec.ts:280:1 › test_normal_when_map_warnings
+[56/724] [chromium] › tests/e2e/単一ユースケース/文字列とYAMLのキーの記法を点検する.spec.ts:313:1 › test_normal_when_legacy_mark_args
+[57/724] [chromium] › tests/e2e/単一ユースケース/文書のフォルダに設定を作る.spec.ts:30:1 › test_normal
+[58/724] [chromium] › tests/e2e/単一ユースケース/文字列とYAMLのキーの記法を点検する.spec.ts:352:1 › test_normal_when_mark_args_not_json
+[59/724] [chromium] › tests/e2e/単一ユースケース/文書のフォルダに設定を作る.spec.ts:56:1 › test_normal_when_config_exists
+[60/724] [chromium] › tests/e2e/単一ユースケース/文書のフォルダに設定を作る.spec.ts:83:1 › test_error_when_write_declined
+[61/724] [chromium] › tests/e2e/単一ユースケース/文書をHTMLに書き出す.spec.ts:107:1 › test_normal
+[62/724] [chromium] › tests/e2e/単一ユースケース/文字列とYAMLのキーの記法を点検する.spec.ts:385:1 › test_normal_when_comment_end_in_value
+[63/724] [chromium] › tests/e2e/単一ユースケース/文書をHTMLに書き出す.spec.ts:153:1 › test_normal_when_unreadable_assets
+[64/724] [chromium] › tests/e2e/単一ユースケース/文書をHTMLに書き出す.spec.ts:190:1 › test_error_when_output_unwritable
+[65/724] [chromium] › tests/e2e/単一ユースケース/ガイドを参照する.spec.ts:68:1 › test_error_when_dev_docs_missing
+[66/724] [chromium] › tests/e2e/単一ユースケース/文書をHTMLに書き出す.spec.ts:210:1 › test_normal_when_code_highlighted
+[67/724] [chromium] › tests/e2e/単一ユースケース/複数の文書を1枚のHTMLにまとめる.spec.ts:45:1 › test_normal
+[68/724] [chromium] › tests/e2e/単一ユースケース/文書をHTMLに書き出す.spec.ts:304:1 › test_normal_when_aliases
+[69/724] [chromium] › tests/e2e/単一ユースケース/複数の文書を1枚のHTMLにまとめる.spec.ts:81:1 › test_normal_when_link_outside_bundle
+
+
+[70/724] [chromium] › tests/e2e/単一ユースケース/端末にmdmarkをセットアップする.spec.ts:124:1 › test_normal
+[71/724] [chromium] › tests/e2e/単一ユースケース/複数の文書を1枚のHTMLにまとめる.spec.ts:123:1 › test_error_when_no_documents
+[72/724] [chromium] › tests/e2e/単一ユースケース/文書をHTMLに書き出す.spec.ts:342:1 › test_normal_when_theme_selected
+[73/724] [chromium] › tests/e2e/単一ユースケース/複数の文書を1枚のHTMLにまとめる.spec.ts:139:1 › test_normal_when_aliases
+[74/724] [chromium] › tests/e2e/単一ユースケース/文書をHTMLに書き出す.spec.ts:387:1 › test_normal_when_page_marker
+[75/724] [chromium] › tests/e2e/単一ユースケース/複数の文書を1枚のHTMLにまとめる.spec.ts:211:1 › test_normal_when_theme_selected
+[76/724] [chromium] › tests/e2e/単一ユースケース/文書をHTMLに書き出す.spec.ts:427:1 › test_normal_when_media_embedded
+[77/724] [chromium] › tests/e2e/単一ユースケース/複数の文書を1枚のHTMLにまとめる.spec.ts:247:1 › test_normal_when_media_embedded
+[78/724] [chromium] › tests/e2e/単一ユースケース/文書をHTMLに書き出す.spec.ts:507:1 › test_normal_when_blob_and_dynamic_import_blocked
+  2) [chromium] › tests/e2e/単一ユースケース/端末にmdmarkをセットアップする.spec.ts:124:1 › test_normal ────────────────
+
+    Error: write EPIPE
+
+       at setup-skill.ts:119
+
+      117 |       },
+      118 |     );
+    > 119 |     child.stdin?.end(options.stdin ?? "");
+          |                  ^
+      120 |   });
+      121 |
+      122 | /** systemd --user が使えるか（`is-system-running` の標準出力が running・degraded・starting） */
+        at /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-render-marker-json-options/tests/e2e/setup-skill.ts:119:18
+        at runFile (/mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-render-marker-json-options/tests/e2e/setup-skill.ts:104:3)
+        at runTmux (/mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-render-marker-json-options/tests/e2e/setup-skill.ts:230:3)
+        at sessionNames (/mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-render-marker-json-options/tests/e2e/setup-skill.ts:245:28)
+        at closeSessions (/mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-render-marker-json-options/tests/e2e/setup-skill.ts:270:28)
+        at Object.terminal (/mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-render-marker-json-options/tests/e2e/setup-skill.ts:219:11)
+
+    Error Context: test-results/単一ユースケース-端末にmdmarkをセットアップする-test-normal-chromium/error-context.md
+
+
+[79/724] [chromium] › tests/e2e/単一ユースケース/文書をHTMLに書き出す.spec.ts:580:1 › test_normal_when_footnotes
+[80/724] [chromium] › tests/e2e/単一ユースケース/複数の文書を1枚のHTMLにまとめる.spec.ts:326:1 › test_normal_when_blob_and_dynamic_import_blocked
+[81/724] [chromium] › tests/e2e/単一ユースケース/文書をHTMLに書き出す.spec.ts:615:1 › test_normal_when_includes_and_icons_embedded
+[82/724] [chromium] › tests/e2e/単一ユースケース/複数の文書を1枚のHTMLにまとめる.spec.ts:398:1 › test_normal_when_footnotes
+[83/724] [chromium] › tests/e2e/単一ユースケース/複数の文書を1枚のHTMLにまとめる.spec.ts:438:1 › test_normal_when_includes_and_icons_embedded
+
+
+[84/724] [chromium] › tests/e2e/単一ユースケース/端末にmdmarkをセットアップする.spec.ts:178:1 › test_normal_when_already_set_up
+[85/724] [chromium] › tests/e2e/単一ユースケース/複数の文書を1枚のHTMLにまとめる.spec.ts:478:1 › test_normal_when_range_scripts
+[86/724] [chromium] › tests/e2e/単一ユースケース/複数の文書を1枚のHTMLにまとめる.spec.ts:535:1 › test_normal_when_cascaded
+[87/724] [chromium] › tests/e2e/単一ユースケース/複数の文書を1枚のHTMLにまとめる.spec.ts:573:1 › test_normal_when_mermaid
+[88/724] [chromium] › tests/e2e/単一ユースケース/設定と索引を点検する.spec.ts:58:1 › test_normal
+[89/724] [chromium] › tests/e2e/単一ユースケース/設定と索引を点検する.spec.ts:71:1 › test_normal_when_drift
+  3) [chromium] › tests/e2e/単一ユースケース/設定と索引を点検する.spec.ts:71:1 › test_normal_when_drift ──────────────
+
+    Error: expect(received).toContain(expected) // indexOf
+
+    Expected substring: "書いてください"
+    Received string:    "mdmark.config.yaml:build: schema: `build.out` がありません。書き出す HTML のパスを記載してください。"
+
+      92 |   expect(missing).toMatch(/^index\.yaml:docs\[\d+\]\.path: missing_doc: /);
+      93 |   // 内容に修正方法が記載されている
+    > 94 |   expect(schema).toContain("書いてください");
+         |                  ^
+      95 |   expect(missing).toContain("ください");
+      96 |   expect(await snapshot(dir)).toEqual(before);
+      97 | });
+        at /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-render-marker-json-options/tests/e2e/単一ユースケース/設定と索引を点検する.spec.ts:94:18
+
+    Error Context: test-results/単一ユースケース-設定と索引を点検する-test-normal-when-drift-chromium/error-context.md
+
+
+[90/724] [chromium] › tests/e2e/単一ユースケース/設定と索引を点検する.spec.ts:100:1 › test_error_when_config_missing
+  4) [chromium] › tests/e2e/単一ユースケース/文書をHTMLに書き出す.spec.ts:615:1 › test_normal_when_includes_and_icons_embedded 
+
+    Error: expect(locator).toContainText(expected) failed
+
+    Locator: locator('article .mdmark-include').first()
+    Expected substring: "実行の段落"
+    Received string:    ""
+    Timeout: 30000ms
+
+    Call log:
+      - Expect "toContainText" locator('article .mdmark-include').first() with timeout 30000ms
+      - waiting for locator('article .mdmark-include').first()
+        63 × locator resolved to <div data-source-line="4" class="mdmark-include" data-include="共通/手順.md#実行"></div>
+           - unexpected value ""
+
+
+      645 |     page.locator('article .mdmark-inline-icon[data-icon="sailboat"] svg'),
+      646 |   ).toHaveCount(1);
+    > 647 |   await expect(page.locator("article .mdmark-include").first()).toContainText(
+          |                                                                 ^
+      648 |     "実行の段落",
+      649 |   );
+      650 |   await expect(page.locator("article")).not.toContainText("準備の段落");
+        at /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-render-marker-json-options/tests/e2e/単一ユースケース/文書をHTMLに書き出す.spec.ts:647:65
+
+    Error Context: test-results/単一ユースケース-文書をHTMLに書き出す-test-14339-includes-and-icons-embedded-chromium/error-context.md
+
+
+[91/724] [chromium] › tests/e2e/単一ユースケース/文書をHTMLに書き出す.spec.ts:659:1 › test_normal_when_range_scripts
+[92/724] [chromium] › tests/e2e/単一ユースケース/追加するJavaScriptを型で点検する.spec.ts:24:1 › test_normal
+[93/724] [chromium] › tests/e2e/単一ユースケース/追加するJavaScriptを型で点検する.spec.ts:37:1 › test_error_when_type_mismatch
+  5) [chromium] › tests/e2e/単一ユースケース/追加するJavaScriptを型で点検する.spec.ts:37:1 › test_error_when_type_mismatch 
+
+    Error: expect(received).toContain(expected) // indexOf
+
+    Expected substring: "slot.textContent = `こんにちは、${value.args[0] ?? \"\"}`;"
+    Received string:    "// @ts-check
+    // 型は、使用するバージョンの dist/ の index.d.ts を ../mdmark/ に配置して読み込む·
+    /** `<!-- greet: {\"target\": \"名前\"} -->` の場所に挨拶を描く拡張 */
+    /** @type {import(\"../mdmark/index.js\").MdmarkExtension} */
+    export default {
+      name: \"greet\",
+      directive: \"greet\",
+      load: async () => ({
+        draw(slot, value) {
+          slot.textContent = `こんにちは、${String(value.options.target ?? \"\")}`;
+        },
+      }),
+    };
+    "
+
+      40 |   const file = join(dir, "extensions", "example.js");
+      41 |   const source = await readFile(file, "utf8");
+    > 42 |   expect(source).toContain(VALID_LINE);
+         |                  ^
+      43 |   const broken = source.replace(VALID_LINE, INVALID_LINE);
+      44 |   await writeFile(file, broken);
+      45 |   const before = await listFiles(dir);
+        at /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-render-marker-json-options/tests/e2e/単一ユースケース/追加するJavaScriptを型で点検する.spec.ts:42:18
+
+    Error Context: test-results/単一ユースケース-追加するJavaScriptを型で点検する-test-error-when-type-mismatch-chromium/error-context.md
+
+
+[94/724] [chromium] › tests/e2e/単一ユースケース/雛形を配置する.spec.ts:20:1 › test_normal
+[95/724] [chromium] › tests/e2e/単一ユースケース/端末にmdmarkをセットアップする.spec.ts:209:1 › test_normal_when_server_stopped
+[96/724] [chromium] › tests/e2e/単一ユースケース/設定と索引を点検する.spec.ts:113:1 › test_normal_when_unknown_mark
+[97/724] [chromium] › tests/e2e/単一ユースケース/設定と索引を点検する.spec.ts:137:1 › test_normal_when_base_given
+[98/724] [chromium] › tests/e2e/単一ユースケース/端末にmdmarkをセットアップする.spec.ts:240:1 › test_normal_when_plugin_updated
+[99/724] [chromium] › tests/e2e/単一ユースケース/設定と索引を点検する.spec.ts:165:1 › test_error_when_base_unknown
+[100/724] [chromium] › tests/e2e/単一ユースケース/設定と索引を点検する.spec.ts:198:1 › test_normal_when_alias_drift
+[101/724] [chromium] › tests/e2e/単一ユースケース/設定と索引を点検する.spec.ts:293:1 › test_normal_when_unknown_theme
+[102/724] [chromium] › tests/e2e/単一ユースケース/端末にmdmarkをセットアップする.spec.ts:270:1 › test_normal_when_moved_from_tmux
+[103/724] [chromium] › tests/e2e/単一ユースケース/設定と索引を点検する.spec.ts:336:1 › test_normal_when_unknown_color_scheme
+[104/724] [chromium] › tests/e2e/単一ユースケース/文書をHTMLに書き出す.spec.ts:726:1 › test_normal_when_cascaded
+[105/724] [chromium] › tests/e2e/単一ユースケース/文書をHTMLに書き出す.spec.ts:747:1 › test_normal_when_first_only
+[106/724] [chromium] › tests/e2e/単一ユースケース/設定と索引を点検する.spec.ts:362:1 › test_normal_when_files_missing
+[107/724] [chromium] › tests/e2e/単一ユースケース/文書をHTMLに書き出す.spec.ts:762:1 › test_normal_when_settings_not_applied_to_export
+[108/724] [chromium] › tests/e2e/単一ユースケース/設定と索引を点検する.spec.ts:414:1 › test_normal_when_diagram_drift
+[109/724] [chromium] › tests/e2e/単一ユースケース/文書をHTMLに書き出す.spec.ts:783:1 › test_error_when_config_unreadable
+[110/724] [chromium] › tests/e2e/単一ユースケース/端末にmdmarkをセットアップする.spec.ts:311:1 › test_normal_when_systemd_unavailable
+[111/724] [chromium] › tests/e2e/単一ユースケース/文書をHTMLに書き出す.spec.ts:802:1 › test_normal_when_mermaid
+[112/724] [chromium] › tests/e2e/単一ユースケース/設定と索引を点検する.spec.ts:471:1 › test_normal_when_diagram_auto_layout
+[113/724] [chromium] › tests/e2e/単一ユースケース/設定と索引を点検する.spec.ts:504:1 › test_normal_when_include_missing
+[114/724] [chromium] › tests/e2e/単一ユースケース/端末にmdmarkをセットアップする.spec.ts:342:1 › test_normal_when_fixed_to_tmux
+[115/724] [chromium] › tests/e2e/単一ユースケース/設定と索引を点検する.spec.ts:546:1 › test_normal_when_diagram_placement_invalid
+[116/724] [chromium] › tests/e2e/複合ユースケース/ClaudeCodeでガイドを参照して記載し点検する.spec.ts:64:1 › test_normal
+[117/724] [chromium] › tests/e2e/単一ユースケース/設定と索引を点検する.spec.ts:581:1 › test_normal_when_group_options_invalid
+[118/724] [chromium] › tests/e2e/単一ユースケース/端末にmdmarkをセットアップする.spec.ts:370:1 › test_normal_when_settings_outdated
+[119/724] [chromium] › tests/e2e/単一ユースケース/設定と索引を点検する.spec.ts:611:1 › test_normal_when_cascaded_config_drift
+  6) [chromium] › tests/e2e/単一ユースケース/設定と索引を点検する.spec.ts:611:1 › test_normal_when_cascaded_config_drift 
+
+    Error: expect(received).toMatch(expected)
+
+    Expected pattern: /^\.\.\/mdmark\.config\.yaml:/
+    Received string:  "/tmp/mdmark-e2e-cli-r8LWi6/mdmark.config.yaml:side-toc.mode: schema: `side-toc.mode` は `hover` か `fixed` で記載してください。"
+
+      647 |   expect(callout[0]).toContain("settings.yaml");
+      648 |   expect(sideToc).toHaveLength(1);
+    > 649 |   expect(sideToc[0]).toMatch(/^\.\.\/mdmark\.config\.yaml:/);
+          |                      ^
+      650 |   const after = await Promise.all(
+      651 |     [settings, ...Object.keys(files).map((file) => join(dir, file))].map(
+      652 |       (path) => readFile(path, "utf8"),
+        at /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-render-marker-json-options/tests/e2e/単一ユースケース/設定と索引を点検する.spec.ts:649:22
+
+    Error Context: test-results/単一ユースケース-設定と索引を点検する-test-normal-when-cascaded-config-drift-chromium/error-context.md
+
+
+[120/724] [chromium] › tests/e2e/単一ユースケース/設定と索引を点検する.spec.ts:681:1 › test_normal_when_map_data_drift
+[121/724] [chromium] › tests/e2e/単一ユースケース/雛形を配置する.spec.ts:45:1 › test_normal_when_javascript
+[122/724] [chromium] › tests/e2e/単一ユースケース/雛形を配置する.spec.ts:75:1 › test_normal_when_file_exists
+[123/724] [chromium] › tests/e2e/複合ユースケース/CSSのテンプレートを別のリポジトリに配置して書き出す.spec.ts:55:1 › test_normal
+[124/724] [chromium] › tests/e2e/複合ユースケース/CSSのテンプレートを別のリポジトリに配置して書き出す.spec.ts:117:1 › test_error_when_template_name_exists
+[125/724] [chromium] › tests/e2e/複合ユースケース/MCPサーバーを起動してプラグインからつなぐ.spec.ts:34:1 › test_normal
+[126/724] [chromium] › tests/e2e/複合ユースケース/MCPサーバーを起動してプラグインからつなぐ.spec.ts:91:1 › test_error_when_server_not_running
+[127/724] [chromium] › tests/e2e/複合ユースケース/Mermaidと補足で書いた図を辿って読む.spec.ts:70:1 › test_normal
+[128/724] [chromium] › tests/e2e/複合ユースケース/Mermaidと補足で書いた図を辿って読む.spec.ts:165:1 › test_normal_when_exported
+[129/724] [chromium] › tests/e2e/複合ユースケース/Mermaidと補足で書いた図を辿って読む.spec.ts:195:1 › test_error_when_map_data_drift
+[130/724] [chromium] › tests/e2e/単一ユースケース/端末にmdmarkをセットアップする.spec.ts:423:1 › test_error_when_write_declined
+[131/724] [chromium] › tests/e2e/複合ユースケース/コードブロックのHTMLでチャートとヒントを読み取る.spec.ts:176:1 › test_normal
+[132/724] [chromium] › tests/e2e/複合ユースケース/コードブロックのHTMLでチャートとヒントを読み取る.spec.ts:230:1 › test_normal_when_exported
+[133/724] [chromium] › tests/e2e/単一ユースケース/端末にmdmarkをセットアップする.spec.ts:457:1 › test_error_when_launcher_missing
+[134/724] [chromium] › tests/e2e/単一ユースケース/端末にmdmarkをセットアップする.spec.ts:488:1 › test_error_when_port_in_use
+[135/724] [chromium] › tests/e2e/複合ユースケース/コードブロックのHTMLでチャートとヒントを読み取る.spec.ts:294:1 › test_normal_when_range_scripts
+[136/724] [chromium] › tests/e2e/単一ユースケース/設定と索引を点検する.spec.ts:722:1 › test_normal_when_legacy_mark
+[137/724] [chromium] › tests/e2e/複合ユースケース/ビューで探してコメントを付ける.spec.ts:55:1 › test_normal
+[138/724] [chromium] › tests/e2e/複合ユースケース/ビューで探してコメントを付ける.spec.ts:108:1 › test_normal_when_exported
+[139/724] [chromium] › tests/e2e/単一ユースケース/設定と索引を点検する.spec.ts:772:1 › test_normal_when_mark_options_drift
+[140/724] [chromium] › tests/e2e/複合ユースケース/ビューで探してコメントを付ける.spec.ts:146:1 › test_normal_when_called_from_javascript
+[141/724] [chromium] › tests/e2e/複合ユースケース/プラグインを入れて端末と文書のフォルダをセットアップする.spec.ts:107:1 › test_normal
+[142/724] [chromium] › tests/e2e/複合ユースケース/固有の部品で図の文書を描いて確認する.spec.ts:42:1 › test_normal
+[143/724] [chromium] › tests/e2e/複合ユースケース/固有の部品で図の文書を描いて確認する.spec.ts:240:1 › test_normal_when_interactive
+[144/724] [chromium] › tests/e2e/複合ユースケース/端末の設定を重ねてプレビューと書き出しをそろえる.spec.ts:40:1 › test_normal
+  7) [chromium] › tests/e2e/複合ユースケース/プラグインを入れて端末と文書のフォルダをセットアップする.spec.ts:107:1 › test_normal ──────
+
+    Error: expect(received).toBe(expected) // Object.is equality
+
+    Expected: "systemd"
+    Received: undefined
+
+      145 |   expect(notListening).toContain(`127.0.0.1:${terminal.port}`);
+      146 |   expect(notListening).toContain("/mdmark:global-setup");
+    > 147 |   expect(globalReport.start.started?.launcher).toBe("systemd");
+          |                                                ^
+      148 |   expect(globalReport.start.started?.unit).toBe(terminal.unit);
+      149 |   const settings = parse(await readFile(terminal.settingsPath, "utf8"));
+      150 |   expect(settings.features.table).toBe(false);
+        at /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-render-marker-json-options/tests/e2e/複合ユースケース/プラグインを入れて端末と文書のフォルダをセットアップする.spec.ts:147:48
+
+    Error Context: test-results/複合ユースケース-プラグインを入れて端末と文書のフォルダをセットアップする-test-normal-chromium/error-context.md
+
+
+  8) [chromium] › tests/e2e/複合ユースケース/固有の部品で図の文書を描いて確認する.spec.ts:240:1 › test_normal_when_interactive 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: locator('#doc .mdmark-param').getByRole('button', { name: '今の値を写す' })
+    Expected: visible
+    Timeout: 30000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" locator('#doc .mdmark-param').getByRole('button', { name: '今の値を写す' }) with timeout 30000ms
+      - waiting for locator('#doc .mdmark-param').getByRole('button', { name: '今の値を写す' })
+
+
+      256 |   await expect(
+      257 |     param.getByRole("button", { name: "今の値を写す" }),
+    > 258 |   ).toBeVisible();
+          |     ^
+      259 |   // スライダーを動かすと、グラフが新しい値で再描画される
+      260 |   await slider.fill("8");
+      261 |   await expect(param.locator("svg[role=img]")).toHaveAttribute(
+        at /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-render-marker-json-options/tests/e2e/複合ユースケース/固有の部品で図の文書を描いて確認する.spec.ts:258:5
+
+    Error Context: test-results/複合ユースケース-固有の部品で図の文書を描いて確認する-test-normal-when-interactive-chromium/error-context.md
+
+
+[145/724] [chromium] › tests/e2e/複合ユースケース/固有の部品で図の文書を描いて確認する.spec.ts:274:1 › test_error_when_type_mismatch
+
+
+[146/724] [chromium] › tests/e2e/複合ユースケース/プラグインを入れて端末と文書のフォルダをセットアップする.spec.ts:179:1 › test_normal_when_already_set_up
+[147/724] [chromium] › tests/e2e/複合ユースケース/ClaudeCodeでガイドを参照して記載し点検する.spec.ts:110:1 › test_error_when_dev_docs_missing
+[148/724] [chromium] › tests/e2e/複合ユースケース/雛形から1枚のHTMLを配る.spec.ts:40:1 › test_normal
+  9) [chromium] › tests/e2e/複合ユースケース/雛形から1枚のHTMLを配る.spec.ts:40:1 › test_normal ─────────────────────
+
+    Error: expect(received).toBe(expected) // Object.is equality
+
+    Expected: 0
+    Received: 1
+
+      46 |   await writeDocuments(dir);
+      47 |   const check = await runCli(builtRoot, ["check"], dir);
+    > 48 |   expect(check.code).toBe(0);
+         |                      ^
+      49 |   expect(linesOf(check.stdout)).toEqual(["ずれ 0 件"]);
+      50 |   const build = await runCli(builtRoot, ["build"], dir);
+      51 |   expect(build.code).toBe(0);
+        at /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-render-marker-json-options/tests/e2e/複合ユースケース/雛形から1枚のHTMLを配る.spec.ts:48:22
+
+    Error Context: test-results/複合ユースケース-雛形から1枚のHTMLを配る-test-normal-chromium/error-context.md
+
+
+[149/724] [chromium] › tests/e2e/複合ユースケース/雛形から1枚のHTMLを配る.spec.ts:95:1 › test_normal_when_single_document
+[150/724] [chromium] › tests/e2e/複合ユースケース/固有の部品で図の文書を描いて確認する.spec.ts:348:1 › test_error_when_diagram_drift
+[151/724] [chromium] › tests/e2e/複合ユースケース/端末の設定を重ねてプレビューと書き出しをそろえる.spec.ts:104:1 › test_normal_when_first_only
+[152/724] [chromium] › tests/e2e/複合ユースケース/端末の設定を重ねてプレビューと書き出しをそろえる.spec.ts:133:1 › test_error_when_settings_unreadable
+[153/724] [chromium] › tests/e2e/単一ユースケース/HTMLに書き出す.spec.ts:60:1 › test_normal
+  10) [chromium] › tests/e2e/複合ユースケース/端末の設定を重ねてプレビューと書き出しをそろえる.spec.ts:133:1 › test_error_when_settings_unreadable 
+
+    Error: expect(received).toContain(expected) // indexOf
+
+    Expected substring: "3 行目"
+    Received string:    "/tmp/mdmark-e2e-settings-4sFM0v/settings.yaml の 4 行目を YAML として読み込めません（Flow sequence in block collection must be sufficiently indented and end with a ] at line 4, column 17:）。字下げと記載方法を修正してください。
+    "
+
+      158 |   expect(failed.code).toBe(1);
+      159 |   expect(failed.stderr).toContain("settings.yaml");
+    > 160 |   expect(failed.stderr).toContain("3 行目");
+          |                         ^
+      161 |   expect(failed.stderr).toContain("字下げと記載方法を修正してください");
+      162 |   expect(existsSync(html)).toBe(false);
+      163 |   expect(await opened.configs()).toEqual(opened.before);
+        at /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-render-marker-json-options/tests/e2e/複合ユースケース/端末の設定を重ねてプレビューと書き出しをそろえる.spec.ts:160:25
+
+    Error Context: test-results/複合ユースケース-端末の設定を重ねてプレビューと書き-21f43-or-when-settings-unreadable-chromium/error-context.md
+
+    Error Context: test-results/複合ユースケース-端末の設定を重ねてプレビューと書き-21f43-or-when-settings-unreadable-chromium/error-context.md
+
+
+[154/724] [chromium] › tests/e2e/単一ユースケース/Mermaidと補足で図を描く.spec.ts:103:1 › test_normal
+[155/724] [chromium] › tests/e2e/複合ユースケース/プラグインを入れて端末と文書のフォルダをセットアップする.spec.ts:218:1 › test_error_when_server_stopped
+[156/724] [chromium] › tests/e2e/単一ユースケース/mermaidの図を描く.spec.ts:43:1 › test_normal
+[157/724] [chromium] › tests/e2e/複合ユースケース/雛形から1枚のHTMLを配る.spec.ts:128:1 › test_error_when_drift
+  11) [chromium] › tests/e2e/複合ユースケース/雛形から1枚のHTMLを配る.spec.ts:128:1 › test_error_when_drift ─────────
+
+    Error: expect(received).toBe(expected) // Object.is equality
+
+    Expected: 0
+    Received: 1
+
+      146 |   await writeFiles(dir, { "index.yaml": index });
+      147 |   const second = await runCli(builtRoot, ["check"], dir);
+    > 148 |   expect(second.code).toBe(0);
+          |                       ^
+      149 |   expect(linesOf(second.stdout)).toEqual(["ずれ 0 件"]);
+      150 |   const build = await runCli(builtRoot, ["build"], dir);
+      151 |   expect(build.code).toBe(0);
+        at /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-render-marker-json-options/tests/e2e/複合ユースケース/雛形から1枚のHTMLを配る.spec.ts:148:23
+
+    Error Context: test-results/複合ユースケース-雛形から1枚のHTMLを配る-test-error-when-drift-chromium/error-context.md
+
+
+[158/724] [chromium] › tests/e2e/単一ユースケース/Mermaidと補足で図を描く.spec.ts:299:1 › test_normal_when_layout_overridden
+[159/724] [chromium] › tests/e2e/単一ユースケース/Mermaidと補足で図を描く.spec.ts:376:1 › test_normal_when_layers
+[160/724] [chromium] › tests/e2e/単一ユースケース/Mermaidと補足で図を描く.spec.ts:464:1 › test_normal_when_sequence
+[161/724] [chromium] › tests/e2e/単一ユースケース/Mermaidと補足で図を描く.spec.ts:565:1 › test_normal_when_unreadable
+[162/724] [chromium] › tests/e2e/単一ユースケース/Mermaidと補足で図を描く.spec.ts:596:1 › test_normal_when_unsupported_kind
+[163/724] [chromium] › tests/e2e/単一ユースケース/Mermaidと補足で図を描く.spec.ts:627:1 › test_normal_when_closed
+[164/724] [chromium] › tests/e2e/単一ユースケース/Mermaidと補足で図を描く.spec.ts:652:1 › test_normal_when_node_selected
+[165/724] [chromium] › tests/e2e/単一ユースケース/Mermaidと補足で図を描く.spec.ts:715:1 › test_normal_when_moved
+[166/724] [chromium] › tests/e2e/単一ユースケース/Mermaidと補足で図を描く.spec.ts:865:1 › test_normal_when_frame_resized
+[167/724] [chromium] › tests/e2e/単一ユースケース/HTMLに書き出す.spec.ts:100:1 › test_normal_when_open_in_browser
+[168/724] [chromium] › tests/e2e/単一ユースケース/PDFに印刷する.spec.ts:39:1 › test_normal
+[169/724] [chromium] › tests/e2e/単一ユースケース/HTMLに書き出す.spec.ts:125:1 › test_error_when_output_unwritable
+[170/724] [chromium] › tests/e2e/単一ユースケース/VSCodeでプレビューを開く.spec.ts:70:1 › test_normal
+[171/724] [chromium] › tests/e2e/単一ユースケース/HTMLに書き出す.spec.ts:152:1 › test_normal_when_theme_selected
+[172/724] [chromium] › tests/e2e/単一ユースケース/HTMLに書き出す.spec.ts:183:1 › test_normal_when_theme_and_extensions
+[173/724] [chromium] › tests/e2e/単一ユースケース/HTMLに書き出す.spec.ts:274:1 › test_normal_when_relative_libraries
+[174/724] [chromium] › tests/e2e/単一ユースケース/HTMLに書き出す.spec.ts:310:1 › test_normal_when_relative_mermaid
+[175/724] [chromium] › tests/e2e/単一ユースケース/mermaidの図を描く.spec.ts:74:1 › test_normal_when_no_mermaid
+[176/724] [chromium] › tests/e2e/単一ユースケース/mermaidの図を描く.spec.ts:90:1 › test_normal_when_dark
+[177/724] [chromium] › tests/e2e/単一ユースケース/mermaidの図を描く.spec.ts:123:1 › test_normal_when_theme_configured
+[178/724] [chromium] › tests/e2e/単一ユースケース/mermaidの図を描く.spec.ts:145:1 › test_normal_when_disabled
+[179/724] [chromium] › tests/e2e/単一ユースケース/mermaidの図を描く.spec.ts:162:1 › test_error_when_mermaid_not_found
+[180/724] [chromium] › tests/e2e/単一ユースケース/mermaidの図を描く.spec.ts:181:1 › test_error_when_syntax_invalid
+[181/724] [chromium] › tests/e2e/単一ユースケース/mermaidの図を描く.spec.ts:206:1 › test_normal_when_inside_map
+[182/724] [chromium] › tests/e2e/単一ユースケース/コードブロックのHTMLを描く.spec.ts:42:1 › test_normal
+[183/724] [chromium] › tests/e2e/単一ユースケース/エディタとプレビューのスクロールを合わせる.spec.ts:77:1 › test_normal
+[184/724] [chromium] › tests/e2e/単一ユースケース/PDFに印刷する.spec.ts:74:1 › test_error_when_output_unwritable
+[185/724] [chromium] › tests/e2e/単一ユースケース/VSCodeでプレビューを開く.spec.ts:110:1 › test_normal_when_same_column
+[186/724] [chromium] › tests/e2e/単一ユースケース/PDFに印刷する.spec.ts:101:1 › test_normal_when_theme_selected
+[187/724] [chromium] › tests/e2e/単一ユースケース/VSCodeでプレビューを開く.spec.ts:129:1 › test_normal_when_version_pinned
+[188/724] [chromium] › tests/e2e/単一ユースケース/コードブロックを飾る.spec.ts:82:1 › test_normal
+[189/724] [chromium] › tests/e2e/単一ユースケース/VSCodeでプレビューを開く.spec.ts:146:1 › test_normal_when_tags_unreachable
+[190/724] [chromium] › tests/e2e/単一ユースケース/VSCodeでプレビューを開く.spec.ts:180:1 › test_error_when_distribution_unreachable
+[191/724] [chromium] › tests/e2e/単一ユースケース/VSCodeでプレビューを開く.spec.ts:211:1 › test_error_when_version_missing
+[192/724] [chromium] › tests/e2e/単一ユースケース/VSCodeでプレビューを開く.spec.ts:228:1 › test_error_when_version_undecidable
+[193/724] [chromium] › tests/e2e/単一ユースケース/コードブロックのHTMLを描く.spec.ts:88:1 › test_normal_when_feature_off
+[194/724] [chromium] › tests/e2e/単一ユースケース/コードブロックのHTMLを描く.spec.ts:106:1 › test_error_when_block_count_invalid
+[195/724] [chromium] › tests/e2e/単一ユースケース/コードブロックのHTMLを描く.spec.ts:161:1 › test_normal_when_range_scripts
+[196/724] [chromium] › tests/e2e/単一ユースケース/コードブロックのHTMLを描く.spec.ts:199:1 › test_normal_when_range_scripts_off
+[197/724] [chromium] › tests/e2e/単一ユースケース/コードブロックのHTMLを描く.spec.ts:220:1 › test_error_when_range_script_invalid
+[198/724] [chromium] › tests/e2e/単一ユースケース/コードブロックのHTMLを描く.spec.ts:258:1 › test_error_when_transpiler_unavailable
+[199/724] [chromium] › tests/e2e/単一ユースケース/シーケンスを構成図の上で再生する.spec.ts:51:1 › test_normal
+[200/724] [chromium] › tests/e2e/単一ユースケース/VSCodeでプレビューを開く.spec.ts:245:1 › test_normal_when_includes
+[201/724] [chromium] › tests/e2e/単一ユースケース/エディタとプレビューのスクロールを合わせる.spec.ts:93:1 › test_normal_when_from_preview
+[202/724] [chromium] › tests/e2e/単一ユースケース/エディタとプレビューのスクロールを合わせる.spec.ts:108:1 › test_normal_when_sync_off
+  12) [chromium] › tests/e2e/単一ユースケース/VSCodeでプレビューを開く.spec.ts:245:1 › test_normal_when_includes ────
+
+    TimeoutError: locator.waitFor: Timeout 30000ms exceeded.
+    Call log:
+      - waiting for locator('.quick-input-box input') to be visible
+        63 × locator resolved to hidden <input wrap="off" type="text" class="input" autocorrect="off" spellcheck="false" autocapitalize="off" aria-controls="quickInput_list" aria-describedby="quickInput_message" aria-label="Search files by name (append : to go to line or @ to go to symbol)" placeholder="Search files by name (append : to go to line or @ to go to symbol)"/>
+
+
+       at vscode.ts:474
+
+      472 |     await win.keyboard.press("Control+P");
+      473 |     const input = win.locator(".quick-input-box input");
+    > 474 |     await input.waitFor({ timeout: WAIT_TIMEOUT_MS });
+          |                 ^
+      475 |     await input.fill(relative);
+      476 |     const name = relative.split("/").at(-1) ?? relative;
+      477 |     await win
+        at Object.openFile (/mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-render-marker-json-options/tests/e2e/vscode.ts:474:17)
+        at /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-render-marker-json-options/tests/e2e/単一ユースケース/VSCodeでプレビューを開く.spec.ts:284:3
+
+    Error Context: test-results/単一ユースケース-VSCodeでプレビューを開く-test-normal-when-includes-chromium/error-context.md
+
+    Error Context: test-results/単一ユースケース-VSCodeでプレビューを開く-test-normal-when-includes-chromium/error-context.md
+
+
+[203/724] [chromium] › tests/e2e/単一ユースケース/コードブロックを飾る.spec.ts:116:1 › test_normal_when_line_marks
+[204/724] [chromium] › tests/e2e/単一ユースケース/コードブロックを飾る.spec.ts:158:1 › test_normal_when_line_mark_escaped
+[205/724] [chromium] › tests/e2e/単一ユースケース/コードブロックを飾る.spec.ts:179:1 › test_normal_when_feature_off
+[206/724] [chromium] › tests/e2e/単一ユースケース/コードブロックを飾る.spec.ts:208:1 › test_normal_when_unknown_key
+[207/724] [chromium] › tests/e2e/単一ユースケース/コードブロックを飾る.spec.ts:227:1 › test_normal_when_title_with_space_and_line_start
+[208/724] [chromium] › tests/e2e/単一ユースケース/エディタとプレビューのスクロールを合わせる.spec.ts:136:1 › test_normal_when_diff_preview
+[209/724] [chromium] › tests/e2e/単一ユースケース/エディタとプレビューのスクロールを合わせる.spec.ts:251:1 › test_normal_when_in_closed_section
+[210/724] [chromium] › tests/e2e/単一ユースケース/VSCodeでプレビューを開く.spec.ts:320:1 › test_normal_when_range_scripts
+  13) [chromium] › tests/e2e/単一ユースケース/コードブロックを飾る.spec.ts:227:1 › test_normal_when_title_with_space_and_line_start 
+
+    Error: expect(locator).toHaveText(expected) failed
+
+    Locator:  locator('#doc').locator('.mdmark-code-title')
+    Expected: "src/app.ts の抜粋"
+    Received: "tssrc/app.ts の抜粋コピー"
+    Timeout:  30000ms
+
+    Call log:
+      - Expect "toHaveText" locator('#doc').locator('.mdmark-code-title') with timeout 30000ms
+      - waiting for locator('#doc').locator('.mdmark-code-title')
+        63 × locator resolved to <figcaption class="mdmark-code-title mdmark-code-bar">…</figcaption>
+           - unexpected value "tssrc/app.ts の抜粋コピー"
+
+
+      239 |   // 検証
+      240 |   const doc = page.locator("#doc");
+    > 241 |   await expect(doc.locator(".mdmark-code-title")).toHaveText(
+          |                                                   ^
+      242 |     "src/app.ts の抜粋",
+      243 |   );
+      244 |   const lines = doc.locator(".mdmark-code-line");
+        at /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-render-marker-json-options/tests/e2e/単一ユースケース/コードブロックを飾る.spec.ts:241:51
+
+    Error Context: test-results/単一ユースケース-コードブロックを飾る-test-n-88078-e-with-space-and-line-start-chromium/error-context.md
+
+    Error Context: test-results/単一ユースケース-コードブロックを飾る-test-n-88078-e-with-space-and-line-start-chromium/error-context.md
+
+
+[211/724] [chromium] › tests/e2e/単一ユースケース/コードブロックを飾る.spec.ts:259:1 › test_error_when_highlight_line_missing
+  14) [chromium] › tests/e2e/単一ユースケース/エディタとプレビューのスクロールを合わせる.spec.ts:251:1 › test_normal_when_in_closed_section 
+
+    Error: expect(received).toBe(expected) // Object.is equality
+
+    Expected: true
+    Received: false
+
+      283 |   ).toContainText("追記");
+      284 |   await session.win.waitForTimeout(500);
+    > 285 |   expect(await closedHeadingPlaced(frame, heading, nextHeading)).toBe(true);
+          |                                                                  ^
+      286 |   await expect(toggle).toHaveAttribute("aria-expanded", "false");
+      287 |   expect(await session.editorTopLine()).toBe(top);
+      288 | });
+        at /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-render-marker-json-options/tests/e2e/単一ユースケース/エディタとプレビューのスクロールを合わせる.spec.ts:285:66
+
+    Error Context: test-results/単一ユースケース-エディタとプレビューのスクロールを-3a73b-rmal-when-in-closed-section-chromium/error-context.md
+
+    Error Context: test-results/単一ユースケース-エディタとプレビューのスクロールを-3a73b-rmal-when-in-closed-section-chromium/error-context.md
+
+
+[212/724] [chromium] › tests/e2e/単一ユースケース/シーケンス図の参加者を選んで強調する.spec.ts:68:1 › test_normal
+[213/724] [chromium] › tests/e2e/単一ユースケース/シーケンスを構成図の上で再生する.spec.ts:166:1 › test_normal_when_reduced_motion
+[214/724] [chromium] › tests/e2e/単一ユースケース/シーケンスを構成図の上で再生する.spec.ts:188:1 › test_normal_when_missing_participant
+[215/724] [chromium] › tests/e2e/単一ユースケース/シーケンスを構成図の上で再生する.spec.ts:224:1 › test_normal_when_autoplay
+[216/724] [chromium] › tests/e2e/単一ユースケース/シーケンスを構成図の上で再生する.spec.ts:261:1 › test_normal_when_interval
+[217/724] [chromium] › tests/e2e/単一ユースケース/ステップ・ファイルツリー・バッジで本文を組む.spec.ts:27:1 › test_normal
+[218/724] [chromium] › tests/e2e/単一ユースケース/コードブロックを飾る.spec.ts:287:1 › test_error_when_unknown_line_mark
+[219/724] [chromium] › tests/e2e/単一ユースケース/コードブロックを飾る.spec.ts:307:1 › test_error_when_no_code_block
+[220/724] [chromium] › tests/e2e/単一ユースケース/コードブロックを飾る.spec.ts:369:1 › test_normal_when_syntax_highlighted
+[221/724] [chromium] › tests/e2e/単一ユースケース/コードブロックを飾る.spec.ts:413:1 › test_normal_when_highlighted_with_line_marks
+[222/724] [chromium] › tests/e2e/単一ユースケース/コードブロックを飾る.spec.ts:477:1 › test_normal_when_language_not_highlighted
+[223/724] [chromium] › tests/e2e/単一ユースケース/コードブロックを飾る.spec.ts:502:1 › test_normal_when_syntax_feature_off
+[224/724] [chromium] › tests/e2e/単一ユースケース/コードブロックを飾る.spec.ts:533:1 › test_error_when_highlighter_not_found
+[225/724] [chromium] › tests/e2e/単一ユースケース/コードブロックを飾る.spec.ts:551:1 › test_error_when_language_module_not_found
+[226/724] [chromium] › tests/e2e/単一ユースケース/コードブロックを飾る.spec.ts:572:1 › test_normal_when_language_label_shown
+[227/724] [chromium] › tests/e2e/単一ユースケース/シーケンス図の参加者を選んで強調する.spec.ts:153:1 › test_normal_when_participants_reordered
+[228/724] [chromium] › tests/e2e/単一ユースケース/コードブロックを飾る.spec.ts:640:1 › test_normal_when_code_copied
+[229/724] [chromium] › tests/e2e/単一ユースケース/セクションと行の詳細を開閉する.spec.ts:24:1 › test_normal
+[230/724] [chromium] › tests/e2e/単一ユースケース/コードブロックを飾る.spec.ts:685:1 › test_normal_when_dockerfile_and_diff_highlighted
+[231/724] [chromium] › tests/e2e/単一ユースケース/コードブロックを飾る.spec.ts:770:1 › test_error_when_clipboard_denied
+[232/724] [chromium] › tests/e2e/単一ユースケース/コードブロックを飾る.spec.ts:792:1 › test_normal_when_language_and_file_name_label_shown
+[233/724] [chromium] › tests/e2e/単一ユースケース/コードブロックを飾る.spec.ts:858:1 › test_normal_when_focus_error_warning
+[234/724] [chromium] › tests/e2e/単一ユースケース/コードブロックを飾る.spec.ts:958:1 › test_normal_when_folded_by_indent
+[235/724] [chromium] › tests/e2e/単一ユースケース/コードブロックを飾る.spec.ts:1025:1 › test_normal_when_indent_guides
+[236/724] [chromium] › tests/e2e/単一ユースケース/コードブロックを飾る.spec.ts:1074:1 › test_normal_when_fold_option
+[237/724] [chromium] › tests/e2e/単一ユースケース/コードブロックを飾る.spec.ts:1128:1 › test_error_when_fold_line_invalid
+[238/724] [chromium] › tests/e2e/単一ユースケース/コードブロックを飾る.spec.ts:1169:1 › test_normal_when_wrap
+[239/724] [chromium] › tests/e2e/単一ユースケース/タブを切り替える.spec.ts:37:1 › test_normal
+[240/724] [chromium] › tests/e2e/単一ユースケース/VSCodeでプレビューを開く.spec.ts:388:1 › test_normal_when_cascaded
+[241/724] [chromium] › tests/e2e/単一ユースケース/VSCodeでプレビューを開く.spec.ts:402:1 › test_normal_when_first_only
+[242/724] [chromium] › tests/e2e/単一ユースケース/VSCodeでプレビューを開く.spec.ts:414:1 › test_error_when_config_unreadable
+[243/724] [chromium] › tests/e2e/単一ユースケース/ステップ・ファイルツリー・バッジで本文を組む.spec.ts:94:1 › test_normal_when_badge_escaped
+[244/724] [chromium] › tests/e2e/単一ユースケース/ステップ・ファイルツリー・バッジで本文を組む.spec.ts:105:1 › test_error_when_tree_line_invalid
+[245/724] [chromium] › tests/e2e/単一ユースケース/ステップ・ファイルツリー・バッジで本文を組む.spec.ts:122:1 › test_error_when_steps_without_ordered_list
+[246/724] [chromium] › tests/e2e/単一ユースケース/ステップ・ファイルツリー・バッジで本文を組む.spec.ts:141:1 › test_normal_when_badge_empty
+[247/724] [chromium] › tests/e2e/単一ユースケース/ステップ・ファイルツリー・バッジで本文を組む.spec.ts:193:1 › test_normal_when_steps_folded
+[248/724] [chromium] › tests/e2e/単一ユースケース/ステップ・ファイルツリー・バッジで本文を組む.spec.ts:242:1 › test_error_when_steps_option_invalid
+[249/724] [chromium] › tests/e2e/単一ユースケース/ステップ・ファイルツリー・バッジで本文を組む.spec.ts:284:1 › test_normal_when_tree_annotated
+[250/724] [chromium] › tests/e2e/単一ユースケース/ステップ・ファイルツリー・バッジで本文を組む.spec.ts:367:1 › test_normal_when_tree_folders_toggled
+[251/724] [chromium] › tests/e2e/単一ユースケース/ステップ・ファイルツリー・バッジで本文を組む.spec.ts:449:1 › test_normal_when_tree_ascii
+[252/724] [chromium] › tests/e2e/単一ユースケース/VSCodeでプレビューを開く.spec.ts:434:1 › test_normal_when_aliases
+[253/724] [chromium] › tests/e2e/単一ユースケース/ステップ・ファイルツリー・バッジで本文を組む.spec.ts:480:1 › test_normal_when_tree_copied
+[254/724] [chromium] › tests/e2e/単一ユースケース/ステップ・ファイルツリー・バッジで本文を組む.spec.ts:499:1 › test_error_when_tree_clipboard_denied
+[255/724] [chromium] › tests/e2e/単一ユースケース/ステップ・ファイルツリー・バッジで本文を組む.spec.ts:544:1 › test_error_when_tree_open_invalid
+[256/724] [chromium] › tests/e2e/単一ユースケース/ステップ・ファイルツリー・バッジで本文を組む.spec.ts:609:1 › test_normal_when_tree_wrap
+[257/724] [chromium] › tests/e2e/単一ユースケース/ステップ・ファイルツリー・バッジで本文を組む.spec.ts:639:1 › test_normal_when_icon_kbd_ruby
+[258/724] [chromium] › tests/e2e/単一ユースケース/ステップ・ファイルツリー・バッジで本文を組む.spec.ts:673:1 › test_normal_when_icon_kbd_escaped
+[259/724] [chromium] › tests/e2e/単一ユースケース/ステップ・ファイルツリー・バッジで本文を組む.spec.ts:689:1 › test_error_when_icon_name_invalid
+[260/724] [chromium] › tests/e2e/単一ユースケース/チャートを描く.spec.ts:42:1 › test_normal
+[261/724] [chromium] › tests/e2e/単一ユースケース/VSCodeでプレビューを開く.spec.ts:468:1 › test_error_when_aliases_missing
+[262/724] [chromium] › tests/e2e/単一ユースケース/セクションと行の詳細を開閉する.spec.ts:49:1 › test_normal_when_fragment_in_closed_section
+[263/724] [chromium] › tests/e2e/単一ユースケース/セクションと行の詳細を開閉する.spec.ts:68:1 › test_normal_when_row_detail
+[264/724] [chromium] › tests/e2e/単一ユースケース/セクションと行の詳細を開閉する.spec.ts:95:1 › test_error_when_section_open_invalid
+[265/724] [chromium] › tests/e2e/単一ユースケース/セクションと行の詳細を開閉する.spec.ts:112:1 › test_error_when_row_out_of_range
+[266/724] [chromium] › tests/e2e/単一ユースケース/セクションと行の詳細を開閉する.spec.ts:138:1 › test_normal_when_row_detail_with_collapsed_column
+[267/724] [chromium] › tests/e2e/単一ユースケース/セクションと行の詳細を開閉する.spec.ts:186:1 › test_normal_when_h1_section
+[268/724] [chromium] › tests/e2e/単一ユースケース/セクションと行の詳細を開閉する.spec.ts:208:1 › test_normal_when_all_toggled
+[269/724] [chromium] › tests/e2e/単一ユースケース/セクションと行の詳細を開閉する.spec.ts:261:1 › test_normal_when_nested_toggled_with_shift
+[270/724] [chromium] › tests/e2e/単一ユースケース/セクションと行の詳細を開閉する.spec.ts:302:1 › test_normal_when_details_range
+[271/724] [chromium] › tests/e2e/単一ユースケース/セクションと行の詳細を開閉する.spec.ts:354:1 › test_error_when_details_unclosed
+[272/724] [chromium] › tests/e2e/単一ユースケース/タブを切り替える.spec.ts:57:1 › test_normal_when_keyboard
+[273/724] [chromium] › tests/e2e/単一ユースケース/タブを切り替える.spec.ts:73:1 › test_error_when_no_heading
+[274/724] [chromium] › tests/e2e/単一ユースケース/タブを切り替える.spec.ts:134:1 › test_normal_when_same_group
+[275/724] [chromium] › tests/e2e/単一ユースケース/タブを切り替える.spec.ts:162:1 › test_normal_when_reloaded
+[276/724] [chromium] › tests/e2e/単一ユースケース/タブを切り替える.spec.ts:207:1 › test_error_when_storage_unavailable
+[277/724] [chromium] › tests/e2e/単一ユースケース/タブを切り替える.spec.ts:237:1 › test_error_when_empty_group
+[278/724] [chromium] › tests/e2e/単一ユースケース/タブを切り替える.spec.ts:259:1 › test_normal_when_unknown_option
+[279/724] [chromium] › tests/e2e/単一ユースケース/タブを切り替える.spec.ts:278:1 › test_normal_when_folded
+[280/724] [chromium] › tests/e2e/単一ユースケース/タブを切り替える.spec.ts:310:1 › test_error_when_collapse_not_object
+[281/724] [chromium] › tests/e2e/単一ユースケース/タブを切り替える.spec.ts:356:1 › test_normal_when_nested
+[282/724] [chromium] › tests/e2e/単一ユースケース/タブを切り替える.spec.ts:387:1 › test_normal_when_bold_tab_name
+[283/724] [chromium] › tests/e2e/単一ユースケース/タブを切り替える.spec.ts:412:1 › test_error_when_nested_unclosed
+[284/724] [chromium] › tests/e2e/単一ユースケース/テーマを選ぶ.spec.ts:45:1 › test_normal
+[285/724] [chromium] › tests/e2e/単一ユースケース/VSCodeでプレビューを開く.spec.ts:500:1 › test_normal_when_mermaid
+[286/724] [chromium] › tests/e2e/単一ユースケース/テーマを上書きする.spec.ts:35:1 › test_normal
+[287/724] [chromium] › tests/e2e/単一ユースケース/バージョンを固定して配布物を読み込む.spec.ts:61:1 › test_normal
+[288/724] [chromium] › tests/e2e/単一ユースケース/チャートを描く.spec.ts:90:1 › test_error_when_definition_invalid
+[289/724] [chromium] › tests/e2e/単一ユースケース/テーマを選ぶ.spec.ts:74:1 › test_normal_when_dark
+[290/724] [chromium] › tests/e2e/単一ユースケース/テーマを選ぶ.spec.ts:99:1 › test_normal_when_parent_class_light
+[291/724] [chromium] › tests/e2e/単一ユースケース/テーマを選ぶ.spec.ts:127:1 › test_normal_when_not_selected
+[292/724] [chromium] › tests/e2e/単一ユースケース/テーマを選ぶ.spec.ts:146:1 › test_normal_when_unknown_theme
+[293/724] [chromium] › tests/e2e/単一ユースケース/テーマを選ぶ.spec.ts:172:1 › test_normal_when_color_preset_in_theme
+[294/724] [chromium] › tests/e2e/単一ユースケース/ビューで項目を確認する.spec.ts:28:1 › test_normal
+[295/724] [chromium] › tests/e2e/単一ユースケース/テーマを上書きする.spec.ts:49:1 › test_normal_when_not_overridden
+[296/724] [chromium] › tests/e2e/単一ユースケース/テーマを上書きする.spec.ts:60:1 › test_normal_when_dark
+[297/724] [chromium] › tests/e2e/単一ユースケース/テーマを上書きする.spec.ts:74:1 › test_normal_when_diagram
+[298/724] [chromium] › tests/e2e/単一ユースケース/テーマを上書きする.spec.ts:102:1 › test_normal_when_parent_class_dark
+[299/724] [chromium] › tests/e2e/単一ユースケース/テーマを上書きする.spec.ts:121:1 › test_normal_when_parent_class_light
+[300/724] [chromium] › tests/e2e/単一ユースケース/テーマを上書きする.spec.ts:160:1 › test_normal_when_layout_overridden
+[301/724] [chromium] › tests/e2e/単一ユースケース/テーマを上書きする.spec.ts:196:1 › test_normal_when_content_width_default
+[302/724] [chromium] › tests/e2e/単一ユースケース/テーマを上書きする.spec.ts:232:1 › test_normal_when_theme_selected
+[303/724] [chromium] › tests/e2e/単一ユースケース/テーマを上書きする.spec.ts:251:1 › test_normal_when_color_preset_overridden
+[304/724] [chromium] › tests/e2e/単一ユースケース/テーマを上書きする.spec.ts:272:1 › test_normal_when_bg_transparent_with_opaque_color
+[305/724] [chromium] › tests/e2e/単一ユースケース/テーマを上書きする.spec.ts:339:1 › test_normal_when_host_pre_wraps
+[306/724] [chromium] › tests/e2e/単一ユースケース/テーマを上書きする.spec.ts:408:3 › VS Code のプレビュー › test_normal_when_vscode_preview
+[307/724] [chromium] › tests/e2e/単一ユースケース/バージョンを固定して配布物を読み込む.spec.ts:86:1 › test_error_when_dist_not_found
+[308/724] [chromium] › tests/e2e/単一ユースケース/プレビューから設定を開く.spec.ts:39:1 › test_normal
+  15) [chromium] › tests/e2e/単一ユースケース/チャートを描く.spec.ts:90:1 › test_error_when_definition_invalid ────
+
+    Error: expect(locator).toContainText(expected) failed
+
+    Locator: locator('#doc .mdmark-syntax-warning')
+    Expected substring: "グラフの部品の定義を JSON として読めません"
+    Received string:    "記載の警告グラフの部品の定義を JSON として読み込めません（1 行目の {\"title\": \"a\", の後に } がありません）。このグラフは描いていません。"
+    Timeout: 30000ms
+
+    Call log:
+      - Expect "toContainText" locator('#doc .mdmark-syntax-warning') with timeout 30000ms
+      - waiting for locator('#doc .mdmark-syntax-warning')
+        64 × locator resolved to <div role="note" class="mdmark-syntax-warning">…</div>
+           - unexpected value "記載の警告グラフの部品の定義を JSON として読み込めません（1 行目の {"title": "a", の後に } がありません）。このグラフは描いていません。"
+
+
+      103 |   const warning = page.locator("#doc .mdmark-syntax-warning");
+      104 |   await expect(warning).toHaveCount(1);
+    > 105 |   await expect(warning).toContainText(
+          |                         ^
+      106 |     "グラフの部品の定義を JSON として読めません",
+      107 |   );
+      108 |   await expect(warning).toContainText("行目");
+        at /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-render-marker-json-options/tests/e2e/単一ユースケース/チャートを描く.spec.ts:105:25
+
+    Error Context: test-results/単一ユースケース-チャートを描く-test-error-when-definition-invalid-chromium/error-context.md
+
+    Error Context: test-results/単一ユースケース-チャートを描く-test-error-when-definition-invalid-chromium/error-context.md
+
+
+[309/724] [chromium] › tests/e2e/単一ユースケース/チャートを描く.spec.ts:125:1 › test_normal_when_more_chart_types
+[310/724] [chromium] › tests/e2e/単一ユースケース/ビューで項目を確認する.spec.ts:105:1 › test_normal_when_opened_as_table
+[311/724] [chromium] › tests/e2e/単一ユースケース/ビューで項目を確認する.spec.ts:130:1 › test_normal_when_disabled
+[312/724] [chromium] › tests/e2e/単一ユースケース/ビューで項目を確認する.spec.ts:148:1 › test_error_when_group_column_missing
+[313/724] [chromium] › tests/e2e/単一ユースケース/ビューで項目を確認する.spec.ts:171:1 › test_error_when_no_table
+[314/724] [chromium] › tests/e2e/単一ユースケース/ビューで項目を確認する.spec.ts:191:1 › test_normal_when_value_icon
+  16) [chromium] › tests/e2e/単一ユースケース/ビューで項目を確認する.spec.ts:191:1 › test_normal_when_value_icon ──────
+
+    Error: expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 1
+    + Received  + 4
+
+    - Array []
+    + Array [
+    +   "<circle cx=\"12\" cy=\"12\" r=\"1\"></circle><circle cx=\"12\" cy=\"12\" r=\"10\"></circle>",
+    +   "<circle cx=\"12\" cy=\"12\" r=\"10\"></circle><path d=\"m16 9-5.5 5.5L8 12\"></path>",
+    + ]
+
+      211 |   expect(icons).toHaveLength(3);
+      212 |   expect(icons[0]).not.toBe(defaults[0]);
+    > 213 |   expect(icons.slice(1)).toEqual(defaults.slice(1));
+          |                          ^
+      214 |   await expect(page.locator("#doc .mdmark-syntax-warning")).toHaveCount(0);
+      215 | });
+      216 |
+        at /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-render-marker-json-options/tests/e2e/単一ユースケース/ビューで項目を確認する.spec.ts:213:26
+
+    Error Context: test-results/単一ユースケース-ビューで項目を確認する-test-normal-when-value-icon-chromium/error-context.md
+
+    Error Context: test-results/単一ユースケース-ビューで項目を確認する-test-normal-when-value-icon-chromium/error-context.md
+
+
+[315/724] [chromium] › tests/e2e/単一ユースケース/ビューで項目を確認する.spec.ts:218:1 › test_error_when_value_missing
+[316/724] [chromium] › tests/e2e/単一ユースケース/プレビューから設定を開く.spec.ts:68:1 › test_normal_when_command_palette
+[317/724] [chromium] › tests/e2e/単一ユースケース/プレビューのリンクと画像を開く.spec.ts:71:1 › test_normal_when_external_link
+[318/724] [chromium] › tests/e2e/単一ユースケース/プレビューから設定を開く.spec.ts:87:1 › test_normal_when_setting_changed
+[319/724] [chromium] › tests/e2e/単一ユースケース/プレビューをVSCodeのテーマに合わせる.spec.ts:25:1 › test_normal
+[320/724] [chromium] › tests/e2e/単一ユースケース/ページの設定を文書で指定する.spec.ts:72:1 › test_normal
+  17) [chromium] › tests/e2e/単一ユースケース/ビューで項目を確認する.spec.ts:218:1 › test_error_when_value_missing ────
+
+    Error: expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 1
+    + Received  + 5
+
+    - Array []
+    + Array [
+    +   "<path d=\"M10.1 2.182a10 10 0 0 1 3.8 0\"></path><path d=\"M13.9 21.818a10 10 0 0 1-3.8 0\"></path><path d=\"M17.609 3.721a10 10 0 0 1 2.69 2.7\"></path><path d=\"M2.182 13.9a10 10 0 0 1 0-3.8\"></path><path d=\"M20.279 17.609a10 10 0 0 1-2.7 2.69\"></path><path d=\"M21.818 10.1a10 10 0 0 1 0 3.8\"></path><path d=\"M3.721 6.391a10 10 0 0 1 2.7-2.69\"></path><path d=\"M6.391 20.279a10 10 0 0 1-2.69-2.7\"></path>",
+    +   "<circle cx=\"12\" cy=\"12\" r=\"1\"></circle><circle cx=\"12\" cy=\"12\" r=\"10\"></circle>",
+    +   "<circle cx=\"12\" cy=\"12\" r=\"10\"></circle><path d=\"m16 9-5.5 5.5L8 12\"></path>",
+    + ]
+
+      242 |     .locator("#doc .mdmark-view-column-head svg")
+      243 |     .evaluateAll((nodes) => nodes.map((node) => node.innerHTML));
+    > 244 |   expect(icons).toEqual(defaults);
+          |                 ^
+      245 | });
+      246 |
+        at /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-render-marker-json-options/tests/e2e/単一ユースケース/ビューで項目を確認する.spec.ts:244:17
+
+    Error Context: test-results/単一ユースケース-ビューで項目を確認する-test-error-when-value-missing-chromium/error-context.md
+
+    Error Context: test-results/単一ユースケース-ビューで項目を確認する-test-error-when-value-missing-chromium/error-context.md
+
+
+[321/724] [chromium] › tests/e2e/単一ユースケース/ほかの文書を取り込む.spec.ts:52:1 › test_normal
+[322/724] [chromium] › tests/e2e/単一ユースケース/プレビューのリンクと画像を開く.spec.ts:87:1 › test_normal_when_markdown_link
+[323/724] [chromium] › tests/e2e/単一ユースケース/プレビューのリンクと画像を開く.spec.ts:102:1 › test_normal_when_anchor_link
+[324/724] [chromium] › tests/e2e/単一ユースケース/プレビューのリンクと画像を開く.spec.ts:134:1 › test_normal_when_relative_image
+[325/724] [chromium] › tests/e2e/単一ユースケース/プレビューをVSCodeのテーマに合わせる.spec.ts:52:1 › test_normal_when_theme_fixed
+[326/724] [chromium] › tests/e2e/単一ユースケース/ページの設定を文書で指定する.spec.ts:88:1 › test_normal_when_config_default
+[327/724] [chromium] › tests/e2e/単一ユースケース/ページの設定を文書で指定する.spec.ts:103:1 › test_normal_when_marker_overrides_config
+[328/724] [chromium] › tests/e2e/単一ユースケース/ページの設定を文書で指定する.spec.ts:123:1 › test_normal_when_auto
+[329/724] [chromium] › tests/e2e/単一ユースケース/ページの設定を文書で指定する.spec.ts:138:1 › test_normal_when_updated
+[330/724] [chromium] › tests/e2e/単一ユースケース/ページの設定を文書で指定する.spec.ts:154:1 › test_normal_when_printed
+[331/724] [chromium] › tests/e2e/単一ユースケース/ページの設定を文書で指定する.spec.ts:171:1 › test_error_when_unknown_key_or_value
+[332/724] [chromium] › tests/e2e/単一ユースケース/ページの設定を文書で指定する.spec.ts:213:1 › test_error_when_not_at_top
+[333/724] [chromium] › tests/e2e/単一ユースケース/リンクと添付のカードを配置する.spec.ts:32:1 › test_normal
+[334/724] [chromium] › tests/e2e/単一ユースケース/プレビューのリンクと画像を開く.spec.ts:152:1 › test_error_when_image_outside_workspace
+[335/724] [chromium] › tests/e2e/単一ユースケース/プレビューをVSCodeのテーマに合わせる.spec.ts:71:1 › test_normal_when_config_theme
+[336/724] [chromium] › tests/e2e/単一ユースケース/プレビューのリンクと画像を開く.spec.ts:232:1 › test_normal_when_relative_media
+[337/724] [chromium] › tests/e2e/単一ユースケース/プレビューをVSCodeのテーマに合わせる.spec.ts:89:1 › test_normal_when_setting_theme
+[338/724] [chromium] › tests/e2e/単一ユースケース/プレビューのリンクと画像を開く.spec.ts:263:1 › test_error_when_unsupported_media
+[339/724] [chromium] › tests/e2e/単一ユースケース/プレビューをVSCodeのテーマに合わせる.spec.ts:122:1 › test_normal_when_config_theme_changed
+[340/724] [chromium] › tests/e2e/単一ユースケース/プレビューのリンクと画像を開く.spec.ts:300:1 › test_normal_when_media_in_asset_root
+[341/724] [chromium] › tests/e2e/単一ユースケース/プレビューをVSCodeのテーマに合わせる.spec.ts:144:1 › test_normal_when_document_marker
+[342/724] [chromium] › tests/e2e/単一ユースケース/プレビューのリンクと画像を開く.spec.ts:375:1 › test_normal_when_flow_node_link
+[343/724] [chromium] › tests/e2e/単一ユースケース/プレビューをVSCodeのテーマに合わせる.spec.ts:164:1 › test_normal_when_config_scheme
+[344/724] [chromium] › tests/e2e/単一ユースケース/リンクをカードの格子に並べる.spec.ts:87:1 › test_normal
+[345/724] [chromium] › tests/e2e/単一ユースケース/名前の色で表・バッジ・本文を強調する.spec.ts:179:1 › test_normal
+[346/724] [chromium] › tests/e2e/単一ユースケース/ほかの文書を取り込む.spec.ts:105:1 › test_error_when_target_missing
+[347/724] [chromium] › tests/e2e/単一ユースケース/ほかの文書を取り込む.spec.ts:135:1 › test_error_when_circular
+[348/724] [chromium] › tests/e2e/単一ユースケース/ほかの文書を取り込む.spec.ts:156:1 › test_normal_when_included_has_frontmatter
+[349/724] [chromium] › tests/e2e/単一ユースケース/ほかの文書を取り込む.spec.ts:177:1 › test_error_when_lines_not_allowed
+[350/724] [chromium] › tests/e2e/単一ユースケース/図と表に番号を付けて参照する.spec.ts:31:1 › test_normal
+[351/724] [chromium] › tests/e2e/単一ユースケース/リンクと添付のカードを配置する.spec.ts:95:1 › test_normal_when_link_in_sentence
+[352/724] [chromium] › tests/e2e/単一ユースケース/図と表を本文の幅より広げる.spec.ts:67:1 › test_normal
+[353/724] [chromium] › tests/e2e/単一ユースケース/リンクをカードの格子に並べる.spec.ts:134:1 › test_normal_when_narrow
+[354/724] [chromium] › tests/e2e/単一ユースケース/リンクをカードの格子に並べる.spec.ts:164:1 › test_normal_when_item_without_link
+[355/724] [chromium] › tests/e2e/単一ユースケース/名前の色で表・バッジ・本文を強調する.spec.ts:200:1 › test_normal_when_dark
+[356/724] [chromium] › tests/e2e/単一ユースケース/リンクをカードの格子に並べる.spec.ts:193:1 › test_normal_when_disabled
+[357/724] [chromium] › tests/e2e/単一ユースケース/名前の色で表・バッジ・本文を強調する.spec.ts:216:1 › test_normal_when_row_position
+[358/724] [chromium] › tests/e2e/単一ユースケース/リンクをカードの格子に並べる.spec.ts:211:1 › test_error_when_not_list
+[359/724] [chromium] › tests/e2e/単一ユースケース/名前の色で表・バッジ・本文を強調する.spec.ts:253:1 › test_normal_when_badge_prefix_not_color
+[360/724] [chromium] › tests/e2e/単一ユースケース/名前の色で表・バッジ・本文を強調する.spec.ts:275:1 › test_error_when_color_unknown
+[361/724] [chromium] › tests/e2e/単一ユースケース/図の要素のツールチップを確認する.spec.ts:81:1 › test_normal
+[362/724] [chromium] › tests/e2e/単一ユースケース/名前の色で表・バッジ・本文を強調する.spec.ts:334:1 › test_normal_when_highlighter
+[363/724] [chromium] › tests/e2e/単一ユースケース/名前の色で表・バッジ・本文を強調する.spec.ts:384:1 › test_error_when_highlighter_color_unknown
+[364/724] [chromium] › tests/e2e/単一ユースケース/図を拡大・縮小・移動する.spec.ts:93:1 › test_normal
+[365/724] [chromium] › tests/e2e/単一ユースケース/図と表に番号を付けて参照する.spec.ts:71:1 › test_error_when_reference_missing
+[366/724] [chromium] › tests/e2e/単一ユースケース/図と表に番号を付けて参照する.spec.ts:88:1 › test_error_when_id_duplicated
+[367/724] [chromium] › tests/e2e/単一ユースケース/図と表に番号を付けて参照する.spec.ts:110:1 › test_normal_when_gallery_and_caption
+[368/724] [chromium] › tests/e2e/単一ユースケース/図を描く.spec.ts:106:1 › test_normal
+[369/724] [chromium] › tests/e2e/単一ユースケース/図と表を本文の幅より広げる.spec.ts:90:1 › test_normal_when_side_toc_shown
+[370/724] [chromium] › tests/e2e/単一ユースケース/図と表を本文の幅より広げる.spec.ts:124:1 › test_normal_when_narrow
+[371/724] [chromium] › tests/e2e/単一ユースケース/図と表を本文の幅より広げる.spec.ts:151:1 › test_error_when_unclosed
+[372/724] [chromium] › tests/e2e/単一ユースケース/図と表を本文の幅より広げる.spec.ts:170:1 › test_normal_when_toggled
+[373/724] [chromium] › tests/e2e/単一ユースケース/図と表を本文の幅より広げる.spec.ts:205:1 › test_normal_when_starts_narrow
+[374/724] [chromium] › tests/e2e/単一ユースケース/図を巡回する.spec.ts:37:1 › test_normal
+[375/724] [chromium] › tests/e2e/単一ユースケース/図を拡大・縮小・移動する.spec.ts:157:1 › test_normal_when_wheel
+[376/724] [chromium] › tests/e2e/単一ユースケース/図の要素のツールチップを確認する.spec.ts:149:1 › test_normal_when_keyboard
+[377/724] [chromium] › tests/e2e/単一ユースケース/図を拡大・縮小・移動する.spec.ts:194:1 › test_normal_when_drag
+[378/724] [chromium] › tests/e2e/単一ユースケース/図の要素のツールチップを確認する.spec.ts:182:1 › test_normal_when_term
+[379/724] [chromium] › tests/e2e/単一ユースケース/図の要素のツールチップを確認する.spec.ts:211:1 › test_normal_when_data_hint
+[380/724] [chromium] › tests/e2e/単一ユースケース/図を拡大・縮小・移動する.spec.ts:244:1 › test_normal_when_keyboard
+[381/724] [chromium] › tests/e2e/単一ユースケース/図を拡大・縮小・移動する.spec.ts:271:1 › test_normal_when_embedded_chart
+[382/724] [chromium] › tests/e2e/単一ユースケース/図の要素のツールチップを確認する.spec.ts:272:1 › test_normal_when_node_hint
+[383/724] [chromium] › tests/e2e/単一ユースケース/図を拡大・縮小・移動する.spec.ts:363:1 › test_normal_when_er_diagram
+[384/724] [chromium] › tests/e2e/単一ユースケース/図を拡大・縮小・移動する.spec.ts:421:1 › test_normal_when_er_columns_folded
+[385/724] [chromium] › tests/e2e/単一ユースケース/図の要素のツールチップを確認する.spec.ts:297:1 › test_normal_when_hints_off
+[386/724] [chromium] › tests/e2e/単一ユースケース/図を拡大・縮小・移動する.spec.ts:453:1 › test_normal_when_drag_on_linked_node
+[387/724] [chromium] › tests/e2e/単一ユースケース/図を拡大・縮小・移動する.spec.ts:629:1 › test_normal_when_group_titles_stuck
+[388/724] [chromium] › tests/e2e/単一ユースケース/図の要素のツールチップを確認する.spec.ts:341:1 › test_normal_when_no_room_below
+[389/724] [chromium] › tests/e2e/単一ユースケース/図の要素のツールチップを確認する.spec.ts:356:1 › test_normal_when_diagram_placement_top
+[390/724] [chromium] › tests/e2e/単一ユースケース/図の要素のツールチップを確認する.spec.ts:399:1 › test_normal_when_term_width_and_case_differ
+[391/724] [chromium] › tests/e2e/単一ユースケース/図の要素のツールチップを確認する.spec.ts:438:3 › タッチの端末 › test_normal_when_touch
+[392/724] [chromium] › tests/e2e/単一ユースケース/図を拡大・縮小・移動する.spec.ts:691:1 › test_normal_when_sticky_titles_off
+[393/724] [chromium] › tests/e2e/単一ユースケース/図の要素のツールチップを確認する.spec.ts:470:1 › test_normal_when_er_table
+[394/724] [chromium] › tests/e2e/単一ユースケース/図を拡大・縮小・移動する.spec.ts:757:1 › test_normal_when_resized
+  18) [chromium] › tests/e2e/単一ユースケース/図を拡大・縮小・移動する.spec.ts:757:1 › test_normal_when_resized ────────
+
+    Error: expect(received).toBeLessThanOrEqual(expected)
+
+    Expected: <= 2
+    Received:    200
+
+      819 |   // 実行・検証: ダブルクリックで定義から決まる高さに戻り、再読み込みしても戻した高さのまま
+      820 |   await handle.dblclick();
+    > 821 |   expect(Math.abs((await heightOf(page)) - opened)).toBeLessThanOrEqual(2);
+          |                                                     ^
+      822 |   await page.reload();
+      823 |   await page.waitForFunction(() => "mdmark" in window);
+      824 |   await mountTall(page);
+        at /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-render-marker-json-options/tests/e2e/単一ユースケース/図を拡大・縮小・移動する.spec.ts:821:53
+
+    Error Context: test-results/単一ユースケース-図を拡大・縮小・移動する-test-normal-when-resized-chromium/error-context.md
+
+    Error Context: test-results/単一ユースケース-図を拡大・縮小・移動する-test-normal-when-resized-chromium/error-context.md
+
+
+[395/724] [chromium] › tests/e2e/単一ユースケース/図の要素のツールチップを確認する.spec.ts:529:1 › test_normal_when_linked_node_has_tip
+[396/724] [chromium] › tests/e2e/単一ユースケース/図の要素のツールチップを確認する.spec.ts:580:1 › test_normal_when_chart_items
+[397/724] [chromium] › tests/e2e/単一ユースケース/図を拡大・縮小・移動する.spec.ts:834:1 › test_normal_when_drag_on_chart_item
+[398/724] [chromium] › tests/e2e/単一ユースケース/埋め込んだHTMLの差分を切り替える.spec.ts:57:1 › test_normal
+[399/724] [chromium] › tests/e2e/単一ユースケース/図を描く.spec.ts:216:1 › test_normal_when_flowchart
+[400/724] [chromium] › tests/e2e/単一ユースケース/図を描く.spec.ts:306:1 › test_normal_when_sequence
+[401/724] [chromium] › tests/e2e/単一ユースケース/図を描く.spec.ts:359:1 › test_normal_when_single_kinds
+[402/724] [chromium] › tests/e2e/単一ユースケース/図を描く.spec.ts:410:1 › test_normal_when_graph
+[403/724] [chromium] › tests/e2e/単一ユースケース/図を描く.spec.ts:439:1 › test_error_when_definition_invalid
+[404/724] [chromium] › tests/e2e/単一ユースケース/図を描く.spec.ts:492:1 › test_normal_when_bar
+[405/724] [chromium] › tests/e2e/単一ユースケース/図を描く.spec.ts:541:1 › test_normal_when_pie
+[406/724] [chromium] › tests/e2e/単一ユースケース/図を描く.spec.ts:571:1 › test_normal_when_scatter
+[407/724] [chromium] › tests/e2e/単一ユースケース/図を描く.spec.ts:623:1 › test_normal_when_more_chart_types
+[408/724] [chromium] › tests/e2e/単一ユースケース/図を描く.spec.ts:770:1 › test_normal_when_many_series
+[409/724] [chromium] › tests/e2e/単一ユースケース/図を描く.spec.ts:811:1 › test_normal_when_er_diagram
+[410/724] [chromium] › tests/e2e/単一ユースケース/図を描く.spec.ts:876:1 › test_error_when_er_definition_invalid
+[411/724] [chromium] › tests/e2e/単一ユースケース/埋め込んだHTMLの差分を切り替える.spec.ts:95:1 › test_normal_when_range_only_on_one_side
+[412/724] [chromium] › tests/e2e/単一ユースケース/埋め込んだHTMLの差分を切り替える.spec.ts:123:1 › test_normal_when_range_unchanged
+[413/724] [chromium] › tests/e2e/単一ユースケース/図を拡大・縮小・移動する.spec.ts:911:1 › test_normal_when_mermaid
+[414/724] [chromium] › tests/e2e/単一ユースケース/埋め込んだHTMLの差分を切り替える.spec.ts:152:1 › test_normal_when_script_in_range
+[415/724] [chromium] › tests/e2e/単一ユースケース/外部ライブラリを使用するときだけ読み込む.spec.ts:35:1 › test_normal
+[416/724] [chromium] › tests/e2e/単一ユースケース/差分の取り出し元を指定する.spec.ts:51:1 › test_normal
+  19) [chromium] › tests/e2e/単一ユースケース/図を描く.spec.ts:876:1 › test_error_when_er_definition_invalid ───
+
+    Error: expect(locator).toContainText(expected) failed
+
+    Locator: locator('#doc .mdmark-syntax-warning')
+    Expected substring: "ER 図の部品の定義を読めません"
+    Received string:    "記載の警告ER 図の部品の定義を読み込めません。関係「注文する」の先のテーブル payments がありません。テーブルの id で記載してください。この ER 図は描いていません。"
+    Timeout: 30000ms
+
+    Call log:
+      - Expect "toContainText" locator('#doc .mdmark-syntax-warning') with timeout 30000ms
+      - waiting for locator('#doc .mdmark-syntax-warning')
+        64 × locator resolved to <div role="note" class="mdmark-syntax-warning">…</div>
+           - unexpected value "記載の警告ER 図の部品の定義を読み込めません。関係「注文する」の先のテーブル payments がありません。テーブルの id で記載してください。この ER 図は描いていません。"
+
+
+      892 |   const warning = page.locator("#doc .mdmark-syntax-warning");
+      893 |   await expect(warning).toHaveCount(1);
+    > 894 |   await expect(warning).toContainText("ER 図の部品の定義を読めません");
+          |                         ^
+      895 |   await expect(warning).toContainText("payments");
+      896 |   await expect(
+      897 |     page.locator('#doc figure.mdmark-diagram[data-diagram="er"]'),
+        at /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-render-marker-json-options/tests/e2e/単一ユースケース/図を描く.spec.ts:894:25
+
+    Error Context: test-results/単一ユースケース-図を描く-test-error-when-er-definition-invalid-chromium/error-context.md
+
+    Error Context: test-results/単一ユースケース-図を描く-test-error-when-er-definition-invalid-chromium/error-context.md
+
+
+[417/724] [chromium] › tests/e2e/単一ユースケース/図を描く.spec.ts:903:1 › test_normal_when_flowchart_auto_layout
+[418/724] [chromium] › tests/e2e/単一ユースケース/差分ビューの変更をプレビューで確認する.spec.ts:22:1 › test_normal
+[419/724] [chromium] › tests/e2e/単一ユースケース/外部ライブラリを使用するときだけ読み込む.spec.ts:49:1 › test_normal_when_no_mark
+[420/724] [chromium] › tests/e2e/単一ユースケース/差分の取り出し元を指定する.spec.ts:81:1 › test_normal_when_opened_on_mount
+[421/724] [chromium] › tests/e2e/単一ユースケース/差分の取り出し元を指定する.spec.ts:105:1 › test_normal_when_no_source
+[422/724] [chromium] › tests/e2e/単一ユースケース/差分の取り出し元を指定する.spec.ts:137:1 › test_normal_when_git_sample
+[423/724] [chromium] › tests/e2e/単一ユースケース/外部ライブラリを使用するときだけ読み込む.spec.ts:66:1 › test_error_when_legacy_args
+[424/724] [chromium] › tests/e2e/単一ユースケース/差分の取り出し元を指定する.spec.ts:211:1 › test_normal_when_yaml_sample
+[425/724] [chromium] › tests/e2e/単一ユースケース/外部ライブラリを使用するときだけ読み込む.spec.ts:87:1 › test_error_when_library_not_found
+[426/724] [chromium] › tests/e2e/単一ユースケース/外部ライブラリを使用するときだけ読み込む.spec.ts:100:1 › test_normal_when_code_highlighted
+[427/724] [chromium] › tests/e2e/単一ユースケース/外部ライブラリを使用するときだけ読み込む.spec.ts:142:1 › test_normal_when_unbundled_icon
+[428/724] [chromium] › tests/e2e/単一ユースケース/差分の取り出し元を指定する.spec.ts:276:1 › test_normal_when_single_revision
+[429/724] [chromium] › tests/e2e/単一ユースケース/外部ライブラリを使用するときだけ読み込む.spec.ts:170:1 › test_error_when_icon_not_in_lucide
+[430/724] [chromium] › tests/e2e/単一ユースケース/差分の取り出し元を指定する.spec.ts:296:1 › test_error_when_revisions_unavailable
+[431/724] [chromium] › tests/e2e/単一ユースケース/外部ライブラリを使用するときだけ読み込む.spec.ts:194:1 › test_error_when_lucide_unavailable
+[432/724] [chromium] › tests/e2e/単一ユースケース/差分の取り出し元を指定する.spec.ts:323:1 › test_error_when_content_unavailable
+[433/724] [chromium] › tests/e2e/単一ユースケース/拡張を登録してマーカーを追加する.spec.ts:27:1 › test_normal
+[434/724] [chromium] › tests/e2e/単一ユースケース/拡張機能の配布物を作る.spec.ts:175:1 › test_normal
+[435/724] [chromium] › tests/e2e/単一ユースケース/図を描く.spec.ts:1000:1 › test_normal_when_node_link
+[436/724] [chromium] › tests/e2e/単一ユースケース/図を描く.spec.ts:1037:1 › test_error_when_node_link_not_allowed
+[437/724] [chromium] › tests/e2e/単一ユースケース/操作できる部品で値を変えて写す.spec.ts:49:1 › test_normal
+[438/724] [chromium] › tests/e2e/単一ユースケース/差分ビューの変更をプレビューで確認する.spec.ts:38:1 › test_normal_when_commit_diff
+[439/724] [chromium] › tests/e2e/単一ユースケース/差分ビューの変更をプレビューで確認する.spec.ts:57:1 › test_normal_when_modified_side_edited
+[440/724] [chromium] › tests/e2e/単一ユースケース/差分ビューの変更をプレビューで確認する.spec.ts:84:1 › test_error_when_version_without_diff
+[441/724] [chromium] › tests/e2e/単一ユースケース/拡張を登録してマーカーを追加する.spec.ts:43:1 › test_normal_when_no_mark
+[442/724] [chromium] › tests/e2e/単一ユースケース/拡張を登録してマーカーを追加する.spec.ts:57:1 › test_error_when_args_invalid
+[443/724] [chromium] › tests/e2e/単一ユースケース/拡張を登録してマーカーを追加する.spec.ts:77:1 › test_error_when_legacy_args
+[444/724] [chromium] › tests/e2e/単一ユースケース/拡張を登録してマーカーを追加する.spec.ts:98:1 › test_error_when_module_not_found
+[445/724] [chromium] › tests/e2e/単一ユースケース/拡張を登録してマーカーを追加する.spec.ts:113:1 › test_normal_when_definition
+[446/724] [chromium] › tests/e2e/単一ユースケース/文書の先頭へ戻る.spec.ts:131:1 › test_normal
+[447/724] [chromium] › tests/e2e/単一ユースケース/文書の差分を確認する.spec.ts:57:1 › test_normal
+[448/724] [chromium] › tests/e2e/単一ユースケース/文書の先頭へ戻る.spec.ts:162:1 › test_normal_when_near_top
+[449/724] [chromium] › tests/e2e/単一ユースケース/文書の先頭へ戻る.spec.ts:187:1 › test_normal_when_pressed_by_keyboard
+[450/724] [chromium] › tests/e2e/単一ユースケース/文書の先頭へ戻る.spec.ts:215:1 › test_normal_when_scroll_container
+[451/724] [chromium] › tests/e2e/単一ユースケース/文書の先頭へ戻る.spec.ts:255:1 › test_normal_when_side_toc_shown
+[452/724] [chromium] › tests/e2e/単一ユースケース/文書の差分を確認する.spec.ts:106:1 › test_normal_when_rendered
+[453/724] [chromium] › tests/e2e/単一ユースケース/文書の先頭へ戻る.spec.ts:281:1 › test_normal_when_diff_minimap_shown
+[454/724] [chromium] › tests/e2e/単一ユースケース/文書の差分を確認する.spec.ts:128:1 › test_normal_when_revisions_changed
+[455/724] [chromium] › tests/e2e/単一ユースケース/文書の先頭へ戻る.spec.ts:326:1 › test_normal_when_comment_margin_shown
+[456/724] [chromium] › tests/e2e/単一ユースケース/文書の差分を確認する.spec.ts:166:1 › test_normal_when_no_change
+[457/724] [chromium] › tests/e2e/単一ユースケース/文書の先頭へ戻る.spec.ts:365:1 › test_normal_when_lightbox_open
+[458/724] [chromium] › tests/e2e/単一ユースケース/文書の差分を確認する.spec.ts:197:1 › test_normal_when_no_segmenter
+[459/724] [chromium] › tests/e2e/単一ユースケース/文書の差分を確認する.spec.ts:217:1 › test_normal_when_closed
+[460/724] [chromium] › tests/e2e/単一ユースケース/文書の差分を確認する.spec.ts:234:1 › test_normal_when_scrolled_by_minimap
+[461/724] [chromium] › tests/e2e/単一ユースケース/文書の先頭へ戻る.spec.ts:403:3 › 狭い幅のタッチの端末 › test_normal_when_narrow_width
+[462/724] [chromium] › tests/e2e/単一ユースケース/文書をHTML文字列にする.spec.ts:28:1 › test_normal
+[463/724] [chromium] › tests/e2e/単一ユースケース/文書を印刷する.spec.ts:42:1 › test_normal
+  20) [chromium] › tests/e2e/単一ユースケース/拡張機能の配布物を作る.spec.ts:175:1 › test_normal ──────────────────────
+
+    "beforeAll" hook timeout of 300000ms exceeded.
+
+      160 | }
+      161 |
+    > 162 | test.beforeAll(async () => {
+          |      ^
+      163 |   clone = await createClone();
+      164 |   // シナリオの準備: 作業ツリーのバージョンに頼らず、`version` が `0.1.0` の状態にする
+      165 |   await setExtensionVersion(RELEASE_VERSION);
+        at /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-render-marker-json-options/tests/e2e/単一ユースケース/拡張機能の配布物を作る.spec.ts:162:6
+
+    Error Context: test-results/単一ユースケース-拡張機能の配布物を作る-test-normal-chromium/error-context.md
+
+    Error Context: test-results/単一ユースケース-拡張機能の配布物を作る-test-normal-chromium/error-context.md
+
+
+[464/724] [chromium] › tests/e2e/単一ユースケース/拡張機能の配布物を作る.spec.ts:204:1 › test_error_when_version_mismatch
+[465/724] [chromium] › tests/e2e/単一ユースケース/文書を描く.spec.ts:25:1 › test_normal
+[466/724] [chromium] › tests/e2e/単一ユースケース/文書をHTML文字列にする.spec.ts:50:1 › test_normal_when_in_browser
+[467/724] [chromium] › tests/e2e/単一ユースケース/文書を印刷する.spec.ts:67:1 › test_normal_when_print_finished
+[468/724] [chromium] › tests/e2e/単一ユースケース/文書を印刷する.spec.ts:86:1 › test_normal_when_syntax_expanded
+[469/724] [chromium] › tests/e2e/単一ユースケース/文書をHTML文字列にする.spec.ts:63:1 › test_normal_when_syntax
+[470/724] [chromium] › tests/e2e/単一ユースケース/文書をHTML文字列にする.spec.ts:141:1 › test_normal_when_index
+[471/724] [chromium] › tests/e2e/単一ユースケース/文書をHTML文字列にする.spec.ts:157:1 › test_normal_when_aliases
+[472/724] [chromium] › tests/e2e/単一ユースケース/文書をHTML文字列にする.spec.ts:194:1 › test_normal_when_footnotes
+[473/724] [chromium] › tests/e2e/単一ユースケース/文書を印刷する.spec.ts:227:1 › test_normal_when_glossary_and_backlinks
+[474/724] [chromium] › tests/e2e/単一ユースケース/文書をHTML文字列にする.spec.ts:222:1 › test_normal_when_includes_given
+[475/724] [chromium] › tests/e2e/単一ユースケース/文書を印刷する.spec.ts:259:1 › test_normal_when_table_features_printed
+[476/724] [chromium] › tests/e2e/単一ユースケース/文書をHTML文字列にする.spec.ts:242:1 › test_normal_when_frontmatter
+[477/724] [chromium] › tests/e2e/単一ユースケース/文書を印刷する.spec.ts:299:1 › test_normal_when_code_block_printed
+[478/724] [chromium] › tests/e2e/単一ユースケース/本文に出た用語と文書の参照を取り出す.spec.ts:95:1 › test_normal
+[479/724] [chromium] › tests/e2e/単一ユースケース/文書を印刷する.spec.ts:379:1 › test_normal_when_collapsed_column_printed
+[480/724] [chromium] › tests/e2e/単一ユースケース/文書を印刷する.spec.ts:418:1 › test_normal_when_side_toc_hidden_in_print
+[481/724] [chromium] › tests/e2e/単一ユースケース/文書を印刷する.spec.ts:451:1 › test_normal_when_theme_selected
+[482/724] [chromium] › tests/e2e/単一ユースケース/文書を印刷する.spec.ts:478:1 › test_normal_when_colors_and_media_printed
+[483/724] [chromium] › tests/e2e/単一ユースケース/文書を印刷する.spec.ts:588:1 › test_normal_when_back_to_top_hidden_in_print
+[484/724] [chromium] › tests/e2e/単一ユースケース/文書を印刷する.spec.ts:618:1 › test_normal_when_code_folded
+[485/724] [chromium] › tests/e2e/単一ユースケース/文書を印刷する.spec.ts:671:1 › test_normal_when_footnotes_printed
+[486/724] [chromium] › tests/e2e/単一ユースケース/文書を印刷する.spec.ts:699:1 › test_normal_when_pagebreak_details_wide
+[487/724] [chromium] › tests/e2e/単一ユースケース/文書を印刷する.spec.ts:754:1 › test_normal_when_tree_folded
+[488/724] [chromium] › tests/e2e/単一ユースケース/本文を横に並べる.spec.ts:65:1 › test_normal
+[489/724] [chromium] › tests/e2e/単一ユースケース/文書を描く.spec.ts:50:1 › test_normal_when_updated
+[490/724] [chromium] › tests/e2e/単一ユースケース/文書を描く.spec.ts:66:1 › test_normal_when_destroyed
+[491/724] [chromium] › tests/e2e/単一ユースケース/文書を描く.spec.ts:78:1 › test_normal_when_unknown_mark
+[492/724] [chromium] › tests/e2e/単一ユースケース/文書を描く.spec.ts:94:1 › test_normal_when_script_in_markdown
+[493/724] [chromium] › tests/e2e/単一ユースケース/文書を描く.spec.ts:145:1 › test_normal_when_index
+[494/724] [chromium] › tests/e2e/単一ユースケース/文書を描く.spec.ts:169:1 › test_normal_when_source_lines
+[495/724] [chromium] › tests/e2e/単一ユースケース/文書を描く.spec.ts:219:1 › test_normal_when_aliases
+[496/724] [chromium] › tests/e2e/単一ユースケース/文書を描く.spec.ts:249:1 › test_normal_when_theme_selected
+[497/724] [chromium] › tests/e2e/単一ユースケース/文書を描く.spec.ts:300:1 › test_normal_when_frontmatter
+[498/724] [chromium] › tests/e2e/単一ユースケース/文書を描く.spec.ts:328:1 › test_normal_when_frontmatter_unclosed
+[499/724] [chromium] › tests/e2e/単一ユースケース/文書を描く.spec.ts:368:1 › test_normal_when_legacy_mark_args
+  21) [chromium] › tests/e2e/単一ユースケース/文書を描く.spec.ts:368:1 › test_normal_when_legacy_mark_args ──────
+
+    Error: expect(received).toBe(expected) // Object.is equality
+
+    - Expected  - 2
+    + Received  + 2
+
+    @@ -1,6 +1,6 @@
+    - <div data-source-line="0" class="mdmark-table" data-kind="data" data-features="sort pin filter resize total" data-total="1:sum"><div class="mdmark-table-bar"><div class="mdmark-table-tools"><button class="mdmark-table-tool mdmark-totals-toggle" type="button" aria-expanded="false" aria-controls="mdmark-table-2-totals"><svg class="mdmark-diagram-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 7V5a1 1 0 0 0-1-1H6.5a.5.5 0 0 0-.4.8l4.5 6a2 2 0 0 1 0 2.4l-4.5 6a.5.5 0 0 0 .4.8H17a1 1 0 0 0 1-1v-2"></path></svg>集計<span class="mdmark-visually-hidden"></span></button></div><span class="mdmark-visually-hidden mdmark-table-status" role="status"></span></div><div class="mdmark-table-scroll"><table tabindex="0" aria-label="表" data-source-line="2" style="--mdmark-sticky-head-start: 1px; --mdmark-sticky-head-max: 116.34375px; --mdmark-sticky-foot-max: 116.34375px; --mdmark-sticky-foot-end: 0px;">
+    + <div data-source-line="0" class="mdmark-table" data-kind="data" data-features="sort pin filter resize total" data-total="1:sum"><div class="mdmark-table-bar"><div class="mdmark-table-tools"><button class="mdmark-table-tool mdmark-totals-toggle" type="button" aria-expanded="false" aria-controls="mdmark-table-1-totals"><svg class="mdmark-diagram-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 7V5a1 1 0 0 0-1-1H6.5a.5.5 0 0 0-.4.8l4.5 6a2 2 0 0 1 0 2.4l-4.5 6a.5.5 0 0 0 .4.8H17a1 1 0 0 0 1-1v-2"></path></svg>集計<span class="mdmark-visually-hidden"></span></button></div><span class="mdmark-visually-hidden mdmark-table-status" role="status"></span></div><div class="mdmark-table-scroll"><table tabindex="0" aria-label="表" data-source-line="2" style="--mdmark-sticky-head-start: 1px; --mdmark-sticky-head-max: 116.34375px; --mdmark-sticky-foot-max: 116.34375px; --mdmark-sticky-foot-end: 0px;">
+      <thead>
+      <tr data-source-line="2">
+      <th data-col="0" style="--mdmark-column-min-width: 109px;"><span class="mdmark-th"><button class="mdmark-sort" type="button">名前</button><span class="mdmark-th-tools"><button class="mdmark-pin" type="button" aria-label="「名前」の列をピン止め" aria-pressed="true" hidden=""></button></span></span><span class="mdmark-col-resize" role="separator" aria-orientation="vertical" tabindex="0" aria-label="「名前」の列の幅" aria-valuenow="603" aria-valuetext="603px" aria-valuemin="110" aria-valuemax="1216"></span></th>
+      <th data-col="1" style="--mdmark-column-min-width: 110px;"><span class="mdmark-th"><button class="mdmark-sort" type="button">数量</button><span class="mdmark-th-tools"><button class="mdmark-pin" type="button" aria-label="「数量」の列をピン止め" aria-pressed="false" hidden=""></button></span></span><span class="mdmark-col-resize" role="separator" aria-orientation="vertical" tabindex="0" aria-label="「数量」の列の幅" aria-valuenow="612" aria-valuetext="612px" aria-valuemin="111" aria-valuemax="1216"></span></th>
+      </tr>
+    @@ -18,7 +18,7 @@
+      <td data-label="名前" data-col="0">c</td>
+      <td data-label="数量" data-col="1">3</td>
+      </tr>
+      </tbody>
+      <tfoot><tr class="mdmark-table-total" data-total-kind="sum"><td data-label="名前" data-col="0"><span class="mdmark-total-name">合計</span></td><td data-label="数量" data-total="sum" data-col="1"><span class="mdmark-total-value">6</span></td></tr></tfoot></table>
+    - </div><div class="mdmark-totals-menu mdmark-table-menu" id="mdmark-table-2-totals" role="dialog" aria-label="表示する集計" hidden=""><p class="mdmark-totals-title">表示する集計</p><ul class="mdmark-totals-options"><li><label><input type="checkbox" value="sum" checked="">合計</label></li></ul></div></div><details data-source-line="10" class="mdmark-collapsible" open=""><summary>実行の例</summary><p data-source-line="12">実行の段落</p>
+    + </div><div class="mdmark-totals-menu mdmark-table-menu" id="mdmark-table-1-totals" role="dialog" aria-label="表示する集計" hidden=""><p class="mdmark-totals-title">表示する集計</p><ul class="mdmark-totals-options"><li><label><input type="checkbox" value="sum" checked="">合計</label></li></ul></div></div><details data-source-line="10" class="mdmark-collapsible" open=""><summary>実行の例</summary><p data-source-line="12">実行の段落</p>
+      </details><button class="mdmark-back-to-top" type="button" aria-label="先頭へ戻る" title="先頭へ戻る" hidden=""><svg class="mdmark-diagram-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 3h14"></path><path d="m18 13-6-6-6 6"></path><path d="M12 7v14"></path></svg></button>
+
+      393 |   );
+      394 |   // 検証
+    > 395 |   expect(legacy).toBe(json);
+          |                  ^
+      396 |   expect(legacy).toContain("mdmark-table-total");
+      397 |   expect(legacy).not.toContain("mdmark-syntax-warning");
+      398 |   const details = page.locator("#doc details", { hasText: "実行の段落" });
+        at /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-render-marker-json-options/tests/e2e/単一ユースケース/文書を描く.spec.ts:395:18
+
+    Error Context: test-results/単一ユースケース-文書を描く-test-normal-when-legacy-mark-args-chromium/error-context.md
+
+    Error Context: test-results/単一ユースケース-文書を描く-test-normal-when-legacy-mark-args-chromium/error-context.md
+
+
+[500/724] [chromium] › tests/e2e/単一ユースケース/文書を描く.spec.ts:404:1 › test_normal_when_multiline_mark_args
+[501/724] [chromium] › tests/e2e/単一ユースケース/本文に出た用語と文書の参照を取り出す.spec.ts:147:1 › test_normal_when_same_target_in_documents
+[502/724] [chromium] › tests/e2e/単一ユースケース/本文に出た用語と文書の参照を取り出す.spec.ts:166:1 › test_normal_when_glossary_table
+[503/724] [chromium] › tests/e2e/単一ユースケース/本文に出た用語と文書の参照を取り出す.spec.ts:209:1 › test_normal_when_feature_off
+[504/724] [chromium] › tests/e2e/単一ユースケース/本文に出た用語と文書の参照を取り出す.spec.ts:236:1 › test_normal_when_avoided_term
+[505/724] [chromium] › tests/e2e/単一ユースケース/本文に出た用語と文書の参照を取り出す.spec.ts:276:1 › test_normal_when_embedded_html_and_diagram
+[506/724] [chromium] › tests/e2e/単一ユースケース/本文に出た用語と文書の参照を取り出す.spec.ts:321:1 › test_normal_when_width_and_case_differ
+[507/724] [chromium] › tests/e2e/単一ユースケース/本文に出た用語と文書の参照を取り出す.spec.ts:364:1 › test_normal_when_aliases
+[508/724] [chromium] › tests/e2e/単一ユースケース/機能のオン・オフを文書で上書きする.spec.ts:35:1 › test_normal
+[509/724] [chromium] › tests/e2e/単一ユースケース/本文を横に並べる.spec.ts:86:1 › test_normal_when_narrow
+[510/724] [chromium] › tests/e2e/単一ユースケース/本文を横に並べる.spec.ts:115:1 › test_error_when_column_count_invalid
+[511/724] [chromium] › tests/e2e/単一ユースケース/本文を横に並べる.spec.ts:162:1 › test_error_when_nested
+[512/724] [chromium] › tests/e2e/単一ユースケース/比較元のMarkdownを指定して変更を強調する.spec.ts:73:1 › test_normal
+  22) [chromium] › tests/e2e/単一ユースケース/文書を描く.spec.ts:404:1 › test_normal_when_multiline_mark_args ───
+
+    Error: expect(received).toBe(expected) // Object.is equality
+
+    - Expected  - 6
+    + Received  + 6
+
+    - <div data-source-line="0" class="mdmark-table" data-kind="data" data-features="sort pin filter resize total" data-total="1:sum"><details class="mdmark-table-details"><summary>明細</summary><div class="mdmark-table-bar"><div class="mdmark-table-tools"><button class="mdmark-table-tool mdmark-totals-toggle" type="button" aria-expanded="false" aria-controls="mdmark-table-2-totals"><svg class="mdmark-diagram-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 7V5a1 1 0 0 0-1-1H6.5a.5.5 0 0 0-.4.8l4.5 6a2 2 0 0 1 0 2.4l-4.5 6a.5.5 0 0 0 .4.8H17a1 1 0 0 0 1-1v-2"></path></svg>集計<span class="mdmark-visually-hidden"></span></button></div><span class="mdmark-visually-hidden mdmark-table-status" role="status"></span></div><div class="mdmark-table-scroll"><table tabindex="0" aria-label="表" data-source-line="2" style="--mdmark-sticky-head-start: 1px; --mdmark-sticky-head-max: 116.34375px; --mdmark-sticky-foot-max: 116.34375px; --mdmark-sticky-foot-end: 0px;">
+    + <div data-source-line="0" class="mdmark-table" data-kind="data" data-features="sort pin filter resize total" data-total="1:sum"><details class="mdmark-table-details"><summary>明細</summary><div class="mdmark-table-bar"><div class="mdmark-table-tools"><button class="mdmark-table-tool mdmark-totals-toggle" type="button" aria-expanded="false" aria-controls="mdmark-table-1-totals"><svg class="mdmark-diagram-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 7V5a1 1 0 0 0-1-1H6.5a.5.5 0 0 0-.4.8l4.5 6a2 2 0 0 1 0 2.4l-4.5 6a.5.5 0 0 0 .4.8H17a1 1 0 0 0 1-1v-2"></path></svg>集計<span class="mdmark-visually-hidden"></span></button></div><span class="mdmark-visually-hidden mdmark-table-status" role="status"></span></div><div class="mdmark-table-scroll"><table tabindex="0" aria-label="表" data-source-line="6" style="--mdmark-sticky-head-start: 1px; --mdmark-sticky-head-max: 116.34375px; --mdmark-sticky-foot-max: 116.34375px; --mdmark-sticky-foot-end: 0px;">
+      <thead>
+    - <tr data-source-line="2">
+    + <tr data-source-line="6">
+      <th data-col="0" style="left: 0px; right: 0px; --mdmark-column-min-width: 109px;" class="is-pinned-col is-pinned-edge is-pinned-edge-end"><span class="mdmark-th"><button class="mdmark-sort" type="button">名前</button><span class="mdmark-th-tools"><button class="mdmark-pin" type="button" aria-label="「名前」の列をピン止め" aria-pressed="true"></button></span></span><span class="mdmark-col-resize" role="separator" aria-orientation="vertical" tabindex="0" aria-label="「名前」の列の幅" aria-valuenow="134" aria-valuetext="134px" aria-valuemin="110" aria-valuemax="43"></span></th>
+      <th data-col="1" style="--mdmark-column-min-width: 110px;"><span class="mdmark-th"><button class="mdmark-sort" type="button">数量</button><span class="mdmark-th-tools"><button class="mdmark-pin" type="button" aria-label="「数量」の列をピン止め" aria-pressed="false"></button></span></span><span class="mdmark-col-resize" role="separator" aria-orientation="vertical" tabindex="0" aria-label="「数量」の列の幅" aria-valuenow="136" aria-valuetext="136px" aria-valuemin="111" aria-valuemax="-91"></span></th>
+      </tr>
+      </thead>
+      <tbody>
+    - <tr data-source-line="4">
+    + <tr data-source-line="8">
+      <td data-label="名前" data-col="0" class="is-pinned-col is-pinned-edge is-pinned-edge-end" style="left: 0px; right: 0px;">a</td>
+      <td data-label="数量" data-col="1">1</td>
+      </tr>
+    - <tr data-source-line="5">
+    + <tr data-source-line="9">
+      <td data-label="名前" data-col="0" class="is-pinned-col is-pinned-edge is-pinned-edge-end" style="left: 0px; right: 0px;">b</td>
+      <td data-label="数量" data-col="1">2</td>
+      </tr>
+    - <tr data-source-line="6">
+    + <tr data-source-line="10">
+      <td data-label="名前" data-col="0" class="is-pinned-col is-pinned-edge is-pinned-edge-end" style="left: 0px; right: 0px;">c</td>
+      <td data-label="数量" data-col="1">3</td>
+      </tr>
+      </tbody>
+      <tfoot><tr class="mdmark-table-total" data-total-kind="sum"><td data-label="名前" data-col="0" class="is-pinned-col is-pinned-edge is-pinned-edge-end" style="left: 0px; right: 0px;"><span class="mdmark-total-name">合計</span></td><td data-label="数量" data-total="sum" data-col="1"><span class="mdmark-total-value">6</span></td></tr></tfoot></table>
+    - </div><div class="mdmark-totals-menu mdmark-table-menu" id="mdmark-table-2-totals" role="dialog" aria-label="表示する集計" hidden=""><p class="mdmark-totals-title">表示する集計</p><ul class="mdmark-totals-options"><li><label><input type="checkbox" value="sum" checked="">合計</label></li></ul></div></details></div><button class="mdmark-back-to-top" type="button" aria-label="先頭へ戻る" title="先頭へ戻る" hidden=""><svg class="mdmark-diagram-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 3h14"></path><path d="m18 13-6-6-6 6"></path><path d="M12 7v14"></path></svg></button>
+    + </div><div class="mdmark-totals-menu mdmark-table-menu" id="mdmark-table-1-totals" role="dialog" aria-label="表示する集計" hidden=""><p class="mdmark-totals-title">表示する集計</p><ul class="mdmark-totals-options"><li><label><input type="checkbox" value="sum" checked="">合計</label></li></ul></div></details></div><button class="mdmark-back-to-top" type="button" aria-label="先頭へ戻る" title="先頭へ戻る" hidden=""><svg class="mdmark-diagram-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 3h14"></path><path d="m18 13-6-6-6 6"></path><path d="M12 7v14"></path></svg></button>
+
+      422 |   );
+      423 |   // 検証
+    > 424 |   expect(multiline).toBe(oneLine);
+          |                     ^
+      425 |   const doc = page.locator("#doc");
+      426 |   const fold = doc.locator("details", { has: page.locator("table") });
+      427 |   await expect(fold.locator("summary").first()).toHaveText("明細");
+        at /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-render-marker-json-options/tests/e2e/単一ユースケース/文書を描く.spec.ts:424:21
+
+    Error Context: test-results/単一ユースケース-文書を描く-test-normal-when-multiline-mark-args-chromium/error-context.md
+
+    Error Context: test-results/単一ユースケース-文書を描く-test-normal-when-multiline-mark-args-chromium/error-context.md
+
+
+[513/724] [chromium] › tests/e2e/単一ユースケース/文書を描く.spec.ts:439:1 › test_error_when_mark_args_not_json
+[514/724] [chromium] › tests/e2e/単一ユースケース/機能のオン・オフを文書で上書きする.spec.ts:50:1 › test_normal_when_enabled_by_mark
+[515/724] [chromium] › tests/e2e/単一ユースケース/機能のオン・オフを文書で上書きする.spec.ts:65:1 › test_normal_when_no_mark
+[516/724] [chromium] › tests/e2e/単一ユースケース/機能のオン・オフを文書で上書きする.spec.ts:80:1 › test_normal_when_unknown_feature
+[517/724] [chromium] › tests/e2e/単一ユースケース/機能のオン・オフを文書で上書きする.spec.ts:96:1 › test_normal_when_syntax_disabled
+[518/724] [chromium] › tests/e2e/単一ユースケース/機能のオン・オフを文書で上書きする.spec.ts:151:1 › test_normal_when_glossary_disabled
+[519/724] [chromium] › tests/e2e/単一ユースケース/機能のオン・オフを文書で上書きする.spec.ts:197:1 › test_normal_when_backlinks_disabled
+[520/724] [chromium] › tests/e2e/単一ユースケース/機能のオン・オフを文書で上書きする.spec.ts:249:1 › test_normal_when_side_toc_disabled
+[521/724] [chromium] › tests/e2e/単一ユースケース/機能のオン・オフを文書で上書きする.spec.ts:271:1 › test_normal_when_side_toc_enabled_by_mark
+[522/724] [chromium] › tests/e2e/単一ユースケース/機能のオン・オフを文書で上書きする.spec.ts:292:1 › test_normal_when_media_features_disabled
+[523/724] [chromium] › tests/e2e/単一ユースケース/機能のオン・オフを文書で上書きする.spec.ts:336:1 › test_normal_when_back_to_top_disabled
+[524/724] [chromium] › tests/e2e/単一ユースケース/機能のオン・オフを文書で上書きする.spec.ts:358:1 › test_normal_when_footnotes_disabled
+[525/724] [chromium] › tests/e2e/単一ユースケース/機能のオン・オフを文書で上書きする.spec.ts:375:1 › test_normal_when_new_syntax_disabled
+[526/724] [chromium] › tests/e2e/単一ユースケース/機能のオン・オフを文書で上書きする.spec.ts:449:1 › test_normal_when_range_scripts_enabled_by_document
+[527/724] [chromium] › tests/e2e/単一ユースケース/機能のオン・オフを文書で上書きする.spec.ts:490:1 › test_normal_when_diagram_resize_disabled
+[528/724] [chromium] › tests/e2e/単一ユースケース/機能のオン・オフを文書で上書きする.spec.ts:527:1 › test_normal_when_frontmatter_enabled
+[529/724] [chromium] › tests/e2e/単一ユースケース/機能のオン・オフを文書で上書きする.spec.ts:556:1 › test_normal_when_frontmatter_enabled_by_mark
+[530/724] [chromium] › tests/e2e/単一ユースケース/機能のオン・オフを文書で上書きする.spec.ts:581:1 › test_normal_when_map_disabled
+[531/724] [chromium] › tests/e2e/単一ユースケース/注意書きを記載する.spec.ts:30:1 › test_normal
+[532/724] [chromium] › tests/e2e/単一ユースケース/比較元のMarkdownを指定して変更を強調する.spec.ts:108:1 › test_normal_when_base_replaced
+[533/724] [chromium] › tests/e2e/単一ユースケース/比較元のMarkdownを指定して変更を強調する.spec.ts:134:1 › test_normal_when_base_null
+[534/724] [chromium] › tests/e2e/単一ユースケース/比較元のMarkdownを指定して変更を強調する.spec.ts:155:1 › test_normal_when_unchanged
+[535/724] [chromium] › tests/e2e/単一ユースケース/比較元のMarkdownを指定して変更を強調する.spec.ts:171:1 › test_error_when_base_not_string
+[536/724] [chromium] › tests/e2e/単一ユースケース/用語の意味をツールチップで確認する.spec.ts:61:1 › test_normal
+  23) [chromium] › tests/e2e/単一ユースケース/操作できる部品で値を変えて写す.spec.ts:49:1 › test_normal ───────────────────
+
+    Test timeout of 300000ms exceeded.
+
+    Error: locator.click: Test timeout of 300000ms exceeded.
+    Call log:
+      - waiting for getByRole('button', { name: '今の値を写す' })
+
+
+      65 |   );
+      66 |   // 実行: 今の値を写すボタンを押す
+    > 67 |   await page.getByRole("button", { name: "今の値を写す" }).click();
+         |                                                      ^
+      68 |   // 検証: コピーしたことがボタンのそばに出て、クリップボードの中身が JSON として読み込める
+      69 |   await expect(
+      70 |     page.locator('#doc .mdmark-param [role="status"]'),
+        at /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-render-marker-json-options/tests/e2e/単一ユースケース/操作できる部品で値を変えて写す.spec.ts:67:54
+
+    Error Context: test-results/単一ユースケース-操作できる部品で値を変えて写す-test-normal-chromium/error-context.md
+
+    Error Context: test-results/単一ユースケース-操作できる部品で値を変えて写す-test-normal-chromium/error-context.md
+
+
+[537/724] [chromium] › tests/e2e/単一ユースケース/操作できる部品で値を変えて写す.spec.ts:80:1 › test_error_when_clipboard_denied
+[538/724] [chromium] › tests/e2e/単一ユースケース/画像・動画・音声を配置する.spec.ts:101:1 › test_normal
+[539/724] [chromium] › tests/e2e/単一ユースケース/注意書きを記載する.spec.ts:65:1 › test_normal_when_collapsed
+[540/724] [chromium] › tests/e2e/単一ユースケース/注意書きを記載する.spec.ts:81:1 › test_normal_when_unknown_kind
+[541/724] [chromium] › tests/e2e/単一ユースケース/注意書きを記載する.spec.ts:95:1 › test_normal_when_titled
+[542/724] [chromium] › tests/e2e/単一ユースケース/注意書きを記載する.spec.ts:134:1 › test_normal_when_expanded
+[543/724] [chromium] › tests/e2e/単一ユースケース/注意書きを記載する.spec.ts:152:1 › test_normal_when_nested
+[544/724] [chromium] › tests/e2e/単一ユースケース/画像をライトボックスで拡大する.spec.ts:72:1 › test_normal
+[545/724] [chromium] › tests/e2e/単一ユースケース/用語の意味をツールチップで確認する.spec.ts:98:1 › test_normal_when_keyboard
+[546/724] [chromium] › tests/e2e/単一ユースケース/用語の意味をツールチップで確認する.spec.ts:130:1 › test_normal_when_excluded_place
+[547/724] [chromium] › tests/e2e/単一ユースケース/用語の意味をツールチップで確認する.spec.ts:154:1 › test_normal_when_no_index
+[548/724] [chromium] › tests/e2e/単一ユースケース/用語の意味をツールチップで確認する.spec.ts:165:1 › test_error_when_invalid_index
+[549/724] [chromium] › tests/e2e/単一ユースケース/用語の意味をツールチップで確認する.spec.ts:198:1 › test_normal_when_embedded_html
+[550/724] [chromium] › tests/e2e/単一ユースケース/用語の意味をツールチップで確認する.spec.ts:264:1 › test_normal_when_avoided_term
+[551/724] [chromium] › tests/e2e/単一ユースケース/用語の意味をツールチップで確認する.spec.ts:334:1 › test_normal_when_no_room_above
+[552/724] [chromium] › tests/e2e/単一ユースケース/用語の意味をツールチップで確認する.spec.ts:354:1 › test_normal_when_placement_bottom
+[553/724] [chromium] › tests/e2e/単一ユースケース/用語の意味をツールチップで確認する.spec.ts:375:1 › test_normal_when_width_and_case_differ
+[554/724] [chromium] › tests/e2e/単一ユースケース/用語の意味をツールチップで確認する.spec.ts:453:1 › test_normal_when_aliases
+[555/724] [chromium] › tests/e2e/単一ユースケース/用語の意味をツールチップで確認する.spec.ts:594:1 › test_normal_when_copy_command
+[556/724] [chromium] › tests/e2e/単一ユースケース/用語の意味をツールチップで確認する.spec.ts:634:1 › test_normal_when_avoid_alias
+[557/724] [chromium] › tests/e2e/単一ユースケース/用語の意味をツールチップで確認する.spec.ts:686:1 › test_error_when_invalid_alias
+[558/724] [chromium] › tests/e2e/単一ユースケース/用語の意味をツールチップで確認する.spec.ts:751:3 › タッチの端末 › test_normal_when_touch
+[559/724] [chromium] › tests/e2e/単一ユースケース/目次と見出しのアンカーでセクションへ移る.spec.ts:43:1 › test_normal
+[560/724] [chromium] › tests/e2e/単一ユースケース/画像・動画・音声を配置する.spec.ts:148:1 › test_normal_when_gallery
+[561/724] [chromium] › tests/e2e/単一ユースケース/画像・動画・音声を配置する.spec.ts:202:1 › test_normal_when_theme_images
+[562/724] [chromium] › tests/e2e/単一ユースケース/画像・動画・音声を配置する.spec.ts:228:1 › test_normal_when_video_and_audio
+[563/724] [chromium] › tests/e2e/単一ユースケース/画像・動画・音声を配置する.spec.ts:266:1 › test_normal_when_gif_toggled
+[564/724] [chromium] › tests/e2e/単一ユースケース/画像・動画・音声を配置する.spec.ts:302:1 › test_normal_when_reduced_motion
+[565/724] [chromium] › tests/e2e/単一ユースケース/画像・動画・音声を配置する.spec.ts:316:1 › test_error_when_attribute_invalid
+[566/724] [chromium] › tests/e2e/単一ユースケース/索引と文書のずれを点検する.spec.ts:30:1 › test_normal
+[567/724] [chromium] › tests/e2e/単一ユースケース/画像をライトボックスで拡大する.spec.ts:147:1 › test_normal_when_opened_by_key
+[568/724] [chromium] › tests/e2e/単一ユースケース/画像をライトボックスで拡大する.spec.ts:167:1 › test_normal_when_nolightbox
+[569/724] [chromium] › tests/e2e/単一ユースケース/脚注を確認する.spec.ts:62:1 › test_normal
+[570/724] [chromium] › tests/e2e/単一ユースケース/目次と見出しのアンカーでセクションへ移る.spec.ts:79:1 › test_normal_when_github_ids
+[571/724] [chromium] › tests/e2e/単一ユースケース/目次と見出しのアンカーでセクションへ移る.spec.ts:94:1 › test_normal_when_opened_with_fragment
+[572/724] [chromium] › tests/e2e/単一ユースケース/目次と見出しのアンカーでセクションへ移る.spec.ts:130:1 › test_normal_when_fragment_in_tab
+[573/724] [chromium] › tests/e2e/単一ユースケース/目次と見出しのアンカーでセクションへ移る.spec.ts:212:1 › test_normal_when_no_headings
+[574/724] [chromium] › tests/e2e/単一ユースケース/目次と見出しのアンカーでセクションへ移る.spec.ts:223:1 › test_normal_when_side_toc_hovered
+[575/724] [chromium] › tests/e2e/単一ユースケース/目次と見出しのアンカーでセクションへ移る.spec.ts:260:1 › test_normal_when_side_toc_pinned
+[576/724] [chromium] › tests/e2e/単一ユースケース/目次と見出しのアンカーでセクションへ移る.spec.ts:312:1 › test_normal_when_side_toc_hovered_after_scroll
+[577/724] [chromium] › tests/e2e/単一ユースケース/目次と見出しのアンカーでセクションへ移る.spec.ts:349:1 › test_normal_when_side_toc_fixed
+[578/724] [chromium] › tests/e2e/単一ユースケース/目次と見出しのアンカーでセクションへ移る.spec.ts:374:1 › test_normal_when_side_toc_focused
+[579/724] [chromium] › tests/e2e/単一ユースケース/目次と見出しのアンカーでセクションへ移る.spec.ts:409:1 › test_normal_when_current_section_highlighted
+[580/724] [chromium] › tests/e2e/単一ユースケース/目次と見出しのアンカーでセクションへ移る.spec.ts:432:1 › test_normal_when_side_toc_into_closed_section
+[581/724] [chromium] › tests/e2e/単一ユースケース/目次と見出しのアンカーでセクションへ移る.spec.ts:460:1 › test_error_when_unknown_side_toc_mode
+[582/724] [chromium] › tests/e2e/単一ユースケース/目次と見出しのアンカーでセクションへ移る.spec.ts:473:1 › test_normal_when_side_toc_in_narrow_width
+[583/724] [chromium] › tests/e2e/単一ユースケース/目次と見出しのアンカーでセクションへ移る.spec.ts:548:1 › test_normal_when_side_toc_over_table
+[584/724] [chromium] › tests/e2e/単一ユースケース/目次と見出しのアンカーでセクションへ移る.spec.ts:606:1 › test_normal_when_side_toc_scrolled_to_end
+[585/724] [chromium] › tests/e2e/単一ユースケース/目次と見出しのアンカーでセクションへ移る.spec.ts:667:1 › test_normal_when_side_toc_at_viewport_edge
+[586/724] [chromium] › tests/e2e/単一ユースケース/表から用語集に用語を入れる.spec.ts:35:1 › test_normal
+[587/724] [chromium] › tests/e2e/単一ユースケース/索引と文書のずれを点検する.spec.ts:67:1 › test_normal_when_drift
+[588/724] [chromium] › tests/e2e/単一ユースケース/索引と文書のずれを点検する.spec.ts:137:1 › test_normal_when_invalid_schema
+[589/724] [chromium] › tests/e2e/単一ユースケース/索引と文書のずれを点検する.spec.ts:166:1 › test_normal_when_avoided_term
+[590/724] [chromium] › tests/e2e/単一ユースケース/索引と文書のずれを点検する.spec.ts:210:1 › test_normal_when_glossary_avoided_term
+[591/724] [chromium] › tests/e2e/単一ユースケース/索引と文書のずれを点検する.spec.ts:259:1 › test_normal_when_normalized_words
+[592/724] [chromium] › tests/e2e/単一ユースケース/索引と文書のずれを点検する.spec.ts:304:1 › test_normal_when_related_drift
+[593/724] [chromium] › tests/e2e/単一ユースケース/脚注を確認する.spec.ts:96:1 › test_normal_when_keyboard
+[594/724] [chromium] › tests/e2e/単一ユースケース/索引と文書のずれを点検する.spec.ts:368:1 › test_normal_when_change_together_missed
+[595/724] [chromium] › tests/e2e/単一ユースケース/脚注を確認する.spec.ts:118:1 › test_normal_when_back_from_list
+[596/724] [chromium] › tests/e2e/単一ユースケース/表を操作する.spec.ts:57:1 › test_normal
+[597/724] [chromium] › tests/e2e/単一ユースケース/脚注を確認する.spec.ts:139:1 › test_normal_when_referenced_twice
+[598/724] [chromium] › tests/e2e/単一ユースケース/脚注を確認する.spec.ts:162:1 › test_normal_when_with_terms
+[599/724] [chromium] › tests/e2e/単一ユースケース/脚注を確認する.spec.ts:190:1 › test_error_when_definition_missing
+[600/724] [chromium] › tests/e2e/単一ユースケース/脚注を確認する.spec.ts:204:1 › test_normal_when_jump_to_list
+[601/724] [chromium] › tests/e2e/単一ユースケース/脚注を確認する.spec.ts:242:3 › タッチの端末 › test_normal_when_touch
+[602/724] [chromium] › tests/e2e/単一ユースケース/表形式のビューを列で絞り込む.spec.ts:32:1 › test_normal
+[603/724] [chromium] › tests/e2e/単一ユースケース/表から用語集に用語を入れる.spec.ts:65:1 › test_normal_when_index_has_same_term
+[604/724] [chromium] › tests/e2e/単一ユースケース/表から用語集に用語を入れる.spec.ts:86:1 › test_error_when_unknown_column
+[605/724] [chromium] › tests/e2e/単一ユースケース/表から用語集に用語を入れる.spec.ts:115:1 › test_normal_when_other_document
+[606/724] [chromium] › tests/e2e/単一ユースケース/表から用語集に用語を入れる.spec.ts:146:1 › test_normal_when_avoid_column
+[607/724] [chromium] › tests/e2e/単一ユースケース/表から用語集に用語を入れる.spec.ts:211:1 › test_normal_when_other_document_avoid_column
+[608/724] [chromium] › tests/e2e/単一ユースケース/表から用語集に用語を入れる.spec.ts:264:1 › test_normal_when_aliases_have_same_term
+[609/724] [chromium] › tests/e2e/単一ユースケース/被参照を確認する.spec.ts:53:1 › test_normal
+[610/724] [chromium] › tests/e2e/単一ユースケース/表を操作する.spec.ts:92:1 › test_normal_when_filtered_by_values
+[611/724] [chromium] › tests/e2e/単一ユースケース/表を操作する.spec.ts:143:1 › test_normal_when_filtered_by_text
+[612/724] [chromium] › tests/e2e/単一ユースケース/表を操作する.spec.ts:164:1 › test_normal_when_filtered_by_date
+[613/724] [chromium] › tests/e2e/単一ユースケース/表を操作する.spec.ts:220:1 › test_normal_when_pinned
+[614/724] [chromium] › tests/e2e/単一ユースケース/表を操作する.spec.ts:296:1 › test_normal_when_closed
+[615/724] [chromium] › tests/e2e/単一ユースケース/表を操作する.spec.ts:341:1 › test_normal_when_feature_removed
+[616/724] [chromium] › tests/e2e/単一ユースケース/表を操作する.spec.ts:356:1 › test_error_when_unknown_kind
+[617/724] [chromium] › tests/e2e/単一ユースケース/表を操作する.spec.ts:378:1 › test_error_when_range_end_missing
+[618/724] [chromium] › tests/e2e/単一ユースケース/表を操作する.spec.ts:395:1 › test_normal_when_unknown_feature_or_key
+[619/724] [chromium] › tests/e2e/単一ユースケース/表を操作する.spec.ts:411:1 › test_error_when_unknown_filter_kind
+[620/724] [chromium] › tests/e2e/単一ユースケース/表を操作する.spec.ts:511:1 › test_normal_when_counting_rows
+[621/724] [chromium] › tests/e2e/単一ユースケース/表を操作する.spec.ts:536:1 › test_normal_when_columns_toggled
+[622/724] [chromium] › tests/e2e/単一ユースケース/表を操作する.spec.ts:607:1 › test_normal_when_columns_change_notified
+[623/724] [chromium] › tests/e2e/単一ユースケース/表を操作する.spec.ts:650:1 › test_normal_when_totals_shown
+[624/724] [chromium] › tests/e2e/単一ユースケース/表を操作する.spec.ts:679:1 › test_normal_when_table_copied
+[625/724] [chromium] › tests/e2e/単一ユースケース/表を操作する.spec.ts:718:1 › test_normal_when_table_copied_as_markdown
+[626/724] [chromium] › tests/e2e/単一ユースケース/表を操作する.spec.ts:749:1 › test_normal_when_row_link_opened
+[627/724] [chromium] › tests/e2e/単一ユースケース/表形式のビューを列で絞り込む.spec.ts:82:1 › test_normal_when_filtered_by_text
+[628/724] [chromium] › tests/e2e/単一ユースケース/表を操作する.spec.ts:823:1 › test_error_when_unknown_total_or_hidden_column
+[629/724] [chromium] › tests/e2e/単一ユースケース/表形式のビューを列で絞り込む.spec.ts:106:1 › test_error_when_filter_kind_unknown
+[630/724] [chromium] › tests/e2e/単一ユースケース/記載した内容をプレビューに映す.spec.ts:50:1 › test_normal
+  24) [chromium] › tests/e2e/単一ユースケース/表を操作する.spec.ts:823:1 › test_error_when_unknown_total_or_hidden_column 
+
+    Error: expect(locator).toHaveCount(expected) failed
+
+    Locator:  locator('#doc .mdmark-table').first().locator('.mdmark-syntax-warning')
+    Expected: 4
+    Received: 3
+    Timeout:  30000ms
+
+    Call log:
+      - Expect "toHaveCount" locator('#doc .mdmark-table').first().locator('.mdmark-syntax-warning') with timeout 30000ms
+      - waiting for locator('#doc .mdmark-table').first().locator('.mdmark-syntax-warning')
+        64 × locator resolved to 3 elements
+           - unexpected value "3"
+
+
+      853 |   }
+      854 |   const warningsA = a.locator(".mdmark-syntax-warning");
+    > 855 |   await expect(warningsA).toHaveCount(4);
+          |                           ^
+      856 |   const textA = (await warningsA.allTextContents()).join("\n");
+      857 |   for (const word of ["max", "sum", "avg", "count", "価格", "備考", "名前"]) {
+      858 |     expect(textA).toContain(word);
+        at /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-render-marker-json-options/tests/e2e/単一ユースケース/表を操作する.spec.ts:855:27
+
+    Error Context: test-results/単一ユースケース-表を操作する-test-error-2bfaf-nown-total-or-hidden-column-chromium/error-context.md
+
+    Error Context: test-results/単一ユースケース-表を操作する-test-error-2bfaf-nown-total-or-hidden-column-chromium/error-context.md
+
+
+[631/724] [chromium] › tests/e2e/単一ユースケース/表を操作する.spec.ts:882:1 › test_error_when_clipboard_denied
+[632/724] [chromium] › tests/e2e/単一ユースケース/被参照を確認する.spec.ts:86:1 › test_normal_when_not_referenced
+[633/724] [chromium] › tests/e2e/単一ユースケース/被参照を確認する.spec.ts:103:1 › test_normal_when_document_alias
+[634/724] [chromium] › tests/e2e/単一ユースケース/被参照を確認する.spec.ts:163:1 › test_normal_when_alias_width_and_case_differ
+[635/724] [chromium] › tests/e2e/単一ユースケース/選んだ箇所にコメントする.spec.ts:82:1 › test_normal
+[636/724] [chromium] › tests/e2e/単一ユースケース/記載した内容をプレビューに映す.spec.ts:87:1 › test_normal_when_live_update_off
+[637/724] [chromium] › tests/e2e/単一ユースケース/記載した内容をプレビューに映す.spec.ts:110:1 › test_normal_when_config_saved
+[638/724] [chromium] › tests/e2e/単一ユースケース/記載した内容をプレビューに映す.spec.ts:247:1 › test_normal_when_revealed
+[639/724] [chromium] › tests/e2e/単一ユースケース/記載した内容をプレビューに映す.spec.ts:294:1 › test_normal_when_reloaded
+[640/724] [chromium] › tests/e2e/単一ユースケース/表を操作する.spec.ts:1013:1 › test_normal_when_header_stuck
+[641/724] [chromium] › tests/e2e/単一ユースケース/表を操作する.spec.ts:1107:1 › test_normal_when_last_column_collapsed
+[642/724] [chromium] › tests/e2e/単一ユースケース/表を操作する.spec.ts:1167:1 › test_normal_when_totals_selected
+[643/724] [chromium] › tests/e2e/単一ユースケース/表を操作する.spec.ts:1203:1 › test_error_when_total_cell_not_number
+[644/724] [chromium] › tests/e2e/単一ユースケース/表を操作する.spec.ts:1238:1 › test_normal_when_row_url_copied
+[645/724] [chromium] › tests/e2e/単一ユースケース/表を操作する.spec.ts:1290:1 › test_normal_when_pinned_by_default
+[646/724] [chromium] › tests/e2e/単一ユースケース/表を操作する.spec.ts:1362:1 › test_normal_when_pin_and_wide
+[647/724] [chromium] › tests/e2e/単一ユースケース/表を操作する.spec.ts:1446:1 › test_normal_when_check_column
+[648/724] [chromium] › tests/e2e/単一ユースケース/表を操作する.spec.ts:1495:1 › test_error_when_unknown_column
+[649/724] [chromium] › tests/e2e/単一ユースケース/記載した内容をプレビューに映す.spec.ts:326:1 › test_error_when_config_unreadable
+[650/724] [chromium] › tests/e2e/単一ユースケース/記載した内容をプレビューに映す.spec.ts:366:1 › test_normal_when_theme_css_saved
+  25) [chromium] › tests/e2e/単一ユースケース/操作できる部品で値を変えて写す.spec.ts:80:1 › test_error_when_clipboard_denied 
+
+    Test timeout of 300000ms exceeded.
+
+    Error: locator.click: Test timeout of 300000ms exceeded.
+    Call log:
+      - waiting for getByRole('button', { name: '今の値を写す' })
+
+
+      84 |   await slider.fill("8");
+      85 |   // 実行
+    > 86 |   await page.getByRole("button", { name: "今の値を写す" }).click();
+         |                                                      ^
+      87 |   // 検証: 書き込めなかったことと、写すはずだった JSON が選んで写せる文字として出る
+      88 |   await expect(
+      89 |     page.locator('#doc .mdmark-param [role="status"]'),
+        at /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-render-marker-json-options/tests/e2e/単一ユースケース/操作できる部品で値を変えて写す.spec.ts:86:54
+
+    Error Context: test-results/単一ユースケース-操作できる部品で値を変えて写す-test-error-when-clipboard-denied-chromium/error-context.md
+
+    Error Context: test-results/単一ユースケース-操作できる部品で値を変えて写す-test-error-when-clipboard-denied-chromium/error-context.md
+
+
+  26) [chromium] › tests/e2e/単一ユースケース/表を操作する.spec.ts:1495:1 › test_error_when_unknown_column ───────
+
+    Error: expect(locator).toHaveCount(expected) failed
+
+    Locator:  locator('#doc .mdmark-table').first().locator('button.mdmark-filter')
+    Expected: 8
+    Received: 0
+    Timeout:  30000ms
+
+    Call log:
+      - Expect "toHaveCount" locator('#doc .mdmark-table').first().locator('button.mdmark-filter') with timeout 30000ms
+      - waiting for locator('#doc .mdmark-table').first().locator('button.mdmark-filter')
+        64 × locator resolved to 0 elements
+           - unexpected value "0"
+
+
+      1511 |   ).toHaveCSS("white-space", "nowrap");
+      1512 |   await expect(tables.nth(0).locator("button.mdmark-sort")).toHaveCount(8);
+    > 1513 |   await expect(tables.nth(0).locator("button.mdmark-filter")).toHaveCount(8);
+           |                                                               ^
+      1514 |   // 検証: 2 つ目の表の警告は無い列だけを記載し、物理名の列を左端に留める
+      1515 |   const second = tables.nth(1).locator(".mdmark-syntax-warning");
+      1516 |   await expect(second).toHaveCount(1);
+        at /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-render-marker-json-options/tests/e2e/単一ユースケース/表を操作する.spec.ts:1513:63
+
+    Error Context: test-results/単一ユースケース-表を操作する-test-error-when-unknown-column-chromium/error-context.md
+
+    Error Context: test-results/単一ユースケース-表を操作する-test-error-when-unknown-column-chromium/error-context.md
+
+
+[651/724] [chromium] › tests/e2e/単一ユースケース/操作できる部品で値を変えて写す.spec.ts:103:1 › test_normal_when_label_configured
+[652/724] [chromium] › tests/e2e/単一ユースケース/表を操作する.spec.ts:1550:1 › test_normal_when_cells_merged
+[653/724] [chromium] › tests/e2e/単一ユースケース/選んだ箇所にコメントする.spec.ts:132:1 › test_normal_when_loaded
+[654/724] [chromium] › tests/e2e/単一ユースケース/選んだ箇所にコメントする.spec.ts:160:1 › test_normal_when_updated
+  27) [chromium] › tests/e2e/単一ユースケース/選んだ箇所にコメントする.spec.ts:160:1 › test_normal_when_updated ────────
+
+    Error: expect(received).toContain(expected) // indexOf
+
+    Expected substring: "mdmark-comment-orphans"
+    Received string:    "mdmark-comment-margin"
+
+      192 |             .at(-1)?.className ?? "",
+      193 |       ),
+    > 194 |   ).toContain("mdmark-comment-orphans");
+          |     ^
+      195 | });
+      196 |
+      197 | // comments を指定しない設定では、読み込みと保存の関数を指定してもボタンを出さず、読み込みも呼ばない（正常シナリオ（機能を解除する））
+        at /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-render-marker-json-options/tests/e2e/単一ユースケース/選んだ箇所にコメントする.spec.ts:194:5
+
+    Error Context: test-results/単一ユースケース-選んだ箇所にコメントする-test-normal-when-updated-chromium/error-context.md
+
+    Error Context: test-results/単一ユースケース-選んだ箇所にコメントする-test-normal-when-updated-chromium/error-context.md
+
+
+[655/724] [chromium] › tests/e2e/単一ユースケース/記載した内容をプレビューに映す.spec.ts:387:1 › test_normal_when_outside_config_saved
+[656/724] [chromium] › tests/e2e/単一ユースケース/選んだ箇所にコメントする.spec.ts:198:1 › test_normal_when_disabled
+[657/724] [chromium] › tests/e2e/単一ユースケース/記載した内容をプレビューに映す.spec.ts:413:1 › test_normal_when_aliases_yaml_saved
+  28) [chromium] › tests/e2e/単一ユースケース/記載した内容をプレビューに映す.spec.ts:413:1 › test_normal_when_aliases_yaml_saved 
+
+    Error: expect(received).toBe(expected) // Object.is equality
+
+    - Expected  - 1
+    + Received  + 5
+
+      案内
+
+    - レンダリングの段落
+    + レンダリング
+    + 用語
+    + 描画
+    + 書き換えた意味
+    + の段落
+
+      案内
+
+    Call Log:
+    - Timeout 30000ms exceeded while waiting on the predicate
+
+      443 |   await expect
+      444 |     .poll(() => frame.locator(".mdmark").first().innerText())
+    > 445 |     .toBe(text);
+          |      ^
+      446 |   expect(await scrollTop(frame)).toBe(top);
+      447 | });
+      448 |
+        at /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-render-marker-json-options/tests/e2e/単一ユースケース/記載した内容をプレビューに映す.spec.ts:445:6
+
+    Error Context: test-results/単一ユースケース-記載した内容をプレビューに映す-test-normal-when-aliases-yaml-saved-chromium/error-context.md
+
+    Error Context: test-results/単一ユースケース-記載した内容をプレビューに映す-test-normal-when-aliases-yaml-saved-chromium/error-context.md
+
+
+[658/724] [chromium] › tests/e2e/単一ユースケース/表を操作する.spec.ts:1631:1 › test_normal_when_merged_after_sort
+[659/724] [chromium] › tests/e2e/単一ユースケース/部品をJavaScriptから使用する.spec.ts:48:1 › test_normal
+[660/724] [chromium] › tests/e2e/単一ユースケース/表を操作する.spec.ts:1679:1 › test_error_when_merge_invalid
+[661/724] [chromium] › tests/e2e/単一ユースケース/記載した内容をプレビューに映す.spec.ts:450:1 › test_normal_when_frontmatter
+  29) [chromium] › tests/e2e/単一ユースケース/表を操作する.spec.ts:1679:1 › test_error_when_merge_invalid ────────
+
+    Error: expect(locator).toContainText(expected) failed
+
+    Locator: locator('#doc .mdmark-syntax-warning')
+    Expected substring: "header-rows="
+    Received string:    "記載の警告<!-- table: {\"kind\": \"data\", \"columns\": {\"列B\": {\"filter\": {}}}, \"header\": {\"rows\": 5}} -->の読み込めない指定を当てずに描いています。header.rows: 5 は使用できません。1 以上で表の行の数（3）より小さい整数を指定してください。既定の 1 で描いています<<: 1 行目の 1 列目は、左に結合するセルがありません。記載した文字のまま描いています。^^: 2 行目の 2 列目は、見出しの行と本文の行をまたいで結合できません。記載した文字のまま描いています。"
+    Timeout: 30000ms
+
+    Call log:
+      - Expect "toContainText" locator('#doc .mdmark-syntax-warning') with timeout 30000ms
+      - waiting for locator('#doc .mdmark-syntax-warning')
+        64 × locator resolved to <div role="note" class="mdmark-syntax-warning">…</div>
+           - unexpected value "記載の警告<!-- table: {"kind": "data", "columns": {"列B": {"filter": {}}}, "header": {"rows": 5}} -->の読み込めない指定を当てずに描いています。header.rows: 5 は使用できません。1 以上で表の行の数（3）より小さい整数を指定してください。既定の 1 で描いています<<: 1 行目の 1 列目は、左に結合するセルがありません。記載した文字のまま描いています。^^: 2 行目の 2 列目は、見出しの行と本文の行をまたいで結合できません。記載した文字のまま描いています。"
+
+
+      1698 |   await expect(warning).toHaveCount(1);
+      1699 |   for (const text of ["header-rows=", "^^", "<<"]) {
+    > 1700 |     await expect(warning).toContainText(text);
+           |                           ^
+      1701 |   }
+      1702 |   const table = page.locator("#doc table");
+      1703 |   await expect(table).toBeVisible();
+        at /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-render-marker-json-options/tests/e2e/単一ユースケース/表を操作する.spec.ts:1700:27
+
+    Error Context: test-results/単一ユースケース-表を操作する-test-error-when-merge-invalid-chromium/error-context.md
+
+    Error Context: test-results/単一ユースケース-表を操作する-test-error-when-merge-invalid-chromium/error-context.md
+
+
+[662/724] [chromium] › tests/e2e/単一ユースケース/表を操作する.spec.ts:1719:1 › test_normal_when_row_header_pinned
+[663/724] [chromium] › tests/e2e/単一ユースケース/選んだ箇所にコメントする.spec.ts:216:1 › test_error_when_save_failed
+[664/724] [chromium] › tests/e2e/単一ユースケース/選んだ箇所にコメントする.spec.ts:246:1 › test_error_when_store_missing
+[665/724] [chromium] › tests/e2e/単一ユースケース/選んだ箇所にコメントする.spec.ts:346:1 › test_normal_when_jumped_from_margin
+[666/724] [chromium] › tests/e2e/単一ユースケース/選んだ箇所にコメントする.spec.ts:503:1 › test_normal_when_edited_and_removed
+[667/724] [chromium] › tests/e2e/単一ユースケース/選んだ箇所にコメントする.spec.ts:575:1 › test_normal_when_reloaded
+[668/724] [chromium] › tests/e2e/単一ユースケース/選んだ箇所にコメントする.spec.ts:617:1 › test_normal_when_focused
+[669/724] [chromium] › tests/e2e/単一ユースケース/選んだ箇所にコメントする.spec.ts:664:1 › test_error_when_update_failed
+[670/724] [chromium] › tests/e2e/単一ユースケース/選んだ箇所にコメントする.spec.ts:691:1 › test_error_when_remove_failed
+[671/724] [chromium] › tests/e2e/単一ユースケース/選んだ箇所にコメントする.spec.ts:721:1 › test_error_when_reload_failed
+[672/724] [chromium] › tests/e2e/単一ユースケース/配布物をビルドして検査する.spec.ts:110:1 › test_normal
+[673/724] [chromium] › tests/e2e/単一ユースケース/部品をJavaScriptから使用する.spec.ts:102:1 › test_normal_when_called_from_extension
+[674/724] [chromium] › tests/e2e/単一ユースケース/部品をJavaScriptから使用する.spec.ts:147:1 › test_error_when_arguments_invalid
+[675/724] [chromium] › tests/e2e/単一ユースケース/部品をJavaScriptから使用する.spec.ts:173:1 › test_normal_when_comments_attached
+[676/724] [chromium] › tests/e2e/単一ユースケース/表を操作する.spec.ts:1785:1 › test_normal_when_csv
+[677/724] [chromium] › tests/e2e/単一ユースケース/表を操作する.spec.ts:1839:1 › test_error_when_csv_columns_mismatch
+[678/724] [chromium] › tests/e2e/単一ユースケース/表を操作する.spec.ts:1856:1 › test_normal_when_csv_raw_toggled
+[679/724] [chromium] › tests/e2e/単一ユースケース/表を操作する.spec.ts:1953:1 › test_normal_when_columns_reordered
+  30) [chromium] › tests/e2e/単一ユースケース/表を操作する.spec.ts:1953:1 › test_normal_when_columns_reordered ───
+
+    Error: expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 1
+    + Received  + 2
+
+      Array [
+    -   "名前",
+    +   "名前
+    + （絞り込み中）",
+        "既定",
+        "型",
+      ]
+
+      2007 |     .locator('input[type="text"]')
+      2008 |     .fill("html");
+    > 2009 |   expect(await headNames(page)).toEqual(["名前", "既定", "型"]);
+           |                                 ^
+      2010 |   // 検証: ほかの表
+      2011 |   await page
+      2012 |     .locator("#doc .mdmark-table")
+        at /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-render-marker-json-options/tests/e2e/単一ユースケース/表を操作する.spec.ts:2009:33
+
+    Error Context: test-results/単一ユースケース-表を操作する-test-normal-when-columns-reordered-chromium/error-context.md
+
+    Error Context: test-results/単一ユースケース-表を操作する-test-normal-when-columns-reordered-chromium/error-context.md
+
+
+[680/724] [chromium] › tests/e2e/複合ユースケース/取り出し元を指定して文書の差分を確認する.spec.ts:35:1 › test_normal
+[681/724] [chromium] › tests/e2e/単一ユースケース/表を操作する.spec.ts:2050:1 › test_normal_when_reordered_within_groups
+[682/724] [chromium] › tests/e2e/複合ユースケース/VSCodeで記載しながら確認してPDFにする.spec.ts:47:1 › test_normal
+[683/724] [chromium] › tests/e2e/複合ユースケース/取り出し元を指定して文書の差分を確認する.spec.ts:90:1 › test_error_when_content_unavailable
+[684/724] [chromium] › tests/e2e/単一ユースケース/表を操作する.spec.ts:2106:1 › test_normal_when_tree
+[685/724] [chromium] › tests/e2e/単一ユースケース/表を操作する.spec.ts:2188:1 › test_normal_when_tree_folded
+[686/724] [chromium] › tests/e2e/単一ユースケース/表を操作する.spec.ts:2249:1 › test_normal_when_tree_filtered
+[687/724] [chromium] › tests/e2e/単一ユースケース/表を操作する.spec.ts:2287:1 › test_normal_when_tree_row_selected
+[688/724] [chromium] › tests/e2e/単一ユースケース/表を操作する.spec.ts:2334:1 › test_normal_when_tree_linked_to_example
+[689/724] [chromium] › tests/e2e/単一ユースケース/表を操作する.spec.ts:2373:1 › test_error_when_tree_options_invalid
+[690/724] [chromium] › tests/e2e/単一ユースケース/表を操作する.spec.ts:2464:1 › test_normal_when_table_fills_width
+[691/724] [chromium] › tests/e2e/単一ユースケース/表を操作する.spec.ts:2524:1 › test_normal_when_pinned_through
+[692/724] [chromium] › tests/e2e/単一ユースケース/表を操作する.spec.ts:2588:1 › test_normal_when_reordered_with_pinned_columns
+[693/724] [chromium] › tests/e2e/単一ユースケース/表を操作する.spec.ts:2662:1 › test_normal_when_pinned_under_merged_header
+  31) [chromium] › tests/e2e/単一ユースケース/表を操作する.spec.ts:2662:1 › test_normal_when_pinned_under_merged_header 
+
+    Error: expect(received).toBeLessThanOrEqual(expected)
+
+    Expected: <= 1
+    Received:    30.1875
+
+      2687 |   expect(
+      2688 |     Math.abs(valueBox.x - (nameBox.x + nameBox.width)),
+    > 2689 |   ).toBeLessThanOrEqual(1);
+           |     ^
+      2690 |   expect(Math.abs(headBox.x - valueBox.x)).toBeLessThanOrEqual(1);
+      2691 |   // 検証: 1 行目の設定のセルは留まらず、型・必須の列と一緒に見えなくなる
+      2692 |   expect(await offsetInTable(scroller, headOf("設定"))).toBeLessThan(-8);
+        at /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-render-marker-json-options/tests/e2e/単一ユースケース/表を操作する.spec.ts:2689:5
+
+    Error Context: test-results/単一ユースケース-表を操作する-test-normal-when-pinned-under-merged-header-chromium/error-context.md
+
+    Error Context: test-results/単一ユースケース-表を操作する-test-normal-when-pinned-under-merged-header-chromium/error-context.md
+
+
+[694/724] [chromium] › tests/e2e/単一ユースケース/表を操作する.spec.ts:2807:1 › test_normal_when_column_resized
+[695/724] [chromium] › tests/e2e/単一ユースケース/バージョンを上げる.spec.ts:171:1 › test_normal
+[696/724] [chromium] › tests/e2e/単一ユースケース/表を操作する.spec.ts:2887:1 › test_normal_when_pinned_column_resized
+[697/724] [chromium] › tests/e2e/単一ユースケース/表を操作する.spec.ts:2959:1 › test_normal_when_column_resized_by_keyboard
+[698/724] [chromium] › tests/e2e/単一ユースケース/表を操作する.spec.ts:3019:1 › test_normal_when_column_resized_in_narrow_width
+[699/724] [chromium] › tests/e2e/単一ユースケース/表を操作する.spec.ts:3083:3 › タッチの端末 › test_normal_when_column_resized_by_touch
+[700/724] [chromium] › tests/e2e/複合ユースケース/今の書き方のマーカーをJSONの記載へ移して書き出す.spec.ts:180:1 › test_normal
+[701/724] [chromium] › tests/e2e/単一ユースケース/バージョンを上げる.spec.ts:225:1 › test_normal_when_plan
+[702/724] [chromium] › tests/e2e/単一ユースケース/バージョンを上げる.spec.ts:249:1 › test_normal_when_value_asked
+[703/724] [chromium] › tests/e2e/複合ユースケース/VSCodeで記載しながら確認してPDFにする.spec.ts:105:1 › test_error_when_distribution_unreachable
+  32) [chromium] › tests/e2e/単一ユースケース/配布物をビルドして検査する.spec.ts:110:1 › test_normal ────────────────────
+
+    Test timeout of 300000ms exceeded.
+
+    Error Context: test-results/単一ユースケース-配布物をビルドして検査する-test-normal-chromium/error-context.md
+
+    Error Context: test-results/単一ユースケース-配布物をビルドして検査する-test-normal-chromium/error-context.md
+
+
+[704/724] [chromium] › tests/e2e/単一ユースケース/配布物をビルドして検査する.spec.ts:143:1 › test_normal_when_version_given
+[705/724] [chromium] › tests/e2e/単一ユースケース/配布物をビルドして検査する.spec.ts:159:1 › test_error_when_version_format_invalid
+[706/724] [chromium] › tests/e2e/単一ユースケース/配布物をビルドして検査する.spec.ts:176:1 › test_error_when_dist_file_too_large
+[707/724] [chromium] › tests/e2e/単一ユースケース/配布物をビルドして検査する.spec.ts:198:1 › test_error_when_api_missing_in_baseline_browser
+[708/724] [chromium] › tests/e2e/単一ユースケース/配布物をビルドして検査する.spec.ts:273:1 › test_normal_when_schema_change_listed
+[709/724] [chromium] › tests/e2e/単一ユースケース/配布物をビルドして検査する.spec.ts:299:1 › test_error_when_schema_changed_without_steps
+[710/724] [chromium] › tests/e2e/単一ユースケース/配布物をビルドして検査する.spec.ts:317:1 › test_error_when_next_steps_left_in_release
+[711/724] [chromium] › tests/e2e/単一ユースケース/バージョンを上げる.spec.ts:274:1 › test_normal_when_version_missing
+[712/724] [chromium] › tests/e2e/単一ユースケース/バージョンを上げる.spec.ts:295:1 › test_normal_when_up_to_date
+[713/724] [chromium] › tests/e2e/単一ユースケース/バージョンを上げる.spec.ts:311:1 › test_normal_when_destructive_declined
+[714/724] [chromium] › tests/e2e/単一ユースケース/バージョンを上げる.spec.ts:332:1 › test_error_when_step_fails
+[715/724] [chromium] › tests/e2e/単一ユースケース/バージョンを上げる.spec.ts:363:1 › test_error_when_check_fails
+[716/724] [chromium] › tests/e2e/単一ユースケース/バージョンを上げる.spec.ts:396:1 › test_error_when_local_version_newer
+[717/724] [chromium] › tests/e2e/単一ユースケース/バージョンを上げる.spec.ts:414:1 › test_normal_when_destructive_with_yes
+[718/724] [chromium] › tests/e2e/単一ユースケース/バージョンを上げる.spec.ts:438:1 › test_error_when_diagram_drift
+[719/724] [chromium] › tests/e2e/複合ユースケース/今の書き方のマーカーをJSONの記載へ移して書き出す.spec.ts:255:1 › test_normal_when_unconverted
+[720/724] [chromium] › tests/e2e/単一ユースケース/バージョンを上げる.spec.ts:486:1 › test_normal_when_parent_config_exists
+[721/724] [chromium] › tests/e2e/単一ユースケース/バージョンを上げる.spec.ts:539:1 › test_normal_when_aliases_rows
+[722/724] [chromium] › tests/e2e/単一ユースケース/バージョンを上げる.spec.ts:605:1 › test_error_when_aliases_row_mixed_types
+[723/724] [chromium] › tests/e2e/単一ユースケース/バージョンを上げる.spec.ts:673:1 › test_normal_when_document_marks
+[724/724] [chromium] › tests/e2e/単一ユースケース/バージョンを上げる.spec.ts:751:1 › test_normal_when_unconverted_marks
+  32 failed
+    [chromium] › tests/e2e/単一ユースケース/VSCodeでプレビューを開く.spec.ts:245:1 › test_normal_when_includes ──────
+    [chromium] › tests/e2e/単一ユースケース/エディタとプレビューのスクロールを合わせる.spec.ts:251:1 › test_normal_when_in_closed_section 
+    [chromium] › tests/e2e/単一ユースケース/コードブロックを飾る.spec.ts:227:1 › test_normal_when_title_with_space_and_line_start 
+    [chromium] › tests/e2e/単一ユースケース/チャートを描く.spec.ts:90:1 › test_error_when_definition_invalid ──────
+    [chromium] › tests/e2e/単一ユースケース/ビューで項目を確認する.spec.ts:191:1 › test_normal_when_value_icon ────────
+    [chromium] › tests/e2e/単一ユースケース/ビューで項目を確認する.spec.ts:218:1 › test_error_when_value_missing ──────
+    [chromium] › tests/e2e/単一ユースケース/図を拡大・縮小・移動する.spec.ts:757:1 › test_normal_when_resized ──────────
+    [chromium] › tests/e2e/単一ユースケース/図を描く.spec.ts:876:1 › test_error_when_er_definition_invalid ─────
+    [chromium] › tests/e2e/単一ユースケース/拡張機能の配布物を作る.spec.ts:175:1 › test_normal ────────────────────────
+    [chromium] › tests/e2e/単一ユースケース/操作できる部品で値を変えて写す.spec.ts:49:1 › test_normal ─────────────────────
+    [chromium] › tests/e2e/単一ユースケース/操作できる部品で値を変えて写す.spec.ts:80:1 › test_error_when_clipboard_denied 
+    [chromium] › tests/e2e/単一ユースケース/文字列とYAMLのキーの記法を点検する.spec.ts:107:1 › test_normal_when_warnings ──
+    [chromium] › tests/e2e/単一ユースケース/文書をHTMLに書き出す.spec.ts:615:1 › test_normal_when_includes_and_icons_embedded 
+    [chromium] › tests/e2e/単一ユースケース/文書を描く.spec.ts:368:1 › test_normal_when_legacy_mark_args ────────
+    [chromium] › tests/e2e/単一ユースケース/文書を描く.spec.ts:404:1 › test_normal_when_multiline_mark_args ─────
+    [chromium] › tests/e2e/単一ユースケース/端末にmdmarkをセットアップする.spec.ts:124:1 › test_normal ─────────────────
+    [chromium] › tests/e2e/単一ユースケース/表を操作する.spec.ts:823:1 › test_error_when_unknown_total_or_hidden_column 
+    [chromium] › tests/e2e/単一ユースケース/表を操作する.spec.ts:1495:1 › test_error_when_unknown_column ─────────
+    [chromium] › tests/e2e/単一ユースケース/表を操作する.spec.ts:1679:1 › test_error_when_merge_invalid ──────────
+    [chromium] › tests/e2e/単一ユースケース/表を操作する.spec.ts:1953:1 › test_normal_when_columns_reordered ─────
+    [chromium] › tests/e2e/単一ユースケース/表を操作する.spec.ts:2662:1 › test_normal_when_pinned_under_merged_header 
+    [chromium] › tests/e2e/単一ユースケース/記載した内容をプレビューに映す.spec.ts:413:1 › test_normal_when_aliases_yaml_saved 
+    [chromium] › tests/e2e/単一ユースケース/設定と索引を点検する.spec.ts:71:1 › test_normal_when_drift ───────────────
+    [chromium] › tests/e2e/単一ユースケース/設定と索引を点検する.spec.ts:611:1 › test_normal_when_cascaded_config_drift 
+    [chromium] › tests/e2e/単一ユースケース/追加するJavaScriptを型で点検する.spec.ts:37:1 › test_error_when_type_mismatch 
+    [chromium] › tests/e2e/単一ユースケース/選んだ箇所にコメントする.spec.ts:160:1 › test_normal_when_updated ──────────
+    [chromium] › tests/e2e/単一ユースケース/配布物をビルドして検査する.spec.ts:110:1 › test_normal ──────────────────────
+    [chromium] › tests/e2e/複合ユースケース/プラグインを入れて端末と文書のフォルダをセットアップする.spec.ts:107:1 › test_normal ───────
+    [chromium] › tests/e2e/複合ユースケース/固有の部品で図の文書を描いて確認する.spec.ts:240:1 › test_normal_when_interactive 
+    [chromium] › tests/e2e/複合ユースケース/端末の設定を重ねてプレビューと書き出しをそろえる.spec.ts:133:1 › test_error_when_settings_unreadable 
+    [chromium] › tests/e2e/複合ユースケース/雛形から1枚のHTMLを配る.spec.ts:40:1 › test_normal ──────────────────────
+    [chromium] › tests/e2e/複合ユースケース/雛形から1枚のHTMLを配る.spec.ts:128:1 › test_error_when_drift ───────────
+  8 did not run
+  684 passed (58.5m)
+exit=1

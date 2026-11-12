@@ -12,7 +12,8 @@ import {
 let builtRoot = "";
 
 // 拡張のマーカーを段落の間に持つ文書
-const MARK_MARKDOWN = "前の段落\n\n<!-- greet: world -->\n\n後の段落\n";
+const MARK_MARKDOWN =
+  '前の段落\n\n<!-- greet: {"target": "world"} -->\n\n後の段落\n';
 
 test.beforeAll(async () => {
   builtRoot = await buildDistRoot();
@@ -31,9 +32,9 @@ test("test_normal", async ({ page }) => {
   // 実行
   await mountDocument(page, { markdown: MARK_MARKDOWN });
   // 検証
-  await expect(page.locator("#doc [data-mdmark-slot]")).toHaveText(
-    "greet:world",
-  );
+  const slot = page.locator("#doc [data-mdmark-slot]");
+  await expect(slot).toHaveText("greet:world");
+  await expect(slot).toHaveAttribute("data-keys", "options");
   expect(requests()).toBe(1);
   await expect(page.locator("#doc > p")).toHaveText(["前の段落", "後の段落"]);
 });
@@ -60,12 +61,33 @@ test("test_error_when_args_invalid", async ({ page }) => {
   await registerGreet(page, { strict: true });
   // 実行
   await mountDocument(page, {
-    markdown: "前の段落\n\n<!-- greet: World 2 -->\n\n後の段落\n",
+    markdown: '前の段落\n\n<!-- greet: {"target": 2} -->\n\n後の段落\n',
   });
   // 検証
   const warning = page.locator("#doc .mdmark-syntax-warning");
-  await expect(warning).toContainText("1 つ目の World");
-  await expect(warning).toContainText("2 つ目の 2");
+  await expect(warning).toContainText("target:");
+  await expect(warning).toContainText("英小文字の文字列で書いてください");
+  await page.waitForTimeout(300);
+  expect(requests()).toBe(0);
+  await expect(page.locator("#doc [data-mdmark-slot]")).toHaveCount(0);
+  await expect(page.locator("#doc > p")).toHaveText(["前の段落", "後の段落"]);
+});
+
+// 引数が JSON のオブジェクトでない拡張のマーカーの場所に、移行を案内する記載の警告を出し、モジュールを読み込まない（異常シナリオ（今の書き方の拡張のマーカー））
+test("test_error_when_legacy_args", async ({ page }) => {
+  // 準備
+  await openPage(page, builtRoot);
+  const requests = await routeExtension(page, 200);
+  await registerGreet(page);
+  // 実行
+  await mountDocument(page, {
+    markdown: "前の段落\n\n<!-- greet: world -->\n\n後の段落\n",
+  });
+  // 検証
+  const warning = page.locator("#doc .mdmark-syntax-warning");
+  await expect(warning).toContainText("JSON のオブジェクトで記載してください");
+  await expect(warning).toContainText("mdmark upgrade");
+  await expect(warning).toContainText("移行の報告");
   await page.waitForTimeout(300);
   expect(requests()).toBe(0);
   await expect(page.locator("#doc [data-mdmark-slot]")).toHaveCount(0);

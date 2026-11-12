@@ -1,6 +1,6 @@
 import type { StateCore, Token } from "markdown-it";
-import type { MdmarkMarkArgs } from "../../extensions.ts";
 import type { MdmarkGlossaryEntry } from "../../knowledge/references.ts";
+import type { MarkOptions } from "../mark-options.ts";
 import { envOf, featureOn, findClose, markOf, textOf } from "./tokens.ts";
 import { unclosedWarning, warningBlock } from "./warnings.ts";
 
@@ -64,22 +64,16 @@ function unknownColumnMessage(
   columns: string[],
 ): string {
   const list = columns.map((column) => `\`${column}\``).join("・");
-  return `の \`${argName}=\` の列 \`${name}\` が表にありません。表の列は ${list} です。列名を修正してください。この表からは用語を入れずに描いています。`;
-}
-
-/** 必須の指定が無いときの記載の警告の本文 */
-function missingArgMessage(argName: string): string {
-  const column = argName === "term" ? "用語" : "意味";
-  return `に \`${argName}=\` がありません。${column}の列を \`${argName}=列名\` で指してください。この表からは用語を入れずに描いています。`;
+  return `の \`${argName}.column\` の列 \`${name}\` が表にありません。表の列は ${list} です。列名を修正してください。この表からは用語を入れずに描いています。`;
 }
 
 /** 範囲の中のトークンの表から、用語・意味・別名・やめた言い方の列を読み込んで行ごとの用語を返却する。誤りがあれば表ごとに用語を入れず、最初の誤りを警告にする */
 export function readGlossaryRows(options: {
-  args: MdmarkMarkArgs;
+  options: MarkOptions;
   tokens: Token[];
   docId: string;
 }): { rows: GlossaryRow[]; warning?: string } {
-  const { args, tokens, docId } = options;
+  const { options: spec, tokens, docId } = options;
   const rows: GlossaryRow[] = [];
   let warning: string | undefined;
   for (const table of readTables(tokens)) {
@@ -91,10 +85,11 @@ export function readGlossaryRows(options: {
       ["aliases", false],
       ["avoid", false],
     ] as const) {
-      const name = args.keys[argName];
-      if (name === undefined || name === "") {
-        if (required && problem === undefined) {
-          problem = missingArgMessage(argName);
+      const name = (spec[argName] as { column?: unknown } | undefined)?.column;
+      if (typeof name !== "string" || name === "") {
+        if (required) {
+          // 必須の欠けは、マーカーの JSON Schema の記載の警告で通知してある
+          problem ??= "";
         }
         continue;
       }
@@ -106,7 +101,9 @@ export function readGlossaryRows(options: {
       }
     }
     if (problem !== undefined) {
-      warning ??= problem;
+      if (problem !== "") {
+        warning ??= problem;
+      }
       continue;
     }
     for (const row of table.rows) {
@@ -133,8 +130,8 @@ export function readGlossaryRows(options: {
 
 /** 用語集の表を読み込んで用語を返却する。表に無い列名と必須の指定の欠けは、用語を返却せず記載の警告の本文を返却する */
 export function readGlossaryTable(options: {
-  /** マーカーの引数 */
-  args: MdmarkMarkArgs;
+  /** マーカーの設定 */
+  options: MarkOptions;
   /** 範囲の中のトークン */
   tokens: Token[];
   /** 表を持つ文書の `id`（索引を指定しないときは空文字） */
@@ -168,7 +165,7 @@ export function glossaryRule(state: StateCore): void {
     const range = tokens.slice(position + 1, end);
     if (enabled) {
       const { rows, warning } = readGlossaryRows({
-        args: mark.args,
+        options: mark.options,
         tokens: range,
         docId: env.docId ?? "",
       });

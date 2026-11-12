@@ -153,13 +153,13 @@ function highlightRequests(name: string): string[] {
     .sort();
 }
 
-/** 色分けの対象の見本: マーカーを持たない `ts`、`<!-- code: lines -->` の直後に 3 行のブロックスカラーを持つ `yml`、色分けしない `text` のコードブロック */
+/** 色分けの対象の見本: マーカーを持たない `ts`、`<!-- code: {"lines": {}} -->` の直後に 3 行のブロックスカラーを持つ `yml`、色分けしない `text` のコードブロック */
 const HIGHLIGHT_MARKDOWN = [
   "```ts",
   "const count: number = 1;",
   "```",
   "",
-  "<!-- code: lines -->",
+  '<!-- code: {"lines": {}} -->',
   "",
   "```yml",
   "body: |",
@@ -293,7 +293,7 @@ test("test_normal_when_mounted_twice", async () => {
 test("test_normal_when_unknown_mark", async () => {
   // 準備
   const el = createElement();
-  const markdown = "前の段落\n\n<!-- unknown: 1 -->\n\n後の段落\n";
+  const markdown = '前の段落\n\n<!-- unknown: {"size": 1} -->\n\n後の段落\n';
   // 実行
   await mountTracked(el, { markdown });
   // 検証
@@ -360,7 +360,8 @@ test("test_normal_when_library_mark", async () => {
   const el = createElement();
   await loadBuilt();
   performance.clearResourceTimings();
-  const markdown = "前の段落\n\n<!-- test-lib: a b -->\n\n後の段落\n";
+  const markdown =
+    '前の段落\n\n<!-- test-lib: {"items": ["a", "b"]} -->\n\n後の段落\n';
   const config = { libraries: { "test-lib": TEST_LIB_PATH } };
   // 実行
   await mountTracked(el, { markdown, config });
@@ -371,6 +372,28 @@ test("test_normal_when_library_mark", async () => {
   expect(slot.textContent).toBe(LOADING_TEXT);
   await expect.poll(() => slot.textContent).toBe("drawn:a,b");
   expect(countRequests(TEST_LIB_PATH)).toBe(1);
+  expect(paragraphTexts(el)).toEqual(["前の段落", "後の段落"]);
+});
+
+// 引数が JSON のオブジェクトでない外部ライブラリのマーカーは、モジュールを読み込まずに記載の警告を描く（正常系）
+test("test_normal_when_legacy_library_args", async () => {
+  // 準備
+  const el = createElement();
+  await loadBuilt();
+  performance.clearResourceTimings();
+  const markdown = "前の段落\n\n<!-- test-lib: a b -->\n\n後の段落\n";
+  const config = { libraries: { "test-lib": TEST_LIB_PATH } };
+  // 実行
+  await mountTracked(el, { markdown, config });
+  // 検証
+  const warning = find<HTMLElement>(el, ".mdmark-syntax-warning");
+  expect(warning.textContent).toContain(
+    "JSON のオブジェクトで記載してください",
+  );
+  expect(warning.textContent).toContain("mdmark upgrade");
+  expect(el.querySelector("[data-mdmark-slot]")).toBeNull();
+  await new Promise((resolve) => setTimeout(resolve, 200));
+  expect(countRequests(TEST_LIB_PATH)).toBe(0);
   expect(paragraphTexts(el)).toEqual(["前の段落", "後の段落"]);
 });
 
@@ -396,7 +419,7 @@ test("test_normal_when_feature_disabled_by_mark", async () => {
   // 準備
   const el = createElement();
   const markdown =
-    "<!-- features: -print -->\n\n<details><summary>s</summary>b</details>\n";
+    '<!-- features: {"print": false} -->\n\n<details><summary>s</summary>b</details>\n';
   await mountTracked(el, { markdown, config: { features: { print: true } } });
   // 実行
   sendPrintEvent("beforeprint");
@@ -410,7 +433,7 @@ test("test_normal_when_feature_enabled_by_mark", async () => {
   // 準備
   const el = createElement();
   const markdown =
-    "<!-- features: +print +unknown -->\n\n<details><summary>s</summary>b</details>\n";
+    '<!-- features: {"print": true, "unknown": true} -->\n\n<details><summary>s</summary>b</details>\n';
   await mountTracked(el, { markdown, config: { features: { print: false } } });
   // 実行
   sendPrintEvent("beforeprint");
@@ -445,7 +468,8 @@ test("test_error_when_library_not_found", async () => {
   // 準備
   const el = createElement();
   const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
-  const markdown = "前の段落\n\n<!-- test-lib: a b -->\n\n後の段落\n";
+  const markdown =
+    '前の段落\n\n<!-- test-lib: {"items": ["a", "b"]} -->\n\n後の段落\n';
   const config = { libraries: { "test-lib": MISSING_LIB_PATH } };
   const { mount } = await loadBuilt();
   let handle: MountHandle | undefined;
@@ -475,7 +499,7 @@ test("test_error_when_library_not_found", async () => {
 
 /** 名前と値の 3 行を持つ、名前の列を絞り込む表の Markdown */
 const FILTER_TABLE_MARKDOWN = [
-  "<!-- table: data filter=名前 -->",
+  '<!-- table: {"kind": "data", "columns": {"名前": {"filter": {}}}} -->',
   "",
   "| 名前 | 値 |",
   "| --- | --- |",
@@ -660,7 +684,7 @@ test("test_normal_when_table_counted_and_columns_toggled", async () => {
   const el = createElement();
   await mountTracked(el, {
     markdown: [
-      "<!-- table: data +count +columns hide=説明 filter=名前:text -->",
+      '<!-- table: {"kind": "data", "features": {"count": {}}, "columns": {"説明": {"hidden": true}, "名前": {"filter": {"type": "text"}}}} -->',
       "",
       "| 名前 | 説明 | 更新日 |",
       "| --- | --- | --- |",
@@ -775,7 +799,7 @@ function chooseCopyFormat(el: Element, format: "markdown" | "tsv"): void {
 
 /** 集計の 3 つの計算（`数量` の合計・`単価` の平均・`名前` の件数）を持つ表の Markdown */
 const TOTALS_MARKDOWN = [
-  "<!-- table: data +total +columns total=数量:sum,単価:avg,名前:count filter=名前:text -->",
+  '<!-- table: {"kind": "data", "features": {"columns": {}}, "columns": {"数量": {"total": [{"calc": "sum"}]}, "単価": {"total": [{"calc": "avg"}]}, "名前": {"total": [{"calc": "count"}], "filter": {"type": "text"}}}} -->',
   "",
   "| 名前 | 数量 | 単価 |",
   "| --- | --- | --- |",
@@ -897,7 +921,7 @@ test("test_normal_when_total_cell_not_number", async () => {
   const el = createElement();
   await mountTracked(el, {
     markdown: [
-      "<!-- table: data +total total=数量:sum,単価:avg filter=名前:text -->",
+      '<!-- table: {"kind": "data", "columns": {"数量": {"total": [{"calc": "sum"}]}, "単価": {"total": [{"calc": "avg"}]}, "名前": {"filter": {"type": "text"}}}} -->',
       "",
       "| 名前 | 数量 | 単価 |",
       "| --- | --- | --- |",
@@ -930,7 +954,7 @@ test("test_normal_when_total_cell_not_number", async () => {
 
 /** 名前 `りんご`・`みかん`・`りんご飴` と、説明（`hide=説明` で隠す）・更新日を持つ表を、コピーできるマーカーで囲んだ Markdown */
 const COPY_MARKDOWN = [
-  "<!-- table: data +copy +columns hide=説明 filter=名前:text -->",
+  '<!-- table: {"kind": "data", "features": {"copy": {}}, "columns": {"説明": {"hidden": true}, "名前": {"filter": {"type": "text"}}}} -->',
   "",
   "| 名前 | 説明 | 更新日 |",
   "| --- | --- | --- |",
@@ -1034,7 +1058,7 @@ test("test_normal_when_table_copy_denied", async () => {
   const el = createElement();
   await mountTracked(el, {
     markdown: [
-      "<!-- table: data +copy -->",
+      '<!-- table: {"kind": "data", "features": {"copy": {}}} -->',
       "",
       "| 名前 | 更新日 |",
       "| --- | --- |",
@@ -1091,7 +1115,7 @@ test("test_normal_when_table_row_linked", async () => {
   history.replaceState(null, "", "#みかん");
   await mountTracked(el, {
     markdown: [
-      "<!-- table: data +rowlink closed -->",
+      '<!-- table: {"kind": "data", "features": {"rowlink": {}}, "collapse": {"open": false}} -->',
       "",
       "| 名前 | 値 |",
       "| --- | --- |",
@@ -1103,9 +1127,9 @@ test("test_normal_when_table_row_linked", async () => {
       "",
       "## セクション",
       "",
-      "<!-- section: closed -->",
+      '<!-- section: {"open": false} -->',
       "",
-      "<!-- table: data +rowlink filter=名前:text -->",
+      '<!-- table: {"kind": "data", "features": {"rowlink": {}}, "columns": {"名前": {"filter": {"type": "text"}}}} -->',
       "",
       "| 名前 | 値 |",
       "| --- | --- |",
@@ -1154,7 +1178,7 @@ test("test_normal_when_table_row_linked", async () => {
 
 /** 名前 `りんご`・`みかん`・`りんご飴` の 3 行の表を、行へのリンクのマーカーで囲んだ Markdown */
 const ROW_LINK_MARKDOWN = [
-  "<!-- table: data +rowlink -->",
+  '<!-- table: {"kind": "data", "features": {"rowlink": {}}} -->',
   "",
   "| 名前 | 値 |",
   "| --- | --- |",
@@ -1346,7 +1370,7 @@ test("test_normal_when_table_pin_and_wide", async () => {
     "備考",
   ];
   const markdown = [
-    "<!-- table: -pin -->",
+    '<!-- table: {"features": {"pin": {"enabled": false}}} -->',
     "",
     `| ${headers.join(" | ")} |`,
     `| ${headers.map(() => "---").join(" | ")} |`,
@@ -1358,7 +1382,7 @@ test("test_normal_when_table_pin_and_wide", async () => {
     "",
     "<!-- /table -->",
     "",
-    "<!-- table: data pin=物理名 wide=説明 -->",
+    '<!-- table: {"kind": "data", "columns": {"物理名": {"pinned": true}, "説明": {"width": {"mode": "nowrap"}}}} -->',
     "",
     `| ${columns.join(" | ")} |`,
     `| ${columns.map(() => "---").join(" | ")} |`,
@@ -1369,7 +1393,7 @@ test("test_normal_when_table_pin_and_wide", async () => {
     "",
     "<!-- /table -->",
     "",
-    "<!-- table: data pin=No,物理名 -->",
+    '<!-- table: {"kind": "data", "columns": {"No": {"pinned": true}, "物理名": {"pinned": true}}} -->',
     "",
     `| ${columns.join(" | ")} |`,
     `| ${columns.map(() => "---").join(" | ")} |`,
@@ -1452,7 +1476,7 @@ test("test_normal_when_table_check_column", async () => {
   stubClipboard(writeText);
   const el = createElement();
   const markdown = [
-    "<!-- table: data +copy check=必須 filter=必須 -->",
+    '<!-- table: {"kind": "data", "features": {"copy": {}}, "columns": {"必須": {"format": {"type": "check"}, "filter": {}}}} -->',
     "",
     "| 名前 | 必須 | 既定 |",
     "| --- | --- | --- |",
@@ -1547,7 +1571,7 @@ const STICKY_MARKDOWN = (() => {
     Array.from({ length: 40 }, (_, i) => `${label}の段落 ${i + 1}\n`);
   return [
     ...paragraphs("前"),
-    "<!-- table: data +total total=数量:sum -->",
+    '<!-- table: {"kind": "data", "columns": {"数量": {"total": [{"calc": "sum"}]}}} -->',
     "",
     `| ${headers.join(" | ")} |`,
     `| ${headers.map(() => "---").join(" | ")} |`,
@@ -1696,7 +1720,7 @@ test("test_normal_when_table_header_stuck", async () => {
 
 /** 390px の幅で 1 行に収まらない説明を最終列に持つ、3 列 3 行の表を `data` のマーカーで囲んだ Markdown */
 const FOLD_TABLE_MARKDOWN = [
-  "<!-- table: data -->",
+  '<!-- table: {"kind": "data"} -->',
   "",
   "| 名前 | 状態 | 説明 |",
   "| --- | --- | --- |",
@@ -1710,7 +1734,7 @@ const FOLD_TABLE_MARKDOWN = [
 
 /** 名前・状態の 2 列で、短い文字の表を `data` のマーカーで囲んだ Markdown */
 const SHORT_TABLE_MARKDOWN = [
-  "<!-- table: data -->",
+  '<!-- table: {"kind": "data"} -->',
   "",
   "| 名前 | 状態 |",
   "| --- | --- |",
@@ -1830,7 +1854,7 @@ test("test_normal_when_row_detail_with_collapsed_column", async () => {
   const el = createElement();
   setElementWidth(el, 390);
   await mountTracked(el, {
-    markdown: `${FOLD_TABLE_MARKDOWN}\n<!-- row-detail: 2 -->\n\nみかんの詳細\n\n<!-- /row-detail -->\n`,
+    markdown: `${FOLD_TABLE_MARKDOWN}\n<!-- row-detail: {"at": 2} -->\n\nみかんの詳細\n\n<!-- /row-detail -->\n`,
   });
   const table = find<HTMLElement>(el, ".mdmark-table");
   await vi.waitFor(() => {
@@ -2008,9 +2032,9 @@ const FRAGMENT_TAB_MARKDOWN = [
   ...Array.from({ length: 30 }, (_, i) => `前の段落 ${i + 1}\n`),
   "## 導入",
   "",
-  "<!-- section: closed -->",
+  '<!-- section: {"open": false} -->',
   "",
-  "<!-- tabs: group=os -->",
+  '<!-- tabs: {"group": "os"} -->',
   "",
   "### macOS",
   "",
@@ -2196,7 +2220,7 @@ test("test_normal_when_sections_and_row_details_toggled", async () => {
     "",
     "## 補足",
     "",
-    "<!-- section: closed -->",
+    '<!-- section: {"open": false} -->',
     "",
     "補足の段落",
     "",
@@ -2208,7 +2232,7 @@ test("test_normal_when_sections_and_row_details_toggled", async () => {
     "| b | 2 |",
     "| c | 3 |",
     "",
-    "<!-- row-detail: 2 -->",
+    '<!-- row-detail: {"at": 2} -->',
     "",
     "詳細の段落",
     "",
@@ -2271,13 +2295,13 @@ test("test_normal_when_printed_with_syntax", async () => {
     "| --- | --- |",
     "| a | 1 |",
     "",
-    "<!-- row-detail: 1 -->",
+    '<!-- row-detail: {"at": 1} -->',
     "",
     "詳細の段落",
     "",
     "<!-- /row-detail -->",
     "",
-    "<!-- table: data closed -->",
+    '<!-- table: {"kind": "data", "collapse": {"open": false}} -->',
     "",
     "| バージョン | 日付 |",
     "| --- | --- |",
@@ -2288,7 +2312,7 @@ test("test_normal_when_printed_with_syntax", async () => {
     "> [!NOTE]-",
     "> 補足の本文",
     "",
-    "<!-- tabs: closed -->",
+    '<!-- tabs: {"collapse": {"open": false}} -->',
     "",
     "### uv",
     "",
@@ -2300,7 +2324,7 @@ test("test_normal_when_printed_with_syntax", async () => {
     "",
     "<!-- /tabs -->",
     "",
-    "<!-- steps: closed -->",
+    '<!-- steps: {"collapse": {"open": false}} -->',
     "",
     "1. 一つ目",
     "2. 二つ目",
@@ -2317,7 +2341,7 @@ test("test_normal_when_printed_with_syntax", async () => {
     wrapDirective("er", erText(shopErFolded())),
     "## 閉じたセクション",
     "",
-    "<!-- section: closed -->",
+    '<!-- section: {"open": false} -->',
     "",
     "セクションの中身",
     "",
@@ -2697,7 +2721,7 @@ test("test_normal_when_glossary_avoid_column", async () => {
     ],
   };
   const glossaryMarkdown = [
-    "<!-- glossary: term=用語 meaning=意味 avoid=やめた言い方 -->",
+    '<!-- glossary: {"term": {"column": "用語"}, "meaning": {"column": "意味"}, "avoid": {"column": "やめた言い方"}} -->',
     "",
     "| 用語 | 意味 | やめた言い方 |",
     "| --- | --- | --- |",
@@ -2707,7 +2731,7 @@ test("test_normal_when_glossary_avoid_column", async () => {
     "",
   ].join("\n");
   const markdown = [
-    "<!-- glossary: term=用語 meaning=意味 avoid=やめた言い方 -->",
+    '<!-- glossary: {"term": {"column": "用語"}, "meaning": {"column": "意味"}, "avoid": {"column": "やめた言い方"}} -->',
     "",
     "| 用語 | 意味 | やめた言い方 |",
     "| --- | --- | --- |",
@@ -4493,7 +4517,9 @@ test("test_error_when_unknown_diff_mode", async () => {
 /** `### {タイトル}` で区切ったタブの範囲の Markdown。`group` が無ければ組を持たない */
 function tabsRange(titles: string[], group?: string): string {
   return [
-    group === undefined ? "<!-- tabs -->" : `<!-- tabs: group=${group} -->`,
+    group === undefined
+      ? "<!-- tabs -->"
+      : `<!-- tabs: {"group": "${group}"} -->`,
     "",
     ...titles.flatMap((title) => [`### ${title}`, "", `${title} の手順`, ""]),
     "<!-- /tabs -->",
@@ -4753,7 +4779,9 @@ test("test_normal_when_view_drawn", async () => {
   // 準備
   const el = createElement();
   // 実行
-  await mountTracked(el, { markdown: viewMarkdown("group=状態") });
+  await mountTracked(el, {
+    markdown: viewMarkdown('{"board": {"group": {"column": "状態"}}}'),
+  });
   // 検証
   await vi.waitFor(() =>
     expect(el.querySelector(".mdmark-view-switch")).not.toBeNull(),
@@ -4801,7 +4829,9 @@ test("test_normal_when_view_filtered", async () => {
   // 準備
   const el = createElement();
   await mountTracked(el, {
-    markdown: viewMarkdown("group=状態 default=table filter=担当"),
+    markdown: viewMarkdown(
+      '{"board": {"group": {"column": "状態"}}, "initial": "table", "columns": {"担当": {"filter": {}}}}',
+    ),
   });
   await vi.waitFor(() =>
     expect(el.querySelector(".mdmark-view-switch")).not.toBeNull(),
@@ -4841,15 +4871,21 @@ test("test_normal_when_view_syntax_invalid", async () => {
   const el = createElement();
   // 実行
   await mountTracked(el, {
-    markdown: viewMarkdown("group=優先度 filter=担当:range"),
+    markdown: viewMarkdown(
+      '{"board": {"group": {"column": "優先度"}}, "columns": {"担当": {"filter": {"type": "range"}}}}',
+    ),
   });
   // 検証
+  await vi.waitFor(() =>
+    expect(el.querySelector(".mdmark-view-switch")).not.toBeNull(),
+  );
   const view = find(el, ".mdmark-view");
   const warnings = [...el.querySelectorAll(".mdmark-syntax-warning")];
   expect(warnings.length).toBeGreaterThanOrEqual(1);
   const text = warnings.map((warning) => warning.textContent).join(" ");
   expect(text).toContain("優先度");
   expect(text).toContain("range");
+  expect(text).toContain("columns.担当.filter.type");
   for (const warning of warnings) {
     expect(
       warning.compareDocumentPosition(view) & Node.DOCUMENT_POSITION_FOLLOWING,
@@ -4872,7 +4908,7 @@ test("test_normal_when_views_disabled", async () => {
   const el = createElement();
   // 実行
   const handle = fresh.mount(el, {
-    markdown: viewMarkdown("group=状態"),
+    markdown: viewMarkdown('{"board": {"group": {"column": "状態"}}}'),
     config: { features: { views: false } },
   });
   handles.push(handle);
@@ -5100,7 +5136,7 @@ test("test_error_when_part_module_unavailable", async () => {
   const spy = vi.spyOn(console, "error").mockImplementation(() => {});
   const el = createElement();
   const store = createCommentStore();
-  const markdown = `${viewMarkdown("group=状態")}\n${COMMENT_TEXT}\n`;
+  const markdown = `${viewMarkdown('{"board": {"group": {"column": "状態"}}}')}\n${COMMENT_TEXT}\n`;
   // 実行
   const handle = blocked.mount(el, {
     markdown,
@@ -5305,7 +5341,7 @@ test("test_normal_when_source_lines", async () => {
     "| 列A | 列B |",
     "| --- | ---: |",
     "| 1 | 2 |",
-    "<!-- code: lines -->",
+    '<!-- code: {"lines": {}} -->',
     "```ts",
     "const a = 1;",
     "```",
@@ -5732,7 +5768,7 @@ test("test_normal_when_no_syntax_target", async () => {
     "",
   ].join("\n");
   const disabledMarkdown = [
-    "<!-- features: -syntax -->",
+    '<!-- features: {"syntax": false} -->',
     "",
     "```ts",
     "const count: number = 1;",
@@ -6076,7 +6112,7 @@ test("test_normal_when_side_toc_into_closed_section", async () => {
         sideTocFiller(),
         "## 補足",
         "",
-        "<!-- section: closed -->",
+        '<!-- section: {"open": false} -->',
         "",
         "### 注意",
         "",
@@ -6124,19 +6160,19 @@ test("test_normal_when_all_sections_toggled", async () => {
         "",
         "## 補足",
         "",
-        "<!-- section: closed -->",
+        '<!-- section: {"open": false} -->',
         "",
         "補足の段落",
         "",
         "### 注意",
         "",
-        "<!-- section: closed -->",
+        '<!-- section: {"open": false} -->',
         "",
         "注意の段落",
         "",
         "# 付録",
         "",
-        "<!-- section: closed -->",
+        '<!-- section: {"open": false} -->',
         "",
         "付録の段落",
         "",
@@ -6205,15 +6241,15 @@ test("test_normal_when_nested_sections_toggled_with_shift", async () => {
       "",
       "## 補足",
       "",
-      "<!-- section: closed -->",
+      '<!-- section: {"open": false} -->',
       "",
       "### 注意",
       "",
-      "<!-- section: closed -->",
+      '<!-- section: {"open": false} -->',
       "",
       "#### 例",
       "",
-      "<!-- section: closed -->",
+      '<!-- section: {"open": false} -->',
       "",
       "例の段落",
       "",
@@ -6347,11 +6383,11 @@ test("test_normal_when_side_toc_not_placed", async () => {
   await mountTracked(plain, { markdown: "段落だけ\n" });
   await mountTracked(off, {
     markdown:
-      "<!-- features: -side-toc -->\n\n## 導入\n\n段落\n\n## 使用方法\n\n段落\n",
+      '<!-- features: {"side-toc": false} -->\n\n## 導入\n\n段落\n\n## 使用方法\n\n段落\n',
   });
   await mountTracked(on, {
     markdown:
-      "<!-- features: +side-toc -->\n\n## 導入\n\n段落\n\n## 使用方法\n\n段落\n",
+      '<!-- features: {"side-toc": true} -->\n\n## 導入\n\n段落\n\n## 使用方法\n\n段落\n',
     config: { features: { "side-toc": false } },
   });
   // 検証
@@ -6789,7 +6825,7 @@ test("test_normal_when_back_to_top_not_placed", async () => {
     const el3 = createElement();
     // 実行
     await mountTracked(el1, {
-      markdown: `<!-- features: -back-to-top -->\n\n${BACK_TO_TOP_MARKDOWN}`,
+      markdown: `<!-- features: {"back-to-top": false} -->\n\n${BACK_TO_TOP_MARKDOWN}`,
     });
     await mountTracked(el2, {
       markdown: BACK_TO_TOP_MARKDOWN,
@@ -7160,7 +7196,7 @@ test("test_normal_when_aliases_have_same_term", async () => {
     },
   ]);
   const markdown = [
-    "<!-- glossary: term=用語 aliases=別名 meaning=意味 -->",
+    '<!-- glossary: {"term": {"column": "用語"}, "aliases": {"column": "別名"}, "meaning": {"column": "意味"}} -->',
     "",
     "| 用語 | 別名 | 意味 |",
     "| --- | --- | --- |",
@@ -7206,7 +7242,7 @@ test("test_normal_when_aliases_glossary_disabled", async () => {
     },
   ]);
   const markdown =
-    "<!-- features: -glossary -->\n\n単体テストと作業場を記載する。\n";
+    '<!-- features: {"glossary": false} -->\n\n単体テストと作業場を記載する。\n';
   // 実行
   await mountTracked(el, { markdown, aliases });
   // 検証
@@ -7377,7 +7413,7 @@ test("test_normal_when_tree_folders_toggled", async () => {
     markdown: [
       ...NESTED_TREE_LINES,
       "",
-      "<!-- tree: open=2 -->",
+      '<!-- tree: {"depth": 2} -->',
       "",
       ...NESTED_TREE_LINES,
       "",
@@ -7547,7 +7583,7 @@ test("test_normal_when_folded_tabs_and_steps_opened", async () => {
   const el = createElement();
   await mountTracked(el, {
     markdown: [
-      "<!-- tabs: closed -->",
+      '<!-- tabs: {"collapse": {"open": false}} -->',
       "",
       "### uv",
       "",
@@ -7559,7 +7595,7 @@ test("test_normal_when_folded_tabs_and_steps_opened", async () => {
       "",
       "<!-- /tabs -->",
       "",
-      "<!-- steps: closed title=準備 -->",
+      '<!-- steps: {"collapse": {"open": false, "title": "準備"}} -->',
       "",
       "1. 一つ目",
       "2. 二つ目",
@@ -7995,7 +8031,7 @@ test("test_normal_when_colors_and_media_printed", async () => {
     const image = pngUrl({ width: 160, height: 90, color: "#0f766e" });
     await mountTracked(el, {
       markdown: [
-        "<!-- table: data row-color=状態:完了=green -->",
+        '<!-- table: {"kind": "data", "rows": {"colors": [{"column": "状態", "value": "完了", "color": "green"}]}} -->',
         "",
         "| 案件 | 状態 |",
         "| --- | --- |",
@@ -8285,7 +8321,7 @@ test("test_normal_when_jumped_from_margin_marker", async () => {
 const CLOSED_MARGIN_MARKDOWN = [
   "## 補足",
   "",
-  "<!-- section: closed -->",
+  '<!-- section: {"open": false} -->',
   "",
   "閉じた中の閉じた箇所を読み込む。",
   "",
@@ -8303,7 +8339,7 @@ const CLOSED_MARGIN_MARKDOWN = [
   "",
   "<!-- /tabs -->",
   "",
-  "<!-- table: data -->",
+  '<!-- table: {"kind": "data"} -->',
   "",
   "| 名前 | 値 |",
   "| --- | --- |",
@@ -8312,7 +8348,7 @@ const CLOSED_MARGIN_MARKDOWN = [
   "",
   "<!-- /table -->",
   "",
-  "<!-- row-detail: 1 -->",
+  '<!-- row-detail: {"at": 1} -->',
   "",
   "りんごの行の箇所を読み込む。",
   "",
@@ -8601,7 +8637,7 @@ const COLUMNS_MARKDOWN = [
   "| --- | --- |",
   "| x | 1 |",
   "",
-  "<!-- table: data +columns -->",
+  '<!-- table: {"kind": "data", "features": {"columns": {}}} -->',
   "",
   "| 名前 | 説明 | 更新日 |",
   "| --- | --- | --- |",
@@ -8609,7 +8645,7 @@ const COLUMNS_MARKDOWN = [
   "",
   "<!-- /table -->",
   "",
-  "<!-- table: data +columns hide=備考 -->",
+  '<!-- table: {"kind": "data", "columns": {"備考": {"hidden": true}}} -->',
   "",
   "| 名前 | 備考 |",
   "| --- | --- |",
@@ -8933,7 +8969,7 @@ test("test_normal_when_comments_reloaded", async () => {
     markdown: [
       EDIT_TEXT,
       "",
-      "<!-- table: data +sort -->",
+      '<!-- table: {"kind": "data", "features": {"sort": {}}} -->',
       "",
       "| 名前 |",
       "| --- |",
@@ -9085,7 +9121,7 @@ test("test_normal_when_comment_focused", async () => {
 
 /** 見出しが 2 行で、分類の列を `^^` で結合した表（数値は上から `3`・`1`・`4`・`2`） */
 const MERGED_TABLE_MARKDOWN = [
-  "<!-- table: data header-rows=2 filter=分類 +copy -->",
+  '<!-- table: {"kind": "data", "features": {"copy": {}}, "columns": {"分類": {"filter": {}}}, "header": {"rows": 2}} -->',
   "",
   "| 区分 | << |",
   "| --- | --- |",
@@ -9187,7 +9223,7 @@ test("test_normal_when_row_header_pinned", async () => {
     ...Array.from({ length: 8 }, (_, i) => `とても長い列の名前${i + 3}`),
   ];
   const markdown = [
-    "<!-- table: data row-header=2 -->",
+    '<!-- table: {"kind": "data", "header": {"columns": 2}} -->',
     "",
     `| ${headers.join(" | ")} |`,
     `| ${headers.map(() => "---").join(" | ")} |`,
@@ -9506,7 +9542,7 @@ test("test_normal_when_code_guide_hovered", async () => {
 
 /** 2 行目と 6 行目が畳める行の 8 行の yaml を、`fold=2,6` で畳んで描く Markdown */
 const CODE_FOLD_INITIAL_MARKDOWN = [
-  "<!-- code: lines fold=2,6 -->",
+  '<!-- code: {"lines": {}, "fold": [2, 6]} -->',
   "",
   "```yaml",
   "root:",
@@ -9575,7 +9611,7 @@ test("test_normal_when_code_folds_printed", async () => {
   // 準備
   const el = createElement();
   const markdown = [
-    "<!-- code: fold=2 -->",
+    '<!-- code: {"fold": [2]} -->',
     "",
     "```yaml",
     "a:",
@@ -9964,7 +10000,7 @@ function sideTocTableMarkdown(): string {
     "## 導入",
     "",
     sideTocFiller(),
-    "<!-- table: data +total total=数量:sum pin=名前 -->",
+    '<!-- table: {"kind": "data", "columns": {"数量": {"total": [{"calc": "sum"}]}, "名前": {"pinned": true}}} -->',
     "",
     `| ${columns.join(" | ")} |`,
     `|${" --- |".repeat(columns.length)}`,
@@ -10379,11 +10415,11 @@ test("test_normal_when_wrap", async () => {
     const el = createElement();
     await mountTracked(el, {
       markdown: [
-        "<!-- code: lines wrap -->",
+        '<!-- code: {"lines": {}, "wrap": true} -->',
         "",
         ...WRAP_CODE,
         "",
-        "<!-- code: lines -->",
+        '<!-- code: {"lines": {}} -->',
         "",
         ...WRAP_CODE,
         "",
@@ -10393,11 +10429,11 @@ test("test_normal_when_wrap", async () => {
         "}",
         "```",
         "",
-        "<!-- tree: open=all wrap -->",
+        '<!-- tree: {"depth": "all", "wrap": true} -->',
         "",
         ...WRAP_TREE,
         "",
-        "<!-- tree: open=all -->",
+        '<!-- tree: {"depth": "all"} -->',
         "",
         ...WRAP_TREE,
         "",
@@ -10669,7 +10705,7 @@ const WIDE_MARKDOWN = [
   "",
   "<!-- /wide -->",
   "",
-  "<!-- wide: closed -->",
+  '<!-- wide: {"open": false} -->',
   "",
   WIDE_TABLE,
   "",
@@ -10826,7 +10862,7 @@ test("test_normal_when_wide_with_side_toc", async () => {
 
 /** CSV の表と、言語 csv でない表を持つ文書 */
 const CSV_MARKDOWN = [
-  "<!-- table: data filter=拠点 -->",
+  '<!-- table: {"kind": "data", "columns": {"拠点": {"filter": {}}}} -->',
   "",
   "```csv",
   "名前,拠点,金額",
@@ -10894,7 +10930,7 @@ test("test_normal_when_pagebreak_and_details_printed", async () => {
       "",
       "<!-- pagebreak -->",
       "",
-      "<!-- details: 補足 -->",
+      '<!-- details: {"title": "補足"} -->',
       "",
       "補足の段落",
       "",
@@ -10936,7 +10972,8 @@ function includeFixture(rowText: string): {
   includes: Record<string, string>;
 } {
   return {
-    markdown: "# 案内\n\n<!-- include: 共通/手順.md#実行 -->\n\n後ろの段落\n",
+    markdown:
+      '# 案内\n\n<!-- include: {"path": "共通/手順.md", "heading": "実行"} -->\n\n後ろの段落\n',
     includes: {
       "共通/手順.md": [
         "## 準備",
@@ -10945,7 +10982,7 @@ function includeFixture(rowText: string): {
         "",
         "## 実行",
         "",
-        "<!-- table: data -->",
+        '<!-- table: {"kind": "data"} -->',
         "",
         "| 手順 | 担当 |",
         "| --- | --- |",
@@ -11089,9 +11126,9 @@ test("test_normal_when_glossary_touch", async () => {
   expect(getComputedStyle(find(wrap, ".mdmark-term-tip")).display).toBe("none");
 });
 
-/** 列の並べ替えを付けた表（`+reorder +columns`）と、`+reorder` だけの表と、`<!-- table: data -->` の表を持つ文書 */
+/** 列の並べ替えを付けた表（`+reorder +columns`）と、`+reorder` だけの表と、`<!-- table: {"kind": "data"} -->` の表を持つ文書 */
 const REORDER_MARKDOWN = [
-  "<!-- table: data +reorder +columns -->",
+  '<!-- table: {"kind": "data", "features": {"reorder": {}, "columns": {}}} -->',
   "",
   "| 名前 | 型 | 既定 | 説明 |",
   "| --- | --- | --- | --- |",
@@ -11101,7 +11138,7 @@ const REORDER_MARKDOWN = [
   "",
   "<!-- /table -->",
   "",
-  "<!-- table: data +reorder -->",
+  '<!-- table: {"kind": "data", "features": {"reorder": {}}} -->',
   "",
   "| 名前 | 型 |",
   "| --- | --- |",
@@ -11109,7 +11146,7 @@ const REORDER_MARKDOWN = [
   "",
   "<!-- /table -->",
   "",
-  "<!-- table: data -->",
+  '<!-- table: {"kind": "data"} -->',
   "",
   "| 名前 | 型 |",
   "| --- | --- |",
@@ -11223,7 +11260,7 @@ test("test_normal_when_columns_reordered", async () => {
 
 /** 2 行の見出しで名前をピン止めし、設定の範囲を持つ表の文書 */
 const REORDER_GROUPS_MARKDOWN = [
-  "<!-- table: data +reorder +columns header-rows=2 pin=名前 -->",
+  '<!-- table: {"kind": "data", "features": {"reorder": {}, "columns": {}}, "columns": {"名前": {"pinned": true}}, "header": {"rows": 2}} -->',
   "",
   "| 名前 | 設定 | << | << | 備考 |",
   "| --- | --- | --- | --- | --- |",
@@ -11374,7 +11411,7 @@ test("test_normal_when_table_pinned_through", async () => {
 
 /** 名前をピン止めし、列の並べ替えを持つ 8 列の表の文書 */
 const REORDER_PINNED_MARKDOWN = [
-  "<!-- table: data +reorder pin=名前 -->",
+  '<!-- table: {"kind": "data", "features": {"reorder": {}}, "columns": {"名前": {"pinned": true}}} -->',
   "",
   "| 名前 | 型 | 既定 | 必須 | 単位 | 範囲 | 例 | 説明 |",
   "| --- | --- | --- | --- | --- | --- | --- | --- |",
@@ -11441,7 +11478,7 @@ test("test_normal_when_reordered_with_pinned_columns", async () => {
 
 /** 2 行の見出しで設定の範囲を持ち、備考を広く取る表の文書 */
 const MERGED_HEADER_PIN_MARKDOWN = [
-  "<!-- table: data header-rows=2 wide=備考 -->",
+  '<!-- table: {"kind": "data", "columns": {"備考": {"width": {"mode": "nowrap"}}}, "header": {"rows": 2}} -->',
   "",
   "| 名前 | 設定 | << | << | 備考 |",
   "| --- | --- | --- | --- | --- |",
@@ -11511,10 +11548,10 @@ const TREE_TABLE_ROWS = [
   "| aliases[].metadata.alias_type.type | ref \\| custom |  |  | 別名の種類 |",
 ];
 
-/** 表のマーカーに `extra` を加えた階層の表の文書 */
-function treeMarkdown(extra = ""): string {
+/** 表のマーカーの `tree` に `tree` のキーを、最上位に `top` のキーを加えた階層の表の文書 */
+function treeMarkdown(extra: { tree?: string; top?: string } = {}): string {
   return [
-    `<!-- table: data tree=キー type=型 required=必須 default=既定${extra} -->`,
+    `<!-- table: {"kind": "data", "tree": {"key": {"column": "キー"}, "type": {"column": "型"}, "required": {"column": "必須"}, "default": {"column": "既定"}${extra.tree ?? ""}}${extra.top ?? ""}} -->`,
     "",
     ...TREE_TABLE_ROWS,
     "",
@@ -12052,7 +12089,7 @@ test("test_normal_when_diagram_resize_disabled", async () => {
   const el3 = createElement();
   // 実行
   await mountTracked(el, {
-    markdown: `<!-- features: -diagram-resize -->\n\n${flow}`,
+    markdown: `<!-- features: {"diagram-resize": false} -->\n\n${flow}`,
   });
   await mountTracked(el2, { markdown: flow });
   await mountTracked(el3, {
@@ -12071,13 +12108,13 @@ test("test_normal_when_diagram_resize_disabled", async () => {
   expect(el3.querySelector(".mdmark-diagram-resize")).toBeNull();
 });
 
-/** 列名と 3 行の表を、`<!-- table: data -->` で囲んだ Markdown にする */
+/** 列名と 3 行の表を、`<!-- table: {"kind": "data"} -->` で囲んだ Markdown にする */
 function dataTableMarkdown(columns: string[]): string {
   const rows = [1, 2, 3].map(
     (row) => `| ${columns.map((_, i) => `値 ${row}-${i + 1}`).join(" | ")} |`,
   );
   return [
-    "<!-- table: data -->",
+    '<!-- table: {"kind": "data"} -->',
     "",
     `| ${columns.join(" | ")} |`,
     `| ${columns.map(() => "---").join(" | ")} |`,
@@ -12090,7 +12127,7 @@ function dataTableMarkdown(columns: string[]): string {
 
 /** 見本を結んだ階層の表と、見出し `設定の見本` の下の `最小`・`エイリアス` のタブを持つ文書 */
 const TREE_EXAMPLE_MARKDOWN = [
-  treeMarkdown(" example=設定の見本"),
+  treeMarkdown({ tree: ', "example": {"heading": "設定の見本"}' }),
   "## 設定の見本",
   "",
   "<!-- tabs -->",
@@ -12194,7 +12231,9 @@ test("test_normal_when_tree_folded", async () => {
   );
   stubClipboard(writeText);
   const el = createElement();
-  await mountTracked(el, { markdown: treeMarkdown(" +copy") });
+  await mountTracked(el, {
+    markdown: treeMarkdown({ top: ', "features": {"copy": {}}' }),
+  });
   const descendants = [
     "aliases[].id",
     "aliases[].metadata",
@@ -12251,7 +12290,9 @@ test("test_normal_when_tree_filtered", async () => {
   // 準備
   const el = createElement();
   await mountTracked(el, {
-    markdown: treeMarkdown(" +count filter=キー:text"),
+    markdown: treeMarkdown({
+      top: ', "features": {"count": {}}, "columns": {"キー": {"filter": {"type": "text"}}}',
+    }),
   });
   const table = find<HTMLElement>(el, ".mdmark-table");
   const count = find<HTMLElement>(el, ".mdmark-table-count");
@@ -12517,7 +12558,7 @@ test("test_normal_when_range_scripts_enabled_by_mark", async () => {
   clearRangeMarks();
   const el = createElement();
   const markdown = [
-    "<!-- features: +html-scripts -->",
+    '<!-- features: {"html-scripts": true} -->',
     "",
     "<!-- html -->",
     "",
@@ -12782,7 +12823,7 @@ test("test_normal_when_page_marker", async () => {
     try {
       // 実行
       await mountTracked(el, {
-        markdown: `<!-- page: scheme=light theme=theme-slate toc=fixed -->\n\n${PAGE_BODY}`,
+        markdown: `<!-- page: {"scheme": "light", "theme": "theme-slate", "toc": {"mode": "fixed"}} -->\n\n${PAGE_BODY}`,
         config: {
           colorScheme: "dark",
           colorTheme: "theme-paper",
@@ -12839,7 +12880,7 @@ test("test_normal_when_color_scheme_auto", async () => {
   try {
     // 実行
     const handle = await mountTracked(el, {
-      markdown: `<!-- page: scheme=auto -->\n\n${THEME_MARKDOWN}`,
+      markdown: `<!-- page: {"scheme": "auto"} -->\n\n${THEME_MARKDOWN}`,
       config: { colorScheme: "light" },
     });
     // 検証
@@ -12856,6 +12897,10 @@ test("test_normal_when_color_scheme_auto", async () => {
   }
 });
 
+/** 知らないキー・値を記載した page のマーカー */
+const PAGE_INVALID_MARK =
+  '<!-- page: {"scheme": "sepia", "theme": "theme-unknown", "size": "wide", "toc": {"mode": "fixed"}} -->';
+
 // 知らないキー・値と、先頭に無い page のマーカーは記載の警告にして使用しない（正常系（ページの設定のマーカーの記載方法の誤り））
 test("test_normal_when_page_marker_invalid", async () => {
   await withViewport(1280, async () => {
@@ -12869,14 +12914,14 @@ test("test_normal_when_page_marker_invalid", async () => {
       expect(() => {
         handles.push(
           mount(el1, {
-            markdown: `<!-- page: scheme=sepia theme=theme-unknown size=wide toc=fixed -->\n\n${PAGE_BODY}`,
+            markdown: `${PAGE_INVALID_MARK}\n\n${PAGE_BODY}`,
             config: { colorScheme: "dark" },
           }),
         );
         handles.push(
           mount(el2, {
             markdown:
-              "最初の段落\n\n<!-- page: scheme=light -->\n\n後ろの段落\n",
+              '最初の段落\n\n<!-- page: {"scheme": "light"} -->\n\n後ろの段落\n',
             config: { colorScheme: "dark" },
           }),
         );
@@ -12886,25 +12931,20 @@ test("test_normal_when_page_marker_invalid", async () => {
       expect(warnings1).toHaveLength(1);
       const text1 = warnings1[0]?.textContent ?? "";
       // 本文の頭はマーカーの文字のため、マーカーの後ろの挙げた指定を確認する
-      const listed1 = text1.replace(
-        "<!-- page: scheme=sepia theme=theme-unknown size=wide toc=fixed -->",
-        "",
-      );
-      // 知らないキー size=wide はスキップし、警告に挙げない
-      expect(listed1).not.toContain("size=wide");
+      const listed1 = text1.replace(PAGE_INVALID_MARK, "");
+      // 知らないキー size は無視し、警告に挙げない
+      expect(listed1).not.toContain("size");
       for (const word of [
-        "scheme=sepia",
-        "theme=theme-unknown",
         "scheme",
+        "sepia",
+        "theme",
+        "theme-unknown",
         "light",
         "dark",
         "auto",
         "theme-slate",
-        "toc",
-        "hover",
-        "fixed",
       ]) {
-        expect(text1).toContain(word);
+        expect(listed1).toContain(word);
       }
       const nodes1 = [...el1.querySelectorAll("h2, .mdmark-syntax-warning")];
       expect(nodes1[0]?.classList.contains("mdmark-syntax-warning")).toBe(true);
@@ -13011,7 +13051,7 @@ test("test_normal_when_card_grid_disabled", async () => {
   const el = createElement();
   // 実行
   await mountTracked(el, {
-    markdown: `<!-- features: -card-grid -->\n\n${CARD_GRID_MARKDOWN}`,
+    markdown: `<!-- features: {"card-grid": false} -->\n\n${CARD_GRID_MARKDOWN}`,
   });
   // 検証
   expect(el.querySelector(".mdmark-card-grid")).toBeNull();
@@ -13240,7 +13280,7 @@ test("test_normal_when_block_spacing", async () => {
   }
   const detailEl = createElement();
   await mountTracked(detailEl, {
-    markdown: `| 名前 | 値 |\n| --- | --- |\n| りんご | 10 |\n\n<!-- row-detail: 1 -->\n\n段落の文。\n\n${SPACING_CODE}\n\n${SPACING_TREE}\n\n<!-- /row-detail -->\n`,
+    markdown: `| 名前 | 値 |\n| --- | --- |\n| りんご | 10 |\n\n<!-- row-detail: {"at": 1} -->\n\n段落の文。\n\n${SPACING_CODE}\n\n${SPACING_TREE}\n\n<!-- /row-detail -->\n`,
     config,
   });
   find<HTMLButtonElement>(detailEl, "button.mdmark-row-toggle").click();
@@ -13258,7 +13298,7 @@ test("test_normal_when_block_spacing", async () => {
   for (const [label, markdown] of [
     [
       "タイトルを持つコードブロック",
-      `<!-- code: title=a.ts -->\n${SPACING_CODE}\n`,
+      `<!-- code: {"title": "a.ts"} -->\n${SPACING_CODE}\n`,
     ],
     ["タイトルを持たないコードブロック", `${SPACING_CODE}\n`],
     ["ファイルツリー", `${SPACING_TREE}\n`],
@@ -13586,7 +13626,7 @@ test("test_normal_when_no_mermaid_target", async () => {
     config: { mermaid: { url: mermaidUrl(name) } },
   });
   await mountTracked(disabled, {
-    markdown: `<!-- features: -mermaid -->\n\n${MERMAID_FLOWCHART}`,
+    markdown: `<!-- features: {"mermaid": false} -->\n\n${MERMAID_FLOWCHART}`,
     config: { mermaid: { url: mermaidUrl(name) } },
   });
   await new Promise((resolve) => setTimeout(resolve, 300));
@@ -13727,7 +13767,7 @@ test("test_normal_when_frontmatter_enabled", async () => {
     // 準備
     const el = createElement();
     const lines = [...FRONTMATTER_MARKDOWN_LINES];
-    lines.splice(4, 0, "<!-- features: +frontmatter -->");
+    lines.splice(4, 0, '<!-- features: {"frontmatter": true} -->');
     // 実行
     await mountTracked(el, { markdown: lines.join("\n") });
     // 検証: 描いた直後
@@ -13747,7 +13787,7 @@ test("test_normal_when_frontmatter_enabled", async () => {
     expect(sideTocTexts(el)).toEqual(["見出し", "節"]);
     // 実行: マーカーでオフにし、設定でオンにする
     const off = createElement();
-    lines[4] = "<!-- features: -frontmatter -->";
+    lines[4] = '<!-- features: {"frontmatter": false} -->';
     await mountTracked(off, {
       markdown: lines.join("\n"),
       config: { features: { frontmatter: true } },
@@ -13818,9 +13858,11 @@ test("test_normal_when_column_resized", async () => {
   vi.spyOn(Element.prototype, "setPointerCapture").mockImplementation(() => {});
   const el = createElement();
   const markdown = [
-    resizeTable("data wide=説明"),
-    resizeTable("data -resize"),
-    resizeTable("plain"),
+    resizeTable(
+      '{"kind": "data", "columns": {"説明": {"width": {"mode": "nowrap"}}}}',
+    ),
+    resizeTable('{"kind": "data", "features": {"resize": {"enabled": false}}}'),
+    resizeTable('{"kind": "plain"}'),
   ].join("\n");
   await mountTracked(el, { markdown });
   const [first, off, plain] = [
@@ -13874,7 +13916,7 @@ test("test_normal_when_column_resized", async () => {
 test("test_normal_when_column_resized_by_keyboard", async () => {
   // 準備
   const el = createElement();
-  await mountTracked(el, { markdown: resizeTable("data") });
+  await mountTracked(el, { markdown: resizeTable('{"kind": "data"}') });
   const table = find<HTMLElement>(el, ".mdmark-table");
   const scroller = find<HTMLElement>(table, ".mdmark-table-scroll");
   const { heads, handles } = resizeParts(table);
@@ -13984,7 +14026,7 @@ test("test_normal_when_column_resized_by_touch", async () => {
   try {
     expect(matchMedia("(pointer: coarse)").matches).toBe(true);
     const el = createElement();
-    await mountTracked(el, { markdown: resizeTable("data") });
+    await mountTracked(el, { markdown: resizeTable('{"kind": "data"}') });
     const table = find<HTMLElement>(el, ".mdmark-table");
     const scroller = find<HTMLElement>(table, ".mdmark-table-scroll");
     const { heads, handles } = resizeParts(table);
@@ -14022,7 +14064,7 @@ test("test_normal_when_column_resized_in_narrow_width", async () => {
   const el = createElement();
   el.style.width = "600px";
   const markdown = [
-    "<!-- table: data -->",
+    '<!-- table: {"kind": "data"} -->',
     "",
     "| 名前 | 状態 | 説明 |",
     "| --- | --- | --- |",
@@ -15147,7 +15189,7 @@ test("test_normal_when_map_disabled", async () => {
   // 準備・実行
   const el = createElement();
   await mountTracked(el, {
-    markdown: `<!-- features: -map -->\n\n${mapRange({ mermaid: MAP_FLOW, data: MAP_DATA })}`,
+    markdown: `<!-- features: {"map": false} -->\n\n${mapRange({ mermaid: MAP_FLOW, data: MAP_DATA })}`,
     config: { features: { mermaid: false } },
   });
   // 検証

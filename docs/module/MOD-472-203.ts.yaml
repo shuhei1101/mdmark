@@ -44,7 +44,7 @@ data_models:
         description: 比較元の Markdown。文字列なら、本文の中で比較元から変えたブロックを `diffMode` の `blocks` と同じ色で塗り分ける。`null` は省いたのと同じ
       - name: onColumnsChange
         type: '((event: MdmarkColumnsChange) => void) | undefined'
-        description: '`+columns` の表で列の表示を切り替えるたびに呼ぶ関数'
+        description: '`columns` の機能の表で列の表示を切り替えるたびに呼ぶ関数'
   - name: MountHandle
     title: 描いた要素の操作
     container: src/mount.ts
@@ -72,7 +72,7 @@ data_models:
     properties:
       - name: tableIndex
         type: number
-        description: 本文の中の `+columns` の表の出現順の番号（0 から。削除したブロックの中の表は数えない）
+        description: 本文の中の `columns` の機能の表の出現順の番号（0 から。削除したブロックの中の表は数えない）
       - name: hidden
         type: string[]
         description: 隠している列の見出しの文字（`textContent` の前後の空白を除いたもの）を表の列の順に並べた新しい配列
@@ -210,7 +210,7 @@ functions:
       - name: test_mount_when_page_marker
         case: 正常
         summary: page のマーカーの明暗・テーマ・目次の出し方を設定より優先し、`update` でもう一度決める
-        condition: '設定が `{ colorScheme: "dark", colorTheme: "theme-paper", "side-toc": { mode: "hover" } }` で、`<!-- page: scheme=light theme=theme-slate toc=fixed -->` と h2 を 2 つ持つ文書を描き、`update` でマーカーを持たない文書にする'
+        condition: '設定が `{ colorScheme: "dark", colorTheme: "theme-paper", "side-toc": { mode: "hover" } }` で、`<!-- page: {"scheme": "light", "theme": "theme-slate", "toc": {"mode": "fixed"}} -->` と h2 を 2 つ持つ文書を描き、`update` でマーカーを持たない文書にする'
         mock: なし
         expected: 描いた直後、`el` が class `mdmark-theme-light` を持ち `mdmark-theme-dark` を持たず、`data-mdmark-color-theme` が `theme-slate`、右側の目次の `data-mode` が `fixed`。`update` の後は class `mdmark-theme-dark`、`data-mdmark-color-theme` が `theme-paper`、右側の目次の `data-mode` が `hover`
       - name: test_mount_when_color_scheme_destroyed
@@ -222,13 +222,13 @@ functions:
       - name: test_mount_when_print_disabled_by_mark
         case: 正常
         summary: 文書のマーカーで印刷の機能を解除すると、印刷の前に折り畳みを開かない
-        condition: '`<!-- features: -print -->` と閉じた `details`。設定の `features` は省く'
+        condition: '`<!-- features: {"print": false} -->` と閉じた `details`。設定の `features` は省く'
         mock: なし
         expected: '`beforeprint` を送信した後も `details` が `open` を持たない'
       - name: test_mount_when_updated_with_print_mark
         case: 正常
         summary: '`update` で再描画した文書のマーカーが印刷の機能に有効になる'
-        condition: 'マーカーの無い文書を描いた後、`<!-- features: -print -->` と閉じた `details` に `update`'
+        condition: 'マーカーの無い文書を描いた後、`<!-- features: {"print": false} -->` と閉じた `details` に `update`'
         mock: なし
         expected: '`beforeprint` を送信した後も `details` が `open` を持たない'
       - name: test_mount_when_updated_with_syntax
@@ -300,7 +300,7 @@ functions:
       - name: test_mount_when_side_toc_off
         case: 正常
         summary: 機能をオフにすると右側の目次を配置せず、本文を列に包まない
-        condition: '先頭に `<!-- features: -side-toc -->` を持つ `# 手引き`・`## 導入`'
+        condition: '先頭に `<!-- features: {"side-toc": false} -->` を持つ `# 手引き`・`## 導入`'
         mock: なし
         expected: '`aside.mdmark-side-toc` と `div.mdmark-content` が無く、`el` の直下に `h1` がある'
       - name: test_mount_when_back_to_top
@@ -312,7 +312,7 @@ functions:
       - name: test_mount_when_back_to_top_off
         case: 正常
         summary: 機能をオフにすると先頭へ戻るボタンを配置しない
-        condition: '先頭に `<!-- features: -back-to-top -->` を持つ `# 手引き` を描く'
+        condition: '先頭に `<!-- features: {"back-to-top": false} -->` を持つ `# 手引き` を描く'
         mock: なし
         expected: '`el` の中に `button.mdmark-back-to-top` が無い'
       - name: test_mount_when_comments_without_side_toc
@@ -402,7 +402,7 @@ functions:
       - name: test_mount_when_columns_changed
         case: 正常
         summary: 列の表示を切り替えると通知し、描いたときと update では通知しない
-        condition: '`<!-- table: data +columns hide=説明 -->` の表（列 `名前`・`状態`・`説明`）を描き、`update` で同じ本文を再描画してから、列の表示で `状態` のチェックを解除する'
+        condition: '`<!-- table: {"kind": "data", "columns": {"説明": {"hidden": true}}} -->` の表（列 `名前`・`状態`・`説明`）を描き、`update` で同じ本文を再描画してから、列の表示で `状態` のチェックを解除する'
         mock: '`onColumnsChange` は引数を記録する関数'
         expected: '`update` の後まで呼ばれず、削除した後に `{ tableIndex: 0, hidden: ["状態", "説明"] }` で 1 回呼ばれる'
       - name: test_mount_when_comment_store_edit_invalid

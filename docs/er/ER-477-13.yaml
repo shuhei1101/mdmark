@@ -1,0 +1,47 @@
+id: ER-477-13
+visibility: internal
+title: 'ER 図: 取り込みのマーカーの設定'
+lead: '`<!-- include: {JSON のオブジェクト} -->` の名前の後ろに記載する、取り込みのマーカーの設定の構造。'
+tables:
+- name: include
+  title: 取り込み
+  datastore: JSON
+  access: 全件
+  scale: ~1
+  summary: 取り込みのマーカー 1 つの設定
+  columns:
+  - name: path
+    title: 取り込むファイルのパス
+    type: string
+    description: 取り込むファイルのパス
+    not_null: true
+    example: '"共通/手順.md"'
+  - name: heading
+    title: 取り込む見出しの ID
+    type: string
+    description: 取り込む見出しの ID。`lines` と同時に記載できない
+    example: '"実行"'
+  - name: lines
+    title: 取り込む行
+    type: object
+    description: 取り込む行。共通のオブジェクトの行の範囲。Markdown 以外のファイルにだけ記載できる。Markdown のファイルに記載したとき・`heading` と両方を記載したときは、取り込まずに記載の警告を出す
+    example: '{"from": 3, "to": 10}'
+notes:
+  見本: |-
+    ```html
+    <!-- include: {"path": "../src/app.ts", "lines": {"from": 3, "to": 10}} -->
+    ```
+  今の引数との対応: |-
+    | 今の引数 | JSON のキー |
+    | --- | --- |
+    | `パス#見出しの ID`・`パス#L開始-L終了` | `path` と `heading`、`path` と `lines`。Markdown のファイルの `#L開始-L終了` は `heading` に移す |
+refs:
+- ER-477-1#
+decisions:
+- D-312
+- D-334
+- D-336
+- D-337
+- D-338
+- D-344
+- D-345

@@ -196,14 +196,14 @@ test("test_normal_when_steps_folded", async ({ page }) => {
   // 実行
   await mountDocument(page, {
     markdown: [
-      "<!-- steps: closed -->",
+      '<!-- steps: {"collapse": {"open": false}} -->',
       "",
       "1. 一つ目",
       "2. 二つ目",
       "",
       "<!-- /steps -->",
       "",
-      "<!-- steps: open title=準備 -->",
+      '<!-- steps: {"collapse": {"open": true, "title": "準備"}} -->',
       "",
       "1. 一つ目",
       "2. 二つ目",
@@ -238,7 +238,7 @@ test("test_normal_when_steps_folded", async ({ page }) => {
   expect(markers).toEqual(["counter(mdmark-step)", "counter(mdmark-step)"]);
 });
 
-// closed と open の両方・closed も open も無い title= は記載の警告を出し、知らない指定はスキップして、読み込めた指定だけを適用する（異常シナリオ（ステップの読み込めない指定））
+// 型の合わない collapse.open は記載の警告を出し、知らないキーは無視して、読み込めた指定だけを適用する（異常シナリオ（ステップの読み込めない指定））
 test("test_error_when_steps_option_invalid", async ({ page }) => {
   // 準備
   await openPage(page, builtRoot);
@@ -254,29 +254,30 @@ test("test_error_when_steps_option_invalid", async ({ page }) => {
   // 実行
   await mountDocument(page, {
     markdown: [
-      ...range("closed open"),
-      ...range("fold"),
-      ...range("title=準備"),
+      ...range('{"collapse": {"open": "no"}}'),
+      ...range('{"fold": true}'),
+      ...range('{"collapse": {"title": "準備"}}'),
     ].join("\n"),
   });
   // 検証
   const warnings = page.locator("#doc .mdmark-syntax-warning");
-  await expect(warnings).toHaveCount(2);
-  await expect(warnings.nth(0)).toContainText("closed");
-  await expect(warnings.nth(0)).toContainText("open");
-  // 知らない指定 fold はスキップする
+  await expect(warnings).toHaveCount(1);
+  await expect(warnings.nth(0)).toContainText("collapse.open");
+  await expect(warnings.nth(0)).toContainText("true");
+  await expect(warnings.nth(0)).toContainText("false");
+  // 知らないキー fold は無視する
   await expect(warnings.nth(0)).not.toContainText("fold");
-  await expect(warnings.nth(1)).not.toContainText("fold");
-  await expect(warnings.nth(1)).toContainText("title=");
-  await expect(warnings.nth(1)).toContainText("closed");
   const lists = page.locator("#doc ol.mdmark-steps");
   await expect(lists).toHaveCount(3);
   await expect(lists.nth(0).locator("xpath=ancestor::details")).toHaveCount(1);
-  await expect(
-    page.locator("#doc details.mdmark-collapsible"),
-  ).not.toHaveAttribute("open", "");
   await expect(lists.nth(1).locator("xpath=ancestor::details")).toHaveCount(0);
-  await expect(lists.nth(2).locator("xpath=ancestor::details")).toHaveCount(0);
+  await expect(lists.nth(2).locator("xpath=ancestor::details")).toHaveCount(1);
+  const folds = page.locator("#doc details.mdmark-collapsible");
+  await expect(folds).toHaveCount(2);
+  for (const fold of await folds.all()) {
+    await expect(fold).not.toHaveAttribute("open", "");
+  }
+  await expect(folds.nth(1).locator("summary")).toHaveText("準備");
 });
 
 // `#` の後ろの注釈を列に統一し、拡張子ごとのアイコンを付け、`C#/` と `#notes.md` は割らず、`...` を「ほかにもある」の項目にする（正常シナリオ（ファイルツリーに注釈を記載する））
@@ -286,7 +287,7 @@ test("test_normal_when_tree_annotated", async ({ page }) => {
   // 実行
   await mountDocument(page, {
     markdown: [
-      "<!-- tree: open=all -->",
+      '<!-- tree: {"depth": "all"} -->',
       "",
       "```tree",
       ...NOTE_TREE,
@@ -371,7 +372,7 @@ test("test_normal_when_tree_folders_toggled", async ({ page }) => {
     markdown: [
       ...NESTED_TREE,
       "",
-      "<!-- tree: open=2 -->",
+      '<!-- tree: {"depth": 2} -->',
       "",
       ...NESTED_TREE,
       "",
@@ -539,20 +540,22 @@ test("test_error_when_tree_clipboard_denied", async ({ page }) => {
   await expect(button).toBeFocused();
 });
 
-// 読み込めない open= は記載の警告を出し、既定の開き方（ルートだけ開く）でツリーを描く（異常シナリオ（ファイルツリーの読み込めない open=））
+// 読み込めない depth は記載の警告を出し、既定の開き方（ルートだけ開く）でツリーを描く（異常シナリオ（ファイルツリーの読み込めない depth））
 test("test_error_when_tree_open_invalid", async ({ page }) => {
   // 準備
   await openPage(page, builtRoot);
   // 実行
   await mountDocument(page, {
-    markdown: ["<!-- tree: open=deep -->", "", ...NESTED_TREE, ""].join("\n"),
+    markdown: ['<!-- tree: {"depth": "deep"} -->', "", ...NESTED_TREE, ""].join(
+      "\n",
+    ),
   });
   // 検証
   const warning = page.locator("#doc .mdmark-syntax-warning");
   await expect(warning).toHaveCount(1);
-  await expect(warning).toContainText("open=deep");
-  await expect(warning).toContainText("all");
-  await expect(warning).toContainText("階層の数");
+  await expect(warning).toContainText("depth");
+  await expect(warning).toContainText('"all"');
+  await expect(warning).toContainText("1 以上の整数");
   const tree = treeAt(page, 0);
   await expect(folderButton(tree, "app/")).toHaveAttribute(
     "aria-expanded",
@@ -610,11 +613,11 @@ test("test_normal_when_tree_wrap", async ({ page }) => {
   // 実行
   await mountDocument(page, {
     markdown: [
-      "<!-- tree: open=all wrap -->",
+      '<!-- tree: {"depth": "all", "wrap": true} -->',
       "",
       ...WRAP_TREE,
       "",
-      "<!-- tree: open=all -->",
+      '<!-- tree: {"depth": "all"} -->',
       "",
       ...WRAP_TREE,
       "",

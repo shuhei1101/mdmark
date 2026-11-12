@@ -13,7 +13,7 @@ const DETAILS_MARKDOWN = "<details><summary>s</summary>b</details>\n";
 
 // 絞り込みを持つ表の文書
 const TABLE_MARKDOWN = [
-  "<!-- table: data filter=名前 -->",
+  '<!-- table: {"kind": "data", "columns": {"名前": {"filter": {}}}} -->',
   "",
   "| 名前 | 値 |",
   "| --- | --- |",
@@ -214,7 +214,7 @@ test("test_mount_when_page_marker", async () => {
     "side-toc": { mode: "hover" },
   };
   const markdown = [
-    "<!-- page: scheme=light theme=theme-slate toc=fixed -->",
+    '<!-- page: {"scheme": "light", "theme": "theme-slate", "toc": {"mode": "fixed"}} -->',
     "",
     "## 導入",
     "",
@@ -269,7 +269,7 @@ test("test_mount_when_print_disabled_by_mark", async () => {
   // 準備
   const el = createElement();
   await mountTracked(el, {
-    markdown: `<!-- features: -print -->\n\n${DETAILS_MARKDOWN}`,
+    markdown: `<!-- features: {"print": false} -->\n\n${DETAILS_MARKDOWN}`,
   });
   // 実行
   sendBeforePrint();
@@ -282,7 +282,7 @@ test("test_mount_when_updated_with_print_mark", async () => {
   // 準備
   const el = createElement();
   const handle = await mountTracked(el, { markdown: "段落\n" });
-  handle.update(`<!-- features: -print -->\n\n${DETAILS_MARKDOWN}`);
+  handle.update(`<!-- features: {"print": false} -->\n\n${DETAILS_MARKDOWN}`);
   // 実行
   sendBeforePrint();
   // 検証
@@ -368,7 +368,7 @@ test("test_mount_when_extension_definition_invalid", async () => {
   );
   resetExtensions();
   const load = vi.fn(async () => ({ draw: () => {} }));
-  const validate = vi.fn(() => ({ value: { args: [], keys: {} } }));
+  const validate = vi.fn(() => ({ value: { options: {} } }));
   registerExtension({
     name: "greet",
     directive: "greet",
@@ -671,7 +671,7 @@ test("test_mount_when_side_toc_off", async () => {
   const el = createElement();
   // 実行
   await mountTracked(el, {
-    markdown: "<!-- features: -side-toc -->\n\n# 手引き\n\n## 導入\n",
+    markdown: '<!-- features: {"side-toc": false} -->\n\n# 手引き\n\n## 導入\n',
   });
   // 検証
   expect(el.querySelector("aside.mdmark-side-toc")).toBeNull();
@@ -703,7 +703,7 @@ test("test_mount_when_back_to_top_off", async () => {
   const el = createElement();
   // 実行
   await mountTracked(el, {
-    markdown: "<!-- features: -back-to-top -->\n\n# 手引き\n",
+    markdown: '<!-- features: {"back-to-top": false} -->\n\n# 手引き\n',
   });
   // 検証
   expect(el.querySelector("button.mdmark-back-to-top")).toBeNull();
@@ -1013,7 +1013,7 @@ test("test_mount_when_columns_changed", async () => {
   // 準備
   const el = createElement();
   const markdown = [
-    "<!-- table: data +columns hide=説明 -->",
+    '<!-- table: {"kind": "data", "columns": {"説明": {"hidden": true}}} -->',
     "",
     "| 名前 | 状態 | 説明 |",
     "| --- | --- | --- |",

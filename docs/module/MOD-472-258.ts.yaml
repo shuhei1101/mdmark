@@ -143,7 +143,7 @@ functions:
       - name: test_collect_matches_when_disabled
         case: 正常
         summary: 文書のマーカーでオフにした機能の種類の一致を返却しない
-        condition: '`guide` に `<!-- features: -glossary -->`、`memo` に `<!-- features: -glossary -backlinks -->`'
+        condition: '`guide` に `<!-- features: {"glossary": false} -->`、`memo` に `<!-- features: {"glossary": false, "backlinks": false} -->`'
         mock: なし
         expected: '`guide` は `doc` の要素だけ、`memo` は空'
       - name: test_collect_matches_when_invalid_index
@@ -179,7 +179,7 @@ functions:
       - name: test_collect_matches_when_avoided_and_glossary_disabled
         case: 正常
         summary: '`glossary` がオフの文書はやめた言い方を返却しない'
-        condition: '用語 `ワークスペース`（`ws`、`avoid` に `作業場`）と、頭に `<!-- features: -glossary -->` を記載し段落に `作業場` を記載した `guide` の本文'
+        condition: '用語 `ワークスペース`（`ws`、`avoid` に `作業場`）と、頭に `<!-- features: {"glossary": false} -->` を記載し段落に `作業場` を記載した `guide` の本文'
         mock: なし
         expected: '`avoided.guide` が空の並び'
       - name: test_collect_matches_when_notation_differs

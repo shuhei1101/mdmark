@@ -7,8 +7,8 @@ scenarios:
       - name: mdmark を読み込むページ
         description: バージョンを固定した URL で `dist/index.js` と `dist/index.css` を読み込み、設定を指定して文書を描く HTML
       - name: 絞り込む列を指定した Markdown
-        description: '`<!-- view: group=状態 default=table filter=担当 -->` 〜 `<!-- /view -->` で、タイトル・状態・担当の列と 5 行を持つ表を囲んだ文書'
-        notes: 担当の列の値は上から `佐藤`・`鈴木`・`佐藤`・`田中`・`鈴木`。`filter=` に種類を記載しない列は値を選んで絞り込む（`select`）
+        description: '`<!-- view: {"board": {"group": {"column": "状態"}}, "initial": "table", "columns": {"担当": {"filter": {}}}} -->` 〜 `<!-- /view -->` で、タイトル・状態・担当の列と 5 行を持つ表を囲んだ文書'
+        notes: 担当の列の値は上から `佐藤`・`鈴木`・`佐藤`・`田中`・`鈴木`。`filter` に `type` を記載しない列は値を選んで絞り込む（`select`）
       - name: Mock
         description: jsDelivr を、ビルドした `dist/` を同じパスで返却する手元の応答に差し替える
     flow: |-
@@ -36,7 +36,7 @@ scenarios:
       - name: mdmark を読み込むページ
         description: 正常シナリオと同じ
       - name: 文字で絞り込む列を指定した Markdown
-        description: '`<!-- view: group=状態 default=table filter=タイトル:text -->` 〜 `<!-- /view -->` で、正常シナリオと同じ表を囲んだ文書'
+        description: '`<!-- view: {"board": {"group": {"column": "状態"}}, "initial": "table", "columns": {"タイトル": {"filter": {"type": "text"}}}} -->` 〜 `<!-- /view -->` で、正常シナリオと同じ表を囲んだ文書'
         notes: タイトルの列に `配色の変数を洗い出す`・`余白の変数を決める`・`印刷の見え方を確認する` などを持つ
       - name: Mock
         description: 正常シナリオと同じ
@@ -55,7 +55,7 @@ scenarios:
       - name: mdmark を読み込むページ
         description: 正常シナリオと同じ
       - name: 知らない種類を指定した Markdown
-        description: '`<!-- view: group=状態 default=table filter=担当:range -->` 〜 `<!-- /view -->` で、正常シナリオと同じ表を囲んだ文書'
+        description: '`<!-- view: {"board": {"group": {"column": "状態"}}, "initial": "table", "columns": {"担当": {"filter": {"type": "range"}}}} -->` 〜 `<!-- /view -->` で、正常シナリオと同じ表を囲んだ文書'
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
@@ -65,21 +65,21 @@ scenarios:
         P->>M: 設定と Markdown を指定して描かせる
         M-->>P: 記載の警告と、絞り込みのボタンの無い表形式のビュー
     expected:
-      - 範囲の上に、`range` が使用できない絞り込みの種類であることと、使用できる種類（`select`・`text`・`date`）を記載した記載の警告がある
+      - 範囲の上に、`columns.担当.filter.type` の `range` が選べる値に無いことと、選べる値（`select`・`text`・`date`）を記載した記載の警告がある
       - 担当の列に絞り込みのボタンが無く、ビューと切り替えは描かれる
     test: test_error_when_filter_kind_unknown
-lead: 文書の作成者がビューのマーカーに `filter=列名:種類` を記載し、読者が表形式のビューの列の見出しの絞り込みで項目を絞る。ボード表示には絞り込みを当てず、常に全ての項目を出す。
+lead: 文書の作成者がビューのマーカーの `columns.{列名}.filter` に絞り込みの種類を記載し、読者が表形式のビューの列の見出しの絞り込みで項目を絞る。ボード表示には絞り込みを当てず、常に全ての項目を出す。
 issue: 8
 primary_actor: 読者
 stakeholders:
   - name: 文書の作成者
-    interest: 記法の表と同じ `filter=` の記載方法で、絞り込める列と種類を選べる
+    interest: 記法の表と同じ `columns.{列名}.filter` の記載方法で、絞り込める列と種類を選べる
   - name: 読者
     interest: 列の値で項目を絞って探せ、ボード表示では全体を見渡せる
 trigger: 読者が、ビューの項目の中から列の値で目当ての項目を探したくなる
 preconditions:
   - ページが `mount` でビューのマーカーを持つ文書を描いているか、利用側のページがビューを描く関数でビューを描いている
   - ビューの機能（`views`）がオン（既定）
-success_guarantee: '`filter=` で指定した列の見出しにだけ絞り込みのボタンがあり、選んだ値・入れた文字に合う行だけが表形式のビューに残る。ボード表示に切り替えると全ての項目が出て、表形式に戻ると絞り込みは残っている。'
-minimal_guarantee: '`filter=` に読み込めない指定があってもビューは描かれ、読み込めた指定だけを適用して、範囲の上に記載の警告が出る。'
+success_guarantee: '`columns.{列名}.filter` で指定した列の見出しにだけ絞り込みのボタンがあり、選んだ値・入れた文字に合う行だけが表形式のビューに残る。ボード表示に切り替えると全ての項目が出て、表形式に戻ると絞り込みは残っている。'
+minimal_guarantee: '`columns.{列名}.filter` に読み込めない指定があってもビューは描かれ、読み込めた指定だけを適用して、範囲の上に記載の警告が出る。'
 test_file: tests/e2e/単一ユースケース/表形式のビューを列で絞り込む.spec.ts

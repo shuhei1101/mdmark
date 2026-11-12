@@ -18,11 +18,11 @@ test("test_read_includes", async () => {
     return files[path];
   };
   const markdown = [
-    "<!-- include: 共通/手順.md#実行 -->",
+    '<!-- include: {"path": "共通/手順.md", "heading": "実行"} -->',
     "",
-    "<!-- include: missing.md -->",
+    '<!-- include: {"path": "missing.md"} -->',
     "",
-    "<!-- include: ../../outside.md -->",
+    '<!-- include: {"path": "../../outside.md"} -->',
     "",
   ].join("\n");
   // 実行

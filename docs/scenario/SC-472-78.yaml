@@ -85,6 +85,52 @@ scenarios:
       - 終了コードが 0 以外
       - 設定・索引・文書が変わっていない
     test: test_normal_when_unknown_mark
+  - name: 正常シナリオ（今の書き方のマーカーがある）
+    setup:
+      - name: 今の書き方のマーカーを持つフォルダ
+        description: '正常シナリオのフォルダの 1 つ目の文書に `<!-- table: data filter=名前 -->` 〜 `<!-- /table -->` で囲んだ表、2 つ目の文書に `<!-- section: closed -->` と、拡張のマーカーの今の書き方の記載を持つもの。設定の `extensions` に、そのマーカーの拡張のモジュールを記載する'
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        actor W as 文書の作成者
+        participant C as mdmark CLI
+        participant M as mdmark の点検の処理
+        W->>C: mdmark check
+        C->>C: 設定・索引・文書を読み込み、設定の Schema と build の対象を確認する
+        C->>M: checkIndex（索引・文書）
+        M-->>C: 空のずれの一覧
+        C->>C: 文書の本文から、引数が JSON のオブジェクトでないマーカーを取得する
+        C-->>W: ファイル・場所・種類・内容の一覧・終了コード 0 以外
+    expected:
+      - 表・section・拡張のマーカーを指す 3 つの行があり、種類が今の書き方のマーカーで、内容に JSON のオブジェクトでの記載方法と `mdmark upgrade` での移行の案内が記載されている
+      - 拡張のマーカーの行の内容に、描くときにそのマーカーを描かないことが記載されている
+      - 終了コードが 0 以外
+      - 設定・索引・文書が変わっていない
+    test: test_normal_when_legacy_mark
+  - name: 正常シナリオ（マーカーの設定にずれがある）
+    setup:
+      - name: マーカーの設定のずれを持つフォルダ
+        description: '正常シナリオのフォルダの 1 つ目の文書に、知らないキーを持つ `<!-- code: {"title": "app.ts", "color": "red"} -->`、型の合わない `<!-- section: {"open": "no"} -->`、機能を削除した表の列の設定 `<!-- table: {"features": {"total": {"enabled": false}}, "columns": {"数量": {"total": [{"calc": "sum"}]}}} -->` を記載したもの'
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        actor W as 文書の作成者
+        participant C as mdmark CLI
+        participant M as mdmark の点検の処理
+        W->>C: mdmark check
+        C->>C: 設定・索引・文書を読み込み、設定の Schema と build の対象を確認する
+        C->>M: checkIndex（索引・文書）
+        M-->>C: 空のずれの一覧
+        C->>C: 文書のマーカーの JSON のオブジェクトを、マーカーごとの JSON Schema で検証する
+        C-->>W: ファイル・場所・種類・内容の一覧・終了コード 0 以外
+    expected:
+      - '`color` を知らないキーとして指す行、`open` の型の誤りを指す行、`enabled` を `false` にした `total` の機能の列の設定 `columns.数量.total` を適用しないことを指す行の 3 つがある'
+      - 各行が文書のファイルとマーカーの行を指し、内容にそのマーカーで記載できるキーか値を挙げる
+      - 終了コードが 0 以外
+      - 設定・索引・文書が変わっていない
+    test: test_normal_when_mark_options_drift
   - name: 正常シナリオ（比べる基準を指定する）
     setup:
       - name: 組で修正する文書を持つ git のフォルダ
@@ -237,7 +283,7 @@ scenarios:
   - name: 正常シナリオ（取り込み先が無い）
     setup:
       - name: 取り込み先の無いマーカーを持つフォルダ
-        description: '正常シナリオのフォルダの 1 つ目の文書に、無いファイルを指す `<!-- include: missing.md -->`、2 つ目の文書に無い見出しを指す include のマーカー、無い行の範囲を指す include のマーカーを記載し、正しい取り込み先を指す include のマーカーも 1 つ記載したもの'
+        description: '正常シナリオのフォルダの 1 つ目の文書に、無いファイルを指す `<!-- include: {"path": "missing.md"} -->`、2 つ目の文書に無い見出しを指す include のマーカー、無い行の範囲を指す include のマーカーを記載し、正しい取り込み先を指す include のマーカーも 1 つ記載したもの'
         notes: 行の範囲は 5 行のファイルの 8〜10 行目を指す。ずれの種類の名前はインターフェース定義で決める
       - name: Mock
         description: 差し替える依存は無い
@@ -387,7 +433,7 @@ primary_actor: 文書の作成者
 trigger: 文書や索引を書き換えた後、書き出す前にずれを確認する
 preconditions:
   - 文書の作成者の手元に Node 24 以降がある
-success_guarantee: 設定の Schema に合わないところ・索引と文書のずれ（`checkIndex` が返却するもの）・`build` の対象が 0 件であること・文書の本文にある知らないマーカー・図の部品の定義の誤りとノードの重なり・はみ出し・線の横切り・ラベルの長さ（座標を省いた判定フローチャートは自動の配置の後の座標で点検する）・include のマーカーの取り込み先が無いことが、ファイル・場所・種類・内容の一覧で出る。比べる基準の git の ref を指定したときは、基準から片方の文書だけが変わった `change_together` の組も、修正漏れとして同じ一覧に出る。ずれが無ければ終了コード 0、あれば 0 以外で終わる。
+success_guarantee: 設定の Schema に合わないところ・索引と文書のずれ（`checkIndex` が返却するもの）・`build` の対象が 0 件であること・文書の本文にある知らないマーカー・今の書き方のマーカー・マーカーの設定の JSON Schema に合わないところ・図の部品の定義の誤りとノードの重なり・はみ出し・線の横切り・ラベルの長さ（座標を省いた判定フローチャートは自動の配置の後の座標で点検する）・include のマーカーの取り込み先が無いことが、ファイル・場所・種類・内容の一覧で出る。比べる基準の git の ref を指定したときは、基準から片方の文書だけが変わった `change_together` の組も、修正漏れとして同じ一覧に出る。ずれが無ければ終了コード 0、あれば 0 以外で終わる。
 minimal_guarantee: 点検は設定・索引・文書を書き換えない。設定ファイルを読み込めないときは、原因と修正方法の 1 文を出して 0 以外で終わる。
 refs:
   - SC-472-70#

@@ -4,6 +4,21 @@ title: ライブラリ本体 / 記法 / includes.ts
 test_files:
   - tests/unit/src/render/syntax/includes.test.ts
 functions:
+  - name: writtenOf
+    title: 取り込みの設定を取り込み先の文字にする
+    container: src/render/syntax/includes.ts
+    kind: 関数
+    scope: internal
+    summary: 取り込みのマーカーの設定（`path`・`heading`・`lines`）を、`resolveIncludePath` に指定する取り込み先の文字（`パス`・`パス#見出しの ID`・`パス#L開始-L終了`）にする
+    description: '`heading` があれば `パス#見出しの ID`、`lines` の `from` があれば `パス#L{from}-L{to}`（`to` を省くと `from`）、どちらも無ければ `パス`。`expandIncludes` と、点検の取り込みの解決（`collectIncludes`）が使用する'
+    args:
+      - name: options
+        type: Record<string, unknown>
+        required: true
+        description: 取り込みのマーカーの設定
+    returns:
+      type: string
+      description: 取り込み先の文字
   - name: resolveIncludePath
     title: 取り込みのパスを解く
     container: src/render/syntax/includes.ts

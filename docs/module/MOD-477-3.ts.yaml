@@ -1,0 +1,103 @@
+id: MOD-477-3
+visibility: internal
+title: ライブラリ本体 / 描画 / legacy-marks.ts
+lead: 今の書き方のマーカーの引数を、ER 図『マーカーの設定の共通の決まり』の「今の引数との対応」の表で JSON のオブジェクトにし、文書の今の書き方のマーカーを書き換える。描く処理と移行の手順のスクリプトが同じ処理を使用する。
+test_files:
+  - tests/unit/src/render/legacy-marks.test.ts
+data_models:
+  - name: DroppedLegacyArg
+    title: 書き出さない今の書き方の記載
+    container: src/render/legacy-marks.ts
+    usecase: 共通
+    summary: 今の実装が適用していない記載か読み込めない記載 1 つ
+    properties:
+      - name: text
+        type: string
+        description: 記載した文字（`total=数量:sum`・`filter=名前:range`）
+      - name: reason
+        type: string
+        description: 書き出さない理由（`+total` が無い・`range` は使用できない絞り込みの種類 など）。描くときは今の実装と同じ記載の警告の本文にする
+  - name: LegacyReportLine
+    title: 移行の報告の行
+    container: src/render/legacy-marks.ts
+    usecase: バージョンを上げる
+    summary: '`rewriteLegacyMarks` が返却する報告 1 行（`{line, name, text, reason}`）'
+functions:
+  - name: convertLegacyArgs
+    title: 今の書き方の引数を JSON のオブジェクトにする
+    container: src/render/legacy-marks.ts
+    kind: 関数
+    scope: internal
+    summary: マーカーの名前ごとの対応で、`parseMarkArgs` の値を JSON のオブジェクトにし、今の実装が適用していない記載と読み込めない記載を `dropped` に分ける
+    description: '列の設定を記載した機能（`filter=`・`hide=`・`pin=`・`total=` を記載した表の `+filter`・`+columns`・`+pin`・`+total`）は `features` に記載しない。`closed` と `open` の両方は `collapse.open` の `false`、値の無い `title=` は `collapse.title` を省く。`section` は最初の引数だけを、`details` の `open` は最後の単語のときだけを移す。Markdown のファイルの `include` の `#L開始-L終了` は `heading` に移す。拡張・`libraries`・`map` の名前は扱わない'
+    args:
+      - name: options
+        type: '{ name: string; text: string }'
+        required: true
+        description: マーカーの名前と今の書き方の引数の文字
+    returns:
+      type: '{ options: MarkOptions; dropped: DroppedLegacyArg[] }'
+      description: JSON のオブジェクトと、書き出さない記載
+    callees:
+      - MOD-472-210#functions[parseMarkArgs]
+    unit_tests:
+      - name: test_convert_legacy_args
+        case: 正常
+        summary: 表の今の書き方を、列の設定と機能と折り畳みにする
+        condition: '`table` と `data +count total=数量:sum filter=名前,更新日:date hide=備考 closed`'
+        mock: なし
+        expected: '`options` が `{ kind: "data", features: { count: {} }, columns: { 名前: { filter: {} }, 更新日: { filter: { type: "date" } } }, collapse: { open: false } }`、`dropped` が `total=数量:sum`（`+total` が無い）と `hide=備考`（`+columns` が無い）'
+      - name: test_convert_legacy_args_when_each_mark
+        case: 正常
+        summary: 記法のマーカーごとの今の書き方を対応のとおりにする
+        condition: '`code`（`title=app.ts lines highlight=2,4-6 fold=8 wrap`）・`details`（`実行の例 open`）・`tree`（`open=2 wrap`）・`include`（`src/app.ts#L3-L5`・`a.md#L3-L5`）・`view`（`group=状態 default=table filter=担当 icons=未着手:inbox`）・`glossary`（`term=用語 meaning=意味`）・`features`（`+a -b`）・`page`（`scheme=dark toc=fixed`）'
+        mock: なし
+        expected: ER 図『マーカーの設定の共通の決まり』の「今の引数との対応」の表のとおりの JSON のオブジェクト（`a.md#L3-L5` は `heading` が `L3-L5`）
+      - name: test_convert_legacy_args_when_unreadable
+        case: 異常
+        summary: 読み込めない記載を書き出さずに分ける
+        condition: '`table` と `data filter=名前:range +unknown`'
+        mock: なし
+        expected: '`options` が `{ kind: "data" }`、`dropped` が `filter=名前:range` と `+unknown`'
+  - name: rewriteLegacyMarks
+    title: 文書の今の書き方のマーカーを書き換える
+    container: src/render/legacy-marks.ts
+    kind: 関数
+    scope: internal
+    summary: Markdown を描く処理と同じ読み取りでマーカーを探し、記法のマーカー（`SYNTAX_MARKS`・`features`・`page`。`map`・`map-data` を除く）の今の書き方の引数を `convertLegacyArgs` の JSON のオブジェクトに書き換え、書き出さない記載と、今の書き方の引数を持つほかの名前のマーカー（拡張・`libraries` のマーカー）を報告の行にする
+    description: 'コードブロックと行内のコードの中・閉じのマーカー・引数の無いマーカー・JSON のオブジェクトのマーカー・マーカーの外の文字は書き換えない。引数の無くなるマーカーは `<!-- 名前 -->` にする。JSON は `, `・`: ` で区切った 1 行の文字にする。もう一度呼んでも結果が変わらない'
+    args:
+      - name: options
+        type: '{ markdown: string }'
+        required: true
+        description: '`markdown` は文書の本文'
+    returns:
+      type: '{ markdown: string; report: LegacyReportLine[] }'
+      description: 書き換えた本文と、行の順の報告
+    callees:
+      - '#functions[convertLegacyArgs]'
+    unit_tests:
+      - name: test_rewrite_legacy_marks
+        case: 正常
+        summary: 今の書き方のマーカーだけを書き換え、ほかの文字を変えない
+        condition: 'シナリオ『バージョンを上げる』の「正常シナリオ（文書のマーカーを JSON の記載へ書き換える）」の 2 つの文書'
+        mock: なし
+        expected: 期待値のとおりの JSON のオブジェクトになり、`<!-- toc -->`・閉じのマーカー・コードブロックの中・本文が変わらず、`report` が `total=数量:sum` の 1 行
+      - name: test_rewrite_legacy_marks_when_unconverted
+        case: 正常
+        summary: 記法でないマーカーを書き換えずに報告する
+        condition: '`<!-- greet: world -->` と `<!-- table: data filter=名前:range -->`'
+        mock: なし
+        expected: '`greet` は変わらず、表は `<!-- table: {"kind": "data"} -->` になり、`report` が 2 行'
+      - name: test_rewrite_legacy_marks_when_rerun
+        case: 正常
+        summary: 書き換えた本文をもう一度書き換えても変わらない
+        condition: 1 つ目のテストの結果の本文
+        mock: なし
+        expected: '`markdown` が同じで、`report` が空'
+refs:
+  - ER-477-1#notes[今の引数との対応]
+  - IF-472-28#constraints[文書のマーカーの移行]
+decisions:
+  - D-312
+  - D-335

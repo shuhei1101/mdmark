@@ -353,5 +353,9 @@
 | [ライブラリ本体 / 設定を重ねて読み込む](./MOD-472-45.yaml) | 端末の設定と、起点のフォルダから上のフォルダの `mdmark.config.yaml` を探して重ねる処理。CLI・MCP のツール・VS Code 拡張機能が同じ関数を呼ぶ。 |
 | [ライブラリ本体 / 部品](./MOD-472-46.yaml) | 文書の中に mdmark が配置する UI の部品を HTML 文字列で返却する関数と、Storybook のストーリー。DOM に頼らず、ブラウザと Node で同じ出力になる。 |
 | [ライブラリ本体 / 部品の描画](./MOD-472-47.yaml) | Storybook（`@storybook/react-vite`）のストーリーに部品の HTML を出す仕組み。部品の HTML を返却する描画のインターフェース（Node の HTTP サーバー）と、Storybook の設定・描画のインターフェースの HTML を描くデコレーター・VS Code の配色を与えるデコレーターを持つ。配布物には入らない。 |
+| [ライブラリ本体 / 描画 / mark-options.ts](./MOD-477-1.ts.yaml) | ライブラリ本体 / 描画 / mark-options.ts |
+| [ライブラリ本体 / 描画 / mark-schema.ts](./MOD-477-2.ts.yaml) | ライブラリ本体 / 描画 / mark-schema.ts |
+| [ライブラリ本体 / 描画 / legacy-marks.ts](./MOD-477-3.ts.yaml) | ライブラリ本体 / 描画 / legacy-marks.ts |
+| [ライブラリ本体 / バージョンを上げる / marker-json.mjs](./MOD-477-4.mjs.yaml) | ライブラリ本体 / バージョンを上げる / marker-json.mjs |
 
 <!-- /table -->

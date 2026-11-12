@@ -130,11 +130,58 @@ flows:
       - 最後の行が `ずれ 1 件`
       - 設定・索引・文書が変わっていない
     test: test_normal_when_unknown_mark
+  - name: 正常系（今の書き方のマーカーがある）
+    summary: 文書の今の書き方のマーカーを、文書と行を指す `legacy_mark` の行にして終了コード 1 で終わる
+    setup:
+      - name: 今の書き方のマーカーを持つフォルダ
+        description: 'シナリオ『設定と索引を点検する』の「正常シナリオ（今の書き方のマーカーがある）」と同じ。`a.md` の 3 行目に `<!-- table: data filter=名前 -->`、`b.md` の 1 行目に `<!-- section: closed -->`、5 行目に拡張の `<!-- greet: 太郎 -->` を記載する'
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        actor W as 文書の作成者
+        participant C as mdmark CLI
+        participant M as checkIndex
+        W->>C: mdmark check
+        C->>M: 索引・文書
+        M-->>C: []
+        C->>C: 文書のマーカーの引数を描く処理と同じ読み取りで読む
+        C-->>W: legacy_mark の行・終了コード 1
+    expected:
+      - 終了コードが 1
+      - '`a.md:3: legacy_mark:`・`b.md:1: legacy_mark:`・`b.md:5: legacy_mark:` で始まる行が 1 つずつあり、どれも `mdmark upgrade` を含む'
+      - '`b.md:5:` の行が、拡張のマーカーを描くときに描かないことを含む'
+      - 最後の行が `ずれ 3 件`
+      - 設定・索引・文書が変わっていない
+    test: test_normal_when_legacy_mark
+    refs:
+      - SC-472-78#scenarios[正常シナリオ（今の書き方のマーカーがある）]
+  - name: 正常系（マーカーの設定にずれがある）
+    summary: 文書のマーカーの知らないキー・型の誤り・削除した機能の列の設定を、文書と行を指す行にして終了コード 1 で終わる
+    setup:
+      - name: マーカーの設定のずれを持つフォルダ
+        description: 'シナリオ『設定と索引を点検する』の「正常シナリオ（マーカーの設定にずれがある）」と同じ。`a.md` の 1 行目に `<!-- code: {"title": "app.ts", "color": "red"} -->`、5 行目に `<!-- section: {"open": "no"} -->`、9 行目に `<!-- table: {"features": {"total": {"enabled": false}}, "columns": {"数量": {"total": [{"calc": "sum"}]}}} -->` を記載する'
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        actor W as 文書の作成者
+        participant C as mdmark CLI
+        W->>C: mdmark check
+        C->>C: 文書のマーカーの引数をマーカーの JSON Schema で検証する
+        C-->>W: ずれの行・終了コード 1
+    expected:
+      - 終了コードが 1
+      - '`a.md:1: unknown_mark_arg:` で始まり `color` を含む行、`a.md:5: mark_option_invalid:` で始まり `open` を含む行、`a.md:9: mark_option_unapplied:` で始まり `columns.数量.total` を含む行が 1 つずつある'
+      - 最後の行が `ずれ 3 件`
+    test: test_normal_when_mark_options_drift
+    refs:
+      - SC-472-78#scenarios[正常シナリオ（マーカーの設定にずれがある）]
   - name: 正常系（拡張と check.ignore のマーカー）
     summary: 拡張が登録したマーカーと `check.ignore` に記載した名前のマーカーは、ずれにしない
     setup:
       - name: 拡張と除外する名前を記載したフォルダ
-        description: '`mdmark init` の雛形の拡張 `extensions/example.js`（`directive` が `greet`）を設定の `extensions` に記載し、設定の `check.ignore` に `prettier-ignore` を記載したフォルダ。文書 `a.md` に `<!-- greet: 太郎 -->` と `<!-- prettier-ignore -->` を記載する'
+        description: '`mdmark init` の雛形の拡張 `extensions/example.js`（`directive` が `greet`）を設定の `extensions` に記載し、設定の `check.ignore` に `prettier-ignore` を記載したフォルダ。文書 `a.md` に `<!-- greet: {"name": "太郎"} -->` と `<!-- prettier-ignore -->` を記載する'
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
@@ -359,7 +406,7 @@ flows:
     summary: include のマーカーが指すファイル・見出し・行の範囲が無いものを `include_target_missing` のずれにする
     setup:
       - name: 取り込み先の無いマーカーを持つフォルダ
-        description: '`build.include` が該当する `docs/a.md` と `docs/b.md` と、5 行の `src/app.ts`、`## 実行` を持つ `docs/共通/手順.md`。`a.md` は 3 行目に `<!-- include: missing.md -->`、5 行目に `<!-- include: 共通/手順.md#実行 -->` を持つ。`b.md` は 2 行目に `<!-- include: 共通/手順.md#無い見出し -->`、4 行目に `<!-- include: ../src/app.ts#L8-L10 -->` を持つ'
+        description: '`build.include` が該当する `docs/a.md` と `docs/b.md` と、5 行の `src/app.ts`、`## 実行` を持つ `docs/共通/手順.md`。`a.md` は 3 行目に `<!-- include: {"path": "missing.md"} -->`、5 行目に `<!-- include: {"path": "共通/手順.md", "heading": "実行"} -->` を持つ。`b.md` は 2 行目に `<!-- include: {"path": "共通/手順.md", "heading": "無い見出し"} -->`、4 行目に `<!-- include: {"path": "../src/app.ts", "lines": {"from": 8, "to": 10}} -->` を持つ'
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
@@ -382,7 +429,7 @@ flows:
     summary: 循環する取り込みを `include_circular`、設定ファイルのフォルダの外を指す取り込みを `include_target_missing` のずれにする
     setup:
       - name: 循環とフォルダの外を指すマーカーを持つフォルダ
-        description: '`build.include` が該当する `docs/a.md`（3 行目に `<!-- include: b.md -->`、5 行目に `<!-- include: ../../outside.md -->`）と、`build.include` に該当しない `docs/b.md`（2 行目に `<!-- include: a.md -->`）。`outside.md` は設定ファイルのフォルダの 1 つ上にある'
+        description: '`build.include` が該当する `docs/a.md`（3 行目に `<!-- include: {"path": "b.md"} -->`、5 行目に `<!-- include: {"path": "../../outside.md"} -->`）と、`build.include` に該当しない `docs/b.md`（2 行目に `<!-- include: {"path": "a.md"} -->`）。`outside.md` は設定ファイルのフォルダの 1 つ上にある'
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
@@ -407,7 +454,7 @@ flows:
       - name: 作業のフォルダ
         description: '`mdmark init` の後のフォルダ'
       - name: 点検する文字列
-        description: '正しいフロー図の部品の定義と、`<!-- table: data -->` で囲んだ表を持つ Markdown を標準入力で指定する'
+        description: '正しいフロー図の部品の定義と、`<!-- table: {"kind": "data"} -->` で囲んだ表を持つ Markdown を標準入力で指定する'
       - name: Mock
         description: 差し替える依存は無い（CLI をそのフォルダで子プロセスとして実行する）
     flow: |-
@@ -428,7 +475,7 @@ flows:
       - name: 作業のフォルダ
         description: 正常系（文字列の記法を点検する）と同じ
       - name: 記載の警告を持つ文字列
-        description: '1 行目の `<!-- flow -->` の範囲にノードの種類 `begin` を記載した定義、20 行目に `<!-- tabz -->`、22 行目に `<!-- code: highlight=9 -->` とその直後の 3 行のコードブロックを持つ Markdown'
+        description: '1 行目の `<!-- flow -->` の範囲にノードの種類 `begin` を記載した定義、20 行目に `<!-- tabz -->`、22 行目に `<!-- code: {"highlight": [9]} -->` とその直後の 3 行のコードブロックを持つ Markdown'
       - name: Mock
         description: 正常系と同じ
     flow: |-
@@ -577,12 +624,12 @@ flows:
     refs:
       - SC-472-78#scenarios[正常シナリオ（グループの項目に誤った値がある）]
   - name: 正常系（文字列の記法のマーカーに知らない引数がある）
-    summary: 描くときにスキップする記法のマーカーの知らない機能・キー・指定を、行を指す `unknown_mark_arg` のずれにして終了コード 1 で終わる
+    summary: 描くときに無視する記法のマーカーの知らないキー（知らない機能名を含む）を、行を指す `unknown_mark_arg` のずれにして終了コード 1 で終わる
     setup:
       - name: 作業のフォルダ
         description: 正常系（文字列の記法を点検する）と同じ
       - name: 知らない引数を持つ文字列
-        description: '1 行目に `<!-- table: data +unknown widht=説明 -->` と 2 列の表と `<!-- /table -->`、8 行目に `<!-- tabs: grop=os -->` と `### macOS`・`### Windows` と `<!-- /tabs -->` を持つ Markdown'
+        description: '1 行目に `<!-- table: {"kind": "data", "features": {"unknown": {}}, "widht": {"説明": {}}} -->` と 2 列の表と `<!-- /table -->`、8 行目に `<!-- tabs: {"grop": "os"} -->` と `### macOS`・`### Windows` と `<!-- /tabs -->` を持つ Markdown'
         notes: 同じ文字列を `render` で描いたときに、記載の警告は出ない
       - name: Mock
         description: 正常系と同じ
@@ -591,16 +638,64 @@ flows:
         actor W as 文書の作成者
         participant C as mdmark CLI
         W->>C: mdmark check --text {Markdown}
-        C->>C: 描くときと同じ読み取りで、記載の警告とスキップした引数を集める
+        C->>C: 描くときと同じ読み取りとマーカーの JSON Schema の検証で、記載の警告と無視したキーを集める
         C-->>W: ずれ 3 行・終了コード 1
     expected:
       - 終了コードが 1
-      - '`-:1: unknown_mark_arg:` で始まる行が 2 つ（`+unknown` と使用できる機能、`widht=` と使用できるキーを含む）、`-:8: unknown_mark_arg:` で始まり `grop=` を含む行が 1 つある'
+      - '`-:1: unknown_mark_arg:` で始まる行が 2 つ（`features.unknown` と使用できる機能、`widht` と使用できるキーを含む）、`-:8: unknown_mark_arg:` で始まり `grop` を含む行が 1 つある'
       - '`syntax_warning` の行が無い'
       - 最後の行が `ずれ 3 件`
     test: test_normal_when_text_unknown_mark_args
     refs:
       - SC-472-52#scenarios[正常シナリオ（知らないキー・機能・指定）]
+  - name: 正常系（文字列に今の書き方のマーカーがある）
+    summary: 文字列の今の書き方のマーカーを、行を指す `legacy_mark` のずれにして終了コード 1 で終わる
+    setup:
+      - name: 作業のフォルダ
+        description: 正常系（文字列の記法を点検する）と同じ
+      - name: 今の書き方のマーカーを持つ文字列
+        description: '1 行目に `<!-- table: data +total total=数量:sum -->` と 2 列の表と `<!-- /table -->`、7 行目に `<!-- details: 補足 open -->` と段落と `<!-- /details -->` を持つ Markdown'
+      - name: Mock
+        description: 正常系と同じ
+    flow: |-
+      sequenceDiagram
+        actor W as 文書の作成者
+        participant C as mdmark CLI
+        W->>C: mdmark check --text {Markdown}
+        C->>C: 描くときと同じ読み取りで、記載の警告と今の書き方のマーカーを集める
+        C-->>W: ずれ 2 行・終了コード 1
+    expected:
+      - 終了コードが 1
+      - '`-:1: legacy_mark:`・`-:7: legacy_mark:` で始まる行が 1 つずつあり、どちらも `mdmark upgrade` を含む'
+      - '`syntax_warning` の行が無い'
+    test: test_normal_when_text_legacy_mark
+    refs:
+      - SC-472-52#scenarios[正常シナリオ（今の書き方のマーカーがある）]
+  - name: 正常系（文字列に JSON として読めない引数がある）
+    summary: 文字列の JSON として読めない引数と値の `-->` で閉じた引数を、`syntax_warning` のずれにして終了コード 1 で終わる
+    setup:
+      - name: 作業のフォルダ
+        description: 正常系（文字列の記法を点検する）と同じ
+      - name: 読めない引数を持つ文字列
+        description: '1 行目に `<!-- code: {"title": "app.ts",} -->` と 3 行のコードブロック、7 行目に `<!-- details: {"title": "a --\u003e b"} -->` と段落と `<!-- /details -->`、11 行目に `<!-- details: {"title": "a --> b"} -->` と段落と `<!-- /details -->` を持つ Markdown'
+      - name: Mock
+        description: 正常系と同じ
+    flow: |-
+      sequenceDiagram
+        actor W as 文書の作成者
+        participant C as mdmark CLI
+        W->>C: mdmark check --text {Markdown}
+        C->>C: 描くときと同じ読み取りで、記載の警告を集める
+        C-->>W: ずれ 2 行・終了コード 1
+    expected:
+      - 終了コードが 1
+      - '`-:1: syntax_warning:` で始まり、JSON として読めない位置と理由を含む行がある'
+      - '`-:11: syntax_warning:` で始まり、値の `-->` でコメントが閉じることと `--\u003e` での記載方法を含む行がある'
+      - '`-:7:` で始まる行が無い'
+    test: test_normal_when_text_mark_args_not_json
+    refs:
+      - SC-472-52#scenarios[正常シナリオ（JSON として読めない引数）]
+      - SC-472-52#scenarios[正常シナリオ（値に --> を記載した引数）]
   - name: 正常系（map の補足にずれがある）
     summary: 文書の map の範囲の Mermaid と補足を読み込み、補足が指す無い ID・知らないキー・`--` を含む値を補足の行を、印の知らないキーを印の行を指すずれにする
     setup:
@@ -714,10 +809,10 @@ response:
   - name: 標準出力
     type: string
     description: 'ずれ 1 つを 1 行（`{ファイル}:{場所}: {種類}: {内容}`。場所が空のときは `{ファイル}: {種類}: {内容}`）で並べ、最後に `ずれ {件数} 件` の行を出す'
-    notes: ファイルは設定ファイルのあるフォルダからの相対パス（`--text` のときは `-`、設定ファイルが無いときは今のフォルダからの相対パス）。`--text`・`--file` のときの並びは、場所の行の順（同じ行は描いたときの警告の順で、`unknown_mark` と `unknown_mark_arg` は警告の後ろ、図の配置のずれはその後ろ）。並びは設定の `schema` → `unknown_color_theme` → `unknown_color_scheme` → `no_documents` → `checkIndex` が返却した並び → エイリアスのずれ（`buildAliases` が返却した並び。`alias_no_files`・`alias_unreadable` は読み込んだ行の順にその場所へ配置する） → `unknown_mark` → `missing_file` → `include_target_missing`・`include_circular`（どちらも文書のパスと行の順） → 図の点検のずれ（どれも文書のパスの順、同じ文書の中は行の順）
+    notes: ファイルは設定ファイルのあるフォルダからの相対パス（`--text` のときは `-`、設定ファイルが無いときは今のフォルダからの相対パス）。`--text`・`--file` のときの並びは、場所の行の順（同じ行は描いたときの警告の順で、`unknown_mark`・`legacy_mark`・`unknown_mark_arg`・`mark_option_unapplied` は警告の後ろ、図の配置のずれはその後ろ）。並びは設定の `schema` → `unknown_color_theme` → `unknown_color_scheme` → `no_documents` → `checkIndex` が返却した並び → エイリアスのずれ（`buildAliases` が返却した並び。`alias_no_files`・`alias_unreadable` は読み込んだ行の順にその場所へ配置する） → `unknown_mark`・`legacy_mark`・`unknown_mark_arg`・`mark_option_unapplied`・`mark_option_invalid`（どれも文書のパスと行の順） → `missing_file` → `include_target_missing`・`include_circular`（どちらも文書のパスと行の順） → 図の点検のずれ（どれも文書のパスの順、同じ文書の中は行の順）
   - name: 種類
-    type: '''schema'' | ''unknown_color_theme'' | ''unknown_color_scheme'' | ''no_documents'' | ''missing_doc'' | ''orphan_doc'' | ''broken_ref'' | ''untyped_related'' | ''one_sided_change_together'' | ''related_link_overlap'' | ''missed_change_together'' | ''duplicate_term'' | ''avoided_term'' | ''alias_no_files'' | ''alias_unreadable'' | ''duplicate_alias_row_id'' | ''alias_records_missing'' | ''alias_field_missing'' | ''alias_unknown_type'' | ''alias_required_empty'' | ''duplicate_alias_id'' | ''unknown_mark'' | ''missing_file'' | ''include_target_missing'' | ''include_circular'' | ''diagram_invalid'' | ''diagram_node_overlap'' | ''diagram_node_overflow'' | ''diagram_wire_crosses_node'' | ''diagram_label_too_long'' | ''syntax_warning'' | ''unknown_mark_arg'''
-    description: '`schema` は設定か索引が Schema に合わない（`build.glossary`・`build.entry` が `include` に該当しないもの・`aliases` の行の Schema のずれを含む）、`unknown_color_theme` は設定の `colorTheme` が mdmark に入っているテーマの名前のどれでもない、`unknown_color_scheme` は設定の `colorScheme` が `light`・`dark`・`auto` のどれでもない、`no_documents` は `build.include` に該当する文書が 0 件、`alias_no_files` は `aliases` の行の `paths` に該当するファイルが 0 件、`alias_unreadable` は `paths` に該当したファイルを YAML として読み込めない、`unknown_mark` は文書の本文に知っているマーカーのどれにも該当しないマーカーがある、`missing_file` は文書が指す画像・動画・音声・添付のファイルが文書からの相対パスにもアセットのルートにも無い、`include_target_missing` は include のマーカーが指すファイル・見出し・行の範囲が無いか、設定ファイルのフォルダの外を指す、`include_circular` は include の取り込みが循環する、`diagram_invalid` は図の部品の定義を読み込めないか構造が合わない、`diagram_node_overlap` はフロー図の 2 つのノードの矩形が重なる、`diagram_node_overflow` はフロー図のノードが図の `width`・`height` の外に出るか `frame` の縁をまたぐ、`diagram_wire_crosses_node` はフロー図の線が `from`・`to` でないノードの中を通る、`diagram_label_too_long` はフロー図のノードの種類・名前・補足の文字が、折り返してもノードの中に収まらない、`syntax_warning` は `--text`・`--file` で指定した Markdown を描いたときに出る記載の警告のうち `unknown_mark`・`diagram_invalid` に該当しないもの（include の取り込み先が無い警告を除く）、`unknown_mark_arg` は `--text`・`--file` で指定した Markdown の記法のマーカーに、描くときに警告を配置せずにスキップする知らない種類・`+機能`・`-機能`・キー・指定の単語がある。`duplicate_alias_row_id`〜`duplicate_alias_id` はインターフェース定義『エイリアスを作る』の `kind`、ほかはインターフェース定義『索引を点検する』の `kind`'
+    type: '''schema'' | ''unknown_color_theme'' | ''unknown_color_scheme'' | ''no_documents'' | ''missing_doc'' | ''orphan_doc'' | ''broken_ref'' | ''untyped_related'' | ''one_sided_change_together'' | ''related_link_overlap'' | ''missed_change_together'' | ''duplicate_term'' | ''avoided_term'' | ''alias_no_files'' | ''alias_unreadable'' | ''duplicate_alias_row_id'' | ''alias_records_missing'' | ''alias_field_missing'' | ''alias_unknown_type'' | ''alias_required_empty'' | ''duplicate_alias_id'' | ''unknown_mark'' | ''missing_file'' | ''include_target_missing'' | ''include_circular'' | ''diagram_invalid'' | ''diagram_node_overlap'' | ''diagram_node_overflow'' | ''diagram_wire_crosses_node'' | ''diagram_label_too_long'' | ''syntax_warning'' | ''unknown_mark_arg'' | ''legacy_mark'' | ''mark_option_unapplied'' | ''mark_option_invalid'''
+    description: '`schema` は設定か索引が Schema に合わない（`build.glossary`・`build.entry` が `include` に該当しないもの・`aliases` の行の Schema のずれを含む）、`unknown_color_theme` は設定の `colorTheme` が mdmark に入っているテーマの名前のどれでもない、`unknown_color_scheme` は設定の `colorScheme` が `light`・`dark`・`auto` のどれでもない、`no_documents` は `build.include` に該当する文書が 0 件、`alias_no_files` は `aliases` の行の `paths` に該当するファイルが 0 件、`alias_unreadable` は `paths` に該当したファイルを YAML として読み込めない、`unknown_mark` は文書の本文に知っているマーカーのどれにも該当しないマーカーがある、`missing_file` は文書が指す画像・動画・音声・添付のファイルが文書からの相対パスにもアセットのルートにも無い、`include_target_missing` は include のマーカーが指すファイル・見出し・行の範囲が無いか、設定ファイルのフォルダの外を指す、`include_circular` は include の取り込みが循環する、`diagram_invalid` は図の部品の定義を読み込めないか構造が合わない、`diagram_node_overlap` はフロー図の 2 つのノードの矩形が重なる、`diagram_node_overflow` はフロー図のノードが図の `width`・`height` の外に出るか `frame` の縁をまたぐ、`diagram_wire_crosses_node` はフロー図の線が `from`・`to` でないノードの中を通る、`diagram_label_too_long` はフロー図のノードの種類・名前・補足の文字が、折り返してもノードの中に収まらない、`syntax_warning` は `--text`・`--file` で指定した Markdown を描いたときに出る記載の警告のうち `unknown_mark`・`diagram_invalid` に該当しないもの（include の取り込み先が無い警告を除く）、`unknown_mark_arg` はマーカーの JSON のオブジェクトに、描くときに警告を配置せずに無視する知らないキーがある、`legacy_mark` はマーカーの引数が今の書き方（JSON のオブジェクトでない）、`mark_option_unapplied` は `enabled` を `false` にした機能の列の設定がある、`mark_option_invalid` は点検する文書のマーカーの引数が JSON として読めないか、型・選べる値・必須に合わない。`duplicate_alias_row_id`〜`duplicate_alias_id` はインターフェース定義『エイリアスを作る』の `kind`、ほかはインターフェース定義『索引を点検する』の `kind`'
   - name: 終了コード
     type: 0 | 1
     description: ずれが 0 件なら 0、ずれがあるか点検できないときは 1
@@ -765,7 +860,7 @@ constraints:
     constraint: Node 24 以降
     decided_by: NFR-472-1#requirements[CLI が動く Node のバージョン]
   - item: 知らないマーカーの点検
-    constraint: '点検する文書ごとに、描く処理と同じ記載方法のマーカー（`<!-- 名前 -->`・`<!-- 名前: 引数 -->`・`<!-- /名前 -->`）を、描く処理と同じく生の HTML のブロックと行内の HTML からだけ取得する（コードブロックとインラインコードの中は取得しない）。名前が知っているマーカーに該当しないマーカーを、1 つにつき 1 件の `unknown_mark` のずれにする。ファイルは設定ファイルのフォルダからの文書の相対パス、場所はマーカーのある行の番号（1 から）、内容はマーカーの名前と、名前を修正するか、拡張・対応表・`check.ignore` に追加するかの修正方法の 1 文'
+    constraint: '点検する文書ごとに、描く処理と同じ記載方法のマーカー（`<!-- 名前 -->`・`<!-- 名前: {JSON のオブジェクト} -->`・`<!-- /名前 -->`。今の書き方の引数を含む）を、描く処理と同じく生の HTML のブロックと行内の HTML からだけ取得する（コードブロックとインラインコードの中は取得しない）。名前が知っているマーカーに該当しないマーカーを、1 つにつき 1 件の `unknown_mark` のずれにする。ファイルは設定ファイルのフォルダからの文書の相対パス、場所はマーカーのある行の番号（1 から）、内容はマーカーの名前と、名前を修正するか、拡張・対応表・`check.ignore` に追加するかの修正方法の 1 文'
   - item: 知っているマーカー
     constraint: '`features`・記法のマーカー・設定の `libraries` に既定を適用した対応表の名前・設定の `extensions` の拡張が既定の書き出しで持つ `directive`・設定の `check.ignore` の名前。拡張は `mdmark export` と同じくまとめ、Node で読み込んで既定の書き出しの `directive` を取る（設定の `extensions` のモジュールは、読み込みの時点でブラウザの API を使用せず、使用するのは `load` の中だけにする）。まとめられない・読み込めない・既定の書き出しが `directive` を持たない拡張は、その `extensions[{位置}]` を指す `schema` のずれにし（読み込めないときは、元のエラーと、ブラウザの API を使用する処理を `load` の中へ移す修正方法を内容に記載する）、その拡張のマーカーは知っているマーカーに入れない'
   - item: 点検する文書
@@ -791,17 +886,19 @@ constraints:
     constraint: ノードの種類・名前・補足の文字を、全角の文字は文字の大きさ、半角の文字は文字の大きさの 0.6 倍の幅とみなし、ノードの `w` から左右の余白を除いた幅で折り返した行の数を数える。文字の大きさと余白は描いた文書の CSS の値（種類 11px・名前 14px・補足 12px・行の高さ 1.4 倍・余白 上下 6px 左右 10px）とし、折り返した行の高さの合計がノードの `h` から上下の余白を除いた高さを超えるものをずれにする
     notes: ブラウザの実際の文字幅は使用しない（D-12）。目安の値は CSS を変えたときに合わせて修正する
   - item: 取り込み先の点検
-    constraint: '制約「点検する文書」の文書ごとに、include のマーカー（コードブロックとインラインコードの中を除く）の取り込み先を、インターフェース定義『文書をHTML文字列にする』の制約「取り込み」と同じパスの解き方でファイルから読み込み、無いファイル・設定ファイルのフォルダの外を指すパス・無い見出しの ID・ファイルの行の数を越える行の範囲を 1 つにつき 1 件の `include_target_missing`、循環する取り込みを 1 つにつき 1 件の `include_circular` のずれにする（取り込んだ文書の中のマーカーもたどる）。ファイルはマーカーを記載した文書の相対パス、場所はマーカーの行の番号（1 から）、内容は、`include_target_missing` は記載した取り込み先と、無いもの（ファイル・フォルダの外・見出し・行。行はファイルの行の数も）と、パス・見出し・行の範囲を修正するかファイルを配置する修正方法の 1 文、`include_circular` は循環の順（`a.md → b.md → a.md`）と、循環するマーカーのどれかを取り除く修正方法の 1 文。文書の `<!-- features: -include -->` の文書は点検しない'
+    constraint: '制約「点検する文書」の文書ごとに、include のマーカー（コードブロックとインラインコードの中を除く）の取り込み先を、インターフェース定義『文書をHTML文字列にする』の制約「取り込み」と同じパスの解き方でファイルから読み込み、無いファイル・設定ファイルのフォルダの外を指すパス・無い見出しの ID・ファイルの行の数を越える行の範囲を 1 つにつき 1 件の `include_target_missing`、循環する取り込みを 1 つにつき 1 件の `include_circular` のずれにする（取り込んだ文書の中のマーカーもたどる）。ファイルはマーカーを記載した文書の相対パス、場所はマーカーの行の番号（1 から）、内容は、`include_target_missing` は記載した取り込み先と、無いもの（ファイル・フォルダの外・見出し・行。行はファイルの行の数も）と、パス・見出し・行の範囲を修正するかファイルを配置する修正方法の 1 文、`include_circular` は循環の順（`a.md → b.md → a.md`）と、循環するマーカーのどれかを取り除く修正方法の 1 文。文書の `<!-- features: {"include": false} -->` の文書は点検しない'
     notes: 種類の名前は単一ユースケース『設定と索引を点検する』でインターフェース定義に任せたもの
   - item: 記法の点検
-    constraint: '`--text` か `--file` と `--key` を指定したときは、設定・索引・`build` の対象・エイリアス・テーマの名前・見つからないファイルの点検をしない。指定した Markdown を `render` と同じ読み取りで読み込み、描いたときに出る記載の警告を 1 つにつき 1 件のずれにする。内容は警告の本文と同じ文。知らないマーカーの警告は `unknown_mark`、図の部品の定義の警告は `diagram_invalid`、そのほかは `syntax_warning` にする。記法のマーカーの知らない種類・`+機能`・`-機能`・キー・指定の単語は、描くときは警告を配置せずにスキップするが、1 つにつき 1 件の `unknown_mark_arg` のずれにする。内容は、スキップした指定とそのマーカーで使用できる種類・機能・キー・指定と、誤記なら名前を修正し、新しいバージョンの指定なら mdmark のバージョンを上げる修正方法の 1 文。include のマーカーの取り込み先が無い警告（ファイル・見出し・行の範囲）は、取り込み先を読み込まないため出さない（取り込み先は設定の文書の点検の `include_target_missing`・`include_circular` が確認する）。読み込めたフロー図の定義は制約「図の定義の点検」と同じ配置の点検もする。設定ファイルが見つかれば、`features`・`libraries`・`extensions`（制約「知っているマーカー」と同じ読み込み方）・`check.ignore` を適用して描くときと同じ警告にし、見つからなければ既定の設定で点検する（設定ファイルが無いことをエラーにしない）。点検はブラウザを使用しない'
+    constraint: '`--text` か `--file` と `--key` を指定したときは、設定・索引・`build` の対象・エイリアス・テーマの名前・見つからないファイルの点検をしない。指定した Markdown を `render` と同じ読み取りで読み込み、描いたときに出る記載の警告を 1 つにつき 1 件のずれにする。内容は警告の本文と同じ文。知らないマーカーの警告は `unknown_mark`、図の部品の定義の警告は `diagram_invalid`、そのほかは `syntax_warning` にする。マーカーの引数は制約「マーカーの設定の点検」のとおり点検し、JSON として読めない引数と型・選べる値・必須に合わない値は、描いたときの記載の警告として `syntax_warning` のずれにする。include のマーカーの取り込み先が無い警告（ファイル・見出し・行の範囲）は、取り込み先を読み込まないため出さない（取り込み先は設定の文書の点検の `include_target_missing`・`include_circular` が確認する）。読み込めたフロー図の定義は制約「図の定義の点検」と同じ配置の点検もする。設定ファイルが見つかれば、`features`・`libraries`・`extensions`（制約「知っているマーカー」と同じ読み込み方）・`check.ignore` を適用して描くときと同じ警告にし、見つからなければ既定の設定で点検する（設定ファイルが無いことをエラーにしない）。点検はブラウザを使用しない'
     notes: 入口を `mdmark check` の引数にするのは要件.md の未確定（記法の点検の入口、推奨 A）
+  - item: マーカーの設定の点検
+    constraint: '点検する文書ごと（`--text`・`--file` のときは指定した Markdown）に、記法のマーカー（`map`・`map-data` を除く。map のマーカーは制約「map の点検」の種類で点検する）の引数を、描く処理と同じ読み取り（インターフェース定義『文書をHTML文字列にする』の制約「マーカーの書式」）で読み、マーカーごとの JSON Schema（ER 図『マーカーの設定の共通の決まり』から辿るマーカーごとの ER 図と同じ内容）で検証する。拡張のマーカーと設定の `libraries` のマーカーは、今の書き方の `legacy_mark` だけを点検し、キーと値は検証しない（拡張の検査は `registerExtension` の `schema` で、描くときだけ行う）。名前の後ろが `{` で始まらない引数のマーカーは、1 つにつき 1 件の `legacy_mark` のずれにし、内容に引数を JSON のオブジェクトで記載することと `mdmark upgrade` で書き換えられること（拡張と `libraries` のマーカーは、描くときに描かないことと、`mdmark upgrade` が書き換えずに移行の報告に挙げること）を記載する。知らないキー（`features` のマーカーと表の `features` の知らない機能名を含む）は 1 つにつき 1 件の `unknown_mark_arg` のずれにし、内容に無視したキーのパス（`features.unknown` など）と、その場所で使用できるキー、誤記なら修正し新しいバージョンのキーなら mdmark のバージョンを上げる修正方法を記載する。`enabled` を `false` にした機能の列の設定は 1 つにつき 1 件の `mark_option_unapplied` のずれにし、内容に適用しない列の設定のパスと、機能を削除するか列の設定を削除する修正方法を記載する。点検する文書の、JSON として読めない引数と型・選べる値・必須に合わない値は 1 つにつき 1 件の `mark_option_invalid` のずれにし、内容は描いたときの記載の警告の本文と同じ文にする（`--text`・`--file` のときは `syntax_warning`）。ファイル・場所は制約「知らないマーカーの点検」と同じ（`--text`・`--file` のときは制約「記法の点検の場所」）。点検はブラウザを使用しない'
   - item: 記法の点検の場所
     constraint: '`--text` のずれの場所は、文字列の中の行の番号（1 から）。`--file` のずれのファイルは YAML のファイル、場所は YAML のファイルの行の番号（1 から）。キーの値がブロックスカラー（`|`・`>`）なら、値の中の行を YAML のファイルの行へ置き換え、それ以外の記載方法の値はキーの行にする。警告の場所は、警告の元になったマーカー（範囲なら開きのマーカー）の行。マーカーを持たない警告（読み込めないファイルツリーなど）は、警告を配置した場所の後ろのブロックの開始の行'
   - item: 重ねた設定ファイルの点検
     constraint: '索引と文書のずれは、インターフェース定義『設定を重ねて読み込む』を `purpose: export` で呼んで重ねた設定で点検する。設定の構造は、重ねた設定ファイルのそれぞれと、`config.applyToExport` によらず端末の設定のファイルがあればその構造も検める。ずれの `file` は『設定を重ねて読み込む』の制約「パスの表示」のパス（今のフォルダからの相対パスか `~` のパス）にする'
   - item: map の点検
-    constraint: '制約「点検する文書」の文書ごとに、map の範囲を文書をHTML文字列にする.ts の制約「map の範囲」と同じ読み込み方で読み込み、制約「map の書き方の誤り」の項目を 1 つにつき 1 件のずれにする。Mermaid の読めない行・閉じの無いブロック・範囲の中の mermaid のブロックと補足の数の誤り・描けない図の種類は `map_invalid`、補足が指す Mermaid に無いノード・線・グループの ID は `map_unknown_ref`、補足の知らないキーと印の JSON のオブジェクトの知らないキーは `map_unknown_key`、補足のスキーマに合わない値・`--` を含む値・JSON として読めない印の引数・型の合わない印の値は `map_invalid_value`、Mermaid のクラスが設定の `map.kinds` に無いノードは `map_unknown_class`、補足の `layout` の `line` の名前が設定の `map.lines` に無い線は `map_unknown_line` にする（設定に `map` が無いときも同じ）。ファイルは文書の相対パス、場所は Mermaid の行は文書の行、補足の箇所は補足の中の行を文書の行へ置き換えた行、そのほかは map の開きのマーカーの行の番号（1 から）。内容は書き方の警告の項目と同じ文。配置は点検しない。文書の `<!-- features: -map -->` の文書は点検しない。点検はブラウザを使用しない'
+    constraint: '制約「点検する文書」の文書ごとに、map の範囲を文書をHTML文字列にする.ts の制約「map の範囲」と同じ読み込み方で読み込み、制約「map の書き方の誤り」の項目を 1 つにつき 1 件のずれにする。Mermaid の読めない行・閉じの無いブロック・範囲の中の mermaid のブロックと補足の数の誤り・描けない図の種類は `map_invalid`、補足が指す Mermaid に無いノード・線・グループの ID は `map_unknown_ref`、補足の知らないキーと印の JSON のオブジェクトの知らないキーは `map_unknown_key`、補足のスキーマに合わない値・`--` を含む値・JSON として読めない印の引数・型の合わない印の値は `map_invalid_value`、Mermaid のクラスが設定の `map.kinds` に無いノードは `map_unknown_class`、補足の `layout` の `line` の名前が設定の `map.lines` に無い線は `map_unknown_line` にする（設定に `map` が無いときも同じ）。ファイルは文書の相対パス、場所は Mermaid の行は文書の行、補足の箇所は補足の中の行を文書の行へ置き換えた行、そのほかは map の開きのマーカーの行の番号（1 から）。内容は書き方の警告の項目と同じ文。配置は点検しない。文書の `<!-- features: {"map": false} -->` の文書は点検しない。点検はブラウザを使用しない'
     notes: '`--text`・`--file` の点検でも同じ種類にする（制約「記法の点検」の `syntax_warning` にしない）'
   - item: map の設定の点検
     constraint: 設定の `map.node_fit`・`map.url_state`・`map.kinds`・`map.lines` は、制約「設定の点検」の Schema で検査し、`node_fit` の知らない値・`url_state` が真偽値でない値・知らない形・模様・太さ・矢じり・色の名前を `schema` のずれにする。`map.kinds` の `icon` が Lucide に無い名前のものは、1 つにつき 1 件の `map_unknown_icon` のずれにする。ファイルは設定ファイル、場所はキーのパス（`map.kinds.store.icon`）、内容は記載した名前と、Lucide のアイコンの名前にする修正方法の 1 文。Lucide の名前の一覧は、外部ライブラリ『lucide』の採用バージョンのパッケージのアイコンの名前を使用する

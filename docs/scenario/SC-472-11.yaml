@@ -123,7 +123,7 @@ scenarios:
       - name: mdmark を読み込むページ
         description: 正常シナリオと同じ
       - name: mermaid の機能を解除する Markdown
-        description: '先頭に `<!-- features: -mermaid -->` を持ち、言語 `mermaid` のコードブロックを 1 つ持つ文書'
+        description: '先頭に `<!-- features: {"mermaid": false} -->` を持ち、言語 `mermaid` のコードブロックを 1 つ持つ文書'
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-

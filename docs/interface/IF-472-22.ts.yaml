@@ -150,7 +150,7 @@ flows:
       - name: ダークのテーマ
         description: VS Code のテーマが Default Dark Modern で、`mdmark.preview.theme` は `auto`
       - name: Markdown
-        description: 'マーカーを持たない `a.md` と、先頭の行に `<!-- page: scheme=dark -->` を持つ `b.md`'
+        description: 'マーカーを持たない `a.md` と、先頭の行に `<!-- page: {"scheme": "dark"} -->` を持つ `b.md`'
       - name: Mock
         description: 正常系と同じ
     flow: |-
@@ -459,7 +459,7 @@ flows:
     summary: include のマーカーの取り込み先をワークスペースから読み込んで指定し、プレビューに描かせる
     setup:
       - name: 取り込みを持つワークスペース
-        description: '`docs/guide.md` が `<!-- include: 共通/手順.md#実行 -->` と `<!-- include: missing.md -->` を持ち、`docs/共通/手順.md` が `## 準備`・`## 実行` を持つフォルダ'
+        description: '`docs/guide.md` が `<!-- include: {"path": "共通/手順.md", "heading": "実行"} -->` と `<!-- include: {"path": "missing.md"} -->` を持ち、`docs/共通/手順.md` が `## 準備`・`## 実行` を持つフォルダ'
       - name: Mock
         description: 正常系と同じ。Webview へ送信したメッセージを記録する
     flow: |-

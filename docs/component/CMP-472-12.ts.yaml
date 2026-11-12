@@ -6,7 +6,7 @@ story: Parts/Gallery
 test_file: tests/integration/lib/gallery.story.test.ts
 states:
   - name: ThreeColumns
-    description: '`cols=3` に画像 4 枚。3 列で並べ、4 枚目を 2 行目に配置する'
+    description: '`columns` の `3` に画像 4 枚。3 列で並べ、4 枚目を 2 行目に配置する'
     args:
       - name: cols
         value: '3'
@@ -20,7 +20,7 @@ states:
     notes:
       定義: スロットに部品『画像の図』を 4 つ入れる
   - name: NarrowTwo
-    description: 配置場所の幅が 32rem より狭い。`cols=3` でも 2 列に減らす
+    description: 配置場所の幅が 32rem より狭い。`columns` が `3` でも 2 列に減らす
     args:
       - name: cols
         value: '3'

@@ -1,17 +1,17 @@
-/** 設定の `features` に、文書のマーカーの引数（`+名前`・`-名前`）を記載した順に重ねて返却する */
+/** 設定の `features` に、文書の `features` のマーカーの JSON のオブジェクトを記載した順に重ねて返却する */
 export function resolveFeatures(options: {
   /** 既定を適用した設定の `features` */
   defaults: Record<string, boolean>;
-  /** 文書の `features` のマーカーの引数を記載した順に並べたもの */
-  args: string[];
+  /** 文書の `features` のマーカーの JSON のオブジェクトを記載した順に並べたもの */
+  marks: Array<Record<string, unknown>>;
 }): Record<string, boolean> {
   const features = { ...options.defaults };
-  for (const arg of options.args) {
-    const sign = arg.slice(0, 1);
-    const name = arg.slice(1);
-    // 既定に無い名前と、符号の無い引数は無視する
-    if ((sign === "+" || sign === "-") && Object.hasOwn(features, name)) {
-      features[name] = sign === "+";
+  for (const mark of options.marks) {
+    for (const [name, value] of Object.entries(mark)) {
+      // 既定に無い名前と、真偽値でない値は無視する
+      if (typeof value === "boolean" && Object.hasOwn(features, name)) {
+        features[name] = value;
+      }
     }
   }
   return features;

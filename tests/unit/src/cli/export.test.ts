@@ -33,7 +33,7 @@ test("test_prepare_embeds", async () => {
   const { prepareEmbeds } = await loadExport();
   const dir = await createTempDir();
   await writeFiles(dir, {
-    "guide.md": "<!-- test-lib: a -->\n",
+    "guide.md": '<!-- test-lib: {"items": ["a"]} -->\n',
     "lib/test-lib.js":
       "export function draw(slot) { slot.textContent = 'x'; }\n",
     "lib/other.js": "export function draw(slot) { slot.textContent = 'y'; }\n",
@@ -67,7 +67,9 @@ test("test_prepare_embeds_when_unreadable", async () => {
   // 準備
   const { prepareEmbeds } = await loadExport();
   const dir = await createTempDir();
-  await writeFiles(dir, { "guide.md": "<!-- test-lib: a -->\n" });
+  await writeFiles(dir, {
+    "guide.md": '<!-- test-lib: {"items": ["a"]} -->\n',
+  });
   const loaded = createLoaded(dir, {
     libraries: { "test-lib": "lib/missing.js" },
     theme: "missing.css",

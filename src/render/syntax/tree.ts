@@ -1,16 +1,9 @@
 import type { StateCore, Token } from "markdown-it";
-import type { WarningItem } from "../../extensions.ts";
 import { escapeHtml } from "../../parts/escape.ts";
 import { renderTree, type TreeNode } from "../../parts/tree.ts";
 import type { Mark } from "../marks.ts";
-import { WRAP_VALUE_MESSAGE } from "./code-blocks.ts";
 import { envOf, featureOn, markOf, ownBlock } from "./tokens.ts";
-import {
-  type SkippedArg,
-  type SyntaxWarning,
-  skippedArgBlocks,
-  warningBlock,
-} from "./warnings.ts";
+import { warningBlock } from "./warnings.ts";
 
 export type { TreeNode };
 
@@ -25,15 +18,6 @@ const RULE_WIDTH = 4;
 
 /** 名前と注釈を分ける区切り: 前に空白がある `#` */
 const NOTE_SEPARATOR = /\s#/;
-
-/** ファイルツリーのマーカーで読み込めるキー */
-const OPEN_KEY = "open";
-
-/** 項目を折り返すフラグ */
-const WRAP_FLAG = "wrap";
-
-/** `open=` に記載できる、階層の数（1 以上の整数） */
-const LEVELS_PATTERN = /^[1-9]\d*$/;
 
 /** 行の頭の字下げと罫線から階層を数え、罫線の後ろの文字を取り出す */
 function readLine(line: string): { depth: number; text: string } {
@@ -93,49 +77,12 @@ export function parseTree(
   return { nodes };
 }
 
-/** ファイルツリーのマーカーの引数から `open=` を読み込み、読み込めない指定を 1 つの記載の警告にまとめ、知らないキーと指定をスキップした引数にする */
-export function readTreeOptions(mark: Mark): {
-  open?: string;
-  wrap: boolean;
-  warning?: SyntaxWarning;
-  skipped: SkippedArg[];
-} {
-  const usable = `\`${OPEN_KEY}=all\`・\`${OPEN_KEY}=階層の数\`・\`${WRAP_FLAG}\``;
-  const items: WarningItem[] = [];
-  const skipped: SkippedArg[] = [];
-  let open: string | undefined;
-  for (const [key, value] of Object.entries(mark.args.keys)) {
-    if (key === WRAP_FLAG) {
-      items.push({ label: `${key}=${value}`, message: WRAP_VALUE_MESSAGE });
-    } else if (key !== OPEN_KEY) {
-      skipped.push({ arg: `${key}=`, usable });
-    } else if (value === "all" || LEVELS_PATTERN.test(value)) {
-      open = value;
-    } else {
-      items.push({
-        label: `${OPEN_KEY}=${value}`,
-        message: `の値は読み込めません。\`all\` か階層の数（1 以上の整数）を記載してください。ルートだけを開いて描いています`,
-      });
-    }
-  }
-  // `キー=値` の構造でない指定
-  const wrap = mark.args.args.includes(WRAP_FLAG);
-  for (const arg of mark.args.args.filter((arg) => arg !== WRAP_FLAG)) {
-    skipped.push({ arg, usable });
-  }
-  if (items.length === 0) {
-    return open === undefined ? { wrap, skipped } : { open, wrap, skipped };
-  }
-  return {
-    ...(open === undefined ? {} : { open }),
-    wrap,
-    skipped,
-    warning: {
-      mark: mark.raw,
-      message: "の読み込めない指定を当てずに描いています。",
-      items,
-    },
-  };
+/** ファイルツリーのマーカーの設定から `depth` と `wrap` を読み込む。`depth` を省いたときは開く階層を入れない */
+export function readTreeOptions(mark: Mark): { open?: string; wrap: boolean } {
+  const { depth, wrap } = mark.options;
+  const open =
+    depth === "all" || typeof depth === "number" ? String(depth) : undefined;
+  return { ...(open === undefined ? {} : { open }), wrap: wrap === true };
 }
 
 /** 注釈の Markdown を、行内の要素だけの HTML にする。注釈に記載した生の HTML は文字にする（mdmark が出したバッジなどの要素だけ残す） */
@@ -178,22 +125,10 @@ export function buildFileTrees(state: StateCore): void {
       continue;
     }
     const mark = markOf(state.tokens[index - 1]);
-    const options =
+    const options: { open?: string; wrap: boolean } =
       mark?.name === "tree" && !mark.closing
         ? readTreeOptions(mark)
-        : { wrap: false, skipped: [] };
-    if ("warning" in options && options.warning) {
-      out.push(warningBlock(state, options.warning, state.tokens[index - 1]));
-    }
-    if (mark && options.skipped.length) {
-      out.push(
-        ...skippedArgBlocks(
-          state,
-          { mark: mark.raw, skipped: options.skipped },
-          state.tokens[index - 1],
-        ),
-      );
-    }
+        : { wrap: false };
     out.push(
       ownBlock(
         state,

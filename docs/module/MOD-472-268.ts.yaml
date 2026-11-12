@@ -7,76 +7,76 @@ data_models:
   - name: TableSpec
     title: 表の指定
     container: src/render/syntax/tables.ts
-    summary: 表のマーカーを読み込んだ結果
+    summary: 表のマーカーの設定を読み込んだ結果
     properties:
       - name: kind
         type: '"default" | "data" | "plain"'
-        description: 種類。知らない種類は `default` にして `skipped` に入れる
+        description: '種類（`kind`。省くと `default`）'
       - name: features
         type: TableFeature[]
-        description: 種類の機能に `+機能`・`-機能` を適用したもの（`TABLE_FEATURES` のうち。知らない機能は当てずに `skipped` に入れる）
+        description: '種類の機能に、`features` のキーの機能を追加し、`enabled` の `false` の機能を削除し、列の設定を記載した機能（`filter`・`hidden`・`pinned`・`total`）を追加したもの'
       - name: filters
         type: 'Array<{ column: number; kind: "select" | "text" | "date" }>'
-        description: 絞り込む列。表に無い列名・知らない種類は入れない
+        description: '`columns.{列名}.filter` の列。表に無い列名は入れない'
       - name: collapse
         type: '"none" | "closed" | "open"'
-        description: 折り畳み。`closed` と `open` を両方書いたら `closed`
+        description: '`readCollapse` の折り畳み'
       - name: warnings
         type: WarningItem[]
-        description: 読み込めなかった指定
+        description: 表に照らして読み込めなかった設定（表に無い列名・表に収まらない数・行の位置）
       - name: hide
         type: number[]
-        description: '`hide=` で既定で隠す列の位置。`columns` の無い表・先頭の列・表に無い列名は入れない'
+        description: '`columns.{列名}.hidden` の `true` の列の位置。先頭の列と表に無い列名は入れない'
       - name: totals
         type: 'Array<{ column: number; calc: "sum" | "avg" | "count" }>'
-        description: '`total=` で集計する列。`total` の無い表・表に無い列名・知らない計算は入れない'
+        description: '`columns.{列名}.total[]` の列と計算（記載した順）。表に無い列名は入れない'
       - name: title
         type: string | undefined
-        description: 折り畳みの見出し（`title=` の値）。`collapse` が `none` の表と、値の無い `title=` では入れない
+        description: 折り畳みの見出し（`collapse.title`）
       - name: headRows
         type: number
-        description: '`header-rows=` で `thead` にする表の先頭の行の数（既定 1）。数でない値と、表の行の数以上の値は 1 にする'
+        description: '`header.rows` の `thead` にする表の先頭の行の数（既定 1）。表の行の数以上の値は 1 にする'
       - name: rowHeader
         type: number
-        description: '`row-header=` で `<th scope="row">` にする本文の各行の先頭の列の数（既定 0）。数でない値と、表の列の数以上の値は 0 にする'
+        description: '`header.columns` の `<th scope="row">` にする本文の各行の先頭の列の数（既定 0）。表の列の数以上の値は 0 にする'
       - name: pin
         type: number[] | undefined
-        description: '`pin=` で留める列の位置（`,` で区切った列名のうち表にあるものを小さい順に並べる）。`pin` の無い表・表にある列名が 1 つも無いときは入れない'
-      - name: wide
+        description: '`columns.{列名}.pinned` の `true` の列の位置（小さい順）。`pin` の無い表・`true` の列が無いときは入れない（`mount` が行見出しの列か先頭の列を留める）'
+      - name: unpinned
         type: number[]
-        description: '`wide=` で広く取る列の位置。表に無い列名は入れない'
+        description: '`columns.{列名}.pinned` の `false` の列の位置（既定で留める列を留めない）'
+      - name: widths
+        type: 'Array<{ column: number; mode: "auto" | "nowrap"; min?: number; max?: number }>'
+        description: '`columns.{列名}.width` の列の幅。表に無い列名は入れない'
       - name: check
         type: number[]
-        description: '`check=` で真偽値を ✓ と空欄で出す列の位置。表に無い列名は入れない'
+        description: '`columns.{列名}.format.type` の `check` の列の位置。表に無い列名は入れない'
       - name: tree
         type: number | undefined
-        description: '`tree=` で階層にするキーの列の位置。表に無い列名では入れない'
+        description: '`tree.key.column` の列の位置。表に無い列名では入れない'
       - name: treeType
         type: number | undefined
-        description: '`type=` の列の位置。`tree` の無い表・表に無い列名では入れない'
+        description: '`tree.type.column` の列の位置。`tree` の無い表・表に無い列名では入れない'
       - name: treeRequired
         type: number | undefined
-        description: '`required=` の列の位置。`tree` の無い表・表に無い列名では入れない'
+        description: '`tree.required.column` の列の位置。`tree` の無い表・表に無い列名では入れない'
       - name: treeDefault
         type: number | undefined
-        description: '`default=` の列の位置。`tree` の無い表・表に無い列名では入れない'
+        description: '`tree.default.column` の列の位置。`tree` の無い表・表に無い列名では入れない'
       - name: example
         type: string | undefined
-        description: '`example=` の見出しの文字。`tree` の無い表では入れない（見出しがあるかは `linkTreeExamples` が確認する）'
-      - name: skipped
-        type: SkippedArg[]
-        description: スキップした知らない種類・`+機能`・`-機能`・キー（記載した順）
+        description: '`tree.example.heading` の見出しの文字。`tree` の無い表では入れない（見出しがあるかは `linkTreeExamples` が確認する）'
   - name: TableColors
     title: 表の色の指定
     container: src/render/syntax/tables.ts
-    summary: 表のマーカーの `highlight=`・`row-color=`・`row-at=` を読み込んだ結果
+    summary: 表のマーカーの `columns.{列名}.highlight`・`rows.colors` を読み込んだ結果
     properties:
       - name: highlight
         type: 'Array<{ column: number; color: ColorName }>'
         description: 強調する列の位置と色。色を省いた列は `blue`
       - name: rows
         type: Array<ColorName | null>
-        description: 本文の行ごとの色。色を付けない行は `null`。`row-color=` と `row-at=` の両方が該当する行は `row-at=` の色
+        description: 本文の行ごとの色。色を付けない行は `null`。複数の `rows.colors` の要素が該当する行は後ろの要素の色
       - name: warnings
         type: WarningItem[]
         description: 読み込めなかった指定（表に無い列名・表に無い行の位置・`=` の無い項目・知らない色の名前）
@@ -108,12 +108,12 @@ functions:
     container: src/render/syntax/tables.ts
     kind: 関数
     scope: internal
-    summary: 表のマーカーの引数と表の見出しから `TableSpec` を作る。`tree=` は見出しにある列名のときだけ読み込み（`tree` を持つ表は `features` から `sort` を除く）、`type=`・`required=`・`default=`・`example=` は `tree` を持つ表でだけ読み込む。`tree` が無い表のこれらのキーと表に無い列名は警告にする。マーカーが無い表は `default`。知らない種類・`+機能`・`-機能`・キーは警告にせず `skipped` に入れる（知らない種類が `readCollapse` の `titleTail` と同じなら `titleTailItem` の警告にする）。`closed`・`open`・`title=` は `readCollapse`（`text` を指定する）で読み込み、その項目を `warnings` に入れる。`hide=` は `columns`、`total=` は `total`、`pin=` は `pin` を付けた表でだけ読み込み、`wide=`・`check=` はどの表でも読み込む。機能の無い表のキー・先頭の列の `hide=`・表に無い列名・知らない計算は警告にする。`header-rows=`・`row-header=` は正の整数として読み取り、数でない値・`header-rows=` の表の行の数以上の値・`row-header=` の表の列の数以上の値は既定にして警告にする
+    summary: '表のマーカーの設定（`validateMarkOptions` を経た値）と表の見出しから `TableSpec` を作る。`columns` のキーと `tree` の `column` を見出しの文字（多段の見出しは最下段。同じ文字は最初の列）に照らし、表に無い列名は当てずに警告にする（項目に表の列名の並び）。`tree` を持つ表は `features` から `sort` を除き、`tree` の無い表の `tree.*` は無い。`header.rows` が表の行の数以上・`header.columns` が表の列の数以上なら既定にして警告にする。先頭の列の `hidden` は当てずに警告にする。`features.{機能}.enabled` が `false` の機能の列の設定は当てない（注記は `takeMarks` が記録する）。`collapse` は `readCollapse` で読み込む。マーカーが無い表は `default`'
     args:
-      - name: args
-        type: MdmarkMarkArgs | undefined
+      - name: options
+        type: MarkOptions | undefined
         required: false
-        description: 表のマーカーの引数（囲まない表は `undefined`）
+        description: 表のマーカーの設定（囲まない表は `undefined`）
       - name: headers
         type: string[]
         required: true
@@ -122,11 +122,6 @@ functions:
         type: number
         required: true
         description: 表の行の数（見出しの行を含む）
-      - name: text
-        type: string
-        required: false
-        default: '""'
-        description: 表のマーカーの引数の文字（`Mark` の `rest`）。`readCollapse` に指定し、`title=` の値の空白の後ろの単語を参照する
     returns:
       type: TableSpec
       description: 表の指定
@@ -134,69 +129,57 @@ functions:
       - name: test_read_table_spec
         case: 正常
         summary: 種類・機能・絞り込み・折り畳みを読み込む
-        condition: '`data -sort filter=名前,更新日:date closed` と見出し `名前`・`値`・`更新日`'
+        condition: '`{"kind": "data", "features": {"sort": {"enabled": false}}, "columns": {"名前": {"filter": {}}, "更新日": {"filter": {"type": "date"}}}, "collapse": {"open": false}}` と見出し `名前`・`値`・`更新日`'
         mock: なし
         expected: '`kind` が `data`、`features` が `["pin", "filter", "resize"]`、`filters` が `[{0, select}, {2, date}]`、`collapse` が `closed`、`warnings` が空'
-      - name: test_read_table_spec_when_unknown
-        case: 正常
-        summary: 読み込めない値と組み合わせを警告にし、知らない種類・機能・キーをスキップする
-        condition: '`unknown +sort +foo size=2 filter=無い列,名前:range closed open`'
+      - name: test_read_table_spec_when_unknown_column
+        case: 異常
+        summary: 表に無い列名を警告にして適用しない
+        condition: '`{"kind": "data", "columns": {"無い列": {"filter": {}}, "名前": {"pinned": true}}}` と見出し `名前`・`値`'
         mock: なし
-        expected: '`kind` が `default`、`features` が `["pin", "resize", "sort"]`、`filters` が空、`collapse` が `closed`、`warnings` に `無い列`・`range`・`closed と open` の項目だけがあり、`skipped` の `arg` が `unknown`・`+foo`・`size=`'
+        expected: '`filters` が空、`pin` が `[0]`、`warnings` に `無い列` と列の並び `名前`・`値` の項目が 1 つ'
       - name: test_read_table_spec_when_features
         case: 正常
-        summary: 5 つの機能と hide=・total= を読み込む
-        condition: '`data +count +columns +total +copy +rowlink hide=説明 total=数量:sum,名前:count` と見出し `名前`・`説明`・`数量`'
+        summary: 列の設定を記載した機能を付け、hidden・total を読み込む
+        condition: '`{"kind": "data", "features": {"count": {}, "copy": {}, "rowlink": {}}, "columns": {"説明": {"hidden": true}, "数量": {"total": [{"calc": "sum"}]}, "名前": {"total": [{"calc": "count"}]}}}` と見出し `名前`・`説明`・`数量`'
         mock: なし
         expected: '`features` が `["sort", "pin", "filter", "resize", "count", "columns", "total", "copy", "rowlink"]`、`hide` が `[1]`、`totals` が `[{2, sum}, {0, count}]`、`warnings` が空'
-      - name: test_read_table_spec_when_feature_keys_invalid
+      - name: test_read_table_spec_when_feature_disabled
         case: 正常
-        summary: 読み込めない集計・隠す列と機能の無い表のキーを警告にして適用しない
-        condition: 見出し `名前`・`数量`・`単価` で、`data +total +columns total=数量:max,価格:sum,単価:avg hide=備考,名前` と `data total=数量:sum hide=単価` をそれぞれ読み込む
+        summary: enabled を false にした機能の列の設定を適用しない
+        condition: '`{"kind": "data", "features": {"total": {"enabled": false}}, "columns": {"数量": {"total": [{"calc": "sum"}]}}}` と見出し `名前`・`数量`'
         mock: なし
-        expected: 1 つ目は `totals` が `[{2, avg}]`、`hide` が空、`warnings` に `max`・`価格`・`備考`・`名前`（先頭の列）の項目。2 つ目は `totals`・`hide` が空、`warnings` に `total=`・`hide=`（機能が要る）の項目
-      - name: test_read_table_spec_when_title
-        case: 正常
-        summary: 折り畳みの見出しを読み込み、closed も open も無い title= を警告にする
-        condition: 見出し `名前` で、`data closed title=リリースの一覧` と `data title=一覧` をそれぞれ読み込む
+        expected: '`features` に `total` が無く、`totals` が空、`warnings` が空'
+      - name: test_read_table_spec_when_first_column_hidden
+        case: 異常
+        summary: 先頭の列の hidden を警告にして適用しない
+        condition: '`{"kind": "data", "columns": {"名前": {"hidden": true}}}` と見出し `名前`・`数量`'
         mock: なし
-        expected: 1 つ目は `collapse` が `closed`、`title` が `リリースの一覧`、`warnings` が空。2 つ目は `collapse` が `none`、`title` が無く、`warnings` に `title=` の項目
-      - name: test_read_table_spec_when_header_rows
+        expected: '`hide` が空、`warnings` に `名前`（先頭の列）の項目'
+      - name: test_read_table_spec_when_header
         case: 正常
         summary: 見出しの行の数と行見出しの列の数を読み取る
-        condition: 見出し 4 列・行の数 5 で、`data header-rows=2 row-header=1`
+        condition: '見出し 4 列・行の数 5 で、`{"kind": "data", "header": {"rows": 2, "columns": 1}}`'
         mock: なし
         expected: '`headRows` が 2、`rowHeader` が 1、`warnings` が空'
-      - name: test_read_table_spec_when_header_rows_invalid
+      - name: test_read_table_spec_when_header_too_large
         case: 異常
-        summary: 表に収まらない数と数でない値を既定にして警告にする
-        condition: 見出し 3 列・行の数 3 で、`data header-rows=5 row-header=x` と `data row-header=3` をそれぞれ読み取る
+        summary: 表に収まらない数を既定にして警告にする
+        condition: '見出し 3 列・行の数 3 で、`{"kind": "data", "header": {"rows": 5, "columns": 3}}`'
         mock: なし
-        expected: 1 つ目は `headRows` が 1、`rowHeader` が 0、`warnings` に `header-rows=`（本文に表の行の数 3）と `row-header=` の項目。2 つ目は `rowHeader` が 0、`warnings` に `row-header=`（本文に表の列の数 3）の項目
+        expected: '`headRows` が 1、`rowHeader` が 0、`warnings` に `header.rows`（本文に表の行の数 3）と `header.columns`（本文に表の列の数 3）の項目'
       - name: test_read_table_spec_when_columns
         case: 正常
-        summary: pin=・wide=・check= の列名を列の位置として解釈し、pin= は複数の列名を読む
-        condition: '`data pin=物理名 wide=説明 check=必須,既定` と `data pin=物理名,No`、見出しはどちらも `No`・`物理名`・`説明`・`必須`・`既定`'
+        summary: pinned・width・format を列の位置として解釈する
+        condition: '`{"kind": "data", "columns": {"物理名": {"pinned": true}, "No": {"pinned": false}, "説明": {"width": {"mode": "nowrap", "max": 30}}, "必須": {"format": {"type": "check"}}, "既定": {"format": {"type": "check"}}}}`、見出しは `No`・`物理名`・`説明`・`必須`・`既定`'
         mock: なし
-        expected: '1 つ目は `pin` が `[1]`、`wide` が `[2]`、`check` が `[3, 4]`、`warnings` が空。2 つ目は `pin` が `[0, 1]`'
-      - name: test_read_table_spec_when_column_keys_invalid
+        expected: '`pin` が `[1]`、`unpinned` が `[0]`、`widths` が `[{2, nowrap, max: 30}]`、`check` が `[3, 4]`、`warnings` が空'
+      - name: test_read_table_spec_when_tree
         case: 正常
-        summary: 表に無い列名と pin の無い表の pin= を警告にして適用せず、pin= は読めた列名だけを適用する
-        condition: 見出し `名前`・`説明` で、`data pin=無い列 wide=説明 check=無い列`・`data -pin pin=名前`・`data pin=名前,無い列` をそれぞれ読み込む
+        summary: tree の列を読み込み、sort を除く
+        condition: '`{"kind": "data", "tree": {"key": {"column": "キー"}, "type": {"column": "型"}, "example": {"heading": "YAML"}}}`、見出しは `キー`・`型`・`説明`'
         mock: なし
-        expected: 1 つ目は `pin` が無く、`wide` が `[1]`、`check` が空、`warnings` に `無い列` の項目が 2 つ。2 つ目は `pin` が無く、`warnings` に `pin=`（`+pin` が要る）の項目。3 つ目は `pin` が `[0]` で、`warnings` に `無い列` の項目が 1 つ
-      - name: test_read_table_spec_when_title_has_space
-        case: 異常
-        summary: title= の値の空白の後ろの単語を警告にし、スキップしない
-        condition: 見出し `名前` で、`data closed title=リリースの 一覧`（`text` も同じ文字）
-        mock: なし
-        expected: '`title` が `リリースの`、`warnings` に `一覧` の項目があり、`skipped` が空'
-      - name: test_read_table_spec_when_title_followed_by_known
-        case: 正常
-        summary: title= の直後の知っている種類・機能は当て、警告にしない
-        condition: 見出し `名前` で、`closed title=一覧 data +count`（`text` も同じ文字）
-        mock: なし
-        expected: '`kind` が `data`、`features` に `count`、`title` が `一覧`、`warnings` と `skipped` が空'
+        expected: '`tree` が 0、`treeType` が 1、`example` が `YAML`、`features` に `sort` が無い'
     callees:
       - 'MOD-472-270#functions[readCollapse]'
   - name: decorateTables
@@ -204,7 +187,7 @@ functions:
     container: src/render/syntax/tables.ts
     kind: 関数
     scope: internal
-    summary: コアルール。表にスクリーンリーダー向けの名前と `tabindex`、セルに列名を付ける（今の処理）。`table` がオンなら、表のマーカーの範囲の表と囲まない表を `readTableSpec` の指定で部品『表』の囲み（`data-kind`・`data-features`・`data-filter`・`data-hide`・`data-total`・折り畳み）に入れ（折り畳みの見出しは `title` か `表（{本文の行の数} 行）`）、`rowlink` の表は本文の各行に `rowIdOf` の `id`（`taken` は `env.headings` の ID と前の行の ID）を付けて先頭のセルに行へのリンクを配置し、警告を囲みの頭に差し込む。`readTableSpec` にはマーカーの `rest` を指定し、`skipped` を `pushSkippedArgs` で囲みの頭に差し込む。`+total` の表は `findUnreadableTotals` で `sum`・`avg` の列の数として読み込めないセルを探し、列と計算ごとに 1 つずつの警告（値の並びは読み込めない値を `codes` で行内のコードにして `・` でつなぐ）を表の上に差し込む。閉じのマーカーが無ければ文書の終わりまでを範囲にして警告を差し込む。表の範囲は `table_open` と `table_close` の入れ子の数で数え、自分の `table_open` に対応する `table_close` までにする。範囲の中の表（行の詳細の中の表）も部品『表』の囲みに入れ、適用する表のマーカーの範囲は外の表の `table_open` より後ろで開くものに限る（無ければ `default`。外の表のマーカーの指定は適用しない）。表の範囲の中の表のマーカーのトークンは、外の表と一緒に移さず使用し切る。本文の行の数・`rowlink`・`total` は、入れ子の数が自分の表と同じ行だけを対象にする。セルの列名は、見出しを表ごとに追加し、`table_close` で外の表の見出しに戻して付ける。`table` がオンなら、表のマーカーの範囲の表と囲まない表に `readTableColors` の色を当て、強調する列の `th`・`td` のトークンに class `mdmark-col-highlight` と `data-color`、色を付ける本文の行の `tr` のトークンに `data-color` を付け（どちらも `data-mdmark-own` を付ける）、読み込めない色の指定を表の囲みの頭の警告の項目に入れる。`pin` は半角の空白で区切って囲みの `data-pin`、`check` は囲みの `data-check` に写す。`reorder` の表で `headRows` が 2 以上なら、最下段の見出しのセルのトークンに `headerGroupsOf` の結合した見出しの位置を `data-group` で付ける。`tree` の表は囲みに `data-tree` をコピーし、表の範囲のトークンを `decorateTreeTable` に指定する。`wide` の列の `th`・`td` のトークンに class `mdmark-wide`、`check` の列の `th`・`td` のトークンに class `mdmark-align-center` を付ける。`check` の列の本文のセルの中身が `true`・`false` のときは、`td` のトークンに `data-value` を付け、中身のトークンを `renderCheckCell` の HTML に `markOwn` を掛けた 1 つのトークンに替える（どれも `data-mdmark-own` を付ける）。表のマーカーの範囲の表は、`headRows` が 2 以上なら本文の先頭の `headRows - 1` 行を `thead` へ移し、`rowHeader` の列の本文のセルを `<th scope="row">` にし、セルの文字の格子を `planCellMerges` に指定して結合を適用する。見出しの行は始まりのセルに `rowspan`・`colspan`（`colspan` を持つセルは `scope="colgroup"`、ほかは `scope="col"`）を付けて結合したセルのトークンを削除し、本文の行は結合したセルの中身を始まりのセルの中身のトークンのコピーに替えて `data-merge` と `hidden` を付け、始まりのセルに `rowspan`・`colspan` を付ける。`mergeColumns` を `data-merge-columns` に設定し、`warnings` を表の囲みの頭の警告の項目に入れる。追加した属性はどれも `data-mdmark-own` を持つトークンに付ける。表のマーカーの範囲の外の表は結合しない
+    summary: コアルール。表にスクリーンリーダー向けの名前と `tabindex`、セルに列名を付ける（今の処理）。`table` がオンなら、表のマーカーの範囲の表と囲まない表を `readTableSpec` の指定で部品『表』の囲み（`data-kind`・`data-features`・`data-filter`・`data-hide`・`data-total`・折り畳み）に入れ（折り畳みの見出しは `title` か `表（{本文の行の数} 行）`）、`rowlink` の表は本文の各行に `rowIdOf` の `id`（`taken` は `env.headings` の ID と前の行の ID）を付けて先頭のセルに行へのリンクを配置し、警告を囲みの頭に差し込む。`total` の機能の表は `findUnreadableTotals` で `sum`・`avg` の列の数として読み込めないセルを探し、列と計算ごとに 1 つずつの警告（値の並びは読み込めない値を `codes` で行内のコードにして `・` でつなぐ）を表の上に差し込む。閉じのマーカーが無ければ文書の終わりまでを範囲にして警告を差し込む。表の範囲は `table_open` と `table_close` の入れ子の数で数え、自分の `table_open` に対応する `table_close` までにする。範囲の中の表（行の詳細の中の表）も部品『表』の囲みに入れ、適用する表のマーカーの範囲は外の表の `table_open` より後ろで開くものに限る（無ければ `default`。外の表のマーカーの指定は適用しない）。表の範囲の中の表のマーカーのトークンは、外の表と一緒に移さず使用し切る。本文の行の数・`rowlink`・`total` は、入れ子の数が自分の表と同じ行だけを対象にする。セルの列名は、見出しを表ごとに追加し、`table_close` で外の表の見出しに戻して付ける。`table` がオンなら、表のマーカーの範囲の表と囲まない表に `readTableColors` の色を当て、強調する列の `th`・`td` のトークンに class `mdmark-col-highlight` と `data-color`、色を付ける本文の行の `tr` のトークンに `data-color` を付け（どちらも `data-mdmark-own` を付ける）、読み込めない色の指定を表の囲みの頭の警告の項目に入れる。`pin` は半角の空白で区切って囲みの `data-pin`、`unpinned` は同じく `data-unpin`（`mount` が既定で留める列から除く）、`check` は囲みの `data-check` に写す。`reorder` の表で `headRows` が 2 以上なら、最下段の見出しのセルのトークンに `headerGroupsOf` の結合した見出しの位置を `data-group` で付ける。`tree` の表は囲みに `data-tree` をコピーし、表の範囲のトークンを `decorateTreeTable` に指定する。`widths` の `mode` が `nowrap` の列の `th`・`td` のトークンに class `mdmark-wide`（`min`・`max` は写さない）、`check` の列の `th`・`td` のトークンに class `mdmark-align-center` を付ける。`check` の列の本文のセルの中身が `true`・`false` のときは、`td` のトークンに `data-value` を付け、中身のトークンを `renderCheckCell` の HTML に `markOwn` を掛けた 1 つのトークンに替える（どれも `data-mdmark-own` を付ける）。表のマーカーの範囲の表は、`headRows` が 2 以上なら本文の先頭の `headRows - 1` 行を `thead` へ移し、`rowHeader` の列の本文のセルを `<th scope="row">` にし、セルの文字の格子を `planCellMerges` に指定して結合を適用する。見出しの行は始まりのセルに `rowspan`・`colspan`（`colspan` を持つセルは `scope="colgroup"`、ほかは `scope="col"`）を付けて結合したセルのトークンを削除し、本文の行は結合したセルの中身を始まりのセルの中身のトークンのコピーに替えて `data-merge` と `hidden` を付け、始まりのセルに `rowspan`・`colspan` を付ける。`mergeColumns` を `data-merge-columns` に設定し、`warnings` を表の囲みの頭の警告の項目に入れる。追加した属性はどれも `data-mdmark-own` を持つトークンに付ける。表のマーカーの範囲の外の表は結合しない
     description: 今の `src/render/parser.ts` の `decorateTables` をここへ移す。並べ替え・ピン止め・絞り込みのボタンは `mount` が付ける
     args:
       - name: state
@@ -224,13 +207,13 @@ functions:
       - name: test_decorate_tables
         case: 正常
         summary: 表のマーカーの表を指定どおりに囲み、囲まない表を default にする
-        condition: '`<!-- table: data filter=名前 closed -->` 〜 `<!-- /table -->` の表と、マーカーの無い表'
+        condition: '`<!-- table: {"kind": "data", "columns": {"名前": {"filter": {}}}, "collapse": {"open": false}} -->` 〜 `<!-- /table -->` の表と、マーカーの無い表'
         mock: なし
         expected: 1 つ目が `data-kind="data" data-features="sort pin filter resize" data-filter="0:select"` と `<details class="mdmark-table-details">`、2 つ目が `data-kind="default" data-features="pin resize"`
       - name: test_decorate_tables_when_range_not_closed
         case: 正常
         summary: 閉じのマーカーが無いときは文書の終わりまでの表に当て、警告を差し込む
-        condition: '`<!-- table: data -->` の後に表が 2 つ'
+        condition: '`<!-- table: {"kind": "data"} -->` の後に表が 2 つ'
         mock: なし
         expected: 2 つとも `data-kind="data"`、警告の本文に `<!-- /table -->`
       - name: test_decorate_tables_when_feature_off
@@ -241,44 +224,44 @@ functions:
         expected: '`<table tabindex="0" aria-label="…">` があり、`mdmark-table` が無い'
       - name: test_decorate_tables_when_features
         case: 正常
-        summary: 5 つの機能と hide=・total= を属性にコピーし、行に ID とリンクを付ける
-        condition: '`## みかん` の後の `<!-- table: data +count +columns +total +copy +rowlink hide=説明 total=数量:sum -->` 〜 `<!-- /table -->` の表（列 `名前`・`説明`・`数量`、名前 `りんご`・`みかん`・`みかん`）'
+        summary: 5 つの機能と hidden・total を属性にコピーし、行に ID とリンクを付ける
+        condition: '`## みかん` の後の `<!-- table: {"kind": "data", "features": {"count": {}, "copy": {}, "rowlink": {}}, "columns": {"説明": {"hidden": true}, "数量": {"total": [{"calc": "sum"}]}}} -->` 〜 `<!-- /table -->` の表（列 `名前`・`説明`・`数量`、名前 `りんご`・`みかん`・`みかん`）'
         mock: なし
         expected: '`data-features="sort pin filter resize count columns total copy rowlink"`・`data-hide="1"`・`data-total="2:sum"`、行の `id` が `りんご`・`みかん-1`・`みかん-2`、各行の先頭のセルに `<a class="mdmark-row-anchor" href="#{ID}">`'
       - name: test_decorate_tables_when_total_unreadable
         case: 異常
         summary: 集計する列の数として読み込めないセルを、列と計算ごとの警告にして表の上に差し込む
-        condition: '`<!-- table: data +total total=数量:sum,数量:avg,数量:count -->` 〜 `<!-- /table -->` の表（列 `名前`・`数量`、数量 `12`・`約3`・空・`-`）'
+        condition: '`<!-- table: {"kind": "data", "columns": {"数量": {"total": [{"calc": "sum"}, {"calc": "avg"}, {"calc": "count"}]}}} -->` 〜 `<!-- /table -->` の表（列 `名前`・`数量`、数量 `12`・`約3`・空・`-`）'
         mock: なし
         expected: 表の前に警告が 2 つあり、本文が `「数量」の列に数として読み込めない値 <code>約3</code>・<code>-</code> があるため、合計を出していません。数を記載するか、セルを空にしてください。` と、`平均` の同じ文。`count` の警告は無い
       - name: test_decorate_tables_when_collapse_title
         case: 正常
-        summary: 折り畳みの見出しを title= か本文の行の数にする
-        condition: '`<!-- table: data closed -->` 〜 `<!-- /table -->` の 3 行の表と、`<!-- table: data open title=リリースの一覧 -->` 〜 `<!-- /table -->` の 2 行の表'
+        summary: 折り畳みの見出しを collapse.title か本文の行の数にする
+        condition: '`<!-- table: {"kind": "data", "collapse": {"open": false}} -->` 〜 `<!-- /table -->` の 3 行の表と、`<!-- table: {"kind": "data", "collapse": {"open": true, "title": "リリースの一覧"}} -->` 〜 `<!-- /table -->` の 2 行の表'
         mock: なし
         expected: 1 つ目が `open` を持たない `<details class="mdmark-table-details">` と `<summary>表（3 行）</summary>`、2 つ目が `<details class="mdmark-table-details" open>` と `<summary>リリースの一覧</summary>`
       - name: test_decorate_tables_when_row_detail_has_table
         case: 正常
         summary: 行の詳細の中に表を配置しても、親の表の行を全て親の表の囲みに残し、列名・行の数・行へのリンク・集計を親の表の行だけで付ける
-        condition: '`<!-- table: data closed +rowlink +total total=数量:sum -->` 〜 `<!-- /table -->` の表（列 `名前`・`数量`、名前 `Todo`・`Done`、数量 `1`・`2`）と、その直後の `<!-- row-detail: 1 -->` 〜 `<!-- /row-detail -->` の中の表（列 `引数`・`値`、1 行 `status`・`todo`）'
+        condition: '`<!-- table: {"kind": "data", "features": {"rowlink": {}}, "columns": {"数量": {"total": [{"calc": "sum"}]}}, "collapse": {"open": false}} -->` 〜 `<!-- /table -->` の表（列 `名前`・`数量`、名前 `Todo`・`Done`、数量 `1`・`2`）と、その直後の `<!-- row-detail: {"at": 1} -->` 〜 `<!-- /row-detail -->` の中の表（列 `引数`・`値`、1 行 `status`・`todo`）'
         mock: なし
         expected: 親の表の `<table>`〜`</table>` の中に `Done` の行と詳細の行があり、親の囲みの `</div>` の後ろに `<tr` が無い。`Done` の行のセルの `data-label` が `名前`・`数量`。親の囲みが `<summary>表（2 行）</summary>` を持ち、親の行の `id` が `todo`・`done`。詳細の行の中の表が `data-kind="default"` の囲みに入り、セルの `data-label` が `引数`・`値` で、行に `id` が無い。数として読み込めない値の警告が無い
       - name: test_decorate_tables_when_row_detail_has_table_without_mark
         case: 正常
         summary: 表のマーカーの外の表でも、行の詳細の中の表の後ろの親の行を親の表の囲みに残す
-        condition: '表のマーカーの無い表（列 `名前`・`説明`、名前 `Todo`・`Done`）と、その直後の `<!-- row-detail: 1 -->` 〜 `<!-- /row-detail -->` の中の表（列 `引数`・`値`、1 行）'
+        condition: '表のマーカーの無い表（列 `名前`・`説明`、名前 `Todo`・`Done`）と、その直後の `<!-- row-detail: {"at": 1} -->` 〜 `<!-- /row-detail -->` の中の表（列 `引数`・`値`、1 行）'
         mock: なし
         expected: 親の表が `data-kind="default"` の囲みに入り、`Done` の行が親の表の `</table>` の前にあり、セルの `data-label` が `名前`・`説明`
       - name: test_decorate_tables_when_row_detail_has_marked_table
         case: 正常
         summary: 行の詳細の中の表には、その表を囲む表のマーカーだけを当て、外の表のマーカーの指定を適用しない
-        condition: '`<!-- table: data filter=名前 -->` 〜 `<!-- /table -->` の表（列 `名前`・`説明`、名前 `Todo`・`Done`）と、その直後の `<!-- row-detail: 1 -->` 〜 `<!-- /row-detail -->` の中の `<!-- table: plain -->` 〜 `<!-- /table -->` の表（列 `引数`・`値`、1 行）と、もう 1 つの行の詳細の中のマーカーの無い表（2 行目に付ける）'
+        condition: '`<!-- table: {"kind": "data", "columns": {"名前": {"filter": {}}}} -->` 〜 `<!-- /table -->` の表（列 `名前`・`説明`、名前 `Todo`・`Done`）と、その直後の `<!-- row-detail: {"at": 1} -->` 〜 `<!-- /row-detail -->` の中の `<!-- table: {"kind": "plain"} -->` 〜 `<!-- /table -->` の表（列 `引数`・`値`、1 行）と、もう 1 つの行の詳細の中のマーカーの無い表（2 行目に付ける）'
         mock: なし
         expected: 親の表が `data-kind="data"`・`data-filter="0:select"`、1 つ目の中の表が `data-kind="plain"`、2 つ目の中の表が `data-kind="default"` で `data-filter` を持たない。記載の警告が無く、表のマーカーのコメントが出力に残らない
       - name: test_decorate_tables_when_colors
         case: 正常
         summary: 列の強調と行の色を属性にする
-        condition: '`<!-- table: data highlight=金額 row-color=状態:完了=green row-at=2=red -->` 〜 `<!-- /table -->` の表（列 `名前`・`状態`・`金額`、状態 `完了`・`保留`）'
+        condition: '`<!-- table: {"kind": "data", "columns": {"金額": {"highlight": {}}}, "rows": {"colors": [{"column": "状態", "value": "完了", "color": "green"}, {"at": 2, "color": "red"}]}} -->` 〜 `<!-- /table -->` の表（列 `名前`・`状態`・`金額`、状態 `完了`・`保留`）'
         mock: なし
         expected: 金額の列の `th` と 2 つの `td` が class `mdmark-col-highlight` と `data-color="blue"` を持ち、本文の `tr` が上から `data-color="green"`・`data-color="red"`、記載の警告が無い
       - name: test_decorate_tables_when_cells_merged
@@ -289,14 +272,14 @@ functions:
         expected: 囲んだ表の `thead` に `tr` が 2 つで、1 行目の 2 列目の `th` が `colspan="2"` と `scope="colgroup"` を持ち、1 行目に `<<` のセルが無い。本文の 1 列目が `<th scope="row">` で、1 行目が `rowspan="3"`、2・3 行目が `A`・`data-merge="up"`・`hidden` を持つ。囲みが `data-merge-columns="0"` を持ち、囲まない表のセルが `^^`・`<<` のまま
       - name: test_decorate_tables_when_merge_invalid
         case: 異常
-        summary: 読み込めない header-rows= と結合する相手の無いセルを 1 つの警告にまとめ、文字のまま出す
+        summary: 表に収まらない header.rows と結合する相手の無いセルを 1 つの警告にまとめ、文字のまま出す
         condition: インターフェース定義『文書をHTML文字列にする』の「正常系（読み込めないセルの結合）」の文書
         mock: なし
-        expected: 表の前の警告が 1 つで、項目に `header-rows=`・`^^`・`<<` がある。`thead` の `tr` が 1 つで、`^^`・`<<` のセルが `rowspan`・`colspan`・`data-merge` を持たない
+        expected: 表の前の警告が 1 つで、項目に `header.rows`・`^^`・`<<` がある。`thead` の `tr` が 1 つで、`^^`・`<<` のセルが `rowspan`・`colspan`・`data-merge` を持たない
       - name: test_decorate_tables_when_columns_specified
         case: 正常
-        summary: pin=・check= を属性にコピーし、広く取る列と真偽値の列のセルに class を付け、真偽値を ✓ と空欄にする
-        condition: '`<!-- table: data pin=物理名 wide=説明 check=必須 -->` 〜 `<!-- /table -->` の表（列 `No`・`物理名`・`説明`・`必須`、必須 `true`・`false`・`未定`）'
+        summary: pinned・format を属性にコピーし、折り返さない列と真偽値の列のセルに class を付け、真偽値を ✓ と空欄にする
+        condition: '`<!-- table: {"kind": "data", "columns": {"物理名": {"pinned": true}, "説明": {"width": {"mode": "nowrap"}}, "必須": {"format": {"type": "check"}}}} -->` 〜 `<!-- /table -->` の表（列 `No`・`物理名`・`説明`・`必須`、必須 `true`・`false`・`未定`）'
         mock: なし
         expected: 囲みが `data-pin="1"`・`data-check="3"` を持ち、説明の列の `th`・`td` が class `mdmark-wide`、必須の列の `th`・`td` が class `mdmark-align-center` を持つ。必須の 1 行目の `td` が `data-value="true"` と `mdmark-check` の要素、2 行目が `data-value="false"` と `いいえ` の `mdmark-visually-hidden` だけを持ち、3 行目は `data-value` を持たず文字 `未定` のまま
     refs:
@@ -341,13 +324,13 @@ functions:
     container: src/render/syntax/tables.ts
     kind: 関数
     scope: internal
-    summary: 表のマーカーの `highlight=`・`row-color=`・`row-at=` を、表の見出しと本文の行のセルの文字で照らして `TableColors` を作る
-    description: '`highlight=` は `列名[:色]` を `,` で区切る。`row-color=` は `列名:値=色` で始め、次の `列名:` までの `値=色` を同じ列に適用する。`row-at=` は `位置=色` を `,` で区切り、位置は見出し行を除いて 1 から、`2-4` で範囲。色の名前は `isColorName` で照らす。読み込めない指定は当てずに `warnings` に入れる'
+    summary: 表のマーカーの `columns.{列名}.highlight` と `rows.colors` を、表の見出しと本文の行のセルの文字で照らして `TableColors` を作る
+    description: '`highlight.color` を省いた列は `blue`。`rows.colors` は記載した順に照らし、複数の要素が該当する行は後ろの要素の色にする。`column` と `value` の要素は列のセルが `value` と一致する行、`at` の要素は見出し行を除いて 1 から数えた位置（行の範囲は `from`〜`to`）の行、両方を持つ要素は両方に該当する行に当てる。色の名前は `validateMarkOptions` が照らしてある。表に無い列名と表に無い行の位置は当てずに `warnings` に入れ、`column` と `value` の片方だけの要素と、`column`・`at` のどちらも無い要素は当てない（注記は `takeMarks` が記録する）'
     args:
-      - name: args
-        type: MdmarkMarkArgs | undefined
+      - name: options
+        type: MarkOptions | undefined
         required: true
-        description: 表のマーカーの引数（囲まない表は `undefined`）
+        description: 表のマーカーの設定（囲まない表は `undefined`）
       - name: headers
         type: string[]
         required: true
@@ -357,29 +340,46 @@ functions:
         required: true
         description: 本文の行ごとのセルの文字（タグを除いたもの）
     returns:
-      type: TableColors
+      type: 'TableColors'
       description: 表の色の指定
-    callees:
-      - MOD-472-312#functions[isColorName]
     unit_tests:
       - name: test_read_table_colors
         case: 正常
         summary: 列の強調と、値と位置の行の色を読み込む
-        condition: '`highlight=金額 row-color=状態:完了=green,保留=yellow row-at=3=red` と見出し `名前`・`状態`・`金額`、状態の列が上から `完了`・`保留`・`未着手`'
+        condition: '`{"columns": {"金額": {"highlight": {}}}, "rows": {"colors": [{"column": "状態", "value": "完了", "color": "green"}, {"column": "状態", "value": "保留", "color": "yellow"}, {"at": 3, "color": "red"}]}}` と見出し `名前`・`状態`・`金額`、状態の列が上から `完了`・`保留`・`未着手`'
         mock: なし
         expected: '`highlight` が `[{2, blue}]`、`rows` が `[green, yellow, red]`、`warnings` が空'
       - name: test_read_table_colors_when_overlap
         case: 正常
-        summary: 両方が該当する行は row-at= の色にし、範囲を読み込む
-        condition: '`highlight=名前:red,金額 row-color=状態:完了=green row-at=1-2=gray` と見出し `名前`・`状態`・`金額`、状態の列が上から `完了`・`完了`・`完了`'
+        summary: 複数が該当する行は後ろの要素の色にし、範囲を読み込む
+        condition: '`{"columns": {"名前": {"highlight": {"color": "red"}}, "金額": {"highlight": {}}}, "rows": {"colors": [{"column": "状態", "value": "完了", "color": "green"}, {"at": {"from": 1, "to": 2}, "color": "gray"}]}}` と見出し `名前`・`状態`・`金額`、状態の列が上から `完了`・`完了`・`完了`'
         mock: なし
         expected: '`highlight` が `[{0, red}, {2, blue}]`、`rows` が `[gray, gray, green]`'
       - name: test_read_table_colors_when_unreadable
         case: 異常
-        summary: 読み込めない指定を警告にして適用しない
-        condition: '`highlight=無い列 row-color=状態:完了=pink,保留 row-at=9=red` と見出し `名前`・`状態`、本文 2 行'
+        summary: 表に照らせない指定を警告にし、片方だけの要素を当てない
+        condition: '`{"columns": {"無い列": {"highlight": {}}}, "rows": {"colors": [{"column": "状態", "color": "green"}, {"at": 9, "color": "red"}]}}` と見出し `名前`・`状態`、本文 2 行'
         mock: なし
-        expected: '`highlight` が空、`rows` が `[null, null]`、`warnings` の項目が `無い列`・`pink`・`保留`・`9` の 4 つ'
+        expected: '`highlight` が空、`rows` が `[null, null]`、`warnings` の項目が `無い列`・`9` の 2 つ'
     status: planned
     introduced:
       pr: 263
+  - name: bodyCellsOf
+    title: 表の本文のセルの文字を集める
+    container: src/render/syntax/tables.ts
+    kind: 関数
+    scope: internal
+    summary: 表の本文の各行のセルの文字を集める
+    description: '`table_open` の位置から、その表の `tbody` の行ごとにセルの文字を集める。表の設定を読む処理と、ビューの項目（`views.ts`）が使用する'
+    args:
+      - name: tokens
+        type: Token[]
+        required: true
+        description: 文書のトークン
+      - name: tableOpen
+        type: number
+        required: true
+        description: '`table_open` の位置'
+    returns:
+      type: string[][]
+      description: 本文の行ごとのセルの文字

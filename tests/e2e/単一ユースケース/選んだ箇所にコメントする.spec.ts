@@ -315,7 +315,7 @@ const MARGIN_MARKDOWN = [
   ),
   "## 補足",
   "",
-  "<!-- section: closed -->",
+  '<!-- section: {"open": false} -->',
   "",
   "閉じた中の閉じた箇所を読む。",
   "",
@@ -582,7 +582,7 @@ test("test_normal_when_reloaded", async ({ page }) => {
     markdown: [
       EDIT_PARAGRAPH,
       "",
-      "<!-- table: data +sort -->",
+      '<!-- table: {"kind": "data", "features": {"sort": {}}} -->',
       "",
       "| 名前 |",
       "| --- |",

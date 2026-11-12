@@ -52,7 +52,7 @@ test("test_render_document", async () => {
   const { renderDocument } = await loadRender();
   // 実行
   const rendered = renderDocument({
-    markdown: "<!-- features: -print -->\n\n段落\n",
+    markdown: '<!-- features: {"print": false} -->\n\n段落\n',
     config: resolvedConfig(),
   });
   // 検証
@@ -65,7 +65,8 @@ test("test_render_document_when_same_input", async () => {
   // 準備
   const { renderDocument } = await loadRender();
   const options = {
-    markdown: "<!-- features: -print -->\n\n<!-- test-lib: a -->\n\n段落\n",
+    markdown:
+      '<!-- features: {"print": false} -->\n\n<!-- test-lib: {"items": ["a"]} -->\n\n段落\n',
     config: resolvedConfig({
       "test-lib": { url: "/fixtures/test-lib.js", figure: true },
     }),
@@ -160,7 +161,7 @@ test("test_collect_warnings", async () => {
   const lines = WARNINGS_MARKDOWN.split("\n");
   expect(lines[0]).toBe("<!-- flow -->");
   expect(lines[19]).toBe("<!-- tabz -->");
-  expect(lines[21]).toBe("<!-- code: highlight=9 -->");
+  expect(lines[21]).toBe('<!-- code: {"highlight": [9]} -->');
   // 実行
   const warnings = collectWarnings(WARNINGS_MARKDOWN);
   // 検証
@@ -181,7 +182,7 @@ test("test_collect_warnings_when_clean", async () => {
   const { collectWarnings } = await loadRender();
   const markdown = [
     wrapDirective("flow", INQUIRY_TEXT),
-    "<!-- table: data -->",
+    '<!-- table: {"kind": "data"} -->',
     "",
     "| 列 | 値 |",
     "| --- | --- |",

@@ -1,0 +1,72 @@
+{
+  "$id": "view.schema.json",
+  "type": "object",
+  "properties": {
+    "board": {
+      "type": "object",
+      "properties": {
+        "group": {
+          "$ref": "common.schema.json#/$defs/column_ref"
+        },
+        "values": {
+          "type": "object",
+          "properties": {},
+          "additionalProperties": {
+            "type": "object",
+            "properties": {
+              "icon": {
+                "type": "string",
+                "enum": [
+                  "circle-dashed",
+                  "circle-dot",
+                  "circle-pause",
+                  "circle-check",
+                  "circle-x",
+                  "circle",
+                  "inbox",
+                  "archive",
+                  "clock",
+                  "flag",
+                  "star",
+                  "bug",
+                  "eye",
+                  "lock",
+                  "zap",
+                  "ban"
+                ]
+              }
+            },
+            "additionalProperties": false
+          }
+        }
+      },
+      "additionalProperties": false,
+      "required": ["group"]
+    },
+    "initial": {
+      "type": "string",
+      "enum": ["board", "table"]
+    },
+    "columns": {
+      "type": "object",
+      "properties": {},
+      "additionalProperties": {
+        "type": "object",
+        "properties": {
+          "filter": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": "string",
+                "enum": ["select", "text", "date"]
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}

@@ -1,0 +1,156 @@
+$ (rc=0; npm run lint || rc=1; npm run lint:eslint || rc=1; npm run typecheck || rc=1; npm --prefix vscode run typecheck || rc=1; exit $rc)
+
+> lint
+> biome check .
+
+plugin/bin/setup.js check ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  ! The size of the file is 1.5 MiB, which exceeds the configured maximum of 1.0 MiB for this project.
+    Use the `files.maxSize` configuration to change the maximum size of files processed, or `files.includes` to ignore the file.
+  
+
+Checked 958 files in 5s. No fixes applied.
+Found 1 warning.
+
+> lint:eslint
+> node scripts/eslint.ts
+
+npm warn deprecated eslint@9.39.5: This version is no longer supported. Please see https://eslint.org/version-support for other options.
+
+added 323 packages, and audited 324 packages in 1m
+
+138 packages are looking for funding
+  run `npm fund` for details
+
+9 moderate severity vulnerabilities
+
+To address issues that do not require attention, run:
+  npm audit fix
+
+To address all issues (including breaking changes), run:
+  npm audit fix --force
+
+Run `npm audit` for details.
+
+> typecheck
+> tsc --noEmit
+
+tests/unit/helpers/env.ts(19,5): error TS2353: Object literal may only specify known properties, and 'featureOptions' does not exist in type 'RenderEnv'.
+tests/unit/helpers/marks.ts(9,3): error TS2353: Object literal may only specify known properties, and 'options' does not exist in type 'Mark'.
+tests/unit/scripts/storybook-render.test.ts(112,57): error TS2353: Object literal may only specify known properties, and 'options' does not exist in type '{ name: string; args?: string[] | undefined; definition?: number | undefined; }'.
+tests/unit/src/cli/check.test.ts(849,11): error TS2339: Property 'checkMarkOptions' does not exist on type 'typeof import("/mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-render-marker-json-options/src/cli/check")'.
+tests/unit/src/cli/check.test.ts(872,19): error TS7031: Binding element 'file' implicitly has an 'any' type.
+tests/unit/src/cli/check.test.ts(872,25): error TS7031: Binding element 'where' implicitly has an 'any' type.
+tests/unit/src/cli/check.test.ts(872,32): error TS7031: Binding element 'kind' implicitly has an 'any' type.
+tests/unit/src/cli/check.test.ts(889,11): error TS2339: Property 'checkMarkOptions' does not exist on type 'typeof import("/mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-render-marker-json-options/src/cli/check")'.
+tests/unit/src/cli/check.test.ts(907,19): error TS7031: Binding element 'file' implicitly has an 'any' type.
+tests/unit/src/cli/check.test.ts(907,25): error TS7031: Binding element 'where' implicitly has an 'any' type.
+tests/unit/src/cli/check.test.ts(907,32): error TS7031: Binding element 'kind' implicitly has an 'any' type.
+tests/unit/src/extensions.test.ts(121,35): error TS2353: Object literal may only specify known properties, and 'options' does not exist in type 'MdmarkMarkArgs'.
+tests/unit/src/extensions.test.ts(123,40): error TS2345: Argument of type 'ObjectSchema<{ readonly options: ObjectSchema<{ readonly target: SchemaWithPipe<readonly [StringSchema<undefined>, RegexAction<string, undefined>]>; readonly count: OptionalSchema<NumberSchema<undefined>, undefined>; }, undefined>; }, undefined>' is not assignable to parameter of type 'StandardSchemaV1<MdmarkMarkArgs, MdmarkMarkArgs>'.
+  The types of '["~standard"].validate(...)' are incompatible between these types.
+    Type 'Promise<StandardResult<{ options: { target: string; count?: number | undefined; }; }>> | StandardResult<{ options: { target: string; count?: number | undefined; }; }>' is not assignable to type 'Promise<Result<MdmarkMarkArgs>> | Result<MdmarkMarkArgs>'.
+      Type 'Promise<StandardResult<{ options: { target: string; count?: number | undefined; }; }>>' is not assignable to type 'Promise<Result<MdmarkMarkArgs>> | Result<MdmarkMarkArgs>'.
+        Type 'Promise<StandardResult<{ options: { target: string; count?: number | undefined; }; }>>' is not assignable to type 'Promise<Result<MdmarkMarkArgs>>'.
+          Type 'StandardResult<{ options: { target: string; count?: number | undefined; }; }>' is not assignable to type 'Result<MdmarkMarkArgs>'.
+            Type 'StandardSuccessResult<{ options: { target: string; count?: number | undefined; }; }>' is not assignable to type 'Result<MdmarkMarkArgs>'.
+              Type 'StandardSuccessResult<{ options: { target: string; count?: number | undefined; }; }>' is not assignable to type 'SuccessResult<MdmarkMarkArgs>'.
+                Types of property 'value' are incompatible.
+                  Type '{ options: { target: string; count?: number | undefined; }; }' is missing the following properties from type 'MdmarkMarkArgs': args, keys
+tests/unit/src/extensions.test.ts(132,35): error TS2353: Object literal may only specify known properties, and 'options' does not exist in type 'MdmarkMarkArgs'.
+tests/unit/src/extensions.test.ts(134,40): error TS2345: Argument of type 'ObjectSchema<{ readonly options: ObjectSchema<{ readonly target: SchemaWithPipe<readonly [StringSchema<undefined>, RegexAction<string, undefined>]>; readonly count: OptionalSchema<NumberSchema<undefined>, undefined>; }, undefined>; }, undefined>' is not assignable to parameter of type 'StandardSchemaV1<MdmarkMarkArgs, MdmarkMarkArgs>'.
+  The types of '["~standard"].validate(...)' are incompatible between these types.
+    Type 'Promise<StandardResult<{ options: { target: string; count?: number | undefined; }; }>> | StandardResult<{ options: { target: string; count?: number | undefined; }; }>' is not assignable to type 'Promise<Result<MdmarkMarkArgs>> | Result<MdmarkMarkArgs>'.
+      Type 'Promise<StandardResult<{ options: { target: string; count?: number | undefined; }; }>>' is not assignable to type 'Promise<Result<MdmarkMarkArgs>> | Result<MdmarkMarkArgs>'.
+        Type 'Promise<StandardResult<{ options: { target: string; count?: number | undefined; }; }>>' is not assignable to type 'Promise<Result<MdmarkMarkArgs>>'.
+          Type 'StandardResult<{ options: { target: string; count?: number | undefined; }; }>' is not assignable to type 'Result<MdmarkMarkArgs>'.
+            Type 'StandardSuccessResult<{ options: { target: string; count?: number | undefined; }; }>' is not assignable to type 'Result<MdmarkMarkArgs>'.
+              Type 'StandardSuccessResult<{ options: { target: string; count?: number | undefined; }; }>' is not assignable to type 'SuccessResult<MdmarkMarkArgs>'.
+                Types of property 'value' are incompatible.
+                  Type '{ options: { target: string; count?: number | undefined; }; }' is missing the following properties from type 'MdmarkMarkArgs': args, keys
+tests/unit/src/extensions.test.ts(151,43): error TS2353: Object literal may only specify known properties, and 'options' does not exist in type 'MdmarkMarkArgs'.
+tests/unit/src/extensions.test.ts(165,5): error TS2353: Object literal may only specify known properties, and 'options' does not exist in type 'MdmarkMarkArgs'.
+tests/unit/src/extensions.test.ts(177,35): error TS2353: Object literal may only specify known properties, and 'options' does not exist in type 'MdmarkMarkArgs'.
+tests/unit/src/extensions.test.ts(192,35): error TS2353: Object literal may only specify known properties, and 'options' does not exist in type 'MdmarkMarkArgs'.
+tests/unit/src/features.test.ts(11,65): error TS2353: Object literal may only specify known properties, and 'marks' does not exist in type '{ defaults: Record<string, boolean>; args: string[]; }'.
+tests/unit/src/features.test.ts(23,5): error TS2353: Object literal may only specify known properties, and 'marks' does not exist in type '{ defaults: Record<string, boolean>; args: string[]; }'.
+tests/unit/src/features.test.ts(36,5): error TS2353: Object literal may only specify known properties, and 'marks' does not exist in type '{ defaults: Record<string, boolean>; args: string[]; }'.
+tests/unit/src/features.test.ts(49,5): error TS2353: Object literal may only specify known properties, and 'marks' does not exist in type '{ defaults: Record<string, boolean>; args: string[]; }'.
+tests/unit/src/libraries.browser.test.ts(72,37): error TS2353: Object literal may only specify known properties, and 'options' does not exist in type '{ name: string; args?: string[] | undefined; definition?: number | undefined; }'.
+tests/unit/src/libraries.browser.test.ts(276,34): error TS2353: Object literal may only specify known properties, and 'options' does not exist in type '{ name: string; args?: string[] | undefined; definition?: number | undefined; }'.
+tests/unit/src/libraries.browser.test.ts(277,36): error TS2353: Object literal may only specify known properties, and 'options' does not exist in type '{ name: string; args?: string[] | undefined; definition?: number | undefined; }'.
+tests/unit/src/libraries.browser.test.ts(301,5): error TS2322: Type 'ObjectSchema<{ readonly options: ObjectSchema<{ readonly target: SchemaWithPipe<readonly [StringSchema<undefined>, RegexAction<string, undefined>]>; }, undefined>; }, undefined>' is not assignable to type 'StandardSchemaV1<MdmarkMarkArgs, MdmarkMarkArgs>'.
+  The types of '["~standard"].validate(...)' are incompatible between these types.
+    Type 'Promise<StandardResult<{ options: { target: string; }; }>> | StandardResult<{ options: { target: string; }; }>' is not assignable to type 'Promise<Result<MdmarkMarkArgs>> | Result<MdmarkMarkArgs>'.
+      Type 'Promise<StandardResult<{ options: { target: string; }; }>>' is not assignable to type 'Promise<Result<MdmarkMarkArgs>> | Result<MdmarkMarkArgs>'.
+        Type 'Promise<StandardResult<{ options: { target: string; }; }>>' is not assignable to type 'Promise<Result<MdmarkMarkArgs>>'.
+          Type 'StandardResult<{ options: { target: string; }; }>' is not assignable to type 'Result<MdmarkMarkArgs>'.
+            Type 'StandardSuccessResult<{ options: { target: string; }; }>' is not assignable to type 'Result<MdmarkMarkArgs>'.
+              Type 'StandardSuccessResult<{ options: { target: string; }; }>' is not assignable to type 'SuccessResult<MdmarkMarkArgs>'.
+                Types of property 'value' are incompatible.
+                  Type '{ options: { target: string; }; }' is missing the following properties from type 'MdmarkMarkArgs': args, keys
+tests/unit/src/libraries.browser.test.ts(306,34): error TS2353: Object literal may only specify known properties, and 'options' does not exist in type '{ name: string; args?: string[] | undefined; definition?: number | undefined; }'.
+tests/unit/src/mount.browser.test.ts(376,58): error TS2322: Type 'Mock<() => { value: { options: {}; }; }>' is not assignable to type '(value: unknown, options?: Options | undefined) => Promise<Result<MdmarkMarkArgs>> | Result<MdmarkMarkArgs>'.
+  Type '{ value: { options: {}; }; }' is not assignable to type 'Promise<Result<MdmarkMarkArgs>> | Result<MdmarkMarkArgs>'.
+    Type '{ value: { options: {}; }; }' is not assignable to type 'SuccessResult<MdmarkMarkArgs>'.
+      Types of property 'value' are incompatible.
+        Type '{ options: {}; }' is missing the following properties from type 'MdmarkMarkArgs': args, keys
+tests/unit/src/parts/embed.test.ts(13,5): error TS2353: Object literal may only specify known properties, and 'options' does not exist in type '{ name: string; args?: string[] | undefined; definition?: number | undefined; }'.
+tests/unit/src/parts/embed.test.ts(28,45): error TS2353: Object literal may only specify known properties, and 'options' does not exist in type '{ name: string; args?: string[] | undefined; definition?: number | undefined; }'.
+tests/unit/src/render/legacy-marks.test.ts(4,38): error TS2307: Cannot find module '../../../../src/render/legacy-marks.ts' or its corresponding type declarations.
+tests/unit/src/render/legacy-marks.test.ts(71,30): error TS7006: Parameter 'item' implicitly has an 'any' type.
+tests/unit/src/render/legacy-marks.test.ts(157,30): error TS7006: Parameter 'item' implicitly has an 'any' type.
+tests/unit/src/render/legacy-marks.test.ts(227,24): error TS7006: Parameter 'line' implicitly has an 'any' type.
+tests/unit/src/render/mark-options.test.ts(4,38): error TS2307: Cannot find module '../../../../src/render/mark-options.ts' or its corresponding type declarations.
+tests/unit/src/render/mark-schema.test.ts(7,37): error TS2307: Cannot find module '../../../../src/render/mark-schema.ts' or its corresponding type declarations.
+tests/unit/src/render/mark-schema.test.ts(187,31): error TS7006: Parameter 'problem' implicitly has an 'any' type.
+tests/unit/src/render/mark-schema.test.ts(224,30): error TS7006: Parameter 'problem' implicitly has an 'any' type.
+tests/unit/src/render/mark-schema.test.ts(225,33): error TS7006: Parameter 'problem' implicitly has an 'any' type.
+tests/unit/src/render/mark-schema.test.ts(326,21): error TS7006: Parameter 'note' implicitly has an 'any' type.
+tests/unit/src/render/mark-schema.test.ts(357,20): error TS7006: Parameter 'note' implicitly has an 'any' type.
+tests/unit/src/render/mark-schema.test.ts(359,21): error TS7006: Parameter 'note' implicitly has an 'any' type.
+tests/unit/src/render/marks.test.ts(45,14): error TS2339: Property 'featureOptions' does not exist on type 'RenderEnv'.
+tests/unit/src/render/marks.test.ts(63,39): error TS2353: Object literal may only specify known properties, and 'options' does not exist in type '{ name: string; args?: string[] | undefined; definition?: number | undefined; }'.
+tests/unit/src/render/marks.test.ts(116,14): error TS2339: Property 'featureOptions' does not exist on type 'RenderEnv'.
+tests/unit/src/render/marks.test.ts(230,11): error TS2353: Object literal may only specify known properties, and 'options' does not exist in type '{ name: string; args?: string[] | undefined; definition?: number | undefined; }'.
+tests/unit/src/render/page.test.ts(11,37): error TS2741: Property 'args' is missing in type '{ scheme: string; theme: string; toc: { mode: string; }; }[]' but required in type 'MdmarkMarkArgs'.
+tests/unit/src/render/page.test.ts(27,37): error TS2741: Property 'args' is missing in type '({ scheme: string; toc: { mode: string; }; } | { toc: { mode: string; }; })[]' but required in type 'MdmarkMarkArgs'.
+tests/unit/src/render/syntax/code-blocks.test.ts(29,31): error TS2353: Object literal may only specify known properties, and 'options' does not exist in type '{ args: MdmarkMarkArgs; text: string; lineCount: number; }'.
+tests/unit/src/render/syntax/code-blocks.test.ts(33,15): error TS2339: Property 'lineStart' does not exist on type '{ title: string; lineNumbers: boolean; wrap: boolean; highlights: Set<number>; folds: Set<number>; warnings: WarningItem[]; skipped: SkippedArg[]; }'.
+tests/unit/src/render/syntax/code-blocks.test.ts(44,31): error TS2353: Object literal may only specify known properties, and 'options' does not exist in type '{ args: MdmarkMarkArgs; text: string; lineCount: number; }'.
+tests/unit/src/render/syntax/code-blocks.test.ts(490,31): error TS2353: Object literal may only specify known properties, and 'options' does not exist in type '{ args: MdmarkMarkArgs; text: string; lineCount: number; }'.
+tests/unit/src/render/syntax/code-blocks.test.ts(688,5): error TS2353: Object literal may only specify known properties, and 'options' does not exist in type '{ args: MdmarkMarkArgs; text: string; lineCount: number; }'.
+tests/unit/src/render/syntax/code-blocks.test.ts(691,32): error TS2353: Object literal may only specify known properties, and 'options' does not exist in type '{ args: MdmarkMarkArgs; text: string; lineCount: number; }'.
+tests/unit/src/render/syntax/code-blocks.test.ts(706,31): error TS2353: Object literal may only specify known properties, and 'options' does not exist in type '{ args: MdmarkMarkArgs; text: string; lineCount: number; }'.
+tests/unit/src/render/syntax/code-blocks.test.ts(708,15): error TS2339: Property 'lineStart' does not exist on type '{ title: string; lineNumbers: boolean; wrap: boolean; highlights: Set<number>; folds: Set<number>; warnings: WarningItem[]; skipped: SkippedArg[]; }'.
+tests/unit/src/render/syntax/collapse.test.ts(13,5): error TS2353: Object literal may only specify known properties, and 'kind' does not exist in type 'MdmarkMarkArgs'.
+tests/unit/src/render/syntax/collapse.test.ts(25,31): error TS2353: Object literal may only specify known properties, and 'group' does not exist in type 'MdmarkMarkArgs'.
+tests/unit/src/render/syntax/collapse.test.ts(36,31): error TS2353: Object literal may only specify known properties, and 'collapse' does not exist in type 'MdmarkMarkArgs'.
+tests/unit/src/render/syntax/details.test.ts(59,41): error TS2345: Argument of type '{ title: string; open?: undefined; } | { title: string; open: boolean; } | { title?: undefined; open?: undefined; }' is not assignable to parameter of type 'string'.
+  Type '{ title: string; open?: undefined; }' is not assignable to type 'string'.
+tests/unit/src/render/syntax/glossary.test.ts(62,5): error TS2353: Object literal may only specify known properties, and 'options' does not exist in type '{ args: MdmarkMarkArgs; tokens: Token[]; docId: string; }'.
+tests/unit/src/render/syntax/glossary.test.ts(99,5): error TS2353: Object literal may only specify known properties, and 'options' does not exist in type '{ args: MdmarkMarkArgs; tokens: Token[]; docId: string; }'.
+tests/unit/src/render/syntax/glossary.test.ts(119,5): error TS2353: Object literal may only specify known properties, and 'options' does not exist in type '{ args: MdmarkMarkArgs; tokens: Token[]; docId: string; }'.
+tests/unit/src/render/syntax/glossary.test.ts(197,5): error TS2353: Object literal may only specify known properties, and 'options' does not exist in type '{ args: MdmarkMarkArgs; tokens: Token[]; docId: string; }'.
+tests/unit/src/render/syntax/glossary.test.ts(225,39): error TS2353: Object literal may only specify known properties, and 'options' does not exist in type '{ args: MdmarkMarkArgs; tokens: Token[]; docId: string; }'.
+tests/unit/src/render/syntax/glossary.test.ts(227,5): error TS2353: Object literal may only specify known properties, and 'options' does not exist in type '{ args: MdmarkMarkArgs; tokens: Token[]; docId: string; }'.
+tests/unit/src/render/syntax/glossary.test.ts(247,5): error TS2353: Object literal may only specify known properties, and 'options' does not exist in type '{ args: MdmarkMarkArgs; tokens: Token[]; docId: string; }'.
+tests/unit/src/render/syntax/tables.test.ts(24,30): error TS2739: Type '{ kind: string; features: { sort: { enabled: boolean; }; }; columns: { 名前: { filter: {}; }; 更新日: { filter: { type: string; }; }; }; collapse: { open: boolean; }; }' is missing the following properties from type 'MdmarkMarkArgs': args, keys
+tests/unit/src/render/syntax/tables.test.ts(52,30): error TS2739: Type '{ kind: string; features: { count: {}; copy: {}; rowlink: {}; }; columns: { 説明: { hidden: boolean; }; 数量: { total: { calc: string; }[]; }; 名前: { total: { calc: string; }[]; }; }; }' is missing the following properties from type 'MdmarkMarkArgs': args, keys
+tests/unit/src/render/syntax/tables.test.ts(89,5): error TS2739: Type '{ kind: string; columns: { 物理名: { pinned: boolean; }; No: { pinned: boolean; }; 説明: { width: { mode: string; max: number; }; }; 必須: { format: { type: string; }; }; 既定: { format: { type: string; }; }; }; }' is missing the following properties from type 'MdmarkMarkArgs': args, keys
+tests/unit/src/render/syntax/tables.test.ts(95,15): error TS2339: Property 'unpinned' does not exist on type 'TableSpec'.
+tests/unit/src/render/syntax/tables.test.ts(96,15): error TS2339: Property 'widths' does not exist on type 'TableSpec'.
+tests/unit/src/render/syntax/tables.test.ts(534,34): error TS2739: Type '{ columns: { 金額: { highlight: {}; }; }; rows: { colors: ({ column: string; value: string; color: string; at?: undefined; } | { column?: undefined; value?: undefined; at: number; color: string; })[]; }; }' is missing the following properties from type 'MdmarkMarkArgs': args, keys
+tests/unit/src/render/syntax/tables.test.ts(563,34): error TS2739: Type '{ columns: { 名前: { highlight: { color: string; }; }; 金額: { highlight: {}; }; }; rows: { colors: ({ at?: undefined; column: string; value: string; color: string; } | { column?: undefined; value?: undefined; at: { from: number; to: number; }; color: string; })[]; }; }' is missing the following properties from type 'MdmarkMarkArgs': args, keys
+tests/unit/src/render/syntax/tables.test.ts(590,34): error TS2739: Type '{ columns: { 無い列: { highlight: {}; }; }; rows: { colors: ({ at?: undefined; column: string; color: string; } | { column?: undefined; at: number; color: string; })[]; }; }' is missing the following properties from type 'MdmarkMarkArgs': args, keys
+tests/unit/src/render/syntax/tables.test.ts(702,30): error TS2739: Type '{ kind: string; columns: { 無い列: { filter: {}; }; 名前: { pinned: boolean; }; }; }' is missing the following properties from type 'MdmarkMarkArgs': args, keys
+tests/unit/src/render/syntax/tables.test.ts(723,30): error TS2739: Type '{ kind: string; features: { total: { enabled: boolean; }; }; columns: { 数量: { total: { calc: string; }[]; }; }; }' is missing the following properties from type 'MdmarkMarkArgs': args, keys
+tests/unit/src/render/syntax/tables.test.ts(736,30): error TS2739: Type '{ kind: string; columns: { 名前: { hidden: boolean; }; }; }' is missing the following properties from type 'MdmarkMarkArgs': args, keys
+tests/unit/src/render/syntax/tables.test.ts(749,30): error TS2739: Type '{ kind: string; header: { rows: number; columns: number; }; }' is missing the following properties from type 'MdmarkMarkArgs': args, keys
+tests/unit/src/render/syntax/tables.test.ts(762,30): error TS2739: Type '{ kind: string; header: { rows: number; columns: number; }; }' is missing the following properties from type 'MdmarkMarkArgs': args, keys
+tests/unit/src/render/syntax/tables.test.ts(787,30): error TS2739: Type '{ kind: string; tree: { key: { column: string; }; type: { column: string; }; example: { heading: string; }; }; }' is missing the following properties from type 'MdmarkMarkArgs': args, keys
+
+> mdmark-vscode@0.1.0 typecheck
+> tsc --noEmit
+
+exit=1

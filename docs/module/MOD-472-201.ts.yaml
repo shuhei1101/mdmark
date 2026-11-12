@@ -8,14 +8,11 @@ data_models:
     title: マーカーの引数
     container: src/extensions.ts
     usecase: 共通
-    summary: マーカーの引数を判別した値。拡張の `schema` と `draw` が受け取る（公開の型）
+    summary: マーカーの引数の JSON のオブジェクトと部品の定義。拡張の `schema` と `draw` が受け取る（公開の型）
     properties:
-      - name: args
-        type: string[]
-        description: '`キー=値` でない引数を記載した順に'
-      - name: keys
-        type: Record<string, string>
-        description: '`キー=値` の引数。同じキーは後に記載した値'
+      - name: options
+        type: Record<string, unknown>
+        description: マーカーの名前の後ろの JSON のオブジェクト（真偽・数・配列・オブジェクトの型を保つ）。引数の無いマーカーは `{}`
       - name: definition
         type: unknown
         description: マーカーを範囲で記載し、範囲に `json` のコードブロックを 1 つ配置したときの、その JSON を読み込んだ値。範囲が無いマーカーでは持たない。JSON として読み込めないときは `schema` も `load` も呼ばず記載の警告にする（分類『図』の `parseDefinitionJson`）
@@ -155,15 +152,15 @@ functions:
       - name: test_validate_mark_args
         case: 正常
         summary: 合う値は空を返却する
-        condition: 'valibot 1.5.0 の `strictTuple` で英小文字 1 つを許す schema と `{ args: ["world"], keys: {} }`'
+        condition: 'valibot 1.5.0 の `v.object({ options: v.object({ target: v.pipe(v.string(), v.regex(/^[a-z]+$/)), count: v.optional(v.number()) }) })` と `{ options: { target: "world" } }`'
         mock: なし
         expected: '`[]`'
       - name: test_validate_mark_args_when_invalid
         case: 正常
         summary: 合わない値は issue ごとの項目を返却する
-        condition: '同じ schema と `{ args: ["World", "2"], keys: {} }`'
+        condition: '同じ schema と `{ options: { target: "World", count: "2" } }`'
         mock: なし
-        expected: ラベルが `1 つ目の World`・`2 つ目の 2` の 2 項目
+        expected: ラベルが `target`・`count` の 2 項目
       - name: test_validate_mark_args_when_rejected
         case: 異常
         summary: validate の拒否を投げる
@@ -175,7 +172,7 @@ functions:
     container: src/extensions.ts
     kind: 関数
     scope: internal
-    summary: issue の `path`（要素が `{ key }` なら `key` を読み込む）が `args` と位置に届けば `{位置+1} つ目の {値}`、`keys` とキーに届けば `{キー}=`、それ以外はラベル無しにし、`message` を本文にする
+    summary: issue の `path`（要素が `{ key }` なら `key` を読み込む）が `options` とキーに届けば `options` の後ろのキーを `.`（数の要素は `[位置]`）でつないだパス、`definition` の中に届けば `definition.{パス}`、それ以外はラベル無しにし、`message` を本文にする
     args:
       - name: issue
         type: StandardSchemaV1.Issue
@@ -184,26 +181,26 @@ functions:
       - name: value
         type: MdmarkMarkArgs
         required: true
-        description: 検査した引数（位置の値を参照する）
+        description: 検査した引数
     returns:
       type: WarningItem
       description: 警告の項目
     unit_tests:
       - name: test_format_issue
         case: 正常
-        summary: 位置まで届く path を位置と値のラベルにする
-        condition: '`path` が `[{ key: "args" }, { key: 1 }]`、値の `args` が `["World", "2"]`'
+        summary: options の中まで届く path をキーのパスのラベルにする
+        condition: '`path` が `[{ key: "options" }, { key: "items" }, { key: 1 }, "name"]`'
         mock: なし
-        expected: '`{ label: "2 つ目の 2", message }`'
-      - name: test_format_issue_when_key
+        expected: '`{ label: "items[1].name", message }`'
+      - name: test_format_issue_when_definition
         case: 正常
-        summary: キーまで届く path を `{キー}=` にする
-        condition: '`path` が `["keys", "lang"]`'
+        summary: definition の中まで届く path を `definition.{パス}` にする
+        condition: '`path` が `["definition", "title"]`'
         mock: なし
-        expected: ラベルが `lang=`
+        expected: ラベルが `definition.title`
       - name: test_format_issue_when_no_position
         case: 正常
-        summary: 位置を持たない issue はラベル無し
-        condition: '`path` が `["args"]` と、`path` が無い issue'
+        summary: キーまで届かない issue はラベル無し
+        condition: '`path` が `["options"]` と、`path` が無い issue'
         mock: なし
         expected: どちらもラベルが空で、本文が `message`

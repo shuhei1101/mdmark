@@ -28,7 +28,7 @@ functions:
       - name: test_attach_table_settings_when_dragged
         case: 正常
         summary: ドラッグ＆ドロップで列を動かし、全ての行のセルをもう一度並べる
-        condition: '`+reorder +columns` の 4 列 3 行の表。説明のつまみを名前の上へ `dragstart`・`dragover`・`drop`'
+        condition: '`reorder`・`columns` の機能の 4 列 3 行の表。説明のつまみを名前の上へ `dragstart`・`dragover`・`drop`'
         mock: '`DataTransfer` を作って指定する'
         expected: 見出しと 3 行のセルの `data-col` が `3,0,1,2` の順で、一覧も同じ順
       - name: test_attach_table_settings_when_arrow_key
@@ -40,7 +40,7 @@ functions:
       - name: test_attach_table_settings_when_group_boundary
         case: 正常
         summary: 結合した見出しの範囲の外とピン止めの境には動かさず、動かせないつまみを `disabled` にする
-        condition: '`header-rows=2 pin=名前` の表を `pinMode: "through"` で付け、型を備考の下へ `drop`'
+        condition: '`header.rows` が 2 で `名前` の列が `pinned` の表を `pinMode: "through"` で付け、型を備考の下へ `drop`'
         mock: なし
         expected: 列の順が変わらず、名前と備考のつまみが `disabled`
       - name: test_attach_table_settings_when_hidden

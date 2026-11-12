@@ -1,0 +1,12 @@
+{
+  "$id": "row-detail.schema.json",
+  "type": "object",
+  "properties": {
+    "at": {
+      "type": "integer",
+      "minimum": 1
+    }
+  },
+  "additionalProperties": false,
+  "required": ["at"]
+}

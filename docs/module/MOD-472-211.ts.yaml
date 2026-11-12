@@ -18,18 +18,18 @@ data_models:
       - name: labels
         type: '{ paramCopy: string } | undefined'
         description: 既定を適用した設定の `labels`（部品の文言。`renderDocument` が入れ、図の部品・埋め込んだ HTML のコアルールが `env.labels?.paramCopy` を `renderParam` に指定する）
-      - name: featureArgs
-        type: string[]
-        description: '`features` のマーカーの引数を記載した順に並べたもの（コアルールが追加する）'
+      - name: featureOptions
+        type: Array<Record<string, boolean>>
+        description: '`features` のマーカーの JSON のオブジェクトを記載した順に並べたもの（コアルールが追加する）'
       - name: features
         type: Record<string, boolean>
-        description: '`defaults` に `featureArgs` を重ねたもの（`resolveDocumentFeatures` が入れる。記法のコアルールが読み込む）'
-      - name: pageArgs
-        type: 'Array<{ args: string[]; keys: Record<string, string> }>'
-        description: 文書の先頭の page のマーカーの引数を記載した順に並べたもの（`takeMarks` が追加する）
+        description: '`defaults` に `featureOptions` を重ねたもの（`resolveDocumentFeatures` が入れる。記法のコアルールが読み込む）'
+      - name: pageOptions
+        type: MarkOptions[]
+        description: 文書の先頭の page のマーカーの JSON のオブジェクトを記載した順に並べたもの（`takeMarks` が追加する）
       - name: page
         type: PageSettings
-        description: '`pageArgs` を読み込んだページの設定（`resolvePageSettings` が入れる）'
+        description: '`pageOptions` を読み込んだページの設定（`resolvePageSettings` が入れる）'
       - name: headings
         type: 'Array<{ level: number; id: string; text: string }>'
         description: 見出しの ID と文字（`assignHeadingIds` が追加する）
@@ -63,6 +63,29 @@ data_models:
       - name: warnings
         type: CollectedWarning[]
         description: 記載の警告（`collectWarningsRule` が最後に集める）
+      - name: markNotes
+        type: 'Array<MarkNote & { line: number }>'
+        description: 画面に出さないマーカーの注記（`recordMarkNotes` が追加し、`collectWarningsRule` が `warnings` に合わせる）
+  - name: FoundMark
+    title: 取得したマーカー
+    container: src/render/parser.ts
+    summary: '`findMarkTexts` が取得したマーカー'
+    properties:
+      - name: name
+        type: string
+        description: マーカーの名前
+      - name: line
+        type: number
+        description: マーカーの行（1 から）
+      - name: raw
+        type: string
+        description: マーカーの文字のまま
+      - name: closing
+        type: boolean
+        description: 閉じのマーカーか
+      - name: args
+        type: string
+        description: マーカーの `:` の後ろの文字（無ければ空）
 functions:
   - name: createParser
     title: 解析器を作る
@@ -127,7 +150,7 @@ functions:
     container: src/render/parser.ts
     usecase: 設定と索引を点検する
     summary: Markdown の生の HTML のブロックと行内の HTML から `MARK_PATTERN` に該当するマーカーを取得し、名前と行の番号を記載した順に返却する
-    description: '`createParser` と同じ設定（`html: true`・`linkify: true`）の markdown-it で、追加するコアルールを登録せずに解析する（コードブロックとインラインコードの中は `html_block`・`html_inline` にならないため取得しない）。行の番号は 1 からで、`html_block` はトークンの `map` の開始行にマーカーより前の改行の数を追加し、`html_inline` は親の `inline` の `map` の開始行（表のセルのように `map` が `null` のときは直前の `tr_open` の `map` の開始行）に、マーカーより前の子の `softbreak`・`hardbreak` の数と、マーカーより前の子の `html_inline` の内容の改行の数と、同じ `html_inline` の中でマーカーより前の改行の数を追加する。閉じのマーカーも 1 つのマーカーとして返却する'
+    description: '`createParser` と同じ設定（`html: true`・`linkify: true`）の markdown-it で、追加するコアルールを登録せずに解析する（コードブロックとインラインコードの中は `html_block`・`html_inline` にならないため取得しない）。行の番号は 1 からで、`html_block` はトークンの `map` の開始行にマーカーより前の改行の数を追加し、`html_inline` は親の `inline` の `map` の開始行（表のセルのように `map` が `null` のときは直前の `tr_open` の `map` の開始行）に、マーカーより前の子の `softbreak`・`hardbreak` の数と、マーカーより前の子の `html_inline` の内容の改行の数と、同じ `html_inline` の中でマーカーより前の改行の数を追加する。閉じのマーカーも 1 つのマーカーとして返却する。`findMarkTexts` の結果から名前と行だけを返却する'
     kind: 関数
     scope: public
     args:
@@ -175,6 +198,22 @@ functions:
     status: planned
     introduced:
       pr: 64
+  - name: findMarkTexts
+    title: 文書のマーカーを引数の文字と一緒に取得する
+    container: src/render/parser.ts
+    usecase: 設定と索引を点検する
+    kind: 関数
+    scope: internal
+    summary: '`findMarks` と同じマーカーを、マーカーの文字・閉じか・引数の文字と一緒に返却する'
+    description: '`findMarks` と同じ解析で取得する。点検（`checkMarkOptions`）が文書ごとのマーカーの引数を読むときに使用する'
+    args:
+      - name: markdown
+        type: string
+        required: true
+        description: 文書の Markdown
+    returns:
+      type: FoundMark[]
+      description: 取得したマーカー
   - name: markSourceLines
     title: 元の行番号を付ける
     kind: 関数
@@ -205,7 +244,7 @@ functions:
       - name: test_mark_source_lines_when_mark_range
         case: 正常
         summary: マーカーの範囲を囲む要素と注意書きに開きのマーカーの行を付け、中のブロックにもそれぞれの行を付ける
-        condition: '1 行目 `<!-- table: data -->`、3 行目から表、6 行目 `<!-- /table -->`、8 行目から `> [!NOTE]` の注意書き'
+        condition: '1 行目 `<!-- table: {"kind": "data"} -->`、3 行目から表、6 行目 `<!-- /table -->`、8 行目から `> [!NOTE]` の注意書き'
         mock: なし
         expected: 表を囲む要素が `data-source-line="0"`、中の `table` が `data-source-line="2"`、注意書きの外側の要素が `data-source-line="7"`
       - name: test_mark_source_lines_when_raw_html

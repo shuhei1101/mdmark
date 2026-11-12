@@ -1,0 +1,43 @@
+id: ER-477-3
+visibility: internal
+title: 'ER 図: タブのマーカーの設定'
+lead: '`<!-- tabs: {JSON のオブジェクト} -->` の名前の後ろに記載する、タブのマーカーの設定の構造。'
+tables:
+- name: tabs
+  title: タブ
+  datastore: JSON
+  access: 全件
+  scale: ~1
+  summary: タブのマーカー 1 つの設定
+  columns:
+  - name: group
+    title: タブの組の名前
+    type: string
+    check: 1 文字以上
+    description: タブの組の名前。1 文字以上。空の文字は記載の警告にし、組を持たないタブにする
+    example: '"os"'
+  - name: collapse
+    title: 共通のオブジェクトの折り畳み
+    type: object
+    description: 共通のオブジェクトの折り畳み
+    example: '{"open": true}'
+notes:
+  見本: |-
+    ```html
+    <!-- tabs: {"group": "os", "collapse": {"open": true, "title": "OS ごとの手順"}} -->
+    ```
+  今の引数との対応: |-
+    | 今の引数 | JSON のキー |
+    | --- | --- |
+    | `closed`・`open`・`title=見出し` | `collapse.open` の `false`・`true` と `collapse.title` |
+    | `group=名前` | `group` |
+refs:
+- ER-477-1#
+decisions:
+- D-312
+- D-334
+- D-336
+- D-337
+- D-338
+- D-344
+- D-345

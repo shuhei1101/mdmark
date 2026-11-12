@@ -1,0 +1,37 @@
+id: ER-477-11
+visibility: internal
+title: 'ER 図: 図と表の番号のマーカーの設定'
+lead: '`<!-- fig: {JSON のオブジェクト} -->` の名前の後ろに記載する、図と表の番号のマーカーの設定の構造。'
+tables:
+- name: fig
+  title: 図と表の番号
+  datastore: JSON
+  access: 全件
+  scale: ~1
+  summary: 図と表の番号のマーカー 1 つの設定
+  columns:
+  - name: id
+    title: 図表の ID
+    type: string
+    description: 図表の ID
+    not_null: true
+    example: '"構成"'
+notes:
+  見本: |-
+    ```html
+    <!-- fig: {"id": "構成"} -->
+    ```
+  今の引数との対応: |-
+    | 今の引数 | JSON のキー |
+    | --- | --- |
+    | ID | `id` |
+refs:
+- ER-477-1#
+decisions:
+- D-312
+- D-334
+- D-336
+- D-337
+- D-338
+- D-344
+- D-345

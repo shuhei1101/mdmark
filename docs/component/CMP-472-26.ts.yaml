@@ -30,7 +30,7 @@ states:
       - name: interactive
         value: 'true'
   - name: OpenAll
-    description: '`open=all` で全てのフォルダが開いたアイコンで開いている'
+    description: '`depth` が `"all"` で全てのフォルダが開いたアイコンで開いている'
     args:
       - name: nodes
         value: '[{"name":"app/","children":[{"name":"src/","children":[{"name":"parts/","children":[{"name":"tree.ts"}]}]}]}]'
@@ -45,7 +45,7 @@ states:
       - name: interactive
         value: 'true'
   - name: OpenLevels
-    description: '`open=2` で `app/`・`src/` が開き、`parts/` が閉じている'
+    description: '`depth` が `2` で `app/`・`src/` が開き、`parts/` が閉じている'
     args:
       - name: nodes
         value: '[{"name":"app/","children":[{"name":"src/","children":[{"name":"parts/","children":[{"name":"tree.ts"}]}]}]}]'
@@ -190,7 +190,7 @@ args:
     required: false
     default: なし（ルートだけ開く）
     choices: '`all`・1 以上の整数の文字列'
-    description: 既定で開く階層（`open=` の値）。`data-open` に入れる。`all` は全て、数はルートの深さを 0 として深さがその数より浅いフォルダを開く
+    description: 既定で開く階層（マーカーの `depth` の値）。`data-open` に入れる。`all` は全て、数はルートの深さを 0 として深さがその数より浅いフォルダを開く
     status: planned
   - name: interactive
     type: 真偽値
@@ -217,7 +217,7 @@ args:
     type: 真偽値
     required: false
     default: 'false'
-    description: '`<!-- tree: wrap -->` を持つか。`true` のとき `div.mdmark-tree` に class `mdmark-tree-wrap` を付け、長い名前をアイコンの右の名前の列の中で折り返し、注釈を名前の下の行に名前の頭から出す。罫線と入れ子の位置は `false` と同じ'
+    description: '`<!-- tree: {"wrap": true} -->` を持つか。`true` のとき `div.mdmark-tree` に class `mdmark-tree-wrap` を付け、長い名前をアイコンの右の名前の列の中で折り返し、注釈を名前の下の行に名前の頭から出す。罫線と入れ子の位置は `false` と同じ'
 css_properties:
   - name: --mdmark-color-muted
     syntax: <color>

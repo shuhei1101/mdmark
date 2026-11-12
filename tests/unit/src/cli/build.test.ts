@@ -92,7 +92,7 @@ test("test_run_build_when_glossary_without_index", async () => {
     ]),
     "README.md": "マーカーを記載する。\n",
     "用語集.md": [
-      "<!-- glossary: term=用語 meaning=意味 -->",
+      '<!-- glossary: {"term": {"column": "用語"}, "meaning": {"column": "意味"}} -->',
       "",
       "| 用語 | 意味 |",
       "| --- | --- |",

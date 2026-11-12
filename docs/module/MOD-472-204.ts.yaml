@@ -11,8 +11,8 @@ data_models:
     summary: '`import()` で読み込んだモジュールが名前付きで export する構造'
     properties:
       - name: draw
-        type: '(slot: HTMLElement, args: string[]) => void | Promise<void>'
-        description: マーカーの場所の要素と、マーカーの引数を受けて描く
+        type: '(slot: HTMLElement, options: Record<string, unknown>) => void | Promise<void>'
+        description: マーカーの場所の要素と、マーカーの引数の JSON のオブジェクトを受けて描く
 constants:
   - name: DRAWN_ATTRIBUTE
     title: 描き終えたマーカー
@@ -35,7 +35,7 @@ functions:
     scope: internal
     is_async: true
     summary: 要素の中のマーカーの場所ごとに、登録した拡張なら引数を検査して `load` で、対応表なら URL でモジュールを読み込んで `draw` を呼ぶ。引数が合わない場所は記載の警告に、読み込めない・描けない・検査が失敗する場所は通知ブロックに替える
-    description: '同じ名前のモジュールは 1 回の呼び出しの中で 1 回だけ読み込む（2 回目からは同じ Promise を待つ）。拡張は対応表より優先し、`draw` に `parseMarkArgs` の値を指定する（対応表のモジュールには今のまま引数の配列を指定する）。拡張の通知ブロックは `source: "extension"` で、名前は拡張の `name`。記載の警告は `renderSyntaxWarning` にマーカーの文字・拡張の名前・`validateMarkArgs` の項目を指定する。マーカーの場所が無ければ何も読み込まない。`embeddedLibraries` があるときは、URL を読み込まずに表の関数でモジュールを読み込み、表に無い名前は読み込めないものとして通知ブロックにする（ページの隣のファイルや CDN へ要求しない）。読み込みと `draw` に時間の上限は配置しない'
+    description: '同じ名前のモジュールは 1 回の呼び出しの中で 1 回だけ読み込む（2 回目からは同じ Promise を待つ）。拡張は対応表より優先し、`draw` に `{ options, definition }`（`options` は `data-mdmark-args` の JSON を読み込んだオブジェクト）を指定する（対応表のモジュールには `options` を指定する）。拡張の通知ブロックは `source: "extension"` で、名前は拡張の `name`。記載の警告は `renderSyntaxWarning` にマーカーの文字・拡張の名前・`validateMarkArgs` の項目を指定する。マーカーの場所が無ければ何も読み込まない。`embeddedLibraries` があるときは、URL を読み込まずに表の関数でモジュールを読み込み、表に無い名前は読み込めないものとして通知ブロックにする（ページの隣のファイルや CDN へ要求しない）。読み込みと `draw` に時間の上限は配置しない'
     side_effects: マーカーの場所の要素の属性を書き換え、失敗した場所を通知ブロックに置き換える。失敗を `console.error` に出す
     args:
       - name: options
@@ -51,7 +51,7 @@ functions:
          - `data-mdmark-slot` の名前で対応表の行を参照する。行が無い（文書に生の HTML で記載された）要素は取り除き、ほかは行わない
          - 行の `url` を `document.baseURI` を基準に解決する
          - 名前ごとに 1 回だけモジュールを読み込む。`embeddedLibraries` があるときはその名前の関数を呼び、無い名前は `Error`（埋めていない）で拒否する。無いときは解決した URL で読み込む（モジュールを読み込む）
-         - `data-mdmark-args` を空白で区切った引数で、モジュールの `draw` を呼んで待つ
+         - `data-mdmark-args` の JSON を読み込んだオブジェクト（属性が無ければ `{}`）で、モジュールの `draw` を呼んで待つ
          - 待った後に `isCurrent()` が `false` なら何もしない
          - 描けたら、要素から `role` を削除し `DRAWN_ATTRIBUTE` を付ける
          - 読み込めない・`draw` が無い・`draw` が例外を投げたときは、要素を通知ブロックに置き換える（通知ブロックを描く）。タイトルは行の `figure` で分ける。`draw` が要素を `root` から取り除いていたら置き換えない
@@ -61,14 +61,13 @@ functions:
       - MOD-472-314#functions[renderSyntaxWarning]
       - MOD-472-201#functions[extensionFor]
       - MOD-472-201#functions[validateMarkArgs]
-      - MOD-472-210#functions[parseMarkArgs]
     unit_tests:
       - name: test_load_libraries
         case: 正常
         summary: マーカーの場所ごとに `draw` を呼び、描けた場所の読み込み中のマーカーを削除する
-        condition: '`renderEmbed` の要素が `test-lib`（引数 `a b`）と `test-lib`（引数無し）の 2 つ。対応表は `{ "test-lib": { url: "/fixtures/test-lib.js", figure: true } }`'
+        condition: '`renderEmbed` の要素が `test-lib`（引数 `{"items": ["a", "b"]}`）と `test-lib`（引数無し）の 2 つ。対応表は `{ "test-lib": { url: "/fixtures/test-lib.js", figure: true } }`'
         mock: '`importModule` が `draw` を持つモジュールを返却する'
-        expected: '`importModule` が 1 回、`location.origin` + `/fixtures/test-lib.js` で呼ばれる。`draw` が `(1 つ目の要素, ["a", "b"])` と `(2 つ目の要素, [])` で呼ばれる。2 つの要素が `role` を持たず `data-mdmark-drawn` を持つ'
+        expected: '`importModule` が 1 回、`location.origin` + `/fixtures/test-lib.js` で呼ばれる。`draw` が `(1 つ目の要素, { items: ["a", "b"] })` と `(2 つ目の要素, {})` で呼ばれる。2 つの要素が `role` を持たず `data-mdmark-drawn` を持つ'
       - name: test_load_libraries_when_no_slot
         case: 正常
         summary: マーカーの場所が無ければ何も読み込まない
@@ -113,14 +112,14 @@ functions:
         expected: 戻りの Promise が解決し、`root` の中に通知ブロックが無い。`console.error` が 1 回呼ばれる
       - name: test_load_libraries_when_extension
         case: 正常
-        summary: 拡張のマーカーを load で読み込み、判別した引数で draw を呼ぶ
-        condition: '`greet` を登録し、`data-mdmark-slot="greet" data-mdmark-args="world lang=ja"` の場所を 2 つ'
+        summary: 拡張のマーカーを load で読み込み、引数の JSON のオブジェクトで draw を呼ぶ
+        condition: '`greet` を登録し、`data-mdmark-slot="greet" data-mdmark-args="{&quot;target&quot;:&quot;world&quot;,&quot;lang&quot;:&quot;ja&quot;}"` の場所を 2 つ'
         mock: '`load` は `draw` を記録するモジュールを返却する関数（呼ばれた回数を数える）'
-        expected: '`load` が 1 回、`draw` が 2 回で引数が `{ args: ["world"], keys: { lang: "ja" } }`'
+        expected: '`load` が 1 回、`draw` が 2 回で引数が `{ options: { target: "world", lang: "ja" } }`'
       - name: test_load_libraries_when_extension_args_invalid
         case: 異常
         summary: 引数が schema に合わない場所は記載の警告にし、load しない
-        condition: 引数 1 つを英小文字で許す schema の `greet` と `World 2` の場所
+        condition: '`options.target` を英小文字で許す schema の `greet` と、引数 `{"target": "World"}` の場所'
         mock: '`load` は呼ばれた回数を数える関数'
         expected: 場所が `mdmark-syntax-warning` になり、`load` が 0 回
       - name: test_load_libraries_when_extension_fails

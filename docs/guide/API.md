@@ -6,7 +6,7 @@
 
 ## 一覧
 
-<!-- table: data -->
+<!-- table: {"kind": "data"} -->
 
 | 名前 | 呼び出し | 説明 |
 | --- | --- | --- |
@@ -78,7 +78,7 @@ getComputedStyle(document.documentElement).getPropertyValue("--mdmark-version");
 表の並べ替え・タブの切り替えなど、記法の操作を付ける（記載方法は [記法](./記法.md)）。
 文書に記載したスクリプト（`script` 要素・`on` で始まる属性・`javascript:` の URL）は落とし、実行しない。
 索引を指定すると、本文に出た用語と文書の別名に破線の下線を付け、ポインターを乗せたときとフォーカスしたときに意味と関連文書のツールチップを出し、文書の末尾に被参照の一覧を配置する。
-索引の用語の `avoid` と用語集の表の `avoid=` の列に並べたやめた言い方が本文に出ると、波線のマーカーを引き、代わりの用語の単語と意味のツールチップを出す（`glossary` がオンのときだけ）。
+索引の用語の `avoid` と用語集の表の `avoid.column` の列に並べたやめた言い方が本文に出ると、波線のマーカーを引き、代わりの用語の単語と意味のツールチップを出す（`glossary` がオンのときだけ）。
 `opts.aliases` に指定したエイリアス（[`buildAliases`](#エイリアスを作る) が作る）の名前と別名にも同じ下線を付け、種類ごとのツールチップを出す（`glossary` がオンのときだけ）。
 コマンドのエイリアスのツールチップには、コマンドをコピーするボタンを付ける。
 ツールチップの操作は `mount` が付け、`update` でもう一度付け、`destroy` で削除する。
@@ -106,7 +106,7 @@ handle.update("# 次の見出し");
 handle.destroy();
 ```
 
-<!-- table: data -->
+<!-- table: {"kind": "data"} -->
 
 | 引数 | 必須 / 任意 | 説明 |
 | --- | --- | --- |
@@ -123,7 +123,7 @@ handle.destroy();
 | `opts.diffMode` | 任意 | 差分の出し方。`button`・`open`・`blocks` のどれか。省くと `button`。`opts.diffSource` を指定しないときは使用しない。知らない値は `button` として扱う |
 | `opts.commentStore` | 任意 | コメントを読み込み、保存する関数（`MdmarkCommentStore`）。機能 `comments` がオンのときだけ使用する。`opts.docId` と一緒に指定する。省くと、コメントを付けられない |
 | `opts.baseMarkdown` | 任意 | 比較元の Markdown（文字列か `null`）。指定すると、本文の中で比較元から追加・変更したブロックと削除したブロックを、`opts.diffMode` が `blocks` のときと同じ色で塗り分ける。`opts.diffSource` は要らない。`opts.diffSource` も指定したときは、色分けに比較元を使用し、取り出し元は「変更表示」の差分にだけ使用する（`blocks` では取り出し元を呼ばない）。`null` と省いたときは色分けしない。`update` の第 2 引数で差し替える |
-| `opts.onColumnsChange` | 任意 | `+columns` の表で列の表示を切り替えるたびに呼ぶ関数。`{ tableIndex, hidden }`（`MdmarkColumnsChange`）を受け取る。`tableIndex` は本文の中の `+columns` の表の出現順（0 から。削除したブロックの中の表は数えない）、`hidden` は隠している列の見出しの文字を列の順に並べた配列。描いたときの `hide=` の状態と、`update` で再描画したときは呼ばない |
+| `opts.onColumnsChange` | 任意 | `columns` の機能を持つ表で列の表示を切り替えるたびに呼ぶ関数。`{ tableIndex, hidden }`（`MdmarkColumnsChange`）を受け取る。`tableIndex` は本文の中の `columns` の機能を持つ表の出現順（0 から。削除したブロックの中の表は数えない）、`hidden` は隠している列の見出しの文字を列の順に並べた配列。描いたときの `hidden` の状態と、`update` で再描画したときは呼ばない |
 
 <!-- /table -->
 
@@ -257,7 +257,7 @@ import { render } from "https://cdn.jsdelivr.net/gh/shuhei1101/mdmark@{タグ}/d
 const html = render("# 見出し\n\n本文");
 ```
 
-<!-- table: data -->
+<!-- table: {"kind": "data"} -->
 
 | 引数 | 必須 / 任意 | 説明 |
 | --- | --- | --- |
@@ -388,7 +388,7 @@ const { byDocument, avoided, targets } = collectMatches({
 
 `byDocument` の要素（`MdmarkMatch`）は、次のキーを持つ。
 
-<!-- table: data -->
+<!-- table: {"kind": "data"} -->
 
 | フィールド | 型 | 説明 |
 | --- | --- | --- |
@@ -406,7 +406,7 @@ const { byDocument, avoided, targets } = collectMatches({
 
 `avoided` の要素（`MdmarkAvoidedMatch`）は、次のキーを持つ。
 
-<!-- table: data -->
+<!-- table: {"kind": "data"} -->
 
 | フィールド | 型 | 説明 |
 | --- | --- | --- |
@@ -455,7 +455,7 @@ const { byDocument, avoided, targets } = collectMatches({
 - `html` がオンの文書は、`<!-- html -->` の範囲の `html` のコードブロックに記載した HTML の文字も照合する。`a`・`code`・`pre`・`button`・見出しが直接持つ文字と、タグ・属性の値・`script` のように中身ごと落ちる要素は除く
 - `diagrams` がオンの文書は、図の部品の範囲の定義と、埋め込んだ HTML の中の図の部品の custom element の定義に記載した `{{単語}}` の単語が正規化した後に用語に一致し、意味が空でないとき、その用語の参照にする。文書の別名は参照しない
 - 文書のマーカーで `glossary` がオフの文書は用語・エイリアス・やめた言い方を、`backlinks` がオフの文書は文書の別名を照合しない。`glossary` がオフの文書の用語集の表は、ほかの文書の照合にも入れない
-- やめた言い方（索引の用語の `avoid` と、エイリアスの `avoid` の種類の `name`・`aliases` と `term` の種類の `avoid`、用語集の表の `avoid=` の列。用語の単語・別名と同じ単語は除く）は、用語・文書の別名の単語に追加して照合し、やめた言い方に該当したところを `avoided` に返却する。照合するのは地の文と、`html` がオンなら埋め込んだ HTML の文字で、図の部品の `{{単語}}` は照合しない。用語・別名の一部として出たやめた言い方は返却しない
+- やめた言い方（索引の用語の `avoid` と、エイリアスの `avoid` の種類の `name`・`aliases` と `term` の種類の `avoid`、用語集の表の `avoid.column` の列。用語の単語・別名と同じ単語は除く）は、用語・文書の別名の単語に追加して照合し、やめた言い方に該当したところを `avoided` に返却する。照合するのは地の文と、`html` がオンなら埋め込んだ HTML の文字で、図の部品の `{{単語}}` は照合しない。用語・別名の一部として出たやめた言い方は返却しない
 
 ツールチップの、セクションごとに同じ参照先の最初の 1 回だけに下線を付ける制限は下線の出し方のためで、取り出しには有効にならない。
 やめた言い方のマーカーの、セクションごとに言い方ごとの最初の 1 回だけに付ける制限も、取り出しには有効にならない。
@@ -583,7 +583,7 @@ const { aliases, problems } = buildAliases({
 
 `MdmarkAlias` は、次のキーを持つ。
 
-<!-- table: data -->
+<!-- table: {"kind": "data"} -->
 
 | フィールド | 型 | 説明 |
 | --- | --- | --- |
@@ -658,8 +658,8 @@ registerExtension({
 | `extension.schema` | 任意 | マーカーの引数を検査する Standard Schema。zod・valibot など、`~standard` を持つ検査ライブラリの schema をそのまま指定できる。省くと検査しない |
 
 拡張のモジュールは、`draw(slot, value)` を名前付きで export する。
-`slot` はマーカーの場所の要素、`value` は `{ args: string[]; keys: Record<string, string>; definition?: unknown }`。
-`キー=値` でない引数を記載した順に `args`、`キー=値` の引数を `keys` に入れる。
+`slot` はマーカーの場所の要素、`value` は `{ options: Record<string, unknown>; definition?: unknown }`。
+`options` はマーカーに記載した JSON のオブジェクトで、引数の無いマーカーは `{}`。前の書き方（JSON でない引数）のマーカーは、`load` を呼ばずに記載の警告に替わる。
 マーカーを範囲（`<!-- {directive} -->` 〜 `<!-- /{directive} -->`）で記載し、範囲に言語 `json` のコードブロックを 1 つ配置すると、その JSON を読み込んだ値を `definition` に入れる。範囲が無いマーカーは `definition` を持たない。
 `draw` は同期でも `Promise` を返却する非同期でもよい。
 `draw` の中で、配布物が出す [`mountView`](#ビューを描く) と [`mountComments`](#コメントを付ける) を `slot` に対して呼んで、マーカーの場所に mdmark の部品を描ける。
@@ -716,17 +716,17 @@ const handle = await mountView(document.querySelector("#tasks"), {
 handle.destroy();
 ```
 
-<!-- table: data -->
+<!-- table: {"kind": "data"} -->
 
 | 引数 | 必須 / 任意 | 説明 |
 | --- | --- | --- |
 | `el` | 必須 | 描く先の要素。中身を空にして、class `mdmark` の要素を 1 つ配置し、その中に描く |
 | `opts.columns` | 必須 | 列名の配列。表形式のビューの列の並びと、ボードの項目に出す値の並びになる。1 つ以上で、空の文字列と重なりを持たない |
 | `opts.items` | 必須 | 項目の配列。列名をキーにした文字列の値を持つオブジェクトで、並びは表の行の順。列名に無いキーは使用せず、列名のキーが無い値は空にする |
-| `opts.group` | 任意 | ボード表示で列に分ける列名。`opts.columns` のどれか。省くと、ボード表示を持たず表形式のビューだけを描く。マーカーの `group=` に該当する |
-| `opts.default` | 任意 | 描いた直後に出すビュー（`"board"` か `"table"`）。省くと、`opts.group` があれば `"board"`、無ければ `"table"`。`opts.group` が無いときは `"table"` だけ。マーカーの `default=` に該当する |
-| `opts.filter` | 任意 | 表形式のビューで絞り込みを付ける列と種類（`select`・`text`・`date`）のオブジェクト。キーは `opts.columns` のどれか。省くと、どの列にも付けない。マーカーの `filter=` に該当する |
-| `opts.icons` | 任意 | ボードの列の見出しの値からアイコンの名前を参照するオブジェクト。既定のアイコンに重ね、同じ値は上書きする。使用できるアイコンは [ビュー](./記法.md#ビュー) のとおり。マーカーの `icons=` に該当する |
+| `opts.group` | 任意 | ボード表示で列に分ける列名。`opts.columns` のどれか。省くと、ボード表示を持たず表形式のビューだけを描く。マーカーの `board.group.column` に該当する |
+| `opts.default` | 任意 | 描いた直後に出すビュー（`"board"` か `"table"`）。省くと、`opts.group` があれば `"board"`、無ければ `"table"`。`opts.group` が無いときは `"table"` だけ。マーカーの `initial` に該当する |
+| `opts.filter` | 任意 | 表形式のビューで絞り込みを付ける列と種類（`select`・`text`・`date`）のオブジェクト。キーは `opts.columns` のどれか。省くと、どの列にも付けない。マーカーの `columns.{列名}.filter.type` に該当する |
+| `opts.icons` | 任意 | ボードの列の見出しの値からアイコンの名前を参照するオブジェクト。既定のアイコンに重ね、同じ値は上書きする。使用できるアイコンは [ビュー](./記法.md#ビュー) のとおり。マーカーの `board.values.{値}.icon` に該当する |
 
 <!-- /table -->
 
@@ -813,7 +813,7 @@ handle.destroy();
 
 配色によらない変数。
 
-<!-- table: data -->
+<!-- table: {"kind": "data"} -->
 
 | 変数 | 既定 | 使用する場所 |
 | --- | --- | --- |
@@ -857,7 +857,7 @@ handle.destroy();
 
 配色の変数。ダークの配色は、画面で OS の設定がダークのとき、または描く先かその祖先の class がダークを選ぶとき（[配色を切り替える class](#配色を切り替える-class)）に該当する。印刷では明るい配色に戻る。
 
-<!-- table: data -->
+<!-- table: {"kind": "data"} -->
 
 | 変数 | 明るい配色 | ダークの配色 | 使用する場所 |
 | --- | --- | --- | --- |
@@ -948,7 +948,7 @@ handle.destroy();
 描く先の要素かその祖先が次の class を持つとき、配色は上から順に決まる。
 どれも無ければ、`prefers-color-scheme`（OS の設定）で決まる。
 
-<!-- table: data -->
+<!-- table: {"kind": "data"} -->
 
 | 優先 | class | 配色 | 付けるもの |
 | --- | --- | --- | --- |
@@ -971,7 +971,7 @@ handle.destroy();
 `mount` は選んだテーマの名前を、描く先の要素の属性 `data-mdmark-color-theme` に付ける。
 利用側がこの属性を付ける必要はない。
 
-<!-- table: data -->
+<!-- table: {"kind": "data"} -->
 
 | テーマ | 内容 |
 | --- | --- |
@@ -995,7 +995,7 @@ handle.destroy();
 
 ##### theme-paper
 
-<!-- table: data -->
+<!-- table: {"kind": "data"} -->
 
 | 変数 | 明るい配色 | ダークの配色 |
 | --- | --- | --- |
@@ -1057,7 +1057,7 @@ handle.destroy();
 
 ##### theme-slate
 
-<!-- table: data -->
+<!-- table: {"kind": "data"} -->
 
 | 変数 | 明るい配色 | ダークの配色 |
 | --- | --- | --- |
@@ -1119,7 +1119,7 @@ handle.destroy();
 
 ##### theme-contrast
 
-<!-- table: data -->
+<!-- table: {"kind": "data"} -->
 
 | 変数 | 明るい配色 | ダークの配色 |
 | --- | --- | --- |

@@ -107,7 +107,7 @@ test("test_find_marks", async () => {
     "<!-- tabz -->",
     "",
     "段落",
-    "続き <!-- note: a --> と <!-- /note -->",
+    '続き <!-- note: {"text": "a"} --> と <!-- /note -->',
     "",
   ].join("\n");
   // 実行
@@ -238,7 +238,7 @@ test("test_mark_source_lines_when_mark_range", async () => {
   // 準備
   const { render } = await loadRender();
   const markdown = [
-    "<!-- table: data -->",
+    '<!-- table: {"kind": "data"} -->',
     "",
     "| a | b |",
     "| --- | --- |",

@@ -1,5 +1,4 @@
 import { expect, test } from "vitest";
-import { parseMarkArgs } from "../../../../../src/render/marks.ts";
 import {
   findTags,
   matches,
@@ -15,14 +14,16 @@ const loadTables = () => import("../../../../../src/render/syntax/tables.ts");
 test("test_read_table_spec", async () => {
   // 準備
   const { readTableSpec } = await loadTables();
-  const args = {
-    args: ["data", "-sort", "closed"],
-    keys: { filter: "名前,更新日:date" },
+  const options = {
+    kind: "data",
+    features: { sort: { enabled: false } },
+    columns: { 名前: { filter: {} }, 更新日: { filter: { type: "date" } } },
+    collapse: { open: false },
   };
   // 実行
-  const spec = readTableSpec(args, ["名前", "値", "更新日"], 10);
+  const spec = readTableSpec(options, ["名前", "値", "更新日"], 10);
   // 検証
-  expect(spec).toEqual({
+  expect(spec).toMatchObject({
     kind: "data",
     features: ["pin", "filter", "resize"],
     filters: [
@@ -31,76 +32,24 @@ test("test_read_table_spec", async () => {
     ],
     collapse: "closed",
     warnings: [],
-    skipped: [],
-    hide: [],
-    totals: [],
-    wide: [],
-    check: [],
-    headRows: 1,
-    rowHeader: 0,
   });
 });
 
-// 読み込めない値と組み合わせを警告にし、知らない種類・機能・キーをスキップする（正常系）
-test("test_read_table_spec_when_unknown", async () => {
-  // 準備
-  const { readTableSpec } = await loadTables();
-  const args = {
-    args: ["unknown", "+sort", "+foo", "closed", "open"],
-    keys: { size: "2", filter: "無い列,名前:range" },
-  };
-  // 実行
-  const spec = readTableSpec(args, ["名前", "値"], 10);
-  // 検証
-  expect(spec.kind).toBe("default");
-  expect(spec.features).toEqual(["pin", "resize", "sort"]);
-  expect(spec.filters).toEqual([]);
-  expect(spec.collapse).toBe("closed");
-  const labels = spec.warnings.map((warning) => warning.label);
-  expect(labels.sort()).toEqual(["closed と open", "range", "無い列"].sort());
-  expect(spec.skipped.map((skipped) => skipped.arg).sort()).toEqual(
-    ["+foo", "size=", "unknown"].sort(),
-  );
-});
-
-// title= の値の空白の後ろの単語を警告にし、スキップしない（異常系）
-test("test_read_table_spec_when_title_has_space", async () => {
-  // 準備
-  const { readTableSpec } = await loadTables();
-  const text = "data closed title=リリースの 一覧";
-  // 実行
-  const spec = readTableSpec(parseMarkArgs(text), ["名前"], 3, text);
-  // 検証
-  expect(spec.title).toBe("リリースの");
-  expect(spec.warnings.map((warning) => warning.label)).toContain("一覧");
-  expect(spec.skipped).toEqual([]);
-});
-
-// title= の直後の知っている種類・機能は当て、警告にしない（正常系）
-test("test_read_table_spec_when_title_followed_by_known", async () => {
-  // 準備
-  const { readTableSpec } = await loadTables();
-  const text = "closed title=一覧 data +count";
-  // 実行
-  const spec = readTableSpec(parseMarkArgs(text), ["名前"], 3, text);
-  // 検証
-  expect(spec.kind).toBe("data");
-  expect(spec.features).toContain("count");
-  expect(spec.title).toBe("一覧");
-  expect(spec.warnings).toEqual([]);
-  expect(spec.skipped).toEqual([]);
-});
-
-// 5 つの機能と hide=・total= を読み込む（正常系）
+// 列の設定を記載した機能を付け、hidden・total を読み込む（正常系）
 test("test_read_table_spec_when_features", async () => {
   // 準備
   const { readTableSpec } = await loadTables();
-  const args = {
-    args: ["data", "+count", "+columns", "+total", "+copy", "+rowlink"],
-    keys: { hide: "説明", total: "数量:sum,名前:count" },
+  const options = {
+    kind: "data",
+    features: { count: {}, copy: {}, rowlink: {} },
+    columns: {
+      説明: { hidden: true },
+      数量: { total: [{ calc: "sum" }] },
+      名前: { total: [{ calc: "count" }] },
+    },
   };
   // 実行
-  const spec = readTableSpec(args, ["名前", "説明", "数量"], 10);
+  const spec = readTableSpec(options, ["名前", "説明", "数量"], 10);
   // 検証
   expect(spec.features).toEqual([
     "sort",
@@ -121,94 +70,32 @@ test("test_read_table_spec_when_features", async () => {
   expect(spec.warnings).toEqual([]);
 });
 
-// 読み込めない集計・隠す列と機能の無い表のキーを警告にして適用しない（正常系）
-test("test_read_table_spec_when_feature_keys_invalid", async () => {
-  // 準備
-  const { readTableSpec } = await loadTables();
-  const headers = ["名前", "数量", "単価"];
-  const invalid = {
-    args: ["data", "+total", "+columns"],
-    keys: { total: "数量:max,価格:sum,単価:avg", hide: "備考,名前" },
-  };
-  const withoutFeatures = {
-    args: ["data"],
-    keys: { total: "数量:sum", hide: "単価" },
-  };
-  // 実行
-  const first = readTableSpec(invalid, headers, 10);
-  const second = readTableSpec(withoutFeatures, headers, 10);
-  // 検証: 読み込めない集計と隠す列
-  expect(first.totals).toEqual([{ column: 2, calc: "avg" }]);
-  expect(first.hide).toEqual([]);
-  const firstLabels = first.warnings.map((warning) => warning.label);
-  expect(firstLabels).toHaveLength(4);
-  expect(firstLabels).toEqual(
-    expect.arrayContaining(["max", "価格", "備考", "名前"]),
-  );
-  const headColumn = first.warnings.find((warning) => warning.label === "名前");
-  expect(headColumn?.message).toContain("`名前`");
-  expect(headColumn?.message).toContain("先頭の列");
-  // 検証: 機能の無い表のキー
-  expect(second.totals).toEqual([]);
-  expect(second.hide).toEqual([]);
-  const secondLabels = second.warnings.map((warning) => warning.label);
-  expect(secondLabels).toHaveLength(2);
-  expect(secondLabels).toEqual(expect.arrayContaining(["total=", "hide="]));
-});
-
-// pin=・wide=・check= の列名を列の位置として解釈する（正常系）
+// pinned・width・format を列の位置として解釈する（正常系）
 test("test_read_table_spec_when_columns", async () => {
   // 準備
   const { readTableSpec } = await loadTables();
-  const args = {
-    args: ["data"],
-    keys: { pin: "物理名", wide: "説明", check: "必須,既定" },
+  const options = {
+    kind: "data",
+    columns: {
+      物理名: { pinned: true },
+      No: { pinned: false },
+      説明: { width: { mode: "nowrap", max: 30 } },
+      必須: { format: { type: "check" } },
+      既定: { format: { type: "check" } },
+    },
   };
-  const headers = ["No", "物理名", "説明", "必須", "既定"];
-  const manyPins = { args: ["data"], keys: { pin: "物理名,No" } };
   // 実行
-  const spec = readTableSpec(args, headers, 10);
-  const many = readTableSpec(manyPins, headers, 10);
+  const spec = readTableSpec(
+    options,
+    ["No", "物理名", "説明", "必須", "既定"],
+    10,
+  );
   // 検証
   expect(spec.pin).toEqual([1]);
-  expect(spec.wide).toEqual([2]);
+  expect(spec.unpinned).toEqual([0]);
+  expect(spec.widths).toEqual([{ column: 2, mode: "nowrap", max: 30 }]);
   expect(spec.check).toEqual([3, 4]);
   expect(spec.warnings).toEqual([]);
-  expect(many.pin).toEqual([0, 1]);
-  expect(many.warnings).toEqual([]);
-});
-
-// 表に無い列名と pin の無い表の pin= を警告にして適用せず、pin= は読めた列名だけを適用する（正常系）
-test("test_read_table_spec_when_column_keys_invalid", async () => {
-  // 準備
-  const { readTableSpec } = await loadTables();
-  const headers = ["名前", "説明"];
-  const unknownColumns = {
-    args: ["data"],
-    keys: { pin: "無い列", wide: "説明", check: "無い列" },
-  };
-  const withoutPin = { args: ["data", "-pin"], keys: { pin: "名前" } };
-  const partlyUnknown = { args: ["data"], keys: { pin: "名前,無い列" } };
-  // 実行
-  const first = readTableSpec(unknownColumns, headers, 10);
-  const second = readTableSpec(withoutPin, headers, 10);
-  const third = readTableSpec(partlyUnknown, headers, 10);
-  // 検証: 表に無い列名
-  expect(first.pin).toBeUndefined();
-  expect(first.wide).toEqual([1]);
-  expect(first.check).toEqual([]);
-  expect(first.warnings.map((warning) => warning.label)).toEqual([
-    "無い列",
-    "無い列",
-  ]);
-  // 検証: pin の無い表の pin=
-  expect(second.pin).toBeUndefined();
-  expect(second.warnings).toHaveLength(1);
-  expect(second.warnings[0]?.label).toBe("pin=");
-  expect(second.warnings[0]?.message).toContain("`+pin`");
-  // 検証: 読めない列名だけを警告にし、読めた列名は適用する
-  expect(third.pin).toEqual([0]);
-  expect(third.warnings.map((warning) => warning.label)).toEqual(["無い列"]);
 });
 
 // 見出しと前の行に重ならない ID を作る（正常系）
@@ -239,7 +126,7 @@ test("test_row_id_of_when_empty", async () => {
 test("test_decorate_tables", () => {
   // 準備
   const markdown = [
-    "<!-- table: data filter=名前 closed -->",
+    '<!-- table: {"kind": "data", "columns": {"名前": {"filter": {}}}, "collapse": {"open": false}} -->',
     "",
     "| 名前 | 値 |",
     "| --- | --- |",
@@ -266,7 +153,7 @@ test("test_decorate_tables", () => {
 test("test_decorate_tables_when_range_not_closed", () => {
   // 準備
   const markdown = [
-    "<!-- table: data -->",
+    '<!-- table: {"kind": "data"} -->',
     "",
     "| 列 |",
     "| --- |",
@@ -285,13 +172,13 @@ test("test_decorate_tables_when_range_not_closed", () => {
   expect(html).toContain("&lt;!-- /table --&gt;");
 });
 
-// 5 つの機能と hide=・total= を属性にコピーし、行に ID とリンクを付ける（正常系）
+// 5 つの機能と hidden・total を属性にコピーし、行に ID とリンクを付ける（正常系）
 test("test_decorate_tables_when_features", () => {
   // 準備
   const markdown = [
     "## みかん",
     "",
-    "<!-- table: data +count +columns +total +copy +rowlink hide=説明 total=数量:sum -->",
+    '<!-- table: {"kind": "data", "features": {"count": {}, "copy": {}, "rowlink": {}}, "columns": {"説明": {"hidden": true}, "数量": {"total": [{"calc": "sum"}]}}} -->',
     "",
     "| 名前 | 説明 | 数量 |",
     "| --- | --- | --- |",
@@ -326,7 +213,7 @@ test("test_decorate_tables_when_features", () => {
 test("test_decorate_tables_when_total_unreadable", () => {
   // 準備
   const markdown = [
-    "<!-- table: data +total total=数量:sum,数量:avg,数量:count -->",
+    '<!-- table: {"kind": "data", "columns": {"数量": {"total": [{"calc": "sum"}, {"calc": "avg"}, {"calc": "count"}]}}} -->',
     "",
     "| 名前 | 数量 |",
     "| --- | --- |",
@@ -358,7 +245,7 @@ test("test_decorate_tables_when_total_unreadable", () => {
 test("test_decorate_tables_when_total_readable", () => {
   // 準備
   const markdown = [
-    "<!-- table: data +total total=数量:sum,数量:avg -->",
+    '<!-- table: {"kind": "data", "columns": {"数量": {"total": [{"calc": "sum"}, {"calc": "avg"}]}}} -->',
     "",
     "| 名前 | 数量 |",
     "| --- | --- |",
@@ -385,35 +272,11 @@ test("test_decorate_tables_when_feature_off", () => {
   expect(html).not.toContain("mdmark-table");
 });
 
-// 折り畳みの見出しを読み込み、closed も open も無い title= を警告にする（正常系）
-test("test_read_table_spec_when_title", async () => {
-  // 準備
-  const { readTableSpec } = await loadTables();
-  // 実行
-  const titled = readTableSpec(
-    { args: ["data", "closed"], keys: { title: "リリースの一覧" } },
-    ["名前"],
-    10,
-  );
-  const alone = readTableSpec(
-    { args: ["data"], keys: { title: "一覧" } },
-    ["名前"],
-    10,
-  );
-  // 検証
-  expect(titled.collapse).toBe("closed");
-  expect(titled.title).toBe("リリースの一覧");
-  expect(titled.warnings).toEqual([]);
-  expect(alone.collapse).toBe("none");
-  expect(alone.title).toBeUndefined();
-  expect(alone.warnings.map((warning) => warning.label)).toEqual(["title="]);
-});
-
-// 折り畳みの見出しを title= か本文の行の数にする（正常系）
+// 折り畳みの見出しを collapse.title か本文の行の数にする（正常系）
 test("test_decorate_tables_when_collapse_title", () => {
   // 準備
   const markdown = [
-    "<!-- table: data closed -->",
+    '<!-- table: {"kind": "data", "collapse": {"open": false}} -->',
     "",
     "| 名前 | 値 |",
     "| --- | --- |",
@@ -423,7 +286,7 @@ test("test_decorate_tables_when_collapse_title", () => {
     "",
     "<!-- /table -->",
     "",
-    "<!-- table: data open title=リリースの一覧 -->",
+    '<!-- table: {"kind": "data", "collapse": {"open": true, "title": "リリースの一覧"}} -->',
     "",
     "| 名前 | 値 |",
     "| --- | --- |",
@@ -449,7 +312,7 @@ test("test_decorate_tables_when_collapse_title", () => {
 test("test_decorate_tables_when_row_detail_has_table", () => {
   // 準備
   const markdown = [
-    "<!-- table: data closed +rowlink +total total=数量:sum -->",
+    '<!-- table: {"kind": "data", "features": {"rowlink": {}}, "columns": {"数量": {"total": [{"calc": "sum"}]}}, "collapse": {"open": false}} -->',
     "",
     "| 名前 | 数量 |",
     "| --- | --- |",
@@ -458,7 +321,7 @@ test("test_decorate_tables_when_row_detail_has_table", () => {
     "",
     "<!-- /table -->",
     "",
-    "<!-- row-detail: 1 -->",
+    '<!-- row-detail: {"at": 1} -->',
     "",
     "| 引数 | 値 |",
     "| --- | --- |",
@@ -500,7 +363,7 @@ test("test_decorate_tables_when_row_detail_has_table_without_mark", () => {
     "| Todo | a |",
     "| Done | b |",
     "",
-    "<!-- row-detail: 1 -->",
+    '<!-- row-detail: {"at": 1} -->',
     "",
     "| 引数 | 値 |",
     "| --- | --- |",
@@ -524,7 +387,7 @@ test("test_decorate_tables_when_row_detail_has_table_without_mark", () => {
 test("test_decorate_tables_when_row_detail_has_marked_table", () => {
   // 準備
   const markdown = [
-    "<!-- table: data filter=名前 -->",
+    '<!-- table: {"kind": "data", "columns": {"名前": {"filter": {}}}} -->',
     "",
     "| 名前 | 説明 |",
     "| --- | --- |",
@@ -533,9 +396,9 @@ test("test_decorate_tables_when_row_detail_has_marked_table", () => {
     "",
     "<!-- /table -->",
     "",
-    "<!-- row-detail: 1 -->",
+    '<!-- row-detail: {"at": 1} -->',
     "",
-    "<!-- table: plain -->",
+    '<!-- table: {"kind": "plain"} -->',
     "",
     "| 引数 | 値 |",
     "| --- | --- |",
@@ -545,7 +408,7 @@ test("test_decorate_tables_when_row_detail_has_marked_table", () => {
     "",
     "<!-- /row-detail -->",
     "",
-    "<!-- row-detail: 2 -->",
+    '<!-- row-detail: {"at": 2} -->',
     "",
     "| 引数 | 値 |",
     "| --- | --- |",
@@ -574,7 +437,7 @@ test("test_decorate_tables_when_row_detail_has_marked_table", () => {
 test("test_decorate_tables_when_colors", () => {
   // 準備
   const markdown = [
-    "<!-- table: data highlight=金額 row-color=状態:完了=green row-at=2=red -->",
+    '<!-- table: {"kind": "data", "columns": {"金額": {"highlight": {}}}, "rows": {"colors": [{"column": "状態", "value": "完了", "color": "green"}, {"at": 2, "color": "red"}]}} -->',
     "",
     "| 名前 | 状態 | 金額 |",
     "| --- | --- | --- |",
@@ -602,11 +465,11 @@ test("test_decorate_tables_when_colors", () => {
   expect(html).not.toContain("mdmark-syntax-warning");
 });
 
-// pin=・check= を属性にコピーし、広く取る列と真偽値の列のセルに class を付け、真偽値を ✓ と空欄にする（正常系）
+// pinned・format を属性にコピーし、折り返さない列と真偽値の列のセルに class を付け、真偽値を ✓ と空欄にする（正常系）
 test("test_decorate_tables_when_columns_specified", () => {
   // 準備
   const markdown = [
-    "<!-- table: data pin=物理名 wide=説明 check=必須 -->",
+    '<!-- table: {"kind": "data", "columns": {"物理名": {"pinned": true}, "説明": {"width": {"mode": "nowrap"}}, "必須": {"format": {"type": "check"}}}} -->',
     "",
     "| No | 物理名 | 説明 | 必須 |",
     "| --- | --- | --- | --- |",
@@ -652,12 +515,14 @@ test("test_decorate_tables_when_columns_specified", () => {
 test("test_read_table_colors", async () => {
   // 準備
   const { readTableColors } = await loadTables();
-  const args = {
-    args: ["data"],
-    keys: {
-      highlight: "金額",
-      "row-color": "状態:完了=green,保留=yellow",
-      "row-at": "3=red",
+  const options = {
+    columns: { 金額: { highlight: {} } },
+    rows: {
+      colors: [
+        { column: "状態", value: "完了", color: "green" },
+        { column: "状態", value: "保留", color: "yellow" },
+        { at: 3, color: "red" },
+      ],
     },
   };
   const cells = [
@@ -666,23 +531,27 @@ test("test_read_table_colors", async () => {
     ["c", "未着手", "3"],
   ];
   // 実行
-  const colors = readTableColors(args, ["名前", "状態", "金額"], cells);
+  const colors = readTableColors(options, ["名前", "状態", "金額"], cells);
   // 検証
   expect(colors.highlight).toEqual([{ column: 2, color: "blue" }]);
   expect(colors.rows).toEqual(["green", "yellow", "red"]);
   expect(colors.warnings).toEqual([]);
 });
 
-// 両方が該当する行は row-at= の色にし、範囲を読み込む（正常系）
+// 複数が該当する行は後ろの要素の色にし、範囲を読み込む（正常系）
 test("test_read_table_colors_when_overlap", async () => {
   // 準備
   const { readTableColors } = await loadTables();
-  const args = {
-    args: ["data"],
-    keys: {
-      highlight: "名前:red,金額",
-      "row-color": "状態:完了=green",
-      "row-at": "1-2=gray",
+  const options = {
+    columns: {
+      名前: { highlight: { color: "red" } },
+      金額: { highlight: {} },
+    },
+    rows: {
+      colors: [
+        { column: "状態", value: "完了", color: "green" },
+        { at: { from: 1, to: 2 }, color: "gray" },
+      ],
     },
   };
   const cells = [
@@ -691,7 +560,7 @@ test("test_read_table_colors_when_overlap", async () => {
     ["c", "完了", "3"],
   ];
   // 実行
-  const colors = readTableColors(args, ["名前", "状態", "金額"], cells);
+  const colors = readTableColors(options, ["名前", "状態", "金額"], cells);
   // 検証
   expect(colors.highlight).toEqual([
     { column: 0, color: "red" },
@@ -700,16 +569,17 @@ test("test_read_table_colors_when_overlap", async () => {
   expect(colors.rows).toEqual(["gray", "gray", "green"]);
 });
 
-// 読み込めない指定を警告にして適用しない（異常系）
+// 表に照らせない指定を警告にし、片方だけの要素を当てない（異常系）
 test("test_read_table_colors_when_unreadable", async () => {
   // 準備
   const { readTableColors } = await loadTables();
-  const args = {
-    args: ["data"],
-    keys: {
-      highlight: "無い列",
-      "row-color": "状態:完了=pink,保留",
-      "row-at": "9=red",
+  const options = {
+    columns: { 無い列: { highlight: {} } },
+    rows: {
+      colors: [
+        { column: "状態", color: "green" },
+        { at: 9, color: "red" },
+      ],
     },
   };
   const cells = [
@@ -717,61 +587,21 @@ test("test_read_table_colors_when_unreadable", async () => {
     ["b", "保留"],
   ];
   // 実行
-  const colors = readTableColors(args, ["名前", "状態"], cells);
+  const colors = readTableColors(options, ["名前", "状態"], cells);
   // 検証
   expect(colors.highlight).toEqual([]);
   expect(colors.rows).toEqual([null, null]);
-  const labels = colors.warnings.map((warning) => warning.label);
-  expect(labels).toHaveLength(4);
-  expect(labels).toEqual(
-    expect.arrayContaining(["無い列", "pink", "保留", "9"]),
-  );
-});
-
-// 見出しの行の数と行見出しの列の数を読み取る（正常系）
-test("test_read_table_spec_when_header_rows", async () => {
-  // 準備
-  const { readTableSpec } = await loadTables();
-  const args = parseMarkArgs("data header-rows=2 row-header=1");
-  // 実行
-  const spec = readTableSpec(args, ["a", "b", "c", "d"], 5);
-  // 検証
-  expect(spec.headRows).toBe(2);
-  expect(spec.rowHeader).toBe(1);
-  expect(spec.warnings).toEqual([]);
-});
-
-// 表に収まらない数と数でない値を既定にして警告にする（異常系）
-test("test_read_table_spec_when_header_rows_invalid", async () => {
-  // 準備
-  const { readTableSpec } = await loadTables();
-  const outside = parseMarkArgs("data header-rows=5 row-header=x");
-  const wide = parseMarkArgs("data row-header=3");
-  // 実行
-  const first = readTableSpec(outside, ["a", "b", "c"], 3);
-  const second = readTableSpec(wide, ["a", "b", "c"], 3);
-  // 検証
-  expect(first.headRows).toBe(1);
-  expect(first.rowHeader).toBe(0);
-  const headerRows = first.warnings.find((item) =>
-    item.label.includes("header-rows="),
-  );
-  expect(headerRows?.message).toContain("3");
-  expect(
-    first.warnings.some((item) => item.label.includes("row-header=")),
-  ).toBe(true);
-  expect(second.rowHeader).toBe(0);
-  const rowHeader = second.warnings.find((item) =>
-    item.label.includes("row-header="),
-  );
-  expect(rowHeader?.message).toContain("3");
+  expect(colors.warnings.map((warning) => warning.label)).toEqual([
+    "無い列",
+    "9",
+  ]);
 });
 
 // 多段の見出し・行見出し・結合したセルにし、マーカーの外の表は結合しない（正常系）
 test("test_decorate_tables_when_cells_merged", () => {
   // 準備
   const markdown = [
-    "<!-- table: data header-rows=2 row-header=1 -->",
+    '<!-- table: {"kind": "data", "header": {"rows": 2, "columns": 1}} -->',
     "",
     "| 地域 | 上期 | << | 下期 |",
     "| --- | --- | --- | --- |",
@@ -823,11 +653,11 @@ test("test_decorate_tables_when_cells_merged", () => {
   expect(html).not.toContain("mdmark-syntax-warning");
 });
 
-// 読み込めない header-rows= と結合する相手の無いセルを 1 つの警告にまとめ、文字のまま出す（異常系）
+// 表に収まらない header.rows と結合する相手の無いセルを 1 つの警告にまとめ、文字のまま出す（異常系）
 test("test_decorate_tables_when_merge_invalid", () => {
   // 準備
   const markdown = [
-    "<!-- table: data header-rows=5 -->",
+    '<!-- table: {"kind": "data", "header": {"rows": 5}} -->',
     "",
     "| << | 値 |",
     "| --- | --- |",
@@ -846,7 +676,7 @@ test("test_decorate_tables_when_merge_invalid", () => {
     html.indexOf("mdmark-syntax-warning"),
     html.indexOf("<table"),
   );
-  expect(warning).toContain("header-rows=");
+  expect(warning).toContain("header.rows");
   expect(warning).toContain("^^");
   expect(warning).toContain("&lt;&lt;");
   const table = html.slice(html.indexOf("<table"));
@@ -858,4 +688,106 @@ test("test_decorate_tables_when_merge_invalid", () => {
   expect(table).not.toContain("colspan");
   expect(table).not.toContain("data-merge=");
   expect(html).toContain('data-features="sort pin filter resize"');
+});
+
+// 表に無い列名を警告にして適用しない（異常系）
+test("test_read_table_spec_when_unknown_column", async () => {
+  // 準備
+  const { readTableSpec } = await loadTables();
+  const options = {
+    kind: "data",
+    columns: { 無い列: { filter: {} }, 名前: { pinned: true } },
+  };
+  // 実行
+  const spec = readTableSpec(options, ["名前", "値"], 10);
+  // 検証
+  expect(spec.filters).toEqual([]);
+  expect(spec.pin).toEqual([0]);
+  expect(spec.warnings).toHaveLength(1);
+  const text = JSON.stringify(spec.warnings[0]);
+  expect(text).toContain("無い列");
+  expect(text).toContain("名前");
+  expect(text).toContain("値");
+});
+
+// enabled を false にした機能の列の設定を適用しない（正常系）
+test("test_read_table_spec_when_feature_disabled", async () => {
+  // 準備
+  const { readTableSpec } = await loadTables();
+  const options = {
+    kind: "data",
+    features: { total: { enabled: false } },
+    columns: { 数量: { total: [{ calc: "sum" }] } },
+  };
+  // 実行
+  const spec = readTableSpec(options, ["名前", "数量"], 10);
+  // 検証
+  expect(spec.features).not.toContain("total");
+  expect(spec.totals).toEqual([]);
+  expect(spec.warnings).toEqual([]);
+});
+
+// 先頭の列の hidden を警告にして適用しない（異常系）
+test("test_read_table_spec_when_first_column_hidden", async () => {
+  // 準備
+  const { readTableSpec } = await loadTables();
+  const options = { kind: "data", columns: { 名前: { hidden: true } } };
+  // 実行
+  const spec = readTableSpec(options, ["名前", "数量"], 10);
+  // 検証
+  expect(spec.hide).toEqual([]);
+  expect(spec.warnings).toHaveLength(1);
+  expect(JSON.stringify(spec.warnings[0])).toContain("名前");
+});
+
+// 見出しの行の数と行見出しの列の数を読み取る（正常系）
+test("test_read_table_spec_when_header", async () => {
+  // 準備
+  const { readTableSpec } = await loadTables();
+  const options = { kind: "data", header: { rows: 2, columns: 1 } };
+  // 実行
+  const spec = readTableSpec(options, ["A", "B", "C", "D"], 5);
+  // 検証
+  expect(spec.headRows).toBe(2);
+  expect(spec.rowHeader).toBe(1);
+  expect(spec.warnings).toEqual([]);
+});
+
+// 表に収まらない数を既定にして警告にする（異常系）
+test("test_read_table_spec_when_header_too_large", async () => {
+  // 準備
+  const { readTableSpec } = await loadTables();
+  const options = { kind: "data", header: { rows: 5, columns: 3 } };
+  // 実行
+  const spec = readTableSpec(options, ["A", "B", "C"], 3);
+  // 検証
+  expect(spec.headRows).toBe(1);
+  expect(spec.rowHeader).toBe(0);
+  const texts = spec.warnings.map((warning) => JSON.stringify(warning));
+  expect(texts).toHaveLength(2);
+  expect(texts[0]).toContain("header.rows");
+  expect(texts[0]).toContain("3");
+  expect(texts[1]).toContain("header.columns");
+  expect(texts[1]).toContain("3");
+});
+
+// tree の列を読み込み、sort を除く（正常系）
+test("test_read_table_spec_when_tree", async () => {
+  // 準備
+  const { readTableSpec } = await loadTables();
+  const options = {
+    kind: "data",
+    tree: {
+      key: { column: "キー" },
+      type: { column: "型" },
+      example: { heading: "YAML" },
+    },
+  };
+  // 実行
+  const spec = readTableSpec(options, ["キー", "型", "説明"], 10);
+  // 検証
+  expect(spec.tree).toBe(0);
+  expect(spec.treeType).toBe(1);
+  expect(spec.example).toBe("YAML");
+  expect(spec.features).not.toContain("sort");
 });

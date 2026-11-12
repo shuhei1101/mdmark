@@ -177,7 +177,7 @@ test("test_normal_when_diff_preview", async () => {
 /** 閉じるセクションの番号（1 始まり） */
 const CLOSED_SECTION = 8;
 
-/** 長い文書の `CLOSED_SECTION` 番目のセクションを `<!-- section: closed -->` で閉じ、3 つの段落にした Markdown と、その見出し・最後の段落・次の見出しの行（エディタの行番号。1 始まり） */
+/** 長い文書の `CLOSED_SECTION` 番目のセクションを `<!-- section: {"open": false} -->` で閉じ、3 つの段落にした Markdown と、その見出し・最後の段落・次の見出しの行（エディタの行番号。1 始まり） */
 function closedDocument(): {
   markdown: string;
   heading: number;
@@ -197,7 +197,7 @@ function closedDocument(): {
     }
     lines.push(`## 節 ${section}`);
     if (section === CLOSED_SECTION) {
-      lines.push("<!-- section: closed -->");
+      lines.push('<!-- section: {"open": false} -->');
     }
     lines.push("");
     const paragraphs = section === CLOSED_SECTION ? 3 : 40;

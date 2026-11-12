@@ -318,11 +318,14 @@ export async function runUpgrade(
         }
       }
     }
+    // 移行の報告に挙げた今の書き方のマーカーは、適用した後の点検の失敗に数えない
     const issues = options.settings
       ? await collectSettingsIssues(configPath)
-      : await collectCheckIssues(configPath, {
-          unknownMarks: false,
-        });
+      : (
+          await collectCheckIssues(configPath, {
+            unknownMarks: false,
+          })
+        ).filter((issue) => issue.kind !== "legacy_mark");
     if (issues.length > 0) {
       await restoreBackup({ dir, backupDir });
       for (const issue of issues) {

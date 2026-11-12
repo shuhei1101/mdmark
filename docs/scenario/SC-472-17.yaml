@@ -7,7 +7,7 @@ scenarios:
       - name: mdmark を読み込むページ
         description: バージョンを固定した URL で `dist/index.js` と `dist/index.css` を読み込み、設定を指定して文書を描く HTML
       - name: コードブロックのマーカーを持つ Markdown
-        description: '`<!-- code: title=app.ts lines highlight=2 -->` の直後に、3 行の言語 `ts` のコードブロックを配置した文書'
+        description: '`<!-- code: {"title": "app.ts", "lines": {}, "highlight": [2]} -->` の直後に、3 行の言語 `ts` のコードブロックを配置した文書'
       - name: Mock
         description: jsDelivr を、ビルドした `dist/` を同じパスで返却する手元の応答に差し替える
     flow: |-
@@ -75,7 +75,7 @@ scenarios:
       - name: mdmark を読み込むページ
         description: 正常シナリオと同じ
       - name: 機能を解除した Markdown
-        description: '`<!-- features: -code -->` を記載し、正常シナリオのコードブロックのマーカーと、行末に `// [!code ++]` を付けた行を持つコードブロックを持つ文書'
+        description: '`<!-- features: {"code": false} -->` を記載し、正常シナリオのコードブロックのマーカーと、行末に `// [!code ++]` を付けた行を持つコードブロックを持つ文書'
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
@@ -96,7 +96,8 @@ scenarios:
       - name: mdmark を読み込むページ
         description: 正常シナリオと同じ
       - name: 読み込めない指定を持つ Markdown
-        description: '`<!-- code: title=app.ts color=red -->` の直後に言語 `ts` のコードブロックを配置した文書'
+        description: '`<!-- code: {"title": "app.ts", "color": "red"} -->` の直後に言語 `ts` のコードブロックを配置した文書'
+        notes: 知らないキー `color` は、描くときは無視し、点検（`mdmark check`）が通知する
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
@@ -105,19 +106,42 @@ scenarios:
         participant P as 利用側のページ
         participant M as mdmark
         P->>M: 設定と Markdown を指定して描かせる
-        M->>M: 知らないキー color= をスキップする
+        M->>M: 知らないキー color を無視する
         M-->>P: 読み込めた指定だけを適用したコードブロックを描く
         P-->>U: コードブロックを表示
     expected:
       - コードブロックの上に記載の警告が無い
       - コードブロックの上にタイトル `app.ts` が出ている
     test: test_normal_when_unknown_key
+  - name: 正常シナリオ（空白を含むタイトルと行番号の開始の番号）
+    setup:
+      - name: mdmark を読み込むページ
+        description: 正常シナリオと同じ
+      - name: 空白を含むタイトルと開始の番号を持つ Markdown
+        description: '`<!-- code: {"title": "src/app.ts の抜粋", "lines": {"start": 10}, "highlight": [{"from": 11, "to": 12}]} -->` の直後に、3 行の言語 `ts` のコードブロックを配置した文書'
+        notes: '`highlight`・`fold` の行と、コードブロックに無い行の判定は、コードブロックの 1 行目を `lines.start` の番号として数える'
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 利用側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を指定して描かせる
+        M-->>P: 空白を含むタイトル・10 から始まる行番号・11〜12 行目の強調を付けたコードブロックを描く
+        P-->>U: コードブロックを表示
+    expected:
+      - コードブロックの上にタイトル `src/app.ts の抜粋` が空白を含めたまま出ている
+      - 行番号が `10`・`11`・`12` の 3 つ
+      - 行番号 `11`・`12` の 2 行が強調の背景になっている
+      - コードブロックの上に記載の警告が無い
+    test: test_normal_when_title_with_space_and_line_start
   - name: 異常シナリオ（コードブロックに無い行の番号）
     setup:
       - name: mdmark を読み込むページ
         description: 正常シナリオと同じ
       - name: 無い行を強調する Markdown
-        description: '`<!-- code: highlight=2,5 -->` の直後に 3 行の言語 `ts` のコードブロックを配置した文書'
+        description: '`<!-- code: {"highlight": [2, 5]} -->` の直後に 3 行の言語 `ts` のコードブロックを配置した文書'
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
@@ -159,7 +183,7 @@ scenarios:
       - name: mdmark を読み込むページ
         description: 正常シナリオと同じ
       - name: コードブロックの無いマーカーを持つ Markdown
-        description: '`<!-- code: title=app.ts -->` の直後に段落を配置した文書'
+        description: '`<!-- code: {"title": "app.ts"} -->` の直後に段落を配置した文書'
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
@@ -207,7 +231,7 @@ scenarios:
       - name: mdmark を読み込むページ
         description: 正常シナリオと同じ
       - name: 飾りと色分けを両方持つ Markdown
-        description: '`<!-- code: title=app.ts lines highlight=4 -->` の直後に、3 行にまたがるブロックコメント、行末に `// [!code --]` を付けた行、行末に `// [!code ++]` を付けた行を持つ言語 `ts` のコードブロックを配置した文書'
+        description: '`<!-- code: {"title": "app.ts", "lines": {}, "highlight": [4]} -->` の直後に、3 行にまたがるブロックコメント、行末に `// [!code --]` を付けた行、行末に `// [!code ++]` を付けた行を持つ言語 `ts` のコードブロックを配置した文書'
       - name: Mock
         description: 正常シナリオ（言語に応じて色分けする）と同じ
     flow: |-
@@ -258,7 +282,7 @@ scenarios:
       - name: mdmark を読み込むページ
         description: 正常シナリオと同じ
       - name: 色分けの機能を解除した Markdown
-        description: '`<!-- features: -syntax -->` を記載し、行末に `// [!code ++]` を付けた行を持つ言語 `ts` のコードブロックを配置した文書'
+        description: '`<!-- features: {"syntax": false} -->` を記載し、行末に `// [!code ++]` を付けた行を持つ言語 `ts` のコードブロックを配置した文書'
       - name: Mock
         description: 正常シナリオ（言語に応じて色分けする）と同じ
     flow: |-
@@ -539,8 +563,8 @@ scenarios:
     setup:
       - name: mdmark を読み込むページ
         description: 正常シナリオと同じ
-      - name: fold= を持つ Markdown
-        description: '`<!-- code: lines fold=2,6 -->` の後に、2 行目と 6 行目が畳める行の言語 `yaml` のコードブロックを配置した文書'
+      - name: fold を持つ Markdown
+        description: '`<!-- code: {"lines": {}, "fold": [2, 6]} -->` の後に、2 行目と 6 行目が畳める行の言語 `yaml` のコードブロックを配置した文書'
       - name: クリップボードの権限
         description: ページにクリップボードへの書き込みを許す
       - name: Mock
@@ -559,14 +583,14 @@ scenarios:
     expected:
       - 描いた直後、2 行目と 6 行目の下の深い行が隠れ、2 行目と 6 行目に ▸ と ⋯ が出ている
       - クリップボードの中身が、畳んだ行を含むコードブロックの全ての行を持つ
-      - 再読み込みした後、開閉の状態は覚えておらず、`fold=` のとおり 2 行目と 6 行目を畳んだ状態で描かれる
+      - 再読み込みした後、開閉の状態は覚えておらず、`fold` のとおり 2 行目と 6 行目を畳んだ状態で描かれる
     test: test_normal_when_fold_option
-  - name: 異常シナリオ（畳めない行の fold=）
+  - name: 異常シナリオ（畳めない行の fold）
     setup:
       - name: mdmark を読み込むページ
         description: 正常シナリオと同じ
       - name: 畳めない行を指定した Markdown
-        description: '`<!-- code: fold=1,3,99 -->` の後に、1 行目だけが畳める行の 5 行の言語 `yaml` のコードブロックを配置した文書'
+        description: '`<!-- code: {"fold": [1, 3, 99]} -->` の後に、1 行目だけが畳める行の 5 行の言語 `yaml` のコードブロックを配置した文書'
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
@@ -589,7 +613,7 @@ scenarios:
         description: 正常シナリオと同じ
         notes: 画面の幅は 390px
       - name: 折り返すマーカーを持つ Markdown
-        description: '`<!-- code: lines wrap -->` の直後に、2 行目だけが表示の幅より長い 3 行の言語 `ts` のコードブロックと、マーカーの無い同じコードブロックを配置した文書'
+        description: '`<!-- code: {"lines": {}, "wrap": true} -->` の直後に、2 行目だけが表示の幅より長い 3 行の言語 `ts` のコードブロックと、マーカーの無い同じコードブロックを配置した文書'
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
@@ -606,7 +630,7 @@ scenarios:
       - マーカーの無いブロックは折り返さず、枠の中で横にスクロールできる
       - '`wrap` のブロックのコピーボタンでコピーした文字に、折り返しの改行が入っていない'
     test: test_normal_when_wrap
-lead: '文書の作成者が、コードブロックの直前の `<!-- code: title=タイトル lines highlight=行 -->` と、コードの行末の行コメントの `[!code ++]`・`[!code --]`・`[!code highlight]` を記載すると、mdmark がコードブロックにタイトル・行番号・行の強調と、追加した行・削除した行・強調のマーカーを付けて描く。言語の指定があれば言語のラベルを出し、読者はコピーボタンで変更後のコードをコピーする。'
+lead: '文書の作成者が、コードブロックの直前の `<!-- code: {"title": "タイトル", "lines": {}, "highlight": [行]} -->` と、コードの行末の行コメントの `[!code ++]`・`[!code --]`・`[!code highlight]` を記載すると、mdmark がコードブロックにタイトル・行番号・行の強調と、追加した行・削除した行・強調のマーカーを付けて描く。言語の指定があれば言語のラベルを出し、読者はコピーボタンで変更後のコードをコピーする。'
 issue: 25
 primary_actor: 文書の作成者
 stakeholders:
@@ -623,7 +647,7 @@ success_guarantee: |-
 
   色分けに対応する言語のコードブロックは、タイトル・行番号・行のマーカーを保ったまま中身が言語に応じて色分けされる。色分けのライブラリは、色分けする言語のコードブロックがある文書でだけ、本体と使用する言語の分を読み込む。
 minimal_guarantee: |-
-  知っているキーの読み込めない値、`title=` の値の空白の後ろの単語と知らないマーカーは、その指定だけを当てずに描かれ、上に記載の警告が出る。知らないキー・指定は、警告を出さずにスキップする。コードの中身は欠けずに出る。
+  知っているキーの型・選べる値に合わない値と知らないマーカーは、その指定だけを適用せずに描かれ、上に記載の警告が出る。知らないキーは、警告を出さずに無視する。コードの中身は欠けずに出る。
 
   色分けのライブラリか言語のモジュールを読み込めないときは、そのコードブロックを色分けせずに記載したとおりに出す。
 test_file: tests/e2e/単一ユースケース/コードブロックを飾る.spec.ts

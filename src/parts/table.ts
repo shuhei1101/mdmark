@@ -124,8 +124,10 @@ export type TableOptions = {
   highlight?: Array<{ column: number; color: ColorName }>;
   /** 本文の行ごとの色（色を付けない行は `null`） */
   rowColors?: Array<ColorName | null>;
-  /** `pin=` で記載した列の位置（小さい順。`data-pin` に半角の空白で区切って写す） */
+  /** `columns.{列名}.pinned` の `true` の列の位置（小さい順。`data-pin` に半角の空白で区切って写す） */
   pin?: number[] | undefined;
+  /** `columns.{列名}.pinned` の `false` の列の位置（既定で留める列から除く。`data-unpin` に半角の空白で区切って写す） */
+  unpin?: number[] | undefined;
   /** 幅を指定した列と、その列の外側の幅（px） */
   widths?: Array<{ column: number; width: number }>;
   /** つまみをドラッグしている列の位置 */
@@ -1288,6 +1290,12 @@ export function renderTable(options: TableOptions): string {
     options.pin !== undefined && options.features.includes("pin")
       ? ` data-pin="${options.pin.join(" ")}"`
       : "";
+  const unpinAttribute =
+    options.unpin !== undefined &&
+    options.unpin.length > 0 &&
+    options.features.includes("pin")
+      ? ` data-unpin="${options.unpin.join(" ")}"`
+      : "";
   const check = options.check ?? [];
   const checkAttribute = check.length ? ` data-check="${check.join(" ")}"` : "";
   const treeAttribute =
@@ -1318,7 +1326,7 @@ export function renderTable(options: TableOptions): string {
     ? ` data-merge-columns="${mergeColumns.join(" ")}"`
     : "";
   if (options.rawCsv === undefined) {
-    return `<div class="mdmark-table${foldedClass}" data-kind="${kind}" data-features="${options.features.join(" ")}"${filterAttribute}${hideAttribute}${totalAttribute}${pinAttribute}${checkAttribute}${treeAttribute}${mergeAttribute}>${inner}</div>`;
+    return `<div class="mdmark-table${foldedClass}" data-kind="${kind}" data-features="${options.features.join(" ")}"${filterAttribute}${hideAttribute}${totalAttribute}${pinAttribute}${unpinAttribute}${checkAttribute}${treeAttribute}${mergeAttribute}>${inner}</div>`;
   }
   // CSV の表: 表の後ろに元の CSV を配置する。帯の右端の RAW のボタンは、表を描いたとき（`body` を指定しないとき）だけ配置し、記法の表には `mount` が付ける
   const shown = options.rawShown ?? false;
@@ -1334,5 +1342,5 @@ export function renderTable(options: TableOptions): string {
         )
       : inner.replace(/^<table(?=[\s>])/, "<table hidden")
     : inner;
-  return `<div class="mdmark-table${foldedClass}" data-kind="${kind}" data-features="${options.features.join(" ")}" data-source="csv"${viewAttribute}${filterAttribute}${hideAttribute}${totalAttribute}${pinAttribute}${checkAttribute}${treeAttribute}${mergeAttribute}>${bar}${shownInner}${raw}</div>`;
+  return `<div class="mdmark-table${foldedClass}" data-kind="${kind}" data-features="${options.features.join(" ")}" data-source="csv"${viewAttribute}${filterAttribute}${hideAttribute}${totalAttribute}${pinAttribute}${unpinAttribute}${checkAttribute}${treeAttribute}${mergeAttribute}>${bar}${shownInner}${raw}</div>`;
 }

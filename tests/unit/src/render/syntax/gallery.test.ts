@@ -30,34 +30,21 @@ function imageParagraphs(count: number): string[] {
 test("test_read_gallery_options", async () => {
   // 準備
   const { readGalleryOptions } = await loadGallery();
-  const withCols = await galleryMark("<!-- gallery: cols=3 -->\n");
+  const withCols = await galleryMark('<!-- gallery: {"columns": 3} -->\n');
   const plain = await galleryMark("<!-- gallery -->\n");
   // 実行
   const first = readGalleryOptions(withCols);
   const second = readGalleryOptions(plain);
   // 検証
-  expect(first).toEqual({ cols: 3, items: [], skipped: [] });
-  expect(second).toEqual({ cols: 2, items: [], skipped: [] });
-});
-
-// 読み込めない列の数と指定を項目にする（異常系）
-test("test_read_gallery_options_when_unreadable", async () => {
-  // 準備
-  const { readGalleryOptions } = await loadGallery();
-  const mark = await galleryMark("<!-- gallery: cols=7 wide -->\n");
-  // 実行
-  const options = readGalleryOptions(mark);
-  // 検証
-  expect(options.cols).toBe(2);
-  expect(options.items.map((item) => item.label)).toEqual(["cols=7"]);
-  expect(options.skipped.map((skipped) => skipped.arg)).toEqual(["wide"]);
+  expect(first).toEqual({ cols: 3 });
+  expect(second).toEqual({ cols: 2 });
 });
 
 // 範囲の画像を格子に並べる（正常系）
 test("test_build_gallery", () => {
   // 準備
   const markdown = [
-    "<!-- gallery: cols=3 -->",
+    '<!-- gallery: {"columns": 3} -->',
     "",
     '![開く](open.png "開く")',
     "",
@@ -83,7 +70,7 @@ test("test_build_gallery", () => {
 test("test_build_gallery_when_numbered", () => {
   // 準備（fig のマーカーが開きのマーカーに { id: "shots", number: 1 } を配置する）
   const markdown = [
-    "<!-- fig: shots -->",
+    '<!-- fig: {"id": "shots"} -->',
     "",
     "<!-- gallery -->",
     "",
@@ -111,7 +98,7 @@ test("test_build_gallery_when_empty_or_too_many", () => {
   // 準備
   const empty = ["<!-- gallery -->", "", "文だけ", "", "<!-- /gallery -->", ""];
   const many = [
-    "<!-- fig: many -->",
+    '<!-- fig: {"id": "many"} -->',
     "",
     "<!-- gallery -->",
     "",

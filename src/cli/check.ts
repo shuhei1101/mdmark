@@ -29,8 +29,15 @@ import { checkMapConfig, collectMapProblems } from "../map/check.ts";
 import type { MapProblem } from "../map/spec.ts";
 import type { MapRangeSource } from "../map/structure.ts";
 import { renderDocument } from "../render/index.ts";
-import { FEATURES_MARK, MARK_PATTERN, SYNTAX_MARKS } from "../render/marks.ts";
-import { findMarks } from "../render/parser.ts";
+import { readMarkArgs } from "../render/mark-options.ts";
+import { markOptionNotes, validateMarkOptions } from "../render/mark-schema.ts";
+import {
+  FEATURES_MARK,
+  MARK_PATTERN,
+  PAGE_MARK,
+  SYNTAX_MARKS,
+} from "../render/marks.ts";
+import { findMarks, findMarkTexts } from "../render/parser.ts";
 import { findDiagramBlocks } from "../render/syntax/diagrams.ts";
 import { loadAliases } from "./aliases.ts";
 import { checkMissingFiles } from "./assets.ts";
@@ -64,6 +71,9 @@ export type CheckIssue = {
     | "diagram_invalid"
     | "syntax_warning"
     | "unknown_mark_arg"
+    | "legacy_mark"
+    | "mark_option_unapplied"
+    | "mark_option_invalid"
     | FlowLayoutKind
     | MapProblem["kind"]
     | "alias_no_files"
@@ -461,6 +471,65 @@ export function checkUnknownMarks(
   return issues;
 }
 
+/** 検証しないマーカー（map の範囲は map の点検の種類で点検する） */
+const UNCHECKED_MARKS = new Set(["map", "map-data"]);
+
+/** 記載の警告の文から、行内のコードの `` ` `` を除く */
+const plainOf = (text: string): string => text.replaceAll("`", "");
+
+/** 文書ごとに取得した記法のマーカーと、拡張・`libraries` のマーカーの引数を読み、引数の誤りを `mark_option_invalid`、注記をその種類のずれにする */
+export function checkMarkOptions(
+  documents: Array<{ path: string; markdown: string }>,
+  embedNames: Set<string>,
+): CheckIssue[] {
+  const issues: CheckIssue[] = [];
+  for (const document of documents) {
+    for (const mark of findMarkTexts(document.markdown)) {
+      if (mark.closing || UNCHECKED_MARKS.has(mark.name)) {
+        continue;
+      }
+      const own =
+        mark.name === FEATURES_MARK ||
+        mark.name === PAGE_MARK ||
+        Object.hasOwn(SYNTAX_MARKS, mark.name);
+      const isExtension = !own && embedNames.has(mark.name);
+      if (!own && !isExtension) {
+        continue;
+      }
+      const where = String(mark.line);
+      const args = readMarkArgs(mark.args);
+      const push = (kind: CheckIssue["kind"], message: string): void => {
+        issues.push({ file: document.path, where, kind, message });
+      };
+      if (args.kind === "invalid") {
+        push("mark_option_invalid", plainOf(`${mark.raw}${args.message}`));
+        continue;
+      }
+      const source = args.kind;
+      let options = args.kind === "json" ? args.options : {};
+      let unknownKeys: string[] = [];
+      if (args.kind === "json" && own) {
+        const checked = validateMarkOptions({ name: mark.name, options });
+        options = checked.options;
+        unknownKeys = checked.unknownKeys;
+        for (const problem of checked.problems) {
+          push("mark_option_invalid", plainOf(`${mark.raw}${problem.message}`));
+        }
+      }
+      for (const note of markOptionNotes({
+        name: mark.name,
+        source,
+        options,
+        unknownKeys,
+        isExtension,
+      })) {
+        push(note.kind, note.message);
+      }
+    }
+  }
+  return issues;
+}
+
 /** html_block の中身が、名前のマーカー 1 つだけなら、その引数（無ければ空）と閉じかを返す */
 const onlyMark = (
   content: string,
@@ -700,6 +769,13 @@ export async function collectCheckIssues(
   const unknownMarks = checkMarks
     ? checkUnknownMarks(documents, config, extensions.directives)
     : [];
+  const markOptions = checkMarkOptions(
+    documents,
+    new Set([
+      ...Object.keys(resolveConfig({ config }).libraries),
+      ...extensions.directives,
+    ]),
+  );
   const includes = await checkIncludes({ documents, root: loaded.dir });
   const diagrams = checkDiagrams(documents);
   const maps = checkMaps(documents, resolveConfig({ config }));
@@ -723,6 +799,7 @@ export async function collectCheckIssues(
     ...aliasIssues,
     ...missingFiles,
     ...unknownMarks,
+    ...markOptions,
     ...includes,
     ...diagrams,
     ...maps,

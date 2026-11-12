@@ -111,7 +111,7 @@ scenarios:
       - name: mdmark を読み込むページ
         description: 正常シナリオと同じ
       - name: 折りたたみのステップを持つ Markdown
-        description: '`<!-- steps: closed -->` で 2 項目の番号付きリストを囲んだ範囲と、`<!-- steps: open title=準備 -->` で 3 項目の番号付きリストを囲んだ範囲を並べた文書'
+        description: '`<!-- steps: {"collapse": {"open": false}} -->` で 2 項目の番号付きリストを囲んだ範囲と、`<!-- steps: {"collapse": {"open": true, "title": "準備"}} -->` で 3 項目の番号付きリストを囲んだ範囲を並べた文書'
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
@@ -125,7 +125,7 @@ scenarios:
         P-->>U: 開いた手順
     expected:
       - 1 つ目の折りたたみの見出しが `手順（2 ステップ）` で、描いた直後は手順が表示されていない
-      - 2 つ目の折りたたみの見出しが `title=` の「準備」で、描いた直後から 3 つの手順が表示されている
+      - 2 つ目の折りたたみの見出しが `collapse.title` の「準備」で、描いた直後から 3 つの手順が表示されている
       - 1 つ目の見出しを押した後、手順に 1・2 の番号が出ている
     test: test_normal_when_steps_folded
   - name: 異常シナリオ（ステップの読み込めない指定）
@@ -133,7 +133,8 @@ scenarios:
       - name: mdmark を読み込むページ
         description: 正常シナリオと同じ
       - name: 読み込めない指定のステップを持つ Markdown
-        description: '`<!-- steps: closed open -->`・`<!-- steps: fold -->`・`<!-- steps: title=準備 -->` で、それぞれ 2 項目の番号付きリストを囲んだ範囲を並べた文書'
+        description: '`<!-- steps: {"collapse": {"open": "no"}} -->`・`<!-- steps: {"fold": true} -->`・`<!-- steps: {"collapse": {"title": "準備"}} -->` で、それぞれ 2 項目の番号付きリストを囲んだ範囲を並べた文書'
+        notes: 知らないキー `fold` は、描くときは無視し、点検（`mdmark check`）が通知する
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
@@ -142,20 +143,20 @@ scenarios:
         participant P as 利用側のページ
         participant M as mdmark
         P->>M: 設定と Markdown を指定して描かせる
-        M->>M: closed と open の両方・closed も open も無い title= があり、知らない指定をスキップする
+        M->>M: collapse.open の型が合わない指定を適用せず、知らないキーを無視する
         M-->>P: 記載の警告と、読み込めた指定だけを適用した手順を描く
         P-->>U: 記載の警告と手順を表示
     expected:
-      - 1 つ目の範囲の上に `closed` と `open` を同時に記載できないこと、3 つ目の範囲の上に `title=` は `closed` か `open` と一緒に記載することを記載した記載の警告がある
-      - 2 つ目の範囲の上に記載の警告が無い（知らない指定 `fold` はスキップする）
-      - 1 つ目の手順は `closed` を適用した閉じた折りたたみに入り、2 つ目と 3 つ目の手順は折りたたみに入らずに描かれている
+      - 1 つ目の範囲の上に、`collapse.open` には真偽（`true`・`false`）を記載することを記載した記載の警告がある
+      - 2 つ目と 3 つ目の範囲の上に記載の警告が無い
+      - 1 つ目の手順は `collapse.open` を適用せず、既定の閉じた折りたたみに入る。2 つ目の手順は折りたたみに入らずに描かれ、3 つ目の手順は見出しが「準備」の閉じた折りたたみに入る
     test: test_error_when_steps_option_invalid
   - name: 正常シナリオ（ファイルツリーに注釈を記載する）
     setup:
       - name: mdmark を読み込むページ
         description: 正常シナリオと同じ
       - name: 注釈を持つファイルツリーの Markdown
-        description: '`<!-- tree: open=all -->` の後ろに、`mdmark/` の下へ `src/ #ソース`・`` index.ts # 入口の `mount` ``・`` README.md # **必読** `badge:新規` ``・`C#/`・`#notes.md`・`...` を罫線で記載した言語 `tree` のコードブロックを持つ文書'
+        description: '`<!-- tree: {"depth": "all"} -->` の後ろに、`mdmark/` の下へ `src/ #ソース`・`` index.ts # 入口の `mount` ``・`` README.md # **必読** `badge:新規` ``・`C#/`・`#notes.md`・`...` を罫線で記載した言語 `tree` のコードブロックを持つ文書'
         notes: '`index.ts` は `src/` の下。そのほかは `mdmark/` の直下'
       - name: Mock
         description: 正常シナリオと同じ
@@ -181,7 +182,7 @@ scenarios:
       - name: mdmark を読み込むページ
         description: 正常シナリオと同じ
       - name: 入れ子の深いファイルツリーの Markdown
-        description: 'マーカーの無い言語 `tree` のコードブロックと、`<!-- tree: open=2 -->` の後ろの言語 `tree` のコードブロックを並べた文書。どちらも `app/` の下に `src/`、その下に `parts/`、その下に `tree.ts` を持つ'
+        description: 'マーカーの無い言語 `tree` のコードブロックと、`<!-- tree: {"depth": 2} -->` の後ろの言語 `tree` のコードブロックを並べた文書。どちらも `app/` の下に `src/`、その下に `parts/`、その下に `tree.ts` を持つ'
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
@@ -275,12 +276,12 @@ scenarios:
       - パネルの中に、元の罫線のテキストが全て選択された状態で出ている
       - パネルは閉じるボタンと Esc で閉じ、フォーカスがコピーボタンへ戻る
     test: test_error_when_tree_clipboard_denied
-  - name: 異常シナリオ（ファイルツリーの読み込めない open=）
+  - name: 異常シナリオ（ファイルツリーの読み込めない depth）
     setup:
       - name: mdmark を読み込むページ
         description: 正常シナリオと同じ
-      - name: 読み込めない open= の Markdown
-        description: '`<!-- tree: open=deep -->` の後ろに、正常シナリオ（ファイルツリーのフォルダを開閉する）と同じコードブロックを持つ文書'
+      - name: 読み込めない depth の Markdown
+        description: '`<!-- tree: {"depth": "deep"} -->` の後ろに、正常シナリオ（ファイルツリーのフォルダを開閉する）と同じコードブロックを持つ文書'
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
@@ -289,11 +290,11 @@ scenarios:
         participant P as 利用側のページ
         participant M as mdmark
         P->>M: 設定と Markdown を指定して描かせる
-        M->>M: open= の値を読み込めない
+        M->>M: depth の値が型と選べる値に合わない
         M-->>P: 記載の警告と、既定の開閉のツリーを描く
         P-->>U: 記載の警告とツリーを表示
     expected:
-      - ツリーの上に、`open=` の値には `all` か階層の数を記載することを記載した記載の警告がある
+      - ツリーの上に、`depth` には `"all"` か 1 以上の整数を記載することを記載した記載の警告がある
       - ツリーは既定のとおり `app/` だけを開いて描かれている
     test: test_error_when_tree_open_invalid
   - name: 正常シナリオ（アイコン・キー・ルビ）
@@ -370,7 +371,7 @@ scenarios:
         description: 正常シナリオと同じ
         notes: 画面の幅は 390px
       - name: 折り返すマーカーを持つファイルツリーの Markdown
-        description: '`<!-- tree: open=all wrap -->` の直後に、表示の幅より長い名前のファイルを入れ子の中に持つ言語 `tree` のコードブロックと、`<!-- tree: open=all -->` の直後の同じコードブロックを配置した文書'
+        description: '`<!-- tree: {"depth": "all", "wrap": true} -->` の直後に、表示の幅より長い名前のファイルを入れ子の中に持つ言語 `tree` のコードブロックと、`<!-- tree: {"depth": "all"} -->` の直後の同じコードブロックを配置した文書'
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-

@@ -1,5 +1,4 @@
 import type { StateCore, Token } from "markdown-it";
-import type { WarningItem } from "../../extensions.ts";
 import { renderFigure } from "../../parts/figure.ts";
 import { renderGallery } from "../../parts/gallery.ts";
 import { SLOT_MARKER, splitSlots } from "../../parts/own.ts";
@@ -7,14 +6,12 @@ import type { Mark } from "../marks.ts";
 import { imageFigureHtml } from "./images.ts";
 import { featureOn, findClose, markOf, ownBlock } from "./tokens.ts";
 import {
-  type SkippedArg,
   type SyntaxWarning,
-  skippedArgBlocks,
   unclosedWarning,
   warningBlock,
 } from "./warnings.ts";
 
-/** `cols=` に記載できる列の数の範囲と、省いたときの数 */
+/** `columns` に記載できる列の数の範囲と、省いたときの数 */
 export const GALLERY_COLS = { min: 1, max: 6, default: 2 } as const;
 
 /** 番号を付けたギャラリーの画像に、範囲の中の順に付ける文字 */
@@ -23,42 +20,12 @@ export const SUBFIGURE_LETTERS = "abcdefghijklmnopqrstuvwxyz";
 /** `numberFigures` が開きのマーカーに配置する図の番号 */
 type GalleryFigure = { id?: string | undefined; number: number };
 
-/** ギャラリーのマーカーで読み込める指定を、スキップした引数の案内に並べる文 */
-const USABLE_ARGS = "`cols=`";
-
-/** ギャラリーのマーカーの `cols=` を読み込み、読み込めない値を項目にし、`cols=` 以外の指定をスキップした引数にする */
-export function readGalleryOptions(mark: Mark): {
-  cols: number;
-  items: WarningItem[];
-  skipped: SkippedArg[];
-} {
-  const items: WarningItem[] = [];
-  const skipped: SkippedArg[] = [];
-  let cols: number = GALLERY_COLS.default;
-  // 記載した順に項目にするため、引数の文字を空白で区切って読み込む
-  for (const part of (mark.rest ?? "").split(/\s+/).filter(Boolean)) {
-    const equals = part.indexOf("=");
-    const key = equals < 0 ? undefined : part.slice(0, equals);
-    const value = part.slice(equals + 1);
-    const count = Number(value);
-    if (key === undefined) {
-      skipped.push({ arg: part, usable: USABLE_ARGS });
-    } else if (key !== "cols") {
-      skipped.push({ arg: `${key}=`, usable: USABLE_ARGS });
-    } else if (
-      /^\d+$/.test(value) &&
-      count >= GALLERY_COLS.min &&
-      count <= GALLERY_COLS.max
-    ) {
-      cols = count;
-    } else {
-      items.push({
-        label: part,
-        message: `列の数は ${GALLERY_COLS.min}〜${GALLERY_COLS.max} の整数で記載してください。${GALLERY_COLS.default} 列で描いています。`,
-      });
-    }
-  }
-  return { cols, items, skipped };
+/** ギャラリーのマーカーの設定の `columns`（マーカーの JSON Schema が列の数の範囲に照らしてある）を列の数にし、省けば既定にする */
+export function readGalleryOptions(mark: Mark): { cols: number } {
+  const { columns } = mark.options;
+  return {
+    cols: typeof columns === "number" ? columns : GALLERY_COLS.default,
+  };
 }
 
 /** 範囲の中の画像のトークンを、現れた順に集める（リンクの中の画像を含む） */
@@ -71,7 +38,7 @@ function imagesIn(tokens: Token[]): Token[] {
 /** ギャラリーの範囲の前に配置する警告を作る */
 function galleryWarnings(
   mark: Mark,
-  options: { items: WarningItem[]; count: number; closed: boolean },
+  options: { count: number; closed: boolean },
 ): SyntaxWarning[] {
   const warnings: SyntaxWarning[] = [];
   const max = SUBFIGURE_LETTERS.length;
@@ -85,15 +52,8 @@ function galleryWarnings(
       `の範囲の画像が ${options.count} 枚あります。画像は ${max} 枚までにしてください。${max + 1} 枚目からはサブ図の番号を付けずに描いています。`,
     );
   }
-  if (options.items.length) {
-    messages.push("の読み込めない指定を当てずに描いています。");
-  }
   if (messages.length) {
-    warnings.push({
-      mark: mark.raw,
-      message: messages.join(""),
-      ...(options.items.length ? { items: options.items } : {}),
-    });
+    warnings.push({ mark: mark.raw, message: messages.join("") });
   }
   if (!options.closed) {
     warnings.push(unclosedWarning(mark));
@@ -118,16 +78,14 @@ export function buildGallery(state: StateCore): void {
     const close = findClose(tokens, index, "gallery");
     const end = close < 0 ? tokens.length : close;
     const images = imagesIn(tokens.slice(index + 1, end));
-    const { cols, items, skipped } = readGalleryOptions(mark);
+    const { cols } = readGalleryOptions(mark);
     const figure = (token.meta as { figure?: GalleryFigure }).figure;
     for (const warning of galleryWarnings(mark, {
-      items,
       count: images.length,
       closed: close >= 0,
     })) {
       out.push(warningBlock(state, warning, token));
     }
-    out.push(...skippedArgBlocks(state, { mark: mark.raw, skipped }, token));
     const [figureHead = "", figureTail = ""] = figure
       ? splitSlots(
           renderFigure({

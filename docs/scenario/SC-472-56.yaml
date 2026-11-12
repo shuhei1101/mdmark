@@ -285,7 +285,7 @@ scenarios:
   - name: 正常シナリオ（取り込みとアイコンを埋める）
     setup:
       - name: 取り込みとアイコンを持つ文書
-        description: '`<!-- include: 共通/手順.md#実行 -->` と、作業のフォルダの `src/app.ts` の 3〜5 行目を指す include のマーカーと、配布物にまとめていない名前の `icon:` を持つ文書 1 つ'
+        description: '`<!-- include: {"path": "共通/手順.md", "heading": "実行"} -->` と、作業のフォルダの `src/app.ts` の 3〜5 行目を指す include のマーカーと、配布物にまとめていない名前の `icon:` を持つ文書 1 つ'
         notes: '`共通/手順.md` と `src/app.ts` は作業のフォルダにある'
       - name: Mock
         description: 正常シナリオと同じく、書き出しがネットワークを読み込まない
@@ -398,7 +398,7 @@ scenarios:
   - name: 正常シナリオ（文書のマーカーで明暗を指定する）
     setup:
       - name: 明暗を指定した文書のフォルダ
-        description: '正常シナリオと同じフォルダで、書き出す文書の先頭の行に `<!-- page: scheme=dark theme=theme-paper -->` を記載する'
+        description: '正常シナリオと同じフォルダで、書き出す文書の先頭の行に `<!-- page: {"scheme": "dark", "theme": "theme-paper"} -->` を記載する'
         notes: 書き出した HTML を開くブラウザの配色はライト
       - name: Mock
         description: 正常シナリオと同じ

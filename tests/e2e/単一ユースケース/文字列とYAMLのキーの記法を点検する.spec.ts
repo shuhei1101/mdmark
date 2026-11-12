@@ -17,7 +17,7 @@ test.skip(
   "ブラウザを使わないシナリオなので chromium のプロジェクトだけで流す",
 );
 
-/** 記載の警告を持つ文字列: 1 行目からノードの種類 `begin` のフロー図の定義、20 行目に `<!-- tabz -->`、22 行目に `<!-- code: highlight=9 -->` と 3 行のコードブロック */
+/** 記載の警告を持つ文字列: 1 行目からノードの種類 `begin` のフロー図の定義、20 行目に `<!-- tabz -->`、22 行目に `<!-- code: {"highlight": [9]} -->` と 3 行のコードブロック */
 const WARNINGS_MARKDOWN = (() => {
   const lines = flowLines({
     title: "判定",
@@ -29,7 +29,7 @@ const WARNINGS_MARKDOWN = (() => {
   while (lines.length < 18) {
     lines.push("");
   }
-  lines.push("本文", "<!-- tabz -->", "", "<!-- code: highlight=9 -->");
+  lines.push("本文", "<!-- tabz -->", "", '<!-- code: {"highlight": [9]} -->');
   lines.push(
     "```ts",
     "const a = 1;",
@@ -86,7 +86,7 @@ test("test_normal", async ({ builtRoot, tempDir }) => {
   const markdown = [
     ...flowLines(CLEAN_FLOW),
     "",
-    "<!-- table: data -->",
+    '<!-- table: {"kind": "data"} -->',
     "",
     "| 列 | 値 |",
     "| --- | --- |",
@@ -127,6 +127,9 @@ test("test_normal_when_warnings", async ({ builtRoot, tempDir }) => {
   const html = await renderInNode(builtRoot, WARNINGS_MARKDOWN);
   const rendered = html
     .replace(/<[^>]+>/g, "")
+    .replace(/&quot;/g, '"')
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
     .replace(/&[a-z]+;/g, "")
     .replace(/\s+/g, "");
   for (const line of [lines[0], lines[2]]) {
@@ -135,19 +138,19 @@ test("test_normal_when_warnings", async ({ builtRoot, tempDir }) => {
   }
 });
 
-// 描くときにスキップするマーカーの知らないキー・機能・指定を、知らないキー・機能・指定の種類のずれにする（正常シナリオ（知らないキー・機能・指定））
+// 描くときに無視するマーカーの知らないキー（知らない機能名を含む）を、知らないキーの種類のずれにする（正常シナリオ（知らないキー・機能・指定））
 test("test_normal_when_unknown_mark_args", async ({ builtRoot, tempDir }) => {
   // 準備
   const dir = await createInitDir(builtRoot, tempDir);
   const markdown = [
-    "<!-- table: data +unknown widht=説明 -->",
+    '<!-- table: {"kind": "data", "features": {"unknown": {}}, "widht": {"説明": {}}} -->',
     "",
     "| 名前 | 説明 |",
     "| --- | --- |",
     "| a | 1 |",
     "",
     "<!-- /table -->",
-    "<!-- tabs: grop=os -->",
+    '<!-- tabs: {"grop": "os"} -->',
     "",
     "### macOS",
     "",
@@ -178,14 +181,14 @@ test("test_normal_when_unknown_mark_args", async ({ builtRoot, tempDir }) => {
   }
   const table = issues.filter((line) => line.startsWith("-:1: "));
   expect(table).toHaveLength(2);
-  expect(table.join("\n")).toContain("+unknown");
+  expect(table.join("\n")).toContain("features.unknown");
   expect(table.join("\n")).toContain("sort");
-  expect(table.join("\n")).toContain("widht=");
-  expect(table.join("\n")).toContain("filter=");
+  expect(table.join("\n")).toContain("widht");
+  expect(table.join("\n")).toContain("columns");
   const tabs = issues.filter((line) => line.startsWith("-:8: "));
   expect(tabs).toHaveLength(1);
-  expect(tabs[0]).toContain("grop=");
-  expect(tabs[0]).toContain("group=");
+  expect(tabs[0]).toContain("grop");
+  expect(tabs[0]).toContain("group");
   // 同じ文字列を描いたときは、記載の警告が出ない
   const html = await renderInNode(builtRoot, markdown);
   expect(html).not.toContain("mdmark-syntax-warning");
@@ -307,4 +310,112 @@ test("test_normal_when_map_warnings", async ({ builtRoot, tempDir, page }) => {
     const message = line.replace(/^-:\d+: \w+: /, "");
     expect(rendered).toContain(message.replace(/[\s`]+/g, ""));
   }
+});
+
+// 今の書き方のマーカーを、行を指す今の書き方のマーカーの種類のずれにする（正常シナリオ（今の書き方のマーカーがある））
+test("test_normal_when_legacy_mark_args", async ({ builtRoot, tempDir }) => {
+  // 準備
+  const dir = await createInitDir(builtRoot, tempDir);
+  const markdown = [
+    "<!-- table: data +total total=数量:sum -->",
+    "",
+    "| 名前 | 数量 |",
+    "| --- | --- |",
+    "| a | 1 |",
+    "",
+    "<!-- /table -->",
+    "",
+    "<!-- details: 補足 open -->",
+    "",
+    "段落",
+    "",
+    "<!-- /details -->",
+    "",
+  ].join("\n");
+  // 実行
+  const result = await runCli(
+    builtRoot,
+    ["check", "--text", "-"],
+    dir,
+    markdown,
+  );
+  // 検証
+  expect(result.code).not.toBe(0);
+  const issues = linesOf(result.stdout).slice(0, -1);
+  expect(issues).toHaveLength(2);
+  expect(issues[0]).toMatch(/^-:1: legacy_mark: /);
+  expect(issues[1]).toMatch(/^-:9: legacy_mark: /);
+  for (const line of issues) {
+    expect(line).toContain("JSON のオブジェクト");
+    expect(line).toContain("mdmark upgrade");
+  }
+});
+
+// JSON として読めない引数を記載の警告のずれにし、--\u003e で記載した値は読む（正常シナリオ（JSON として読めない引数））
+test("test_normal_when_mark_args_not_json", async ({ builtRoot, tempDir }) => {
+  // 準備
+  const dir = await createInitDir(builtRoot, tempDir);
+  const markdown = [
+    '<!-- code: {"title": "app.ts",} -->',
+    "```ts",
+    "const a = 1;",
+    "```",
+    "",
+    '<!-- details: {"title": "a --\\u003e b"} -->',
+    "",
+    "段落",
+    "",
+    "<!-- /details -->",
+    "",
+  ].join("\n");
+  // 実行
+  const result = await runCli(
+    builtRoot,
+    ["check", "--text", "-"],
+    dir,
+    markdown,
+  );
+  // 検証
+  expect(result.code).not.toBe(0);
+  const issues = linesOf(result.stdout).slice(0, -1);
+  expect(issues).toHaveLength(1);
+  expect(issues[0]).toMatch(/^-:1: syntax_warning: /);
+  expect(issues[0]).toContain("JSON として読めません");
+  expect(issues[0]).toContain("文字目");
+});
+
+// 値に --> を記載した引数を記載の警告のずれにし、--\u003e での記載方法を挙げる（正常シナリオ（値に --> を記載した引数））
+test("test_normal_when_comment_end_in_value", async ({
+  builtRoot,
+  tempDir,
+}) => {
+  // 準備
+  const dir = await createInitDir(builtRoot, tempDir);
+  const markdown = [
+    "段落",
+    "",
+    '<!-- details: {"title": "a --> b"} -->',
+    "",
+    "中の段落",
+    "",
+    "<!-- /details -->",
+    "",
+  ].join("\n");
+  // 実行
+  const result = await runCli(
+    builtRoot,
+    ["check", "--text", "-"],
+    dir,
+    markdown,
+  );
+  // 検証
+  expect(result.code).not.toBe(0);
+  const issues = linesOf(result.stdout).slice(0, -1);
+  const details = issues.filter((line) =>
+    line.startsWith("-:3: syntax_warning: "),
+  );
+  expect(details).toHaveLength(1);
+  expect(details[0]).toContain("JSON として読めません");
+  expect(details[0]).toContain("コメントがそこで閉じます");
+  expect(details[0]).toContain("--\\u003e");
 });

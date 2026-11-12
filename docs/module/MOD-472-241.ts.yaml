@@ -39,7 +39,7 @@ functions:
       - name: test_attach_table_tree_when_filtered
         case: 正常
         summary: 末尾の名前で絞り込み、祖先を残して件数を書き換える
-        condition: '`+count filter=キー:text` の階層の表で、絞り込みの欄に `id`'
+        condition: '`count` の機能と `キー` の列の `text` の絞り込みを持つ階層の表で、絞り込みの欄に `id`'
         mock: なし
         expected: '`aliases[]`・`aliases[].id` だけが出て、`mark.mdmark-tree-hit` が 1 つ、件数が `1 / 4 件`'
       - name: test_attach_table_tree_when_copied

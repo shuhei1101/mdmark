@@ -86,7 +86,7 @@ functions:
     title: 表示の状態を取り出す
     container: src/viewer/view-state.ts
     usecase: まとめたHTMLで文書を行き来する
-    summary: 描いた文書の要素から、位置・`RESTORABLE_FOLDS` の開閉・`group=` の無いタブの選択を取り出す
+    summary: 描いた文書の要素から、位置・`RESTORABLE_FOLDS` の開閉・`group` の無いタブの選択を取り出す
     kind: 関数
     scope: public
     args:
@@ -101,9 +101,9 @@ functions:
       - name: test_capture_view_state
         case: 正常
         summary: 開閉とタブの選択を出現順に取り出す
-        condition: 閉じた `details`・開いたセクション・`group=` の無いタブ群（2 つ目を選択）・`group=os` のタブ群を描いた要素
+        condition: 閉じた `details`・開いたセクション・`group` の無いタブ群（2 つ目を選択）・`group` が `os` のタブ群を描いた要素
         mock: Chromium の `document`（`.browser.test.ts` で実行する）に `mount` で描く
-        expected: '`folds` が `[false, true]`、`tabs` が `[1]`（`group=os` のタブ群を含まない）、`path` が指定したパス'
+        expected: '`folds` が `[false, true]`、`tabs` が `[1]`（`group` が `os` のタブ群を含まない）、`path` が指定したパス'
     status: planned
     introduced:
       pr: 428

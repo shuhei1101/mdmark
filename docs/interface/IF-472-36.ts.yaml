@@ -41,7 +41,7 @@ flows:
       - name: 配布物を読み込む Node の処理
         description: 正常系と同じ
       - name: 用語集のページを持つ索引と本文
-        description: '文書 `glossary`（`path` は `用語集.md`）と `guide` を持つ索引。`用語集.md` の本文は `<!-- glossary: term=用語 aliases=別名 meaning=意味 -->` で、用語 `マーカー`（意味 `HTML コメントで記載する指定`）の行を持つ表を囲む。`guide` の本文の段落に `マーカー` と `印刷` を記載する'
+        description: '文書 `glossary`（`path` は `用語集.md`）と `guide` を持つ索引。`用語集.md` の本文は `<!-- glossary: {"term": {"column": "用語"}, "aliases": {"column": "別名"}, "meaning": {"column": "意味"}} -->` で、用語 `マーカー`（意味 `HTML コメントで記載する指定`）の行を持つ表を囲む。`guide` の本文の段落に `マーカー` と `印刷` を記載する'
         notes: '`印刷` は単語の区切りが 1 単語（`Intl.Segmenter` を持つ Node で実行する）'
       - name: Mock
         description: 差し替える依存は無い
@@ -117,7 +117,7 @@ flows:
       - name: 配布物を読み込む Node の処理
         description: 正常系と同じ
       - name: 機能をオフにした 2 つの文書
-        description: '正常系の索引に文書 `memo` を追加し、用語 `ワークスペース` の `avoid` に `作業場` を加えたものと、`guide`・`memo` の本文。どちらも段落に `ワークスペース`・`公開関数`・`作業場` を記載し、`guide` の頭に `<!-- features: -glossary -->`、`memo` の頭に `<!-- features: -glossary -backlinks -->` を記載する'
+        description: '正常系の索引に文書 `memo` を追加し、用語 `ワークスペース` の `avoid` に `作業場` を加えたものと、`guide`・`memo` の本文。どちらも段落に `ワークスペース`・`公開関数`・`作業場` を記載し、`guide` の頭に `<!-- features: {"glossary": false} -->`、`memo` の頭に `<!-- features: {"glossary": false, "backlinks": false} -->` を記載する'
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
@@ -270,7 +270,7 @@ request:
     required: false
     default: なし（全てのキーに既定を適用する）
     location: argument
-    description: '`mount` の `opts.config` と同じ。読み込むのは `features`（文書ごとの `<!-- features: … -->` を重ねて、`glossary`・`backlinks`・`html`・`diagrams` のオン・オフを文書ごとに決める）だけ'
+    description: '`mount` の `opts.config` と同じ。読み込むのは `features`（文書ごとの `<!-- features: {…} -->` を重ねて、`glossary`・`backlinks`・`html`・`diagrams` のオン・オフを文書ごとに決める）だけ'
   - name: input.aliases
     type: MdmarkAlias[]
     required: false

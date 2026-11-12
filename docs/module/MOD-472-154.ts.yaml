@@ -45,16 +45,16 @@ data_models:
     properties:
       - name: group
         type: number | null
-        description: ボードで分ける列の位置。`group=` が無いか表に無ければ `null`
+        description: ボードで分ける列の位置。`board.group.column` が無いか表に無ければ `null`
       - name: mode
         type: '"board" | "table"'
         description: 描いた直後に出すビュー
       - name: boardDisabled
         type: string
-        description: '`group=` の列が表に無いときの記載の警告の `id`。それ以外は空'
+        description: '`board.group.column` の列が表に無いときの記載の警告の `id`。それ以外は空'
       - name: icons
         type: Record<string, ViewIconName>
-        description: '`icons=` の読み込めた対応'
+        description: '`board.values.{値}.icon` の読み込めた対応'
 constants:
   - name: VIEW_ICON_NAMES
     title: 使用できるアイコン

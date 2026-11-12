@@ -1,0 +1,77 @@
+id: ER-477-16
+visibility: internal
+title: 'ER 図: 用語集の表のマーカーの設定'
+lead: '`<!-- glossary: {JSON のオブジェクト} -->` の名前の後ろに記載する、用語集の表のマーカーの設定の構造。'
+tables:
+- name: glossary
+  title: 用語集の表
+  datastore: JSON
+  access: 全件
+  scale: ~1
+  summary: 用語集の表のマーカー 1 つの設定
+  columns:
+  - name: term
+    title: 用語の列
+    type: object
+    description: 用語の列
+    not_null: true
+    example: '{"column": "用語"}'
+  - name: term.column
+    title: 列の見出しの文字
+    type: string
+    description: 列の見出しの文字
+    not_null: true
+    example: '"用語"'
+  - name: meaning
+    title: 意味の列
+    type: object
+    description: 意味の列
+    not_null: true
+    example: '{"column": "意味"}'
+  - name: meaning.column
+    title: 列の見出しの文字
+    type: string
+    description: 列の見出しの文字
+    not_null: true
+    example: '"意味"'
+  - name: aliases
+    title: 別名の列
+    type: object
+    description: 別名の列
+    example: '{"column": "別名"}'
+  - name: aliases.column
+    title: 列の見出しの文字
+    type: string
+    description: 列の見出しの文字
+    not_null: true
+    example: '"別名"'
+  - name: avoid
+    title: やめた言い方の列
+    type: object
+    description: やめた言い方の列
+    example: '{"column": "やめた言い方"}'
+  - name: avoid.column
+    title: 列の見出しの文字
+    type: string
+    description: 列の見出しの文字
+    not_null: true
+    example: '"やめた言い方"'
+notes:
+  見本: |-
+    ```html
+    <!-- glossary: {"term": {"column": "用語"}, "meaning": {"column": "意味"}, "aliases": {"column": "別名"}} -->
+    ```
+  今の引数との対応: |-
+    | 今の引数 | JSON のキー |
+    | --- | --- |
+    | `term=`・`meaning=`・`aliases=`・`avoid=` | `term.column`・`meaning.column`・`aliases.column`・`avoid.column` |
+refs:
+- ER-477-1#
+decisions:
+- D-312
+- D-334
+- D-336
+- D-337
+- D-338
+- D-344
+- D-345

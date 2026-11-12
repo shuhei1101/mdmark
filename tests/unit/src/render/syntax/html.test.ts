@@ -70,7 +70,7 @@ test("test_build_embedded_html_when_hint", () => {
   const body =
     '<div data-hint="説明">本文</div><p><span data-hint="分類の説明">分類</span></p>';
   const on = wrapHtml(body);
-  const off = wrapHtml(body, "<!-- features: -hints -->");
+  const off = wrapHtml(body, '<!-- features: {"hints": false} -->');
   // 実行
   const { html: withHints } = renderDoc(on);
   const { html: withoutHints } = renderDoc(off);
@@ -196,7 +196,7 @@ test("test_build_embedded_html_when_blocks_count", () => {
 test("test_build_embedded_html_when_disabled", () => {
   // 準備
   const markdown = [
-    "<!-- features: -html -->",
+    '<!-- features: {"html": false} -->',
     "",
     wrapHtml("<p>こんにちは</p>"),
     OUTSIDE,

@@ -1559,6 +1559,24 @@ files:
     related:
       - to: docs/module/MOD-472-210.ts
         type: implements
+  - path: render/mark-options.ts
+    description: モジュール構成『ライブラリ本体 / 描画』のうち「マーカーの引数の JSON の読み取りと、読めない JSON の警告の文」を受け持つ。マーカーの引数の読み方を変えるときに参照する。
+    tags: [topic:markdown, topic:マーカー, topic:json]
+    related:
+      - to: docs/module/MOD-477-1.ts
+        type: implements
+  - path: render/mark-schema.ts
+    description: モジュール構成『ライブラリ本体 / 描画』のうち「マーカーごとの JSON Schema での設定の検証と、点検だけが通知する注記」を受け持つ。マーカーの設定の検証を変えるときに参照する。
+    tags: [topic:markdown, topic:マーカー, topic:スキーマ, action:検証]
+    related:
+      - to: docs/module/MOD-477-2.ts
+        type: implements
+  - path: render/legacy-marks.ts
+    description: モジュール構成『ライブラリ本体 / 描画』のうち「今の書き方の引数の JSON のオブジェクトへの変換と、文書の書き換え」を受け持つ。今の書き方の読み方と移行の書き換えを変えるときに参照する。
+    tags: [topic:markdown, topic:マーカー, topic:移行]
+    related:
+      - to: docs/module/MOD-477-3.ts
+        type: implements
   - path: render/syntax/frontmatter.ts
     description: モジュール構成『ライブラリ本体 / 記法』のうち「フロントマターの表示を差し込むコアルールの insertFrontmatter」を受け持つ。フロントマターの表示の差し込みを変えるときに参照する。
     tags: [topic:markdown, topic:構文, tool:markdown-it, topic:フロントマター]

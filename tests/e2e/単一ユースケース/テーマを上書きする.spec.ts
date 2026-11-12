@@ -351,7 +351,7 @@ test("test_normal_when_host_pre_wraps", async ({ page }) => {
     "└── a-file-name-that-is-much-longer-than-the-box-width-on-phones.config.ts",
     "```",
     "",
-    "<!-- code: wrap -->",
+    '<!-- code: {"wrap": true} -->',
     "",
     "```ts",
     'const url = "https://cdn.jsdelivr.net/gh/shuhei1101/mdmark@v0.10.0/dist/index.js"; // 長い行',

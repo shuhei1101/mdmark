@@ -9,5 +9,5 @@ type Story = StoryObj<Record<string, unknown>>;
 export const Loading: Story = {
   name: "Loading",
   parameters: { server: { id: "embed" } },
-  args: { name: "chart", args: "a,b" },
+  args: { name: "chart", options: '{"items":["a","b"]}' },
 };

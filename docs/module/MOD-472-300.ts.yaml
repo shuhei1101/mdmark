@@ -9,7 +9,7 @@ functions:
     container: src/render/syntax/wide.ts
     kind: 関数
     scope: internal
-    summary: 'コアルール。`wide` がオンなら、`<!-- wide -->`（`closed` で `narrow`）〜 `<!-- /wide -->` を部品『wide の範囲』（`toggle: false`）で囲む。閉じのマーカーが無いときは記載の警告を差し込み、`closed` 以外の引数は `pushSkippedArgs` でスキップした引数として差し込む。範囲の中の wide のマーカーは取り除く'
+    summary: 'コアルール。`wide` がオンなら、`<!-- wide -->`（`open` の `false` で `narrow`）〜 `<!-- /wide -->` を部品『wide の範囲』（`toggle: false`）で囲む。閉じのマーカーが無いときは記載の警告を差し込む。範囲の中の wide のマーカーは取り除く'
     args:
       - name: state
         type: StateCore
@@ -21,19 +21,19 @@ functions:
     unit_tests:
       - name: test_build_wide_ranges
         case: 正常
-        condition: '`<!-- wide -->` と `<!-- wide: closed -->` で表を囲んだ範囲'
+        condition: '`<!-- wide -->` と `<!-- wide: {"open": false} -->` で表を囲んだ範囲'
         expected: '`data-state="wide"` と `data-state="narrow"` の `div.mdmark-wide-range` の中に表があり、`button` が無い'
         mock: なし
-        summary: 範囲を囲み、`closed` を `narrow` にする
+        summary: 範囲を囲み、`open` の `false` を `narrow` にする
       - name: test_build_wide_ranges_when_unclosed
         case: 異常
         condition: 閉じのマーカーの無い `<!-- wide -->` とその後の表
         expected: '`mdmark-wide-range` が無く、`<!-- /wide -->` を含む記載の警告がある'
         mock: なし
         summary: 閉じのマーカーが無いと囲まずに警告する
-      - name: test_build_wide_ranges_when_unknown_args
+      - name: test_build_wide_ranges_when_unknown_keys
         case: 正常
-        summary: closed 以外の引数は警告にせずスキップする
-        condition: '`<!-- wide: narrow size=2 -->` で表を囲んだ範囲'
+        summary: 知らないキーは警告にせず無視する
+        condition: '`<!-- wide: {"state": "narrow", "size": 2} -->` で表を囲んだ範囲'
         mock: なし
-        expected: 記載の警告が無く、`data-state="wide"` の `div.mdmark-wide-range` があり、`env.warnings` が `narrow`・`size=` の `unknown_mark_arg` の 2 件
+        expected: 記載の警告が無く、`data-state="wide"` の `div.mdmark-wide-range` があり、`env.warnings` が `state`・`size` の `unknown_mark_arg` の 2 件

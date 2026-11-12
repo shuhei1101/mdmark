@@ -90,7 +90,7 @@ scenarios:
       - name: 配布物を読み込む Node の処理
         description: 正常シナリオと同じ
       - name: 用語集の表にやめた言い方を持つ索引と文書
-        description: '索引が文書 `glossary` と `guide` を持ち、`terms` を持たない。`glossary` の本文は、`<!-- glossary: term=用語 meaning=意味 avoid=やめた言い方 -->` で用語 `ワークスペース`（やめた言い方 `作業場`）の行を持つ表だけを持つ。`guide` の本文は、1 つの行に `作業場` を記載する'
+        description: '索引が文書 `glossary` と `guide` を持ち、`terms` を持たない。`glossary` の本文は、`<!-- glossary: {"term": {"column": "用語"}, "meaning": {"column": "意味"}, "avoid": {"column": "やめた言い方"}} -->` で用語 `ワークスペース`（やめた言い方 `作業場`）の行を持つ表だけを持つ。`guide` の本文は、1 つの行に `作業場` を記載する'
         notes: 表を持たない文書 `guide` にずれが出ることと、表の中の `作業場` を数えないことを、文書を分けて決定的に発生させる
       - name: Mock
         description: 差し替える依存は無い

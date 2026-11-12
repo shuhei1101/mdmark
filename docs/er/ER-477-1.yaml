@@ -1,0 +1,148 @@
+id: ER-477-1
+visibility: internal
+title: 'ER 図: マーカーの設定の共通の決まり'
+lead: HTML コメントのマーカーの名前の後ろに記載する JSON のオブジェクトの、全てのマーカーに共通の決まりと共通のオブジェクト。
+overview: |-
+  マーカーの名前の後ろに、最上位の波括弧を含めた JSON のオブジェクトを 1 つ記載する（複数の行にわたってよい）。機能を後から追加してもキーの名前と階層を変えずに済むように、同じ意味の設定は同じキーにまとめ、列ごと・機能ごとの設定はオブジェクトに入れる。対象は HTML コメントのマーカーの引数で、設定ファイル（`mdmark.config.yaml`）と、コメントでない記法（画像の `{width=…}`・`[!NOTE]`・`badge:` など）は対象にしない。マーカーごとのキーは、`refs` のマーカーごとの設計書が持つ。
+
+  | 項目 | 決まり |
+  | --- | --- |
+  | 記載方法 | `<!-- 名前: {JSON のオブジェクト} -->`。引数の無いマーカーは `<!-- 名前 -->` のまま |
+  | キーの名前 | 英語の小文字の 1 単語。2 単語になるときは、オブジェクトで階層に分ける。機能名・列名のように既にある名前をキーにするときは、その名前のまま |
+  | 値の型 | 真偽は `true`・`false`、複数の値は配列、列ごとの設定は列名をキーにしたオブジェクト。書式・集計・強調・行番号・目次のように、それ自体に引数が後から付きうる設定は、今の引数が 1 つでもオブジェクトにする（`{"type": "check"}`・`{"calc": "sum"}`） |
+  | 引数の要らない設定 | オブジェクトの設定は、キーを記載するとその機能が付く。引数が要らなければ `{}` と記載する（`"lines": {}`） |
+  | 選ぶ値 | 英語の小文字の文字列（`"data"`・`"select"`） |
+  | 行の位置と範囲 | 行の位置は 1 から数える整数、範囲は共通のオブジェクトの行の範囲（`{"from": 2, "to": 4}`）。配列で範囲を表さない |
+  | 省いたキー | 既定の値を使用する |
+  | 知らないキー | 描くのを止めず、キーを無視する。点検（`mdmark check`）が通知する。表に無い列名（`columns.{列名}`）と、列に無い値（`board.values.{値}`）は、今と同じくその場所に記載の警告を出し、その設定を適用しない |
+  | 必須 | 入れ子のキーの ✓ は、親のキーを記載したときに必須。`{列名}`・`{値}` は任意の文字のキー、`{機能}` は機能名の列挙 |
+  | 記載できない文字 | 値に `-->` を記載しない。要るときは `>` を JSON のエスケープにして `--\u003e` と記載する。点検が通知する |
+  | JSON として読めない引数・型の誤り | 名前の後ろが `{` で始まる引数を JSON として読めない・型や選べる値が合わないときは、その場所に記載の警告を出し、その設定を適用しない |
+  | 今の書き方 | 名前の後ろが `{` で始まらない引数は今の書き方（`キー=値`・`+機能`・位置の値）として、この記載方法を入れたマイナーバージョンの間だけ参照し、点検が通知する。移行（`migrations/`）は「今の引数との対応」の表に従って書き換える |
+  | 拡張のマーカー | JSON のオブジェクトを `options` として、拡張の `schema` と `draw` に `{options, definition}` を指定する。`args`・`keys` は無くす。今の書き方の拡張のマーカーは描かずに記載の警告を出し、移行を案内する |
+  | 設定の `libraries` のマーカー | 拡張と同じく、`draw(slot, options)` に JSON のオブジェクトを指定する。今の書き方は描かずに記載の警告を出し、移行を案内する |
+tables:
+- name: collapse
+  title: 折り畳み
+  datastore: JSON
+  access: 全件
+  scale: ~1
+  summary: 表・タブ・ステップの範囲を入れる折り畳み
+  columns:
+  - name: collapse
+    title: 範囲を折り畳みに入れる
+    type: object
+    description: 範囲を折り畳みに入れる。省くと折り畳まない。表・タブ・ステップで使用する
+    example: '{"open": false}'
+  - name: collapse.open
+    title: 描いた直後に開くか
+    type: boolean
+    description: 描いた直後に開くか。省くと `false`
+    default: '`false`'
+    example: 'true'
+  - name: collapse.title
+    title: 折り畳みの見出し
+    type: string
+    description: 折り畳みの見出し。省くとマーカーごとの既定の見出し
+    example: '"引数の一覧"'
+- name: line_range
+  title: 行の範囲
+  datastore: JSON
+  access: 全件
+  scale: ~1
+  summary: 行の位置の範囲
+  description: 表の `rows.colors[].at`、コードブロックの飾りの `highlight`・`fold` の要素、取り込みの `lines` で使用する。
+  columns:
+  - name: from
+    title: 最初の行
+    type: integer
+    description: 最初の行
+    not_null: true
+    example: '2'
+  - name: to
+    title: 最後の行
+    type: integer
+    description: 最後の行。省くと `from` の 1 行だけ
+    default: '`from`'
+    example: '4'
+- name: column_ref
+  title: 列を指す値
+  datastore: JSON
+  access: 全件
+  scale: ~1
+  summary: 表の列を見出しの文字で指す値
+  description: 表の `tree` の各キー・用語集の表の各キー・ビューの `board.group` で使用する
+  columns:
+  - name: column
+    title: 列の見出しの文字
+    type: string
+    not_null: true
+    description: 列の見出しの文字。多段の見出しは最下段の文字
+    example: 用語
+notes:
+  引数を持たないマーカー: |-
+    `toc`・`pagebreak`・`columns`・`column`・`cards`・`html`・`flow`・`sequence`・`chart`・`param`・`er` は引数を持たない。図の部品（`flow`・`sequence`・`chart`・`param`・`er`）の定義は、今と同じく範囲の中の `json` のコードブロックに記載する。
+  今の引数との対応: |-
+    移行（`migrations/`）が、文書の今の記載を JSON に書き換えるときの対応。表の `columns.{列名}.width.min`・`columns.{列名}.width.max`（列の幅の自動計算 shuhei1101/mdmark#458 で使用する）と、`code` の `lines.start` は今の引数に無く、JSON にするときに追加する。移行は、今の実装が適用している設定だけを書き出す。適用されていない記載（`+total` の無い `total=` など）・読み込めない記載は書き出さず、移行の報告に挙げる。`closed` と `open` の両方は `collapse.open` の `false`、値の無い `title=` は `collapse.title` を省く。`section` は最初の引数だけを、`details` の `open` は最後の単語のときだけを移す。
+
+    | 今の引数 | マーカー | JSON のキー |
+    | --- | --- | --- |
+    | 種類（`data`・`plain`） | `table` | `kind` |
+    | `+機能`・`-機能` | `table` | `+機能` は `features.{機能}` の `{}`、`-機能` は `features.{機能}.enabled` の `false`。列の設定に移した機能（`filter=`・`hide=`・`pin=`・`total=` を記載した表の `+filter`・`+columns`・`+pin`・`+total`）は記載しない |
+    | `filter=列名:種類` | `table` | `columns.{列名}.filter.type` |
+    | `hide=列名` | `table` | `columns.{列名}.hidden` の `true` |
+    | `total=列名:計算` | `table` | `columns.{列名}.total[].calc` |
+    | `pin=列名` | `table` | `columns.{列名}.pinned` の `true` |
+    | `wide=列名` | `table` | `columns.{列名}.width.mode` の `"nowrap"` |
+    | `check=列名` | `table` | `columns.{列名}.format.type` の `"check"` |
+    | `highlight=列名:色` | `table` | `columns.{列名}.highlight.color`。色を省いた列は `"highlight": {}` |
+    | `row-color=列名:値=色` | `table` | `rows.colors[]` の `column`・`value`・`color` |
+    | `row-at=位置=色` | `table` | `rows.colors[]` の `at`・`color`。`2-4` は `{"from": 2, "to": 4}`。`row-color=` から移した要素の後ろに並べる |
+    | `header-rows=N`・`row-header=N` | `table` | `header.rows`・`header.columns` |
+    | `tree=`・`type=`・`required=`・`default=` | `table` | `tree.key.column`・`tree.type.column`・`tree.required.column`・`tree.default.column` |
+    | `example=見出し` | `table` | `tree.example.heading` |
+    | `closed`・`open`・`title=見出し` | `table`・`tabs`・`steps` | `collapse.open` の `false`・`true` と `collapse.title` |
+    | `group=名前` | `tabs` | `group` |
+    | `open=all`・`open=階層の数`・`wrap` | `tree` | `depth`・`wrap` の `true` |
+    | `title=`・`lines`・`wrap` | `code` | `title`・`"lines": {}`・`wrap` の `true` |
+    | `highlight=行,…`・`fold=行,…` | `code` | `highlight`・`fold`。`4-6` は `{"from": 4, "to": 6}` |
+    | `closed`・`open` | `section` | `open` の `false`・`true` |
+    | タイトル・`open` | `details` | `title`・`open` の `true` |
+    | `closed` | `wide` | `open` の `false` |
+    | 行の位置 | `row-detail` | `at` |
+    | ID | `fig` | `id` |
+    | `cols=列の数` | `gallery` | `columns` |
+    | `パス#見出しの ID`・`パス#L開始-L終了` | `include` | `path` と `heading`、`path` と `lines`。Markdown のファイルの `#L開始-L終了` は `heading` に移す |
+    | `scheme=`・`theme=`・`toc=` | `page` | `scheme`・`theme`・`toc.mode` |
+    | `+機能`・`-機能` | `features` | `{機能}` の `true`・`false` |
+    | `term=`・`meaning=`・`aliases=`・`avoid=` | `glossary` | `term.column`・`meaning.column`・`aliases.column`・`avoid.column` |
+    | `group=列名`・`icons=値:アイコンの名前` | `view` | `board.group.column`・`board.values.{値}.icon` |
+    | `default=board`・`default=table` | `view` | `initial` |
+    | `filter=列名:種類` | `view` | `columns.{列名}.filter.type` |
+refs:
+- ER-477-2#
+- ER-477-3#
+- ER-477-4#
+- ER-477-5#
+- ER-477-6#
+- ER-477-7#
+- ER-477-8#
+- ER-477-9#
+- ER-477-10#
+- ER-477-11#
+- ER-477-12#
+- ER-477-13#
+- ER-477-14#
+- ER-477-15#
+- ER-477-16#
+- ER-477-17#
+- ER-477-18#
+decisions:
+- D-312
+- D-334
+- D-335
+- D-336
+- D-337
+- D-338
+- D-344
+- D-345

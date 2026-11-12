@@ -99,17 +99,17 @@ test("test_render_part_when_notice", async () => {
   );
 });
 
-// カンマで結ばれた引数を配列に戻して読み込み中のブロックを描く（正常系）
+// JSON の引数を戻して読み込み中のブロックを描く（正常系）
 test("test_render_part_when_embed", async () => {
   // 準備
   const { renderPart } = await loadRender();
   const { renderEmbed } = await loadEmbed();
-  const params = new URLSearchParams("name=chart&args=a,b");
+  const params = new URLSearchParams('name=chart&options={"items":["a","b"]}');
   // 実行
   const html = renderPart({ component: "embed", params });
   // 検証
   expect(html).toBe(
-    `<div class="mdmark">${renderEmbed({ name: "chart", args: ["a", "b"] })}</div>`,
+    `<div class="mdmark">${renderEmbed({ name: "chart", options: { items: ["a", "b"] } })}</div>`,
   );
 });
 

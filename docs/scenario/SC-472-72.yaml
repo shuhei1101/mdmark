@@ -7,7 +7,7 @@ scenarios:
       - name: mdmark を読み込むページ
         description: バージョンを固定した URL で `dist/index.js` と `dist/index.css` を読み込み、索引を指定せずに文書を描く HTML
       - name: 用語集の表を持つ Markdown
-        description: '`<!-- glossary: term=用語 aliases=別名 meaning=意味 -->` 〜 `<!-- /glossary -->` で、用語 `マーカー`（別名 `マーク、オン・オフのマーカー`、意味 `HTML コメントで記載する指定`）の行を持つ表を囲み、表の後の段落に `マーク` が、別のセクションの段落に `オン・オフのマーカー` が出る文書'
+        description: '`<!-- glossary: {"term": {"column": "用語"}, "aliases": {"column": "別名"}, "meaning": {"column": "意味"}} -->` 〜 `<!-- /glossary -->` で、用語 `マーカー`（別名 `マーク、オン・オフのマーカー`、意味 `HTML コメントで記載する指定`）の行を持つ表を囲み、表の後の段落に `マーク` が、別のセクションの段落に `オン・オフのマーカー` が出る文書'
         notes: 別名のセルは「、」で区切り、「・」では区切らない
       - name: Mock
         description: jsDelivr を、ビルドした `dist/` を同じパスで返却する手元の応答に差し替える
@@ -56,7 +56,7 @@ scenarios:
       - name: mdmark を読み込むページ
         description: 正常シナリオと同じ
       - name: 列名を誤った Markdown
-        description: '`<!-- glossary: term=用語 meaning=説明 -->` で、列が `用語`・`意味` の表を囲んだ文書'
+        description: '`<!-- glossary: {"term": {"column": "用語"}, "meaning": {"column": "説明"}} -->` で、列が `用語`・`意味` の表を囲んだ文書'
         notes: '`説明` の列は表に無い'
       - name: Mock
         description: 正常シナリオと同じ
@@ -104,7 +104,7 @@ scenarios:
       - name: mdmark を読み込むページ
         description: 正常シナリオと同じ
       - name: やめた言い方の列を持つ Markdown
-        description: '`<!-- glossary: term=用語 meaning=意味 avoid=やめた言い方 -->` で、用語 `ワークスペース`（意味 `作業の配置場所`、やめた言い方 `作業場、ワーク場`）の行を持つ表を囲み、表の後の段落に `ワークスペース` と `作業場` が出る文書'
+        description: '`<!-- glossary: {"term": {"column": "用語"}, "meaning": {"column": "意味"}, "avoid": {"column": "やめた言い方"}} -->` で、用語 `ワークスペース`（意味 `作業の配置場所`、やめた言い方 `作業場、ワーク場`）の行を持つ表を囲み、表の後の段落に `ワークスペース` と `作業場` が出る文書'
         notes: やめた言い方のセルは別名と同じく「、」で区切る
       - name: Mock
         description: 正常シナリオと同じ
@@ -177,7 +177,7 @@ scenarios:
       - 段落の `マーク` のツールチップが `エイリアスに記載したマークの意味`
       - 段落の `オン・オフのマーカー` のツールチップが表の意味 `HTML コメントで記載する指定`
     test: test_normal_when_aliases_have_same_term
-lead: '文書の作成者が本文の表を `<!-- glossary: term=列名 meaning=列名 aliases=列名 -->` 〜 `<!-- /glossary -->` で囲むと、mdmark がその表の用語・意味・別名の列から用語を入れ、本文に出たその単語に意味のツールチップを付ける。'
+lead: '文書の作成者が本文の表を `<!-- glossary: {"term": {"column": "列名"}, "meaning": {"column": "列名"}, "aliases": {"column": "列名"}} -->` 〜 `<!-- /glossary -->` で囲むと、mdmark がその表の用語・意味・別名の列から用語を入れ、本文に出たその単語に意味のツールチップを付ける。'
 issue: 5
 primary_actor: 文書の作成者
 stakeholders:

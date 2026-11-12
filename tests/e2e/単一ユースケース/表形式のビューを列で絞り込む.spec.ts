@@ -33,7 +33,9 @@ test("test_normal", async ({ page }) => {
   // 準備
   await openPage(page, builtRoot);
   await mountDocument(page, {
-    markdown: viewMarkdown("group=状態 default=table filter=担当"),
+    markdown: viewMarkdown(
+      '{"board": {"group": {"column": "状態"}}, "initial": "table", "columns": {"担当": {"filter": {}}}}',
+    ),
   });
   // 検証: ボタンは担当の列にだけある
   await expect(page.locator("#doc button.mdmark-filter")).toHaveCount(1);
@@ -81,7 +83,9 @@ test("test_normal_when_filtered_by_text", async ({ page }) => {
   // 準備
   await openPage(page, builtRoot);
   await mountDocument(page, {
-    markdown: viewMarkdown("group=状態 default=table filter=題:text"),
+    markdown: viewMarkdown(
+      '{"board": {"group": {"column": "状態"}}, "initial": "table", "columns": {"題": {"filter": {"type": "text"}}}}',
+    ),
   });
   const drawer = page.locator("#doc .mdmark-filter-drawer");
   // 実行
@@ -104,11 +108,14 @@ test("test_error_when_filter_kind_unknown", async ({ page }) => {
   await openPage(page, builtRoot);
   // 実行
   await mountDocument(page, {
-    markdown: viewMarkdown("group=状態 default=table filter=担当:range"),
+    markdown: viewMarkdown(
+      '{"board": {"group": {"column": "状態"}}, "initial": "table", "columns": {"担当": {"filter": {"type": "range"}}}}',
+    ),
   });
   // 検証
   const warning = page.locator("#doc .mdmark-syntax-warning");
   await expect(warning).toHaveCount(1);
+  await expect(warning).toContainText("columns.担当.filter.type");
   await expect(warning).toContainText("range");
   await expect(warning).toContainText("select");
   await expect(warning).toContainText("text");

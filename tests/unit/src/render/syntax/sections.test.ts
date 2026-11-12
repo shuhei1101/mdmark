@@ -16,7 +16,7 @@ test("test_wrap_sections", () => {
     "",
     "## C",
     "",
-    "<!-- section: closed -->",
+    '<!-- section: {"open": false} -->',
     "",
     "本文C",
     "",
@@ -57,19 +57,6 @@ test("test_wrap_sections_when_h1", () => {
     'id="section-付録"',
   );
   expect(html).toContain('id="section-付録"');
-});
-
-// 知らない開閉の指定はスキップし、開いたセクションにする（正常系）
-test("test_wrap_sections_when_unknown_value", () => {
-  // 準備
-  const markdown = "## A\n\n<!-- section: hidden -->\n\n本文A\n";
-  // 実行
-  const { html, warnings } = renderDoc(markdown);
-  // 検証
-  expect(findTag(html, 'id="section-a"')).toContain('data-section="open"');
-  expect(html).not.toContain("mdmark-syntax-warning");
-  expect(warnings.map((warning) => warning.kind)).toEqual(["unknown_mark_arg"]);
-  expect(warnings[0]?.message).toContain("hidden");
 });
 
 // sections がオフなら見出しに class を付けず、囲まない（正常系）
@@ -123,4 +110,17 @@ test("test_wrap_sections_when_in_tab", () => {
     'id="section-windows-の注意"',
   );
   expect(innerHtml(html, 'id="section-導入"')).toContain('class="mdmark-tabs"');
+});
+
+// 知らないキーは無視し、開いたセクションにする（正常系）
+test("test_wrap_sections_when_unknown_key", () => {
+  // 準備
+  const markdown = '## A\n\n<!-- section: {"state": "hidden"} -->\n\n本文A\n';
+  // 実行
+  const { html, warnings } = renderDoc(markdown);
+  // 検証
+  expect(findTag(html, 'id="section-a"')).toContain('data-section="open"');
+  expect(html).not.toContain("mdmark-syntax-warning");
+  expect(warnings.map((warning) => warning.kind)).toEqual(["unknown_mark_arg"]);
+  expect(warnings[0]?.message).toContain("state");
 });

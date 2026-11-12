@@ -7,15 +7,15 @@ import { renderDoc } from "../../../helpers/render.ts";
 test("test_number_figures", () => {
   // 準備
   const markdown = [
-    "<!-- fig: arch -->",
+    '<!-- fig: {"id": "arch"} -->',
     "",
     '![構成](a.png "全体の構成")',
     "",
-    "<!-- fig: flow -->",
+    '<!-- fig: {"id": "flow"} -->',
     "",
     "![流れ](b.png)",
     "",
-    "<!-- fig: list -->",
+    '<!-- fig: {"id": "list"} -->',
     "",
     "| 列 |",
     "| --- |",
@@ -43,11 +43,11 @@ test("test_number_figures_when_broken_or_duplicated", () => {
   const markdown = [
     "[図](#fig-missing)",
     "",
-    "<!-- fig: arch -->",
+    '<!-- fig: {"id": "arch"} -->',
     "",
     "![一つ目](a.png)",
     "",
-    "<!-- fig: arch -->",
+    '<!-- fig: {"id": "arch"} -->',
     "",
     "![二つ目](b.png)",
     "",
@@ -67,14 +67,14 @@ test("test_number_figures_when_broken_or_duplicated", () => {
 test("test_number_figures_when_table_has_nested_table", () => {
   // 準備
   const markdown = [
-    "<!-- fig: list -->",
+    '<!-- fig: {"id": "list"} -->',
     "",
     "| 名前 | 説明 |",
     "| --- | --- |",
     "| Todo | a |",
     "| Done | b |",
     "",
-    "<!-- row-detail: 1 -->",
+    '<!-- row-detail: {"at": 1} -->',
     "",
     "| 引数 | 値 |",
     "| --- | --- |",
@@ -109,13 +109,13 @@ test("test_number_figures_when_image_figure", async () => {
   const { numberFigures } = await loadFigures();
   const { readImages } = await loadImages();
   const markdown = [
-    "<!-- fig: arch -->",
+    '<!-- fig: {"id": "arch"} -->',
     "",
     '![構成](arch.png "全体"){width=300}',
     "",
-    "<!-- fig: shots -->",
+    '<!-- fig: {"id": "shots"} -->',
     "",
-    "<!-- gallery: cols=2 -->",
+    '<!-- gallery: {"columns": 2} -->',
     "",
     '![開く](open.png "開く")',
     "",

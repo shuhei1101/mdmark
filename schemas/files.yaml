@@ -90,3 +90,105 @@ files:
   - path: nonfunctional.schema.yaml
     description: 非機能要件の設計書のスキーマ。外部の制約から逆算したアプリの決定値を記載する。非機能要件を記載するときに参照する。
     tags: [topic:スキーマ, topic:テンプレート, topic:設計書, tool:jsonschema]
+  - path: marks/code.schema.json
+    description: コードブロックの飾りのマーカーの設定の JSON Schema。描く処理と点検がマーカーの設定を検証するときに読み込む
+    tags: [topic:マーカー, topic:スキーマ]
+    related:
+      - to: docs/er/ER-477-6
+        type: implements
+  - path: marks/common.schema.json
+    description: マーカーの設定の共通のオブジェクト（折り畳み・行の範囲・列を指す値）の JSON Schema。ER 図『マーカーの設定の共通の決まり』と同じ内容にする
+    tags: [topic:マーカー, topic:スキーマ]
+    related:
+      - to: docs/er/ER-477-1
+        type: implements
+  - path: marks/details.schema.json
+    description: details の範囲のマーカーの設定の JSON Schema。描く処理と点検がマーカーの設定を検証するときに読み込む
+    tags: [topic:マーカー, topic:スキーマ]
+    related:
+      - to: docs/er/ER-477-8
+        type: implements
+  - path: marks/features.schema.json
+    description: 機能のオン・オフのマーカーの設定の JSON Schema。描く処理と点検がマーカーの設定を検証するときに読み込む
+    tags: [topic:マーカー, topic:スキーマ]
+    related:
+      - to: docs/er/ER-477-15
+        type: implements
+  - path: marks/fig.schema.json
+    description: 図と表の番号のマーカーの設定の JSON Schema。描く処理と点検がマーカーの設定を検証するときに読み込む
+    tags: [topic:マーカー, topic:スキーマ]
+    related:
+      - to: docs/er/ER-477-11
+        type: implements
+  - path: marks/gallery.schema.json
+    description: ギャラリーのマーカーの設定の JSON Schema。描く処理と点検がマーカーの設定を検証するときに読み込む
+    tags: [topic:マーカー, topic:スキーマ]
+    related:
+      - to: docs/er/ER-477-12
+        type: implements
+  - path: marks/glossary.schema.json
+    description: 用語集の表のマーカーの設定の JSON Schema。描く処理と点検がマーカーの設定を検証するときに読み込む
+    tags: [topic:マーカー, topic:スキーマ]
+    related:
+      - to: docs/er/ER-477-16
+        type: implements
+  - path: marks/include.schema.json
+    description: 取り込みのマーカーの設定の JSON Schema。描く処理と点検がマーカーの設定を検証するときに読み込む
+    tags: [topic:マーカー, topic:スキーマ]
+    related:
+      - to: docs/er/ER-477-13
+        type: implements
+  - path: marks/page.schema.json
+    description: ページの設定のマーカーの設定の JSON Schema。描く処理と点検がマーカーの設定を検証するときに読み込む
+    tags: [topic:マーカー, topic:スキーマ]
+    related:
+      - to: docs/er/ER-477-14
+        type: implements
+  - path: marks/row-detail.schema.json
+    description: 行の詳細のマーカーの設定の JSON Schema。描く処理と点検がマーカーの設定を検証するときに読み込む
+    tags: [topic:マーカー, topic:スキーマ]
+    related:
+      - to: docs/er/ER-477-10
+        type: implements
+  - path: marks/section.schema.json
+    description: セクションの開閉のマーカーの設定の JSON Schema。描く処理と点検がマーカーの設定を検証するときに読み込む
+    tags: [topic:マーカー, topic:スキーマ]
+    related:
+      - to: docs/er/ER-477-7
+        type: implements
+  - path: marks/steps.schema.json
+    description: ステップのマーカーの設定の JSON Schema。描く処理と点検がマーカーの設定を検証するときに読み込む
+    tags: [topic:マーカー, topic:スキーマ]
+    related:
+      - to: docs/er/ER-477-4
+        type: implements
+  - path: marks/table.schema.json
+    description: 表のマーカーの設定の JSON Schema。描く処理と点検がマーカーの設定を検証するときに読み込む
+    tags: [topic:マーカー, topic:スキーマ]
+    related:
+      - to: docs/er/ER-477-2
+        type: implements
+  - path: marks/tabs.schema.json
+    description: タブのマーカーの設定の JSON Schema。描く処理と点検がマーカーの設定を検証するときに読み込む
+    tags: [topic:マーカー, topic:スキーマ]
+    related:
+      - to: docs/er/ER-477-3
+        type: implements
+  - path: marks/tree.schema.json
+    description: ファイルツリーのマーカーの設定の JSON Schema。描く処理と点検がマーカーの設定を検証するときに読み込む
+    tags: [topic:マーカー, topic:スキーマ]
+    related:
+      - to: docs/er/ER-477-5
+        type: implements
+  - path: marks/view.schema.json
+    description: ビューのマーカーの設定の JSON Schema。描く処理と点検がマーカーの設定を検証するときに読み込む
+    tags: [topic:マーカー, topic:スキーマ]
+    related:
+      - to: docs/er/ER-477-17
+        type: implements
+  - path: marks/wide.schema.json
+    description: wide の範囲のマーカーの設定の JSON Schema。描く処理と点検がマーカーの設定を検証するときに読み込む
+    tags: [topic:マーカー, topic:スキーマ]
+    related:
+      - to: docs/er/ER-477-9
+        type: implements

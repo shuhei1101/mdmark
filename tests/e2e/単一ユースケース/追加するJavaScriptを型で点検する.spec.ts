@@ -4,9 +4,10 @@ import { expect, runCli, test } from "../cli.ts";
 import { listFiles, placeDeclarations, runTsc } from "../diagram.ts";
 
 // 雛形の拡張の、`draw` の中身（この行を型に合わない値に書き換える）
-// biome-ignore lint/suspicious/noTemplateCurlyInString: 雛形のファイルの中身の一行
-const VALID_LINE = 'slot.textContent = `こんにちは、${value.args[0] ?? ""}`;';
-const INVALID_LINE = "slot.textContent = value.args.length;";
+const VALID_LINE =
+  // biome-ignore lint/suspicious/noTemplateCurlyInString: 雛形のファイルの中身の一行
+  'slot.textContent = `こんにちは、${String(value.options.target ?? "")}`;';
+const INVALID_LINE = "slot.textContent = value.options.target;";
 
 /** JavaScript の雛形を配置し、配布物の型定義を `mdmark/` に配置したフォルダを作る */
 async function prepare(

@@ -148,7 +148,7 @@ test("test_normal_when_disabled", async ({ page }) => {
   await openPage(page, builtRoot);
   // 実行
   await mountDocument(page, {
-    markdown: `<!-- features: -mermaid -->\n\n${MERMAID_FLOWCHART}`,
+    markdown: `<!-- features: {"mermaid": false} -->\n\n${MERMAID_FLOWCHART}`,
   });
   await expect(page.locator("#doc pre code")).toContainText("flowchart LR");
   await page.waitForTimeout(SETTLE_MS);

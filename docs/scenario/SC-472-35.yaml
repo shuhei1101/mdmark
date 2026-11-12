@@ -78,7 +78,7 @@ scenarios:
       - name: mdmark を読み込むページ
         description: 正常シナリオと同じ
       - name: カードの格子の機能を解除する Markdown
-        description: '先頭にカードの格子の機能を解除する `<!-- features: ... -->` を持ち、正常シナリオと同じ cards の範囲を持つ文書'
+        description: '先頭にカードの格子の機能を解除する `<!-- features: {...} -->` を持ち、正常シナリオと同じ cards の範囲を持つ文書'
         notes: 機能名はインターフェース定義で決める
       - name: Mock
         description: 正常シナリオと同じ

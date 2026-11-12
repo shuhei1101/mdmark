@@ -1,0 +1,55 @@
+id: ER-477-14
+visibility: internal
+title: 'ER 図: ページの設定のマーカーの設定'
+lead: '`<!-- page: {JSON のオブジェクト} -->` の名前の後ろに記載する、ページの設定のマーカーの設定の構造。'
+tables:
+- name: page
+  title: ページの設定
+  datastore: JSON
+  access: 全件
+  scale: ~1
+  summary: ページの設定のマーカー 1 つの設定
+  columns:
+  - name: scheme
+    title: 配色の明暗
+    type: string
+    description: 配色の明暗
+    enum_values: '`light` / `dark` / `auto`'
+    example: '"dark"'
+  - name: theme
+    title: テーマの名前
+    type: string
+    description: テーマの名前
+    enum_values: '`dev-swiss` / `theme-paper` / `theme-slate` / `theme-contrast`'
+    example: '"theme-slate"'
+  - name: toc
+    title: 右側の目次
+    type: object
+    description: 右側の目次
+    example: '{"mode": "fixed"}'
+  - name: toc.mode
+    title: 右側の目次の出し方
+    type: string
+    description: 右側の目次の出し方
+    enum_values: '`hover` / `fixed`'
+    example: '"fixed"'
+  description: '`page` を複数記載したときは、後の値を使用する。'
+notes:
+  見本: |-
+    ```html
+    <!-- page: {"scheme": "dark", "theme": "theme-slate", "toc": {"mode": "fixed"}} -->
+    ```
+  今の引数との対応: |-
+    | 今の引数 | JSON のキー |
+    | --- | --- |
+    | `scheme=`・`theme=`・`toc=` | `scheme`・`theme`・`toc.mode` |
+refs:
+- ER-477-1#
+decisions:
+- D-312
+- D-334
+- D-336
+- D-337
+- D-338
+- D-344
+- D-345

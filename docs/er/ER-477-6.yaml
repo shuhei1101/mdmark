@@ -1,0 +1,64 @@
+id: ER-477-6
+visibility: internal
+title: 'ER 図: コードブロックの飾りのマーカーの設定'
+lead: '`<!-- code: {JSON のオブジェクト} -->` の名前の後ろに記載する、コードブロックの飾りのマーカーの設定の構造。'
+tables:
+- name: code
+  title: コードブロックの飾り
+  datastore: JSON
+  access: 全件
+  scale: ~1
+  summary: コードブロックの飾りのマーカー 1 つの設定
+  columns:
+  - name: title
+    title: コードブロックの上に出すタイトル
+    type: string
+    description: コードブロックの上に出すタイトル。空白を記載できる
+    example: '"src/app.ts の抜粋"'
+  - name: lines
+    title: 行番号を出す
+    type: object
+    description: 行番号を出す。省くと出さない
+    example: '{}'
+  - name: lines.start
+    title: 最初の行の番号
+    type: integer
+    description: 最初の行の番号。省くと 1
+    default: '1'
+    example: '10'
+  - name: highlight
+    title: 強調する行
+    type: array
+    description: 強調する行。要素は行の番号か、共通のオブジェクトの行の範囲
+    example: '[2, {"from": 4, "to": 6}]'
+  - name: fold
+    title: 最初から畳む行
+    type: array
+    description: 最初から畳む行。記載方法は `highlight` と同じ
+    example: '[{"from": 10, "to": 20}]'
+  - name: wrap
+    title: 長い行を折り返す
+    type: boolean
+    description: 長い行を折り返す。省くと `false`
+    default: '`false`'
+    example: 'true'
+notes:
+  見本: |-
+    ```html
+    <!-- code: {"title": "src/app.ts の抜粋", "lines": {}, "highlight": [2, {"from": 4, "to": 6}]} -->
+    ```
+  今の引数との対応: |-
+    | 今の引数 | JSON のキー |
+    | --- | --- |
+    | `title=`・`lines`・`wrap` | `title`・`"lines": {}`・`wrap` の `true` |
+    | `highlight=行,…`・`fold=行,…` | `highlight`・`fold`。`4-6` は `{"from": 4, "to": 6}` |
+refs:
+- ER-477-1#
+decisions:
+- D-312
+- D-334
+- D-336
+- D-337
+- D-338
+- D-344
+- D-345

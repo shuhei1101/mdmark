@@ -1,7 +1,7 @@
 import { existsSync } from "node:fs";
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
-import { writeSettings } from "../cascade.ts";
+import { greetSource, writeSettings } from "../cascade.ts";
 import {
   BROKEN_FLOW,
   CLEAN_FLOW,
@@ -715,5 +715,105 @@ test("test_normal_when_map_data_drift", async ({ builtRoot, tempDir }) => {
   expect(mark).toHaveLength(1);
   expect(mark[0]).toContain("mdoe");
   expect(lines.some((line) => line.startsWith("a.md:20:"))).toBe(false);
+  expect(await snapshot(dir)).toEqual(before);
+});
+
+// 文書の今の書き方のマーカーを、ファイルと行を指す今の書き方のマーカーの種類の行にする（正常シナリオ（今の書き方のマーカーがある））
+test("test_normal_when_legacy_mark", async ({ builtRoot, tempDir }) => {
+  // 準備
+  const dir = await createCleanDir(builtRoot, tempDir);
+  await appendConfig(dir, ["extensions: [extensions/greet.js]"]);
+  await writeFiles(dir, {
+    "extensions/greet.js": greetSource(),
+    "a.md": [
+      "# A",
+      "",
+      "<!-- table: data filter=名前 -->",
+      "",
+      "| 名前 |",
+      "| --- |",
+      "| a |",
+      "",
+      "<!-- /table -->",
+      "",
+    ].join("\n"),
+    "b.md": [
+      "<!-- section: closed -->",
+      "",
+      "# B",
+      "",
+      "<!-- greet: 太郎 -->",
+      "",
+    ].join("\n"),
+  });
+  const before = await snapshot(dir);
+  // 実行
+  const result = await runCli(builtRoot, ["check"], dir);
+  // 検証
+  expect(result.code).not.toBe(0);
+  const lines = linesOf(result.stdout);
+  for (const head of [
+    "a.md:3: legacy_mark:",
+    "b.md:1: legacy_mark:",
+    "b.md:5: legacy_mark:",
+  ]) {
+    const found = lines.filter((line) => line.startsWith(head));
+    expect(found, head).toHaveLength(1);
+    expect(found[0]).toContain("JSON のオブジェクト");
+    expect(found[0]).toContain("mdmark upgrade");
+  }
+  expect(lines.find((line) => line.startsWith("b.md:5:"))).toContain(
+    "描くときに描きません",
+  );
+  expect(await snapshot(dir)).toEqual(before);
+});
+
+// 文書のマーカーの知らないキー・型の誤り・削除した機能の列の設定を、ファイルと行を指す行にする（正常シナリオ（マーカーの設定にずれがある））
+test("test_normal_when_mark_options_drift", async ({ builtRoot, tempDir }) => {
+  // 準備
+  const dir = await createCleanDir(builtRoot, tempDir);
+  await writeFiles(dir, {
+    "a.md": [
+      '<!-- code: {"title": "app.ts", "color": "red"} -->',
+      "```ts",
+      "const a = 1;",
+      "```",
+      '<!-- section: {"open": "no"} -->',
+      "",
+      "# A",
+      "",
+      '<!-- table: {"features": {"total": {"enabled": false}}, "columns": {"数量": {"total": [{"calc": "sum"}]}}} -->',
+      "",
+      "| 名前 | 数量 |",
+      "| --- | --- |",
+      "| a | 1 |",
+      "",
+      "<!-- /table -->",
+      "",
+    ].join("\n"),
+  });
+  const before = await snapshot(dir);
+  // 実行
+  const result = await runCli(builtRoot, ["check"], dir);
+  // 検証
+  expect(result.code).not.toBe(0);
+  const lines = linesOf(result.stdout);
+  const unknown = lines.filter((line) =>
+    line.startsWith("a.md:1: unknown_mark_arg:"),
+  );
+  expect(unknown).toHaveLength(1);
+  expect(unknown[0]).toContain("color");
+  expect(unknown[0]).toContain("title");
+  const invalid = lines.filter((line) =>
+    line.startsWith("a.md:5: mark_option_invalid:"),
+  );
+  expect(invalid).toHaveLength(1);
+  expect(invalid[0]).toContain("open");
+  expect(invalid[0]).toContain("true");
+  const unapplied = lines.filter((line) =>
+    line.startsWith("a.md:9: mark_option_unapplied:"),
+  );
+  expect(unapplied).toHaveLength(1);
+  expect(unapplied[0]).toContain("columns.数量.total");
   expect(await snapshot(dir)).toEqual(before);
 });

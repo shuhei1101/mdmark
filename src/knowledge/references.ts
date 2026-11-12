@@ -75,7 +75,8 @@ export function parseDocument(options: {
   const env: RenderEnv = {
     libraries: {},
     defaults: options.defaults,
-    featureArgs: [],
+    featureOptions: [],
+    markNotes: [],
     features: {},
     headings: [],
     nonce: "",

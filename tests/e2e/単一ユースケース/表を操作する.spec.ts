@@ -59,7 +59,7 @@ test("test_normal", async ({ page }) => {
   await openPage(page, builtRoot);
   await mountDocument(page, {
     markdown:
-      "<!-- table: data -->\n\n| 名前 | 数 |\n| --- | ---: |\n| a | 10 |\n| b | 2 |\n| c | 33 |\n\n<!-- /table -->\n",
+      '<!-- table: {"kind": "data"} -->\n\n| 名前 | 数 |\n| --- | ---: |\n| a | 10 |\n| b | 2 |\n| c | 33 |\n\n<!-- /table -->\n',
   });
   const sort = head(page, "数").locator("button.mdmark-sort");
   // 実行・検証
@@ -95,7 +95,7 @@ test("test_normal_when_filtered_by_values", async ({ page }) => {
   await openPage(page, builtRoot);
   await mountDocument(page, {
     markdown:
-      "<!-- table: data filter=名前 -->\n\n| 名前 | 数 |\n| --- | --- |\n| りんご | 1 |\n| みかん | 2 |\n| りんご飴 | 3 |\n\n<!-- /table -->\n",
+      '<!-- table: {"kind": "data", "columns": {"名前": {"filter": {}}}} -->\n\n| 名前 | 数 |\n| --- | --- |\n| りんご | 1 |\n| みかん | 2 |\n| りんご飴 | 3 |\n\n<!-- /table -->\n',
   });
   const filters = page.locator("#doc button.mdmark-filter");
   await expect(filters).toHaveCount(1);
@@ -145,7 +145,7 @@ test("test_normal_when_filtered_by_text", async ({ page }) => {
   await openPage(page, builtRoot);
   await mountDocument(page, {
     markdown:
-      "<!-- table: data filter=説明:text -->\n\n| 説明 |\n| --- |\n| 描画を速くする |\n| 印刷を直す |\n| 描画の崩れを直す |\n\n<!-- /table -->\n",
+      '<!-- table: {"kind": "data", "columns": {"説明": {"filter": {"type": "text"}}}} -->\n\n| 説明 |\n| --- |\n| 描画を速くする |\n| 印刷を直す |\n| 描画の崩れを直す |\n\n<!-- /table -->\n',
   });
   const drawer = page.locator("#doc .mdmark-filter-drawer");
   // 実行
@@ -166,7 +166,7 @@ test("test_normal_when_filtered_by_date", async ({ page }) => {
   await openPage(page, builtRoot);
   await mountDocument(page, {
     markdown:
-      "<!-- table: data filter=更新日:date -->\n\n| 更新日 |\n| --- |\n| 2026-10-01 |\n| 2026-10-10 |\n| 2026-10-20 |\n\n<!-- /table -->\n",
+      '<!-- table: {"kind": "data", "columns": {"更新日": {"filter": {"type": "date"}}}} -->\n\n| 更新日 |\n| --- |\n| 2026-10-01 |\n| 2026-10-10 |\n| 2026-10-20 |\n\n<!-- /table -->\n',
   });
   const drawer = page.locator("#doc .mdmark-filter-drawer");
   const from = drawer.getByLabel("開始日");
@@ -298,7 +298,7 @@ test("test_normal_when_closed", async ({ page }) => {
   await openPage(page, builtRoot);
   await mountDocument(page, {
     markdown: [
-      "<!-- table: data closed -->",
+      '<!-- table: {"kind": "data", "collapse": {"open": false}} -->',
       "",
       "| 名前 | 数 |",
       "| --- | --- |",
@@ -308,7 +308,7 @@ test("test_normal_when_closed", async ({ page }) => {
       "",
       "<!-- /table -->",
       "",
-      "<!-- table: data open title=リリースの一覧 -->",
+      '<!-- table: {"kind": "data", "collapse": {"open": true, "title": "リリースの一覧"}} -->',
       "",
       "| 名前 | 数 |",
       "| --- | --- |",
@@ -343,7 +343,7 @@ test("test_normal_when_feature_removed", async ({ page }) => {
   await openPage(page, builtRoot, { hostCss: NARROW_HOST_CSS });
   // 実行
   await mountDocument(page, {
-    markdown: `<!-- table: data -sort -->\n\n${wideTable()}\n<!-- /table -->\n`,
+    markdown: `<!-- table: {"kind": "data", "features": {"sort": {"enabled": false}}} -->\n\n${wideTable()}\n<!-- /table -->\n`,
   });
   // 検証
   await expect(
@@ -352,16 +352,21 @@ test("test_normal_when_feature_removed", async ({ page }) => {
   await expect(page.locator("#doc button.mdmark-sort")).toHaveCount(0);
 });
 
-// 知らない種類はスキップして既定の種類にし、記載の警告を出さずに +sort を適用する（正常シナリオ（知らない種類））
-test("test_normal_when_unknown_kind", async ({ page }) => {
+// 知らない種類は記載の警告を出して既定の種類にし、features.sort を適用する（異常シナリオ（知らない種類））
+test("test_error_when_unknown_kind", async ({ page }) => {
   // 準備
   await openPage(page, builtRoot, { hostCss: NARROW_HOST_CSS });
   // 実行
   await mountDocument(page, {
-    markdown: `<!-- table: unknown +sort -->\n\n${wideTable()}\n<!-- /table -->\n\n表の後の段落\n`,
+    markdown: `<!-- table: {"kind": "unknown", "features": {"sort": {}}} -->\n\n${wideTable()}\n<!-- /table -->\n\n表の後の段落\n`,
   });
   // 検証
-  await expect(page.locator("#doc .mdmark-syntax-warning")).toHaveCount(0);
+  const warning = page.locator("#doc .mdmark-syntax-warning");
+  await expect(warning).toHaveCount(1);
+  await expect(warning).toContainText("kind");
+  await expect(warning).toContainText("unknown");
+  await expect(warning).toContainText("data");
+  await expect(warning).toContainText("plain");
   await expect(
     page.locator("#doc button.mdmark-pin:not([hidden])"),
   ).toHaveCount(10);
@@ -376,7 +381,7 @@ test("test_error_when_range_end_missing", async ({ page }) => {
   // 実行
   await mountDocument(page, {
     markdown:
-      "<!-- table: data -->\n\n| a |\n| --- |\n| 1 |\n\n| b |\n| --- |\n| 2 |\n",
+      '<!-- table: {"kind": "data"} -->\n\n| a |\n| --- |\n| 1 |\n\n| b |\n| --- |\n| 2 |\n',
   });
   // 検証
   await expect(page.locator("#doc .mdmark-syntax-warning")).toContainText(
@@ -386,13 +391,13 @@ test("test_error_when_range_end_missing", async ({ page }) => {
   await expect(page.locator("#doc button.mdmark-sort")).toHaveCount(2);
 });
 
-// 知らない機能とキーはスキップし、記載の警告を出さずに data の機能を付ける（正常シナリオ（知らない機能・キー））
+// 知らない機能とキーは無視し、記載の警告を出さずに data の機能を付ける（正常シナリオ（知らない機能・キー））
 test("test_normal_when_unknown_feature_or_key", async ({ page }) => {
   // 準備
   await openPage(page, builtRoot, { hostCss: NARROW_HOST_CSS });
   // 実行
   await mountDocument(page, {
-    markdown: `<!-- table: data +unknown size=2 -->\n\n${wideTable()}\n<!-- /table -->\n`,
+    markdown: `<!-- table: {"kind": "data", "features": {"unknown": {}}, "size": 2} -->\n\n${wideTable()}\n<!-- /table -->\n`,
   });
   // 検証
   await expect(page.locator("#doc .mdmark-syntax-warning")).toHaveCount(0);
@@ -409,7 +414,7 @@ test("test_error_when_unknown_filter_kind", async ({ page }) => {
   // 実行
   await mountDocument(page, {
     markdown:
-      "<!-- table: data filter=名前:range,説明:text -->\n\n| 名前 | 説明 |\n| --- | --- |\n| a | b |\n\n<!-- /table -->\n",
+      '<!-- table: {"kind": "data", "columns": {"名前": {"filter": {"type": "range"}}, "説明": {"filter": {"type": "text"}}}} -->\n\n| 名前 | 説明 |\n| --- | --- |\n| a | b |\n\n<!-- /table -->\n',
   });
   // 検証
   const warning = page.locator("#doc .mdmark-syntax-warning");
@@ -489,7 +494,7 @@ async function totalRows(page: Page): Promise<string[][]> {
 
 /** 4 列 4 行の集計の行を持つ表の Markdown（数量は空のセルを含み、産地は `青森`・`愛媛`・`青森`・空） */
 const TOTALS_MARKDOWN = [
-  "<!-- table: data +total total=数量:sum,単価:avg,産地:count filter=名前:text -->",
+  '<!-- table: {"kind": "data", "columns": {"数量": {"total": [{"calc": "sum"}]}, "単価": {"total": [{"calc": "avg"}]}, "産地": {"total": [{"calc": "count"}]}, "名前": {"filter": {"type": "text"}}}} -->',
   "",
   "| 名前 | 数量 | 単価 | 産地 |",
   "| --- | --- | --- | --- |",
@@ -507,7 +512,9 @@ test("test_normal_when_counting_rows", async ({ page }) => {
   // 準備
   await openPage(page, builtRoot);
   await mountDocument(page, {
-    markdown: fruitTable("data +count filter=説明:text"),
+    markdown: fruitTable(
+      '{"kind": "data", "features": {"count": {}}, "columns": {"説明": {"filter": {"type": "text"}}}}',
+    ),
   });
   const count = page.locator("#doc .mdmark-table-count");
   // 検証: 描いた直後
@@ -530,7 +537,9 @@ test("test_normal_when_columns_toggled", async ({ page }) => {
   // 準備
   await openPage(page, builtRoot);
   await mountDocument(page, {
-    markdown: fruitTable("data +columns hide=説明"),
+    markdown: fruitTable(
+      '{"kind": "data", "columns": {"説明": {"hidden": true}}}',
+    ),
   });
   const toggle = page.getByRole("button", { name: "テーブル設定" });
   const panel = settingsPanel(page);
@@ -583,8 +592,8 @@ const COLUMNS_NOTIFY_MARKDOWN = [
   "| --- | --- |",
   "| x | 1 |",
   "",
-  fruitTable("data +columns"),
-  "<!-- table: data +columns hide=備考 -->",
+  fruitTable('{"kind": "data", "features": {"columns": {}}}'),
+  '<!-- table: {"kind": "data", "columns": {"備考": {"hidden": true}}} -->',
   "",
   "| 名前 | 備考 |",
   "| --- | --- |",
@@ -672,7 +681,9 @@ test("test_normal_when_table_copied", async ({ page }) => {
   await stubClipboard(page, "allow");
   await openPage(page, builtRoot);
   await mountDocument(page, {
-    markdown: fruitTable("data +copy +columns hide=説明 filter=名前:text"),
+    markdown: fruitTable(
+      '{"kind": "data", "features": {"copy": {}}, "columns": {"説明": {"hidden": true}, "名前": {"filter": {"type": "text"}}}}',
+    ),
   });
   await filterByText(page, "名前", "りんご");
   const button = page.locator("#doc button.mdmark-copy");
@@ -709,7 +720,9 @@ test("test_normal_when_table_copied_as_markdown", async ({ page }) => {
   await stubClipboard(page, "allow");
   await openPage(page, builtRoot);
   await mountDocument(page, {
-    markdown: fruitTable("data +copy +columns hide=説明 filter=名前:text"),
+    markdown: fruitTable(
+      '{"kind": "data", "features": {"copy": {}}, "columns": {"説明": {"hidden": true}, "名前": {"filter": {"type": "text"}}}}',
+    ),
   });
   await page.getByRole("button", { name: "テーブル設定" }).click();
   await eyeOf(settingsPanel(page), "説明").click();
@@ -743,7 +756,7 @@ test("test_normal_when_row_link_opened", async ({ page }) => {
       "# 見出し",
       "",
       ...Array.from({ length: 30 }, (_, i) => `長い段落 ${i + 1}\n`),
-      "<!-- table: data +rowlink closed -->",
+      '<!-- table: {"kind": "data", "features": {"rowlink": {}}, "collapse": {"open": false}} -->',
       "",
       "| 名前 | 値 |",
       "| --- | --- |",
@@ -755,9 +768,9 @@ test("test_normal_when_row_link_opened", async ({ page }) => {
       "",
       "## 節",
       "",
-      "<!-- section: closed -->",
+      '<!-- section: {"open": false} -->',
       "",
-      "<!-- table: data +rowlink filter=名前:text -->",
+      '<!-- table: {"kind": "data", "features": {"rowlink": {}}, "columns": {"名前": {"filter": {"type": "text"}}}} -->',
       "",
       "| 名前 | 値 |",
       "| --- | --- |",
@@ -822,23 +835,23 @@ test("test_error_when_unknown_total_or_hidden_column", async ({ page }) => {
   // 実行
   await mountDocument(page, {
     markdown: [
-      "<!-- table: data +total +columns total=数量:max,価格:sum,単価:avg hide=備考,名前 -->",
+      '<!-- table: {"kind": "data", "columns": {"数量": {"total": [{"calc": "max"}]}, "価格": {"total": [{"calc": "sum"}]}, "単価": {"total": [{"calc": "avg"}]}, "備考": {"hidden": true}, "名前": {"hidden": true}}} -->',
       "",
       ...rows,
-      "<!-- table: data total=数量:sum hide=名前 -->",
+      '<!-- table: {"kind": "data", "features": {"total": {"enabled": false}, "columns": {"enabled": false}}, "columns": {"数量": {"total": [{"calc": "sum"}]}, "単価": {"hidden": true}}} -->',
       "",
       ...rows,
-      "<!-- table: data +total -->",
+      '<!-- table: {"kind": "data", "features": {"total": {}}} -->',
       "",
       ...rows,
     ].join("\n"),
   });
-  // 検証: 表 A
+  // 検証: 表 A（JSON の Schema に合わない指定の警告は表の枠の外の上に出るため、文書の全ての警告を表 A の警告として数える）
   const [a, b, c] = await page.locator("#doc .mdmark-table").all();
   if (!a || !b || !c) {
     throw new Error("表が 3 つ描かれていない");
   }
-  const warningsA = a.locator(".mdmark-syntax-warning");
+  const warningsA = page.locator("#doc .mdmark-syntax-warning");
   await expect(warningsA).toHaveCount(4);
   const textA = (await warningsA.allTextContents()).join("\n");
   for (const word of ["max", "sum", "avg", "count", "価格", "備考", "名前"]) {
@@ -857,12 +870,9 @@ test("test_error_when_unknown_total_or_hidden_column", async ({ page }) => {
     await expect(header).toBeVisible();
   }
   // 検証: 表 B
-  const warningsB = b.locator(".mdmark-syntax-warning");
-  await expect(warningsB).toHaveCount(1);
-  await expect(warningsB).toContainText("+total");
-  await expect(warningsB).toContainText("+columns");
+  await expect(b.locator(".mdmark-syntax-warning")).toHaveCount(0);
   await expect(b.locator("tfoot")).toHaveCount(0);
-  await expect(b.locator("thead th", { hasText: "名前" })).toBeVisible();
+  await expect(b.locator("thead th", { hasText: "単価" })).toBeVisible();
   // 検証: 表 C
   await expect(c.locator(".mdmark-syntax-warning")).toHaveCount(0);
   await expect(c.locator("tfoot")).toHaveCount(0);
@@ -873,7 +883,9 @@ test("test_error_when_clipboard_denied", async ({ page }) => {
   // 準備
   await stubClipboard(page, "deny");
   await openPage(page, builtRoot);
-  await mountDocument(page, { markdown: fruitTable("data +copy") });
+  await mountDocument(page, {
+    markdown: fruitTable('{"kind": "data", "features": {"copy": {}}}'),
+  });
   const button = page.locator("#doc button.mdmark-copy");
   const panel = page.locator("#doc .mdmark-copy-panel");
   const textarea = panel.locator("textarea");
@@ -945,7 +957,7 @@ function stickyDocument(): string {
   });
   return [
     ...paragraphs("前"),
-    "<!-- table: data +total total=数量:sum -->",
+    '<!-- table: {"kind": "data", "columns": {"数量": {"total": [{"calc": "sum"}]}}} -->',
     "",
     `| ${headers.join(" | ")} |`,
     `| ${headers.map(() => "---").join(" | ")} |`,
@@ -1079,7 +1091,7 @@ test("test_normal_when_header_stuck", async ({ page }) => {
 
 /** 390px の幅で 1 行に収まらない説明を最終列に持つ、3 列 3 行の表の Markdown */
 const FOLD_TABLE = [
-  "<!-- table: data -->",
+  '<!-- table: {"kind": "data"} -->',
   "",
   "| 名前 | 状態 | 説明 |",
   "| --- | --- | --- |",
@@ -1194,7 +1206,7 @@ test("test_error_when_total_cell_not_number", async ({ page }) => {
   // 実行
   await mountDocument(page, {
     markdown: [
-      "<!-- table: data +total total=数量:sum,単価:avg -->",
+      '<!-- table: {"kind": "data", "columns": {"数量": {"total": [{"calc": "sum"}]}, "単価": {"total": [{"calc": "avg"}]}}} -->',
       "",
       "| 名前 | 数量 | 単価 |",
       "| --- | --- | --- |",
@@ -1229,7 +1241,7 @@ test("test_normal_when_row_url_copied", async ({ page }) => {
   await openPage(page, builtRoot);
   await mountDocument(page, {
     markdown: [
-      "<!-- table: data +rowlink -->",
+      '<!-- table: {"kind": "data", "features": {"rowlink": {}}} -->',
       "",
       "| 名前 | 値 |",
       "| --- | --- |",
@@ -1280,7 +1292,7 @@ test("test_normal_when_pinned_by_default", async ({ page }) => {
   await openPage(page, builtRoot, { hostCss: NARROW_HOST_CSS });
   // 実行
   await mountDocument(page, {
-    markdown: `${wideTable()}\n<!-- table: -pin -->\n\n${wideTable()}\n<!-- /table -->\n`,
+    markdown: `${wideTable()}\n<!-- table: {"features": {"pin": {"enabled": false}}} -->\n\n${wideTable()}\n<!-- /table -->\n`,
   });
   // 横にスクロールするのは表を包む要素
   const tables = page.locator("#doc .mdmark-table-scroll");
@@ -1352,7 +1364,7 @@ test("test_normal_when_pin_and_wide", async ({ page }) => {
   await openPage(page, builtRoot, { hostCss: NARROW_HOST_CSS });
   // 実行
   await mountDocument(page, {
-    markdown: `${pinAndWideTable("data pin=物理名 wide=説明")}\n${pinAndWideTable("data pin=No,物理名")}`,
+    markdown: `${pinAndWideTable('{"kind": "data", "columns": {"物理名": {"pinned": true}, "説明": {"width": {"mode": "nowrap"}}}}')}\n${pinAndWideTable('{"kind": "data", "columns": {"No": {"pinned": true}, "物理名": {"pinned": true}}}')}`,
   });
   // 横にスクロールするのは表を包む要素
   const scrollers = page.locator("#doc .mdmark-table-scroll");
@@ -1437,7 +1449,9 @@ test("test_normal_when_check_column", async ({ page }) => {
   await openPage(page, builtRoot);
   // 実行
   await mountDocument(page, {
-    markdown: checkTable("data check=必須 filter=必須 +copy"),
+    markdown: checkTable(
+      '{"kind": "data", "features": {"copy": {}}, "columns": {"必須": {"format": {"type": "check"}, "filter": {}}}}',
+    ),
   });
   const required = page.locator("#doc tbody tr td:nth-child(2)");
   // 検証: 必須の列の ✓ と空欄
@@ -1477,23 +1491,21 @@ test("test_normal_when_check_column", async ({ page }) => {
   ]);
 });
 
-// pin= と check= の知らない列名は警告し、読み込めた指定だけを適用する（異常シナリオ（知らない列名））
+// columns の知らない列名は警告し、読み込めた指定だけを適用する（異常シナリオ（知らない列名））
 test("test_error_when_unknown_column", async ({ page }) => {
   // 準備
   await openPage(page, builtRoot, { hostCss: NARROW_HOST_CSS });
   // 実行
   await mountDocument(page, {
     markdown: `${pinAndWideTable(
-      "data pin=無い列 wide=説明 check=無い列 filter=説明",
-    )}\n${pinAndWideTable("data pin=物理名,無い列")}`,
+      '{"kind": "data", "columns": {"無い列": {"pinned": true, "format": {"type": "check"}}, "説明": {"width": {"mode": "nowrap"}, "filter": {}}}}',
+    )}\n${pinAndWideTable('{"kind": "data", "columns": {"物理名": {"pinned": true}, "無い列": {"pinned": true}}}')}`,
   });
   // 検証
   const tables = page.locator("#doc .mdmark-table");
   const warning = tables.nth(0).locator(".mdmark-syntax-warning");
-  await expect(warning).toHaveCount(2);
-  for (const item of await warning.all()) {
-    await expect(item).toContainText("無い列");
-  }
+  await expect(warning).toHaveCount(1);
+  await expect(warning).toContainText("無い列");
   await expect(
     tables.nth(0).locator("tbody tr").first().locator("td").nth(6),
   ).toHaveCSS("white-space", "nowrap");
@@ -1547,7 +1559,7 @@ test("test_normal_when_cells_merged", async ({ page }) => {
   // 実行
   await mountDocument(page, {
     markdown: [
-      "<!-- table: data +copy header-rows=2 row-header=1 filter=分類,件数,時間,メモ -->",
+      '<!-- table: {"kind": "data", "features": {"copy": {}}, "columns": {"分類": {"filter": {}}, "件数": {"filter": {}}, "時間": {"filter": {}}, "メモ": {"filter": {}}}, "header": {"rows": 2, "columns": 1}} -->',
       "",
       "| 区分 | 値 | << | 備考 |",
       "| --- | --- | --- | --- |",
@@ -1626,7 +1638,7 @@ test("test_normal_when_merged_after_sort", async ({ page }) => {
   await openPage(page, builtRoot);
   await mountDocument(page, {
     markdown: [
-      "<!-- table: data filter=分類 -->",
+      '<!-- table: {"kind": "data", "columns": {"分類": {"filter": {}}}} -->',
       "",
       "| 分類 | 数値 |",
       "| --- | ---: |",
@@ -1675,7 +1687,7 @@ test("test_error_when_merge_invalid", async ({ page }) => {
   // 実行
   await mountDocument(page, {
     markdown: [
-      "<!-- table: data header-rows=5 filter=列B -->",
+      '<!-- table: {"kind": "data", "columns": {"列B": {"filter": {}}}, "header": {"rows": 5}} -->',
       "",
       "| << | 列B |",
       "| --- | --- |",
@@ -1689,7 +1701,7 @@ test("test_error_when_merge_invalid", async ({ page }) => {
   // 検証
   const warning = page.locator("#doc .mdmark-syntax-warning");
   await expect(warning).toHaveCount(1);
-  for (const text of ["header-rows=", "^^", "<<"]) {
+  for (const text of ["header.rows", "^^", "<<"]) {
     await expect(warning).toContainText(text);
   }
   const table = page.locator("#doc table");
@@ -1720,7 +1732,7 @@ test("test_normal_when_row_header_pinned", async ({ page }) => {
   // 実行
   await mountDocument(page, {
     markdown: [
-      "<!-- table: data row-header=2 -->",
+      '<!-- table: {"kind": "data", "header": {"columns": 2}} -->',
       "",
       `| ${headers.join(" | ")} |`,
       `| ${headers.map(() => "---").join(" | ")} |`,
@@ -1781,7 +1793,7 @@ test("test_normal_when_csv", async ({ page }) => {
   // 実行
   await mountDocument(page, {
     markdown: [
-      "<!-- table: data -->",
+      '<!-- table: {"kind": "data"} -->',
       "",
       "```csv",
       CSV,
@@ -1851,7 +1863,7 @@ test("test_normal_when_csv_raw_toggled", async ({ page }) => {
   await openPage(page, builtRoot);
   await mountDocument(page, {
     markdown: [
-      "<!-- table: data filter=拠点 -->",
+      '<!-- table: {"kind": "data", "columns": {"拠点": {"filter": {}}}} -->',
       "",
       "```csv",
       CSV,
@@ -1894,7 +1906,7 @@ test("test_normal_when_csv_raw_toggled", async ({ page }) => {
 
 /** 列の並べ替えを付けた表（`+reorder +columns`）・`+reorder` だけの表・`+reorder` も `+columns` も付けない表の文書 */
 const REORDER_MARKDOWN = [
-  "<!-- table: data +reorder +columns filter=名前:text -->",
+  '<!-- table: {"kind": "data", "features": {"reorder": {}, "columns": {}}, "columns": {"名前": {"filter": {"type": "text"}}}} -->',
   "",
   "| 名前 | 型 | 既定 | 説明 |",
   "| --- | --- | --- | --- |",
@@ -1904,7 +1916,7 @@ const REORDER_MARKDOWN = [
   "",
   "<!-- /table -->",
   "",
-  "<!-- table: data +reorder -->",
+  '<!-- table: {"kind": "data", "features": {"reorder": {}}} -->',
   "",
   "| 名前 | 型 |",
   "| --- | --- |",
@@ -1912,7 +1924,7 @@ const REORDER_MARKDOWN = [
   "",
   "<!-- /table -->",
   "",
-  "<!-- table: data -->",
+  '<!-- table: {"kind": "data"} -->',
   "",
   "| 名前 | 型 |",
   "| --- | --- |",
@@ -2027,7 +2039,7 @@ test("test_normal_when_columns_reordered", async ({ page }) => {
 
 /** 2 行の見出しで名前をピン止めし、設定の範囲を持つ表の文書 */
 const REORDER_GROUPS_MARKDOWN = [
-  "<!-- table: data +reorder +columns header-rows=2 pin=名前 -->",
+  '<!-- table: {"kind": "data", "features": {"reorder": {}, "columns": {}}, "columns": {"名前": {"pinned": true}}, "header": {"rows": 2}} -->',
   "",
   "| 名前 | 設定 | << | << | 備考 |",
   "| --- | --- | --- | --- | --- |",
@@ -2182,7 +2194,9 @@ test("test_normal_when_tree_folded", async ({ page }) => {
   // 準備
   await stubClipboard(page, "allow");
   await openPage(page, builtRoot);
-  await mountDocument(page, { markdown: treeMarkdown(" +copy") });
+  await mountDocument(page, {
+    markdown: treeMarkdown({ top: ', "features": {"copy": {}}' }),
+  });
   const toggle = (path: string) =>
     treeRow(page, path).locator("button.mdmark-tree-toggle");
   const descendants = [
@@ -2241,7 +2255,9 @@ test("test_normal_when_tree_filtered", async ({ page }) => {
   // 準備
   await openPage(page, builtRoot);
   await mountDocument(page, {
-    markdown: treeMarkdown(" +count filter=キー:text"),
+    markdown: treeMarkdown({
+      top: ', "features": {"count": {}}, "columns": {"キー": {"filter": {"type": "text"}}}',
+    }),
   });
   const count = page.locator("#doc .mdmark-table-count");
   await treeRow(page, "features").locator("button.mdmark-tree-toggle").click();
@@ -2358,29 +2374,33 @@ test("test_normal_when_tree_linked_to_example", async ({ page }) => {
   await expect(toggle).toHaveAttribute("aria-expanded", "false");
 });
 
-// 表に無い列名の tree=・tree= の無い type=・無い見出しの example= の表の上に記載の警告を配置し、読み込めた指定だけで描く（異常シナリオ（読み込めない階層の指定））
+// 表に無い列名の tree.key.column・tree.key の無い tree・無い見出しの tree.example.heading の表の上に記載の警告を配置し、読み込めた指定だけで描く（異常シナリオ（読み込めない階層の指定））
 test("test_error_when_tree_options_invalid", async ({ page }) => {
   // 準備
   await openPage(page, builtRoot);
   const table = (mark: string) =>
     treeMarkdown().replace(
-      "<!-- table: data tree=キー type=型 required=必須 default=既定 -->",
+      '<!-- table: {"kind": "data", "tree": {"key": {"column": "キー"}, "type": {"column": "型"}, "required": {"column": "必須"}, "default": {"column": "既定"}}} -->',
       `<!-- table: ${mark} -->`,
     );
   // 実行
   await mountDocument(page, {
     markdown: [
-      table("data tree=キー名"),
-      table("data type=型"),
-      table("data tree=キー example=見本"),
+      table('{"kind": "data", "tree": {"key": {"column": "キー名"}}}'),
+      table('{"kind": "data", "tree": {"type": {"column": "型"}}}'),
+      table(
+        '{"kind": "data", "tree": {"key": {"column": "キー"}, "example": {"heading": "見本"}}}',
+      ),
     ].join("\n"),
   });
   // 検証
   const warnings = page.locator("#doc .mdmark-syntax-warning");
   await expect(warnings).toHaveCount(3);
-  await expect(warnings.nth(0)).toContainText("tree=キー名");
-  await expect(warnings.nth(1)).toContainText("type=型");
-  await expect(warnings.nth(2)).toContainText("example=見本");
+  await expect(warnings.nth(0)).toContainText("tree.key.column");
+  await expect(warnings.nth(0)).toContainText("キー名");
+  await expect(warnings.nth(1)).toContainText("tree に必須の key がありません");
+  await expect(warnings.nth(2)).toContainText("tree.example.heading");
+  await expect(warnings.nth(2)).toContainText("見本");
   const tables = page.locator("#doc .mdmark-table");
   await expect(tables.nth(0).locator("tr.mdmark-tree-row")).toHaveCount(0);
   await expect(tables.nth(1).locator(".mdmark-type-badge")).toHaveCount(0);
@@ -2394,13 +2414,13 @@ test("test_error_when_tree_options_invalid", async ({ page }) => {
   ).toHaveCount(0);
 });
 
-/** 列名と 3 行の表を、`<!-- table: data -->` で囲んだ Markdown にする */
+/** 列名と 3 行の表を、`<!-- table: {"kind": "data"} -->` で囲んだ Markdown にする */
 function dataTable(columns: string[]): string {
   const rows = [1, 2, 3].map(
     (row) => `| ${columns.map((_, i) => `値 ${row}-${i + 1}`).join(" | ")} |`,
   );
   return [
-    "<!-- table: data -->",
+    '<!-- table: {"kind": "data"} -->',
     "",
     `| ${columns.join(" | ")} |`,
     `| ${columns.map(() => "---").join(" | ")} |`,
@@ -2558,7 +2578,7 @@ test("test_normal_when_pinned_through", async ({ page }) => {
 
 /** 名前をピン止めし、列の並べ替えを持つ 8 列の表の文書 */
 const REORDER_PINNED_MARKDOWN = [
-  "<!-- table: data +reorder pin=名前 -->",
+  '<!-- table: {"kind": "data", "features": {"reorder": {}}, "columns": {"名前": {"pinned": true}}} -->',
   "",
   "| 名前 | 型 | 既定 | 必須 | 単位 | 範囲 | 例 | 説明 |",
   "| --- | --- | --- | --- | --- | --- | --- | --- |",
@@ -2631,7 +2651,7 @@ test("test_normal_when_reordered_with_pinned_columns", async ({ page }) => {
 
 /** 2 行の見出しで設定の範囲を持ち、各列に長い値を持つ表の文書 */
 const MERGED_HEADER_PIN_MARKDOWN = [
-  "<!-- table: data header-rows=2 -->",
+  '<!-- table: {"kind": "data", "header": {"rows": 2}} -->',
   "",
   "| 名前 | 設定 | << | << | 備考 |",
   "| --- | --- | --- | --- | --- |",
@@ -2794,9 +2814,13 @@ test("test_normal_when_column_resized", async ({ page }) => {
   await openPage(page, builtRoot);
   await mountDocument(page, {
     markdown: [
-      resizeTable("data wide=説明"),
-      resizeTable("data -resize"),
-      resizeTable("plain"),
+      resizeTable(
+        '{"kind": "data", "columns": {"説明": {"width": {"mode": "nowrap"}}}}',
+      ),
+      resizeTable(
+        '{"kind": "data", "features": {"resize": {"enabled": false}}}',
+      ),
+      resizeTable('{"kind": "plain"}'),
     ].join("\n"),
   });
   const nameHandle = resizeHandle(page, 0);
@@ -2940,7 +2964,7 @@ test("test_normal_when_pinned_column_resized", async ({ page }) => {
 test("test_normal_when_column_resized_by_keyboard", async ({ page }) => {
   // 準備
   await openPage(page, builtRoot);
-  await mountDocument(page, { markdown: resizeTable("data") });
+  await mountDocument(page, { markdown: resizeTable('{"kind": "data"}') });
   const handle = resizeHandle(page, 0);
   const scroller = page.locator("#doc .mdmark-table-scroll");
   const opened = await headWidthsOf(page);
@@ -3003,7 +3027,7 @@ test("test_normal_when_column_resized_in_narrow_width", async ({ page }) => {
   await openPage(page, builtRoot, { hostCss: "body { margin: 0 }" });
   await mountDocument(page, {
     markdown: [
-      "<!-- table: data -->",
+      '<!-- table: {"kind": "data"} -->',
       "",
       "| 名前 | 状態 | 説明 |",
       "| --- | --- | --- |",
@@ -3065,7 +3089,7 @@ test.describe("タッチの端末", () => {
     // 準備
     await page.setViewportSize({ width: 390, height: 844 });
     await openPage(page, builtRoot);
-    await mountDocument(page, { markdown: resizeTable("data") });
+    await mountDocument(page, { markdown: resizeTable('{"kind": "data"}') });
     const handle = resizeHandle(page, 0);
     const scroller = page.locator("#doc .mdmark-table-scroll");
     // 検証: ポインターが粗い画面なので、描いた直後からつまみの線が出ている

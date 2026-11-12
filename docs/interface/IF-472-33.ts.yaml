@@ -334,7 +334,7 @@ flows:
     summary: 取り込む文書とまとめていない名前のアイコンの形状を埋め、開いたときに外へ要求せずに描く
     setup:
       - name: 取り込みとアイコンを持つフォルダ
-        description: '`guide.md` が `<!-- include: 共通/手順.md#実行 -->`・`<!-- include: ../src/app.ts#L3-L5 -->`・`<!-- include: missing.md -->`・見出しの `` `icon:sailboat` `` と `` `icon:no-such-icon` `` を持つ。`共通/手順.md` は `## 実行` の下に `<!-- include: ../../src/app.ts#L1 -->` を持ち、`src/app.ts` は 12 行'
+        description: '`guide.md` が `<!-- include: {"path": "共通/手順.md", "heading": "実行"} -->`・`<!-- include: {"path": "../src/app.ts", "lines": {"from": 3, "to": 5}} -->`・`<!-- include: {"path": "missing.md"} -->`・見出しの `` `icon:sailboat` `` と `` `icon:no-such-icon` `` を持つ。`共通/手順.md` は `## 実行` の下に `<!-- include: {"path": "../../src/app.ts", "heading": "L1"} -->` を持ち、`src/app.ts` は 12 行'
         notes: '`sailboat` は配布物にまとめていない Lucide の名前'
       - name: Mock
         description: 差し替える依存は無い。書き出した HTML は Playwright の Chromium で file:// で開き、要求を記録する
@@ -537,7 +537,7 @@ constraints:
     constraint: 設定の `tooltips.placement` と `tooltips.diagramPlacement` を、`features` と同じく埋める設定にコピーして `mount` の `opts.config` に指定する。無いキーは写さず、`mount` の既定（`placement` は `top`、`diagramPlacement` は `bottom`）に任せる。`top`・`bottom` 以外の値は設定ファイルの誤り（終了コード 1）にする
     decided_by: CFG-472-3#settings[tooltips.placement]
   - item: 埋める色分け
-    constraint: '機能 `syntax` がオンのとき、文書のコードブロックの情報文字列から色分けの対象の言語を取得し（`mount` と同じ対応表で、`dockerfile`・`diff` とその別名を含む。言語は情報文字列の最初の `:` の前。文書の `<!-- features: -syntax -->` の文書は取得しない）、設定の `syntax.url`（無ければ既定の jsDelivr の URL）の本体と使用する言語のモジュールだけを制約「まとめるスクリプト」の 1 つのスクリプトにまとめて埋める。開いたときは `mount` が埋めたモジュールから色分けし、埋めなかった言語は読み込みに行かず色分けせずに残す。相対パスの `syntax.url` は、その値を記載した設定ファイルのフォルダを基準に読み込む。届かないモジュールは埋めず警告に出す（書き出しは止めない）'
+    constraint: '機能 `syntax` がオンのとき、文書のコードブロックの情報文字列から色分けの対象の言語を取得し（`mount` と同じ対応表で、`dockerfile`・`diff` とその別名を含む。言語は情報文字列の最初の `:` の前。文書の `<!-- features: {"syntax": false} -->` の文書は取得しない）、設定の `syntax.url`（無ければ既定の jsDelivr の URL）の本体と使用する言語のモジュールだけを制約「まとめるスクリプト」の 1 つのスクリプトにまとめて埋める。開いたときは `mount` が埋めたモジュールから色分けし、埋めなかった言語は読み込みに行かず色分けせずに残す。相対パスの `syntax.url` は、その値を記載した設定ファイルのフォルダを基準に読み込む。届かないモジュールは埋めず警告に出す（書き出しは止めない）'
     notes: 'PoC #98 で、core と 3 言語を埋めた HTML を外への要求 0 件で色分けできることを確認した（約 35KB）。埋めるモジュールは頭の BSD-3-Clause の著作権表示を残す'
   - item: 埋める mermaid
     constraint: 機能 `mermaid` がオンで、文書に mermaid のコードブロック（文書をHTML文字列にする.ts の制約『mermaid のコードブロック』）があるときだけ、設定の `mermaid.url`（無ければ既定の jsDelivr の URL）のモジュールを、それが読み込む chunk ごと制約「まとめるスクリプト」の 1 つのスクリプトにまとめて埋める。開いたときは `mount` が埋めたモジュールで図にし、URL を読み込まない。相対パスの `mermaid.url` は、その値を記載した設定ファイルのフォルダを基準に読み込む。届かないときは埋めず警告に出す（書き出しは止めない）。設定の `mermaid.theme`・`mermaid.themeVariables` は `features` と同じく埋める設定に写す
@@ -566,7 +566,7 @@ constraints:
     constraint: 設定と文書のマーカーで `html-scripts` がオンの文書の、`<!-- html -->` の範囲の `ts`・`js` を esbuild で CommonJS に変え（`ts` は型を削除する）、範囲のコードの文字から既定のエクスポートの関数を参照する表として制約「まとめるスクリプト」の 1 つのスクリプトに加える。開くと起動の処理がその表を `mount` の範囲のスクリプトの処理に指定し、変換のライブラリ（`html-scripts.url`）を読み込まずに動かす。esbuild が変換できない範囲はまとめずに警告に出し、開いたときその範囲の前に記載の警告を出す。`blob:` URL と動的 `import()` は使用しない
     notes: 変換は CLI の今の依存の esbuild。PoC 検証（#306）でまとめた 1 つのスクリプトから呼ぶ経路を確認した
   - item: 埋める取り込み
-    constraint: '文書の include のマーカーの取り込み先を、インターフェース定義『文書をHTML文字列にする』の制約「取り込み」と同じパスの解き方でファイルから読み込み（取り込んだ文書の中のマーカーもたどり、同じファイルは 1 回だけ読み込む）、キーを書き出す文書のフォルダからのパスにした取り込む文書の表を `opts.includes` として埋める。読み込むのは設定ファイルのフォルダ（設定ファイルが無ければ文書のフォルダ）の中のファイルだけで、その外を指すパスと読み込めないファイルは表に入れず、警告に出す（書き出しは止めない。開いたときはそのマーカーの場所に記載の警告が出る）。文書の `<!-- features: -include -->` の文書は読み込まない'
+    constraint: '文書の include のマーカーの取り込み先を、インターフェース定義『文書をHTML文字列にする』の制約「取り込み」と同じパスの解き方でファイルから読み込み（取り込んだ文書の中のマーカーもたどり、同じファイルは 1 回だけ読み込む）、キーを書き出す文書のフォルダからのパスにした取り込む文書の表を `opts.includes` として埋める。読み込むのは設定ファイルのフォルダ（設定ファイルが無ければ文書のフォルダ）の中のファイルだけで、その外を指すパスと読み込めないファイルは表に入れず、警告に出す（書き出しは止めない。開いたときはそのマーカーの場所に記載の警告が出る）。文書の `<!-- features: {"include": false} -->` の文書は読み込まない'
   - item: 埋めるアイコン
     constraint: 文書（取り込む文書を含む）の `icon:` のうち配布物にまとめていない名前の IconNode を、依存の lucide から取り出して `opts.icons` として埋め、開いたとき jsDelivr を読み込まない。lucide に無い名前は埋めず警告に出し（書き出しは止めない）、開いたときはその場所を行内のコードのままにして記載の警告を配置する。`opts.icons` を埋める `script` の直前に、注釈 `<!-- lucide {バージョン} - ISC License (c) Lucide Contributors / MIT License (c) 2013-present Cole Bemis -->` を 1 行置く（埋める名前が無いときは配置しない）
     notes: ライセンスの表示を残すことは外部ライブラリ『lucide』の `license`

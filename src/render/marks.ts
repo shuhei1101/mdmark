@@ -1,12 +1,28 @@
 import type { StateCore, Token } from "markdown-it";
 import { parseDefinitionJson } from "../diagram/definition.ts";
-import { extensionFor, type MdmarkMarkArgs } from "../extensions.ts";
+import { extensionFor, type WarningItem } from "../extensions.ts";
 import { resolveFeatures } from "../features.ts";
 import { renderEmbed } from "../parts/embed.ts";
 import { markOwn } from "../parts/own.ts";
+import { convertLegacyArgs } from "./legacy-marks.ts";
+import {
+  hasUnclosedString,
+  type MarkOptions,
+  readMarkArgs,
+} from "./mark-options.ts";
+import {
+  type MarkNote,
+  type MarkProblem,
+  markOptionNotes,
+  validateMarkOptions,
+} from "./mark-schema.ts";
 import { readPageSettings } from "./page.ts";
 import type { RenderEnv } from "./parser.ts";
-import { skippedArgBlocks, warningBlock } from "./syntax/warnings.ts";
+import {
+  recordMarkNotes,
+  type SyntaxWarning,
+  warningBlock,
+} from "./syntax/warnings.ts";
 
 /** 生の HTML の中のマーカー（`<!-- 名前: 引数 -->`・`<!-- 名前 -->`・`<!-- /名前 -->`）を取得する正規表現 */
 export const MARK_PATTERN =
@@ -59,19 +75,33 @@ export const MARK_TOKEN = "mdmark_mark";
 export type Mark = {
   /** マーカーの名前 */
   name: string;
-  /** 判別した引数 */
-  args: MdmarkMarkArgs;
+  /** 引数の JSON のオブジェクト。今の書き方の引数は同じオブジェクトにしたもの。引数が無い・読めないときは `{}` */
+  options: MarkOptions;
+  /** 引数の記載方法 */
+  source: "none" | "json" | "legacy" | "invalid";
+  /** 引数を読んで検証したときの、記載の警告にする誤り */
+  problems: MarkProblem[];
+  /** 無視した知らないキーのパス */
+  unknownKeys: string[];
   /** マーカーの文字のまま（記載の警告に出す） */
   raw: string;
   /** 閉じのマーカー（`<!-- /名前 -->`）か */
   closing: boolean;
-  /** マーカーの引数の文字（コロンの後ろ）。空白で区切る前のまま */
+  /** マーカーの引数の文字（コロンの後ろ）。map の範囲が読む */
   rest?: string;
 };
 
-/** マーカーの引数の文字を空白で区切り、`キー=値` を `keys`、それ以外を記載した順に `args` に入れる */
-export function parseMarkArgs(text: string): MdmarkMarkArgs {
-  const value: MdmarkMarkArgs = { args: [], keys: {} };
+/** 今の書き方の引数を判別した値 */
+export type LegacyMarkArgs = {
+  /** `キー=値` でない引数を記載した順に */
+  args: string[];
+  /** `キー=値` の引数。同じキーは後に記載した値 */
+  keys: Record<string, string>;
+};
+
+/** 今の書き方の引数の文字を空白で区切り、`キー=値` を `keys`、それ以外を記載した順に `args` に入れる */
+export function parseMarkArgs(text: string): LegacyMarkArgs {
+  const value: LegacyMarkArgs = { args: [], keys: {} };
   for (const part of text.split(/\s+/).filter(Boolean)) {
     const pair = /^([^\s=]+)=(.*)$/.exec(part);
     if (pair?.[1] !== undefined) {
@@ -83,24 +113,191 @@ export function parseMarkArgs(text: string): MdmarkMarkArgs {
   return value;
 }
 
-/** 正規表現のマッチの各部分からマーカーを作る */
+/** 検証しないマーカー（map の範囲が今の読み方で読む） */
+const UNVALIDATED_MARKS = new Set(["map", "map-data"]);
+
+/** 拡張か設定の `libraries` のマーカーか */
+function isEmbedMark(name: string, env: RenderEnv | undefined): boolean {
+  return (
+    extensionFor(name) !== undefined ||
+    (env !== undefined && Object.hasOwn(env.libraries, name))
+  );
+}
+
+/** 記法・機能・ページのマーカーか（JSON Schema で検証し、今の書き方を JSON のオブジェクトにする） */
+function isOwnMark(name: string): boolean {
+  return (
+    name === FEATURES_MARK ||
+    name === PAGE_MARK ||
+    Object.hasOwn(SYNTAX_MARKS, name)
+  );
+}
+
+/** 正規表現のマッチの各部分からマーカーを作り、引数を読んで検証する */
 function toMark(
   raw: string,
   closing: string | undefined,
   name: string,
   rest: string | undefined,
 ): Mark {
+  const base = { name, raw, closing: closing === "/", rest: rest ?? "" };
+  // map の範囲は引数を今の読み方で読み、map の点検の種類で通知する
+  if (base.closing || UNVALIDATED_MARKS.has(name)) {
+    return {
+      ...base,
+      options: {},
+      source: "none",
+      problems: [],
+      unknownKeys: [],
+    };
+  }
+  const args = readMarkArgs(rest ?? "");
+  switch (args.kind) {
+    case "none":
+      return {
+        ...base,
+        options: {},
+        source: "none",
+        problems: [],
+        unknownKeys: [],
+      };
+    case "invalid":
+      return {
+        ...base,
+        options: {},
+        source: "invalid",
+        problems: [{ path: "", message: args.message }],
+        unknownKeys: [],
+      };
+    case "legacy": {
+      if (!isOwnMark(name) || UNVALIDATED_MARKS.has(name)) {
+        return {
+          ...base,
+          options: {},
+          source: "legacy",
+          problems: [],
+          unknownKeys: [],
+        };
+      }
+      const converted = convertLegacyArgs({ name, text: args.text });
+      const checked = validateMarkOptions({ name, options: converted.options });
+      return {
+        ...base,
+        options: checked.options,
+        source: "legacy",
+        problems: converted.dropped.map((item) => ({
+          path: item.text,
+          message: item.reason,
+        })),
+        unknownKeys: [],
+      };
+    }
+    case "json": {
+      if (UNVALIDATED_MARKS.has(name) || !isOwnMark(name)) {
+        return {
+          ...base,
+          options: args.options,
+          source: "json",
+          problems: [],
+          unknownKeys: [],
+        };
+      }
+      const checked = validateMarkOptions({ name, options: args.options });
+      return {
+        ...base,
+        options: checked.options,
+        source: "json",
+        problems: checked.problems,
+        unknownKeys: checked.unknownKeys,
+      };
+    }
+    default:
+      return args satisfies never;
+  }
+}
+
+/** マーカーの誤りを記載の警告にする。誤りが無ければ `undefined` */
+function markProblemWarning(mark: Mark): SyntaxWarning | undefined {
+  const [first, ...others] = mark.problems;
+  if (first === undefined) {
+    return undefined;
+  }
+  if (mark.source === "legacy") {
+    return {
+      mark: mark.raw,
+      message: "の読み込めない指定を当てずに描いています。",
+      items: mark.problems.map((problem) => ({
+        label: problem.path,
+        message: problem.message,
+      })),
+    };
+  }
+  if (others.length === 0) {
+    return { mark: mark.raw, message: first.message };
+  }
+  const items: WarningItem[] = mark.problems.map((problem) => ({
+    label: problem.path,
+    message: problem.message.replace(
+      /^(?:の `[^`]*` (?:の |には |に)?|に)/,
+      "",
+    ),
+  }));
   return {
-    name,
-    args: parseMarkArgs(rest ?? ""),
-    raw,
-    closing: closing === "/",
-    rest: rest ?? "",
+    mark: mark.raw,
+    message: "の読み込めない指定を当てずに描いています。",
+    items,
   };
 }
 
-/** HTML の中のマーカーを、`features` は引数を取得して取り除き、対応表と拡張の名前はマーカーの場所の要素に置き換え、それ以外は取り除く */
-function replaceMarks(html: string, env: RenderEnv): string {
+/** 機能のマーカーの、真偽値の値を持つ機能の名前と値 */
+function featureOptionsOf(text: string, mark: Mark): Record<string, boolean> {
+  const args = readMarkArgs(text);
+  const options = args.kind === "json" ? args.options : mark.options;
+  return Object.fromEntries(
+    Object.entries(options).filter(
+      (entry): entry is [string, boolean] => typeof entry[1] === "boolean",
+    ),
+  );
+}
+
+/** マーカーの注記（知らないキー・今の書き方・適用しない列の設定）を作る */
+function notesOf(mark: Mark, env: RenderEnv): MarkNote[] {
+  if (mark.closing) {
+    return [];
+  }
+  const isExtension = isEmbedMark(mark.name, env) && !isOwnMark(mark.name);
+  if (
+    !isExtension &&
+    (!isOwnMark(mark.name) || UNVALIDATED_MARKS.has(mark.name))
+  ) {
+    return [];
+  }
+  return markOptionNotes({
+    name: mark.name,
+    source: mark.source,
+    options: mark.options,
+    unknownKeys: mark.unknownKeys,
+    isExtension,
+  });
+}
+
+/** 今の書き方の拡張と対応表のマーカーの記載の警告 */
+function legacyEmbedWarning(mark: Mark): SyntaxWarning {
+  const example = mark.rest
+    ? ` \`<!-- ${mark.name}: {"…": "${mark.rest.replaceAll('"', "'").split(/\s+/)[0] ?? ""}"} -->\``
+    : "";
+  return {
+    mark: mark.raw,
+    message: `の引数は JSON のオブジェクトで記載してください（例:${example}）。拡張 \`${mark.name}\` の部品は描いていません。\`mdmark upgrade\` の移行の報告で、記載し直す箇所を確かめられます。`,
+  };
+}
+
+/** HTML の中のマーカーを、`features` は設定を取得して取り除き、対応表と拡張の名前はマーカーの場所の要素に置き換え、それ以外は取り除く。記載の警告にする誤りは `warnings` に追加する */
+function replaceMarks(
+  html: string,
+  env: RenderEnv,
+  context: { line: number | undefined; warnings: SyntaxWarning[] },
+): string {
   return html.replace(
     MARK_PATTERN,
     (
@@ -113,14 +310,36 @@ function replaceMarks(html: string, env: RenderEnv): string {
       if (mark.closing) {
         return "";
       }
+      const line = context.line === undefined ? undefined : context.line + 1;
+      if (line !== undefined) {
+        recordMarkNotes(env, { notes: notesOf(mark, env), line });
+      }
       if (mark.name === FEATURES_MARK) {
-        env.featureArgs.push(...mark.args.args);
+        // 知らない機能の名前は `resolveFeatures` が無視し、点検が注記で通知する
+        env.featureOptions.push(featureOptionsOf(rest ?? "", mark));
+        const warning = markProblemWarning(mark);
+        if (warning) {
+          context.warnings.push(warning);
+        }
         return "";
       }
       // 設定の対応表より登録した拡張を優先する
-      if (extensionFor(mark.name) || Object.hasOwn(env.libraries, mark.name)) {
-        const args = (rest ?? "").split(/\s+/).filter(Boolean);
-        return markOwn(renderEmbed({ name: mark.name, args }), env.nonce);
+      if (isEmbedMark(mark.name, env)) {
+        if (mark.source === "legacy") {
+          context.warnings.push(legacyEmbedWarning(mark));
+          return "";
+        }
+        if (mark.source === "invalid") {
+          const warning = markProblemWarning(mark);
+          if (warning) {
+            context.warnings.push(warning);
+          }
+          return "";
+        }
+        return markOwn(
+          renderEmbed({ name: mark.name, options: mark.options }),
+          env.nonce,
+        );
       }
       return "";
     },
@@ -225,12 +444,17 @@ function extensionSlot(options: {
       message: `の部品の定義を JSON として読み込めません（${detail}）。拡張 \`${extensionName}\` の部品は描いていません。`,
     });
   }
+  if (mark.source === "legacy" || mark.source === "invalid") {
+    return warningBlock(state, {
+      ...(markProblemWarning(mark) ?? legacyEmbedWarning(mark)),
+      ...(line === undefined ? {} : { line }),
+    });
+  }
   env.extensionDefinitions ??= [];
   const definition = env.extensionDefinitions.push(parsed.value) - 1;
-  const args = (mark.rest ?? "").split(/\s+/).filter(Boolean);
   return ownHtmlBlock(
     state,
-    renderEmbed({ name: mark.name, args, definition }),
+    renderEmbed({ name: mark.name, options: mark.options, definition }),
   );
 }
 
@@ -291,7 +515,7 @@ function isMarksOnly(token: Token): boolean {
   );
 }
 
-/** マーカーだけの `html_block` の page のマーカーを取得する。文書の先頭（それより前がマーカーだけの `html_block`）のマーカーは引数を環境へ追加して取り除き、先頭に無いマーカーは記載の警告に置き換える */
+/** マーカーだけの `html_block` の page のマーカーを取得する。文書の先頭（それより前がマーカーだけの `html_block`）のマーカーは設定を環境へ追加して取り除き（誤りがあればその場所を記載の警告にする）、先頭に無いマーカーは記載の警告に置き換える */
 function takePageMarks(state: StateCore): void {
   const env = state.env as RenderEnv;
   let atTop = true;
@@ -302,44 +526,125 @@ function takePageMarks(state: StateCore): void {
       atTop &&= isMarksOnly(token);
       return token;
     }
+    const line = token.map?.[0];
+    if (line !== undefined) {
+      recordMarkNotes(env, { notes: notesOf(mark, env), line: line + 1 });
+    }
     if (atTop) {
-      env.pageMarks ??= [];
-      env.pageMarks.push({ raw: mark.raw, args: mark.args });
+      env.pageOptions ??= [];
+      env.pageOptions.push({ raw: mark.raw, options: mark.options });
+      const warning = markProblemWarning(mark);
+      if (warning) {
+        return warningBlock(state, {
+          ...warning,
+          ...(line === undefined ? {} : { line }),
+        });
+      }
       token.content = "";
       return token;
     }
     return warningBlock(state, {
       mark: mark.raw,
-      ...(token.map?.[0] === undefined ? {} : { line: token.map[0] }),
+      ...(line === undefined ? {} : { line }),
       message:
         "は文書の先頭（最初の見出し・段落・表・リスト・コードブロックより前）に記載します。この場所のマーカーは使用していません。",
     });
   });
 }
 
-/** マーカーを取得し、`features` は引数を環境へ追加し、`page` は文書の先頭なら環境へ追加し、対応表と拡張の名前はマーカーの場所の要素にし、記法のマーカーはマーカーのトークンにし、それ以外は取り除く */
+/** マーカーを取得し、`features` は設定を環境へ追加し、`page` は文書の先頭なら環境へ追加し、対応表と拡張の名前はマーカーの場所の要素にし、記法のマーカーはマーカーのトークンにし、それ以外は取り除く。引数の誤りは記載の警告にしてマーカーの前に差し込み、注記を記録する */
+/** 値の `-->` でコメントが閉じたマーカー（`<!-- 名前: {"title": "a -->` の後ろに文字が続く `html_block`）を、マーカーだけの `html_block` と、続く文字の段落に分ける */
+function splitEarlyClosedMarks(state: StateCore): void {
+  const out: Token[] = [];
+  for (const token of state.tokens) {
+    const match =
+      token.type === "html_block"
+        ? /^(<!--\s*[a-z][a-z0-9-]*:\s*(\{.*?)-->)(.*\S.*)$/s.exec(
+            token.content.trimEnd(),
+          )
+        : null;
+    const [, mark = "", args = "", rest = ""] = match ?? [];
+    if (!match || !hasUnclosedString(args)) {
+      out.push(token);
+      continue;
+    }
+    token.content = `${mark}\n`;
+    out.push(token);
+    const open = new state.Token("paragraph_open", "p", 1);
+    const inline = new state.Token("inline", "", 0);
+    const text = new state.Token("text", "", 0);
+    const close = new state.Token("paragraph_close", "p", -1);
+    open.map = token.map;
+    inline.map = token.map;
+    inline.content = rest;
+    text.content = rest;
+    inline.children = [text];
+    out.push(open, inline, close);
+  }
+  state.tokens = out;
+}
+
 export function takeMarks(state: StateCore): void {
   const env = state.env as RenderEnv;
+  splitEarlyClosedMarks(state);
   takeDefinitionRanges(state);
   takePageMarks(state);
+  const out: Token[] = [];
   for (const token of state.tokens) {
+    const line = token.map?.[0];
     if (token.type === "html_block") {
       const mark = soleSyntaxMark(token.content, env);
       if (mark) {
+        const warning = markProblemWarning(mark);
+        if (warning) {
+          out.push(
+            warningBlock(state, {
+              ...warning,
+              ...(line === undefined ? {} : { line }),
+            }),
+          );
+        }
+        if (line !== undefined) {
+          recordMarkNotes(env, { notes: notesOf(mark, env), line: line + 1 });
+        }
         token.type = MARK_TOKEN;
         token.meta = mark;
         token.content = "";
+        out.push(token);
         continue;
       }
-      token.content = replaceMarks(token.content, env);
-    }
-    // 行内の HTML は inline トークンの子にある
-    for (const child of token.children ?? []) {
-      if (child.type === "html_inline") {
-        child.content = replaceMarks(child.content, env);
+      const warnings: SyntaxWarning[] = [];
+      token.content = replaceMarks(token.content, env, { line, warnings });
+      for (const warning of warnings) {
+        out.push(
+          warningBlock(state, {
+            ...warning,
+            ...(line === undefined ? {} : { line }),
+          }),
+        );
       }
     }
+    // 行内の HTML は inline トークンの子にある
+    const inlineWarnings: SyntaxWarning[] = [];
+    for (const child of token.children ?? []) {
+      if (child.type === "html_inline") {
+        child.content = replaceMarks(child.content, env, {
+          line,
+          warnings: inlineWarnings,
+        });
+      }
+    }
+    for (const warning of inlineWarnings) {
+      out.push(
+        warningBlock(state, {
+          ...warning,
+          ...(line === undefined ? {} : { line }),
+        }),
+      );
+    }
+    out.push(token);
   }
+  state.tokens = out;
 }
 
 /** `takeMarks` の後に、設定の `features` に文書の `features` のマーカーを重ねて `env.features` に入れる */
@@ -347,48 +652,15 @@ export function resolveDocumentFeatures(state: StateCore): void {
   const env = state.env as RenderEnv;
   env.features = resolveFeatures({
     defaults: env.defaults,
-    args: env.featureArgs,
+    marks: env.featureOptions,
   });
 }
 
-/** `takeMarks` が取得した先頭の page のマーカーを読み込んで `env.page` に入れ、記載できるキーの知らない値があれば文書の先頭に記載の警告を差し込み、知らないキーと指定はスキップした引数にする */
+/** `takeMarks` が取得した先頭の page のマーカーの設定を記載した順に重ねて `env.page` に入れる */
 export function resolvePageSettings(state: StateCore): void {
   const env = state.env as RenderEnv;
-  const marks = env.pageMarks ?? [];
-  const keys: Record<string, string> = {};
-  const args: string[] = [];
-  for (const mark of marks) {
-    args.push(...mark.args.args);
-    for (const [key, value] of Object.entries(mark.args.keys)) {
-      // 同じキーは後に記載した値を使用する
-      delete keys[key];
-      keys[key] = value;
-    }
-  }
-  const { settings, unknown, skipped } = readPageSettings({ args, keys });
-  env.page = settings;
-  const [first] = marks;
-  if (!first) {
-    return;
-  }
-  state.tokens.unshift(
-    ...skippedArgBlocks(state, {
-      mark: first.raw,
-      skipped: skipped.map((arg) => ({
-        arg,
-        usable: "`scheme=`・`theme=`・`toc=`",
-      })),
-    }),
-  );
-  if (unknown.length === 0) {
-    return;
-  }
-  const listed = unknown.map((arg) => `\`${arg}\``).join("・");
-  state.tokens.unshift(
-    warningBlock(state, {
-      mark: first.raw,
-      message: `の ${listed} は使用できません。記載できるのは \`scheme\`（\`light\`・\`dark\`・\`auto\`）・\`theme\`（\`dev-swiss\`・\`theme-paper\`・\`theme-slate\`・\`theme-contrast\`）・\`toc\`（\`hover\`・\`fixed\`）です。残りの指定で描いています。`,
-    }),
+  env.page = readPageSettings(
+    (env.pageOptions ?? []).map((mark) => mark.options),
   );
 }
 

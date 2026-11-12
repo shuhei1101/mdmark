@@ -17,7 +17,8 @@ import { routeMermaid } from "../mermaid.ts";
 let builtRoot = "";
 
 // 外部ライブラリのマーカーを持つ文書と、そのマーカーを対応表に追加する設定
-const MARKDOWN = "前の段落\n\n<!-- test-lib: a b -->\n\n後の段落\n";
+const MARKDOWN =
+  '前の段落\n\n<!-- test-lib: {"label": "売上"} -->\n\n後の段落\n';
 const CONFIG = { libraries: { "test-lib": LIB_URL } };
 // 読み込みが起きないことを確認するために待つ時間（ミリ秒）
 const SETTLE_MS = 500;
@@ -39,7 +40,7 @@ test("test_normal", async ({ page }) => {
   await mountDocument(page, { markdown: MARKDOWN, config: CONFIG });
   // 検証
   const doc = page.locator("#doc");
-  await expect(doc.locator("[data-mdmark-slot]")).toHaveText("drawn:a,b");
+  await expect(doc.locator("[data-mdmark-slot]")).toHaveText("売上");
   expect(requestCount()).toBe(1);
   await expect(doc.locator("p")).toHaveText(["前の段落", "後の段落"]);
 });
@@ -59,6 +60,27 @@ test("test_normal_when_no_mark", async ({ page }) => {
   expect(syntaxRequests()).toEqual([]);
   expect(mermaidRequests()).toEqual([]);
   await expect(page.locator("#doc p")).toHaveText("段落");
+});
+
+// 引数が JSON のオブジェクトでない外部ライブラリのマーカーの場所に、移行を案内する記載の警告を出し、読み込まない（異常シナリオ（今の書き方の外部ライブラリのマーカー））
+test("test_error_when_legacy_args", async ({ page }) => {
+  // 準備
+  const requestCount = await routeLibrary(page, 200);
+  await openPage(page, builtRoot);
+  // 実行
+  await mountDocument(page, {
+    markdown: "前の段落\n\n<!-- test-lib: 売上 -->\n\n後の段落\n",
+    config: CONFIG,
+  });
+  // 検証
+  const doc = page.locator("#doc");
+  const warning = doc.locator(".mdmark-syntax-warning");
+  await expect(warning).toContainText("JSON のオブジェクトで記載してください");
+  await expect(warning).toContainText("mdmark upgrade");
+  await expect(warning).toContainText("移行の報告");
+  await page.waitForTimeout(SETTLE_MS);
+  expect(requestCount()).toBe(0);
+  await expect(doc.locator(":scope > p")).toHaveText(["前の段落", "後の段落"]);
 });
 
 // 外部ライブラリを読み込めないマーカーの場所だけを通知ブロックにし、ほかの本文は描く（異常シナリオ（外部ライブラリを読み込めない））

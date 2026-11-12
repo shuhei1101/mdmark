@@ -174,7 +174,7 @@ test("test_normal_when_glossary_table", async () => {
   };
   const documents = {
     "用語集.md": [
-      "<!-- glossary: term=用語 meaning=意味 -->",
+      '<!-- glossary: {"term": {"column": "用語"}, "meaning": {"column": "意味"}} -->',
       "",
       "| 用語 | 意味 |",
       "| --- | --- |",
@@ -214,8 +214,8 @@ test("test_normal_when_feature_off", async () => {
   };
   const paragraph = "ワークスペースと公開関数と作業場を使う。";
   const documents = {
-    "使い方/guide.md": `<!-- features: -glossary -->\n\n${paragraph}\n`,
-    "memo.md": `<!-- features: -glossary -backlinks -->\n\n${paragraph}\n`,
+    "使い方/guide.md": `<!-- features: {"glossary": false} -->\n\n${paragraph}\n`,
+    "memo.md": `<!-- features: {"glossary": false, "backlinks": false} -->\n\n${paragraph}\n`,
   };
   // 実行
   const matches = await collectMatchesInNode(builtRoot, { index, documents });

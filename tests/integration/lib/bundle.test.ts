@@ -73,7 +73,7 @@ async function createSampleDir(options?: {
     "用語集.md": [
       "# 用語集",
       "",
-      "<!-- glossary: term=用語 meaning=意味 -->",
+      '<!-- glossary: {"term": {"column": "用語"}, "meaning": {"column": "意味"}} -->',
       "",
       "| 用語 | 意味 |",
       "| --- | --- |",
@@ -83,7 +83,7 @@ async function createSampleDir(options?: {
       "",
     ].join("\n"),
     "使い方/guide.md":
-      "# 使用方法\n\n<!-- test-lib: a -->\n\n![図](../img/a.png)\n\n[入口へ](../README.md)\n",
+      '# 使用方法\n\n<!-- test-lib: {"items": ["a"]} -->\n\n![図](../img/a.png)\n\n[入口へ](../README.md)\n',
     "lib/test-lib.js": TEST_LIB_SOURCE,
     "img/a.png": PNG_BYTES,
   });
@@ -344,7 +344,7 @@ test("test_normal_when_page_settings_per_document", async () => {
       "",
     ].join("\n"),
     "a.md":
-      "<!-- page: scheme=dark theme=theme-slate -->\n\n# A\n\n[B へ](b.md)\n",
+      '<!-- page: {"scheme": "dark", "theme": "theme-slate"} -->\n\n# A\n\n[B へ](b.md)\n',
     "b.md": "# B\n\nもう 1 つの文書。\n",
   });
   // 実行
@@ -511,7 +511,7 @@ test("test_normal_when_blob_and_dynamic_import_blocked", async () => {
       "",
       "[ガイド](guide.md) を読み込む。",
       "",
-      "<!-- greet: 世界 -->",
+      '<!-- greet: {"target": "世界"} -->',
       "",
       "```ts",
       "const count: number = 1;",
@@ -523,7 +523,7 @@ test("test_normal_when_blob_and_dynamic_import_blocked", async () => {
       "",
       VIEW_SOURCE,
       "",
-      "<!-- test-lib: a -->",
+      '<!-- test-lib: {"items": ["a"]} -->',
       "",
     ].join("\n"),
     ...(await readHighlightVendor()),
@@ -568,9 +568,9 @@ test("test_normal_when_includes_and_icons", async () => {
     "docs/a.md": [
       "# A",
       "",
-      "<!-- include: b.md#使用方法 -->",
+      '<!-- include: {"path": "b.md", "heading": "使用方法"} -->',
       "",
-      "<!-- include: ../共通/手順.md -->",
+      '<!-- include: {"path": "../共通/手順.md"} -->',
       "",
       "`icon:sailboat` の段落",
       "",
@@ -851,7 +851,7 @@ test("test_normal_when_back_restore_folds_and_tabs", async () => {
     "a.md": [
       "# A",
       "",
-      "<!-- table: data closed -->",
+      '<!-- table: {"kind": "data", "collapse": {"open": false}} -->',
       "",
       "| 名前 | 値 |",
       "| --- | --- |",
@@ -866,7 +866,7 @@ test("test_normal_when_back_restore_folds_and_tabs", async () => {
       "",
       "## 導入",
       "",
-      "<!-- section: closed -->",
+      '<!-- section: {"open": false} -->',
       "",
       "<!-- tabs -->",
       "",
