@@ -11,7 +11,7 @@ import { attachFootnotes } from "./footnotes.ts";
 import { attachGifs } from "./gif.ts";
 import { attachLightbox } from "./lightbox.ts";
 import { attachParams } from "./params.ts";
-import { attachSections } from "./sections.ts";
+import { attachSections, type SectionStates } from "./sections.ts";
 import { attachStickyRows } from "./sticky.ts";
 import { attachTables } from "./tables.ts";
 import { attachTabs } from "./tabs.ts";
@@ -35,6 +35,10 @@ export function attachInteractions(options: {
   pinMode?: TablePinMode;
   /** 列の表示を切り替えたときに通知する */
   onColumnsChange?: (event: MdmarkColumnsChange) => void;
+  /** セクションの開閉の記録（省くと記録しない） */
+  sectionStates?: SectionStates;
+  /** 付けたときに URL の `#ID` で開くか（既定 `true`） */
+  revealHash?: boolean;
 }): () => void {
   const {
     root,
@@ -44,13 +48,23 @@ export function attachInteractions(options: {
     paramDefinitions = [],
     pinMode = "each",
     onColumnsChange,
+    sectionStates,
+    revealHash,
   } = options;
   const detachers: Array<() => void> = [];
   // 閉じたセクションの中の行へは、`attachTables` が行へ送信する前に `attachSections` がセクションを開いておく
   const sections = features.sections === true;
   const rowDetails = features["row-details"] === true;
   if (sections || rowDetails) {
-    detachers.push(attachSections({ root, sections, rowDetails }));
+    detachers.push(
+      attachSections({
+        root,
+        sections,
+        rowDetails,
+        states: sectionStates,
+        revealHash,
+      }),
+    );
   }
   if (features.table === true) {
     detachers.push(attachTables(root, { onColumnsChange, pinMode }));

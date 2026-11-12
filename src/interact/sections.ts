@@ -5,6 +5,9 @@ import { visibleText } from "./text.ts";
 /** セクションの開閉を切り替える関数 */
 type SetOpen = (open: boolean) => void;
 
+/** 読者が開閉したセクションの開閉を、セクションの中身の `id` から引く記録。`marker` は記録したときの中身の `data-section` の値 */
+export type SectionStates = Map<string, { open: boolean; marker: string }>;
+
 /** セクションの開閉の関数の記録。`attachSections` が操作を付けたセクションの中身から、そのセクションを開くか閉じる関数を参照する。削除する関数が取り除く */
 const sectionSetters = new WeakMap<HTMLElement, SetOpen>();
 
@@ -43,8 +46,12 @@ function bodyOf(heading: HTMLElement): HTMLElement | null {
     : null;
 }
 
-/** セクションの見出し 1 つを開閉のボタンにし、閉じたセクションの中身を隠す。削除する関数を返却する */
-function attachSection(heading: HTMLElement, body: HTMLElement): () => void {
+/** セクションの見出し 1 つを開閉のボタンにし、閉じたセクションの中身を隠す。記録があり、マーカーが記録したときと同じなら記録の開閉で始め、開閉を変えるたびに記録へ書く。削除する関数を返却する */
+function attachSection(
+  heading: HTMLElement,
+  body: HTMLElement,
+  states: SectionStates | undefined,
+): () => void {
   const anchor = heading.querySelector(":scope > .mdmark-anchor");
   const button = document.createElement("button");
   button.className = "mdmark-section-toggle";
@@ -52,7 +59,13 @@ function attachSection(heading: HTMLElement, body: HTMLElement): () => void {
   button.setAttribute("aria-controls", body.id);
   button.append(...[...heading.childNodes].filter((node) => node !== anchor));
   heading.prepend(button);
-  const setOpen: SetOpen = (open) => {
+  const marker = body.dataset.section ?? "open";
+  /** 読者が変えた開閉を記録へ書く */
+  const remember = (open: boolean): void => {
+    states?.set(body.id, { open, marker });
+  };
+  /** ボタンと中身を開閉の状態にする */
+  const show = (open: boolean): void => {
     button.setAttribute("aria-expanded", String(open));
     if (open) {
       body.removeAttribute("hidden");
@@ -60,8 +73,13 @@ function attachSection(heading: HTMLElement, body: HTMLElement): () => void {
       body.setAttribute("hidden", "until-found");
     }
   };
+  const setOpen: SetOpen = (open) => {
+    show(open);
+    remember(open);
+  };
   sectionSetters.set(body, setOpen);
-  setOpen(body.dataset.section !== "closed");
+  const saved = states?.get(body.id);
+  show(saved?.marker === marker ? saved.open : marker !== "closed");
   /** そのセクションを今と逆の状態にし、中の入れ子の全てのセクションを同じ状態にする */
   const toggleNested = (): void => {
     const open = button.getAttribute("aria-expanded") !== "true";
@@ -85,8 +103,10 @@ function attachSection(heading: HTMLElement, body: HTMLElement): () => void {
     }
   };
   // ページ内検索が閉じた中身に該当したとき: ブラウザが開く前にボタンの状態を合わせる
-  const onBeforeMatch = (): void =>
+  const onBeforeMatch = (): void => {
     button.setAttribute("aria-expanded", "true");
+    remember(true);
+  };
   button.addEventListener("click", onClick);
   button.addEventListener("keydown", onKeyDown);
   body.addEventListener("beforematch", onBeforeMatch);
@@ -240,7 +260,7 @@ function attachRowDetails(root: HTMLElement): () => void {
   };
 }
 
-/** `sections` がオンならセクションの見出しを開閉のボタンにして閉じたセクションの中身を隠し、`row-details` がオンなら詳細を持つ行に開閉のボタンを配置して詳細の行を閉じる。URL の `#ID` が閉じたセクションの中を指すとき（付けたときと `hashchange`）にそのセクションを開く */
+/** `sections` がオンならセクションの見出しを開閉のボタンにして閉じたセクションの中身を隠し、`row-details` がオンなら詳細を持つ行に開閉のボタンを配置して詳細の行を閉じる。URL の `#ID` が閉じたセクションの中を指すとき（`revealHash` が `true` のときの付けたときと、`hashchange`）にそのセクションを開く */
 export function attachSections(options: {
   /** 描いた要素 */
   root: HTMLElement;
@@ -248,8 +268,12 @@ export function attachSections(options: {
   sections: boolean;
   /** 行の詳細の機能 */
   rowDetails: boolean;
+  /** セクションの開閉の記録（省くと記録しない） */
+  states?: SectionStates;
+  /** 付けたときに URL の `#ID` で開くか（既定 `true`） */
+  revealHash?: boolean;
 }): () => void {
-  const { root, sections, rowDetails } = options;
+  const { root, sections, rowDetails, states, revealHash = true } = options;
   const cleanups: Array<() => void> = [];
   if (sections) {
     for (const heading of root.querySelectorAll<HTMLElement>(
@@ -257,13 +281,15 @@ export function attachSections(options: {
     )) {
       const body = bodyOf(heading);
       if (body !== null) {
-        cleanups.push(attachSection(heading, body));
+        cleanups.push(attachSection(heading, body, states));
       }
     }
     const onHashChange = (): void => revealHashTarget(root);
     window.addEventListener("hashchange", onHashChange);
     cleanups.push(() => window.removeEventListener("hashchange", onHashChange));
-    revealHashTarget(root);
+    if (revealHash) {
+      revealHashTarget(root);
+    }
   }
   if (rowDetails) {
     cleanups.push(attachRowDetails(root));
