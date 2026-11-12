@@ -42,6 +42,23 @@
 | モジュール構成設計 | `4ea9af36..0ad400c7` | レビューの任意の指摘の修正（書き出しで `config.syntax` を置き換える・`buildCsp` の `syntax.url` の origin） |
 | モジュール構成設計 | `308b8fa5..17a18454` | 実装で判明した責務の移動。`usedSyntaxLanguages` を `src/render/used.ts` から import する（[ライブラリ本体](./ライブラリ本体.md)）。IF-472-15 の制約「埋める色分けのライブラリ」の参照先も直す |
 
+## 実装
+
+| 項目 | 内容 |
+| --- | --- |
+| バンドルの確認 | `usedSyntaxLanguages` を `src/render/used.ts` から import した後の `vscode/dist/extension.cjs` に、ネイティブの `esbuild` の `ESBUILD_BINARY_PATH` が 0 件（develop と同じ） |
+
 ## テスト結果
 
-なし
+### 単体
+
+| ファイル | メソッド | 変更種別 | 結果 | 補足 |
+| --- | --- | --- | --- | --- |
+| `tests/unit/vscode/src/config.test.ts` | 全実行 | 新規・変更 | ✅ | `test_library_origins_when_syntax`・`test_resolve_syntax`・`test_load_config_when_tooltips_and_syntax` を追加。`test_library_origins_when_mermaid` の期待値に既定の jsDelivr の origin を追加（設計書の修正のとおり）<br>`テスト結果/20261112225936_4bee4d9d_単体テスト.log`<br>Red: `テスト結果/20261112222508_308b8fa5_単体テスト.log` |
+| `tests/unit/vscode/src/export/embed.test.ts` | 全実行 | 新規 | ✅ | `test_embed_local_syntax` ほか 3 件<br>`テスト結果/20261112225936_4bee4d9d_単体テスト.log` |
+| `tests/unit/vscode/src/export/html.test.ts` | 全実行 | 新規 | ✅ | `test_build_export_html_when_import_map`<br>`テスト結果/20261112225936_4bee4d9d_単体テスト.log` |
+| `tests/`（`npm run test:unit` の全件） | 全実行 | 実行のみ | ✅ | 284 ファイル・2062 テスト pass<br>同じ commit の 1 回目は lint と他の作業の vitest を同時に流していたため `test_main`・`test_prepare_embeds` が時間切れになり、単独で pass した後に全件を流し直した<br>lint: `テスト結果/20261112225009_4bee4d9d_lint.log` |
+
+### 結合
+
+結合テスト作成で記入する
