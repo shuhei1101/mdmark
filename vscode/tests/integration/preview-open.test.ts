@@ -1,5 +1,5 @@
 import * as assert from "node:assert";
-import { readFile } from "node:fs/promises";
+import { cp, readFile } from "node:fs/promises";
 import { createServer } from "node:http";
 import type { AddressInfo } from "node:net";
 import { join } from "node:path";
@@ -12,6 +12,7 @@ import {
   EXTENSION_ID,
   extensionLogSince,
   extensionLogSize,
+  focusInPreview,
   guideMarkdown,
   inspect,
   installMessages,
@@ -29,6 +30,7 @@ import {
   sleep,
   stub,
   tagRequestCount,
+  trackFile,
   waitFor,
   waitForRendered,
   workspaceDir,
@@ -173,6 +175,31 @@ async function startMermaidServer(): Promise<{
   };
 }
 
+/** 脚注の番号が画面の途中に来るよう前に段落を並べ、`ts` のコードブロックを持つ文書 */
+const TOOLTIP_SYNTAX_MARKDOWN = [
+  "# 色分けと脚注",
+  "",
+  ...Array.from({ length: 6 }, (_, index) => `段落 ${index + 1}。\n`),
+  "本文に脚注を付ける[^1]。",
+  "",
+  "```ts",
+  "const answer: number = 42;",
+  "```",
+  "",
+  "[^1]: 脚注の中身",
+  "",
+].join("\n");
+
+/** `@highlightjs/cdn-assets` の `es/` フォルダをワークスペースの `hljs/` に写す */
+async function copyHighlight(): Promise<void> {
+  await cp(
+    join(REPO_ROOT, "node_modules", "@highlightjs", "cdn-assets", "es"),
+    join(workspaceDir(), "hljs"),
+    { recursive: true },
+  );
+  trackFile("hljs");
+}
+
 suite("プレビューを開く", () => {
   suiteSetup(() => {
     installRecorder();
@@ -297,6 +324,51 @@ suite("プレビューを開く", () => {
     } finally {
       mermaid.close();
     }
+  });
+
+  // 設定の tooltips と、設定ファイルのフォルダから解決した syntax.url を mount に指定し、手元の色分けのライブラリで色分けしてツールチップを参照の下に出す（正常系（ツールチップの位置と相対パスの色分けのライブラリ））
+  test("test_normal_when_tooltips_and_relative_syntax", async () => {
+    // 準備
+    await stub.setTags(["v0.10.0"]);
+    await copyHighlight();
+    await writeFixture("guide.md", TOOLTIP_SYNTAX_MARKDOWN);
+    await writeFixture(
+      "mdmark.config.yaml",
+      "tooltips:\n  placement: bottom\nsyntax:\n  url: ./hljs/\n",
+    );
+    await openMarkdown("guide.md");
+    // 実行
+    await vscode.commands.executeCommand("mdmark.openPreviewToSide");
+    const record = lastPanel();
+    await waitForRendered(record);
+    // 検証: mount に指定した設定
+    const config = renders(record).at(-1)?.config;
+    assert.deepStrictEqual(config?.tooltips, { placement: "bottom" });
+    const syntaxUrl = String(config?.syntax?.url ?? "");
+    assert.ok(syntaxUrl.endsWith("/hljs/"), syntaxUrl);
+    assert.ok(!syntaxUrl.startsWith("./"), syntaxUrl);
+    // 検証: 手元の色分けのライブラリで色分けする
+    await waitFor(
+      async () => (await inspect('pre code [class^="hljs-"]')).length > 0,
+      { message: "色分けしない" },
+    );
+    assert.strictEqual((await inspect(".mdmark-notice")).length, 0);
+    // 検証: ツールチップを参照の下に出す
+    focusInPreview(record, ".mdmark-fn-link");
+    await waitFor(
+      async () => (await inspect(".mdmark-fn-ref.is-open")).length === 1,
+      { message: "脚注のツールチップを開かない" },
+    );
+    const [link] = await inspect(".mdmark-fn-link");
+    const [tip] = await inspect(".mdmark-fn-ref.is-open .mdmark-fn-tip");
+    assert.ok(link && tip);
+    assert.ok(
+      tip.top >= link.top + link.height - 1,
+      JSON.stringify({ link, tip }),
+    );
+    // 検証: CSP の違反
+    const [root] = await inspect("html");
+    assert.strictEqual(root?.attributes["data-mdmark-csp-violations"], "0");
   });
 
   // CSP を広げずに、範囲の ts をページの nonce を付けた script 要素で動かす（正常系（範囲のスクリプトと CSS））
