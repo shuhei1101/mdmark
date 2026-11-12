@@ -1,0 +1,24 @@
+work: /tmp/tmp.O3kKFb4eKF
+2.1.322 (Claude Code)
+== [noversion] version=no first=8841e5f1e4ee7779c7f27076eb06a7ca3e93c0c9
+marketplace add exit=0
+install exit=0
+after install: {'version': '8841e5f1e4ee', 'gitCommitSha': '8841e5f1e4ee7779c7f27076eb06a7ca3e93c0c9', 'installPath': '/tmp/tmp.O3kKFb4eKF/noversion-config/plugins/cache/mnoversion/pnoversion/8841e5f1e4ee'}
+second=0b17f55c38dc748184a660df500232aa5e844deb
+marketplace update exit=0
+after marketplace update: {'version': '8841e5f1e4ee', 'gitCommitSha': '8841e5f1e4ee7779c7f27076eb06a7ca3e93c0c9', 'installPath': '/tmp/tmp.O3kKFb4eKF/noversion-config/plugins/cache/mnoversion/pnoversion/8841e5f1e4ee'}
+✔ Plugin "pnoversion" updated from 8841e5f1e4ee to 0b17f55c38dc for scope user. Restart to apply changes.
+plugin update exit=0
+after plugin update: {'version': '0b17f55c38dc', 'gitCommitSha': '0b17f55c38dc748184a660df500232aa5e844deb', 'installPath': '/tmp/tmp.O3kKFb4eKF/noversion-config/plugins/cache/mnoversion/pnoversion/0b17f55c38dc'}
+SKILL.md の最後の行: second
+== [withversion] version=yes first=8500f0fc241e2c00e948a43271c166527adaa60a
+marketplace add exit=0
+install exit=0
+after install: {'version': 'v0.1.0', 'gitCommitSha': '8500f0fc241e2c00e948a43271c166527adaa60a', 'installPath': '/tmp/tmp.O3kKFb4eKF/withversion-config/plugins/cache/mwithversion/pwithversion/v0.1.0'}
+second=e107d830774c5e26aeb5d065acfedf4142a5ed0f
+marketplace update exit=0
+after marketplace update: {'version': 'v0.1.0', 'gitCommitSha': '8500f0fc241e2c00e948a43271c166527adaa60a', 'installPath': '/tmp/tmp.O3kKFb4eKF/withversion-config/plugins/cache/mwithversion/pwithversion/v0.1.0'}
+✔ pwithversion is already at the latest version (v0.1.0).
+plugin update exit=0
+after plugin update: {'version': 'v0.1.0', 'gitCommitSha': '8500f0fc241e2c00e948a43271c166527adaa60a', 'installPath': '/tmp/tmp.O3kKFb4eKF/withversion-config/plugins/cache/mwithversion/pwithversion/v0.1.0'}
+SKILL.md の最後の行: first
