@@ -1,0 +1,50 @@
+$ (rc=0; npm run lint || rc=1; npm run lint:eslint || rc=1; npm run typecheck || rc=1; npm --prefix vscode run typecheck || rc=1; exit $rc)
+
+> lint
+> biome check .
+
+plugin/bin/setup.js check ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  ! The size of the file is 1.5 MiB, which exceeds the configured maximum of 1.0 MiB for this project.
+    Use the `files.maxSize` configuration to change the maximum size of files processed, or `files.includes` to ignore the file.
+  
+
+Checked 979 files in 4s. No fixes applied.
+Found 1 warning.
+
+> lint:eslint
+> node scripts/eslint.ts
+
+
+> typecheck
+> tsc --noEmit
+
+tests/integration/lib/register-extension.browser.test.ts(160,5): error TS2322: Type 'ObjectSchema<{ readonly args: StrictTupleSchema<[SchemaWithPipe<readonly [StringSchema<undefined>, RegexAction<string, undefined>]>], undefined>; readonly keys: RecordSchema<...>; }, undefined>' is not assignable to type 'StandardSchemaV1<MdmarkMarkArgs, MdmarkMarkArgs>'.
+  The types of '["~standard"].validate(...)' are incompatible between these types.
+    Type 'Promise<StandardResult<{ args: [string]; keys: { [x: string]: string; }; }>> | StandardResult<{ args: [string]; keys: { [x: string]: string; }; }>' is not assignable to type 'Promise<Result<MdmarkMarkArgs>> | Result<MdmarkMarkArgs>'.
+      Type 'Promise<StandardResult<{ args: [string]; keys: { [x: string]: string; }; }>>' is not assignable to type 'Promise<Result<MdmarkMarkArgs>> | Result<MdmarkMarkArgs>'.
+        Type 'Promise<StandardResult<{ args: [string]; keys: { [x: string]: string; }; }>>' is not assignable to type 'Promise<Result<MdmarkMarkArgs>>'.
+          Type 'StandardResult<{ args: [string]; keys: { [x: string]: string; }; }>' is not assignable to type 'Result<MdmarkMarkArgs>'.
+            Type 'StandardSuccessResult<{ args: [string]; keys: { [x: string]: string; }; }>' is not assignable to type 'Result<MdmarkMarkArgs>'.
+              Type 'StandardSuccessResult<{ args: [string]; keys: { [x: string]: string; }; }>' is not assignable to type 'SuccessResult<MdmarkMarkArgs>'.
+                Types of property 'value' are incompatible.
+                  Property 'options' is missing in type '{ args: [string]; keys: { [x: string]: string; }; }' but required in type 'MdmarkMarkArgs'.
+tests/integration/lib/render.test.ts(810,58): error TS2322: Type 'Mock<() => { value: { args: never[]; keys: {}; }; }>' is not assignable to type '(value: unknown, options?: Options | undefined) => Promise<Result<MdmarkMarkArgs>> | Result<MdmarkMarkArgs>'.
+  Type '{ value: { args: never[]; keys: {}; }; }' is not assignable to type 'Promise<Result<MdmarkMarkArgs>> | Result<MdmarkMarkArgs>'.
+    Type '{ value: { args: never[]; keys: {}; }; }' is not assignable to type 'SuccessResult<MdmarkMarkArgs>'.
+      Types of property 'value' are incompatible.
+        Property 'options' is missing in type '{ args: never[]; keys: {}; }' but required in type 'MdmarkMarkArgs'.
+
+> mdmark-vscode@0.1.0 typecheck
+> tsc --noEmit
+
+exit=1
+
+# base ブランチ（develop の worktree）で同じ型検査を回した結果
+$ npm run typecheck  # base: develop
+commit 23881bce
+
+> typecheck
+> tsc --noEmit
+
+exit=0
