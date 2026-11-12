@@ -56,11 +56,7 @@ docs:
     status: todo
   - page: docs/guide/記法.md
     new: false
-    change: 罫線のコードブロックの警告を止める指定（マーカーか引数。設計で決める）の行を追加する
-    status: todo
-  - page: docs/guide/CLI.md
-    new: false
-    change: check のずれの種類に罫線のコードブロックの警告の扱い（新しい種類か syntax_warning に含めるか。設計で決める）を追加する
+    change: code のマーカーのキーに tree_warning（false で罫線のフォルダ構成の記載の警告を止める）を追加する
     status: todo
   - page: guide/index.yaml
     new: false
