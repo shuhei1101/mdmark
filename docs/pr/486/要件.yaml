@@ -1,0 +1,8 @@
+use_cases:
+  - kind: single
+    scenario: docs/scenario/SC-472-10.yaml
+    impact: none
+    detail: 正常シナリオ（範囲のスクリプトと CSS）の結合テストに、CSP の違反が 0 件であることの確認を加える。シナリオの記述は変わらない
+    depends_on: []
+docs: []
+scope_out: []

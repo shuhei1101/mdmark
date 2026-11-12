@@ -1,0 +1,15 @@
+$ npm run test:unit
+
+> test:unit
+> vitest run --project 'unit*'
+
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/fix-interact-keep-section-open-on-update
+
+
+ Test Files  284 passed (284)
+      Tests  2060 passed (2060)
+   Start at  01:37:06
+   Duration  124.81s (worker 67%, tests 21%, import 11%, transform 1%)
+
+rc=0

@@ -352,6 +352,8 @@ suite("プレビューを開く", () => {
       for (const word of ["blob:", "'unsafe-inline'", "'unsafe-eval'"]) {
         assert.ok(!scriptSrc.includes(word), scriptSrc);
       }
+      const [root] = await inspect("html");
+      assert.strictEqual(root?.attributes["data-mdmark-csp-violations"], "0");
       assert.strictEqual((await inspect(".mdmark-notice")).length, 0);
       assert.strictEqual((await inspect(".mdmark-syntax-warning")).length, 0);
     } finally {
