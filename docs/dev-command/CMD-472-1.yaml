@@ -7,16 +7,16 @@ categories:
       - Node.js v24
       - 取り込み後の追従（pull 後）の `npm ci` を実行してある
     commands: |-
-      結合テストと E2E テストが使用する Chromium と Firefox を入れる。
+      結合テストが使用する Chromium を入れる。
 
       ```bash
-      npx playwright install chromium firefox
+      npx playwright install chromium
       ```
-    effects: '`~/.cache/ms-playwright` に Chromium と Firefox（合わせて数百 MB）をダウンロードする。一度入れれば、どの作業ツリーからも使用できる'
+    effects: '`~/.cache/ms-playwright` に Chromium（数百 MB）をダウンロードする。一度入れれば、どの作業ツリーからも使用できる'
     verification:
       state: 済
       date: '2026-10-13'
-      detail: コマンドが終了コード 0 で終わり、続けて `npm run test:integration` のブラウザテストと `npm run test:e2e` の Chromium・Firefox が通ることを確認した
+      detail: コマンドが終了コード 0 で終わり、続けて `npm run test:integration` のブラウザテストが通ることを確認した
   - name: 取り込み後の追従（pull 後）
     prerequisites:
       - Node.js v24
