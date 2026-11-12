@@ -2115,7 +2115,7 @@
 
       <!-- #505 列の幅を中身から決める: 列ごとにセルの中身の種類と改行で分けた行の幅から、折り返すかと列の幅を決める -->
       <section aria-labelledby="state-505-fit" data-mock-table505>
-        <h2 class="catalog-label" id="state-505-fit">列の幅を中身から決める（描く先の幅は本文の幅。数値・バッジ・日付と短い列は折り返さず、改行のある手順の列は最も長い行の幅、説明の列だけを残りの幅で折り返す）</h2>
+        <h2 class="catalog-label" id="state-505-fit">列の幅を中身から決める（長文の説明の列だけを折り返し、表を本文の幅いっぱいまで広げる。ほかの列は折り返さず、改行のある手順の列は最も長い行の幅）</h2>
         <article class="mdmark">
 <div>
 <div class="mdmark-table" data-kind="data">
@@ -2147,9 +2147,24 @@
         </article>
       </section>
 
+      <!-- #505 長文の列が収まる表: 長文の列が折り返さずに本文の幅に収まるときは、本文の幅まで広げず最も長い行の幅で止める -->
+      <section aria-labelledby="state-505-long-fits" data-mock-table505>
+        <h2 class="catalog-label" id="state-505-long-fits">長文の列が折り返さずに収まる表（説明の列は 1 行で収まるので、本文の幅まで広げず最も長い行の幅で止める）</h2>
+        <article class="mdmark">
+<div class="mdmark-table" data-kind="data">
+  <div class="mdmark-table-scroll">
+  <table tabindex="0" aria-label="表: 長文の列が収まる表">
+    <thead><tr><th>名前</th><th>説明</th></tr></thead>
+    <tbody><tr><td>列の幅</td><td>列ごとにセルの文字の量と改行の有無から決める</td></tr><tr><td>表の幅</td><td>収まる表は本文の幅まで広げずに列の幅で描く</td></tr><tr><td>見える幅</td><td>表の見える幅が変わったときだけ列の幅を決め直す</td></tr></tbody>
+  </table>
+  </div>
+</div>
+        </article>
+      </section>
+
       <!-- #505 狭い幅: 配分した幅が最小の幅を下回る列を最小の幅で止め、表を横にスクロールする -->
       <section aria-labelledby="state-505-narrow" data-mock-table505>
-        <h2 class="catalog-label" id="state-505-narrow">狭い幅で横にスクロールする（描く先の幅 390px。説明・備考の列は最小の幅で止めて折り返し、表の中で横にスクロールする）</h2>
+        <h2 class="catalog-label" id="state-505-narrow">狭い幅で横にスクロールする（描く先の幅 390px。列の最小の幅の合計が収まらないので、長文の説明・備考の列を最小の幅 20em で描き、表の中で横にスクロールする）</h2>
         <article class="mdmark">
 <div class="mock-505-width-390">
 <div class="mdmark-table" data-kind="data">
@@ -2181,7 +2196,7 @@
   <div class="mdmark-table-scroll">
   <table tabindex="0" aria-label="表: 列の幅の範囲を指定した表">
     <thead><tr><th data-mock-width-mode="nowrap">名前</th><th data-mock-width-min="20" data-mock-width-max="30">説明</th><th>備考</th></tr></thead>
-    <tbody><tr><td>描いた文書の表の列の幅を自動で計算する機能の名前</td><td>記載した幅の範囲（20em 以上 30em 以下）で折り返す説明の列。自動の判定より、マーカーの columns.{列名}.width の min・max を優先する。名前の列は mode が nowrap なので、30 文字の長い名前でも折り返さない。範囲を記載しない列は、これまでどおり中身から決める。</td><td>済</td></tr><tr><td>ファイルツリーの既定の開き方</td><td>記載した幅の範囲（20em 以上 30em 以下）で折り返す説明の列。自動の判定より、マーカーの columns.{列名}.width の min・max を優先する。名前の列は mode が nowrap なので、30 文字の長い名前でも折り返さない。範囲を記載しない列は、これまでどおり中身から決める。</td><td>済</td></tr><tr><td>コードブロックの帯</td><td>記載した幅の範囲（20em 以上 30em 以下）で折り返す説明の列。自動の判定より、マーカーの columns.{列名}.width の min・max を優先する。名前の列は mode が nowrap なので、30 文字の長い名前でも折り返さない。範囲を記載しない列は、これまでどおり中身から決める。</td><td>未</td></tr></tbody>
+    <tbody><tr><td>表の列の幅を自動で計算する機能の名前</td><td>記載した幅の範囲（20em 以上 30em 以下）で折り返す説明の列。自動の判定より、マーカーの columns.{列名}.width の min・max を優先する。名前の列は mode が nowrap なので、30 文字の長い名前でも折り返さない。範囲を記載しない列は、これまでどおり中身から決める。</td><td>済</td></tr><tr><td>ファイルツリーの既定の開き方</td><td>記載した幅の範囲（20em 以上 30em 以下）で折り返す説明の列。自動の判定より、マーカーの columns.{列名}.width の min・max を優先する。名前の列は mode が nowrap なので、30 文字の長い名前でも折り返さない。範囲を記載しない列は、これまでどおり中身から決める。</td><td>済</td></tr><tr><td>コードブロックの帯</td><td>記載した幅の範囲（20em 以上 30em 以下）で折り返す説明の列。自動の判定より、マーカーの columns.{列名}.width の min・max を優先する。名前の列は mode が nowrap なので、30 文字の長い名前でも折り返さない。範囲を記載しない列は、これまでどおり中身から決める。</td><td>未</td></tr></tbody>
   </table>
   </div>
 </div>

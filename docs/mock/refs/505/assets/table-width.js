@@ -1,14 +1,16 @@
-// #505 の表の見本: 列ごとに、セルの中身の種類と改行で分けた行の幅から、折り返すかと列の幅を決める。
+// #505 の表の見本: 列ごとに、セルの中身の文字数と改行で分けた行の幅から、折り返すかと列の幅を決める。
 // [data-mock-table505] の中の表に、描いた直後と、表を包む要素の幅が変わったときに当てる。
 // 見出しのセルの data-mock-width-mode（nowrap）・data-mock-width-min・data-mock-width-max（em）は、マーカーの columns.{列名}.width に当たる
+//
+// 1. 長文の列（改行で分けた 1 行が LONG_CHARS 文字以上のセルを持つ列）だけを折り返し、ほかの列は折り返さず最も長い行の幅にする
+// 2. 長文の列は、最も長い行の幅まで（表を本文の幅いっぱいまで）広げる。折り返さずに収まるなら、その幅で止める
+// 3. 長文の列は LONG_MIN_EM より狭くしない。全ての列の最小の幅の合計が見える幅を超えたら、最小の幅で描いて表を横にスクロールする
 
 {
-  /** 折り返さない短い列の上限（em） */
-  const SHORT_EM = 12;
-  /** 折り返す列の最小の幅（em。列の中の最も長い半角の単語の幅の方が広ければそちら） */
-  const MIN_EM = 12;
-  /** 折り返す列の最大の幅（em） */
-  const MAX_EM = 40;
+  /** 長文の列とみなす、1 行の文字数 */
+  const LONG_CHARS = 20;
+  /** 長文の列の最小の幅（em。列の中の最も長い半角の単語の幅の方が広ければそちら） */
+  const LONG_MIN_EM = 20;
 
   /** セルの中で、行の文字を折り返さずに置いたときの表示の幅（px） */
   const textWidth = (text, cell) => {
@@ -56,29 +58,35 @@
       const cells = rows.map((row) => row.cells[index]).filter(Boolean);
       const style = getComputedStyle(th);
       const padding = Number.parseFloat(style.paddingLeft) + Number.parseFloat(style.paddingRight) + 1;
-      const longest = Math.max(...[th, ...cells].flatMap((cell) => linesOf(cell).map((line) => textWidth(line, cell)))) + padding;
+      const lines = [th, ...cells].flatMap((cell) => linesOf(cell).map((line) => ({ line, cell })));
+      const longest = Math.max(...lines.map(({ line, cell }) => textWidth(line, cell))) + padding;
       // 単語は空白で区切った半角の連なり（全角の文字はどこでも折り返せるので単語に数えない）
-      const longestWord = Math.max(0, ...cells.flatMap((cell) => linesOf(cell).flatMap((line) => line.match(/[\x21-\x7e]+/g) ?? []).map((word) => textWidth(word, cell)))) + padding;
-      const min = th.dataset.mockWidthMin ? Number(th.dataset.mockWidthMin) * em : Math.max(MIN_EM * em, longestWord);
-      const max = Math.max(min, th.dataset.mockWidthMax ? Number(th.dataset.mockWidthMax) * em : MAX_EM * em);
-      const nowrap = th.dataset.mockWidthMode === "nowrap" || cells.every(isCompact) || (longest <= SHORT_EM * em && !th.dataset.mockWidthMin);
-      return { th, cells, longest, min, max, nowrap };
+      const longestWord = Math.max(0, ...lines.flatMap(({ line, cell }) => (line.match(/[\x21-\x7e]+/g) ?? []).map((word) => textWidth(word, cell)))) + padding;
+      const ranged = th.dataset.mockWidthMin || th.dataset.mockWidthMax;
+      const long = ranged || (!cells.every(isCompact) && cells.some((cell) => linesOf(cell).some((line) => [...line].length >= LONG_CHARS)));
+      const nowrap = th.dataset.mockWidthMode === "nowrap" || !long;
+      const min = nowrap ? longest : th.dataset.mockWidthMin ? Number(th.dataset.mockWidthMin) * em : Math.max(LONG_MIN_EM * em, longestWord);
+      const max = th.dataset.mockWidthMax ? Number(th.dataset.mockWidthMax) * em : Number.POSITIVE_INFINITY;
+      // 望む幅: 折り返さずに収まる幅（最も長い行の幅）を、最小の幅と最大の幅の間に収める
+      const wanted = nowrap ? longest : Math.max(min, Math.min(longest, max));
+      return { th, cells, min, wanted, nowrap };
     });
-    const fixed = columns.filter((column) => column.nowrap).reduce((sum, column) => sum + column.longest, 0);
+    const minimum = columns.reduce((sum, column) => sum + column.min, 0);
+    const fixed = columns.filter((column) => column.nowrap).reduce((sum, column) => sum + column.wanted, 0);
     const wrapping = columns.filter((column) => !column.nowrap);
-    // 折り返す列が望む幅: 最長の行の幅を、最小の幅と最大の幅の間に収める
-    for (const column of wrapping) {
-      column.wanted = Math.min(Math.max(column.longest, column.min), column.max);
-    }
     const wanted = wrapping.reduce((sum, column) => sum + column.wanted, 0);
     const rest = available - fixed;
     for (const column of columns) {
       if (column.nowrap) {
-        column.width = column.longest;
+        column.width = column.wanted;
+      } else if (minimum > available) {
+        // 最小の幅の合計が見える幅を超える: 最小の幅で描き、表を横にスクロールする
+        column.width = column.min;
       } else if (fixed + wanted <= available) {
+        // 折り返さずに収まる: 本文の幅まで広げず、最も長い行の幅で止める
         column.width = column.wanted;
       } else {
-        // 残りの幅を望む幅の比で分け、最小の幅を下回る列は最小の幅で止める（表は横にスクロールする）
+        // 残りの幅（本文の幅いっぱいまで）を望む幅の比で分ける。最小の幅より狭くしない
         column.width = Math.max(column.min, (rest * column.wanted) / wanted);
       }
     }

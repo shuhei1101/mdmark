@@ -1,0 +1,7 @@
+confirmations:
+  - topic: '#460 の帯と本文の背景の色の違いを残すか'
+    decision: 帯の背景を本文と同じ色にする（別案 B）。言語のラベルは、帯の上端に付けた枠線を持たない塗りのタブにする（ユーザーの画像のとおり）
+    decided_by: reply
+    approver: shuhei1101
+    commit:
+    thread: https://github.com/shuhei1101/mdmark/pull/505#discussion_r4554582525
