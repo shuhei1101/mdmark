@@ -314,8 +314,10 @@ docs:
     updated_at: '2026-11-12T02:50:53.239715+00:00'
   - page: docs/guide/変更履歴.md
     new: false
-    change: マーカーの引数の JSON 化と、拡張の引数の破壊的変更・移行の手順を書く（release を master へ入れるとき）
-    status: todo
+    change: '表のマーカーを JSON の記載（<!-- table: {"kind": "data"} -->）に書き換える'
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-12T09:55:50.934840+00:00'
   - page: guide/index.yaml
     new: false
     change: 使い方集の索引の記法の概要・マーカーの記載例を JSON に合わせる
@@ -494,3 +496,6 @@ scope_out:
   - item: migrations/next/legacy-marks.js にまとめた依存のライセンスの表記（同じフォルダへのライセンスのファイルの書き込みか、buildLegacyMarks の metafile のライセンスの集計への追加）
     reason: レビューの任意の指摘。今は dist/THIRD_PARTY_LICENSES.txt が同じ依存を挙げており、表記が欠けるのは後のバージョンで dist/ の依存が変わったとき。移行の手順のフォルダを v{バージョン}/ に移す release の前に別の Issue で行う
     plan: '#480'
+  - item: docs/guide/変更履歴.md の版の行（マーカーの引数の JSON 化と、拡張の引数の破壊的変更・移行の手順の記載）
+    reason: 変更履歴の版の行は、リリースのたびに release の作業で 1 PR = 1 行で足す
+    plan: none
