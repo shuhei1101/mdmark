@@ -53,10 +53,12 @@ const markdown = `# 表とコードブロックの見え方
 
 ## 最小の幅の合計が収まらない表（横にスクロールする）
 
-| 名前 | 説明 | 備考 | 列 4 | 列 5 | 列 6 | 列 7 | 列 8 | 列 9 | 列 10 | 列 11 | 列 12 |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| 列の幅 | ${long} | ${long} | 1-4 | 1-5 | 1-6 | 1-7 | 1-8 | 1-9 | 1-10 | 1-11 | 1-12 |
-| 表の幅 | ${long} | ${long} | 2-4 | 2-5 | 2-6 | 2-7 | 2-8 | 2-9 | 2-10 | 2-11 | 2-12 |
+長文の列が 4 つあり、1280px の画面でも最小の幅の合計が収まらないので、表は描く先の幅の端まで広がり、表の中で横にスクロールする。
+
+| 名前 | 説明 | 備考 | 手順の詳細 | 確認の方法 | 列 6 | 列 7 | 列 8 |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| 列の幅 | ${long} | ${long} | ${long} | ${long} | 1-6 | 1-7 | 1-8 |
+| 表の幅 | ${long} | ${long} | ${long} | ${long} | 2-6 | 2-7 | 2-8 |
 
 ## コードブロック
 
@@ -82,6 +84,7 @@ export function mount(element, markdown, options = {}) {
 const doc = document.getElementById("doc");
 document.body.classList.add(scheme === "dark" ? "mdmark-theme-dark" : "mdmark-theme-light");
 mount(doc, { markdown });
+
 
 // 開閉のボタン: その行の文字の始まり（行頭の空白の数）の 1 つ左に配置するため、空白の数を行に持たせる
 for (const button of doc.querySelectorAll(".mdmark-code-line > .mdmark-code-fold")) {

@@ -50,17 +50,22 @@
   const layout = (table) => {
     const scroll = table.closest(".mdmark-table-scroll");
     // 表の左右の枠線の分を引いた、列に配れる幅
-    const available = scroll.clientWidth - (table.offsetWidth - table.clientWidth) - 2;
+    let available = scroll.clientWidth - (table.offsetWidth - table.clientWidth) - 2;
     const em = Number.parseFloat(getComputedStyle(table).fontSize);
-    const head = [...[...table.tHead.rows].at(-1).cells];
+    // 畳んだ列と隠した列は数えない（列の幅を当てない）
+    const allHead = [...[...table.tHead.rows].at(-1).cells];
+    const head = allHead.filter((th) => getComputedStyle(th).display !== "none");
+    const indexes = head.map((th) => allHead.indexOf(th));
     // 行の詳細などの、列と 1 対 1 でない行は数えない
-    const rows = [...table.tBodies[0].rows].filter((row) => row.cells.length === head.length);
-    const columns = head.map((th, index) => {
+    const rows = [...table.tBodies[0].rows].filter((row) => row.cells.length === allHead.length);
+    const columns = head.map((th, position) => {
+      const index = indexes[position];
       const cells = rows.map((row) => row.cells[index]).filter(Boolean);
       const style = getComputedStyle(th);
-      const padding = Number.parseFloat(style.paddingLeft) + Number.parseFloat(style.paddingRight) + 1;
+      // セルの左右の余白と枠線の幅に、測った幅の端数の分を足す
+      const padding = Number.parseFloat(style.paddingLeft) + Number.parseFloat(style.paddingRight) + Number.parseFloat(style.borderLeftWidth) + Number.parseFloat(style.borderRightWidth) + 2;
       const lines = [th, ...cells].flatMap((cell) => linesOf(cell).map((line) => ({ line, cell })));
-      const longest = Math.max(...lines.map(({ line, cell }) => textWidth(line, cell))) + padding;
+      const longest = Math.ceil(Math.max(...lines.map(({ line, cell }) => textWidth(line, cell))) + padding);
       // 単語は空白で区切った半角の連なり（全角の文字はどこでも折り返せるので単語に数えない）
       const longestWord = Math.max(0, ...lines.flatMap(({ line, cell }) => (line.match(/[\x21-\x7e]+/g) ?? []).map((word) => textWidth(word, cell)))) + padding;
       const ranged = th.dataset.mockWidthMin || th.dataset.mockWidthMax;
@@ -72,6 +77,8 @@
       const wanted = nowrap ? longest : Math.max(min, Math.min(longest, max));
       return { th, cells, min, wanted, nowrap };
     });
+    // 列ごとに切り上げる分（1 列 1px まで）を、配れる幅から引いておく
+    available -= columns.length;
     const minimum = columns.reduce((sum, column) => sum + column.min, 0);
     const fixed = columns.filter((column) => column.nowrap).reduce((sum, column) => sum + column.wanted, 0);
     const wrapping = columns.filter((column) => !column.nowrap);
@@ -114,7 +121,7 @@
     }
     colgroup.replaceChildren(...columns.map((column) => {
       const col = document.createElement("col");
-      col.style.width = `${Math.floor(column.width)}px`;
+      col.style.width = `${Math.ceil(column.width)}px`;
       return col;
     }));
     for (const column of columns) {
@@ -122,7 +129,7 @@
         cell.classList.toggle("is-mock-nowrap", column.nowrap);
       }
     }
-    table.style.width = `${columns.reduce((sum, column) => sum + Math.floor(column.width), 0)}px`;
+    table.style.width = `${columns.reduce((sum, column) => sum + Math.ceil(column.width), 0)}px`;
   };
 
   const start = () => {
