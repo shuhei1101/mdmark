@@ -218,67 +218,100 @@ docs:
   - page: docs/guide/記法.md
     new: false
     change: マーカーごとの引数の記載方法を JSON のオブジェクトにし、キーの表はマーカーごとの設計書へリンクする。旧記法を 1 つのマイナーバージョンの間だけ読むことと、値に --> を記載できないことを書く
-    status: todo
+    status: done
+    content: マーカーごとの引数の記載方法を JSON のオブジェクトにし、キーの表を JSON のキーのパスで書く（ER 図は visibility が internal のため、公開する使い方集にキーの表を持つ）。旧記法を 1 つのマイナーバージョンの間だけ読むことと、値に --> を記載できないことを書く
+    updated_by: planner
+    updated_at: '2026-11-12T02:50:53.239715+00:00'
   - page: docs/guide/記載する-表に機能を付ける.md
     new: false
     change: 表の記載例を JSON にし、列の設定を記載すると機能が付くことと features.{機能} の記載方法に書き換える
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-12T02:50:53.239715+00:00'
   - page: docs/guide/記載する-本文を部品で組む.md
     new: false
     change: タブ・ステップ・ファイルツリー・コードブロック・セクション・details・wide・行の詳細・取り込みの記載例を JSON に書き換える
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-12T02:50:53.239715+00:00'
   - page: docs/guide/記載する-ビューとコメントを使用する.md
     new: false
     change: ビューのマーカーの記載例を JSON に書き換える
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-12T02:50:53.239715+00:00'
   - page: docs/guide/記載する-図と表に番号を付ける.md
     new: false
     change: fig のマーカーの記載例を JSON に書き換える
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-12T02:50:53.239715+00:00'
   - page: docs/guide/記載する-索引と用語集を記載する.md
     new: false
     change: 用語集の表のマーカーの記載例を JSON（列は column のオブジェクト）に書き換える
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-12T02:50:53.239715+00:00'
   - page: docs/guide/記載する-色で強調する.md
     new: false
     change: 列の強調・行の色の記載例を JSON に書き換える
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-12T02:50:53.239715+00:00'
   - page: docs/guide/記載する-画像と動画を配置する.md
     new: false
     change: ギャラリーのマーカーの記載例を JSON に書き換える
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-12T02:50:53.239715+00:00'
   - page: docs/guide/カスタマイズ-機能をオン・オフする.md
     new: false
     change: 機能のマーカーと表の機能の記載例を JSON に書き換える
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-12T02:50:53.239715+00:00'
   - page: docs/guide/カスタマイズ-拡張を登録する.md
     new: false
     change: 拡張の schema と draw が options と definition を受け取ることと、旧記法の拡張のマーカーが描かれず移行を案内されることを書く
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-12T02:50:53.239715+00:00'
   - page: docs/guide/API.md
     new: false
     change: MdmarkMarkArgs の型と registerExtension・libraries の draw に渡す値を書き換える
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-12T02:50:53.239715+00:00'
   - page: docs/guide/設定.md
     new: false
     change: libraries の draw に JSON のオブジェクトを渡すことと、記載例のマーカーを書き換える
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-12T02:50:53.239715+00:00'
   - page: docs/guide/書き出す-点検する.md
     new: false
     change: マーカーの JSON の検証（知らないキー・型の誤り・旧記法・値の -->）のずれと直し方を追加する
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-12T02:50:53.239715+00:00'
   - page: docs/guide/導入-バージョンを上げる.md
     new: false
     change: 文書のマーカーを JSON に書き換える移行の手順と、移行の報告に挙がる記載の直し方を追加する
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-12T02:50:53.239715+00:00'
   - page: docs/guide/用語集.md
     new: false
     change: マーカーの引数・旧記法の用語を JSON のオブジェクトに合わせる
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-12T02:50:53.239715+00:00'
   - page: docs/guide/コアコンセプト-文書を描く仕組み.md
     new: false
     change: マーカーの引数を JSON として読み、マーカーごとの JSON Schema で検証する流れを書く
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-12T02:50:53.239715+00:00'
   - page: docs/guide/変更履歴.md
     new: false
     change: マーカーの引数の JSON 化と、拡張の引数の破壊的変更・移行の手順を書く（release を master へ入れるとき）
@@ -286,15 +319,21 @@ docs:
   - page: guide/index.yaml
     new: false
     change: 使い方集の索引の記法の概要・マーカーの記載例を JSON に合わせる
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-12T02:50:53.239715+00:00'
   - page: templates/extensions/example.ts
     new: false
     change: 拡張の雛形を options と definition を受け取る形にする
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-12T02:50:53.239715+00:00'
   - page: templates/extensions/example.js
     new: false
     change: 拡張の雛形を options と definition を受け取る形にする
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-12T02:50:53.239715+00:00'
   - page: docs/screen/SCR-472-4.ts.yaml
     new: false
     change: 記載例のマーカーを JSON のオブジェクトに書き換える

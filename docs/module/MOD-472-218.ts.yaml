@@ -473,12 +473,12 @@ functions:
     kind: 関数
     scope: internal
     summary: '`data-pin` の位置・行見出しの列の数・ピン止めの動きから、描いた直後に留める列の位置を小さい順に返却する'
-    description: 留める元の列は `pin` があればその列、無ければ行見出しの全ての列、行見出しも無ければ先頭の列。`each` はそのまま、`through` は先頭からその最も右の列までの全ての列にする
+    description: 留める元の列は `pin` があればその列、無ければ行見出しの全ての列（行見出しも無ければ先頭の列）から `unpin` の列を除いたもの。`each` はそのまま、`through` は先頭からその最も右の列までの全ての列にする
     args:
       - name: options
-        type: '{ pin: number[]; rowHeadCount: number; mode: TablePinMode }'
+        type: '{ pin: number[]; rowHeadCount: number; mode: TablePinMode; unpin?: number[] }'
         required: true
-        description: '`data-pin` の位置（無ければ空）、`th scope="row"` の行見出しの列の数、ピン止めの動き'
+        description: '`data-pin` の位置（無ければ空）、`th scope="row"` の行見出しの列の数、ピン止めの動き、`data-unpin` の位置（既定で留める列から除く。無ければ空）'
     returns:
       type: number[]
       description: 留める列の位置

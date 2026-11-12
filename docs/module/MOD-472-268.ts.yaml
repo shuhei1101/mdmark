@@ -364,3 +364,22 @@ functions:
     status: planned
     introduced:
       pr: 263
+  - name: bodyCellsOf
+    title: 表の本文のセルの文字を集める
+    container: src/render/syntax/tables.ts
+    kind: 関数
+    scope: internal
+    summary: 表の本文の各行のセルの文字を集める
+    description: '`table_open` の位置から、その表の `tbody` の行ごとにセルの文字を集める。表の設定を読む処理と、ビューの項目（`views.ts`）が使用する'
+    args:
+      - name: tokens
+        type: Token[]
+        required: true
+        description: 文書のトークン
+      - name: tableOpen
+        type: number
+        required: true
+        description: '`table_open` の位置'
+    returns:
+      type: string[][]
+      description: 本文の行ごとのセルの文字

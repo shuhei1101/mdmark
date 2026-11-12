@@ -28,6 +28,9 @@ data_models:
       - name: raw
         type: string
         description: マーカーの文字のまま（記載の警告に出す）
+      - name: rest
+        type: string | undefined
+        description: マーカーの `:` の後ろの引数の文字のまま。拡張・`libraries` のマーカーの今の書き方の記載の警告の例と、`map` の引数に使用する
       - name: closing
         type: boolean
         description: 閉じのマーカー（`<!-- /名前 -->`）か

@@ -12,12 +12,12 @@ functions:
     scope: public
     is_async: true
     summary: 文書のマーカーの今の書き方の引数を JSON のオブジェクトへ書き換える移行の手順のスクリプトの処理
-    description: '`steps.yaml` の `call`（`destructive: true`・`files: [documents]`。`description` は ``文書のマーカーの今の書き方の引数を JSON のオブジェクトへ書き換える（書き出さない記載と拡張・`libraries` のマーカーは移行の報告に挙げる）``）が実行する。スクリプトとして呼ばれると、`--config` の設定ファイルを `yaml` の `parse` で読み込み、この関数を呼ぶ。文書はインターフェース定義『バージョンを上げる』の制約「文書」のとおり、設定の `build.include` に該当し `build.exclude` に該当しないファイル（設定ファイルのフォルダから `node:fs/promises` の `glob` で参照する）と、設定の `index` の索引の文書の `path` を、重ねずに設定ファイルのフォルダからの相対パスの順に並べる。文書ごとに、スクリプトのフォルダから 2 つ上の `dist/legacy-marks.js` の `rewriteLegacyMarks` で書き換え、変わった文書だけを書き込む。`report` を `{文書の相対パス}:{行}: {マーカーの名前}: {記載}: {理由}` の行にして標準出力へ 1 行ずつ書き込み、行が無ければ `{書き換えた文書の数} 件の文書のマーカーを書き換えました。` を書き込んで 0 で終わる。読み込めない文書があれば書き込まずに標準エラーへ書き込んで 1 で終わる。単体テストは `migrations/*/marker-json.mjs` を探して import し、release で `next/` をバージョンのフォルダへ移した後も同じテストで読み込む'
+    description: '`steps.yaml` の `call`（`destructive: true`・`files: [documents]`。`description` は ``文書のマーカーの今の書き方の引数を JSON のオブジェクトへ書き換える（書き出さない記載と拡張・`libraries` のマーカーは移行の報告に挙げる）``）が実行する。スクリプトとして呼ばれると、`--config` の設定ファイルを `yaml` の `parse` で読み込み、スクリプトのフォルダから 2 つ上の `dist/legacy-marks.js` を動的に import して、その `rewriteLegacyMarks` を `rewrite` に渡してこの関数を呼ぶ（単体テストは `src/render/legacy-marks.ts` の関数を渡し、配布物を作らずに確かめる）。文書はインターフェース定義『バージョンを上げる』の制約「文書」のとおり、設定の `build.include` に該当し `build.exclude` に該当しないファイル（設定ファイルのフォルダから `node:fs/promises` の `glob` で参照する）と、設定の `index` の索引の文書の `path` を、重ねずに設定ファイルのフォルダからの相対パスの順に並べる。文書ごとに `rewrite` で書き換え、変わった文書だけを書き込む。`report` を `{文書の相対パス}:{行}: {マーカーの名前}: {記載}: {理由}` の行にして標準出力へ 1 行ずつ書き込み、行が無ければ `{書き換えた文書の数} 件の文書のマーカーを書き換えました。` を書き込んで 0 で終わる。読み込めない文書があれば書き込まずに標準エラーへ書き込んで 1 で終わる。単体テストは `migrations/*/marker-json.mjs` を探して import し、release で `next/` をバージョンのフォルダへ移した後も同じテストで読み込む'
     args:
       - name: options
-        type: '{ config: unknown; configDir: string }'
+        type: '{ config: unknown; configDir: string; rewrite: (options: { markdown: string }) => { markdown: string; report: LegacyReportLine[] } }'
         required: true
-        description: 設定ファイルを読み込んだ値と、設定ファイルのあるフォルダの絶対パス
+        description: 設定ファイルを読み込んだ値と、設定ファイルのあるフォルダの絶対パスと、文書の本文を書き換える関数（`rewriteLegacyMarks`）
     returns:
       type: 'Promise<{ changed: string[]; report: string[]; problems: string[] }>'
       description: 書き換えた文書の相対パス・移行の報告の行・読み込めない文書の修正方法

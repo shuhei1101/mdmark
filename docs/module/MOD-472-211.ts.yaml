@@ -66,6 +66,26 @@ data_models:
       - name: markNotes
         type: 'Array<MarkNote & { line: number }>'
         description: 画面に出さないマーカーの注記（`recordMarkNotes` が追加し、`collectWarningsRule` が `warnings` に合わせる）
+  - name: FoundMark
+    title: 取得したマーカー
+    container: src/render/parser.ts
+    summary: '`findMarkTexts` が取得したマーカー'
+    properties:
+      - name: name
+        type: string
+        description: マーカーの名前
+      - name: line
+        type: number
+        description: マーカーの行（1 から）
+      - name: raw
+        type: string
+        description: マーカーの文字のまま
+      - name: closing
+        type: boolean
+        description: 閉じのマーカーか
+      - name: args
+        type: string
+        description: マーカーの `:` の後ろの文字（無ければ空）
 functions:
   - name: createParser
     title: 解析器を作る
@@ -130,7 +150,7 @@ functions:
     container: src/render/parser.ts
     usecase: 設定と索引を点検する
     summary: Markdown の生の HTML のブロックと行内の HTML から `MARK_PATTERN` に該当するマーカーを取得し、名前と行の番号を記載した順に返却する
-    description: '`createParser` と同じ設定（`html: true`・`linkify: true`）の markdown-it で、追加するコアルールを登録せずに解析する（コードブロックとインラインコードの中は `html_block`・`html_inline` にならないため取得しない）。行の番号は 1 からで、`html_block` はトークンの `map` の開始行にマーカーより前の改行の数を追加し、`html_inline` は親の `inline` の `map` の開始行（表のセルのように `map` が `null` のときは直前の `tr_open` の `map` の開始行）に、マーカーより前の子の `softbreak`・`hardbreak` の数と、マーカーより前の子の `html_inline` の内容の改行の数と、同じ `html_inline` の中でマーカーより前の改行の数を追加する。閉じのマーカーも 1 つのマーカーとして返却する'
+    description: '`createParser` と同じ設定（`html: true`・`linkify: true`）の markdown-it で、追加するコアルールを登録せずに解析する（コードブロックとインラインコードの中は `html_block`・`html_inline` にならないため取得しない）。行の番号は 1 からで、`html_block` はトークンの `map` の開始行にマーカーより前の改行の数を追加し、`html_inline` は親の `inline` の `map` の開始行（表のセルのように `map` が `null` のときは直前の `tr_open` の `map` の開始行）に、マーカーより前の子の `softbreak`・`hardbreak` の数と、マーカーより前の子の `html_inline` の内容の改行の数と、同じ `html_inline` の中でマーカーより前の改行の数を追加する。閉じのマーカーも 1 つのマーカーとして返却する。`findMarkTexts` の結果から名前と行だけを返却する'
     kind: 関数
     scope: public
     args:
@@ -178,6 +198,22 @@ functions:
     status: planned
     introduced:
       pr: 64
+  - name: findMarkTexts
+    title: 文書のマーカーを引数の文字と一緒に取得する
+    container: src/render/parser.ts
+    usecase: 設定と索引を点検する
+    kind: 関数
+    scope: internal
+    summary: '`findMarks` と同じマーカーを、マーカーの文字・閉じか・引数の文字と一緒に返却する'
+    description: '`findMarks` と同じ解析で取得する。点検（`checkMarkOptions`）が文書ごとのマーカーの引数を読むときに使用する'
+    args:
+      - name: markdown
+        type: string
+        required: true
+        description: 文書の Markdown
+    returns:
+      type: FoundMark[]
+      description: 取得したマーカー
   - name: markSourceLines
     title: 元の行番号を付ける
     kind: 関数
