@@ -10,14 +10,9 @@ use_cases:
     detail: 設定ファイルと文書のマーカーの明暗で描く流れは変えず、確かめ方だけを修正する
     depends_on: []
   - kind: single
-    scenario: docs/scenario/SC-472-56.yaml
+    scenario: docs/scenario/SC-472-82.yaml
     impact: none
-    detail: mermaid を埋めて書き出す流れは変えず、確かめるテストを削除・軽量化する
-    depends_on: []
-  - kind: single
-    scenario: docs/scenario/SC-472-76.yaml
-    impact: none
-    detail: mermaid を埋めて 1 枚にまとめる流れは変えず、確かめるテストを削除・軽量化する
+    detail: ビルドの流れは変えず、単体テストと確かめる内容が重なる結合テスト 3 件を削除し、残りを軽量化する
     depends_on: []
 scope_out:
   - item: 結合テストのメモリの使い過ぎの削減
