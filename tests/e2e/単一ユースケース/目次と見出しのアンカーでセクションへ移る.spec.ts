@@ -105,7 +105,7 @@ test("test_normal_when_opened_with_fragment", async ({ page }) => {
 const FRAGMENT_TAB_MARKDOWN = [
   ...Array.from({ length: 30 }, (_, i) => `前の段落 ${i + 1}\n`),
   "## 導入",
-  "<!-- section: closed -->",
+  '<!-- section: {"open": false} -->',
   "",
   "<!-- tabs -->",
   "",
@@ -435,7 +435,7 @@ test("test_normal_when_side_toc_into_closed_section", async ({ page }) => {
     markdown: [
       FILLER,
       "## 補足",
-      "<!-- section: closed -->",
+      '<!-- section: {"open": false} -->',
       "",
       "### 注意",
       "",
@@ -522,7 +522,7 @@ const SIDE_TOC_TABLE_MARKDOWN = [
   "導入の段落",
   "",
   FILLER,
-  "<!-- table: data +total total=数量:sum pin=名前 -->",
+  '<!-- table: {"kind": "data", "columns": {"数量": {"total": [{"calc": "sum"}]}, "名前": {"pinned": true}}} -->',
   "",
   `| 名前 | 数量 | ${Array.from({ length: 8 }, (_, i) => `説明の長い列 ${i + 1}`).join(" | ")} |`,
   `|${" --- |".repeat(10)}`,

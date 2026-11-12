@@ -75,7 +75,7 @@ test("test_normal", async ({ page }) => {
   await openPage(page, builtRoot);
   // 実行
   await mountDocument(page, {
-    markdown: `<!-- page: scheme=dark -->\n\n${BODY}`,
+    markdown: `<!-- page: {"scheme": "dark"} -->\n\n${BODY}`,
     config: {},
   });
   // 検証
@@ -107,7 +107,7 @@ test("test_normal_when_marker_overrides_config", async ({ page }) => {
   await openPage(page, builtRoot);
   // 実行
   await mountDocument(page, {
-    markdown: `<!-- page: scheme=light theme=theme-slate toc=fixed -->\n\n${HEADINGS_BODY}`,
+    markdown: `<!-- page: {"scheme": "light", "theme": "theme-slate", "toc": {"mode": "fixed"}} -->\n\n${HEADINGS_BODY}`,
     config: {
       colorScheme: "dark",
       colorTheme: "theme-paper",
@@ -127,7 +127,7 @@ test("test_normal_when_auto", async ({ page }) => {
   await setBodyClass(page, "mdmark-theme-dark");
   // 実行
   await mountDocument(page, {
-    markdown: `<!-- page: scheme=auto -->\n\n${BODY}`,
+    markdown: `<!-- page: {"scheme": "auto"} -->\n\n${BODY}`,
     config: { colorScheme: "light" },
   });
   // 検証
@@ -140,7 +140,7 @@ test("test_normal_when_updated", async ({ page }) => {
   await page.emulateMedia({ colorScheme: "light" });
   await openPage(page, builtRoot);
   await mountDocument(page, {
-    markdown: `<!-- page: scheme=dark -->\n\n${BODY}`,
+    markdown: `<!-- page: {"scheme": "dark"} -->\n\n${BODY}`,
     config: {},
   });
   await expect.poll(() => readBackground(page)).toBe(SWISS_DARK_BG);
@@ -156,7 +156,7 @@ test("test_normal_when_printed", async ({ page }) => {
   await page.emulateMedia({ colorScheme: "light" });
   await openPage(page, builtRoot);
   await mountDocument(page, {
-    markdown: `<!-- page: scheme=dark -->\n\n${BODY}`,
+    markdown: `<!-- page: {"scheme": "dark"} -->\n\n${BODY}`,
     config: {},
   });
   await expect.poll(() => readBackground(page)).toBe(SWISS_DARK_BG);
@@ -167,7 +167,7 @@ test("test_normal_when_printed", async ({ page }) => {
   await expect.poll(() => readBackground(page)).toBe(SWISS_LIGHT_BG);
 });
 
-// 知らない値は記載の警告にして使用せず、知らないキーはスキップし、残りの指定と設定で描く（異常シナリオ（知らないキーと値））
+// 知らない値は記載の警告にして使用せず、知らないキーは無視し、残りの指定と設定で描く（異常シナリオ（知らないキーと値））
 test("test_error_when_unknown_key_or_value", async ({ page }) => {
   // 準備
   await page.setViewportSize({ width: 1280, height: 800 });
@@ -175,7 +175,7 @@ test("test_error_when_unknown_key_or_value", async ({ page }) => {
   await openPage(page, builtRoot);
   // 実行
   await mountDocument(page, {
-    markdown: `<!-- page: scheme=sepia theme=theme-unknown size=wide toc=fixed -->\n\n${HEADINGS_BODY}`,
+    markdown: `<!-- page: {"scheme": "sepia", "theme": "theme-unknown", "size": "wide", "toc": {"mode": "fixed"}} -->\n\n${HEADINGS_BODY}`,
     config: { colorScheme: "dark" },
   });
   // 検証
@@ -183,21 +183,21 @@ test("test_error_when_unknown_key_or_value", async ({ page }) => {
   await expect(warnings).toHaveCount(1);
   // 本文の頭はマーカーの文字のため、マーカーの後ろの挙げた指定を確認する
   const listed = (await warnings.innerText()).replace(
-    "<!-- page: scheme=sepia theme=theme-unknown size=wide toc=fixed -->",
+    '<!-- page: {"scheme": "sepia", "theme": "theme-unknown", "size": "wide", "toc": {"mode": "fixed"}} -->',
     "",
   );
-  expect(listed).not.toContain("size=wide");
+  expect(listed).not.toContain("size");
   for (const text of [
-    "scheme=sepia",
-    "theme=theme-unknown",
+    "scheme",
+    "sepia",
+    "theme",
+    "theme-unknown",
     "light",
     "dark",
     "auto",
     "theme-slate",
-    "hover",
-    "fixed",
   ]) {
-    await expect(warnings).toContainText(text);
+    expect(listed).toContain(text);
   }
   const first = await page
     .locator("#doc")
@@ -216,7 +216,7 @@ test("test_error_when_not_at_top", async ({ page }) => {
   await openPage(page, builtRoot);
   // 実行
   await mountDocument(page, {
-    markdown: "最初の段落\n\n<!-- page: scheme=dark -->\n\n後ろの段落\n",
+    markdown: '最初の段落\n\n<!-- page: {"scheme": "dark"} -->\n\n後ろの段落\n',
     config: {},
   });
   // 検証

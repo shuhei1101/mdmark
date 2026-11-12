@@ -249,9 +249,9 @@ test("test_normal_when_includes", async () => {
       "guide.md": [
         "# 案内",
         "",
-        "<!-- include: 共通/手順.md#実行 -->",
+        '<!-- include: {"path": "共通/手順.md", "heading": "実行"} -->',
         "",
-        "<!-- include: 共通/無い.md -->",
+        '<!-- include: {"path": "共通/無い.md"} -->',
         "",
       ].join("\n"),
       "共通/手順.md": [

@@ -16,7 +16,7 @@ const TRANSPARENT = "rgba(0, 0, 0, 0)";
 
 // 金額の列を強調し、状態で行に色を付けた表と、色の名前のバッジと本文の文字の色を持つ文書
 const MARKDOWN = [
-  "<!-- table: data highlight=金額 row-color=状態:完了=green,保留=yellow -->",
+  '<!-- table: {"kind": "data", "columns": {"金額": {"highlight": {}}}, "rows": {"colors": [{"column": "状態", "value": "完了", "color": "green"}, {"column": "状態", "value": "保留", "color": "yellow"}]}} -->',
   "",
   "| 名前 | 状態 | 金額 |",
   "| --- | --- | --- |",
@@ -220,7 +220,7 @@ test("test_normal_when_row_position", async ({ page }) => {
   // 実行
   await mountDocument(page, {
     markdown: [
-      "<!-- table: data row-at=2=yellow -->",
+      '<!-- table: {"kind": "data", "rows": {"colors": [{"at": 2, "color": "yellow"}]}} -->',
       "",
       "| 名前 | 数 |",
       "| --- | --- |",
@@ -278,7 +278,7 @@ test("test_error_when_color_unknown", async ({ page }) => {
   // 実行
   await mountDocument(page, {
     markdown: [
-      "<!-- table: data row-color=状態:完了=pink -->",
+      '<!-- table: {"kind": "data", "rows": {"colors": [{"column": "状態", "value": "完了", "color": "pink"}]}} -->',
       "",
       "| 名前 | 状態 |",
       "| --- | --- |",

@@ -152,8 +152,8 @@ test("test_normal_when_gallery", async ({ page }) => {
   // 実行
   await mountDocument(page, {
     markdown: [
-      "<!-- fig: shots -->",
-      "<!-- gallery: cols=3 -->",
+      '<!-- fig: {"id": "shots"} -->',
+      '<!-- gallery: {"columns": 3} -->',
       ...["a", "b", "c", "d", "e", "f"].map(
         (name) => `![画面 ${name}](${name}.png)`,
       ),

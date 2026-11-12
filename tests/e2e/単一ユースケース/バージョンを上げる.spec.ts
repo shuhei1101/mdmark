@@ -5,6 +5,7 @@ import { join, resolve } from "node:path";
 import { promisify } from "node:util";
 import { parse } from "yaml";
 import { migrationsDirOf } from "../../migrations-dir.ts";
+import { greetSource } from "../cascade.ts";
 import { test as base, expect, linesOf, runCli, writeFiles } from "../cli.ts";
 import { buildDistRoot, removeDistRoot } from "../dist-page.ts";
 
@@ -631,4 +632,165 @@ test("test_error_when_aliases_row_mixed_types", async ({
   const work = await readWork(dir);
   expect(work.config).toBe(config);
   expect(parse(work.config).version).toBe("v0.3.0");
+});
+
+/** 文書のマーカーを JSON の記載へ書き換えるリポジトリの移行の手順と、その手順が読み込むファイルを、`v0.5.0` の手順として配置するパッケージのファイル */
+async function markerJsonMigrationFiles(): Promise<Record<string, string>> {
+  const nextDir = migrationsDirOf("marker-json.mjs");
+  const files: Record<string, string> = {};
+  for (const name of await readdir(nextDir)) {
+    if (name !== "steps.yaml") {
+      files[`migrations/v0.5.0/${name}`] = await readFile(
+        join(nextDir, name),
+        "utf8",
+      );
+    }
+  }
+  return migrationFiles({
+    stepsV050: await readFile(join(nextDir, "steps.yaml"), "utf8"),
+    extra: files,
+  });
+}
+
+/** 移行の報告の行のうち、文書とマーカーの名前が該当し、記載の文字を含む行 */
+function reportLines(
+  lines: string[],
+  file: string,
+  name: string,
+  text: string,
+): string[] {
+  return lines
+    .map((line) => line.trim())
+    .filter(
+      (line) =>
+        line.startsWith(`${file}:`) &&
+        line.includes(`: ${name}: `) &&
+        line.includes(text),
+    );
+}
+
+// 今の書き方のマーカーを、今の実装が適用している設定だけの JSON のオブジェクトへ書き換え、書き出さない記載を移行の報告に出す（正常シナリオ（文書のマーカーを JSON の記載へ書き換える））
+test("test_normal_when_document_marks", async ({ package050, tempDir }) => {
+  // 準備
+  await setMigrations(package050, await markerJsonMigrationFiles());
+  const dir = await createWork(tempDir);
+  await writeFiles(dir, {
+    "docs/a.md": [
+      "# A",
+      "",
+      "<!-- table: data +count total=数量:sum filter=名前,更新日:date closed -->",
+      "",
+      "| 名前 | 数量 | 更新日 |",
+      "| --- | --- | --- |",
+      "| a | 1 | 2026-10-01 |",
+      "",
+      "<!-- /table -->",
+      "",
+      "<!-- code: title=app.ts lines highlight=2,4-6 -->",
+      "",
+      "```ts",
+      ...Array.from({ length: 6 }, (_, index) => `const v${index} = ${index};`),
+      "```",
+      "",
+    ].join("\n"),
+    "docs/b.md": [
+      "# B",
+      "",
+      "<!-- toc -->",
+      "",
+      "<!-- details: 実行の例 open -->",
+      "",
+      "段落",
+      "",
+      "<!-- /details -->",
+      "",
+      "<!-- fig: arch -->",
+      "",
+      '![構成](arch.png "全体の構成")',
+      "",
+      "<!-- include: src/app.ts#L3-L5 -->",
+      "",
+      "```markdown",
+      "<!-- section: closed -->",
+      "```",
+      "",
+    ].join("\n"),
+    "docs/arch.png": "",
+    "docs/src/app.ts": Array.from(
+      { length: 6 },
+      (_, index) => `const v${index} = ${index};`,
+    ).join("\n"),
+  });
+  // 実行
+  const result = await runCli(package050, ["upgrade", "--yes"], dir);
+  // 検証
+  expect(result.code).toBe(0);
+  const { a, b, config } = await readWork(dir);
+  expect(a).toContain(
+    '<!-- table: {"kind": "data", "features": {"count": {}}, "columns": {"名前": {"filter": {}}, "更新日": {"filter": {"type": "date"}}}, "collapse": {"open": false}} -->',
+  );
+  expect(a).not.toContain("total");
+  expect(a).toContain(
+    '<!-- code: {"title": "app.ts", "lines": {}, "highlight": [2, {"from": 4, "to": 6}]} -->',
+  );
+  expect(b).toContain('<!-- details: {"title": "実行の例", "open": true} -->');
+  expect(b).toContain('<!-- fig: {"id": "arch"} -->');
+  expect(b).toContain(
+    '<!-- include: {"path": "src/app.ts", "lines": {"from": 3, "to": 5}} -->',
+  );
+  expect(b).toContain("<!-- toc -->");
+  expect(b).toContain("<!-- /details -->");
+  expect(b).toContain("```markdown\n<!-- section: closed -->\n```");
+  expect(
+    reportLines(linesOf(result.stdout), "docs/a.md", "table", "total=数量:sum"),
+  ).toHaveLength(1);
+  expect(parse(config).version).toBe("v0.5.0");
+});
+
+// 拡張・libraries のマーカーと読み込めない記載を書き換えずに移行の報告に挙げ、点検に合格させる（正常シナリオ（書き換えない記載を移行の報告に挙げる））
+test("test_normal_when_unconverted_marks", async ({ package050, tempDir }) => {
+  // 準備
+  await setMigrations(package050, await markerJsonMigrationFiles());
+  const dir = await createWork(
+    tempDir,
+    `${OLD_CONFIG}extensions: [extensions/greet.js]\nlibraries:\n  test-lib: lib/test-lib.js\n`,
+  );
+  await writeFiles(dir, {
+    "extensions/greet.js": greetSource(),
+    "lib/test-lib.js": "export function draw() {}\n",
+    "docs/a.md": [
+      "<!-- section: closed -->",
+      "",
+      "# A",
+      "",
+      "<!-- greet: world -->",
+      "",
+      "<!-- test-lib: a b -->",
+      "",
+      "<!-- table: data filter=名前:range -->",
+      "",
+      "| 名前 |",
+      "| --- |",
+      "| a |",
+      "",
+      "<!-- /table -->",
+      "",
+    ].join("\n"),
+  });
+  // 実行
+  const result = await runCli(package050, ["upgrade", "--yes"], dir);
+  // 検証
+  expect(result.code).toBe(0);
+  const { a, config } = await readWork(dir);
+  expect(a).toContain('<!-- section: {"open": false} -->');
+  expect(a).toContain('<!-- table: {"kind": "data"} -->');
+  expect(a).toContain("<!-- greet: world -->");
+  expect(a).toContain("<!-- test-lib: a b -->");
+  const lines = linesOf(result.stdout);
+  expect(reportLines(lines, "docs/a.md", "greet", "world")).toHaveLength(1);
+  expect(reportLines(lines, "docs/a.md", "test-lib", "a b")).toHaveLength(1);
+  expect(
+    reportLines(lines, "docs/a.md", "table", "filter=名前:range"),
+  ).toHaveLength(1);
+  expect(parse(config).version).toBe("v0.5.0");
 });

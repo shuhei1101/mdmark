@@ -24,9 +24,9 @@ async function writeDocuments(dir: string): Promise<void> {
       "",
       "## `icon:sailboat` 取り込み",
       "",
-      "<!-- include: 用語集.md#書き方 -->",
+      '<!-- include: {"path": "用語集.md", "heading": "書き方"} -->',
       "",
-      "<!-- include: src/app.ts#L3-L5 -->",
+      '<!-- include: {"path": "src/app.ts", "lines": {"from": 3, "to": 5}} -->',
       "",
     ].join("\n"),
   });

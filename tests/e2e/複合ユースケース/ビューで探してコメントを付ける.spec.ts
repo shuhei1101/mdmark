@@ -57,7 +57,10 @@ test("test_normal", async ({ page, builtRoot }) => {
   await openPage(page, builtRoot);
   await installCommentStore(page);
   await mountDocument(page, {
-    markdown: viewMarkdown("group=状態 filter=担当", PARAGRAPH),
+    markdown: viewMarkdown(
+      '{"board": {"group": {"column": "状態"}}, "columns": {"担当": {"filter": {}}}}',
+      PARAGRAPH,
+    ),
     config: { features: { comments: true } },
     docId: "guide",
     useCommentStore: true,
@@ -108,7 +111,10 @@ test("test_normal_when_exported", async ({ page, builtRoot, tempDir }) => {
   await writeFiles(dir, {
     "mdmark.config.yaml": "theme: theme.css\n",
     "theme.css": THEME_SOURCE,
-    "guide.md": viewMarkdown("group=状態 filter=担当", PARAGRAPH),
+    "guide.md": viewMarkdown(
+      '{"board": {"group": {"column": "状態"}}, "columns": {"担当": {"filter": {}}}}',
+      PARAGRAPH,
+    ),
   });
   // 実行
   const result = await runCli(

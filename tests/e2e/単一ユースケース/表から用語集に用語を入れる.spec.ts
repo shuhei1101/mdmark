@@ -13,7 +13,7 @@ let builtRoot = "";
 
 // 用語 `マーカー`（別名 `マーク、オン・オフのマーカー`）を入れる用語集の表
 const GLOSSARY_TABLE = [
-  "<!-- glossary: term=用語 aliases=別名 meaning=意味 -->",
+  '<!-- glossary: {"term": {"column": "用語"}, "aliases": {"column": "別名"}, "meaning": {"column": "意味"}} -->',
   "",
   "| 用語 | 別名 | 意味 |",
   "| --- | --- | --- |",
@@ -86,7 +86,7 @@ test("test_normal_when_index_has_same_term", async ({ page }) => {
 test("test_error_when_unknown_column", async ({ page }) => {
   // 準備
   const markdown = [
-    "<!-- glossary: term=用語 meaning=説明 -->",
+    '<!-- glossary: {"term": {"column": "用語"}, "meaning": {"column": "説明"}} -->',
     "",
     "| 用語 | 意味 |",
     "| --- | --- |",
@@ -146,7 +146,7 @@ test("test_normal_when_other_document", async ({ page }) => {
 test("test_normal_when_avoid_column", async ({ page }) => {
   // 準備
   const markdown = [
-    "<!-- glossary: term=用語 meaning=意味 avoid=やめた言い方 -->",
+    '<!-- glossary: {"term": {"column": "用語"}, "meaning": {"column": "意味"}, "avoid": {"column": "やめた言い方"}} -->',
     "",
     "| 用語 | 意味 | やめた言い方 |",
     "| --- | --- | --- |",
@@ -219,7 +219,7 @@ test("test_normal_when_other_document_avoid_column", async ({ page }) => {
   };
   const documents = {
     "用語集.md": [
-      "<!-- glossary: term=用語 meaning=意味 avoid=やめた言い方 -->",
+      '<!-- glossary: {"term": {"column": "用語"}, "meaning": {"column": "意味"}, "avoid": {"column": "やめた言い方"}} -->',
       "",
       "| 用語 | 意味 | やめた言い方 |",
       "| --- | --- | --- |",

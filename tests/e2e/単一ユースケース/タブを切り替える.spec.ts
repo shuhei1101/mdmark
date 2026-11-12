@@ -136,9 +136,9 @@ test("test_normal_when_same_group", async ({ page }) => {
   await openPage(page, builtRoot);
   await mountDocument(page, {
     markdown: [
-      tabsRange(["macOS", "Windows"], "group=os"),
-      tabsRange(["macOS", "Windows"], "group=os"),
-      tabsRange(["macOS", "Linux"], "group=os"),
+      tabsRange(["macOS", "Windows"], '{"group": "os"}'),
+      tabsRange(["macOS", "Windows"], '{"group": "os"}'),
+      tabsRange(["macOS", "Linux"], '{"group": "os"}'),
       tabsRange(["macOS", "Windows"]),
     ].join("\n"),
   });
@@ -163,7 +163,7 @@ test("test_normal_when_reloaded", async ({ page }) => {
   // 準備
   const markdown = [
     [
-      "<!-- tabs: group=os -->",
+      '<!-- tabs: {"group": "os"} -->',
       "",
       "### macOS",
       "",
@@ -218,8 +218,8 @@ test("test_error_when_storage_unavailable", async ({ page }) => {
   // 実行
   await mountDocument(page, {
     markdown: [
-      tabsRange(["macOS", "Windows"], "group=os"),
-      tabsRange(["macOS", "Windows"], "group=os"),
+      tabsRange(["macOS", "Windows"], '{"group": "os"}'),
+      tabsRange(["macOS", "Windows"], '{"group": "os"}'),
     ].join("\n"),
   });
   // 検証: 描いた直後
@@ -240,7 +240,7 @@ test("test_error_when_empty_group", async ({ page }) => {
   // 実行
   await mountDocument(page, {
     markdown: [
-      tabsRange(["macOS", "Windows"], "group="),
+      tabsRange(["macOS", "Windows"], '{"group": ""}'),
       tabsRange(["macOS", "Windows"]),
     ].join("\n"),
   });
@@ -248,22 +248,22 @@ test("test_error_when_empty_group", async ({ page }) => {
   // 検証
   const warning = page.locator("#doc .mdmark-syntax-warning");
   await expect(warning).toHaveCount(1);
-  await expect(warning).toContainText("group=");
-  await expect(warning).toContainText("組の名前がありません");
+  await expect(warning).toContainText("group");
+  await expect(warning).toContainText("1 文字以上の文字");
   await expectBefore(warning, tabGroup(page, 0));
   await expectSelected(tabGroup(page, 0), "Windows", ["macOS"]);
   await expectSelected(tabGroup(page, 1), "macOS", ["Windows"]);
 });
 
-// 知らないキーと指定はスキップし、記載の警告を出さずに読み込めた指定だけで描く（正常シナリオ（知らないタブの指定））
+// 知らないキーは無視し、記載の警告を出さずに読み込めた指定だけで描く（正常シナリオ（知らないタブの指定））
 test("test_normal_when_unknown_option", async ({ page }) => {
   // 準備
   await openPage(page, builtRoot);
   // 実行
   await mountDocument(page, {
     markdown: [
-      tabsRange(["macOS", "Windows"], "grop=os"),
-      tabsRange(["macOS", "Windows"], "group=os fold"),
+      tabsRange(["macOS", "Windows"], '{"grop": "os"}'),
+      tabsRange(["macOS", "Windows"], '{"group": "os", "fold": true}'),
     ].join("\n"),
   });
   await tabGroup(page, 0).getByRole("tab", { name: "Windows" }).click();
@@ -281,8 +281,11 @@ test("test_normal_when_folded", async ({ page }) => {
   // 実行
   await mountDocument(page, {
     markdown: [
-      tabsRange(["uv", "pip"], "closed"),
-      tabsRange(["macOS", "Windows"], "open title=入れ方"),
+      tabsRange(["uv", "pip"], '{"collapse": {"open": false}}'),
+      tabsRange(
+        ["macOS", "Windows"],
+        '{"collapse": {"open": true, "title": "入れ方"}}',
+      ),
     ].join("\n"),
   });
   const folds = page.locator("#doc details.mdmark-collapsible");
@@ -303,23 +306,23 @@ test("test_normal_when_folded", async ({ page }) => {
   await expect(page.locator("#doc .mdmark-syntax-warning")).toHaveCount(0);
 });
 
-// closed と open を両方書くと、記載の警告を出し、closed を適用した閉じた折り畳みにする（異常シナリオ（closed と open を両方書いたタブ））
-test("test_error_when_closed_and_open", async ({ page }) => {
+// オブジェクトでない collapse に記載の警告を出し、折りたたみに入れずにタブを描く（異常シナリオ（オブジェクトでない折りたたみの指定））
+test("test_error_when_collapse_not_object", async ({ page }) => {
   // 準備
   await openPage(page, builtRoot);
   // 実行
   await mountDocument(page, {
-    markdown: tabsRange(["macOS", "Windows"], "closed open"),
+    markdown: tabsRange(["macOS", "Windows"], '{"collapse": "closed"}'),
   });
   // 検証
   const warning = page.locator("#doc .mdmark-syntax-warning");
   await expect(warning).toHaveCount(1);
-  await expect(warning).toContainText("closed");
+  await expect(warning).toContainText("collapse");
   await expect(warning).toContainText("open");
-  const fold = page.locator("#doc details.mdmark-collapsible");
-  await expect(fold).not.toHaveAttribute("open", "");
-  await expect(fold.locator("summary")).toHaveText("タブ（macOS・Windows）");
-  await expect(fold.locator("[role=tablist]")).toBeHidden();
+  await expect(warning).toContainText("title");
+  await expect(page.locator("#doc details.mdmark-collapsible")).toHaveCount(0);
+  await expect(page.locator("#doc [role=tablist]")).toBeVisible();
+  await expect(page.getByText("macOS の段落")).toBeVisible();
 });
 
 /** 外側の macOS・Windows のタブの macOS の中に、zsh・bash のタブを入れ子にした範囲（`innerClosed` が false なら内側の閉じのマーカーを除く） */

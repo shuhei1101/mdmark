@@ -29,7 +29,9 @@ test("test_normal", async ({ page }) => {
   // 準備
   await openPage(page, builtRoot);
   // 実行
-  await mountDocument(page, { markdown: viewMarkdown("group=状態") });
+  await mountDocument(page, {
+    markdown: viewMarkdown('{"board": {"group": {"column": "状態"}}}'),
+  });
   // 検証: ボード表示
   await expect(switchButton(page, "board")).toHaveAttribute(
     "aria-pressed",
@@ -105,7 +107,9 @@ test("test_normal_when_opened_as_table", async ({ page }) => {
   await openPage(page, builtRoot);
   // 実行
   await mountDocument(page, {
-    markdown: viewMarkdown("group=状態 default=table"),
+    markdown: viewMarkdown(
+      '{"board": {"group": {"column": "状態"}}, "initial": "table"}',
+    ),
   });
   // 検証
   await expect(switchButton(page, "table")).toHaveAttribute(
@@ -128,7 +132,7 @@ test("test_normal_when_disabled", async ({ page }) => {
   await openPage(page, builtRoot);
   // 実行
   await mountDocument(page, {
-    markdown: viewMarkdown("group=状態"),
+    markdown: viewMarkdown('{"board": {"group": {"column": "状態"}}}'),
     config: { features: { views: false } },
   });
   await page.waitForTimeout(300);
@@ -140,12 +144,14 @@ test("test_normal_when_disabled", async ({ page }) => {
   await expect(page.locator("#doc .mdmark-syntax-warning")).toHaveCount(0);
 });
 
-// group= が表に無い列のときは、記載の警告を出して表形式で描き、ボード表示を押せなくする（異常シナリオ（知らない列））
+// board.group.column が表に無い列のときは、記載の警告を出して表形式で描き、ボード表示を押せなくする（異常シナリオ（知らない列））
 test("test_error_when_group_column_missing", async ({ page }) => {
   // 準備
   await openPage(page, builtRoot);
   // 実行
-  await mountDocument(page, { markdown: viewMarkdown("group=優先度") });
+  await mountDocument(page, {
+    markdown: viewMarkdown('{"board": {"group": {"column": "優先度"}}}'),
+  });
   // 検証
   const warning = page.locator("#doc .mdmark-syntax-warning");
   await expect(warning).toHaveCount(1);
@@ -168,7 +174,7 @@ test("test_error_when_no_table", async ({ page }) => {
   // 実行
   await mountDocument(page, {
     markdown:
-      "<!-- view: group=状態 -->\n\n表の無い段落だけ。\n\n<!-- /view -->\n",
+      '<!-- view: {"board": {"group": {"column": "状態"}}} -->\n\n表の無い段落だけ。\n\n<!-- /view -->\n',
   });
   // 検証
   const warning = page.locator("#doc .mdmark-syntax-warning");
@@ -179,4 +185,67 @@ test("test_error_when_no_table", async ({ page }) => {
   ).toBeVisible();
   await expect(page.locator("#doc .mdmark-view-switch")).toHaveCount(0);
   await expect(page.locator("#doc .mdmark-view-board")).toHaveCount(0);
+});
+
+// board.values の値ごとのアイコンを、その値の列の見出しにだけ付ける（正常シナリオ（値ごとのアイコンを指定する））
+test("test_normal_when_value_icon", async ({ page }) => {
+  // 準備
+  await openPage(page, builtRoot);
+  await mountDocument(page, {
+    markdown: viewMarkdown('{"board": {"group": {"column": "状態"}}}'),
+  });
+  await expect(page.locator("#doc .mdmark-view-column-head svg")).toHaveCount(
+    3,
+  );
+  const defaults = await page
+    .locator("#doc .mdmark-view-column-head svg")
+    .evaluateAll((nodes) => nodes.map((node) => node.innerHTML));
+  await mountDocument(page, {
+    markdown: viewMarkdown(
+      '{"board": {"group": {"column": "状態"}, "values": {"未着手": {"icon": "inbox"}}}}',
+    ),
+  });
+  // 実行
+  const icons = await page
+    .locator("#doc .mdmark-view-column-head svg")
+    .evaluateAll((nodes) => nodes.map((node) => node.innerHTML));
+  // 検証
+  expect(await columnNames(page)).toEqual(["未着手", "進行中", "完了"]);
+  expect(icons).toHaveLength(3);
+  expect(icons[0]).not.toBe(defaults[0]);
+  expect(icons.slice(1)).toEqual(defaults.slice(1));
+  await expect(page.locator("#doc .mdmark-syntax-warning")).toHaveCount(0);
+});
+
+// board.values の列に無い値は、記載の警告を出して当てず、既定のアイコンで描く（異常シナリオ（列に無い値のアイコン））
+test("test_error_when_value_missing", async ({ page }) => {
+  // 準備
+  await openPage(page, builtRoot);
+  await mountDocument(page, {
+    markdown: viewMarkdown('{"board": {"group": {"column": "状態"}}}'),
+  });
+  await expect(page.locator("#doc .mdmark-view-column-head svg")).toHaveCount(
+    3,
+  );
+  const defaults = await page
+    .locator("#doc .mdmark-view-column-head svg")
+    .evaluateAll((nodes) => nodes.map((node) => node.innerHTML));
+  // 実行
+  await mountDocument(page, {
+    markdown: viewMarkdown(
+      '{"board": {"group": {"column": "状態"}, "values": {"保留": {"icon": "inbox"}}}}',
+    ),
+  });
+  // 検証
+  const warning = page.locator("#doc .mdmark-syntax-warning");
+  await expect(warning).toHaveCount(1);
+  await expect(warning).toContainText("board.values");
+  await expect(warning).toContainText("保留");
+  for (const value of ["未着手", "進行中", "完了"]) {
+    await expect(warning).toContainText(value);
+  }
+  const icons = await page
+    .locator("#doc .mdmark-view-column-head svg")
+    .evaluateAll((nodes) => nodes.map((node) => node.innerHTML));
+  expect(icons).toEqual(defaults);
 });

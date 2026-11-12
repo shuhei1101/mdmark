@@ -80,7 +80,7 @@ test("test_normal_when_unknown_mark", async ({ page }) => {
   await openPage(page, builtRoot);
   // 実行
   await mountDocument(page, {
-    markdown: "前の段落\n\n<!-- unknown: 1 -->\n\n後の段落\n",
+    markdown: '前の段落\n\n<!-- unknown: {"size": 1} -->\n\n後の段落\n',
   });
   // 検証
   const doc = page.locator("#doc");
@@ -336,4 +336,137 @@ test("test_normal_when_frontmatter_unclosed", async ({ page }) => {
   await expect(content.locator("hr")).toHaveCount(1);
   await expect(content.locator("p", { hasText: "段落" })).toHaveCount(1);
   await expect(content.locator("h2")).toHaveText("見出し");
+});
+
+/** 名前・数量の 2 列 3 行の表の行（閉じのマーカーまで） */
+const QUANTITY_TABLE = [
+  "",
+  "| 名前 | 数量 |",
+  "| --- | --- |",
+  "| a | 1 |",
+  "| b | 2 |",
+  "| c | 3 |",
+  "",
+  "<!-- /table -->",
+  "",
+];
+
+/** 2 つの文書を別々に描き、描くたびに振る表の id と元の行番号を除いた、描く先の要素の HTML を返却する */
+async function renderTwo(
+  page: import("@playwright/test").Page,
+  first: string,
+  second: string,
+): Promise<[string, string]> {
+  const html = async (markdown: string): Promise<string> => {
+    await mountDocument(page, { markdown });
+    return (await page.locator("#doc").innerHTML())
+      .replace(/mdmark-table-\d+/g, "mdmark-table")
+      .replace(/ data-source-line="\d+"/g, "");
+  };
+  return [await html(first), await html(second)];
+}
+
+// 今の書き方のマーカーを、同じ設定の JSON の記載と同じに描き、記載の警告を出さない（正常シナリオ（今の書き方のマーカー））
+test("test_normal_when_legacy_mark_args", async ({ page }) => {
+  // 準備
+  await openPage(page, builtRoot);
+  const body = (table: string, details: string): string =>
+    [
+      table,
+      ...QUANTITY_TABLE,
+      details,
+      "",
+      "実行の段落",
+      "",
+      "<!-- /details -->",
+      "",
+    ].join("\n");
+  // 実行
+  const [legacy, json] = await renderTwo(
+    page,
+    body(
+      "<!-- table: data +total total=数量:sum -->",
+      "<!-- details: 実行の例 open -->",
+    ),
+    body(
+      '<!-- table: {"kind": "data", "columns": {"数量": {"total": [{"calc": "sum"}]}}} -->',
+      '<!-- details: {"title": "実行の例", "open": true} -->',
+    ),
+  );
+  // 検証
+  expect(legacy).toBe(json);
+  expect(legacy).toContain("mdmark-table-total");
+  expect(legacy).not.toContain("mdmark-syntax-warning");
+  const details = page.locator("#doc details", { hasText: "実行の段落" });
+  await expect(details.locator("summary")).toHaveText("実行の例");
+  await expect(details).toHaveAttribute("open", "");
+});
+
+// 複数行に分けた JSON のマーカーを、1 行で記載したマーカーと同じに描く（正常シナリオ（複数行にまたがる JSON のマーカー））
+test("test_normal_when_multiline_mark_args", async ({ page }) => {
+  // 準備
+  await openPage(page, builtRoot);
+  // 実行
+  const [multiline, oneLine] = await renderTwo(
+    page,
+    [
+      "<!-- table: {",
+      '"kind": "data",',
+      '"columns": {"数量": {"total": [{"calc": "sum"}]}},',
+      '"collapse": {"open": false, "title": "明細"}',
+      "} -->",
+      ...QUANTITY_TABLE,
+    ].join("\n"),
+    [
+      '<!-- table: {"kind": "data", "columns": {"数量": {"total": [{"calc": "sum"}]}}, "collapse": {"open": false, "title": "明細"}} -->',
+      ...QUANTITY_TABLE,
+    ].join("\n"),
+  );
+  // 検証
+  expect(multiline).toBe(oneLine);
+  const doc = page.locator("#doc");
+  const fold = doc.locator("details", { has: page.locator("table") });
+  await expect(fold.locator("summary").first()).toHaveText("明細");
+  await expect(fold).not.toHaveAttribute("open", "");
+  await fold.locator("summary").first().click();
+  await expect(doc.locator(".mdmark-table-total")).toBeVisible();
+  await expect(doc.locator(".mdmark-syntax-warning")).toHaveCount(0);
+  const text = await doc.innerText();
+  for (const absent of ["<!--", '"kind"', "} -->"]) {
+    expect(text).not.toContain(absent);
+  }
+});
+
+// JSON として読めない引数と型の合わない引数に記載の警告を出し、既定の設定で描く（異常シナリオ（JSON として読めないマーカーの引数））
+test("test_error_when_mark_args_not_json", async ({ page }) => {
+  // 準備
+  await openPage(page, builtRoot);
+  // 実行
+  await mountDocument(page, {
+    markdown: [
+      '<!-- details: {"title": 補足} -->',
+      "",
+      "範囲の段落",
+      "",
+      "<!-- /details -->",
+      "",
+      '<!-- fig: {"id": 1} -->',
+      "",
+      '![構成](data:image/gif;base64,R0lGODlhAQABAAAAACw= "全体の構成")',
+      "",
+    ].join("\n"),
+  });
+  // 検証
+  const doc = page.locator("#doc");
+  const warnings = doc.locator(".mdmark-syntax-warning");
+  await expect(warnings).toHaveCount(2);
+  await expect(warnings.nth(0)).toContainText("JSON として読めません");
+  await expect(warnings.nth(0)).toContainText("文字目");
+  await expect(warnings.nth(1)).toContainText("id");
+  await expect(warnings.nth(1)).toContainText("文字");
+  const details = doc.locator("details", { hasText: "範囲の段落" });
+  await expect(details.locator("summary")).toHaveText("詳細");
+  await expect(details).not.toHaveAttribute("open", "");
+  await expect(doc.locator("img[alt='構成']")).toHaveCount(1);
+  await expect(doc).not.toContainText("図 1");
 });

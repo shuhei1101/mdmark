@@ -11,13 +11,13 @@ export const CASCADE_THEME_VARIABLE = "--e2e-cascade-theme";
 export const cascadeTheme = (value: string): string =>
   `.mdmark { ${CASCADE_THEME_VARIABLE}: ${value}; }\n`;
 
-/** 固有の部品のモジュール。`greet` のマーカーの場所に `{prefix}:{引数}` を描く */
+/** 固有の部品のモジュール。`greet` のマーカーの場所に `{prefix}:{options.target}` を描く */
 export const greetSource = (prefix = "greet"): string => `export default {
   name: "greet",
   directive: "greet",
   load: async () => ({
     draw(slot, value) {
-      slot.textContent = "${prefix}:" + value.args.join(",");
+      slot.textContent = "${prefix}:" + value.options.target;
     },
   }),
 };
@@ -30,7 +30,7 @@ export const CASCADE_GUIDE = [
   "> [!NOTE]",
   "> 注意書き",
   "",
-  "<!-- table: data -->",
+  '<!-- table: {"kind": "data"} -->',
   "",
   "| 名前 | 数 |",
   "| --- | --- |",
@@ -39,7 +39,7 @@ export const CASCADE_GUIDE = [
   "",
   "<!-- /table -->",
   "",
-  "<!-- greet: 世界 -->",
+  '<!-- greet: {"target": "世界"} -->',
   "",
 ].join("\n");
 

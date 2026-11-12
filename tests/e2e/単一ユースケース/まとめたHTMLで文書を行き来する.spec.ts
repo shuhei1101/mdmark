@@ -87,7 +87,7 @@ test("test_normal_when_page_settings_per_document", async ({
       "  out: dist/docs.html",
       "",
     ].join("\n"),
-    "A.md": "<!-- page: scheme=dark -->\n\n# 文書A\n\n入口の文書。\n",
+    "A.md": '<!-- page: {"scheme": "dark"} -->\n\n# 文書A\n\n入口の文書。\n',
     "B.md": "# 文書B\n\nマーカーを持たない文書。\n",
   });
   const result = await runCli(builtRoot, ["build"], dir);
@@ -405,7 +405,7 @@ test("test_normal_when_back_restore_folds_and_tabs", async ({
       "",
       "## 導入",
       "",
-      "<!-- section: closed -->",
+      '<!-- section: {"open": false} -->',
       "",
       "<!-- tabs -->",
       "",

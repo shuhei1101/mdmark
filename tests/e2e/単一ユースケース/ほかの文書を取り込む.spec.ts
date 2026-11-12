@@ -33,7 +33,7 @@ const PROCEDURE_MD = [
   "",
   "実行の段落",
   "",
-  "<!-- table: data -->",
+  '<!-- table: {"kind": "data"} -->',
   "",
   "| 手順 | 担当 |",
   "| --- | --- |",
@@ -57,11 +57,11 @@ test("test_normal", async ({ page }) => {
     markdown: [
       "# 案内",
       "",
-      "<!-- include: 共通/手順.md -->",
+      '<!-- include: {"path": "共通/手順.md"} -->',
       "",
-      "<!-- include: 共通/手順.md#実行 -->",
+      '<!-- include: {"path": "共通/手順.md", "heading": "実行"} -->',
       "",
-      "<!-- include: src/app.ts#L3-L5 -->",
+      '<!-- include: {"path": "src/app.ts", "lines": {"from": 3, "to": 5}} -->',
       "",
     ].join("\n"),
     includes: { "共通/手順.md": PROCEDURE_MD, "src/app.ts": APP_TS },
@@ -110,11 +110,11 @@ test("test_error_when_target_missing", async ({ page }) => {
     markdown: [
       "前の段落",
       "",
-      "<!-- include: missing.md -->",
+      '<!-- include: {"path": "missing.md"} -->',
       "",
-      "<!-- include: 共通/手順.md#無い見出し -->",
+      '<!-- include: {"path": "共通/手順.md", "heading": "無い見出し"} -->',
       "",
-      "<!-- include: src/app.ts#L20-L22 -->",
+      '<!-- include: {"path": "src/app.ts", "lines": {"from": 20, "to": 22}} -->',
       "",
       "後ろの段落",
       "",
@@ -137,10 +137,10 @@ test("test_error_when_circular", async ({ page }) => {
   await openPage(page, builtRoot);
   // 実行
   await mountDocument(page, {
-    markdown: "<!-- include: a.md -->\n",
+    markdown: '<!-- include: {"path": "a.md"} -->\n',
     includes: {
-      "a.md": "a の段落\n\n<!-- include: b.md -->\n",
-      "b.md": "b の段落\n\n<!-- include: a.md -->\n",
+      "a.md": 'a の段落\n\n<!-- include: {"path": "b.md"} -->\n',
+      "b.md": 'b の段落\n\n<!-- include: {"path": "a.md"} -->\n',
     },
   });
   // 検証
@@ -158,7 +158,8 @@ test("test_normal_when_included_has_frontmatter", async ({ page }) => {
   await openPage(page, builtRoot);
   // 実行
   await mountDocument(page, {
-    markdown: "前の段落\n\n<!-- include: 共通/手順.md -->\n\n後の段落\n",
+    markdown:
+      '前の段落\n\n<!-- include: {"path": "共通/手順.md"} -->\n\n後の段落\n',
     config: { features: { frontmatter: true } },
     includes: {
       "共通/手順.md": "---\ntitle: 手順\n---\n\n## 実行\n\n実行の段落\n",
@@ -170,4 +171,34 @@ test("test_normal_when_included_has_frontmatter", async ({ page }) => {
   await expect(doc.getByText("実行の段落")).toHaveCount(1);
   await expect(doc).not.toContainText("title: 手順");
   await expect(doc.locator(".mdmark-frontmatter")).toHaveCount(0);
+});
+
+// Markdown のファイルへの lines と、heading と lines の両方を持つ取り込みを、取り込まずに記載の警告にする（異常シナリオ（記載できない取り込みの組み合わせ））
+test("test_error_when_lines_not_allowed", async ({ page }) => {
+  // 準備
+  await openPage(page, builtRoot);
+  // 実行
+  await mountDocument(page, {
+    markdown: [
+      "前の段落",
+      "",
+      '<!-- include: {"path": "共通/手順.md", "lines": {"from": 1, "to": 3}} -->',
+      "",
+      '<!-- include: {"path": "src/app.ts", "heading": "実行", "lines": {"from": 3, "to": 5}} -->',
+      "",
+      "後ろの段落",
+      "",
+    ].join("\n"),
+    includes: { "共通/手順.md": PROCEDURE_MD, "src/app.ts": APP_TS },
+  });
+  // 検証
+  const warnings = page.locator("#doc .mdmark-syntax-warning");
+  await expect(warnings).toHaveCount(2);
+  await expect(warnings.nth(0)).toContainText("Markdown 以外のファイル");
+  await expect(warnings.nth(1)).toContainText("同時に記載できません");
+  await expect(page.locator("#doc .mdmark-include")).toHaveCount(0);
+  await expect(page.locator("#doc")).not.toContainText("準備の段落");
+  await expect(page.locator("#doc")).not.toContainText("const v3 = 3;");
+  await expect(page.locator("#doc")).toContainText("前の段落");
+  await expect(page.locator("#doc")).toContainText("後ろの段落");
 });

@@ -35,13 +35,13 @@ test("test_normal", async ({ page }) => {
   // 実行
   await mountDocument(page, {
     markdown: [
-      "<!-- fig: arch -->",
+      '<!-- fig: {"id": "arch"} -->',
       "![構成](https://img.example.test/arch.svg)",
       "",
-      "<!-- fig: flow -->",
+      '<!-- fig: {"id": "flow"} -->',
       "![流れ](https://img.example.test/flow.svg)",
       "",
-      "<!-- fig: list -->",
+      '<!-- fig: {"id": "list"} -->',
       "| 名前 | 数 |",
       "| --- | --- |",
       "| a | 1 |",
@@ -74,7 +74,7 @@ test("test_error_when_reference_missing", async ({ page }) => {
   // 実行
   await mountDocument(page, {
     markdown:
-      "<!-- fig: arch -->\n![構成](https://img.example.test/arch.svg)\n\n本文の [図](#fig-missing) を見る。\n",
+      '<!-- fig: {"id": "arch"} -->\n![構成](https://img.example.test/arch.svg)\n\n本文の [図](#fig-missing) を見る。\n',
   });
   // 検証
   await expect(page.locator("#doc p a")).toHaveText("図");
@@ -91,7 +91,7 @@ test("test_error_when_id_duplicated", async ({ page }) => {
   // 実行
   await mountDocument(page, {
     markdown:
-      "<!-- fig: arch -->\n![一](https://img.example.test/one.svg)\n\n<!-- fig: arch -->\n![二](https://img.example.test/two.svg)\n",
+      '<!-- fig: {"id": "arch"} -->\n![一](https://img.example.test/one.svg)\n\n<!-- fig: {"id": "arch"} -->\n![二](https://img.example.test/two.svg)\n',
   });
   // 検証
   await expect(page.locator("#doc .mdmark-figure-caption")).toHaveText([
@@ -113,13 +113,13 @@ test("test_normal_when_gallery_and_caption", async ({ page }) => {
   // 実行
   await mountDocument(page, {
     markdown: [
-      "<!-- fig: shots -->",
-      "<!-- gallery: cols=2 -->",
+      '<!-- fig: {"id": "shots"} -->',
+      '<!-- gallery: {"columns": 2} -->',
       "![一](https://img.example.test/one.svg)",
       "![二](https://img.example.test/two.svg)",
       "<!-- /gallery -->",
       "",
-      "<!-- fig: arch -->",
+      '<!-- fig: {"id": "arch"} -->',
       '![構成図](https://img.example.test/arch.svg "構成")',
       "",
       '![写真の画像](https://img.example.test/photo.svg "写真")',
