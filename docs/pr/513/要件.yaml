@@ -45,7 +45,9 @@ docs:
   - page: vscode/files.yaml
     new: false
     change: '`tests/integration/stub-server.ts` の行の description から E2E を削除する'
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-12T20:52:10.602606+00:00'
 scope_out:
   - item: シナリオの `test_file` と、シナリオの前提・手順の E2E の記述（『配布物をビルドして検査する』の E2E のブラウザの取得 等）
     reason: D-311 A でシナリオを残し、`test_file` を作り直すときの対応の印として残すと決めている

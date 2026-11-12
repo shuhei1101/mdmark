@@ -60,8 +60,10 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-12T20:48:36.035860+00:00'
   - process: モジュール構成設計
-    status: todo
+    status: done
     note: MOD-472-87（stub-server.ts）・MOD-472-17（ビルドと配布）の E2E の記述を削除する
+    updated_by: planner
+    updated_at: '2026-11-12T20:52:13.899571+00:00'
   - process: ドキュメント修正
     status: todo
     note: 要件.yaml の更新ドキュメントのとおり
