@@ -6396,6 +6396,38 @@ flows:
       - 「記法の読み取り」を閉じると、閉じたグループのノードに「ノード 3 件」が出る
       - 'シーケンス図に `plays_over: 1` と構成図に無い参加者 `ghost` を足すと、シーケンス図の前の書き方の警告に `ghost` が出て、`ghost` のメッセージを再生すると構成図に `map-dim` が無い'
     test: test_normal_when_map_terms
+  - name: 正常系（描き直してもセクションの開閉を保つ）
+    summary: 読者が開閉したセクションを、`update` の後も同じ開閉で描き、マーカーを変えたセクションと新しいセクションはマーカーのとおりに描く
+    setup:
+      - name: 配布物を読み込んだページ
+        description: 正常系と同じ
+        notes: URL は `#注意` を付けて開く
+      - name: 開いたセクションと閉じたセクションを持つ Markdown
+        description: '`## 概要` と段落、直後に `<!-- section: {"open": false} -->` を持つ `## 補足` と段落と `### 注意` と段落、`## 参考` と段落を持つ文書'
+      - name: 描き直す Markdown
+        description: '段落の文字を書き換え、`## 参考` の直後に `<!-- section: {"open": false} -->` を追加し、末尾に `## 付録` と段落を追加した文書'
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        participant P as 利用側のページ
+        participant M as mdmark
+        P->>M: mount(el, { markdown })
+        M->>P: #注意 を囲む補足を開いて描く
+        P->>M: 概要の開閉を押す
+        M->>P: 概要を閉じる
+        P->>M: 補足の開閉を押す
+        M->>P: 補足を閉じる
+        P->>M: 参考の開閉を 2 回押す
+        M->>P: 参考を開いたままにする
+        P->>M: update(描き直す Markdown)
+        M->>P: 覚えた開閉で概要と補足を閉じ、参考と付録はマーカーのとおりに描く
+    expected:
+      - '`update` の後、`概要` と `補足` の中身が `hidden="until-found"` を持ち、開閉のボタンの `aria-expanded` が `false`'
+      - '`update` の後、URL が `#注意` のままでも `補足` は閉じたまま'
+      - '`update` の後、マーカーを追加した `参考` の中身が `hidden="until-found"` を持ち、追加した `付録` の中身は `hidden` を持たない'
+      - もう一度 `mount` した後、`概要` は開き、`補足` は `#注意` で開いている
+    test: test_normal_when_sections_kept_on_update
 lead: 利用側のページが、要素と Markdown と設定を指定し、要素の中に文書を描く。戻り値で本文の差し替えと片付けができる。
 idempotent: false
 side_effects: '`el` の中身と class を書き換え、記法の操作のイベントを `el` の中に付ける。まとめていない名前の `icon:` があるとき、jsDelivr の Lucide のアイコンのモジュールを名前ごとに `import()` し、読み込めなかった名前だけ同じ URL へ `HEAD` の `fetch` を送信する。`side-toc` がオンで見出しがあるとき、`el` の中を本文の列と右側の目次に分け、見出しの位置を `IntersectionObserver` で確認する。出し方が `hover` のときは、右端の線とパネルの位置を決めるため、`window` の `scroll`・`resize` と、`el` に最も近いスクロールする祖先の要素があればその `scroll` を受け取り、`document.body` の子の追加・削除を `MutationObserver` で確認する。`back-to-top` がオンのとき、`el` の子に先頭へ戻るボタンを配置し、スクロールする場所が画面全体なら `window` の `scroll`、`el` に最も近いスクロールする祖先の要素なら `document` の `scroll`（キャプチャーフェーズ）と、`window` の `resize` を受け取り、`document.body` と `el` の子の追加・削除を `MutationObserver` で確認する。`window` の `beforeprint`・`afterprint`・`hashchange` と、絞り込みのドロワーを開いている間だけ `document` の `pointerdown`・`keydown` を受け取る。図の部品か埋め込んだ HTML があるとき、図の表示する枠と埋め込んだ HTML の大きさを `ResizeObserver` で見、ツールチップを開いている間だけ `document` の `keydown`・`pointerdown` と `window` の `scroll`・`resize` を受け取り、全画面の間だけ `el` の中に `dialog` を配置する。リンク先を持つフロー図のノードの上から図を動かしたとき、次の 1 回の `click` まで `window` の `click`（キャプチャーフェーズ）を受け取る。`diagram-resize` がオンのとき、リサイズハンドルで変えた図の高さを sessionStorage に書き込み、描くたびに読み込む（ダブルクリックで今の倍率の図の全体が収まる高さを書き込む）。操作できる部品の写すボタン・表のコピー・行の URL のコピー・コードブロックのコピー・ファイルツリーのコピーでクリップボードに書き込む。表があるとき、表の大きさと描く先の要素の幅を `ResizeObserver` で見、`animation-timeline` を持たないブラウザでは `window` と文書の中の `scroll` と `window` の `resize` を受け取る。`data-group` を持つタブがあるとき、localStorage の `mdmark-tabs:{group}` を描くたびに読み込み、読者がタブを選ぶと書き込む。そのとき、ページの中の `el` の外にある同じ `group` のタブ群の選択も書き換える。文書に外部ライブラリか拡張のマーカーがあるとき、そのモジュールを読み込む。色分けの対象のコードブロックがあるとき、`syntax.url` の先の core と、使用する言語のモジュールを読み込む。`mermaid` がオンの文書に mermaid のコードブロックがあるとき、`mermaid.url` の先のモジュールを読み込み、描く先の配色の明暗の変化を確認して再描画する。`html-scripts` がオンの文書に範囲の `ts`・`js` があるとき、`html-scripts.url` の先の変換のライブラリを読み込み、範囲ごとに `document.head` へ `script` 要素を 1 つ配置してすぐ削除し、範囲の関数を呼ぶ。`opts.diffSource` を指定したとき、読者が差分を開くと（`opts.diffMode` が `open` なら描いた時点、`blocks` なら描くたびに）取り出し元の `revisions`・`content` を呼び、差分の行を出している間だけミニマップの帯を配置し、スクロール先のスクロールの `scroll` と `window` の `resize` を受け取る。文書にビューのマーカーがあるとき、ビューの部品のモジュールを読み込む。`comments` がオンで `opts.commentStore` を指定したとき、コメントの部品のモジュールを読み込み、`load` を描くたびに 1 回呼び、保存で `save`、読み込みと保存の関数が持つときは吹き出しの修正で `update`・削除で `remove`、`reloadComments` で `load` を呼ぶ。その間は `document` の `selectionchange` を受け取り、コメントのボタン・入力欄・吹き出しを `document.body` に配置する。あわせて本文の列の右に余白の列を配置し、描く先の要素の大きさを `ResizeObserver`、描く先の要素の中の開閉・切り替えを `MutationObserver` で確認する。map の範囲があるとき、図ごとの開閉・中へ入ったグループ・動かした位置・参加者の並び順を sessionStorage に記載し、`map.url_state` が `false` でなければ中へ入ったグループと中だけを描くブロックを `history.replaceState` でクエリ文字列の `map-{図の番号}` に記載する。ノードの大きさの変化を `ResizeObserver` で確認する。map の部品のモジュール（`dist/map.js`）を読み込む。印の引数が `{"play": "autoplay"}` の図は、画面に入ったかを `IntersectionObserver` で確認し、自動で進めている間は印の `interval` 秒ごとの時計を持つ'
@@ -6797,7 +6829,7 @@ constraints:
   - item: タブの操作
     constraint: '`mdmark-tabs` の頭に `role="tablist"` の並びを配置し、各 `mdmark-tab-panel` のタブ名を `role="tab"` のボタンにする。中身は `role="tabpanel"` にし、選んだタブの中身だけを出してほかは `hidden` にする。左右の矢印・Home・End でタブを移って選ぶ（WAI-ARIA のタブの作法）。描いた直後は最初のタブを選ぶ。`data-group` を持つ `mdmark-tabs` は、描いたときに localStorage のキー `mdmark-tabs:{group}` に残したタブ名のタブを選び、残していないかそのタブ名が無ければ最初のタブを選ぶ。読者が押すかキーでタブを選ぶと、ページの `data-group` が同じ `mdmark-tabs` のうち同じタブ名を持つものをそのタブ名へ切り替え（フォーカスは動かさない）、選んだタブ名を `mdmark-tabs:{group}` に残す。描いたときの選択と統一して切り替わった選択は残さない。localStorage を取り出す・読み込みと保存をするときに例外が出たら、`console.warn` に出して残さず・読み込まずに統一する動きと切り替えを続ける。入れ子の `mdmark-tabs` はそれぞれ別の `tablist` にし、矢印・Home・End はフォーカスのある並びの中だけで移る。内側のタブを選んでも外側の選択は変えない。タブ名の `strong` はボタンの中に残す'
   - item: セクションと行の詳細の開閉
-    constraint: セクションは見出しの文字を `aria-expanded`・`aria-controls` を持つボタンにし、閉じたセクションの `mdmark-section-body` を `hidden="until-found"` にする（`data-section="closed"` は閉じた状態で始める）。URL の `#ID` が閉じたセクションの中を指すとき（描いたときと `hashchange`）と、ページ内検索が閉じたセクションの中に該当したときは、そのセクションを開く。行の詳細は、詳細を持つ行の先頭のセルに `aria-expanded`・`aria-controls` を持つボタンを配置し、`mdmark-row-detail` の行を `hidden` で開閉する（描いた直後は閉じる）
+    constraint: セクションは見出しの文字を `aria-expanded`・`aria-controls` を持つボタンにし、閉じたセクションの `mdmark-section-body` を `hidden="until-found"` にする（`data-section="closed"` は閉じた状態で始める）。URL の `#ID` が閉じたセクションの中を指すとき（`mount` で描いたときと `hashchange`）と、ページ内検索が閉じたセクションの中に該当したときは、そのセクションを開く。読者が開閉したセクション（開閉のボタン・Shift での入れ子の開閉・すべて展開・すべて折りたたむ・URL の `#ID`・右側の目次から移る・コメントの箇所へ移る・ページ内検索で開いたもの）の開閉は `mount` ごとに覚え、`update` で描き直すと `mdmark-section-body` の `id` が同じセクションをその開閉で描く。覚えていないセクションと、`data-section` が覚えたときと変わったセクションはマーカーのとおりの開閉で描く。`update` では URL の `#ID` のセクションを開き直さない。印刷の前後の開閉は覚えず、同じ要素への 2 回目の `mount` と `destroy` で覚えた開閉を捨てる。行の詳細は、詳細を持つ行の先頭のセルに `aria-expanded`・`aria-controls` を持つボタンを配置し、`mdmark-row-detail` の行を `hidden` で開閉する（描いた直後は閉じる）
   - item: 印刷で記法を開く
     constraint: '`print` がオンのとき、`beforeprint` で閉じた `details`（閉じた表・閉じた注意書きと入れ子の注意書きを含む）・閉じたセクション・行の詳細・閉じたツリーのフォルダ・畳んだコードの行・列を畳んだ ER 図のテーブル（全ての列を出し、関係の線をもう一度結ぶ）・閉じた脚注の一覧・畳んだ階層の表の行・隠した YAML の見本を開き、タブの全ての中身をタブ名をタイトルにして縦に並べる。`afterprint` で、開いたものだけをもう一度閉じ、印刷の前に選んでいたタブだけを出す'
   - item: 拡張のマーカー

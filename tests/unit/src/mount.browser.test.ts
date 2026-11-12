@@ -83,6 +83,7 @@ afterEach(() => {
   for (const el of elements.splice(0)) {
     el.remove();
   }
+  history.replaceState(null, "", location.pathname + location.search);
 });
 
 // 要素に本文を描き、class を付ける（正常系）
@@ -665,6 +666,58 @@ test("test_mount_when_side_toc_kept_on_update", async () => {
   expect(hrefs).toEqual(["#b", "#c"]);
 });
 
+/** セクションの ID の中身の要素を返却する */
+function sectionBody(el: HTMLElement, id: string): HTMLElement {
+  const body = el.querySelector<HTMLElement>(`[id="section-${id}"]`);
+  if (!body) {
+    throw new Error(`セクションの中身が無い: ${id}`);
+  }
+  return body;
+}
+
+// 閉じた補足の中に注意を持つ文書
+const SECTIONS_MARKDOWN = [
+  "## 概要",
+  "",
+  "概要の段落",
+  "",
+  "## 補足",
+  "",
+  '<!-- section: {"open": false} -->',
+  "",
+  "補足の段落",
+  "",
+  "### 注意",
+  "",
+  "注意の段落",
+  "",
+].join("\n");
+
+// update で描き直しても読者が開閉したセクションの開閉を保ち、#ID で開き直さない（正常系）
+test("test_mount_when_sections_kept_on_update", async () => {
+  // 準備
+  history.replaceState(null, "", "#注意");
+  const el = createElement();
+  const handle = await mountTracked(el, { markdown: SECTIONS_MARKDOWN });
+  for (const id of ["概要", "補足"]) {
+    el.querySelector<HTMLButtonElement>(
+      `[aria-controls="section-${id}"]`,
+    )?.click();
+  }
+  const updated = `${SECTIONS_MARKDOWN.replace("概要の段落", "書き換えた概要の段落")}\n## 付録\n\n付録の段落\n`;
+  // 実行
+  handle.update(updated);
+  // 検証: 読者が閉じた概要と補足は閉じたまま、追加した付録は開く
+  expect(sectionBody(el, "概要").getAttribute("hidden")).toBe("until-found");
+  expect(sectionBody(el, "補足").getAttribute("hidden")).toBe("until-found");
+  expect(sectionBody(el, "付録").hasAttribute("hidden")).toBe(false);
+  // 検証: もう一度 mount すると覚えた開閉を捨て、#注意 で補足を開く
+  handle.destroy();
+  await mountTracked(el, { markdown: updated });
+  expect(sectionBody(el, "概要").hasAttribute("hidden")).toBe(false);
+  expect(sectionBody(el, "補足").hasAttribute("hidden")).toBe(false);
+});
+
 // 機能をオフにすると右側の目次を配置せず、本文を列に包まない（正常系）
 test("test_mount_when_side_toc_off", async () => {
   // 準備
@@ -798,6 +851,42 @@ test("test_mount_when_diff_blocks", async () => {
   ]);
   // 検証: 記法の操作が色分けした本文に付いている
   expect(el.querySelector("button.mdmark-filter")).not.toBeNull();
+});
+
+// blocks で mount の直後に描き直す 2 回目の描画でも #ID へ移る（正常系）
+test("test_mount_when_diff_blocks_with_hash", async () => {
+  // 準備
+  history.replaceState(null, "", "#注意");
+  const scrolled: Element[] = [];
+  vi.spyOn(Element.prototype, "scrollIntoView").mockImplementation(function (
+    this: Element,
+  ) {
+    scrolled.push(this);
+  });
+  const el = createElement();
+  const after = `${SECTIONS_MARKDOWN}\n追加した段落\n`;
+  const contents: Record<string, string> = {
+    r1: SECTIONS_MARKDOWN,
+    r2: after,
+  };
+  const diffSource = {
+    revisions: async () => DIFF_REVISIONS,
+    content: async (target: { docId: string; revisionId: string }) =>
+      contents[target.revisionId] ?? "",
+  };
+  // 実行
+  await mountTracked(el, {
+    markdown: after,
+    docId: "guide",
+    diffSource,
+    diffMode: "blocks",
+  });
+  // 検証: 2 回目の描画の後も補足が開き、その描画の注意へ移る
+  await vi.waitFor(() => {
+    expect(addedParagraphs(el)).toEqual(["追加した段落"]);
+  });
+  expect(sectionBody(el, "補足").hasAttribute("hidden")).toBe(false);
+  expect(scrolled.at(-1)).toBe(el.querySelector('[id="注意"]'));
 });
 
 // blocks で update した後に届いた古い取り出しの結果で再描画しない（正常系）
