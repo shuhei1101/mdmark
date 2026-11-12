@@ -6,6 +6,7 @@
       "!dev",
       "!docs",
       "!dist",
+      "!migrations/*/legacy-marks.js",
       "!vscode/dist",
       "!vscode/media",
       "!.storybook/public",

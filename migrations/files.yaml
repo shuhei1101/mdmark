@@ -42,3 +42,9 @@ files:
     related:
       - to: docs/module/MOD-477-4.mjs
         type: implements
+  - path: next/legacy-marks.js
+    description: モジュール構成『ライブラリ本体 / バージョンを上げる』のうち「移行のスクリプトが読み込む、今の書き方の引数を JSON に書き換える処理をまとめたファイル（buildLegacyMarks が書き込む）」を受け持つ。文書のマーカーの移行が使う書き換えの処理を確かめるときに参照する。
+    tags: [topic:バージョン, topic:移行, topic:マーカー]
+    related:
+      - to: docs/module/MOD-472-166.ts
+        type: implements

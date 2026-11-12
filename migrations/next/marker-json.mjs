@@ -109,15 +109,12 @@ export const migrateDocumentMarks = async (options) => {
   return { changed, report, problems };
 };
 
-/** スクリプトとして呼ばれたとき、`--config` の設定の文書を、配布物の書き換えの処理で書き換える */
+/** スクリプトとして呼ばれたとき、`--config` の設定の文書を、同じフォルダにまとめた書き換えの処理で書き換える */
 const main = async () => {
   const configPath = resolve(argv[argv.indexOf("--config") + 1]);
   const { rewriteLegacyMarks } = await import(
     pathToFileURL(
-      resolve(
-        dirname(fileURLToPath(import.meta.url)),
-        "../../dist/legacy-marks.js",
-      ),
+      resolve(dirname(fileURLToPath(import.meta.url)), "legacy-marks.js"),
     ).href
   );
   const result = await migrateDocumentMarks({
