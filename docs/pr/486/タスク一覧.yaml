@@ -1,0 +1,83 @@
+tasks:
+  - process: 初期構築
+    status: skipped
+    reason: 既存リポジトリのため対象外
+    updated_by: planner
+    updated_at: '2026-11-12T12:17:06.322264+00:00'
+  - process: リバースエンジニアリング
+    status: skipped
+    reason: 設計書が揃っているため対象外
+    updated_by: planner
+    updated_at: '2026-11-12T12:17:06.322264+00:00'
+  - process: 方針決め
+    status: skipped
+    reason: 方針決めの依頼ではない
+    updated_by: planner
+    updated_at: '2026-11-12T12:17:06.322264+00:00'
+  - process: PoC 検証
+    status: skipped
+    reason: '確認に使う data-mdmark-csp-violations は #382 で test_normal_when_mermaid が使っており検証済み'
+    updated_by: planner
+    updated_at: '2026-11-12T12:17:06.322264+00:00'
+  - process: 複合ユースケース設計
+    status: skipped
+    reason: シナリオは変わらない
+    updated_by: planner
+    updated_at: '2026-11-12T12:17:06.322264+00:00'
+  - process: デザインスタイル選定
+    status: skipped
+    reason: 画面を変えない
+    updated_by: planner
+    updated_at: '2026-11-12T12:17:06.322264+00:00'
+  - process: 画面一覧・画面遷移
+    status: skipped
+    reason: 画面を変えない
+    updated_by: planner
+    updated_at: '2026-11-12T12:17:06.322264+00:00'
+  - process: 単一ユースケース設計
+    status: skipped
+    reason: シナリオは変わらない
+    updated_by: planner
+    updated_at: '2026-11-12T12:17:06.322264+00:00'
+  - process: モック作成
+    status: skipped
+    reason: 画面を変えない
+    updated_by: planner
+    updated_at: '2026-11-12T12:17:06.322264+00:00'
+  - process: インターフェース定義設計
+    status: skipped
+    reason: IF-472-22 の正常系（範囲のスクリプトと CSS）は期待値に「CSP の違反が 0 件」を既に持ち、テスト名も変わらない
+    updated_by: planner
+    updated_at: '2026-11-12T12:17:06.322264+00:00'
+  - process: 部品設計
+    status: skipped
+    reason: 部品を変えない
+    updated_by: planner
+    updated_at: '2026-11-12T12:17:06.322264+00:00'
+  - process: 画面設計
+    status: skipped
+    reason: 画面を変えない
+    updated_by: planner
+    updated_at: '2026-11-12T12:17:06.322264+00:00'
+  - process: モジュール構成設計
+    status: skipped
+    reason: 'モジュールを変えない（MOD-472-75 の CSP の違反の件数の記載は #382 で入っている）'
+    updated_by: planner
+    updated_at: '2026-11-12T12:17:06.322264+00:00'
+  - process: ドキュメント修正
+    status: skipped
+    reason: 更新するドキュメントが無い
+    updated_by: planner
+    updated_at: '2026-11-12T12:17:06.322264+00:00'
+  - process: 単体テスト作成
+    status: skipped
+    reason: 実装を変えない
+    updated_by: planner
+    updated_at: '2026-11-12T12:17:06.322264+00:00'
+  - process: 実装
+    status: skipped
+    reason: 実装を変えない
+    updated_by: planner
+    updated_at: '2026-11-12T12:17:06.322264+00:00'
+  - process: 結合テスト作成
+    status: todo
