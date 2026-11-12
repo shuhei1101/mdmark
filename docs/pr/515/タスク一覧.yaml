@@ -71,7 +71,9 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-12T22:33:04.175995+00:00'
   - process: 実装
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-12T22:44:02.867210+00:00'
   - process: 結合テスト作成
     status: skipped
     reason: 書き出しの結合テストは無く、書き出す HTML は単体テストと単一 UC『HTMLに書き出す』の E2E で確かめる
