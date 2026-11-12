@@ -5236,10 +5236,13 @@ test("test_error_when_part_module_unavailable", async () => {
   expect(el.querySelector(".mdmark-view-switch")).toBeNull();
   expect(el.querySelector(".mdmark-view-board")).toBeNull();
   expect(el.querySelector(".mdmark-notice")).toBeNull();
-  expect(spy.mock.calls.map((call) => call.map(String).join(" "))).toEqual([
-    expect.stringMatching(/view .*\/blocked\/.*\/view\.js/),
-    expect.stringMatching(/comments .*\/blocked\/.*\/comments\.js/),
-  ]);
+  // view と comments の読み込みは並んで進み、呼び出しの順番は決まっていない
+  expect(spy.mock.calls.map((call) => call.map(String).join(" "))).toEqual(
+    expect.arrayContaining([
+      expect.stringMatching(/view .*\/blocked\/.*\/view\.js/),
+      expect.stringMatching(/comments .*\/blocked\/.*\/comments\.js/),
+    ]),
+  );
   // 元のエラーを最後の引数に含む
   for (const call of spy.mock.calls) {
     expect(call.at(-1)).toBeInstanceOf(Error);
