@@ -92,3 +92,6 @@ scope_out:
   - item: mdmark check を引数なしで実行するフォルダの点検での、罫線のコードブロックの警告
     reason: フォルダの点検は描いたときの記載の警告を集めず（知らないマーカー・図の定義・map の補足などだけ）、記載した後の点検は --text・--file（MCP の check）で行うため。記載の警告をフォルダの点検へ広げるのは警告全体に関わる別の題材
     plan: none
+  - item: 図の枠のリサイズハンドル（`src/parts/diagram.ts` の `renderDiagramFrame`）が、描いた直後に aria-valuenow などの必須の ARIA 属性を持たず、axe の aria-required-attr が出る
+    reason: reviewer の対象外の逸脱の報告（https://github.com/shuhei1101/mdmark/pull/508#discussion_r4556332375 ）。WAI-ARIA のフォーカスできる separator の必須の属性と部品設計『図の枠』の accessibility から外れている。develop の既存の描画で、今回の要望に含まれない
+    plan: '#514'
