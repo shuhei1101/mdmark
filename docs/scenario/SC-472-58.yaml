@@ -51,7 +51,7 @@ scenarios:
       - name: 文書を描いたページ
         description: バージョンを固定した URL で mdmark を読み込み、文書を描いた HTML
       - name: 閉じた記法を持つ Markdown
-        description: '2 つの中身を持つタブの範囲、`<!-- section: {"open": false} -->` のセクション、`<!-- row-detail: {"at": 1} -->` の行の詳細、`<!-- table: {"kind": "data", "collapse": {"open": false}} -->` の表、`> [!NOTE]-` の注意書き、`<!-- tabs: {"collapse": {"open": false}} -->` のタブの範囲、`<!-- steps: {"collapse": {"open": false}} -->` のステップの範囲、ルートの下に 2 階層の入れ子のフォルダを持つ言語 `tree` のコードブロックを持つ文書'
+        description: '2 つの中身を持つタブの範囲、`<!-- section: {"open": false} -->` のセクション、`<!-- row-detail: {"at": 1} -->` の行の詳細、`<!-- table: {"kind": "data", "collapse": {"open": false}} -->` の表、`> [!NOTE]-` の注意書き、`<!-- tabs: {"collapse": {"open": false}} -->` のタブの範囲、`<!-- steps: {"collapse": {"open": false}} -->` のステップの範囲、`<!-- tree: {"depth": 1} -->` の後ろの、ルートの下に 2 階層の入れ子のフォルダを持つ言語 `tree` のコードブロックを持つ文書'
       - name: Mock
         description: 正常シナリオと同じ。印刷の終わりは、媒体を `screen` に戻して印刷の後のイベントを送信することで代える
     flow: |-
