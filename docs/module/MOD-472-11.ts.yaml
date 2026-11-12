@@ -18,7 +18,7 @@ functions:
       - name: options
         type: '{ env: NodeJS.ProcessEnv; pluginRoot: string; version: string } & { run: RunCommand }'
         required: true
-        description: 環境変数・プラグインの直下・プラグインのバージョン・コマンドの実行
+        description: 環境変数・プラグインの直下・プラグインのビルドで埋めた mdmark のバージョン・コマンドの実行
     returns:
       type: Promise<TerminalStatus>
       description: インターフェース定義『端末の状態を調べる』のレスポンス
