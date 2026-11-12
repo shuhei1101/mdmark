@@ -1643,17 +1643,17 @@ files:
     related:
       - to: docs/module/MOD-472-118.ts
         type: implements
-  - path: render/parser.ts
-    description: モジュール構成『ライブラリ本体 / 描画』のうち「markdown-it の解析器と、追加するコアルール」を受け持つ。Markdown から HTML 文字列にする流れを変えるときに参照する。
-    tags: [topic:markdown, tool:markdown-it]
-    related:
-      - to: docs/module/MOD-472-211.ts
-        type: implements
   - path: render/page.ts
     description: モジュール構成『ライブラリ本体 / 描画』のうち「page のマーカーの設定を記載した順に重ねる readPageSettings」を受け持つ。ページの設定のマーカーの読み方を変えるときに参照する。
     tags: [topic:markdown, topic:マーカー, topic:設定]
     related:
       - to: docs/module/MOD-472-215.ts
+        type: implements
+  - path: render/parser.ts
+    description: モジュール構成『ライブラリ本体 / 描画』のうち「markdown-it の解析器と、追加するコアルール」を受け持つ。Markdown から HTML 文字列にする流れを変えるときに参照する。
+    tags: [topic:markdown, tool:markdown-it]
+    related:
+      - to: docs/module/MOD-472-211.ts
         type: implements
   - path: render/sanitize.ts
     description: モジュール構成『ライブラリ本体 / 描画』のうち「sanitize-html の設定と sanitize」を受け持つ。Markdown から HTML 文字列にする流れを変えるときに参照する。
