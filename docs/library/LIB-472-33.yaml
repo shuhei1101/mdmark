@@ -7,7 +7,7 @@ version:
   latest: 5.0.4
   checked_on: '2026-10-13'
   source: package.json
-  pinning: 完全一致。`@vitest/browser-playwright` を同じ 5.0.4、`playwright` を E2E と同じバージョンで並べる（peer が `*`）
+  pinning: 完全一致。`@vitest/browser-playwright` を同じ 5.0.4 で並べる。`playwright` は peer が `*` のため、外部ライブラリ『playwright』のバージョンにする
 catalogs:
   - name: 設定
     version: 5.0.4

@@ -8,7 +8,7 @@ functions:
     container: vscode/tests/integration/stub-server.ts
     usecase: 共通
     summary: 配布物の経路 `/mdmark@{バージョン}/dist/{ファイル}` とタグ一覧 `/tags` を返却し、テストが状態を切り替える `PUT /tags`・`PUT /mode` と、受けた要求を読み込む `GET /requests`・`DELETE /requests` を持つ HTTP サーバーを作る
-    description: 結合テストの入口（`runIntegrationTests`）と E2E（`tests/e2e/vscode.ts`）が同じ代役を使用する。直下の型検査が `vscode/` の依存を参照しないよう、`@vscode/test-electron` を import しないファイルに配置する
+    description: 結合テストの入口（`runIntegrationTests`）が代役を使用し、結合テストのヘルパー（`helpers.ts`）が要求の時刻の型を参照する
     scope: public
     is_async: false
     args:

@@ -1,8 +1,6 @@
 docs/generated/
 node_modules/
 .vitest/
-test-results/
-playwright-report/
 debug-storybook.log
 vscode/node_modules/
 vscode/dist/
