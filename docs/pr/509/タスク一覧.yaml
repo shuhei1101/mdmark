@@ -65,8 +65,10 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-12T19:04:53.463761+00:00'
   - process: ドキュメント修正
-    status: todo
+    status: done
     note: docs/_theme/ を AI Monitor の develop から取り込み（*.ts と nav.project.yml は配布物リストの除外のとおり残す）、docs/_config.yml にレイアウト・コレクション・プラグインの設定を追加し、docs/_root/files.yml の _theme の行を揃える。Jekyll でビルドし、上タブと分類のトップページが描かれることを確かめる
+    updated_by: planner
+    updated_at: '2026-11-12T19:15:38.373677+00:00'
   - process: 単体テスト作成
     status: skipped
     reason: ソースコードを変えないため対象外
