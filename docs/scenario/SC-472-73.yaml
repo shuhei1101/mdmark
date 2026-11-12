@@ -820,7 +820,7 @@ scenarios:
       - name: mdmark を読み込むページ
         description: 正常シナリオと同じ
       - name: 知らない列名を指定した Markdown
-        description: '`<!-- table: {"kind": "data", "columns": {"無い列": {"pinned": true, "format": {"type": "check"}}, "説明": {"width": {"mode": "nowrap"}}}} -->` で、`説明` の列を持つ表を囲み、続けて `<!-- table: {"kind": "data", "columns": {"物理名": {"pinned": true}, "無い列": {"pinned": true}}} -->` で `物理名` の列を持つはみ出す表を囲んだ文書'
+        description: '`<!-- table: {"kind": "data", "columns": {"無い列": {"pinned": true, "format": {"type": "check"}}, "説明": {"width": {"mode": "nowrap"}, "filter": {}}}} -->` で、`説明` の列を持つ表を囲み、続けて `<!-- table: {"kind": "data", "columns": {"物理名": {"pinned": true}, "無い列": {"pinned": true}}} -->` で `物理名` の列を持つはみ出す表を囲んだ文書'
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
@@ -835,7 +835,7 @@ scenarios:
     expected:
       - 表の上に記載の警告があり、`columns` の列名 `無い列` が見出しに無いことが記載されている
       - "`説明` の列は広く取られている"
-      - 表は描かれ、並べ替えと絞り込みのボタンが見出しにある
+      - 表は描かれ、並べ替えのボタンが見出しの各列にあり、絞り込みのボタンが `columns.説明.filter` で指定した `説明` の見出しにある
       - 2 つ目の表の上の記載の警告には `無い列` だけが記載されていて、2 つ目の表を横にスクロールすると `物理名` の列が左端に見えている
     test: test_error_when_unknown_column
   - name: 正常シナリオ（はみ出す表で行見出しの列までを留める）
