@@ -12,7 +12,7 @@ directory: |-
   │   └── release-check.ts       # タグと package.json の version を照合する
   └── tests/integration/
       ├── run.ts                 # 代役の配信を起動し、runTests を 1.141.0 と stable で呼ぶ
-      ├── stub-server.ts         # 代役の配信（配布物とタグ一覧）。結合テストと E2E が使用し、@vscode/test-electron を import しない
+      ├── stub-server.ts         # 代役の配信（配布物とタグ一覧）。結合テストが使用する
       ├── index.ts               # 拡張機能ホストの中で mocha を動かす run()
       └── {インターフェース定義}.test.ts
   .github/workflows/

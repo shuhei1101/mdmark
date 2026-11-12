@@ -258,7 +258,7 @@ files:
       - to: docs/interface/IF-472-17.ts
         type: see_also
   - path: tests/integration/stub-server.ts
-    description: モジュール構成『VS Code 拡張機能 / ビルドと配布』のうち「代役の配信（配布物とタグ一覧）。結合テストと E2E が使用し、@vscode/test-electron を import しない」を受け持つ。拡張機能のビルド・テスト・配布を変えるときに参照する。
+    description: モジュール構成『VS Code 拡張機能 / ビルドと配布』のうち「代役の配信（配布物とタグ一覧）。結合テストが使用する」を受け持つ。拡張機能のビルド・テスト・配布を変えるときに参照する。
     tags: [tool:vscode, topic:ci]
     related:
       - to: docs/module/MOD-472-87.ts
