@@ -6,4 +6,7 @@ docs:
     updated_by: planner
     updated_at: '2026-11-12T13:14:36.174112+00:00'
 use_cases: []
-scope_out: []
+scope_out:
+  - item: src/files.yaml の config-files.ts の行の related に同じ MOD-472-116 への implements が 2 つ並んでいる
+    reason: 規約『ドキュメント管理』の files.yaml の関連が受け持つ設計書を正しく指していない。今回の要望（行の無いファイルの行の追加）に含まれない
+    plan: '#490'
