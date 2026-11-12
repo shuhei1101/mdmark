@@ -800,7 +800,9 @@ test("test_build_code_blocks_when_tree_lines", () => {
   // 実行
   const { html } = renderDoc(markdown);
   // 検証
-  const blocks = html.split(/(?=<div class="mdmark-syntax-warning"|<(?:div|figure) class="mdmark-code"|<div class="mdmark-tree")/);
+  const blocks = html.split(
+    /(?=<div class="mdmark-syntax-warning"|<(?:div|figure) class="mdmark-code"|<div class="mdmark-tree")/,
+  );
   const kinds = blocks.map((part) =>
     part.startsWith('<div class="mdmark-syntax-warning"')
       ? part.includes("罫線のフォルダ構成があります")
@@ -824,8 +826,12 @@ test("test_build_code_blocks_when_tree_lines", () => {
     "tree-warning",
     "code",
   ]);
-  expect(html).toContain("言語 <code>text</code> のコードブロックに、罫線のフォルダ構成があります。");
-  expect(html).toContain("言語の無いコードブロックに、罫線のフォルダ構成があります。");
+  expect(html).toContain(
+    "言語 <code>text</code> のコードブロックに、罫線のフォルダ構成があります。",
+  );
+  expect(html).toContain(
+    "言語の無いコードブロックに、罫線のフォルダ構成があります。",
+  );
   expect(html).toContain("tree_warning");
   expect(matches(html, /<code class="language-text"/g)).toHaveLength(4);
 });

@@ -1,5 +1,9 @@
 import { afterEach, expect, test } from "vitest";
-import { addStyles, createRootFromHtml, removeRoots } from "../../helpers/dom.ts";
+import {
+  addStyles,
+  createRootFromHtml,
+  removeRoots,
+} from "../../helpers/dom.ts";
 import { CONFIG, mapRange, SEQUENCE } from "../../helpers/map.ts";
 import { renderDoc } from "../../helpers/render.ts";
 
