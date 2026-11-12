@@ -61,4 +61,9 @@
 
 ### 結合
 
-結合テスト作成で記入する
+| ファイル | メソッド | 変更種別 | 結果 | 補足 |
+| --- | --- | --- | --- | --- |
+| [vscode/tests/integration/preview-open.test.ts](https://github.com/shuhei1101/mdmark/blob/fix/vscode/pass-tooltips-and-syntax-url/vscode/tests/integration/preview-open.test.ts) | `test_normal_when_tooltips_and_relative_syntax` | 新規 | ✅ | VS Code 1.141.0 と stable の両方で pass。脚注の参照へフォーカスを移す `focusInPreview` を `vscode/tests/integration/helpers.ts` に追加<br>`テスト結果/20261113022917_01d4c320_VSCode拡張機能の結合テスト.log` |
+| [vscode/tests/integration/export.test.ts](https://github.com/shuhei1101/mdmark/blob/fix/vscode/pass-tooltips-and-syntax-url/vscode/tests/integration/export.test.ts) | `test_normal_when_tooltips_and_relative_syntax` | 新規 | ✅ | VS Code 1.141.0 と stable の両方で pass<br>`テスト結果/20261113022917_01d4c320_VSCode拡張機能の結合テスト.log` |
+| `vscode/tests/integration/*.test.ts` | 全実行 | 実行のみ | ✅ | 1.141.0・stable ともに 82 件 pass・1 件 pending<br>pending は [#496](https://github.com/shuhei1101/mdmark/issues/496) の `test_normal_when_library_origin_added` を手元だけで `test.skip` にしたもの（commit していない）<br>lint: `テスト結果/20261113023319_01d4c320_lint.log` |
+| [vscode/tests/integration/preview-rerender.test.ts](https://github.com/shuhei1101/mdmark/blob/fix/vscode/pass-tooltips-and-syntax-url/vscode/tests/integration/preview-rerender.test.ts) | `test_normal_when_library_origin_added` | 実行のみ | ❌ | 「別の配信元がモジュールの要求を受けない」。develop の既存の fail で、[#496](https://github.com/shuhei1101/mdmark/issues/496) で起票済み。この PR の対象外<br>`テスト結果/20261113022052_01d4c320_VSCode拡張機能の結合テスト_496のfailを含む.log` |
