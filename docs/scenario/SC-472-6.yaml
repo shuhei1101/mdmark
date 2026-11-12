@@ -149,7 +149,7 @@ scenarios:
   - name: 正常シナリオ（ツールチップの位置と相対パスの色分けのライブラリ）
     setup:
       - name: 手元の色分けのライブラリを指すワークスペース
-        description: '`ts` のコードブロックと脚注の参照を 1 つずつ持つ Markdown と、`tooltips.placement: bottom` と、`syntax.url` に同じフォルダの highlight.js の `es/` フォルダの手元のコピーを相対パスで記載した `mdmark.config.yaml` を配置したフォルダ'
+        description: '`ts` のコードブロックと脚注の参照を 1 つずつ持つ Markdown と、`tooltips.placement: bottom` と、`syntax.url` に同じフォルダの `@highlightjs/cdn-assets` の `es/` フォルダの手元のコピーを相対パスで記載した `mdmark.config.yaml` を配置したフォルダ'
         notes: 手元のコピーの、Markdown が使用しない言語のモジュールの 1 つは、他のファイルに出ない目印の文字列を持つ
       - name: Mock
         description: 正常シナリオと同じ。書き出した HTML は Chromium で file:// で開く
