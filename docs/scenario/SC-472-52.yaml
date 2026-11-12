@@ -231,6 +231,28 @@ scenarios:
       - 各行の内容が、同じ文字列を描いたときの書き方の警告と同じ
       - 終了コードが 0 以外
     test: test_normal_when_map_warnings
+  - name: 正常シナリオ（罫線のフォルダ構成の言語が tree でない）
+    setup:
+      - name: 作業のフォルダ
+        description: 正常シナリオと同じ
+      - name: 罫線を言語 tree でないコードブロックに記載した文字列
+        description: 『ステップ・ファイルツリー・バッジで本文を組む』の異常シナリオ（罫線のフォルダ構成の言語が tree でない）の言語 `text` のコードブロックだけを持つ Markdown の文字列
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor W as 文書の作成者
+        participant C as mdmark CLI
+        participant R as mdmark の描画の処理
+        W->>C: mdmark check（Markdown の文字列）
+        C->>R: 文字列を描くときと同じ読み取りで、記載の警告を集める
+        R-->>C: 罫線のコードブロックの警告 1 件
+        C-->>W: 場所・種類・内容の一覧・終了コード 0 以外
+    expected:
+      - ずれの行が 1 つあり、コードブロックの開始の行を指す
+      - 行の内容が、同じ文字列を描いたときの記載の警告と同じで、言語を `tree` にすることと警告を止める指定を案内している
+      - 終了コードが 0 以外
+    test: test_normal_when_tree_lines_without_tree_language
 lead: |-
   文書の作成者が `mdmark check` に Markdown の文字列、またはファイルと YAML のキーを指定し、描いたときの記載の警告と同じ内容をずれの一覧で受け取る。
   YAML のキーの中に Markdown を書き込むツール（dev-docs・MindStella）も、書き込みのたびに同じ点検を呼ぶ。

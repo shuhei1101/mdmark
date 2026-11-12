@@ -47,6 +47,27 @@ scenarios:
       - mdmark の MCP のツールの一覧に `read_guide` が無い
       - dev-docs の端末の設定のファイルが作られていない
     test: test_error_when_dev_docs_missing
+  - name: 正常シナリオ（フォルダ構成を記載する）
+    setup:
+      - name: 起動した dev-docs
+        description: 正常シナリオと同じ
+      - name: 起動した常駐サーバー
+        description: 正常シナリオと同じ
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        participant C as Claude Code
+        participant D as dev-docs
+        C->>D: search_docs（source: mdmark、kind: docs、タグ topic:ガイド）
+        D-->>C: ガイドのページの一覧と description
+        C->>D: search_docs（source: mdmark、kind: docs、タグ topic:ガイド、本文に「フォルダ構成」）
+        D-->>C: 該当するガイドのページ
+    expected:
+      - 一覧の『本文を部品で組む』（`docs/guide/記載する-本文を部品で組む.md`）の description に、フォルダ構成を記載するときに参照する旨がある
+      - 本文に「フォルダ構成」を含むガイドのページに、『本文を部品で組む』がある
+      - '`guide/index.yaml` の `components` の `when` に、フォルダ構成を記載するときがある'
+    test: test_normal_when_folder_structure
 lead: Claude Code が、mdmark の MCP の instructions に沿って、dev-docs の `search_docs` で mdmark の配信元からガイドのページを受け取る。
 issue: 186
 primary_actor: Claude Code
