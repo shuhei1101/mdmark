@@ -332,3 +332,46 @@ test("test_attach_footnotes_when_doc_path_in_href", async () => {
   expect(preventedByBack).toBe(true);
   expect(document.activeElement).toBe(link);
 });
+
+// `root` に先に付いたバブリングフェーズの `click` より先に既定の動作を止める（正常系）
+test("test_attach_footnotes_when_root_has_bubbling_click", async () => {
+  // 準備
+  const { attachFootnotes } = await loadFootnotes();
+  const root = createRootFromHtml(await footnoteHtml());
+  const hash = location.hash;
+  /** まとめた HTML の `view` の `click` と同じく、止められていなければ URL をリンクの `href` へ置き換える */
+  const onBubblingClick = (event: MouseEvent): void => {
+    const anchor =
+      event.target instanceof Element ? event.target.closest("a") : null;
+    const href = anchor?.getAttribute("href");
+    if (href && !event.defaultPrevented) {
+      event.preventDefault();
+      history.replaceState(history.state, "", href);
+    }
+  };
+  root.addEventListener("click", onBubblingClick);
+  detachers.push(() => {
+    root.removeEventListener("click", onBubblingClick);
+    history.replaceState(
+      history.state,
+      "",
+      `${location.pathname}${location.search}${hash}`,
+    );
+  });
+  detachers.push(attachFootnotes({ root, placement: "top" }));
+  const { link, item } = footnoteParts(root);
+  const back = root.querySelector<HTMLElement>(".mdmark-fn-back");
+  if (!back) {
+    throw new Error("戻るリンクが描かれていない");
+  }
+  // 実行
+  click(link);
+  // 検証
+  expect(location.hash).toBe(hash);
+  expect(document.activeElement).toBe(item);
+  // 実行
+  click(back);
+  // 検証
+  expect(location.hash).toBe(hash);
+  expect(document.activeElement).toBe(link);
+});
