@@ -75,8 +75,10 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-12T20:08:08.051251+00:00'
   - process: 実装
-    status: todo
+    status: done
     note: docs/pr/*/スクリーンショット/ と docs/pr/*/ストーリー/ の画像を削除する commit を入れる
+    updated_by: planner
+    updated_at: '2026-11-12T20:14:48.486204+00:00'
   - process: 結合テスト作成
     status: skipped
     reason: コードを変えないため対象外
