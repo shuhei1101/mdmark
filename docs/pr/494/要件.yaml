@@ -1,0 +1,6 @@
+use_cases: []
+docs: []
+scope_out:
+  - item: CLI 以外のモジュール構成のフォルダ構成に載っていない src/・vscode/src/ の 12 ファイル（bundle-module.ts・interact/embedded-html.ts など）
+    reason: 要望は src/cli/ の 2 ファイルが対象。今回の作業 PR がマージされなくても同じ内容で成り立つ横展開の残り
+    plan: '#495'
