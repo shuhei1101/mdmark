@@ -15,8 +15,10 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-12T13:40:56.378403+00:00'
   - process: PoC 検証
-    status: todo
+    status: done
     note: plugin.json に version が無いとき、develop へ入った commit が /plugin update と自動更新で配布先へ届くかを実機で確かめる
+    updated_by: planner
+    updated_at: '2026-11-12T14:04:12.142878+00:00'
   - process: 複合ユースケース設計
     status: skipped
     reason: 利用者の業務の流れは変わらず、複合ユースケースに配布の契機の記述が無い
