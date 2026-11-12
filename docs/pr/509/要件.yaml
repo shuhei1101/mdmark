@@ -30,3 +30,6 @@ scope_out:
   - item: 取り込んだ docs/_theme/llms.txt が空で出力される
     reason: 配布元の llms.txt がタブ名のフォルダの README だけを参照し、nav.project.yml の分類のトップページを参照しない不具合で、配布元の AI Monitor の docs/_theme/ を直す必要がある。今回の要望（取り込みと設定）に含まれない
     plan: shuhei1101/ai-monitor#3407
+  - item: 上タブの共通の「使い方」（AI Monitor の公開サイトへの外部リンク）を出さない
+    reason: 配布元の nav.yml・tab-link.html が共通のタブを出さない設定を持たず、配布元を修正する必要がある。ユーザーの決着（確認ログ）で、修正されるまでは両方のタブを並べる
+    plan: shuhei1101/ai-monitor#3410
