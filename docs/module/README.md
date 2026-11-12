@@ -17,7 +17,7 @@
 | [ライブラリ本体 / バージョンを上げる / drop-tag-vocabulary.mjs](./MOD-472-153.mjs.yaml) | ライブラリ本体 / バージョンを上げる / drop-tag-vocabulary.mjs |
 | [ライブラリ本体 / 検査 / package.json](./MOD-472-251.json.yaml) | ライブラリ本体 / 検査 / package.json |
 | [ライブラリ本体 / ビルド / baseline.ts](./MOD-472-165.ts.yaml) | ライブラリ本体 / ビルド / baseline.ts |
-| [ClaudeCodeプラグイン / プラグインのビルド / build-plugin.ts](./MOD-472-14.ts.yaml) | 配布物のビルド（`scripts/build.ts`）から呼ばれ、ガイドの索引を検査してから、フックをまとめ、プラグインのバージョン・まとめた依存のライセンスを `plugin/` に書き込む。MCP サーバーとガイドはまとめない。 |
+| [ClaudeCodeプラグイン / プラグインのビルド / build-plugin.ts](./MOD-472-14.ts.yaml) | 配布物のビルド（`scripts/build.ts`）から呼ばれ、ガイドの索引を検査してから、フックをまとめ、まとめた依存のライセンスを `plugin/` に書き込む。MCP サーバーとガイドはまとめない。 |
 | [ライブラリ本体 / ビルド / build.ts](./MOD-472-166.ts.yaml) | ライブラリ本体 / ビルド / build.ts |
 | [ライブラリ本体 / ビルド / bundle.ts](./MOD-472-167.ts.yaml) | ライブラリ本体 / ビルド / bundle.ts |
 | [ライブラリ本体 / 検査 / eslint.ts](./MOD-472-252.ts.yaml) | ライブラリ本体 / 検査 / eslint.ts |
