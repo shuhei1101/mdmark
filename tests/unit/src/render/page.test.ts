@@ -3,41 +3,31 @@ import { expect, test } from "vitest";
 /** ページの設定のマーカーの処理を読み込む（実装が無い間は各テストが個別に失敗する） */
 const loadPage = () => import("../../../../src/render/page.ts");
 
-/** マーカーの引数を読み込む処理を読み込む */
-const loadMarks = () => import("../../../../src/render/marks.ts");
-
 // 記載できるキーと値を読み込む（正常系）
 test("test_read_page_settings", async () => {
   // 準備
   const { readPageSettings } = await loadPage();
-  const { parseMarkArgs } = await loadMarks();
   // 実行
-  const result = readPageSettings(
-    parseMarkArgs("scheme=dark theme=theme-slate toc=fixed"),
-  );
+  const settings = readPageSettings([
+    { scheme: "dark", theme: "theme-slate", toc: { mode: "fixed" } },
+  ]);
   // 検証
-  expect(result).toEqual({
-    settings: { scheme: "dark", theme: "theme-slate", toc: "fixed" },
-    unknown: [],
-    skipped: [],
+  expect(settings).toEqual({
+    scheme: "dark",
+    theme: "theme-slate",
+    toc: "fixed",
   });
 });
 
-// 知らない値と知らないキーを分ける（異常系）
-test("test_read_page_settings_when_unknown", async () => {
+// 後に記載した値を使用する（正常系）
+test("test_read_page_settings_when_repeated", async () => {
   // 準備
   const { readPageSettings } = await loadPage();
-  const { parseMarkArgs } = await loadMarks();
   // 実行
-  const result = readPageSettings(
-    parseMarkArgs(
-      "scheme=sepia theme=theme-unknown size=wide toc=fixed toc=hover",
-    ),
-  );
+  const settings = readPageSettings([
+    { scheme: "dark", toc: { mode: "fixed" } },
+    { toc: { mode: "hover" } },
+  ]);
   // 検証
-  expect(result).toEqual({
-    settings: { toc: "hover" },
-    unknown: ["scheme=sepia", "theme=theme-unknown"],
-    skipped: ["size="],
-  });
+  expect(settings).toEqual({ scheme: "dark", toc: "hover" });
 });

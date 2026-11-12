@@ -185,8 +185,8 @@ test("test_check_unknown_marks", async () => {
     {
       path: "a.md",
       markdown: [
-        "<!-- features: toc -->",
-        "<!-- table: data -->",
+        '<!-- features: {"toc": true} -->',
+        '<!-- table: {"kind": "data"} -->',
         "<!-- tabz -->",
         "<!-- /table -->",
         "",
@@ -214,7 +214,7 @@ test("test_check_unknown_marks_when_known_by_config", async () => {
       path: "a.md",
       markdown: [
         "<!-- mermaid -->",
-        "<!-- greet: x -->",
+        '<!-- greet: {"target": "x"} -->',
         "<!-- prettier-ignore -->",
         "",
       ].join("\n"),
@@ -730,19 +730,19 @@ test("test_check_includes", async () => {
     "mdmark.config.yaml": "",
     "共通/手順.md": "## 実行\n\nB\n",
     "app.ts": "1\n2\n3\n",
-    "a.md": "<!-- include: b.md -->\n",
-    "b.md": "<!-- include: a.md -->\n",
+    "a.md": '<!-- include: {"path": "b.md"} -->\n',
+    "b.md": '<!-- include: {"path": "a.md"} -->\n',
   });
   const markdown = [
-    "<!-- include: missing.md -->",
+    '<!-- include: {"path": "missing.md"} -->',
     "",
-    "<!-- include: 共通/手順.md#無い見出し -->",
+    '<!-- include: {"path": "共通/手順.md", "heading": "無い見出し"} -->',
     "",
-    "<!-- include: app.ts#L8-L10 -->",
+    '<!-- include: {"path": "app.ts", "lines": {"from": 8, "to": 10}} -->',
     "",
-    "<!-- include: a.md -->",
+    '<!-- include: {"path": "a.md"} -->',
     "",
-    "<!-- include: 共通/手順.md#実行 -->",
+    '<!-- include: {"path": "共通/手順.md", "heading": "実行"} -->',
     "",
   ].join("\n");
   // 実行
@@ -836,9 +836,74 @@ test("test_check_maps_when_map_disabled", async () => {
   const { checkMaps } = await loadCheck();
   const { resolveConfig } = await import("../../../../src/config.ts");
   const { mapRange } = await import("../../helpers/map.ts");
-  const markdown = `<!-- features: -map -->\n\n${mapRange({ mermaid: "flowchart LR\n  A -> B\n" })}`;
+  const markdown = `<!-- features: {"map": false} -->\n\n${mapRange({ mermaid: "flowchart LR\n  A -> B\n" })}`;
   // 実行
   const issues = checkMaps([{ path: "a.md", markdown }], resolveConfig({}));
   // 検証
   expect(issues).toEqual([]);
+});
+
+// 今の書き方・知らないキー・適用しない列の設定・型の誤りを行の順のずれにする（正常系）
+test("test_check_mark_options", async () => {
+  // 準備
+  const { checkMarkOptions } = await loadCheck();
+  const documents = [
+    {
+      path: "a.md",
+      markdown: [
+        '<!-- code: {"title": "app.ts", "color": "red"} -->',
+        "",
+        "<!-- table: data filter=名前 -->",
+        "",
+        '<!-- section: {"open": "no"} -->',
+        "",
+        "",
+        "",
+        '<!-- table: {"features": {"total": {"enabled": false}}, "columns": {"数量": {"total": [{"calc": "sum"}]}}} -->',
+        "",
+      ].join("\n"),
+    },
+    { path: "b.md", markdown: "<!-- section: closed -->\n" },
+  ];
+  // 実行
+  const issues = checkMarkOptions(documents, new Set());
+  // 検証
+  expect(
+    issues.map(({ file, where, kind }) => ({ file, where, kind })),
+  ).toEqual([
+    { file: "a.md", where: "1", kind: "unknown_mark_arg" },
+    { file: "a.md", where: "3", kind: "legacy_mark" },
+    { file: "a.md", where: "5", kind: "mark_option_invalid" },
+    { file: "a.md", where: "9", kind: "mark_option_unapplied" },
+    { file: "b.md", where: "1", kind: "legacy_mark" },
+  ]);
+  expect(issues[0]?.message).toContain("color");
+  expect(issues[1]?.message).toContain("mdmark upgrade");
+  expect(issues[2]?.message).toContain("open");
+  expect(issues[3]?.message).toContain("columns.数量.total");
+});
+
+// 拡張と libraries のマーカーは今の書き方だけをずれにし、キーを検証しない（正常系）
+test("test_check_mark_options_when_embed", async () => {
+  // 準備
+  const { checkMarkOptions } = await loadCheck();
+  const documents = [
+    {
+      path: "a.md",
+      markdown: [
+        "<!-- greet: world -->",
+        "",
+        '<!-- chart: {"size": 1} -->',
+        "",
+        '<!-- map: {"title": 1} -->',
+        "",
+      ].join("\n"),
+    },
+  ];
+  // 実行
+  const issues = checkMarkOptions(documents, new Set(["greet", "chart"]));
+  // 検証
+  expect(
+    issues.map(({ file, where, kind }) => ({ file, where, kind })),
+  ).toEqual([{ file: "a.md", where: "1", kind: "legacy_mark" }]);
 });

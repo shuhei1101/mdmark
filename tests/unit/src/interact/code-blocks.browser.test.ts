@@ -174,7 +174,14 @@ test("test_attach_code_copy_when_folded", async () => {
     "  h: 4",
   ];
   const { root } = createRoot(
-    ["<!-- code: fold=2,6 -->", "", "```yaml", ...lines, "```", ""].join("\n"),
+    [
+      '<!-- code: {"fold": [2, 6]} -->',
+      "",
+      "```yaml",
+      ...lines,
+      "```",
+      "",
+    ].join("\n"),
   );
   detachers.push(attachCodeFolds(root));
   detachers.push(attachCodeCopy(root));

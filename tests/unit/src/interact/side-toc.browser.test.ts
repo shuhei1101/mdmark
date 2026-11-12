@@ -264,7 +264,7 @@ test("test_attach_side_toc_when_link_into_closed_section", async () => {
   const { attachSideToc } = await loadSideToc();
   const { attachSections } = await loadSections();
   const { root } = createRoot(
-    "## 導入\n\n<!-- section: closed -->\n\n### 注意\n\n本文\n",
+    '## 導入\n\n<!-- section: {"open": false} -->\n\n### 注意\n\n本文\n',
   );
   const result = attachSideToc({
     el: root,
@@ -305,7 +305,7 @@ test("test_attach_side_toc_when_href_rewritten", async () => {
   const { attachSideToc } = await loadSideToc();
   const { attachSections } = await loadSections();
   const { root } = createRoot(
-    "## 導入\n\n<!-- section: closed -->\n\n### 注意\n\n本文\n",
+    '## 導入\n\n<!-- section: {"open": false} -->\n\n### 注意\n\n本文\n',
   );
   const result = attachSideToc({
     el: root,

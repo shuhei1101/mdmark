@@ -18,7 +18,7 @@ const SYNTAX_MARKDOWN = [
   "| --- | --- |",
   "| a | 1 |",
   "",
-  "<!-- row-detail: 1 -->",
+  '<!-- row-detail: {"at": 1} -->',
   "",
   "詳細",
   "",
@@ -38,7 +38,7 @@ const SYNTAX_MARKDOWN = [
   "",
   "## 閉じる",
   "",
-  "<!-- section: closed -->",
+  '<!-- section: {"open": false} -->',
   "",
   "本文",
   "",
@@ -180,7 +180,7 @@ test("test_attach_print_when_tree", async () => {
 
 // 2 行目を畳んだコードブロックと、入れ子の注意書きを閉じた文書
 const FOLDED_MARKDOWN = [
-  "<!-- code: fold=2 -->",
+  '<!-- code: {"fold": [2]} -->',
   "",
   "```yaml",
   "a:",

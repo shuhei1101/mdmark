@@ -1,6 +1,5 @@
 import { expect, test } from "vitest";
 import type { WarningItem } from "../../../../../src/extensions.ts";
-import { parseMarkArgs } from "../../../../../src/render/marks.ts";
 import {
   findTag,
   findTags,
@@ -21,44 +20,34 @@ const warningText = (warnings: WarningItem[]): string =>
 test("test_read_code_spec", async () => {
   // 準備
   const { readCodeSpec } = await loadCodeBlocks();
-  const args = parseMarkArgs("title=app.ts lines highlight=2,4-6");
+  const options = {
+    title: "My App.ts",
+    lines: {},
+    highlight: [2, { from: 4, to: 6 }],
+  };
   // 実行
-  const spec = readCodeSpec({ args, text: "", lineCount: 6 });
+  const spec = readCodeSpec({ options, lineCount: 6 });
   // 検証
-  expect(spec.title).toBe("app.ts");
+  expect(spec.title).toBe("My App.ts");
   expect(spec.lineNumbers).toBe(true);
+  expect(spec.lineStart).toBe(1);
   expect([...spec.highlights]).toEqual([2, 4, 5, 6]);
   expect(spec.warnings).toEqual([]);
 });
 
-// 空白の後ろの指定を警告にし、知らないキーをスキップして、読み込めたタイトルを適用する（異常系）
-test("test_read_code_spec_when_unknown_key", async () => {
-  // 準備
-  const { readCodeSpec } = await loadCodeBlocks();
-  const text = "title=My App.ts color=red debug";
-  // 実行
-  const spec = readCodeSpec({ args: parseMarkArgs(text), text, lineCount: 3 });
-  // 検証
-  expect(spec.title).toBe("My");
-  expect(spec.warnings.map((item) => item.label)).toEqual(["App.ts"]);
-  expect(spec.skipped.map((skipped) => skipped.arg).sort()).toEqual(
-    ["color=", "debug"].sort(),
-  );
-});
-
-// 行の数を超える番号と読み込めない番号を削除して警告にする（異常系）
+// 行に無い番号と逆の範囲を削除して警告にする（異常系）
 test("test_read_code_spec_when_line_missing", async () => {
   // 準備
   const { readCodeSpec } = await loadCodeBlocks();
-  const args = parseMarkArgs("highlight=2,5,x,3-1");
+  const options = { highlight: [2, 5, { from: 3, to: 1 }] };
   // 実行
-  const spec = readCodeSpec({ args, text: "", lineCount: 3 });
+  const spec = readCodeSpec({ options, lineCount: 3 });
   // 検証
   expect([...spec.highlights]).toEqual([2]);
-  const text = warningText(spec.warnings);
+  const text = JSON.stringify(spec.warnings);
+  expect(spec.warnings).toHaveLength(2);
   expect(text).toContain("5");
-  expect(text).toContain("x");
-  expect(text).toContain("3-1");
+  expect(text).toContain("to");
 });
 
 // マーカーとマーカーだけの行コメントの頭と行末の空白を削除する（正常系）
@@ -120,7 +109,7 @@ test("test_read_line_marks_when_unknown", async () => {
 test("test_build_code_blocks", () => {
   // 準備
   const markdown = [
-    "<!-- code: title=app.ts lines -->",
+    '<!-- code: {"title": "app.ts", "lines": {}} -->',
     "",
     "```ts",
     "const a = 1;",
@@ -249,7 +238,9 @@ test("test_build_code_blocks_when_unknown_line_mark", () => {
 // 後ろにコードブロックの無いマーカーを警告にする（異常系）
 test("test_build_code_blocks_when_no_fence", () => {
   // 準備
-  const markdown = ["<!-- code: title=app.ts -->", "", "段落", ""].join("\n");
+  const markdown = ['<!-- code: {"title": "app.ts"} -->', "", "段落", ""].join(
+    "\n",
+  );
   // 実行
   const { html } = renderDoc(markdown);
   // 検証
@@ -310,13 +301,13 @@ test("test_build_code_blocks_when_syntax", () => {
 test("test_build_code_blocks_when_syntax_disabled", () => {
   // 準備
   const markdown = [
-    "<!-- features: -syntax -->",
+    '<!-- features: {"syntax": false} -->',
     "",
     "```ts",
     "const a = 1;",
     "```",
     "",
-    "<!-- code: lines -->",
+    '<!-- code: {"lines": {}} -->',
     "",
     "```ts",
     "const b = 2;",
@@ -394,7 +385,7 @@ test("test_build_code_blocks_when_mermaid", () => {
 test("test_build_code_blocks_when_mermaid_disabled", () => {
   // 準備
   const markdown = [
-    "<!-- features: -mermaid -->",
+    '<!-- features: {"mermaid": false} -->',
     "",
     "```mermaid",
     "flowchart LR",
@@ -494,12 +485,13 @@ test("test_split_info_string_when_no_language", async () => {
 test("test_read_code_spec_when_fold", async () => {
   // 準備
   const { readCodeSpec } = await loadCodeBlocks();
-  const args = parseMarkArgs("fold=2,4-5,99");
+  const options = { fold: [2, { from: 4, to: 5 }, 99] };
   // 実行
-  const spec = readCodeSpec({ args, text: "", lineCount: 6 });
+  const spec = readCodeSpec({ options, lineCount: 6 });
   // 検証
   expect([...spec.folds]).toEqual([2, 4, 5]);
-  expect(warningText(spec.warnings)).toContain("99");
+  expect(spec.warnings).toHaveLength(1);
+  expect(JSON.stringify(spec.warnings)).toContain("99");
 });
 
 // focus・error・warning を行の種類にする（正常系）
@@ -575,11 +567,11 @@ function codeLineTags(html: string): string[][] {
     );
 }
 
-// インデントのある行と畳める行を行に分け、fold= の行を畳んだ状態にする（正常系）
+// インデントのある行と畳める行を行に分け、fold の行を畳んだ状態にする（正常系）
 test("test_build_code_blocks_when_foldable", () => {
   // 準備
   const markdown = [
-    "<!-- code: fold=2 -->",
+    '<!-- code: {"fold": [2]} -->',
     "",
     "```yaml",
     "a:",
@@ -622,11 +614,11 @@ test("test_build_code_blocks_when_foldable", () => {
   expect(html).not.toContain("mdmark-syntax-warning");
 });
 
-// 畳めない fold= の行を警告にする（異常系）
+// 畳めない fold の行を警告にする（異常系）
 test("test_build_code_blocks_when_fold_invalid", () => {
   // 準備
   const markdown = [
-    "<!-- code: fold=1,3,99 -->",
+    '<!-- code: {"fold": [1, 3, 99]} -->',
     "",
     "```yaml",
     "a:",
@@ -687,27 +679,33 @@ test("test_build_code_blocks_when_focus", () => {
   expect(innerHtml(html, "<pre")).not.toContain("//");
 });
 
-// wrap を読み込み、値を持つ wrap= を警告にする（正常系）
+// wrap を読み込む（正常系）
 test("test_read_code_spec_when_wrap", async () => {
   // 準備
   const { readCodeSpec } = await loadCodeBlocks();
   // 実行
   const wrapped = readCodeSpec({
-    args: parseMarkArgs("lines wrap"),
-    text: "lines wrap",
+    options: { lines: {}, wrap: true },
     lineCount: 3,
   });
-  const valued = readCodeSpec({
-    args: parseMarkArgs("wrap=yes"),
-    text: "wrap=yes",
-    lineCount: 3,
-  });
+  const plain = readCodeSpec({ options: {}, lineCount: 3 });
   // 検証
   expect(wrapped.wrap).toBe(true);
-  expect(wrapped.lineNumbers).toBe(true);
   expect(wrapped.warnings).toEqual([]);
-  expect(valued.wrap).toBe(false);
-  const text = warningText(valued.warnings);
-  expect(text).toContain("wrap=yes");
-  expect(text).toContain("wrap と記載して");
+  expect(plain.wrap).toBe(false);
+  expect(plain.lineNumbers).toBe(false);
+  expect(plain.warnings).toEqual([]);
+});
+
+// 最初の行の番号から数えて強調する行を読む（正常系）
+test("test_read_code_spec_when_line_start", async () => {
+  // 準備
+  const { readCodeSpec } = await loadCodeBlocks();
+  const options = { lines: { start: 10 }, highlight: [11, { from: 13 }] };
+  // 実行
+  const spec = readCodeSpec({ options, lineCount: 5 });
+  // 検証
+  expect(spec.lineStart).toBe(10);
+  expect([...spec.highlights]).toEqual([2, 4]);
+  expect(spec.warnings).toEqual([]);
 });

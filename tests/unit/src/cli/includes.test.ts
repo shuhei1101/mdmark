@@ -12,12 +12,13 @@ test("test_collect_includes", async () => {
   // 準備
   const { collectIncludes } = await loadIncludes();
   const root = await createTempDir();
-  const markdown = "# 案内\n\n<!-- include: 共通/手順.md#実行 -->\n";
+  const markdown =
+    '# 案内\n\n<!-- include: {"path": "共通/手順.md", "heading": "実行"} -->\n';
   await writeFiles(root, {
     "mdmark.config.yaml": "",
     "docs/guide.md": markdown,
     "docs/共通/手順.md":
-      "## 準備\n\nA\n\n## 実行\n\n<!-- include: ../../src/app.ts#L1 -->\n",
+      '## 準備\n\nA\n\n## 実行\n\n<!-- include: {"path": "../../src/app.ts", "heading": "L1"} -->\n',
     "src/app.ts": "export const a = 1;\n",
   });
   // 実行
@@ -41,15 +42,15 @@ test("test_collect_includes_when_problems", async () => {
   const parent = await createTempDir();
   const root = join(parent, "root");
   const markdown = [
-    "<!-- include: missing.md -->",
+    '<!-- include: {"path": "missing.md"} -->',
     "",
-    "<!-- include: 共通/手順.md#無い見出し -->",
+    '<!-- include: {"path": "共通/手順.md", "heading": "無い見出し"} -->',
     "",
-    "<!-- include: src/app.ts#L8-L10 -->",
+    '<!-- include: {"path": "src/app.ts", "lines": {"from": 8, "to": 10}} -->',
     "",
-    "<!-- include: ../../outside.md -->",
+    '<!-- include: {"path": "../../outside.md"} -->',
     "",
-    "<!-- include: a.md -->",
+    '<!-- include: {"path": "a.md"} -->',
     "",
   ].join("\n");
   await writeFiles(parent, {
@@ -57,8 +58,8 @@ test("test_collect_includes_when_problems", async () => {
     "root/docs/guide.md": markdown,
     "root/docs/共通/手順.md": "## 準備\n\nA\n",
     "root/docs/src/app.ts": "1\n2\n3\n4\n5\n",
-    "root/docs/a.md": "<!-- include: b.md -->\n",
-    "root/docs/b.md": "<!-- include: a.md -->\n",
+    "root/docs/a.md": '<!-- include: {"path": "b.md"} -->\n',
+    "root/docs/b.md": '<!-- include: {"path": "a.md"} -->\n',
   });
   // 実行
   const result = await collectIncludes({

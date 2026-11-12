@@ -37,7 +37,7 @@ async function avoidTableTokens(
 
 /** 用語集の表を含む文書。表の後の段落に別名が出る */
 const GLOSSARY_MARKDOWN = [
-  "<!-- glossary: term=用語 aliases=別名 meaning=意味 -->",
+  '<!-- glossary: {"term": {"column": "用語"}, "aliases": {"column": "別名"}, "meaning": {"column": "意味"}} -->',
   "",
   "| 用語 | 別名 | 意味 |",
   "| --- | --- | --- |",
@@ -59,9 +59,10 @@ test("test_read_glossary_table", async () => {
   ]);
   // 実行
   const { entries, warning } = readGlossaryTable({
-    args: {
-      args: [],
-      keys: { term: "用語", aliases: "別名", meaning: "意味" },
+    options: {
+      term: { column: "用語" },
+      aliases: { column: "別名" },
+      meaning: { column: "意味" },
     },
     tokens,
     docId: "glossary",
@@ -95,7 +96,7 @@ test("test_read_glossary_table_when_unknown_column", async () => {
   ]);
   // 実行
   const { entries, warning } = readGlossaryTable({
-    args: { args: [], keys: { term: "用語", meaning: "説明" } },
+    options: { term: { column: "用語" }, meaning: { column: "説明" } },
     tokens,
     docId: "",
   });
@@ -106,7 +107,7 @@ test("test_read_glossary_table_when_unknown_column", async () => {
   expect(warning).toContain("意味");
 });
 
-// 必須の meaning= が無ければ警告を返却する（異常系）
+// 必須の meaning が無ければ用語を返却しない（異常系）
 test("test_read_glossary_table_when_missing_arg", async () => {
   // 準備
   const { readGlossaryTable } = await loadGlossary();
@@ -115,13 +116,13 @@ test("test_read_glossary_table_when_missing_arg", async () => {
   ]);
   // 実行
   const { entries, warning } = readGlossaryTable({
-    args: { args: [], keys: { term: "用語" } },
+    options: { term: { column: "用語" } },
     tokens,
     docId: "",
   });
   // 検証
   expect(entries).toEqual([]);
-  expect(warning).toContain("meaning=");
+  expect(warning).toBeUndefined();
 });
 
 // マーカーを取り除き表を残し、用語を env に追加する（正常系）
@@ -144,7 +145,7 @@ test("test_glossary_rule_when_disabled", async () => {
   const parser = createParser();
   const onEnv = createEnv();
   const offEnv = createEnv();
-  const markdown = `<!-- features: -glossary -->\n\n${GLOSSARY_MARKDOWN}`;
+  const markdown = `<!-- features: {"glossary": false} -->\n\n${GLOSSARY_MARKDOWN}`;
   // 実行
   parser.render(GLOSSARY_MARKDOWN, onEnv);
   const html = parser.render(markdown, offEnv);
@@ -158,7 +159,7 @@ test("test_glossary_rule_when_disabled", async () => {
 
 /** やめた言い方の列を持つ用語集の表を含む文書。表の後の段落に用語とやめた言い方が出る */
 const AVOID_GLOSSARY_MARKDOWN = [
-  "<!-- glossary: term=用語 meaning=意味 avoid=やめた言い方 -->",
+  '<!-- glossary: {"term": {"column": "用語"}, "meaning": {"column": "意味"}, "avoid": {"column": "やめた言い方"}} -->',
   "",
   "| 用語 | 意味 | やめた言い方 |",
   "| --- | --- | --- |",
@@ -193,9 +194,10 @@ test("test_read_glossary_rows_with_avoid", async () => {
   );
   // 実行
   const { rows, warning } = readGlossaryRows({
-    args: {
-      args: [],
-      keys: { term: "用語", meaning: "意味", avoid: "やめた言い方" },
+    options: {
+      term: { column: "用語" },
+      meaning: { column: "意味" },
+      avoid: { column: "やめた言い方" },
     },
     tokens,
     docId: "glossary",
@@ -207,27 +209,32 @@ test("test_read_glossary_rows_with_avoid", async () => {
   expect(rows[0]?.entry.aliases).toEqual([]);
 });
 
-// avoid= が無ければやめた言い方を空にする（正常系）
+// avoid が無ければやめた言い方を空にする（正常系）
 test("test_read_glossary_rows_without_avoid", async () => {
   // 準備
   const { readGlossaryRows, readGlossaryTable } = await loadGlossary();
   const tokens = await tableTokens([
     "| マーカー | マーク | HTML コメントで記載する指定 |",
   ]);
-  const args = {
-    args: [],
-    keys: { term: "用語", aliases: "別名", meaning: "意味" },
+  const options = {
+    term: { column: "用語" },
+    aliases: { column: "別名" },
+    meaning: { column: "意味" },
   };
   // 実行
-  const { rows } = readGlossaryRows({ args, tokens, docId: "glossary" });
-  const { entries } = readGlossaryTable({ args, tokens, docId: "glossary" });
+  const { rows } = readGlossaryRows({ options, tokens, docId: "glossary" });
+  const { entries } = readGlossaryTable({
+    options,
+    tokens,
+    docId: "glossary",
+  });
   // 検証
   expect(rows).toHaveLength(1);
   expect(rows[0]?.entry.avoid).toEqual([]);
   expect(rows[0]?.entry).toEqual(entries[0]);
 });
 
-// avoid= が表に無い列名なら行を返却せず警告を返却する（異常系）
+// avoid が表に無い列名なら行を返却せず警告を返却する（異常系）
 test("test_read_glossary_rows_when_unknown_avoid_column", async () => {
   // 準備
   const { readGlossaryRows } = await loadGlossary();
@@ -237,16 +244,17 @@ test("test_read_glossary_rows_when_unknown_avoid_column", async () => {
   // 列は 用語・別名・意味 の並びで、旧称 は無い
   // 実行
   const { rows, warning } = readGlossaryRows({
-    args: {
-      args: [],
-      keys: { term: "用語", meaning: "意味", avoid: "旧称" },
+    options: {
+      term: { column: "用語" },
+      meaning: { column: "意味" },
+      avoid: { column: "旧称" },
     },
     tokens,
     docId: "",
   });
   // 検証
   expect(rows).toEqual([]);
-  expect(warning).toContain("avoid=");
+  expect(warning).toContain("avoid.column");
   expect(warning).toContain("旧称");
   expect(warning).toContain("用語");
   expect(warning).toContain("別名");

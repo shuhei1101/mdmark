@@ -9,10 +9,12 @@ import type { StandardSchemaV1 } from "../../../src/standard-schema.ts";
 /** 拡張の処理を読み込む（実装が無い間は各テストが個別に失敗する） */
 const loadExtensions = () => import("../../../src/extensions.ts");
 
-/** 英小文字 1 つだけの引数を許す schema */
+/** 英小文字の `target` と、数の `count` を許す schema */
 const GREET_SCHEMA = v.object({
-  args: v.strictTuple([v.pipe(v.string(), v.regex(/^[a-z]+$/))]),
-  keys: v.record(v.string(), v.string()),
+  options: v.object({
+    target: v.pipe(v.string(), v.regex(/^[a-z]+$/)),
+    count: v.optional(v.number()),
+  }),
 });
 
 /** 構造の合う拡張を作る */
@@ -116,7 +118,7 @@ function catchError(fn: () => void): Error | undefined {
 test("test_validate_mark_args", async () => {
   // 準備
   const { validateMarkArgs } = await loadExtensions();
-  const value: MdmarkMarkArgs = { args: ["world"], keys: {} };
+  const value: MdmarkMarkArgs = { options: { target: "world" } };
   // 実行
   const items = await validateMarkArgs(GREET_SCHEMA, value);
   // 検証
@@ -127,14 +129,11 @@ test("test_validate_mark_args", async () => {
 test("test_validate_mark_args_when_invalid", async () => {
   // 準備
   const { validateMarkArgs } = await loadExtensions();
-  const value: MdmarkMarkArgs = { args: ["World", "2"], keys: {} };
+  const value: MdmarkMarkArgs = { options: { target: "World", count: "2" } };
   // 実行
   const items = await validateMarkArgs(GREET_SCHEMA, value);
   // 検証
-  expect(items.map((item) => item.label)).toEqual([
-    "1 つ目の World",
-    "2 つ目の 2",
-  ]);
+  expect(items.map((item) => item.label)).toEqual(["target", "count"]);
 });
 
 // validate の拒否を投げる（異常系）
@@ -149,45 +148,55 @@ test("test_validate_mark_args_when_rejected", async () => {
     },
   };
   // 実行・検証
-  await expect(
-    validateMarkArgs(schema, { args: [], keys: {} }),
-  ).rejects.toThrow("boom");
+  await expect(validateMarkArgs(schema, { options: {} })).rejects.toThrow(
+    "boom",
+  );
 });
 
-// 位置まで届く path を位置と値のラベルにする（正常系）
+// options の中まで届く path をキーのパスのラベルにする（正常系）
 test("test_format_issue", async () => {
   // 準備
   const { formatIssue } = await loadExtensions();
-  const issue = { message: "合わない", path: [{ key: "args" }, { key: 1 }] };
-  const value: MdmarkMarkArgs = { args: ["World", "2"], keys: {} };
+  const issue = {
+    message: "合わない",
+    path: [{ key: "options" }, { key: "items" }, { key: 1 }, "name"],
+  };
+  const value: MdmarkMarkArgs = {
+    options: { items: [{ name: "a" }, { name: 2 }] },
+  };
   // 実行
   const item = formatIssue(issue, value);
   // 検証
-  expect(item).toEqual({ label: "2 つ目の 2", message: "合わない" });
+  expect(item).toEqual({ label: "items[1].name", message: "合わない" });
 });
 
-// キーまで届く path を `{キー}=` にする（正常系）
-test("test_format_issue_when_key", async () => {
+// definition の中まで届く path を `definition.{パス}` にする（正常系）
+test("test_format_issue_when_definition", async () => {
   // 準備
   const { formatIssue } = await loadExtensions();
-  const issue = { message: "合わない", path: ["keys", "lang"] };
-  const value: MdmarkMarkArgs = { args: [], keys: { lang: "x" } };
+  const value: MdmarkMarkArgs = { options: {}, definition: { title: 1 } };
   // 実行
-  const item = formatIssue(issue, value);
+  const item = formatIssue(
+    { message: "合わない", path: ["definition", "title"] },
+    value,
+  );
   // 検証
-  expect(item.label).toBe("lang=");
+  expect(item.label).toBe("definition.title");
   expect(item.message).toBe("合わない");
 });
 
-// 位置を持たない issue はラベル無しにする（正常系）
+// キーまで届かない issue はラベル無し（正常系）
 test("test_format_issue_when_no_position", async () => {
   // 準備
   const { formatIssue } = await loadExtensions();
-  const value: MdmarkMarkArgs = { args: ["World"], keys: {} };
+  const value: MdmarkMarkArgs = { options: { target: "World" } };
   // 実行
-  const onlyArgs = formatIssue({ message: "合わない", path: ["args"] }, value);
+  const onlyOptions = formatIssue(
+    { message: "合わない", path: ["options"] },
+    value,
+  );
   const noPath = formatIssue({ message: "合わない" }, value);
   // 検証
-  expect(onlyArgs).toEqual({ label: "", message: "合わない" });
+  expect(onlyOptions).toEqual({ label: "", message: "合わない" });
   expect(noPath).toEqual({ label: "", message: "合わない" });
 });

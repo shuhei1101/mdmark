@@ -41,11 +41,11 @@ test("test_expand_includes", () => {
     "src/app.ts": TWELVE_LINES,
   };
   const markdown = [
-    "<!-- include: 共通/手順.md -->",
+    '<!-- include: {"path": "共通/手順.md"} -->',
     "",
-    "<!-- include: 共通/手順.md#実行 -->",
+    '<!-- include: {"path": "共通/手順.md", "heading": "実行"} -->',
     "",
-    "<!-- include: src/app.ts#L3-L5 -->",
+    '<!-- include: {"path": "src/app.ts", "lines": {"from": 3, "to": 5}} -->',
     "",
   ].join("\n");
   // 実行
@@ -71,11 +71,11 @@ test("test_expand_includes_when_missing", () => {
   // 準備
   const includes = { "a.md": "## 準備\n\n本文\n", "src/app.ts": TWELVE_LINES };
   const markdown = [
-    "<!-- include: missing.md -->",
+    '<!-- include: {"path": "missing.md"} -->',
     "",
-    "<!-- include: a.md#無い見出し -->",
+    '<!-- include: {"path": "a.md", "heading": "無い見出し"} -->',
     "",
-    "<!-- include: src/app.ts#L20-L22 -->",
+    '<!-- include: {"path": "src/app.ts", "lines": {"from": 20, "to": 22}} -->',
     "",
   ].join("\n");
   // 実行
@@ -92,10 +92,10 @@ test("test_expand_includes_when_missing", () => {
 test("test_expand_includes_when_circular", () => {
   // 準備
   const includes = {
-    "a.md": "a の段落\n\n<!-- include: b.md -->\n",
-    "b.md": "b の段落\n\n<!-- include: a.md -->\n",
+    "a.md": 'a の段落\n\n<!-- include: {"path": "b.md"} -->\n',
+    "b.md": 'b の段落\n\n<!-- include: {"path": "a.md"} -->\n',
   };
-  const markdown = "<!-- include: a.md -->\n";
+  const markdown = '<!-- include: {"path": "a.md"} -->\n';
   // 実行
   const { html } = renderDoc(markdown, {}, { includes });
   // 検証
@@ -146,7 +146,7 @@ test("test_expand_includes_when_frontmatter", () => {
   const includes = {
     "共通/手順.md": "---\ntitle: 手順\n---\n\n## 実行\n\n実行の本文\n",
   };
-  const markdown = "<!-- include: 共通/手順.md -->\n";
+  const markdown = '<!-- include: {"path": "共通/手順.md"} -->\n';
   // 実行
   const { html } = renderDoc(markdown, { frontmatter: true }, { includes });
   // 検証

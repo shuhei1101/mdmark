@@ -149,7 +149,7 @@ export const LINKED_TEXT: string = JSON.stringify({
 
 /**
  * インターフェース定義『設定と索引を点検する』の「正常系（文字列に記載の警告がある）」の Markdown。
- * 1 行目の `<!-- flow -->` の範囲にノードの種類 `begin` の定義、20 行目に `<!-- tabz -->`、22 行目に `<!-- code: highlight=9 -->` と 3 行のコードブロックを持つ
+ * 1 行目の `<!-- flow -->` の範囲にノードの種類 `begin` の定義、20 行目に `<!-- tabz -->`、22 行目に `<!-- code: {"highlight": [9]} -->` と 3 行のコードブロックを持つ
  */
 export const WARNINGS_MARKDOWN: string = (() => {
   const flow = [
@@ -171,7 +171,7 @@ export const WARNINGS_MARKDOWN: string = (() => {
   while (lines.length < 18) {
     lines.push("");
   }
-  lines.push("本文", "<!-- tabz -->", "", "<!-- code: highlight=9 -->");
+  lines.push("本文", "<!-- tabz -->", "", '<!-- code: {"highlight": [9]} -->');
   lines.push(
     "```ts",
     "const a = 1;",

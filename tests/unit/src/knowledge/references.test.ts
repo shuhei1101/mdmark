@@ -32,7 +32,7 @@ test("test_collect_references_when_disabled", async () => {
   const documents = {
     ...ARCH_DOCUMENTS,
     "使い方/guide.md": [
-      "<!-- features: -backlinks -glossary -->",
+      '<!-- features: {"backlinks": false, "glossary": false} -->',
       "",
       "[構成](../設計/arch.md)",
       "",
@@ -123,7 +123,7 @@ test("test_parse_document_when_frontmatter", async () => {
     "| 用語 | 意味 |",
     "---",
     "",
-    "<!-- glossary: term=用語 meaning=意味 -->",
+    '<!-- glossary: {"term": {"column": "用語"}, "meaning": {"column": "意味"}} -->',
     "",
     "| 用語 | 意味 |",
     "| --- | --- |",

@@ -15,7 +15,7 @@ const TABLE = [
 // 詳細を指定の行の直後に入れる（正常系）
 test("test_attach_row_details", () => {
   // 準備
-  const markdown = `${TABLE}\n<!-- row-detail: 2 -->\n\n詳細の段落\n\n<!-- /row-detail -->\n`;
+  const markdown = `${TABLE}\n<!-- row-detail: {"at": 2} -->\n\n詳細の段落\n\n<!-- /row-detail -->\n`;
   // 実行
   const { html } = renderDoc(markdown);
   // 検証
@@ -29,7 +29,7 @@ test("test_attach_row_details", () => {
 // 表に無い行は警告を差し込み、中身を表の後に残す（正常系）
 test("test_attach_row_details_when_row_missing", () => {
   // 準備
-  const markdown = `${TABLE}\n<!-- row-detail: 5 -->\n\n詳細の段落\n\n<!-- /row-detail -->\n`;
+  const markdown = `${TABLE}\n<!-- row-detail: {"at": 5} -->\n\n詳細の段落\n\n<!-- /row-detail -->\n`;
   // 実行
   const { html } = renderDoc(markdown);
   // 検証

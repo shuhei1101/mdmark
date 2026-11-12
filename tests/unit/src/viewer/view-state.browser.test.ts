@@ -6,7 +6,7 @@ const loadViewState = () => import("../../../../src/viewer/view-state.ts");
 
 // 閉じた表（details）・開いたセクション・group= の無いタブ群・group=os のタブ群を持つ文書（h1 もセクションの開閉を持つため置かない）
 const MARKDOWN = [
-  "<!-- table: data closed -->",
+  '<!-- table: {"kind": "data", "collapse": {"open": false}} -->',
   "",
   "| 名前 | 値 |",
   "| --- | --- |",
@@ -28,7 +28,7 @@ const MARKDOWN = [
   "",
   "<!-- /tabs -->",
   "",
-  "<!-- tabs: group=os -->",
+  '<!-- tabs: {"group": "os"} -->',
   "",
   "### Windows",
   "",

@@ -9,13 +9,13 @@ const loadDetails = () => import("../../../../../src/render/syntax/details.ts");
 test("test_build_details_ranges", () => {
   // 準備
   const markdown = [
-    "<!-- details: 補足 -->",
+    '<!-- details: {"title": "補足"} -->',
     "",
     "中身 A",
     "",
     "<!-- /details -->",
     "",
-    "<!-- details: 実行の例 open -->",
+    '<!-- details: {"title": "実行の例", "open": true} -->',
     "",
     "中身 B",
     "",
@@ -36,7 +36,7 @@ test("test_build_details_ranges", () => {
 // 閉じのマーカーが無いと囲まずに警告する（異常系）
 test("test_build_details_ranges_when_unclosed", () => {
   // 準備
-  const markdown = "<!-- details: 補足 -->\n\n段落\n";
+  const markdown = '<!-- details: {"title": "補足"} -->\n\n段落\n';
   // 実行
   const { html } = renderDoc(markdown);
   // 検証
@@ -47,14 +47,16 @@ test("test_build_details_ranges_when_unclosed", () => {
   expect(html).toContain("段落");
 });
 
-// 最後の `open` を開閉として読み込む（正常系）
+// タイトルと開閉を読み込む（正常系）
 test("test_read_details_options", async () => {
   // 準備
   const { readDetailsOptions } = await loadDetails();
   // 実行
-  const results = ["補足", "実行の例 open", ""].map((args) =>
-    readDetailsOptions(args),
-  );
+  const results = [
+    { title: "補足" },
+    { title: "実行の例", open: true },
+    {},
+  ].map((options) => readDetailsOptions(options));
   // 検証
   expect(results).toEqual([
     { title: "補足", open: false },

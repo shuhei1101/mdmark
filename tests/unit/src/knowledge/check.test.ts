@@ -288,7 +288,7 @@ test("test_find_avoided_terms_ignores_code_links_and_headings", async () => {
     "作業場を開く",
     "```",
     "",
-    "<!-- glossary: term=用語 meaning=意味 -->",
+    '<!-- glossary: {"term": {"column": "用語"}, "meaning": {"column": "意味"}} -->',
     "",
     "| 用語 | 意味 |",
     "| --- | --- |",

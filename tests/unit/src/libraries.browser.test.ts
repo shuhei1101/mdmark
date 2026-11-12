@@ -69,7 +69,7 @@ test("test_load_libraries", async () => {
   const { loadLibraries: load } = await loadLibraries();
   const { renderEmbed } = await loadEmbed();
   const root = createRoot(
-    renderEmbed({ name: "test-lib", args: ["a", "b"] }) +
+    renderEmbed({ name: "test-lib", options: { items: ["a", "b"] } }) +
       renderEmbed({ name: "test-lib" }),
   );
   const draw = vi.fn();
@@ -85,8 +85,8 @@ test("test_load_libraries", async () => {
   const [first, second] = findSlots(root);
   expect(importModule).toHaveBeenCalledTimes(1);
   expect(importModule).toHaveBeenCalledWith(MODULE_URL);
-  expect(draw).toHaveBeenCalledWith(first, ["a", "b"]);
-  expect(draw).toHaveBeenCalledWith(second, []);
+  expect(draw).toHaveBeenCalledWith(first, { items: ["a", "b"] });
+  expect(draw).toHaveBeenCalledWith(second, {});
   for (const slot of [first, second]) {
     expect(slot.hasAttribute("role")).toBe(false);
     expect(slot.hasAttribute("data-mdmark-drawn")).toBe(true);
@@ -259,7 +259,7 @@ test("test_load_libraries_when_draw_removes_slot", async () => {
   expect(errorSpy).toHaveBeenCalledTimes(1);
 });
 
-// 拡張のマーカーを load で読み込み、判別した引数で draw を呼ぶ（正常系）
+// 拡張のマーカーを load で読み込み、引数の JSON のオブジェクトで draw を呼ぶ（正常系）
 test("test_load_libraries_when_extension", async () => {
   // 準備
   const { loadLibraries: load } = await loadLibraries();
@@ -271,9 +271,10 @@ test("test_load_libraries_when_extension", async () => {
     directive: "greet",
     load: extensionLoad,
   });
-  const args = ["world", "lang=ja"];
+  const options = { target: "world", lang: "ja" };
   const root = createRoot(
-    renderEmbed({ name: "greet", args }) + renderEmbed({ name: "greet", args }),
+    renderEmbed({ name: "greet", options }) +
+      renderEmbed({ name: "greet", options }),
   );
   // 実行
   await load({ root, libraries: {}, isCurrent: () => true });
@@ -282,8 +283,7 @@ test("test_load_libraries_when_extension", async () => {
   expect(draw).toHaveBeenCalledTimes(2);
   for (const slot of findSlots(root)) {
     expect(draw).toHaveBeenCalledWith(slot, {
-      args: ["world"],
-      keys: { lang: "ja" },
+      options: { target: "world", lang: "ja" },
     });
   }
 });
@@ -299,11 +299,12 @@ test("test_load_libraries_when_extension_args_invalid", async () => {
     directive: "greet",
     load: extensionLoad,
     schema: v.object({
-      args: v.strictTuple([v.pipe(v.string(), v.regex(/^[a-z]+$/))]),
-      keys: v.record(v.string(), v.string()),
+      options: v.object({ target: v.pipe(v.string(), v.regex(/^[a-z]+$/)) }),
     }),
   });
-  const root = createRoot(renderEmbed({ name: "greet", args: ["World", "2"] }));
+  const root = createRoot(
+    renderEmbed({ name: "greet", options: { target: "World" } }),
+  );
   // 実行
   await load({ root, libraries: {}, isCurrent: () => true });
   // 検証

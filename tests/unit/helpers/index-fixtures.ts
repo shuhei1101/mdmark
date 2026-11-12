@@ -37,7 +37,7 @@ export const ARCH_DOCUMENTS: Record<string, string> = {
 /** 用語集の表を 1 つ持つ Markdown。`rows` は `[用語, 意味]` の並びで、最初の行が 5 行目になる */
 export function glossaryDocument(rows: Array<[string, string]>): string {
   return [
-    "<!-- glossary: term=用語 meaning=意味 -->",
+    '<!-- glossary: {"term": {"column": "用語"}, "meaning": {"column": "意味"}} -->',
     "",
     "| 用語 | 意味 |",
     "| --- | --- |",
@@ -77,7 +77,7 @@ export const AVOIDED_GUIDE = [
 
 /** 用語 `ワークスペース` にやめた言い方 `作業場`・`ワーク場` を持つ用語集の表だけの文書。表の中に `作業場`・`ワーク場` が出る */
 export const AVOID_GLOSSARY_DOCUMENT = [
-  "<!-- glossary: term=用語 meaning=意味 avoid=やめた言い方 -->",
+  '<!-- glossary: {"term": {"column": "用語"}, "meaning": {"column": "意味"}, "avoid": {"column": "やめた言い方"}} -->',
   "",
   "| 用語 | 意味 | やめた言い方 |",
   "| --- | --- | --- |",

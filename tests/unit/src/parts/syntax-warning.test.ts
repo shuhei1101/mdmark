@@ -11,18 +11,20 @@ test("test_render_syntax_warning", async () => {
   const { renderSyntaxWarning } = await loadSyntaxWarning();
   // 実行
   const html = renderSyntaxWarning({
-    mark: "<!-- table: data +x -->",
+    mark: '<!-- table: {"kind": "x"} -->',
     message: "の読み込めない指定を当てずに描いています。",
-    items: [{ label: "+x", message: "使用できない機能です" }],
+    items: [{ label: "kind", message: "`x` は選べる値にありません" }],
   });
   // 検証
   expect(
     html.startsWith('<div class="mdmark-syntax-warning" role="note">'),
   ).toBe(true);
   expect(html).toContain("記載の警告");
-  expect(html).toContain("<code>&lt;!-- table: data +x --&gt;</code>");
+  expect(html).toContain(
+    "<code>&lt;!-- table: {&quot;kind&quot;: &quot;x&quot;} --&gt;</code>",
+  );
   expect(matches(html, /<li>/g)).toHaveLength(1);
-  expect(html).toContain("<code>+x</code>");
+  expect(html).toContain("<code>kind</code>");
 });
 
 // マーカーと項目が無ければ本文だけを出す（正常系）

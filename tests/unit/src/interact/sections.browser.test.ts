@@ -48,7 +48,7 @@ const NESTED_MARKDOWN = [
   "",
   "#### C",
   "",
-  "<!-- section: closed -->",
+  '<!-- section: {"open": false} -->',
   "",
   "本文C",
   "",
@@ -72,7 +72,7 @@ test("test_attach_sections", async () => {
   // 準備
   const { attachSections } = await loadSections();
   const { root } = createRoot(
-    "## 開く\n\n本文1\n\n## 閉じる\n\n<!-- section: closed -->\n\n本文2\n",
+    '## 開く\n\n本文1\n\n## 閉じる\n\n<!-- section: {"open": false} -->\n\n本文2\n',
   );
   // 実行
   detachers.push(attachSections({ root, sections: true, rowDetails: true }));
@@ -93,7 +93,7 @@ test("test_attach_sections_when_hash", async () => {
   // 準備
   const { attachSections } = await loadSections();
   const { root } = createRoot(
-    "## 親\n\n<!-- section: closed -->\n\n### 注意\n\n本文\n",
+    '## 親\n\n<!-- section: {"open": false} -->\n\n### 注意\n\n本文\n',
   );
   detachers.push(attachSections({ root, sections: true, rowDetails: true }));
   const closed = sectionBody(root, "親");
@@ -110,7 +110,7 @@ test("test_attach_sections_when_bundle_hash", async () => {
   // 準備
   const { attachSections } = await loadSections();
   const { root } = createRoot(
-    "## 親\n\n<!-- section: closed -->\n\n### 注意\n\n本文\n",
+    '## 親\n\n<!-- section: {"open": false} -->\n\n### 注意\n\n本文\n',
   );
   detachers.push(attachSections({ root, sections: true, rowDetails: true }));
   const closed = sectionBody(root, "親");
@@ -133,7 +133,7 @@ test("test_attach_sections_when_row_detail", async () => {
       "| a | 1 |",
       "| b | 2 |",
       "",
-      "<!-- row-detail: 2 -->",
+      '<!-- row-detail: {"at": 2} -->',
       "",
       "詳細の段落",
       "",
@@ -165,13 +165,13 @@ test("test_attach_sections_when_row_has_term", async () => {
     "| --- | --- |",
     "| マーカー | 1 |",
     "",
-    "<!-- row-detail: 1 -->",
+    '<!-- row-detail: {"at": 1} -->',
     "",
     "詳細の段落",
     "",
     "<!-- /row-detail -->",
     "",
-    "<!-- glossary: term=用語 meaning=意味 -->",
+    '<!-- glossary: {"term": {"column": "用語"}, "meaning": {"column": "意味"}} -->',
     "",
     "| 用語 | 意味 |",
     "| --- | --- |",
@@ -216,7 +216,7 @@ test("test_attach_sections_when_hash_in_tab", async () => {
       "",
       "#### 補足",
       "",
-      "<!-- section: closed -->",
+      '<!-- section: {"open": false} -->',
       "",
       "##### 注意",
       "",
@@ -382,11 +382,11 @@ test("test_reveal_target", async () => {
     [
       "## A",
       "",
-      "<!-- section: closed -->",
+      '<!-- section: {"open": false} -->',
       "",
       "### B",
       "",
-      "<!-- section: closed -->",
+      '<!-- section: {"open": false} -->',
       "",
       "#### C",
       "",
@@ -420,7 +420,7 @@ test("test_reveal_target_when_row", async () => {
     [
       "## A",
       "",
-      "<!-- section: closed -->",
+      '<!-- section: {"open": false} -->',
       "",
       "| 名前 | 値 |",
       "| --- | --- |",
@@ -459,7 +459,7 @@ test("test_fold_all_sections", async () => {
       "",
       "### 注意",
       "",
-      "<!-- section: closed -->",
+      '<!-- section: {"open": false} -->',
       "",
       "注意の段落",
       "",
@@ -491,13 +491,13 @@ test("test_open_enclosing", async () => {
     [
       "## A",
       "",
-      "<!-- section: closed -->",
+      '<!-- section: {"open": false} -->',
       "",
       "| 名前 | 値 |",
       "| --- | --- |",
       "| a | 1 |",
       "",
-      "<!-- row-detail: 1 -->",
+      '<!-- row-detail: {"at": 1} -->',
       "",
       "詳細の段落",
       "",

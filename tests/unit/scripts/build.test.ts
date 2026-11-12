@@ -434,11 +434,21 @@ test("test_build_dist_when_cli_and_viewer", async () => {
     join(root, "src", "viewer", "viewer.css"),
     ".a { color: red }\n",
   );
+  await mkdir(join(root, "src", "render"), { recursive: true });
+  await writeFile(
+    join(root, "src", "render", "legacy-marks.ts"),
+    "export const rewriteLegacyMarks = (markdown: string): string => markdown;\n",
+  );
   // 実行
   const outputs = await buildDist("v0.0.1", root);
   // 検証
   const paths = Object.keys(outputs);
-  for (const name of ["dist/cli.js", "dist/viewer.js", "dist/viewer.css"]) {
+  for (const name of [
+    "dist/cli.js",
+    "dist/viewer.js",
+    "dist/viewer.css",
+    "dist/legacy-marks.js",
+  ]) {
     expect(paths.some((path) => path.endsWith(name))).toBe(true);
   }
   const cli = await readFile(join(root, "dist", "cli.js"), "utf8");

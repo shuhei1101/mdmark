@@ -17,7 +17,7 @@ afterEach(() => {
 
 /** `+reorder +columns` の 4 列 3 行の表（列 `名前`・`型`・`既定`・`説明`） */
 const REORDER_TABLE = [
-  "<!-- table: data +reorder +columns -->",
+  '<!-- table: {"kind": "data", "features": {"reorder": {}, "columns": {}}} -->',
   "",
   "| 名前 | 型 | 既定 | 説明 |",
   "| --- | --- | --- | --- |",
@@ -31,7 +31,7 @@ const REORDER_TABLE = [
 
 /** 2 行の見出しで `設定` が 3 列にまたがり、名前をピン止めした表 */
 const GROUPED_TABLE = [
-  "<!-- table: data +reorder header-rows=2 pin=名前 -->",
+  '<!-- table: {"kind": "data", "features": {"reorder": {}}, "columns": {"名前": {"pinned": true}}, "header": {"rows": 2}} -->',
   "",
   "| 名前 | 設定 | << | << | 備考 |",
   "| --- | --- | --- | --- | --- |",

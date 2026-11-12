@@ -30,9 +30,9 @@ test("test_used_library_marks", async () => {
   // 準備
   const { usedLibraryMarks } = await loadUsed();
   const markdown = [
-    "<!-- chart: a -->",
+    '<!-- chart: {"data": "a"} -->',
     "",
-    "<!-- table: data -->",
+    '<!-- table: {"kind": "data"} -->',
     "",
     "<!-- unknown -->",
     "",
@@ -54,7 +54,7 @@ test("test_collect_range_scripts", async () => {
     config: { features: { "html-scripts": true } },
   });
   const byMarker = collectRangeScripts({
-    markdown: `<!-- features: +html-scripts -->\n\n${range}`,
+    markdown: `<!-- features: {"html-scripts": true} -->\n\n${range}`,
     config: {},
   });
   // 検証
@@ -68,7 +68,7 @@ test("test_collect_range_scripts_when_off_or_no_script", async () => {
   // 準備
   const { collectRangeScripts } = await loadUsed();
   const on = { features: { "html-scripts": true } };
-  const offByMarker = `<!-- features: -html-scripts -->\n\n${rangeScriptDoc("ts", ESCAPED_SCRIPT)}`;
+  const offByMarker = `<!-- features: {"html-scripts": false} -->\n\n${rangeScriptDoc("ts", ESCAPED_SCRIPT)}`;
   const cssOnly = rangeScriptDoc("css", ".toggle { color: red; }");
   const outside = ["```ts", ESCAPED_SCRIPT, "```", ""].join("\n");
   // 実行
@@ -85,7 +85,7 @@ test("test_uses_mermaid", async () => {
   const { usesMermaid } = await loadUsed();
   const mermaid = ["```mermaid", "flowchart LR", "```", ""].join("\n");
   const ts = ["```ts", "const a = 1;", "```", ""].join("\n");
-  const disabled = `<!-- features: -mermaid -->\n\n${mermaid}`;
+  const disabled = `<!-- features: {"mermaid": false} -->\n\n${mermaid}`;
   // 実行
   const results = [
     usesMermaid({ markdowns: [mermaid, ts], config: {} }),

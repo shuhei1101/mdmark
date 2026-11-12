@@ -129,11 +129,11 @@ test("test_attach_file_trees_when_open", async () => {
   const { attachFileTrees } = await loadTrees();
   const { root } = createRoot(
     markdownOf(
-      "<!-- tree: open=2 -->",
+      '<!-- tree: {"depth": 2} -->',
       "",
       ...NESTED_TREE,
       "",
-      "<!-- tree: open=all -->",
+      '<!-- tree: {"depth": "all"} -->',
       "",
       ...NESTED_TREE,
     ),
@@ -152,7 +152,7 @@ test("test_attach_file_trees_when_toggled", async () => {
   // 準備
   const { attachFileTrees } = await loadTrees();
   const { root } = createRoot(
-    markdownOf("<!-- tree: open=all -->", "", ...NESTED_TREE),
+    markdownOf('<!-- tree: {"depth": "all"} -->', "", ...NESTED_TREE),
   );
   detachers.push(attachFileTrees(root));
   const tree = treeOf(root);

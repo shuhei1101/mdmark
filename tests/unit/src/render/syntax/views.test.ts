@@ -12,10 +12,13 @@ const TABLE = [
   "",
 ].join("\n");
 
-/** ビューのマーカーの引数を指定して、表をマーカーで囲んだ文書にする */
-function viewMarkdown(args: string): string {
-  return `<!-- view: ${args} -->\n\n${TABLE}\n<!-- /view -->\n`;
+/** ビューのマーカーの設定を指定して、表をマーカーで囲んだ文書にする */
+function viewMarkdown(options: Record<string, unknown>): string {
+  return `<!-- view: ${JSON.stringify(options)} -->\n\n${TABLE}\n<!-- /view -->\n`;
 }
+
+/** 状態の列でボードに分ける設定 */
+const BOARD = { group: { column: "状態" } };
 
 /** `div.mdmark-view` の `data-view` を JSON として読み込む */
 function readViewSpec(html: string): unknown {
@@ -33,7 +36,10 @@ function readViewSpec(html: string): unknown {
 // 範囲を囲みにし、表を data の種類にする（正常系）
 test("test_build_views", () => {
   // 準備
-  const markdown = viewMarkdown("group=状態 filter=担当 icons=完了:archive");
+  const markdown = viewMarkdown({
+    board: { ...BOARD, values: { 完了: { icon: "archive" } } },
+    columns: { 担当: { filter: {} } },
+  });
   // 実行
   const { html } = renderDoc(markdown);
   // 検証
@@ -53,7 +59,7 @@ test("test_build_views", () => {
 // 表に無い group の列を警告にし、表で描く（正常系）
 test("test_build_views_when_group_missing", () => {
   // 準備
-  const markdown = viewMarkdown("group=優先度");
+  const markdown = viewMarkdown({ board: { group: { column: "優先度" } } });
   // 実行
   const { html } = renderDoc(markdown);
   // 検証
@@ -72,7 +78,7 @@ test("test_build_views_when_group_missing", () => {
 test("test_build_views_when_no_table", () => {
   // 準備
   const markdown =
-    "<!-- view: group=状態 -->\n\n範囲の段落\n\n<!-- /view -->\n";
+    '<!-- view: {"board": {"group": {"column": "状態"}}} -->\n\n範囲の段落\n\n<!-- /view -->\n';
   // 実行
   const { html } = renderDoc(markdown);
   // 検証
@@ -82,35 +88,42 @@ test("test_build_views_when_no_table", () => {
   expect(html).not.toContain('class="mdmark-view"');
 });
 
-// 使用できないアイコンは当てずに警告にする（正常系）
+// 使用できないアイコンと列に無い値は当てずに警告にする（正常系）
 test("test_build_views_when_unknown_icon", () => {
   // 準備
-  const markdown = viewMarkdown("group=状態 icons=完了:rocket");
+  const markdown = viewMarkdown({
+    board: {
+      ...BOARD,
+      values: { 完了: { icon: "rocket" }, 保留: { icon: "inbox" } },
+    },
+  });
   // 実行
   const { html } = renderDoc(markdown);
   // 検証
-  const warning = outerHtml(html, "mdmark-syntax-warning");
-  expect(plainText(warning)).toContain("のアイコン rocket は使用できません");
+  const text = plainText(html);
+  expect(text).toContain("rocket");
+  expect(text).toContain("保留");
+  expect(text).toContain("未着手");
   expect(readViewSpec(html)).toMatchObject({ icons: {} });
 });
 
 // 知らないキーは警告にせずスキップする（正常系）
 test("test_build_views_when_unknown_key", () => {
   // 準備
-  const markdown = viewMarkdown("group=状態 size=2");
+  const markdown = viewMarkdown({ board: BOARD, size: 2 });
   // 実行
   const { html, warnings } = renderDoc(markdown);
   // 検証
   expect(html).not.toContain("mdmark-syntax-warning");
   expect(readViewSpec(html)).toMatchObject({ mode: "board" });
   expect(warnings.map((warning) => warning.kind)).toEqual(["unknown_mark_arg"]);
-  expect(warnings[0]?.message).toContain("size=");
+  expect(warnings[0]?.message).toContain("size");
 });
 
 // views がオフなら囲まずに表だけを描く（正常系）
 test("test_build_views_when_disabled", () => {
   // 準備
-  const markdown = `<!-- features: -views -->\n\n${viewMarkdown("group=状態")}`;
+  const markdown = `<!-- features: {"views": false} -->\n\n${viewMarkdown({ board: BOARD })}`;
   // 実行
   const { html } = renderDoc(markdown);
   // 検証
@@ -119,5 +132,5 @@ test("test_build_views_when_disabled", () => {
     'data-kind="data"',
   );
   expect(html).not.toContain("<!--");
-  expect(plainText(html)).not.toContain("group=");
+  expect(plainText(html)).not.toContain("board");
 });

@@ -8,9 +8,9 @@ import {
 import { renderDoc } from "../../../helpers/render.ts";
 
 /** 表のマーカーと見出し・行から、マーカーで囲んだ表の Markdown を作る */
-function treeTable(mark: string, rows: string[]): string {
+function treeTable(mark: Record<string, unknown>, rows: string[]): string {
   return [
-    `<!-- table: ${mark} -->`,
+    `<!-- table: ${JSON.stringify(mark)} -->`,
     "",
     ...rows,
     "",
@@ -34,13 +34,16 @@ function attr(tag: string, name: string): string | undefined {
 // 表に無い親の行を補い、行にパスと深さを付ける（正常系）
 test("test_decorate_tree_table", () => {
   // 準備
-  const markdown = treeTable("data tree=キー", [
-    "| キー | 説明 |",
-    "| --- | --- |",
-    "| features.table | 表の機能 |",
-    "| features.html | 埋め込んだ HTML の機能 |",
-    "| aliases[].id | 別名の ID |",
-  ]);
+  const markdown = treeTable(
+    { kind: "data", tree: { key: { column: "キー" } } },
+    [
+      "| キー | 説明 |",
+      "| --- | --- |",
+      "| features.table | 表の機能 |",
+      "| features.html | 埋め込んだ HTML の機能 |",
+      "| aliases[].id | 別名の ID |",
+    ],
+  );
   // 実行
   const { html } = renderDoc(markdown);
   // 検証
@@ -67,7 +70,15 @@ test("test_decorate_tree_table", () => {
 test("test_decorate_tree_table_when_columns", () => {
   // 準備
   const markdown = treeTable(
-    "data tree=キー type=型 required=必須 default=既定",
+    {
+      kind: "data",
+      tree: {
+        key: { column: "キー" },
+        type: { column: "型" },
+        required: { column: "必須" },
+        default: { column: "既定" },
+      },
+    },
     [
       "| キー | 型 | 必須 | 既定 | 説明 |",
       "| --- | --- | --- | --- | --- |",
@@ -90,14 +101,20 @@ test("test_decorate_tree_table_when_columns", () => {
   expect(html).toContain('<span class="mdmark-tree-default">true</span>');
 });
 
-/** `tree=キー example=設定の見本` の表と、見出し `設定の見本` の下の 2 つのタブを持つ文書 */
+/** `tree` の `key` が `キー`、`example.heading` が `設定の見本` の表と、見出し `設定の見本` の下の 2 つのタブを持つ文書 */
 const EXAMPLE_DOC = [
-  treeTable("data tree=キー example=設定の見本", [
-    "| キー | 説明 |",
-    "| --- | --- |",
-    "| features.table | 表の機能 |",
-    "| aliases[].id | 別名の ID |",
-  ]),
+  treeTable(
+    {
+      kind: "data",
+      tree: { key: { column: "キー" }, example: { heading: "設定の見本" } },
+    },
+    [
+      "| キー | 説明 |",
+      "| --- | --- |",
+      "| features.table | 表の機能 |",
+      "| aliases[].id | 別名の ID |",
+    ],
+  ),
   "## 設定の見本",
   "",
   "<!-- tabs -->",
@@ -146,14 +163,16 @@ test("test_link_tree_examples", () => {
   expect(idLine).toBeDefined();
 });
 
-// 見出しが無い `example=` は記載の警告にし、見本を配置しない（異常系）
+// 見出しが無い `example.heading` は記載の警告にし、見本を配置しない（異常系）
 test("test_link_tree_examples_when_heading_missing", () => {
   // 準備
-  const markdown = treeTable("data tree=キー example=見本", [
-    "| キー | 説明 |",
-    "| --- | --- |",
-    "| features.table | 表の機能 |",
-  ]);
+  const markdown = treeTable(
+    {
+      kind: "data",
+      tree: { key: { column: "キー" }, example: { heading: "見本" } },
+    },
+    ["| キー | 説明 |", "| --- | --- |", "| features.table | 表の機能 |"],
+  );
   // 実行
   const { html } = renderDoc(markdown);
   // 検証

@@ -28,7 +28,7 @@ const NESTED_YAML = [
 
 /** 2 行目と 6 行目を `fold=` で畳んだ 8 行のコードブロック */
 const FOLDED_YAML = [
-  "<!-- code: fold=2,6 -->",
+  '<!-- code: {"fold": [2, 6]} -->',
   "",
   "```yaml",
   "a:",
@@ -177,7 +177,7 @@ test("test_set_code_fold_open", async () => {
   // 準備
   const { attachCodeFolds, setCodeFoldOpen } = await loadCodeFolds();
   const { root } = createRoot(
-    ["<!-- code: fold=2 -->", "", NESTED_YAML].join("\n"),
+    ['<!-- code: {"fold": [2]} -->', "", NESTED_YAML].join("\n"),
   );
   detachers.push(attachCodeFolds(root));
   const lines = codeLines(root);

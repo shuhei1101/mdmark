@@ -127,7 +127,7 @@ test("test_check_markdown_source_when_include", async () => {
   // 実行
   const issues = await checkMarkdownSource({
     cwd,
-    text: "<!-- include: missing.md -->\n\n本文\n\n<!-- tabz -->\n",
+    text: '<!-- include: {"path": "missing.md"} -->\n\n本文\n\n<!-- tabz -->\n',
     importCode,
   });
   // 検証
@@ -189,20 +189,20 @@ test("test_read_yaml_key_when_missing", async () => {
   await expect(notString).rejects.toThrow(/文字列/);
 });
 
-// 描くときにスキップするマーカーの引数を unknown_mark_arg にする（正常系）
-test("test_check_markdown_source_when_unknown_mark_args", async () => {
+// 描くときに無視するマーカーの知らないキーを unknown_mark_arg にする（正常系）
+test("test_check_markdown_source_when_unknown_mark_keys", async () => {
   // 準備
   const { checkMarkdownSource } = await loadMarkdownCheck();
   const cwd = await createConfigDir();
   const text = [
-    "<!-- table: data +unknown widht=説明 -->",
+    '<!-- table: {"kind": "data", "features": {"unknown": {}}, "widht": {"説明": {}}} -->',
     "",
     "| 名前 | 説明 |",
     "| --- | --- |",
     "| a | 1 |",
     "",
     "<!-- /table -->",
-    "<!-- tabs: grop=os -->",
+    '<!-- tabs: {"grop": "os"} -->',
     "",
     "### macOS",
     "",
@@ -224,7 +224,38 @@ test("test_check_markdown_source_when_unknown_mark_args", async () => {
     { where: "8", kind: "unknown_mark_arg" },
   ]);
   const messages = issues.map((issue) => issue.message).join("\n");
-  expect(messages).toContain("+unknown");
-  expect(messages).toContain("widht=");
-  expect(messages).toContain("grop=");
+  expect(messages).toContain("features.unknown");
+  expect(messages).toContain("widht");
+  expect(messages).toContain("grop");
+});
+
+// 今の書き方のマーカーを legacy_mark にし、記載の警告にしない（正常系）
+test("test_check_markdown_source_when_legacy_mark", async () => {
+  // 準備
+  const { checkMarkdownSource } = await loadMarkdownCheck();
+  const cwd = await createConfigDir();
+  const text = [
+    "<!-- table: data +total total=数量:sum -->",
+    "",
+    "| 名前 | 数量 |",
+    "| --- | --- |",
+    "| a | 1 |",
+    "<!-- /table -->",
+    "<!-- details: 補足 open -->",
+    "",
+    "段落",
+    "",
+    "<!-- /details -->",
+    "",
+  ].join("\n");
+  // 実行
+  const issues = await checkMarkdownSource({ cwd, text, importCode });
+  // 検証
+  expect(issues.map(({ where, kind }) => ({ where, kind }))).toEqual([
+    { where: "1", kind: "legacy_mark" },
+    { where: "7", kind: "legacy_mark" },
+  ]);
+  for (const issue of issues) {
+    expect(issue.message).toContain("mdmark upgrade");
+  }
 });

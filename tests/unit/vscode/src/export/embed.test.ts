@@ -43,7 +43,7 @@ test("test_embed_local_libraries", async () => {
   const { moduleDataUrl } = await loadHtml();
   const { bundle, calls } = recordingBundle();
   const markdown = [
-    "<!-- test-lib: a -->",
+    '<!-- test-lib: {"items": ["a"]} -->',
     "",
     "<!-- cdn-lib -->",
     "",
@@ -80,7 +80,7 @@ test("test_embed_local_libraries_when_bundle_fails", async () => {
   const { bundle, calls } = recordingBundle(["/ws/libs/test.js"]);
   // 実行
   const result = await embedLocalLibraries({
-    markdown: "<!-- test-lib: a -->\n",
+    markdown: '<!-- test-lib: {"items": ["a"]} -->\n',
     libraries: { "test-lib": "/ws/libs/test.js" },
     htmlScripts: { url: "/ws/libs/babel.js" },
     config: { features: { "html-scripts": true } },

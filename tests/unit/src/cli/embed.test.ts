@@ -16,9 +16,9 @@ test("test_used_parts", async () => {
   // 準備
   const { usedParts } = await loadEmbed();
   const marked =
-    "<!-- view: group=状態 -->\n\n| タイトル |\n| --- |\n| a |\n\n<!-- /view -->\n";
+    '<!-- view: {"board": {"group": {"column": "状態"}}} -->\n\n| タイトル |\n| --- |\n| a |\n\n<!-- /view -->\n';
   const unmarked =
-    "<!-- table: data -->\n\n| タイトル |\n| --- |\n| a |\n\n<!-- /table -->\n";
+    '<!-- table: {"kind": "data"} -->\n\n| タイトル |\n| --- |\n| a |\n\n<!-- /table -->\n';
   // 実行
   const withView = usedParts({ markdowns: [unmarked, marked] });
   const withoutView = usedParts({ markdowns: [unmarked] });
@@ -186,7 +186,7 @@ test("test_used_syntax_languages", async () => {
     "",
   ].join("\n");
   const second = [
-    "<!-- features: -syntax -->",
+    '<!-- features: {"syntax": false} -->',
     "",
     "```sql",
     "select 1;",
@@ -584,7 +584,9 @@ test("test_uses_map_when_disabled", async () => {
   const { mapRange, FLOW } = await import("../../helpers/map.ts");
   // 実行
   const used = usesMap({
-    markdowns: [`<!-- features: -map -->\n\n${mapRange({ mermaid: FLOW })}`],
+    markdowns: [
+      `<!-- features: {"map": false} -->\n\n${mapRange({ mermaid: FLOW })}`,
+    ],
     config: {},
   });
   // 検証

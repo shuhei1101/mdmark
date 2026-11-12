@@ -10,8 +10,8 @@ const detachers: Array<() => void> = [];
 /** 名前と値の 3 行の data の表。`filter` を指定すると絞り込みの列を指定する */
 function dataTable(options: { filter?: string; values: string[] }): string {
   const mark = options.filter
-    ? `<!-- table: data filter=${options.filter} -->`
-    : "<!-- table: data -->";
+    ? `<!-- table: {"kind": "data", "columns": {"${options.filter}": {"filter": {}}}} -->`
+    : '<!-- table: {"kind": "data"} -->';
   return [
     mark,
     "",
@@ -108,7 +108,7 @@ function totalRowCells(root: HTMLElement): string[][] {
 /** `+copy` の data の表（名前 `a`・`b`・`c`、値は指定した順） */
 function dataTableWithCopy(values: string[]): string {
   return [
-    "<!-- table: data +copy -->",
+    '<!-- table: {"kind": "data", "features": {"copy": {}}} -->',
     "",
     "| 名前 | 値 |",
     "| --- | --- |",
@@ -487,7 +487,7 @@ test("test_attach_tables_when_filtered", async () => {
   const { attachTables } = await loadTables();
   const { root } = createRoot(
     [
-      "<!-- table: data filter=名前 -->",
+      '<!-- table: {"kind": "data", "columns": {"名前": {"filter": {}}}} -->',
       "",
       "| 名前 | 値 |",
       "| --- | --- |",
@@ -611,8 +611,11 @@ test("test_attach_tables_when_pin_specified", async () => {
   const { attachTables } = await loadTables();
   const { root } = createRoot(
     [
-      ...wideTable(8, "<!-- table: data pin=とても長い列の名前2 -->"),
-      ...wideTable(10, "<!-- table: plain -->"),
+      ...wideTable(
+        8,
+        '<!-- table: {"kind": "data", "columns": {"とても長い列の名前2": {"pinned": true}}} -->',
+      ),
+      ...wideTable(10, '<!-- table: {"kind": "plain"} -->'),
     ].join("\n"),
   );
   root.style.width = "320px";
@@ -646,7 +649,7 @@ test("test_attach_tables_when_check_column", async () => {
   const { attachTables } = await loadTables();
   const { root } = createRoot(
     [
-      "<!-- table: data +copy check=必須 filter=必須 -->",
+      '<!-- table: {"kind": "data", "features": {"copy": {}}, "columns": {"必須": {"format": {"type": "check"}, "filter": {}}}} -->',
       "",
       "| 名前 | 必須 |",
       "| --- | --- |",
@@ -707,7 +710,7 @@ test("test_attach_tables_when_cell_has_term", async () => {
   // 準備
   const { mount } = await import("../../../../src/mount.ts");
   const markdown = [
-    "<!-- table: data filter=名前 -->",
+    '<!-- table: {"kind": "data", "columns": {"名前": {"filter": {}}}} -->',
     "",
     "| 名前 | 値 |",
     "| --- | --- |",
@@ -716,7 +719,7 @@ test("test_attach_tables_when_cell_has_term", async () => {
     "",
     "<!-- /table -->",
     "",
-    "<!-- glossary: term=用語 meaning=意味 -->",
+    '<!-- glossary: {"term": {"column": "用語"}, "meaning": {"column": "意味"}} -->',
     "",
     "| 用語 | 意味 |",
     "| --- | --- |",
@@ -762,7 +765,7 @@ test("test_attach_tables_when_counted", async () => {
   const { attachTables } = await loadTables();
   const { root } = createRoot(
     [
-      "<!-- table: data +count +total filter=名前:text total=名前:count,数量:sum,単価:avg -->",
+      '<!-- table: {"kind": "data", "features": {"count": {}}, "columns": {"名前": {"filter": {"type": "text"}, "total": [{"calc": "count"}]}, "数量": {"total": [{"calc": "sum"}]}, "単価": {"total": [{"calc": "avg"}]}}} -->',
       "",
       "| 名前 | 数量 | 単価 |",
       "| --- | --- | --- |",
@@ -799,7 +802,7 @@ test("test_attach_tables_when_columns_toggled", async () => {
   const { attachTables } = await loadTables();
   const { root } = createRoot(
     [
-      "<!-- table: data +columns +total hide=説明 total=数量:sum -->",
+      '<!-- table: {"kind": "data", "columns": {"説明": {"hidden": true}, "数量": {"total": [{"calc": "sum"}]}}} -->',
       "",
       "| 名前 | 説明 | 数量 |",
       "| --- | --- | --- |",
@@ -874,7 +877,7 @@ test("test_attach_tables_when_copied", async () => {
   const { attachTables } = await loadTables();
   const { root } = createRoot(
     [
-      "<!-- table: data +columns +copy hide=説明 filter=名前:text -->",
+      '<!-- table: {"kind": "data", "features": {"copy": {}}, "columns": {"説明": {"hidden": true}, "名前": {"filter": {"type": "text"}}}} -->',
       "",
       "| 名前 | 説明 | 更新日 |",
       "| --- | --- | --- |",
@@ -924,7 +927,7 @@ test("test_attach_tables_when_copied_markdown", async () => {
   const { attachTables } = await loadTables();
   const { root } = createRoot(
     [
-      "<!-- table: data +copy -->",
+      '<!-- table: {"kind": "data", "features": {"copy": {}}} -->',
       "",
       "| 名前 | 式 |",
       "| --- | --- |",
@@ -988,7 +991,7 @@ test("test_attach_tables_when_copy_denied", async () => {
   const { attachTables } = await loadTables();
   const { root } = createRoot(
     [
-      "<!-- table: data +copy -->",
+      '<!-- table: {"kind": "data", "features": {"copy": {}}} -->',
       "",
       "| 名前 | 値 |",
       "| --- | --- |",
@@ -1044,7 +1047,7 @@ test("test_attach_tables_when_row_linked", async () => {
   const { attachTables } = await loadTables();
   const { root } = createRoot(
     [
-      "<!-- table: data +rowlink closed -->",
+      '<!-- table: {"kind": "data", "features": {"rowlink": {}}, "collapse": {"open": false}} -->',
       "",
       "| 名前 | 値 |",
       "| --- | --- |",
@@ -1054,7 +1057,7 @@ test("test_attach_tables_when_row_linked", async () => {
       "",
       "<!-- /table -->",
       "",
-      "<!-- table: data +rowlink filter=名前:text -->",
+      '<!-- table: {"kind": "data", "features": {"rowlink": {}}, "columns": {"名前": {"filter": {"type": "text"}}}} -->',
       "",
       "| 名前 | 値 |",
       "| --- | --- |",
@@ -1108,7 +1111,7 @@ test("test_attach_tables_when_totals_unreadable", async () => {
   const { attachTables } = await loadTables();
   const { root } = createRoot(
     [
-      "<!-- table: data +total filter=名前:text total=数量:sum,数量:avg,数量:count -->",
+      '<!-- table: {"kind": "data", "columns": {"名前": {"filter": {"type": "text"}}, "数量": {"total": [{"calc": "sum"}, {"calc": "avg"}, {"calc": "count"}]}}} -->',
       "",
       "| 名前 | 数量 |",
       "| --- | --- |",
@@ -1145,7 +1148,7 @@ test("test_attach_tables_when_totals_toggled", async () => {
   const { attachTables } = await loadTables();
   const { root } = createRoot(
     [
-      "<!-- table: data +total total=数量:sum,数量:avg -->",
+      '<!-- table: {"kind": "data", "columns": {"数量": {"total": [{"calc": "sum"}, {"calc": "avg"}]}}} -->',
       "",
       "| 名前 | 数量 |",
       "| --- | --- |",
@@ -1204,7 +1207,7 @@ test("test_attach_tables_when_row_link_copied", async () => {
   const { attachTables } = await loadTables();
   const { root } = createRoot(
     [
-      "<!-- table: data +rowlink -->",
+      '<!-- table: {"kind": "data", "features": {"rowlink": {}}} -->',
       "",
       "| 名前 | 値 |",
       "| --- | --- |",
@@ -1213,7 +1216,7 @@ test("test_attach_tables_when_row_link_copied", async () => {
       "",
       "<!-- /table -->",
       "",
-      "<!-- table: data +rowlink -->",
+      '<!-- table: {"kind": "data", "features": {"rowlink": {}}} -->',
       "",
       "| 名前 | 値 |",
       "| --- | --- |",
@@ -1335,7 +1338,7 @@ test("test_attach_tables_when_folded_with_row_detail", async () => {
     "../../../../src/interact/sections.ts"
   );
   const { root } = createRoot(
-    `${FOLDABLE_TABLE}\n<!-- row-detail: 2 -->\n\nみかんの詳細\n\n<!-- /row-detail -->\n`,
+    `${FOLDABLE_TABLE}\n<!-- row-detail: {"at": 2} -->\n\nみかんの詳細\n\n<!-- /row-detail -->\n`,
   );
   setRootWidth(root, 390);
   detachers.push(attachSections({ root, sections: true, rowDetails: true }));
@@ -1365,7 +1368,7 @@ test("test_attach_tables_when_fold_column_hidden", async () => {
   addStyles();
   const { attachTables } = await loadTables();
   const { root } = createRoot(
-    `<!-- table: data +columns -->\n\n${FOLDABLE_TABLE}\n<!-- /table -->\n`,
+    `<!-- table: {"kind": "data", "features": {"columns": {}}} -->\n\n${FOLDABLE_TABLE}\n<!-- /table -->\n`,
   );
   setRootWidth(root, 390);
   detachers.push(attachTables(root));
@@ -1407,7 +1410,7 @@ test("test_attach_tables_when_nested_table", async () => {
   );
   const { root } = createRoot(
     [
-      `<!-- table: data filter=${wideHeaders[0]} -->`,
+      `<!-- table: {"kind": "data", "columns": {"${wideHeaders[0]}": {"filter": {}}}} -->`,
       "",
       `| ${wideHeaders.join(" | ")} |`,
       `| ${wideHeaders.map(() => "---").join(" | ")} |`,
@@ -1416,9 +1419,9 @@ test("test_attach_tables_when_nested_table", async () => {
       "",
       "<!-- /table -->",
       "",
-      "<!-- row-detail: 1 -->",
+      '<!-- row-detail: {"at": 1} -->',
       "",
-      "<!-- table: data -sort filter=引数 -->",
+      '<!-- table: {"kind": "data", "features": {"sort": {"enabled": false}}, "columns": {"引数": {"filter": {}}}} -->',
       "",
       "| 引数 | 値 |",
       "| --- | --- |",
@@ -1489,7 +1492,7 @@ test("test_attach_tables_when_nested_table_sorted", async () => {
   );
   const { root } = createRoot(
     [
-      "<!-- table: data -filter -->",
+      '<!-- table: {"kind": "data", "features": {"filter": {"enabled": false}}} -->',
       "",
       "| 名前 | 値 |",
       "| --- | --- |",
@@ -1498,9 +1501,9 @@ test("test_attach_tables_when_nested_table_sorted", async () => {
       "",
       "<!-- /table -->",
       "",
-      "<!-- row-detail: 1 -->",
+      '<!-- row-detail: {"at": 1} -->',
       "",
-      "<!-- table: data -filter -->",
+      '<!-- table: {"kind": "data", "features": {"filter": {"enabled": false}}} -->',
       "",
       "| 引数 | 値 |",
       "| --- | --- |",
@@ -1540,7 +1543,7 @@ test("test_attach_tables_when_nested_table_sorted", async () => {
 
 /** 見出しが 2 行で、分類の列を `^^` で結合した表（数値は上から `3`・`1`・`4`・`2`） */
 const MERGED_TABLE = [
-  "<!-- table: data header-rows=2 filter=分類 +copy -->",
+  '<!-- table: {"kind": "data", "features": {"copy": {}}, "columns": {"分類": {"filter": {}}}, "header": {"rows": 2}} -->',
   "",
   "| 区分 | << |",
   "| --- | --- |",
@@ -1613,7 +1616,7 @@ test("test_attach_tables_when_row_header_pinned", async () => {
   );
   const { root } = createRoot(
     [
-      "<!-- table: data row-header=2 -->",
+      '<!-- table: {"kind": "data", "header": {"columns": 2}} -->',
       "",
       `| ${headers.join(" | ")} |`,
       `| ${headers.map(() => "---").join(" | ")} |`,
@@ -1733,7 +1736,7 @@ test("test_attach_tables_when_pinned_under_merged_header", async () => {
   const long = "とても長い説明の文".repeat(8);
   const { root } = createRoot(
     [
-      "<!-- table: data header-rows=2 wide=備考 -->",
+      '<!-- table: {"kind": "data", "columns": {"備考": {"width": {"mode": "nowrap"}}}, "header": {"rows": 2}} -->',
       "",
       "| 名前 | 設定 | << | << | 備考 |",
       "| --- | --- | --- | --- | --- |",
@@ -1948,8 +1951,8 @@ test("test_merge_spans_when_left_breaks", async () => {
 function columnsTable(hide?: string): string {
   return [
     hide
-      ? `<!-- table: data +columns hide=${hide} -->`
-      : "<!-- table: data +columns -->",
+      ? `<!-- table: {"kind": "data", "columns": {"${hide}": {"hidden": true}}} -->`
+      : '<!-- table: {"kind": "data", "features": {"columns": {}}} -->',
     "",
     "| 名前 | 状態 | 説明 |",
     "| --- | --- | --- |",
@@ -1981,7 +1984,7 @@ test("test_attach_tables_when_tree_copied", async () => {
   const { attachTables } = await loadTables();
   const { root } = createRoot(
     [
-      "<!-- table: data +copy tree=キー -->",
+      '<!-- table: {"kind": "data", "features": {"copy": {}}, "tree": {"key": {"column": "キー"}}} -->',
       "",
       "| キー | 説明 |",
       "| --- | --- |",
@@ -2101,7 +2104,7 @@ test("test_attach_tables_when_columns_badge", async () => {
   const { attachTables } = await loadTables();
   const { root } = createRoot(
     [
-      "<!-- table: data +columns hide=説明 -->",
+      '<!-- table: {"kind": "data", "columns": {"説明": {"hidden": true}}} -->',
       "",
       "| 名前 | 説明 | 更新日 |",
       "| --- | --- | --- |",
@@ -2140,7 +2143,7 @@ test("test_attach_tables_when_scroll_wrapper", async () => {
   const wide = Array.from({ length: 12 }, (_, i) => `列${i + 1}の見出し`);
   const { root } = createRoot(
     [
-      "<!-- table: data -->",
+      '<!-- table: {"kind": "data"} -->',
       "",
       "| 名前 | 数量 |",
       "| --- | --- |",
@@ -2148,7 +2151,7 @@ test("test_attach_tables_when_scroll_wrapper", async () => {
       "",
       "<!-- /table -->",
       "",
-      "<!-- table: data -->",
+      '<!-- table: {"kind": "data"} -->',
       "",
       `| ${wide.join(" | ")} |`,
       `| ${wide.map(() => "---").join(" | ")} |`,
@@ -2297,7 +2300,7 @@ test("test_attach_tables_when_resized_column_not_folded", async () => {
   const { attachTables } = await loadTables();
   const { root } = createRoot(
     [
-      "<!-- table: data -->",
+      '<!-- table: {"kind": "data"} -->',
       "",
       "| 名前 | 状態 | 説明 |",
       "| --- | --- | --- |",
@@ -2356,8 +2359,8 @@ test("test_attach_tables_when_resize_off", async () => {
   const { attachTables } = await loadTables();
   const { root } = createRoot(
     dataTable({ values: ["10", "2", "33"] }).replace(
-      "<!-- table: data -->",
-      "<!-- table: data -resize -->",
+      '<!-- table: {"kind": "data"} -->',
+      '<!-- table: {"kind": "data", "features": {"resize": {"enabled": false}}} -->',
     ),
   );
   // 実行

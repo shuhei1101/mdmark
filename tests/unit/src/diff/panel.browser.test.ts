@@ -356,7 +356,7 @@ test("test_attach_diff_when_h1_section", async () => {
       "",
       "## 導入",
       "",
-      "<!-- section: closed -->",
+      '<!-- section: {"open": false} -->',
       "",
       "導入の段落",
       "",

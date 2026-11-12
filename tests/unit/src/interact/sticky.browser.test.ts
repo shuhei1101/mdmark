@@ -20,7 +20,7 @@ const detachers: Array<() => void> = [];
 /** 行の数と集計の行を持つ data の表の文書 */
 function longTable(rows: number): string {
   return [
-    "<!-- table: data +total total=数量:sum -->",
+    '<!-- table: {"kind": "data", "columns": {"数量": {"total": [{"calc": "sum"}]}}} -->',
     "",
     "| 番号 | 数量 |",
     "| --- | --- |",

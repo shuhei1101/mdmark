@@ -1,23 +1,12 @@
 import { expect, test } from "vitest";
-import { type Mark, parseMarkArgs } from "../../../../../src/render/marks.ts";
 import { markOf } from "../../../../../src/render/syntax/tokens.ts";
 import { parseWithRules } from "../../../helpers/core-rules.ts";
 import { findTags, innerHtml, matches } from "../../../helpers/html.ts";
+import { jsonMark } from "../../../helpers/marks.ts";
 import { renderDoc } from "../../../helpers/render.ts";
 
 /** タブの処理を読み込む（実装が無い間は各テストが個別に失敗する） */
 const loadTabs = () => import("../../../../../src/render/syntax/tabs.ts");
-
-/** `<!-- tabs: {rest} -->` の開きのマーカー（引数が無ければ `<!-- tabs -->`） */
-function tabsMark(rest?: string): Mark {
-  return {
-    name: "tabs",
-    args: parseMarkArgs(rest ?? ""),
-    raw: rest === undefined ? "<!-- tabs -->" : `<!-- tabs: ${rest} -->`,
-    closing: false,
-    rest: rest ?? "",
-  };
-}
 
 /** マーカーの開きを `open` にして `### macOS`・`### Windows` を囲んだ Markdown */
 function tabsMarkdown(open: string): string {
@@ -81,7 +70,7 @@ test("test_build_tabs_when_no_heading", () => {
 // group を部品に写す（正常系）
 test("test_build_tabs_when_group", () => {
   // 準備
-  const markdown = tabsMarkdown("<!-- tabs: group=os -->");
+  const markdown = tabsMarkdown('<!-- tabs: {"group": "os"} -->');
   // 実行
   const { html } = renderDoc(markdown);
   // 検証
@@ -90,23 +79,20 @@ test("test_build_tabs_when_group", () => {
   expect(html).not.toContain("mdmark-syntax-warning");
 });
 
-// 値の無い group= は警告にし、知らないキーと指定はスキップしてタブにする（異常系）
+// 読み込めない指定は警告にしてタブにはする（異常系）
 test("test_build_tabs_when_unreadable_options", () => {
   // 準備
-  const markdown = tabsMarkdown("<!-- tabs: group= grop=os fold -->");
+  const markdown = tabsMarkdown('<!-- tabs: {"group": "", "grop": "os"} -->');
   // 実行
   const { html, warnings } = renderDoc(markdown);
   // 検証
   expect(matches(html, /class="mdmark-syntax-warning"/g)).toHaveLength(1);
-  expect(html).toContain("<code>group=</code>");
-  expect(html).not.toContain("<code>grop=</code>");
-  expect(html).not.toContain("<code>fold</code>");
-  const skipped = warnings
+  expect(html).toContain("group");
+  const unknown = warnings
     .filter((warning) => warning.kind === "unknown_mark_arg")
     .map((warning) => warning.message)
     .join("\n");
-  expect(skipped).toContain("grop=");
-  expect(skipped).toContain("fold");
+  expect(unknown).toContain("grop");
   expect(html).toContain('<div class="mdmark-tabs">');
   expect(html).not.toContain("data-group");
   expect(html.indexOf("mdmark-syntax-warning")).toBeLessThan(
@@ -120,63 +106,28 @@ test("test_read_tabs_options", async () => {
   // 準備
   const { readTabsOptions } = await loadTabs();
   // 実行
-  const options = readTabsOptions(tabsMark("group=os"));
+  const options = readTabsOptions(jsonMark("tabs", { group: "os" }));
   // 検証
   expect(options.group).toBe("os");
-  expect(options.warning).toBeUndefined();
+  expect(options.collapse).toBe("none");
 });
 
-// 引数が無ければ組も警告も無い（正常系）
+// 引数が無ければ組も折り畳みも無い（正常系）
 test("test_read_tabs_options_when_none", async () => {
   // 準備
   const { readTabsOptions } = await loadTabs();
   // 実行
-  const options = readTabsOptions(tabsMark());
+  const options = readTabsOptions(jsonMark("tabs"));
   // 検証
   expect(options.group).toBeUndefined();
-  expect(options.warning).toBeUndefined();
-});
-
-// 値の無い group= を警告にし、知らないキーと指定をスキップする（異常系）
-test("test_read_tabs_options_when_unreadable", async () => {
-  // 準備
-  const { readTabsOptions } = await loadTabs();
-  // 実行
-  const options = readTabsOptions(tabsMark("group= grop=os fold"));
-  // 検証
-  expect(options.group).toBeUndefined();
-  expect(options.warning?.message).toBe(
-    "の読み込めない指定を当てずに描いています。",
-  );
-  expect(options.warning?.mark).toBe("<!-- tabs: group= grop=os fold -->");
-  const items = options.warning?.items ?? [];
-  expect(items.map((item) => item.label)).toEqual(["group="]);
-  expect(items[0]?.message).toContain("組の名前がありません");
-  expect(items[0]?.message).toContain("組を持たないタブとして描いています");
-  expect(options.skipped.map((skipped) => skipped.arg).sort()).toEqual(
-    ["fold", "grop="].sort(),
-  );
-});
-
-// title= の値の空白の後ろの単語を警告にし、スキップしない（異常系）
-test("test_read_tabs_options_when_title_has_space", async () => {
-  // 準備
-  const { readTabsOptions } = await loadTabs();
-  // 実行
-  const options = readTabsOptions(tabsMark("closed title=インストールの 手順"));
-  // 検証
-  expect(options.title).toBe("インストールの");
-  expect((options.warning?.items ?? []).map((item) => item.label)).toEqual([
-    "手順",
-  ]);
-  expect(options.skipped).toEqual([]);
+  expect(options.collapse).toBe("none");
 });
 
 // closed のタブをタブ名の見出しの折り畳みに入れる（正常系）
 test("test_build_tabs_when_collapsed", () => {
   // 準備
   const markdown = [
-    "<!-- tabs: closed -->",
+    '<!-- tabs: {"collapse": {"open": false}} -->',
     "",
     "### uv",
     "",
@@ -203,17 +154,14 @@ test("test_read_tabs_options_when_collapse", async () => {
   // 準備
   const { readTabsOptions } = await loadTabs();
   // 実行
-  const opened = readTabsOptions(tabsMark("open title=入れ方 group=os"));
-  const conflict = readTabsOptions(tabsMark("closed open"));
+  const options = readTabsOptions(
+    jsonMark("tabs", {
+      group: "os",
+      collapse: { open: true, title: "入れ方" },
+    }),
+  );
   // 検証
-  expect(opened.group).toBe("os");
-  expect(opened.collapse).toBe("open");
-  expect(opened.title).toBe("入れ方");
-  expect(opened.warning).toBeUndefined();
-  expect(conflict.collapse).toBe("closed");
-  expect((conflict.warning?.items ?? []).map((item) => item.label)).toEqual([
-    "closed と open",
-  ]);
+  expect(options).toEqual({ group: "os", collapse: "open", title: "入れ方" });
 });
 
 /** 外側のタブで `### macOS`・`### **Windows**` を囲み、`macOS` の中に `#### zsh`・`#### bash` の内側のタブを配置した Markdown（`innerClose` が偽なら内側の閉じを記載しない） */
