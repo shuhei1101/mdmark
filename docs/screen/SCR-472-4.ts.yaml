@@ -1461,7 +1461,7 @@ elements:
     label: 「{列名}」の列の幅（`aria-label`）
     io: 入力
     type: 列の幅（px）
-    visible_when: '`resize` の表（既定の種類と `data` の種類。`-resize` を記載した表と `plain` の表には無い）'
+    visible_when: '`resize` の表（既定の種類と `data` の種類。`features.resize.enabled` を `false` にした表と `plain` の表には無い）'
     initial_value: 描いた直後の列の幅（`width.mode` が `nowrap` の列は値の長さの幅）。幅は覚えず、再描画すると戻る
     action: ドラッグ（マウス・タッチ）か、フォーカスして ←・→ キー（1 回 16px）で、つまみの左の列の幅だけを変える。ダブルクリック・ダブルタップ・Enter で描いた直後の幅に戻す
     constraints: 列の最小幅（セルの `min-width` の 6em）から、表の見えている幅からほかに留めた列の幅の合計を引いた幅までに収める。`aria-valuenow`・`aria-valuetext`（`{幅}px`）・`aria-valuemin`・`aria-valuemax` で示す
