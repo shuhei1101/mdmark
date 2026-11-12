@@ -1,0 +1,1 @@
+# dev-docs が配信から除いている docs/mock/files.yml のバイナリの素材 4 行を修正する
