@@ -318,3 +318,20 @@ test("test_mermaid", async () => {
   );
   await expect(figure.locator(".mdmark-mermaid svg").count()).resolves.toBe(1);
 });
+
+// 指で図を動かす操作中は、表示するノードの線がリンクの色の 2px で、表示する枠の touch-action が none（TouchActive）
+test("test_touch_active", async () => {
+  // 準備・実行
+  const page = await openFrame("touch-active", false);
+  // 検証
+  const link = await resolveColor(page, "var(--mdmark-color-link)");
+  await expect(boxShadow(page)).resolves.toBe(`${link} 0px 0px 0px 2px inset`);
+  await expect(
+    page
+      .locator(".mdmark-diagram-viewport")
+      .evaluate((viewport) => getComputedStyle(viewport).touchAction),
+  ).resolves.toBe("none");
+  await expect(
+    page.locator(".mdmark-diagram-box").getAttribute("data-touch-active"),
+  ).resolves.toBe("");
+});
