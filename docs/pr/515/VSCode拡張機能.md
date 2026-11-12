@@ -36,6 +36,20 @@
 
 ## テスト結果
 
-なし（テスト作成・実装で記入する）
+### 単体
+
+| ファイル | メソッド | 変更種別 | 結果 | 補足 |
+| --- | --- | --- | --- | --- |
+| [tests/unit/vscode/src/export/html.test.ts](https://github.com/shuhei1101/mdmark/blob/6a904ccf/tests/unit/vscode/src/export/html.test.ts) | 全実行 | 変更 | ✅ | `test_build_export_html_when_aliases` を追加<br>`テスト結果/20261113074349_67e8fab1_単体テスト.log` |
+| [tests/unit/vscode/src/config.test.ts](https://github.com/shuhei1101/mdmark/blob/6a904ccf/tests/unit/vscode/src/config.test.ts) | 全実行 | 変更 | ✅ | `test_load_config_when_export` の期待値を書き出しでもエイリアスを作る値に変更<br>`テスト結果/20261113074349_67e8fab1_単体テスト.log` |
+| `npm run test:unit` | 全実行 | 実行のみ | ✅ | 284 ファイル・2068 テスト pass<br>`テスト結果/20261113074349_67e8fab1_単体テスト.log` |
+
+Red のログ: `テスト結果/20261113073300_438e0bbf_単体テスト.log`（追加・変更した 2 テストだけが、実装が無いことで fail）
+
+lint: `テスト結果/20261113074349_67e8fab1_lint.log`（`biome check` の警告 1 件は、この PR が触らない `plugin/bin/setup.js` のファイルサイズ）
+
+### 結合
+
+なし（書き出しの結合テストは無く、タスク一覧で `skipped`）
 
 ドキュメント修正の工程は、ガイドと設定の設計書の記述だけを変えたため、関係する単体・結合テストは無い。
