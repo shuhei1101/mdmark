@@ -8,13 +8,43 @@ export default meta;
 /** ストーリー: 描画のインターフェース（`parameters.server.id`）の部品を `args` で描く */
 type Story = StoryObj<Record<string, unknown>>;
 
-export const ClosedAndOpen: Story = {
-  name: "ClosedAndOpen",
+export const TypeMismatch: Story = {
+  name: "TypeMismatch",
   parameters: { server: { id: "syntax-warning" } },
   args: {
-    mark: "<!-- table: data closed open -->",
+    mark: '<!-- tabs: {"collapse": "closed"} -->',
     message:
-      "の `closed` と `open` は同時に記載できません。どちらか 1 つにしてください。`closed` を適用して描いています。",
+      'の `collapse` には `open`・`title` を持つオブジェクトを記載してください（例 `{"open": false}`）。折り畳みに入れずに描いています。',
+  },
+};
+
+export const InvalidJson: Story = {
+  name: "InvalidJson",
+  parameters: { server: { id: "syntax-warning" } },
+  args: {
+    mark: '<!-- details: {"title": 補足} -->',
+    message:
+      'の引数を JSON として読めません（11 文字目の `補` で、値の文字を `"` で囲んでいません）。値の文字は `"` で囲んでください。既定の設定で描いています。',
+  },
+};
+
+export const CommentEndInValue: Story = {
+  name: "CommentEndInValue",
+  parameters: { server: { id: "syntax-warning" } },
+  args: {
+    mark: '<!-- details: {"title": "a -->',
+    message:
+      "の引数を JSON として読めません（文字の値が閉じていません）。値に `-->` を記載すると、コメントがそこで閉じます。`>` を `\\u003e` にした `--\\u003e` で記載してください。既定の設定で描いています。",
+  },
+};
+
+export const LegacyExtension: Story = {
+  name: "LegacyExtension",
+  parameters: { server: { id: "syntax-warning" } },
+  args: {
+    mark: "<!-- greet: world -->",
+    message:
+      'の引数は JSON のオブジェクトで記載してください（例: `<!-- greet: {"target": "world"} -->`）。拡張 `greet` の部品は描いていません。`mdmark upgrade` の移行の報告で、記載し直す箇所を確かめられます。',
   },
 };
 
@@ -22,10 +52,10 @@ export const Items: Story = {
   name: "Items",
   parameters: { server: { id: "syntax-warning" } },
   args: {
-    mark: "<!-- table: data hide=備考 total=価格:sum -->",
+    mark: '<!-- table: {"kind": "data", "columns": {"数量": {"total": [{"calc": "max"}]}, "名前": {"hidden": true}}} -->',
     message: "の読み込めない指定を当てずに描いています。",
     items:
-      '[{"label":"hide=","message":"`+columns` を記載した表でだけ使用できます。当てずに描いています"},{"label":"total=","message":"`+total` を記載した表でだけ使用できます。当てずに描いています"}]',
+      '[{"label":"columns.数量.total[0].calc","message":"`max` は選べる値にありません。選べる値は `sum`・`avg`・`count` です"},{"label":"columns.名前.hidden","message":"先頭の列は隠せません。当てずに描いています"}]',
   },
 };
 
@@ -34,7 +64,7 @@ export const BrokenReference: Story = {
   parameters: { server: { id: "syntax-warning" } },
   args: {
     message:
-      "リンク先の `#fig-missing` の図表がありません。`<!-- fig: missing -->` を図か表の直前に記載するか、リンク先を修正してください。",
+      'リンク先の `#fig-missing` の図表がありません。`<!-- fig: {"id": "missing"} -->` を図か表の直前に記載するか、リンク先を修正してください。',
   },
 };
 
@@ -42,11 +72,11 @@ export const ExtensionSchema: Story = {
   name: "ExtensionSchema",
   parameters: { server: { id: "syntax-warning" } },
   args: {
-    mark: "<!-- greet: World 2 -->",
+    mark: '<!-- greet: {"target": "World", "count": "2"} -->',
     message:
       "の引数が、拡張 `greet` の決まりに合いません。修正してから再読み込みしてください。",
     items:
-      '[{"label":"1 つ目の World","message":"Invalid format: Expected /^[a-z]+$/ but received \\"World\\""},{"label":"2 つ目の 2","message":"Invalid type: Expected never but received \\"2\\""}]',
+      '[{"label":"target","message":"Invalid format: Expected /^[a-z]+$/ but received \\"World\\""},{"label":"count","message":"Invalid type: Expected number but received \\"2\\""}]',
   },
 };
 
@@ -54,9 +84,9 @@ export const LongMark: Story = {
   name: "LongMark",
   parameters: { server: { id: "syntax-warning" } },
   args: {
-    mark: "<!-- table: data filter=とても長い列の名前:range,もう一つの長い列の名前:text,更新日:date -->",
+    mark: '<!-- table: {"kind": "data", "columns": {"とても長い列の名前": {"filter": {"type": "range"}}, "もう一つの長い列の名前": {"filter": {"type": "text"}}, "更新日": {"filter": {"type": "date"}}}} -->',
     message:
-      "の絞り込みの種類 `range` は使用できません。使用できる種類は `select`・`text`・`date` です。",
+      "の `filter.type` の `range` は選べる値にありません。選べる値は `select`・`text`・`date` です。",
   },
 };
 
@@ -64,9 +94,9 @@ export const GlossaryColumn: Story = {
   name: "GlossaryColumn",
   parameters: { server: { id: "syntax-warning" } },
   args: {
-    mark: "<!-- glossary: term=用語 meaning=説明 -->",
+    mark: '<!-- glossary: {"term": {"column": "用語"}, "meaning": {"column": "説明"}} -->',
     message:
-      "の `meaning=` の列 `説明` が表にありません。表の列は `用語`・`意味` です。列名を修正してください。この表からは用語を入れずに描いています。",
+      "の `meaning.column` の列 `説明` が表にありません。表の列は `用語`・`意味` です。列名を修正してください。この表からは用語を入れずに描いています。",
   },
 };
 
@@ -74,9 +104,9 @@ export const GlossaryMissingArg: Story = {
   name: "GlossaryMissingArg",
   parameters: { server: { id: "syntax-warning" } },
   args: {
-    mark: "<!-- glossary: term=用語 -->",
+    mark: '<!-- glossary: {"term": {"column": "用語"}} -->',
     message:
-      "に `meaning=` がありません。意味の列を `meaning=列名` で指してください。この表からは用語を入れずに描いています。",
+      'に必須の `meaning` がありません。意味の列を `"meaning": {"column": "列名"}` で指してください。この表からは用語を入れずに描いています。',
   },
 };
 
@@ -84,7 +114,7 @@ export const ViewGroupColumn: Story = {
   name: "ViewGroupColumn",
   parameters: { server: { id: "syntax-warning" } },
   args: {
-    mark: "<!-- view: group=優先度 -->",
+    mark: '<!-- view: {"board": {"group": {"column": "優先度"}}} -->',
     message:
       "の列 `優先度` は表にありません。表の列は `タイトル`・`状態`・`担当` です。ボードにせず、表で描いています。",
   },
@@ -94,7 +124,7 @@ export const ViewNoTable: Story = {
   name: "ViewNoTable",
   parameters: { server: { id: "syntax-warning" } },
   args: {
-    mark: "<!-- view: group=状態 -->",
+    mark: '<!-- view: {"board": {"group": {"column": "状態"}}} -->',
     message:
       "の範囲に、項目にする表がありません。範囲の中に Markdown の表を記載してください。範囲の中身はそのまま描いています。",
   },
@@ -104,7 +134,7 @@ export const ViewUnknownIcon: Story = {
   name: "ViewUnknownIcon",
   parameters: { server: { id: "syntax-warning" } },
   args: {
-    mark: "<!-- view: group=状態 icons=完了:rocket -->",
+    mark: '<!-- view: {"board": {"group": {"column": "状態"}, "values": {"完了": {"icon": "rocket"}}}} -->',
     message:
       "のアイコン `rocket` は使用できません。使用できるアイコンは `circle`・`circle-dashed`・`circle-dot`・`circle-pause`・`circle-check`・`circle-x`・`inbox`・`archive`・`clock`・`flag`・`star`・`bug`・`eye`・`lock`・`zap`・`ban` です。`完了` の列には既定のアイコンを付けています。",
   },
@@ -144,7 +174,7 @@ export const IncludeMissing: Story = {
   name: "IncludeMissing",
   parameters: { server: { id: "syntax-warning" } },
   args: {
-    mark: "<!-- include: src/app.ts#L20-L22 -->",
+    mark: '<!-- include: {"path": "src/app.ts", "lines": {"from": 20, "to": 22}} -->',
     message:
       "の `src/app.ts` は 12 行で、20〜22 行目がありません。行の範囲を修正してください。",
   },
@@ -154,9 +184,9 @@ export const IncludeCircular: Story = {
   name: "IncludeCircular",
   parameters: { server: { id: "syntax-warning" } },
   args: {
-    mark: "<!-- include: a.md -->",
+    mark: '<!-- include: {"path": "a.md"} -->',
     message:
-      "の取り込みが循環しています（`a.md → b.md → a.md`）。この場所では取り込んでいません。",
+      "の取り込みが循環しています（`a.md` → `b.md` → `a.md`）。この場所では取り込んでいません。",
   },
 };
 
