@@ -7,7 +7,7 @@ use_cases:
   - kind: single
     scenario: docs/scenario/SC-472-42.yaml
     impact: changed
-    detail: 読者がスマホの指のドラッグで map の図を縦にも動かせる（#357）。ページのスクロールとの分け方を決める
+    detail: 読者が図をタップしてから、スマホの指のドラッグで図を縦にも動かせる。タップする前の縦のドラッグは文書のスクロールにする（#357。共通の図の枠のため今の図にも当たる）
     depends_on: []
   - kind: single
     scenario: docs/scenario/SC-472-20.yaml
@@ -15,26 +15,14 @@ use_cases:
     detail: 文書の作成者が罫線でフォルダ構成を記載したのに言語が tree でないコードブロックに、言語を tree にする書き方の警告を受け取り、罫線の例をそのまま見せたいときは警告を止められる（#466）
     depends_on: []
   - kind: single
-    scenario: docs/scenario/SC-472-78.yaml
-    impact: changed
-    detail: mdmark check が、罫線の行を持つ言語が tree でないコードブロックを点検の結果に挙げる（#466）
-    depends_on:
-      - docs/scenario/SC-472-20.yaml
-  - kind: single
     scenario: docs/scenario/SC-472-3.yaml
-    impact: following
-    detail: Claude Code が MCP の check・export_html で、罫線のコードブロックの警告を受け取る（#466）
-    depends_on:
-      - docs/scenario/SC-472-78.yaml
+    impact: run_only
+    detail: MCP の check・export_html は、mdmark check と描画と同じ処理で罫線のコードブロックの警告を返す。シナリオの記述は変わらないが、警告の追加が壊しうる
+    depends_on: []
   - kind: single
     scenario: docs/scenario/SC-472-15.yaml
     impact: changed
     detail: フォルダ構成を記載しようとした Claude Code が、ガイドの索引からファイルツリーの記載方法のページに行き着く（#466）
-    depends_on: []
-  - kind: single
-    scenario: docs/scenario/SC-472-22.yaml
-    impact: run_only
-    detail: SessionStart の案内に文を加えるかは設計で決める。加えない場合もプラグインのビルドで生成し直すため回帰を確かめる（#466）
     depends_on: []
   - kind: single
     scenario: docs/scenario/SC-472-8.yaml
@@ -56,6 +44,12 @@ use_cases:
     impact: run_only
     detail: 流れは変わらないが、ガイドの索引と点検の項目の変更が壊しうる
     depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-52.yaml
+    impact: changed
+    detail: mdmark check に Markdown の文字列かファイルを指定すると、罫線の行を持つ言語が tree でないコードブロックをずれに挙げる（#466）
+    depends_on:
+      - docs/scenario/SC-472-20.yaml
 docs:
   - page: docs/guide/図を描く-Mermaidと補足で図を描く.md
     new: false
@@ -63,7 +57,7 @@ docs:
     status: todo
   - page: docs/guide/記載する-本文を部品で組む.md
     new: false
-    change: ファイルツリーの節に、罫線のコードブロックの書き方の警告と警告を止める指定を追加する
+    change: ファイルツリーの節を「フォルダ構成」の語でも引けるようにし、罫線のコードブロックの書き方の警告と警告を止める指定を追加する
     status: todo
   - page: docs/guide/記法.md
     new: false
@@ -77,10 +71,17 @@ docs:
     new: false
     change: components の when に、フォルダ構成・ファイルツリーを記載するときを追加する
     status: todo
+  - page: docs/guide/files.yml
+    new: false
+    change: 記載する-本文を部品で組む.md の description に、フォルダ構成・ファイルツリーを記載するときに参照する旨を追加する（dev-docs のガイドの検索で行き着く）
+    status: todo
 scope_out:
   - item: 今の flow（座標の JSON のフロー図）の箱の種類 dm の表示名「意思決定モデル」
     reason: 'map は固定のノードの種類を持たず、表示名は使う側の設定 map.kinds の label で決まるため、#464 の #333 の要件は develop で満たされている。今の flow の固定の種類を設定で作る形にするのは #470 が扱う'
     plan: '#470'
-  - item: 今の sequence（座標の JSON のシーケンス図）での参加者の表示と非表示と、今の flow・sequence の図の枠のタッチでのドラッグ
-    reason: '#464 は map への追加で、今の flow・sequence は map へ移してから廃止する（#467）。ただし図の枠は共通の部品のため、共通の CSS を直すと今の図にも当たる場合はそのまま含める（設計で決める）'
+  - item: 今の sequence（座標の JSON のシーケンス図）での参加者の表示と非表示
+    reason: '#464 は map への追加で、今の sequence は map へ移してから廃止する（#467）。図の枠のタッチでのドラッグは、図の枠が共通の部品のため今の図にも当て、この PR に含める'
     plan: '#467'
+  - item: mdmark check を引数なしで実行するフォルダの点検での、罫線のコードブロックの警告
+    reason: フォルダの点検は描いたときの記載の警告を集めず（知らないマーカー・図の定義・map の補足などだけ）、記載した後の点検は --text・--file（MCP の check）で行うため。記載の警告をフォルダの点検へ広げるのは警告全体に関わる別の題材
+    plan: none
