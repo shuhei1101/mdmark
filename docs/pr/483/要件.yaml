@@ -1,0 +1,11 @@
+docs:
+  - page: docs/mock/files.yml
+    new: false
+    change: refs/263/assets/media/ のバイナリ 4 行（build.gif・demo-poster.png・demo.mp4・voice.mp3）を削除する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-12T12:14:26.031665+00:00'
+scope_out:
+  - item: '#413: plugin/files.yaml の skills/global-setup/SKILL.md・skills/setup/SKILL.md の行の description を引用符で囲む'
+    reason: 'origin/develop では #472（23881bce）で 2 行とも引用符で囲まれ、解消済みのため変更しない（ドキュメント修正で dev-docs の警告が出ないことだけ確かめる）'
+    plan: none

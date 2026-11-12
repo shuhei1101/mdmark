@@ -63,6 +63,26 @@ const AFTER_MOUNT = {
   diff: (el) => el.querySelector(".mdmark-diff-toggle").click(),
 };
 
+/** 列ごとに同じ名前で並ぶランドマーク（mount が描く nav・名前付きの section、写した HTML の見本の nav） */
+const LANDMARKS = "nav, section[aria-label], section[aria-labelledby], aside[aria-label], aside[aria-labelledby]";
+
+/** 列の中のランドマークの名前に列の名前を加え、列どうしで名前が重ならないようにする。mount は後から描き直すため、中身が変わるたびに付け直す */
+function watchLandmarks(slot, label) {
+  const rename = () => {
+    for (const landmark of slot.querySelectorAll(LANDMARKS)) {
+      if (landmark.dataset.canvasColumn !== undefined) continue;
+      const ids = landmark.getAttribute("aria-labelledby");
+      const name = ids
+        ? ids.split(/\s+/).map((id) => document.getElementById(id)?.textContent.trim() ?? "").join(" ")
+        : landmark.getAttribute("aria-label") ?? "";
+      landmark.removeAttribute("aria-labelledby");
+      landmark.setAttribute("aria-label", `${name}（列: ${label}）`);
+      landmark.dataset.canvasColumn = "";
+    }
+  };
+  new MutationObserver(rename).observe(slot, { childList: true, subtree: true });
+}
+
 /** セクションの後ろに 2 つの列を追加し、列ごとの中身の配置場所を返却する */
 function addColumns(section) {
   const pair = document.createElement("div");
@@ -77,6 +97,7 @@ function addColumns(section) {
     name.className = "canvas-column-label";
     name.textContent = label;
     const slot = document.createElement("div");
+    watchLandmarks(slot, label);
     column.append(name, slot);
     pair.append(column);
     return slot;

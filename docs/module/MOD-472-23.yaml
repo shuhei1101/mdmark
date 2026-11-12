@@ -7,6 +7,7 @@ directory: |-
   src/cli/
   ├── main.ts       # 引数の読み取りとコマンドの振り分け
   ├── errors.ts     # CLI の誤りと入出力の型
+  ├── issues.ts     # 点検のずれを 1 行にする
   ├── config.ts     # 設定ファイルの探索・読み取り・構造の検査
   ├── alias-schema.ts # 設定の aliases の行の JSON Schema での検査
   ├── aliases.ts    # aliases の行の paths の YAML の読み取りとエイリアスの組み立て
@@ -18,6 +19,7 @@ directory: |-
   ├── html.ts       # 書き出す HTML の組み立て
   ├── init.ts       # mdmark init
   ├── check.ts      # mdmark check
+  ├── markdown-check.ts # Markdown の文字列・YAML のキーの値の記法の点検
   ├── git.ts        # 比べる基準から変わったファイルの引き出し
   ├── export.ts     # mdmark export
   └── build.ts      # mdmark build
