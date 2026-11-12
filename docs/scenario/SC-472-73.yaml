@@ -1167,14 +1167,14 @@ scenarios:
       - もう一度押した後、表に戻り、並べ替え・絞り込みのボタンがある
       - RAW のボタンはフォーカスして Enter でも押せる
     test: test_normal_when_csv_raw_toggled
-  - name: 正常シナリオ（表を本文の幅に広げる）
+  - name: 正常シナリオ（列の幅を中身から決める）
     setup:
       - name: mdmark を読み込むページ
         description: 正常シナリオと同じ
         notes: 描く先の要素の幅は 1000px
-      - name: 列の少ない表と列の多い表を持つ Markdown
-        description: '`<!-- table: {"kind": "data"} -->` 〜 `<!-- /table -->` で、名前・数量の 2 列 3 行の表を囲み、続けて同じマーカーで 12 列 3 行の表を囲んだ文書'
-        notes: 12 列の表は、列の最小幅の合計が描く先の要素の幅を超える
+      - name: 中身の量の違う列を持つ表の Markdown
+        description: '`<!-- table: {"kind": "data"} -->` 〜 `<!-- /table -->` で、`No`（数値）・`状態`（`badge:` のバッジ）・`更新日`（日付）・`名前`（全角 6 文字以内）・`手順`（`<br>` で区切った全角 10 文字以内の 3 行）・`説明`（全角 120 文字の文）の 6 列 3 行の表を囲んだ文書'
+        notes: '`説明` の列は 1 行で描くと、ほかの列と合わせて描く先の要素の幅を超える'
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
@@ -1183,17 +1183,112 @@ scenarios:
         participant P as 利用側のページ
         participant M as mdmark
         P->>M: 設定と Markdown を指定して描かせる
-        M-->>P: 本文の幅に広げた 2 つの表を描く
-        U->>P: 12 列の表を横にスクロールする
+        M->>M: 列ごとに、セルの中身の種類と改行で分けた行の幅から、折り返すかと列の幅を決める
+        M-->>P: 短い列を折り返さず、説明の列だけを残りの幅で折り返した表を描く
+        P-->>U: 文書を表示
+    expected:
+      - '`No`・`状態`・`更新日`・`名前` の列のセルと見出しが折り返さず 1 行で出ている'
+      - '`手順` の列のセルは `<br>` で区切った行ごとに 1 行で出て、`手順` の列の幅は 3 行のうち最も長い行の幅に合っている（3 行の全体の文字数の幅より狭い）'
+      - '`説明` の列のセルが折り返して出ていて、`説明` の列の幅が部品設計『表』の最小の幅以上・最大の幅以下'
+      - 表の外側の枠線の幅が本文の幅以下で、表は横にスクロールせず、ページに横スクロールが出ない
+    test: test_normal_when_column_widths_fit_content
+  - name: 正常シナリオ（余白の多い表を中身の幅で描く）
+    setup:
+      - name: mdmark を読み込むページ
+        description: 正常シナリオと同じ
+        notes: 描く先の要素の幅は 1000px
+      - name: 列の少ない表を持つ Markdown
+        description: '`<!-- table: {"kind": "data"} -->` 〜 `<!-- /table -->` で、名前・数量の 2 列 3 行の表を囲み、続けてマーカーの無い同じ表を記載した文書'
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 利用側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を指定して描かせる
+        M-->>P: 本文の幅まで広げず、列の中身の幅で 2 つの表を描く
+        P-->>U: 文書を表示
+    expected:
+      - 2 つの表とも、外側の枠線の幅が本文の幅より狭く、列の幅の合計と同じ（差が 1px 以内）で、列どうしの間に中身の幅を超える余白が無い
+      - 2 つの表とも、見出しとセルが折り返していない
+      - 2 つの表とも横にスクロールせず、左右の端に影が出ない
+    test: test_normal_when_table_fits_content
+  - name: 正常シナリオ（狭い幅で横にスクロールする）
+    setup:
+      - name: mdmark を読み込むページ
+        description: 正常シナリオと同じ
+        notes: 画面と描く先の要素の幅は 390px
+      - name: 説明の列と列の多い表を持つ Markdown
+        description: '`<!-- table: {"kind": "data"} -->` 〜 `<!-- /table -->` で、名前・説明（全角 120 文字の文）・備考（全角 80 文字の文）の 3 列 3 行の表を囲み、続けて同じマーカーで 12 列 3 行の表を囲んだ文書'
+        notes: どちらの表も、折り返す列を最小の幅にしても描く先の要素の幅に収まらない
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 利用側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を指定して描かせる
+        M->>M: 配分した幅が最小の幅を下回る列を、最小の幅で止める
+        M-->>P: 折り返す列を最小の幅で描き、表の中で横にスクロールする表を描く
+        U->>P: 1 つ目の表を横にスクロールする
         P-->>U: 表の中で横に動いた表
     expected:
-      - 2 列の表の外側の枠の幅が本文の幅と同じ（差が 1px 以内）で、右端の列の右端が外側の枠の内側に一致している（列が本文の幅まで広がっている）
-      - 2 列の表は横にスクロールせず、左右の端に影が出ない
-      - 2 列の表の見出しが折り返していない
-      - 12 列の表の外側の枠の幅が本文の幅と同じで、表の中で横にスクロールでき、スクロールできる側の端に影が出る
-      - 12 列の表の各列の幅は列の最小幅以上
+      - 1 つ目の表の `説明`・`備考` の列の幅が部品設計『表』の最小の幅と同じ（差が 1px 以内）で、セルが折り返して出ている
+      - 2 つの表とも外側の枠線の幅が本文の幅と同じで、表の中で横にスクロールでき、スクロールできる側の端に影が出る
+      - 12 列の表の各列の幅は、その列の最小の幅以上
       - ページに横スクロールが出ない
-    test: test_normal_when_table_fills_width
+    test: test_normal_when_table_scrolls_in_narrow_width
+  - name: 正常シナリオ（列の幅の範囲を指定する）
+    setup:
+      - name: mdmark を読み込むページ
+        description: 正常シナリオと同じ
+        notes: 描く先の要素の幅は 1000px
+      - name: 列の幅の範囲を記載した表を持つ Markdown
+        description: '`<!-- table: {"kind": "data", "columns": {"説明": {"width": {"min": 20, "max": 30}}, "名前": {"width": {"mode": "nowrap"}}}} -->` 〜 `<!-- /table -->` で、名前（全角 30 文字）・説明（全角 200 文字の文）・備考（全角 4 文字）の 3 列 3 行の表を囲んだ文書'
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 利用側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を指定して描かせる
+        M->>M: 記載した列の幅の範囲と mode を、自動の判定より優先する
+        M-->>P: 説明の列を記載した範囲の幅で折り返し、名前の列を折り返さずに描く
+        P-->>U: 文書を表示
+    expected:
+      - '`説明` の列の幅が 20em 以上 30em 以下で、セルが折り返して出ている'
+      - '`名前` の列のセルが、全角 30 文字でも折り返さず 1 行で出ている'
+      - '`備考` の列のセルが折り返さず 1 行で出ている'
+    test: test_normal_when_column_width_range_specified
+  - name: 正常シナリオ（表の見える幅が変わったら列の幅を決め直す）
+    setup:
+      - name: mdmark を読み込むページ
+        description: 正常シナリオと同じ
+        notes: 描く先の要素の幅は 1000px で描き、表を操作した後に 600px へ狭める
+      - name: 中身の量の違う列を持つ表の Markdown
+        description: 正常シナリオ（列の幅を中身から決める）と同じ文書
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 利用側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を指定して描かせる
+        M-->>P: 列の幅を決めた表を描く
+        U->>P: 名前の列で並べ替え、状態の列で絞り込む
+        P-->>U: 列の幅を変えずに並べ替え・絞り込んだ表
+        U->>P: 描く先の要素の幅を 600px へ狭める
+        M->>M: 表の見える幅が変わったので、列ごとに判定し直す
+        M-->>P: 600px の幅で列の幅を決め直した表を描く
+    expected:
+      - 並べ替え・絞り込みの後、各列の幅が操作の前と同じ（差が 1px 以内）
+      - 600px へ狭めた後、`説明` の列の幅が狭まり、`No`・`状態`・`更新日`・`名前` の列は折り返さず 1 行のまま
+      - 600px へ狭めた後、ページに横スクロールが出ない
+    test: test_normal_when_column_widths_recalculated_on_resize
   - name: 正常シナリオ（押した列までを留める設定）
     setup:
       - name: mdmark を読み込むページ
@@ -1302,7 +1397,7 @@ scenarios:
       - つまみを右へ 80px ドラッグした後、名前の列の幅がドラッグの前より 80px 広く、説明・更新日の列の幅はドラッグの前と同じ
       - ドラッグの後も、名前の列の見出しの `aria-sort` は変わらず、行の並びも変わらない（並べ替えの操作と取り違えない）
       - 説明の列を列の最小幅より狭くなるまでドラッグした後、説明の列の幅は列の最小幅で止まり、説明のセルの文が折り返して出る
-      - ダブルクリックした後、名前の列の幅が描いた直後の幅に戻り、説明の列は `nowrap` の幅（折り返さず 1 行で出る幅）に戻る
+      - ダブルクリックした後、名前の列の幅が描いた直後の自動で決めた幅に戻り、説明の列は `nowrap` の幅（折り返さず 1 行で出る幅）に戻る
       - 2 つ目の `features.resize.enabled` を `false` にした表と 3 つ目の `plain` の表の見出しには、つまみが無い
     test: test_normal_when_column_resized
   - name: 正常シナリオ（留めた列の幅を変える）

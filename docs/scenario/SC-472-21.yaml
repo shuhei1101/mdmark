@@ -33,7 +33,7 @@ scenarios:
         description: 正常シナリオと同じ
         notes: ページの URL の末尾に `#注意` を付けて開く
       - name: 閉じたセクションの中に見出しを持つ Markdown
-        description: '`## 補足` とその直後の `<!-- section: {"open": false} -->`、そのセクションの中の `### 注意` と段落を持つ文書'
+        description: '`## 補足` とその直後の `<!-- section: {"open": false} -->`、そのセクションの中の `### 注意` とその直後の `<!-- section: {"open": false} -->` と段落を持つ文書'
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
@@ -43,10 +43,10 @@ scenarios:
         participant M as mdmark
         U->>P: #注意 付きの URL を開く
         P->>M: 設定と Markdown を指定して描かせる
-        M-->>P: 移る先を含む補足のセクションを開いて移る
-        P-->>U: 「注意」の見出しを表示
+        M-->>P: 移る先を含む補足のセクションと、移る先の注意のセクションを開いて移る
+        P-->>U: 「注意」の見出しと段落を表示
     expected:
-      - '`補足` のセクションが開いていて、`注意` の見出しが画面に入っている'
+      - '`補足` と `注意` のセクションが開いていて、`注意` の見出しが画面に入り、`注意` の段落が表示されている'
     test: test_normal_when_fragment_in_closed_section
   - name: 正常シナリオ（行の詳細）
     setup:

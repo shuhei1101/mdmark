@@ -182,7 +182,7 @@ scenarios:
       - name: mdmark を読み込むページ
         description: 正常シナリオと同じ
       - name: 入れ子の深いファイルツリーの Markdown
-        description: 'マーカーの無い言語 `tree` のコードブロックと、`<!-- tree: {"depth": 2} -->` の後ろの言語 `tree` のコードブロックを並べた文書。どちらも `app/` の下に `src/`、その下に `parts/`、その下に `tree.ts` を持つ'
+        description: 'マーカーの無い言語 `tree` のコードブロックと、`<!-- tree: {"depth": 2} -->` の後ろの言語 `tree` のコードブロックと、`<!-- tree: {"depth": 1} -->` の後ろの言語 `tree` のコードブロックを並べた文書。どれも `app/` の下に `src/`、その下に `parts/`、その下に `tree.ts` を持つ'
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
@@ -191,16 +191,17 @@ scenarios:
         participant P as 利用側のページ
         participant M as mdmark
         P->>M: 設定と Markdown を指定して描かせる
-        M-->>P: 1 つ目はルートだけ、2 つ目は 2 階層まで開いたツリーを描く
-        U->>P: 1 つ目のツリーの src/ の名前を押す
+        M-->>P: 1 つ目は全てのフォルダ、2 つ目は 2 階層まで、3 つ目はルートだけを開いたツリーを描く
+        U->>P: 3 つ目のツリーの src/ の名前を押す
         P-->>U: src/ を開いたツリー
-        U->>P: 1 つ目のツリーの app/ のアイコンを Shift を押しながら押す
+        U->>P: 3 つ目のツリーの app/ のアイコンを Shift を押しながら押す
         P-->>U: app/ と入れ子を全て閉じたツリー
         U->>P: もう一度 Shift を押しながら app/ のアイコンを押す
         P-->>U: 入れ子を全て開いたツリー
     expected:
-      - 描いた直後、1 つ目のツリーは `app/` だけが開き、`src/` が閉じて `parts/` が表示されていない
+      - 描いた直後、1 つ目のツリーは `app/`・`src/`・`parts/` が開き、`tree.ts` が表示されている
       - 描いた直後、2 つ目のツリーは `app/` と `src/` が開き、`parts/` が閉じて `tree.ts` が表示されていない
+      - 描いた直後、3 つ目のツリーは `app/` だけが開き、`src/` が閉じて `parts/` が表示されていない
       - '`src/` の名前を押した後、`parts/` が表示され、`src/` の開閉のボタンの `aria-expanded` が `true`'
       - Shift を押しながら押すたびに、`app/` の入れ子のフォルダが全て閉じ、次に全て開いて `tree.ts` が表示される
       - フォルダの開閉は、フォーカスして Enter でもできる
@@ -281,7 +282,7 @@ scenarios:
       - name: mdmark を読み込むページ
         description: 正常シナリオと同じ
       - name: 読み込めない depth の Markdown
-        description: '`<!-- tree: {"depth": "deep"} -->` の後ろに、正常シナリオ（ファイルツリーのフォルダを開閉する）と同じコードブロックを持つ文書'
+        description: '`<!-- tree: {"depth": "deep"} -->` の後ろに、正常シナリオ（ファイルツリーのフォルダを開閉する）の 1 つ目と同じコードブロックを持つ文書'
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
@@ -295,7 +296,7 @@ scenarios:
         P-->>U: 記載の警告とツリーを表示
     expected:
       - ツリーの上に、`depth` には `"all"` か 1 以上の整数を記載することを記載した記載の警告がある
-      - ツリーは既定のとおり `app/` だけを開いて描かれている
+      - ツリーは既定のとおり全てのフォルダを開いて描かれ、`tree.ts` が表示されている
     test: test_error_when_tree_open_invalid
   - name: 正常シナリオ（アイコン・キー・ルビ）
     setup:
