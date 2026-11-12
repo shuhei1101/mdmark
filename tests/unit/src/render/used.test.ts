@@ -98,3 +98,79 @@ test("test_uses_mermaid", async () => {
   // 検証
   expect(results).toEqual([true, false, false]);
 });
+
+// 色分けの対象の言語だけを取得し、機能を解除した文書は取得しない（正常系）
+test("test_used_syntax_languages", async () => {
+  // 準備
+  const { usedSyntaxLanguages } = await loadUsed();
+  const first = [
+    "```ts",
+    "const a = 1;",
+    "```",
+    "",
+    "```yml",
+    "a: 1",
+    "```",
+    "",
+    "```text",
+    "plain",
+    "```",
+    "",
+    '<pre><code class="language-python">x</code></pre>',
+    "",
+  ].join("\n");
+  const second = [
+    '<!-- features: {"syntax": false} -->',
+    "",
+    "```sql",
+    "select 1;",
+    "```",
+    "",
+  ].join("\n");
+  // 実行
+  const languages = usedSyntaxLanguages({
+    markdowns: [first, second],
+    config: {},
+  });
+  // 検証
+  expect(languages).toEqual(["typescript", "yaml"]);
+});
+
+// 別名とファイル名付きの言語をモジュール名にして取得する（正常系）
+test("test_used_syntax_languages_when_aliases_and_file_name", async () => {
+  // 準備
+  const { usedSyntaxLanguages } = await loadUsed();
+  const markdown = [
+    "```dockerfile",
+    "FROM node:22",
+    "```",
+    "",
+    "```patch",
+    "-a",
+    "+b",
+    "```",
+    "",
+    "```ts:app.ts",
+    "const a = 1;",
+    "```",
+    "",
+  ].join("\n");
+  // 実行
+  const languages = usedSyntaxLanguages({ markdowns: [markdown], config: {} });
+  // 検証
+  expect(languages).toEqual(["diff", "dockerfile", "typescript"]);
+});
+
+// 設定で機能を解除すると何も取得しない（正常系）
+test("test_used_syntax_languages_when_disabled", async () => {
+  // 準備
+  const { usedSyntaxLanguages } = await loadUsed();
+  const markdown = ["```ts", "const a = 1;", "```", ""].join("\n");
+  // 実行
+  const languages = usedSyntaxLanguages({
+    markdowns: [markdown],
+    config: { features: { syntax: false } },
+  });
+  // 検証
+  expect(languages).toEqual([]);
+});

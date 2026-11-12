@@ -54,12 +54,12 @@ functions:
       - name: options
         type: '{ env: NodeJS.ProcessEnv; pluginRoot: string; version: string } & { sets: string[] }'
         required: true
-        description: 環境変数・プラグインの直下・プラグインのバージョン・`--set` の値
+        description: 環境変数・プラグインの直下・プラグインのビルドで埋めた mdmark のバージョン・`--set` の値
     returns:
       type: 'Promise<{ written: string[]; keys: string[] }>'
       description: 書き込んだファイルとキー
     process: |-
-      1. パスを決め、端末の設定があれば `yaml` の `Document` で読み込む。無ければ `plugin/settings.sample.yaml` を雛形にし、`version` をプラグインのバージョンにする
+      1. パスを決め、端末の設定があれば `yaml` の `Document` で読み込む。無ければ `plugin/settings.sample.yaml` を雛形にし、`version` をプラグインのビルドで埋めた mdmark のバージョンにする
       2. `--set` の組を `Document.setIn` で当て、`toJS()` を `validateConfig`（`settings: true`）で検める。ずれがあれば `SetupError`（1）で何も書き込まない
       3. 端末の設定を書き込む（親のフォルダが無ければ作る）
       4. `defaultPath` が偽なら `writeClaudeEnv` で `MDMARK_CONFIG` を書き込む
@@ -145,12 +145,12 @@ functions:
       - name: options
         type: '{ env: NodeJS.ProcessEnv; pluginRoot: string; version: string } & { dir: string; sets: string[] }'
         required: true
-        description: 環境変数・プラグインの直下・プラグインのバージョン・文書のフォルダ・`--set` の値
+        description: 環境変数・プラグインの直下・プラグインのビルドで埋めた mdmark のバージョン・文書のフォルダ・`--set` の値
     returns:
       type: 'Promise<{ written: string[]; keys: string[] }>'
       description: 書き込んだファイルとキー
     process: |-
-      1. `{dir}/mdmark.config.yaml` があれば `Document` で読み込み、無ければ `mdmark init` と同じ雛形を読み込み `version` をプラグインのバージョンにする
+      1. `{dir}/mdmark.config.yaml` があれば `Document` で読み込み、無ければ `mdmark init` と同じ雛形を読み込み `version` をプラグインのビルドで埋めた mdmark のバージョンにする
       2. `--set` のキーが端末の設定だけが持つキー（`config.*`・`serve.*`）なら `SetupError`（1）
       3. 適用した後を `validateConfig` で検め、ずれがあれば `SetupError`（1）で書き込まない
       4. 書き込む

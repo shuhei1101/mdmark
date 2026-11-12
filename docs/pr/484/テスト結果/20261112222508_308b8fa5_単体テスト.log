@@ -1,0 +1,167 @@
+$ npx vitest run --project 'unit*' tests/unit/vscode/src/config.test.ts tests/unit/vscode/src/export/embed.test.ts tests/unit/vscode/src/export/html.test.ts
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/fix-vscode-pass-tooltips-and-syntax-url
+
+ ❯ |unit| tests/unit/vscode/src/export/html.test.ts (7 tests | 1 failed) 178ms
+   × test_build_export_html_when_import_map 5ms
+ ❯ |unit| tests/unit/vscode/src/config.test.ts (24 tests | 4 failed) 5931ms
+   × test_library_origins_when_mermaid 6ms
+   × test_library_origins_when_syntax 1ms
+   × test_resolve_syntax 0ms
+   × test_load_config_when_tooltips_and_syntax 2ms
+ ❯ |unit| tests/unit/vscode/src/export/embed.test.ts (7 tests | 4 failed) 20582ms
+   × test_embed_local_syntax 4ms
+   × test_embed_local_syntax_when_not_local 0ms
+   × test_embed_local_syntax_when_unused 0ms
+   × test_embed_local_syntax_when_bundle_fails 0ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 9 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit| tests/unit/vscode/src/config.test.ts > test_library_origins_when_mermaid
+AssertionError: expected [ 'https://mermaid.example.com' ] to deeply equal [ 'https://mermaid.example.com', …(1) ]
+
+- Expected
++ Received
+
+  [
+    "https://mermaid.example.com",
+-   "https://cdn.jsdelivr.net",
+  ]
+
+ ❯ tests/unit/vscode/src/config.test.ts:440:18
+    438|   const local = libraryOrigins({}, htmlScripts, { url: "./m.mjs" });
+    439|   // 検証
+    440|   expect(remote).toEqual([
+       |                  ^
+    441|     "https://mermaid.example.com",
+    442|     "https://cdn.jsdelivr.net",
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/9]⎯
+
+ FAIL  |unit| tests/unit/vscode/src/config.test.ts > test_library_origins_when_syntax
+AssertionError: expected [] to deeply equal [ 'https://hljs.example.com' ]
+
+- Expected
++ Received
+
+- [
+-   "https://hljs.example.com",
+- ]
++ []
+
+ ❯ tests/unit/vscode/src/config.test.ts:459:18
+    457|   const local = libraryOrigins({}, htmlScripts, mermaid, { url: "./hlj…
+    458|   // 検証
+    459|   expect(remote).toEqual(["https://hljs.example.com"]);
+       |                  ^
+    460|   expect(local).toEqual([]);
+    461| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/9]⎯
+
+ FAIL  |unit| tests/unit/vscode/src/config.test.ts > test_resolve_syntax
+TypeError: resolveSyntax is not a function
+ ❯ resolve tests/unit/vscode/src/config.test.ts:468:5
+    466|   const { resolveSyntax } = await loadModule();
+    467|   const resolve = (syntax: Record<string, unknown>) =>
+    468|     resolveSyntax({
+       |     ^
+    469|       syntax,
+    470|       configDir: "/ws/docs",
+ ❯ tests/unit/vscode/src/config.test.ts:474:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/9]⎯
+
+ FAIL  |unit| tests/unit/vscode/src/config.test.ts > test_load_config_when_tooltips_and_syntax
+AssertionError: expected {} to deeply equal { …(2) }
+
+- Expected
++ Received
+
+- {
+-   "syntax": {
+-     "url": "/w/hljs",
+-   },
+-   "tooltips": {
+-     "placement": "bottom",
+-   },
+- }
++ {}
+
+ ❯ tests/unit/vscode/src/config.test.ts:530:22
+    528|   const text = await load(loadOptions(files, { cwd: "/w/b" }));
+    529|   // 検証
+    530|   expect(map.config).toEqual({
+       |                      ^
+    531|     tooltips: { placement: "bottom" },
+    532|     syntax: { url: "/w/hljs" },
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/9]⎯
+
+ FAIL  |unit| tests/unit/vscode/src/export/embed.test.ts > test_embed_local_syntax
+TypeError: embedLocalSyntax is not a function
+ ❯ tests/unit/vscode/src/export/embed.test.ts:143:24
+    141|   const { bundle, calls } = recordingBundle();
+    142|   // 実行
+    143|   const result = await embedLocalSyntax({
+       |                        ^
+    144|     markdown: TS_BLOCK,
+    145|     syntax: { url: "/ws/hljs" },
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/9]⎯
+
+ FAIL  |unit| tests/unit/vscode/src/export/embed.test.ts > test_embed_local_syntax_when_not_local
+TypeError: embedLocalSyntax is not a function
+ ❯ tests/unit/vscode/src/export/embed.test.ts:173:28
+    171|   const remote = { url: "https://cdn.example.com/es/" };
+    172|   // 実行
+    173|   const withRemote = await embedLocalSyntax({
+       |                            ^
+    174|     markdown: TS_BLOCK,
+    175|     syntax: remote,
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/9]⎯
+
+ FAIL  |unit| tests/unit/vscode/src/export/embed.test.ts > test_embed_local_syntax_when_unused
+TypeError: embedLocalSyntax is not a function
+ ❯ tests/unit/vscode/src/export/embed.test.ts:199:24
+    197|   const { bundle, calls } = recordingBundle();
+    198|   // 実行
+    199|   const result = await embedLocalSyntax({
+       |                        ^
+    200|     markdown: "# タイトル\n",
+    201|     syntax: { url: "/ws/hljs" },
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/9]⎯
+
+ FAIL  |unit| tests/unit/vscode/src/export/embed.test.ts > test_embed_local_syntax_when_bundle_fails
+TypeError: embedLocalSyntax is not a function
+ ❯ tests/unit/vscode/src/export/embed.test.ts:217:24
+    215|   const { bundle } = recordingBundle(["/ws/hljs/languages/typescript.m…
+    216|   // 実行
+    217|   const result = await embedLocalSyntax({
+       |                        ^
+    218|     markdown: TS_BLOCK,
+    219|     syntax: { url: "/ws/hljs" },
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/9]⎯
+
+ FAIL  |unit| tests/unit/vscode/src/export/html.test.ts > test_build_export_html_when_import_map
+AssertionError: expected null not to be null
+ ❯ tests/unit/vscode/src/export/html.test.ts:161:19
+    159|     /<script\b[^>]*type="importmap"[^>]*>([\s\S]*?)<\/script>/,
+    160|   );
+    161|   expect(map).not.toBeNull();
+       |                   ^
+    162|   expect(JSON.parse(map?.[1] ?? "")).toEqual({ imports: importMap });
+    163|   expect(html.indexOf('type="importmap"')).toBeLessThan(
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/9]⎯
+
+
+ Test Files  3 failed (3)
+      Tests  9 failed | 29 passed (38)
+   Start at  22:25:20
+   Duration  22.44s (tests 94%, transform 3%, import 3%, worker 1%)
+
+exit=1

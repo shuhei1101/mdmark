@@ -1,0 +1,62 @@
+$ cd docs && ruby -e 'gem "github-pages"; require "github-pages"; load Gem.bin_path("jekyll","jekyll")' build -s . -d /tmp/mdmark-site-509   # github-pages 232 / jekyll 3.10.0
+Configuration file: ./_config.yml
+To use retry middleware with Faraday v2.0+, install `faraday-retry` gem
+            Source: .
+       Destination: /tmp/mdmark-site-509
+ Incremental build: disabled. Enable with --incremental
+      Generating... 
+    Liquid Warning: Liquid syntax error (line 456): Unexpected character 単 in "{{単語}}" in guide/API.md
+    Liquid Warning: Liquid syntax error (line 458): Unexpected character 単 in "{{単語}}" in guide/API.md
+    Liquid Warning: Liquid syntax error (line 113): Unexpected character 単 in "{{単語}}" in guide/図を描く-図を描く.md
+    Liquid Warning: Liquid syntax error (line 45): Expected end_of_string but found colon in "{{ title: string, items: string[] }}" in guide/図を描く-固有の部品とCSSを適用する.md
+    Liquid Warning: Liquid syntax error (line 36): Unexpected character 意 in "{{意思決定モデル}}" in guide/図を描く-見本.md
+    Liquid Warning: Liquid syntax error (line 40): Unexpected character よ in "{{よくある質問}}" in guide/図を描く-見本.md
+    Liquid Warning: Liquid syntax error (line 83): Unexpected character 意 in "{{意思決定モデル}}" in guide/図を描く-見本.md
+                    done in 20.893 seconds.
+ Auto-regeneration: disabled. Use --watch to enable.
+
+# 出力の確認
+== index.html
+data-tab=""
+<a class="tab" href="/mdmark/%E3%81%AF%E3%81%98%E3%82%81%E3%81%AB/">はじめに</a>
+<a class="tab tab-external" href="https://shuhei1101.github.io/ai-monitor/使い方/" target="_blank" rel="noopener">使い方</a>
+<a class="tab" href="/mdmark/%E3%83%AA%E3%83%95%E3%82%A1%E3%83%AC%E3%83%B3%E3%82%B9/">リファレンス</a>
+<a class="tab" href="/mdmark/%E4%BD%BF%E7%94%A8%E6%96%B9%E6%B3%95/">使用方法</a>
+data-sidebar-source: 0
+== はじめに/index.html
+data-tab="はじめに"
+<a class="tab" href="/mdmark/%E3%81%AF%E3%81%98%E3%82%81%E3%81%AB/" aria-current="page">はじめに</a>
+<a class="tab tab-external" href="https://shuhei1101.github.io/ai-monitor/使い方/" target="_blank" rel="noopener">使い方</a>
+<a class="tab" href="/mdmark/%E3%83%AA%E3%83%95%E3%82%A1%E3%83%AC%E3%83%B3%E3%82%B9/">リファレンス</a>
+<a class="tab" href="/mdmark/%E4%BD%BF%E7%94%A8%E6%96%B9%E6%B3%95/">使用方法</a>
+data-sidebar-source: 1
+== 使用方法/index.html
+data-tab="使用方法"
+<a class="tab" href="/mdmark/%E3%81%AF%E3%81%98%E3%82%81%E3%81%AB/">はじめに</a>
+<a class="tab tab-external" href="https://shuhei1101.github.io/ai-monitor/使い方/" target="_blank" rel="noopener">使い方</a>
+<a class="tab" href="/mdmark/%E3%83%AA%E3%83%95%E3%82%A1%E3%83%AC%E3%83%B3%E3%82%B9/">リファレンス</a>
+<a class="tab" href="/mdmark/%E4%BD%BF%E7%94%A8%E6%96%B9%E6%B3%95/" aria-current="page">使用方法</a>
+data-sidebar-source: 1
+== guide/導入-文書を描く.html
+data-tab="使用方法"
+<a class="tab" href="/mdmark/%E3%81%AF%E3%81%98%E3%82%81%E3%81%AB/">はじめに</a>
+<a class="tab tab-external" href="https://shuhei1101.github.io/ai-monitor/使い方/" target="_blank" rel="noopener">使い方</a>
+<a class="tab" href="/mdmark/%E3%83%AA%E3%83%95%E3%82%A1%E3%83%AC%E3%83%B3%E3%82%B9/">リファレンス</a>
+<a class="tab" href="/mdmark/%E4%BD%BF%E7%94%A8%E6%96%B9%E6%B3%95/" aria-current="page">使用方法</a>
+data-sidebar-source: 1
+== guide/CLI.html
+data-tab="リファレンス"
+<a class="tab" href="/mdmark/%E3%81%AF%E3%81%98%E3%82%81%E3%81%AB/">はじめに</a>
+<a class="tab tab-external" href="https://shuhei1101.github.io/ai-monitor/使い方/" target="_blank" rel="noopener">使い方</a>
+<a class="tab" href="/mdmark/%E3%83%AA%E3%83%95%E3%82%A1%E3%83%AC%E3%83%B3%E3%82%B9/" aria-current="page">リファレンス</a>
+<a class="tab" href="/mdmark/%E4%BD%BF%E7%94%A8%E6%96%B9%E6%B3%95/">使用方法</a>
+data-sidebar-source: 1
+== assets
+assets/app.js
+assets/css/style.css
+assets/style.css
+assets/vendor/mdmark/THIRD_PARTY_LICENSES.txt
+assets/vendor/mdmark/index.css
+assets/vendor/mdmark/index.js
+assets/vendor/mermaid.min.js
+== llms.txt: 0 bytes / search.json: 385363 bytes

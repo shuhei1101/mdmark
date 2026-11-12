@@ -35,8 +35,6 @@ const CONFIG_TEMPLATE = {
 };
 /** リポジトリの直下からのガイドの索引のパス */
 const GUIDE_SOURCE = "guide/index.yaml";
-/** バージョンを記載するプラグインの定義のパス */
-const PLUGIN_MANIFEST = "plugin/.claude-plugin/plugin.json";
 /** まとめたプラグインのライセンスを記載する、プラグインの直下のファイル名 */
 const PLUGIN_LICENSES_FILE = "plugin/THIRD_PARTY_LICENSES.txt";
 
@@ -135,19 +133,6 @@ export async function writePluginLicenses(options: {
   await writeFile(join(root, PLUGIN_LICENSES_FILE), blocks.join("\n\n"));
 }
 
-/** `PLUGIN_MANIFEST` の `version` を埋めるバージョンにし、他のキーと並びは保つ */
-export async function writePluginManifest(options: {
-  /** 作業ツリーの場所 */
-  root: string;
-  /** 埋めるバージョン */
-  version: string;
-}): Promise<void> {
-  const path = join(options.root, PLUGIN_MANIFEST);
-  const manifest = JSON.parse(await readFile(path, "utf8"));
-  manifest.version = options.version;
-  await writeFile(path, `${JSON.stringify(manifest, null, 2)}\n`);
-}
-
 /** `PLUGIN_OUTPUTS` を削除する。無いものは飛ばす */
 export function removePluginOutputs(root: string): void {
   for (const path of PLUGIN_OUTPUTS) {
@@ -155,7 +140,7 @@ export function removePluginOutputs(root: string): void {
   }
 }
 
-/** ガイドの索引を検査し、合えばフックをまとめ、バージョン・ライセンスを `plugin/` に書き込む。問題があれば `plugin/` に何も書き込まずに問題の行を返却する。`src/plugin/pre-tool-use.ts` が無ければ何もしない */
+/** ガイドの索引を検査し、合えばフックをまとめ、ライセンスを `plugin/` に書き込む。問題があれば `plugin/` に何も書き込まずに問題の行を返却する。`src/plugin/pre-tool-use.ts` が無ければ何もしない */
 export async function buildPlugin(options: {
   /** 埋めるバージョン */
   version: string;
@@ -188,7 +173,6 @@ export async function buildPlugin(options: {
     join(root, CONFIG_TEMPLATE.from),
     join(root, CONFIG_TEMPLATE.to),
   );
-  await writePluginManifest({ root, version });
   await writePluginLicenses({ metafile: result.metafile, root });
   return [];
 }

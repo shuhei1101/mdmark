@@ -1,0 +1,102 @@
+use_cases:
+  - kind: single
+    scenario: docs/scenario/SC-472-50.yaml
+    impact: changed
+    detail: 拡張機能の配布物を作るタグを、master の commit ではなくスプリントの区切りに develop の commit へ打つ
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-4.yaml
+    impact: changed
+    detail: プラグインのバージョンを固定せず、develop へ入った変更がプラグインの更新で届く
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-69.yaml
+    impact: following
+    detail: 端末の設定の移行の目標のバージョンを、プラグインの定義ではなくビルドで埋めた mdmark のバージョンとして読む
+    depends_on:
+      - docs/scenario/SC-472-4.yaml
+  - kind: single
+    scenario: docs/scenario/SC-472-82.yaml
+    impact: run_only
+    detail: ビルドがプラグインの定義にバージョンを書かなくなる。配布物のバージョンの埋め方は変わらない
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-28.yaml
+    impact: none
+    detail: バージョンのタグを固定した URL は変わらない（タグを打つブランチだけが変わる）
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-10.yaml
+    impact: none
+    detail: 拡張機能が読むバージョンをタグの一覧から選ぶ方法は変わらない
+    depends_on: []
+  - kind: composite
+    scenario: docs/scenario/SC-472-91.yaml
+    impact: run_only
+    detail: プラグインを入れてセットアップする流れは変わらないが、プラグインの定義の変更が入れ方を壊しうる
+    depends_on: []
+docs:
+  - page: docs/dev-command/CMD-472-1.yaml
+    new: false
+    change: 管理作業を、master へマージする前ではなくスプリントの区切りに develop で行い develop の commit へタグを打つ手順にする。VS Code 拡張機能のタグも develop に入った commit へ打つ
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-12T15:04:02.580170+00:00'
+  - page: docs/architecture/ARCH-472-1.yaml
+    new: false
+    change: 配布の経路（vscode-v* のタグ・`plugin/` の届き方）を develop に打ったタグと develop の commit で届くプラグインに合わせる
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-12T15:04:02.580170+00:00'
+  - page: docs/library/LIB-472-1.yaml
+    new: false
+    change: 制約「プラグインの更新」を、version が無いとき commit で更新する振る舞いに合わせ、PoC の結果を検証に書き足す
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-12T15:04:02.580170+00:00'
+  - page: docs/config/CFG-472-1.yaml
+    new: false
+    change: 既定の起動コマンドの `v{プラグインのバージョン}` を、ビルドで埋めた mdmark のバージョンの呼び名に合わせる
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-12T15:04:02.580170+00:00'
+  - page: docs/guide/ClaudeCodeで使用する-プラグインを入れる.md
+    new: false
+    change: プラグインが develop の最新を読み、更新で develop へ入った変更が届くことと、バージョンを固定するときのタグの書き方を合わせる
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-12T15:24:43.621316+00:00'
+  - page: docs/guide/VSCodeで確認する-プレビューを開く.md
+    new: false
+    change: 拡張機能のタグを develop に打つことに合わせて説明を直す（記述がブランチに触れる場合）
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-12T15:24:43.621316+00:00'
+  - page: docs/guide/記載する-索引と用語集を記載する.md
+    new: false
+    change: knowledge の規約への `blob/master` のリンクを develop に修正する（D-296）
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-12T15:24:43.621316+00:00'
+  - page: docs/guide/変更履歴.md
+    new: false
+    change: 行を足す時期の記述を「バージョンのタグを打つたびに」にする（この PR の行は、次のタグを打つときに管理作業で足す）
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-12T15:24:43.621316+00:00'
+scope_out:
+  - item: GitHub の既定のブランチと GitHub Pages の出すブランチを develop にする
+    reason: GitHub の設定の操作で、2026-11-09 に変更済み（A-120 の「GitHub の設定の変更」）
+    plan: none
+  - item: E2E のテスト（tests/e2e/）の vscode-v* のタグ・plugin.json の version を前提にしたケースの修正
+    reason: '0.x の間は E2E を回さず修正もしない（D-297）。今ある E2E は #450 で削除する'
+    plan: '#450'
+  - item: VS Code 拡張機能の Marketplace と Open VSX への公開の自動化
+    reason: 公開の工程の追加で、この作業の契機の変更の後ろへ回した（task-planner の扱いの判断）
+    plan: '#84'
+  - item: dev-docs の画面と MindStella のプレビューが読む mdmark を develop に打ったタグへ切り替える
+    reason: 別のリポジトリの後続で、shuhei1101/dev-docs#127・shuhei1101/mindstella#475 として起票済み。この作業の完了後、起点 Issue で着手できる旨を知らせる
+    plan: none
+  - item: テストの精査の工程（D-299）
+    reason: メジャーのリリースの前の工程で、AI Monitor の運用（shuhei1101/ai-monitor#3061）が持つ
+    plan: none

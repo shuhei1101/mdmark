@@ -288,8 +288,7 @@ test("test_main_when_guide_index_invalid", {
       "    page: docs/a.md",
       "",
     ].join("\n"),
-    "plugin/.claude-plugin/plugin.json":
-      '{"name":"mdmark","version":"v0.0.0"}\n',
+    "plugin/.claude-plugin/plugin.json": '{"name":"mdmark"}\n',
   };
   for (const [path, content] of Object.entries(files)) {
     await mkdir(dirname(join(root, path)), { recursive: true });

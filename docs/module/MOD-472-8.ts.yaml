@@ -41,7 +41,7 @@ functions:
       - name: options
         type: '{ argv: string[]; env: NodeJS.ProcessEnv; pluginRoot: string; version: string; run: RunCommand; stdout: (line: string) => void; stderr: (line: string) => void }'
         required: true
-        description: 引数・環境変数・プラグインの直下・プラグインのバージョン・コマンドの実行・出力の先
+        description: 引数・環境変数・プラグインの直下・プラグインのビルドで埋めた mdmark のバージョン・コマンドの実行・出力の先
     returns:
       type: Promise<0 | 1 | 2 | 3>
       description: '`SETUP_EXIT` の値'

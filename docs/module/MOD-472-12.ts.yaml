@@ -179,7 +179,7 @@ functions:
       - name: options
         type: '{ env: NodeJS.ProcessEnv; pluginRoot: string; version: string; launcher: Launcher | undefined } & { run: RunCommand; sleep: (ms: number) => Promise<void>; writeFile: (path: string, data: string) => Promise<void> }'
         required: true
-        description: 環境変数・プラグインの直下・プラグインのバージョン・`--launcher` の値・コマンドの実行・待つ関数・ファイルの書き込み
+        description: 環境変数・プラグインの直下・プラグインのビルドで埋めた mdmark のバージョン・`--launcher` の値・コマンドの実行・待つ関数・ファイルの書き込み
     returns:
       type: Promise<StartResult>
       description: インターフェース定義『常駐サーバーを起動する』のレスポンス

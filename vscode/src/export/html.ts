@@ -69,7 +69,7 @@ document.fonts.ready.then(() => {
 setTimeout(print, PRINT_WAIT_MS);
 `;
 
-/** 書き出す HTML を組む。`<base>`・そのバージョンの `index.css` の `<link>`・本文と設定の JSON の `<script type="application/json">`・`index.js` を読み込んで `mount` を呼ぶ `<script type="module">` を持つ。`print` が `true` のときだけ印刷を待つ処理を追加する */
+/** 書き出す HTML を組む。`<base>`・そのバージョンの `index.css` の `<link>`・本文と設定の JSON の `<script type="application/json">`・`importMap` が空でないときの `<script type="importmap">`・`index.js` を読み込んで `mount` を呼ぶ `<script type="module">` を持つ。`print` が `true` のときだけ印刷を待つ処理を追加する */
 export function buildExportHtml(options: {
   /** 全文 */
   markdown: string;
@@ -89,6 +89,8 @@ export function buildExportHtml(options: {
   themeCss?: string | undefined;
   /** 拡張をまとめた ES モジュールのコード（設定の順） */
   extensions: string[];
+  /** import map の `imports`（相対パスの `syntax.url` の本体と言語のモジュールの `data:` の URL）。空なら配置しない */
+  importMap?: Record<string, string> | undefined;
 }): string {
   const data = escapeScriptJson({
     markdown: options.markdown,
@@ -100,6 +102,11 @@ export function buildExportHtml(options: {
     options.themeCss === undefined
       ? ""
       : `<style>${options.themeCss.replace(/<\/(style)/gi, "<\\/$1")}</style>\n`;
+  const importMap =
+    options.importMap === undefined ||
+    Object.keys(options.importMap).length === 0
+      ? ""
+      : `<script type="importmap">${escapeScriptJson({ imports: options.importMap })}</script>\n`;
   const register =
     options.extensions.length === 0 ? "" : REGISTER_EXTENSIONS_SCRIPT;
   return `<!DOCTYPE html>
@@ -110,7 +117,7 @@ export function buildExportHtml(options: {
 <title>${escapeHtml(options.title)}</title>
 <base href="${escapeHtml(options.baseHref)}">
 <link rel="stylesheet" href="${escapeHtml(options.distCss)}">
-${themeStyle}</head>
+${themeStyle}${importMap}</head>
 <body>
 <main></main>
 <script type="application/json" id="mdmark-data">${data}</script>

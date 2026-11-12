@@ -28,7 +28,7 @@ scenarios:
         C-->>W: プラグインを入れた・終了コード 0
     expected:
       - '`claude plugin marketplace add` と `claude plugin install mdmark@mdmark` がどちらも終了コード 0 で終わる'
-      - '`claude plugin list --json` に `mdmark@mdmark` が有効として出、その `installPath` が設定のフォルダのプラグインのキャッシュの下'
+      - '`claude plugin list --json` に `mdmark@mdmark` が有効として出、その `installPath` が設定のフォルダのプラグインのキャッシュの下で、バージョンがブランチの commit の短縮 SHA（`plugin.json` が `version` を持たない）'
       - '`installPath` に `hooks/hooks.json`・`.mcp.json`・`scripts/pre-tool-use.js`・`scripts/session-start.js`・`skills/global-setup/SKILL.md`・`skills/setup/SKILL.md` があり、ガイドの `guide/`・`node_modules` が無い'
       - '`installPath` の `.mcp.json` が `type: http` と接続先 `http://127.0.0.1:${MDMARK_PORT:-8782}/mcp` を持ち、`command` を持たない'
       - '`.mcp.json` の接続先につなぐと、起動した常駐サーバーが `export_html`・`build_site`・`check` のツールの一覧を返却し、`read_guide` が無い'
@@ -64,6 +64,29 @@ scenarios:
     test: test_error_when_server_not_running
     notes:
       Claude Code の実機での挙動: Claude Code 2.1.310 では、この状態で開いたセッションは MCP サーバーだけが `failed` になり、常駐サーバーを起動してから `/mcp` の Reconnect でセッションをもう一度開かずにツールを呼べた（外部ライブラリ『ClaudeCode』の `verification`）
+  - name: 正常シナリオ（develop の commit で更新する）
+    setup:
+      - name: 使い捨てのブランチで入れたプラグイン
+        description: 今の HEAD の commit から使い捨てのブランチ（`e2e/plugin-update-{実行ごとに一意の値}`）を切って GitHub へ push し、空の設定のフォルダで `shuhei1101/mdmark#{そのブランチ}` をマーケットプレイスとして追加し、プラグインを入れたもの。ブランチはテストの後に、成否によらず GitHub から削除し、配るブランチ（develop・release）にテストの commit を残さない
+      - name: commit を追加した使い捨てのブランチ
+        description: 使い捨てのブランチへ、`plugin/` のスキルを書き換えた commit を 1 つ push したもの（`plugin.json` は変えない）
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor W as 文書の作成者
+        participant C as Claude Code
+        participant R as GitHub の mdmark のリポジトリ
+        W->>C: claude plugin marketplace update mdmark
+        C->>R: ブランチの新しい commit を取得する
+        W->>C: claude plugin update mdmark@mdmark
+        C->>C: 新しい commit の plugin/ をキャッシュへ写す
+        C-->>W: 短縮 SHA の前後と、再起動で反映すること
+    expected:
+      - '`claude plugin update mdmark@mdmark` が終了コード 0 で終わり、`claude plugin list --json` の `mdmark@mdmark` のバージョンが追加した commit の短縮 SHA になる'
+      - 新しい `installPath` のスキルが、追加した commit の内容になる
+      - '`claude plugin marketplace update mdmark` だけでは、入れたプラグインのバージョンは変わらない'
+    test: test_normal_when_commit_added
 lead: 文書の作成者が、mdmark のリポジトリを Claude Code のマーケットプレイスとして追加し、mdmark のプラグインを入れる。
 issue: 11
 primary_actor: 文書の作成者
