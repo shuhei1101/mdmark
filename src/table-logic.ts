@@ -315,13 +315,20 @@ export const initialPinnedColumns = (options: {
   rowHeadCount: number;
   /** ピン止めの動き */
   mode: TablePinMode;
+  /** `data-unpin` の位置（既定で留める列から除く。無ければ空） */
+  unpin?: number[];
 }): number[] => {
-  const { pin, rowHeadCount, mode } = options;
-  // 留める元の列は、pin= の列、無ければ行見出しの全ての列、行見出しも無ければ先頭の列
+  const { pin, rowHeadCount, mode, unpin = [] } = options;
+  // 留める元の列は、pinned の列、無ければ行見出しの全ての列（行見出しも無ければ先頭の列）から pinned の false の列を除いたもの
   const base =
     pin.length > 0
       ? [...new Set(pin)].sort((a, b) => a - b)
-      : columnsThrough(Math.max(1, rowHeadCount) - 1);
+      : columnsThrough(Math.max(1, rowHeadCount) - 1).filter(
+          (column) => !unpin.includes(column),
+        );
+  if (base.length === 0) {
+    return [];
+  }
   return mode === "each" ? base : columnsThrough(Math.max(...base));
 };
 

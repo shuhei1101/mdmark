@@ -1,0 +1,8 @@
+{
+  "$id": "features.schema.json",
+  "type": "object",
+  "properties": {},
+  "additionalProperties": {
+    "type": "boolean"
+  }
+}

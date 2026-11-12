@@ -2,13 +2,9 @@ import type { StateCore, Token } from "markdown-it";
 import { SLOT_MARKER } from "../../parts/own.ts";
 import { renderSection } from "../../parts/section.ts";
 import { featureOn, markOf, ownBlock, tabBoundaryOf } from "./tokens.ts";
-import { skippedArgBlocks } from "./warnings.ts";
 
 /** 見出しの中身の差し込みインターフェース */
 const TITLE_MARKER = "\u0000mdmark-title\u0000";
-
-/** セクションの開閉の指定 */
-const SECTION_STATES = ["closed", "open"];
 
 /** `sections` がオンなら、h1〜h4 の見出しの後ろから次の同じか上の階層の見出しの前までをセクションの中身の要素で囲む。タブの中身の中で開いたセクションは、次の見出しより前にその中身が終わるときは中身の終わりで閉じる（タブの外で開いたセクションはタブをまたいで続く） */
 export function wrapSections(state: StateCore): void {
@@ -61,15 +57,13 @@ export function wrapSections(state: StateCore): void {
       out.push(token);
       continue;
     }
-    // 見出しの直後の `section` のマーカーで開閉を決める。知らない値はスキップした引数にして開く
+    // 見出しの直後の `section` のマーカーの `open`（省くと `true`）で開閉を決める
     const section = mark?.name === "section" ? mark : undefined;
-    const value = section?.args.args[0];
-    const known = value === undefined || SECTION_STATES.includes(value);
     const html = renderSection({
       level: level as 1 | 2 | 3 | 4,
       id: String(token.attrGet("id") ?? ""),
       title: TITLE_MARKER,
-      open: value !== "closed",
+      open: section?.options.open !== false,
       toggle: false,
       anchor: false,
       body: SLOT_MARKER,
@@ -77,18 +71,6 @@ export function wrapSections(state: StateCore): void {
     const [head = "", rest = ""] = html.split(TITLE_MARKER);
     const [body = ""] = rest.split(SLOT_MARKER);
     out.push(ownBlock(state, head, token), inline, ownBlock(state, body));
-    if (section && !known) {
-      out.push(
-        ...skippedArgBlocks(
-          state,
-          {
-            mark: section.raw,
-            skipped: [{ arg: value ?? "", usable: "`closed`・`open`" }],
-          },
-          tokens[index + 3],
-        ),
-      );
-    }
     levels.push(level);
     // 見出しの 3 つのトークンと、使用したマーカーを飛ばす
     index += section ? 3 : 2;

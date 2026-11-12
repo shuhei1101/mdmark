@@ -1,0 +1,19 @@
+{
+  "$id": "include.schema.json",
+  "type": "object",
+  "properties": {
+    "path": {
+      "type": "string"
+    },
+    "heading": {
+      "type": "string"
+    },
+    "lines": {
+      "$ref": "common.schema.json#/$defs/line_range"
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "path"
+  ]
+}

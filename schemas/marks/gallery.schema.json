@@ -1,0 +1,12 @@
+{
+  "$id": "gallery.schema.json",
+  "type": "object",
+  "properties": {
+    "columns": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 6
+    }
+  },
+  "additionalProperties": false
+}

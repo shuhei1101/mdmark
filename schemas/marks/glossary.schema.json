@@ -1,0 +1,23 @@
+{
+  "$id": "glossary.schema.json",
+  "type": "object",
+  "properties": {
+    "term": {
+      "$ref": "common.schema.json#/$defs/column_ref"
+    },
+    "meaning": {
+      "$ref": "common.schema.json#/$defs/column_ref"
+    },
+    "aliases": {
+      "$ref": "common.schema.json#/$defs/column_ref"
+    },
+    "avoid": {
+      "$ref": "common.schema.json#/$defs/column_ref"
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "term",
+    "meaning"
+  ]
+}

@@ -35,7 +35,7 @@ const handle = await mountView(document.querySelector("#tasks"), {
 要素の中身は空にして、class `mdmark` の要素を 1 つ配置し、その中に描く。
 列名と項目の値は文字として出し、HTML として解釈しない。
 
-<!-- table: data -->
+<!-- table: {"kind": "data"} -->
 
 | 引数 | 必須 / 任意 | 説明 |
 | --- | --- | --- |

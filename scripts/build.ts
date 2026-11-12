@@ -35,7 +35,12 @@ const MAX_DIST_FILE_BYTES = 656 * 1024;
 // 配布物にまとめた依存のライセンスを記載する、`dist/` の中のファイル名
 const LICENSES_FILE = "THIRD_PARTY_LICENSES.txt";
 // サイズを検めない配布ファイル（利用側のページが jsDelivr から読み込まない出力）
-const UNSIZED_OUTPUTS = ["dist/cli.js", "dist/viewer.js", "dist/viewer.css"];
+const UNSIZED_OUTPUTS = [
+  "dist/cli.js",
+  "dist/viewer.js",
+  "dist/viewer.css",
+  "dist/legacy-marks.js",
+];
 // CLI の実行時の依存: まとめずに `package.json` の `dependencies` から読み込む
 const CLI_EXTERNALS = ["yaml", "esbuild"];
 // バージョンを指定する引数の名前
@@ -206,6 +211,35 @@ async function buildCli(
   };
 }
 
+/** 移行の手順のスクリプトが読み込む `src/render/legacy-marks.ts` を、依存を含めて Node で動く `dist/legacy-marks.js` にまとめる。ソースが無ければ何も書き込まない */
+async function buildLegacyMarks(
+  version: string,
+  root: string,
+): Promise<Record<string, number>> {
+  if (!existsSync(join(root, "src", "render", "legacy-marks.ts"))) {
+    return {};
+  }
+  const result = await build({
+    absWorkingDir: root,
+    entryPoints: [{ in: "src/render/legacy-marks.ts", out: "legacy-marks" }],
+    outdir: "dist",
+    bundle: true,
+    format: "esm",
+    platform: "node",
+    target: NODE_TARGET,
+    plugins: [postcssStubPlugin],
+    define: bundleDefines(version),
+    metafile: true,
+    logLevel: "silent",
+  });
+  return Object.fromEntries(
+    Object.entries(result.metafile.outputs).map(([path, output]) => [
+      path,
+      output.bytes,
+    ]),
+  );
+}
+
 /** esbuild で `src/index.ts` と `src/index.css` を、バージョンを埋めた `dist/` にまとめ、型定義を書き込み、配布物と CLI にまとめた依存のライセンスを書き込む */
 export async function buildDist(
   version: string,
@@ -237,6 +271,7 @@ export async function buildDist(
   Object.assign(outputs, await buildViewer(version, root));
   const cli = await buildCli(version, root);
   Object.assign(outputs, cli.outputs);
+  Object.assign(outputs, await buildLegacyMarks(version, root));
   await writeThirdPartyLicenses({
     metafiles: [result.metafile, ...(cli.metafile ? [cli.metafile] : [])],
     root,

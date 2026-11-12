@@ -1,0 +1,6 @@
+steps:
+  - op: call
+    description: 文書のマーカーの今の書き方の引数を JSON のオブジェクトへ書き換える（書き出さない記載と拡張・`libraries` のマーカーは移行の報告に挙げる）
+    destructive: true
+    script: marker-json.mjs
+    files: [documents]

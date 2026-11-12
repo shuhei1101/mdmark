@@ -7,13 +7,13 @@ const LOADING_TEXT = "図を読み込んでいます";
 export function renderEmbed(options: {
   /** マーカーの名前 */
   name: string;
-  /** マーカーの引数（既定 `[]`） */
-  args?: string[];
+  /** マーカーの引数の JSON のオブジェクト（既定 `{}`） */
+  options?: Record<string, unknown>;
   /** マーカーの範囲から読み込んだ定義の番号。範囲で記載したマーカーだけが持つ */
   definition?: number;
 }): string {
-  const { name, args = [], definition } = options;
+  const { name, options: markOptions = {}, definition } = options;
   const index =
     definition === undefined ? "" : ` data-mdmark-definition="${definition}"`;
-  return `<div class="mdmark-embed" data-mdmark-slot="${escapeHtml(name)}" data-mdmark-args="${escapeHtml(args.join(" "))}"${index} role="status">${LOADING_TEXT}</div>`;
+  return `<div class="mdmark-embed" data-mdmark-slot="${escapeHtml(name)}" data-mdmark-args="${escapeHtml(JSON.stringify(markOptions))}"${index} role="status">${LOADING_TEXT}</div>`;
 }

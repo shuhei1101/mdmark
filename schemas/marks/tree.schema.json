@@ -1,0 +1,24 @@
+{
+  "$id": "tree.schema.json",
+  "type": "object",
+  "properties": {
+    "depth": {
+      "anyOf": [
+        {
+          "type": "string",
+          "enum": [
+            "all"
+          ]
+        },
+        {
+          "type": "integer",
+          "minimum": 1
+        }
+      ]
+    },
+    "wrap": {
+      "type": "boolean"
+    }
+  },
+  "additionalProperties": false
+}

@@ -1,75 +1,24 @@
 import type { StateCore, Token } from "markdown-it";
-import type { WarningItem } from "../../extensions.ts";
 import { SLOT_MARKER } from "../../parts/own.ts";
 import { renderTabs } from "../../parts/tabs.ts";
 import type { Mark } from "../marks.ts";
-import { type CollapseMode, readCollapse, titleTailItem } from "./collapse.ts";
+import { type CollapseMode, readCollapse } from "./collapse.ts";
 import { envOf, featureOn, markOf, tabBoundaryBlock } from "./tokens.ts";
-import {
-  type SkippedArg,
-  type SyntaxWarning,
-  skippedArgBlocks,
-  unclosedWarning,
-  warningBlock,
-} from "./warnings.ts";
+import { unclosedWarning, warningBlock } from "./warnings.ts";
 
-/** タブのマーカーで読み込めるキー */
-const GROUP_KEY = "group";
-
-/** タブのマーカーで読み込める指定を、記載の警告の案内に並べる文 */
-const USABLE_ARGS = "`group=名前`・`closed`・`open`・`title=見出し`";
-
-/** タブのマーカーの引数から `group` と折り畳みの指定を読み込む。値の無い `group=` は 1 つの記載の警告にまとめ、知らないキーと `キー=値` の構造でない指定はスキップした引数にする */
+/** タブのマーカーの設定から `group` と折り畳みの指定を読み込む */
 export function readTabsOptions(mark: Mark): {
   group?: string;
   collapse: CollapseMode;
   title?: string | undefined;
-  warning?: SyntaxWarning;
-  skipped: SkippedArg[];
 } {
-  const {
-    collapse,
-    title,
-    items: collapseItems,
-    titleTail,
-    rest,
-  } = readCollapse(mark.args, mark.rest);
-  const items: WarningItem[] = [...collapseItems];
-  const skipped: SkippedArg[] = [];
-  let group: string | undefined;
-  for (const [key, value] of Object.entries(rest.keys)) {
-    if (key !== GROUP_KEY) {
-      skipped.push({ arg: `${key}=`, usable: USABLE_ARGS });
-    } else if (value === "") {
-      items.push({
-        label: `${GROUP_KEY}=`,
-        message: `組の名前がありません。\`${GROUP_KEY}=os\` のように名前を記載してください。組を持たないタブとして描いています`,
-      });
-    } else {
-      group = value;
-    }
-  }
-  // `キー=値` の構造でない指定
-  for (const arg of rest.args) {
-    if (arg === titleTail) {
-      items.push(titleTailItem(arg));
-    } else {
-      skipped.push({ arg, usable: USABLE_ARGS });
-    }
-  }
-  if (items.length === 0) {
-    return { group, collapse, title, skipped };
-  }
+  const { collapse, title } = readCollapse(mark.options);
+  const group =
+    typeof mark.options.group === "string" ? mark.options.group : undefined;
   return {
-    group,
+    ...(group === undefined ? {} : { group }),
     collapse,
-    title,
-    skipped,
-    warning: {
-      mark: mark.raw,
-      message: "の読み込めない指定を当てずに描いています。",
-      items,
-    },
+    ...(title === undefined ? {} : { title }),
   };
 }
 
@@ -118,11 +67,7 @@ function buildTabsIn(state: StateCore, tokens: Token[]): Token[] {
       }
       continue;
     }
-    const { group, collapse, title, warning, skipped } = readTabsOptions(mark);
-    if (warning) {
-      out.push(warningBlock(state, warning, token));
-    }
-    out.push(...skippedArgBlocks(state, { mark: mark.raw, skipped }, token));
+    const { group, collapse, title } = readTabsOptions(mark);
     const { close: closeIndex, nested } = findTabsClose(tokens, index);
     if (closeIndex < 0) {
       out.push(warningBlock(state, unclosedWarning(mark), token));

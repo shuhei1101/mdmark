@@ -1,5 +1,6 @@
 import type { StateCore, Token } from "markdown-it";
 import MarkdownIt from "markdown-it";
+import type { MarkOptions } from "../mark-options.ts";
 import { pairRanges } from "./blocks.ts";
 import { featureOn, markOf, tabBoundaryBlock } from "./tokens.ts";
 import { unclosedWarning, warningBlock } from "./warnings.ts";
@@ -10,15 +11,16 @@ const titleParser = new MarkdownIt();
 /** タイトルが空のときのタイトル */
 const DEFAULT_TITLE = "詳細";
 
-/** マーカーの引数の最後の単語が `open` なら開いた状態にしてタイトルから除外し、空のタイトルは `詳細` にする */
+/** マーカーの設定の `title`（空の文字か省くと `詳細`）と `open`（省くと `false`）を読み込む */
 export const readDetailsOptions = (
-  args: string,
-): { title: string; open: boolean } => {
-  const words = args.trim().split(/\s+/).filter(Boolean);
-  const open = words.at(-1) === "open";
-  const title = (open ? words.slice(0, -1) : words).join(" ");
-  return { title: title || DEFAULT_TITLE, open };
-};
+  options: MarkOptions,
+): { title: string; open: boolean } => ({
+  title:
+    typeof options.title === "string" && options.title !== ""
+      ? options.title
+      : DEFAULT_TITLE,
+  open: options.open === true,
+});
 
 /** `details` がオンなら、`<!-- details: … -->` 〜 `<!-- /details -->` を開閉する `details` にする。閉じのマーカーが無いときは警告を差し込んで囲まない */
 export const buildDetailsRanges = (state: StateCore): void => {
@@ -52,7 +54,7 @@ export const buildDetailsRanges = (state: StateCore): void => {
       out.push(warningBlock(state, unclosedWarning(mark)));
       continue;
     }
-    const { title, open } = readDetailsOptions(mark.rest ?? "");
+    const { title, open } = readDetailsOptions(mark.options);
     const summary = titleParser.renderInline(title);
     out.push(
       tabBoundaryBlock({

@@ -1,0 +1,251 @@
+{
+  "$id": "table.schema.json",
+  "type": "object",
+  "properties": {
+    "kind": {
+      "type": "string",
+      "enum": [
+        "data",
+        "plain"
+      ]
+    },
+    "features": {
+      "type": "object",
+      "properties": {
+        "sort": {
+          "$ref": "common.schema.json#/$defs/feature"
+        },
+        "pin": {
+          "$ref": "common.schema.json#/$defs/feature"
+        },
+        "filter": {
+          "$ref": "common.schema.json#/$defs/feature"
+        },
+        "resize": {
+          "$ref": "common.schema.json#/$defs/feature"
+        },
+        "count": {
+          "$ref": "common.schema.json#/$defs/feature"
+        },
+        "columns": {
+          "$ref": "common.schema.json#/$defs/feature"
+        },
+        "reorder": {
+          "$ref": "common.schema.json#/$defs/feature"
+        },
+        "total": {
+          "$ref": "common.schema.json#/$defs/feature"
+        },
+        "copy": {
+          "$ref": "common.schema.json#/$defs/feature"
+        },
+        "rowlink": {
+          "$ref": "common.schema.json#/$defs/feature"
+        }
+      },
+      "additionalProperties": false
+    },
+    "columns": {
+      "type": "object",
+      "properties": {},
+      "additionalProperties": {
+        "type": "object",
+        "properties": {
+          "filter": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": "string",
+                "enum": [
+                  "select",
+                  "text",
+                  "date"
+                ]
+              }
+            },
+            "additionalProperties": false
+          },
+          "hidden": {
+            "type": "boolean"
+          },
+          "pinned": {
+            "type": "boolean"
+          },
+          "total": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "calc": {
+                  "type": "string",
+                  "enum": [
+                    "sum",
+                    "avg",
+                    "count"
+                  ]
+                }
+              },
+              "additionalProperties": false,
+              "required": [
+                "calc"
+              ]
+            }
+          },
+          "width": {
+            "type": "object",
+            "properties": {
+              "mode": {
+                "type": "string",
+                "enum": [
+                  "auto",
+                  "nowrap"
+                ]
+              },
+              "min": {
+                "type": "number",
+                "minimum": 0
+              },
+              "max": {
+                "type": "number",
+                "minimum": 0
+              }
+            },
+            "additionalProperties": false
+          },
+          "format": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": "string",
+                "enum": [
+                  "check"
+                ]
+              }
+            },
+            "additionalProperties": false,
+            "required": [
+              "type"
+            ]
+          },
+          "highlight": {
+            "type": "object",
+            "properties": {
+              "color": {
+                "type": "string",
+                "enum": [
+                  "blue",
+                  "red",
+                  "green",
+                  "yellow",
+                  "orange",
+                  "purple",
+                  "gray"
+                ]
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "header": {
+      "type": "object",
+      "properties": {
+        "rows": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "columns": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "additionalProperties": false
+    },
+    "rows": {
+      "type": "object",
+      "properties": {
+        "colors": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "column": {
+                "type": "string"
+              },
+              "value": {
+                "type": "string"
+              },
+              "at": {
+                "anyOf": [
+                  {
+                    "type": "integer",
+                    "minimum": 1
+                  },
+                  {
+                    "$ref": "common.schema.json#/$defs/line_range"
+                  }
+                ]
+              },
+              "color": {
+                "type": "string",
+                "enum": [
+                  "blue",
+                  "red",
+                  "green",
+                  "yellow",
+                  "orange",
+                  "purple",
+                  "gray"
+                ]
+              }
+            },
+            "additionalProperties": false,
+            "required": [
+              "color"
+            ]
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "tree": {
+      "type": "object",
+      "properties": {
+        "key": {
+          "$ref": "common.schema.json#/$defs/column_ref"
+        },
+        "type": {
+          "$ref": "common.schema.json#/$defs/column_ref"
+        },
+        "required": {
+          "$ref": "common.schema.json#/$defs/column_ref"
+        },
+        "default": {
+          "$ref": "common.schema.json#/$defs/column_ref"
+        },
+        "example": {
+          "type": "object",
+          "properties": {
+            "heading": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "heading"
+          ]
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "key"
+      ]
+    },
+    "collapse": {
+      "$ref": "common.schema.json#/$defs/collapse"
+    }
+  },
+  "additionalProperties": false
+}

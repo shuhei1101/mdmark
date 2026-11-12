@@ -58,7 +58,7 @@ MCP サーバーを起動しました: http://127.0.0.1:8782/mcp
 
 #### 別の端末から確認する
 
-<!-- tabs: group=os -->
+<!-- tabs: {"group": "os"} -->
 
 ##### macOS・Linux
 

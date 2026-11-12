@@ -1,0 +1,14 @@
+{
+  "$id": "tabs.schema.json",
+  "type": "object",
+  "properties": {
+    "group": {
+      "type": "string",
+      "minLength": 1
+    },
+    "collapse": {
+      "$ref": "common.schema.json#/$defs/collapse"
+    }
+  },
+  "additionalProperties": false
+}

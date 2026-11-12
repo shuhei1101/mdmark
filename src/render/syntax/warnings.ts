@@ -1,23 +1,17 @@
 import type { StateCore, Token } from "markdown-it";
 import type { WarningItem } from "../../extensions.ts";
 import { renderSyntaxWarning } from "../../parts/syntax-warning.ts";
+import type { MarkNote } from "../mark-schema.ts";
 import type { Mark } from "../marks.ts";
+import type { RenderEnv } from "../parser.ts";
 import { envOf, ownBlock } from "./tokens.ts";
 
-/** 集める警告の種類。`unknown_mark_arg` は画面に出さず、点検だけが返却する */
+/** 集める警告の種類。マーカーの注記（`MarkNote` の種類）は画面に出さず、点検だけが返却する */
 export type WarningKind =
   | "diagram_invalid"
   | "syntax_warning"
-  | "unknown_mark_arg"
+  | MarkNote["kind"]
   | "map";
-
-/** 記法のマーカーの知らない種類・`+機能`・`-機能`・キー・指定の単語 1 つと、そのマーカーで使用できるもの */
-export type SkippedArg = {
-  /** 記載した引数の文字。キーは `{キー}=` */
-  arg: string;
-  /** そのマーカーで使用できる種類・機能・キー・指定を行内のコードにして `・` でつないだ文字 */
-  usable: string;
-};
 
 /** 記載の警告に指定する値 */
 export type SyntaxWarning = {
@@ -141,37 +135,32 @@ export function collectWarningsRule(state: StateCore): void {
       });
     }
   });
-  envOf(state).warnings = warnings;
-}
-
-/** スキップした引数 1 つにつき、画面に何も出さない `html_block` を作り、`meta.warning` に `unknown_mark_arg` の文とマーカーの行を入れて記載した順に返却する（差し込む位置を呼ぶ側が決めるとき） */
-export function skippedArgBlocks(
-  state: StateCore,
-  options: { mark: string; skipped: SkippedArg[] },
-  source?: Token,
-): Token[] {
-  const line = source?.map?.[0];
-  return options.skipped.map((skipped) => {
-    const token = new state.Token("html_block", "", 0);
-    token.block = true;
-    const meta: WarningMeta = {
-      kind: "unknown_mark_arg",
-      message: `${options.mark} の ${skipped.arg} はこのバージョンの mdmark が知らない指定で、描くときはスキップしています。使用できるのは ${skipped.usable.replaceAll("`", "")} です。誤記なら名前を修正し、新しいバージョンの指定なら mdmark のバージョンを上げてください。`,
-      ...(line === undefined ? {} : { line }),
+  const env = envOf(state);
+  // 注記は、同じ行の警告の後ろになるよう行の順に合わせる
+  for (const note of env.markNotes) {
+    const at = warnings.findIndex((warning) => warning.line > note.line);
+    const item: CollectedWarning = {
+      line: note.line,
+      kind: note.kind,
+      message: note.message,
     };
-    token.meta = { warning: meta };
-    return token;
-  });
+    if (at < 0) {
+      warnings.push(item);
+    } else {
+      warnings.splice(at, 0, item);
+    }
+  }
+  env.warnings = warnings;
 }
 
-/** `skippedArgBlocks` のトークンを `index` の位置に差し込む */
-export function pushSkippedArgs(
-  state: StateCore,
-  index: number,
-  options: { mark: string; skipped: SkippedArg[] },
-  source?: Token,
+/** マーカーの注記を、マーカーの行（1 から）と一緒に記載した順に記録する。トークンは差し込まない */
+export function recordMarkNotes(
+  env: RenderEnv,
+  options: { notes: MarkNote[]; line: number },
 ): void {
-  state.tokens.splice(index, 0, ...skippedArgBlocks(state, options, source));
+  for (const note of options.notes) {
+    env.markNotes.push({ ...note, line: options.line });
+  }
 }
 
 /** 範囲のマーカーに閉じのマーカーが無いときの警告 */

@@ -6,7 +6,6 @@ import type {
 import MarkdownIt from "markdown-it";
 import type { LibraryEntry, PageSettings } from "../config.ts";
 import type { MdmarkParamDefinition } from "../diagram/definition.ts";
-import type { MdmarkMarkArgs } from "../extensions.ts";
 import type { MdmarkIndex } from "../knowledge/index-shape.ts";
 import type {
   MdmarkGlossaryEntry,
@@ -14,6 +13,8 @@ import type {
 } from "../knowledge/references.ts";
 import { escapeHtml } from "../parts/escape.ts";
 import type { MdmarkIconNode } from "../parts/inline-icon.ts";
+import type { MarkOptions } from "./mark-options.ts";
+import type { MarkNote } from "./mark-schema.ts";
 import {
   dropMarks,
   MARK_PATTERN,
@@ -77,13 +78,13 @@ export type RenderEnv = {
   defaults: Record<string, boolean>;
   /** 既定を適用した設定の `labels`（部品の文言） */
   labels?: { paramCopy: string };
-  /** `features` のマーカーの引数を記載した順に並べたもの */
-  featureArgs: string[];
-  /** `defaults` に `featureArgs` を重ねたもの */
+  /** `features` のマーカーの JSON のオブジェクトを記載した順に並べたもの */
+  featureOptions: Array<Record<string, boolean>>;
+  /** `defaults` に `featureOptions` を重ねたもの */
   features: Record<string, boolean>;
-  /** 文書の先頭の page のマーカーを記載した順に並べたもの（`takeMarks` が追加する） */
-  pageMarks?: Array<{ raw: string; args: MdmarkMarkArgs }>;
-  /** `pageMarks` を読み込んだページの設定（`resolvePageSettings` が入れる） */
+  /** 文書の先頭の page のマーカーの設定を記載した順に並べたもの（`takeMarks` が追加する） */
+  pageOptions?: Array<{ raw: string; options: MarkOptions }>;
+  /** `pageOptions` を読み込んだページの設定（`resolvePageSettings` が入れる） */
   page?: PageSettings;
   /** 見出しの ID と文字 */
   headings: Array<{ level: number; id: string; text: string }>;
@@ -121,6 +122,8 @@ export type RenderEnv = {
   icons?: Record<string, MdmarkIconNode> | undefined;
   /** 描いた記載の警告（最後のコアルール `collectWarningsRule` が入れる） */
   warnings?: CollectedWarning[];
+  /** 画面に出さず点検だけがずれにするマーカーの注記と、マーカーの行（1 から） */
+  markNotes: Array<MarkNote & { line: number }>;
   /** 文書の先頭のフロントマターの中身と閉じる行の 0 始まりの行番号（`renderDocument` が入れ、`insertFrontmatter` が読む） */
   frontmatter?: { content: string; endLine: number } | undefined;
 };
@@ -244,19 +247,48 @@ function inlineStartLine(tokens: Token[], position: number): number {
   return 0;
 }
 
+/** 文書から取得したマーカー 1 つ（`findMarks` の結果） */
+export type FoundMark = {
+  /** マーカーの名前 */
+  name: string;
+  /** マーカーの行（1 から） */
+  line: number;
+  /** マーカーの文字のまま */
+  raw: string;
+  /** 閉じのマーカーか */
+  closing: boolean;
+  /** マーカーの `:` の後ろの文字（無ければ空） */
+  args: string;
+};
+
+/** マーカーの正規表現のマッチから、行を除くマーカーの値を作る */
+function foundOf(match: RegExpMatchArray): Omit<FoundMark, "line"> {
+  return {
+    name: match[2] ?? "",
+    raw: match[0],
+    closing: match[1] === "/",
+    args: match[3] ?? "",
+  };
+}
+
 /** Markdown の生の HTML のブロックと行内の HTML からマーカーの名前と行の番号（1 から）を、記載した順に返却する。閉じのマーカーも 1 つのマーカーとして返却する */
 export function findMarks(
   markdown: string,
 ): Array<{ name: string; line: number }> {
+  return findMarkTexts(markdown).map(({ name, line }) => ({ name, line }));
+}
+
+/** `findMarks` と同じマーカーを、マーカーの文字と引数の文字と一緒に返却する */
+export function findMarkTexts(markdown: string): FoundMark[] {
   const tokens = new MarkdownIt(PARSER_OPTIONS).parse(markdown, {});
-  const found: Array<{ name: string; line: number }> = [];
+  const found: FoundMark[] = [];
   for (const [position, token] of tokens.entries()) {
     if (token.type === "html_block" && token.map) {
       const start = token.map[0] + 1;
       for (const match of token.content.matchAll(MARK_PATTERN)) {
         const before = token.content.slice(0, match.index);
         found.push({
-          name: match[2] ?? "",
+          ...foundOf(match),
           line: start + countNewlines(before),
         });
       }
@@ -270,7 +302,7 @@ export function findMarks(
           for (const match of child.content.matchAll(MARK_PATTERN)) {
             const before = child.content.slice(0, match.index);
             found.push({
-              name: match[2] ?? "",
+              ...foundOf(match),
               line: offset + countNewlines(before),
             });
           }

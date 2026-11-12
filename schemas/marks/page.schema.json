@@ -1,0 +1,37 @@
+{
+  "$id": "page.schema.json",
+  "type": "object",
+  "properties": {
+    "scheme": {
+      "type": "string",
+      "enum": [
+        "light",
+        "dark",
+        "auto"
+      ]
+    },
+    "theme": {
+      "type": "string",
+      "enum": [
+        "dev-swiss",
+        "theme-paper",
+        "theme-slate",
+        "theme-contrast"
+      ]
+    },
+    "toc": {
+      "type": "object",
+      "properties": {
+        "mode": {
+          "type": "string",
+          "enum": [
+            "hover",
+            "fixed"
+          ]
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

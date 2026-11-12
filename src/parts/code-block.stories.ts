@@ -254,3 +254,16 @@ export const Wrap: Story = {
       '[{"text":"import { mount } from \\"mdmark\\";"},{"text":"const url = \\"https://cdn.jsdelivr.net/gh/shuhei1101/mdmark@v0.10.0/dist/index.js\\"; // バージョンを固定した URL から配布物を読み込み、描く先の要素に文書を描く"},{"text":"mount(document.querySelector(\\"#doc\\"), markdown);"}]',
   },
 };
+
+export const LineStart: Story = {
+  name: "LineStart",
+  parameters: { server: { id: "code-block" } },
+  args: {
+    language: "ts",
+    title: "src/app.ts の抜粋",
+    lineNumbers: true,
+    lineStart: 10,
+    lines:
+      '[{"text":"import { mount } from \\"mdmark\\";"},{"text":"const doc = await fetch(\\"/README.md\\");","kind":"highlight"},{"text":"mount(document.querySelector(\\"#doc\\"), await doc.text());","kind":"highlight"}]',
+  },
+};

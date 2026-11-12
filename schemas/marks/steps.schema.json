@@ -1,0 +1,10 @@
+{
+  "$id": "steps.schema.json",
+  "type": "object",
+  "properties": {
+    "collapse": {
+      "$ref": "common.schema.json#/$defs/collapse"
+    }
+  },
+  "additionalProperties": false
+}

@@ -1,0 +1,51 @@
+{
+  "$id": "code.schema.json",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string"
+    },
+    "lines": {
+      "type": "object",
+      "properties": {
+        "start": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "additionalProperties": false
+    },
+    "highlight": {
+      "type": "array",
+      "items": {
+        "anyOf": [
+          {
+            "type": "integer",
+            "minimum": 1
+          },
+          {
+            "$ref": "common.schema.json#/$defs/line_range"
+          }
+        ]
+      }
+    },
+    "fold": {
+      "type": "array",
+      "items": {
+        "anyOf": [
+          {
+            "type": "integer",
+            "minimum": 1
+          },
+          {
+            "$ref": "common.schema.json#/$defs/line_range"
+          }
+        ]
+      }
+    },
+    "wrap": {
+      "type": "boolean"
+    }
+  },
+  "additionalProperties": false
+}

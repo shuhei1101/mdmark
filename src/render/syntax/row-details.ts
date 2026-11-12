@@ -92,7 +92,7 @@ export function attachRowDetails(state: StateCore): void {
       }
       const closeIndex = findClose(tokens, position, "row-detail");
       const end = closeIndex < 0 ? tokens.length : closeIndex;
-      const row = Number(mark.args.args[0]);
+      const row = Number(mark.options.at);
       const target = Number.isInteger(row) ? table.rows[row - 1] : undefined;
       removed.add(position);
       if (closeIndex >= 0) {
@@ -110,7 +110,7 @@ export function attachRowDetails(state: StateCore): void {
             state,
             {
               mark: mark.raw,
-              message: `の ${mark.args.args[0] ?? ""} 行目がありません。表は ${table.rows.length} 行です。行の位置を 1〜${table.rows.length} で記載してください。詳細は表の後の本文として描いています。`,
+              message: `の at の ${String(mark.options.at ?? "")} 行目がありません。表は ${table.rows.length} 行です。行の位置を 1〜${table.rows.length} で記載してください。詳細は表の後の本文として描いています。`,
             },
             tokens[position],
           ),

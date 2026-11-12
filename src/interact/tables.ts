@@ -210,7 +210,12 @@ function initialPinned(options: {
   const rowHeadCount = [...(originalRows[0]?.cells ?? [])].findIndex(
     (cell) => !(cell.tagName === "TH" && cell.scope === "row"),
   );
-  return initialPinnedColumns({ pin, rowHeadCount, mode });
+  return initialPinnedColumns({
+    pin,
+    rowHeadCount,
+    mode,
+    unpin: readColumnList(wrapper.dataset.unpin),
+  });
 }
 
 /** 表 1 つに、並べ替え・ピン止め・絞り込みを付け、削除する関数を返却する */

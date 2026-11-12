@@ -1,11 +1,11 @@
 import type { StateCore, Token } from "markdown-it";
 import { foldLinesOf, measureIndents } from "../../code-fold-logic.ts";
-import type { MdmarkMarkArgs, WarningItem } from "../../extensions.ts";
+import type { WarningItem } from "../../extensions.ts";
 import { type CodeLine, renderCodeBlock } from "../../parts/code-block.ts";
-import { titleTailOf } from "./collapse.ts";
+import type { MarkOptions } from "../mark-options.ts";
 import { MAP_SOURCE_META } from "./map.ts";
 import { featureOn, markOf, ownBlock } from "./tokens.ts";
-import { type SkippedArg, skippedArgBlocks, warningBlock } from "./warnings.ts";
+import { warningBlock } from "./warnings.ts";
 
 /** コードの行のマーカーの名前から、行の種類を参照する */
 const LINE_MARK_KINDS: Readonly<Record<string, NonNullable<CodeLine["kind"]>>> =
@@ -37,145 +37,96 @@ export const LINE_COMMENT_HEADS: readonly string[] = [
 /** 前の文字を問わずに削除する頭。`--`・`#`・`;` は `i--` や `foo();` の一部と取り違えるため、行頭か空白の後ろだけで削除する */
 const ANYWHERE_COMMENT_HEADS: readonly string[] = ["<!--", "//", "/*"];
 
-/** コードブロックのマーカーに記載できる指定の並び（警告に記載する） */
-const CODE_SPEC_LIST = "`title=`・`lines`・`highlight=`・`fold=`・`wrap`";
-
 /** 使用できるコードの行のマーカーの並び（警告に記載する） */
 const LINE_MARK_LIST =
   "`[!code ++]`・`[!code --]`・`[!code highlight]`・`[!code focus]`・`[!code error]`・`[!code warning]`";
 
-/** 値を持つ `wrap=` の警告の項目の本文 */
-export const WRAP_VALUE_MESSAGE =
-  "wrap は値を持ちません。wrap=… ではなく wrap と記載してください。折り返さずに描いています";
+/** 行の指定の要素（行の番号か行の範囲） */
+type LineEntry = number | { from?: unknown; to?: unknown };
 
-/** コードブロックのマーカーに記載できるキー */
-const CODE_KEYS = ["title", "highlight", "fold"];
-
-/** コードブロックのマーカーに記載できる、キーの無い指定 */
-const CODE_FLAGS = ["lines", "wrap"];
-
-/** `highlight=` の 1 つ分（`2` か `4-6`）を行の範囲に読み込む。読み込めなければ `undefined` */
-function readRange(part: string): [number, number] | undefined {
-  const single = /^(\d+)$/.exec(part);
-  if (single?.[1] !== undefined) {
-    const line = Number(single[1]);
-    return [line, line];
-  }
-  const range = /^(\d+)-(\d+)$/.exec(part);
-  if (range?.[1] === undefined || range[2] === undefined) {
-    return undefined;
-  }
-  const [from, to] = [Number(range[1]), Number(range[2])];
-  return from <= to ? [from, to] : undefined;
-}
-
-/** `highlight=`・`fold=` の値（`2,4-6`）を行の番号に読み込む。読み込めない番号と、コードブロックの行の数を超える番号は、当てずに警告にする */
+/** `highlight`・`fold` の要素を、`lineStart` から数えた行の番号として位置（1 から）に読み込む。コードブロックに無い番号と、`from` より小さい `to` は当てずに警告にする */
 function readLineNumbers(options: {
   key: string;
-  value: string | undefined;
+  entries: unknown;
+  lineStart: number;
   lineCount: number;
   warnings: WarningItem[];
 }): Set<number> {
-  const { key, value, lineCount, warnings } = options;
+  const { key, entries, lineStart, lineCount, warnings } = options;
   const numbers = new Set<number>();
-  if (value === undefined) {
+  if (!Array.isArray(entries)) {
     return numbers;
   }
-  for (const part of value.split(",")) {
-    const range = readRange(part);
-    if (range === undefined) {
+  const last = lineStart + lineCount - 1;
+  entries.forEach((entry: LineEntry, index) => {
+    const label = `${key}[${index}]`;
+    const from = typeof entry === "number" ? entry : Number(entry.from);
+    const to =
+      typeof entry === "number"
+        ? entry
+        : entry.to === undefined
+          ? from
+          : Number(entry.to);
+    if (to < from) {
       warnings.push({
-        label: part || `${key}=`,
-        message:
-          "読み込めない行の指定です。`2`・`4-6` のように、行の番号と範囲をコンマで並べてください。",
+        label: `${label}.to`,
+        message: `to が from より小さい範囲です（from ${from}、to ${to}）。{"from": 2, "to": 4} のように記載してください。`,
       });
-      continue;
+      return;
     }
-    const [from, to] = range;
-    if (from < 1 || to > lineCount) {
+    if (from < lineStart || to > last) {
       warnings.push({
-        label: part,
-        message: `コードブロックに無い行の番号です。コードブロックは ${lineCount} 行です。行の番号を 1〜${lineCount} で記載してください。`,
+        label,
+        message: `コードブロックに無い行の番号 ${from === to ? from : `${from}〜${to}`} です。コードブロックは ${lineStart}〜${last} 行目です。`,
       });
+      return;
     }
-    for (
-      let line = Math.max(from, 1);
-      line <= Math.min(to, lineCount);
-      line++
-    ) {
-      numbers.add(line);
+    for (let line = from; line <= to; line++) {
+      numbers.add(line - lineStart + 1);
     }
-  }
+  });
   return numbers;
 }
 
-/** `code` のマーカーの引数を、タイトル・行番号の有無・強調する行・最初から畳む行に読み込む。`title=` の値の空白の後ろの単語、読み込めない `highlight=`・`fold=` の番号、コードブロックの行の数を超える行の番号は、当てずに警告にする。それ以外の知らないキー・指定はスキップした引数にする。`text` はマーカーの引数の文字 */
+/** `code` のマーカーの設定を、タイトル・行番号の有無と最初の行の番号・強調する行・最初から畳む行・折り返すかに読み込む */
 export function readCodeSpec(options: {
-  args: MdmarkMarkArgs;
-  text: string;
+  options: MarkOptions;
   lineCount: number;
 }): {
   title: string;
   lineNumbers: boolean;
+  lineStart: number;
   wrap: boolean;
   highlights: Set<number>;
   folds: Set<number>;
   warnings: WarningItem[];
-  skipped: SkippedArg[];
 } {
-  const { args, lineCount } = options;
+  const { options: spec, lineCount } = options;
   const warnings: WarningItem[] = [];
-  const skipped: SkippedArg[] = [];
-  for (const [key, value] of Object.entries(args.keys)) {
-    if (key === "wrap") {
-      warnings.push({ label: `wrap=${value}`, message: WRAP_VALUE_MESSAGE });
-    } else if (!CODE_KEYS.includes(key)) {
-      skipped.push({ arg: `${key}=`, usable: CODE_SPEC_LIST });
-    }
-  }
-  const tail =
-    args.keys.title === undefined ? undefined : titleTailOf(options.text);
-  for (const flag of args.args) {
-    if (CODE_FLAGS.includes(flag)) {
-      continue;
-    }
-    if (flag === tail) {
-      warnings.push({
-        label: flag,
-        message: `使用できない指定です。使用できる指定は ${CODE_SPEC_LIST} です。マーカーの引数は空白で区切るため、タイトルに空白は記載できません。`,
-      });
-    } else {
-      skipped.push({ arg: flag, usable: CODE_SPEC_LIST });
-    }
-  }
-  const title = args.keys.title ?? "";
-  if (args.keys.title === "") {
-    warnings.push({
-      label: "title=",
-      message:
-        "タイトルがありません。`title=app.ts` のように記載してください。",
-    });
-  }
+  const lines = spec.lines as { start?: unknown } | undefined;
+  const lineStart = typeof lines?.start === "number" ? lines.start : 1;
   const highlights = readLineNumbers({
     key: "highlight",
-    value: args.keys.highlight,
+    entries: spec.highlight,
+    lineStart,
     lineCount,
     warnings,
   });
   const folds = readLineNumbers({
     key: "fold",
-    value: args.keys.fold,
+    entries: spec.fold,
+    lineStart,
     lineCount,
     warnings,
   });
   return {
-    title,
-    lineNumbers: args.args.includes("lines"),
-    wrap: args.args.includes("wrap"),
+    title: typeof spec.title === "string" ? spec.title : "",
+    lineNumbers: lines !== undefined,
+    lineStart,
+    wrap: spec.wrap === true,
     highlights,
     folds,
     warnings,
-    skipped,
   };
 }
 
@@ -407,11 +358,7 @@ export function buildCodeBlocks(state: StateCore): void {
       ? readLineMarks(token.content)
       : { lines: plainLines(token.content), warnings: [] };
     const options = code
-      ? readCodeSpec({
-          args: code.args,
-          text: code.rest ?? "",
-          lineCount: read.length,
-        })
+      ? readCodeSpec({ options: code.options, lineCount: read.length })
       : undefined;
     const marked = read.map(
       (line, position): CodeLine =>
@@ -428,15 +375,6 @@ export function buildCodeBlocks(state: StateCore): void {
       message: "の読み込めない指定を当てずに描いています。",
       items: [...(options?.warnings ?? []), ...foldWarnings],
     });
-    if (code && options) {
-      out.push(
-        ...skippedArgBlocks(
-          state,
-          { mark: code.raw, skipped: options.skipped },
-          tokens[index - 1],
-        ),
-      );
-    }
     // 知らないマーカーは 1 つにつき 1 つの警告にする
     for (const warning of lineWarnings) {
       out.push(warningBlock(state, { message: warning.message }));
@@ -459,6 +397,7 @@ export function buildCodeBlocks(state: StateCore): void {
             fileName,
             title,
             lineNumbers,
+            lineStart: options?.lineStart ?? 1,
             wrap: options?.wrap ?? false,
             lines,
             syntax,

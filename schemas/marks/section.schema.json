@@ -1,0 +1,10 @@
+{
+  "$id": "section.schema.json",
+  "type": "object",
+  "properties": {
+    "open": {
+      "type": "boolean"
+    }
+  },
+  "additionalProperties": false
+}

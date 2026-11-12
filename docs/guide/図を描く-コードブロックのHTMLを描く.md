@@ -55,7 +55,7 @@ features:
 ```
 
 `mdmark.config.yaml` の `features` に `html-scripts: true` を記載する。
-1 つの文書だけでオンにするときは、文書に `<!-- features: +html-scripts -->` を記載する。
+1 つの文書だけでオンにするときは、文書に `<!-- features: {"html-scripts": true} -->` を記載する。
 範囲ごとには許せない。オンにした文書の全ての範囲の `css`・`ts`・`js` が該当する。
 
 #### 範囲に `css` と `ts` のコードブロックを配置する
@@ -172,7 +172,7 @@ custom element の属性は読み込まない。
 理解に必須のことは `data-hint` に入れず、要素の文字だけで読み込めるようにする。
 
 部品の定義のノードの `hint` と `io`、線の `tip` も同じ外観のツールチップで出る。
-ツールチップを出したくないときは、設定の `features.hints` か文書の `<!-- features: -hints -->` でまとめて削除する。
+ツールチップを出したくないときは、設定の `features.hints` か文書の `<!-- features: {"hints": false} -->` でまとめて削除する。
 手順は [機能をオン・オフする](./カスタマイズ-機能をオン・オフする.md)。
 
 ### 用語を出す

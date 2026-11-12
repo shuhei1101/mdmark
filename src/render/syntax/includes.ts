@@ -62,6 +62,20 @@ export const resolveIncludePath = (
   return { key, target: { kind: "heading", id: fragment } };
 };
 
+/** 取り込みのマーカーの設定（`path`・`heading`・`lines`）を、`resolveIncludePath` に指定する取り込み先の文字（`パス`・`パス#見出しの ID`・`パス#L開始-L終了`）にする */
+export const writtenOf = (options: Record<string, unknown>): string => {
+  const path = typeof options.path === "string" ? options.path : "";
+  if (typeof options.heading === "string") {
+    return `${path}#${options.heading}`;
+  }
+  const lines = options.lines as { from?: unknown; to?: unknown } | undefined;
+  if (typeof lines?.from === "number") {
+    const to = typeof lines.to === "number" ? lines.to : lines.from;
+    return `${path}#L${lines.from}-L${to}`;
+  }
+  return path;
+};
+
 /** 見出しの文字の ID が `id` と一致する最初の見出しから、次の同じか上の階層の見出しの前までを返却する。無ければ `null` */
 export const selectHeadingSection = (
   tokens: Token[],
@@ -101,7 +115,7 @@ export const selectLines = (
 /** 取り込む Markdown を、同じパーサの block と inline のルールでトークンにし、マーカーを取得する（`features` のマーカーは使用しない） */
 const tokenize = (state: StateCore, text: string): Token[] => {
   const env = envOf(state);
-  const subEnv: RenderEnv = { ...env, featureArgs: [] };
+  const subEnv: RenderEnv = { ...env, featureOptions: [], markNotes: [] };
   const tokens: Token[] = [];
   // 取り込む Markdown の先頭のフロントマターは空白にして差し込まない
   const { body } = splitFrontmatter(text);
@@ -172,7 +186,8 @@ const expandMarker = (options: {
 }): Token[] => {
   const { state, marker, fromPath, chain } = options;
   const mark = markOf(marker);
-  const written = (mark?.rest ?? "").trim();
+  const spec = mark?.options ?? {};
+  const written = writtenOf(spec);
   const { key, target } = resolveIncludePath(fromPath, written);
   /** 取り込み先が無い警告（循環を除く）は `includeTarget` を付け、記法の点検が除けるようにする */
   const warn = (message: string, includeTarget = true): Token[] => {
@@ -185,6 +200,18 @@ const expandMarker = (options: {
     block.map = marker.map ? [...marker.map] : null;
     return [block];
   };
+  if (spec.lines !== undefined && spec.heading !== undefined) {
+    return warn(
+      "の `heading` と `lines` は同時に記載できません。どちらか 1 つにしてください。この場所では取り込んでいません。",
+      false,
+    );
+  }
+  if (spec.lines !== undefined && isMarkdownPath(key)) {
+    return warn(
+      "の `lines` は Markdown 以外のファイルにだけ記載できます。Markdown のファイルは `heading` で見出しを指してください。この場所では取り込んでいません。",
+      false,
+    );
+  }
   if (chain.includes(key)) {
     return warn(
       problemMessage({ kind: "circular", key, chain: [...chain, key] }),

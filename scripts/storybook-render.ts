@@ -1510,6 +1510,9 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
       language,
       title: String(args.title ?? ""),
       lineNumbers: args.lineNumbers === true,
+      ...(typeof args.lineStart === "number"
+        ? { lineStart: args.lineStart }
+        : {}),
       wrap: args.wrap === true,
       lines,
       ...(typeof args.fileName === "string" ? { fileName: args.fileName } : {}),
@@ -1977,10 +1980,10 @@ export function renderPart(options: {
     return `<div class="mdmark">${renderNotice({ name, figure, source })}</div>`;
   }
   if (component === "embed") {
-    // 配列はカンマで区切った 1 つの文字列で届く
-    const joined = params.get("args") ?? "";
-    const args = joined === "" ? [] : joined.split(",");
-    return `<div class="mdmark">${renderEmbed({ name, args })}</div>`;
+    // 引数の JSON のオブジェクトは JSON の文字列で届く
+    const text = params.get("options");
+    const options = text ? (JSON.parse(text) as Record<string, unknown>) : {};
+    return `<div class="mdmark">${renderEmbed({ name, options })}</div>`;
   }
   if (component === "mermaid-diagram") {
     // 見本の SVG はファイルの名前で届く

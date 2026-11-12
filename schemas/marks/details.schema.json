@@ -1,0 +1,13 @@
+{
+  "$id": "details.schema.json",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string"
+    },
+    "open": {
+      "type": "boolean"
+    }
+  },
+  "additionalProperties": false
+}

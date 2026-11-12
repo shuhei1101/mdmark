@@ -178,7 +178,7 @@ export function numberFigures(state: StateCore): void {
       }
       continue;
     }
-    const id = mark.args.args[0] ?? "";
+    const id = typeof mark.options.id === "string" ? mark.options.id : "";
     counts[target.kind] += 1;
     const number = counts[target.kind];
     const duplicated = figures.has(id);

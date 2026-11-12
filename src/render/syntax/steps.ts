@@ -1,62 +1,18 @@
 import type { StateCore, Token } from "markdown-it";
-import type { WarningItem } from "../../extensions.ts";
 import { renderCollapsible } from "../../parts/collapsible.ts";
 import { SLOT_MARKER } from "../../parts/own.ts";
 import type { Mark } from "../marks.ts";
-import { type CollapseMode, readCollapse, titleTailItem } from "./collapse.ts";
+import { type CollapseMode, readCollapse } from "./collapse.ts";
 import { envOf, featureOn, findClose, markOf, ownBlock } from "./tokens.ts";
-import {
-  type SkippedArg,
-  type SyntaxWarning,
-  skippedArgBlocks,
-  unclosedWarning,
-  warningBlock,
-} from "./warnings.ts";
+import { unclosedWarning, warningBlock } from "./warnings.ts";
 
-/** ステップのマーカーで読み込める指定を、スキップした引数の案内に並べる文 */
-const USABLE_ARGS = "`closed`・`open`・`title=見出し`";
-
-/** ステップのマーカーの引数から折り畳みの指定を読み込み、読み込めない指定を 1 つの記載の警告にまとめ、知らないキーと指定をスキップした引数にする */
+/** ステップのマーカーの設定の `collapse` を読み込む */
 export function readStepsOptions(mark: Mark): {
   collapse: CollapseMode;
   title?: string | undefined;
-  warning?: SyntaxWarning;
-  skipped: SkippedArg[];
 } {
-  const {
-    collapse,
-    title,
-    items: collapseItems,
-    titleTail,
-    rest,
-  } = readCollapse(mark.args, mark.rest);
-  const items: WarningItem[] = [
-    ...collapseItems,
-    ...rest.args.filter((arg) => arg === titleTail).map(titleTailItem),
-  ];
-  const skipped: SkippedArg[] = [
-    ...Object.keys(rest.keys).map((key) => ({
-      arg: `${key}=`,
-      usable: USABLE_ARGS,
-    })),
-    // `キー=値` の構造でない指定
-    ...rest.args
-      .filter((arg) => arg !== titleTail)
-      .map((arg) => ({ arg, usable: USABLE_ARGS })),
-  ];
-  if (items.length === 0) {
-    return { collapse, title, skipped };
-  }
-  return {
-    collapse,
-    title,
-    skipped,
-    warning: {
-      mark: mark.raw,
-      message: "の読み込めない指定を当てずに描いています。",
-      items,
-    },
-  };
+  const { collapse, title } = readCollapse(mark.options);
+  return { collapse, ...(title === undefined ? {} : { title }) };
 }
 
 /** 入れ子を除く、手順の `ol` の項目の数を数える */
@@ -92,11 +48,7 @@ export function buildSteps(state: StateCore): void {
     if (mark?.name !== "steps" || mark.closing) {
       continue;
     }
-    const { collapse, title, warning, skipped } = readStepsOptions(mark);
-    if (warning) {
-      out.push(warningBlock(state, warning, token));
-    }
-    out.push(...skippedArgBlocks(state, { mark: mark.raw, skipped }, token));
+    const { collapse, title } = readStepsOptions(mark);
     const closeIndex = findClose(tokens, index, "steps");
     const end = closeIndex < 0 ? tokens.length : closeIndex;
     if (closeIndex < 0) {
