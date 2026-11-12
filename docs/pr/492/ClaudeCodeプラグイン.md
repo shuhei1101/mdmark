@@ -78,9 +78,13 @@ diff の見どころは、`plugin.json` の `version` の有無だけを変え�
 | --- | --- | --- | --- | --- |
 | [tests/unit/scripts/build-plugin.test.ts](https://github.com/shuhei1101/mdmark/blob/62eb7a86/tests/unit/scripts/build-plugin.test.ts) | `writePluginManifest` のテスト | 削除 | - | 関数の廃止に合わせて削除 |
 | 単体テストの全件 | 全実行 | 実行のみ | ✅ | 2067 テスト中 2064 pass。時間切れの 3 件（`test_take_backup_when_outside`・`test_run_check`・`test_prepare_embeds`）は load average 40 の負荷によるもので、時間切れの上限を延ばした個別実行で 62 テスト pass<br>`テスト結果/20261113040426_66ac56cd_単体テスト.log` |
+| [tests/unit/scripts/build.test.ts](https://github.com/shuhei1101/mdmark/blob/a687178e/tests/unit/scripts/build.test.ts) | `test_main_when_guide_index_invalid` | 変更 | ✅ | 準備の `plugin.json` から `version` を削除。`build-plugin.test.ts` と合わせて 38 テスト pass<br>`テスト結果/20261113050419_a687178e_単体テスト.log` |
 
-lint は違反なし（`テスト結果/20261113040426_66ac56cd_lint.log`。警告は base にもある `plugin/bin/setup.js` のサイズの 1 件）。
+lint は違反なし（`テスト結果/20261113040426_66ac56cd_lint.log`・`テスト結果/20261113050419_a687178e_lint.log`。警告は base にもある `plugin/bin/setup.js` のサイズの 1 件）。
 
 ### 結合
 
-なし（結合テスト作成で記入する）
+| ファイル | メソッド | 変更種別 | 結果 | 補足 |
+| --- | --- | --- | --- | --- |
+| [tests/integration/lib/build.test.ts](https://github.com/shuhei1101/mdmark/blob/a687178e/tests/integration/lib/build.test.ts) | `test_normal`・`test_normal_when_version_given` | 変更 | ✅ | `plugin.json` が `version` を持たず、ビルドの前と同じ中身であることを確認する。ファイルの 8 テスト pass。負荷による時間切れの 2 回の実行もログに残す<br>`テスト結果/20261113050419_a687178e_結合テスト.log` |
+| `tests/integration/ClaudeCodeプラグイン/` | 全実行 | 実行のみ | ✅ | 14 ファイル pass（同じログ） |
