@@ -1,0 +1,1 @@
+# モジュール構成『ライブラリ本体 / CLI』のフォルダ構成に markdown-check.ts・issues.ts を追加する
