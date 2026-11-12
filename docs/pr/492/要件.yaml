@@ -63,19 +63,27 @@ docs:
   - page: docs/guide/ClaudeCodeで使用する-プラグインを入れる.md
     new: false
     change: プラグインが develop の最新を読み、更新で develop へ入った変更が届くことと、バージョンを固定するときのタグの書き方を合わせる
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-12T15:24:43.621316+00:00'
   - page: docs/guide/VSCodeで確認する-プレビューを開く.md
     new: false
     change: 拡張機能のタグを develop に打つことに合わせて説明を直す（記述がブランチに触れる場合）
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-12T15:24:43.621316+00:00'
   - page: docs/guide/記載する-索引と用語集を記載する.md
     new: false
     change: knowledge の規約への `blob/master` のリンクを develop に修正する（D-296）
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-12T15:24:43.621316+00:00'
   - page: docs/guide/変更履歴.md
     new: false
-    change: 次のバージョンに、プラグインが develop の commit で届き jsDelivr と VS Code 拡張機能が develop に打ったタグで配られる変更を載せる
-    status: todo
+    change: 行を足す時期の記述を「バージョンのタグを打つたびに」にする（この PR の行は、次のタグを打つときに管理作業で足す）
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-12T15:24:43.621316+00:00'
 scope_out:
   - item: GitHub の既定のブランチと GitHub Pages の出すブランチを develop にする
     reason: GitHub の設定の操作で、2026-11-09 に変更済み（A-120 の「GitHub の設定の変更」）
