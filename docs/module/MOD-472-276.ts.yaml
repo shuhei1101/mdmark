@@ -34,8 +34,8 @@ constants:
   - name: TREE_LINE_PATTERN
     title: 罫線のフォルダ構成の行
     container: src/render/syntax/code-blocks.ts
-    summary: 罫線でフォルダ構成を記載した行に当たる正規表現。行頭の空白と縦線（`│`・`|`）の後に `├── `・`└── `・`|-- `・`` `-- `` が続く行
-    value: '/^[\t │|]*(?:├── |└── |\|-- |`-- )/u'
+    summary: 罫線でフォルダ構成を記載した行に当たる正規表現。行頭の空白（タブ・空白・`tree` コマンドが縦線の後ろに出す NBSP の U+00A0）と縦線（`│`・`|`）の後に `├── `・`└── `・`|-- `・`` `-- `` が続く行。`tree` 2.1.1 の出力を `od -c` で測り、縦線の後ろが NBSP 2 つと空白 1 つであることを確かめた
+    value: '/^[\t \u00A0│|]*(?:├── |└── |\|-- |`-- )/u'
     refs:
       - IF-472-34#constraints[罫線のフォルダ構成の記載の警告]
     status: planned
@@ -121,9 +121,9 @@ functions:
       - name: test_count_tree_lines
         case: 正常
         summary: 今の罫線と ASCII の罫線と縦線の後ろの罫線を数える
-        condition: '`mdmark/`・`├── src/`・`│   └── index.ts`・`└── README.md`・`|-- a`・`` `-- b ``・`|   |-- c`'
+        condition: '`mdmark/`・`├── src/`・`│   └── index.ts`・`└── README.md`・`|-- a`・`` `-- b ``・`|   |-- c`・`tree` コマンドの出力の `│` の後ろが NBSP 2 つと空白 1 つの `│\u00A0\u00A0 └── b`'
         mock: なし
-        expected: '`6`'
+        expected: '`7`'
       - name: test_count_tree_lines_when_not_tree
         case: 正常
         summary: 行の途中の罫線と、罫線の後ろに空白の無い行は数えない

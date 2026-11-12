@@ -61,8 +61,14 @@ functions:
     process: |-
       1. `parseSequence`・`parseMapData` で読み、`readMapState` で状態を読んで `sequenceRows` で表示する行を決め、`renderMapSequence` で描く
       2. 表示する行のメッセージを `attachBand`（モード `playback`）の手順にする。開閉・中だけを描くで表示するメッセージが変わったら `update` で手順を差し替え、再生していれば `onStep(undefined)` を呼ぶ。`follow` を `attachBand` の `follow` にし、`step` には手順のメッセージの番号を指定する
-      3. 参加者の箱の名前の文字の外を押すと選び、4px 動かすと並べ替えのドラッグにして、移す先の列に縦の線（`.map-insert-line`）を出し、離した位置に最も近い列へ移す。ドラッグの直後の押した扱いは選ばない
+      3. 参加者の箱の名前の文字の外を押すと選び、4px 動かすと並べ替えのドラッグにして、移す先の列に縦の線（`.map-insert-line`）を出し、離した位置に最も近い列へ移す。ドラッグの直後の押した扱いは選ばない。`pointercancel` では並び順を変えず、縦の線と箱の移動を戻して、`window` の `pointermove`・`pointerup`・`pointercancel` の受け取りを削除する
     unit_tests:
+      - name: test_attach_map_sequence_when_reorder_cancelled
+        case: 正常
+        summary: 並べ替えのドラッグを pointercancel で止めたとき、並び順を変えない
+        condition: 1 人目の参加者の箱に `pointerType` が `touch` の `pointerdown` と、右へ 3 列分の `pointermove` を発火し、`pointercancel` を発火した後に `pointerup` を発火する
+        mock: '`writeMapState`'
+        expected: '`writeMapState` の `order` が呼ばれないか記載の順のままで、`.map-insert-line` が無く、箱の `translate` が空'
       - name: test_attach_map_sequence_when_reorder
         case: 正常
         summary: Alt + →

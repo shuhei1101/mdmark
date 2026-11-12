@@ -32,7 +32,7 @@ functions:
     container: src/map/drag.ts
     usecase: Mermaidと補足で図を描く
     role: 処理
-    summary: 押した場所（ノード・グループのタイトルの行・線の区間）を判定し、4px 動くまでは押した扱い、動いたら全てのノードとグループの位置を固定してから動かす
+    summary: 押した場所（ノード・グループのタイトルの行・線の区間）を判定し、4px 動くまでは押した扱い、動いたら全てのノードとグループの位置を固定してから動かす。`pointercancel` で動かした分を戻して終える
     scope: public
     args:
       - name: options
@@ -47,7 +47,14 @@ functions:
       2. 4px 動くまでは待ち、離したら `onClick` を呼ぶ
       3. 動いたら全てのノードとグループの今の位置を `positions` に入れ、ノード・グループは動いた分を足し、線の区間は `wireShifts` に足す。ほかとの間が `minGap` より狭くなる位置と、グループの左端・上端より外へは進めない
       4. 線の端の区間がノードの辺の端を越えたら、越えた側の辺へつなぎ替える
+      5. `pointerup` か `pointercancel` で `window` の `pointermove`・`pointerup`・`pointercancel` の受け取りを削除する。`pointercancel`（指のドラッグをブラウザが文書のスクロールに切り替えたとき）では、動かしていれば `onMove` を押した時点の状態で呼んで動かした分を戻し、`onClick` は呼ばない
     unit_tests:
+      - name: test_start_drag_when_cancelled
+        case: 正常
+        summary: pointercancel で動かした分を戻し、その後の移動で動かさない
+        condition: ノードに `pointerType` が `touch` の `pointerdown` と、下へ 40px の `pointermove` を発火し、`pointercancel` を発火した後に、さらに下へ 40px の `pointermove` を発火する
+        mock: '`onMove`・`onClick`'
+        expected: '`pointercancel` の後の `onMove` の最後の呼び出しの状態でノードの `y` が押した時点と同じで、続く `pointermove` で `onMove` が呼ばれず、`onClick` も呼ばれない'
       - name: test_start_drag_when_click
         case: 正常
         summary: 押しただけ
