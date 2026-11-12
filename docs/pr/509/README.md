@@ -1,0 +1,1 @@
+# 公開ドキュメントの Pages を docs/_theme/ のレイアウトで描き、AI Monitor の develop の版へ取り込む
