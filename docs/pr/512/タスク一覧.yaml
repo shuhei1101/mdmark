@@ -1,0 +1,66 @@
+tasks:
+  - process: 初期構築
+    status: skipped
+    reason: 既存リポジトリのため対象外
+    updated_by: planner
+    updated_at: '2026-11-12T20:49:21.445655+00:00'
+  - process: リバースエンジニアリング
+    status: skipped
+    reason: 対象の設計書は揃っている
+    updated_by: planner
+    updated_at: '2026-11-12T20:49:21.445655+00:00'
+  - process: 方針決め
+    status: skipped
+    reason: 方針決めを依頼する Issue ではない
+    updated_by: planner
+    updated_at: '2026-11-12T20:49:21.445655+00:00'
+  - process: PoC 検証
+    status: todo
+    note: ovsx が GitHub Actions の OIDC トークン（trusted publisher）で公開できるか、拡張機能の初回の公開に使えるか
+  - process: 複合ユースケース設計
+    status: skipped
+    reason: 拡張機能の配布物を作る単一ユースケースに閉じ、複合ユースケースから参照されていない
+    updated_by: planner
+    updated_at: '2026-11-12T20:49:21.445655+00:00'
+  - process: デザインスタイル選定
+    status: skipped
+    reason: 画面に関わらない（ワークフローの変更）
+    updated_by: planner
+    updated_at: '2026-11-12T20:49:21.445655+00:00'
+  - process: 画面一覧・画面遷移
+    status: skipped
+    reason: 画面に関わらない（ワークフローの変更）
+    updated_by: planner
+    updated_at: '2026-11-12T20:49:21.445655+00:00'
+  - process: 単一ユースケース設計
+    status: todo
+  - process: モック作成
+    status: skipped
+    reason: 画面に関わらない（ワークフローの変更）
+    updated_by: planner
+    updated_at: '2026-11-12T20:49:21.445655+00:00'
+  - process: インターフェース定義設計
+    status: todo
+  - process: 部品設計
+    status: skipped
+    reason: 画面の部品に関わらない
+    updated_by: planner
+    updated_at: '2026-11-12T20:49:21.445655+00:00'
+  - process: 画面設計
+    status: skipped
+    reason: 画面に関わらない
+    updated_by: planner
+    updated_at: '2026-11-12T20:49:21.445655+00:00'
+  - process: モジュール構成設計
+    status: todo
+  - process: ドキュメント修正
+    status: todo
+  - process: 単体テスト作成
+    status: skipped
+    reason: ワークフローの YAML だけを変え、単体テストの対象になるコードを変えない。ワークフローの構成は結合テストで確かめる
+    updated_by: planner
+    updated_at: '2026-11-12T20:49:21.445655+00:00'
+  - process: 実装
+    status: todo
+  - process: 結合テスト作成
+    status: todo
