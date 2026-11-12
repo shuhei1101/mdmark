@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <!-- viewport: スマホ幅で等倍に表示する -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- color-scheme: 明るい配色とダークの両方を持つことをブラウザへ伝える -->
+  <meta name="color-scheme" content="light dark">
+  <title>tree-lines-warning | mdmark の部品のモック</title>
+  <!-- 本文の規則とモック専用の操作列（#16 で共有するアセット） -->
+  <link rel="stylesheet" href="../../refs/16/assets/sample.css">
+  <!-- 採用スタイル本体の変数の値 -->
+  <link rel="stylesheet" href="../../assets/style.css">
+  <!-- 拡張記法の規則とカタログの並べ方（#19 で共有するアセット） -->
+  <link rel="stylesheet" href="../../refs/19/assets/syntax.css">
+  <link rel="stylesheet" href="../../refs/19/assets/catalog.css">
+  <!-- コードブロックの規則（#65 で共有するアセット） -->
+  <link rel="stylesheet" href="../../refs/65/assets/code-block.css">
+  <!-- 配色の切り替え -->
+  <script src="../../refs/16/assets/sample.js" defer></script>
+</head>
+<body>
+  <!-- モック専用の操作列: 配色の切り替え -->
+  <div class="mock-bar">
+    <div class="mock-bar-group" role="group" aria-label="配色">
+      <button class="mock-bar-item" type="button" data-scheme-set="light" aria-pressed="false">明るい配色</button>
+      <button class="mock-bar-item" type="button" data-scheme-set="dark" aria-pressed="false">ダーク</button>
+    </div>
+  </div>
+
+  <main class="host">
+    <div class="catalog">
+      <h1 class="catalog-title">罫線のフォルダ構成の言語が tree でないコードブロックの記載の警告</h1>
+
+      <!-- 言語 text: 罫線の行が 2 行以上。コードブロックの上に記載の警告を置き、コードブロックは記載した言語のまま描く -->
+      <section aria-labelledby="state-text">
+        <h2 class="catalog-label" id="state-text">言語 text（罫線の行が 2 行以上）</h2>
+        <article class="mdmark">
+<div class="mdmark-syntax-warning">
+  <p class="mdmark-syntax-warning-title"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg>記載の警告</p>
+  <p>言語 <code>text</code> のコードブロックに、罫線のフォルダ構成があります。言語を <code>tree</code> にすると、アイコン・開閉・注釈・コピーを付けたファイルツリーで描きます。罫線のまま見せるときは、直前に <code>&lt;!-- code: {"tree_warning": false} --&gt;</code> を記載してください。コードブロックのまま描いています。</p>
+</div>
+<pre tabindex="0" aria-label="コード: text"><code class="language-text">mdmark/
+├── src/
+│   ├── index.ts
+│   └── parts/
+└── README.md</code></pre>
+        </article>
+      </section>
+
+      <!-- 言語なし・ASCII の罫線: 同じ警告。言語の部分だけ「言語の無いコードブロック」にする -->
+      <section aria-labelledby="state-none">
+        <h2 class="catalog-label" id="state-none">言語なし（ASCII の罫線の行が 2 行以上）</h2>
+        <article class="mdmark">
+<div class="mdmark-syntax-warning">
+  <p class="mdmark-syntax-warning-title"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg>記載の警告</p>
+  <p>言語の無いコードブロックに、罫線のフォルダ構成があります。言語を <code>tree</code> にすると、アイコン・開閉・注釈・コピーを付けたファイルツリーで描きます。罫線のまま見せるときは、直前に <code>&lt;!-- code: {"tree_warning": false} --&gt;</code> を記載してください。コードブロックのまま描いています。</p>
+</div>
+<pre tabindex="0" aria-label="コード"><code>src/
+|-- index.ts
+`-- parts/</code></pre>
+        </article>
+      </section>
+
+      <!-- 罫線の行が 1 行だけ: 警告を出さない -->
+      <section aria-labelledby="state-one-line">
+        <h2 class="catalog-label" id="state-one-line">罫線の行が 1 行だけ（警告を出さない）</h2>
+        <article class="mdmark">
+<pre tabindex="0" aria-label="コード: text"><code class="language-text">dist/
+└── index.js</code></pre>
+        </article>
+      </section>
+
+      <!-- 警告を止めた: 直前の code のマーカーで止めたコードブロックは、警告を出さずに描く -->
+      <section aria-labelledby="state-suppressed">
+        <h2 class="catalog-label" id="state-suppressed">警告を止めた（直前に <code>&lt;!-- code: {"tree_warning": false} --&gt;</code>）</h2>
+        <article class="mdmark">
+<pre tabindex="0" aria-label="コード: text"><code class="language-text">mdmark/
+├── src/
+│   ├── index.ts
+│   └── parts/
+└── README.md</code></pre>
+        </article>
+      </section>
+
+      <!-- 狭い幅: 警告の文は折り返し、コードブロックは横にスクロールする -->
+      <section aria-labelledby="state-narrow">
+        <h2 class="catalog-label" id="state-narrow">狭い幅</h2>
+        <article class="mdmark" style="max-width: 22.5rem">
+<div class="mdmark-syntax-warning">
+  <p class="mdmark-syntax-warning-title"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg>記載の警告</p>
+  <p>言語 <code>text</code> のコードブロックに、罫線のフォルダ構成があります。言語を <code>tree</code> にすると、アイコン・開閉・注釈・コピーを付けたファイルツリーで描きます。罫線のまま見せるときは、直前に <code>&lt;!-- code: {"tree_warning": false} --&gt;</code> を記載してください。コードブロックのまま描いています。</p>
+</div>
+<pre tabindex="0" aria-label="コード: text"><code class="language-text">mdmark/
+├── src/
+│   ├── index.ts
+│   └── parts/
+└── README.md</code></pre>
+        </article>
+      </section>
+    </div>
+  </main>
+</body>
+</html>

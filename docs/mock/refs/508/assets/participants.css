@@ -1,0 +1,142 @@
+/* map のシーケンス図の参加者の表示と非表示のモックの規則（#508） */
+
+/* 案 A: 右上のツールの「参加者の表示と非表示」と、開くポップオーバー */
+.map-participants-tool {
+  position: relative;
+  display: inline-flex;
+}
+.map-participants-tool .mdmark-diagram-tool {
+  position: relative;
+}
+/* 非表示の参加者がいるときは、ボタンを選択中の色にして右上に人数を出す */
+.map-participants-tool .mdmark-diagram-tool.is-active {
+  color: var(--mdmark-color-link);
+}
+.map-participants-count {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  box-sizing: border-box;
+  border-radius: 8px;
+  background: var(--mdmark-color-link);
+  color: var(--mdmark-color-bg-opaque);
+  font-size: 11px;
+  line-height: 16px;
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+}
+/* ポップオーバー: ボタンの下に出す。position-anchor を使えないブラウザでも、画面の中に収まる位置に出す */
+.map-participants-panel {
+  margin: 0;
+  inset: auto;
+  position-area: bottom span-left;
+  position-try-fallbacks: flip-block, flip-inline;
+  min-width: 14rem;
+  max-width: min(20rem, calc(100% - 16px));
+  padding: 8px 4px;
+  border: 1px solid var(--mdmark-color-border);
+  border-radius: calc(var(--mdmark-radius) * 2);
+  background: var(--mdmark-color-bg-opaque);
+  color: var(--mdmark-color-text);
+  box-shadow: 0 4px 16px color-mix(in srgb, var(--mdmark-color-text) 16%, transparent);
+}
+.map-participants-heading {
+  margin: 0 8px 4px;
+  font-size: 12px;
+  color: var(--mdmark-color-muted);
+}
+.map-participants-panel ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.map-participants-panel label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 32px;
+  padding: 0 8px;
+  border-radius: var(--mdmark-radius);
+  cursor: pointer;
+  overflow-wrap: anywhere;
+}
+.map-participants-panel label:hover {
+  background: var(--mdmark-color-surface);
+}
+.map-participants-panel input {
+  width: 16px;
+  height: 16px;
+  margin: 0;
+  flex: none;
+  accent-color: var(--mdmark-color-link);
+}
+.map-participants-panel label:has(input:disabled) {
+  color: var(--mdmark-color-muted);
+  cursor: not-allowed;
+}
+
+/* 案 B: 参加者の箱の右上の目のボタン（ポインターを当てるかフォーカスしたときと、タッチの端末で出す） */
+.map-participant-hide {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  display: inline-grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: 0;
+  border-radius: var(--mdmark-radius);
+  background: var(--mdmark-color-bg-opaque);
+  color: var(--mdmark-color-muted);
+  cursor: pointer;
+  opacity: 0;
+}
+.map-participant:is(:hover, :focus-within) .map-participant-hide,
+.map-participant-hide:focus-visible {
+  opacity: 1;
+}
+@media (hover: none) {
+  .map-participant-hide {
+    opacity: 1;
+  }
+}
+.map-participant-hide:disabled {
+  display: none;
+}
+.map-participant-hide .mdmark-diagram-icon {
+  width: 16px;
+  height: 16px;
+}
+/* 案 B: 非表示の参加者を、図の枠の上の帯にチップで並べる。チップを押すと表示に戻す */
+.map-hidden-strip {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 8px;
+  padding: 4px 8px;
+  border: 1px solid var(--mdmark-color-border);
+  border-bottom: 0;
+  font-size: 12px;
+  color: var(--mdmark-color-muted);
+}
+.map-hidden-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 24px;
+  padding: 0 8px;
+  border: 1px solid var(--mdmark-color-border);
+  border-radius: 12px;
+  background: var(--mdmark-color-surface);
+  color: var(--mdmark-color-text);
+  font: inherit;
+  cursor: pointer;
+}
+.map-hidden-chip .mdmark-diagram-icon {
+  width: 14px;
+  height: 14px;
+}

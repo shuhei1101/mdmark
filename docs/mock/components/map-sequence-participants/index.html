@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <!-- viewport: スマホ幅で等倍に表示する -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>map-sequence-participants（map のシーケンス図の参加者の表示と非表示） | mdmark のモック</title>
+  <!-- 配布物の CSS（ライブラリ本体）: 色・余白・角丸の CSS 変数 -->
+  <link rel="stylesheet" href="../../../../dist/index.css">
+  <!-- 利用側のページの外観（#287 で共有するアセット） -->
+  <link rel="stylesheet" href="../../refs/287/assets/scene.css">
+  <!-- map の図のモックの規則（#445 で共有するアセット） -->
+  <link rel="stylesheet" href="../../refs/445/assets/map-mock.css">
+  <!-- 参加者の表示と非表示の規則（#508 で共有するアセット） -->
+  <link rel="stylesheet" href="../../refs/508/assets/participants.css">
+  <style>
+    /* カタログの並び: 状態ごとに見出しと図を縦に並べる */
+    .map-catalog { box-sizing: border-box; max-width: 1100px; margin: 0 auto; padding: 16px; }
+    .map-catalog h2 { font-size: 20px; margin: 32px 0 4px; }
+    .map-catalog h3 { font-size: 16px; margin: 24px 0 4px; }
+    .map-catalog p.state-note { margin: 0 0 8px; color: var(--mdmark-color-muted); font-size: 13px; }
+    .narrow { max-width: 390px; }
+  </style>
+</head>
+<body class="mdmark-theme-light">
+  <header class="host-bar">利用側のアプリ</header>
+  <nav class="crumbs" aria-label="パンくずリスト">
+    <a href="../index.md">components</a> / map-sequence-participants
+  </nav>
+  <main class="map-catalog" id="catalog"><h1>map-sequence-participants</h1></main>
+  <script type="module">
+    import { createSequence } from "../../refs/445/assets/map-mock.js";
+    import { CONFIG, SEQUENCE } from "../../refs/445/assets/samples.js";
+
+    const KINDS = { user: CONFIG.kinds.outside, mount: CONFIG.kinds.step, marker: CONFIG.kinds.step, mermaid: CONFIG.kinds.step, layout: CONFIG.kinds.step };
+    const SECTIONS = [
+      ["案 A（推奨）: 右上のボタンで参加者の一覧を開く", [
+        ["通常", "右上のツールに「参加者の表示と非表示」のボタンを足す。押すとポップオーバーで参加者のチェックボックスの一覧を開く", { hideUi: "list" }],
+        ["一覧を開いた", "チェックを外した参加者を非表示にする。外側を押すか Esc で閉じる", { hideUi: "list" }, "open"],
+        ["2 人目を非表示にした", "「map のマーカーの読み取り」が送信・受信するメッセージを、相手が表示されていても全て隠す。ボタンに非表示の人数を出し、「元に戻す」が押せる", { hideUi: "list", hidden: ["marker"] }],
+        ["表示が 1 人だけ", "最後の 1 人のチェックは外せない", { hideUi: "list", hidden: ["user", "marker", "mermaid", "layout"] }, "open"],
+      ]],
+      ["案 B: 参加者の箱から非表示にし、図の上のチップから戻す", [
+        ["通常", "参加者の箱にポインターを当てるかフォーカスすると、右上に目のボタンが出る（タッチの端末では常に出す）", { hideUi: "box" }],
+        ["2 人目を非表示にした", "図の枠の上の帯に、非表示の参加者のチップを並べる。チップを押すと表示に戻す", { hideUi: "box", hidden: ["marker"] }],
+      ]],
+    ];
+    const catalog = document.getElementById("catalog");
+    let index = 0;
+    const add = (heading, note, spec, open, narrow = false) => {
+      catalog.append(Object.assign(document.createElement("h3"), { textContent: heading }));
+      catalog.append(Object.assign(document.createElement("p"), { className: "state-note", textContent: note }));
+      const host = document.createElement("div");
+      if (narrow) host.className = "narrow";
+      catalog.append(host);
+      const id = `participants-${index}`;
+      index += 1;
+      createSequence(host, { ...SEQUENCE, id, queryKey: id, ...spec }, KINDS, () => {});
+      // 開いた状態を並べて見せるため、モックでは開いた一覧どうしが閉じ合わないようにする
+      if (open) requestAnimationFrame(() => {
+        const panel = host.querySelector(".map-participants-panel");
+        if (!panel) return;
+        panel.popover = "manual";
+        panel.showPopover();
+      });
+    };
+    for (const [title, states] of SECTIONS) {
+      catalog.append(Object.assign(document.createElement("h2"), { textContent: title }));
+      for (const [heading, note, spec, open] of states) add(heading, note, spec, open);
+    }
+    catalog.append(Object.assign(document.createElement("h2"), { textContent: "狭い幅（390px）" }));
+    add("案 A: 2 人目を非表示にした", "ボタンとポップオーバーは図の枠の右上に収まる", { hideUi: "list", hidden: ["marker"] }, false, true);
+    add("案 B: 2 人目を非表示にした", "チップの帯は折り返す", { hideUi: "box", hidden: ["marker"] }, false, true);
+  </script>
+</body>
+</html>

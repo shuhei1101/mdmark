@@ -1,0 +1,10 @@
+/* 図の枠を指で動かすモックの規則（#508） */
+
+/* 操作中: 図の余白をタップした後。枠線を強い色の 2px にし、指のドラッグを縦にも図の移動にする。図の外をタップすると解く */
+.mdmark-diagram-box[data-touch-active] {
+  border-color: var(--mdmark-color-link);
+  box-shadow: 0 0 0 1px var(--mdmark-color-link);
+}
+.mdmark-diagram-box[data-touch-active] .mdmark-diagram-viewport {
+  touch-action: none;
+}

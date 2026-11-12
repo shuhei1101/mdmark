@@ -75,6 +75,9 @@ const ICONS = {
   bot: '<path d="M12 8V4H8"/><rect width="16" height="12" x="4" y="8" rx="2"/><path d="M2 14h2"/><path d="M20 14h2"/><path d="M15 13v2"/><path d="M9 13v2"/>',
   expand: '<path d="m9 18 6-6-6-6"/>',
   resize: '<line x1="5" x2="19" y1="9" y2="9"/><line x1="5" x2="19" y1="15" y2="15"/>',
+  eye: '<path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"/><circle cx="12" cy="12" r="3"/>',
+  eyeOff: '<path d="M10.733 5.076a10.744 10.744 0 0 1 11.205 6.575 1 1 0 0 1 0 .696 10.747 10.747 0 0 1-1.444 2.49"/><path d="M14.084 14.158a3 3 0 0 1-4.242-4.242"/><path d="M17.479 17.499a10.75 10.75 0 0 1-15.417-5.151 1 1 0 0 1 0-.696 10.75 10.75 0 0 1 4.446-5.143"/><path d="m2 2 20 20"/>',
+  users: '<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>',
 };
 
 /** リサイズハンドルのアイコンを、上下だけに動かせると分かる横の 2 本線にする（今の部品の点の並びを置き換える。実装では図の枠の部品で変える） */
@@ -1299,14 +1302,19 @@ const keepSequenceScale = (host) => {
  * 行は今のシーケンス図の部品の行の高さ（52px）で並ぶ。見出しと注記の行は、部品には空のメッセージとして渡し、描いた後に隠す
  */
 const SEQ_ROW = { firstY: 116, height: 52 };
-const sequenceRows = (sequence, view = { collapsed: new Set(), enter: undefined }) => {
+const sequenceRows = (sequence, view = { collapsed: new Set(), enter: undefined, hidden: new Set() }) => {
   const fragments = sequence.fragments;
+  // 非表示の参加者が送る・受けるメッセージは、相手が表示されていても行にしない（#508）
+  const hidden = view.hidden ?? new Set();
+  const hiddenMessage = (index) => hidden.has(sequence.messages[index].from) || hidden.has(sequence.messages[index].to);
+  const hasShownMessage = (fragment) => sequence.messages.slice(fragment.start, fragment.end).some((_, offset) => !hiddenMessage(fragment.start + offset));
   const scope = view.enter === undefined ? undefined : fragments[view.enter];
   const contains = (outer, inner) => outer.start <= inner.start && inner.end <= outer.end && outer.depth < inner.depth;
   // 閉じたブロックの中のブロックは出さない。中だけを見ているときは、そのブロックの中のブロックだけを出す
   // 中だけを見ているブロックも、枠とタブを残す（構成図の中へ入ったグループと同じく、外枠が見える）
   const shown = (fragment, at) =>
     fragment.end > fragment.start &&
+    hasShownMessage(fragment) &&
     (!scope || at === view.enter || contains(scope, fragment)) &&
     ![...view.collapsed].some((closed) => closed !== at && fragments[closed] && contains(fragments[closed], fragment));
   const closedAt = (index) => [...view.collapsed].find((at) => fragments[at] && shown(fragments[at], at) && fragments[at].start <= index && index < fragments[at].end);
@@ -1314,7 +1322,7 @@ const sequenceRows = (sequence, view = { collapsed: new Set(), enter: undefined 
   const first = scope ? scope.start : 0;
   const last = scope ? scope.end : sequence.messages.length;
   for (let index = first; index < last; index += 1) {
-    if (closedAt(index) === undefined) for (const note of sequence.notes.filter((item) => item.after === index)) rows.push({ note });
+    if (closedAt(index) === undefined) for (const note of sequence.notes.filter((item) => item.after === index && item.of.some((id) => !hidden.has(id)))) rows.push({ note: { ...note, of: note.of.filter((id) => !hidden.has(id)) } });
     const starting = fragments.map((fragment, at) => ({ fragment, at })).filter(({ fragment, at }) => fragment.start === index && shown(fragment, at)).sort((x, y) => x.fragment.depth - y.fragment.depth);
     let closed = false;
     for (const { fragment, at } of starting) {
@@ -1333,14 +1341,14 @@ const sequenceRows = (sequence, view = { collapsed: new Set(), enter: undefined 
         });
       });
     }
-    if (closedAt(index) === undefined) rows.push({ message: index });
+    if (closedAt(index) === undefined && !hiddenMessage(index)) rows.push({ message: index });
   }
-  if (!scope) for (const note of sequence.notes.filter((item) => item.after === sequence.messages.length)) rows.push({ note });
+  if (!scope) for (const note of sequence.notes.filter((item) => item.after === sequence.messages.length && item.of.some((id) => !hidden.has(id)))) rows.push({ note: { ...note, of: note.of.filter((id) => !hidden.has(id)) } });
   return rows;
 };
 
 /** 複合フラグメントの枠・注記・活性化の帯・矢印の種類・番号を、描いたシーケンス図の上に足す */
-const decorateSequence = ({ stage, svg, rows, rowWires, rowLabels, wires, messageLabels, visible, heads, sequence, enter, onToggle, onEnter }) => {
+const decorateSequence = ({ stage, svg, rows, rowWires, rowLabels, wires, messageLabels, visible, heads, sequence, enter, onToggle, onEnter, hidden = new Set() }) => {
   const rowY = (at) => SEQ_ROW.firstY + at * SEQ_ROW.height;
   const columnX = (id) => {
     const head = heads(id);
@@ -1406,7 +1414,7 @@ const decorateSequence = ({ stage, svg, rows, rowWires, rowLabels, wires, messag
     const tab = tabOf(fragment, row.collapsed, false, left, top);
     const count = document.createElement("span");
     count.className = "map-seq-fragment-count";
-    count.textContent = `メッセージ ${fragment.end - fragment.start} 件`;
+    count.textContent = `メッセージ ${sequence.messages.slice(fragment.start, fragment.end).filter((message) => !hidden.has(message.from) && !hidden.has(message.to)).length} 件`;
     tab.append(count);
     stage.append(tab);
   });
@@ -1537,6 +1545,8 @@ export const createSequence = (host, spec, kinds, onStep) => {
     auto: false,
     /** 閉じた複合フラグメント（sequence.fragments の番号） */
     collapsed: new Set(),
+    /** 非表示の参加者の ID（#508） */
+    hidden: new Set(spec.hidden ?? []),
     /** 参加者の箱が既定より高いとき、最初の行の前に空ける行の数（一番高い箱の下端から行を始める） */
     headRows: 0,
     /** 中だけを見ている複合フラグメントの番号（URL のクエリ文字列から読む） */
@@ -1555,13 +1565,14 @@ export const createSequence = (host, spec, kinds, onStep) => {
     const pageY = window.scrollY;
     const oldViewport = host.querySelector(".mdmark-diagram-viewport");
     const scroll = oldViewport ? [oldViewport.scrollLeft, oldViewport.scrollTop] : [0, 0];
-    const view = { collapsed: state.collapsed, enter: state.enter };
+    const view = { collapsed: state.collapsed, enter: state.enter, hidden: state.hidden };
     const rows = [...Array.from({ length: state.headRows }, () => ({ gap: true })), ...sequenceRows(sequence, view)];
     const shownSet = new Set(rows.flatMap((row) => (row.message === undefined ? [] : [row.message])));
     const shown = sequence.messages.map((message, index) => ({ message, index })).filter(({ index }) => shownSet.has(index));
     // ブロックの中だけを見ているときは、ブロックの中のメッセージに関わる参加者だけを出す
     const involved = new Set(shown.flatMap(({ message }) => [message.from, message.to]));
-    const visible = state.enter === undefined ? state.order : state.order.filter((id) => involved.has(id));
+    const order = state.order.filter((id) => !state.hidden.has(id));
+    const visible = state.enter === undefined ? order : order.filter((id) => involved.has(id));
     const definition = {
       title: spec.title,
       scope: state.enter === undefined ? "map のシーケンス図" : `${sequence.fragments[state.enter].kind === "rect" ? "ブロック" : sequence.fragments[state.enter].kind}「${sequence.fragments[state.enter].label}」の中`,
@@ -1599,6 +1610,7 @@ export const createSequence = (host, spec, kinds, onStep) => {
       heads,
       figure,
       sequence,
+      hidden: state.hidden,
       onToggle: (index, all) => {
         // Shift を押しながらだと、そのブロックと中のブロックを全て開閉する
         const targets = all ? sequence.fragments.flatMap((item, at) => (item.start >= sequence.fragments[index].start && item.end <= sequence.fragments[index].end ? [at] : [])) : [index];
@@ -1735,7 +1747,7 @@ export const createSequence = (host, spec, kinds, onStep) => {
     group.className = "mdmark-diagram-tools-group";
     group.dataset.group = "map";
     // 参加者を並べ替えたか選んだときだけ押せる「元に戻す」: 並び順と選択をまとめて戻す
-    const changed = state.selected.size > 0 || state.order.some((id, at) => id !== initialOrder[at]);
+    const changed = state.selected.size > 0 || state.hidden.size > 0 || state.order.some((id, at) => id !== initialOrder[at]);
     group.append(
       toolButton("back", "ブロックの外へ戻る", () => {
         const outer = sequence.fragments.filter((item, at) => at !== state.enter && item.start <= sequence.fragments[state.enter].start && sequence.fragments[state.enter].end <= item.end && item.depth < sequence.fragments[state.enter].depth);
@@ -1752,13 +1764,16 @@ export const createSequence = (host, spec, kinds, onStep) => {
         });
         render();
       }),
+      ...(spec.hideUi === "list" ? [participantsButton()] : []),
       toolButton("reset", "参加者の並び順と選択を元に戻す", () => {
         state.order = [...initialOrder];
         state.selected.clear();
+        state.hidden.clear();
         render();
       }, changed ? {} : { disabled: "" }),
     );
     tools.prepend(group);
+    if (spec.hideUi === "box") addBoxHide(figure, visible, heads);
 
     // 図の枠の下の帯: メッセージを 1 通ずつ進め、構成図の上でも同じメッセージを強調してデータを流す
     state.shownIndexes = shown.map(({ index }) => index);
@@ -1875,6 +1890,108 @@ export const createSequence = (host, spec, kinds, onStep) => {
       document.addEventListener("pointermove", onMove);
       document.addEventListener("pointerup", onUp, { once: true });
     });
+  };
+
+  /** 表示と非表示を切り替え、隠したメッセージを再生していたら再生を解く */
+  const setHidden = (id, hide) => {
+    if (hide) {
+      if (state.order.length - state.hidden.size <= 1) return;
+      state.hidden.add(id);
+      state.selected.delete(id);
+    } else state.hidden.delete(id);
+    const current = state.current === undefined ? undefined : sequence.messages[state.current];
+    if (current && (state.hidden.has(current.from) || state.hidden.has(current.to))) state.current = undefined;
+    render();
+  };
+
+  /**
+   * 案 A: 右上のツールの「参加者の表示と非表示」。押すとポップオーバーで参加者のチェックボックスの一覧を開く。
+   * 非表示の参加者がいるときは、ボタンに非表示の人数を出す。表示している参加者が 1 人のときは、その 1 人のチェックを外せない
+   */
+  const participantsButton = () => {
+    const wrap = document.createElement("span");
+    wrap.className = "map-participants-tool";
+    const panelId = `map-participants-${spec.id}`;
+    const button = toolButton("users", `参加者の表示と非表示${state.hidden.size ? `（非表示 ${state.hidden.size} 人）` : ""}`, () => {});
+    button.setAttribute("popovertarget", panelId);
+    if (state.hidden.size) {
+      const count = document.createElement("span");
+      count.className = "map-participants-count";
+      count.textContent = String(state.hidden.size);
+      count.setAttribute("aria-hidden", "true");
+      button.append(count);
+      button.classList.add("is-active");
+    }
+    const panel = document.createElement("div");
+    panel.id = panelId;
+    panel.popover = "auto";
+    panel.className = "map-participants-panel";
+    const heading = document.createElement("p");
+    heading.className = "map-participants-heading";
+    heading.textContent = "表示する参加者";
+    const list = document.createElement("ul");
+    const shownCount = state.order.length - state.hidden.size;
+    for (const id of state.order) {
+      const item = document.createElement("li");
+      const label = document.createElement("label");
+      const box = document.createElement("input");
+      box.type = "checkbox";
+      box.checked = !state.hidden.has(id);
+      if (box.checked && shownCount <= 1) {
+        box.disabled = true;
+        label.title = "全ての参加者は非表示にできません";
+      }
+      box.addEventListener("change", () => {
+        setHidden(id, !box.checked);
+        host.querySelector(`#${CSS.escape(panelId)}`)?.showPopover();
+        host.querySelector(`#${CSS.escape(panelId)} input[data-id="${CSS.escape(id)}"]`)?.focus();
+      });
+      box.dataset.id = id;
+      label.append(box, document.createTextNode(labelOf(id)));
+      item.append(label);
+      list.append(item);
+    }
+    panel.append(heading, list);
+    wrap.append(button, panel);
+    return wrap;
+  };
+
+  /**
+   * 案 B: 参加者の箱の右上の目のボタンで非表示にし、非表示の参加者は図の左上の帯にチップで並べて、チップから表示に戻す
+   */
+  const addBoxHide = (figure, visible, heads) => {
+    visible.forEach((id) => {
+      const head = heads(id);
+      if (!head) return;
+      const hide = document.createElement("button");
+      hide.type = "button";
+      hide.className = "map-participant-hide";
+      hide.setAttribute("aria-label", `${labelOf(id)}を非表示`);
+      hide.title = `${labelOf(id)}を非表示`;
+      hide.innerHTML = icon("eyeOff");
+      if (visible.length <= 1) hide.disabled = true;
+      hide.addEventListener("click", (event) => {
+        event.stopPropagation();
+        setHidden(id, true);
+      });
+      head.append(hide);
+    });
+    if (state.hidden.size === 0) return;
+    const strip = document.createElement("div");
+    strip.className = "map-hidden-strip";
+    const caption = document.createElement("span");
+    caption.textContent = "非表示の参加者";
+    strip.append(caption);
+    for (const id of state.order.filter((item) => state.hidden.has(item))) {
+      const chip = document.createElement("button");
+      chip.type = "button";
+      chip.className = "map-hidden-chip";
+      chip.setAttribute("aria-label", `${labelOf(id)}を表示`);
+      chip.innerHTML = `${icon("eye")}<span>${labelOf(id)}</span>`;
+      chip.addEventListener("click", () => setHidden(id, false));
+      strip.append(chip);
+    }
+    figure.querySelector(".mdmark-diagram-box").before(strip);
   };
 
   const step = (index) => {
