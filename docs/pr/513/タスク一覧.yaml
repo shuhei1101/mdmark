@@ -75,7 +75,9 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-12T20:48:36.035860+00:00'
   - process: 実装
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-12T21:29:11.339761+00:00'
   - process: 結合テスト作成
     status: skipped
     reason: 足す振る舞いが無い。既存の結合テストを実行して、playwright を共有する結合テストが動くことを確かめる

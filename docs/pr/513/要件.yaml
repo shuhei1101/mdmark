@@ -55,7 +55,9 @@ docs:
   - page: tests/files.yaml
     new: false
     change: '`tests/e2e/` のファイルの行を削除する'
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-12T21:29:04.013844+00:00'
   - page: vscode/files.yaml
     new: false
     change: '`tests/integration/stub-server.ts` の行の description から E2E を削除する'
