@@ -1,0 +1,1 @@
+# モック ui-canvas/80/side-by-side の列ごとのランドマークに列の名前を付け、axe の landmark-unique を無くす
