@@ -1,0 +1,86 @@
+use_cases:
+  - kind: single
+    scenario: docs/scenario/SC-472-19.yaml
+    impact: changed
+    detail: 読者が map のシーケンス図の参加者の表示と非表示を切り替え、非表示にした参加者だけに関わるメッセージを隠す（#404 の残り）
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-42.yaml
+    impact: changed
+    detail: 読者がスマホの指のドラッグで map の図を縦にも動かせる（#357）。ページのスクロールとの分け方を決める
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-20.yaml
+    impact: changed
+    detail: 文書の作成者が罫線でフォルダ構成を記載したのに言語が tree でないコードブロックに、言語を tree にする書き方の警告を受け取り、罫線の例をそのまま見せたいときは警告を止められる（#466）
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-78.yaml
+    impact: changed
+    detail: mdmark check が、罫線の行を持つ言語が tree でないコードブロックを点検の結果に挙げる（#466）
+    depends_on:
+      - docs/scenario/SC-472-20.yaml
+  - kind: single
+    scenario: docs/scenario/SC-472-3.yaml
+    impact: following
+    detail: Claude Code が MCP の check・export_html で、罫線のコードブロックの警告を受け取る（#466）
+    depends_on:
+      - docs/scenario/SC-472-78.yaml
+  - kind: single
+    scenario: docs/scenario/SC-472-15.yaml
+    impact: changed
+    detail: フォルダ構成を記載しようとした Claude Code が、ガイドの索引からファイルツリーの記載方法のページに行き着く（#466）
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-22.yaml
+    impact: run_only
+    detail: SessionStart の案内に文を加えるかは設計で決める。加えない場合もプラグインのビルドで生成し直すため回帰を確かめる（#466）
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-8.yaml
+    impact: run_only
+    detail: map の構成図の描き方は変えないが、図の枠のタッチの扱いの変更が壊しうる
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-56.yaml
+    impact: run_only
+    detail: 書き出しは変えないが、書き方の警告の追加が書き出した HTML の警告に出る
+    depends_on: []
+  - kind: composite
+    scenario: docs/scenario/SC-472-87.yaml
+    impact: run_only
+    detail: 流れは変わらないが、シーケンス図の参加者の操作と図の枠のタッチの変更が壊しうる
+    depends_on: []
+  - kind: composite
+    scenario: docs/scenario/SC-472-85.yaml
+    impact: run_only
+    detail: 流れは変わらないが、ガイドの索引と点検の項目の変更が壊しうる
+    depends_on: []
+docs:
+  - page: docs/guide/図を描く-Mermaidと補足で図を描く.md
+    new: false
+    change: map のシーケンス図の参加者の表示と非表示の操作と、スマホの指で図を動かす操作を追加する
+    status: todo
+  - page: docs/guide/記載する-本文を部品で組む.md
+    new: false
+    change: ファイルツリーの節に、罫線のコードブロックの書き方の警告と警告を止める指定を追加する
+    status: todo
+  - page: docs/guide/記法.md
+    new: false
+    change: 罫線のコードブロックの警告を止める指定（マーカーか引数。設計で決める）の行を追加する
+    status: todo
+  - page: docs/guide/CLI.md
+    new: false
+    change: check のずれの種類に罫線のコードブロックの警告の扱い（新しい種類か syntax_warning に含めるか。設計で決める）を追加する
+    status: todo
+  - page: guide/index.yaml
+    new: false
+    change: components の when に、フォルダ構成・ファイルツリーを記載するときを追加する
+    status: todo
+scope_out:
+  - item: 今の flow（座標の JSON のフロー図）の箱の種類 dm の表示名「意思決定モデル」
+    reason: 'map は固定のノードの種類を持たず、表示名は使う側の設定 map.kinds の label で決まるため、#464 の #333 の要件は develop で満たされている。今の flow の固定の種類を設定で作る形にするのは #470 が扱う'
+    plan: '#470'
+  - item: 今の sequence（座標の JSON のシーケンス図）での参加者の表示と非表示と、今の flow・sequence の図の枠のタッチでのドラッグ
+    reason: '#464 は map への追加で、今の flow・sequence は map へ移してから廃止する（#467）。ただし図の枠は共通の部品のため、共通の CSS を直すと今の図にも当たる場合はそのまま含める（設計で決める）'
+    plan: '#467'
