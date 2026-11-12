@@ -4,10 +4,7 @@
   "properties": {
     "kind": {
       "type": "string",
-      "enum": [
-        "data",
-        "plain"
-      ]
+      "enum": ["data", "plain"]
     },
     "features": {
       "type": "object",
@@ -56,11 +53,7 @@
             "properties": {
               "type": {
                 "type": "string",
-                "enum": [
-                  "select",
-                  "text",
-                  "date"
-                ]
+                "enum": ["select", "text", "date"]
               }
             },
             "additionalProperties": false
@@ -78,17 +71,11 @@
               "properties": {
                 "calc": {
                   "type": "string",
-                  "enum": [
-                    "sum",
-                    "avg",
-                    "count"
-                  ]
+                  "enum": ["sum", "avg", "count"]
                 }
               },
               "additionalProperties": false,
-              "required": [
-                "calc"
-              ]
+              "required": ["calc"]
             }
           },
           "width": {
@@ -96,10 +83,7 @@
             "properties": {
               "mode": {
                 "type": "string",
-                "enum": [
-                  "auto",
-                  "nowrap"
-                ]
+                "enum": ["auto", "nowrap"]
               },
               "min": {
                 "type": "number",
@@ -117,15 +101,11 @@
             "properties": {
               "type": {
                 "type": "string",
-                "enum": [
-                  "check"
-                ]
+                "enum": ["check"]
               }
             },
             "additionalProperties": false,
-            "required": [
-              "type"
-            ]
+            "required": ["type"]
           },
           "highlight": {
             "type": "object",
@@ -202,9 +182,7 @@
               }
             },
             "additionalProperties": false,
-            "required": [
-              "color"
-            ]
+            "required": ["color"]
           }
         }
       },
@@ -233,15 +211,11 @@
             }
           },
           "additionalProperties": false,
-          "required": [
-            "heading"
-          ]
+          "required": ["heading"]
         }
       },
       "additionalProperties": false,
-      "required": [
-        "key"
-      ]
+      "required": ["key"]
     },
     "collapse": {
       "$ref": "common.schema.json#/$defs/collapse"

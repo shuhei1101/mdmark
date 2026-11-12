@@ -16,8 +16,5 @@
     }
   },
   "additionalProperties": false,
-  "required": [
-    "term",
-    "meaning"
-  ]
+  "required": ["term", "meaning"]
 }

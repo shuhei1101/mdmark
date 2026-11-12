@@ -25,9 +25,7 @@
           "minimum": 1
         }
       },
-      "required": [
-        "from"
-      ],
+      "required": ["from"],
       "additionalProperties": false
     },
     "column_ref": {
@@ -38,9 +36,7 @@
           "minLength": 1
         }
       },
-      "required": [
-        "column"
-      ],
+      "required": ["column"],
       "additionalProperties": false
     },
     "feature": {

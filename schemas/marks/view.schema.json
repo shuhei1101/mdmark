@@ -41,16 +41,11 @@
         }
       },
       "additionalProperties": false,
-      "required": [
-        "group"
-      ]
+      "required": ["group"]
     },
     "initial": {
       "type": "string",
-      "enum": [
-        "board",
-        "table"
-      ]
+      "enum": ["board", "table"]
     },
     "columns": {
       "type": "object",
@@ -63,11 +58,7 @@
             "properties": {
               "type": {
                 "type": "string",
-                "enum": [
-                  "select",
-                  "text",
-                  "date"
-                ]
+                "enum": ["select", "text", "date"]
               }
             },
             "additionalProperties": false

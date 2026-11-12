@@ -8,7 +8,5 @@
     }
   },
   "additionalProperties": false,
-  "required": [
-    "at"
-  ]
+  "required": ["at"]
 }

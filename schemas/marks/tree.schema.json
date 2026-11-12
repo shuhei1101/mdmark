@@ -6,9 +6,7 @@
       "anyOf": [
         {
           "type": "string",
-          "enum": [
-            "all"
-          ]
+          "enum": ["all"]
         },
         {
           "type": "integer",
