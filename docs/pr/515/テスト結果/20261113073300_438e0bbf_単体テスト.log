@@ -1,0 +1,57 @@
+$ npx vitest run --project 'unit*' tests/unit/vscode/src/config.test.ts tests/unit/vscode/src/export/html.test.ts
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/design-vscode-export-aliases
+
+ ❯ |unit| tests/unit/vscode/src/export/html.test.ts (8 tests | 1 failed) 88ms
+   × test_build_export_html_when_aliases 4ms
+ ❯ |unit| tests/unit/vscode/src/config.test.ts (24 tests | 1 failed) 2445ms
+   × test_load_config_when_export 6ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit| tests/unit/vscode/src/config.test.ts > test_load_config_when_export
+AssertionError: Target cannot be null or undefined.
+ ❯ tests/unit/vscode/src/config.test.ts:278:26
+    276|   );
+    277|   // 検証
+    278|   expect(result.aliases).toHaveLength(1);
+       |                          ^
+    279|   expect(result.aliases?.[0]).toMatchObject({
+    280|     alias_type: "term",
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  |unit| tests/unit/vscode/src/export/html.test.ts > test_build_export_html_when_aliases
+AssertionError: expected undefined to deeply equal [ { alias_type: 'term', …(3) } ]
+
+- Expected:
+[
+  {
+    "alias_type": "term",
+    "aliases": [
+      "レンダリング",
+    ],
+    "id": "render",
+    "name": "描画",
+  },
+]
+
++ Received:
+undefined
+
+ ❯ tests/unit/vscode/src/export/html.test.ts:203:34
+    201|     text.match(/<script\b[^>]*type="module"[^>]*>([\s\S]*?)<\/script>/…
+    202|     "";
+    203|   expect(readJson(html).aliases).toEqual(aliases);
+       |                                  ^
+    204|   expect(readModule(html)).toContain("aliases: data.aliases");
+    205|   expect(readJson(plain)).not.toHaveProperty("aliases");
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  2 failed (2)
+      Tests  2 failed | 30 passed (32)
+   Start at  07:32:53
+   Duration  3.24s (tests 82%, transform 10%, import 7%, worker 1%)
+

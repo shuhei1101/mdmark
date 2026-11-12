@@ -73,7 +73,7 @@ data_models:
         description: 読み込めない・構造の合わない最初の設定ファイル（端末の設定 → 上 → 近いの順）
       - name: aliases
         type: MdmarkAlias[] | undefined
-        description: '`purpose` が `preview` で重ねた設定に `aliases` があるときに作ったエイリアス。無いときは持たない'
+        description: 重ねた設定に `aliases` があるときに作ったエイリアス（`purpose` によらない）。無いときは持たない
       - name: aliasIssues
         type: CheckIssue[]
         description: エイリアスを作ったときのずれ（`loadAliases` の `issues`）。無ければ空
@@ -187,7 +187,7 @@ functions:
          - `config` は重ねた設定のうち、値がマップの `features`・`libraries`・`html-scripts`・`side-toc`・`table`・`labels`・`mermaid`・`tooltips`・`syntax` と、値が文字列の `colorTheme`・`colorScheme` だけ
          - `files` は重ねた設定ファイルの `path`、`theme`・`extensions`・`assetsRoot` は重ねた設定の `theme`・`extensions`・`assets.root`
          - `unreadable` がある場合、`problem` は `{ path, line, message }`。無く `issues` がある場合、`problem` は `{ path: issues[0].file, settingKey: issues[0].where, message: issues[0].message }`
-      4. `purpose` が `preview` で重ねた設定に `aliases` がある場合、エイリアスを読み込む（エイリアスを読み込む）
+      4. 重ねた設定に `aliases` がある場合、`purpose` によらずエイリアスを読み込む（エイリアスを読み込む）
          - 指定する設定ファイルは `nearest`、無ければ端末の設定ファイル（`resolveSettingsPath` の `env`・`home`）。`dir` はそのフォルダで、`config` は重ねた設定のパスの値を `dir` からの相対パスに戻した値（`relativizeConfigPaths`）
          - 返った `aliases`・`issues`・`files` を `aliases`・`aliasIssues`・`aliasFiles` に入れる
     exceptions:
@@ -256,10 +256,10 @@ functions:
         expected: '`aliases` が 1 行目の用語だけ、`aliasIssues` が `alias_no_files`（`where` が `aliases[1].paths`）の 1 件'
       - name: test_load_config_when_export
         case: 正常
-        summary: 書き出しのときはエイリアスを作らない
+        summary: 書き出しのときもエイリアスを作る
         condition: '`test_load_config_when_aliases` と同じファイルで `purpose` が `export`'
         mock: 一時フォルダ
-        expected: '`aliases` が無く、`aliasIssues`・`aliasFiles` が空'
+        expected: '`aliases` が用語の 1 件、`aliasIssues` が空、`aliasFiles` が `glossary.yaml` の絶対パスの 1 件'
       - name: test_load_config_when_table
         case: 正常
         summary: 設定の `table` を `mount` に指定する設定に入れ、マップでない `table` は入れない
@@ -278,6 +278,7 @@ functions:
       - MOD-472-124#functions[loadAliases]
     refs:
       - IF-472-22#constraints[エイリアス]
+      - IF-472-15#constraints[エイリアス]
     status: planned
   - name: resolveLibraries
     title: libraries の URL を修正する

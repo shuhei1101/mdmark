@@ -265,7 +265,7 @@ colorTheme: theme-slate
 | `syntax.url` | 色分けのライブラリの読み込み先。`http:`・`https:` の URL はそのまま、相対 URL はその値を記載した設定ファイルのフォルダを基準に解決して、`mount` の `opts.config.syntax.url` に指定する。書き出す HTML には、文書が使用する言語があるとき本体とその言語のモジュールを埋める |
 | `colorScheme` | 配色の明暗。プレビューでは `mdmark.preview.theme` が `auto` のときだけ、書き出す HTML ではいつも、記載した値をそのまま `mount` の `opts.config.colorScheme` に指定する |
 | `assets.root` | アセットのルート。Markdown のフォルダからの相対パスに無い画像・動画・音声を、その値を記載した設定ファイルのフォルダからのこのフォルダで同じ相対パスで探す。`mount` には指定しない |
-| `aliases` | エイリアスの元の行。プレビューでは、行の `paths` の YAML をその値を記載した設定ファイルのフォルダから読み込んでエイリアスを作り、`mount` の `opts.aliases` に指定する。使用できない行・レコードは除き、出力チャネルに `mdmark check` と同じ書式の警告を出す。書き出す HTML には指定しない |
+| `aliases` | エイリアスの元の行。プレビューと書き出す HTML では、行の `paths` の YAML をその値を記載した設定ファイルのフォルダから読み込んでエイリアスを作り、`mount` の `opts.aliases` に指定する。使用できない行・レコードは除き、出力チャネルに `mdmark check` と同じ書式の警告を出す |
 
 | `theme` | 利用側の CSS。その値を記載した設定ファイルのフォルダから解決し、プレビューでは配布物の CSS の後に読み込み、書き出す HTML には埋める |
 | `extensions` | 拡張のモジュール。その値を記載した設定ファイルのフォルダから解決し、`mount` の前に登録する。書き出す HTML には 1 つのスクリプトにまとめて埋める |

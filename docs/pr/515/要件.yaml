@@ -1,0 +1,76 @@
+use_cases:
+  - kind: single
+    scenario: docs/scenario/SC-472-6.yaml
+    impact: changed
+    detail: 設定の aliases のエイリアスに、書き出した HTML でも下線とツールチップが出る正常シナリオと、YAML を読み込めない行を除いて書き出す異常シナリオを追加
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-9.yaml
+    impact: run_only
+    detail: 書き出しと同じ HTML を組んで印刷するため、エイリアスの指定で変わりうる
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-10.yaml
+    impact: run_only
+    detail: 設定の読み込みでエイリアスを作る条件が変わるため、プレビューのエイリアスの表示を確かめる
+    depends_on: []
+  - kind: composite
+    scenario: docs/scenario/SC-472-94.yaml
+    impact: run_only
+    detail: 重ねて読み込んだ設定から書き出しでも aliases を取り出す
+    depends_on: []
+  - kind: composite
+    scenario: docs/scenario/SC-472-88.yaml
+    impact: run_only
+    detail: PDF にする HTML にエイリアスが入る
+    depends_on: []
+docs:
+  - page: docs/guide/VSCode拡張機能.md
+    new: false
+    change: 設定ファイルのキーの表の aliases の行を、書き出す HTML にもエイリアスを指定する記述に修正
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-12T22:26:34.383395+00:00'
+  - page: docs/guide/VSCodeで確認する-HTMLとPDFにする.md
+    new: false
+    change: 設定の aliases のエイリアスに、書き出した HTML と PDF でも下線とツールチップが出ることを追加
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-12T22:26:34.383395+00:00'
+  - page: docs/guide/設定.md
+    new: false
+    change: エイリアスの元の行の節で、VS Code 拡張機能が読み込む先にプレビューと書き出す HTML を記載
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-12T22:26:34.383395+00:00'
+  - page: docs/config/CFG-472-2.yaml
+    new: false
+    change: aliases の説明を、書き出す HTML にもエイリアスを指定する記述に修正
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-12T22:26:34.383395+00:00'
+  - page: docs/config/CFG-472-3.yaml
+    new: false
+    change: aliases を読み込む側に VS Code 拡張機能の書き出しを追加
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-12T22:26:34.383395+00:00'
+  - page: docs/guide/記載する-索引と用語集を記載する.md
+    new: false
+    change: aliases のエイリアスを書き出す HTML に埋める側に、VS Code 拡張機能の書き出しとプレビューを追加
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-12T22:26:34.383395+00:00'
+  - page: docs/guide/コアコンセプト-索引と被参照.md
+    new: false
+    change: aliases のエイリアスを書き出す HTML に埋める側に、VS Code 拡張機能の書き出しとプレビューを追加
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-12T22:26:34.383395+00:00'
+scope_out:
+  - item: 書き出す HTML への索引（index）と参照の表（references）の指定
+    reason: Issue の要望はエイリアスに限る。被参照・索引の用語は別の機能
+    plan: none
+  - item: 書き出しのときに aliases の行が指す YAML を見張って書き出し直すこと
+    reason: 書き出しは 1 回の操作で、プレビューのような再描画を持たない
+    plan: none

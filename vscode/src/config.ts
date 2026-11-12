@@ -66,7 +66,7 @@ export type ConfigLoad = {
   assetsRoot?: string | undefined;
   /** 読み込めない・構造の合わない最初の設定ファイル */
   problem?: ConfigProblem | undefined;
-  /** プレビューで、重ねた設定の `aliases` から作ったエイリアス。`aliases` が無いときは持たない */
+  /** 重ねた設定の `aliases` から作ったエイリアス。`aliases` が無いときは持たない */
   aliases?: MdmarkAlias[] | undefined;
   /** エイリアスを作ったときのずれ */
   aliasIssues: CheckIssue[];
@@ -225,8 +225,8 @@ export async function loadConfig(options: {
       : undefined;
   const assets = config.assets;
   const aliasResult =
-    options.purpose === "preview" && config.aliases !== undefined
-      ? await loadPreviewAliases({
+    config.aliases !== undefined
+      ? await loadConfigAliases({
           layered,
           settingsPath: resolveSettingsPath(options),
         })
@@ -253,7 +253,7 @@ export async function loadConfig(options: {
 }
 
 /** 重ねた設定の `aliases` からエイリアスを作る。基準の設定ファイルは最も近い `mdmark.config.yaml`、無ければ端末の設定ファイル */
-async function loadPreviewAliases(options: {
+async function loadConfigAliases(options: {
   layered: Awaited<ReturnType<typeof loadLayeredConfig>>;
   settingsPath: string;
 }): ReturnType<typeof loadAliases> {
