@@ -13,17 +13,6 @@
     .mdmark-table-scroll :is(th, td) {
       min-width: 0;
     }
-
-    /* 折り返さない列のセル */
-    .is-mock-nowrap {
-      text-wrap: nowrap;
-      white-space: nowrap;
-    }
-  }
-
-  /* 描く先の要素の幅の見本: 場面ごとに描く先の幅を決める */
-  .mock-505-width-1000 {
-    max-width: 1000px;
   }
 
   .mock-505-width-390 {
@@ -32,12 +21,19 @@
 
   /* 見える幅を変える見本: 右下の角をドラッグして描く先の幅を変えられる */
   .mock-505-resizable {
-    width: 1000px;
+    box-sizing: border-box;
+    width: 100%;
     max-width: 100%;
-    min-width: 280px;
+    min-width: min(280px, 100%);
     padding-inline-end: 0.5rem;
     border-inline-end: 2px dashed var(--mdmark-color-border);
     overflow: hidden;
     resize: horizontal;
   }
+}
+
+/* 折り返さない列のセル: 表の規則の折り返しより優先するため、層の外に置く */
+[data-mock-table505] .mdmark .is-mock-nowrap {
+  text-wrap: nowrap;
+  white-space: nowrap;
 }

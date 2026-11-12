@@ -676,8 +676,8 @@ build:
       </section>
 
       <!-- #505 案 A: 帯（言語のラベル・タイトル）に続く pre の上の枠線を削除し、帯の背景の色は残す -->
-      <section aria-labelledby="state-505-a">
-        <h2 class="catalog-label" id="state-505-a">帯と本文の間の線を削除した 案 A（帯の背景の色を残す。外側の枠線と角丸は残す）</h2>
+      <section aria-labelledby="state-505-a" data-mock-505-theme="contrast">
+        <h2 class="catalog-label" id="state-505-a">帯と本文の間の線を削除した 案 A（theme-contrast。帯の背景の色を残す。外側の枠線と角丸は残す）</h2>
         <article class="mdmark">
 <pre tabindex="0" aria-label="コード: bash"><code class="language-bash">npx mdmark check
 npx mdmark build --out dist/stock.html</code></pre>
@@ -690,8 +690,8 @@ npx mdmark build --out dist/stock.html</code></pre>
       </section>
 
       <!-- #505 案 B: 線を削除し、帯の背景も本文と同じ色にして 1 つの枠に見せる -->
-      <section aria-labelledby="state-505-b" data-mock-505-variant="b">
-        <h2 class="catalog-label" id="state-505-b">帯と本文の間の線を削除した 案 B（帯の背景を本文と同じ色にする）</h2>
+      <section aria-labelledby="state-505-b" data-mock-505-variant="b" data-mock-505-theme="contrast">
+        <h2 class="catalog-label" id="state-505-b">帯と本文の間の線を削除した 案 B（theme-contrast。帯の背景を本文と同じ色にする）</h2>
         <article class="mdmark">
 <pre tabindex="0" aria-label="コード: bash"><code class="language-bash">npx mdmark check
 npx mdmark build --out dist/stock.html</code></pre>

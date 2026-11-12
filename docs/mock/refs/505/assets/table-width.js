@@ -5,18 +5,20 @@
 {
   /** 折り返さない短い列の上限（em） */
   const SHORT_EM = 12;
-  /** 折り返す列の最小の幅（em。列の中の最も長い単語の幅の方が広ければそちら） */
+  /** 折り返す列の最小の幅（em。列の中の最も長い半角の単語の幅の方が広ければそちら） */
   const MIN_EM = 12;
   /** 折り返す列の最大の幅（em） */
   const MAX_EM = 40;
 
-  const canvas = document.createElement("canvas").getContext("2d");
-
-  /** 要素の文字の表示の幅（px） */
-  const textWidth = (text, element) => {
-    const style = getComputedStyle(element);
-    canvas.font = `${style.fontStyle} ${style.fontWeight} ${style.fontSize} ${style.fontFamily}`;
-    return canvas.measureText(text).width;
+  /** セルの中で、行の文字を折り返さずに置いたときの表示の幅（px） */
+  const textWidth = (text, cell) => {
+    const probe = document.createElement("span");
+    probe.style.cssText = "position:absolute;visibility:hidden;white-space:nowrap;text-wrap:nowrap";
+    probe.textContent = text;
+    cell.append(probe);
+    const width = probe.getBoundingClientRect().width;
+    probe.remove();
+    return width;
   };
 
   /** セルを改行（br・リストの項目・段落）で行に分ける */
@@ -45,16 +47,18 @@
   /** 表の列の幅を決めて当てる */
   const layout = (table) => {
     const scroll = table.closest(".mdmark-table-scroll");
-    const available = scroll.clientWidth;
+    // 表の左右の枠線の分を引いた、列に配れる幅
+    const available = scroll.clientWidth - (table.offsetWidth - table.clientWidth) - 2;
     const em = Number.parseFloat(getComputedStyle(table).fontSize);
-    const head = [...table.tHead.rows.at(-1).cells];
+    const head = [...[...table.tHead.rows].at(-1).cells];
     const rows = [...table.tBodies[0].rows];
     const columns = head.map((th, index) => {
       const cells = rows.map((row) => row.cells[index]).filter(Boolean);
       const style = getComputedStyle(th);
       const padding = Number.parseFloat(style.paddingLeft) + Number.parseFloat(style.paddingRight) + 1;
       const longest = Math.max(...[th, ...cells].flatMap((cell) => linesOf(cell).map((line) => textWidth(line, cell)))) + padding;
-      const longestWord = Math.max(0, ...cells.flatMap((cell) => linesOf(cell).flatMap((line) => line.split(/\s+/)).map((word) => textWidth(word, cell)))) + padding;
+      // 単語は空白で区切った半角の連なり（全角の文字はどこでも折り返せるので単語に数えない）
+      const longestWord = Math.max(0, ...cells.flatMap((cell) => linesOf(cell).flatMap((line) => line.match(/[\x21-\x7e]+/g) ?? []).map((word) => textWidth(word, cell)))) + padding;
       const min = th.dataset.mockWidthMin ? Number(th.dataset.mockWidthMin) * em : Math.max(MIN_EM * em, longestWord);
       const max = Math.max(min, th.dataset.mockWidthMax ? Number(th.dataset.mockWidthMax) * em : MAX_EM * em);
       const nowrap = th.dataset.mockWidthMode === "nowrap" || cells.every(isCompact) || (longest <= SHORT_EM * em && !th.dataset.mockWidthMin);
@@ -81,12 +85,12 @@
     let colgroup = table.querySelector("colgroup[data-mock-505]");
     if (!colgroup) {
       colgroup = document.createElement("colgroup");
-      colgroup.dataset.mock505 = "";
+      colgroup.setAttribute("data-mock-505", "");
       table.prepend(colgroup);
     }
     colgroup.replaceChildren(...columns.map((column) => {
       const col = document.createElement("col");
-      col.style.width = `${Math.ceil(column.width)}px`;
+      col.style.width = `${Math.floor(column.width)}px`;
       return col;
     }));
     for (const column of columns) {
@@ -94,7 +98,7 @@
         cell.classList.toggle("is-mock-nowrap", column.nowrap);
       }
     }
-    table.style.width = `${Math.ceil(columns.reduce((sum, column) => sum + Math.ceil(column.width), 0))}px`;
+    table.style.width = `${columns.reduce((sum, column) => sum + Math.floor(column.width), 0)}px`;
   };
 
   const start = () => {

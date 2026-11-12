@@ -12,3 +12,11 @@
     background: var(--mdmark-color-surface);
   }
 }
+
+/* 見本の配色: 帯と本文の背景の色が違うテーマ（theme-contrast の明るい配色）の値を、[data-mock-505-theme="contrast"] の場面だけに当てる。
+   既定のテーマ（theme-default・theme-paper・theme-slate）は帯と本文の背景が同じ色 */
+[data-mock-505-theme="contrast"] .mdmark {
+  --mdmark-color-border: #767676;
+  --mdmark-color-surface: #f0f0f0;
+  --mdmark-color-table-head: #e6e6e6;
+}
