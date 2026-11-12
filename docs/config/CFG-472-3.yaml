@@ -22,7 +22,7 @@ settings:
     type: Record<string, boolean>
     required: false
     default: '`comments` を除く全ての機能が `true`'
-    description: '機能ごとのオン・オフの既定。文書の `<!-- features: +機能 -機能 -->` がその文書だけ上書きする'
+    description: '機能ごとのオン・オフの既定。文書の `<!-- features: {"機能": true} -->`（`false` でオフ）がその文書だけ上書きする'
     allowed: 値は真偽値。知らない機能名と真偽値でない値は無視する
     reload: reload
     implementation: src/config.ts#resolveConfig
@@ -41,7 +41,7 @@ settings:
     type: Record<string, string>
     required: false
     default: '`{}`'
-    description: マーカーの名前から外部ライブラリのモジュールの URL を参照する。既定の対応表に重ね、同じ名前は URL を上書きし、無い名前は追加する
+    description: マーカーの名前から外部ライブラリのモジュールの URL を参照する。既定の対応表に重ね、同じ名前は URL を上書きし、無い名前は追加する。モジュールの `draw(slot, options)` には、マーカーの名前の後ろの JSON のオブジェクト（引数の無いマーカーは `{}`）を渡す
     allowed: キーは英小文字で始まり英小文字・数字・`-` だけを持つマーカーの名前。値は URL（相対 URL はページの `document.baseURI` を基準に解決する）。文字列でない値は無視する
     reload: reload
     implementation: src/config.ts#resolveConfig
@@ -196,7 +196,7 @@ settings:
     type: boolean
     required: false
     default: 'true'
-    description: '`<!-- gallery: cols=列の数 -->` の範囲の画像を格子に並べ、`fig` のマーカーの番号にサブ図の番号を付ける。オフのときはマーカーを取り除く'
+    description: '`<!-- gallery: {"columns": 列の数} -->` の範囲の画像を格子に並べ、`fig` のマーカーの番号にサブ図の番号を付ける。オフのときはマーカーを取り除く'
     reload: reload
     status: planned
     refs:
@@ -571,7 +571,7 @@ settings:
     type: '"light" | "dark" | "auto"'
     required: false
     default: auto
-    description: '描いた文書の配色の明暗。`light`・`dark` は描く先の祖先の class（`mdmark-theme-light` / `mdmark-theme-dark`）と OS の設定より優先し、`auto` は今の決め方のまま。文書の先頭の `<!-- page: scheme=… -->` がその文書だけ上書きする。印刷では明るい配色を使用する。`mount` は `opts.config.colorScheme` を読み込み、CLI の `mdmark export`・`mdmark build` は書き出す HTML の `mount` に指定する'
+    description: '描いた文書の配色の明暗。`light`・`dark` は描く先の祖先の class（`mdmark-theme-light` / `mdmark-theme-dark`）と OS の設定より優先し、`auto` は今の決め方のまま。文書の先頭の `<!-- page: {"scheme": …} -->` がその文書だけ上書きする。印刷では明るい配色を使用する。`mount` は `opts.config.colorScheme` を読み込み、CLI の `mdmark export`・`mdmark build` は書き出す HTML の `mount` に指定する'
     missing: 今の決め方（祖先の class・OS の設定）で描く
     reload: reload
     allowed: '`light`・`dark`・`auto`。Schema の型は文字列で、知らない値は `auto` として描き、`mdmark check` が `unknown_color_scheme` のずれにする'

@@ -98,7 +98,7 @@ settings:
     type: '"auto" | "light" | "dark"'
     required: false
     default: auto
-    description: '`auto` は設定ファイルの `colorScheme`、無ければ VS Code のテーマの明暗に合わせ、`light`・`dark` はその配色に固定する。文書の先頭の `<!-- page: scheme=… -->` はこの設定より優先する'
+    description: '`auto` は設定ファイルの `colorScheme`、無ければ VS Code のテーマの明暗に合わせ、`light`・`dark` はその配色に固定する。文書の先頭の `<!-- page: {"scheme": …} -->` はこの設定より優先する'
     reload: immediate
     refs:
       - IF-472-35#constraints[配色の切り替え]
