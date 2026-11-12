@@ -128,7 +128,9 @@ test("test_record_mark_notes", () => {
   // 検証
   expect(html).not.toContain("mdmark-syntax-warning");
   expect(html).not.toContain("foo");
-  expect(html).not.toContain("size");
+  // 機能の名前の `resize` が `size` を含むため、マーカーの文字が残らないことで確かめる
+  expect(html).not.toContain('"size"');
+  expect(html).not.toContain("<!--");
   expect(warnings.map(({ line, kind }) => ({ line, kind }))).toEqual([
     { line: 3, kind: "unknown_mark_arg" },
     { line: 3, kind: "unknown_mark_arg" },

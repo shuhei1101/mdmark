@@ -143,12 +143,15 @@ test("test_take_marks_when_syntax_mark", async () => {
 // 今の書き方の記法のマーカーを、同じ JSON のオブジェクトにしたマーカーのトークンにする（正常系）
 test("test_take_marks_when_legacy_syntax_mark", async () => {
   // 準備
-  const { createParser } = await loadParser();
+  const { takeMarks } = await loadMarks();
+  const { renderDoc } = await loadRenderHelper();
   const markdown = "<!-- table: data +total total=数量:sum closed -->\n";
-  const parser = createParser();
+  // マーカーのトークンは最後のコアルールが取り除くため、マーカーを取得するルールだけで解析する
+  const parser = new MarkdownIt({ html: true });
+  parser.core.ruler.push("take_marks", takeMarks);
   // 実行
   const tokens = parser.parse(markdown, createEnv());
-  const html = parser.render(markdown, createEnv());
+  const { html } = renderDoc(markdown);
   // 検証
   const marks = tokens.filter((token) => token.type === "mdmark_mark");
   expect(marks.map((token) => token.meta)).toMatchObject([

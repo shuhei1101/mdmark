@@ -658,7 +658,7 @@ const CONSUMER = [
   '  directive: "greet",',
   "  load: async () => ({",
   "    draw: (slot: HTMLElement, value: MdmarkMarkArgs) => {",
-  '      slot.textContent = value.args[0] ?? "";',
+  '      slot.textContent = String(value.options.target ?? "");',
   "    },",
   "  }),",
   "};",
@@ -678,6 +678,10 @@ test("test_emit_declarations", async () => {
   const { emitDeclarations } = await loadBuild();
   const root = await createToolingRoot();
   await cp(join(process.cwd(), "src"), join(root, "src"), { recursive: true });
+  // 描く処理がマーカーの JSON Schema を読み込む
+  await cp(join(process.cwd(), "schemas"), join(root, "schemas"), {
+    recursive: true,
+  });
   // 実行
   await emitDeclarations(root);
   // 検証

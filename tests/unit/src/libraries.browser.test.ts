@@ -397,7 +397,7 @@ test("test_load_libraries_when_embedded", async () => {
   expect(importModule).not.toHaveBeenCalled();
   const drawn = root.querySelector('[data-mdmark-slot="test-lib"]');
   expect(drawn?.hasAttribute("data-mdmark-drawn")).toBe(true);
-  expect(draw).toHaveBeenCalledWith(drawn, []);
+  expect(draw).toHaveBeenCalledWith(drawn, {});
   expect(root.querySelector('[data-mdmark-slot="other"]')).toBeNull();
   expect(root.innerHTML).toContain(
     normalize(renderNotice({ name: "other", figure: true })),

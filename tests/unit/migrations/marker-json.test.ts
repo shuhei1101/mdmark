@@ -3,6 +3,7 @@ import { join } from "node:path";
 import { pathToFileURL } from "node:url";
 import { expect, test } from "vitest";
 import { parse } from "yaml";
+import { rewriteLegacyMarks } from "../../../src/render/legacy-marks.ts";
 import { migrationsDirOf } from "../../migrations-dir.ts";
 import { useTempDirs, writeFiles } from "../helpers/cli.ts";
 
@@ -13,6 +14,7 @@ const SCRIPT = "marker-json.mjs";
 type MigrateDocumentMarks = (options: {
   config: unknown;
   configDir: string;
+  rewrite: typeof rewriteLegacyMarks;
 }) => Promise<{ changed: string[]; report: string[]; problems: string[] }>;
 
 /** 移行のスクリプトを、それを持つ移行の手順のフォルダから読み込む（実装が無い間は各テストが個別に失敗する） */
@@ -93,7 +95,11 @@ test("test_migrate_document_marks", async () => {
   const migrateDocumentMarks = await loadMigrateDocumentMarks();
   const { config, configDir } = await createFolder();
   // 実行
-  const result = await migrateDocumentMarks({ config, configDir });
+  const result = await migrateDocumentMarks({
+    config,
+    configDir,
+    rewrite: rewriteLegacyMarks,
+  });
   // 検証
   const stock = await readFile(join(configDir, "docs/stock.md"), "utf8");
   const extra = await readFile(join(configDir, "notes/extra.md"), "utf8");
@@ -126,10 +132,18 @@ test("test_migrate_document_marks_when_rerun", async () => {
   // 準備
   const migrateDocumentMarks = await loadMigrateDocumentMarks();
   const { config, configDir } = await createFolder();
-  await migrateDocumentMarks({ config, configDir });
+  await migrateDocumentMarks({
+    config,
+    configDir,
+    rewrite: rewriteLegacyMarks,
+  });
   const before = await stat(join(configDir, "docs/stock.md"));
   // 実行
-  const result = await migrateDocumentMarks({ config, configDir });
+  const result = await migrateDocumentMarks({
+    config,
+    configDir,
+    rewrite: rewriteLegacyMarks,
+  });
   // 検証
   const after = await stat(join(configDir, "docs/stock.md"));
   expect(result.changed).toEqual([]);
