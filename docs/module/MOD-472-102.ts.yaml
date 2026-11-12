@@ -102,7 +102,7 @@ functions:
         exception: まとめられない
     callees:
       - MOD-472-100#functions[moduleDataUrl]
-      - MOD-472-112#functions[usedSyntaxLanguages]
+      - MOD-472-118#functions[usedSyntaxLanguages]
     refs:
       - IF-472-15#constraints[埋める色分けのライブラリ]
     status: planned
