@@ -3,11 +3,9 @@ docs:
   - page: docs/mock/pages/ui-canvas/80/side-by-side/app.js
     new: false
     change: mount で描いた列ごとのランドマーク（目次・関連文書の nav、箇所が見つからないコメントの section、写した nav.mdmark-doc-list）の accessible name に列の名前を加える
-    status: todo
-  - page: docs/mock/pages/ui-canvas/80/side-by-side/index.html
-    new: false
-    change: template の nav.mdmark-doc-list の aria-label を、列ごとに名前を加えられる形にする（app.js の付け替えで足りる場合は変えない）
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-12T12:30:24.587021+00:00'
 scope_out:
   - item: ライブラリが描く目次・関連文書の nav と箇所が見つからないコメントの section の accessible name を、同じページで mount を複数回呼んでも重ならないようにする
     reason: 'Issue #425 はモックだけの修正で、task-planner の受付判断も公開関数・描いた文書の HTML を変えないとした。1 ページに 1 文書を描く使い方では名前は重ならない'

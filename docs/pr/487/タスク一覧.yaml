@@ -65,8 +65,10 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-12T12:21:58.211172+00:00'
   - process: ドキュメント修正
-    status: todo
+    status: done
     note: docs/mock/pages/ui-canvas/80/side-by-side/ の app.js・index.html で列ごとのランドマークに列の名前を加え、axe の landmark-unique を 1280x800・390x844 で 0 件にする
+    updated_by: planner
+    updated_at: '2026-11-12T12:30:28.674116+00:00'
   - process: 単体テスト作成
     status: skipped
     reason: src のコードを変えない
