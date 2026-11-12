@@ -83,8 +83,7 @@
 /* 案 B: 参加者の箱の右上の目のボタン（ポインターを当てるかフォーカスしたときと、タッチの端末で出す） */
 .map-participant-hide {
   position: absolute;
-  top: 2px;
-  right: 2px;
+  z-index: 2;
   display: inline-grid;
   place-items: center;
   width: 24px;
@@ -97,8 +96,8 @@
   cursor: pointer;
   opacity: 0;
 }
-.map-participant:is(:hover, :focus-within) .map-participant-hide,
-.map-participant-hide:focus-visible {
+.map-participant:is(:hover, :focus-visible) + .map-participant-hide,
+.map-participant-hide:is(:hover, :focus-visible) {
   opacity: 1;
 }
 @media (hover: none) {

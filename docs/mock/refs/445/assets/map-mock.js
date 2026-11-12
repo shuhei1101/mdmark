@@ -1980,7 +1980,11 @@ export const createSequence = (host, spec, kinds, onStep) => {
         event.stopPropagation();
         setHidden(id, true);
       });
-      head.append(hide);
+      // 押せる参加者の箱の中に入れ子にせず、箱の隣に置いて右上に重ねる
+      hide.style.left = `${head.offsetLeft + head.offsetWidth - 26}px`;
+      hide.style.top = `${head.offsetTop + 2}px`;
+      hide.dataset.for = id;
+      head.after(hide);
     });
     if (state.hidden.size === 0) return;
     const strip = document.createElement("div");
