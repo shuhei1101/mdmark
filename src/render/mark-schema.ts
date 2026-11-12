@@ -149,6 +149,15 @@ const childPath = (path: string, key: string | number): string =>
 /** 値を JSON の文字にする */
 const show = (value: unknown): string => JSON.stringify(value);
 
+/** 選べる値の誤りの文の値の文字にする（文字の値は引用符を付けず、ほかは JSON の文字にする） */
+const showChoice = (value: unknown): string =>
+  typeof value === "string" ? value : JSON.stringify(value);
+
+/** 誤りで取り除くと、持ち主のオブジェクトごと当てないキー（持ち主のキーの名前 → キー）。絞り込みの種類を読めない列には、別の種類の絞り込みを付けない */
+const DECIDING_KEYS: Readonly<Record<string, readonly string[]>> = {
+  filter: ["type"],
+};
+
 /** スキーマから見本の値を作る */
 const exampleOf = (node: MarkSchema, root: MarkSchema): unknown => {
   const resolved = resolve(node, root);
@@ -247,8 +256,10 @@ const mismatchMessage = (
 ): string => {
   const resolved = resolve(node, root);
   if (resolved.enum && matchesType(resolved.type, value)) {
-    const values = resolved.enum.map((item) => `\`${show(item)}\``).join("・");
-    return `の \`${path}\` の \`${show(value)}\` は選べる値にありません。選べる値は ${values} です。この設定を当てずに描いています。`;
+    const values = resolved.enum
+      .map((item) => `\`${showChoice(item)}\``)
+      .join("・");
+    return `の \`${path}\` の \`${showChoice(value)}\` は選べる値にありません。選べる値は ${values} です。この設定を当てずに描いています。`;
   }
   return `の \`${path}\` には ${expectedOf(node, root)} を記載してください（例 \`${show(exampleOf(node, root))}\`）。この設定を当てずに描いています。`;
 };
@@ -386,8 +397,18 @@ const checkObject = (
       return { value: REMOVED, problems, unknownKeys };
     }
   }
-  // 誤りで取り除いたキーが必須なら、このオブジェクトも当てない
-  if (path !== "" && (node.required ?? []).some((key) => removed.has(key))) {
+  // 誤りで取り除いたキーが必須か、オブジェクトの振る舞いを決めるキーなら、このオブジェクトも当てない
+  const owner =
+    path
+      .split(/\.|\[\d+\]/)
+      .filter(Boolean)
+      .at(-1) ?? "";
+  if (
+    path !== "" &&
+    [...(node.required ?? []), ...(DECIDING_KEYS[owner] ?? [])].some((key) =>
+      removed.has(key),
+    )
+  ) {
     return { value: REMOVED, problems, unknownKeys };
   }
   return { value: out, problems, unknownKeys };
