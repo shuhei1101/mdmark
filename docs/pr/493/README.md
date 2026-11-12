@@ -1,0 +1,1 @@
+# PoC: plugin.json に version が無いプラグインが commit で更新されるか
