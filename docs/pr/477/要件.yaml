@@ -491,3 +491,6 @@ scope_out:
   - item: 'ai-monitor の design_docs publish が作る設計書・使い方集の README の目次の表のマーカー（<!-- table: data -->）'
     reason: ai-monitor の生成の雛形が今の書き方で書くため、この PR で書き換えても publish のたびに今の書き方に戻る。今の書き方は 1 つのマイナーバージョンの間は読むため描ける。生成の雛形を JSON の書き方にするのは ai-monitor 側の変更で、リポジトリごとの移行の Issue と一緒に起票する
     plan: to_file
+  - item: migrations/next/legacy-marks.js にまとめた依存のライセンスの表記（同じフォルダへのライセンスのファイルの書き込みか、buildLegacyMarks の metafile のライセンスの集計への追加）
+    reason: レビューの任意の指摘。今は dist/THIRD_PARTY_LICENSES.txt が同じ依存を挙げており、表記が欠けるのは後のバージョンで dist/ の依存が変わったとき。移行の手順のフォルダを v{バージョン}/ に移す release の前に別の Issue で行う
+    plan: to_file
