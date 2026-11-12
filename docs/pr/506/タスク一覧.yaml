@@ -35,8 +35,10 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-12T17:25:52.187421+00:00'
   - process: 単一ユースケース設計
-    status: todo
+    status: done
     note: シナリオ『リンクをカードの格子に並べる』の notes.項目の記載方法の `icon:名前` を修正する
+    updated_by: planner
+    updated_at: '2026-11-12T17:30:12.598885+00:00'
   - process: モック作成
     status: skipped
     reason: 画面に関わる変更ではない
