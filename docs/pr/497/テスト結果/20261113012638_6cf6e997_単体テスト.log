@@ -1,0 +1,114 @@
+$ npx vitest run --project 'unit*' tests/unit/src/interact/sections.browser.test.ts tests/unit/src/mount.browser.test.ts
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/fix-interact-keep-section-open-on-update
+
+ ❯ |unit-browser (chromium)| tests/unit/src/interact/sections.browser.test.ts (19 tests | 3 failed) 3455ms
+   × test_attach_sections_when_states 190ms
+   × test_attach_sections_when_beforematch 120ms
+   × test_attach_sections_when_reveal_hash_off 134ms
+ ❯ |unit-browser (chromium)| tests/unit/src/mount.browser.test.ts (44 tests | 1 failed) 10805ms
+   × test_mount_when_sections_kept_on_update 159ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/mount.browser.test.ts > test_mount_when_sections_kept_on_update
+AssertionError: expected null to be 'until-found' // Object.is equality
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/mount.browser.test.ts/test_mount_when_sections_kept_on_update.png
+
+[32m- Expected:[39m
+"until-found"
+
+[31m+ Received:[39m
+null
+
+ ❯ tests/unit/src/mount.browser.test.ts:711:56
+    709|   handle.update(updated);
+    710|   // 検証: 読者が閉じた概要と補足は閉じたまま、追加した付録は開く
+    711|   expect(sectionBody(el, "概要").getAttribute("hidden")).toBe("until-fou…
+       |                                                        ^
+    712|   expect(sectionBody(el, "補足").getAttribute("hidden")).toBe("until-fou…
+    713|   expect(sectionBody(el, "付録").hasAttribute("hidden")).toBe(false);
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=61d96d52:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/4]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/interact/sections.browser.test.ts > test_attach_sections_when_states
+AssertionError: expected true to be false // Object.is equality
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/sections.browser.test.ts/test_attach_sections_when_states.png
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- false[39m
+[31m+ true[39m
+
+ ❯ tests/unit/src/interact/sections.browser.test.ts:402:57
+    400|   );
+    401|   // 検証
+    402|   expect(sectionBody(root, "甲").hasAttribute("hidden")).toBe(false);
+       |                                                         ^
+    403|   expect(expandedStates(root, ["甲"])).toEqual(["true"]);
+    404|   expect(sectionBody(root, "乙").getAttribute("hidden")).toBe("until-fo…
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=61d96d52:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/4]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/interact/sections.browser.test.ts > test_attach_sections_when_beforematch
+AssertionError: expected undefined to deeply equal { open: true, marker: 'closed' }
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/sections.browser.test.ts/test_attach_sections_when_beforematch.png
+
+[32m- Expected:[39m
+{
+  "marker": "closed",
+  "open": true,
+}
+
+[31m+ Received:[39m
+undefined
+
+ ❯ tests/unit/src/interact/sections.browser.test.ts:441:35
+    439|   sectionBody(root, "甲").dispatchEvent(new Event("beforematch"));
+    440|   // 検証
+    441|   expect(states.get("section-甲")).toEqual({ open: true, marker: "close…
+       |                                   ^
+    442| });
+    443|
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=61d96d52:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/4]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/interact/sections.browser.test.ts > test_attach_sections_when_reveal_hash_off
+AssertionError: expected null to be 'until-found' // Object.is equality
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/sections.browser.test.ts/test_attach_sections_when_reveal_hash_off.png
+
+[32m- Expected:[39m
+"until-found"
+
+[31m+ Received:[39m
+null
+
+ ❯ tests/unit/src/interact/sections.browser.test.ts:463:41
+    461|   // 検証
+    462|   const closed = sectionBody(root, "親");
+    463|   expect(closed.getAttribute("hidden")).toBe("until-found");
+       |                                         ^
+    464|   window.dispatchEvent(new HashChangeEvent("hashchange"));
+    465|   await vi.waitFor(() => {
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=61d96d52:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/4]⎯
+
+
+ Test Files  2 failed (2)
+      Tests  4 failed | 59 passed (63)
+   Start at  01:25:39
+   Duration  53.48s (worker 72%, tests 15%, import 13%)
+

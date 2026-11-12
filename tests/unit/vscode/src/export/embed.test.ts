@@ -129,3 +129,100 @@ test("test_embed_local_libraries_when_mermaid", async () => {
   expect(unused.calls).not.toContain("/ws/libs/mermaid.mjs");
   expect(withoutBlock.mermaid).toEqual(mermaid);
 });
+
+/** 言語 `ts` のコードブロックを 1 つ持つ文書 */
+const TS_BLOCK = "```ts\nconst a = 1;\n```\n";
+
+// 文書が使用する言語と本体だけをまとめ、import map で割り当てる（正常系）
+test("test_embed_local_syntax", async () => {
+  // 準備
+  const { embedLocalSyntax } = await loadEmbed();
+  const { moduleDataUrl } = await loadHtml();
+  const { bundle, calls } = recordingBundle();
+  // 実行
+  const result = await embedLocalSyntax({
+    markdown: TS_BLOCK,
+    syntax: { url: "/ws/hljs" },
+    config: {},
+    bundle,
+  });
+  // 検証
+  expect(result.syntax).toEqual({ url: "file:///ws/hljs/" });
+  expect(result.imports).toEqual({
+    "file:///ws/hljs/core.min.js": moduleDataUrl(
+      'export default "/ws/hljs/core.min.js";',
+    ),
+    "file:///ws/hljs/languages/typescript.min.js": moduleDataUrl(
+      'export default "/ws/hljs/languages/typescript.min.js";',
+    ),
+  });
+  expect([...calls].sort()).toEqual([
+    "/ws/hljs/core.min.js",
+    "/ws/hljs/languages/typescript.min.js",
+  ]);
+  expect(result.failures).toEqual([]);
+});
+
+// http・https の url と syntax が無いときはそのまま返却する（正常系）
+test("test_embed_local_syntax_when_not_local", async () => {
+  // 準備
+  const { embedLocalSyntax } = await loadEmbed();
+  const { bundle, calls } = recordingBundle();
+  const remote = { url: "https://cdn.example.com/es/" };
+  // 実行
+  const withRemote = await embedLocalSyntax({
+    markdown: TS_BLOCK,
+    syntax: remote,
+    config: {},
+    bundle,
+  });
+  const withoutSyntax = await embedLocalSyntax({
+    markdown: TS_BLOCK,
+    syntax: undefined,
+    config: {},
+    bundle,
+  });
+  // 検証
+  expect(withRemote.syntax).toEqual(remote);
+  expect(withRemote.imports).toEqual({});
+  expect(withoutSyntax.syntax).toBeUndefined();
+  expect(withoutSyntax.imports).toEqual({});
+  expect(calls).toEqual([]);
+});
+
+// 色分けの対象が無い文書では url を削除してまとめない（正常系）
+test("test_embed_local_syntax_when_unused", async () => {
+  // 準備
+  const { embedLocalSyntax } = await loadEmbed();
+  const { bundle, calls } = recordingBundle();
+  // 実行
+  const result = await embedLocalSyntax({
+    markdown: "# タイトル\n",
+    syntax: { url: "/ws/hljs" },
+    config: {},
+    bundle,
+  });
+  // 検証
+  expect(result.syntax).toBeUndefined();
+  expect(result.imports).toEqual({});
+  expect(calls).toEqual([]);
+});
+
+// まとめられないモジュールは割り当てず誤りを返却する（異常系）
+test("test_embed_local_syntax_when_bundle_fails", async () => {
+  // 準備
+  const { embedLocalSyntax } = await loadEmbed();
+  const { bundle } = recordingBundle(["/ws/hljs/languages/typescript.min.js"]);
+  // 実行
+  const result = await embedLocalSyntax({
+    markdown: TS_BLOCK,
+    syntax: { url: "/ws/hljs" },
+    config: {},
+    bundle,
+  });
+  // 検証
+  expect(Object.keys(result.imports)).toEqual(["file:///ws/hljs/core.min.js"]);
+  expect(result.failures).toEqual([
+    { path: "/ws/hljs/languages/typescript.min.js", error: "読み込めない" },
+  ]);
+});

@@ -1,0 +1,36 @@
+use_cases:
+  - kind: single
+    scenario: docs/scenario/SC-472-10.yaml
+    impact: none
+    detail: タグ一覧が返らないときに前回のバージョンで描く流れは変えず、確かめ方だけを修正する
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-32.yaml
+    impact: none
+    detail: 設定ファイルと文書のマーカーの明暗で描く流れは変えず、確かめ方だけを修正する
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-82.yaml
+    impact: none
+    detail: ビルドの流れは変えず、単体テストと確かめる内容が重なる結合テスト 3 件を削除し、残りを軽量化する
+    depends_on: []
+scope_out:
+  - item: 結合テストのメモリの使い過ぎの削減
+    reason: 所要時間の短縮と目的が違う
+    plan: '#373'
+  - item: test_normal_when_range_scripts が通しで流すと落ちる事象
+    reason: 要望が挙げた 3 件と別の事象
+    plan: '#364'
+  - item: preview-rerender.test.ts の test_normal の時間の比較でときどき落ちる事象
+    reason: 要望が挙げた 3 件に含まれず、別の Issue がある
+    plan: '#474'
+  - item: preview-rerender.test.ts の test_normal_when_library_origin_added が libraries のマーカーを今の書き方で記載していて毎回落ちる事象
+    reason: '#477 のマーカーの JSON の記載への変更に追随していない別の事象で、ときどき落ちるテストではない'
+    plan: '#496'
+  - item: mount.browser.test.ts の test_normal_when_unbundled_icons が全件の実行でときどき落ちる事象
+    reason: 要望が挙げた 3 件に含まれず、修正後の計測で初めて観測した別の事象
+    plan: '#502'
+  - item: 拡張機能のタグ一覧の要求が待ちの上限 3 秒より早く TimeoutError になる事象（test_normal_when_tags_unreachable の下限の失敗）
+    reason: テストではなく拡張機能の実装の不具合で、この PR は実装を変えない
+    plan: '#504'
+docs: []

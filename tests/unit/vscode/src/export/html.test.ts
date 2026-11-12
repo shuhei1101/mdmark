@@ -133,3 +133,35 @@ test("test_build_export_html_when_theme_and_extensions", async () => {
   expect(plain).not.toContain("<style>");
   expect(plain).not.toContain("registerExtension");
 });
+
+// import map を type=module の script より前に埋める（正常系）
+test("test_build_export_html_when_import_map", async () => {
+  // 準備
+  const { buildExportHtml } = await loadHtml();
+  const importMap = {
+    "file:///ws/hljs/core.min.js": "data:text/javascript;charset=utf-8,a",
+  };
+  // 実行
+  const html = buildExportHtml({
+    ...BUILD_OPTIONS,
+    markdown: "# タイトル",
+    print: false,
+    importMap,
+  });
+  const plain = buildExportHtml({
+    ...BUILD_OPTIONS,
+    markdown: "# タイトル",
+    print: false,
+    importMap: {},
+  });
+  // 検証
+  const map = html.match(
+    /<script\b[^>]*type="importmap"[^>]*>([\s\S]*?)<\/script>/,
+  );
+  expect(map).not.toBeNull();
+  expect(JSON.parse(map?.[1] ?? "")).toEqual({ imports: importMap });
+  expect(html.indexOf('type="importmap"')).toBeLessThan(
+    html.indexOf('type="module"'),
+  );
+  expect(plain).not.toContain("importmap");
+});

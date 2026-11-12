@@ -1,6 +1,13 @@
 import * as assert from "node:assert";
 import { existsSync } from "node:fs";
-import { chmod, cp, mkdir, readdir, readFile } from "node:fs/promises";
+import {
+  chmod,
+  cp,
+  mkdir,
+  readdir,
+  readFile,
+  writeFile,
+} from "node:fs/promises";
 import { join } from "node:path";
 import { pathToFileURL } from "node:url";
 import playwright from "playwright";
@@ -72,6 +79,34 @@ async function openGuide(options: { extra?: string } = {}): Promise<void> {
   await openMarkdown("docs/guide.md");
 }
 
+/** 脚注の番号が画面の途中に来るよう前に段落を並べ、`ts` のコードブロックを持つ文書 */
+const TOOLTIP_SYNTAX_MARKDOWN = [
+  "# 色分けと脚注",
+  "",
+  ...Array.from({ length: 6 }, (_, index) => `段落 ${index + 1}。\n`),
+  "本文に脚注を付ける[^1]。",
+  "",
+  "```ts",
+  "const answer: number = 42;",
+  "```",
+  "",
+  "[^1]: 脚注の中身",
+  "",
+].join("\n");
+
+/** Markdown が使用しない言語のモジュールの末尾に追加する目印 */
+const UNUSED_LANGUAGE_SIGN = "unused-language-sign-484";
+
+/** `@highlightjs/cdn-assets` の `es/` フォルダをワークスペースの `hljs/` に写す */
+async function copyHighlight(): Promise<void> {
+  await cp(
+    join(REPO_ROOT, "node_modules", "@highlightjs", "cdn-assets", "es"),
+    join(workspaceDir(), "hljs"),
+    { recursive: true },
+  );
+  trackFile("hljs");
+}
+
 /** 書き出した HTML の `file:` の URL */
 function exportedUrl(relative: string): string {
   return pathToFileURL(join(workspaceDir(), relative)).href;
@@ -104,6 +139,8 @@ function exportedData(html: string): {
     libraries?: Record<string, string>;
     "html-scripts"?: { url?: string };
     mermaid?: { url?: string };
+    tooltips?: { placement?: string };
+    syntax?: { url?: string };
   };
 } {
   const found = html.match(
@@ -339,6 +376,89 @@ suite("HTML に書き出す", () => {
       assert.strictEqual(
         await exported.page.locator(".mdmark-notice").count(),
         0,
+      );
+    } finally {
+      await exported.close();
+    }
+  });
+
+  // 相対パスの syntax.url の本体と文書が使用する言語のモジュールを data: の URL にして import map で割り当て、Chromium で file:// で開いて色分けし、ツールチップを参照の下に出す（正常系（ツールチップの位置と相対パスの色分けのライブラリ））
+  test("test_normal_when_tooltips_and_relative_syntax", async function () {
+    // 本体と言語のモジュールを esbuild-wasm でまとめる書き出しを最大 60 秒待つ
+    this.timeout(90000);
+    // 準備
+    await copyHighlight();
+    const unused = join(workspaceDir(), "hljs", "languages", "python.min.js");
+    await writeFile(
+      unused,
+      `${await readFile(unused, "utf8")}\n// ${UNUSED_LANGUAGE_SIGN}\n`,
+    );
+    await writeFixture(
+      "mdmark.config.yaml",
+      "tooltips:\n  placement: bottom\nsyntax:\n  url: ./hljs/\n",
+    );
+    await writeFixture("docs/syntax.md", TOOLTIP_SYNTAX_MARKDOWN);
+    await openMarkdown("docs/syntax.md");
+    trackFile("docs/syntax.html");
+    // 実行
+    await vscode.commands.executeCommand("mdmark.exportHtml");
+    // 検証: 埋めた設定と import map
+    const path = join(workspaceDir(), "docs", "syntax.html");
+    await waitFor(() => existsSync(path), {
+      message: "書き出されない",
+      timeout: 60_000,
+    });
+    const html = await readFixture("docs/syntax.html");
+    const { config } = exportedData(html);
+    assert.deepStrictEqual(config.tooltips, { placement: "bottom" });
+    const folder = `${pathToFileURL(join(workspaceDir(), "hljs")).href}/`;
+    assert.strictEqual(config.syntax?.url, folder);
+    const importMap = /<script type="importmap">([\s\S]*?)<\/script>/.exec(
+      html,
+    )?.[1];
+    assert.ok(importMap, "import map が無い");
+    const { imports } = JSON.parse(importMap) as {
+      imports: Record<string, string>;
+    };
+    assert.deepStrictEqual(Object.keys(imports).sort(), [
+      `${folder}core.min.js`,
+      `${folder}languages/typescript.min.js`,
+    ]);
+    for (const url of Object.values(imports)) {
+      assert.ok(url.startsWith("data:text/javascript"), url.slice(0, 40));
+    }
+    assert.ok(!decodedDataUrls(html).includes(UNUSED_LANGUAGE_SIGN));
+    // 検証: file:// で開いて色分けし、ツールチップを参照の下に出す
+    const fileRequests: string[] = [];
+    const exported = await openExported(path, async (page) => {
+      page.on("request", (request) => {
+        if (request.url().startsWith("file:")) {
+          fileRequests.push(request.url());
+        }
+      });
+    });
+    try {
+      await exported.page.waitForSelector('pre code [class^="hljs-"]');
+      assert.strictEqual(
+        await exported.page.locator(".mdmark-notice").count(),
+        0,
+      );
+      await exported.page.focus(".mdmark-fn-link");
+      await exported.page.waitForSelector(
+        ".mdmark-fn-ref.is-open .mdmark-fn-tip",
+      );
+      const link = await exported.page.locator(".mdmark-fn-link").boundingBox();
+      const tip = await exported.page
+        .locator(".mdmark-fn-ref.is-open .mdmark-fn-tip")
+        .boundingBox();
+      assert.ok(link && tip);
+      assert.ok(
+        tip.y >= link.y + link.height - 1,
+        JSON.stringify({ link, tip }),
+      );
+      assert.deepStrictEqual(
+        fileRequests.filter((url) => url !== exportedUrl("docs/syntax.html")),
+        [],
       );
     } finally {
       await exported.close();
