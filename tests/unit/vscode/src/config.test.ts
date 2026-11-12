@@ -257,7 +257,7 @@ test("test_load_config_when_aliases_missing_files", async () => {
   });
 });
 
-// 書き出しのときはエイリアスを作らない（正常系）
+// 書き出しのときもエイリアスを作る（正常系）
 test("test_load_config_when_export", async () => {
   // 準備
   const { loadConfig: load } = await loadModule();
@@ -275,9 +275,14 @@ test("test_load_config_when_export", async () => {
     }),
   );
   // 検証
-  expect(result.aliases).toBeUndefined();
+  expect(result.aliases).toHaveLength(1);
+  expect(result.aliases?.[0]).toMatchObject({
+    alias_type: "term",
+    name: "描画",
+    aliases: ["レンダリング"],
+  });
   expect(result.aliasIssues).toEqual([]);
-  expect(result.aliasFiles).toEqual([]);
+  expect(result.aliasFiles).toEqual([join(dir, "glossary.yaml")]);
 });
 
 // 空でない mdmark.colorTheme が設定ファイルに勝ち、空なら設定ファイルのまま（正常系）
