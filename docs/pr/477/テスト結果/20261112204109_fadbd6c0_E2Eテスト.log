@@ -1,0 +1,70 @@
+$ npx playwright test --project=chromium -g "<直したテストと PR だけで fail したテスト>" <ファイル>
+- Resolving version...
+✔ Validated version: 1.141.0
+✔ Found existing install in /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-render-marker-json-options/vscode/.vscode-test/vscode-linux-x64-1.141.0
+
+Running 22 tests using 4 workers
+
+[1/22] [chromium] › tests/e2e/単一ユースケース/文書を描く.spec.ts:25:1 › test_normal
+[2/22] [chromium] › tests/e2e/単一ユースケース/コードブロックを飾る.spec.ts:82:1 › test_normal
+[3/22] [chromium] › tests/e2e/単一ユースケース/ビューで項目を確認する.spec.ts:28:1 › test_normal
+[4/22] [chromium] › tests/e2e/単一ユースケース/VSCodeでプレビューを開く.spec.ts:70:1 › test_normal
+[5/22] [chromium] › tests/e2e/単一ユースケース/文書を描く.spec.ts:370:1 › test_normal_when_legacy_mark_args
+[6/22] [chromium] › tests/e2e/単一ユースケース/コードブロックを飾る.spec.ts:227:1 › test_normal_when_title_with_space_and_line_start
+[7/22] [chromium] › tests/e2e/単一ユースケース/文書を描く.spec.ts:406:1 › test_normal_when_multiline_mark_args
+[8/22] [chromium] › tests/e2e/単一ユースケース/表を操作する.spec.ts:57:1 › test_normal
+[9/22] [chromium] › tests/e2e/単一ユースケース/ビューで項目を確認する.spec.ts:191:1 › test_normal_when_value_icon
+[10/22] [chromium] › tests/e2e/単一ユースケース/ビューで項目を確認する.spec.ts:221:1 › test_error_when_value_missing
+[11/22] [chromium] › tests/e2e/単一ユースケース/記載した内容をプレビューに映す.spec.ts:50:1 › test_normal
+[12/22] [chromium] › tests/e2e/単一ユースケース/文字列とYAMLのキーの記法を点検する.spec.ts:82:1 › test_normal
+[13/22] [chromium] › tests/e2e/単一ユースケース/VSCodeでプレビューを開く.spec.ts:245:1 › test_normal_when_includes
+[14/22] [chromium] › tests/e2e/単一ユースケース/表を操作する.spec.ts:823:1 › test_error_when_unknown_total_or_hidden_column
+[15/22] [chromium] › tests/e2e/単一ユースケース/表を操作する.spec.ts:1495:1 › test_error_when_unknown_column
+[16/22] [chromium] › tests/e2e/単一ユースケース/表を操作する.spec.ts:1684:1 › test_error_when_merge_invalid
+
+
+[17/22] [chromium] › tests/e2e/単一ユースケース/端末にmdmarkをセットアップする.spec.ts:124:1 › test_normal
+[18/22] [chromium] › tests/e2e/単一ユースケース/追加するJavaScriptを型で点検する.spec.ts:25:1 › test_normal
+[19/22] [chromium] › tests/e2e/単一ユースケース/文字列とYAMLのキーの記法を点検する.spec.ts:107:1 › test_normal_when_warnings
+[20/22] [chromium] › tests/e2e/単一ユースケース/文字列とYAMLのキーの記法を点検する.spec.ts:316:1 › test_normal_when_legacy_mark_args
+[21/22] [chromium] › tests/e2e/単一ユースケース/記載した内容をプレビューに映す.spec.ts:413:1 › test_normal_when_aliases_yaml_saved
+[22/22] [chromium] › tests/e2e/単一ユースケース/追加するJavaScriptを型で点検する.spec.ts:38:1 › test_error_when_type_mismatch
+  1) [chromium] › tests/e2e/単一ユースケース/記載した内容をプレビューに映す.spec.ts:413:1 › test_normal_when_aliases_yaml_saved 
+
+    Error: expect(received).toBe(expected) // Object.is equality
+
+    - Expected  - 1
+    + Received  + 5
+
+      案内
+
+    - レンダリングの段落
+    + レンダリング
+    + 用語
+    + 描画
+    + 書き換えた意味
+    + の段落
+
+      案内
+
+    Call Log:
+    - Timeout 30000ms exceeded while waiting on the predicate
+
+      443 |   await expect
+      444 |     .poll(() => frame.locator(".mdmark").first().innerText())
+    > 445 |     .toBe(text);
+          |      ^
+      446 |   expect(await scrollTop(frame)).toBe(top);
+      447 | });
+      448 |
+        at /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-render-marker-json-options/tests/e2e/単一ユースケース/記載した内容をプレビューに映す.spec.ts:445:6
+
+    Error Context: test-results/単一ユースケース-記載した内容をプレビューに映す-test-normal-when-aliases-yaml-saved-chromium/error-context.md
+
+    Error Context: test-results/単一ユースケース-記載した内容をプレビューに映す-test-normal-when-aliases-yaml-saved-chromium/error-context.md
+
+
+  1 failed
+    [chromium] › tests/e2e/単一ユースケース/記載した内容をプレビューに映す.spec.ts:413:1 › test_normal_when_aliases_yaml_saved 
+  21 passed (5.1m)
+exit=1
