@@ -434,15 +434,15 @@ print(f"{len(docs)} 件を描きました", None, True)</code></pre>
         </article>
       </section>
 
-      <!-- 知らないコードの行のマーカー（異常シナリオ）: 行末の // [!code focus] は行に当てず、記載した文字のまま出す -->
+      <!-- 知らないコードの行のマーカー（異常シナリオ）: 行末の // [!code blink] は行に当てず、記載した文字のまま出す -->
       <section aria-labelledby="state-unknown-mark">
         <h2 class="catalog-label" id="state-unknown-mark">知らないコードの行のマーカー（異常シナリオ）</h2>
         <article class="mdmark">
 <div class="mdmark-syntax-warning">
   <p class="mdmark-syntax-warning-title"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg>記載の警告</p>
-  <p>コードの行のマーカー <code>[!code focus]</code> は使用できません。使用できるマーカーは <code>[!code ++]</code>・<code>[!code --]</code>・<code>[!code highlight]</code> です。この行には当てず、記載した文字のまま描いています。</p>
+  <p>コードの行のマーカー <code>[!code blink]</code> は使用できません。使用できるマーカーは <code>[!code ++]</code>・<code>[!code --]</code>・<code>[!code highlight]</code>・<code>[!code focus]</code>・<code>[!code error]</code>・<code>[!code warning]</code> です。1 行目には当てず、記載した文字のまま描いています。</p>
 </div>
-<pre tabindex="0" aria-label="コード: ts"><code class="language-ts"><span class="hljs-keyword">const</span> doc = <span class="hljs-keyword">await</span> <span class="hljs-title function_">fetch</span>(<span class="hljs-string">&quot;/README.md&quot;</span>); <span class="hljs-comment">// [!code focus]</span></code></pre>
+<pre tabindex="0" aria-label="コード: ts"><code class="language-ts"><span class="hljs-keyword">const</span> doc = <span class="hljs-keyword">await</span> <span class="hljs-title function_">fetch</span>(<span class="hljs-string">&quot;/README.md&quot;</span>); <span class="hljs-comment">// [!code blink]</span></code></pre>
         </article>
       </section>
 
