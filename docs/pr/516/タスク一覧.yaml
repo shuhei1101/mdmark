@@ -60,7 +60,10 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-12T23:05:29.456400+00:00'
   - process: モジュール構成設計
-    status: todo
+    status: done
+    note: attachFootnotes の説明に click をキャプチャーフェーズで受けることと理由を加え、単体テストの行 test_attach_footnotes_when_root_has_bubbling_click を加えた
+    updated_by: planner
+    updated_at: '2026-11-12T23:08:13.178636+00:00'
   - process: ドキュメント修正
     status: skipped
     reason: 利用者の操作・用語・API は変わらない
