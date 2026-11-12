@@ -20,6 +20,7 @@
 
     /* 言語のラベル: 帯の上端に付けたタブ。枠線を持たず、本文より少し濃い面に本文の色の文字で出す */
     .mdmark-code-bar > .mdmark-code-lang {
+      order: -1;
       align-self: flex-start;
       padding: 0.3em 0.75em;
       border: 0;
@@ -38,5 +39,13 @@
     .mdmark-code-bar .mdmark-code-file {
       border-inline-start-color: color-mix(in oklab, var(--mdmark-color-text) 35%, var(--mdmark-color-surface));
     }
+  }
+}
+
+/* 開閉のボタン: 行番号の右の列でなく、その行のコードの文字の始まりの 1 つ左に配置する。
+   --mock-505-lead は行頭の空白の幅（モックは scene.js が行に持たせる） */
+@layer mdmark {
+  .mdmark pre.mdmark-code-lines .mdmark-code-line > .mdmark-code-fold {
+    inset-inline-start: calc(var(--mdmark-code-text-start) + var(--mock-505-lead, 0ch) - 1.35em - 0.25ch);
   }
 }

@@ -53,7 +53,8 @@
     const available = scroll.clientWidth - (table.offsetWidth - table.clientWidth) - 2;
     const em = Number.parseFloat(getComputedStyle(table).fontSize);
     const head = [...[...table.tHead.rows].at(-1).cells];
-    const rows = [...table.tBodies[0].rows];
+    // 行の詳細などの、列と 1 対 1 でない行は数えない
+    const rows = [...table.tBodies[0].rows].filter((row) => row.cells.length === head.length);
     const columns = head.map((th, index) => {
       const cells = rows.map((row) => row.cells[index]).filter(Boolean);
       const style = getComputedStyle(th);

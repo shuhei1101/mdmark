@@ -1,0 +1,15 @@
+/* #505 の文書の場面: 文書を描く先の要素を画面の幅いっぱいに広げる（配布物の既定の --mdmark-content-width: none のまま） */
+
+.host {
+  max-width: none;
+}
+
+/* 表: 配布物の規則より後に読み、table-width.js が決めた列の幅で描く */
+[data-mock-table505] .mdmark .mdmark-table-scroll > table {
+  width: auto;
+  table-layout: fixed;
+}
+
+[data-mock-table505] .mdmark .mdmark-table-scroll :is(th, td) {
+  min-width: 0;
+}
