@@ -858,11 +858,11 @@ test("test_mount_when_diff_blocks_with_hash", async () => {
   // 準備
   history.replaceState(null, "", "#注意");
   const scrolled: Element[] = [];
-  vi.spyOn(Element.prototype, "scrollIntoView").mockImplementation(
-    function (this: Element) {
-      scrolled.push(this);
-    },
-  );
+  vi.spyOn(Element.prototype, "scrollIntoView").mockImplementation(function (
+    this: Element,
+  ) {
+    scrolled.push(this);
+  });
   const el = createElement();
   const after = `${SECTIONS_MARKDOWN}\n追加した段落\n`;
   const contents: Record<string, string> = {
