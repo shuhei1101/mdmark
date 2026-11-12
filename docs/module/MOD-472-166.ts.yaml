@@ -25,7 +25,7 @@ constants:
     title: サイズを検めない配布ファイル
     container: scripts/build.ts
     summary: 利用側のページが jsDelivr から読み込まないため、配布ファイル 1 つの上限を適用しない出力
-    value: '["dist/cli.js", "dist/viewer.js", "dist/viewer.css", "dist/legacy-marks.js"]'
+    value: '["dist/cli.js", "dist/viewer.js", "dist/viewer.css"]'
     refs:
       - IF-472-41#constraints[配布ファイル 1 つのサイズ]
     status: planned
@@ -170,7 +170,7 @@ functions:
     kind: 関数
     scope: public
     is_async: true
-    summary: esbuild で `src/index.ts` と `src/index.css` を、バージョンを埋めた `dist/index.js` と `dist/index.css` に、ビューとコメントと map の部品の `src/views/index.ts`・`src/comments/index.ts`・`src/map/index.ts` を `dist/view.js`・`dist/comments.js`・`dist/map.js` にまとめ、`emitDeclarations` で型定義を書き込む。続けて、書き出した HTML の起動の処理 `src/viewer/index.ts` と `src/viewer/viewer.css` を `dist/viewer.js` と `dist/viewer.css` に、CLI の `src/cli/main.ts` を `dist/cli.js` に、移行の手順のスクリプトが読み込む `src/render/legacy-marks.ts` を `dist/legacy-marks.js` にまとめ、配布物と CLI にまとめた依存のライセンスを書き込む
+    summary: esbuild で `src/index.ts` と `src/index.css` を、バージョンを埋めた `dist/index.js` と `dist/index.css` に、ビューとコメントと map の部品の `src/views/index.ts`・`src/comments/index.ts`・`src/map/index.ts` を `dist/view.js`・`dist/comments.js`・`dist/map.js` にまとめ、`emitDeclarations` で型定義を書き込む。続けて、書き出した HTML の起動の処理 `src/viewer/index.ts` と `src/viewer/viewer.css` を `dist/viewer.js` と `dist/viewer.css` に、CLI の `src/cli/main.ts` を `dist/cli.js` ににまとめ、`buildLegacyMarks` で移行の手順のスクリプトが読み込む書き換えの処理をまとめ、配布物と CLI にまとめた依存のライセンスを書き込む
     description: '`format: esm`・`bundle: true`・`minify: true`・`target: BROWSER_TARGETS`・`plugins: [postcssStubPlugin]`・`define` で `__MDMARK_VERSION__` を、`banner.css` で `:root{--mdmark-version:"{バージョン}"}` を埋め、`metafile` を取る。続けて `metafile` を指定してまとめた依存のライセンスを記載する。'
     side_effects: '`dist/` を書き換える'
     args:
@@ -208,9 +208,9 @@ functions:
       - name: test_build_dist_when_cli_and_viewer
         case: 正常
         summary: CLI と起動の処理をまとめる
-        condition: バージョン `v0.0.1`、`src/cli/main.ts` と `src/viewer/index.ts`・`src/viewer/viewer.css` と `src/render/legacy-marks.ts` がある
+        condition: バージョン `v0.0.1`、`src/cli/main.ts` と `src/viewer/index.ts`・`src/viewer/viewer.css` がある
         mock: 一時フォルダに `src/` を配置し、作業ツリーの `node_modules` へのリンクと `tsconfig.json`・`tsconfig.dist.json` を配置する
-        expected: 戻り値に `dist/cli.js`・`dist/viewer.js`・`dist/viewer.css`・`dist/legacy-marks.js` があり、`dist/cli.js` の 1 行目が `#!/usr/bin/env node` で `yaml` をまとめていない。`src/viewer/index.ts` の文字列 `"</script>"` が `dist/viewer.js` では `<\/script>` になっている
+        expected: 戻り値に `dist/cli.js`・`dist/viewer.js`・`dist/viewer.css` があり、`dist/cli.js` の 1 行目が `#!/usr/bin/env node` で `yaml` をまとめていない。`src/viewer/index.ts` の文字列 `"</script>"` が `dist/viewer.js` では `<\/script>` になっている
       - name: test_build_dist_when_cli_bundles_package
         case: 正常
         summary: CLI にまとめたパッケージのライセンスも記載する
@@ -218,8 +218,42 @@ functions:
         mock: 一時フォルダに `src/` とそのパッケージの `package.json`・`LICENSE` を配置し、作業ツリーの `node_modules` へのリンクと `tsconfig.json`・`tsconfig.dist.json` を配置する
         expected: '`dist/THIRD_PARTY_LICENSES.txt` にそのパッケージの名前と本文がある'
     notes:
-      CLI と起動の処理のまとめ方: '`dist/viewer.js` は `dist/index.js` と同じ設定（対応ブラウザの `target`・`postcssStubPlugin`・バージョンの `define`）で、ライブラリ本体を含めて 1 つにまとめる。`dist/cli.js` は `platform: node`・`target: node24`・`format: esm`・`banner.js` に `#!/usr/bin/env node` でまとめ、`yaml` と `esbuild` を `external` にして `package.json` の `dependencies` から読み込む。`dist/legacy-marks.js` は `platform: node`・`target: node24`・`format: esm` で依存を含めて 1 つにまとめる（移行の手順のスクリプトが `node_modules` を参照せずに読み込む）。これらを `UNSIZED_OUTPUTS` に入れ、サイズを検めない'
+      CLI と起動の処理のまとめ方: '`dist/viewer.js` は `dist/index.js` と同じ設定（対応ブラウザの `target`・`postcssStubPlugin`・バージョンの `define`）で、ライブラリ本体を含めて 1 つにまとめる。`dist/cli.js` は `platform: node`・`target: node24`・`format: esm`・`banner.js` に `#!/usr/bin/env node` でまとめ、`yaml` と `esbuild` を `external` にして `package.json` の `dependencies` から読み込む。これらを `UNSIZED_OUTPUTS` に入れ、サイズを検めない'
       起動の処理の script の閉じ: '`dist/viewer.js` は `startViewer` を export する ES モジュールで、書き出した HTML にそのまま配置しない。書き出しのとき CLI の `bundleViewer` が埋めるモジュールともう一度まとめ、`</script` と `<!--` の並びを替える'
+  - name: buildLegacyMarks
+    title: 移行の手順のフォルダに書き換えの処理をまとめる
+    container: scripts/build.ts
+    kind: 関数
+    scope: public
+    is_async: true
+    summary: '`src/render/legacy-marks.ts` を依存を含めて Node で動く 1 つのファイルにまとめ、`migrations/` の中の `marker-json.mjs` を持つフォルダごとに `legacy-marks.js` として書き込む'
+    description: '`entryPoints: ["src/render/legacy-marks.ts"]`・`bundle: true`・`minify: true`・`format: esm`・`platform: node`・`target: NODE_TARGET`・`plugins: [postcssStubPlugin]`・`define` で、フォルダごとに `outfile` を変えてまとめる。`src/render/legacy-marks.ts` か `migrations/` が無ければ何も書き込まない。書き込んだファイルは移行の手順と一緒に commit し、release で `migrations/next/` をバージョンのフォルダへ移すと一緒に移る。今の書き方を読む処理（`src/render/legacy-marks.ts`）を消した後は書き込まず、commit 済みのファイルで、古いバージョンから上げる利用者に移行の手順が動く。配布物ではないため、配布ファイル 1 つの上限を検めない'
+    side_effects: '`migrations/{フォルダ}/legacy-marks.js` を書き換える'
+    args:
+      - name: version
+        type: string
+        description: 埋めるバージョン
+      - name: root
+        type: string
+        description: 作業ツリーの直下
+    returns:
+      type: Promise<string[]>
+      description: 書き込んだファイルの作業ツリーの直下からのパス（フォルダの名前の順）
+    refs:
+      - ER-472-5#tables[migrations/{バージョン}/steps.yaml]
+    unit_tests:
+      - name: test_build_legacy_marks
+        case: 正常
+        summary: 書き換えの処理を、移行のスクリプトを持つフォルダにだけまとめる
+        condition: '`src/render/legacy-marks.ts` があり、`migrations/next/` は `marker-json.mjs`、`migrations/v0.1.0/` は `steps.yaml` だけを持つ'
+        mock: 一時フォルダ
+        expected: 戻り値が `["migrations/next/legacy-marks.js"]` で、読み込んだ `rewriteLegacyMarks` がソースのとおりに動き、`migrations/v0.1.0/legacy-marks.js` が無い
+      - name: test_build_legacy_marks_when_source_removed
+        case: 正常
+        summary: ソースの無いときは何も書き込まない
+        condition: '`src/render/legacy-marks.ts` が無く、`migrations/v0.11.0/` が `marker-json.mjs` と書き込み済みの `legacy-marks.js` を持つ'
+        mock: 一時フォルダ
+        expected: 戻り値が空で、`legacy-marks.js` の中身が変わらない
   - name: writeThirdPartyLicenses
     title: まとめた依存のライセンスを記載する
     container: scripts/build.ts

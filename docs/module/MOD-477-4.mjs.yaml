@@ -12,7 +12,7 @@ functions:
     scope: public
     is_async: true
     summary: 文書のマーカーの今の書き方の引数を JSON のオブジェクトへ書き換える移行の手順のスクリプトの処理
-    description: '`steps.yaml` の `call`（`destructive: true`・`files: [documents]`。`description` は ``文書のマーカーの今の書き方の引数を JSON のオブジェクトへ書き換える（書き出さない記載と拡張・`libraries` のマーカーは移行の報告に挙げる）``）が実行する。スクリプトとして呼ばれると、`--config` の設定ファイルを `yaml` の `parse` で読み込み、スクリプトのフォルダから 2 つ上の `dist/legacy-marks.js` を動的に import して、その `rewriteLegacyMarks` を `rewrite` に渡してこの関数を呼ぶ（単体テストは `src/render/legacy-marks.ts` の関数を渡し、配布物を作らずに確かめる）。文書はインターフェース定義『バージョンを上げる』の制約「文書」のとおり、設定の `build.include` に該当し `build.exclude` に該当しないファイル（設定ファイルのフォルダから `node:fs/promises` の `glob` で参照する）と、設定の `index` の索引の文書の `path` を、重ねずに設定ファイルのフォルダからの相対パスの順に並べる。文書ごとに `rewrite` で書き換え、変わった文書だけを書き込む。`report` を `{文書の相対パス}:{行}: {マーカーの名前}: {記載}: {理由}` の行にして標準出力へ 1 行ずつ書き込み、行が無ければ `{書き換えた文書の数} 件の文書のマーカーを書き換えました。` を書き込んで 0 で終わる。読み込めない文書があれば書き込まずに標準エラーへ書き込んで 1 で終わる。単体テストは `migrations/*/marker-json.mjs` を探して import し、release で `next/` をバージョンのフォルダへ移した後も同じテストで読み込む'
+    description: '`steps.yaml` の `call`（`destructive: true`・`files: [documents]`。`description` は ``文書のマーカーの今の書き方の引数を JSON のオブジェクトへ書き換える（書き出さない記載と拡張・`libraries` のマーカーは移行の報告に挙げる）``）が実行する。スクリプトとして呼ばれると、`--config` の設定ファイルを `yaml` の `parse` で読み込み、同じフォルダの `legacy-marks.js`（`buildLegacyMarks` がまとめて commit したファイル）を動的に import して、その `rewriteLegacyMarks` を `rewrite` に渡してこの関数を呼ぶ。今の書き方を読む処理を本体から消した後も、このフォルダだけで動く。文書はインターフェース定義『バージョンを上げる』の制約「文書」のとおり、設定の `build.include` に該当し `build.exclude` に該当しないファイル（設定ファイルのフォルダから `node:fs/promises` の `glob` で参照する）と、設定の `index` の索引の文書の `path` を、重ねずに設定ファイルのフォルダからの相対パスの順に並べる。文書ごとに `rewrite` で書き換え、変わった文書だけを書き込む。`report` を `{文書の相対パス}:{行}: {マーカーの名前}: {記載}: {理由}` の行にして標準出力へ 1 行ずつ書き込み、行が無ければ `{書き換えた文書の数} 件の文書のマーカーを書き換えました。` を書き込んで 0 で終わる。読み込めない文書があれば書き込まずに標準エラーへ書き込んで 1 で終わる。単体テストは `migrations/*/marker-json.mjs` を探して import し、release で `next/` をバージョンのフォルダへ移した後も同じテストで読み込む'
     args:
       - name: options
         type: '{ config: unknown; configDir: string; rewrite: (options: { markdown: string }) => { markdown: string; report: LegacyReportLine[] } }'
@@ -40,3 +40,9 @@ functions:
         condition: 1 つ目のテストの後の一時フォルダ
         mock: 一時フォルダ
         expected: '`changed` が空で、文書の更新日時が変わらない'
+      - name: test_migrate_document_marks_when_bundled
+        case: 正常
+        summary: 移行の手順のフォルダにまとめた書き換えの処理で、ソースの処理と同じに書き換える
+        condition: 1 つ目のテストと同じ一時フォルダを 2 つ作り、片方にソースの `rewriteLegacyMarks`、もう片方にスクリプトと同じフォルダの `legacy-marks.js` の `rewriteLegacyMarks` を渡す
+        mock: 一時フォルダ
+        expected: 戻り値と書き換えた文書が同じ（まとめたファイルが無い・古いときは失敗する）
