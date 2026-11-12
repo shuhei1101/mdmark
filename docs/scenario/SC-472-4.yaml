@@ -66,10 +66,10 @@ scenarios:
       Claude Code の実機での挙動: Claude Code 2.1.310 では、この状態で開いたセッションは MCP サーバーだけが `failed` になり、常駐サーバーを起動してから `/mcp` の Reconnect でセッションをもう一度開かずにツールを呼べた（外部ライブラリ『ClaudeCode』の `verification`）
   - name: 正常シナリオ（develop の commit で更新する）
     setup:
-      - name: 入れたプラグイン
-        description: 正常シナリオを終えた後の設定のフォルダ
-      - name: commit を追加したブランチ
-        description: 入れたときのブランチへ、`plugin/` のスキルを書き換えた commit を 1 つ push したもの（`plugin.json` は変えない）
+      - name: 使い捨てのブランチで入れたプラグイン
+        description: 今の HEAD の commit から使い捨てのブランチ（`e2e/plugin-update-{実行ごとに一意の値}`）を切って GitHub へ push し、空の設定のフォルダで `shuhei1101/mdmark#{そのブランチ}` をマーケットプレイスとして追加し、プラグインを入れたもの。ブランチはテストの後に、成否によらず GitHub から削除し、配るブランチ（develop・release）にテストの commit を残さない
+      - name: commit を追加した使い捨てのブランチ
+        description: 使い捨てのブランチへ、`plugin/` のスキルを書き換えた commit を 1 つ push したもの（`plugin.json` は変えない）
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
