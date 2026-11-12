@@ -106,7 +106,7 @@ catalogs:
           - name: hookSpecificOutput.permissionDecision
             type: "'allow' | 'deny' | 'ask' | 'defer'"
             required: false
-            description: '`allow` は権限の確認を省く。設定の deny・ask のルールはフックの返却に関係なく評価される'
+            description: '`allow` は権限の確認を省く（plan mode の読み取りだけでない呼び出しと、どのモードでも自動で許可しない操作を除く）。設定の deny・ask のルールはフックの返却に関係なく評価される'
           - name: hookSpecificOutput.permissionDecisionReason
             type: string
             required: false

@@ -72,7 +72,7 @@ response:
     description: フックの種類
   - name: hookSpecificOutput.permissionDecision
     type: "'allow'"
-    description: 呼び出しの許可。権限の確認を省く
+    description: 呼び出しの許可。権限の確認を省く（plan mode の読み取りだけでない呼び出しと、どのモードでも自動で許可しない操作を除く）
   - name: hookSpecificOutput.permissionDecisionReason
     type: string
     description: 許可した理由。Claude Code はデバッグのログにだけ書く
