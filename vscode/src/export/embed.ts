@@ -1,7 +1,9 @@
+import { pathToFileURL } from "node:url";
 import type { MdmarkConfig } from "../../../src/config.ts";
 import {
   collectRangeScripts,
   usedLibraryMarks,
+  usedSyntaxLanguages,
   usesMermaid,
 } from "../../../src/render/used.ts";
 import { moduleDataUrl } from "./html.ts";
@@ -106,4 +108,55 @@ export async function embedLocalLibraries(options: {
     mermaid: embeddedMermaid,
     failures,
   };
+}
+
+/** 相対パス（絶対パスに解決した値）の `syntax.url` のフォルダの `core.min.js` と、文書が使用する言語の `languages/{言語}.min.js` を `bundle` でまとめ、import map の `imports` と、`url` をフォルダの `file:` の URL に替えた `syntax` を返却する。色分けの対象が無い文書では `url` を削除してまとめない。`http:`・`https:` の値と文字列でない値はそのまま返却する */
+export async function embedLocalSyntax(options: {
+  /** 書き出す全文 */
+  markdown: string;
+  /** 重ねた設定の `syntax`（相対パスの `url` は絶対パスにした値） */
+  syntax: Record<string, unknown> | undefined;
+  /** `usedSyntaxLanguages` に指定する重ねた設定 */
+  config: MdmarkConfig;
+  /** 絶対パスを ES モジュールにまとめる関数 */
+  bundle: BundleModules;
+}): Promise<{
+  syntax: Record<string, unknown> | undefined;
+  imports: Record<string, string>;
+  failures: Array<{ path: string; error: string }>;
+}> {
+  const { markdown, syntax, config, bundle } = options;
+  const url = syntax?.url;
+  if (syntax === undefined || !isLocal(url)) {
+    return { syntax, imports: {}, failures: [] };
+  }
+  const languages = usedSyntaxLanguages({ markdowns: [markdown], config });
+  if (languages.length === 0) {
+    const { url: _, ...rest } = syntax;
+    return {
+      syntax: Object.keys(rest).length === 0 ? undefined : rest,
+      imports: {},
+      failures: [],
+    };
+  }
+  const folder = url.endsWith("/") ? url : `${url}/`;
+  const folderUrl = pathToFileURL(folder).href;
+  /** まとめる絶対パス → フォルダからの相対パス */
+  const relatives = new Map(
+    ["core.min.js", ...languages.map((name) => `languages/${name}.min.js`)].map(
+      (relative) => [`${folder}${relative}`, relative],
+    ),
+  );
+  const imports: Record<string, string> = {};
+  const failures: Array<{ path: string; error: string }> = [];
+  for (const result of await bundle([...relatives.keys()])) {
+    if ("code" in result) {
+      imports[`${folderUrl}${relatives.get(result.path)}`] = moduleDataUrl(
+        result.code,
+      );
+    } else {
+      failures.push(result);
+    }
+  }
+  return { syntax: { ...syntax, url: folderUrl }, imports, failures };
 }

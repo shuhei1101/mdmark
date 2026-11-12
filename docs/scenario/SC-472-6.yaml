@@ -146,6 +146,30 @@ scenarios:
       - 書き出した HTML を Chromium で開くと、mermaid のコードブロックの場所に図の枠と SVG の図があり、通知ブロックが出ない
       - 開いている間に、書き出した HTML 以外の `file:` の URL への要求が出ない
     test: test_normal_when_relative_mermaid
+  - name: 正常シナリオ（ツールチップの位置と相対パスの色分けのライブラリ）
+    setup:
+      - name: 手元の色分けのライブラリを指すワークスペース
+        description: '`ts` のコードブロックと脚注の参照を 1 つずつ持つ Markdown と、`tooltips.placement: bottom` と、`syntax.url` に同じフォルダの `@highlightjs/cdn-assets` の `es/` フォルダの手元のコピーを相対パスで記載した `mdmark.config.yaml` を配置したフォルダ'
+        notes: 手元のコピーの、Markdown が使用しない言語のモジュールの 1 つは、他のファイルに出ない目印の文字列を持つ
+      - name: Mock
+        description: 正常シナリオと同じ。書き出した HTML は Chromium で file:// で開く
+    flow: |-
+      sequenceDiagram
+        actor W as 文書の作成者
+        participant EX as 拡張機能
+        participant B as ブラウザ（Chromium）
+        W->>EX: mdmark: HTML に書き出す
+        EX->>EX: 色分けのライブラリの本体と文書が使用する言語のモジュールをまとめて HTML に埋める
+        W->>B: 書き出した HTML を file:// で開く
+        B-->>W: 色分けしたコードブロック
+        W->>B: 脚注の参照にフォーカスを移す
+        B-->>W: 参照の下に出たツールチップ
+    expected:
+      - 書き出した HTML を Chromium で開くと、`ts` のコードブロックが色分けされ、通知ブロックが出ない
+      - 脚注の参照にフォーカスを移すと、ツールチップが参照の下に出る
+      - 書き出した HTML に、文書が使用しない言語のモジュールの目印の文字列が無い
+      - 開いている間に、書き出した HTML 以外の `file:` の URL への要求が出ない
+    test: test_normal_when_tooltips_and_relative_syntax
 lead: 文書の作成者が、開いている Markdown をコマンドパレットから HTML に書き出し、既定のブラウザで開く。
 issue: 22
 primary_actor: 文書の作成者

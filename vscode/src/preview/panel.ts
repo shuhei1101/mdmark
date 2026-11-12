@@ -28,6 +28,7 @@ import {
   resolveHtmlScripts,
   resolveLibraries,
   resolveMermaid,
+  resolveSyntax,
 } from "../config.ts";
 import { openConfigFile } from "../config-file.ts";
 import { type ExtensionDeps, LAST_VERSION_KEY } from "../deps.ts";
@@ -78,6 +79,8 @@ export class PreviewPanel {
   private rawHtmlScripts: Record<string, unknown> | undefined;
   /** 設定ファイルに書き込んだままの `mermaid`（CSP の origin に使用する） */
   private rawMermaid: Record<string, unknown> | undefined;
+  /** 設定ファイルに書き込んだままの `syntax`（CSP の origin に使用する） */
+  private rawSyntax: Record<string, unknown> | undefined;
   /** 今の HTML の CSP に入れた `libraries` の origin（`load` が記載する）。設定ファイルを再読み込みした後の origin と比べ、違えば HTML をもう一度入れる */
   private cspLibraryOrigins: string[] = [];
   /** 設定ファイルを読み込めていないときの読み込めない行 */
@@ -216,6 +219,7 @@ export class PreviewPanel {
       this.rawLibraries,
       this.rawHtmlScripts,
       this.rawMermaid,
+      this.rawSyntax,
     );
     const webview = this.webviewPanel.webview;
     this.updateResourceRoots();
@@ -331,11 +335,13 @@ export class PreviewPanel {
       libraries,
       "html-scripts": htmlScripts,
       mermaid,
+      syntax,
       ...rest
     } = load.config;
     this.rawLibraries = libraries;
     this.rawHtmlScripts = htmlScripts;
     this.rawMermaid = mermaid;
+    this.rawSyntax = syntax;
     this.assetsRoot = load.assetsRoot;
     this.wanted = { theme: load.theme, extensions: load.extensions };
     // 相対パスは重ねる前に絶対パスにしてある
@@ -359,6 +365,9 @@ export class PreviewPanel {
       ...(mermaid === undefined
         ? {}
         : { mermaid: resolveMermaid({ mermaid, configDir, toUrl }) }),
+      ...(syntax === undefined
+        ? {}
+        : { syntax: resolveSyntax({ syntax, configDir, toUrl }) }),
     };
     this.aliases = load.aliases;
     for (const issue of load.aliasIssues) {
@@ -458,6 +467,7 @@ export class PreviewPanel {
       this.rawLibraries,
       this.rawHtmlScripts,
       this.rawMermaid,
+      this.rawSyntax,
     );
     const sameOrigins =
       next.length === this.cspLibraryOrigins.length &&
