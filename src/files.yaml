@@ -1517,11 +1517,65 @@ files:
     related:
       - to: docs/module/MOD-472-50.ts
         type: implements
+  - path: plugin/port.ts
+    description: モジュール構成『ClaudeCodeプラグイン / ポート』の「`127.0.0.1` のポートが待ち受けているかの確認と、待ち受けるポートの読み取り」を受け持つ。`mdmark serve`・SessionStart のフック・`setup.js` のポートの扱いを変えるときに参照する。
+    tags: [tool:claude-code, topic:設定]
+    related:
+      - to: docs/module/MOD-472-15.ts
+        type: implements
   - path: plugin/pre-tool-use.ts
     description: モジュール構成『ClaudeCodeプラグイン / フック』のうち「PreToolUse のフックの入口」を受け持つ。Claude Code のフックの振る舞いを変えるときに参照する。
     tags: [topic:フック, tool:claude-code]
     related:
       - to: docs/module/MOD-472-13.ts
+        type: implements
+  - path: plugin/session-start.ts
+    description: モジュール構成『ClaudeCodeプラグイン / SessionStartのフック』の「常駐サーバーが待ち受けていないときだけ、そのことを 1 行で指定する SessionStart のフックの入口」を受け持つ。Claude Code のフックの振る舞いを変えるときに参照する。
+    tags: [topic:フック, tool:claude-code]
+    related:
+      - to: docs/module/MOD-472-3.ts
+        type: implements
+  - path: plugin/setup/keys.ts
+    description: モジュール構成『ClaudeCodeプラグイン / セットアップ / キーの一覧』の「`keys` の結果」を受け持つ。`setup.js` の設定のキーの一覧を変えるときに参照する。
+    tags: [tool:claude-code, topic:設定]
+    related:
+      - to: docs/module/MOD-472-6.ts
+        type: implements
+  - path: plugin/setup/main.ts
+    description: モジュール構成『ClaudeCodeプラグイン / セットアップ / 入口』の「`setup.js` の入口とサブコマンドの振り分け」を受け持つ。`setup.js` のサブコマンドを変えるときに参照する。
+    tags: [tool:claude-code, topic:設定, topic:cli]
+    related:
+      - to: docs/module/MOD-472-8.ts
+        type: implements
+  - path: plugin/setup/paths.ts
+    description: モジュール構成『ClaudeCodeプラグイン / セットアップ / パス』の「端末の設定・状態の配置場所・`settings.json`・unit のファイルのパスと、起動の方法・unit の名前・tmux のセッション名の読み取り」を受け持つ。`setup.js` が扱うパスや起動の方法の読み取りを変えるときに参照する。
+    tags: [tool:claude-code, topic:設定]
+    related:
+      - to: docs/module/MOD-472-7.ts
+        type: implements
+  - path: plugin/setup/server.ts
+    description: モジュール構成『ClaudeCodeプラグイン / セットアップ / 起動』の「`start-server` の起動の方法の決定・systemd --user の unit と tmux のセッションでの起動・待ち受けの確認」を受け持つ。常駐サーバーの起動の流れを変えるときに参照する。
+    tags: [tool:claude-code, topic:設定]
+    related:
+      - to: docs/module/MOD-472-12.ts
+        type: implements
+  - path: plugin/setup/status.ts
+    description: モジュール構成『ClaudeCodeプラグイン / セットアップ / 状態』の「`status` の結果」を受け持つ。`setup.js` が返す端末の状態を変えるときに参照する。
+    tags: [tool:claude-code, topic:設定]
+    related:
+      - to: docs/module/MOD-472-11.ts
+        type: implements
+  - path: plugin/setup/systemd.ts
+    description: モジュール構成『ClaudeCodeプラグイン / セットアップ / systemd』の「systemd --user の確認・unit のファイルの組み立て・unit の状態の読み取り」を受け持つ。systemd --user での常駐サーバーの起動を変えるときに参照する。
+    tags: [tool:claude-code, topic:設定]
+    related:
+      - to: docs/module/MOD-472-5.ts
+        type: implements
+  - path: plugin/setup/write.ts
+    description: モジュール構成『ClaudeCodeプラグイン / セットアップ / 書き込み』の「`write-settings`・`write-config` と `settings.json` の `env` の書き換え」を受け持つ。`setup.js` の設定の書き込みを変えるときに参照する。
+    tags: [tool:claude-code, topic:設定]
+    related:
+      - to: docs/module/MOD-472-10.ts
         type: implements
   - path: plugin/tools.ts
     description: モジュール構成『ClaudeCodeプラグイン / MCPサーバー』のうち「ツールの定義と処理・ツールの結果への変換」を受け持つ。MCP のツールの振る舞いを変えるときに参照する。
@@ -1595,6 +1649,12 @@ files:
     related:
       - to: docs/module/MOD-472-211.ts
         type: implements
+  - path: render/page.ts
+    description: モジュール構成『ライブラリ本体 / 描画』のうち「page のマーカーの設定を記載した順に重ねる readPageSettings」を受け持つ。ページの設定のマーカーの読み方を変えるときに参照する。
+    tags: [topic:markdown, topic:マーカー, topic:設定]
+    related:
+      - to: docs/module/MOD-472-215.ts
+        type: implements
   - path: render/sanitize.ts
     description: モジュール構成『ライブラリ本体 / 描画』のうち「sanitize-html の設定と sanitize」を受け持つ。Markdown から HTML 文字列にする流れを変えるときに参照する。
     tags: [topic:markdown, tool:markdown-it, tool:sanitize-html]
@@ -1630,6 +1690,12 @@ files:
     tags: [topic:markdown, topic:構文, tool:markdown-it, topic:注意書き]
     related:
       - to: docs/module/MOD-472-284.ts
+        type: implements
+  - path: render/syntax/card-grid.ts
+    description: モジュール構成『ライブラリ本体 / 記法』のうち「カードの格子のマーカーの中のリストを部品『カードの格子』にするコアルールの buildCardGrid」を受け持つ。記法の記載方法や出力する HTML を変えるときに参照する。
+    tags: [topic:markdown, topic:構文, tool:markdown-it, topic:カード]
+    related:
+      - to: docs/module/MOD-472-296.ts
         type: implements
   - path: render/syntax/cards.ts
     description: モジュール構成『ライブラリ本体 / 記法』のうち「リンクと添付のカード」を受け持つ。記法の記載方法や出力する HTML を変えるときに参照する。
