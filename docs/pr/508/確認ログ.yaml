@@ -1,0 +1,7 @@
+confirmations:
+  - topic: map のシーケンス図で参加者を非表示にしたときに隠すメッセージの範囲
+    decision: 非表示の参加者が送信・受信するメッセージを、相手が表示されていても全て隠す（推奨案 A）
+    decided_by: thumbs_up
+    approver: shuhei1101
+    commit: fddb8ac03c1f30a0d8637803d766bfc401146c92
+    thread: https://github.com/shuhei1101/mdmark/pull/508#discussion_r4554494291
