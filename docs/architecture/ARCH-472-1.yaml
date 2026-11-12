@@ -96,7 +96,7 @@ repository:
     | 場所 | 役割 | 利用側への届き方 | 作る Issue |
     | --- | --- | --- | --- |
     | `src/` | TypeScript と CSS の本体 | ビルドして `dist/` | この土台 |
-    | `dist/` | 配布物の JavaScript と CSS、CLI の `cli.js`（release と hotfix でだけ commit する） | jsDelivr からバージョンのタグを固定した URL で読み込む。CLI は `npx github:shuhei1101/mdmark#v{バージョン}` で入れる | この土台・#9 |
+    | `dist/` | 配布物の JavaScript と CSS、CLI の `cli.js`（スプリントの区切りの develop・release・hotfix でだけ commit する） | jsDelivr からバージョンのタグを固定した URL で読み込む。CLI は `npx github:shuhei1101/mdmark#v{バージョン}` で入れる | この土台・#9 |
     | `scripts/` | 開発のスクリプト（ビルド） | 届けない | この土台 |
     | `tests/` | 単体・結合・E2E のテスト | 届けない | この土台 |
     | `templates/` | 利用側へ配置する雛形（設定・`theme.css`・索引・拡張の雛形。差分のアダプターのサンプルは #7） | CLI の `init` が配置する | #9 |
@@ -105,8 +105,8 @@ repository:
     | `migrations/` | バージョンごとの移行の手順とスクリプト（`v{バージョン}/`）、出していないバージョンの手順（`next/`）、移行の手順が要らないスキーマの変更の一覧（`no-steps.yaml`） | CLI の `upgrade` が `v{バージョン}/` を読み込む（`next/` と `no-steps.yaml` は配布物のビルドだけが読み込む） | #10 |
     | `guide/` | ガイドの索引（`index.yaml`。本文は `docs/guide/` のページを指す） | 配布物のビルドが検査し、Claude Code が dev-docs の配信元 `mdmark` からタグ `topic:ガイド` で絞って参照する | #11 |
     | `.claude-plugin/` | マーケットプレイスの定義（`marketplace.json`。`plugin/` を記載する） | `/plugin marketplace add shuhei1101/mdmark` | #11 |
-    | `plugin/` | Claude Code のプラグインの定義（`plugin.json`・`.mcp.json`・`hooks/hooks.json`）と、配布物のビルドが記載するまとめたフック（`dist/` と同じく release と hotfix でだけ commit する） | プラグインのマーケットプレイスから Claude Code が入れる | #11 |
-    | `vscode/` | VS Code 拡張機能（独自の `package.json`。バージョンは `vscode-v{バージョン}` のタグ） | GitHub Release に添えた .vsix と、Marketplace・Open VSX（拡張機能の ID `ShuheiNishikawa.mdmark-vscode`・表示名 `mdmark for VS Code`） | #22 |
+    | `plugin/` | Claude Code のプラグインの定義（`plugin.json`・`.mcp.json`・`hooks/hooks.json`）と、配布物のビルドが記載するまとめたフック（`dist/` と同じ時期にだけ commit する） | プラグインのマーケットプレイスから Claude Code が入れる。`plugin.json` は `version` を持たず、develop の commit がプラグインの更新で届く | #11 |
+    | `vscode/` | VS Code 拡張機能（独自の `package.json`。バージョンは develop の commit に打つ `vscode-v{バージョン}` のタグ） | GitHub Release に添えた .vsix と、Marketplace・Open VSX（拡張機能の ID `ShuheiNishikawa.mdmark-vscode`・表示名 `mdmark for VS Code`） | #22 |
     | `.github/workflows/` | `vscode-v*` のタグで .vsix を作って Release に添えるワークフロー | 届けない | #22 |
     | `dev-docs.yaml` | dev-docs の配信元の設定（設計書の種類ごとの行と、各フォルダの `files.yaml` の行） | 届けない | #178 |
     | 各フォルダの `files.yaml`（`docs/` の下は `files.yml`） | YAML の設計書でないファイルの概要文・タグ・関連（1 ファイル 1 行。スキーマは `schemas/files.schema.yaml`） | 届けない | #178 |

@@ -171,8 +171,8 @@ categories:
       detail: '`npm run check` が終了コード 0 で終わった（ESLint は Webview の 30 ファイルだけを検査した）'
   - name: 管理作業
     prerequisites:
-      - タグを打つ担当（tester）が、master へマージする前に対象のブランチの worktree で実行する
-      - release は `version.ini` を打つバージョンへ更新した後、hotfix は打つバージョンを決めた後
+      - タグを打つ担当（tester）が、スプリントの区切りに develop の worktree で実行する（release を切るときは master へマージする前に release の worktree で、hotfix は hotfix の worktree で実行する）
+      - develop と release は `version.ini` を打つバージョンへ更新した後、hotfix は打つバージョンを決めた後
     commands: |-
       1. 依存を lock どおりに入れる
 
@@ -209,7 +209,7 @@ categories:
       git push origin {対象のブランチ}
       ```
 
-      VS Code 拡張機能を出すときは、`vscode/package.json` の `version` を出すバージョンにした commit が master に入った後、タグと `version` を照合してからタグを打つ（GitHub Actions の `vscode-release.yml` が .vsix を作り、そのタグの GitHub Release に添える）。mdmark の `v{バージョン}` のタグと混ぜない。
+      VS Code 拡張機能を出すときは、`vscode/package.json` の `version` を出すバージョンにした commit が develop に入った後、その commit でタグと `version` を照合してからタグを打つ（GitHub Actions の `vscode-release.yml` が .vsix を作り、そのタグの GitHub Release に添える）。mdmark の `v{バージョン}` のタグと混ぜない。
 
       ```bash
       npm --prefix vscode run release:check -- vscode-v{バージョン}
