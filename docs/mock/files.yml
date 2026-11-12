@@ -663,15 +663,6 @@ files:
   - path: refs/263/assets/media.js
     description: '#263 のモックが共通で読み込む素材: ライトボックスの開閉と前後の切り替え、GIF の止める・再生する、モック専用の操作列のテーマの切り替え。複数のモックに有効になる外観や動きを変えるときに参照する。'
     tags: [topic:モック, tool:javascript]
-  - path: refs/263/assets/media/build.gif
-    description: '#263 のモックが配置する GIF の見本（ビルドの進み具合）。GIF の見本を差し替えるときに参照する。'
-    tags: [topic:モック]
-  - path: refs/263/assets/media/demo-poster.png
-    description: '#263 のモックが配置する動画の poster の画像。動画の見本を差し替えるときに参照する。'
-    tags: [topic:モック]
-  - path: refs/263/assets/media/demo.mp4
-    description: '#263 のモックが配置する動画の見本（4 秒）。動画の見本を差し替えるときに参照する。'
-    tags: [topic:モック]
   - path: refs/263/assets/media/screen-dark.svg
     description: '#263 のモックが配置する暗い配色の画面の画像（#only-dark の見本）。画像の見本を差し替えるときに参照する。'
     tags: [topic:モック, tool:svg]
@@ -690,9 +681,6 @@ files:
   - path: refs/263/assets/media/step-4.svg
     description: '#263 のモックが配置する手順 4 の画面の画像（nolightbox・ギャラリーの見本）。画像の見本を差し替えるときに参照する。'
     tags: [topic:モック, tool:svg]
-  - path: refs/263/assets/media/voice.mp3
-    description: '#263 のモックが配置する音声の見本（3 秒）。音声の見本を差し替えるときに参照する。'
-    tags: [topic:モック]
   - path: refs/263/index.md
     description: '#263（表の列と行を名前の色で強調し、画像・動画・GIF・音声・リンクと添付のカードを描けるようにする）の PR のモックへのリンク集。この PR で作ったモックを探すときに参照する。'
     tags: [topic:モック]
