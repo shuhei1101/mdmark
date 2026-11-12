@@ -1,0 +1,10 @@
+$ node .axe487.mjs http://127.0.0.1:58762/docs/mock/pages/ui-canvas/80/side-by-side/index.html
+# axe-core の landmark-unique だけを 1280x800・390x844 で流す（描画を 2 秒待ってから実行）
+
+## 変更前（develop の app.js）
+1280x800 [{"id":"landmark-unique","n":5,"t":[".theme-modern.canvas-column > .mdmark > .mdmark-toc[aria-label=\"目次\"]","nav[aria-labelledby=\"mdmark-backlinks-title-29\"]","section[aria-labelledby=\"mdmark-comment-orphans-1\"]",".theme-modern.canvas-column > div > .canvas-bundle > .mdmark-bundle > aside > .mdmark-doc-list[aria-label=\"文書の一覧\"]",".theme-modern.canvas-column > div > .canvas-bundle-narrow > .mdmark-bundle-panel > .mdmark-doc-list[aria-label=\"文書の一覧（パネル）\"]"]}]
+390x844 [{"id":"landmark-unique","n":4,"t":[".theme-modern.canvas-column > .mdmark > .mdmark-toc[aria-label=\"目次\"]","nav[aria-labelledby=\"mdmark-backlinks-title-29\"]","section[aria-labelledby=\"mdmark-comment-orphans-1\"]",".theme-modern.canvas-column > div > .canvas-bundle-narrow > .mdmark-bundle-panel > .mdmark-doc-list[aria-label=\"文書の一覧（パネル）\"]"]}]
+
+## 変更後（ba27c20d）
+1280x800 []
+390x844 []
