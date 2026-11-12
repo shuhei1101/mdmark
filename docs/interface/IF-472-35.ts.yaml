@@ -1542,9 +1542,9 @@ flows:
         P->>M: mount(el, { markdown })
         M->>P: 記載の警告と表形式のビュー
     expected:
-      - 範囲の上の記載の警告に、`優先度` が表に無い列であることと、`columns.担当.filter.type` の `range` が選べる値に無いことの 2 項目がある
+      - 範囲の上に、`優先度` が表に無い列であることの記載の警告と、`columns.担当.filter.type` の `range` が選べる値に無いことの記載の警告がある
       - 5 行の表形式のビューで描かれ、「ボード」が押せない
-      - 担当の列に絞り込みのボタンが無い
+      - 担当の列に、選べる値に無い種類を当てずに既定の `select` の絞り込みのボタンがある
       - 例外を投げない
     test: test_normal_when_view_syntax_invalid
   - name: 正常系（ビューの機能を解除する）

@@ -216,7 +216,7 @@ flows:
         M-->>C: HTML 文字列
     expected:
       - '`<div class="mdmark-syntax-warning" role="note">` が 5 つあり、それぞれにタイトル `記載の警告` がある'
-      - 1 つ目の表が `data-kind="default"` と `data-features="pin resize sort"` を持ち、その前の警告の本文に `kind` の `unknown` と選べる値（`data`・`plain`）がある
+      - 1 つ目の表が `data-kind="default"` と `data-features="sort pin resize"` を持ち、その前の警告の本文に `kind` の `unknown` と選べる値（`data`・`plain`）がある
       - 見出しの無いタブの範囲の段落がある
       - 'このタブの範囲だけが `data-group` を持たない `<div class="mdmark-tabs">` になり、その前の警告の本文に空の文字の `group` があり、知らないキー `grop`・`fold` が無い'
       - リンクの文字が `図` のままで、警告の本文に `#fig-missing` がある
@@ -1808,7 +1808,7 @@ flows:
         M->>M: 取り込みの途中の同じファイルを取り込まない
         M-->>C: HTML 文字列
     expected:
-      - '`missing.md`・`無い見出し`・`src/app.ts` のマーカーの場所に `<div class="mdmark-syntax-warning" role="note">` があり、本文にそれぞれ `missing.md`、`無い見出し`、`L20-L22` と `12 行` がある'
+      - '`missing.md`・`無い見出し`・`src/app.ts` のマーカーの場所に `<div class="mdmark-syntax-warning" role="note">` があり、本文にそれぞれ `missing.md`、`無い見出し`、`20〜22 行目` と `12 行` がある'
       - 段落 `A` と `B` が 1 回ずつあり、`b.md` の中の `a.md` のマーカーの場所の警告の本文に `a.md → b.md → a.md` がある
       - '`opts.includes` を指定せずに呼ぶと、4 つのマーカーの場所に取り込み先が無い警告がある'
       - マーカーの前後の段落がある
