@@ -213,7 +213,7 @@ function toMark(
 }
 
 /** マーカーの誤りを記載の警告にする。誤りが無ければ `undefined` */
-export function markProblemWarning(mark: Mark): SyntaxWarning | undefined {
+function markProblemWarning(mark: Mark): SyntaxWarning | undefined {
   const [first, ...others] = mark.problems;
   if (first === undefined) {
     return undefined;
