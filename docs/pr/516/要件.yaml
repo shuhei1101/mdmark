@@ -1,0 +1,19 @@
+use_cases:
+  - kind: single
+    scenario: docs/scenario/SC-472-76.yaml
+    impact: run_only
+    detail: 'まとめた HTML で脚注の番号から一覧へ、戻るリンクから番号へ移る操作を、目次の列の有無によらず URL の # を書き換えずに動かす'
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-71.yaml
+    impact: run_only
+    detail: 脚注の番号と戻るリンクを押したときの受け方を変えるため、番号と一覧の行き来が今のとおり動くことを確かめる
+    depends_on: []
+docs: []
+scope_out:
+  - item: 再利用できる注釈の記法（脚注のツールチップと末尾の一覧の再利用・拡張）
+    reason: '要望に含まれない。計画で #419 の後ろへ回した'
+    plan: '#304'
+  - item: まとめた HTML の bundle.ts の click で脚注のリンクを除く（Issue の案 B）
+    reason: 案 A で脚注の側だけで順序が決まり、まとめた HTML に脚注の class を持たせずに済むため採らない
+    plan: none
