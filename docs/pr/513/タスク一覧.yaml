@@ -65,8 +65,10 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-12T20:52:13.899571+00:00'
   - process: ドキュメント修正
-    status: todo
-    note: 要件.yaml の更新ドキュメントのとおり
+    status: done
+    note: tests/files.yaml の行の削除は、tests/e2e/ の削除と一体のため実装で行う
+    updated_by: planner
+    updated_at: '2026-11-12T20:59:35.004830+00:00'
   - process: 単体テスト作成
     status: skipped
     reason: 足す振る舞いが無い。既存の単体テストを実行して回帰を確かめる
