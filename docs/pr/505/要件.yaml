@@ -21,14 +21,14 @@ use_cases:
     depends_on: []
   - kind: single
     scenario: docs/scenario/SC-472-21.yaml
-    impact: following
-    detail: '#501: URL の #ID で閉じたセクションの見出しへ移るとき、見出し自身のセクションも開くかを目次と合わせて決め、決めた扱いに記述を追随させる'
+    impact: changed
+    detail: '#501: URL の #ID が閉じたセクションの見出しを指すとき、見出しを囲むセクションに加えて見出し自身のセクションも開く'
     depends_on:
       - docs/scenario/SC-472-68.yaml
   - kind: single
     scenario: docs/scenario/SC-472-58.yaml
-    impact: run_only
-    detail: 印刷で、全て開いたファイルツリー・帯と本文の間の線が無いコードブロック・自動で決めた幅の表が崩れないかを確かめる
+    impact: changed
+    detail: '#460: 印刷でもコードブロックの帯と本文の間の線を出さない。全て開いたファイルツリー・自動で決めた幅の表が崩れないかも確認する'
     depends_on: []
   - kind: single
     scenario: docs/scenario/SC-472-31.yaml
@@ -42,7 +42,7 @@ docs:
     status: todo
   - page: docs/guide/記載する-表に機能を付ける.md
     new: false
-    change: 列の幅を自動で決めること、`width.min`・`width.max` の記載、列の幅のつまみで狭められる下限（今の 6em）と描いた直後の幅に戻すときの幅を修正する
+    change: 列の幅を自動で決めること、「表は本文の幅いっぱいに広がる」の記述（列の幅の合計が収まる表は列の幅の合計で描く）、`width.min`・`width.max` の記載、列の幅のつまみで狭められる下限（今の 6em）と描いた直後の幅に戻すときの幅を修正する
     status: todo
   - page: docs/guide/記載する-本文を部品で組む.md
     new: false
