@@ -1,4 +1,5 @@
 import { afterEach, expect, test, vi } from "vitest";
+import type { SectionStates } from "../../../../src/interact/sections.ts";
 import { createRoot, removeRoots } from "../../helpers/dom.ts";
 
 /** セクションの操作を読み込む（実装が無い間は各テストが個別に失敗する） */
@@ -372,6 +373,98 @@ test("test_attach_sections_when_detached", async () => {
   foldAllSections({ root, open: false });
   // 検証
   expect(sectionBody(root, "導入").hasAttribute("hidden")).toBe(false);
+});
+
+// 記録した開閉で始める（正常系）
+test("test_attach_sections_when_states", async () => {
+  // 準備
+  const { attachSections } = await loadSections();
+  const markdown =
+    '## 甲\n\n<!-- section: {"open": false} -->\n\n本文甲\n\n## 乙\n\n本文乙\n';
+  const states: SectionStates = new Map();
+  const first = createRoot(markdown).root;
+  const detachFirst = attachSections({
+    root: first,
+    sections: true,
+    rowDetails: true,
+    states,
+  });
+  sectionToggle(first, "甲").click();
+  sectionToggle(first, "乙").click();
+  detachFirst();
+  first.remove();
+  const { root } = createRoot(markdown);
+  // 実行
+  detachers.push(
+    attachSections({ root, sections: true, rowDetails: true, states }),
+  );
+  // 検証
+  expect(sectionBody(root, "甲").hasAttribute("hidden")).toBe(false);
+  expect(expandedStates(root, ["甲"])).toEqual(["true"]);
+  expect(sectionBody(root, "乙").getAttribute("hidden")).toBe("until-found");
+  expect(states.get("section-甲")).toEqual({ open: true, marker: "closed" });
+});
+
+// data-section が記録したときと違うセクションはマーカーのとおりに始める（正常系）
+test("test_attach_sections_when_marker_changed", async () => {
+  // 準備
+  const { attachSections } = await loadSections();
+  const states: SectionStates = new Map([
+    ["section-甲", { open: true, marker: "open" }],
+  ]);
+  const { root } = createRoot(
+    '## 甲\n\n<!-- section: {"open": false} -->\n\n本文甲\n',
+  );
+  // 実行
+  detachers.push(
+    attachSections({ root, sections: true, rowDetails: true, states }),
+  );
+  // 検証
+  expect(sectionBody(root, "甲").getAttribute("hidden")).toBe("until-found");
+  expect(expandedStates(root, ["甲"])).toEqual(["false"]);
+});
+
+// ページ内検索で開いたセクションを記録する（正常系）
+test("test_attach_sections_when_beforematch", async () => {
+  // 準備
+  const { attachSections } = await loadSections();
+  const states: SectionStates = new Map();
+  const { root } = createRoot(
+    '## 甲\n\n<!-- section: {"open": false} -->\n\n本文甲\n',
+  );
+  detachers.push(
+    attachSections({ root, sections: true, rowDetails: true, states }),
+  );
+  // 実行
+  sectionBody(root, "甲").dispatchEvent(new Event("beforematch"));
+  // 検証
+  expect(states.get("section-甲")).toEqual({ open: true, marker: "closed" });
+});
+
+// revealHash が false なら付けたときに #ID で開かず、hashchange では開く（正常系）
+test("test_attach_sections_when_reveal_hash_off", async () => {
+  // 準備
+  const { attachSections } = await loadSections();
+  history.replaceState(null, "", "#注意");
+  const { root } = createRoot(
+    '## 親\n\n<!-- section: {"open": false} -->\n\n### 注意\n\n本文\n',
+  );
+  // 実行
+  detachers.push(
+    attachSections({
+      root,
+      sections: true,
+      rowDetails: true,
+      revealHash: false,
+    }),
+  );
+  // 検証
+  const closed = sectionBody(root, "親");
+  expect(closed.getAttribute("hidden")).toBe("until-found");
+  window.dispatchEvent(new HashChangeEvent("hashchange"));
+  await vi.waitFor(() => {
+    expect(closed.hasAttribute("hidden")).toBe(false);
+  });
 });
 
 // 入れ子の閉じたセクションを外側から開いて移る（正常系）

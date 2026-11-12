@@ -21,6 +21,7 @@ import { runHtmlScripts, type Transpiler } from "./html-scripts.ts";
 import { loadInlineIcons } from "./inline-icons.ts";
 import { attachBackToTop } from "./interact/back-to-top.ts";
 import { attachInteractions } from "./interact/index.ts";
+import type { SectionStates } from "./interact/sections.ts";
 import { attachSideToc, type SideTocState } from "./interact/side-toc.ts";
 import type { MdmarkAlias } from "./knowledge/aliases.ts";
 import type { MdmarkIndex } from "./knowledge/index-shape.ts";
@@ -248,6 +249,8 @@ export function mount(el: HTMLElement, opts: MountOptions): MountHandle {
   let detachContent: (() => void) | undefined;
   // 右側の目次の状態（`mount` ごとに 1 つ。再描画でも保つ）
   const sideTocState: SideTocState = { open: false, pinned: false };
+  // 読者が開閉したセクションの開閉の記録（`mount` ごとに 1 つ。再描画でも保つ）
+  const sectionStates: SectionStates = new Map();
   // 前の描画の右側の目次の出し方（出し方が変わったら目次の状態を戻す）
   let lastTocMode: ResolvedConfig["sideToc"]["mode"] | undefined;
   // 色分けのライブラリのモジュールの記録（`mount` ごとに 1 つ。再描画では再読み込みしない）
@@ -263,8 +266,12 @@ export function mount(el: HTMLElement, opts: MountOptions): MountHandle {
   // コメントの機能に読み込みと保存の関数が要ることを出したか（`mount` ごとに 1 回だけ出す）
   const warned = { missingStore: false };
 
-  /** 文書を描く。`coloredFrom` は `blocks` で色分けするときの前の Markdown（`markdown` が後） */
-  const draw = (markdown: string, coloredFrom?: string): void => {
+  /** 文書を描く。`coloredFrom` は `blocks` で色分けするときの前の Markdown（`markdown` が後）、`fromUpdate` は `update` から始まった描画か */
+  const draw = (
+    markdown: string,
+    coloredFrom?: string,
+    fromUpdate = false,
+  ): void => {
     generation += 1;
     const current = generation;
     destroyScripts?.();
@@ -365,6 +372,8 @@ export function mount(el: HTMLElement, opts: MountOptions): MountHandle {
       diagramPlacement: config.tooltips.diagramPlacement,
       pinMode: config.table.pin,
       onColumnsChange,
+      sectionStates,
+      revealHash: !fromUpdate,
     });
     // まとめていない名前のアイコンを読み込む。読み込みの完了は待たない
     if (features.icon === true) {
@@ -448,7 +457,7 @@ export function mount(el: HTMLElement, opts: MountOptions): MountHandle {
             return;
           }
           if (pair.kind === "pair" && pair.before !== pair.after) {
-            draw(pair.after, pair.before);
+            draw(pair.after, pair.before, fromUpdate);
           } else if (pair.kind === "failed") {
             body.prepend(
               parseElement(
@@ -484,13 +493,14 @@ export function mount(el: HTMLElement, opts: MountOptions): MountHandle {
           includes = options.includes;
         }
       }
-      draw(markdown);
+      draw(markdown, undefined, true);
     },
     destroy: () => {
       if (destroyed) {
         return;
       }
       destroyed = true;
+      sectionStates.clear();
       destroyScripts?.();
       destroyScripts = undefined;
       detachMermaid?.();
