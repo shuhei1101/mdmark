@@ -74,20 +74,35 @@
     const minimum = columns.reduce((sum, column) => sum + column.min, 0);
     const fixed = columns.filter((column) => column.nowrap).reduce((sum, column) => sum + column.wanted, 0);
     const wrapping = columns.filter((column) => !column.nowrap);
-    const wanted = wrapping.reduce((sum, column) => sum + column.wanted, 0);
-    const rest = available - fixed;
     for (const column of columns) {
       if (column.nowrap) {
         column.width = column.wanted;
       } else if (minimum > available) {
         // 最小の幅の合計が見える幅を超える: 最小の幅で描き、表を横にスクロールする
         column.width = column.min;
-      } else if (fixed + wanted <= available) {
-        // 折り返さずに収まる: 本文の幅まで広げず、最も長い行の幅で止める
-        column.width = column.wanted;
       } else {
-        // 残りの幅（本文の幅いっぱいまで）を望む幅の比で分ける。最小の幅より狭くしない
-        column.width = Math.max(column.min, (rest * column.wanted) / wanted);
+        column.width = column.wanted;
+      }
+    }
+    if (minimum <= available && fixed + wrapping.reduce((sum, column) => sum + column.wanted, 0) > available) {
+      // 残りの幅（本文の幅いっぱいまで）を、長文の列に望む幅の比で分ける。
+      // 最小の幅を下回る列は最小の幅で止め、その列を除いた残りの幅をほかの列へ分け直す（止める列が出なくなるまで繰り返す）
+      let open = [...wrapping];
+      let rest = available - fixed;
+      for (;;) {
+        const total = open.reduce((sum, column) => sum + column.wanted, 0);
+        const stopped = open.filter((column) => (rest * column.wanted) / total < column.min);
+        if (stopped.length === 0) {
+          for (const column of open) {
+            column.width = (rest * column.wanted) / total;
+          }
+          break;
+        }
+        for (const column of stopped) {
+          column.width = column.min;
+          rest -= column.min;
+        }
+        open = open.filter((column) => !stopped.includes(column));
       }
     }
     let colgroup = table.querySelector("colgroup[data-mock-505]");

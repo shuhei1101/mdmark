@@ -1216,6 +1216,30 @@ scenarios:
       - '`説明` の列のセルが折り返さず 1 行で出ている'
       - 表の外側の枠線の幅が本文の幅より狭く、列の幅の合計と同じ（差が 1px 以内）
     test: test_normal_when_long_column_fits
+  - name: 正常シナリオ（長文の列が 2 つある）
+    setup:
+      - name: mdmark を読み込むページ
+        description: 正常シナリオと同じ
+        notes: 描く先の要素の幅は 688px
+      - name: 長文の列を 2 つ持つ表の Markdown
+        description: '`<!-- table: {"kind": "data"} -->` 〜 `<!-- /table -->` で、名前（全角 3 文字）・説明（全角 120 文字の文）・備考（全角 20〜24 文字の文）の 3 列 2 行の表を囲んだ文書'
+        notes: 全ての列の最小の幅の合計は描く先の要素の幅に収まるが、残りの幅を望む幅の比で分けると、備考の列が長文の列の最小の幅を下回る
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 利用側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を指定して描かせる
+        M->>M: 最小の幅を下回る備考の列を最小の幅で止め、残りの幅を説明の列へ分け直す
+        M-->>P: 本文の幅に収めた表を描く
+        P-->>U: 文書を表示
+    expected:
+      - '`備考` の列の幅が部品設計『表』の長文の列の最小の幅と同じ（差が 1px 以内）'
+      - '`説明` の列が残りの幅を全て使い、表の外側の枠線の幅が本文の幅と同じ（差が 1px 以内）'
+      - 表は横にスクロールせず、ページに横スクロールが出ない
+    test: test_normal_when_two_long_columns
   - name: 正常シナリオ（余白の多い表を中身の幅で描く）
     setup:
       - name: mdmark を読み込むページ

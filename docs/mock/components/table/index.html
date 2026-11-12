@@ -2162,6 +2162,21 @@
         </article>
       </section>
 
+      <!-- #505 長文の列が 2 つある表: 最小の幅で止めた列を除き、残りの幅をほかの長文の列へ分け直して、本文の幅に収める -->
+      <section aria-labelledby="state-505-two-long" data-mock-table505>
+        <h2 class="catalog-label" id="state-505-two-long">長文の列が 2 つある表（備考の列を最小の幅 20em で止め、残りの幅を説明の列へ分け直して本文の幅に収める。横にスクロールしない）</h2>
+        <article class="mdmark">
+<div class="mdmark-table" data-kind="data">
+  <div class="mdmark-table-scroll">
+  <table tabindex="0" aria-label="表: 長文の列が 2 つある表">
+    <thead><tr><th>名前</th><th>説明</th><th>備考</th></tr></thead>
+    <tbody><tr><td>列の幅</td><td>表の列の幅は、指定が無くても列ごとにセルの文字の量と改行の有無から決める。長文の列だけを折り返し、表を本文の幅いっぱいまで広げて、なるべく横幅を使う。短い値の列は折り返さず、最も長い行の幅にする。</td><td>備考の列は 20 文字ほどの短めの長文の列にあたる文です</td></tr><tr><td>表の幅</td><td>表の列の幅は、指定が無くても列ごとにセルの文字の量と改行の有無から決める。長文の列だけを折り返し、表を本文の幅いっぱいまで広げて、なるべく横幅を使う。短い値の列は折り返さず、最も長い行の幅にする。</td><td>備考の列は 20 文字ほどの短めの長文の列にあたる文です</td></tr></tbody>
+  </table>
+  </div>
+</div>
+        </article>
+      </section>
+
       <!-- #505 狭い幅: 配分した幅が最小の幅を下回る列を最小の幅で止め、表を横にスクロールする -->
       <section aria-labelledby="state-505-narrow" data-mock-table505>
         <h2 class="catalog-label" id="state-505-narrow">狭い幅で横にスクロールする（描く先の幅 390px。列の最小の幅の合計が収まらないので、長文の説明・備考の列を最小の幅 20em で描き、表の中で横にスクロールする）</h2>
