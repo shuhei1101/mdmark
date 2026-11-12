@@ -41,6 +41,17 @@ constants:
     status: planned
     introduced:
       pr: 141
+  - name: PERMISSION_DECISION_REASON
+    title: 許可した理由
+    container: src/plugin/pre-tool-use.ts
+    usecase: 作業のフォルダを引数に入れる
+    summary: '`permissionDecision` の `allow` と一緒に返却する `permissionDecisionReason`。Claude Code はデバッグのログにだけ書く'
+    value: mdmark のプラグインが作業のフォルダを project_dir に入れた
+    refs:
+      - IF-472-5#response
+    status: planned
+    introduced:
+      pr: 517
 functions:
   - name: runPreToolUse
     title: 作業のフォルダを引数に入れる
@@ -48,8 +59,8 @@ functions:
     container: src/plugin/pre-tool-use.ts
     usecase: 作業のフォルダを引数に入れる
     role: 入口
-    summary: 標準入力の `tool_input` に `project_dir` を入れた `updatedInput` を標準出力に 1 行書く
-    description: まとめた `plugin/scripts/pre-tool-use.js` を入口として実行したときだけ、標準入力を読み込み切って実行し、戻り値を終了コードにする（`import.meta.main`）。`permissionDecision` は記載しない
+    summary: 標準入力の `tool_input` に `project_dir` を入れた `updatedInput` を、`permissionDecision` の `allow` と一緒に標準出力に 1 行書く
+    description: まとめた `plugin/scripts/pre-tool-use.js` を入口として実行したときだけ、標準入力を読み込み切って実行し、戻り値を終了コードにする（`import.meta.main`）
     scope: public
     is_async: false
     args:
@@ -63,14 +74,14 @@ functions:
     process: |-
       1. `PROJECT_DIR_ENV` が無いか空なら、何も書き込まず 0 を返却する
       2. 標準入力を JSON として読み込み、`tool_input` の引数に `project_dir` を環境変数の値で入れる（既にあれば上書きする）
-      3. `{ hookSpecificOutput: { hookEventName: "PreToolUse", updatedInput } }` を JSON の 1 行で標準出力に書き込んで 0 を返却する
+      3. `{ hookSpecificOutput: { hookEventName: "PreToolUse", permissionDecision: "allow", permissionDecisionReason: PERMISSION_DECISION_REASON, updatedInput } }` を JSON の 1 行で標準出力に書き込んで 0 を返却する
     unit_tests:
       - name: test_run_pre_tool_use
         case: 正常
-        summary: project_dir を入れた updatedInput を記載する
+        summary: project_dir を入れた updatedInput を allow と一緒に記載する
         condition: '`CLAUDE_PROJECT_DIR=/work`、`tool_input` が `{ "config": "a.yaml" }`'
         mock: 行を配列に貯める `stdout`
-        expected: '0 を返却し、`stdout` の 1 行を JSON として読み込むと `hookEventName` が `PreToolUse`、`updatedInput` が `{ "config": "a.yaml", "project_dir": "/work" }`、`permissionDecision` が無い'
+        expected: '0 を返却し、`stdout` の 1 行を JSON として読み込むと `hookEventName` が `PreToolUse`、`permissionDecision` が `allow`、`permissionDecisionReason` が `PERMISSION_DECISION_REASON`、`updatedInput` が `{ "config": "a.yaml", "project_dir": "/work" }`'
       - name: test_run_pre_tool_use_when_project_dir_given
         case: 正常
         summary: エージェントが記載した project_dir を上書きする
