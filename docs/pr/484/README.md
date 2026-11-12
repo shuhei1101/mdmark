@@ -1,0 +1,1 @@
+# VS Code 拡張機能のプレビューと書き出す HTML へ設定 tooltips と syntax.url を通す
