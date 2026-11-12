@@ -243,3 +243,29 @@ test("test_move_by_key_when_blocked", async () => {
     }),
   ).toBeUndefined();
 });
+
+// pointercancel で動かした分を戻し、その後の移動で動かさない（正常系）
+test("test_start_drag_when_cancelled", async () => {
+  // 準備
+  const { target, moves, clicks } = await setUp('[data-node="A"]');
+  const base = { bubbles: true, pointerId: 1, button: 0, pointerType: "touch" };
+  // 実行: 下へ 40px 動かしてから pointercancel、続けてさらに下へ 40px
+  target.dispatchEvent(
+    new PointerEvent("pointerdown", { ...base, clientX: 50, clientY: 50 }),
+  );
+  window.dispatchEvent(
+    new PointerEvent("pointermove", { ...base, clientX: 50, clientY: 90 }),
+  );
+  window.dispatchEvent(
+    new PointerEvent("pointercancel", { ...base, clientX: 50, clientY: 90 }),
+  );
+  const count = moves.length;
+  window.dispatchEvent(
+    new PointerEvent("pointermove", { ...base, clientX: 50, clientY: 130 }),
+  );
+  // 検証: pointercancel で押した時点の状態に戻り、その後は onMove を呼ばない
+  expect(count).toBeGreaterThanOrEqual(2);
+  expect(moves.at(-1)).toBe(STATE);
+  expect(moves).toHaveLength(count);
+  expect(clicks).toHaveLength(0);
+});
