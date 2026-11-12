@@ -1,0 +1,18 @@
+# VS Code 拡張機能
+
+## 現状
+
+| 分類 | ページ / ファイル | 概要 | 補足 |
+| --- | --- | --- | --- |
+| ドキュメント | [docs/interface/IF-472-21.ts.yaml](https://github.com/shuhei1101/mdmark/blob/develop/docs/interface/IF-472-21.ts.yaml) | インターフェース定義『プレビューを再描画する』。正常系の期待値に送信の時刻を持つ | 変更しない |
+| 実装 | [vscode/src/preview/panel.ts](https://github.com/shuhei1101/mdmark/blob/develop/vscode/src/preview/panel.ts) | `scheduleRender` が最後の変更から `updateDelayMs` 待って `render` を送信する | 変更しない |
+| テスト | [vscode/tests/integration/preview-rerender.test.ts](https://github.com/shuhei1101/mdmark/blob/develop/vscode/tests/integration/preview-rerender.test.ts) | `test_normal` が `editor.edit` の完了の後に取った時刻と送信の時刻を比べる | 修正する |
+| テスト | [vscode/tests/integration/helpers.ts](https://github.com/shuhei1101/mdmark/blob/develop/vscode/tests/integration/helpers.ts) | `installRecorder` が送信したメッセージと時刻を記録する。`replaceFirstLine` が先頭の行を書き換える | 必要なら修正する |
+
+## 変更方針
+
+| 対象 | 方針 | 補足 |
+| --- | --- | --- |
+| 最後の書き換えの時刻 | `workspace.onDidChangeTextDocument` で対象の文書が変わった時刻を記録し、最後の記録を `lastEdit` にする | `editor.edit` の完了の時刻は使わない |
+| 時刻の比較 | `sentAt - lastEdit` を、インターフェース定義の期待値（300 ms より後）に合わせ、タイマーの誤差の分だけ緩めた下限で比べる | 下限の値は結合テスト作成で決める |
+| 実装 | 変えない | 送信した中身が 3 回目の全文のため、送信の待ちは期待どおり |
