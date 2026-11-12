@@ -89,9 +89,9 @@ functions:
       - name: test_collect_warnings_rule_when_mark_notes
         case: 正常
         summary: マーカーの注記を、マーカーの行でその種類にして集める
-        condition: '5 行目の `<!-- tabs: {"grop": "os"} -->` と `### macOS`・`### Windows` の範囲、9 行目の `<!-- section: {"open": false} -->`'
+        condition: '5 行目の `<!-- tabs: {"grop": "os"} -->` と `### macOS`・`### Windows` の範囲、17 行目の今の書き方の `<!-- section: closed -->`'
         mock: なし
-        expected: '`env.warnings` が `{ line: 5, kind: "unknown_mark_arg" }`（`message` に `grop` と `group`・`collapse` を含む）と `{ line: 9, kind: "legacy_mark" }` の 2 件'
+        expected: '`env.warnings` が `{ line: 5, kind: "unknown_mark_arg" }`（`message` に `grop` と `group`・`collapse` を含む）と `{ line: 17, kind: "legacy_mark" }` の 2 件'
     status: planned
     introduced:
       pr: 328
