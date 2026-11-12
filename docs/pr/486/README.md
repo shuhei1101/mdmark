@@ -1,0 +1,1 @@
+# VS Code の結合テスト test_normal_when_range_scripts で CSP の違反が 0 件であることを確認する
