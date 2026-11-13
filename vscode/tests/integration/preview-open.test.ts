@@ -237,12 +237,11 @@ suite("プレビューを開く", () => {
       "h1",
       ".mdmark-table",
       ".markdown-alert",
-      ".mdmark-diagram-frame",
+      'figure.mdmark-diagram[data-diagram="map"]',
     ]) {
-      assert.ok(
-        (await inspect(selector)).length > 0,
-        `${selector} が描かれていない`,
-      );
+      await waitFor(async () => (await inspect(selector)).length > 0, {
+        message: `${selector} が描かれていない`,
+      });
     }
     // パネルの部品にアクセシビリティの違反が無い
     assert.deepStrictEqual(await audit(), []);

@@ -230,43 +230,26 @@ suite("プレビューのリンクを開く", () => {
     assert.deepStrictEqual(opened, []);
   });
 
-  // フロー図のノードのリンクを、本文のリンクと同じ種類ごとの先で開き、ノードの上のドラッグでは開かない
-  test("test_normal_when_flow_node_link", async () => {
+  // map の図のノードのリンクを、本文のリンクと同じ種類ごとの先で開き、ノードの上のドラッグでは開かない
+  test("test_normal_when_map_node_link", async () => {
     // 準備
-    const node = (id: string, x: number, href: string) => ({
-      id,
-      kind: "script",
-      x,
-      y: 40,
-      w: 200,
-      h: 72,
-      name: `ノード ${id}`,
-      href,
-    });
-    const definition = {
-      title: "リンク",
-      scope: "点検",
-      updated: "2026-11-05",
-      width: 520,
-      height: 152,
-      nodes: [
-        node("doc", 20, "./other.md"),
-        node("web", 300, "https://aka.ms/mdmark"),
-      ],
-      wires: [],
-    };
     await writeFixture(
       "flow.md",
       [
         "# 図",
         "",
-        "<!-- flow -->",
+        "<!-- map -->",
         "",
-        "```json",
-        JSON.stringify(definition),
+        "```mermaid",
+        "flowchart LR",
+        '  doc["ノード doc"]',
+        '  web["ノード web"]',
+        "  doc --> web",
+        '  click doc "./other.md"',
+        '  click web "https://aka.ms/mdmark"',
         "```",
         "",
-        "<!-- /flow -->",
+        "<!-- /map -->",
         "",
       ].join("\n"),
     );
@@ -278,9 +261,17 @@ suite("プレビューのリンクを開く", () => {
     const sentBefore = record.sent.length;
     const linkOf = (id: string) =>
       `[data-node="${id}"] a.mdmark-diagram-node-link`;
-    // 実行・検証: 外部の URL のノードの上でドラッグしても開かない
-    dragInPreview(record, linkOf("web"), -100);
+    await waitFor(async () => (await inspect(linkOf("web"))).length === 1, {
+      message: "map のノードのリンクが描かれていない",
+    });
+    // 実行・検証: 外部の URL のノードの上でドラッグすると、ノードを動かして開かない
+    const styleOf = async () =>
+      (await inspect('.mdmark-diagram-node[data-node="web"]'))[0]?.attributes
+        .style;
+    const before = await styleOf();
+    dragInPreview(record, linkOf("web"), 100);
     await sleep(500);
+    assert.notStrictEqual(await styleOf(), before);
     assert.strictEqual(
       record.received.filter((message) => message.type === "openLink").length,
       0,
