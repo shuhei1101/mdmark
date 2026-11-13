@@ -11,6 +11,7 @@ import { attachFootnotes } from "./footnotes.ts";
 import { attachGifs } from "./gif.ts";
 import { attachLightbox } from "./lightbox.ts";
 import { attachParams } from "./params.ts";
+import { attachDetailsStates, type PartStates } from "./part-states.ts";
 import { attachSections, type SectionStates } from "./sections.ts";
 import { attachStickyRows } from "./sticky.ts";
 import { attachTables } from "./tables.ts";
@@ -39,6 +40,8 @@ export function attachInteractions(options: {
   onColumnsChange?: (event: MdmarkColumnsChange) => void;
   /** セクションの開閉の記録（省くと記録しない） */
   sectionStates?: SectionStates;
+  /** 部品の開閉の記録（省くと記録しない） */
+  partStates?: PartStates;
   /** 付けたときに URL の `#ID` で開くか（既定 `true`） */
   revealHash?: boolean;
 }): () => void {
@@ -52,6 +55,7 @@ export function attachInteractions(options: {
     longColumnMin,
     onColumnsChange,
     sectionStates,
+    partStates,
     revealHash,
   } = options;
   const detachers: Array<() => void> = [];
@@ -65,13 +69,19 @@ export function attachInteractions(options: {
         sections,
         rowDetails,
         states: sectionStates,
+        partStates,
         revealHash,
       }),
     );
   }
   if (features.table === true) {
     detachers.push(
-      attachTables(root, { onColumnsChange, pinMode, longColumnMin }),
+      attachTables(root, {
+        onColumnsChange,
+        pinMode,
+        longColumnMin,
+        partStates,
+      }),
     );
     detachers.push(attachStickyRows(root));
   }
@@ -87,13 +97,15 @@ export function attachInteractions(options: {
   }
   if (features.code === true) {
     detachers.push(attachCodeCopy(root));
-    detachers.push(attachCodeFolds(root));
+    detachers.push(attachCodeFolds(root, partStates));
   }
   if (features.tree === true) {
-    detachers.push(attachFileTrees(root));
+    detachers.push(attachFileTrees(root, partStates));
   }
   if (features.diagrams === true) {
-    detachers.push(attachDiagrams({ root, placement: diagramPlacement }));
+    detachers.push(
+      attachDiagrams({ root, placement: diagramPlacement, partStates }),
+    );
     detachers.push(attachParams(root, paramDefinitions));
   }
   if (features.footnotes === true) {
@@ -118,6 +130,9 @@ export function attachInteractions(options: {
   }
   if (features.lightbox === true) {
     detachers.push(attachLightbox(root));
+  }
+  if (partStates !== undefined) {
+    detachers.push(attachDetailsStates({ root, states: partStates }));
   }
   // GIF の包みは拡大のボタンごと包むため、拡大の後に付ける
   if (features.gif === true) {

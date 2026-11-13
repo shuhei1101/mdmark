@@ -5,6 +5,12 @@ import type {
 } from "../diagram/definition.ts";
 import { ER_METRICS, erRelationRoute, erTableHeight } from "../diagram/er.ts";
 import { erEndSvg, erFoldIcon } from "../parts/er.ts";
+import {
+  type PartStates,
+  partKey,
+  recordOpen,
+  startOpen,
+} from "./part-states.ts";
 
 /** テーブルの開閉のボタン */
 function foldButton(table: HTMLElement): HTMLButtonElement | null {
@@ -181,8 +187,42 @@ export function setErTableFolded(options: {
 }
 
 /** ER 図の開閉のボタンを押したら（Enter・Space を含む）列を畳む・開く。フォーカスはボタンに残す。付けた受け取りを解除する関数を返却する */
-export function attachErFolds(figure: HTMLElement): () => void {
+export function attachErFolds(
+  figure: HTMLElement,
+  states?: PartStates,
+): () => void {
   const controller = new AbortController();
+  const root =
+    figure.parentElement?.closest<HTMLElement>(".mdmark") ??
+    figure.ownerDocument.body;
+  /** テーブルの記録の鍵と、付けたときのマーカー（定義の `folded` の有無） */
+  const entries = new Map<HTMLElement, { key: string; marker: string }>();
+  if (states !== undefined) {
+    for (const table of figure.querySelectorAll<HTMLElement>(
+      ".mdmark-diagram-er-table",
+    )) {
+      if (!foldButton(table)) {
+        continue;
+      }
+      const marker = isFolded(table) ? "folded" : "";
+      const key = partKey({
+        root,
+        part: figure,
+        kind: "er",
+        inner: table.dataset.node ?? "",
+      });
+      entries.set(table, { key, marker });
+      const open = startOpen({
+        states,
+        key,
+        marker,
+        markerOpen: marker === "",
+      });
+      if (open === isFolded(table)) {
+        setErTableFolded({ table, folded: !open });
+      }
+    }
+  }
   figure.addEventListener(
     "click",
     (event) => {
@@ -194,6 +234,10 @@ export function attachErFolds(figure: HTMLElement): () => void {
         return;
       }
       setErTableFolded({ table, folded: !isFolded(table) });
+      const entry = entries.get(table);
+      if (entry) {
+        recordOpen({ states, open: !isFolded(table), ...entry });
+      }
       button.focus();
     },
     { signal: controller.signal },

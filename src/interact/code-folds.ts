@@ -4,6 +4,12 @@ import {
   renderCodeFoldMore,
   renderCodeFoldToggle,
 } from "../parts/code-block.ts";
+import {
+  type PartStates,
+  partKey,
+  recordOpen,
+  startOpen,
+} from "./part-states.ts";
 
 /** `attachCodeFolds` が開閉のボタンごとに登録する、行を開くか畳む関数 */
 export const codeFoldSetters = new WeakMap<Element, (open: boolean) => void>();
@@ -24,7 +30,11 @@ function elementOf(html: string): HTMLElement {
 }
 
 /** コードブロック 1 つの行に開閉を付け、削除する関数を返却する */
-function attachCodeBlock(code: HTMLElement): () => void {
+function attachCodeBlock(
+  code: HTMLElement,
+  root: HTMLElement,
+  states: PartStates | undefined,
+): () => void {
   codeCounter += 1;
   const base = `mdmark-code-${codeCounter}`;
   const lines = [
@@ -42,6 +52,48 @@ function attachCodeBlock(code: HTMLElement): () => void {
     (line, index) =>
       line.dataset.folded === "true" && foldLines[index] !== undefined,
   );
+  const pre = code.parentElement;
+  /** 行の記録の鍵（`pre` が無ければ記録しない） */
+  const keyOf = (index: number): string | undefined =>
+    pre === null
+      ? undefined
+      : partKey({ root, part: pre, kind: "code", inner: String(index + 1) });
+  /** 行のマーカーの値（`data-folded` の有無） */
+  const markers = folded.map((value) => (value ? "folded" : ""));
+  folded.forEach((value, index) => {
+    const key = keyOf(index);
+    if (key !== undefined && foldLines[index] !== undefined) {
+      folded[index] = !startOpen({
+        states,
+        key,
+        marker: markers[index] ?? "",
+        markerOpen: !value,
+      });
+    }
+  });
+  /** 読者が変えた行の開閉を記録する（`nested` が真なら範囲の中の畳める行も） */
+  const record = (index: number, nested: boolean): void => {
+    const targets = [index];
+    if (nested) {
+      const { from, to } = rangeOf(index);
+      for (let line = from - 1; line <= to - 1; line++) {
+        if (foldLines[line] !== undefined) {
+          targets.push(line);
+        }
+      }
+    }
+    for (const target of targets) {
+      const key = keyOf(target);
+      if (key !== undefined) {
+        recordOpen({
+          states,
+          key,
+          open: !folded[target],
+          marker: markers[target] ?? "",
+        });
+      }
+    }
+  };
   const addedIds = lines.filter((line) => !line.id);
   lines.forEach((line, index) => {
     line.id ||= codeLineId(base, index);
@@ -59,7 +111,6 @@ function attachCodeBlock(code: HTMLElement): () => void {
     return wrapper;
   });
   // 開閉のボタンの列の幅を取る class
-  const pre = code.parentElement;
   pre?.classList.add("mdmark-code-foldable");
   const toggles = new Map<number, HTMLButtonElement>();
   /** 畳む範囲の最初と最後の行番号（1 から） */
@@ -151,10 +202,13 @@ function attachCodeBlock(code: HTMLElement): () => void {
     }
     if (more) {
       setFolded(index, false, false);
+      record(index, false);
       toggles.get(index)?.focus();
       return;
     }
-    setFolded(index, !folded[index], event.shiftKey || shiftKeyDown);
+    const nested = event.shiftKey || shiftKeyDown;
+    setFolded(index, !folded[index], nested);
+    record(index, nested);
   };
   /** 乗せた行を含む最も内側の範囲の行に `data-guide-active` を付ける */
   const markGuide = (index: number | undefined): void => {
@@ -243,13 +297,16 @@ function attachCodeBlock(code: HTMLElement): () => void {
 }
 
 /** `data-fold-lines` の行を持つコードブロックに、行の開閉のボタン・`⋯`・縦線の範囲を付け、削除する関数を返却する */
-export function attachCodeFolds(root: HTMLElement): () => void {
+export function attachCodeFolds(
+  root: HTMLElement,
+  states?: PartStates,
+): () => void {
   const blocks = [...root.querySelectorAll<HTMLElement>("pre > code")].filter(
     (code) =>
       code.querySelector(":scope > .mdmark-code-line[data-fold-lines]") !==
       null,
   );
-  const detachers = blocks.map(attachCodeBlock);
+  const detachers = blocks.map((code) => attachCodeBlock(code, root, states));
   return () => {
     for (const detach of detachers) {
       detach();
