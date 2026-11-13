@@ -1,0 +1,15 @@
+$ npm run test:unit
+
+> test:unit
+> vitest run --project 'unit*'
+
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/fix-interact-keep-ui-state-on-update-and-tab-switch
+
+
+ Test Files  287 passed (287)
+      Tests  2124 passed (2124)
+   Start at  04:37:20
+   Duration  105.18s (worker 68%, tests 20%, import 11%, transform 1%)
+
+exit=0

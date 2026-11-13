@@ -1,0 +1,28 @@
+$ npx vitest run --project unit-browser --reporter=verbose tests/unit/src/interact/tabs.browser.test.ts（Chromium）
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/fix-interact-keep-ui-state-on-update-and-tab-switch
+
+ ✓ |unit-browser (chromium)| tests/unit/src/interact/tabs.browser.test.ts > test_attach_tabs 78ms
+ ✓ |unit-browser (chromium)| tests/unit/src/interact/tabs.browser.test.ts > test_attach_tabs_when_group_synced 2ms
+ ✓ |unit-browser (chromium)| tests/unit/src/interact/tabs.browser.test.ts > test_attach_tabs_when_choice_saved 1ms
+ ✓ |unit-browser (chromium)| tests/unit/src/interact/tabs.browser.test.ts > test_attach_tabs_when_detached 1ms
+ ✓ |unit-browser (chromium)| tests/unit/src/interact/tabs.browser.test.ts > test_attach_tabs_when_group_has_quote 2ms
+ ✓ |unit-browser (chromium)| tests/unit/src/interact/tabs.browser.test.ts > test_load_tab_choice 0ms
+ ✓ |unit-browser (chromium)| tests/unit/src/interact/tabs.browser.test.ts > test_load_tab_choice_when_storage_unavailable 1ms
+ ✓ |unit-browser (chromium)| tests/unit/src/interact/tabs.browser.test.ts > test_save_tab_choice 1ms
+ ✓ |unit-browser (chromium)| tests/unit/src/interact/tabs.browser.test.ts > test_save_tab_choice_when_storage_unavailable 1ms
+ ✓ |unit-browser (chromium)| tests/unit/src/interact/tabs.browser.test.ts > test_attach_tabs_when_hash_in_tab 3ms
+ ✓ |unit-browser (chromium)| tests/unit/src/interact/tabs.browser.test.ts > test_reveal_tab_target 2ms
+ ✓ |unit-browser (chromium)| tests/unit/src/interact/tabs.browser.test.ts > test_reveal_tab_target_when_outside 2ms
+ ✓ |unit-browser (chromium)| tests/unit/src/interact/tabs.browser.test.ts > test_attach_tabs_when_nested 6ms
+ ✓ |unit-browser (chromium)| tests/unit/src/interact/tabs.browser.test.ts > test_attach_tabs_when_link_title 7ms
+ ✓ |unit-browser (chromium)| tests/unit/src/interact/tabs.browser.test.ts > test_attach_tabs_when_position_kept 3ms
+ ✓ |unit-browser (chromium)| tests/unit/src/interact/tabs.browser.test.ts > test_attach_tabs_when_group_above_shrinks 2ms
+ ✓ |unit-browser (chromium)| tests/unit/src/interact/tabs.browser.test.ts > test_attach_tabs_when_cannot_restore 1ms
+ ✓ |unit-browser (chromium)| tests/unit/src/interact/tabs.browser.test.ts > test_attach_tabs_when_position_kept_with_anchoring 53ms
+
+ Test Files  1 passed (1)
+      Tests  18 passed (18)
+   Start at  04:45:53
+   Duration  3.50s (import 90%, tests 6%, worker 4%)
+

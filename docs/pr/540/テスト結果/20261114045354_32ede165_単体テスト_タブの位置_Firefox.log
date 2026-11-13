@@ -1,0 +1,28 @@
+$ npx vitest run --project unit-browser --reporter=verbose tests/unit/src/interact/tabs.browser.test.ts（vitest.config.ts の unit-browser の instances を一時的に firefox にして実行）
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/fix-interact-keep-ui-state-on-update-and-tab-switch
+
+ ✓ |unit-browser (firefox)| tests/unit/src/interact/tabs.browser.test.ts > test_attach_tabs 110ms
+ ✓ |unit-browser (firefox)| tests/unit/src/interact/tabs.browser.test.ts > test_attach_tabs_when_group_synced 5ms
+ ✓ |unit-browser (firefox)| tests/unit/src/interact/tabs.browser.test.ts > test_attach_tabs_when_choice_saved 4ms
+ ✓ |unit-browser (firefox)| tests/unit/src/interact/tabs.browser.test.ts > test_attach_tabs_when_detached 3ms
+ ✓ |unit-browser (firefox)| tests/unit/src/interact/tabs.browser.test.ts > test_attach_tabs_when_group_has_quote 2ms
+ ✓ |unit-browser (firefox)| tests/unit/src/interact/tabs.browser.test.ts > test_load_tab_choice 2ms
+ ✓ |unit-browser (firefox)| tests/unit/src/interact/tabs.browser.test.ts > test_load_tab_choice_when_storage_unavailable 1ms
+ ✓ |unit-browser (firefox)| tests/unit/src/interact/tabs.browser.test.ts > test_save_tab_choice 1ms
+ ✓ |unit-browser (firefox)| tests/unit/src/interact/tabs.browser.test.ts > test_save_tab_choice_when_storage_unavailable 1ms
+ ✓ |unit-browser (firefox)| tests/unit/src/interact/tabs.browser.test.ts > test_attach_tabs_when_hash_in_tab 3ms
+ ✓ |unit-browser (firefox)| tests/unit/src/interact/tabs.browser.test.ts > test_reveal_tab_target 4ms
+ ✓ |unit-browser (firefox)| tests/unit/src/interact/tabs.browser.test.ts > test_reveal_tab_target_when_outside 2ms
+ ✓ |unit-browser (firefox)| tests/unit/src/interact/tabs.browser.test.ts > test_attach_tabs_when_nested 14ms
+ ✓ |unit-browser (firefox)| tests/unit/src/interact/tabs.browser.test.ts > test_attach_tabs_when_link_title 12ms
+ ✓ |unit-browser (firefox)| tests/unit/src/interact/tabs.browser.test.ts > test_attach_tabs_when_position_kept 3ms
+ ✓ |unit-browser (firefox)| tests/unit/src/interact/tabs.browser.test.ts > test_attach_tabs_when_group_above_shrinks 3ms
+ ✓ |unit-browser (firefox)| tests/unit/src/interact/tabs.browser.test.ts > test_attach_tabs_when_cannot_restore 4ms
+ ✓ |unit-browser (firefox)| tests/unit/src/interact/tabs.browser.test.ts > test_attach_tabs_when_position_kept_with_anchoring 41ms
+
+ Test Files  1 passed (1)
+      Tests  18 passed (18)
+   Start at  04:46:01
+   Duration  10.71s (import 93%, worker 4%, tests 2%)
+

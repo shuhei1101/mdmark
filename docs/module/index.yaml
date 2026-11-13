@@ -166,6 +166,8 @@ items:
   summary: ライブラリ本体 / 操作 / lightbox.ts
 - page: MOD-472-185.ts.yaml
   summary: ライブラリ本体 / 図 / params.ts
+- page: MOD-472-348.ts.yaml
+  summary: ライブラリ本体 / 操作 / part-states.ts
 - page: MOD-472-231.ts.yaml
   summary: ライブラリ本体 / 操作 / placement.ts
 - page: MOD-472-234.ts.yaml

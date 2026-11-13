@@ -91,6 +91,7 @@
 | [ライブラリ本体 / 操作 / index.ts](./MOD-472-227.ts.yaml) | ライブラリ本体 / 操作 / index.ts |
 | [ライブラリ本体 / 操作 / lightbox.ts](./MOD-472-224.ts.yaml) | ライブラリ本体 / 操作 / lightbox.ts |
 | [ライブラリ本体 / 図 / params.ts](./MOD-472-185.ts.yaml) | ライブラリ本体 / 図 / params.ts |
+| [ライブラリ本体 / 操作 / part-states.ts](./MOD-472-348.ts.yaml) | ライブラリ本体 / 操作 / part-states.ts |
 | [ライブラリ本体 / 操作 / placement.ts](./MOD-472-231.ts.yaml) | ライブラリ本体 / 操作 / placement.ts |
 | [ライブラリ本体 / 操作 / scroller.ts](./MOD-472-234.ts.yaml) | ライブラリ本体 / 操作 / scroller.ts |
 | [ライブラリ本体 / 操作 / sections.ts](./MOD-472-222.ts.yaml) | ライブラリ本体 / 操作 / sections.ts |

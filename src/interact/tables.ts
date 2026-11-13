@@ -39,6 +39,7 @@ import {
   togglePinnedColumn,
 } from "../table-logic.ts";
 import { COPIED_NOTICE_MS, copyText } from "./clipboard.ts";
+import type { PartStates } from "./part-states.ts";
 import { attachColumnResize } from "./table-resize.ts";
 import { attachTableSettings, reorderRowCells } from "./table-settings.ts";
 import { attachTableTree, TREE_FOLDED_ATTRIBUTE } from "./table-tree.ts";
@@ -209,6 +210,7 @@ function attachTable(
   notifyColumns?: (hidden: string[]) => void,
   pinMode: TablePinMode = "each",
   longColumnMin: number = DEFAULT_LONG_COLUMN_MIN_EM,
+  partStates: PartStates | undefined = undefined,
 ): () => void {
   tableCounter += 1;
   const id = `mdmark-table-${tableCounter}`;
@@ -257,7 +259,7 @@ function attachTable(
   const tree =
     treeColumn === undefined
       ? undefined
-      : attachTableTree({ wrapper, placement: "top" });
+      : attachTableTree({ wrapper, placement: "top", states: partStates });
   /** 件数に数える本文の行（階層の表の補った行を除く） */
   const countedRows = originalRows.filter(
     (row) => !row.classList.contains("is-virtual"),
@@ -1430,12 +1432,15 @@ export function attachTables(
     pinMode?: TablePinMode | undefined;
     /** 長文の列の最小の幅（em。既定 `DEFAULT_LONG_COLUMN_MIN_EM`） */
     longColumnMin?: number | undefined;
+    /** 階層の表に指定する部品の開閉の記録（省くと記録しない） */
+    partStates?: PartStates | undefined;
   } = {},
 ): () => void {
   const {
     onColumnsChange,
     pinMode = "each",
     longColumnMin = DEFAULT_LONG_COLUMN_MIN_EM,
+    partStates,
   } = options;
   const detachers: Array<() => void> = [];
   // 列の表示を付けた表の、削除したブロックの中を除いた文書の順の位置
@@ -1466,7 +1471,9 @@ export function attachTables(
             }
           }
         : undefined;
-    detachers.push(attachTable(wrapper, table, notify, pinMode, longColumnMin));
+    detachers.push(
+      attachTable(wrapper, table, notify, pinMode, longColumnMin, partStates),
+    );
   }
   return () => {
     for (const detach of detachers) {

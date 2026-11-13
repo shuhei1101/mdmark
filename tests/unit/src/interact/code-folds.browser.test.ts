@@ -1,4 +1,5 @@
 import { afterEach, expect, test, vi } from "vitest";
+import type { PartStates } from "../../../../src/interact/part-states.ts";
 import { createRoot, removeRoots } from "../../helpers/dom.ts";
 
 /** コードの行の畳みの操作を読み込む（実装が無い間は各テストが個別に失敗する。ファイルが無いと Vite の解決が失敗してテストファイルごと落ちるため、URL を組んで読み込む） */
@@ -238,4 +239,28 @@ test("test_set_code_fold_open", async () => {
   expect(
     lines[1]?.querySelector("button.mdmark-code-fold-more"),
   ).not.toBeNull();
+});
+
+// 記録した開閉で始め、押した開閉を記録する（正常系）
+test("test_attach_code_folds_when_states", async () => {
+  // 準備
+  const { attachCodeFolds, setCodeFoldOpen } = await loadCodeFolds();
+  const states: PartStates = new Map();
+  const first = createRoot(FOLDED_YAML).root;
+  const detachFirst = attachCodeFolds(first, states);
+  foldToggle(codeLines(first)[1]).click();
+  detachFirst();
+  first.remove();
+  const { root } = createRoot(FOLDED_YAML);
+  const lines = codeLines(root);
+  // 実行
+  detachers.push(attachCodeFolds(root, states));
+  // 検証: 2 行目は開いたまま、6 行目はマーカーのとおり畳んだまま
+  expect(foldToggle(lines[1]).getAttribute("aria-expanded")).toBe("true");
+  expect(foldToggle(lines[5]).getAttribute("aria-expanded")).toBe("false");
+  expect(hiddenLineNumbers(lines)).toEqual([7]);
+  // 実行・検証: setCodeFoldOpen で開閉した行は記録しない
+  const recorded = new Map(states);
+  setCodeFoldOpen(foldToggle(lines[5]), true);
+  expect(states).toEqual(recorded);
 });
