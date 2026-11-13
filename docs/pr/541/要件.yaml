@@ -1,0 +1,123 @@
+use_cases:
+  - kind: single
+    scenario: docs/scenario/SC-472-78.yaml
+    impact: changed
+    detail: 拡張子が純粋な `.md` の文書が mdmark の記法を含むとき、拡張子を `.mark.md` に変えるよう提案するずれを出すシナリオと、設定で止めたときに出さないシナリオを追加する。記法を含まない `.md` と `.mark.md` には出さない
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-3.yaml
+    impact: changed
+    detail: Claude Code から呼んだ点検でも、記法を含む純粋な `.md` の拡張子の提案が返ることを加える
+    depends_on:
+      - docs/scenario/SC-472-78.yaml
+  - kind: single
+    scenario: docs/scenario/SC-472-15.yaml
+    impact: changed
+    detail: '`.mark.md` の文書を記載するときと、利用者が mdmark で記載するよう指示したときに、記法のルールを MCP で参照するよう 1 セッションに 1 回案内されるシナリオを加える。純粋な `.md` には利用者の指示が無い限り記法を使用しないことが伝わる'
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-4.yaml
+    impact: changed
+    detail: プラグインを入れた後のフックに、文書の記載と利用者の発言での案内が加わる
+    depends_on:
+      - docs/scenario/SC-472-15.yaml
+  - kind: composite
+    scenario: docs/scenario/SC-472-85.yaml
+    impact: changed
+    detail: '`.mark.md` の文書を記載するときに案内を受けてガイドを参照し、記載した後に点検する流れにする。記法を含む純粋な `.md` の拡張子の提案を点検で受ける'
+    depends_on:
+      - docs/scenario/SC-472-15.yaml
+      - docs/scenario/SC-472-3.yaml
+  - kind: single
+    scenario: docs/scenario/SC-472-76.yaml
+    impact: following
+    detail: '`.mark.md` の文書も、純粋な `.md` と同じく 1 枚の HTML にまとめる対象になることを記載する'
+    depends_on:
+      - docs/scenario/SC-472-78.yaml
+  - kind: single
+    scenario: docs/scenario/SC-472-10.yaml
+    impact: run_only
+    detail: '`.mark.md` の文書も VS Code のプレビューで開けることを、変更の後も確かめる'
+    depends_on: []
+docs:
+  - page: docs/config/CFG-472-3.yaml
+    new: false
+    change: 記法を含む純粋な `.md` の提案を止める設定のキーを追加する。`build.include` の既定が `.mark.md` も含むことを記載する
+    status: todo
+  - page: docs/config/CFG-472-1.yaml
+    new: false
+    change: セッションごとの案内済みの記録の置き場所を決める値があれば追加する
+    status: todo
+  - page: docs/library/LIB-472-1.yaml
+    new: false
+    change: 使用する Claude Code のフックに UserPromptSubmit と Write・Edit への PreToolUse を追加し、入力の `session_id`・`prompt`・`tool_input.file_path` と出力の `additionalContext` を記載する
+    status: todo
+  - page: docs/architecture/ARCH-472-1.yaml
+    new: false
+    change: Claude Code プラグインのフックに、文書の記載と利用者の発言での案内を追加する
+    status: todo
+  - page: schemas/mdmark.config.schema.json
+    new: false
+    change: 記法を含む純粋な `.md` の提案を止める設定のキーを追加する
+    status: todo
+  - page: migrations/no-steps.yaml
+    new: false
+    change: 設定の Schema への省略できるキーの追加に、移行の手順が要らない行を置く
+    status: todo
+  - page: docs/guide/書き出す-点検する.md
+    new: false
+    change: 記法を含む純粋な `.md` の拡張子の提案と、提案を止める設定を記載する
+    status: todo
+  - page: docs/guide/CLI.md
+    new: false
+    change: '`mdmark check` のずれの種類に、記法を含む純粋な `.md` の提案を追加する'
+    status: todo
+  - page: docs/guide/MCP.md
+    new: false
+    change: '`check` が返すずれの種類と、プラグインのフックの案内を記載する'
+    status: todo
+  - page: docs/guide/設定.md
+    new: false
+    change: 提案を止める設定のキーを追加し、`build.include` の既定が `.mark.md` も含むことを記載する
+    status: todo
+  - page: docs/guide/用語集.md
+    new: false
+    change: mdmark の文書の拡張子 `.mark.md` と純粋な Markdown を用語に追加する
+    status: todo
+  - page: docs/guide/コアコンセプト-ClaudeCodeに使用方法を提供する仕組み.md
+    new: false
+    change: '`.mark.md` の記載と利用者の指示で記法のルールの参照を 1 セッションに 1 回案内する仕組みと、純粋な `.md` に記法を使用しないことを伝える経路を記載する'
+    status: todo
+  - page: docs/guide/ClaudeCodeで使用する-プラグインを入れる.md
+    new: false
+    change: プラグインが入れるフックに、文書の記載と利用者の発言での案内を追加する
+    status: todo
+  - page: docs/guide/記載する-文書の記載方法.md
+    new: false
+    change: mdmark の記法で記載する文書の拡張子を `.mark.md` にし、純粋な `.md` も描けることを記載する
+    status: todo
+  - page: docs/guide/書き出す-文書を1枚にまとめる.md
+    new: false
+    change: まとめる対象に `.mark.md` と `.md` の両方が入ることを記載する
+    status: todo
+  - page: guide/index.yaml
+    new: false
+    change: 案内が参照を促す記法のルールのページの `when` に `.mark.md` の文書を記載するときを入れる
+    status: todo
+  - page: README.md
+    new: false
+    change: mdmark の記法で記載する文書の拡張子 `.mark.md` を記載する
+    status: todo
+scope_out:
+  - item: 既存の文書（mdmark・knowledge・ai-monitor・MindStella の資料）の拡張子の `.mark.md` への移行
+    reason: 起点 Issue の後続で、リポジトリごとに移行の時機を決める。この PR は提案を止める設定を持たせる
+    plan: to_file
+  - item: VS Code 拡張機能の有効になる対象の変更
+    reason: '`.mark.md` は末尾が `.md` で、言語が `markdown` のまま拡張機能が有効になるため変更しない'
+    plan: none
+  - item: 純粋な Markdown への書き出し（書き出した文書の拡張子は `.md`）
+    reason: 起点 Issue の「関係」で、別の Issue が扱う
+    plan: '#313'
+  - item: 純粋な Markdown・Mermaid だけの文書でのビュワーの操作
+    reason: 別の題材で、別の Issue が扱う
+    plan: '#500'
