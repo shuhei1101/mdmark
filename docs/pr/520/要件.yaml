@@ -1,0 +1,12 @@
+scope_out:
+  - item: mdmark のリポジトリのほかの文書（docs/mock など）のマーカーの移行
+    reason: mdmark のリポジトリの文書は別の Issue が扱う
+    plan: '#481'
+  - item: マーカーの今の書き方を参照する処理の削除
+    reason: 全てのリポジトリの移行の後に、次のマイナーバージョンの破壊的変更として別の Issue が扱う
+    plan: '#479'
+  - item: リポジトリごとの文書への mdmark upgrade の適用と記載の修正
+    reason: 要件.md の未確定（移行の進め方）が案 A に決まれば、各リポジトリの Issue が扱う。案 B に決まればこの作業 PR の反映作業へ移す
+    plan: to_file
+use_cases: []
+docs: []
