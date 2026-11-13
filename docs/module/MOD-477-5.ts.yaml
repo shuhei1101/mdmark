@@ -141,7 +141,7 @@ functions:
     kind: 関数
     scope: public
     summary: 本文の `<!-- flow -->`・`<!-- sequence -->` の範囲（コードブロックと行内のコードの中と、`skip` の名前の範囲を除く）ごとに、`json` のコードブロックを `readRetiredDefinition` で読み、読めた範囲を `flowToMap`・`sequenceToMap` の map の範囲に置き換える。読めない範囲は書き換えず、報告に挙げる
-    description: 範囲の見つけ方は `findDiagramBlocks` と同じ（閉じのマーカーの無い範囲は文書の終わりまで）。置き換えは範囲の開きのマーカーの行から閉じのマーカーの行までで、範囲の外の本文と改行の種類を変えない
+    description: 範囲は `findDiagramBlocks` の `line`・`end` を使用する（閉じのマーカーの無い範囲は文書の終わりまで）。置き換えは範囲の開きのマーカーの行から閉じのマーカーの行までで、範囲の外の本文と改行の種類を変えない
     args:
       - name: options
         type: '{ markdown: string; skip: Set<string> }'
@@ -232,10 +232,11 @@ functions:
     process: |-
       1. ノードの `id` のうち `SAFE_ID` に合わないものと `MERMAID_RESERVED` のものを、図の中のほかの `id` と重ならない `n{番号}`（1 から）に置き換える。線の `from`・`to`、補足の `notes`・`layout` のキー、`click` の行も置き換えた ID にし、元の `id` と置き換えた ID を写さない値の項目（`id {元の id} → {置き換えた ID}`）にする
       2. `frame` を最上位の `subgraph frame["{タイトル}"]`、`lanes` を枠の中の `subgraph lane{番号}["{名前}"]`（記載の順。グループの ID がノードの ID と重なるときは、重ならない番号まで後ろに `_` を足す）にし、ノードを `y` で層へ入れる（層に入らないノードは枠の中、`external` のノードは枠の外）
-      3. ノードを `{id}{形}:::{種類}` にする（形は `RETIRED_KIND_STYLES` の `mermaid`、名前は `tag` があれば `{tag}<br>{name}`）。名前の Mermaid の記号（`"`・`[`・`]` など）は `#quot;` などの文字の参照にする
+      3. ノードを `{id}{形}:::{種類}` にする（形は `RETIRED_KIND_STYLES` の `mermaid`、名前は `tag` があれば `{tag}<br>{name}`）
       4. 線を `{from} -->|{label}| {to}`（線の ID は `{from}->{to}`）にし、`flow` 以外の種類は補足の `layout.{線の ID}.line` に種類の名前を記載する
       5. `href` を `click {id} "{href}"` の行にする
       6. 補足の `notes` に、ノードの `io`（`入力: {in}`・`処理: {do}`・`出力: {out}` を改行でつなぐ）と `hint`（両方あれば `io` の後ろ）、線の `tip`、`frame`・`lanes` の `hint` を、その ID の説明として記載する。説明が無ければ補足を `{"version": 1}` だけにする
+      - ノードの名前・`tag`・線のラベル・グループのタイトルの `#`・`"`・`[`・`]`・`(`・`)`・`{`・`}`・`|`・`<`・`>`・`;` は、`decodeEntities` が戻す文字の参照（`"` は `#quot;`、ほかは `#{10 進の番号};`）にする
     args:
       - name: definition
         type: RetiredFlowDefinition
@@ -279,7 +280,7 @@ functions:
     process: |-
       1. 相手の `id` のうち `SAFE_ID` に合わないものと `MERMAID_RESERVED` のものを、ほかの `id` と重ならない `p{番号}`（1 から）に置き換え（メッセージの `from`・`to` も）、写さない値の項目にする
       2. 相手を `participant {id} as {name}`（記載の順）にする。map のシーケンス図の参加者は種類を持たないため、相手の `kind` は写さない
-      3. メッセージを `{from}->>{to}: {label}`、`reply` は `{from}-->>{to}: {label}` にする
+      3. メッセージを `{from}->>{to}: {label}`、`reply` は `{from}-->>{to}: {label}` にする（相手の名前・メッセージ・繰り返しのラベルの `#`・`;` は `#{10 進の番号};` の文字の参照にする）
       4. `loop` があれば、全てのメッセージを `loop {label}` 〜 `end` で囲む
       5. メッセージの `tip` を、補足の `notes` の記載の順のメッセージの番号の説明にする
     args:

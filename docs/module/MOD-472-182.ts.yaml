@@ -66,22 +66,22 @@ functions:
     container: src/render/syntax/diagrams.ts
     kind: 関数
     scope: internal
-    summary: Markdown を markdown-it で解析し、`chart`・`param`・`er` のマーカーの範囲と、`RETIRED_DIAGRAM_DIRECTIVES` のマーカーの範囲ごとに、マーカーの名前・開きのマーカーの行の番号・範囲の `json` のコードブロックの中身を返却する（`buildDiagrams` と同じ範囲の読み込み方。埋め込んだ HTML の中の custom element は返却しない）
+    summary: Markdown を markdown-it で解析し、`chart`・`param`・`er` のマーカーの範囲と、`RETIRED_DIAGRAM_DIRECTIVES` のマーカーの範囲ごとに、マーカーの名前・開きと閉じのマーカーの行の番号・範囲の `json` のコードブロックの中身を返却する（`buildDiagrams` と同じ範囲の読み込み方。埋め込んだ HTML の中の custom element は返却しない）
     args:
       - name: markdown
         type: string
         required: true
         description: 文書の本文
     returns:
-      type: 'Array<{ directive: "flow" | "sequence" | "chart" | "param" | "er"; line: number; blocks: string[] }>'
-      description: 範囲ごとのマーカーの名前・行の番号（1 から）・`json` のコードブロック
+      type: 'Array<{ directive: "flow" | "sequence" | "chart" | "param" | "er"; line: number; end: number; blocks: string[] }>'
+      description: 範囲ごとのマーカーの名前・開きのマーカーの行の番号（1 から）・閉じのマーカーの行の番号（閉じが無ければ文書の最後の行）・`json` のコードブロック
     unit_tests:
       - name: test_find_diagram_blocks
         case: 正常
         summary: 図の部品の範囲だけを返却する
         condition: '`<!-- flow -->` の範囲（3 行目）と `<!-- chart -->` の範囲と、`<!-- html -->` の中の `<mdmark-chart>`'
         mock: なし
-        expected: 2 つの範囲を返却し、1 つ目が `flow`・行 3・`json` 1 つ（廃止した図の範囲も返却し、点検が `retired_diagram` にする）
+        expected: 2 つの範囲を返却し、1 つ目が `flow`・行 3・閉じのマーカーの行・`json` 1 つ（廃止した図の範囲も返却し、点検が `retired_diagram` にする）
     status: planned
     introduced:
       pr: 275
