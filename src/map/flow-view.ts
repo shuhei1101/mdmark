@@ -22,7 +22,11 @@ import {
   nearestSegment,
   startDrag,
 } from "./drag.ts";
-import { type Flowchart, parseFlowchart } from "./flowchart.ts";
+import {
+  type Flowchart,
+  mapLinkProblems,
+  parseFlowchart,
+} from "./flowchart.ts";
 import { layoutMap, type MapLayout, type MapOverride } from "./layout.ts";
 import type { MapArgs } from "./spec.ts";
 import {
@@ -146,6 +150,7 @@ export const attachMapFlow = (
   const notes = Object.fromEntries(
     Object.entries(data.notes).map(([id, note]) => [id, note.text]),
   );
+  const links = mapLinkProblems(chart.links).allowed;
   const wireLines = Object.fromEntries(
     Object.entries(data.layout).flatMap(([id, entry]) =>
       entry.line === undefined ? [] : [[id, entry.line]],
@@ -195,6 +200,7 @@ export const attachMapFlow = (
       lines: config.map.lines,
       wireLines,
       notes,
+      links,
       colors,
       collapsed: state.collapsed,
       entered: state.entered,
@@ -504,6 +510,8 @@ export const attachMapFlow = (
     const head = target.closest(".map-group-head, .map-group-bar");
     if (!node && !wire && !head) return;
     event.preventDefault();
+    // 動かした後の click ではノードのリンクを開かない（動かさずに押したときだけ開く）
+    let moved = true;
     startDrag({
       event,
       layout: { ...layout, wires: applyWireShifts(layout, state).wires },
@@ -515,6 +523,7 @@ export const attachMapFlow = (
         refresh();
       },
       onClick: () => {
+        moved = false;
         if (node) select([node]);
         else if (wire) {
           const item = layout.wires.find((one) => one.id === wire);
@@ -526,6 +535,14 @@ export const attachMapFlow = (
       window.removeEventListener("pointerup", finish);
       window.removeEventListener("pointercancel", finish);
       save();
+      if (!moved || !node) return;
+      const suppress = (click: MouseEvent) => {
+        click.preventDefault();
+        window.removeEventListener("click", suppress, true);
+      };
+      window.addEventListener("click", suppress, true);
+      // click が続かないとき（指を離した場所が別の要素）は、次の操作の click を止めない
+      setTimeout(() => window.removeEventListener("click", suppress, true));
     };
     window.addEventListener("pointerup", finish);
     window.addEventListener("pointercancel", finish);

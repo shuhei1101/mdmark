@@ -15,6 +15,7 @@ import type { MapKind, MapLine } from "../map/spec.ts";
 import { isColorName } from "./colors.ts";
 import {
   createTips,
+  groupInfo,
   renderFlow,
   renderText,
   type TermLookup,
@@ -115,8 +116,10 @@ export type MapFlowArgs = {
   lines: Record<string, MapLine>;
   /** 補足の layout の line（線の ID ごとの線の種類の名前） */
   wireLines?: Record<string, string> | undefined;
-  /** 補足の notes（ID ごとの説明） */
+  /** 補足の notes（ノード・グループ・線の ID ごとの説明） */
   notes?: Record<string, string> | undefined;
+  /** `mapLinkProblems` が許したノードのリンク先 */
+  links?: Record<string, string> | undefined;
   /** 補足の layout の color（グループの ID ごとの色の名前） */
   colors?: Record<string, string> | undefined;
   collapsed: string[];
@@ -314,7 +317,7 @@ const MAP_NODE_KEYS =
 export const selectableName = (name: string, selected: boolean): string =>
   selected ? `${name}（選択中）` : name;
 
-/** 部品『mapの構成図』の HTML。フロー図の部品の定義にしたノードと線を renderFlow で描き、グループの面とタイトルの行・開閉と中へ入るボタン・閉じたグループを重ねる */
+/** 部品『mapの構成図』の HTML。ノードと線（`notes` の説明を `hint`、`links` のリンク先を `href` にする）を renderFlow で描き、グループの面とタイトルの行・開閉と中へ入るボタン・説明のマーカー・閉じたグループを重ねる */
 export const renderMapFlow = (args: MapFlowArgs): MapPart => {
   const { layout } = args;
   const kindOf = (classes: string[] | undefined): MapKind | undefined => {
@@ -337,9 +340,9 @@ export const renderMapFlow = (args: MapFlowArgs): MapPart => {
   const nodes: MdmarkDiagramNode[] = layout.nodes.map((node) => {
     const kind = kindOf(node.classes);
     const note = args.notes?.[node.id];
+    const href = args.links?.[node.id];
     return {
       id: node.id,
-      kind: "script",
       x: node.x,
       y: node.y,
       w: node.w,
@@ -352,6 +355,7 @@ export const renderMapFlow = (args: MapFlowArgs): MapPart => {
         color: args.colors?.[node.id] ?? kind?.color,
       },
       ...(note === undefined ? {} : { hint: note }),
+      ...(href === undefined ? {} : { href }),
     };
   });
   const wires: MdmarkDiagramWire[] = layout.wires.map((wire) => {
@@ -374,7 +378,6 @@ export const renderMapFlow = (args: MapFlowArgs): MapPart => {
       id: wire.id,
       from: wire.from,
       to: wire.to,
-      line: "flow",
       points: wire.points,
       ...(wire.merged === undefined && wire.label !== undefined
         ? { label: wire.label }
@@ -388,9 +391,6 @@ export const renderMapFlow = (args: MapFlowArgs): MapPart => {
     };
   });
   const definition: MdmarkFlowDefinition = {
-    title: "",
-    scope: "",
-    updated: "",
     width: layout.width,
     height: layout.height,
     nodes,
@@ -466,6 +466,15 @@ export const renderMapFlow = (args: MapFlowArgs): MapPart => {
       ? ""
       : `;--map-fill:${fill};--map-ink:${ink}`;
   };
+  // 説明を持つグループは、タイトルの右にノードと同じマーカーを配置する
+  const groupTips = createTips(`${args.id ?? "map"}-group`);
+  const groupMark = (id: string, title: string): string =>
+    groupInfo({
+      hint: args.notes?.[id],
+      label: title,
+      owner: `group:${id}`,
+      tips: groupTips,
+    });
   // グループは外側から順に、線とノードの下に重ねる
   const groups = [...open]
     .sort((a, b) => a.ancestors.length - b.ancestors.length)
@@ -477,14 +486,14 @@ export const renderMapFlow = (args: MapFlowArgs): MapPart => {
       const bar = movable
         ? `<div class="map-group-bar" tabindex="0" role="button" aria-label="${escapeHtml(`${group.title}を動かす`)}" aria-keyshortcuts="Alt+ArrowUp Alt+ArrowDown Alt+ArrowLeft Alt+ArrowRight" title="ドラッグでグループを動かす"></div>`
         : "";
-      return `<div class="${classes}" data-group="${escapeHtml(group.id)}" style="left:${group.x}px;top:${group.y}px;width:${group.w}px;height:${group.h}px${groupTint(group.id)}">${bar}<div class="map-group-head">${disclosure(group.id, group.title, true)}${groupTitle(group.id, group.title, current)}</div></div>`;
+      return `<div class="${classes}" data-group="${escapeHtml(group.id)}" style="left:${group.x}px;top:${group.y}px;width:${group.w}px;height:${group.h}px${groupTint(group.id)}">${bar}<div class="map-group-head">${disclosure(group.id, group.title, true)}${groupTitle(group.id, group.title, current)}${groupMark(group.id, group.title)}</div></div>`;
     })
     .join("");
   // 閉じたグループは、二重の枠線の 1 つのノードにする（本数とラベルは出さない）
   const closedHtml = closed
     .map(
       (group) =>
-        `<div class="mdmark-diagram-node map-closed-group${group.faded ? " map-faded" : ""}" data-group="${escapeHtml(group.id)}" style="left:${group.x}px;top:${group.y}px;width:${group.w}px;height:${group.h}px"><div class="map-group-head">${disclosure(group.id, group.title, false)}${groupTitle(group.id, group.title, false)}</div>${group.count === undefined ? "" : `<span class="map-closed-count">ノード ${group.count} 件</span>`}</div>`,
+        `<div class="mdmark-diagram-node map-closed-group${group.faded ? " map-faded" : ""}" data-group="${escapeHtml(group.id)}" style="left:${group.x}px;top:${group.y}px;width:${group.w}px;height:${group.h}px"><div class="map-group-head">${disclosure(group.id, group.title, false)}${groupTitle(group.id, group.title, false)}${groupMark(group.id, group.title)}</div>${group.count === undefined ? "" : `<span class="map-closed-count">ノード ${group.count} 件</span>`}</div>`,
     )
     .join("");
   const packets = `<svg class="map-packets" width="${layout.width}" height="${layout.height}" aria-hidden="true">${renderMapPackets(args, args.packets)}</svg>`;
@@ -498,7 +507,7 @@ export const renderMapFlow = (args: MapFlowArgs): MapPart => {
   const hitLayer = `<svg class="map-wire-hits" width="${layout.width}" height="${layout.height}">${hits}</svg>`;
   return {
     html: `${groups}${html}${hitLayer}${closedHtml}${packets}`,
-    tips: `${markTipTerms(`${part.tips}${wireTips.html()}`, args.terms)}${marker.tips.html()}`,
+    tips: `${markTipTerms(`${part.tips}${wireTips.html()}${groupTips.html()}`, args.terms)}${marker.tips.html()}`,
   };
 };
 

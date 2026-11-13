@@ -5,10 +5,9 @@ import {
   definitionWarning,
   type MdmarkChartDefinition,
   type MdmarkErDefinition,
-  type MdmarkFlowDefinition,
   type MdmarkParamDefinition,
-  type MdmarkSequenceDefinition,
-  nodeLinkProblems,
+  RETIRED_DIAGRAM_DIRECTIVES,
+  type RetiredDiagramDirective,
   readDefinition,
 } from "../../diagram/definition.ts";
 import { buildDictionary } from "../../knowledge/dictionary.ts";
@@ -43,8 +42,49 @@ function jsonBlocks(tokens: Token[]): string[] {
   return jsonFences(tokens).map((token) => token.content);
 }
 
-/** `diagrams` がオンなら、図の部品のマーカーの範囲の `json` のコードブロックを定義として読み込み、図か操作できる部品の HTML にする。読み込めない定義は記載の警告にする。範囲の中身は出力に残さない。オフのときはマーカーだけを取り除く */
+/** 廃止した図の範囲の記載の警告の本文 */
+export function retiredDiagramMessage(
+  directive: RetiredDiagramDirective,
+): string {
+  return `\`<!-- ${directive} -->\` の図の記載方法は廃止しました。\`mdmark upgrade\` を実行すると、map の範囲（Mermaid と補足）へ書き換えます。この図は描いていません。`;
+}
+
+/** 廃止した図の部品のマーカーの名前か */
+export function isRetiredDiagram(
+  name: string,
+): name is RetiredDiagramDirective {
+  return (RETIRED_DIAGRAM_DIRECTIVES as readonly string[]).includes(name);
+}
+
+/** 拡張に無い廃止した図の範囲を、範囲の中身ごと廃止した図の記載の警告に置き換える（機能 `diagrams` のオン・オフによらない） */
+function replaceRetiredDiagrams(state: StateCore): void {
+  const tokens = state.tokens;
+  const out: Token[] = [];
+  for (let index = 0; index < tokens.length; index++) {
+    const token = tokens[index];
+    const mark = markOf(token);
+    if (!token || !mark || mark.closing || !isRetiredDiagram(mark.name)) {
+      if (token) {
+        out.push(token);
+      }
+      continue;
+    }
+    const closeIndex = findClose(tokens, index, mark.name);
+    out.push(
+      warningBlock(state, {
+        message: retiredDiagramMessage(mark.name),
+        kind: "retired_diagram",
+        ...(token.map ? { line: token.map[0] } : {}),
+      }),
+    );
+    index = closeIndex < 0 ? tokens.length : closeIndex;
+  }
+  state.tokens = out;
+}
+
+/** 拡張に無い廃止した図の範囲を記載の警告にする。`diagrams` がオンなら、図の部品のマーカーの範囲の `json` のコードブロックを定義として読み込み、図か操作できる部品の HTML にする。読み込めない定義は記載の警告にする。範囲の中身は出力に残さない。オフのときはマーカーだけを取り除く */
 export function buildDiagrams(state: StateCore): void {
+  replaceRetiredDiagrams(state);
   if (!featureOn(state, "diagrams")) {
     return;
   }
@@ -87,7 +127,7 @@ export function buildDiagrams(state: StateCore): void {
       directive,
       jsonBlocks(tokens.slice(index + 1, end)),
     );
-    let definition = result.definition;
+    const definition = result.definition;
     if (!result.ok || definition === undefined) {
       out.push(
         warningBlock(state, {
@@ -97,34 +137,6 @@ export function buildDiagrams(state: StateCore): void {
         }),
       );
     } else {
-      if (directive === "flow") {
-        const flow = definition as MdmarkFlowDefinition;
-        const problems = nodeLinkProblems(flow);
-        if (problems.length > 0) {
-          out.push(
-            warningBlock(state, {
-              message:
-                "フロー図のノードのリンク先に使用できないものがあります。使用できるリンク先は http・https・mailto と相対パスです。このノードはリンクにせずに描いています。",
-              items: problems.map(({ id, href }) => ({
-                label: id,
-                message: `\`${href.replaceAll("`", "'")}\``,
-              })),
-              ...(token.map ? { line: token.map[0] } : {}),
-            }),
-          );
-          const blocked = new Set(problems.map(({ id }) => id));
-          definition = {
-            ...flow,
-            nodes: flow.nodes.map((node) => {
-              if (!blocked.has(node.id)) {
-                return node;
-              }
-              const { href: _href, ...rest } = node;
-              return rest;
-            }),
-          };
-        }
-      }
       env.diagramCount = (env.diagramCount ?? 0) + 1;
       const count = env.diagramCount;
       let html: string;
@@ -139,11 +151,7 @@ export function buildDiagrams(state: StateCore): void {
       } else {
         html = renderDiagram({
           kind: directive,
-          definition: definition as
-            | MdmarkFlowDefinition
-            | MdmarkSequenceDefinition
-            | MdmarkChartDefinition
-            | MdmarkErDefinition,
+          definition: definition as MdmarkChartDefinition | MdmarkErDefinition,
           id: `${DIAGRAM_ID_PREFIX}-${count}`,
           lookup,
           hints,
@@ -162,10 +170,11 @@ export function buildDiagrams(state: StateCore): void {
   state.tokens = out;
 }
 
-/** 点検が読み込む図の部品の範囲: マーカーの名前・開きのマーカーの行の番号（1 から）・範囲の `json` のコードブロックの中身 */
+/** 点検と移行の手順が読み込む図の部品の範囲: マーカーの名前・開きと閉じのマーカーの行の番号（1 から。閉じが無ければ文書の最後の行）・範囲の `json` のコードブロックの中身 */
 export type DiagramBlocks = {
-  directive: DiagramDirective;
+  directive: DiagramDirective | RetiredDiagramDirective;
   line: number;
+  end: number;
   blocks: string[];
 };
 
@@ -188,9 +197,11 @@ function blockMark(
   return { name: only[2] ?? "", closing: only[1] === "/" };
 }
 
-/** Markdown の図の部品のマーカーの範囲ごとに、マーカーの名前・開きのマーカーの行の番号・`json` のコードブロックの中身を返却する（`buildDiagrams` と同じ範囲の読み込み方。埋め込んだ HTML の中の custom element は返却しない） */
+/** Markdown の図の部品のマーカーと廃止した図の部品のマーカーの範囲ごとに、マーカーの名前・開きと閉じのマーカーの行の番号・`json` のコードブロックの中身を返却する（`buildDiagrams` と同じ範囲の読み込み方。埋め込んだ HTML の中の custom element は返却しない） */
 export function findDiagramBlocks(markdown: string): DiagramBlocks[] {
   const tokens = new MarkdownIt({ html: true }).parse(markdown, {});
+  const lines = markdown.split("\n");
+  const lastLine = lines.at(-1) === "" ? lines.length - 1 : lines.length;
   const found: DiagramBlocks[] = [];
   for (let index = 0; index < tokens.length; index++) {
     const token = tokens[index];
@@ -199,7 +210,10 @@ export function findDiagramBlocks(markdown: string): DiagramBlocks[] {
       !token ||
       !mark ||
       mark.closing ||
-      !Object.hasOwn(DIAGRAM_DIRECTIVES, mark.name)
+      !(
+        Object.hasOwn(DIAGRAM_DIRECTIVES, mark.name) ||
+        isRetiredDiagram(mark.name)
+      )
     ) {
       continue;
     }
@@ -216,9 +230,11 @@ export function findDiagramBlocks(markdown: string): DiagramBlocks[] {
         break;
       }
     }
+    const closeToken = tokens[end];
     found.push({
-      directive: mark.name as DiagramDirective,
+      directive: mark.name as DiagramDirective | RetiredDiagramDirective,
       line: (token.map?.[0] ?? 0) + 1,
+      end: closeToken?.map ? closeToken.map[0] + 1 : lastLine,
       blocks: jsonBlocks(tokens.slice(index + 1, end)).map((block) =>
         block.replace(/\n$/, ""),
       ),

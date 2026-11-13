@@ -12,16 +12,7 @@ import {
   resolveConfig,
 } from "../config.ts";
 import { displayConfigPath, relativizeConfigPaths } from "../config-files.ts";
-import {
-  checkFlowLayout,
-  type FlowLayoutIssue,
-  type FlowLayoutKind,
-} from "../diagram/check.ts";
-import {
-  definitionWarning,
-  type MdmarkFlowDefinition,
-  readDefinition,
-} from "../diagram/definition.ts";
+import { definitionWarning, readDefinition } from "../diagram/definition.ts";
 import type { MdmarkAliasProblem } from "../knowledge/aliases.ts";
 import { checkIndex, type MdmarkIndexIssue } from "../knowledge/check.ts";
 import { normalizePath } from "../knowledge/paths.ts";
@@ -38,7 +29,11 @@ import {
   SYNTAX_MARKS,
 } from "../render/marks.ts";
 import { findMarks, findMarkTexts } from "../render/parser.ts";
-import { findDiagramBlocks } from "../render/syntax/diagrams.ts";
+import {
+  findDiagramBlocks,
+  isRetiredDiagram,
+  retiredDiagramMessage,
+} from "../render/syntax/diagrams.ts";
 import { loadAliases } from "./aliases.ts";
 import { checkMissingFiles } from "./assets.ts";
 import {
@@ -69,12 +64,12 @@ export type CheckIssue = {
     | "unknown_mark"
     | "missing_file"
     | "diagram_invalid"
+    | "retired_diagram"
     | "syntax_warning"
     | "unknown_mark_arg"
     | "legacy_mark"
     | "mark_option_unapplied"
     | "mark_option_invalid"
-    | FlowLayoutKind
     | MapProblem["kind"]
     | "alias_no_files"
     | "alias_unreadable"
@@ -627,29 +622,27 @@ export function checkMaps(
   return issues;
 }
 
-/** フロー図の配置のずれ 1 件の内容（図のタイトル・対象の `id`・修正方法の 1 文） */
-function flowLayoutMessage(title: string, issue: FlowLayoutIssue): string {
-  const [first = "", second = ""] = issue.ids;
-  switch (issue.kind) {
-    case "diagram_node_overlap":
-      return `${title}: ノード \`${first}\` と \`${second}\` が重なっています。どちらかの \`x\`・\`y\`・\`w\`・\`h\` を修正してください。`;
-    case "diagram_node_overflow":
-      return `${title}: ノード \`${first}\` が図の幅・高さの外に出ているか、システムの枠の縁にまたがっています。ノードの \`x\`・\`y\`・\`w\`・\`h\` か、図の \`width\`・\`height\`・\`frame\` を修正してください。`;
-    case "diagram_wire_crosses_node":
-      return `${title}: 線 \`${first}\` がノード \`${second}\` の中を通っています。線の \`points\` か、ノードの \`x\`・\`y\` を修正してください。`;
-    case "diagram_label_too_long":
-      return `${title}: ノード \`${first}\` の文字が、折り返してもノードに収まりません。ノードの \`w\`・\`h\` を広げるか、文字を短くしてください。`;
-  }
-}
-
-/** 文書ごとに図の部品の範囲を読み込み、読み込めない定義を 1 件の `diagram_invalid`、読み込めたフロー図の定義を `checkFlowLayout` のずれにする。並びは文書の順、同じ文書の中は行の順 */
+/** 文書ごとに図の部品の範囲を読み込み、拡張の `directive` に無い廃止した図の範囲を 1 件の `retired_diagram`、読み込めない定義を 1 件の `diagram_invalid` にする。拡張の `directive` の範囲は点検しない。並びは文書の順、同じ文書の中は行の順 */
 export function checkDiagrams(
   documents: Array<{ path: string; markdown: string }>,
+  directives: Set<string>,
 ): CheckIssue[] {
   const issues: CheckIssue[] = [];
   for (const document of documents) {
     for (const found of findDiagramBlocks(document.markdown)) {
+      if (directives.has(found.directive)) {
+        continue;
+      }
       const where = String(found.line);
+      if (isRetiredDiagram(found.directive)) {
+        issues.push({
+          file: document.path,
+          where,
+          kind: "retired_diagram",
+          message: retiredDiagramMessage(found.directive),
+        });
+        continue;
+      }
       const result = readDefinition(found.directive, found.blocks);
       if (!result.ok || result.definition === undefined) {
         const warning = definitionWarning(found.directive, result.problems);
@@ -661,20 +654,6 @@ export function checkDiagrams(
             warning.message,
             ...warning.items.map((item) => item.message),
           ].join(" "),
-        });
-        continue;
-      }
-      if (found.directive !== "flow") {
-        continue;
-      }
-      const definition = result.definition as MdmarkFlowDefinition;
-      const title = definition.title || found.directive;
-      for (const issue of checkFlowLayout(definition)) {
-        issues.push({
-          file: document.path,
-          where,
-          kind: issue.kind,
-          message: flowLayoutMessage(title, issue),
         });
       }
     }
@@ -777,7 +756,10 @@ export async function collectCheckIssues(
     ]),
   );
   const includes = await checkIncludes({ documents, root: loaded.dir });
-  const diagrams = checkDiagrams(documents);
+  // upgrade の呼び方では拡張を読み込まないため、移行の報告に挙げた廃止した図の範囲を除く
+  const diagrams = checkDiagrams(documents, extensions.directives).filter(
+    (issue) => checkMarks || issue.kind !== "retired_diagram",
+  );
   const maps = checkMaps(documents, resolveConfig({ config }));
   const mapIcons: CheckIssue[] = checkMapConfig(config.map).map((issue) => ({
     file,

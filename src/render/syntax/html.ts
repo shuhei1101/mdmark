@@ -3,9 +3,7 @@ import {
   type DiagramDirective,
   definitionWarning,
   type MdmarkChartDefinition,
-  type MdmarkFlowDefinition,
   type MdmarkParamDefinition,
-  type MdmarkSequenceDefinition,
   readDefinition,
 } from "../../diagram/definition.ts";
 import type { WarningItem } from "../../extensions.ts";
@@ -23,7 +21,11 @@ import {
   sanitizeEmbedded,
 } from "../sanitize.ts";
 import { scopeCss } from "../scope-css.ts";
-import { PARAM_COUNT_META } from "./diagrams.ts";
+import {
+  isRetiredDiagram,
+  PARAM_COUNT_META,
+  retiredDiagramMessage,
+} from "./diagrams.ts";
 import { type SeenTerms, termSegments } from "./terms.ts";
 import { envOf, featureOn, findClose, markOf } from "./tokens.ts";
 import { unclosedWarning, type WarningMeta, warningBlock } from "./warnings.ts";
@@ -151,11 +153,22 @@ function takeParts(options: {
   const html = source.replace(
     PART_PATTERN,
     (_match: string, name: string, text: string): string => {
+      const lower = name.toLowerCase();
+      // 廃止した図の要素は、中身ごと落として廃止した図の記載の警告にする
+      if (isRetiredDiagram(lower)) {
+        const warning = warningBlock(state, {
+          message: retiredDiagramMessage(lower),
+          kind: "retired_diagram",
+        });
+        warnings.push(warning.meta?.warning as WarningMeta);
+        parts.push(warning.content);
+        return `<${EMBED_PART_TAG} ${EMBED_PART_ATTRIBUTE}="${env.nonce}:${parts.length - 1}"></${EMBED_PART_TAG}>`;
+      }
       // 図の部品の機能がオフなら、要素を中身ごと落とす
       if (!diagrams) {
         return "";
       }
-      const directive = name.toLowerCase() as DiagramDirective;
+      const directive = lower as DiagramDirective;
       const result = readDefinition(directive, [text.trim()]);
       const definition = result.definition;
       let part: string;
@@ -180,10 +193,7 @@ function takeParts(options: {
         } else {
           part = renderDiagram({
             kind: directive,
-            definition: definition as
-              | MdmarkFlowDefinition
-              | MdmarkSequenceDefinition
-              | MdmarkChartDefinition,
+            definition: definition as MdmarkChartDefinition,
             id: `${DIAGRAM_ID_PREFIX}-${count}`,
             lookup,
             hints,
