@@ -4923,3 +4923,79 @@ test("test_normal_when_board_value_icons", async () => {
   expect(box).toContain("未着手");
   expect(box).toContain("完了");
 });
+
+// 罫線の行を 2 行以上持つ言語が tree でないコードブロックの前に記載の警告を配置し、tree_warning が false のコードブロックには配置しない（正常系）
+test("test_normal_when_tree_lines_without_tree_language", async () => {
+  // 準備
+  const render = await loadRender();
+  const tree = ["mdmark/", "├── src/", "│   └── index.ts", "└── README.md"];
+  const markdown = [
+    "```text",
+    ...tree,
+    "```",
+    "",
+    "```",
+    "src/",
+    "|-- index.ts",
+    "`-- parts/",
+    "```",
+    "",
+    "```text",
+    "└── index.js",
+    "```",
+    "",
+    '<!-- code: {"tree_warning": false} -->',
+    "",
+    "```text",
+    ...tree,
+    "```",
+    "",
+    "```tree",
+    ...tree,
+    "```",
+    "",
+    '<!-- code: {"tree_warning": "no"} -->',
+    "",
+    "```text",
+    ...tree,
+    "```",
+    "",
+  ].join("\n");
+  // 実行
+  const html = render(markdown);
+  // 検証: 警告とコードブロック・ファイルツリーを出る順に並べる
+  const order = [
+    ...html.matchAll(
+      /<div class="mdmark-syntax-warning"[^>]*>[\s\S]*?<\/div>|<pre[^>]*>|<div class="mdmark-tree"/g,
+    ),
+  ].map((match) =>
+    match[0].startsWith('<div class="mdmark-syntax-warning"')
+      ? match[0].includes("罫線のフォルダ構成があります")
+        ? match[0].includes("言語の無いコードブロック")
+          ? "tree-warning-none"
+          : "tree-warning-text"
+        : "warning"
+      : match[0].startsWith("<pre")
+        ? "pre"
+        : "tree",
+  );
+  expect(order).toEqual([
+    "tree-warning-text",
+    "pre",
+    "tree-warning-none",
+    "pre",
+    "pre",
+    "pre",
+    "tree",
+    "warning",
+    "tree-warning-text",
+    "pre",
+  ]);
+  expect(html).toContain(
+    "言語 <code>text</code> のコードブロックに、罫線のフォルダ構成があります。",
+  );
+  expect(html).toContain('&lt;!-- code: {"tree_warning": false} --&gt;');
+  expect(
+    startTags(html, "code").filter((tag) => tag.includes("language-text")),
+  ).toHaveLength(4);
+});

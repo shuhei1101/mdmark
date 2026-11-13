@@ -347,6 +347,12 @@ files:
     related:
       - to: docs/module/MOD-472-179.ts
         type: implements
+  - path: interact/diagram-touch.ts
+    description: モジュール構成『ライブラリ本体 / 図』のうち「指で図を動かす操作中」を受け持つ。図の部品の描き方や操作を変えるときに参照する。
+    tags: [topic:図]
+    related:
+      - to: docs/module/MOD-472-346.ts
+        type: implements
   - path: interact/diagram-tips.ts
     description: モジュール構成『ライブラリ本体 / 図』のうち「図のツールチップ」を受け持つ。図の部品の描き方や操作を変えるときに参照する。
     tags: [topic:図, tool:svg]

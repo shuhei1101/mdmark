@@ -524,9 +524,11 @@ export const attachMapFlow = (
     });
     const finish = () => {
       window.removeEventListener("pointerup", finish);
+      window.removeEventListener("pointercancel", finish);
       save();
     };
     window.addEventListener("pointerup", finish);
+    window.addEventListener("pointercancel", finish);
   };
   /** キーで操作する要素（ノード・グループのタイトルの行の帯・線） */
   const keyTargetOf = (element: Element | undefined) => {

@@ -29,6 +29,9 @@ styles:
       - class_name: .mdmark .mdmark-table :is(th, td).mdmark-wide と .mdmark-check
         target: 広く取る列と真偽値の ✓
         value: '`mdmark-wide` は `white-space: nowrap`。`mdmark-check` は `inline-flex` で、中の `.mdmark-icon` を `1.1em` 角・塗り無し・`currentcolor` の太さ 3 の線にする。値は `docs/mock/refs/283/assets/table.css`'
+      - class_name: .mdmark .mdmark-diagram-box[data-touch-active]
+        target: 指で図を動かす操作中の図の枠
+        value: '枠線（表示するノードの `box-shadow` の内側の線）をリンクの色の 2px にする（`inset 0 0 0 2px var(--mdmark-color-link)`）。中の `.mdmark-diagram-viewport` の `touch-action` を `pan-y` から `none` にする。値は `docs/mock/refs/508/assets/touch.css`'
       - class_name: .mdmark .mdmark-embed:not([data-mdmark-drawn])
         target: 読み込み中のブロック
         value: '`min-height: 12rem`・`--mdmark-color-border` の破線・角丸 `--mdmark-radius`・文字を中央に `--mdmark-color-muted` で配置する'

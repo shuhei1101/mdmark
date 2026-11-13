@@ -3332,6 +3332,94 @@ test("test_normal_when_diagram_tooltip_touch", async () => {
   expect(hintTip.hidden).toBe(true);
 });
 
+/** 表示する枠の中の位置に、`pointerType` が `touch` のポインターのイベントを発火する */
+function fireTouchAt(
+  target: Element,
+  type: string,
+  point: { x: number; y: number },
+): void {
+  target.dispatchEvent(
+    new PointerEvent(type, {
+      pointerType: "touch",
+      pointerId: 7,
+      button: 0,
+      bubbles: true,
+      clientX: point.x,
+      clientY: point.y,
+    }),
+  );
+}
+
+// タッチでは余白をタップするまで縦のドラッグを文書のスクロールにし、タップした後は図の外をタップするまで縦にも横にも図を動かす（正常系）
+test("test_normal_when_diagram_touch_drag", async () => {
+  // 準備: 画面の幅を 390px にし、表示する枠より広いフロー図を拡大して描く
+  await withViewport(390, async () => {
+    const el = createElement();
+    await mountTracked(el, {
+      markdown: `${wrapDirective("flow", INQUIRY_TEXT)}\n\n図の外の段落。`,
+    });
+    const box = find<HTMLElement>(el, ".mdmark-diagram-box");
+    const viewport = find<HTMLElement>(el, ".mdmark-diagram-viewport");
+    buttonOf(el, "拡大").click();
+    buttonOf(el, "拡大").click();
+    const outside = find<HTMLElement>(el, ":scope > p");
+    const node = find<HTMLElement>(el, ".mdmark-diagram-node");
+    const rect = viewport.getBoundingClientRect();
+    // 余白: 表示する枠の中で、ノード・線・ボタンの上でない位置
+    const blank = (() => {
+      for (let y = rect.top + 8; y < rect.bottom - 8; y += 8) {
+        for (let x = rect.left + 8; x < rect.right - 8; x += 8) {
+          const hit = document.elementFromPoint(x, y);
+          if (
+            hit &&
+            viewport.contains(hit) &&
+            !hit.closest(
+              ".mdmark-diagram-node, .mdmark-diagram-wire-hit, [data-tip-owner], button, a",
+            )
+          ) {
+            return { x, y };
+          }
+        }
+      }
+      throw new Error("表示する枠に余白が無い");
+    })();
+    // 検証: 描いた直後は縦のドラッグが文書のスクロール
+    expect(getComputedStyle(viewport).touchAction).toBe("pan-y");
+    expect(box.hasAttribute("data-touch-active")).toBe(false);
+    // ノードの上のタップでは操作中にしない
+    const nodeRect = node.getBoundingClientRect();
+    const onNode = { x: nodeRect.left + 4, y: nodeRect.top + 4 };
+    fireTouchAt(node, "pointerdown", onNode);
+    fireTouchAt(node, "pointerup", onNode);
+    expect(box.hasAttribute("data-touch-active")).toBe(false);
+    // mouse のクリックでは操作中にしない
+    firePointer(viewport, "pointerdown", "mouse");
+    firePointer(viewport, "pointerup", "mouse");
+    expect(box.hasAttribute("data-touch-active")).toBe(false);
+    // 余白のタップで操作中にする
+    fireTouchAt(viewport, "pointerdown", blank);
+    fireTouchAt(viewport, "pointerup", blank);
+    expect(box.hasAttribute("data-touch-active")).toBe(true);
+    expect(getComputedStyle(viewport).touchAction).toBe("none");
+    const linkColor = getComputedStyle(box)
+      .getPropertyValue("--mdmark-color-link")
+      .trim();
+    expect(linkColor).not.toBe("");
+    expect(getComputedStyle(box).boxShadow).toContain("2px inset");
+    // 操作中のドラッグで縦にも横にも動く（合成のイベントはブラウザのポインターを持たないため、捕まえる処理を差し替える）
+    vi.spyOn(viewport, "setPointerCapture").mockImplementation(() => {});
+    const before = { left: viewport.scrollLeft, top: viewport.scrollTop };
+    fireTouchAt(viewport, "pointerdown", blank);
+    fireTouchAt(viewport, "pointermove", { x: blank.x - 40, y: blank.y - 40 });
+    fireTouchAt(viewport, "pointerup", { x: blank.x - 40, y: blank.y - 40 });
+    expect(viewport.scrollLeft).toBeGreaterThan(before.left);
+    expect(viewport.scrollTop).toBeGreaterThan(before.top);
+    // 図の外の段落のタップで操作中を解く
+    fireTouchAt(outside, "pointerdown", { x: 1, y: 1 });
+    expect(box.hasAttribute("data-touch-active")).toBe(false);
+  });
+});
+
 /** 操作できる部品を描いた要素と、その要素の部品の要素 */
 async function mountParam(): Promise<{ el: HTMLElement; param: HTMLElement }> {
   const el = createElement();

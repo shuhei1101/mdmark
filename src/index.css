@@ -5086,6 +5086,15 @@
         --mdmark-diagram-box-shadow,
         inset 0 0 0 1px var(--mdmark-color-border)
       );
+
+      /* 指で図を動かす操作中: 枠線をリンクの色の 2px にし、指の縦のドラッグも図の移動にする */
+      &[data-touch-active] {
+        box-shadow: inset 0 0 0 2px var(--mdmark-color-link);
+
+        .mdmark-diagram-viewport {
+          touch-action: none;
+        }
+      }
     }
 
     /* 右上のボタンの帯: 移動と拡大・縮小のまとまりを右に配置し、狭い幅では折り返す */

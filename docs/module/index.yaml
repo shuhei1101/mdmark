@@ -146,6 +146,8 @@ items:
   summary: ライブラリ本体 / 操作 / csv-raw.ts
 - page: MOD-472-179.ts.yaml
   summary: ライブラリ本体 / 図 / diagram-resize.ts
+- page: MOD-472-346.ts.yaml
+  summary: ライブラリ本体 / 図 / diagram-touch.ts
 - page: MOD-472-184.ts.yaml
   summary: ライブラリ本体 / 図 / diagram-tips.ts
 - page: MOD-472-183.ts.yaml
