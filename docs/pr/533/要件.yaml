@@ -2,7 +2,7 @@ use_cases:
   - kind: single
     scenario: docs/scenario/SC-472-73.yaml
     impact: changed
-    detail: 複数の列を留め、留めた列の幅の合計が表の見える幅を超えたときも、留めた列どうしが重ならずに読める。留められない列はそのことが読む人に伝わる
+    detail: 列を留め（選んだ列だけを留める設定と、押した列までを留める設定の両方）、留めた列の幅の合計が表の見える幅を超えたときも、留めた列どうしが重ならずに読める。留められない列はそのことが読む人に伝わる
     depends_on: []
 docs:
   - page: docs/guide/記載する-表に機能を付ける.md
@@ -11,13 +11,10 @@ docs:
     status: todo
   - page: docs/config/CFG-472-3.yaml
     new: false
-    change: '`table.pin` の `each` の説明に、見える幅を超えた列の扱いを足す'
+    change: '`table.pin` の `each`・`through` の説明に、見える幅を超えた列の扱いを足す'
     status: todo
   - page: docs/guide/設定.md
     new: false
-    change: 「表のピン止めの動き」の `each` の説明に、見える幅を超えた列の扱いを足す
+    change: 「表のピン止めの動き」の `each`・`through` の説明に、見える幅を超えた列の扱いを足す
     status: todo
-scope_out:
-  - item: '`table.pin: through` で、押した列までの幅の合計が表の見える幅を超えるときの扱い'
-    reason: 要望は `each` で留めた列どうしが重なる事象で、`through` は左端に並べるだけで重ならない。含めるかは単一ユースケース設計のレビューで確定する
-    plan: none
+scope_out: []
