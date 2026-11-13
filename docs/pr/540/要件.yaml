@@ -60,7 +60,7 @@ docs:
 scope_out:
   - item: 図のグループ・シーケンス図のブロックの開閉（`src/parts/map.ts`）と前付けの `<details>`（`src/parts/frontmatter.ts`）を update で引き継ぐ
     reason: 要望の対象の 7 種類の部品に含まれないが、同じ理由（描き直しで本文を丸ごと差し替える）で初期の開閉へ戻る見込み。この PR で広げる開閉の記録に寄せると対応が小さいため、この PR の仕組みを前提にする後続として扱う。スコープに含めるかはレビューで確定する
-    plan: to_file
+    plan: '#543'
   - item: 結合テスト `tests/integration/lib/build.test.ts` の `test_normal` が、無くなった `migrations/next` を写そうとして fail する
     reason: 不具合（v0.11.0 へ移行の手順を移した後も、テストが `migrations/next` を参照している）で、今回の要望に含まれない。develop でも同じく fail し、この PR がマージされなくても同じ内容で成り立つ
     plan: '#542'
