@@ -434,3 +434,96 @@ test("test_render_map_flow_when_merged_notes", async () => {
     /class="map-wire-hit" data-wire="read-&gt;layout" data-tip-owner/,
   );
 });
+
+// 状態遷移図の再生（正常系）
+test("test_render_map_band_when_transition", async () => {
+  // 準備
+  const { renderMapBand } = await loadParts();
+  // 実行
+  const html = renderMapBand({
+    mode: "playback",
+    unit: "transition",
+    total: 13,
+    index: 5,
+    title: "判定 → 差し戻しの理由を確認する：差し戻し",
+    text: "",
+    auto: false,
+    label: "作業の状態の再生",
+  });
+  // 検証
+  const labels = matches(html, /aria-label="([^"]+)"/g).map((item) =>
+    item.replace(/^aria-label="|"$/g, ""),
+  );
+  expect(labels).toEqual(
+    expect.arrayContaining([
+      "前の遷移",
+      "再生をやめる",
+      "自動で進める",
+      "次の遷移",
+    ]),
+  );
+  expect(labels).not.toContain("前のメッセージ");
+});
+
+/** 部品『mapのER図』の Default の「注文」 */
+async function orderTable(collapsed: boolean) {
+  const { parseErDiagram } = await import("../../../../src/map/er.ts");
+  const { ER } = await import("../../helpers/map.ts");
+  const table = parseErDiagram(ER).tables[1];
+  if (!table) throw new Error("テーブルが読めない");
+  return {
+    name: table.name,
+    columns: table.columns,
+    notes: { 状態: "下書き・確定・発送済み・取り消し" },
+    collapsed,
+  };
+}
+
+// 列の行（正常系）
+test("test_render_map_er", async () => {
+  // 準備
+  const { renderMapEr } = await loadParts();
+  // 実行
+  const result = renderMapEr(await orderTable(false));
+  // 検証
+  expect(matches(result.columns, /class="map-er-column"/g)).toHaveLength(8);
+  expect(result.columns).toMatch(
+    /data-column="状態"[\s\S]*?<button[^>]*map-er-note/,
+  );
+  expect(result.toggle).toContain('aria-expanded="true"');
+});
+
+// 列を閉じた（正常系）
+test("test_render_map_er_when_collapsed", async () => {
+  // 準備
+  const { renderMapEr } = await loadParts();
+  // 実行
+  const result = renderMapEr(await orderTable(true));
+  // 検証
+  expect(result.columns).not.toContain("map-er-column");
+  expect(result.toggle).toContain("列 8");
+  expect(result.toggle).toContain('aria-expanded="false"');
+});
+
+// 同じ状態への遷移（正常系）
+test("test_render_map_state", async () => {
+  // 準備
+  const { renderMapState } = await loadParts();
+  // 実行
+  const html = renderMapState({
+    wire: "t2",
+    x: 100,
+    y: 50,
+    width: 120,
+    label: "保存する",
+    active: false,
+    dim: false,
+  });
+  // 検証
+  const d =
+    /<path[^>]*class="map-state-loop"[^>]*d="([^"]+)"/.exec(html)?.[1] ?? "";
+  expect(d.startsWith("M220 64")).toBe(true);
+  expect(d.endsWith("L160 50")).toBe(true);
+  expect(html).toContain("保存する");
+  expect(html).toMatch(/class="map-wire-hit"[^>]*aria-label="[^"]+"/);
+});
