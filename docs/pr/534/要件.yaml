@@ -138,15 +138,21 @@ docs:
   - page: docs/guide/記法.md
     new: false
     change: '`flow`・`sequence` の印の行を削除し、map へ変換できる旨と変換の方法を案内する'
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-13T19:29:03.836433+00:00'
   - page: docs/guide/図を描く-図を描く.md
     new: false
     change: 座標で記載するフロー図・シーケンス図の手順を削除し、構成図・シーケンス図は map で描く案内にする
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-13T19:29:03.836433+00:00'
   - page: docs/guide/図を描く-見本.md
     new: false
     change: 見本の文書のフロー図・シーケンス図を map の範囲に置き換える
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-13T19:29:03.836433+00:00'
   - page: docs/guide/図を描く-描いた図を確認する.md
     new: false
     change: 確かめる図の例をフロー図から map に置き換える
@@ -162,7 +168,9 @@ docs:
   - page: docs/guide/図を描く-Mermaidと補足で図を描く.md
     new: false
     change: 今のフロー図・シーケンス図と比べる記述を削除し、今の定義から変換する手順を追加する
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-13T19:29:03.836433+00:00'
   - page: docs/guide/図を描く-固有の部品とCSSを適用する.md
     new: false
     change: 固有の部品と並べるフロー図の例を map に置き換える
@@ -196,11 +204,15 @@ docs:
   - page: docs/guide/フローチャートの決まり.md
     new: false
     change: 判定フローチャートの描き方を `flow` から map へ置き換える
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-13T19:29:03.836433+00:00'
   - page: docs/guide/構成図の決まり.md
     new: false
     change: 今のフロー図の層・凡例の記述を削除し、map の決まりにそろえる
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-13T19:29:03.836433+00:00'
   - page: docs/guide/コアコンセプト-図を自動配置して辿る仕組み.md
     new: false
     change: 今の図と併存する記述を、廃止の後の形にする
@@ -276,27 +288,39 @@ docs:
   - page: docs/mock/components/flow-diagram/index.html
     new: false
     change: 今のフロー図の部品のモックを削除する（map が使う見た目の部品を残す場合はその範囲に絞る）
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-13T19:29:03.836433+00:00'
   - page: docs/mock/components/sequence-diagram/index.html
     new: false
     change: 今のシーケンス図の部品のモックを削除する（map が使う見た目の部品を残す場合はその範囲に絞る）
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-13T19:29:03.836433+00:00'
   - page: docs/mock/components/index.md
     new: false
     change: フロー図・シーケンス図の部品のモックの行を削除する
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-13T19:29:03.836433+00:00'
   - page: docs/mock/files.yml
     new: false
     change: 削除したモックの行を削除する
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-13T19:29:03.836433+00:00'
   - page: src/files.yaml
     new: false
     change: '`parts/flow-diagram.stories.ts`・`parts/sequence-diagram.stories.ts` などの削除したファイルの行を削除し、変換のスクリプトの行を追加する'
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-13T19:29:03.836433+00:00'
   - page: tests/files.yaml
     new: false
     change: 削除・追加したテストの行を修正する
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-13T19:29:03.836433+00:00'
   - page: schemas/mdmark.config.schema.json
     new: false
     change: 図の機能のキーの description から `flow`・`sequence` を削除する（`migrations/no-steps.yaml` に行を置く）
@@ -306,7 +330,10 @@ docs:
   - page: migrations/no-steps.yaml
     new: false
     change: description だけを変えた `mdmark.config.schema.json` の行を追加する
-    status: todo
+    status: done
+    content: '`migrations/next/steps.yaml` に移行の手順を置いたため、`mdmark.config.schema.json` の行は置かない（`checkMigrations` が空を返す）'
+    updated_by: planner
+    updated_at: '2026-11-13T19:29:03.836433+00:00'
 scope_out:
   - item: 既存の文書（mdmark の使い方集のほか、mdmark を使う各リポジトリ）の flow・sequence を、用意した変換で map へ書き換える移行
     reason: 変換を使う側の作業で、この Issue では変換と廃止までを扱う。ただし、このリポジトリの使い方集・見本・設計書の図は、廃止で描けなくなるためこの PR で書き換える（更新ドキュメント）

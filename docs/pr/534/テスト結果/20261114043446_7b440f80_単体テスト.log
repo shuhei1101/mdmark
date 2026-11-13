@@ -1,0 +1,15 @@
+$ npm run test:unit
+
+> test:unit
+> vitest run --project 'unit*'
+
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-diagram-retire-flow-sequence
+
+
+ Test Files  286 passed (286)
+      Tests  2114 passed (2114)
+   Start at  04:28:53
+   Duration  129.96s (worker 67%, tests 21%, import 12%, transform 1%)
+
+exit 0
