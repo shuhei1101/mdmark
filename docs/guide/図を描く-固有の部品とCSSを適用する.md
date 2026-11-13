@@ -76,7 +76,7 @@ JavaScript は変換せずにそのまま配る。
 }
 
 .mdmark {
-  --mdmark-color-diagram-llm: #be185d;
+  --mdmark-color-diagram-line: #be185d;
 }
 ```
 
@@ -177,7 +177,7 @@ getComputedStyle(document.querySelector(".team-milestones")).borderTopWidth
 ```
 
 `1px` が出る。
-`--mdmark-color-diagram-llm` を上書きしたとき、LLM のノードの色が変わっている。
+`--mdmark-color-diagram-line` を上書きしたとき、map の図の色を指定しない線の色が変わっている。
 
 #### 別の場所の文書に該当していない
 

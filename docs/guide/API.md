@@ -839,7 +839,6 @@ handle.destroy();
 | `--mdmark-color-avoided-underline` | `var(--mdmark-color-notice-border)` | やめた言い方の単語の、波線の下線の色 |
 | `--mdmark-tooltip-max-width` | `22rem` | ツールチップの幅の上限。画面の幅から `2rem` を参照した幅を超えない |
 | `--mdmark-tooltip-max-height` | `18rem` | ツールチップの高さの上限。画面の高さの 60% を超えない。超える分はツールチップの中でスクロールする |
-| `--mdmark-diagram-lane-tint` | `8%` | 図の層の背景に敷く、ノードの色の濃さ |
 | `--mdmark-diagram-max-height` | `36rem` | 文書の中の図の表示する枠の最初の高さの上限。開いたときと全体が収まる倍率に戻したときは、図の高さ × 全体が収まる倍率とこの値の小さいほうにする（全体が収まる倍率は枠の幅で決める）。利用側が高さを変えたときはこの値で止めず、図の高さ × 今の倍率まで広げられる |
 | `--mdmark-diagram-box-shadow` | `inset 0 0 0 1px var(--mdmark-color-border)` | 図の表示するノード（右上のボタンの帯と表示する枠をまとめたノード）の線（`box-shadow` の値）。枠を持つ面に文書を描く利用側は、面で `none` を指定して線を削除する。操作できる部品の中の図は線を描かず、全画面のモーダルの中の図はこの値を受け継がず既定の線で描く |
 | `--mdmark-diff-minimap-width` | `14px` | 差分のミニマップの帯の幅 |

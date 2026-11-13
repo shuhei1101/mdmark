@@ -263,7 +263,7 @@ files:
   - path: 構成図の決まり.md
     visibility: public
     category: リファレンス
-    description: 構成図の外観の決まり（枠・3 層・タイトルと凡例・線・交差・ツールチップ・操作）。名前から参照して確認するときに参照する。
+    description: 構成図の外観の決まり（入れ子と層・タイトル・ノード・線・交差・ツールチップ・操作）。名前から参照して確認するときに参照する。
     tags: [topic:リファレンス, topic:図, topic:ガイド]
   - path: フローチャートの決まり.md
     visibility: public
