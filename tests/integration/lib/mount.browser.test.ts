@@ -2213,6 +2213,291 @@ test("test_normal_when_sections_kept_on_update", async () => {
   }
 });
 
+// 読者が開閉した部品を update の後も同じ開閉で描き、マーカーを変えた要素と新しい要素はマーカーのとおりに描く（正常系）
+test("test_normal_when_parts_kept_on_update", async () => {
+  // 準備
+  const el = createElement();
+  const parts = (texts: {
+    detail: string;
+    noticeOpen: boolean;
+    appendix: boolean;
+  }): string =>
+    [
+      "| 名前 | 値 |",
+      "| --- | --- |",
+      "| a | 1 |",
+      "| b | 2 |",
+      "",
+      '<!-- row-detail: {"at": 2} -->',
+      "",
+      texts.detail,
+      "",
+      "<!-- /row-detail -->",
+      "",
+      '<!-- details: {"title": "手順"} -->',
+      "",
+      `${texts.detail}の手順`,
+      "",
+      "<!-- /details -->",
+      "",
+      texts.noticeOpen
+        ? '<!-- details: {"title": "注意", "open": true} -->'
+        : '<!-- details: {"title": "注意"} -->',
+      "",
+      "注意の段落",
+      "",
+      "<!-- /details -->",
+      "",
+      "> [!NOTE]+ 詳細",
+      `> ${texts.detail}の注意書き`,
+      "",
+      wrapDirective("er", erText(foldEr())),
+      "",
+      "```tree",
+      "app/",
+      "├── src/",
+      "│   └── index.ts",
+      "└── docs/",
+      "    └── guide.md",
+      "```",
+      "",
+      '<!-- code: {"fold": [2]} -->',
+      "",
+      "```yaml",
+      "a:",
+      "  b:",
+      "    c: 1",
+      "  d: 2",
+      "e:",
+      "  f:",
+      "    g: 3",
+      "  h: 4",
+      "```",
+      "",
+      '<!-- table: {"kind": "data", "tree": {"key": {"column": "キー"}}} -->',
+      "",
+      "| キー | 説明 |",
+      "| --- | --- |",
+      "| features.table | 表の機能 |",
+      "| aliases[].id | 別名の ID |",
+      `| aliases[].metadata.type | ${texts.detail} |`,
+      "",
+      "<!-- /table -->",
+      "",
+      ...(texts.appendix
+        ? [
+            '<!-- details: {"title": "付録"} -->',
+            "",
+            "付録の段落",
+            "",
+            "<!-- /details -->",
+            "",
+          ]
+        : []),
+    ].join("\n");
+  const markdown = parts({
+    detail: "詳細",
+    noticeOpen: false,
+    appendix: false,
+  });
+  const updated = parts({
+    detail: "書き換えた詳細",
+    noticeOpen: true,
+    appendix: true,
+  });
+  const collapsible = (title: string): HTMLDetailsElement => {
+    const found = [
+      ...el.querySelectorAll<HTMLDetailsElement>("details.mdmark-collapsible"),
+    ].find(
+      (details) => details.querySelector("summary")?.textContent === title,
+    );
+    if (!found) {
+      throw new Error(`details が無い: ${title}`);
+    }
+    return found;
+  };
+  const clickSummary = async (details: HTMLDetailsElement): Promise<void> => {
+    const toggled = new Promise((resolve) =>
+      details.addEventListener("toggle", resolve, { once: true }),
+    );
+    details.querySelector("summary")?.click();
+    await toggled;
+  };
+  const folderToggle = (name: string): HTMLButtonElement => {
+    const found = [
+      ...el.querySelectorAll<HTMLButtonElement>("button.mdmark-tree-toggle"),
+    ].find(
+      (button) =>
+        button.closest(".mdmark-tree") !== null &&
+        button.textContent?.trim().startsWith(name),
+    );
+    if (!found) {
+      throw new Error(`フォルダが無い: ${name}`);
+    }
+    return found;
+  };
+  const codeToggle = (line: number): HTMLButtonElement =>
+    find<HTMLButtonElement>(
+      [...el.querySelectorAll<HTMLElement>(".mdmark-code-line")][
+        line - 1
+      ] as HTMLElement,
+      "button.mdmark-code-fold",
+    );
+  const treeRow = (path: string): HTMLTableRowElement => {
+    const found = [
+      ...el.querySelectorAll<HTMLTableRowElement>("tr.mdmark-tree-row"),
+    ].find((row) => row.dataset.path === path);
+    if (!found) {
+      throw new Error(`行が無い: ${path}`);
+    }
+    return found;
+  };
+  const handle = await mountTracked(el, { markdown });
+  find<HTMLButtonElement>(el, "button.mdmark-row-toggle").click();
+  await clickSummary(collapsible("手順"));
+  await clickSummary(find<HTMLDetailsElement>(el, "details.markdown-alert"));
+  await clickSummary(collapsible("注意"));
+  await clickSummary(collapsible("注意"));
+  await userEvent.click(
+    find<HTMLButtonElement>(
+      find(el, '.mdmark-diagram-er-table[data-node="orders"]'),
+      ".mdmark-diagram-er-fold",
+    ),
+  );
+  folderToggle("src/").click();
+  codeToggle(2).click();
+  codeToggle(6).click();
+  find<HTMLButtonElement>(
+    treeRow("aliases[]"),
+    "button.mdmark-tree-toggle",
+  ).click();
+  // 実行
+  handle.update(updated);
+  // 検証: 読者が変えた開閉で描く
+  expect(
+    find<HTMLButtonElement>(el, "button.mdmark-row-toggle").getAttribute(
+      "aria-expanded",
+    ),
+  ).toBe("true");
+  expect(find<HTMLElement>(el, "tr.mdmark-row-detail").hidden).toBe(false);
+  expect(collapsible("手順").open).toBe(true);
+  expect(find<HTMLDetailsElement>(el, "details.markdown-alert").open).toBe(
+    false,
+  );
+  const orders = find<HTMLElement>(
+    el,
+    '.mdmark-diagram-er-table[data-node="orders"]',
+  );
+  expect(
+    find(orders, ".mdmark-diagram-er-fold").getAttribute("aria-expanded"),
+  ).toBe("false");
+  expect(isShown(find(orders, ".mdmark-diagram-er-rest"))).toBe(true);
+  expect(folderToggle("src/").getAttribute("aria-expanded")).toBe("false");
+  expect(codeToggle(2).getAttribute("aria-expanded")).toBe("true");
+  expect(codeToggle(6).getAttribute("aria-expanded")).toBe("false");
+  expect(treeRow("aliases[].id").hidden).toBe(true);
+  // 検証: マーカーを変えた注意と追加した付録はマーカーのとおり
+  expect(collapsible("注意").open).toBe(true);
+  expect(collapsible("付録").open).toBe(false);
+  // 実行・検証: もう一度 mount すると、全ての部品がマーカーのとおりに描かれる
+  handle.destroy();
+  await mountTracked(el, { markdown: updated });
+  expect(find<HTMLElement>(el, "tr.mdmark-row-detail").hidden).toBe(true);
+  expect(collapsible("手順").open).toBe(false);
+  expect(find<HTMLDetailsElement>(el, "details.markdown-alert").open).toBe(
+    true,
+  );
+  expect(folderToggle("src/").getAttribute("aria-expanded")).toBe("true");
+  expect(codeToggle(2).getAttribute("aria-expanded")).toBe("false");
+  expect(codeToggle(6).getAttribute("aria-expanded")).toBe("true");
+  expect(treeRow("aliases[].id").hidden).toBe(false);
+});
+
+// 読者がタブを選ぶと押したタブのボタンの画面の位置を保ち、戻しきれないときはスクロール位置の上限まで戻す（正常系）
+test("test_normal_when_tab_position_kept", async () => {
+  // 準備
+  const el = createElement();
+  const paragraphs = (count: number): string[] =>
+    Array.from({ length: count }, (_, index) => [
+      `段落 ${index + 1}`,
+      "",
+    ]).flat();
+  const tabs = (group: boolean): string[] => [
+    group ? '<!-- tabs: {"group": "len"} -->' : "<!-- tabs -->",
+    "",
+    "### 長文",
+    "",
+    ...paragraphs(30),
+    "### 短文",
+    "",
+    "短文の段落",
+    "",
+    "<!-- /tabs -->",
+    "",
+  ];
+  const markdown = [
+    ...tabs(true),
+    ...paragraphs(60),
+    ...tabs(true),
+    ...paragraphs(60),
+    ...tabs(false),
+  ].join("\n");
+  document.documentElement.style.overflowAnchor = "none";
+  const tabOf = (index: number, name: string): HTMLButtonElement => {
+    const found = [
+      ...(el
+        .querySelectorAll(".mdmark-tabs")
+        [index]?.querySelectorAll<HTMLButtonElement>('[role="tab"]') ?? []),
+    ].find((button) => button.textContent === name);
+    if (!found) {
+      throw new Error(`タブが無い: ${name}`);
+    }
+    return found;
+  };
+  const scrollTo = (button: HTMLButtonElement): void => {
+    window.scrollBy(0, button.getBoundingClientRect().top - 400);
+  };
+  try {
+    await mountTracked(el, { markdown });
+    // 実行: 2 つ目のタブの短文を押す
+    const second = tabOf(1, "短文");
+    scrollTo(second);
+    const before = second.getBoundingClientRect().top;
+    second.click();
+    // 検証: 1 つ目も短文へ切り替わり、押したボタンの位置は変わらない
+    expect(tabOf(0, "短文").getAttribute("aria-selected")).toBe("true");
+    expect(
+      Math.abs(second.getBoundingClientRect().top - before),
+    ).toBeLessThanOrEqual(1);
+    // 実行: 末尾のタブの短文を押す
+    const last = tabOf(2, "短文");
+    scrollTo(last);
+    last.click();
+    // 検証: スクロール位置が上限で、押したボタンが画面の中にある
+    expect(
+      Math.abs(
+        window.scrollY -
+          (document.documentElement.scrollHeight - window.innerHeight),
+      ),
+    ).toBeLessThanOrEqual(1);
+    const top = last.getBoundingClientRect().top;
+    expect(top).toBeGreaterThanOrEqual(0);
+    expect(top).toBeLessThan(window.innerHeight);
+    // 実行: 末尾のタブの長文を押す
+    const long = tabOf(2, "長文");
+    const beforeLong = long.getBoundingClientRect().top;
+    long.click();
+    // 検証
+    expect(
+      Math.abs(long.getBoundingClientRect().top - beforeLong),
+    ).toBeLessThanOrEqual(1);
+  } finally {
+    document.documentElement.style.removeProperty("overflow-anchor");
+    window.scrollTo(0, 0);
+    localStorage.removeItem("mdmark-tabs:len");
+  }
+});
+
 // 印刷の前にタブの全ての中身と閉じた記法を開き、印刷の後に戻す（正常系）
 test("test_normal_when_printed_with_syntax", async () => {
   // 準備
