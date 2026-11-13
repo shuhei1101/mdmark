@@ -2037,7 +2037,7 @@ test("test_attach_tables_when_pinned_under_merged_header", async () => {
     ].join("\n"),
   );
   // 留める名前と既定の列が見えている範囲に収まる幅
-  setRootWidth(root, 800);
+  setRootWidth(root, 1000);
   detachers.push(attachTables(root));
   const table = root.querySelector<HTMLElement>(".mdmark-table");
   if (!table) {
