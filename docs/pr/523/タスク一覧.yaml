@@ -60,17 +60,26 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-13T05:14:26.712817+00:00'
   - process: モジュール構成設計
-    status: todo
+    status: skipped
     note: docs/module/MOD-472-22.ts.yaml の fetchLatestVersion の処理（中断の合図の作り方）と単体テストを、特定した原因に合わせて直す
+    reason: 中断の合図は performance.now で測って 3000 ms で発火しており、上限より早く見えたのは WSL2 の時計の補正で Date.now が戻ったため。fetchLatestVersion の処理は今のモジュール構成のままで要件を満たす（テスト結果/20261113142206_905ccdba_時計の補正の計測.log）
+    updated_by: planner
+    updated_at: '2026-11-13T05:22:16.611886+00:00'
   - process: ドキュメント修正
     status: skipped
     reason: 利用者の操作・設定・公開ドキュメントの記述は変わらない
     updated_by: planner
     updated_at: '2026-11-13T05:14:26.712817+00:00'
   - process: 単体テスト作成
-    status: todo
+    status: skipped
+    reason: vscode/src/version.ts を変えないため、単体テストも変えない
+    updated_by: planner
+    updated_at: '2026-11-13T05:22:16.611886+00:00'
   - process: 実装
-    status: todo
+    status: skipped
+    reason: 原因は結合テストの経過時間を Date.now で測っていることで、拡張機能の実装は変えない
+    updated_by: planner
+    updated_at: '2026-11-13T05:22:16.611886+00:00'
   - process: 結合テスト作成
     status: todo
-    note: vscode/tests/integration/preview-open.test.ts の test_normal_when_tags_unreachable を VS Code 1.141.0 と stable で繰り返し実行し、落ちないことを確認する
+    note: preview-open.test.ts と stub-server.ts の経過時間を performance.now で測るよう直し、test_normal_when_tags_unreachable を VS Code 1.141.0 と stable で 10 回ずつ繰り返して全 pass を確かめる

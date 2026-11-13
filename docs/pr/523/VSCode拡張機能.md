@@ -15,18 +15,9 @@
 
 | 対象 | 方針 | 補足 |
 | --- | --- | --- |
-| 原因の特定 | 拡張機能のホストで、`AbortSignal.timeout` を作った時刻・`fetch` を呼んだ時刻・中断した時刻を測り、上限より早く中断する条件を再現して切り分ける | 結果を `テスト結果/` に置く |
-| `fetchLatestVersion` の中断の合図 | 特定した原因に合わせ、要求を始めてから待ちの上限が経つまでは中断しない作り方へ直す。合計の待ちにする目的は保つ | `未確定`（決める段: モジュール構成設計） |
-| 単体テスト | `tests/unit/vscode/src/version.test.ts` に、上限より前に中断しないことの確認を足す | - |
+| 原因の特定 | 手元の node（v24.14.0）で `AbortSignal.timeout(3000)` の中断と、`Date.now`・`performance.now` の進みの差を測った。`performance.now` で 3000 ms のとき `Date.now` は 2929 ms で、`Date.now` は 30 秒ごとに 55〜72 ms 戻る。カーネルのログにも `Time jumped backwards` が残る | `テスト結果/20261113142206_905ccdba_時計の補正の計測.log` |
+| `vscode/src/version.ts` | 変えない | `AbortSignal.timeout` は単調な時計で測る |
+| `stub-server.ts` の `/tags` の要求の時刻 | `receivedAt`・`closedAt` に加え、受けてから閉じられるまでを代役の配信の中で `performance.now` の差で測った値を返す | テストと別のプロセスのため、プロセスをまたいで `performance.now` を比べない |
+| `preview-open.test.ts` の経過時間 | `test_normal_when_tags_unreachable`（タグ一覧の代役が応えないときと 403 のとき）と `test_normal_when_loading_shown` の経過時間を `performance.now` の差で測る | 期待の範囲は変えない |
+| fail のときのメッセージ | `Date.now` と `performance.now` の両方の経過時間を出す | 実装の中断が単調な時計でも早いときは、実装の修正へ戻る |
 | 結合テスト | `test_normal_when_tags_unreachable` を VS Code 1.141.0 と stable で 10 回ずつ繰り返し、全 pass のログを置く | - |
-
-`未確定` の中断の合図の作り方は、原因の特定の結果で決める。
-
-| 案 | 内容 |
-| --- | --- |
-| A | `AbortController` と `setTimeout` で上限を測り、上限が経ったら `abort` する |
-| B | `AbortSignal.timeout` のまま、原因になった呼び方（合図を作る時点など）だけを直す |
-
-推奨: A
-
-`setTimeout` は拡張機能のホストの他の待ちと同じ時計で動き、作った時点と中断する時点をログで確かめられるため。
