@@ -23,7 +23,7 @@ test("test_run_pre_tool_use", async () => {
   const { PERMISSION_DECISION_REASON, runPreToolUse } = await loadPreToolUse();
   const stdout: string[] = [];
   // 実行
-  const code = await runPreToolUse({
+  const code = runPreToolUse({
     env: { CLAUDE_PROJECT_DIR: "/work" },
     input: createInput({ config: "a.yaml" }),
     stdout: (line) => stdout.push(line),
@@ -49,7 +49,7 @@ test("test_run_pre_tool_use_when_project_dir_given", async () => {
   const { runPreToolUse } = await loadPreToolUse();
   const stdout: string[] = [];
   // 実行
-  await runPreToolUse({
+  runPreToolUse({
     env: { CLAUDE_PROJECT_DIR: "/work" },
     input: createInput({ project_dir: "/other" }),
     stdout: (line) => stdout.push(line),
@@ -65,7 +65,7 @@ test("test_run_pre_tool_use_when_project_dir_unknown", async () => {
   const { runPreToolUse } = await loadPreToolUse();
   const stdout: string[] = [];
   // 実行
-  const code = await runPreToolUse({
+  const code = runPreToolUse({
     env: {},
     input: createInput({ config: "a.yaml" }),
     stdout: (line) => stdout.push(line),
