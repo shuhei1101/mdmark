@@ -91,16 +91,6 @@ args:
     required: false
     default: '{}'
     description: Mermaid の `click` の行のノードの ID からリンク先への対応（許可したものだけ）。ノードの全体を覆う `a.mdmark-diagram-node-link` にし、ノードに class `has-link` を付ける
-  - name: notes
-    type: オブジェクト
-    required: false
-    default: '{}'
-    description: 補足の `notes` の ID ごとの説明。ノードとグループの説明は右上（グループはタイトルの右）のマーカーと `hint` のツールチップ、線の説明は線の押せる帯の `wire` のツールチップにする
-  - name: links
-    type: オブジェクト
-    required: false
-    default: '{}'
-    description: Mermaid の `click` の行のノードの ID からリンク先への対応（許可したものだけ）。ノードの全体を覆う `a.mdmark-diagram-node-link` にし、ノードに class `has-link` を付ける
   - name: collapsed
     type: 配列
     required: false
