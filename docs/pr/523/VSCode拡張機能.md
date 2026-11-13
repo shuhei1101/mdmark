@@ -4,7 +4,7 @@
 
 | 分類 | ページ / ファイル | 概要 | 補足 |
 | --- | --- | --- | --- |
-| ドキュメント | [docs/module/MOD-472-22.ts.yaml](https://github.com/shuhei1101/mdmark/blob/develop/docs/module/MOD-472-22.ts.yaml) | 読み込むバージョン。`fetchLatestVersion` の処理の 1 が「`AbortSignal.timeout(timeoutMs)` を 1 つ作り、全てのページの要求に指定する」 | 原因に合わせて処理と単体テストを直す |
+| ドキュメント | [docs/module/MOD-472-22.ts.yaml](https://github.com/shuhei1101/mdmark/blob/develop/docs/module/MOD-472-22.ts.yaml) | 読み込むバージョン。`fetchLatestVersion` の処理の 1 が「`AbortSignal.timeout(timeoutMs)` を 1 つ作り、全てのページの要求に指定する」 | 処理を変えないため変えない |
 | ドキュメント | [docs/interface/IF-472-22.ts.yaml](https://github.com/shuhei1101/mdmark/blob/develop/docs/interface/IF-472-22.ts.yaml) | プレビューを開く。正常系（タグ一覧を取れない）の期待が「待ちの上限（3 秒）を少し過ぎたところで `@v0.6.0/dist/index.js` が要求される」 | 期待を変えないため変えない |
 | ドキュメント | [docs/nonfunctional/NFR-472-1.yaml](https://github.com/shuhei1101/mdmark/blob/develop/docs/nonfunctional/NFR-472-1.yaml) | 『タグ一覧を取る待ちの上限』3 秒 | 値を変えないため変えない |
 | 実装 | [vscode/src/version.ts](https://github.com/shuhei1101/mdmark/blob/develop/vscode/src/version.ts) | `fetchLatestVersion` が呼ぶたびに `AbortSignal.timeout(timeoutMs)` を作り、`fetch` に指定する。中断は `[warn] タグ一覧を取れない` に名前とメッセージを出して `undefined` を返す | 中断が 276 ms・2451 ms で発火した |
