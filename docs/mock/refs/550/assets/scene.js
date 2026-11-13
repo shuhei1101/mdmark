@@ -98,10 +98,9 @@ for (const block of el.querySelectorAll(".mdmark-diff-block")) {
 for (const link of el.querySelectorAll(".mdmark-side-toc-list a[data-heading-id]")) {
   if (!changed.has(link.dataset.headingId)) continue;
   link.dataset.changed = "";
-  link.insertAdjacentHTML(
-    "beforeend",
-    `<span class="mdmark-visually-hidden">（${CHANGED_LABEL}）</span><span class="mock-toc-changed" aria-hidden="true"></span>`,
-  );
+  // 読み上げの文言はリンクの aria-label に持たせ、リンクの文字（目次を出すボタンの今いる見出しに写す文字）には足さない
+  link.setAttribute("aria-label", `${link.textContent}（${CHANGED_LABEL}）`);
+  link.insertAdjacentHTML("beforeend", '<span class="mock-toc-changed" aria-hidden="true"></span>');
 }
 const bars = el.querySelectorAll(".mdmark-side-toc-bar");
 headings.forEach((heading, index) => {
