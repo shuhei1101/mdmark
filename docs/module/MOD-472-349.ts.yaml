@@ -1,4 +1,4 @@
-id: MOD-472-348
+id: MOD-472-349
 visibility: internal
 title: ClaudeCodeプラグイン / フック / guide-notice.ts
 lead: プラグインの `hooks/hooks.json` の `Write|Edit` の PreToolUse・UserPromptSubmit・PreCompact が `node` で起動する処理。`.mark.md` の記載と語 mdmark を含む発言で、記法のルールの参照をセッションに 1 回だけ案内し、圧縮でその記録を削除する。

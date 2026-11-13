@@ -195,7 +195,7 @@
 | [ClaudeCodeプラグイン / MCPサーバー / http.ts](./MOD-472-51.ts.yaml) | ClaudeCodeプラグイン / MCPサーバー / http.ts |
 | [ClaudeCodeプラグイン / MCPサーバー / mcp.ts](./MOD-472-50.ts.yaml) | ClaudeCodeプラグイン / MCPサーバー / mcp.ts |
 | [ClaudeCodeプラグイン / ポート / port.ts](./MOD-472-15.ts.yaml) | `127.0.0.1` のポートが待ち受けているかの確認と、待ち受けるポートの読み取り（`mdmark serve`・SessionStart のフック・`setup.js` が使用する）。 |
-| [ClaudeCodeプラグイン / フック / guide-notice.ts](./MOD-472-348.ts.yaml) | プラグインの `hooks/hooks.json` の `Write\|Edit` の PreToolUse・UserPromptSubmit・PreCompact が `node` で起動する処理。`.mark.md` の記載と語 mdmark を含む発言で、記法のルールの参照をセッションに 1 回だけ案内する。 |
+| [ClaudeCodeプラグイン / フック / guide-notice.ts](./MOD-472-349.ts.yaml) | プラグインの `hooks/hooks.json` の `Write\|Edit` の PreToolUse・UserPromptSubmit・PreCompact が `node` で起動する処理。`.mark.md` の記載と語 mdmark を含む発言で、記法のルールの参照をセッションに 1 回だけ案内する。 |
 | [ClaudeCodeプラグイン / フック / pre-tool-use.ts](./MOD-472-13.ts.yaml) | プラグインの `hooks/hooks.json` が `node` で起動する処理。PreToolUse で作業のフォルダを MCP のツールの引数 `project_dir` に入れる。 |
 | [ClaudeCodeプラグイン / SessionStartのフック / session-start.ts](./MOD-472-3.ts.yaml) | プラグインの `hooks/hooks.json` の SessionStart が `node` で起動する処理。常駐サーバーが待ち受けていないときだけ、そのことを 1 行で指定する。 |
 | [ClaudeCodeプラグイン / セットアップ / キーの一覧 / keys.ts](./MOD-472-6.ts.yaml) | `keys` の結果を作る。 |

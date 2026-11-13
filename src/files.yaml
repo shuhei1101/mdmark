@@ -1531,7 +1531,7 @@ files:
     description: モジュール構成『ClaudeCodeプラグイン / フック』のうち「記法のルールの参照の案内のフックの入口」を受け持つ。`.mark.md` の記載と mdmark で記載する指示での案内を変えるときに参照する。
     tags: [topic:フック, tool:claude-code]
     related:
-      - to: docs/module/MOD-472-348.ts
+      - to: docs/module/MOD-472-349.ts
         type: implements
   - path: plugin/pre-tool-use.ts
     description: モジュール構成『ClaudeCodeプラグイン / フック』のうち「PreToolUse のフックの入口」を受け持つ。Claude Code のフックの振る舞いを変えるときに参照する。
