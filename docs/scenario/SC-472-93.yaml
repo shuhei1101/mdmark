@@ -100,7 +100,7 @@ scenarios:
       - SC-472-79#scenarios[異常シナリオ（型が合わない）]
       - SC-472-79#scenarios[正常シナリオ]
       - SC-472-44#scenarios[正常シナリオ]
-  - name: 異常シナリオ（図の定義にずれがある）
+  - name: 異常シナリオ（map の補足にずれがある）
     setup:
       - name: 空のフォルダ
         description: 正常シナリオと同じ
