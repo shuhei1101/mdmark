@@ -69,6 +69,11 @@ export const STATE = `stateDiagram-v2
     処理 --> [*]
   }
   完了 --> [*]
+  state 保留 {
+    待機
+  }
+  確認待ち --> 保留 : 保留する
+  保留 --> 確認待ち : 戻す
   note right of 確認待ち : 担当者が内容を確認する
 `;
 
