@@ -1,0 +1,7 @@
+docs:
+  - page: src/files.yaml
+    new: false
+    change: config-files.ts の行の related から、重なった docs/module/MOD-472-116.ts への implements の 1 つを削除する
+    status: todo
+use_cases: []
+scope_out: []
