@@ -11,6 +11,7 @@ directory: |-
   └── interact/
       ├── index.ts       # attachInteractions
       ├── placement.ts   # ツールチップを持ち主の上と下のどちらに配置するかを決める
+      ├── text.ts        # 用語のツールチップの文字を除いた要素の文字 visibleText と、表のセルの値 cellValue（表・セクション・右側の目次・ビューが使用する）
       ├── tables.ts      # 表の並べ替え・ピン止め・絞り込み・件数・集計・コピー・行へ移る・行の URL のコピー
       ├── table-settings.ts # テーブル設定のパネルの開閉・列の表示の切り替え・列の並べ替え（ドラッグと ↑・↓ キー）
       ├── table-resize.ts # 列の幅のつまみのドラッグ・←→ キーで列の幅を変え、ダブルクリック・ダブルタップ・Enter で戻す
@@ -30,5 +31,6 @@ directory: |-
       ├── lightbox.ts    # 画像を拡大のボタンで包み、ライトボックスで開いて切り替え・拡大・縮小・移動を付ける
       ├── gif.ts         # GIF を止める・再生するボタンを付ける
       ├── wide.ts        # wide の範囲の幅の切り替えのボタン
+      ├── embedded-html.ts # 埋め込んだ HTML が列より広い間だけ、中で横にスクロールさせる
       └── csv-raw.ts     # CSV の表と元の CSV の切り替え
   ```

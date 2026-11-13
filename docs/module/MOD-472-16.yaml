@@ -10,7 +10,8 @@ directory: |-
   └── src/
       ├── messages.ts                    # 拡張機能 ⇄ Webview のメッセージの型（型だけ）
       └── webview/
-          ├── main.tsx                   # 入口: 描く先を包む要素を読み込み、React の木を描く
+          ├── vite-env.d.ts              # vite/client の型の参照
+          ├── main.tsx                  # 入口: 描く先を包む要素を読み込み、React の木を描く
           ├── app/
           │   └── app.tsx                # Error Boundary と画面
           ├── features/preview/panel/
