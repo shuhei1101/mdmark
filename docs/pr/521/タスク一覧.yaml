@@ -45,8 +45,10 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-13T03:42:11.871912+00:00'
   - process: インターフェース定義設計
-    status: todo
+    status: done
     note: IF-472-41（配布物をビルドする）の出力と期待値。移行の手順のフォルダへライセンスのファイルを書き込む案を採るとき
+    updated_by: planner
+    updated_at: '2026-11-13T03:45:49.482889+00:00'
   - process: 部品設計
     status: skipped
     reason: 部品を持たないビルドの変更
