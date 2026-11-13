@@ -1,0 +1,73 @@
+# preview-rerender.test.ts の test_normal だけを test.only にして 10 回実行（1 回で 1.141.0 と stable の 2 版。作業ツリーは実行後に戻した）
+$ for i in $(seq 10); do xvfb-run -a npm --prefix vscode run test:integration | grep -E 'Validated version|✔ test_|^\s+[0-9]+\) |最後の書き換えから|passing|failing'; done
+=== 1 回目
+✔ Validated version: 1.141.0
+    ✔ test_normal (2777ms)
+  1 passing (4s)
+✔ Validated version: 1.146.0
+    ✔ test_normal (2871ms)
+  1 passing (5s)
+=== 2 回目
+✔ Validated version: 1.141.0
+    ✔ test_normal (3150ms)
+  1 passing (5s)
+✔ Validated version: 1.146.0
+    ✔ test_normal (2865ms)
+  1 passing (5s)
+=== 3 回目
+✔ Validated version: 1.141.0
+    ✔ test_normal (3078ms)
+  1 passing (5s)
+✔ Validated version: 1.146.0
+    ✔ test_normal (3043ms)
+  1 passing (5s)
+=== 4 回目
+✔ Validated version: 1.141.0
+    ✔ test_normal (3358ms)
+  1 passing (6s)
+✔ Validated version: 1.146.0
+    ✔ test_normal (1665ms)
+  1 passing (4s)
+=== 5 回目
+✔ Validated version: 1.141.0
+    ✔ test_normal (3164ms)
+  1 passing (5s)
+✔ Validated version: 1.146.0
+    ✔ test_normal (3089ms)
+  1 passing (5s)
+=== 6 回目
+✔ Validated version: 1.141.0
+    ✔ test_normal (3011ms)
+  1 passing (5s)
+✔ Validated version: 1.146.0
+    ✔ test_normal (3015ms)
+  1 passing (5s)
+=== 7 回目
+✔ Validated version: 1.141.0
+    ✔ test_normal (3931ms)
+  1 passing (6s)
+✔ Validated version: 1.146.0
+    ✔ test_normal (3275ms)
+  1 passing (4s)
+=== 8 回目
+✔ Validated version: 1.141.0
+    ✔ test_normal (3804ms)
+  1 passing (6s)
+✔ Validated version: 1.146.0
+    ✔ test_normal (4643ms)
+  1 passing (6s)
+=== 9 回目
+✔ Validated version: 1.141.0
+    ✔ test_normal (3575ms)
+  1 passing (6s)
+✔ Validated version: 1.146.0
+    ✔ test_normal (3869ms)
+  1 passing (4s)
+=== 10 回目
+✔ Validated version: 1.141.0
+    ✔ test_normal (3155ms)
+  1 passing (5s)
+✔ Validated version: 1.146.0
+    ✔ test_normal (3423ms)
+  1 passing (5s)
+pass=20 fail=0

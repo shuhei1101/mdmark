@@ -1,0 +1,17 @@
+use_cases:
+  - kind: single
+    scenario: docs/scenario/SC-472-77.yaml
+    impact: none
+    detail: 書き換えの後に最後の内容で再描画する流れは変わらない。この流れを確かめる結合テストの時刻の取り方だけを修正する
+    depends_on: []
+docs: []
+scope_out:
+  - item: preview-rerender.test.ts の test_normal_when_library_origin_added が libraries のマーカーを今の書き方で記載していて毎回 fail する事象
+    reason: 時刻の比較とは別の原因で、同じ内容の open の Issue がある
+    plan: '#496'
+  - item: preview-open.test.ts・mount.browser.test.ts のときどき fail するテストと、VS Code 拡張機能の結合テストの所要時間の短縮
+    reason: このテストとは別の箇所で、同じ内容の open の Issue がある
+    plan: '#390'
+  - item: preview-rerender.test.ts の test_normal_when_map_configured が、余分な再描画を数えてときどき fail する事象
+    reason: test_normal の時刻の比較とは別のテストで、今回の要望に含まれない。develop を取り込んだ後の実行で 1 回 fail し、続く 6 回は pass した
+    plan: '#535'
