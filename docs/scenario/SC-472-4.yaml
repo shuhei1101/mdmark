@@ -29,10 +29,10 @@ scenarios:
     expected:
       - '`claude plugin marketplace add` と `claude plugin install mdmark@mdmark` がどちらも終了コード 0 で終わる'
       - '`claude plugin list --json` に `mdmark@mdmark` が有効として出、その `installPath` が設定のフォルダのプラグインのキャッシュの下で、バージョンがブランチの commit の短縮 SHA（`plugin.json` が `version` を持たない）'
-      - '`installPath` に `hooks/hooks.json`・`.mcp.json`・`scripts/pre-tool-use.js`・`scripts/session-start.js`・`skills/global-setup/SKILL.md`・`skills/setup/SKILL.md` があり、ガイドの `guide/`・`node_modules` が無い'
+      - '`installPath` に `hooks/hooks.json`・`.mcp.json`・`scripts/pre-tool-use.js`・`scripts/session-start.js`・`scripts/guide-notice.js`・`skills/global-setup/SKILL.md`・`skills/setup/SKILL.md` があり、ガイドの `guide/`・`node_modules` が無い'
       - '`installPath` の `.mcp.json` が `type: http` と接続先 `http://127.0.0.1:${MDMARK_PORT:-8782}/mcp` を持ち、`command` を持たない'
       - '`.mcp.json` の接続先につなぐと、起動した常駐サーバーが `export_html`・`build_site`・`check` のツールの一覧を返却し、`read_guide` が無い'
-      - '`hooks/hooks.json` に SessionStart の行が 1 つある'
+      - '`hooks/hooks.json` に SessionStart の行が 1 つあり、UserPromptSubmit の行と、`Write`・`Edit` を対象にする PreToolUse の行が `scripts/guide-notice.js` を起動する'
     test: test_normal
   - name: 異常シナリオ（常駐サーバーが起動していない）
     setup:
@@ -95,6 +95,6 @@ preconditions:
   - 文書の作成者の手元に Claude Code と git と Node 24 以降がある
   - 文書の作成者の手元から GitHub と npm のレジストリへ届く
   - '`MDMARK_PORT` のポート（無ければ既定の 8782）を、mdmark の常駐サーバーのほかに使用するプロセスが無い'
-success_guarantee: プラグインが有効になり、次に開くセッションで SessionStart と PreToolUse のフック・`global-setup` と `setup` のスキル・MCP サーバー `plugin:mdmark:mdmark` が読み込まれる。プラグインの配置場所にはまとめたフックだけがあり、依存を入れない。
+success_guarantee: プラグインが有効になり、次に開くセッションで SessionStart・PreToolUse・UserPromptSubmit のフック・`global-setup` と `setup` のスキル・MCP サーバー `plugin:mdmark:mdmark` が読み込まれる。プラグインの配置場所にはまとめたフックだけがあり、依存を入れない。
 minimal_guarantee: マーケットプレイスの定義が読み込めないときは、Claude Code が理由を出してプラグインを入れない。手元の他のプラグインの設定は変わらない。常駐サーバーが起動していなくてもプラグインは入り、MCP サーバー `plugin:mdmark:mdmark` だけが接続の失敗になる。
 test_file: tests/e2e/単一ユースケース/ClaudeCodeにプラグインを入れる.spec.ts

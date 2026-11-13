@@ -427,13 +427,57 @@ scenarios:
       - 終了コードが 0 以外
       - 設定・索引・文書が変わっていない
     test: test_normal_when_map_data_drift
+  - name: 正常シナリオ（記法を含む純粋な .md がある）
+    setup:
+      - name: 記法を含む純粋な .md を持つフォルダ
+        description: '正常シナリオのフォルダの文書を、5 行目に表のマーカー `<!-- table: {"kind": "data"} -->` を記載した `a.md` と、同じマーカーを記載した `b.mark.md` にし、`c.md` に GFM の表と `mermaid` のコードブロックだけを記載したもの。索引に 3 つとも記載する'
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        actor W as 文書の作成者
+        participant C as mdmark CLI
+        participant M as mdmark の点検の処理
+        W->>C: mdmark check
+        C->>C: 設定・索引・文書を読み込み、設定の Schema と build の対象を確認する
+        C->>M: checkIndex（索引・文書）
+        M-->>C: 空のずれの一覧
+        C->>C: 拡張子が純粋な .md の文書の本文から、mdmark の記法を探す
+        C-->>W: ファイル・場所・種類・内容の一覧・終了コード 0 以外
+    expected:
+      - '`a.md` の 5 行目を指す行が 1 つだけあり、種類が拡張子の提案で、内容に拡張子を `.mark.md` に変えることと、提案を止める設定が記載されている'
+      - '`b.mark.md` と `c.md` を指す行が無い'
+      - 終了コードが 0 以外
+      - 設定・索引・文書が変わっていない
+    test: test_normal_when_plain_md_has_marks
+  - name: 正常シナリオ（拡張子の提案を止める）
+    setup:
+      - name: 提案を止めたフォルダ
+        description: 正常シナリオ（記法を含む純粋な .md がある）のフォルダで、`mdmark.config.yaml` に拡張子の提案を止める設定を記載したもの
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        actor W as 文書の作成者
+        participant C as mdmark CLI
+        participant M as mdmark の点検の処理
+        W->>C: mdmark check
+        C->>C: 設定・索引・文書を読み込み、拡張子の提案を止める設定を読む
+        C->>M: checkIndex（索引・文書）
+        M-->>C: 空のずれの一覧
+        C-->>W: ずれ 0 件・終了コード 0
+    expected:
+      - 標準出力が `ずれ 0 件` の 1 行
+      - 終了コードが 0
+      - 設定・索引・文書が変わっていない
+    test: test_normal_when_extension_hint_disabled
 lead: 文書の作成者が `mdmark check` を実行し、設定ファイルと索引の構造・索引と文書のずれ・書き出す対象の有無・文書の本文にある知らないマーカー・図の部品の定義のずれを、ファイル・場所・種類・内容の一覧で受け取る。
 issue: 9
 primary_actor: 文書の作成者
 trigger: 文書や索引を書き換えた後、書き出す前にずれを確認する
 preconditions:
   - 文書の作成者の手元に Node 24 以降がある
-success_guarantee: 設定の Schema に合わないところ・索引と文書のずれ（`checkIndex` が返却するもの）・`build` の対象が 0 件であること・文書の本文にある知らないマーカー・今の書き方のマーカー・マーカーの設定の JSON Schema に合わないところ・図の部品の定義の誤りとノードの重なり・はみ出し・線の横切り・ラベルの長さ（座標を省いた判定フローチャートは自動の配置の後の座標で点検する）・include のマーカーの取り込み先が無いことが、ファイル・場所・種類・内容の一覧で出る。比べる基準の git の ref を指定したときは、基準から片方の文書だけが変わった `change_together` の組も、修正漏れとして同じ一覧に出る。ずれが無ければ終了コード 0、あれば 0 以外で終わる。
+success_guarantee: 設定の Schema に合わないところ・索引と文書のずれ（`checkIndex` が返却するもの）・`build` の対象が 0 件であること・文書の本文にある知らないマーカー・今の書き方のマーカー・マーカーの設定の JSON Schema に合わないところ・図の部品の定義の誤りとノードの重なり・はみ出し・線の横切り・ラベルの長さ（座標を省いた判定フローチャートは自動の配置の後の座標で点検する）・include のマーカーの取り込み先が無いこと・拡張子が純粋な `.md` の文書が mdmark の記法を含むこと（設定で止めたときを除く）が、ファイル・場所・種類・内容の一覧で出る。比べる基準の git の ref を指定したときは、基準から片方の文書だけが変わった `change_together` の組も、修正漏れとして同じ一覧に出る。ずれが無ければ終了コード 0、あれば 0 以外で終わる。
 minimal_guarantee: 点検は設定・索引・文書を書き換えない。設定ファイルを読み込めないときは、原因と修正方法の 1 文を出して 0 以外で終わる。
 refs:
   - SC-472-70#

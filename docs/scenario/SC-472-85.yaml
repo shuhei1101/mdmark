@@ -25,6 +25,7 @@ scenarios:
     expected:
       - '`a.mark.md` への 1 回目の Write の PreToolUse のフックが、記法のルールを MCP で参照する案内を返し、同じセッションの 2 回目の Edit では案内を返さない'
       - mdmark の MCP の instructions に、記載する前に dev-docs の `search_docs` で mdmark の配信元のガイドを参照し、記載した後に `check` で点検する動線がある
+      - mdmark の MCP の instructions に、記法で記載する文書の拡張子が `.mark.md` で、利用者の指示が無い限り純粋な `.md` には記法を使用しないことがある
       - dev-docs の `search_docs` で mdmark の配信元の `docs` の行をタグ `topic:ガイド` で絞って参照すると、`guide/index.yaml` の全ての `page` のページが返り、`writing` の `page`（`docs/guide/記載する-文書の記載方法.md`）の本文がリポジトリのそのファイルと一致する
       - 知らないマーカーを記載した文書で `check` がずれを 1 件返し、マーカーを修正した後の `check` が空のずれの一覧を返却する
       - mdmark の MCP のツールの一覧に `read_guide` が無い
@@ -120,6 +121,6 @@ preconditions:
   - 文書の作成者の手元に Claude Code と Node 24 以降がある
   - mdmark の常駐サーバーが起動している
   - 作業のフォルダに mdmark の設定（`mdmark.config.yaml`）と索引がある
-success_guarantee: '`.mark.md` を記載するときと mdmark で記載するよう指示されたときに、ガイドを参照する案内をセッションに 1 回受ける。mdmark の配信元のガイドのページを `search_docs` で参照できる。記載した文書は `check` のずれが 0 件になる。'
+success_guarantee: '`.mark.md` を記載するときと mdmark で記載するよう指示されたときに、ガイドを参照する案内をセッションに 1 回受ける。利用者の指示が無い限り純粋な `.md` には記法を使用しないことが MCP の instructions から分かる。mdmark の配信元のガイドのページを `search_docs` で参照できる。記載した文書は `check` のずれが 0 件になる。'
 minimal_guarantee: dev-docs が無いときも、mdmark の MCP の instructions から「dev-docs が無いので見つかりません」と分かる。ガイドを参照しなくても、記載した後の `check` でずれを見つけられる。
 test_file: tests/e2e/複合ユースケース/ClaudeCodeでガイドを参照して記載し点検する.spec.ts

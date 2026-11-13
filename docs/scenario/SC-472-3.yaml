@@ -168,6 +168,25 @@ scenarios:
       - '`export_html` が 1 枚の HTML を書き込み、書き出したパスを返却する'
       - 書き出した HTML が、同じ文書と同じ端末の設定で `mdmark export` を実行して記載した HTML と同じ
     test: test_normal_when_cascaded
+  - name: 正常シナリオ（記法を含む純粋な .md がある）
+    setup:
+      - name: 記法を含む純粋な .md を持つ作業のフォルダ
+        description: 正常シナリオのフォルダの文書 1 つを、表のマーカーを記載した `b.md` にしたもの
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        participant C as Claude Code
+        participant S as MCP サーバー
+        participant F as 作業のフォルダ
+        C->>S: check
+        S->>F: 設定・索引・文書を読み込む
+        S-->>C: ずれの一覧（ファイル・場所・種類・内容）
+    expected:
+      - ずれの一覧に、`b.md` の表のマーカーの行を指す拡張子の提案が 1 件あり、内容に拡張子を `.mark.md` に変えることが記載されている
+      - 同じフォルダで `mdmark check` を実行したときと同じずれが返る
+      - 設定・索引・文書が変わっていない
+    test: test_normal_when_plain_md_has_marks
 lead: Claude Code が MCP のツール `check`・`export_html`・`build_site` で、`mdmark check`・`export`・`build` と同じ点検・1 文書の書き出し・1 枚へのまとめを呼び、結果を受け取る。
 issue: 11
 primary_actor: Claude Code
