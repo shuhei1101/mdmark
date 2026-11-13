@@ -352,7 +352,7 @@ flows:
     expected:
       - '`flow`・`sequence` の範囲の場所に `div.mdmark-syntax-warning` が 1 つずつあり、本文に廃止した記載方法であることと、`mdmark upgrade` で map の範囲へ変換できることが記載されている'
       - '`figure.mdmark-diagram` が無く、出力に範囲の中の定義の JSON の文字（`"nodes"`）が無い'
-      - '埋め込んだ HTML の中の `<mdmark-flow>` の要素が中身ごと落ちていて、その場所に同じ記載の警告がある'
+      - '埋め込んだ HTML の中の `<mdmark-flow>` の要素が中身ごと落ちていて、その場所に、要素を廃止したことと、埋め込んだ HTML の外に `<!-- map -->` の範囲で記載し直すことを記載した記載の警告がある（`mdmark upgrade` は記載しない）'
       - 段落がある
     test: test_normal_when_retired_diagram
     refs:
@@ -2481,7 +2481,7 @@ constraints:
     constraint: '`html` がオンのとき、`<!-- html -->` 〜 `<!-- /html -->` の範囲にある言語 `html` のコードブロック 1 つの中身を、コードでなく生の HTML として `<div class="mdmark-html">` の中に描く。範囲の中のコードブロック以外の Markdown は出力に残さない。中身は文書に記載した生の HTML と同じ許可の検査（制約の「残す要素・属性」「URL のスキーム」）を経由し、`script` 要素・`on` で始まる属性・`javascript:` の URL を落とす。埋め込んだ HTML の中に限り `button` を残し、`type` を `button` に固定して `form` で始まる属性を落とす（押しても何も起きない）。中身の要素の `style` 属性は、レイアウト・余白・枠・色・文字の宣言（`display`・`flex*`・`align-items`・`align-self`・`justify-content`・`grid*`・`gap`・`row-gap`・`column-gap`・`margin*`・`padding*`・`border*`・`width`・`max-width`・`min-width`・`height`・`color`・`background-color`・`font-size`・`font-weight`・`text-align`）だけを残し、`url(` を含む値・単位 `vw`・`vh` を含む値・負の `margin`・`padding` と `position` を落とす。列より広い HTML は `mount` が中で横にスクロールさせる。範囲の外の `html` のコードブロックは今のとおりコードとして出す。`html` がオフのときはマーカーだけを取り除き、コードブロックをコードとして出す'
     notes: '`style` の残し方は #6 の確認ログの決定。宣言の一覧はモジュール構成『描画』の `EMBED_STYLES`。`button` を残すのはシナリオ『コードブロックのHTMLを描く』とモックに合わせるため'
   - item: 埋め込んだ HTML の中の図の部品
-    constraint: 埋め込んだ HTML の中の custom element `<mdmark-chart>`・`<mdmark-param>` の中身の文字を、同じ名前の図の部品のマーカーの範囲の `json` のコードブロックと同じ定義として読み込み、制約の「図の部品」と同じ図に置き換える。読み込めない定義は制約の「図の定義の誤り」と同じく、その要素の場所を記載の警告にする。`diagrams` がオフのときは要素を中身ごと落とす。custom element の属性は読み込まない。`<mdmark-flow>`・`<mdmark-sequence>` は制約「廃止した図の範囲」と同じく、要素を中身ごと落として記載の警告を配置する。埋め込んだ HTML の中の文字は用語の照合に回す
+    constraint: 埋め込んだ HTML の中の custom element `<mdmark-chart>`・`<mdmark-param>` の中身の文字を、同じ名前の図の部品のマーカーの範囲の `json` のコードブロックと同じ定義として読み込み、制約の「図の部品」と同じ図に置き換える。読み込めない定義は制約の「図の定義の誤り」と同じく、その要素の場所を記載の警告にする。`diagrams` がオフのときは要素を中身ごと落とす。custom element の属性は読み込まない。`<mdmark-flow>`・`<mdmark-sequence>` は、要素を中身ごと落とし、要素を廃止したことと、埋め込んだ HTML の外に `<!-- map -->` の範囲で記載し直すことを記載した記載の警告を配置する（移行の手順と点検はこの要素を扱わないため、`mdmark upgrade` は記載しない）。埋め込んだ HTML の中の文字は用語の照合に回す
     notes: 文書に式やスクリプトを記載させない（D-22）
   - item: ヒント
     constraint: '`hints` がオンのとき、埋め込んだ HTML の中の `data-hint` を持つ要素に、ツールチップの中身を `<span class="mdmark-hint-tip" role="tooltip" id="mdmark-hint-{n}" hidden>` で配置する（`{n}` は文書の頭からの通し番号）。`data-hint` の要素は、行内の要素（`span`・`a`・`abbr`・`b`・`strong`・`em`・`i`・`code`・`small`・`mark`・`sub`・`sup`・`time`・`kbd`・`q`・`s`・`u`）なら class `mdmark-hint-inline`・`tabindex="0"`・`aria-describedby` を付け、それ以外のブロックの要素は class `mdmark-hint-block` を付けて最後の子に `<button type="button" class="mdmark-hint-mark" aria-label="説明" aria-describedby="mdmark-hint-{n}">` を追加する。`hints` がオフのときは、`data-hint` の属性と ER 図のテーブルと列の説明のツールチップの中身とマーカーを出さない（テーブルと列の名前は出す）。`data-hint` の値は Markdown として解析せず、文字として出す'

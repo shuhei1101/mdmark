@@ -66,7 +66,7 @@ AI が HTML を作るときの記載方法の決まり
 | `button` | 残る。`type="button"` に固定し、`form` で始まる属性は落とす。範囲の `ts`・`js` が操作を付けない限り、押しても何も起きない |
 | `style` | 下の宣言だけが残る |
 | `data-hint` | 任意の要素に記載でき、値の文がツールチップで出る。値は Markdown として読み込まず、文字として出す |
-| 図の部品 | `<mdmark-chart>`・`<mdmark-param>` の中の JSON を、図の部品の定義として描く。要素の属性は読み込まない。廃止した `<mdmark-flow>`・`<mdmark-sequence>` は描かずに、記載方法を廃止した警告を出す |
+| 図の部品 | `<mdmark-chart>`・`<mdmark-param>` の中の JSON を、図の部品の定義として描く。要素の属性は読み込まない。廃止した `<mdmark-flow>`・`<mdmark-sequence>` は描かずに、埋め込んだ HTML の外に `<!-- map -->` の範囲で記載し直すよう警告を出す（`mdmark upgrade` は書き換えない） |
 | `id`・`data-*`（`data-hint` を除く） | 残さない |
 
 <!-- /table -->
