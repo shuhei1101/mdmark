@@ -14,8 +14,6 @@ export function renderRowDetail(options: {
   open?: boolean;
   /** 開閉のボタンを付けるか（既定 `true`） */
   toggle?: boolean;
-  /** 畳んだ最終列。指定すると詳細の中身の上に最終列の見出しと中身を配置する */
-  foldedColumn?: { name: string; html: string } | undefined;
   /** 詳細の中身の HTML（`SLOT_MARKER` を指定できる） */
   body: string;
 }): { row: string; toggle: string } {
@@ -26,15 +24,11 @@ export function renderRowDetail(options: {
     label,
     open = false,
     toggle = true,
-    foldedColumn,
     body,
   } = options;
   const hidden = toggle && !open ? " hidden" : "";
-  const folded = foldedColumn
-    ? `<div class="mdmark-fold-part"><p class="mdmark-fold-name">${escapeHtml(foldedColumn.name)}</p><div class="mdmark-fold-value">${foldedColumn.html}</div></div>`
-    : "";
   return {
-    row: `<tr class="mdmark-row-detail" data-row="${row}" id="${escapeHtml(id)}"${hidden}><td colspan="${columns}">${folded}${body}</td></tr>`,
+    row: `<tr class="mdmark-row-detail" data-row="${row}" id="${escapeHtml(id)}"${hidden}><td colspan="${columns}">${body}</td></tr>`,
     toggle: toggle
       ? `<button class="mdmark-row-toggle" type="button" aria-expanded="${open}" aria-controls="${escapeHtml(id)}" aria-label="「${escapeHtml(label)}」の詳細"></button>`
       : "",

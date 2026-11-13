@@ -502,31 +502,6 @@ export const RowLinkFailed: Story = {
   },
 };
 
-export const Folded: Story = {
-  name: "Folded",
-  parameters: { server: { id: "table" } },
-  args: {
-    kind: "data",
-    features: '["sort","pin","filter"]',
-    columns: '["名前","更新日","説明"]',
-    rows: '[["りんご","2026-10-01","描画を速くするために、見出しの ID を作る処理を 1 回にまとめる"],["みかん","2026-10-10","印刷で折り畳みを開き、リンクの URL を併記する"]]',
-    folded: "true",
-  },
-};
-
-export const FoldedOpen: Story = {
-  name: "FoldedOpen",
-  parameters: { server: { id: "table" } },
-  args: {
-    kind: "data",
-    features: '["sort","pin","filter"]',
-    columns: '["名前","更新日","説明"]',
-    rows: '[["りんご","2026-10-01","描画を速くするために、見出しの ID を作る処理を 1 回にまとめる"],["みかん","2026-10-10","印刷で折り畳みを開き、リンクの URL を併記する"]]',
-    folded: "true",
-    unfoldedRows: "[0]",
-  },
-};
-
 export const StickyRows: Story = {
   name: "StickyRows",
   parameters: { server: { id: "table" } },
@@ -917,14 +892,81 @@ export const ColumnsButtonA: Story = {
   },
 };
 
-export const FillsWidth: Story = {
-  name: "FillsWidth",
+export const FitsContent: Story = {
+  name: "FitsContent",
   parameters: { server: { id: "table" } },
   args: {
     kind: "data",
-    features: '["sort","pin","filter"]',
     columns: '["名前","数量"]',
     rows: '[["りんご","3"],["みかん","5"],["ぶどう","2"]]',
+    autoWidths: '[{"column":0,"width":71},{"column":1,"width":56}]',
+  },
+};
+
+export const AutoWidth: Story = {
+  name: "AutoWidth",
+  parameters: { server: { id: "table" } },
+  args: {
+    kind: "data",
+    columns: '["No","状態","更新日","名前","手順","説明"]',
+    rows: '[["1","<span class=\\"mdmark-badge\\">対応中</span>","2026-11-01","表の幅","測る<br>分ける<br>描く","描画を速くするために、見出しの列ごとの幅を描いた後に一度だけ測り、表の見える幅が変わったときだけ列の幅を決め直す。並べ替え・絞り込み・列の表示の切り替えでは列の幅を変えず、読者がつまみで変えた列の幅は自動の幅より優先する"]]',
+    long: "[5]",
+    autoWidths:
+      '[{"column":0,"width":47},{"column":1,"width":71},{"column":2,"width":100},{"column":3,"width":78},{"column":4,"width":92},{"column":5,"width":757}]',
+  },
+};
+
+export const TwoLongColumns: Story = {
+  name: "TwoLongColumns",
+  parameters: { server: { id: "table" } },
+  args: {
+    kind: "data",
+    columns: '["名前","説明","備考"]',
+    rows: '[["表の幅","描画を速くするために、見出しの列ごとの幅を描いた後に一度だけ測り、表の見える幅が変わったときだけ列の幅を決め直す。並べ替え・絞り込み・列の表示の切り替えでは列の幅を変えず、読者がつまみで変えた列の幅は自動の幅より優先する","長文の列が 2 つある表の備考の列の文字"]]',
+    long: "[1,2]",
+    autoWidths:
+      '[{"column":0,"width":67},{"column":1,"width":755},{"column":2,"width":323}]',
+  },
+};
+
+export const NarrowScroll: Story = {
+  name: "NarrowScroll",
+  parameters: { server: { id: "table" } },
+  args: {
+    kind: "data",
+    columns: '["名前","説明","備考"]',
+    rows: '[["表の幅","描画を速くするために、見出しの列ごとの幅を描いた後に一度だけ測り、表の見える幅が変わったときだけ列の幅を決め直す。並べ替え・絞り込み・列の表示の切り替えでは列の幅を変えず、読者がつまみで変えた列の幅は自動の幅より優先する","描画を速くするために、見出しの列ごとの幅を描いた後に一度だけ測り、表の見える幅が変わったときだけ列の幅を決め直す。並べ替え・絞り込み・列の表示の切り替えでは列の幅を変えず、読者がつまみで変えた列の幅は自動の幅より優先する"]]',
+    long: "[1,2]",
+    overflow: "true",
+    autoWidths:
+      '[{"column":0,"width":67},{"column":1,"width":630},{"column":2,"width":630}]',
+  },
+};
+
+export const WidthRange: Story = {
+  name: "WidthRange",
+  parameters: { server: { id: "table" } },
+  args: {
+    kind: "data",
+    columns: '["名前","説明","備考"]',
+    rows: '[["表の幅","描画を速くするために、見出しの列ごとの幅を描いた後に一度だけ測り、表の見える幅が変わったときだけ列の幅を決め直す。並べ替え・絞り込み・列の表示の切り替えでは列の幅を変えず、読者がつまみで変えた列の幅は自動の幅より優先する","補足"]]',
+    long: "[1]",
+    widthRanges: '[{"column":1,"min":20,"max":30}]',
+    autoWidths:
+      '[{"column":0,"width":67},{"column":1,"width":420},{"column":2,"width":46}]',
+  },
+};
+
+export const LongColumnTextFilter: Story = {
+  name: "LongColumnTextFilter",
+  parameters: { server: { id: "table" } },
+  args: {
+    kind: "data",
+    columns: '["名前","説明"]',
+    rows: '[["表の幅","描画を速くするために、見出しの列ごとの幅を描いた後に一度だけ測り、表の見える幅が変わったときだけ列の幅を決め直す。並べ替え・絞り込み・列の表示の切り替えでは列の幅を変えず、読者がつまみで変えた列の幅は自動の幅より優先する"]]',
+    long: "[1]",
+    filters: '[{"column":0,"kind":"select"},{"column":1,"kind":"text"}]',
+    openFilter: "1",
   },
 };
 

@@ -55,7 +55,7 @@ functions:
       - name: test_render_tree_when_interactive
         case: 正常
         summary: 帯と開閉のボタンを配置し、開く階層より深いフォルダを閉じる
-        condition: '部品設計の `Interactive` と `OpenLevels`（`open: 2`）'
+        condition: '部品設計の `OpenRoot`（`open: 1`）の `mdmark/` のツリーと `OpenLevels`（`open: 2`）'
         mock: なし
         expected: どちらも `ul` の前に `mdmark-tree-bar`（`tree` と `data-state="idle"` の `mdmark-tree-copy`）がある。1 つ目は `mdmark/` の `mdmark-tree-toggle` が `aria-expanded="true"`、`src/` が `aria-expanded="false"` でその入れ子の `ul` が `hidden="until-found"`、`aria-controls` がその `ul` の id。2 つ目は `app/`・`src/` が `aria-expanded="true"`、`parts/` が `aria-expanded="false"`
       - name: test_render_tree_when_copy_fallback

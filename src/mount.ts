@@ -148,6 +148,7 @@ function createDiffHtmlRenderer(options: {
           placement: config.tooltips.placement,
           diagramPlacement: config.tooltips.diagramPlacement,
           pinMode: config.table.pin,
+          longColumnMin: config.table.longColumnMin,
         }),
     };
   };
@@ -371,6 +372,7 @@ export function mount(el: HTMLElement, opts: MountOptions): MountHandle {
       placement: config.tooltips.placement,
       diagramPlacement: config.tooltips.diagramPlacement,
       pinMode: config.table.pin,
+      longColumnMin: config.table.longColumnMin,
       onColumnsChange,
       sectionStates,
       revealHash: !fromUpdate,

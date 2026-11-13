@@ -41,7 +41,7 @@ functions:
       - name: test_attach_file_trees_when_found
         case: 正常
         summary: ページ内検索で開いたフォルダを開いた状態にする
-        condition: 閉じた `src/` の入れ子の `ul` に `beforematch` を送信する
+        condition: '`depth` が `1` のツリーの、閉じた `src/` の入れ子の `ul` に `beforematch` を送信する'
         mock: なし
         expected: '`src/` のボタンが `aria-expanded="true"` で、入れ子の `ul` が `hidden` を持たない'
       - name: test_attach_file_trees_when_copied
@@ -59,7 +59,7 @@ functions:
       - name: test_attach_file_trees_when_detached
         case: 正常
         summary: 削除すると render の出した状態に戻す
-        condition: 閉じたフォルダを持つツリーでコピーボタンを押してすぐ削除し、2 秒進める
+        condition: '`depth` が `1` で閉じたフォルダを持つツリーでコピーボタンを押してすぐ削除し、2 秒進める'
         mock: '`navigator.clipboard.writeText` を記録して解決する関数に、時計を偽の時計に差し替える'
         expected: '`mdmark-tree-bar`・`mdmark-tree-toggle` が無く、入れ子の `ul` が `hidden` を持たず、例外が出ない'
     callees:

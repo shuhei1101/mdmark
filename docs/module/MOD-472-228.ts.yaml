@@ -206,7 +206,7 @@ functions:
         summary: 包む要素がはみ出す間だけピン止めを適用する
         condition: 幅 1000px の要素に、`div.mdmark-table-scroll` で包んだ 2 列の `data` の表と 12 列の `data` の表
         mock: なし（Chromium）
-        expected: 2 列の表はピン止めのボタンが `hidden` で `table` の幅が包む要素の幅と同じ。12 列の表はピン止めのボタンが `hidden` を持たず、包む要素の `scrollWidth` が `clientWidth` より大きい
+        expected: 2 列の表はピン止めのボタンが `hidden` で、`table` の幅が包む要素の幅より狭く（列の幅の合計で描く）、包む要素が横にスクロールしない。12 列の表はピン止めのボタンが `hidden` を持たず、包む要素の `scrollWidth` が `clientWidth` より大きい
       - name: test_attach_tables_when_pinned_at_end
         case: 正常
         summary: 留めた列より左を表示している間は、留めた列を右端に並べて留める

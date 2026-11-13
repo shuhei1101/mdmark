@@ -33,6 +33,8 @@ export function attachInteractions(options: {
   paramDefinitions?: MdmarkParamDefinition[];
   /** 既定を適用した設定の、表のピン止めの動き（既定 `each`） */
   pinMode?: TablePinMode;
+  /** 既定を適用した設定の、長文の列の最小の幅（em） */
+  longColumnMin?: number;
   /** 列の表示を切り替えたときに通知する */
   onColumnsChange?: (event: MdmarkColumnsChange) => void;
   /** セクションの開閉の記録（省くと記録しない） */
@@ -47,6 +49,7 @@ export function attachInteractions(options: {
     diagramPlacement = "bottom",
     paramDefinitions = [],
     pinMode = "each",
+    longColumnMin,
     onColumnsChange,
     sectionStates,
     revealHash,
@@ -67,7 +70,9 @@ export function attachInteractions(options: {
     );
   }
   if (features.table === true) {
-    detachers.push(attachTables(root, { onColumnsChange, pinMode }));
+    detachers.push(
+      attachTables(root, { onColumnsChange, pinMode, longColumnMin }),
+    );
     detachers.push(attachStickyRows(root));
   }
   // RAW のボタンは、表の操作の帯ができてからその帯に追加する

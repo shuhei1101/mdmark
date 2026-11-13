@@ -1524,6 +1524,7 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
         : {}),
       // 畳める行を持つストーリーは、`mount` が付ける開閉のボタンと `⋯` を配置した状態で出す
       foldButtons: lines.some((line) => line.foldLines !== undefined),
+      foldColumnHovered: args.foldColumnHovered === true,
     });
     return args.highlight === true
       ? highlightCodeBlock(html, language, lines)
@@ -1559,9 +1560,6 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
       columns,
       label: String(args.label),
       open: args.open as boolean | undefined,
-      foldedColumn: args.foldedColumn as
-        | { name: string; html: string }
-        | undefined,
       body: bodyOf(args, SAMPLE_BODY),
     });
     const head = `<td><span class="mdmark-row-head">${toggle}${String(args.label)}</span></td>`;
