@@ -3,7 +3,46 @@ visibility: internal
 title: ライブラリ本体 / 索引と用語 / paths.ts
 test_files:
   - tests/unit/src/knowledge/paths.test.ts
+constants:
+  - name: MARK_MARKDOWN_SUFFIX
+    title: mdmark の文書の拡張子
+    container: src/knowledge/paths.ts
+    usecase: 共通
+    summary: mdmark の記法で記載する文書のファイル名の末尾。末尾が `.md` で、これで終わらない文書を純粋な `.md` とする
+    value: .mark.md
+    refs:
+      - IF-472-39#constraints[拡張子の提案]
+      - IF-472-43#constraints[案内する条件]
+    status: planned
+    introduced:
+      pr: 541
 functions:
+  - name: isMarkMarkdown
+    title: mdmark の文書のパスか
+    container: src/knowledge/paths.ts
+    kind: 関数
+    scope: public
+    usecase: 共通
+    summary: パスが `MARK_MARKDOWN_SUFFIX` で終わるか（大文字・小文字を区別する）
+    description: 点検（`checkPlainMarkdown`）とプラグインの案内のフック（`noticeHead`）が使用する。依存を持たない（プラグインのフックにまとめるため）
+    args:
+      - name: path
+        type: string
+        required: true
+        description: ファイルのパス（区切りは `/` でも OS の区切りでもよい）
+    returns:
+      type: boolean
+      description: mdmark の文書なら `true`
+    unit_tests:
+      - name: test_is_mark_markdown
+        case: 正常
+        summary: .mark.md で終わるパスだけを mdmark の文書とする
+        condition: '`docs/a.mark.md`・`C:\w\b.mark.md`・`a.md`・`a.mark.md.bak`・`amark.md`'
+        mock: なし
+        expected: '`true`・`true`・`false`・`false`・`false`'
+    status: planned
+    introduced:
+      pr: 541
   - name: resolveLink
     title: 本文のリンクを索引のパスにする
     container: src/knowledge/paths.ts

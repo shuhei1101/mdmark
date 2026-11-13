@@ -68,6 +68,8 @@ items:
   summary: 作業のフォルダを使用するツールの引数に、PreToolUse のフックで project_dir を入れる
 - page: IF-472-6.ts.yaml
   summary: SessionStart で常駐サーバーのポートを確認し、待ち受けていないときだけ global-setup での起動の仕方を 1 行で指定する
+- page: IF-472-43.ts.yaml
+  summary: .mark.md への Write・Edit と語 mdmark を含む発言で、記法のルールの参照を 1 セッションに 1 回案内する
 - page: IF-472-11.ts.yaml
   summary: 端末の設定のパスとバージョン・tmux のセッション名・待ち受けているか・ログの場所を返却する（setup.js status）
 - page: IF-472-14.ts.yaml

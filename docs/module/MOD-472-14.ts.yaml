@@ -16,8 +16,8 @@ directory: |-
   plugin/
   ├── .claude-plugin/plugin.json  # 名前・説明（`version` を持たず、Claude Code が commit の短縮 SHA をバージョンにする）
   ├── .mcp.json         # type: http で http://127.0.0.1:${MDMARK_PORT:-8782}/mcp につなぐ
-  ├── hooks/hooks.json  # `project_dir` を使用するツールの PreToolUse で scripts/pre-tool-use.js を実行する
-  ├── scripts/          # まとめたフック（pre-tool-use.js。生成）
+  ├── hooks/hooks.json  # `project_dir` を使用するツールの PreToolUse で scripts/pre-tool-use.js、`Write|Edit` の PreToolUse・UserPromptSubmit・PreCompact で scripts/guide-notice.js を実行する
+  ├── scripts/          # まとめたフック（pre-tool-use.js・session-start.js・guide-notice.js。生成）
   └── THIRD_PARTY_LICENSES.txt  # まとめた依存のライセンス（生成）
   ```
 constants:
@@ -33,6 +33,9 @@ constants:
       - key: src/plugin/session-start.ts
         value: plugin/scripts/session-start.js
         description: SessionStart のフック
+      - key: src/plugin/guide-notice.ts
+        value: plugin/scripts/guide-notice.js
+        description: '`Write|Edit` の PreToolUse・UserPromptSubmit・PreCompact のフック（記法のルールの参照の案内）'
       - key: src/plugin/setup/main.ts
         value: plugin/bin/setup.js
         description: '`global-setup`・`setup` のスキルが呼ぶスクリプト'
