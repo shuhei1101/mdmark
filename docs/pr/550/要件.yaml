@@ -30,6 +30,14 @@ docs:
     new: false
     change: 新しい用語（長文の列・変更のマーカー）を足すなら追加
     status: todo
+  - page: schemas/marks/table.schema.json
+    new: false
+    change: '`columns.{列名}.sort`（真偽値）を追加'
+    status: todo
+  - page: migrations/no-steps.yaml
+    new: false
+    change: 任意のキー `columns.{列名}.sort` の追加は既存の文書を書き換えないため、移行の手順を持たない行を追加
+    status: todo
 scope_out:
   - item: dev-docs の文書の画面で、比較中に目次の見出しの変更のマーカーを出す対応
     reason: dev-docs のリポジトリの作業で、この作業 PR がマージされた後に mdmark の版を上げて行う
