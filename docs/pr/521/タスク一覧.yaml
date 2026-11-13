@@ -65,8 +65,10 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-13T04:01:51.953556+00:00'
   - process: ドキュメント修正
-    status: todo
-    note: migrations/files.yaml・MOD-472-30 のフォルダの構成
+    status: done
+    note: MOD-472-30 はモジュール構成設計で修正済み。migrations/files.yaml は実装でファイルを書き込んだ後に修正する
+    updated_by: planner
+    updated_at: '2026-11-13T04:07:50.307842+00:00'
   - process: 単体テスト作成
     status: todo
   - process: 実装
