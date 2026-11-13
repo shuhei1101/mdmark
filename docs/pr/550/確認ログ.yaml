@@ -1,0 +1,7 @@
+confirmations:
+  - topic: '`features.sort: {}` を記載した既存の表でも、長文の列から並べ替えを除外するか'
+    decision: '表の種類と `features.sort` の記載によらず長文の列には並べ替えを付けず、戻す指定は `columns.{列名}.sort: true` だけ（推奨案 A）'
+    decided_by: thumbs_up
+    approver: shuhei1101
+    commit:
+    thread: https://github.com/shuhei1101/mdmark/pull/550#discussion_r4569138536
