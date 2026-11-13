@@ -1330,6 +1330,7 @@ function attachTable(
             pinned,
             column,
           }),
+        onWidthWritten: () => autoWidths.refresh(),
         // 幅を変えた後と戻した後は、列の幅と留める位置と境の線を今の列の幅で決め直す
         onResize: () => {
           autoWidths.refresh();

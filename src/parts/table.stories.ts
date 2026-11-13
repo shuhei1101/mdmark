@@ -255,8 +255,10 @@ export const LongCells: Story = {
     kind: "data",
     features: '["sort","pin","filter"]',
     columns: '["とても長い列の名前で見出しの幅を超えるもの","値"]',
-    rows: '[["とても長い値でセルの幅を超えて折り返すときの見え方を確認する","1"]]',
+    rows: '[["とても長い値でセルの幅を超えて折り返すときの見え方を確認するために、長文の列の最小の幅より長い文を入れた値","1"]]',
     filters: '[{"column":0,"kind":"select"}]',
+    long: "[0]",
+    autoWidths: '[{"column":0,"width":630},{"column":1,"width":80}]',
   },
 };
 

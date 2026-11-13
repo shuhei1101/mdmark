@@ -192,7 +192,7 @@ export const attachAutoColumnWidths = (
   const ranges = readWidthRanges(wrapper.dataset.width);
   // 元の列の位置ごとの測った値。隠していて測れなかった列は、表示したときに測る
   const measures = new Map<number, ColumnMeasure>();
-  // 元の列の位置ごとに入れた幅（外側の幅。px）
+  // 元の列の位置ごとに自動で決めた幅（外側の幅。px）。つまみで変えた列は、戻したときのために前の幅を残す
   const assigned = new Map<number, number>();
   let lastWidth: number | undefined;
 
@@ -214,6 +214,12 @@ export const attachAutoColumnWidths = (
     });
   };
 
+  /** つまみで幅を変えた列の外側の幅（px）。インラインの `width`（中身の幅）に余白と罫線を足す */
+  const resizedWidth = (head: HTMLTableCellElement): number => {
+    const width = Number.parseFloat(head.style.width);
+    return Number.isNaN(width) ? head.offsetWidth : width + paddingOf(head);
+  };
+
   /** 列ごとの最小の幅と望む幅を、測った値から決める */
   const boundsOf = (
     columns: ColumnMeasure[],
@@ -221,7 +227,7 @@ export const attachAutoColumnWidths = (
     columns.map(({ column, longest, longestWord, em }) => {
       const head = headCells[column];
       if (head?.classList.contains("is-resized")) {
-        const width = head.offsetWidth;
+        const width = resizedWidth(head);
         return { wraps: false, min: width, wanted: width, fixed: true };
       }
       const range = ranges.get(column);
@@ -236,13 +242,19 @@ export const attachAutoColumnWidths = (
       });
     });
 
-  /** 表の幅を、表示している列に入れた幅の合計にする */
+  /** 表の幅を、表示している列の幅（つまみで変えた列はその幅）の合計にする */
   const writeTotal = (): void => {
-    const total = headCells.reduce(
-      (sum, head, column) =>
-        head.hidden ? sum : sum + (assigned.get(column) ?? 0),
-      0,
-    );
+    const total = headCells.reduce((sum, head, column) => {
+      if (head.hidden) {
+        return sum;
+      }
+      return (
+        sum +
+        (head.classList.contains("is-resized")
+          ? resizedWidth(head)
+          : (assigned.get(column) ?? 0))
+      );
+    }, 0);
     table.style.setProperty(AUTO_TABLE_WIDTH_VARIABLE, `${total}px`);
   };
 
@@ -255,10 +267,10 @@ export const attachAutoColumnWidths = (
     columns.forEach(({ column }, index) => {
       const head = headCells[column];
       const width = Math.ceil(widths[index] ?? 0);
-      assigned.set(column, width);
       if (bounds[index]?.fixed) {
         head?.style.removeProperty(AUTO_WIDTH_VARIABLE);
       } else {
+        assigned.set(column, width);
         head?.style.setProperty(AUTO_WIDTH_VARIABLE, `${width}px`);
       }
     });
@@ -273,8 +285,12 @@ export const attachAutoColumnWidths = (
     }
     const columns = shownMeasures();
     const bounds = boundsOf(columns);
+    const tableStyle = getComputedStyle(table);
     const available =
-      visible - (table.offsetWidth - table.clientWidth) - columns.length;
+      visible -
+      Number.parseFloat(tableStyle.borderLeftWidth) -
+      Number.parseFloat(tableStyle.borderRightWidth) -
+      columns.length;
     const first = distributeColumnWidths(bounds, available);
     table.setAttribute(AUTO_WIDTH_ATTRIBUTE, "");
     write(columns, bounds, first.widths);
@@ -303,23 +319,46 @@ export const attachAutoColumnWidths = (
     onApply?.();
   };
 
-  /** 列の表示を切り替えた後に、表示している列の幅を変えずに表の幅を入れ直す。前に幅を入れていない列は、測って最小の幅を入れる */
-  const columnsChanged = (): void => {
-    if (!table.hasAttribute(AUTO_WIDTH_ATTRIBUTE)) {
-      return;
-    }
-    const fresh = shownMeasures().filter(({ column }) => !assigned.has(column));
-    if (fresh.length > 0) {
-      const bounds = boundsOf(fresh);
-      write(
-        fresh,
-        bounds,
-        bounds.map((bound) => bound.min),
-      );
-    } else {
-      writeTotal();
-    }
+  /** 測り直さず、表示している列の幅を変えずに、表の幅を表示している列の幅の合計にする。つまみで変えた列はその幅、戻した列は前に自動で決めた幅、前に幅を決めていない列は測って最小の幅にする */
+  const keepWidths = (): void => {
+    const fresh = shownMeasures().filter(
+      ({ column }) =>
+        !assigned.has(column) &&
+        headCells[column]?.classList.contains("is-resized") !== true,
+    );
+    const bounds = boundsOf(fresh);
+    fresh.forEach(({ column }, index) => {
+      assigned.set(column, Math.ceil(bounds[index]?.min ?? 0));
+    });
+    headCells.forEach((head, column) => {
+      const width = assigned.get(column);
+      if (head.hidden) {
+        return;
+      }
+      if (head.classList.contains("is-resized") || width === undefined) {
+        head.style.removeProperty(AUTO_WIDTH_VARIABLE);
+      } else {
+        head.style.setProperty(AUTO_WIDTH_VARIABLE, `${width}px`);
+      }
+    });
+    writeTotal();
     onApply?.();
+  };
+
+  /** 列の幅のつまみで幅を変えた後と戻した後に呼ぶ。まだ幅を決めていない表は決める */
+  const refresh = (): void => {
+    if (table.hasAttribute(AUTO_WIDTH_ATTRIBUTE)) {
+      keepWidths();
+    } else {
+      apply();
+    }
+  };
+
+  /** 列の表示を切り替えた後に呼ぶ。まだ幅を決めていない表は何もしない */
+  const columnsChanged = (): void => {
+    if (table.hasAttribute(AUTO_WIDTH_ATTRIBUTE)) {
+      keepWidths();
+    }
   };
 
   const observer = new ResizeObserver(() => {
@@ -333,7 +372,7 @@ export const attachAutoColumnWidths = (
   apply();
 
   return {
-    refresh: apply,
+    refresh,
     columnsChanged,
     detach: () => {
       observer.disconnect();
