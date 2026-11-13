@@ -60,8 +60,10 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-13T03:42:11.871912+00:00'
   - process: モジュール構成設計
-    status: todo
+    status: done
     note: MOD-472-166 の buildLegacyMarks・writeThirdPartyLicenses
+    updated_by: planner
+    updated_at: '2026-11-13T04:01:51.953556+00:00'
   - process: ドキュメント修正
     status: todo
     note: migrations/files.yaml・MOD-472-30 のフォルダの構成
