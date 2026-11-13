@@ -45,15 +45,15 @@ test("test_normal", async () => {
       "schema: 2",
       "docs:",
       "  - id: a",
-      "    path: a.md",
+      "    path: a.mark.md",
       "    title: A",
       "  - id: b",
-      "    path: b.md",
+      "    path: b.mark.md",
       "    title: B",
       "",
     ].join("\n"),
-    "a.md": "# A\n",
-    "b.md": "# B\n",
+    "a.mark.md": "# A\n",
+    "b.mark.md": "# B\n",
   };
   await writeFiles(dir, files);
   const before = await snapshot(dir, Object.keys(files));
@@ -138,6 +138,62 @@ test("test_normal_when_base_given", async () => {
   });
   const cli = await runCli(["check", "--base", BASE_TAG], dir);
   expect(linesOf(cli.stdout).slice(0, -1)).toEqual(issues.map(toLine));
+});
+
+// CLI と同じ拡張子の提案を返却する（正常系（記法を含む純粋な .md がある））
+test("test_normal_when_plain_md_has_marks", async () => {
+  // 準備
+  const dir = await createTempDir();
+  const files = {
+    "mdmark.config.yaml": [
+      "index: index.yaml",
+      "build:",
+      '  include: ["*.md"]',
+      "  out: dist/docs.html",
+      "",
+    ].join("\n"),
+    "index.yaml": [
+      "schema: 2",
+      "docs:",
+      "  - id: a",
+      "    path: a.mark.md",
+      "    title: A",
+      "  - id: b",
+      "    path: b.md",
+      "    title: B",
+      "",
+    ].join("\n"),
+    "a.mark.md": "# A\n",
+    "b.md": [
+      "# B",
+      "",
+      "",
+      "",
+      '<!-- table: {"kind": "data"} -->',
+      "| a |",
+      "| - |",
+      "<!-- /table -->",
+      "",
+    ].join("\n"),
+  };
+  await writeFiles(dir, files);
+  const before = await snapshot(dir, Object.keys(files));
+  const client = await connectHttp({ projectDir: dir });
+  // 実行
+  const result = await callTool(client, "check", {});
+  // 検証
+  expect(result.isError).toBe(false);
+  const issues = JSON.parse(result.texts[0] ?? "").issues as Issue[];
+  expect(issues).toHaveLength(1);
+  expect(issues[0]).toMatchObject({
+    file: "b.md",
+    where: "5",
+    kind: "plain_md_with_marks",
+  });
+  expect(issues[0]?.message).toContain("b.mark.md");
+  const cli = await runCli(["check"], dir);
+  expect(linesOf(cli.stdout).slice(0, -1)).toEqual(issues.map(toLine));
+  expect(await snapshot(dir, Object.keys(files))).toEqual(before);
 });
 
 // project_dir を持たない呼び出しを、作業のフォルダを読み込まずにエラーにする（異常系）
@@ -228,7 +284,7 @@ test("test_normal_when_include_targets_missing", async () => {
       "  out: dist/docs.html",
       "",
     ].join("\n"),
-    "docs/a.md": [
+    "docs/a.mark.md": [
       "# A",
       "",
       '<!-- include: {"path": "missing.md"} -->',
@@ -236,7 +292,7 @@ test("test_normal_when_include_targets_missing", async () => {
       '<!-- include: {"path": "共通/手順.md", "heading": "実行"} -->',
       "",
     ].join("\n"),
-    "docs/b.md": [
+    "docs/b.mark.md": [
       "# B",
       '<!-- include: {"path": "共通/手順.md", "heading": "無い見出し"} -->',
       "",
