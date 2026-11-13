@@ -44,3 +44,12 @@
 ### ドキュメント修正
 
 なし（ドキュメント修正の工程は、ガイド・README・アーキテクチャ図・設定の Schema・移行の行だけを修正し、実装コードを変えないため、関係する単体・結合テストが無い。修正したガイドと README は `mdmark check --text` でずれ 0 件を確かめた）
+
+### 単体
+
+| ファイル | メソッド | 変更種別 | 結果 | 補足 |
+| --- | --- | --- | --- | --- |
+| `tests/unit/src/plugin/guide-notice.test.ts` | 全実行 | 新規 | ✅ | 全件（`npm run test:unit`）2118 件のうち 2116 件 pass。時間切れの 2 件（`test_run_check`・`test_prepare_embeds`）は同じ commit で単独に流し直して pass<br>`テスト結果/20261114050515_cd513697_単体テスト.log` |
+| [tests/unit/src/plugin/pre-tool-use.test.ts](https://github.com/shuhei1101/mdmark/blob/d2e6de76/tests/unit/src/plugin/pre-tool-use.test.ts) | 全実行 | 実行のみ | ✅ | `hooks.json` の PreToolUse の 1 行目が変わらないことの回帰確認 |
+
+`tests/unit/src/plugin/guide-notice.test.ts` は、lint の `noTemplateCurlyInString` の警告を抑える注釈だけを `b17210bf` で実装と別に追加した（`hooks.json` に記載した展開前の文字列と比べるため）。
