@@ -157,7 +157,16 @@ test("test_attach_print_when_tree", async () => {
   // 準備
   const { attachInteractions } = await loadInteract();
   const { root, features } = createDocumentRoot(
-    ["```tree", "app/", "└── src/", "    └── index.ts", "```", ""].join("\n"),
+    [
+      '<!-- tree: {"depth": 1} -->',
+      "",
+      "```tree",
+      "app/",
+      "└── src/",
+      "    └── index.ts",
+      "```",
+      "",
+    ].join("\n"),
   );
   detachers.push(attachInteractions({ root, features, placement: "top" }));
   await attachTracked(root, () => true);
