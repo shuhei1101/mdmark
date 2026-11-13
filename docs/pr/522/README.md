@@ -1,0 +1,1 @@
+# src/files.yaml の config-files.ts の行で重なった MOD-472-116 への implements の 1 つを削除する
