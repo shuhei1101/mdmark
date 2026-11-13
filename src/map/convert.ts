@@ -15,6 +15,7 @@ export type RetiredFlowDefinition = {
     y?: number;
     name: string;
     tag?: string;
+    sub?: string;
     io?: { in: string; do: string; out: string };
     hint?: string;
     href?: string;
@@ -210,9 +211,13 @@ const SEQUENCE_SYMBOLS = /[#;]/g;
 const entity = (char: string): string =>
   char === '"' ? "#quot;" : `#${char.codePointAt(0)};`;
 
+/** 用語の印の `{{単語}}` を `単語` にする（map は用語を本文と同じく照合する） */
+const unwrapTerms = (text: string): string =>
+  text.replace(/\{\{(.+?)\}\}/g, "$1");
+
 /** flowchart のノードの名前・線のラベル・グループのタイトルの文字（改行は `<br>`） */
 const flowText = (text: string): string =>
-  text.replace(FLOW_SYMBOLS, entity).replaceAll("\n", "<br>");
+  unwrapTerms(text).replace(FLOW_SYMBOLS, entity).replaceAll("\n", "<br>");
 
 /** sequenceDiagram の名前・メッセージ・繰り返しのラベルの文字 */
 const sequenceText = (text: string): string =>
@@ -520,7 +525,7 @@ export const flowToMap = (
     const io = node.io
       ? `入力: ${node.io.in}\n処理: ${node.io.do}\n出力: ${node.io.out}`
       : undefined;
-    const text = [io, node.hint].filter(
+    const text = [node.sub, io, node.hint].filter(
       (item): item is string => item !== undefined && item !== "",
     );
     note(idOf(node.id), text.length === 0 ? undefined : text.join("\n"));
