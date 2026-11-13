@@ -248,6 +248,64 @@ test("test_attach_auto_column_widths_when_resized_container", async () => {
   expect(autoWidthOf(headCells[5])).toBeCloseTo(45 * 14, 0);
 });
 
+// 列の表示を切り替えても、表示している列の幅を変えない（正常系）
+test("test_attach_auto_column_widths_when_columns_toggled", async () => {
+  // 準備
+  addStyles();
+  const { attachAutoColumnWidths } = await loadTableWidth();
+  const { root } = createRoot(CONTENT_TABLE);
+  setRootWidth(root, 1280);
+  const { wrapper, table, scroller, headCells } = tableParts(root);
+  const handle = attachAutoColumnWidths(table, {
+    wrapper,
+    scroller,
+    headCells,
+    longColumnMin: 45,
+  });
+  detachers.push(handle.detach);
+  await vi.waitFor(() => {
+    expect(table.hasAttribute("data-auto-width")).toBe(true);
+  });
+  const before = headCells.map((cell) => cell.offsetWidth);
+  const stepWidth = autoWidthOf(headCells[4]);
+  /** 手順の列の見出しとセルの `hidden` を切り替える */
+  const setStepHidden = (hidden: boolean): void => {
+    for (const row of table.rows) {
+      const cell = row.cells[4];
+      if (cell) {
+        cell.hidden = hidden;
+      }
+    }
+  };
+  // 実行: 手順の列を隠す
+  setStepHidden(true);
+  handle.columnsChanged();
+  // 検証: 残った列の幅は変わらず、表の幅は残った列の幅の合計
+  const shown = [0, 1, 2, 3, 5];
+  for (const column of shown) {
+    expect(
+      Math.abs((headCells[column]?.offsetWidth ?? 0) - (before[column] ?? 0)),
+    ).toBeLessThanOrEqual(1);
+  }
+  expect(
+    Number.parseFloat(
+      table.style.getPropertyValue("--mdmark-auto-table-width"),
+    ),
+  ).toBe(
+    shown.reduce((sum, column) => sum + autoWidthOf(headCells[column]), 0),
+  );
+  // 実行: 手順の列を出す
+  setStepHidden(false);
+  handle.columnsChanged();
+  // 検証: 手順の列は隠す前の幅で、各列の幅は隠す前と同じ
+  expect(autoWidthOf(headCells[4])).toBe(stepWidth);
+  headCells.forEach((cell, column) => {
+    expect(
+      Math.abs(cell.offsetWidth - (before[column] ?? 0)),
+    ).toBeLessThanOrEqual(1);
+  });
+});
+
 // 幅が 0 の表は決めず、見えたときに決める（正常系）
 test("test_attach_auto_column_widths_when_hidden", async () => {
   // 準備

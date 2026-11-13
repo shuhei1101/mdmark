@@ -2441,6 +2441,36 @@ test("test_attach_tables_when_auto_width", async () => {
   });
 });
 
+// 列を隠しても、残った列の幅を変えない（正常系）
+test("test_attach_tables_when_column_hidden_keeps_widths", async () => {
+  // 準備
+  addStyles();
+  const { attachTables } = await loadTables();
+  const { root } = createRoot(
+    `<!-- table: {"kind": "data", "features": {"columns": {"enabled": true}}} -->\n\n${FOLDABLE_TABLE}\n<!-- /table -->\n`,
+  );
+  setRootWidth(root, 1280);
+  detachers.push(attachTables(root));
+  const table = root.querySelector<HTMLTableElement>(".mdmark-table table");
+  if (!table) {
+    throw new Error("表が無い");
+  }
+  await vi.waitFor(() => {
+    expect(table.hasAttribute("data-auto-width")).toBe(true);
+  });
+  const heads = [...table.querySelectorAll<HTMLElement>("thead th")];
+  const before = heads.map((th) => th.offsetWidth);
+  // 実行: 状態の列を隠す
+  clickEye(root, 1);
+  // 検証: 残った名前・説明の列の幅は隠す前と同じ
+  expect(heads[1]?.hidden).toBe(true);
+  for (const column of [0, 2]) {
+    expect(
+      Math.abs((heads[column]?.offsetWidth ?? 0) - (before[column] ?? 0)),
+    ).toBeLessThanOrEqual(1);
+  }
+});
+
 // つまみで列の幅を変えた後と戻した後に、列の幅を決め直す（正常系）
 test("test_attach_tables_when_resized_refreshes_width", async () => {
   // 準備
