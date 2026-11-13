@@ -21,3 +21,19 @@
 | `preview-open.test.ts` の経過時間 | `test_normal_when_tags_unreachable`（タグ一覧の代役が応えないときと 403 のとき）と `test_normal_when_loading_shown` の経過時間を `performance.now` の差で測る | 期待の範囲は変えない |
 | fail のときのメッセージ | `Date.now` と `performance.now` の両方の経過時間を出す | 実装の中断が単調な時計でも早いときは、実装の修正へ戻る |
 | 結合テスト | `test_normal_when_tags_unreachable` を VS Code 1.141.0 と stable で 10 回ずつ繰り返し、全 pass のログを置く | - |
+
+## テスト結果
+
+### 単体
+
+なし（`vscode/src/` を変えないため）
+
+### 結合
+
+| ファイル | メソッド | 変更種別 | 結果 | 補足 |
+| --- | --- | --- | --- | --- |
+| [vscode/tests/integration/preview-open.test.ts](https://github.com/shuhei1101/mdmark/blob/fix/vscode/tags-timeout-early-abort/vscode/tests/integration/preview-open.test.ts) | `test_normal_when_tags_unreachable` | 変更 | ✅ | VS Code 1.141.0 と stable（1.146.0）で 10 回ずつ繰り返して 20 回とも pass<br>`テスト結果/20261113160406_ccda144d_VSCode拡張機能のtest_normal_when_tags_unreachableの10回の繰り返し.log` |
+| [vscode/tests/integration/preview-open.test.ts](https://github.com/shuhei1101/mdmark/blob/fix/vscode/tags-timeout-early-abort/vscode/tests/integration/preview-open.test.ts) | `test_normal_when_loading_shown` | 変更 | ✅ | 全実行の中で pass |
+| [vscode/tests/integration/stub-server.ts](https://github.com/shuhei1101/mdmark/blob/fix/vscode/tags-timeout-early-abort/vscode/tests/integration/stub-server.ts) | - | 変更 | ✅ | テストの代役の配信。全実行の中で使う |
+| `vscode/tests/integration/` | 全実行 | 実行のみ | ✅ | 1.141.0・stable とも 82 pass・1 pending<br>`テスト結果/20261113212510_ccda144d_結合テスト.log` |
+| [vscode/tests/integration/preview-rerender.test.ts](https://github.com/shuhei1101/mdmark/blob/develop/vscode/tests/integration/preview-rerender.test.ts) | `test_normal_when_library_origin_added` | 実行のみ | ❌ | 別の配信元がモジュールの要求を受けない。[#496](https://github.com/shuhei1101/mdmark/issues/496) で毎回 fail すると起票済みの既存の不具合で、この PR の変更と関係しない。1 回目の全実行で fail したため、2 回目はこのテストだけを作業ツリーで `test.skip` にして流した（commit していない）<br>`テスト結果/20261113211959_ccda144d_結合テスト.log` |
