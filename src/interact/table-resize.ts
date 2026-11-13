@@ -31,6 +31,8 @@ export type ColumnResizeOptions = {
   maxWidth: (column: number) => number;
   /** 幅を変えた後と戻した後に呼ぶ */
   onResize: (column: number) => void;
+  /** 見出しのセルに幅を入れた後、外側の幅を測る前に呼ぶ（表の幅を列の幅の合計に合わせる） */
+  onWidthWritten?: () => void;
 };
 
 /** ドラッグしている間の記録 */
@@ -79,9 +81,14 @@ const writeInnerWidth = (cell: HTMLElement, inner: number): void => {
 };
 
 /** 見出しのセルの外側の幅を `outer` にする。入れた後に測った外側の幅が違えば、差を加えて入れ直す */
-const writeOuterWidth = (cell: HTMLElement, outer: number): void => {
+const writeOuterWidth = (
+  cell: HTMLElement,
+  outer: number,
+  onWritten?: () => void,
+): void => {
   const inner = outer - insetOf(cell);
   writeInnerWidth(cell, inner);
+  onWritten?.();
   const diff = outer - cell.getBoundingClientRect().width;
   if (Math.abs(diff) >= 0.5) {
     writeInnerWidth(cell, inner + diff);
@@ -93,7 +100,7 @@ export const attachColumnResize = (
   table: HTMLTableElement,
   options: ColumnResizeOptions,
 ): (() => void) => {
-  const { headCells, maxWidth, onResize } = options;
+  const { headCells, maxWidth, onResize, onWidthWritten } = options;
   const initialVariables = headCells.map((cell) =>
     cell.style.getPropertyValue(MIN_WIDTH_VARIABLE),
   );
@@ -176,7 +183,11 @@ export const attachColumnResize = (
     if (!cell) {
       return;
     }
-    const others = resized.size === 0 ? freezeOthers(column) : [];
+    // 自動で列の幅を決めた表は、ほかの列の幅を CSS 変数が保つので固定しない
+    const others =
+      resized.size === 0 && !table.hasAttribute("data-auto-width")
+        ? freezeOthers(column)
+        : [];
     frozen.delete(column);
     resized.add(column);
     // mdmark-wide の列は幅を指定すると折り返すので、class を付けてから最小幅を測る
@@ -188,7 +199,7 @@ export const attachColumnResize = (
       min: Math.ceil(minWidthOf(cell)),
       max: Math.floor(maxWidth(column)),
     });
-    writeOuterWidth(cell, target);
+    writeOuterWidth(cell, target, onWidthWritten);
     for (const [other, outer] of others) {
       writeOuterWidth(other, outer);
     }

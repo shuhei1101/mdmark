@@ -112,10 +112,14 @@ export type TableOptions = {
   copyFallback?: { format: CopyFormat; text: string };
   /** `targetRow` の行の URL をコピーした結果 */
   rowLinkNotice?: "copied" | "failed";
-  /** 最終列を畳んでいるか */
-  folded?: boolean;
-  /** 畳んだ最終列を開いている本文の行の位置 */
-  unfoldedRows?: number[];
+  /** 長文の列の位置（`data-long`） */
+  long?: number[] | undefined;
+  /** `width.min`・`width.max` を記載した列（`data-width`。em の数） */
+  widthRanges?:
+    | Array<{ column: number; min?: number; max?: number }>
+    | undefined;
+  /** `mount` が自動で決めた列の幅（見出しのセルの外側の幅の px） */
+  autoWidths?: Array<{ column: number; width: number }>;
   /** 表の代わりに配置する HTML（`SLOT_MARKER` を指定できる） */
   body?: string;
   /** ドロワーの `id` の頭（既定 `mdmark-table`）。ビューの中の表のように、文書の中に表が 2 つ以上あるときに重ならない値を指定する */
@@ -718,28 +722,6 @@ export function renderCopyPanel(options: {
   return `<div class="mdmark-copy-panel" role="group" aria-labelledby="${escapeHtml(titleId)}"><div class="mdmark-copy-panel-head"><p class="mdmark-copy-panel-title" id="${escapeHtml(titleId)}">${iconSvg("circle-alert")}クリップボードにコピーできませんでした</p><button class="mdmark-copy-panel-close" type="button" aria-label="閉じる">${iconSvg("x")}</button></div><p class="mdmark-copy-panel-note" id="${escapeHtml(noteId)}">${target}を選択しています。Ctrl+C（Mac は ⌘C）でコピーしてください。</p><textarea class="mdmark-copy-panel-text" readonly rows="6" aria-labelledby="${escapeHtml(titleId)} ${escapeHtml(noteId)}">${escapeHtml(text)}</textarea></div>`;
 }
 
-/** 最終列を畳んだ表の本文の行 1 つについて、先頭のセルに配置する開閉のボタンと、行の直後に配置する開閉の行の HTML を返却する */
-export function renderFoldedColumn(options: {
-  /** 開閉の行の id（ボタンの `aria-controls` が指す） */
-  id: string;
-  /** 表の列の数 */
-  columns: number;
-  /** 行の先頭のセルの文字 */
-  label: string;
-  /** 最終列の見出しの文字 */
-  name: string;
-  /** 行の最終列のセルの中身の HTML */
-  html: string;
-  /** 開いているか（既定 `false`） */
-  open?: boolean;
-}): { toggle: string; row: string } {
-  const { id, columns, label, name, html, open = false } = options;
-  return {
-    toggle: `<button class="mdmark-row-toggle mdmark-fold-toggle" type="button" aria-expanded="${open}" aria-controls="${escapeHtml(id)}" aria-label="「${escapeHtml(label)}」の${escapeHtml(name)}"></button>`,
-    row: `<tr class="mdmark-row-detail mdmark-fold-detail" id="${escapeHtml(id)}"${open ? "" : " hidden"}><td colspan="${columns}"><div class="mdmark-fold-part"><p class="mdmark-fold-name">${escapeHtml(name)}</p><div class="mdmark-fold-value">${html}</div></div></td></tr>`,
-  };
-}
-
 /** 行へのリンクのマーカーを持つ先頭のセルの HTML を返却する。`content` は先頭のセルの中身（`SLOT_MARKER` を指定して前後に分けられる）。`notice` を指定すると、URL をコピーした結果をマーカーの横の通知に出す */
 export function renderRowLink(
   content: string,
@@ -796,9 +778,6 @@ function renderTableBody(options: TableOptions, id: string): string {
   );
   const hiddenAttribute = (column: number): string =>
     hidden.has(column) ? " hidden" : "";
-  const lastColumn = columns.length - 1;
-  const folded = isFolded(options, hidden);
-  const unfolded = new Set(options.unfoldedRows ?? []);
   const drawers: string[] = [];
   /** 強調する列の色 */
   const highlightOf = (column: number): ColorName | undefined =>
@@ -808,7 +787,10 @@ function renderTableBody(options: TableOptions, id: string): string {
   const widthOf = new Map(
     (options.widths ?? []).map((item) => [item.column, item.width]),
   );
-  /** セルの class 属性（ピン止めした列・畳んだ最終列・強調する列・広く取る列・真偽値の列・`extra`）と色 */
+  const autoWidthOf = new Map(
+    (options.autoWidths ?? []).map((item) => [item.column, item.width]),
+  );
+  /** セルの class 属性（ピン止めした列・強調する列・広く取る列・真偽値の列・`extra`）と色 */
   const cellClass = (column: number, extra: string[] = []): string => {
     const names = [
       ...(pinned.has(column)
@@ -816,7 +798,6 @@ function renderTableBody(options: TableOptions, id: string): string {
           ? ["is-pinned-col", "is-pinned-edge"]
           : ["is-pinned-col"]
         : []),
-      ...(folded && column === lastColumn ? ["mdmark-fold-col"] : []),
       ...(highlightOf(column) ? ["mdmark-col-highlight"] : []),
       ...(wideColumns.has(column) ? ["mdmark-wide"] : []),
       ...(checkColumns.has(column) ? ["mdmark-align-center"] : []),
@@ -865,10 +846,21 @@ function renderTableBody(options: TableOptions, id: string): string {
           )
         : header;
     const width = widthOf.get(index);
+    const autoWidth = autoWidthOf.get(index);
+    const declarations = [
+      ...(width === undefined
+        ? []
+        : [
+            `width:${width}px`,
+            `min-width:${width}px`,
+            `--mdmark-column-min-width:${width}px`,
+          ]),
+      ...(autoWidth === undefined || width !== undefined
+        ? []
+        : [`--mdmark-auto-width:${autoWidth}px`]),
+    ];
     const style =
-      width === undefined
-        ? ""
-        : ` style="width:${width}px;min-width:${width}px;--mdmark-column-min-width:${width}px"`;
+      declarations.length === 0 ? "" : ` style="${declarations.join(";")}"`;
     return `<th${cellClass(index)}${style}${sorted}${hiddenAttribute(index)}>${resizedHeader}</th>`;
   };
   const head = options.headRows
@@ -906,17 +898,6 @@ function renderTableBody(options: TableOptions, id: string): string {
       }
       const rowId = rowLinking ? options.rowIds?.[rowIndex] : undefined;
       const targeted = rowLinking && options.targetRow === rowIndex;
-      const foldId = `${id}-fold-${rowIndex}`;
-      const fold = folded
-        ? renderFoldedColumn({
-            id: foldId,
-            columns: columns.length - hidden.size,
-            label: plainText(row[0] ?? ""),
-            name: labels[lastColumn] ?? "",
-            html: row[lastColumn] ?? "",
-            open: unfolded.has(rowIndex),
-          })
-        : undefined;
       const cells = row
         .map((text, index) => {
           const checkValue =
@@ -934,10 +915,7 @@ function renderTableBody(options: TableOptions, id: string): string {
                   targeted ? options.rowLinkNotice : undefined,
                 )
               : cell;
-          const content =
-            index === 0 && fold
-              ? `<span class="mdmark-row-head">${fold.toggle}${linked}</span>`
-              : linked;
+          const content = linked;
           const merge = mergeColumns.indexOf(index);
           const span = merge >= 0 ? spanOf.get(rowIndex)?.[merge] : undefined;
           const spanAttribute =
@@ -956,7 +934,7 @@ function renderTableBody(options: TableOptions, id: string): string {
       const rowColor = options.rowColors?.[rowIndex];
       const colorAttribute = rowColor ? ` data-color="${rowColor}"` : "";
       const line = `<tr${idAttribute}${target}${colorAttribute}${match ? "" : " hidden"}>${cells}</tr>`;
-      return fold ? `${line}${fold.row}` : line;
+      return line;
     })
     .join("");
   const empty = `<tr class="mdmark-table-empty"${shownRows.length > 0 ? " hidden" : ""}><td colspan="${columns.length - hidden.size}">一致する行がありません</td></tr>`;
@@ -1015,7 +993,15 @@ function renderTableBody(options: TableOptions, id: string): string {
   const panel = options.copyFallback
     ? renderCopyPanel({ id: `${id}-panel`, ...options.copyFallback })
     : "";
-  const tableHtml = `<table tabindex="0" aria-label="表"><thead>${head}</thead><tbody>${body}${empty}</tbody>${footer}</table>`;
+  const autoTotal = [...autoWidthOf.values()].reduce(
+    (sum, width) => sum + width,
+    0,
+  );
+  const autoAttribute =
+    autoWidthOf.size > 0
+      ? ` data-auto-width style="--mdmark-auto-table-width:${autoTotal}px"`
+      : "";
+  const tableHtml = `<table tabindex="0" aria-label="表"${autoAttribute}><thead>${head}</thead><tbody>${body}${empty}</tbody>${footer}</table>`;
   return `${bar}${panel}<div class="mdmark-table-scroll">${options.order ? reorderCellsHtml(tableHtml, options.order) : tableHtml}</div>${menus}${drawers.join("")}`;
 }
 
@@ -1260,12 +1246,6 @@ function renderHeadRows(
     .join("");
 }
 
-/** 最終列を畳んだ表として描くか。列が 2 つ以上あり、最終列を隠していないときだけ */
-function isFolded(options: TableOptions, hidden: Set<number>): boolean {
-  const lastColumn = (options.columns ?? []).length - 1;
-  return options.folded === true && lastColumn > 0 && !hidden.has(lastColumn);
-}
-
 /** 表を囲む HTML を返却する。`body` を指定すると囲みだけを作り、指定しなければ `columns`・`rows` から表を作る */
 export function renderTable(options: TableOptions): string {
   if (options.tree !== undefined && options.rows !== undefined) {
@@ -1312,21 +1292,18 @@ export function renderTable(options: TableOptions): string {
     collapse === "none"
       ? content
       : `<details class="mdmark-table-details"${collapse === "open" ? " open" : ""}><summary>${escapeHtml(title)}</summary>${content}</details>`;
-  const hiddenColumns = new Set(
-    options.features.includes("columns")
-      ? (options.hiddenColumns ?? options.hide ?? [])
-      : [],
-  );
-  const foldedClass =
-    options.body === undefined && isFolded(options, hiddenColumns)
-      ? " is-folded"
-      : "";
+  const long = options.long ?? [];
+  const longAttribute = long.length ? ` data-long="${long.join(" ")}"` : "";
+  const ranges = options.widthRanges ?? [];
+  const widthAttribute = ranges.length
+    ? ` data-width="${ranges.map((range) => `${range.column}:${range.min ?? ""}-${range.max ?? ""}`).join(" ")}"`
+    : "";
   const mergeColumns = options.mergeColumns ?? [];
   const mergeAttribute = mergeColumns.length
     ? ` data-merge-columns="${mergeColumns.join(" ")}"`
     : "";
   if (options.rawCsv === undefined) {
-    return `<div class="mdmark-table${foldedClass}" data-kind="${kind}" data-features="${options.features.join(" ")}"${filterAttribute}${hideAttribute}${totalAttribute}${pinAttribute}${unpinAttribute}${checkAttribute}${treeAttribute}${mergeAttribute}>${inner}</div>`;
+    return `<div class="mdmark-table" data-kind="${kind}" data-features="${options.features.join(" ")}"${filterAttribute}${hideAttribute}${totalAttribute}${pinAttribute}${unpinAttribute}${checkAttribute}${treeAttribute}${mergeAttribute}${longAttribute}${widthAttribute}>${inner}</div>`;
   }
   // CSV の表: 表の後ろに元の CSV を配置する。帯の右端の RAW のボタンは、表を描いたとき（`body` を指定しないとき）だけ配置し、記法の表には `mount` が付ける
   const shown = options.rawShown ?? false;
@@ -1342,5 +1319,5 @@ export function renderTable(options: TableOptions): string {
         )
       : inner.replace(/^<table(?=[\s>])/, "<table hidden")
     : inner;
-  return `<div class="mdmark-table${foldedClass}" data-kind="${kind}" data-features="${options.features.join(" ")}" data-source="csv"${viewAttribute}${filterAttribute}${hideAttribute}${totalAttribute}${pinAttribute}${unpinAttribute}${checkAttribute}${treeAttribute}${mergeAttribute}>${bar}${shownInner}${raw}</div>`;
+  return `<div class="mdmark-table" data-kind="${kind}" data-features="${options.features.join(" ")}" data-source="csv"${viewAttribute}${filterAttribute}${hideAttribute}${totalAttribute}${pinAttribute}${unpinAttribute}${checkAttribute}${treeAttribute}${mergeAttribute}${longAttribute}${widthAttribute}>${bar}${shownInner}${raw}</div>`;
 }

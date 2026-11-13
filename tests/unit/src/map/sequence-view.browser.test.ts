@@ -1,5 +1,9 @@
 import { afterEach, expect, test } from "vitest";
-import { createRootFromHtml, removeRoots } from "../../helpers/dom.ts";
+import {
+  addStyles,
+  createRootFromHtml,
+  removeRoots,
+} from "../../helpers/dom.ts";
 import { CONFIG, mapRange, SEQUENCE } from "../../helpers/map.ts";
 import { renderDoc } from "../../helpers/render.ts";
 
@@ -100,4 +104,42 @@ test("test_attach_map_sequence_when_packets", async () => {
     const message = messages[at];
     expect(message?.from === "mount" || message?.to === "mount").toBe(true);
   }
+});
+
+// 並べ替えのドラッグを pointercancel で止めたとき、並び順を変えない（正常系）
+test("test_attach_map_sequence_when_reorder_cancelled", async () => {
+  // 準備: 参加者を列に並べるため、描いた文書の CSS を読み込む
+  addStyles();
+  const root = await setUp();
+  const heads = [...root.querySelectorAll<HTMLElement>(".map-participant")];
+  const first = heads[0] as HTMLElement;
+  const fourth = heads[3] as HTMLElement;
+  const start = first.getBoundingClientRect();
+  const goal = fourth.getBoundingClientRect();
+  const point = (x: number) => ({
+    bubbles: true,
+    pointerId: 1,
+    button: 0,
+    pointerType: "touch",
+    clientX: x,
+    clientY: start.y + 2,
+  });
+  // 実行: 4 人目の列まで動かしてから pointercancel、続けて pointerup
+  first.dispatchEvent(new PointerEvent("pointerdown", point(start.x + 2)));
+  window.dispatchEvent(
+    new PointerEvent("pointermove", point(goal.x + goal.width / 2)),
+  );
+  window.dispatchEvent(
+    new PointerEvent("pointercancel", point(goal.x + goal.width / 2)),
+  );
+  window.dispatchEvent(
+    new PointerEvent("pointerup", point(goal.x + goal.width / 2)),
+  );
+  // 検証
+  expect(saved().order).toBeUndefined();
+  expect(root.querySelector(".map-insert-line")).toBeNull();
+  expect(
+    root.querySelector<HTMLElement>('[data-participant="user"]')?.style
+      .translate,
+  ).toBe("");
 });

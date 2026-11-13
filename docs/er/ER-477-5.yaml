@@ -13,7 +13,7 @@ tables:
   - name: depth
     title: 開いて描く階層
     type: string / integer
-    description: 開いて描く階層。整数は 1 以上で、ルートの深さを 0 として、その数より浅いフォルダを開く。省くと `"all"`（既定を全て開いた状態にする shuhei1101/mdmark#459 に合わせる）
+    description: 開いて描く階層。整数は 1 以上で、ルートの深さを 0 として、その数より浅いフォルダを開く。省くと `"all"`（全てのフォルダを開く）
     default: '`"all"`'
     enum_values: '`all`'
     example: '2'

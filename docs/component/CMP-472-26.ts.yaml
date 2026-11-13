@@ -17,7 +17,7 @@ states:
           │   └── index.ts
           └── package.json
   - name: Interactive
-    description: '`mount` が付けた状態で、指定の無い開き方。ルートだけが開き、`src/` は閉じたアイコンで中身を隠す。上に種類 `tree` と `コピー` の帯'
+    description: '`mount` が付けた状態で、指定の無い開き方。全てのフォルダが開いたアイコンで開いている。上に種類 `tree` と `コピー` の帯'
     args:
       - name: nodes
         value: '[{"name":"mdmark/","children":[{"name":"src/","children":[{"name":"index.ts"}]},{"name":"package.json"}]}]'
@@ -57,6 +57,21 @@ states:
                   └── tree.ts
       - name: open
         value: '2'
+      - name: interactive
+        value: 'true'
+  - name: OpenRoot
+    description: '`depth` が `1` で `app/` だけが開き、`src/` は閉じたアイコンで中身を隠す'
+    args:
+      - name: nodes
+        value: '[{"name":"app/","children":[{"name":"src/","children":[{"name":"parts/","children":[{"name":"tree.ts"}]}]}]}]'
+      - name: source
+        value: |-
+          app/
+          └── src/
+              └── parts/
+                  └── tree.ts
+      - name: open
+        value: '1'
       - name: interactive
         value: 'true'
   - name: Notes
@@ -188,9 +203,9 @@ args:
   - name: open
     type: 文字列
     required: false
-    default: なし（ルートだけ開く）
+    default: なし（全て開く）
     choices: '`all`・1 以上の整数の文字列'
-    description: 既定で開く階層（マーカーの `depth` の値）。`data-open` に入れる。`all` は全て、数はルートの深さを 0 として深さがその数より浅いフォルダを開く
+    description: 既定で開く階層（マーカーの `depth` の値）。`data-open` に入れる。`all` と指定の無いときは全て、数はルートの深さを 0 として深さがその数より浅いフォルダを開く
     status: planned
   - name: interactive
     type: 真偽値

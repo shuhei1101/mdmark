@@ -11,6 +11,9 @@ export type SectionStates = Map<string, { open: boolean; marker: string }>;
 /** セクションの開閉の関数の記録。`attachSections` が操作を付けたセクションの中身から、そのセクションを開くか閉じる関数を参照する。削除する関数が取り除く */
 const sectionSetters = new WeakMap<HTMLElement, SetOpen>();
 
+/** セクションの見出しの要素から、そのセクションの中身を引く記録。`attachSections` が付け、削除する関数が取り除く */
+const headingBodies = new WeakMap<HTMLElement, HTMLElement>();
+
 /** セクションの中身に入っている、操作を付けた入れ子のセクションの中身 */
 function nestedBodies(body: HTMLElement): HTMLElement[] {
   return [...body.querySelectorAll<HTMLElement>(".mdmark-section-body")];
@@ -78,6 +81,7 @@ function attachSection(
     remember(open);
   };
   sectionSetters.set(body, setOpen);
+  headingBodies.set(heading, body);
   const saved = states?.get(body.id);
   show(saved?.marker === marker ? saved.open : marker !== "closed");
   /** そのセクションを今と逆の状態にし、中の入れ子の全てのセクションを同じ状態にする */
@@ -116,6 +120,7 @@ function attachSection(
     button.remove();
     body.removeAttribute("hidden");
     sectionSetters.delete(body);
+    headingBodies.delete(heading);
   };
 }
 
@@ -137,9 +142,13 @@ function openSectionsAndTabs(target: HTMLElement): void {
   revealTabTarget(target);
 }
 
-/** 要素を囲む閉じたセクションを外側から開き、選ばれていないタブの中ならそのタブも選び、表の行（`tr`）でなければ `scrollIntoView` する。URL の `#ID` で移るときと右側の目次の項目で移るときに使用する */
+/** 要素を囲む閉じたセクションを外側から開き、要素がセクションの見出しなら見出し自身のセクションも開き、選ばれていないタブの中ならそのタブも選び、表の行（`tr`）でなければ `scrollIntoView` する。URL の `#ID` で移るときと右側の目次の項目で移るときに使用する */
 export function revealTarget(target: HTMLElement): void {
   openSectionsAndTabs(target);
+  const ownBody = headingBodies.get(target);
+  if (ownBody) {
+    sectionSetters.get(ownBody)?.(true);
+  }
   // 表の行へは、`attachTables` が絞り込みを解除してから送信する
   if (target.tagName !== "TR") {
     target.scrollIntoView();

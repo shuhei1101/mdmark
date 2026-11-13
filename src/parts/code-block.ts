@@ -150,6 +150,8 @@ export function renderCodeBlock(options: {
   copyState?: CodeCopyState | undefined;
   /** 行の開閉のボタンを配置するか（既定 `false`） */
   foldButtons?: boolean | undefined;
+  /** ポインターが開閉のボタンの列に乗っているか。`true` なら `pre` に `data-fold-hover` を付ける（既定 `false`） */
+  foldColumnHovered?: boolean | undefined;
 }): string {
   const { language, title, lineNumbers, lines, syntax } = options;
   const { fileName = "", bar = true, copyState, foldButtons } = options;
@@ -237,7 +239,9 @@ export function renderCodeBlock(options: {
         .join("\n")
     : escapeHtml(lines.map((line) => line.text).join("\n")) +
       (lines.length > 0 ? "\n" : "");
-  const pre = `<pre${preClass} tabindex="0" aria-label="${label}"><code${codeAttributes}>${body}</code></pre>`;
+  const hoverAttribute =
+    options.foldColumnHovered === true ? " data-fold-hover" : "";
+  const pre = `<pre${preClass}${hoverAttribute} tabindex="0" aria-label="${label}"><code${codeAttributes}>${body}</code></pre>`;
   if (!bar) {
     return `<pre${mermaidAttribute}${pre.slice("<pre".length)}`;
   }

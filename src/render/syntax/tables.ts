@@ -13,9 +13,13 @@ import {
   type TableTotal,
 } from "../../parts/table.ts";
 import {
+  type ColumnLines,
+  defaultFilterKind,
   FILTER_KINDS,
   type FilterKind,
+  findLongColumns,
   findUnreadableTotals,
+  isCompactCellText,
   TOTAL_LABELS,
   type TotalCalc,
 } from "../../table-logic.ts";
@@ -76,8 +80,8 @@ export type TableSpec = {
   kind: TableKind;
   /** 種類の機能に、`features` と列の設定の機能を適用したもの */
   features: TableFeature[];
-  /** 絞り込む列。表に無い列名は入れない */
-  filters: TableFilter[];
+  /** 絞り込む列。表に無い列名は入れない。`type` を省いた列は `kind` を持たない */
+  filters: Array<{ column: number; kind?: FilterKind }>;
   /** 折り畳み */
   collapse: "none" | "closed" | "open";
   /** 折り畳みの見出し（`collapse.title`） */
@@ -188,7 +192,7 @@ export function readTableSpec(
       add(name as TableFeature);
     }
   }
-  const filters: TableFilter[] = [];
+  const filters: TableSpec["filters"] = [];
   const hide: number[] = [];
   const totals: TableTotal[] = [];
   const pinned: number[] = [];
@@ -218,10 +222,11 @@ export function readTableSpec(
     };
     if (isObject(settings.filter) && on("filter")) {
       const type = settings.filter.type;
-      filters.push({
-        column,
-        kind: typeof type === "string" ? (type as FilterKind) : "select",
-      });
+      filters.push(
+        typeof type === "string"
+          ? { column, kind: type as FilterKind }
+          : { column },
+      );
     }
     if (settings.hidden === true && on("hidden")) {
       if (column === 0) {
@@ -711,6 +716,100 @@ function decorateAttributes(state: StateCore): void {
   }
 }
 
+/** `badge:` のバッジの頭 */
+const BADGE_PREFIX = "badge:";
+
+/** 改行の `html_inline`（`<br>`） */
+const BREAK_TAG = /^<br\s*\/?>$/i;
+
+/** 文字の中の `<br>`（HTML を描かない設定で文字として残ったもの） */
+const BREAK_IN_TEXT = /<br\s*\/?>/i;
+
+/** セルの `inline` のトークンを、改行で分けた行と短い値だけのセルかにする */
+const cellLinesOf = (
+  inline: Token | undefined,
+): { lines: string[]; compact: boolean } => {
+  const parts: string[] = [""];
+  let onlyCode = true;
+  let hasCode = false;
+  for (const child of inline?.children ?? []) {
+    if (
+      child.type === "softbreak" ||
+      child.type === "hardbreak" ||
+      (child.type === "html_inline" && BREAK_TAG.test(child.content.trim()))
+    ) {
+      parts.push("");
+      continue;
+    }
+    if (child.type === "code_inline") {
+      hasCode = true;
+      const text = child.content.startsWith(BADGE_PREFIX)
+        ? child.content.slice(BADGE_PREFIX.length)
+        : child.content;
+      parts[parts.length - 1] += text;
+      continue;
+    }
+    if (child.type === "text" && child.content.trim() === "") {
+      parts[parts.length - 1] += child.content;
+      continue;
+    }
+    if (child.content !== "") {
+      onlyCode = false;
+    }
+    parts[parts.length - 1] += child.content;
+  }
+  const lines = parts
+    .flatMap((part) => part.split(BREAK_IN_TEXT))
+    .map((line) => line.trim())
+    .filter(Boolean);
+  return {
+    lines,
+    compact: (hasCode && onlyCode) || isCompactCellText(lines.join(" ")),
+  };
+};
+
+/** 表の最下段の見出しと本文のセルを列ごとに集め、改行で分けた行と短い値だけのセルかを返却する */
+export function columnLinesOf(
+  tokens: Token[],
+  tableOpen: number,
+): ColumnLines[] {
+  const head: string[][] = [];
+  const body: Array<Array<{ lines: string[]; compact: boolean }>> = [];
+  let section: "head" | "body" | undefined;
+  let column = 0;
+  for (const index of ownTokenIndexes(tokens, tableOpen)) {
+    const token = tokens[index];
+    if (token?.type === "thead_open") {
+      section = "head";
+    } else if (token?.type === "tbody_open") {
+      section = "body";
+    } else if (token?.type === "tr_open") {
+      column = 0;
+      if (section === "head") {
+        head.length = 0;
+      } else {
+        body.push([]);
+      }
+    } else if (token?.type === "th_open" || token?.type === "td_open") {
+      const cell = cellLinesOf(tokens[index + 1]);
+      if (section === "head") {
+        head[column] = cell.lines;
+      } else {
+        body.at(-1)?.push(cell);
+      }
+      column += 1;
+    }
+  }
+  const count = Math.max(head.length, ...body.map((row) => row.length));
+  return Array.from({ length: count }, (_, index) => ({
+    head: head[index] ?? [],
+    cells: body.flatMap((row) => {
+      const cell = row[index];
+      return cell ? [cell] : [];
+    }),
+  }));
+}
+
 /** 表の本文の各行のセルの文字を集める */
 export function bodyCellsOf(tokens: Token[], tableOpen: number): string[][] {
   const rows: string[][] = [];
@@ -1053,10 +1152,28 @@ export function decorateTables(state: StateCore): void {
       spec.warnings.push(...merged.warnings);
     }
     const filtering = spec.features.includes("filter");
+    const long = findLongColumns(columnLinesOf(tokens, index));
+    const filters: TableFilter[] = spec.filters.map((filter) => ({
+      column: filter.column,
+      kind: filter.kind ?? defaultFilterKind(long.includes(filter.column)),
+    }));
+    const widthRanges = spec.widths.flatMap((width) =>
+      width.min === undefined && width.max === undefined
+        ? []
+        : [
+            {
+              column: width.column,
+              ...(width.min === undefined ? {} : { min: width.min }),
+              ...(width.max === undefined ? {} : { max: width.max }),
+            },
+          ],
+    );
     const html = renderTable({
       kind: spec.kind,
       features: spec.features,
-      filters: filtering ? spec.filters : [],
+      filters: filtering ? filters : [],
+      long,
+      widthRanges,
       collapse: spec.collapse,
       title: spec.title,
       rowCount: bodyRowCount(tokens, index),

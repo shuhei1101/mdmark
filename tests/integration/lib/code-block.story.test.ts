@@ -211,7 +211,7 @@ function barLayout(page: Awaited<ReturnType<typeof holder.openStory>>) {
   });
 }
 
-// 言語のラベルを帯の左端に、コピーのボタンを右端に配置する（LanguageLabel）
+// 言語のラベルを帯の左端の上端のタブに、コピーのボタンを右端に配置し、帯を本文と同じ地にして間に線を引かない（LanguageLabel）
 test("test_language_label", async () => {
   // 準備・実行
   const page = await holder.openStory("parts-codeblock--language-label");
@@ -230,6 +230,26 @@ test("test_language_label", async () => {
   const layout = await barLayout(page);
   expect(layout.langLeft).toBeLessThan(16);
   expect(layout.copyRight).toBeLessThan(16);
+  const bar = await page.locator(".mdmark-code-bar").evaluate((element) => {
+    const pre = element.nextElementSibling as HTMLElement;
+    const lang = element.querySelector(".mdmark-code-lang") as HTMLElement;
+    return {
+      barBackground: getComputedStyle(element).backgroundColor,
+      barBorderBottom: getComputedStyle(element).borderBottomWidth,
+      preBackground: getComputedStyle(pre).backgroundColor,
+      preBorderTop: getComputedStyle(pre).borderTopWidth,
+      langBorder: getComputedStyle(lang).borderTopWidth,
+      langBackground: getComputedStyle(lang).backgroundColor,
+      langTop:
+        lang.getBoundingClientRect().top - element.getBoundingClientRect().top,
+    };
+  });
+  expect(bar.barBackground).toBe(bar.preBackground);
+  expect(bar.barBorderBottom).toBe("0px");
+  expect(bar.preBorderTop).toBe("0px");
+  expect(bar.langBorder).toBe("0px");
+  expect(bar.langBackground).not.toBe(bar.barBackground);
+  expect(Math.abs(bar.langTop)).toBeLessThanOrEqual(1);
   await expect(
     page.locator("#storybook-root pre").getAttribute("aria-label"),
   ).resolves.toBe("コード: ts");
@@ -426,6 +446,23 @@ test("test_foldable", async () => {
   await lines.nth(2).hover();
   await expect.poll(() => opacity(1)).toBe(1);
   await expect(opacity(0)).resolves.toBe(0);
+});
+
+// ポインターが開閉のボタンの列に乗っているときは、畳める全ての行の開閉のボタンを出す（FoldColumnHovered）
+test("test_fold_column_hovered", async () => {
+  // 準備・実行
+  const page = await holder.openStory("parts-codeblock--fold-column-hovered");
+  // 検証
+  await expect(
+    page.locator("#storybook-root pre").getAttribute("data-fold-hover"),
+  ).resolves.not.toBeNull();
+  await expect(
+    page
+      .locator(".mdmark-code-fold")
+      .evaluateAll((elements) =>
+        elements.map((element) => Number(getComputedStyle(element).opacity)),
+      ),
+  ).resolves.toEqual([1, 1, 1, 1]);
 });
 
 // `fold=3` の 3 行目は、開閉のボタンを常に出して `⋯` を配置し、閉じ括弧の 8 行目を残す（Folded）

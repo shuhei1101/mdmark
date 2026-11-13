@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <!-- viewport: スマホ幅で等倍に表示する -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- color-scheme: 明るい配色とダークの両方を持つことをブラウザへ伝える -->
+  <meta name="color-scheme" content="light dark">
+  <title>diagram-frame-touch | mdmark の部品のモック</title>
+  <!-- 本文の規則とモック専用の操作列（#16 で共有するアセット） -->
+  <link rel="stylesheet" href="../../refs/16/assets/sample.css">
+  <!-- 採用スタイル本体の変数の値 -->
+  <link rel="stylesheet" href="../../assets/style.css">
+  <!-- 拡張記法の規則とカタログの並べ方（#19 で共有するアセット） -->
+  <link rel="stylesheet" href="../../refs/19/assets/syntax.css">
+  <link rel="stylesheet" href="../../refs/19/assets/catalog.css">
+  <!-- 図の部品の規則（#42 で共有するアセット） -->
+  <link rel="stylesheet" href="../../refs/42/assets/diagram.css">
+  <!-- 図の枠を指で動かすときの規則（#508 で共有するアセット） -->
+  <link rel="stylesheet" href="../../refs/508/assets/touch.css">
+  <!-- 狭い枠の見本の幅（図の枠の部品のモックと同じ） -->
+  <link rel="stylesheet" href="../diagram-frame/style.css">
+  <!-- 配色の切り替え -->
+  <script src="../../refs/16/assets/sample.js" defer></script>
+  <!-- 図の定義の見本と、図を描いて操作を付けるスクリプト（#42 で共有するアセット） -->
+  <script src="../../refs/42/assets/samples.js" defer></script>
+  <script src="../../refs/308/assets/samples.js" defer></script>
+  <script src="../../refs/42/assets/diagram.js" defer></script>
+  <!-- 図の余白のタップで操作中にする（#508 で共有するアセット） -->
+  <script src="../../refs/508/assets/touch.js" defer></script>
+</head>
+<body>
+  <!-- モック専用の操作列: 配色の切り替え -->
+  <div class="mock-bar">
+    <div class="mock-bar-group" role="group" aria-label="配色">
+      <button class="mock-bar-item" type="button" data-scheme-set="light" aria-pressed="false">明るい配色</button>
+      <button class="mock-bar-item" type="button" data-scheme-set="dark" aria-pressed="false">ダーク</button>
+    </div>
+  </div>
+
+  <main class="host">
+    <div class="catalog">
+      <h1 class="catalog-title">図の枠を指で動かす</h1>
+
+      <!-- タップする前: 縦の指のドラッグは文書のスクロール、横の指のドラッグは図の移動（今のまま） -->
+      <section aria-labelledby="state-before">
+        <h2 class="catalog-label" id="state-before">タップする前（縦のドラッグは文書のスクロール。横のドラッグは図を動かす）</h2>
+        <article class="mdmark catalog-narrow">
+          <figure data-mock-diagram="inquiry" data-mock-zoom="1.25" data-mock-scroll="230,90"></figure>
+        </article>
+      </section>
+
+      <!-- 操作中: 図の余白をタップした後。枠線を強い色にし、縦にも横にも指で図を動かす。図の外のタップで解く -->
+      <section aria-labelledby="state-active">
+        <h2 class="catalog-label" id="state-active">操作中（図の余白をタップした後。縦にも横にも指で図を動かす。図の外をタップすると解く）</h2>
+        <article class="mdmark catalog-narrow">
+          <!-- [data-mock-touch-active]: touch.js が描いた直後から操作中にする（モックだけの指定） -->
+          <figure data-mock-diagram="inquiry" data-mock-zoom="1.25" data-mock-scroll="230,90" data-mock-touch-active></figure>
+        </article>
+      </section>
+
+      <!-- 操作中（広い枠）: 同じ見た目を PC の幅でも確認する -->
+      <section aria-labelledby="state-active-wide">
+        <h2 class="catalog-label" id="state-active-wide">操作中（広い枠）</h2>
+        <article class="mdmark">
+          <figure data-mock-diagram="inquiry" data-mock-zoom="1.25" data-mock-scroll="230,90" data-mock-touch-active></figure>
+        </article>
+      </section>
+    </div>
+  </main>
+</body>
+</html>

@@ -75,3 +75,7 @@ entries:
     schema: mdmark.config.schema.json
     sha256: b06ad7017ba653f33a9a62fc6bf9d78d5df0149c4adf1c9e995f2be1f1c9030a
     reason: 省いてよい table と、その中の省いてよい pin と、features に省いてよい map と、省いてよい map（node_fit・url_state・kinds・lines）を足しただけで、古い設定もそのまま新しい Schema に合う
+  - version: next
+    schema: mdmark.config.schema.json
+    sha256: 48187e75d9ddd5d62d732688a65bf7d441da86160a1ba49faeb8839e19e424ee
+    reason: table に省いてよい long_column_min を足しただけで、古い設定もそのまま新しい Schema に合う

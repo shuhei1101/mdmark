@@ -33,7 +33,7 @@ scenarios:
         description: 正常シナリオと同じ
         notes: ページの URL の末尾に `#注意` を付けて開く
       - name: 閉じたセクションの中に見出しを持つ Markdown
-        description: '`## 補足` とその直後の `<!-- section: {"open": false} -->`、そのセクションの中の `### 注意` と段落を持つ文書'
+        description: '`## 補足` とその直後の `<!-- section: {"open": false} -->`、そのセクションの中の `### 注意` とその直後の `<!-- section: {"open": false} -->` と段落を持つ文書'
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
@@ -43,10 +43,10 @@ scenarios:
         participant M as mdmark
         U->>P: #注意 付きの URL を開く
         P->>M: 設定と Markdown を指定して描かせる
-        M-->>P: 移る先を含む補足のセクションを開いて移る
-        P-->>U: 「注意」の見出しを表示
+        M-->>P: 移る先を含む補足のセクションと、移る先の注意のセクションを開いて移る
+        P-->>U: 「注意」の見出しと段落を表示
     expected:
-      - '`補足` のセクションが開いていて、`注意` の見出しが画面に入っている'
+      - '`補足` と `注意` のセクションが開いていて、`注意` の見出しが画面に入り、`注意` の段落が表示されている'
     test: test_normal_when_fragment_in_closed_section
   - name: 正常シナリオ（行の詳細）
     setup:
@@ -114,7 +114,7 @@ scenarios:
       - 表の後に詳細の段落が表示されている
       - 表の行に開閉のボタンが無い
     test: test_error_when_row_out_of_range
-  - name: 正常シナリオ（畳んだ最終列と行の詳細）
+  - name: 正常シナリオ（狭い幅の行の詳細）
     setup:
       - name: mdmark を読み込むページ
         description: 正常シナリオと同じ
@@ -131,14 +131,14 @@ scenarios:
         participant P as 利用側のページ
         participant M as mdmark
         P->>M: 設定と Markdown を指定して描かせる
-        M-->>P: 最終列を畳み、各行に開閉を 1 つずつ付けた表を描く
+        M-->>P: 最終列を畳まず、行の詳細を持つ 2 行目にだけ開閉を付けた表を描く
         U->>P: 2 行目の開閉を押す
-        P-->>U: 2 行目の下に最終列の中身と行の詳細を表示
+        P-->>U: 2 行目の下に行の詳細を表示
     expected:
-      - 描いた直後、各行の開閉のボタンは 1 つずつで、2 行目にも 1 つだけ
-      - 2 行目の開閉を押した後、2 行目の直後に、見出し `説明` と 2 行目の説明の中身、その下に行の詳細の段落が表示され、ボタンの `aria-expanded` が `true`
-      - もう一度押すと、最終列の中身と行の詳細が一緒に閉じる
-    test: test_normal_when_row_detail_with_collapsed_column
+      - 描いた直後、説明の列が表に出ていて、開閉のボタンは 2 行目に 1 つだけ
+      - 2 行目の開閉を押した後、2 行目の直後に行の詳細の段落が表示され、ボタンの `aria-expanded` が `true`
+      - もう一度押すと、行の詳細が閉じる
+    test: test_normal_when_row_detail_in_narrow_width
   - name: 正常シナリオ（H1 のセクション）
     setup:
       - name: mdmark を読み込むページ

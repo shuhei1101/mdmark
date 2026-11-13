@@ -51,7 +51,7 @@ scenarios:
       - name: 文書を描いたページ
         description: バージョンを固定した URL で mdmark を読み込み、文書を描いた HTML
       - name: 閉じた記法を持つ Markdown
-        description: '2 つの中身を持つタブの範囲、`<!-- section: {"open": false} -->` のセクション、`<!-- row-detail: {"at": 1} -->` の行の詳細、`<!-- table: {"kind": "data", "collapse": {"open": false}} -->` の表、`> [!NOTE]-` の注意書き、`<!-- tabs: {"collapse": {"open": false}} -->` のタブの範囲、`<!-- steps: {"collapse": {"open": false}} -->` のステップの範囲、ルートの下に 2 階層の入れ子のフォルダを持つ言語 `tree` のコードブロックを持つ文書'
+        description: '2 つの中身を持つタブの範囲、`<!-- section: {"open": false} -->` のセクション、`<!-- row-detail: {"at": 1} -->` の行の詳細、`<!-- table: {"kind": "data", "collapse": {"open": false}} -->` の表、`> [!NOTE]-` の注意書き、`<!-- tabs: {"collapse": {"open": false}} -->` のタブの範囲、`<!-- steps: {"collapse": {"open": false}} -->` のステップの範囲、`<!-- tree: {"depth": 1} -->` の後ろの、ルートの下に 2 階層の入れ子のフォルダを持つ言語 `tree` のコードブロックを持つ文書'
       - name: Mock
         description: 正常シナリオと同じ。印刷の終わりは、媒体を `screen` に戻して印刷の後のイベントを送信することで代える
     flow: |-
@@ -145,34 +145,8 @@ scenarios:
       - 1 行目が強調の背景で、追加した行と削除した行がそれぞれの色と行頭の `+`・`-` で出ている
       - 行の中のキーワード・文字列などが、画面と同じ色分けの色で出ている
       - 言語のラベル `ts` が出ていて、コピーボタンが出ていない
+      - タイトルとラベルの帯とコードの間に線が無く、帯とコードを囲む外側の枠線は残っている
     test: test_normal_when_code_block_printed
-  - name: 正常シナリオ（畳んだ最終列を開いて出す）
-    setup:
-      - name: 文書を描いたページ
-        description: バージョンを固定した URL で mdmark を読み込み、文書を描いた HTML
-        notes: 画面と描く先の要素の幅は 390px
-      - name: 最終列の長い表を持つ Markdown
-        description: 『表を操作する』の正常シナリオ（狭い幅で最終列を畳む）と同じ文書
-        notes: '-'
-      - name: Mock
-        description: 正常シナリオと同じ。印刷の終わりは、媒体を `screen` に戻して印刷の後のイベントを送信することで代える
-        notes: '-'
-    flow: |-
-      sequenceDiagram
-        actor U as 利用者
-        participant B as ブラウザ
-        participant M as mdmark
-        U->>B: 印刷を始める
-        B->>M: 印刷の前のイベント
-        B->>B: 印刷向けの CSS を適用する
-        B-->>U: 最終列を畳まない印刷の出力
-        B->>M: 印刷の後のイベント
-        B-->>U: 最終列を畳んだ画面の表示に戻る
-    expected:
-      - 印刷の前のイベントの後、説明の列の見出しと全ての行のセルが表の中に出ている
-      - 行の開閉のボタンが出ていない
-      - 印刷の後のイベントの後、説明の列が畳まれ、行に開閉のボタンがある
-    test: test_normal_when_collapsed_column_printed
   - name: 正常シナリオ（右側の目次とセクションのボタンを印刷に出さない）
     setup:
       - name: 文書を描いたページ

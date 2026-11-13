@@ -709,3 +709,142 @@ test("test_read_code_spec_when_line_start", async () => {
   expect([...spec.highlights]).toEqual([2, 4]);
   expect(spec.warnings).toEqual([]);
 });
+
+// tree_warning の false だけで罫線の記載の警告を止める（正常系）
+test("test_read_code_spec_when_tree_warning", async () => {
+  // 準備
+  const { readCodeSpec } = await loadCodeBlocks();
+  // 実行
+  const off = readCodeSpec({ options: { tree_warning: false }, lineCount: 3 });
+  const on = readCodeSpec({ options: { tree_warning: true }, lineCount: 3 });
+  const omitted = readCodeSpec({ options: {}, lineCount: 3 });
+  // 検証
+  expect(off.treeWarning).toBe(false);
+  expect(on.treeWarning).toBe(true);
+  expect(omitted.treeWarning).toBe(true);
+  expect([...off.warnings, ...on.warnings, ...omitted.warnings]).toEqual([]);
+});
+
+// 今の罫線と ASCII の罫線と縦線の後ろの罫線を数える（正常系）
+test("test_count_tree_lines", async () => {
+  // 準備
+  const { countTreeLines } = await loadCodeBlocks();
+  const source = [
+    "mdmark/",
+    "├── src/",
+    "│   └── index.ts",
+    "└── README.md",
+    "|-- a",
+    "`-- b",
+    "|   |-- c",
+    "│   └── b",
+  ].join("\n");
+  // 実行
+  const count = countTreeLines(source);
+  // 検証
+  expect(count).toBe(7);
+});
+
+// 行の途中の罫線と、罫線の後ろに空白の無い行は数えない（正常系）
+test("test_count_tree_lines_when_not_tree", async () => {
+  // 準備
+  const { countTreeLines } = await loadCodeBlocks();
+  const source = ["a ├── b", "├──b", "-- コメント", "const a = b || c;"].join(
+    "\n",
+  );
+  // 実行
+  const count = countTreeLines(source);
+  // 検証
+  expect(count).toBe(0);
+});
+
+/** 罫線のフォルダ構成の行（3 行が罫線） */
+const TREE_LINES = ["mdmark/", "├── src/", "│   └── index.ts", "└── README.md"];
+
+// 罫線の行が 2 行以上の言語が tree でないコードブロックの前に罫線の記載の警告を差し込む（異常系）
+test("test_build_code_blocks_when_tree_lines", () => {
+  // 準備
+  const markdown = [
+    "```text",
+    ...TREE_LINES,
+    "```",
+    "",
+    "```",
+    "src/",
+    "|-- index.ts",
+    "`-- parts/",
+    "```",
+    "",
+    "```text",
+    "dist/",
+    "└── index.js",
+    "```",
+    "",
+    '<!-- code: {"tree_warning": false} -->',
+    "",
+    "```text",
+    ...TREE_LINES,
+    "```",
+    "",
+    "```tree",
+    ...TREE_LINES,
+    "```",
+    "",
+    '<!-- code: {"tree_warning": "no"} -->',
+    "",
+    "```text",
+    ...TREE_LINES,
+    "```",
+    "",
+  ].join("\n");
+  // 実行
+  const { html } = renderDoc(markdown);
+  // 検証
+  const blocks = html.split(
+    /(?=<div class="mdmark-syntax-warning"|<(?:div|figure) class="mdmark-code"|<div class="mdmark-tree")/,
+  );
+  const kinds = blocks.map((part) =>
+    part.startsWith('<div class="mdmark-syntax-warning"')
+      ? part.includes("罫線のフォルダ構成があります")
+        ? "tree-warning"
+        : "warning"
+      : part.startsWith('<div class="mdmark-tree"')
+        ? "tree"
+        : part.startsWith("<")
+          ? "code"
+          : "other",
+  );
+  expect(kinds.filter((kind) => kind !== "other")).toEqual([
+    "tree-warning",
+    "code",
+    "tree-warning",
+    "code",
+    "code",
+    "code",
+    "tree",
+    "warning",
+    "tree-warning",
+    "code",
+  ]);
+  expect(html).toContain(
+    "言語 <code>text</code> のコードブロックに、罫線のフォルダ構成があります。",
+  );
+  expect(html).toContain(
+    "言語の無いコードブロックに、罫線のフォルダ構成があります。",
+  );
+  expect(html).toContain("tree_warning");
+  expect(matches(html, /<code class="language-text"/g)).toHaveLength(4);
+});
+
+// mermaid のコードブロックと code がオフの文書には罫線の記載の警告を出さない（正常系）
+test("test_build_code_blocks_when_tree_lines_in_mermaid", () => {
+  // 準備
+  const mermaid = ["```mermaid", ...TREE_LINES, "```", ""].join("\n");
+  const text = ["```text", ...TREE_LINES, "```", ""].join("\n");
+  // 実行
+  const withMermaid = renderDoc(mermaid).html;
+  const withoutCode = renderDoc(text, { code: false }).html;
+  // 検証
+  expect(withMermaid).not.toContain("mdmark-syntax-warning");
+  expect(withoutCode).not.toContain("mdmark-syntax-warning");
+});

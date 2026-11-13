@@ -1,0 +1,40 @@
+# 49e0bd2c のテストを、修正前の実装（5c383513^ の src/interact/table-resize.ts・table-width.ts・tables.ts）で実行した Red
+$ git show 5c383513^:src/interact/{table-resize,table-width,tables}.ts で 3 ファイルを戻す
+$ npx vitest run --project unit-browser tests/unit/src/interact/table-resize.browser.test.ts
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-document-table-width-tree-code-toc
+
+ ❯ |unit-browser (chromium)| tests/unit/src/interact/table-resize.browser.test.ts (6 tests | 1 failed) 205ms
+   × test_attach_column_resize_when_auto_width 145ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/interact/table-resize.browser.test.ts > test_attach_column_resize_when_auto_width
+AssertionError: expected '124.191px' to be '' // Object.is equality
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/table-resize.browser.test.ts/test_attach_column_resize_when_auto_width.png
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[31m+ 124.191px[39m
+
+ ❯ tests/unit/src/interact/table-resize.browser.test.ts:142:36
+    140|   drag(handles[0], 80);
+    141|   // 検証: ほかの列にインラインの幅が入らず、幅を入れるたびに onResize の前に onWidthWritten が呼ばれる
+    142|   expect(headCells[1].style.width).toBe("");
+       |                                    ^
+    143|   expect(headCells[2].style.width).toBe("");
+    144|   expect(calls[0]).toBe("written");
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=6a971394:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 5 passed (6)
+   Start at  19:55:29
+   Duration  5.06s (import 92%, tests 5%, worker 3%)
+
+exit=1

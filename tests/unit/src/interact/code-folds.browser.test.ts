@@ -172,6 +172,52 @@ test("test_attach_code_folds_when_hovered", async () => {
   expect(activeLines()).toEqual([]);
 });
 
+/** 要素の上の指定した位置へ `pointermove` を送る */
+const movePointer = (
+  target: Element,
+  clientX: number,
+  clientY: number,
+): void => {
+  target.dispatchEvent(
+    new PointerEvent("pointermove", { bubbles: true, clientX, clientY }),
+  );
+};
+
+// 開閉のボタンの列にポインターが乗っている間だけ、pre に data-fold-hover を付ける（正常系）
+test("test_attach_code_folds_when_fold_column_hovered", async () => {
+  // 準備
+  const { attachCodeFolds } = await loadCodeFolds();
+  const { root } = createRoot(NESTED_YAML);
+  const detach = attachCodeFolds(root);
+  const lines = codeLines(root);
+  const pre = root.querySelector("pre");
+  const firstToggle = foldToggle(lines[0]);
+  const fourth = lines[3];
+  if (!pre || !fourth) {
+    throw new Error("コードブロックか 4 行目が無い");
+  }
+  const toggleBox = firstToggle.getBoundingClientRect();
+  const lineBox = fourth.getBoundingClientRect();
+  const columnX = toggleBox.left + toggleBox.width / 2;
+  const lineY = lineBox.top + lineBox.height / 2;
+  const textX = lineBox.right - 4;
+  // 実行・検証: 4 行目の高さでボタンの列に乗せると付く
+  movePointer(fourth, columnX, lineY);
+  expect(pre.hasAttribute("data-fold-hover")).toBe(true);
+  // 実行・検証: 4 行目の文字の上へ動かすと外れる
+  movePointer(fourth, textX, lineY);
+  expect(pre.hasAttribute("data-fold-hover")).toBe(false);
+  // 実行・検証: もう一度列に乗せて付けた後、pointerleave で外れる
+  movePointer(fourth, columnX, lineY);
+  expect(pre.hasAttribute("data-fold-hover")).toBe(true);
+  pre.dispatchEvent(new PointerEvent("pointerleave"));
+  expect(pre.hasAttribute("data-fold-hover")).toBe(false);
+  // 実行・検証: 削除した後は列に乗せても付かない
+  detach();
+  movePointer(fourth, columnX, lineY);
+  expect(pre.hasAttribute("data-fold-hover")).toBe(false);
+});
+
 // 畳んだ行を開き、もう一度畳む（正常系）
 test("test_set_code_fold_open", async () => {
   // 準備

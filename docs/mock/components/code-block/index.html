@@ -33,6 +33,8 @@
   <!-- 配色の切り替え -->
   <!-- 折り返しの規則（#328 で共有するアセット）と、利用側の pre への汎用の CSS の見本 -->
   <link rel="stylesheet" href="../../refs/328/assets/wrap.css">
+  <!-- 帯と本文の間の線を削除する規則（#505 の追加分） -->
+  <link rel="stylesheet" href="../../refs/505/assets/code-block.css">
   <link rel="stylesheet" href="./style.css">
   <script src="../../refs/16/assets/sample.js" defer></script>
   <!-- モックの「印刷の見え方」の切り替え -->
@@ -672,6 +674,21 @@ build:
 }</code></pre>
         </article>
       </section>
+
+      <!-- #505 帯（言語のラベル・タイトル）に続く pre の上の枠線を削除し、帯の背景を本文と同じ色にする。言語のラベルは上端のタブ -->
+      <section aria-labelledby="state-505-a">
+        <h2 class="catalog-label" id="state-505-a">帯と本文の間の線を削除し、帯を本文と同じ色にした（言語のラベルは帯の上端に付けたタブ。外側の枠線と角丸は残す）</h2>
+        <article class="mdmark">
+<pre tabindex="0" aria-label="コード: bash"><code class="language-bash">npx mdmark check
+npx mdmark build --out dist/stock.html</code></pre>
+<figure class="mdmark-code">
+  <figcaption class="mdmark-code-title"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/></svg>app.ts</figcaption>
+  <pre tabindex="0" aria-label="コード: app.ts"><code class="language-ts"><span class="hljs-keyword">import</span> { mount } <span class="hljs-keyword">from</span> <span class="hljs-string">&quot;mdmark&quot;</span>;
+<span class="hljs-title function_">mount</span>(<span class="hljs-variable language_">document</span>.<span class="hljs-title function_">querySelector</span>(<span class="hljs-string">&quot;#doc&quot;</span>), markdown);</code></pre>
+</figure>
+        </article>
+      </section>
+
 
     </div>
   </main>

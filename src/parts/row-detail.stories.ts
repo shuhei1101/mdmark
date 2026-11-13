@@ -19,16 +19,3 @@ export const Open: Story = {
   parameters: { server: { id: "row-detail" } },
   args: { row: 1, columns: 3, label: "table", open: true },
 };
-
-export const OpenWithFoldedColumn: Story = {
-  name: "OpenWithFoldedColumn",
-  parameters: { server: { id: "row-detail" } },
-  args: {
-    row: "1",
-    columns: "3",
-    label: "table",
-    open: "true",
-    foldedColumn:
-      '{"name":"説明","html":"並べ替え・ピン止め・絞り込みを付けた表を描く"}',
-  },
-};
