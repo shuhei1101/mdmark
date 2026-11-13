@@ -248,20 +248,21 @@ test("test_attach_auto_column_widths_when_resized_container", async () => {
   expect(autoWidthOf(headCells[5])).toBeCloseTo(45 * 14, 0);
 });
 
-// 見えていない表は決めず、見えたときに決める（正常系）
+// 幅が 0 の表は決めず、見えたときに決める（正常系）
 test("test_attach_auto_column_widths_when_hidden", async () => {
   // 準備
   addStyles();
   const { attachAutoColumnWidths } = await loadTableWidth();
   const { root } = createRoot(CONTENT_TABLE);
   setRootWidth(root, 1280);
-  const details = document.createElement("details");
-  root.prepend(details);
+  const panel = document.createElement("div");
+  panel.hidden = true;
+  root.prepend(panel);
   const wrapperElement = root.querySelector<HTMLElement>(".mdmark-table");
   if (!wrapperElement) {
     throw new Error("表が無い");
   }
-  details.append(wrapperElement);
+  panel.append(wrapperElement);
   const { wrapper, table, scroller, headCells } = tableParts(root);
   // 実行
   const handle = attachAutoColumnWidths(table, {
@@ -273,8 +274,8 @@ test("test_attach_auto_column_widths_when_hidden", async () => {
   detachers.push(handle.detach);
   // 検証: 付けた直後は決めない
   expect(table.hasAttribute("data-auto-width")).toBe(false);
-  // 実行: 開く
-  details.open = true;
+  // 実行: 出す
+  panel.hidden = false;
   // 検証: 開いた後に決める
   await vi.waitFor(() => {
     expect(table.hasAttribute("data-auto-width")).toBe(true);

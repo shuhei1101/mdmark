@@ -2276,12 +2276,12 @@ test("test_attach_tables_when_scroll_wrapper", async () => {
     ),
   ).toBe(true);
   const table = narrow.querySelector("table");
-  expect(
-    Math.abs(
-      (table?.getBoundingClientRect().width ?? 0) -
-        narrowScroll.getBoundingClientRect().width,
-    ),
-  ).toBeLessThanOrEqual(1);
+  expect(table?.getBoundingClientRect().width ?? 0).toBeLessThan(
+    narrowScroll.getBoundingClientRect().width,
+  );
+  expect(narrowScroll.scrollWidth).toBeLessThanOrEqual(
+    narrowScroll.clientWidth,
+  );
   expect(
     [...many.querySelectorAll<HTMLElement>("button.mdmark-pin")].some(
       (pin) => !pin.hidden,

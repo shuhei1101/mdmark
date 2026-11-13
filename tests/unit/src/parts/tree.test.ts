@@ -117,6 +117,7 @@ test("test_render_tree_when_interactive", async () => {
   const basic = renderTree({
     nodes: BASIC_NODES,
     source: "mdmark/\n├── src/\n│   └── index.ts\n└── package.json",
+    open: "1",
     interactive: true,
   });
   const levels = renderTree({
