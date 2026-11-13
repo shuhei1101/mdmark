@@ -198,6 +198,58 @@ functions:
         condition: '`notes` が `{"2": "補足を渡す"}`、`terms` が `{"補足": "意味"}`'
         mock: なし
         expected: 2 つ目のメッセージ（`data-message="1"`）の `.map-wire-hit` だけが `data-tip-owner` を持ち、`tips` にその持ち主のツールチップがあり、説明の中の `補足` が `tabindex` を持たない `span.mdmark-term` で、末尾に「補足：意味」の行がある
+  - name: renderMapEr
+    title: mapのER図の列の行のHTML
+    kind: 関数
+    container: src/parts/map.ts
+    usecase: Mermaidと補足で図を描く
+    role: 処理
+    summary: 部品設計『mapのER図』のテーブルのノードの中身。列ごとにキー・名前・型・説明のボタンの行と、テーブル名の行の列の開閉のボタンを描く。行が増える旨のマーカーのボタンも返す
+    scope: public
+    args:
+      - name: table
+        type: '{ name: string; columns: ErColumn[]; notes: Record<string, string>; collapsed: boolean }'
+        required: true
+        description: テーブルと、列ごとの説明（補足の `{テーブル}.{列}` かコメント）と、列を閉じているか
+    returns:
+      type: '{ toggle: string; columns: string; tips: string }'
+      description: 開閉のボタン・列の行・説明のツールチップの HTML
+    unit_tests:
+      - name: test_render_map_er
+        case: 正常
+        summary: 列の行
+        condition: 部品の Default の「注文」
+        mock: なし
+        expected: '`div.map-er-column` が 8 つで、`状態` の行に説明のボタンがあり、開閉のボタンが `aria-expanded="true"`'
+      - name: test_render_map_er_when_collapsed
+        case: 正常
+        summary: 列を閉じた
+        condition: '`collapsed: true`'
+        mock: なし
+        expected: 列の行が無く、開閉のボタンの文字が `列 8`
+  - name: renderMapState
+    title: mapの状態遷移図の同じ状態への遷移のHTML
+    kind: 関数
+    container: src/parts/map.ts
+    usecase: Mermaidと補足で図を描く
+    role: 処理
+    summary: 部品設計『mapの状態遷移図』の同じ状態への遷移の線（状態の右の辺から出て上を回り、上の辺へ戻る `path`）と、押せる帯とラベル
+    scope: public
+    args:
+      - name: loop
+        type: '{ wire: string; x: number; y: number; width: number; label: string | undefined; active: boolean; dim: boolean }'
+        required: true
+        description: 遷移の ID と、状態のノードの位置と幅、ラベル、強調するか・薄くするか
+    returns:
+      type: string
+      description: SVG の `g` の HTML
+    unit_tests:
+      - name: test_render_map_state
+        case: 正常
+        summary: 同じ状態への遷移
+        condition: '`x: 100`・`y: 50`・`width: 120`・ラベル `保存する`'
+        mock: なし
+        expected: '`path` の始点が `(220, 64)`、終点が `(160, 50)` で、ラベル `保存する` と `aria-label` を持つ押せる帯がある'
   - name: renderMapBand
     title: 案内の帯のHTML
     kind: 関数

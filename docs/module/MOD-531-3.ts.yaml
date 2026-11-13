@@ -1,0 +1,64 @@
+id: MOD-531-3
+visibility: internal
+title: ライブラリ本体 / map / 描画と操作 / er-view.ts
+test_files:
+  - tests/unit/src/map/er-view.browser.test.ts
+functions:
+  - name: attachMapEr
+    title: ER図を付ける
+    kind: 関数
+    container: src/map/er-view.ts
+    usecase: Mermaidと補足で図を描く
+    role: 処理
+    summary: '`erDiagram` を読み取って構成図の入力にし、構成図と同じ配置・開閉・中へ入る・案内・強調を付けたうえで、列の行・関連の端の付け替え・多重度・経路の選択・行が増える関連のマーカーを足す'
+    scope: public
+    callees:
+      - MOD-531-1#functions[parseErDiagram]
+      - MOD-531-1#functions[erToFlowchart]
+      - MOD-531-1#functions[erColumnFor]
+      - MOD-531-1#functions[erFanouts]
+      - MOD-472-130#functions[attachMapFlow]
+      - MOD-472-133#functions[renderMapEr]
+    args:
+      - name: range
+        type: HTMLElement
+        required: true
+        description: '`div.mdmark-map`（`data-map-kind="erDiagram"`）'
+      - name: config
+        type: ResolvedConfig
+        required: true
+        description: 既定を当てた設定
+      - name: args
+        type: MapArgs
+        required: true
+        description: '`parseMapArgs` の結果'
+    returns:
+      type: MapFlowHandle
+      description: 構成図と同じ操作の口
+    process: |-
+      1. `parseErDiagram` と `erToFlowchart` で `Flowchart` を作り、テーブルの幅を 240px にした上書きを補足の `layout` の前に重ねて、`attachMapFlow` に `extension` と一緒に指定する
+      2. `extension.decorateNode` で、テーブルのノードに `renderMapEr` の列の行と列の開閉のボタンを描く（列を閉じた状態は `collapsed` に持つ）
+      3. `extension.afterRender` で、各関連の経路の両端を `erColumnFor` の列の行の縦の中ほどの左右の辺へ付け替え（次の点がある側の辺から 14px 出して元の経路へ戻す。`layout` の `r{番号}.ends` があればその辺）、線の `d` と押せる帯を書き換え、両端の多重度とラベルを描く
+      4. `extension.selectionOf` で、1 つ選べばその関連と相手、2 つ選べば `erFanouts` の経路を残し、`fanouts` のマーカー（最も長い内側の区間の中ほどの、ラベルの反対側）を描く
+      5. `extension.collapsedTag` で、閉じた分類に「テーブル {数} 件」を返す
+    unit_tests:
+      - name: test_attach_map_er
+        case: 正常
+        summary: 列の行と関連の端
+        condition: モックの `ER`・`ER_DATA` の範囲
+        mock: なし
+        expected: 「注文」のノードに列の行が 8 つあり、`r1` の線の「注文」の側の端の y が列 `顧客ID` の行の縦の中ほどで、両端に多重度の文字がある
+      - name: test_attach_map_er_when_path_selected
+        case: 正常
+        summary: 2 つのテーブルの経路
+        condition: 「顧客」と「明細」を押す
+        mock: なし
+        expected: '`button.map-er-fanout` が 3 つで、「支払い」が `map-dim` を持つ'
+      - name: test_attach_map_er_when_columns_collapsed
+        case: 正常
+        summary: 列を閉じる
+        condition: 「注文」の列の開閉のボタンを押す
+        mock: なし
+        expected: 「注文」に列の行が無く、ボタンの文字が `列 8` で `aria-expanded="false"`、`r1` の線の端がノードの辺の中ほど
+refs:
+  - IF-472-35#constraints[map の ER 図]
