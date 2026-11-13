@@ -1,0 +1,13 @@
+confirmations:
+  - topic: 留めた列の幅の合計が表の見える幅を超えたときの動き
+    decision: 収まらない右側の列を留めず、ボタンは押したまま、留まっていないことをボタンで示す。収まれば再び留める（推奨案 A。#438 の「何もしない」の決着を置き換える）
+    decided_by: thumbs_up
+    approver: shuhei1101
+    commit: fcf83bc8
+    thread: https://github.com/shuhei1101/mdmark/pull/533#discussion_r4565287068
+  - topic: '`table.pin: through` の表をこの PR に含めるか'
+    decision: この PR に含め、`through` の表も左から順に収まる列までを留める（推奨案 A）
+    decided_by: thumbs_up
+    approver: shuhei1101
+    commit: fcf83bc8
+    thread: https://github.com/shuhei1101/mdmark/pull/533#discussion_r4565288410
