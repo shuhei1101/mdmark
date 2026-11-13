@@ -530,6 +530,37 @@ functions:
     status: planned
     introduced:
       pr: 438
+  - name: fitPinnedColumns
+    title: 見えている幅に収まる留める列を選ぶ
+    container: src/table-logic.ts
+    kind: 関数
+    scope: internal
+    summary: 選んだ列を左から順に幅を足し、表の見えている幅に収まる列（`fitted`）と、見えている幅を超える列から右の列（`unpinned`）に分けて返却する
+    description: 幅は整数（`offsetWidth`）のまま足し合わせ、合計が見えている幅と等しい列までを収まる列にする。超えた列より右の列は、幅が小さくても収まる列に入れない
+    args:
+      - name: options
+        type: '{ widths: number[]; pinned: number[]; visibleWidth: number }'
+        required: true
+        description: 列ごとの幅（隠した列は 0）、選んだ列の位置、表を包む要素の `clientWidth`
+    returns:
+      type: '{ fitted: number[]; unpinned: number[] }'
+      description: 収まる列と収まらない列の位置（どちらも小さい順）
+    unit_tests:
+      - name: test_fit_pinned_columns
+        case: 正常
+        summary: 見えている幅を超える列から右を留めない
+        condition: '`widths` が `[125, 125, 111, 40, 40, 40, 40, 40, 143, 40]`、`pinned` が `[0, 2, 8]` で、`visibleWidth` が `303`・`379`・`200`'
+        mock: なし
+        expected: '`303` は `fitted` が `[0, 2]`・`unpinned` が `[8]`、`379` は `fitted` が `[0, 2, 8]`・`unpinned` が `[]`、`200` は `fitted` が `[0]`・`unpinned` が `[2, 8]`'
+      - name: test_fit_pinned_columns_when_later_column_narrow
+        case: 境界
+        summary: 超えた列より右の列は、幅が小さくても留めない
+        condition: '`widths` が `[100, 200, 10]`、`pinned` が `[0, 1, 2]`、`visibleWidth` が `250`'
+        mock: なし
+        expected: '`fitted` が `[0]`、`unpinned` が `[1, 2]`'
+    status: planned
+    introduced:
+      pr: 533
   - name: clampColumnWidth
     title: 列の幅を範囲に収める
     container: src/table-logic.ts
