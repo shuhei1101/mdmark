@@ -84,6 +84,12 @@ docs:
     status: done
     updated_by: planner
     updated_at: '2026-11-13T07:33:00.627593+00:00'
+  - page: docs/guide/コアコンセプト-文書を描く仕組み.md
+    new: false
+    change: '`mount` が付ける記法の操作の並びから「最終列を畳む処理」を削除する（狭い幅で最終列を畳む描き方を削除するため）'
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-13T07:36:33.633892+00:00'
 scope_out:
   - item: 表の留めた列の幅の合計が見える幅を超えるときに留めた列が重なる事象
     reason: '列の幅の決め方ではなく留めた列の配置の事象で、計画で #458 の後ろへ回している'
