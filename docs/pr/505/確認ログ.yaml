@@ -5,3 +5,9 @@ confirmations:
     approver: shuhei1101
     commit:
     thread: https://github.com/shuhei1101/mdmark/pull/505#discussion_r4554582525
+  - topic: '#458 の自動の列の幅と、既存の「狭い幅で最終列を畳む」のどちらを優先するか'
+    decision: 自動の列の幅を持つ表では最終列を畳まず、最小の幅で横にスクロールする（推奨案 A）
+    decided_by: thumbs_up
+    approver: shuhei1101
+    commit:
+    thread: https://github.com/shuhei1101/mdmark/pull/505#discussion_r4555812978

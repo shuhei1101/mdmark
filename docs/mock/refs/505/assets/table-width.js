@@ -4,13 +4,13 @@
 //
 // 1. 長文の列（改行で分けた 1 行が LONG_CHARS 文字以上のセルを持つ列）だけを折り返し、ほかの列は折り返さず最も長い行の幅にする
 // 2. 長文の列は、最も長い行の幅まで（表を本文の幅いっぱいまで）広げる。折り返さずに収まるなら、その幅で止める
-// 3. 長文の列は LONG_MIN_EM より狭くしない。全ての列の最小の幅の合計が見える幅を超えたら、最小の幅で描いて表を横にスクロールする
+// 3. 長文の列は LONG_MIN_EM より狭くしない。ほかの列の最小の幅と最大の幅は、最も長い行の幅。全ての列の最小の幅の合計が見える幅を超えたら、最小の幅で描いて表を横にスクロールする
 
 {
   /** 長文の列とみなす、1 行の文字数 */
   const LONG_CHARS = 20;
   /** 長文の列の最小の幅（em。列の中の最も長い半角の単語の幅の方が広ければそちら） */
-  const LONG_MIN_EM = 20;
+  const LONG_MIN_EM = 30;
 
   /** セルの中で、行の文字を折り返さずに置いたときの表示の幅（px） */
   const textWidth = (text, cell) => {
@@ -75,7 +75,7 @@
       const max = th.dataset.mockWidthMax ? Number(th.dataset.mockWidthMax) * em : Number.POSITIVE_INFINITY;
       // 望む幅: 折り返さずに収まる幅（最も長い行の幅）を、最小の幅と最大の幅の間に収める
       const wanted = nowrap ? longest : Math.max(min, Math.min(longest, max));
-      return { th, cells, min, wanted, nowrap };
+      return { th, cells, min, wanted, nowrap, long: !nowrap, ranged: Boolean(ranged) };
     });
     // 列ごとに切り上げる分（1 列 1px まで）を、配れる幅から引いておく
     available -= columns.length;
@@ -130,6 +130,18 @@
       }
     }
     table.style.width = `${columns.reduce((sum, column) => sum + Math.ceil(column.width), 0)}px`;
+    // モックだけの内訳: 列ごとに長文の列か・最小の幅・決めた幅を、表の下に出す
+    const holder = table.closest(".mdmark-table");
+    let note = holder.nextElementSibling?.matches(".mock-505-note") ? holder.nextElementSibling : null;
+    if (!note) {
+      note = document.createElement("p");
+      note.className = "mock-505-note";
+      holder.after(note);
+    }
+    const scroll2 = minimum > available ? "最小の幅の合計が見える幅を超えるので、横にスクロール" : "横にスクロールしない";
+    note.textContent = `列の幅（モックだけの内訳）: ${columns
+      .map((column) => `${column.th.textContent.trim()} = ${column.nowrap ? "短い列（折り返さない）" : column.ranged ? "幅の範囲を記載した列" : "長文の列"} ${Math.ceil(column.width)}px（最小 ${Math.ceil(column.min)}px）`)
+      .join("、")}。${scroll2}`;
   };
 
   const start = () => {

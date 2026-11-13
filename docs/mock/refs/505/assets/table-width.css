@@ -37,3 +37,10 @@
   text-wrap: nowrap;
   white-space: nowrap;
 }
+
+/* モックだけの内訳: 表の下に、列ごとの判定と幅を小さく出す */
+[data-mock-table505] .mock-505-note {
+  margin-block: 0.25rem 0;
+  color: var(--mdmark-color-muted);
+  font-size: 0.75rem;
+}

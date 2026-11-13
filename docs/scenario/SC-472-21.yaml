@@ -114,7 +114,7 @@ scenarios:
       - 表の後に詳細の段落が表示されている
       - 表の行に開閉のボタンが無い
     test: test_error_when_row_out_of_range
-  - name: 正常シナリオ（畳んだ最終列と行の詳細）
+  - name: 正常シナリオ（狭い幅の行の詳細）
     setup:
       - name: mdmark を読み込むページ
         description: 正常シナリオと同じ
@@ -131,14 +131,14 @@ scenarios:
         participant P as 利用側のページ
         participant M as mdmark
         P->>M: 設定と Markdown を指定して描かせる
-        M-->>P: 最終列を畳み、各行に開閉を 1 つずつ付けた表を描く
+        M-->>P: 最終列を畳まず、行の詳細を持つ 2 行目にだけ開閉を付けた表を描く
         U->>P: 2 行目の開閉を押す
-        P-->>U: 2 行目の下に最終列の中身と行の詳細を表示
+        P-->>U: 2 行目の下に行の詳細を表示
     expected:
-      - 描いた直後、各行の開閉のボタンは 1 つずつで、2 行目にも 1 つだけ
-      - 2 行目の開閉を押した後、2 行目の直後に、見出し `説明` と 2 行目の説明の中身、その下に行の詳細の段落が表示され、ボタンの `aria-expanded` が `true`
-      - もう一度押すと、最終列の中身と行の詳細が一緒に閉じる
-    test: test_normal_when_row_detail_with_collapsed_column
+      - 描いた直後、説明の列が表に出ていて、開閉のボタンは 2 行目に 1 つだけ
+      - 2 行目の開閉を押した後、2 行目の直後に行の詳細の段落が表示され、ボタンの `aria-expanded` が `true`
+      - もう一度押すと、行の詳細が閉じる
+    test: test_normal_when_row_detail_in_narrow_width
   - name: 正常シナリオ（H1 のセクション）
     setup:
       - name: mdmark を読み込むページ
