@@ -1,6 +1,8 @@
 id: MOD-472-218
 visibility: internal
 title: ライブラリ本体 / 操作 / table-logic.ts
+test_files:
+  - tests/unit/src/interact/tables.browser.test.ts
 data_models:
   - name: FilterValue
     title: 適用した絞り込み
