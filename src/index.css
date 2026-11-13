@@ -10770,15 +10770,14 @@
 
   /* map の状態遷移図: 開始（黒丸）・終了（二重丸）・分岐（ひし形）。名前と種類の行は出さない */
   .mdmark-diagram[data-diagram="map"]
-    .mdmark-diagram-node:is([data-shape="start"], [data-shape="end"]) {
+  .mdmark-diagram-node:is([data-shape="start"], [data-shape="end"]) {
     min-height: 32px;
     padding: 0;
     border-radius: 50%;
     background: var(--mdmark-color-text);
     border-color: var(--mdmark-color-text);
   }
-  .mdmark-diagram[data-diagram="map"]
-    .mdmark-diagram-node[data-shape="end"] {
+  .mdmark-diagram[data-diagram="map"] .mdmark-diagram-node[data-shape="end"] {
     border: 6px double var(--mdmark-color-text);
     background: var(--mdmark-color-bg);
   }
