@@ -87,7 +87,7 @@ use_cases:
   - kind: single
     scenario: docs/scenario/SC-472-60.yaml
     impact: changed
-    detail: HTML の中の `<mdmark-flow>` のノードの用語の取り出しを、廃止に合わせて見直す
+    detail: HTML の中の `<mdmark-flow>` と `flow` の図の `{{単語}}` の取り出しを削除し、map の範囲のノードの名前の用語を辞書の照合で参照にする流れにする
     depends_on:
       - docs/scenario/SC-472-43.yaml
   - kind: single
