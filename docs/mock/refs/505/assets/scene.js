@@ -98,12 +98,6 @@ document.body.classList.add(scheme === "dark" ? "mdmark-theme-dark" : "mdmark-th
 mount(doc, { markdown });
 
 
-// 開閉のボタン: その行の文字の始まり（行頭の空白の数）の 1 つ左に配置するため、空白の数を行に持たせる
-for (const button of doc.querySelectorAll(".mdmark-code-line > .mdmark-code-fold")) {
-  const line = button.parentElement;
-  const text = [...line.childNodes].filter((node) => node !== button).map((node) => node.textContent).join("");
-  line.style.setProperty("--mock-505-lead", `${text.length - text.trimStart().length}ch`);
-}
 
 // 撮影で場面を指すための印（モックだけ）: 表を出てくる順に 1 から数える
 for (const [index, table] of [...doc.querySelectorAll(".mdmark-table")].entries()) {

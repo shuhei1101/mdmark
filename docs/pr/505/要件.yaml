@@ -12,7 +12,7 @@ use_cases:
   - kind: single
     scenario: docs/scenario/SC-472-17.yaml
     impact: changed
-    detail: '#460: コードブロックの帯を本文と同じ色にして間の線を出さず、言語のラベルを帯の上端のタブにする（タイトルを持つコードブロック・ダークの配色・印刷でも同じ）。開閉のボタンを、その行のコードの文字の始まりの 1 つ左に配置する'
+    detail: '#460: コードブロックの帯を本文と同じ色にして間の線を出さず、言語のラベルを帯の上端のタブにする（タイトルを持つコードブロック・ダークの配色・印刷でも同じ）'
     depends_on: []
   - kind: single
     scenario: docs/scenario/SC-472-68.yaml

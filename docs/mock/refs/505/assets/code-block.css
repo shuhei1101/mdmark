@@ -42,10 +42,3 @@
   }
 }
 
-/* 開閉のボタン: 行番号の右の列でなく、その行のコードの文字の始まりの 1 つ左に配置する。
-   --mock-505-lead は行頭の空白の幅（モックは scene.js が行に持たせる） */
-@layer mdmark {
-  .mdmark pre.mdmark-code-lines .mdmark-code-line > .mdmark-code-fold {
-    inset-inline-start: calc(var(--mdmark-code-text-start) + var(--mock-505-lead, 0ch) - 1.35em - 0.25ch);
-  }
-}
