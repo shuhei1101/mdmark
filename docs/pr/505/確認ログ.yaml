@@ -11,3 +11,8 @@ confirmations:
     approver: shuhei1101
     commit:
     thread: https://github.com/shuhei1101/mdmark/pull/505#discussion_r4555812978
+  - topic: 長文の列の最小の幅を最も長い行の幅までにするか、30em より狭くしないか。案のほかはモックのとおりに進めてよいか
+    decision: 最も長い行の幅を上限にする（推奨案 A）。最小の幅の既定は 1.5 倍の 45em にして設定ファイルで変えられるようにし、filter.type を記載しない列は長文の列なら text・長文でない列なら select で絞り込む。ほかはモックのとおりに進める（モックの確認は不要）
+    decided_by: thumbs_up
+    approver: shuhei1101
+    thread: https://github.com/shuhei1101/mdmark/pull/505#discussion_r4559073181

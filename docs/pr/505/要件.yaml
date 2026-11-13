@@ -12,7 +12,7 @@ use_cases:
   - kind: single
     scenario: docs/scenario/SC-472-17.yaml
     impact: changed
-    detail: '#460: コードブロックの帯を本文と同じ色にして間の線を出さず、言語のラベルを帯の上端のタブにする（タイトルを持つコードブロック・ダークの配色・印刷でも同じ）'
+    detail: '#460: コードブロックの帯を本文と同じ色にして間の線を出さず、言語のラベルを帯の上端のタブにする（タイトルを持つコードブロック・ダークの配色・印刷でも同じ）。ポインターが開閉のボタンの列に乗ったときは、その列の開閉のボタンを全て表示する'
     depends_on: []
   - kind: single
     scenario: docs/scenario/SC-472-68.yaml
