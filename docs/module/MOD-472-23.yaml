@@ -25,4 +25,5 @@ directory: |-
   └── build.ts      # mdmark build
   templates/        # init が配置する雛形の原本
   schemas/alias-inject/v0.3.0/aliases.schema.json # 取り込んだ alias-inject の行の Schema
+  src/bundle-module.ts # URL かファイルのモジュールを、指定した esbuild の build で 1 つの ES モジュールにまとめる（CLI と VS Code 拡張機能が使用する）
   ```
