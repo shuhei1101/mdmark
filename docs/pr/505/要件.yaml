@@ -1,0 +1,117 @@
+use_cases:
+  - kind: single
+    scenario: docs/scenario/SC-472-73.yaml
+    impact: changed
+    detail: '#458: 列の幅の指定が無い表で、列ごとにセルの文字の量と改行から、折り返すか・列の幅・折り返す列の最小と最大の幅を決めて描く。余白が多いときに表を最大の幅にしない・見える幅が狭いときに折り返すか横スクロールにするかの判定も加える'
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-20.yaml
+    impact: changed
+    detail: '#459: 開く階層を記載しないファイルツリーを、全てのフォルダを開いた状態で描く'
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-17.yaml
+    impact: changed
+    detail: '#460: コードブロックの帯を本文と同じ色にして間の線を出さず、言語のラベルを帯の上端のタブにする（タイトルを持つコードブロック・ダークの配色・印刷でも同じ）。ポインターが開閉のボタンの列に乗ったときは、その列の開閉のボタンを全て表示する'
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-68.yaml
+    impact: changed
+    detail: '#501: 右側の目次の項目を押したとき、見出しを囲む閉じたセクションに加えて、押した見出し自身の閉じたセクションも開く'
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-21.yaml
+    impact: changed
+    detail: '#501: URL の #ID が閉じたセクションの見出しを指すとき、見出しを囲むセクションに加えて見出し自身のセクションも開く'
+    depends_on:
+      - docs/scenario/SC-472-68.yaml
+  - kind: single
+    scenario: docs/scenario/SC-472-58.yaml
+    impact: changed
+    detail: '#460: 印刷でもコードブロックの帯と本文の間の線を出さない。全て開いたファイルツリー・自動で決めた幅の表が崩れないかも確認する'
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-31.yaml
+    impact: run_only
+    detail: VS Code のプレビューで右側の目次の項目を押したとき、押した見出し自身の閉じたセクションも開くかを確かめる
+    depends_on: []
+docs:
+  - page: docs/guide/記法.md
+    new: false
+    change: 表の `columns.{列名}.width`（`mode`・`min`・`max`）と指定が無いときの自動の列の幅、ファイルツリーの `depth` を省いたときの既定（全て開く。読み込めない値のときの描き方を含む）、目次の項目を押したときに開くセクションを修正する。狭い幅で最終列を畳む描き方の説明を削除し、最小の幅で横にスクロールする説明に置き換える
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-13T07:33:00.627593+00:00'
+  - page: docs/guide/記載する-表に機能を付ける.md
+    new: false
+    change: 列の幅を自動で決めること、「表は本文の幅いっぱいに広がる」の記述（列の幅の合計が収まる表は列の幅の合計で描く）、`width.min`・`width.max` の記載、列の幅のつまみで狭められる下限（今の 6em）と描いた直後の幅に戻すときの幅を修正する。「狭い幅で最終列を畳む」と「見出し行が留まり、最終列が畳まれる」の説明を削除し、最小の幅で横にスクロールする説明に置き換える。`filter.type` を省いた絞り込みの種類（長文の列は `text`、ほかは `select`）と、長文の列の最小の幅を設定 `table.long_column_min` で変えられることを記載する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-13T07:33:00.627593+00:00'
+  - page: docs/guide/記載する-本文を部品で組む.md
+    new: false
+    change: ファイルツリーの既定を全て開く描き方に、目次の項目を押したときに開くセクションを押した見出し自身までに修正する。コードブロックの開閉のボタンの列にポインターを乗せると全ての開閉のボタンが出ることを記載する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-13T07:33:00.627593+00:00'
+  - page: docs/guide/API.md
+    new: false
+    change: 修正しない。利用側に公開する列の幅の CSS 変数は変えない（自動の列の幅の `--mdmark-auto-width`・`--mdmark-auto-table-width` は `mount` が入れる内部の変数で、テーマの CSS 変数の一覧に載せない。モジュール構成『index.css』）
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-13T07:33:00.627593+00:00'
+  - page: docs/er/ER-477-2.yaml
+    new: false
+    change: '`columns.{列名}.width.min`・`width.max` の単位と、省いたときの自動の計算の説明を、部品設計『表』の判定フローチャートと合わせる'
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-13T07:33:00.627593+00:00'
+  - page: docs/er/ER-477-5.yaml
+    new: false
+    change: '`depth` の説明の「#459 に合わせる」の注記を、既定が全て開くことの記述に修正する'
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-13T07:33:00.627593+00:00'
+  - page: docs/guide/カスタマイズ-印刷する.md
+    new: false
+    change: 印刷の前に開くものの表の「畳んだ最終列」の行と、「畳んでいた最終列は表の中に出ている」の確認の記述を削除する（狭い幅で最終列を畳む描き方を削除するため）
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-13T07:33:00.627593+00:00'
+  - page: docs/guide/設定.md
+    new: false
+    change: 表の長文の列の最小の幅のキー `table.long_column_min`（em の数・既定 45）を、キーの一覧と節と見本に追加する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-13T07:33:00.627593+00:00'
+  - page: docs/guide/コアコンセプト-文書を描く仕組み.md
+    new: false
+    change: '`mount` が付ける記法の操作の並びから「最終列を畳む処理」を削除する（狭い幅で最終列を畳む描き方を削除するため）'
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-13T07:36:33.633892+00:00'
+scope_out:
+  - item: 表の留めた列の幅の合計が見える幅を超えるときに留めた列が重なる事象
+    reason: '列の幅の決め方ではなく留めた列の配置の事象で、計画で #458 の後ろへ回している'
+    plan: '#453'
+  - item: ファイルツリーの手で開閉した状態を、編集で描き直した後も保つこと
+    reason: 既定の開き方ではなく描き直しをまたいだ開閉の引き継ぎで、別の Issue が扱う
+    plan: '#498'
+  - item: E2E のテスト（tests/e2e）の既定の値・期待値の修正
+    reason: '開発の間は E2E を作らず修正もしない決定（#450 の D-307 A）で、今ある E2E は #450 が削除する'
+    plan: '#450'
+  - item: ファイルツリーの既定の開き方を設定ファイルで変えるキー
+    reason: '#459 の受付判断で設定のキーは追加しないと決めた。閉じて始める文書はマーカーの `depth` を記載すれば足りる'
+    plan: none
+  - item: 画面設計『文書』の表の「続きがある側の端に影を出す」と、表の CSS（横スクロールの端の影を出さない）の食い違い
+    reason: 画面設計 SCR-472-4 の要素「表」は横スクロールする表の端に影を出すと記載しているが、src/index.css の表は影を出さない（develop から続く食い違い）。今回の要望は列の幅の決め方で、表の端の影は含まない
+    plan: '#529'
+  - item: '結合テスト test_normal_when_column_resized_by_touch のタッチの代役が、後のテストまで (hover: none)・(pointer: coarse) を残す事象'
+    reason: 'tests/integration/lib/mount.browser.test.ts の test_normal_when_column_resized_by_touch は finally で Emulation.setTouchEmulationEnabled を false に戻すが、同じページの後のテストで (hover: hover) が一致しないまま残り、ポインターを乗せる確認をそのテストより後に置けない（develop から続く事象）。今回の要望は列の幅とコードブロックの表示で、テストの代役の後始末は含まない'
+    plan: '#530'
+  - item: VS Code 拡張機能の結合テスト test_normal_when_tags_unreachable が develop でも時間切れで fail する事象
+    reason: vscode/tests/integration/preview-open.test.ts のタグ一覧の要求が待ちの上限より早く打ち切られる（develop の a16591d6 でも同じエラー）。今回の要望は表とコードブロックと目次の表示で、拡張機能のタグ一覧の待ちは含まない
+    plan: '#504'
+  - item: VS Code 拡張機能の結合テスト test_normal_when_library_origin_added が develop でも fail する事象
+    reason: vscode/tests/integration/preview-rerender.test.ts のテストの文書が今の書き方でないマーカーを使い、「別の配信元がモジュールの要求を受けない」で fail する（develop の a16591d6 でも同じ）。今回の要望には含まない
+    plan: '#496'

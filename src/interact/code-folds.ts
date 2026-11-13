@@ -186,12 +186,32 @@ function attachCodeBlock(code: HTMLElement): () => void {
   const onPointerOut = (): void => {
     markGuide(undefined);
   };
+  /** ポインターの横の位置が開閉のボタンの列（最初の開閉のボタンの左端から右端まで）にあれば `pre` に `data-fold-hover` を付ける */
+  const onPointerMove = (event: PointerEvent): void => {
+    const first = toggles.values().next().value;
+    if (!pre || !first) {
+      return;
+    }
+    const box = first.getBoundingClientRect();
+    pre.toggleAttribute(
+      "data-fold-hover",
+      box.left <= event.clientX && event.clientX <= box.right,
+    );
+  };
+  const onPointerLeave = (): void => {
+    pre?.removeAttribute("data-fold-hover");
+  };
   code.addEventListener("click", onClick);
   code.addEventListener("keydown", onKeyDown);
   code.addEventListener("keyup", onKeyUp);
   code.addEventListener("pointerover", onPointerOver);
   code.addEventListener("pointerout", onPointerOut);
+  pre?.addEventListener("pointermove", onPointerMove);
+  pre?.addEventListener("pointerleave", onPointerLeave);
   return () => {
+    pre?.removeEventListener("pointermove", onPointerMove);
+    pre?.removeEventListener("pointerleave", onPointerLeave);
+    pre?.removeAttribute("data-fold-hover");
     code.removeEventListener("click", onClick);
     code.removeEventListener("keydown", onKeyDown);
     code.removeEventListener("keyup", onKeyUp);

@@ -1,0 +1,46 @@
+/* #505 の表の追加分: 列ごとに中身から折り返すかと列の幅を決める（自動の列の幅）。
+   refs/308・449 の table.css の後に読む。[data-mock-table505] の場面だけに当てる */
+
+@layer mdmark {
+  [data-mock-table505] .mdmark {
+    /* 包んだ表: 本文の幅まで広げず、table-width.js が決めた列の幅の合計で描く。収まらないときは包む要素の中で横にスクロールする */
+    .mdmark-table-scroll > table {
+      width: auto;
+      table-layout: fixed;
+    }
+
+    /* セル: 列の幅は table-width.js が決めるので、既定の列の最小幅（6em）を当てない */
+    .mdmark-table-scroll :is(th, td) {
+      min-width: 0;
+    }
+  }
+
+  .mock-505-width-390 {
+    max-width: 390px;
+  }
+
+  /* 見える幅を変える見本: 右下の角をドラッグして描く先の幅を変えられる */
+  .mock-505-resizable {
+    box-sizing: border-box;
+    width: 100%;
+    max-width: 100%;
+    min-width: min(280px, 100%);
+    padding-inline-end: 0.5rem;
+    border-inline-end: 2px dashed var(--mdmark-color-border);
+    overflow: hidden;
+    resize: horizontal;
+  }
+}
+
+/* 折り返さない列のセル: 表の規則の折り返しより優先するため、層の外に置く */
+[data-mock-table505] .mdmark .is-mock-nowrap {
+  text-wrap: nowrap;
+  white-space: nowrap;
+}
+
+/* モックだけの内訳: 表の下に、列ごとの判定と幅を小さく出す */
+[data-mock-table505] .mock-505-note {
+  margin-block: 0.25rem 0;
+  color: var(--mdmark-color-muted);
+  font-size: 0.75rem;
+}

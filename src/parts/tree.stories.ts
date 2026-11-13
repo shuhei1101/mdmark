@@ -53,6 +53,18 @@ export const OpenLevels: Story = {
   },
 };
 
+export const OpenRoot: Story = {
+  name: "OpenRoot",
+  parameters: { server: { id: "tree" } },
+  args: {
+    nodes:
+      '[{"name":"app/","children":[{"name":"src/","children":[{"name":"parts/","children":[{"name":"tree.ts"}]}]}]}]',
+    source: "app/\n└── src/\n    └── parts/\n        └── tree.ts",
+    open: 1,
+    interactive: true,
+  },
+};
+
 export const Notes: Story = {
   name: "Notes",
   parameters: { server: { id: "tree" } },

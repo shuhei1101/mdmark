@@ -12,7 +12,7 @@ directory: |-
   ├── embed.ts                     # 読み込み中のブロックの renderEmbed
   ├── embed.stories.yaml           # 読み込み中のブロックのストーリー（Loading）
   ├── syntax-warning.ts            # 記載の警告の renderSyntaxWarning
-  ├── table.ts                     # 表の renderTable・renderTableTools・renderTableBar・renderTableSettings・renderTreeKeyCell・renderTypeCell・renderTreeTools・renderTotalRows・renderCopyPanel・renderFoldedColumn・renderCheckCell
+  ├── table.ts                     # 表の renderTable・renderTableTools・renderTableBar・renderTableSettings・renderTreeKeyCell・renderTypeCell・renderTreeTools・renderTotalRows・renderCopyPanel・renderCheckCell
   ├── callout.ts                   # 注意書きの renderCallout
   ├── tabs.ts                      # タブの renderTabs
   ├── steps.ts                     # ステップの renderSteps

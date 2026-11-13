@@ -12,9 +12,9 @@ functions:
     summary: 機能がオンの記法だけ `attachSections`・`attachTables`・`attachTabs` の順に呼び（付けたときも `hashchange` も、`attachTables` が行へ送信する前に `attachSections` が URL の `#ID` の指す閉じたセクションを開くため）、`table` がオンなら `attachTables` の後に `attachStickyRows` を、`code` がオンなら `attachCodeCopy` と `attachCodeFolds` を、`tree` がオンなら `attachFileTrees` を呼び、`footnotes` がオンなら `attachFootnotes` を呼び、`glossary` か `backlinks` がオンなら `attachTermTips` を呼ぶ。`html` がオンなら `attachEmbeddedHtml` を、さらに `hints` がオンなら `div.mdmark-html` ごとに `attachDiagramTips` を呼ぶ。`attachTermTips`・`attachFootnotes` には `placement` を、`attachDiagrams` と `div.mdmark-html` の `attachDiagramTips` には `diagramPlacement` を指定する。まとめて削除する関数を返却する。`lightbox` がオンなら `attachLightbox` を、`gif` がオンなら `attachLightbox` の後に `attachGifs` を呼ぶ（GIF の包みが拡大のボタンを含むため）
     args:
       - name: options
-        type: '{ root: HTMLElement; features: Record<string, boolean>; placement: TooltipPlacement; diagramPlacement: TooltipPlacement; pinMode?: TablePinMode; onColumnsChange?: (event: MdmarkColumnsChange) => void; sectionStates?: SectionStates; revealHash?: boolean }'
+        type: '{ root: HTMLElement; features: Record<string, boolean>; placement: TooltipPlacement; diagramPlacement: TooltipPlacement; pinMode?: TablePinMode; longColumnMin?: number; onColumnsChange?: (event: MdmarkColumnsChange) => void; sectionStates?: SectionStates; revealHash?: boolean }'
         required: true
-        description: 描いた要素と文書で決まった機能のオン・オフと、既定を適用した設定のツールチップを出す場所（本文の `placement` と図の `diagramPlacement`）と、`attachTables` に指定する表のピン止めの動き（既定を適用した設定の `table.pin`。既定 `each`）と列の表示の通知（`mount` の `opts.onColumnsChange`。`MdmarkColumnsChange` は `src/mount.ts` から型だけを読み込む）と、`attachSections` に `states` として指定するセクションの開閉の記録（`SectionStates` は `src/interact/sections.ts` から型だけを読み込む）と、付けたときに URL の `#ID` で開くか（`revealHash`。既定 `true`）
+        description: 描いた要素と文書で決まった機能のオン・オフと、既定を適用した設定のツールチップを出す場所（本文の `placement` と図の `diagramPlacement`）と、`attachTables` に指定する表のピン止めの動き（既定を適用した設定の `table.pin`。既定 `each`）と長文の列の最小の幅（既定を適用した設定の `table.longColumnMin`）と列の表示の通知（`mount` の `opts.onColumnsChange`。`MdmarkColumnsChange` は `src/mount.ts` から型だけを読み込む）と、`attachSections` に `states` として指定するセクションの開閉の記録（`SectionStates` は `src/interact/sections.ts` から型だけを読み込む）と、付けたときに URL の `#ID` で開くか（`revealHash`。既定 `true`）
     returns:
       type: () => void
       description: 付けた操作を削除する関数

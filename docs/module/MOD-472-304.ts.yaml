@@ -42,8 +42,8 @@ data_models:
         type: '{ url?: string; theme?: string; themeVariables?: Record<string, unknown> } | undefined'
         description: mermaid の設定。`url` は mermaid の ES モジュールの URL、`theme` はテーマの名前（知らない値も受けて `resolveConfig` が `mdmark` にするため、型は `string`）、`themeVariables` はテーマの変数の上書き
       - name: table
-        type: '{ pin?: string } | undefined'
-        description: 表の設定。`pin` はピン止めの動き（`each` / `through`）。知らない値も受けて `resolveConfig` が `each` にするため、型は `string`
+        type: '{ pin?: string; long_column_min?: unknown } | undefined'
+        description: 表の設定。`pin` はピン止めの動き（`each` / `through`）。知らない値も受けて `resolveConfig` が `each` にするため、型は `string`。`long_column_min` は長文の列の最小の幅（em）。読み込めない値も受けて `resolveConfig` が既定にするため、型は `unknown`
       - name: map
         type: '{ node_fit?: "height" | "width"; url_state?: boolean; kinds?: Record<string, MapKind>; lines?: Record<string, MapLine> }'
         description: map の図のノードの広げ方・クエリ文字列に保つか・ノードの種類・線の種類（インターフェース定義『文書を描く』の `opts.config.map.*`）
@@ -99,8 +99,8 @@ data_models:
         type: '{ node_fit: "height" | "width"; url_state: boolean; kinds: Record<string, MapKind>; lines: Record<string, MapLine> }'
         description: '`resolveMapConfig` で既定を当てた設定の `map`'
       - name: table
-        type: '{ pin: TablePinMode }'
-        description: 設定の `table.pin` が `through` のときだけ `through`、それ以外は `each`
+        type: '{ pin: TablePinMode; longColumnMin: number }'
+        description: '`pin` は設定の `table.pin` が `through` のときだけ `through`、それ以外は `each`。`longColumnMin` は設定の `table.long_column_min` が 0 より大きい有限の数ならその値、それ以外は `DEFAULT_LONG_COLUMN_MIN_EM`'
   - name: MermaidTheme
     title: mermaid のテーマ
     container: src/config.ts
@@ -392,6 +392,12 @@ functions:
         condition: '`{ table: { pin: "through" } }`、`{ table: { pin: "left" } }`、`{ table: { pin: 1 } }`、`{}`'
         mock: なし
         expected: 1 つ目の `table.pin` が `through`、残りは `each`
+      - name: test_resolve_config_when_long_column_min_given
+        case: 正常
+        summary: 0 より大きい数だけを長文の列の最小の幅にし、ほかは既定の 45 にする
+        condition: '`{ table: { long_column_min: 30 } }`、`{ table: { long_column_min: 0 } }`、`{ table: { long_column_min: "wide" } }`、`{ table: { long_column_min: -5 } }`、`{}`'
+        mock: なし
+        expected: '`table.longColumnMin` が順に `30`・`45`・`45`・`45`・`45`'
   - name: applyPageSettings
     title: ページの設定を重ねる
     container: src/config.ts

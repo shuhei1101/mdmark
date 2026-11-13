@@ -210,6 +210,18 @@ export const Foldable: Story = {
   },
 };
 
+export const FoldColumnHovered: Story = {
+  name: "FoldColumnHovered",
+  parameters: { server: { id: "code-block" } },
+  args: {
+    language: "ts",
+    lineNumbers: true,
+    lines:
+      '[{"text":"export function mount(element, markdown, options = {}) {","foldLines":10},{"text":"  const config = withDefaults(options);","indent":1},{"text":"  for (const block of parse(markdown)) {","indent":1,"foldLines":4},{"text":"    if (block.kind === \\"table\\") {","indent":2,"foldLines":1},{"text":"      attachTable(block, config.features);","indent":3},{"text":"    }","indent":2},{"text":"    element.append(render(block));","indent":2},{"text":"  }","indent":1},{"text":"  return () => {","indent":1,"foldLines":1},{"text":"    element.replaceChildren();","indent":2},{"text":"  };","indent":1},{"text":"}"}]',
+    foldColumnHovered: true,
+  },
+};
+
 export const Folded: Story = {
   name: "Folded",
   parameters: { server: { id: "code-block" } },

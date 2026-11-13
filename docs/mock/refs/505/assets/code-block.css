@@ -1,0 +1,44 @@
+/* #505 のコードブロックの追加分: 帯（言語のラベル・タイトル）と本文の間の線を削除し、帯の背景を本文と同じ色にして 1 つの面にする。
+   言語のラベルは、帯の上端に付けたタブの形（上端に接し、下の角だけを丸め、枠線を持たない塗りの札）にする。
+   refs/65・151 の code-block.css の後に読む。実装では src/index.css の mdmark の層の、帯と言語のラベルの規則に足す */
+
+@layer mdmark {
+  .mdmark {
+    /* 帯に続く pre: 上の枠線を削除し、帯と本文を 1 つの枠線で囲む（外側の枠線と下の角丸は残す） */
+    .mdmark-code :is(.mdmark-code-title, .mdmark-code-bar) + pre {
+      border-block-start: 0;
+    }
+
+    /* 帯: 背景を本文と同じ色にする。上の余白を削除し、言語のラベルを上端に接して配置する */
+    :is(.mdmark-code-title, .mdmark-code-bar) {
+      background: var(--mdmark-color-surface);
+    }
+
+    .mdmark-code-bar {
+      padding-block: 0 0.15em;
+    }
+
+    /* 言語のラベル: 帯の上端に付けたタブ。枠線を持たず、本文より少し濃い面に本文の色の文字で出す */
+    .mdmark-code-bar > .mdmark-code-lang {
+      order: -1;
+      align-self: flex-start;
+      padding: 0.3em 0.75em;
+      border: 0;
+      border-radius: 0 0 calc(var(--mdmark-radius) - 2px) calc(var(--mdmark-radius) - 2px);
+      background: color-mix(in oklab, var(--mdmark-color-text) 14%, var(--mdmark-color-surface));
+      color: var(--mdmark-color-text);
+      font-size: 0.8125rem;
+    }
+
+    /* ラベルの言語: タブの面に本文の色で出す */
+    .mdmark-code-bar .mdmark-code-lang-name {
+      color: var(--mdmark-color-text);
+    }
+
+    /* ラベルのファイル名の区切り: タブの面に合わせた線にする */
+    .mdmark-code-bar .mdmark-code-file {
+      border-inline-start-color: color-mix(in oklab, var(--mdmark-color-text) 35%, var(--mdmark-color-surface));
+    }
+  }
+}
+

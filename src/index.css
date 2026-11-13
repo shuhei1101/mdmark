@@ -2673,44 +2673,6 @@
       opacity: 1;
     }
 
-    /* ---------- 狭い幅で畳む最終列 ---------- */
-
-    /* 畳んでいない間: 最終列を開くボタンと、開いたときの中身を出さない */
-    .mdmark-table:not(.is-folded)
-      :is(.mdmark-fold-toggle, .mdmark-fold-detail, .mdmark-fold-part) {
-      display: none;
-    }
-
-    /* 畳んだ表: 最終列の見出しとセルを出さない */
-    .mdmark-table.is-folded .mdmark-fold-col {
-      display: none;
-    }
-
-    /* 畳んだ最終列の中身: 列名を小さな見出しにし、その下に中身を出す */
-    .mdmark-fold-part {
-      display: grid;
-      gap: 0.15em;
-    }
-
-    /* 畳んだ最終列の中身の後に行の詳細が続くとき: 間を空けて線で分ける */
-    .mdmark-fold-part + * {
-      padding-block-start: calc(var(--mdmark-space) / 2);
-      border-block-start: 1px solid var(--mdmark-color-border);
-    }
-
-    /* 畳んだ最終列の名前 */
-    .mdmark-fold-name {
-      margin: 0;
-      color: var(--mdmark-color-muted);
-      font-size: 0.85em;
-      font-weight: 600;
-    }
-
-    /* 畳んだ最終列の中身の段落 */
-    .mdmark-fold-value > * {
-      margin: 0;
-    }
-
     /* 絞り込みのドロワー: 押した見出しのボタンの下に重ねて開く（位置は描く処理がボタンから入れる） */
     .mdmark-filter-drawer {
       position: fixed;
@@ -4167,21 +4129,9 @@
         transform: none;
       }
 
-      /* 紙では押せない操作（集計・コピーの形式のメニュー、コピーできないときのパネル、行の URL の通知、最終列の開閉）: 出さない */
-      :is(
-          .mdmark-table-menu,
-          .mdmark-copy-panel,
-          .mdmark-row-link-notice,
-          .mdmark-fold-toggle,
-          .mdmark-fold-detail,
-          .mdmark-fold-part
-        ) {
+      /* 紙では押せない操作（集計・コピーの形式のメニュー、コピーできないときのパネル、行の URL の通知）: 出さない */
+      :is(.mdmark-table-menu, .mdmark-copy-panel, .mdmark-row-link-notice) {
         display: none;
-      }
-
-      /* 畳んだ最終列: 紙では畳まずに列として出す */
-      .mdmark-table.is-folded .mdmark-fold-col {
-        display: table-cell;
       }
 
       /* 集計の行: 紙では縦にスクロールしないので下端に留めない */
@@ -4362,7 +4312,7 @@
         box-shadow: none;
       }
 
-      /* 集計の行の値の無いセル（畳んだ最終列を含む）: 出さない */
+      /* 集計の行の値の無いセル: 出さない */
       .mdmark-table
         tfoot
         td:not(
@@ -4371,11 +4321,6 @@
             .mdmark-total-value,
             .mdmark-total-unreadable
           )
-        ),
-      .mdmark-table.is-folded
-        tfoot
-        td.mdmark-fold-col:not(
-          :has(.mdmark-total-value, .mdmark-total-unreadable)
         ) {
         display: none;
       }
@@ -8067,6 +8012,52 @@
       margin-inline-end: 0.6em;
     }
 
+    /* 帯に続く pre: 上の枠線を削除し、帯と本文を 1 つの枠線で囲む（外側の枠線と下の角丸は残す） */
+    .mdmark-code :is(.mdmark-code-title, .mdmark-code-bar) + pre {
+      border-block-start: 0;
+    }
+
+    /* 帯: 背景を本文と同じ色にして 1 つの面にする */
+    :is(.mdmark-code-title, .mdmark-code-bar) {
+      background: var(--mdmark-color-surface);
+    }
+
+    /* 帯: 上の余白を削除し、言語のラベルを上端に接して配置する */
+    .mdmark-code-bar {
+      padding-block: 0 0.15em;
+    }
+
+    /* 言語のラベル: 帯の上端に付けたタブ。枠線を持たず、本文より少し濃い面に本文の色の文字で出す */
+    .mdmark-code-bar > .mdmark-code-lang {
+      order: -1;
+      align-self: flex-start;
+      padding: 0.3em 0.75em;
+      border: 0;
+      border-radius: 0 0 calc(var(--mdmark-radius) - 2px)
+        calc(var(--mdmark-radius) - 2px);
+      background: color-mix(
+        in oklab,
+        var(--mdmark-color-text) 14%,
+        var(--mdmark-color-surface)
+      );
+      color: var(--mdmark-color-text);
+      font-size: 0.8125rem;
+    }
+
+    /* ラベルの言語: タブの面に本文の色で出す */
+    .mdmark-code-bar .mdmark-code-lang-name {
+      color: var(--mdmark-color-text);
+    }
+
+    /* ラベルのファイル名の区切り: タブの面に合わせた線にする */
+    .mdmark-code-bar .mdmark-code-file {
+      border-inline-start-color: color-mix(
+        in oklab,
+        var(--mdmark-color-text) 35%,
+        var(--mdmark-color-surface)
+      );
+    }
+
     /* 畳める行を持つコードブロック: 行番号の右に開閉のボタンの列を取る */
     pre.mdmark-code-foldable code {
       --mdmark-code-fold-width: 2.75ch;
@@ -8221,7 +8212,9 @@
       }
     }
 
-    .mdmark-code-line:hover > .mdmark-code-fold {
+    /* 乗せた行と、開閉のボタンの列にポインターが乗っているコードブロック（`data-fold-hover`）: 開閉のボタンを出す */
+    .mdmark-code-line:hover > .mdmark-code-fold,
+    pre[data-fold-hover] .mdmark-code-fold {
       opacity: 1;
     }
 
@@ -10304,7 +10297,7 @@
 /* #308: 表を本文の幅に広げる包み・アイコンだけの帯のボタン・図のリサイズハンドル・グラフの項目のツールチップ・グループの説明・留めたタイトル */
 @layer mdmark {
   .mdmark {
-    /* 表を包む要素: 本文の幅いっぱいに広げ、収まらないときだけこの中で横スクロールする */
+    /* 表を包む要素: 本文の幅いっぱいに広げ、表が収まらないときだけこの中で横スクロールする */
     .mdmark-table-scroll {
       justify-self: stretch;
       width: 100%;
@@ -10312,12 +10305,31 @@
       overflow-x: auto;
       border-radius: calc(var(--mdmark-radius) * 2);
 
+      /* 表: 本文の幅まで広げず、列の幅の合計で描く */
       > table {
         display: table;
         box-sizing: border-box;
-        width: 100%;
+        width: max-content;
         max-width: none;
         overflow: visible;
+      }
+    }
+
+    /* 自動で列の幅を決めた表: 決めた幅の合計で描き、最下段の見出しのセルを決めた幅にする（読者がつまみで入れたインラインの幅が優先される） */
+    @media not print {
+      .mdmark-table-scroll > table[data-auto-width] {
+        table-layout: fixed;
+        width: var(--mdmark-auto-table-width);
+
+        :is(th, td) {
+          min-width: 0;
+        }
+
+        /* 自動で決めた幅は外側の幅なので、つまみで幅を変えていない見出しのセルは余白と罫線を含めた幅にする */
+        th:not(.is-resized) {
+          box-sizing: border-box;
+          width: var(--mdmark-auto-width, auto);
+        }
       }
     }
 

@@ -1,0 +1,28 @@
+/* #505 の文書の場面: 文書を描く先の要素を画面の幅いっぱいに広げる（配布物の既定の --mdmark-content-width: none のまま） */
+
+.host {
+  max-width: none;
+}
+
+/* 表: 配布物の規則より後に読み、table-width.js が決めた列の幅で描く */
+[data-mock-table505] .mdmark .mdmark-table-scroll > table {
+  width: auto;
+  table-layout: fixed;
+}
+
+[data-mock-table505] .mdmark .mdmark-table-scroll :is(th, td) {
+  min-width: 0;
+}
+
+/* 案 A（自動の列の幅を持つ表は最終列を畳まず、最小の幅で横にスクロールする）の見本:
+   配布物が狭い幅で畳んだ最終列を出し、行の詳細と開閉のボタンを隠す */
+[data-mock-table505] .mdmark .mdmark-table.is-folded {
+  .mdmark-fold-col {
+    display: table-cell !important;
+  }
+
+  .mdmark-row-detail,
+  .mdmark-row-toggle {
+    display: none !important;
+  }
+}

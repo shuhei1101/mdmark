@@ -8,7 +8,6 @@ import {
   type CopyState,
   renderCopyButtonContent,
   renderCopyPanel,
-  renderFoldedColumn,
   renderTableBar,
   renderTableTools,
   renderTotalRows,
@@ -20,17 +19,16 @@ import {
   columnWidthLimit,
   compareCells,
   computeTotal,
+  DEFAULT_LONG_COLUMN_MIN_EM,
   FILTER_KINDS,
   type FilterKind,
   type FilterValue,
-  FOLD_MAX_WIDTH,
   findUnreadableTotals,
   initialPinnedColumns,
   matchesFilter,
   mergeSpans,
   pinOffsets,
   rowIdFromHash,
-  shouldFold,
   TOTAL_CALCS,
   TOTAL_LABELS,
   type TotalCalc,
@@ -42,6 +40,7 @@ import { COPIED_NOTICE_MS, copyText } from "./clipboard.ts";
 import { attachColumnResize } from "./table-resize.ts";
 import { attachTableSettings, reorderRowCells } from "./table-settings.ts";
 import { attachTableTree, TREE_FOLDED_ATTRIBUTE } from "./table-tree.ts";
+import { attachAutoColumnWidths } from "./table-width.ts";
 import { cellValue, visibleText } from "./text.ts";
 
 export { compareCells, type FilterValue, matchesFilter };
@@ -104,23 +103,6 @@ function detailsOf(row: HTMLTableRowElement): HTMLTableRowElement[] {
     details.push(next);
   }
   return details;
-}
-
-/** 行の直後に続く行の詳細の行のうち、畳んだ最終列の開閉の行を除いたもの */
-function ownDetailsOf(row: HTMLTableRowElement): HTMLTableRowElement[] {
-  return detailsOf(row).filter(
-    (detail) => !detail.classList.contains("mdmark-fold-detail"),
-  );
-}
-
-/** 要素の中身の幅（内側の余白を除く） */
-function contentWidthOf(element: HTMLElement): number {
-  const style = getComputedStyle(element);
-  return (
-    element.clientWidth -
-    (Number.parseFloat(style.paddingLeft) || 0) -
-    (Number.parseFloat(style.paddingRight) || 0)
-  );
 }
 
 /** 表の本文の行（行の詳細の行と一致なしの行を除く）を返却する */
@@ -222,9 +204,9 @@ function initialPinned(options: {
 function attachTable(
   wrapper: HTMLElement,
   table: HTMLTableElement,
-  root: HTMLElement,
   notifyColumns?: (hidden: string[]) => void,
   pinMode: TablePinMode = "each",
+  longColumnMin: number = DEFAULT_LONG_COLUMN_MIN_EM,
 ): () => void {
   tableCounter += 1;
   const id = `mdmark-table-${tableCounter}`;
@@ -953,131 +935,6 @@ function attachTable(
     );
   };
 
-  // ─── 最終列を畳む ───
-  /** 畳んでいる最終列の位置（畳んでいなければ `undefined`）と、畳むために追加したものを元に戻す関数 */
-  let foldedColumn: number | undefined;
-  let unfoldRows: Array<() => void> = [];
-  /** 表示している最終列の位置 */
-  const lastVisibleColumn = (): number => {
-    for (let index = order.length - 1; index > 0; index -= 1) {
-      const column = order[index] ?? 0;
-      if (!hiddenColumns.has(column)) {
-        return column;
-      }
-    }
-    return 0;
-  };
-  /** 最終列のセルのどれかが 1 行に収まらないか */
-  const lastColumnWraps = (column: number): boolean =>
-    originalRows.some((row) => {
-      const cell = cellAt(row, column);
-      if (!cell || cell.hidden) {
-        return false;
-      }
-      const style = getComputedStyle(cell);
-      const lineHeight =
-        Number.parseFloat(style.lineHeight) ||
-        Number.parseFloat(style.fontSize) * 1.5;
-      const content =
-        cell.scrollHeight -
-        (Number.parseFloat(style.paddingTop) || 0) -
-        (Number.parseFloat(style.paddingBottom) || 0);
-      return content > lineHeight * 1.5;
-    });
-  /** 最終列を畳んで、各行に開閉のボタンと開閉の行を配置する */
-  const foldColumn = (column: number): void => {
-    foldedColumn = column;
-    wrapper.classList.add("is-folded");
-    const shownCount = headCells.length - hiddenColumns.size;
-    const name = labels[column] ?? "";
-    for (const cell of [
-      headCells[column],
-      ...originalRows.map((row) => cellAt(row, column)),
-    ]) {
-      cell?.classList.add("mdmark-fold-col");
-    }
-    originalRows.forEach((row, index) => {
-      const lastCell = cellAt(row, column);
-      const firstCell = cellAt(row, 0);
-      if (!lastCell || !firstCell) {
-        return;
-      }
-      const parts = renderFoldedColumn({
-        id: `${id}-fold-${index}`,
-        columns: shownCount,
-        label: cellText(row, 0),
-        name,
-        html: lastCell.innerHTML,
-      });
-      const template = document.createElement("template");
-      template.innerHTML = `<table><tbody>${parts.row}</tbody></table>`;
-      const foldRow = template.content.querySelector("tr");
-      const part = foldRow?.querySelector(".mdmark-fold-part");
-      const details = ownDetailsOf(row);
-      const ownDetail = details[0]?.cells[0];
-      // 行の詳細を持つ行は、詳細の中身の上に最終列を配置し、詳細のボタンだけで開閉する
-      if (ownDetail && part) {
-        ownDetail.prepend(part);
-        unfoldRows.push(() => part.remove());
-        return;
-      }
-      if (!foldRow) {
-        return;
-      }
-      foldRow.hidden = row.hidden || foldRow.hidden;
-      const head = document.createElement("span");
-      head.className = "mdmark-row-head";
-      head.insertAdjacentHTML("beforeend", parts.toggle);
-      head.append(...firstCell.childNodes);
-      firstCell.append(head);
-      const lastRow = details.at(-1) ?? row;
-      lastRow.after(foldRow);
-      unfoldRows.push(() => {
-        firstCell.append(...[...head.childNodes].slice(1));
-        head.remove();
-        foldRow.remove();
-      });
-    });
-  };
-  /** 畳むために追加したものを取り除く */
-  const unfoldColumn = (): void => {
-    for (const restore of unfoldRows) {
-      restore();
-    }
-    unfoldRows = [];
-    for (const cell of ownElements(wrapper, ".mdmark-fold-col")) {
-      cell.classList.remove("mdmark-fold-col");
-    }
-    wrapper.classList.remove("is-folded");
-    foldedColumn = undefined;
-  };
-  /** 畳むかを、描く先の要素の幅と最終列の折り返しでもう一度決める */
-  const updateFold = (): void => {
-    const column = lastVisibleColumn();
-    const width = contentWidthOf(root);
-    // 畳んでいる間は最終列が隠れているため、一度出して測る
-    const wasFolded = wrapper.classList.contains("is-folded");
-    wrapper.classList.remove("is-folded");
-    // 幅を指定した最終列は畳まない
-    const next =
-      !headCells[column]?.classList.contains("is-resized") &&
-      shouldFold({
-        width,
-        lastColumn: column,
-        wraps: width < FOLD_MAX_WIDTH && column > 0 && lastColumnWraps(column),
-      });
-    if (wasFolded) {
-      wrapper.classList.add("is-folded");
-    }
-    if (foldedColumn !== undefined && (!next || foldedColumn !== column)) {
-      unfoldColumn();
-    }
-    if (next && foldedColumn === undefined) {
-      foldColumn(column);
-    }
-  };
-  cleanups.push(unfoldColumn);
-
   // ─── 列の表示の切り替え ───
   /** 隠している列を見出し・セル・集計のセルに当て、メニューとボタンの状態を合わせる */
   const applyColumns = (): void => {
@@ -1127,7 +984,6 @@ function attachTable(
     if (pinned.length > 0) {
       pinColumns(pinned);
     }
-    updateFold();
   };
   if (features.includes("columns")) {
     applyColumns();
@@ -1308,7 +1164,6 @@ function attachTable(
     const totalsToggle = target.closest<HTMLElement>(".mdmark-totals-toggle");
     const panelClose = target.closest<HTMLElement>(".mdmark-copy-panel-close");
     const rowAnchor = target.closest<HTMLAnchorElement>(".mdmark-row-anchor");
-    const foldToggle = target.closest<HTMLElement>(".mdmark-fold-toggle");
     const cell = target.closest<HTMLTableCellElement>("th");
     if (sort && cell) {
       sortBy(cell);
@@ -1347,6 +1202,7 @@ function attachTable(
         hiddenColumns.add(column);
       }
       applyColumns();
+      autoWidths.columnsChanged();
       notifyHidden();
       eye.focus();
     } else if (totalsToggle && totalsMenu) {
@@ -1360,16 +1216,6 @@ function attachTable(
       closeCopyPanel(true);
     } else if (rowAnchor) {
       void copyRowLink(rowAnchor);
-    } else if (foldToggle) {
-      const open = foldToggle.getAttribute("aria-expanded") !== "true";
-      foldToggle.setAttribute("aria-expanded", String(open));
-      const foldRow = ownElement<HTMLElement>(
-        wrapper,
-        `[id="${foldToggle.getAttribute("aria-controls")}"]`,
-      );
-      if (foldRow) {
-        foldRow.hidden = !open;
-      }
     }
   };
   /** 帯のメニューを開く・閉じる */
@@ -1432,7 +1278,6 @@ function attachTable(
           if (pinned.length > 0) {
             pinColumns(pinned);
           }
-          updateFold();
         },
       }),
     );
@@ -1452,18 +1297,20 @@ function attachTable(
   });
   observer.observe(table);
   observer.observe(wrapper);
-  // 描く先の要素の幅が変わるたびに、最終列を畳むかをもう一度決める（高さだけの変化では決め直さない）
-  let rootWidth: number | undefined;
-  const foldObserver = new ResizeObserver((entries) => {
-    const width = entries.at(-1)?.contentRect.width;
-    if (width === undefined || width === rootWidth) {
-      return;
-    }
-    rootWidth = width;
-    updateFold();
+  // 列の幅を中身から決め、幅を入れた後に留める位置を決め直す
+  const autoWidths = attachAutoColumnWidths(table, {
+    wrapper,
+    scroller,
+    headCells,
+    longColumnMin,
+    onApply: () => {
+      updatePinVisibility();
+      if (pinned.length > 0) {
+        pinColumns(pinned);
+      }
+    },
   });
-  foldObserver.observe(root);
-  updateFold();
+  cleanups.push(autoWidths.detach);
   updatePinVisibility();
   if (pinned.length > 0) {
     pinColumns(pinned);
@@ -1483,8 +1330,10 @@ function attachTable(
             pinned,
             column,
           }),
-        // 幅を変えたら、留める位置と境の線を今の列の幅で決め直す（最終列を畳むかは決め直さない）
+        onWidthWritten: () => autoWidths.refresh(),
+        // 幅を変えた後と戻した後は、列の幅と留める位置と境の線を今の列の幅で決め直す
         onResize: () => {
+          autoWidths.refresh();
           if (pinned.length > 0) {
             pinColumns(pinned);
           }
@@ -1499,7 +1348,6 @@ function attachTable(
     tree?.detach();
     closeDrawer(false);
     observer.disconnect();
-    foldObserver.disconnect();
     wrapper.removeEventListener("keydown", onPanelKeyDown);
     wrapper.removeEventListener("click", onClick);
     wrapper.removeEventListener("input", onInput);
@@ -1545,9 +1393,15 @@ export function attachTables(
     onColumnsChange?: ((event: MdmarkColumnsChange) => void) | undefined;
     /** ピン止めの動き（既定 `each`） */
     pinMode?: TablePinMode | undefined;
+    /** 長文の列の最小の幅（em。既定 `DEFAULT_LONG_COLUMN_MIN_EM`） */
+    longColumnMin?: number | undefined;
   } = {},
 ): () => void {
-  const { onColumnsChange, pinMode = "each" } = options;
+  const {
+    onColumnsChange,
+    pinMode = "each",
+    longColumnMin = DEFAULT_LONG_COLUMN_MIN_EM,
+  } = options;
   const detachers: Array<() => void> = [];
   // 列の表示を付けた表の、削除したブロックの中を除いた文書の順の位置
   let columnsIndex = 0;
@@ -1577,7 +1431,7 @@ export function attachTables(
             }
           }
         : undefined;
-    detachers.push(attachTable(wrapper, table, root, notify, pinMode));
+    detachers.push(attachTable(wrapper, table, notify, pinMode, longColumnMin));
   }
   return () => {
     for (const detach of detachers) {

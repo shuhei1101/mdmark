@@ -61,7 +61,7 @@ functions:
     container: src/config-files.ts
     usecase: 共通
     summary: 読み込んだ値を `schemas/mdmark.config.schema.json` と同じ構造で検め、合わないところを `schema` のずれで返却する
-    description: 検めるのは、最上位がオブジェクトであること・`version` が `VERSION_PATTERN` に合う文字列・`features` の値が真偽値・`libraries` の値が文字列でキーがマーカーの名前・`index`・`theme`・`colorTheme`・`colorScheme` が文字列（`colorTheme` の知らない名前と `colorScheme` の知らない値はここでは拒まず、設定に残す）・`extensions` が文字列の配列・`build` があれば `include`（1 つ以上の文字列）と `out`（`.html` の文字列）を持ち `exclude`・`glossary` が文字列の配列で `entry` が文字列であること・`check` があれば `ignore` がマーカーの名前（`MARK_NAME_PATTERN`）の文字列の配列であること・`tooltips` があれば `placement` と `diagramPlacement` がどちらも（あれば）`top` か `bottom` であること・`labels` があればオブジェクトで `paramCopy` があれば空でない文字列であること（合わなければ `labels` を設定から落とす。知らないキーは拒まない）・`side-toc` があればオブジェクトで `mode` が `hover` か `fixed` であること・`table` があればオブジェクトで `pin` が（あれば）`each` か `through` であること（合わなければ `table` を設定から落とす）・`syntax` があればオブジェクトで `url` が文字列であること・`html-scripts` があればオブジェクトで `url` が文字列であること（合わなければ `html-scripts` を設定から落とす）・`mermaid` があればオブジェクトで、`url`・`theme` が（あれば）文字列、`themeVariables` が（あれば）オブジェクトであること（合わなければ `mermaid` を設定から落とす。`theme` の知らない名前はここでは拒まず、設定に残す）・`assets` があればオブジェクトで `root` が文字列であること・`map` があればオブジェクトであること（合わなければ `map` を設定から落とす。値はここでは拒まず設定に残し、描くときに既定にする）。`aliases` があれば配列であることを確認し、行は `validateAliasRows` で検める（ずれをそのまま `schema` のずれに加え、返った行を `config.aliases` に入れる）。知らない最上位のキーは拒まない。`aliases` の行のほかの構造の検査は手書きで、ライブラリを追加しない（索引の `normalizeIndex` と同じやり方）。検める構造は `schemas/mdmark.config.schema.json` と統一する
+    description: 検めるのは、最上位がオブジェクトであること・`version` が `VERSION_PATTERN` に合う文字列・`features` の値が真偽値・`libraries` の値が文字列でキーがマーカーの名前・`index`・`theme`・`colorTheme`・`colorScheme` が文字列（`colorTheme` の知らない名前と `colorScheme` の知らない値はここでは拒まず、設定に残す）・`extensions` が文字列の配列・`build` があれば `include`（1 つ以上の文字列）と `out`（`.html` の文字列）を持ち `exclude`・`glossary` が文字列の配列で `entry` が文字列であること・`check` があれば `ignore` がマーカーの名前（`MARK_NAME_PATTERN`）の文字列の配列であること・`tooltips` があれば `placement` と `diagramPlacement` がどちらも（あれば）`top` か `bottom` であること・`labels` があればオブジェクトで `paramCopy` があれば空でない文字列であること（合わなければ `labels` を設定から落とす。知らないキーは拒まない）・`side-toc` があればオブジェクトで `mode` が `hover` か `fixed` であること・`table` があればオブジェクトで `pin` が（あれば）`each` か `through`、`long_column_min` が（あれば）0 より大きい有限の数であること（合わなければ `table` を設定から落とす）・`syntax` があればオブジェクトで `url` が文字列であること・`html-scripts` があればオブジェクトで `url` が文字列であること（合わなければ `html-scripts` を設定から落とす）・`mermaid` があればオブジェクトで、`url`・`theme` が（あれば）文字列、`themeVariables` が（あれば）オブジェクトであること（合わなければ `mermaid` を設定から落とす。`theme` の知らない名前はここでは拒まず、設定に残す）・`assets` があればオブジェクトで `root` が文字列であること・`map` があればオブジェクトであること（合わなければ `map` を設定から落とす。値はここでは拒まず設定に残し、描くときに既定にする）。`aliases` があれば配列であることを確認し、行は `validateAliasRows` で検める（ずれをそのまま `schema` のずれに加え、返った行を `config.aliases` に入れる）。知らない最上位のキーは拒まない。`aliases` の行のほかの構造の検査は手書きで、ライブラリを追加しない（索引の `normalizeIndex` と同じやり方）。検める構造は `schemas/mdmark.config.schema.json` と統一する
     kind: 関数
     scope: public
     args:
@@ -191,6 +191,12 @@ functions:
         condition: '`table.pin` が `left` の値と、`through` の値'
         mock: なし
         expected: '`left` は `where` が `table.pin` の `schema` のずれが 1 件で `config.table` が無い。`through` は `issues` が空で `config.table.pin` が `through`'
+      - name: test_validate_config_when_table_long_column_min_invalid
+        case: 正常
+        summary: 0 より大きい数でない `table.long_column_min` を schema のずれにし、設定から落とす
+        condition: '`table.long_column_min` が `0`・`"wide"` の値と、`30` の値'
+        mock: なし
+        expected: '`0`・`"wide"` はどちらも `where` が `table.long_column_min` の `schema` のずれが 1 件で `config.table` が無い。`30` は `issues` が空で `config.table.long_column_min` が `30`'
     status: planned
     introduced:
       pr: 32

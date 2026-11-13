@@ -31,7 +31,7 @@ function resolvedConfig(
     colorTheme: "dev-swiss",
     colorScheme: "auto",
     labels: { paramCopy: "今の値をコピーする" },
-    table: { pin: "each" },
+    table: { pin: "each", longColumnMin: 45 },
     map: { node_fit: "height", url_state: true, kinds: {}, lines: {} },
   };
 }
