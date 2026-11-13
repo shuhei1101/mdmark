@@ -16114,8 +16114,10 @@ test("test_normal_when_code_fold_column_hovered", async () => {
     HTMLButtonElement,
     HTMLButtonElement,
   ];
-  // 検証: 描いた直後は出さず、ボタンは行番号の右
-  await userEvent.unhover(el);
+  // 検証: ポインターをコードブロックの外に置くと出さず、ボタンは行番号の右
+  const away = createElement();
+  away.textContent = "コードブロックの外";
+  await userEvent.hover(away);
   await vi.waitFor(() => {
     expect([foldOpacity(first), foldOpacity(second)]).toEqual([0, 0]);
   });
