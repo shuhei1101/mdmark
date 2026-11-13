@@ -553,7 +553,7 @@ functions:
         mock: なし
         expected: '`303` は `fitted` が `[0, 2]`・`unpinned` が `[8]`、`379` は `fitted` が `[0, 2, 8]`・`unpinned` が `[]`、`200` は `fitted` が `[0]`・`unpinned` が `[2, 8]`'
       - name: test_fit_pinned_columns_when_later_column_narrow
-        case: 境界
+        case: 正常
         summary: 超えた列より右の列は、幅が小さくても留めない
         condition: '`widths` が `[100, 200, 10]`、`pinned` が `[0, 1, 2]`、`visibleWidth` が `250`'
         mock: なし
