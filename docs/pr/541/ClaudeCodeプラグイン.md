@@ -38,6 +38,7 @@
 | インターフェース定義設計 | `87893c33..60e03df9` | レビューの指摘の修正（PreCompact で記録を消す。SC-472-4・SC-472-15 の期待値を合わせた） |
 | モジュール構成設計 | `22e66f6d..4d4a73de` | guide-notice.ts（新規）・build-plugin.ts・mcp.ts |
 | インターフェース定義設計 | `745562c9..5b63c852` | レビューの指摘の修正（MDMARK_GUIDE_NOTICE_DIR を visibility: developer にした） |
+| モジュール構成設計 | `7c8df41b..7c5218fd` | レビューの指摘の修正（develop の #540 と重なった ID を MOD-472-349 に改名した） |
 
 ## テスト結果
 
