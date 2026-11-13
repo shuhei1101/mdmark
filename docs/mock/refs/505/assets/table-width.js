@@ -71,8 +71,9 @@
       const ranged = th.dataset.mockWidthMin || th.dataset.mockWidthMax;
       const long = ranged || (!cells.every(isCompact) && cells.some((cell) => linesOf(cell).some((line) => [...line].length >= LONG_CHARS)));
       const nowrap = th.dataset.mockWidthMode === "nowrap" || !long;
-      const min = nowrap ? longest : th.dataset.mockWidthMin ? Number(th.dataset.mockWidthMin) * em : Math.min(longest, Math.max(LONG_MIN_EM * em, longestWord));
       const max = th.dataset.mockWidthMax ? Number(th.dataset.mockWidthMax) * em : Number.POSITIVE_INFINITY;
+      // 最小の幅は最大の幅を超えない（width.min が width.max より大きいときも width.max を優先する）
+      const min = nowrap ? longest : Math.min(max, th.dataset.mockWidthMin ? Number(th.dataset.mockWidthMin) * em : Math.min(longest, Math.max(LONG_MIN_EM * em, longestWord)));
       // 望む幅: 折り返さずに収まる幅（最も長い行の幅）を、最小の幅と最大の幅の間に収める
       const wanted = nowrap ? longest : Math.max(min, Math.min(longest, max));
       return { th, cells, min, wanted, nowrap, long: !nowrap, ranged: Boolean(ranged) };
