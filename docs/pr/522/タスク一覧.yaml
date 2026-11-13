@@ -65,8 +65,10 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-13T04:58:48.584172+00:00'
   - process: ドキュメント修正
-    status: todo
+    status: done
     note: src/files.yaml の config-files.ts の行の related から、重なった docs/module/MOD-472-116.ts への implements の 1 つを削除する
+    updated_by: planner
+    updated_at: '2026-11-13T05:00:49.675550+00:00'
   - process: 単体テスト作成
     status: skipped
     reason: コードを変えない
