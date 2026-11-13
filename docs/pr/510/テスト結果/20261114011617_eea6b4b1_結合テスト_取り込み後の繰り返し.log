@@ -1,0 +1,23 @@
+# develop を取り込んだ後に、preview-rerender.test.ts の suite だけを suite.only にし、#496 の test_normal_when_library_origin_added を test.skip にして 3 回実行（1 回で 1.141.0 と stable の 2 版。作業ツリーは実行後に戻した）
+$ for i in 1 2 3; do xvfb-run -a npm --prefix vscode run test:integration | grep -E "Validated version|passing|failing|pending|^\s+[0-9]+\) "; done
+=== 1 回目
+✔ Validated version: 1.141.0
+  14 passing (27s)
+  1 pending
+✔ Validated version: 1.146.0
+  14 passing (31s)
+  1 pending
+=== 2 回目
+✔ Validated version: 1.141.0
+  14 passing (23s)
+  1 pending
+✔ Validated version: 1.146.0
+  14 passing (24s)
+  1 pending
+=== 3 回目
+✔ Validated version: 1.141.0
+  14 passing (29s)
+  1 pending
+✔ Validated version: 1.146.0
+  14 passing (22s)
+  1 pending
