@@ -35,7 +35,7 @@ functions:
       description: 構成図と同じ操作の口
     process: |-
       1. `parseStateDiagram` と `stateToFlowchart` で `Flowchart` を作り、開始・終了を幅 32px、分岐を幅 40px にした上書きを補足の `layout` の前に重ねる
-      2. 補足の `walkthroughs` が無ければ、遷移を記載順の手順（`title` は「{遷移元} → {遷移先}：{ラベル}」、`text` は補足の `t{番号}` の説明、強調は遷移元と遷移先）にして、`attachMapFlow` に `extension` と一緒に指定する
+      2. 補足の `walkthroughs` が無ければ、遷移を記載順の手順（`title` は「{遷移元} → {遷移先}：{ラベル}」、`text` は補足の `t{番号}` の説明、強調は遷移元と遷移先）にし、`bandMode` を `playback` にして、`attachMapFlow` に `extension` と一緒に指定する。`walkthroughs` があれば `bandMode` を `walkthrough` にする
       3. `extension.decorateNode` で、状態の種類ごとの形状（`data-shape` の `start`・`end`・`choice`）と、注記の種類の行「注記」を付ける
       4. `extension.afterRender` で、`loops` の遷移を `renderMapState` の線（状態の右の辺から出て上を回り上の辺へ戻る）とラベルで描き、手順がその遷移のときは太く、ほかの手順と選択では `map-dim` にする
       5. `extension.selectionOf` で、1 つ選んだ状態の入る遷移・出る遷移と相手を残す。開始・終了・分岐・注記は選ばない
@@ -52,7 +52,7 @@ functions:
         summary: 遷移の再生
         condition: 帯の次へを 6 回押す
         mock: なし
-        expected: 帯の文字が `6/13` と `判定 → 差し戻しの理由を確認する：差し戻し` で、説明が `差し戻しの理由はコメントに残る`
+        expected: 帯の文字が `6/13` と `判定 → 差し戻しの理由を確認する：差し戻し` で、説明が `差し戻しの理由はコメントに残る`。帯の `aria-label` が `作業の状態の再生` で、ボタンの名前が部品設計『案内の帯』の再生のもの（`前のメッセージ`・`再生をやめる`・`自動で進める`・`次のメッセージ`）
       - name: test_attach_map_state_when_walkthroughs
         case: 正常
         summary: 案内を持つ
