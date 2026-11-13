@@ -1,6 +1,8 @@
 id: MOD-477-6
 visibility: internal
 title: ライブラリ本体 / バージョンを上げる / retired-diagrams.mjs
+test_files:
+  - tests/unit/migrations/retired-diagrams.test.ts
 lead: 移行の手順のスクリプト。文書の廃止した `flow`・`sequence` の範囲を map の範囲へ書き換え、使用していた種類を設定の `map.kinds`・`map.lines` へ書き足す。
 functions:
   - name: migrateRetiredDiagrams

@@ -34,7 +34,7 @@ functions:
       - name: test_attach_diagram_tips_when_box_hovered
         case: 正常
         summary: ノードのマーカーの外では開かない
-        condition: '`io` を持つノードの名前に `pointerenter` を送信し、次にマーカーに送信する'
+        condition: '`hint` を持つノードの名前に `pointerenter` を送信し、次にマーカーに送信する'
         mock: なし
         expected: 名前ではツールチップが `hidden` を持ち、マーカーでは持たない
       - name: test_attach_diagram_tips_when_embedded_hint

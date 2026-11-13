@@ -177,9 +177,9 @@ functions:
       - name: test_render_map_flow_when_group_note
         case: 正常
         summary: 説明を持つグループのタイトルの右にマーカーを配置する
-        condition: '`notes` が `{ lib: "記法を読み取る部分" }` の Default と、`lib` を閉じた同じ図'
+        condition: '`notes` が `{ read: "記法を読み取る部分" }` の Default と、`read` を閉じた同じ図'
         mock: なし
-        expected: どちらも `lib` のタイトルの行に `button.mdmark-diagram-group-info`（`aria-label="「記法の読み取り」の説明"`）があり、`aria-describedby` が指すツールチップの文字が `記法を読み取る部分`。マーカーはタイトルのボタンの中に無く、説明を持たないグループには無い
+        expected: どちらも `read` のタイトルの行に `button.mdmark-diagram-group-info`（`aria-label="「記法の読み取り」の説明"`）があり、`aria-describedby` が指すツールチップの文字が `記法を読み取る部分`。マーカーはタイトルのボタンの中に無く、説明を持たないグループには無い
   - name: renderMapSequence
     title: mapのシーケンス図のHTML
     kind: 関数

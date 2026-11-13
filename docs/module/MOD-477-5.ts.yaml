@@ -1,6 +1,8 @@
 id: MOD-477-5
 visibility: internal
 title: ライブラリ本体 / map / convert.ts
+test_files:
+  - tests/unit/src/map/convert.test.ts
 lead: 文書の廃止した `flow`・`sequence` の範囲を、map の範囲（Mermaid と補足）へ書き換える。廃止の前の定義の読み取りはこのモジュールだけが持ち、移行の手順のスクリプトがまとめて読み込む。
 data_models:
   - name: RetiredFlowDefinition
