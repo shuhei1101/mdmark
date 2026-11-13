@@ -5614,10 +5614,10 @@ flows:
     summary: 列ごとに改行で分けた 1 行の文字数から長文の列を決め、長文の列だけを折り返し、長文の列を本文の幅いっぱいまで広げる
     setup:
       - name: 配布物を読み込んだページ
-        description: 正常系と同じ。描く先の `div` の幅は 1000px
+        description: 正常系と同じ。画面と描く先の `div` の幅は 1280px
       - name: 中身の量の違う列を持つ表の Markdown
         description: '`<!-- table: {"kind": "data"} -->` 〜 `<!-- /table -->` で、`No`（数値）・`状態`（`badge:` のバッジ）・`更新日`（日付）・`名前`（全角 6 文字以内）・`手順`（`<br>` で区切った全角 10 文字以内の 3 行）・`説明`（全角 120 文字の文）の 6 列 3 行の表を囲んだ文書'
-        notes: '`説明` の列は 1 行で描くと、ほかの列と合わせて描く先の要素の幅を超える'
+        notes: '全ての列の最小の幅の合計（`説明` は 45em）は描く先の要素の幅に収まり、`説明` の列は 1 行で描くとほかの列と合わせて描く先の要素の幅を超える'
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
@@ -5662,21 +5662,21 @@ flows:
     summary: 残りの幅を望む幅の比で分けて最小の幅を下回る長文の列は最小の幅で止め、残りの幅をほかの長文の列へ分け直す
     setup:
       - name: 配布物を読み込んだページ
-        description: 正常系と同じ。描く先の `div` の幅は 688px
+        description: 正常系と同じ。画面と描く先の `div` の幅は 1280px
       - name: 長文の列を 2 つ持つ表の Markdown
         description: '`<!-- table: {"kind": "data"} -->` 〜 `<!-- /table -->` で、名前（全角 3 文字）・説明（全角 120 文字の文）・備考（全角 20〜24 文字の文）の 3 列 2 行の表を囲んだ文書'
-        notes: '`opts.config.table.long_column_min` に `20` を指定する。全ての列の最小の幅の合計は描く先の要素の幅に収まるが、残りの幅を望む幅の比で分けると備考の列が最小の幅を下回る'
+        notes: '`備考` の最も長い行は 45em より狭いため、`備考` の最小の幅はその行の幅になる。全ての列の最小の幅の合計は描く先の要素の幅に収まるが、残りの幅を望む幅の比で分けると備考の列が最小の幅を下回る'
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
       sequenceDiagram
         participant P as 利用側のページ
         participant M as mdmark
-        P->>M: mount(el, { markdown, config })
+        P->>M: mount(el, { markdown })
         M->>M: 最小の幅を下回る備考の列を最小の幅で止め、残りの幅を説明の列へ分け直す
         M->>P: 本文の幅に収めた表を描く
     expected:
-      - '`備考` の列の幅が `20em`（差が 1px 以内）'
+      - '`備考` の列の幅が最も長い行の幅と同じ（差が 1px 以内）で、`備考` の `td` の高さが 1 行分'
       - '`説明` の列が残りの幅を全て使い、`table` の幅が本文の幅と同じ（差が 1px 以内）'
       - 表の `scrollWidth` が `clientWidth` 以下
     test: test_normal_when_two_long_columns
@@ -5755,7 +5755,7 @@ flows:
     summary: 並べ替え・絞り込み・列の表示の切り替えでは列の幅を変えず、表の見える幅が変わったときだけ決め直し、つまみで変えた幅は保つ
     setup:
       - name: 配布物を読み込んだページ
-        description: 正常系と同じ。描く先の `div` の幅は 1000px で描き、表を操作した後に 600px へ狭める
+        description: 正常系と同じ。画面と描く先の `div` の幅は 1280px で描き、表を操作した後に描く先の `div` を 900px へ狭める
       - name: 中身の量の違う列を持つ表の Markdown
         description: '正常系（列の幅を中身から決める）と同じ表を、`<!-- table: {"kind": "data", "features": {"columns": {}}} -->` 〜 `<!-- /table -->` で囲んだ文書'
       - name: Mock
@@ -5770,14 +5770,14 @@ flows:
         P->>M: テーブル設定で手順の列を隠す
         M->>P: 残った列の幅を変えずに手順の列を隠した表
         P->>M: 名前の列のつまみを右へ 40px ドラッグする
-        P->>P: 描く先の div の幅を 600px にする
+        P->>P: 描く先の div の幅を 900px にする
         M->>M: 表の見える幅が変わったので、つまみで変えていない列を判定し直す
-        M->>P: 600px の幅で列の幅を決め直した表
+        M->>P: 900px の幅で列の幅を決め直した表
     expected:
       - 並べ替え・絞り込みの後、各列の `th` の幅が操作の前と同じ（差が 1px 以内）
       - '`手順` の列を隠した後、残った各列の `th` の幅が隠す前と同じ（差が 1px 以内）'
-      - 600px にした後、`説明` の列の幅が狭まり、`No`・`状態`・`更新日` の列の `td` の高さが 1 行分のまま
-      - 600px にした後も、`名前` の列の幅がドラッグした後の幅と同じ（差が 1px 以内）
+      - 900px にした後、`説明` の列の幅が狭まって `45em`（差が 1px 以内）になり、表の `scrollWidth` が `clientWidth` より大きく、`No`・`状態`・`更新日` の列の `td` の高さが 1 行分のまま
+      - 900px にした後も、`名前` の列の幅がドラッグした後の幅と同じ（差が 1px 以内）
       - '`document.documentElement.scrollWidth` が `clientWidth` 以下'
     test: test_normal_when_column_widths_recalculated_on_resize
     refs:
