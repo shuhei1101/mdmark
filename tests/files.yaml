@@ -1456,6 +1456,12 @@ files:
     related:
       - to: src/plugin/mcp
         type: tests
+  - path: unit/src/plugin/guide-notice.test.ts
+    description: src/plugin/guide-notice.ts（「記法のルールの参照の案内のフックの入口」）を確認する単体テスト。guide-notice.ts を変えたときに、合わせて再確認するケースを探すときに参照する。
+    tags: [topic:単体テスト, tool:vitest, topic:フック, tool:claude-code]
+    related:
+      - to: src/plugin/guide-notice
+        type: tests
   - path: unit/src/plugin/pre-tool-use.test.ts
     description: src/plugin/pre-tool-use.ts（「PreToolUse のフックの入口」）を確認する単体テスト。pre-tool-use.ts を変えたときに、合わせて再確認するケースを探すときに参照する。
     tags: [topic:単体テスト, tool:vitest, topic:フック, tool:claude-code]
