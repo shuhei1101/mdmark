@@ -5,22 +5,25 @@ scenarios:
   - name: 正常シナリオ
     setup:
       - name: 作業のフォルダ
-        description: 雛形を配置した後の設定・索引と、索引に載った文書 1 つ
+        description: 雛形を配置した後の設定・索引と、索引に載った文書 `a.mark.md` 1 つ
         notes: 文書に知らないマーカーを 1 つ記載しておき、`check` がずれを 1 件返す状態にする
       - name: 起動した dev-docs
         description: 一時フォルダの端末の設定（`DEV_DOCS_CONFIG`）に mdmark のリポジトリを配信元として登録し、空きポートで待ち受ける dev-docs
       - name: Mock
-        description: Claude Code の代わりに、dev-docs と mdmark の常駐サーバーへ HTTP でつなぐ MCP のクライアントを使用する。モデルは使用しない
+        description: Claude Code の代わりに、dev-docs と mdmark の常駐サーバーへ HTTP でつなぐ MCP のクライアントと、プラグインのフックを Claude Code と同じ JSON の入力で起動する子プロセスを使用する。モデルは使用しない
     flow: |-
       flowchart TD
-        A[ClaudeCodeにプラグインを入れる:正常シナリオ] --> C[ガイドを参照する:正常シナリオ]
+        A[ClaudeCodeにプラグインを入れる:正常シナリオ] --> B[ガイドを参照する:正常シナリオ（.mark.md を記載するときに案内を受ける）]
+        B --> C[ガイドを参照する:正常シナリオ]
         C --> D[ClaudeCodeから点検と書き出しを呼ぶ:正常シナリオ（ずれがある）]
         D --> E[ClaudeCodeから点検と書き出しを呼ぶ:正常シナリオ]
         click A "id:SC-472-4#scenarios[正常シナリオ]"
+        click B "id:SC-472-15#scenarios[正常シナリオ（.mark.md を記載するときに案内を受ける）]"
         click C "id:SC-472-15#scenarios[正常シナリオ]"
         click D "id:SC-472-3#scenarios[正常シナリオ（ずれがある）]"
         click E "id:SC-472-3#scenarios[正常シナリオ]"
     expected:
+      - '`a.mark.md` への 1 回目の Write の PreToolUse のフックが、記法のルールを MCP で参照する案内を返し、同じセッションの 2 回目の Edit では案内を返さない'
       - mdmark の MCP の instructions に、記載する前に dev-docs の `search_docs` で mdmark の配信元のガイドを参照し、記載した後に `check` で点検する動線がある
       - dev-docs の `search_docs` で mdmark の配信元の `docs` の行をタグ `topic:ガイド` で絞って参照すると、`guide/index.yaml` の全ての `page` のページが返り、`writing` の `page`（`docs/guide/記載する-文書の記載方法.md`）の本文がリポジトリのそのファイルと一致する
       - 知らないマーカーを記載した文書で `check` がずれを 1 件返し、マーカーを修正した後の `check` が空のずれの一覧を返却する
@@ -28,8 +31,57 @@ scenarios:
     test: test_normal
     uses:
       - SC-472-4#scenarios[正常シナリオ]
+      - SC-472-15#scenarios[正常シナリオ（.mark.md を記載するときに案内を受ける）]
       - SC-472-15#scenarios[正常シナリオ]
       - SC-472-3#scenarios[正常シナリオ（ずれがある）]
+      - SC-472-3#scenarios[正常シナリオ]
+  - name: 正常シナリオ（mdmark で記載するよう指示する）
+    setup:
+      - name: 作業のフォルダ
+        description: 正常シナリオと同じ
+      - name: 起動した dev-docs
+        description: 正常シナリオと同じ
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      flowchart TD
+        A[ClaudeCodeにプラグインを入れる:正常シナリオ] --> B[ガイドを参照する:正常シナリオ（mdmark で記載するよう指示する）]
+        B --> C[ガイドを参照する:正常シナリオ]
+        C --> D[ClaudeCodeから点検と書き出しを呼ぶ:正常シナリオ（ずれがある）]
+        click A "id:SC-472-4#scenarios[正常シナリオ]"
+        click B "id:SC-472-15#scenarios[正常シナリオ（mdmark で記載するよう指示する）]"
+        click C "id:SC-472-15#scenarios[正常シナリオ]"
+        click D "id:SC-472-3#scenarios[正常シナリオ（ずれがある）]"
+    expected:
+      - 利用者の発言「mdmark で書いて」の UserPromptSubmit のフックが案内を返し、同じセッションでその後に `a.mark.md` を Write する PreToolUse のフックは案内を返さない
+      - 知らないマーカーを記載した文書で `check` がずれを 1 件返す
+    test: test_normal_when_prompt_asks_mdmark
+    uses:
+      - SC-472-4#scenarios[正常シナリオ]
+      - SC-472-15#scenarios[正常シナリオ（mdmark で記載するよう指示する）]
+      - SC-472-15#scenarios[正常シナリオ]
+      - SC-472-3#scenarios[正常シナリオ（ずれがある）]
+  - name: 正常シナリオ（記法を含む純粋な .md の拡張子を変える）
+    setup:
+      - name: 作業のフォルダ
+        description: 雛形を配置した後の設定・索引と、索引に載った文書 `b.md` 1 つ
+        notes: '`b.md` に表のマーカーを記載しておく'
+      - name: Mock
+        description: Claude Code の代わりに、mdmark の常駐サーバーへ HTTP でつなぐ MCP のクライアントを使用する。モデルは使用しない
+    flow: |-
+      flowchart TD
+        A[ClaudeCodeにプラグインを入れる:正常シナリオ] --> B[ClaudeCodeから点検と書き出しを呼ぶ:正常シナリオ（記法を含む純粋な .md がある）]
+        B --> C[ClaudeCodeから点検と書き出しを呼ぶ:正常シナリオ]
+        click A "id:SC-472-4#scenarios[正常シナリオ]"
+        click B "id:SC-472-3#scenarios[正常シナリオ（記法を含む純粋な .md がある）]"
+        click C "id:SC-472-3#scenarios[正常シナリオ]"
+    expected:
+      - '`check` が、`b.md` の表のマーカーの行を指し、拡張子を `.mark.md` に変えるよう提案するずれを 1 件返す'
+      - '`b.md` を `b.mark.md` に改名し、索引の行を修正した後の `check` が空のずれの一覧を返却する'
+    test: test_normal_when_plain_md_has_marks
+    uses:
+      - SC-472-4#scenarios[正常シナリオ]
+      - SC-472-3#scenarios[正常シナリオ（記法を含む純粋な .md がある）]
       - SC-472-3#scenarios[正常シナリオ]
   - name: 異常シナリオ（dev-docs が無い）
     setup:
@@ -55,19 +107,19 @@ scenarios:
       - SC-472-4#scenarios[正常シナリオ]
       - SC-472-15#scenarios[異常シナリオ（dev-docs が無い）]
       - SC-472-3#scenarios[正常シナリオ（ずれがある）]
-lead: 文書の作成者が mdmark のプラグインを入れ、Claude Code が記載する前に dev-docs でガイドを参照し、記載した後に mdmark の `check` で点検する。
+lead: 文書の作成者が mdmark のプラグインを入れ、Claude Code が `.mark.md` の文書を記載する前に案内を受けて dev-docs でガイドを参照し、記載した後に mdmark の `check` で点検する。
 issue: 186
 primary_actor: 文書の作成者
 stakeholders:
   - name: 文書の作成者
     interest: mdmark で記載した文書に、描画で「記載の警告」が出る箇所を残さない
   - name: Claude Code
-    interest: mdmark のガイドを、記載する前に必要なページだけ参照できる
+    interest: mdmark の文書を記載する前に、ガイドを参照する案内をセッションに 1 回だけ受け、必要なページだけ参照できる。純粋な `.md` に記法を使用しない
 trigger: 文書の作成者が、Claude Code に mdmark で文書を記載するよう指定する
 preconditions:
   - 文書の作成者の手元に Claude Code と Node 24 以降がある
   - mdmark の常駐サーバーが起動している
   - 作業のフォルダに mdmark の設定（`mdmark.config.yaml`）と索引がある
-success_guarantee: mdmark の配信元のガイドのページを `search_docs` で参照できる。記載した文書は `check` のずれが 0 件になる。
+success_guarantee: '`.mark.md` を記載するときと mdmark で記載するよう指示されたときに、ガイドを参照する案内をセッションに 1 回受ける。mdmark の配信元のガイドのページを `search_docs` で参照できる。記載した文書は `check` のずれが 0 件になる。'
 minimal_guarantee: dev-docs が無いときも、mdmark の MCP の instructions から「dev-docs が無いので見つかりません」と分かる。ガイドを参照しなくても、記載した後の `check` でずれを見つけられる。
 test_file: tests/e2e/複合ユースケース/ClaudeCodeでガイドを参照して記載し点検する.spec.ts

@@ -10,11 +10,13 @@ use_cases:
     detail: Claude Code から呼んだ点検でも、記法を含む純粋な `.md` の拡張子の提案が返ることを加える
     depends_on:
       - docs/scenario/SC-472-78.yaml
+      - docs/scenario/SC-472-85.yaml
   - kind: single
     scenario: docs/scenario/SC-472-15.yaml
     impact: changed
     detail: '`.mark.md` の文書を記載するときと、利用者が mdmark で記載するよう指示したときに、記法のルールを MCP で参照するよう 1 セッションに 1 回案内されるシナリオを加える。純粋な `.md` には利用者の指示が無い限り記法を使用しないことが伝わる'
-    depends_on: []
+    depends_on:
+      - docs/scenario/SC-472-85.yaml
   - kind: single
     scenario: docs/scenario/SC-472-4.yaml
     impact: changed
@@ -25,9 +27,7 @@ use_cases:
     scenario: docs/scenario/SC-472-85.yaml
     impact: changed
     detail: '`.mark.md` の文書を記載するときに案内を受けてガイドを参照し、記載した後に点検する流れにする。記法を含む純粋な `.md` の拡張子の提案を点検で受ける'
-    depends_on:
-      - docs/scenario/SC-472-15.yaml
-      - docs/scenario/SC-472-3.yaml
+    depends_on: []
   - kind: single
     scenario: docs/scenario/SC-472-76.yaml
     impact: following
