@@ -857,9 +857,13 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
         layout,
         kinds: MAP_CONFIG.kinds,
         lines: MAP_CONFIG.lines,
-        notes: Object.fromEntries(
-          Object.entries(data.notes).map(([id, note]) => [id, note.text]),
-        ),
+        notes: {
+          ...Object.fromEntries(
+            Object.entries(data.notes).map(([id, note]) => [id, note.text]),
+          ),
+          ...jsonObject<Record<string, string>>(args.notes),
+        },
+        links: jsonObject<Record<string, string>>(args.links),
         collapsed,
         entered,
         selected,
