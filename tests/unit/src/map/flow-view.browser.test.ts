@@ -258,11 +258,12 @@ test("test_attach_map_flow_when_node_link", async () => {
       new MouseEvent("click", { ...point(40), cancelable: true }),
     );
     const moved = node().style.cssText;
+    kind().dispatchEvent(new PointerEvent("pointerdown", point(40)));
+    window.dispatchEvent(new PointerEvent("pointerup", point(40)));
+    // 押すとノードを選んで描き直すため、描き直した後のリンクを押す
     const link = node().querySelector<HTMLAnchorElement>(
       "a.mdmark-diagram-node-link",
     ) as HTMLAnchorElement;
-    kind().dispatchEvent(new PointerEvent("pointerdown", point(40)));
-    window.dispatchEvent(new PointerEvent("pointerup", point(40)));
     link.dispatchEvent(
       new MouseEvent("click", { ...point(40), cancelable: true }),
     );
