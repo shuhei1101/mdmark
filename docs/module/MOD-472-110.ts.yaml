@@ -17,7 +17,7 @@ data_models:
         type: string
         description: キーのパスか行。ファイル全体は空文字
       - name: kind
-        type: "'schema' | 'unknown_color_theme' | 'unknown_color_scheme' | 'no_documents' | MdmarkIndexIssue['kind'] | 'alias_no_files' | 'alias_unreadable' | MdmarkAliasProblem['kind'] | 'missing_file' | 'unknown_mark' | 'diagram_invalid' | 'diagram_node_overlap' | 'diagram_node_overflow' | 'diagram_wire_crosses_node' | 'diagram_label_too_long' | 'syntax_warning' | 'unknown_mark_arg' | 'legacy_mark' | 'mark_option_unapplied' | 'mark_option_invalid' | 'map_invalid' | 'map_unknown_ref' | 'map_unknown_key' | 'map_invalid_value' | 'map_unknown_icon' | 'map_unknown_class' | 'map_unknown_line'"
+        type: "'schema' | 'unknown_color_theme' | 'unknown_color_scheme' | 'no_documents' | MdmarkIndexIssue['kind'] | 'alias_no_files' | 'alias_unreadable' | MdmarkAliasProblem['kind'] | 'missing_file' | 'unknown_mark' | 'diagram_invalid' | 'retired_diagram' | 'syntax_warning' | 'unknown_mark_arg' | 'legacy_mark' | 'mark_option_unapplied' | 'mark_option_invalid' | 'map_invalid' | 'map_unknown_ref' | 'map_unknown_key' | 'map_invalid_value' | 'map_unknown_icon' | 'map_unknown_class' | 'map_unknown_line'"
         description: ずれの種類
       - name: message
         type: string
@@ -97,7 +97,7 @@ functions:
         summary: 文字列の記載の警告を - の行にして出す
         condition: '`mdmark init` の後のフォルダで、インターフェース定義『設定と索引を点検する』の「正常系（文字列に記載の警告がある）」の文字列を `{ text }` で指定する'
         mock: 一時フォルダ、出力を配列に貯める `CliIo`
-        expected: '1 を返却し、`-:1: diagram_invalid:`・`-:20: unknown_mark:`・`-:22: syntax_warning:` の行と `ずれ 3 件` を出す'
+        expected: '1 を返却し、`-:1: retired_diagram:`・`-:20: unknown_mark:`・`-:22: syntax_warning:` の行と `ずれ 3 件` を出す'
       - name: test_run_check_when_arguments_conflict
         case: 異常
         summary: 一緒に指定できない引数を点検せずに止める
@@ -120,7 +120,7 @@ functions:
     container: src/cli/check.ts
     usecase: 共通
     summary: '設定を重ねて読み込み（`purpose: export`）、重ねた設定ファイルのそれぞれと端末の設定（`config.applyToExport` によらず）の構造のずれを先に、続けて `mdmark check` と同じ並びのずれを返却する。ずれの `file` は設定ファイルのパスを表示の構造にしたパス（`base` は今のフォルダ）'
-    description: '並びは設定の `schema`（`validateConfig` のずれ、`theme`・`extensions` の無いファイル、`build.glossary`・`build.entry` がまとめる文書に該当しないもの）→ `unknown_color_theme`（設定の `colorTheme` が `COLOR_THEMES` に無いとき 1 件。`where` は `colorTheme`、`message` は `不明なテーマ名 {名前} です。{COLOR_THEMES を「・」で結んだもの} のいずれかに修正してください。`）→ `unknown_color_scheme`（設定の `colorScheme` が `COLOR_SCHEMES` に無いとき 1 件。`where` は `colorScheme`、`message` は `不明な明暗 {値} です。{COLOR_SCHEMES を「・」で結んだもの} のいずれかに修正してください。`）→ `no_documents` → `checkIndex` の並び → エイリアスのずれ（`loadAliases` の `issues`。設定に `aliases` があるときだけ）→ `missing_file`（`collectCheckDocuments` の文書ごとの `checkMissingFiles`）→ `unknown_mark`（`checkUnknownMarks`）→ マーカーの設定のずれ（`checkMarkOptions`。`unknownMarks` が `false` のときは拡張のマーカーを点検しない）→ 図の点検のずれ（`checkDiagrams`。`unknownMarks` によらず点検する）→ map のずれ（`checkMaps`）。設定の `map` の値のうち `schemas/mdmark.config.schema.json` の記載できる値に無いもの（`node_fit`・`url_state`・`kinds` の `shape`・`lines` の `dash`・`width`・`head`）は、`where` が値のキー（`map.kinds.store.shape` など）で、記載できる値を「・」で結んで並べた `schema` のずれにし、`map_unknown_icon`（`checkMapConfig`）と合わせて設定の `schema` の並びの後ろに配置する。知らないマーカーの点検では、`collectCheckDocuments` の文書を、`loadExtensionDirectives` の `directive` を知っているマーカーに入れて点検し、`loadExtensionDirectives` の `schema` のずれは設定の `schema` の並びの最後に配置する。索引のずれの `file` は設定ファイルのフォルダからの相対パスに修正する。索引を読み込めないときは索引を指す `schema` のずれにする。`base` があり設定に `index` があるときだけ、ずれを集める前に `changedPathsSince`（`cwd` は設定ファイルのフォルダ、`indexDir` は索引のファイルのフォルダ）で変わったファイルを引き、`checkIndex` の `changedPaths` に指定する。`runCheck` と `runUpgrade` が呼び、`runUpgrade` は `unknownMarks: false` で呼ぶ（拡張を読み込まず、知らないマーカーを点検しない）。設定の `assets.root` のフォルダが無いときは `assets.root` を指す `schema` のずれを設定の `schema` の並びに配置し、`missing_file` は文書のフォルダだけで探す'
+    description: '並びは設定の `schema`（`validateConfig` のずれ、`theme`・`extensions` の無いファイル、`build.glossary`・`build.entry` がまとめる文書に該当しないもの）→ `unknown_color_theme`（設定の `colorTheme` が `COLOR_THEMES` に無いとき 1 件。`where` は `colorTheme`、`message` は `不明なテーマ名 {名前} です。{COLOR_THEMES を「・」で結んだもの} のいずれかに修正してください。`）→ `unknown_color_scheme`（設定の `colorScheme` が `COLOR_SCHEMES` に無いとき 1 件。`where` は `colorScheme`、`message` は `不明な明暗 {値} です。{COLOR_SCHEMES を「・」で結んだもの} のいずれかに修正してください。`）→ `no_documents` → `checkIndex` の並び → エイリアスのずれ（`loadAliases` の `issues`。設定に `aliases` があるときだけ）→ `missing_file`（`collectCheckDocuments` の文書ごとの `checkMissingFiles`）→ `unknown_mark`（`checkUnknownMarks`）→ マーカーの設定のずれ（`checkMarkOptions`。`unknownMarks` が `false` のときは拡張のマーカーを点検しない）→ 図の点検のずれ（`checkDiagrams` に `loadExtensionDirectives` の `directive` を指定する。`diagram_invalid` は `unknownMarks` によらず点検し、`unknownMarks` が `false` のとき（`runUpgrade`）は拡張を読み込まないため `retired_diagram` を除く。移行の手順が書き換えずに残す廃止した図の範囲は、移行の報告に挙げた読めない定義と、拡張のマーカーだけ）→ map のずれ（`checkMaps`）。設定の `map` の値のうち `schemas/mdmark.config.schema.json` の記載できる値に無いもの（`node_fit`・`url_state`・`kinds` の `shape`・`lines` の `dash`・`width`・`head`）は、`where` が値のキー（`map.kinds.store.shape` など）で、記載できる値を「・」で結んで並べた `schema` のずれにし、`map_unknown_icon`（`checkMapConfig`）と合わせて設定の `schema` の並びの後ろに配置する。知らないマーカーの点検では、`collectCheckDocuments` の文書を、`loadExtensionDirectives` の `directive` を知っているマーカーに入れて点検し、`loadExtensionDirectives` の `schema` のずれは設定の `schema` の並びの最後に配置する。索引のずれの `file` は設定ファイルのフォルダからの相対パスに修正する。索引を読み込めないときは索引を指す `schema` のずれにする。`base` があり設定に `index` があるときだけ、ずれを集める前に `changedPathsSince`（`cwd` は設定ファイルのフォルダ、`indexDir` は索引のファイルのフォルダ）で変わったファイルを引き、`checkIndex` の `changedPaths` に指定する。`runCheck` と `runUpgrade` が呼び、`runUpgrade` は `unknownMarks: false` で呼ぶ（拡張を読み込まず、知らないマーカーを点検しない）。設定の `assets.root` のフォルダが無いときは `assets.root` を指す `schema` のずれを設定の `schema` の並びに配置し、`missing_file` は文書のフォルダだけで探す'
     kind: 関数
     scope: public
     is_async: true
@@ -193,7 +193,7 @@ functions:
       - name: test_collect_check_issues_when_diagram
         case: 正常
         summary: 図の点検のずれを最後に返却し、upgrade の呼び方でも点検する
-        condition: 索引の無い設定で、`docs/a.md` の 3 行目に読み込めない `<!-- flow -->` の定義と、見つからない画像。`unknownMarks` が `true` と `false`
+        condition: 索引の無い設定で、`docs/a.md` の 3 行目に読み込めない `<!-- chart -->` の定義と、見つからない画像。`unknownMarks` が `true` と `false`
         mock: なし
         expected: 'どちらも `missing_file` の後に `{ file: "docs/a.md", where: "3", kind: "diagram_invalid" }` の 1 件がある'
     refs:
@@ -351,40 +351,50 @@ functions:
     introduced:
       pr: 64
   - name: checkDiagrams
-    title: 図の定義を点検する
+    title: 図の定義と廃止した図の範囲を点検する
     container: src/cli/check.ts
     usecase: 設定と索引を点検する
     kind: 関数
     scope: internal
-    summary: 文書ごとに `findDiagramBlocks` で図の部品の範囲を読み込み、`readDefinition` で読み込めない定義を 1 件の `diagram_invalid`、読み込めたフロー図の定義を `checkFlowLayout` のずれにする
-    description: ずれの `file` は文書のパス、`where` は開きのマーカーの行の番号の文字、`message` は `diagram_invalid` なら記載の警告と同じ文、ほかは図のタイトル（無ければマーカーの名前）・対象のノードか線の `id`・修正方法の 1 文。並びは文書の順、同じ文書の中は行の順
+    summary: 文書ごとに `findDiagramBlocks` で図の部品の範囲を読み込み、`directives`（拡張の `directive`）に無い `RETIRED_DIAGRAM_DIRECTIVES` の範囲を 1 件の `retired_diagram`、`readDefinition` で読み込めない定義を 1 件の `diagram_invalid` にする。`directives` にある名前の範囲は点検しない（拡張のマーカーは `checkUnknownMarks`・`checkMarkOptions` が点検する）
+    description: ずれの `file` は文書のパス、`where` は開きのマーカーの行の番号の文字、`message` は記載の警告と同じ文。並びは文書の順、同じ文書の中は行の順
     args:
       - name: documents
         type: '{ path: string; markdown: string }[]'
         required: true
         description: '`collectCheckDocuments` の文書'
+      - name: directives
+        type: Set<string>
+        required: true
+        description: '`loadExtensionDirectives` の `directive`'
     returns:
       type: CheckIssue[]
-      description: '`diagram_*` のずれ（無ければ空）'
+      description: '`diagram_invalid`・`retired_diagram` のずれ（無ければ空）'
     callees:
       - MOD-472-182#functions[findDiagramBlocks]
       - MOD-472-171#functions[readDefinition]
-      - MOD-472-175#functions[checkFlowLayout]
     unit_tests:
       - name: test_check_diagrams
         case: 正常
-        summary: 読み込めない定義と配置のずれを返却する
-        condition: '`a.md` の 3 行目に読み込めない `<!-- chart -->` の定義、10 行目に 2 つのノードが重なる `<!-- flow -->` の定義（タイトル `受付`）'
+        summary: 読み込めない定義と廃止した図の範囲を返却する
+        condition: '`a.md` の 3 行目に読み込めない `<!-- chart -->` の定義、10 行目に `<!-- flow -->` の範囲、20 行目に `<!-- sequence -->` の範囲'
         mock: なし
-        expected: '`{ file: "a.md", where: "3", kind: "diagram_invalid" }` と `{ file: "a.md", where: "10", kind: "diagram_node_overlap" }` の 2 件で、2 件目の `message` に `受付` と 2 つのノードの `id` が入る'
+        expected: '`{ where: "3", kind: "diagram_invalid" }`・`{ where: "10", kind: "retired_diagram" }`・`{ where: "20", kind: "retired_diagram" }` の 3 件で、`retired_diagram` の `message` に `mdmark upgrade` が入る'
+      - name: test_check_diagrams_when_extension_named
+        case: 正常
+        summary: 同じ名前の拡張がある範囲を廃止した図にしない
+        condition: 同じ文書と、`directives` が `flow` を持つ
+        mock: なし
+        expected: '`where` が `10` の行が無く、`20` の `retired_diagram` は残る'
       - name: test_check_diagrams_when_clean
         case: 正常
         summary: 整った図と図の無い文書はずれを返却しない
-        condition: モックの `inquiry` の定義を持つ文書と、図の無い文書
+        condition: モックの `shop-er` の定義を持つ文書と、図の無い文書
         mock: なし
         expected: 空の配列
     refs:
       - IF-472-39#constraints[図の定義の点検]
+      - IF-472-39#constraints[廃止した図の範囲の点検]
     status: planned
     introduced:
       pr: 275

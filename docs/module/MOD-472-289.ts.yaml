@@ -11,7 +11,7 @@ functions:
     description: |-
       置き換える HTML は次の順で作る。
 
-      1. 中身の `<mdmark-flow>`・`<mdmark-sequence>`・`<mdmark-chart>`・`<mdmark-param>` を正規表現で取得し、中身の文字を `readDefinition` に指定する（`diagrams` がオフなら要素を中身ごと削除する）。読み込めたら図の部品の HTML（`buildDiagrams` と同じ作りで、`renderParam` に `env.labels?.paramCopy` を指定し、`markOwn` を掛ける）、読み込めなければ記載の警告の HTML を、その場所へ一時的なマーカー（`<!--mdmark-part:{n}-->`）で預ける
+      1. 中身の `<mdmark-chart>`・`<mdmark-param>` を正規表現で取得し、中身の文字を `readDefinition` に指定する（`diagrams` がオフなら要素を中身ごと削除する）。`<mdmark-flow>`・`<mdmark-sequence>` は中身ごと削除し、廃止した図の記載の警告の HTML を預ける。読み込めたら図の部品の HTML（`buildDiagrams` と同じ作りで、`renderParam` に `env.labels?.paramCopy` を指定し、`markOwn` を掛ける）、読み込めなければ記載の警告の HTML を、その場所へ一時的なマーカー（`<!--mdmark-part:{n}-->`）で預ける
       2. 残りを `sanitizeEmbedded` で落とす。`onText` は `buildDictionary`・`findWords`・`renderTermTip` で用語・エイリアス（`env.aliases`。`termsRule` と同じく種類のツールチップにする）・文書の別名に下線を付ける（範囲ごとに単語の最初の 1 回だけ。`glossary` と `backlinks` が両方オフなら文字のまま）
       3. `hints` がオンなら `data-hint` を持つ要素に `renderHintMarkup` を当て、オフなら `data-hint` を削除する
       4. 預けたマーカーを図の部品と記載の警告の HTML に戻し、`<div class="mdmark-html">`（`markOwn`）で囲む

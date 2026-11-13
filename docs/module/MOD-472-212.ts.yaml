@@ -145,13 +145,13 @@ functions:
       - name: test_collect_warnings
         case: 正常
         summary: 記載の警告を場所と種類つきで返却する
-        condition: '1 行目の `<!-- flow -->` の範囲にノードの種類 `begin` の定義、22 行目に `<!-- code: {"highlight": [9]} -->` と 3 行のコードブロックを持つ Markdown'
+        condition: '1 行目の `<!-- flow -->` の範囲、22 行目に `<!-- code: {"highlight": [9]} -->` と 3 行のコードブロックを持つ Markdown'
         mock: なし
-        expected: '`{ line: 1, kind: "diagram_invalid" }` と `{ line: 22, kind: "syntax_warning" }` の 2 件で、`message` が同じ Markdown を `render` で描いた警告の文字と同じ'
+        expected: '`{ line: 1, kind: "retired_diagram" }` と `{ line: 22, kind: "syntax_warning" }` の 2 件で、`message` が同じ Markdown を `render` で描いた警告の文字と同じ'
       - name: test_collect_warnings_when_clean
         case: 正常
         summary: 警告の無い Markdown は空の配列を返却する
-        condition: '正しいフロー図の定義と `<!-- table: {"kind": "data"} -->` で囲んだ表'
+        condition: '正しいグラフの定義と `<!-- table: {"kind": "data"} -->` で囲んだ表'
         mock: なし
         expected: 空の配列
     status: planned

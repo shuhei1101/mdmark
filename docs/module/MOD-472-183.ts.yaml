@@ -9,7 +9,7 @@ functions:
     container: src/interact/diagrams.ts
     kind: 関数
     scope: internal
-    summary: '`root` の中の `figure.mdmark-diagram` ごとに、`fitScale` で開いたときの倍率を当て（`data-fit-min` を持つ図は、その値より小さくしない）、縮小・拡大・倍率のボタン（倍率のボタンは `0` と同じく開いたときの倍率と位置に戻し、倍率が変わるたびに文字とスクリーンリーダー向けの名前を書き換える）・`+`・`-`・`0`・矢印キー・余白のドラッグ・全画面のボタンを付ける。倍率は図の中身に `transform: scale()` を掛け、大きさのノードを倍率を掛けた大きさにしてスクロールさせる。文書の中の表示する枠は、開いたときと開いたときの倍率に戻したときに `style.height` を定義の高さ × 全体が収まる倍率と `--mdmark-diagram-max-height` の計算値（`style.maxHeight` を削除して読み込む `getComputedStyle` の `maxHeight`）の小さいほうにし、倍率を適用するたびに `style.maxHeight` を定義の高さ × 今の倍率にする（利用側が高さを変えたとき、36rem で止めず図の全体が収まる高さまで広げられる）。全画面に写す枠は `style.height` と `style.maxHeight` を削除する。印刷では CSS（`@media print .mdmark`）がインラインの高さと上限を削除する。表示する枠の大きさを `ResizeObserver` で確認して、開いたときの倍率のままならもう一度求める。ER 図の図には `attachErFolds` を付ける。ホイールは受け取らない。倍率と移動の操作（ボタン・`+`・`-`・`0`・矢印キー・ドラッグ）は `attachZoom` に `percentBase: "fit"` で任せ、表示する枠の高さの付け替えだけをこの関数が持つ。`fitHeight` は関数で指定し、リサイズハンドルで高さを変えた後だけ `true` を返却する。図ごとに `attachDiagramTips` と `attachDiagramTouch` を付け、`attachZoom` の `onPanStart` でその `closeOpen` を呼ぶ。`div.mdmark-diagram-resize` を持つ図には `attachDiagramResize` を付け（キーは `diagramHeightKey` に `location.pathname`・`root` の中の `figure.mdmark-diagram` の順・題名を指定する。保った高さがあればその高さで開く）、高さを変えたら `attachZoom` の `refit()` を呼ぶ。`data-sticky-titles` が `off` でないフロー図は、表示する枠の `scroll` ごとに `data-sticky-top` を持つタイトルを `stickyTitleShifts` の量で `transform: translateY()` し、留めたものに class `is-stuck` を付ける'
+    summary: '`root` の中の `figure.mdmark-diagram` ごとに、`fitScale` で開いたときの倍率を当て（`data-fit-min` を持つ図は、その値より小さくしない）、縮小・拡大・倍率のボタン（倍率のボタンは `0` と同じく開いたときの倍率と位置に戻し、倍率が変わるたびに文字とスクリーンリーダー向けの名前を書き換える）・`+`・`-`・`0`・矢印キー・余白のドラッグ・全画面のボタンを付ける。倍率は図の中身に `transform: scale()` を掛け、大きさのノードを倍率を掛けた大きさにしてスクロールさせる。文書の中の表示する枠は、開いたときと開いたときの倍率に戻したときに `style.height` を定義の高さ × 全体が収まる倍率と `--mdmark-diagram-max-height` の計算値（`style.maxHeight` を削除して読み込む `getComputedStyle` の `maxHeight`）の小さいほうにし、倍率を適用するたびに `style.maxHeight` を定義の高さ × 今の倍率にする（利用側が高さを変えたとき、36rem で止めず図の全体が収まる高さまで広げられる）。全画面に写す枠は `style.height` と `style.maxHeight` を削除する。印刷では CSS（`@media print .mdmark`）がインラインの高さと上限を削除する。表示する枠の大きさを `ResizeObserver` で確認して、開いたときの倍率のままならもう一度求める。ER 図の図には `attachErFolds` を付ける。ホイールは受け取らない。倍率と移動の操作（ボタン・`+`・`-`・`0`・矢印キー・ドラッグ）は `attachZoom` に `percentBase: "fit"` で任せ、表示する枠の高さの付け替えだけをこの関数が持つ。`fitHeight` は関数で指定し、リサイズハンドルで高さを変えた後だけ `true` を返却する。図ごとに `attachDiagramTips` と `attachDiagramTouch` を付け、`attachZoom` の `onPanStart` でその `closeOpen` を呼ぶ。`div.mdmark-diagram-resize` を持つ図には `attachDiagramResize` を付け（キーは `diagramHeightKey` に `location.pathname`・`root` の中の `figure.mdmark-diagram` の順・題名を指定する。保った高さがあればその高さで開く）、高さを変えたら `attachZoom` の `refit()` を呼ぶ'
     args:
       - name: options
         type: '{ root: HTMLElement; placement: TooltipPlacement; storage?: Storage | null; figures?: HTMLElement[] }'
@@ -28,7 +28,7 @@ functions:
       - name: test_attach_diagrams
         case: 正常
         summary: 収まる倍率で開き、拡大と戻す
-        condition: 幅 600px の要素に幅 1100 のフロー図
+        condition: 幅 600px の要素に幅 1100 の ER 図
         mock: なし
         expected: 倍率の表示が `100%` で縮小が `disabled`、拡大の後に `125%`、`0` の後に `100%`
       - name: test_attach_diagrams_when_max
@@ -58,37 +58,31 @@ functions:
       - name: test_attach_diagrams_when_zoom_button
         case: 正常
         summary: 倍率のボタンで開いたときの倍率と位置に戻す
-        condition: 幅 600px の要素に幅 1100 のフロー図。拡大を 2 回押して表示する枠を `ArrowRight` で動かし、倍率のボタンを押す
+        condition: 幅 600px の要素に幅 1100 の ER 図。拡大を 2 回押して表示する枠を `ArrowRight` で動かし、倍率のボタンを押す
         mock: なし
         expected: 押す前のスクリーンリーダー向けの名前が `倍率 156%。全体が収まる倍率に戻す`、押した後に文字が `100%` で `scrollLeft` が 0、開いたときの倍率で押しても倍率が変わらない
       - name: test_attach_diagrams_when_tall
         case: 正常
         summary: 開いたときの高さを `--mdmark-diagram-max-height` で抑え、上限を図の全体が収まる高さにする
-        condition: 幅 600px の要素に幅 600・高さ 1200 のフロー図（`--mdmark-diagram-max-height` は既定の 36rem = 576px）
+        condition: 幅 600px の要素に幅 600・高さ 1200 の ER 図（`--mdmark-diagram-max-height` は既定の 36rem = 576px）
         mock: なし
         expected: 表示する枠の `clientHeight` が 576 で、`style.maxHeight` が `1200px`
       - name: test_attach_diagrams_when_resized
         case: 正常
         summary: 利用側が高さを変えると、36rem を超えて図の全体が収まる高さまで広がり、倍率に合わせて上限を付け替える
-        condition: 幅 600px の要素に幅 600・高さ 1200 のフロー図。表示する枠の `style.height` を `1000px`、`1500px` の順にし、拡大を 1 回押し、`0` を押す
+        condition: 幅 600px の要素に幅 600・高さ 1200 の ER 図。表示する枠の `style.height` を `1000px`、`1500px` の順にし、拡大を 1 回押し、`0` を押す
         mock: なし
         expected: '`clientHeight` が 1000、1200（上限で止まる）の順になり、拡大の後に `style.maxHeight` が `1500px`、`0` の後に `clientHeight` が 576 で `style.maxHeight` が `1200px`'
       - name: test_attach_diagrams_when_handle_resized
         case: 正常
         summary: リサイズハンドルで高さを変えると、全体が収まる倍率を幅と高さでもう一度求め、もう一度付けても保つ
-        condition: 幅 600px の要素に幅 500・高さ 1600 のフロー図。リサイズハンドルを 200px 下へドラッグし、`0` を押し、削除して同じ要素にもう一度付ける
+        condition: 幅 600px の要素に幅 500・高さ 1600 の ER 図。リサイズハンドルを 200px 下へドラッグし、`0` を押し、削除して同じ要素にもう一度付ける
         mock: '`storage` に `Map` で包んだ `Storage` の構造のオブジェクトを指定する'
         expected: ドラッグの後に `clientHeight` が 776 で倍率が変わらず、`0` の後の倍率が `776 / 1600` で、もう一度付けた後の `clientHeight` が 776
-      - name: test_attach_diagrams_when_titles_stuck
-        case: 正常
-        summary: 動かした間、グループのタイトルを上端に留め、`off` の図では留めない
-        condition: モックの `inquiry-groups` の図と、`data-sticky-titles="off"` の同じ図。どちらも拡大を 2 回押し、表示する枠の `scrollTop` を処理の層の途中まで増やす
-        mock: なし
-        expected: 1 つ目の図の枠と処理の層のタイトルが `is-stuck` と `translateY` を持ち、2 つ目の図のタイトルは `transform` を持たない
       - name: test_attach_diagrams_when_figures_given
         case: 正常
         summary: 指定した図だけに付け、倍率の下限を守る
-        condition: 幅 300px の要素に、幅 1100 のフロー図と、`data-fit-min="0.75"` を持つ幅 1100 の図。`figures` に後者だけを指定する
+        condition: 幅 300px の要素に、幅 1100 の ER 図と、`data-fit-min="0.75"` を持つ幅 1100 の図。`figures` に後者だけを指定する
         mock: なし
         expected: 後者の中身の `transform` が `scale(0.75)` で、拡大のボタンで倍率が変わる。前者の拡大のボタンを押しても倍率が変わらない
   - name: openDiagramDialog

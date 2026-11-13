@@ -1,0 +1,60 @@
+id: MOD-477-6
+visibility: internal
+title: ライブラリ本体 / バージョンを上げる / retired-diagrams.mjs
+lead: 移行の手順のスクリプト。文書の廃止した `flow`・`sequence` の範囲を map の範囲へ書き換え、使用していた種類を設定の `map.kinds`・`map.lines` へ書き足す。
+functions:
+  - name: migrateRetiredDiagrams
+    title: 廃止した図の範囲を map の範囲へ書き換える
+    container: migrations/next/retired-diagrams.mjs
+    usecase: バージョンを上げる
+    kind: 関数
+    scope: public
+    is_async: true
+    summary: 廃止した図の範囲を map の範囲へ書き換え、設定に種類を書き足す移行の手順のスクリプトの処理
+    description: '`steps.yaml` の `call`（`destructive: true`・`files: [config, documents]`。`description` は ``文書の廃止した `flow`・`sequence` の範囲を map の範囲へ書き換え、使用していた種類を設定の `map.kinds`・`map.lines` へ書き足す（写さない値と読めない範囲は移行の報告に挙げる）``）が実行する。スクリプトとして呼ばれると、同じフォルダの `retired-diagrams.js`（`buildRetiredDiagrams` がまとめて commit したファイル）を動的に import し、その `loadConfig` で `--config` の設定を読み、`loadExtensionDirectives` で拡張の `directive` を取り、`convertRetiredDiagrams` を `convert` に渡してこの関数を呼ぶ。廃止の前の定義を読む処理を本体から消した後も、このフォルダだけで動く。文書は `migrateDocumentMarks` と同じく、設定の `build` の対象と索引の文書を、重ねずに設定ファイルのフォルダからの相対パスの順に並べる。文書ごとに `convert` で書き換え、変わった文書だけを書き込む。全ての文書の `kinds`・`lines` を合わせ、設定に同じ名前の行が無いものだけを `yaml` の `parseDocument` で読んだ設定の `map.kinds`・`map.lines` に書き足して書き込む（コメント・キーの並び・ほかのキーの記載方法を残す。書き足すものが無ければ設定を書き込まない）。`report` を `{文書の相対パス}:{行}: {名前}: {項目}: {理由}` の行にして標準出力へ 1 行ずつ書き込み、行が無ければ `{書き換えた文書の数} 件の文書の廃止した図を map の範囲へ書き換えました。` を書き込んで 0 で終わる。読み込めない文書があれば書き込まずに標準エラーへ書き込んで 1 で終わる。単体テストは `migrations/*/retired-diagrams.mjs` を探して import し、release で `next/` をバージョンのフォルダへ移した後も同じテストで読み込む'
+    args:
+      - name: options
+        type: '{ config: unknown; configPath: string; configDir: string; directives: Set<string>; convert: (options: { markdown: string; skip: Set<string> }) => ConvertResult }'
+        required: true
+        description: 設定ファイルを読み込んだ値・設定ファイルのパス・設定ファイルのあるフォルダの絶対パス・拡張の `directive`・文書の本文を書き換える関数（`convertRetiredDiagrams`）
+    returns:
+      type: 'Promise<{ changed: string[]; configChanged: boolean; report: string[]; problems: string[] }>'
+      description: 書き換えた文書の相対パス・設定を書き換えたか・移行の報告の行・読み込めない文書の修正方法
+    side_effects: 文書と設定ファイルを書き換える
+    callees:
+      - MOD-477-5#functions[convertRetiredDiagrams]
+      - MOD-472-110#functions[loadExtensionDirectives]
+    refs:
+      - IF-472-28#constraints[スクリプトの呼び方]
+      - IF-472-28#constraints[廃止した図の範囲の移行]
+    unit_tests:
+      - name: test_migrate_retired_diagrams
+        case: 正常
+        summary: build の対象と索引の文書を書き換え、設定に種類を書き足して報告の行を出す
+        condition: シナリオ『バージョンを上げる』の「正常シナリオ（座標で書いた図を map へ書き換える）」の文書を、`build.include` の文書と索引だけの文書に分けて持ち、コメントを持つ設定の一時フォルダ
+        mock: 一時フォルダ
+        expected: 両方の文書がシナリオの期待値のとおりで、設定の `map.kinds`・`map.lines` に種類が加わり、設定のコメントとほかのキーが残り、`report` が文書と行の順、`changed` が 2 つ
+      - name: test_migrate_retired_diagrams_when_kind_defined
+        case: 正常
+        summary: 設定に同じ名前の種類があれば書き換えない
+        condition: '同じ一時フォルダで、設定の `map.kinds.llm` が `{ label: "AI" }`'
+        mock: 一時フォルダ
+        expected: '設定の `map.kinds.llm` が `{ label: "AI" }` のまま'
+      - name: test_migrate_retired_diagrams_when_extension
+        case: 正常
+        summary: 拡張の名前の範囲を書き換えない
+        condition: '`<!-- flow: {"target": "world"} -->` の範囲を持つ文書と、`directives` が `flow`'
+        mock: 一時フォルダ
+        expected: 文書と設定が変わらず、`report` が空
+      - name: test_migrate_retired_diagrams_when_rerun
+        case: 正常
+        summary: もう一度適用しても書き換えない
+        condition: 1 つ目のテストの後の一時フォルダ
+        mock: 一時フォルダ
+        expected: '`changed` が空で `configChanged` が `false`、文書と設定の更新日時が変わらない'
+      - name: test_migrate_retired_diagrams_when_bundled
+        case: 正常
+        summary: 移行の手順のフォルダにまとめた書き換えの処理で、ソースの処理と同じに書き換える
+        condition: 1 つ目のテストと同じ一時フォルダを 2 つ作り、片方にソースの `convertRetiredDiagrams`、もう片方にスクリプトと同じフォルダの `retired-diagrams.js` の `convertRetiredDiagrams` を渡す
+        mock: 一時フォルダ
+        expected: 戻り値と書き換えた文書と設定が同じ（まとめたファイルが無い・古いときは失敗する）

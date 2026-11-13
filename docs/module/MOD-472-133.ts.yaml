@@ -9,11 +9,17 @@ data_models:
     container: src/parts/map.ts
     usecase: Mermaidと補足で図を描く
     role: データモデル
-    summary: 部品設計『mapの構成図』の引数（`layout`・`collapsed`・`entered`・`selected`・`focus`・`packets`・`dragging`）
+    summary: 部品設計『mapの構成図』の引数（`layout`・`notes`・`links`・`collapsed`・`entered`・`selected`・`focus`・`packets`・`dragging`）
     properties:
       - name: layout
         type: MapLayout
         description: 配置の結果
+      - name: notes
+        type: Record<string, string> | undefined
+        description: 補足の `notes` の ID ごとの説明（ノード・グループ・線）
+      - name: links
+        type: Record<string, string> | undefined
+        description: '`mapLinkProblems` が許したノードのリンク先'
       - name: collapsed
         type: string[]
         description: 閉じたグループ
@@ -95,7 +101,7 @@ functions:
     container: src/parts/map.ts
     usecase: Mermaidと補足で図を描く
     role: 処理
-    summary: 部品設計『mapの構成図』の HTML。フロー図の部品の定義にしたノードと線を `renderFlow` で描き、グループの面とタイトルの行・開閉と中へ入るボタン・閉じたグループを重ねる。ノードと線を押す場所はフォーカスできるボタンにし、中へ入ったグループと薄く残したグループのほかは、タイトルの行に動かす帯（`.map-group-bar`）を置く
+    summary: 部品設計『mapの構成図』の HTML。ノードと線（`notes` の説明を `hint`、`links` のリンク先を `href` にする）を `renderFlow` で描き、グループの面とタイトルの行・開閉と中へ入るボタン・閉じたグループを重ねる。`notes` に説明を持つグループ（閉じたグループのノードを含む）は、タイトルの右にノードと同じマーカー（`button.mdmark-diagram-info.mdmark-diagram-group-info`。`aria-label` は `「{タイトル}」の説明`。タイトルのボタンの外）とツールチップの中身を配置する。ノードと線を押す場所はフォーカスできるボタンにし、中へ入ったグループと薄く残したグループのほかは、タイトルの行に動かす帯（`.map-group-bar`）を置く
     scope: public
     callees:
       - MOD-472-172#functions[renderFlow]
@@ -162,14 +168,26 @@ functions:
         condition: '`collapsed: ["read"]` で、`notes` が `{"data->layout": "上書きを当てる"}`'
         mock: なし
         expected: '`read->layout` のツールチップが「補足の検査 → 入れ子のグループの自動配置：上書きを当てる」だけを持ち、説明を持たない元の線（`mermaid->layout`）を含まない。`notes` が空なら `read->layout` の押せる帯は `data-tip-owner` を持たない'
+      - name: test_render_map_flow_when_links
+        case: 正常
+        summary: リンク先を持つノードをリンクにし、説明のマーカーをリンクの外に配置する
+        condition: '`links` が `{ mount: "https://example.com/spec" }`、`notes` が `{ mount: "文書を描く公開関数" }` の Default'
+        mock: なし
+        expected: '`mount` のノードが `has-link` と `a.mdmark-diagram-node-link[href="https://example.com/spec"]` を持ち、説明のマーカーが `a` の後ろにある。ほかのノードは `a` を持たない'
+      - name: test_render_map_flow_when_group_note
+        case: 正常
+        summary: 説明を持つグループのタイトルの右にマーカーを配置する
+        condition: '`notes` が `{ lib: "記法を読み取る部分" }` の Default と、`lib` を閉じた同じ図'
+        mock: なし
+        expected: どちらも `lib` のタイトルの行に `button.mdmark-diagram-group-info`（`aria-label="「記法の読み取り」の説明"`）があり、`aria-describedby` が指すツールチップの文字が `記法を読み取る部分`。マーカーはタイトルのボタンの中に無く、説明を持たないグループには無い
   - name: renderMapSequence
     title: mapのシーケンス図のHTML
     kind: 関数
     container: src/parts/map.ts
     usecase: Mermaidと補足で図を描く
     role: 処理
-    summary: 部品設計『mapのシーケンス図』の HTML。参加者の箱・ライフライン・メッセージの線とラベルを今のシーケンス図の部品と同じ class で描き、ブロックの枠とタブの開閉と名前のボタン・区間・注記・活性化の帯・参加者の選択を重ねる
-    description: 今の `renderSequence` は全てのメッセージに番号を付け、複合フラグメント・注記・活性化・矢印の種類を持たないため、図の部品の HTML は使わず同じ class と寸法（`MAP_SEQ`）で描く
+    summary: 部品設計『mapのシーケンス図』の HTML。参加者の箱・ライフライン・メッセージの線とラベルを `mdmark-diagram-seq-*` の class で描き、ブロックの枠とタブの開閉と名前のボタン・区間・注記・活性化の帯・参加者の選択を重ねる
+    description: 寸法は `MAP_SEQ` で決める
     scope: public
     args:
       - name: args
