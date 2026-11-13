@@ -1049,7 +1049,7 @@ test("test_normal_when_diagram_invalid", async () => {
   expect(html).toContain("<p>段落</p>");
 });
 
-// 廃止した flow・sequence の範囲と <mdmark-flow> を描かずに、mdmark upgrade で変換できる記載の警告にする（正常系）
+// 廃止した flow・sequence の範囲を mdmark upgrade で変換できる記載の警告、<mdmark-flow> を map の範囲で記載し直す記載の警告にして描かない（正常系）
 test("test_normal_when_retired_diagram", async () => {
   // 準備
   const render = await loadRender();
@@ -1069,12 +1069,16 @@ test("test_normal_when_retired_diagram", async () => {
     ),
   ].map((match) => plainText(match[1] ?? ""));
   expect(warnings).toHaveLength(3);
-  for (const [index, name] of ["flow", "sequence", "flow"].entries()) {
+  for (const [index, name] of ["flow", "sequence"].entries()) {
     expect(warnings[index]).toContain(
       `<!-- ${name} --> の図の記載方法は廃止しました。`,
     );
     expect(warnings[index]).toContain("mdmark upgrade");
   }
+  // 埋め込んだ HTML の要素は、map の範囲で記載し直す文
+  expect(warnings[2]).toContain("<mdmark-flow> の要素は廃止しました。");
+  expect(warnings[2]).toContain("<!-- map --> の範囲で記載し直してください");
+  expect(warnings[2]).not.toContain("mdmark upgrade");
   expect(diagramFigures(html)).toHaveLength(0);
   expect(html).not.toContain('"nodes"');
   expect(html).not.toContain("mdmark-flow");
