@@ -62,6 +62,7 @@ test("test_parse_map_data_when_empty", async () => {
     walkthroughs: [],
     layout: {},
     plays_over: undefined,
+    groups: {},
   });
   expect(problems).toEqual([]);
 });
