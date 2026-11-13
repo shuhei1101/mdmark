@@ -2122,6 +2122,12 @@
       }
     }
 
+    /* 表の見えている幅に収まらず留まっていない列のピン止め: 押した状態の地のまま、枠線を破線にし、色を薄くする */
+    .mdmark-pin.is-unpinned {
+      border-style: dashed;
+      color: var(--mdmark-color-muted);
+    }
+
     /* plain の種類: 外側の枠・表と見出し行の面・縦の罫線を削除し、行の区切りの線だけにする */
     .mdmark-table[data-kind="plain"] {
       table {
@@ -3903,6 +3909,11 @@
 
     .mdmark-pin[aria-pressed="true"]::before {
       --mdmark-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23000' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 17v5'/%3E%3Cpath d='M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z'/%3E%3C/svg%3E");
+    }
+
+    /* 留まっていない列のピン: 塗らず、線を破線にする */
+    .mdmark-pin.is-unpinned::before {
+      --mdmark-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-dasharray='3 2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 17v5'/%3E%3Cpath d='M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z'/%3E%3C/svg%3E");
     }
 
     /* 開閉のマーカー（行の詳細・セクション・注意書き）: 下向きの山形 */

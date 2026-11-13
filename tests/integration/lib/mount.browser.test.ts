@@ -11514,7 +11514,8 @@ function wideTableMarkdown(): string {
 test("test_normal_when_table_pinned_through", async () => {
   // 準備
   const el = createElement();
-  el.style.width = "320px";
+  // 1〜3 列目の幅の合計が見えている範囲に収まる幅
+  el.style.width = "800px";
   await mountTracked(el, {
     markdown: wideTableMarkdown(),
     config: { table: { pin: "through" } },
@@ -14096,6 +14097,144 @@ test("test_normal_when_pinned_column_resized", async () => {
   for (const index of [0, 2, 8]) {
     expect(pins[index]?.getAttribute("aria-pressed")).toBe("true");
   }
+});
+
+/** どの列も同じ長さの値を持つ 10 列 30 行の表の Markdown（390px では留める列が 2 列までしか収まらない） */
+function evenTableMarkdown(): string {
+  const headers = Array.from({ length: 10 }, (_, i) => `列名${i + 1}`);
+  return [
+    `| ${headers.join(" | ")} |`,
+    `| ${headers.map(() => "---").join(" | ")} |`,
+    ...Array.from(
+      { length: 30 },
+      () => `| ${headers.map(() => "あいうえおかきくけこ").join(" | ")} |`,
+    ),
+    "",
+  ].join("\n");
+}
+
+/** 留まっていない列のボタンの名前に付く文言 */
+const UNPINNED_SUFFIX = "（表の幅に収まらないため留まっていません）";
+
+// 選んだ列を左から順に足し、表の見えている幅に収まらない列は留めず、そのボタンを押したまま留まっていない状態にし、幅が広がれば再び留める（正常系（留めた列の幅の合計が見えている幅を超える））
+test("test_normal_when_pinned_columns_exceed_visible_width", async () => {
+  // 準備
+  vi.spyOn(Element.prototype, "setPointerCapture").mockImplementation(() => {});
+  const el = createElement();
+  el.style.width = "390px";
+  await mountTracked(el, { markdown: evenTableMarkdown() });
+  const table = find<HTMLElement>(el, ".mdmark-table");
+  const scroller = find<HTMLElement>(table, ".mdmark-table-scroll");
+  const pins = [
+    ...table.querySelectorAll<HTMLButtonElement>("button.mdmark-pin"),
+  ];
+  await vi.waitFor(() => expect(pins[8]?.hidden).toBe(false));
+  const { heads, handles } = resizeParts(table);
+  const firstRow = find<HTMLTableRowElement>(table, "tbody tr");
+  const sticky = (index: number) =>
+    getComputedStyle(firstRow.cells[index] as HTMLElement).position ===
+    "sticky";
+  const ninthLabel = "「列名9」の列をピン止め";
+  // 前提: 1・3 列目は収まり、1・3・9 列目は収まらない
+  const sum = (indexes: number[]) =>
+    indexes.reduce(
+      (total, index) => total + (heads[index]?.offsetWidth ?? 0),
+      0,
+    );
+  expect(sum([0, 2])).toBeLessThanOrEqual(scroller.clientWidth);
+  expect(sum([0, 2, 8])).toBeGreaterThan(scroller.clientWidth);
+  // 実行: 3 列目と 9 列目のピン止めを押し、右端までスクロールする
+  pins[2]?.click();
+  pins[8]?.click();
+  scroller.scrollLeft = scroller.scrollWidth;
+  await nextFrames();
+  // 検証: 1・3 列目だけを留め、9 列目は留めない
+  expect([sticky(0), sticky(2), sticky(8)]).toEqual([true, true, false]);
+  const ninthCell = firstRow.cells[8] as HTMLElement;
+  expect(getComputedStyle(ninthCell).left).toBe("auto");
+  expect(getComputedStyle(ninthCell).right).toBe("auto");
+  expect(pins[8]?.getAttribute("aria-pressed")).toBe("true");
+  expect(pins[8]?.classList.contains("is-unpinned")).toBe(true);
+  expect(pins[8]?.getAttribute("aria-label")).toBe(
+    `${ninthLabel}${UNPINNED_SUFFIX}`,
+  );
+  expect(pins[8]?.getAttribute("title")).toBe(
+    `${ninthLabel}${UNPINNED_SUFFIX}`,
+  );
+  expect(pins[0]?.classList.contains("is-unpinned")).toBe(false);
+  expect(pins[2]?.classList.contains("is-unpinned")).toBe(false);
+  // 検証: 1 列目は見えている範囲の左端、3 列目は 1 列目の右端に並ぶ
+  const visibleLeft =
+    scroller.getBoundingClientRect().left + scroller.clientLeft;
+  const firstRect = (firstRow.cells[0] as HTMLElement).getBoundingClientRect();
+  const thirdRect = (firstRow.cells[2] as HTMLElement).getBoundingClientRect();
+  expect(Math.round(firstRect.left)).toBe(Math.round(visibleLeft));
+  expect(Math.round(thirdRect.left)).toBe(Math.round(firstRect.right));
+  // 実行・検証: el の幅を広げると、9 列目を右端に留める
+  el.style.width = "800px";
+  await vi.waitFor(() => expect(sticky(8)).toBe(true));
+  expect(ninthCell.style.right).toBe("0px");
+  expect(pins[8]?.classList.contains("is-unpinned")).toBe(false);
+  expect(pins[8]?.getAttribute("aria-label")).toBe(ninthLabel);
+  // 実行・検証: el の幅を戻すと、9 列目は再び留まらない
+  el.style.width = "390px";
+  await vi.waitFor(() => expect(sticky(8)).toBe(false));
+  expect(pins[8]?.classList.contains("is-unpinned")).toBe(true);
+  // 実行: 3 列目のつまみを、見えている幅を超えるまで右へドラッグする
+  dragResizeHandle(handles[2] as HTMLElement, 5000);
+  // 検証: 上限は 1 列目の幅だけを引き（9 列目の幅は引かない）、9 列目は留まらない
+  const limit = Math.floor(scroller.clientWidth - (heads[0]?.offsetWidth ?? 0));
+  expect(handles[2]?.getAttribute("aria-valuemax")).toBe(String(limit));
+  expect(heads[2]?.offsetWidth).toBeLessThanOrEqual(limit);
+  expect([sticky(0), sticky(2), sticky(8)]).toEqual([true, true, false]);
+  // 実行・検証: 3 列目のピン止めをもう一度押すと、1・9 列目を留める
+  pins[2]?.click();
+  await vi.waitFor(() => expect(sticky(8)).toBe(true));
+  expect(sticky(0)).toBe(true);
+  expect(pins[8]?.classList.contains("is-unpinned")).toBe(false);
+});
+
+// table.pin: through の表で、押した列までのうち見えている幅に収まる列だけを左端に留め、押した列のボタンを留まっていない状態にする（正常系（押した列までを留める設定で、見えている幅を超える））
+test("test_normal_when_pinned_through_exceed_visible_width", async () => {
+  // 準備
+  const el = createElement();
+  el.style.width = "390px";
+  await mountTracked(el, {
+    markdown: evenTableMarkdown(),
+    config: { table: { pin: "through" } },
+  });
+  const table = find<HTMLElement>(el, ".mdmark-table");
+  const scroller = find<HTMLElement>(table, ".mdmark-table-scroll");
+  const pins = [
+    ...table.querySelectorAll<HTMLButtonElement>("button.mdmark-pin"),
+  ];
+  await vi.waitFor(() => expect(pins[2]?.hidden).toBe(false));
+  const firstRow = find<HTMLTableRowElement>(table, "tbody tr");
+  const sticky = (index: number) =>
+    getComputedStyle(firstRow.cells[index] as HTMLElement).position ===
+    "sticky";
+  // 実行: 3 列目のピン止めを押し、右端までスクロールする
+  pins[2]?.click();
+  scroller.scrollLeft = scroller.scrollWidth;
+  await nextFrames();
+  // 検証
+  expect([sticky(0), sticky(1), sticky(2)]).toEqual([true, true, false]);
+  expect(pins.map((pin) => pin.getAttribute("aria-pressed"))).toEqual([
+    "false",
+    "false",
+    "true",
+    ...Array.from({ length: 7 }, () => "false"),
+  ]);
+  expect(pins[2]?.classList.contains("is-unpinned")).toBe(true);
+  expect(pins[2]?.getAttribute("aria-label")).toBe(
+    `「列名3」の列までピン止め${UNPINNED_SUFFIX}`,
+  );
+  expect(pins[2]?.getAttribute("title")).toBe(
+    `「列名3」の列までピン止め${UNPINNED_SUFFIX}`,
+  );
+  const firstRect = (firstRow.cells[0] as HTMLElement).getBoundingClientRect();
+  const secondRect = (firstRow.cells[1] as HTMLElement).getBoundingClientRect();
+  expect(Math.round(secondRect.left)).toBe(Math.round(firstRect.right));
 });
 
 // タッチのドラッグで幅を変え、ダブルタップで描いた直後の幅に戻し、ポインターが粗い画面ではつまみを常に出す（正常系（タッチで列の幅を変える））

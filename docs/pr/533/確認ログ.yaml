@@ -1,0 +1,31 @@
+confirmations:
+  - topic: 留めた列の幅の合計が表の見える幅を超えたときの動き
+    decision: 収まらない右側の列を留めず、ボタンは押したまま、留まっていないことをボタンで示す。収まれば再び留める（推奨案 A。#438 の「何もしない」の決着を置き換える）
+    decided_by: thumbs_up
+    approver: shuhei1101
+    commit: fcf83bc8
+    thread: https://github.com/shuhei1101/mdmark/pull/533#discussion_r4565287068
+  - topic: '`table.pin: through` の表をこの PR に含めるか'
+    decision: この PR に含め、`through` の表も左から順に収まる列までを留める（推奨案 A）
+    decided_by: thumbs_up
+    approver: shuhei1101
+    commit: fcf83bc8
+    thread: https://github.com/shuhei1101/mdmark/pull/533#discussion_r4565288410
+  - topic: モックへの合意
+    decision: 収まる列だけを留め、収まらない列はスクロールで流し、ボタンで留まっていないことを示すモックで進める（推奨案 A）
+    decided_by: thumbs_up
+    approver: shuhei1101
+    commit: b37cda20
+    thread: https://github.com/shuhei1101/mdmark/pull/533#discussion_r4565783687
+  - topic: 留まっていない列のピン止めのボタンの見た目
+    decision: ピンのアイコンを塗らない破線にし、ボタンの枠線も破線・アイコンの色を薄くする（推奨案 A）
+    decided_by: thumbs_up
+    approver: shuhei1101
+    commit: b37cda20
+    thread: https://github.com/shuhei1101/mdmark/pull/533#discussion_r4565781706
+  - topic: 留まっていない列のボタンの読み上げの名前と title の文言
+    decision: 今のボタンの名前の後ろに「（表の幅に収まらないため留まっていません）」を付ける（推奨案 A）
+    decided_by: thumbs_up
+    approver: shuhei1101
+    commit: b37cda20
+    thread: https://github.com/shuhei1101/mdmark/pull/533#discussion_r4565782614

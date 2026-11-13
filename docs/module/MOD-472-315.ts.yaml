@@ -9,7 +9,7 @@ functions:
     container: src/parts/table.ts
     kind: 関数
     scope: internal
-    summary: 部品設計『表』の HTML を返却する。`render` は表を `SLOT_MARKER` にして囲みだけを使用し、Storybook は `columns`・`rows` と状態の引数（`sort`・`overflow`・`pinned`・`openFilter`・`filterValues`・`hiddenColumns`・`openColumns`・`copyState`・`targetRow`・`shownTotals`・`openTotals`・`openCopy`・`copyFallback`・`rowLinkNotice`・`autoWidths`）で操作を付けた後の外観を作る。折り畳みの見出しは `title` か `表（{`rows` の数か `rowCount`} 行）`。表（と `SLOT_MARKER`）は横にスクロールさせる `div.mdmark-table-scroll` で包む（計画書の案 A。表の `tabindex="0"` と `aria-label` は `table` に残す）。囲みには `hide`・`totals` を `data-hide`・`data-total` で持たせ、`rows` を指定したときは `renderTableBar` の帯とメニュー、`copyFallback` のときは `renderCopyPanel` のパネル、`renderTotalRows` の集計の行、`rowIds` の行の `id` と行へのリンクと通知の要素も描く。集計の値は `filterValues` に合う行から `computeTotal` で出し、全ての行で `findUnreadableTotals` が返却した列と計算のセルは空にする。`highlight` の列の `th`・`td` に class `mdmark-col-highlight` と `data-color`、`rowColors` の行の `tr` に `data-color` を付ける（`render` はこれらを記法のコアルールがトークンに付けるため、Storybook の外観にだけ使用する）。`headRows` を指定すると `thead` を行ごとのセル（`rowspan`・`colspan`・`scope`）で描き、`bottomHeadCells` で決めた最下段のセルにだけ `renderTableTools` のボタンを配置する。`rowHeader` の列のセルは `<th scope="row">`、`mergeColumns` の列は表示する行から `mergeSpans` で結合を決めて始まりのセルに `rowspan` と `is-merged`、続くセルに `hidden` を付ける。`pinned` を省いたときは `rowHeader` の全ての列を留める。留める列は `pinned` の位置のセルに `is-pinned-col` を付け、結合した見出しのセルはまたぐ列が全て `pinned` にあるときだけ付ける。囲みには `pin`・`unpin`（半角の空白で区切る）・`check` を `data-pin`・`data-unpin`・`data-check` で持たせる。`rows` を指定したときは、`wide` の列の `th`・`td` に class `mdmark-wide`、`check` の列の `th`・`td` に class `mdmark-align-center` を付け、`check` の列の `true`・`false` のセルを `data-value` と `renderCheckCell` の中身にする
+    summary: 部品設計『表』の HTML を返却する。`render` は表を `SLOT_MARKER` にして囲みだけを使用し、Storybook は `columns`・`rows` と状態の引数（`sort`・`overflow`・`pinned`・`unpinned`・`openFilter`・`filterValues`・`hiddenColumns`・`openColumns`・`copyState`・`targetRow`・`shownTotals`・`openTotals`・`openCopy`・`copyFallback`・`rowLinkNotice`・`autoWidths`）で操作を付けた後の外観を作る。折り畳みの見出しは `title` か `表（{`rows` の数か `rowCount`} 行）`。表（と `SLOT_MARKER`）は横にスクロールさせる `div.mdmark-table-scroll` で包む（計画書の案 A。表の `tabindex="0"` と `aria-label` は `table` に残す）。囲みには `hide`・`totals` を `data-hide`・`data-total` で持たせ、`rows` を指定したときは `renderTableBar` の帯とメニュー、`copyFallback` のときは `renderCopyPanel` のパネル、`renderTotalRows` の集計の行、`rowIds` の行の `id` と行へのリンクと通知の要素も描く。集計の値は `filterValues` に合う行から `computeTotal` で出し、全ての行で `findUnreadableTotals` が返却した列と計算のセルは空にする。`highlight` の列の `th`・`td` に class `mdmark-col-highlight` と `data-color`、`rowColors` の行の `tr` に `data-color` を付ける（`render` はこれらを記法のコアルールがトークンに付けるため、Storybook の外観にだけ使用する）。`headRows` を指定すると `thead` を行ごとのセル（`rowspan`・`colspan`・`scope`）で描き、`bottomHeadCells` で決めた最下段のセルにだけ `renderTableTools` のボタンを配置する。`rowHeader` の列のセルは `<th scope="row">`、`mergeColumns` の列は表示する行から `mergeSpans` で結合を決めて始まりのセルに `rowspan` と `is-merged`、続くセルに `hidden` を付ける。`pinned` を省いたときは `rowHeader` の全ての列を留める。留める列は `pinned` の位置のセルに `is-pinned-col` を付け、結合した見出しのセルはまたぐ列が全て `pinned` にあるときだけ付ける。囲みには `pin`・`unpin`（半角の空白で区切る）・`check` を `data-pin`・`data-unpin`・`data-check` で持たせる。`rows` を指定したときは、`wide` の列の `th`・`td` に class `mdmark-wide`、`check` の列の `th`・`td` に class `mdmark-align-center` を付け、`check` の列の `true`・`false` のセルを `data-value` と `renderCheckCell` の中身にする
     args:
       - name: options
         type: TableOptions
@@ -154,9 +154,9 @@ functions:
     summary: 列 1 つの見出しの中身（並べ替え・絞り込み・ピン止めのボタンと、`features` に `resize` を含むときは `.mdmark-th` の後ろに列の幅のつまみ `span.mdmark-col-resize`）と、その列の絞り込みのドロワーの HTML を返却する。`mount` が描いた表に追加するのにも使用する
     args:
       - name: options
-        type: '{ id: string; column: number; label: string; features: string[]; filter?: { kind: "select" | "text" | "date"; values: string[] }; active?: boolean; open?: boolean; value?: FilterValue; pinVisible?: boolean; pinPressed?: boolean; pinMode?: TablePinMode }'
+        type: '{ id: string; column: number; label: string; features: string[]; filter?: { kind: "select" | "text" | "date"; values: string[] }; active?: boolean; open?: boolean; value?: FilterValue; pinVisible?: boolean; pinPressed?: boolean; pinUnpinned?: boolean; pinMode?: TablePinMode }'
         required: true
-        description: ドロワーの id の頭、列の位置、列名、機能、絞り込み（`select` は候補の値）、絞り込み中か、ドロワーを開いているか、適用している絞り込み、ピン止めのボタンを出すか（既定 `false`。`mount` が幅を測って決め、Storybook は `overflow` で出す）、ピン止めのボタンを押した状態にするか、ピン止めの動き（既定 `each`。ボタンの `aria-label` は `each` なら `「{列名}」の列をピン止め`、`through` なら `「{列名}」の列までピン止め`）
+        description: ドロワーの id の頭、列の位置、列名、機能、絞り込み（`select` は候補の値）、絞り込み中か、ドロワーを開いているか、適用している絞り込み、ピン止めのボタンを出すか（既定 `false`。`mount` が幅を測って決め、Storybook は `overflow` で出す）、ピン止めのボタンを押した状態にするか、ピン止めのボタンを見えている幅に収まらず留まっていない状態にするか（既定 `false`。`true` なら `is-unpinned` を付け、`aria-label` と `title` に `（表の幅に収まらないため留まっていません）` を付ける。`mount` が入れ、Storybook は `unpinned` で入れる）、ピン止めの動き（既定 `each`。ボタンの `aria-label` は `each` なら `「{列名}」の列をピン止め`、`through` なら `「{列名}」の列までピン止め`）
     returns:
       type: '{ header: string; drawer: string }'
       description: 見出しの中身とドロワー（絞り込みが無ければ空）
@@ -187,6 +187,12 @@ functions:
         condition: '`features: [pin]`、列名 `名前`、`pinVisible: true`、`pinPressed: true` で、`pinMode` を省いたものと `through`'
         mock: なし
         expected: 1 つ目の `mdmark-pin` が `aria-label="「名前」の列をピン止め"`、2 つ目が `aria-label="「名前」の列までピン止め"` で、どちらも `aria-pressed="true"`
+      - name: test_render_table_tools_when_unpinned
+        case: 正常
+        summary: 見えている幅に収まらず留まっていない列のボタンに、留まっていないことを付ける
+        condition: '`features: [pin]`、列名 `名前`、`pinVisible: true`、`pinPressed: true`、`pinUnpinned: true` と、`pinUnpinned` を省いたもの'
+        mock: なし
+        expected: 1 つ目の `mdmark-pin` が `is-unpinned` を持ち、`aria-label` と `title` が `「名前」の列をピン止め（表の幅に収まらないため留まっていません）`、`aria-pressed="true"`。2 つ目は `is-unpinned` を持たず、`aria-label` が `「名前」の列をピン止め`
   - name: renderTableBar
     title: 表の上の帯とテーブル設定のパネルを描く
     container: src/parts/table.ts

@@ -82,6 +82,8 @@ export type TableOptions = {
   overflow?: boolean;
   /** 留める列の位置（小さい順。省くと `rowHeader` の全ての列） */
   pinned?: number[];
+  /** `pinned` のうち、表の見えている幅に収まらず留めない列の位置 */
+  unpinned?: number[];
   /** ピン止めの動き（既定 `each`）。ボタンの名前と押した状態にする列が変わる */
   pinMode?: TablePinMode;
   /** 開いた絞り込みのドロワーの列の位置 */
@@ -222,6 +224,8 @@ export type TableToolsOptions = {
   pinVisible?: boolean;
   /** ピン止めのボタンを押した状態にするか */
   pinPressed?: boolean;
+  /** ピン止めのボタンを、表の見えている幅に収まらず留まっていない状態にするか */
+  pinUnpinned?: boolean;
   /** ピン止めの動き（既定 `each`）。ボタンの名前が変わる */
   pinMode?: TablePinMode;
 };
@@ -261,6 +265,23 @@ function renderFilterFields(options: TableToolsOptions): string {
   return `<label class="mdmark-filter-field">候補を検索<input class="mdmark-filter-search" type="search"></label><ul class="mdmark-filter-options">${items}</ul><p class="mdmark-filter-none" hidden>一致する候補がありません</p>`;
 }
 
+/** 表の見えている幅に収まらず留まっていない列のピン止めのボタンの名前に付ける文言 */
+export const PIN_UNPINNED_SUFFIX = "（表の幅に収まらないため留まっていません）";
+
+/** ピン止めのボタンの名前（`aria-label`）を返却する。留まっていない列は `PIN_UNPINNED_SUFFIX` を付ける */
+export function pinButtonLabel(options: {
+  /** 列名 */
+  label: string;
+  /** ピン止めの動き */
+  mode: TablePinMode;
+  /** 表の見えている幅に収まらず留まっていないか */
+  unpinned: boolean;
+}): string {
+  const { label, mode, unpinned } = options;
+  const base = `「${label}」${mode === "each" ? "の列をピン止め" : "の列までピン止め"}`;
+  return unpinned ? `${base}${PIN_UNPINNED_SUFFIX}` : base;
+}
+
 /** 列 1 つの見出しの中身（並べ替え・絞り込み・ピン止めのボタンと、`resize` のときは列の幅のつまみ）と、その列の絞り込みのドロワーの HTML を返却する */
 export function renderTableTools(options: TableToolsOptions): {
   header: string;
@@ -275,6 +296,7 @@ export function renderTableTools(options: TableToolsOptions): {
     active = false,
     pinVisible = false,
     pinPressed = false,
+    pinUnpinned = false,
     pinMode = "each",
   } = options;
   const open = options.open ?? false;
@@ -287,8 +309,13 @@ export function renderTableTools(options: TableToolsOptions): {
   const filterButton = filterable
     ? `<button class="mdmark-filter${active ? " is-active" : ""}" type="button" aria-label="「${escapedLabel}」で絞り込む" aria-expanded="${open}" aria-controls="${escapeHtml(controls)}"><span class="mdmark-visually-hidden">${active ? "（絞り込み中）" : ""}</span></button>`
     : "";
+  const pinLabel = pinButtonLabel({
+    label: escapedLabel,
+    mode: pinMode,
+    unpinned: pinUnpinned,
+  });
   const pinButton = features.includes("pin")
-    ? `<button class="mdmark-pin" type="button" aria-label="「${escapedLabel}」${pinMode === "each" ? "の列をピン止め" : "の列までピン止め"}" aria-pressed="${pinPressed}"${pinVisible ? "" : " hidden"}></button>`
+    ? `<button class="mdmark-pin${pinUnpinned ? " is-unpinned" : ""}" type="button" aria-label="${pinLabel}"${pinUnpinned ? ` title="${pinLabel}"` : ""} aria-pressed="${pinPressed}"${pinVisible ? "" : " hidden"}></button>`
     : "";
   const tools =
     filterButton || pinButton
@@ -764,9 +791,13 @@ function renderTableBody(options: TableOptions, id: string): string {
           Array.from({ length: options.rowHeader ?? 0 }, (_, index) => index))
       : [],
   );
+  // 選んだ列のうち、表の見えている幅に収まらず留めない列
+  const unpinned = new Set(options.overflow ? (options.unpinned ?? []) : []);
+  const stuck = (column: number): boolean =>
+    pinned.has(column) && !unpinned.has(column);
   // 境の線は、左端から続けて留めた列の最も右の列に引く（描いた直後のスクロールの位置での見え方）
   let pinnedEdge = -1;
-  while (pinned.has(pinnedEdge + 1)) {
+  while (stuck(pinnedEdge + 1)) {
     pinnedEdge += 1;
   }
   const pinnedLast = Math.max(-1, ...pinned);
@@ -793,7 +824,7 @@ function renderTableBody(options: TableOptions, id: string): string {
   /** セルの class 属性（ピン止めした列・強調する列・広く取る列・真偽値の列・`extra`）と色 */
   const cellClass = (column: number, extra: string[] = []): string => {
     const names = [
-      ...(pinned.has(column)
+      ...(stuck(column)
         ? column === pinnedEdge
           ? ["is-pinned-col", "is-pinned-edge"]
           : ["is-pinned-col"]
@@ -826,6 +857,10 @@ function renderTableBody(options: TableOptions, id: string): string {
       value,
       pinVisible: options.overflow === true,
       pinPressed: pinMode === "each" ? pinned.has(index) : index === pinnedLast,
+      pinUnpinned:
+        pinMode === "each"
+          ? unpinned.has(index)
+          : index === pinnedLast && unpinned.size > 0,
       pinMode,
     });
     drawers.push(tools.drawer);

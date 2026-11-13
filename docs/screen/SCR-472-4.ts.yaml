@@ -78,6 +78,8 @@ elements:
         value: マーカーの `rows.colors` の `column` と `value`・`at` から決めた本文の行ごとの色（複数の要素が該当する行は後ろの要素の色）
       - name: pinned
         value: '`pin` の表で幅からはみ出す間は、マーカーの `columns.{列名}.pinned` の `true` の列の位置（無ければ行見出しの列、行見出しも無ければ先頭の列。`pinned` の `false` の列は除く。`pinMode` が `through` ならその最も右の列までの全ての列）。押したピン止めのボタンで変わる'
+      - name: unpinned
+        value: '`pinned` のうち、左から順に幅を足して表の見えている幅を超える列の位置（`mount` が表の幅・列の幅・ピン止め・列の表示と並びが変わるたびに求め直す）'
       - name: wide
         value: マーカーの `columns.{列名}.width.mode` の `nowrap` の列（列名を列の位置として解釈する）
       - name: check
