@@ -5,27 +5,20 @@ implementation: "src/parts/diagram.ts#renderDiagramTip"
 story: "Parts/DiagramTooltip"
 states:
   - name: Closed
-    description: 閉じている。`tip` を持つ線のラベルと `io` を持つノードのマーカーだけが見える
+    description: 閉じている。補足の `notes` で説明を持つ線と、説明を持つノードのマーカーだけが見える
     notes:
-      定義: モックの `inquiry`
+      定義: 部品設計『mapの構成図』の Default
   - name: Wire
-    description: 線の入力の詳細を開いた。開いた線を太くする
+    description: map の構成図の線の説明を開いた。開いた線を太くする
     args:
       - name: kind
         value: wire
       - name: open
         value: 'true'
-  - name: Io
-    description: ノードの入力・処理・出力を開いた
-    args:
-      - name: kind
-        value: io
-      - name: open
-        value: 'true'
   - name: Term
     description: ノードの中の用語を開いた。本文の用語と同じ破線の下線と外観
   - name: Hint
-    description: ノードの `hint` を開いた。ノードの下に文だけを出す
+    description: map の構成図のノードの説明を開いた。ノードの下に文だけを出す
     args:
       - name: kind
         value: hint
@@ -50,14 +43,14 @@ states:
     notes:
       定義: モックの `reply-time`
   - name: GroupHint
-    description: システムの枠のタイトルのマーカーで `hint` を開いた。マーカーの下に文だけを出す
+    description: map の構成図のグループのタイトルのマーカーで説明を開いた。マーカーの下に文だけを出す
     args:
       - name: kind
         value: hint
       - name: open
         value: "'true'"
     notes:
-      定義: モックの `inquiry-groups`（`docs/mock/refs/308/assets/samples.js`）
+      定義: 部品設計『mapの構成図』の GroupNote
   - name: Merged
     description: map の構成図で閉じたグループへまとめた線を開いた。元の線を 1 行ずつ並べる
     args:
@@ -67,12 +60,12 @@ states:
         value: '''true'''
     notes:
       定義: 部品設計『mapの構成図』の Collapsed
-lead: 図の線のラベル・ノードのマーカー・グループのタイトルのマーカー・グラフの項目に付くツールチップ。線は入力の詳細を、LLM・スクリプトなどのノードは入力・処理・出力を、ER 図のテーブルの説明のボタンはテーブルの概要と列の説明を出す。ノードの中の用語は用語のツールチップを使用する。
+lead: map の構成図の線・ノードのマーカー・グループのタイトルのマーカー、ER 図のテーブルの説明のボタン、グラフの項目、埋め込んだ HTML の `data-hint` に付くツールチップ。map の構成図は補足の `notes` の説明を、ER 図はテーブルの概要と列の説明を、グラフは系列か項目の名前と値を出す。ノードの中の用語は用語のツールチップを使用する。
 args:
   - name: kind
     type: 列挙
     required: true
-    choices: '`wire`（線の入力の詳細）・`io`（ノードの入力・処理・出力と `hint`）・`hint`（ノードの `hint` か埋め込んだ HTML の `data-hint` の文だけ）・`table`（ER 図のテーブルの概要と列の説明）・`item`（グラフの項目の系列か項目の名前と値）・`merged`（map の構成図で閉じたグループへまとめた線の元の線）。グループのタイトルの `hint` は `hint`、map の構成図の線のラベルと補足の `notes` は `wire`'
+    choices: '`wire`（線の説明）・`hint`（ノードかグループの説明か、埋め込んだ HTML の `data-hint` の文だけ）・`table`（ER 図のテーブルの概要と列の説明）・`item`（グラフの項目の系列か項目の名前と値）・`merged`（map の構成図で閉じたグループへまとめた線の元の線）。map の構成図の線の補足の `notes` は `wire`、ノードとグループの補足の `notes` は `hint`'
     description: ツールチップの種類
   - name: label
     type: 文字列
