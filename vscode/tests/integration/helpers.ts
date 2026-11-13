@@ -36,7 +36,7 @@ export const STUB_ORIGIN = new URL(
 /** 代役の配信が配布物を返却する経路 `/mdmark@{バージョン}/dist/{ファイル}` */
 export function distPath(
   version: string,
-  file: "index.js" | "index.css",
+  file: "index.js" | "index.css" | "map.js",
 ): string {
   return `/mdmark@${version}/dist/${file}`;
 }
