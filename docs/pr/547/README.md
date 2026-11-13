@@ -1,0 +1,1 @@
+# 結合テスト test_normal_when_unbundled_icons が全件の実行でアイコンの要求を 0 件と記録して落ちる原因を特定して直す
