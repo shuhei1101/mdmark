@@ -75,7 +75,7 @@ functions:
       - name: test_attach_tables_when_pinned
         case: 正常
         summary: はみ出す表だけピン止めのボタンを出して先頭の列を既定で留め、押した列だけを留める
-        condition: 幅 320px の要素に 10 列の表と 2 列の表、3 列目のピン止めを押し、もう一度押す
+        condition: 幅 800px の要素（留める 1・3 列目が見えている範囲に収まる）に 10 列の表と 2 列の表、3 列目のピン止めを押し、もう一度押す
         mock: なし
         expected: 10 列の表だけボタンが `hidden` を持たない。付けた直後は 10 列の表の 1 列目のセルだけが `sticky` で 1 列目のボタンが `aria-pressed="true"`、2 列の表はどのセルも `sticky` でない。押した後は 1・3 列目のセルが `sticky` で 2 列目は `sticky` でなく、3 列目のセルの `left` が 1 列目のセルの `offsetWidth`、もう一度押した後は 1 列目のセルだけが `sticky`
       - name: test_attach_tables_when_pin_specified
@@ -177,7 +177,7 @@ functions:
       - name: test_attach_tables_when_row_header_pinned
         case: 正常
         summary: 行見出しを持つはみ出す表を、描いた直後に行見出しの全ての列を留める
-        condition: 幅 320px の要素に、`header.columns` が 2 の 10 列 5 行の表
+        condition: 幅 800px の要素（行見出しの 2 列が見えている範囲に収まる）に、`header.columns` が 2 の 10 列 5 行の表
         mock: なし
         expected: 1・2 列目のピン止めのボタンが `aria-pressed="true"`、1・2 列目のセルの `position` が `sticky`、3 列目は `sticky` でない
       - name: test_attach_tables_when_tree_copied
@@ -243,7 +243,7 @@ functions:
       - name: test_attach_tables_when_pinned_under_merged_header
         case: 正常
         summary: 結合した見出しの下の 1 列だけを留めると、結合したセルは留めない
-        condition: 幅 320px の要素に、1 行目が `名前`・`設定`（3 列）・`備考`、2 行目が `名前`・`型`・`既定`・`必須`・`備考` の表を付け、`既定` のピン止めを押す
+        condition: 幅 800px の要素（留める `名前`・`既定` が見えている範囲に収まる）に、1 行目が `名前`・`設定`（3 列）・`備考`、2 行目が `名前`・`型`・`既定`・`必須`・`備考` の表を付け、`既定` のピン止めを押す
         mock: なし
         expected: '`既定` の 2 行目の `th` と本文の `td` が `sticky` で `left` が `名前` のセルの `offsetWidth`、1 行目の `設定` の `th` は `sticky` でない'
       - name: test_attach_tables_when_column_resized
