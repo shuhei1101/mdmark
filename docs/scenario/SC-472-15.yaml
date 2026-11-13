@@ -86,6 +86,10 @@ scenarios:
         H-->>C: additionalContext（記法のルールを MCP で参照し、記載した後に check で点検する）
         C->>H: PreToolUse（Edit・a.mark.md・セッション 1）
         H-->>C: 案内なし
+        C->>H: PreCompact（セッション 1）
+        H->>H: セッション 1 の記録を消す
+        C->>H: PreToolUse（Edit・a.mark.md・セッション 1）
+        H-->>C: additionalContext（記法のルールを MCP で参照し、記載した後に check で点検する）
         C->>H: PreToolUse（Write・b.md・セッション 2）
         H-->>C: 案内なし
         C->>H: PreToolUse（Write・a.mark.md・セッション 2）
@@ -93,6 +97,7 @@ scenarios:
     expected:
       - セッション 1 の `a.mark.md` への Write で、`additionalContext` に記法のルールを MCP で参照することと、記載した後に `check` で点検することが記載されている
       - セッション 1 の 2 回目の Edit と、セッション 2 の `b.md` への Write では `additionalContext` を返さない
+      - セッション 1 で会話を圧縮した（PreCompact）後の `a.mark.md` への Edit では、もう一度案内を返す
       - セッション 2 の `a.mark.md` への Write では、もう一度案内を返す
       - どの呼び出しも、ツールの呼び出しを止めない（終了コード 0 で、拒否の判定を返さない）
     test: test_normal_when_mark_md_written
@@ -125,7 +130,7 @@ primary_actor: Claude Code
 trigger: Claude Code が mdmark の文書を記載する前に、記法・部品・図の描き方・拡張の仕方を確認する
 preconditions:
   - ビルドしたこのリポジトリの `mdmark serve` で、MCP の常駐サーバーが起動している
-success_guarantee: '`.mark.md` の文書を Write・Edit するときと、利用者が mdmark で記載するよう指示したときに、ガイドを参照する案内をセッションに 1 回受け取る。純粋な `.md` には利用者の指示が無い限り記法を使用しないことが instructions から分かる。dev-docs の `search_docs` で、mdmark の配信元のガイドのページの一覧と本文を受け取れる。'
+success_guarantee: '`.mark.md` の文書を Write・Edit するときと、利用者が mdmark で記載するよう指示したときに、ガイドを参照する案内をセッションに 1 回（会話を圧縮した後はもう一度）受け取る。純粋な `.md` には利用者の指示が無い限り記法を使用しないことが instructions から分かる。dev-docs の `search_docs` で、mdmark の配信元のガイドのページの一覧と本文を受け取れる。'
 minimal_guarantee: dev-docs が無いときも、mdmark の MCP の instructions から「dev-docs が無いので見つかりません」と分かる。mdmark は dev-docs の端末の設定を作らない。
 test_file: tests/e2e/単一ユースケース/ガイドを参照する.spec.ts
 refs:
