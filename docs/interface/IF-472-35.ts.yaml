@@ -4273,7 +4273,7 @@ flows:
     refs:
       - SC-472-17#scenarios[正常シナリオ（インデントの縦線）]
   - name: 正常系（fold で畳んで描く）
-    summary: '`fold` の行を畳んだ状態で描き、コピーには畳んだ行も記載し、再描画すると `fold` のとおりに戻す'
+    summary: '`fold` の行を畳んだ状態で描き、コピーには畳んだ行も記載し、`update` で描き直すと読者が開いた行を開いたまま描く'
     setup:
       - name: 配布物を読み込んだページ
         description: 正常系と同じ
@@ -4290,11 +4290,11 @@ flows:
         P->>M: コピーボタンを押す
         M->>M: 畳んだ行を含めてクリップボードへ書き込む
         P->>M: 2 行目を開いてから update(markdown)
-        M->>P: 2 行目と 6 行目を畳んで再描画する
+        M->>P: 読者が開いた 2 行目を開いたまま、6 行目を畳んで描き直す
     expected:
       - 描いた直後、2 行目と 6 行目のボタンの `aria-expanded` が `false` で、その下の深い行が `hidden` を持ち、2 行目と 6 行目に `⋯` のボタンがある
       - '`navigator.clipboard.writeText` の中身が 8 行全てを持つ'
-      - '`update` の後、2 行目のボタンの `aria-expanded` が `false` に戻っている'
+      - '`update` の後、2 行目のボタンの `aria-expanded` が `true` のままで、6 行目のボタンは `false`'
     test: test_normal_when_code_fold_initial
     refs:
       - SC-472-17#scenarios[正常シナリオ（最初から畳む行を指定する）]
