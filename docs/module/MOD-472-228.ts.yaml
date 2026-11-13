@@ -243,7 +243,7 @@ functions:
       - name: test_attach_tables_when_pinned_under_merged_header
         case: 正常
         summary: 結合した見出しの下の 1 列だけを留めると、結合したセルは留めない
-        condition: 幅 800px の要素（留める `名前`・`既定` が見えている範囲に収まる）に、1 行目が `名前`・`設定`（3 列）・`備考`、2 行目が `名前`・`型`・`既定`・`必須`・`備考` の表を付け、`既定` のピン止めを押す
+        condition: 幅 1000px の要素（留める `名前`・`既定` が見えている範囲に収まる）に、1 行目が `名前`・`設定`（3 列）・`備考`、2 行目が `名前`・`型`・`既定`・`必須`・`備考` の表を付け、`既定` のピン止めを押す
         mock: なし
         expected: '`既定` の 2 行目の `th` と本文の `td` が `sticky` で `left` が `名前` のセルの `offsetWidth`、1 行目の `設定` の `th` は `sticky` でない'
       - name: test_attach_tables_when_column_resized
