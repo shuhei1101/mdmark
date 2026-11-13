@@ -76,6 +76,10 @@ catalogs:
             type: string
             required: false
             description: フックを実行するツール名の正規表現。MCP のツールは `mcp__plugin_{プラグイン}_{サーバー}__{ツール}` の完全名で適用する
+          - name: hooks.UserPromptSubmit[].hooks[].command
+            type: string
+            required: false
+            description: 利用者の発言を Claude Code が処理する前に実行するコマンド。`matcher` を持たない
       - name: package.json・package-lock.json
         kind: ファイル
         purpose: プラグインの実行時の依存。導入時に Claude Code が入れる
@@ -92,9 +96,50 @@ catalogs:
       - name: MCP_TIMEOUT
         kind: 環境変数
         purpose: MCP サーバーの接続を待つ上限のミリ秒。既定は 30 秒
+  - name: フックの入力
+    version: 2.1.309
+    entries:
+      - name: 標準入力の JSON
+        kind: JSON のキー
+        purpose: フックのコマンドの標準入力に渡る呼び出しの内容
+        params:
+          - name: session_id
+            type: string
+            required: true
+            description: セッションの ID。同じセッションのフックには同じ値が渡る
+          - name: hook_event_name
+            type: string
+            required: true
+            description: フックの種類
+          - name: tool_name・tool_input
+            type: string・object
+            required: false
+            description: PreToolUse のときのツール名と引数。Write・Edit の `tool_input.file_path` は書き込み先の絶対パス
+          - name: prompt
+            type: string
+            required: false
+            description: UserPromptSubmit のときの利用者の発言
+        status: planned
+        introduced:
+          pr: 541
   - name: フックの出力
     version: 2.1.309
     entries:
+      - name: hookSpecificOutput.additionalContext
+        kind: JSON のキー
+        purpose: PreToolUse・UserPromptSubmit・SessionStart のフックが標準出力に書き込む JSON で、文を Claude Code の文脈に加える。呼び出しと発言は止めない
+        params:
+          - name: hookSpecificOutput.hookEventName
+            type: "'PreToolUse' | 'UserPromptSubmit' | 'SessionStart'"
+            required: true
+            description: フックの種類
+          - name: hookSpecificOutput.additionalContext
+            type: string
+            required: true
+            description: 文脈に加える文
+        status: planned
+        introduced:
+          pr: 541
       - name: hookSpecificOutput.updatedInput
         kind: JSON のキー
         purpose: PreToolUse のフックが標準出力に書き込む JSON で、ツールに指定する引数を置き換える。auto モードは書き換える前の入力を確認しているため、`permissionDecision` を記載しないと書き換えた呼び出しを拒否しうる

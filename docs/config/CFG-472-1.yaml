@@ -9,6 +9,21 @@ files:
     manages: Claude Code がつなぐ MCP サーバーの種類と URL
     notes: プラグインと一緒に配る。利用側は書き換えない
 settings:
+  - key: MDMARK_GUIDE_NOTICE_DIR
+    title: 案内したセッションの記録のフォルダ
+    file: 環境変数
+    type: string
+    default: '`{os.tmpdir()}/mdmark-guide-notice`'
+    description: プラグインの案内のフックが、記法のルールの参照を案内したセッションを `session_id` の名前の空のファイルで記録するフォルダ。同じセッションで 2 回目の案内をしないために使う
+    env_var: MDMARK_GUIDE_NOTICE_DIR
+    reload: reload
+    allowed: 書き込める絶対パス。書き込めないときはフックが案内せずに終わる
+    refs:
+      - IF-472-43#constraints[記録]
+    status: planned
+    visibility: user
+    introduced:
+      pr: 541
   - key: MDMARK_PORT
     title: MCP サーバーのポート
     file: 環境変数

@@ -1,0 +1,205 @@
+id: IF-472-43
+visibility: internal
+title: 記法のルールの参照を案内する
+entry:
+  kind: trigger
+  value: Claude Code の PreToolUse（`matcher`：`Write|Edit`）と UserPromptSubmit のフック（`node ${CLAUDE_PLUGIN_ROOT}/scripts/guide-notice.js`）
+flows:
+  - name: 正常系
+    summary: '`.mark.md` への Write でセッションの 1 回目だけ案内し、記録してから返却する'
+    setup:
+      - name: Mock
+        description: Claude Code の代わりに、`hooks/hooks.json` の `Write|Edit` の PreToolUse のコマンドを `CLAUDE_PLUGIN_ROOT` を `plugin/` にして子プロセスで実行し、標準入力に呼び出しの JSON を指定する
+      - name: 記録のフォルダ
+        description: '`MDMARK_GUIDE_NOTICE_DIR` に指定した、まだ無い一時フォルダのパス'
+      - name: 呼び出し
+        description: '`session_id` が `s1`、`tool_name` が `Write`、`tool_input.file_path` が `/w/docs/a.mark.md`'
+    flow: |-
+      sequenceDiagram
+        participant C as Claude Code
+        participant H as 案内のフック
+        participant R as 記録のフォルダ
+        C->>H: session_id・hook_event_name・tool_name・tool_input
+        H->>R: s1 の記録があるか
+        R-->>H: 無い
+        H->>R: s1 の記録を作る
+        H-->>C: hookSpecificOutput（additionalContext）・終了コード 0
+    expected:
+      - 標準出力が JSON で、`hookSpecificOutput.hookEventName` が `PreToolUse`
+      - '`hookSpecificOutput.additionalContext` が制約「案内の文」の文で、ファイル名 `a.mark.md` を含む'
+      - '`hookSpecificOutput` が `permissionDecision`・`updatedInput` を持たない'
+      - 記録のフォルダに `s1` のファイルがある
+      - 終了コードが 0
+    test: test_normal
+  - name: 正常系（案内済みのセッション）
+    summary: 同じセッションの 2 回目は何も出さない
+    setup:
+      - name: Mock
+        description: 正常系と同じ
+      - name: 案内済みの記録
+        description: 正常系を実行した後の記録のフォルダ
+      - name: 呼び出し
+        description: '`session_id` が `s1`、`tool_name` が `Edit`、`tool_input.file_path` が `/w/docs/a.mark.md`'
+    flow: |-
+      sequenceDiagram
+        participant C as Claude Code
+        participant H as 案内のフック
+        participant R as 記録のフォルダ
+        C->>H: session_id・hook_event_name・tool_name・tool_input
+        H->>R: s1 の記録があるか
+        R-->>H: ある
+        H-->>C: 空の標準出力・終了コード 0
+    expected:
+      - 標準出力が空
+      - 終了コードが 0
+    test: test_normal_when_already_noticed
+  - name: 正常系（純粋な .md）
+    summary: '`.mark.md` で終わらないファイルへの Write は案内も記録もしない'
+    setup:
+      - name: Mock
+        description: 正常系と同じ
+      - name: 呼び出し
+        description: '`session_id` が `s2`、`tool_name` が `Write`、`tool_input.file_path` が `/w/README.md`'
+    flow: |-
+      sequenceDiagram
+        participant C as Claude Code
+        participant H as 案内のフック
+        C->>H: session_id・hook_event_name・tool_name・tool_input
+        H->>H: file_path が .mark.md で終わらない
+        H-->>C: 空の標準出力・終了コード 0
+    expected:
+      - 標準出力が空
+      - 記録のフォルダに `s2` のファイルが無い
+      - 終了コードが 0
+    test: test_normal_when_plain_md
+  - name: 正常系（mdmark で記載するよう指示する）
+    summary: 発言が語 mdmark を含むとき、セッションの 1 回目だけ案内する
+    setup:
+      - name: Mock
+        description: Claude Code の代わりに、`hooks/hooks.json` の UserPromptSubmit のコマンドを正常系と同じく子プロセスで実行する
+      - name: 呼び出し
+        description: '`session_id` が `s3`、`hook_event_name` が `UserPromptSubmit`、`prompt` が `設計メモを MDMark で書いて`'
+    flow: |-
+      sequenceDiagram
+        participant C as Claude Code
+        participant H as 案内のフック
+        participant R as 記録のフォルダ
+        C->>H: session_id・hook_event_name・prompt
+        H->>R: s3 の記録があるか
+        R-->>H: 無い
+        H->>R: s3 の記録を作る
+        H-->>C: hookSpecificOutput（additionalContext）・終了コード 0
+    expected:
+      - '`hookSpecificOutput.hookEventName` が `UserPromptSubmit`'
+      - '`hookSpecificOutput.additionalContext` が制約「案内の文」の文'
+      - '`decision` を持たない'
+      - 記録のフォルダに `s3` のファイルがある
+      - 終了コードが 0
+    test: test_normal_when_prompt_asks_mdmark
+  - name: 正常系（mdmark を含まない発言）
+    summary: 語 mdmark を含まない発言は案内も記録もしない
+    setup:
+      - name: Mock
+        description: 正常系（mdmark で記載するよう指示する）と同じ
+      - name: 呼び出し
+        description: '`session_id` が `s4`、`prompt` が `README を直して`'
+    flow: |-
+      sequenceDiagram
+        participant C as Claude Code
+        participant H as 案内のフック
+        C->>H: session_id・hook_event_name・prompt
+        H->>H: prompt が mdmark を含まない
+        H-->>C: 空の標準出力・終了コード 0
+    expected:
+      - 標準出力が空
+      - 記録のフォルダに `s4` のファイルが無い
+      - 終了コードが 0
+    test: test_normal_when_prompt_without_mdmark
+  - name: 正常系（記録できない）
+    summary: '`session_id` が使用できない値か、記録のフォルダに書き込めないときは案内せずに終わる'
+    setup:
+      - name: Mock
+        description: 正常系と同じ
+      - name: 呼び出し
+        description: '`session_id` が `../x`、`tool_input.file_path` が `/w/docs/a.mark.md`'
+    flow: |-
+      sequenceDiagram
+        participant C as Claude Code
+        participant H as 案内のフック
+        C->>H: session_id・hook_event_name・tool_name・tool_input
+        H->>H: session_id がファイル名に使用できない
+        H-->>C: 空の標準出力・終了コード 0
+    expected:
+      - 標準出力が空
+      - 記録のフォルダの外にファイルが作られていない
+      - 終了コードが 0
+    test: test_normal_when_session_unusable
+lead: '`.mark.md` のファイルへの Write・Edit と、語 mdmark を含む利用者の発言で、mdmark の記法のルールを MCP で参照して記載した後に `check` で点検するよう、1 つのセッションで 1 回だけ Claude Code へ案内する。呼び出しと発言は止めない。'
+idempotent: false
+side_effects: 案内したセッションの記録のファイルを、記録のフォルダに作る
+callers:
+  - SC-472-15#
+request:
+  - name: session_id
+    type: string
+    required: true
+    location: body
+    description: セッションの ID。標準入力の JSON
+  - name: hook_event_name
+    type: "'PreToolUse' | 'UserPromptSubmit'"
+    required: true
+    location: body
+    description: フックの種類。標準入力の JSON
+  - name: tool_input.file_path
+    type: string
+    required: false
+    location: body
+    description: Write・Edit の書き込み先の絶対パス。PreToolUse のとき。標準入力の JSON
+  - name: prompt
+    type: string
+    required: false
+    location: body
+    description: 利用者の発言。UserPromptSubmit のとき。標準入力の JSON
+  - name: MDMARK_GUIDE_NOTICE_DIR
+    type: string
+    required: false
+    location: argument
+    description: 案内したセッションを記録するフォルダ（環境変数）
+    default: '`{os.tmpdir()}/mdmark-guide-notice`'
+request_example: |-
+  ```json
+  {"session_id": "s1", "hook_event_name": "PreToolUse", "tool_name": "Write", "tool_input": {"file_path": "/w/docs/a.mark.md", "content": "# A"}}
+  ```
+response:
+  - name: hookSpecificOutput.hookEventName
+    type: "'PreToolUse' | 'UserPromptSubmit'"
+    description: 案内するときだけ出す。受け取った `hook_event_name`
+  - name: hookSpecificOutput.additionalContext
+    type: string
+    description: 制約「案内の文」の文
+response_example: |-
+  ```json
+  {"hookSpecificOutput": {"hookEventName": "PreToolUse", "additionalContext": "a.mark.md は mdmark の記法で記載する文書。記載する前に、mdmark の MCP の instructions のとおりにガイドを参照し、記載した後は check で点検する。"}}
+  ```
+exceptions:
+  - name: なし（正常終了）
+    condition: どの場合も終了コード 0
+  - name: なし（記録できない・終了コード 0）
+    condition: '`session_id` が無いか `^[A-Za-z0-9_-]+$` に合わない、標準入力を JSON として読めない、または記録のフォルダに書き込めない'
+    notes: 標準出力に何も出さず、呼び出しと発言を止めない
+constraints:
+  - item: 案内する条件
+    constraint: PreToolUse は `tool_input.file_path` が `.mark.md` で終わるとき、UserPromptSubmit は `prompt` が大文字・小文字を区別せずに語 `mdmark` を含むとき。どちらも、記録のフォルダに `session_id` のファイルが無いときだけ案内する
+    notes: 指示の判定は要件.md の未確定（指示の判定、推奨 A）
+  - item: 記録
+    constraint: 案内する前に、記録のフォルダ（無ければ作る）に `session_id` を名前にした空のファイルを作る。作れないときは案内しない。PreToolUse と UserPromptSubmit は同じ記録を使用し、どちらかで案内したセッションはもう一方でも案内しない
+  - item: 案内の文
+    constraint: 'PreToolUse は「{ファイル名} は mdmark の記法で記載する文書。」、UserPromptSubmit は「利用者が mdmark で記載するよう指示した。」で始め、続けて「記載する前に、mdmark の MCP の instructions のとおりにガイドを参照し、記載した後は check で点検する。」を置く'
+    notes: ガイドの引き方は MCP の instructions（インターフェース定義『MCPサーバーを起動・停止する』の制約「instructions」）に任せ、案内の文に同じ手順を置かない
+  - item: 呼び出しを止めない
+    constraint: '`permissionDecision`・`updatedInput`・`decision`・`continue` を返却しない。終了コードは 0'
+  - item: 対象のツール
+    constraint: '`hooks.json` の PreToolUse の `matcher` を `Write|Edit` にし、既存の mdmark の MCP のツールの PreToolUse の行とは別の行にする'
+refs:
+  - SC-472-15#
+test_file: tests/integration/ClaudeCodeプラグイン/guide-notice.test.ts
