@@ -68,10 +68,10 @@ scenarios:
   - name: 正常シナリオ（図の色を上書きする）
     setup:
       - name: 上書きの CSS を読み込むページ
-        description: mdmark の CSS の後に、図の層の背景と線の色の CSS 変数を書き換える利用側の CSS を読み込み、文書を描く HTML
-        notes: LLM の層のノードの色の CSS 変数を赤（`rgb(255, 0, 0)`）にする
-      - name: フロー図の定義を持つ Markdown
-        description: 『図を描く』の正常シナリオと同じ文書
+        description: mdmark の CSS の後に、図の線の色の CSS 変数を書き換える利用側の CSS を読み込み、文書を描く HTML
+        notes: 図の線の色の CSS 変数 `--mdmark-color-diagram-line` を赤（`rgb(255, 0, 0)`）にする
+      - name: map の構成図を持つ Markdown
+        description: 『Mermaidと補足で図を描く』の正常シナリオと同じ文書
       - name: Mock
         description: jsDelivr を、ビルドした `dist/` を同じパスで返却する手元の応答に差し替える
     flow: |-
@@ -81,12 +81,12 @@ scenarios:
         participant M as mdmark
         U->>P: ページを開く
         P->>M: 文書を描かせる
-        M-->>P: 層の中の CSS が該当したフロー図
+        M-->>P: 層の中の CSS が該当した map の図
         P->>P: 層の外の利用側の CSS が該当する
         P-->>U: 上書きした色で図を表示
     expected:
-      - LLM の層のノードの線の色の計算値が `rgb(255, 0, 0)`
-      - LLM の層の背景は同じ色をうっすら敷いた色で、凡例の LLM の色も同じ色に変わる
+      - 色を指定していない線の色の計算値が `rgb(255, 0, 0)`
+      - 線の矢じりの色も同じ色に変わる
     test: test_normal_when_diagram
   - name: 正常シナリオ（親の class でダークにする）
     setup:
@@ -235,8 +235,8 @@ scenarios:
       - name: 周りの面になじませるページ
         description: body の地を `rgb(240, 240, 240)` にし、mdmark の CSS の後に利用側の CSS を読み込み、文書を描く HTML
         notes: 利用側の CSS は `.mdmark` の `--mdmark-color-bg` を `transparent`、`--mdmark-color-bg-opaque` を `rgb(240, 240, 240)` にする。OS の配色はライト、画面の幅は 1280px
-      - name: 表とフロー図を持つ Markdown
-        description: 本文の幅に収まる 3 列 3 行の表と、『図を描く』の正常シナリオと同じフロー図を持つ文書
+      - name: 表と map の図を持つ Markdown
+        description: 本文の幅に収まる 3 列 3 行の表と、『Mermaidと補足で図を描く』の正常シナリオと同じ map の構成図を持つ文書
       - name: Mock
         description: jsDelivr を、ビルドした `dist/` を同じパスで返却する手元の応答に差し替える
     flow: |-
@@ -249,7 +249,7 @@ scenarios:
         M-->>P: 層の中の CSS が該当した本文
         P->>P: 層の外の利用側の CSS が該当する
         P-->>U: 周りの面になじんだ本文を表示
-        U->>P: フロー図のノードにポインターを乗せる
+        U->>P: 説明を持つ線にポインターを乗せる
         P-->>U: 図のツールチップを表示
         U->>P: 図の全画面のボタンを押す
         P-->>U: 全画面の図を表示

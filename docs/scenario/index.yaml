@@ -67,7 +67,7 @@ items:
 - page: SC-472-27.yaml
   summary: 文書の作成者が `mdmark upgrade` で移行の手順をバージョンの順に当て、点検に合格してから設定のバージョンを書き換える
 - page: SC-472-43.yaml
-  summary: 文書に部品の定義を記載し、共通の部品にフロー図・シーケンス図・グラフを図の決まりのとおりに描かせる
+  summary: 文書に部品の定義を記載し、共通の部品にグラフ・ER 図を図の決まりのとおりに描かせ、廃止した flow・sequence の範囲には変換の案内の警告を出す
 - page: SC-472-11.yaml
   summary: 言語 mermaid のコードブロックを、mdmark の外観のテーマで図の枠に入れて描く
 - page: SC-472-42.yaml

@@ -57,10 +57,10 @@ scenarios:
         description: クリップボードの書き込みを許したブラウザのコンテキストで開く
     flow: |-
       flowchart TD
-        A[雛形を配置する:正常シナリオ] --> B[図を描く:正常シナリオ（グラフ）]
+        A[雛形を配置する:正常シナリオ] --> B[図を描く:正常シナリオ]
         B --> C[操作できる部品で値を変えて写す:正常シナリオ]
         click A "id:SC-472-83#scenarios[正常シナリオ]"
-        click B "id:SC-472-43#scenarios[正常シナリオ（グラフ）]"
+        click B "id:SC-472-43#scenarios[正常シナリオ]"
         click C "id:SC-472-51#scenarios[正常シナリオ]"
     expected:
       - 見本の操作の文書を描くと、スライダー・グラフ・今の値を写すボタンが描かれる
@@ -69,7 +69,7 @@ scenarios:
     test: test_normal_when_interactive
     uses:
       - SC-472-83#scenarios[正常シナリオ]
-      - SC-472-43#scenarios[正常シナリオ（グラフ）]
+      - SC-472-43#scenarios[正常シナリオ]
       - SC-472-51#scenarios[正常シナリオ]
   - name: 異常シナリオ（追加した JavaScript の型が合わない）
     setup:

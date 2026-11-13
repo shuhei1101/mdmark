@@ -351,7 +351,7 @@ scenarios:
         description: 正常シナリオと同じ
         notes: 設定の `features` は図のリサイズハンドルの機能を記載しない（既定のオン）
       - name: 図のリサイズハンドルを削除する Markdown
-        description: '先頭に図のリサイズハンドルの機能を解除する `<!-- features: {...} -->` を持ち、フロー図の部品の定義 1 つを持つ文書'
+        description: '先頭に図のリサイズハンドルの機能を解除する `<!-- features: {...} -->` を持ち、map の範囲 1 つを持つ文書'
         notes: 機能名はインターフェース定義で決める
       - name: Mock
         description: 正常シナリオと同じ
