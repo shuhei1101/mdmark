@@ -614,6 +614,8 @@ elements:
     args:
       - name: mode
         value: 構成図と ER 図は `walkthrough`、シーケンス図は `playback`、状態遷移図は補足に `walkthroughs` があれば `walkthrough`、無ければ `playback`
+      - name: unit
+        value: 状態遷移図の再生は `transition`、ほかは `message`
       - name: total
         value: 補足の `walkthroughs` の手順の数か、表示するメッセージの数か、状態遷移図の再生では遷移の数
       - name: title

@@ -70,6 +70,9 @@ data_models:
       - name: mode
         type: '"walkthrough" | "playback"'
         description: モード
+      - name: unit
+        type: '"message" | "transition" | undefined'
+        description: 再生で進める単位（既定 `message`）。`transition` では再生のボタンの名前を `前の遷移`・`次の遷移` にする
       - name: total
         type: number
         description: 手順の数
@@ -279,3 +282,9 @@ functions:
         condition: '`mode: playback`'
         mock: なし
         expected: ボタンの名前が `前のメッセージ`・`再生をやめる`・`自動で進める`・`次のメッセージ`
+      - name: test_render_map_band_when_transition
+        case: 正常
+        summary: 状態遷移図の再生
+        condition: '`mode: playback`・`unit: transition`'
+        mock: なし
+        expected: ボタンの名前が `前の遷移`・`再生をやめる`・`自動で進める`・`次の遷移`
