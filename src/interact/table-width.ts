@@ -182,16 +182,43 @@ export type AutoColumnWidthsOptions = {
 export const attachAutoColumnWidths = (
   table: HTMLTableElement,
   options: AutoColumnWidthsOptions,
-): { refresh: () => void; detach: () => void } => {
+): {
+  refresh: () => void;
+  columnsChanged: () => void;
+  detach: () => void;
+} => {
   const { wrapper, scroller, headCells, longColumnMin, onApply } = options;
   const long = readLongColumns(wrapper.dataset.long);
   const ranges = readWidthRanges(wrapper.dataset.width);
-  let measured: ColumnMeasure[] | undefined;
+  // 元の列の位置ごとの測った値。隠していて測れなかった列は、表示したときに測る
+  const measures = new Map<number, ColumnMeasure>();
+  // 元の列の位置ごとに入れた幅（外側の幅。px）
+  const assigned = new Map<number, number>();
   let lastWidth: number | undefined;
 
+  /** 表示している列の測った値を返却する。まだ測っていない列があれば測る */
+  const shownMeasures = (): ColumnMeasure[] => {
+    const shown = headCells.flatMap((head, column) =>
+      head.hidden ? [] : [column],
+    );
+    if (shown.some((column) => !measures.has(column))) {
+      for (const measure of measureColumns(table, headCells)) {
+        if (!measures.has(measure.column)) {
+          measures.set(measure.column, measure);
+        }
+      }
+    }
+    return shown.flatMap((column) => {
+      const measure = measures.get(column);
+      return measure ? [measure] : [];
+    });
+  };
+
   /** 列ごとの最小の幅と望む幅を、測った値から決める */
-  const boundsOf = (): Array<ColumnBounds & { fixed?: boolean }> =>
-    (measured ?? []).map(({ column, longest, longestWord, em }) => {
+  const boundsOf = (
+    columns: ColumnMeasure[],
+  ): Array<ColumnBounds & { fixed?: boolean }> =>
+    columns.map(({ column, longest, longestWord, em }) => {
       const head = headCells[column];
       if (head?.classList.contains("is-resized")) {
         const width = head.offsetWidth;
@@ -209,56 +236,89 @@ export const attachAutoColumnWidths = (
       });
     });
 
-  /** 列ごとの幅（外側の幅）を見出しのセルと表に入れる */
+  /** 表の幅を、表示している列に入れた幅の合計にする */
+  const writeTotal = (): void => {
+    const total = headCells.reduce(
+      (sum, head, column) =>
+        head.hidden ? sum : sum + (assigned.get(column) ?? 0),
+      0,
+    );
+    table.style.setProperty(AUTO_TABLE_WIDTH_VARIABLE, `${total}px`);
+  };
+
+  /** 列ごとの幅（外側の幅）を見出しのセルに入れ、表の幅を入れ直す */
   const write = (
-    columns: Array<ColumnBounds & { fixed?: boolean }>,
+    columns: ColumnMeasure[],
+    bounds: Array<ColumnBounds & { fixed?: boolean }>,
     widths: number[],
   ): void => {
-    let total = 0;
-    (measured ?? []).forEach(({ column }, index) => {
+    columns.forEach(({ column }, index) => {
       const head = headCells[column];
       const width = Math.ceil(widths[index] ?? 0);
-      total += width;
-      if (columns[index]?.fixed) {
+      assigned.set(column, width);
+      if (bounds[index]?.fixed) {
         head?.style.removeProperty(AUTO_WIDTH_VARIABLE);
       } else {
         head?.style.setProperty(AUTO_WIDTH_VARIABLE, `${width}px`);
       }
     });
-    table.style.setProperty(AUTO_TABLE_WIDTH_VARIABLE, `${total}px`);
+    writeTotal();
   };
 
-  /** 測った値で列の幅を決めて入れる。入れた幅より広く描かれた列（見出しのボタンの幅など）は、描かれた幅を最小の幅にして分け直す */
+  /** 表示している列を測った値で列の幅を決めて入れる。入れた幅より広く描かれた列（見出しのボタンの幅など）は、描かれた幅を最小の幅にして分け直す */
   const apply = (): void => {
     const visible = scroller.clientWidth;
     if (visible === 0) {
       return;
     }
-    measured ??= measureColumns(table, headCells);
-    const columns = boundsOf();
+    const columns = shownMeasures();
+    const bounds = boundsOf(columns);
     const available =
       visible - (table.offsetWidth - table.clientWidth) - columns.length;
-    const first = distributeColumnWidths(columns, available);
+    const first = distributeColumnWidths(bounds, available);
     table.setAttribute(AUTO_WIDTH_ATTRIBUTE, "");
-    write(columns, first.widths);
+    write(columns, bounds, first.widths);
     let widened = false;
-    const adjusted = columns.map((bounds, index) => {
-      const head = headCells[measured?.[index]?.column ?? -1];
+    const adjusted = bounds.map((bound, index) => {
+      const head = headCells[columns[index]?.column ?? -1];
       const drawn = head?.offsetWidth ?? 0;
-      if (bounds.fixed || drawn <= Math.ceil(first.widths[index] ?? 0) + 1) {
-        return bounds;
+      if (bound.fixed || drawn <= Math.ceil(first.widths[index] ?? 0) + 1) {
+        return bound;
       }
       widened = true;
       return {
-        ...bounds,
-        min: Math.max(bounds.min, drawn),
-        wanted: Math.max(bounds.wanted, drawn),
+        ...bound,
+        min: Math.max(bound.min, drawn),
+        wanted: Math.max(bound.wanted, drawn),
       };
     });
     if (widened) {
-      write(adjusted, distributeColumnWidths(adjusted, available).widths);
+      write(
+        columns,
+        adjusted,
+        distributeColumnWidths(adjusted, available).widths,
+      );
     }
     lastWidth = visible;
+    onApply?.();
+  };
+
+  /** 列の表示を切り替えた後に、表示している列の幅を変えずに表の幅を入れ直す。前に幅を入れていない列は、測って最小の幅を入れる */
+  const columnsChanged = (): void => {
+    if (!table.hasAttribute(AUTO_WIDTH_ATTRIBUTE)) {
+      return;
+    }
+    const fresh = shownMeasures().filter(({ column }) => !assigned.has(column));
+    if (fresh.length > 0) {
+      const bounds = boundsOf(fresh);
+      write(
+        fresh,
+        bounds,
+        bounds.map((bound) => bound.min),
+      );
+    } else {
+      writeTotal();
+    }
     onApply?.();
   };
 
@@ -274,6 +334,7 @@ export const attachAutoColumnWidths = (
 
   return {
     refresh: apply,
+    columnsChanged,
     detach: () => {
       observer.disconnect();
       for (const head of headCells) {

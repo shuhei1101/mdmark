@@ -1202,6 +1202,7 @@ function attachTable(
         hiddenColumns.add(column);
       }
       applyColumns();
+      autoWidths.columnsChanged();
       notifyHidden();
       eye.focus();
     } else if (totalsToggle && totalsMenu) {
