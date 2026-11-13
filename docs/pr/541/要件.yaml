@@ -155,3 +155,9 @@ scope_out:
   - item: 純粋な Markdown・Mermaid だけの文書でのビュワーの操作
     reason: 別の題材で、別の Issue が扱う
     plan: '#500'
+  - item: 結合テスト `tests/integration/lib/build.test.ts` の `test_normal` が `migrations/next` が無いと ENOENT で失敗する
+    reason: この PR の変更と関係の無い既存の不具合。develop でも同じく失敗する
+    plan: '#544'
+  - item: 規約『フック作成ガイド』（`claude-hook`）に、許可・拒否を判断せずに `additionalContext` だけを出す PreToolUse のフックの出力の行を追加するルール改修
+    reason: reviewer の判断で起票する。`create_plugin_rule_issue` が起票先の未設定（`my_plugins_repo`）で失敗したため、まだ Issue が無い
+    plan: to_file
