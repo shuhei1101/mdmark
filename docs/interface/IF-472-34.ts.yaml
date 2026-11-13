@@ -2211,6 +2211,7 @@ flows:
       - それぞれの `div.mdmark-map` の中に、Mermaid のソースを持つ `div.mdmark-code`（`code` が `language-mermaid`。属性 `data-mdmark-mermaid` を持たない）と、補足の JSON の文字を持つ `pre.mdmark-map-data`（`hidden`）がある
       - 補足の HTML コメントの区切り（`<!-- map-data:`・`-->`）とマーカーの文字が出力に無い
       - '`svg` と `figure.mdmark-diagram` が無い（図にするのは `mount`）'
+      - '`erDiagram` の範囲は `data-map-kind="erDiagram"`、`stateDiagram-v2` と `stateDiagram` の範囲は `data-map-kind="stateDiagram"` の `div.mdmark-map` になる'
       - 同じ Markdown を 2 回描くと同じ文字列が返る
     test: test_normal_when_map_range
   - name: 正常系（map の書き方の誤り）
@@ -2232,7 +2233,7 @@ flows:
     expected:
       - 1 つ目の範囲の場所に書き方の警告が無く（読めない行・閉じの無い `subgraph`・補足の知らないキーは `mount` が警告にする）、`div.mdmark-map` があり、その `data-map-args` に `mdoe` が無い
       - 印の引数が JSON として読めない範囲の場所に、印の引数を JSON のオブジェクトで記載する直し方の書き方の警告があり、引数なしとして `div.mdmark-map` がある
-      - '`pie` の範囲の場所に、この版で描ける種類（`flowchart`・`sequenceDiagram`）を記載した書き方の警告があり、`div.mdmark-map` を持たず、ソースのコードブロックがある'
+      - '`pie` の範囲の場所に、この版で描ける種類（`flowchart`・`sequenceDiagram`・`erDiagram`・`stateDiagram-v2`）を記載した書き方の警告があり、`div.mdmark-map` を持たず、ソースのコードブロックがある'
       - mermaid のブロックの無い範囲と、補足を 2 つ持つ範囲の場所に書き方の警告があり、`div.mdmark-map` が無い
       - ほかの本文は描かれている
     test: test_normal_when_map_written_wrongly
