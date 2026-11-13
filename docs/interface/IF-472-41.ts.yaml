@@ -212,7 +212,7 @@ exceptions:
     condition: 利用側のブラウザが読み込む JS（`dist/index.js`・`dist/view.js`・`dist/comments.js`・`dist/viewer.js`）のどれかが、下限のバージョンに無い API を、同じ API の `typeof` で確認する `if` のブロックの外で使用する
 constraints:
   - item: 配布ファイル 1 つのサイズ
-    constraint: 656KB 以下（671744 バイト）。利用側のページが読み込まない `dist/cli.js`・`dist/viewer.js`・`dist/viewer.css` は対象外
+    constraint: 672KB 以下（688128 バイト）。利用側のページが読み込まない `dist/cli.js`・`dist/viewer.js`・`dist/viewer.css` は対象外
     decided_by: NFR-472-1#requirements[配布ファイル 1 つのサイズ]
   - item: 出力の対象のブラウザ
     constraint: Chrome 99・Firefox 98・Safari 16.4
