@@ -508,7 +508,7 @@ test("test_attach_diagram_tips_when_chart_item", async () => {
     tableMark.getBoundingClientRect().bottom,
   );
   const open = [
-    ...document.querySelectorAll<HTMLElement>('[role="tooltip"]'),
+    ...er.querySelectorAll<HTMLElement>('[role="tooltip"]'),
   ].filter((tip) => !tip.hidden);
   expect(open).toHaveLength(1);
 });

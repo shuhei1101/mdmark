@@ -289,7 +289,9 @@ test("test_open_diagram_dialog_when_tip_open", async () => {
     throw new Error("全画面が開いていない");
   }
   const owners = [
-    ...dialog.querySelectorAll<HTMLElement>(".mdmark-diagram-label.has-tip"),
+    ...dialog.querySelectorAll<HTMLElement>(
+      ".mdmark-diagram-info[aria-describedby]",
+    ),
   ];
   expect(owners.length).toBeGreaterThanOrEqual(2);
   // 実行・検証
