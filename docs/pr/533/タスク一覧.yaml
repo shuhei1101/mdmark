@@ -50,11 +50,15 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-13T16:26:23.519470+00:00'
   - process: 部品設計
-    status: todo
+    status: done
     note: CMP-472-61（表）に、留めた列の幅の合計が見える幅を超えたストーリーを足す
+    updated_by: planner
+    updated_at: '2026-11-13T16:42:51.579201+00:00'
   - process: 画面設計
-    status: todo
+    status: done
     note: SCR-472-4（文書）の表のピン止めのボタンに、見える幅を超えたときの動きと知らせを足す
+    updated_by: planner
+    updated_at: '2026-11-13T16:42:51.579201+00:00'
   - process: モジュール構成設計
     status: todo
     note: MOD-472-218（table-logic.ts）の pinOffsets と MOD-472-228（tables.ts）の pinColumns に、見える幅を超えた列を留めない分岐を足す
