@@ -725,7 +725,7 @@ flows:
     summary: '`erDiagram`・`stateDiagram-v2` の map の補足が指す無いテーブル・列・関連・状態・遷移の ID と、`groups` の誤りと、ID の衝突をずれにする'
     setup:
       - name: ER 図・状態遷移図の補足にずれを持つフォルダ
-        description: '`build.include` が該当する `docs/a.md` だけを持ち、3 行目の `<!-- map -->` の範囲に、テーブル「注文」「明細」・関連 2 本の `erDiagram` と、10 行目の 1 行の補足（`notes` のキー `注文.幽霊`・`r3`、`groups` の分類 `記録` の `tables` に無いテーブル「支払い」、分類 `明細`）を持ち、20 行目の `<!-- map -->` の範囲に、状態「下書き」・遷移 1 本の `stateDiagram-v2` と、27 行目の 1 行の補足（`notes` のキー `t2`）を持つフォルダ'
+        description: '`build.include` が該当する `docs/a.mark.md` だけを持ち、3 行目の `<!-- map -->` の範囲に、テーブル「注文」「明細」・関連 2 本の `erDiagram` と、10 行目の 1 行の補足（`notes` のキー `注文.幽霊`・`r3`、`groups` の分類 `記録` の `tables` に無いテーブル「支払い」、分類 `明細`）を持ち、20 行目の `<!-- map -->` の範囲に、状態「下書き」・遷移 1 本の `stateDiagram-v2` と、27 行目の 1 行の補足（`notes` のキー `t2`）を持つフォルダ'
       - name: Mock
         description: 差し替える依存は無い。点検はブラウザを使用しない
     flow: |-
@@ -738,8 +738,8 @@ flows:
         C-->>W: map のずれの 5 行・終了コード 1
     expected:
       - 終了コードが 1
-      - '`docs/a.md:10:` で始まる行に、`map_unknown_ref` が 3 つ（内容に `notes.注文.幽霊`・`notes.r3`・`groups.記録.tables` の「支払い」）と、`map_invalid_value` が 1 つ（内容に、分類の ID `明細` がテーブル名と同じで、分類の ID を付け直す修正方法）ある'
-      - '`docs/a.md:27:` で始まる行に、`map_unknown_ref` が 1 つ（内容に `notes.t2` と、遷移の ID を記載順の `t{番号}` にする修正方法）ある'
+      - '`docs/a.mark.md:10:` で始まる行に、`map_unknown_ref` が 3 つ（内容に `notes.注文.幽霊`・`notes.r3`・`groups.記録.tables` の「支払い」）と、`map_invalid_value` が 1 つ（内容に、分類の ID `明細` がテーブル名と同じで、分類の ID を付け直す修正方法）ある'
+      - '`docs/a.mark.md:27:` で始まる行に、`map_unknown_ref` が 1 つ（内容に `notes.t2` と、遷移の ID を記載順の `t{番号}` にする修正方法）ある'
       - 最後の行が `ずれ 5 件`
       - 設定・索引・文書が変わっていない
     test: test_normal_when_map_er_state_data_drift
