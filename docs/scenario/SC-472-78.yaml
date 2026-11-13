@@ -5,7 +5,7 @@ scenarios:
   - name: 正常シナリオ
     setup:
       - name: ずれの無いフォルダ
-        description: '`mdmark init` の後に文書 2 つを記載し、索引に 2 つとも記載し、設定の `build.include` が 2 つに該当するフォルダ'
+        description: '`mdmark init` の後に拡張子が `.mark.md` の文書 2 つを記載し、索引に 2 つとも記載し、設定の `build.include` が 2 つに該当するフォルダ'
       - name: Mock
         description: 差し替える依存は無い
     flow: |-

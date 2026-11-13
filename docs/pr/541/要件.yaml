@@ -2,12 +2,12 @@ use_cases:
   - kind: single
     scenario: docs/scenario/SC-472-78.yaml
     impact: changed
-    detail: 拡張子が純粋な `.md` の文書が mdmark の記法を含むとき、拡張子を `.mark.md` に変えるよう提案するずれを出すシナリオと、設定で止めたときに出さないシナリオを追加する。記法を含まない `.md` と `.mark.md` には出さない
+    detail: 拡張子が純粋な `.md` の文書が mdmark の記法を含むとき、拡張子を `.mark.md` に変えるよう提案するずれを出すシナリオと、設定で止めたときに出さないシナリオを追加する。記法を含まない `.md` と `.mark.md` には出さない。既存のシナリオが元にする正常シナリオのフォルダの文書を `.mark.md` にする
     depends_on: []
   - kind: single
     scenario: docs/scenario/SC-472-3.yaml
     impact: changed
-    detail: Claude Code から呼んだ点検でも、記法を含む純粋な `.md` の拡張子の提案が返ることを加える
+    detail: Claude Code から呼んだ点検でも、記法を含む純粋な `.md` の拡張子の提案が返ることを加える。正常シナリオのフォルダの文書を `.mark.md` にする
     depends_on:
       - docs/scenario/SC-472-78.yaml
       - docs/scenario/SC-472-85.yaml
