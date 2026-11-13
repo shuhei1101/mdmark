@@ -1,0 +1,54 @@
+use_cases:
+  - kind: single
+    scenario: docs/scenario/SC-472-21.yaml
+    impact: changed
+    detail: 利用側のページが本文を描き直しても、読者が手で開閉した行の詳細・details の範囲などがその開閉のまま残るシナリオを追加
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-23.yaml
+    impact: changed
+    detail: 中身の高さが大きく違うタブへ切り替えても、押したタブの見出しが画面の同じ位置に残るシナリオを、ページの先頭・中ほど・末尾で追加
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-59.yaml
+    impact: run_only
+    detail: 本文だけを描き直す流れは変えないが、描き直しで引き継ぐ状態が増えるため回帰を確認する
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-77.yaml
+    impact: run_only
+    detail: VS Code のプレビューは編集のたびに本文を描き直すため、手で開閉した部品の中を編集しても開閉が残ることを確認する
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-17.yaml
+    impact: run_only
+    detail: コードブロックの畳む行と表のキーの階層の開閉の始め方が変わるため回帰を確認する
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-20.yaml
+    impact: run_only
+    detail: ファイルツリーのフォルダの開閉の始め方が変わるため回帰を確認する
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-64.yaml
+    impact: run_only
+    detail: 折りたたみの注意書きの開閉の始め方が変わるため回帰を確認する
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-42.yaml
+    impact: run_only
+    detail: ER 図の列の開閉の始め方が変わるため回帰を確認する
+    depends_on: []
+docs:
+  - page: docs/guide/導入-文書を描く.md
+    new: false
+    change: '`update` を呼ぶの説明に、読者が手で開閉した行の詳細・details の範囲・ER 図の列・ファイルツリー・コードブロックの折り畳み・表のキーの階層・折り畳む注意書きの開閉も保つことを追加'
+    status: todo
+  - page: docs/guide/API.md
+    new: false
+    change: '`MountHandle.update` の説明に、手で開閉した部品の開閉も保つことを追加'
+    status: todo
+scope_out:
+  - item: 図のグループ・シーケンス図のブロックの開閉（`src/parts/map.ts`）と前付けの `<details>`（`src/parts/frontmatter.ts`）を update で引き継ぐ
+    reason: 要望の対象の 7 種類の部品に含まれないが、同じ理由（描き直しで本文を丸ごと差し替える）で初期の開閉へ戻る見込み。この PR で広げる開閉の記録に寄せると対応が小さいため、この PR の仕組みを前提にする後続として扱う。スコープに含めるかはレビューで確定する
+    plan: to_file

@@ -1,0 +1,62 @@
+tasks:
+  - process: 初期構築
+    status: skipped
+    reason: 既存リポジトリのため対象外
+    updated_by: planner
+    updated_at: '2026-11-13T18:19:23.729428+00:00'
+  - process: リバースエンジニアリング
+    status: skipped
+    reason: 既存の設計書があるため対象外
+    updated_by: planner
+    updated_at: '2026-11-13T18:19:23.729428+00:00'
+  - process: 方針決め
+    status: skipped
+    reason: 方針決めを依頼する Issue ではないため対象外
+    updated_by: planner
+    updated_at: '2026-11-13T18:19:23.729428+00:00'
+  - process: PoC 検証
+    status: skipped
+    reason: 既存の開閉の記録（#497）とスクロール位置の調整で成り立ち、未検証の技術機構に依存しないため対象外
+    updated_by: planner
+    updated_at: '2026-11-13T18:19:23.729428+00:00'
+  - process: 複合ユースケース設計
+    status: skipped
+    reason: ユースケースの連鎖は変わらず、単一 UC の中で閉じるため対象外
+    updated_by: planner
+    updated_at: '2026-11-13T18:19:23.729428+00:00'
+  - process: デザインスタイル選定
+    status: skipped
+    reason: 画面の見た目が変わらない（開閉とスクロール位置の保持だけ）ため対象外
+    updated_by: planner
+    updated_at: '2026-11-13T18:19:23.729428+00:00'
+  - process: 画面一覧・画面遷移
+    status: skipped
+    reason: 画面の見た目が変わらない（開閉とスクロール位置の保持だけ）ため対象外
+    updated_by: planner
+    updated_at: '2026-11-13T18:19:23.729428+00:00'
+  - process: 単一ユースケース設計
+    status: todo
+  - process: モック作成
+    status: skipped
+    reason: 画面の見た目が変わらない（開閉とスクロール位置の保持だけ）ため対象外
+    updated_by: planner
+    updated_at: '2026-11-13T18:19:23.729428+00:00'
+  - process: インターフェース定義設計
+    status: todo
+  - process: 部品設計
+    status: todo
+  - process: 画面設計
+    status: skipped
+    reason: UI 項目と操作は増えず変わらないため対象外
+    updated_by: planner
+    updated_at: '2026-11-13T18:19:23.729428+00:00'
+  - process: モジュール構成設計
+    status: todo
+  - process: ドキュメント修正
+    status: todo
+  - process: 単体テスト作成
+    status: todo
+  - process: 実装
+    status: todo
+  - process: 結合テスト作成
+    status: todo
