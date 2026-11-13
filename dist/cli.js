@@ -56481,6 +56481,7 @@ import { isAbsolute as isAbsolute5, resolve as resolve13 } from "node:path";
 import { join as join7, resolve as resolve9 } from "node:path";
 
 // src/knowledge/paths.ts
+var MARK_MARKDOWN_SUFFIX = ".mark.md";
 var SCHEME_PATTERN = /^[a-z][a-z0-9+.-]*:/i;
 function normalizePath(path) {
   return path.split("/").filter((segment) => segment !== "" && segment !== ".").join("/");
@@ -56528,6 +56529,9 @@ function relativeHref(fromPath, toPath) {
   }
   const ups = Array.from({ length: from.length - common }, () => "..");
   return [...ups, ...to.slice(common)].join("/");
+}
+function isMarkMarkdown(path) {
+  return path.endsWith(MARK_MARKDOWN_SUFFIX);
 }
 
 // src/cli/config.ts
@@ -56836,7 +56840,7 @@ function compareVersions(a, b) {
   return 0;
 }
 function cliVersion() {
-  return "v0.11.0";
+  return "v0.12.0";
 }
 
 // src/table-logic.ts
@@ -57677,6 +57681,18 @@ function validateCheck(value, file, issues) {
       )
     );
     return void 0;
+  }
+  if (value.suggestMarkExtension !== void 0 && typeof value.suggestMarkExtension !== "boolean") {
+    issues.push(
+      schemaIssue(
+        file,
+        "check.suggestMarkExtension",
+        "`check.suggestMarkExtension` \u306F `true` \u304B `false` \u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002"
+      )
+    );
+    const rest2 = { ...value };
+    delete rest2.suggestMarkExtension;
+    return validateCheck(rest2, file, issues);
   }
   if (value.ignore === void 0) {
     return value;
@@ -65322,6 +65338,12 @@ function renderFilterFields(options) {
   ).join("");
   return `<label class="mdmark-filter-field">\u5019\u88DC\u3092\u691C\u7D22<input class="mdmark-filter-search" type="search"></label><ul class="mdmark-filter-options">${items}</ul><p class="mdmark-filter-none" hidden>\u4E00\u81F4\u3059\u308B\u5019\u88DC\u304C\u3042\u308A\u307E\u305B\u3093</p>`;
 }
+var PIN_UNPINNED_SUFFIX = "\uFF08\u8868\u306E\u5E45\u306B\u53CE\u307E\u3089\u306A\u3044\u305F\u3081\u7559\u307E\u3063\u3066\u3044\u307E\u305B\u3093\uFF09";
+function pinButtonLabel(options) {
+  const { label, mode, unpinned } = options;
+  const base = `\u300C${label}\u300D${mode === "each" ? "\u306E\u5217\u3092\u30D4\u30F3\u6B62\u3081" : "\u306E\u5217\u307E\u3067\u30D4\u30F3\u6B62\u3081"}`;
+  return unpinned ? `${base}${PIN_UNPINNED_SUFFIX}` : base;
+}
 function renderTableTools(options) {
   const {
     id,
@@ -65332,6 +65354,7 @@ function renderTableTools(options) {
     active = false,
     pinVisible = false,
     pinPressed = false,
+    pinUnpinned = false,
     pinMode = "each"
   } = options;
   const open2 = options.open ?? false;
@@ -65340,7 +65363,12 @@ function renderTableTools(options) {
   const filterable = features.includes("filter") && filter2 !== void 0;
   const title = features.includes("sort") ? `<button class="mdmark-sort" type="button">${escapedLabel}</button>` : `<span class="mdmark-th-label">${escapedLabel}</span>`;
   const filterButton = filterable ? `<button class="mdmark-filter${active ? " is-active" : ""}" type="button" aria-label="\u300C${escapedLabel}\u300D\u3067\u7D5E\u308A\u8FBC\u3080" aria-expanded="${open2}" aria-controls="${escapeHtml2(controls)}"><span class="mdmark-visually-hidden">${active ? "\uFF08\u7D5E\u308A\u8FBC\u307F\u4E2D\uFF09" : ""}</span></button>` : "";
-  const pinButton = features.includes("pin") ? `<button class="mdmark-pin" type="button" aria-label="\u300C${escapedLabel}\u300D${pinMode === "each" ? "\u306E\u5217\u3092\u30D4\u30F3\u6B62\u3081" : "\u306E\u5217\u307E\u3067\u30D4\u30F3\u6B62\u3081"}" aria-pressed="${pinPressed}"${pinVisible ? "" : " hidden"}></button>` : "";
+  const pinLabel = pinButtonLabel({
+    label: escapedLabel,
+    mode: pinMode,
+    unpinned: pinUnpinned
+  });
+  const pinButton = features.includes("pin") ? `<button class="mdmark-pin${pinUnpinned ? " is-unpinned" : ""}" type="button" aria-label="${pinLabel}"${pinUnpinned ? ` title="${pinLabel}"` : ""} aria-pressed="${pinPressed}"${pinVisible ? "" : " hidden"}></button>` : "";
   const tools = filterButton || pinButton ? `<span class="mdmark-th-tools">${filterButton}${pinButton}</span>` : "";
   const drawer = filterable ? `<div class="mdmark-filter-drawer" id="${escapeHtml2(controls)}" role="dialog" aria-label="\u300C${escapedLabel}\u300D\u3067\u7D5E\u308A\u8FBC\u3080" data-filter-kind="${filter2.kind}" data-column="${column}"${open2 ? "" : " hidden"}><p class="mdmark-filter-title">\u300C${escapedLabel}\u300D\u3067\u7D5E\u308A\u8FBC\u3080</p>${renderFilterFields(options)}<button class="mdmark-filter-clear" type="button">\u7D5E\u308A\u8FBC\u307F\u3092\u89E3\u9664</button></div>` : "";
   const resizeHandle = features.includes("resize") ? `<span class="mdmark-col-resize" role="separator" aria-orientation="vertical" tabindex="0" aria-label="\u300C${escapedLabel}\u300D\u306E\u5217\u306E\u5E45"></span>` : "";
@@ -65572,8 +65600,10 @@ function renderTableBody(options, id) {
   const pinned = new Set(
     options.overflow ? options.pinned ?? Array.from({ length: options.rowHeader ?? 0 }, (_, index) => index) : []
   );
+  const unpinned = new Set(options.overflow ? options.unpinned ?? [] : []);
+  const stuck = (column) => pinned.has(column) && !unpinned.has(column);
   let pinnedEdge = -1;
-  while (pinned.has(pinnedEdge + 1)) {
+  while (stuck(pinnedEdge + 1)) {
     pinnedEdge += 1;
   }
   const pinnedLast = Math.max(-1, ...pinned);
@@ -65594,7 +65624,7 @@ function renderTableBody(options, id) {
   );
   const cellClass = (column, extra = []) => {
     const names2 = [
-      ...pinned.has(column) ? column === pinnedEdge ? ["is-pinned-col", "is-pinned-edge"] : ["is-pinned-col"] : [],
+      ...stuck(column) ? column === pinnedEdge ? ["is-pinned-col", "is-pinned-edge"] : ["is-pinned-col"] : [],
       ...highlightOf(column) ? ["mdmark-col-highlight"] : [],
       ...wideColumns.has(column) ? ["mdmark-wide"] : [],
       ...checkColumns.has(column) ? ["mdmark-align-center"] : [],
@@ -65622,6 +65652,7 @@ function renderTableBody(options, id) {
       value,
       pinVisible: options.overflow === true,
       pinPressed: pinMode === "each" ? pinned.has(index) : index === pinnedLast,
+      pinUnpinned: pinMode === "each" ? unpinned.has(index) : index === pinnedLast && unpinned.size > 0,
       pinMode
     });
     drawers.push(tools.drawer);
@@ -80999,12 +81030,17 @@ async function collectCheckDocuments(loaded) {
   }
   return [...documents].map(([path, markdown]) => ({ path, markdown })).sort((a, b) => a.path < b.path ? -1 : a.path > b.path ? 1 : 0);
 }
-function checkUnknownMarks(documents, config3, directives) {
-  const known = /* @__PURE__ */ new Set([
+function knownMarkNames(options) {
+  return /* @__PURE__ */ new Set([
     FEATURES_MARK,
     ...Object.keys(SYNTAX_MARKS),
-    ...Object.keys(resolveConfig({ config: config3 }).libraries),
-    ...directives,
+    ...Object.keys(resolveConfig({ config: options.config }).libraries),
+    ...options.directives
+  ]);
+}
+function checkUnknownMarks(documents, config3, directives) {
+  const known = /* @__PURE__ */ new Set([
+    ...knownMarkNames({ config: config3, directives }),
     ...config3.check?.ignore ?? []
   ]);
   const issues = [];
@@ -81019,6 +81055,28 @@ function checkUnknownMarks(documents, config3, directives) {
         });
       }
     }
+  }
+  return issues;
+}
+function checkPlainMarkdown(documents, known) {
+  const issues = [];
+  for (const document2 of documents) {
+    if (isMarkMarkdown(document2.path)) {
+      continue;
+    }
+    const mark = findMarks(document2.markdown).find(
+      (found) => known.has(found.name)
+    );
+    if (mark === void 0) {
+      continue;
+    }
+    const renamed = `${basename8(document2.path).replace(/\.md$/, "")}${MARK_MARKDOWN_SUFFIX}`;
+    issues.push({
+      file: document2.path,
+      where: String(mark.line),
+      kind: "plain_md_with_marks",
+      message: `\u8A18\u6CD5\u3092\u542B\u3080\u6587\u66F8\u306E\u62E1\u5F35\u5B50\u304C .md \u3067\u3059\u3002${renamed} \u306B\u6539\u540D\u3059\u308B\u304B\u3001\u62E1\u5F35\u5B50\u306E\u63D0\u6848\u3092\u6B62\u3081\u308B\u3068\u304D\u306F\u8A2D\u5B9A\u306E check.suggestMarkExtension \u3092 false \u306B\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
+    });
   }
   return issues;
 }
@@ -81257,6 +81315,10 @@ async function collectCheckIssues(path, options = {}) {
   const includes = await checkIncludes({ documents, root: loaded.dir });
   const diagrams = checkDiagrams(documents);
   const maps2 = checkMaps(documents, resolveConfig({ config: config3 }));
+  const plainMarkdown = checkMarks && config3.check?.suggestMarkExtension !== false ? checkPlainMarkdown(
+    documents,
+    knownMarkNames({ config: config3, directives: extensions2.directives })
+  ) : [];
   const mapIcons = checkMapConfig(config3.map).map((issue2) => ({
     file,
     where: issue2.key,
@@ -81280,7 +81342,8 @@ async function collectCheckIssues(path, options = {}) {
     ...markOptions,
     ...includes,
     ...diagrams,
-    ...maps2
+    ...maps2,
+    ...plainMarkdown
   ];
 }
 function validateSourceArgs(options) {
@@ -81901,7 +81964,7 @@ ${error2 instanceof Error ? error2.stack ?? "" : ""}`
 
 // src/plugin/mcp.ts
 var SERVER_NAME = "mdmark";
-var INSTRUCTIONS = 'mdmark \u306F Markdown \u6587\u66F8\u306E\u8A18\u6CD5\u30FB\u90E8\u54C1\u30FB\u56F3\u3092\u63CF\u304F\u30E9\u30A4\u30D6\u30E9\u30EA\u3067\u3001\u3053\u306E MCP \u30B5\u30FC\u30D0\u30FC\u306F mdmark \u306E\u6587\u66F8\u306E\u70B9\u691C\uFF08check\uFF09\u30FBHTML \u3078\u306E\u66F8\u304D\u51FA\u3057\uFF08export_html\uFF09\u30FB1 \u679A\u3078\u306E\u307E\u3068\u3081\uFF08build_site\uFF09\u3068\u3001\u5229\u7528\u5074\u306E CSS \u306E\u30C6\u30F3\u30D7\u30EC\u30FC\u30C8\u306E\u4E00\u89A7\uFF08list_templates\uFF09\u30FB\u767B\u9332\uFF08add_template\uFF09\u30FB\u914D\u7F6E\uFF08apply_template\uFF09\u3092\u6301\u3064\u3002\nmdmark \u306E\u8A18\u6CD5\u30FB\u90E8\u54C1\u30FB\u56F3\u306E\u8A18\u8F09\u65B9\u6CD5\u306F\u3001\u30AC\u30A4\u30C9\u3068\u3057\u3066 dev-docs \u306E\u914D\u4FE1\u5143 mdmark \u306B\u3042\u308B\u3002\nmdmark \u306E\u6587\u66F8\u3092\u8A18\u8F09\u3059\u308B\u524D\u306B\u3001dev-docs \u306E search_docs \u3067 source: "mdmark" \u306E kind \u304C docs \u306E\u6587\u66F8\u3092\u30BF\u30B0 topic:\u30AC\u30A4\u30C9 \u3067\u7D5E\u3063\u3066\u4E00\u89A7\u3092\u5F15\u304D\u3001\u5F53\u3066\u306F\u307E\u308B\u30DA\u30FC\u30B8\u3092 view: "full" \u3067\u8AAD\u307F\u8FBC\u3080\u3002\u4F5C\u696D\u5834\u6240\u304C mdmark \u306E\u30EA\u30DD\u30B8\u30C8\u30EA\u306E\u5916\u306A\u3089 outside_scope: true \u3092\u4ED8\u3051\u308B\u3002\ndev-docs \u304C\u7121\u3044\u3001\u307E\u305F\u306F\u914D\u4FE1\u5143 mdmark \u304C\u767B\u9332\u3055\u308C\u3066\u3044\u306A\u3044\u3068\u304D\u306F\u3001dev-docs \u304C\u7121\u3044\u306E\u3067\u898B\u3064\u304B\u308A\u307E\u305B\u3093\u3002\n\u8A18\u8F09\u3057\u305F\u5F8C\u306F check \u3067\u70B9\u691C\u3057\u3001\u56F3\u306F\u30AC\u30A4\u30C9\u306E\u300E\u63CF\u3044\u305F\u56F3\u3092\u78BA\u8A8D\u3059\u308B\u300F\u306E\u624B\u9806\u3067\u78BA\u8A8D\u3059\u308B\u3002\n\u5229\u7528\u5074\u306E CSS \u3092\u63A2\u3059\u3068\u304D\u306F list_templates \u3067\u4E00\u89A7\u3092\u5F15\u304D\u3001\u9078\u3093\u3060\u30C6\u30F3\u30D7\u30EC\u30FC\u30C8\u3092 apply_template \u3067\u914D\u7F6E\u3057\u3066\u3001\u8FD4\u3063\u305F theme \u306E\u5024\u3092\u8A2D\u5B9A\u306E theme \u306B\u8A18\u8F09\u3059\u308B\u3002\u4F5C\u3063\u305F CSS \u3092\u4F7F\u3044\u56DE\u3059\u3068\u304D\u306F add_template \u3067\u767B\u9332\u3059\u308B\u3002\n\u8A18\u6CD5\u3092\u4F7F\u7528\u3057\u306A\u3044 Markdown \u306E\u7DE8\u96C6\u3068\u30B3\u30FC\u30C9\u306E\u8ABF\u67FB\u306B\u306F\u3001\u3053\u306E MCP \u30B5\u30FC\u30D0\u30FC\u3068\u30AC\u30A4\u30C9\u306F\u8981\u3089\u306A\u3044\u3002\n\u3053\u306E\u5E38\u99D0\u30B5\u30FC\u30D0\u30FC\u306F {location} \u3067\u52D5\u304F\u3002\u6B62\u307E\u3063\u305F\u3068\u304D\u306F /mdmark:global-setup \u3067\u3082\u3046\u4E00\u5EA6\u8D77\u52D5\u3067\u304D\u308B\u3002';
+var INSTRUCTIONS = 'mdmark \u306F Markdown \u6587\u66F8\u306E\u8A18\u6CD5\u30FB\u90E8\u54C1\u30FB\u56F3\u3092\u63CF\u304F\u30E9\u30A4\u30D6\u30E9\u30EA\u3067\u3001\u3053\u306E MCP \u30B5\u30FC\u30D0\u30FC\u306F mdmark \u306E\u6587\u66F8\u306E\u70B9\u691C\uFF08check\uFF09\u30FBHTML \u3078\u306E\u66F8\u304D\u51FA\u3057\uFF08export_html\uFF09\u30FB1 \u679A\u3078\u306E\u307E\u3068\u3081\uFF08build_site\uFF09\u3068\u3001\u5229\u7528\u5074\u306E CSS \u306E\u30C6\u30F3\u30D7\u30EC\u30FC\u30C8\u306E\u4E00\u89A7\uFF08list_templates\uFF09\u30FB\u767B\u9332\uFF08add_template\uFF09\u30FB\u914D\u7F6E\uFF08apply_template\uFF09\u3092\u6301\u3064\u3002\nmdmark \u306E\u8A18\u6CD5\u30FB\u90E8\u54C1\u30FB\u56F3\u306E\u8A18\u8F09\u65B9\u6CD5\u306F\u3001\u30AC\u30A4\u30C9\u3068\u3057\u3066 dev-docs \u306E\u914D\u4FE1\u5143 mdmark \u306B\u3042\u308B\u3002\nmdmark \u306E\u6587\u66F8\u3092\u8A18\u8F09\u3059\u308B\u524D\u306B\u3001dev-docs \u306E search_docs \u3067 source: "mdmark" \u306E kind \u304C docs \u306E\u6587\u66F8\u3092\u30BF\u30B0 topic:\u30AC\u30A4\u30C9 \u3067\u7D5E\u3063\u3066\u4E00\u89A7\u3092\u5F15\u304D\u3001\u5F53\u3066\u306F\u307E\u308B\u30DA\u30FC\u30B8\u3092 view: "full" \u3067\u8AAD\u307F\u8FBC\u3080\u3002\u4F5C\u696D\u5834\u6240\u304C mdmark \u306E\u30EA\u30DD\u30B8\u30C8\u30EA\u306E\u5916\u306A\u3089 outside_scope: true \u3092\u4ED8\u3051\u308B\u3002\ndev-docs \u304C\u7121\u3044\u3001\u307E\u305F\u306F\u914D\u4FE1\u5143 mdmark \u304C\u767B\u9332\u3055\u308C\u3066\u3044\u306A\u3044\u3068\u304D\u306F\u3001dev-docs \u304C\u7121\u3044\u306E\u3067\u898B\u3064\u304B\u308A\u307E\u305B\u3093\u3002\n\u8A18\u8F09\u3057\u305F\u5F8C\u306F check \u3067\u70B9\u691C\u3057\u3001\u56F3\u306F\u30AC\u30A4\u30C9\u306E\u300E\u63CF\u3044\u305F\u56F3\u3092\u78BA\u8A8D\u3059\u308B\u300F\u306E\u624B\u9806\u3067\u78BA\u8A8D\u3059\u308B\u3002\n\u5229\u7528\u5074\u306E CSS \u3092\u63A2\u3059\u3068\u304D\u306F list_templates \u3067\u4E00\u89A7\u3092\u5F15\u304D\u3001\u9078\u3093\u3060\u30C6\u30F3\u30D7\u30EC\u30FC\u30C8\u3092 apply_template \u3067\u914D\u7F6E\u3057\u3066\u3001\u8FD4\u3063\u305F theme \u306E\u5024\u3092\u8A2D\u5B9A\u306E theme \u306B\u8A18\u8F09\u3059\u308B\u3002\u4F5C\u3063\u305F CSS \u3092\u4F7F\u3044\u56DE\u3059\u3068\u304D\u306F add_template \u3067\u767B\u9332\u3059\u308B\u3002\nmdmark \u306E\u8A18\u6CD5\u3067\u8A18\u8F09\u3059\u308B\u6587\u66F8\u306E\u62E1\u5F35\u5B50\u306F .mark.md \u3067\u3001\u5229\u7528\u8005\u306E\u6307\u793A\u304C\u7121\u3044\u9650\u308A\u3001\u7D14\u7C8B\u306A .md \u306B\u306F\u8A18\u6CD5\u3092\u4F7F\u7528\u3057\u306A\u3044\u3002\n\u8A18\u6CD5\u3092\u4F7F\u7528\u3057\u306A\u3044 Markdown \u306E\u7DE8\u96C6\u3068\u30B3\u30FC\u30C9\u306E\u8ABF\u67FB\u306B\u306F\u3001\u3053\u306E MCP \u30B5\u30FC\u30D0\u30FC\u3068\u30AC\u30A4\u30C9\u306F\u8981\u3089\u306A\u3044\u3002\n\u3053\u306E\u5E38\u99D0\u30B5\u30FC\u30D0\u30FC\u306F {location} \u3067\u52D5\u304F\u3002\u6B62\u307E\u3063\u305F\u3068\u304D\u306F /mdmark:global-setup \u3067\u3082\u3046\u4E00\u5EA6\u8D77\u52D5\u3067\u304D\u308B\u3002';
 var describeServerLocation = (options) => options.launcher === "systemd" ? `systemd --user \u306E unit ${options.unit}\uFF08\u30ED\u30B0\u306F journalctl --user -u ${options.unit}\uFF09` : `tmux \u306E\u30BB\u30C3\u30B7\u30E7\u30F3 ${options.session}`;
 function createMcpServer(options) {
   const { roots, version: version2, serverLocation, stderr } = options;

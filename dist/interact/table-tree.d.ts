@@ -1,4 +1,5 @@
 import type { TooltipPlacement } from "../config.ts";
+import { type PartStates } from "./part-states.ts";
 /** 開閉で隠した行に付ける属性（印刷の前後で開閉を戻すのに使用する） */
 export declare const TREE_FOLDED_ATTRIBUTE = "data-tree-folded";
 /** 階層の表の操作の取っ手。`attachTable` が絞り込みのたびに `refresh` を呼ぶ */
@@ -17,4 +18,6 @@ export declare function attachTableTree(options: {
     wrapper: HTMLElement;
     /** ツールチップを出す場所 */
     placement: TooltipPlacement;
+    /** 部品の開閉の記録（省くと記録しない） */
+    states?: PartStates;
 }): TableTreeHandle;
