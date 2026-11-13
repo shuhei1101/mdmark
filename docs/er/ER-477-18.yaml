@@ -19,7 +19,7 @@ tables:
   - name: focus
     title: 最初に入るグループの ID
     type: string
-    description: 最初に入るグループの ID。クエリ文字列の `map-{図の番号}` と sessionStorage に記録があれば、そちらを先に使用する。無いグループの ID は飛ばす
+    description: 最初に入るグループ（ER 図の分類・状態遷移図の入れ子の状態を含む）の ID。クエリ文字列の `map-{図の番号}` と sessionStorage に記録があれば、そちらを先に使用する。無いグループの ID は飛ばす
     example: '"app"'
   - name: play
     title: 再生か案内を自動で始めるか
