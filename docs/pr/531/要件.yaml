@@ -40,23 +40,33 @@ docs:
   - page: docs/guide/図を描く-Mermaidと補足で図を描く.md
     new: false
     change: erDiagram・stateDiagram-v2 の記載方法と、種類に固有の操作（関連するテーブルの強調・遷移の再生 等）の手順を追加する
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-13T23:04:36.307098+00:00'
   - page: docs/guide/記法.md
     new: false
     change: map で描ける Mermaid の種類に erDiagram・stateDiagram-v2 を追加する
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-13T23:04:36.307098+00:00'
   - page: docs/guide/コアコンセプト-図を自動配置して辿る仕組み.md
     new: false
     change: 種類に依らない部分（補足・layout・巡回・拡大と縮小・凡例・ツールチップ）と、種類ごとの読み取り・配置・固有の機能の分け方を追記する
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-13T23:04:36.307098+00:00'
   - page: docs/guide/用語集.md
     new: false
     change: 状態遷移の再生など、新しい操作の用語を追加する
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-13T23:04:36.307098+00:00'
   - page: docs/guide/図を描く-mermaidの図を描く.md
     new: false
     change: erDiagram・stateDiagram-v2 を map で操作つきに描く場合の参照を追加する
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-13T23:04:36.307098+00:00'
   - page: docs/er/ER-472-2.yaml
     new: false
     change: 補足に ER 図の分類（groups）を追加し、notes のキーに ER 図のテーブル・列・関連と状態遷移図の状態・遷移の ID を追加する
@@ -65,8 +75,10 @@ docs:
     updated_at: '2026-11-13T14:59:39.491243+00:00'
   - page: docs/er/ER-477-18.yaml
     new: false
-    change: map のマーカーの設定に、追加する種類の項目が要るかを反映する
-    status: todo
+    change: 引数 `focus` の説明に、ER 図の分類・状態遷移図の入れ子の状態も最初に入るグループになることを追加する（追加する引数は無い）
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-13T23:04:36.307098+00:00'
 scope_out:
   - item: classDiagram・mindmap・gantt・timeline・gitGraph・journey・block-beta・architecture-beta・C4Context を map で描く
     reason: Issue の一案のとおり種類ごとに分け、優先の高い erDiagram・stateDiagram-v2 と種類に依らない共通の部分を先に作る。残りはこの PR で作る共通の部分を前提にする

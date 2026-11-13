@@ -59,7 +59,10 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-13T17:05:36.833909+00:00'
   - process: ドキュメント修正
-    status: todo
+    status: done
+    note: docs/guide の 5 ページと ER-477-18
+    updated_by: planner
+    updated_at: '2026-11-13T23:04:38.249055+00:00'
   - process: 単体テスト作成
     status: todo
   - process: 実装
