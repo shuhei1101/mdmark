@@ -61,59 +61,87 @@ docs:
   - page: docs/architecture/ARCH-472-1.yaml
     new: false
     change: Claude Code プラグインのフックに、文書の記載と利用者の発言での案内を追加する
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-13T19:34:27.844618+00:00'
   - page: schemas/mdmark.config.schema.json
     new: false
     change: 記法を含む純粋な `.md` の提案を止める設定のキーを追加する
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-13T19:34:27.844618+00:00'
   - page: migrations/no-steps.yaml
     new: false
     change: 設定の Schema への省略できるキーの追加に、移行の手順が要らない行を置く
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-13T19:34:27.844618+00:00'
   - page: docs/guide/書き出す-点検する.md
     new: false
     change: 記法を含む純粋な `.md` の拡張子の提案と、提案を止める設定を記載する
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-13T19:34:27.844618+00:00'
   - page: docs/guide/CLI.md
     new: false
     change: '`mdmark check` のずれの種類に、記法を含む純粋な `.md` の提案を追加する'
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-13T19:34:27.844618+00:00'
   - page: docs/guide/MCP.md
     new: false
     change: '`check` が返すずれの種類と、プラグインのフックの案内を記載する'
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-13T19:34:27.844618+00:00'
   - page: docs/guide/設定.md
     new: false
-    change: 提案を止める設定のキーを追加し、`build.include` の既定が `.mark.md` も含むことを記載する
-    status: todo
+    change: 提案を止める設定のキー `check.suggestMarkExtension` を追加する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-13T19:34:27.844618+00:00'
   - page: docs/guide/用語集.md
     new: false
     change: mdmark の文書の拡張子 `.mark.md` と純粋な Markdown を用語に追加する
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-13T19:34:27.844618+00:00'
   - page: docs/guide/コアコンセプト-ClaudeCodeに使用方法を提供する仕組み.md
     new: false
     change: '`.mark.md` の記載と利用者の指示で記法のルールの参照を 1 セッションに 1 回案内する仕組みと、純粋な `.md` に記法を使用しないことを伝える経路を記載する'
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-13T19:34:27.844618+00:00'
   - page: docs/guide/ClaudeCodeで使用する-プラグインを入れる.md
     new: false
     change: プラグインが入れるフックに、文書の記載と利用者の発言での案内を追加する
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-13T19:34:27.844618+00:00'
   - page: docs/guide/記載する-文書の記載方法.md
     new: false
     change: mdmark の記法で記載する文書の拡張子を `.mark.md` にし、純粋な `.md` も描けることを記載する
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-13T19:34:27.844618+00:00'
   - page: docs/guide/書き出す-文書を1枚にまとめる.md
     new: false
     change: まとめる対象に `.mark.md` と `.md` の両方が入ることを記載する
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-13T19:34:27.844618+00:00'
   - page: guide/index.yaml
     new: false
     change: 案内が参照を促す記法のルールのページの `when` に `.mark.md` の文書を記載するときを入れる
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-13T19:34:27.844618+00:00'
   - page: README.md
     new: false
     change: mdmark の記法で記載する文書の拡張子 `.mark.md` を記載する
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-13T19:34:27.844618+00:00'
 scope_out:
   - item: 既存の文書（mdmark・knowledge・ai-monitor・MindStella の資料）の拡張子の `.mark.md` への移行
     reason: 起点 Issue の後続で、リポジトリごとに移行の時機を決める。この PR は提案を止める設定を持たせる
