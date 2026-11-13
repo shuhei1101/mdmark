@@ -34,7 +34,9 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-13T15:15:58.603717+00:00'
   - process: 単一ユースケース設計
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-13T15:56:26.806844+00:00'
   - process: モック作成
     status: skipped
     reason: 'モック要否: 変換した図は既存の map の見た目で描き、廃止の警告は既存の書き方の警告の帯で出すため、作り手が見た目を決める余地が無い。今のフロー図・シーケンス図のモックの削除は更新ドキュメントで扱う'

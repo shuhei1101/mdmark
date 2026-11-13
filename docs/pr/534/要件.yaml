@@ -45,13 +45,13 @@ use_cases:
   - kind: single
     scenario: docs/scenario/SC-472-40.yaml
     impact: changed
-    detail: ツールチップを確かめる図をフロー図から map の構成図（補足の `notes`）に置き換える
+    detail: ツールチップを確かめる図をフロー図から map の構成図（補足の `notes` の線・ノード・グループの説明）に置き換える。グループの説明のマーカーを追加する。`features.hints` と `tooltips.diagramPlacement` を確かめる流れは ER 図と `data-hint` に置き換える
     depends_on:
       - docs/scenario/SC-472-43.yaml
   - kind: single
     scenario: docs/scenario/SC-472-42.yaml
     impact: changed
-    detail: 拡大・縮小・移動を確かめる図をフロー図から map の構成図に置き換える
+    detail: 拡大・縮小の正常シナリオとリサイズハンドルを map の構成図（等倍より縮めず、動かす矢印のボタンを持たない）に、ドラッグと文字の選択・矢印キーとボタンを ER 図に置き換える。グループのタイトルを留める・留めないと、リンク先を持つノードの上のドラッグのシナリオを削除する（リンク先を持つノードのドラッグは SC-472-8）
     depends_on:
       - docs/scenario/SC-472-43.yaml
   - kind: single
@@ -289,3 +289,6 @@ scope_out:
   - item: 変換で、今の図の題の行の範囲・更新日を map へ写すこと
     reason: '#445 の資料 A-38 で、map の図の題の行には題だけを出し、凡例は出さないと決めている。写す先が無い値として落とし、変換の報告に挙げる（凡例は定義の値ではなく、描くときに種類から作るため報告に挙げない）'
     plan: none
+  - item: map の図の説明のツールチップに、設定の `features.hints`（まとめて削除する）と `tooltips.diagramPlacement`（上を先にする）を当てること
+    reason: '今の map はどちらの設定も読まず、説明を常に下を先に出す。flow の廃止で、この 2 つの設定が当たる図は ER 図・グラフ・埋め込んだ HTML の `data-hint` だけになる。要件を変えるかに当たるため、単一ユースケース設計の承認確認でユーザーに確かめる（今の判断: この PR では当てず、別の Issue にする）'
+    plan: to_file
