@@ -118,6 +118,34 @@ scenarios:
       - '`mount` が、`baseMarkdown` を文字列か `null` で指定するよう伝える `TypeError` を投げる'
       - 描く先の要素の中は空のまま
     test: test_error_when_base_not_string
+  - name: 正常シナリオ（右側の目次で変わったセクションを示す）
+    setup:
+      - name: mdmark を読み込むページ
+        description: 正常シナリオと同じページで、右側の目次を出す設定で文書を描く。`mount` の戻り値の `update` を呼べる
+      - name: 比較元の Markdown
+        description: h2 の見出し A・B・C の 3 つのセクションを持ち、各セクションが段落を 1 つ持つ文書
+      - name: 描く Markdown
+        description: 比較元のセクション B の段落の単語を 1 つ書き換え、セクション C の段落を削除し、末尾に段落を持つ h2 の見出し D のセクションを追加した文書
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 読者
+        participant P as 利用側のページ
+        participant M as mdmark
+        P->>M: 比較元の Markdown を指定して描かせる
+        M-->>P: 変わったブロックを強調し、変わったセクションの目次の項目に変更のマーカーを付けた文書
+        U->>P: 右側の目次を出す
+        P-->>U: 見出し B・C・D の項目に変更のマーカーがある目次
+        P->>M: update(描く Markdown, {baseMarkdown: null})
+        M-->>P: 強調と変更のマーカーの無い文書
+        P-->>U: 文書を表示
+    expected:
+      - 右側の目次の見出し B・C・D の項目に変更のマーカーがあり、見出し A の項目には無い
+      - 変更のマーカーの付いた項目は、読み上げで項目の名前に続けて `変更` と読まれる（視覚に出さない文言を持つ）
+      - 右側の目次の出し方が `hover` でも `fixed` でも、目次を出したときに同じ項目に変更のマーカーがある
+      - '`baseMarkdown: null` で `update` を呼んだ後、右側の目次のどの項目にも変更のマーカーが無い'
+    test: test_normal_when_side_toc_marked
 lead: 利用側のページが、描く Markdown と一緒に比較元の Markdown を文字列で `mount` に指定し、本文の中で比較元から追加・変更したブロックと削除したブロックの位置を差分のブロックで強調する。`update` で本文と比較元を差し替える。
 issue: 222
 primary_actor: mdmark を使用するアプリのページ
@@ -130,7 +158,7 @@ trigger: 利用側のページが、比較元の Markdown を持った状態で�
 preconditions:
   - ページがバージョンを固定した URL で mdmark の JavaScript と CSS を読み込んでいる
   - 描く先の要素がページにある
-success_guarantee: 比較元から追加・変更したブロックは追加の色、削除したブロックは本文のその位置に削除の色で出る。比較元を省くか `null` にしたときは強調の無い文書を描く。
+success_guarantee: 比較元から追加・変更したブロックは追加の色、削除したブロックは本文のその位置に削除の色で出る。右側の目次では、比較元から変わったブロックを持つセクションの項目に変更のマーカーが付く。比較元を省くか `null` にしたときは強調の無い文書を描く。
 minimal_guarantee: 比較元が文字列でも `null` でもないときは、何も描かずに `TypeError` を投げる。
 notes:
   取り出し元との関係: '`diffSource` と比較元を両方渡したときは、本文の中の強調に比較元を使用し、取り出し元はリビジョンを選ぶ差分の UI だけに使用する。`diffMode: blocks` と比較元を両方渡したときも、取り出し元からリビジョンを読み込まずに比較元で強調する。'

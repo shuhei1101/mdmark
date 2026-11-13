@@ -1702,6 +1702,52 @@ scenarios:
       - 描き直した後、`aliases[]` を開くと書き換えた説明が表示される
       - 描き直した後、追加した表は全ての行が見えている
     test: test_normal_when_tree_updated_after_fold
+  - name: 正常シナリオ（長文の列に並べ替えを付けない）
+    setup:
+      - name: mdmark を読み込むページ
+        description: 正常シナリオと同じ
+      - name: 長文の列を持つ表の Markdown
+        description: '`<!-- table: {"kind": "data"} -->` 〜 `<!-- /table -->` で、名前の列・日付の列・説明の列を持つ 3 行の表を囲んだ文書'
+        notes: 説明の列のセルは、どれも 20 文字以上の文。名前の列は 10 文字未満の値、日付の列は `YYYY-MM-DD` の値
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 利用側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を指定して描かせる
+        M-->>P: 説明の列にだけ並べ替えを付けない表を描く
+        U->>P: 日付の列の見出しの並べ替えを押す
+        P-->>U: 日付の降順に並べ替えた表
+    expected:
+      - 説明の列の見出しに並べ替えのボタンが無い
+      - 名前の列と日付の列の見出しに並べ替えのボタンがある
+      - 日付の列の並べ替えを押した後、日付の列が新しい順に並び、見出しの `aria-sort` が `descending`
+      - 説明の列の見出しにピン止めのボタンと絞り込みのボタンがある（並べ替えのほかの機能は外さない）
+    test: test_normal_when_long_column_not_sortable
+  - name: 正常シナリオ（列ごとに並べ替えを指定する）
+    setup:
+      - name: mdmark を読み込むページ
+        description: 正常シナリオと同じ
+      - name: 列ごとに並べ替えを指定した表の Markdown
+        description: '`<!-- table: {"kind": "data", "columns": {"説明": {"sort": true}, "名前": {"sort": false}}} -->` 〜 `<!-- /table -->` で、正常シナリオ（長文の列に並べ替えを付けない）と同じ表を囲んだ文書'
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 利用側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を指定して描かせる
+        M-->>P: 説明の列に並べ替えを付け、名前の列から並べ替えを外した表を描く
+        U->>P: 説明の列の見出しの並べ替えを押す
+        P-->>U: 説明の列で並べ替えた表
+    expected:
+      - 説明の列と日付の列の見出しに並べ替えのボタンがあり、名前の列の見出しには無い
+      - 説明の列の並べ替えを押した後、見出しの `aria-sort` が `descending` で、説明の列の文字の降順に並ぶ
+      - '`columns.{列名}.sort` を記載した表の範囲の上に記載の警告が出ない'
+    test: test_normal_when_column_sort_specified
 lead: '文書の作成者が `<!-- table: {JSON のオブジェクト} -->` 〜 `<!-- /table -->` で表を囲み、読者が描かれた表を見出し行を見ながらページのスクロールで読み込み、列で並べ替え・絞り込み・ピン止めし、閉じた表を開き、表と行の URL をコピーする。'
 issue: 4
 primary_actor: 読者
