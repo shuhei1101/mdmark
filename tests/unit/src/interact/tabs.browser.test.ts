@@ -507,3 +507,36 @@ test("test_attach_tabs_when_cannot_restore", async () => {
   expect(top).toBeLessThan(window.innerHeight);
   window.scrollTo(0, 0);
 });
+
+/** 次の描画のフレームを 2 回待つ */
+async function nextFrames(): Promise<void> {
+  for (let count = 0; count < 2; count += 1) {
+    await new Promise((resolve) => requestAnimationFrame(resolve));
+  }
+}
+
+// スクロールのアンカリングを持つブラウザでも、補正が二重に効かず押したタブのボタンの位置を保つ（正常系）
+test("test_attach_tabs_when_position_kept_with_anchoring", async () => {
+  // 準備
+  const { attachTabs } = await loadTabs();
+  const root = createRootFromHtml(
+    `${heightTabsHtml("len")}${SPACER_HTML}${heightTabsHtml("len")}${SPACER_HTML}`,
+  );
+  detachers.push(attachTabs(root));
+  const short = tabOf(root, 1, "短文");
+  window.scrollBy(0, topOf(short) - 300);
+  const before = topOf(short);
+  // 実行: 上にある同じ組のタブと押したタブがどちらも縮む
+  short.click();
+  await nextFrames();
+  // 検証
+  expect(Math.abs(topOf(short) - before)).toBeLessThanOrEqual(1);
+  // 実行: 上にある同じ組のタブと押したタブがどちらも伸びる
+  const long = tabOf(root, 1, "長文");
+  const beforeLong = topOf(long);
+  long.click();
+  await nextFrames();
+  // 検証
+  expect(Math.abs(topOf(long) - beforeLong)).toBeLessThanOrEqual(1);
+  window.scrollTo(0, 0);
+});

@@ -108,6 +108,12 @@ functions:
         condition: 画面全体の末尾に `長文`・`短文` のタブを置き、タブのボタンが画面の上端から 300px の位置までスクロールしてから `短文` を押す
         mock: なし
         expected: '`scrollY` と `document.documentElement.scrollHeight - innerHeight` の差が 1px 以内で、押したボタンが画面の中にある'
+      - name: test_attach_tabs_when_position_kept_with_anchoring
+        case: 正常
+        summary: スクロールのアンカリングを持つブラウザでも、補正が二重に効かず押したタブのボタンの位置を保つ
+        condition: '`data-group="len"` の `長文`・`短文` のタブを 2 つ、間と後ろに高さ 1200px の要素を挟んで画面全体で並べ（アンカリングは止めない）、2 つ目のタブのボタンが画面の上端から 300px の位置までスクロールしてから 2 つ目の `短文` を押し、続けて `長文` を押す。それぞれ描画のフレームを 2 回待ってから測る'
+        mock: なし
+        expected: どちらの後も、押したボタンの `getBoundingClientRect().top` の差が押す前と 1px 以内
   - name: loadTabChoice
     title: 残したタブ名を読み込む
     container: src/interact/tabs.ts
