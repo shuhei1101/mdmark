@@ -21,7 +21,7 @@ functions:
 
       列の幅は、`attachColumnResize` に、列の幅の上限を返す関数（`columnWidthLimit` に、表を包む要素の `clientWidth`・はみ出しているか・列ごとの幅・留めている列を渡す）と、幅を変えた後の処理を渡す。幅を変えた後と戻した後は、`attachAutoColumnWidths` の `refresh` で列の幅を決め直し、留める列があれば `pinColumns` で留める位置と境の線をもう一度決める。
 
-      列の幅を自動で決める処理は、囲みごとに `attachAutoColumnWidths` に、囲み・表を包む要素・最下段の見出しのセル・`longColumnMin` と、幅を入れた後に留める列があれば `pinColumns` を呼ぶ関数を渡して付ける。ピン止めのボタンを出すかのはみ出しは、幅を入れた後に測る。
+      列の幅を自動で決める処理は、囲みごとに `attachAutoColumnWidths` に、囲み・表を包む要素・最下段の見出しのセル・`longColumnMin` と、幅を入れた後に留める列があれば `pinColumns` を呼ぶ関数を渡して付ける。列の表示を切り替えた後は、戻り値の `columnsChanged` を呼ぶ。ピン止めのボタンを出すかのはみ出しは、幅を入れた後に測る。
     args:
       - name: root
         type: HTMLElement
@@ -249,6 +249,12 @@ functions:
         condition: '`test_attach_tables_when_auto_width` の表を幅 1280px で付け、名前の列のつまみで → を 2 回押し、Enter を押す'
         mock: なし
         expected: → の後、表の `--mdmark-auto-table-width` が名前の列の広げた幅を含む合計で、名前の列の `--mdmark-auto-width` が無い。Enter の後、名前の列に `--mdmark-auto-width` が入り直す
+      - name: test_attach_tables_when_column_hidden_keeps_widths
+        case: 正常
+        summary: 列を隠しても、残った列の幅を変えない
+        condition: '`test_attach_tables_when_auto_width` の表に `columns` の機能を付けて幅 1280px で付け、テーブル設定の目のアイコンで状態の列を隠す'
+        mock: なし
+        expected: 残った名前・説明の列の見出しのセルの `offsetWidth` が隠す前と同じ（差が 1px 以内）
     refs:
       - IF-472-35#constraints[列の表示の通知]
       - 'MOD-472-218#functions[computeTotal]'
