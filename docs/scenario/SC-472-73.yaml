@@ -1388,7 +1388,7 @@ scenarios:
     setup:
       - name: mdmark を読み込むページ
         description: 正常シナリオと同じ
-        notes: '描く先の要素の幅は、表が横にスクロールする幅。設定に `table.pin: through` を指定する'
+        notes: '描く先の要素の幅は、表が横にスクロールし、1 列目から 3 列目の幅の合計が表の見える幅に収まる幅。設定に `table.pin: through` を指定する'
       - name: 列の多い表を持つ Markdown
         description: 10 列 30 行の表を持ち、表のマーカーで囲まない文書（既定の種類）
       - name: Mock
