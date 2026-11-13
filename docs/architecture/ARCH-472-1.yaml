@@ -131,7 +131,7 @@ subsystems:
       pr: 69
   - name: Claude Code プラグイン
     scope: claude-code-plugin
-    role: Claude Code に、記載する前に dev-docs でガイドを参照し記載した後に点検する順序を MCP の instructions で示し、書き出し・まとめ・点検を MCP のツールで呼ばせる。MCP のツールは、ライブラリ本体の CLI の `mdmark serve` が常駐の HTTP サーバーとして返却する
+    role: Claude Code に、記載する前に dev-docs でガイドを参照し記載した後に点検する順序を MCP の instructions で示し、書き出し・まとめ・点検を MCP のツールで呼ばせる。`.mark.md` の記載と mdmark で記載する指示では、フックが記法のルールの参照をセッションに 1 回案内する。MCP のツールは、ライブラリ本体の CLI の `mdmark serve` が常駐の HTTP サーバーとして返却する
     runtime: TypeScript 7（Node 24）
     runs_on: 文書の作成者の手元の Claude Code が、プラグインのキャッシュの `plugin/` から `node` で起動するフックと、`.mcp.json` の URL へ HTTP でつなぐ `mdmark serve` の MCP サーバー（文書の作成者が `npx github:shuhei1101/mdmark#v{バージョン} serve` で起動しておく）
     reason: Claude Code のバージョンと仕様に依る部分を、ブラウザと Node で動くライブラリ本体と分けて確認する
@@ -193,7 +193,7 @@ external_systems:
     introduced:
       pr: 69
   - name: Claude Code
-    purpose: マーケットプレイスからプラグインを入れ、常駐の MCP サーバーへ HTTP でつないで instructions を受け取り、ツールを呼ぶ。ツールの呼び出しの前に PreToolUse のフックを実行する
+    purpose: マーケットプレイスからプラグインを入れ、常駐の MCP サーバーへ HTTP でつないで instructions を受け取り、ツールを呼ぶ。ツールの呼び出しの前に PreToolUse のフックを、利用者の発言の処理の前と会話の圧縮の前に UserPromptSubmit・PreCompact のフックを実行する
     direction: 双方向
     protocol: フックは子プロセスの標準入出力（JSON）、MCP は 127.0.0.1 への Streamable HTTP（JSON-RPC）
     detail: LIB-472-1#
