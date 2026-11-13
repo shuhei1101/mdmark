@@ -25,13 +25,13 @@ const saved = () =>
   );
 
 /** 構成図を描いて付ける */
-async function setUp(search = "") {
+async function setUp(search = "", mermaid = FLOW) {
   history.replaceState(null, "", `${location.pathname}${search}`);
   const { attachMapFlow } = await loadFlowView();
   const { parseMapArgs } = await loadSpec();
   const { resolveConfig } = await loadConfig();
   const root = createRootFromHtml(
-    renderDoc(mapRange({ mermaid: FLOW, data: DATA })).html,
+    renderDoc(mapRange({ mermaid, data: DATA })).html,
   );
   const range = root.querySelector<HTMLElement>(".mdmark-map") as HTMLElement;
   const handle = attachMapFlow(
@@ -217,4 +217,54 @@ test("test_attach_map_flow_when_drag_cancelled", async () => {
   expect(
     root.querySelector<HTMLElement>('[data-node="mount"]')?.style.cssText,
   ).toBe(before);
+});
+
+// リンク先を持つノードを動かしたときは開かず、動かさずに押すと開く（正常系）
+test("test_attach_map_flow_when_node_link", async () => {
+  // 準備
+  const root = await setUp(
+    "",
+    `${FLOW}  click mount "https://example.com/spec"\n`,
+  );
+  // 図が止めたかを記録し、記録した後はテストのページを移らないようにする
+  const prevented: boolean[] = [];
+  const check = (event: MouseEvent) => {
+    prevented.push(event.defaultPrevented);
+    event.preventDefault();
+  };
+  window.addEventListener("click", check);
+  const node = () =>
+    root.querySelector<HTMLElement>('[data-node="mount"]') as HTMLElement;
+  const kind = () =>
+    node().querySelector<HTMLElement>(".mdmark-diagram-node-kind") as HTMLElement;
+  const before = node().style.cssText;
+  const box = kind().getBoundingClientRect();
+  const point = (dx: number) => ({
+    bubbles: true,
+    pointerId: 1,
+    button: 0,
+    pointerType: "mouse",
+    clientX: box.x + 4 + dx,
+    clientY: box.y + 4,
+  });
+  try {
+    // 実行: 種類の行を 40px ドラッグして離し、続けて動かさずに押す
+    kind().dispatchEvent(new PointerEvent("pointerdown", point(0)));
+    window.dispatchEvent(new PointerEvent("pointermove", point(40)));
+    window.dispatchEvent(new PointerEvent("pointerup", point(40)));
+    kind().dispatchEvent(new MouseEvent("click", { ...point(40), cancelable: true }));
+    const moved = node().style.cssText;
+    const link = node().querySelector<HTMLAnchorElement>(
+      "a.mdmark-diagram-node-link",
+    ) as HTMLAnchorElement;
+    kind().dispatchEvent(new PointerEvent("pointerdown", point(40)));
+    window.dispatchEvent(new PointerEvent("pointerup", point(40)));
+    link.dispatchEvent(new MouseEvent("click", { ...point(40), cancelable: true }));
+    // 検証
+    expect(moved).not.toBe(before);
+    expect(prevented).toEqual([true, false]);
+    expect(link.getAttribute("href")).toBe("https://example.com/spec");
+  } finally {
+    window.removeEventListener("click", check);
+  }
 });

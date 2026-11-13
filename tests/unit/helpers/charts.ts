@@ -1,4 +1,3 @@
-import type { MdmarkFlowDefinition } from "../../../src/diagram/definition.ts";
 import { INQUIRY_TEXT, parsed } from "./diagrams.ts";
 
 /** 見本の棒のグラフの定義（`inquiry-count`）の JSON: 系列 2 つ・項目 4 つ。縦の軸の範囲を省く */
@@ -79,8 +78,10 @@ export const LENGTH_TIME_TEXT: string = JSON.stringify(
 export const INQUIRY_HINT_TEXT: string = JSON.stringify(inquiryHint(), null, 2);
 
 /** `inquiry` のノード `mcp` に `hint` を追加した定義 */
-function inquiryHint(): MdmarkFlowDefinition {
-  const definition = parsed<MdmarkFlowDefinition>(INQUIRY_TEXT);
+function inquiryHint(): { nodes: Array<{ id: string; hint?: string }> } {
+  const definition = parsed<{ nodes: Array<{ id: string; hint?: string }> }>(
+    INQUIRY_TEXT,
+  );
   const node = definition.nodes.find((candidate) => candidate.id === "mcp");
   if (node === undefined) {
     throw new Error("見本のノード mcp が無い");

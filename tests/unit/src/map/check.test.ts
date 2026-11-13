@@ -90,6 +90,38 @@ test("test_collect_map_problems_when_unknown_ref", async () => {
   expect(problems[0]?.message).toContain("notes.ghost");
 });
 
+// グループの ID を指す notes をずれにしない（正常系）
+test("test_collect_map_problems_when_group_note", async () => {
+  // 準備
+  const { collectMapProblems } = await loadCheck();
+  // 実行
+  const problems = collectMapProblems(
+    range(FLOW, '{"version": 1, "notes": {"lib": {"text": "記法を読み取る部分"}}}'),
+    CONFIG,
+    true,
+  );
+  // 検証
+  expect(problems).toEqual([]);
+});
+
+// 許さないノードのリンク先（異常系）
+test("test_collect_map_problems_when_link_not_allowed", async () => {
+  // 準備
+  const { collectMapProblems } = await loadCheck();
+  // 実行
+  const problems = collectMapProblems(
+    range('flowchart LR\n  a --> b\n  click a "javascript:alert(1)"\n'),
+    CONFIG,
+    true,
+  );
+  // 検証
+  expect(problems.map((problem) => problem.kind)).toEqual([
+    "map_invalid_value",
+  ]);
+  expect(problems[0]?.message).toContain("a");
+  expect(problems[0]?.message).toContain("javascript:alert(1)");
+});
+
 // 線の上書きをノードに指定した（異常系）
 test("test_collect_map_problems_when_wire_override_on_node", async () => {
   // 準備
