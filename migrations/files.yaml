@@ -30,25 +30,25 @@ files:
     related:
       - to: docs/module/MOD-472-30
         type: implements
-  - path: next/steps.yaml
+  - path: v0.11.0/steps.yaml
     description: モジュール構成『ライブラリ本体 / バージョンを上げる』のうち「出していないバージョンの移行の手順」を受け持つ。mdmark upgrade で適用する手順を追加する・変えるときに参照する。
     tags: [topic:バージョン, topic:移行, topic:cli, topic:ステップ]
     related:
       - to: docs/module/MOD-472-30
         type: implements
-  - path: next/marker-json.mjs
+  - path: v0.11.0/marker-json.mjs
     description: モジュール構成『ライブラリ本体 / バージョンを上げる』のうち「文書のマーカーの今の書き方を JSON のオブジェクトに書き換える移行のスクリプト」を受け持つ。文書のマーカーの移行を変えるときに参照する。
     tags: [topic:バージョン, topic:移行, topic:マーカー]
     related:
       - to: docs/module/MOD-477-4.mjs
         type: implements
-  - path: next/legacy-marks.js
+  - path: v0.11.0/legacy-marks.js
     description: モジュール構成『ライブラリ本体 / バージョンを上げる』のうち「移行のスクリプトが読み込む、今の書き方の引数を JSON に書き換える処理をまとめたファイル（buildLegacyMarks が書き込む）」を受け持つ。文書のマーカーの移行が使う書き換えの処理を確かめるときに参照する。
     tags: [topic:バージョン, topic:移行, topic:マーカー]
     related:
       - to: docs/module/MOD-472-166.ts
         type: implements
-  - path: next/THIRD_PARTY_LICENSES.txt
+  - path: v0.11.0/THIRD_PARTY_LICENSES.txt
     description: モジュール構成『ライブラリ本体 / ビルド / build.ts』のうち「legacy-marks.js にまとめた依存のライセンス（buildLegacyMarks が書き込む）」を受け持つ。移行の手順のフォルダにまとめた依存のライセンスを確かめるときに参照する。
     tags: [topic:バージョン, topic:移行, topic:ライセンス]
     related:
