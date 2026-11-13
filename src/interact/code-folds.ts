@@ -53,16 +53,19 @@ function attachCodeBlock(
       line.dataset.folded === "true" && foldLines[index] !== undefined,
   );
   const pre = code.parentElement;
-  /** 行の記録の鍵（`pre` が無ければ記録しない） */
-  const keyOf = (index: number): string | undefined =>
-    pre === null
+  /** コードブロックの記録の鍵（`pre` が無いか記録しないときは無し） */
+  const blockKey =
+    pre === null || states === undefined
       ? undefined
-      : partKey({ root, part: pre, kind: "code", inner: String(index + 1) });
+      : partKey({ root, part: pre, kind: "code" });
+  /** 行の記録の鍵 */
+  const keyOf = (index: number): string | undefined =>
+    blockKey === undefined ? undefined : `${blockKey}|${index + 1}`;
   /** 行のマーカーの値（`data-folded` の有無） */
   const markers = folded.map((value) => (value ? "folded" : ""));
   folded.forEach((value, index) => {
-    const key = keyOf(index);
-    if (key !== undefined && foldLines[index] !== undefined) {
+    const key = foldLines[index] === undefined ? undefined : keyOf(index);
+    if (key !== undefined) {
       folded[index] = !startOpen({
         states,
         key,

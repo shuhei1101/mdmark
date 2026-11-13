@@ -198,6 +198,7 @@ export function attachErFolds(
   /** テーブルの記録の鍵と、付けたときのマーカー（定義の `folded` の有無） */
   const entries = new Map<HTMLElement, { key: string; marker: string }>();
   if (states !== undefined) {
+    const base = partKey({ root, part: figure, kind: "er" });
     for (const table of figure.querySelectorAll<HTMLElement>(
       ".mdmark-diagram-er-table",
     )) {
@@ -205,12 +206,7 @@ export function attachErFolds(
         continue;
       }
       const marker = isFolded(table) ? "folded" : "";
-      const key = partKey({
-        root,
-        part: figure,
-        kind: "er",
-        inner: table.dataset.node ?? "",
-      });
+      const key = `${base}|${table.dataset.node ?? ""}`;
       entries.set(table, { key, marker });
       const open = startOpen({
         states,

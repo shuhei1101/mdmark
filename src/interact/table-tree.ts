@@ -57,8 +57,11 @@ export function attachTableTree(options: {
     wrapper.parentElement?.closest<HTMLElement>(".mdmark") ??
     wrapper.ownerDocument.body;
   /** 行の記録の鍵 */
-  const keyOf = (path: string): string =>
-    partKey({ root, part: wrapper, kind: "table-tree", inner: path });
+  const base =
+    states === undefined
+      ? ""
+      : partKey({ root, part: wrapper, kind: "table-tree" });
+  const keyOf = (path: string): string => `${base}|${path}`;
   const rows = [
     ...wrapper.querySelectorAll<HTMLTableRowElement>(
       ":scope table > tbody > tr.mdmark-tree-row",

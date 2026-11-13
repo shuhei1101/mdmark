@@ -204,14 +204,12 @@ function attachTree(
     }
     return names.join("/");
   };
+  /** ツリーの記録の鍵（記録しないときは作らない） */
+  const base =
+    states === undefined ? "" : partKey({ root, part: tree, kind: "tree" });
   /** 開閉のボタンのフォルダの記録の鍵 */
   const keyOf = (toggle: Element): string =>
-    partKey({
-      root,
-      part: tree,
-      kind: "tree",
-      inner: pathOf(toggle.closest("li.mdmark-tree-folder") ?? toggle),
-    });
+    `${base}|${pathOf(toggle.closest("li.mdmark-tree-folder") ?? toggle)}`;
   /** 開閉のボタンの今の開閉を記録する */
   const record = (toggle: Element): void => {
     recordOpen({

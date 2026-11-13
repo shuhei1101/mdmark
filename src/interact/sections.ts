@@ -233,6 +233,8 @@ function attachRowDetails(
     }
   }
   const cleanups: Array<() => void> = [];
+  /** 表ごとの記録の鍵（表の中の行の詳細で使い回す） */
+  const tableKeys = new Map<HTMLTableElement, string>();
   for (const [owner, details] of owners) {
     const cell = owner.cells[0];
     if (!cell) {
@@ -253,15 +255,18 @@ function attachRowDetails(
     head.append(button, ...cell.childNodes);
     cell.append(head);
     const table = owner.closest("table");
-    const key =
-      table === null
+    const base =
+      table === null || partStates === undefined
         ? undefined
-        : partKey({
-            root,
-            part: table,
-            kind: "row-detail",
-            inner: details[0]?.dataset.row ?? "",
-          });
+        : (tableKeys.get(table) ??
+          partKey({ root, part: table, kind: "row-detail" }));
+    if (table !== null && base !== undefined) {
+      tableKeys.set(table, base);
+    }
+    const key =
+      base === undefined
+        ? undefined
+        : `${base}|${details[0]?.dataset.row ?? ""}`;
     /** 詳細の行を開閉し、ボタンの `aria-expanded` に写す */
     const setOpen = (open: boolean): void => {
       button.setAttribute("aria-expanded", String(open));
