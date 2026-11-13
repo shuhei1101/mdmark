@@ -2,7 +2,7 @@ use_cases:
   - kind: single
     scenario: docs/scenario/SC-472-8.yaml
     impact: changed
-    detail: map の範囲に erDiagram・stateDiagram-v2 の Mermaid と補足を記載すると、テーブルと関連・状態と遷移を自動配置した図として描き、補足の説明と layout を当てる。描けない種類の案内の文言を変える
+    detail: map の範囲に erDiagram・stateDiagram-v2 の Mermaid と補足を記載すると、テーブルと関連・状態と遷移を自動配置した図として描き、補足の説明・分類・layout を当てる。テーブル・状態を選んで関わるものだけを強調し、ER 図では 1 対多で行が増える関連に印を付ける。描けない種類の案内の文言を変える
     depends_on: []
   - kind: single
     scenario: docs/scenario/SC-472-39.yaml
@@ -18,10 +18,9 @@ use_cases:
       - docs/scenario/SC-472-8.yaml
   - kind: single
     scenario: docs/scenario/SC-472-19.yaml
-    impact: following
-    detail: 要素を選んで関わるものだけを強調する操作を、ER 図のテーブル（関連するテーブル）と状態遷移図の状態（入る遷移と出る遷移）にも広げるのに合わせて、選択と強調の記述を種類に依らない形に揃える
-    depends_on:
-      - docs/scenario/SC-472-8.yaml
+    impact: run_only
+    detail: ER 図のテーブルと状態遷移図の状態の選択と強調は『Mermaidと補足で図を描く』に記載し、シーケンス図の参加者の選択の記述は変わらないが、選択と強調の処理を種類で共通にするため壊しうる
+    depends_on: []
   - kind: single
     scenario: docs/scenario/SC-472-11.yaml
     impact: run_only
@@ -60,8 +59,10 @@ docs:
     status: todo
   - page: docs/er/ER-472-2.yaml
     new: false
-    change: 補足の YAML に、ER 図のテーブル・列と状態遷移図の状態・遷移を指す ID と説明の項目を追加する
-    status: todo
+    change: 補足に ER 図の分類（groups）を追加し、notes のキーに ER 図のテーブル・列・関連と状態遷移図の状態・遷移の ID を追加する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-13T14:59:39.491243+00:00'
   - page: docs/er/ER-477-18.yaml
     new: false
     change: map のマーカーの設定に、追加する種類の項目が要るかを反映する
