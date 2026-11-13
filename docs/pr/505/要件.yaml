@@ -39,35 +39,51 @@ docs:
   - page: docs/guide/記法.md
     new: false
     change: 表の `columns.{列名}.width`（`mode`・`min`・`max`）と指定が無いときの自動の列の幅、ファイルツリーの `depth` を省いたときの既定（全て開く。読み込めない値のときの描き方を含む）、目次の項目を押したときに開くセクションを修正する。狭い幅で最終列を畳む描き方の説明を削除し、最小の幅で横にスクロールする説明に置き換える
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-13T07:33:00.627593+00:00'
   - page: docs/guide/記載する-表に機能を付ける.md
     new: false
     change: 列の幅を自動で決めること、「表は本文の幅いっぱいに広がる」の記述（列の幅の合計が収まる表は列の幅の合計で描く）、`width.min`・`width.max` の記載、列の幅のつまみで狭められる下限（今の 6em）と描いた直後の幅に戻すときの幅を修正する。「狭い幅で最終列を畳む」と「見出し行が留まり、最終列が畳まれる」の説明を削除し、最小の幅で横にスクロールする説明に置き換える。`filter.type` を省いた絞り込みの種類（長文の列は `text`、ほかは `select`）と、長文の列の最小の幅を設定 `table.long_column_min` で変えられることを記載する
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-13T07:33:00.627593+00:00'
   - page: docs/guide/記載する-本文を部品で組む.md
     new: false
     change: ファイルツリーの既定を全て開く描き方に、目次の項目を押したときに開くセクションを押した見出し自身までに修正する。コードブロックの開閉のボタンの列にポインターを乗せると全ての開閉のボタンが出ることを記載する
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-13T07:33:00.627593+00:00'
   - page: docs/guide/API.md
     new: false
-    change: 表の列の幅の CSS 変数（`--mdmark-column-min-width` 等）を、自動の列の幅で決めた値と合わせて修正する（変数を変えないと設計で決まれば修正しない）
-    status: todo
+    change: 修正しない。利用側に公開する列の幅の CSS 変数は変えない（自動の列の幅の `--mdmark-auto-width`・`--mdmark-auto-table-width` は `mount` が入れる内部の変数で、テーマの CSS 変数の一覧に載せない。モジュール構成『index.css』）
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-13T07:33:00.627593+00:00'
   - page: docs/er/ER-477-2.yaml
     new: false
     change: '`columns.{列名}.width.min`・`width.max` の単位と、省いたときの自動の計算の説明を、部品設計『表』の判定フローチャートと合わせる'
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-13T07:33:00.627593+00:00'
   - page: docs/er/ER-477-5.yaml
     new: false
     change: '`depth` の説明の「#459 に合わせる」の注記を、既定が全て開くことの記述に修正する'
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-13T07:33:00.627593+00:00'
   - page: docs/guide/カスタマイズ-印刷する.md
     new: false
     change: 印刷の前に開くものの表の「畳んだ最終列」の行と、「畳んでいた最終列は表の中に出ている」の確認の記述を削除する（狭い幅で最終列を畳む描き方を削除するため）
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-13T07:33:00.627593+00:00'
   - page: docs/guide/設定.md
     new: false
     change: 表の長文の列の最小の幅のキー `table.long_column_min`（em の数・既定 45）を、キーの一覧と節と見本に追加する
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-13T07:33:00.627593+00:00'
 scope_out:
   - item: 表の留めた列の幅の合計が見える幅を超えるときに留めた列が重なる事象
     reason: '列の幅の決め方ではなく留めた列の配置の事象で、計画で #458 の後ろへ回している'
