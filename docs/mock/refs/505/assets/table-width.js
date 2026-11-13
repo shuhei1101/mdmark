@@ -10,7 +10,7 @@
   /** 長文の列とみなす、1 行の文字数 */
   const LONG_CHARS = 20;
   /** 長文の列の最小の幅（em。列の中の最も長い半角の単語の幅の方が広ければそちら） */
-  const LONG_MIN_EM = 30;
+  const LONG_MIN_EM = 45;
 
   /** セルの中で、行の文字を折り返さずに置いたときの表示の幅（px） */
   const textWidth = (text, cell) => {
