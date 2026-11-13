@@ -536,8 +536,10 @@ export const attachMapFlow = (
       window.removeEventListener("pointercancel", finish);
       save();
       if (!moved || !node) return;
+      // 利用側が document で click を受けてもリンク先を開かないよう、伝播も止める
       const suppress = (click: MouseEvent) => {
         click.preventDefault();
+        click.stopPropagation();
         window.removeEventListener("click", suppress, true);
       };
       window.addEventListener("click", suppress, true);

@@ -4994,6 +4994,10 @@
         .mdmark-diagram-node-kind,
         .mdmark-diagram-node-name,
         .mdmark-diagram-node-sub,
+        .mdmark-diagram-er-physical,
+        .mdmark-diagram-er-logical,
+        .mdmark-diagram-er-name,
+        .mdmark-diagram-er-type,
         .mdmark-diagram-label,
         .mdmark-diagram-axis-text,
         .mdmark-diagram-value-text
