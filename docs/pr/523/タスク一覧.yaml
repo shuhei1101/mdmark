@@ -81,5 +81,7 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-13T05:22:16.611886+00:00'
   - process: 結合テスト作成
-    status: todo
+    status: done
     note: preview-open.test.ts と stub-server.ts の経過時間を performance.now で測るよう直し、test_normal_when_tags_unreachable を VS Code 1.141.0 と stable で 10 回ずつ繰り返して全 pass を確かめる
+    updated_by: planner
+    updated_at: '2026-11-13T12:31:58.658481+00:00'
