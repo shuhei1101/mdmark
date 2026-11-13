@@ -1,11 +1,13 @@
 import type { ResolvedConfig } from "../config.ts";
 import { renderSyntaxWarning } from "../parts/syntax-warning.ts";
 import { collectMapProblems } from "./check.ts";
+import { attachMapEr } from "./er-view.ts";
 import { attachMapFlow, type MapFlowHandle } from "./flow-view.ts";
 import { parseFlowchart } from "./flowchart.ts";
 import { parseSequence } from "./sequence.ts";
 import { attachMapSequence } from "./sequence-view.ts";
 import { parseMapArgs } from "./spec.ts";
+import { attachMapState } from "./state-view.ts";
 import { collectMapStructure, type MapRangeSource } from "./structure.ts";
 
 export { attachMapFlow } from "./flow-view.ts";
@@ -109,6 +111,10 @@ export const attachMap = (
         },
       };
       sequences.push(entry);
+    } else if (range.dataset.mapKind === "erDiagram") {
+      destroyers.push(attachMapEr(range, config, args).destroy);
+    } else if (range.dataset.mapKind === "stateDiagram") {
+      destroyers.push(attachMapState(range, config, args).destroy);
     } else {
       // 構成図の案内を始めたら、この構成図の上で再生しているシーケンス図の強調を解く（構成図の強調は残す）
       const handle = attachMapFlow(range, config, args, () => {

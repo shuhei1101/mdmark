@@ -127,6 +127,8 @@ export type MapFlowArgs = {
   dragging: string | undefined;
   /** 図の番号（ツールチップと矢じりの id の頭） */
   id?: string | undefined;
+  /** 閉じたグループの名前の後ろの文字（無ければ「ノード {数} 件」） */
+  collapsedTag?: ((groupId: string) => string | undefined) | undefined;
 };
 
 /** 開閉の山形のボタン */
@@ -480,11 +482,19 @@ export const renderMapFlow = (args: MapFlowArgs): MapPart => {
       return `<div class="${classes}" data-group="${escapeHtml(group.id)}" style="left:${group.x}px;top:${group.y}px;width:${group.w}px;height:${group.h}px${groupTint(group.id)}">${bar}<div class="map-group-head">${disclosure(group.id, group.title, true)}${groupTitle(group.id, group.title, current)}</div></div>`;
     })
     .join("");
+  const closedCount = (id: string, count: number | undefined): string => {
+    const tag =
+      args.collapsedTag?.(id) ??
+      (count === undefined ? undefined : `ノード ${count} 件`);
+    return tag === undefined
+      ? ""
+      : `<span class="map-closed-count">${escapeHtml(tag)}</span>`;
+  };
   // 閉じたグループは、二重の枠線の 1 つのノードにする（本数とラベルは出さない）
   const closedHtml = closed
     .map(
       (group) =>
-        `<div class="mdmark-diagram-node map-closed-group${group.faded ? " map-faded" : ""}" data-group="${escapeHtml(group.id)}" style="left:${group.x}px;top:${group.y}px;width:${group.w}px;height:${group.h}px"><div class="map-group-head">${disclosure(group.id, group.title, false)}${groupTitle(group.id, group.title, false)}</div>${group.count === undefined ? "" : `<span class="map-closed-count">ノード ${group.count} 件</span>`}</div>`,
+        `<div class="mdmark-diagram-node map-closed-group${group.faded ? " map-faded" : ""}" data-group="${escapeHtml(group.id)}" style="left:${group.x}px;top:${group.y}px;width:${group.w}px;height:${group.h}px"><div class="map-group-head">${disclosure(group.id, group.title, false)}${groupTitle(group.id, group.title, false)}</div>${closedCount(group.id, group.count)}</div>`,
     )
     .join("");
   const packets = `<svg class="map-packets" width="${layout.width}" height="${layout.height}" aria-hidden="true">${renderMapPackets(args, args.packets)}</svg>`;
@@ -505,6 +515,8 @@ export const renderMapFlow = (args: MapFlowArgs): MapPart => {
 /** 部品『案内の帯』の引数 */
 export type MapBandArgs = {
   mode: "walkthrough" | "playback";
+  /** 再生で進める単位（既定 message。transition は状態遷移図の遷移） */
+  unit?: "message" | "transition" | undefined;
   total: number;
   index: number | undefined;
   title: string;
@@ -521,11 +533,21 @@ const NAMES = {
     stop: "再生をやめる",
     next: "次のメッセージ",
   },
+  transition: {
+    prev: "前の遷移",
+    stop: "再生をやめる",
+    next: "次の遷移",
+  },
 } as const;
 
 /** 部品『案内の帯』の HTML */
 export const renderMapBand = (args: MapBandArgs): string => {
-  const names = NAMES[args.mode];
+  const names =
+    NAMES[
+      args.mode === "playback" && args.unit === "transition"
+        ? "transition"
+        : args.mode
+    ];
   const button = (
     action: string,
     label: string,
@@ -879,4 +901,79 @@ export const renderMapSequence = (args: MapSequenceArgs): MapPart => {
     html,
     tips: `${markTipTerms(noteTips.html(), args.terms)}${marker.tips.html()}`,
   };
+};
+
+/** 部品『mapのER図』のテーブルの引数 */
+export type MapErTableArgs = {
+  name: string;
+  columns: Array<{ type: string; name: string; keys: string[] }>;
+  /** 列の名前ごとの説明（補足の `{テーブル}.{列}` か列のコメント） */
+  notes: Record<string, string>;
+  collapsed: boolean;
+  /** ツールチップの id の頭 */
+  id?: string | undefined;
+};
+
+/** 部品『mapのER図』のテーブルの中身。列を開閉するボタン・列の行・列の説明のツールチップ */
+export const renderMapEr = (
+  args: MapErTableArgs,
+): { toggle: string; columns: string; tips: string } => {
+  const label = `${args.name}の列を${args.collapsed ? "開く" : "閉じる"}`;
+  const toggle = `<button class="map-er-toggle" type="button" data-er-toggle="${escapeHtml(args.name)}" aria-expanded="${!args.collapsed}" aria-label="${escapeHtml(label)}" title="${escapeHtml(label)}">${args.collapsed ? `列 ${args.columns.length}` : iconSvg("chevron-down")}</button>`;
+  if (args.collapsed) return { toggle, columns: "", tips: "" };
+  const tips = createTips(args.id ?? `map-er-${args.name}`);
+  const rows = args.columns
+    .map((column) => {
+      const note = args.notes[column.name];
+      const owner = `column:${args.name}.${column.name}`;
+      const mark =
+        note === undefined
+          ? ""
+          : `<button class="map-er-note" type="button" aria-label="${escapeHtml(`${column.name}の説明`)}" aria-describedby="${tips.add({ kind: "hint", label: column.name, tip: note, owner })}" data-tip-owner="${escapeHtml(owner)}">i</button>`;
+      return `<div class="map-er-column" role="listitem" data-column="${escapeHtml(column.name)}"><span class="map-er-key">${escapeHtml(column.keys.join(","))}</span><span class="map-er-name">${escapeHtml(column.name)}</span><span class="map-er-type">${escapeHtml(column.type)}</span><span class="map-er-note-cell">${mark}</span></div>`;
+    })
+    .join("");
+  return {
+    toggle,
+    columns: `<div class="map-er-columns" role="list">${rows}</div>`,
+    tips: tips.html(),
+  };
+};
+
+/** 部品『mapの状態遷移図』の同じ状態への遷移の引数 */
+export type MapStateLoopArgs = {
+  wire: string;
+  x: number;
+  y: number;
+  width: number;
+  label: string | undefined;
+  /** 再生でその遷移の手順か */
+  active: boolean;
+  dim: boolean;
+};
+
+/** 同じ状態への遷移の折れ線の点（状態の右の辺から出て上を回り、上の辺へ戻る） */
+export const stateLoopPoints = (
+  args: Pick<MapStateLoopArgs, "x" | "y" | "width">,
+): Array<[number, number]> => [
+  [args.x + args.width, args.y + 14],
+  [args.x + args.width + 20, args.y + 14],
+  [args.x + args.width + 20, args.y - 20],
+  [args.x + args.width / 2, args.y - 20],
+  [args.x + args.width / 2, args.y],
+];
+
+/** 部品『mapの状態遷移図』の同じ状態への遷移の線・押せる帯・ラベル */
+export const renderMapState = (args: MapStateLoopArgs): string => {
+  const points = stateLoopPoints(args);
+  const d = points
+    .map(([x, y], index) => `${index === 0 ? "M" : "L"}${x} ${y}`)
+    .join("");
+  const classes = `map-state-loop${args.active ? " is-active" : ""}${args.dim ? " map-dim" : ""}`;
+  const name = `${args.label ?? ""}（同じ状態への遷移）`;
+  const label =
+    args.label === undefined
+      ? ""
+      : `<text class="map-state-loop-label${args.dim ? " map-dim" : ""}" x="${args.x + args.width / 2 + 8}" y="${args.y - 26}">${escapeHtml(args.label)}</text>`;
+  return `<g data-loop="${escapeHtml(args.wire)}"><path class="${classes}" data-wire="${escapeHtml(args.wire)}" d="${d}"></path><path class="map-wire-hit" data-wire="${escapeHtml(args.wire)}" tabindex="0" role="button" aria-label="${escapeHtml(name)}" d="${d}"></path>${label}</g>`;
 };

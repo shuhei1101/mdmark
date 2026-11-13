@@ -13,7 +13,7 @@ import {
   type BandStep,
   createFollow,
 } from "./band.ts";
-import { type MapData, parseMapData } from "./data.ts";
+import { type MapData, type MapStep, parseMapData } from "./data.ts";
 import {
   applyWireShifts,
   KEY_MOVE_PX,
@@ -50,19 +50,64 @@ export type MapFlowHandle = {
   destroy: () => void;
 };
 
+/** 構成図の描画と操作に、ER 図・状態遷移図が足す処理（attachMapFlow の extension） */
+export type MapFlowExtension = {
+  /** parseFlowchart の代わりに配置するノード・グループ・線 */
+  chart: Flowchart;
+  /** 補足の layout の前に重ねる配置の上書き（ノードの幅など） */
+  overrides?: Record<string, MapOverride>;
+  /** 補足の walkthroughs の代わりに帯で進める手順 */
+  walkthroughs?: MapStep[] | undefined;
+  /** 帯のモード（既定 walkthrough） */
+  bandMode?: "walkthrough" | "playback";
+  /** 再生で進める単位（既定 message） */
+  bandUnit?: "message" | "transition";
+  /** 全て閉じるで閉じる、グループのほかの ID（ER 図のテーブル） */
+  collapsibles?: string[];
+  /** ノードを描いた後、中身を測る前に呼ぶ */
+  decorateNode?: (
+    element: HTMLElement,
+    id: string,
+    view: {
+      faded: boolean;
+      collapsed: Set<string>;
+      toggle: (id: string) => void;
+    },
+  ) => void;
+  /** ノードの中身を描いた後に、線の経路を描いた要素に合わせて引き直す（引き直さなければ undefined） */
+  rewire?: (
+    layout: MapLayout,
+    figure: HTMLElement,
+  ) => MapLayout["wires"] | undefined;
+  /** 強調を当てた後に呼ぶ（多重度・マーカー・同じ状態への遷移を描き直す） */
+  afterRender?: (
+    figure: HTMLElement,
+    layout: MapLayout,
+    view: { selected: Set<string>; step: number | undefined },
+  ) => void;
+  /** 選んだノードから残すノードと線（undefined なら構成図の選び方） */
+  selectionOf?: (
+    selected: Set<string>,
+  ) => { nodes: Set<string>; wires: Set<string> } | undefined;
+  /** 閉じたグループの名前の後ろの文字 */
+  collapsedTag?: (groupId: string) => string | undefined;
+};
+
 /** 補足の layout と状態から、ID ごとの配置の上書きを作る */
 const overridesOf = (
   data: MapData,
   state: MapState,
   sizes: Record<string, { w: number; h: number }>,
+  base: Record<string, MapOverride> = {},
 ): Record<string, MapOverride> => {
-  const overrides: Record<string, MapOverride> = {};
+  const overrides: Record<string, MapOverride> = { ...base };
   for (const [id, entry] of Object.entries(data.layout)) {
     overrides[id] = {
+      ...overrides[id],
       align: entry.align,
       order: entry.order,
       pos: entry.pos,
-      width: entry.width,
+      width: entry.width ?? overrides[id]?.width,
       justify: entry.justify,
       ends: entry.ends,
       via: entry.via,
@@ -116,10 +161,11 @@ export const attachMapFlow = (
   config: ResolvedConfig,
   args: MapArgs,
   onWalk?: () => void,
+  extension?: MapFlowExtension,
 ): MapFlowHandle => {
   const index = Number(range.dataset.map ?? "1");
   const source = range.querySelector("code")?.textContent ?? "";
-  const chart = parseFlowchart(source);
+  const chart = extension?.chart ?? parseFlowchart(source);
   const { data } = parseMapData(
     range.querySelector(".mdmark-map-data")?.textContent ?? undefined,
   );
@@ -163,9 +209,11 @@ export const attachMapFlow = (
   let layout: MapLayout = layoutMap(
     chart,
     { collapsed: state.collapsed, entered: state.entered },
-    overridesOf(data, state, sizes),
+    overridesOf(data, state, sizes, extension?.overrides),
     config.map.node_fit,
   );
+  /** 帯で今出している手順の番号 */
+  let currentStep: number | undefined;
   const frameId = `map-${index}`;
   const tools = () => [
     {
@@ -204,6 +252,7 @@ export const attachMapFlow = (
       dragging: undefined,
       id: frameId,
       terms,
+      collapsedTag: extension?.collapsedTag,
     });
     return {
       html: part.html,
@@ -247,28 +296,61 @@ export const attachMapFlow = (
       history,
       location,
     });
+  /** 描いたノードに種類ごとの中身を足す */
+  const decorate = () => {
+    if (!extension?.decorateNode) return;
+    const collapsed = new Set(state.collapsed);
+    for (const element of figure.querySelectorAll<HTMLElement>(
+      ".mdmark-diagram-stage > .mdmark-diagram-node[data-node]",
+    )) {
+      extension.decorateNode(element, element.dataset.node ?? "", {
+        faded: element.classList.contains("map-faded"),
+        collapsed,
+        toggle: (id) => {
+          delete sizes[id];
+          const set = new Set(state.collapsed);
+          if (set.has(id)) set.delete(id);
+          else set.add(id);
+          change({ ...state, collapsed: [...set] });
+        },
+      });
+    }
+  };
+  /** 図の中身を描き、種類ごとの中身を足し、線を引き直す */
+  const drawStage = () => {
+    const paint = () => {
+      const part = body();
+      const stage = figure.querySelector<HTMLElement>(".mdmark-diagram-stage");
+      const sizer = figure.querySelector<HTMLElement>(".mdmark-diagram-sizer");
+      if (stage) {
+        stage.innerHTML = part.html;
+        stage.style.width = `${part.width}px`;
+        stage.style.height = `${part.height}px`;
+      }
+      if (sizer) {
+        sizer.style.width = `${part.width}px`;
+        sizer.style.height = `${part.height}px`;
+      }
+      replaceTips(figure, part.tips);
+      decorate();
+    };
+    paint();
+    const wires = extension?.rewire?.(layout, figure);
+    if (wires) {
+      layout = { ...layout, wires };
+      paint();
+    }
+  };
   /** 状態から配置し直して、図の中身とツールを描き直す */
   const refresh = (relayout = true) => {
     if (relayout)
       layout = layoutMap(
         chart,
         { collapsed: state.collapsed, entered: state.entered },
-        overridesOf(data, state, sizes),
+        overridesOf(data, state, sizes, extension?.overrides),
         config.map.node_fit,
       );
-    const part = body();
-    const stage = figure.querySelector<HTMLElement>(".mdmark-diagram-stage");
-    const sizer = figure.querySelector<HTMLElement>(".mdmark-diagram-sizer");
-    if (stage) {
-      stage.innerHTML = part.html;
-      stage.style.width = `${part.width}px`;
-      stage.style.height = `${part.height}px`;
-    }
-    if (sizer) {
-      sizer.style.width = `${part.width}px`;
-      sizer.style.height = `${part.height}px`;
-    }
-    replaceTips(figure, part.tips);
+    drawStage();
     for (const item of tools()) {
       const button = figure.querySelector<HTMLButtonElement>(
         `[data-tool="${item.name}"]`,
@@ -323,7 +405,7 @@ export const attachMapFlow = (
           wires: new Set([pointed.id]),
         }
       : selected.size > 0
-        ? {
+        ? (extension?.selectionOf?.(selected) ?? {
             nodes: selected,
             wires: new Set(
               layout.wires
@@ -334,7 +416,7 @@ export const attachMapFlow = (
                 )
                 .map((wire) => wire.id),
             ),
-          }
+          })
         : focus === undefined
           ? undefined
           : { nodes: new Set(focus.nodes), wires: new Set(focus.wires) };
@@ -386,6 +468,10 @@ export const attachMapFlow = (
         state.selected.length === 0 &&
         Object.keys(state.positions).length === 0 &&
         Object.keys(state.wireShifts).length === 0;
+    extension?.afterRender?.(figure, layout, {
+      selected,
+      step: currentStep,
+    });
   };
   /** 選択だけを変える（配置し直さない） */
   const changeSelection = (selected: string[]) => {
@@ -410,6 +496,7 @@ export const attachMapFlow = (
     }
     if (changed) refresh();
   };
+  if (extension?.decorateNode || extension?.rewire) drawStage();
   measure();
   observeNodes();
   // 保った選択の強調と印を、初めに描いた図にも当てる
@@ -465,9 +552,10 @@ export const attachMapFlow = (
     else if (tool.dataset.tool === "collapseAll")
       change({
         ...state,
-        collapsed: chart.groups
-          .map((group) => group.id)
-          .filter((id) => id !== state.entered),
+        collapsed: [
+          ...chart.groups.map((group) => group.id),
+          ...(extension?.collapsibles ?? []),
+        ].filter((id) => id !== state.entered),
       });
     else if (tool.dataset.tool === "reset")
       change({
@@ -657,8 +745,9 @@ export const attachMapFlow = (
   let band: BandHandle | undefined;
   /** 案内を始めたときに中へ入っていたグループ（停止で戻す） */
   let walkFrom: { entered: string | undefined } | undefined;
-  if (data.walkthroughs.length > 0) {
-    const steps: BandStep[] = data.walkthroughs.map((step) => ({
+  const walkthroughs = extension?.walkthroughs ?? data.walkthroughs;
+  if (walkthroughs.length > 0) {
+    const steps: BandStep[] = walkthroughs.map((step) => ({
       title: step.title ?? "",
       text: step.text,
       nodes: step.nodes,
@@ -667,7 +756,10 @@ export const attachMapFlow = (
     }));
     band = attachBand({
       figure,
-      mode: "walkthrough",
+      mode: extension?.bandMode ?? "walkthrough",
+      ...(extension?.bandUnit === undefined
+        ? {}
+        : { unit: extension.bandUnit }),
       steps,
       interval: args.interval,
       autoplay: args.play === "autoplay",
@@ -675,6 +767,7 @@ export const attachMapFlow = (
         typeof matchMedia !== "undefined" &&
         matchMedia("(prefers-reduced-motion: reduce)").matches,
       apply: (step) => {
+        currentStep = step === undefined ? undefined : steps.indexOf(step);
         if (step !== undefined) {
           onWalk?.();
           walkFrom ??= { entered: state.entered };
