@@ -1,0 +1,12 @@
+use_cases: []
+scope_out:
+  - item: 要素の文書を持たない 4 ファイル（src/map/structure.ts・src/parts/embedded-html.ts・src/parts/icon-node.ts・vscode/src/webview/vite-env.d.ts）の物理ファイルごとのモジュール構成の新設
+    reason: 要望はフォルダ構成のツリーへの行の追加。今回の作業 PR がマージされなくても同じ内容で成り立つ
+    plan: '#537'
+  - item: src/cli/ の markdown-check.ts・issues.ts
+    reason: '#437（PR #494）で対応する'
+    plan: '#437'
+  - item: '*.stories.ts'
+    reason: 起点 Issue が対象外としている
+    plan: none
+docs: []

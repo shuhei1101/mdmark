@@ -7,5 +7,6 @@ directory: |-
   vscode/src/
   ├── settings.ts     # settings.json の mdmark.* を読み込み、範囲の外の値を既定に戻す（vscode を import しない）
   ├── config.ts       # 設定ファイルの場所・読み取り・features と libraries の取り出し・雛形（vscode を import しない）
-  └── config-file.ts  # mdmark.openConfig（設定ファイルを開く・雛形を作るか尋ねる）
+  ├── config-file.ts  # mdmark.openConfig（設定ファイルを開く・雛形を作るか尋ねる）
+  └── extensions-bundle.ts # 重ねた設定の extensions を esbuild-wasm で ES モジュールにまとめる（vscode を import しない）
   ```
