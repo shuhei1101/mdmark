@@ -160,7 +160,7 @@ flows:
     summary: 文書の廃止した `flow`・`sequence` の範囲を、文書と行を指す `retired_diagram` の行にして終了コード 1 で終わる
     setup:
       - name: 廃止した図の範囲を持つフォルダ
-        description: 'シナリオ『設定と索引を点検する』の「正常シナリオ（座標で書いた図がある）」と同じ。`a.md` の 3 行目に `<!-- flow -->`、`b.md` の 5 行目に `<!-- sequence -->` の範囲を記載し、どちらも廃止の前のバージョンで描けた部品の定義を持つ'
+        description: 'シナリオ『設定と索引を点検する』の「正常シナリオ（座標で書いた図がある）」と同じ。`a.mark.md` の 3 行目に `<!-- flow -->`、`b.mark.md` の 5 行目に `<!-- sequence -->` の範囲を記載し、どちらも廃止の前のバージョンで描けた部品の定義を持つ'
       - name: Mock
         description: 差し替える依存は無い。点検はブラウザを使用しない
     flow: |-
@@ -175,7 +175,7 @@ flows:
         C-->>W: retired_diagram の行・終了コード 1
     expected:
       - 終了コードが 1
-      - '`a.md:3: retired_diagram:`・`b.md:5: retired_diagram:` で始まる行が 1 つずつあり、どちらも map の範囲で記載することと `mdmark upgrade` を含む'
+      - '`a.mark.md:3: retired_diagram:`・`b.mark.md:5: retired_diagram:` で始まる行が 1 つずつあり、どちらも map の範囲で記載することと `mdmark upgrade` を含む'
       - '`diagram_invalid` の行が無い（範囲の中の定義は点検しない）'
       - 最後の行が `ずれ 2 件`
       - 設定・索引・文書が変わっていない
