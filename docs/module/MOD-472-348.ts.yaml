@@ -1,0 +1,175 @@
+id: MOD-472-348
+visibility: internal
+title: ClaudeCodeプラグイン / フック / guide-notice.ts
+lead: プラグインの `hooks/hooks.json` の `Write|Edit` の PreToolUse・UserPromptSubmit・PreCompact が `node` で起動する処理。`.mark.md` の記載と語 mdmark を含む発言で、記法のルールの参照をセッションに 1 回だけ案内し、圧縮でその記録を削除する。
+test_files:
+  - tests/unit/src/plugin/guide-notice.test.ts
+directory: |-
+  ```tree
+  src/plugin/
+  └── guide-notice.ts   # 記法のルールの参照の案内のフックの入口
+  ```
+constants:
+  - name: NOTICE_DIR_ENV
+    title: 記録のフォルダの環境変数
+    container: src/plugin/guide-notice.ts
+    usecase: 記法のルールの参照を案内する
+    summary: 案内したセッションを記録するフォルダを指定する環境変数
+    value: MDMARK_GUIDE_NOTICE_DIR
+    refs:
+      - CFG-472-1#settings[MDMARK_GUIDE_NOTICE_DIR]
+    status: planned
+    introduced:
+      pr: 541
+  - name: DEFAULT_NOTICE_DIR_NAME
+    title: 既定の記録のフォルダの名前
+    container: src/plugin/guide-notice.ts
+    usecase: 記法のルールの参照を案内する
+    summary: '`NOTICE_DIR_ENV` が無いときに `os.tmpdir()` の下に作るフォルダの名前'
+    value: mdmark-guide-notice
+    status: planned
+    introduced:
+      pr: 541
+  - name: SESSION_ID_PATTERN
+    title: 記録に使用できるセッションの ID
+    container: src/plugin/guide-notice.ts
+    usecase: 記法のルールの参照を案内する
+    summary: 記録のファイル名にする `session_id` の書式。合わない値では記録も案内もしない
+    value: ^[A-Za-z0-9_-]+$
+    refs:
+      - IF-472-43#exceptions
+    status: planned
+    introduced:
+      pr: 541
+  - name: PROMPT_KEYWORD
+    title: 案内する発言の語
+    container: src/plugin/guide-notice.ts
+    usecase: 記法のルールの参照を案内する
+    summary: UserPromptSubmit の `prompt` が大文字・小文字を区別せずに含むと案内する語
+    value: mdmark
+    refs:
+      - IF-472-43#constraints[案内する条件]
+    status: planned
+    introduced:
+      pr: 541
+  - name: NOTICE_BODY
+    title: 案内の文の本体
+    container: src/plugin/guide-notice.ts
+    usecase: 記法のルールの参照を案内する
+    summary: 案内の文の頭に続ける文
+    value: 記載する前に、mdmark の MCP の instructions のとおりにガイドを参照し、記載した後は check で点検する。
+    refs:
+      - IF-472-43#constraints[案内の文]
+    status: planned
+    introduced:
+      pr: 541
+functions:
+  - name: runGuideNotice
+    title: 記法のルールの参照を案内する
+    kind: 関数
+    container: src/plugin/guide-notice.ts
+    usecase: 記法のルールの参照を案内する
+    role: 入口
+    summary: 標準入力の `hook_event_name` で振り分け、PreCompact は記録を削除し、PreToolUse・UserPromptSubmit は案内する条件に合って記録が無いときだけ記録を作ってから `additionalContext` を標準出力に 1 行書く
+    description: まとめた `plugin/scripts/guide-notice.js` を入口として実行したときだけ、標準入力を読み込み切って実行し、戻り値を終了コードにする（`import.meta.main`）。どの失敗でも例外を外へ投げず、何も書き込まずに 0 を返却する（フックの失敗で呼び出しと発言を止めないため）
+    scope: public
+    is_async: true
+    args:
+      - name: options
+        type: '{ env: NodeJS.ProcessEnv; input: string; stdout: (line: string) => void; tmpdir: () => string }'
+        required: true
+        description: 環境変数・標準入力の文字列・標準出力へ 1 行書く関数・一時フォルダのパスを返す関数（`os.tmpdir`）
+    returns:
+      type: Promise<0>
+      description: 常に 0
+    process: |-
+      1. 標準入力を JSON として読み込む。読めない・`session_id` が `SESSION_ID_PATTERN` に合わないなら、何も書き込まず 0 を返却する
+      2. 記録のファイルのパスを `{NOTICE_DIR_ENV の値か tmpdir()/DEFAULT_NOTICE_DIR_NAME}/{session_id}` にする
+      3. `hook_event_name` が `PreCompact` なら、記録のファイルを削除し（無ければ何もしない）、0 を返却する
+      4. `noticeHead` で案内の文の頭を作る。`null` なら 0 を返却する
+      5. 記録のファイルを `wx` で作る（フォルダが無ければ作る）。既にある・作れないなら 0 を返却する
+      6. `{ hookSpecificOutput: { hookEventName, additionalContext: 頭 + NOTICE_BODY } }` を JSON の 1 行で標準出力に書き込んで 0 を返却する
+    unit_tests:
+      - name: test_run_guide_notice
+        case: 正常
+        summary: .mark.md への Write で案内し、記録を作る
+        condition: '`MDMARK_GUIDE_NOTICE_DIR` が一時フォルダ、`session_id` が `s1`、`hook_event_name` が `PreToolUse`、`tool_input.file_path` が `/w/a.mark.md`'
+        mock: 行を配列に貯める `stdout`
+        expected: '0 を返却し、`stdout` の 1 行の `hookEventName` が `PreToolUse`、`additionalContext` が `a.mark.md は mdmark の記法で記載する文書。` + `NOTICE_BODY`、`permissionDecision` が無く、一時フォルダに `s1` がある'
+      - name: test_run_guide_notice_when_already_noticed
+        case: 正常
+        summary: 記録のあるセッションでは何も書き込まない
+        condition: 一時フォルダに `s1` があり、同じ呼び出し
+        mock: 行を配列に貯める `stdout`
+        expected: 0 を返却し、`stdout` が空
+      - name: test_run_guide_notice_when_prompt
+        case: 正常
+        summary: 語 mdmark を含む発言で案内する
+        condition: '`hook_event_name` が `UserPromptSubmit`、`prompt` が `設計メモを MDMark で書いて`'
+        mock: 行を配列に貯める `stdout`
+        expected: '`hookEventName` が `UserPromptSubmit`、`additionalContext` が `利用者が mdmark で記載するよう指示した。` + `NOTICE_BODY`'
+      - name: test_run_guide_notice_when_compacted
+        case: 正常
+        summary: PreCompact で記録を削除し、次の Write でもう一度案内する
+        condition: 一時フォルダに `s1` があり、`hook_event_name` が `PreCompact` の呼び出しの後に正常の呼び出し
+        mock: 行を配列に貯める `stdout`
+        expected: PreCompact の `stdout` が空で `s1` が削除され、次の呼び出しで 1 行を書き込む
+      - name: test_run_guide_notice_when_session_unusable
+        case: 異常
+        summary: 使用できない session_id では記録も案内もしない
+        condition: '`session_id` が `../x`'
+        mock: 行を配列に貯める `stdout`
+        expected: 0 を返却し、`stdout` が空で、一時フォルダとその親にファイルが作られていない
+      - name: test_run_guide_notice_when_input_unreadable
+        case: 異常
+        summary: JSON として読めない標準入力では何もしない
+        condition: 標準入力が `{`
+        mock: 行を配列に貯める `stdout`
+        expected: 0 を返却し、`stdout` が空
+      - name: test_run_guide_notice_when_dir_unwritable
+        case: 異常
+        summary: 記録のフォルダに書き込めないときは案内しない
+        condition: '`MDMARK_GUIDE_NOTICE_DIR` が既にあるファイルのパス'
+        mock: 行を配列に貯める `stdout`
+        expected: 0 を返却し、`stdout` が空
+      - name: test_run_guide_notice_when_matcher
+        case: 正常
+        summary: hooks.json の行が guide-notice.js を起動する
+        condition: '`plugin/hooks/hooks.json` を読み込む'
+        mock: なし
+        expected: '`matcher` が `Write|Edit` の PreToolUse の行・UserPromptSubmit の行・PreCompact の行が、どれも `${CLAUDE_PLUGIN_ROOT}/scripts/guide-notice.js` を起動する'
+    callees:
+      - '#functions[noticeHead]'
+      - 'MOD-472-262#functions[isMarkMarkdown]'
+    refs:
+      - IF-472-43#
+    status: planned
+    introduced:
+      pr: 541
+  - name: noticeHead
+    title: 案内の文の頭を作る
+    kind: 関数
+    container: src/plugin/guide-notice.ts
+    usecase: 記法のルールの参照を案内する
+    summary: 呼び出しが案内する条件に合えば案内の文の頭を、合わなければ `null` を返却する
+    description: PreToolUse は `tool_input.file_path` が `isMarkMarkdown` に合えば `{ファイル名} は mdmark の記法で記載する文書。`、UserPromptSubmit は `prompt` を小文字にして `PROMPT_KEYWORD` を含めば `利用者が mdmark で記載するよう指示した。`。ほかの種類と、値が文字列でないときは `null`
+    scope: internal
+    is_async: false
+    args:
+      - name: input
+        type: '{ hook_event_name?: unknown; tool_input?: unknown; prompt?: unknown }'
+        required: true
+        description: 標準入力の JSON
+    returns:
+      type: string | null
+      description: 案内の文の頭
+    unit_tests:
+      - name: test_notice_head_when_plain_md
+        case: 正常
+        summary: 純粋な .md と mdmark を含まない発言では null
+        condition: '`file_path` が `/w/README.md`、`prompt` が `README を直して`'
+        mock: なし
+        expected: どちらも `null`
+    status: planned
+    introduced:
+      pr: 541
