@@ -43,7 +43,7 @@ functions:
     kind: 関数
     container: vscode/src/preview/html.ts
     usecase: VSCodeでプレビューを開く
-    summary: 'インターフェース定義の制約「CSP」のとおりの `Content-Security-Policy` の値を組む。`script-src` には `libraryOrigins` が返却する `libraries` と `html-scripts.url`・`mermaid.url` の origin を含め、`blob:`・`''unsafe-inline''`・`''unsafe-eval''` は含めない。`media-src` は `img-src` と同じ `{cspSource} https: data:`'
+    summary: 'インターフェース定義の制約「CSP」のとおりの `Content-Security-Policy` の値を組む。`script-src` には `libraryOrigins` が返却する `libraries` と `html-scripts.url`・`mermaid.url`・`syntax.url` の origin を含め、`blob:`・`''unsafe-inline''`・`''unsafe-eval''` は含めない。`media-src` は `img-src` と同じ `{cspSource} https: data:`'
     scope: public
     args:
       - name: options

@@ -87,6 +87,15 @@ states:
     args:
       - name: zoom
         value: '1.25'
+  - name: TouchActive
+    description: 指で図を動かす操作中（タッチで表示する枠の余白をタップした後）。表示するノードの枠線がリンクの色の 2px になり、表示する枠の `touch-action` が `none` になる
+    args:
+      - name: zoom
+        value: '1.25'
+      - name: touchActive
+        value: 'true'
+    notes:
+      定義: モック `docs/mock/components/diagram-frame-touch/` の「操作中」。確認ログ『図の枠を指で動かすときの操作中の見せ方』
 lead: |-
   図の部品（フロー図・シーケンス図・グラフ・ER 図）を囲む枠。タイトル（題名・範囲・更新日）・右上のボタンの帯・図を出す表示する枠・凡例をこの順に配置し、拡大・縮小・移動・全画面のモーダルと、表示する枠の高さを変える右下のリサイズハンドルを持つ。
   右上のボタンの帯と表示する枠は、表示するノード（`.mdmark-diagram-box`）にまとめる。ボタンは 1.75rem 四方、帯の余白は 0.25rem。
@@ -137,6 +146,10 @@ args:
     type: 真偽値
     default: 'false'
     description: 置き場所の幅いっぱいに広げるか（右側の目次をピン止めしていないときは右端の線の手前、ピン止めしたときはパネルの手前まで）。`true` のときは本文の幅との切り替えのボタンを出さず、倍率を 1 より小さくしない。種類 `map` は `true`
+  - name: touchActive
+    type: 真偽値
+    default: 'false'
+    description: 指で図を動かす操作中か。`true` のときは表示するノード（`.mdmark-diagram-box`）に `data-touch-active` を付け、枠線をリンクの色の 2px にして、表示する枠の `touch-action` を `pan-y` から `none` にする
   - name: tools
     type: オブジェクトの配列
     default: '[]'
@@ -161,6 +174,10 @@ events:
     when: 余白をドラッグする、矢印キーを押す、移動のボタンを押す
     value: 表示する枠の `scrollLeft`・`scrollTop`
     description: '`mount` が表示する枠をスクロールさせる'
+  - name: 指で動かす操作中にする・解く
+    when: タッチで表示する枠の余白（ノード・線・グラフの項目・ボタン・リンクの外）をタップする。図の外をタップする
+    value: '`touchActive`'
+    description: '`mount` が `touchActive` を切り替える。操作中でない間の指のドラッグは横だけを図の移動にし、縦は文書のスクロールにする'
   - name: 全画面で開く・閉じる
     when: 全画面のボタンを押す。閉じるボタンか Esc を押す
     value: '`dialog` の `open`'

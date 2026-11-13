@@ -135,6 +135,8 @@ export type DiagramFrame = {
   fitMin?: number;
   /** 置き場所の幅いっぱいに広げるか（`figure` に `data-wide="true"`。map の図） */
   wide?: boolean;
+  /** 指で図を動かす操作中か（表示するノードに `data-touch-active` を付ける。ストーリーの状態だけが指定する） */
+  touchActive?: boolean;
   /** 右上の帯の先頭に並べるボタン（map の図）。`name` は `MAP_TOOL_ICONS` のキー */
   tools?: Array<{ name: string; label: string; disabled?: boolean }>;
   /** ツールチップと矢じりの `id` の頭 */
@@ -1121,7 +1123,8 @@ export function renderDiagramFrame(
       ? ""
       : `<span class="mdmark-diagram-meta">範囲: ${escapeHtml(frame.scope)}・更新日: <time datetime="${escapeHtml(frame.updated)}">${escapeHtml(frame.updated)}</time></span>`;
   const wide = frame.wide === true ? ' data-wide="true"' : "";
-  return `<figure class="mdmark-diagram" data-diagram="${frame.kind}"${sticky}${fitMin}${wide}><figcaption class="mdmark-diagram-head" id="${id}-title"><span class="mdmark-diagram-title">${escapeHtml(frame.title)}</span>${meta}</figcaption><div class="mdmark-diagram-box">${renderTools(frame)}<div class="mdmark-diagram-viewport" tabindex="0" role="group" aria-roledescription="図" aria-labelledby="${id}-title" aria-keyshortcuts="${VIEWPORT_KEYS}"><div class="mdmark-diagram-sizer" style="${sizer}"><div class="mdmark-diagram-stage" style="${stage}">${body.html}</div></div></div>${resize}${body.tips}</div><ul class="mdmark-diagram-legend" aria-label="凡例"${frame.legend.length === 0 ? ' hidden="hidden"' : ""}>${legend}</ul><svg class="mdmark-diagram-defs" width="0" height="0" aria-hidden="true"><defs>${markerDefs(id)}</defs></svg></figure>`;
+  const touchActive = frame.touchActive === true ? " data-touch-active" : "";
+  return `<figure class="mdmark-diagram" data-diagram="${frame.kind}"${sticky}${fitMin}${wide}><figcaption class="mdmark-diagram-head" id="${id}-title"><span class="mdmark-diagram-title">${escapeHtml(frame.title)}</span>${meta}</figcaption><div class="mdmark-diagram-box"${touchActive}>${renderTools(frame)}<div class="mdmark-diagram-viewport" tabindex="0" role="group" aria-roledescription="図" aria-labelledby="${id}-title" aria-keyshortcuts="${VIEWPORT_KEYS}"><div class="mdmark-diagram-sizer" style="${sizer}"><div class="mdmark-diagram-stage" style="${stage}">${body.html}</div></div></div>${resize}${body.tips}</div><ul class="mdmark-diagram-legend" aria-label="凡例"${frame.legend.length === 0 ? ' hidden="hidden"' : ""}>${legend}</ul><svg class="mdmark-diagram-defs" width="0" height="0" aria-hidden="true"><defs>${markerDefs(id)}</defs></svg></figure>`;
 }
 
 /** 図の種類 */
@@ -1142,6 +1145,8 @@ export function renderDiagram(options: {
   zoom?: number;
   fit?: number;
   modal?: boolean;
+  /** 指で図を動かす操作中か（ストーリーの状態だけが指定する） */
+  touchActive?: boolean;
 }): string {
   const {
     kind,
@@ -1151,6 +1156,7 @@ export function renderDiagram(options: {
     zoom,
     fit,
     modal,
+    touchActive,
     hints = true,
     resizable = true,
   } = options;
@@ -1184,6 +1190,7 @@ export function renderDiagram(options: {
       ...(zoom === undefined ? {} : { zoom }),
       ...(fit === undefined ? {} : { fit }),
       ...(modal === undefined ? {} : { modal }),
+      ...(touchActive === undefined ? {} : { touchActive }),
     },
     part,
   );

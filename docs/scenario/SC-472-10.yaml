@@ -359,6 +359,30 @@ scenarios:
       - 出力チャネルに、読み込めない `aliases` の行の位置とずれの種類が記録される
       - パネルに設定ファイルを読み込めない帯は出ない
     test: test_error_when_aliases_missing
+  - name: 正常シナリオ（ツールチップの位置と相対パスの色分けのライブラリ）
+    setup:
+      - name: 手元の色分けのライブラリを指すワークスペース
+        description: '`ts` のコードブロックと脚注の参照を 1 つずつ持つ Markdown と、`tooltips.placement: bottom` と、`syntax.url` に同じフォルダの `@highlightjs/cdn-assets` の `es/` フォルダの手元のコピーを相対パスで記載した `mdmark.config.yaml` を配置したフォルダ'
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor W as 文書の作成者
+        participant EX as 拡張機能
+        participant PV as プレビュー（Webview）
+        W->>EX: mdmark.openPreviewToSide
+        EX->>EX: syntax.url を設定ファイルのフォルダから解決し、Webview で読み込める URL にする
+        EX->>PV: 横の列にパネルを開き、Markdown の全文と設定を送信する
+        PV->>PV: 手元の色分けのライブラリの本体と ts のモジュールを読み込み、mount で描く
+        PV-->>W: 色分けしたコードブロック
+        W->>PV: 脚注の参照にフォーカスを移す
+        PV-->>W: 参照の下に出たツールチップ
+    expected:
+      - パネルの `ts` のコードブロックが色分けされ、通知ブロックが出ない
+      - 読み込んだ色分けのライブラリの本体の URL が、設定ファイルのフォルダの手元のコピーを指す Webview の URL
+      - 脚注の参照にフォーカスを移すと、ツールチップが参照の下に出る
+      - CSP の違反が 0 件
+    test: test_normal_when_tooltips_and_relative_syntax
 lead: 文書の作成者が、VS Code で開いている Markdown の横に、mdmark で描いたプレビューを開く。拡張機能は読み込む mdmark のバージョンを決め、jsDelivr の版付きの URL から配布物を読み込んで描く。
 issue: 22
 primary_actor: 文書の作成者

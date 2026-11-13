@@ -42,6 +42,12 @@ tables:
     description: 長い行を折り返す。省くと `false`
     default: '`false`'
     example: 'true'
+  - name: tree_warning
+    title: 罫線のフォルダ構成の記載の警告を出す
+    type: boolean
+    description: 罫線の行を 2 行以上持つ言語が `tree` でないコードブロックに、言語を `tree` にするよう案内する記載の警告を出すか。`false` で止める（罫線の例をそのまま見せるとき）。省くと `true`
+    default: '`true`'
+    example: 'false'
 notes:
   見本: |-
     ```html

@@ -1,0 +1,35 @@
+docs:
+  - page: docs/_config.yml
+    new: false
+    change: layouts_dir・includes_dir・data_dir・コレクション theme・defaults の layout・プラグイン（jekyll-optional-front-matter・jekyll-readme-index・jekyll-relative-links・jekyll-github-metadata）と関連の設定（title・baseurl・markdown・include・readme_index・relative_links）を AI Monitor の develop の docs/_config.yml に揃えて追加する。exclude の文書を指す行はそのまま保つ
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-12T19:14:13.626090+00:00'
+  - page: docs/_theme/_layouts/default.html
+    new: false
+    change: AI Monitor の develop の docs/_theme/ を取り込む（配布物リスト distribution.yaml の除外の docs/_theme/assets/*.ts と docs/_theme/_data/nav.project.yml は写さず残す）。_includes・assets・vendor/mdmark・llms.txt・search.json を含む
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-12T19:14:13.626090+00:00'
+  - page: docs/_root/files.yml
+    new: false
+    change: 取り込みで増えたのは配布物の vendor（assets/vendor/mdmark/）だけで、既存の vendor/mermaid.min.js と同じく行を持たない。消えたファイルが無く、既存の行の説明も役割が変わらないため変更しない
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-12T19:14:13.626090+00:00'
+scope_out:
+  - item: ai-monitor-theme.yaml と ai-monitor-version.ini のバージョン（v0.3.0）を上げる
+    reason: 取り込む AI Monitor の develop にはバージョンのタグが無く、控えに書けるタグが無い。次に AI Monitor がタグを打ったときの追従 Issue で import-site を流すと控えが上がる
+    plan: none
+  - item: docs/_theme/_data/nav.project.yml の中身の書き換え
+    reason: 'AI Monitor の publish が docs/guide/ の分類から書き出すファイルで、配布物リストの除外のため取り込みでも上書きしない。今の tabs と pages: の形を取り込んだレイアウトが読めるかを確かめるだけにする'
+    plan: none
+  - item: Pages の公開元（ブランチ・フォルダ）の設定の変更
+    reason: 要望に含まれない。今の公開元の docs/ のまま _config.yml で描き方を変える
+    plan: none
+  - item: 取り込んだ docs/_theme/llms.txt が空で出力される
+    reason: 配布元の llms.txt がタブ名のフォルダの README だけを参照し、nav.project.yml の分類のトップページを参照しない不具合で、配布元の AI Monitor の docs/_theme/ を直す必要がある。今回の要望（取り込みと設定）に含まれない
+    plan: shuhei1101/ai-monitor#3407
+  - item: 上タブの共通の「使い方」（AI Monitor の公開サイトへの外部リンク）を出さない
+    reason: 配布元の nav.yml・tab-link.html が共通のタブを出さない設定を持たず、配布元を修正する必要がある。ユーザーの決着（確認ログ）で、修正されるまでは両方のタブを並べる
+    plan: shuhei1101/ai-monitor#3410

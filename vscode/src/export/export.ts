@@ -3,6 +3,8 @@ import { homedir } from "node:os";
 import { basename, dirname } from "node:path";
 import { pathToFileURL } from "node:url";
 import { env, type TextDocument, Uri, window, workspace } from "vscode";
+import { formatCheckIssue } from "../../../src/cli/issues.ts";
+import type { MdmarkAlias } from "../../../src/knowledge/aliases.ts";
 import type { PreviewConfig } from "../config.ts";
 import { applyColorTheme, isFile, loadConfig } from "../config.ts";
 import { type ExtensionDeps, LAST_VERSION_KEY } from "../deps.ts";
@@ -15,7 +17,7 @@ import {
   TAGS_TIMEOUT_MS,
 } from "../version.ts";
 import { baseDirOf } from "../workspace.ts";
-import { embedLocalLibraries } from "./embed.ts";
+import { embedLocalLibraries, embedLocalSyntax } from "./embed.ts";
 import { buildExportHtml, resolveExportPath } from "./html.ts";
 import { writeFileAtomically } from "./write.ts";
 
@@ -25,7 +27,15 @@ export type ExportMode = "export" | "browser" | "print";
 /** 書き出した通知のボタン */
 const OPEN_LABEL = "ブラウザで開く";
 
-/** 設定を重ねて読み込み、相対パスの `libraries`・`html-scripts.url`・`mermaid.url` を `data:` の URL で埋め、`theme` の CSS を読み込み、`extensions` をまとめる。読み込めない設定ファイルは重ねずに残りで書き出す */
+/** 重ねた設定の `features` のうち値が真偽値のものだけを返却する（`MdmarkConfig` の `features` の形） */
+const features = (value: Record<string, unknown> | undefined) =>
+  Object.fromEntries(
+    Object.entries(value ?? {}).filter(
+      (entry): entry is [string, boolean] => typeof entry[1] === "boolean",
+    ),
+  );
+
+/** 設定を重ねて読み込み、相対パスの `libraries`・`html-scripts.url`・`mermaid.url` を `data:` の URL で埋め、相対パスの `syntax.url` の本体と使用する言語のモジュールを import map で割り当て、`theme` の CSS を読み込み、`extensions` をまとめる。読み込めない設定ファイルは重ねずに残りで書き出す */
 async function readExportConfig(options: {
   document: TextDocument;
   configPath: string;
@@ -34,6 +44,8 @@ async function readExportConfig(options: {
   config: PreviewConfig;
   themeCss: string | undefined;
   extensions: string[];
+  importMap: Record<string, string>;
+  aliases: MdmarkAlias[] | undefined;
 }> {
   const { document, configPath, deps } = options;
   const { log } = deps;
@@ -57,7 +69,13 @@ async function readExportConfig(options: {
       configPath,
       error instanceof Error ? error : String(error),
     );
-    return { config: {}, themeCss: undefined, extensions: [] };
+    return {
+      config: {},
+      themeCss: undefined,
+      extensions: [],
+      importMap: {},
+      aliases: undefined,
+    };
   }
   if (load.problem) {
     log.warn(
@@ -67,10 +85,14 @@ async function readExportConfig(options: {
       load.problem.message,
     );
   }
+  for (const issue of load.aliasIssues) {
+    log.warn(formatCheckIssue(issue));
+  }
   const {
     libraries,
     "html-scripts": htmlScripts,
     mermaid,
+    syntax,
     ...rest
   } = load.config;
   // 相対パスは重ねる前に絶対パスにしてある
@@ -79,17 +101,18 @@ async function readExportConfig(options: {
     libraries,
     htmlScripts,
     mermaid,
-    config: {
-      features: Object.fromEntries(
-        Object.entries(rest.features ?? {}).filter(
-          (entry): entry is [string, boolean] => typeof entry[1] === "boolean",
-        ),
-      ),
-    },
+    config: { features: features(rest.features) },
     bundle: (paths) =>
       bundleExtensions({ paths, extensionPath: deps.context.extensionPath }),
   });
-  for (const failure of embedded.failures) {
+  const embeddedSyntax = await embedLocalSyntax({
+    markdown: document.getText(),
+    syntax,
+    config: { features: features(rest.features) },
+    bundle: (paths) =>
+      bundleExtensions({ paths, extensionPath: deps.context.extensionPath }),
+  });
+  for (const failure of [...embedded.failures, ...embeddedSyntax.failures]) {
     log.warn("ライブラリをまとめられない", failure.path, failure.error);
   }
   const config: PreviewConfig = {
@@ -101,6 +124,9 @@ async function readExportConfig(options: {
       ? {}
       : { "html-scripts": embedded.htmlScripts }),
     ...(embedded.mermaid === undefined ? {} : { mermaid: embedded.mermaid }),
+    ...(embeddedSyntax.syntax === undefined
+      ? {}
+      : { syntax: embeddedSyntax.syntax }),
   };
   let themeCss: string | undefined;
   if (load.theme !== undefined) {
@@ -125,7 +151,13 @@ async function readExportConfig(options: {
       extensions.push(result.code);
     }
   }
-  return { config, themeCss, extensions };
+  return {
+    config,
+    themeCss,
+    extensions,
+    importMap: embeddedSyntax.imports,
+    aliases: load.aliases,
+  };
 }
 
 /** Markdown を HTML に書き出し、`mode` に合わせて通知するか開く。書き出した HTML の `Uri` を返却する。書き出せなかったときは `undefined` */
@@ -197,6 +229,8 @@ export async function exportMarkdown(options: {
     print: mode === "print",
     themeCss: exported.themeCss,
     extensions: exported.extensions,
+    importMap: exported.importMap,
+    aliases: exported.aliases,
   });
   try {
     await writeFileAtomically({ path, content: html });

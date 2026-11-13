@@ -107,7 +107,7 @@ scenarios:
   - name: 正常シナリオ（プラグインを更新した）
     setup:
       - name: 古いプラグインで起動した常駐サーバー
-        description: 正常シナリオを終えた後の端末で、unit のファイルの起動するコマンドが今のプラグインと違うバージョンの CLI を指し、その unit で常駐サーバーが待ち受けている
+        description: 正常シナリオを終えた後の端末で、unit のファイルの起動するコマンドが今のプラグインのビルドで埋めた mdmark のバージョンと違うバージョンの CLI を指し、その unit で常駐サーバーが待ち受けている
       - name: systemd --user が使える端末と空いたポート
         description: 正常シナリオと同じ
       - name: Mock
@@ -129,7 +129,7 @@ scenarios:
         S-->>C: ツールの一覧
         C-->>W: unit を記載し直して起動し直したこと・unit の名前
     expected:
-      - unit のファイルの起動するコマンドが、今のプラグインのバージョンの CLI を指す
+      - unit のファイルの起動するコマンドが、今のプラグインのビルドで埋めた mdmark のバージョンの CLI を指す
       - '`MDMARK_PORT` のポートで待ち受けるプロセスが 1 つだけあり、呼ぶ前のプロセスと違う'
       - 最後の報告に、unit を記載し直して起動し直したことが出る
     test: test_normal_when_plugin_updated

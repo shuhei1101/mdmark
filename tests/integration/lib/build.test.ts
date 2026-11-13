@@ -16,7 +16,7 @@ import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 import { promisify } from "node:util";
-import { afterEach, expect, test, vi } from "vitest";
+import { afterAll, afterEach, beforeAll, expect, test, vi } from "vitest";
 import { main } from "../../../scripts/build.ts";
 import { copyPluginInputs, writeRootPackageJson } from "../plugin-inputs.ts";
 
@@ -26,35 +26,49 @@ const execFileAsync = promisify(execFile);
 const REPO_ROOT = resolve(import.meta.dirname, "../../..");
 
 // ビルド（型定義を記載する `tsc` を含む）を子プロセスで実行するテストの待つ上限（ミリ秒）。
-// WSL2 の /mnt/c 上で、このファイル単独 5 回と integration-node 全件 3 回を実行した所要時間の最大は 128.6 秒（test_normal_when_schema_change_listed）。
-// 128.6 秒 × 1.5 = 192.9 秒を 10 秒単位で切り上げて 200 秒にした
+// WSL2 の /mnt/c 上で、このファイル単独 5 回と integration-node 全件 3 回を実行した所要時間の最大は 128.6 秒（削除した test_normal_when_schema_change_listed）。
+// 128.6 秒 × 1.5 = 192.9 秒を 10 秒単位で切り上げて 200 秒にした。残したテストの全件 2 回の最大は 99.2 秒（test_normal_when_version_given）で、この上限に収まる
 const BUILD_TIMEOUT_MS = 200_000;
 
 const createdRoots: string[] = [];
 
-/** 一時フォルダに作業ツリー（scripts・src・version.ini・依存）を作り、そのパスを返却する */
-async function createWorkTree(versionIni: string): Promise<string> {
-  const root = await mkdtemp(join(tmpdir(), "mdmark-integration-build-"));
-  createdRoots.push(root);
-  await cp(join(REPO_ROOT, "scripts"), join(root, "scripts"), {
+/** 作業ツリーのコピー元（ファイルで 1 回だけリポジトリから写す。`version.ini` と依存は含めない） */
+let templateRoot = "";
+
+beforeAll(async () => {
+  templateRoot = await mkdtemp(join(tmpdir(), "mdmark-integration-build-src-"));
+  await cp(join(REPO_ROOT, "scripts"), join(templateRoot, "scripts"), {
     recursive: true,
   });
-  await cp(join(REPO_ROOT, "src"), join(root, "src"), { recursive: true });
+  await cp(join(REPO_ROOT, "src"), join(templateRoot, "src"), {
+    recursive: true,
+  });
   // CLI がまとめる設定の Schema と取り込んだ alias-inject の Schema
-  await cp(join(REPO_ROOT, "schemas"), join(root, "schemas"), {
+  await cp(join(REPO_ROOT, "schemas"), join(templateRoot, "schemas"), {
     recursive: true,
   });
   // CLI の `init` が写す雛形の原本
-  await cp(join(REPO_ROOT, "templates"), join(root, "templates"), {
+  await cp(join(REPO_ROOT, "templates"), join(templateRoot, "templates"), {
     recursive: true,
   });
-  await writeRootPackageJson(root);
-  await copyPluginInputs(root);
-  await writeFile(join(root, "version.ini"), versionIni);
+  await writeRootPackageJson(templateRoot);
+  await copyPluginInputs(templateRoot);
   // 型定義を記載する `tsc` が読み込む設定
   for (const name of ["tsconfig.json", "tsconfig.dist.json"]) {
-    await copyFile(join(REPO_ROOT, name), join(root, name));
+    await copyFile(join(REPO_ROOT, name), join(templateRoot, name));
   }
+});
+
+afterAll(async () => {
+  await rm(templateRoot, { recursive: true, force: true });
+});
+
+/** 一時フォルダに作業ツリー（コピー元・version.ini・依存）を作り、そのパスを返却する */
+async function createWorkTree(versionIni: string): Promise<string> {
+  const root = await mkdtemp(join(tmpdir(), "mdmark-integration-build-"));
+  createdRoots.push(root);
+  await cp(templateRoot, root, { recursive: true });
+  await writeFile(join(root, "version.ini"), versionIni);
   await symlink(
     join(REPO_ROOT, "node_modules"),
     join(root, "node_modules"),
@@ -96,9 +110,6 @@ function stepsYaml(options?: { withoutTo?: boolean }): string {
 /** `v0.3.0` のタグを打った作業ツリーを作る。タグの commit は今の Schema と、手順なしの一覧が空の `migrations/` を持つ */
 async function createTaggedWorkTree(versionIni: string): Promise<string> {
   const root = await createWorkTree(versionIni);
-  await cp(join(REPO_ROOT, "schemas"), join(root, "schemas"), {
-    recursive: true,
-  });
   await mkdir(join(root, "migrations"), { recursive: true });
   await writeFile(join(root, "migrations", "no-steps.yaml"), "entries: []\n");
   await git(root, ["init", "--quiet"]);
@@ -143,6 +154,14 @@ async function runBuild(
   }
 }
 
+/** 作業ツリーの `plugin/.claude-plugin/plugin.json` の本文を返却する */
+async function readPluginManifest(root: string): Promise<string> {
+  return readFile(
+    join(root, "plugin", ".claude-plugin", "plugin.json"),
+    "utf8",
+  );
+}
+
 /** ビルドした dist/index.js を読み込み、version() の戻り値を返却する */
 async function readBuiltVersion(root: string): Promise<string> {
   const url = pathToFileURL(join(root, "dist", "index.js")).href;
@@ -163,6 +182,17 @@ afterEach(async () => {
 test("test_normal", { timeout: BUILD_TIMEOUT_MS }, async () => {
   // 準備
   const root = await createWorkTree("v0.0.0\n");
+  // `marker-json.mjs` を持つ移行の手順のフォルダ
+  await cp(
+    join(REPO_ROOT, "migrations", "next"),
+    join(root, "migrations", "next"),
+    { recursive: true },
+  );
+  // 書き込み済みのライセンスは消し、ビルドが書き込むことを確かめる
+  await rm(join(root, "migrations", "next", "THIRD_PARTY_LICENSES.txt"), {
+    force: true,
+  });
+  const manifestBefore = await readPluginManifest(root);
   // 実行
   const { code } = await runBuild(root, []);
   // 検証
@@ -182,6 +212,18 @@ test("test_normal", { timeout: BUILD_TIMEOUT_MS }, async () => {
     expect(licenses).toContain(name);
   }
   expect(licenses).toMatch(/permission is hereby granted|MIT|BSD/i);
+  // 移行の手順のフォルダの `legacy-marks.js` にまとめた依存
+  expect(existsSync(join(root, "migrations", "next", "legacy-marks.js"))).toBe(
+    true,
+  );
+  const legacyLicenses = await readFile(
+    join(root, "migrations", "next", "THIRD_PARTY_LICENSES.txt"),
+    "utf8",
+  );
+  for (const name of ["sanitize-html", "dayjs"]) {
+    expect(legacyLicenses).toContain(name);
+  }
+  expect(legacyLicenses).toMatch(/permission is hereby granted/i);
   const declarations = await readFile(join(root, "dist", "index.d.ts"), "utf8");
   for (const name of [
     "version",
@@ -199,20 +241,16 @@ test("test_normal", { timeout: BUILD_TIMEOUT_MS }, async () => {
   for (const name of ["cli.js", "viewer.js", "viewer.css"]) {
     expect(existsSync(join(root, "dist", name))).toBe(true);
   }
-  // Claude Code のプラグインの生成物と、バージョン。MCP サーバーはまとめない
+  // Claude Code のプラグインの生成物。MCP サーバーはまとめず、plugin.json は書き換えない
   for (const path of ["scripts/pre-tool-use.js", "scripts/session-start.js"]) {
     expect(existsSync(join(root, "plugin", path))).toBe(true);
   }
   for (const path of ["guide", "server", "dist"]) {
     expect(existsSync(join(root, "plugin", path))).toBe(false);
   }
-  const manifest = JSON.parse(
-    await readFile(
-      join(root, "plugin", ".claude-plugin", "plugin.json"),
-      "utf8",
-    ),
-  );
-  expect(manifest.version).toBe("v0.0.0");
+  const manifest = await readPluginManifest(root);
+  expect(JSON.parse(manifest)).not.toHaveProperty("version");
+  expect(manifest).toBe(manifestBefore);
   const initTarget = await mkdtemp(join(tmpdir(), "mdmark-integration-init-"));
   createdRoots.push(initTarget);
   const init = await execFileAsync(
@@ -254,18 +292,15 @@ test("test_normal_when_version_given", {
 }, async () => {
   // 準備
   const root = await createWorkTree("v0.0.0\n");
+  const manifestBefore = await readPluginManifest(root);
   // 実行
   const { code } = await runBuild(root, ["--version", "v0.0.1"]);
   // 検証
   expect(code).toBe(0);
   expect(await readBuiltVersion(root)).toBe("v0.0.1");
-  const manifest = JSON.parse(
-    await readFile(
-      join(root, "plugin", ".claude-plugin", "plugin.json"),
-      "utf8",
-    ),
-  );
-  expect(manifest.version).toBe("v0.0.1");
+  const manifest = await readPluginManifest(root);
+  expect(JSON.parse(manifest)).not.toHaveProperty("version");
+  expect(manifest).toBe(manifestBefore);
 });
 
 // 書式に合わないバージョンを指定すると、配布物を書き込まずに終わる（異常系）
@@ -304,24 +339,6 @@ async function appendToEntry(root: string, code: string): Promise<void> {
   await appendFile(join(root, "src", "index.ts"), `\n${code}\n`);
 }
 
-// 有無を確認してから下限に無い API を使用すると、止めずにビルドする（正常系）
-test("test_normal_when_api_checked_before_use", {
-  timeout: BUILD_TIMEOUT_MS,
-}, async () => {
-  // 準備
-  const root = await createWorkTree("v0.0.0\n");
-  await appendToEntry(
-    root,
-    'if (typeof Intl.Segmenter !== "undefined") { new Intl.Segmenter("ja"); }',
-  );
-  // 実行
-  const { code, stderr } = await runBuild(root, []);
-  // 検証
-  expect(code).toBe(0);
-  expect(existsSync(join(root, "dist", "index.js"))).toBe(true);
-  expect(stderr).not.toContain("Intl.Segmenter");
-});
-
 // 下限に無い API を確認せずに使用すると、記載した配布物を削除して終わる（異常系）
 test("test_error_when_api_missing_in_baseline_browser", {
   timeout: BUILD_TIMEOUT_MS,
@@ -337,45 +354,6 @@ test("test_error_when_api_missing_in_baseline_browser", {
   for (const expected of ["Intl.Segmenter", "dist/index.js", "Firefox 98"]) {
     expect(stderr).toContain(expected);
   }
-});
-
-// スキーマを変えても migrations/next/steps.yaml があれば合格にする（正常系）
-test("test_normal_when_schema_changed_with_steps", {
-  timeout: BUILD_TIMEOUT_MS,
-}, async () => {
-  // 準備
-  const root = await createTaggedWorkTree("v0.3.0\n");
-  await writeFile(
-    join(root, "schemas", "mdmark.index.schema.json"),
-    '{ "type": "object", "required": ["documents"] }\n',
-  );
-  await mkdir(join(root, "migrations", "next"), { recursive: true });
-  await writeFile(join(root, "migrations", "next", "steps.yaml"), stepsYaml());
-  // 実行
-  const { code } = await runBuild(root, []);
-  // 検証
-  expect(code).toBe(0);
-  expect(existsSync(join(root, "dist", "index.js"))).toBe(true);
-});
-
-// 手順なしの一覧に今の Schema の SHA-256 の行があれば合格にする（正常系）
-test("test_normal_when_schema_change_listed", {
-  timeout: BUILD_TIMEOUT_MS,
-}, async () => {
-  // 準備
-  const root = await createTaggedWorkTree("v0.3.0\n");
-  const changed =
-    '{ "type": "object", "properties": { "title": { "type": "string" } } }\n';
-  await writeFile(join(root, "schemas", "mdmark.config.schema.json"), changed);
-  await writeFile(
-    join(root, "migrations", "no-steps.yaml"),
-    noStepsYaml("mdmark.config.schema.json", sha256(changed)),
-  );
-  // 実行
-  const { code } = await runBuild(root, []);
-  // 検証
-  expect(code).toBe(0);
-  expect(existsSync(join(root, "dist", "index.js"))).toBe(true);
 });
 
 // スキーマを変えたのに手順も一覧の合う行も無ければ、配布物を書き込まずに終わる（異常系）

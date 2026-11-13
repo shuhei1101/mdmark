@@ -50,9 +50,9 @@ stakeholders:
     interest: 手で .vsix を作らずに、決まったバージョンの拡張機能を配れる
   - name: 文書の作成者
     interest: GitHub Release から .vsix を落として入れられる
-trigger: 開発者が master の commit に `vscode-v{バージョン}` のタグを打って push する
+trigger: 開発者がスプリントの区切りに、develop の commit に `vscode-v{バージョン}` のタグを打って push する
 preconditions:
-  - '`vscode/package.json` の `version` を配るバージョンにしている'
+  - '`vscode/package.json` の `version` を配るバージョンにした commit が develop に入っている'
 success_guarantee: タグの GitHub Release に `mdmark-{バージョン}.vsix` が添えられる。
 minimal_guarantee: タグと `vscode/package.json` のバージョンが合わないときは .vsix を作らず、Release に何も添えない。
 test_file: tests/e2e/単一ユースケース/拡張機能の配布物を作る.spec.ts

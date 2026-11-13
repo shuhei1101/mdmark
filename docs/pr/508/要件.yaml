@@ -1,0 +1,97 @@
+use_cases:
+  - kind: single
+    scenario: docs/scenario/SC-472-42.yaml
+    impact: changed
+    detail: 読者が図をタップしてから、スマホの指のドラッグで図を縦にも動かせる。タップする前の縦のドラッグは文書のスクロールにする（#357。共通の図の枠のため、map・フロー図・シーケンス図・グラフ・ER 図・mermaid の図・埋め込んだ HTML のチャートの全てに当たる）
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-20.yaml
+    impact: changed
+    detail: 文書の作成者が罫線でフォルダ構成を記載したのに言語が tree でないコードブロックに、言語を tree にする書き方の警告を受け取り、罫線の例をそのまま見せたいときは警告を止められる（#466）
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-3.yaml
+    impact: run_only
+    detail: MCP の check・export_html は、mdmark check と描画と同じ処理で罫線のコードブロックの警告を返す。シナリオの記述は変わらないが、警告の追加が壊しうる
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-15.yaml
+    impact: changed
+    detail: フォルダ構成を記載しようとした Claude Code が、ガイドの索引からファイルツリーの記載方法のページに行き着く（#466）
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-8.yaml
+    impact: run_only
+    detail: map の構成図の描き方は変えないが、図の枠のタッチの扱いの変更が壊しうる
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-56.yaml
+    impact: run_only
+    detail: 書き出しは変えないが、書き方の警告の追加が書き出した HTML の警告に出る
+    depends_on: []
+  - kind: composite
+    scenario: docs/scenario/SC-472-87.yaml
+    impact: run_only
+    detail: 流れは変わらないが、図の枠のタッチの変更が壊しうる
+    depends_on: []
+  - kind: composite
+    scenario: docs/scenario/SC-472-85.yaml
+    impact: run_only
+    detail: 流れは変わらないが、ガイドの索引と点検の項目の変更が壊しうる
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-52.yaml
+    impact: changed
+    detail: mdmark check に Markdown の文字列かファイルを指定すると、罫線の行を持つ言語が tree でないコードブロックをずれに挙げる（#466）
+    depends_on:
+      - docs/scenario/SC-472-20.yaml
+docs:
+  - page: docs/guide/記載する-本文を部品で組む.md
+    new: false
+    change: ファイルツリーの節に、フォルダ構成は言語 tree で記載することと、罫線のコードブロックの記載の警告と止める指定を追加する。罫線の記載方法を説明する言語 markdown の例 4 つの直前に tree_warning の false を記載する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-12T20:18:25.028567+00:00'
+  - page: docs/guide/記法.md
+    new: false
+    change: code のマーカーの引数の表に tree_warning を追加する。罫線の記載方法を説明する言語 markdown の例の直前に tree_warning の false を記載する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-12T20:18:25.028567+00:00'
+  - page: guide/index.yaml
+    new: false
+    change: components の when に、フォルダ構成・ファイルツリーを記載するときを追加する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-12T20:18:25.028567+00:00'
+  - page: docs/guide/files.yml
+    new: false
+    change: 記載する-本文を部品で組む.md の description に、フォルダ構成・ファイルツリーを記載するときに参照する旨を追加する（dev-docs のガイドの検索で行き着く）
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-12T20:18:25.028567+00:00'
+  - page: docs/guide/図を描く-図を描く.md
+    new: false
+    change: 「読者ができること」に、タッチの端末で余白をタップしてから指で縦にも横にも図を動かす操作を追加する（図の枠を共有する全ての図の操作。map のページはこの節を参照する）
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-12T20:18:25.028567+00:00'
+  - page: docs/guide/書き出す-文書を書き出す.md
+    new: false
+    change: 動画と音声のコピーのフォルダ構成を言語 text から tree にする（罫線のフォルダ構成の記載の警告の対象）
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-12T20:18:25.028567+00:00'
+scope_out:
+  - item: 今の flow（座標の JSON のフロー図）の箱の種類 dm の表示名「意思決定モデル」
+    reason: 'map は固定のノードの種類を持たず、表示名は使う側の設定 map.kinds の label で決まるため、#464 の #333 の要件は develop で満たされている。今の flow の固定の種類を設定で作る形にするのは #470 が扱う'
+    plan: '#470'
+  - item: map・今の sequence のシーケンス図での参加者の表示と非表示（#404 の残り）
+    reason: ユーザーが参加者の非表示の機能は不要と判断した（https://github.com/shuhei1101/mdmark/pull/508#discussion_r4555259514 ）。図の枠のタッチでのドラッグは、図の枠が共通の部品のため今の図にも当て、この PR に含める
+    plan: none
+  - item: mdmark check を引数なしで実行するフォルダの点検での、罫線のコードブロックの警告
+    reason: フォルダの点検は描いたときの記載の警告を集めず（知らないマーカー・図の定義・map の補足などだけ）、記載した後の点検は --text・--file（MCP の check）で行うため。記載の警告をフォルダの点検へ広げるのは警告全体に関わる別の題材
+    plan: none
+  - item: 図の枠のリサイズハンドル（`src/parts/diagram.ts` の `renderDiagramFrame`）が、描いた直後に aria-valuenow などの必須の ARIA 属性を持たず、axe の aria-required-attr が出る
+    reason: reviewer の対象外の逸脱の報告（https://github.com/shuhei1101/mdmark/pull/508#discussion_r4556332375 ）。WAI-ARIA のフォーカスできる separator の必須の属性と部品設計『図の枠』の accessibility から外れている。develop の既存の描画で、今回の要望に含まれない
+    plan: '#514'

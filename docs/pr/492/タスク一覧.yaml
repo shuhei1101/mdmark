@@ -1,0 +1,81 @@
+tasks:
+  - process: 初期構築
+    status: skipped
+    reason: 既存リポジトリのため対象外
+    updated_by: planner
+    updated_at: '2026-11-12T13:40:56.378403+00:00'
+  - process: リバースエンジニアリング
+    status: skipped
+    reason: 設計書が既にあるため対象外
+    updated_by: planner
+    updated_at: '2026-11-12T13:40:56.378403+00:00'
+  - process: 方針決め
+    status: skipped
+    reason: 方針決めを依頼する Issue ではない（方針は D-294〜D-298 で決定済み）
+    updated_by: planner
+    updated_at: '2026-11-12T13:40:56.378403+00:00'
+  - process: PoC 検証
+    status: done
+    note: plugin.json に version が無いとき、develop へ入った commit が /plugin update と自動更新で配布先へ届くかを実機で確かめる
+    updated_by: planner
+    updated_at: '2026-11-12T14:04:12.142878+00:00'
+  - process: 複合ユースケース設計
+    status: skipped
+    reason: 利用者の業務の流れは変わらず、複合ユースケースに配布の契機の記述が無い
+    updated_by: planner
+    updated_at: '2026-11-12T13:40:56.378403+00:00'
+  - process: デザインスタイル選定
+    status: skipped
+    reason: 画面を変えない（判定フローチャート『モック要否』）
+    updated_by: planner
+    updated_at: '2026-11-12T13:40:56.378403+00:00'
+  - process: 画面一覧・画面遷移
+    status: skipped
+    reason: 画面を変えない（判定フローチャート『モック要否』）
+    updated_by: planner
+    updated_at: '2026-11-12T13:40:56.378403+00:00'
+  - process: 単一ユースケース設計
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-12T14:16:51.214075+00:00'
+  - process: モック作成
+    status: skipped
+    reason: 画面を変えない（判定フローチャート『モック要否』）
+    updated_by: planner
+    updated_at: '2026-11-12T13:40:56.378403+00:00'
+  - process: インターフェース定義設計
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-12T14:44:11.413662+00:00'
+  - process: 部品設計
+    status: skipped
+    reason: 画面の部品を変えない
+    updated_by: planner
+    updated_at: '2026-11-12T13:40:56.378403+00:00'
+  - process: 画面設計
+    status: skipped
+    reason: 画面を変えない（判定フローチャート『画面設計要否』）
+    updated_by: planner
+    updated_at: '2026-11-12T13:40:56.378403+00:00'
+  - process: モジュール構成設計
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-12T15:04:07.555127+00:00'
+  - process: ドキュメント修正
+    status: done
+    note: 要件.yaml の docs の行（公開ドキュメントと開発コマンド・アーキテクチャ図・外部ライブラリ）
+    updated_by: planner
+    updated_at: '2026-11-12T15:24:43.886265+00:00'
+  - process: 単体テスト作成
+    status: done
+    note: 廃止する writePluginManifest の単体テスト test_write_plugin_manifest を削除しただけで、新しい単体テストは無いため Red は出ない
+    updated_by: planner
+    updated_at: '2026-11-12T15:56:23.070524+00:00'
+  - process: 実装
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-12T19:05:14.801987+00:00'
+  - process: 結合テスト作成
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-12T20:04:53.335062+00:00'

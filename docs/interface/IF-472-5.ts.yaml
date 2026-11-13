@@ -21,11 +21,11 @@ flows:
         participant H as PreToolUse のフック
         C->>H: tool_name・tool_input
         H->>H: tool_input に project_dir を入れる
-        H-->>C: hookSpecificOutput（updatedInput）・終了コード 0
+        H-->>C: hookSpecificOutput（permissionDecision・updatedInput）・終了コード 0
     expected:
       - 標準出力が JSON で、`hookSpecificOutput.hookEventName` が `PreToolUse`
       - '`updatedInput.project_dir` が `CLAUDE_PROJECT_DIR` の値で、`updatedInput.config` が指定した値のまま'
-      - '`hookSpecificOutput` が `permissionDecision` を持たない'
+      - '`hookSpecificOutput.permissionDecision` が `allow` で、`permissionDecisionReason` が空でない文字列'
       - 終了コードが 0
     test: test_normal
   - name: 正常系（作業のフォルダが分からない）
@@ -44,7 +44,7 @@ flows:
       - 標準出力が空
       - 終了コードが 0
     test: test_normal_when_project_dir_unknown
-lead: 作業のフォルダを使用する mdmark のツールの呼び出しの前に、引数へ `project_dir` として `CLAUDE_PROJECT_DIR` の値を入れて Claude Code へ返却する。許可の判定には関わらない。
+lead: 作業のフォルダを使用する mdmark のツールの呼び出しの前に、引数へ `project_dir` として `CLAUDE_PROJECT_DIR` の値を入れて Claude Code へ返却する。auto モードで書き換えた呼び出しが拒否されないよう、許可を添える。
 side_effects: なし（標準出力へ書き込むだけ）
 request:
   - name: tool_name
@@ -70,12 +70,18 @@ response:
   - name: hookSpecificOutput.hookEventName
     type: "'PreToolUse'"
     description: フックの種類
+  - name: hookSpecificOutput.permissionDecision
+    type: "'allow'"
+    description: 呼び出しの許可。権限の確認を省く（plan mode の読み取りだけでない呼び出しと、どのモードでも自動で許可しない操作を除く）
+  - name: hookSpecificOutput.permissionDecisionReason
+    type: string
+    description: 許可した理由。Claude Code はデバッグのログにだけ書く
   - name: hookSpecificOutput.updatedInput
     type: Record<string, unknown>
     description: '`tool_input` に `project_dir` を入れた引数。エージェントが `project_dir` を記載していても `CLAUDE_PROJECT_DIR` の値で置き換える。ほかの引数はそのまま'
 response_example: |-
   ```json
-  {"hookSpecificOutput": {"hookEventName": "PreToolUse", "updatedInput": {"project_dir": "/home/w/docs"}}}
+  {"hookSpecificOutput": {"hookEventName": "PreToolUse", "permissionDecision": "allow", "permissionDecisionReason": "mdmark のプラグインが作業のフォルダを project_dir に入れた", "updatedInput": {"project_dir": "/home/w/docs"}}}
   ```
 exceptions:
   - name: なし（正常終了）
@@ -87,7 +93,7 @@ constraints:
   - item: 対象のツール
     constraint: '`hooks.json` の PreToolUse の `matcher` を、作業のフォルダを使用するツール（`check`・`export_html`・`build_site`・`list_templates`・`add_template`・`apply_template`）の完全名に絞る'
   - item: 許可
-    constraint: '`permissionDecision` を返却せず、`updatedInput` だけを返却する。許可の判定はフックが無いときと同じ'
+    constraint: '`updatedInput` と一緒に `permissionDecision` を `allow` で返却する。`permissionDecision` が無いと、auto モードはフックが書き換える前の入力を確認しているため、書き換えた呼び出しを拒否しうる。権限の確認を省くのは `matcher` のツールだけで、設定の deny・ask のルールはフックの返却に関係なく評価される'
   - item: 公開の Schema
     constraint: Claude Code は `updatedInput` を `tools/list` の `inputSchema` でもう一度検査しない。`project_dir` は `inputSchema` に出さない
 refs:

@@ -1,0 +1,10 @@
+scope_out:
+  - item: tmp/screenshots/ の画像の削除と tmp/ の Git 管理外の確認
+    reason: '#472 で解消済み（origin/develop の tmp/ は中身が * の tmp/.gitignore だけ）'
+    plan: none
+  - item: 履歴からの画像の削除（履歴の書き換え）
+    reason: Issue の要望が履歴を書き換えないと定めている
+    plan: none
+  - item: docs/mock/refs/ の画像
+    reason: 作業 PR のスクリーンショットではなく、モックが参照する画像のため
+    plan: none

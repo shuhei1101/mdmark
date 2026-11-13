@@ -1,0 +1,38 @@
+$ npm run test:unit
+
+> test:unit
+> vitest run --project 'unit*'
+
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/fix-plugin-pre-tool-use-permission-decision
+
+ ❯ |unit| tests/unit/src/plugin/pre-tool-use.test.ts (4 tests | 1 failed) 6757ms
+   × test_run_pre_tool_use 42ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit| tests/unit/src/plugin/pre-tool-use.test.ts > test_run_pre_tool_use
+AssertionError: expected undefined to be 'allow' // Object.is equality
+
+- Expected:
+"allow"
+
++ Received:
+undefined
+
+ ❯ tests/unit/src/plugin/pre-tool-use.test.ts:36:56
+     34|   const output = JSON.parse(stdout[0] ?? "");
+     35|   expect(output.hookSpecificOutput.hookEventName).toBe("PreToolUse");
+     36|   expect(output.hookSpecificOutput.permissionDecision).toBe("allow");
+       |                                                        ^
+     37|   expect(output.hookSpecificOutput.permissionDecisionReason).toBe(
+     38|     PERMISSION_DECISION_REASON,
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 283 passed (284)
+      Tests  1 failed | 2068 passed (2069)
+   Start at  09:10:44
+   Duration  98.58s (worker 68%, tests 19%, import 12%, transform 1%)
+

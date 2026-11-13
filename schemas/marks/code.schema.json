@@ -45,6 +45,9 @@
     },
     "wrap": {
       "type": "boolean"
+    },
+    "tree_warning": {
+      "type": "boolean"
     }
   },
   "additionalProperties": false

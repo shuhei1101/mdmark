@@ -86,7 +86,7 @@ flows:
     summary: unit のファイルが今の内容と違えば、記載し直して起動し直す
     setup:
       - name: 古い内容の unit
-        description: 正常系を実行した後に、`MDMARK_SERVE_COMMAND` の引数を変えて呼ぶ（プラグインのバージョンが変わって起動するコマンドが変わったときと同じ）
+        description: 正常系を実行した後に、`MDMARK_SERVE_COMMAND` の引数を変えて呼ぶ（プラグインのビルドで埋めた mdmark のバージョンが変わって起動するコマンドが変わったときと同じ）
       - name: Mock
         description: 正常系と同じ
     flow: |-
@@ -379,7 +379,7 @@ request:
   - name: MDMARK_SERVE_COMMAND
     type: string
     required: false
-    default: なし（`npx -y github:shuhei1101/mdmark#v{プラグインのバージョン} serve`）
+    default: なし（`npx -y github:shuhei1101/mdmark#{プラグインのビルドで埋めた mdmark のバージョン} serve`）
     location: argument
     description: 起動するコマンド（環境変数）。テストでビルドした CLI に差し替える
   - name: MDMARK_START_TIMEOUT_SEC

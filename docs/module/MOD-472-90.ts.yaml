@@ -20,7 +20,7 @@ classes:
       - name: config
         type: PreviewConfig
         access: private
-        description: 最後に使用した設定（`libraries`・`html-scripts.url`・`mermaid.url` は Webview で読み込める URL に修正した値）。読み込めない設定ファイルがあるときは前に使用した設定を残し、使用したことが無ければ残りを重ねた設定
+        description: 最後に使用した設定（`libraries`・`html-scripts.url`・`mermaid.url`・`syntax.url` は Webview で読み込める URL に修正した値）。読み込めない設定ファイルがあるときは前に使用した設定を残し、使用したことが無ければ残りを重ねた設定
       - name: timer
         type: NodeJS.Timeout | undefined
         access: private
@@ -81,6 +81,10 @@ classes:
         type: '{ theme?: string; extensions: Array<{ path: string; hash: string; file?: string }> }'
         access: private
         description: 今の HTML に入れた `theme` の絶対パスと、`extensions` の絶対パス・そのファイルの中身の SHA-256・まとめて記載したファイル。再読み込みした値と比べ、違えばもう一度まとめて HTML をもう一度入れる
+      - name: rawSyntax
+        type: Record<string, unknown> | undefined
+        access: private
+        description: '`config` の `syntax` の `url` を修正する前の値（CSP に入れる origin の元）。読み込めなかったときは前に読み込めた値を残す'
     methods:
       - name: load
         title: 読み込む
@@ -125,6 +129,8 @@ classes:
           - MOD-472-104#functions[resolveHtmlScripts]
           - MOD-472-116#functions[displayConfigPath]
           - MOD-472-125#functions[formatCheckIssue]
+          - MOD-472-104#functions[resolveMermaid]
+          - MOD-472-104#functions[resolveSyntax]
         refs:
           - IF-472-21#constraints[設定ファイルを読み込めないとき]
           - IF-472-22#constraints[エイリアス]
@@ -134,7 +140,7 @@ classes:
                - `[error]` 設定ファイルを開けない（パス・誤り）
           2. `files`・`theme`・`extensions`・`aliasFiles` と、`configPath` を記載したときはそのファイルを `watched` に入れ、`nearest` を記録する
           3. `problem` で分ける
-             - 無い場合、`libraries`・`html-scripts`・`mermaid` を `asWebviewUri` で修正して（libraries の URL を修正する・html-scripts の URL を修正する・mermaid の URL を修正する）`config` を替え、`aliases` を `loadConfig` の `aliases` に替え、`configProblem` があったときだけ削除して `configOk` を送信する
+             - 無い場合、`libraries`・`html-scripts`・`mermaid`・`syntax` を `asWebviewUri` で修正して（libraries の URL を修正する・html-scripts の URL を修正する・mermaid の URL を修正する・色分けのライブラリの URL を修正する）`config` を替え、`aliases` を `loadConfig` の `aliases` に替え、`configProblem` があったときだけ削除して `configOk` を送信する
                - `[warn]` エイリアスのずれ（`aliasIssues` の 1 件ずつ、ずれを 1 行にした値）
              - ある場合、前に使用した `config` が無ければ同じく修正して使用し、あれば残す。`configProblem` に入れ、`{ type: "configError", path, line, settingKey }` を送信する（`path` は設定ファイルのパスを表示の構造にする。`base` はワークスペースのフォルダ、`home` は `os.homedir()`）
                - `[warn]` 設定ファイルを読み込めない（パス・行かキー・`message`）

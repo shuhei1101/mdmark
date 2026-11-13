@@ -549,6 +549,33 @@ flows:
       - Webview の HTML の CSP の `script-src` に `mermaid.url` の origin があり、`blob:`・`'unsafe-inline'`・`'unsafe-eval'` が無い
       - CSP の違反が 0 件（テストのときに Webview が数える `securitypolicyviolation` の件数）
     test: test_normal_when_mermaid
+  - name: 正常系（ツールチップの位置と相対パスの色分けのライブラリ）
+    summary: 設定の `tooltips` と、設定ファイルのフォルダから解決した `syntax.url` を `mount` に指定し、手元の色分けのライブラリで色分けして、ツールチップを参照の下に出す
+    setup:
+      - name: 見本のワークスペース
+        description: '`ts` のコードブロックと脚注の参照を 1 つずつ持つ Markdown と、`tooltips.placement: bottom` と `syntax.url: ./hljs/` を記載した `mdmark.config.yaml` と、`@highlightjs/cdn-assets` の `es/` フォルダのコピーの `hljs/` を配置したフォルダ'
+      - name: Mock
+        description: 正常系と同じ
+    flow: |-
+      sequenceDiagram
+        actor W as 文書の作成者
+        participant EX as 拡張機能
+        participant PV as プレビュー（Webview）
+        W->>EX: mdmark.openPreviewToSide
+        EX->>EX: syntax.url を設定ファイルのフォルダから解決し、Webview の URL にする
+        EX->>PV: render（config に tooltips と syntax）
+        PV->>PV: hljs/ の core.min.js と languages/typescript.min.js を読み込み、mount で描く
+        PV-->>W: 色分けしたコードブロック
+        W->>PV: 脚注の参照にフォーカスを移す
+        PV-->>W: 参照の下に出たツールチップ
+    expected:
+      - '`render` の `config.tooltips` が `{ placement: "bottom" }` で、`config.syntax.url` が `hljs/` フォルダを指す Webview の URL で `/` で終わる'
+      - パネルの `ts` のコードブロックの中に class が `hljs-` で始まる要素があり、通知ブロックが無い
+      - 脚注の参照にフォーカスを移すと、`role="tooltip"` のツールチップの上端が参照の下端より下にある
+      - CSP の違反が 0 件（テストのときに Webview が数える `securitypolicyviolation` の件数）
+    test: test_normal_when_tooltips_and_relative_syntax
+    refs:
+      - SC-472-10#scenarios[正常シナリオ（ツールチップの位置と相対パスの色分けのライブラリ）]
 lead: 文書の作成者が、開いている Markdown の横の列か同じ列に、mdmark で描くプレビューのパネルを開く。拡張機能は読み込む mdmark のバージョンを決め、Webview に jsDelivr の配布物を読み込ませて描かせる。差分ビューから開いたときは、変更前と変更後の Markdown を読み込み、変更後の文書のブロックを色分けして描かせる。
 idempotent: true
 side_effects: Webview のパネルを開く。`mdmark.version` が `latest` のとき GitHub のタグ一覧を 1 回取り、選んだバージョンを拡張機能の `globalState` の `mdmark.lastVersion` に記載する。差分ビューのときは、変更前と変更後の文書を `workspace.openTextDocument` で読み込む。設定に `aliases` があるときは、その行の `paths` の YAML を読み込む。Markdown・設定ファイル・Git のリポジトリは書き換えない
@@ -609,12 +636,12 @@ constraints:
     constraint: 'viewType `mdmark.preview`、タブのタイトル `プレビュー {ファイル名}`。`openPreviewToSide` は `ViewColumn.Beside`、`openPreview` は `ViewColumn.Active` に開く。`enableScripts: true`・`retainContextWhenHidden: false`。`localResourceRoots` は Markdown を含むワークスペースのフォルダ（ワークスペースの外の Markdown は Markdown のフォルダ）と、拡張機能の `media/`'
     notes: 背面に回したパネルは Webview が再作成され、`ready` を受けて最後の全文をもう一度送信し、背面に回す前のスクロールの位置へ戻す（プレビューを再描画する.ts）
   - item: CSP
-    constraint: "`default-src 'none'; script-src 'nonce-{nonce}' {配布物の origin} {libraries の origin} {html-scripts.url の origin} {mermaid.url の origin} {cspSource}; style-src {配布物の origin} {cspSource} 'unsafe-inline'; img-src {cspSource} https: data:; media-src {cspSource} https: data:; font-src {配布物の origin} {cspSource}; connect-src {配布物の origin}`。`{cspSource}` は `Webview.cspSource`、nonce は HTML を入れるたびに再作成する。`libraries`・`html-scripts.url`・`mermaid.url` の origin は設定ファイルの `http:`・`https:` の URL の origin だけ（`html-scripts.url`・`mermaid.url` を記載しないときは既定の jsDelivr の origin）。mermaid が図の SVG に入れるインラインの `style` は、今の `style-src 'unsafe-inline'` で受ける。範囲の `ts`・`js` は、`mount` がページの `script[nonce]` の nonce を付けた `script` 要素で動かすため、`blob:`・`'unsafe-inline'`・`'unsafe-eval'` を追加しない。まとめていない名前のアイコンを読み込む `https://cdn.jsdelivr.net` を `script-src` と `connect-src` に含める"
+    constraint: "`default-src 'none'; script-src 'nonce-{nonce}' {配布物の origin} {libraries の origin} {html-scripts.url の origin} {mermaid.url の origin} {syntax.url の origin} {cspSource}; style-src {配布物の origin} {cspSource} 'unsafe-inline'; img-src {cspSource} https: data:; media-src {cspSource} https: data:; font-src {配布物の origin} {cspSource}; connect-src {配布物の origin}`。`{cspSource}` は `Webview.cspSource`、nonce は HTML を入れるたびに再作成する。`libraries`・`html-scripts.url`・`mermaid.url`・`syntax.url` の origin は設定ファイルの `http:`・`https:` の URL の origin だけ（`html-scripts.url`・`mermaid.url`・`syntax.url` を記載しないときは既定の jsDelivr の origin）。mermaid が図の SVG に入れるインラインの `style` は、今の `style-src 'unsafe-inline'` で受ける。範囲の `ts`・`js` は、`mount` がページの `script[nonce]` の nonce を付けた `script` 要素で動かすため、`blob:`・`'unsafe-inline'`・`'unsafe-eval'` を追加しない。まとめていない名前のアイコンを読み込む `https://cdn.jsdelivr.net` を `script-src` と `connect-src` に含める"
     notes: "図とヒントの部品が HTML に `style` 属性を記載するため `style-src` に `'unsafe-inline'` が要る（PoC #70）。スクリプトは nonce で絞る"
   - item: 相対パスの基準
     constraint: Webview の HTML に `<base href="{Markdown のフォルダの asWebviewUri}/">` を配置し、本文の相対パスの画像を Markdown のフォルダから読み込む。`localResourceRoots` の外の画像は Webview が読み込まず、`alt` が出る
   - item: Webview とのメッセージ
-    constraint: '拡張機能 → Webview: `{ type: "render", markdown, previous?, config, theme, includes, aliases? }`（`aliases` は制約「エイリアス」のエイリアスの配列で、設定に `aliases` が無いときは持たない、`includes` は制約「取り込む文書」の取り込む文書の表、`previous` は差分のパネルだけが持つ変更前の Markdown、`config` は `{ features?, libraries?, "html-scripts"?, "side-toc"?, labels?, mermaid?, map?, colorTheme?, colorScheme? }`、`theme` は `mdmark.preview.theme` の値）・`{ type: "scrollToLine", line }`・`{ type: "configError", path, line?, settingKey? }`（`line` と `settingKey` はどちらか一方）・`{ type: "configOk" }`・`{ type: "theme", href }`・`{ type: "assetsResolved", id, urls }`（`urls` は `paths` の各パスから Webview の URL か `null` を参照するオブジェクト）・`{ type: "inspect", id, selector }`・`{ type: "axe", id }`（どちらもテストのときだけ）。Webview → 拡張機能: `{ type: "ready" }`（配布物を読み込み終えた）・`{ type: "rendered" }`（`mount` か `update` を呼び終えた）・`{ type: "loadFailed", reason }`（`reason` は `offline`・`versionMissing`・`diffUnsupported`）・`{ type: "openLink", href }`・`{ type: "revealLine", line }`・`{ type: "reload" }`・`{ type: "openConfig" }`・`{ type: "resolveAssets", id, paths }`（制約「動画・音声とアセットのルートの解決」）・`{ type: "openAsset", path }`（制約「再生できない動画・音声」）・`{ type: "inspected", id, elements }`（テストのときだけ。`elements` は `selector` に該当する要素ごとの `{ tagName, className, attributes, text, naturalWidth?, top, height }`。`top` は見えている範囲の先頭からの位置、`height` は高さで、単位は px）・`{ type: "axed", id, violations }`（テストのときだけ。`violations` は axe-core の違反ごとの `{ id, impact, targets }`）。`render` は初回と `config` か `aliases` が変わったときは `mount`（前の描画は `destroy`）、それ以外は戻り値の `update` で描く'
+    constraint: '拡張機能 → Webview: `{ type: "render", markdown, previous?, config, theme, includes, aliases? }`（`aliases` は制約「エイリアス」のエイリアスの配列で、設定に `aliases` が無いときは持たない、`includes` は制約「取り込む文書」の取り込む文書の表、`previous` は差分のパネルだけが持つ変更前の Markdown、`config` は `{ features?, libraries?, "html-scripts"?, "side-toc"?, labels?, mermaid?, map?, tooltips?, syntax?, colorTheme?, colorScheme? }`、`theme` は `mdmark.preview.theme` の値）・`{ type: "scrollToLine", line }`・`{ type: "configError", path, line?, settingKey? }`（`line` と `settingKey` はどちらか一方）・`{ type: "configOk" }`・`{ type: "theme", href }`・`{ type: "assetsResolved", id, urls }`（`urls` は `paths` の各パスから Webview の URL か `null` を参照するオブジェクト）・`{ type: "inspect", id, selector }`・`{ type: "axe", id }`（どちらもテストのときだけ）。Webview → 拡張機能: `{ type: "ready" }`（配布物を読み込み終えた）・`{ type: "rendered" }`（`mount` か `update` を呼び終えた）・`{ type: "loadFailed", reason }`（`reason` は `offline`・`versionMissing`・`diffUnsupported`）・`{ type: "openLink", href }`・`{ type: "revealLine", line }`・`{ type: "reload" }`・`{ type: "openConfig" }`・`{ type: "resolveAssets", id, paths }`（制約「動画・音声とアセットのルートの解決」）・`{ type: "openAsset", path }`（制約「再生できない動画・音声」）・`{ type: "inspected", id, elements }`（テストのときだけ。`elements` は `selector` に該当する要素ごとの `{ tagName, className, attributes, text, naturalWidth?, top, height }`。`top` は見えている範囲の先頭からの位置、`height` は高さで、単位は px）・`{ type: "axed", id, violations }`（テストのときだけ。`violations` は axe-core の違反ごとの `{ id, impact, targets }`）。`render` は初回と `config` か `aliases` が変わったときは `mount`（前の描画は `destroy`）、それ以外は戻り値の `update` で描く'
     notes: '`line` は 0 始まりの元の行番号（文書をHTML文字列にする.ts の制約「元の行番号」）'
   - item: 描けない理由の見分け方
     constraint: Webview は `import()` が失敗したら、同じ `index.js` の URL を `fetch` の `HEAD` で確認する。404 なら `versionMissing`、それ以外（ネットワークのエラーを含む）は `offline` を拡張機能へ通知し、パネルに描けない理由を出す。バージョンを決められないときは、拡張機能が配布物を読み込まない HTML で理由を出す
@@ -650,4 +677,4 @@ constraints:
     notes: プレビューでも取り込むことは確認ログの決定
   - item: エイリアス
     constraint: '重ねた設定に `aliases` があるとき、インターフェース定義『エイリアスを作る』の CLI と同じ読み込み方（`src/cli/aliases.ts` の `loadAliases`）で、各行の `paths` を値を記載した設定ファイルのフォルダから参照して YAML を読み込み、作ったエイリアスを `render` の `aliases` に入れる。`loadAliases` に指定する設定ファイルは、最も近い `mdmark.config.yaml`（`mdmark.configPath` を記載したときはそのファイル）で、無いときは端末の設定ファイルにする（CLI の `requireConfig` と同じく、重ねた設定のパスの値をそのファイルのフォルダからの相対パスに戻して指定する）。Webview は `mount` の `opts.aliases` に指定する。使用できない行・レコードは除き、ずれごとに CLI の `mdmark check` と同じ `{file}:{where}: {kind}: {message}`（`where` が空なら `{file}: {kind}: {message}`）の警告を出力チャネルに書き込む。エイリアスを作るのは設定を再読み込みしたときと、制約の YAML のファイルが変わったときだけで、Markdown の書き換えでは再作成しない'
-    notes: 書き出す HTML へのエイリアスの埋め込みは要件のスコープ外（#379）
+    notes: 書き出す HTML も同じ読み込み方でエイリアスを埋める（HTMLに書き出す.ts の制約「エイリアス」）

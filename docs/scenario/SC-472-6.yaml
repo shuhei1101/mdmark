@@ -146,6 +146,84 @@ scenarios:
       - 書き出した HTML を Chromium で開くと、mermaid のコードブロックの場所に図の枠と SVG の図があり、通知ブロックが出ない
       - 開いている間に、書き出した HTML 以外の `file:` の URL への要求が出ない
     test: test_normal_when_relative_mermaid
+  - name: 正常シナリオ（ツールチップの位置と相対パスの色分けのライブラリ）
+    setup:
+      - name: 手元の色分けのライブラリを指すワークスペース
+        description: '`ts` のコードブロックと脚注の参照を 1 つずつ持つ Markdown と、`tooltips.placement: bottom` と、`syntax.url` に同じフォルダの `@highlightjs/cdn-assets` の `es/` フォルダの手元のコピーを相対パスで記載した `mdmark.config.yaml` を配置したフォルダ'
+        notes: 手元のコピーの、Markdown が使用しない言語のモジュールの 1 つは、他のファイルに出ない目印の文字列を持つ
+      - name: Mock
+        description: 正常シナリオと同じ。書き出した HTML は Chromium で file:// で開く
+    flow: |-
+      sequenceDiagram
+        actor W as 文書の作成者
+        participant EX as 拡張機能
+        participant B as ブラウザ（Chromium）
+        W->>EX: mdmark: HTML に書き出す
+        EX->>EX: 色分けのライブラリの本体と文書が使用する言語のモジュールをまとめて HTML に埋める
+        W->>B: 書き出した HTML を file:// で開く
+        B-->>W: 色分けしたコードブロック
+        W->>B: 脚注の参照にフォーカスを移す
+        B-->>W: 参照の下に出たツールチップ
+    expected:
+      - 書き出した HTML を Chromium で開くと、`ts` のコードブロックが色分けされ、通知ブロックが出ない
+      - 脚注の参照にフォーカスを移すと、ツールチップが参照の下に出る
+      - 書き出した HTML に、文書が使用しない言語のモジュールの目印の文字列が無い
+      - 開いている間に、書き出した HTML 以外の `file:` の URL への要求が出ない
+    test: test_normal_when_tooltips_and_relative_syntax
+  - name: 正常シナリオ（設定の aliases のエイリアス）
+    setup:
+      - name: エイリアスを持つワークスペース
+        description: 『VSCodeでプレビューを開く』の正常シナリオ（設定の aliases のエイリアス）と同じ `mdmark.config.yaml`・`glossary.yaml`・Markdown を配置したフォルダ
+      - name: Mock
+        description: 正常シナリオと同じ。書き出した HTML は Chromium で file:// で開く
+    flow: |-
+      sequenceDiagram
+        actor W as 文書の作成者
+        participant EX as 拡張機能
+        participant FS as 設定ファイル
+        participant B as ブラウザ（Chromium）
+        W->>EX: mdmark: HTML に書き出す
+        EX->>FS: mdmark.config.yaml と aliases の行が指す glossary.yaml を読み込む
+        EX->>EX: aliases の行と読み込んだ YAML からエイリアスを作る
+        EX->>EX: エイリアスを埋め、mount にエイリアスを指定する HTML を書き込む
+        W->>B: 書き出した HTML を file:// で開く
+        B-->>W: 別名に下線を付けた文書
+        W->>B: 下線の単語にポインターを乗せる
+        B-->>W: 用語の種類と意味のツールチップ
+    expected:
+      - 書き出した HTML を Chromium で開くと、本文の `レンダリング` に用語の下線が付く
+      - 下線の単語にポインターを乗せると、ツールチップの「用語」の区分に、名前 `描画` と `glossary.yaml` の意味が出る
+      - 設定に `aliases` が無い文書を書き出した HTML は、下線もツールチップも出さず、今と同じに描かれる
+    test: test_normal_when_aliases
+    refs:
+      - SC-472-10#scenarios[正常シナリオ（設定の aliases のエイリアス）]
+  - name: 異常シナリオ（aliases の YAML が無い）
+    setup:
+      - name: エイリアスを持つワークスペース
+        description: 正常シナリオ（設定の aliases のエイリアス）の `aliases` に、無い YAML を指す行を 1 つ追加したもの
+      - name: Mock
+        description: 正常シナリオ（設定の aliases のエイリアス）と同じ
+    flow: |-
+      sequenceDiagram
+        actor W as 文書の作成者
+        participant EX as 拡張機能
+        participant FS as 設定ファイル
+        participant B as ブラウザ（Chromium）
+        W->>EX: mdmark: HTML に書き出す
+        EX->>FS: aliases の行が指す YAML を読み込む
+        FS-->>EX: 1 つの行の YAML が無い
+        EX->>EX: 読み込めない行を除いてエイリアスを作り、出力チャネルに警告を記録する
+        EX->>EX: HTML を書き込む
+        EX-->>W: 書き出したパスと「ブラウザで開く」の通知
+        W->>B: 書き出した HTML を file:// で開く
+        B-->>W: 読み込めた行のエイリアスに下線を付けた文書
+    expected:
+      - Markdown と同じフォルダに `.html` が 1 つ記載され、通知に書き出したパスと「ブラウザで開く」が出る
+      - 書き出した HTML を Chromium で開くと、本文の `レンダリング` に用語の下線が付く
+      - 出力チャネルに、読み込めない `aliases` の行の位置とずれの種類が記録される
+    test: test_error_when_aliases_missing
+    refs:
+      - SC-472-10#scenarios[異常シナリオ（aliases の YAML が無い）]
 lead: 文書の作成者が、開いている Markdown をコマンドパレットから HTML に書き出し、既定のブラウザで開く。
 issue: 22
 primary_actor: 文書の作成者

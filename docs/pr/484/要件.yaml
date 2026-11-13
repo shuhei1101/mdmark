@@ -1,0 +1,39 @@
+use_cases:
+  - kind: single
+    scenario: docs/scenario/SC-472-10.yaml
+    impact: changed
+    detail: 設定ファイルに記載したツールチップの出る位置と、相対パスで記載した色分けのライブラリで、プレビューを描く
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-6.yaml
+    impact: changed
+    detail: 相対パスで記載した色分けのライブラリを書き出す HTML に埋め、file:// で開いても色分けして描く
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-77.yaml
+    impact: following
+    detail: 設定ファイルの書き換えで、ツールチップの出る位置と色分けのライブラリの読み込み先が変わったときも描き直す
+    depends_on:
+      - docs/scenario/SC-472-10.yaml
+  - kind: single
+    scenario: docs/scenario/SC-472-9.yaml
+    impact: run_only
+    detail: HTML に書き出すと同じ設定で書き出して印刷する
+    depends_on: []
+docs:
+  - page: docs/config/CFG-472-2.yaml
+    new: false
+    change: 拡張機能が読み込む mdmark.config.yaml のキーに tooltips と syntax.url を追加する（syntax.url の相対パスの解決・CSP の origin・書き出す HTML での埋め方）
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-12T12:48:54.675891+00:00'
+  - page: docs/guide/VSCode拡張機能.md
+    new: false
+    change: 設定ファイルのキーの表に tooltips と syntax.url の行を追加する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-12T12:48:54.675891+00:00'
+scope_out:
+  - item: 「HTML に書き出す」での設定 aliases のエイリアスのツールチップ
+    reason: 同じ設定の取り出しの近くを変えるが要望に含まれない
+    plan: '#379'

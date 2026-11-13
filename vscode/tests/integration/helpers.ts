@@ -128,11 +128,12 @@ export function installRecorder(): void {
   };
 }
 
-/** Webview に追加する、テストの操作の中継のスクリプト。`testClick` はセレクタに該当する最初の要素を押し、`testDrag` はその要素の中央で押して横に `dx` 動かして離し、続く `click` を送信する（合成のポインターは捕捉できないため、`setPointerCapture` を何もしない関数にする） */
+/** Webview に追加する、テストの操作の中継のスクリプト。`testClick` はセレクタに該当する最初の要素を押し、`testFocus` はその要素にフォーカスを移し、`testDrag` はその要素の中央で押して横に `dx` 動かして離し、続く `click` を送信する（合成のポインターは捕捉できないため、`setPointerCapture` を何もしない関数にする） */
 const RELAY_SCRIPT = [
   'window.addEventListener("message", (event) => {',
   "  const data = event.data;",
   '  if (data?.type === "testClick") { document.querySelector(data.selector)?.click(); }',
+  '  if (data?.type === "testFocus") { document.querySelector(data.selector)?.focus(); }',
   '  if (data?.type === "testDrag") {',
   "    const element = document.querySelector(data.selector);",
   "    if (!element) { return; }",
@@ -185,6 +186,11 @@ function injectClickRelay(webview: vscode.Webview): void {
 /** Webview の要素を押す（`injectClickRelay` が追加したスクリプトが受ける） */
 export function clickInPreview(record: RecordedPanel, selector: string): void {
   void record.postRaw({ type: "testClick", selector });
+}
+
+/** Webview の要素にフォーカスを移す（`injectClickRelay` が追加したスクリプトが受ける） */
+export function focusInPreview(record: RecordedPanel, selector: string): void {
+  void record.postRaw({ type: "testFocus", selector });
 }
 
 /** Webview の要素の中央で押したまま横に `dx` 動かして離す（`injectClickRelay` が追加したスクリプトが受ける） */

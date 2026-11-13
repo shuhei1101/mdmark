@@ -133,3 +133,75 @@ test("test_build_export_html_when_theme_and_extensions", async () => {
   expect(plain).not.toContain("<style>");
   expect(plain).not.toContain("registerExtension");
 });
+
+// import map を type=module の script より前に埋める（正常系）
+test("test_build_export_html_when_import_map", async () => {
+  // 準備
+  const { buildExportHtml } = await loadHtml();
+  const importMap = {
+    "file:///ws/hljs/core.min.js": "data:text/javascript;charset=utf-8,a",
+  };
+  // 実行
+  const html = buildExportHtml({
+    ...BUILD_OPTIONS,
+    markdown: "# タイトル",
+    print: false,
+    importMap,
+  });
+  const plain = buildExportHtml({
+    ...BUILD_OPTIONS,
+    markdown: "# タイトル",
+    print: false,
+    importMap: {},
+  });
+  // 検証
+  const map = html.match(
+    /<script\b[^>]*type="importmap"[^>]*>([\s\S]*?)<\/script>/,
+  );
+  expect(map).not.toBeNull();
+  expect(JSON.parse(map?.[1] ?? "")).toEqual({ imports: importMap });
+  expect(html.indexOf('type="importmap"')).toBeLessThan(
+    html.indexOf('type="module"'),
+  );
+  expect(plain).not.toContain("importmap");
+});
+
+// エイリアスを JSON に埋め、mount の opts.aliases に指定する（正常系）
+test("test_build_export_html_when_aliases", async () => {
+  // 準備
+  const { buildExportHtml } = await loadHtml();
+  const aliases = [
+    {
+      alias_type: "term" as const,
+      id: "render",
+      name: "描画",
+      aliases: ["レンダリング"],
+    },
+  ];
+  // 実行
+  const html = buildExportHtml({
+    ...BUILD_OPTIONS,
+    markdown: "レンダリング",
+    print: false,
+    aliases,
+  });
+  const plain = buildExportHtml({
+    ...BUILD_OPTIONS,
+    markdown: "レンダリング",
+    print: false,
+  });
+  // 検証
+  const readJson = (text: string) =>
+    JSON.parse(
+      text.match(
+        /<script\b[^>]*type="application\/json"[^>]*>([\s\S]*?)<\/script>/,
+      )?.[1] ?? "",
+    );
+  const readModule = (text: string) =>
+    text.match(/<script\b[^>]*type="module"[^>]*>([\s\S]*?)<\/script>/)?.[1] ??
+    "";
+  expect(readJson(html).aliases).toEqual(aliases);
+  expect(readModule(html)).toContain("aliases: data.aliases");
+  expect(readJson(plain)).not.toHaveProperty("aliases");
+  expect(readModule(plain)).not.toContain("aliases");
+});

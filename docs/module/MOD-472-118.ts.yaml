@@ -63,6 +63,45 @@ functions:
     status: planned
     introduced:
       pr: 382
+  - name: usedSyntaxLanguages
+    title: 文書が使用する色分けの言語を取得する
+    container: src/render/used.ts
+    kind: 関数
+    scope: public
+    summary: 文書ごとに `render` を設定と一緒に呼び、返った HTML の `data-mdmark-syntax` の値を重なりなく取得する
+    description: '`mount` と同じ色分けの対象（機能 `syntax` と文書の `<!-- features: {"syntax": false} -->`、生の HTML の `code` を削除することを含む）を、同じ処理から得るために `render` を経由する。VS Code 拡張機能の書き出しも呼ぶため、`collectRangeScripts` と同じく `src/render/used.ts` に配置し、`src/cli/embed.ts` から同じ名前で export する'
+    args:
+      - name: options
+        type: '{ markdowns: string[]; config: MdmarkConfig }'
+        required: true
+        description: 文書の Markdown と読み込んだ設定
+    returns:
+      type: string[]
+      description: 言語のモジュール名。名前の順に並べる
+    callees:
+      - MOD-472-212#functions[render]
+    unit_tests:
+      - name: test_used_syntax_languages
+        case: 正常
+        summary: 色分けの対象の言語だけを取得し、機能を解除した文書は取得しない
+        condition: '文書 1 が `ts`・`yml`・`text` のコードブロックと生の HTML `<pre><code class="language-python">x</code></pre>`、文書 2 が `<!-- features: {"syntax": false} -->` と `sql` のコードブロック。設定は空'
+        mock: なし
+        expected: '`["typescript", "yaml"]`'
+      - name: test_used_syntax_languages_when_disabled
+        case: 正常
+        summary: 設定で機能を解除すると何も取得しない
+        condition: '`ts` のコードブロックを持つ文書と、`features.syntax: false` の設定'
+        mock: なし
+        expected: '`[]`'
+      - name: test_used_syntax_languages_when_aliases_and_file_name
+        case: 正常
+        summary: 別名とファイル名付きの言語をモジュール名にして取得する
+        condition: '`dockerfile`・`patch`・`ts:app.ts` のコードブロックを持つ文書。設定は空'
+        mock: なし
+        expected: '`["diff", "dockerfile", "typescript"]`'
+    status: planned
+    introduced:
+      pr: 97
   - name: collectRangeScripts
     title: 範囲のスクリプトを集める
     container: src/render/used.ts

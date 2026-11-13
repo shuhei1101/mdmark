@@ -194,9 +194,86 @@ flows:
       - 書き出した HTML に埋めた `config.mermaid.url` が `data:text/javascript` で始まる
       - Chromium で開くと、mermaid のコードブロックの場所に `figure.mdmark-diagram[data-diagram="mermaid"]` があり、通知ブロックが出ない
     test: test_normal_when_relative_mermaid
+  - name: 正常系（ツールチップの位置と相対パスの色分けのライブラリ）
+    summary: 相対パスの `syntax.url` の本体と文書が使用する言語のモジュールを `data:` の URL にして import map で割り当て、Chromium で file:// で開いて色分けし、ツールチップを参照の下に出す
+    setup:
+      - name: 見本のワークスペース
+        description: '`ts` のコードブロックと脚注の参照を 1 つずつ持つ Markdown と、`tooltips.placement: bottom` と `syntax.url: ./hljs/` を記載した `mdmark.config.yaml` と、`@highlightjs/cdn-assets` の `es/` フォルダのコピーの `hljs/` を配置したフォルダ'
+        notes: '`hljs/languages/` の、Markdown が使用しない言語のモジュール 1 つの末尾に、他のファイルに出ない目印のコメントを追加する'
+      - name: Mock
+        description: 正常系と同じ
+    flow: |-
+      sequenceDiagram
+        actor W as 文書の作成者
+        participant EX as 拡張機能
+        participant B as ブラウザ（Chromium）
+        W->>EX: mdmark: HTML に書き出す
+        EX->>EX: core.min.js と languages/typescript.min.js をまとめて data: の URL にし、import map で割り当てる
+        W->>B: 書き出した HTML を file:// で開く
+        B-->>W: 色分けしたコードブロック
+        W->>B: 脚注の参照にフォーカスを移す
+        B-->>W: 参照の下に出たツールチップ
+    expected:
+      - '書き出した HTML に埋めた `config.tooltips` が `{ placement: "bottom" }` で、`config.syntax.url` が `hljs/` フォルダの `file:` の URL で `/` で終わる'
+      - 書き出した HTML の `<script type="importmap">` の `imports` が、`{config.syntax.url}core.min.js` と `{config.syntax.url}languages/typescript.min.js` の 2 つだけを `data:text/javascript` で始まる URL に割り当てる
+      - 書き出した HTML に目印の文字列が無い
+      - Chromium で開くと、`ts` のコードブロックの中に class が `hljs-` で始まる要素があり、脚注の参照にフォーカスを移すと `role="tooltip"` のツールチップの上端が参照の下端より下にある
+      - 開いている間に、書き出した HTML 以外の `file:` の URL への要求が出ない
+    test: test_normal_when_tooltips_and_relative_syntax
+    refs:
+      - SC-472-6#scenarios[正常シナリオ（ツールチップの位置と相対パスの色分けのライブラリ）]
+  - name: 正常系（設定の aliases のエイリアス）
+    summary: 設定の `aliases` から作ったエイリアスを HTML に埋め、`mount` の `opts.aliases` に指定して下線とツールチップを出す
+    setup:
+      - name: エイリアスを持つワークスペース
+        description: プレビューを開く.ts の正常系（設定の aliases のエイリアス）と同じ `mdmark.config.yaml`・`glossary.yaml`・`guide.md` を配置したフォルダ
+      - name: Mock
+        description: 正常系と同じ。書き出した HTML は Playwright の Chromium で file:// で開く
+    flow: |-
+      sequenceDiagram
+        participant U as 文書の作成者
+        participant EX as 拡張機能
+        participant BR as Chromium
+        U->>EX: mdmark.exportHtml
+        EX->>EX: 重ねた設定の aliases の行が指す glossary.yaml を読み込み、エイリアスを作る
+        EX->>EX: エイリアスを埋め、mount に aliases を指定する guide.html を書き込む
+        U->>BR: guide.html を file:// で開く
+        BR-->>U: 別名に下線を付けた文書
+    expected:
+      - '書き出した HTML に埋めた `aliases` が 1 件で、その要素の `alias_type` が `term`・`name` が `描画`・`aliases` が `["レンダリング"]`'
+      - 開いた HTML の本文の `レンダリング` が用語の下線の要素に包まれている
+      - 下線の要素にフォーカスを移すと、`role="tooltip"` のツールチップの「用語」の区分に `描画` と `glossary.yaml` の意味が出る
+      - 設定に `aliases` が無いワークスペースで書き出した HTML は、埋めた JSON に `aliases` を持たず、`mount` に `aliases` を指定しない
+    test: test_normal_when_aliases
+    refs:
+      - SC-472-6#scenarios[正常シナリオ（設定の aliases のエイリアス）]
+  - name: 異常系（aliases の YAML が無い・行を除いて書き出す）
+    summary: '`aliases` の行の `paths` に該当するファイルが無いとき、その行を除いたエイリアスを埋めて書き出し、出力チャネルに警告を記録する'
+    setup:
+      - name: エイリアスを持つワークスペース
+        description: 正常系（設定の aliases のエイリアス）の `aliases` の 2 行目に、`paths` が `missing/*.yaml`（該当するファイルが無い）の行を追加したもの
+      - name: Mock
+        description: 正常系と同じ。出力チャネルへ書き込んだ行を記録する
+    flow: |-
+      sequenceDiagram
+        participant U as 文書の作成者
+        participant EX as 拡張機能
+        U->>EX: mdmark.exportHtml
+        EX->>EX: aliases の 2 行目に該当するファイルが無い
+        EX->>EX: 出力チャネルに警告を記載する
+        EX->>EX: 1 行目のエイリアスを埋めた guide.html を書き込む
+        EX->>U: 書き出したパスと「ブラウザで開く」
+    expected:
+      - '`docs/guide.html` が 1 つ記載され、戻り値がそのファイル'
+      - 書き出した HTML に埋めた `aliases` が 1 行目の用語だけを持つ
+      - '出力チャネルに `mdmark.config.yaml:aliases[1].paths: alias_no_files:` で始まる警告が 1 行ある'
+      - '`showErrorMessage` は呼ばれない'
+    test: test_error_when_aliases_missing
+    refs:
+      - SC-472-6#scenarios[異常シナリオ（aliases の YAML が無い）]
 lead: 開いている Markdown を、jsDelivr の配布物を読み込んで `mount` で描く 1 つの HTML に書き出し、書き出したパスを通知で通知する。
 idempotent: true
-side_effects: 書き出す先に `{Markdown の名前}.html` を書き込む（あれば上書きする）。`mdmark.version` が `latest` のときはタグ一覧を 1 回取る。Markdown は書き換えない
+side_effects: 書き出す先に `{Markdown の名前}.html` を書き込む（あれば上書きする）。`mdmark.version` が `latest` のときはタグ一覧を 1 回取る。設定に `aliases` があるときは、その行の `paths` の YAML を読み込む。Markdown は書き換えない
 callers:
   - SC-472-6#
 exclusivity: 同じ書き出す先への書き出しが重なったら、後に書き込み終えた内容が残る（一時ファイルから置き換えるため、書き込みかけは残らない）
@@ -221,14 +298,17 @@ exceptions:
   - name: なし（バージョンを決められない）
     condition: '`mdmark.version` が `latest` で、タグ一覧を取れず `mdmark.lastVersion` も無い'
     notes: 記載せずに、理由を `showErrorMessage` で出す
+  - name: なし（aliases の YAML を使用できない）
+    condition: '`aliases` の行の `paths` に該当するファイルが無い・YAML として読み込めない・行やレコードが `buildAliases` で使用できない'
+    notes: 例外を投げず、使用できない行・レコードを除いたエイリアスを埋めて書き出し、出力チャネルに警告を記載する
 constraints:
   - item: 書き出す先
     constraint: '`mdmark.export.outputDir` が空なら Markdown と同じフォルダ、相対パスなら Markdown を含むワークスペースのフォルダから、絶対パスならそのまま。ファイル名は Markdown の拡張子を `.html` に替えたもの。フォルダが無ければ作る。同じフォルダの一時ファイルに書き込んでから置き換える'
   - item: 書き出す中身
-    constraint: '`TextDocument.getText()` の全文（保存していない書き換えを含む）を、`<script type="application/json">` に JSON で埋める（JSON の中の `<` は、JSON の Unicode エスケープであるバックスラッシュ・`u`・`003c` の 6 文字に置き換え、本文の `</script>` で `script` 要素が閉じないようにする）。バージョンはプレビューを開く.ts の制約「バージョンの決め方」で決め、`<link>` と `<script type="module">` でそのバージョンの jsDelivr の `dist/index.css`・`dist/index.js` を読み込み、`mount(document.querySelector("main"), { markdown, config })` を呼ぶ'
+    constraint: '`TextDocument.getText()` の全文（保存していない書き換えを含む）を、`<script type="application/json">` に JSON で埋める（JSON の中の `<` は、JSON の Unicode エスケープであるバックスラッシュ・`u`・`003c` の 6 文字に置き換え、本文の `</script>` で `script` 要素が閉じないようにする）。バージョンはプレビューを開く.ts の制約「バージョンの決め方」で決め、`<link>` と `<script type="module">` でそのバージョンの jsDelivr の `dist/index.css`・`dist/index.js` を読み込み、`mount(document.querySelector("main"), { markdown, config })` を呼ぶ。制約「エイリアス」のエイリアスがあるときは、同じ JSON に `aliases` を埋め、`mount` の `opts.aliases` に指定する'
   - item: 設定と相対パス
-    constraint: '`config` はプレビューを再描画する.ts の制約「設定の取り出し方」と同じ。`colorScheme` は `mdmark.preview.theme` によらず設定ファイルの値を指定する（`mdmark.preview.theme` はプレビューのパネルだけの配色）。`colorTheme` は `mdmark.colorTheme` が空でないときはその値で上書きする（プレビューを再描画する.ts の制約「送信する中身」と同じ）。重ねた設定はインターフェース定義『設定を重ねて読み込む』を `purpose: export` で呼んで得る。`libraries` と `html-scripts.url` の相対パスは、その値を記載した設定ファイルのフォルダから解決し、制約「埋めるライブラリ」のとおり HTML に埋める。`theme` の CSS は HTML の `<style>` に埋め、`extensions` のモジュールは、インターフェース定義『文書をHTMLに書き出す』の制約「まとめるスクリプト」と同じ引数で、拡張機能の中では esbuild-wasm でまとめて HTML に埋め（`.ts` も読み込む。まとめられない拡張は飛ばして書き出す）、`mount` の前に登録する（`file:` のページから `file:` のモジュールを `import()` すると Chromium 系のブラウザが読み込まないため）。HTML に `<base href="{Markdown のフォルダの file: の URL}/">` を配置し、本文の相対パスの画像とリンクを Markdown のフォルダから解決する'
-    notes: '`http:`・`https:` の `libraries`・`html-scripts.url`・`mermaid.url` は URL のまま読み込む。相対パスの `mermaid.url` は、`html-scripts.url` と同じく本体と chunk をまとめた `data:` の URL で埋める'
+    constraint: '`config` はプレビューを再描画する.ts の制約「設定の取り出し方」と同じ。`colorScheme` は `mdmark.preview.theme` によらず設定ファイルの値を指定する（`mdmark.preview.theme` はプレビューのパネルだけの配色）。`colorTheme` は `mdmark.colorTheme` が空でないときはその値で上書きする（プレビューを再描画する.ts の制約「送信する中身」と同じ）。重ねた設定はインターフェース定義『設定を重ねて読み込む』を `purpose: export` で呼んで得る。`libraries` と `html-scripts.url` の相対パスは、その値を記載した設定ファイルのフォルダから解決し、制約「埋めるライブラリ」のとおり HTML に埋める。`syntax.url` の相対パスは、同じく解決し、制約「埋める色分けのライブラリ」のとおり HTML に埋める。`theme` の CSS は HTML の `<style>` に埋め、`extensions` のモジュールは、インターフェース定義『文書をHTMLに書き出す』の制約「まとめるスクリプト」と同じ引数で、拡張機能の中では esbuild-wasm でまとめて HTML に埋め（`.ts` も読み込む。まとめられない拡張は飛ばして書き出す）、`mount` の前に登録する（`file:` のページから `file:` のモジュールを `import()` すると Chromium 系のブラウザが読み込まないため）。HTML に `<base href="{Markdown のフォルダの file: の URL}/">` を配置し、本文の相対パスの画像とリンクを Markdown のフォルダから解決する'
+    notes: '`http:`・`https:` の `libraries`・`html-scripts.url`・`mermaid.url`・`syntax.url` は URL のまま読み込む。相対パスの `mermaid.url` は、`html-scripts.url` と同じく本体と chunk をまとめた `data:` の URL で埋める'
   - item: 通信
     constraint: 書き出した HTML は、開くときに jsDelivr へ届く必要がある。配布物を HTML に埋めない
     notes: 要件.md の確認ログ「書き出す HTML の作り方」。外へ要求しない 1 枚の HTML は CLI の `mdmark export` が作る
@@ -237,3 +317,9 @@ constraints:
   - item: 埋めるライブラリ
     constraint: 相対パスの `libraries` は、文書にマーカーがある名前のモジュールだけを、相対パスの `html-scripts.url` は、文書に `ts`・`js` の範囲があり重ねた設定と文書のマーカーで `html-scripts` がオンのときだけ変換のライブラリを、`extensions` と同じく esbuild-wasm で import する先も含めて 1 つの ES モジュールにまとめ、`data:text/javascript` の URL にして `config` のそのキーの値に配置する。文書にマーカー・範囲が無い相対パスの値は `config` から除外する。まとめられないモジュールは埋めず、出力チャネルに警告を記録して書き出しを続ける（開いたときそのマーカー・範囲に mdmark が通知ブロックを出す）
     notes: Chromium 系のブラウザは `file:` のページから `file:` の ES モジュールを動的 `import()` で読み込まないため。変換のライブラリは範囲を変換して埋めずにそのまま埋め、配布物の `mount` の公開の引数を変えない
+  - item: 埋める色分けのライブラリ
+    constraint: '相対パスの `syntax.url` は、文書に色分けの対象のコードブロックがあるときだけ（使用する言語は `src/render/used.ts` の `usedSyntaxLanguages` で求める）、解決したフォルダの `core.min.js` と、使用する言語の `languages/{言語}.min.js` を 1 つずつ esbuild-wasm でまとめて `data:text/javascript` の URL にする。HTML の `<script type="module">` より前に `<script type="importmap">` を配置し、`imports` で `{解決したフォルダの file: の URL}/core.min.js`・`{同}/languages/{言語}.min.js` をその URL に割り当て、`config.syntax.url` を解決したフォルダの `file:` の URL（末尾に `/`）にする。色分けの対象が無いときは `syntax.url` を `config` から除外し、import map を配置しない。まとめられないモジュールは割り当てず、出力チャネルに警告を記録して書き出しを続ける（開いたとき、そのモジュールを使用するコードブロックは色分けせずに描かれる）'
+    notes: '`syntax.url` は本体と言語のモジュールを読み込むフォルダの URL で、1 つの `data:` の URL では表せない。配布物の公開の引数を変えないため、CLI が使用する `setEmbeddedSyntax` は使用しない'
+  - item: エイリアス
+    constraint: '重ねた設定に `aliases` があるとき、プレビューを開く.ts の制約「エイリアス」と同じ読み込み方（`src/cli/aliases.ts` の `loadAliases`、指定する設定ファイルも同じ）でエイリアスを作り、HTML に埋める（`buildAliases` が返す `aliases` で、`env` を含まない）。設定に `aliases` が無いときは、埋めた JSON に `aliases` を持たず、`mount` に `aliases` を指定しない。使用できない行・レコードは除き、ずれごとにプレビューと同じ書式の警告を出力チャネルに書き込み、書き出しを続ける'
+    notes: '`mdmark.openInBrowser`・`mdmark.printToPdf` も同じ HTML を組むため、同じエイリアスを埋める'

@@ -213,28 +213,6 @@ test("test_write_plugin_licenses_when_embedded_license_missing", async () => {
   expect((error as Error).message).toContain("scripts/licenses/ajv.txt");
 });
 
-// version だけを書き換える（正常系）
-test("test_write_plugin_manifest", async () => {
-  // 準備
-  const { writePluginManifest } = await loadBuildPlugin();
-  const root = await createTempDir();
-  const before = { name: "mdmark", version: "v0.0.0", description: "説明" };
-  await writeFiles(root, {
-    "plugin/.claude-plugin/plugin.json": `${JSON.stringify(before, null, 2)}\n`,
-  });
-  // 実行
-  await writePluginManifest({ root, version: "v0.0.1" });
-  // 検証
-  const text = await readFile(
-    join(root, "plugin", ".claude-plugin", "plugin.json"),
-    "utf8",
-  );
-  expect(text).toBe(
-    `${JSON.stringify({ ...before, version: "v0.0.1" }, null, 2)}\n`,
-  );
-  expect(Object.keys(JSON.parse(text))).toEqual(Object.keys(before));
-});
-
 // 生成物だけを削除する（正常系）
 test("test_remove_plugin_outputs", async () => {
   // 準備

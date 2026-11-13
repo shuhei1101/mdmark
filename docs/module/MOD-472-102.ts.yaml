@@ -50,3 +50,61 @@ functions:
       - IF-472-15#constraints[埋めるライブラリ]
       - IF-472-15#constraints[設定と相対パス]
     status: planned
+  - name: embedLocalSyntax
+    title: 相対パスの色分けのライブラリを埋める
+    kind: 関数
+    container: vscode/src/export/embed.ts
+    usecase: HTMLに書き出す
+    summary: 相対パスの `syntax.url` のフォルダの `core.min.js` と、ライブラリ本体の `usedSyntaxLanguages` が返却する言語の `languages/{言語}.min.js` を `bundle` でまとめ、import map の `imports`（フォルダの `file:` の URL に続くパス → `moduleDataUrl` の URL）と、`url` をフォルダの `file:` の URL に替えた `syntax` を返却する
+    scope: public
+    is_async: true
+    args:
+      - name: options
+        type: '{ markdown: string; syntax: Record<string, unknown> | undefined; config: MdmarkConfig; bundle: BundleModules }'
+        required: true
+        description: 書き出す全文・重ねた設定の `syntax`（相対パスは設定を重ねる処理が絶対パスにした値）・`usedSyntaxLanguages` に指定する重ねた設定・絶対パスを ES モジュールにまとめる関数（拡張機能では `bundleExtensions`）
+    returns:
+      type: 'Promise<{ syntax: Record<string, unknown> | undefined; imports: Record<string, string>; failures: Array<{ path: string; error: string }> }>'
+      description: 埋めた値に替えた `syntax`、import map の `imports`、まとめられなかったパスと誤り
+    process: |-
+      1. `syntax` が無いか、`syntax.url` が文字列でないか `http:`・`https:` の URL の場合、`syntax` をそのまま、`imports` を空で返却する
+      2. 使用する言語を求める（`usedSyntaxLanguages`。`markdowns` は `[markdown]`）
+         - 無い場合、`url` を削除した `syntax`（ほかのキーが無ければ `undefined`）を、`imports` を空で返却する
+      3. `url` のフォルダの `file:` の URL（`pathToFileURL`。末尾に `/`）を作る
+      4. `{url}/core.min.js` と `{url}/languages/{言語}.min.js` を `bundle` でまとめる
+      5. まとめられたモジュールごとに、`{フォルダの file: の URL}{core.min.js か languages/{言語}.min.js}` から `moduleDataUrl` の URL を参照する行を `imports` に入れ、まとめられないパスを `failures` に入れる
+      6. `url` をフォルダの `file:` の URL に替えた `syntax` を返却する
+    unit_tests:
+      - name: test_embed_local_syntax
+        case: 正常
+        summary: 文書が使用する言語と本体だけをまとめ、import map で割り当てる
+        condition: '`syntax` が `{ url: "/ws/hljs" }`、文書は `ts` のコードブロックを 1 つ持つ'
+        mock: '`bundle` はパスごとに `export default "{パス}"` を返却し、指定されたパスを記録する'
+        expected: '`syntax` が `{ url: "file:///ws/hljs/" }`、`imports` が `file:///ws/hljs/core.min.js` と `file:///ws/hljs/languages/typescript.min.js` の 2 つのキーだけを持ち、値が `moduleDataUrl` の値。`bundle` に渡ったパスが `/ws/hljs/core.min.js` と `/ws/hljs/languages/typescript.min.js` だけで、`failures` が空'
+      - name: test_embed_local_syntax_when_not_local
+        case: 正常
+        summary: http・https の url と syntax が無いときはそのまま返却する
+        condition: '`syntax` が `{ url: "https://cdn.example.com/es/" }` のときと `undefined` のとき。文書は `ts` のコードブロックを持つ'
+        mock: '`test_embed_local_syntax` と同じ'
+        expected: '`syntax` が指定した値のまま、`imports` が空で、`bundle` に渡らない'
+      - name: test_embed_local_syntax_when_unused
+        case: 正常
+        summary: 色分けの対象が無い文書では url を削除してまとめない
+        condition: '`syntax` が `{ url: "/ws/hljs" }`、文書はコードブロックを持たない'
+        mock: '`test_embed_local_syntax` と同じ'
+        expected: '`syntax` が `undefined`、`imports` が空で、`bundle` に渡らない'
+      - name: test_embed_local_syntax_when_bundle_fails
+        case: 異常
+        summary: まとめられないモジュールは割り当てず誤りを返却する
+        condition: '`test_embed_local_syntax` と同じ入力'
+        mock: '`bundle` は `/ws/hljs/languages/typescript.min.js` に `{ path, error: "読み込めない" }` を返却する'
+        expected: '`imports` が `file:///ws/hljs/core.min.js` だけを持ち、`failures` が `/ws/hljs/languages/typescript.min.js` と誤りの 1 件'
+        exception: まとめられない
+    callees:
+      - MOD-472-100#functions[moduleDataUrl]
+      - MOD-472-118#functions[usedSyntaxLanguages]
+    refs:
+      - IF-472-15#constraints[埋める色分けのライブラリ]
+    status: planned
+    introduced:
+      pr: 484

@@ -1,0 +1,11 @@
+use_cases:
+  - kind: single
+    scenario: docs/scenario/SC-472-35.yaml
+    impact: changed
+    detail: 補足の項目の記載方法で、アイコンの記法の説明を点検で書き方の警告にならない書き方に修正する（流れと結果は変わらない）
+    depends_on: []
+docs: []
+scope_out:
+  - item: インターフェース定義（IF-472-34・IF-472-35 の constraint）・モジュール構成（MOD-472-296 の summary）・部品設計（CMP-472-10 の description）・画面設計（SCR-472-4 の description）の `icon:名前`
+    reason: どの値もスキーマで `$defs/markdown` ではなく、Markdown として点検されないため書き込みは止まらない
+    plan: none

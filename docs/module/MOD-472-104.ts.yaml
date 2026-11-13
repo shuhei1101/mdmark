@@ -8,7 +8,7 @@ data_models:
     title: mount に指定する設定
     container: vscode/src/config.ts
     usecase: 共通
-    summary: 設定ファイルから取り出した `features`・`libraries`・`html-scripts`・`side-toc`・`table`・`labels`・`mermaid`・`map`・`colorTheme`・`colorScheme`。`render` の `config` と書き出す HTML の `config` になる
+    summary: 設定ファイルから取り出した `features`・`libraries`・`html-scripts`・`side-toc`・`table`・`labels`・`mermaid`・`map`・`tooltips`・`syntax`・`colorTheme`・`colorScheme`。`render` の `config` と書き出す HTML の `config` になる
     properties:
       - name: features
         type: Record<string, unknown> | undefined
@@ -37,6 +37,12 @@ data_models:
       - name: table
         type: Record<string, unknown> | undefined
         description: 記載した値のまま（`pin` の知らない値は mdmark が `each` で描く）
+      - name: tooltips
+        type: Record<string, unknown> | undefined
+        description: 記載した値のまま（`placement`・`diagramPlacement` の知らない値は mdmark が既定の場所に出す）
+      - name: syntax
+        type: Record<string, unknown> | undefined
+        description: 記載した値のまま。`url` は呼ぶ側が修正する（色分けのライブラリの URL を修正する・相対パスの色分けのライブラリを埋める）。文字列でない `url` は mdmark が無視して既定の URL から読み込む
     status: planned
   - name: ConfigLoad
     title: 設定ファイルの読み取りの結果
@@ -67,7 +73,7 @@ data_models:
         description: 読み込めない・構造の合わない最初の設定ファイル（端末の設定 → 上 → 近いの順）
       - name: aliases
         type: MdmarkAlias[] | undefined
-        description: '`purpose` が `preview` で重ねた設定に `aliases` があるときに作ったエイリアス。無いときは持たない'
+        description: 重ねた設定に `aliases` があるときに作ったエイリアス（`purpose` によらない）。無いときは持たない
       - name: aliasIssues
         type: CheckIssue[]
         description: エイリアスを作ったときのずれ（`loadAliases` の `issues`）。無ければ空
@@ -178,10 +184,10 @@ functions:
          - そのファイルが無い（`isFile` が `false`）場合、`explicit` を指定せず、`isFile` を常に `false` を返却する関数にして呼ぶ（上へ探さず、端末の設定だけを重ねる）
       2. 設定を重ねて読み込む（設定を重ねて読み込む。`explicitName` は `mdmark.configPath`）
       3. 結果を `ConfigLoad` にする
-         - `config` は重ねた設定のうち、値がマップの `features`・`libraries`・`html-scripts`・`side-toc`・`table`・`labels`・`mermaid` と、値が文字列の `colorTheme`・`colorScheme` だけ
+         - `config` は重ねた設定のうち、値がマップの `features`・`libraries`・`html-scripts`・`side-toc`・`table`・`labels`・`mermaid`・`tooltips`・`syntax` と、値が文字列の `colorTheme`・`colorScheme` だけ
          - `files` は重ねた設定ファイルの `path`、`theme`・`extensions`・`assetsRoot` は重ねた設定の `theme`・`extensions`・`assets.root`
          - `unreadable` がある場合、`problem` は `{ path, line, message }`。無く `issues` がある場合、`problem` は `{ path: issues[0].file, settingKey: issues[0].where, message: issues[0].message }`
-      4. `purpose` が `preview` で重ねた設定に `aliases` がある場合、エイリアスを読み込む（エイリアスを読み込む）
+      4. 重ねた設定に `aliases` がある場合、`purpose` によらずエイリアスを読み込む（エイリアスを読み込む）
          - 指定する設定ファイルは `nearest`、無ければ端末の設定ファイル（`resolveSettingsPath` の `env`・`home`）。`dir` はそのフォルダで、`config` は重ねた設定のパスの値を `dir` からの相対パスに戻した値（`relativizeConfigPaths`）
          - 返った `aliases`・`issues`・`files` を `aliases`・`aliasIssues`・`aliasFiles` に入れる
     exceptions:
@@ -250,22 +256,29 @@ functions:
         expected: '`aliases` が 1 行目の用語だけ、`aliasIssues` が `alias_no_files`（`where` が `aliases[1].paths`）の 1 件'
       - name: test_load_config_when_export
         case: 正常
-        summary: 書き出しのときはエイリアスを作らない
+        summary: 書き出しのときもエイリアスを作る
         condition: '`test_load_config_when_aliases` と同じファイルで `purpose` が `export`'
         mock: 一時フォルダ
-        expected: '`aliases` が無く、`aliasIssues`・`aliasFiles` が空'
+        expected: '`aliases` が用語の 1 件、`aliasIssues` が空、`aliasFiles` が `glossary.yaml` の絶対パスの 1 件'
       - name: test_load_config_when_table
         case: 正常
         summary: 設定の `table` を `mount` に指定する設定に入れ、マップでない `table` は入れない
         condition: '`/w/mdmark.config.yaml` に `table: { pin: through }`、`/w/b/mdmark.config.yaml` に `table: through`。`cwd` が `/w` と `/w/b` のそれぞれ'
         mock: '`readFile`・`isFile` を差し替える（`test_load_config_when_labels` と同じ）'
         expected: '`/w` の `config` が `{ table: { pin: "through" } }`。`/w/b` の `config` が `table` を持たず、`problem.settingKey` が `table`'
+      - name: test_load_config_when_tooltips_and_syntax
+        case: 正常
+        summary: tooltips と syntax を config に入れ、マップでない値は入れない
+        condition: '`/w/mdmark.config.yaml` に `tooltips: { placement: bottom }`・`syntax: { url: ./hljs/ }`、`/w/b/mdmark.config.yaml` に `tooltips: bottom`。`cwd` が `/w` と `/w/b` のそれぞれ（端末の設定は無い）'
+        mock: '`readFile`・`isFile` を差し替える（`test_load_config_when_labels` と同じ）'
+        expected: '`/w` の `config` が `{ tooltips: { placement: "bottom" }, syntax: { url: "/w/hljs" } }`（`url` は設定を重ねる処理が絶対パスにした値）。`/w/b` の `config` が `tooltips` を持たず、`problem.settingKey` が `tooltips`'
     callees:
       - '#functions[resolveConfigPath]'
       - MOD-472-116#functions[loadLayeredConfig]
       - MOD-472-124#functions[loadAliases]
     refs:
       - IF-472-22#constraints[エイリアス]
+      - IF-472-15#constraints[エイリアス]
     status: planned
   - name: resolveLibraries
     title: libraries の URL を修正する
@@ -355,7 +368,7 @@ functions:
     kind: 関数
     container: vscode/src/config.ts
     usecase: VSCodeでプレビューを開く
-    summary: '`libraries` の値と `html-scripts.url`・`mermaid.url`（どちらも無ければライブラリ本体の既定の URL）のうち `http:`・`https:` の URL の origin を、重なりを除いて返却する（CSP の `script-src` に使用する）'
+    summary: '`libraries` の値と `html-scripts.url`・`mermaid.url`・`syntax.url`（それぞれ無ければライブラリ本体の既定の URL）のうち `http:`・`https:` の URL の origin を、重なりを除いて返却する（CSP の `script-src` に使用する）'
     scope: public
     args:
       - name: libraries
@@ -370,6 +383,10 @@ functions:
         type: Record<string, unknown> | undefined
         required: false
         description: 取り出した `mermaid`
+      - name: syntax
+        type: Record<string, unknown> | undefined
+        required: false
+        description: 取り出した `syntax`
     returns:
       type: string[]
       description: origin の並び
@@ -391,7 +408,13 @@ functions:
         summary: mermaid.url の http・https の origin を追加し、相対パスでは追加しない
         condition: '`libraries` が `{}`、`htmlScripts` が `{ url: "./babel.mjs" }` で、`mermaid` が `{ url: "https://mermaid.example.com/m.mjs" }` のときと `{ url: "./m.mjs" }` のとき'
         mock: なし
-        expected: '前者は `["https://mermaid.example.com"]`、後者は `[]`'
+        expected: '前者は `["https://mermaid.example.com", "https://cdn.jsdelivr.net"]`、後者は `["https://cdn.jsdelivr.net"]`（後ろは `syntax` を省いたときの `syntax.url` の既定の URL の origin）'
+      - name: test_library_origins_when_syntax
+        case: 正常
+        summary: syntax.url の http・https の origin を追加し、相対パスでは追加しない
+        condition: '`libraries` が `{}`、`htmlScripts` が `{ url: "./babel.mjs" }`、`mermaid` が `{ url: "./m.mjs" }` で、`syntax` が `{ url: "https://hljs.example.com/es/" }` のときと `{ url: "./hljs/" }` のとき'
+        mock: なし
+        expected: 前者は `["https://hljs.example.com"]`、後者は `[]`
     refs:
       - IF-472-22#constraints[CSP]
     status: planned
@@ -451,6 +474,34 @@ functions:
       - IF-472-22#constraints[配色]
       - IF-472-21#constraints[設定の取り出し方]
     status: planned
+  - name: resolveSyntax
+    title: 色分けのライブラリの URL を修正する
+    kind: 関数
+    container: vscode/src/config.ts
+    usecase: VSCodeでプレビューを開く
+    summary: '`syntax.url` が `http:`・`https:` でない文字列なら、設定ファイルのフォルダから解決した絶対パスを `toUrl` で URL にし、末尾が `/` でなければ `/` を付けた `syntax` を返却する。それ以外はそのまま返却する'
+    scope: public
+    args:
+      - name: options
+        type: '{ syntax: Record<string, unknown>; configDir: string; toUrl: (path: string) => string }'
+        required: true
+        description: 取り出した `syntax`、設定ファイルのあるフォルダ、絶対パスを読み込める URL にする関数
+    returns:
+      type: Record<string, unknown>
+      description: '`url` を修正した `syntax`'
+    description: '`syntax.url` は本体と言語のモジュールを読み込むフォルダの URL で、`resolve` と `asWebviewUri` が末尾の `/` を削除するため、修正した後に `/` を付ける'
+    unit_tests:
+      - name: test_resolve_syntax
+        case: 正常
+        summary: 相対パスの url だけを設定ファイルのフォルダから修正し、末尾に / を付ける
+        condition: '`{ url: "./hljs/" }`・`{ url: "https://cdn.example.com/es/" }`・`{ url: 1 }`、`configDir` が `/ws/docs`、`toUrl` が頭に `web:` を付ける'
+        mock: なし
+        expected: '`{ url: "web:/ws/docs/hljs/" }`・`{ url: "https://cdn.example.com/es/" }`・`{ url: 1 }`'
+    refs:
+      - IF-472-21#constraints[libraries の URL]
+    status: planned
+    introduced:
+      pr: 484
 function_types:
   - name: ReadTextFile
     title: テキストのファイルを読み込む関数

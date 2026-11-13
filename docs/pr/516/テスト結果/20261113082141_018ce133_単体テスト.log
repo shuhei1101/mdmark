@@ -1,0 +1,14 @@
+$ npm run test:unit
+
+> test:unit
+> vitest run --project 'unit*'
+
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/fix-interact-footnote-click-capture
+
+
+ Test Files  284 passed (284)
+      Tests  2069 passed (2069)
+   Start at  08:21:47
+   Duration  99.89s (worker 68%, tests 20%, import 11%, transform 1%)
+

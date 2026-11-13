@@ -145,7 +145,7 @@ functions:
       - 'MOD-472-112#functions[inlineImages]'
       - 'MOD-472-117#functions[readIndexWithDocuments]'
       - 'MOD-472-117#functions[documentTitle]'
-      - 'MOD-472-112#functions[usedSyntaxLanguages]'
+      - 'MOD-472-118#functions[usedSyntaxLanguages]'
       - 'MOD-472-124#functions[loadAliases]'
       - 'MOD-472-113#functions[copyMedia]'
       - 'MOD-472-112#functions[inlineImages]'

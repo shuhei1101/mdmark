@@ -257,7 +257,7 @@ test("test_load_config_when_aliases_missing_files", async () => {
   });
 });
 
-// 書き出しのときはエイリアスを作らない（正常系）
+// 書き出しのときもエイリアスを作る（正常系）
 test("test_load_config_when_export", async () => {
   // 準備
   const { loadConfig: load } = await loadModule();
@@ -275,9 +275,14 @@ test("test_load_config_when_export", async () => {
     }),
   );
   // 検証
-  expect(result.aliases).toBeUndefined();
+  expect(result.aliases).toHaveLength(1);
+  expect(result.aliases?.[0]).toMatchObject({
+    alias_type: "term",
+    name: "描画",
+    aliases: ["レンダリング"],
+  });
   expect(result.aliasIssues).toEqual([]);
-  expect(result.aliasFiles).toEqual([]);
+  expect(result.aliasFiles).toEqual([join(dir, "glossary.yaml")]);
 });
 
 // 空でない mdmark.colorTheme が設定ファイルに勝ち、空なら設定ファイルのまま（正常系）
@@ -437,8 +442,47 @@ test("test_library_origins_when_mermaid", async () => {
   });
   const local = libraryOrigins({}, htmlScripts, { url: "./m.mjs" });
   // 検証
-  expect(remote).toEqual(["https://mermaid.example.com"]);
+  expect(remote).toEqual([
+    "https://mermaid.example.com",
+    "https://cdn.jsdelivr.net",
+  ]);
+  expect(local).toEqual(["https://cdn.jsdelivr.net"]);
+});
+
+// syntax.url の http・https の origin を追加し、相対パスでは追加しない（正常系）
+test("test_library_origins_when_syntax", async () => {
+  // 準備
+  const { libraryOrigins } = await loadModule();
+  const htmlScripts = { url: "./babel.mjs" };
+  const mermaid = { url: "./m.mjs" };
+  // 実行
+  const remote = libraryOrigins({}, htmlScripts, mermaid, {
+    url: "https://hljs.example.com/es/",
+  });
+  const local = libraryOrigins({}, htmlScripts, mermaid, { url: "./hljs/" });
+  // 検証
+  expect(remote).toEqual(["https://hljs.example.com"]);
   expect(local).toEqual([]);
+});
+
+// 相対パスの url だけを設定ファイルのフォルダから修正し、末尾に / を付ける（正常系）
+test("test_resolve_syntax", async () => {
+  // 準備
+  const { resolveSyntax } = await loadModule();
+  const resolve = (syntax: Record<string, unknown>) =>
+    resolveSyntax({
+      syntax,
+      configDir: "/ws/docs",
+      toUrl: (path: string) => `web:${path}`,
+    });
+  // 実行
+  const relative = resolve({ url: "./hljs/" });
+  const remote = resolve({ url: "https://cdn.example.com/es/" });
+  const notString = resolve({ url: 1 });
+  // 検証
+  expect(relative).toEqual({ url: "web:/ws/docs/hljs/" });
+  expect(remote).toEqual({ url: "https://cdn.example.com/es/" });
+  expect(notString).toEqual({ url: 1 });
 });
 
 // labels を config に入れ、labels がマップでない設定ファイルは重ねない（正常系）
@@ -473,4 +517,25 @@ test("test_load_config_when_table", async () => {
   expect(map.config).toEqual({ table: { pin: "through" } });
   expect(text.config).not.toHaveProperty("table");
   expect(text.problem?.settingKey).toBe("table");
+});
+
+// tooltips と syntax を config に入れ、マップでない値は入れない（正常系）
+test("test_load_config_when_tooltips_and_syntax", async () => {
+  // 準備
+  const { loadConfig: load } = await loadModule();
+  const files = {
+    "/w/mdmark.config.yaml":
+      "tooltips:\n  placement: bottom\nsyntax:\n  url: ./hljs/\n",
+    "/w/b/mdmark.config.yaml": "tooltips: bottom\n",
+  };
+  // 実行
+  const map = await load(loadOptions(files, { cwd: "/w" }));
+  const text = await load(loadOptions(files, { cwd: "/w/b" }));
+  // 検証
+  expect(map.config).toEqual({
+    tooltips: { placement: "bottom" },
+    syntax: { url: "/w/hljs" },
+  });
+  expect(text.config).not.toHaveProperty("tooltips");
+  expect(text.problem?.settingKey).toBe("tooltips");
 });

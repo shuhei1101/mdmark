@@ -298,11 +298,12 @@ settings:
     type: object[]
     required: false
     default: なし（エイリアスを指定しない）
-    description: プレビューで、重ねた設定の行の `paths` の YAML を CLI と同じく読み込んでエイリアスを作り、`mount` の `opts.aliases` に指定する。行の `paths` はその値を記載した設定ファイルのフォルダから解決する。使用できない行・レコードは除き、出力チャネルに警告を記載する。行の `paths` に該当した YAML を保存すると再描画する。書き出した HTML には指定しない
+    description: プレビューと書き出す HTML で、重ねた設定の行の `paths` の YAML を CLI と同じく読み込んでエイリアスを作り、`mount` の `opts.aliases` に指定する。行の `paths` はその値を記載した設定ファイルのフォルダから解決する。使用できない行・レコードは除き、出力チャネルに警告を記載する。プレビューは、行の `paths` に該当した YAML を保存すると再描画する
     reload: immediate
     refs:
       - CFG-472-3#settings[aliases]
       - IF-472-22#constraints[エイリアス]
+      - IF-472-15#constraints[エイリアス]
     status: planned
     visibility: user
     introduced:
@@ -321,3 +322,34 @@ settings:
     visibility: user
     introduced:
       pr: 438
+  - key: tooltips
+    title: ツールチップを出す場所（拡張機能が指定する）
+    file: mdmark.config.yaml
+    type: Record<string, unknown>
+    required: false
+    default: なし（`mount` に指定せず mdmark の既定の場所に出す）
+    description: 拡張機能は値がマップのときだけ、記載した値をそのまま `mount` の `opts.config.tooltips` に指定する。プレビューと書き出した HTML のツールチップを出す場所になる
+    reload: immediate
+    refs:
+      - CFG-472-3#settings[tooltips.placement]
+      - CFG-472-3#settings[tooltips.diagramPlacement]
+    status: planned
+    visibility: user
+    introduced:
+      pr: 484
+  - key: syntax.url
+    title: 色分けのライブラリの読み込み先（拡張機能が指定する）
+    file: mdmark.config.yaml
+    type: string
+    required: false
+    default: なし（`mount` に指定せず、ライブラリ本体の既定の jsDelivr の URL から読み込む）
+    description: '`syntax` を `mount` の `opts.config.syntax` に指定する。相対の `url` は設定ファイルのあるフォルダを基準に解決し、プレビューでは末尾に `/` を付けた Webview で読み込める URL、書き出した HTML では本体と文書が使用する言語のモジュールを `data:` の URL にして import map で割り当てる。`http:`・`https:` の `url` はそのまま指定し、その origin（`url` が無いときは既定の jsDelivr の origin）を CSP の `script-src` に含める'
+    reload: immediate
+    refs:
+      - CFG-472-3#settings[syntax.url]
+      - IF-472-22#constraints[CSP]
+      - IF-472-15#constraints[埋める色分けのライブラリ]
+    status: planned
+    visibility: user
+    introduced:
+      pr: 484

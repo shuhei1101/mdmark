@@ -388,6 +388,48 @@ scenarios:
       - 折り返した名前の続きが、その項目のアイコンの右の名前の頭に一致し、罫線と入れ子の位置が `wrap` の無いツリーと同じ
       - '`wrap` の無いツリーは折り返さず、横にスクロールできる'
     test: test_normal_when_tree_wrap
+  - name: 異常シナリオ（罫線のフォルダ構成の言語が tree でない）
+    setup:
+      - name: mdmark を読み込むページ
+        description: 正常シナリオと同じ
+      - name: 罫線を言語 tree でないコードブロックに記載した Markdown
+        description: 正常シナリオの罫線（`├── `・`└── ` の行が 2 行以上）を言語 `text` のコードブロックに、ASCII の罫線（`|-- `・`` `-- `` の行が 2 行以上）を言語の無いコードブロックに記載し、`├── ` の行を 1 行だけ持つ言語 `text` のコードブロックも持つ文書
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 利用側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を指定して描かせる
+        M->>M: 言語が tree でないコードブロックに、罫線の行が 2 行以上ある
+        M-->>P: 記載の警告と、元のコードブロックを描く
+        P-->>U: 記載の警告とコードブロックを表示
+    expected:
+      - 罫線の行を 2 行以上持つ 2 つのコードブロックの上に、言語を `tree` にするとファイルツリーに描かれることと、警告を止める指定を記載した記載の警告がある
+      - 2 つのコードブロックは、記載したとおりの言語のコードブロックのまま描かれ、ファイルツリーにならない
+      - 罫線の行を 1 行だけ持つコードブロックには、記載の警告が無い
+    test: test_error_when_tree_lines_without_tree_language
+  - name: 正常シナリオ（罫線の例の警告を止める）
+    setup:
+      - name: mdmark を読み込むページ
+        description: 正常シナリオと同じ
+      - name: 警告を止めた Markdown
+        description: 異常シナリオ（罫線のフォルダ構成の言語が tree でない）と同じ文書で、罫線の行を 2 行以上持つ言語 `text` のコードブロックの直前にだけ、警告を止める指定を記載したもの
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 利用側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を指定して描かせる
+        M-->>P: 警告を止めたコードブロックを、記載の警告を付けずに描く
+        P-->>U: 文書を表示
+    expected:
+      - 警告を止めたコードブロックの上に記載の警告が無く、罫線の文字のまま言語 `text` のコードブロックで描かれている
+      - 警告を止めていない言語の無いコードブロックの上には、記載の警告が残っている
+    test: test_normal_when_tree_lines_warning_suppressed
 lead: 文書の作成者が、`<!-- steps -->` 〜 `<!-- /steps -->` で囲んだ番号付きリスト・言語 `tree` のコードブロック・頭に `badge:` を付けた行内のコードを記載すると、mdmark がそれぞれ手順・ファイルツリー・バッジに描く。手順は `closed`・`open` で見出し付きの折りたたみに入れられ、ファイルツリーは `#` の後ろの注釈を列に統一し、読者がフォルダを開閉して元の罫線のテキストをコピーできる。
 issue: 4
 primary_actor: 文書の作成者

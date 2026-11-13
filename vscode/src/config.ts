@@ -10,7 +10,7 @@ import {
 import type { MdmarkAlias } from "../../src/knowledge/aliases.ts";
 import type { PreviewSettings } from "./settings.ts";
 
-/** `mount` に指定する設定。設定ファイルから取り出した `features`・`libraries`・`html-scripts`・`side-toc`・`table`・`labels`・`mermaid`・`map`・`colorTheme`・`colorScheme` */
+/** `mount` に指定する設定。設定ファイルから取り出した `features`・`libraries`・`html-scripts`・`side-toc`・`table`・`labels`・`mermaid`・`map`・`tooltips`・`syntax`・`colorTheme`・`colorScheme` */
 export type PreviewConfig = {
   /** 記載した値のまま（中の知らない名前と型の違う値は mdmark が無視する） */
   features?: Record<string, unknown>;
@@ -28,6 +28,10 @@ export type PreviewConfig = {
   mermaid?: Record<string, unknown>;
   /** 記載した値のまま（知らない値は mdmark が既定で描く） */
   map?: Record<string, unknown>;
+  /** 記載した値のまま（`placement`・`diagramPlacement` の知らない値は mdmark が既定の場所に出す） */
+  tooltips?: Record<string, unknown>;
+  /** 記載した値のまま。`url` は呼ぶ側が修正する（文字列でない `url` は mdmark が無視して既定の URL から読み込む） */
+  syntax?: Record<string, unknown>;
   /** 記載した値のまま。`mdmark.colorTheme` が空でないときは `applyColorTheme` がその値に置き換える（知らない名前は mdmark が dev-swiss で描く） */
   colorTheme?: string;
   /** 記載した値のまま。プレビューでは `mdmark.preview.theme` が `light`・`dark` のとき `applyPreviewTheme` が除く（知らない値は mdmark が `auto` で描く） */
@@ -62,7 +66,7 @@ export type ConfigLoad = {
   assetsRoot?: string | undefined;
   /** 読み込めない・構造の合わない最初の設定ファイル */
   problem?: ConfigProblem | undefined;
-  /** プレビューで、重ねた設定の `aliases` から作ったエイリアス。`aliases` が無いときは持たない */
+  /** 重ねた設定の `aliases` から作ったエイリアス。`aliases` が無いときは持たない */
   aliases?: MdmarkAlias[] | undefined;
   /** エイリアスを作ったときのずれ */
   aliasIssues: CheckIssue[];
@@ -108,7 +112,7 @@ export const CONFIG_TEMPLATE = `# mdmark の設定。端末の設定（~/.config
 #   - ./extensions/example.js
 `;
 
-/** ライブラリ本体が `html-scripts.url`・`mermaid.url` を省いたときに読み込む URL の origin */
+/** ライブラリ本体が `html-scripts.url`・`mermaid.url`・`syntax.url` を省いたときに読み込む URL の origin */
 const DEFAULT_HTML_SCRIPTS_ORIGIN = "https://cdn.jsdelivr.net";
 
 /** `http:`・`https:` の URL か */
@@ -130,7 +134,7 @@ export function resolveConfigPath(options: {
   return isAbsolute(configPath) ? configPath : resolve(baseDir, configPath);
 }
 
-/** 重ねた設定から `mount` に指定するキー（マップの `features`・`libraries`・`html-scripts`・`side-toc`・`table`・`labels`・`mermaid`・`map` と文字列の `colorTheme`・`colorScheme`）だけを取り出す */
+/** 重ねた設定から `mount` に指定するキー（マップの `features`・`libraries`・`html-scripts`・`side-toc`・`table`・`labels`・`mermaid`・`map`・`tooltips`・`syntax` と文字列の `colorTheme`・`colorScheme`）だけを取り出す */
 function pickPreviewConfig(config: Record<string, unknown>): PreviewConfig {
   const picked: PreviewConfig = {};
   if (isMap(config.features)) {
@@ -156,6 +160,12 @@ function pickPreviewConfig(config: Record<string, unknown>): PreviewConfig {
   }
   if (isMap(config.map)) {
     picked.map = config.map;
+  }
+  if (isMap(config.tooltips)) {
+    picked.tooltips = config.tooltips;
+  }
+  if (isMap(config.syntax)) {
+    picked.syntax = config.syntax;
   }
   if (typeof config.colorTheme === "string") {
     picked.colorTheme = config.colorTheme;
@@ -215,8 +225,8 @@ export async function loadConfig(options: {
       : undefined;
   const assets = config.assets;
   const aliasResult =
-    options.purpose === "preview" && config.aliases !== undefined
-      ? await loadPreviewAliases({
+    config.aliases !== undefined
+      ? await loadConfigAliases({
           layered,
           settingsPath: resolveSettingsPath(options),
         })
@@ -243,7 +253,7 @@ export async function loadConfig(options: {
 }
 
 /** 重ねた設定の `aliases` からエイリアスを作る。基準の設定ファイルは最も近い `mdmark.config.yaml`、無ければ端末の設定ファイル */
-async function loadPreviewAliases(options: {
+async function loadConfigAliases(options: {
   layered: Awaited<ReturnType<typeof loadLayeredConfig>>;
   settingsPath: string;
 }): ReturnType<typeof loadAliases> {
@@ -307,11 +317,30 @@ export function resolveMermaid(options: {
   return resolveHtmlScripts({ htmlScripts: mermaid, configDir, toUrl });
 }
 
-/** `libraries` の値と `html-scripts.url`・`mermaid.url`（文字列でなければライブラリ本体の既定の URL）のうち `http:`・`https:` の URL の origin を、重なりを除いて返却する */
+/** `syntax.url` が `http:`・`https:` でない文字列なら、設定ファイルのフォルダから解決した絶対パスを `toUrl` で URL にし、末尾に `/` を付けて返却する（`resolve` と `asWebviewUri` が末尾の `/` を削除するため） */
+export function resolveSyntax(options: {
+  /** 取り出した `syntax` */
+  syntax: Record<string, unknown>;
+  /** 設定ファイルのあるフォルダ */
+  configDir: string;
+  /** 絶対パスを読み込める URL にする関数 */
+  toUrl: (path: string) => string;
+}): Record<string, unknown> {
+  const { syntax, configDir, toUrl } = options;
+  const { url } = syntax;
+  if (typeof url !== "string" || HTTP_URL_PATTERN.test(url)) {
+    return syntax;
+  }
+  const resolved = toUrl(resolve(configDir, url));
+  return { ...syntax, url: resolved.endsWith("/") ? resolved : `${resolved}/` };
+}
+
+/** `libraries` の値と `html-scripts.url`・`mermaid.url`・`syntax.url`（文字列でなければライブラリ本体の既定の URL）のうち `http:`・`https:` の URL の origin を、重なりを除いて返却する */
 export function libraryOrigins(
   libraries: Record<string, unknown> | undefined,
   htmlScripts?: Record<string, unknown>,
   mermaid?: Record<string, unknown>,
+  syntax?: Record<string, unknown>,
 ): string[] {
   const origins = new Set<string>();
   const urlOrDefault = (setting?: Record<string, unknown>): string =>
@@ -322,6 +351,7 @@ export function libraryOrigins(
     ...Object.values(libraries ?? {}),
     urlOrDefault(htmlScripts),
     urlOrDefault(mermaid),
+    urlOrDefault(syntax),
   ]) {
     if (typeof value === "string" && HTTP_URL_PATTERN.test(value)) {
       // 読み込めない URL は CSP に追加しない（読み込みは mdmark が通知ブロックにする）

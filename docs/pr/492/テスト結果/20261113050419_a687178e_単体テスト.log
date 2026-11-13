@@ -1,0 +1,11 @@
+$ npx vitest run --project 'unit*' tests/unit/scripts/build.test.ts tests/unit/scripts/build-plugin.test.ts
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/chore-release-distribute-from-develop-tags
+
+
+ Test Files  2 passed (2)
+      Tests  38 passed (38)
+   Start at  04:32:49
+   Duration  47.66s (tests 98%, transform 1%, import 1%)
+
+exit=0
