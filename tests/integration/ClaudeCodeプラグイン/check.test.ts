@@ -132,7 +132,7 @@ test("test_normal_when_base_given", async () => {
   const issues = JSON.parse(result.texts[0] ?? "").issues as Issue[];
   expect(issues).toHaveLength(1);
   expect(issues[0]).toMatchObject({
-    file: "b.md",
+    file: "b.mark.md",
     where: "",
     kind: "missed_change_together",
   });
