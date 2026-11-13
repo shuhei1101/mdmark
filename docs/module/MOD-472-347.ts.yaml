@@ -1,0 +1,113 @@
+id: MOD-472-347
+visibility: internal
+title: ライブラリ本体 / 操作 / table-width.ts
+lead: 表を描いた直後と表の見える幅が変わったときに、列ごとの中身の幅を測り、部品設計『表』の注記「列の幅」のとおりに列の幅を決めて入れる。
+test_files:
+  - tests/unit/src/interact/table-width.browser.test.ts
+constants:
+  - name: MEASURE_ROWS
+    title: 列の幅を測る行の数
+    container: src/interact/table-width.ts
+    summary: 列の幅を決めるときに測る本文の行の数の上限。表の先頭から数える
+    value: '200'
+    refs:
+      - CMP-472-61#notes
+    status: planned
+    introduced:
+      pr: 505
+functions:
+  - name: measureColumns
+    title: 列の中身の幅を測る
+    container: src/interact/table-width.ts
+    kind: 関数
+    scope: internal
+    summary: 表示している列ごとに、見出しのセルと先頭から `MEASURE_ROWS` 行までの本文のセルを改行（`br`・`li`・`p`）で行に分け、最も長い行の幅と最も長い半角の単語の幅を測って返却する
+    description: '行の文字は、セルの中に `position: absolute`・`visibility: hidden`・`white-space: nowrap` の `span` を一時的に配置して入れ、`getBoundingClientRect().width` で測ってすぐ取り除く（セルの文字の大きさと書体で測るため）。測った幅にセルの左右の余白と罫線の幅と端数の 2px を足し、切り上げる。半角の単語は `[\x21-\x7e]+` の連なり。行の詳細の行・`一致する行がありません` の行・集計の行のように、列と 1 対 1 でない行は測らない。`hidden` の列は返却しない'
+    args:
+      - name: table
+        type: HTMLTableElement
+        required: true
+        description: 測る表
+      - name: headCells
+        type: HTMLTableCellElement[]
+        required: true
+        description: 列ごとの最下段の見出しのセル
+    returns:
+      type: '{ column: number; longest: number; longestWord: number; em: number }[]'
+      description: 表示している列ごとの、元の列の位置・最も長い行の幅・最も長い半角の単語の幅（px）と、見出しのセルの文字の大きさ（px）
+    unit_tests:
+      - name: test_measure_columns
+        case: 正常
+        summary: 改行で分けた行のうち最も長い行と、最も長い半角の単語を測る
+        condition: '`font: 14px/1.5 monospace` の表で、列 0 が `<br>` で分けた `ab`・`abcdef`、列 1 が `x hello-world y`、列 2 が `hidden` の列'
+        mock: なし
+        expected: 列 2 を返却せず、列 0 の `longest` が `abcdef` の幅に余白と罫線と 2px を足して切り上げた値、列 1 の `longestWord` が `hello-world` の幅を同じく足した値。測った後に表の中に一時的な `span` が残っていない
+      - name: test_measure_columns_when_rows_limited
+        case: 正常
+        summary: 先頭から MEASURE_ROWS 行までだけを測る
+        condition: 201 行の表で、201 行目だけが長い文を持つ列
+        mock: なし
+        expected: その列の `longest` が、201 行目の文の幅より狭い
+    status: planned
+    introduced:
+      pr: 505
+  - name: attachAutoColumnWidths
+    title: 表の列の幅を自動で決める
+    container: src/interact/table-width.ts
+    kind: 関数
+    scope: internal
+    summary: '`measureColumns` で測った幅を `columnBounds`・`distributeColumnWidths` に渡して列の幅を決め、見出しのセルの `--mdmark-auto-width` と表の `--mdmark-auto-table-width` に入れ、表に `data-auto-width` を付ける'
+    description: |-
+      囲みの `data-long`（長文の列）と `data-width`（`{位置}:{min}-{max}`。空の側は持たない）を読み、列ごとに `columnBounds` を呼ぶ。最下段の見出しのセルが `mdmark-wide` の列は `nowrap`。見出しのセルが `is-resized` の列（読者がつまみで幅を変えた列）は、その `offsetWidth` を `min`・`wanted` に入れて `fixed` にする。`distributeColumnWidths` の `available` は、表を包む要素（`div.mdmark-table-scroll`）の `clientWidth` から、表の左右の枠線と列の数の 1px を引いた幅。
+
+      決めた幅は、`fixed` でない列の見出しのセルのインラインの `--mdmark-auto-width`（`{幅}px`）と、表のインラインの `--mdmark-auto-table-width`（幅の合計）に入れる。CSS は `data-auto-width` の表を `table-layout: fixed` にして、この 2 つの変数を `width` に使用する（印刷の媒体では使用しない）。読者がつまみで入れたインラインの `width` は変数より優先される。
+
+      表を包む要素を `ResizeObserver` で見、`contentRect.width` が前と変わったときだけ決め直す（高さだけの変化・並べ替え・絞り込み・列の表示の切り替えでは決め直さない）。戻り値の `refresh` は、列の幅のつまみで幅を変えた後と戻した後に呼び、測り直さずに前に測った値で決め直す（つまみで戻した列は、もう一度自動の幅になる）。描いたときに表が `hidden` の祖先（閉じた折り畳み・閉じたセクション・選ばれていないタブ）の中にあり `clientWidth` が 0 のときは決めず、見えて幅が 0 でなくなったときに `ResizeObserver` で決める
+    args:
+      - name: table
+        type: HTMLTableElement
+        required: true
+        description: '`div.mdmark-table` の中の表'
+      - name: options
+        type: '{ wrapper: HTMLElement; scroller: HTMLElement; headCells: HTMLTableCellElement[]; longColumnMin: number; onApply?: () => void }'
+        required: true
+        description: '表の囲み（`div.mdmark-table`）、表を包む要素（`div.mdmark-table-scroll`）、列ごとの最下段の見出しのセル、長文の列の最小の幅（em）、幅を入れた後に呼ぶ関数（ピン止めの位置を決め直す）'
+    returns:
+      type: '{ refresh: () => void; detach: () => void }'
+      description: 測り直さずに決め直す関数と、`ResizeObserver` を止めて入れた変数と `data-auto-width` を取り除く関数
+    side_effects: 見出しのセルと表の `style` の CSS 変数と表の `data-auto-width` を書き換え、表を包む要素に `ResizeObserver` を付ける
+    callees:
+      - '#functions[measureColumns]'
+      - MOD-472-218#functions[columnBounds]
+      - MOD-472-218#functions[distributeColumnWidths]
+    unit_tests:
+      - name: test_attach_auto_column_widths
+        case: 正常
+        summary: 長文の列を残りの幅で広げ、ほかの列を最も長い行の幅にする
+        condition: 幅 1280px の要素に、インターフェース定義『文書を描く』の「正常系（列の幅を中身から決める）」の 6 列の表（`data-long="5"`）を付ける
+        mock: なし
+        expected: '表が `data-auto-width` を持ち、`No`〜`手順` の見出しのセルの `--mdmark-auto-width` が測った最も長い行の幅、`説明` が残りの幅で、`--mdmark-auto-table-width` が包む要素の `clientWidth` から枠線と列の数の 1px を引いた幅以下'
+      - name: test_attach_auto_column_widths_when_resized_container
+        case: 正常
+        summary: 包む要素の幅が変わったときだけ決め直し、つまみで変えた列の幅を保つ
+        condition: 同じ表を付けた後に 1 列目の見出しのセルに `is-resized` とインラインの `width` を入れて `refresh` を呼び、包む要素の高さだけを変え、続けて幅を 900px にする
+        mock: なし
+        expected: '`refresh` の後、1 列目の `--mdmark-auto-width` が無く、`--mdmark-auto-table-width` が 1 列目の `offsetWidth` を含む合計。高さだけの変化では `onApply` が呼ばれず、900px にした後に呼ばれ、`説明` の `--mdmark-auto-width` が `45em` の幅'
+      - name: test_attach_auto_column_widths_when_hidden
+        case: 正常
+        summary: 見えていない表は決めず、見えたときに決める
+        condition: '閉じた `details` の中の表を付け、`details` を開く'
+        mock: '`ResizeObserver` の通知を、`details` を開いた後に呼ぶ'
+        expected: 付けた直後は表が `data-auto-width` を持たず、開いた後に持つ
+      - name: test_attach_auto_column_widths_when_detached
+        case: 正常
+        summary: 取り除く関数で変数と印を外す
+        condition: 付けた後に `detach` を呼び、包む要素の幅を変える
+        mock: なし
+        expected: 表と見出しのセルに `--mdmark-auto-width`・`--mdmark-auto-table-width`・`data-auto-width` が無く、幅を変えても入らない
+    status: planned
+    introduced:
+      pr: 505
+refs:
+  - IF-472-35#constraints[列の幅]
+  - CMP-472-61#notes

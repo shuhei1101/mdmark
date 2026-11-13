@@ -121,7 +121,7 @@ functions:
   - name: folderOpenByDefault
     title: フォルダを既定で開くかを決める
     container: src/parts/tree.ts
-    summary: ルートを 0 としたフォルダの深さと `data-open` の値から、既定で開くかを返却する。`all` は常に開き、数は深さがその数より浅いとき、値が無ければルートだけを開く。部品のツリーと操作が使用する
+    summary: ルートを 0 としたフォルダの深さと `data-open` の値から、既定で開くかを返却する。`all` と値が無いときは常に開き、数は深さがその数より浅いときに開く。部品のツリーと操作が使用する
     kind: 関数
     scope: internal
     args:
@@ -142,7 +142,7 @@ functions:
         summary: 指定ごとに開く深さを決める
         condition: 深さ 0・1・2 を、`open` が無い・`all`・`2` のそれぞれで指定する
         mock: なし
-        expected: 無いときは `true`・`false`・`false`、`all` は全て `true`、`2` は `true`・`true`・`false`
+        expected: 無いときと `all` は全て `true`、`2` は `true`・`true`・`false`
     status: planned
     introduced:
       pr: 225

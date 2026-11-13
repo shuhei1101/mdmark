@@ -81,6 +81,7 @@
 | [ライブラリ本体 / 操作 / code-folds.ts](./MOD-472-225.ts.yaml) | ライブラリ本体 / 操作 / code-folds.ts |
 | [ライブラリ本体 / 操作 / csv-raw.ts](./MOD-472-243.ts.yaml) | ライブラリ本体 / 操作 / csv-raw.ts |
 | [ライブラリ本体 / 図 / diagram-resize.ts](./MOD-472-179.ts.yaml) | ライブラリ本体 / 図 / diagram-resize.ts |
+| [ライブラリ本体 / 図 / diagram-touch.ts](./MOD-472-346.ts.yaml) | ライブラリ本体 / 図 / diagram-touch.ts |
 | [ライブラリ本体 / 図 / diagram-tips.ts](./MOD-472-184.ts.yaml) | ライブラリ本体 / 図 / diagram-tips.ts |
 | [ライブラリ本体 / 図 / diagrams.ts](./MOD-472-183.ts.yaml) | ライブラリ本体 / 図 / diagrams.ts |
 | [ライブラリ本体 / 操作 / embedded-html.ts](./MOD-472-230.ts.yaml) | ライブラリ本体 / 操作 / embedded-html.ts |
@@ -98,6 +99,7 @@
 | [ライブラリ本体 / 操作 / table-resize.ts](./MOD-472-226.ts.yaml) | ライブラリ本体 / 操作 / table-resize.ts |
 | [ライブラリ本体 / 操作 / table-settings.ts](./MOD-472-240.ts.yaml) | ライブラリ本体 / 操作 / table-settings.ts |
 | [ライブラリ本体 / 操作 / table-tree.ts](./MOD-472-241.ts.yaml) | ライブラリ本体 / 操作 / table-tree.ts |
+| [ライブラリ本体 / 操作 / table-width.ts](./MOD-472-347.ts.yaml) | ライブラリ本体 / 操作 / table-width.ts |
 | [ライブラリ本体 / 操作 / tables.ts](./MOD-472-228.ts.yaml) | ライブラリ本体 / 操作 / tables.ts |
 | [ライブラリ本体 / 操作 / tabs.ts](./MOD-472-220.ts.yaml) | ライブラリ本体 / 操作 / tabs.ts |
 | [ライブラリ本体 / 索引と用語 / terms.ts](./MOD-472-266.ts.yaml) | ライブラリ本体 / 索引と用語 / terms.ts |

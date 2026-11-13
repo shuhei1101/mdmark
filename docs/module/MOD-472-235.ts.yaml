@@ -22,10 +22,10 @@ functions:
     unit_tests:
       - name: test_attach_file_trees
         case: 正常
-        summary: 帯と開閉のボタンを配置し、指定が無ければルートだけを開く
+        summary: 帯と開閉のボタンを配置し、指定が無ければ全てのフォルダを開く
         condition: '`mdmark/` の下に `src/`（子 `index.ts`、注釈 `ソース`）と `package.json` を描いた `data-open` の無いツリーに付ける'
         mock: なし
-        expected: '`mdmark-tree-bar` があり、`mdmark/` の `mdmark-tree-toggle` が `aria-expanded="true"`、`src/` が `aria-expanded="false"` で入れ子の `ul` が `hidden="until-found"`。`package.json` はボタンを持たない。`div.mdmark-tree` が `--mdmark-tree-note-start` を持つ'
+        expected: '`mdmark-tree-bar` があり、`mdmark/` と `src/` の `mdmark-tree-toggle` が `aria-expanded="true"` で、入れ子の `ul` が `hidden` を持たない。`package.json` はボタンを持たない。`div.mdmark-tree` が `--mdmark-tree-note-start` を持つ'
       - name: test_attach_file_trees_when_open
         case: 正常
         summary: data-open の階層まで開く

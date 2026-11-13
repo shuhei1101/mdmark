@@ -273,7 +273,7 @@ args:
   - name: foldColumnHovered
     type: 真偽値
     default: 'false'
-    description: ポインターが開閉のボタンの列（行番号の右の `--mdmark-code-fold-width` の幅。行番号を持たないときは行の頭の同じ幅）に乗っているか（`mount` が付けた状態）。`true` のとき `pre` に `data-fold-hover` を付け、畳める全ての行の開閉のボタンを出す。`mount` は列の上の `pointerover`・`pointerleave` で付け外しする
+    description: ポインターが開閉のボタンの列（行番号の右の `--mdmark-code-fold-width` の幅。行番号を持たないときは行の頭の同じ幅）に乗っているか（`mount` が付けた状態）。`true` のとき `pre` に `data-fold-hover` を付け、畳める全ての行の開閉のボタンを出す。`mount` は `pre` の `pointermove`（ポインターの横の位置が列にあるか）と `pointerleave` で付け外しする
   - name: highlight
     type: 真偽値
     default: 'false'

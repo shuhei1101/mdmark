@@ -9,31 +9,31 @@ functions:
     container: src/interact/tables.ts
     kind: 関数
     scope: internal
-    summary: 表を横にスクロールさせるのは表を包む `div.mdmark-table-scroll` で、ピン止めを適用するはみ出しはその要素の `scrollWidth` と `clientWidth` で決める。列の表示を切り替えるたびに、テーブル設定のボタンの隠した列の数のバッジ（`span.mdmark-table-tool-badge`。0 列なら `hidden` にする）・`is-active`・`aria-label` を書き換える。コピーの結果はボタンの `title` とスクリーンリーダー向けの名前を書き換えて示す。各 `mdmark-table` の `data-features`・`data-filter`・`data-hide`・`data-total`・`data-pin`・`data-unpin` を読み込み、見出しに `renderTableTools` のボタンとドロワーを配置して、並べ替え・ピン止め・絞り込みを付ける。`count`・`columns`・`reorder`・`total`・`copy` の表は `renderTableBar` の帯とメニュー（テーブル設定の一覧を分ける留めた列の数は `data-pin` がある表だけ数え、無い表は 0）を、`columns`・`reorder` の表は `attachTableSettings` でテーブル設定を、`data-tree` の表は `attachTableTree` で階層の操作を、`total` の表は `renderTotalRows` の集計の行を配置し、`rowlink` の表は行へ移る処理と行の URL のコピーを付け、`resize` の表は `attachColumnResize` で列の幅のつまみの操作を付ける。全ての表に、描く先の要素の幅で最終列を畳む処理を付ける。`thead` が複数の行を持つ表は `bottomHeadCells` で列ごとの最下段の見出しのセルを決め、ボタンをそのセルにだけ配置し、列の位置はそのセルの列で数える（`cellIndex` を使用しない）。`data-merge-columns` の表は、並べ替え・絞り込みのたびに、表示している本文の行のその列の値から `mergeSpans` で結合を決め、始まりのセルに `rowspan` と `is-merged`、続くセルに `hidden` をもう一度付ける。結合で隠したセルも値を持つセルとして並べ替え・絞り込み・コピー・集計に使用する。囲み・表から探す部品の要素（ピン止めのボタン・ドロワー・畳んだ列のセル・行の詳細の行など）は、`closest(".mdmark-table")` がその囲みのものだけにし、行の詳細の中の表の要素を取得しない。受け取り（`click`・`change`・`input`・`keydown`）は、対象の `closest(".mdmark-table")` がその囲みのときだけ処理する
+    summary: 表を横にスクロールさせるのは表を包む `div.mdmark-table-scroll` で、ピン止めを適用するはみ出しはその要素の `scrollWidth` と `clientWidth` で決める。列の表示を切り替えるたびに、テーブル設定のボタンの隠した列の数のバッジ（`span.mdmark-table-tool-badge`。0 列なら `hidden` にする）・`is-active`・`aria-label` を書き換える。コピーの結果はボタンの `title` とスクリーンリーダー向けの名前を書き換えて示す。各 `mdmark-table` の `data-features`・`data-filter`・`data-hide`・`data-total`・`data-pin`・`data-unpin` を読み込み、見出しに `renderTableTools` のボタンとドロワーを配置して、並べ替え・ピン止め・絞り込みを付ける。`count`・`columns`・`reorder`・`total`・`copy` の表は `renderTableBar` の帯とメニュー（テーブル設定の一覧を分ける留めた列の数は `data-pin` がある表だけ数え、無い表は 0）を、`columns`・`reorder` の表は `attachTableSettings` でテーブル設定を、`data-tree` の表は `attachTableTree` で階層の操作を、`total` の表は `renderTotalRows` の集計の行を配置し、`rowlink` の表は行へ移る処理と行の URL のコピーを付け、`resize` の表は `attachColumnResize` で列の幅のつまみの操作を付ける。全ての表に、`attachAutoColumnWidths` で列の幅を自動で決める処理を付ける。`thead` が複数の行を持つ表は `bottomHeadCells` で列ごとの最下段の見出しのセルを決め、ボタンをそのセルにだけ配置し、列の位置はそのセルの列で数える（`cellIndex` を使用しない）。`data-merge-columns` の表は、並べ替え・絞り込みのたびに、表示している本文の行のその列の値から `mergeSpans` で結合を決め、始まりのセルに `rowspan` と `is-merged`、続くセルに `hidden` をもう一度付ける。結合で隠したセルも値を持つセルとして並べ替え・絞り込み・コピー・集計に使用する。囲み・表から探す部品の要素（ピン止めのボタン・ドロワー・行の詳細の行など）は、`closest(".mdmark-table")` がその囲みのものだけにし、行の詳細の中の表の要素を取得しない。受け取り（`click`・`change`・`input`・`keydown`）は、対象の `closest(".mdmark-table")` がその囲みのときだけ処理する
     description: |-
-      並べ替えは降順 → 昇順 → 元の並び（描いたときの順を行に記録する）を繰り返し、`th` の `aria-sort` を付与・解除する。行の詳細の行と畳んだ最終列の開閉の行はその行に付いて動かす。ピン止めのボタンは `ResizeObserver` で表がはみ出すときだけ出し、留める列の位置の集まり（付けたときは `initialPinnedColumns`、ボタンを押すと `togglePinnedColumn`）のセルに、表がはみ出す間だけ `position: sticky` と `pinOffsets` の `left`（`each` は `right` も）を適用する（はみ出さない間は留めず、留める列は記録したまま）。列の幅は見出しの列ごとのセルの `offsetWidth`（隠した列は 0）で測る。ボタンの `aria-pressed` は、`each` は留めた列、`through` は留めた最も右の列だけを `true` にする。境の線は、表を包む要素の `scroll` と留める列を変えるたびに、左端に留まっている最も右の列のセルに `is-pinned-edge`、右端に留まっている最も左の列のセルに `is-pinned-edge-end` を付ける（留まっているかは列の元の位置と `scrollLeft`・`clientWidth`・`pinOffsets` で決める）。`thead` が複数の行を持つ表の見出しのセルは、またぐ列が全て留める列のときだけ留め、`left` は最初の列、`right` は最後の列の値にする。セルの値は `cellValue` で読み込む（`data-check` の列は `data-value`）。絞り込みのドロワーは `hidden` と `aria-expanded` で開閉し、同時に 1 つだけ開く。開いたら最初の入力欄へフォーカスを移し（スマホでもボタンの押下の処理の中で移す）、開いている間だけ `document` の `pointerdown`（外を押す）と `keydown`（Esc）を受け取る。「絞り込みを解除」はその列の入力を空にして絞り込みをもう一度適用する（ドロワーの中の押下を外の押下として扱わない）。列ごとの絞り込みは `matchesFilter` で重ねて当て、合わない行に `hidden` を付ける。
+      並べ替えは降順 → 昇順 → 元の並び（描いたときの順を行に記録する）を繰り返し、`th` の `aria-sort` を付与・解除する。行の詳細の行はその行に付いて動かす。ピン止めのボタンは `ResizeObserver` で表がはみ出すときだけ出し、留める列の位置の集まり（付けたときは `initialPinnedColumns`、ボタンを押すと `togglePinnedColumn`）のセルに、表がはみ出す間だけ `position: sticky` と `pinOffsets` の `left`（`each` は `right` も）を適用する（はみ出さない間は留めず、留める列は記録したまま）。列の幅は見出しの列ごとのセルの `offsetWidth`（隠した列は 0）で測る。ボタンの `aria-pressed` は、`each` は留めた列、`through` は留めた最も右の列だけを `true` にする。境の線は、表を包む要素の `scroll` と留める列を変えるたびに、左端に留まっている最も右の列のセルに `is-pinned-edge`、右端に留まっている最も左の列のセルに `is-pinned-edge-end` を付ける（留まっているかは列の元の位置と `scrollLeft`・`clientWidth`・`pinOffsets` で決める）。`thead` が複数の行を持つ表の見出しのセルは、またぐ列が全て留める列のときだけ留め、`left` は最初の列、`right` は最後の列の値にする。セルの値は `cellValue` で読み込む（`data-check` の列は `data-value`）。絞り込みのドロワーは `hidden` と `aria-expanded` で開閉し、同時に 1 つだけ開く。開いたら最初の入力欄へフォーカスを移し（スマホでもボタンの押下の処理の中で移す）、開いている間だけ `document` の `pointerdown`（外を押す）と `keydown`（Esc）を受け取る。「絞り込みを解除」はその列の入力を空にして絞り込みをもう一度適用する（ドロワーの中の押下を外の押下として扱わない）。列ごとの絞り込みは `matchesFilter` で重ねて当て、合わない行に `hidden` を付ける。
 
-      件数と集計の行は、絞り込みを適用するたびに、行の詳細・開閉の行・`一致する行がありません` の行を除く本文の行のうち `hidden` を持たない行から再作成する（集計は `computeTotal`）。集計の行は計算ごとの 1 行で、付けたときに全ての本文の行から `findUnreadableTotals` で数として読み込めないセルを持つ列と計算を記録し、そのセルは再作成しても空にする。`集計` のボタンのメニュー（`表示する集計`）のチェックボックスに合わせて計算の行の `hidden` を切り替え、ボタンの `is-active` とスクリーンリーダー向けの名前を書き換え、`{計算の名前}の行を出しました`・`{計算の名前}の行を隠しました` を帯の `mdmark-table-status` に入れる（選択は覚えない）。テーブル設定のパネル・集計のメニュー・コピーの形式のメニューは絞り込みのドロワーと同じ開閉の受け取りを使用する（同時に開くのはドロワーとパネル・メニューを合わせて 1 つ）。列の表示と順の切り替え（テーブル設定のパネルの目のアイコンとつまみ）は `attachTableSettings` に任せ、切り替えるたびに最終列を畳むかをもう一度決める。ピン止めの左端からの位置は隠した列を除いてもう一度測る。`onColumnsChange` を指定したときは、`attachTableSettings` が目のアイコンで列の表示を切り替えた後に、`{ tableIndex, hidden }` で 1 回呼ぶ。`tableIndex` は付けたときに `root` の中の `columns` の表（`.mdmark-diff-block[data-kind="del"]` の中の表を除く）を文書の順に並べた位置、`hidden` は隠している列の見出しのセルの `visibleText` を列の順に並べた新しい配列。例外を投げたら、`onColumnsChange` と元のエラーを `console.error` に出して続ける。
+      件数と集計の行は、絞り込みを適用するたびに、行の詳細・`一致する行がありません` の行を除く本文の行のうち `hidden` を持たない行から再作成する（集計は `computeTotal`）。集計の行は計算ごとの 1 行で、付けたときに全ての本文の行から `findUnreadableTotals` で数として読み込めないセルを持つ列と計算を記録し、そのセルは再作成しても空にする。`集計` のボタンのメニュー（`表示する集計`）のチェックボックスに合わせて計算の行の `hidden` を切り替え、ボタンの `is-active` とスクリーンリーダー向けの名前を書き換え、`{計算の名前}の行を出しました`・`{計算の名前}の行を隠しました` を帯の `mdmark-table-status` に入れる（選択は覚えない）。テーブル設定のパネル・集計のメニュー・コピーの形式のメニューは絞り込みのドロワーと同じ開閉の受け取りを使用する（同時に開くのはドロワーとパネル・メニューを合わせて 1 つ）。列の表示と順の切り替え（テーブル設定のパネルの目のアイコンとつまみ）は `attachTableSettings` に任せ、切り替えても列の幅は決め直さない。ピン止めの左端からの位置は隠した列を除いてもう一度測る。`onColumnsChange` を指定したときは、`attachTableSettings` が目のアイコンで列の表示を切り替えた後に、`{ tableIndex, hidden }` で 1 回呼ぶ。`tableIndex` は付けたときに `root` の中の `columns` の表（`.mdmark-diff-block[data-kind="del"]` の中の表を除く）を文書の順に並べた位置、`hidden` は隠している列の見出しのセルの `visibleText` を列の順に並べた新しい配列。例外を投げたら、`onColumnsChange` と元のエラーを `console.error` に出して続ける。
 
-      コピーは形式のボタンの `data-format` で、見出しの行と、行の詳細・開閉の行・`一致する行がありません` の行を除く本文の行のうち `hidden` を持たない行と階層の表の畳んで隠した行（補った行 `is-virtual` を除く）の、テーブル設定で隠していない列（畳んだ最終列は含める）の `visibleText`（階層の表のキーの列は行の `data-path`）を `tableToMarkdown` か `tableToTsv` にして `copyText` で書き込む。書き込めたらボタンを `copied` にして 2 秒で `idle` に戻し、`{形式の名前}をコピーしました` を `mdmark-table-status` に入れる。書き込めなければボタンを `failed` にし、前のパネルを取り除いてから帯の直後に `renderCopyPanel` のパネルを配置し、`textarea` へフォーカスを移して `select()` し、`クリップボードにコピーできませんでした。選択した{形式の名前}を手動でコピーできます` を入れる。パネルは閉じるボタンか、パネルの中の Esc で取り除き、フォーカスを `表をコピー` に戻す。
+      コピーは形式のボタンの `data-format` で、見出しの行と、行の詳細・`一致する行がありません` の行を除く本文の行のうち `hidden` を持たない行と階層の表の畳んで隠した行（補った行 `is-virtual` を除く）の、テーブル設定で隠していない列の `visibleText`（階層の表のキーの列は行の `data-path`）を `tableToMarkdown` か `tableToTsv` にして `copyText` で書き込む。書き込めたらボタンを `copied` にして 2 秒で `idle` に戻し、`{形式の名前}をコピーしました` を `mdmark-table-status` に入れる。書き込めなければボタンを `failed` にし、前のパネルを取り除いてから帯の直後に `renderCopyPanel` のパネルを配置し、`textarea` へフォーカスを移して `select()` し、`クリップボードにコピーできませんでした。選択した{形式の名前}を手動でコピーできます` を入れる。パネルは閉じるボタンか、パネルの中の Esc で取り除き、フォーカスを `表をコピー` に戻す。
 
       行へ移る処理は、付けたときと `hashchange` で `rowIdFromHash` の ID を持つ行を探し、囲む閉じた `details` を開き（閉じたセクションは、`attachInteractions` が先に付けた `attachSections` が同じきっかけで開いている）、行が `hidden` ならその表の絞り込みを全て削除し、`scrollIntoView` してその行だけに `data-target` を付ける。行へのリンクのマーカーを押すと、移る動きはそのままにマーカーの `href` プロパティ（解決済みの絶対 URL）を `copyText` で記載し、描いたときにマーカーの横へ配置した `mdmark-row-link-notice` に `data-state` と文言（`リンクをコピーしました`・`リンクをコピーできませんでした`）を入れて 2 秒後に空に戻す。
 
-      列の幅は、`attachColumnResize` に、列の幅の上限を返す関数（`columnWidthLimit` に、表を包む要素の `clientWidth`・はみ出しているか・列ごとの幅・留めている列を渡す）と、幅を変えた後の処理を渡す。幅を変えた後は、留める列があれば `pinColumns` で留める位置と境の線をもう一度決める。最終列を畳むかは決め直さない。
+      列の幅は、`attachColumnResize` に、列の幅の上限を返す関数（`columnWidthLimit` に、表を包む要素の `clientWidth`・はみ出しているか・列ごとの幅・留めている列を渡す）と、幅を変えた後の処理を渡す。幅を変えた後と戻した後は、`attachAutoColumnWidths` の `refresh` で列の幅を決め直し、留める列があれば `pinColumns` で留める位置と境の線をもう一度決める。
 
-      最終列を畳む処理は、描いた要素 `root` を `ResizeObserver` で見、`root` の幅（`contentRect.width`）が前と変わったときと列の表示の切り替えのときだけ、一度畳みを削除して測り、`shouldFold` で決める（高さだけの変化では決め直さない）。表示している最終列に幅を指定している（`is-resized`）ときは畳まない。測るのは `root` の中身の幅と、表示している最終列（先頭の列を除く）のセルの中身の高さが、計算した `line-height` の 1.5 倍を超えるものがあるか。畳むときは最終列のセルに `mdmark-fold-col`、囲みに `is-folded` を付け、行の詳細を持たない行には `renderFoldedColumn` の開閉のボタンを先頭のセルに、開閉の行を行の直後に配置し、行の詳細を持つ行には詳細の中身の先頭に同じ `mdmark-fold-part` を配置する。畳まないときはこれらを取り除く。開閉のボタンは `aria-expanded` と開閉の行の `hidden` を切り替え、開閉の行はその行が隠れると隠す
+      列の幅を自動で決める処理は、囲みごとに `attachAutoColumnWidths` に、囲み・表を包む要素・最下段の見出しのセル・`longColumnMin` と、幅を入れた後に留める列があれば `pinColumns` を呼ぶ関数を渡して付ける。ピン止めのボタンを出すかのはみ出しは、幅を入れた後に測る。
     args:
       - name: root
         type: HTMLElement
         required: true
         description: 描いた要素
       - name: options
-        type: '{ onColumnsChange?: (event: MdmarkColumnsChange) => void; pinMode?: TablePinMode }'
+        type: '{ onColumnsChange?: (event: MdmarkColumnsChange) => void; pinMode?: TablePinMode; longColumnMin?: number }'
         required: false
-        description: 列の表示の通知と、ピン止めの動き（既定 `each`）
+        description: 列の表示の通知と、ピン止めの動き（既定 `each`）と、長文の列の最小の幅（em。既定 `DEFAULT_LONG_COLUMN_MIN_EM`）
     returns:
       type: () => void
-      description: ボタン・ドロワー・パネル・開閉の行・受け取り・`ResizeObserver`・タイマーを削除する関数
+      description: ボタン・ドロワー・パネル・受け取り・`ResizeObserver`・タイマー・自動の列の幅を削除する関数
     side_effects: 表の DOM を書き換え、イベントと `ResizeObserver` を付ける
     callees:
       - 'MOD-472-218#functions[compareCells]'
@@ -43,10 +43,9 @@ functions:
       - 'MOD-472-229#functions[cellValue]'
       - 'MOD-472-218#functions[findUnreadableTotals]'
       - 'MOD-472-218#functions[tableToMarkdown]'
-      - 'MOD-472-218#functions[shouldFold]'
       - 'MOD-472-232#functions[copyText]'
       - MOD-472-315#functions[renderCopyPanel]
-      - MOD-472-315#functions[renderFoldedColumn]
+      - MOD-472-347#functions[attachAutoColumnWidths]
       - 'MOD-472-218#functions[bottomHeadCells]'
       - 'MOD-472-218#functions[mergeSpans]'
       - 'MOD-472-226#functions[attachColumnResize]'
@@ -154,24 +153,6 @@ functions:
         condition: '`rowlink` の表（`id` `みかん` の行）で、その行のマーカーを押す。もう 1 つの表では書き込みを拒む'
         mock: '`navigator.clipboard.writeText` を記録して解決する関数（1 つ目）と `NotAllowedError` で拒む関数（2 つ目）に、時計を偽の時計に差し替える'
         expected: 1 つ目は `location.href` の `#` より前に `#%E3%81%BF%E3%81%8B%E3%82%93` を続けた URL で呼ばれ、マーカーの横の `mdmark-row-link-notice` が `data-state="copied"` と `リンクをコピーしました`、2 つ目は `data-state="failed"` と `リンクをコピーできませんでした`。2 秒進めるとどちらも空で `data-state` を持たない。どちらも行が `data-target` を持つ
-      - name: test_attach_tables_when_folded
-        case: 正常
-        summary: 狭い幅で折り返す最終列を畳み、開閉し、広げると畳みを削除する
-        condition: 幅 390px の要素に、どの行も 1 行に収まらない説明の列を最終列に持つ 3 列 3 行の表と、短い文字の 2 列の表。付けた後、畳んだ表の 1 行目の開閉のボタンを押し、要素の幅を 800px にする
-        mock: なし
-        expected: 付けた後は 1 つ目の表だけ囲みが `is-folded` で各行に `aria-expanded="false"` の `mdmark-fold-toggle`、2 つ目の表は畳まない。押した後はボタンが `aria-expanded="true"` で直後の `mdmark-fold-detail` が `hidden` を持たず、`mdmark-fold-name` が `説明`。800px にした後は `is-folded`・開閉のボタン・開閉の行が無い
-      - name: test_attach_tables_when_folded_with_row_detail
-        case: 正常
-        summary: 行の詳細を持つ行は、詳細の中身の上に最終列を配置して詳細のボタンだけで開閉する
-        condition: 幅 390px の要素に、`test_attach_tables_when_folded` の 3 列 3 行の表で 2 行目に行の詳細を持つものを `attachSections` の後に付け、行の詳細のボタンを押す
-        mock: なし
-        expected: 2 行目は `mdmark-fold-toggle` を持たず、詳細の行の中身の先頭に `mdmark-fold-part` があり、押した後に詳細の行が `hidden` を持たない。1・3 行目は `mdmark-fold-toggle` を持つ
-      - name: test_attach_tables_when_fold_column_hidden
-        case: 正常
-        summary: テーブル設定で最終列を隠すと畳みを削除し、前の列を最終列としてもう一度決める
-        condition: 幅 390px の要素に `data-features="columns"` の 3 列の表（状態は短く、説明は 1 行に収まらない）を付け、テーブル設定の説明の目のアイコンで隠す
-        mock: なし
-        expected: 付けた後は `is-folded`、削除した後は `is-folded`・開閉のボタン・開閉の行が無く、説明の列が `hidden`
       - name: test_attach_tables_when_nested_table
         case: 正常
         summary: 行の詳細の中の表の要素を、親の表の操作が取得しない
@@ -250,18 +231,24 @@ functions:
         condition: 幅 320px の要素に `data-features="pin resize"` の、列名が短く留めた 1 列目と 3 列目の幅の合計が見えている幅に収まる 10 列の表を付け、3 列目のピン止めを押し、1 列目のつまみで → キーを押し、続けて 1 列目のつまみを 2000px 右へドラッグする
         mock: なし
         expected: → キーの後、3 列目のセルの `left` が 1 列目の `th` の `offsetWidth`。ドラッグの後、1 列目の `th` の `offsetWidth` が表を包む要素の `clientWidth` から 3 列目の `th` の `offsetWidth` を引いた値以下で、つまみの `aria-valuenow` と `aria-valuemax` が同じ。続けて 3 列目のつまみにフォーカスすると、その `aria-valuemax` が表を包む要素の `clientWidth` から 1 列目の `th` の `offsetWidth` を引いた値（切り捨て）
-      - name: test_attach_tables_when_resized_column_not_folded
-        case: 正常
-        summary: 最終列を畳む判定は描く先の要素の幅の変化でだけやり直し、幅を指定した最終列は畳まない
-        condition: 幅 600px の要素に、最終列が 1 行に収まる 3 列の表を付け、最終列のつまみで ← キーを押して折り返させ（最終列のセルの中身の高さが `line-height` の 1.5 倍を超えることを前提として確かめる）、続けて要素の幅を 590px にする
-        mock: なし
-        expected: ← キーの後も、要素の幅を変えた後も、最終列のセルが `mdmark-fold-col` を持たず、囲みが `is-folded` を持たない
       - name: test_attach_tables_when_resize_off
         case: 正常
         summary: '`resize` を持たない表には、つまみの操作を付けない'
         condition: '`data-features="sort pin"` の表を付ける'
         mock: なし
         expected: '`mdmark-col-resize` が無い'
+      - name: test_attach_tables_when_auto_width
+        case: 正常
+        summary: 狭い幅でも最終列を畳まず、列の幅を自動で決めてから、はみ出す表にピン止めを付ける
+        condition: 幅 390px の要素に、名前・状態・説明（どの行も 1 行に収まらない長文の列。`data-long="2"`）の 3 列 3 行の表を付ける
+        mock: なし
+        expected: 表が `data-auto-width` を持ち、説明の列のセルが表示され、どの行にも開閉のボタンと `mdmark-fold-col` が無い。表を包む要素の `scrollWidth` が `clientWidth` より大きく、先頭の列が留まっている
+      - name: test_attach_tables_when_resized_refreshes_width
+        case: 正常
+        summary: つまみで列の幅を変えた後と戻した後に、列の幅を決め直す
+        condition: '`test_attach_tables_when_auto_width` の表を幅 1280px で付け、名前の列のつまみで → を 2 回押し、Enter を押す'
+        mock: なし
+        expected: → の後、表の `--mdmark-auto-table-width` が名前の列の広げた幅を含む合計で、名前の列の `--mdmark-auto-width` が無い。Enter の後、名前の列に `--mdmark-auto-width` が入り直す
     refs:
       - IF-472-35#constraints[列の表示の通知]
       - 'MOD-472-218#functions[computeTotal]'

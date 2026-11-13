@@ -9,12 +9,12 @@ functions:
     container: src/parts/table.ts
     kind: 関数
     scope: internal
-    summary: 部品設計『表』の HTML を返却する。`render` は表を `SLOT_MARKER` にして囲みだけを使用し、Storybook は `columns`・`rows` と状態の引数（`sort`・`overflow`・`pinned`・`openFilter`・`filterValues`・`hiddenColumns`・`openColumns`・`copyState`・`targetRow`・`shownTotals`・`openTotals`・`openCopy`・`copyFallback`・`rowLinkNotice`・`folded`・`unfoldedRows`）で操作を付けた後の外観を作る。折り畳みの見出しは `title` か `表（{`rows` の数か `rowCount`} 行）`。表（と `SLOT_MARKER`）は横にスクロールさせる `div.mdmark-table-scroll` で包む（計画書の案 A。表の `tabindex="0"` と `aria-label` は `table` に残す）。囲みには `hide`・`totals` を `data-hide`・`data-total` で持たせ、`rows` を指定したときは `renderTableBar` の帯とメニュー、`copyFallback` のときは `renderCopyPanel` のパネル、`renderTotalRows` の集計の行、`rowIds` の行の `id` と行へのリンクと通知の要素、`folded` のときは `renderFoldedColumn` の開閉のボタンと開閉の行（最終列のセルに `mdmark-fold-col`、囲みに `is-folded`）も描く。集計の値は `filterValues` に合う行から `computeTotal` で出し、全ての行で `findUnreadableTotals` が返却した列と計算のセルは空にする。`highlight` の列の `th`・`td` に class `mdmark-col-highlight` と `data-color`、`rowColors` の行の `tr` に `data-color` を付ける（`render` はこれらを記法のコアルールがトークンに付けるため、Storybook の外観にだけ使用する）。`headRows` を指定すると `thead` を行ごとのセル（`rowspan`・`colspan`・`scope`）で描き、`bottomHeadCells` で決めた最下段のセルにだけ `renderTableTools` のボタンを配置する。`rowHeader` の列のセルは `<th scope="row">`、`mergeColumns` の列は表示する行から `mergeSpans` で結合を決めて始まりのセルに `rowspan` と `is-merged`、続くセルに `hidden` を付ける。`pinned` を省いたときは `rowHeader` の全ての列を留める。留める列は `pinned` の位置のセルに `is-pinned-col` を付け、結合した見出しのセルはまたぐ列が全て `pinned` にあるときだけ付ける。囲みには `pin`・`unpin`（半角の空白で区切る）・`check` を `data-pin`・`data-unpin`・`data-check` で持たせる。`rows` を指定したときは、`wide` の列の `th`・`td` に class `mdmark-wide`、`check` の列の `th`・`td` に class `mdmark-align-center` を付け、`check` の列の `true`・`false` のセルを `data-value` と `renderCheckCell` の中身にする
+    summary: 部品設計『表』の HTML を返却する。`render` は表を `SLOT_MARKER` にして囲みだけを使用し、Storybook は `columns`・`rows` と状態の引数（`sort`・`overflow`・`pinned`・`openFilter`・`filterValues`・`hiddenColumns`・`openColumns`・`copyState`・`targetRow`・`shownTotals`・`openTotals`・`openCopy`・`copyFallback`・`rowLinkNotice`・`autoWidths`）で操作を付けた後の外観を作る。折り畳みの見出しは `title` か `表（{`rows` の数か `rowCount`} 行）`。表（と `SLOT_MARKER`）は横にスクロールさせる `div.mdmark-table-scroll` で包む（計画書の案 A。表の `tabindex="0"` と `aria-label` は `table` に残す）。囲みには `hide`・`totals` を `data-hide`・`data-total` で持たせ、`rows` を指定したときは `renderTableBar` の帯とメニュー、`copyFallback` のときは `renderCopyPanel` のパネル、`renderTotalRows` の集計の行、`rowIds` の行の `id` と行へのリンクと通知の要素も描く。集計の値は `filterValues` に合う行から `computeTotal` で出し、全ての行で `findUnreadableTotals` が返却した列と計算のセルは空にする。`highlight` の列の `th`・`td` に class `mdmark-col-highlight` と `data-color`、`rowColors` の行の `tr` に `data-color` を付ける（`render` はこれらを記法のコアルールがトークンに付けるため、Storybook の外観にだけ使用する）。`headRows` を指定すると `thead` を行ごとのセル（`rowspan`・`colspan`・`scope`）で描き、`bottomHeadCells` で決めた最下段のセルにだけ `renderTableTools` のボタンを配置する。`rowHeader` の列のセルは `<th scope="row">`、`mergeColumns` の列は表示する行から `mergeSpans` で結合を決めて始まりのセルに `rowspan` と `is-merged`、続くセルに `hidden` を付ける。`pinned` を省いたときは `rowHeader` の全ての列を留める。留める列は `pinned` の位置のセルに `is-pinned-col` を付け、結合した見出しのセルはまたぐ列が全て `pinned` にあるときだけ付ける。囲みには `pin`・`unpin`（半角の空白で区切る）・`check` を `data-pin`・`data-unpin`・`data-check` で持たせる。`rows` を指定したときは、`wide` の列の `th`・`td` に class `mdmark-wide`、`check` の列の `th`・`td` に class `mdmark-align-center` を付け、`check` の列の `true`・`false` のセルを `data-value` と `renderCheckCell` の中身にする
     args:
       - name: options
         type: TableOptions
         required: true
-        description: 部品設計の引数（`kind`・`features`・`columns`・`rows`・`filters`・`collapse`・`title`・`rowCount`（`rows` を省いたときの本文の行の数）・`hide`・`totals`・`rowIds`・`highlight`・`rowColors`・`pin`（`data-pin` に写す列の位置の並び）・`unpin`（`data-unpin` に写す、既定で留める列から除く列の位置の並び）・`pinMode`（ピン止めのボタンの名前と押した状態を決める。既定 `each`）・`widths`（`{ column, width }` の並び。指定した列の見出しのセルの `width`・`min-width`・`--mdmark-column-min-width` に入れ、セルに `is-resized` を付ける）・`resizing`（つまみの線を出したままにする列の位置）・`wide`・`check`・`headRows`・`rowHeader`・`mergeColumns`・状態の引数）。`rows` を省いて `body` に `SLOT_MARKER` を指定すると囲みだけを作る
+        description: 部品設計の引数（`kind`・`features`・`columns`・`rows`・`filters`・`collapse`・`title`・`rowCount`（`rows` を省いたときの本文の行の数）・`hide`・`totals`・`rowIds`・`highlight`・`rowColors`・`pin`（`data-pin` に写す列の位置の並び）・`unpin`（`data-unpin` に写す、既定で留める列から除く列の位置の並び）・`pinMode`（ピン止めのボタンの名前と押した状態を決める。既定 `each`）・`widths`（`{ column, width }` の並び。指定した列の見出しのセルの `width`・`min-width`・`--mdmark-column-min-width` に入れ、セルに `is-resized` を付ける）・`resizing`（つまみの線を出したままにする列の位置）・`long`（`data-long` に写す長文の列の位置の並び）・`widthRanges`（`{ column, min?, max? }` の並び。`data-width` に `{位置}:{min}-{max}` を空白で区切って写し、記載しない側は空にする）・`autoWidths`（`{ column, width }` の並び。表に `data-auto-width` と `--mdmark-auto-table-width`（幅の合計）、見出しのセルに `--mdmark-auto-width` を入れる）・`wide`・`check`・`headRows`・`rowHeader`・`mergeColumns`・状態の引数）。`rows` を省いて `body` に `SLOT_MARKER` を指定すると囲みだけを作る
     returns:
       type: string
       description: '`<div class="mdmark-table"` で始まる HTML'
@@ -24,7 +24,6 @@ functions:
       - '#functions[renderTotalRows]'
       - '#functions[renderTableBar]'
       - '#functions[renderCopyPanel]'
-      - '#functions[renderFoldedColumn]'
       - MOD-472-218#functions[bottomHeadCells]
       - MOD-472-218#functions[mergeSpans]
       - '#functions[renderCheckCell]'
@@ -83,18 +82,18 @@ functions:
         condition: '部品設計の `RowLinkCopied`（`targetRow: 1`、`rowLinkNotice: copied`）'
         mock: なし
         expected: どの行にも `role="status"` の `mdmark-row-link-notice` があり、2 行目だけが `data-state="copied"` と `リンクをコピーしました` を持つ
-      - name: test_render_table_when_folded
-        case: 正常
-        summary: 最終列を畳み、開いた行の直後に最終列を出す
-        condition: '部品設計の `FoldedOpen`（`folded: true`、`unfoldedRows: [0]`）'
-        mock: なし
-        expected: 囲みが `is-folded`、最終列のセルが `mdmark-fold-col`、各行の先頭のセルに `mdmark-fold-toggle` があり、1 行目のボタンだけ `aria-expanded="true"`、1 行目の直後の `mdmark-fold-detail` が `hidden` を持たず `mdmark-fold-name` が `説明`
       - name: test_render_table_when_title
         case: 正常
         summary: 開いた折り畳みの見出しを title にし、エスケープする
         condition: '部品設計の `OpenTitle`（`collapse: open`、`title: リリースの一覧`）と、`title: a<b` にしたもの'
         mock: なし
         expected: 1 つ目が `<details class="mdmark-table-details" open><summary>リリースの一覧</summary>`、2 つ目の `summary` が `a&lt;b`
+      - name: test_render_table_when_long_columns
+        case: 正常
+        summary: 長文の列と列の幅の範囲を囲みに写し、自動の列の幅を入れる
+        condition: '`body: SLOT_MARKER`・`long: [1, 3]`・`widthRanges: [{1, min: 20, max: 30}, {3, max: 12}]` と、部品設計の `AutoWidth`'
+        mock: なし
+        expected: 1 つ目の囲みが `data-long="1 3"`・`data-width="1:20-30 3:-12"` を持つ。`AutoWidth` の表が `data-auto-width` と `--mdmark-auto-table-width:1145px` を持ち、6 列の見出しのセルが `autoWidths` の幅の `--mdmark-auto-width` を持つ
       - name: test_render_table_when_colors
         case: 正常
         summary: 強調する列と色を付ける行を属性にする
@@ -285,38 +284,6 @@ functions:
         condition: '`format: tree`、`text: "src/\n└── index.ts"`'
         mock: なし
         expected: 案内が `ツリーのテキストを選択しています。` で始まり、`textarea` の中身が `src/\n└── index.ts`
-    callees:
-      - 'MOD-472-313#functions[escapeHtml]'
-    status: planned
-    introduced:
-      pr: 151
-  - name: renderFoldedColumn
-    title: 畳んだ最終列を描く
-    container: src/parts/table.ts
-    summary: 最終列を畳んだ表の本文の行 1 つについて、先頭のセルに配置する開閉のボタン `<button class="mdmark-row-toggle mdmark-fold-toggle" type="button" aria-expanded aria-controls aria-label="「{先頭のセルの文字}」の{最終列の見出しの文字}">` と、行の直後に配置する `<tr class="mdmark-row-detail mdmark-fold-detail">`（`mdmark-fold-part` の中に `mdmark-fold-name` と `mdmark-fold-value`）を返却する。開いていなければ行は `hidden` を持つ。先頭のセルはボタンと元の中身を `mdmark-row-head` で包む（包むのは呼ぶ側）。`mount` が畳むときにも使用する
-    kind: 関数
-    scope: internal
-    args:
-      - name: options
-        type: '{ id: string; columns: number; label: string; name: string; html: string; open?: boolean }'
-        required: true
-        description: 開閉の行の id、表の列の数（開閉の行の `colspan`）、先頭のセルの文字、最終列の見出しの文字、その行の最終列のセルの中身の HTML、開いているか（既定 `false`）
-    returns:
-      type: '{ toggle: string; row: string }'
-      description: 開閉のボタンと開閉の行
-    unit_tests:
-      - name: test_render_folded_column
-        case: 正常
-        summary: 閉じた開閉の行とボタンを返却する
-        condition: '`id: t1-fold-0`、`columns: 3`、`label: りんご`、`name: 説明`、`html: "描画を速くする"`'
-        mock: なし
-        expected: '`toggle` が `aria-expanded="false"`・`aria-controls="t1-fold-0"`・`aria-label="「りんご」の説明"`、`row` が `<tr class="mdmark-row-detail mdmark-fold-detail" id="t1-fold-0" hidden><td colspan="3">` で `mdmark-fold-name` が `説明`、`mdmark-fold-value` が `描画を速くする`'
-      - name: test_render_folded_column_when_open
-        case: 正常
-        summary: 開いた行は隠さない
-        condition: '`open: true`'
-        mock: なし
-        expected: '`toggle` が `aria-expanded="true"`、`row` が `hidden` を持たない'
     callees:
       - 'MOD-472-313#functions[escapeHtml]'
     status: planned

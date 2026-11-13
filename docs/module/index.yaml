@@ -182,6 +182,8 @@ items:
   summary: ライブラリ本体 / 操作 / table-settings.ts
 - page: MOD-472-241.ts.yaml
   summary: ライブラリ本体 / 操作 / table-tree.ts
+- page: MOD-472-347.ts.yaml
+  summary: ライブラリ本体 / 操作 / table-width.ts
 - page: MOD-472-228.ts.yaml
   summary: ライブラリ本体 / 操作 / tables.ts
 - page: MOD-472-220.ts.yaml
