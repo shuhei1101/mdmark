@@ -23,4 +23,9 @@
 
 ### 結合
 
-なし
+| ファイル | メソッド | 変更種別 | 結果 | 補足 |
+| --- | --- | --- | --- | --- |
+| [vscode/tests/integration/preview-rerender.test.ts](https://github.com/shuhei1101/mdmark/blob/test/vscode/library-origin-added-marker/vscode/tests/integration/preview-rerender.test.ts) | `test_normal_when_library_origin_added` | 変更 | ✅ | 1.141.0 と stable（1.146.0）で pass<br>`テスト結果/20261114025113_b3d86422_結合テスト.log` |
+| `vscode/tests/integration/*.test.ts` | 全実行 | 実行のみ | ✅ | 1.141.0 と stable（1.146.0）でそれぞれ 83 件 pass<br>`テスト結果/20261114025113_b3d86422_結合テスト.log` |
+
+lint: `テスト結果/20261114025113_b3d86422_lint.log`（`plugin/bin/setup.js` のファイルの大きさの警告 1 件は base ブランチから残っている）
