@@ -5,8 +5,44 @@ scope_out:
   - item: マーカーの今の書き方を参照する処理の削除
     reason: 全てのリポジトリの移行の後に、次のマイナーバージョンの破壊的変更として別の Issue が扱う
     plan: '#479'
-  - item: リポジトリごとの文書への mdmark upgrade の適用と記載の修正
-    reason: 要件.md の未確定（移行の進め方）が案 A に決まれば、各リポジトリの Issue が扱う。案 B に決まればこの作業 PR の反映作業へ移す
-    plan: to_file
+  - item: ai-monitor の文書の移行
+    reason: そのリポジトリの作業 PR で扱う
+    plan: shuhei1101/ai-monitor#3418
+  - item: aituber の文書の移行
+    reason: そのリポジトリの作業 PR で扱う
+    plan: shuhei1101/aituber#132
+  - item: gui-support の文書の移行
+    reason: そのリポジトリの作業 PR で扱う
+    plan: shuhei1101/gui-support#122
+  - item: voice-paste の文書の移行
+    reason: そのリポジトリの作業 PR で扱う
+    plan: shuhei1101/voice-paste#294
+  - item: project-index の文書の移行
+    reason: そのリポジトリの作業 PR で扱う
+    plan: shuhei1101/project-index#64
+  - item: mindstella の文書と MindStella のワークスペースの文書の移行
+    reason: そのリポジトリの作業 PR で扱う
+    plan: shuhei1101/mindstella#512
+  - item: observability の文書の移行
+    reason: そのリポジトリの作業 PR で扱う
+    plan: shuhei1101/observability#50
+  - item: claude-balancer の文書の移行
+    reason: そのリポジトリの作業 PR で扱う
+    plan: shuhei1101/claude-balancer#286
+  - item: rule-inject の文書の移行
+    reason: そのリポジトリの作業 PR で扱う
+    plan: shuhei1101/rule-inject#171
+  - item: alias-inject の文書の移行
+    reason: そのリポジトリの作業 PR で扱う
+    plan: shuhei1101/alias-inject#93
+  - item: dev-docs の文書の移行
+    reason: そのリポジトリの作業 PR で扱う
+    plan: shuhei1101/dev-docs#193
+  - item: shuhdev-gateway の文書の移行
+    reason: そのリポジトリの作業 PR で扱う
+    plan: shuhei1101/shuhdev-gateway#45
+  - item: knowledge の文書の移行
+    reason: そのリポジトリの作業 PR で扱う
+    plan: shuhei1101/knowledge#316
 use_cases: []
 docs: []
