@@ -15,6 +15,9 @@ states:
         value: '{"nodes": ["判定", "s1"], "wires": ["t6"]}'
   - name: SelfTransitionPlaying
     description: 再生の 2 本目（同じ状態への遷移）。状態から出て戻る線が太く強調される
+    args:
+      - name: focus
+        value: '{"nodes": ["下書き"], "wires": ["t2"]}'
   - name: StateSelected
     description: 「確認待ち」を選んだ。入る遷移 2 本・出る遷移 2 本と相手の状態のほかが薄い
     args:

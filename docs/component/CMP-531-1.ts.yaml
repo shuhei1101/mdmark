@@ -33,8 +33,15 @@ states:
     args:
       - name: selected
         value: '["顧客", "明細"]'
+      - name: fanouts
+        value: '[{"wire": "r1", "from": "顧客", "to": "注文"}, {"wire": "r2", "from": "注文", "to": "明細"}, {"wire": "r3", "from": "商品", "to": "明細"}]'
   - name: FanoutTip
-    description: 行が増える旨のマーカーにフォーカスした。図のツールチップに行が増えるテーブルが出る
+    description: PathSelected の場面で、「顧客」→「注文」の行が増える旨のマーカーにフォーカスした。図のツールチップに「顧客 から 注文 へたどると、顧客 の 1 行に 注文 の行が複数つながる」旨が出る
+    args:
+      - name: selected
+        value: '["顧客", "明細"]'
+      - name: fanouts
+        value: '[{"wire": "r1", "from": "顧客", "to": "注文"}, {"wire": "r2", "from": "注文", "to": "明細"}, {"wire": "r3", "from": "商品", "to": "明細"}]'
   - name: Narrow
     description: 幅 390px の置き場所。図は倍率 1 のまま表示する枠の中で横にスクロールする
 lead: map の `erDiagram` を、テーブルを列の行を持つノード、補足の `groups` の分類を入れ子のグループにして、構成図の部品の上に描く。関連の端を列の行の高さへ付け替え、両端の多重度とラベル、列の開閉、2 つのテーブルの経路の強調と行が増える関連のマーカーを持つ。

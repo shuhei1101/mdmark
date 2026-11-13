@@ -615,16 +615,16 @@ elements:
       - name: mode
         value: 構成図と ER 図は `walkthrough`、シーケンス図は `playback`、状態遷移図は補足に `walkthroughs` があれば `walkthrough`、無ければ `playback`
       - name: total
-        value: 補足の `walkthroughs` の手順の数か、表示するメッセージの数
+        value: 補足の `walkthroughs` の手順の数か、表示するメッセージの数か、状態遷移図の再生では遷移の数
       - name: title
-        value: 手順の `title` か、メッセージの文
+        value: 手順の `title` か、メッセージの文か、状態遷移図の再生では `{遷移元} → {遷移先}：{ラベル}`
       - name: text
-        value: 構成図は手順の `text`、シーケンス図は `{送り手} → {受け手}` と補足の `notes` のそのメッセージの説明（改行はそのまま）
+        value: 構成図・ER 図・状態遷移図の案内は手順の `text`、シーケンス図は `{送り手} → {受け手}` と補足の `notes` のそのメッセージの説明、状態遷移図の再生は補足の `notes` の `t{番号}` の説明（改行はそのまま）
       - name: label
         value: '`{図のタイトル}の案内`・`{図のタイトル}の再生`'
-    position: 描く先の要素 > map の構成図・map のシーケンス図の図の枠の下
+    position: 描く先の要素 > map の構成図・map のシーケンス図・map の ER 図・map の状態遷移図の図の枠の下
     description: 案内と再生の帯。始める前も常に出す
-    visible_when: 構成図は補足に `walkthroughs` があるとき、シーケンス図は常時
+    visible_when: 構成図と ER 図は補足に `walkthroughs` があるとき、シーケンス図と状態遷移図は常時
     action: 前へ・次へで手順を進め（端では反対の端へ回る）、停止で強調を解き、自動で進めるで印の `interval` 秒ごとに進める。シーケンス図の再生は、補足の `plays_over` で指した構成図の上でも強調する。片方の図で案内か再生を始めると、もう片方の強調を解く
     refs:
       - IF-472-35#constraints[map の強調]
