@@ -1,0 +1,148 @@
+$ npm run test:unit
+# 全件実行。表の単体テストは全て pass。マシンの負荷（load average 20 前後、ほかの作業のプロセス）で、表と関係の無い 6 ファイルが時間切れになった
+
+> test:unit
+> vitest run --project 'unit*'
+
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/fix-table-pinned-columns-overflow
+
+ ❯ |unit-browser (chromium)| tests/unit/vscode/src/webview/main.browser.test.tsx (1 test | 1 failed) 15298ms
+   × test_start_preview_when_no_root 15297ms
+ ❯ |unit-browser (chromium)| tests/unit/src/viewer/index.browser.test.ts (2 tests | 1 failed) 19146ms
+   × test_start_viewer 15343ms
+ ❯ |unit-browser (chromium)| tests/unit/vscode/src/webview/features/preview/panel/panel-screen.browser.test.tsx (15 tests | 1 failed) 22273ms
+   × test_panel_screen_when_rendered 15347ms
+ ❯ |unit| tests/unit/src/cli/main.test.ts (4 tests | 1 failed) 44127ms
+   × test_main 30005ms
+ ❯ |unit| tests/unit/src/cli/upgrade.test.ts (15 tests | 1 failed) 45364ms
+   × test_write_config_version 30006ms
+ ❯ |unit| tests/unit/src/cli/export.test.ts (25 tests | 1 failed) 56086ms
+   × test_prepare_embeds 30006ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 6 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit| tests/unit/src/cli/export.test.ts > test_prepare_embeds
+Error: Test timed out in 30000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/unit/src/cli/export.test.ts:31:1
+     29|
+     30| // マーカーのあるモジュールだけをまとめ、拡張と theme を読み込む（正常系）
+     31| test("test_prepare_embeds", async () => {
+       | ^
+     32|   // 準備
+     33|   const { prepareEmbeds } = await loadExport();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/6]⎯
+
+ FAIL  |unit| tests/unit/src/cli/main.test.ts > test_main
+Error: Test timed out in 30000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/unit/src/cli/main.test.ts:19:1
+     17|
+     18| // コマンド名で init を呼び、その終了コードを返却する（正常系）
+     19| test("test_main", async () => {
+       | ^
+     20|   // 準備
+     21|   const { main } = await loadMain();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/6]⎯
+
+ FAIL  |unit| tests/unit/src/cli/upgrade.test.ts > test_write_config_version
+Error: Test timed out in 30000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/unit/src/cli/upgrade.test.ts:105:1
+    103|
+    104| // ある version を書き換え、コメントとフロー形式の並びを残す（正常系）
+    105| test("test_write_config_version", async () => {
+       | ^
+    106|   // 準備
+    107|   const { writeConfigVersion } = await loadModule();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/6]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/viewer/index.browser.test.ts > test_start_viewer
+Error: Test timed out in 15000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/index.browser.test.ts/test_start_viewer.png
+
+ ❯ task node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=c0d4ae50:5128:43
+ ❯ Object.<anonymous> node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=c0d4ae50:5145:16
+ ❯ Object.<anonymous> node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=c0d4ae50:4935:28
+ ❯ chain node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=c0d4ae50:4336:14
+ ❯ tests/unit/src/viewer/index.browser.test.ts:14:1
+     12|
+     13| // document の中身を描く先の要素に描く（正常系）
+     14| test("test_start_viewer", async () => {
+       | ^
+     15|   // 準備
+     16|   const payload = {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/6]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/vscode/src/webview/main.browser.test.tsx > test_start_preview_when_no_root
+Error: Test timed out in 15000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/main.browser.test.tsx/test_start_preview_when_no_root.png
+
+ ❯ task node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=c0d4ae50:5128:43
+ ❯ Object.<anonymous> node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=c0d4ae50:5145:16
+ ❯ Object.<anonymous> node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=c0d4ae50:4935:28
+ ❯ chain node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=c0d4ae50:4336:14
+ ❯ tests/unit/vscode/src/webview/main.browser.test.tsx:11:1
+      9|
+     10| // 描く先を包む要素が無いページでは描かない（正常系）
+     11| test("test_start_preview_when_no_root", async () => {
+       | ^
+     12|   // 準備
+     13|   const acquire = vi.fn(() => ({ postMessage: vi.fn() }));
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/6]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/vscode/src/webview/features/preview/panel/panel-screen.browser.test.tsx > test_panel_screen_when_rendered
+Error: Test timed out in 15000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/panel-screen.browser.test.tsx/test_panel_screen_when_rendered.png
+
+ ❯ task node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=c0d4ae50:5128:43
+ ❯ Object.<anonymous> node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=c0d4ae50:5145:16
+ ❯ Object.<anonymous> node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=c0d4ae50:4935:28
+ ❯ Object.<anonymous> node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=c0d4ae50:5394:7
+ ❯ chain node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=c0d4ae50:4336:14
+ ❯ tests/unit/vscode/src/webview/features/preview/panel/panel-screen.browser.test.tsx:84:1
+     82|
+     83| // 配布物を読み込み終えたら ready を送信し、render で描いて rendered を送信する（正常系）
+     84| test("test_panel_screen_when_rendered", async () => {
+       | ^
+     85|   // 準備
+     86|   const { PanelScreen } = await loadScreen();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/6]⎯
+
+
+ Test Files  6 failed | 280 passed (286)
+      Tests  6 failed | 2099 passed (2105)
+   Start at  02:47:39
+   Duration  189.60s (worker 69%, tests 20%, import 10%, transform 1%)
+
+exit=1
+
+$ npx vitest run --project 'unit*' {時間切れになった 6 ファイル}
+# 時間切れになったファイルだけを流し直し、全て pass
+FILES=tests/unit/src/cli/export.test.ts tests/unit/src/cli/main.test.ts tests/unit/src/cli/upgrade.test.ts tests/unit/src/viewer/index.browser.test.ts tests/unit/vscode/src/webview/features/preview/panel/panel-screen.browser.test.ts tests/unit/vscode/src/webview/main.browser.test.ts 
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/fix-table-pinned-columns-overflow
+
+
+ Test Files  6 passed (6)
+      Tests  62 passed (62)
+   Start at  02:50:44
+   Duration  21.46s (tests 92%, import 4%, transform 2%, worker 1%)
+
+exit=0

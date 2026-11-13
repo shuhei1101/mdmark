@@ -462,6 +462,95 @@ test("test_pinned_each", async () => {
   await expect(pinnedColumns(page)).resolves.toEqual([0, 2]);
 });
 
+/** ピン止めのボタンごとの、押した状態・留まっていない状態・名前 */
+function pinStates(page: Page): Promise<
+  Array<{
+    pressed: string | null;
+    unpinned: boolean;
+    label: string | null;
+    title: string | null;
+  }>
+> {
+  return page
+    .locator("#storybook-root thead button.mdmark-pin")
+    .evaluateAll((buttons) =>
+      buttons.map((button) => ({
+        pressed: button.getAttribute("aria-pressed"),
+        unpinned: button.classList.contains("is-unpinned"),
+        label: button.getAttribute("aria-label"),
+        title: button.getAttribute("title"),
+      })),
+    );
+}
+
+// pinMode: each で 1・3・9 列目を選び、unpinned の 9 列目を留めず、ボタンを押したまま破線のピンにする（PinnedOverflowEach）
+test("test_pinned_overflow_each", async () => {
+  // 準備・実行
+  const page = await open("pinned-overflow-each");
+  // 検証
+  await expect(pinnedColumns(page)).resolves.toEqual([0, 2]);
+  const states = await pinStates(page);
+  expect(states.map((state) => state.pressed)).toEqual([
+    "true",
+    "false",
+    "true",
+    "false",
+    "false",
+    "false",
+    "false",
+    "false",
+    "true",
+    "false",
+  ]);
+  expect(states.map((state) => state.unpinned)).toEqual([
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    true,
+    false,
+  ]);
+  const label =
+    "「iOS Safari」の列をピン止め（表の幅に収まらないため留まっていません）";
+  expect(states[8]?.label).toBe(label);
+  expect(states[8]?.title).toBe(label);
+  expect(states[0]?.title).toBeNull();
+  // 検証: 破線の枠線
+  await expect(
+    page
+      .locator("#storybook-root thead button.mdmark-pin.is-unpinned")
+      .evaluate((button) => getComputedStyle(button).borderTopStyle),
+  ).resolves.toBe("dashed");
+});
+
+// pinMode: through で 3 列目までを押し、unpinned の 3 列目を留めず、押した 3 列目のボタンだけを破線のピンにする（PinnedOverflowThrough）
+test("test_pinned_overflow_through", async () => {
+  // 準備・実行
+  const page = await open("pinned-overflow-through");
+  // 検証
+  await expect(pinnedColumns(page)).resolves.toEqual([0, 1]);
+  const states = await pinStates(page);
+  expect(states.map((state) => state.pressed)).toEqual([
+    "false",
+    "false",
+    "true",
+    ...Array.from({ length: 7 }, () => "false"),
+  ]);
+  expect(states.map((state) => state.unpinned)).toEqual([
+    false,
+    false,
+    true,
+    ...Array.from({ length: 7 }, () => false),
+  ]);
+  expect(states[2]?.label).toBe(
+    "「表」の列までピン止め（表の幅に収まらないため留まっていません）",
+  );
+});
+
 // pinMode: each で結合した見出しの下の既定だけを名前と一緒に留め、結合した設定のセルは留めない（PinnedUnderMergedHeader）
 test("test_pinned_under_merged_header", async () => {
   // 準備・実行

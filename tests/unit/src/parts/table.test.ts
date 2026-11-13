@@ -442,6 +442,34 @@ test("test_render_table_tools_when_pin_mode", async () => {
   expect(throughPin).toContain('aria-pressed="true"');
 });
 
+// 見えている幅に収まらず留まっていない列のボタンに、留まっていないことを付ける（正常系）
+test("test_render_table_tools_when_unpinned", async () => {
+  // 準備
+  const { renderTableTools } = await loadTable();
+  const options = {
+    id: "t1",
+    column: 0,
+    label: "名前",
+    features: ["pin"],
+    pinVisible: true,
+    pinPressed: true,
+  };
+  // 実行
+  const unpinned = renderTableTools({ ...options, pinUnpinned: true });
+  const pinned = renderTableTools(options);
+  // 検証
+  const unpinnedPin = findTag(unpinned.header, "mdmark-pin");
+  const pinnedPin = findTag(pinned.header, "mdmark-pin");
+  const label =
+    "「名前」の列をピン止め（表の幅に収まらないため留まっていません）";
+  expect(unpinnedPin).toMatch(/class="[^"]*\bis-unpinned\b/);
+  expect(unpinnedPin).toContain(`aria-label="${label}"`);
+  expect(unpinnedPin).toContain(`title="${label}"`);
+  expect(unpinnedPin).toContain('aria-pressed="true"');
+  expect(pinnedPin).not.toContain("is-unpinned");
+  expect(pinnedPin).toContain('aria-label="「名前」の列をピン止め"');
+});
+
 // 日付のドロワーは開始日と終了日の欄を持つ（正常系）
 test("test_render_table_tools_when_date", async () => {
   // 準備

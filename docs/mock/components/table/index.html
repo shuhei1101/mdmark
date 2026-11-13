@@ -34,6 +34,8 @@
   <link rel="stylesheet" href="../../refs/438/assets/table.css">
   <!-- 列の見出しの右端の、列の幅を変えるつまみ（#449 の追加分） -->
   <link rel="stylesheet" href="../../refs/449/assets/table.css">
+  <!-- 見える幅に収まらず留まっていない列のピン止めのボタン（#533 の追加分） -->
+  <link rel="stylesheet" href="../../refs/533/assets/table.css">
   <!-- 列ごとに中身から折り返すかと列の幅を決める規則（#505 の追加分） -->
   <link rel="stylesheet" href="../../refs/505/assets/table-width.css">
   <!-- 多段の見出し・行見出し・セルの結合の規則（#275 の追加分） -->
@@ -67,6 +69,9 @@
   <!-- 列の見出しの右端のつまみで列の幅を変える見本の定義と操作（#449） -->
   <script src="../../refs/449/assets/table-samples.js" defer></script>
   <script src="../../refs/449/assets/table-resize.js" defer></script>
+  <!-- 留めた列の幅の合計が見える幅を超えるときに、収まる列だけを留める見本の定義と操作（#533） -->
+  <script src="../../refs/533/assets/table-samples.js" defer></script>
+  <script src="../../refs/533/assets/table-pin-fit.js" defer></script>
   <script src="../../refs/505/assets/table-width.js" defer></script>
   <!-- 多段の見出し・セルの結合と再結合・行見出しの列までのピン止めの見本の定義と操作（#275。syntax.js の後に読み込む） -->
   <script src="../../refs/275/assets/table-samples.js" defer></script>
@@ -1378,6 +1383,60 @@
         <article class="mdmark">
           <!-- [data-mock-table449]: table-resize.js が table-samples.js の同じ名前の定義から表を描く -->
           <div data-mock-table449="off"></div>
+        </article>
+      </section>
+
+      <!-- #533 選んだ列が見える幅に収まらない（table.pin: each。案 A: 留まっていない 9 列目のボタンのピンを破線にする。9 列目が見えるまでスクロールした） -->
+      <section aria-labelledby="state-533-each-a">
+        <h2 class="catalog-label" id="state-533-each-a">選んだ列が見える幅に収まらない（table.pin: each。案 A: 留まっていない 9 列目のボタンのピンを破線にする。9 列目が見えるまでスクロールした）</h2>
+        <article class="mdmark">
+          <!-- [data-mock-table533]: table-pin-fit.js が table-samples.js の同じ名前の定義から表を描く。is-mock-narrow で表の幅を 320px にする -->
+          <div class="is-mock-narrow" data-mock-table533="each-a"></div>
+        </article>
+      </section>
+
+      <!-- #533 同じ表を右端までスクロールした（案 A。9 列目は留まらず、ほかの列と同じく留めた列の下へ流れる） -->
+      <section aria-labelledby="state-533-each-a-end">
+        <h2 class="catalog-label" id="state-533-each-a-end">同じ表を右端までスクロールした（案 A。9 列目は留まらず、ほかの列と同じく留めた列の下へ流れる）</h2>
+        <article class="mdmark">
+          <!-- [data-mock-table533]: table-pin-fit.js が table-samples.js の同じ名前の定義から表を描く。is-mock-narrow で表の幅を 320px にする -->
+          <div class="is-mock-narrow" data-mock-table533="each-a-end"></div>
+        </article>
+      </section>
+
+      <!-- #533 選んだ列が見える幅に収まらない（table.pin: each。案 B: 留まっていない 9 列目のボタンの右上に注意の色の丸を重ねる） -->
+      <section aria-labelledby="state-533-each-b">
+        <h2 class="catalog-label" id="state-533-each-b">選んだ列が見える幅に収まらない（table.pin: each。案 B: 留まっていない 9 列目のボタンの右上に注意の色の丸を重ねる）</h2>
+        <article class="mdmark">
+          <!-- [data-mock-table533]: table-pin-fit.js が table-samples.js の同じ名前の定義から表を描く。is-mock-narrow で表の幅を 320px にする -->
+          <div class="is-mock-narrow" data-mock-table533="each-b"></div>
+        </article>
+      </section>
+
+      <!-- #533 押した列までが見える幅に収まらない（table.pin: through。案 A: 3 列目までを押し、留まらない 3 列目のボタンのピンを破線にする） -->
+      <section aria-labelledby="state-533-through-a">
+        <h2 class="catalog-label" id="state-533-through-a">押した列までが見える幅に収まらない（table.pin: through。案 A: 3 列目までを押し、留まらない 3 列目のボタンのピンを破線にする）</h2>
+        <article class="mdmark">
+          <!-- [data-mock-table533]: table-pin-fit.js が table-samples.js の同じ名前の定義から表を描く。is-mock-narrow で表の幅を 320px にする -->
+          <div class="is-mock-narrow" data-mock-table533="through-a"></div>
+        </article>
+      </section>
+
+      <!-- #533 押した列までが見える幅に収まらない（table.pin: through。案 B: 押した 3 列目のボタンの右上に注意の色の丸を重ねる） -->
+      <section aria-labelledby="state-533-through-b">
+        <h2 class="catalog-label" id="state-533-through-b">押した列までが見える幅に収まらない（table.pin: through。案 B: 押した 3 列目のボタンの右上に注意の色の丸を重ねる）</h2>
+        <article class="mdmark">
+          <!-- [data-mock-table533]: table-pin-fit.js が table-samples.js の同じ名前の定義から表を描く。is-mock-narrow で表の幅を 320px にする -->
+          <div class="is-mock-narrow" data-mock-table533="through-b"></div>
+        </article>
+      </section>
+
+      <!-- #533 比べる見本: 選んだ 2 列が、スマホ幅を含むどの画面幅でも見える幅に収まる -->
+      <section aria-labelledby="state-533-each-fit">
+        <h2 class="catalog-label" id="state-533-each-fit">選んだ列が全て見える幅に収まる（1・9 列目を選び、どの画面幅でも 2 列とも留まり、どのボタンも留まっている状態）</h2>
+        <article class="mdmark">
+          <!-- [data-mock-table533]: table-pin-fit.js が table-samples.js の同じ名前の定義から表を描く -->
+          <div data-mock-table533="each-fit"></div>
         </article>
       </section>
 
