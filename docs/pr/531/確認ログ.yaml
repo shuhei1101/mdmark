@@ -1,0 +1,19 @@
+confirmations:
+  - topic: map の ER 図・状態遷移図のモック（map-er-state）の描き方と操作への合意
+    decision: モックの描き方で進める（推奨案 A）
+    decided_by: thumbs_up
+    approver: shuhei1101
+    commit:
+    thread: https://github.com/shuhei1101/mdmark/pull/531#discussion_r4565652080
+  - topic: 入れ子の状態への遷移のつなぎ先
+    decision: 中の開始・終了へつなぎ、中に [*] が無ければ補う（推奨案 A）
+    decided_by: thumbs_up
+    approver: shuhei1101
+    commit:
+    thread: https://github.com/shuhei1101/mdmark/pull/531#discussion_r4565653845
+  - topic: ER 図で行が増える関連の示し方
+    decision: 線の横の ×n のボタンとツールチップ（推奨案 A）
+    decided_by: thumbs_up
+    approver: shuhei1101
+    commit:
+    thread: https://github.com/shuhei1101/mdmark/pull/531#discussion_r4565655449
