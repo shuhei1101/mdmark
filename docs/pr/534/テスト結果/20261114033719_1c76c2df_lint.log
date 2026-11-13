@@ -1,0 +1,64 @@
+$ (rc=0; npm run lint || rc=1; npm run lint:eslint || rc=1; npm run typecheck || rc=1; npm --prefix vscode run typecheck || rc=1; exit $rc)
+
+> lint
+> biome check .
+
+plugin/bin/setup.js check ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  ! The size of the file is 1.5 MiB, which exceeds the configured maximum of 1.0 MiB for this project.
+    Use the `files.maxSize` configuration to change the maximum size of files processed, or `files.includes` to ignore the file.
+  
+
+Checked 867 files in 5s. No fixes applied.
+Found 1 warning.
+
+> lint:eslint
+> node scripts/eslint.ts
+
+
+> typecheck
+> tsc --noEmit
+
+tests/unit/migrations/retired-diagrams.test.ts(6,45): error TS2307: Cannot find module '../../../src/map/convert.ts' or its corresponding type declarations.
+tests/unit/migrations/retired-diagrams.test.ts(48,17): error TS2307: Cannot find module '../../../src/map/convert.ts' or its corresponding type declarations.
+tests/unit/scripts/build.test.ts(561,11): error TS2339: Property 'buildRetiredDiagrams' does not exist on type 'typeof import("/mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-diagram-retire-flow-sequence/scripts/build")'.
+tests/unit/src/cli/check.test.ts(686,62): error TS2554: Expected 1 arguments, but got 2.
+tests/unit/src/cli/check.test.ts(707,5): error TS2554: Expected 1 arguments, but got 2.
+tests/unit/src/cli/check.test.ts(728,43): error TS2554: Expected 1 arguments, but got 2.
+tests/unit/src/diagram/geometry.test.ts(9,3): error TS2741: Property 'line' is missing in type '{ id: string; from: string; to: string; points: [number, number][]; style: {}; }' but required in type 'MdmarkDiagramWire'.
+tests/unit/src/interact/diagram-tips.browser.test.ts(63,5): error TS2741: Property 'kind' is missing in type '{ id: string; name: string; hint: string; x: number; y: number; w: number; h: number; style: { label: string; icon: string; }; }' but required in type 'MdmarkDiagramNode'.
+tests/unit/src/interact/diagram-tips.browser.test.ts(73,5): error TS2741: Property 'kind' is missing in type '{ id: string; name: string; x: number; y: number; w: number; h: number; style: { label: string; icon: string; }; }' but required in type 'MdmarkDiagramNode'.
+tests/unit/src/interact/diagram-tips.browser.test.ts(84,5): error TS2741: Property 'line' is missing in type '{ id: string; from: string; to: string; points: [[number, number], [number, number]]; label: string; labelAt: [number, number]; tip: string; style: {}; }' but required in type 'MdmarkDiagramWire'.
+tests/unit/src/knowledge/matches.test.ts(617,11): error TS2339: Property 'mapTermMatches' does not exist on type 'typeof import("/mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-diagram-retire-flow-sequence/src/knowledge/matches")'.
+tests/unit/src/knowledge/matches.test.ts(638,23): error TS7006: Parameter 'match' implicitly has an 'any' type.
+tests/unit/src/knowledge/matches.test.ts(647,11): error TS2339: Property 'mapTermMatches' does not exist on type 'typeof import("/mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-diagram-retire-flow-sequence/src/knowledge/matches")'.
+tests/unit/src/map/convert.test.ts(18,34): error TS2307: Cannot find module '../../../../src/map/convert.ts' or its corresponding type declarations.
+tests/unit/src/map/convert.test.ts(59,24): error TS7006: Parameter 'line' implicitly has an 'any' type.
+tests/unit/src/map/convert.test.ts(96,44): error TS7006: Parameter 'line' implicitly has an 'any' type.
+tests/unit/src/map/convert.test.ts(228,16): error TS2339: Property 'links' does not exist on type 'Flowchart'.
+tests/unit/src/map/convert.test.ts(291,16): error TS2339: Property 'links' does not exist on type 'Flowchart'.
+tests/unit/src/map/convert.test.ts(375,33): error TS7006: Parameter 'item' implicitly has an 'any' type.
+tests/unit/src/map/flowchart.test.ts(127,16): error TS2339: Property 'links' does not exist on type 'Flowchart'.
+tests/unit/src/map/flowchart.test.ts(160,11): error TS2339: Property 'decodeEntities' does not exist on type 'typeof import("/mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-diagram-retire-flow-sequence/src/map/flowchart")'.
+tests/unit/src/map/flowchart.test.ts(170,11): error TS2339: Property 'mapLinkProblems' does not exist on type 'typeof import("/mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-diagram-retire-flow-sequence/src/map/flowchart")'.
+tests/unit/src/map/flowchart.test.ts(186,31): error TS7006: Parameter 'problem' implicitly has an 'any' type.
+tests/unit/src/parts/diagram.test.ts(31,5): error TS2322: Type '{ id: string; x: number; y: number; w: number; h: number; name: string; style: { label: string | undefined; icon: string | undefined; }; hint?: string | undefined; }[]' is not assignable to type 'MdmarkDiagramNode[]'.
+  Property 'kind' is missing in type '{ id: string; x: number; y: number; w: number; h: number; name: string; style: { label: string | undefined; icon: string | undefined; }; hint?: string | undefined; }' but required in type 'MdmarkDiagramNode'.
+tests/unit/src/parts/diagram.test.ts(47,5): error TS2322: Type '{ id: string; from: string; to: string; points: [number, number][]; label?: string | undefined; style: {}; }[]' is not assignable to type 'MdmarkDiagramWire[]'.
+  Property 'line' is missing in type '{ id: string; from: string; to: string; points: [number, number][]; label?: string | undefined; style: {}; }' but required in type 'MdmarkDiagramWire'.
+tests/unit/src/parts/diagram.test.ts(64,3): error TS2322: Type '{ id: string; name: string; hint?: string | undefined; href?: string | undefined; x: number; y: number; w: number; h: number; style: { label: string; icon: string; }; }[]' is not assignable to type 'MdmarkDiagramNode[]'.
+  Property 'kind' is missing in type '{ id: string; name: string; hint?: string; href?: string; x: number; y: number; w: number; h: number; style: { label: string; icon: string; }; }' but required in type 'MdmarkDiagramNode'.
+tests/unit/src/parts/diagram.test.ts(72,3): error TS2322: Type '{ id: string; from: string; to: string; points: [number, number][]; label: string; style: {}; }[]' is not assignable to type 'MdmarkDiagramWire[]'.
+  Property 'line' is missing in type '{ id: string; from: string; to: string; points: Array<[number, number]>; label: string; style: {}; }' but required in type 'MdmarkDiagramWire'.
+tests/unit/src/parts/diagram.test.ts(172,5): error TS2322: Type '{ id: string; name: string; x: number; y: number; w: number; h: number; style: {}; }[]' is not assignable to type 'MdmarkDiagramNode[]'.
+  Property 'kind' is missing in type '{ id: string; name: string; x: number; y: number; w: number; h: number; style: {}; }' but required in type 'MdmarkDiagramNode'.
+tests/unit/src/parts/diagram.test.ts(182,7): error TS2741: Property 'line' is missing in type '{ id: string; from: string; to: string; points: [[number, number], [number, number]]; style: {}; }' but required in type 'MdmarkDiagramWire'.
+tests/unit/src/parts/diagram.test.ts(192,7): error TS2741: Property 'line' is missing in type '{ id: string; from: string; to: string; points: [[number, number], [number, number]]; style: {}; }' but required in type 'MdmarkDiagramWire'.
+tests/unit/src/parts/map.test.ts(445,5): error TS2561: Object literal may only specify known properties, but 'links' does not exist in type 'MapFlowArgs'. Did you mean to write 'lines'?
+
+> mdmark-vscode@0.1.0 typecheck
+> tsc --noEmit
+
+exit 1
+
+# 残る違反は、単体テストが呼ぶ実装（src/map/convert.ts・mapTermMatches・decodeEntities・mapLinkProblems・buildRetiredDiagrams・checkDiagrams の引数・map の構成図のノードと線の型）が無いことによる型検査の違反
