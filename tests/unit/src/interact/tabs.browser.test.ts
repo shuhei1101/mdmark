@@ -427,6 +427,14 @@ function heightTabsHtml(group?: string): string {
 /** 高さ 1200px の空の要素の HTML */
 const SPACER_HTML = '<div style="height: 1200px"></div>';
 
+/** スクロールのアンカリングを持たないブラウザ（Safari）と同じく、画面全体のアンカリングを止め、戻す関数を返却する */
+function disableScrollAnchoring(): () => void {
+  document.documentElement.style.overflowAnchor = "none";
+  return () => {
+    document.documentElement.style.removeProperty("overflow-anchor");
+  };
+}
+
 /** 要素の画面の上端からの位置 */
 function topOf(element: Element): number {
   return element.getBoundingClientRect().top;
@@ -437,7 +445,7 @@ test("test_attach_tabs_when_position_kept", async () => {
   // 準備
   const { attachTabs } = await loadTabs();
   const root = createRootFromHtml(
-    `<div class="scroller" style="height: 600px; overflow-y: auto">${SPACER_HTML}${heightTabsHtml()}${SPACER_HTML}</div>`,
+    `<div class="scroller" style="height: 600px; overflow-y: auto; overflow-anchor: none">${SPACER_HTML}${heightTabsHtml()}${SPACER_HTML}</div>`,
   );
   detachers.push(attachTabs(root));
   const scroller = root.querySelector<HTMLElement>(".scroller");
@@ -462,6 +470,7 @@ test("test_attach_tabs_when_position_kept", async () => {
 // 上にある同じ組のタブの高さが変わっても、押したタブのボタンの位置を保つ（正常系）
 test("test_attach_tabs_when_group_above_shrinks", async () => {
   // 準備
+  detachers.push(disableScrollAnchoring());
   const { attachTabs } = await loadTabs();
   const root = createRootFromHtml(
     `${heightTabsHtml("len")}${SPACER_HTML}${heightTabsHtml("len")}${SPACER_HTML}`,
@@ -482,6 +491,7 @@ test("test_attach_tabs_when_group_above_shrinks", async () => {
 // 文書が縮んで戻しきれないときはスクロール位置の上限で止まる（正常系）
 test("test_attach_tabs_when_cannot_restore", async () => {
   // 準備
+  detachers.push(disableScrollAnchoring());
   const { attachTabs } = await loadTabs();
   const root = createRootFromHtml(`${SPACER_HTML}${heightTabsHtml()}`);
   detachers.push(attachTabs(root));
