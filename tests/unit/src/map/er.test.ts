@@ -121,7 +121,7 @@ test("test_er_to_flowchart", async () => {
   const chart = erToFlowchart(er, data.groups);
   // 検証
   expect(chart.nodes).toHaveLength(5);
-  expect(chart.boxes.map((box) => box.id)).toEqual(["記録"]);
+  expect(chart.groups.map((group) => group.id)).toEqual(["記録"]);
   expect(
     chart.nodes
       .filter((node) => node.parent === "記録")
