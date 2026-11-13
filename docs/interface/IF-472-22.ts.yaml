@@ -30,7 +30,7 @@ flows:
         PV->>EX: rendered
     expected:
       - パネルが `ViewColumn.Beside` に開き、タイトルが `プレビュー guide.md`
-      - 配布物の要求が `@v0.10.0/dist/index.js` と `@v0.10.0/dist/index.css` だけで、`vscode-v0.11.0` を選んでいない（文字の並びでなく数で比べている）
+      - 配布物の要求が `@v0.10.0/dist/index.js`・`@v0.10.0/dist/index.css` と、map の構成図を描く `@v0.10.0/dist/map.js` だけで、`vscode-v0.11.0` を選んでいない（文字の並びでなく数で比べている）
       - '`mdmark.lastVersion` が `v0.10.0`'
       - '`rendered` を受けた後、Webview の本文に見出し・表・注意書き・map の構成図の要素がある'
       - Webview の HTML の CSP が制約「CSP」のとおりで、`script` 要素が全て nonce を持つ
@@ -87,10 +87,10 @@ flows:
         participant CDN as jsDelivr
         U->>EX: mdmark.openPreviewToSide
         EX->>PV: v0.6.0 で HTML を入れる
-        PV-->>CDN: v0.6.0 の index.js・index.css
+        PV-->>CDN: v0.6.0 の index.js・index.css・map.js
         PV->>EX: rendered
     expected:
-      - 配布物の要求が `@v0.6.0/dist/` の 2 つ
+      - 配布物の要求が `@v0.6.0/dist/` の `index.js`・`index.css`・`map.js` の 3 つ
       - タグ一覧の代役が 1 回も呼ばれない
       - '`mdmark.lastVersion` が `v0.7.0` のまま'
     test: test_normal_when_version_pinned
