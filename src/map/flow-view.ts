@@ -549,10 +549,18 @@ export const attachMapFlow = (
   };
   /** キーで操作する要素（ノード・グループのタイトルの行の帯・線） */
   const keyTargetOf = (element: Element | undefined) => {
-    const node = element
-      ?.closest(".mdmark-diagram-node[data-node]")
-      ?.getAttribute("data-node");
-    if (node) return { node, selector: `[data-node="${CSS.escape(node)}"]` };
+    const nodeElement = element?.closest(".mdmark-diagram-node[data-node]");
+    const node = nodeElement?.getAttribute("data-node");
+    // リンク先を持つノードは、ノードの代わりにリンクがフォーカスを受ける
+    if (node) {
+      const linked = nodeElement?.querySelector(".mdmark-diagram-node-link");
+      const selector = `[data-node="${CSS.escape(node)}"]`;
+      return {
+        node,
+        linked: linked !== null && linked !== undefined,
+        selector: linked ? `${selector} .mdmark-diagram-node-link` : selector,
+      };
+    }
     const group = element
       ?.closest(".map-group-bar")
       ?.closest("[data-group]")
@@ -599,7 +607,9 @@ export const attachMapFlow = (
     // Enter・Space でノードを、Enter で線の両端を選ぶ
     if (
       keyTarget &&
-      (event.key === "Enter" || (event.key === " " && keyTarget.node))
+      (event.key === "Enter" || (event.key === " " && keyTarget.node)) &&
+      // リンクの Enter はリンクを開く
+      !(event.key === "Enter" && keyTarget.linked)
     ) {
       if (keyTarget.node) {
         event.preventDefault();

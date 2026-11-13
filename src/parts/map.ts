@@ -162,6 +162,15 @@ const keptOf = (
   };
 };
 
+/** 描いた HTML の、`data-node="{value}"` のノードに `data-selected` を付ける（`value` は正規表現に逃がした ID） */
+const markSelected = (html: string, value: string): string =>
+  html.replace(
+    new RegExp(
+      `(<div class="[^"]*map-kinded[^"]*"[^>]*\\sdata-node="${value}")`,
+    ),
+    "$1 data-selected",
+  );
+
 /** 描いた HTML の、属性 `{name}="{id}"` を持つ要素の class に名前を足す */
 const addClass = (
   html: string,
@@ -313,6 +322,10 @@ const termMarker = (
 const MAP_NODE_KEYS =
   "Enter Space Alt+ArrowLeft Alt+ArrowUp Alt+ArrowDown Alt+ArrowRight";
 
+/** リンク先を持つノードのリンクのキー操作（Enter はリンクを開く） */
+const MAP_LINK_KEYS =
+  "Space Alt+ArrowLeft Alt+ArrowUp Alt+ArrowDown Alt+ArrowRight";
+
 /** 選べるノード・参加者のスクリーンリーダー向けの名前（選んでいれば末尾に「（選択中）」） */
 export const selectableName = (name: string, selected: boolean): string =>
   selected ? `${name}（選択中）` : name;
@@ -427,16 +440,27 @@ export const renderMapFlow = (args: MapFlowArgs): MapPart => {
       (_whole, head: string, tail: string) => `${head}${marked}${tail}`,
     );
   }
-  // ノードはフォーカスして Enter・Space で選び、Alt + 矢印キーで動かせる
+  // ノードはフォーカスして Enter・Space で選び、Alt + 矢印キーで動かせる。リンク先を持つノードは、ノードの代わりにリンクがフォーカスを受ける
   const selectedIds = new Set(args.selected);
   for (const node of layout.nodes) {
     const value = escapeHtml(node.id).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
     const selected = selectedIds.has(node.id);
+    const name = escapeHtml(selectableName(nameOf(node.id), selected));
+    if (args.links?.[node.id] !== undefined) {
+      html = html.replace(
+        new RegExp(
+          `(<div class="[^"]*map-kinded[^"]*"[^>]*\\sdata-node="${value}"[^>]*>[\\s\\S]*?<a class="mdmark-diagram-node-link" href="[^"]*") aria-label="[^"]*"`,
+        ),
+        `$1 aria-roledescription="ノード" aria-keyshortcuts="${MAP_LINK_KEYS}" aria-label="${name}"`,
+      );
+      if (selected) html = markSelected(html, value);
+      continue;
+    }
     html = html.replace(
       new RegExp(
         `(<div class="[^"]*map-kinded[^"]*"[^>]*\\sdata-node="${value}")`,
       ),
-      `$1 tabindex="0" role="button" aria-roledescription="ノード" aria-keyshortcuts="${MAP_NODE_KEYS}" aria-label="${escapeHtml(selectableName(nameOf(node.id), selected))}"${selected ? " data-selected" : ""}`,
+      `$1 tabindex="0" role="button" aria-roledescription="ノード" aria-keyshortcuts="${MAP_NODE_KEYS}" aria-label="${name}"${selected ? " data-selected" : ""}`,
     );
   }
   for (const node of layout.nodes) {
