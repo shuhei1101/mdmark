@@ -920,6 +920,18 @@ files:
   - path: refs/449/index.md
     description: '#449（表の列の幅を、見出しの右端をドラッグして変えられるようにし、ダブルクリックで元の幅に戻す）の PR のモックへのリンク集。この PR で作ったモックを探すときに参照する。'
     tags: [topic:モック]
+  - path: refs/533/assets/table-pin-fit.js
+    description: '#533 のモックが共通で読み込む素材: 表を組み、選んだ列（`through` は押した列までの列）を左から順に足して見える幅に収まる列だけを留め、選んだのに留まっていない列のボタンを押したまま留まっていない状態にする。複数のモックに有効になる外観や動きを変えるときに参照する。'
+    tags: [topic:モック, tool:javascript]
+  - path: refs/533/assets/table-samples.js
+    description: '#533 のモックが共通で読み込む素材: 選んだ列が見える幅に収まらない `each` の表・`through` の表（留まっていないことを示すボタンの案 A・案 B）と、全て収まる表の定義の見本。複数のモックに有効になる外観や動きを変えるときに参照する。'
+    tags: [topic:モック, tool:javascript]
+  - path: refs/533/assets/table.css
+    description: '#533 のモックが共通で読み込む素材: 見える幅に収まらず留まっていない列のピン止めのボタンの規則（案 A の破線のピン・案 B の注意の色の丸）。複数のモックに有効になる外観や動きを変えるときに参照する。'
+    tags: [topic:モック, tool:css]
+  - path: refs/533/index.md
+    description: '#533（表の留めた列の幅の合計が見える幅を超えても、留めた列が重なって見えなくならないようにする）の PR のモックへのリンク集。この PR で作ったモックを探すときに参照する。'
+    tags: [topic:モック]
   - path: refs/505/assets/code-block.css
     description: '#505 のモックが共通で読み込む素材: コードブロックの帯（言語のラベル・タイトル）に続く pre の上の枠線を削除し、帯の背景を本文と同じ色にし、言語のラベルを帯の上端に付けたタブにする規則。複数のモックに有効になる外観や動きを変えるときに参照する。'
     tags: [topic:モック, tool:css]

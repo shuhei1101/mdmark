@@ -26,6 +26,9 @@ styles:
       - class_name: .mdmark :is(th, td).mdmark-align-{left,center,right}
         target: 表の列の配置
         value: '`text-align: left` / `center` / `right`。`center` の見出しのセルは `.mdmark-th` も中央に配置する'
+      - class_name: .mdmark .mdmark-pin.is-unpinned
+        target: 表の見えている幅に収まらず留まっていない列のピン止めのボタン
+        value: 押した状態の地のまま、枠線を破線にし、色を `--mdmark-color-muted` にする。ピンのアイコンは塗らない破線（押していない状態のピンを `stroke-dasharray` の破線にした `mask-image`）にする。値は `docs/mock/refs/533/assets/table.css` の案 A
       - class_name: .mdmark .mdmark-table :is(th, td).mdmark-wide と .mdmark-check
         target: 広く取る列と真偽値の ✓
         value: '`mdmark-wide` は `white-space: nowrap`。`mdmark-check` は `inline-flex` で、中の `.mdmark-icon` を `1.1em` 角・塗り無し・`currentcolor` の太さ 3 の線にする。値は `docs/mock/refs/283/assets/table.css`'

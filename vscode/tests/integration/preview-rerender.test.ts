@@ -666,7 +666,10 @@ suite("プレビューを再描画する", () => {
     );
     try {
       const origin = `http://127.0.0.1:${(library.address() as AddressInfo).port}`;
-      await writeFixture("guide.md", "# 見出し\n\n<!-- my-chart: a -->\n");
+      await writeFixture(
+        "guide.md",
+        '# 見出し\n\n<!-- my-chart: {"label": "a"} -->\n',
+      );
       await writeFixture("mdmark.config.yaml", "# 設定\n");
       await openMarkdown("guide.md");
       await vscode.commands.executeCommand("mdmark.openPreviewToSide");

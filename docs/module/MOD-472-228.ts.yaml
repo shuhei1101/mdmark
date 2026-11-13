@@ -19,7 +19,9 @@ functions:
 
       行へ移る処理は、付けたときと `hashchange` で `rowIdFromHash` の ID を持つ行を探し、囲む閉じた `details` を開き（閉じたセクションは、`attachInteractions` が先に付けた `attachSections` が同じきっかけで開いている）、行が `hidden` ならその表の絞り込みを全て削除し、`scrollIntoView` してその行だけに `data-target` を付ける。行へのリンクのマーカーを押すと、移る動きはそのままにマーカーの `href` プロパティ（解決済みの絶対 URL）を `copyText` で記載し、描いたときにマーカーの横へ配置した `mdmark-row-link-notice` に `data-state` と文言（`リンクをコピーしました`・`リンクをコピーできませんでした`）を入れて 2 秒後に空に戻す。
 
-      列の幅は、`attachColumnResize` に、列の幅の上限を返す関数（`columnWidthLimit` に、表を包む要素の `clientWidth`・はみ出しているか・列ごとの幅・留めている列を渡す）と、幅を変えた後の処理と、幅を入れた後・測る前に `attachAutoColumnWidths` の `refresh` を呼ぶ関数を渡す。幅を変えた後と戻した後は、`refresh` で表の幅を列の幅の合計にし、留める列があれば `pinColumns` で留める位置と境の線をもう一度決める。
+      ピン止めは、`pinColumns` が選んだ列（`through` は押した列までの列）を今の列の並びで `fitPinnedColumns` に渡し、表を包む要素の `clientWidth` に収まる列だけを `pinOffsets` で留め、収まらない列のセルは `left`・`right` と `is-pinned-col` を外す。押した列のボタン（`each` はその列、`through` は最も右の列）が収まらない列なら、`aria-pressed` を `true` のまま `is-unpinned` を付け、`aria-label` と `title` に `（表の幅に収まらないため留まっていません）` を付ける（収まれば外す）。`pinColumns` は、ピン止めのボタン・描く先の要素の幅の変化・列の幅の変更・列の表示の切り替え・列の並べ替えのたびに呼ぶ。
+
+      列の幅は、`attachColumnResize` に、列の幅の上限を返す関数（`columnWidthLimit` に、表を包む要素の `clientWidth`・はみ出しているか・列ごとの幅・`fitPinnedColumns` の `fitted`（実際に留まっている列）を渡す）と、幅を変えた後の処理と、幅を入れた後・測る前に `attachAutoColumnWidths` の `refresh` を呼ぶ関数を渡す。幅を変えた後と戻した後は、`refresh` で表の幅を列の幅の合計にし、留める列があれば `pinColumns` で留める位置と境の線をもう一度決める。
 
       列の幅を自動で決める処理は、囲みごとに `attachAutoColumnWidths` に、囲み・表を包む要素・最下段の見出しのセル・`longColumnMin` と、幅を入れた後に留める列があれば `pinColumns` を呼ぶ関数を渡して付ける。列の表示を切り替えた後は、戻り値の `columnsChanged` を呼ぶ。ピン止めのボタンを出すかのはみ出しは、幅を入れた後に測る。
     args:
@@ -48,6 +50,7 @@ functions:
       - MOD-472-347#functions[attachAutoColumnWidths]
       - 'MOD-472-218#functions[bottomHeadCells]'
       - 'MOD-472-218#functions[mergeSpans]'
+      - 'MOD-472-218#functions[fitPinnedColumns]'
       - 'MOD-472-226#functions[attachColumnResize]'
       - 'MOD-472-218#functions[columnWidthLimit]'
     unit_tests:
@@ -72,7 +75,7 @@ functions:
       - name: test_attach_tables_when_pinned
         case: 正常
         summary: はみ出す表だけピン止めのボタンを出して先頭の列を既定で留め、押した列だけを留める
-        condition: 幅 320px の要素に 10 列の表と 2 列の表、3 列目のピン止めを押し、もう一度押す
+        condition: 幅 800px の要素（留める 1・3 列目が見えている範囲に収まる）に 10 列の表と 2 列の表、3 列目のピン止めを押し、もう一度押す
         mock: なし
         expected: 10 列の表だけボタンが `hidden` を持たない。付けた直後は 10 列の表の 1 列目のセルだけが `sticky` で 1 列目のボタンが `aria-pressed="true"`、2 列の表はどのセルも `sticky` でない。押した後は 1・3 列目のセルが `sticky` で 2 列目は `sticky` でなく、3 列目のセルの `left` が 1 列目のセルの `offsetWidth`、もう一度押した後は 1 列目のセルだけが `sticky`
       - name: test_attach_tables_when_pin_specified
@@ -174,7 +177,7 @@ functions:
       - name: test_attach_tables_when_row_header_pinned
         case: 正常
         summary: 行見出しを持つはみ出す表を、描いた直後に行見出しの全ての列を留める
-        condition: 幅 320px の要素に、`header.columns` が 2 の 10 列 5 行の表
+        condition: 幅 800px の要素（行見出しの 2 列が見えている範囲に収まる）に、`header.columns` が 2 の 10 列 5 行の表
         mock: なし
         expected: 1・2 列目のピン止めのボタンが `aria-pressed="true"`、1・2 列目のセルの `position` が `sticky`、3 列目は `sticky` でない
       - name: test_attach_tables_when_tree_copied
@@ -216,13 +219,31 @@ functions:
       - name: test_attach_tables_when_pinned_through
         case: 正常
         summary: '`pinMode: through` の表は押した列までを左端に留め、押した列のボタンだけを押した状態にする'
-        condition: '幅 320px の要素に 10 列の表を `pinMode: "through"` で付け、3 列目のピン止めを押し、もう一度押す'
+        condition: '幅 800px の要素（1〜3 列目の幅の合計が見えている範囲に収まる）に 10 列の表を `pinMode: "through"` で付け、3 列目のピン止めを押し、もう一度押す'
         mock: なし
         expected: 押した後は 1〜3 列目のセルが `sticky` で `right` が空、3 列目のボタンだけが `aria-pressed="true"`、ボタンの `aria-label` が `「{列名}」の列までピン止め`。もう一度押した後はどのセルも `sticky` でない
+      - name: test_attach_tables_when_pinned_exceed_visible_width
+        case: 正常
+        summary: 見えている幅に収まらない選んだ列は留めず、ボタンを留まっていない状態にし、幅が広がれば再び留める
+        condition: 幅 390px の要素（留める列が 2 列までしか収まらない）に、どの列も同じ長さの値の 10 列の表を付け、3 列目と 9 列目のピン止めを押し、要素の幅を 800px にし、390px に戻す
+        mock: なし
+        expected: '押した後、1・3 列目のセルが `sticky` で、9 列目のセルは `sticky` でなく `left`・`right` が空、9 列目のボタンが `aria-pressed="true"`・`is-unpinned` で `aria-label` と `title` が `「{列名}」の列をピン止め（表の幅に収まらないため留まっていません）`。800px にした後、9 列目のセルが `sticky` でボタンが `is-unpinned` を持たない。390px に戻した後、9 列目が再び `sticky` でなくボタンが `is-unpinned` を持つ'
+      - name: test_attach_tables_when_pinned_through_exceed_visible_width
+        case: 正常
+        summary: '`through` の表は、押した列までのうち収まる列だけを留め、押した列のボタンを留まっていない状態にする'
+        condition: '幅 390px の要素に同じ 10 列の表を `pinMode: "through"` で付け、3 列目のピン止めを押す'
+        mock: なし
+        expected: 1・2 列目のセルが `sticky` で、3 列目のセルは `sticky` でない。3 列目のボタンだけが `aria-pressed="true"`・`is-unpinned` で、`aria-label` が `「{列名}」の列までピン止め（表の幅に収まらないため留まっていません）`
+      - name: test_attach_tables_when_resized_with_unpinned
+        case: 正常
+        summary: 留まっていない列があるとき、列の幅の上限は実際に留まっている列だけを引き、列を狭めて収まれば再び留める
+        condition: '幅 390px の要素に `data-features="pin resize"` の 10 列の表を付ける。1・9 列目は 2 文字の値で列の最小幅（6em）になり、3 列目は `mdmark-wide` で折り返さない 30 文字の値を持つ（1・3・9 列目の幅の合計が見えている幅を超え、3 列目を最小幅にすると収まる）。3 列目と 9 列目のピン止めを押し、3 列目のつまみにフォーカスして、← キーを `aria-valuenow` が `aria-valuemin` になるまで押す'
+        mock: なし
+        expected: ← キーの前、1・3・9 列目の `th` の `offsetWidth` の合計が表を包む要素の `clientWidth` より大きく、9 列目のボタンが `is-unpinned` を持ち、3 列目のつまみの `aria-valuemax` が `clientWidth` から 1 列目の `th` の `offsetWidth` を引いた値（9 列目の幅は引かない。切り捨て）。最小幅まで狭めた後、1・3・9 列目の `th` の `offsetWidth` の合計が `clientWidth` 以下で、9 列目のセルが `sticky` でボタンが `is-unpinned` を持たない
       - name: test_attach_tables_when_pinned_under_merged_header
         case: 正常
         summary: 結合した見出しの下の 1 列だけを留めると、結合したセルは留めない
-        condition: 幅 320px の要素に、1 行目が `名前`・`設定`（3 列）・`備考`、2 行目が `名前`・`型`・`既定`・`必須`・`備考` の表を付け、`既定` のピン止めを押す
+        condition: 幅 1000px の要素（留める `名前`・`既定` が見えている範囲に収まる）に、1 行目が `名前`・`設定`（3 列）・`備考`、2 行目が `名前`・`型`・`既定`・`必須`・`備考` の表を付け、`既定` のピン止めを押す
         mock: なし
         expected: '`既定` の 2 行目の `th` と本文の `td` が `sticky` で `left` が `名前` のセルの `offsetWidth`、1 行目の `設定` の `th` は `sticky` でない'
       - name: test_attach_tables_when_column_resized

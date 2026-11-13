@@ -1061,6 +1061,40 @@ states:
         value: '[0,2]'
       - name: pinMode
         value: each
+  - name: PinnedOverflowEach
+    description: '`pinMode: each` で 1・3・9 列目を選び、`unpinned` で 9 列目を留まっていない状態にした表。1・3 列目が留まり、9 列目はボタンを押したまま留まらず、ボタンが破線のピンになる'
+    args:
+      - name: features
+        value: '["pin"]'
+      - name: columns
+        value: '["文書","行数","表","図","Chrome","Edge","Firefox","Safari","iOS Safari","Android Chrome"]'
+      - name: rows
+        value: '[["導入の手順","128","8","0","18","17","23","16","15","16"]]'
+      - name: overflow
+        value: 'true'
+      - name: pinned
+        value: '[0,2,8]'
+      - name: unpinned
+        value: '[8]'
+      - name: pinMode
+        value: each
+  - name: PinnedOverflowThrough
+    description: '`pinMode: through` で 3 列目までを留め、`unpinned` で 3 列目を留まっていない状態にした表。1・2 列目が留まり、押した 3 列目のボタンが破線のピンになる'
+    args:
+      - name: features
+        value: '["pin"]'
+      - name: columns
+        value: '["文書","行数","表","図","Chrome","Edge","Firefox","Safari","iOS Safari","Android Chrome"]'
+      - name: rows
+        value: '[["導入の手順","128","8","0","18","17","23","16","15","16"]]'
+      - name: overflow
+        value: 'true'
+      - name: pinned
+        value: '[0,1,2]'
+      - name: unpinned
+        value: '[2]'
+      - name: pinMode
+        value: through
   - name: Resizable
     description: '`resize` の表。最下段の各列の見出しのセルの右端に、列の幅を変えるつまみ（`role="separator"`）がある。つまみの線は、ポインターを乗せたとき・フォーカスしたとき・ドラッグ中に出し、ポインターが粗い画面では常に薄く出す'
     args:
@@ -1163,6 +1197,12 @@ args:
     default: '`[]`'
     enabled_when: '`overflow` が `true` のとき'
     description: 留める列の位置（小さい順。空は留めない）。`pinMode` が `each` なら列ごとに、その列より左で留めた列の幅の合計を `left`、右で留めた列の幅の合計を `right` に入れて留め、`through` なら先頭から最も右の列までを左端に留める。`rowHeader` を持つ表で省いたときは行見出しの全ての列。`mount` は描いた直後に `data-pin` の列（無ければ行見出しの列、行見出しも無ければ先頭の列。`through` はその最も右の列まで）にする
+  - name: unpinned
+    type: 整数の配列
+    required: false
+    default: '`[]`'
+    enabled_when: '`overflow` が `true` のとき'
+    description: '`pinned` のうち、左から順に幅を足して表の見えている幅を超え、留めない列の位置。その列は `left`・`right` を入れずにスクロールに任せる。押した列（`each` はその列、`through` は最も右の列）のボタンは `aria-pressed` を `true` のまま `is-unpinned` を付けて、ピンを塗らない破線・枠線を破線・アイコンの色を薄くし、名前と `title` に `（表の幅に収まらないため留まっていません）` を付ける。`mount` が表の幅・列の幅・ピン止め・列の表示と並びが変わるたびに入れ直す'
   - name: headRows
     type: 配列
     required: false
@@ -1398,7 +1438,7 @@ events:
   - name: ピン止めする
     when: 列のピン止めのボタンを押す
     value: ボタンの `aria-pressed`
-    description: '`mount` が、`pinMode` が `each` なら押した列だけを留め（もう一度押すとその列だけを解除する）、`through` なら押した列までを左端に留める（もう一度押すと解除する）'
+    description: '`mount` が、`pinMode` が `each` なら押した列だけを留め（もう一度押すとその列だけを解除する）、`through` なら押した列までを左端に留める（もう一度押すと解除する）。表の見えている幅に収まらない列は留めず、`unpinned` に入れる'
   - name: 絞り込む
     when: 絞り込みのボタンでドロワーを開き、値を選ぶか入れる。「絞り込みを解除」で戻す
     value: ボタンの `aria-expanded` と、ドロワーの入力欄の値
@@ -1493,7 +1533,7 @@ accessibility:
   - 並べ替えのボタンは列名をスクリーンリーダー向けの名前にし、並べた列の `th` は `aria-sort` で向きを示す
   - 絞り込みのボタンは `「{列名}」で絞り込む` をスクリーンリーダー向けの名前に持ち、`aria-expanded`・`aria-controls` でドロワーの開閉を示す。絞り込み中は地・線・塗ったアイコンで示し、色だけに頼らない
   - ドロワーは開いたら最初の入力欄へフォーカスを移し、Esc で閉じてボタンへフォーカスを戻す
-  - ピン止めのボタンは、`pinMode` が `each` なら `「{列名}」の列をピン止め`、`through` なら `「{列名}」の列までピン止め` をスクリーンリーダー向けの名前に持ち、`aria-pressed` で状態を示す（`each` は留めた列のボタン、`through` は留めた最も右の列のボタンを `true`）
+  - ピン止めのボタンは、`pinMode` が `each` なら `「{列名}」の列をピン止め`、`through` なら `「{列名}」の列までピン止め` をスクリーンリーダー向けの名前に持ち、`aria-pressed` で状態を示す（`each` は選んだ列のボタン、`through` は押した最も右の列のボタンを `true`）。表の見えている幅に収まらず留まっていない列のボタンは、名前と `title` に `（表の幅に収まらないため留まっていません）` を付け、破線のピンと枠線の形でも示し、色だけに頼らない
   - 列の幅のつまみは `role="separator"`・`aria-orientation="vertical"`・`tabindex="0"` で、`「{列名}」の列の幅` をスクリーンリーダー向けの名前に持ち、`aria-valuenow`・`aria-valuetext`（`{幅}px`）・`aria-valuemin`・`aria-valuemax` で今の幅と範囲を示す。←・→ キーで幅を変え、Enter で戻す。ポインターが粗い画面では押せる幅を 24px にする
   - 多段の見出しは、複数の列をまたぐセルを `scope="colgroup"`、1 列のセルを `scope="col"` にし、行見出しは `scope="row"` にする。結合で隠したセルも値を持ち、並べ替え・絞り込み・コピー・集計はその値で扱う
   - 真偽値の ✓ は `role="img"` と `aria-label="はい"`、空欄のセルはスクリーンリーダー向けの `いいえ` を持ち、外観の空欄とスクリーンリーダーを対応させる

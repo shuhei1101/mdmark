@@ -769,7 +769,8 @@ test("test_attach_tables_when_pinned", async () => {
       "\n",
     ),
   );
-  root.style.width = "320px";
+  // 留める 1・3 列目が見えている範囲に収まる幅
+  root.style.width = "800px";
   detachers.push(attachTables(root));
   const [wide, narrow] = [
     ...root.querySelectorAll<HTMLElement>(".mdmark-table"),
@@ -1725,7 +1726,8 @@ test("test_attach_tables_when_row_header_pinned", async () => {
       "",
     ].join("\n"),
   );
-  setRootWidth(root, 320);
+  // 行見出しの 2 列が見えている範囲に収まる幅
+  setRootWidth(root, 800);
   // 実行
   detachers.push(attachTables(root));
   // 検証: 1・2 列目のピン止めが押した状態で、行見出しの全ての列を留める
@@ -1793,7 +1795,8 @@ test("test_attach_tables_when_pinned_through", async () => {
   addStyles();
   const { attachTables } = await loadTables();
   const { root } = createRoot(wideTable(10).join("\n"));
-  setRootWidth(root, 320);
+  // 1〜3 列目の幅の合計が見えている範囲に収まる幅
+  setRootWidth(root, 800);
   detachers.push(attachTables(root, { pinMode: "through" }));
   const table = root.querySelector<HTMLElement>(".mdmark-table");
   const pins = root.querySelectorAll<HTMLButtonElement>("button.mdmark-pin");
@@ -1823,6 +1826,197 @@ test("test_attach_tables_when_pinned_through", async () => {
   expect(stickyColumns(table).some(Boolean)).toBe(false);
 });
 
+/** どの列も同じ長さの値を持つ 10 列の表の Markdown（390px では留める列が 2 列までしか収まらない） */
+function evenTable(): string {
+  const names = Array.from({ length: 10 }, (_, i) => `列名${i + 1}`);
+  return [
+    `| ${names.join(" | ")} |`,
+    `| ${names.map(() => "---").join(" | ")} |`,
+    `| ${names.map(() => "あいうえおかきくけこ").join(" | ")} |`,
+    "",
+  ].join("\n");
+}
+
+/** 見出しのセルの指定した列の `offsetWidth` の合計 */
+function headWidths(table: HTMLElement, columns: number[]): number {
+  const heads = table.querySelectorAll<HTMLTableCellElement>("thead th");
+  return columns.reduce(
+    (sum, column) => sum + (heads[column]?.offsetWidth ?? 0),
+    0,
+  );
+}
+
+const UNPINNED_SUFFIX = "（表の幅に収まらないため留まっていません）";
+
+// 見えている幅に収まらない選んだ列は留めず、ボタンを留まっていない状態にし、幅が広がれば再び留める（正常系）
+test("test_attach_tables_when_pinned_exceed_visible_width", async () => {
+  // 準備
+  addStyles();
+  const { attachTables } = await loadTables();
+  const { root } = createRoot(evenTable());
+  setRootWidth(root, 390);
+  detachers.push(attachTables(root));
+  const table = root.querySelector<HTMLElement>(".mdmark-table");
+  const scroller = root.querySelector<HTMLElement>(".mdmark-table-scroll");
+  const pins = root.querySelectorAll<HTMLButtonElement>("button.mdmark-pin");
+  if (!table || !scroller) {
+    throw new Error("表が無い");
+  }
+  await vi.waitFor(() => {
+    expect(pins[8]?.hasAttribute("hidden")).toBe(false);
+  });
+  // 前提: 1・3 列目は収まり、1・3・9 列目は収まらない
+  expect(headWidths(table, [0, 2])).toBeLessThanOrEqual(scroller.clientWidth);
+  expect(headWidths(table, [0, 2, 8])).toBeGreaterThan(scroller.clientWidth);
+  // 実行: 3 列目と 9 列目を押す
+  pins[2].click();
+  pins[8].click();
+  // 検証
+  const cells = table.querySelector<HTMLTableRowElement>("tbody tr")?.cells;
+  if (!cells) {
+    throw new Error("本文の行が無い");
+  }
+  expect(stickyColumns(table).slice(0, 9)).toEqual([
+    true,
+    false,
+    true,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+  ]);
+  expect(cells[8].style.left).toBe("");
+  expect(cells[8].style.right).toBe("");
+  expect(pins[8].getAttribute("aria-pressed")).toBe("true");
+  expect(pins[8].classList.contains("is-unpinned")).toBe(true);
+  expect(pins[8].getAttribute("aria-label")).toBe(
+    `「列名9」の列をピン止め${UNPINNED_SUFFIX}`,
+  );
+  expect(pins[8].getAttribute("title")).toBe(
+    `「列名9」の列をピン止め${UNPINNED_SUFFIX}`,
+  );
+  expect(pins[0].classList.contains("is-unpinned")).toBe(false);
+  expect(pins[2].classList.contains("is-unpinned")).toBe(false);
+  // 実行・検証: 幅を広げると 9 列目も留まる
+  setRootWidth(root, 800);
+  await vi.waitFor(() => {
+    expect(getComputedStyle(cells[8]).position).toBe("sticky");
+  });
+  expect(pins[8].classList.contains("is-unpinned")).toBe(false);
+  expect(pins[8].getAttribute("aria-label")).toBe("「列名9」の列をピン止め");
+  // 実行・検証: 幅を戻すと 9 列目は再び留まらない
+  setRootWidth(root, 390);
+  await vi.waitFor(() => {
+    expect(getComputedStyle(cells[8]).position).not.toBe("sticky");
+  });
+  expect(pins[8].classList.contains("is-unpinned")).toBe(true);
+});
+
+// through の表は、押した列までのうち収まる列だけを留め、押した列のボタンを留まっていない状態にする（正常系）
+test("test_attach_tables_when_pinned_through_exceed_visible_width", async () => {
+  // 準備
+  addStyles();
+  const { attachTables } = await loadTables();
+  const { root } = createRoot(evenTable());
+  setRootWidth(root, 390);
+  detachers.push(attachTables(root, { pinMode: "through" }));
+  const table = root.querySelector<HTMLElement>(".mdmark-table");
+  const scroller = root.querySelector<HTMLElement>(".mdmark-table-scroll");
+  const pins = root.querySelectorAll<HTMLButtonElement>("button.mdmark-pin");
+  if (!table || !scroller) {
+    throw new Error("表が無い");
+  }
+  await vi.waitFor(() => {
+    expect(pins[2]?.hasAttribute("hidden")).toBe(false);
+  });
+  expect(headWidths(table, [0, 1, 2])).toBeGreaterThan(scroller.clientWidth);
+  // 実行
+  pins[2].click();
+  // 検証
+  expect(stickyColumns(table).slice(0, 4)).toEqual([true, true, false, false]);
+  expect([...pins].map((pin) => pin.getAttribute("aria-pressed"))).toEqual([
+    "false",
+    "false",
+    "true",
+    ...Array.from({ length: 7 }, () => "false"),
+  ]);
+  expect([...pins].map((pin) => pin.classList.contains("is-unpinned"))).toEqual(
+    [false, false, true, ...Array.from({ length: 7 }, () => false)],
+  );
+  expect(pins[2].getAttribute("aria-label")).toBe(
+    `「列名3」の列までピン止め${UNPINNED_SUFFIX}`,
+  );
+});
+
+// 留まっていない列があるとき、列の幅の上限は実際に留まっている列だけを引き、列を狭めて収まれば再び留める（正常系）
+test("test_attach_tables_when_resized_with_unpinned", async () => {
+  // 準備
+  addStyles();
+  const { attachTables } = await loadTables();
+  const names = Array.from({ length: 10 }, (_, i) => `列${i + 1}`);
+  const values = names.map((_, i) =>
+    i === 2 ? "とても長い説明の文".repeat(3).slice(0, 30) : "値",
+  );
+  const { root } = createRoot(
+    [
+      '<!-- table: {"kind": "data", "columns": {"列3": {"width": {"mode": "nowrap"}}}} -->',
+      "",
+      `| ${names.join(" | ")} |`,
+      `| ${names.map(() => "---").join(" | ")} |`,
+      `| ${values.join(" | ")} |`,
+      "",
+      "<!-- /table -->",
+      "",
+    ].join("\n"),
+  );
+  setRootWidth(root, 390);
+  detachers.push(attachTables(root));
+  const table = root.querySelector<HTMLElement>(".mdmark-table");
+  const scroller = root.querySelector<HTMLElement>(".mdmark-table-scroll");
+  const pins = root.querySelectorAll<HTMLButtonElement>("button.mdmark-pin");
+  const handles = root.querySelectorAll<HTMLElement>(".mdmark-col-resize");
+  const heads = root.querySelectorAll<HTMLTableCellElement>("thead th");
+  if (!table || !scroller) {
+    throw new Error("表が無い");
+  }
+  await vi.waitFor(() => {
+    expect(pins[8]?.hasAttribute("hidden")).toBe(false);
+  });
+  pins[2].click();
+  pins[8].click();
+  handles[2].focus();
+  // 検証: 狭める前は 3 列の合計が見えている幅を超え、9 列目は留まらず、上限は 1 列目の幅だけを引く
+  expect(headWidths(table, [0, 2, 8])).toBeGreaterThan(scroller.clientWidth);
+  expect(pins[8].classList.contains("is-unpinned")).toBe(true);
+  expect(handles[2].getAttribute("aria-valuemax")).toBe(
+    String(Math.floor(scroller.clientWidth - heads[0].offsetWidth)),
+  );
+  // 実行: 3 列目を列の最小幅まで狭める
+  for (let i = 0; i < 200; i += 1) {
+    if (
+      handles[2].getAttribute("aria-valuenow") ===
+      handles[2].getAttribute("aria-valuemin")
+    ) {
+      break;
+    }
+    pressResizeKey(handles[2], "ArrowLeft");
+  }
+  // 検証: 収まり、9 列目が留まる
+  expect(handles[2].getAttribute("aria-valuenow")).toBe(
+    handles[2].getAttribute("aria-valuemin"),
+  );
+  expect(headWidths(table, [0, 2, 8])).toBeLessThanOrEqual(
+    scroller.clientWidth,
+  );
+  const cells = table.querySelector<HTMLTableRowElement>("tbody tr")?.cells;
+  await vi.waitFor(() => {
+    expect(cells && getComputedStyle(cells[8]).position).toBe("sticky");
+  });
+  expect(pins[8].classList.contains("is-unpinned")).toBe(false);
+});
+
 // 結合した見出しの下の 1 列だけを留めると、結合したセルは留めない（正常系）
 test("test_attach_tables_when_pinned_under_merged_header", async () => {
   // 準備
@@ -1842,7 +2036,8 @@ test("test_attach_tables_when_pinned_under_merged_header", async () => {
       "",
     ].join("\n"),
   );
-  setRootWidth(root, 320);
+  // 留める名前と既定の列が見えている範囲に収まる幅
+  setRootWidth(root, 1000);
   detachers.push(attachTables(root));
   const table = root.querySelector<HTMLElement>(".mdmark-table");
   if (!table) {
@@ -1927,6 +2122,41 @@ test("test_pin_offsets", async () => {
   expect(offsets.get(4)).toEqual({ start: 160, end: 0 });
   expect(offsets.has(1)).toBe(false);
   expect(offsets.has(3)).toBe(false);
+});
+
+// 見えている幅を超える列から右を留めない（正常系）
+test("test_fit_pinned_columns", async () => {
+  // 準備
+  const { fitPinnedColumns } = await loadLogic();
+  const widths = [125, 125, 111, 40, 40, 40, 40, 40, 143, 40];
+  const pinned = [0, 2, 8];
+  // 実行・検証
+  expect(fitPinnedColumns({ widths, pinned, visibleWidth: 303 })).toEqual({
+    fitted: [0, 2],
+    unpinned: [8],
+  });
+  expect(fitPinnedColumns({ widths, pinned, visibleWidth: 379 })).toEqual({
+    fitted: [0, 2, 8],
+    unpinned: [],
+  });
+  expect(fitPinnedColumns({ widths, pinned, visibleWidth: 200 })).toEqual({
+    fitted: [0],
+    unpinned: [2, 8],
+  });
+});
+
+// 超えた列より右の列は、幅が小さくても留めない（境界）
+test("test_fit_pinned_columns_when_later_column_narrow", async () => {
+  // 準備
+  const { fitPinnedColumns } = await loadLogic();
+  // 実行
+  const result = fitPinnedColumns({
+    widths: [100, 200, 10],
+    pinned: [0, 1, 2],
+    visibleWidth: 250,
+  });
+  // 検証
+  expect(result).toEqual({ fitted: [0], unpinned: [1, 2] });
 });
 
 // 同じ範囲と同じピン止めの側だけを許す（正常系）

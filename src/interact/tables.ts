@@ -6,6 +6,7 @@ import {
   COPY_STATES,
   type CopyFormat,
   type CopyState,
+  PIN_UNPINNED_SUFFIX,
   renderCopyButtonContent,
   renderCopyPanel,
   renderTableBar,
@@ -24,6 +25,7 @@ import {
   type FilterKind,
   type FilterValue,
   findUnreadableTotals,
+  fitPinnedColumns,
   initialPinnedColumns,
   matchesFilter,
   mergeSpans,
@@ -691,6 +693,8 @@ function attachTable(
 
   // ─── ピン止め ───
   // 留める列（元の列の位置）: 描いた直後は `initialPinned`、ボタンを押すと `togglePinnedColumn`。表がはみ出す間だけ適用する
+  /** 留める列のうち、表の見えている幅に収まって実際に留まっている列（元の列の位置） */
+  let stuckColumns: number[] = [];
   let pinned = initialPinned({
     wrapper,
     features,
@@ -757,21 +761,37 @@ function attachTable(
   /** 留める列を `columns` にし、表がはみ出す間だけ、留める列のセルを `left`（`each` は `right` も）で留める（空で削除する） */
   const pinColumns = (columns: number[]): void => {
     pinned = columns;
-    const applied = new Set(isOverflowing() ? columns : []);
     // 今の列の並びで幅を測る（列の幅は見出しの列ごとのセル。隠した列は 0）
     const widths = order.map((column) => {
       const cell = headCells[column];
       return cell && !cell.hidden ? cell.offsetWidth : 0;
     });
+    const positionOf = new Map(
+      order.map((column, position) => [column, position]),
+    );
+    // 選んだ列を左から順に足し、表の見えている幅に収まる列だけを留める
+    const fit = fitPinnedColumns({
+      widths,
+      pinned: (isOverflowing() ? columns : [])
+        .map((column) => positionOf.get(column) ?? -1)
+        .filter((position) => position >= 0),
+      visibleWidth: scroller.clientWidth,
+    });
+    /** 並びの位置を元の列の位置にする */
+    const columnsAt = (positions: number[]): number[] =>
+      positions.flatMap((position) => {
+        const column = order[position];
+        return column === undefined ? [] : [column];
+      });
+    const applied = new Set(columnsAt(fit.fitted));
+    const unpinned = new Set(columnsAt(fit.unpinned));
+    stuckColumns = [...applied];
     const naturalLefts: number[] = [];
     let left = 0;
     for (const width of widths) {
       naturalLefts.push(left);
       left += width;
     }
-    const positionOf = new Map(
-      order.map((column, position) => [column, position]),
-    );
     const offsets = pinOffsets({
       widths,
       pinned: [...applied].map((column) => positionOf.get(column) ?? -1),
@@ -810,14 +830,29 @@ function attachTable(
     }
     const last = Math.max(-1, ...columns);
     headCells.forEach((cell, column) => {
-      cell
-        .querySelector(".mdmark-pin")
-        ?.setAttribute(
-          "aria-pressed",
-          String(
-            pinMode === "each" ? columns.includes(column) : column === last,
-          ),
-        );
+      const pin = cell.querySelector<HTMLElement>(".mdmark-pin");
+      if (!pin) {
+        return;
+      }
+      const pressed =
+        pinMode === "each" ? columns.includes(column) : column === last;
+      // 押した列（`each` はその列、`through` は最も右の列）が収まらないときは、留まっていないことを示す
+      const notFit =
+        pressed &&
+        (pinMode === "each" ? unpinned.has(column) : unpinned.size > 0);
+      pin.setAttribute("aria-pressed", String(pressed));
+      pin.classList.toggle("is-unpinned", notFit);
+      const current = pin.getAttribute("aria-label") ?? "";
+      const base = current.endsWith(PIN_UNPINNED_SUFFIX)
+        ? current.slice(0, -PIN_UNPINNED_SUFFIX.length)
+        : current;
+      if (notFit) {
+        pin.setAttribute("aria-label", `${base}${PIN_UNPINNED_SUFFIX}`);
+        pin.setAttribute("title", `${base}${PIN_UNPINNED_SUFFIX}`);
+      } else {
+        pin.setAttribute("aria-label", base);
+        pin.removeAttribute("title");
+      }
     });
     markPinnedEdges();
   };
@@ -1327,7 +1362,7 @@ function attachTable(
             widths: headCells.map((cell) =>
               cell.hidden ? 0 : cell.offsetWidth,
             ),
-            pinned,
+            pinned: stuckColumns,
             column,
           }),
         onWidthWritten: () => autoWidths.refresh(),
