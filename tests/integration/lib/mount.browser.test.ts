@@ -9996,7 +9996,7 @@ const CODE_FOLD_INITIAL_MARKDOWN = [
   "",
 ].join("\n");
 
-// `fold=` の行を畳んで描き、畳んだ行を含めてコピーし、`update` で畳んだ状態に戻す（正常系）
+// `fold=` の行を畳んで描き、畳んだ行を含めてコピーし、`update` で読者が開いた行を開いたまま描く（正常系）
 test("test_normal_when_code_fold_initial", async () => {
   // 準備
   const writeText = vi.fn<(text: string) => Promise<void>>(() =>
@@ -10040,9 +10040,10 @@ test("test_normal_when_code_fold_initial", async () => {
   foldToggle(lines[1])?.click();
   expect(foldToggle(lines[1])?.getAttribute("aria-expanded")).toBe("true");
   handle.update(CODE_FOLD_INITIAL_MARKDOWN);
-  // 検証: 2 行目を畳んだ状態に戻す
+  // 検証: 読者が開いた 2 行目は開いたまま、6 行目は畳んだまま描く
   lines = codeLines(el);
-  expect(foldToggle(lines[1])?.getAttribute("aria-expanded")).toBe("false");
+  expect(foldToggle(lines[1])?.getAttribute("aria-expanded")).toBe("true");
+  expect(foldToggle(lines[5])?.getAttribute("aria-expanded")).toBe("false");
 });
 
 // 印刷の前に畳んだコードの行と閉じた注意書きを開き、印刷の後に開いたものだけを戻す（正常系）
