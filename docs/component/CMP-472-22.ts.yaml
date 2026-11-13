@@ -119,7 +119,7 @@ events:
   - name: URL の ID でタブを選ぶ
     when: URL の `#ID` が選ばれていないタブの中身（入れ子のタブを含む）の中の要素を指す（描いたときと `hashchange`）
     value: URL の `#ID`
-    description: '`mount` が外側のタブから順にその要素を含むタブを選び、外側の閉じたセクションを開いてから要素へスクロールする。描いたときは localStorage に残したタブ名より URL の ID を優先し、URL の ID で選んだタブは localStorage に残さず、同じ `data-group` のほかのタブも切り替えない'
+    description: '`mount` が外側のタブから順にその要素を含むタブを選び、外側の閉じたセクション（要素が見出しなら見出し自身の閉じたセクションも）を開いてから要素へスクロールする。描いたときは localStorage に残したタブ名より URL の ID を優先し、URL の ID で選んだタブは localStorage に残さず、同じ `data-group` のほかのタブも切り替えない'
 css_properties:
   - name: --mdmark-color-border
     syntax: <color>

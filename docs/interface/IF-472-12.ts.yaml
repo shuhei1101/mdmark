@@ -23,7 +23,7 @@ flows:
         P-->>K: 書き込んだパスとキー・終了コード 0
     expected:
       - 終了コードが 0
-      - '`MDMARK_CONFIG` のパスの端末の設定が `version`（プラグインのバージョン）と `features.table: false` を持つ'
+      - '`MDMARK_CONFIG` のパスの端末の設定が `version`（プラグインのビルドで埋めた mdmark のバージョン）と `features.table: false` を持つ'
       - '`CLAUDE_CONFIG_DIR` の `settings.json` の `env.MDMARK_CONFIG` が端末の設定のパス'
       - 標準出力の JSON の `written` に端末の設定のパスと `settings.json` のパスがある
     test: test_normal
@@ -131,7 +131,7 @@ constraints:
     constraint: コメント・キーの並び・触らないキーの記載方法を残す
     decided_by: LIB-472-36#
   - item: version
-    constraint: 端末の設定を新しく作るときだけ `version` をプラグインのバージョンにする。既にある `version` は書き換えない（移行は `mdmark upgrade --settings`）
+    constraint: 端末の設定を新しく作るときだけ `version` をプラグインのビルドで埋めた mdmark のバージョンにする。既にある `version` は書き換えない（移行は `mdmark upgrade --settings`）
   - item: settings.json
     constraint: '`env.MDMARK_CONFIG` だけを書き込み、ほかのキーと記載方法を残す。端末の設定が既定のパスなら書き込まない'
   - item: 出力

@@ -112,9 +112,9 @@ test("test_attach_file_trees", async () => {
   // 検証
   const tree = treeOf(root);
   expect(tree.querySelector(".mdmark-tree-bar")).not.toBeNull();
-  expect(expandedOf(tree, ["mdmark/", "src/"])).toEqual(["true", "false"]);
-  expect(nestedListOf(toggleOf(tree, "src/")).getAttribute("hidden")).toBe(
-    "until-found",
+  expect(expandedOf(tree, ["mdmark/", "src/"])).toEqual(["true", "true"]);
+  expect(nestedListOf(toggleOf(tree, "src/")).hasAttribute("hidden")).toBe(
+    false,
   );
   const file = [...tree.querySelectorAll("li.mdmark-tree-file")].find(
     (candidate) => candidate.textContent?.includes("package.json"),
@@ -176,7 +176,9 @@ test("test_attach_file_trees_when_toggled", async () => {
 test("test_attach_file_trees_when_found", async () => {
   // 準備
   const { attachFileTrees } = await loadTrees();
-  const { root } = createRoot(markdownOf(...NESTED_TREE));
+  const { root } = createRoot(
+    markdownOf('<!-- tree: {"depth": 1} -->', "", ...NESTED_TREE),
+  );
   detachers.push(attachFileTrees(root));
   const tree = treeOf(root);
   const button = toggleOf(tree, "src/");
@@ -273,7 +275,9 @@ test("test_attach_file_trees_when_detached", async () => {
   );
   stubClipboard(writeText);
   const { attachFileTrees } = await loadTrees();
-  const { root } = createRoot(markdownOf(...NESTED_TREE));
+  const { root } = createRoot(
+    markdownOf('<!-- tree: {"depth": 1} -->', "", ...NESTED_TREE),
+  );
   const detach = attachFileTrees(root);
   const tree = treeOf(root);
   expect(tree.querySelector("ul[hidden]")).not.toBeNull();

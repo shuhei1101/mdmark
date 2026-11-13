@@ -18,7 +18,7 @@ functions:
     container: src/interact/code-folds.ts
     kind: 関数
     scope: internal
-    summary: '`data-fold-lines` の行に `renderCodeFoldToggle` のボタンを配置し（`data-folded` の行は畳んだ状態）、押すと行の畳んだ状態を切り替えて `hiddenLinesOf` の行に `hidden` を付与・解除し、畳んだ行の末尾に `renderCodeFoldMore` を配置する。Shift を押しながらの押下（Enter・Space を含む）は範囲の中の畳める行も同じ状態にする。`⋯` を押すとその行を開く。`pointerover`・`pointerout` で `guideRangeOf` の範囲の行に `data-guide-active` を付与・解除する。開閉を切り替える関数を `codeFoldSetters` に登録する'
+    summary: '`data-fold-lines` の行に `renderCodeFoldToggle` のボタンを配置し（`data-folded` の行は畳んだ状態）、押すと行の畳んだ状態を切り替えて `hiddenLinesOf` の行に `hidden` を付与・解除し、畳んだ行の末尾に `renderCodeFoldMore` を配置する。Shift を押しながらの押下（Enter・Space を含む）は範囲の中の畳める行も同じ状態にする。`⋯` を押すとその行を開く。`pointerover`・`pointerout` で `guideRangeOf` の範囲の行に `data-guide-active` を付与・解除する。畳める行を持つ `pre` の `pointermove` で、ポインターの横の位置が開閉のボタンの列（コードブロックの最初の開閉のボタンの `getBoundingClientRect()` の左端から右端まで）にあれば `pre` に `data-fold-hover` を付け、無ければ外し、`pointerleave` で外す（行の高さに関わらず、ボタンを持たない行の上でも列に乗れば付ける）。開閉を切り替える関数を `codeFoldSetters` に登録する'
     args:
       - name: root
         type: HTMLElement
@@ -26,7 +26,7 @@ functions:
         description: 描いた要素
     returns:
       type: () => void
-      description: ボタン・`⋯`・`hidden`・`data-guide-active`・受け取りを取り除き、`codeFoldSetters` から除外する関数
+      description: ボタン・`⋯`・`hidden`・`data-guide-active`・`data-fold-hover`・受け取りを取り除き、`codeFoldSetters` から除外する関数
     side_effects: コードブロックの行に開閉のボタンを配置し、行の `hidden` を書き換える
     callees:
       - 'MOD-472-237#functions[hiddenLinesOf]'
@@ -58,6 +58,12 @@ functions:
         condition: 同じ yaml のコードブロックの 3 行目に `pointerover`、続けて `pointerout`
         mock: なし
         expected: '`pointerover` の後に 3 行目だけが `data-guide-active` を持ち、`pointerout` の後は持つ行が無い'
+      - name: test_attach_code_folds_when_fold_column_hovered
+        case: 正常
+        summary: 開閉のボタンの列にポインターが乗っている間だけ、pre に data-fold-hover を付ける
+        condition: 同じ yaml のコードブロックで、4 行目の高さで横の位置が 1 行目のボタンの中ほどの `pointermove`、続けて 4 行目の文字の上の `pointermove`、もう一度ボタンの列の `pointermove` の後に `pointerleave`
+        mock: なし
+        expected: 1 回目の後に `pre` が `data-fold-hover` を持ち、2 回目の後に持たず、3 回目の後に持ち、`pointerleave` の後に持たない。削除した後に列の上で `pointermove` しても付かない
     status: planned
     introduced:
       pr: 275

@@ -1,0 +1,18 @@
+confirmations:
+  - topic: '#460 の帯と本文の背景の色の違いを残すか'
+    decision: 帯の背景を本文と同じ色にする（別案 B）。言語のラベルは、帯の上端に付けた枠線を持たない塗りのタブにする（ユーザーの画像のとおり）
+    decided_by: reply
+    approver: shuhei1101
+    commit:
+    thread: https://github.com/shuhei1101/mdmark/pull/505#discussion_r4554582525
+  - topic: '#458 の自動の列の幅と、既存の「狭い幅で最終列を畳む」のどちらを優先するか'
+    decision: 自動の列の幅を持つ表では最終列を畳まず、最小の幅で横にスクロールする（推奨案 A）
+    decided_by: thumbs_up
+    approver: shuhei1101
+    commit:
+    thread: https://github.com/shuhei1101/mdmark/pull/505#discussion_r4555812978
+  - topic: 長文の列の最小の幅を最も長い行の幅までにするか、30em より狭くしないか。案のほかはモックのとおりに進めてよいか
+    decision: 最も長い行の幅を上限にする（推奨案 A）。最小の幅の既定は 1.5 倍の 45em にして設定ファイルで変えられるようにし、filter.type を記載しない列は長文の列なら text・長文でない列なら select で絞り込む。ほかはモックのとおりに進める（モックの確認は不要）
+    decided_by: thumbs_up
+    approver: shuhei1101
+    thread: https://github.com/shuhei1101/mdmark/pull/505#discussion_r4559073181

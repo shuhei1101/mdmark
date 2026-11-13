@@ -40,10 +40,11 @@ functions:
       1. 読み込むバージョンを決める（読み込むバージョンを決める）
          - `undecidable` の場合、画面設計の「バージョンを決められない通知」を `showErrorMessage` で出し、`undefined` を返却する
          - `fetched` が `true` の場合、`mdmark.lastVersion` に記載する
-      2. 設定ファイルを読み込み（設定ファイルを読み込む。`purpose: export`、`cwd` は Markdown のフォルダ、`baseDir` は Markdown を含むワークスペースのフォルダ、`env` は `process.env`、`home` は `os.homedir()`）、相対パスの `libraries`・`html-scripts.url`・`mermaid.url` を `getText()` の全文で判定して埋め（相対パスのライブラリを埋める。`bundle` は拡張をまとめる。まとめられないものは `[warn]` を出す）、相対パスの `syntax.url` の本体と使用する言語のモジュールを `getText()` の全文で判定してまとめ（相対パスの色分けのライブラリを埋める。まとめられないものは `[warn]` を出す。返却した `syntax` で書き出す `config.syntax` を置き換える）、`theme` の CSS を読み込んで `<style>` に、`extensions` を拡張をまとめる（拡張をまとめる）でまとめて、それぞれを描く前に登録するスクリプトとして埋める（まとめられない拡張は `[warn]` を出して飛ばす）。`problem` があるときはそのファイルを重ねずに書き出す。続けて `mdmark.colorTheme` で上書きする（テーマの設定で上書きする）
+      2. 設定ファイルを読み込み（設定ファイルを読み込む。`purpose: export`、`cwd` は Markdown のフォルダ、`baseDir` は Markdown を含むワークスペースのフォルダ、`env` は `process.env`、`home` は `os.homedir()`）、相対パスの `libraries`・`html-scripts.url`・`mermaid.url` を `getText()` の全文で判定して埋め（相対パスのライブラリを埋める。`bundle` は拡張をまとめる。まとめられないものは `[warn]` を出す）、相対パスの `syntax.url` の本体と使用する言語のモジュールを `getText()` の全文で判定してまとめ（相対パスの色分けのライブラリを埋める。まとめられないものは `[warn]` を出す。返却した `syntax` で書き出す `config.syntax` を置き換える）、`theme` の CSS を読み込んで `<style>` に、`extensions` を拡張をまとめる（拡張をまとめる）でまとめて、それぞれを描く前に登録するスクリプトとして埋める（まとめられない拡張は `[warn]` を出して飛ばす）。`problem` があるときはそのファイルを重ねずに書き出す。続けて `mdmark.colorTheme` で上書きする（テーマの設定で上書きする）。`aliasIssues` は 1 件ずつ、プレビューと同じくずれを 1 行にした値で出力チャネルに書き込む
          - `[warn]` 設定ファイルを読み込めないため設定なしで書き出す（パス・行・`message`）
+         - `[warn]` エイリアスのずれ（`aliasIssues` の 1 件ずつ、ずれを 1 行にした値）
          - `[warn]` ライブラリをまとめられない（パス・誤り）
-      3. 書き出す先を決め（書き出す先を決める）、`getText()` の全文で HTML を組み（書き出す HTML を組む。`print` は `mode` が `print` のとき、`importMap` は相対パスの色分けのライブラリを埋めるが返却した `imports`）、記載する（一時ファイルから置き換える）
+      3. 書き出す先を決め（書き出す先を決める）、`getText()` の全文で HTML を組み（書き出す HTML を組む。`print` は `mode` が `print` のとき、`importMap` は相対パスの色分けのライブラリを埋めるが返却した `imports`、`aliases` は設定ファイルを読み込むが返却した `aliases`）、記載する（一時ファイルから置き換える）
          - 記載できない場合、画面設計の「書き出せない通知」を `showErrorMessage` で出し、`undefined` を返却する
            - `[error]` HTML を書き出せない（パス・誤り）
          - `[info]` HTML を書き出した（パス・バージョン・`mode`）
@@ -63,6 +64,7 @@ functions:
       - MOD-472-102#functions[embedLocalSyntax]
     refs:
       - IF-472-15#
+      - IF-472-15#constraints[エイリアス]
       - IF-472-18#
       - IF-472-16#
       - SCR-472-1#elements[書き出した通知]

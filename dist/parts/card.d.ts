@@ -1,6 +1,6 @@
 /** 添付の種類 */
 export type AttachmentKind = "pdf" | "doc" | "sheet" | "slide" | "archive" | "text";
-/** リンクと添付のカードの HTML を返す */
+/** リンクと添付のカードの HTML を返却する */
 export declare function renderCard(options: {
     /** リンクか添付か */
     kind: "link" | "file";

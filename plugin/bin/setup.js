@@ -7748,11 +7748,11 @@ var require_codegen = __commonJS({
         const rhs = this.rhs === void 0 ? "" : ` = ${this.rhs}`;
         return `${varKind} ${this.name}${rhs};` + _n;
       }
-      optimizeNames(names, constants) {
+      optimizeNames(names, constants2) {
         if (!names[this.name.str])
           return;
         if (this.rhs)
-          this.rhs = optimizeExpr(this.rhs, names, constants);
+          this.rhs = optimizeExpr(this.rhs, names, constants2);
         return this;
       }
       get names() {
@@ -7769,10 +7769,10 @@ var require_codegen = __commonJS({
       render({ _n }) {
         return `${this.lhs} = ${this.rhs};` + _n;
       }
-      optimizeNames(names, constants) {
+      optimizeNames(names, constants2) {
         if (this.lhs instanceof code_1.Name && !names[this.lhs.str] && !this.sideEffects)
           return;
-        this.rhs = optimizeExpr(this.rhs, names, constants);
+        this.rhs = optimizeExpr(this.rhs, names, constants2);
         return this;
       }
       get names() {
@@ -7833,8 +7833,8 @@ var require_codegen = __commonJS({
       optimizeNodes() {
         return `${this.code}` ? this : void 0;
       }
-      optimizeNames(names, constants) {
-        this.code = optimizeExpr(this.code, names, constants);
+      optimizeNames(names, constants2) {
+        this.code = optimizeExpr(this.code, names, constants2);
         return this;
       }
       get names() {
@@ -7863,12 +7863,12 @@ var require_codegen = __commonJS({
         }
         return nodes.length > 0 ? this : void 0;
       }
-      optimizeNames(names, constants) {
+      optimizeNames(names, constants2) {
         const { nodes } = this;
         let i = nodes.length;
         while (i--) {
           const n = nodes[i];
-          if (n.optimizeNames(names, constants))
+          if (n.optimizeNames(names, constants2))
             continue;
           subtractNames(names, n.names);
           nodes.splice(i, 1);
@@ -7921,12 +7921,12 @@ var require_codegen = __commonJS({
           return void 0;
         return this;
       }
-      optimizeNames(names, constants) {
+      optimizeNames(names, constants2) {
         var _a3;
-        this.else = (_a3 = this.else) === null || _a3 === void 0 ? void 0 : _a3.optimizeNames(names, constants);
-        if (!(super.optimizeNames(names, constants) || this.else))
+        this.else = (_a3 = this.else) === null || _a3 === void 0 ? void 0 : _a3.optimizeNames(names, constants2);
+        if (!(super.optimizeNames(names, constants2) || this.else))
           return;
-        this.condition = optimizeExpr(this.condition, names, constants);
+        this.condition = optimizeExpr(this.condition, names, constants2);
         return this;
       }
       get names() {
@@ -7949,10 +7949,10 @@ var require_codegen = __commonJS({
       render(opts) {
         return `for(${this.iteration})` + super.render(opts);
       }
-      optimizeNames(names, constants) {
-        if (!super.optimizeNames(names, constants))
+      optimizeNames(names, constants2) {
+        if (!super.optimizeNames(names, constants2))
           return;
-        this.iteration = optimizeExpr(this.iteration, names, constants);
+        this.iteration = optimizeExpr(this.iteration, names, constants2);
         return this;
       }
       get names() {
@@ -7988,10 +7988,10 @@ var require_codegen = __commonJS({
       render(opts) {
         return `for(${this.varKind} ${this.name} ${this.loop} ${this.iterable})` + super.render(opts);
       }
-      optimizeNames(names, constants) {
-        if (!super.optimizeNames(names, constants))
+      optimizeNames(names, constants2) {
+        if (!super.optimizeNames(names, constants2))
           return;
-        this.iterable = optimizeExpr(this.iterable, names, constants);
+        this.iterable = optimizeExpr(this.iterable, names, constants2);
         return this;
       }
       get names() {
@@ -8033,11 +8033,11 @@ var require_codegen = __commonJS({
         (_b = this.finally) === null || _b === void 0 ? void 0 : _b.optimizeNodes();
         return this;
       }
-      optimizeNames(names, constants) {
+      optimizeNames(names, constants2) {
         var _a3, _b;
-        super.optimizeNames(names, constants);
-        (_a3 = this.catch) === null || _a3 === void 0 ? void 0 : _a3.optimizeNames(names, constants);
-        (_b = this.finally) === null || _b === void 0 ? void 0 : _b.optimizeNames(names, constants);
+        super.optimizeNames(names, constants2);
+        (_a3 = this.catch) === null || _a3 === void 0 ? void 0 : _a3.optimizeNames(names, constants2);
+        (_b = this.finally) === null || _b === void 0 ? void 0 : _b.optimizeNames(names, constants2);
         return this;
       }
       get names() {
@@ -8338,7 +8338,7 @@ var require_codegen = __commonJS({
     function addExprNames(names, from) {
       return from instanceof code_1._CodeOrName ? addNames(names, from.names) : names;
     }
-    function optimizeExpr(expr, names, constants) {
+    function optimizeExpr(expr, names, constants2) {
       if (expr instanceof code_1.Name)
         return replaceName(expr);
       if (!canOptimize(expr))
@@ -8353,14 +8353,14 @@ var require_codegen = __commonJS({
         return items;
       }, []));
       function replaceName(n) {
-        const c = constants[n.str];
+        const c = constants2[n.str];
         if (c === void 0 || names[n.str] !== 1)
           return n;
         delete names[n.str];
         return c;
       }
       function canOptimize(e) {
-        return e instanceof code_1._Code && e._items.some((c) => c instanceof code_1.Name && names[c.str] === 1 && constants[c.str] !== void 0);
+        return e instanceof code_1._Code && e._items.some((c) => c instanceof code_1.Name && names[c.str] === 1 && constants2[c.str] !== void 0);
       }
     }
     function subtractNames(names, from) {
@@ -14797,20 +14797,20 @@ var require__ = __commonJS({
 
 // src/plugin/setup/main.ts
 import { execFile } from "node:child_process";
-import { readFile as readFile4 } from "node:fs/promises";
-import { join as join4 } from "node:path";
+import { readFile as readFile4, writeFile as writeFile2 } from "node:fs/promises";
+import { join as join5 } from "node:path";
 import { parseArgs } from "node:util";
 
 // schemas/mdmark.config.schema.json
 var mdmark_config_schema_default = {
   $schema: "https://json-schema.org/draft/2020-12/schema",
   title: "mdmark.config.yaml",
-  description: "mdmark \u306E\u8A2D\u5B9A\u306E\u3046\u3061\u3001\u30E9\u30A4\u30D6\u30E9\u30EA\u672C\u4F53\u3068 CLI \u304C\u8AAD\u3080\u30AD\u30FC\u3002\u4ED6\u306E\u30AD\u30FC\u306F\u62D2\u307E\u306A\u3044\u3002",
+  description: "mdmark \u306E\u8A2D\u5B9A\u306E\u3046\u3061\u3001\u30E9\u30A4\u30D6\u30E9\u30EA\u672C\u4F53\u3068 CLI \u304C\u8AAD\u307F\u8FBC\u3080\u30AD\u30FC\u3002\u4ED6\u306E\u30AD\u30FC\u306F\u62D2\u307E\u306A\u3044\u3002",
   type: "object",
   properties: {
     version: {
-      title: "\u624B\u5143\u306E\u7248",
-      description: "\u3053\u306E\u8A2D\u5B9A\u30FB\u7D22\u5F15\u30FB\u6587\u66F8\u304C\u5408\u308F\u305B\u3066\u3042\u308B mdmark \u306E\u7248\u3002`mdmark init` \u304C\u547C\u3093\u3060 CLI \u306E\u7248\u3092\u66F8\u304D\u3001`mdmark upgrade` \u304C\u79FB\u884C\u306E\u624B\u9806\u3092\u5F53\u3066\u3066\u70B9\u691C\u304C\u901A\u3063\u305F\u5F8C\u306B\u547C\u3093\u3060 CLI \u306E\u7248\u3078\u66F8\u304D\u63DB\u3048\u308B\u3002",
+      title: "\u624B\u5143\u306E\u30D0\u30FC\u30B8\u30E7\u30F3",
+      description: "\u3053\u306E\u8A2D\u5B9A\u30FB\u7D22\u5F15\u30FB\u6587\u66F8\u304C\u5408\u308F\u305B\u3066\u3042\u308B mdmark \u306E\u30D0\u30FC\u30B8\u30E7\u30F3\u3002`mdmark init` \u304C\u547C\u3093\u3060 CLI \u306E\u30D0\u30FC\u30B8\u30E7\u30F3\u3092\u8A18\u8F09\u3057\u3001`mdmark upgrade` \u304C\u79FB\u884C\u306E\u624B\u9806\u3092\u9069\u7528\u3057\u3066\u70B9\u691C\u304C\u901A\u3063\u305F\u5F8C\u306B\u547C\u3093\u3060 CLI \u306E\u30D0\u30FC\u30B8\u30E7\u30F3\u3078\u66F8\u304D\u63DB\u3048\u308B\u3002",
       type: "string",
       pattern: "^v\\d+\\.\\d+\\.\\d+$"
     },
@@ -14821,19 +14821,19 @@ var mdmark_config_schema_default = {
       properties: {
         print: {
           title: "\u5370\u5237\u306E\u6A5F\u80FD",
-          description: "\u5370\u5237\u306E\u524D\u306B\u9589\u3058\u305F\u6298\u308A\u7573\u307F\u3068\u3001\u30BF\u30D6\u30FB\u9589\u3058\u305F\u7BC0\u30FB\u884C\u306E\u8A73\u7D30\u3092\u958B\u304D\u3001\u5370\u5237\u306E\u5F8C\u306B\u623B\u3059\u3002",
+          description: "\u5370\u5237\u306E\u524D\u306B\u9589\u3058\u305F\u6298\u308A\u7573\u307F\u3068\u3001\u30BF\u30D6\u30FB\u9589\u3058\u305F\u30BB\u30AF\u30B7\u30E7\u30F3\u30FB\u884C\u306E\u8A73\u7D30\u3092\u958B\u304D\u3001\u5370\u5237\u306E\u5F8C\u306B\u623B\u3059\u3002",
           type: "boolean",
           default: true
         },
         table: {
           title: "\u8868\u306E\u6A5F\u80FD",
-          description: "\u8868\u306E\u5370\u3068\u3001\u5370\u3067\u56F2\u307E\u306A\u3044\u8868\u306B\u3001\u7A2E\u985E\u3054\u3068\u306E\u4E26\u3079\u66FF\u3048\u30FB\u30D4\u30F3\u6B62\u3081\u30FB\u7D5E\u308A\u8FBC\u307F\u3068\u958B\u9589\u3092\u4ED8\u3051\u308B\u3002\u30AA\u30D5\u306E\u3068\u304D\u306F\u8868\u306E\u5370\u3092\u53D6\u308A\u9664\u3044\u3066\u666E\u901A\u306E\u8868\u3092\u63CF\u304F\u3002",
+          description: "\u8868\u306E\u30DE\u30FC\u30AB\u30FC\u3068\u3001\u30DE\u30FC\u30AB\u30FC\u3067\u56F2\u307E\u306A\u3044\u8868\u306B\u3001\u7A2E\u985E\u3054\u3068\u306E\u4E26\u3079\u66FF\u3048\u30FB\u30D4\u30F3\u6B62\u3081\u30FB\u7D5E\u308A\u8FBC\u307F\u3068\u958B\u9589\u3092\u4ED8\u3051\u308B\u3002\u30AA\u30D5\u306E\u3068\u304D\u306F\u8868\u306E\u30DE\u30FC\u30AB\u30FC\u3092\u53D6\u308A\u9664\u3044\u3066\u666E\u901A\u306E\u8868\u3092\u63CF\u304F\u3002",
           type: "boolean",
           default: true
         },
         callout: {
           title: "\u6CE8\u610F\u66F8\u304D\u306E\u6A5F\u80FD",
-          description: "1 \u884C\u76EE\u304C `[!NOTE]` \u306A\u3069\u306E\u5F15\u7528\u3092\u3001\u7A2E\u985E\u3054\u3068\u306E\u984C\u30FB\u8272\u30FB\u30A2\u30A4\u30B3\u30F3\u3092\u6301\u3064\u67A0\u306B\u3059\u308B\u3002\u30AA\u30D5\u306E\u3068\u304D\u306F\u5F15\u7528\u306E\u307E\u307E\u63CF\u304F\u3002",
+          description: "1 \u884C\u76EE\u304C `[!NOTE]` \u306A\u3069\u306E\u5F15\u7528\u3092\u3001\u7A2E\u985E\u3054\u3068\u306E\u30BF\u30A4\u30C8\u30EB\u30FB\u8272\u30FB\u30A2\u30A4\u30B3\u30F3\u3092\u6301\u3064\u67A0\u306B\u3059\u308B\u3002\u30AA\u30D5\u306E\u3068\u304D\u306F\u5F15\u7528\u306E\u307E\u307E\u63CF\u304F\u3002",
           type: "boolean",
           default: true
         },
@@ -14863,25 +14863,25 @@ var mdmark_config_schema_default = {
         },
         footnotes: {
           title: "\u811A\u6CE8\u306E\u6A5F\u80FD",
-          description: "`[^\u30E9\u30D9\u30EB]`\u30FB`[^\u30E9\u30D9\u30EB]: \u4E2D\u8EAB`\u30FB`^[\u4E2D\u8EAB]` \u3092\u3001\u672C\u6587\u306E\u756A\u53F7\u3068\u30C4\u30FC\u30EB\u30C1\u30C3\u30D7\u3068\u672B\u5C3E\u306E\u811A\u6CE8\u306E\u4E00\u89A7\u306B\u3059\u308B\u3002\u30AA\u30D5\u306E\u3068\u304D\u306F\u66F8\u3044\u305F\u6587\u5B57\u306E\u307E\u307E\u63CF\u304F\u3002",
+          description: "`[^\u30E9\u30D9\u30EB]`\u30FB`[^\u30E9\u30D9\u30EB]: \u4E2D\u8EAB`\u30FB`^[\u4E2D\u8EAB]` \u3092\u3001\u672C\u6587\u306E\u756A\u53F7\u3068\u30C4\u30FC\u30EB\u30C1\u30C3\u30D7\u3068\u672B\u5C3E\u306E\u811A\u6CE8\u306E\u4E00\u89A7\u306B\u3059\u308B\u3002\u30AA\u30D5\u306E\u3068\u304D\u306F\u8A18\u8F09\u3057\u305F\u6587\u5B57\u306E\u307E\u307E\u63CF\u304F\u3002",
           type: "boolean",
           default: true
         },
         code: {
           title: "\u30B3\u30FC\u30C9\u30D6\u30ED\u30C3\u30AF\u3092\u98FE\u308B\u6A5F\u80FD",
-          description: "\u30B3\u30FC\u30C9\u30D6\u30ED\u30C3\u30AF\u306B\u3001\u76F4\u524D\u306E `<!-- code: -->` \u306E\u984C\u30FB\u884C\u756A\u53F7\u30FB\u884C\u306E\u5F37\u8ABF\u3068\u3001\u884C\u672B\u306E\u30B3\u30FC\u30C9\u306E\u884C\u306E\u5370\uFF08`[!code ++]`\u30FB`[!code --]`\u30FB`[!code highlight]`\uFF09\u3092\u5F53\u3066\u308B\u3002\u30AA\u30D5\u306E\u3068\u304D\u306F\u984C\u30FB\u884C\u756A\u53F7\u30FB\u884C\u306E\u5F37\u8ABF\u3092\u4ED8\u3051\u305A\u3001\u30B3\u30FC\u30C9\u306E\u884C\u306E\u5370\u306F\u66F8\u3044\u305F\u6587\u5B57\u306E\u307E\u307E\u63CF\u304F\u3002",
+          description: "\u30B3\u30FC\u30C9\u30D6\u30ED\u30C3\u30AF\u306B\u3001\u76F4\u524D\u306E `<!-- code: -->` \u306E\u30BF\u30A4\u30C8\u30EB\u30FB\u884C\u756A\u53F7\u30FB\u884C\u306E\u5F37\u8ABF\u3068\u3001\u884C\u672B\u306E\u30B3\u30FC\u30C9\u306E\u884C\u306E\u30DE\u30FC\u30AB\u30FC\uFF08`[!code ++]`\u30FB`[!code --]`\u30FB`[!code highlight]`\uFF09\u3092\u9069\u7528\u3059\u308B\u3002\u30AA\u30D5\u306E\u3068\u304D\u306F\u30BF\u30A4\u30C8\u30EB\u30FB\u884C\u756A\u53F7\u30FB\u884C\u306E\u5F37\u8ABF\u3092\u4ED8\u3051\u305A\u3001\u30B3\u30FC\u30C9\u306E\u884C\u306E\u30DE\u30FC\u30AB\u30FC\u306F\u8A18\u8F09\u3057\u305F\u6587\u5B57\u306E\u307E\u307E\u63CF\u304F\u3002",
           type: "boolean",
           default: true
         },
         syntax: {
           title: "\u30B3\u30FC\u30C9\u30D6\u30ED\u30C3\u30AF\u306E\u8272\u5206\u3051\u306E\u6A5F\u80FD",
-          description: "\u60C5\u5831\u6587\u5B57\u5217\u306E\u8A00\u8A9E\u304C\u8272\u5206\u3051\u306E\u5BFE\u5FDC\u8868\u306B\u3042\u308B\u30B3\u30FC\u30C9\u30D6\u30ED\u30C3\u30AF\u3092\u3001\u63CF\u3044\u305F\u5F8C\u306B\u8A00\u8A9E\u306B\u5FDC\u3058\u3066\u8272\u5206\u3051\u3059\u308B\u3002\u30AA\u30D5\u306E\u3068\u304D\u306F\u8272\u5206\u3051\u306E\u30E9\u30A4\u30D6\u30E9\u30EA\u3092\u8AAD\u307E\u305A\u3001\u30B3\u30FC\u30C9\u30D6\u30ED\u30C3\u30AF\u3092\u8272\u5206\u3051\u305B\u305A\u306B\u63CF\u304F\u3002",
+          description: "\u60C5\u5831\u6587\u5B57\u5217\u306E\u8A00\u8A9E\u304C\u8272\u5206\u3051\u306E\u5BFE\u5FDC\u8868\u306B\u3042\u308B\u30B3\u30FC\u30C9\u30D6\u30ED\u30C3\u30AF\u3092\u3001\u63CF\u3044\u305F\u5F8C\u306B\u8A00\u8A9E\u306B\u5FDC\u3058\u3066\u8272\u5206\u3051\u3059\u308B\u3002\u30AA\u30D5\u306E\u3068\u304D\u306F\u8272\u5206\u3051\u306E\u30E9\u30A4\u30D6\u30E9\u30EA\u3092\u8AAD\u307F\u8FBC\u307E\u305A\u3001\u30B3\u30FC\u30C9\u30D6\u30ED\u30C3\u30AF\u3092\u8272\u5206\u3051\u305B\u305A\u306B\u63CF\u304F\u3002",
           type: "boolean",
           default: true
         },
         toc: {
           title: "\u76EE\u6B21\u306E\u6A5F\u80FD",
-          description: "`<!-- toc -->` \u306E\u5834\u6240\u306B h2\u301Ch3 \u306E\u76EE\u6B21\u3092\u7F6E\u304F\u3002\u30AA\u30D5\u306E\u3068\u304D\u306F\u5370\u3092\u53D6\u308A\u9664\u304F\u3002",
+          description: "`<!-- toc -->` \u306E\u5834\u6240\u306B h2\u301Ch3 \u306E\u76EE\u6B21\u3092\u914D\u7F6E\u3059\u308B\u3002\u30AA\u30D5\u306E\u3068\u304D\u306F\u30DE\u30FC\u30AB\u30FC\u3092\u53D6\u308A\u9664\u304F\u3002",
           type: "boolean",
           default: true
         },
@@ -14892,8 +14892,8 @@ var mdmark_config_schema_default = {
           default: true
         },
         sections: {
-          title: "\u7BC0\u306E\u958B\u9589\u306E\u6A5F\u80FD",
-          description: "h1\u301Ch4 \u306E\u7BC0\u3092\u898B\u51FA\u3057\u304B\u3089\u958B\u9589\u3067\u304D\u308B\u3088\u3046\u306B\u3059\u308B\u3002\u30AA\u30D5\u306E\u3068\u304D\u306F\u7BC0\u3092\u56F2\u307E\u305A\u3001`section` \u306E\u5370\u3092\u53D6\u308A\u9664\u304F\u3002",
+          title: "\u30BB\u30AF\u30B7\u30E7\u30F3\u306E\u958B\u9589\u306E\u6A5F\u80FD",
+          description: "h1\u301Ch4 \u306E\u30BB\u30AF\u30B7\u30E7\u30F3\u3092\u898B\u51FA\u3057\u304B\u3089\u958B\u9589\u3067\u304D\u308B\u3088\u3046\u306B\u3059\u308B\u3002\u30AA\u30D5\u306E\u3068\u304D\u306F\u30BB\u30AF\u30B7\u30E7\u30F3\u3092\u56F2\u307E\u305A\u3001`section` \u306E\u30DE\u30FC\u30AB\u30FC\u3092\u53D6\u308A\u9664\u304F\u3002",
           type: "boolean",
           default: true
         },
@@ -14905,73 +14905,79 @@ var mdmark_config_schema_default = {
         },
         figures: {
           title: "\u56F3\u8868\u306E\u756A\u53F7\u306E\u6A5F\u80FD",
-          description: "`<!-- fig -->` \u306E\u76F4\u5F8C\u306E\u56F3\u3068\u8868\u306B\u756A\u53F7\u3092\u4ED8\u3051\u3001`#fig-ID` \u3078\u306E\u30EA\u30F3\u30AF\u306E\u6587\u5B57\u3092\u756A\u53F7\u306B\u3059\u308B\u3002\u30AA\u30D5\u306E\u3068\u304D\u306F\u5370\u3092\u53D6\u308A\u9664\u304D\u3001\u30EA\u30F3\u30AF\u306E\u6587\u5B57\u3092\u5909\u3048\u306A\u3044\u3002",
+          description: "`<!-- fig -->` \u306E\u76F4\u5F8C\u306E\u56F3\u3068\u8868\u306B\u756A\u53F7\u3092\u4ED8\u3051\u3001`#fig-ID` \u3078\u306E\u30EA\u30F3\u30AF\u306E\u6587\u5B57\u3092\u756A\u53F7\u306B\u3059\u308B\u3002\u30AA\u30D5\u306E\u3068\u304D\u306F\u30DE\u30FC\u30AB\u30FC\u3092\u53D6\u308A\u9664\u304D\u3001\u30EA\u30F3\u30AF\u306E\u6587\u5B57\u3092\u5909\u3048\u306A\u3044\u3002",
           type: "boolean",
           default: true
         },
         diagrams: {
           title: "\u56F3\u306E\u90E8\u54C1\u306E\u6A5F\u80FD",
-          description: "`<!-- flow -->`\u30FB`<!-- sequence -->`\u30FB`<!-- chart -->`\u30FB`<!-- param -->` \u306E\u7BC4\u56F2\u306E\u90E8\u54C1\u306E\u5B9A\u7FA9\u304B\u3089\u56F3\u3068\u64CD\u4F5C\u3067\u304D\u308B\u90E8\u54C1\u3092\u63CF\u304F\u3002\u30AA\u30D5\u306E\u3068\u304D\u306F\u5370\u3092\u53D6\u308A\u9664\u304D\u3001\u5B9A\u7FA9\u3092 JSON \u306E\u30B3\u30FC\u30C9\u30D6\u30ED\u30C3\u30AF\u306E\u307E\u307E\u63CF\u304F\u3002",
+          description: "`<!-- flow -->`\u30FB`<!-- sequence -->`\u30FB`<!-- chart -->`\u30FB`<!-- param -->` \u306E\u7BC4\u56F2\u306E\u90E8\u54C1\u306E\u5B9A\u7FA9\u304B\u3089\u56F3\u3068\u64CD\u4F5C\u3067\u304D\u308B\u90E8\u54C1\u3092\u63CF\u304F\u3002\u30AA\u30D5\u306E\u3068\u304D\u306F\u30DE\u30FC\u30AB\u30FC\u3092\u53D6\u308A\u9664\u304D\u3001\u5B9A\u7FA9\u3092 JSON \u306E\u30B3\u30FC\u30C9\u30D6\u30ED\u30C3\u30AF\u306E\u307E\u307E\u63CF\u304F\u3002",
           type: "boolean",
           default: true
         },
         "diagram-resize": {
           title: "\u56F3\u306E\u30EA\u30B5\u30A4\u30BA\u30CF\u30F3\u30C9\u30EB\u306E\u6A5F\u80FD",
-          description: "\u56F3\u306E\u90E8\u54C1\u306E\u8868\u793A\u3059\u308B\u67A0\u306E\u53F3\u4E0B\u306B\u3001\u9AD8\u3055\u3092\u5909\u3048\u308B\u30EA\u30B5\u30A4\u30BA\u30CF\u30F3\u30C9\u30EB\u3092\u7F6E\u304F\u3002\u30AA\u30D5\u306E\u3068\u304D\u306F\u7F6E\u304B\u305A\u3001\u8868\u793A\u3059\u308B\u67A0\u306F\u5B9A\u7FA9\u304B\u3089\u6C7A\u307E\u308B\u9AD8\u3055\u306E\u307E\u307E\u306B\u3059\u308B\u3002",
+          description: "\u56F3\u306E\u90E8\u54C1\u306E\u8868\u793A\u3059\u308B\u67A0\u306E\u53F3\u4E0B\u306B\u3001\u9AD8\u3055\u3092\u5909\u3048\u308B\u30EA\u30B5\u30A4\u30BA\u30CF\u30F3\u30C9\u30EB\u3092\u914D\u7F6E\u3059\u308B\u3002\u30AA\u30D5\u306E\u3068\u304D\u306F\u914D\u7F6E\u305B\u305A\u3001\u8868\u793A\u3059\u308B\u67A0\u306F\u5B9A\u7FA9\u304B\u3089\u6C7A\u307E\u308B\u9AD8\u3055\u306E\u307E\u307E\u306B\u3059\u308B\u3002",
           type: "boolean",
           default: true
         },
         glossary: {
           title: "\u7528\u8A9E\u306E\u6A5F\u80FD",
-          description: "\u7D22\u5F15\u306E `terms` \u3068\u7528\u8A9E\u96C6\u306E\u8868\u306E\u7528\u8A9E\u306B\u4E0B\u7DDA\u3068\u610F\u5473\u306E\u30C4\u30FC\u30EB\u30C1\u30C3\u30D7\u3092\u4ED8\u3051\u3001`<!-- glossary -->` \u306E\u8868\u3092\u7528\u8A9E\u96C6\u306B\u5165\u308C\u308B\u3002\u30AA\u30D5\u306E\u3068\u304D\u306F\u5370\u3092\u53D6\u308A\u9664\u304D\u3001\u8868\u3092\u666E\u901A\u306E\u8868\u3068\u3057\u3066\u63CF\u304F\u3002",
+          description: "\u7D22\u5F15\u306E `terms` \u3068\u7528\u8A9E\u96C6\u306E\u8868\u306E\u7528\u8A9E\u306B\u4E0B\u7DDA\u3068\u610F\u5473\u306E\u30C4\u30FC\u30EB\u30C1\u30C3\u30D7\u3092\u4ED8\u3051\u3001`<!-- glossary -->` \u306E\u8868\u3092\u7528\u8A9E\u96C6\u306B\u5165\u308C\u308B\u3002\u30AA\u30D5\u306E\u3068\u304D\u306F\u30DE\u30FC\u30AB\u30FC\u3092\u53D6\u308A\u9664\u304D\u3001\u8868\u3092\u666E\u901A\u306E\u8868\u3068\u3057\u3066\u63CF\u304F\u3002",
           type: "boolean",
           default: true
         },
         backlinks: {
           title: "\u95A2\u9023\u6587\u66F8\u306E\u6A5F\u80FD",
-          description: "\u6587\u66F8\u306E\u672B\u5C3E\u306B\u95A2\u9023\u6587\u66F8\uFF08\u88AB\u53C2\u7167\uFF09\u306E\u4E00\u89A7\u3092\u7F6E\u304D\u3001\u7D22\u5F15\u306E\u6587\u66F8\u306E `aliases` \u306B\u4E00\u81F4\u3057\u305F\u8A9E\u306E\u30C4\u30FC\u30EB\u30C1\u30C3\u30D7\u306B\u95A2\u9023\u6587\u66F8\u3092\u51FA\u3059\u3002\u30AA\u30D5\u306E\u6587\u66F8\u306F\u53C2\u7167\u306E\u8868\u3067\u53C2\u7167\u5143\u306B\u3082\u53C2\u7167\u5148\u306B\u3082\u306A\u3089\u306A\u3044\u3002",
+          description: "\u6587\u66F8\u306E\u672B\u5C3E\u306B\u95A2\u9023\u6587\u66F8\uFF08\u88AB\u53C2\u7167\uFF09\u306E\u4E00\u89A7\u3092\u914D\u7F6E\u3057\u3001\u7D22\u5F15\u306E\u6587\u66F8\u306E `aliases` \u306B\u4E00\u81F4\u3057\u305F\u5358\u8A9E\u306E\u30C4\u30FC\u30EB\u30C1\u30C3\u30D7\u306B\u95A2\u9023\u6587\u66F8\u3092\u51FA\u3059\u3002\u30AA\u30D5\u306E\u6587\u66F8\u306F\u53C2\u7167\u306E\u8868\u3067\u53C2\u7167\u5143\u306B\u3082\u53C2\u7167\u5148\u306B\u3082\u306A\u3089\u306A\u3044\u3002",
           type: "boolean",
           default: true
         },
         html: {
           title: "\u57CB\u3081\u8FBC\u3093\u3060 HTML \u306E\u6A5F\u80FD",
-          description: "`<!-- html -->` \u306E\u7BC4\u56F2\u306E `html` \u306E\u30B3\u30FC\u30C9\u30D6\u30ED\u30C3\u30AF\u306E\u4E2D\u8EAB\u3092 HTML \u3068\u3057\u3066\u63CF\u304D\u3001\u4E2D\u306E\u56F3\u306E\u90E8\u54C1\u306E custom element \u3092\u56F3\u306B\u3059\u308B\u3002\u30AA\u30D5\u306E\u3068\u304D\u306F\u5370\u3092\u53D6\u308A\u9664\u304D\u3001\u30B3\u30FC\u30C9\u30D6\u30ED\u30C3\u30AF\u306E\u307E\u307E\u63CF\u304F\u3002",
+          description: "`<!-- html -->` \u306E\u7BC4\u56F2\u306E `html` \u306E\u30B3\u30FC\u30C9\u30D6\u30ED\u30C3\u30AF\u306E\u4E2D\u8EAB\u3092 HTML \u3068\u3057\u3066\u63CF\u304D\u3001\u4E2D\u306E\u56F3\u306E\u90E8\u54C1\u306E custom element \u3092\u56F3\u306B\u3059\u308B\u3002\u30AA\u30D5\u306E\u3068\u304D\u306F\u30DE\u30FC\u30AB\u30FC\u3092\u53D6\u308A\u9664\u304D\u3001\u30B3\u30FC\u30C9\u30D6\u30ED\u30C3\u30AF\u306E\u307E\u307E\u63CF\u304F\u3002",
           type: "boolean",
           default: true
         },
         "html-scripts": {
           title: "\u7BC4\u56F2\u306E\u30B9\u30AF\u30EA\u30D7\u30C8\u306E\u6A5F\u80FD",
-          description: "`<!-- html -->` \u306E\u7BC4\u56F2\u306E `css`\u30FB`ts`\u30FB`js` \u3092\u63CF\u3044\u305F HTML \u306B\u5F53\u3066\u308B\u3002\u30AA\u30D5\u306E\u3068\u304D\u306F\u7BC4\u56F2\u306E `html` \u3060\u3051\u3092\u63CF\u304D\u3001`css`\u30FB`ts`\u30FB`js` \u3092\u30B3\u30FC\u30C9\u306E\u307E\u307E\u63CF\u304F\u3002\u6587\u66F8\u306E `<!-- features: +html-scripts -->` \u304C\u305D\u306E\u6587\u66F8\u3060\u3051\u4E0A\u66F8\u304D\u3059\u308B\u3002",
+          description: "`<!-- html -->` \u306E\u7BC4\u56F2\u306E `css`\u30FB`ts`\u30FB`js` \u3092\u63CF\u3044\u305F HTML \u306B\u9069\u7528\u3059\u308B\u3002\u30AA\u30D5\u306E\u3068\u304D\u306F\u7BC4\u56F2\u306E `html` \u3060\u3051\u3092\u63CF\u304D\u3001`css`\u30FB`ts`\u30FB`js` \u3092\u30B3\u30FC\u30C9\u306E\u307E\u307E\u63CF\u304F\u3002\u6587\u66F8\u306E `<!-- features: +html-scripts -->` \u304C\u305D\u306E\u6587\u66F8\u3060\u3051\u4E0A\u66F8\u304D\u3059\u308B\u3002",
           type: "boolean",
           default: false
         },
         mermaid: {
           title: "mermaid \u306E\u30B3\u30FC\u30C9\u30D6\u30ED\u30C3\u30AF\u306E\u6A5F\u80FD",
-          description: "\u8A00\u8A9E `mermaid` \u306E\u30B3\u30FC\u30C9\u30D6\u30ED\u30C3\u30AF\u3092\u56F3\u306B\u3059\u308B\u3002\u30AA\u30D5\u306E\u3068\u304D\u306F\u30B3\u30FC\u30C9\u30D6\u30ED\u30C3\u30AF\u306E\u307E\u307E\u63CF\u304D\u3001mermaid \u3092\u8AAD\u307E\u306A\u3044\u3002\u6587\u66F8\u306E `<!-- features: -mermaid -->` \u304C\u305D\u306E\u6587\u66F8\u3060\u3051\u4E0A\u66F8\u304D\u3059\u308B\u3002",
+          description: "\u8A00\u8A9E `mermaid` \u306E\u30B3\u30FC\u30C9\u30D6\u30ED\u30C3\u30AF\u3092\u56F3\u306B\u3059\u308B\u3002\u30AA\u30D5\u306E\u3068\u304D\u306F\u30B3\u30FC\u30C9\u30D6\u30ED\u30C3\u30AF\u306E\u307E\u307E\u63CF\u304D\u3001mermaid \u3092\u8AAD\u307F\u8FBC\u307E\u306A\u3044\u3002\u6587\u66F8\u306E `<!-- features: -mermaid -->` \u304C\u305D\u306E\u6587\u66F8\u3060\u3051\u4E0A\u66F8\u304D\u3059\u308B\u3002",
+          type: "boolean",
+          default: true
+        },
+        map: {
+          title: "map \u306E\u6A5F\u80FD",
+          description: "`<!-- map -->` \u306E\u7BC4\u56F2\u306E Mermaid \u3068\u88DC\u8DB3\u3092\u3001\u5165\u308C\u5B50\u306E\u30B0\u30EB\u30FC\u30D7\u3092\u81EA\u52D5\u3067\u914D\u7F6E\u3057\u305F\u56F3\u306B\u3059\u308B\u3002\u30AA\u30D5\u306E\u3068\u304D\u306F\u7BC4\u56F2\u306E\u30DE\u30FC\u30AB\u30FC\u3068\u88DC\u8DB3\u3092\u53D6\u308A\u9664\u304D\u3001Mermaid \u306E\u30D6\u30ED\u30C3\u30AF\u3092 mermaid \u306E\u30B3\u30FC\u30C9\u30D6\u30ED\u30C3\u30AF\u3068\u3057\u3066\u63CF\u304F\u3002\u6587\u66F8\u306E `<!-- features: -map -->` \u304C\u305D\u306E\u6587\u66F8\u3060\u3051\u4E0A\u66F8\u304D\u3059\u308B\u3002",
           type: "boolean",
           default: true
         },
         hints: {
           title: "\u30D2\u30F3\u30C8\u306E\u6A5F\u80FD",
-          description: "\u57CB\u3081\u8FBC\u3093\u3060 HTML \u306E `data-hint`\u3001\u56F3\u306E\u7BB1\u306E `hint`\u30FB`io`\u3001\u7DDA\u306E `tip` \u306E\u30C4\u30FC\u30EB\u30C1\u30C3\u30D7\u3092\u51FA\u3059\u3002\u30AA\u30D5\u306E\u3068\u304D\u306F\u5370\u3068\u30C4\u30FC\u30EB\u30C1\u30C3\u30D7\u306E\u4E2D\u8EAB\u3092\u51FA\u3055\u305A\u3001\u7DDA\u306E\u30E9\u30D9\u30EB\u3068\u7BB1\u306E\u540D\u524D\u306F\u51FA\u3059\u3002",
+          description: "\u57CB\u3081\u8FBC\u3093\u3060 HTML \u306E `data-hint`\u3001\u56F3\u306E\u30CE\u30FC\u30C9\u306E `hint`\u30FB`io`\u3001\u7DDA\u306E `tip` \u306E\u30C4\u30FC\u30EB\u30C1\u30C3\u30D7\u3092\u51FA\u3059\u3002\u30AA\u30D5\u306E\u3068\u304D\u306F\u30DE\u30FC\u30AB\u30FC\u3068\u30C4\u30FC\u30EB\u30C1\u30C3\u30D7\u306E\u4E2D\u8EAB\u3092\u51FA\u3055\u305A\u3001\u7DDA\u306E\u30E9\u30D9\u30EB\u3068\u30CE\u30FC\u30C9\u306E\u540D\u524D\u306F\u51FA\u3059\u3002",
           type: "boolean",
           default: true
         },
         views: {
           title: "\u30D3\u30E5\u30FC\u306E\u6A5F\u80FD",
-          description: "`<!-- view -->` \u306E\u7BC4\u56F2\u306E\u8868\u3092\u3001\u30DC\u30FC\u30C9\u8868\u793A\u3068\u8868\u5F62\u5F0F\u3092\u5207\u308A\u66FF\u3048\u308B\u30D3\u30E5\u30FC\u306B\u3059\u308B\u3002\u30AA\u30D5\u306E\u3068\u304D\u306F\u5370\u3092\u53D6\u308A\u9664\u304D\u3001\u8868\u306E\u307E\u307E\u63CF\u304F\u3002",
+          description: "`<!-- view -->` \u306E\u7BC4\u56F2\u306E\u8868\u3092\u3001\u30DC\u30FC\u30C9\u8868\u793A\u3068\u8868\u5F62\u5F0F\u3092\u5207\u308A\u66FF\u3048\u308B\u30D3\u30E5\u30FC\u306B\u3059\u308B\u3002\u30AA\u30D5\u306E\u3068\u304D\u306F\u30DE\u30FC\u30AB\u30FC\u3092\u53D6\u308A\u9664\u304D\u3001\u8868\u306E\u307E\u307E\u63CF\u304F\u3002",
           type: "boolean",
           default: true
         },
         comments: {
           title: "\u30B3\u30E1\u30F3\u30C8\u306E\u6A5F\u80FD",
-          description: "\u8AAD\u3080\u4EBA\u304C\u672C\u6587\u306E\u9078\u3093\u3060\u7B87\u6240\u306B\u30B3\u30E1\u30F3\u30C8\u3092\u4ED8\u3051\u3089\u308C\u308B\u3088\u3046\u306B\u3059\u308B\u3002\u4F7F\u3046\u5074\u304C `mount` \u306B\u30B3\u30E1\u30F3\u30C8\u306E\u8AAD\u307F\u66F8\u304D\u306E\u95A2\u6570\uFF08`commentStore`\uFF09\u3092\u6E21\u3057\u305F\u3068\u304D\u3060\u3051\u52B9\u304F\u3002\u30B3\u30E1\u30F3\u30C8\u306F\u4F7F\u3046\u5074\u306E\u4FDD\u5B58\u5148\u304C\u8981\u308A\u3001\u4F7F\u308F\u306A\u3044\u6587\u66F8\u3067\u6587\u5B57\u3092\u9078\u3076\u305F\u3073\u306B\u30DC\u30BF\u30F3\u3092\u51FA\u3055\u306A\u3044\u305F\u3081\u3001\u65E2\u5B9A\u3092\u30AA\u30D5\u306B\u3059\u308B\u3002",
+          description: "\u8AAD\u8005\u304C\u672C\u6587\u306E\u9078\u3093\u3060\u7B87\u6240\u306B\u30B3\u30E1\u30F3\u30C8\u3092\u4ED8\u3051\u3089\u308C\u308B\u3088\u3046\u306B\u3059\u308B\u3002\u5229\u7528\u5074\u304C `mount` \u306B\u30B3\u30E1\u30F3\u30C8\u306E\u8AAD\u307F\u8FBC\u307F\u3068\u4FDD\u5B58\u306E\u95A2\u6570\uFF08`commentStore`\uFF09\u3092\u6307\u5B9A\u3057\u305F\u3068\u304D\u3060\u3051\u6709\u52B9\u306B\u306A\u308B\u3002\u30B3\u30E1\u30F3\u30C8\u306F\u5229\u7528\u5074\u306E\u4FDD\u5B58\u5148\u304C\u8981\u308A\u3001\u4F7F\u7528\u3057\u306A\u3044\u6587\u66F8\u3067\u6587\u5B57\u3092\u9078\u3076\u305F\u3073\u306B\u30DC\u30BF\u30F3\u3092\u51FA\u3055\u306A\u3044\u305F\u3081\u3001\u65E2\u5B9A\u3092\u30AA\u30D5\u306B\u3059\u308B\u3002",
           type: "boolean",
           default: false
         },
         "side-toc": {
           title: "\u53F3\u5074\u306E\u76EE\u6B21\u306E\u6A5F\u80FD",
-          description: "\u63CF\u3044\u305F\u6587\u66F8\u306E\u53F3\u5074\u306B h1\u301Ch3 \u306E\u76EE\u6B21\u3092\u7F6E\u304F\u3002\u898B\u51FA\u3057\u304C\u7121\u3044\u6587\u66F8\u306B\u306F\u7F6E\u304B\u306A\u3044\u3002\u6587\u66F8\u306E `<!-- features: +\u6A5F\u80FD -\u6A5F\u80FD -->` \u3067\u305D\u306E\u6587\u66F8\u3060\u3051\u30AA\u30F3\u30FB\u30AA\u30D5\u3067\u304D\u308B\u3002",
+          description: "\u63CF\u3044\u305F\u6587\u66F8\u306E\u53F3\u5074\u306B h1\u301Ch3 \u306E\u76EE\u6B21\u3092\u914D\u7F6E\u3059\u308B\u3002\u898B\u51FA\u3057\u304C\u7121\u3044\u6587\u66F8\u306B\u306F\u914D\u7F6E\u3057\u306A\u3044\u3002\u6587\u66F8\u306E `<!-- features: +\u6A5F\u80FD -\u6A5F\u80FD -->` \u3067\u305D\u306E\u6587\u66F8\u3060\u3051\u30AA\u30F3\u30FB\u30AA\u30D5\u3067\u304D\u308B\u3002",
           type: "boolean",
           default: true
         },
@@ -14983,19 +14989,19 @@ var mdmark_config_schema_default = {
         },
         "text-color": {
           title: "\u672C\u6587\u306E\u6587\u5B57\u306E\u8272\u306E\u6A5F\u80FD",
-          description: "`[\u6587\u5B57]{color=\u8272}` \u306E\u6587\u5B57\u306B\u540D\u524D\u306E\u8272\u3092\u4ED8\u3051\u308B\u3002\u30AA\u30D5\u306E\u3068\u304D\u306F\u66F8\u3044\u305F\u6587\u5B57\u306E\u307E\u307E\u63CF\u304F\u3002",
+          description: "`[\u6587\u5B57]{color=\u8272}` \u306E\u6587\u5B57\u306B\u540D\u524D\u306E\u8272\u3092\u4ED8\u3051\u308B\u3002\u30AA\u30D5\u306E\u3068\u304D\u306F\u8A18\u8F09\u3057\u305F\u6587\u5B57\u306E\u307E\u307E\u63CF\u304F\u3002",
           type: "boolean",
           default: true
         },
         images: {
           title: "\u753B\u50CF\u306E\u6A5F\u80FD",
-          description: "\u753B\u50CF\u306E\u5F8C\u308D\u306E `{\u2026}` \u306E\u5C5E\u6027\u3092\u5F53\u3066\u3001\u753B\u50CF\u3060\u3051\u306E\u6BB5\u843D\u3092\u56F3\u306B\u3057\u3001`#only-dark`\u30FB`#only-light` \u306E\u753B\u50CF\u3092\u914D\u8272\u306B\u5408\u308F\u305B\u3066\u51FA\u3059\u3002\u30AA\u30D5\u306E\u3068\u304D\u306F `{\u2026}` \u3092\u66F8\u3044\u305F\u6587\u5B57\u306E\u307E\u307E\u63CF\u304F\u3002",
+          description: "\u753B\u50CF\u306E\u5F8C\u308D\u306E `{\u2026}` \u306E\u5C5E\u6027\u3092\u5F53\u3066\u3001\u753B\u50CF\u3060\u3051\u306E\u6BB5\u843D\u3092\u56F3\u306B\u3057\u3001`#only-dark`\u30FB`#only-light` \u306E\u753B\u50CF\u3092\u914D\u8272\u306B\u5408\u308F\u305B\u3066\u51FA\u3059\u3002\u30AA\u30D5\u306E\u3068\u304D\u306F `{\u2026}` \u3092\u8A18\u8F09\u3057\u305F\u6587\u5B57\u306E\u307E\u307E\u63CF\u304F\u3002",
           type: "boolean",
           default: true
         },
         gallery: {
           title: "\u30AE\u30E3\u30E9\u30EA\u30FC\u306E\u6A5F\u80FD",
-          description: "`<!-- gallery -->` \u306E\u7BC4\u56F2\u306E\u753B\u50CF\u3092\u683C\u5B50\u306B\u4E26\u3079\u308B\u3002\u30AA\u30D5\u306E\u3068\u304D\u306F\u5370\u3092\u53D6\u308A\u9664\u304D\u3001\u753B\u50CF\u3092\u4E26\u3079\u306A\u3044\u3002",
+          description: "`<!-- gallery -->` \u306E\u7BC4\u56F2\u306E\u753B\u50CF\u3092\u683C\u5B50\u306B\u4E26\u3079\u308B\u3002\u30AA\u30D5\u306E\u3068\u304D\u306F\u30DE\u30FC\u30AB\u30FC\u3092\u53D6\u308A\u9664\u304D\u3001\u753B\u50CF\u3092\u4E26\u3079\u306A\u3044\u3002",
           type: "boolean",
           default: true
         },
@@ -15025,9 +15031,15 @@ var mdmark_config_schema_default = {
         },
         "card-grid": {
           title: "\u30AB\u30FC\u30C9\u306E\u683C\u5B50\u306E\u6A5F\u80FD",
-          description: "`<!-- cards -->` \u306E\u5370\u3067\u56F2\u3093\u3060\u30EA\u30B9\u30C8\u3092\u30AB\u30FC\u30C9\u306E\u683C\u5B50\u306B\u3059\u308B\u3002\u30AA\u30D5\u306E\u3068\u304D\u306F\u30EA\u30B9\u30C8\u306E\u307E\u307E\u63CF\u304F\u3002",
+          description: "`<!-- cards -->` \u306E\u30DE\u30FC\u30AB\u30FC\u3067\u56F2\u3093\u3060\u30EA\u30B9\u30C8\u3092\u30AB\u30FC\u30C9\u306E\u683C\u5B50\u306B\u3059\u308B\u3002\u30AA\u30D5\u306E\u3068\u304D\u306F\u30EA\u30B9\u30C8\u306E\u307E\u307E\u63CF\u304F\u3002",
           type: "boolean",
           default: true
+        },
+        frontmatter: {
+          title: "\u30D5\u30ED\u30F3\u30C8\u30DE\u30BF\u30FC\u306E\u8868\u793A\u306E\u6A5F\u80FD",
+          description: "\u6587\u66F8\u306E\u5148\u982D\u306E YAML \u306E\u30D5\u30ED\u30F3\u30C8\u30DE\u30BF\u30FC\u3092\u3001\u672C\u6587\u306E\u5148\u982D\u306E\u9589\u3058\u305F\u6298\u308A\u305F\u305F\u307F\u306B\u8A00\u8A9E yaml \u306E\u30B3\u30FC\u30C9\u30D6\u30ED\u30C3\u30AF\u3067\u51FA\u3059\u3002\u30AA\u30D5\u306E\u3068\u304D\u3082\u30D5\u30ED\u30F3\u30C8\u30DE\u30BF\u30FC\u306F\u672C\u6587\u304B\u3089\u9664\u5916\u3059\u308B\u3002",
+          type: "boolean",
+          default: false
         }
       },
       additionalProperties: {
@@ -15071,12 +15083,12 @@ var mdmark_config_schema_default = {
     },
     index: {
       title: "\u7D22\u5F15\u306E\u5834\u6240",
-      description: "\u7D22\u5F15\u306E YAML \u306E\u30D1\u30B9\u3002`mdmark.config.yaml` \u306E\u3042\u308B\u30D5\u30A9\u30EB\u30C0\u304B\u3089\u306E\u76F8\u5BFE\u30D1\u30B9\u3002`mount`\u30FB`render` \u306F\u3053\u306E\u30AD\u30FC\u3092\u8AAD\u307E\u305A\u3001\u4F7F\u3046\u5074\u306E\u30B5\u30FC\u30D0\u30FC\u304C\u8AAD\u3093\u3060\u7D22\u5F15\u3092 `opts.index` \u306B\u6E21\u3059\u3002\u7D22\u5F15\u306E\u6587\u66F8\u306E `path` \u306F\u3053\u306E\u7D22\u5F15\u306E\u30D5\u30A1\u30A4\u30EB\u306E\u3042\u308B\u30D5\u30A9\u30EB\u30C0\u304B\u3089\u306E\u76F8\u5BFE\u30D1\u30B9\u3002",
+      description: "\u7D22\u5F15\u306E YAML \u306E\u30D1\u30B9\u3002`mdmark.config.yaml` \u306E\u3042\u308B\u30D5\u30A9\u30EB\u30C0\u304B\u3089\u306E\u76F8\u5BFE\u30D1\u30B9\u3002`mount`\u30FB`render` \u306F\u3053\u306E\u30AD\u30FC\u3092\u8AAD\u307F\u8FBC\u307E\u305A\u3001\u5229\u7528\u5074\u306E\u30B5\u30FC\u30D0\u30FC\u304C\u8AAD\u307F\u8FBC\u3093\u3060\u7D22\u5F15\u3092 `opts.index` \u306B\u6307\u5B9A\u3059\u308B\u3002\u7D22\u5F15\u306E\u6587\u66F8\u306E `path` \u306F\u3053\u306E\u7D22\u5F15\u306E\u30D5\u30A1\u30A4\u30EB\u306E\u3042\u308B\u30D5\u30A9\u30EB\u30C0\u304B\u3089\u306E\u76F8\u5BFE\u30D1\u30B9\u3002",
       type: "string"
     },
     libraries: {
       title: "\u5916\u90E8\u30E9\u30A4\u30D6\u30E9\u30EA\u306E\u5BFE\u5FDC\u8868",
-      description: "\u5370\u306E\u540D\u524D\u304B\u3089\u5916\u90E8\u30E9\u30A4\u30D6\u30E9\u30EA\u306E\u30E2\u30B8\u30E5\u30FC\u30EB\u306E URL \u3092\u5F15\u304F\u3002\u65E2\u5B9A\u306E\u5BFE\u5FDC\u8868\u306B\u91CD\u306D\u3001\u540C\u3058\u540D\u524D\u306F URL \u3092\u4E0A\u66F8\u304D\u3057\u3001\u7121\u3044\u540D\u524D\u306F\u8DB3\u3059\u3002\u76F8\u5BFE URL \u306F\u30DA\u30FC\u30B8\u306E `document.baseURI` \u3092\u57FA\u6E96\u306B\u89E3\u6C7A\u3059\u308B\u3002",
+      description: "\u30DE\u30FC\u30AB\u30FC\u306E\u540D\u524D\u304B\u3089\u5916\u90E8\u30E9\u30A4\u30D6\u30E9\u30EA\u306E\u30E2\u30B8\u30E5\u30FC\u30EB\u306E URL \u3092\u53C2\u7167\u3059\u308B\u3002\u65E2\u5B9A\u306E\u5BFE\u5FDC\u8868\u306B\u91CD\u306D\u3001\u540C\u3058\u540D\u524D\u306F URL \u3092\u4E0A\u66F8\u304D\u3057\u3001\u7121\u3044\u540D\u524D\u306F\u8FFD\u52A0\u3059\u308B\u3002\u76F8\u5BFE URL \u306F\u30DA\u30FC\u30B8\u306E `document.baseURI` \u3092\u57FA\u6E96\u306B\u89E3\u6C7A\u3059\u308B\u3002",
       type: "object",
       propertyNames: {
         pattern: "^[a-z][a-z0-9-]*$"
@@ -15107,7 +15119,7 @@ var mdmark_config_schema_default = {
     },
     "side-toc": {
       title: "\u53F3\u5074\u306E\u76EE\u6B21\u306E\u8A2D\u5B9A",
-      description: "\u63CF\u3044\u305F\u6587\u66F8\u306E\u53F3\u5074\u306B\u7F6E\u304F\u76EE\u6B21\u306E\u51FA\u3057\u65B9\u3002",
+      description: "\u63CF\u3044\u305F\u6587\u66F8\u306E\u53F3\u5074\u306B\u914D\u7F6E\u3059\u308B\u76EE\u6B21\u306E\u51FA\u3057\u65B9\u3002",
       type: "object",
       properties: {
         mode: {
@@ -15118,26 +15130,46 @@ var mdmark_config_schema_default = {
         }
       }
     },
+    table: {
+      title: "\u8868\u306E\u8A2D\u5B9A",
+      description: "\u8868\u306E\u30DE\u30FC\u30AB\u30FC\u3068\u3001\u30DE\u30FC\u30AB\u30FC\u3067\u56F2\u307E\u306A\u3044\u8868\u306B\u4ED8\u3051\u308B\u6A5F\u80FD\u306E\u52D5\u304D\u3002",
+      type: "object",
+      properties: {
+        pin: {
+          title: "\u30D4\u30F3\u6B62\u3081\u306E\u52D5\u304D",
+          description: "`each` \u306F\u62BC\u3057\u305F\u5217\u3060\u3051\u3092\u7559\u3081\u3001\u8907\u6570\u306E\u5217\u3092\u7559\u3081\u3089\u308C\u308B\u3002\u7559\u3081\u305F\u5217\u306F\u3001\u5DE6\u306E\u5217\u304C\u898B\u3048\u3066\u3044\u308B\u9593\u306F\u53F3\u7AEF\u306B\u3001\u5DE6\u306E\u5217\u3092\u8D8A\u3048\u3066\u30B9\u30AF\u30ED\u30FC\u30EB\u3059\u308B\u3068\u5DE6\u7AEF\u306B\u7559\u307E\u308B\u3002`through` \u306F\u62BC\u3057\u305F\u5217\u307E\u3067\u306E\u5217\u3092\u5DE6\u7AEF\u306B\u7559\u3081\u308B\u3002`mount` \u306F\u4ED6\u306E\u5024\u3092\u7121\u8996\u3057\u3066 `each` \u306B\u3057\u3001CLI \u306F\u4ED6\u306E\u5024\u3092\u8A2D\u5B9A\u30D5\u30A1\u30A4\u30EB\u306E\u8AA4\u308A\u306B\u3059\u308B\u3002",
+          enum: ["each", "through"],
+          default: "each"
+        },
+        long_column_min: {
+          title: "\u9577\u6587\u306E\u5217\u306E\u6700\u5C0F\u306E\u5E45",
+          description: "\u8868\u306E\u9577\u6587\u306E\u5217\u306E\u6700\u5C0F\u306E\u5E45\u306E em \u306E\u6570\u3002\u5217\u306E\u6700\u3082\u9577\u3044\u884C\u306E\u5E45\u306E\u65B9\u304C\u72ED\u3051\u308C\u3070\u3001\u305D\u306E\u5E45\u3092\u6700\u5C0F\u306E\u5E45\u306B\u3059\u308B\u3002\u5217\u3054\u3068\u306E `width.min` \u304C\u3042\u308C\u3070\u305D\u3061\u3089\u3092\u512A\u5148\u3059\u308B\u3002`mount` \u306F\u4ED6\u306E\u5024\u3092\u7121\u8996\u3057\u3066 `45` \u306B\u3057\u3001CLI \u306F\u4ED6\u306E\u5024\u3092\u8A2D\u5B9A\u30D5\u30A1\u30A4\u30EB\u306E\u8AA4\u308A\u306B\u3059\u308B\u3002",
+          type: "number",
+          exclusiveMinimum: 0,
+          default: 45
+        }
+      }
+    },
     colorScheme: {
       title: "\u660E\u6697",
-      description: "\u63CF\u3044\u305F\u6587\u66F8\u306E\u660E\u6697\u3002`light` \u306F\u660E\u308B\u3044\u914D\u8272\u3001`dark` \u306F\u30C0\u30FC\u30AF\u306E\u914D\u8272\u306B\u6C7A\u3081\u3001`auto` \u306F\u4ECA\u306E\u6C7A\u3081\u65B9\uFF08\u7956\u5148\u306E class\u30FBOS \u306E\u8A2D\u5B9A\uFF09\u306B\u4EFB\u305B\u308B\u3002\u6587\u66F8\u306E\u5148\u982D\u306E `<!-- page: scheme=\u2026 -->` \u306E\u5370\u304C\u3053\u306E\u5024\u306B\u52DD\u3064\u3002`mount` \u306F\u77E5\u3089\u306A\u3044\u5024\u3092\u7121\u8996\u3057\u3066 `auto` \u3067\u63CF\u304D\u3001CLI \u306F\u77E5\u3089\u306A\u3044\u5024\u3092 `mdmark check` \u306E\u305A\u308C\uFF08`unknown_color_scheme`\uFF09\u306B\u3059\u308B\u3002",
+      description: "\u63CF\u3044\u305F\u6587\u66F8\u306E\u660E\u6697\u3002`light` \u306F\u660E\u308B\u3044\u914D\u8272\u3001`dark` \u306F\u30C0\u30FC\u30AF\u306E\u914D\u8272\u306B\u6C7A\u3081\u3001`auto` \u306F\u4ECA\u306E\u6C7A\u3081\u65B9\uFF08\u7956\u5148\u306E class\u30FBOS \u306E\u8A2D\u5B9A\uFF09\u306B\u4EFB\u305B\u308B\u3002\u6587\u66F8\u306E\u5148\u982D\u306E `<!-- page: scheme=\u2026 -->` \u306E\u30DE\u30FC\u30AB\u30FC\u304C\u3053\u306E\u5024\u306B\u52DD\u3064\u3002`mount` \u306F\u77E5\u3089\u306A\u3044\u5024\u3092\u7121\u8996\u3057\u3066 `auto` \u3067\u63CF\u304D\u3001CLI \u306F\u77E5\u3089\u306A\u3044\u5024\u3092 `mdmark check` \u306E\u305A\u308C\uFF08`unknown_color_scheme`\uFF09\u306B\u3059\u308B\u3002",
       type: "string",
       default: "auto"
     },
     colorTheme: {
       title: "\u9078\u3076\u30C6\u30FC\u30DE",
-      description: "\u63CF\u3044\u305F\u6587\u66F8\u306E\u914D\u8272\u3092\u3001mdmark \u306B\u5165\u308C\u305F\u30C6\u30FC\u30DE\u304B\u3089\u9078\u3076\u3002`dev-swiss`\u30FB`theme-paper`\u30FB`theme-slate`\u30FB`theme-contrast` \u306E\u3069\u308C\u304B\u3002\u660E\u6697\u306F\u4ECA\u306E\u6C7A\u3081\u65B9\uFF08OS \u306E\u8A2D\u5B9A\u30FBclass\uFF09\u306E\u307E\u307E\u3001\u9078\u3093\u3060\u30C6\u30FC\u30DE\u306E\u4E2D\u3067\u660E\u308B\u3044\u914D\u8272\u3068\u30C0\u30FC\u30AF\u306E\u914D\u8272\u3092\u9078\u3076\u3002`mount` \u306F\u77E5\u3089\u306A\u3044\u540D\u524D\u3092\u7121\u8996\u3057\u3066 `dev-swiss` \u3067\u63CF\u304D\u3001CLI \u306F\u77E5\u3089\u306A\u3044\u540D\u524D\u3092 `mdmark check` \u306E\u305A\u308C\uFF08`unknown_color_theme`\uFF09\u3068\u66F8\u304D\u51FA\u3057\u306E\u8B66\u544A\u306B\u3059\u308B\u3002\u4F7F\u3046\u5074\u306E CSS \u306E `theme` \u3068\u306F\u5225\u306E\u30AD\u30FC\u3002",
+      description: "\u63CF\u3044\u305F\u6587\u66F8\u306E\u914D\u8272\u3092\u3001mdmark \u306B\u5165\u308C\u305F\u30C6\u30FC\u30DE\u304B\u3089\u9078\u3076\u3002`dev-swiss`\u30FB`theme-paper`\u30FB`theme-slate`\u30FB`theme-contrast` \u306E\u3069\u308C\u304B\u3002\u660E\u6697\u306F\u4ECA\u306E\u6C7A\u3081\u65B9\uFF08OS \u306E\u8A2D\u5B9A\u30FBclass\uFF09\u306E\u307E\u307E\u3001\u9078\u3093\u3060\u30C6\u30FC\u30DE\u306E\u4E2D\u3067\u660E\u308B\u3044\u914D\u8272\u3068\u30C0\u30FC\u30AF\u306E\u914D\u8272\u3092\u9078\u3076\u3002`mount` \u306F\u77E5\u3089\u306A\u3044\u540D\u524D\u3092\u7121\u8996\u3057\u3066 `dev-swiss` \u3067\u63CF\u304D\u3001CLI \u306F\u77E5\u3089\u306A\u3044\u540D\u524D\u3092 `mdmark check` \u306E\u305A\u308C\uFF08`unknown_color_theme`\uFF09\u3068\u66F8\u304D\u51FA\u3057\u306E\u8B66\u544A\u306B\u3059\u308B\u3002\u5229\u7528\u5074\u306E CSS \u306E `theme` \u3068\u306F\u5225\u306E\u30AD\u30FC\u3002",
       type: "string",
       default: "dev-swiss"
     },
     labels: {
       title: "\u90E8\u54C1\u306E\u6587\u8A00",
-      description: "mdmark \u304C\u63CF\u304F\u90E8\u54C1\u306E\u6587\u8A00\u3002\u77E5\u3089\u306A\u3044\u30AD\u30FC\u306F\u8AAD\u307E\u306A\u3044\u3002",
+      description: "mdmark \u304C\u63CF\u304F\u90E8\u54C1\u306E\u6587\u8A00\u3002\u77E5\u3089\u306A\u3044\u30AD\u30FC\u306F\u8AAD\u307F\u8FBC\u307E\u306A\u3044\u3002",
       type: "object",
       properties: {
         paramCopy: {
           title: "\u4ECA\u306E\u5024\u3092\u30B3\u30D4\u30FC\u3059\u308B\u30DC\u30BF\u30F3\u306E\u6587\u8A00",
-          description: "\u64CD\u4F5C\u3067\u304D\u308B\u90E8\u54C1\u306E\u4ECA\u306E\u5024\u3092\u30B3\u30D4\u30FC\u3059\u308B\u30DC\u30BF\u30F3\u306E\u3001\u30A2\u30A4\u30B3\u30F3\u306E\u5F8C\u308D\u306B\u63CF\u304F\u6587\u8A00\u3002\u30DC\u30BF\u30F3\u306E\u8AAD\u307F\u4E0A\u3052\u306E\u540D\u524D\u3082\u3053\u306E\u6587\u8A00\u306B\u306A\u308B\u3002`mount` \u306F\u7A7A\u6587\u5B57\u3068\u6587\u5B57\u5217\u3067\u306A\u3044\u5024\u3092\u7121\u8996\u3057\u3066\u65E2\u5B9A\u306E\u6587\u8A00\u3067\u63CF\u304D\u3001CLI \u306F\u7A7A\u3067\u306A\u3044\u6587\u5B57\u5217\u3067\u306A\u3044\u5024\u3092\u8A2D\u5B9A\u30D5\u30A1\u30A4\u30EB\u306E\u8AA4\u308A\u306B\u3059\u308B\u3002",
+          description: "\u64CD\u4F5C\u3067\u304D\u308B\u90E8\u54C1\u306E\u4ECA\u306E\u5024\u3092\u30B3\u30D4\u30FC\u3059\u308B\u30DC\u30BF\u30F3\u306E\u3001\u30A2\u30A4\u30B3\u30F3\u306E\u5F8C\u308D\u306B\u63CF\u304F\u6587\u8A00\u3002\u30DC\u30BF\u30F3\u306E\u30B9\u30AF\u30EA\u30FC\u30F3\u30EA\u30FC\u30C0\u30FC\u5411\u3051\u306E\u540D\u524D\u3082\u3053\u306E\u6587\u8A00\u306B\u306A\u308B\u3002`mount` \u306F\u7A7A\u6587\u5B57\u3068\u6587\u5B57\u5217\u3067\u306A\u3044\u5024\u3092\u7121\u8996\u3057\u3066\u65E2\u5B9A\u306E\u6587\u8A00\u3067\u63CF\u304D\u3001CLI \u306F\u7A7A\u3067\u306A\u3044\u6587\u5B57\u5217\u3067\u306A\u3044\u5024\u3092\u8A2D\u5B9A\u30D5\u30A1\u30A4\u30EB\u306E\u8AA4\u308A\u306B\u3059\u308B\u3002",
           type: "string",
           minLength: 1,
           default: "\u4ECA\u306E\u5024\u3092\u5199\u3059"
@@ -15146,12 +15178,12 @@ var mdmark_config_schema_default = {
     },
     syntax: {
       title: "\u8272\u5206\u3051\u306E\u8A2D\u5B9A",
-      description: "\u30B3\u30FC\u30C9\u30D6\u30ED\u30C3\u30AF\u306E\u8272\u5206\u3051\u306B\u4F7F\u3046\u30E9\u30A4\u30D6\u30E9\u30EA\u306E\u8A2D\u5B9A\u3002",
+      description: "\u30B3\u30FC\u30C9\u30D6\u30ED\u30C3\u30AF\u306E\u8272\u5206\u3051\u306B\u4F7F\u7528\u3059\u308B\u30E9\u30A4\u30D6\u30E9\u30EA\u306E\u8A2D\u5B9A\u3002",
       type: "object",
       properties: {
         url: {
           title: "\u8272\u5206\u3051\u306E\u30E9\u30A4\u30D6\u30E9\u30EA\u306E\u8AAD\u307F\u8FBC\u307F\u5148",
-          description: "\u8272\u5206\u3051\u306E\u30E9\u30A4\u30D6\u30E9\u30EA\uFF08highlight.js\uFF09\u306E `es/` \u30D5\u30A9\u30EB\u30C0\u306E URL\u3002\u672C\u4F53\u3092 `{url}core.min.js`\u3001\u8A00\u8A9E\u3092 `{url}languages/{\u8A00\u8A9E}.min.js` \u304B\u3089\u8AAD\u3080\u3002`mount` \u306F\u30DA\u30FC\u30B8\u306E `document.baseURI`\u3001CLI \u306F `mdmark.config.yaml` \u306E\u3042\u308B\u30D5\u30A9\u30EB\u30C0\u3092\u57FA\u6E96\u306B\u89E3\u6C7A\u3059\u308B\u3002`mount` \u306F\u6587\u5B57\u5217\u3067\u306A\u3044\u5024\u3092\u7121\u8996\u3057\u3066\u65E2\u5B9A\u3092\u5F53\u3066\u3001CLI \u306F\u6587\u5B57\u5217\u3067\u306A\u3044\u5024\u3092\u8A2D\u5B9A\u30D5\u30A1\u30A4\u30EB\u306E\u8AA4\u308A\u306B\u3059\u308B\u3002",
+          description: "\u8272\u5206\u3051\u306E\u30E9\u30A4\u30D6\u30E9\u30EA\uFF08highlight.js\uFF09\u306E `es/` \u30D5\u30A9\u30EB\u30C0\u306E URL\u3002\u672C\u4F53\u3092 `{url}core.min.js`\u3001\u8A00\u8A9E\u3092 `{url}languages/{\u8A00\u8A9E}.min.js` \u304B\u3089\u8AAD\u307F\u8FBC\u3080\u3002`mount` \u306F\u30DA\u30FC\u30B8\u306E `document.baseURI`\u3001CLI \u306F `mdmark.config.yaml` \u306E\u3042\u308B\u30D5\u30A9\u30EB\u30C0\u3092\u57FA\u6E96\u306B\u89E3\u6C7A\u3059\u308B\u3002`mount` \u306F\u6587\u5B57\u5217\u3067\u306A\u3044\u5024\u3092\u7121\u8996\u3057\u3066\u65E2\u5B9A\u3092\u5F53\u3066\u3001CLI \u306F\u6587\u5B57\u5217\u3067\u306A\u3044\u5024\u3092\u8A2D\u5B9A\u30D5\u30A1\u30A4\u30EB\u306E\u8AA4\u308A\u306B\u3059\u308B\u3002",
           type: "string",
           default: "https://cdn.jsdelivr.net/npm/@highlightjs/cdn-assets@11.12.0/es/"
         }
@@ -15159,12 +15191,12 @@ var mdmark_config_schema_default = {
     },
     "html-scripts": {
       title: "\u7BC4\u56F2\u306E\u30B9\u30AF\u30EA\u30D7\u30C8\u306E\u8A2D\u5B9A",
-      description: "`<!-- html -->` \u306E\u7BC4\u56F2\u306E `ts`\u30FB`js` \u306E\u5909\u63DB\u306B\u4F7F\u3046\u30E9\u30A4\u30D6\u30E9\u30EA\u306E\u8A2D\u5B9A\u3002",
+      description: "`<!-- html -->` \u306E\u7BC4\u56F2\u306E `ts`\u30FB`js` \u306E\u5909\u63DB\u306B\u4F7F\u7528\u3059\u308B\u30E9\u30A4\u30D6\u30E9\u30EA\u306E\u8A2D\u5B9A\u3002",
       type: "object",
       properties: {
         url: {
           title: "\u7BC4\u56F2\u306E\u30B9\u30AF\u30EA\u30D7\u30C8\u306E\u5909\u63DB\u306E\u30E9\u30A4\u30D6\u30E9\u30EA\u306E\u8AAD\u307F\u8FBC\u307F\u5148",
-          description: "\u7BC4\u56F2\u306E `ts`\u30FB`js` \u3092\u5909\u63DB\u3059\u308B\u30E9\u30A4\u30D6\u30E9\u30EA\uFF08@babel/standalone\uFF09\u306E ES \u30E2\u30B8\u30E5\u30FC\u30EB\u306E URL\u3002`mount` \u306F\u30DA\u30FC\u30B8\u306E `document.baseURI` \u3092\u57FA\u6E96\u306B\u89E3\u6C7A\u3059\u308B\u3002\u6587\u5B57\u5217\u3067\u306A\u3044\u5024\u306F\u7121\u8996\u3057\u3066\u65E2\u5B9A\u3092\u5F53\u3066\u308B\u3002",
+          description: "\u7BC4\u56F2\u306E `ts`\u30FB`js` \u3092\u5909\u63DB\u3059\u308B\u30E9\u30A4\u30D6\u30E9\u30EA\uFF08@babel/standalone\uFF09\u306E ES \u30E2\u30B8\u30E5\u30FC\u30EB\u306E URL\u3002`mount` \u306F\u30DA\u30FC\u30B8\u306E `document.baseURI` \u3092\u57FA\u6E96\u306B\u89E3\u6C7A\u3059\u308B\u3002\u6587\u5B57\u5217\u3067\u306A\u3044\u5024\u306F\u7121\u8996\u3057\u3066\u65E2\u5B9A\u3092\u9069\u7528\u3059\u308B\u3002",
           type: "string",
           default: "https://cdn.jsdelivr.net/npm/@babel/standalone@8.1.1/+esm"
         }
@@ -15183,7 +15215,7 @@ var mdmark_config_schema_default = {
         },
         theme: {
           title: "mermaid \u306E\u56F3\u306E\u30C6\u30FC\u30DE",
-          description: "`mdmark`\uFF08\u63CF\u3044\u305F\u6587\u66F8\u306E\u914D\u8272\u304B\u3089\u4F5C\u308B mdmark \u306E\u898B\u305F\u76EE\u306E\u30C6\u30FC\u30DE\uFF09\u304B\u3001mermaid \u306E\u30C6\u30FC\u30DE\u306E\u540D\u524D\uFF08`default`\u30FB`neutral`\u30FB`dark`\u30FB`forest`\u30FB`base`\uFF09\u3002\u77E5\u3089\u306A\u3044\u540D\u524D\u306F `mdmark` \u306B\u3059\u308B\u3002",
+          description: "`mdmark`\uFF08\u63CF\u3044\u305F\u6587\u66F8\u306E\u914D\u8272\u304B\u3089\u4F5C\u308B mdmark \u306E\u5916\u89B3\u306E\u30C6\u30FC\u30DE\uFF09\u304B\u3001mermaid \u306E\u30C6\u30FC\u30DE\u306E\u540D\u524D\uFF08`default`\u30FB`neutral`\u30FB`dark`\u30FB`forest`\u30FB`base`\uFF09\u3002\u77E5\u3089\u306A\u3044\u540D\u524D\u306F `mdmark` \u306B\u3059\u308B\u3002",
           type: "string",
           default: "mdmark"
         },
@@ -15195,14 +15227,97 @@ var mdmark_config_schema_default = {
         }
       }
     },
+    map: {
+      title: "map \u306E\u8A2D\u5B9A",
+      description: "map \u306E\u56F3\u306E\u3001\u540D\u524D\u306E\u9577\u3044\u30CE\u30FC\u30C9\u306E\u5E83\u3052\u65B9\u30FB\u72B6\u614B\u3092\u30AF\u30A8\u30EA\u6587\u5B57\u5217\u306B\u4FDD\u3064\u304B\u30FB\u30CE\u30FC\u30C9\u306E\u7A2E\u985E\u30FB\u7DDA\u306E\u7A2E\u985E\u3002",
+      type: "object",
+      properties: {
+        node_fit: {
+          title: "\u540D\u524D\u306E\u9577\u3044\u30CE\u30FC\u30C9\u306E\u5E83\u3052\u65B9",
+          description: "`height` \u306F\u5E45\u3092\u4E0A\u9650 220px \u306E\u307E\u307E\u6298\u308A\u8FD4\u3057\u3066\u9AD8\u3055\u3092\u5897\u3084\u3057\u3001`width` \u306F\u5E45\u3092\u4E0A\u9650 360px \u307E\u3067\u5E83\u3052\u3066\u304B\u3089\u6298\u308A\u8FD4\u3059\u3002",
+          type: "string",
+          enum: ["height", "width"],
+          default: "height"
+        },
+        url_state: {
+          title: "\u72B6\u614B\u3092\u30AF\u30A8\u30EA\u6587\u5B57\u5217\u306B\u4FDD\u3064\u304B",
+          description: "\u4E2D\u3078\u5165\u3063\u305F\u30B0\u30EB\u30FC\u30D7\u3068\u3001\u30B7\u30FC\u30B1\u30F3\u30B9\u56F3\u306E\u4E2D\u3060\u3051\u3092\u63CF\u304F\u30D6\u30ED\u30C3\u30AF\u3092\u3001URL \u306E\u30AF\u30A8\u30EA\u6587\u5B57\u5217 `map-{\u56F3\u306E\u756A\u53F7}` \u306B\u3082\u4FDD\u3064\u304B\u3002`false` \u3067\u306F\u30AF\u30A8\u30EA\u6587\u5B57\u5217\u3092\u8AAD\u307F\u3082\u66F8\u304D\u3082\u305B\u305A\u3001sessionStorage \u3060\u3051\u306B\u4FDD\u3064\u3002",
+          type: "boolean",
+          default: true
+        },
+        kinds: {
+          title: "\u30CE\u30FC\u30C9\u306E\u7A2E\u985E",
+          description: "Mermaid \u306E\u30AF\u30E9\u30B9\u540D\uFF08`:::\u540D\u524D`\uFF09\u3054\u3068\u306E\u30CE\u30FC\u30C9\u306E\u7A2E\u985E\u3002",
+          type: "object",
+          additionalProperties: {
+            type: "object",
+            properties: {
+              label: {
+                type: "string",
+                description: "\u7A2E\u985E\u306E\u884C\u306E\u540D\u524D\u3002"
+              },
+              icon: {
+                type: "string",
+                description: "Lucide \u306E\u30A2\u30A4\u30B3\u30F3\u306E\u540D\u524D\u3002"
+              },
+              shape: {
+                type: "string",
+                enum: ["rounded", "rect", "pill", "double"],
+                default: "rounded",
+                description: "\u5F62\u72B6\u3002"
+              },
+              color: {
+                type: "string",
+                description: "\u8272\u306E\u540D\u524D\uFF08`blue`\u30FB`green` \u306A\u3069\uFF09\u3002"
+              }
+            },
+            additionalProperties: false
+          }
+        },
+        lines: {
+          title: "\u7DDA\u306E\u7A2E\u985E",
+          description: "Mermaid \u306E\u77E2\u5370\uFF08`-->`\u30FB`-.->`\u30FB`==>`\uFF09\u3054\u3068\u3068\u3001\u88DC\u8DB3\u306E `layout` \u306E `line` \u3067\u6307\u3059\u540D\u524D\u3054\u3068\u306E\u7DDA\u306E\u7A2E\u985E\u3002",
+          type: "object",
+          additionalProperties: {
+            type: "object",
+            properties: {
+              dash: {
+                type: "string",
+                enum: ["solid", "dashed", "dotted", "dash-dot", "long-dash"],
+                default: "solid",
+                description: "\u6A21\u69D8\u3002"
+              },
+              width: {
+                type: "string",
+                enum: ["thin", "normal", "thick"],
+                default: "normal",
+                description: "\u592A\u3055\u3002"
+              },
+              head: {
+                type: "string",
+                enum: ["filled", "open", "none"],
+                default: "filled",
+                description: "\u77E2\u3058\u308A\u3002"
+              },
+              color: {
+                type: "string",
+                description: "\u8272\u306E\u540D\u524D\uFF08`blue`\u30FB`green` \u306A\u3069\uFF09\u3002"
+              }
+            },
+            additionalProperties: false
+          }
+        }
+      },
+      additionalProperties: false
+    },
     theme: {
-      title: "\u4F7F\u3046\u5074\u306E CSS",
-      description: "CLI \u304C\u66F8\u304D\u51FA\u3059 HTML \u306B\u3001\u914D\u5E03\u7269\u306E CSS \u306E\u5F8C\u3067\u57CB\u3081\u308B\u4F7F\u3046\u5074\u306E CSS \u306E\u30D1\u30B9\u3002`mdmark.config.yaml` \u306E\u3042\u308B\u30D5\u30A9\u30EB\u30C0\u304B\u3089\u306E\u76F8\u5BFE\u30D1\u30B9\u3002`mount`\u30FB`render` \u306F\u3053\u306E\u30AD\u30FC\u3092\u8AAD\u307E\u306A\u3044\u3002",
+      title: "\u5229\u7528\u5074\u306E CSS",
+      description: "CLI \u304C\u66F8\u304D\u51FA\u3059 HTML \u306B\u3001\u914D\u5E03\u7269\u306E CSS \u306E\u5F8C\u3067\u57CB\u3081\u308B\u5229\u7528\u5074\u306E CSS \u306E\u30D1\u30B9\u3002`mdmark.config.yaml` \u306E\u3042\u308B\u30D5\u30A9\u30EB\u30C0\u304B\u3089\u306E\u76F8\u5BFE\u30D1\u30B9\u3002`mount`\u30FB`render` \u306F\u3053\u306E\u30AD\u30FC\u3092\u8AAD\u307F\u8FBC\u307E\u306A\u3044\u3002",
       type: "string"
     },
     extensions: {
       title: "\u62E1\u5F35\u306E\u30E2\u30B8\u30E5\u30FC\u30EB",
-      description: "CLI \u304C\u66F8\u304D\u51FA\u3059 HTML \u306B\u675F\u306D\u3066\u57CB\u3081\u3001\u63CF\u304F\u524D\u306B `registerExtension` \u3067\u767B\u9332\u3059\u308B\u62E1\u5F35\u306E\u30E2\u30B8\u30E5\u30FC\u30EB\u306E\u30D1\u30B9\u306E\u4E26\u3073\u3002`mdmark.config.yaml` \u306E\u3042\u308B\u30D5\u30A9\u30EB\u30C0\u304B\u3089\u306E\u76F8\u5BFE\u30D1\u30B9\u3002`mount`\u30FB`render` \u306F\u3053\u306E\u30AD\u30FC\u3092\u8AAD\u307E\u306A\u3044\u3002",
+      description: "CLI \u304C\u66F8\u304D\u51FA\u3059 HTML \u306B\u307E\u3068\u3081\u3066\u57CB\u3081\u3001\u63CF\u304F\u524D\u306B `registerExtension` \u3067\u767B\u9332\u3059\u308B\u62E1\u5F35\u306E\u30E2\u30B8\u30E5\u30FC\u30EB\u306E\u30D1\u30B9\u306E\u4E26\u3073\u3002`mdmark.config.yaml` \u306E\u3042\u308B\u30D5\u30A9\u30EB\u30C0\u304B\u3089\u306E\u76F8\u5BFE\u30D1\u30B9\u3002`mount`\u30FB`render` \u306F\u3053\u306E\u30AD\u30FC\u3092\u8AAD\u307F\u8FBC\u307E\u306A\u3044\u3002",
       type: "array",
       items: {
         type: "string"
@@ -15211,12 +15326,12 @@ var mdmark_config_schema_default = {
     },
     build: {
       title: "\u307E\u3068\u3081\u308B\u8A2D\u5B9A",
-      description: "`mdmark build` \u304C 1 \u679A\u306E HTML \u306B\u307E\u3068\u3081\u308B\u6587\u66F8\u3068\u66F8\u304D\u51FA\u3059\u5148\u3002\u30D1\u30B9\u3068 glob \u306F `mdmark.config.yaml` \u306E\u3042\u308B\u30D5\u30A9\u30EB\u30C0\u304B\u3089\u306E\u76F8\u5BFE\u3002`mount`\u30FB`render`\u30FB`mdmark export` \u306F\u3053\u306E\u30AD\u30FC\u3092\u8AAD\u307E\u306A\u3044\u3002",
+      description: "`mdmark build` \u304C 1 \u679A\u306E HTML \u306B\u307E\u3068\u3081\u308B\u6587\u66F8\u3068\u66F8\u304D\u51FA\u3059\u5148\u3002\u30D1\u30B9\u3068 glob \u306F `mdmark.config.yaml` \u306E\u3042\u308B\u30D5\u30A9\u30EB\u30C0\u304B\u3089\u306E\u76F8\u5BFE\u3002`mount`\u30FB`render`\u30FB`mdmark export` \u306F\u3053\u306E\u30AD\u30FC\u3092\u8AAD\u307F\u8FBC\u307E\u306A\u3044\u3002",
       type: "object",
       properties: {
         include: {
           title: "\u307E\u3068\u3081\u308B\u6587\u66F8",
-          description: "\u307E\u3068\u3081\u308B Markdown \u306E glob \u306E\u4E26\u3073\u3002`**`\u30FB`*`\u30FB`?` \u3092\u4F7F\u3048\u308B\u3002\u5F53\u305F\u308B\u306E\u306F\u62E1\u5F35\u5B50 `.md` \u306E\u30D5\u30A1\u30A4\u30EB\u3060\u3051\u3002",
+          description: "\u307E\u3068\u3081\u308B Markdown \u306E glob \u306E\u4E26\u3073\u3002`**`\u30FB`*`\u30FB`?` \u3092\u4F7F\u7528\u3067\u304D\u308B\u3002\u8A72\u5F53\u3059\u308B\u306E\u306F\u62E1\u5F35\u5B50 `.md` \u306E\u30D5\u30A1\u30A4\u30EB\u3060\u3051\u3002",
           type: "array",
           items: {
             type: "string"
@@ -15224,8 +15339,8 @@ var mdmark_config_schema_default = {
           minItems: 1
         },
         exclude: {
-          title: "\u5916\u3059\u6587\u66F8",
-          description: "`include` \u306B\u5F53\u305F\u3063\u305F\u6587\u66F8\u304B\u3089\u5916\u3059 glob \u306E\u4E26\u3073\u3002",
+          title: "\u524A\u9664\u3059\u308B\u6587\u66F8",
+          description: "`include` \u306B\u8A72\u5F53\u3057\u305F\u6587\u66F8\u304B\u3089\u9664\u5916\u3059\u308B glob \u306E\u4E26\u3073\u3002",
           type: "array",
           items: {
             type: "string"
@@ -15234,7 +15349,7 @@ var mdmark_config_schema_default = {
         },
         glossary: {
           title: "\u7528\u8A9E\u96C6\u306E\u6587\u66F8",
-          description: "\u7528\u8A9E\u96C6\u306E\u8868\uFF08`<!-- glossary -->`\uFF09\u306E\u7528\u8A9E\u3092\u3001\u307E\u3068\u3081\u305F\u5168\u3066\u306E\u6587\u66F8\u3067\u52B9\u304B\u305B\u308B\u6587\u66F8\u306E\u30D1\u30B9\u306E\u4E26\u3073\u3002",
+          description: "\u7528\u8A9E\u96C6\u306E\u8868\uFF08`<!-- glossary -->`\uFF09\u306E\u7528\u8A9E\u3092\u3001\u307E\u3068\u3081\u305F\u5168\u3066\u306E\u6587\u66F8\u3067\u6709\u52B9\u306B\u3057\u308B\u6587\u66F8\u306E\u30D1\u30B9\u306E\u4E26\u3073\u3002",
           type: "array",
           items: {
             type: "string"
@@ -15248,7 +15363,7 @@ var mdmark_config_schema_default = {
         },
         out: {
           title: "\u66F8\u304D\u51FA\u3059\u5148",
-          description: "\u307E\u3068\u3081\u305F HTML \u3092\u66F8\u304F\u30D1\u30B9\u3002\u62E1\u5F35\u5B50 `.html`\u3002\u65E2\u306B\u3042\u308C\u3070\u4E0A\u66F8\u304D\u3059\u308B\u3002",
+          description: "\u307E\u3068\u3081\u305F HTML \u3092\u66F8\u304D\u8FBC\u3080\u30D1\u30B9\u3002\u62E1\u5F35\u5B50 `.html`\u3002\u65E2\u306B\u3042\u308C\u3070\u4E0A\u66F8\u304D\u3059\u308B\u3002",
           type: "string",
           pattern: "\\.html$"
         }
@@ -15257,12 +15372,12 @@ var mdmark_config_schema_default = {
     },
     check: {
       title: "\u70B9\u691C\u306E\u8A2D\u5B9A",
-      description: "`mdmark check` \u304C\u8AAD\u3080\u8A2D\u5B9A\u3002`mount`\u30FB`render`\u30FB`export`\u30FB`build` \u306F\u3053\u306E\u30AD\u30FC\u3092\u8AAD\u307E\u306A\u3044\u3002",
+      description: "`mdmark check` \u304C\u8AAD\u307F\u8FBC\u3080\u8A2D\u5B9A\u3002`mount`\u30FB`render`\u30FB`export`\u30FB`build` \u306F\u3053\u306E\u30AD\u30FC\u3092\u8AAD\u307F\u8FBC\u307E\u306A\u3044\u3002",
       type: "object",
       properties: {
         ignore: {
-          title: "\u77E5\u3089\u306A\u3044\u5370\u304B\u3089\u5916\u3059\u540D\u524D",
-          description: "`mdmark check` \u304C\u6587\u66F8\u306E\u672C\u6587\u306E\u77E5\u3089\u306A\u3044\u5370\u3068\u3057\u3066\u77E5\u3089\u305B\u306A\u3044\u3001\u5370\u3068\u540C\u3058\u66F8\u304D\u65B9\u306E HTML \u30B3\u30E1\u30F3\u30C8\u306E\u540D\u524D\u306E\u4E26\u3073\uFF08`prettier-ignore`\u30FB`markdownlint-disable` \u306A\u3069\u4ED6\u306E\u30C4\u30FC\u30EB\u3078\u306E\u6307\u793A\uFF09\u3002",
+          title: "\u77E5\u3089\u306A\u3044\u30DE\u30FC\u30AB\u30FC\u304B\u3089\u9664\u5916\u3059\u308B\u540D\u524D",
+          description: "`mdmark check` \u304C\u6587\u66F8\u306E\u672C\u6587\u306E\u77E5\u3089\u306A\u3044\u30DE\u30FC\u30AB\u30FC\u3068\u3057\u3066\u901A\u77E5\u3057\u306A\u3044\u3001\u30DE\u30FC\u30AB\u30FC\u3068\u540C\u3058\u8A18\u8F09\u65B9\u6CD5\u306E HTML \u30B3\u30E1\u30F3\u30C8\u306E\u540D\u524D\u306E\u4E26\u3073\uFF08`prettier-ignore`\u30FB`markdownlint-disable` \u306A\u3069\u4ED6\u306E\u30C4\u30FC\u30EB\u3078\u306E\u6307\u793A\uFF09\u3002",
           type: "array",
           items: {
             type: "string",
@@ -15274,12 +15389,12 @@ var mdmark_config_schema_default = {
     },
     aliases: {
       title: "\u30A8\u30A4\u30EA\u30A2\u30B9\u306E\u5143\u306E\u884C",
-      description: "\u30D7\u30ED\u30B8\u30A7\u30AF\u30C8\u306E YAML \u306E\u5217\u304B\u3089\u30A8\u30A4\u30EA\u30A2\u30B9\uFF08\u7528\u8A9E\u30FB\u6587\u66F8\u30FB\u30B3\u30DE\u30F3\u30C9\u30FBURL \u306A\u3069\uFF09\u3092\u4F5C\u308B\u884C\u306E\u4E26\u3073\u3002\u884C\u306E\u69CB\u9020\u306F alias-inject v0.3.0 \u306E `schemas/aliases.schema.yaml` \u3092\u53D6\u308A\u8FBC\u3093\u3060 Schema \u304C\u6C7A\u3081\u308B\u3002CLI \u306E `export`\u30FB`build` \u304C `paths` \u306E YAML \u3092\u8AAD\u3093\u3067\u66F8\u304D\u51FA\u3059 HTML \u306B\u57CB\u3081\u3001`mdmark check` \u304C\u884C\u3068\u30EC\u30B3\u30FC\u30C9\u306E\u305A\u308C\u3092\u8FD4\u3059\u3002`mount`\u30FB`render` \u306F\u3053\u306E\u30AD\u30FC\u3092\u8AAD\u307E\u306A\u3044\u3002",
+      description: "\u30D7\u30ED\u30B8\u30A7\u30AF\u30C8\u306E YAML \u306E\u5217\u304B\u3089\u30A8\u30A4\u30EA\u30A2\u30B9\uFF08\u7528\u8A9E\u30FB\u6587\u66F8\u30FB\u30B3\u30DE\u30F3\u30C9\u30FBURL \u306A\u3069\uFF09\u3092\u4F5C\u308B\u884C\u306E\u4E26\u3073\u3002\u884C\u306E\u69CB\u9020\u306F alias-inject v0.3.0 \u306E `schemas/aliases.schema.yaml` \u3092\u53D6\u308A\u8FBC\u3093\u3060 Schema \u304C\u6C7A\u3081\u308B\u3002CLI \u306E `export`\u30FB`build` \u304C `paths` \u306E YAML \u3092\u8AAD\u307F\u8FBC\u3093\u3067\u66F8\u304D\u51FA\u3059 HTML \u306B\u57CB\u3081\u3001`mdmark check` \u304C\u884C\u3068\u30EC\u30B3\u30FC\u30C9\u306E\u305A\u308C\u3092\u8FD4\u5374\u3059\u308B\u3002`mount`\u30FB`render` \u306F\u3053\u306E\u30AD\u30FC\u3092\u8AAD\u307F\u8FBC\u307E\u306A\u3044\u3002",
       $ref: "alias-inject/v0.3.0/aliases.schema.json"
     },
     assets: {
       title: "\u30A2\u30BB\u30C3\u30C8\u306E\u8A2D\u5B9A",
-      description: "\u6587\u66F8\u304C\u6307\u3059\u753B\u50CF\u30FB\u52D5\u753B\u30FB\u97F3\u58F0\u30FB\u6DFB\u4ED8\u306E\u30D5\u30A1\u30A4\u30EB\u306E\u63A2\u3057\u65B9\u3002CLI \u3068 VS Code \u62E1\u5F35\u6A5F\u80FD\u304C\u8AAD\u307F\u3001`mount`\u30FB`render` \u306F\u8AAD\u307E\u306A\u3044\u3002",
+      description: "\u6587\u66F8\u304C\u6307\u3059\u753B\u50CF\u30FB\u52D5\u753B\u30FB\u97F3\u58F0\u30FB\u6DFB\u4ED8\u306E\u30D5\u30A1\u30A4\u30EB\u306E\u63A2\u3057\u65B9\u3002CLI \u3068 VS Code \u62E1\u5F35\u6A5F\u80FD\u304C\u8AAD\u307F\u8FBC\u307F\u3001`mount`\u30FB`render` \u306F\u8AAD\u307F\u8FBC\u307E\u306A\u3044\u3002",
       type: "object",
       properties: {
         root: {
@@ -15297,7 +15412,7 @@ var mdmark_config_schema_default = {
 var mdmark_settings_schema_default = {
   $schema: "https://json-schema.org/draft/2020-12/schema",
   title: "settings.yaml",
-  description: "mdmark \u306E\u7AEF\u672B\u306E\u8A2D\u5B9A\uFF08`MDMARK_CONFIG`\u3001\u7121\u3051\u308C\u3070 `${XDG_CONFIG_HOME:-~/.config}/mdmark/settings.yaml`\uFF09\u3002`mdmark.config.yaml` \u306E\u30AD\u30FC\u306B\u3001\u7AEF\u672B\u306E\u8A2D\u5B9A\u3060\u3051\u304C\u6301\u3064 `config`\u30FB`serve` \u3092\u8DB3\u3057\u305F\u3082\u306E\u3002\u4ED6\u306E\u30AD\u30FC\u306F\u62D2\u307E\u306A\u3044\u3002",
+  description: "mdmark \u306E\u7AEF\u672B\u306E\u8A2D\u5B9A\uFF08`MDMARK_CONFIG`\u3001\u7121\u3051\u308C\u3070 `${XDG_CONFIG_HOME:-~/.config}/mdmark/settings.yaml`\uFF09\u3002`mdmark.config.yaml` \u306E\u30AD\u30FC\u306B\u3001\u7AEF\u672B\u306E\u8A2D\u5B9A\u3060\u3051\u304C\u6301\u3064 `config`\u30FB`serve` \u3092\u8FFD\u52A0\u3057\u305F\u3082\u306E\u3002\u4ED6\u306E\u30AD\u30FC\u306F\u62D2\u307E\u306A\u3044\u3002",
   allOf: [
     {
       $ref: "mdmark.config.schema.json"
@@ -15306,12 +15421,12 @@ var mdmark_settings_schema_default = {
   type: "object",
   properties: {
     config: {
-      title: "\u8A2D\u5B9A\u306E\u8AAD\u307F\u65B9\u306E\u5207\u308A\u66FF\u3048",
-      description: "\u7AEF\u672B\u306E\u8A2D\u5B9A\u3060\u3051\u304C\u6301\u3064\u5207\u308A\u66FF\u3048\u3002`mdmark.config.yaml` \u306B\u66F8\u3044\u3066\u3082\u8AAD\u307E\u306A\u3044\u3002",
+      title: "\u8A2D\u5B9A\u306E\u8AAD\u307F\u8FBC\u307F\u65B9\u306E\u5207\u308A\u66FF\u3048",
+      description: "\u7AEF\u672B\u306E\u8A2D\u5B9A\u3060\u3051\u304C\u6301\u3064\u5207\u308A\u66FF\u3048\u3002`mdmark.config.yaml` \u306B\u66F8\u304D\u8FBC\u3093\u3067\u3082\u8AAD\u307F\u8FBC\u307E\u306A\u3044\u3002",
       type: "object",
       properties: {
         cascade: {
-          title: "\u91CD\u306D\u3066\u8AAD\u3080\u304B",
+          title: "\u91CD\u306D\u3066\u8AAD\u307F\u8FBC\u3080\u304B",
           description: "`true` \u306E\u3068\u304D\u3001\u6587\u66F8\u306E\u30D5\u30A9\u30EB\u30C0\u304B\u3089\u4E0A\u306E `mdmark.config.yaml` \u3092\u5168\u3066\u91CD\u306D\u308B\u3002`false` \u306E\u3068\u304D\u306F\u6700\u521D\u306B\u898B\u3064\u304B\u3063\u305F 1 \u3064\u3060\u3051\u3092\u7AEF\u672B\u306E\u8A2D\u5B9A\u306B\u91CD\u306D\u308B\u3002",
           type: "boolean",
           default: false
@@ -15326,9 +15441,24 @@ var mdmark_settings_schema_default = {
     },
     serve: {
       title: "\u5E38\u99D0\u30B5\u30FC\u30D0\u30FC\u306E\u8D77\u52D5",
-      description: "\u7AEF\u672B\u306E\u8A2D\u5B9A\u3060\u3051\u304C\u6301\u3064\u3001`/mdmark:global-setup` \u304C\u5E38\u99D0\u30B5\u30FC\u30D0\u30FC\u3092\u8D77\u52D5\u3059\u308B\u3068\u304D\u306E\u5024\u3002`mdmark.config.yaml` \u306B\u66F8\u3044\u3066\u3082\u8AAD\u307E\u306A\u3044\u3002",
+      description: "\u7AEF\u672B\u306E\u8A2D\u5B9A\u3060\u3051\u304C\u6301\u3064\u3001`/mdmark:global-setup` \u304C\u5E38\u99D0\u30B5\u30FC\u30D0\u30FC\u3092\u8D77\u52D5\u3059\u308B\u3068\u304D\u306E\u5024\u3002`mdmark.config.yaml` \u306B\u66F8\u304D\u8FBC\u3093\u3067\u3082\u8AAD\u307F\u8FBC\u307E\u306A\u3044\u3002",
       type: "object",
       properties: {
+        launcher: {
+          title: "\u5E38\u99D0\u30B5\u30FC\u30D0\u30FC\u306E\u8D77\u52D5\u306E\u65B9\u6CD5",
+          description: "`/mdmark:global-setup` \u304C `mdmark serve` \u3092\u8D77\u52D5\u3059\u308B\u65B9\u6CD5\u3002`auto` \u306F systemd --user \u304C\u4F7F\u3048\u308B\u7AEF\u672B\u3067\u306F unit\u3001\u4F7F\u3048\u306A\u3044\u7AEF\u672B\u3067\u306F tmux \u306E\u30BB\u30C3\u30B7\u30E7\u30F3\u3067\u8D77\u52D5\u3059\u308B\u3002",
+          enum: ["auto", "systemd", "tmux"],
+          default: "auto",
+          examples: ["auto"]
+        },
+        systemdUnit: {
+          title: "\u5E38\u99D0\u30B5\u30FC\u30D0\u30FC\u306E systemd --user \u306E unit \u306E\u540D\u524D",
+          description: "`/mdmark:global-setup` \u304C `~/.config/systemd/user/{\u540D\u524D}.service` \u306B\u4F5C\u3063\u3066\u8D77\u52D5\u3059\u308B unit \u306E\u540D\u524D\u3002MCP \u306E `instructions` \u3082\u3053\u306E\u540D\u524D\u3092\u4F1D\u3048\u308B\u3002",
+          type: "string",
+          pattern: "^[A-Za-z0-9_-]+$",
+          default: "mdmark-mcp",
+          examples: ["mdmark-mcp"]
+        },
         tmuxSession: {
           title: "\u5E38\u99D0\u30B5\u30FC\u30D0\u30FC\u306E tmux \u306E\u30BB\u30C3\u30B7\u30E7\u30F3\u540D",
           description: "`/mdmark:global-setup` \u304C `mdmark serve` \u3092\u8D77\u52D5\u3059\u308B tmux \u306E\u30BB\u30C3\u30B7\u30E7\u30F3\u540D\u3002MCP \u306E `instructions` \u3082\u3053\u306E\u540D\u524D\u3092\u4F1D\u3048\u308B\u3002",
@@ -15672,7 +15802,7 @@ function messageOf(error2, where) {
     case "enum":
       return `\`${where}\`${label}\u306F ${params.allowedValues.join("\u30FB")} \u306E\u3069\u308C\u304B\u306B\u3057\u3066\u304F\u3060\u3055\u3044\u3002`;
     case "additionalProperties":
-      return `\`${where}\` \u306E \`${String(params.additionalProperty)}\` \u306F\u8A18\u8F09\u3067\u304D\u307E\u305B\u3093\u3002\u6D88\u3057\u3066\u304F\u3060\u3055\u3044\u3002`;
+      return `\`${where}\` \u306E \`${String(params.additionalProperty)}\` \u306F\u8A18\u8F09\u3067\u304D\u307E\u305B\u3093\u3002\u524A\u9664\u3057\u3066\u304F\u3060\u3055\u3044\u3002`;
     default:
       return `\`${where}\`${label}\u304C Schema \u306B\u5408\u3044\u307E\u305B\u3093\uFF08${error2.message ?? ""}\uFF09\u3002`;
   }
@@ -15711,6 +15841,10 @@ function validateAliasRows(rows, file) {
 // src/cli/versions.ts
 var VERSION_PATTERN = /^v(\d+)\.(\d+)\.(\d+)$/;
 
+// src/table-logic.ts
+var collator = new Intl.Collator("ja", { numeric: true });
+var totalFormat = new Intl.NumberFormat("ja", { maximumFractionDigits: 2 });
+
 // src/config.ts
 var MARK_NAME_PATTERN = /^[a-z][a-z0-9-]*$/;
 
@@ -15727,7 +15861,7 @@ function schemaIssue(file, where, message) {
 function validateBuild(value, file, issues) {
   if (!isRecord(value)) {
     issues.push(
-      schemaIssue(file, "build", "`build` \u306F\u30AD\u30FC\u3068\u5024\u3067\u66F8\u3044\u3066\u304F\u3060\u3055\u3044\u3002")
+      schemaIssue(file, "build", "`build` \u306F\u30AD\u30FC\u3068\u5024\u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002")
     );
     return void 0;
   }
@@ -15737,7 +15871,7 @@ function validateBuild(value, file, issues) {
       schemaIssue(
         file,
         "build",
-        "`build.include` \u304C\u3042\u308A\u307E\u305B\u3093\u3002\u307E\u3068\u3081\u308B Markdown \u306E glob \u3092\u66F8\u3044\u3066\u304F\u3060\u3055\u3044\u3002"
+        "`build.include` \u304C\u3042\u308A\u307E\u305B\u3093\u3002\u307E\u3068\u3081\u308B Markdown \u306E glob \u3092\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002"
       )
     );
   } else if (!isStringArray(value.include) || value.include.length === 0) {
@@ -15745,7 +15879,7 @@ function validateBuild(value, file, issues) {
       schemaIssue(
         file,
         "build.include",
-        "`build.include` \u306F 1 \u3064\u4EE5\u4E0A\u306E glob \u306E\u4E26\u3073\u3067\u66F8\u3044\u3066\u304F\u3060\u3055\u3044\u3002"
+        "`build.include` \u306F 1 \u3064\u4EE5\u4E0A\u306E glob \u306E\u4E26\u3073\u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002"
       )
     );
   }
@@ -15754,7 +15888,7 @@ function validateBuild(value, file, issues) {
       schemaIssue(
         file,
         "build",
-        "`build.out` \u304C\u3042\u308A\u307E\u305B\u3093\u3002\u66F8\u304D\u51FA\u3059 HTML \u306E\u30D1\u30B9\u3092\u66F8\u3044\u3066\u304F\u3060\u3055\u3044\u3002"
+        "`build.out` \u304C\u3042\u308A\u307E\u305B\u3093\u3002\u66F8\u304D\u51FA\u3059 HTML \u306E\u30D1\u30B9\u3092\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002"
       )
     );
   } else if (typeof value.out !== "string" || !value.out.endsWith(".html")) {
@@ -15762,7 +15896,7 @@ function validateBuild(value, file, issues) {
       schemaIssue(
         file,
         "build.out",
-        "`build.out` \u306F\u62E1\u5F35\u5B50 `.html` \u306E\u30D1\u30B9\u3067\u66F8\u3044\u3066\u304F\u3060\u3055\u3044\u3002"
+        "`build.out` \u306F\u62E1\u5F35\u5B50 `.html` \u306E\u30D1\u30B9\u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002"
       )
     );
   }
@@ -15772,7 +15906,7 @@ function validateBuild(value, file, issues) {
         schemaIssue(
           file,
           `build.${key}`,
-          `\`build.${key}\` \u306F\u6587\u5B57\u5217\u306E\u4E26\u3073\u3067\u66F8\u3044\u3066\u304F\u3060\u3055\u3044\u3002`
+          `\`build.${key}\` \u306F\u6587\u5B57\u5217\u306E\u4E26\u3073\u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
         )
       );
     }
@@ -15782,7 +15916,7 @@ function validateBuild(value, file, issues) {
       schemaIssue(
         file,
         "build.entry",
-        "`build.entry` \u306F\u6587\u66F8\u306E\u30D1\u30B9\u306E\u6587\u5B57\u5217\u3067\u66F8\u3044\u3066\u304F\u3060\u3055\u3044\u3002"
+        "`build.entry` \u306F\u6587\u66F8\u306E\u30D1\u30B9\u306E\u6587\u5B57\u5217\u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002"
       )
     );
   }
@@ -15795,7 +15929,7 @@ function validateConfig(raw, file) {
       schemaIssue(
         file,
         "",
-        `${file} \u304C\u7A7A\u304B\u3001\u30AD\u30FC\u3068\u5024\u306E\u5F62\u3067\u306F\u3042\u308A\u307E\u305B\u3093\u3002\u8A2D\u5B9A\u306E\u30AD\u30FC\u3092\u66F8\u3044\u3066\u304F\u3060\u3055\u3044\u3002`
+        `${file} \u304C\u7A7A\u304B\u3001\u30AD\u30FC\u3068\u5024\u306E\u69CB\u9020\u3067\u306F\u3042\u308A\u307E\u305B\u3093\u3002\u8A2D\u5B9A\u306E\u30AD\u30FC\u3092\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
       )
     );
     return { config: {}, issues };
@@ -15812,7 +15946,7 @@ function validateConfig(raw, file) {
             schemaIssue(
               file,
               `features.${name}`,
-              `\`features.${name}\` \u306F true \u304B false \u3067\u66F8\u3044\u3066\u304F\u3060\u3055\u3044\u3002`
+              `\`features.${name}\` \u306F true \u304B false \u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
             )
           );
         }
@@ -15823,7 +15957,7 @@ function validateConfig(raw, file) {
         schemaIssue(
           file,
           "features",
-          "`features` \u306F\u6A5F\u80FD\u540D\u3068 true / false \u3067\u66F8\u3044\u3066\u304F\u3060\u3055\u3044\u3002"
+          "`features` \u306F\u6A5F\u80FD\u540D\u3068 true / false \u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002"
         )
       );
       delete config2.features;
@@ -15838,7 +15972,7 @@ function validateConfig(raw, file) {
             schemaIssue(
               file,
               `libraries.${name}`,
-              `\`libraries.${name}\` \u306F\u3001\u82F1\u5C0F\u6587\u5B57\u3067\u59CB\u307E\u308B\u5370\u306E\u540D\u524D\u3068 URL \u306E\u6587\u5B57\u5217\u3067\u66F8\u3044\u3066\u304F\u3060\u3055\u3044\u3002`
+              `\`libraries.${name}\` \u306F\u3001\u82F1\u5C0F\u6587\u5B57\u3067\u59CB\u307E\u308B\u30DE\u30FC\u30AB\u30FC\u306E\u540D\u524D\u3068 URL \u306E\u6587\u5B57\u5217\u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
             )
           );
         } else {
@@ -15851,7 +15985,7 @@ function validateConfig(raw, file) {
         schemaIssue(
           file,
           "libraries",
-          "`libraries` \u306F\u5370\u306E\u540D\u524D\u3068 URL \u3067\u66F8\u3044\u3066\u304F\u3060\u3055\u3044\u3002"
+          "`libraries` \u306F\u30DE\u30FC\u30AB\u30FC\u306E\u540D\u524D\u3068 URL \u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002"
         )
       );
       delete config2.libraries;
@@ -15863,7 +15997,7 @@ function validateConfig(raw, file) {
         schemaIssue(
           file,
           "version",
-          "`version` \u306F v{MAJOR}.{MINOR}.{PATCH} \u306E\u5F62\u3067\u66F8\u3044\u3066\u304F\u3060\u3055\u3044\u3002"
+          "`version` \u306F v{MAJOR}.{MINOR}.{PATCH} \u306E\u69CB\u9020\u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002"
         )
       );
       delete config2.version;
@@ -15875,7 +16009,7 @@ function validateConfig(raw, file) {
         schemaIssue(
           file,
           key,
-          `\`${key}\` \u306F\u30D5\u30A1\u30A4\u30EB\u306E\u30D1\u30B9\u306E\u6587\u5B57\u5217\u3067\u66F8\u3044\u3066\u304F\u3060\u3055\u3044\u3002`
+          `\`${key}\` \u306F\u30D5\u30A1\u30A4\u30EB\u306E\u30D1\u30B9\u306E\u6587\u5B57\u5217\u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
         )
       );
       delete config2[key];
@@ -15886,7 +16020,7 @@ function validateConfig(raw, file) {
       schemaIssue(
         file,
         "colorTheme",
-        "`colorTheme` \u306F\u30C6\u30FC\u30DE\u306E\u540D\u524D\u306E\u6587\u5B57\u5217\u3067\u66F8\u3044\u3066\u304F\u3060\u3055\u3044\u3002"
+        "`colorTheme` \u306F\u30C6\u30FC\u30DE\u306E\u540D\u524D\u306E\u6587\u5B57\u5217\u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002"
       )
     );
     delete config2.colorTheme;
@@ -15896,7 +16030,7 @@ function validateConfig(raw, file) {
       schemaIssue(
         file,
         "colorScheme",
-        "`colorScheme` \u306F `light`\u30FB`dark`\u30FB`auto` \u306E\u3069\u308C\u304B\u306E\u6587\u5B57\u5217\u3067\u66F8\u3044\u3066\u304F\u3060\u3055\u3044\u3002"
+        "`colorScheme` \u306F `light`\u30FB`dark`\u30FB`auto` \u306E\u3069\u308C\u304B\u306E\u6587\u5B57\u5217\u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002"
       )
     );
     delete config2.colorScheme;
@@ -15906,7 +16040,7 @@ function validateConfig(raw, file) {
       schemaIssue(
         file,
         "extensions",
-        "`extensions` \u306F\u62E1\u5F35\u306E\u30E2\u30B8\u30E5\u30FC\u30EB\u306E\u30D1\u30B9\u306E\u4E26\u3073\u3067\u66F8\u3044\u3066\u304F\u3060\u3055\u3044\u3002"
+        "`extensions` \u306F\u62E1\u5F35\u306E\u30E2\u30B8\u30E5\u30FC\u30EB\u306E\u30D1\u30B9\u306E\u4E26\u3073\u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002"
       )
     );
     delete config2.extensions;
@@ -15940,6 +16074,12 @@ function validateConfig(raw, file) {
   if (raw["side-toc"] !== void 0 && !isValidSideToc(raw["side-toc"], file, issues)) {
     delete config2["side-toc"];
   }
+  if (raw.table !== void 0 && !isValidTable(raw.table, file, issues)) {
+    delete config2.table;
+  }
+  if (raw.map !== void 0 && !isValidMap(raw.map, file, issues)) {
+    delete config2.map;
+  }
   if (raw.aliases !== void 0) {
     if (Array.isArray(raw.aliases)) {
       const checked = validateAliasRows(raw.aliases, file);
@@ -15950,7 +16090,7 @@ function validateConfig(raw, file) {
         schemaIssue(
           file,
           "aliases",
-          "`aliases` \u306F\u30A8\u30A4\u30EA\u30A2\u30B9\u306E\u5143\u306E\u884C\u306E\u4E26\u3073\u3067\u66F8\u3044\u3066\u304F\u3060\u3055\u3044\u3002"
+          "`aliases` \u306F\u30A8\u30A4\u30EA\u30A2\u30B9\u306E\u5143\u306E\u884C\u306E\u4E26\u3073\u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002"
         )
       );
       delete config2.aliases;
@@ -15966,13 +16106,24 @@ function validateConfig(raw, file) {
   }
   return { config: config2, issues };
 }
+function isValidMap(value, file, issues) {
+  if (isRecord(value)) return true;
+  issues.push(
+    schemaIssue(
+      file,
+      "map",
+      "`map` \u306F `node_fit`\u30FB`url_state`\u30FB`kinds`\u30FB`lines` \u3092\u6301\u3064\u30AD\u30FC\u3068\u5024\u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002"
+    )
+  );
+  return false;
+}
 function isValidTooltips(value, file, issues) {
   if (!isRecord(value)) {
     issues.push(
       schemaIssue(
         file,
         "tooltips",
-        "`tooltips` \u306F `placement`\u30FB`diagramPlacement` \u3092\u6301\u3064\u30AD\u30FC\u3068\u5024\u3067\u66F8\u3044\u3066\u304F\u3060\u3055\u3044\u3002"
+        "`tooltips` \u306F `placement`\u30FB`diagramPlacement` \u3092\u6301\u3064\u30AD\u30FC\u3068\u5024\u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002"
       )
     );
     return false;
@@ -15985,7 +16136,7 @@ function isValidTooltips(value, file, issues) {
         schemaIssue(
           file,
           `tooltips.${key}`,
-          `\`tooltips.${key}\` \u306F \`top\` \u304B \`bottom\` \u3067\u66F8\u3044\u3066\u304F\u3060\u3055\u3044\u3002`
+          `\`tooltips.${key}\` \u306F \`top\` \u304B \`bottom\` \u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
         )
       );
       valid = false;
@@ -15999,7 +16150,7 @@ function isValidLabels(value, file, issues) {
       schemaIssue(
         file,
         "labels",
-        "`labels` \u306F\u90E8\u54C1\u306E\u6587\u8A00\u306E\u30AD\u30FC\u3068\u5024\u3067\u66F8\u3044\u3066\u304F\u3060\u3055\u3044\u3002"
+        "`labels` \u306F\u90E8\u54C1\u306E\u6587\u8A00\u306E\u30AD\u30FC\u3068\u5024\u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002"
       )
     );
     return false;
@@ -16009,7 +16160,7 @@ function isValidLabels(value, file, issues) {
       schemaIssue(
         file,
         "labels.paramCopy",
-        "`labels.paramCopy` \u306F\u7A7A\u3067\u306A\u3044\u6587\u5B57\u5217\u3067\u66F8\u3044\u3066\u304F\u3060\u3055\u3044\u3002"
+        "`labels.paramCopy` \u306F\u7A7A\u3067\u306A\u3044\u6587\u5B57\u5217\u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002"
       )
     );
     return false;
@@ -16022,7 +16173,7 @@ function isValidSideToc(value, file, issues) {
       schemaIssue(
         file,
         "side-toc",
-        "`side-toc` \u306F `mode` \u3092\u6301\u3064\u30AD\u30FC\u3068\u5024\u3067\u66F8\u3044\u3066\u304F\u3060\u3055\u3044\u3002"
+        "`side-toc` \u306F `mode` \u3092\u6301\u3064\u30AD\u30FC\u3068\u5024\u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002"
       )
     );
     return false;
@@ -16032,7 +16183,41 @@ function isValidSideToc(value, file, issues) {
       schemaIssue(
         file,
         "side-toc.mode",
-        "`side-toc.mode` \u306F `hover` \u304B `fixed` \u3067\u66F8\u3044\u3066\u304F\u3060\u3055\u3044\u3002"
+        "`side-toc.mode` \u306F `hover` \u304B `fixed` \u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002"
+      )
+    );
+    return false;
+  }
+  return true;
+}
+function isValidTable(value, file, issues) {
+  if (!isRecord(value)) {
+    issues.push(
+      schemaIssue(
+        file,
+        "table",
+        "`table` \u306F `pin` \u3092\u6301\u3064\u30AD\u30FC\u3068\u5024\u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002"
+      )
+    );
+    return false;
+  }
+  if (value.pin !== void 0 && value.pin !== "each" && value.pin !== "through") {
+    issues.push(
+      schemaIssue(
+        file,
+        "table.pin",
+        "`table.pin` \u306F `each` \u304B `through` \u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002"
+      )
+    );
+    return false;
+  }
+  const min = value.long_column_min;
+  if (min !== void 0 && (typeof min !== "number" || !Number.isFinite(min) || min <= 0)) {
+    issues.push(
+      schemaIssue(
+        file,
+        "table.long_column_min",
+        "`table.long_column_min` \u306F 0 \u3088\u308A\u5927\u304D\u3044\u6570\u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002"
       )
     );
     return false;
@@ -16045,7 +16230,7 @@ function isValidAssets(value, file, issues) {
       schemaIssue(
         file,
         "assets",
-        "`assets` \u306F `root` \u3092\u6301\u3064\u30AD\u30FC\u3068\u5024\u3067\u66F8\u3044\u3066\u304F\u3060\u3055\u3044\u3002"
+        "`assets` \u306F `root` \u3092\u6301\u3064\u30AD\u30FC\u3068\u5024\u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002"
       )
     );
     return false;
@@ -16055,7 +16240,7 @@ function isValidAssets(value, file, issues) {
       schemaIssue(
         file,
         "assets.root",
-        "`assets.root` \u306F\u8A2D\u5B9A\u30D5\u30A1\u30A4\u30EB\u306E\u30D5\u30A9\u30EB\u30C0\u304B\u3089\u306E\u30D5\u30A9\u30EB\u30C0\u306E\u30D1\u30B9\u306E\u6587\u5B57\u5217\u3067\u66F8\u3044\u3066\u304F\u3060\u3055\u3044\u3002"
+        "`assets.root` \u306F\u8A2D\u5B9A\u30D5\u30A1\u30A4\u30EB\u306E\u30D5\u30A9\u30EB\u30C0\u304B\u3089\u306E\u30D5\u30A9\u30EB\u30C0\u306E\u30D1\u30B9\u306E\u6587\u5B57\u5217\u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002"
       )
     );
     return false;
@@ -16068,7 +16253,7 @@ function isValidSyntax(value, file, issues) {
       schemaIssue(
         file,
         "syntax",
-        "`syntax` \u306F `url` \u3092\u6301\u3064\u30AD\u30FC\u3068\u5024\u3067\u66F8\u3044\u3066\u304F\u3060\u3055\u3044\u3002"
+        "`syntax` \u306F `url` \u3092\u6301\u3064\u30AD\u30FC\u3068\u5024\u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002"
       )
     );
     return false;
@@ -16078,7 +16263,7 @@ function isValidSyntax(value, file, issues) {
       schemaIssue(
         file,
         "syntax.url",
-        "`syntax.url` \u306F\u8272\u5206\u3051\u306E\u30E9\u30A4\u30D6\u30E9\u30EA\u306E `es/` \u30D5\u30A9\u30EB\u30C0\u306E URL \u304B\u30D1\u30B9\u306E\u6587\u5B57\u5217\u3067\u66F8\u3044\u3066\u304F\u3060\u3055\u3044\u3002"
+        "`syntax.url` \u306F\u8272\u5206\u3051\u306E\u30E9\u30A4\u30D6\u30E9\u30EA\u306E `es/` \u30D5\u30A9\u30EB\u30C0\u306E URL \u304B\u30D1\u30B9\u306E\u6587\u5B57\u5217\u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002"
       )
     );
     return false;
@@ -16091,7 +16276,7 @@ function isValidHtmlScripts(value, file, issues) {
       schemaIssue(
         file,
         "html-scripts",
-        "`html-scripts` \u306F `url` \u3092\u6301\u3064\u30AD\u30FC\u3068\u5024\u3067\u66F8\u3044\u3066\u304F\u3060\u3055\u3044\u3002"
+        "`html-scripts` \u306F `url` \u3092\u6301\u3064\u30AD\u30FC\u3068\u5024\u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002"
       )
     );
     return false;
@@ -16101,7 +16286,7 @@ function isValidHtmlScripts(value, file, issues) {
       schemaIssue(
         file,
         "html-scripts.url",
-        "`html-scripts.url` \u306F\u5909\u63DB\u306E\u30E9\u30A4\u30D6\u30E9\u30EA\u306E ES \u30E2\u30B8\u30E5\u30FC\u30EB\u306E URL \u304B\u30D1\u30B9\u306E\u6587\u5B57\u5217\u3067\u66F8\u3044\u3066\u304F\u3060\u3055\u3044\u3002"
+        "`html-scripts.url` \u306F\u5909\u63DB\u306E\u30E9\u30A4\u30D6\u30E9\u30EA\u306E ES \u30E2\u30B8\u30E5\u30FC\u30EB\u306E URL \u304B\u30D1\u30B9\u306E\u6587\u5B57\u5217\u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002"
       )
     );
     return false;
@@ -16114,7 +16299,7 @@ function isValidMermaid(value, file, issues) {
       schemaIssue(
         file,
         "mermaid",
-        "`mermaid` \u306F `url`\u30FB`theme`\u30FB`themeVariables` \u3092\u6301\u3064\u30AD\u30FC\u3068\u5024\u3067\u66F8\u3044\u3066\u304F\u3060\u3055\u3044\u3002"
+        "`mermaid` \u306F `url`\u30FB`theme`\u30FB`themeVariables` \u3092\u6301\u3064\u30AD\u30FC\u3068\u5024\u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002"
       )
     );
     return false;
@@ -16124,7 +16309,7 @@ function isValidMermaid(value, file, issues) {
       schemaIssue(
         file,
         "mermaid.url",
-        "`mermaid.url` \u306F mermaid \u306E ES \u30E2\u30B8\u30E5\u30FC\u30EB\u306E URL \u304B\u30D1\u30B9\u306E\u6587\u5B57\u5217\u3067\u66F8\u3044\u3066\u304F\u3060\u3055\u3044\u3002"
+        "`mermaid.url` \u306F mermaid \u306E ES \u30E2\u30B8\u30E5\u30FC\u30EB\u306E URL \u304B\u30D1\u30B9\u306E\u6587\u5B57\u5217\u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002"
       )
     );
     return false;
@@ -16134,7 +16319,7 @@ function isValidMermaid(value, file, issues) {
       schemaIssue(
         file,
         "mermaid.theme",
-        "`mermaid.theme` \u306F `mdmark` \u304B mermaid \u306E\u30C6\u30FC\u30DE\u306E\u540D\u524D\u306E\u6587\u5B57\u5217\u3067\u66F8\u3044\u3066\u304F\u3060\u3055\u3044\u3002"
+        "`mermaid.theme` \u306F `mdmark` \u304B mermaid \u306E\u30C6\u30FC\u30DE\u306E\u540D\u524D\u306E\u6587\u5B57\u5217\u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002"
       )
     );
     return false;
@@ -16144,7 +16329,7 @@ function isValidMermaid(value, file, issues) {
       schemaIssue(
         file,
         "mermaid.themeVariables",
-        "`mermaid.themeVariables` \u306F\u3001mermaid \u306E\u30C6\u30FC\u30DE\u306E\u5909\u6570\u306E\u540D\u524D\u3068\u5024\u306E\u30AD\u30FC\u3068\u5024\u3067\u66F8\u3044\u3066\u304F\u3060\u3055\u3044\u3002"
+        "`mermaid.themeVariables` \u306F\u3001mermaid \u306E\u30C6\u30FC\u30DE\u306E\u5909\u6570\u306E\u540D\u524D\u3068\u5024\u306E\u30AD\u30FC\u3068\u5024\u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002"
       )
     );
     return false;
@@ -16157,7 +16342,7 @@ function validateCheck(value, file, issues) {
       schemaIssue(
         file,
         "check",
-        "`check` \u306F `ignore` \u3092\u6301\u3064\u30AD\u30FC\u3068\u5024\u3067\u66F8\u3044\u3066\u304F\u3060\u3055\u3044\u3002"
+        "`check` \u306F `ignore` \u3092\u6301\u3064\u30AD\u30FC\u3068\u5024\u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002"
       )
     );
     return void 0;
@@ -16170,7 +16355,7 @@ function validateCheck(value, file, issues) {
       schemaIssue(
         file,
         "check.ignore",
-        "`check.ignore` \u306F\u5370\u306E\u540D\u524D\u306E\u4E26\u3073\u3067\u66F8\u3044\u3066\u304F\u3060\u3055\u3044\u3002"
+        "`check.ignore` \u306F\u30DE\u30FC\u30AB\u30FC\u306E\u540D\u524D\u306E\u4E26\u3073\u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002"
       )
     );
     const rest = { ...value };
@@ -16186,7 +16371,7 @@ function validateCheck(value, file, issues) {
         schemaIssue(
           file,
           `check.ignore[${position}]`,
-          `\`check.ignore[${position}]\` \u306F\u3001\u82F1\u5C0F\u6587\u5B57\u3067\u59CB\u307E\u308A\u3001\u82F1\u5C0F\u6587\u5B57\u30FB\u6570\u5B57\u30FB\`-\` \u304C\u7D9A\u304F\u5370\u306E\u540D\u524D\u3067\u66F8\u3044\u3066\u304F\u3060\u3055\u3044\u3002`
+          `\`check.ignore[${position}]\` \u306F\u3001\u82F1\u5C0F\u6587\u5B57\u3067\u59CB\u307E\u308A\u3001\u82F1\u5C0F\u6587\u5B57\u30FB\u6570\u5B57\u30FB\`-\` \u304C\u7D9A\u304F\u30DE\u30FC\u30AB\u30FC\u306E\u540D\u524D\u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
         )
       );
     }
@@ -16212,7 +16397,7 @@ var validateServeKeys = (raw, file) => {
       schemaIssue(
         file,
         "serve",
-        "`serve` \u306F `tmuxSession` \u3092\u6301\u3064\u30AD\u30FC\u3068\u5024\u3067\u66F8\u3044\u3066\u304F\u3060\u3055\u3044\u3002"
+        "`serve` \u306F `tmuxSession` \u3092\u6301\u3064\u30AD\u30FC\u3068\u5024\u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002"
       )
     ];
   }
@@ -16222,7 +16407,7 @@ var validateServeKeys = (raw, file) => {
       schemaIssue(
         file,
         "serve.tmuxSession",
-        "`serve.tmuxSession` \u306F\u82F1\u6570\u5B57\u30FB`_`\u30FB`-` \u306E\u6587\u5B57\u5217\u3067\u66F8\u3044\u3066\u304F\u3060\u3055\u3044\u3002"
+        "`serve.tmuxSession` \u306F\u82F1\u6570\u5B57\u30FB`_`\u30FB`-` \u306E\u6587\u5B57\u5217\u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002"
       )
     ];
   }
@@ -16242,7 +16427,7 @@ var validateSettingsKeys = (raw, file) => {
       schemaIssue(
         file,
         "config",
-        "`config` \u306F `cascade`\u30FB`applyToExport` \u3092\u6301\u3064\u30AD\u30FC\u3068\u5024\u3067\u66F8\u3044\u3066\u304F\u3060\u3055\u3044\u3002"
+        "`config` \u306F `cascade`\u30FB`applyToExport` \u3092\u6301\u3064\u30AD\u30FC\u3068\u5024\u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002"
       )
     ];
   }
@@ -16254,7 +16439,7 @@ var validateSettingsKeys = (raw, file) => {
         schemaIssue(
           file,
           `config.${key}`,
-          `\`config.${key}\` \u306F true \u304B false \u3067\u66F8\u3044\u3066\u304F\u3060\u3055\u3044\u3002`
+          `\`config.${key}\` \u306F true \u304B false \u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
         )
       );
     }
@@ -16278,7 +16463,7 @@ var isPortListening = (options) => new Promise((resolve2) => {
 });
 var PORT_ENV = "MDMARK_PORT";
 var DEFAULT_PORT = 8782;
-var INVALID_PORT_MESSAGE = "MDMARK_PORT \u306E\u5024 {value} \u306F\u30DD\u30FC\u30C8\u306B\u4F7F\u3048\u307E\u305B\u3093\u30021\u301C65535 \u306E\u6574\u6570\u3092\u8A2D\u5B9A\u3057\u3066\u304F\u3060\u3055\u3044\u3002";
+var INVALID_PORT_MESSAGE = "MDMARK_PORT \u306E\u5024 {value} \u306F\u30DD\u30FC\u30C8\u306B\u4F7F\u7528\u3067\u304D\u307E\u305B\u3093\u30021\u301C65535 \u306E\u6574\u6570\u3092\u8A2D\u5B9A\u3057\u3066\u304F\u3060\u3055\u3044\u3002";
 var MIN_PORT = 1;
 var MAX_PORT = 65535;
 function readPort(options) {
@@ -16295,6 +16480,7 @@ function readPort(options) {
 
 // src/plugin/setup/paths.ts
 var DEFAULT_SESSION_NAME = "mdmark-mcp";
+var DEFAULT_UNIT_NAME = "mdmark-mcp";
 var SERVE_LOG_FILE = "serve.log";
 var SetupError = class extends Error {
   name = "SetupError";
@@ -16327,15 +16513,26 @@ var resolveSetupPaths = (env) => {
     port: readPort({ env })
   };
 };
-var readSessionName = (settings) => {
+var readServeValue = (settings, key) => {
   const serve = settings?.serve;
-  if (typeof serve === "object" && serve !== null) {
-    const session = serve.tmuxSession;
-    if (typeof session === "string") {
-      return session;
-    }
-  }
-  return DEFAULT_SESSION_NAME;
+  return typeof serve === "object" && serve !== null ? serve[key] : void 0;
+};
+var readSessionName = (settings) => {
+  const session = readServeValue(settings, "tmuxSession");
+  return typeof session === "string" ? session : DEFAULT_SESSION_NAME;
+};
+var readUnitName = (settings) => {
+  const unit = readServeValue(settings, "systemdUnit");
+  return typeof unit === "string" ? unit : DEFAULT_UNIT_NAME;
+};
+var readLauncherSetting = (settings) => {
+  const value = readServeValue(settings, "launcher");
+  return value === "systemd" || value === "tmux" ? value : "auto";
+};
+var resolveUnitPath = (options) => {
+  const home = options.env.HOME || homedir();
+  const config2 = options.env.XDG_CONFIG_HOME ? expandHome(options.env.XDG_CONFIG_HOME, home) : join2(home, ".config");
+  return join2(config2, "systemd", "user", `${options.unit}.service`);
 };
 var readYamlFile = async (options) => {
   let text;
@@ -16354,7 +16551,7 @@ var readYamlFile = async (options) => {
     if (error2 instanceof import_yaml2.YAMLParseError) {
       const line = error2.linePos?.[0].line ?? 1;
       throw new SetupError(
-        `${options.path} \u306E ${line} \u884C\u76EE\u3092 YAML \u3068\u3057\u3066\u8AAD\u3081\u307E\u305B\u3093\u3002${error2.message.split("\n")[0] ?? ""}`
+        `${options.path} \u306E ${line} \u884C\u76EE\u3092 YAML \u3068\u3057\u3066\u8AAD\u307F\u8FBC\u3081\u307E\u305B\u3093\u3002${error2.message.split("\n")[0] ?? ""}`
       );
     }
     throw error2;
@@ -16363,13 +16560,15 @@ var readYamlFile = async (options) => {
     return { text, raw: {} };
   }
   if (typeof raw !== "object" || Array.isArray(raw)) {
-    throw new SetupError(`${options.path} \u304C\u30AD\u30FC\u3068\u5024\u306E\u5F62\u3067\u306F\u3042\u308A\u307E\u305B\u3093\u3002`);
+    throw new SetupError(`${options.path} \u304C\u30AD\u30FC\u3068\u5024\u306E\u69CB\u9020\u3067\u306F\u3042\u308A\u307E\u305B\u3093\u3002`);
   }
   return { text, raw };
 };
 
 // src/plugin/setup/server.ts
+import { accessSync, constants } from "node:fs";
 import { mkdir, readFile as readFile2 } from "node:fs/promises";
+import { dirname as dirname2 } from "node:path";
 
 // node_modules/@modelcontextprotocol/client/dist/chunk-Br0eD_fh.mjs
 var __create2 = Object.create;
@@ -29355,9 +29554,9 @@ var require_codegen2 = /* @__PURE__ */ __commonJSMin(((exports) => {
       const rhs = this.rhs === void 0 ? "" : ` = ${this.rhs}`;
       return `${varKind} ${this.name}${rhs};` + _n;
     }
-    optimizeNames(names, constants) {
+    optimizeNames(names, constants2) {
       if (!names[this.name.str]) return;
-      if (this.rhs) this.rhs = optimizeExpr(this.rhs, names, constants);
+      if (this.rhs) this.rhs = optimizeExpr(this.rhs, names, constants2);
       return this;
     }
     get names() {
@@ -29374,9 +29573,9 @@ var require_codegen2 = /* @__PURE__ */ __commonJSMin(((exports) => {
     render({ _n }) {
       return `${this.lhs} = ${this.rhs};` + _n;
     }
-    optimizeNames(names, constants) {
+    optimizeNames(names, constants2) {
       if (this.lhs instanceof code_1.Name && !names[this.lhs.str] && !this.sideEffects) return;
-      this.rhs = optimizeExpr(this.rhs, names, constants);
+      this.rhs = optimizeExpr(this.rhs, names, constants2);
       return this;
     }
     get names() {
@@ -29435,8 +29634,8 @@ var require_codegen2 = /* @__PURE__ */ __commonJSMin(((exports) => {
     optimizeNodes() {
       return `${this.code}` ? this : void 0;
     }
-    optimizeNames(names, constants) {
-      this.code = optimizeExpr(this.code, names, constants);
+    optimizeNames(names, constants2) {
+      this.code = optimizeExpr(this.code, names, constants2);
       return this;
     }
     get names() {
@@ -29462,12 +29661,12 @@ var require_codegen2 = /* @__PURE__ */ __commonJSMin(((exports) => {
       }
       return nodes.length > 0 ? this : void 0;
     }
-    optimizeNames(names, constants) {
+    optimizeNames(names, constants2) {
       const { nodes } = this;
       let i = nodes.length;
       while (i--) {
         const n = nodes[i];
-        if (n.optimizeNames(names, constants)) continue;
+        if (n.optimizeNames(names, constants2)) continue;
         subtractNames(names, n.names);
         nodes.splice(i, 1);
       }
@@ -29514,11 +29713,11 @@ var require_codegen2 = /* @__PURE__ */ __commonJSMin(((exports) => {
       if (cond === false || !this.nodes.length) return void 0;
       return this;
     }
-    optimizeNames(names, constants) {
+    optimizeNames(names, constants2) {
       var _a3;
-      this.else = (_a3 = this.else) === null || _a3 === void 0 ? void 0 : _a3.optimizeNames(names, constants);
-      if (!(super.optimizeNames(names, constants) || this.else)) return;
-      this.condition = optimizeExpr(this.condition, names, constants);
+      this.else = (_a3 = this.else) === null || _a3 === void 0 ? void 0 : _a3.optimizeNames(names, constants2);
+      if (!(super.optimizeNames(names, constants2) || this.else)) return;
+      this.condition = optimizeExpr(this.condition, names, constants2);
       return this;
     }
     get names() {
@@ -29540,9 +29739,9 @@ var require_codegen2 = /* @__PURE__ */ __commonJSMin(((exports) => {
     render(opts) {
       return `for(${this.iteration})` + super.render(opts);
     }
-    optimizeNames(names, constants) {
-      if (!super.optimizeNames(names, constants)) return;
-      this.iteration = optimizeExpr(this.iteration, names, constants);
+    optimizeNames(names, constants2) {
+      if (!super.optimizeNames(names, constants2)) return;
+      this.iteration = optimizeExpr(this.iteration, names, constants2);
       return this;
     }
     get names() {
@@ -29577,9 +29776,9 @@ var require_codegen2 = /* @__PURE__ */ __commonJSMin(((exports) => {
     render(opts) {
       return `for(${this.varKind} ${this.name} ${this.loop} ${this.iterable})` + super.render(opts);
     }
-    optimizeNames(names, constants) {
-      if (!super.optimizeNames(names, constants)) return;
-      this.iterable = optimizeExpr(this.iterable, names, constants);
+    optimizeNames(names, constants2) {
+      if (!super.optimizeNames(names, constants2)) return;
+      this.iterable = optimizeExpr(this.iterable, names, constants2);
       return this;
     }
     get names() {
@@ -29618,11 +29817,11 @@ var require_codegen2 = /* @__PURE__ */ __commonJSMin(((exports) => {
       (_b = this.finally) === null || _b === void 0 || _b.optimizeNodes();
       return this;
     }
-    optimizeNames(names, constants) {
+    optimizeNames(names, constants2) {
       var _a3, _b;
-      super.optimizeNames(names, constants);
-      (_a3 = this.catch) === null || _a3 === void 0 || _a3.optimizeNames(names, constants);
-      (_b = this.finally) === null || _b === void 0 || _b.optimizeNames(names, constants);
+      super.optimizeNames(names, constants2);
+      (_a3 = this.catch) === null || _a3 === void 0 || _a3.optimizeNames(names, constants2);
+      (_b = this.finally) === null || _b === void 0 || _b.optimizeNames(names, constants2);
       return this;
     }
     get names() {
@@ -29871,7 +30070,7 @@ var require_codegen2 = /* @__PURE__ */ __commonJSMin(((exports) => {
   function addExprNames(names, from) {
     return from instanceof code_1._CodeOrName ? addNames(names, from.names) : names;
   }
-  function optimizeExpr(expr, names, constants) {
+  function optimizeExpr(expr, names, constants2) {
     if (expr instanceof code_1.Name) return replaceName(expr);
     if (!canOptimize(expr)) return expr;
     return new code_1._Code(expr._items.reduce((items, c) => {
@@ -29881,13 +30080,13 @@ var require_codegen2 = /* @__PURE__ */ __commonJSMin(((exports) => {
       return items;
     }, []));
     function replaceName(n) {
-      const c = constants[n.str];
+      const c = constants2[n.str];
       if (c === void 0 || names[n.str] !== 1) return n;
       delete names[n.str];
       return c;
     }
     function canOptimize(e) {
-      return e instanceof code_1._Code && e._items.some((c) => c instanceof code_1.Name && names[c.str] === 1 && constants[c.str] !== void 0);
+      return e instanceof code_1._Code && e._items.some((c) => c instanceof code_1.Name && names[c.str] === 1 && constants2[c.str] !== void 0);
     }
   }
   function subtractNames(names, from) {
@@ -40070,6 +40269,81 @@ var StreamableHTTPClientTransport = class {
 
 // src/plugin/setup/status.ts
 import { readFile } from "node:fs/promises";
+
+// src/plugin/setup/systemd.ts
+import { join as join3 } from "node:path";
+var UNIT_BASE_PATH = "/usr/local/bin:/usr/bin:/bin";
+var SYSTEMD_USABLE_STATES = ["running", "degraded", "starting"];
+var hasSystemd = async (run) => SYSTEMD_USABLE_STATES.includes(
+  (await run("systemctl", ["--user", "is-system-running"])).stdout.trim()
+);
+var escapeUnitValue = (value) => value.replaceAll("\\", "\\\\").replaceAll('"', '\\"').replaceAll("%", "%%");
+var buildUnitFile = (options) => {
+  const environment = [
+    `MDMARK_PORT=${options.port}`,
+    `MDMARK_CONFIG=${options.settingsPath}`,
+    `MDMARK_STATE_DIR=${options.stateDir}`,
+    "MDMARK_LAUNCHER=systemd",
+    `PATH=${options.path}`
+  ].map((value) => `Environment="${escapeUnitValue(value)}"`);
+  const command = options.command.replaceAll("'", "'\\''").replaceAll("%", "%%").replaceAll("$", "$$$$");
+  return [
+    "[Unit]",
+    "Description=mdmark MCP server",
+    "",
+    "[Service]",
+    ...environment,
+    `ExecStart=/bin/sh -c '${command}'`,
+    "Restart=on-failure",
+    "",
+    "[Install]",
+    "WantedBy=default.target",
+    ""
+  ].join("\n");
+};
+var buildUnitPathEnv = (options) => {
+  const dirs = (options.path ?? "").split(":").filter((dir) => dir !== "");
+  const found = ["node", "npx"].flatMap((name) => {
+    const dir = dirs.find(
+      (candidate) => options.isExecutable(join3(candidate, name))
+    );
+    return dir === void 0 ? [] : [dir];
+  });
+  return [.../* @__PURE__ */ new Set([...found, ...UNIT_BASE_PATH.split(":")])].join(":");
+};
+var readUnitState = async (options) => {
+  const { stdout } = await options.run("systemctl", [
+    "--user",
+    "show",
+    "-p",
+    "ActiveState",
+    "-p",
+    "SubState",
+    "-p",
+    "NRestarts",
+    "-p",
+    "MainPID",
+    "-p",
+    "UnitFileState",
+    `${options.unit}.service`
+  ]);
+  const values = new Map(
+    stdout.split("\n").filter((line) => line.includes("=")).map((line) => {
+      const at = line.indexOf("=");
+      return [line.slice(0, at), line.slice(at + 1)];
+    })
+  );
+  return {
+    activeState: values.get("ActiveState") ?? "",
+    subState: values.get("SubState") ?? "",
+    nRestarts: Number(values.get("NRestarts") ?? "0"),
+    mainPid: Number(values.get("MainPID") ?? "0"),
+    enabled: values.get("UnitFileState") === "enabled"
+  };
+};
+var hasUnitExited = (state) => state.nRestarts >= 1 || state.subState === "auto-restart" || state.activeState === "failed";
+
+// src/plugin/setup/status.ts
 var hasTmux = async (run) => (await run("tmux", ["-V"])).code === 0;
 var hasSession = async (options) => (await options.run("tmux", ["has-session", "-t", `=${options.session}`])).code === 0;
 var readTerminalStatus = async (options) => {
@@ -40079,7 +40353,11 @@ var readTerminalStatus = async (options) => {
     readFile: (path) => readFile(path, "utf8")
   });
   const session = readSessionName(settings?.raw);
+  const unit = readUnitName(settings?.raw);
+  const setting = readLauncherSetting(settings?.raw);
   const available = await hasTmux(options.run);
+  const systemdAvailable = await hasSystemd(options.run);
+  const unitState = systemdAvailable ? await readUnitState({ run: options.run, unit }) : void 0;
   const version2 = settings?.raw.version;
   return {
     settings: {
@@ -40093,12 +40371,21 @@ var readTerminalStatus = async (options) => {
       port: paths.port,
       session,
       session_exists: available && await hasSession({ run: options.run, session }),
+      unit,
+      unit_path: resolveUnitPath({ env: options.env, unit }),
+      unit_active: unitState?.activeState === "active",
+      unit_enabled: unitState?.enabled === true,
       listening: await isPortListening({
         port: paths.port,
         timeoutMs: CONNECT_TIMEOUT_MS
       })
     },
     tmux: { available },
+    systemd: { available: systemdAvailable },
+    launcher: {
+      setting,
+      resolved: setting === "auto" ? systemdAvailable ? "systemd" : "tmux" : setting
+    },
     state: { dir: paths.stateDir, log: paths.logPath }
   };
 };
@@ -40106,6 +40393,7 @@ var readTerminalStatus = async (options) => {
 // src/plugin/setup/server.ts
 var START_TIMEOUT_SEC = 120;
 var POLL_INTERVAL_MS = 1e3;
+var PORT_RELEASE_TIMEOUT_SEC = 10;
 var LOG_TAIL_LINES = 20;
 var quote = (value) => `'${value.replaceAll("'", "'\\''")}'`;
 var buildTmuxArgs = (options) => [
@@ -40119,6 +40407,8 @@ var buildTmuxArgs = (options) => [
   `MDMARK_CONFIG=${options.settingsPath}`,
   "-e",
   `MDMARK_STATE_DIR=${options.stateDir}`,
+  "-e",
+  "MDMARK_LAUNCHER=tmux",
   "sh",
   "-c",
   `${options.command} 2>&1 | tee -a ${quote(options.logPath)}`
@@ -40146,6 +40436,34 @@ var readLogTail = async (path) => {
     throw error2;
   }
 };
+var readJournalTail = async (options) => (await options.run("journalctl", [
+  "--user",
+  "-u",
+  options.unit,
+  "-n",
+  String(LOG_TAIL_LINES),
+  "--no-pager",
+  "-o",
+  "cat"
+])).stdout.trimEnd();
+var readUnitFile = async (path) => {
+  try {
+    return await readFile2(path, "utf8");
+  } catch (error2) {
+    if (error2.code === "ENOENT") {
+      return void 0;
+    }
+    throw error2;
+  }
+};
+var isExecutable = (file) => {
+  try {
+    accessSync(file, constants.X_OK);
+    return true;
+  } catch {
+    return false;
+  }
+};
 var readTimeoutSec = (env) => {
   const value = env.MDMARK_START_TIMEOUT_SEC;
   if (value === void 0 || value === "") {
@@ -40153,58 +40471,158 @@ var readTimeoutSec = (env) => {
   }
   if (!/^\d+$/.test(value)) {
     throw new SetupError(
-      `MDMARK_START_TIMEOUT_SEC \u306E\u5024 ${value} \u306F 0 \u4EE5\u4E0A\u306E\u6574\u6570\u3067\u66F8\u3044\u3066\u304F\u3060\u3055\u3044\u3002`
+      `MDMARK_START_TIMEOUT_SEC \u306E\u5024 ${value} \u306F 0 \u4EE5\u4E0A\u306E\u6574\u6570\u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
     );
   }
   return Number(value);
 };
-var startServer = async (options) => {
-  const { env, run, sleep: sleep2 } = options;
-  const paths = resolveSetupPaths(env);
-  const command = env.MDMARK_SERVE_COMMAND || `npx -y github:shuhei1101/mdmark#${options.version} serve`;
-  if (!await hasTmux(run)) {
+var portInUse = (port, detail) => new SetupError(
+  `\u30DD\u30FC\u30C8 ${port} \u3067 ${detail}\u3002\u307B\u304B\u306E\u30D7\u30ED\u30BB\u30B9\u304C\u4F7F\u7528\u3057\u3066\u3044\u308B\u3068\u304D\u306F\u3001~/.claude/settings.json \u306E env \u306E MDMARK_PORT \u3092\u7A7A\u3044\u305F\u30DD\u30FC\u30C8\u306B\u5909\u3048\u3001\u30BB\u30C3\u30B7\u30E7\u30F3\u3092\u3082\u3046\u4E00\u5EA6\u958B\u3044\u3066 /mdmark:global-setup \u3092\u3082\u3046\u4E00\u5EA6\u547C\u3093\u3067\u304F\u3060\u3055\u3044\u3002`
+);
+var resolveLauncher = (options) => {
+  const fromSetting = options.setting === "auto" ? options.systemdAvailable ? "systemd" : "tmux" : options.setting;
+  const launcher = options.argument ?? fromSetting;
+  const usable = launcher === "systemd" ? options.systemdAvailable : options.tmuxAvailable;
+  if (!usable) {
+    const missing = options.argument === void 0 && options.setting === "auto" ? "systemd --user \u3082 tmux \u3082\u4F7F\u3048\u307E\u305B\u3093" : launcher === "systemd" ? "systemd --user \u304C\u4F7F\u3048\u307E\u305B\u3093" : "tmux \u304C\u898B\u3064\u304B\u308A\u307E\u305B\u3093";
     throw new SetupError(
-      `tmux \u304C\u898B\u3064\u304B\u308A\u307E\u305B\u3093\u3002\u7AEF\u672B\u3092\u958B\u3044\u305F\u307E\u307E\u6B21\u306E\u30B3\u30DE\u30F3\u30C9\u3067\u5E38\u99D0\u30B5\u30FC\u30D0\u30FC\u3092\u52D5\u304B\u3057\u3066\u304F\u3060\u3055\u3044: MDMARK_PORT=${paths.port} ${command}`,
+      `${missing}\u3002\u7AEF\u672B\u3092\u958B\u3044\u305F\u307E\u307E\u6B21\u306E\u30B3\u30DE\u30F3\u30C9\u3067\u5E38\u99D0\u30B5\u30FC\u30D0\u30FC\u3092\u52D5\u304B\u3057\u3066\u304F\u3060\u3055\u3044: MDMARK_PORT=${options.port} ${options.command}`,
       2
     );
   }
-  const settings = await readYamlFile({
-    path: paths.settingsPath,
-    readFile: (path) => readFile2(path, "utf8")
-  });
-  const session = readSessionName(settings?.raw);
-  const listening = () => isPortListening({ port: paths.port, timeoutMs: CONNECT_TIMEOUT_MS });
-  const portInUse = (detail) => new SetupError(
-    `\u30DD\u30FC\u30C8 ${paths.port} \u3067 ${detail}\u3002\u307B\u304B\u306E\u30D7\u30ED\u30BB\u30B9\u304C\u4F7F\u3063\u3066\u3044\u308B\u3068\u304D\u306F\u3001~/.claude/settings.json \u306E env \u306E MDMARK_PORT \u3092\u7A7A\u3044\u305F\u30DD\u30FC\u30C8\u306B\u5909\u3048\u3001\u30BB\u30C3\u30B7\u30E7\u30F3\u3092\u958B\u304D\u76F4\u3057\u3066 /mdmark:global-setup \u3092\u547C\u3073\u76F4\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
-  );
-  const done = async (result2) => {
-    let tools;
-    try {
-      tools = await listToolNames({ port: paths.port });
-    } catch (error2) {
+  return { launcher, migrate: options.argument === void 0 };
+};
+var waitForListening = async (options) => {
+  const deadline = Date.now() + options.timeoutSec * 1e3;
+  for (; ; ) {
+    if (await options.hasExited()) {
+      return "exited";
+    }
+    if (await isPortListening({
+      port: options.port,
+      timeoutMs: CONNECT_TIMEOUT_MS
+    })) {
+      return "listening";
+    }
+    if (Date.now() >= deadline) {
+      return "timed_out";
+    }
+    await options.sleep(POLL_INTERVAL_MS);
+  }
+};
+var waitForPortReleased = async (options) => {
+  const deadline = Date.now() + PORT_RELEASE_TIMEOUT_SEC * 1e3;
+  while (await isPortListening({ port: options.port, timeoutMs: CONNECT_TIMEOUT_MS })) {
+    if (Date.now() >= deadline) {
       throw portInUse(
-        `\u5F85\u3061\u53D7\u3051\u3066\u3044\u308B\u30D7\u30ED\u30BB\u30B9\u304B\u3089 MCP \u306E\u30C4\u30FC\u30EB\u306E\u4E00\u89A7\u3092\u53D7\u3051\u53D6\u308C\u307E\u305B\u3093\uFF08${error2 instanceof Error ? error2.message : String(error2)}\uFF09`
+        options.port,
+        `\u6B62\u3081\u305F\u5E38\u99D0\u30B5\u30FC\u30D0\u30FC\u306E\u5F85\u3061\u53D7\u3051\u304C ${PORT_RELEASE_TIMEOUT_SEC} \u79D2\u306E\u9593\u306B\u89E3\u653E\u3055\u308C\u307E\u305B\u3093`
       );
     }
+    await options.sleep(POLL_INTERVAL_MS);
+  }
+};
+var startWithSystemd = async (options) => {
+  const { paths, unit, run, sleep: sleep2 } = options;
+  const changes = [];
+  if (options.migrate && await hasSession({ run, session: options.session })) {
+    await run("tmux", ["kill-session", "-t", `=${options.session}`]);
+    changes.push("tmux_session_closed");
+    await waitForPortReleased({ port: paths.port, sleep: sleep2 });
+  }
+  const unitPath = resolveUnitPath({ env: options.env, unit });
+  const content = buildUnitFile({
+    port: paths.port,
+    settingsPath: paths.settingsPath,
+    stateDir: paths.stateDir,
+    path: buildUnitPathEnv({ path: options.env.PATH, isExecutable }),
+    command: options.command
+  });
+  const same = await readUnitFile(unitPath) === content;
+  const state = await readUnitState({ run, unit });
+  const active = state.activeState === "active";
+  const listening = await isPortListening({
+    port: paths.port,
+    timeoutMs: CONNECT_TIMEOUT_MS
+  });
+  if (active && same && listening) {
+    if (!state.enabled) {
+      await run("systemctl", ["--user", "enable", unit]);
+    }
+    return { result: "already_running", changes, launcher: "systemd" };
+  }
+  if (!active && listening) {
+    throw portInUse(
+      paths.port,
+      `unit ${unit} \u306E\u5916\u306E\u30D7\u30ED\u30BB\u30B9\u304C\u5F85\u3061\u53D7\u3051\u3066\u3044\u308B\u305F\u3081\u3001\u8D77\u52D5\u3057\u3066\u3044\u307E\u305B\u3093`
+    );
+  }
+  if (!same) {
+    await mkdir(dirname2(unitPath), { recursive: true });
+    await options.writeFile(unitPath, content);
+    await run("systemctl", ["--user", "daemon-reload"]);
+    changes.push("unit_written");
+  }
+  if (active) {
+    await run("systemctl", ["--user", "restart", unit]);
+  } else {
+    await run("systemctl", ["--user", "enable", "--now", unit]);
+  }
+  const waited = await waitForListening({
+    port: paths.port,
+    timeoutSec: readTimeoutSec(options.env),
+    hasExited: async () => hasUnitExited(await readUnitState({ run, unit })),
+    sleep: sleep2
+  });
+  if (waited === "listening") {
     return {
-      result: result2,
-      session,
-      url: `http://127.0.0.1:${paths.port}/mcp`,
-      tools,
-      log: paths.logPath,
-      stop: `tmux kill-session -t =${session}`
+      result: active ? "restarted" : "started",
+      changes,
+      launcher: "systemd"
     };
-  };
+  }
+  await run("systemctl", ["--user", "disable", "--now", unit]);
+  const journal = await readJournalTail({ run, unit });
+  if (waited === "exited") {
+    throw new SetupError(
+      `mdmark serve \u304C\u7D42\u308F\u3063\u305F\u305F\u3081\u3001unit ${unit} \u3092\u6B62\u3081\u307E\u3057\u305F\u3002journalctl --user -u ${unit} \u306E\u672B\u5C3E:
+${journal}
+\u30DD\u30FC\u30C8\u304C\u4F7F\u7528\u3055\u308C\u3066\u3044\u308B\u3068\u304D\u306F\u3001~/.claude/settings.json \u306E env \u306E MDMARK_PORT \u3092\u7A7A\u3044\u305F\u30DD\u30FC\u30C8\u306B\u5909\u3048\u3001\u30BB\u30C3\u30B7\u30E7\u30F3\u3092\u3082\u3046\u4E00\u5EA6\u958B\u3044\u3066 /mdmark:global-setup \u3092\u3082\u3046\u4E00\u5EA6\u547C\u3093\u3067\u304F\u3060\u3055\u3044\u3002`
+    );
+  }
+  throw new SetupError(
+    `\u5E38\u99D0\u30B5\u30FC\u30D0\u30FC\u304C\u5F85\u3061\u53D7\u3051\u308B\u307E\u3067\u306E\u4E0A\u9650\u3092\u8D85\u3048\u305F\u305F\u3081\u3001unit ${unit} \u3092\u6B62\u3081\u307E\u3057\u305F\u3002journalctl --user -u ${unit} \u306E\u672B\u5C3E:
+${journal}
+\u53D6\u5F97\u306B\u6642\u9593\u304C\u304B\u304B\u3063\u3066\u3044\u308B\u306E\u3067\u3001\u3082\u3046\u4E00\u5EA6 /mdmark:global-setup \u3092\u547C\u3093\u3067\u304F\u3060\u3055\u3044\u3002`,
+    3
+  );
+};
+var startWithTmux = async (options) => {
+  const { paths, unit, session, run, sleep: sleep2 } = options;
+  const changes = [];
+  const listening = () => isPortListening({ port: paths.port, timeoutMs: CONNECT_TIMEOUT_MS });
+  if (options.systemdAvailable) {
+    const state = await readUnitState({ run, unit });
+    const active = state.activeState === "active";
+    if (options.migrate && (active || state.enabled)) {
+      await run("systemctl", ["--user", "disable", "--now", unit]);
+      changes.push("unit_disabled");
+      await waitForPortReleased({ port: paths.port, sleep: sleep2 });
+    } else if (!options.migrate && active && await listening()) {
+      return { result: "already_running", changes, launcher: "systemd" };
+    }
+  }
   let result = "started";
   if (await hasSession({ run, session })) {
     if (await listening()) {
-      return await done("already_running");
+      return { result: "already_running", changes, launcher: "tmux" };
     }
     await run("tmux", ["kill-session", "-t", `=${session}`]);
     result = "restarted";
   }
   if (await listening()) {
     throw portInUse(
+      paths.port,
       `\u30BB\u30C3\u30B7\u30E7\u30F3 ${session} \u306E\u5916\u306E\u30D7\u30ED\u30BB\u30B9\u304C\u5F85\u3061\u53D7\u3051\u3066\u3044\u308B\u305F\u3081\u3001\u8D77\u52D5\u3057\u3066\u3044\u307E\u305B\u3093`
     );
   }
@@ -40217,40 +40635,92 @@ var startServer = async (options) => {
       settingsPath: paths.settingsPath,
       stateDir: paths.stateDir,
       logPath: paths.logPath,
-      command
+      command: options.command
     })
   );
-  const deadline = Date.now() + readTimeoutSec(env) * 1e3;
-  for (; ; ) {
-    if (!await hasSession({ run, session })) {
-      throw new SetupError(
-        `mdmark serve \u304C\u7D42\u308F\u308A\u307E\u3057\u305F\u3002${paths.logPath} \u306E\u672B\u5C3E:
+  const waited = await waitForListening({
+    port: paths.port,
+    timeoutSec: readTimeoutSec(options.env),
+    hasExited: async () => !await hasSession({ run, session }),
+    sleep: sleep2
+  });
+  if (waited === "listening") {
+    return { result, changes, launcher: "tmux" };
+  }
+  if (waited === "exited") {
+    throw new SetupError(
+      `mdmark serve \u304C\u7D42\u308F\u308A\u307E\u3057\u305F\u3002${paths.logPath} \u306E\u672B\u5C3E:
 ${await readLogTail(paths.logPath)}
-\u30DD\u30FC\u30C8\u304C\u4F7F\u308F\u308C\u3066\u3044\u308B\u3068\u304D\u306F\u3001~/.claude/settings.json \u306E env \u306E MDMARK_PORT \u3092\u7A7A\u3044\u305F\u30DD\u30FC\u30C8\u306B\u5909\u3048\u3001\u30BB\u30C3\u30B7\u30E7\u30F3\u3092\u958B\u304D\u76F4\u3057\u3066 /mdmark:global-setup \u3092\u547C\u3073\u76F4\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
-      );
-    }
-    if (await listening()) {
-      return await done(result);
-    }
-    if (Date.now() >= deadline) {
-      await run("tmux", ["kill-session", "-t", `=${session}`]);
-      throw new SetupError(
-        `\u5E38\u99D0\u30B5\u30FC\u30D0\u30FC\u304C\u5F85\u3061\u53D7\u3051\u308B\u307E\u3067\u306E\u4E0A\u9650\u3092\u8D85\u3048\u305F\u305F\u3081\u3001\u30BB\u30C3\u30B7\u30E7\u30F3 ${session} \u3092\u9589\u3058\u307E\u3057\u305F\u3002${paths.logPath} \u306E\u672B\u5C3E:
+\u30DD\u30FC\u30C8\u304C\u4F7F\u7528\u3055\u308C\u3066\u3044\u308B\u3068\u304D\u306F\u3001~/.claude/settings.json \u306E env \u306E MDMARK_PORT \u3092\u7A7A\u3044\u305F\u30DD\u30FC\u30C8\u306B\u5909\u3048\u3001\u30BB\u30C3\u30B7\u30E7\u30F3\u3092\u3082\u3046\u4E00\u5EA6\u958B\u3044\u3066 /mdmark:global-setup \u3092\u3082\u3046\u4E00\u5EA6\u547C\u3093\u3067\u304F\u3060\u3055\u3044\u3002`
+    );
+  }
+  await run("tmux", ["kill-session", "-t", `=${session}`]);
+  throw new SetupError(
+    `\u5E38\u99D0\u30B5\u30FC\u30D0\u30FC\u304C\u5F85\u3061\u53D7\u3051\u308B\u307E\u3067\u306E\u4E0A\u9650\u3092\u8D85\u3048\u305F\u305F\u3081\u3001\u30BB\u30C3\u30B7\u30E7\u30F3 ${session} \u3092\u9589\u3058\u307E\u3057\u305F\u3002${paths.logPath} \u306E\u672B\u5C3E:
 ${await readLogTail(paths.logPath)}
 \u53D6\u5F97\u306B\u6642\u9593\u304C\u304B\u304B\u3063\u3066\u3044\u308B\u306E\u3067\u3001\u3082\u3046\u4E00\u5EA6 /mdmark:global-setup \u3092\u547C\u3093\u3067\u304F\u3060\u3055\u3044\u3002`,
-        3
-      );
-    }
-    await sleep2(POLL_INTERVAL_MS);
+    3
+  );
+};
+var startServer = async (options) => {
+  const { env, run, sleep: sleep2 } = options;
+  const paths = resolveSetupPaths(env);
+  const command = env.MDMARK_SERVE_COMMAND || `npx -y github:shuhei1101/mdmark#${options.version} serve`;
+  const settings = await readYamlFile({
+    path: paths.settingsPath,
+    readFile: (path) => readFile2(path, "utf8")
+  });
+  const unit = readUnitName(settings?.raw);
+  const session = readSessionName(settings?.raw);
+  const systemdAvailable = await hasSystemd(run);
+  const choice = resolveLauncher({
+    argument: options.launcher,
+    setting: readLauncherSetting(settings?.raw),
+    systemdAvailable,
+    tmuxAvailable: await hasTmux(run),
+    command,
+    port: paths.port
+  });
+  const launch = {
+    env,
+    paths,
+    unit,
+    session,
+    command,
+    migrate: choice.migrate,
+    run,
+    sleep: sleep2
+  };
+  const outcome = choice.launcher === "systemd" ? await startWithSystemd({ ...launch, writeFile: options.writeFile }) : await startWithTmux({ ...launch, systemdAvailable });
+  let tools;
+  try {
+    tools = await listToolNames({ port: paths.port });
+  } catch (error2) {
+    throw portInUse(
+      paths.port,
+      `\u5F85\u3061\u53D7\u3051\u3066\u3044\u308B\u30D7\u30ED\u30BB\u30B9\u304B\u3089 MCP \u306E\u30C4\u30FC\u30EB\u306E\u4E00\u89A7\u3092\u53D7\u3051\u53D6\u308C\u307E\u305B\u3093\uFF08${error2 instanceof Error ? error2.message : String(error2)}\uFF09`
+    );
   }
+  const bySystemd = outcome.launcher === "systemd";
+  return {
+    result: outcome.result,
+    launcher: outcome.launcher,
+    changes: outcome.changes,
+    unit: bySystemd ? unit : null,
+    session: bySystemd ? null : session,
+    url: `http://127.0.0.1:${paths.port}/mcp`,
+    tools,
+    log: bySystemd ? `journalctl --user -u ${unit}` : paths.logPath,
+    stop: bySystemd ? `systemctl --user disable --now ${unit}` : `tmux kill-session -t =${session}`
+  };
 };
 
 // src/plugin/setup/write.ts
 var import_yaml3 = __toESM(require_dist(), 1);
 import { mkdir as mkdir2, readFile as readFile3, writeFile } from "node:fs/promises";
-import { dirname as dirname2, join as join3 } from "node:path";
+import { dirname as dirname3, join as join4 } from "node:path";
 var SETTINGS_TEMPLATE = "settings.sample.yaml";
-var CONFIG_TEMPLATE = join3("templates", "mdmark.config.yaml");
+var CONFIG_TEMPLATE = join4("templates", "mdmark.config.yaml");
 var CONFIG_FILE = "mdmark.config.yaml";
 var SETTINGS_ONLY_ROOTS2 = ["config", "serve"];
 var CONFIG_ENV = "MDMARK_CONFIG";
@@ -40258,7 +40728,7 @@ var parseSetArgs = (args) => args.map((arg) => {
   const index = arg.indexOf("=");
   if (index <= 0) {
     throw new SetupError(
-      `--set ${arg} \u306F {\u30AD\u30FC}={\u5024} \u306E\u5F62\u3067\u66F8\u3044\u3066\u304F\u3060\u3055\u3044\u3002`
+      `--set ${arg} \u306F {\u30AD\u30FC}={\u5024} \u306E\u69CB\u9020\u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
     );
   }
   return {
@@ -40280,7 +40750,7 @@ var assertNoIssues = (issues) => {
   if (issues.length > 0) {
     throw new SetupError(
       `${issues.map((issue2) => `${issue2.where}: ${issue2.message}`).join("\n")}
-\u4F55\u3082\u66F8\u3044\u3066\u3044\u307E\u305B\u3093\u3002`
+\u4F55\u3082\u66F8\u304D\u8FBC\u3093\u3067\u3044\u307E\u305B\u3093\u3002`
     );
   }
 };
@@ -40305,7 +40775,7 @@ var writeClaudeEnv = async (options) => {
     return false;
   }
   settings.env = { ...env, [options.key]: options.value };
-  await mkdir2(dirname2(options.path), { recursive: true });
+  await mkdir2(dirname3(options.path), { recursive: true });
   await writeFile(options.path, `${JSON.stringify(settings, null, 2)}
 `);
   return true;
@@ -40315,7 +40785,7 @@ var writeSettings = async (options) => {
   const sets = parseSetArgs(options.sets);
   const doc = await applySets({
     path: paths.settingsPath,
-    templatePath: join3(options.pluginRoot, SETTINGS_TEMPLATE),
+    templatePath: join4(options.pluginRoot, SETTINGS_TEMPLATE),
     version: options.version,
     sets
   });
@@ -40324,7 +40794,7 @@ var writeSettings = async (options) => {
     ...validateConfig(raw, paths.settingsPath).issues,
     ...validateSettingsKeys(raw, paths.settingsPath)
   ]);
-  await mkdir2(dirname2(paths.settingsPath), { recursive: true });
+  await mkdir2(dirname3(paths.settingsPath), { recursive: true });
   await writeFile(
     paths.settingsPath,
     doc.toString({ flowCollectionPadding: false })
@@ -40346,13 +40816,13 @@ var writeConfig = async (options) => {
   );
   if (settingsOnly) {
     throw new SetupError(
-      `${settingsOnly.path.join(".")} \u306F\u7AEF\u672B\u306E\u8A2D\u5B9A\u3060\u3051\u304C\u6301\u3064\u30AD\u30FC\u3067\u3059\u3002mdmark.config.yaml \u306B\u306F\u66F8\u3051\u307E\u305B\u3093\u3002`
+      `${settingsOnly.path.join(".")} \u306F\u7AEF\u672B\u306E\u8A2D\u5B9A\u3060\u3051\u304C\u6301\u3064\u30AD\u30FC\u3067\u3059\u3002mdmark.config.yaml \u306B\u306F\u66F8\u304D\u8FBC\u3081\u307E\u305B\u3093\u3002`
     );
   }
-  const path = join3(options.dir, CONFIG_FILE);
+  const path = join4(options.dir, CONFIG_FILE);
   const doc = await applySets({
     path,
-    templatePath: join3(options.pluginRoot, CONFIG_TEMPLATE),
+    templatePath: join4(options.pluginRoot, CONFIG_TEMPLATE),
     version: options.version,
     sets
   });
@@ -40365,10 +40835,10 @@ var writeConfig = async (options) => {
 var SETUP_EXIT = {
   ok: 0,
   failed: 1,
-  tmuxMissing: 2,
+  launcherMissing: 2,
   timedOut: 3
 };
-var USAGE = "\u4F7F\u3044\u65B9: setup.js status | keys --target settings|config [--dir {\u6587\u66F8\u306E\u30D5\u30A9\u30EB\u30C0}] | write-settings [--set {\u30AD\u30FC}={\u5024}]... | start-server | write-config --dir {\u6587\u66F8\u306E\u30D5\u30A9\u30EB\u30C0} [--set {\u30AD\u30FC}={\u5024}]...";
+var USAGE = "\u4F7F\u7528\u65B9\u6CD5: setup.js status | keys --target settings|config [--dir {\u6587\u66F8\u306E\u30D5\u30A9\u30EB\u30C0}] | write-settings [--set {\u30AD\u30FC}={\u5024}]... | start-server [--launcher systemd|tmux] | write-config --dir {\u6587\u66F8\u306E\u30D5\u30A9\u30EB\u30C0} [--set {\u30AD\u30FC}={\u5024}]...";
 var SCHEMAS = {
   "mdmark.config.schema.json": mdmark_config_schema_default,
   "mdmark.settings.schema.json": mdmark_settings_schema_default
@@ -40376,7 +40846,7 @@ var SCHEMAS = {
 var resolveRef = (ref) => {
   const schema = SCHEMAS[ref];
   if (schema === void 0) {
-    throw new SetupError(`Schema ${ref} \u3092\u8AAD\u3081\u307E\u305B\u3093\u3002`);
+    throw new SetupError(`Schema ${ref} \u3092\u8AAD\u307F\u8FBC\u3081\u307E\u305B\u3093\u3002`);
   }
   return schema;
 };
@@ -40386,7 +40856,8 @@ var runCommand = async (options) => {
     options: {
       target: { type: "string" },
       dir: { type: "string" },
-      set: { type: "string", multiple: true }
+      set: { type: "string", multiple: true },
+      launcher: { type: "string" }
     },
     allowPositionals: true
   });
@@ -40413,7 +40884,7 @@ var runCommand = async (options) => {
         };
       }
       if (values.target === "config" && values.dir) {
-        const current = (await read(join4(values.dir, "mdmark.config.yaml")))?.raw ?? {};
+        const current = (await read(join5(values.dir, "mdmark.config.yaml")))?.raw ?? {};
         return {
           keys: listConfigKeys({
             target: "config",
@@ -40431,10 +40902,17 @@ var runCommand = async (options) => {
     case "write-settings":
       return await writeSettings({ ...base, sets });
     case "start-server":
+      if (values.launcher !== void 0 && values.launcher !== "systemd" && values.launcher !== "tmux") {
+        throw new SetupError(
+          `start-server \u306E --launcher \u306B\u306F systemd \u304B tmux \u3092\u6307\u5B9A\u3057\u3066\u304F\u3060\u3055\u3044\uFF08${values.launcher}\uFF09\u3002${USAGE}`
+        );
+      }
       return await startServer({
         ...base,
+        launcher: values.launcher,
         run: options.run,
-        sleep: (ms) => new Promise((resolve2) => setTimeout(resolve2, ms))
+        sleep: (ms) => new Promise((resolve2) => setTimeout(resolve2, ms)),
+        writeFile: (path, data) => writeFile2(path, data, "utf8")
       });
     case "write-config":
       if (!values.dir) {
@@ -40479,8 +40957,8 @@ if (import.meta.main) {
   process.exitCode = await runSetup({
     argv: process.argv.slice(2),
     env: process.env,
-    pluginRoot: join4(import.meta.dirname, ".."),
-    version: "v0.10.0",
+    pluginRoot: join5(import.meta.dirname, ".."),
+    version: "v0.11.0",
     run: runExternal,
     stdout: (line) => console.log(line),
     stderr: (line) => console.error(line)

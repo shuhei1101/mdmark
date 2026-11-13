@@ -11,21 +11,21 @@ export type MdmarkGlossaryEntry = {
     meaning: string;
     /** 表を持つ文書の `id` */
     docId: string;
-    /** やめた言い方の列を「、」「,」で区切ったもの。やめた言い方の列が無いときは空。使う側が組み立てた参照の表で無いときは、やめた言い方を持たない用語として扱う */
+    /** やめた言い方の列を「、」「,」で区切ったもの。やめた言い方の列が無いときは空。利用側が組み立てた参照の表で無いときは、やめた言い方を持たない用語として扱う */
     avoid?: string[] | undefined;
 };
-/** `collectReferences` が返し、`mount`・`render` の `opts.references` が受け取る参照の表 */
+/** `collectReferences` が返却し、`mount`・`render` の `opts.references` が受け取る参照の表 */
 export type MdmarkReferences = {
     /** 文書の `id` から、その文書を参照している文書の `id` の並び */
     backlinks: Record<string, string[]>;
     /** 各文書の用語集の表から入れた用語 */
     glossary: MdmarkGlossaryEntry[];
 };
-/** 文書の本文を読んだ結果 */
+/** 文書の本文を読み込んだ結果 */
 export type ParsedDocument = {
     /** 解析器のトークン */
     tokens: Token[];
-    /** 文書の印を重ねて決まった機能のオン・オフ */
+    /** 文書のマーカーを重ねて決まった機能のオン・オフ */
     features: Record<string, boolean>;
     /** 用語集の表の 1 行ごとの用語と、その行の行番号（1 から） */
     glossary: Array<{
@@ -33,7 +33,7 @@ export type ParsedDocument = {
         line: number;
     }>;
 };
-/** 文書の本文を、印・機能・用語集の表を読んだトークンにする */
+/** 文書の本文を、マーカー・機能・用語集の表を読み込んだトークンにする */
 export declare function parseDocument(options: {
     /** 本文の Markdown */
     body: string;
@@ -44,11 +44,11 @@ export declare function parseDocument(options: {
 }): ParsedDocument;
 /** 本文のリンクが指す、索引のパスの集まり */
 export declare function linkedPaths(doc: MdmarkIndexDoc, tokens: Token[]): Set<string>;
-/** 索引と全ての文書の本文から、文書ごとの被参照と、各文書の用語集の表から入れた用語を返す */
+/** 索引と全ての文書の本文から、文書ごとの被参照と、各文書の用語集の表から入れた用語を返却する */
 export declare function collectReferences(input: {
     /** 索引 */
     index: MdmarkIndex;
-    /** 文書のパスから本文を引く表 */
+    /** 文書のパスから本文を参照する表 */
     documents: Record<string, string>;
     /** 設定 */
     config?: MdmarkConfig;

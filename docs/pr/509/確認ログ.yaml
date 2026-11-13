@@ -1,0 +1,7 @@
+confirmations:
+  - topic: 共通の上タブ「使い方」と mdmark の「使用方法」が並ぶ件の扱い
+    decision: 配布先で共通のタブを出さない設定を AI Monitor へ起票し、直るまでは両方のタブを並べる（推奨案 C）
+    decided_by: thumbs_up
+    approver: shuhei1101
+    commit:
+    thread: https://github.com/shuhei1101/mdmark/pull/509#discussion_r4555330887

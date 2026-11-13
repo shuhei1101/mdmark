@@ -55,7 +55,7 @@ functions:
       - name: test_render_tree_when_interactive
         case: 正常
         summary: 帯と開閉のボタンを配置し、開く階層より深いフォルダを閉じる
-        condition: '部品設計の `Interactive` と `OpenLevels`（`open: 2`）'
+        condition: '部品設計の `OpenRoot`（`open: 1`）の `mdmark/` のツリーと `OpenLevels`（`open: 2`）'
         mock: なし
         expected: どちらも `ul` の前に `mdmark-tree-bar`（`tree` と `data-state="idle"` の `mdmark-tree-copy`）がある。1 つ目は `mdmark/` の `mdmark-tree-toggle` が `aria-expanded="true"`、`src/` が `aria-expanded="false"` でその入れ子の `ul` が `hidden="until-found"`、`aria-controls` がその `ul` の id。2 つ目は `app/`・`src/` が `aria-expanded="true"`、`parts/` が `aria-expanded="false"`
       - name: test_render_tree_when_copy_fallback
@@ -121,7 +121,7 @@ functions:
   - name: folderOpenByDefault
     title: フォルダを既定で開くかを決める
     container: src/parts/tree.ts
-    summary: ルートを 0 としたフォルダの深さと `data-open` の値から、既定で開くかを返却する。`all` は常に開き、数は深さがその数より浅いとき、値が無ければルートだけを開く。部品のツリーと操作が使用する
+    summary: ルートを 0 としたフォルダの深さと `data-open` の値から、既定で開くかを返却する。`all` と値が無いときは常に開き、数は深さがその数より浅いときに開く。部品のツリーと操作が使用する
     kind: 関数
     scope: internal
     args:
@@ -142,7 +142,7 @@ functions:
         summary: 指定ごとに開く深さを決める
         condition: 深さ 0・1・2 を、`open` が無い・`all`・`2` のそれぞれで指定する
         mock: なし
-        expected: 無いときは `true`・`false`・`false`、`all` は全て `true`、`2` は `true`・`true`・`false`
+        expected: 無いときと `all` は全て `true`、`2` は `true`・`true`・`false`
     status: planned
     introduced:
       pr: 225

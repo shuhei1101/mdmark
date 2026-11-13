@@ -1,0 +1,82 @@
+use_cases:
+  - kind: single
+    scenario: docs/scenario/SC-472-5.yaml
+    impact: run_only
+    detail: package.json の開発の依存から E2E のテストランナーを外すため、GitHub の参照から入れて CLI を起動できることが変わらないかを確かめる
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-82.yaml
+    impact: run_only
+    detail: package.json の開発の依存とスクリプトを変えるため、依存を入れて配布物をビルドし検査できることが変わらないかを確かめる
+    depends_on: []
+docs:
+  - page: docs/test-procedure/TP-472-1.yaml
+    new: false
+    change: 'E2E テストの層を、使用しない層と同じ `run_all: 未確定` だけにする（説明・前提・全件実行・個別実行を削除する）'
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-12T20:59:18.951462+00:00'
+  - page: docs/dev-command/CMD-472-1.yaml
+    new: false
+    change: ブラウザの取得を結合テストが使用する Chromium だけにし、`npm run test:e2e` の確認の記述を削除する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-12T20:59:18.951462+00:00'
+  - page: docs/library/LIB-472-20.yaml
+    new: false
+    change: '`@playwright/test` と `playwright test` のコマンド・E2E だけが使用する API を削除し、結合テストのブラウザの起動に合わせる'
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-12T20:59:18.951462+00:00'
+  - page: docs/library/README.md
+    new: false
+    change: playwright の行の概要から E2E を削除する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-12T20:59:18.951462+00:00'
+  - page: docs/library/index.yaml
+    new: false
+    change: playwright の行の summary から E2E を削除する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-12T20:59:18.951462+00:00'
+  - page: docs/library/LIB-472-33.yaml
+    new: false
+    change: pinning の「playwright を E2E と同じバージョン」を修正する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-12T20:59:18.951462+00:00'
+  - page: docs/guide/図を描く-見本.md
+    new: false
+    change: 「見本のページ（E2E が開く文書）は、この文書を描く。」を削除する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-12T20:59:18.951462+00:00'
+  - page: tests/files.yaml
+    new: false
+    change: '`tests/e2e/` のファイルの行を削除する'
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-12T21:29:04.013844+00:00'
+  - page: vscode/files.yaml
+    new: false
+    change: '`tests/integration/stub-server.ts` の行の description から E2E を削除する'
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-12T20:52:10.602606+00:00'
+scope_out:
+  - item: シナリオの `test_file` と、シナリオの前提・手順の E2E の記述（『配布物をビルドして検査する』の E2E のブラウザの取得 等）
+    reason: D-311 A でシナリオを残し、`test_file` を作り直すときの対応の印として残すと決めている
+    plan: none
+  - item: E2E を確かめる手段として挙げる記述（非機能要件 NFR-472-1 の測定方法、アーキテクチャ図 ARCH-472-1 の `tests/` の説明と dev-docs の確認、IF-472-41・LIB-472-1・LIB-472-8・LIB-472-33 の「E2E で確認する」、`docs/scenario/README.md`・`docs/index.yaml` の「E2E テストの元」）
+    reason: メジャーのリリースの前にシナリオから E2E を作り直すため（D-307 A）、削除するファイルを指さないこれらの記述は成り立つ
+    plan: none
+  - item: スキーマ `schemas/scenario.schema.yaml`・`schemas/test-procedure.schema.yaml` の E2E の記述
+    reason: E2E を作り直すときにも使用する型で、スキーマを変えると移行の手順が要る
+    plan: none
+  - item: 公開ドキュメント『変更履歴』の E2E の PR の行と、`docs/pr/` の E2E のテスト結果のログ
+    reason: 過去の記録で、今ある E2E を指してエージェントが参照するものではない
+    plan: none
+  - item: 公開ドキュメント『図を描く-描いた図を確認する』の Playwright の手順
+    reason: 利用者が自分の環境で Playwright を使用する手順で、このリポジトリの E2E ではない
+    plan: none

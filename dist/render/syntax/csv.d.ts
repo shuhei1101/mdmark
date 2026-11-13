@@ -1,5 +1,5 @@
 import type { StateCore } from "markdown-it";
-/** 表にしたコードブロックの `table_open` の `meta` に持たせる、書いたとおりの CSV */
+/** 表にしたコードブロックの `table_open` の `meta` に持たせる、記載したとおりの CSV */
 export type CsvTableMeta = {
     rawCsv: string;
 };

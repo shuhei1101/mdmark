@@ -1,0 +1,41 @@
+$ npm run test:unit
+
+> test:unit
+> vitest run --project 'unit*'
+
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/fix-interact-footnote-click-capture
+
+ ❯ |unit-browser (chromium)| tests/unit/src/interact/footnotes.browser.test.ts (10 tests | 1 failed) 1724ms
+   × test_attach_footnotes_when_root_has_bubbling_click 192ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/interact/footnotes.browser.test.ts > test_attach_footnotes_when_root_has_bubbling_click
+AssertionError: expected '#mdmark-fn-11-1' to be '' // Object.is equality
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/footnotes.browser.test.ts/test_attach_footnotes_when_root_has_bubbling_click.png
+
+- Expected
++ Received
+
++ #mdmark-fn-11-1
+
+ ❯ tests/unit/src/interact/footnotes.browser.test.ts:370:25
+    368|   click(link);
+    369|   // 検証
+    370|   expect(location.hash).toBe(hash);
+       |                         ^
+    371|   expect(document.activeElement).toBe(item);
+    372|   // 実行
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=19ebfd6d:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 283 passed (284)
+      Tests  1 failed | 2068 passed (2069)
+   Start at  08:19:30
+   Duration  94.40s (worker 66%, tests 20%, import 12%, transform 1%)
+

@@ -540,7 +540,7 @@ settings:
     type: object[]
     required: false
     default: '[]'
-    description: エイリアスを作る YAML と、その列からエイリアスのキーへの当て方の行の並び（行の構造は ER 図『エイリアスの元の行』）。`paths` は `mdmark.config.yaml` のあるフォルダからの相対パスか glob。CLI の `export`・`build` が読み込み、`buildAliases` で作ったエイリアスを書き出す HTML に埋める。VS Code 拡張機能のプレビューも読み込み、作ったエイリアスを `mount` の `opts.aliases` に指定する。`mount`・`render` はこのキーを読み込まず、利用側が `buildAliases` で作った配列を `opts.aliases` に指定する
+    description: エイリアスを作る YAML と、その列からエイリアスのキーへの当て方の行の並び（行の構造は ER 図『エイリアスの元の行』）。`paths` は `mdmark.config.yaml` のあるフォルダからの相対パスか glob。CLI の `export`・`build` が読み込み、`buildAliases` で作ったエイリアスを書き出す HTML に埋める。VS Code 拡張機能のプレビューと書き出しも読み込み、作ったエイリアスを `mount` の `opts.aliases` に指定する。`mount`・`render` はこのキーを読み込まず、利用側が `buildAliases` で作った配列を `opts.aliases` に指定する
     missing: エイリアスを使用しない
     reload: reload
     allowed: 読み込めない行・使用できない行は書き出しを止めず警告に出す。`mdmark check` がスキーマのずれとエイリアスのずれを返却する
@@ -959,6 +959,21 @@ settings:
     status: planned
     introduced:
       pr: 438
+  - key: table.long_column_min
+    title: 長文の列の最小の幅
+    file: mdmark.config.yaml
+    type: number
+    required: false
+    default: '`45`'
+    description: 表の長文の列の最小の幅の em の数。列の最も長い行の幅の方が狭ければ、その幅を最小の幅にする。列ごとの `width.min` があればそちらを優先する
+    reload: reload
+    allowed: 0 より大きい数。`mount` は他の値を無視して `45` にし、CLI は他の値を設定ファイルの誤りにする
+    refs:
+      - IF-472-35#request[opts.config.table.long_column_min]
+    implementation: src/config.ts#resolveConfig
+    status: planned
+    introduced:
+      pr: 505
   - key: features.frontmatter
     title: フロントマターの表示の機能
     file: mdmark.config.yaml

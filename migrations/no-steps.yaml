@@ -51,27 +51,31 @@ entries:
     schema: mdmark.config.schema.json
     sha256: fb56336a681e886c8b5e676b2cebe58c939edfa72fa349d651187dbfe5b6bf9f
     reason: features に省いてよい mermaid と、省いてよい mermaid を足しただけで、古い設定もそのまま新しい Schema に合う
-  - version: next
+  - version: v0.11.0
     schema: mdmark.config.schema.json
     sha256: 20ea9fcb246968439ca0f76a1b865ba1fdfd15cc4cb841d51488eeb0af0827e0
     reason: 説明文の単語を対応表の置き換え先にしただけで、キーと型は変えないので、古い設定もそのまま新しい Schema に合う
-  - version: next
+  - version: v0.11.0
     schema: mdmark.config.schema.json
     sha256: c3d63db537fda3f67384fc323f2d009a56f9eb1cd0dfffa0f4c8f42b5bcd94d9
     reason: features に省いてよい frontmatter を足しただけで、古い設定もそのまま新しい Schema に合う
-  - version: next
+  - version: v0.11.0
     schema: mdmark.index.schema.json
     sha256: bb5710b2a061fcdcdb1f6d55d0bbb20ace1a83ecf4b07e8340a0bab29f780540
     reason: 説明文の単語を対応表の置き換え先にしただけで、キーと型は変えないので、古い索引もそのまま新しい Schema に合う
-  - version: next
+  - version: v0.11.0
     schema: mdmark.settings.schema.json
     sha256: 689c99393b640b494eb95f43cb0da943cf4c68af08d102f835f15afd3918d570
     reason: 説明文の単語を対応表の置き換え先にし、端末の設定に省いてよい serve.launcher・serve.systemdUnit を足しただけで、既にあるキーと型は変えないので、古い端末の設定もそのまま新しい Schema に合う
-  - version: next
+  - version: v0.11.0
     schema: mdmark.templates.schema.json
     sha256: c852b5d8b2c17a46a1655bdec008679555e74a6adcc94f7b5c3eb9820e7782a3
     reason: 説明文の単語を対応表の置き換え先にしただけで、キーと型は変えないので、古い CSS のテンプレートの索引もそのまま新しい Schema に合う
-  - version: next
+  - version: v0.11.0
     schema: mdmark.config.schema.json
     sha256: b06ad7017ba653f33a9a62fc6bf9d78d5df0149c4adf1c9e995f2be1f1c9030a
     reason: 省いてよい table と、その中の省いてよい pin と、features に省いてよい map と、省いてよい map（node_fit・url_state・kinds・lines）を足しただけで、古い設定もそのまま新しい Schema に合う
+  - version: v0.11.0
+    schema: mdmark.config.schema.json
+    sha256: 48187e75d9ddd5d62d732688a65bf7d441da86160a1ba49faeb8839e19e424ee
+    reason: table に省いてよい long_column_min を足しただけで、古い設定もそのまま新しい Schema に合う

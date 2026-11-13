@@ -7,7 +7,7 @@ items:
 - page: LIB-472-33.yaml
   summary: 単体テスト（Node）と結合テスト（実ブラウザ）のランナー
 - page: LIB-472-20.yaml
-  summary: E2E のブラウザ操作と、結合テストのブラウザの起動
+  summary: 結合テストのブラウザの起動と操作
 - page: LIB-472-7.yaml
   summary: lint と整形の検査
 - page: LIB-472-30.yaml

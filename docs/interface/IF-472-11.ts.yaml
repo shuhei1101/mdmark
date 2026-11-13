@@ -45,7 +45,7 @@ flows:
         K->>P: status
         P-->>K: JSON の 1 行・終了コード 0
     expected:
-      - '`settings.exists` が `true`、`settings.version` が端末の設定の `version`、`settings.target_version` がプラグインのバージョン'
+      - '`settings.exists` が `true`、`settings.version` が端末の設定の `version`、`settings.target_version` がプラグインのビルドで埋めた mdmark のバージョン'
       - '`server.session` が `mdmark-test`、`server.session_exists` と `server.listening` が `true`'
     test: test_normal_when_already_set_up
   - name: 正常系（systemd --user が使えない）
@@ -146,7 +146,7 @@ response:
     description: 端末の設定の `version`。ファイルか `version` が無ければ `null`
   - name: settings.target_version
     type: string
-    description: プラグインのバージョン（`plugin.json` の `version`）。移行の目標になる
+    description: プラグインのビルドで埋めた mdmark のバージョン（ビルドのときの `version.ini` か `--version` の値）。移行の目標になる
   - name: server.port
     type: number
     description: 常駐サーバーのポート

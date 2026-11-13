@@ -1,7 +1,7 @@
 id: MOD-472-14
 visibility: internal
 title: ClaudeCodeプラグイン / プラグインのビルド / build-plugin.ts
-lead: 配布物のビルド（`scripts/build.ts`）から呼ばれ、ガイドの索引を検査してから、フックをまとめ、プラグインのバージョン・まとめた依存のライセンスを `plugin/` に書き込む。MCP サーバーとガイドはまとめない。
+lead: 配布物のビルド（`scripts/build.ts`）から呼ばれ、ガイドの索引を検査してから、フックをまとめ、まとめた依存のライセンスを `plugin/` に書き込む。MCP サーバーとガイドはまとめない。
 test_files:
   - tests/unit/scripts/build-plugin.test.ts
 directory: |-
@@ -14,7 +14,7 @@ directory: |-
   .claude-plugin/
   └── marketplace.json  # マーケットプレイスの定義（plugin/ を記載する）
   plugin/
-  ├── .claude-plugin/plugin.json  # 名前・説明・バージョン（バージョンはビルドが記載する）
+  ├── .claude-plugin/plugin.json  # 名前・説明（`version` を持たず、Claude Code が commit の短縮 SHA をバージョンにする）
   ├── .mcp.json         # type: http で http://127.0.0.1:${MDMARK_PORT:-8782}/mcp につなぐ
   ├── hooks/hooks.json  # `project_dir` を使用するツールの PreToolUse で scripts/pre-tool-use.js を実行する
   ├── scripts/          # まとめたフック（pre-tool-use.js。生成）
@@ -65,7 +65,7 @@ constants:
     usecase: 配布物をビルドして検査する
     summary: バージョンを記載するプラグインの定義のパス
     value: plugin/.claude-plugin/plugin.json
-    status: planned
+    status: removed
     introduced:
       pr: 72
   - name: EMBEDDED_LICENSES_DIR
@@ -246,14 +246,7 @@ functions:
     process: |-
       1. `PLUGIN_MANIFEST` を JSON として読み込み、`version` を置き換える
       2. 2 字下げと末尾の改行で記載する
-    unit_tests:
-      - name: test_write_plugin_manifest
-        case: 正常
-        summary: version だけを書き換える
-        condition: '`name`・`version: v0.0.0`・`description` の plugin.json に `version: v0.0.1`'
-        mock: なし（一時フォルダ）
-        expected: '`version` が `v0.0.1`、他のキーと並びが同じ'
-    status: planned
+    status: removed
     introduced:
       pr: 72
   - name: removePluginOutputs
@@ -289,11 +282,11 @@ functions:
     kind: 関数
     container: scripts/build-plugin.ts
     usecase: 配布物をビルドして検査する
-    summary: ガイドの索引を検査し、合えばフックをまとめ、バージョン・ライセンスを `plugin/` に書き込む
+    summary: ガイドの索引を検査し、合えばフックをまとめ、ライセンスを `plugin/` に書き込む
     description: '`dist/` を書き込んだ後に `main` が呼ぶ。`src/plugin/pre-tool-use.ts` が無ければ何もしない（ソースの一部だけを配置した単体テストのため）'
     scope: public
     is_async: true
-    side_effects: '`PLUGIN_OUTPUTS` と `PLUGIN_MANIFEST` を記載する'
+    side_effects: '`PLUGIN_OUTPUTS` を記載する。`plugin/.claude-plugin/plugin.json` は書き換えない'
     args:
       - name: options
         type: '{ version: string; root: string }'
@@ -306,7 +299,7 @@ functions:
       1. `src/plugin/pre-tool-use.ts` が無ければ空を返却する
       2. ガイドの索引を検査し、問題があれば返却する（ガイドの索引を検査する）
       3. `PLUGIN_ENTRY_POINTS` を esbuild でまとめる。`platform: node`・target は CLI と同じ Node・先頭に CLI と同じ行・バージョンを `__MDMARK_VERSION__` に埋める・`metafile` を取る
-      4. `CONFIG_TEMPLATE` をコピーし、バージョンとライセンスを記載して、空を返却する（プラグインのバージョンを記載する・プラグインの依存のライセンスを記載する）
+      4. `CONFIG_TEMPLATE` をコピーし、ライセンスを記載して、空を返却する（プラグインの依存のライセンスを記載する）
     unit_tests:
       - name: test_build_plugin_when_source_missing
         case: 正常
@@ -322,7 +315,6 @@ functions:
         expected: 問題の行を返却し、`plugin/scripts` が無い
     callees:
       - '#functions[checkGuideSource]'
-      - '#functions[writePluginManifest]'
       - '#functions[writePluginLicenses]'
     refs:
       - IF-472-41#

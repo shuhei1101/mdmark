@@ -34,6 +34,8 @@
   <link rel="stylesheet" href="../../refs/438/assets/table.css">
   <!-- 列の見出しの右端の、列の幅を変えるつまみ（#449 の追加分） -->
   <link rel="stylesheet" href="../../refs/449/assets/table.css">
+  <!-- 列ごとに中身から折り返すかと列の幅を決める規則（#505 の追加分） -->
+  <link rel="stylesheet" href="../../refs/505/assets/table-width.css">
   <!-- 多段の見出し・行見出し・セルの結合の規則（#275 の追加分） -->
   <link rel="stylesheet" href="../../refs/275/assets/table.css">
   <!-- 列の並べ替え・キーの階層・YAML の見本の規則（#303 の追加分） -->
@@ -65,6 +67,7 @@
   <!-- 列の見出しの右端のつまみで列の幅を変える見本の定義と操作（#449） -->
   <script src="../../refs/449/assets/table-samples.js" defer></script>
   <script src="../../refs/449/assets/table-resize.js" defer></script>
+  <script src="../../refs/505/assets/table-width.js" defer></script>
   <!-- 多段の見出し・セルの結合と再結合・行見出しの列までのピン止めの見本の定義と操作（#275。syntax.js の後に読み込む） -->
   <script src="../../refs/275/assets/table-samples.js" defer></script>
   <script src="../../refs/275/assets/table-merge.js" defer></script>
@@ -2106,6 +2109,129 @@
     <li><button type="button"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 7V5a1 1 0 0 0-1-1H6.5a.5.5 0 0 0-.4.8l4.5 6a2 2 0 0 1 0 2.4l-4.5 6a.5.5 0 0 0 .4.8H17a1 1 0 0 0 1-1v-2"/></svg>集計</button></li>
     <li><button type="button"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>表をコピー</button></li>
   </ul>
+</div>
+        </article>
+      </section>
+
+      <!-- #505 列の幅を中身から決める: 列ごとにセルの中身の種類と改行で分けた行の幅から、折り返すかと列の幅を決める -->
+      <section aria-labelledby="state-505-fit" data-mock-table505>
+        <h2 class="catalog-label" id="state-505-fit">列の幅を中身から決める（長文の説明の列だけを折り返し、表を本文の幅いっぱいまで広げる。ほかの列は折り返さず、改行のある手順の列は最も長い行の幅）</h2>
+        <article class="mdmark">
+<div>
+<div class="mdmark-table" data-kind="data">
+  <div class="mdmark-table-scroll">
+  <table tabindex="0" aria-label="表: 列の幅を中身から決める">
+    <thead><tr><th>No</th><th>状態</th><th>更新日</th><th>名前</th><th>手順</th><th>説明</th></tr></thead>
+    <tbody><tr><td>1</td><td><span class="mdmark-badge">完了</span></td><td>2026-11-01</td><td>列の幅</td><td>列を測る<br>幅を配る<br>折り返す</td><td>表の列の幅は、指定が無くても列ごとにセルの文字の量と改行の有無から決める。短い値の列は折り返さず、長い文の列だけを残りの幅で折り返すので、列どうしが大きく離れたり、短い値が細く折り返されたりしない。</td></tr><tr><td>2</td><td><span class="mdmark-badge">作業中</span></td><td>2026-11-05</td><td>見える幅</td><td>幅を見張る<br>判定し直す<br>描き直す</td><td>列の幅のつまみで読者が変えた幅は、表の見える幅が変わっても読者の幅のまま残す。並べ替え・絞り込み・列の表示の切り替えでは列の幅を変えず、見える幅が変わったときだけ判定し直す。</td></tr><tr><td>10</td><td><span class="mdmark-badge">未着手</span></td><td>2026-11-12</td><td>表の幅</td><td>合計を取る<br>枠を描く</td><td>余白の多い表は本文の幅まで広げず、列の幅の合計で描く。本文の幅に収まらない表だけを本文の幅の枠で描き、枠の中で横にスクロールさせて、続きがある側の端に影を出す。</td></tr></tbody>
+  </table>
+  </div>
+</div>
+</div>
+        </article>
+      </section>
+
+      <!-- #505 余白の多い表: 本文の幅まで広げず、列の幅の合計で描く（#308 の本文の幅に広げた表の描き方を置き換える） -->
+      <section aria-labelledby="state-505-small" data-mock-table505>
+        <h2 class="catalog-label" id="state-505-small">余白の多い表を中身の幅で描く（本文の幅まで広げず、列の幅の合計で描く）</h2>
+        <article class="mdmark">
+<div>
+<div class="mdmark-table" data-kind="data">
+  <div class="mdmark-table-scroll">
+  <table tabindex="0" aria-label="表: 余白の多い表">
+    <thead><tr><th>名前</th><th>数量</th></tr></thead>
+    <tbody><tr><td>りんご</td><td>10</td></tr><tr><td>みかん</td><td>2</td></tr><tr><td>ぶどう</td><td>33</td></tr></tbody>
+  </table>
+  </div>
+</div>
+</div>
+        </article>
+      </section>
+
+      <!-- #505 長文の列が収まる表: 長文の列が折り返さずに本文の幅に収まるときは、本文の幅まで広げず最も長い行の幅で止める -->
+      <section aria-labelledby="state-505-long-fits" data-mock-table505>
+        <h2 class="catalog-label" id="state-505-long-fits">長文の列が折り返さずに収まる表（説明の列は 1 行で収まるので、本文の幅まで広げず最も長い行の幅で止める）</h2>
+        <article class="mdmark">
+<div class="mdmark-table" data-kind="data">
+  <div class="mdmark-table-scroll">
+  <table tabindex="0" aria-label="表: 長文の列が収まる表">
+    <thead><tr><th>名前</th><th>説明</th></tr></thead>
+    <tbody><tr><td>列の幅</td><td>列ごとにセルの文字の量と改行の有無から決める</td></tr><tr><td>表の幅</td><td>収まる表は本文の幅まで広げずに列の幅で描く</td></tr><tr><td>見える幅</td><td>表の見える幅が変わったときだけ列の幅を決め直す</td></tr></tbody>
+  </table>
+  </div>
+</div>
+        </article>
+      </section>
+
+      <!-- #505 長文の列が 2 つある表: 最小の幅で止めた列を除き、残りの幅をほかの長文の列へ分け直して、本文の幅に収める -->
+      <section aria-labelledby="state-505-two-long" data-mock-table505>
+        <h2 class="catalog-label" id="state-505-two-long">長文の列が 2 つある表（備考の列を最小の幅 20em で止め、残りの幅を説明の列へ分け直して本文の幅に収める。横にスクロールしない）</h2>
+        <article class="mdmark">
+<div class="mdmark-table" data-kind="data">
+  <div class="mdmark-table-scroll">
+  <table tabindex="0" aria-label="表: 長文の列が 2 つある表">
+    <thead><tr><th>名前</th><th>説明</th><th>備考</th></tr></thead>
+    <tbody><tr><td>列の幅</td><td>表の列の幅は、指定が無くても列ごとにセルの文字の量と改行の有無から決める。長文の列だけを折り返し、表を本文の幅いっぱいまで広げて、なるべく横幅を使う。短い値の列は折り返さず、最も長い行の幅にする。</td><td>備考の列は 20 文字ほどの短めの長文の列にあたる文です</td></tr><tr><td>表の幅</td><td>表の列の幅は、指定が無くても列ごとにセルの文字の量と改行の有無から決める。長文の列だけを折り返し、表を本文の幅いっぱいまで広げて、なるべく横幅を使う。短い値の列は折り返さず、最も長い行の幅にする。</td><td>備考の列は 20 文字ほどの短めの長文の列にあたる文です</td></tr></tbody>
+  </table>
+  </div>
+</div>
+        </article>
+      </section>
+
+      <!-- #505 狭い幅: 配分した幅が最小の幅を下回る列を最小の幅で止め、表を横にスクロールする -->
+      <section aria-labelledby="state-505-narrow" data-mock-table505>
+        <h2 class="catalog-label" id="state-505-narrow">狭い幅で横にスクロールする（描く先の幅 390px。列の最小の幅の合計が収まらないので、長文の説明・備考の列を最小の幅 20em で描き、表の中で横にスクロールする）</h2>
+        <article class="mdmark">
+<div class="mock-505-width-390">
+<div class="mdmark-table" data-kind="data">
+  <div class="mdmark-table-scroll">
+  <table tabindex="0" aria-label="表: 狭い幅の表">
+    <thead><tr><th>名前</th><th>説明</th><th>備考</th></tr></thead>
+    <tbody><tr><td>列の幅</td><td>表の見える幅が狭いときは、折り返す列を最小の幅で止めて、表の中で横にスクロールさせる。説明文の列を細く折り返して縦に長くするより、横にスクロールして読む方が読みやすい。列ごとの例外はマーカーの幅の範囲で記載できる。</td><td>最小の幅は、列の中の最も長い単語の幅と既定の幅の大きい方にする。最大の幅は 1 行の読みやすい文字数で止める。</td></tr><tr><td>表の幅</td><td>最小の幅は、列の中の最も長い単語の幅と既定の幅の大きい方にする。最大の幅は 1 行の読みやすい文字数で止める。</td><td>表の見える幅が狭いときは、折り返す列を最小の幅で止めて、表の中で横にスクロールさせる。説明文の列を細く折り返して縦に長くするより、横にスクロールして読む方が読みやすい。列ごとの例外はマーカーの幅の範囲で記載できる。</td></tr><tr><td>見える幅</td><td>表の見える幅が狭いときは、折り返す列を最小の幅で止めて、表の中で横にスクロールさせる。説明文の列を細く折り返して縦に長くするより、横にスクロールして読む方が読みやすい。列ごとの例外はマーカーの幅の範囲で記載できる。</td><td>最小の幅は、列の中の最も長い単語の幅と既定の幅の大きい方にする。最大の幅は 1 行の読みやすい文字数で止める。</td></tr></tbody>
+  </table>
+  </div>
+</div>
+<div class="mdmark-table" data-kind="data">
+  <div class="mdmark-table-scroll">
+  <table tabindex="0" aria-label="表: 12 列の表">
+    <thead><tr><th>列 1</th><th>列 2</th><th>列 3</th><th>列 4</th><th>列 5</th><th>列 6</th><th>列 7</th><th>列 8</th><th>列 9</th><th>列 10</th><th>列 11</th><th>列 12</th></tr></thead>
+    <tbody><tr><td>1-1</td><td>1-2</td><td>1-3</td><td>1-4</td><td>1-5</td><td>1-6</td><td>1-7</td><td>1-8</td><td>1-9</td><td>1-10</td><td>1-11</td><td>1-12</td></tr><tr><td>2-1</td><td>2-2</td><td>2-3</td><td>2-4</td><td>2-5</td><td>2-6</td><td>2-7</td><td>2-8</td><td>2-9</td><td>2-10</td><td>2-11</td><td>2-12</td></tr><tr><td>3-1</td><td>3-2</td><td>3-3</td><td>3-4</td><td>3-5</td><td>3-6</td><td>3-7</td><td>3-8</td><td>3-9</td><td>3-10</td><td>3-11</td><td>3-12</td></tr></tbody>
+  </table>
+  </div>
+</div>
+</div>
+        </article>
+      </section>
+
+      <!-- #505 列の幅の範囲: マーカーの columns.{列名}.width の min・max・mode を自動の判定より優先する -->
+      <section aria-labelledby="state-505-range" data-mock-table505>
+        <h2 class="catalog-label" id="state-505-range">列の幅の範囲を指定する（説明は width.min 20・width.max 30、名前は width.mode nowrap）</h2>
+        <article class="mdmark">
+<div>
+<div class="mdmark-table" data-kind="data">
+  <div class="mdmark-table-scroll">
+  <table tabindex="0" aria-label="表: 列の幅の範囲を指定した表">
+    <thead><tr><th data-mock-width-mode="nowrap">名前</th><th data-mock-width-min="20" data-mock-width-max="30">説明</th><th>備考</th></tr></thead>
+    <tbody><tr><td>表の列の幅を自動で計算する機能の名前</td><td>記載した幅の範囲（20em 以上 30em 以下）で折り返す説明の列。自動の判定より、マーカーの columns.{列名}.width の min・max を優先する。名前の列は mode が nowrap なので、30 文字の長い名前でも折り返さない。範囲を記載しない列は、これまでどおり中身から決める。</td><td>済</td></tr><tr><td>ファイルツリーの既定の開き方</td><td>記載した幅の範囲（20em 以上 30em 以下）で折り返す説明の列。自動の判定より、マーカーの columns.{列名}.width の min・max を優先する。名前の列は mode が nowrap なので、30 文字の長い名前でも折り返さない。範囲を記載しない列は、これまでどおり中身から決める。</td><td>済</td></tr><tr><td>コードブロックの帯</td><td>記載した幅の範囲（20em 以上 30em 以下）で折り返す説明の列。自動の判定より、マーカーの columns.{列名}.width の min・max を優先する。名前の列は mode が nowrap なので、30 文字の長い名前でも折り返さない。範囲を記載しない列は、これまでどおり中身から決める。</td><td>未</td></tr></tbody>
+  </table>
+  </div>
+</div>
+</div>
+        </article>
+      </section>
+
+      <!-- #505 見える幅の変更: 表を包む要素の幅が変わったときだけ、列ごとに判定し直す -->
+      <section aria-labelledby="state-505-resize" data-mock-table505>
+        <h2 class="catalog-label" id="state-505-resize">表の見える幅が変わったら列の幅を決め直す（破線の右下の角をドラッグして描く先の幅を変える）</h2>
+        <article class="mdmark">
+<div class="mock-505-resizable">
+<div class="mdmark-table" data-kind="data">
+  <div class="mdmark-table-scroll">
+  <table tabindex="0" aria-label="表: 見える幅を変える表">
+    <thead><tr><th>No</th><th>状態</th><th>更新日</th><th>名前</th><th>手順</th><th>説明</th></tr></thead>
+    <tbody><tr><td>1</td><td><span class="mdmark-badge">完了</span></td><td>2026-11-01</td><td>列の幅</td><td>列を測る<br>幅を配る<br>折り返す</td><td>表の列の幅は、指定が無くても列ごとにセルの文字の量と改行の有無から決める。短い値の列は折り返さず、長い文の列だけを残りの幅で折り返すので、列どうしが大きく離れたり、短い値が細く折り返されたりしない。</td></tr><tr><td>2</td><td><span class="mdmark-badge">作業中</span></td><td>2026-11-05</td><td>見える幅</td><td>幅を見張る<br>判定し直す<br>描き直す</td><td>列の幅のつまみで読者が変えた幅は、表の見える幅が変わっても読者の幅のまま残す。並べ替え・絞り込み・列の表示の切り替えでは列の幅を変えず、見える幅が変わったときだけ判定し直す。</td></tr><tr><td>10</td><td><span class="mdmark-badge">未着手</span></td><td>2026-11-12</td><td>表の幅</td><td>合計を取る<br>枠を描く</td><td>余白の多い表は本文の幅まで広げず、列の幅の合計で描く。本文の幅に収まらない表だけを本文の幅の枠で描き、枠の中で横にスクロールさせて、続きがある側の端に影を出す。</td></tr></tbody>
+  </table>
+  </div>
+</div>
 </div>
         </article>
       </section>

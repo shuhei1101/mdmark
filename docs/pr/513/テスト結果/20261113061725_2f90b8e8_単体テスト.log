@@ -1,0 +1,15 @@
+$ npm run test:unit
+
+> test:unit
+> vitest run --project 'unit*'
+
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/test-e2e-remove-e2e-tests
+
+
+ Test Files  284 passed (284)
+      Tests  2067 passed (2067)
+   Start at  06:13:21
+   Duration  123.33s (worker 71%, tests 17%, import 11%, transform 1%)
+
+exit=0

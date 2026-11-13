@@ -1,0 +1,47 @@
+id: MOD-472-346
+visibility: internal
+title: ライブラリ本体 / 図 / diagram-touch.ts
+test_files:
+  - tests/unit/src/interact/diagram-touch.browser.test.ts
+functions:
+  - name: attachDiagramTouch
+    title: 指で図を動かす操作中を付ける
+    container: src/interact/diagram-touch.ts
+    kind: 関数
+    scope: internal
+    summary: '`pointerType` が `touch` の `pointerup` で、押してから離すまで動かしていない（`DRAG_THRESHOLD` 以下）タップを見分ける。表示する枠の余白（ノード・線・グラフの項目・ボタン・リンク・ツールチップのマーカーの外）のタップで、表示するノード（`.mdmark-diagram-box`）に `data-touch-active` を付ける。付いている間の `document` の `pointerdown` が `touch` で表示するノードの外なら外す。`touch-action` の切り替えと枠線の色は CSS が `data-touch-active` で当てる。`mouse`・`pen` の操作では付けない'
+    args:
+      - name: options
+        type: '{ box: HTMLElement; viewport: HTMLElement }'
+        required: true
+        description: 表示するノードと表示する枠
+    returns:
+      type: () => void
+      description: 付けた操作を削除し、`data-touch-active` を外す関数
+    callees:
+      - MOD-472-177#constants[DRAG_THRESHOLD]
+    unit_tests:
+      - name: test_attach_diagram_touch
+        case: 正常
+        summary: 余白のタップで操作中にし、外のタップで解く
+        condition: 表示する枠の余白に `pointerType` が `touch` の `pointerdown`・`pointerup` を同じ位置で発火し、続けて表示するノードの外の要素に `touch` の `pointerdown` を発火する
+        mock: なし
+        expected: 1 回目の後に `box` が `data-touch-active` を持ち、外の `pointerdown` の後に持たない
+      - name: test_attach_diagram_touch_when_node
+        case: 正常
+        summary: ノードの上のタップとドラッグと mouse では操作中にしない
+        condition: ノードの上の `touch` のタップ、余白の上で `DRAG_THRESHOLD` を超えて動かした `touch` の `pointerup`、余白の `mouse` の `pointerdown`・`pointerup`
+        mock: なし
+        expected: どの後も `box` が `data-touch-active` を持たない
+      - name: test_attach_diagram_touch_when_detached
+        case: 正常
+        summary: 削除すると操作中を外し、タップに反応しない
+        condition: 操作中にした後に戻り値を呼び、余白を `touch` でタップする
+        mock: なし
+        expected: '`box` が `data-touch-active` を持たない'
+    refs:
+      - IF-472-35#constraints[図の移動]
+      - CMP-472-39#
+    status: planned
+    introduced:
+      pr: 508

@@ -1,6 +1,6 @@
 import type { StateCore } from "markdown-it";
 import type { TableSpec } from "./tables.ts";
-/** 階層の表の `table_open` の `meta` に `decorateTables` が置く、表の指定と表の印の文字 */
+/** 階層の表の `table_open` の `meta` に `decorateTables` が配置する、表の指定と表のマーカーの文字 */
 export type TreeTableMeta = {
     treeSpec?: TableSpec;
     treeMark?: string;

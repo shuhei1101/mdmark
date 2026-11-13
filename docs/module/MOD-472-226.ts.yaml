@@ -44,16 +44,16 @@ functions:
     description: |-
       つまみの `pointerdown` で既定の動作を止めて伝わりを止め、`setPointerCapture` でポインターを捕まえ、つまみに `is-dragging` を付ける。`pointermove` では押した位置からの横の移動量を押したときの幅に足し、`setColumnWidth` で入れる。`pointerup`・`pointercancel` で `is-dragging` を外す。`pointerType` が `touch` で、`pointerdown` からの移動が `TAP_MOVE_TOLERANCE_PX` 以内の `pointerup` だけをタップとして数え、タップが前のタップから `DOUBLE_TAP_MS` 以内なら幅を戻す（動かしたドラッグの終わりはタップに数えず、前のタップの記録も消す）。`dblclick` でも幅を戻す。`keydown` の → は `COLUMN_RESIZE_STEP_PX` 広げ、← は狭め、Enter は幅を戻す（どれも既定の動作を止める）。
 
-      `setColumnWidth` は、`clampColumnWidth` で列の最小幅（見出しのセルのインラインの `--mdmark-column-min-width` を外して測った `min-width` に左右の余白と罫線を足した外側の幅）から `maxWidth(column)` までに収めた外側の幅を、見出しのセルの内側の幅に換算して `width`・`min-width`・`--mdmark-column-min-width` に入れる。入れた後に測った外側の幅が指定した幅と違えば、差を足して入れ直す。列の全てのセルに `is-resized` を付ける。幅を戻すときは、`width`・`min-width` を外し、`--mdmark-column-min-width` を付けたときの値に戻し、`is-resized` を外す。入れた後と戻した後に `onResize(column)` を呼ぶ。付けたとき・つまみにフォーカスしたとき・入れた後と戻した後に、つまみの `aria-valuenow`・`aria-valuetext`（`{幅}px`）・`aria-valuemin`・`aria-valuemax` を書き換える（最小は切り上げ、上限は切り捨て）
+      `setColumnWidth` は、`clampColumnWidth` で列の最小幅（見出しのセルのインラインの `--mdmark-column-min-width` を外して測った、その変数の計算値（既定 `6em`）に左右の余白と罫線を足した外側の幅）から `maxWidth(column)` までに収めた外側の幅を、見出しのセルの内側の幅に換算して `width`・`min-width`・`--mdmark-column-min-width` に入れる。入れた後、測る前に `onWidthWritten` を呼び、測った外側の幅が指定した幅と違えば、差を足して入れ直す。`data-auto-width` の表では、ほかの列の幅を止めない（ほかの列は `--mdmark-auto-width` が保つ）。列の全てのセルに `is-resized` を付ける。幅を戻すときは、`width`・`min-width` を外し、`--mdmark-column-min-width` を付けたときの値に戻し、`is-resized` を外す（`attachAutoColumnWidths` の `--mdmark-auto-width` の幅に戻る）。入れた後と戻した後に `onResize(column)` を呼ぶ。列の最小幅は自動の列の幅の最小の幅（長文の列の `45em` など）と分け、読者は長文の列も 6em まで狭められる。`data-auto-width` の表のセルは `min-width` が `0` のため、`min-width` ではなく変数の値を測る。付けたとき・つまみにフォーカスしたとき・入れた後と戻した後に、つまみの `aria-valuenow`・`aria-valuetext`（`{幅}px`）・`aria-valuemin`・`aria-valuemax` を書き換える（最小は切り上げ、上限は切り捨て）
     args:
       - name: table
         type: HTMLTableElement
         required: true
         description: つまみを持つ表
       - name: options
-        type: '{ headCells: HTMLTableCellElement[]; maxWidth: (column: number) => number; onResize: (column: number) => void }'
+        type: '{ headCells: HTMLTableCellElement[]; maxWidth: (column: number) => number; onResize: (column: number) => void; onWidthWritten?: () => void }'
         required: true
-        description: 列ごとの最下段の見出しのセル、列の幅の上限を返す関数、幅を変えた後と戻した後に呼ぶ関数
+        description: 列ごとの最下段の見出しのセル、列の幅の上限を返す関数、幅を変えた後と戻した後に呼ぶ関数、見出しのセルに幅を入れた後・外側の幅を測る前に呼ぶ関数（表の幅を列の幅の合計に合わせる）
     returns:
       type: () => void
       description: 受け取りを削除し、幅の指定を全て戻す関数
@@ -67,6 +67,12 @@ functions:
         condition: 3 列の表の 1 列目のつまみで、`pointerdown` から `pointermove` で 80px 右へ動かして `pointerup`、続けて `dblclick`
         mock: なし
         expected: '`pointerup` の後、1 列目の `th` の `offsetWidth` が 80 大きく、2・3 列目は変わらず、`onResize` が `0` で呼ばれる。`dblclick` の後、1 列目の `th` の `offsetWidth` が付けた直後と同じで、`--mdmark-column-min-width` が付けたときの値'
+      - name: test_attach_column_resize_when_auto_width
+        case: 正常
+        summary: 自動で列の幅を決めた表では、ほかの列の幅を止めず、幅を入れた後・測る前に onWidthWritten を呼ぶ
+        condition: '`data-auto-width` を付けた 3 列の表に `onWidthWritten` と `onResize` を渡して付け、1 列目のつまみを右へ 80px ドラッグする'
+        mock: なし
+        expected: 2・3 列目の見出しのセルにインラインの `width` が無く、`onWidthWritten` が `onResize` より前に呼ばれる
       - name: test_attach_column_resize_when_key
         case: 正常
         summary: ←→ キーで 16px ずつ変え、Enter で戻し、つまみの値を書き換える

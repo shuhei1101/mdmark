@@ -1,0 +1,460 @@
+$ npm run test:unit
+
+> test:unit
+> vitest run --project 'unit*'
+
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-document-table-width-tree-code-toc
+
+ ❯ |unit| tests/unit/src/config.test.ts (18 tests | 1 failed) 216ms
+   × test_resolve_config_when_long_column_min_given 5ms
+ ❯ |unit| tests/unit/src/parts/tree.test.ts (8 tests | 1 failed) 1665ms
+   × test_folder_open_by_default 4ms
+ ❯ |unit| tests/unit/src/parts/table.test.ts (36 tests | 1 failed) 1759ms
+   × test_render_table_when_long_columns 13ms
+ ❯ |unit-browser (chromium)| tests/unit/src/interact/code-folds.browser.test.ts (6 tests | 1 failed) 258ms
+   × test_attach_code_folds_when_fold_column_hovered 155ms
+ ❯ |unit-browser (chromium)| tests/unit/src/interact/trees.browser.test.ts (7 tests | 1 failed) 919ms
+   × test_attach_file_trees 890ms
+ ❯ |unit-browser (chromium)| tests/unit/src/interact/sections.browser.test.ts (20 tests | 1 failed) 3648ms
+   × test_reveal_target_when_heading 197ms
+ ❯ |unit-browser (chromium)| tests/unit/src/interact/tables.browser.test.ts (71 tests | 10 failed) 6215ms
+   × test_is_compact_cell_text 160ms
+   × test_find_long_columns 157ms
+   × test_find_long_columns_when_head 173ms
+   × test_default_filter_kind 183ms
+   × test_column_bounds 109ms
+   × test_column_bounds_when_range 151ms
+   × test_distribute_column_widths 149ms
+   × test_distribute_column_widths_when_fixed 202ms
+   × test_attach_tables_when_auto_width 162ms
+   × test_attach_tables_when_resized_refreshes_width 1118ms
+ ❯ |unit-browser (chromium)| tests/unit/src/interact/table-width.browser.test.ts (6 tests | 6 failed) 9297ms
+   × test_measure_columns 461ms
+   × test_measure_columns_when_rows_limited 1686ms
+   × test_attach_auto_column_widths 1105ms
+   × test_attach_auto_column_widths_when_resized_container 696ms
+   × test_attach_auto_column_widths_when_hidden 3132ms
+   × test_attach_auto_column_widths_when_detached 2216ms
+ ❯ |unit| tests/unit/src/render/syntax/tables.test.ts (31 tests | 4 failed) 112ms
+   × test_read_table_spec 11ms
+   × test_decorate_tables_when_long_columns 5ms
+   × test_decorate_tables_when_nowrap_long_column 4ms
+   × test_column_lines_of 1ms
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 26 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/interact/code-folds.browser.test.ts > test_attach_code_folds_when_fold_column_hovered
+AssertionError: expected false to be true // Object.is equality
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/code-folds.browser.test.ts/test_attach_code_folds_when_fold_column_hovered.png
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ tests/unit/src/interact/code-folds.browser.test.ts:206:47
+    204|   // 実行・検証: 4 行目の高さでボタンの列に乗せると付く
+    205|   movePointer(fourth, columnX, lineY);
+    206|   expect(pre.hasAttribute("data-fold-hover")).toBe(true);
+       |                                               ^
+    207|   // 実行・検証: 4 行目の文字の上へ動かすと外れる
+    208|   movePointer(fourth, textX, lineY);
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=6a971394:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/26]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/interact/sections.browser.test.ts > test_reveal_target_when_heading
+AssertionError: expected true to be false // Object.is equality
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/sections.browser.test.ts/test_reveal_target_when_heading.png
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ tests/unit/src/interact/sections.browser.test.ts:582:57
+    580|   // 検証: 囲むセクションと見出し自身のセクションが開く
+    581|   expect(sectionBody(root, "a").hasAttribute("hidden")).toBe(false);
+    582|   expect(sectionBody(root, "b").hasAttribute("hidden")).toBe(false);
+       |                                                         ^
+    583|   expect(expandedStates(root, ["a", "b"])).toEqual(["true", "true"]);
+    584|   // 実行: 閉じたセクションの中の段落を指定する
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=6a971394:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/26]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/interact/table-width.browser.test.ts > test_measure_columns
+ FAIL  |unit-browser (chromium)| tests/unit/src/interact/table-width.browser.test.ts > test_measure_columns_when_rows_limited
+ FAIL  |unit-browser (chromium)| tests/unit/src/interact/table-width.browser.test.ts > test_attach_auto_column_widths
+ FAIL  |unit-browser (chromium)| tests/unit/src/interact/table-width.browser.test.ts > test_attach_auto_column_widths_when_resized_container
+ FAIL  |unit-browser (chromium)| tests/unit/src/interact/table-width.browser.test.ts > test_attach_auto_column_widths_when_hidden
+ FAIL  |unit-browser (chromium)| tests/unit/src/interact/table-width.browser.test.ts > test_attach_auto_column_widths_when_detached
+TypeError: Failed to fetch dynamically imported module: http://localhost:63315/src/interact/table-width.ts
+
+Failure screenshots:
+  - .vitest/attachments/failure-screenshots/table-width.browser.test.ts/test_measure_columns.png
+  - .vitest/attachments/failure-screenshots/table-width.browser.test.ts/test_measure_columns_when_rows_limited.png
+  - .vitest/attachments/failure-screenshots/table-width.browser.test.ts/test_attach_auto_column_widths.png
+  - .vitest/attachments/failure-screenshots/table-width.browser.test.ts/test_attach_auto_column_widths_when_resized_container.png
+  - .vitest/attachments/failure-screenshots/table-width.browser.test.ts/test_attach_auto_column_widths_when_hidden.png
+  - .vitest/attachments/failure-screenshots/table-width.browser.test.ts/test_attach_auto_column_widths_when_detached.png
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/26]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/interact/tables.browser.test.ts > test_is_compact_cell_text
+TypeError: isCompactCellText is not a function
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/tables.browser.test.ts/test_is_compact_cell_text.png
+
+ ❯ tests/unit/src/interact/tables.browser.test.ts:345:38
+    343|   ];
+    344|   // 実行
+    345|   const result = texts.map((text) => isCompactCellText(text));
+       |                                      ^
+    346|   // 検証
+    347|   expect(result).toEqual([true, true, true, true, true, true, false, f…
+ ❯ tests/unit/src/interact/tables.browser.test.ts:345:24
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=6a971394:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/26]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/interact/tables.browser.test.ts > test_find_long_columns
+TypeError: findLongColumns is not a function
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/tables.browser.test.ts/test_find_long_columns.png
+
+ ❯ tests/unit/src/interact/tables.browser.test.ts:383:18
+    381|   ];
+    382|   // 実行
+    383|   const result = findLongColumns(columns);
+       |                  ^
+    384|   // 検証: 列 4 は全てのセルが短い値のため長文の列にしない
+    385|   expect(result).toEqual([3]);
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=6a971394:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/26]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/interact/tables.browser.test.ts > test_find_long_columns_when_head
+TypeError: findLongColumns is not a function
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/tables.browser.test.ts/test_find_long_columns_when_head.png
+
+ ❯ tests/unit/src/interact/tables.browser.test.ts:393:18
+    391|   const { findLongColumns } = await loadLogic();
+    392|   // 実行
+    393|   const result = findLongColumns([
+       |                  ^
+    394|     { head: [wide(20)], cells: [{ lines: [wide(2)], compact: false }] …
+    395|   ]);
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=6a971394:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/26]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/interact/tables.browser.test.ts > test_default_filter_kind
+TypeError: defaultFilterKind is not a function
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/tables.browser.test.ts/test_default_filter_kind.png
+
+ ❯ tests/unit/src/interact/tables.browser.test.ts:405:19
+    403|   const { defaultFilterKind } = await loadLogic();
+    404|   // 実行
+    405|   const result = [defaultFilterKind(true), defaultFilterKind(false)];
+       |                   ^
+    406|   // 検証
+    407|   expect(result).toEqual(["text", "select"]);
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=6a971394:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/26]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/interact/tables.browser.test.ts > test_column_bounds
+TypeError: columnBounds is not a function
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/tables.browser.test.ts/test_column_bounds.png
+
+ ❯ tests/unit/src/interact/tables.browser.test.ts:436:31
+    434|     { ...base, long: true, longest: 1700, longestWord: 700 },
+    435|     { ...base, nowrap: true, long: true, longest: 1700 },
+    436|   ].map((options) => boundsOf(columnBounds(options)));
+       |                               ^
+    437|   // 検証
+    438|   expect(result).toEqual([
+ ❯ tests/unit/src/interact/tables.browser.test.ts:436:5
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=6a971394:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/26]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/interact/tables.browser.test.ts > test_column_bounds_when_range
+TypeError: columnBounds is not a function
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/tables.browser.test.ts/test_column_bounds_when_range.png
+
+ ❯ tests/unit/src/interact/tables.browser.test.ts:465:31
+    463|     { ...base, range: { min: 30, max: 20 }, longest: 2800 },
+    464|     { ...base, range: { min: 10 }, longest: 60 },
+    465|   ].map((options) => boundsOf(columnBounds(options)));
+       |                               ^
+    466|   // 検証
+    467|   expect(result).toEqual([
+ ❯ tests/unit/src/interact/tables.browser.test.ts:465:5
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=6a971394:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/26]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/interact/tables.browser.test.ts > test_distribute_column_widths
+TypeError: distributeColumnWidths is not a function
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/tables.browser.test.ts/test_distribute_column_widths.png
+
+ ❯ tests/unit/src/interact/tables.browser.test.ts:487:5
+    485|   // 実行
+    486|   const result = [
+    487|     distributeColumnWidths(
+       |     ^
+    488|       columnsOf([
+    489|         [false, 80, 80],
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=6a971394:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/26]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/interact/tables.browser.test.ts > test_distribute_column_widths_when_fixed
+TypeError: distributeColumnWidths is not a function
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/tables.browser.test.ts/test_distribute_column_widths_when_fixed.png
+
+ ❯ tests/unit/src/interact/tables.browser.test.ts:532:18
+    530|   const { distributeColumnWidths } = await loadLogic();
+    531|   // 実行
+    532|   const result = distributeColumnWidths(
+       |                  ^
+    533|     [
+    534|       { wraps: false, min: 118, wanted: 118, fixed: true },
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=6a971394:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/26]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/interact/tables.browser.test.ts > test_attach_tables_when_auto_width
+AssertionError: expected undefined to be '2' // Object.is equality
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/tables.browser.test.ts/test_attach_tables_when_auto_width.png
+
+- Expected:
+"2"
+
++ Received:
+undefined
+
+ ❯ tests/unit/src/interact/tables.browser.test.ts:2425:32
+    2423|     throw new Error("表が無い");
+    2424|   }
+    2425|   expect(wrapper.dataset.long).toBe("2");
+       |                                ^
+    2426|   await vi.waitFor(() => {
+    2427|     expect(table.hasAttribute("data-auto-width")).toBe(true);
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=6a971394:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[12/26]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/interact/tables.browser.test.ts > test_attach_tables_when_resized_refreshes_width
+AssertionError: expected false to be true // Object.is equality
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/tables.browser.test.ts/test_attach_tables_when_resized_refreshes_width.png
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ tests/unit/src/interact/tables.browser.test.ts:2461:51
+    2459|   }
+    2460|   await vi.waitFor(() => {
+    2461|     expect(table.hasAttribute("data-auto-width")).toBe(true);
+       |                                                   ^
+    2462|   });
+    2463|   // 実行: 名前の列のつまみで → を 2 回押す
+ ❯ checkCallback node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/index.uwTEEBsB-Cm3Wu9lp.js?v=6a971394:6076:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[13/26]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/interact/trees.browser.test.ts > test_attach_file_trees
+AssertionError: expected [ 'true', 'false' ] to deeply equal [ 'true', 'true' ]
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/trees.browser.test.ts/test_attach_file_trees.png
+
+- Expected
++ Received
+
+  [
+    "true",
+-   "true",
++   "false",
+  ]
+
+ ❯ tests/unit/src/interact/trees.browser.test.ts:115:49
+    113|   const tree = treeOf(root);
+    114|   expect(tree.querySelector(".mdmark-tree-bar")).not.toBeNull();
+    115|   expect(expandedOf(tree, ["mdmark/", "src/"])).toEqual(["true", "true…
+       |                                                 ^
+    116|   expect(nestedListOf(toggleOf(tree, "src/")).hasAttribute("hidden")).…
+    117|     false,
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=6a971394:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[14/26]⎯
+
+ FAIL  |unit| tests/unit/src/config.test.ts > test_resolve_config_when_long_column_min_given
+AssertionError: expected [ undefined, undefined, …(3) ] to deeply equal [ 30, 45, 45, 45, 45 ]
+
+- Expected
++ Received
+
+  [
+-   30,
+-   45,
+-   45,
+-   45,
+-   45,
++   undefined,
++   undefined,
++   undefined,
++   undefined,
++   undefined,
+  ]
+
+ ❯ tests/unit/src/config.test.ts:260:18
+    258|   );
+    259|   // 検証
+    260|   expect(result).toEqual([30, 45, 45, 45, 45]);
+       |                  ^
+    261| });
+    262|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[15/26]⎯
+
+ FAIL  |unit| tests/unit/src/parts/table.test.ts > test_render_table_when_long_columns
+AssertionError: expected '<div class="mdmark-table" data-kind="…' to contain 'data-long="1 3"'
+
+Expected: "data-long="1 3""
+Received: "<div class="mdmark-table" data-kind="data" data-features="sort pin filter">"
+
+ ❯ tests/unit/src/parts/table.test.ts:641:16
+    639|   // 検証: 囲みに長文の列と幅の範囲を写す
+    640|   const open = findTag(wrapper, 'class="mdmark-table"');
+    641|   expect(open).toContain('data-long="1 3"');
+       |                ^
+    642|   expect(open).toContain('data-width="1:20-30 3:-12"');
+    643|   // 検証: 自動の列の幅を表と見出しのセルに入れる
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[16/26]⎯
+
+ FAIL  |unit| tests/unit/src/parts/tree.test.ts > test_folder_open_by_default
+AssertionError: expected [ true, false, false ] to deeply equal [ true, true, true ]
+
+- Expected
++ Received
+
+  [
+    true,
+-   true,
+-   true,
++   false,
++   false,
+  ]
+
+ ❯ tests/unit/src/parts/tree.test.ts:240:17
+    238|   const two = depths.map((depth) => folderOpenByDefault(depth, "2"));
+    239|   // 検証
+    240|   expect(unset).toEqual([true, true, true]);
+       |                 ^
+    241|   expect(all).toEqual([true, true, true]);
+    242|   expect(two).toEqual([true, true, false]);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[17/26]⎯
+
+ FAIL  |unit| tests/unit/src/render/syntax/tables.test.ts > test_read_table_spec
+AssertionError: expected { column: +0, kind: 'select' } to not have property "kind"
+
+- Expected:
+undefined
+
++ Received:
+"select"
+
+ ❯ tests/unit/src/render/syntax/tables.test.ts:27:31
+     25|   const spec = readTableSpec(options, ["名前", "値", "更新日"], 10);
+     26|   // 検証: kind を省いた列は kind を持たない
+     27|   expect(spec.filters[0]).not.toHaveProperty("kind");
+       |                               ^
+     28|   expect(spec).toMatchObject({
+     29|     kind: "data",
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[18/26]⎯
+
+ FAIL  |unit| tests/unit/src/render/syntax/tables.test.ts > test_decorate_tables_when_long_columns
+AssertionError: expected '<div class="mdmark-table" data-kind="…' to contain 'data-long="1 3"'
+
+Expected: "data-long="1 3""
+Received: "<div class="mdmark-table" data-kind="data" data-features="sort pin filter resize" data-filter="0:select 1:select 3:select">"
+
+ ❯ tests/unit/src/render/syntax/tables.test.ts:534:19
+    532|   // 検証
+    533|   const wrapper = findTags(html, 'class="mdmark-table"')[0] ?? "";
+    534|   expect(wrapper).toContain('data-long="1 3"');
+       |                   ^
+    535|   expect(wrapper).toContain('data-width="1:20-30 3:-12"');
+    536|   expect(wrapper).toContain('data-filter="0:select 1:text 3:select"');
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[19/26]⎯
+
+ FAIL  |unit| tests/unit/src/render/syntax/tables.test.ts > test_decorate_tables_when_nowrap_long_column
+AssertionError: expected '<div class="mdmark-table" data-kind="…' to contain 'data-long="1"'
+
+Expected: "data-long="1""
+Received: "<div class="mdmark-table" data-kind="data" data-features="sort pin filter resize" data-filter="1:select">"
+
+ ❯ tests/unit/src/render/syntax/tables.test.ts:557:19
+    555|   // 検証
+    556|   const wrapper = findTags(html, 'class="mdmark-table"')[0] ?? "";
+    557|   expect(wrapper).toContain('data-long="1"');
+       |                   ^
+    558|   expect(wrapper).toContain('data-filter="1:text"');
+    559|   const wideTags = findTags(html, "mdmark-wide");
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[20/26]⎯
+
+ FAIL  |unit| tests/unit/src/render/syntax/tables.test.ts > test_column_lines_of
+TypeError: columnLinesOf is not a function
+ ❯ tests/unit/src/render/syntax/tables.test.ts:579:19
+    577|   const tableOpen = tokens.findIndex((token) => token.type === "table_…
+    578|   // 実行
+    579|   const columns = columnLinesOf(tokens, tableOpen);
+       |                   ^
+    580|   // 検証
+    581|   expect(columns.map((column) => column.head)).toEqual([
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[21/26]⎯
+
+
+ Test Files  9 failed | 277 passed (286)
+      Tests  26 failed | 2069 passed (2095)
+   Start at  16:55:32
+   Duration  110.92s (worker 69%, tests 20%, import 10%, transform 2%)
+
+exit=1

@@ -20,7 +20,7 @@ VS Code で Markdown を編集しながら、mdmark で描いた外観を確認�
 
 Visual Studio Marketplace と Open VSX に登録したバージョンは、拡張機能の画面で `ShuheiNishikawa.mdmark-vscode` を検索し、表示名 `mdmark for VS Code` の拡張機能を入れられる。
 
-拡張機能のタグ `vscode-v{バージョン}` は mdmark 本体のタグ `v{バージョン}` とは別で、拡張機能のバージョンと、プレビューが読み込む mdmark のバージョンは一致しない。
+拡張機能のタグ `vscode-v{バージョン}` は、スプリントの区切りに develop の commit へ打つ。mdmark 本体のタグ `v{バージョン}` とは別で、拡張機能のバージョンと、プレビューが読み込む mdmark のバージョンは一致しない。
 
 ### プレビューを開く
 

@@ -536,6 +536,58 @@ test("test_reveal_target_when_row", async () => {
   expect(scrollIntoView).not.toHaveBeenCalled();
 });
 
+// 見出しを指定すると、囲むセクションに加えて見出し自身の閉じたセクションも開く（正常系）
+test("test_reveal_target_when_heading", async () => {
+  // 準備
+  const { attachSections, revealTarget } = await loadSections();
+  const { root } = createRoot(
+    [
+      "## A",
+      "",
+      '<!-- section: {"open": false} -->',
+      "",
+      "### B",
+      "",
+      '<!-- section: {"open": false} -->',
+      "",
+      "本文B",
+      "",
+      "## E",
+      "",
+      '<!-- section: {"open": false} -->',
+      "",
+      "段落E",
+      "",
+      "### F",
+      "",
+      '<!-- section: {"open": false} -->',
+      "",
+      "本文F",
+      "",
+    ].join("\n"),
+  );
+  detachers.push(attachSections({ root, sections: true, rowDetails: true }));
+  vi.spyOn(Element.prototype, "scrollIntoView").mockImplementation(() => {});
+  const heading = root.querySelector<HTMLElement>('h3[id="b"]');
+  const paragraph = [...root.querySelectorAll<HTMLElement>("p")].find(
+    (candidate) => candidate.textContent === "段落E",
+  );
+  if (!heading || !paragraph) {
+    throw new Error("B の見出しか E の段落が無い");
+  }
+  // 実行: 見出しを指定する
+  revealTarget(heading);
+  // 検証: 囲むセクションと見出し自身のセクションが開く
+  expect(sectionBody(root, "a").hasAttribute("hidden")).toBe(false);
+  expect(sectionBody(root, "b").hasAttribute("hidden")).toBe(false);
+  expect(expandedStates(root, ["a", "b"])).toEqual(["true", "true"]);
+  // 実行: 閉じたセクションの中の段落を指定する
+  revealTarget(paragraph);
+  // 検証: 段落を囲むセクションだけが開き、後ろの見出しのセクションは開かない
+  expect(sectionBody(root, "e").hasAttribute("hidden")).toBe(false);
+  expect(sectionBody(root, "f").hasAttribute("hidden")).toBe(true);
+});
+
 // すべて展開は全てを開き、すべて折りたたむは H1 だけ開く（正常系）
 test("test_fold_all_sections", async () => {
   // 準備

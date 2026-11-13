@@ -117,7 +117,7 @@ constraints:
   - item: CLI との一致
     constraint: 同じ文書・設定では、`mdmark export` と同じ中身の HTML を書き込む
   - item: 書き出す中身
-    constraint: プラグインに同梱した配布物を埋める。配布物のバージョンはプラグインのバージョンと同じ
+    constraint: プラグインに同梱した配布物を埋める。配布物のバージョンはプラグインのビルドで埋めた mdmark のバージョンと同じ
 refs:
   - IF-472-33#
 test_file: tests/integration/ClaudeCodeプラグイン/export-html.test.ts

@@ -21,6 +21,12 @@ const LINE_MARK_KINDS: Readonly<Record<string, NonNullable<CodeLine["kind"]>>> =
 /** 行末のマーカーと、マーカーを閉じるコメントの終わり（`-->` か星とスラッシュ）。打ち消したマーカー（`[\!code`）は該当しない */
 const LINE_MARK_PATTERN = /\[!code\s+([^\]]*?)\s*\](?:\s*(?:-->|\*\/))?\s*$/;
 
+/** 罫線でフォルダ構成を記載した行。行頭の空白（`tree` コマンドが縦線の後ろに出す NBSP を含む）と縦線の後に、罫線の枝が続く */
+export const TREE_LINE_PATTERN = /^[\t \u00A0│|]*(?:├── |└── |\|-- |`-- )/u;
+
+/** この数以上の罫線の行を持つ言語が `tree` でないコードブロックに、罫線のフォルダ構成の記載の警告を出す */
+export const TREE_WARNING_MIN_LINES = 2;
+
 /** 打ち消したマーカーの `\` */
 const ESCAPED_MARK_PATTERN = /\[\\!code(?=\s)/g;
 
@@ -97,6 +103,7 @@ export function readCodeSpec(options: {
   lineNumbers: boolean;
   lineStart: number;
   wrap: boolean;
+  treeWarning: boolean;
   highlights: Set<number>;
   folds: Set<number>;
   warnings: WarningItem[];
@@ -124,10 +131,25 @@ export function readCodeSpec(options: {
     lineNumbers: lines !== undefined,
     lineStart,
     wrap: spec.wrap === true,
+    treeWarning: spec.tree_warning !== false,
     highlights,
     folds,
     warnings,
   };
+}
+
+/** コードブロックの中身の、罫線でフォルダ構成を記載した行の数を返却する */
+export function countTreeLines(source: string): number {
+  return source.split("\n").filter((line) => TREE_LINE_PATTERN.test(line))
+    .length;
+}
+
+/** 罫線のフォルダ構成の記載の警告の本文（言語が空なら言語の無いコードブロックとして書く） */
+function treeLinesMessage(language: string): string {
+  const block = language
+    ? `言語 \`${language}\` のコードブロックに`
+    : "言語の無いコードブロックに";
+  return `${block}、罫線のフォルダ構成があります。言語を \`tree\` にすると、アイコン・開閉・注釈・コピーを付けたファイルツリーで描きます。罫線のまま見せるときは、直前に \`<!-- code: {"tree_warning": false} -->\` を記載してください。コードブロックのまま描いています。`;
 }
 
 /** `[\!code …]` の `\` を削除する */
@@ -382,10 +404,25 @@ export function buildCodeBlocks(state: StateCore): void {
     const title = options?.title ?? "";
     const lineNumbers = options?.lineNumbers ?? false;
     const { language, fileName } = splitInfoString(token.info);
+    const firstWord = token.info.trim().split(/\s+/)[0];
     const mermaid =
       mermaidOn &&
-      token.info.trim().split(/\s+/)[0] === "mermaid" &&
+      firstWord === "mermaid" &&
       token.meta?.[MAP_SOURCE_META] !== true;
+    if (
+      codeOn &&
+      firstWord !== "mermaid" &&
+      token.meta?.[MAP_SOURCE_META] !== true &&
+      (options?.treeWarning ?? true) &&
+      countTreeLines(token.content) >= TREE_WARNING_MIN_LINES
+    ) {
+      out.push(
+        warningBlock(state, {
+          message: treeLinesMessage(language),
+          ...(token.map ? { line: token.map[0] } : {}),
+        }),
+      );
+    }
     const syntax =
       syntaxOn && !mermaid ? syntaxLanguageOf(language) : undefined;
     if (codeOn || syntax !== undefined || mermaid) {

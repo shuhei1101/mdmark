@@ -22,7 +22,8 @@ Claude Code で mdmark の文書を記載し始める前に実行する。
 ```
 
 ターミナルからは `claude plugin marketplace add shuhei1101/mdmark` で追加できる。
-バージョンを固定するときは `shuhei1101/mdmark#v{バージョン}` とタグを記載する。
+タグを記載しないと develop の最新を読み込み、develop に入った変更がプラグインの更新で届く。
+バージョンを固定するときは `shuhei1101/mdmark#v{バージョン}` と、develop に打ったタグを記載する。
 リポジトリの直下の `.claude-plugin/marketplace.json` を読み込み、プラグイン `mdmark` を記載する。
 
 ### プラグインを入れる
@@ -74,6 +75,17 @@ dev-docs で mdmark のガイドの一覧を出して
 ```
 
 配信元 `mdmark` のタグ `topic:ガイド` のページが並ぶ。
+
+## 更新する
+
+```bash
+claude plugin marketplace update mdmark
+claude plugin update mdmark@mdmark
+```
+
+`plugin.json` はバージョンを持たず、プラグインのバージョンは commit の短縮 SHA になる。
+マーケットプレイスの更新だけではプラグインは変わらず、`claude plugin update` で新しい commit に上がる。
+Claude Code を起動し直すと反映される。
 
 ## 子プロセスで起動していたプラグインからの移行
 

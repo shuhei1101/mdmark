@@ -1,0 +1,10 @@
+$ npx vitest run --project 'integration*' tests/integration/lib/build.test.ts
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/chore-build-legacy-marks-licenses
+
+
+ Test Files  1 passed (1)
+      Tests  8 passed (8)
+   Start at  13:31:08
+   Duration  364.28s (tests 96%, import 4%)
+

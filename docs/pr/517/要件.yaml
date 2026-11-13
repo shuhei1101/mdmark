@@ -1,0 +1,22 @@
+use_cases:
+  - kind: single
+    scenario: docs/scenario/SC-472-3.yaml
+    impact: run_only
+    detail: Claude Code から点検と書き出しを呼ぶとき、フックが作業のフォルダを入れて返す内容が変わる。流れと期待値は変わらないが、ツールの呼び出しを壊しうる
+    depends_on: []
+  - kind: composite
+    scenario: docs/scenario/SC-472-86.yaml
+    impact: run_only
+    detail: プラグインからつないだ MCP サーバーのツールを、フックを経由した引数で呼ぶ流れを壊しうる
+    depends_on: []
+docs:
+  - page: docs/library/LIB-472-1.yaml
+    new: false
+    change: フックの出力の `hookSpecificOutput.updatedInput` の「`permissionDecision` を記載しなければ許可の判定は変わらない」を、auto モードで拒否されうる公式の資料に合わせて修正し、`permissionDecision`・`permissionDecisionReason` の項目を加える
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-12T23:47:43.579760+00:00'
+scope_out:
+  - item: 規約『フック』への permissionDecision の決まりの追加
+    reason: 別のリポジトリの規約で、shuhei1101/knowledge#244 が扱う
+    plan: none

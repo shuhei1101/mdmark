@@ -1,4 +1,4 @@
-/** 行の詳細の行と、行の先頭のセルの開閉のボタンの HTML を返す */
+/** 行の詳細の行と、行の先頭のセルの開閉のボタンの HTML を返却する */
 export declare function renderRowDetail(options: {
     /** 詳細の行の id（開閉のボタンの `aria-controls` が指す） */
     id: string;
@@ -12,12 +12,7 @@ export declare function renderRowDetail(options: {
     open?: boolean;
     /** 開閉のボタンを付けるか（既定 `true`） */
     toggle?: boolean;
-    /** 畳んだ最終列。渡すと詳細の中身の上に最終列の見出しと中身を置く */
-    foldedColumn?: {
-        name: string;
-        html: string;
-    } | undefined;
-    /** 詳細の中身の HTML（`SLOT_MARKER` を渡せる） */
+    /** 詳細の中身の HTML（`SLOT_MARKER` を指定できる） */
     body: string;
 }): {
     row: string;

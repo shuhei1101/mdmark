@@ -3,7 +3,7 @@ export type DiffHtmlSide = {
     label: string;
     html: string;
 };
-/** 部品設計『埋め込んだHTMLの差分』: 差分の中の `<!-- html -->` の範囲を、右端に「HTML」のラベルを持つ見出しで囲んだ HTML を返す。変えた範囲は「ソース」「プレビュー」で、行の色分けと前と後の描いた結果を切り替える */
+/** 部品設計『埋め込んだHTMLの差分』: 差分の中の `<!-- html -->` の範囲を、右端に「HTML」のラベルを持つ見出しで囲んだ HTML を返却する。変えた範囲は「ソース」「プレビュー」で、行の色分けと前と後の描いた結果を切り替える */
 export declare function renderDiffHtml(options: {
     /** 前か後で範囲を変えたか。false なら見方の切り替えを付けず、ラベルだけの見出しにする */
     changed: boolean;

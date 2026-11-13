@@ -1,0 +1,56 @@
+$ npm run test:unit
+
+> test:unit
+> vitest run --project 'unit*'
+
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-document-table-width-tree-code-toc
+
+ ❯ |unit-browser (chromium)| tests/unit/src/interact/table-width.browser.test.ts (7 tests | 1 failed) 696ms
+   × test_attach_auto_column_widths_when_columns_toggled 181ms
+ ❯ |unit-browser (chromium)| tests/unit/src/interact/tables.browser.test.ts (72 tests | 1 failed) 1462ms
+   × test_attach_tables_when_column_hidden_keeps_widths 143ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/interact/table-width.browser.test.ts > test_attach_auto_column_widths_when_columns_toggled
+TypeError: handle.columnsChanged is not a function
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/table-width.browser.test.ts/test_attach_auto_column_widths_when_columns_toggled.png
+
+ ❯ tests/unit/src/interact/table-width.browser.test.ts:282:10
+    280|   // 実行: 手順の列を隠す
+    281|   setStepHidden(true);
+    282|   handle.columnsChanged();
+       |          ^
+    283|   // 検証: 残った列の幅は変わらず、表の幅は残った列の幅の合計
+    284|   const shown = [0, 1, 2, 3, 5];
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=6a971394:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/interact/tables.browser.test.ts > test_attach_tables_when_column_hidden_keeps_widths
+AssertionError: expected 10 to be less than or equal to 1
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/tables.browser.test.ts/test_attach_tables_when_column_hidden_keeps_widths.png
+
+ ❯ tests/unit/src/interact/tables.browser.test.ts:2470:7
+    2468|     expect(
+    2469|       Math.abs((heads[column]?.offsetWidth ?? 0) - (before[column] ?? …
+    2470|     ).toBeLessThanOrEqual(1);
+       |       ^
+    2471|   }
+    2472| });
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=6a971394:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  2 failed | 284 passed (286)
+      Tests  2 failed | 2095 passed (2097)
+   Start at  17:55:29
+   Duration  86.96s (worker 69%, tests 19%, import 11%, transform 1%)
+
+exit=1

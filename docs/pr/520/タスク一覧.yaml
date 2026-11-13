@@ -1,0 +1,87 @@
+tasks:
+  - process: 初期構築
+    status: skipped
+    reason: 既存リポジトリのため対象外
+    updated_by: planner
+    updated_at: '2026-11-13T02:56:53.776133+00:00'
+  - process: リバースエンジニアリング
+    status: skipped
+    reason: 設計書を起こす依頼ではないため対象外
+    updated_by: planner
+    updated_at: '2026-11-13T02:56:53.776133+00:00'
+  - process: 方針決め
+    status: skipped
+    reason: 方針決めを依頼する Issue ではないため対象外
+    updated_by: planner
+    updated_at: '2026-11-13T02:56:53.776133+00:00'
+  - process: PoC 検証
+    status: skipped
+    reason: '移行の手順は #477 で実装・検証済みで、未検証の技術機構に依存しないため対象外'
+    updated_by: planner
+    updated_at: '2026-11-13T02:56:53.776133+00:00'
+  - process: 複合ユースケース設計
+    status: skipped
+    reason: ほかのリポジトリの文書に既存の移行の手順を適用するだけで、mdmark のユースケースは変わらないため対象外
+    updated_by: planner
+    updated_at: '2026-11-13T02:56:53.776133+00:00'
+  - process: デザインスタイル選定
+    status: skipped
+    reason: 画面に関わる変更を含まないため対象外
+    updated_by: planner
+    updated_at: '2026-11-13T02:56:53.776133+00:00'
+  - process: 画面一覧・画面遷移
+    status: skipped
+    reason: 画面に関わる変更を含まないため対象外
+    updated_by: planner
+    updated_at: '2026-11-13T02:56:53.776133+00:00'
+  - process: 単一ユースケース設計
+    status: skipped
+    reason: mdmark のユースケースは変わらないため対象外
+    updated_by: planner
+    updated_at: '2026-11-13T02:56:53.776133+00:00'
+  - process: モック作成
+    status: skipped
+    reason: 画面に関わる変更を含まないため対象外
+    updated_by: planner
+    updated_at: '2026-11-13T02:56:53.776133+00:00'
+  - process: インターフェース定義設計
+    status: skipped
+    reason: インターフェースは変わらないため対象外
+    updated_by: planner
+    updated_at: '2026-11-13T02:56:53.776133+00:00'
+  - process: 部品設計
+    status: skipped
+    reason: 部品は変わらないため対象外
+    updated_by: planner
+    updated_at: '2026-11-13T02:56:53.776133+00:00'
+  - process: 画面設計
+    status: skipped
+    reason: 画面は変わらないため対象外
+    updated_by: planner
+    updated_at: '2026-11-13T02:56:53.776133+00:00'
+  - process: モジュール構成設計
+    status: skipped
+    reason: コードを変更しないため対象外
+    updated_by: planner
+    updated_at: '2026-11-13T02:56:53.776133+00:00'
+  - process: ドキュメント修正
+    status: skipped
+    note:
+    reason: mdmark のリポジトリで更新するドキュメントが無いため対象外。ほかのリポジトリの文書の修正は要件.yaml のスコープ外の行で扱う
+    updated_by: planner
+    updated_at: '2026-11-13T02:59:14.626225+00:00'
+  - process: 単体テスト作成
+    status: skipped
+    reason: コードを変更しないため対象外
+    updated_by: planner
+    updated_at: '2026-11-13T02:56:53.776133+00:00'
+  - process: 実装
+    status: skipped
+    reason: コードを変更しないため対象外
+    updated_by: planner
+    updated_at: '2026-11-13T02:56:53.776133+00:00'
+  - process: 結合テスト作成
+    status: skipped
+    reason: コードを変更しないため対象外
+    updated_by: planner
+    updated_at: '2026-11-13T02:56:53.776133+00:00'

@@ -23,7 +23,7 @@ flows:
         P-->>K: 書き込んだパスとキー・終了コード 0
     expected:
       - 終了コードが 0
-      - '`mdmark.config.yaml` が `version`（プラグインのバージョン）と `features.callout: false` を持ち、ほかのキーは雛形のまま'
+      - '`mdmark.config.yaml` が `version`（プラグインのビルドで埋めた mdmark のバージョン）と `features.callout: false` を持ち、ほかのキーは雛形のまま'
     test: test_normal
   - name: 正常系（設定がある）
     summary: 指定したキーだけを書き換える
@@ -101,7 +101,7 @@ constraints:
     constraint: コメント・キーの並び・触らないキーの記載方法を残す
     decided_by: LIB-472-36#
   - item: version
-    constraint: 新しく作るときだけ `version` をプラグインのバージョンにする
+    constraint: 新しく作るときだけ `version` をプラグインのビルドで埋めた mdmark のバージョンにする
   - item: 出力
     constraint: 結果は標準出力に JSON の 1 行で出す。誤りは標準エラーに理由と修正方法を出す
   - item: 動く Node のバージョン

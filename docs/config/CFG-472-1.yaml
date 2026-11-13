@@ -112,7 +112,7 @@ settings:
     title: 常駐サーバーを起動するコマンド
     file: 環境変数
     type: string
-    default: npx -y github:shuhei1101/mdmark#v{プラグインのバージョン} serve
+    default: npx -y github:shuhei1101/mdmark#{プラグインのビルドで埋めた mdmark のバージョン} serve
     description: '`setup.js start-server` が tmux のセッションで実行するコマンド。テストでこのブランチのビルドした CLI に差し替える'
     env_var: MDMARK_SERVE_COMMAND
     reload: restart

@@ -1,0 +1,86 @@
+tasks:
+  - process: 初期構築
+    status: skipped
+    reason: 既存リポジトリのため対象外
+    updated_by: planner
+    updated_at: '2026-11-12T19:04:53.463761+00:00'
+  - process: リバースエンジニアリング
+    status: skipped
+    reason: 設計書は揃っており、棚卸しの依頼ではないため対象外
+    updated_by: planner
+    updated_at: '2026-11-12T19:04:53.463761+00:00'
+  - process: 方針決め
+    status: skipped
+    reason: 方針決めを依頼する Issue ではないため対象外
+    updated_by: planner
+    updated_at: '2026-11-12T19:04:53.463761+00:00'
+  - process: PoC 検証
+    status: skipped
+    reason: AI Monitor の公開ドキュメントが同じ _theme/ と _config.yml の設定で描かれており、未検証の機構に依存しないため対象外
+    updated_by: planner
+    updated_at: '2026-11-12T19:04:53.463761+00:00'
+  - process: 複合ユースケース設計
+    status: skipped
+    reason: 利用者の操作の流れが変わらず、影響する複合ユースケースが無いため対象外
+    updated_by: planner
+    updated_at: '2026-11-12T19:04:53.463761+00:00'
+  - process: デザインスタイル選定
+    status: skipped
+    reason: 見た目は AI Monitor の配布する共通のレイアウトをそのまま使い、作り手が決める余地が無いため対象外（判定フローチャート『モック要否』）
+    updated_by: planner
+    updated_at: '2026-11-12T19:04:53.463761+00:00'
+  - process: 画面一覧・画面遷移
+    status: skipped
+    reason: ページの追加・削除と遷移の変更が無く、見た目を作り手が決める余地も無いため対象外（判定フローチャート『モック要否』）
+    updated_by: planner
+    updated_at: '2026-11-12T19:04:53.463761+00:00'
+  - process: 単一ユースケース設計
+    status: skipped
+    reason: 利用者の操作の流れが変わらず、影響する単一ユースケースが無いため対象外
+    updated_by: planner
+    updated_at: '2026-11-12T19:04:53.463761+00:00'
+  - process: モック作成
+    status: skipped
+    reason: 見た目は AI Monitor の配布する共通のレイアウトをそのまま使い、作り手が決める余地が無いため対象外（判定フローチャート『モック要否』）
+    updated_by: planner
+    updated_at: '2026-11-12T19:04:53.463761+00:00'
+  - process: インターフェース定義設計
+    status: skipped
+    reason: コードのインターフェースが変わらないため対象外
+    updated_by: planner
+    updated_at: '2026-11-12T19:04:53.463761+00:00'
+  - process: 部品設計
+    status: skipped
+    reason: 部品が変わらないため対象外
+    updated_by: planner
+    updated_at: '2026-11-12T19:04:53.463761+00:00'
+  - process: 画面設計
+    status: skipped
+    reason: サイトの UI 項目（タブ・サイドバー）は配布元の AI Monitor の画面設計（docs/screen/SCR-3038-1・SCR-3038-2）が持ち、mdmark は取り込んで設定を当てるだけで UI 項目を決めないため対象外
+    updated_by: planner
+    updated_at: '2026-11-12T19:04:53.463761+00:00'
+  - process: モジュール構成設計
+    status: skipped
+    reason: ソースコードのモジュールが変わらないため対象外
+    updated_by: planner
+    updated_at: '2026-11-12T19:04:53.463761+00:00'
+  - process: ドキュメント修正
+    status: done
+    note: docs/_theme/ を AI Monitor の develop から取り込み（*.ts と nav.project.yml は配布物リストの除外のとおり残す）、docs/_config.yml にレイアウト・コレクション・プラグインの設定を追加し、docs/_root/files.yml の _theme の行を揃える。Jekyll でビルドし、上タブと分類のトップページが描かれることを確かめる
+    updated_by: planner
+    updated_at: '2026-11-12T19:15:38.373677+00:00'
+  - process: 単体テスト作成
+    status: skipped
+    reason: ソースコードを変えないため対象外
+    updated_by: planner
+    updated_at: '2026-11-12T19:04:53.463761+00:00'
+  - process: 実装
+    status: skipped
+    reason: ソースコードを変えず、変更はドキュメント修正の工程で行う Pages の設定と配布物の取り込みだけのため対象外
+    updated_by: planner
+    updated_at: '2026-11-12T19:04:53.463761+00:00'
+  - process: 結合テスト作成
+    status: skipped
+    reason: Pages のビルドはリポジトリのテストの対象外で、描かれることの確認はドキュメント修正の工程でのビルドで行うため対象外
+    updated_by: planner
+    updated_at: '2026-11-12T19:04:53.463761+00:00'

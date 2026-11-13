@@ -21,5 +21,5 @@ export type { MdmarkIconNode } from "./parts/inline-icon.ts";
 export { render } from "./render/index.ts";
 export type { StandardSchemaV1 } from "./standard-schema.ts";
 export type { MdmarkViewHandle, MdmarkViewOptions } from "./views/spec.ts";
-/** ビルドで埋めた版（`v{MAJOR}.{MINOR}.{PATCH}`）を返す */
+/** ビルドで埋めたバージョン（`v{MAJOR}.{MINOR}.{PATCH}`）を返却する */
 export declare function version(): string;

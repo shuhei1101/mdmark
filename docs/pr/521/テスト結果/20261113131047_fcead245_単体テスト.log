@@ -1,0 +1,27 @@
+$ npx vitest run --project 'unit*' tests/unit/scripts/build.test.ts
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/chore-build-legacy-marks-licenses
+
+ ❯ |unit| tests/unit/scripts/build.test.ts (28 tests | 1 failed) 22420ms
+   × test_build_legacy_marks_when_package_bundled 21ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit| tests/unit/scripts/build.test.ts > test_build_legacy_marks_when_package_bundled
+Error: ENOENT: no such file or directory, open '/tmp/mdmark-build-gnjdlZ/migrations/next/THIRD_PARTY_LICENSES.txt'
+ ❯ tests/unit/scripts/build.test.ts:517:16
+    515|   await buildLegacyMarks("v0.0.1", root);
+    516|   // 検証
+    517|   const text = await readFile(
+       |                ^
+    518|     join(root, "migrations", "next", "THIRD_PARTY_LICENSES.txt"),
+    519|     "utf8",
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 27 passed (28)
+   Start at  13:10:17
+   Duration  23.42s (tests 99%)
+

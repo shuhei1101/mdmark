@@ -154,6 +154,14 @@ async function runBuild(
   }
 }
 
+/** 作業ツリーの `plugin/.claude-plugin/plugin.json` の本文を返却する */
+async function readPluginManifest(root: string): Promise<string> {
+  return readFile(
+    join(root, "plugin", ".claude-plugin", "plugin.json"),
+    "utf8",
+  );
+}
+
 /** ビルドした dist/index.js を読み込み、version() の戻り値を返却する */
 async function readBuiltVersion(root: string): Promise<string> {
   const url = pathToFileURL(join(root, "dist", "index.js")).href;
@@ -174,6 +182,17 @@ afterEach(async () => {
 test("test_normal", { timeout: BUILD_TIMEOUT_MS }, async () => {
   // 準備
   const root = await createWorkTree("v0.0.0\n");
+  // `marker-json.mjs` を持つ移行の手順のフォルダ
+  await cp(
+    join(REPO_ROOT, "migrations", "next"),
+    join(root, "migrations", "next"),
+    { recursive: true },
+  );
+  // 書き込み済みのライセンスは消し、ビルドが書き込むことを確かめる
+  await rm(join(root, "migrations", "next", "THIRD_PARTY_LICENSES.txt"), {
+    force: true,
+  });
+  const manifestBefore = await readPluginManifest(root);
   // 実行
   const { code } = await runBuild(root, []);
   // 検証
@@ -193,6 +212,18 @@ test("test_normal", { timeout: BUILD_TIMEOUT_MS }, async () => {
     expect(licenses).toContain(name);
   }
   expect(licenses).toMatch(/permission is hereby granted|MIT|BSD/i);
+  // 移行の手順のフォルダの `legacy-marks.js` にまとめた依存
+  expect(existsSync(join(root, "migrations", "next", "legacy-marks.js"))).toBe(
+    true,
+  );
+  const legacyLicenses = await readFile(
+    join(root, "migrations", "next", "THIRD_PARTY_LICENSES.txt"),
+    "utf8",
+  );
+  for (const name of ["sanitize-html", "dayjs"]) {
+    expect(legacyLicenses).toContain(name);
+  }
+  expect(legacyLicenses).toMatch(/permission is hereby granted/i);
   const declarations = await readFile(join(root, "dist", "index.d.ts"), "utf8");
   for (const name of [
     "version",
@@ -210,20 +241,16 @@ test("test_normal", { timeout: BUILD_TIMEOUT_MS }, async () => {
   for (const name of ["cli.js", "viewer.js", "viewer.css"]) {
     expect(existsSync(join(root, "dist", name))).toBe(true);
   }
-  // Claude Code のプラグインの生成物と、バージョン。MCP サーバーはまとめない
+  // Claude Code のプラグインの生成物。MCP サーバーはまとめず、plugin.json は書き換えない
   for (const path of ["scripts/pre-tool-use.js", "scripts/session-start.js"]) {
     expect(existsSync(join(root, "plugin", path))).toBe(true);
   }
   for (const path of ["guide", "server", "dist"]) {
     expect(existsSync(join(root, "plugin", path))).toBe(false);
   }
-  const manifest = JSON.parse(
-    await readFile(
-      join(root, "plugin", ".claude-plugin", "plugin.json"),
-      "utf8",
-    ),
-  );
-  expect(manifest.version).toBe("v0.0.0");
+  const manifest = await readPluginManifest(root);
+  expect(JSON.parse(manifest)).not.toHaveProperty("version");
+  expect(manifest).toBe(manifestBefore);
   const initTarget = await mkdtemp(join(tmpdir(), "mdmark-integration-init-"));
   createdRoots.push(initTarget);
   const init = await execFileAsync(
@@ -265,18 +292,15 @@ test("test_normal_when_version_given", {
 }, async () => {
   // 準備
   const root = await createWorkTree("v0.0.0\n");
+  const manifestBefore = await readPluginManifest(root);
   // 実行
   const { code } = await runBuild(root, ["--version", "v0.0.1"]);
   // 検証
   expect(code).toBe(0);
   expect(await readBuiltVersion(root)).toBe("v0.0.1");
-  const manifest = JSON.parse(
-    await readFile(
-      join(root, "plugin", ".claude-plugin", "plugin.json"),
-      "utf8",
-    ),
-  );
-  expect(manifest.version).toBe("v0.0.1");
+  const manifest = await readPluginManifest(root);
+  expect(JSON.parse(manifest)).not.toHaveProperty("version");
+  expect(manifest).toBe(manifestBefore);
 });
 
 // 書式に合わないバージョンを指定すると、配布物を書き込まずに終わる（異常系）

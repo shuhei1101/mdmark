@@ -1,10 +1,10 @@
-/** 動画と音声の HTML を返す */
+/** 動画と音声の HTML を返却する */
 export declare function renderMedia(options: {
     /** 動画か音声か */
     kind: "video" | "audio";
     /** ファイルの URL */
     src: string;
-    /** 読み上げの名前 */
+    /** スクリーンリーダー向けの名前 */
     alt: string;
     /** キャプション（title） */
     caption?: string;
@@ -14,7 +14,7 @@ export declare function renderMedia(options: {
     poster?: string;
     /** 開いたときに再生する */
     autoplay?: boolean;
-    /** 音を消して始める */
+    /** ミュートにして始める */
     muted?: boolean;
     /** 繰り返し再生する */
     loop?: boolean;

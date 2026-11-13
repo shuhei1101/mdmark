@@ -203,7 +203,7 @@ export function attachFootnotes(options: {
     return { ref, handlers };
   });
 
-  /** 番号を押す: 閉じた一覧を開き、該当の項目を画面に入れてフォーカスを移す。戻るリンクを押す: 番号を画面に入れてフォーカスを移す。どちらも URL の `#` を書き換えない */
+  /** 番号を押す: 閉じた一覧を開き、該当の項目を画面に入れてフォーカスを移す。戻るリンクを押す: 番号を画面に入れてフォーカスを移す。どちらも URL の `#` を書き換えない。`root` がまとめた HTML の `view` と同じ要素でも、`view` のバブリングフェーズの `click`（止められていなければ URL の `#` を書き換える）より先に既定の動作を止めるため、キャプチャーフェーズで受ける */
   const onClick = (event: MouseEvent): void => {
     const link =
       event.target instanceof Element
@@ -286,7 +286,7 @@ export function attachFootnotes(options: {
       close(ref);
     }
   };
-  root.addEventListener("click", onClick);
+  root.addEventListener("click", onClick, { capture: true });
   document.addEventListener("keydown", onKeydown);
   document.addEventListener("pointerdown", onPointerdown, { capture: true });
   window.addEventListener("scroll", placeOpen, {
@@ -297,7 +297,7 @@ export function attachFootnotes(options: {
   window.addEventListener("beforeprint", closeAll);
 
   return () => {
-    root.removeEventListener("click", onClick);
+    root.removeEventListener("click", onClick, { capture: true });
     document.removeEventListener("keydown", onKeydown);
     document.removeEventListener("pointerdown", onPointerdown, {
       capture: true,

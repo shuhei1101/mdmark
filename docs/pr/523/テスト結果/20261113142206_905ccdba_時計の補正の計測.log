@@ -1,0 +1,45 @@
+# 端末: WSL2 6.6.87.2-microsoft-standard-WSL2、node v24.14.0
+
+## 1. AbortSignal.timeout(3000) が中断するまでを Date.now と performance.now で測る（4 本並べて 28 回）
+$ node drift.mjs
+const d0 = Date.now(), p0 = performance.now();
+let maxDiff = 0, early = [];
+const iv = setInterval(() => {
+  const diff = (Date.now() - d0) - (performance.now() - p0);
+  if (Math.abs(diff) > Math.abs(maxDiff)) maxDiff = diff;
+}, 50);
+let n = 0;
+function one() {
+  const ds = Date.now(), ps = performance.now();
+  const s = AbortSignal.timeout(3000);
+  s.addEventListener("abort", () => {
+    const de = Date.now() - ds, pe = performance.now() - ps;
+    if (de < 2990 || pe < 2990) early.push({ de, pe });
+    if (++n < 25) one(); else { clearInterval(iv); console.log(JSON.stringify({ n, maxDiff, early })); }
+  });
+}
+for (let i = 0; i < 4; i++) one();
+---
+{"n":25,"maxDiff":-71.50677600000199,"early":[{"de":2929,"pe":3000.2970509999996},{"de":2929,"pe":3000.364122000001},{"de":2929,"pe":3000.38313},{"de":2929,"pe":3000.478400000002}]}
+
+## 2. 100 ms ごとに Date.now と performance.now の進みの差を 180 秒測り、20 ms 以上ずれた時刻を出す
+$ node jumps.mjs 180
+let pd = Date.now(), pp = performance.now(); const jumps = [];
+const end = performance.now() + Number(process.argv[2]) * 1000;
+const iv = setInterval(() => {
+  const d = Date.now(), p = performance.now();
+  const j = (d - pd) - (p - pp);
+  if (Math.abs(j) >= 20) jumps.push({ at: new Date(d).toISOString(), jumpMs: Math.round(j) });
+  pd = d; pp = p;
+  if (p > end) { clearInterval(iv); console.log(JSON.stringify(jumps)); }
+}, 100);
+---
+[{"at":"2026-11-13T05:17:58.557Z","jumpMs":-72},{"at":"2026-11-13T05:18:28.453Z","jumpMs":-56},{"at":"2026-11-13T05:18:58.445Z","jumpMs":-63},{"at":"2026-11-13T05:19:28.336Z","jumpMs":-61},{"at":"2026-11-13T05:19:58.325Z","jumpMs":-68},{"at":"2026-11-13T05:20:28.222Z","jumpMs":-55}]
+
+## 3. カーネルのログの時計の戻り
+$ dmesg | grep "Time jumped" | tail -5
+[3099384.199744] systemd-journald[57402]: Time jumped backwards, rotating.
+[3102909.492646] systemd-journald[57402]: Time jumped backwards, rotating.
+[3104408.467804] systemd-journald[57402]: Time jumped backwards, rotating.
+[3106116.759164] systemd-journald[57402]: Time jumped backwards, rotating.
+[3108363.331316] systemd-journald[57402]: Time jumped backwards, rotating.

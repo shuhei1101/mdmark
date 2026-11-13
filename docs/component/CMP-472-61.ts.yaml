@@ -222,7 +222,7 @@ states:
       - name: collapse
         value: closed
   - name: LongCells
-    description: 長い列名と値。セルの中で折り返し、見出しのボタンが文字に重ならない
+    description: 長い列名と、長文の列の最小の幅（`45em`）より長い値。値の列を最小の幅で折り返し、見出しのボタンが文字に重ならない
     args:
       - name: kind
         value: data
@@ -231,9 +231,13 @@ states:
       - name: columns
         value: '["とても長い列の名前で見出しの幅を超えるもの","値"]'
       - name: rows
-        value: '[["とても長い値でセルの幅を超えて折り返すときの見え方を確認する","1"]]'
+        value: '[["とても長い値でセルの幅を超えて折り返すときの見え方を確認するために、長文の列の最小の幅より長い文を入れた値","1"]]'
       - name: filters
         value: '[{"column":0,"kind":"select"}]'
+      - name: long
+        value: '[0]'
+      - name: autoWidths
+        value: '[{"column":0,"width":630},{"column":1,"width":80}]'
   - name: Count
     description: 件数を出した表（`3 / 3 件`）
     args:
@@ -506,34 +510,6 @@ states:
         value: '1'
       - name: rowLinkNotice
         value: failed
-  - name: Folded
-    description: 最終列（説明）を畳んだ。説明の列は出さず、各行の先頭のセルに開閉のボタンが付く
-    args:
-      - name: kind
-        value: data
-      - name: features
-        value: '["sort","pin","filter"]'
-      - name: columns
-        value: '["名前","更新日","説明"]'
-      - name: rows
-        value: '[["りんご","2026-10-01","描画を速くするために、見出しの ID を作る処理を 1 回にまとめる"],["みかん","2026-10-10","印刷で折り畳みを開き、リンクの URL を併記する"]]'
-      - name: folded
-        value: 'true'
-  - name: FoldedOpen
-    description: 最終列を畳み、1 行目を開いた。行の直後に `説明` の見出しと中身が出る
-    args:
-      - name: kind
-        value: data
-      - name: features
-        value: '["sort","pin","filter"]'
-      - name: columns
-        value: '["名前","更新日","説明"]'
-      - name: rows
-        value: '[["りんご","2026-10-01","描画を速くするために、見出しの ID を作る処理を 1 回にまとめる"],["みかん","2026-10-10","印刷で折り畳みを開き、リンクの URL を併記する"]]'
-      - name: folded
-        value: 'true'
-      - name: unfoldedRows
-        value: '[0]'
   - name: StickyRows
     description: 30 行と集計の行を持つ表。ストーリーの枠を縦にスクロールすると、表が枠に残っている間、見出し行が枠の上端に、集計の行が枠の下端に留まる
     screenshot: false
@@ -955,15 +931,102 @@ states:
         value: "'[\"count\",\"columns\",\"copy\"]'"
       - name: hide
         value: "'[1]'"
-  - name: FillsWidth
-    description: 列の少ない表を本文の幅いっぱいに広げた。横にスクロールせず、端の影が無い
+  - name: FitsContent
+    description: 列の少ない表を、本文の幅まで広げず列の幅の合計で描いた。横にスクロールせず、端の影が無い
     args:
       - name: kind
         value: data
+      - name: features
+        value: '["sort","pin","filter","resize"]'
       - name: columns
-        value: "'[\"名前\",\"数量\"]'"
+        value: '["名前","数量"]'
       - name: rows
-        value: "'[[\"りんご\",\"3\"],[\"みかん\",\"5\"],[\"ぶどう\",\"2\"]]'"
+        value: '[["りんご","3"],["みかん","5"],["ぶどう","2"]]'
+      - name: autoWidths
+        value: '[{"column":0,"width":80},{"column":1,"width":72}]'
+  - name: AutoWidth
+    description: 長文の説明の列だけを折り返し、ほかの列は最も長い行の幅にした。説明の列が残りの幅を使い、表が本文の幅いっぱいに広がる。手順の列は `<br>` で区切った行のうち最も長い行の幅
+    args:
+      - name: kind
+        value: data
+      - name: features
+        value: '["sort","pin","filter","resize"]'
+      - name: columns
+        value: '["No","状態","更新日","名前","手順","説明"]'
+      - name: rows
+        value: '[["1","<span class=\"mdmark-badge\">対応中</span>","2026-11-01","表の幅","測る<br>分ける<br>描く","描画を速くするために、見出しの列ごとの幅を描いた後に一度だけ測り、表の見える幅が変わったときだけ列の幅を決め直す。並べ替え・絞り込み・列の表示の切り替えでは列の幅を変えず、読者がつまみで変えた列の幅は自動の幅より優先する"]]'
+      - name: long
+        value: '[5]'
+      - name: autoWidths
+        value: '[{"column":0,"width":60},{"column":1,"width":90},{"column":2,"width":112},{"column":3,"width":78},{"column":4,"width":92},{"column":5,"width":713}]'
+  - name: TwoLongColumns
+    description: 長文の列が 2 つある。1 行で収まる備考の列は最も長い行の幅で止め、残りの幅を説明の列へ分けた
+    args:
+      - name: kind
+        value: data
+      - name: features
+        value: '["sort","pin","filter","resize"]'
+      - name: columns
+        value: '["名前","説明","備考"]'
+      - name: rows
+        value: '[["表の幅","描画を速くするために、見出しの列ごとの幅を描いた後に一度だけ測り、表の見える幅が変わったときだけ列の幅を決め直す。並べ替え・絞り込み・列の表示の切り替えでは列の幅を変えず、読者がつまみで変えた列の幅は自動の幅より優先する","長文の列が 2 つある表の備考の列の文字"]]'
+      - name: long
+        value: '[1,2]'
+      - name: autoWidths
+        value: '[{"column":0,"width":82},{"column":1,"width":740},{"column":2,"width":323}]'
+  - name: NarrowScroll
+    description: 画面の幅が狭く、全ての列の最小の幅の合計が見える幅を超える。長文の列を最小の幅（45em）で折り返し、表の中で横にスクロールする
+    args:
+      - name: kind
+        value: data
+      - name: features
+        value: '["sort","pin","filter","resize"]'
+      - name: columns
+        value: '["名前","説明","備考"]'
+      - name: rows
+        value: '[["表の幅","描画を速くするために、見出しの列ごとの幅を描いた後に一度だけ測り、表の見える幅が変わったときだけ列の幅を決め直す。並べ替え・絞り込み・列の表示の切り替えでは列の幅を変えず、読者がつまみで変えた列の幅は自動の幅より優先する","描画を速くするために、見出しの列ごとの幅を描いた後に一度だけ測り、表の見える幅が変わったときだけ列の幅を決め直す。並べ替え・絞り込み・列の表示の切り替えでは列の幅を変えず、読者がつまみで変えた列の幅は自動の幅より優先する"]]'
+      - name: long
+        value: '[1,2]'
+      - name: overflow
+        value: 'true'
+      - name: autoWidths
+        value: '[{"column":0,"width":82},{"column":1,"width":630},{"column":2,"width":630}]'
+  - name: WidthRange
+    description: '`width.min` が 20・`width.max` が 30 の説明の列を、記載した範囲の幅で折り返した'
+    args:
+      - name: kind
+        value: data
+      - name: features
+        value: '["sort","pin","filter","resize"]'
+      - name: columns
+        value: '["名前","説明","備考"]'
+      - name: rows
+        value: '[["表の幅","描画を速くするために、見出しの列ごとの幅を描いた後に一度だけ測り、表の見える幅が変わったときだけ列の幅を決め直す。並べ替え・絞り込み・列の表示の切り替えでは列の幅を変えず、読者がつまみで変えた列の幅は自動の幅より優先する","補足"]]'
+      - name: long
+        value: '[1]'
+      - name: widthRanges
+        value: '[{"column":1,"min":20,"max":30}]'
+      - name: autoWidths
+        value: '[{"column":0,"width":82},{"column":1,"width":420},{"column":2,"width":72}]'
+  - name: LongColumnTextFilter
+    description: '`filter.type` を省いた絞り込みのうち、長文の説明の列は文字で絞り込み、名前の列は値を選んで絞り込む。説明の列のドロワーを開いた'
+    args:
+      - name: kind
+        value: data
+      - name: features
+        value: '["sort","pin","filter","resize"]'
+      - name: columns
+        value: '["名前","説明"]'
+      - name: rows
+        value: '[["表の幅","描画を速くするために、見出しの列ごとの幅を描いた後に一度だけ測り、表の見える幅が変わったときだけ列の幅を決め直す。並べ替え・絞り込み・列の表示の切り替えでは列の幅を変えず、読者がつまみで変えた列の幅は自動の幅より優先する"]]'
+      - name: long
+        value: '[1]'
+      - name: filters
+        value: '[{"column":0,"kind":"select"},{"column":1,"kind":"text"}]'
+      - name: openFilter
+        value: '1'
+      - name: autoWidths
+        value: '[{"column":0,"width":82},{"column":1,"width":1063}]'
   - name: PinnedEach
     description: '`pinMode: each` で、1 列目と 3 列目だけを留めた。1・3 列目のボタンが押され、1・3 列目のセルが留まる。各列の `left`・`right` と、左端に留まった最も右の列の右・右端に留まった最も左の列の左の境の線は、列の幅と横のスクロールから `mount` が入れる'
     args:
@@ -1050,7 +1113,7 @@ states:
         value: '[1]'
       - name: widths
         value: '[{"column":1,"width":110}]'
-lead: Markdown の表を囲み、多段の見出し・行見出し・縦に結合したセルを描き、種類と `+機能`・`-機能` で決まった並べ替え・ピン止め・絞り込みのボタンと、絞り込みのドロワーを付ける。見出し行は面の色で分け、表が画面に残っている間はページを縦にスクロールしても画面の上端に留め、集計の行を画面の下端に留める。描く先の要素の幅が狭く最終列が 1 行に収まらないときは、最終列を畳んで行ごとに開閉させる。
+lead: Markdown の表を囲み、多段の見出し・行見出し・縦に結合したセルを描き、種類と `+機能`・`-機能` で決まった並べ替え・ピン止め・絞り込みのボタンと、絞り込みのドロワーを付ける。見出し行は面の色で分け、表が画面に残っている間はページを縦にスクロールしても画面の上端に留め、集計の行を画面の下端に留める。列ごとに中身の量から折り返すかと列の幅を決め、全ての列の最小の幅が収まらない表は表の中で横にスクロールさせる。
 args:
   - name: kind
     type: 列挙
@@ -1075,7 +1138,7 @@ args:
     required: false
     default: '[]'
     enabled_when: '`features` に `filter` を含むとき'
-    description: 絞り込みを付ける列（`{ column, kind }`。`kind` は `select`・`text`・`date`）。この列の見出しにだけ絞り込みのボタンとドロワーを配置する
+    description: 絞り込みを付ける列（`{ column, kind }`。`kind` は `select`・`text`・`date`）。この列の見出しにだけ絞り込みのボタンとドロワーを配置する。`filter.type` を省いた列の `kind` は、`long` の列なら `text`、ほかは `select`
   - name: collapse
     type: 列挙
     required: false
@@ -1210,15 +1273,18 @@ args:
     choices: '`copied`（`リンクをコピーしました`）・`failed`（`リンクをコピーできませんでした`）'
     enabled_when: '`targetRow` を指定したとき'
     description: '`targetRow` の行の URL をコピーした結果。その行の行へのリンクのマーカーの横の `role="status"` の要素に、文言とアイコン（`check`・`circle-alert`）を出す'
-  - name: folded
-    type: 真偽値
-    default: 'false'
-    description: 最終列を畳んでいるか（`mount` が描く先の要素の幅と最終列のセルの折り返しを測って決める）。`true` のとき最終列の見出しとセルを隠し、本文の各行の先頭のセルに最終列を開閉するボタンを配置する。テーブル設定で最終列を隠しているときは畳まない
-  - name: unfoldedRows
+  - name: long
     type: 配列
     default: '[]'
-    enabled_when: '`folded` が `true` のとき'
-    description: 畳んだ最終列を開いた本文の行の位置。行の直後の開閉の行に最終列の見出しの文字とその行のセルの中身を出し、ボタンを `aria-expanded="true"` にする
+    description: 長文の列の位置（`data-long`）。`render` が、見出しとセルを改行で分けた 1 行の文字数から決めて写す（決め方は注記の「列の幅」）。`mount` はこの列を折り返す列にし、`filters` の `kind` を省いた列の既定にも使用する
+  - name: widthRanges
+    type: オブジェクトの配列
+    default: '[]'
+    description: '`width.min`・`width.max` を記載した列（`{ column, min, max }`。`min`・`max` は em の数で、記載しない側は持たない）。`data-width` に `{位置}:{min}-{max}` を空白で区切って写す。`mount` はこの列を折り返す列にし、最小の幅と最大の幅にする'
+  - name: autoWidths
+    type: オブジェクトの配列
+    default: '[]'
+    description: '`mount` が自動で決めた列の幅（`{ column, width }`。`width` は見出しのセルの外側の幅の px）。最下段の各 `th` のインラインの `width` に入れ、`table` の幅を幅の合計にする。決め方は注記の「列の幅」。`widths` を指定した列は `widths` を優先する'
   - name: title
     type: 文字列
     required: false
@@ -1340,7 +1406,7 @@ events:
   - name: 列の表示を切り替える
     when: テーブル設定の目のアイコンを押す
     value: 一覧の行の `data-column`（列の位置）と目のアイコンの `aria-pressed`
-    description: '`mount` がその列の見出し・セル・集計のセルの `hidden` を切り替え、最終列を畳むかをもう一度決める'
+    description: '`mount` がその列の見出し・セル・集計のセルの `hidden` を切り替える。残った列の幅は変えない'
   - name: 表をコピーする
     when: '`表をコピー` のボタンでコピーの形式のメニューを開き、`Markdown の表`・`TSV` のどちらかを押す'
     value: 形式のボタンの `data-format`（`markdown`・`tsv`）と、`表をコピー` のボタンの `data-state`
@@ -1361,10 +1427,6 @@ events:
     when: 行へのリンクのマーカーを押す
     value: マーカーの解決済みの `href`
     description: '`mount` が行へ移る動きはそのままに、行を指す絶対 URL をクリップボードへコピーし、マーカーの横の `role="status"` の要素に結果を 2 秒出す'
-  - name: 最終列を開閉する
-    when: 畳んだ最終列の開閉のボタンを押す（Enter・Space を含む）
-    value: ボタンの `aria-expanded`
-    description: '`mount` が行の直後の開閉の行の `hidden` を付与・解除する。行の詳細を持つ行では、行の詳細の開閉のボタンが最終列と詳細を一緒に開閉する'
   - name: 列を動かす
     when: テーブル設定の一覧のつまみをドラッグしてドロップするか、つまみにフォーカスして ↑・↓ キーを押す
     value: 一覧の行の `data-column` の並び
@@ -1443,7 +1505,6 @@ accessibility:
   - 集計の行の出し入れ、表のコピーの結果（コピーした形式・書き込めなかったことと手動でコピーできること）は、帯の `role="status"` の要素でスクリーンリーダーに伝える
   - コピーできないときのパネルは `role="group"` でタイトルを名前に持ち、出したら `textarea` へフォーカスを移して中身を全て選択する。閉じるボタンは `閉じる` をスクリーンリーダー向けの名前に持ち、閉じるとフォーカスを `表をコピー` に戻す
   - 行へのリンクは `「{先頭のセルの文字}」の行へのリンク` をスクリーンリーダー向けの名前に持ち、フォーカスしたときはマーカーを出す。指せない端末ではマーカーを常に薄く出す。URL をコピーした結果は、描くときにマーカーの横へ配置した `role="status"` の要素でスクリーンリーダーに伝える
-  - 畳んだ最終列の開閉のボタンは `「{先頭のセルの文字}」の{最終列の見出しの文字}` をスクリーンリーダー向けの名前に持ち、`aria-expanded`・`aria-controls` で開閉の状態を示す
   - テーブル設定のボタンはアイコンだけで、`aria-label` とツールチップに `テーブル設定` を持つ。列を隠しているときは、バッジに加えて `aria-label` を `テーブル設定（{隠した列の数} 列を非表示）` にし、色と数だけに頼らない。パネルは絞り込みのドロワーと同じ開閉の作法。つまみはキーボードの ↑・↓ で動かせ、動かせないつまみは `disabled`。案内はつまみの `aria-describedby` でスクリーンリーダーに伝える
   - 階層の開閉のボタンは `aria-expanded` と `{パス} を畳む`・`{パス} を開く` のスクリーンリーダー向けの名前を持つ。キーの名前は `tabindex="0"` で、フォーカスでも全体のパスのツールチップを出す。選んだ行は `aria-selected` で示し、縦線の濃さだけに頼らない
   - 見本の表示の切り替えのボタンは `aria-expanded`・`aria-controls` で見本の開閉を示す
@@ -1451,9 +1512,87 @@ accessibility:
 refs:
   - IF-472-34#constraints[表]
   - IF-472-35#constraints[表の操作]
+  - IF-472-35#constraints[列の幅]
   - IF-472-34#constraints[表の列と行の色]
 status: planned
 notes:
-  HTML: '`<div class="mdmark-table" data-kind="{kind}" data-features="{features}"><table tabindex="0" aria-label="…"><thead><tr><th><span class="mdmark-th"><button class="mdmark-sort" type="button">{列名}</button><span class="mdmark-th-tools"><button class="mdmark-filter" type="button" aria-expanded="false" aria-controls="…"></button><button class="mdmark-pin" type="button" aria-pressed="false"></button></span></span></th></tr></thead><tbody>…<tr class="mdmark-table-empty" hidden><td colspan="…">一致する行がありません</td></tr></tbody></table><div class="mdmark-filter-drawer" role="dialog" hidden>…</div></div>`。`collapse` が `closed`・`open` のときは表を `<details class="mdmark-table-details"><summary>{title}</summary>` に入れる（`open` のときは `details` に `open` を付ける）。ドロワーは `select` が「候補を検索」の欄・チェックボックス・`一致する候補がありません`、`text` が「キーワード」の欄、`date` が「開始日」「終了日」の欄で、どれもタイトル `「{列名}」で絞り込む` と「絞り込みを解除」を持つ。表の外観は確認ログの決定（拡張記法のモック・修正した表のモック）。モックは `docs/mock/components/table/`。`count`・`columns`・`reorder`・`total`・`copy` の表は `<table>` の前に `<div class="mdmark-table-bar"><p class="mdmark-table-count" aria-live="polite">…</p><div class="mdmark-table-tools"><button class="mdmark-table-tool mdmark-table-settings-toggle is-icon-only" aria-expanded aria-controls aria-label="テーブル設定（列を隠しているときは「テーブル設定（{隠した列の数} 列を非表示）」）" title="テーブル設定">{アイコン}<span class="mdmark-table-tool-badge" aria-hidden="true">{隠した列の数}</span></button><button class="mdmark-table-tool mdmark-totals-toggle" aria-expanded aria-controls>集計<span class="mdmark-visually-hidden"></span></button><button class="mdmark-table-tool mdmark-copy" data-state="idle" aria-expanded aria-controls><span class="mdmark-copy-label">表をコピー</span></button></div><span class="mdmark-visually-hidden mdmark-table-status" role="status"></span></div>` を配置し、`<table>` の後ろに `<div class="mdmark-table-settings" role="dialog" aria-label="テーブル設定" hidden>`（`mdmark-table-settings-title`・`<ul class="mdmark-table-settings-list">` の列ごとの `<li class="mdmark-table-settings-item" data-column="{元の列の位置}" data-name="{列名}">`（`reorder` のとき `<button class="mdmark-table-settings-grip" aria-label="「{列名}」の列を並べ替える" aria-describedby>`、`mdmark-table-settings-name`、`columns` のとき `<button class="mdmark-table-settings-eye" aria-pressed aria-label>`）・ピン止めと結合した見出しの範囲ごとの `<li class="mdmark-table-settings-group">` の見出し・`mdmark-table-settings-note`）、`<div class="mdmark-totals-menu mdmark-table-menu" role="dialog" aria-label="表示する集計" hidden>`（タイトルと、`value` が計算のチェックボックス）、`<div class="mdmark-copy-menu mdmark-table-menu" role="dialog" aria-label="コピーの形式" hidden>`（`<button class="mdmark-copy-format" data-format="{markdown|tsv}">` が `mdmark-copy-format-name` と `mdmark-copy-format-note` を持つ）を配置する。コピーできないときのパネルは帯の直後の `<div class="mdmark-copy-panel" role="group" aria-labelledby>`（`mdmark-copy-panel-title`・`mdmark-copy-panel-close`・`mdmark-copy-panel-note`・`<textarea class="mdmark-copy-panel-text" readonly rows="6">`）。集計の行は計算ごとの `<tfoot><tr class="mdmark-table-total" data-total-kind="{計算}">` で、先頭のセルに `mdmark-total-name`、集計する列のセルが `data-total="{計算}"` と `mdmark-total-value` を持つ。行へのリンクは `<tr id>` の先頭のセルの `<span class="mdmark-row-link-cell">{中身}<a class="mdmark-row-anchor" href="#{ID}"><span class="mdmark-row-link-notice" role="status"></span>` で、強調する行は `data-target` を持ち、通知の要素はコピーの結果で `data-state` を持つ。畳んだ最終列は、最終列のセルに `mdmark-fold-col`、表の外側に `is-folded` を付け、先頭のセルを `<span class="mdmark-row-head"><button class="mdmark-row-toggle mdmark-fold-toggle" type="button" aria-expanded aria-controls aria-label>{セルの中身}</span>` にし、行の直後に `<tr class="mdmark-row-detail mdmark-fold-detail" hidden><td colspan><div class="mdmark-fold-part"><p class="mdmark-fold-name">{最終列の見出し}</p><div class="mdmark-fold-value">{セルの中身}</div></div></td></tr>` を配置する（行の詳細を持つ行は詳細の中身の先頭に `mdmark-fold-part` を配置する）。真偽値のセルは `<td class="mdmark-align-center" data-value="true"><span class="mdmark-check" role="img" aria-label="はい"><svg class="mdmark-icon">…</svg></span></td>` と `<td class="mdmark-align-center" data-value="false"><span class="mdmark-visually-hidden">いいえ</span></td>`。アイコンは全て lucide（テーブル設定の `settings-2`・つまみの `grip-vertical`・目の `eye`・`eye-off`・開閉の
-    `chevron-down`・`columns-3`・`sigma`・`copy`・`check`・`circle-alert`・`chevron-down`・`x`・`link`）。印刷では帯のボタン・メニュー・パネル・行へのリンクのマーカーと畳んだ最終列の開閉のボタンを出さず、最終列を畳まない。画面の幅が 768px 以下のときは、集計の行のセルの上下の余白を 0.2em に詰め、下端に留めた集計の行が本文の行を覆う高さを減らす。`resize` の表の最下段の各 `th` は、末尾に `<span class="mdmark-col-resize" role="separator" aria-orientation="vertical" tabindex="0" aria-label="「{列名}」の列の幅" aria-valuenow aria-valuetext aria-valuemin aria-valuemax>` を持つ'
+  HTML: '`<div class="mdmark-table" data-kind="{kind}" data-features="{features}"><table tabindex="0" aria-label="…"><thead><tr><th><span class="mdmark-th"><button class="mdmark-sort" type="button">{列名}</button><span class="mdmark-th-tools"><button class="mdmark-filter" type="button" aria-expanded="false" aria-controls="…"></button><button class="mdmark-pin" type="button" aria-pressed="false"></button></span></span></th></tr></thead><tbody>…<tr class="mdmark-table-empty" hidden><td colspan="…">一致する行がありません</td></tr></tbody></table><div class="mdmark-filter-drawer" role="dialog" hidden>…</div></div>`。`collapse` が `closed`・`open` のときは表を `<details class="mdmark-table-details"><summary>{title}</summary>` に入れる（`open` のときは `details` に `open` を付ける）。ドロワーは `select` が「候補を検索」の欄・チェックボックス・`一致する候補がありません`、`text` が「キーワード」の欄、`date` が「開始日」「終了日」の欄で、どれもタイトル `「{列名}」で絞り込む` と「絞り込みを解除」を持つ。表の外観は確認ログの決定（拡張記法のモック・修正した表のモック）。モックは `docs/mock/components/table/`。`count`・`columns`・`reorder`・`total`・`copy` の表は `<table>` の前に `<div class="mdmark-table-bar"><p class="mdmark-table-count" aria-live="polite">…</p><div class="mdmark-table-tools"><button class="mdmark-table-tool mdmark-table-settings-toggle is-icon-only" aria-expanded aria-controls aria-label="テーブル設定（列を隠しているときは「テーブル設定（{隠した列の数} 列を非表示）」）" title="テーブル設定">{アイコン}<span class="mdmark-table-tool-badge" aria-hidden="true">{隠した列の数}</span></button><button class="mdmark-table-tool mdmark-totals-toggle" aria-expanded aria-controls>集計<span class="mdmark-visually-hidden"></span></button><button class="mdmark-table-tool mdmark-copy" data-state="idle" aria-expanded aria-controls><span class="mdmark-copy-label">表をコピー</span></button></div><span class="mdmark-visually-hidden mdmark-table-status" role="status"></span></div>` を配置し、`<table>` の後ろに `<div class="mdmark-table-settings" role="dialog" aria-label="テーブル設定" hidden>`（`mdmark-table-settings-title`・`<ul class="mdmark-table-settings-list">` の列ごとの `<li class="mdmark-table-settings-item" data-column="{元の列の位置}" data-name="{列名}">`（`reorder` のとき `<button class="mdmark-table-settings-grip" aria-label="「{列名}」の列を並べ替える" aria-describedby>`、`mdmark-table-settings-name`、`columns` のとき `<button class="mdmark-table-settings-eye" aria-pressed aria-label>`）・ピン止めと結合した見出しの範囲ごとの `<li class="mdmark-table-settings-group">` の見出し・`mdmark-table-settings-note`）、`<div class="mdmark-totals-menu mdmark-table-menu" role="dialog" aria-label="表示する集計" hidden>`（タイトルと、`value` が計算のチェックボックス）、`<div class="mdmark-copy-menu mdmark-table-menu" role="dialog" aria-label="コピーの形式" hidden>`（`<button class="mdmark-copy-format" data-format="{markdown|tsv}">` が `mdmark-copy-format-name` と `mdmark-copy-format-note` を持つ）を配置する。コピーできないときのパネルは帯の直後の `<div class="mdmark-copy-panel" role="group" aria-labelledby>`（`mdmark-copy-panel-title`・`mdmark-copy-panel-close`・`mdmark-copy-panel-note`・`<textarea class="mdmark-copy-panel-text" readonly rows="6">`）。集計の行は計算ごとの `<tfoot><tr class="mdmark-table-total" data-total-kind="{計算}">` で、先頭のセルに `mdmark-total-name`、集計する列のセルが `data-total="{計算}"` と `mdmark-total-value` を持つ。行へのリンクは `<tr id>` の先頭のセルの `<span class="mdmark-row-link-cell">{中身}<a class="mdmark-row-anchor" href="#{ID}"><span class="mdmark-row-link-notice" role="status"></span>` で、強調する行は `data-target` を持ち、通知の要素はコピーの結果で `data-state` を持つ。真偽値のセルは `<td class="mdmark-align-center" data-value="true"><span class="mdmark-check" role="img" aria-label="はい"><svg class="mdmark-icon">…</svg></span></td>` と `<td class="mdmark-align-center" data-value="false"><span class="mdmark-visually-hidden">いいえ</span></td>`。アイコンは全て lucide（テーブル設定の `settings-2`・つまみの `grip-vertical`・目の `eye`・`eye-off`・開閉の
+    `chevron-down`・`columns-3`・`sigma`・`copy`・`check`・`circle-alert`・`chevron-down`・`x`・`link`）。印刷では帯のボタン・メニュー・パネル・行へのリンクのマーカーを出さず、`autoWidths` の幅を当てない。画面の幅が 768px 以下のときは、集計の行のセルの上下の余白を 0.2em に詰め、下端に留めた集計の行が本文の行を覆う高さを減らす。`resize` の表の最下段の各 `th` は、末尾に `<span class="mdmark-col-resize" role="separator" aria-orientation="vertical" tabindex="0" aria-label="「{列名}」の列の幅" aria-valuenow aria-valuetext aria-valuemin aria-valuemax>` を持つ'
+  列の幅: |-
+    列ごとに、折り返すか・最小の幅・望む幅を決め（1 つ目の図）、全ての列の値から表の列の幅を決める（2 つ目の図）。表を描いた直後と、表の見える幅が変わったとき（`ResizeObserver`）だけ決め直し、並べ替え・絞り込み・列の表示の切り替えでは決め直さない。隠した列は数えない。列の表示を切り替えたときは、表示している列の幅を変えず、表の幅を表示している列の幅の合計にする。後から表示した列は、前に決めた幅があればその幅、無ければ測って 1 つ目の図の最小の幅にする。行の詳細の行のように列と 1 対 1 でない行は測らない。
+
+    <!-- flow -->
+
+    ```json
+    {
+      "title": "列ごとの最小の幅と望む幅",
+      "scope": "表の列ごとに、折り返すかと最小の幅・望む幅を決めるとき",
+      "updated": "2026-11-13",
+      "width": 1048,
+      "height": 1172,
+      "nodes": [
+        {"id": "start", "kind": "start", "x": 434, "y": 24, "w": 120, "h": 120, "name": "列の幅を決める"},
+        {"id": "q1", "kind": "question", "x": 334, "y": 200, "w": 320, "h": 164, "name": "読者がつまみで幅を変えた列か"},
+        {"id": "r1", "kind": "result", "x": 724, "y": 236, "w": 300, "h": 92, "name": "読者が変えた幅のまま（自動で決め直さない）"},
+        {"id": "q2", "kind": "question", "x": 334, "y": 420, "w": 320, "h": 164, "name": "`width.mode` が `nowrap` か"},
+        {"id": "r2", "kind": "result", "x": 724, "y": 456, "w": 300, "h": 92, "name": "折り返さない列。最小の幅も望む幅も最も長い行の幅"},
+        {"id": "q3", "kind": "question", "x": 334, "y": 640, "w": 320, "h": 164, "name": "`width.min`・`width.max` を記載した列か"},
+        {"id": "r3", "kind": "result", "x": 724, "y": 676, "w": 300, "h": 92, "name": "折り返す列。最小の幅は `width.min`（無ければ長文の列と同じ値）、最大の幅は `width.max`。最小の幅は最大の幅を超えない ※5"},
+        {"id": "q4", "kind": "question", "x": 334, "y": 860, "w": 320, "h": 120, "name": "長文の列か ※1"},
+        {"id": "r4", "kind": "result", "x": 724, "y": 874, "w": 300, "h": 92, "name": "折り返さない列。最小の幅も望む幅も最も長い行の幅"},
+        {"id": "rf", "kind": "result", "x": 344, "y": 1036, "w": 300, "h": 112, "name": "折り返す列。最小の幅は `long_column_min` の em（既定 45）と最も長い半角の単語の幅の広い方で、最も長い行の幅を超えない ※2"}
+      ],
+      "wires": [
+        {"id": "j-start-q1", "from": "start", "to": "q1", "line": "flow", "points": [[494, 144], [494, 200]]},
+        {"id": "j-q1-r1", "from": "q1", "to": "r1", "line": "flow", "points": [[654, 282], [724, 282]], "label": "YES", "labelAt": [689, 282]},
+        {"id": "j-q1-q2", "from": "q1", "to": "q2", "line": "flow", "points": [[494, 364], [494, 420]], "label": "NO", "labelAt": [494, 392]},
+        {"id": "j-q2-r2", "from": "q2", "to": "r2", "line": "flow", "points": [[654, 502], [724, 502]], "label": "YES", "labelAt": [689, 502]},
+        {"id": "j-q2-q3", "from": "q2", "to": "q3", "line": "flow", "points": [[494, 584], [494, 640]], "label": "NO", "labelAt": [494, 612]},
+        {"id": "j-q3-r3", "from": "q3", "to": "r3", "line": "flow", "points": [[654, 722], [724, 722]], "label": "YES", "labelAt": [689, 722]},
+        {"id": "j-q3-q4", "from": "q3", "to": "q4", "line": "flow", "points": [[494, 804], [494, 860]], "label": "NO", "labelAt": [494, 832]},
+        {"id": "j-q4-r4", "from": "q4", "to": "r4", "line": "flow", "points": [[654, 920], [724, 920]], "label": "NO", "labelAt": [689, 920]},
+        {"id": "j-q4-rf", "from": "q4", "to": "rf", "line": "flow", "points": [[494, 980], [494, 1036]], "label": "YES", "labelAt": [494, 1008]}
+      ]
+    }
+    ```
+
+    <!-- /flow -->
+
+    <!-- flow -->
+
+    ```json
+    {
+      "title": "表の列の幅",
+      "scope": "列ごとの最小の幅と望む幅から、表の列の幅を決めるとき",
+      "updated": "2026-11-13",
+      "width": 1048,
+      "height": 776,
+      "nodes": [
+        {"id": "start", "kind": "start", "x": 434, "y": 24, "w": 120, "h": 120, "name": "全ての列の最小の幅と望む幅が決まった"},
+        {"id": "q1", "kind": "question", "x": 334, "y": 200, "w": 320, "h": 164, "name": "全ての列の最小の幅の合計が、表の見える幅を超えるか"},
+        {"id": "r1", "kind": "result", "x": 724, "y": 236, "w": 300, "h": 92, "name": "折り返す列を最小の幅で描き、表の中で横にスクロールする"},
+        {"id": "q2", "kind": "question", "x": 334, "y": 420, "w": 320, "h": 164, "name": "全ての列の望む幅の合計が、表の見える幅に収まるか ※3"},
+        {"id": "r2", "kind": "result", "x": 724, "y": 456, "w": 300, "h": 92, "name": "望む幅で描き、本文の幅まで広げない"},
+        {"id": "rf", "kind": "result", "x": 344, "y": 640, "w": 300, "h": 112, "name": "残りの幅を折り返す列へ望む幅の比で分け、本文の幅まで広げる ※4"}
+      ],
+      "wires": [
+        {"id": "j-start-q1", "from": "start", "to": "q1", "line": "flow", "points": [[494, 144], [494, 200]]},
+        {"id": "j-q1-r1", "from": "q1", "to": "r1", "line": "flow", "points": [[654, 282], [724, 282]], "label": "YES", "labelAt": [689, 282]},
+        {"id": "j-q1-q2", "from": "q1", "to": "q2", "line": "flow", "points": [[494, 364], [494, 420]], "label": "NO", "labelAt": [494, 392]},
+        {"id": "j-q2-r2", "from": "q2", "to": "r2", "line": "flow", "points": [[654, 502], [724, 502]], "label": "YES", "labelAt": [689, 502]},
+        {"id": "j-q2-rf", "from": "q2", "to": "rf", "line": "flow", "points": [[494, 584], [494, 640]], "label": "NO", "labelAt": [494, 612]}
+      ]
+    }
+    ```
+
+    <!-- /flow -->
+
+    - ※1 長文の列: 本文のセルが数値・日付・✓・バッジ・行内のコードだけの列でなく、見出しか本文のセルを改行（`<br>`・リストの項目・段落）で分けた 1 行が、20 文字（`LONG_CHARS`）以上の列。`render` が判定して `data-long` に写す。20 文字は、モックの表で名前・短い説明の列を折り返さず、文の列だけを折り返す数
+    - ※2 最も長い半角の単語: 空白で区切った半角の英数字・記号の連なりで、途中で折り返せない幅。全角の文字はどこでも折り返せるので数えない。望む幅は最も長い行の幅を `width.max` で抑えた幅
+    - ※3 望む幅: 折り返さない列は最も長い行の幅、折り返す列は最も長い行の幅（`width.max` で抑え、最小の幅を下回らない）。最小の幅は `width.max` を超えない
+    - ※4 分け方: 表の見える幅から折り返さない列の幅を引いた残りを、折り返す列へ望む幅の比で分ける。最小の幅を下回る列は最小の幅で止め、止めた列を除いた残りの幅をほかの列へ分け直し、止める列が出なくなるまで繰り返す
+    - ※5 `width.max` との関係: 最小の幅（`width.min`、無ければ長文の列と同じ値）が `width.max` より広いときは、最小の幅を `width.max` にする。`width.min` と `width.max` の両方を記載して `min` が `max` より大きいときも同じく `width.max` を優先し、記載の警告にしない
+    - 幅の測り方: 最も長い行の幅は、セルの中に `white-space: nowrap` の見えない要素を置いて行の文字を入れ、`getBoundingClientRect().width` に、セルの左右の余白と枠線の幅と端数の 2px を足して切り上げる。列ごとに切り上げる分（1 列 1px）を表の見える幅から引いてから分ける
+    - 行の数が多い表は、先頭から 200 行（`MEASURE_ROWS`）までを測る
+    - モックは `docs/mock/pages/document/505/a-auto-width/` と `docs/mock/refs/505/assets/table-width.js`
   階層の表: '`tree` の表は `<div class="mdmark-table" data-tree>` で、本文の行が `<tr class="mdmark-tree-row" data-path data-parent data-depth aria-selected>`（補った行は `is-virtual`、子を持つ行は `has-children`）。キーのセルは `<td class="mdmark-tree-key"><span class="mdmark-tree-cell">` に、深さの数の `mdmark-tree-guide`（選んだ範囲は `is-active`）・子を持つ行は `<button class="mdmark-tree-toggle" aria-expanded aria-label>`、持たない行は `mdmark-tree-spacer`・`<span class="mdmark-tree-name" tabindex="0">`・`mdmark-tree-array`・`mdmark-tree-required`・`<button class="mdmark-tree-copy" aria-label="全体のパスをコピー">` を並べる。型は `mdmark-type-badge`（`data-type`）か `mdmark-type-chip`、既定は `mdmark-tree-default`、絞り込みで該当した単語は `mark.mdmark-tree-hit`。見本を結んだ表は `<div class="mdmark-tree-bar"><button class="mdmark-tree-example-toggle" aria-expanded aria-controls>`と、`<div class="mdmark-tree-layout">`（隠したとき `is-example-hidden`）の中に表と `<aside class="mdmark-tree-example">` を配置し、見本の行は `<span class="mdmark-yaml-line" data-path>`（表で選んだ行と同じパスは `is-linked`）。モックは `docs/mock/components/table/` の `#state-303-*`。印刷では開閉・コピー・見本の表示の切り替えのボタンを出さない'

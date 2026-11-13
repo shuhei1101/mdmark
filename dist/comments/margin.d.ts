@@ -9,7 +9,7 @@ type Line = {
     top: number;
     height: number;
 };
-/** 行の上端と高さの並びから、同じ行をまとめ、重ならないように下げたマーカーの縦の中ほどを返す */
+/** 行の上端と高さの並びから、同じ行をまとめ、重ならないように下げたマーカーの縦の中ほどを返却する */
 export declare function layoutMarkers(options: {
     /** 箇所ごとの行の上端と高さ（並びは問わない） */
     lines: Line[];
@@ -19,7 +19,7 @@ export declare function layoutMarkers(options: {
     center: number;
     indexes: number[];
 }>;
-/** 本文の列の右に余白の列を置き、印の行の縦の中ほどに余白のマーカーを置いて、押すと印へ移る操作と置き直しを付け、外す関数を返す */
+/** 本文の列の右に余白の列を配置し、マーカーの行の縦の中ほどに余白のマーカーを配置して、押すとマーカーへ移る操作と再配置を付け、削除する関数を返却する */
 export declare function attachMarginMarkers(options: {
     /** 本文の列（`div.mdmark-content`） */
     content: HTMLElement;

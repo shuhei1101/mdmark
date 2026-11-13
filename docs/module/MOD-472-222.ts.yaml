@@ -156,7 +156,7 @@ functions:
   - name: revealTarget
     title: 要素へ移る
     container: src/interact/sections.ts
-    summary: 要素を囲む閉じたセクションを外側から `sectionSetters` の関数で開き、選ばれていないタブの中なら `revealTabTarget` でそのタブを選び、表の行（`tr`）でなければ `scrollIntoView` する。URL の `#ID` で移るときと右側の目次の項目で移るときに使用する
+    summary: 要素を囲む閉じたセクションを外側から `sectionSetters` の関数で開き、要素がセクションの見出し（`sectionSetters` に記録した見出しの要素）なら、続けて見出し自身の閉じたセクションも開く。選ばれていないタブの中なら `revealTabTarget` でそのタブを選び、表の行（`tr`）でなければ `scrollIntoView` する。URL の `#ID` で移るときと右側の目次の項目で移るときに使用する
     kind: 関数
     scope: internal
     side_effects: セクションの中身の `hidden`・タブの選択を書き換え、スクロールする
@@ -181,6 +181,12 @@ functions:
         condition: 閉じたセクションの中の表の `tr` を指定する
         mock: '`Element.prototype.scrollIntoView` を記録する関数に差し替える'
         expected: セクションが開き、`scrollIntoView` は呼ばれない
+      - name: test_reveal_target_when_heading
+        case: 正常
+        summary: 見出しを指定すると、囲むセクションに加えて見出し自身の閉じたセクションも開く
+        condition: 閉じた `## A` の中の閉じた `### B` の見出しを指定し、続けて閉じたセクションの中の段落を指定する
+        mock: '`Element.prototype.scrollIntoView` を記録する関数に差し替える'
+        expected: 見出しを指定した後、`A`・`B` の中身が `hidden` を持たず、2 つのボタンが `aria-expanded="true"`。段落を指定したときは、段落を囲むセクションだけが開き、段落の後ろの見出しのセクションは開かない
     status: planned
     introduced:
       pr: 166

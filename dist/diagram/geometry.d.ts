@@ -26,7 +26,7 @@ export declare function fitScale(content: {
     width: number;
     height: number;
 }): number;
-/** 全ての線の横の区間が、ほかの線の縦の区間と交わる点に半円の弧を入れた svg のパスを、線の `id` から引ける形で返す。同じ向きで重なる区間はずらす */
+/** 全ての線の横の区間が、ほかの線の縦の区間と交わる点に半円の弧を入れた svg のパスを、線の `id` から参照できる構造で返却する。同じ向きで重なる区間はずらす */
 export declare function jumpPaths(wires: MdmarkDiagramWire[]): Map<string, string>;
 /** 縦の軸の刻みを切る: データの最小と最大を含む範囲を、1・2・5×10 のべき乗の刻みで切る。最小が 0 以上なら下端を 0 にする */
 export declare function niceTicks(values: number[]): {
@@ -34,13 +34,13 @@ export declare function niceTicks(values: number[]): {
     max: number;
     step: number;
 };
-/** 目盛りごとに、0 以上の値は 0 から上へ、負の値は 0 から下へ、系列の順に積み上げた下端と上端を返す */
+/** 目盛りごとに、0 以上の値は 0 から上へ、負の値は 0 から下へ、系列の順に積み上げた下端と上端を返却する */
 export declare function stackSeries(series: number[][]): Array<Array<{
     from: number;
     to: number;
 }>>;
-/** 表示する枠の高さを `RESIZE.min` 以上・`max` 以下に収め、整数に丸める（`max` が下限より小さいときは下限） */
-export declare function clampDiagramHeight(height: number, max: number): number;
+/** 高さを `RESIZE.min` 以上に収め、整数に丸める（上限は持たない） */
+export declare function clampDiagramHeight(height: number): number;
 /** グループのタイトル 1 つの位置（定義の座標） */
 export type StickyTitle = {
     /** 元の上端 */
