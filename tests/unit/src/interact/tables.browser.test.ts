@@ -769,7 +769,8 @@ test("test_attach_tables_when_pinned", async () => {
       "\n",
     ),
   );
-  root.style.width = "320px";
+  // 留める 1・3 列目が見えている範囲に収まる幅
+  root.style.width = "800px";
   detachers.push(attachTables(root));
   const [wide, narrow] = [
     ...root.querySelectorAll<HTMLElement>(".mdmark-table"),
@@ -1725,7 +1726,8 @@ test("test_attach_tables_when_row_header_pinned", async () => {
       "",
     ].join("\n"),
   );
-  setRootWidth(root, 320);
+  // 行見出しの 2 列が見えている範囲に収まる幅
+  setRootWidth(root, 800);
   // 実行
   detachers.push(attachTables(root));
   // 検証: 1・2 列目のピン止めが押した状態で、行見出しの全ての列を留める
@@ -2034,7 +2036,8 @@ test("test_attach_tables_when_pinned_under_merged_header", async () => {
       "",
     ].join("\n"),
   );
-  setRootWidth(root, 320);
+  // 留める名前と既定の列が見えている範囲に収まる幅
+  setRootWidth(root, 800);
   detachers.push(attachTables(root));
   const table = root.querySelector<HTMLElement>(".mdmark-table");
   if (!table) {
