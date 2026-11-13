@@ -1,0 +1,20 @@
+$ npx vitest run --project integration-browser tests/integration/lib/mount.browser.test.ts -t icon  # 1 回目
+      Tests  3 passed | 260 skipped (263)
+$ npx vitest run --project integration-browser tests/integration/lib/mount.browser.test.ts -t icon  # 2 回目
+      Tests  3 passed | 260 skipped (263)
+$ npx vitest run --project integration-browser tests/integration/lib/mount.browser.test.ts -t icon  # 3 回目
+      Tests  3 passed | 260 skipped (263)
+$ npx vitest run --project integration-browser tests/integration/lib/mount.browser.test.ts -t icon  # 4 回目
+      Tests  3 passed | 260 skipped (263)
+$ npx vitest run --project integration-browser tests/integration/lib/mount.browser.test.ts -t icon  # 5 回目
+      Tests  3 passed | 260 skipped (263)
+$ npx vitest run --project integration-browser tests/integration/lib/mount.browser.test.ts -t icon  # 6 回目
+      Tests  3 passed | 260 skipped (263)
+$ npx vitest run --project integration-browser tests/integration/lib/mount.browser.test.ts -t icon  # 7 回目
+      Tests  3 passed | 260 skipped (263)
+$ npx vitest run --project integration-browser tests/integration/lib/mount.browser.test.ts -t icon  # 8 回目
+      Tests  3 passed | 260 skipped (263)
+$ npx vitest run --project integration-browser tests/integration/lib/mount.browser.test.ts -t icon  # 9 回目
+      Tests  3 passed | 260 skipped (263)
+$ npx vitest run --project integration-browser tests/integration/lib/mount.browser.test.ts -t icon  # 10 回目
+      Tests  3 passed | 260 skipped (263)
