@@ -1,0 +1,11 @@
+use_cases: []
+scope_out: []
+docs:
+  - page: migrations/files.yaml
+    new: false
+    change: 移行の手順のフォルダにライセンスのファイルを書き込む案を採る場合、そのファイルの行を追加する
+    status: todo
+  - page: docs/module/MOD-472-30.yaml
+    new: false
+    change: 移行の手順のフォルダの構成に、ライセンスのファイルを書き込む案を採る場合、そのファイルを追加する
+    status: todo
