@@ -10,10 +10,10 @@ export type CardGridItem = {
     /** 説明の HTML */
     description?: string | undefined;
 };
-/** カードの格子の HTML を返す */
+/** カードの格子の HTML を返却する */
 export declare const renderCardGrid: (options: {
     /** 項目ごとのカードの中身 */
     items: CardGridItem[];
-    /** 束ねていない名前のアイコンの形の表 */
+    /** まとめていない名前のアイコンの形状の表 */
     icons?: Record<string, MdmarkIconNode> | undefined;
 }) => string;

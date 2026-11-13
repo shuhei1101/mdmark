@@ -1,4 +1,4 @@
-/** 表の列と行・バッジ・本文の文字に書ける色の名前 */
+/** 表の列と行・バッジ・本文の文字に記載できる色の名前 */
 export declare const COLOR_NAMES: readonly ["blue", "red", "green", "yellow", "orange", "purple", "gray"];
 /** 色の名前 */
 export type ColorName = (typeof COLOR_NAMES)[number];

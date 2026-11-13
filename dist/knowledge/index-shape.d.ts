@@ -7,27 +7,27 @@ export type MdmarkIndexDocTag = {
 };
 /** 関係の種類。`MdmarkIndexRelated` の `type` に記載できる値 */
 export type MdmarkRelationType = 
-/** 相手を先に読まないと分からない */
+/** 相手を先に読み込まないと分からない */
 "requires"
-/** 相手を必要なときに引く */
+/** 相手を必要なときに参照する */
  | "references"
 /** 相手を置き換えた */
  | "replaces"
 /** 相手の一部をなす */
  | "part_of"
-/** 片方を直したらもう片方も直す。両側に記載する */
+/** 片方を修正したらもう片方も修正する。両側に記載する */
  | "change_together";
 /** `MdmarkRelationType` の値（記載できる順） */
 export declare const RELATION_TYPES: readonly MdmarkRelationType[];
-/** 文書の関連のうち、関係の種類といつ読むかを持つオブジェクト */
+/** 文書の関連のうち、関係の種類といつ読み込むかを持つオブジェクト */
 export type MdmarkIndexRelated = {
     /** 相手の文書の `id` */
     to: string;
     /** 関係の種類 */
     type: MdmarkRelationType;
-    /** いつ読むかの 1 文 */
+    /** いつ読み込むかの 1 文 */
     when: string;
-    /** 関連が当たるファイルの glob の並び */
+    /** 関連が該当するファイルの glob の並び */
     paths?: string[];
 };
 /** 索引の文書 1 つ */
@@ -36,7 +36,7 @@ export type MdmarkIndexDoc = {
     id: string;
     /** 文書のパス。索引のファイルのあるフォルダからの相対パス */
     path: string;
-    /** 文書の題 */
+    /** 文書のタイトル */
     title: string;
     /** 1 文の概要 */
     description?: string;
@@ -51,7 +51,7 @@ export type MdmarkIndexDoc = {
 export type MdmarkIndexTerm = {
     /** 用語の ID。`terms` の中で一意 */
     id: string;
-    /** 用語の語 */
+    /** 用語の単語 */
     term: string;
     /** 別名 */
     aliases?: string[];
@@ -60,9 +60,9 @@ export type MdmarkIndexTerm = {
     /** やめた言い方 */
     avoid?: string[];
 };
-/** 使う側が索引の YAML を読んだ値の型 */
+/** 利用側が索引の YAML を読み込んだ値の型 */
 export type MdmarkIndex = {
-    /** 索引の版 */
+    /** 索引のバージョン */
     schema: 2;
     /** 文書 */
     docs: MdmarkIndexDoc[];
@@ -81,14 +81,14 @@ export declare const INDEX_SHAPE: {
     doc: Record<string, KeyShape>;
     term: Record<string, KeyShape>;
 };
-/** 索引の形に合わない場所 */
+/** 索引の構造に合わない場所 */
 export type IndexProblem = {
-    /** 合わない場所（`docs[1].path` の形。ファイル全体は空文字） */
+    /** 合わない場所（`docs[1].path` の構造。ファイル全体は空文字） */
     where: string;
     /** 合わない内容 */
     message: string;
 };
-/** 値を索引の形で検査し、合う文書・用語だけの索引と、合わない場所の一覧を返す */
+/** 値を索引の構造で検査し、合う文書・用語だけの索引と、合わない場所の一覧を返却する */
 export declare function normalizeIndex(value: unknown): {
     index: MdmarkIndex;
     problems: IndexProblem[];

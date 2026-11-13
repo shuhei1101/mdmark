@@ -2,12 +2,12 @@
 export type MermaidSource = {
     /** front matter の `title`、無ければ `accTitle` の値。どちらも無ければ持たない */
     title?: string | undefined;
-    /** mermaid の `render` に渡すソース */
+    /** mermaid の `render` に指定するソース */
     body: string;
-    /** 図の種類の行の最初の語。無ければ空 */
+    /** 図の種類の行の最初の単語。無ければ空 */
     kind: string;
 };
-/** タイトルが無いときに図の枠のタイトルにする、図の種類の行の最初の語から引く名前 */
+/** タイトルが無いときに図の枠のタイトルにする、図の種類の行の最初の単語から参照する名前 */
 export declare const MERMAID_KIND_NAMES: Record<string, string>;
 /** テーマ `mdmark` で、mermaid の `base` テーマの変数ごとに元にする mdmark の CSS 変数 */
 export declare const MERMAID_THEME_COLORS: {
@@ -83,7 +83,7 @@ export declare const MERMAID_FIXED_THEME_VARIABLES: {
     readonly useGradient: false;
     readonly dropShadow: "none";
 };
-/** ソースの先頭の front matter の `title:` を取り出してその行を除き、無ければ `accTitle:` の値を取る。図の種類の行の最初の語を `kind` にする */
+/** ソースの先頭の front matter の `title:` を取り出してその行を除き、無ければ `accTitle:` の値を取る。図の種類の行の最初の単語を `kind` にする */
 export declare const splitMermaidTitle: (source: string) => MermaidSource;
-/** 図の種類の行の最初の語から名前を引く。表に無い語は `図` */
+/** 図の種類の行の最初の単語から名前を参照する。表に無い単語は `図` */
 export declare const mermaidKindName: (kind: string) => string;

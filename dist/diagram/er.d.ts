@@ -29,7 +29,7 @@ export declare function isKeyColumn(column: {
     pk?: boolean;
     fk?: boolean;
 }): boolean;
-/** ER 図のテーブルの高さ: 見出し・出している列の行・畳んだときの非表示の行・枠と余白を足す */
+/** ER 図のテーブルの高さ: 見出し・出している列の行・畳んだときの非表示の行・枠と余白を加算する */
 export declare function erTableHeight(options: {
     table: MdmarkErTable;
     folded: boolean;

@@ -32,12 +32,30 @@ export type MdmarkDiagramNode = {
     tag?: string;
     /** 補足 */
     sub?: string;
-    /** 入力・処理・出力。持つノードに印を付ける */
+    /** 入力・処理・出力。持つノードにマーカーを付ける */
     io?: MdmarkDiagramIo;
-    /** ノードの右上の印に出す文。`io` と一緒に持つと、入力・処理・出力の後に出す */
+    /** ノードの右上のマーカーに出す文。`io` と一緒に持つと、入力・処理・出力の後に出す */
     hint?: string;
     /** リンク先。`http`・`https`・`mailto` の URL か相対パス */
     href?: string;
+    /** map の構成図が指定する、設定の map.kinds の種類（`kind` の既定の名前・アイコン・構造の代わりに使う） */
+    style?: MdmarkNodeStyle;
+};
+/** map の構成図のノードの種類（種類の行の名前・Lucide のアイコンの名前・構造・色の名前） */
+export type MdmarkNodeStyle = {
+    label?: string | undefined;
+    icon?: string | undefined;
+    shape?: "rounded" | "rect" | "pill" | "double" | undefined;
+    color?: string | undefined;
+};
+/** map の構成図の線の種類（模様・太さ・矢じり・色の名前） */
+export type MdmarkWireStyle = {
+    dash?: "solid" | "dashed" | "dotted" | "dash-dot" | "long-dash" | undefined;
+    width?: "thin" | "normal" | "thick" | undefined;
+    head?: "filled" | "open" | "none" | undefined;
+    color?: string | undefined;
+    /** 両端に矢じりを付けるか（`<-->`） */
+    both?: boolean | undefined;
 };
 /** フロー図の線 */
 export type MdmarkDiagramWire = {
@@ -57,6 +75,8 @@ export type MdmarkDiagramWire = {
     labelAt?: [number, number];
     /** ラベルの詳細。持つラベルにツールチップを付ける */
     tip?: string;
+    /** map の構成図が指定する、設定の map.lines の線の種類（`line` の見た目の代わりに使う） */
+    style?: MdmarkWireStyle;
 };
 /** フロー図の定義 */
 export type MdmarkFlowDefinition = {
@@ -130,10 +150,10 @@ export type MdmarkChartSeries = {
     points: number[] | Array<[number, number]> | Array<[number, number, number]>;
     /** `combo` の系列の描き方。省くと `line` */
     as?: "line" | "bar";
-    /** `combo` の系列が使う縦の軸。省くと `y` */
+    /** `combo` の系列が使用する縦の軸。省くと `y` */
     axis?: "y" | "y2";
 };
-/** 縦の軸。`min`・`max`・`step` は 3 つとも書くか 3 つとも省き、省くとデータから切る */
+/** 縦の軸。`min`・`max`・`step` は 3 つとも記載するか 3 つとも省き、省くとデータから切る */
 export type MdmarkChartYAxis = {
     label: string;
     min?: number;
@@ -175,7 +195,7 @@ export type MdmarkChartDefinition = {
 };
 /** 操作できる部品の定義 */
 export type MdmarkParamDefinition = {
-    /** 部品の題 */
+    /** 部品のタイトル */
     title: string;
     /** スライダー。`value` が既定の値 */
     knob: {
@@ -186,7 +206,7 @@ export type MdmarkParamDefinition = {
         step: number;
         value: number;
     };
-    /** グラフの題と軸（折れ線） */
+    /** グラフのタイトルと軸（折れ線） */
     chart: {
         title: string;
         scope: string;
@@ -283,25 +303,25 @@ export type MdmarkErDefinition = {
     /** 関係 */
     relations: MdmarkErRelation[];
 };
-/** 読めた定義の種類 */
+/** 読み込めた定義の種類 */
 export type MdmarkDefinition = MdmarkFlowDefinition | MdmarkSequenceDefinition | MdmarkChartDefinition | MdmarkParamDefinition | MdmarkErDefinition;
-/** 定義を読んだ結果 */
+/** 定義を読み込んだ結果 */
 export type DefinitionResult = {
-    /** 読めたか */
+    /** 読み込めたか */
     ok: boolean;
-    /** 読めた定義 */
+    /** 読み込めた定義 */
     definition?: MdmarkDefinition | undefined;
-    /** 読めない箇所と直し方の文。読めたときは空 */
+    /** 読み込めない箇所と修正方法の文。読み込めたときは空 */
     problems: string[];
 };
-/** 図の部品の印の名前 */
+/** 図の部品のマーカーの名前 */
 export type DiagramDirective = "flow" | "sequence" | "chart" | "param" | "er";
-/** 図の部品の印の名前と、書き方の警告に出す図の種類の名前・呼び名 */
+/** 図の部品のマーカーの名前と、記載の警告に出す図の種類の名前・呼び名 */
 export declare const DIAGRAM_DIRECTIVES: Readonly<Record<DiagramDirective, {
     name: string;
     call: string;
 }>>;
-/** 定義の JSON を読む。読めないときは、読めた最後の行・その行の文字・足りない記号を返す */
+/** 定義の JSON を読み込む。読み込めないときは、読み込めた最後の行・その行の文字・足りない記号を返却する */
 export declare function parseDefinitionJson(text: string): {
     ok: true;
     value: unknown;
@@ -313,14 +333,14 @@ export declare function parseDefinitionJson(text: string): {
 };
 /** 座標を省けるノードの種類（判定フローチャート） */
 export declare const JUDGEMENT_KINDS: readonly MdmarkDiagramKind[];
-/** 印の範囲の `json` のコードブロックを読み、種類ごとの形を確かめる。読めない箇所は書き方の警告の文にして返す */
+/** マーカーの範囲の `json` のコードブロックを読み込み、種類ごとの構造を確認する。読み込めない箇所は記載の警告の文にして返却する */
 export declare function readDefinition(directive: DiagramDirective, blocks: string[]): DefinitionResult;
-/** フロー図の定義の、本文のリンクと同じ許可に当たらないリンク先を持つノードを定義の順に返す */
+/** フロー図の定義の、本文のリンクと同じ許可に該当しないリンク先を持つノードを定義の順に返却する */
 export declare function nodeLinkProblems(definition: MdmarkFlowDefinition): Array<{
     id: string;
     href: string;
 }>;
-/** 読めない定義の書き方の警告の本文と項目。読めない箇所が 2 つ以上あるときは、1 つ目を本文に書き、残りを項目に並べる */
+/** 読み込めない定義の記載の警告の本文と項目。読み込めない箇所が 2 つ以上あるときは、1 つ目を本文に記載し、残りを項目に並べる */
 export declare function definitionWarning(directive: DiagramDirective, problems: string[]): {
     message: string;
     items: Array<{

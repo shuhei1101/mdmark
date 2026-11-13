@@ -5,7 +5,7 @@ import type { RenderEnv } from "../parser.ts";
 export declare function envOf(state: StateCore): RenderEnv;
 /** 記法の機能がオンか */
 export declare function featureOn(state: StateCore, name: string): boolean;
-/** mdmark が出した要素として印を付けた HTML を、`html_block` のトークンにする。`source` を渡すと、その `map`（元の行）を写す */
+/** mdmark が出した要素としてマーカーを付けた HTML を、`html_block` のトークンにする。`source` を指定すると、その `map`（元の行）を写す */
 export declare function ownBlock(state: StateCore, html: string, source?: Token): Token;
 /** タブの中身の境目: タブの先頭（`start`）・中身の間（`between`）・タブの終わり（`end`） */
 export type TabBoundary = "start" | "between" | "end";
@@ -16,11 +16,11 @@ export declare function tabBoundaryBlock(options: {
     boundary: TabBoundary;
     source?: Token | undefined;
 }): Token;
-/** タブの中身の境目のトークンなら、その境目を返す */
+/** タブの中身の境目のトークンなら、その境目を返却する */
 export declare function tabBoundaryOf(token: Token | undefined): TabBoundary | undefined;
-/** 印のトークンなら、その印を返す */
+/** マーカーのトークンなら、そのマーカーを返却する */
 export declare function markOf(token: Token | undefined): Mark | undefined;
-/** `openIndex` の印に対する閉じの印の位置を返す。無ければ `-1` */
+/** `openIndex` のマーカーに対する閉じのマーカーの位置を返却する。無ければ `-1` */
 export declare function findClose(tokens: Token[], openIndex: number, name: string): number;
 /** `open` に対応する閉じのトークンの位置を、階層で探す */
 export declare function findNestedClose(tokens: Token[], openIndex: number): number;

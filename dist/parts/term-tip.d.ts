@@ -16,20 +16,20 @@ export declare const COMMAND_COPY_STATES: {
         readonly icon: "circle-alert";
     };
 };
-/** コピーのボタンの中に置く、状態のアイコンと文言の HTML を返す */
+/** コピーのボタンの中に配置する、状態のアイコンと文言の HTML を返却する */
 export declare function renderTermTipCopy(state: TermTipCopyState): string;
 /** ツールチップの「関連文書」に並べる文書 1 つ */
 export type TermTipDoc = {
-    /** 文書の題 */
+    /** 文書のタイトル */
     title: string;
-    /** 描く文書から見た相対パス */
+    /** 描く文書を基準にした相対パス */
     href: string;
     /** 索引の `description` */
     description?: string;
 };
-/** 本文の語に破線の下線を引き、直後に「用語」の意味と「関連文書」のツールチップを置く HTML を返す。意味も関連文書も無ければ語をそのまま返す。`replacement` を渡すと、語に波線のマーカーを引き、「代わりの用語」だけのツールチップを置く（`meaning`・`docs` は使わない） */
+/** 本文の単語に破線の下線を付け、直後に「用語」の意味と「関連文書」のツールチップを配置する HTML を返却する。意味も関連文書も無ければ単語をそのまま返却する。`replacement` を指定すると、単語に波線のマーカーを引き、「代わりの用語」だけのツールチップを配置する（`meaning`・`docs` は使用しない） */
 export declare function renderTermTip(props: {
-    /** 下線を引く本文の語 */
+    /** 下線を付ける本文の単語 */
     text: string;
     /** ツールチップの要素の `id` */
     id: string;
@@ -37,15 +37,15 @@ export declare function renderTermTip(props: {
     meaning?: string;
     /** 「関連文書」に並べる文書。空なら「関連文書」の区分を出さない */
     docs?: TermTipDoc[];
-    /** `text` がやめた言い方のときの代わりの用語。`meaning` が無ければ意味を置かない */
+    /** `text` がやめた言い方のときの代わりの用語。`meaning` が無ければ意味を配置しない */
     replacement?: {
         term: string;
         meaning?: string;
     };
-    /** `text` が一致したエイリアス。渡すと種類ごとの区分を出し、`meaning`・`docs` は使わない */
+    /** `text` が一致したエイリアス。指定すると種類ごとの区分を出し、`meaning`・`docs` は使用しない */
     alias?: MdmarkAlias;
     /** コマンドのコピーのボタンの状態（`mount` が付けた状態）。省くと `idle` */
     copy?: TermTipCopyState;
-    /** 語の下に開いた見た目にするか。ストーリーが下に開いた状態を出すために使い、`render` は渡さない */
+    /** 単語の下に開いた外観にするか。ストーリーが下に開いた状態を出すために使用し、`render` は指定しない */
     below?: boolean;
 }): string;

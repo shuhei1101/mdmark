@@ -9,7 +9,7 @@ import type { MdmarkIconNode } from "./parts/inline-icon.ts";
 export type MountOptions = {
     /** 描く Markdown */
     markdown: string;
-    /** 使う側の設定。省いたキーには既定を当てる */
+    /** 利用側の設定。省いたキーには既定を適用する */
     config?: MdmarkConfig;
     /** 索引。省くと索引の用語と関連文書を出さない */
     index?: MdmarkIndex;
@@ -17,21 +17,21 @@ export type MountOptions = {
     docId?: string;
     /** `collectReferences` の戻り値。省くと、関連文書の一覧は索引の `related` だけから出し、他の文書の用語集の表の用語を照合しない */
     references?: MdmarkReferences;
-    /** `buildAliases` が作ったエイリアス。`glossary` がオンのとき、名前と別名に下線と種類ごとのツールチップを付ける。使えないエイリアス（`env` を含む）は照合せず、知らせの枠も出さない */
+    /** `buildAliases` が作ったエイリアス。`glossary` がオンのとき、名前と別名に下線と種類ごとのツールチップを付ける。使用できないエイリアス（`env` を含む）は照合せず、通知ブロックも出さない */
     aliases?: MdmarkAlias[];
-    /** 差分の取り出し元。渡すと描いた文書に差分を開く UI を付ける。渡すときは `docId` も要る */
+    /** 差分の取り出し元。指定すると描いた文書に差分を開く UI を付ける。指定するときは `docId` も要る */
     diffSource?: DiffSource;
-    /** 差分の出し方。`button`（既定）は「変更を見る」を押してから差分の行を出し、`open` は描いた時点で押した状態にし、`blocks` は描いた文書のブロックを追加と削除の色で塗り分ける。`diffSource` を渡さないときは使わない。知らない値は `button` にする */
+    /** 差分の出し方。`button`（既定）は「変更表示」を押してから差分の行を出し、`open` は描いた時点で押した状態にし、`blocks` は描いた文書のブロックを追加と削除の色で塗り分ける。`diffSource` を指定しないときは使用しない。知らない値は `button` にする */
     diffMode?: DiffMode;
-    /** コメントの読み書きの関数。`comments` の機能がオンのときだけ使う。渡すときは `docId` も要る */
+    /** コメントの読み込みと保存の関数。`comments` の機能がオンのときだけ使用する。指定するときは `docId` も要る */
     commentStore?: MdmarkCommentStore;
-    /** 比較元の Markdown。渡すと、本文の中で比較元から変えたブロックを `blocks` と同じ色で塗り分ける。`null` と省いたときは色分けしない */
+    /** 比較元の Markdown。指定すると、本文の中で比較元から変えたブロックを `blocks` と同じ色で塗り分ける。`null` と省いたときは色分けしない */
     baseMarkdown?: string | null;
     /** `+columns` の表で列の表示を切り替えるたびに呼ぶ */
     onColumnsChange?: (event: MdmarkColumnsChange) => void;
     /** 取り込む文書の表。キーは描く文書のフォルダからのパス。省くと include のマーカーを取り込み先が無い警告にする */
     includes?: Record<string, string>;
-    /** 束ねていない名前のアイコンの形の表。表に無い名前は jsDelivr から読む */
+    /** まとめていない名前のアイコンの形状の表。表に無い名前は jsDelivr から読み込む */
     icons?: Record<string, MdmarkIconNode>;
 };
 /** `onColumnsChange` が受け取る列の表示 */
@@ -43,19 +43,19 @@ export type MdmarkColumnsChange = {
 };
 /** `mount` の戻り値 */
 export type MountHandle = {
-    /** 本文だけを描き直す。設定は `mount` に渡したものを使う。`options.baseMarkdown` を渡すと比較元を差し替え、`null` で外す。`options.includes` を渡すと取り込む文書の表を差し替える。`destroy` の後は何もしない */
+    /** 本文だけを再描画する。設定は `mount` に指定したものを使用する。`options.baseMarkdown` を指定すると比較元を差し替え、`null` で削除する。`options.includes` を指定すると取り込む文書の表を差し替える。`destroy` の後は何もしない */
     update: (markdown: string, options?: {
         baseMarkdown?: string | null;
         includes?: Record<string, string>;
     }) => void;
-    /** 要素の中を空にして class `mdmark` とテーマの属性を外し、印刷の受け取りを外す。2 回目以降は何もしない */
+    /** 要素の中を空にして class `mdmark` とテーマの属性を削除し、印刷の受け取りを解除する。2 回目以降は何もしない */
     destroy: () => void;
-    /** 本文を描き直さずにコメントを読み直し、印を付け直してから解決する。コメントを付けていないときと `destroy` の後は解決する */
+    /** 本文を再描画せずにコメントを再読み込みし、マーカーをもう一度付けてから解決する。コメントを付けていないときと `destroy` の後は解決する */
     reloadComments: () => Promise<void>;
-    /** その `id` のコメントの印へ移って強調する。印が無い `id` と `destroy` の後は何もしない */
+    /** その `id` のコメントのマーカーへ移って強調する。マーカーが無い `id` と `destroy` の後は何もしない */
     focusComment: (id: string) => void;
 };
-/** 比較元が文字列か `null` か `undefined` かを確かめ、違えば `baseMarkdown` を含む `TypeError` を投げる */
+/** 比較元が文字列か `null` か `undefined` かを確認し、違えば `baseMarkdown` を含む `TypeError` を投げる */
 export declare function checkBaseMarkdown(value: unknown): asserts value is string | null | undefined;
-/** 要素の中に文書を描き、記法の操作を付け、外部ライブラリと拡張の印を描かせ、ビューとコメントの部品を付け、印刷の受け取りを付けて、描き直しと片付けの関数を返す。`diffSource` か `commentStore` を渡して `docId` が無いとき、`commentStore`・`baseMarkdown`・`onColumnsChange` が合わないときは、何も描かずに `TypeError` を投げる */
+/** 要素の中に文書を描き、記法の操作を付け、外部ライブラリと拡張のマーカーを描かせ、ビューとコメントの部品を付け、印刷の受け取りを付けて、再描画と片付けの関数を返却する。`diffSource` か `commentStore` を指定して `docId` が無いとき、`commentStore`・`baseMarkdown`・`onColumnsChange` が合わないときは、何も描かずに `TypeError` を投げる */
 export declare function mount(el: HTMLElement, opts: MountOptions): MountHandle;

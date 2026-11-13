@@ -17,7 +17,7 @@ export type FlowLayoutIssue = {
     /** 対象のノードか線の `id` */
     ids: string[];
 };
-/** 全角の文字を文字の大きさ、半角の文字を 0.6 倍の幅とみなし、幅で折り返した行の数を返す（空の文字は 0） */
+/** 全角の文字を文字の大きさ、半角の文字を 0.6 倍の幅とみなし、幅で折り返した行の数を返却する（空の文字は 0） */
 export declare function labelLineCount(options: {
     text: string;
     fontSize: number;
@@ -25,5 +25,5 @@ export declare function labelLineCount(options: {
 }): number;
 /** ノードの種類・名前・補足を折り返した行の高さの合計が、ノードの高さに収まらないか（上下の余白には文字がはみ出してよい） */
 export declare function labelTooLong(node: MdmarkDiagramNode): boolean;
-/** フロー図の定義の、ノードの重なり・はみ出し・線のノードの横切り・収まらないラベルを、ずれ 1 つにつき 1 件にして返す */
+/** フロー図の定義の、ノードの重なり・はみ出し・線のノードの横切り・収まらないラベルを、ずれ 1 つにつき 1 件にして返却する */
 export declare function checkFlowLayout(definition: MdmarkFlowDefinition): FlowLayoutIssue[];

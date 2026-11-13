@@ -1,10 +1,10 @@
-/** タブを描く。`group` を渡すと `data-group` に写す。`selected` を渡すとタブの並びを付け、選んだもの以外の中身を `hidden` にする。`collapse` が `closed`・`open` なら、折り畳みに入れる */
+/** タブを描く。`group` を指定すると `data-group` に写す。`selected` を指定するとタブの並びを付け、選んだもの以外の中身を `hidden` にする。`collapse` が `closed`・`open` なら、折り畳みに入れる */
 export declare function renderTabs(options: {
     /** タブの id の頭 */
     id: string;
     /** タブ名の行内の HTML（エスケープ済み） */
     titles: string[];
-    /** タブごとの中身の HTML（`SLOT_MARKER` を渡せる） */
+    /** タブごとの中身の HTML（`SLOT_MARKER` を指定できる） */
     panels: string[];
     /** 選んだタブの位置（0 から） */
     selected?: number;

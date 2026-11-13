@@ -1,4 +1,4 @@
-/** ライトボックスの `dialog` の HTML を返す */
+/** ライトボックスの `dialog` の HTML を返却する */
 export declare function renderLightbox(options: {
     /** 画像の URL */
     src: string;
@@ -8,7 +8,7 @@ export declare function renderLightbox(options: {
     caption?: string;
     /** 何枚目か（1 から） */
     index: number;
-    /** 送りの並びの枚数 */
+    /** 切り替えの並びの枚数 */
     total: number;
     /** 今の倍率（既定は `fit`） */
     zoom?: number;
