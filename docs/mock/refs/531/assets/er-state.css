@@ -10,9 +10,10 @@
 .map-figure .er-name { overflow-wrap: anywhere; user-select: text; }
 .map-figure .er-type { color: var(--mdmark-color-muted); }
 .map-figure .er-note {
-  display: inline-grid; place-items: center; width: 16px; height: 16px; border-radius: 50%;
-  border: 1px solid var(--mdmark-color-border); font-size: 11px; cursor: help;
+  display: inline-grid; place-items: center; width: 20px; height: 20px; padding: 0; border-radius: 50%;
+  border: 1px solid var(--mdmark-color-border); background: var(--mdmark-color-bg); color: inherit; font-size: 11px; cursor: help;
 }
+.map-figure .er-note-cell { position: relative; }
 .map-figure .er-toggle {
   margin-left: auto; min-width: 24px; min-height: 24px; padding: 0 6px; border: 1px solid var(--mdmark-color-border);
   border-radius: 4px; background: var(--mdmark-color-bg); color: inherit; font-size: 12px; cursor: pointer;
@@ -33,7 +34,26 @@
   border-radius: 50%; padding: 0; min-height: 32px; height: 32px !important; background: var(--mdmark-color-text); border-color: var(--mdmark-color-text);
 }
 .map-figure .mdmark-diagram-node[data-shape="end"] { background: var(--mdmark-color-bg); border: 6px double var(--mdmark-color-text); }
-.map-figure .mdmark-diagram-node[data-shape="choice"] { transform: rotate(45deg) scale(0.75); border-radius: 4px; border-color: var(--mdmark-color-text); padding: 0; min-height: 40px; height: 40px !important; }
+.map-figure .mdmark-diagram-node[data-shape="choice"] {
+  /* ひし形は配置の幅と高さ（40px）いっぱいに切り抜き、線の端が角に合うようにする */
+  clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%); border-radius: 0; padding: 0;
+  min-height: 40px; height: 40px !important; background: var(--mdmark-color-text); border-color: var(--mdmark-color-text);
+}
 .map-figure .mdmark-diagram-node:is([data-shape="start"], [data-shape="end"], [data-shape="choice"]) :is(.mdmark-diagram-node-kind, .mdmark-diagram-node-name) {
   visibility: hidden; height: 0; min-height: 0; overflow: hidden;
 }
+
+/* ツールチップ（列の説明・行が増える関連）: 構成図の線のツールチップと同じ見た目で、マーカーの下に出す */
+.map-figure .er-tip { position: absolute; top: calc(100% + 4px); right: 0; z-index: 5; width: max-content; max-width: 260px; white-space: normal; }
+.map-figure .er-fanout + .er-tip { right: auto; }
+
+/* ER 図: 関連のラベル（引き直した線の横） */
+.map-figure .er-label { font-size: 12px; fill: var(--mdmark-color-text); paint-order: stroke; stroke: var(--mdmark-color-bg); stroke-width: 4px; }
+.map-figure :is(.er-card, .er-label).map-dim { opacity: 0.25; }
+
+/* 状態遷移図: 同じ状態への遷移の線と、再生で今の遷移のとき */
+.map-figure .er-self { fill: none; stroke: var(--mdmark-color-muted); stroke-width: 1.5; }
+.map-figure .er-self.map-dim { opacity: 0.25; }
+.map-figure .er-self.er-self-active { stroke: var(--mdmark-color-link); stroke-width: 2.5; }
+
+/* 状態遷移図: 注記のノード（Mermaid の note）。説明の補足（i のツールチップ）とは別に描く */

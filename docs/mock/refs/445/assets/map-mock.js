@@ -400,7 +400,8 @@ export const createMap = (host, spec, initial = {}) => {
       return {
         id: leaf.id,
         kind,
-        ...(box ? { tag: "グループ" } : {}),
+        // 閉じたグループの種類の行。種類ごとに中の数などへ替えられる（ER 図・状態遷移図）
+        ...(box ? { tag: spec.collapsedTag?.(leaf.id) ?? "グループ" } : {}),
         x: leaf.x,
         y: leaf.y,
         w: leaf.w,
@@ -487,7 +488,7 @@ export const createMap = (host, spec, initial = {}) => {
     decorateGroups(stage, layout);
     decorateNodes(stage, layout);
     decorateWires(figure, layout);
-    spec.afterRender?.(figure, layout, { selected: state.selected, enter: state.enter, collapsed: state.collapsed });
+    spec.afterRender?.(figure, layout, { selected: state.selected, enter: state.enter, collapsed: state.collapsed, step: state.step });
     decorateTools(figure);
     renderBand(figure);
     renderPackets(stage, layout);
