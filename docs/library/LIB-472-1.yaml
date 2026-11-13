@@ -97,12 +97,20 @@ catalogs:
     entries:
       - name: hookSpecificOutput.updatedInput
         kind: JSON のキー
-        purpose: PreToolUse のフックが標準出力に書き込む JSON で、ツールに指定する引数を置き換える。`permissionDecision` を記載しなければ許可の判定は変わらない
+        purpose: PreToolUse のフックが標準出力に書き込む JSON で、ツールに指定する引数を置き換える。auto モードは書き換える前の入力を確認しているため、`permissionDecision` を記載しないと書き換えた呼び出しを拒否しうる
         params:
           - name: hookSpecificOutput.hookEventName
             type: "'PreToolUse'"
             required: true
             description: フックの種類
+          - name: hookSpecificOutput.permissionDecision
+            type: "'allow' | 'deny' | 'ask' | 'defer'"
+            required: false
+            description: '`allow` は権限の確認を省く（plan mode の読み取りだけでない呼び出しと、どのモードでも自動で許可しない操作を除く）。設定の deny・ask のルールはフックの返却に関係なく評価される'
+          - name: hookSpecificOutput.permissionDecisionReason
+            type: string
+            required: false
+            description: 許可・拒否の理由。`allow` のときはデバッグのログにだけ書かれる
           - name: hookSpecificOutput.updatedInput
             type: object
             required: true

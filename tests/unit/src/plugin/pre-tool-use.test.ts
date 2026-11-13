@@ -17,13 +17,13 @@ function createInput(toolInput: Record<string, unknown>): string {
   });
 }
 
-// project_dir を入れた updatedInput を記載する（正常系）
+// project_dir を入れた updatedInput を allow と一緒に記載する（正常系）
 test("test_run_pre_tool_use", async () => {
   // 準備
-  const { runPreToolUse } = await loadPreToolUse();
+  const { PERMISSION_DECISION_REASON, runPreToolUse } = await loadPreToolUse();
   const stdout: string[] = [];
   // 実行
-  const code = await runPreToolUse({
+  const code = runPreToolUse({
     env: { CLAUDE_PROJECT_DIR: "/work" },
     input: createInput({ config: "a.yaml" }),
     stdout: (line) => stdout.push(line),
@@ -33,11 +33,14 @@ test("test_run_pre_tool_use", async () => {
   expect(stdout).toHaveLength(1);
   const output = JSON.parse(stdout[0] ?? "");
   expect(output.hookSpecificOutput.hookEventName).toBe("PreToolUse");
+  expect(output.hookSpecificOutput.permissionDecision).toBe("allow");
+  expect(output.hookSpecificOutput.permissionDecisionReason).toBe(
+    PERMISSION_DECISION_REASON,
+  );
   expect(output.hookSpecificOutput.updatedInput).toEqual({
     config: "a.yaml",
     project_dir: "/work",
   });
-  expect(output.hookSpecificOutput).not.toHaveProperty("permissionDecision");
 });
 
 // エージェントが記載した project_dir を上書きする（正常系）
@@ -46,7 +49,7 @@ test("test_run_pre_tool_use_when_project_dir_given", async () => {
   const { runPreToolUse } = await loadPreToolUse();
   const stdout: string[] = [];
   // 実行
-  await runPreToolUse({
+  runPreToolUse({
     env: { CLAUDE_PROJECT_DIR: "/work" },
     input: createInput({ project_dir: "/other" }),
     stdout: (line) => stdout.push(line),
@@ -62,7 +65,7 @@ test("test_run_pre_tool_use_when_project_dir_unknown", async () => {
   const { runPreToolUse } = await loadPreToolUse();
   const stdout: string[] = [];
   // 実行
-  const code = await runPreToolUse({
+  const code = runPreToolUse({
     env: {},
     input: createInput({ config: "a.yaml" }),
     stdout: (line) => stdout.push(line),
