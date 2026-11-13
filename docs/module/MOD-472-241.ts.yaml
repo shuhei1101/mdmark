@@ -14,15 +14,18 @@ functions:
     side_effects: 表の行の `hidden`・`aria-selected`・縦線の class・見本の行の class を書き換える。クリップボードに書き込む
     args:
       - name: options
-        type: '{ wrapper: HTMLElement; placement: TooltipPlacement }'
+        type: '{ wrapper: HTMLElement; placement: TooltipPlacement; states?: PartStates }'
         required: true
-        description: '`wrapper` は `div.mdmark-table[data-tree]`、`placement` はツールチップを出す場所'
+        description: '`wrapper` は `div.mdmark-table[data-tree]`、`placement` はツールチップを出す場所、`states` は部品の開閉の記録（省くと記録しない）。表を `partKey` の種類 `table-tree`、部品の中の鍵を行の `data-path` で引き、`startOpen` の開閉（マーカーは無く、既定は開く）で始め、読者が開閉のボタンを押すたびに `recordOpen` で書き込む（Shift で同じ状態にした子孫の行も書き込む）'
     returns:
       type: () => void
       description: 受け取りを解除する関数
     callees:
       - 'MOD-472-239#functions[filterTreeRows]'
       - MOD-472-315#functions[renderTreeTools]
+      - MOD-472-348#functions[partKey]
+      - MOD-472-348#functions[startOpen]
+      - MOD-472-348#functions[recordOpen]
     unit_tests:
       - name: test_attach_table_tree_when_folded
         case: 正常
@@ -54,6 +57,12 @@ functions:
         condition: '`見本を隠す` を押す'
         mock: なし
         expected: '`mdmark-tree-layout` が `is-example-hidden` を持ち、ボタンが `aria-expanded="false"`・文字 `見本を表示`'
+      - name: test_attach_table_tree_when_states
+        case: 正常
+        summary: 記録した開閉で始め、押した開閉を記録する
+        condition: '`aliases[]` が子を持つ階層の表に空の `states` を指定して付け、`aliases[]` のボタンを押してから削除し、同じ HTML を描き直した表に同じ `states` でもう一度付ける'
+        mock: なし
+        expected: 2 回目に付けた後、`aliases[]` の子孫の行が `hidden` を持ち、ボタンの `aria-expanded` が `false`
     status: planned
     introduced:
       pr: 303

@@ -1,4 +1,10 @@
 import { rowIdFromHash } from "../table-logic.ts";
+import {
+  type PartStates,
+  partKey,
+  recordOpen,
+  startOpen,
+} from "./part-states.ts";
 import { revealTabTarget } from "./tabs.ts";
 import { visibleText } from "./text.ts";
 
@@ -210,7 +216,10 @@ function revealHashTarget(root: HTMLElement): void {
 }
 
 /** 行の詳細を持つ行の先頭のセルに開閉のボタンを配置し、詳細の行を閉じる。削除する関数を返却する */
-function attachRowDetails(root: HTMLElement): () => void {
+function attachRowDetails(
+  root: HTMLElement,
+  partStates: PartStates | undefined,
+): () => void {
   const owners = new Map<HTMLTableRowElement, HTMLTableRowElement[]>();
   for (const detail of root.querySelectorAll<HTMLTableRowElement>(
     "tr.mdmark-row-detail",
@@ -224,6 +233,8 @@ function attachRowDetails(root: HTMLElement): () => void {
     }
   }
   const cleanups: Array<() => void> = [];
+  /** 表ごとの記録の鍵（表の中の行の詳細で使い回す） */
+  const tableKeys = new Map<HTMLTableElement, string>();
   for (const [owner, details] of owners) {
     const cell = owner.cells[0];
     if (!cell) {
@@ -243,14 +254,35 @@ function attachRowDetails(root: HTMLElement): () => void {
     button.setAttribute("aria-label", `「${label}」の詳細`);
     head.append(button, ...cell.childNodes);
     cell.append(head);
-    for (const detail of details) {
-      detail.hidden = true;
+    const table = owner.closest("table");
+    const base =
+      table === null || partStates === undefined
+        ? undefined
+        : (tableKeys.get(table) ??
+          partKey({ root, part: table, kind: "row-detail" }));
+    if (table !== null && base !== undefined) {
+      tableKeys.set(table, base);
     }
-    const onClick = (): void => {
-      const open = button.getAttribute("aria-expanded") !== "true";
+    const key =
+      base === undefined
+        ? undefined
+        : `${base}|${details[0]?.dataset.row ?? ""}`;
+    /** 詳細の行を開閉し、ボタンの `aria-expanded` に写す */
+    const setOpen = (open: boolean): void => {
       button.setAttribute("aria-expanded", String(open));
       for (const detail of details) {
         detail.hidden = !open;
+      }
+    };
+    setOpen(
+      key !== undefined &&
+        startOpen({ states: partStates, key, marker: "", markerOpen: false }),
+    );
+    const onClick = (): void => {
+      const open = button.getAttribute("aria-expanded") !== "true";
+      setOpen(open);
+      if (key !== undefined) {
+        recordOpen({ states: partStates, key, open, marker: "" });
       }
     };
     button.addEventListener("click", onClick);
@@ -279,10 +311,19 @@ export function attachSections(options: {
   rowDetails: boolean;
   /** セクションの開閉の記録（省くと記録しない） */
   states?: SectionStates;
+  /** 部品の開閉の記録（省くと記録しない） */
+  partStates?: PartStates;
   /** 付けたときに URL の `#ID` で開くか（既定 `true`） */
   revealHash?: boolean;
 }): () => void {
-  const { root, sections, rowDetails, states, revealHash = true } = options;
+  const {
+    root,
+    sections,
+    rowDetails,
+    states,
+    partStates,
+    revealHash = true,
+  } = options;
   const cleanups: Array<() => void> = [];
   if (sections) {
     for (const heading of root.querySelectorAll<HTMLElement>(
@@ -301,7 +342,7 @@ export function attachSections(options: {
     }
   }
   if (rowDetails) {
-    cleanups.push(attachRowDetails(root));
+    cleanups.push(attachRowDetails(root, partStates));
   }
   return () => {
     for (const cleanup of cleanups.reverse()) {

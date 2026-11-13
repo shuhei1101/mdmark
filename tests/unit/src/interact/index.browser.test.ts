@@ -1,4 +1,5 @@
 import { afterEach, expect, test, vi } from "vitest";
+import type { PartStates } from "../../../../src/interact/part-states.ts";
 import { wrapHtml } from "../../helpers/charts.ts";
 import { createRoot, removeRoots } from "../../helpers/dom.ts";
 
@@ -231,4 +232,81 @@ test("test_attach_interactions_when_lightbox_off", async () => {
   expect(root.querySelector("img[data-gif]")).not.toBeNull();
   expect(root.querySelector("button.mdmark-image-open")).toBeNull();
   expect(root.querySelector("button.mdmark-gif-toggle")).toBeNull();
+});
+
+// 部品の開閉の記録を各部品の操作へ指定する（正常系）
+test("test_attach_interactions_when_part_states", async () => {
+  // 準備
+  const { attachInteractions } = await loadInteract();
+  const markdown = [
+    "| 名前 | 値 |",
+    "| --- | --- |",
+    "| a | 1 |",
+    "| b | 2 |",
+    "",
+    '<!-- row-detail: {"at": 2} -->',
+    "",
+    "詳細の段落",
+    "",
+    "<!-- /row-detail -->",
+    "",
+    "```tree",
+    "app/",
+    "└── src/",
+    "    └── index.ts",
+    "```",
+    "",
+    '<!-- details: {"title": "手順"} -->',
+    "",
+    "手順の段落",
+    "",
+    "<!-- /details -->",
+    "",
+  ].join("\n");
+  const partStates: PartStates = new Map();
+  const first = createRoot(markdown);
+  const detachFirst = attachInteractions({
+    root: first.root,
+    features: first.features,
+    placement: "top",
+    partStates,
+  });
+  first.root
+    .querySelector<HTMLButtonElement>("button.mdmark-row-toggle")
+    ?.click();
+  [
+    ...first.root.querySelectorAll<HTMLButtonElement>(
+      "button.mdmark-tree-toggle",
+    ),
+  ]
+    .find((button) => button.textContent?.trim().startsWith("src/"))
+    ?.click();
+  const firstDetails = first.root.querySelector<HTMLDetailsElement>(
+    "details.mdmark-collapsible",
+  );
+  firstDetails?.querySelector("summary")?.click();
+  await new Promise((resolve) =>
+    firstDetails?.addEventListener("toggle", resolve, { once: true }),
+  );
+  detachFirst();
+  first.root.remove();
+  const { root, features } = createRoot(markdown);
+  // 実行
+  detachers.push(
+    attachInteractions({ root, features, placement: "top", partStates }),
+  );
+  // 検証
+  expect(
+    root
+      .querySelector("button.mdmark-row-toggle")
+      ?.getAttribute("aria-expanded"),
+  ).toBe("true");
+  expect(
+    [...root.querySelectorAll("button.mdmark-tree-toggle")]
+      .find((button) => button.textContent?.trim().startsWith("src/"))
+      ?.getAttribute("aria-expanded"),
+  ).toBe("false");
+  expect(
+    root.querySelector<HTMLDetailsElement>("details.mdmark-collapsible")?.open,
+  ).toBe(true);
 });
