@@ -1,0 +1,162 @@
+id: MOD-472-348
+visibility: internal
+title: ライブラリ本体 / 操作 / part-states.ts
+test_files:
+  - tests/unit/src/interact/part-states.browser.test.ts
+constants:
+  - name: PART_SELECTORS
+    title: 開閉を記録する部品のセレクタ
+    container: src/interact/part-states.ts
+    summary: '`partKey` の種類ごとに、同じセクションの中の何番目かを数える部品の要素のセレクタ。`details` は class が `mdmark-collapsible` だけの `details`（details の範囲と、`collapse` で折りたたみに入れたタブ・ステップ。class を加える前付けは当たらない）'
+    value: '`{ "row-detail": "table:has(tr.mdmark-row-detail)", details: "details[class=\"mdmark-collapsible\"]", callout: "details.markdown-alert", er: "figure.mdmark-diagram[data-diagram=\"er\"]", tree: "div.mdmark-tree", code: "pre:has([data-fold-lines])", "table-tree": "div.mdmark-table[data-tree]" }`'
+    status: planned
+    introduced:
+      pr: 540
+functions:
+  - name: partKey
+    title: 部品の記録の鍵を作る
+    container: src/interact/part-states.ts
+    kind: 関数
+    scope: internal
+    summary: '`part` を囲む最も内側の `mdmark-section-body` の `id`（`root` の中に無ければ空の文字列）と、そのセクションの中で `PART_SELECTORS[kind]` に当たる部品のうち、囲む最も内側の `mdmark-section-body` が同じものの中の何番目か（0 から。文書の順）を `{kind}|{セクションの id}|{何番目か}` にし、`inner` を指定したときは後ろに `|{inner}` を付けて返却する'
+    args:
+      - name: options
+        type: '{ root: HTMLElement; part: Element; kind: keyof typeof PART_SELECTORS; inner?: string }'
+        required: true
+        description: 描いた要素、部品の要素（`PART_SELECTORS[kind]` に当たる要素）、部品の種類、部品の中の要素の鍵（行の位置・テーブルの名前・フォルダのパス・行番号・行のパス）
+    returns:
+      type: string
+      description: 記録の鍵
+    unit_tests:
+      - name: test_part_key
+        case: 正常
+        summary: 囲むセクションとその中の順番で鍵を作る
+        condition: '`section-a` の中に `div.mdmark-tree` を 2 つ、`section-b` の中に 1 つ、見出しより前に 1 つ置き、それぞれを種類 `tree`・`inner` `app/src` で引く'
+        mock: なし
+        expected: '`tree|section-a|0|app/src`・`tree|section-a|1|app/src`・`tree|section-b|0|app/src`・`tree||0|app/src`'
+      - name: test_part_key_when_nested_section
+        case: 正常
+        summary: 入れ子のセクションの中の部品は外側のセクションの順番に数えない
+        condition: '`section-a` の中に `div.mdmark-tree`、`section-a` の中の `section-a-1` の中に `div.mdmark-tree`、その後ろの `section-a` の直下に `div.mdmark-tree` を置き、3 つ目を種類 `tree` で引く'
+        mock: なし
+        expected: '`tree|section-a|1`'
+    status: planned
+    introduced:
+      pr: 540
+  - name: startOpen
+    title: 部品の要素を始める開閉を決める
+    container: src/interact/part-states.ts
+    kind: 関数
+    scope: internal
+    summary: '`states` の `key` の記録が有り、記録の `marker` が `marker` と同じなら記録の `open` を、そうでなければ `markerOpen` を返却する'
+    args:
+      - name: options
+        type: '{ states: PartStates | undefined; key: string; marker: string; markerOpen: boolean }'
+        required: true
+        description: 部品の開閉の記録（無ければ記録を見ない）、記録の鍵、今のマーカーの値（文字にしたもの。マーカーを持たない部品は空の文字列）、マーカーのとおりの開閉
+    returns:
+      type: boolean
+      description: 始める開閉（開くなら `true`）
+    unit_tests:
+      - name: test_start_open
+        case: 正常
+        summary: マーカーが同じ記録の開閉を返却する
+        condition: '`states` の `k` が `{ open: true, marker: "closed" }`、`marker` が `closed`、`markerOpen` が `false`'
+        mock: なし
+        expected: '`true`'
+      - name: test_start_open_when_marker_changed
+        case: 正常
+        summary: マーカーが変わった要素と記録の無い要素はマーカーのとおり
+        condition: '`states` の `k` が `{ open: false, marker: "closed" }` で `marker` が `open`・`markerOpen` が `true`。続けて記録の無い `j` を `markerOpen` `false` で引く'
+        mock: なし
+        expected: '`true`、`false`'
+    status: planned
+    introduced:
+      pr: 540
+  - name: recordOpen
+    title: 読者が変えた開閉を記録する
+    container: src/interact/part-states.ts
+    kind: 関数
+    scope: internal
+    summary: '`states` が有れば、`key` に `{ open, marker }` を書き込む（前の記録は上書きする）'
+    args:
+      - name: options
+        type: '{ states: PartStates | undefined; key: string; open: boolean; marker: string }'
+        required: true
+        description: 部品の開閉の記録（無ければ何もしない）、記録の鍵、変えた後の開閉、今のマーカーの値
+    returns:
+      type: void
+      description: なし
+    unit_tests:
+      - name: test_record_open
+        case: 正常
+        summary: 最後の開閉を書き込む
+        condition: 空の `states` に `k` を `open` `true`、続けて `false` で書き込む
+        mock: なし
+        expected: '`states` の `k` が `{ open: false, marker: ... }`'
+    status: planned
+    introduced:
+      pr: 540
+  - name: attachDetailsStates
+    title: details の範囲と折りたたみの注意書きの開閉を記録する
+    container: src/interact/part-states.ts
+    kind: 関数
+    scope: internal
+    summary: '`root` の中の `PART_SELECTORS` の `details`・`callout` に当たる `details` ごとに、`partKey`（`inner` 無し）の鍵で `startOpen`（マーカーは `open` 属性の有無を `open`・`closed` にしたもの）の開閉にする。`summary` の `click`（Enter・Space を含む）で押した `details` を控え、その `details` の次の `toggle` で `recordOpen` に書き込む（印刷の前後など、`summary` を押さずに変わった開閉は書き込まない）。マーカーは付けたときの `open` 属性の有無で決め、記録の照合と書き込みに使用する'
+    args:
+      - name: options
+        type: '{ root: HTMLElement; states: PartStates }'
+        required: true
+        description: 描いた要素と部品の開閉の記録
+    returns:
+      type: () => void
+      description: 受け取りを取り除く関数
+    side_effects: '`details` の `open` を書き換え、`click`・`toggle` を受け取る'
+    callees:
+      - '#functions[partKey]'
+      - '#functions[startOpen]'
+      - '#functions[recordOpen]'
+    unit_tests:
+      - name: test_attach_details_states
+        case: 正常
+        summary: 押した開閉を記録し、もう一度付けると記録の開閉で始める
+        condition: '閉じた `details.mdmark-collapsible` と開いた `details.markdown-alert` に空の `states` で付け、両方の `summary` を押してから削除し、同じ HTML を描き直した要素に同じ `states` でもう一度付ける'
+        mock: なし
+        expected: 2 回目に付けた後、`mdmark-collapsible` が `open` を持ち、`markdown-alert` が `open` を持たない
+      - name: test_attach_details_states_when_not_clicked
+        case: 正常
+        summary: '`summary` を押さずに変わった開閉は記録しない'
+        condition: 閉じた `details.mdmark-collapsible` に空の `states` で付け、`open` を `true` にして `toggle` を待つ
+        mock: なし
+        expected: '`states` が空'
+      - name: test_attach_details_states_when_marker_changed
+        case: 正常
+        summary: '`open` 属性が記録したときと変わった `details` はマーカーのとおり'
+        condition: 閉じた `details.mdmark-collapsible` に空の `states` で付け、`summary` を 2 回押してから削除し、`open` を持つ同じ `details` を描き直して同じ `states` でもう一度付ける
+        mock: なし
+        expected: '`details` が `open` を持つ'
+      - name: test_attach_details_states_when_frontmatter
+        case: 正常
+        summary: 前付けの折りたたみは記録しない
+        condition: '`details.mdmark-collapsible.mdmark-frontmatter` に空の `states` で付け、`summary` を押す'
+        mock: なし
+        expected: '`states` が空'
+    status: planned
+    introduced:
+      pr: 540
+data_models:
+  - name: PartStates
+    title: 部品の開閉の記録
+    container: src/interact/part-states.ts
+    usecase: 利用側のページが文書を描く
+    summary: '読者が開閉した行の詳細・details の範囲・折りたたみの注意書き・ER 図の列・ファイルツリーのフォルダ・コードの折りたたみ・階層の表の行の開閉を、`partKey` の鍵から引く `Map<string, { open: boolean; marker: string }>`。`mount` ごとに 1 つ作り、各部品の操作が読み書きする'
+    properties:
+      - name: open
+        type: boolean
+        description: 開いているか（ER 図は全ての列を出しているか、コードの折りたたみは畳んでいないか）
+      - name: marker
+        type: string
+        description: 記録したときのマーカーの値（details・注意書きは `open`・`closed`、ER 図は `folded` の有無、ファイルツリーは `data-open`、コードの折りたたみは `data-folded` の有無。マーカーを持たない部品は空の文字列）
+    status: planned
+    introduced:
+      pr: 540

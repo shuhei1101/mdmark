@@ -24,6 +24,10 @@ functions:
         type: HTMLElement
         required: true
         description: 描いた要素
+      - name: states
+        type: PartStates
+        required: false
+        description: 部品の開閉の記録（省くと記録しない）。コードブロックを `partKey` の種類 `code`、部品の中の鍵を行番号で引き、`startOpen` の開閉（マーカーは `data-folded` の有無）で始め、読者が開閉のボタンか `⋯` を押すたびに `recordOpen` で書き込む（Shift で同じ状態にした行も書き込む）
     returns:
       type: () => void
       description: ボタン・`⋯`・`hidden`・`data-guide-active`・`data-fold-hover`・受け取りを取り除き、`codeFoldSetters` から除外する関数
@@ -33,6 +37,9 @@ functions:
       - 'MOD-472-237#functions[guideRangeOf]'
       - MOD-472-306#functions[renderCodeFoldToggle]
       - MOD-472-306#functions[renderCodeFoldMore]
+      - MOD-472-348#functions[partKey]
+      - MOD-472-348#functions[startOpen]
+      - MOD-472-348#functions[recordOpen]
     unit_tests:
       - name: test_attach_code_folds
         case: 正常
@@ -64,6 +71,12 @@ functions:
         condition: 同じ yaml のコードブロックで、4 行目の高さで横の位置が 1 行目のボタンの中ほどの `pointermove`、続けて 4 行目の文字の上の `pointermove`、もう一度ボタンの列の `pointermove` の後に `pointerleave`
         mock: なし
         expected: 1 回目の後に `pre` が `data-fold-hover` を持ち、2 回目の後に持たず、3 回目の後に持ち、`pointerleave` の後に持たない。削除した後に列の上で `pointermove` しても付かない
+      - name: test_attach_code_folds_when_states
+        case: 正常
+        summary: 記録した開閉で始め、押した開閉を記録する
+        condition: 2 行目と 6 行目が `data-folded` の 8 行のコードブロックに空の `states` を指定して付け、2 行目のボタンを押してから削除し、同じ HTML を描き直した要素に同じ `states` でもう一度付ける
+        mock: なし
+        expected: 2 回目に付けた後、2 行目のボタンが `aria-expanded="true"` で後ろの行が `hidden` を持たず、6 行目は `false` のまま。`setCodeFoldOpen` で開閉した行は `states` に書き込まれない
     status: planned
     introduced:
       pr: 275

@@ -30,7 +30,7 @@ functions:
     container: src/interact/tabs.ts
     kind: 関数
     scope: internal
-    summary: 各 `mdmark-tabs` の頭にタブの並びを配置し、中身を `role="tabpanel"` にする。`data-group` を持つものは `loadTabChoice` のタブ名のタブ、無ければ 1 つ目を選ぶ。中身の選び方を `tabPanelSelectors` に登録し、付けたときに URL の `#ID`（`rowIdFromHash` で読み込む）が選ばれていない中身の中を指すなら、残したタブ名より先に `revealTabTarget` でそのタブを選んで要素を `scrollIntoView` する。押すと左右の矢印・Home・End で選び、`data-group` を持つときはページの `document.querySelectorAll(".mdmark-tabs[data-group]")` を `dataset.group === group` で絞った `mdmark-tabs` を、`tabSelectors` から参照した関数で同じタブ名へ切り替え（組の名前をセレクタに入れない。`tabSelectors` に無いものは飛ばす。フォーカスは動かさない。そのタブ名が無ければ変えない）、`saveTabChoice` で残す。タブのボタンにはタブ名の要素の子のノードのコピーを入れ（`strong` を残す）、組の統一と残すタブ名にはその文字を使用する。入れ子の `mdmark-tabs` はそれぞれ別の並びにし、キーの移動と選択はその並びの中だけで行う
+    summary: 各 `mdmark-tabs` の頭にタブの並びを配置し、中身を `role="tabpanel"` にする。`data-group` を持つものは `loadTabChoice` のタブ名のタブ、無ければ 1 つ目を選ぶ。中身の選び方を `tabPanelSelectors` に登録し、付けたときに URL の `#ID`（`rowIdFromHash` で読み込む）が選ばれていない中身の中を指すなら、残したタブ名より先に `revealTabTarget` でそのタブを選んで要素を `scrollIntoView` する。押すと左右の矢印・Home・End で選び、`data-group` を持つときはページの `document.querySelectorAll(".mdmark-tabs[data-group]")` を `dataset.group === group` で絞った `mdmark-tabs` を、`tabSelectors` から参照した関数で同じタブ名へ切り替え（組の名前をセレクタに入れない。`tabSelectors` に無いものは飛ばす。フォーカスは動かさない。そのタブ名が無ければ変えない）、`saveTabChoice` で残す。タブのボタンにはタブ名の要素の子のノードのコピーを入れ（`strong` を残す）、組の統一と残すタブ名にはその文字を使用する。入れ子の `mdmark-tabs` はそれぞれ別の並びにし、キーの移動と選択はその並びの中だけで行う。読者が押すかキーで選ぶときは、選ぶ前に押したタブのボタンの `getBoundingClientRect().top` を測り、選んで同じ組を統一した後にもう一度測って、`findScrollContainer` の要素（画面全体なら `window.scrollBy`）を差の分だけスクロールする（文書が縮んで戻しきれない分はブラウザがスクロール位置の上限で止める）。付けたときの選択と `revealTabTarget` の選択ではスクロールしない
     args:
       - name: root
         type: HTMLElement
@@ -39,13 +39,14 @@ functions:
     returns:
       type: () => void
       description: タブの並びを取り除き、`tabSelectors` と `tabPanelSelectors` から除外し、中身を `render` の構造に戻す関数
-    side_effects: タブの DOM を書き換え、イベントを付ける。`data-group` を持つときは localStorage を読み込みと保存し、`root` の外の同じ `data-group` のタブも切り替える
+    side_effects: タブの DOM を書き換え、イベントを付ける。読者がタブを選ぶとスクロールする場所のスクロール位置を書き換える。`data-group` を持つときは localStorage を読み込みと保存し、`root` の外の同じ `data-group` のタブも切り替える
     callees:
       - '#functions[loadTabChoice]'
       - '#functions[saveTabChoice]'
       - MOD-472-316#functions[renderTabs]
       - '#functions[revealTabTarget]'
       - 'MOD-472-218#functions[rowIdFromHash]'
+      - MOD-472-234#functions[findScrollContainer]
     unit_tests:
       - name: test_attach_tabs
         case: 正常
@@ -89,6 +90,24 @@ functions:
         condition: インターフェース定義『文書を描く』の「正常系（入れ子のタブを切り替える）」の文書を描いた要素
         mock: なし
         expected: '`role="tablist"` が 2 つで、`Windows` のボタンが `strong` を持つ。`bash` を押した後も `macOS` が選ばれたまま。内側の `bash` で右の矢印を押すとフォーカスが `zsh` に移る'
+      - name: test_attach_tabs_when_position_kept
+        case: 正常
+        summary: 高さの違うタブへ切り替えても、押したタブのボタンの画面の位置を保つ
+        condition: '高さ 600px・`overflow-y: auto` の `div` の中に、高さ 1200px の要素・段落 30 個の `長文` と段落 1 つの `短文` のタブ・高さ 1200px の要素を並べて付け、タブのボタンが `div` の上端から 300px の位置までスクロールしてから `短文` を押し、続けて `長文` を押す'
+        mock: なし
+        expected: どちらの後も、押したボタンの `getBoundingClientRect().top` の差が押す前と 1px 以内
+      - name: test_attach_tabs_when_group_above_shrinks
+        case: 正常
+        summary: 上にある同じ組のタブの高さが変わっても、押したタブのボタンの位置を保つ
+        condition: '`data-group="len"` の `長文`・`短文` のタブを 2 つ、間と後ろに高さ 1200px の要素を挟んで画面全体で並べ、2 つ目のタブのボタンが画面の上端から 300px の位置までスクロールしてから 2 つ目の `短文` を押す'
+        mock: localStorage を空にしておく
+        expected: 2 つのタブが `短文` を選び、2 つ目のボタンの `getBoundingClientRect().top` の差が押す前と 1px 以内
+      - name: test_attach_tabs_when_cannot_restore
+        case: 正常
+        summary: 文書が縮んで戻しきれないときはスクロール位置の上限で止まる
+        condition: 画面全体の末尾に `長文`・`短文` のタブを置き、タブのボタンが画面の上端から 300px の位置までスクロールしてから `短文` を押す
+        mock: なし
+        expected: '`scrollY` と `document.documentElement.scrollHeight - innerHeight` の差が 1px 以内で、押したボタンが画面の中にある'
   - name: loadTabChoice
     title: 残したタブ名を読み込む
     container: src/interact/tabs.ts

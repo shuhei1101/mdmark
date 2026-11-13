@@ -30,9 +30,9 @@ functions:
         required: true
         description: 描いた要素
       - name: options
-        type: '{ onColumnsChange?: (event: MdmarkColumnsChange) => void; pinMode?: TablePinMode; longColumnMin?: number }'
+        type: '{ onColumnsChange?: (event: MdmarkColumnsChange) => void; pinMode?: TablePinMode; longColumnMin?: number; partStates?: PartStates }'
         required: false
-        description: 列の表示の通知と、ピン止めの動き（既定 `each`）と、長文の列の最小の幅（em。既定 `DEFAULT_LONG_COLUMN_MIN_EM`）
+        description: 列の表示の通知と、ピン止めの動き（既定 `each`）と、長文の列の最小の幅（em。既定 `DEFAULT_LONG_COLUMN_MIN_EM`）。`partStates` は階層の表の `attachTableTree` に `states` として指定する部品の開閉の記録
     returns:
       type: () => void
       description: ボタン・ドロワー・パネル・受け取り・`ResizeObserver`・タイマー・自動の列の幅を削除する関数
