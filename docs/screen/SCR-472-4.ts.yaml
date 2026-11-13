@@ -549,13 +549,71 @@ elements:
       - IF-472-35#constraints[map の図]
       - IF-472-35#constraints[map の状態の保存]
     status: planned
+  - name: map の ER 図
+    id: map-er
+    kind: figure
+    component: CMP-472-39#
+    args:
+      - name: kind
+        value: '`map`'
+      - name: title
+        value: map のマーカーの `title`
+      - name: legend
+        value: '`[]`'
+      - name: wide
+        value: '''true'''
+      - name: tools
+        value: 要素「map の構成図」と同じ（全て開く・全て閉じるはテーブルの列と分類の両方）
+      - name: resizable
+        value: 機能 `diagram-resize` がオンか
+    slots:
+      - name: default
+        value: docs/component/CMP-531-1.ts#（`collapsed`・`entered`・`selected` は sessionStorage とクエリ文字列 `map-{図の番号}` の状態）
+    position: 描く先の要素
+    description: map の範囲の `erDiagram` を、列の行を持つテーブルのノードと分類のグループにして自動配置した ER 図。補足に `walkthroughs` があれば、図の枠の下に要素「map の案内の帯」を配置する
+    visible_when: '`map` がオンで、map の範囲に `erDiagram` の mermaid のブロックがあるとき'
+    action: 要素「map の構成図」と同じ図の枠の操作に加え、テーブルの開閉のボタンで列を開閉する。2 つのテーブルを押すと経路を残し、行が増える旨のマーカーにフォーカスすると説明を出す
+    refs:
+      - IF-472-35#constraints[map の図]
+      - IF-472-35#constraints[map の ER 図]
+      - IF-472-35#constraints[map の状態の保存]
+    status: planned
+  - name: map の状態遷移図
+    id: map-state
+    kind: figure
+    component: CMP-472-39#
+    args:
+      - name: kind
+        value: '`map`'
+      - name: title
+        value: map のマーカーの `title`
+      - name: legend
+        value: '`[]`'
+      - name: wide
+        value: '''true'''
+      - name: tools
+        value: 要素「map の構成図」と同じ
+      - name: resizable
+        value: 機能 `diagram-resize` がオンか
+    slots:
+      - name: default
+        value: docs/component/CMP-531-2.ts#
+    position: 描く先の要素
+    description: map の範囲の `stateDiagram-v2`・`stateDiagram` を自動配置した状態遷移図。図の枠の下に要素「map の案内の帯」を、補足に `walkthroughs` があれば案内、無ければ遷移の再生として配置する
+    visible_when: '`map` がオンで、map の範囲に `stateDiagram-v2` か `stateDiagram` の mermaid のブロックがあるとき'
+    action: 要素「map の構成図」と同じ図の枠の操作に加え、状態を押して入る遷移と出る遷移を残す
+    refs:
+      - IF-472-35#constraints[map の図]
+      - IF-472-35#constraints[map の状態遷移図]
+      - IF-472-35#constraints[map の状態の保存]
+    status: planned
   - name: map の案内の帯
     id: map-band
     kind: toolbar
     component: CMP-472-50#
     args:
       - name: mode
-        value: 構成図は `walkthrough`、シーケンス図は `playback`
+        value: 構成図と ER 図は `walkthrough`、シーケンス図は `playback`、状態遷移図は補足に `walkthroughs` があれば `walkthrough`、無ければ `playback`
       - name: total
         value: 補足の `walkthroughs` の手順の数か、表示するメッセージの数
       - name: title
