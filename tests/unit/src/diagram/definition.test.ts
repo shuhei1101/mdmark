@@ -71,13 +71,18 @@ test("test_read_definition", async () => {
 test("test_read_definition_when_kind_unknown", async () => {
   // 準備
   const { readDefinition } = await loadDefinition();
-  const definition = { ...parsed<MdmarkChartDefinition>(REPLY_TIME_TEXT), type: "robot" };
+  const definition = {
+    ...parsed<MdmarkChartDefinition>(REPLY_TIME_TEXT),
+    type: "robot",
+  };
   // 実行
   const result = readDefinition("chart", [JSON.stringify(definition)]);
   // 検証
   expect(result.ok).toBe(false);
   expect(result.problems[0]).toContain("robot");
-  expect(result.problems[0]).toMatch(/使用できる種類は [a-z-]+(・[a-z-]+)+ です/);
+  expect(result.problems[0]).toMatch(
+    /使用できる種類は [a-z-]+(・[a-z-]+)+ です/,
+  );
 });
 
 // 系列の点の数が横の目盛りと合わないときは数を示す（異常系）

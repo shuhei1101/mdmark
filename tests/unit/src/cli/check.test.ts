@@ -10,11 +10,11 @@ import {
 } from "../../helpers/cli.ts";
 import { wrapDirective } from "../../helpers/diagrams.ts";
 import { erText, shopEr } from "../../helpers/er.ts";
+import { BASE_TAG, setUpChangeTogetherRepository } from "../../helpers/git.ts";
 import {
   INQUIRY_SEQ_TEXT,
   INQUIRY_TEXT,
 } from "../../helpers/retired-diagrams.ts";
-import { BASE_TAG, setUpChangeTogetherRepository } from "../../helpers/git.ts";
 
 /** 点検の処理を読み込む（実装が無い間は各テストが個別に失敗する） */
 const loadCheck = () => import("../../../../src/cli/check.ts");

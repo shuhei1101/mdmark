@@ -562,11 +562,11 @@ test("test_build_retired_diagrams", async () => {
   const root = await createRoot("v0.0.0\n");
   const sources: Record<string, string> = {
     "src/map/convert.ts":
-      'export const convertRetiredDiagrams = (options: { markdown: string }) => ({ markdown: `${options.markdown}!` });\n',
+      'export const convertRetiredDiagrams = (options: { markdown: string }) => ({ markdown: options.markdown + "!" });\n',
     "src/cli/check.ts":
       'export const loadExtensionDirectives = async () => ({ directives: new Set(["flow"]), issues: [] });\n',
     "src/cli/config.ts":
-      'export const loadConfig = async (file: string) => ({ file, config: {} });\n',
+      "export const loadConfig = async (file: string) => ({ file, config: {} });\n",
     "migrations/next/retired-diagrams.mjs": "\n",
     "migrations/v0.11.0/marker-json.mjs": "\n",
   };

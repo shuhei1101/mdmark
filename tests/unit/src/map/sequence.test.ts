@@ -107,7 +107,7 @@ test("test_parse_sequence_when_entity", async () => {
     [
       "sequenceDiagram",
       "  participant A as #35;1#59; 受付",
-      '  loop #quot;x#quot;',
+      "  loop #quot;x#quot;",
       "    A->>A: a#59; b",
       "  end",
     ].join("\n"),

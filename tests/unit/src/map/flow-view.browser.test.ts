@@ -236,7 +236,9 @@ test("test_attach_map_flow_when_node_link", async () => {
   const node = () =>
     root.querySelector<HTMLElement>('[data-node="mount"]') as HTMLElement;
   const kind = () =>
-    node().querySelector<HTMLElement>(".mdmark-diagram-node-kind") as HTMLElement;
+    node().querySelector<HTMLElement>(
+      ".mdmark-diagram-node-kind",
+    ) as HTMLElement;
   const before = node().style.cssText;
   const box = kind().getBoundingClientRect();
   const point = (dx: number) => ({
@@ -252,14 +254,18 @@ test("test_attach_map_flow_when_node_link", async () => {
     kind().dispatchEvent(new PointerEvent("pointerdown", point(0)));
     window.dispatchEvent(new PointerEvent("pointermove", point(40)));
     window.dispatchEvent(new PointerEvent("pointerup", point(40)));
-    kind().dispatchEvent(new MouseEvent("click", { ...point(40), cancelable: true }));
+    kind().dispatchEvent(
+      new MouseEvent("click", { ...point(40), cancelable: true }),
+    );
     const moved = node().style.cssText;
     const link = node().querySelector<HTMLAnchorElement>(
       "a.mdmark-diagram-node-link",
     ) as HTMLAnchorElement;
     kind().dispatchEvent(new PointerEvent("pointerdown", point(40)));
     window.dispatchEvent(new PointerEvent("pointerup", point(40)));
-    link.dispatchEvent(new MouseEvent("click", { ...point(40), cancelable: true }));
+    link.dispatchEvent(
+      new MouseEvent("click", { ...point(40), cancelable: true }),
+    );
     // 検証
     expect(moved).not.toBe(before);
     expect(prevented).toEqual([true, false]);

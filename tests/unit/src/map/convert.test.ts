@@ -245,7 +245,9 @@ test("test_flow_to_map_when_judgement", async () => {
   expect(shapeOf("a1")).toBe("rect");
   expect(shapeOf("r1")).toBe("stadium");
   expect(
-    chart.edges.flatMap((edge) => (edge.label === undefined ? [] : [edge.label])),
+    chart.edges.flatMap((edge) =>
+      edge.label === undefined ? [] : [edge.label],
+    ),
   ).toEqual(["YES", "NO", "YES", "NO"]);
   expect([...result.kinds].sort()).toEqual([
     "action",
@@ -335,9 +337,15 @@ test("test_sequence_to_map", async () => {
   expect(mermaid).toContain("classify-->>recv: 返信の種類");
   expect(mermaid).toContain("mcp-->>draft: 保存した下書きの ID");
   expect(sequence.fragments).toHaveLength(1);
-  expect(sequence.fragments[0]).toMatchObject({ kind: "loop", start: 0, end: 6 });
+  expect(sequence.fragments[0]).toMatchObject({
+    kind: "loop",
+    start: 0,
+    end: 6,
+  });
   expect(parsed.data.notes["1"]?.text).toBe("件名・本文・送信者のアドレス");
-  expect(parsed.data.notes["4"]?.text).toBe("本文・返信の種類・回答の候補 3 件");
+  expect(parsed.data.notes["4"]?.text).toBe(
+    "本文・返信の種類・回答の候補 3 件",
+  );
 });
 
 // map で読めない相手の id を置き換える（正常系）

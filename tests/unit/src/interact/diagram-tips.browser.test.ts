@@ -1,11 +1,11 @@
 import { afterEach, beforeAll, expect, test, vi } from "vitest";
 import { userEvent } from "vitest/browser";
-import { wrapHtml } from "../../helpers/charts.ts";
 import type { MdmarkFlowDefinition } from "../../../../src/diagram/definition.ts";
 import {
   renderDiagramFrame,
   renderFlow,
 } from "../../../../src/parts/diagram.ts";
+import { wrapHtml } from "../../helpers/charts.ts";
 import { REPLY_TIME_TEXT, wrapDirective } from "../../helpers/diagrams.ts";
 import {
   addStyles,
@@ -507,8 +507,8 @@ test("test_attach_diagram_tips_when_chart_item", async () => {
   expect(tableTip.getBoundingClientRect().top).toBeGreaterThanOrEqual(
     tableMark.getBoundingClientRect().bottom,
   );
-  const open = [
-    ...er.querySelectorAll<HTMLElement>('[role="tooltip"]'),
-  ].filter((tip) => !tip.hidden);
+  const open = [...er.querySelectorAll<HTMLElement>('[role="tooltip"]')].filter(
+    (tip) => !tip.hidden,
+  );
   expect(open).toHaveLength(1);
 });

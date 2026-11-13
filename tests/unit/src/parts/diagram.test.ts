@@ -7,8 +7,8 @@ import type {
 import { iconSvg } from "../../../../src/parts/icons.ts";
 import { parsed } from "../../helpers/diagrams.ts";
 import { shopEr } from "../../helpers/er.ts";
-import { CONFIG, DATA, FLOW } from "../../helpers/map.ts";
 import { findTag, matches, outerHtml, plainText } from "../../helpers/html.ts";
+import { CONFIG, DATA, FLOW } from "../../helpers/map.ts";
 
 /** 図の部品を読み込む（実装が無い間は各テストが個別に失敗する） */
 const loadDiagram = () => import("../../../../src/parts/diagram.ts");
@@ -29,7 +29,9 @@ const defaultFlow = async (): Promise<MdmarkFlowDefinition> => {
     width: layout.width,
     height: layout.height,
     nodes: layout.nodes.map((node) => {
-      const kind = node.classes.map((name) => kinds[name]).find(Boolean);
+      const kind = (node.classes ?? [])
+        .map((name) => kinds[name])
+        .find(Boolean);
       const note = notes[node.id]?.text;
       return {
         id: node.id,
@@ -177,8 +179,26 @@ test("test_render_flow", async () => {
       style: {},
     })),
     wires: [
-      { id: "a->b", from: "a", to: "b", points: [[40, 100], [160, 100]], style: {} },
-      { id: "c->d", from: "c", to: "d", points: [[100, 40], [100, 160]], style: {} },
+      {
+        id: "a->b",
+        from: "a",
+        to: "b",
+        points: [
+          [40, 100],
+          [160, 100],
+        ],
+        style: {},
+      },
+      {
+        id: "c->d",
+        from: "c",
+        to: "d",
+        points: [
+          [100, 40],
+          [100, 160],
+        ],
+        style: {},
+      },
     ],
   };
   // 実行

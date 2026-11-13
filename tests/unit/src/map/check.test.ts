@@ -96,7 +96,10 @@ test("test_collect_map_problems_when_group_note", async () => {
   const { collectMapProblems } = await loadCheck();
   // 実行
   const problems = collectMapProblems(
-    range(FLOW, '{"version": 1, "notes": {"lib": {"text": "記法を読み取る部分"}}}'),
+    range(
+      FLOW,
+      '{"version": 1, "notes": {"lib": {"text": "記法を読み取る部分"}}}',
+    ),
     CONFIG,
     true,
   );

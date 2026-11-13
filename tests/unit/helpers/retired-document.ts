@@ -124,7 +124,15 @@ const JUDGEMENT_DEFINITION = {
   width: 600,
   height: 400,
   nodes: [
-    { id: "start", kind: "start", x: 250, y: 10, w: 100, h: 100, name: "受け取る" },
+    {
+      id: "start",
+      kind: "start",
+      x: 250,
+      y: 10,
+      w: 100,
+      h: 100,
+      name: "受け取る",
+    },
     {
       id: "q1",
       kind: "question",
@@ -134,18 +142,54 @@ const JUDGEMENT_DEFINITION = {
       h: 136,
       name: "よくある質問で回答できるか",
     },
-    { id: "a1", kind: "action", x: 480, y: 180, w: 100, h: 72, name: "リンクを添える" },
-    { id: "r1", kind: "result", x: 480, y: 320, w: 100, h: 60, name: "返信する" },
-    { id: "r2", kind: "result", x: 200, y: 320, w: 200, h: 60, name: "担当者へ回す" },
+    {
+      id: "a1",
+      kind: "action",
+      x: 480,
+      y: 180,
+      w: 100,
+      h: 72,
+      name: "リンクを添える",
+    },
+    {
+      id: "r1",
+      kind: "result",
+      x: 480,
+      y: 320,
+      w: 100,
+      h: 60,
+      name: "返信する",
+    },
+    {
+      id: "r2",
+      kind: "result",
+      x: 200,
+      y: 320,
+      w: 200,
+      h: 60,
+      name: "担当者へ回す",
+    },
   ],
   wires: [
-    { id: "j-start", from: "start", to: "q1", line: "flow", points: [[300, 110], [300, 150]] },
+    {
+      id: "j-start",
+      from: "start",
+      to: "q1",
+      line: "flow",
+      points: [
+        [300, 110],
+        [300, 150],
+      ],
+    },
     {
       id: "j-yes",
       from: "q1",
       to: "a1",
       line: "flow",
-      points: [[440, 218], [480, 218]],
+      points: [
+        [440, 218],
+        [480, 218],
+      ],
       label: "YES",
     },
     {
@@ -153,10 +197,22 @@ const JUDGEMENT_DEFINITION = {
       from: "q1",
       to: "r2",
       line: "flow",
-      points: [[300, 286], [300, 320]],
+      points: [
+        [300, 286],
+        [300, 320],
+      ],
       label: "NO",
     },
-    { id: "j-a1", from: "a1", to: "r1", line: "flow", points: [[530, 252], [530, 320]] },
+    {
+      id: "j-a1",
+      from: "a1",
+      to: "r1",
+      line: "flow",
+      points: [
+        [530, 252],
+        [530, 320],
+      ],
+    },
   ],
 };
 
@@ -295,7 +351,12 @@ export const RETIRED_DOCUMENT_CONVERTED: string = documentOf([
 /** 書き換えた文書が使用していたノードの種類（設定の `map.kinds` へ書き足す値） */
 export const RETIRED_KINDS: Record<string, MapKind> = {
   external: { label: "外部", icon: "globe", shape: "rounded", color: "gray" },
-  script: { label: "スクリプト", icon: "code-xml", shape: "rect", color: "blue" },
+  script: {
+    label: "スクリプト",
+    icon: "code-xml",
+    shape: "rect",
+    color: "blue",
+  },
   llm: { label: "LLM", icon: "bot", shape: "rounded", color: "purple" },
   data: { label: "データ", icon: "database", shape: "double", color: "yellow" },
   start: { label: "開始", icon: "play", shape: "pill", color: "green" },
