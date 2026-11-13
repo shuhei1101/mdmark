@@ -13,16 +13,22 @@ er:
     - from: 補足
       to: 案内の手順
       from_cardinality: '1'
+      from_column: walkthroughs
+      to_column: index
       to_cardinality: 0..n
       label: walkthroughs
     - from: 補足
       to: 配置の上書き
       from_cardinality: '1'
+      from_column: layout
+      to_column: id
       to_cardinality: 0..n
       label: layout
     - from: 補足
       to: 分類
       from_cardinality: '1'
+      from_column: groups
+      to_column: id
       to_cardinality: 0..n
       label: groups
 tables:
@@ -46,7 +52,7 @@ tables:
         default: '`{}`'
         description: 'ノード・線の ID ごとの説明（`{ "text": 説明の文 }`）。線にポインターを当てたツールチップと、再生の帯の説明に出す'
         example: '{"mount": {"text": "文書を描く公開関数"}}'
-        notes: キーは Mermaid のノード・線の ID（シーケンス図はメッセージの番号、ER 図はテーブル名・`{テーブル名}.{列名}`・関連の記載順の `r{番号}`、状態遷移図は状態の ID・遷移の記載順の `t{番号}`）。無い ID は `map_unknown_ref`
+        notes: キーは Mermaid のノード・線の ID（シーケンス図はメッセージの番号、ER 図はテーブル名・`{テーブル名}.{列名}`・関連の記載順の `r{番号}`、状態遷移図は状態の ID・遷移の記載順の `t{番号}`）。無い ID は `map_unknown_ref`。ER 図のテーブル名・状態遷移図の状態の ID が、同じ図の関連・遷移の `r{番号}`・`t{番号}` か ER 図の分類の ID と同じときは `map_invalid_value`
       - name: plays_over
         title: 再生を重ねる構成図
         type: integer
@@ -72,7 +78,7 @@ tables:
         not_null: true
         description: 箱に入れるテーブル名。1 つのテーブルは 1 つの分類にだけ入る
         example: '["注文", "明細", "支払い"]'
-        notes: 無いテーブル名は `map_unknown_ref`、2 つの分類に入るテーブルは `map_invalid_value`
+        notes: 無いテーブル名は `map_unknown_ref`、2 つの分類に入るテーブルと、テーブル名と同じ分類の ID は `map_invalid_value`
       - name: parent
         title: 親の分類
         type: string
@@ -181,7 +187,7 @@ tables:
         title: 最初に閉じる
         type: boolean
         default: '`false`'
-        description: グループの ID のときだけ。`true` なら、開閉の状態が保たれていないときにそのグループを閉じて描く
+        description: グループ（構成図の `subgraph`、ER 図の分類、状態遷移図の入れ子の状態）の ID と、ER 図のテーブル名のときだけ。`true` なら、開閉の状態が保たれていないときに、グループを閉じて描き、テーブルは列を閉じて描く
         example: 'true'
 refs:
   - IF-472-34#constraints[map の範囲]
