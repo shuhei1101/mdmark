@@ -220,7 +220,12 @@ test("test_flow_to_map", async () => {
   ]);
   expect(parsed.data.layout["faq->draft"]?.line).toBe("read");
   expect(parsed.data.layout["recv->table"]?.line).toBe("write");
-  expect(parsed.data.notes.recv?.text).toContain("入力: 問い合わせのメール");
+  expect(parsed.data.notes.recv?.text).toMatch(
+    /^1 通ずつ読み込む\n入力: 問い合わせのメール/,
+  );
+  expect(chart.nodes.find((node) => node.id === "classify")?.label).toBe(
+    "意思決定モデル\n分類",
+  );
   expect(parsed.data.notes.spec?.text).toBe("仕様の文書");
   expect(parsed.data.notes["mail->recv"]?.text).toBe(
     "件名・本文・送信者のアドレス",
