@@ -2,7 +2,7 @@ use_cases:
   - kind: single
     scenario: docs/scenario/SC-472-21.yaml
     impact: changed
-    detail: 利用側のページが本文を描き直しても、読者が手で開閉した行の詳細・details の範囲などがその開閉のまま残るシナリオを追加
+    detail: 利用側のページが本文を描き直しても、読者が手で開閉した行の詳細・details の範囲がその開閉のまま残るシナリオを追加
     depends_on: []
   - kind: single
     scenario: docs/scenario/SC-472-23.yaml
@@ -21,23 +21,28 @@ use_cases:
     depends_on: []
   - kind: single
     scenario: docs/scenario/SC-472-17.yaml
-    impact: run_only
-    detail: コードブロックの畳む行と表のキーの階層の開閉の始め方が変わるため回帰を確認する
+    impact: changed
+    detail: 利用側のページが本文を描き直しても、読者が手で変えたコードブロックの畳みが残るシナリオを追加
     depends_on: []
   - kind: single
     scenario: docs/scenario/SC-472-20.yaml
-    impact: run_only
-    detail: ファイルツリーのフォルダの開閉の始め方が変わるため回帰を確認する
+    impact: changed
+    detail: 利用側のページが本文を描き直しても、読者が手で開閉したファイルツリーのフォルダが残るシナリオを追加
     depends_on: []
   - kind: single
     scenario: docs/scenario/SC-472-64.yaml
-    impact: run_only
-    detail: 折りたたみの注意書きの開閉の始め方が変わるため回帰を確認する
+    impact: changed
+    detail: 利用側のページが本文を描き直しても、読者が手で開閉した折りたたみの注意書きが残るシナリオを追加
     depends_on: []
   - kind: single
     scenario: docs/scenario/SC-472-42.yaml
-    impact: run_only
-    detail: ER 図の列の開閉の始め方が変わるため回帰を確認する
+    impact: changed
+    detail: 利用側のページが本文を描き直しても、読者が畳んだ ER 図の列が残るシナリオを追加
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-73.yaml
+    impact: changed
+    detail: 利用側のページが本文を描き直しても、読者が手で変えた表のキーの階層の開閉が残るシナリオを追加
     depends_on: []
 docs:
   - page: docs/guide/導入-文書を描く.md

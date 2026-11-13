@@ -430,6 +430,34 @@ scenarios:
       - 警告を止めたコードブロックの上に記載の警告が無く、罫線の文字のまま言語 `text` のコードブロックで描かれている
       - 警告を止めていない言語の無いコードブロックの上には、記載の警告が残っている
     test: test_normal_when_tree_lines_warning_suppressed
+  - name: 正常シナリオ（描き直しても手で開閉したフォルダを保つ）
+    setup:
+      - name: mdmark を読み込むページ
+        description: 正常シナリオと同じ
+        notes: '`mount` の戻り値の `update` で、本文を差し替えて描き直す'
+      - name: 入れ子の深いファイルツリーの Markdown
+        description: 正常シナリオ（ファイルツリーのフォルダを開閉する）と同じ文書
+      - name: 描き直す Markdown
+        description: 3 つのツリーの `tree.ts` を `tree-view.ts` に書き換え、末尾にマーカーの無い言語 `tree` のコードブロックを追加した文書
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 利用側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を指定して描かせる
+        M-->>P: depth のとおりに開いたツリーを描く
+        U->>P: 1 つ目のツリーの src/ を閉じ、3 つ目のツリーの src/ を開く
+        P-->>U: 開閉を変えたツリー
+        P->>M: 書き換えた Markdown で描き直させる
+        M-->>P: 手で変えた開閉のまま描き、追加したツリーは全てのフォルダを開いて描く
+        P-->>U: 書き換えた本文を表示
+    expected:
+      - 描き直した後、1 つ目のツリーの `src/` が閉じ、開閉のボタンの `aria-expanded` が `false`
+      - 描き直した後、3 つ目のツリーの `src/` が開き、`parts/` が表示されている
+      - 描き直した後、追加したツリーは全てのフォルダが開き、`tree-view.ts` が表示されている
+    test: test_normal_when_tree_folders_updated_after_toggle
 lead: 文書の作成者が、`<!-- steps -->` 〜 `<!-- /steps -->` で囲んだ番号付きリスト・言語 `tree` のコードブロック・頭に `badge:` を付けた行内のコードを記載すると、mdmark がそれぞれ手順・ファイルツリー・バッジに描く。手順は `closed`・`open` で見出し付きの折りたたみに入れられ、ファイルツリーは `#` の後ろの注釈を列に統一し、読者がフォルダを開閉して元の罫線のテキストをコピーできる。
 issue: 4
 primary_actor: 文書の作成者
@@ -440,7 +468,7 @@ trigger: 利用側のページが、ステップ・ファイルツリー・バ�
 preconditions:
   - ページがバージョンを固定した URL で mdmark の JavaScript と CSS を読み込んでいる
   - ステップ・ファイルツリー・バッジの機能（`steps`・`tree`・`badge`）がオン（既定）
-success_guarantee: 番号付きリストが番号と線でつないだ手順に、罫線のフォルダ構成が入れ子のツリーに、`badge:` の行内のコードが札になる。GitHub ではリスト・コードブロック・行内のコードとして読み込める。
+success_guarantee: 番号付きリストが番号と線でつないだ手順に、罫線のフォルダ構成が入れ子のツリーに、`badge:` の行内のコードが札になる。利用側のページが本文を描き直しても、読者が手で開閉したフォルダは保たれる。GitHub ではリスト・コードブロック・行内のコードとして読み込める。
 minimal_guarantee: 読み込めない記載方法の部品は、記載したとおりのリスト・コードブロックで描かれ、上に記載の警告が出る。
 test_file: tests/e2e/単一ユースケース/ステップ・ファイルツリー・バッジで本文を組む.spec.ts
 refs:
