@@ -112,9 +112,9 @@ test("test_attach_file_trees", async () => {
   // 検証
   const tree = treeOf(root);
   expect(tree.querySelector(".mdmark-tree-bar")).not.toBeNull();
-  expect(expandedOf(tree, ["mdmark/", "src/"])).toEqual(["true", "false"]);
-  expect(nestedListOf(toggleOf(tree, "src/")).getAttribute("hidden")).toBe(
-    "until-found",
+  expect(expandedOf(tree, ["mdmark/", "src/"])).toEqual(["true", "true"]);
+  expect(nestedListOf(toggleOf(tree, "src/")).hasAttribute("hidden")).toBe(
+    false,
   );
   const file = [...tree.querySelectorAll("li.mdmark-tree-file")].find(
     (candidate) => candidate.textContent?.includes("package.json"),

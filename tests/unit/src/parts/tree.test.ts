@@ -237,7 +237,7 @@ test("test_folder_open_by_default", async () => {
   const all = depths.map((depth) => folderOpenByDefault(depth, "all"));
   const two = depths.map((depth) => folderOpenByDefault(depth, "2"));
   // 検証
-  expect(unset).toEqual([true, false, false]);
+  expect(unset).toEqual([true, true, true]);
   expect(all).toEqual([true, true, true]);
   expect(two).toEqual([true, true, false]);
 });

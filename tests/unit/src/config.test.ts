@@ -241,6 +241,25 @@ test("test_resolve_config_when_table_pin_given", async () => {
   expect(resolvedEmpty.table.pin).toBe("each");
 });
 
+// 0 より大きい数だけを長文の列の最小の幅にし、ほかは既定の 45 にする（正常系）
+test("test_resolve_config_when_long_column_min_given", async () => {
+  // 準備
+  const { resolveConfig } = await loadConfig();
+  const configs = [
+    { table: { long_column_min: 30 } },
+    { table: { long_column_min: 0 } },
+    { table: { long_column_min: "wide" } },
+    { table: { long_column_min: -5 } },
+    {},
+  ] as unknown as MdmarkConfig[];
+  // 実行
+  const result = configs.map(
+    (config) => resolveConfig({ config }).table.longColumnMin,
+  );
+  // 検証
+  expect(result).toEqual([30, 45, 45, 45, 45]);
+});
+
 // COLOR_THEMES の名前だけを受け、他の値と無いときは dev-swiss にする（正常系）
 test("test_resolve_config_when_color_theme_given", async () => {
   // 準備
