@@ -127,12 +127,12 @@ erDiagram
   }
   注文 {
     int id PK
-    int 顧客ID FK
+    int 顧客ID FK "参照: 顧客.id"
   }
   顧客 ||--o{ 注文 : "注文する"
 ```
 
-<!-- map-data: {"version": 1, "notes": {"注文.顧客ID": {"text": "参照: 顧客.id"}, "r1": {"text": "顧客 1 人が注文を 0 件以上持つ"}}, "groups": {"記録": {"title": "記録", "tables": ["注文"]}}} -->
+<!-- map-data: {"version": 1, "notes": {"注文.顧客ID": {"text": "注文した顧客"}, "r1": {"text": "顧客 1 人が注文を 0 件以上持つ"}}, "groups": {"記録": {"title": "記録", "tables": ["注文"]}}} -->
 
 <!-- /map -->
 ````
