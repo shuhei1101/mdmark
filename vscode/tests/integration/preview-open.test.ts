@@ -880,7 +880,10 @@ suite("プレビューを開く", () => {
       },
       { message: "読み込み中が出ない" },
     );
-    assert.ok(shownAfter >= 900, `読み込み中が ${Math.round(shownAfter)} ms で出た`);
+    assert.ok(
+      shownAfter >= 900,
+      `読み込み中が ${Math.round(shownAfter)} ms で出た`,
+    );
     const [loading] = await inspect(".mdmark-preview-loading");
     assert.strictEqual(loading?.attributes.role, "status");
     assert.ok(loading?.text.includes("mdmark を読み込んでいます"));
