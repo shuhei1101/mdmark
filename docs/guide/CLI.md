@@ -179,7 +179,7 @@ npx github:shuhei1101/mdmark#v{バージョン} build [--config {設定ファイ
 
 ずれ 1 つを 1 行（`{ファイル}:{場所}: {種類}: {内容}`。場所が空のときは `{ファイル}: {種類}: {内容}`）で並べ、最後に `ずれ {件数} 件` の行を出す。
 ファイルは設定ファイルのあるフォルダからの相対パス。
-並びは `schema` → `unknown_color_theme` → `no_documents` → `checkIndex` が返却した並び → エイリアスのずれ（[`buildAliases`](./API.md#エイリアスを作る) が返却した並び。`alias_no_files`・`alias_unreadable` は読み込んだ行の順にその場所へ配置する） → `missing_file` → `include_target_missing`・`include_circular` → `unknown_mark` → `diagram_` で始まる種類（いずれも文書のパスの順、同じ文書の中は行の順）。
+並びは `schema` → `unknown_color_theme` → `no_documents` → `checkIndex` が返却した並び → エイリアスのずれ（[`buildAliases`](./API.md#エイリアスを作る) が返却した並び。`alias_no_files`・`alias_unreadable` は読み込んだ行の順にその場所へ配置する） → `missing_file` → `include_target_missing`・`include_circular` → `unknown_mark` → `diagram_` で始まる種類（いずれも文書のパスの順、同じ文書の中は行の順） → `plain_md_with_marks`（文書のパスの順）。
 内容は、何が合わないかと修正方法の日本語の 1 文。
 
 ```text
@@ -232,6 +232,7 @@ mdmark.config.yaml:build: schema: `build.out` がありません。書き出す 
 | `map_unknown_icon` | 設定の `map.kinds` の `icon` が Lucide に無い名前。場所はキーのパス（`map.kinds.store.icon`） |
 | `map_unknown_class` | map の範囲のノードのクラスが、設定の `map.kinds` に無い |
 | `map_unknown_line` | map の補足の `layout` の `line` の名前が、設定の `map.lines` に無い |
+| `plain_md_with_marks` | 拡張子が `.md` で `.mark.md` でない文書が、mdmark のマーカー（記法・`features`・`libraries` の対応表・`extensions` の拡張のマーカー。`check.ignore` の名前を除く）を含む。1 文書に 1 件で、場所は最初のマーカーの行。内容は改名先のファイル名と、設定の `check.suggestMarkExtension` で提案を止められること。設定の `check.suggestMarkExtension` が `false` のときと、`--text`・`--file` のときは出さない |
 
 <!-- /table -->
 

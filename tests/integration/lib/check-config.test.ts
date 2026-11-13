@@ -32,16 +32,16 @@ async function createCleanDir(options?: { js?: boolean }): Promise<string> {
   const dir = await createTempDir();
   await runCli(["init", dir, ...(options?.js ? ["--js"] : [])], dir);
   await writeFiles(dir, {
-    "a.md": "# A\n",
-    "b.md": "# B\n",
+    "a.mark.md": "# A\n",
+    "b.mark.md": "# B\n",
     "index.yaml": [
       "schema: 2",
       "docs:",
       "  - id: a",
-      "    path: a.md",
+      "    path: a.mark.md",
       "    title: A",
       "  - id: b",
-      "    path: b.md",
+      "    path: b.mark.md",
       "    title: B",
       "",
     ].join("\n"),
@@ -52,7 +52,7 @@ async function createCleanDir(options?: { js?: boolean }): Promise<string> {
 /** フォルダの設定・索引・文書の中身を返却する（変わっていないことを確認する） */
 async function snapshot(dir: string): Promise<string[]> {
   return Promise.all(
-    ["mdmark.config.yaml", "index.yaml", "a.md", "b.md"].map((path) =>
+    ["mdmark.config.yaml", "index.yaml", "a.mark.md", "b.mark.md"].map((path) =>
       readFile(join(dir, path), "utf8"),
     ),
   );
@@ -128,7 +128,7 @@ test("test_normal_when_no_documents", async () => {
 test("test_error_when_config_missing", async () => {
   // 準備
   const dir = await createTempDir();
-  await writeFiles(dir, { "a.md": "# A\n" });
+  await writeFiles(dir, { "a.mark.md": "# A\n" });
   // 実行
   const result = await runCli(["check"], dir);
   // 検証
@@ -165,7 +165,7 @@ test("test_normal_when_unknown_mark", async () => {
   // 準備
   const dir = await createCleanDir();
   await writeFiles(dir, {
-    "a.md": "# A\n\n<!-- tabz -->\n\n```markdown\n<!-- tabz -->\n```\n",
+    "a.mark.md": "# A\n\n<!-- tabz -->\n\n```markdown\n<!-- tabz -->\n```\n",
   });
   const before = await snapshot(dir);
   // 実行
@@ -175,9 +175,112 @@ test("test_normal_when_unknown_mark", async () => {
   const lines = linesOf(result.stdout);
   const marks = lines.filter((line) => line.includes("unknown_mark"));
   expect(marks).toHaveLength(1);
-  expect(marks[0]).toMatch(/^a\.md:3: unknown_mark: .*tabz/);
+  expect(marks[0]).toMatch(/^a\.mark\.md:3: unknown_mark: .*tabz/);
   expect(lines.at(-1)).toBe("ずれ 1 件");
   expect(await snapshot(dir)).toEqual(before);
+});
+
+/** 記法を含む純粋な .md・.mark.md・GFM と Mermaid だけの .md を持ち、check.ignore に prettier-ignore を記載したフォルダを作る */
+async function createPlainMarkdownDir(): Promise<string> {
+  const dir = await createCleanDir();
+  const table = '<!-- table: {"kind": "data"} -->';
+  await appendConfig(dir, ["check:", "  ignore: [prettier-ignore]"]);
+  await writeFiles(dir, {
+    "a.md": [
+      "# A",
+      "",
+      "",
+      "",
+      table,
+      "| a |",
+      "| - |",
+      "<!-- /table -->",
+      table,
+      "| b |",
+      "| - |",
+      "<!-- /table -->",
+      "",
+    ].join("\n"),
+    "b.mark.md": `# B\n\n${table}\n\n| a |\n| - |\n\n<!-- /table -->\n`,
+    "c.md": [
+      "# C",
+      "",
+      "<!-- prettier-ignore -->",
+      "| a |",
+      "| - |",
+      "",
+      "```mermaid",
+      "flowchart TD",
+      "  A --> B",
+      "```",
+      "",
+    ].join("\n"),
+    "index.yaml": [
+      "schema: 2",
+      "docs:",
+      "  - id: a",
+      "    path: a.md",
+      "    title: A",
+      "  - id: b",
+      "    path: b.mark.md",
+      "    title: B",
+      "  - id: c",
+      "    path: c.md",
+      "    title: C",
+      "  - id: a2",
+      "    path: a.mark.md",
+      "    title: A2",
+      "",
+    ].join("\n"),
+  });
+  return dir;
+}
+
+// 拡張子が純粋な .md で mdmark の記法を含む文書を、最初の記法の行を指す plain_md_with_marks の行にして終了コード 1 で終わる（正常系（記法を含む純粋な .md がある））
+test("test_normal_when_plain_md_has_marks", async () => {
+  // 準備
+  const dir = await createPlainMarkdownDir();
+  const files = [
+    "mdmark.config.yaml",
+    "index.yaml",
+    "a.md",
+    "b.mark.md",
+    "c.md",
+  ];
+  const before = await Promise.all(
+    files.map((path) => readFile(join(dir, path), "utf8")),
+  );
+  // 実行
+  const result = await runCli(["check"], dir);
+  // 検証
+  expect(result.code).toBe(1);
+  const lines = linesOf(result.stdout);
+  const plain = lines.filter((line) => line.includes("plain_md_with_marks"));
+  expect(plain).toHaveLength(1);
+  expect(plain[0]).toMatch(/^a\.md:5: plain_md_with_marks: /);
+  expect(plain[0]).toContain("a.mark.md");
+  expect(plain[0]).toContain("check.suggestMarkExtension");
+  expect(
+    lines.some(
+      (line) => line.startsWith("b.mark.md") || line.startsWith("c.md"),
+    ),
+  ).toBe(false);
+  expect(lines.at(-1)).toBe("ずれ 1 件");
+  expect(
+    await Promise.all(files.map((path) => readFile(join(dir, path), "utf8"))),
+  ).toEqual(before);
+});
+
+// check.suggestMarkExtension が false のときは plain_md_with_marks を出さない（正常系（拡張子の提案を止める））
+test("test_normal_when_extension_hint_disabled", async () => {
+  // 準備
+  const dir = await createPlainMarkdownDir();
+  await appendConfig(dir, ["  suggestMarkExtension: false"]);
+  // 実行
+  const result = await runCli(["check"], dir);
+  // 検証
+  expect(result.code).toBe(0);
+  expect(linesOf(result.stdout)).toEqual(["ずれ 0 件"]);
 });
 
 // 拡張が登録したマーカーと check.ignore に記載した名前のマーカーは、ずれにしない（正常系（拡張と check.ignore のマーカー））
@@ -190,7 +293,7 @@ test("test_normal_when_known_extension_and_ignored_mark", async () => {
     "  ignore: [prettier-ignore]",
   ]);
   await writeFiles(dir, {
-    "a.md":
+    "a.mark.md":
       '# A\n\n<!-- greet: {"name": "太郎"} -->\n\n<!-- prettier-ignore -->\n',
   });
   // 実行
@@ -212,7 +315,7 @@ test("test_normal_when_extension_unloadable", async () => {
       'export default { name: "broken", directive: "broken", load: async () => ({}) };',
       "",
     ].join("\n"),
-    "a.md": "# A\n\n<!-- broken -->\n",
+    "a.mark.md": "# A\n\n<!-- broken -->\n",
   });
   // 実行
   const result = await runCli(["check"], dir);
@@ -230,7 +333,8 @@ test("test_normal_when_extension_unloadable", async () => {
   expect(
     lines.some(
       (line) =>
-        line.startsWith("a.md:3: unknown_mark:") && line.includes("broken"),
+        line.startsWith("a.mark.md:3: unknown_mark:") &&
+        line.includes("broken"),
     ),
   ).toBe(true);
 });
@@ -250,8 +354,8 @@ test("test_normal_when_base_given", async () => {
   expect(
     lines.some(
       (line) =>
-        line.startsWith("b.md: missed_change_together:") &&
-        line.includes("a.md"),
+        line.startsWith("b.mark.md: missed_change_together:") &&
+        line.includes("a.mark.md"),
     ),
   ).toBe(true);
   expect(lines.at(-1)).toBe("ずれ 1 件");
@@ -439,7 +543,7 @@ test("test_normal_when_files_missing", async () => {
   ].join("\n");
   await writeFiles(dir, {
     "mdmark.config.yaml": config,
-    "docs/guide.md": guide,
+    "docs/guide.mark.md": guide,
     "assets/images/logo.png": "png",
   });
   // 実行
@@ -454,7 +558,7 @@ test("test_normal_when_files_missing", async () => {
     [9, "files/missing.pdf"],
   ] as const) {
     const found = lines.find((text) =>
-      text.startsWith(`docs/guide.md:${line}: missing_file:`),
+      text.startsWith(`docs/guide.mark.md:${line}: missing_file:`),
     );
     expect(found, path).toContain(path);
   }
@@ -464,7 +568,9 @@ test("test_normal_when_files_missing", async () => {
   );
   expect(lines.at(-1)).toBe("ずれ 4 件");
   expect(await readFile(join(dir, "mdmark.config.yaml"), "utf8")).toBe(config);
-  expect(await readFile(join(dir, "docs", "guide.md"), "utf8")).toBe(guide);
+  expect(await readFile(join(dir, "docs", "guide.mark.md"), "utf8")).toBe(
+    guide,
+  );
   expect(existsSync(join(dir, "dist"))).toBe(false);
 });
 
@@ -516,8 +622,8 @@ test("test_normal_when_diagram_drift", async () => {
     "",
   ];
   await writeFiles(dir, {
-    "docs/a.md": a.join("\n"),
-    "docs/b.md": [
+    "docs/a.mark.md": a.join("\n"),
+    "docs/b.mark.md": [
       "# B",
       "",
       ...diagramLines("er", shopEr()),
@@ -529,15 +635,20 @@ test("test_normal_when_diagram_drift", async () => {
       "schema: 2",
       "docs:",
       "  - id: a",
-      "    path: docs/a.md",
+      "    path: docs/a.mark.md",
       "    title: A",
       "  - id: b",
-      "    path: docs/b.md",
+      "    path: docs/b.mark.md",
       "    title: B",
       "",
     ].join("\n"),
   });
-  const files = ["mdmark.config.yaml", "index.yaml", "docs/a.md", "docs/b.md"];
+  const files = [
+    "mdmark.config.yaml",
+    "index.yaml",
+    "docs/a.mark.md",
+    "docs/b.mark.md",
+  ];
   const read = () =>
     Promise.all(files.map((path) => readFile(join(dir, path), "utf8")));
   const before = await read();
@@ -554,13 +665,13 @@ test("test_normal_when_diagram_drift", async () => {
     [30, "payments"],
   ] as const) {
     const found = lines.filter((text) =>
-      text.startsWith(`docs/a.md:${line}: diagram_invalid:`),
+      text.startsWith(`docs/a.mark.md:${line}: diagram_invalid:`),
     );
     expect(found, String(line)).toHaveLength(1);
     expect(found[0]).toContain(word);
   }
   expect(lines.some((line) => line.includes("unknown_mark"))).toBe(false);
-  expect(lines.some((line) => line.includes("docs/b.md"))).toBe(false);
+  expect(lines.some((line) => line.includes("docs/b.mark.md"))).toBe(false);
   expect(lines.at(-1)).toBe("ずれ 3 件");
   expect(await read()).toEqual(before);
 });
@@ -885,7 +996,7 @@ test("test_normal_when_include_targets_missing", async () => {
   const dir = await createTempDir();
   const files = {
     "mdmark.config.yaml": DOCS_CONFIG,
-    "docs/a.md": [
+    "docs/a.mark.md": [
       "# A",
       "",
       '<!-- include: {"path": "missing.md"} -->',
@@ -893,7 +1004,7 @@ test("test_normal_when_include_targets_missing", async () => {
       '<!-- include: {"path": "共通/手順.md", "heading": "実行"} -->',
       "",
     ].join("\n"),
-    "docs/b.md": [
+    "docs/b.mark.md": [
       "# B",
       '<!-- include: {"path": "共通/手順.md", "heading": "無い見出し"} -->',
       "",
@@ -912,19 +1023,23 @@ test("test_normal_when_include_targets_missing", async () => {
   const lines = linesOf(result.stdout);
   const lineOf = (prefix: string) =>
     lines.find((line) => line.startsWith(prefix)) ?? "";
-  expect(lineOf("docs/a.md:3: include_target_missing:")).toContain(
+  expect(lineOf("docs/a.mark.md:3: include_target_missing:")).toContain(
     "missing.md",
   );
-  expect(lineOf("docs/b.md:2: include_target_missing:")).toContain(
+  expect(lineOf("docs/b.mark.md:2: include_target_missing:")).toContain(
     "無い見出し",
   );
-  const range = lineOf("docs/b.md:4: include_target_missing:");
+  const range = lineOf("docs/b.mark.md:4: include_target_missing:");
   expect(range).toContain("L8-L10");
   expect(range).toContain("5 行");
-  for (const line of [lineOf("docs/a.md:3:"), lineOf("docs/b.md:2:"), range]) {
+  for (const line of [
+    lineOf("docs/a.mark.md:3:"),
+    lineOf("docs/b.mark.md:2:"),
+    range,
+  ]) {
     expect(line).toContain("修正してください");
   }
-  expect(lines.some((line) => line.startsWith("docs/a.md:5"))).toBe(false);
+  expect(lines.some((line) => line.startsWith("docs/a.mark.md:5"))).toBe(false);
   expect(lines.at(-1)).toBe("ずれ 3 件");
   expect(await snapshotFiles(dir, Object.keys(files))).toEqual(before);
 });
@@ -937,19 +1052,19 @@ test("test_normal_when_include_circular_or_outside", async () => {
   const files = {
     "root/mdmark.config.yaml": [
       "build:",
-      '  include: ["docs/a.md"]',
+      '  include: ["docs/a.mark.md"]',
       "  out: dist/docs.html",
       "",
     ].join("\n"),
-    "root/docs/a.md": [
+    "root/docs/a.mark.md": [
       "# A",
       "",
-      '<!-- include: {"path": "b.md"} -->',
+      '<!-- include: {"path": "b.mark.md"} -->',
       "",
       '<!-- include: {"path": "../../outside.md"} -->',
       "",
     ].join("\n"),
-    "root/docs/b.md": '# B\n<!-- include: {"path": "a.md"} -->\n',
+    "root/docs/b.mark.md": '# B\n<!-- include: {"path": "a.mark.md"} -->\n',
     "outside.md": '<!-- include: {"path": "nowhere.md"} -->\n',
   };
   await writeFiles(parent, files);
@@ -960,12 +1075,12 @@ test("test_normal_when_include_circular_or_outside", async () => {
   expect(result.code).toBe(1);
   const lines = linesOf(result.stdout);
   const circular = lines.find((line) =>
-    line.startsWith("docs/b.md:2: include_circular:"),
+    line.startsWith("docs/b.mark.md:2: include_circular:"),
   );
-  expect(circular).toContain("a.md → b.md → a.md");
+  expect(circular).toContain("a.mark.md → b.mark.md → a.mark.md");
   expect(circular).toContain("修正してください");
   const outside = lines.find((line) =>
-    line.startsWith("docs/a.md:5: include_target_missing:"),
+    line.startsWith("docs/a.mark.md:5: include_target_missing:"),
   );
   expect(outside).toContain("../../outside.md");
   expect(outside).toContain("設定ファイルのフォルダの外");
@@ -1032,7 +1147,7 @@ test("test_normal_when_map_data_drift", async () => {
   expect(result.code).toBe(1);
   const lines = linesOf(result.stdout);
   const at = (line: number, kind: string) =>
-    lines.filter((item) => item.startsWith(`docs/a.md:${line}: ${kind}:`));
+    lines.filter((item) => item.startsWith(`docs/a.mark.md:${line}: ${kind}:`));
   expect(
     a.indexOf(drift.find((item) => item.startsWith("<!-- map-data")) ?? "") + 1,
   ).toBe(10);
@@ -1043,12 +1158,14 @@ test("test_normal_when_map_data_drift", async () => {
   expect(at(10, "map_invalid_value")).toHaveLength(1);
   expect(at(10, "map_invalid_value")[0]).toContain("walkthroughs[0].text");
   expect(at(10, "map_invalid_value")[0]).toContain("--");
-  const mark = lines.filter((item) => item.startsWith("docs/a.md:3:"));
+  const mark = lines.filter((item) => item.startsWith("docs/a.mark.md:3:"));
   expect(mark).toHaveLength(1);
-  expect(mark[0]).toMatch(/^docs\/a\.md:3: map_unknown_key: .*mdoe/);
+  expect(mark[0]).toMatch(/^docs\/a\.mark\.md:3: map_unknown_key: .*mdoe/);
   for (const key of ["title", "focus", "play", "interval", "collapse"])
     expect(mark[0]).toContain(key);
-  expect(lines.some((line) => line.startsWith("docs/a.md:20:"))).toBe(false);
+  expect(lines.some((line) => line.startsWith("docs/a.mark.md:20:"))).toBe(
+    false,
+  );
   expect(lines.at(-1)).toBe("ずれ 4 件");
   expect(await snapshotFiles(dir, MAP_FILES)).toEqual(before);
 });
@@ -1128,7 +1245,7 @@ test("test_normal_when_map_config_drift", async () => {
   expect(icon[0]).toContain("no-such-icon");
   const doc = (kind: string) =>
     lines.filter(
-      (line) => line.startsWith("docs/a.md") && line.includes(` ${kind}:`),
+      (line) => line.startsWith("docs/a.mark.md") && line.includes(` ${kind}:`),
     );
   expect(doc("map_unknown_class")).toHaveLength(1);
   expect(doc("map_unknown_class")[0]).toContain("queue");
@@ -1146,7 +1263,7 @@ test("test_normal_when_legacy_mark", async () => {
   const dir = await createCleanDir({ js: true });
   await appendConfig(dir, ["extensions: [extensions/example.js]"]);
   await writeFiles(dir, {
-    "a.md": [
+    "a.mark.md": [
       "# A",
       "",
       "<!-- table: data filter=名前 -->",
@@ -1158,7 +1275,7 @@ test("test_normal_when_legacy_mark", async () => {
       "<!-- /table -->",
       "",
     ].join("\n"),
-    "b.md": [
+    "b.mark.md": [
       "<!-- section: closed -->",
       "",
       "# B",
@@ -1174,15 +1291,15 @@ test("test_normal_when_legacy_mark", async () => {
   expect(result.code).toBe(1);
   const lines = linesOf(result.stdout);
   for (const head of [
-    "a.md:3: legacy_mark:",
-    "b.md:1: legacy_mark:",
-    "b.md:5: legacy_mark:",
+    "a.mark.md:3: legacy_mark:",
+    "b.mark.md:1: legacy_mark:",
+    "b.mark.md:5: legacy_mark:",
   ]) {
     const found = lines.filter((line) => line.startsWith(head));
     expect(found, head).toHaveLength(1);
     expect(found[0]).toContain("mdmark upgrade");
   }
-  expect(lines.find((line) => line.startsWith("b.md:5:"))).toContain(
+  expect(lines.find((line) => line.startsWith("b.mark.md:5:"))).toContain(
     "描くときに描きません",
   );
   expect(lines.at(-1)).toBe("ずれ 3 件");
@@ -1194,7 +1311,7 @@ test("test_normal_when_mark_options_drift", async () => {
   // 準備
   const dir = await createCleanDir();
   await writeFiles(dir, {
-    "a.md": [
+    "a.mark.md": [
       '<!-- code: {"title": "app.ts", "color": "red"} -->',
       "```ts",
       "const a = 1;",
@@ -1219,17 +1336,17 @@ test("test_normal_when_mark_options_drift", async () => {
   expect(result.code).toBe(1);
   const lines = linesOf(result.stdout);
   const unknown = lines.filter((line) =>
-    line.startsWith("a.md:1: unknown_mark_arg:"),
+    line.startsWith("a.mark.md:1: unknown_mark_arg:"),
   );
   expect(unknown).toHaveLength(1);
   expect(unknown[0]).toContain("color");
   const invalid = lines.filter((line) =>
-    line.startsWith("a.md:5: mark_option_invalid:"),
+    line.startsWith("a.mark.md:5: mark_option_invalid:"),
   );
   expect(invalid).toHaveLength(1);
   expect(invalid[0]).toContain("open");
   const unapplied = lines.filter((line) =>
-    line.startsWith("a.md:9: mark_option_unapplied:"),
+    line.startsWith("a.mark.md:9: mark_option_unapplied:"),
   );
   expect(unapplied).toHaveLength(1);
   expect(unapplied[0]).toContain("columns.数量.total");

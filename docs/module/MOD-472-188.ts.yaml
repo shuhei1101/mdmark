@@ -15,11 +15,18 @@ functions:
         type: HTMLElement
         required: true
         description: '`data-diagram="er"` の `figure.mdmark-diagram`（全画面の枠を含む）'
+      - name: states
+        type: PartStates
+        required: false
+        description: 部品の開閉の記録（省くと記録しない。全画面の枠には指定しない）。図を `partKey` の種類 `er`、部品の中の鍵をテーブルの `data-node` で引き、付けたときに `startOpen` の開閉（開くは全ての列を出す。マーカーは定義の `folded`）でないテーブルを `setErTableFolded` で切り替え、読者がボタンを押すたびに `recordOpen` で書き込む
     returns:
       type: () => void
       description: 付けた受け取りを解除する関数
     callees:
       - '#functions[setErTableFolded]'
+      - MOD-472-348#functions[partKey]
+      - MOD-472-348#functions[startOpen]
+      - MOD-472-348#functions[recordOpen]
     unit_tests:
       - name: test_attach_er_folds
         case: 正常
@@ -27,6 +34,12 @@ functions:
         condition: 主キー 1 つ・ほかの列 10 個・12 番目に外部キーを持つ `orders` と、その外部キーへ関係を持つ `customers` の ER 図（インターフェース定義『文書を描く』のフロー `正常系（ER 図の列を開閉する）` と同じ定義）で、`orders` の開閉のボタンを押し、もう一度押す
         mock: なし（Chromium）
         expected: 1 回目の後に主キーと外部キー以外の列の行が `hidden` を持ち、ボタンが `aria-expanded="false"`、12 番目の外部キーの列へ結ぶ線の端の y が変わる。2 回目の後に全ての列が出て、線の端の y が初めと同じ。フォーカスがボタンに残る
+      - name: test_attach_er_folds_when_states
+        case: 正常
+        summary: 記録した開閉で始め、押した開閉を記録する
+        condition: 列 12 個のテーブル `orders` の ER 図に空の `states` を指定して付け、`orders` の列の開閉のボタンを押してから削除し、同じ HTML を描き直した図に同じ `states` でもう一度付ける
+        mock: なし
+        expected: 2 回目に付けた後、`orders` の列の行が主キーと外部キーの 2 つと `非表示 10 列` の行で、ボタンの `aria-expanded` が `false`
     status: planned
     introduced:
       pr: 298

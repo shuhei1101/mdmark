@@ -1,0 +1,6 @@
+scope_out:
+  - item: コピー先のフォルダの名前と、`rm` の対象・`legacy-marks.js`・`THIRD_PARTY_LICENSES.txt` の検証のパスを、コピー元のフォルダの名前（`v0.11.0` 等）に合わせる
+    reason: ビルドは `marker-json.mjs` を持つフォルダを名前によらず探すため、コピー先を `migrations/next` のまま保てば IF-472-41 の正常系の前提と検証のパスが変わらない
+    plan: none
+docs: []
+use_cases: []

@@ -138,7 +138,7 @@ functions:
     process: |-
       1. `diffSource` か `commentStore` を指定して `docId` が無ければ `TypeError` を投げる。`commentStore` を `checkCommentStore(commentStore, "commentStore")` で確認する（コメントの読み込みと保存の関数を検める）。`baseMarkdown` を `checkBaseMarkdown` で確認し、`onColumnsChange` を指定して関数でなければ `onColumnsChange` を含む `TypeError` を投げる。比較元（`baseMarkdown` が文字列ならその値、それ以外は無し）を記録する。`mounted` に `el` があれば、その `destroy` を呼ぶ。差分の出し方を `normalizeDiffMode(opts.diffMode)` で決める
       2. 設定に既定を適用する（設定に既定を適用する）
-      3. 描く世代を 0、片付けたマーカーを `false`、操作を削除する関数・右側の目次を削除する関数・先頭へ戻るボタンを削除する関数を無しにし、右側の目次の状態（`SideTocState`）を `{ open: false, pinned: false }` で作り、セクションの開閉の記録（`SectionStates`）を空の `Map` で作る
+      3. 描く世代を 0、片付けたマーカーを `false`、操作を削除する関数・右側の目次を削除する関数・先頭へ戻るボタンを削除する関数を無しにし、右側の目次の状態（`SideTocState`）を `{ open: false, pinned: false }` で作り、セクションの開閉の記録（`SectionStates`）と部品の開閉の記録（`PartStates`）を空の `Map` で作る
       4. 文書を描く。描くたびに次の処理をする
          - 世代を 1 進め、前の操作を削除する関数・右側の目次を削除する関数・先頭へ戻るボタンを削除する関数があれば呼ぶ
          - 本文の HTML と機能のオン・オフを得て（文書を描く。`opts` の `index`・`docId`・`references`・`aliases` を指定する）、戻りの `page` を既定を適用した設定に重ねてこの描画の設定にする（ページの設定を重ねる）。`el` の中を本文の HTML に置き換え、`el` に `ROOT_CLASS` を付け、`COLOR_THEME_ATTRIBUTE` にこの描画の設定の `colorTheme` を付ける。`COLOR_SCHEME_CLASSES` の 2 つの class を削除してから、この描画の設定の `colorScheme` が `light`・`dark` ならその class を付ける
@@ -146,7 +146,7 @@ functions:
          - 機能の `side-toc` がオンなら右側の目次を付け（右側の目次を付ける。この描画の設定の `sideToc.mode`・機能の `sections`・手順 3 の状態を指定する。前の描画と `sideToc.mode` が違うときは、指定する前に手順 3 の状態を `{ open: false, pinned: false }` に戻す）、削除する関数を記録する。以降の記法の操作・外部ライブラリ・色分け・部品・差分に描いた要素として指定するのは、戻りの `content`（本文の列。右側の目次を付けないときは `el`）
          - 比較元があって本文と違うときは、本文の HTML を `el` に配置する前に、本文と比較元の Markdown を同じ引数で描いた `template` の中身を `colorDiffBlocks` に経由し、本文の中身を `el` に配置する（下の `blocks` の色分けと同じ）
          - 機能の `comments` がオンで `commentStore` と `docId` を指定し、右側の目次が本文の列に包んでいない（戻りの `content` が `el`）ときは、`el` の子を `div.mdmark-content` に包み、以降の描いた要素をその本文の列にする。削除する関数は、包む前の子の並びへ戻す（余白の列を本文の列の右に配置するため。インターフェース定義『文書を描く』の制約「余白のマーカー」）
-         - 記法の操作を付け（記法の操作を付ける。ツールチップを出す場所は、既定を適用した設定の `tooltips.placement` と `tooltips.diagramPlacement` を、表のピン止めの動きは `table.pin` を、長文の列の最小の幅は `table.longColumnMin` を指定する。`onColumnsChange` を指定したときはそれも指定する。手順 3 のセクションの開閉の記録を指定し、`revealHash` はこの描画が `update` から始まっていないときだけ `true` にする）、削除する関数を記録する
+         - 記法の操作を付け（記法の操作を付ける。ツールチップを出す場所は、既定を適用した設定の `tooltips.placement` と `tooltips.diagramPlacement` を、表のピン止めの動きは `table.pin` を、長文の列の最小の幅は `table.longColumnMin` を指定する。`onColumnsChange` を指定したときはそれも指定する。手順 3 のセクションの開閉の記録と部品の開閉の記録を指定し、`revealHash` はこの描画が `update` から始まっていないときだけ `true` にする）、削除する関数を記録する
          - マーカーの場所に外部ライブラリと拡張を描かせる（マーカーの場所に外部ライブラリを描かせる）。今の世代と片付けたマーカーを確認する `isCurrent` を指定し、戻りの Promise は待たない
          - 色分けの対象を色分けする（色分けの対象を色分けする）。既定を適用した設定の `syntax.url`・同じ `isCurrent`・`mount` ごとに 1 つ作るモジュールの記録（`Map`）を指定し、戻りの Promise は待たない
          - 機能の `mermaid` がオンなら、前の mermaid の図を削除する関数を呼んでから mermaid の図を付ける（mermaid の図を付ける。描いた要素・`el`・この描画の設定・`mount` の通し番号・同じ `isCurrent`・`mount` ごとに 1 つ作る mermaid のモジュールの記録（`Map`）・既定を適用した設定の `tooltips.diagramPlacement` を指定する）。戻りの `ready` は待たず、`detach` を記録する。マーカーの場所に外部ライブラリを描かせる処理の後に呼ぶ（読み込み中のブロックをマーカーの場所として取得させない）
@@ -156,9 +156,9 @@ functions:
          - `diffSource` を指定し、差分の出し方が `blocks` で、比較元が無く、色分けせずに描いたときは、比べる 2 つの本文を取り出す（`loadDiffPair`。戻りの Promise は待たない）。解決したときに世代が変わっているか片付けていれば何もしない。`pair` で前と後が違えば、後の Markdown をこの手順 4 で再描画する（`update` から始まったかは、取り出した描画の値を引き継ぐ）。そのときは本文の HTML を `el` に配置する前に、後と前の Markdown を同じ引数で描いた `template` の中身を `colorDiffBlocks` に経由し（`segmenter` は `Intl.Segmenter` があれば `ja`・`word` で作る）、後の中身を `el` に配置する。色分けして描いたときは取り出し元をもう一度呼ばない。`single` と同じ本文のときは描いたまま残す。`failed` なら本文の列の先頭に `renderNotice({ name: docId, source: "diff-blocks" })` の通知ブロックを配置する
          - 機能の `back-to-top` がオンなら先頭へ戻るボタンを付け（先頭へ戻るボタンを付ける。`el` と、ここまでで決まった本文の列を指定する）、削除する関数を記録する。描くたびにもう一度付け、スクロールする場所を `update` の後にももう一度決める
       5. 印刷の受け取りを付ける（印刷の前後で折り畳みと記法を開く）。`isEnabled` は記録した機能のオン・オフの `print` を返却する
-      6. `update` は、片付けた後なら何もしない。`options.baseMarkdown` を指定したときは `checkBaseMarkdown` で確認し（投げたら再描画せずにそのまま投げる）、比較元を文字列ならその値、`null` なら無しに差し替える。手順 4 で `update` から始まった描画として再描画する（右側の目次の状態とセクションの開閉の記録は保つ。`index`・`docId`・`references`・`aliases` は最初に指定したもののまま）
+      6. `update` は、片付けた後なら何もしない。`options.baseMarkdown` を指定したときは `checkBaseMarkdown` で確認し（投げたら再描画せずにそのまま投げる）、比較元を文字列ならその値、`null` なら無しに差し替える。手順 4 で `update` から始まった描画として再描画する（右側の目次の状態とセクションの開閉の記録と部品の開閉の記録は保つ。`index`・`docId`・`references`・`aliases` は最初に指定したもののまま）
       7. `reloadComments` は、片付けた後なら解決した Promise を返却し、そうでなければ記録した `PartsHandle` の `reloadComments()` を返却する。`focusComment(id)` は、片付けた後なら何もせず、そうでなければ記録した `PartsHandle` の `focusComment(id)` を呼ぶ
-      8. `destroy` は、片付けた後なら何もせず、そうでなければ片付けたマーカーを `true` にし、操作・差分・ビューとコメントの部品・右側の目次・先頭へ戻るボタン・mermaid の図・印刷の受け取りを解除し、セクションの開閉の記録を空にし、`el` の中を空にして `ROOT_CLASS`・`COLOR_THEME_ATTRIBUTE`・`COLOR_SCHEME_CLASSES` の class を削除し、`mounted` の `el` が自分なら削除する
+      8. `destroy` は、片付けた後なら何もせず、そうでなければ片付けたマーカーを `true` にし、操作・差分・ビューとコメントの部品・右側の目次・先頭へ戻るボタン・mermaid の図・印刷の受け取りを解除し、セクションの開閉の記録と部品の開閉の記録を空にし、`el` の中を空にして `ROOT_CLASS`・`COLOR_THEME_ATTRIBUTE`・`COLOR_SCHEME_CLASSES` の class を削除し、`mounted` の `el` が自分なら削除する
       9. `mounted` に `el` と戻り値を記録して返却する
     callees:
       - MOD-472-304#functions[resolveConfig]
@@ -429,6 +429,12 @@ functions:
         condition: '`location.hash` を `#注意` にして、`## 概要`・閉じた `## 補足`（中に `### 注意`）を描き、`概要` と `補足` の開閉のボタンを押してから、段落を書き換えて `## 付録` を追加した文書に `update`。続けて `destroy` して同じ文書をもう一度 `mount`'
         mock: なし
         expected: '`update` の後、`概要`・`補足` の中身が `hidden="until-found"` で、`付録` の中身は `hidden` を持たない。もう一度 `mount` した後は `概要` の中身が `hidden` を持たず、`補足` は `#注意` で開いて `hidden` を持たない'
+      - name: test_mount_when_parts_kept_on_update
+        case: 正常
+        summary: '`update` で描き直しても読者が開閉した部品の開閉を保ち、もう一度 `mount` すると捨てる'
+        condition: '行の詳細を 2 行目に持つ表と、閉じた `<!-- details: {"title": "手順"} -->` の範囲を描き、2 行目の開閉と `手順` を押してから、中の段落を書き換えた文書に `update`。続けて `destroy` して同じ文書をもう一度 `mount`'
+        mock: なし
+        expected: '`update` の後、2 行目の詳細の行が `hidden` を持たず、`手順` の `details` が `open` を持つ。もう一度 `mount` した後は、詳細の行が `hidden` を持ち、`details` が `open` を持たない'
       - name: test_mount_when_diff_blocks_with_hash
         case: 正常
         summary: '`blocks` で `mount` の直後に描き直す 2 回目の描画でも `#ID` へ移る'

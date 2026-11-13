@@ -41,6 +41,8 @@ export type CliConfig = MdmarkConfig & {
 export type CheckConfig = {
   /** 知らないマーカーとして通知しないマーカーの名前の並び */
   ignore?: string[];
+  /** 記法を含む純粋な `.md` に、拡張子を `.mark.md` に変えるよう提案するか（省略時は提案する） */
+  suggestMarkExtension?: boolean;
 };
 
 /** 値が連想配列（`null`・配列を除くオブジェクト）か */
@@ -653,7 +655,7 @@ function isValidMermaid(
   return true;
 }
 
-/** 設定の `check` を検める。オブジェクトでなければ `schema` のずれにして `undefined` を返却し、`ignore` はマーカーの名前の書式に合う値だけを残す */
+/** 設定の `check` を検める。オブジェクトでなければ `schema` のずれにして `undefined` を返却し、`ignore` はマーカーの名前の書式に合う値だけを残し、真偽値でない `suggestMarkExtension` を落とす */
 function validateCheck(
   value: unknown,
   file: string,
@@ -668,6 +670,21 @@ function validateCheck(
       ),
     );
     return undefined;
+  }
+  if (
+    value.suggestMarkExtension !== undefined &&
+    typeof value.suggestMarkExtension !== "boolean"
+  ) {
+    issues.push(
+      schemaIssue(
+        file,
+        "check.suggestMarkExtension",
+        "`check.suggestMarkExtension` は `true` か `false` で記載してください。",
+      ),
+    );
+    const rest = { ...value };
+    delete rest.suggestMarkExtension;
+    return validateCheck(rest, file, issues);
   }
   if (value.ignore === undefined) {
     return value as CheckConfig;

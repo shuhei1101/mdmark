@@ -17,7 +17,7 @@ data_models:
         type: string
         description: キーのパスか行。ファイル全体は空文字
       - name: kind
-        type: "'schema' | 'unknown_color_theme' | 'unknown_color_scheme' | 'no_documents' | MdmarkIndexIssue['kind'] | 'alias_no_files' | 'alias_unreadable' | MdmarkAliasProblem['kind'] | 'missing_file' | 'unknown_mark' | 'diagram_invalid' | 'retired_diagram' | 'syntax_warning' | 'unknown_mark_arg' | 'legacy_mark' | 'mark_option_unapplied' | 'mark_option_invalid' | 'map_invalid' | 'map_unknown_ref' | 'map_unknown_key' | 'map_invalid_value' | 'map_unknown_icon' | 'map_unknown_class' | 'map_unknown_line'"
+        type: "'schema' | 'unknown_color_theme' | 'unknown_color_scheme' | 'no_documents' | MdmarkIndexIssue['kind'] | 'alias_no_files' | 'alias_unreadable' | MdmarkAliasProblem['kind'] | 'missing_file' | 'unknown_mark' | 'diagram_invalid' | 'retired_diagram' | 'syntax_warning' | 'unknown_mark_arg' | 'legacy_mark' | 'mark_option_unapplied' | 'mark_option_invalid' | 'map_invalid' | 'map_unknown_ref' | 'map_unknown_key' | 'map_invalid_value' | 'map_unknown_icon' | 'map_unknown_class' | 'map_unknown_line' | 'plain_md_with_marks'"
         description: ずれの種類
       - name: message
         type: string
@@ -120,7 +120,7 @@ functions:
     container: src/cli/check.ts
     usecase: 共通
     summary: '設定を重ねて読み込み（`purpose: export`）、重ねた設定ファイルのそれぞれと端末の設定（`config.applyToExport` によらず）の構造のずれを先に、続けて `mdmark check` と同じ並びのずれを返却する。ずれの `file` は設定ファイルのパスを表示の構造にしたパス（`base` は今のフォルダ）'
-    description: '並びは設定の `schema`（`validateConfig` のずれ、`theme`・`extensions` の無いファイル、`build.glossary`・`build.entry` がまとめる文書に該当しないもの）→ `unknown_color_theme`（設定の `colorTheme` が `COLOR_THEMES` に無いとき 1 件。`where` は `colorTheme`、`message` は `不明なテーマ名 {名前} です。{COLOR_THEMES を「・」で結んだもの} のいずれかに修正してください。`）→ `unknown_color_scheme`（設定の `colorScheme` が `COLOR_SCHEMES` に無いとき 1 件。`where` は `colorScheme`、`message` は `不明な明暗 {値} です。{COLOR_SCHEMES を「・」で結んだもの} のいずれかに修正してください。`）→ `no_documents` → `checkIndex` の並び → エイリアスのずれ（`loadAliases` の `issues`。設定に `aliases` があるときだけ）→ `missing_file`（`collectCheckDocuments` の文書ごとの `checkMissingFiles`）→ `unknown_mark`（`checkUnknownMarks`）→ マーカーの設定のずれ（`checkMarkOptions`。`unknownMarks` が `false` のときは拡張のマーカーを点検しない）→ 図の点検のずれ（`checkDiagrams` に `loadExtensionDirectives` の `directive` を指定する。`diagram_invalid` は `unknownMarks` によらず点検し、`unknownMarks` が `false` のとき（`runUpgrade`）は拡張を読み込まないため `retired_diagram` を除く。移行の手順が書き換えずに残す廃止した図の範囲は、移行の報告に挙げた読めない定義と、拡張のマーカーだけ）→ map のずれ（`checkMaps`）。設定の `map` の値のうち `schemas/mdmark.config.schema.json` の記載できる値に無いもの（`node_fit`・`url_state`・`kinds` の `shape`・`lines` の `dash`・`width`・`head`）は、`where` が値のキー（`map.kinds.store.shape` など）で、記載できる値を「・」で結んで並べた `schema` のずれにし、`map_unknown_icon`（`checkMapConfig`）と合わせて設定の `schema` の並びの後ろに配置する。知らないマーカーの点検では、`collectCheckDocuments` の文書を、`loadExtensionDirectives` の `directive` を知っているマーカーに入れて点検し、`loadExtensionDirectives` の `schema` のずれは設定の `schema` の並びの最後に配置する。索引のずれの `file` は設定ファイルのフォルダからの相対パスに修正する。索引を読み込めないときは索引を指す `schema` のずれにする。`base` があり設定に `index` があるときだけ、ずれを集める前に `changedPathsSince`（`cwd` は設定ファイルのフォルダ、`indexDir` は索引のファイルのフォルダ）で変わったファイルを引き、`checkIndex` の `changedPaths` に指定する。`runCheck` と `runUpgrade` が呼び、`runUpgrade` は `unknownMarks: false` で呼ぶ（拡張を読み込まず、知らないマーカーを点検しない）。設定の `assets.root` のフォルダが無いときは `assets.root` を指す `schema` のずれを設定の `schema` の並びに配置し、`missing_file` は文書のフォルダだけで探す'
+    description: '並びは設定の `schema`（`validateConfig` のずれ、`theme`・`extensions` の無いファイル、`build.glossary`・`build.entry` がまとめる文書に該当しないもの）→ `unknown_color_theme`（設定の `colorTheme` が `COLOR_THEMES` に無いとき 1 件。`where` は `colorTheme`、`message` は `不明なテーマ名 {名前} です。{COLOR_THEMES を「・」で結んだもの} のいずれかに修正してください。`）→ `unknown_color_scheme`（設定の `colorScheme` が `COLOR_SCHEMES` に無いとき 1 件。`where` は `colorScheme`、`message` は `不明な明暗 {値} です。{COLOR_SCHEMES を「・」で結んだもの} のいずれかに修正してください。`）→ `no_documents` → `checkIndex` の並び → エイリアスのずれ（`loadAliases` の `issues`。設定に `aliases` があるときだけ）→ `missing_file`（`collectCheckDocuments` の文書ごとの `checkMissingFiles`）→ `unknown_mark`（`checkUnknownMarks`）→ マーカーの設定のずれ（`checkMarkOptions`。`unknownMarks` が `false` のときは拡張のマーカーを点検しない）→ 図の点検のずれ（`checkDiagrams` に `loadExtensionDirectives` の `directive` を指定する。`diagram_invalid` は `unknownMarks` によらず点検し、`unknownMarks` が `false` のとき（`runUpgrade`）は拡張を読み込まないため `retired_diagram` を除く。移行の手順が書き換えずに残す廃止した図の範囲は、移行の報告に挙げた読めない定義と、拡張のマーカーだけ）→ map のずれ（`checkMaps`）→ `plain_md_with_marks`（`checkPlainMarkdown`。`unknownMarks` が `false` のときと、設定の `check.suggestMarkExtension` が `false` のときは点検しない）。設定の `map` の値のうち `schemas/mdmark.config.schema.json` の記載できる値に無いもの（`node_fit`・`url_state`・`kinds` の `shape`・`lines` の `dash`・`width`・`head`）は、`where` が値のキー（`map.kinds.store.shape` など）で、記載できる値を「・」で結んで並べた `schema` のずれにし、`map_unknown_icon`（`checkMapConfig`）と合わせて設定の `schema` の並びの後ろに配置する。知らないマーカーの点検では、`collectCheckDocuments` の文書を、`loadExtensionDirectives` の `directive` を知っているマーカーに入れて点検し、`loadExtensionDirectives` の `schema` のずれは設定の `schema` の並びの最後に配置する。索引のずれの `file` は設定ファイルのフォルダからの相対パスに修正する。索引を読み込めないときは索引を指す `schema` のずれにする。`base` があり設定に `index` があるときだけ、ずれを集める前に `changedPathsSince`（`cwd` は設定ファイルのフォルダ、`indexDir` は索引のファイルのフォルダ）で変わったファイルを引き、`checkIndex` の `changedPaths` に指定する。`runCheck` と `runUpgrade` が呼び、`runUpgrade` は `unknownMarks: false` で呼ぶ（拡張を読み込まず、知らないマーカーを点検しない）。設定の `assets.root` のフォルダが無いときは `assets.root` を指す `schema` のずれを設定の `schema` の並びに配置し、`missing_file` は文書のフォルダだけで探す'
     kind: 関数
     scope: public
     is_async: true
@@ -154,6 +154,12 @@ functions:
         condition: 索引の `old.md` が無く、文書 `a.md` の 3 行目に `<!-- tabz -->`
         mock: 一時フォルダ
         expected: '`kind` が `missing_doc`・`unknown_mark` の順で、`unknown_mark` の `file` が `a.md`・`where` が `3`'
+      - name: test_collect_check_issues_when_plain_md_has_marks
+        case: 正常
+        summary: 記法を含む純粋な .md の提案を map のずれの後ろに配置し、設定と unknownMarks で止める
+        condition: '文書 `a.md` の 5 行目に `<!-- table: {"kind": "data"} -->` と 7 行目に `<!-- tabz -->`、`b.mark.md` に同じ表のマーカー。`check.suggestMarkExtension` が無いとき・`false` のとき・`{ unknownMarks: false }` のとき'
+        mock: 一時フォルダ
+        expected: '無いときは `kind` が `unknown_mark`（`a.md`・`7`）・`plain_md_with_marks`（`a.md`・`5`）の順で `b.mark.md` を指すずれが無い。`false` のときと `unknownMarks: false` のときは `plain_md_with_marks` が無い'
       - name: test_collect_check_issues_when_unknown_marks_off
         case: 正常
         summary: '`unknownMarks: false` では知らないマーカーを返却せず、拡張を読み込まない'
@@ -201,6 +207,7 @@ functions:
       - MOD-472-256#functions[checkIndex]
       - '#functions[checkUnknownMarks]'
       - '#functions[checkMarkOptions]'
+      - '#functions[checkPlainMarkdown]'
       - 'MOD-472-122#functions[changedPathsSince]'
     status: planned
     introduced:
@@ -312,7 +319,7 @@ functions:
     container: src/cli/check.ts
     usecase: 設定と索引を点検する
     summary: 文書ごとに `findMarks` で取得したマーカーのうち、知っているマーカーに該当しないものを 1 つにつき 1 件の `unknown_mark` のずれにする
-    description: 知っているマーカーは `FEATURES_MARK`・`SYNTAX_MARKS` の名前・`resolveConfig` が設定の `libraries` に既定を適用した対応表の名前・`directives`・設定の `check.ignore` の名前。ずれの `file` は文書のパス、`where` はマーカーの行の番号の文字、`message` はマーカーの名前と、名前を修正するか、拡張・`libraries`・`check.ignore` に追加するかの修正方法の 1 文。並びは文書の並び、同じ文書の中は行の順
+    description: 知っているマーカーは `knownMarkNames` の名前と設定の `check.ignore` の名前。ずれの `file` は文書のパス、`where` はマーカーの行の番号の文字、`message` はマーカーの名前と、名前を修正するか、拡張・`libraries`・`check.ignore` に追加するかの修正方法の 1 文。並びは文書の並び、同じ文書の中は行の順
     kind: 関数
     scope: internal
     args:
@@ -350,6 +357,60 @@ functions:
     status: planned
     introduced:
       pr: 64
+  - name: checkPlainMarkdown
+    title: 記法を含む純粋な .md に拡張子の提案を出す
+    container: src/cli/check.ts
+    usecase: 設定と索引を点検する
+    summary: 純粋な `.md`（`isMarkMarkdown` に合わない文書）ごとに、`findMarks` で取得したマーカーのうち知っているマーカーがあれば、最初のマーカーの行を指す `plain_md_with_marks` のずれを 1 件にする
+    description: 知っているマーカーは `knownMarkNames`（`check.ignore` の名前を含まない）。ずれの `file` は文書のパス、`where` は最初の知っているマーカーの行の番号の文字、`message` は `記法を含む文書の拡張子が .md です。{改名先のファイル名} に改名するか、拡張子の提案を止めるときは設定の check.suggestMarkExtension を false にしてください。`。改名先は末尾の `.md` を `MARK_MARKDOWN_SUFFIX` にしたファイル名。並びは文書の並び
+    kind: 関数
+    scope: internal
+    args:
+      - name: documents
+        type: '{ path: string; markdown: string }[]'
+        required: true
+        description: '`collectCheckDocuments` の文書'
+      - name: known
+        type: Set<string>
+        required: true
+        description: '`knownMarkNames` の名前'
+    returns:
+      type: CheckIssue[]
+      description: '`plain_md_with_marks` のずれ（無ければ空）'
+    unit_tests:
+      - name: test_check_plain_markdown
+        case: 正常
+        summary: 知っているマーカーを含む純粋な .md だけを、最初のマーカーの行で 1 件にする
+        condition: '`a.md` の 5 行目と 9 行目に表のマーカー、`b.mark.md` に表のマーカー、`c.md` に GFM の表と `mermaid` のコードブロックと `<!-- prettier-ignore -->`、`d.md` に `markdown` のコードブロックの中の表のマーカーだけ'
+        mock: なし
+        expected: '`{ file: "a.md", where: "5", kind: "plain_md_with_marks" }` の 1 件で、`message` に `a.mark.md` と `check.suggestMarkExtension` が入る'
+    callees:
+      - MOD-472-211#functions[findMarks]
+      - 'MOD-472-262#functions[isMarkMarkdown]'
+    refs:
+      - IF-472-39#constraints[拡張子の提案]
+    status: planned
+    introduced:
+      pr: 541
+  - name: knownMarkNames
+    title: 知っているマーカーの名前を集める
+    container: src/cli/check.ts
+    usecase: 設定と索引を点検する
+    summary: '`FEATURES_MARK`・`SYNTAX_MARKS` の名前・`resolveConfig` が設定の `libraries` に既定を適用した対応表の名前・`directives` を合わせた名前の集合を返却する'
+    description: '`checkUnknownMarks` はこれに設定の `check.ignore` の名前を加えて知っているマーカーにし、`checkPlainMarkdown` はこれをそのまま使用する'
+    kind: 関数
+    scope: internal
+    args:
+      - name: options
+        type: '{ config: CliConfig; directives: Set<string> }'
+        required: true
+        description: 構造を検めた設定と、`loadExtensionDirectives` の `directive`
+    returns:
+      type: Set<string>
+      description: 知っているマーカーの名前
+    status: planned
+    introduced:
+      pr: 541
   - name: checkDiagrams
     title: 図の定義と廃止した図の範囲を点検する
     container: src/cli/check.ts

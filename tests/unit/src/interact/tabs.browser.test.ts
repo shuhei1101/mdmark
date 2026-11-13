@@ -416,3 +416,127 @@ test("test_attach_tabs_when_link_title", async () => {
     root.querySelector(".mdmark-tab-panel .mdmark-tab-title a"),
   ).not.toBeNull();
 });
+
+/** 段落を 30 個持つ `長文` と段落を 1 つ持つ `短文` のタブ 1 組の HTML（段落は高さ 40px） */
+function heightTabsHtml(group?: string): string {
+  const attribute = group === undefined ? "" : ` data-group="${group}"`;
+  const paragraph = '<p style="height: 40px; margin: 0">段落</p>';
+  return `<div class="mdmark-tabs"${attribute}><div class="mdmark-tab-panel"><p class="mdmark-tab-title">長文</p>${paragraph.repeat(30)}</div><div class="mdmark-tab-panel"><p class="mdmark-tab-title">短文</p>${paragraph}</div></div>`;
+}
+
+/** 高さ 1200px の空の要素の HTML */
+const SPACER_HTML = '<div style="height: 1200px"></div>';
+
+/** スクロールのアンカリングを持たないブラウザ（Safari）と同じく、画面全体のアンカリングを止め、戻す関数を返却する */
+function disableScrollAnchoring(): () => void {
+  document.documentElement.style.overflowAnchor = "none";
+  return () => {
+    document.documentElement.style.removeProperty("overflow-anchor");
+  };
+}
+
+/** 要素の画面の上端からの位置 */
+function topOf(element: Element): number {
+  return element.getBoundingClientRect().top;
+}
+
+// 高さの違うタブへ切り替えても、押したタブのボタンの画面の位置を保つ（正常系）
+test("test_attach_tabs_when_position_kept", async () => {
+  // 準備
+  const { attachTabs } = await loadTabs();
+  const root = createRootFromHtml(
+    `<div class="scroller" style="height: 600px; overflow-y: auto; overflow-anchor: none">${SPACER_HTML}${heightTabsHtml()}${SPACER_HTML}</div>`,
+  );
+  detachers.push(attachTabs(root));
+  const scroller = root.querySelector<HTMLElement>(".scroller");
+  if (!scroller) {
+    throw new Error("スクロールする要素が無い");
+  }
+  const short = tabOf(root, 0, "短文");
+  scroller.scrollTop += topOf(short) - topOf(scroller) - 300;
+  const before = topOf(short);
+  // 実行
+  short.click();
+  // 検証
+  expect(Math.abs(topOf(short) - before)).toBeLessThanOrEqual(1);
+  // 実行
+  const long = tabOf(root, 0, "長文");
+  const beforeLong = topOf(long);
+  long.click();
+  // 検証
+  expect(Math.abs(topOf(long) - beforeLong)).toBeLessThanOrEqual(1);
+});
+
+// 上にある同じ組のタブの高さが変わっても、押したタブのボタンの位置を保つ（正常系）
+test("test_attach_tabs_when_group_above_shrinks", async () => {
+  // 準備
+  detachers.push(disableScrollAnchoring());
+  const { attachTabs } = await loadTabs();
+  const root = createRootFromHtml(
+    `${heightTabsHtml("len")}${SPACER_HTML}${heightTabsHtml("len")}${SPACER_HTML}`,
+  );
+  detachers.push(attachTabs(root));
+  const short = tabOf(root, 1, "短文");
+  window.scrollBy(0, topOf(short) - 300);
+  const before = topOf(short);
+  // 実行
+  short.click();
+  // 検証
+  expect(selectedTitle(root, 0)).toBe("短文");
+  expect(selectedTitle(root, 1)).toBe("短文");
+  expect(Math.abs(topOf(short) - before)).toBeLessThanOrEqual(1);
+  window.scrollTo(0, 0);
+});
+
+// 文書が縮んで戻しきれないときはスクロール位置の上限で止まる（正常系）
+test("test_attach_tabs_when_cannot_restore", async () => {
+  // 準備
+  detachers.push(disableScrollAnchoring());
+  const { attachTabs } = await loadTabs();
+  const root = createRootFromHtml(`${SPACER_HTML}${heightTabsHtml()}`);
+  detachers.push(attachTabs(root));
+  const short = tabOf(root, 0, "短文");
+  window.scrollBy(0, topOf(short) - 300);
+  // 実行
+  short.click();
+  // 検証
+  const max = document.documentElement.scrollHeight - window.innerHeight;
+  expect(Math.abs(window.scrollY - max)).toBeLessThanOrEqual(1);
+  const top = topOf(short);
+  expect(top).toBeGreaterThanOrEqual(0);
+  expect(top).toBeLessThan(window.innerHeight);
+  window.scrollTo(0, 0);
+});
+
+/** 次の描画のフレームを 2 回待つ */
+async function nextFrames(): Promise<void> {
+  for (let count = 0; count < 2; count += 1) {
+    await new Promise((resolve) => requestAnimationFrame(resolve));
+  }
+}
+
+// スクロールのアンカリングを持つブラウザでも、補正が二重に効かず押したタブのボタンの位置を保つ（正常系）
+test("test_attach_tabs_when_position_kept_with_anchoring", async () => {
+  // 準備
+  const { attachTabs } = await loadTabs();
+  const root = createRootFromHtml(
+    `${heightTabsHtml("len")}${SPACER_HTML}${heightTabsHtml("len")}${SPACER_HTML}`,
+  );
+  detachers.push(attachTabs(root));
+  const short = tabOf(root, 1, "短文");
+  window.scrollBy(0, topOf(short) - 300);
+  const before = topOf(short);
+  // 実行: 上にある同じ組のタブと押したタブがどちらも縮む
+  short.click();
+  await nextFrames();
+  // 検証
+  expect(Math.abs(topOf(short) - before)).toBeLessThanOrEqual(1);
+  // 実行: 上にある同じ組のタブと押したタブがどちらも伸びる
+  const long = tabOf(root, 1, "長文");
+  const beforeLong = topOf(long);
+  long.click();
+  await nextFrames();
+  // 検証
+  expect(Math.abs(topOf(long) - beforeLong)).toBeLessThanOrEqual(1);
+  window.scrollTo(0, 0);
+});

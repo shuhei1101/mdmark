@@ -303,7 +303,7 @@ settings:
     description: まとめる Markdown の glob の並び。該当した文書を、glob の並び・同じ glob の中はパスの順で並べる
     missing: '`build` の構造の誤りとして終了コード 1 で終わる（`mdmark check` は `schema` のずれにする）'
     reload: reload
-    allowed: 1 つ以上。`**`・`*`・`?` を使用できる。該当するのは拡張子 `.md` のファイルだけ
+    allowed: 1 つ以上。`**`・`*`・`?` を使用できる。該当するのは拡張子 `.md` のファイル（mdmark の記法で記載する `.mark.md` を含む）だけ
     status: planned
     introduced:
       pr: 32
@@ -415,6 +415,21 @@ settings:
     status: planned
     introduced:
       pr: 64
+  - key: check.suggestMarkExtension
+    title: 記法を含む純粋な .md の拡張子の提案
+    file: mdmark.config.yaml
+    type: boolean
+    required: false
+    default: 'true'
+    description: '`mdmark check` が、拡張子が `.md` で `.mark.md` でない文書が mdmark の記法を含むとき、拡張子を `.mark.md` に変えるよう提案する（`plain_md_with_marks` のずれ）。既存の文書の拡張子を移すまで `false` にして止められる。`mount`・`render`・`export`・`build` はこのキーを読み込まない'
+    missing: 提案する
+    reload: reload
+    allowed: 真偽値。真偽値でないと `mdmark check` は `schema` のずれにする
+    refs:
+      - IF-472-39#constraints[拡張子の提案]
+    status: planned
+    introduced:
+      pr: 541
   - key: features.views
     title: ビューの機能
     file: mdmark.config.yaml

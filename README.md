@@ -12,4 +12,6 @@ VS Code で Markdown のプレビューを出し、HTML・PDF にする拡張機
 
 バージョンを上げるときは、CLI で移行の手順を適用する: [バージョンを上げる](./docs/guide/導入-バージョンを上げる.md)
 
+mdmark の記法で記載する文書の拡張子は `.mark.md`（`hoge.mark.md`）にし、純粋な Markdown（`.md`）と分ける: [文書の記載方法](./docs/guide/記載する-文書の記載方法.md)
+
 Claude Code にガイドへの動線と書き出し・点検のツールを指定する: [Claude Code で使用する](./docs/guide/使用方法.md)

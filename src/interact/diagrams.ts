@@ -5,6 +5,7 @@ import { attachDiagramResize, diagramHeightKey } from "./diagram-resize.ts";
 import { attachDiagramTips } from "./diagram-tips.ts";
 import { attachDiagramTouch } from "./diagram-touch.ts";
 import { attachErFolds } from "./er-folds.ts";
+import type { PartStates } from "./part-states.ts";
 import { attachZoom } from "./zoom.ts";
 
 export { ZOOM };
@@ -275,6 +276,8 @@ export function attachDiagrams(options: {
   storage?: Storage | null;
   /** 付ける図（省くと `root` の中の全ての図。高さのキーの通し番号は `root` の中の順） */
   figures?: HTMLElement[];
+  /** 文書の中の ER 図に指定する部品の開閉の記録（省くと記録しない） */
+  partStates?: PartStates;
 }): () => void {
   const { root, placement, storage = defaultStorage() } = options;
   attachCounter += 1;
@@ -325,7 +328,7 @@ export function attachDiagrams(options: {
       detachers.push(attachDiagramTouch({ box, viewport }));
     }
     if (figure.dataset.diagram === "er") {
-      detachers.push(attachErFolds(figure));
+      detachers.push(attachErFolds(figure, options.partStates));
     }
     const opener = figure.querySelector<HTMLButtonElement>(
       '[data-tool="fullscreen"]',

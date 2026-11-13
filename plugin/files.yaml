@@ -13,7 +13,7 @@ files:
       - to: docs/module/MOD-472-14.ts
         type: implements
   - path: hooks/hooks.json
-    description: モジュール構成『ClaudeCodeプラグイン / プラグインのビルド』のうち「`project_dir` を使用するツールの PreToolUse で scripts/pre-tool-use.js を実行する」を受け持つ。プラグインの配布物の作り方を変えるときに参照する。
+    description: モジュール構成『ClaudeCodeプラグイン / プラグインのビルド』のうち「`project_dir` を使用するツールの PreToolUse で scripts/pre-tool-use.js、`Write|Edit` の PreToolUse・UserPromptSubmit・PreCompact で scripts/guide-notice.js を実行する」を受け持つ。プラグインの配布物の作り方を変えるときに参照する。
     tags: [topic:プラグイン, tool:claude-code, tool:esbuild]
     related:
       - to: docs/module/MOD-472-14.ts

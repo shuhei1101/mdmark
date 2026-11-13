@@ -18,6 +18,7 @@ import { pathToFileURL } from "node:url";
 import { promisify } from "node:util";
 import { afterAll, afterEach, beforeAll, expect, test, vi } from "vitest";
 import { main } from "../../../scripts/build.ts";
+import { migrationsDirOf } from "../../migrations-dir.ts";
 import { copyPluginInputs, writeRootPackageJson } from "../plugin-inputs.ts";
 
 const execFileAsync = promisify(execFile);
@@ -184,7 +185,7 @@ test("test_normal", { timeout: BUILD_TIMEOUT_MS }, async () => {
   const root = await createWorkTree("v0.0.0\n");
   // `retired-diagrams.mjs` を持つ移行の手順のフォルダ
   await cp(
-    join(REPO_ROOT, "migrations", "next"),
+    migrationsDirOf("retired-diagrams.mjs"),
     join(root, "migrations", "next"),
     { recursive: true },
   );

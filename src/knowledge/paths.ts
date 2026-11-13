@@ -1,3 +1,6 @@
+/** mdmark の記法で記載する文書のファイル名の末尾 */
+export const MARK_MARKDOWN_SUFFIX = ".mark.md";
+
 /** スキームを持つ URL（`https:`・`mailto:` など）を見分ける正規表現 */
 const SCHEME_PATTERN = /^[a-z][a-z0-9+.-]*:/i;
 
@@ -69,4 +72,9 @@ export function relativeHref(
   }
   const ups = Array.from({ length: from.length - common }, () => "..");
   return [...ups, ...to.slice(common)].join("/");
+}
+
+/** パスが mdmark の記法で記載する文書（`MARK_MARKDOWN_SUFFIX` で終わる）か */
+export function isMarkMarkdown(path: string): boolean {
+  return path.endsWith(MARK_MARKDOWN_SUFFIX);
 }

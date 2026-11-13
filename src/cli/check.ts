@@ -15,7 +15,11 @@ import { displayConfigPath, relativizeConfigPaths } from "../config-files.ts";
 import { definitionWarning, readDefinition } from "../diagram/definition.ts";
 import type { MdmarkAliasProblem } from "../knowledge/aliases.ts";
 import { checkIndex, type MdmarkIndexIssue } from "../knowledge/check.ts";
-import { normalizePath } from "../knowledge/paths.ts";
+import {
+  isMarkMarkdown,
+  MARK_MARKDOWN_SUFFIX,
+  normalizePath,
+} from "../knowledge/paths.ts";
 import { checkMapConfig, collectMapProblems } from "../map/check.ts";
 import type { MapProblem } from "../map/spec.ts";
 import type { MapRangeSource } from "../map/structure.ts";
@@ -70,6 +74,7 @@ export type CheckIssue = {
     | "legacy_mark"
     | "mark_option_unapplied"
     | "mark_option_invalid"
+    | "plain_md_with_marks"
     | MapProblem["kind"]
     | "alias_no_files"
     | "alias_unreadable"
@@ -437,6 +442,19 @@ export async function collectCheckDocuments(
     .sort((a, b) => (a.path < b.path ? -1 : a.path > b.path ? 1 : 0));
 }
 
+/** 記法のマーカー・`features`・設定の `libraries` に既定を適用した対応表・拡張の `directive` の名前を集める（`check.ignore` の名前は含まない） */
+function knownMarkNames(options: {
+  config: CliConfig;
+  directives: Set<string>;
+}): Set<string> {
+  return new Set([
+    FEATURES_MARK,
+    ...Object.keys(SYNTAX_MARKS),
+    ...Object.keys(resolveConfig({ config: options.config }).libraries),
+    ...options.directives,
+  ]);
+}
+
 /** 文書ごとに取得したマーカーのうち、知っているマーカーに該当しないものを 1 つにつき 1 件の `unknown_mark` のずれにする */
 export function checkUnknownMarks(
   documents: Array<{ path: string; markdown: string }>,
@@ -444,10 +462,7 @@ export function checkUnknownMarks(
   directives: Set<string>,
 ): CheckIssue[] {
   const known = new Set([
-    FEATURES_MARK,
-    ...Object.keys(SYNTAX_MARKS),
-    ...Object.keys(resolveConfig({ config }).libraries),
-    ...directives,
+    ...knownMarkNames({ config, directives }),
     ...(config.check?.ignore ?? []),
   ]);
   const issues: CheckIssue[] = [];
@@ -462,6 +477,33 @@ export function checkUnknownMarks(
         });
       }
     }
+  }
+  return issues;
+}
+
+/** 純粋な `.md`（`.mark.md` で終わらない文書）ごとに、知っているマーカーがあれば最初のマーカーの行を指す `plain_md_with_marks` のずれを 1 件にする */
+export function checkPlainMarkdown(
+  documents: Array<{ path: string; markdown: string }>,
+  known: Set<string>,
+): CheckIssue[] {
+  const issues: CheckIssue[] = [];
+  for (const document of documents) {
+    if (isMarkMarkdown(document.path)) {
+      continue;
+    }
+    const mark = findMarks(document.markdown).find((found) =>
+      known.has(found.name),
+    );
+    if (mark === undefined) {
+      continue;
+    }
+    const renamed = `${basename(document.path).replace(/\.md$/, "")}${MARK_MARKDOWN_SUFFIX}`;
+    issues.push({
+      file: document.path,
+      where: String(mark.line),
+      kind: "plain_md_with_marks",
+      message: `記法を含む文書の拡張子が .md です。${renamed} に改名するか、拡張子の提案を止めるときは設定の check.suggestMarkExtension を false にしてください。`,
+    });
   }
   return issues;
 }
@@ -761,6 +803,13 @@ export async function collectCheckIssues(
     (issue) => checkMarks || issue.kind !== "retired_diagram",
   );
   const maps = checkMaps(documents, resolveConfig({ config }));
+  const plainMarkdown =
+    checkMarks && config.check?.suggestMarkExtension !== false
+      ? checkPlainMarkdown(
+          documents,
+          knownMarkNames({ config, directives: extensions.directives }),
+        )
+      : [];
   const mapIcons: CheckIssue[] = checkMapConfig(config.map).map((issue) => ({
     file,
     where: issue.key,
@@ -785,6 +834,7 @@ export async function collectCheckIssues(
     ...includes,
     ...diagrams,
     ...maps,
+    ...plainMarkdown,
   ];
 }
 

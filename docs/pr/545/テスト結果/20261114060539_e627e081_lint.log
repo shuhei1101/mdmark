@@ -1,0 +1,9 @@
+$ npx biome check tests/integration/lib/build.test.ts
+Checked 1 file in 156ms. No fixes applied.
+exit=0
+$ npm run typecheck
+
+> typecheck
+> tsc --noEmit
+
+exit=0

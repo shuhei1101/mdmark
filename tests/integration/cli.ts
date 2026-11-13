@@ -190,14 +190,14 @@ const CHANGE_TOGETHER_INDEX = [
   "schema: 2",
   "docs:",
   "  - id: a",
-  "    path: a.md",
+  "    path: a.mark.md",
   "    title: A",
   "    related:",
   "      - to: b",
   "        type: change_together",
   "        when: 索引の Schema を変えるとき",
   "  - id: b",
-  "    path: b.md",
+  "    path: b.mark.md",
   "    title: B",
   "    related:",
   "      - to: a",
@@ -208,7 +208,7 @@ const CHANGE_TOGETHER_INDEX = [
 
 /**
  * `mdmark init` の雛形に、互いを `change_together` で記載した文書 `a`・`b` を追加した git のフォルダを作る。
- * 全てをコミットしてタグ `base` を付け、その後 `a.md` だけを書き換えてコミットする
+ * 全てをコミットしてタグ `base` を付け、その後 `a.mark.md` だけを書き換えてコミットする
  */
 export async function createChangeTogetherDir(
   createTempDir: () => Promise<string>,
@@ -216,8 +216,8 @@ export async function createChangeTogetherDir(
   const dir = await createTempDir();
   await runCli(["init", dir], dir);
   await writeFiles(dir, {
-    "a.md": "# A\n",
-    "b.md": "# B\n",
+    "a.mark.md": "# A\n",
+    "b.mark.md": "# B\n",
     "index.yaml": CHANGE_TOGETHER_INDEX,
   });
   await git(dir, "init", "-q");
@@ -227,7 +227,7 @@ export async function createChangeTogetherDir(
   await git(dir, "add", "-A");
   await git(dir, "commit", "-q", "-m", "最初のコミット");
   await git(dir, "tag", BASE_TAG);
-  await writeFiles(dir, { "a.md": "# A\n\n書き換えた。\n" });
+  await writeFiles(dir, { "a.mark.md": "# A\n\n書き換えた。\n" });
   await git(dir, "add", "-A");
   await git(dir, "commit", "-q", "-m", "a を書き換える");
   return dir;

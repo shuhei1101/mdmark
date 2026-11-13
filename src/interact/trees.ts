@@ -6,6 +6,12 @@ import {
   type TreeCopyState,
 } from "../parts/tree.ts";
 import { COPIED_NOTICE_MS, copyText } from "./clipboard.ts";
+import {
+  type PartStates,
+  partKey,
+  recordOpen,
+  startOpen,
+} from "./part-states.ts";
 
 // 開閉の対象の `ul` の id と、コピーのパネルの id を文書の中で重ならせないための通し番号
 let treeCounter = 0;
@@ -158,7 +164,11 @@ export function alignFileTreeNotes(tree: HTMLElement): void {
 }
 
 /** ファイルツリー 1 つに、帯・開閉のボタン・コピーを付け、取り除く関数を返却する */
-function attachTree(tree: HTMLElement): () => void {
+function attachTree(
+  tree: HTMLElement,
+  root: HTMLElement,
+  states: PartStates | undefined,
+): () => void {
   const list = tree.querySelector<HTMLElement>(":scope > .mdmark-tree-list");
   if (!list) {
     return () => {};
@@ -174,6 +184,41 @@ function attachTree(tree: HTMLElement): () => void {
   const copyButton = bar?.querySelector<HTMLButtonElement>(".mdmark-tree-copy");
   const status = bar?.querySelector<HTMLElement>(".mdmark-tree-status");
   cleanups.push(() => bar?.remove());
+
+  const marker = tree.dataset.open ?? "";
+  /** フォルダのルートからのパス（`/` でつないだ名前） */
+  const pathOf = (folder: Element): string => {
+    const names: string[] = [];
+    for (
+      let current: Element | null = folder;
+      current && current !== list;
+      current = current.parentElement
+    ) {
+      if (current.matches("li.mdmark-tree-folder")) {
+        names.unshift(
+          current
+            .querySelector(":scope > .mdmark-tree-row .mdmark-tree-name")
+            ?.textContent?.trim() ?? "",
+        );
+      }
+    }
+    return names.join("/");
+  };
+  /** ツリーの記録の鍵（記録しないときは作らない） */
+  const base =
+    states === undefined ? "" : partKey({ root, part: tree, kind: "tree" });
+  /** 開閉のボタンのフォルダの記録の鍵 */
+  const keyOf = (toggle: Element): string =>
+    `${base}|${pathOf(toggle.closest("li.mdmark-tree-folder") ?? toggle)}`;
+  /** 開閉のボタンの今の開閉を記録する */
+  const record = (toggle: Element): void => {
+    recordOpen({
+      states,
+      key: keyOf(toggle),
+      open: toggle.getAttribute("aria-expanded") === "true",
+      marker,
+    });
+  };
 
   // フォルダの名前を開閉のボタンで包み、開く階層より深いフォルダを閉じる
   list
@@ -196,7 +241,15 @@ function attachTree(tree: HTMLElement): () => void {
       button.append(name);
       setFolderOpen(
         button,
-        folderOpenByDefault(depthOf(folder, list), tree.dataset.open),
+        startOpen({
+          states,
+          key: keyOf(button),
+          marker,
+          markerOpen: folderOpenByDefault(
+            depthOf(folder, list),
+            tree.dataset.open,
+          ),
+        }),
       );
       cleanups.push(() => {
         row.insertBefore(name, button);
@@ -214,6 +267,14 @@ function attachTree(tree: HTMLElement): () => void {
         : null;
     if (toggle && list.contains(toggle)) {
       toggleFolder(toggle, event.shiftKey);
+      record(toggle);
+      if (event.shiftKey) {
+        for (const inner of controlledList(toggle)?.querySelectorAll(
+          ".mdmark-tree-toggle",
+        ) ?? []) {
+          record(inner);
+        }
+      }
     }
   };
   list.addEventListener("click", onClick);
@@ -333,10 +394,13 @@ function attachTree(tree: HTMLElement): () => void {
 }
 
 /** 描いた要素の中のファイルツリーに、帯とコピーのボタン・フォルダの開閉・注釈の列の位置を付け、まとめて削除して `render` の出した状態に戻す関数を返却する */
-export function attachFileTrees(root: HTMLElement): () => void {
+export function attachFileTrees(
+  root: HTMLElement,
+  states?: PartStates,
+): () => void {
   const detachers = [
     ...root.querySelectorAll<HTMLElement>("div.mdmark-tree"),
-  ].map(attachTree);
+  ].map((tree) => attachTree(tree, root, states));
   return () => {
     for (const detach of detachers.reverse()) {
       detach();

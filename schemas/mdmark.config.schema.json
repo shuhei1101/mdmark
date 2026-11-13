@@ -580,6 +580,12 @@
             "pattern": "^[a-z][a-z0-9-]*$"
           },
           "default": []
+        },
+        "suggestMarkExtension": {
+          "title": "記法を含む純粋な .md の拡張子の提案",
+          "description": "`mdmark check` が、拡張子が `.md` で `.mark.md` でない文書が mdmark の記法を含むとき、拡張子を `.mark.md` に変えるよう提案するか。既存の文書の拡張子を移すまで `false` にして止められる。",
+          "type": "boolean",
+          "default": true
         }
       }
     },

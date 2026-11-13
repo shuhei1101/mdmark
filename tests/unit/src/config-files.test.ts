@@ -468,6 +468,22 @@ test("test_validate_config_when_version_invalid", async () => {
   expect(issues[0]).toMatchObject({ where: "version", kind: "schema" });
 });
 
+// 真偽値でない check.suggestMarkExtension を schema のずれにし、設定から落とす（異常系）
+test("test_validate_config_when_suggest_mark_extension_invalid", async () => {
+  // 準備
+  const { validateConfig } = await loadModule();
+  const raw = { check: { suggestMarkExtension: "no" } };
+  // 実行
+  const { config, issues } = validateConfig(raw, "mdmark.config.yaml");
+  // 検証
+  expect(issues).toHaveLength(1);
+  expect(issues[0]).toMatchObject({
+    where: "check.suggestMarkExtension",
+    kind: "schema",
+  });
+  expect(config.check?.suggestMarkExtension).toBeUndefined();
+});
+
 // マーカーの名前の書式に合わない check.ignore の値を schema のずれにし、設定から落とす（正常系）
 test("test_validate_config_when_check_ignore_invalid", async () => {
   // 準備

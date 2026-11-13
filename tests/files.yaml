@@ -18,6 +18,12 @@ files:
     related:
       - to: docs/interface/IF-472-9.ts
         type: see_also
+  - path: integration/ClaudeCodeプラグイン/guide-notice.test.ts
+    description: インターフェース定義『記法のルールの参照を案内する』の正常系のフローを確認する結合テスト。この操作の入出力を変えたときに参照する。
+    tags: [topic:結合テスト, tool:vitest, tool:claude-code]
+    related:
+      - to: docs/interface/IF-472-43.ts
+        type: see_also
   - path: integration/ClaudeCodeプラグイン/pre-tool-use.test.ts
     description: インターフェース定義『作業のフォルダを引数に入れる』の正常系と異常系のフローを確認する結合テスト。この操作の入出力を変えたときに参照する。
     tags: [topic:結合テスト, tool:vitest, tool:mcp, tool:claude-code]
@@ -1467,6 +1473,12 @@ files:
     tags: [topic:単体テスト, tool:vitest, tool:mcp, tool:claude-code]
     related:
       - to: src/plugin/mcp
+        type: tests
+  - path: unit/src/plugin/guide-notice.test.ts
+    description: src/plugin/guide-notice.ts（「記法のルールの参照の案内のフックの入口」）を確認する単体テスト。guide-notice.ts を変えたときに、合わせて再確認するケースを探すときに参照する。
+    tags: [topic:単体テスト, tool:vitest, topic:フック, tool:claude-code]
+    related:
+      - to: src/plugin/guide-notice
         type: tests
   - path: unit/src/plugin/pre-tool-use.test.ts
     description: src/plugin/pre-tool-use.ts（「PreToolUse のフックの入口」）を確認する単体テスト。pre-tool-use.ts を変えたときに、合わせて再確認するケースを探すときに参照する。

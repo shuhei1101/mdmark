@@ -210,6 +210,48 @@ test("test_check_unknown_marks", async () => {
   expect(issues[0]?.message).toContain("tabz");
 });
 
+// 知っているマーカーを含む純粋な .md だけを、最初のマーカーの行で 1 件にする（正常系）
+test("test_check_plain_markdown", async () => {
+  // 準備
+  const { checkPlainMarkdown } = await loadCheck();
+  const table = '<!-- table: {"kind": "data"} -->';
+  const documents = [
+    {
+      path: "a.md",
+      markdown: ["# A", "", "", "", table, "", "", "", table, ""].join("\n"),
+    },
+    { path: "b.mark.md", markdown: `# B\n\n${table}\n` },
+    {
+      path: "c.md",
+      markdown: [
+        "# C",
+        "",
+        "<!-- prettier-ignore -->",
+        "| a |",
+        "| - |",
+        "",
+        "```mermaid",
+        "flowchart TD",
+        "```",
+        "",
+      ].join("\n"),
+    },
+    { path: "d.md", markdown: `# D\n\n\`\`\`markdown\n${table}\n\`\`\`\n` },
+  ];
+  const known = new Set(["table", "features", "mermaid"]);
+  // 実行
+  const issues = checkPlainMarkdown(documents, known);
+  // 検証
+  expect(issues).toHaveLength(1);
+  expect(issues[0]).toMatchObject({
+    file: "a.md",
+    where: "5",
+    kind: "plain_md_with_marks",
+  });
+  expect(issues[0]?.message).toContain("a.mark.md");
+  expect(issues[0]?.message).toContain("check.suggestMarkExtension");
+});
+
 // 対応表・拡張・check.ignore の名前のマーカーはずれにしない（正常系）
 test("test_check_unknown_marks_when_known_by_config", async () => {
   // 準備
@@ -367,6 +409,58 @@ test("test_collect_check_issues_when_unknown_mark", async () => {
     "unknown_mark",
   ]);
   expect(issues[1]).toMatchObject({ file: "a.md", where: "3" });
+});
+
+// 記法を含む純粋な .md の提案を map のずれの後ろに配置し、設定と unknownMarks で止める（正常系）
+test("test_collect_check_issues_when_plain_md_has_marks", async () => {
+  // 準備
+  const { collectCheckIssues } = await loadCheck();
+  const table = '<!-- table: {"kind": "data"} -->';
+  const files = {
+    "a.md": [
+      "# A",
+      "",
+      "",
+      "",
+      table,
+      "<!-- /table -->",
+      "<!-- tabz -->",
+      "",
+    ].join("\n"),
+    "b.md": "# B\n",
+    "c.mark.md": `# C\n\n${table}\n<!-- /table -->\n`,
+  };
+  const extraDocs = "  - id: c\n    path: c.mark.md\n    title: C\n";
+  const defaultDir = await createRootDir({ files, extraDocs });
+  const offDir = await createRootDir({
+    files,
+    extraDocs,
+    configLines: ["check:", "  suggestMarkExtension: false"],
+  });
+  // 実行
+  const byDefault = await collectCheckIssues(
+    join(defaultDir, "mdmark.config.yaml"),
+  );
+  const bySetting = await collectCheckIssues(
+    join(offDir, "mdmark.config.yaml"),
+  );
+  const byUpgrade = await collectCheckIssues(
+    join(defaultDir, "mdmark.config.yaml"),
+    { unknownMarks: false },
+  );
+  // 検証
+  expect(
+    byDefault.map((issue) => [issue.kind, issue.file, issue.where]),
+  ).toEqual([
+    ["unknown_mark", "a.md", "7"],
+    ["plain_md_with_marks", "a.md", "5"],
+  ]);
+  expect(bySetting.map((issue) => issue.kind)).not.toContain(
+    "plain_md_with_marks",
+  );
+  expect(byUpgrade.map((issue) => issue.kind)).not.toContain(
+    "plain_md_with_marks",
+  );
 });
 
 // 知らないテーマの名前を schema の後・no_documents の前に返却する（正常系）

@@ -130,6 +130,34 @@ scenarios:
       - class `markdown-alert-warning` の枠の中に、class `markdown-alert-tip` の枠がある
       - 2 つの枠のそれぞれに本文の段落があり、`[!WARNING]`・`[!TIP]` の文字が出ていない
     test: test_normal_when_nested
+  - name: 正常シナリオ（描き直しても手で開閉した注意書きを保つ）
+    setup:
+      - name: mdmark を読み込むページ
+        description: 正常シナリオと同じ
+        notes: '`mount` の戻り値の `update` で、本文を差し替えて描き直す'
+      - name: 折りたたみの注意書きの Markdown
+        description: 1 行目が `> [!NOTE]+ 詳細` の引用と、1 行目が `> [!TIP]- 補足` の引用を並べ、それぞれ本文の段落を持つ文書
+      - name: 描き直す Markdown
+        description: 2 つの注意書きの本文の段落の文字を書き換え、末尾に 1 行目が `> [!NOTE]- 付録` で本文の段落を持つ引用を追加した文書
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 利用側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を指定して描かせる
+        M-->>P: 詳細を開き、補足を閉じた注意書きを描く
+        U->>P: 「詳細」と「補足」のタイトルを押す
+        P-->>U: 詳細を閉じ、補足を開いた注意書き
+        P->>M: 書き換えた Markdown で描き直させる
+        M-->>P: 手で変えた開閉のまま描き、追加した付録は閉じて描く
+        P-->>U: 書き換えた本文を表示
+    expected:
+      - 描き直した後、`詳細` の本文の段落が表示されていない
+      - 描き直した後、`補足` の書き換えた本文の段落が表示されている
+      - 描き直した後、追加した `付録` の本文の段落が表示されていない
+    test: test_normal_when_updated_after_toggle
 lead: 文書の作成者が GitHub と同じ `> [!NOTE]` などの引用で注意書きを記載すると、mdmark が種類ごとのタイトル・色・アイコンを持つ枠に描く。種類の後ろの文字はタイトルにし、末尾に `-` を付けた注意書きは閉じた、`+` を付けた注意書きは開いた折り畳みにする。注意書きは入れ子にできる。
 issue: 4
 primary_actor: 文書の作成者
@@ -140,6 +168,6 @@ trigger: 利用側のページが、注意書きを持つ文書を描かせる
 preconditions:
   - ページがバージョンを固定した URL で mdmark の JavaScript と CSS を読み込んでいる
   - 注意書きの機能（`callout`）がオン（既定）
-success_guarantee: 注意書きが種類ごとのタイトル・色・アイコンを持つ枠になり、GitHub で読み込んでも同じ種類の注意書きとして読み込める。
+success_guarantee: 注意書きが種類ごとのタイトル・色・アイコンを持つ枠になり、GitHub で読み込んでも同じ種類の注意書きとして読み込める。利用側のページが本文を描き直しても、読者が手で開閉した折りたたみの注意書きは保たれる。
 minimal_guarantee: 知らない種類を記載しても、注意書きは `NOTE` の枠で描かれ、中身は読み込める。
 test_file: tests/e2e/単一ユースケース/注意書きを記載する.spec.ts
