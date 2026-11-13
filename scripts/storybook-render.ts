@@ -22,10 +22,15 @@ import type { WarningItem } from "../src/extensions.ts";
 import { highlightLines } from "../src/highlight-lines.ts";
 import type { MdmarkAlias } from "../src/knowledge/aliases.ts";
 import { parseMapData } from "../src/map/data.ts";
+import { erFanouts, erToFlowchart, parseErDiagram } from "../src/map/er.ts";
 import { parseFlowchart } from "../src/map/flowchart.ts";
 import { layoutMap } from "../src/map/layout.ts";
 import { parseSequence } from "../src/map/sequence.ts";
 import { sequenceRows } from "../src/map/sequence-rows.ts";
+import {
+  parseStateDiagram,
+  stateToFlowchart,
+} from "../src/map/state-diagram.ts";
 import { renderBackToTop } from "../src/parts/back-to-top.ts";
 import { renderBacklinks } from "../src/parts/backlinks.ts";
 import { renderBadge } from "../src/parts/badge.ts";
@@ -81,8 +86,10 @@ import { renderLayoutColumns } from "../src/parts/layout-columns.ts";
 import { renderLightbox } from "../src/parts/lightbox.ts";
 import {
   renderMapBand,
+  renderMapEr,
   renderMapFlow,
   renderMapSequence,
+  renderMapState,
 } from "../src/parts/map.ts";
 import { renderMedia } from "../src/parts/media.ts";
 import { renderMermaidDiagram } from "../src/parts/mermaid.ts";
@@ -114,8 +121,12 @@ import { warningsOf } from "../src/render/syntax/tables.ts";
 import {
   CONFIG as MAP_CONFIG,
   DATA as MAP_DATA,
+  ER as MAP_ER,
+  ER_DATA as MAP_ER_DATA,
   FLOW as MAP_FLOW,
   SEQUENCE as MAP_SEQUENCE,
+  STATE as MAP_STATE,
+  STATE_DATA as MAP_STATE_DATA,
 } from "../tests/unit/helpers/map.ts";
 import { renderMediaError } from "../vscode/src/webview/shared/lib/media-error.ts";
 
@@ -1134,6 +1145,181 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
       layout,
     );
   },
+  "map-er": (args) => {
+    const er = parseErDiagram(MAP_ER);
+    const { data } = parseMapData(MAP_ER_DATA);
+    const collapsed = jsonList(args.collapsed);
+    const entered = typeof args.entered === "string" ? args.entered : undefined;
+    const selected = jsonList(args.selected);
+    const fanouts =
+      jsonObject<Array<{ wire: string; from: string; to: string }>>(
+        args.fanouts,
+      ) ?? [];
+    // 列の行の高さ（px）と、テーブル名の行の高さ（px）でノードの高さを見積もる
+    const sizes = Object.fromEntries(
+      er.tables.map((table) => [
+        table.name,
+        {
+          width: 240,
+          size: {
+            w: 240,
+            h: collapsed.includes(table.name)
+              ? 64
+              : 64 + table.columns.length * 23,
+          },
+        },
+      ]),
+    );
+    const layout = layoutMap(
+      erToFlowchart(er, data.groups),
+      { collapsed, entered },
+      sizes,
+      "height",
+    );
+    const path =
+      selected.length === 2
+        ? erFanouts(er.relations, selected[0] as string, selected[1] as string)
+        : undefined;
+    const part = renderMapFlow({
+      layout,
+      kinds: {},
+      lines: {
+        "-.->": { dash: "dashed", head: "none" },
+        "---": { head: "none" },
+      },
+      notes: Object.fromEntries(
+        Object.entries(data.notes).map(([id, note]) => [id, note.text]),
+      ),
+      collapsed,
+      entered,
+      // 2 つのテーブルを選んだときは、経路のテーブルと関連を強調する（mount の attachMapEr の選び方）
+      selected: path === undefined ? selected : [],
+      focus:
+        path === undefined
+          ? undefined
+          : { nodes: path.tables, wires: path.relations },
+      packets: [],
+      dragging: undefined,
+      id: "story-map-er",
+      collapsedTag: (group) =>
+        `テーブル ${data.groups[group]?.tables.length ?? 0} 件`,
+    });
+    // テーブルのノードに、列の開閉のボタンと列の行を入れる（mount の attachMapEr と同じ中身）
+    let html = part.html;
+    let tips = part.tips;
+    for (const table of er.tables) {
+      const columns = renderMapEr({
+        name: table.name,
+        columns: table.columns,
+        notes: Object.fromEntries(
+          table.columns.flatMap((column) => {
+            const text =
+              data.notes[`${table.name}.${column.name}`]?.text ??
+              column.comment;
+            return text === undefined ? [] : [[column.name, text]];
+          }),
+        ),
+        collapsed: collapsed.includes(table.name),
+        id: `story-map-er-${er.tables.indexOf(table)}`,
+      });
+      html = html.replace(
+        new RegExp(
+          `(data-node="${table.name}"[^>]*>[\\s\\S]*?<span class="mdmark-diagram-node-kind[^"]*">)([\\s\\S]*?)(</span>[\\s\\S]*?<span class="mdmark-diagram-node-name">[\\s\\S]*?</span>)`,
+        ),
+        `$1$2${columns.toggle}$3${columns.columns}`,
+      );
+      tips += columns.tips;
+    }
+    // 関連の両端の多重度
+    const cardinality = er.relations
+      .flatMap((relation) => {
+        const wire = layout.wires.find((item) => item.id === relation.id);
+        const first = wire?.points[0];
+        const last = wire?.points[wire.points.length - 1];
+        return first && last
+          ? [
+              `<text class="map-er-cardinality" x="${first[0] + 4}" y="${first[1] - 5}">${relation.fromCardinality}</text>`,
+              `<text class="map-er-cardinality" x="${last[0] - 4}" y="${last[1] - 5}" text-anchor="end">${relation.toCardinality}</text>`,
+            ]
+          : [];
+      })
+      .join("");
+    html += `<svg class="map-er-cardinalities" width="${layout.width}" height="${layout.height}" style="position:absolute;inset:0;pointer-events:none">${cardinality}</svg>`;
+    // 行が増える関連のマーカーは、関連の線の中ほどに配置する
+    for (const fanout of fanouts) {
+      const wire = layout.wires.find((item) => item.id === fanout.wire);
+      const middle = wire?.points[Math.floor(wire.points.length / 2)];
+      if (middle)
+        html += `<button class="map-er-fanout" type="button" style="left:${middle[0] - 22}px;top:${middle[1]}px" aria-label="${fanout.from} から ${fanout.to} で行が増える">×n</button>`;
+    }
+    return mapFrame("記録の構造", { html, tips }, layout);
+  },
+  "map-state": (args) => {
+    const diagram = parseStateDiagram(MAP_STATE);
+    const { data } = parseMapData(MAP_STATE_DATA);
+    const { chart, loops } = stateToFlowchart(diagram);
+    const collapsed = jsonList(args.collapsed);
+    const entered = typeof args.entered === "string" ? args.entered : undefined;
+    const selected = jsonList(args.selected);
+    const focus = jsonObject<{ nodes: string[]; wires: string[] }>(args.focus);
+    const widths = Object.fromEntries(
+      chart.nodes.flatMap((node) =>
+        node.classes[0] === "start" || node.classes[0] === "end"
+          ? [[node.id, { width: 32 }]]
+          : node.classes[0] === "choice"
+            ? [[node.id, { width: 40 }]]
+            : [],
+      ),
+    );
+    const layout = layoutMap(chart, { collapsed, entered }, widths, "height");
+    const part = renderMapFlow({
+      layout,
+      kinds: {},
+      lines: { "-.->": { dash: "dashed", head: "none" } },
+      notes: Object.fromEntries(
+        Object.entries(data.notes).map(([id, note]) => [id, note.text]),
+      ),
+      collapsed,
+      entered,
+      selected,
+      focus,
+      packets: [],
+      dragging: undefined,
+      id: "story-map-state",
+      collapsedTag: (group) =>
+        `状態 ${diagram.states.filter((state) => state.parent === group && state.kind === "state").length} 件`,
+    });
+    // 開始・終了・分岐の形状を付け、同じ状態への遷移を重ねる（mount の attachMapState と同じ）
+    let html = part.html;
+    for (const node of chart.nodes) {
+      const kind = node.classes[0];
+      if (kind === "start" || kind === "end" || kind === "choice")
+        html = html.replace(
+          `data-node="${node.id}"`,
+          `data-node="${node.id}" data-shape="${kind}"`,
+        );
+    }
+    const loopsSvg = loops
+      .flatMap((loop) => {
+        const node = layout.nodes.find((item) => item.id === loop.from);
+        return node
+          ? [
+              renderMapState({
+                wire: loop.id,
+                x: node.x,
+                y: node.y,
+                width: node.w,
+                label: loop.label,
+                active: focus?.wires.includes(loop.id) === true,
+                dim: focus !== undefined && !focus.wires.includes(loop.id),
+              }),
+            ]
+          : [];
+      })
+      .join("");
+    html += `<svg class="map-state-loops" width="${layout.width}" height="${layout.height}">${loopsSvg}</svg>`;
+    return mapFrame("作業の状態", { html, tips: part.tips }, layout);
+  },
   "map-sequence": (args) => {
     const sequence = parseSequence(
       args.source === "arrows"
@@ -1177,6 +1363,7 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
   "map-band": (args) =>
     renderMapBand({
       mode: args.mode === "playback" ? "playback" : "walkthrough",
+      unit: args.unit === "transition" ? "transition" : "message",
       total: typeof args.total === "number" ? args.total : 4,
       index: typeof args.index === "number" ? args.index : undefined,
       title: typeof args.title === "string" ? args.title : "",
