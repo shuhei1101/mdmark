@@ -1,0 +1,39 @@
+/* #533 の表の追加分: 選んだのに見える幅に収まらず留まっていない列のピン止めのボタン。
+   #438 の追加分（refs/438/assets/table.css）の後に読む */
+
+@layer mdmark {
+  .mdmark {
+    /* 案 A: 押した状態の地と線のまま、ピンのアイコンを塗らずに破線で描き、枠も破線にする */
+    .mdmark-table[data-notice="a"] .mdmark-pin.is-unpinned {
+      border-style: dashed;
+      color: var(--mdmark-color-muted);
+
+      .mdmark-icon {
+        fill: none;
+        stroke-dasharray: 3 2;
+      }
+    }
+
+    /* 案 B: 押した状態のピンのまま、ボタンの右上の角に注意の色の丸を重ねる */
+    .mdmark-table[data-notice="b"] .mdmark-pin.is-unpinned {
+      position: relative;
+
+      &::after {
+        position: absolute;
+        top: -0.25rem;
+        right: -0.25rem;
+        width: 0.5rem;
+        height: 0.5rem;
+        border: 1px solid var(--mdmark-color-bg);
+        border-radius: 50%;
+        background: var(--mdmark-color-callout-warning);
+        content: "";
+      }
+    }
+
+    /* 見本の表の幅: スマホの画面幅（390px）で、見える幅に留める列が 2 列までしか収まらない */
+    .mdmark-table.is-mock-narrow {
+      max-width: 390px;
+    }
+  }
+}
