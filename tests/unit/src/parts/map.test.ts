@@ -448,6 +448,10 @@ test("test_render_map_flow_when_links", async () => {
   // 検証
   const node = outerHtml(html, 'data-node="mount"');
   expect(findTag(node, 'data-node="mount"')).toContain("has-link");
+  expect(findTag(node, 'data-node="mount"')).not.toContain("tabindex");
+  const link = findTag(node, "mdmark-diagram-node-link");
+  expect(link).toContain('aria-roledescription="ノード"');
+  expect(link).toContain('aria-label="mount"');
   expect(node).toMatch(
     /<a class="mdmark-diagram-node-link" href="https:\/\/example\.com\/spec"[^>]*><\/a>[\s\S]*<button class="mdmark-diagram-info/,
   );
