@@ -65,8 +65,11 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-13T02:56:53.776133+00:00'
   - process: ドキュメント修正
-    status: todo
+    status: skipped
     note: 要件.md の対象のリポジトリごとの移行の進め方を確定し、推奨の案 A ならリポジトリごとの Issue を起票してスコープ外の行に番号を記載する
+    reason: mdmark のリポジトリで更新するドキュメントが無いため対象外。ほかのリポジトリの文書の修正は要件.yaml のスコープ外の行で扱う
+    updated_by: planner
+    updated_at: '2026-11-13T02:59:14.626225+00:00'
   - process: 単体テスト作成
     status: skipped
     reason: コードを変更しないため対象外
