@@ -128,7 +128,7 @@ export function installRecorder(): void {
   };
 }
 
-/** Webview に追加する、テストの操作の中継のスクリプト。`testClick` はセレクタに該当する最初の要素を押し、`testFocus` はその要素にフォーカスを移し、`testDrag` はその要素の中央で押して横に `dx` 動かして離し、続く `click` を送信する（合成のポインターは捕捉できないため、`setPointerCapture` を何もしない関数にする） */
+/** Webview に追加する、テストの操作の中継のスクリプト。`testClick` はセレクタに該当する最初の要素を押し、`testFocus` はその要素にフォーカスを移し、`testDrag` はその要素の中央で押して横に `dx` 動かして離す（動かす・離すは `window` へ送信し、`click` は送信しない）（合成のポインターは捕捉できないため、`setPointerCapture` を何もしない関数にする） */
 const RELAY_SCRIPT = [
   'window.addEventListener("message", (event) => {',
   "  const data = event.data;",
@@ -143,9 +143,8 @@ const RELAY_SCRIPT = [
   "    const y = rect.top + rect.height / 2;",
   "    const point = { bubbles: true, cancelable: true, pointerId: 1, button: 0, clientY: y };",
   '    element.dispatchEvent(new PointerEvent("pointerdown", { ...point, clientX: x }));',
-  '    element.dispatchEvent(new PointerEvent("pointermove", { ...point, clientX: x + data.dx }));',
-  '    element.dispatchEvent(new PointerEvent("pointerup", { ...point, clientX: x + data.dx }));',
-  '    element.dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true }));',
+  '    window.dispatchEvent(new PointerEvent("pointermove", { ...point, clientX: x + data.dx }));',
+  '    window.dispatchEvent(new PointerEvent("pointerup", { ...point, clientX: x + data.dx }));',
   "  }",
   "});",
 ].join("");
