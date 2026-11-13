@@ -5440,7 +5440,7 @@ flows:
     summary: map の構成図の `click` のリンク先を持つノードをクリックと Enter で開き、ノードの上から始めたドラッグではノードを動かすだけにする
     setup:
       - name: 図を描いたページ
-        description: インターフェース定義『文書をHTML文字列にする』の正常系（map のノードのリンク先）のノード `a`（`click` の行で `https://example.com/spec`、補足の `notes` で説明を持つ）と `e`（`click` の行なし）を持つ map の構成図を `mount` で描いた状態
+        description: 'flowchart の map の範囲 1 つを持つ文書を `mount` で描いた状態。ノード `a` は `click a "https://example.com/spec"` の行と補足の `notes` の説明を、`b` は `click b "./other.md"` の行を持ち、`e` は `click` の行を持たない'
       - name: Mock
         description: '`https://example.com/spec` への遷移を Playwright の route で手元の応答に差し替え、開いた URL を記録する'
     flow: |-
@@ -5454,12 +5454,40 @@ flows:
         P->>M: a を動かさずに押して離す
         M-->>P: リンク先へ移る
     expected:
+      - '`a`・`b` のノードが class `has-link` と、記載した `href` を持つ `a.mdmark-diagram-node-link` を持ち、`a.mdmark-diagram-node-link` のスクリーンリーダー向けの名前がノードの名前。`e` は `a` 要素と `has-link` を持たない'
+      - '`a` の説明のマーカーが `a.mdmark-diagram-node-link` の中に無く、その後ろにある'
       - '`a` の名前の上の `cursor` の計算値が `pointer`、`e` の名前の上が `text`'
       - ドラッグの後、`a` のノードの位置が 100px 動き、開いた URL が 0 件
       - マーカーを押した後、説明のツールチップが `hidden` を持たず、開いた URL が 0 件
       - Tab で `a.mdmark-diagram-node-link`、マーカーの順にフォーカスが移る
       - 動かさずに押した後、開いた URL が `https://example.com/spec` の 1 件。戻って `a.mdmark-diagram-node-link` にフォーカスして Enter を押しても同じ URL へ移る
     test: test_normal_when_node_link_opened
+    refs:
+      - SC-472-8#scenarios[正常シナリオ（リンク先を持つノード）]
+  - name: 異常系（map のノードのリンク先を許可しない）
+    summary: map の `click` の許さないリンク先のノードをリンクにせず、図の前の書き方の警告に並べる
+    setup:
+      - name: 配布物を読み込んだページ
+        description: 正常系と同じ
+      - name: 許さないリンク先を持つ map の Markdown
+        description: 'flowchart の map の範囲 1 つを持ち、ノード `c` に `click c "javascript:alert(1)"`、`d` に `click d "id:spec#items"` の行を持たせ、図の後に段落を持つ文書'
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        participant P as 利用側のページ
+        participant M as mdmark
+        P->>M: mount(el, { markdown })
+        M->>M: click の行のリンク先を本文のリンクと同じ許可で確認する
+        M->>P: 書き方の警告と、リンクにしないノードの map の図と段落を描く
+    expected:
+      - '`c`・`d` のノードが `a` 要素と `has-link` を持たず、名前が描かれている'
+      - 図の枠の前の書き方の警告に、`c`・`d` と `javascript:alert(1)`・`id:spec#items` と使用できるリンク先が並ぶ
+      - '`el` の中に `href` が `javascript:` で始まる要素が無い'
+      - 段落が描かれている
+    test: test_error_when_map_node_link_not_allowed
+    refs:
+      - SC-472-8#scenarios[異常シナリオ（ノードのリンク先を許可しない）]
   - name: 正常系（折り返す）
     summary: '`wrap` のコードブロックとファイルツリーだけを折り返し、利用側の `pre` への汎用の CSS では既定を変えない'
     setup:
@@ -7406,7 +7434,15 @@ constraints:
     constraint: Mermaid の読めない行（行番号・行の文字・直し方）・閉じの無い `subgraph` と複合フラグメント・補足の JSON の読めない箇所（行と原因）・知らないキー・スキーマに合わない値・補足が指す Mermaid に無いノード・線・グループの ID・`--` を含む補足の文字・設定の `map.kinds` に無いクラス・`map.lines` に無い線の名前を、`dist/map.js` が集めて図の枠の前の書き方の警告にする。`render` が範囲の形の警告を配置していれば、その警告に項目を足す
     notes: '`render` が確かめる範囲の形は文書をHTML文字列にする.ts の制約『map の書き方の誤り』'
   - item: map の用語の下線
-    constraint: 文書をHTML文字列にする.ts の制約『map の範囲』の `data-map-terms` の用語を、構成図のノードの名前と、シーケンス図の参加者の名前・メッセージの文・注記の文の中で見つけ、今の図のノードの用語と同じく `span.mdmark-term`（フォーカスでき、図のツールチップに意味を出す）にする。用語の文字は、文字を逃がした名前の中に置き、名前の文字の選択とコピーを妨げない。構成図のツールチップ（ノードと線の補足の `notes` の説明）の文の中の用語は、フォーカスを持たない下線（`tabindex` とツールチップの持ち主を持たない `span.mdmark-term`）にし、そのツールチップの末尾に用語ごとに「{用語}：{意味}」の行を並べる。押せる要素の中の文字（グループのタイトルのボタン・ツールチップを持つ線のラベル）と、案内と再生の帯の文には付けない（今の図と同じく、押せる要素とツールチップの中に、フォーカスできる用語を入れ子にしない）。同じ図の構成図のノードの説明（補足の `notes`）のツールチップも、図の枠のツールチップの層に配置する
+    constraint: 文書をHTML文字列にする.ts の制約『map の範囲』の `data-map-terms` の用語を、構成図のノードの名前と、シーケンス図の参加者の名前・メッセージの文・注記の文の中で見つけ、今の図のノードの用語と同じく `span.mdmark-term`（フォーカスでき、図のツールチップに意味を出す）にする。用語の文字は、文字を逃がした名前の中に置き、名前の文字の選択とコピーを妨げない。構成図のツールチップ（ノード・線・グループの補足の `notes` の説明）の文の中の用語は、フォーカスを持たない下線（`tabindex` とツールチップの持ち主を持たない `span.mdmark-term`）にし、そのツールチップの末尾に用語ごとに「{用語}：{意味}」の行を並べる。押せる要素の中の文字（グループのタイトルのボタン・ツールチップを持つ線のラベル）と、案内と再生の帯の文には付けない（今の図と同じく、押せる要素とツールチップの中に、フォーカスできる用語を入れ子にしない）。同じ図の構成図のノードの説明（補足の `notes`）のツールチップも、図の枠のツールチップの層に配置する
+  - item: map のノードのリンク
+    constraint: '構成図の Mermaid の `click {ID} "{リンク先}"` の行（`href` を省いた形と、`"{リンク先}" "{ツールチップ}"`・`_blank` などの後ろの値は読んで捨てる）を、そのノードのリンク先にする。リンク先を文書をHTML文字列にする.ts の制約「URL のスキーム」と同じ許可（`http`・`https`・`mailto` と相対 URL）で確認し、許すノードはノードの全体を覆う `<a class="mdmark-diagram-node-link" href="{リンク先}">`（スクリーンリーダー向けの名前はノードの名前。開く先は本文のリンクと同じく同じタブ）にし、ノードの要素に class `has-link` を付ける。説明のマーカーはリンクの中に入れず、リンクの後ろに配置する。許さないリンク先のノードはリンクにせず名前を描き、ノードの ID と記載したリンク先と使用できるリンク先を制約「map の書き方の警告」の項目に並べる。リンク先を持つノードの上で押したまま 4px を超えて動かしたときはノードを動かし、制約「図の移動」と同じくその後の `click` を止める。コールバックの関数を指す `click {ID} {関数名}` の形は読んで捨てる'
+    decided_by: SC-472-8#scenarios[正常シナリオ（リンク先を持つノード）]
+    notes: '`id:` などの参照は利用側が URL に変えてから記載する。確認ログ『map のノードのリンクをこの PR の要件に追加するか』'
+  - item: map のグループの説明
+    constraint: 補足の `notes` のキーが構成図の `subgraph` の ID のとき、そのグループのタイトルの右に、ノードの説明と同じマーカー（フォーカスでき、`aria-describedby` で説明のツールチップを指す）を配置し、ポインターを乗せるかフォーカスしたときに説明を図のツールチップで出す。閉じたグループのノードと、中へ入ったグループの押せないタイトルにも同じマーカーを配置する。マーカーはタイトルのボタンの外に置き、押してもグループの中へ入らない・開閉しない
+    decided_by: SC-472-40#scenarios[正常シナリオ]
+    notes: 確認ログ『map のグループの説明をこの PR の要件に追加するか』。マーカーの外観は部品設計『mapの構成図』
   - item: map のシーケンス図の説明のツールチップ
     constraint: シーケンス図の補足の `notes`（キーは記載の順に 1 からのメッセージの番号）に説明があるメッセージは、線の押せる帯（`.map-wire-hit[data-message]`）を持ち主にした図のツールチップを持ち、線にポインターを当てると「{送り手の名前} → {受け手の名前}」の見出しと説明を出す。説明の文の中の用語は、構成図の説明のツールチップと同じく、フォーカスを持たない下線と末尾の「{用語}：{意味}」の行にする。説明を持たないメッセージの線にはツールチップを付けない
   - item: map の閉じたグループのノードの数

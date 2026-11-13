@@ -9,7 +9,7 @@ flows:
     summary: タグ一覧から最新のバージョンを選び、横の列のパネルに描かせる
     setup:
       - name: 見本のワークスペース
-        description: 見出し・表・注意書き・フロー図を持つ `guide.md` を配置したフォルダ。`mdmark.version` は既定の `latest`。`mdmark.lastVersion` は空
+        description: 見出し・表・注意書き・map の構成図を持つ `guide.md` を配置したフォルダ。`mdmark.version` は既定の `latest`。`mdmark.lastVersion` は空
       - name: Mock
         description: '`MDMARK_VSCODE_DIST_BASE` に、このブランチでビルドした配布物を `@{バージョン}/dist/` の構造の URL で配る手元のサーバー。`MDMARK_VSCODE_TAGS_URL` に `v0.7.0`・`v0.10.0`・`v0.6.0`・`vscode-v0.11.0` を返却する代役'
     flow: |-
@@ -32,7 +32,7 @@ flows:
       - パネルが `ViewColumn.Beside` に開き、タイトルが `プレビュー guide.md`
       - 配布物の要求が `@v0.10.0/dist/index.js` と `@v0.10.0/dist/index.css` だけで、`vscode-v0.11.0` を選んでいない（文字の並びでなく数で比べている）
       - '`mdmark.lastVersion` が `v0.10.0`'
-      - '`rendered` を受けた後、Webview の本文に見出し・表・注意書き・フロー図の要素がある'
+      - '`rendered` を受けた後、Webview の本文に見出し・表・注意書き・map の構成図の要素がある'
       - Webview の HTML の CSP が制約「CSP」のとおりで、`script` 要素が全て nonce を持つ
       - '`auditPreview()` が返却するパネルの部品の axe の違反が 0 件'
     test: test_normal

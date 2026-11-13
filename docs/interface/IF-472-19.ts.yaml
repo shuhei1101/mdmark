@@ -97,11 +97,11 @@ flows:
       - '`導入` と `注意` のセクションが開き、Webview の見えている範囲に `注意` の見出しが入り、`注意` の段落が表示されている'
       - 拡張機能が `openLink` を受けず、エディタがもう一度開かれない
     test: test_normal_when_side_toc_link
-  - name: 正常系（フロー図のノードのリンク）
-    summary: フロー図のノードのリンクを、本文のリンクと同じ種類ごとの先で開く
+  - name: 正常系（図のノードのリンク）
+    summary: map の図のノードのリンクを、本文のリンクと同じ種類ごとの先で開く
     setup:
       - name: ノードのリンクを持つ文書のプレビュー
-        description: 同じフォルダの `other.md` を指すノードと `https://aka.ms/mdmark` を指すノードのフロー図を持つ Markdown のプレビューを開いた状態
+        description: 同じフォルダの `other.md` と `https://aka.ms/mdmark` を `click` の行で指すノードの map の構成図を持つ Markdown のプレビューを開いた状態
       - name: Mock
         description: 正常系（外部の URL）と同じ
     flow: |-
@@ -116,8 +116,8 @@ flows:
     expected:
       - '`other.md` を指すノードを押すと、`other.md` がエディタで開く'
       - '`https://aka.ms/mdmark` を指すノードを押すと、`env.openExternal` の代役にその URL が 1 回だけ渡る'
-      - ノードを押してもプレビューの文書が変わらない。`https://aka.ms/mdmark` を指すノードの名前の上で押したまま 100px 動かして離したときは、`openLink` が送信されず、`env.openExternal` の代役が呼ばれない
-    test: test_normal_when_flow_node_link
+      - ノードを押してもプレビューの文書が変わらない。`https://aka.ms/mdmark` を指すノードの種類の行の上で押したまま 100px 動かして離したときは（ノードが動く）、`openLink` が送信されず、`env.openExternal` の代役が呼ばれない
+    test: test_normal_when_map_node_link
 lead: プレビューで押したリンクを、外部の URL は既定のブラウザ、Markdown へのリンクは VS Code のエディタ、`#` で始まるリンクはプレビューの中で開く。
 idempotent: true
 side_effects: 既定のブラウザか VS Code のエディタでリンク先を開く。プレビューの文書とスクロールの位置は変えない（`#` のリンクを除く）
@@ -137,6 +137,6 @@ exceptions:
     notes: 何もしない。スキームは mdmark の sanitize が `http`・`https`・`mailto` と相対 URL だけを残すため、ほかのスキームは届かない
 constraints:
   - item: リンクの見分け方
-    constraint: Webview は本文の `a`（フロー図のノードの `a.mdmark-diagram-node-link` を含む。図を動かした後の `click` は mdmark が `window` のキャプチャで止めるため、`document` まで届かず送信しない）の `click` を `document` のキャプチャで受け、`preventDefault` と `stopPropagation` を呼んで `openLink` を送信する（VS Code の Webview の外枠は `window` の `click` でリンクを開くため、伝えると 2 回開く）。`#` で始まるリンクだけは送信せず、Webview の中でその `id` の要素へ `scrollIntoView` する。右側の目次（`.mdmark-side-toc`）の中のリンクはキャプチャでは止めずに右側の目次へ届け（閉じたセクションを開いて移り、狭い幅ではパネルを隠す）、`document` のバブリングで `preventDefault` と `stopPropagation` を呼ぶ。拡張機能は `http:`・`https:`・`mailto:` を `env.openExternal` で開き、相対パスは Markdown のフォルダから解決して、`.md` は `window.showTextDocument`、それ以外のファイルは `vscode.open` で開く。相対パスの `#` 以降は使用しない
+    constraint: Webview は本文の `a`（map の図のノードの `a.mdmark-diagram-node-link` を含む。ノードを動かした後の `click` は mdmark が `window` のキャプチャで止めるため、`document` まで届かず送信しない）の `click` を `document` のキャプチャで受け、`preventDefault` と `stopPropagation` を呼んで `openLink` を送信する（VS Code の Webview の外枠は `window` の `click` でリンクを開くため、伝えると 2 回開く）。`#` で始まるリンクだけは送信せず、Webview の中でその `id` の要素へ `scrollIntoView` する。右側の目次（`.mdmark-side-toc`）の中のリンクはキャプチャでは止めずに右側の目次へ届け（閉じたセクションを開いて移り、狭い幅ではパネルを隠す）、`document` のバブリングで `preventDefault` と `stopPropagation` を呼ぶ。拡張機能は `http:`・`https:`・`mailto:` を `env.openExternal` で開き、相対パスは Markdown のフォルダから解決して、`.md` は `window.showTextDocument`、それ以外のファイルは `vscode.open` で開く。相対パスの `#` 以降は使用しない
   - item: 開く列
     constraint: Markdown へのリンクは、元の Markdown のエディタと同じ列に開く。プレビューは閉じない
