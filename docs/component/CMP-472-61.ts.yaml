@@ -1062,10 +1062,10 @@ states:
       - name: pinMode
         value: each
   - name: PinnedOverflowEach
-    description: '`pinMode: each` で 1・3・9 列目を選び、3 列の幅の合計が表の見えている幅を超える。左から順に収まる 1・3 列目だけが留まり、9 列目はボタンを押したまま留まらず、ボタンが破線のピンになる'
+    description: '`pinMode: each` で 1・3・9 列目を選び、`unpinned` で 9 列目を留まっていない状態にした表。1・3 列目が留まり、9 列目はボタンを押したまま留まらず、ボタンが破線のピンになる'
     args:
       - name: features
-        value: '["pin","resize"]'
+        value: '["pin"]'
       - name: columns
         value: '["文書","行数","表","図","Chrome","Edge","Firefox","Safari","iOS Safari","Android Chrome"]'
       - name: rows
@@ -1078,13 +1078,11 @@ states:
         value: '[8]'
       - name: pinMode
         value: each
-      - name: widths
-        value: '[{"column":0,"width":480},{"column":2,"width":480},{"column":8,"width":480}]'
   - name: PinnedOverflowThrough
-    description: '`pinMode: through` で 3 列目までを留め、1〜3 列目の幅の合計が表の見えている幅を超える。左から順に収まる 1・2 列目だけが留まり、押した 3 列目のボタンが破線のピンになる'
+    description: '`pinMode: through` で 3 列目までを留め、`unpinned` で 3 列目を留まっていない状態にした表。1・2 列目が留まり、押した 3 列目のボタンが破線のピンになる'
     args:
       - name: features
-        value: '["pin","resize"]'
+        value: '["pin"]'
       - name: columns
         value: '["文書","行数","表","図","Chrome","Edge","Firefox","Safari","iOS Safari","Android Chrome"]'
       - name: rows
@@ -1097,8 +1095,6 @@ states:
         value: '[2]'
       - name: pinMode
         value: through
-      - name: widths
-        value: '[{"column":0,"width":480},{"column":1,"width":480},{"column":2,"width":480}]'
   - name: Resizable
     description: '`resize` の表。最下段の各列の見出しのセルの右端に、列の幅を変えるつまみ（`role="separator"`）がある。つまみの線は、ポインターを乗せたとき・フォーカスしたとき・ドラッグ中に出し、ポインターが粗い画面では常に薄く出す'
     args:
