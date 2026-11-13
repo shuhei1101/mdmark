@@ -35,8 +35,10 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-13T15:10:12.067274+00:00'
   - process: 単一ユースケース設計
-    status: todo
+    status: done
     note: SC-472-73（表を操作する）に、留めた列の幅の合計が見える幅を超える場面のシナリオを足す
+    updated_by: planner
+    updated_at: '2026-11-13T15:14:13.861314+00:00'
   - process: モック作成
     status: todo
     note: 部品『table』のモックに、見える幅を超えた留めた列の見え方と、留められないことの知らせ方の場面を足す
