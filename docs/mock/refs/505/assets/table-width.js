@@ -4,7 +4,7 @@
 //
 // 1. 長文の列（改行で分けた 1 行が LONG_CHARS 文字以上のセルを持つ列）だけを折り返し、ほかの列は折り返さず最も長い行の幅にする
 // 2. 長文の列は、最も長い行の幅まで（表を本文の幅いっぱいまで）広げる。折り返さずに収まるなら、その幅で止める
-// 3. 長文の列は LONG_MIN_EM より狭くしない。ほかの列の最小の幅と最大の幅は、最も長い行の幅。全ての列の最小の幅の合計が見える幅を超えたら、最小の幅で描いて表を横にスクロールする
+// 3. 長文の列は LONG_MIN_EM より狭くしない（最も長い行の幅が短ければ、その幅を最小の幅にする）。ほかの列の最小の幅と最大の幅は、最も長い行の幅。全ての列の最小の幅の合計が見える幅を超えたら、最小の幅で描いて表を横にスクロールする
 
 {
   /** 長文の列とみなす、1 行の文字数 */
@@ -71,7 +71,7 @@
       const ranged = th.dataset.mockWidthMin || th.dataset.mockWidthMax;
       const long = ranged || (!cells.every(isCompact) && cells.some((cell) => linesOf(cell).some((line) => [...line].length >= LONG_CHARS)));
       const nowrap = th.dataset.mockWidthMode === "nowrap" || !long;
-      const min = nowrap ? longest : th.dataset.mockWidthMin ? Number(th.dataset.mockWidthMin) * em : Math.max(LONG_MIN_EM * em, longestWord);
+      const min = nowrap ? longest : th.dataset.mockWidthMin ? Number(th.dataset.mockWidthMin) * em : Math.min(longest, Math.max(LONG_MIN_EM * em, longestWord));
       const max = th.dataset.mockWidthMax ? Number(th.dataset.mockWidthMax) * em : Number.POSITIVE_INFINITY;
       // 望む幅: 折り返さずに収まる幅（最も長い行の幅）を、最小の幅と最大の幅の間に収める
       const wanted = nowrap ? longest : Math.max(min, Math.min(longest, max));
