@@ -33,6 +33,19 @@ states:
         value: '9'
       - name: title
         value: mount を呼ぶ
+  - name: StatePlayback
+    description: 状態遷移図の遷移の再生。タイトルが「{遷移元} → {遷移先}：{ラベル}」で、ボタンの名前が前の遷移・次の遷移・再生をやめる
+    args:
+      - name: mode
+        value: playback
+      - name: unit
+        value: transition
+      - name: index
+        value: '5'
+      - name: total
+        value: '13'
+      - name: title
+        value: 判定 → 差し戻しの理由を確認する：差し戻し
   - name: Narrow
     description: 幅 390px。タイトルは番号とボタンの下の行に回る
     args:
@@ -48,6 +61,12 @@ args:
     default: walkthrough
     choices: '`walkthrough`・`playback`'
     description: 構成図の案内か、シーケンス図の再生か。ボタンのスクリーンリーダー向けの名前を変える
+  - name: unit
+    type: 列挙
+    required: false
+    default: message
+    choices: '`message`・`transition`'
+    description: 再生で進める単位。`playback` のボタンの名前を、`message` ではメッセージ、`transition`（状態遷移図）では遷移にする
   - name: total
     type: 整数
     required: true
@@ -96,7 +115,7 @@ uses:
     how: 前へ・停止・自動で進める（一時停止）・次へのアイコン
 accessibility:
   - 帯は `role="region"` と `aria-label`（引数 `label`）を持ち、文の要素は `aria-live="polite"`
-  - ボタンはアイコンだけで、スクリーンリーダー向けの名前と `title` を、案内では `前の手順`・`案内をやめる`・`自動で進める`（自動のときは `一時停止`）・`次の手順`、再生では `前のメッセージ`・`再生をやめる`・`自動で進める`・`次のメッセージ` にする
+  - ボタンはアイコンだけで、スクリーンリーダー向けの名前と `title` を、案内では `前の手順`・`案内をやめる`・`自動で進める`（自動のときは `一時停止`）・`次の手順`、再生では `前のメッセージ`・`再生をやめる`・`自動で進める`・`次のメッセージ`（`unit` が `transition` のときは `前の遷移`・`再生をやめる`・`自動で進める`・`次の遷移`）にする
   - 番号は等幅の数字で出し、説明の文の行数によらずボタンの位置を変えない
 refs:
   - IF-472-35#
