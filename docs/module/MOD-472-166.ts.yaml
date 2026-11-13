@@ -39,7 +39,7 @@ functions:
     scope: public
     is_async: true
     summary: 前回の `dist/` を削除してから、バージョンを決めて検査し、移行の手順を点検し、`dist/` を書き込んでサイズを検査し、プラグインをビルドし、終了コードを返却する
-    side_effects: 最初に `dist/` を削除してからもう一度書き込む。失敗したとき（バージョンの書式の誤り・`version.ini` を読み込めない・esbuild の失敗・上限超過・対応ブラウザの下限に無い API）は `dist/` を残さず、標準エラーに理由を出す
+    side_effects: 最初に `dist/` を削除してからもう一度書き込み、`migrations/` の中の `marker-json.mjs` を持つフォルダの `legacy-marks.js`・`THIRD_PARTY_LICENSES.txt` を書き換える。失敗したとき（バージョンの書式の誤り・`version.ini` を読み込めない・esbuild の失敗・上限超過・対応ブラウザの下限に無い API）は `dist/` を残さず、標準エラーに理由を出す
     args:
       - name: argv
         type: string[]
@@ -172,7 +172,7 @@ functions:
     is_async: true
     summary: esbuild で `src/index.ts` と `src/index.css` を、バージョンを埋めた `dist/index.js` と `dist/index.css` に、ビューとコメントと map の部品の `src/views/index.ts`・`src/comments/index.ts`・`src/map/index.ts` を `dist/view.js`・`dist/comments.js`・`dist/map.js` にまとめ、`emitDeclarations` で型定義を書き込む。続けて、書き出した HTML の起動の処理 `src/viewer/index.ts` と `src/viewer/viewer.css` を `dist/viewer.js` と `dist/viewer.css` に、CLI の `src/cli/main.ts` を `dist/cli.js` ににまとめ、`buildLegacyMarks` で移行の手順のスクリプトが読み込む書き換えの処理をまとめ、配布物と CLI にまとめた依存のライセンスを書き込む
     description: '`format: esm`・`bundle: true`・`minify: true`・`target: BROWSER_TARGETS`・`plugins: [postcssStubPlugin]`・`define` で `__MDMARK_VERSION__` を、`banner.css` で `:root{--mdmark-version:"{バージョン}"}` を埋め、`metafile` を取る。続けて `metafile` を指定してまとめた依存のライセンスを記載する。'
-    side_effects: '`dist/` を書き換える'
+    side_effects: '`dist/` と、`migrations/` の中の `marker-json.mjs` を持つフォルダの `legacy-marks.js`・`THIRD_PARTY_LICENSES.txt` を書き換える'
     args:
       - name: version
         type: string
