@@ -81,10 +81,10 @@ flows:
       - 拡張機能が例外を投げない
     test: test_error_when_link_target_missing
   - name: 正常系（右側の目次の項目）
-    summary: 右側の目次の項目を押すと、閉じたセクションを開いて見出しへ移り、拡張機能へは送信しない
+    summary: 右側の目次の項目を押すと、囲む閉じたセクションと見出し自身の閉じたセクションを開いて見出しへ移り、拡張機能へは送信しない
     setup:
       - name: 閉じたセクションを持つ文書のプレビュー
-        description: '`## 導入` を閉じた状態で描き、その中に `### 注意` を持つ `guide.md` のプレビューを開いた状態。右側の目次は既定の出し方'
+        description: '`## 導入` を閉じた状態で描き、その中に閉じた状態の `### 注意` と段落を持つ `guide.md` のプレビューを開いた状態。右側の目次は既定の出し方'
       - name: Mock
         description: 正常系（外部の URL）と同じ。拡張機能が受けたメッセージを記録する
     flow: |
@@ -92,9 +92,9 @@ flows:
         participant U as 文書の作成者
         participant PV as Webview
         U->>PV: 右側の目次の「注意」を押す
-        PV->>PV: 「導入」のセクションを開いて見出しへ scrollIntoView
+        PV->>PV: 「導入」と「注意」のセクションを開いて見出しへ scrollIntoView
     expected:
-      - '`導入` のセクションが開き、Webview の見えている範囲に `注意` の見出しが入る'
+      - '`導入` と `注意` のセクションが開き、Webview の見えている範囲に `注意` の見出しが入り、`注意` の段落が表示されている'
       - 拡張機能が `openLink` を受けず、エディタがもう一度開かれない
     test: test_normal_when_side_toc_link
   - name: 正常系（フロー図のノードのリンク）

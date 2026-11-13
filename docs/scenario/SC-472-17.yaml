@@ -539,6 +539,31 @@ scenarios:
       - 開閉のボタンはキーボードで操作でき、`aria-expanded` で開閉の状態を示す
       - '`tree` のコードブロックには、インデントの開閉のボタンが付かない'
     test: test_normal_when_folded_by_indent
+  - name: 正常シナリオ（開閉のボタンの列にポインターを乗せる）
+    setup:
+      - name: mdmark を読み込むページ
+        description: 正常シナリオと同じ
+        notes: ポインターで操作できる画面で開く
+      - name: 入れ子のコードを持つ Markdown
+        description: '`<!-- code: {"lines": {}} -->` の後に、3 階層の入れ子のキーを持つ言語 `yaml` のコードブロックを持つ文書'
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 利用側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を指定して描かせる
+        M-->>P: 行番号の右に ▾ を持つコードブロックを描く
+        U->>P: 畳めない行の、行番号の右の ▾ の列にポインターを乗せる
+        P-->>U: そのコードブロックの全ての ▾ を出したコードブロック
+        U->>P: ポインターをコードの文字へ動かす
+        P-->>U: ポインターを乗せた行の ▾ だけを出したコードブロック
+    expected:
+      - ▾ の列にポインターを乗せている間、そのコードブロックの畳める全ての行の ▾ が出ている
+      - コードの文字にポインターを動かした後、ポインターを乗せた行の ▾ だけが出ている（畳んだ行の ▸ は常に出ている）
+      - ▾ の列にポインターを乗せても、ほかのコードブロックの ▾ は出ない
+    test: test_normal_when_fold_column_hovered
   - name: 正常シナリオ（インデントの縦線）
     setup:
       - name: mdmark を読み込むページ

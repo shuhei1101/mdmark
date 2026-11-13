@@ -1338,6 +1338,52 @@ scenarios:
       - 600px へ狭めた後も、`名前` の列の幅はドラッグした後の幅のまま（差が 1px 以内）
       - 600px へ狭めた後、ページに横スクロールが出ない
     test: test_normal_when_column_widths_recalculated_on_resize
+  - name: 正常シナリオ（長文の列の最小の幅を設定で変える）
+    setup:
+      - name: mdmark を読み込むページ
+        description: 正常シナリオと同じ
+        notes: 画面と描く先の要素の幅は 390px。設定の `table.long_column_min` に `30` を指定する
+      - name: 長文の列を持つ表の Markdown
+        description: 正常シナリオ（狭い幅で横にスクロールする）の 1 つ目の表を持つ文書
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 利用側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を指定して描かせる
+        M->>M: 長文の列の最小の幅を、設定の em の数にする
+        M-->>P: 長文の列を 30em で折り返した表を描く
+        P-->>U: 文書を表示
+    expected:
+      - '`説明`・`備考` の列の幅が `30em`（差が 1px 以内）で、セルが折り返して出ている'
+      - 設定の `table.long_column_min` を省くと、`説明`・`備考` の列の幅が既定の `45em`（差が 1px 以内）
+    test: test_normal_when_long_column_min_configured
+  - name: 正常シナリオ（長文の列を文字で絞り込む）
+    setup:
+      - name: mdmark を読み込むページ
+        description: 正常シナリオと同じ
+      - name: 種類を省いた絞り込みの列を持つ Markdown
+        description: '`<!-- table: {"kind": "data", "columns": {"名前": {"filter": {}}, "説明": {"filter": {}}}} -->` 〜 `<!-- /table -->` で、名前（全角 6 文字以内）・説明（全角 120 文字の文）の 2 列 3 行の表を囲んだ文書'
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 利用側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を指定して描かせる
+        M->>M: 種類を省いた絞り込みを、長文の列なら文字、ほかは値を選ぶ絞り込みにする
+        M-->>P: 2 つの列の見出しに絞り込みのボタンを持つ表を描く
+        U->>P: 説明の列の絞り込みのボタンを押す
+        P-->>U: 文字の入力欄
+        U->>P: 名前の列の絞り込みのボタンを押す
+        P-->>U: 値のチェックボックス
+    expected:
+      - 説明の列の絞り込みのボタンを押すと、チェックボックスではなく文字の入力欄が出る
+      - 名前の列の絞り込みのボタンを押すと、名前の値のチェックボックスが出る
+    test: test_normal_when_long_column_filtered_by_text
   - name: 正常シナリオ（押した列までを留める設定）
     setup:
       - name: mdmark を読み込むページ
