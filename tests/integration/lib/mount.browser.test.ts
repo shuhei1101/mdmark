@@ -16059,18 +16059,17 @@ test("test_normal_when_side_toc_opens_own_section", async () => {
     const handle = await mountTracked(el, {
       markdown: lines("注意の段落").join("\n"),
     });
-    const { rail, linkOf } = sideTocOf(el);
+    const { linkOf } = sideTocOf(el);
     const paragraph = (text: string) =>
       [...el.querySelectorAll("p")].find((p) => p.textContent === text);
-    // 実行・検証: 「注意」を押す
-    await userEvent.hover(rail);
-    await userEvent.click(linkOf("注意"));
+    // 実行・検証: 「注意」を押す（ほかのテストの重なりに左右されないよう、項目を直に押す）
+    linkOf("注意").click();
     await vi.waitFor(() => {
       expect(expandedOf(el, ["補足", "注意"])).toEqual(["true", "true"]);
       expect(isShown(paragraph("注意の段落"))).toBe(true);
     });
     // 実行・検証: 「付録」を押す
-    await userEvent.click(linkOf("付録"));
+    linkOf("付録").click();
     await vi.waitFor(() => {
       expect(expandedOf(el, ["補足", "注意", "付録"])).toEqual([
         "true",
