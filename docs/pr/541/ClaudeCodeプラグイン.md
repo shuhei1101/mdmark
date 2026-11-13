@@ -37,10 +37,10 @@
 | インターフェース定義設計 | `f09875e5..47e17f7b` | 記法のルールの参照を案内する（新規）・MCPサーバーを起動・停止する（instructions）・設定: Claude Code プラグイン・外部ライブラリ『ClaudeCode』 |
 | インターフェース定義設計 | `87893c33..60e03df9` | レビューの指摘の修正（PreCompact で記録を消す。SC-472-4・SC-472-15 の期待値を合わせた） |
 | モジュール構成設計 | `22e66f6d..4d4a73de` | guide-notice.ts（新規）・build-plugin.ts・mcp.ts |
+| インターフェース定義設計 | `745562c9..5b63c852` | レビューの指摘の修正（MDMARK_GUIDE_NOTICE_DIR を visibility: developer にした） |
 
 ## テスト結果
 
 ### ドキュメント修正
 
 なし（ドキュメント修正の工程は、ガイド・README・アーキテクチャ図・設定の Schema・移行の行だけを修正し、実装コードを変えないため、関係する単体・結合テストが無い。修正したガイドと README は `mdmark check --text` でずれ 0 件を確かめた）
-| インターフェース定義設計 | `745562c9..5b63c852` | レビューの指摘の修正（MDMARK_GUIDE_NOTICE_DIR を visibility: developer にした） |
