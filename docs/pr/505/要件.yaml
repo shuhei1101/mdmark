@@ -105,7 +105,13 @@ scope_out:
     plan: none
   - item: 画面設計『文書』の表の「続きがある側の端に影を出す」と、表の CSS（横スクロールの端の影を出さない）の食い違い
     reason: 画面設計 SCR-472-4 の要素「表」は横スクロールする表の端に影を出すと記載しているが、src/index.css の表は影を出さない（develop から続く食い違い）。今回の要望は列の幅の決め方で、表の端の影は含まない
-    plan: to_file
+    plan: '#529'
   - item: '結合テスト test_normal_when_column_resized_by_touch のタッチの代役が、後のテストまで (hover: none)・(pointer: coarse) を残す事象'
     reason: 'tests/integration/lib/mount.browser.test.ts の test_normal_when_column_resized_by_touch は finally で Emulation.setTouchEmulationEnabled を false に戻すが、同じページの後のテストで (hover: hover) が一致しないまま残り、ポインターを乗せる確認をそのテストより後に置けない（develop から続く事象）。今回の要望は列の幅とコードブロックの表示で、テストの代役の後始末は含まない'
-    plan: to_file
+    plan: '#530'
+  - item: VS Code 拡張機能の結合テスト test_normal_when_tags_unreachable が develop でも時間切れで fail する事象
+    reason: vscode/tests/integration/preview-open.test.ts のタグ一覧の要求が待ちの上限より早く打ち切られる（develop の a16591d6 でも同じエラー）。今回の要望は表とコードブロックと目次の表示で、拡張機能のタグ一覧の待ちは含まない
+    plan: '#504'
+  - item: VS Code 拡張機能の結合テスト test_normal_when_library_origin_added が develop でも fail する事象
+    reason: vscode/tests/integration/preview-rerender.test.ts のテストの文書が今の書き方でないマーカーを使い、「別の配信元がモジュールの要求を受けない」で fail する（develop の a16591d6 でも同じ）。今回の要望には含まない
+    plan: '#496'
