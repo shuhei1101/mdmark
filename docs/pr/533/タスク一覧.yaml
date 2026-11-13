@@ -45,8 +45,10 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-13T16:23:54.215163+00:00'
   - process: インターフェース定義設計
-    status: todo
+    status: done
     note: IF-472-35（文書を描く）の表のピン止めの制約とテストに、見える幅を超えたときの扱いを足す
+    updated_by: planner
+    updated_at: '2026-11-13T16:26:23.519470+00:00'
   - process: 部品設計
     status: todo
     note: CMP-472-61（表）に、留めた列の幅の合計が見える幅を超えたストーリーを足す
