@@ -21,7 +21,7 @@ settings:
     refs:
       - IF-472-43#constraints[記録]
     status: planned
-    visibility: user
+    visibility: developer
     introduced:
       pr: 541
   - key: MDMARK_PORT
