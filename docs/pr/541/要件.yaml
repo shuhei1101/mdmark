@@ -43,15 +43,21 @@ docs:
   - page: docs/config/CFG-472-3.yaml
     new: false
     change: 記法を含む純粋な `.md` の提案を止める設定のキーを追加する。`build.include` の既定が `.mark.md` も含むことを記載する
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-13T19:05:56.462105+00:00'
   - page: docs/config/CFG-472-1.yaml
     new: false
-    change: セッションごとの案内済みの記録の置き場所を決める値があれば追加する
-    status: todo
+    change: 案内したセッションの記録のフォルダの環境変数 `MDMARK_GUIDE_NOTICE_DIR` を追加する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-13T19:05:56.462105+00:00'
   - page: docs/library/LIB-472-1.yaml
     new: false
     change: 使用する Claude Code のフックに UserPromptSubmit と Write・Edit への PreToolUse を追加し、入力の `session_id`・`prompt`・`tool_input.file_path` と出力の `additionalContext` を記載する
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-13T19:05:56.462105+00:00'
   - page: docs/architecture/ARCH-472-1.yaml
     new: false
     change: Claude Code プラグインのフックに、文書の記載と利用者の発言での案内を追加する
