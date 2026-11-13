@@ -653,7 +653,7 @@ registerExtension({
 | 引数 | 必須 / 任意 | 説明 |
 | --- | --- | --- |
 | `extension.name` | 必須 | 拡張の名前。空にできない。通知ブロック・記載の警告・`console.error` に出す |
-| `extension.directive` | 必須 | 拡張のマーカーの名前（`<!-- {directive}: {引数} -->`）。英小文字で始まり、英小文字・数字・`-` だけを持つ。`features` と記法のマーカー（`table`・`tabs`・`steps`・`section`・`row-detail`・`fig`・`toc`・`glossary`・`view`）と、登録済みの拡張の `directive` は使用できない。設定の `libraries` や図の部品のマーカー（`flow`・`sequence`・`chart`・`param`）に同じ名前があるときは、拡張を優先する |
+| `extension.directive` | 必須 | 拡張のマーカーの名前（`<!-- {directive}: {引数} -->`）。英小文字で始まり、英小文字・数字・`-` だけを持つ。`features` と記法のマーカー（`table`・`tabs`・`steps`・`section`・`row-detail`・`fig`・`toc`・`glossary`・`view`）と、登録済みの拡張の `directive` は使用できない。設定の `libraries` や図の部品のマーカー（`chart`・`param`・`er`）、廃止した `flow`・`sequence` に同じ名前があるときは、拡張を優先する |
 | `extension.load` | 必須 | 拡張のモジュールを読み込む関数。文書にマーカーがあるときだけ、`mount` と `update` が描くごとに 1 回呼ぶ。同じ文書の同じ拡張のマーカーでは 1 回だけ呼ぶ |
 | `extension.schema` | 任意 | マーカーの引数を検査する Standard Schema。zod・valibot など、`~standard` を持つ検査ライブラリの schema をそのまま指定できる。省くと検査しない |
 
@@ -667,7 +667,7 @@ registerExtension({
 `update`・`destroy` でマーカーの場所を片付けるとき、その中の部品の `destroy` も行う。
 手順は [部品をJavaScriptから使用する](./カスタマイズ-部品をJavaScriptから使用する.md)。
 
-`registerExtension` と、型 `MdmarkExtension`・`MdmarkExtensionModule`・`MdmarkMarkArgs`・`StandardSchemaV1` と、図の部品の定義の型 `MdmarkFlowDefinition`・`MdmarkSequenceDefinition`・`MdmarkChartDefinition`・`MdmarkParamDefinition` は、型定義 `dist/index.d.ts` に書き出して配布物と一緒に配る。
+`registerExtension` と、型 `MdmarkExtension`・`MdmarkExtensionModule`・`MdmarkMarkArgs`・`StandardSchemaV1` と、図の部品の定義の型 `MdmarkChartDefinition`・`MdmarkParamDefinition` は、型定義 `dist/index.d.ts` に書き出して配布物と一緒に配る。
 JavaScript で記載する拡張は、この型定義に対して `tsc --noEmit` で点検できる（[固有の部品とCSSを適用する](./図を描く-固有の部品とCSSを適用する.md)）。
 `StandardSchemaV1` は Standard Schema の仕様の型を複製したもので、mdmark は検査ライブラリに依存しない。
 
@@ -881,17 +881,7 @@ handle.destroy();
 | `--mdmark-color-callout-warning` | `#b45309` | `#fbbf24` | 警告の注意書きのタイトル・アイコンの色と、面・枠の線のもとの色。コードブロックの警告の行の左端の線と行頭の `!` の色 |
 | `--mdmark-color-callout-caution` | `#b91c1c` | `#f87171` | 注意の注意書きのタイトル・アイコンの色と、面・枠の線のもとの色 |
 | `--mdmark-color-current-bg` | `#e6f3f1` | `#10302c` | [まとめた HTML](./用語集.md) の文書の一覧の、開いている文書の行の背景。右側の目次の、今いるセクションの項目と、目次を出しているときの目次を出すボタンの背景 |
-| `--mdmark-color-diagram-llm` | `#6d28d9` | `#c4a7ff` | 図の LLM のノードと LLM の層の色 |
-| `--mdmark-color-diagram-dm` | `#1d4ed8` | `#7aa2ff` | 図の意思決定モデルのノードの色 |
-| `--mdmark-color-diagram-script` | `#52525b` | `#b4b4bc` | 図のスクリプトのノードの色 |
-| `--mdmark-color-diagram-mcp` | `#b45309` | `#fbbf24` | 図の MCP のノードと処理の層の色 |
-| `--mdmark-color-diagram-data` | `#0f766e` | `#2dd4bf` | 図のデータのノードとデータの層の色 |
-| `--mdmark-color-diagram-external` | `#15803d` | `#4ade80` | 図の外部のシステムのノードの色 |
-| `--mdmark-color-diagram-start` | `#52525b` | `#b4b4bc` | 図の判定フローチャートの開始のノードの色 |
-| `--mdmark-color-diagram-question` | `#1d4ed8` | `#7aa2ff` | 図の判定フローチャートの質問のノードの色 |
-| `--mdmark-color-diagram-action` | `#b45309` | `#fbbf24` | 図の判定フローチャートのアクションのノードの色 |
-| `--mdmark-color-diagram-result` | `#15803d` | `#4ade80` | 図の判定フローチャートの結果のノードの色 |
-| `--mdmark-color-diagram-line` | `#71717a` | `#8f8f99` | 図の処理の流れ・戻る線の色 |
+| `--mdmark-color-diagram-line` | `#71717a` | `#8f8f99` | map の図の、色を指定しない線の色 |
 | `--mdmark-color-series-1` | `#0f766e` | `#2dd4bf` | グラフの 1 つ目の系列の色（実線・丸の点） |
 | `--mdmark-color-series-2` | `#b45309` | `#fbbf24` | グラフの 2 つ目の系列の色 |
 | `--mdmark-color-series-3` | `#6d28d9` | `#c4a7ff` | グラフの 3 つ目の系列の色 |
@@ -1018,16 +1008,6 @@ handle.destroy();
 | `--mdmark-color-callout-important` | `#6b3fa0` | `#c9a8ec` |
 | `--mdmark-color-callout-warning` | `#94540a` | `#e8b04a` |
 | `--mdmark-color-callout-caution` | `#a3261f` | `#f0928a` |
-| `--mdmark-color-diagram-llm` | `#6b3fa0` | `#c9a8ec` |
-| `--mdmark-color-diagram-dm` | `#1e4f8c` | `#8fb4e8` |
-| `--mdmark-color-diagram-script` | `#5c5247` | `#b8ad9c` |
-| `--mdmark-color-diagram-mcp` | `#94540a` | `#e8b04a` |
-| `--mdmark-color-diagram-data` | `#9b2c2c` | `#f0a39a` |
-| `--mdmark-color-diagram-external` | `#3f6b2a` | `#a3c98a` |
-| `--mdmark-color-diagram-start` | `#5c5247` | `#b8ad9c` |
-| `--mdmark-color-diagram-question` | `#1e4f8c` | `#8fb4e8` |
-| `--mdmark-color-diagram-action` | `#94540a` | `#e8b04a` |
-| `--mdmark-color-diagram-result` | `#3f6b2a` | `#a3c98a` |
 | `--mdmark-color-diagram-line` | `#857a6c` | `#9a8f80` |
 | `--mdmark-color-series-1` | `#9b2c2c` | `#f0a39a` |
 | `--mdmark-color-series-2` | `#1e4f8c` | `#8fb4e8` |
@@ -1080,16 +1060,6 @@ handle.destroy();
 | `--mdmark-color-callout-important` | `#6d28d9` | `#c4b5fd` |
 | `--mdmark-color-callout-warning` | `#a24a06` | `#fbbf24` |
 | `--mdmark-color-callout-caution` | `#b91c1c` | `#fca5a5` |
-| `--mdmark-color-diagram-llm` | `#6d28d9` | `#c4b5fd` |
-| `--mdmark-color-diagram-dm` | `#1d4ed8` | `#f9a8d4` |
-| `--mdmark-color-diagram-script` | `#475569` | `#a3b1c6` |
-| `--mdmark-color-diagram-mcp` | `#a24a06` | `#fbbf24` |
-| `--mdmark-color-diagram-data` | `#0e7490` | `#7dd3fc` |
-| `--mdmark-color-diagram-external` | `#047857` | `#5eead4` |
-| `--mdmark-color-diagram-start` | `#475569` | `#a3b1c6` |
-| `--mdmark-color-diagram-question` | `#1d4ed8` | `#f9a8d4` |
-| `--mdmark-color-diagram-action` | `#a24a06` | `#fbbf24` |
-| `--mdmark-color-diagram-result` | `#047857` | `#5eead4` |
 | `--mdmark-color-diagram-line` | `#64748b` | `#8391a7` |
 | `--mdmark-color-series-1` | `#1d4ed8` | `#7dd3fc` |
 | `--mdmark-color-series-2` | `#047857` | `#6ee7b7` |
@@ -1142,16 +1112,6 @@ handle.destroy();
 | `--mdmark-color-callout-important` | `#5b21b6` | `#d0b3ff` |
 | `--mdmark-color-callout-warning` | `#8a4b00` | `#ffd23f` |
 | `--mdmark-color-callout-caution` | `#a3001c` | `#ff9090` |
-| `--mdmark-color-diagram-llm` | `#5b21b6` | `#d0b3ff` |
-| `--mdmark-color-diagram-dm` | `#0037a8` | `#9cc0ff` |
-| `--mdmark-color-diagram-script` | `#333333` | `#d6d6d6` |
-| `--mdmark-color-diagram-mcp` | `#8a4b00` | `#ffd23f` |
-| `--mdmark-color-diagram-data` | `#006a6a` | `#4fd1c5` |
-| `--mdmark-color-diagram-external` | `#1a5e1a` | `#7ee07e` |
-| `--mdmark-color-diagram-start` | `#333333` | `#d6d6d6` |
-| `--mdmark-color-diagram-question` | `#0037a8` | `#9cc0ff` |
-| `--mdmark-color-diagram-action` | `#8a4b00` | `#ffd23f` |
-| `--mdmark-color-diagram-result` | `#1a5e1a` | `#7ee07e` |
 | `--mdmark-color-diagram-line` | `#4d4d4d` | `#a6a6a6` |
 | `--mdmark-color-series-1` | `#0037a8` | `#9cc0ff` |
 | `--mdmark-color-series-2` | `#8a4b00` | `#ffd23f` |

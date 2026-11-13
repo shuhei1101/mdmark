@@ -218,12 +218,9 @@ mdmark.config.yaml:build: schema: `build.out` がありません。書き出す 
 | `missing_file` | 文書が相対パスで指す画像（動画の `poster` を含む）・動画・音声・添付のカードにするファイルが、文書のフォルダにもアセットのルートにも無い。場所は記載した行の番号。内容は記載したパスと種類（画像・動画・音声・添付）と修正方法。コードブロックと行内のコードの中・絶対 URL・`#` で始まるリンクは点検しない |
 | `include_target_missing` | include のマーカーが指すファイル・見出し・行の範囲が無いか、設定ファイルのフォルダ（無ければ文書のフォルダ）の外を指す。場所はマーカーの行の番号。内容は取り込み先と、無いもの（行の範囲はファイルの行の数も）と修正方法 |
 | `include_circular` | include の取り込みが循環する。場所はマーカーの行の番号。内容は循環の順（`a.md → b.md → a.md`）と修正方法 |
-| `diagram_invalid` | `flow`・`sequence`・`chart`・`param` のマーカーの中の `json` のコードブロックの部品の定義を読み込めないか、部品の構造に合わない。内容は描いたときに出す記載の警告と同じ文 |
-| `diagram_node_overlap` | フロー図の 2 つのノードが重なっている |
-| `diagram_node_overflow` | フロー図のノードが図の幅・高さの外に出ているか、システムの枠の縁にまたがっている |
-| `diagram_wire_crosses_node` | フロー図の線が、`from`・`to` でないノードを通っている |
-| `diagram_label_too_long` | フロー図のノードの文字が、折り返してもノードに収まらない |
-| `syntax_warning` | `--text`・`--file` で指定した Markdown を描いたときに出る記載の警告のうち、`unknown_mark`・`diagram_invalid` に該当しないもの。include の取り込み先が無い警告は、取り込み先を読み込まないため出さない（取り込み先は設定の文書の点検の `include_target_missing`・`include_circular` で確認する）。内容は記載の警告の文と同じ。場所は警告の元のマーカーの行 |
+| `diagram_invalid` | `chart`・`param`・`er` のマーカーの中の `json` のコードブロックの部品の定義を読み込めないか、部品の構造に合わない。内容は描いたときに出す記載の警告と同じ文 |
+| `retired_diagram` | 文書に、廃止した `flow`・`sequence` の範囲がある（同じ名前の拡張を `extensions` に記載しているときは出ない）。場所は範囲の開きのマーカーの行。内容は map の範囲で記載することと、`mdmark upgrade` で書き換えられること |
+| `syntax_warning` | `--text`・`--file` で指定した Markdown を描いたときに出る記載の警告のうち、`unknown_mark`・`diagram_invalid`・`retired_diagram` に該当しないもの。include の取り込み先が無い警告は、取り込み先を読み込まないため出さない（取り込み先は設定の文書の点検の `include_target_missing`・`include_circular` で確認する）。内容は記載の警告の文と同じ。場所は警告の元のマーカーの行 |
 | `unknown_mark_arg` | 設定の文書と `--text`・`--file` で指定した Markdown の記法のマーカーに、描くときに警告を出さずに無視する知らないキーがある。1 つにつき 1 件で、内容は無視したキー・その場所で使用できるキー・修正方法。場所はマーカーの行 |
 | `legacy_mark` | 記法・拡張・`libraries` のマーカーの引数が、JSON でない前の書き方（`キー=値`・`+機能` など）。内容は JSON での記載方法と、`mdmark upgrade` で書き換えられるか。場所はマーカーの行 |
 | `mark_option_invalid` | マーカーの引数を JSON のオブジェクトとして読めないか、値の型・選べる値・必須のキーが合わない。内容は描いたときに出す記載の警告と同じ文。場所はマーカーの行 |
@@ -240,8 +237,8 @@ mdmark.config.yaml:build: schema: `build.out` がありません。書き出す 
 
 `missing_doc` から `avoided_term` までは、`checkIndex` が返却する `kind` と同じ（[点検が返却するずれ](./索引.md#点検が返却するずれ)）。
 `duplicate_alias_row_id` から `duplicate_alias_id` までは、`buildAliases` が返却する `kind` と同じ（[エイリアスを作る](./API.md#エイリアスを作る)）。
-`diagram_` で始まる種類の場所は図の開くマーカーの行の番号で、内容は図のタイトル（無いときはマーカーの名前）・ノードの `id`・修正方法。
-図の点検はブラウザを使用せず、フロー図は配置まで確認する（座標を省いた判定フローチャートは mdmark が配置した後の座標で確認する）。埋め込んだ HTML の custom element は点検しない。
+`diagram_invalid` の場所は図の開くマーカーの行の番号。
+図の点検はブラウザを使用しない。埋め込んだ HTML の custom element は点検しない。
 `missed_change_together` は、`--base` を指定したときだけ出る。
 エイリアスのずれは、設定に `aliases` があるときだけ出る。`enabled` が `false` の行は読み込まない。`env` のレコードも種類と必須のキーを確認し、ずれがあれば出す。
 
