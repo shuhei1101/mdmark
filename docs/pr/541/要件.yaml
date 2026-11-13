@@ -144,8 +144,8 @@ docs:
     updated_at: '2026-11-13T19:34:27.844618+00:00'
 scope_out:
   - item: 既存の文書（mdmark・knowledge・ai-monitor・MindStella の資料）の拡張子の `.mark.md` への移行
-    reason: 起点 Issue の後続で、リポジトリごとに移行の時機を決める。この PR は提案を止める設定を持たせる
-    plan: to_file
+    reason: '起点 Issue の後続で、リポジトリごとに移行の時機を決める。この PR は提案を止める設定を持たせる。mdmark の分は #546 に起票した。knowledge・ai-monitor・MindStella の分は、起点 Issue の完了の後に task-planner がリポジトリごとに起票する'
+    plan: '#546'
   - item: VS Code 拡張機能の有効になる対象の変更
     reason: '`.mark.md` は末尾が `.md` で、言語が `markdown` のまま拡張機能が有効になるため変更しない'
     plan: none
@@ -159,5 +159,5 @@ scope_out:
     reason: この PR の変更と関係の無い既存の不具合。develop でも同じく失敗する
     plan: '#544'
   - item: 規約『フック作成ガイド』（`claude-hook`）に、許可・拒否を判断せずに `additionalContext` だけを出す PreToolUse のフックの出力の行を追加するルール改修
-    reason: reviewer の判断で起票する。`create_plugin_rule_issue` が起票先の未設定（`my_plugins_repo`）で失敗したため、まだ Issue が無い
-    plan: to_file
+    reason: reviewer の判断で起票した（shuhei1101/knowledge#330）。`create_plugin_rule_issue` は起票先の未設定で失敗したため、`create_issue` で knowledge へ起票した
+    plan: '#330'
