@@ -173,7 +173,7 @@ functions:
         summary: リンク先を持つノードをリンクにし、説明のマーカーをリンクの外に配置する
         condition: '`links` が `{ mount: "https://example.com/spec" }`、`notes` が `{ mount: "文書を描く公開関数" }` の Default'
         mock: なし
-        expected: '`mount` のノードが `has-link` と `a.mdmark-diagram-node-link[href="https://example.com/spec"]` を持ち、説明のマーカーが `a` の後ろにある。ほかのノードは `a` を持たない'
+        expected: '`mount` のノードが `has-link` と `a.mdmark-diagram-node-link[href="https://example.com/spec"]` を持ち、ノードの `div` は `tabindex` を持たず、`a` が `aria-roledescription="ノード"` と `aria-label="mount"` を持つ。説明のマーカーが `a` の後ろにある。ほかのノードは `a` を持たない'
       - name: test_render_map_flow_when_group_note
         case: 正常
         summary: 説明を持つグループのタイトルの右にマーカーを配置する

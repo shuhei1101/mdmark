@@ -168,7 +168,7 @@ accessibility:
   - 'ノードの名前の文字は選んでコピーでき（ポインターの形状は `text`）、種類の行の文字は選べない（`user-select: none`）。ドラッグできる場所のポインターの形状は `grab`'
   - 強調は薄くするだけで色を変えず、データの印は `aria-hidden`。読者が始めた印は `prefers-reduced-motion` でも流し、配置し直したときのノードとグループの移動は止める
   - 色を持たないグループの枠線は背景とのコントラスト比 3:1 以上
-  - リンク先を持つノードの `a.mdmark-diagram-node-link` は、スクリーンリーダー向けの名前がノードの名前で、説明のマーカーとは別にフォーカスできる（Tab の順はリンク、マーカー）。グループの説明のマーカーはタイトルのボタンの外にあり、`aria-describedby` で説明のツールチップを指す
+  - リンク先を持つノードは、ノードの `div` がフォーカスを受けず、`a.mdmark-diagram-node-link` がノードの代わりにフォーカスを受ける（ノードの中にフォーカスできる要素を入れ子にしない）。リンクはスクリーンリーダー向けの名前がノードの名前（選んでいれば `（選択中）`）で、`aria-roledescription="ノード"`・`aria-keyshortcuts="Space Alt+ArrowLeft Alt+ArrowUp Alt+ArrowDown Alt+ArrowRight"` を持ち、Enter でリンク先を開き、Space で選び、Alt + 矢印キーで動かす。説明のマーカーとは別にフォーカスできる（Tab の順はリンク、マーカー）。グループの説明のマーカーはタイトルのボタンの外にあり、`aria-describedby` で説明のツールチップを指す
 refs:
   - IF-472-35#
 status: planned
