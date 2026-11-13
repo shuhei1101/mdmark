@@ -4,6 +4,7 @@ use_cases:
     impact: none
     detail: 設定ファイルに別の配信元のライブラリを追加して保存すると読み込んで描く流れは変わらない。この流れを確かめる結合テストの文書のマーカーだけを修正する
     depends_on: []
+docs: []
 scope_out:
   - item: preview-rerender.test.ts の test_normal_when_map_configured が、余分な再描画を数えてときどき fail する事象
     reason: このテストとは別のテストで、今回の要望に含まれない。同じ内容の open の Issue がある
