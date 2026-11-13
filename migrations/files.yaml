@@ -48,3 +48,9 @@ files:
     related:
       - to: docs/module/MOD-472-166.ts
         type: implements
+  - path: next/THIRD_PARTY_LICENSES.txt
+    description: モジュール構成『ライブラリ本体 / ビルド / build.ts』のうち「legacy-marks.js にまとめた依存のライセンス（buildLegacyMarks が書き込む）」を受け持つ。移行の手順のフォルダにまとめた依存のライセンスを確かめるときに参照する。
+    tags: [topic:バージョン, topic:移行, topic:ライセンス]
+    related:
+      - to: docs/module/MOD-472-166.ts
+        type: implements

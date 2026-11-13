@@ -18,7 +18,8 @@ directory: |-
   ├── next/          # 出していないバージョンの steps.yaml とスクリプト
   │   ├── steps.yaml
   │   ├── marker-json.mjs  # 文書のマーカーの今の書き方の引数を JSON のオブジェクトへ書き換える
-  │   └── legacy-marks.js  # marker-json.mjs が読み込む書き換えの処理（ビルドがまとめて commit する）
+  │   ├── legacy-marks.js  # marker-json.mjs が読み込む書き換えの処理（ビルドがまとめて commit する）
+  │   └── THIRD_PARTY_LICENSES.txt  # legacy-marks.js にまとめた依存のライセンス（ビルドが書き込んで commit する）
   └── no-steps.yaml  # 移行の手順が要らないスキーマの変更の一覧
   ```
 refs:
