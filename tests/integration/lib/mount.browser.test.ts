@@ -9579,6 +9579,121 @@ test("test_normal_when_code_guide_hovered", async () => {
   selection?.removeAllRanges();
 });
 
+/** 開閉のボタンの `opacity` の計算値 */
+function foldOpacity(toggle: HTMLElement | undefined): number {
+  return toggle ? Number(getComputedStyle(toggle).opacity) : Number.NaN;
+}
+
+// 開閉のボタンは乗せた行だけに出し、開閉のボタンの列に乗せたときは全てのボタンを出す（正常系（開閉のボタンの列にポインターを乗せる））
+test("test_normal_when_code_fold_column_hovered", async () => {
+  // 準備・実行
+  const el = createElement();
+  await mountTracked(el, {
+    markdown: [
+      '<!-- code: {"lines": {}} -->',
+      "",
+      ...CODE_FOLD_MARKDOWN.split("\n").slice(0, 7),
+      "",
+    ].join("\n"),
+    config: { features: { syntax: false } },
+  });
+  const lines = codeLines(el);
+  const [first, second] = [foldToggle(lines[0]), foldToggle(lines[1])] as [
+    HTMLButtonElement,
+    HTMLButtonElement,
+  ];
+  // 検証: ポインターをコードブロックの外に置くと出さず、ボタンは行番号の右
+  const away = createElement();
+  away.textContent = "コードブロックの外";
+  await userEvent.hover(away);
+  await vi.waitFor(() => {
+    expect([foldOpacity(first), foldOpacity(second)]).toEqual([0, 0]);
+  });
+  const number = getComputedStyle(lines[0] as HTMLElement, "::before");
+  expect(number.content).not.toBe("none");
+  // 実行・検証: 3 行目の文字に乗せる
+  await userEvent.hover(
+    find<HTMLElement>(lines[2] as HTMLElement, ".mdmark-code-text"),
+  );
+  await vi.waitFor(() => {
+    expect([foldOpacity(first), foldOpacity(second)]).toEqual([0, 0]);
+  });
+  // 実行・検証: 1 行目の文字に乗せる
+  await userEvent.hover(
+    find<HTMLElement>(lines[0] as HTMLElement, ".mdmark-code-text"),
+  );
+  await vi.waitFor(() => {
+    expect([foldOpacity(first), foldOpacity(second)]).toEqual([1, 0]);
+  });
+  // 実行・検証: 4 行目の開閉のボタンの列に乗せる
+  const column = first.getBoundingClientRect();
+  const fourth = (lines[3] as HTMLElement).getBoundingClientRect();
+  await userEvent.hover(lines[3] as HTMLElement, {
+    position: {
+      x: column.left + column.width / 2 - fourth.left,
+      y: fourth.height / 2,
+    },
+  });
+  await vi.waitFor(() => {
+    expect([foldOpacity(first), foldOpacity(second)]).toEqual([1, 1]);
+  });
+  // 実行・検証: 2 行目を畳み、キーボードで 1 行目にフォーカスしてから、ポインターを開閉のボタンの列の外に出す
+  second.click();
+  await userEvent.keyboard("{Shift}");
+  first.focus();
+  await userEvent.hover(el.querySelector("pre") as HTMLElement, {
+    position: { x: 1, y: 1 },
+  });
+  await vi.waitFor(() => {
+    expect(second.getAttribute("aria-expanded")).toBe("false");
+    expect([foldOpacity(first), foldOpacity(second)]).toEqual([1, 1]);
+  });
+  first.blur();
+  // 検証: ポインターで乗せられない画面（`(hover: none)`。ブラウザの代役で切り替えられない）では、開閉のボタンを常に出す CSS を持つ
+  expect(hoverNoneOpacity(".mdmark-code-fold")).toBe("1");
+});
+
+/** 配布物の CSS のうち `(hover: none)` の中で `selector` に当てる `opacity` を返却する（無ければ undefined） */
+function hoverNoneOpacity(selector: string): string | undefined {
+  const visit = (
+    rules: CSSRuleList,
+    inHoverNone: boolean,
+  ): string | undefined => {
+    for (const rule of rules) {
+      const hoverNone =
+        inHoverNone ||
+        (rule instanceof CSSMediaRule &&
+          rule.conditionText.includes("hover: none"));
+      if (
+        hoverNone &&
+        rule instanceof CSSStyleRule &&
+        rule.selectorText.split(",").some((text) => {
+          const trimmed = text.trim();
+          return trimmed === selector || trimmed.endsWith(` ${selector}`);
+        }) &&
+        rule.style.opacity
+      ) {
+        return rule.style.opacity;
+      }
+      const children = (rule as CSSGroupingRule).cssRules;
+      if (children) {
+        const found = visit(children, hoverNone);
+        if (found !== undefined) {
+          return found;
+        }
+      }
+    }
+    return undefined;
+  };
+  for (const sheet of document.styleSheets) {
+    const found = visit(sheet.cssRules, false);
+    if (found !== undefined) {
+      return found;
+    }
+  }
+  return undefined;
+}
+
 /** 2 行目と 6 行目が畳める行の 8 行の yaml を、`fold=2,6` で畳んで描く Markdown */
 const CODE_FOLD_INITIAL_MARKDOWN = [
   '<!-- code: {"lines": {}, "fold": [2, 6]} -->',
@@ -16090,118 +16205,3 @@ test("test_normal_when_side_toc_opens_own_section", async () => {
     });
   });
 });
-
-/** 開閉のボタンの `opacity` の計算値 */
-function foldOpacity(toggle: HTMLElement | undefined): number {
-  return toggle ? Number(getComputedStyle(toggle).opacity) : Number.NaN;
-}
-
-// 開閉のボタンは乗せた行だけに出し、開閉のボタンの列に乗せたときは全てのボタンを出す（正常系（開閉のボタンの列にポインターを乗せる））
-test("test_normal_when_code_fold_column_hovered", async () => {
-  // 準備・実行
-  const el = createElement();
-  await mountTracked(el, {
-    markdown: [
-      '<!-- code: {"lines": {}} -->',
-      "",
-      ...CODE_FOLD_MARKDOWN.split("\n").slice(0, 7),
-      "",
-    ].join("\n"),
-    config: { features: { syntax: false } },
-  });
-  const lines = codeLines(el);
-  const [first, second] = [foldToggle(lines[0]), foldToggle(lines[1])] as [
-    HTMLButtonElement,
-    HTMLButtonElement,
-  ];
-  // 検証: ポインターをコードブロックの外に置くと出さず、ボタンは行番号の右
-  const away = createElement();
-  away.textContent = "コードブロックの外";
-  await userEvent.hover(away);
-  await vi.waitFor(() => {
-    expect([foldOpacity(first), foldOpacity(second)]).toEqual([0, 0]);
-  });
-  const number = getComputedStyle(lines[0] as HTMLElement, "::before");
-  expect(number.content).not.toBe("none");
-  // 実行・検証: 3 行目の文字に乗せる
-  await userEvent.hover(
-    find<HTMLElement>(lines[2] as HTMLElement, ".mdmark-code-text"),
-  );
-  await vi.waitFor(() => {
-    expect([foldOpacity(first), foldOpacity(second)]).toEqual([0, 0]);
-  });
-  // 実行・検証: 1 行目の文字に乗せる
-  await userEvent.hover(
-    find<HTMLElement>(lines[0] as HTMLElement, ".mdmark-code-text"),
-  );
-  await vi.waitFor(() => {
-    expect([foldOpacity(first), foldOpacity(second)]).toEqual([1, 0]);
-  });
-  // 実行・検証: 4 行目の開閉のボタンの列に乗せる
-  const column = first.getBoundingClientRect();
-  const fourth = (lines[3] as HTMLElement).getBoundingClientRect();
-  await userEvent.hover(lines[3] as HTMLElement, {
-    position: {
-      x: column.left + column.width / 2 - fourth.left,
-      y: fourth.height / 2,
-    },
-  });
-  await vi.waitFor(() => {
-    expect([foldOpacity(first), foldOpacity(second)]).toEqual([1, 1]);
-  });
-  // 実行・検証: 2 行目を畳み、キーボードで 1 行目にフォーカスしてから、ポインターを開閉のボタンの列の外に出す
-  second.click();
-  await userEvent.keyboard("{Shift}");
-  first.focus();
-  await userEvent.hover(el.querySelector("pre") as HTMLElement, {
-    position: { x: 1, y: 1 },
-  });
-  await vi.waitFor(() => {
-    expect(second.getAttribute("aria-expanded")).toBe("false");
-    expect([foldOpacity(first), foldOpacity(second)]).toEqual([1, 1]);
-  });
-  first.blur();
-  // 検証: ポインターで乗せられない画面（`(hover: none)`。ブラウザの代役で切り替えられない）では、開閉のボタンを常に出す CSS を持つ
-  expect(hoverNoneOpacity(".mdmark-code-fold")).toBe("1");
-});
-
-/** 配布物の CSS のうち `(hover: none)` の中で `selector` に当てる `opacity` を返却する（無ければ undefined） */
-function hoverNoneOpacity(selector: string): string | undefined {
-  const visit = (
-    rules: CSSRuleList,
-    inHoverNone: boolean,
-  ): string | undefined => {
-    for (const rule of rules) {
-      const hoverNone =
-        inHoverNone ||
-        (rule instanceof CSSMediaRule &&
-          rule.conditionText.includes("hover: none"));
-      if (
-        hoverNone &&
-        rule instanceof CSSStyleRule &&
-        rule.selectorText.split(",").some((text) => {
-          const trimmed = text.trim();
-          return trimmed === selector || trimmed.endsWith(` ${selector}`);
-        }) &&
-        rule.style.opacity
-      ) {
-        return rule.style.opacity;
-      }
-      const children = (rule as CSSGroupingRule).cssRules;
-      if (children) {
-        const found = visit(children, hoverNone);
-        if (found !== undefined) {
-          return found;
-        }
-      }
-    }
-    return undefined;
-  };
-  for (const sheet of document.styleSheets) {
-    const found = visit(sheet.cssRules, false);
-    if (found !== undefined) {
-      return found;
-    }
-  }
-  return undefined;
-}
