@@ -3,8 +3,10 @@ scope_out: []
 docs:
   - page: migrations/files.yaml
     new: false
-    change: '`next/THIRD_PARTY_LICENSES.txt` の行を追加する（実装でファイルを書き込んだ後）'
-    status: todo
+    change: '`next/THIRD_PARTY_LICENSES.txt` の行を追加する'
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-13T04:13:55.036233+00:00'
   - page: docs/module/MOD-472-30.yaml
     new: false
     change: 移行の手順のフォルダの構成に `THIRD_PARTY_LICENSES.txt` を追加する
