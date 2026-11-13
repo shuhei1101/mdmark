@@ -1,0 +1,1 @@
+# map で erDiagram・stateDiagram-v2 の Mermaid を、flowchart・シーケンス図と同じ書き方と操作で描く
