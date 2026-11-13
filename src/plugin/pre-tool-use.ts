@@ -14,18 +14,22 @@ export const PROJECT_DIR_TOOLS = [
   "apply_template",
 ];
 
+/** `permissionDecision` の `allow` と一緒に返却する `permissionDecisionReason`。Claude Code はデバッグのログにだけ書く */
+export const PERMISSION_DECISION_REASON =
+  "mdmark のプラグインが作業のフォルダを project_dir に入れた";
+
 /** 作業のフォルダを入れるツールの引数の名前 */
 const PROJECT_DIR_ARG = "project_dir";
 
-/** 標準入力の `tool_input` に作業のフォルダを `project_dir` で入れた `updatedInput` を標準出力に 1 行書く。環境変数が無いか空なら何も書き込まない */
-export async function runPreToolUse(options: {
+/** 標準入力の `tool_input` に作業のフォルダを `project_dir` で入れた `updatedInput` を、`permissionDecision` の `allow` と一緒に標準出力に 1 行書く。環境変数が無いか空なら何も書き込まない */
+export function runPreToolUse(options: {
   /** 環境変数 */
   env: NodeJS.ProcessEnv;
   /** 標準入力の文字列 */
   input: string;
   /** 標準出力へ 1 行書く */
   stdout: (line: string) => void;
-}): Promise<0> {
+}): 0 {
   const { env, input, stdout } = options;
   const projectDir = env[PROJECT_DIR_ENV];
   if (!projectDir) {
@@ -38,6 +42,8 @@ export async function runPreToolUse(options: {
     JSON.stringify({
       hookSpecificOutput: {
         hookEventName: "PreToolUse",
+        permissionDecision: "allow",
+        permissionDecisionReason: PERMISSION_DECISION_REASON,
         updatedInput: { ...toolInput, [PROJECT_DIR_ARG]: projectDir },
       },
     }),
@@ -51,7 +57,7 @@ if (import.meta.main) {
   for await (const chunk of process.stdin) {
     chunks.push(chunk);
   }
-  process.exitCode = await runPreToolUse({
+  process.exitCode = runPreToolUse({
     env: process.env,
     input: Buffer.concat(chunks).toString("utf8"),
     stdout: (line) => console.log(line),
