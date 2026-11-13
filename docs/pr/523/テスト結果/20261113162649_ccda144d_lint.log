@@ -1,0 +1,9 @@
+$ npx biome check vscode/tests/integration/stub-server.ts vscode/tests/integration/preview-open.test.ts
+Checked 2 files in 136ms. No fixes applied.
+exit=0
+$ npm --prefix vscode run typecheck
+
+> mdmark-vscode@0.1.0 typecheck
+> tsc --noEmit
+
+exit=0
