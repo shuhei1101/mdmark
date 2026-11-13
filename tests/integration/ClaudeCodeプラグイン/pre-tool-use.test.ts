@@ -25,11 +25,15 @@ test("test_normal", async () => {
   expect(result.code).toBe(0);
   const output = JSON.parse(result.stdout);
   expect(output.hookSpecificOutput.hookEventName).toBe("PreToolUse");
+  expect(output.hookSpecificOutput.permissionDecision).toBe("allow");
+  expect(output.hookSpecificOutput.permissionDecisionReason).toEqual(
+    expect.any(String),
+  );
+  expect(output.hookSpecificOutput.permissionDecisionReason).not.toBe("");
   expect(output.hookSpecificOutput.updatedInput).toEqual({
     config: "docs/mdmark.config.yaml",
     project_dir: projectDir,
   });
-  expect(output.hookSpecificOutput).not.toHaveProperty("permissionDecision");
 });
 
 // CLAUDE_PROJECT_DIR が無いときは何も出さずに終わる（正常系（作業のフォルダが分からない））
