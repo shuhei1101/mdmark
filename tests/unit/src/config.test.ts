@@ -81,7 +81,7 @@ test("test_resolve_config", async () => {
     htmlScripts: { url: DEFAULT_HTML_SCRIPTS_URL },
     mermaid: { url: DEFAULT_MERMAID_URL, theme: "mdmark", themeVariables: {} },
     sideToc: { mode: "hover" },
-    table: { pin: "each" },
+    table: { pin: "each", longColumnMin: 45 },
     colorTheme: "dev-swiss",
     colorScheme: "auto",
     labels: { paramCopy: "今の値をコピーする" },
