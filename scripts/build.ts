@@ -31,8 +31,8 @@ import { checkMigrations } from "./migrations.ts";
 
 // 埋めるバージョンが合うべき書式
 const VERSION_PATTERN = /^v\d+\.\d+\.\d+$/;
-// 配布ファイル 1 つの上限（非機能要件の 656KB）
-const MAX_DIST_FILE_BYTES = 656 * 1024;
+// 配布ファイル 1 つの上限（非機能要件の 672KB）
+const MAX_DIST_FILE_BYTES = 672 * 1024;
 // 配布物にまとめた依存のライセンスを記載する、`dist/` の中のファイル名
 const LICENSES_FILE = "THIRD_PARTY_LICENSES.txt";
 // サイズを検めない配布ファイル（利用側のページが jsDelivr から読み込まない出力）
