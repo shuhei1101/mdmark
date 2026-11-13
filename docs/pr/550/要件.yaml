@@ -2,12 +2,17 @@ use_cases:
   - kind: single
     scenario: docs/scenario/SC-472-63.yaml
     impact: changed
-    detail: 比較元を指定して描いたとき、右側の目次で比較元から変わったセクションに変更のマーカーと読み上げの文言が出て、比較元を解除すると消える
+    detail: 比較元を指定して描いたとき、右側の目次（hover・fixed）で比較元から変わったセクションに変更のマーカーと読み上げの文言が出て、比較元を解除すると消える
     depends_on: []
   - kind: single
     scenario: docs/scenario/SC-472-73.yaml
     impact: changed
-    detail: 説明文のような長文の列には並べ替えが付かず、短い値の列は今のまま並べ替えられる
+    detail: 説明文のような長文の列には、表の種類と並べ替えの記載によらず並べ替えが付かず、短い値の列は今のまま並べ替えられる。列ごとの指定で並べ替えを付け外しできる
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-47.yaml
+    impact: changed
+    detail: 取り出し元のリビジョンでブロックを色分けして描いたときも、右側の目次で変わったセクションに変更のマーカーが出る
     depends_on: []
 docs:
   - page: docs/guide/導入-差分を表示する.md
