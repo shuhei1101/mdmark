@@ -3,6 +3,7 @@ import { createServer } from "node:http";
 import type { AddressInfo } from "node:net";
 import { join } from "node:path";
 import * as vscode from "vscode";
+import { SETTING_DEFAULTS } from "../../src/settings.ts";
 import {
   audit,
   closeRepositories,
@@ -36,6 +37,9 @@ const LIBRARY_SOURCE = `export function draw(slot) {
   slot.textContent = "drawn";
 }
 `;
+
+/** 拡張機能が待ちを始める時刻と、テストが変更の通知で取る時刻の差、タイマーが早く発火する分の許容（ミリ秒） */
+const TIMER_TOLERANCE_MS = 10;
 
 /** 長い文書の見出し A の行（0 始まり）。前に 8 つの段落を配置し、文書の先頭から離す */
 const HEADING_A_LINE = 18;
@@ -166,12 +170,21 @@ suite("プレビューを再描画する", () => {
     // 準備
     const { editor, record } = await openGuide();
     const before = renders(record).length;
-    // 実行: 100 ms おきに 3 回書き換える（保存しない）
+    // 最後の書き換えの時刻は、拡張機能が待ちを始めるのと同じ文書の変更の通知で取る
     let lastEdit = 0;
-    for (const text of ["# 見出し 1", "# 見出し 2", "# 見出し 3"]) {
-      await replaceFirstLine(editor, text);
-      lastEdit = Date.now();
-      await sleep(100);
+    const watcher = vscode.workspace.onDidChangeTextDocument((event) => {
+      if (event.document === editor.document) {
+        lastEdit = Date.now();
+      }
+    });
+    // 実行: 100 ms おきに 3 回書き換える（保存しない）
+    try {
+      for (const text of ["# 見出し 1", "# 見出し 2", "# 見出し 3"]) {
+        await replaceFirstLine(editor, text);
+        await sleep(100);
+      }
+    } finally {
+      watcher.dispose();
     }
     // 検証
     await waitFor(() => renders(record).length > before);
@@ -181,7 +194,7 @@ suite("プレビューを再描画する", () => {
     assert.ok(sent[0]?.markdown.startsWith("# 見出し 3"));
     const sentAt = record.sentAt[record.sent.indexOf(sent[0] as never)] ?? 0;
     assert.ok(
-      sentAt - lastEdit >= 150,
+      sentAt - lastEdit >= SETTING_DEFAULTS.updateDelayMs - TIMER_TOLERANCE_MS,
       `最後の書き換えから ${sentAt - lastEdit} ms`,
     );
     await waitFor(async () =>
