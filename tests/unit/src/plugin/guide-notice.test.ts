@@ -188,6 +188,7 @@ test("test_run_guide_notice_when_matcher", async () => {
       "utf8",
     ),
   );
+  // biome-ignore lint/suspicious/noTemplateCurlyInString: hooks.json に記載した展開前の文字列と比べる
   const script = "${CLAUDE_PLUGIN_ROOT}/scripts/guide-notice.js";
   const runs = (entry: { hooks: { args?: string[] }[] }) =>
     entry.hooks.some((hook) => hook.args?.includes(script));
