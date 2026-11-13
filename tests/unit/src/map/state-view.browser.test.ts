@@ -60,10 +60,14 @@ test("test_attach_map_state", async () => {
   const start = root.querySelector<HTMLElement>(
     '[data-node="start_実行中"]',
   ) as HTMLElement;
-  expect(endX).toBeGreaterThanOrEqual(start.offsetLeft - 2);
-  expect(endX).toBeLessThanOrEqual(start.offsetLeft + start.offsetWidth + 2);
-  expect(endY).toBeGreaterThanOrEqual(start.offsetTop - 2);
-  expect(endY).toBeLessThanOrEqual(start.offsetTop + start.offsetHeight + 2);
+  // ノードの位置と大きさは、配置の結果を入れた style で比べる
+  const [left, top, width, height] = ["left", "top", "width", "height"].map(
+    (key) => Number.parseFloat(start.style.getPropertyValue(key)),
+  ) as [number, number, number, number];
+  expect(endX).toBeGreaterThanOrEqual(left - 2);
+  expect(endX).toBeLessThanOrEqual(left + width + 2);
+  expect(endY).toBeGreaterThanOrEqual(top - 2);
+  expect(endY).toBeLessThanOrEqual(top + height + 2);
   const loop = root.querySelector(
     '.map-state-loop[data-wire="t2"], [data-wire="t2"] .map-state-loop',
   );

@@ -34,11 +34,22 @@ async function setUp() {
 const tableOf = (root: HTMLElement, name: string) =>
   root.querySelector<HTMLElement>(`[data-node="${name}"]`) as HTMLElement;
 
-/** テーブルの種類の行を押して選ぶ */
-const select = (root: HTMLElement, name: string) =>
-  tableOf(root, name)
-    .querySelector<HTMLElement>(".mdmark-diagram-node-kind")
-    ?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+/** テーブルの種類の行を押して選ぶ（4px 未満の動きで離す） */
+const select = (root: HTMLElement, name: string) => {
+  const head = tableOf(root, name).querySelector<HTMLElement>(
+    ".mdmark-diagram-node-kind",
+  ) as HTMLElement;
+  const box = head.getBoundingClientRect();
+  const point = {
+    bubbles: true,
+    pointerId: 1,
+    button: 0,
+    clientX: box.x + 8,
+    clientY: box.y + box.height / 2,
+  };
+  head.dispatchEvent(new PointerEvent("pointerdown", point));
+  window.dispatchEvent(new PointerEvent("pointerup", point));
+};
 
 // 列の行と関連の端（正常系）
 test("test_attach_map_er", async () => {
@@ -50,12 +61,14 @@ test("test_attach_map_er", async () => {
   const row = order.querySelector<HTMLElement>(
     '[data-column="顧客ID"]',
   ) as HTMLElement;
-  const stage = root.querySelector<HTMLElement>(
-    ".mdmark-diagram-stage",
-  ) as HTMLElement;
+  // ノードの位置は配置の結果を入れた style、行の位置はノードの中の位置で比べる
   const rowRect = row.getBoundingClientRect();
-  const stageRect = stage.getBoundingClientRect();
-  const rowMiddle = rowRect.top + rowRect.height / 2 - stageRect.top;
+  const orderRect = order.getBoundingClientRect();
+  const rowMiddle =
+    Number.parseFloat(order.style.top) +
+    rowRect.top -
+    orderRect.top +
+    rowRect.height / 2;
   const path = root.querySelector<SVGPathElement>(
     'path.mdmark-diagram-wire[data-wire="r1"]',
   );
@@ -94,17 +107,14 @@ test("test_attach_map_er_when_columns_collapsed", async () => {
   const toggle = order.querySelector<HTMLButtonElement>("button.map-er-toggle");
   expect(toggle?.textContent).toContain("列 8");
   expect(toggle?.getAttribute("aria-expanded")).toBe("false");
-  const nodeRect = order.getBoundingClientRect();
-  const stageRect = (
-    root.querySelector(".mdmark-diagram-stage") as HTMLElement
-  ).getBoundingClientRect();
+  const middle =
+    Number.parseFloat(order.style.top) +
+    Number.parseFloat(order.style.height) / 2;
   const path = root.querySelector<SVGPathElement>(
     'path.mdmark-diagram-wire[data-wire="r1"]',
   );
   const points =
     (path?.getAttribute("d") ?? "").match(/-?\d+(\.\d+)?/g)?.map(Number) ?? [];
   const lastY = points.at(-1) ?? Number.NaN;
-  expect(
-    Math.abs(lastY - (nodeRect.top + nodeRect.height / 2 - stageRect.top)),
-  ).toBeLessThan(2);
+  expect(Math.abs(lastY - middle)).toBeLessThan(2);
 });
