@@ -103,3 +103,9 @@ scope_out:
   - item: ファイルツリーの既定の開き方を設定ファイルで変えるキー
     reason: '#459 の受付判断で設定のキーは追加しないと決めた。閉じて始める文書はマーカーの `depth` を記載すれば足りる'
     plan: none
+  - item: 画面設計『文書』の表の「続きがある側の端に影を出す」と、表の CSS（横スクロールの端の影を出さない）の食い違い
+    reason: 画面設計 SCR-472-4 の要素「表」は横スクロールする表の端に影を出すと記載しているが、src/index.css の表は影を出さない（develop から続く食い違い）。今回の要望は列の幅の決め方で、表の端の影は含まない
+    plan: to_file
+  - item: '結合テスト test_normal_when_column_resized_by_touch のタッチの代役が、後のテストまで (hover: none)・(pointer: coarse) を残す事象'
+    reason: 'tests/integration/lib/mount.browser.test.ts の test_normal_when_column_resized_by_touch は finally で Emulation.setTouchEmulationEnabled を false に戻すが、同じページの後のテストで (hover: hover) が一致しないまま残り、ポインターを乗せる確認をそのテストより後に置けない（develop から続く事象）。今回の要望は列の幅とコードブロックの表示で、テストの代役の後始末は含まない'
+    plan: to_file
