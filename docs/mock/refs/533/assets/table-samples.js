@@ -16,5 +16,5 @@ window.mdmarkMockTables533 = {};
   T["each-b"] = { label: "1・3・9 列目を選び、9 列目が見える幅に収まらない表（案 B）", head, body, mode: "each", press: [2, 8], scroll: 8, notice: "b" };
   T["through-a"] = { label: "table.pin: through で 3 列目を押し、3 列目が見える幅に収まらない表（案 A）", head, body, mode: "through", press: [2], scroll: 2, notice: "a" };
   T["through-b"] = { label: "table.pin: through で 3 列目を押し、3 列目が見える幅に収まらない表（案 B）", head, body, mode: "through", press: [2], scroll: 2, notice: "b" };
-  T["each-fit"] = { label: "1・3・9 列目を選び、全て見える幅に収まる表", head, body, mode: "each", press: [2, 8], scroll: "start", notice: "a" };
+  T["each-fit"] = { label: "1・9 列目を選び、どの画面幅でも見える幅に収まる表", head, body, mode: "each", press: [8], scroll: 8, notice: "a" };
 }
