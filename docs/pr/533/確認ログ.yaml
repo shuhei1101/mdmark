@@ -11,3 +11,21 @@ confirmations:
     approver: shuhei1101
     commit: fcf83bc8
     thread: https://github.com/shuhei1101/mdmark/pull/533#discussion_r4565288410
+  - topic: モックへの合意
+    decision: 収まる列だけを留め、収まらない列はスクロールで流し、ボタンで留まっていないことを示すモックで進める（推奨案 A）
+    decided_by: thumbs_up
+    approver: shuhei1101
+    commit: b37cda20
+    thread: https://github.com/shuhei1101/mdmark/pull/533#discussion_r4565783687
+  - topic: 留まっていない列のピン止めのボタンの見た目
+    decision: ピンのアイコンを塗らない破線にし、ボタンの枠線も破線・アイコンの色を薄くする（推奨案 A）
+    decided_by: thumbs_up
+    approver: shuhei1101
+    commit: b37cda20
+    thread: https://github.com/shuhei1101/mdmark/pull/533#discussion_r4565781706
+  - topic: 留まっていない列のボタンの読み上げの名前と title の文言
+    decision: 今のボタンの名前の後ろに「（表の幅に収まらないため留まっていません）」を付ける（推奨案 A）
+    decided_by: thumbs_up
+    approver: shuhei1101
+    commit: b37cda20
+    thread: https://github.com/shuhei1101/mdmark/pull/533#discussion_r4565782614
