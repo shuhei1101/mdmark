@@ -12,8 +12,6 @@ files:
     related:
       - to: docs/module/MOD-472-116.ts
         type: implements
-      - to: docs/module/MOD-472-116.ts
-        type: implements
   - path: cli/alias-schema.ts
     description: モジュール構成『ライブラリ本体 / CLI』のうち「設定の aliases の行の JSON Schema での検査」を受け持つ。CLI のコマンドの振る舞いを変えるときに参照する。
     tags: [topic:cli, tool:ajv]

@@ -1,0 +1,15 @@
+$ npm run test:unit
+
+> test:unit
+> vitest run --project 'unit*'
+
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/design-vscode-export-aliases
+
+
+ Test Files  284 passed (284)
+      Tests  2068 passed (2068)
+   Start at  07:41:51
+   Duration  117.46s (worker 68%, tests 20%, import 11%, transform 1%)
+
+exit=0

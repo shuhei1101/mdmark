@@ -479,6 +479,47 @@ test("test_build_legacy_marks", async () => {
   expect(
     existsSync(join(root, "migrations", "v0.1.0", "legacy-marks.js")),
   ).toBe(false);
+  expect(
+    existsSync(join(root, "migrations", "v0.1.0", "THIRD_PARTY_LICENSES.txt")),
+  ).toBe(false);
+});
+
+// まとめた依存のライセンスを同じフォルダに記載する（正常系）
+test("test_build_legacy_marks_when_package_bundled", async () => {
+  // 準備
+  const { buildLegacyMarks } = await loadBuild();
+  const root = await createRoot("v0.0.0\n");
+  await createPackage(root, "legacy-only-pkg", {
+    version: "3.0.0",
+    license: "MIT",
+    licenseText: "Copyright LEGACY holder",
+  });
+  await writeFile(
+    join(root, "node_modules", "legacy-only-pkg", "index.js"),
+    "export const suffix = '!';\n",
+  );
+  await mkdir(join(root, "src", "render"), { recursive: true });
+  await writeFile(
+    join(root, "src", "render", "legacy-marks.ts"),
+    [
+      "// @ts-expect-error 型定義の無い一時のパッケージ",
+      'import { suffix } from "legacy-only-pkg";',
+      "",
+      "export const rewriteLegacyMarks = (markdown: string): string => markdown + suffix;",
+      "",
+    ].join("\n"),
+  );
+  await mkdir(join(root, "migrations", "next"), { recursive: true });
+  await writeFile(join(root, "migrations", "next", "marker-json.mjs"), "\n");
+  // 実行
+  await buildLegacyMarks("v0.0.1", root);
+  // 検証
+  const text = await readFile(
+    join(root, "migrations", "next", "THIRD_PARTY_LICENSES.txt"),
+    "utf8",
+  );
+  expect(text).toContain("legacy-only-pkg");
+  expect(text).toContain("Copyright LEGACY holder");
 });
 
 // ソースの無いときは何も書き込まない（正常系）
@@ -492,6 +533,10 @@ test("test_build_legacy_marks_when_source_removed", async () => {
     join(root, "migrations", "v0.11.0", "legacy-marks.js"),
     "// 書き込み済み\n",
   );
+  await writeFile(
+    join(root, "migrations", "v0.11.0", "THIRD_PARTY_LICENSES.txt"),
+    "書き込み済みのライセンス\n",
+  );
   // 実行
   const written = await buildLegacyMarks("v0.0.1", root);
   // 検証
@@ -502,6 +547,12 @@ test("test_build_legacy_marks_when_source_removed", async () => {
       "utf8",
     ),
   ).toBe("// 書き込み済み\n");
+  expect(
+    await readFile(
+      join(root, "migrations", "v0.11.0", "THIRD_PARTY_LICENSES.txt"),
+      "utf8",
+    ),
+  ).toBe("書き込み済みのライセンス\n");
 });
 
 // CLI にまとめたパッケージのライセンスも記載する（正常系）
@@ -566,7 +617,11 @@ test("test_write_third_party_licenses", async () => {
     "src/index.ts",
   ]);
   // 実行
-  await writeThirdPartyLicenses({ metafiles: [metafile], root });
+  await writeThirdPartyLicenses({
+    metafiles: [metafile],
+    root,
+    outfile: "dist/THIRD_PARTY_LICENSES.txt",
+  });
   // 検証
   const text = await readFile(
     join(root, "dist", "THIRD_PARTY_LICENSES.txt"),
@@ -592,7 +647,11 @@ test("test_write_third_party_licenses_when_license_missing", async () => {
   const metafile = createMetafile(["node_modules/b/index.js"]);
   // 実行・検証
   await expect(
-    writeThirdPartyLicenses({ metafiles: [metafile], root }),
+    writeThirdPartyLicenses({
+      metafiles: [metafile],
+      root,
+      outfile: "dist/THIRD_PARTY_LICENSES.txt",
+    }),
   ).rejects.toThrow("ライセンスの本文が無い: b");
 });
 
@@ -635,7 +694,11 @@ test("test_write_third_party_licenses_when_embedded", async () => {
     "node_modules/pkg/dist/a.mjs",
   ]);
   // 実行
-  await writeThirdPartyLicenses({ metafiles: [first, second], root });
+  await writeThirdPartyLicenses({
+    metafiles: [first, second],
+    root,
+    outfile: "dist/THIRD_PARTY_LICENSES.txt",
+  });
   // 検証
   const text = await readFile(
     join(root, "dist", "THIRD_PARTY_LICENSES.txt"),

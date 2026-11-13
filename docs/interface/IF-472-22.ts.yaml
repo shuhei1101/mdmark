@@ -677,4 +677,4 @@ constraints:
     notes: プレビューでも取り込むことは確認ログの決定
   - item: エイリアス
     constraint: '重ねた設定に `aliases` があるとき、インターフェース定義『エイリアスを作る』の CLI と同じ読み込み方（`src/cli/aliases.ts` の `loadAliases`）で、各行の `paths` を値を記載した設定ファイルのフォルダから参照して YAML を読み込み、作ったエイリアスを `render` の `aliases` に入れる。`loadAliases` に指定する設定ファイルは、最も近い `mdmark.config.yaml`（`mdmark.configPath` を記載したときはそのファイル）で、無いときは端末の設定ファイルにする（CLI の `requireConfig` と同じく、重ねた設定のパスの値をそのファイルのフォルダからの相対パスに戻して指定する）。Webview は `mount` の `opts.aliases` に指定する。使用できない行・レコードは除き、ずれごとに CLI の `mdmark check` と同じ `{file}:{where}: {kind}: {message}`（`where` が空なら `{file}: {kind}: {message}`）の警告を出力チャネルに書き込む。エイリアスを作るのは設定を再読み込みしたときと、制約の YAML のファイルが変わったときだけで、Markdown の書き換えでは再作成しない'
-    notes: 書き出す HTML へのエイリアスの埋め込みは要件のスコープ外（#379）
+    notes: 書き出す HTML も同じ読み込み方でエイリアスを埋める（HTMLに書き出す.ts の制約「エイリアス」）

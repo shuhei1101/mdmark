@@ -7,27 +7,7 @@ layers:
     run_all: 未確定
   - id: TL-2
     name: E2E テスト
-    description: Playwright（`@playwright/test`）を Chromium と Firefox の 2 つのプロジェクトで実行する。ブラウザを使用しない『配布物をビルドして検査する』『拡張機能の配布物を作る』は Chromium のプロジェクトだけで流れ、Firefox の分は skip になる。Playwright の `globalSetup` は、E2E を実行するたびに（VS Code 拡張機能のシナリオを選ばないときも）ワーカーの前で VS Code 1.141.0 を 1 回だけ取得する。VS Code 拡張機能のシナリオは、`tests/e2e/vscode.ts` がその実行ファイルを Playwright の `_electron` で起動して操作する（Chromium のプロジェクトだけ）。拡張機能はこのブランチのソースを一時フォルダにビルドして `--extensionDevelopmentPath` に指定し、jsDelivr と GitHub のタグ一覧は `MDMARK_VSCODE_DIST_BASE`・`MDMARK_VSCODE_TAGS_URL` で手元の代役に差し替える。待ちの既定は 30 秒（`playwright.config.ts` の `expect.timeout`）
-    prerequisites:
-      - '`npm ci` で依存を入れ、`npx playwright install chromium firefox` でブラウザを入れてある'
-      - 『配布物をビルドして検査する』が一時フォルダのクローンで `npm ci` を実行し、『GitHubの参照から入れてCLIを起動する』が一時の Git のリポジトリから `npm exec` で入れるため、npm レジストリへの接続が要る
-      - VS Code 拡張機能のシナリオは `npm --prefix vscode ci` で拡張機能の依存を入れ、Node は 24 を使用する。ヘッドレスの Linux では `xvfb-run -a` を付けて実行する
-      - 『ClaudeCodeにプラグインを入れる』は GitHub のブランチからプラグインを入れるため、開発コマンド『管理作業』の手順 3〜5 を release ブランチで済ませた後に実行する
-      - 『ガイドを参照する』『ClaudeCodeでガイドを参照して記載し点検する』は dev-docs を起動するため、dev-docs のクローンに依存（`.venv`）を入れてある。クローンの場所は環境変数 `DEV_DOCS_CLONE`、無ければ `~/.config/dev-docs/settings.yaml` の `clone` を使用する。`search_docs` の 1 回の呼び出しの時間切れは 135 秒（dev-docs に所要時間の公開仕様が無く、実測が 1,000 回に満たないため、起動した dev-docs への 30 回の実測の最大 89.4 秒にその 50% を加えた仮の値。起動の直後の 1 回目が最も遅い）。呼び出しを 2 回含む `test_normal` の待ちは 405 秒（時間切れの合計 270 秒と、その 50% の余裕）
-      - '`globalSetup` は `npm --prefix vscode ci` で入れた `@vscode/test-electron` で VS Code を取得するため、どの E2E を実行するときも（VS Code 拡張機能のシナリオを選ばないときも）`npm --prefix vscode ci` が要る。`vscode/.vscode-test/` に無いときは `update.code.visualstudio.com` から取得する'
-      - '`mdmark serve` を起動するケースは `MDMARK_PORT` に空きポートを指定して起動し、どのケースも 8782 を使用しない（手元の `mdmark serve` が使用する）'
-    run_all: |-
-      ```bash
-      npm run test:e2e
-      ```
-    run_one:
-      label: シナリオ
-      command: |-
-        ```bash
-        npx playwright test {シナリオファイルパス}
-        ```
-    duration: 全件で約 10 分（作業ツリーのクローンと `npm ci`、VS Code の起動を含む。VS Code を起動するシナリオが大半を占める）。初回は VS Code の取得が加わる
-    external_cost: 無料。npm レジストリへ接続する。jsDelivr へは接続せず、`page.route()` で手元の応答に差し替える
+    run_all: 未確定
   - id: TL-3
     name: 結合テスト（フロント）
     description: Vitest の `integration-node`（ビルドの入口を子プロセスで実行する・ビルドした配布物を Node で読み込む・Claude Code プラグインの MCP サーバーとフックを実行する）と `integration-browser`（ビルドした配布物を Chromium で読み込む）と `integration-storybook`（部品の描画のインターフェースと Storybook を空きポートで起動し、ストーリーを Playwright で開く。起動に約 40 秒。続けて Chromium を 1 つ起動し、最初のストーリーを開いて Vite が依存をまとめ終えるまで待ち、約 1 分かかる。各ファイルはその Chromium に接続してストーリーを開き、開いたページをテストごとに閉じる）の 3 つで実行する。同時に実行するファイルの数は、`integration-node`・`integration-storybook` の合計と `integration-browser` のそれぞれで CPU 数の半分（3 つに同じ `maxWorkers`）までにする。VS Code 拡張機能の結合テストは Vitest でなく、補足「VS Code 拡張機能」のコマンドで別に実行する

@@ -1,4 +1,5 @@
 import { basename, dirname, extname, resolve } from "node:path";
+import type { MdmarkAlias } from "../../../src/knowledge/aliases.ts";
 import type { PreviewConfig } from "../config.ts";
 import { escapeHtml } from "../escape.ts";
 
@@ -69,7 +70,7 @@ document.fonts.ready.then(() => {
 setTimeout(print, PRINT_WAIT_MS);
 `;
 
-/** 書き出す HTML を組む。`<base>`・そのバージョンの `index.css` の `<link>`・本文と設定の JSON の `<script type="application/json">`・`importMap` が空でないときの `<script type="importmap">`・`index.js` を読み込んで `mount` を呼ぶ `<script type="module">` を持つ。`print` が `true` のときだけ印刷を待つ処理を追加する */
+/** 書き出す HTML を組む。`<base>`・そのバージョンの `index.css` の `<link>`・本文と設定の JSON の `<script type="application/json">`・`importMap` が空でないときの `<script type="importmap">`・`index.js` を読み込んで `mount` を呼ぶ `<script type="module">` を持つ。`aliases` があるときは JSON に埋めて `mount` の `opts.aliases` に指定する。`print` が `true` のときだけ印刷を待つ処理を追加する */
 export function buildExportHtml(options: {
   /** 全文 */
   markdown: string;
@@ -91,12 +92,15 @@ export function buildExportHtml(options: {
   extensions: string[];
   /** import map の `imports`（相対パスの `syntax.url` の本体と言語のモジュールの `data:` の URL）。空なら配置しない */
   importMap?: Record<string, string> | undefined;
+  /** 設定の `aliases` から作ったエイリアス。無いときは JSON にも `mount` にも指定しない */
+  aliases?: MdmarkAlias[] | undefined;
 }): string {
   const data = escapeScriptJson({
     markdown: options.markdown,
     config: options.config,
     // `file:` のページは `file:` のモジュールを読み込まないため、`data:` の URL にして読み込む
     extensions: options.extensions.map(moduleDataUrl),
+    ...(options.aliases === undefined ? {} : { aliases: options.aliases }),
   });
   const themeStyle =
     options.themeCss === undefined
@@ -125,7 +129,7 @@ ${themeStyle}${importMap}</head>
 import { mount${options.extensions.length === 0 ? "" : ", registerExtension"} } from ${escapeScriptJson(options.distJs)};
 const main = document.querySelector("main");
 const data = JSON.parse(document.getElementById("mdmark-data").textContent);${register}
-mount(main, { markdown: data.markdown, config: data.config });${options.print ? PRINT_SCRIPT : ""}
+mount(main, { markdown: data.markdown, config: data.config${options.aliases === undefined ? "" : ", aliases: data.aliases"} });${options.print ? PRINT_SCRIPT : ""}
 </script>
 </body>
 </html>

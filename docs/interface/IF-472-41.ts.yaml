@@ -9,7 +9,7 @@ flows:
     summary: '`version.ini` のバージョンを埋めてビルドする'
     setup:
       - name: 依存を入れた作業ツリー
-        description: '`version.ini` が `v0.0.0` の作業ツリー'
+        description: '`version.ini` が `v0.0.0` で、`migrations/next/marker-json.mjs` を持つ作業ツリー'
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
@@ -20,6 +20,7 @@ flows:
         D->>B: npm run build
         B->>F: version.ini を読み込む
         B->>F: v0.0.0 を埋めた dist/index.js と index.css、型定義の dist/index.d.ts、まとめた依存の THIRD_PARTY_LICENSES.txt を書き込む
+        B->>F: migrations/next/ に legacy-marks.js と、まとめた依存の THIRD_PARTY_LICENSES.txt を書き込む
         B-->>D: 終了コード 0
     expected:
       - 終了コードが 0
@@ -31,6 +32,7 @@ flows:
       - '`dist/viewer.js` と `dist/viewer.css` がある'
       - '`plugin/scripts/pre-tool-use.js`・`plugin/scripts/session-start.js` があり、`plugin/guide`・`plugin/server`・`plugin/dist` が無く、`plugin/.claude-plugin/plugin.json` が `version` を持たずビルドの前と同じ中身'
       - '`dist/THIRD_PARTY_LICENSES.txt` に `dist/cli.js` にまとめた `@modelcontextprotocol/server` と、その配布物に取り込まれた `ajv` の名前とライセンスの本文がある'
+      - '`migrations/next/THIRD_PARTY_LICENSES.txt` に、`migrations/next/legacy-marks.js` にまとめた `sanitize-html` と `dayjs` の名前とライセンスの本文がある'
     test: test_normal
   - name: 正常系（バージョンを指定する）
     summary: '`--version` で指定したバージョンを埋めてビルドする'
@@ -181,7 +183,7 @@ flows:
     test: test_error_when_api_missing_in_baseline_browser
 lead: '`src/` の TypeScript と CSS を、バージョンを埋めた ES モジュールの `dist/index.js` と `dist/index.css` と、公開関数と拡張の型定義 `dist/index.d.ts` と、Node で動く CLI の `dist/cli.js` と、CLI が書き出す HTML に埋める起動の処理 `dist/viewer.js`・`dist/viewer.css` にビルドする。'
 idempotent: true
-side_effects: '`dist/` を書き換える'
+side_effects: '`dist/` と、`migrations/` の中の `marker-json.mjs` を持つフォルダの `legacy-marks.js`・`THIRD_PARTY_LICENSES.txt` を書き換える'
 callers:
   - SC-472-82#
 request:
