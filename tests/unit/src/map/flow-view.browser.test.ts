@@ -226,13 +226,13 @@ test("test_attach_map_flow_when_node_link", async () => {
     "",
     `${FLOW}  click mount "https://example.com/spec"\n`,
   );
-  // 図が止めたかを記録し、記録した後はテストのページを移らないようにする
+  // document まで届いた click と図が止めたかを記録し、記録した後はテストのページを移らないようにする
   const prevented: boolean[] = [];
   const check = (event: MouseEvent) => {
     prevented.push(event.defaultPrevented);
     event.preventDefault();
   };
-  window.addEventListener("click", check);
+  document.addEventListener("click", check);
   const node = () =>
     root.querySelector<HTMLElement>('[data-node="mount"]') as HTMLElement;
   const kind = () =>
@@ -254,9 +254,11 @@ test("test_attach_map_flow_when_node_link", async () => {
     kind().dispatchEvent(new PointerEvent("pointerdown", point(0)));
     window.dispatchEvent(new PointerEvent("pointermove", point(40)));
     window.dispatchEvent(new PointerEvent("pointerup", point(40)));
-    kind().dispatchEvent(
-      new MouseEvent("click", { ...point(40), cancelable: true }),
-    );
+    const dragged = new MouseEvent("click", {
+      ...point(40),
+      cancelable: true,
+    });
+    kind().dispatchEvent(dragged);
     const moved = node().style.cssText;
     kind().dispatchEvent(new PointerEvent("pointerdown", point(40)));
     window.dispatchEvent(new PointerEvent("pointerup", point(40)));
@@ -269,9 +271,10 @@ test("test_attach_map_flow_when_node_link", async () => {
     );
     // 検証
     expect(moved).not.toBe(before);
-    expect(prevented).toEqual([true, false]);
+    expect(dragged.defaultPrevented).toBe(true);
+    expect(prevented).toEqual([false]);
     expect(link.getAttribute("href")).toBe("https://example.com/spec");
   } finally {
-    window.removeEventListener("click", check);
+    document.removeEventListener("click", check);
   }
 });
