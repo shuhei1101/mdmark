@@ -17,3 +17,9 @@ confirmations:
     approver: shuhei1101
     commit:
     thread: https://github.com/shuhei1101/mdmark/pull/531#discussion_r4565655449
+  - topic: 状態遷移図の再生のボタンの名前
+    decision: 前の遷移・再生をやめる・自動で進める・次の遷移（推奨案 A）
+    decided_by: thumbs_up
+    approver: shuhei1101
+    commit:
+    thread: https://github.com/shuhei1101/mdmark/pull/531#discussion_r4566452934
