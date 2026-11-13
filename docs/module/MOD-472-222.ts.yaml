@@ -23,7 +23,7 @@ functions:
       - name: options
         type: '{ root: HTMLElement; sections: boolean; rowDetails: boolean; states?: SectionStates; partStates?: PartStates; revealHash?: boolean }'
         required: true
-        description: 描いた要素と、セクション・行の詳細の機能と、セクションの開閉の記録（省くと記録しない）と、部品の開閉の記録（省くと記録しない。行の詳細を持つ表を `partKey` の種類 `row-detail`、部品の中の鍵を詳細を持つ行の位置で引き、`startOpen` の開閉（マーカーは無く、既定は閉じる）で始め、読者が開閉のボタンを押すたびに `recordOpen` で書き込む）と、付けたときに URL の `#ID` で開くか（既定 `true`）
+        description: 描いた要素と、セクション・行の詳細の機能と、セクションの開閉の記録（省くと記録しない）と、部品の開閉の記録（省くと記録しない。行の詳細を持つ表を `partKey` の種類 `row-detail`、部品の中の鍵をマーカーの `at` の行の位置（並べ替え・絞り込みに左右されない値）で引き、`startOpen` の開閉（マーカーは無く、既定は閉じる）で始め、読者が開閉のボタンを押すたびに `recordOpen` で書き込む）と、付けたときに URL の `#ID` で開くか（既定 `true`）
     returns:
       type: () => void
       description: ボタン・`hashchange` の受け取りを解除する関数

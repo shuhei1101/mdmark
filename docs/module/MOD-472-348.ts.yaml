@@ -23,7 +23,7 @@ functions:
       - name: options
         type: '{ root: HTMLElement; part: Element; kind: keyof typeof PART_SELECTORS; inner?: string }'
         required: true
-        description: 描いた要素、部品の要素（`PART_SELECTORS[kind]` に当たる要素）、部品の種類、部品の中の要素の鍵（行の位置・テーブルの名前・フォルダのパス・行番号・行のパス）
+        description: 描いた要素、部品の要素（`PART_SELECTORS[kind]` に当たる要素）、部品の種類、部品の中の要素の鍵（行の詳細のマーカーの `at`・テーブルの名前・フォルダのパス・行番号・行のパス）
     returns:
       type: string
       description: 記録の鍵
