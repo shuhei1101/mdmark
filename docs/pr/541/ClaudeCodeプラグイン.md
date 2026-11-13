@@ -53,3 +53,12 @@
 | [tests/unit/src/plugin/pre-tool-use.test.ts](https://github.com/shuhei1101/mdmark/blob/d2e6de76/tests/unit/src/plugin/pre-tool-use.test.ts) | 全実行 | 実行のみ | ✅ | `hooks.json` の PreToolUse の 1 行目が変わらないことの回帰確認 |
 
 `tests/unit/src/plugin/guide-notice.test.ts` は、lint の `noTemplateCurlyInString` の警告を抑える注釈だけを `b17210bf` で実装と別に追加した（`hooks.json` に記載した展開前の文字列と比べるため）。
+
+### 結合
+
+| ファイル | メソッド | 変更種別 | 結果 | 補足 |
+| --- | --- | --- | --- | --- |
+| `tests/integration/ClaudeCodeプラグイン/guide-notice.test.ts` | 全実行 | 新規 | ✅ | 7 テスト pass<br>`テスト結果/20261114053437_dfc991bb_結合テスト.log` |
+| [tests/integration/ClaudeCodeプラグイン/check.test.ts](https://github.com/shuhei1101/mdmark/blob/d2e6de76/tests/integration/ClaudeCodeプラグイン/check.test.ts) | 全実行 | 変更 | ✅ | 拡張子の提案のケースを追加し、正常系・取り込み先のフィクスチャの文書を `.mark.md` にした |
+| [tests/integration/ClaudeCodeプラグイン/pre-tool-use.test.ts](https://github.com/shuhei1101/mdmark/blob/d2e6de76/tests/integration/ClaudeCodeプラグイン/pre-tool-use.test.ts)・[session-start.test.ts](https://github.com/shuhei1101/mdmark/blob/d2e6de76/tests/integration/ClaudeCodeプラグイン/session-start.test.ts)・[serve.test.ts](https://github.com/shuhei1101/mdmark/blob/d2e6de76/tests/integration/ClaudeCodeプラグイン/serve.test.ts) | 全実行 | 実行のみ | ✅ | `hooks.json` の行の追加と `INSTRUCTIONS` の変更の回帰確認 |
+| [tests/integration/plugin.ts](https://github.com/shuhei1101/mdmark/blob/d2e6de76/tests/integration/plugin.ts) | - | 変更 | - | 案内のフックの行を起動する `runGuideNoticeHook` を追加した（テストの補助） |
