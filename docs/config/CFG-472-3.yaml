@@ -950,7 +950,7 @@ settings:
     type: '"each" | "through"'
     required: false
     default: '`each`'
-    description: 表のピン止めの動き。`each` は押した列だけを留め、留めた列より左を表示している間は表の右端に、過ぎた後は左端に留める。`through` は押した列までを左端に留める。マーカーの `pin=` もこの動きに従う
+    description: 表のピン止めの動き。`each` は押した列だけを留め、留めた列より左を表示している間は表の右端に、過ぎた後は左端に留める。`through` は押した列までを左端に留める。どちらも、留める列を左から順に足して表の見えている幅を超える列から右は留めず、その列のボタンを押したまま留まっていない状態にする。マーカーの `pin=` もこの動きに従う
     reload: reload
     allowed: '`each` / `through`。`mount` は他の値を無視して `each` にし、CLI は他の値を設定ファイルの誤りにする'
     refs:
