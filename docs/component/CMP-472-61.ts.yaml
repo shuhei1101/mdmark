@@ -932,17 +932,21 @@ states:
     args:
       - name: kind
         value: data
+      - name: features
+        value: '["sort","pin","filter","resize"]'
       - name: columns
         value: '["名前","数量"]'
       - name: rows
         value: '[["りんご","3"],["みかん","5"],["ぶどう","2"]]'
       - name: autoWidths
-        value: '[{"column":0,"width":71},{"column":1,"width":56}]'
+        value: '[{"column":0,"width":80},{"column":1,"width":72}]'
   - name: AutoWidth
     description: 長文の説明の列だけを折り返し、ほかの列は最も長い行の幅にした。説明の列が残りの幅を使い、表が本文の幅いっぱいに広がる。手順の列は `<br>` で区切った行のうち最も長い行の幅
     args:
       - name: kind
         value: data
+      - name: features
+        value: '["sort","pin","filter","resize"]'
       - name: columns
         value: '["No","状態","更新日","名前","手順","説明"]'
       - name: rows
@@ -950,12 +954,14 @@ states:
       - name: long
         value: '[5]'
       - name: autoWidths
-        value: '[{"column":0,"width":47},{"column":1,"width":71},{"column":2,"width":100},{"column":3,"width":78},{"column":4,"width":92},{"column":5,"width":757}]'
+        value: '[{"column":0,"width":60},{"column":1,"width":90},{"column":2,"width":112},{"column":3,"width":78},{"column":4,"width":92},{"column":5,"width":713}]'
   - name: TwoLongColumns
     description: 長文の列が 2 つある。1 行で収まる備考の列は最も長い行の幅で止め、残りの幅を説明の列へ分けた
     args:
       - name: kind
         value: data
+      - name: features
+        value: '["sort","pin","filter","resize"]'
       - name: columns
         value: '["名前","説明","備考"]'
       - name: rows
@@ -963,12 +969,14 @@ states:
       - name: long
         value: '[1,2]'
       - name: autoWidths
-        value: '[{"column":0,"width":67},{"column":1,"width":755},{"column":2,"width":323}]'
+        value: '[{"column":0,"width":82},{"column":1,"width":740},{"column":2,"width":323}]'
   - name: NarrowScroll
     description: 画面の幅が狭く、全ての列の最小の幅の合計が見える幅を超える。長文の列を最小の幅（45em）で折り返し、表の中で横にスクロールする
     args:
       - name: kind
         value: data
+      - name: features
+        value: '["sort","pin","filter","resize"]'
       - name: columns
         value: '["名前","説明","備考"]'
       - name: rows
@@ -978,12 +986,14 @@ states:
       - name: overflow
         value: 'true'
       - name: autoWidths
-        value: '[{"column":0,"width":67},{"column":1,"width":630},{"column":2,"width":630}]'
+        value: '[{"column":0,"width":82},{"column":1,"width":630},{"column":2,"width":630}]'
   - name: WidthRange
     description: '`width.min` が 20・`width.max` が 30 の説明の列を、記載した範囲の幅で折り返した'
     args:
       - name: kind
         value: data
+      - name: features
+        value: '["sort","pin","filter","resize"]'
       - name: columns
         value: '["名前","説明","備考"]'
       - name: rows
@@ -993,12 +1003,14 @@ states:
       - name: widthRanges
         value: '[{"column":1,"min":20,"max":30}]'
       - name: autoWidths
-        value: '[{"column":0,"width":67},{"column":1,"width":420},{"column":2,"width":46}]'
+        value: '[{"column":0,"width":82},{"column":1,"width":420},{"column":2,"width":72}]'
   - name: LongColumnTextFilter
     description: '`filter.type` を省いた絞り込みのうち、長文の説明の列は文字で絞り込み、名前の列は値を選んで絞り込む。説明の列のドロワーを開いた'
     args:
       - name: kind
         value: data
+      - name: features
+        value: '["sort","pin","filter","resize"]'
       - name: columns
         value: '["名前","説明"]'
       - name: rows
@@ -1009,6 +1021,8 @@ states:
         value: '[{"column":0,"kind":"select"},{"column":1,"kind":"text"}]'
       - name: openFilter
         value: '1'
+      - name: autoWidths
+        value: '[{"column":0,"width":82},{"column":1,"width":1063}]'
   - name: PinnedEach
     description: '`pinMode: each` で、1 列目と 3 列目だけを留めた。1・3 列目のボタンが押され、1・3 列目のセルが留まる。各列の `left`・`right` と、左端に留まった最も右の列の右・右端に留まった最も左の列の左の境の線は、列の幅と横のスクロールから `mount` が入れる'
     args:
