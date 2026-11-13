@@ -43,3 +43,19 @@ test("test_relative_href", async () => {
   // 検証
   expect(cases).toEqual(["../api.md", "../使い方/guide.md", "b.md", "api.md"]);
 });
+
+// .mark.md で終わるパスだけを mdmark の文書とする（正常系）
+test("test_is_mark_markdown", async () => {
+  // 準備
+  const { isMarkMarkdown } = await loadPaths();
+  // 実行
+  const results = [
+    "docs/a.mark.md",
+    "C:\\w\\b.mark.md",
+    "a.md",
+    "a.mark.md.bak",
+    "amark.md",
+  ].map((path) => isMarkMarkdown(path));
+  // 検証
+  expect(results).toEqual([true, true, false, false, false]);
+});
