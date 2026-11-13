@@ -27,7 +27,7 @@ data_models:
         type: '{ label: string; y: number; h: number; hint?: string }[] | undefined'
         description: 層。枠の中の `subgraph` にし、`y` が層の `y` から `y + h` の中にあるノードを入れる。`hint` を補足の `notes` のグループの説明にする
       - name: nodes
-        type: '{ id: string; kind: string; y?: number; name: string; tag?: string; io?: { in: string; do: string; out: string }; hint?: string; href?: string }[]'
+        type: '{ id: string; kind: string; y?: number; name: string; tag?: string; sub?: string; io?: { in: string; do: string; out: string }; hint?: string; href?: string }[]'
         description: ノード。座標は層の割り当てにだけ使用する
       - name: wires
         type: '{ from: string; to: string; line: string; label?: string; tip?: string }[]'
@@ -237,8 +237,8 @@ functions:
       3. ノードを `{id}{形}:::{種類}` にする（形は `RETIRED_KIND_STYLES` の `mermaid`、名前は `tag` があれば `{tag}<br>{name}`）
       4. 線を `{from} -->|{label}| {to}`（線の ID は `{from}->{to}`）にし、`flow` 以外の種類は補足の `layout.{線の ID}.line` に種類の名前を記載する
       5. `href` を `click {id} "{href}"` の行にする
-      6. 補足の `notes` に、ノードの `io`（`入力: {in}`・`処理: {do}`・`出力: {out}` を改行でつなぐ）と `hint`（両方あれば `io` の後ろ）、線の `tip`、`frame`・`lanes` の `hint` を、その ID の説明として記載する。説明が無ければ補足を `{"version": 1}` だけにする
-      - ノードの名前・`tag`・線のラベル・グループのタイトルの `#`・`"`・`[`・`]`・`(`・`)`・`{`・`}`・`|`・`<`・`>`・`;` は、`decodeEntities` が戻す文字の参照（`"` は `#quot;`、ほかは `#{10 進の番号};`）にする
+      6. 補足の `notes` に、ノードの `sub`・`io`（`入力: {in}`・`処理: {do}`・`出力: {out}` を改行でつなぐ）・`hint`（この順に改行でつなぐ）、線の `tip`、`frame`・`lanes` の `hint` を、その ID の説明として記載する。説明が無ければ補足を `{"version": 1}` だけにする
+      - ノードの名前・`tag`・線のラベル・グループのタイトルの `{{単語}}` は `単語` にし（map は用語を照合する）、`#`・`"`・`[`・`]`・`(`・`)`・`{`・`}`・`|`・`<`・`>`・`;` は、`decodeEntities` が戻す文字の参照（`"` は `#quot;`、ほかは `#{10 進の番号};`）にする
     args:
       - name: definition
         type: RetiredFlowDefinition
@@ -253,7 +253,7 @@ functions:
         summary: 枠と層を入れ子のグループにし、種類と説明とリンクを写す
         condition: '`inquiry` と同じ定義に、`href` を持つノード 1 つを追加したもの'
         mock: なし
-        expected: '`subgraph frame` の中に層の `subgraph` が 3 つあり、`external` のノードが枠の外。`read` の線が `layout` の `line` を持ち、`io`・`hint`・`tip` が `notes` にあり、`click` の行がある。`lines` を `parseFlowchart` と `parseMapData` で参照すると `problems` が空'
+        expected: '`subgraph frame` の中に層の `subgraph` が 3 つあり、`external` のノードが枠の外。`read` の線が `layout` の `line` を持ち、`sub`・`io`・`hint`・`tip` が `notes` にあり、`tag` の `{{意思決定モデル}}` が `意思決定モデル` になり、`click` の行がある。`lines` を `parseFlowchart` と `parseMapData` で参照すると `problems` が空'
       - name: test_flow_to_map_when_judgement
         case: 正常
         summary: 判定フローチャートのノードを種類ごとの形にする
