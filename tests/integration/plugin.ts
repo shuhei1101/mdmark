@@ -150,10 +150,11 @@ function launch(options: {
   return { child, stdout: () => stdout, stderr: () => stderr, exited };
 }
 
-/** `hooks/hooks.json` の `event` のコマンドを、`CLAUDE_PLUGIN_ROOT` を `pluginDir` にして子プロセスで実行する。`input` を標準入力に指定する。終了コードが 0 以外でも例外を投げず、結果を返却する */
+/** `hooks/hooks.json` の `event` の `index` 番目の行のコマンドを、`CLAUDE_PLUGIN_ROOT` を `pluginDir` にして子プロセスで実行する。`input` を標準入力に指定する。終了コードが 0 以外でも例外を投げず、結果を返却する */
 async function runHook(options: {
   pluginDir: string;
-  event: "PreToolUse" | "SessionStart";
+  event: "PreToolUse" | "SessionStart" | "UserPromptSubmit" | "PreCompact";
+  index?: number;
   env: Record<string, string>;
   input: string;
 }): Promise<HookResult> {
@@ -161,7 +162,7 @@ async function runHook(options: {
   const hooks = JSON.parse(
     await readFile(join(pluginDir, "hooks", "hooks.json"), "utf8"),
   );
-  const { command, args } = hooks.hooks[event][0].hooks[0] as {
+  const { command, args } = hooks.hooks[event][options.index ?? 0].hooks[0] as {
     command: string;
     args: string[];
   };
@@ -187,6 +188,25 @@ export async function runPreToolUseHook(options: {
   input: string;
 }): Promise<HookResult> {
   return runHook({ ...options, event: "PreToolUse" });
+}
+
+/** `hooks/hooks.json` の案内のフック（`Write|Edit` の PreToolUse の行・UserPromptSubmit・PreCompact）のコマンドを、標準入力に `input` を指定して実行する。`env` は子プロセスの環境変数に重ねる */
+export async function runGuideNoticeHook(options: {
+  pluginDir: string;
+  event: "PreToolUse" | "UserPromptSubmit" | "PreCompact";
+  env: Record<string, string>;
+  input: string;
+}): Promise<HookResult> {
+  const hooks = JSON.parse(
+    await readFile(join(options.pluginDir, "hooks", "hooks.json"), "utf8"),
+  );
+  const index =
+    options.event === "PreToolUse"
+      ? hooks.hooks.PreToolUse.findIndex(
+          (entry: { matcher?: string }) => entry.matcher === "Write|Edit",
+        )
+      : 0;
+  return runHook({ ...options, index });
 }
 
 /** `hooks/hooks.json` の SessionStart のコマンドを実行する。`env` は子プロセスの環境変数に重ねる */

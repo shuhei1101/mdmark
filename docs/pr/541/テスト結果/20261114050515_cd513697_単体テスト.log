@@ -1,0 +1,60 @@
+$ npm run test:unit
+
+> test:unit
+> vitest run --project 'unit*'
+
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-plugin-mark-md-extension
+
+ ❯ |unit| tests/unit/src/cli/check.test.ts (35 tests | 1 failed) 34822ms
+   × test_run_check 30006ms
+ ❯ |unit| tests/unit/src/cli/export.test.ts (25 tests | 1 failed) 45523ms
+   × test_prepare_embeds 30005ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit| tests/unit/src/cli/check.test.ts > test_run_check
+Error: Test timed out in 30000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/unit/src/cli/check.test.ts:46:1
+     44|
+     45| // ずれの無いフォルダで 0 件（正常系）
+     46| test("test_run_check", async () => {
+       | ^
+     47|   // 準備
+     48|   const { runCheck } = await loadCheck();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  |unit| tests/unit/src/cli/export.test.ts > test_prepare_embeds
+Error: Test timed out in 30000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/unit/src/cli/export.test.ts:31:1
+     29|
+     30| // マーカーのあるモジュールだけをまとめ、拡張と theme を読み込む（正常系）
+     31| test("test_prepare_embeds", async () => {
+       | ^
+     32|   // 準備
+     33|   const { prepareEmbeds } = await loadExport();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  2 failed | 285 passed (287)
+      Tests  2 failed | 2116 passed (2118)
+   Start at  04:57:25
+   Duration  168.21s (worker 67%, tests 21%, import 12%, transform 1%)
+
+exit=1
+
+# 全件の並列実行で 30 秒の時間切れになった 2 件（test_run_check・test_prepare_embeds）を、同じ commit で単独に流し直した
+$ npx vitest run --project "unit*" tests/unit/src/cli/check.test.ts tests/unit/src/cli/export.test.ts
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-plugin-mark-md-extension
+
+
+ Test Files  2 passed (2)
+      Tests  60 passed (60)
+   Start at  05:00:39
+   Duration  18.12s (tests 95%, transform 4%, import 1%)
+

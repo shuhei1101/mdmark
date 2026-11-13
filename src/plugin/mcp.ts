@@ -13,6 +13,7 @@ export const INSTRUCTIONS =
   "dev-docs が無い、または配信元 mdmark が登録されていないときは、dev-docs が無いので見つかりません。\n" +
   "記載した後は check で点検し、図はガイドの『描いた図を確認する』の手順で確認する。\n" +
   "利用側の CSS を探すときは list_templates で一覧を引き、選んだテンプレートを apply_template で配置して、返った theme の値を設定の theme に記載する。作った CSS を使い回すときは add_template で登録する。\n" +
+  "mdmark の記法で記載する文書の拡張子は .mark.md で、利用者の指示が無い限り、純粋な .md には記法を使用しない。\n" +
   "記法を使用しない Markdown の編集とコードの調査には、この MCP サーバーとガイドは要らない。\n" +
   "この常駐サーバーは {location} で動く。止まったときは /mdmark:global-setup でもう一度起動できる。";
 

@@ -1,0 +1,8 @@
+$ npx biome check {作業 PR が変えたテストのファイル}
+Checked 9 files in 855ms. No fixes applied.
+$ npm run typecheck
+
+> typecheck
+> tsc --noEmit
+
+exit=0

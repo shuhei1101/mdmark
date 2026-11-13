@@ -79,3 +79,7 @@ entries:
     schema: mdmark.config.schema.json
     sha256: 48187e75d9ddd5d62d732688a65bf7d441da86160a1ba49faeb8839e19e424ee
     reason: table に省いてよい long_column_min を足しただけで、古い設定もそのまま新しい Schema に合う
+  - version: next
+    schema: mdmark.config.schema.json
+    sha256: f56120764f66d9d9ad165379a6565371e0eb7394621d206dea6e0790b0414b64
+    reason: check に省いてよい suggestMarkExtension を足しただけで、古い設定もそのまま新しい Schema に合う

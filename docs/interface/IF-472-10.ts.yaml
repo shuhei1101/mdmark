@@ -9,7 +9,7 @@ flows:
     summary: ずれの無いフォルダで空の一覧を返却する
     setup:
       - name: ずれの無いフォルダ
-        description: 雛形に文書 2 つを追加し、索引に 2 つとも記載し、`build.include` が 2 つに該当するフォルダ
+        description: 雛形に拡張子が `.mark.md` の文書 2 つを追加し、索引に 2 つとも記載し、`build.include` が 2 つに該当するフォルダ
       - name: Mock
         description: Claude Code の代わりに、起動した常駐サーバーへ HTTP でつなぐ MCP のクライアント。`project_dir` にそのフォルダの絶対パスを入れて呼ぶ
     flow: |-
@@ -66,7 +66,7 @@ flows:
     summary: base を指定すると、mdmark check --base と同じ修正漏れを返却する
     setup:
       - name: 組で修正する文書を持つ git のフォルダ
-        description: インターフェース定義『設定と索引を点検する』の正常系（比べる基準を指定する）と同じフォルダ。タグ `base` の後に `a.md` だけを書き換えてコミットしてある
+        description: インターフェース定義『設定と索引を点検する』の正常系（比べる基準を指定する）と同じフォルダ。タグ `base` の後に `a.mark.md` だけを書き換えてコミットしてある
       - name: Mock
         description: 正常系と同じ
     flow: |-
@@ -148,6 +148,26 @@ flows:
       - 同じフォルダで同じ引数の `mdmark check --text`・`--file --key` の出力の行と一致する
       - 設定・索引・文書と `records.yaml` が変わっていない
     test: test_normal_when_text_and_key
+  - name: 正常系（記法を含む純粋な .md がある）
+    summary: CLI と同じ拡張子の提案を返却する
+    setup:
+      - name: 記法を含む純粋な .md を持つフォルダ
+        description: 正常系のフォルダの文書 1 つを、5 行目に表のマーカーを記載した `b.md` にしたもの
+      - name: Mock
+        description: 正常系と同じ
+    flow: |-
+      sequenceDiagram
+        participant C as Claude Code
+        participant S as MCP サーバー
+        participant F as 作業のフォルダ
+        C->>S: check
+        S->>F: 設定・索引・文書を読み込む
+        S-->>C: issues（plain_md_with_marks）
+    expected:
+      - '`issues` が `plain_md_with_marks`（`b.md`・`5`）の 1 件で、`message` に `b.mark.md` を含む'
+      - '`isError` が立たない'
+      - 同じフォルダで実行した `mdmark check` の出力の行と一致する
+    test: test_normal_when_plain_md_has_marks
 lead: '`mdmark check` と同じ処理で、設定の構造・索引と文書のずれ・`build` の対象の有無・知らないマーカー・見つからないファイル・include のマーカーの取り込み先・図の部品の定義を点検し、ずれの一覧を返却する。`text` か `file` と `key` を指定したときは、`mdmark check --text`・`--file --key` と同じく、指定した Markdown を描いたときの記載の警告と図の定義のずれを返却する。'
 idempotent: true
 side_effects: なし（設定・索引・文書を書き換えない）
@@ -204,7 +224,7 @@ response:
     type: string
     description: 行かキーのパス。無いときは空の文字列
   - name: issues[].kind
-    type: "'schema' | 'unknown_color_theme' | 'no_documents' | 'missing_doc' | 'orphan_doc' | 'broken_ref' | 'untyped_related' | 'one_sided_change_together' | 'related_link_overlap' | 'missed_change_together' | 'duplicate_term' | 'avoided_term' | 'alias_no_files' | 'alias_unreadable' | 'duplicate_alias_row_id' | 'alias_records_missing' | 'alias_field_missing' | 'alias_unknown_type' | 'alias_required_empty' | 'duplicate_alias_id' | 'unknown_mark' | 'missing_file' | 'diagram_invalid' | 'diagram_node_overlap' | 'diagram_node_overflow' | 'diagram_wire_crosses_node' | 'diagram_label_too_long' | 'syntax_warning' | 'unknown_mark_arg'"
+    type: "'schema' | 'unknown_color_theme' | 'no_documents' | 'missing_doc' | 'orphan_doc' | 'broken_ref' | 'untyped_related' | 'one_sided_change_together' | 'related_link_overlap' | 'missed_change_together' | 'duplicate_term' | 'avoided_term' | 'alias_no_files' | 'alias_unreadable' | 'duplicate_alias_row_id' | 'alias_records_missing' | 'alias_field_missing' | 'alias_unknown_type' | 'alias_required_empty' | 'duplicate_alias_id' | 'unknown_mark' | 'missing_file' | 'diagram_invalid' | 'diagram_node_overlap' | 'diagram_node_overflow' | 'diagram_wire_crosses_node' | 'diagram_label_too_long' | 'syntax_warning' | 'unknown_mark_arg' | 'plain_md_with_marks'"
     description: ずれの種類。意味は『設定と索引を点検する』の「種類」
   - name: issues[].message
     type: string

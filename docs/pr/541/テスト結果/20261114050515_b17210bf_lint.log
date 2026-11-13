@@ -1,0 +1,78 @@
+$ (rc=0; npm run lint || rc=1; npm run lint:eslint || rc=1; npm run typecheck || rc=1; npm --prefix vscode run typecheck || rc=1; exit $rc)
+
+> lint
+> biome check .
+
+plugin/bin/setup.js check ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  ! The size of the file is 1.5 MiB, which exceeds the configured maximum of 1.0 MiB for this project.
+    Use the `files.maxSize` configuration to change the maximum size of files processed, or `files.includes` to ignore the file.
+  
+
+tests/unit/src/plugin/guide-notice.test.ts:191:19 lint/suspicious/noTemplateCurlyInString ━━━━━━━━━━
+
+  ! Unexpected template string placeholder.
+  
+    189 │     ),
+    190 │   );
+  > 191 │   const script = "${CLAUDE_PLUGIN_ROOT}/scripts/guide-notice.js";
+        │                   ^^^^^^^^^^^^^^^^^^^^^
+    192 │   const runs = (entry: { hooks: { args?: string[] }[] }) =>
+    193 │     entry.hooks.some((hook) => hook.args?.includes(script));
+  
+  i Turn the string into a template string.
+  
+
+Checked 867 files in 9s. No fixes applied.
+Found 2 warnings.
+
+> lint:eslint
+> node scripts/eslint.ts
+
+npm warn deprecated eslint@9.39.5: This version is no longer supported. Please see https://eslint.org/version-support for other options.
+
+added 323 packages, and audited 324 packages in 1m
+
+138 packages are looking for funding
+  run `npm fund` for details
+
+9 moderate severity vulnerabilities
+
+To address issues that do not require attention, run:
+  npm audit fix
+
+To address all issues (including breaking changes), run:
+  npm audit fix --force
+
+Run `npm audit` for details.
+
+> typecheck
+> tsc --noEmit
+
+
+> mdmark-vscode@0.1.0 typecheck
+> tsc --noEmit
+
+exit=0
+
+# tests/unit/src/plugin/guide-notice.test.ts の noTemplateCurlyInString の警告を b17210bf で抑えた後に流し直した
+$ npx biome check .
+plugin/bin/setup.js check ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  ! The size of the file is 1.5 MiB, which exceeds the configured maximum of 1.0 MiB for this project.
+    Use the `files.maxSize` configuration to change the maximum size of files processed, or `files.includes` to ignore the file.
+  
+
+Checked 867 files in 4s. No fixes applied.
+Found 1 warning.
+
+# 残る警告（plugin/bin/setup.js の大きさ）は base と同じ。origin/develop の plugin/bin/setup.js を同じ設定で点検した
+$ git diff --stat origin/develop -- plugin/bin/setup.js
+$ npx biome check setup.js（origin/develop の版）
+  
+  i These paths were provided but ignored:
+  
+  - setup.js
+  
+
+# 一時フォルダでは biome.json の includes の外になり点検できなかった。plugin/bin/setup.js は origin/develop から変えていない（上の diff が空）ため、警告は作業 PR で新しく出たものではない
