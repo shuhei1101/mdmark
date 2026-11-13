@@ -1,0 +1,1 @@
+# 今の flow・sequence の定義を map へ変換するスクリプトを用意し、flow・sequence を廃止する
