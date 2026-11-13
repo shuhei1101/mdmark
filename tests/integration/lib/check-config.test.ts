@@ -681,13 +681,13 @@ test("test_normal_when_retired_diagram", async () => {
   // 準備
   const dir = await createCleanDir();
   await writeFiles(dir, {
-    "a.md": [
+    "a.mark.md": [
       "# A",
       "",
       ...diagramLines("flow", JSON.parse(INQUIRY_TEXT)),
       "",
     ].join("\n"),
-    "b.md": [
+    "b.mark.md": [
       "# B",
       "",
       "本文",
@@ -703,8 +703,8 @@ test("test_normal_when_retired_diagram", async () => {
   expect(result.code).toBe(1);
   const lines = linesOf(result.stdout);
   for (const prefix of [
-    "a.md:3: retired_diagram:",
-    "b.md:5: retired_diagram:",
+    "a.mark.md:3: retired_diagram:",
+    "b.mark.md:5: retired_diagram:",
   ]) {
     const found = lines.filter((line) => line.startsWith(prefix));
     expect(found, prefix).toHaveLength(1);
@@ -791,19 +791,19 @@ const mapLines = (options: {
   "<!-- /map -->",
 ];
 
-/** `docs/a.md` だけを索引に持つフォルダを作る */
+/** `docs/a.mark.md` だけを索引に持つフォルダを作る */
 async function createMapDir(a: string[], config = ""): Promise<string> {
   const dir = await createTempDir();
   await runCli(["init", dir], dir);
   const base = await readFile(join(dir, "mdmark.config.yaml"), "utf8");
   await writeFiles(dir, {
     "mdmark.config.yaml": `${base}${config}`,
-    "docs/a.md": a.join("\n"),
+    "docs/a.mark.md": a.join("\n"),
     "index.yaml": [
       "schema: 2",
       "docs:",
       "  - id: a",
-      "    path: docs/a.md",
+      "    path: docs/a.mark.md",
       "    title: A",
       "",
     ].join("\n"),
@@ -811,7 +811,7 @@ async function createMapDir(a: string[], config = ""): Promise<string> {
   return dir;
 }
 
-const MAP_FILES = ["mdmark.config.yaml", "index.yaml", "docs/a.md"];
+const MAP_FILES = ["mdmark.config.yaml", "index.yaml", "docs/a.mark.md"];
 
 // 記載の警告を持たない Markdown の文字列で 0 件を返却する（正常系（文字列の記法を点検する））
 test("test_normal_when_text", async () => {
