@@ -42,9 +42,12 @@
 
 | ファイル | メソッド | 変更種別 | 結果 | 補足 |
 | --- | --- | --- | --- | --- |
-| `tests/unit/src/plugin/pre-tool-use.test.ts` | 全実行 | 変更 | ✅ | 4 テスト pass<br>`テスト結果/20261113091241_dbb79efc_単体テスト.log`（Red は `テスト結果/20261113091042_3c616da7_単体テスト.log`） |
+| `tests/unit/src/plugin/pre-tool-use.test.ts` | 全実行 | 変更 | ✅ | 4 テスト pass（`ccb98ff8` で `await` を外した後もファイル単位で 4 テスト pass）<br>`テスト結果/20261113091241_dbb79efc_単体テスト.log`（Red は `テスト結果/20261113091042_3c616da7_単体テスト.log`） |
 | ほかの `tests/unit/` | 全実行 | 実行のみ | ✅ | 284 ファイル・2069 テスト pass（同じログ）<br>lint は `テスト結果/20261113091430_dbb79efc_lint.log` |
 
 ### 結合
 
-なし（結合テスト作成の工程で記入する）
+| ファイル | メソッド | 変更種別 | 結果 | 補足 |
+| --- | --- | --- | --- | --- |
+| `tests/integration/ClaudeCodeプラグイン/pre-tool-use.test.ts` | 全実行 | 変更 | ✅ | `test_normal` の期待値を `permissionDecision` が `allow`・`permissionDecisionReason` が空でない文字列に置き換えた<br>`テスト結果/20261113093655_5ede8ae2_結合テスト.log` |
+| ほかの `tests/integration/` | 全実行 | 実行のみ | ✅ | 96 ファイル・1057 テスト pass（同じログ）<br>lint は `テスト結果/20261113094915_5ede8ae2_lint.log` |
