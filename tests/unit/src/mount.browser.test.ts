@@ -718,6 +718,65 @@ test("test_mount_when_sections_kept_on_update", async () => {
   expect(sectionBody(el, "補足").hasAttribute("hidden")).toBe(false);
 });
 
+// update で描き直しても読者が開閉した部品の開閉を保ち、もう一度 mount すると捨てる（正常系）
+test("test_mount_when_parts_kept_on_update", async () => {
+  // 準備
+  const markdown = [
+    "| 名前 | 値 |",
+    "| --- | --- |",
+    "| a | 1 |",
+    "| b | 2 |",
+    "",
+    '<!-- row-detail: {"at": 2} -->',
+    "",
+    "詳細の段落",
+    "",
+    "<!-- /row-detail -->",
+    "",
+    '<!-- details: {"title": "手順"} -->',
+    "",
+    "手順の段落",
+    "",
+    "<!-- /details -->",
+    "",
+  ].join("\n");
+  const el = createElement();
+  const handle = await mountTracked(el, { markdown });
+  el.querySelector<HTMLButtonElement>("button.mdmark-row-toggle")?.click();
+  const details = el.querySelector<HTMLDetailsElement>(
+    "details.mdmark-collapsible",
+  );
+  details?.querySelector("summary")?.click();
+  await new Promise((resolve) =>
+    details?.addEventListener("toggle", resolve, { once: true }),
+  );
+  const updated = markdown
+    .replace("詳細の段落", "書き換えた詳細の段落")
+    .replace("手順の段落", "書き換えた手順の段落");
+  // 実行
+  handle.update(updated);
+  // 検証: 読者が開いた行の詳細と details は開いたまま
+  expect(
+    el
+      .querySelector<HTMLElement>("tr.mdmark-row-detail")
+      ?.hasAttribute("hidden"),
+  ).toBe(false);
+  expect(
+    el.querySelector<HTMLDetailsElement>("details.mdmark-collapsible")?.open,
+  ).toBe(true);
+  // 検証: もう一度 mount すると覚えた開閉を捨てる
+  handle.destroy();
+  await mountTracked(el, { markdown: updated });
+  expect(
+    el
+      .querySelector<HTMLElement>("tr.mdmark-row-detail")
+      ?.hasAttribute("hidden"),
+  ).toBe(true);
+  expect(
+    el.querySelector<HTMLDetailsElement>("details.mdmark-collapsible")?.open,
+  ).toBe(false);
+});
+
 // 機能をオフにすると右側の目次を配置せず、本文を列に包まない（正常系）
 test("test_mount_when_side_toc_off", async () => {
   // 準備
