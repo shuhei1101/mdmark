@@ -2,6 +2,12 @@ import type { TooltipPlacement } from "../config.ts";
 import { renderTreeTools } from "../parts/table.ts";
 import { filterTreeRows, type TreeRowPlan } from "../tree-logic.ts";
 import { COPIED_NOTICE_MS, copyText } from "./clipboard.ts";
+import {
+  type PartStates,
+  partKey,
+  recordOpen,
+  startOpen,
+} from "./part-states.ts";
 
 /** 開閉で隠した行に付ける属性（印刷の前後で開閉を戻すのに使用する） */
 export const TREE_FOLDED_ATTRIBUTE = "data-tree-folded";
@@ -43,8 +49,19 @@ export function attachTableTree(options: {
   wrapper: HTMLElement;
   /** ツールチップを出す場所 */
   placement: TooltipPlacement;
+  /** 部品の開閉の記録（省くと記録しない） */
+  states?: PartStates;
 }): TableTreeHandle {
-  const { wrapper } = options;
+  const { wrapper, states } = options;
+  const root =
+    wrapper.parentElement?.closest<HTMLElement>(".mdmark") ??
+    wrapper.ownerDocument.body;
+  /** 行の記録の鍵 */
+  const base =
+    states === undefined
+      ? ""
+      : partKey({ root, part: wrapper, kind: "table-tree" });
+  const keyOf = (path: string): string => `${base}|${path}`;
   const rows = [
     ...wrapper.querySelectorAll<HTMLTableRowElement>(
       ":scope table > tbody > tr.mdmark-tree-row",
@@ -241,6 +258,42 @@ export function attachTableTree(options: {
     }
     refresh({ word, matches });
   };
+  /** 読者が変えた行の開閉を記録する（`deep` なら子孫の子を持つ行も） */
+  const record = (row: HTMLTableRowElement, deep: boolean): void => {
+    const path = row.dataset.path ?? "";
+    const targets = deep
+      ? [
+          row,
+          ...descendantsOf(path).filter((d) =>
+            d.classList.contains("has-children"),
+          ),
+        ]
+      : [row];
+    for (const target of targets) {
+      const targetPath = target.dataset.path ?? "";
+      recordOpen({
+        states,
+        key: keyOf(targetPath),
+        open: !collapsed.has(targetPath),
+        marker: "",
+      });
+    }
+  };
+  // 記録した開閉で始める
+  if (states !== undefined) {
+    for (const row of rows) {
+      const path = row.dataset.path ?? "";
+      if (
+        row.classList.contains("has-children") &&
+        !startOpen({ states, key: keyOf(path), marker: "", markerOpen: true })
+      ) {
+        collapsed.add(path);
+      }
+    }
+    if (collapsed.size > 0) {
+      refresh({ word, matches });
+    }
+  }
 
   // ─── 行の選択と見本 ───
   const layout = wrapper.closest<HTMLElement>(".mdmark-tree-layout");
@@ -307,7 +360,9 @@ export function attachTableTree(options: {
     }
     if (toggle) {
       const expanded = toggle.getAttribute("aria-expanded") === "true";
-      setFolded(row, expanded, (event as MouseEvent).shiftKey === true);
+      const deep = (event as MouseEvent).shiftKey === true;
+      setFolded(row, expanded, deep);
+      record(row, deep);
       return;
     }
     if (copy) {

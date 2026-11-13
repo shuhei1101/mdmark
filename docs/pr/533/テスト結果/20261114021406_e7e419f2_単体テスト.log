@@ -1,0 +1,156 @@
+$ npx vitest run --project 'unit*' tests/unit/src/interact/tables.browser.test.ts tests/unit/src/parts/table.test.ts
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/fix-table-pinned-columns-overflow
+
+ ❯ |unit| tests/unit/src/parts/table.test.ts (37 tests | 1 failed) 6345ms
+   × test_render_table_tools_when_unpinned 8ms
+ ❯ |unit-browser (chromium)| tests/unit/src/interact/tables.browser.test.ts (77 tests | 5 failed) 3348ms
+   × test_attach_tables_when_pinned_exceed_visible_width 164ms
+   × test_attach_tables_when_pinned_through_exceed_visible_width 114ms
+   × test_attach_tables_when_resized_with_unpinned 99ms
+   × test_fit_pinned_columns 82ms
+   × test_fit_pinned_columns_when_later_column_narrow 94ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 6 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit| tests/unit/src/parts/table.test.ts > test_render_table_tools_when_unpinned
+AssertionError: expected '<button class="mdmark-pin" type="butt…' to match /class="[^"]*\bis-unpinned\b/
+
+- Expected:
+/class="[^"]*\bis-unpinned\b/
+
++ Received:
+"<button class=\"mdmark-pin\" type=\"button\" aria-label=\"「名前」の列をピン止め\" aria-pressed=\"true\">"
+
+ ❯ tests/unit/src/parts/table.test.ts:465:23
+    463|   const label =
+    464|     "「名前」の列をピン止め（表の幅に収まらないため留まっていません）";
+    465|   expect(unpinnedPin).toMatch(/class="[^"]*\bis-unpinned\b/);
+       |                       ^
+    466|   expect(unpinnedPin).toContain(`aria-label="${label}"`);
+    467|   expect(unpinnedPin).toContain(`title="${label}"`);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/6]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/interact/tables.browser.test.ts > test_attach_tables_when_pinned_exceed_visible_width
+AssertionError: expected [ true, false, true, false, …(5) ] to deeply equal [ true, false, true, false, …(5) ]
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/tables.browser.test.ts/test_attach_tables_when_pinned_exceed_visible_width.png
+
+- Expected
++ Received
+
+@@ -5,7 +5,7 @@
+    false,
+    false,
+    false,
+    false,
+    false,
+-   false,
++   true,
+  ]
+
+ ❯ tests/unit/src/interact/tables.browser.test.ts:1877:44
+    1875|     throw new Error("本文の行が無い");
+    1876|   }
+    1877|   expect(stickyColumns(table).slice(0, 9)).toEqual([
+       |                                            ^
+    1878|     true,
+    1879|     false,
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=53a42f48:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/6]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/interact/tables.browser.test.ts > test_attach_tables_when_pinned_through_exceed_visible_width
+AssertionError: expected [ true, true, true, false ] to deeply equal [ true, true, false, false ]
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/tables.browser.test.ts/test_attach_tables_when_pinned_through_exceed_visible_width.png
+
+- Expected
++ Received
+
+  [
+    true,
+    true,
+-   false,
++   true,
+    false,
+  ]
+
+ ❯ tests/unit/src/interact/tables.browser.test.ts:1936:44
+    1934|   pins[2].click();
+    1935|   // 検証
+    1936|   expect(stickyColumns(table).slice(0, 4)).toEqual([true, true, false,…
+       |                                            ^
+    1937|   expect([...pins].map((pin) => pin.getAttribute("aria-pressed"))).toE…
+    1938|     "false",
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=53a42f48:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/6]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/interact/tables.browser.test.ts > test_attach_tables_when_resized_with_unpinned
+AssertionError: expected false to be true // Object.is equality
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/tables.browser.test.ts/test_attach_tables_when_resized_with_unpinned.png
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ tests/unit/src/interact/tables.browser.test.ts:1990:53
+    1988|   // 検証: 狭める前は 3 列の合計が見えている幅を超え、9 列目は留まらず、上限は 1 列目の幅だけを引く
+    1989|   expect(headWidths(table, [0, 2, 8])).toBeGreaterThan(scroller.client…
+    1990|   expect(pins[8].classList.contains("is-unpinned")).toBe(true);
+       |                                                     ^
+    1991|   expect(handles[2].getAttribute("aria-valuemax")).toBe(
+    1992|     String(Math.floor(scroller.clientWidth - heads[0].offsetWidth)),
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=53a42f48:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/6]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/interact/tables.browser.test.ts > test_fit_pinned_columns
+TypeError: fitPinnedColumns is not a function
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/tables.browser.test.ts/test_fit_pinned_columns.png
+
+ ❯ tests/unit/src/interact/tables.browser.test.ts:2131:10
+    2129|   const pinned = [0, 2, 8];
+    2130|   // 実行・検証
+    2131|   expect(fitPinnedColumns({ widths, pinned, visibleWidth: 303 })).toEq…
+       |          ^
+    2132|     fitted: [0, 2],
+    2133|     unpinned: [8],
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=53a42f48:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/6]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/interact/tables.browser.test.ts > test_fit_pinned_columns_when_later_column_narrow
+TypeError: fitPinnedColumns is not a function
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/tables.browser.test.ts/test_fit_pinned_columns_when_later_column_narrow.png
+
+ ❯ tests/unit/src/interact/tables.browser.test.ts:2150:18
+    2148|   const { fitPinnedColumns } = await loadLogic();
+    2149|   // 実行
+    2150|   const result = fitPinnedColumns({
+       |                  ^
+    2151|     widths: [100, 200, 10],
+    2152|     pinned: [0, 1, 2],
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=53a42f48:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/6]⎯
+
+
+ Test Files  2 failed (2)
+      Tests  6 failed | 108 passed (114)
+   Start at  02:12:58
+   Duration  51.04s (worker 65%, tests 15%, transform 12%, import 8%)
+
+exit=1

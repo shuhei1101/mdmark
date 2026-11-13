@@ -1,5 +1,6 @@
 import { afterEach, beforeAll, expect, test } from "vitest";
 import { userEvent } from "vitest/browser";
+import type { PartStates } from "../../../../src/interact/part-states.ts";
 import { wrapDirective } from "../../helpers/diagrams.ts";
 import { addStyles, createRoot, removeRoots } from "../../helpers/dom.ts";
 import { erText, foldEr, shopErFolded } from "../../helpers/er.ts";
@@ -123,4 +124,36 @@ test("test_set_er_table_folded", async () => {
   expect(openedHidden).toBe(false);
   expect(openedRestShown).toBe(false);
   expect(figure.innerHTML).toBe(initial);
+});
+
+// 記録した開閉で始め、押した開閉を記録する（正常系）
+test("test_attach_er_folds_when_states", async () => {
+  // 準備
+  const { attachErFolds } = await loadFolds();
+  const states: PartStates = new Map();
+  const markdown = wrapDirective("er", erText(foldEr()));
+  const first = createRoot(markdown).root;
+  const detachFirst = attachErFolds(figureOf(first), states);
+  const firstButton = tableOf(
+    figureOf(first),
+    "orders",
+  ).querySelector<HTMLButtonElement>("button.mdmark-diagram-er-fold");
+  if (firstButton === null) {
+    throw new Error("開閉のボタンが無い");
+  }
+  await userEvent.click(firstButton);
+  detachFirst();
+  first.remove();
+  const { root } = createRoot(markdown);
+  const figure = figureOf(root);
+  // 実行
+  detachers.push(attachErFolds(figure, states));
+  // 検証: orders は畳んだまま始まる
+  const orders = tableOf(figure, "orders");
+  expect(otherRows(orders).every((row) => row.hidden)).toBe(true);
+  expect(
+    orders
+      .querySelector("button.mdmark-diagram-er-fold")
+      ?.getAttribute("aria-expanded"),
+  ).toBe("false");
 });

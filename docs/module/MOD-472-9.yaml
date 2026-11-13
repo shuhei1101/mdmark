@@ -6,6 +6,7 @@ directory: |-
   ```tree
   src/plugin/
   ├── port.ts            # 待ち受けているかの確認（モジュール構成『ポート』）
+  ├── session-start.ts   # SessionStart のフック。常駐サーバーが待ち受けていないときだけ 1 行を指定する（モジュール構成『SessionStartのフック』）
   └── setup/
       ├── main.ts        # setup.js の入口とサブコマンドの振り分け
       ├── paths.ts       # 端末の設定・状態の配置場所・settings.json のパスとセッション名

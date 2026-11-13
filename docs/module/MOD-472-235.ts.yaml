@@ -16,6 +16,10 @@ functions:
         type: HTMLElement
         required: true
         description: 描いた要素
+      - name: states
+        type: PartStates
+        required: false
+        description: 部品の開閉の記録（省くと記録しない）。ツリーを `partKey` の種類 `tree`、部品の中の鍵をルートからのフォルダのパス（`/` でつないだ名前）で引き、`startOpen` の開閉（マーカーは `data-open` の値、既定の開閉は `folderOpenByDefault`）で始め、読者がボタンを押すたびに `recordOpen` で書き込む（Shift で同じ状態にしたフォルダも書き込む）
     returns:
       type: () => void
       description: 帯・ボタン・パネル・タイマーを取り除き、入れ子の `ul` の `hidden` を削除して `render` の出した状態に戻す関数
@@ -62,12 +66,21 @@ functions:
         condition: '`depth` が `1` で閉じたフォルダを持つツリーでコピーボタンを押してすぐ削除し、2 秒進める'
         mock: '`navigator.clipboard.writeText` を記録して解決する関数に、時計を偽の時計に差し替える'
         expected: '`mdmark-tree-bar`・`mdmark-tree-toggle` が無く、入れ子の `ul` が `hidden` を持たず、例外が出ない'
+      - name: test_attach_file_trees_when_states
+        case: 正常
+        summary: 記録した開閉で始め、押した開閉を記録する
+        condition: '`app/` の下に `src/`（その下に `parts/`）を持つツリーに空の `states` を指定して付け、`src/` のボタンを押してから削除し、同じ HTML を描き直した要素に同じ `states` でもう一度付ける。続けて `data-open` を `1` に変えた HTML に同じ `states` で付ける'
+        mock: なし
+        expected: 2 回目に付けた後、`src/` のボタンが `aria-expanded="false"` で入れ子の `ul` が `hidden="until-found"`。`data-open` を変えた後は `src/` がマーカーのとおり閉じ、`app/` は開いている
     callees:
       - 'MOD-472-232#functions[copyText]'
       - MOD-472-269#functions[folderOpenByDefault]
       - MOD-472-269#functions[renderTreeBar]
       - MOD-472-315#functions[renderCopyPanel]
       - '#functions[setFolderOpen]'
+      - MOD-472-348#functions[partKey]
+      - MOD-472-348#functions[startOpen]
+      - MOD-472-348#functions[recordOpen]
       - MOD-472-269#functions[renderTreeCopyContent]
     status: planned
     introduced:

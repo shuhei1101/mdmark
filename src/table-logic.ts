@@ -359,6 +359,30 @@ export const pinOffsets = (options: {
   return offsets;
 };
 
+/** 選んだ列を左から順に幅を足し、表の見えている幅に収まる列（`fitted`）と、見えている幅を超える列から右の列（`unpinned`）に分けて返却する */
+export const fitPinnedColumns = (options: {
+  /** 列ごとの幅（隠した列は 0） */
+  widths: number[];
+  /** 選んだ列の位置 */
+  pinned: number[];
+  /** 表を包む要素の `clientWidth` */
+  visibleWidth: number;
+}): { fitted: number[]; unpinned: number[] } => {
+  const { widths, pinned, visibleWidth } = options;
+  const sorted = [...new Set(pinned)].sort((a, b) => a - b);
+  const fitted: number[] = [];
+  let total = 0;
+  for (const [index, column] of sorted.entries()) {
+    total += widths[column] ?? 0;
+    // 超えた列より右の列は、幅が小さくても留めない
+    if (total > visibleWidth) {
+      return { fitted, unpinned: sorted.slice(index) };
+    }
+    fitted.push(column);
+  }
+  return { fitted, unpinned: [] };
+};
+
 /** 列の幅を、列の最小幅から上限までに収めた値を返却する。上限が最小幅より小さいときは最小幅を返す */
 export const clampColumnWidth = (options: {
   /** 指定したい幅（px） */

@@ -740,6 +740,36 @@ export const PinnedUnderMergedHeader: Story = {
   },
 };
 
+export const PinnedOverflowEach: Story = {
+  name: "PinnedOverflowEach",
+  parameters: { server: { id: "table" } },
+  args: {
+    features: '["pin"]',
+    columns:
+      '["文書","行数","表","図","Chrome","Edge","Firefox","Safari","iOS Safari","Android Chrome"]',
+    rows: '[["導入の手順","128","8","0","18","17","23","16","15","16"]]',
+    overflow: true,
+    pinned: "[0,2,8]",
+    unpinned: "[8]",
+    pinMode: "each",
+  },
+};
+
+export const PinnedOverflowThrough: Story = {
+  name: "PinnedOverflowThrough",
+  parameters: { server: { id: "table" } },
+  args: {
+    features: '["pin"]',
+    columns:
+      '["文書","行数","表","図","Chrome","Edge","Firefox","Safari","iOS Safari","Android Chrome"]',
+    rows: '[["導入の手順","128","8","0","18","17","23","16","15","16"]]',
+    overflow: true,
+    pinned: "[0,1,2]",
+    unpinned: "[2]",
+    pinMode: "through",
+  },
+};
+
 export const Tree: Story = {
   name: "Tree",
   parameters: { server: { id: "table" } },

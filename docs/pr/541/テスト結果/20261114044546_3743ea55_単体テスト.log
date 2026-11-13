@@ -1,0 +1,225 @@
+$ npx vitest run --project "unit*" tests/unit/src/plugin/guide-notice.test.ts tests/unit/src/knowledge/paths.test.ts tests/unit/src/cli/check.test.ts tests/unit/src/config-files.test.ts
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-plugin-mark-md-extension
+
+ ❯ |unit| tests/unit/src/knowledge/paths.test.ts (4 tests | 1 failed) 47ms
+   × test_is_mark_markdown 2ms
+ ❯ |unit| tests/unit/src/plugin/guide-notice.test.ts (9 tests | 9 failed) 770ms
+   × test_run_guide_notice 182ms
+   × test_run_guide_notice_when_already_noticed 7ms
+   × test_run_guide_notice_when_prompt 3ms
+   × test_run_guide_notice_when_compacted 8ms
+   × test_run_guide_notice_when_session_unusable 5ms
+   × test_run_guide_notice_when_input_unreadable 484ms
+   × test_run_guide_notice_when_dir_unwritable 69ms
+   × test_run_guide_notice_when_matcher 9ms
+   × test_notice_head_when_plain_md 2ms
+ ❯ |unit| tests/unit/src/config-files.test.ts (44 tests | 1 failed) 3131ms
+   × test_validate_config_when_suggest_mark_extension_invalid 5ms
+ ❯ |unit| tests/unit/src/cli/check.test.ts (35 tests | 2 failed) 14975ms
+   × test_check_plain_markdown 3ms
+   × test_collect_check_issues_when_plain_md_has_marks 43ms
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 13 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit| tests/unit/src/config-files.test.ts > test_validate_config_when_suggest_mark_extension_invalid
+AssertionError: expected [] to have a length of 1 but got +0
+
+- Expected
++ Received
+
+- 1
++ 0
+
+ ❯ tests/unit/src/config-files.test.ts:479:18
+    477|   const { config, issues } = validateConfig(raw, "mdmark.config.yaml");
+    478|   // 検証
+    479|   expect(issues).toHaveLength(1);
+       |                  ^
+    480|   expect(issues[0]).toMatchObject({
+    481|     where: "check.suggestMarkExtension",
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/13]⎯
+
+ FAIL  |unit| tests/unit/src/cli/check.test.ts > test_check_plain_markdown
+TypeError: checkPlainMarkdown is not a function
+ ❯ tests/unit/src/cli/check.test.ts:238:18
+    236|   const known = new Set(["table", "features", "mermaid"]);
+    237|   // 実行
+    238|   const issues = checkPlainMarkdown(documents, known);
+       |                  ^
+    239|   // 検証
+    240|   expect(issues).toHaveLength(1);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/13]⎯
+
+ FAIL  |unit| tests/unit/src/cli/check.test.ts > test_collect_check_issues_when_plain_md_has_marks
+AssertionError: expected [ [ 'unknown_mark', 'a.md', '7' ] ] to deeply equal [ …(2) ]
+
+- Expected
++ Received
+
+@@ -2,11 +2,6 @@
+    [
+      "unknown_mark",
+      "a.md",
+      "7",
+    ],
+-   [
+-     "plain_md_with_marks",
+-     "a.md",
+-     "5",
+-   ],
+  ]
+
+ ❯ tests/unit/src/cli/check.test.ts:449:5
+    447|   expect(
+    448|     byDefault.map((issue) => [issue.kind, issue.file, issue.where]),
+    449|   ).toEqual([
+       |     ^
+    450|     ["unknown_mark", "a.md", "7"],
+    451|     ["plain_md_with_marks", "a.md", "5"],
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/13]⎯
+
+ FAIL  |unit| tests/unit/src/knowledge/paths.test.ts > test_is_mark_markdown
+TypeError: isMarkMarkdown is not a function
+ ❯ tests/unit/src/knowledge/paths.test.ts:58:19
+     56|     "a.mark.md.bak",
+     57|     "amark.md",
+     58|   ].map((path) => isMarkMarkdown(path));
+       |                   ^
+     59|   // 検証
+     60|   expect(results).toEqual([true, true, false, false, false]);
+ ❯ tests/unit/src/knowledge/paths.test.ts:58:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/13]⎯
+
+ FAIL  |unit| tests/unit/src/plugin/guide-notice.test.ts > test_run_guide_notice
+Error: Cannot find module '/src/plugin/guide-notice.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-plugin-mark-md-extension/tests/unit/src/plugin/guide-notice.test.ts
+ ❯ tests/unit/src/plugin/guide-notice.test.ts:65:27
+     63| test("test_run_guide_notice", async () => {
+     64|   // 準備
+     65|   const { NOTICE_BODY } = await loadGuideNotice();
+       |                           ^
+     66|   const { dir } = await createNoticeDir();
+     67|   // 実行
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/13]⎯
+
+ FAIL  |unit| tests/unit/src/plugin/guide-notice.test.ts > test_run_guide_notice_when_already_noticed
+Error: Cannot find module '/src/plugin/guide-notice.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-plugin-mark-md-extension/tests/unit/src/plugin/guide-notice.test.ts
+ ❯ run tests/unit/src/plugin/guide-notice.test.ts:40:30
+     38|   input: Record<string, unknown> | string;
+     39| }): Promise<{ code: number; stdout: string[] }> {
+     40|   const { runGuideNotice } = await loadGuideNotice();
+       |                              ^
+     41|   const stdout: string[] = [];
+     42|   const code = await runGuideNotice({
+ ❯ tests/unit/src/plugin/guide-notice.test.ts:86:3
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/13]⎯
+
+ FAIL  |unit| tests/unit/src/plugin/guide-notice.test.ts > test_run_guide_notice_when_prompt
+Error: Cannot find module '/src/plugin/guide-notice.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-plugin-mark-md-extension/tests/unit/src/plugin/guide-notice.test.ts
+ ❯ tests/unit/src/plugin/guide-notice.test.ts:104:27
+    102| test("test_run_guide_notice_when_prompt", async () => {
+    103|   // 準備
+    104|   const { NOTICE_BODY } = await loadGuideNotice();
+       |                           ^
+    105|   const { dir } = await createNoticeDir();
+    106|   // 実行
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/13]⎯
+
+ FAIL  |unit| tests/unit/src/plugin/guide-notice.test.ts > test_run_guide_notice_when_compacted
+Error: Cannot find module '/src/plugin/guide-notice.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-plugin-mark-md-extension/tests/unit/src/plugin/guide-notice.test.ts
+ ❯ run tests/unit/src/plugin/guide-notice.test.ts:40:30
+     38|   input: Record<string, unknown> | string;
+     39| }): Promise<{ code: number; stdout: string[] }> {
+     40|   const { runGuideNotice } = await loadGuideNotice();
+       |                              ^
+     41|   const stdout: string[] = [];
+     42|   const code = await runGuideNotice({
+ ❯ tests/unit/src/plugin/guide-notice.test.ts:130:3
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/13]⎯
+
+ FAIL  |unit| tests/unit/src/plugin/guide-notice.test.ts > test_run_guide_notice_when_session_unusable
+Error: Cannot find module '/src/plugin/guide-notice.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-plugin-mark-md-extension/tests/unit/src/plugin/guide-notice.test.ts
+ ❯ run tests/unit/src/plugin/guide-notice.test.ts:40:30
+     38|   input: Record<string, unknown> | string;
+     39| }): Promise<{ code: number; stdout: string[] }> {
+     40|   const { runGuideNotice } = await loadGuideNotice();
+       |                              ^
+     41|   const stdout: string[] = [];
+     42|   const code = await runGuideNotice({
+ ❯ tests/unit/src/plugin/guide-notice.test.ts:150:28
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/13]⎯
+
+ FAIL  |unit| tests/unit/src/plugin/guide-notice.test.ts > test_run_guide_notice_when_input_unreadable
+Error: Cannot find module '/src/plugin/guide-notice.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-plugin-mark-md-extension/tests/unit/src/plugin/guide-notice.test.ts
+ ❯ run tests/unit/src/plugin/guide-notice.test.ts:40:30
+     38|   input: Record<string, unknown> | string;
+     39| }): Promise<{ code: number; stdout: string[] }> {
+     40|   const { runGuideNotice } = await loadGuideNotice();
+       |                              ^
+     41|   const stdout: string[] = [];
+     42|   const code = await runGuideNotice({
+ ❯ tests/unit/src/plugin/guide-notice.test.ts:163:28
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/13]⎯
+
+ FAIL  |unit| tests/unit/src/plugin/guide-notice.test.ts > test_run_guide_notice_when_dir_unwritable
+Error: Cannot find module '/src/plugin/guide-notice.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-plugin-mark-md-extension/tests/unit/src/plugin/guide-notice.test.ts
+ ❯ run tests/unit/src/plugin/guide-notice.test.ts:40:30
+     38|   input: Record<string, unknown> | string;
+     39| }): Promise<{ code: number; stdout: string[] }> {
+     40|   const { runGuideNotice } = await loadGuideNotice();
+       |                              ^
+     41|   const stdout: string[] = [];
+     42|   const code = await runGuideNotice({
+ ❯ tests/unit/src/plugin/guide-notice.test.ts:176:28
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/13]⎯
+
+ FAIL  |unit| tests/unit/src/plugin/guide-notice.test.ts > test_run_guide_notice_when_matcher
+AssertionError: expected [] to deeply equal [ 'Write|Edit' ]
+
+- Expected
++ Received
+
+- [
+-   "Write|Edit",
+- ]
++ []
+
+ ❯ tests/unit/src/plugin/guide-notice.test.ts:199:73
+    197|   const compact = (hooks.hooks.PreCompact ?? []).filter(runs);
+    198|   // 検証
+    199|   expect(preToolUse.map((entry: { matcher: string }) => entry.matcher)…
+       |                                                                         ^
+    200|     ["Write|Edit"],
+    201|   );
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[12/13]⎯
+
+ FAIL  |unit| tests/unit/src/plugin/guide-notice.test.ts > test_notice_head_when_plain_md
+Error: Cannot find module '/src/plugin/guide-notice.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-plugin-mark-md-extension/tests/unit/src/plugin/guide-notice.test.ts
+ ❯ tests/unit/src/plugin/guide-notice.test.ts:209:26
+    207| test("test_notice_head_when_plain_md", async () => {
+    208|   // 準備
+    209|   const { noticeHead } = await loadGuideNotice();
+       |                          ^
+    210|   // 実行
+    211|   const plain = noticeHead({
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[13/13]⎯
+
+
+ Test Files  4 failed (4)
+      Tests  13 failed | 79 passed (92)
+   Start at  04:45:18
+   Duration  17.44s (tests 89%, transform 8%, import 2%, worker 1%)
+

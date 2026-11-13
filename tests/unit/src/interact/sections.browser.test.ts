@@ -1,4 +1,5 @@
 import { afterEach, expect, test, vi } from "vitest";
+import type { PartStates } from "../../../../src/interact/part-states.ts";
 import type { SectionStates } from "../../../../src/interact/sections.ts";
 import { createRoot, removeRoots } from "../../helpers/dom.ts";
 
@@ -672,4 +673,49 @@ test("test_open_enclosing", async () => {
   expect(expandedStates(root, ["a"])).toEqual(["true"]);
   expect(rowToggle.getAttribute("aria-expanded")).toBe("true");
   expect(scrollIntoView).not.toHaveBeenCalled();
+});
+
+// 記録した行の詳細の開閉で始め、押した開閉を記録する（正常系）
+test("test_attach_sections_when_row_detail_states", async () => {
+  // 準備
+  const { attachSections } = await loadSections();
+  const markdown = [
+    "| 名前 | 値 |",
+    "| --- | --- |",
+    "| a | 1 |",
+    "| b | 2 |",
+    "",
+    '<!-- row-detail: {"at": 2} -->',
+    "",
+    "詳細の段落",
+    "",
+    "<!-- /row-detail -->",
+    "",
+  ].join("\n");
+  const partStates: PartStates = new Map();
+  const first = createRoot(markdown).root;
+  const detachFirst = attachSections({
+    root: first,
+    sections: true,
+    rowDetails: true,
+    partStates,
+  });
+  first.querySelector<HTMLButtonElement>("button.mdmark-row-toggle")?.click();
+  detachFirst();
+  first.remove();
+  const { root } = createRoot(markdown);
+  // 実行
+  detachers.push(
+    attachSections({ root, sections: true, rowDetails: true, partStates }),
+  );
+  // 検証
+  const toggle = root.querySelector<HTMLButtonElement>(
+    "button.mdmark-row-toggle",
+  );
+  expect(toggle?.getAttribute("aria-expanded")).toBe("true");
+  expect(
+    root
+      .querySelector<HTMLElement>("tr.mdmark-row-detail")
+      ?.hasAttribute("hidden"),
+  ).toBe(false);
 });

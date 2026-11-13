@@ -16,13 +16,14 @@ scenarios:
         participant M as mdmark の MCP サーバー
         participant D as dev-docs
         C->>M: initialize
-        M-->>C: instructions（記載する前にガイドを参照し、記載した後に check で点検する）
+        M-->>C: instructions（記載する前にガイドを参照し、記載した後に check で点検する。記法で記載する文書の拡張子は .mark.md で、利用者の指示が無い限り純粋な .md には記法を使用しない）
         C->>D: search_docs（source: mdmark、kind: docs、タグ topic:ガイド）
         D-->>C: ガイドのページの一覧
         C->>D: search_docs（ID: writing のページ、view: full）
         D-->>C: ページの本文
     expected:
       - mdmark の MCP サーバーの instructions に、記載する前に dev-docs の `search_docs` で mdmark の配信元の `docs` の行をタグ `topic:ガイド` で絞ってガイドを参照し、記載した後に `check` で点検する動線がある
+      - mdmark の MCP サーバーの instructions に、記法で記載する文書の拡張子が `.mark.md` で、利用者の指示が無い限り純粋な `.md` には記法を使用しないことがある
       - タグで絞った一覧に、`guide/index.yaml` の全ての `page` のページがある
       - '`writing` の `page`（`docs/guide/記載する-文書の記載方法.md`）の本文が、リポジトリのそのファイルと一致する'
     test: test_normal
@@ -68,13 +69,68 @@ scenarios:
       - 本文に「フォルダ構成」を含むガイドのページに、『本文を部品で組む』がある
       - '`guide/index.yaml` の `components` の `when` に、フォルダ構成を記載するときがある'
     test: test_normal_when_folder_structure
-lead: Claude Code が、mdmark の MCP の instructions に沿って、dev-docs の `search_docs` で mdmark の配信元からガイドのページを受け取る。
+  - name: 正常シナリオ（.mark.md を記載するときに案内を受ける）
+    setup:
+      - name: 作業のフォルダ
+        description: 雛形を配置した後の設定・索引を持つフォルダ
+      - name: 案内の記録の無い状態
+        description: プラグインのフックが案内を記録するファイルが無い一時フォルダを、記録の置き場所にする
+      - name: Mock
+        description: Claude Code の代わりに、プラグインのフックを Claude Code と同じ JSON の入力（`session_id`・`hook_event_name`・`tool_name`・`tool_input`）で子プロセスとして起動する。モデルは使用しない
+    flow: |-
+      sequenceDiagram
+        participant C as Claude Code
+        participant H as mdmark のプラグインのフック
+        C->>H: PreToolUse（Write・a.mark.md・セッション 1）
+        H->>H: セッション 1 を案内済みとして記録する
+        H-->>C: additionalContext（記法のルールを MCP で参照し、記載した後に check で点検する）
+        C->>H: PreToolUse（Edit・a.mark.md・セッション 1）
+        H-->>C: 案内なし
+        C->>H: PreCompact（セッション 1）
+        H->>H: セッション 1 の記録を消す
+        C->>H: PreToolUse（Edit・a.mark.md・セッション 1）
+        H-->>C: additionalContext（記法のルールを MCP で参照し、記載した後に check で点検する）
+        C->>H: PreToolUse（Write・b.md・セッション 2）
+        H-->>C: 案内なし
+        C->>H: PreToolUse（Write・a.mark.md・セッション 2）
+        H-->>C: additionalContext（記法のルールを MCP で参照し、記載した後に check で点検する）
+    expected:
+      - セッション 1 の `a.mark.md` への Write で、`additionalContext` に記法のルールを MCP で参照することと、記載した後に `check` で点検することが記載されている
+      - セッション 1 の 2 回目の Edit と、セッション 2 の `b.md` への Write では `additionalContext` を返さない
+      - セッション 1 で会話を圧縮した（PreCompact）後の `a.mark.md` への Edit では、もう一度案内を返す
+      - セッション 2 の `a.mark.md` への Write では、もう一度案内を返す
+      - どの呼び出しも、ツールの呼び出しを止めない（終了コード 0 で、拒否の判定を返さない）
+    test: test_normal_when_mark_md_written
+  - name: 正常シナリオ（mdmark で記載するよう指示する）
+    setup:
+      - name: 案内の記録の無い状態
+        description: 正常シナリオ（.mark.md を記載するときに案内を受ける）と同じ
+      - name: Mock
+        description: Claude Code の代わりに、プラグインのフックを Claude Code と同じ JSON の入力（`session_id`・`hook_event_name`・`prompt`）で子プロセスとして起動する。モデルは使用しない
+    flow: |-
+      sequenceDiagram
+        participant C as Claude Code
+        participant H as mdmark のプラグインのフック
+        C->>H: UserPromptSubmit（「設計メモを mdmark で書いて」・セッション 1）
+        H->>H: セッション 1 を案内済みとして記録する
+        H-->>C: additionalContext（記法のルールを MCP で参照し、記載した後に check で点検する）
+        C->>H: PreToolUse（Write・a.mark.md・セッション 1）
+        H-->>C: 案内なし
+        C->>H: UserPromptSubmit（「README を直して」・セッション 2）
+        H-->>C: 案内なし
+    expected:
+      - 「設計メモを mdmark で書いて」の UserPromptSubmit で、`additionalContext` に記法のルールを MCP で参照することと、記載した後に `check` で点検することが記載されている
+      - 同じセッションのその後の `a.mark.md` への Write では `additionalContext` を返さない
+      - mdmark で記載する指示を含まない発言では `additionalContext` を返さない
+      - 'どの呼び出しも、発言を止めない（終了コード 0 で、`decision: block` を返さない）'
+    test: test_normal_when_prompt_asks_mdmark
+lead: Claude Code が、mdmark のプラグインのフックの案内と MCP の instructions に沿って、dev-docs の `search_docs` で mdmark の配信元からガイドのページを受け取る。
 issue: 186
 primary_actor: Claude Code
 trigger: Claude Code が mdmark の文書を記載する前に、記法・部品・図の描き方・拡張の仕方を確認する
 preconditions:
   - ビルドしたこのリポジトリの `mdmark serve` で、MCP の常駐サーバーが起動している
-success_guarantee: dev-docs の `search_docs` で、mdmark の配信元のガイドのページの一覧と本文を受け取れる。
+success_guarantee: '`.mark.md` の文書を Write・Edit するときと、利用者が mdmark で記載するよう指示したときに、ガイドを参照する案内をセッションに 1 回（会話を圧縮した後はもう一度）受け取る。純粋な `.md` には利用者の指示が無い限り記法を使用しないことが instructions から分かる。dev-docs の `search_docs` で、mdmark の配信元のガイドのページの一覧と本文を受け取れる。'
 minimal_guarantee: dev-docs が無いときも、mdmark の MCP の instructions から「dev-docs が無いので見つかりません」と分かる。mdmark は dev-docs の端末の設定を作らない。
 test_file: tests/e2e/単一ユースケース/ガイドを参照する.spec.ts
 refs:

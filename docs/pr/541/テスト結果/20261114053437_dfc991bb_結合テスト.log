@@ -1,0 +1,39 @@
+$ npx vitest run --project 'integration*' tests/integration/ClaudeCodeプラグイン/guide-notice.test.ts tests/integration/ClaudeCodeプラグイン/check.test.ts tests/integration/ClaudeCodeプラグイン/pre-tool-use.test.ts tests/integration/ClaudeCodeプラグイン/session-start.test.ts tests/integration/ClaudeCodeプラグイン/serve.test.ts tests/integration/lib/check-config.test.ts tests/integration/lib/bundle.test.ts
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-plugin-mark-md-extension
+
+
+ Test Files  7 passed (7)
+      Tests  80 passed (80)
+   Start at  05:24:51
+   Duration  174.12s (tests 84%, import 12%, transform 3%)
+
+
+# 点検を呼ぶほかの結合テスト（upgrade.test.ts）と、ビルドの結合テスト（build.test.ts）も流した。build.test.ts の test_normal は migrations/next が無いことによる既存の不具合（develop でも失敗する。#544）
+$ npx vitest run --project 'integration*' tests/integration/lib/upgrade.test.ts tests/integration/lib/build.test.ts
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-plugin-mark-md-extension
+
+ ❯ |integration-node| tests/integration/lib/build.test.ts (8 tests | 1 failed) 247723ms
+   × test_normal 378ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |integration-node| tests/integration/lib/build.test.ts > test_normal
+Error: ENOENT: no such file or directory, lstat '/mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-plugin-mark-md-extension/migrations/next'
+ ❯ tests/integration/lib/build.test.ts:186:3
+    184|   const root = await createWorkTree("v0.0.0\n");
+    185|   // `marker-json.mjs` を持つ移行の手順のフォルダ
+    186|   await cp(
+       |   ^
+    187|     join(REPO_ROOT, "migrations", "next"),
+    188|     join(root, "migrations", "next"),
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 1 passed (2)
+      Tests  1 failed | 26 passed (27)
+   Start at  05:28:17
+   Duration  345.13s (tests 94%, import 6%)
+

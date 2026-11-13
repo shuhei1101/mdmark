@@ -42,6 +42,7 @@
 | [MCPサーバーを起動・停止する](./IF-472-4.ts.yaml) | MCP の常駐サーバーを 127.0.0.1 の Streamable HTTP で起動し、instructions とツールを返却し、シグナルで停止する（mdmark serve） |
 | [作業のフォルダを引数に入れる](./IF-472-5.ts.yaml) | 作業のフォルダを使用するツールの引数に、PreToolUse のフックで project_dir を入れる |
 | [常駐サーバーの状態を伝える](./IF-472-6.ts.yaml) | SessionStart で常駐サーバーのポートを確認し、待ち受けていないときだけ global-setup での起動の仕方を 1 行で指定する |
+| [記法のルールの参照を案内する](./IF-472-43.ts.yaml) | .mark.md への Write・Edit と語 mdmark を含む発言で、記法のルールの参照を 1 セッションに 1 回案内する |
 | [端末の状態を調べる](./IF-472-11.ts.yaml) | 端末の設定のパスとバージョン・tmux のセッション名・待ち受けているか・ログの場所を返却する（setup.js status） |
 | [設定のキーの一覧を返却する](./IF-472-14.ts.yaml) | 設定の Schema のキーごとに今の値・既定・説明を返却する（setup.js keys） |
 | [端末の設定を書き込む](./IF-472-12.ts.yaml) | 回答した値で端末の設定を作る・書き換え、既定のパスでなければ settings.json の env に MDMARK_CONFIG を書き込む（setup.js write-settings） |

@@ -166,6 +166,8 @@ items:
   summary: ライブラリ本体 / 操作 / lightbox.ts
 - page: MOD-472-185.ts.yaml
   summary: ライブラリ本体 / 図 / params.ts
+- page: MOD-472-348.ts.yaml
+  summary: ライブラリ本体 / 操作 / part-states.ts
 - page: MOD-472-231.ts.yaml
   summary: ライブラリ本体 / 操作 / placement.ts
 - page: MOD-472-234.ts.yaml
@@ -384,6 +386,8 @@ items:
   summary: '`127.0.0.1` のポートが待ち受けているかの確認と、待ち受けるポートの読み取り（`mdmark serve`・SessionStart のフック・`setup.js` が使用する）。'
 - page: MOD-472-13.ts.yaml
   summary: プラグインの `hooks/hooks.json` が `node` で起動する処理。PreToolUse で作業のフォルダを MCP のツールの引数 `project_dir` に入れる。
+- page: MOD-472-349.ts.yaml
+  summary: プラグインの `hooks/hooks.json` の `Write|Edit` の PreToolUse・UserPromptSubmit・PreCompact が `node` で起動する処理。`.mark.md` の記載と語 mdmark を含む発言で、記法のルールの参照をセッションに 1 回だけ案内する。
 - page: MOD-472-3.ts.yaml
   summary: プラグインの `hooks/hooks.json` の SessionStart が `node` で起動する処理。常駐サーバーが待ち受けていないときだけ、そのことを 1 行で指定する。
 - page: MOD-472-6.ts.yaml

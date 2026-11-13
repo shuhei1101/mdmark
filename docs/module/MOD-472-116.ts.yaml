@@ -61,7 +61,7 @@ functions:
     container: src/config-files.ts
     usecase: 共通
     summary: 読み込んだ値を `schemas/mdmark.config.schema.json` と同じ構造で検め、合わないところを `schema` のずれで返却する
-    description: 検めるのは、最上位がオブジェクトであること・`version` が `VERSION_PATTERN` に合う文字列・`features` の値が真偽値・`libraries` の値が文字列でキーがマーカーの名前・`index`・`theme`・`colorTheme`・`colorScheme` が文字列（`colorTheme` の知らない名前と `colorScheme` の知らない値はここでは拒まず、設定に残す）・`extensions` が文字列の配列・`build` があれば `include`（1 つ以上の文字列）と `out`（`.html` の文字列）を持ち `exclude`・`glossary` が文字列の配列で `entry` が文字列であること・`check` があれば `ignore` がマーカーの名前（`MARK_NAME_PATTERN`）の文字列の配列であること・`tooltips` があれば `placement` と `diagramPlacement` がどちらも（あれば）`top` か `bottom` であること・`labels` があればオブジェクトで `paramCopy` があれば空でない文字列であること（合わなければ `labels` を設定から落とす。知らないキーは拒まない）・`side-toc` があればオブジェクトで `mode` が `hover` か `fixed` であること・`table` があればオブジェクトで `pin` が（あれば）`each` か `through`、`long_column_min` が（あれば）0 より大きい有限の数であること（合わなければ `table` を設定から落とす）・`syntax` があればオブジェクトで `url` が文字列であること・`html-scripts` があればオブジェクトで `url` が文字列であること（合わなければ `html-scripts` を設定から落とす）・`mermaid` があればオブジェクトで、`url`・`theme` が（あれば）文字列、`themeVariables` が（あれば）オブジェクトであること（合わなければ `mermaid` を設定から落とす。`theme` の知らない名前はここでは拒まず、設定に残す）・`assets` があればオブジェクトで `root` が文字列であること・`map` があればオブジェクトであること（合わなければ `map` を設定から落とす。値はここでは拒まず設定に残し、描くときに既定にする）。`aliases` があれば配列であることを確認し、行は `validateAliasRows` で検める（ずれをそのまま `schema` のずれに加え、返った行を `config.aliases` に入れる）。知らない最上位のキーは拒まない。`aliases` の行のほかの構造の検査は手書きで、ライブラリを追加しない（索引の `normalizeIndex` と同じやり方）。検める構造は `schemas/mdmark.config.schema.json` と統一する
+    description: 検めるのは、最上位がオブジェクトであること・`version` が `VERSION_PATTERN` に合う文字列・`features` の値が真偽値・`libraries` の値が文字列でキーがマーカーの名前・`index`・`theme`・`colorTheme`・`colorScheme` が文字列（`colorTheme` の知らない名前と `colorScheme` の知らない値はここでは拒まず、設定に残す）・`extensions` が文字列の配列・`build` があれば `include`（1 つ以上の文字列）と `out`（`.html` の文字列）を持ち `exclude`・`glossary` が文字列の配列で `entry` が文字列であること・`check` があれば `ignore` がマーカーの名前（`MARK_NAME_PATTERN`）の文字列の配列で、`suggestMarkExtension` が（あれば）真偽値であること・`tooltips` があれば `placement` と `diagramPlacement` がどちらも（あれば）`top` か `bottom` であること・`labels` があればオブジェクトで `paramCopy` があれば空でない文字列であること（合わなければ `labels` を設定から落とす。知らないキーは拒まない）・`side-toc` があればオブジェクトで `mode` が `hover` か `fixed` であること・`table` があればオブジェクトで `pin` が（あれば）`each` か `through`、`long_column_min` が（あれば）0 より大きい有限の数であること（合わなければ `table` を設定から落とす）・`syntax` があればオブジェクトで `url` が文字列であること・`html-scripts` があればオブジェクトで `url` が文字列であること（合わなければ `html-scripts` を設定から落とす）・`mermaid` があればオブジェクトで、`url`・`theme` が（あれば）文字列、`themeVariables` が（あれば）オブジェクトであること（合わなければ `mermaid` を設定から落とす。`theme` の知らない名前はここでは拒まず、設定に残す）・`assets` があればオブジェクトで `root` が文字列であること・`map` があればオブジェクトであること（合わなければ `map` を設定から落とす。値はここでは拒まず設定に残し、描くときに既定にする）。`aliases` があれば配列であることを確認し、行は `validateAliasRows` で検める（ずれをそのまま `schema` のずれに加え、返った行を `config.aliases` に入れる）。知らない最上位のキーは拒まない。`aliases` の行のほかの構造の検査は手書きで、ライブラリを追加しない（索引の `normalizeIndex` と同じやり方）。検める構造は `schemas/mdmark.config.schema.json` と統一する
     kind: 関数
     scope: public
     args:
@@ -107,6 +107,12 @@ functions:
         condition: '`version: 0.3`'
         mock: なし
         expected: '`where` が `version` の `schema` のずれが 1 件'
+      - name: test_validate_config_when_suggest_mark_extension_invalid
+        case: 異常
+        summary: 真偽値でない `check.suggestMarkExtension` を schema のずれにし、設定から落とす
+        condition: '`check.suggestMarkExtension` が `"no"`'
+        mock: なし
+        expected: '`where` が `check.suggestMarkExtension` の `schema` のずれが 1 件で、`config.check.suggestMarkExtension` が無い'
       - name: test_validate_config_when_check_ignore_invalid
         case: 正常
         summary: マーカーの名前の書式に合わない `check.ignore` の値を schema のずれにし、設定から落とす
