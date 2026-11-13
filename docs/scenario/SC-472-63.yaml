@@ -122,6 +122,7 @@ scenarios:
     setup:
       - name: mdmark を読み込むページ
         description: 正常シナリオと同じページで、右側の目次を出す設定で文書を描く。`mount` の戻り値の `update` を呼べる
+        notes: 設定の `side-toc.mode` は `hover`。右側の目次は、描いた後に右端の線へポインターを置いて出す
       - name: 比較元の Markdown
         description: h2 の見出し A・B・C の 3 つのセクションを持ち、各セクションが段落を 1 つ持つ文書
       - name: 描く Markdown
@@ -135,7 +136,7 @@ scenarios:
         participant M as mdmark
         P->>M: 比較元の Markdown を指定して描かせる
         M-->>P: 変わったブロックを強調し、変わったセクションの目次の項目に変更のマーカーを付けた文書
-        U->>P: 右側の目次を出す
+        U->>P: 右端の線へポインターを置く
         P-->>U: 見出し B・C・D の項目に変更のマーカーがある目次
         P->>M: update(描く Markdown, {baseMarkdown: null})
         M-->>P: 強調と変更のマーカーの無い文書
@@ -143,9 +144,32 @@ scenarios:
     expected:
       - 右側の目次の見出し B・C・D の項目に変更のマーカーがあり、見出し A の項目には無い
       - 変更のマーカーの付いた項目は、読み上げで項目の名前に続けて `変更` と読まれる（視覚に出さない文言を持つ）
-      - 右側の目次の出し方が `hover` でも `fixed` でも、目次を出したときに同じ項目に変更のマーカーがある
       - '`baseMarkdown: null` で `update` を呼んだ後、右側の目次のどの項目にも変更のマーカーが無い'
     test: test_normal_when_side_toc_marked
+  - name: 正常シナリオ（固定した右側の目次で変わったセクションを示す）
+    setup:
+      - name: mdmark を読み込むページ
+        description: 正常シナリオ（右側の目次で変わったセクションを示す）と同じ
+        notes: 設定の `side-toc.mode` は `fixed`。描いた後に目次を出すボタンを押し、右側の目次を出す
+      - name: 比較元の Markdown
+        description: 正常シナリオ（右側の目次で変わったセクションを示す）と同じ
+      - name: 描く Markdown
+        description: 正常シナリオ（右側の目次で変わったセクションを示す）と同じ
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 読者
+        participant P as 利用側のページ
+        participant M as mdmark
+        P->>M: 比較元の Markdown を指定して描かせる
+        M-->>P: 変わったセクションの目次の項目に変更のマーカーを付けた文書
+        U->>P: 目次を出すボタンを押す
+        P-->>U: 見出し B・C・D の項目に変更のマーカーがある目次
+    expected:
+      - 右側の目次の見出し B・C・D の項目に変更のマーカーがあり、見出し A の項目には無い
+      - 変更のマーカーの付いた項目は、読み上げで項目の名前に続けて `変更` と読まれる
+    test: test_normal_when_fixed_side_toc_marked
 lead: 利用側のページが、描く Markdown と一緒に比較元の Markdown を文字列で `mount` に指定し、本文の中で比較元から追加・変更したブロックと削除したブロックの位置を差分のブロックで強調する。`update` で本文と比較元を差し替える。
 issue: 222
 primary_actor: mdmark を使用するアプリのページ

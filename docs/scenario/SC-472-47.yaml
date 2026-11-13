@@ -215,6 +215,33 @@ scenarios:
       - '`content` が `{ docId: guide, revisionId: r3 }` と `{ docId: guide, revisionId: r2 }` を受けて呼ばれる'
       - 描き終えた時点で、`r2` と `r3` の差分が開いた状態で出る
     test: test_normal_when_opened_on_mount
+  - name: 正常シナリオ（ブロックの色分けで右側の目次に変わったセクションを示す）
+    setup:
+      - name: mdmark を読み込むページ
+        description: 正常シナリオと同じページで、差分の出し方 `diffMode` に `blocks` を指定し、右側の目次を出す設定で文書を描く
+        notes: 設定の `side-toc.mode` は `hover`。右側の目次は、描いた後に右端の線へポインターを置いて出す
+      - name: 見本の文書の 2 つのリビジョン
+        description: '`id` が `r1`・`r2`。`r1` は h2 の見出し A・B を持ち、各セクションが段落を 1 つ持つ。`r2` は `r1` のセクション B の段落の単語を 1 つ書き換えた文書で、描く Markdown と同じ'
+      - name: Mock
+        description: 正常シナリオと同じ取り出し元が、見本の 2 つのリビジョンを返却する
+    flow: |-
+      ```mermaid
+      sequenceDiagram
+        actor U as 読者
+        participant P as 利用側のページ
+        participant M as mdmark
+        participant S as 取り出し元
+        P->>M: 要素・Markdown・docId・取り出し元・diffMode blocks を指定して描かせる
+        M->>S: revisions(docId)・content(r2)・content(r1)
+        S-->>M: リビジョンの一覧と 2 つの Markdown
+        M-->>P: 変わったブロックを色分けし、変わったセクションの目次の項目に変更のマーカーを付けた文書
+        U->>P: 右端の線へポインターを置く
+        P-->>U: 見出し B の項目に変更のマーカーがある目次
+      ```
+    expected:
+      - 右側の目次の見出し B の項目に変更のマーカーがあり、見出し A の項目には無い
+      - 変更のマーカーの付いた項目は、読み上げで項目の名前に続けて `変更` と読まれる
+    test: test_normal_when_blocks_side_toc_marked
 lead: 利用側のページが、要素と Markdown と差分の取り出し元（`DiffSource`）を mdmark に指定して文書を描く。読者が差分を開くと、mdmark が取り出し元からリビジョンの一覧と本文を受けて差分を出す。差分を開いた状態で描く指定を指定したときは、読者が開かなくても描いた時点で差分を出す。
 issue: 7
 primary_actor: mdmark を使用するアプリのページ
