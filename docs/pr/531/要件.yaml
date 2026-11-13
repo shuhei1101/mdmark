@@ -1,0 +1,84 @@
+use_cases:
+  - kind: single
+    scenario: docs/scenario/SC-472-8.yaml
+    impact: changed
+    detail: map の範囲に erDiagram・stateDiagram-v2 の Mermaid と補足を記載すると、テーブルと関連・状態と遷移を自動配置した図として描き、補足の説明と layout を当てる。描けない種類の案内の文言を変える
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-39.yaml
+    impact: changed
+    detail: ER 図のテーブルの列と分類の箱、状態遷移図の入れ子の状態を、構成図のグループと同じ操作で開閉し、中へ入る
+    depends_on:
+      - docs/scenario/SC-472-8.yaml
+  - kind: single
+    scenario: docs/scenario/SC-472-41.yaml
+    impact: changed
+    detail: ER 図・状態遷移図でも補足の巡回の手順を前へ・次へで進める。状態遷移図は遷移を 1 歩ずつ進める再生を持つ
+    depends_on:
+      - docs/scenario/SC-472-8.yaml
+  - kind: single
+    scenario: docs/scenario/SC-472-19.yaml
+    impact: following
+    detail: 要素を選んで関わるものだけを強調する操作を、ER 図のテーブル（関連するテーブル）と状態遷移図の状態（入る遷移と出る遷移）にも広げるのに合わせて、選択と強調の記述を種類に依らない形に揃える
+    depends_on:
+      - docs/scenario/SC-472-8.yaml
+  - kind: single
+    scenario: docs/scenario/SC-472-11.yaml
+    impact: run_only
+    detail: map の範囲の外の erDiagram・stateDiagram-v2 のコードブロックは、今までどおり mermaid で描く
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-18.yaml
+    impact: run_only
+    detail: シーケンス図の再生の操作は変わらないが、再生と巡回の帯を状態遷移図と共通にするため壊しうる
+    depends_on: []
+  - kind: composite
+    scenario: docs/scenario/SC-472-87.yaml
+    impact: run_only
+    detail: 図の種類に依らない流れで記述は変わらないが、map の読み取り・配置・操作を広げるため壊しうる
+    depends_on: []
+docs:
+  - page: docs/guide/図を描く-Mermaidと補足で図を描く.md
+    new: false
+    change: erDiagram・stateDiagram-v2 の記載方法と、種類に固有の操作（関連するテーブルの強調・遷移の再生 等）の手順を追加する
+    status: todo
+  - page: docs/guide/記法.md
+    new: false
+    change: map で描ける Mermaid の種類に erDiagram・stateDiagram-v2 を追加する
+    status: todo
+  - page: docs/guide/コアコンセプト-図を自動配置して辿る仕組み.md
+    new: false
+    change: 種類に依らない部分（補足・layout・巡回・拡大と縮小・凡例・ツールチップ）と、種類ごとの読み取り・配置・固有の機能の分け方を追記する
+    status: todo
+  - page: docs/guide/用語集.md
+    new: false
+    change: 状態遷移の再生など、新しい操作の用語を追加する
+    status: todo
+  - page: docs/guide/図を描く-mermaidの図を描く.md
+    new: false
+    change: erDiagram・stateDiagram-v2 を map で操作つきに描く場合の参照を追加する
+    status: todo
+  - page: docs/er/ER-472-2.yaml
+    new: false
+    change: 補足の YAML に、ER 図のテーブル・列と状態遷移図の状態・遷移を指す ID と説明の項目を追加する
+    status: todo
+  - page: docs/er/ER-477-18.yaml
+    new: false
+    change: map のマーカーの設定に、追加する種類の項目が要るかを反映する
+    status: todo
+scope_out:
+  - item: classDiagram・mindmap・gantt・timeline・gitGraph・journey・block-beta・architecture-beta・C4Context を map で描く
+    reason: Issue の一案のとおり種類ごとに分け、優先の高い erDiagram・stateDiagram-v2 と種類に依らない共通の部分を先に作る。残りはこの PR で作る共通の部分を前提にする
+    plan: to_file
+  - item: pie・xychart-beta・quadrantChart・sankey-beta を map で描く
+    reason: 今の部品 chart と重なる（Issue の候補の対象外の案）
+    plan: none
+  - item: ER 図の部品（#244。部品設計 CMP-472-1）を map に統合して削除するか、残すか
+    reason: '判断が分かれる。今の判断は、この PR では部品を残して記載方法を変えず（破壊的変更を付けない）、統合は flow・sequence を廃止する #467 と同じ形の後続にする。単一ユースケース設計のレビューで確定する'
+    plan: to_file
+  - item: knowledge のテンプレート『ER図』（er.entities・er.relations）・『状態遷移』から Mermaid を生成して map で描く経路
+    reason: knowledge のテンプレートと設計書を描く側（dev-docs）の変更で、このリポジトリの map で描けるようになった後に作る
+    plan: to_file
+  - item: map を Markdown へ書き出すときの種類ごとの扱い
+    reason: '#313 は Mermaid のブロックを残して補足を削除する方式で、種類が増えても変わらない'
+    plan: '#313'
