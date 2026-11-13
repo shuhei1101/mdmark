@@ -173,6 +173,10 @@
     }
     applyPin();
     if (def.scroll === "end") table.scrollLeft = table.scrollWidth;
+    // 数値は列の位置: その列の右端が表の見える範囲の右端に揃うまでスクロールする
+    if (typeof def.scroll === "number") {
+      table.scrollLeft = boxes[def.scroll].left + boxes[def.scroll].width - table.clientWidth;
+    }
     markEdges();
   };
 
