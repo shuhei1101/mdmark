@@ -150,11 +150,15 @@ docs:
   - page: docs/guide/図を描く-描いた図を確認する.md
     new: false
     change: 確かめる図の例をフロー図から map に置き換える
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-13T17:49:11.553897+00:00'
   - page: docs/guide/図を描く-コードブロックのHTMLを描く.md
     new: false
     change: '`<mdmark-flow>` などのフロー図・シーケンス図の custom element の記述を削除する'
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-13T17:49:11.553897+00:00'
   - page: docs/guide/図を描く-Mermaidと補足で図を描く.md
     new: false
     change: 今のフロー図・シーケンス図と比べる記述を削除し、今の定義から変換する手順を追加する
@@ -162,23 +166,33 @@ docs:
   - page: docs/guide/図を描く-固有の部品とCSSを適用する.md
     new: false
     change: 固有の部品と並べるフロー図の例を map に置き換える
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-13T17:49:11.553897+00:00'
   - page: docs/guide/図を描く-mermaidの図を描く.md
     new: false
     change: 今のフロー図・シーケンス図と比べる記述を見直す
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-13T17:49:11.553897+00:00'
   - page: docs/guide/カスタマイズ-拡張を登録する.md
     new: false
     change: フロー図・シーケンス図の部品を使う拡張の例を見直す
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-13T17:49:11.553897+00:00'
   - page: docs/guide/カスタマイズ-機能をオン・オフする.md
     new: false
     change: 図の機能のキーの説明から `flow`・`sequence` を削除する
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-13T17:49:11.553897+00:00'
   - page: docs/guide/設定.md
     new: false
     change: 図の機能のキーの説明から `flow`・`sequence` を削除する
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-13T17:49:11.553897+00:00'
   - page: docs/guide/フローチャートの決まり.md
     new: false
     change: 判定フローチャートの描き方を `flow` から map へ置き換える
@@ -190,51 +204,75 @@ docs:
   - page: docs/guide/コアコンセプト-図を自動配置して辿る仕組み.md
     new: false
     change: 今の図と併存する記述を、廃止の後の形にする
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-13T17:49:11.553897+00:00'
   - page: docs/guide/コアコンセプト-共通の定義と固有の定義.md
     new: false
     change: 基盤の部品の例からフロー図・シーケンス図を削除する
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-13T17:49:11.553897+00:00'
   - page: docs/guide/記載する-文書の記載方法.md
     new: false
     change: 図の選び方の記述から座標のフロー図・シーケンス図を削除する
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-13T17:49:11.553897+00:00'
   - page: docs/guide/HTMLの記載方法.md
     new: false
     change: フロー図・シーケンス図の custom element の記述を削除する
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-13T17:49:11.553897+00:00'
   - page: docs/guide/書き出す-点検する.md
     new: false
     change: フロー図の定義の点検の項目を削除し、`flow`・`sequence` の廃止の警告を追加する
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-13T17:49:11.553897+00:00'
   - page: docs/guide/API.md
     new: false
     change: フロー図・シーケンス図の部品を描く関数と CSS 変数を削除する
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-13T17:49:11.553897+00:00'
   - page: docs/guide/CLI.md
     new: false
     change: 点検の出力からフロー図の項目を削除し、変換の方法（移行の手順か CLI のコマンド）を追加する
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-13T17:49:11.553897+00:00'
   - page: docs/guide/用語集.md
     new: false
     change: フロー図・シーケンス図の用語を、廃止の後の意味（map の図）に直す
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-13T17:49:11.553897+00:00'
   - page: docs/guide/使用方法.md
     new: false
     change: 図を描く手順の案内から座標のフロー図・シーケンス図を削除する
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-13T17:49:11.553897+00:00'
   - page: docs/guide/はじめに.md
     new: false
     change: できることの一覧のフロー図・シーケンス図を map の図に直す
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-13T17:49:11.553897+00:00'
   - page: docs/guide/README.md
     new: false
     change: 図の案内から座標のフロー図・シーケンス図を削除する
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-13T17:49:11.553897+00:00'
   - page: guide/index.yaml
     new: false
     change: 使い方集の索引の `when`・`summary` から座標のフロー図・シーケンス図を削除する
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-13T17:49:11.553897+00:00'
   - page: docs/mock/components/flow-diagram/index.html
     new: false
     change: 今のフロー図の部品のモックを削除する（map が使う見た目の部品を残す場合はその範囲に絞る）
@@ -262,7 +300,9 @@ docs:
   - page: schemas/mdmark.config.schema.json
     new: false
     change: 図の機能のキーの description から `flow`・`sequence` を削除する（`migrations/no-steps.yaml` に行を置く）
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-13T17:49:11.553897+00:00'
   - page: migrations/no-steps.yaml
     new: false
     change: description だけを変えた `mdmark.config.schema.json` の行を追加する
