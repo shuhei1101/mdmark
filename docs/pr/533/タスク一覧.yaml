@@ -60,8 +60,10 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-13T16:42:51.579201+00:00'
   - process: モジュール構成設計
-    status: todo
+    status: done
     note: MOD-472-218（table-logic.ts）の pinOffsets と MOD-472-228（tables.ts）の pinColumns に、見える幅を超えた列を留めない分岐を足す
+    updated_by: planner
+    updated_at: '2026-11-13T16:53:54.409040+00:00'
   - process: ドキュメント修正
     status: todo
     note: docs/guide/記載する-表に機能を付ける.md の「ピン止めが働く」に、見える幅を超えたときの動きを足す
