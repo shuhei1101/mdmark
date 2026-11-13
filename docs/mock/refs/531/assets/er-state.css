@@ -1,0 +1,39 @@
+/* map の ER 図・状態遷移図のモックの規則（#531） */
+
+/* ER 図: テーブルの列の行（キー・名前・型・説明のマーカー） */
+.map-figure .er-columns { display: grid; margin-top: 4px; font-size: 12px; }
+.map-figure .er-column {
+  display: grid; grid-template-columns: 4em 1fr auto 20px; gap: 4px; align-items: center;
+  padding: 2px 0; border-top: 1px solid var(--mdmark-color-border);
+}
+.map-figure .er-key { color: var(--mdmark-color-accent-orange-text); font-weight: 600; }
+.map-figure .er-name { overflow-wrap: anywhere; user-select: text; }
+.map-figure .er-type { color: var(--mdmark-color-muted); }
+.map-figure .er-note {
+  display: inline-grid; place-items: center; width: 16px; height: 16px; border-radius: 50%;
+  border: 1px solid var(--mdmark-color-border); font-size: 11px; cursor: help;
+}
+.map-figure .er-toggle {
+  margin-left: auto; min-width: 24px; min-height: 24px; padding: 0 6px; border: 1px solid var(--mdmark-color-border);
+  border-radius: 4px; background: var(--mdmark-color-bg); color: inherit; font-size: 12px; cursor: pointer;
+}
+.map-figure .mdmark-diagram-node-kind:has(.er-toggle) { display: flex; align-items: center; gap: 4px; }
+
+/* ER 図: 関連の端の多重度と、経路の行が増える関連のマーカー */
+.map-figure .er-card { font-size: 11px; fill: var(--mdmark-color-muted); }
+.map-figure .er-fanout {
+  position: absolute; transform: translate(-50%, -50%); min-width: 24px; min-height: 24px; padding: 0 4px;
+  border: 1px solid var(--mdmark-color-accent-red-text); border-radius: 999px;
+  background: var(--mdmark-color-accent-red-bg); color: var(--mdmark-color-accent-red-text); font-size: 11px; font-weight: 700; z-index: 3;
+}
+
+/* 状態遷移図: 開始（黒丸）・終了（二重丸）・分岐（ひし形）。中の名前と種類の行は出さない */
+.map-figure .mdmark-diagram-node[data-shape="start"],
+.map-figure .mdmark-diagram-node[data-shape="end"] {
+  border-radius: 50%; padding: 0; min-height: 32px; height: 32px !important; background: var(--mdmark-color-text); border-color: var(--mdmark-color-text);
+}
+.map-figure .mdmark-diagram-node[data-shape="end"] { background: var(--mdmark-color-bg); border: 6px double var(--mdmark-color-text); }
+.map-figure .mdmark-diagram-node[data-shape="choice"] { transform: rotate(45deg) scale(0.75); border-radius: 4px; border-color: var(--mdmark-color-text); padding: 0; min-height: 40px; height: 40px !important; }
+.map-figure .mdmark-diagram-node:is([data-shape="start"], [data-shape="end"], [data-shape="choice"]) :is(.mdmark-diagram-node-kind, .mdmark-diagram-node-name) {
+  visibility: hidden; height: 0; min-height: 0; overflow: hidden;
+}

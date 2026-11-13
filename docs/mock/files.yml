@@ -1132,6 +1132,8 @@ files:
     tags: [topic:モック, topic:図]
   - path: components/map-diagram/index.html
     description: '部品『map-diagram』のモック: Mermaid と補足で書いた map の図の、全体・グループの中・閉じたグループとまとめた線・案内の最初と最後・再生の一時停止・狭い幅。部品の外観や状態を決めるときに参照する。'
+  - path: components/map-er-state/index.html
+    description: '部品『map-er-state』のモック: map の ER 図・状態遷移図の、テーブルの列と多重度・分類の箱・列と分類の開閉・開始と終了と分岐・入れ子の状態・遷移の再生・狭い幅。部品の外観や状態を決めるときに参照する。'
     tags: [topic:モック, topic:図]
   - path: pages/document/445/a-map/index.html
     description: '#445 の画面のモックの案『a-map』: 配布物の mount で描いた文書の map の範囲に、自動配置した図を今のフロー図の部品で描いて入れ子のグループを重ね、中へ入る・開閉・案内・再生・書き方の警告を場面で切り替える。画面の外観や振る舞いを決めるときに参照する。'
@@ -1160,3 +1162,12 @@ files:
   - path: refs/445/index.md
     description: '#445（Mermaid と補足で書き、自動配置で描いて階層を辿れる新しい図（map）を追加する）の PR のモックへのリンク集。この PR で作ったモックを探すときに参照する。'
     tags: [topic:モック]
+  - path: refs/531/assets/er-state.js
+    description: '#531 のモックの ER 図・状態遷移図: erDiagram・stateDiagram-v2 と補足を #445 の map の図の入力に読み替え、列の行・多重度・経路の行が増えるマーカー・開始と終了・遷移の再生を足す処理。このモックの振る舞いを変えるときに参照する。'
+    tags: [topic:モック, topic:図]
+  - path: refs/531/assets/er-state.css
+    description: '#531 のモックの ER 図・状態遷移図の規則: 列の行と開閉のボタン・多重度・行が増えるマーカー・開始と終了と分岐の形。このモックの外観を変えるときに参照する。'
+    tags: [topic:モック, topic:図]
+  - path: refs/531/assets/samples.js
+    description: '#531 のモックの見本: ER 図・状態遷移図の Mermaid と補足（説明・分類）。このモックの図の中身を変えるときに参照する。'
+    tags: [topic:モック, topic:図]

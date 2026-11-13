@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <!-- viewport: スマホ幅で等倍に表示する -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>map-er-state（map の ER 図・状態遷移図の状態） | mdmark のモック</title>
+  <!-- 配布物の CSS（ライブラリ本体）: 色・余白・角丸の CSS 変数 -->
+  <link rel="stylesheet" href="../../../../dist/index.css">
+  <!-- 利用側のページの外観（#287 で共有するアセット） -->
+  <link rel="stylesheet" href="../../refs/287/assets/scene.css">
+  <!-- map の図のモックの規則（#445 で共有するアセット） -->
+  <link rel="stylesheet" href="../../refs/445/assets/map-mock.css">
+  <!-- ER 図・状態遷移図に固有の規則（#531 で追加するアセット） -->
+  <link rel="stylesheet" href="../../refs/531/assets/er-state.css">
+  <style>
+    /* カタログの並び: 状態ごとに見出しと図を縦に並べる */
+    .map-catalog { box-sizing: border-box; max-width: 1100px; margin: 0 auto; padding: 16px; }
+    .map-catalog h2 { font-size: 20px; margin: 32px 0 4px; }
+    .map-catalog p.state-note { margin: 0; color: var(--mdmark-color-muted); font-size: 13px; }
+    .narrow { max-width: 390px; }
+  </style>
+</head>
+<body class="mdmark-theme-light">
+  <header class="host-bar">利用側のアプリ</header>
+  <nav class="crumbs" aria-label="パンくずリスト">
+    <a href="../index.md">components</a> / map-er-state
+  </nav>
+  <main class="map-catalog" id="catalog"><h1>map-er-state</h1></main>
+  <script type="module">
+    import { createErMap, createStateMap } from "../../refs/531/assets/er-state.js";
+    import { ER, ER_DATA, STATE, STATE_DATA } from "../../refs/531/assets/samples.js";
+
+    /** 状態の見出し・補足・描く関数・初期状態 */
+    const STATES = [
+      ["ER 図（通常）", "テーブルは列の行（キー・名前・型）を持つ。補足の groups の分類を箱にし、関連の両端に多重度を出す", "er", {}],
+      ["ER 図（列を閉じる）", "列を閉じたテーブルは、テーブル名と列の数の 1 行になる", "er", { collapsed: ["注文"] }],
+      ["ER 図（分類の中）", "分類の箱の中だけを配置し直し、外を薄く残す", "er", { enter: "記録" }],
+      ["ER 図（分類を閉じる）", "分類の箱を 1 つのノードに閉じ、中への関連をまとめる", "er", { collapsed: ["記録"] }],
+      ["状態遷移図（通常）", "開始は黒丸、終了は二重丸、分岐はひし形。入れ子の状態はグループ。図の枠の下に遷移の再生の帯を出す", "state", {}],
+      ["状態遷移図（再生）", "記載の順の遷移を 1 本ずつ強調する（6 本目: 判定 → 差し戻し）", "state", { step: 5 }],
+      ["状態遷移図（入れ子の状態の中）", "入れ子の状態の中だけを配置し直す", "state", { enter: "実行中" }],
+      ["状態遷移図（入れ子の状態を閉じる）", "入れ子の状態への遷移と中の状態への遷移を 1 本にまとめる", "state", { collapsed: ["実行中"] }],
+    ];
+    const catalog = document.getElementById("catalog");
+    const add = (index, title, note, kind, initial, narrow = false) => {
+      catalog.append(Object.assign(document.createElement("h2"), { textContent: title }));
+      catalog.append(Object.assign(document.createElement("p"), { className: "state-note", textContent: note }));
+      const host = document.createElement("div");
+      if (narrow) host.className = "narrow";
+      catalog.append(host);
+      if (kind === "er") createErMap(host, { id: `er-${index}`, title: `記録の構造（${title}）`, source: ER, data: ER_DATA }, initial);
+      else createStateMap(host, { id: `state-${index}`, title: `作業の状態（${title}）`, source: STATE, data: STATE_DATA }, initial);
+    };
+    STATES.forEach(([title, note, kind, initial], index) => add(index, title, note, kind, initial));
+    add(STATES.length, "狭い幅（390px）", "ER 図は表示する枠の中で横にスクロールする", "er", {}, true);
+    // 選んだ状態はモックの初期状態では持たないため、見出しの操作で再現する
+    const hint = Object.assign(document.createElement("p"), { className: "state-note", textContent: "選択: ER 図のテーブルの見出しの余白を押すと関連するテーブルだけを残し、2 つ押すと経路と、行が増える関連の ×n のマーカーを出す。状態遷移図の状態を押すと、入る遷移と出る遷移だけを残す" });
+    catalog.insertBefore(hint, catalog.children[1]);
+  </script>
+</body>
+</html>
