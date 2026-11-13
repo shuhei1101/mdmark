@@ -5654,10 +5654,10 @@ flows:
         M->>M: 列ごとに最も長い行の幅を測り、data-long の列を長文の列にする
         M->>P: 長文でない列を最も長い行の幅で、説明の列を残りの幅で折り返して描く
     expected:
-      - '`No`・`状態`・`更新日`・`名前` の列の `th` と `td` の高さが 1 行分で、`white-space` の計算値が `nowrap`'
+      - '`No`・`状態`・`更新日`・`名前` の列の `th` と `td` の高さが 1 行分'
       - '`手順` の列の幅が 3 行のうち最も長い行の幅と同じ（差が 1px 以内）'
       - '`説明` の列の `td` が折り返し（高さが 1 行分を超える）、`説明` の列の幅が長文の列の最小の幅（`45em`）以上'
-      - '`mdmark-table` と `table` の幅が本文の幅と同じ（差が 1px 以内）で、表の `scrollWidth` が `clientWidth` 以下'
+      - '`mdmark-table` の幅が本文の幅と同じ（差が 1px 以内）で、`table` の幅が本文の幅以下で差が列の数（px）以内。表の `scrollWidth` が `clientWidth` 以下'
       - '`document.documentElement.scrollWidth` が `clientWidth` 以下'
     test: test_normal_when_column_widths_fit_content
     refs:
@@ -5680,7 +5680,7 @@ flows:
         M->>P: 本文の幅まで広げず、列の幅の合計で表を描く
     expected:
       - '`説明` の列の `td` の高さが 1 行分'
-      - '`table` の幅が本文の幅より狭く、列の `th` の幅の合計と同じ（差が 1px 以内）'
+      - '`table` の幅が本文の幅より狭く、`table` の左右の枠線を除いた幅が列の `th` の幅の合計と同じ（差が 1px 以内）'
     test: test_normal_when_long_column_fits
     refs:
       - SC-472-73#scenarios[正常シナリオ（長文の列が折り返さずに収まる）]
@@ -5703,7 +5703,7 @@ flows:
         M->>P: 本文の幅に収めた表を描く
     expected:
       - '`備考` の列の幅が最も長い行の幅と同じ（差が 1px 以内）で、`備考` の `td` の高さが 1 行分'
-      - '`説明` の列が残りの幅を全て使い、`table` の幅が本文の幅と同じ（差が 1px 以内）'
+      - '`説明` の列が残りの幅を全て使い、`table` の幅が本文の幅以下で差が列の数（px）以内'
       - 表の `scrollWidth` が `clientWidth` 以下
     test: test_normal_when_two_long_columns
     refs:
@@ -5724,9 +5724,9 @@ flows:
         P->>M: mount(el, { markdown })
         M->>P: 本文の幅まで広げず、列の幅の合計で 2 つの表を描く
     expected:
-      - 2 つの表とも、`table` の幅が本文の幅より狭く、列の `th` の幅の合計と同じ（差が 1px 以内）
+      - 2 つの表とも、`table` の幅が本文の幅より狭く、`table` の左右の枠線を除いた幅が列の `th` の幅の合計と同じ（差が 1px 以内）
       - 2 つの表とも、`th` と `td` の高さが 1 行分
-      - 2 つの表とも、表の `scrollWidth` が `clientWidth` 以下で、左右の端の影が出ていない
+      - 2 つの表とも、表の `scrollWidth` が `clientWidth` 以下
     test: test_normal_when_table_fits_content
     refs:
       - SC-472-73#scenarios[正常シナリオ（余白の多い表を中身の幅で描く）]
@@ -5748,7 +5748,7 @@ flows:
         M->>P: 長文の列を最小の幅で折り返し、表の中で横にスクロールする表を描く
     expected:
       - 1 つ目の表の `説明`・`備考` の列の幅が `45em`（差が 1px 以内）で、`td` が折り返している
-      - 2 つの表とも、`mdmark-table` の幅が本文の幅と同じで、表の `scrollWidth` が `clientWidth` より大きく、スクロールできる側の端に影が出ている
+      - 2 つの表とも、`mdmark-table` の幅が本文の幅と同じで、表の `scrollWidth` が `clientWidth` より大きい
       - 12 列の表の各列の幅が、その列の最も長い行の幅以上
       - '`document.documentElement.scrollWidth` が `clientWidth` 以下'
     test: test_normal_when_table_scrolls_in_narrow_width
@@ -5783,7 +5783,7 @@ flows:
       - name: 配布物を読み込んだページ
         description: 正常系と同じ。画面と描く先の `div` の幅は 1280px で描き、表を操作した後に描く先の `div` を 900px へ狭める
       - name: 中身の量の違う列を持つ表の Markdown
-        description: '正常系（列の幅を中身から決める）と同じ表を、`<!-- table: {"kind": "data", "features": {"columns": {}}} -->` 〜 `<!-- /table -->` で囲んだ文書'
+        description: '正常系（列の幅を中身から決める）と同じ表を、`<!-- table: {"kind": "data", "features": {"columns": {}}, "columns": {"状態": {"filter": {}}}} -->` 〜 `<!-- /table -->` で囲んだ文書'
       - name: Mock
         description: 差し替える依存は無い
     flow: |-

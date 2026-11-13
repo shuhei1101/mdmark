@@ -19,7 +19,7 @@ functions:
 
       行へ移る処理は、付けたときと `hashchange` で `rowIdFromHash` の ID を持つ行を探し、囲む閉じた `details` を開き（閉じたセクションは、`attachInteractions` が先に付けた `attachSections` が同じきっかけで開いている）、行が `hidden` ならその表の絞り込みを全て削除し、`scrollIntoView` してその行だけに `data-target` を付ける。行へのリンクのマーカーを押すと、移る動きはそのままにマーカーの `href` プロパティ（解決済みの絶対 URL）を `copyText` で記載し、描いたときにマーカーの横へ配置した `mdmark-row-link-notice` に `data-state` と文言（`リンクをコピーしました`・`リンクをコピーできませんでした`）を入れて 2 秒後に空に戻す。
 
-      列の幅は、`attachColumnResize` に、列の幅の上限を返す関数（`columnWidthLimit` に、表を包む要素の `clientWidth`・はみ出しているか・列ごとの幅・留めている列を渡す）と、幅を変えた後の処理を渡す。幅を変えた後と戻した後は、`attachAutoColumnWidths` の `refresh` で列の幅を決め直し、留める列があれば `pinColumns` で留める位置と境の線をもう一度決める。
+      列の幅は、`attachColumnResize` に、列の幅の上限を返す関数（`columnWidthLimit` に、表を包む要素の `clientWidth`・はみ出しているか・列ごとの幅・留めている列を渡す）と、幅を変えた後の処理と、幅を入れた後・測る前に `attachAutoColumnWidths` の `refresh` を呼ぶ関数を渡す。幅を変えた後と戻した後は、`refresh` で表の幅を列の幅の合計にし、留める列があれば `pinColumns` で留める位置と境の線をもう一度決める。
 
       列の幅を自動で決める処理は、囲みごとに `attachAutoColumnWidths` に、囲み・表を包む要素・最下段の見出しのセル・`longColumnMin` と、幅を入れた後に留める列があれば `pinColumns` を呼ぶ関数を渡して付ける。列の表示を切り替えた後は、戻り値の `columnsChanged` を呼ぶ。ピン止めのボタンを出すかのはみ出しは、幅を入れた後に測る。
     args:

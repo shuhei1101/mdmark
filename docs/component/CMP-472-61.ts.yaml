@@ -222,7 +222,7 @@ states:
       - name: collapse
         value: closed
   - name: LongCells
-    description: 長い列名と値。セルの中で折り返し、見出しのボタンが文字に重ならない
+    description: 長い列名と、長文の列の最小の幅（`45em`）より長い値。値の列を最小の幅で折り返し、見出しのボタンが文字に重ならない
     args:
       - name: kind
         value: data
@@ -231,9 +231,13 @@ states:
       - name: columns
         value: '["とても長い列の名前で見出しの幅を超えるもの","値"]'
       - name: rows
-        value: '[["とても長い値でセルの幅を超えて折り返すときの見え方を確認する","1"]]'
+        value: '[["とても長い値でセルの幅を超えて折り返すときの見え方を確認するために、長文の列の最小の幅より長い文を入れた値","1"]]'
       - name: filters
         value: '[{"column":0,"kind":"select"}]'
+      - name: long
+        value: '[0]'
+      - name: autoWidths
+        value: '[{"column":0,"width":630},{"column":1,"width":80}]'
   - name: Count
     description: 件数を出した表（`3 / 3 件`）
     args:

@@ -62,7 +62,7 @@ functions:
 
       決めた幅は、表示している列だけで決め（`hidden` の列は数えない）、`fixed` でない列の見出しのセルのインラインの `--mdmark-auto-width`（`{幅}px`）と、表のインラインの `--mdmark-auto-table-width`（幅の合計）に入れる。CSS は `data-auto-width` の表を `table-layout: fixed` にして、この 2 つの変数を `width` に使用する（印刷の媒体では使用しない）。読者がつまみで入れたインラインの `width` は変数より優先される。
 
-      表を包む要素を `ResizeObserver` で見、`contentRect.width` が前と変わったときだけ決め直す（高さだけの変化・並べ替え・絞り込み・列の表示の切り替えでは決め直さない）。戻り値の `columnsChanged` は、列の表示を切り替えた後に呼び、測り直さず、表示している列の `--mdmark-auto-width` を変えずに `--mdmark-auto-table-width` を表示している列の幅の合計にする。後から表示した列は、前に決めた幅があればその幅、無ければその時点で測って `columnBounds` の `min`（`is-resized` の列は `offsetWidth`）を入れる。戻り値の `refresh` は、列の幅のつまみで幅を変えた後と戻した後に呼び、測り直さずに前に測った値で決め直す（つまみで戻した列は、もう一度自動の幅になる）。描いたときに表が `display: none` の祖先（選ばれていないタブなど）の中にあり `clientWidth` が 0 のときは決めず、見えて幅が 0 でなくなったときに `ResizeObserver` で決める（閉じた `details`・`hidden="until-found"` の中は幅を測れるので、そのまま決める）
+      表を包む要素を `ResizeObserver` で見、`contentRect.width` が前と変わったときだけ決め直す（高さだけの変化・並べ替え・絞り込み・列の表示の切り替えでは決め直さない）。戻り値の `columnsChanged` は、列の表示を切り替えた後に呼び、測り直さず、表示している列の `--mdmark-auto-width` を変えずに `--mdmark-auto-table-width` を表示している列の幅の合計にする。後から表示した列は、前に決めた幅があればその幅、無ければその時点で測って `columnBounds` の `min`（`is-resized` の列は `offsetWidth`）を入れる。戻り値の `refresh` は、列の幅のつまみで幅を入れた後と戻した後に呼び、測り直さず、ほかの列の `--mdmark-auto-width` を変えずに `--mdmark-auto-table-width` を表示している列の幅（`is-resized` の列はインラインの `width` に余白と罫線を足した外側の幅）の合計にする（つまみで戻した列は、前に自動で決めた幅に戻る）。まだ幅を決めていない表では、`refresh` は決め、`columnsChanged` は何もしない。描いたときに表が `display: none` の祖先（選ばれていないタブなど）の中にあり `clientWidth` が 0 のときは決めず、見えて幅が 0 でなくなったときに `ResizeObserver` で決める（閉じた `details`・`hidden="until-found"` の中は幅を測れるので、そのまま決める）
     args:
       - name: table
         type: HTMLTableElement
