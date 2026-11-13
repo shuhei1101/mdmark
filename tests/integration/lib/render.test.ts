@@ -718,6 +718,35 @@ test("test_normal_when_table_columns_specified", async () => {
   expect(html).not.toContain("mdmark-syntax-warning");
 });
 
+// 見出しとセルを改行で分けた 1 行の文字数から長文の列を決め、列の幅の範囲と絞り込みの種類を囲みの属性に出す（正常系（長文の列と列の幅の範囲））
+test("test_normal_when_table_long_columns", async () => {
+  // 準備
+  const render = await loadRender();
+  const wide = (count: number): string => "あ".repeat(count);
+  const markdown = [
+    '<!-- table: {"kind": "data", "columns": {"名前": {"filter": {}}, "説明": {"filter": {}, "width": {"min": 20, "max": 30}}, "備考": {"filter": {"type": "select"}, "width": {"max": 12}}}} -->',
+    "",
+    "| 名前 | 説明 | 手順 | 備考 |",
+    "| --- | --- | --- | --- |",
+    ...[1, 2].map(
+      (no) =>
+        `| 名前${no} | ${wide(120)} | ${wide(10)}<br>${wide(8)}<br>${wide(6)} | ${wide(80)} |`,
+    ),
+    "",
+    "<!-- /table -->",
+    "",
+  ].join("\n");
+  // 実行
+  const html = render(markdown);
+  // 検証
+  const start = html.indexOf('<div class="mdmark-table"');
+  const wrapper = html.slice(start, html.indexOf(">", start));
+  expect(wrapper).toContain(' data-long="1 3"');
+  expect(wrapper).toContain(' data-width="1:20-30 3:-12"');
+  expect(wrapper).toContain(' data-filter="0:select 1:text 3:select"');
+  expect(html).not.toContain("mdmark-syntax-warning");
+});
+
 // 見出しに無い列名の pin=・check= と、pin の機能の無い表の pin= を記載の警告にして適用しない（正常系）
 test("test_normal_when_table_column_errors", async () => {
   // 準備
