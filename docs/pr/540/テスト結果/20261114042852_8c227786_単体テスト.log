@@ -1,0 +1,240 @@
+$ npm run test:unit
+
+> test:unit
+> vitest run --project 'unit*'
+
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/fix-interact-keep-ui-state-on-update-and-tab-switch
+
+ ❯ |unit-browser (chromium)| tests/unit/src/interact/code-folds.browser.test.ts (7 tests | 1 failed) 895ms
+   × test_attach_code_folds_when_states 230ms
+ ❯ |unit-browser (chromium)| tests/unit/src/interact/er-folds.browser.test.ts (3 tests | 1 failed) 1224ms
+   × test_attach_er_folds_when_states 229ms
+ ❯ |unit-browser (chromium)| tests/unit/src/interact/trees.browser.test.ts (8 tests | 1 failed) 258ms
+   × test_attach_file_trees_when_states 177ms
+ ❯ |unit-browser (chromium)| tests/unit/src/interact/index.browser.test.ts (7 tests | 1 failed) 2982ms
+   × test_attach_interactions_when_part_states 217ms
+ ❯ |unit-browser (chromium)| tests/unit/src/interact/tabs.browser.test.ts (17 tests | 1 failed) 289ms
+   × test_attach_tabs_when_group_above_shrinks 225ms
+ ❯ |unit-browser (chromium)| tests/unit/src/interact/table-tree.browser.test.ts (6 tests | 1 failed) 3152ms
+   × test_attach_table_tree_when_states 279ms
+ ❯ |unit-browser (chromium)| tests/unit/src/interact/sections.browser.test.ts (21 tests | 1 failed) 3512ms
+   × test_attach_sections_when_row_detail_states 175ms
+ ❯ |unit-browser (chromium)| tests/unit/src/interact/part-states.browser.test.ts (9 tests | 9 failed) 15930ms
+   × test_part_key 549ms
+   × test_part_key_when_nested_section 1368ms
+   × test_start_open 920ms
+   × test_start_open_when_marker_changed 1740ms
+   × test_record_open 2973ms
+   × test_attach_details_states 2517ms
+   × test_attach_details_states_when_not_clicked 2787ms
+   × test_attach_details_states_when_marker_changed 2125ms
+   × test_attach_details_states_when_frontmatter 950ms
+ ❯ |unit-browser (chromium)| tests/unit/src/mount.browser.test.ts (45 tests | 1 failed) 19735ms
+   × test_mount_when_parts_kept_on_update 347ms
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 17 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/mount.browser.test.ts > test_mount_when_parts_kept_on_update
+AssertionError: expected true to be false // Object.is equality
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/mount.browser.test.ts/test_mount_when_parts_kept_on_update.png
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ tests/unit/src/mount.browser.test.ts:763:5
+    761|       .querySelector<HTMLElement>("tr.mdmark-row-detail")
+    762|       ?.hasAttribute("hidden"),
+    763|   ).toBe(false);
+       |     ^
+    764|   expect(
+    765|     el.querySelector<HTMLDetailsElement>("details.mdmark-collapsible")…
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=a034fc12:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/17]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/interact/code-folds.browser.test.ts > test_attach_code_folds_when_states
+AssertionError: expected 'false' to be 'true' // Object.is equality
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/code-folds.browser.test.ts/test_attach_code_folds_when_states.png
+
+Expected: "true"
+Received: "false"
+
+ ❯ tests/unit/src/interact/code-folds.browser.test.ts:259:62
+    257|   detachers.push(attachCodeFolds(root, states));
+    258|   // 検証: 2 行目は開いたまま、6 行目はマーカーのとおり畳んだまま
+    259|   expect(foldToggle(lines[1]).getAttribute("aria-expanded")).toBe("tru…
+       |                                                              ^
+    260|   expect(foldToggle(lines[5]).getAttribute("aria-expanded")).toBe("fal…
+    261|   expect(hiddenLineNumbers(lines)).toEqual([7]);
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=a034fc12:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/17]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/interact/er-folds.browser.test.ts > test_attach_er_folds_when_states
+AssertionError: expected false to be true // Object.is equality
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/er-folds.browser.test.ts/test_attach_er_folds_when_states.png
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ tests/unit/src/interact/er-folds.browser.test.ts:153:56
+    151|   // 検証: orders は畳んだまま始まる
+    152|   const orders = tableOf(figure, "orders");
+    153|   expect(otherRows(orders).every((row) => row.hidden)).toBe(true);
+       |                                                        ^
+    154|   expect(
+    155|     orders
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=a034fc12:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/17]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/interact/index.browser.test.ts > test_attach_interactions_when_part_states
+AssertionError: expected 'false' to be 'true' // Object.is equality
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/index.browser.test.ts/test_attach_interactions_when_part_states.png
+
+Expected: "true"
+Received: "false"
+
+ ❯ tests/unit/src/interact/index.browser.test.ts:303:5
+    301|       .querySelector("button.mdmark-row-toggle")
+    302|       ?.getAttribute("aria-expanded"),
+    303|   ).toBe("true");
+       |     ^
+    304|   expect(
+    305|     [...root.querySelectorAll("button.mdmark-tree-toggle")]
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=a034fc12:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/17]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/interact/part-states.browser.test.ts > test_part_key
+ FAIL  |unit-browser (chromium)| tests/unit/src/interact/part-states.browser.test.ts > test_part_key_when_nested_section
+ FAIL  |unit-browser (chromium)| tests/unit/src/interact/part-states.browser.test.ts > test_start_open
+ FAIL  |unit-browser (chromium)| tests/unit/src/interact/part-states.browser.test.ts > test_start_open_when_marker_changed
+ FAIL  |unit-browser (chromium)| tests/unit/src/interact/part-states.browser.test.ts > test_record_open
+ FAIL  |unit-browser (chromium)| tests/unit/src/interact/part-states.browser.test.ts > test_attach_details_states
+ FAIL  |unit-browser (chromium)| tests/unit/src/interact/part-states.browser.test.ts > test_attach_details_states_when_not_clicked
+ FAIL  |unit-browser (chromium)| tests/unit/src/interact/part-states.browser.test.ts > test_attach_details_states_when_marker_changed
+ FAIL  |unit-browser (chromium)| tests/unit/src/interact/part-states.browser.test.ts > test_attach_details_states_when_frontmatter
+TypeError: Failed to fetch dynamically imported module: http://localhost:63315/src/interact/part-states.ts
+
+Failure screenshots:
+  - .vitest/attachments/failure-screenshots/part-states.browser.test.ts/test_part_key.png
+  - .vitest/attachments/failure-screenshots/part-states.browser.test.ts/test_part_key_when_nested_section.png
+  - .vitest/attachments/failure-screenshots/part-states.browser.test.ts/test_start_open.png
+  - .vitest/attachments/failure-screenshots/part-states.browser.test.ts/test_start_open_when_marker_changed.png
+  - .vitest/attachments/failure-screenshots/part-states.browser.test.ts/test_record_open.png
+  - .vitest/attachments/failure-screenshots/part-states.browser.test.ts/test_attach_details_states.png
+  - .vitest/attachments/failure-screenshots/part-states.browser.test.ts/test_attach_details_states_when_not_clicked.png
+  - .vitest/attachments/failure-screenshots/part-states.browser.test.ts/test_attach_details_states_when_marker_changed.png
+  - .vitest/attachments/failure-screenshots/part-states.browser.test.ts/test_attach_details_states_when_frontmatter.png
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/17]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/interact/sections.browser.test.ts > test_attach_sections_when_row_detail_states
+AssertionError: expected 'false' to be 'true' // Object.is equality
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/sections.browser.test.ts/test_attach_sections_when_row_detail_states.png
+
+Expected: "true"
+Received: "false"
+
+ ❯ tests/unit/src/interact/sections.browser.test.ts:715:49
+    713|     "button.mdmark-row-toggle",
+    714|   );
+    715|   expect(toggle?.getAttribute("aria-expanded")).toBe("true");
+       |                                                 ^
+    716|   expect(
+    717|     root
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=a034fc12:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/17]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/interact/table-tree.browser.test.ts > test_attach_table_tree_when_states
+AssertionError: expected false to be true // Object.is equality
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/table-tree.browser.test.ts/test_attach_table_tree_when_states.png
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ tests/unit/src/interact/table-tree.browser.test.ts:255:46
+    253|   );
+    254|   // 検証: aliases[] の子孫は畳んだまま始まる
+    255|   expect(rowOf(root, "aliases[].id").hidden).toBe(true);
+       |                                              ^
+    256|   expect(
+    257|     rowOf(root, "aliases[]")
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=a034fc12:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/17]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/interact/tabs.browser.test.ts > test_attach_tabs_when_group_above_shrinks
+AssertionError: expected 721 to be less than or equal to 1
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/tabs.browser.test.ts/test_attach_tabs_when_group_above_shrinks.png
+
+ ❯ tests/unit/src/interact/tabs.browser.test.ts:487:43
+    485|   expect(selectedTitle(root, 0)).toBe("短文");
+    486|   expect(selectedTitle(root, 1)).toBe("短文");
+    487|   expect(Math.abs(topOf(short) - before)).toBeLessThanOrEqual(1);
+       |                                           ^
+    488|   window.scrollTo(0, 0);
+    489| });
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=a034fc12:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/17]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/interact/trees.browser.test.ts > test_attach_file_trees_when_states
+AssertionError: expected [ 'true', 'true' ] to deeply equal [ 'true', 'false' ]
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/trees.browser.test.ts/test_attach_file_trees_when_states.png
+
+- Expected
++ Received
+
+  [
+    "true",
+-   "false",
++   "true",
+  ]
+
+ ❯ tests/unit/src/interact/trees.browser.test.ts:311:46
+    309|   // 検証: src/ は押した後の閉じた状態で始まる
+    310|   const tree = treeOf(root);
+    311|   expect(expandedOf(tree, ["app/", "src/"])).toEqual(["true", "false"]…
+       |                                              ^
+    312|   expect(nestedListOf(toggleOf(tree, "src/")).getAttribute("hidden")).…
+    313|     "until-found",
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=a034fc12:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/17]⎯
+
+
+ Test Files  9 failed | 278 passed (287)
+      Tests  17 failed | 2107 passed (2124)
+   Start at  04:26:48
+   Duration  103.58s (worker 72%, tests 17%, import 10%, transform 1%)
+
+exit=1
