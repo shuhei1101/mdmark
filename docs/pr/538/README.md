@@ -1,0 +1,1 @@
+# VS Code 拡張機能の結合テスト test_normal_when_library_origin_added のテストの文書の libraries のマーカーを JSON の記載に合わせる
