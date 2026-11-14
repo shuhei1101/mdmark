@@ -16721,7 +16721,7 @@ test("test_normal_when_map_state_played", async () => {
   ).toBe("保存する");
   const note = mapNode(figure(), "n1");
   expect(note.querySelector(".mdmark-diagram-node-kind")?.textContent).toBe(
-    "注記",
+    "ノート",
   );
   expect(note.getBoundingClientRect().left).toBeGreaterThanOrEqual(
     mapNode(figure(), "確認待ち").getBoundingClientRect().right,
