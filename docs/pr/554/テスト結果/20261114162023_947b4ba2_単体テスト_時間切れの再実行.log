@@ -1,0 +1,10 @@
+$ npx vitest run --project unit -t "^(test_call_tool|test_main|test_prepare_embeds)$" tests/unit/src/cli/main.test.ts tests/unit/src/cli/export.test.ts tests/unit/src/plugin/tools.test.ts
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-export-hide-mdmark-traces
+
+
+ Test Files  3 passed (3)
+      Tests  3 passed | 48 skipped (51)
+   Start at  16:19:54
+   Duration  18.08s (tests 96%, transform 2%, import 2%)
+

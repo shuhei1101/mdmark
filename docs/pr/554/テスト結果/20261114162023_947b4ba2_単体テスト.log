@@ -1,0 +1,63 @@
+$ npm run test:unit
+
+> test:unit
+> vitest run --project 'unit*'
+
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-export-hide-mdmark-traces
+
+ ❯ |unit| tests/unit/src/cli/main.test.ts (5 tests | 1 failed) 35911ms
+   × test_main 30006ms
+ ❯ |unit| tests/unit/src/plugin/tools.test.ts (20 tests | 1 failed) 35384ms
+   × test_call_tool 30015ms
+ ❯ |unit| tests/unit/src/cli/export.test.ts (26 tests | 1 failed) 46198ms
+   × test_prepare_embeds 30011ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit| tests/unit/src/cli/export.test.ts > test_prepare_embeds
+Error: Test timed out in 30000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/unit/src/cli/export.test.ts:31:1
+     29|
+     30| // マーカーのあるモジュールだけをまとめ、拡張と theme を読み込む（正常系）
+     31| test("test_prepare_embeds", async () => {
+       | ^
+     32|   // 準備
+     33|   const { prepareEmbeds } = await loadExport();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯
+
+ FAIL  |unit| tests/unit/src/cli/main.test.ts > test_main
+Error: Test timed out in 30000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/unit/src/cli/main.test.ts:21:1
+     19|
+     20| // コマンド名で init を呼び、その終了コードを返却する（正常系）
+     21| test("test_main", async () => {
+       | ^
+     22|   // 準備
+     23|   const { main } = await loadMain();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/3]⎯
+
+ FAIL  |unit| tests/unit/src/plugin/tools.test.ts > test_call_tool
+Error: Test timed out in 30000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/unit/src/plugin/tools.test.ts:58:1
+     56|
+     57| // json を 1 つのテキストにする（正常系）
+     58| test("test_call_tool", async () => {
+       | ^
+     59|   // 準備
+     60|   const { callTool } = await loadTools();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/3]⎯
+
+
+ Test Files  3 failed | 290 passed (293)
+      Tests  3 failed | 2202 passed (2205)
+   Start at  16:13:13
+   Duration  187.27s (worker 66%, tests 21%, import 12%, transform 1%)
+
+exit=1
