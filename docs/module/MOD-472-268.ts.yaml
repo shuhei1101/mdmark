@@ -14,7 +14,7 @@ data_models:
         description: '種類（`kind`。省くと `default`）'
       - name: features
         type: TableFeature[]
-        description: '種類の機能に、`features` のキーの機能を追加し、`enabled` の `false` の機能を削除し、列の設定を記載した機能（`filter`・`hidden`・`pinned`・`total`）を追加したもの'
+        description: '種類の機能に、`features` のキーの機能を追加し、`enabled` の `false` の機能を削除し、列の設定を記載した機能（`filter`・`hidden`・`pinned`・`total`・`sort` の `true`）を追加したもの'
       - name: filters
         type: 'Array<{ column: number; kind?: "select" | "text" | "date" }>'
         description: '`columns.{列名}.filter` の列。表に無い列名は入れない。`type` を省いた列は `kind` を持たない（`decorateTables` が `defaultFilterKind` で決める）'
@@ -51,6 +51,9 @@ data_models:
       - name: check
         type: number[]
         description: '`columns.{列名}.format.type` の `check` の列の位置。表に無い列名は入れない'
+      - name: sorts
+        type: 'Array<{ column: number; sort: boolean }>'
+        description: '`columns.{列名}.sort` を記載した列と値。表に無い列名と、`sort` の機能を持たない表では入れない'
       - name: tree
         type: number | undefined
         description: '`tree.key.column` の列の位置。表に無い列名では入れない'
@@ -108,7 +111,7 @@ functions:
     container: src/render/syntax/tables.ts
     kind: 関数
     scope: internal
-    summary: '表のマーカーの設定（`validateMarkOptions` を経た値）と表の見出しから `TableSpec` を作る。`columns` のキーと `tree` の `column` を見出しの文字（多段の見出しは最下段。同じ文字は最初の列）に照らし、表に無い列名は当てずに警告にする（項目に表の列名の並び）。`tree` を持つ表は `features` から `sort` を除き、`tree` の無い表の `tree.*` は無い。`header.rows` が表の行の数以上・`header.columns` が表の列の数以上なら既定にして警告にする。先頭の列の `hidden` は当てずに警告にする。`features.{機能}.enabled` が `false` の機能の列の設定は当てない（注記は `takeMarks` が記録する）。`collapse` は `readCollapse` で読み込む。マーカーが無い表は `default`'
+    summary: '表のマーカーの設定（`validateMarkOptions` を経た値）と表の見出しから `TableSpec` を作る。`columns` のキーと `tree` の `column` を見出しの文字（多段の見出しは最下段。同じ文字は最初の列）に照らし、表に無い列名は当てずに警告にする（項目に表の列名の並び）。`tree` を持つ表は `features` から `sort` を除き、`tree` の無い表の `tree.*` は無い。`header.rows` が表の行の数以上・`header.columns` が表の列の数以上なら既定にして警告にする。先頭の列の `hidden` は当てずに警告にする。`features.{機能}.enabled` が `false` の機能の列の設定は当てない（注記は `takeMarks` が記録する）。`columns.{列名}.sort` の `true` は `features` に `sort` を加え、`sort` の機能を持つ表の `columns.{列名}.sort` を `sorts` に入れる。`collapse` は `readCollapse` で読み込む。マーカーが無い表は `default`'
     args:
       - name: options
         type: MarkOptions | undefined
@@ -174,6 +177,12 @@ functions:
         condition: '`{"kind": "data", "columns": {"物理名": {"pinned": true}, "No": {"pinned": false}, "説明": {"width": {"mode": "nowrap", "max": 30}}, "必須": {"format": {"type": "check"}}, "既定": {"format": {"type": "check"}}}}`、見出しは `No`・`物理名`・`説明`・`必須`・`既定`'
         mock: なし
         expected: '`pin` が `[1]`、`unpinned` が `[0]`、`widths` が `[{2, nowrap, max: 30}]`、`check` が `[3, 4]`、`warnings` が空'
+      - name: test_read_table_spec_when_column_sort
+        case: 正常
+        summary: 列ごとの並べ替えの指定を読み込み、true は sort の機能を加える
+        condition: '`{"kind": "plain", "columns": {"名前": {"sort": true}, "説明": {"sort": false}}}` と、`{"kind": "data", "features": {"sort": {"enabled": false}}, "columns": {"名前": {"sort": true}}}`（見出し `名前`・`説明`）'
+        mock: なし
+        expected: '1 つ目の `features` が `sort` を持ち、`sorts` が `[{column: 0, sort: true}, {column: 1, sort: false}]`。2 つ目の `features` が `sort` を持たず、`sorts` が `[]`'
       - name: test_read_table_spec_when_tree
         case: 正常
         summary: tree の列を読み込み、sort を除く
@@ -187,7 +196,7 @@ functions:
     container: src/render/syntax/tables.ts
     kind: 関数
     scope: internal
-    summary: コアルール。表にスクリーンリーダー向けの名前と `tabindex`、セルに列名を付ける（今の処理）。`table` がオンなら、表のマーカーの範囲の表と囲まない表を `readTableSpec` の指定で部品『表』の囲み（`data-kind`・`data-features`・`data-filter`・`data-hide`・`data-total`・折り畳み）に入れ（折り畳みの見出しは `title` か `表（{本文の行の数} 行）`）、`rowlink` の表は本文の各行に `rowIdOf` の `id`（`taken` は `env.headings` の ID と前の行の ID）を付けて先頭のセルに行へのリンクを配置し、警告を囲みの頭に差し込む。`total` の機能の表は `findUnreadableTotals` で `sum`・`avg` の列の数として読み込めないセルを探し、列と計算ごとに 1 つずつの警告（値の並びは読み込めない値を `codes` で行内のコードにして `・` でつなぐ）を表の上に差し込む。閉じのマーカーが無ければ文書の終わりまでを範囲にして警告を差し込む。表の範囲は `table_open` と `table_close` の入れ子の数で数え、自分の `table_open` に対応する `table_close` までにする。範囲の中の表（行の詳細の中の表）も部品『表』の囲みに入れ、適用する表のマーカーの範囲は外の表の `table_open` より後ろで開くものに限る（無ければ `default`。外の表のマーカーの指定は適用しない）。表の範囲の中の表のマーカーのトークンは、外の表と一緒に移さず使用し切る。本文の行の数・`rowlink`・`total` は、入れ子の数が自分の表と同じ行だけを対象にする。セルの列名は、見出しを表ごとに追加し、`table_close` で外の表の見出しに戻して付ける。`table` がオンなら、表のマーカーの範囲の表と囲まない表に `readTableColors` の色を当て、強調する列の `th`・`td` のトークンに class `mdmark-col-highlight` と `data-color`、色を付ける本文の行の `tr` のトークンに `data-color` を付け（どちらも `data-mdmark-own` を付ける）、読み込めない色の指定を表の囲みの頭の警告の項目に入れる。`pin` は半角の空白で区切って囲みの `data-pin`、`unpinned` は同じく `data-unpin`（`mount` が既定で留める列から除く）、`check` は囲みの `data-check` に写す。`reorder` の表で `headRows` が 2 以上なら、最下段の見出しのセルのトークンに `headerGroupsOf` の結合した見出しの位置を `data-group` で付ける。`tree` の表は囲みに `data-tree` をコピーし、表の範囲のトークンを `decorateTreeTable` に指定する。`widths` の `mode` が `nowrap` の列の `th`・`td` のトークンに class `mdmark-wide` を付け、`min`・`max` を持つ列を `renderTable` の `widthRanges` に渡して囲みの `data-width` に写す。`columnLinesOf` の列ごとの行から `findLongColumns` で長文の列を決め、`mode` が `nowrap` の列も除かずに `renderTable` の `long`（囲みの `data-long`）に渡し（折り返さないのは `mdmark-wide` で決まる）、`filters` の `kind` を持たない列は `defaultFilterKind`（長文の列か）で決めてから `renderTable` の `filters` に渡す。`check` の列の `th`・`td` のトークンに class `mdmark-align-center` を付ける。`check` の列の本文のセルの中身が `true`・`false` のときは、`td` のトークンに `data-value` を付け、中身のトークンを `renderCheckCell` の HTML に `markOwn` を掛けた 1 つのトークンに替える（どれも `data-mdmark-own` を付ける）。表のマーカーの範囲の表は、`headRows` が 2 以上なら本文の先頭の `headRows - 1` 行を `thead` へ移し、`rowHeader` の列の本文のセルを `<th scope="row">` にし、セルの文字の格子を `planCellMerges` に指定して結合を適用する。見出しの行は始まりのセルに `rowspan`・`colspan`（`colspan` を持つセルは `scope="colgroup"`、ほかは `scope="col"`）を付けて結合したセルのトークンを削除し、本文の行は結合したセルの中身を始まりのセルの中身のトークンのコピーに替えて `data-merge` と `hidden` を付け、始まりのセルに `rowspan`・`colspan` を付ける。`mergeColumns` を `data-merge-columns` に設定し、`warnings` を表の囲みの頭の警告の項目に入れる。追加した属性はどれも `data-mdmark-own` を持つトークンに付ける。表のマーカーの範囲の外の表は結合しない
+    summary: コアルール。表にスクリーンリーダー向けの名前と `tabindex`、セルに列名を付ける（今の処理）。`table` がオンなら、表のマーカーの範囲の表と囲まない表を `readTableSpec` の指定で部品『表』の囲み（`data-kind`・`data-features`・`data-filter`・`data-hide`・`data-total`・`data-no-sort`（`findNoSortColumns` で決めた並べ替えを付けない列）・折り畳み）に入れ（折り畳みの見出しは `title` か `表（{本文の行の数} 行）`）、`rowlink` の表は本文の各行に `rowIdOf` の `id`（`taken` は `env.headings` の ID と前の行の ID）を付けて先頭のセルに行へのリンクを配置し、警告を囲みの頭に差し込む。`total` の機能の表は `findUnreadableTotals` で `sum`・`avg` の列の数として読み込めないセルを探し、列と計算ごとに 1 つずつの警告（値の並びは読み込めない値を `codes` で行内のコードにして `・` でつなぐ）を表の上に差し込む。閉じのマーカーが無ければ文書の終わりまでを範囲にして警告を差し込む。表の範囲は `table_open` と `table_close` の入れ子の数で数え、自分の `table_open` に対応する `table_close` までにする。範囲の中の表（行の詳細の中の表）も部品『表』の囲みに入れ、適用する表のマーカーの範囲は外の表の `table_open` より後ろで開くものに限る（無ければ `default`。外の表のマーカーの指定は適用しない）。表の範囲の中の表のマーカーのトークンは、外の表と一緒に移さず使用し切る。本文の行の数・`rowlink`・`total` は、入れ子の数が自分の表と同じ行だけを対象にする。セルの列名は、見出しを表ごとに追加し、`table_close` で外の表の見出しに戻して付ける。`table` がオンなら、表のマーカーの範囲の表と囲まない表に `readTableColors` の色を当て、強調する列の `th`・`td` のトークンに class `mdmark-col-highlight` と `data-color`、色を付ける本文の行の `tr` のトークンに `data-color` を付け（どちらも `data-mdmark-own` を付ける）、読み込めない色の指定を表の囲みの頭の警告の項目に入れる。`pin` は半角の空白で区切って囲みの `data-pin`、`unpinned` は同じく `data-unpin`（`mount` が既定で留める列から除く）、`check` は囲みの `data-check` に写す。`reorder` の表で `headRows` が 2 以上なら、最下段の見出しのセルのトークンに `headerGroupsOf` の結合した見出しの位置を `data-group` で付ける。`tree` の表は囲みに `data-tree` をコピーし、表の範囲のトークンを `decorateTreeTable` に指定する。`widths` の `mode` が `nowrap` の列の `th`・`td` のトークンに class `mdmark-wide` を付け、`min`・`max` を持つ列を `renderTable` の `widthRanges` に渡して囲みの `data-width` に写す。`columnLinesOf` の列ごとの行から `findLongColumns` で長文の列を決め、`mode` が `nowrap` の列も除かずに `renderTable` の `long`（囲みの `data-long`）に渡し（折り返さないのは `mdmark-wide` で決まる）、`filters` の `kind` を持たない列は `defaultFilterKind`（長文の列か）で決めてから `renderTable` の `filters` に渡す。`check` の列の `th`・`td` のトークンに class `mdmark-align-center` を付ける。`check` の列の本文のセルの中身が `true`・`false` のときは、`td` のトークンに `data-value` を付け、中身のトークンを `renderCheckCell` の HTML に `markOwn` を掛けた 1 つのトークンに替える（どれも `data-mdmark-own` を付ける）。表のマーカーの範囲の表は、`headRows` が 2 以上なら本文の先頭の `headRows - 1` 行を `thead` へ移し、`rowHeader` の列の本文のセルを `<th scope="row">` にし、セルの文字の格子を `planCellMerges` に指定して結合を適用する。見出しの行は始まりのセルに `rowspan`・`colspan`（`colspan` を持つセルは `scope="colgroup"`、ほかは `scope="col"`）を付けて結合したセルのトークンを削除し、本文の行は結合したセルの中身を始まりのセルの中身のトークンのコピーに替えて `data-merge` と `hidden` を付け、始まりのセルに `rowspan`・`colspan` を付ける。`mergeColumns` を `data-merge-columns` に設定し、`warnings` を表の囲みの頭の警告の項目に入れる。追加した属性はどれも `data-mdmark-own` を持つトークンに付ける。表のマーカーの範囲の外の表は結合しない
     description: 今の `src/render/parser.ts` の `decorateTables` をここへ移す。並べ替え・ピン止め・絞り込みのボタンは `mount` が付ける
     args:
       - name: state
@@ -205,6 +214,7 @@ functions:
       - MOD-472-311#functions[markOwn]
       - '#functions[columnLinesOf]'
       - MOD-472-218#functions[findLongColumns]
+      - MOD-472-218#functions[findNoSortColumns]
       - MOD-472-218#functions[defaultFilterKind]
     unit_tests:
       - name: test_decorate_tables
@@ -297,6 +307,12 @@ functions:
         condition: '`<!-- table: {"kind": "data", "columns": {"説明": {"width": {"mode": "nowrap"}, "filter": {}}}} -->` 〜 `<!-- /table -->` で、列 `名前`・`説明`（全角 120 文字の文）の表'
         mock: なし
         expected: 囲みが `data-long="1"`・`data-filter="1:text"` を持ち、説明の列の `th`・`td` が class `mdmark-wide`
+      - name: test_decorate_tables_when_no_sort
+        case: 正常
+        summary: 並べ替えを付けない列を囲みの data-no-sort に写す
+        condition: インターフェース定義『文書をHTML文字列にする』の「正常系（長文の列と並べ替えの指定）」の文書
+        mock: なし
+        expected: 表 A〜E の囲みが流れの期待値どおりの `data-features` と `data-no-sort` を持ち、記載の警告が無い
     refs:
       - '#functions[readTableSpec]'
       - '#functions[rowIdOf]'
