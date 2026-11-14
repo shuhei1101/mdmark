@@ -26,6 +26,25 @@ flows:
       - '`docs` が 2'
       - 同じフォルダで実行した `mdmark build` の HTML と中身が同じ
     test: test_normal
+  - name: 正常系（隠さない書き出しを指定する）
+    summary: '`keep_traces` が `true` のとき、`mdmark build --keep-traces` と同じ HTML を書き込む'
+    setup:
+      - name: 作業のフォルダ
+        description: 正常系と同じ
+      - name: Mock
+        description: 正常系と同じ
+    flow: |-
+      sequenceDiagram
+        participant C as Claude Code
+        participant S as MCP サーバー
+        participant F as 作業のフォルダ
+        C->>S: build_site（keep_traces: true）
+        S->>F: 隠さない HTML を書き込む
+        S-->>C: out・warnings
+    expected:
+      - 同じ指定で実行した `mdmark build --keep-traces` の HTML と中身が同じで、`class="mdmark"` と `:root{--mdmark-version:` を持つ
+      - '`keep_traces` を指定しない正常系の HTML は、`class="mdmark"` と `:root{--mdmark-version:` を持たない'
+    test: test_normal_when_traces_kept
   - name: 異常系（設定に build が無い・ツールのエラー）
     summary: build の無い設定では何も書き込まずにエラーにする
     setup:
@@ -71,6 +90,13 @@ request:
     default: なし（端末の設定と、`project_dir` から上のフォルダの `mdmark.config.yaml` を重ねる。端末の設定は `mdmark serve` のプロセスの環境変数で決まる）
     location: argument
     description: 使用する設定ファイルのパス
+  - name: keep_traces
+    type: boolean
+    required: false
+    default: 'なし（`false`。`mdmark build` と同じく mdmark の痕跡を隠す）'
+    location: argument
+    description: '`true` のとき、`mdmark build --keep-traces` と同じく、mdmark の名前・HTML のコメント・バージョン・mdmark 自身のライセンスの表記を残して書き出す'
+    notes: 開発のときだけ使用する
   - name: project_dir
     type: string
     required: true

@@ -3,7 +3,7 @@ visibility: internal
 title: "複数の文書を1枚のHTMLにまとめる"
 entry:
   kind: operation
-  value: '`mdmark build [--config {設定ファイル}]`（CLI。`npx github:shuhei1101/mdmark#v{バージョン} build` で呼ぶ）'
+  value: '`mdmark build [--config {設定ファイル}] [--keep-traces]`（CLI。`npx github:shuhei1101/mdmark#v{バージョン} build` で呼ぶ）'
 flows:
   - name: 正常系
     summary: 3 つの文書を、文書をまたぐ用語と被参照が有効になる 1 枚にまとめる
@@ -465,6 +465,48 @@ flows:
       - 終了コードが 0
       - a.md と b.md のどちらでも、`:::store` のノードの種類の行に `database` のアイコンと「保存先」がある
     test: test_normal_when_map_config
+  - name: 正常系（mdmark を使用していることを隠す）
+    summary: 隠さない書き出しを指定しないとき、インターフェース定義『文書をHTMLに書き出す』と同じく隠し、ファイル名に `mdmark` を含む文書へも行き来できる
+    setup:
+      - name: mdmark の名前を持つフォルダ
+        description: インターフェース定義『文書をHTMLに書き出す』の正常系（mdmark を使用していることを隠す）のフォルダに、`mdmark-intro.md` からリンクされ `mdmark-intro.md` へ戻るリンクを持つ `guide.md` を加え、`build.include` が 2 つに該当する設定
+      - name: Mock
+        description: 同じ流れの Mock と同じ。比べる HTML は、同じフォルダを `--keep-traces` でまとめたもの
+    flow: |-
+      sequenceDiagram
+        actor W as 文書の作成者
+        participant C as mdmark CLI
+        participant H as 出力の HTML
+        W->>C: mdmark build
+        C->>C: 隠さない HTML を組み立て、名前を別名へ置き換え、コメント・バージョン・mdmark 自身のライセンスの表記を削除する
+        C->>H: build.out を書き込む
+        C-->>W: 書き出した: build.out（文書 2 件）・終了コード 0
+    expected:
+      - 終了コードが 0
+      - インターフェース定義『文書をHTMLに書き出す』の正常系（mdmark を使用していることを隠す）の、HTML の文字列・埋め込みの JSON・埋め込みの Markdown・バージョン・ライセンスの表記の期待値を満たす
+      - file:// で開くと、文書の一覧に 2 つのタイトルが並び、`#/mdmark-intro.md` で開ける
+      - 本文のリンクで `guide.md` へ移り、戻るリンクと `history.back()` で `mdmark-intro.md` へ戻れる
+      - 要素・別名を `mdmark` に戻した class・計算後のスタイルが、比べる HTML と本文のコードの例の中を除いて同じ
+    test: test_normal_when_traces_hidden
+  - name: 正常系（隠さない書き出しを指定する）
+    summary: '`--keep-traces` のとき、名前を置き換えず、コメントとバージョンを残してまとめる'
+    setup:
+      - name: mdmark の名前を持つフォルダ
+        description: 正常系（mdmark を使用していることを隠す）と同じ
+      - name: Mock
+        description: 正常系（mdmark を使用していることを隠す）と同じ
+    flow: |-
+      sequenceDiagram
+        actor W as 文書の作成者
+        participant C as mdmark CLI
+        participant H as 出力の HTML
+        W->>C: mdmark build --keep-traces
+        C->>H: 隠さない HTML を書き込む
+        C-->>W: 書き出した: build.out（文書 2 件）・終了コード 0
+    expected:
+      - 終了コードが 0
+      - HTML に `class="mdmark"`・`:root{--mdmark-version:`・`id="mdmark-payload"` が残る
+    test: test_normal_when_traces_kept
 lead: 文書の作成者が設定の `build` で決めた文書を、参照・被参照・用語のツールチップが有効になり、文書を行き来できる 1 枚の HTML にまとめる。埋めるものと外へ要求しないことはインターフェース定義『文書をHTMLに書き出す』と同じ。
 idempotent: true
 side_effects: '`build.out` に HTML を書き込む（既にあれば上書きする）。文書が指す動画・音声を、`build.out` の隣の `_files/` のフォルダへコピーする。文書が使用する外部ライブラリの URL の先を読み込む。書き出した HTML を開いたページでは、`history.scrollRestoration` を `manual` にし、履歴の項目ごとの表示の状態を sessionStorage に記載する'
@@ -478,6 +520,13 @@ request:
     location: argument
     description: 使用する設定ファイルのパス
     notes: まとめる文書と書き出す先は設定の `build` が持つ
+  - name: --keep-traces
+    type: boolean
+    required: false
+    default: なし（制約「mdmark の痕跡」のとおり隠してまとめる）
+    location: argument
+    description: 開発のときに、mdmark の名前・HTML のコメント・バージョン・mdmark 自身のライセンスの表記を残してまとめる
+    notes: 値を取らないフラグ
 response:
   - name: 標準出力
     type: string
@@ -559,4 +608,7 @@ constraints:
   - item: map の設定
     constraint: 文書をHTMLに書き出す.ts の制約「map の設定」と同じ
     decided_by: IF-472-33#constraints[map の設定]
+  - item: mdmark の痕跡
+    constraint: 文書をHTMLに書き出す.ts の制約「mdmark の痕跡」と同じ。まとめる全ての文書の本文・取り込む文書の表に同じ規則を当て、文書のパスと文書間のリンクの `href` は置き換えない
+    decided_by: IF-472-33#constraints[mdmark の痕跡]
 test_file: tests/integration/lib/bundle.test.ts
