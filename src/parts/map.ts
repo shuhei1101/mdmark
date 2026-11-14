@@ -1228,8 +1228,9 @@ const erMarkOf = (points: Point[]): { label: Point; vertical: boolean } => {
 };
 
 /**
- * 行が増える関連のマーカーの置き場所。両端を除いた区間を長い順に、ラベルの反対側 → ラベルの側の順に試し、
- * どのノードの矩形（左右に空ける幅を含む）とも重ならない最初の置き場所にする。全て重なるときは最も長い区間のラベルの反対側
+ * 行が増える関連のマーカーの置き場所。両端を除いた区間を長い順に、区間の中ほど → 4 分の 1 → 4 分の 3 の位置で、
+ * ラベルの反対側を試し、次にラベルの側を試して、どのノードの矩形（左右に空ける幅を含む）とも重ならない最初の置き場所にする。
+ * 全て重なるときは最も長い区間の中ほどのラベルの反対側
  */
 const fanoutMarkOf = (points: Point[], nodes: MapLayout["nodes"]): Point => {
   const inner = points.slice(1, -1);
@@ -1251,18 +1252,18 @@ const fanoutMarkOf = (points: Point[], nodes: MapLayout["nodes"]): Point => {
         y + half <= node.y ||
         node.y + node.h <= y - half,
     );
-  const candidates = segments.flatMap(([a, b]): Point[] => {
-    const mid: Point = [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2];
-    return a[0] === b[0]
-      ? [
-          [mid[0] - MAP_ER.fanoutGap, mid[1]],
-          [mid[0] + MAP_ER.fanoutGap, mid[1]],
-        ]
-      : [
-          [mid[0], mid[1] + MAP_ER.fanoutGap],
-          [mid[0], mid[1] - MAP_ER.fanoutGap],
-        ];
-  });
+  /** 区間の位置 t の、ラベルの反対側（`away`）かラベルの側の点 */
+  const at = ([a, b]: [Point, Point], t: number, away: boolean): Point => {
+    const x = a[0] + (b[0] - a[0]) * t;
+    const y = a[1] + (b[1] - a[1]) * t;
+    const gap = away ? MAP_ER.fanoutGap : -MAP_ER.fanoutGap;
+    return a[0] === b[0] ? [x - gap, y] : [x, y + gap];
+  };
+  const candidates = [true, false].flatMap((away) =>
+    segments.flatMap((segment) =>
+      [0.5, 0.25, 0.75].map((t) => at(segment, t, away)),
+    ),
+  );
   return candidates.find(free) ?? (candidates[0] as Point);
 };
 
