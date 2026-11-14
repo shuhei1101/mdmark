@@ -1,0 +1,351 @@
+$ npm run test:unit
+
+> test:unit
+> vitest run --project 'unit*'
+
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-view-side-toc-diff-marker-and-long-text-sort
+
+ ❯ |unit| tests/unit/src/plugin/setup/server.test.ts (17 tests | 1 failed) 45639ms
+   × test_list_tool_names 30020ms
+ ❯ |unit| tests/unit/src/plugin/tools.test.ts (18 tests | 1 failed) 47359ms
+   × test_call_tool 30016ms
+ ❯ |unit| tests/unit/src/cli/upgrade.test.ts (15 tests | 1 failed) 52968ms
+   × test_write_config_version 30031ms
+ ❯ |unit| tests/unit/src/cli/export.test.ts (25 tests | 1 failed) 58098ms
+   × test_prepare_embeds 30013ms
+node:fs:736
+  return binding.read(fd, buffer, offset, length, position);
+                 ^
+
+Error: ENOMEM: not enough memory, read
+    at Object.readSync (node:fs:736:18)
+    at tryReadSync (node:fs:416:20)
+    at readFileSync (node:fs:462:19)
+    at getSourceSync (node:internal/modules/esm/load:37:14)
+    at defaultLoadSync (node:internal/modules/esm/load:153:34)
+    at #loadAndMaybeBlockOnLoaderThread (node:internal/modules/esm/loader:796:12)
+    at #loadSync (node:internal/modules/esm/loader:816:49)
+    at ModuleLoader.load (node:internal/modules/esm/loader:781:26)
+    at ModuleLoader.loadAndTranslate (node:internal/modules/esm/loader:526:31)
+    at #getOrCreateModuleJobAfterResolve (node:internal/modules/esm/loader:577:36) {
+  errno: -12,
+  code: 'ENOMEM',
+  syscall: 'read'
+}
+
+Node.js v24.14.0
+node:fs:736
+  return binding.read(fd, buffer, offset, length, position);
+                 ^
+
+Error: ENOMEM: not enough memory, read
+    at Object.readSync (node:fs:736:18)
+    at tryReadSync (node:fs:416:20)
+    at readFileSync (node:fs:462:19)
+    at getSourceSync (node:internal/modules/esm/load:37:14)
+    at defaultLoadSync (node:internal/modules/esm/load:153:34)
+    at #loadAndMaybeBlockOnLoaderThread (node:internal/modules/esm/loader:796:12)
+    at #loadSync (node:internal/modules/esm/loader:816:49)
+    at ModuleLoader.load (node:internal/modules/esm/loader:781:26)
+    at ModuleLoader.loadAndTranslate (node:internal/modules/esm/loader:526:31)
+    at #getOrCreateModuleJobAfterResolve (node:internal/modules/esm/loader:577:36) {
+  errno: -12,
+  code: 'ENOMEM',
+  syscall: 'read'
+}
+
+Node.js v24.14.0
+node:fs:736
+  return binding.read(fd, buffer, offset, length, position);
+                 ^
+
+Error: ENOMEM: not enough memory, read
+    at Object.readSync (node:fs:736:18)
+    at tryReadSync (node:fs:416:20)
+    at readFileSync (node:fs:462:19)
+    at getSourceSync (node:internal/modules/esm/load:37:14)
+    at defaultLoadSync (node:internal/modules/esm/load:153:34)
+    at #loadAndMaybeBlockOnLoaderThread (node:internal/modules/esm/loader:796:12)
+    at #loadSync (node:internal/modules/esm/loader:816:49)
+    at ModuleLoader.load (node:internal/modules/esm/loader:781:26)
+    at ModuleLoader.loadAndTranslate (node:internal/modules/esm/loader:526:31)
+    at #getOrCreateModuleJobAfterResolve (node:internal/modules/esm/loader:577:36) {
+  errno: -12,
+  code: 'ENOMEM',
+  syscall: 'read'
+}
+
+Node.js v24.14.0
+ ❯ |unit| tests/unit/src/render/syntax/warnings.test.ts (0 test)
+ ❯ |unit| tests/unit/src/render/syntax/images.test.ts (0 test)
+node:fs:736
+  return binding.read(fd, buffer, offset, length, position);
+                 ^
+
+Error: ENOMEM: not enough memory, read
+    at Object.readSync (node:fs:736:18)
+    at tryReadSync (node:fs:416:20)
+    at readFileSync (node:fs:462:19)
+    at getSourceSync (node:internal/modules/esm/load:37:14)
+    at defaultLoadSync (node:internal/modules/esm/load:153:34)
+    at #loadAndMaybeBlockOnLoaderThread (node:internal/modules/esm/loader:796:12)
+    at #loadSync (node:internal/modules/esm/loader:816:49)
+    at ModuleLoader.load (node:internal/modules/esm/loader:781:26)
+    at ModuleLoader.loadAndTranslate (node:internal/modules/esm/loader:526:31)
+    at #getOrCreateModuleJobAfterResolve (node:internal/modules/esm/loader:577:36) {
+  errno: -12,
+  code: 'ENOMEM',
+  syscall: 'read'
+}
+node:fs:736
+  return binding.read(fd, buffer, offset, length, position);
+                 ^
+
+Error: ENOMEM: not enough memory, read
+    at Object.readSync (node:fs:736:18)
+    at tryReadSync (node:fs:416:20)
+    at readFileSync (node:fs:462:19)
+    at getSourceSync (node:internal/modules/esm/load:37:14)
+    at defaultLoadSync (node:internal/modules/esm/load:153:34)
+    at #loadAndMaybeBlockOnLoaderThread (node:internal/modules/esm/loader:796:12)
+    at #loadSync (node:internal/modules/esm/loader:816:49)
+    at ModuleLoader.load (node:internal/modules/esm/loader:781:26)
+    at ModuleLoader.loadAndTranslate (node:internal/modules/esm/loader:526:31)
+    at #getOrCreateModuleJobAfterResolve (node:internal/modules/esm/loader:577:36) {
+  errno: -12,
+  code: 'ENOMEM',
+  syscall: 'read'
+}
+
+Node.js v24.14.0
+
+Node.js v24.14.0
+node:fs:736
+  return binding.read(fd, buffer, offset, length, position);
+                 ^
+
+Error: ENOMEM: not enough memory, read
+    at Object.readSync (node:fs:736:18)
+    at tryReadSync (node:fs:416:20)
+    at readFileSync (node:fs:462:19)
+    at getSourceSync (node:internal/modules/esm/load:37:14)
+    at defaultLoadSync (node:internal/modules/esm/load:153:34)
+    at #loadAndMaybeBlockOnLoaderThread (node:internal/modules/esm/loader:796:12)
+    at #loadSync (node:internal/modules/esm/loader:816:49)
+    at ModuleLoader.load (node:internal/modules/esm/loader:781:26)
+    at ModuleLoader.loadAndTranslate (node:internal/modules/esm/loader:526:31)
+    at #getOrCreateModuleJobAfterResolve (node:internal/modules/esm/loader:577:36) {
+  errno: -12,
+  code: 'ENOMEM',
+  syscall: 'read'
+}
+
+Node.js v24.14.0
+node:fs:736
+  return binding.read(fd, buffer, offset, length, position);
+                 ^
+
+Error: ENOMEM: not enough memory, read
+    at Object.readSync (node:fs:736:18)
+    at tryReadSync (node:fs:416:20)
+    at readFileSync (node:fs:462:19)
+    at getSourceSync (node:internal/modules/esm/load:37:14)
+    at defaultLoadSync (node:internal/modules/esm/load:153:34)
+    at #loadAndMaybeBlockOnLoaderThread (node:internal/modules/esm/loader:796:12)
+    at #loadSync (node:internal/modules/esm/loader:816:49)
+    at ModuleLoader.load (node:internal/modules/esm/loader:781:26)
+    at ModuleLoader.loadAndTranslate (node:internal/modules/esm/loader:526:31)
+    at #getOrCreateModuleJobAfterResolve (node:internal/modules/esm/loader:577:36) {
+  errno: -12,
+  code: 'ENOMEM',
+  syscall: 'read'
+}
+
+Node.js v24.14.0
+
+⎯⎯⎯⎯⎯⎯ Failed Suites 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit| tests/unit/src/render/syntax/images.test.ts [ tests/unit/src/render/syntax/images.test.ts ]
+ FAIL  |unit| tests/unit/src/render/syntax/warnings.test.ts [ tests/unit/src/render/syntax/warnings.test.ts ]
+Error: ENOMEM: not enough memory, read
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/6]⎯
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit| tests/unit/src/cli/export.test.ts > test_prepare_embeds
+Error: Test timed out in 30000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/unit/src/cli/export.test.ts:31:1
+     29|
+     30| // マーカーのあるモジュールだけをまとめ、拡張と theme を読み込む（正常系）
+     31| test("test_prepare_embeds", async () => {
+       | ^
+     32|   // 準備
+     33|   const { prepareEmbeds } = await loadExport();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/6]⎯
+
+ FAIL  |unit| tests/unit/src/cli/upgrade.test.ts > test_write_config_version
+Error: Test timed out in 30000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/unit/src/cli/upgrade.test.ts:105:1
+    103|
+    104| // ある version を書き換え、コメントとフロー形式の並びを残す（正常系）
+    105| test("test_write_config_version", async () => {
+       | ^
+    106|   // 準備
+    107|   const { writeConfigVersion } = await loadModule();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/6]⎯
+
+ FAIL  |unit| tests/unit/src/plugin/tools.test.ts > test_call_tool
+Error: Test timed out in 30000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/unit/src/plugin/tools.test.ts:57:1
+     55|
+     56| // json を 1 つのテキストにする（正常系）
+     57| test("test_call_tool", async () => {
+       | ^
+     58|   // 準備
+     59|   const { callTool } = await loadTools();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/6]⎯
+
+ FAIL  |unit| tests/unit/src/plugin/setup/server.test.ts > test_list_tool_names
+Error: Test timed out in 30000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/unit/src/plugin/setup/server.test.ts:232:1
+    230|
+    231| // 起動した常駐サーバーのツール（正常系）
+    232| test("test_list_tool_names", async () => {
+       | ^
+    233|   // 準備
+    234|   const { listToolNames } = await loadServer();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/6]⎯
+
+⎯⎯⎯⎯⎯⎯ Unhandled Errors ⎯⎯⎯⎯⎯⎯
+
+Vitest caught 7 unhandled errors during the test run.
+This might cause false positive tests. Resolve unhandled errors to make sure your tests are not affected.
+
+⎯⎯⎯⎯⎯⎯ Unhandled Error ⎯⎯⎯⎯⎯⎯⎯
+Error: [vitest-pool]: Worker forks emitted error.
+ ❯ EventEmitter.onTaskError node_modules/vitest/dist/chunks/index.B8VfM7Mf.js:5893:21
+ ❯ EventEmitter.emit node:events:520:35
+ ❯ ChildProcess.emitUnexpectedExit node_modules/vitest/dist/chunks/index.B8VfM7Mf.js:5368:22
+ ❯ ChildProcess.emit node:events:508:28
+ ❯ ChildProcess._handle.onexit node:internal/child_process:294:12
+
+Caused by: Error: Worker exited unexpectedly with exit code 1 during starting state
+ ❯ ChildProcess.emitUnexpectedExit node_modules/vitest/dist/chunks/index.B8VfM7Mf.js:5366:33
+ ❯ ChildProcess.emit node:events:508:28
+ ❯ ChildProcess._handle.onexit node:internal/child_process:294:12
+
+
+⎯⎯⎯⎯⎯⎯ Unhandled Error ⎯⎯⎯⎯⎯⎯⎯
+Error: [vitest-pool]: Worker forks emitted error.
+ ❯ EventEmitter.onTaskError node_modules/vitest/dist/chunks/index.B8VfM7Mf.js:5893:21
+ ❯ EventEmitter.emit node:events:520:35
+ ❯ ChildProcess.emitUnexpectedExit node_modules/vitest/dist/chunks/index.B8VfM7Mf.js:5368:22
+ ❯ ChildProcess.emit node:events:508:28
+ ❯ ChildProcess._handle.onexit node:internal/child_process:294:12
+
+Caused by: Error: Worker exited unexpectedly with exit code 1 during starting state
+ ❯ ChildProcess.emitUnexpectedExit node_modules/vitest/dist/chunks/index.B8VfM7Mf.js:5366:33
+ ❯ ChildProcess.emit node:events:508:28
+ ❯ ChildProcess._handle.onexit node:internal/child_process:294:12
+
+
+⎯⎯⎯⎯⎯⎯ Unhandled Error ⎯⎯⎯⎯⎯⎯⎯
+Error: [vitest-pool]: Worker forks emitted error.
+ ❯ EventEmitter.onTaskError node_modules/vitest/dist/chunks/index.B8VfM7Mf.js:5893:21
+ ❯ EventEmitter.emit node:events:520:35
+ ❯ ChildProcess.emitUnexpectedExit node_modules/vitest/dist/chunks/index.B8VfM7Mf.js:5368:22
+ ❯ ChildProcess.emit node:events:508:28
+ ❯ ChildProcess._handle.onexit node:internal/child_process:294:12
+
+Caused by: Error: Worker exited unexpectedly with exit code 1 during starting state
+ ❯ ChildProcess.emitUnexpectedExit node_modules/vitest/dist/chunks/index.B8VfM7Mf.js:5366:33
+ ❯ ChildProcess.emit node:events:508:28
+ ❯ ChildProcess._handle.onexit node:internal/child_process:294:12
+
+
+⎯⎯⎯⎯⎯⎯ Unhandled Error ⎯⎯⎯⎯⎯⎯⎯
+Error: [vitest-pool]: Worker forks emitted error.
+ ❯ EventEmitter.onTaskError node_modules/vitest/dist/chunks/index.B8VfM7Mf.js:5893:21
+ ❯ EventEmitter.emit node:events:520:35
+ ❯ ChildProcess.emitUnexpectedExit node_modules/vitest/dist/chunks/index.B8VfM7Mf.js:5368:22
+ ❯ ChildProcess.emit node:events:508:28
+ ❯ ChildProcess._handle.onexit node:internal/child_process:294:12
+
+Caused by: Error: Worker exited unexpectedly with exit code 1 during starting state
+ ❯ ChildProcess.emitUnexpectedExit node_modules/vitest/dist/chunks/index.B8VfM7Mf.js:5366:33
+ ❯ ChildProcess.emit node:events:508:28
+ ❯ ChildProcess._handle.onexit node:internal/child_process:294:12
+
+
+⎯⎯⎯⎯⎯⎯ Unhandled Error ⎯⎯⎯⎯⎯⎯⎯
+Error: [vitest-pool]: Worker forks emitted error.
+ ❯ EventEmitter.onTaskError node_modules/vitest/dist/chunks/index.B8VfM7Mf.js:5893:21
+ ❯ EventEmitter.emit node:events:520:35
+ ❯ ChildProcess.emitUnexpectedExit node_modules/vitest/dist/chunks/index.B8VfM7Mf.js:5368:22
+ ❯ ChildProcess.emit node:events:508:28
+ ❯ ChildProcess._handle.onexit node:internal/child_process:294:12
+
+Caused by: Error: Worker exited unexpectedly with exit code 1 during starting state
+ ❯ ChildProcess.emitUnexpectedExit node_modules/vitest/dist/chunks/index.B8VfM7Mf.js:5366:33
+ ❯ ChildProcess.emit node:events:508:28
+ ❯ ChildProcess._handle.onexit node:internal/child_process:294:12
+
+
+⎯⎯⎯⎯⎯⎯ Unhandled Error ⎯⎯⎯⎯⎯⎯⎯
+Error: [vitest-pool]: Worker forks emitted error.
+ ❯ EventEmitter.onTaskError node_modules/vitest/dist/chunks/index.B8VfM7Mf.js:5893:21
+ ❯ EventEmitter.emit node:events:520:35
+ ❯ ChildProcess.emitUnexpectedExit node_modules/vitest/dist/chunks/index.B8VfM7Mf.js:5368:22
+ ❯ ChildProcess.emit node:events:508:28
+ ❯ ChildProcess._handle.onexit node:internal/child_process:294:12
+
+Caused by: Error: Worker exited unexpectedly with exit code 1 during starting state
+ ❯ ChildProcess.emitUnexpectedExit node_modules/vitest/dist/chunks/index.B8VfM7Mf.js:5366:33
+ ❯ ChildProcess.emit node:events:508:28
+ ❯ ChildProcess._handle.onexit node:internal/child_process:294:12
+
+
+⎯⎯⎯⎯⎯⎯ Unhandled Error ⎯⎯⎯⎯⎯⎯⎯
+Error: [vitest-pool]: Worker forks emitted error.
+ ❯ EventEmitter.onTaskError node_modules/vitest/dist/chunks/index.B8VfM7Mf.js:5893:21
+ ❯ EventEmitter.emit node:events:520:35
+ ❯ ChildProcess.emitUnexpectedExit node_modules/vitest/dist/chunks/index.B8VfM7Mf.js:5368:22
+ ❯ ChildProcess.emit node:events:508:28
+ ❯ ChildProcess._handle.onexit node:internal/child_process:294:12
+
+Caused by: Error: Worker exited unexpectedly with exit code 1 during starting state
+ ❯ ChildProcess.emitUnexpectedExit node_modules/vitest/dist/chunks/index.B8VfM7Mf.js:5366:33
+ ❯ ChildProcess.emit node:events:508:28
+ ❯ ChildProcess._handle.onexit node:internal/child_process:294:12
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+
+
+ Test Files  6 failed | 275 passed (281)
+      Tests  4 failed | 2112 passed (2116)
+     Errors  7 errors
+   Start at  11:30:45
+   Duration  197.07s (worker 70%, tests 20%, import 9%, transform 1%)
+
+
+# 全件の実行で落ちた 6 ファイルは、この PR が変えていないファイルで、実行の時のメモリー不足（ENOMEM）と負荷（load average 26）による時間切れ。同じ commit で 6 ファイルだけを実行し直して全 pass を確認した。
+$ npx vitest run --project 'unit*' tests/unit/src/cli/export.test.ts tests/unit/src/cli/upgrade.test.ts tests/unit/src/plugin/setup/server.test.ts tests/unit/src/plugin/tools.test.ts tests/unit/src/render/syntax/images.test.ts tests/unit/src/render/syntax/warnings.test.ts
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-view-side-toc-diff-marker-and-long-text-sort
+
+
+ Test Files  6 passed (6)
+      Tests  91 passed (91)
+   Start at  11:34:20
+   Duration  16.54s (tests 71%, transform 17%, import 12%)
+

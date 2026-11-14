@@ -488,6 +488,26 @@ test("test_render_table_tools_when_date", async () => {
   expect(findTags(drawer, 'type="date"')).toHaveLength(2);
 });
 
+// sortable が false の列は並べ替えのボタンにせず、ほかのボタンは付ける（正常系）
+test("test_render_table_tools_when_not_sortable", async () => {
+  // 準備
+  const { renderTableTools } = await loadTable();
+  // 実行
+  const { header } = renderTableTools({
+    id: "t1",
+    column: 2,
+    label: "説明",
+    features: ["sort", "pin", "filter"],
+    sortable: false,
+    filter: { kind: "text", values: [] },
+  });
+  // 検証
+  expect(header).not.toContain("mdmark-sort");
+  expect(header).toContain('<span class="mdmark-th-label">説明</span>');
+  expect(header).toContain("mdmark-filter");
+  expect(header).toContain("mdmark-pin");
+});
+
 // 数として読み込めないセルを持つ列の合計と平均を空にし、計算ごとの行を出す（正常系）
 test("test_render_table_when_totals_unreadable", async () => {
   // 準備
@@ -677,6 +697,27 @@ test("test_render_table_when_long_columns", async () => {
   heads.forEach((head, column) => {
     expect(head).toContain(`--mdmark-auto-width:${widths[column]}px`);
   });
+  // 検証: 部品設計の LongColumnNotSortable は並べ替えを付けない列を写し、その列の見出しを文字のままにする
+  const notSortable = renderTable({
+    kind: "data",
+    features: ["sort", "pin", "filter"],
+    columns: ["名前", "更新日", "説明"],
+    rows: [
+      [
+        "目次",
+        "2026-11-01",
+        "比較元から見出しの下のブロックが変わったセクションの項目に、変更のマーカーを付ける。",
+      ],
+    ],
+    long: [2],
+    noSort: [2],
+  });
+  expect(findTag(notSortable, 'class="mdmark-table"')).toContain(
+    'data-no-sort="2"',
+  );
+  const sortHeads = innerHtml(notSortable, "<thead");
+  expect(findTags(sortHeads, "mdmark-sort")).toHaveLength(2);
+  expect(sortHeads).toContain('<span class="mdmark-th-label">説明</span>');
 });
 
 // ツリーのパネルはツリーの案内を出す（正常系）

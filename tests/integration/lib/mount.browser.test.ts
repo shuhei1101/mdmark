@@ -647,6 +647,49 @@ test("test_normal_when_table_sorted_and_filtered", async () => {
   expect(drawer.hasAttribute("hidden")).toBe(true);
   expect(filterButton.getAttribute("aria-expanded")).toBe("false");
 });
+// data-no-sort の列の見出しには並べ替えのボタンを付けず、ほかの列は並べ替えられる（正常系）
+test("test_normal_when_long_column_not_sortable", async () => {
+  // 準備
+  const wide = "あ".repeat(40);
+  const el = createElement();
+  await mountTracked(el, {
+    markdown: [
+      '<!-- table: {"kind": "data", "columns": {"説明": {"filter": {}}}} -->',
+      "",
+      "| 名前 | 更新日 | 説明 |",
+      "| --- | --- | --- |",
+      `| 目次 | 2026-11-01 | ${wide} |`,
+      `| 表 | 2026-11-12 | ${wide} |`,
+      `| 差分 | 2026-11-05 | ${wide} |`,
+      "",
+      "<!-- /table -->",
+      "",
+    ].join("\n"),
+  });
+  const heads = [...el.querySelectorAll<HTMLElement>("thead th")];
+  // 検証
+  expect(find<HTMLElement>(el, ".mdmark-table").dataset.noSort).toBe("2");
+  expect(heads[2]?.querySelector("button.mdmark-sort")).toBeNull();
+  expect(heads[2]?.querySelector("span.mdmark-th-label")?.textContent).toBe(
+    "説明",
+  );
+  expect(heads[0]?.querySelector("button.mdmark-sort")).not.toBeNull();
+  // 検証: 説明の列の見出しは、並べ替えのほかの機能（ピン止め・絞り込み）のボタンを持つ
+  expect(heads[2]?.querySelector("button.mdmark-pin")).not.toBeNull();
+  expect(heads[2]?.querySelector("button.mdmark-filter")).not.toBeNull();
+  // 実行: 更新日の列の見出しを押す
+  find<HTMLButtonElement>(
+    heads[1] as HTMLElement,
+    "button.mdmark-sort",
+  ).click();
+  // 検証
+  expect(columnTexts(el, 1)).toEqual([
+    "2026-11-12",
+    "2026-11-05",
+    "2026-11-01",
+  ]);
+  expect(heads[1]?.getAttribute("aria-sort")).toBe("descending");
+});
 
 /** 表の本文の行の指定した列のセル（隠れた行も含む）と、その列の見出し・集計のセルを返却する */
 function columnCells(el: Element, column: number): HTMLElement[] {
@@ -9115,6 +9158,144 @@ test("test_normal_when_base_with_diff_source", async () => {
   // 検証
   await waitForDiffLines(other);
   expect(source.revisionsCalls).toEqual(["guide"]);
+});
+
+/** 右側の目次の変更のマーカーを確かめる比較元: h1 の下に h2 の A・B・E・C、B に h3 の B1 */
+const TOC_BASE = [
+  "# 文書",
+  "",
+  "## A",
+  "",
+  "A の段落です。",
+  "",
+  "## B",
+  "",
+  "書き換える前の B の段落です。",
+  "",
+  "### B1",
+  "",
+  "B1 の段落です。",
+  "",
+  "## E",
+  "",
+  "E の段落です。",
+  "",
+  "## C",
+  "",
+  "削除する C の段落です。",
+  "",
+].join("\n");
+
+/** 比較元の B の段落を書き換え、E を見出しごと削除し、C の段落を削除し、末尾に D を追加した文書 */
+const TOC_TARGET = [
+  "# 文書",
+  "",
+  "## A",
+  "",
+  "A の段落です。",
+  "",
+  "## B",
+  "",
+  "書き換えた後の B の段落です。",
+  "",
+  "### B1",
+  "",
+  "B1 の段落です。",
+  "",
+  "## C",
+  "",
+  "## D",
+  "",
+  "追加した D の段落です。",
+  "",
+].join("\n");
+
+/** 右側の目次の項目のリンクのうち、変更のマーカーを持つものの見出しの ID */
+function changedTocIds(el: HTMLElement): string[] {
+  return [
+    ...el.querySelectorAll<HTMLAnchorElement>(
+      ".mdmark-side-toc-list a[data-changed]",
+    ),
+  ].map((link) => link.dataset.headingId ?? "");
+}
+
+// 色分けしたブロックを持つセクションと祖先の項目と線に変更のマーカーを付け、比較元を解除すると消す（正常系）
+test("test_normal_when_side_toc_marked", async () => {
+  // 準備
+  const el = createElement();
+  // 実行
+  const handle = await mountTracked(el, {
+    markdown: TOC_TARGET,
+    baseMarkdown: TOC_BASE,
+    config: { "side-toc": { mode: "hover" } },
+  });
+  await settle();
+  // 検証: h1・B・C・D に付き、A・B1 と見出しごと削除した E の前の B1 には付かない
+  expect(changedTocIds(el).sort()).toEqual(["b", "c", "d", "文書"].sort());
+  expect(
+    el.querySelector('.mdmark-side-toc-list a[data-heading-id="e"]'),
+  ).toBeNull();
+  const link = find<HTMLAnchorElement>(
+    el,
+    '.mdmark-side-toc-list a[data-heading-id="b"]',
+  );
+  expect(link.getAttribute("aria-label")).toBe("B（変更）");
+  const marker = find<HTMLElement>(link, "span.mdmark-side-toc-changed");
+  expect(marker.getAttribute("aria-hidden")).toBe("true");
+  expect(link.lastElementChild).toBe(marker);
+  // 検証: 右端の線は見出しの順に並び、h1・B・C・D の線に付く
+  const bars = [...el.querySelectorAll(".mdmark-side-toc-bar")];
+  const ids = [
+    ...el.querySelectorAll<HTMLAnchorElement>(".mdmark-side-toc-list a"),
+  ].map((item) => item.dataset.headingId ?? "");
+  expect(
+    bars
+      .map((bar, index) => (bar.hasAttribute("data-changed") ? ids[index] : ""))
+      .filter(Boolean)
+      .sort(),
+  ).toEqual(["b", "c", "d", "文書"].sort());
+  // 検証: 目次を出すボタンの今いる見出しの文字に（変更）が無い
+  expect(find(el, ".mdmark-side-toc-current").textContent).not.toContain(
+    "（変更）",
+  );
+  // 実行: 比較元を解除する
+  handle.update(TOC_TARGET, { baseMarkdown: null });
+  await settle();
+  // 検証
+  expect(changedTocIds(el)).toEqual([]);
+  expect(
+    el.querySelectorAll(".mdmark-side-toc-bar[data-changed]"),
+  ).toHaveLength(0);
+  expect(
+    el.querySelectorAll(".mdmark-side-toc-list a[aria-label]"),
+  ).toHaveLength(0);
+});
+
+// diffMode が blocks のとき、取り出し元のリビジョンで色分けしたブロックから同じ変更のマーカーを付ける（正常系）
+test("test_normal_when_blocks_side_toc_marked", async () => {
+  // 準備
+  const before =
+    "## A\n\nA の段落です。\n\n## B\n\n書き換える前の B の段落です。\n";
+  const after =
+    "## A\n\nA の段落です。\n\n## B\n\n書き換えた後の B の段落です。\n";
+  const source = createBlocksSource({ r1: before, r2: after });
+  const el = createElement();
+  // 実行
+  await mountTracked(el, {
+    markdown: after,
+    docId: "guide",
+    diffSource: source,
+    diffMode: "blocks",
+    config: { "side-toc": { mode: "hover" } },
+  });
+  await vi.waitFor(() => {
+    expect(changedTocIds(el).length).toBeGreaterThan(0);
+  });
+  // 検証
+  expect(changedTocIds(el)).toEqual(["b"]);
+  const bars = el.querySelectorAll(".mdmark-side-toc-bar");
+  expect(bars[0]?.hasAttribute("data-changed")).toBe(false);
+  expect(bars[1]?.hasAttribute("data-changed")).toBe(true);
 });
 
 // 比較元が文字列でも null でもないと、描かずに TypeError を投げる（異常系）

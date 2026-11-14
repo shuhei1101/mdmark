@@ -872,3 +872,95 @@ test("test_read_table_spec_when_tree", async () => {
   expect(spec.example).toBe("YAML");
   expect(spec.features).not.toContain("sort");
 });
+
+// 列ごとの並べ替えの指定を読み込み、true は sort の機能を加える（正常系）
+test("test_read_table_spec_when_column_sort", async () => {
+  // 準備
+  const { readTableSpec } = await loadTables();
+  const plain = {
+    kind: "plain",
+    columns: { 名前: { sort: true }, 説明: { sort: false } },
+  };
+  const disabled = {
+    kind: "data",
+    features: { sort: { enabled: false } },
+    columns: { 名前: { sort: true } },
+  };
+  // 実行
+  const first = readTableSpec(plain, ["名前", "説明"], 10);
+  const second = readTableSpec(disabled, ["名前", "説明"], 10);
+  // 検証
+  expect(first.features).toContain("sort");
+  expect(first.sorts).toEqual([
+    { column: 0, sort: true },
+    { column: 1, sort: false },
+  ]);
+  expect(second.features).not.toContain("sort");
+  expect(second.sorts).toEqual([]);
+});
+
+// 並べ替えを付けない列を囲みの data-no-sort に写す（正常系）
+test("test_decorate_tables_when_no_sort", () => {
+  // 準備: インターフェース定義『文書をHTML文字列にする』の「正常系（長文の列と並べ替えの指定）」の文書
+  const table = (mark: string): string =>
+    [
+      `<!-- table: ${mark} -->`,
+      "",
+      "| 名前 | 更新日 | 説明 |",
+      "| --- | --- | --- |",
+      `| ${wide(6)} | 2026-11-01 | ${wide(40)} |`,
+      `| ${wide(4)} | 2026-11-05 | ${wide(40)} |`,
+      "",
+      "<!-- /table -->",
+      "",
+    ].join("\n");
+  const markdown = [
+    table('{"kind": "data"}'),
+    table(
+      '{"kind": "data", "columns": {"説明": {"sort": true}, "名前": {"sort": false}}}',
+    ),
+    table('{"kind": "plain", "features": {"sort": {}}}'),
+    table('{"kind": "plain", "columns": {"名前": {"sort": true}}}'),
+    table(
+      '{"kind": "data", "features": {"sort": {"enabled": false}}, "columns": {"説明": {"sort": true}}}',
+    ),
+  ].join("\n");
+  // 実行
+  const { html } = renderDoc(markdown);
+  // 検証
+  const wrappers = findTags(html, 'class="mdmark-table"');
+  expect(wrappers).toHaveLength(5);
+  const [a, b, c, d, e] = wrappers.map((wrapper) => wrapper ?? "");
+  expect(a).toContain('data-no-sort="2"');
+  expect(b).toContain('data-no-sort="0"');
+  expect(c).toMatch(/data-features="[^"]*\bsort\b/);
+  expect(c).toContain('data-no-sort="2"');
+  expect(d).toMatch(/data-features="[^"]*\bsort\b/);
+  expect(d).toContain('data-no-sort="2"');
+  expect(e).not.toMatch(/data-features="[^"]*\bsort\b/);
+  expect(e).not.toContain("data-no-sort");
+  expect(html).not.toContain("mdmark-syntax-warning");
+});
+
+// ビューの表は長文の列にも並べ替えを付けたまま描く（正常系）
+test("test_decorate_tables_when_view_long_column", () => {
+  // 準備: 説明の列が長文の列になるビューの表
+  const markdown = [
+    "<!-- view: {} -->",
+    "",
+    "| 名前 | 説明 |",
+    "| --- | --- |",
+    `| ${wide(6)} | ${wide(40)} |`,
+    `| ${wide(4)} | ${wide(40)} |`,
+    "",
+    "<!-- /view -->",
+    "",
+  ].join("\n");
+  // 実行
+  const { html } = renderDoc(markdown);
+  // 検証
+  const wrapper = findTags(html, 'class="mdmark-table"')[0] ?? "";
+  expect(wrapper).toMatch(/data-features="[^"]*\bsort\b/);
+  expect(wrapper).toContain('data-long="1"');
+  expect(wrapper).not.toContain("data-no-sort");
+});

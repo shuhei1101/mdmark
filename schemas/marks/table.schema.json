@@ -64,6 +64,9 @@
           "pinned": {
             "type": "boolean"
           },
+          "sort": {
+            "type": "boolean"
+          },
           "total": {
             "type": "array",
             "items": {

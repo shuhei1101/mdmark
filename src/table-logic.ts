@@ -466,6 +466,22 @@ export const findLongColumns = (columns: ColumnLines[]): number[] =>
       : [];
   });
 
+/** 長文の列のうち `sorts` で `true` を指定していない列と、`sorts` で `false` を指定した列の位置を、小さい順に返却する */
+export const findNoSortColumns = (options: {
+  /** 長文の列の位置 */
+  long: number[];
+  /** `columns.{列名}.sort` を記載した列と値 */
+  sorts: Array<{ column: number; sort: boolean }>;
+}): number[] => {
+  const { long, sorts } = options;
+  const sortOf = new Map(sorts.map(({ column, sort }) => [column, sort]));
+  const columns = new Set([
+    ...long.filter((column) => sortOf.get(column) !== true),
+    ...sorts.filter(({ sort }) => !sort).map(({ column }) => column),
+  ]);
+  return [...columns].sort((a, b) => a - b);
+};
+
 /** `filter.type` を省いた列の絞り込みの種類。長文の列なら `text`、ほかは `select` */
 export const defaultFilterKind = (long: boolean): FilterKind =>
   long ? "text" : "select";

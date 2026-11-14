@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <!-- viewport: スマホ幅で等倍に表示する -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>document / b-dot-start（右側の目次の変更のマーカーと長文の列の並べ替え） | mdmark のモック</title>
+  <!-- 配布物の CSS（ライブラリ本体） -->
+  <link rel="stylesheet" href="../../../../../../dist/index.css">
+  <!-- 利用側のページの外観と、モック専用の操作列（#287 で共有するアセット） -->
+  <link rel="stylesheet" href="../../../../refs/287/assets/scene.css">
+  <!-- 右側の目次の変更のマーカーの案（#550 で共有するアセット） -->
+  <link rel="stylesheet" href="../../../../refs/550/assets/toc-marker.css">
+  <!-- 配布物の mount で比較元つきの文書を描き、目次のマーカーと長文の列の並べ替えの除外を当てる -->
+  <script type="module" src="../../../../refs/550/assets/scene.js"></script>
+</head>
+<body data-mock-marker="start">
+  <!-- モック専用の操作列: 案・目次の出し方・比較元・明暗の切り替え。[data-scene-axis] [data-scene-value]: scene.js が行き先の URL と今の値の aria-current を適用する -->
+  <div class="mock-bar" data-mock-bar>
+    <div class="mock-bar-group" role="group" aria-label="マーカーの位置">
+      <span class="mock-bar-label">マーカーの位置</span>
+      <a class="mock-bar-item" href="../a-dot-end/index.html">案 A（右端）</a>
+      <a class="mock-bar-item" href="../b-dot-start/index.html" aria-current="page">案 B（文字の前）</a>
+    </div>
+    <div class="mock-bar-group" role="group" aria-label="目次の出し方">
+      <span class="mock-bar-label">目次の出し方</span>
+      <a class="mock-bar-item" data-scene-axis="mode" data-scene-value="hover">hover</a>
+      <a class="mock-bar-item" data-scene-axis="mode" data-scene-value="fixed">fixed</a>
+    </div>
+    <div class="mock-bar-group" role="group" aria-label="比較元">
+      <span class="mock-bar-label">比較元</span>
+      <a class="mock-bar-item" data-scene-axis="base" data-scene-value="on">指定する</a>
+      <a class="mock-bar-item" data-scene-axis="base" data-scene-value="off">null</a>
+    </div>
+    <div class="mock-bar-group" role="group" aria-label="明暗">
+      <span class="mock-bar-label">明暗</span>
+      <a class="mock-bar-item" data-scene-axis="scheme" data-scene-value="light">明るい配色</a>
+      <a class="mock-bar-item" data-scene-axis="scheme" data-scene-value="dark">ダーク</a>
+    </div>
+  </div>
+
+  <!-- 利用側のページのトップバー（mdmark の外） -->
+  <header class="host-bar">利用側のアプリ</header>
+
+  <nav class="crumbs" aria-label="パンくずリスト">
+    <a href="../../../index.md">pages</a> / <a href="../../index.md">document</a> / <a href="../index.md">550</a> / b-dot-start
+  </nav>
+
+  <main class="host">
+    <!-- mount で描く先の要素 -->
+    <div id="doc"></div>
+  </main>
+</body>
+</html>

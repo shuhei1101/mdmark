@@ -1,0 +1,63 @@
+use_cases:
+  - kind: single
+    scenario: docs/scenario/SC-472-63.yaml
+    impact: changed
+    detail: 比較元を指定して描いたとき、右側の目次（hover・fixed）で比較元から変わったセクションに変更のマーカーと読み上げの文言が出て、比較元を解除すると消える
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-73.yaml
+    impact: changed
+    detail: 説明文のような長文の列には、表の種類と並べ替えの記載によらず並べ替えが付かず、短い値の列は今のまま並べ替えられる。列ごとの指定で並べ替えを付け外しできる
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-47.yaml
+    impact: changed
+    detail: 取り出し元のリビジョンでブロックを色分けして描いたときも、右側の目次で変わったセクションに変更のマーカーが出る
+    depends_on: []
+docs:
+  - page: docs/guide/導入-差分を表示する.md
+    new: false
+    change: '`baseMarkdown` を指定すると右側の目次の変わったセクションにマーカーが出ることを追加'
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-14T00:13:30.613221+00:00'
+  - page: docs/guide/API.md
+    new: false
+    change: '`opts.baseMarkdown` の説明に右側の目次のマーカーを追加'
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-14T00:13:30.613221+00:00'
+  - page: docs/guide/記載する-表に機能を付ける.md
+    new: false
+    change: 長文の列には並べ替えが既定で付かないこと（列ごとに戻す指定を足すならその書き方）を追加
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-14T00:13:30.613221+00:00'
+  - page: docs/guide/記法.md
+    new: false
+    change: 表のマーカーの `sort` の説明に長文の列の扱いを追加
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-14T00:13:30.613221+00:00'
+  - page: docs/guide/用語集.md
+    new: false
+    change: 用語「変更のマーカー」を追加（長文の列は各ページの本文で定義しているため追加しない）
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-14T00:13:30.613221+00:00'
+  - page: schemas/marks/table.schema.json
+    new: false
+    change: '`columns.{列名}.sort`（真偽値）を追加'
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-14T01:03:20.128285+00:00'
+scope_out:
+  - item: dev-docs の文書の画面で、比較中に目次の見出しの変更のマーカーを出す対応
+    reason: dev-docs のリポジトリの作業で、この作業 PR がマージされた後に mdmark の版を上げて行う
+    plan: shuhei1101/dev-docs#199
+  - item: '`diffSource` の差分の表示（「変更表示」の差分の行）で右側の目次にマーカーを出すこと'
+    reason: 要望は `baseMarkdown` の色分けが対象。差分の行を開いている間は右側の目次を隠すため対象にしない
+    plan: none
+  - item: 'ビューのマーカー（`<!-- view: … -->`）の表でも、長文の列に並べ替えを既定で付けず、ビューのマーカーで `columns.{列名}.sort` を読む'
+    reason: ビューのマーカーのスキーマにキーを追加し、既存のビューの表の見え方を変えるため、要望（表のマーカーの表）の範囲を広げる判断が要る。この PR はビューの表を今のままにする
+    plan: '#561'
