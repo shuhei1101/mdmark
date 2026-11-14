@@ -220,7 +220,10 @@ mdmark.config.yaml:build: schema: `build.out` がありません。書き出す 
 | `include_circular` | include の取り込みが循環する。場所はマーカーの行の番号。内容は循環の順（`a.md → b.md → a.md`）と修正方法 |
 | `diagram_invalid` | `chart`・`param`・`er` のマーカーの中の `json` のコードブロックの部品の定義を読み込めないか、部品の構造に合わない。内容は描いたときに出す記載の警告と同じ文 |
 | `retired_diagram` | 文書に、廃止した `flow`・`sequence` の範囲がある（同じ名前の拡張を `extensions` に記載しているときは出ない）。場所は範囲の開きのマーカーの行。内容は map の範囲で記載することと、`mdmark upgrade` で書き換えられること |
-| `syntax_warning` | `--text`・`--file` で指定した Markdown を描いたときに出る記載の警告のうち、`unknown_mark`・`diagram_invalid`・`retired_diagram` に該当しないもの。include の取り込み先が無い警告は、取り込み先を読み込まないため出さない（取り込み先は設定の文書の点検の `include_target_missing`・`include_circular` で確認する）。内容は記載の警告の文と同じ。場所は警告の元のマーカーの行 |
+| `annotation_undefined` | 文書の `※[ID]`・map の補足の `notes.{ID}.annotations` が、定義の無い注記の ID を参照している。場所は参照の行。内容は ID と、定義 `※[ID]: 本文` を記載するか ID を修正する修正方法 |
+| `annotation_unused` | 注記の定義 `※[ID]: 本文` が、どこからも参照されていない。場所は定義の行 |
+| `annotation_duplicate` | 同じ ID の注記の定義が 2 つ以上ある。2 つ目以降の定義ごとに 1 件。場所はその定義の行。内容は最初の定義を使用していることと、ID を変えるか定義を削除する修正方法 |
+| `syntax_warning` | `--text`・`--file` で指定した Markdown を描いたときに出る記載の警告のうち、`unknown_mark`・`diagram_invalid`・`retired_diagram`・`annotation_*` に該当しないもの。include の取り込み先が無い警告は、取り込み先を読み込まないため出さない（取り込み先は設定の文書の点検の `include_target_missing`・`include_circular` で確認する）。内容は記載の警告の文と同じ。場所は警告の元のマーカーの行 |
 | `unknown_mark_arg` | 設定の文書と `--text`・`--file` で指定した Markdown の記法のマーカーに、描くときに警告を出さずに無視する知らないキーがある。1 つにつき 1 件で、内容は無視したキー・その場所で使用できるキー・修正方法。場所はマーカーの行 |
 | `legacy_mark` | 記法・拡張・`libraries` のマーカーの引数が、JSON でない前の書き方（`キー=値`・`+機能` など）。内容は JSON での記載方法と、`mdmark upgrade` で書き換えられるか。場所はマーカーの行 |
 | `mark_option_invalid` | マーカーの引数を JSON のオブジェクトとして読めないか、値の型・選べる値・必須のキーが合わない。内容は描いたときに出す記載の警告と同じ文。場所はマーカーの行 |

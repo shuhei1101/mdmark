@@ -45,43 +45,57 @@ docs:
   - page: docs/guide/記法.md
     new: false
     change: 注記の定義と参照（本文・表のセル）の記法の行と節を追加する（使用方法集 notation）
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-14T05:55:20.089186+00:00'
   - page: docs/guide/図を描く-Mermaidと補足で図を描く.md
     new: false
     change: 補足で map のノードと線から注記を参照する書き方と、補足の notes（説明）との使い分けを追加する（使用方法集 map）。状態遷移図の Mermaid の `note` の呼び名を「ノート」に改める
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-14T05:55:20.089186+00:00'
   - page: docs/guide/図を描く-図を描く.md
     new: false
     change: 図の `※n` の注記の表を、注記の記法で記載する案内を追加する（使用方法集 diagrams）
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-14T05:55:20.089186+00:00'
   - page: docs/guide/記載する-本文を部品で組む.md
     new: false
     change: 脚注の節の横に、注記の定義と参照の手順と、脚注との使い分けを追加する
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-14T05:55:20.089186+00:00'
   - page: docs/guide/用語集.md
     new: false
     change: 注記・注記の一覧の用語を追加する。ファイルツリーの用語「注釈」との違いが分かる意味にする
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-14T05:55:20.089186+00:00'
   - page: docs/guide/設定.md
     new: false
     change: 設定の features に annotations（注記の機能。既定はオン）のキーを追加する
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-14T05:55:20.089186+00:00'
   - page: docs/guide/カスタマイズ-印刷する.md
     new: false
     change: 印刷で末尾の注記の一覧を開いて出すことを追加する
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-14T05:55:20.089186+00:00'
   - page: docs/guide/CLI.md
     new: false
     change: check が返すずれに、定義の無い注記の参照・参照されていない注記の定義・同じ ID の 2 つ目の定義を追加する
-    status: todo
-  - page: docs/guide/MCP.md
-    new: false
-    change: MCP の check が返すずれに、注記の 3 つの警告を追加する
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-14T05:55:20.089186+00:00'
   - page: guide/index.yaml
     new: false
     change: notation ・ map ・ diagrams の summary に注記を追加する
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-14T05:55:20.089186+00:00'
   - page: docs/guide/コアコンセプト-図を自動配置して辿る仕組み.md
     new: false
     change: Mermaid の `note` の呼び名を「注記」から「ノート」に改める
