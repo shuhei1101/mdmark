@@ -259,6 +259,17 @@ function withBlankLines(options: {
       removed: kind === "del",
     });
   };
+  /** 削除・追加の行と、その後ろの空白だけの行を同じ種類で並べる */
+  const pushWithBlanks = (
+    text: string,
+    kind: "del" | "add",
+    blanks: string[] | undefined,
+  ): void => {
+    push(text, kind);
+    for (const blank of blanks ?? []) {
+      push(blank, kind);
+    }
+  };
   /** 同じ行（か先頭）の後ろの空白だけの行を前から順に対にする */
   const pairBlanks = (beforeLine: number, afterLine: number): void => {
     const dels = before.blanks.get(beforeLine) ?? [];
@@ -289,16 +300,10 @@ function withBlankLines(options: {
     for (const text of splitLines(change.value)) {
       if (change.removed) {
         beforeLine += 1;
-        push(text, "del");
-        for (const blank of before.blanks.get(beforeLine) ?? []) {
-          push(blank, "del");
-        }
+        pushWithBlanks(text, "del", before.blanks.get(beforeLine));
       } else if (change.added) {
         afterLine += 1;
-        push(text, "add");
-        for (const blank of after.blanks.get(afterLine) ?? []) {
-          push(blank, "add");
-        }
+        pushWithBlanks(text, "add", after.blanks.get(afterLine));
       } else {
         beforeLine += 1;
         afterLine += 1;
