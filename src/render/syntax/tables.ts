@@ -18,6 +18,7 @@ import {
   FILTER_KINDS,
   type FilterKind,
   findLongColumns,
+  findNoSortColumns,
   findUnreadableTotals,
   isCompactCellText,
   TOTAL_LABELS,
@@ -109,6 +110,8 @@ export type TableSpec = {
   }>;
   /** 真偽値を ✓ と空欄で出す列の位置 */
   check: number[];
+  /** `columns.{列名}.sort` を記載した列と値（`sort` の機能を持たない表では入れない） */
+  sorts: Array<{ column: number; sort: boolean }>;
   /** 階層にするキーの列の位置 */
   tree?: number | undefined;
   /** 型の列の位置 */
@@ -199,6 +202,7 @@ export function readTableSpec(
   const unpinned: number[] = [];
   const widths: TableSpec["widths"] = [];
   const check: number[] = [];
+  const sorts: TableSpec["sorts"] = [];
   const columns = isObject(spec.columns) ? spec.columns : {};
   for (const [name, settings] of Object.entries(columns)) {
     if (!isObject(settings)) {
@@ -267,6 +271,12 @@ export function readTableSpec(
     if (isObject(settings.format) && settings.format.type === "check") {
       check.push(column);
     }
+    if (typeof settings.sort === "boolean" && !disabled.has("sort")) {
+      if (settings.sort) {
+        add("sort");
+      }
+      sorts.push({ column, sort: settings.sort });
+    }
   }
   const header = isObject(spec.header) ? spec.header : {};
   let headRows = 1;
@@ -327,6 +337,8 @@ export function readTableSpec(
     unpinned,
     widths,
     check,
+    // `sort` の機能を持たない表（階層の表を含む）には列ごとの並べ替えの指定を当てない
+    sorts: features.includes("sort") ? sorts : [],
   };
 }
 
@@ -1153,6 +1165,9 @@ export function decorateTables(state: StateCore): void {
     }
     const filtering = spec.features.includes("filter");
     const long = findLongColumns(columnLinesOf(tokens, index));
+    const noSort = spec.features.includes("sort")
+      ? findNoSortColumns({ long, sorts: spec.sorts })
+      : [];
     const filters: TableFilter[] = spec.filters.map((filter) => ({
       column: filter.column,
       kind: filter.kind ?? defaultFilterKind(long.includes(filter.column)),
@@ -1184,6 +1199,7 @@ export function decorateTables(state: StateCore): void {
       unpin: spec.unpinned,
       check: spec.check,
       tree: spec.tree,
+      noSort,
       body: SLOT_MARKER,
       rawCsv: (token.meta as Partial<CsvTableMeta> | null)?.rawCsv,
     });

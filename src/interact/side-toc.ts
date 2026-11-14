@@ -56,12 +56,60 @@ function headingElements(content: HTMLElement): HTMLElement[] {
   ].filter((heading) => heading.closest(EMBEDDED_HTML_SELECTOR) === null);
 }
 
-/** 本文の中の右側の目次に並べる見出しを文書の順に集める */
+/** 本文の中で色分けしたブロック */
+const DIFF_BLOCK_SELECTOR = ".mdmark-diff-block";
+
+/** 変わったセクションを数える見出し。削除のブロックの中の `id` を持たない見出しも含める */
+const ALL_HEADING_SELECTOR = "h1, h2, h3";
+
+/** 本文の中の色分けしたブロックごとに、そのブロックが含む見出しか前にある最後の見出しと、その祖先の見出しを集め、`id` を持つ見出しの ID を返却する */
+export function findChangedHeadings(content: HTMLElement): Set<string> {
+  const changed = new Set<string>();
+  const blocks = [
+    ...content.querySelectorAll<HTMLElement>(DIFF_BLOCK_SELECTOR),
+  ];
+  if (blocks.length === 0) {
+    return changed;
+  }
+  const headings = [
+    ...content.querySelectorAll<HTMLElement>(ALL_HEADING_SELECTOR),
+  ].filter((heading) => heading.closest(EMBEDDED_HTML_SELECTOR) === null);
+  const levelOf = (heading: HTMLElement): number =>
+    Number(heading.tagName[1]);
+  for (const block of blocks) {
+    const own = headings.find((heading) => block.contains(heading));
+    // 文書の順でブロックより前にある見出し（ブロックが含む見出しを除く）
+    const before = headings.filter(
+      (heading) =>
+        !block.contains(heading) &&
+        (block.compareDocumentPosition(heading) &
+          Node.DOCUMENT_POSITION_PRECEDING) !==
+          0,
+    );
+    let target = own ?? before.at(-1);
+    while (target !== undefined) {
+      // `id` を持たない見出し（削除のブロックの中）は目次の項目を持たないため、祖先だけを集める
+      if (target.id !== "") {
+        changed.add(target.id);
+      }
+      const level = levelOf(target);
+      const index = before.indexOf(target);
+      target = (index < 0 ? before : before.slice(0, index))
+        .filter((heading) => levelOf(heading) < level)
+        .at(-1);
+    }
+  }
+  return changed;
+}
+
+/** 本文の中の右側の目次に並べる見出しを文書の順に集め、変わったセクションの見出しに `changed` を付ける */
 export function collectSideTocHeadings(content: HTMLElement): SideTocHeading[] {
+  const changed = findChangedHeadings(content);
   return headingElements(content).map((heading) => ({
     level: Number(heading.tagName[1]) as SideTocHeading["level"],
     id: heading.id,
     text: visibleText(heading),
+    ...(changed.has(heading.id) ? { changed: true } : {}),
   }));
 }
 

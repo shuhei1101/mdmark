@@ -10,7 +10,12 @@ export type SideTocHeading = {
   id: string;
   /** 目次に出す見出しの文字 */
   text: string;
+  /** 比較元から変わったセクションか。`true` なら項目と右端の線に変更のマーカーを付ける */
+  changed?: boolean;
 };
+
+/** 変更のマーカーの読み上げで、項目の名前に続ける文言 */
+const CHANGED_LABEL = "（変更）";
 
 /** 入れ子にした目次の項目 */
 type SideTocItem = {
@@ -48,7 +53,17 @@ function renderItems(
   return items
     .map(({ heading, children }) => {
       const mark = heading.id === current ? ' aria-current="location"' : "";
-      const link = `<a href="#${escapeHtml(heading.id)}" data-heading-id="${escapeHtml(heading.id)}"${mark}>${escapeHtml(heading.text)}</a>`;
+      const text = escapeHtml(heading.text);
+      // 変わったセクションは読み上げの文言をリンクの名前に持たせ、リンクの文字には足さない（目次を出すボタンへ写す文字を変えない）
+      const changed =
+        heading.changed === true
+          ? ` data-changed aria-label="${text}${CHANGED_LABEL}"`
+          : "";
+      const marker =
+        heading.changed === true
+          ? '<span class="mdmark-side-toc-changed" aria-hidden="true"></span>'
+          : "";
+      const link = `<a href="#${escapeHtml(heading.id)}" data-heading-id="${escapeHtml(heading.id)}"${mark}${changed}>${text}${marker}</a>`;
       const nested = children.length
         ? `<ul>${renderItems(children, current)}</ul>`
         : "";
@@ -100,8 +115,8 @@ export function renderSideToc(options: {
   const currentText = headings.find((heading) => heading.id === current)?.text;
   const bars = headings
     .map(
-      ({ level, id }) =>
-        `<span class="mdmark-side-toc-bar" data-level="${level}"${id === current ? " data-current" : ""}></span>`,
+      ({ level, id, changed }) =>
+        `<span class="mdmark-side-toc-bar" data-level="${level}"${id === current ? " data-current" : ""}${changed === true ? " data-changed" : ""}></span>`,
     )
     .join("");
   const actions = sections
