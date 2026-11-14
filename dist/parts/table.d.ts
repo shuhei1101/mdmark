@@ -87,6 +87,8 @@ export type TableOptions = {
     rowLinkNotice?: "copied" | "failed";
     /** 長文の列の位置（`data-long`） */
     long?: number[] | undefined;
+    /** 並べ替えを付けない列の位置（`data-no-sort`） */
+    noSort?: number[] | undefined;
     /** `width.min`・`width.max` を記載した列（`data-width`。em の数） */
     widthRanges?: Array<{
         column: number;
@@ -195,6 +197,8 @@ export type TableToolsOptions = {
     label: string;
     /** 機能 */
     features: string[];
+    /** 並べ替えのボタンにするか（既定 `true`。`false` なら `features` に `sort` があっても列名を文字のままにする） */
+    sortable?: boolean;
     /** 絞り込み（`select` は候補の値） */
     filter?: {
         kind: FilterKind;

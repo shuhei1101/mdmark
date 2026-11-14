@@ -12,7 +12,7 @@ export type MapRangeSource = {
     dataLine?: number | undefined;
 };
 /** 描ける図の種類 */
-export type MapKindName = "flowchart" | "sequenceDiagram";
+export type MapKindName = "flowchart" | "sequenceDiagram" | "erDiagram" | "stateDiagram";
 /** Mermaid の 1 行目の最初の単語から図の種類を決める */
 export declare const mapKindOf: (mermaid: string) => MapKindName | undefined;
 /** 範囲の mermaid のブロックと補足の数・図の種類・マーカーの引数だけを確かめる（Mermaid と補足の中身は読まない） */
