@@ -42,7 +42,7 @@ import { assembleHtml, type ExportPayload } from "./html.ts";
 import { collectIconNodes } from "./icons.ts";
 import { collectIncludes, includeProblemMessage } from "./includes.ts";
 import { formatCheckIssue } from "./issues.ts";
-import { hideMarkdown } from "./traces.ts";
+import { hideMarkdown, hideNames } from "./traces.ts";
 
 /** 索引に追加する、用語集の文書の `id` の頭 */
 const GLOSSARY_ID_PREFIX = "mdmark-glossary-";
@@ -120,7 +120,7 @@ async function prepareReferences(
     documents[key] = markdown;
     if (!referenceDocs.some((doc) => normalizePath(doc.path) === key)) {
       referenceDocs.push({
-        id: `${GLOSSARY_ID_PREFIX}${position}`,
+        id: `${options.hideTraces ? hideNames(GLOSSARY_ID_PREFIX) : GLOSSARY_ID_PREFIX}${position}`,
         path: key,
         title: documentTitle({ path, markdown }),
       });
