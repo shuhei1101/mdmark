@@ -49,6 +49,13 @@ export function retiredDiagramMessage(
   return `\`<!-- ${directive} -->\` の図の記載方法は廃止しました。\`mdmark upgrade\` を実行すると、map の範囲（Mermaid と補足）へ書き換えます。この図は描いていません。`;
 }
 
+/** 埋め込んだ HTML の中の廃止した図の要素（`<mdmark-flow>`・`<mdmark-sequence>`）の記載の警告の本文 */
+export function retiredElementMessage(
+  directive: RetiredDiagramDirective,
+): string {
+  return `\`<mdmark-${directive}>\` の要素は廃止しました。埋め込んだ HTML の外に \`<!-- map -->\` の範囲で記載し直してください。この図は描いていません。`;
+}
+
 /** 廃止した図の部品のマーカーの名前か */
 export function isRetiredDiagram(
   name: string,

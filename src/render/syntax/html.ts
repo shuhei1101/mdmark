@@ -24,7 +24,7 @@ import { scopeCss } from "../scope-css.ts";
 import {
   isRetiredDiagram,
   PARAM_COUNT_META,
-  retiredDiagramMessage,
+  retiredElementMessage,
 } from "./diagrams.ts";
 import { type SeenTerms, termSegments } from "./terms.ts";
 import { envOf, featureOn, findClose, markOf } from "./tokens.ts";
@@ -154,10 +154,10 @@ function takeParts(options: {
     PART_PATTERN,
     (_match: string, name: string, text: string): string => {
       const lower = name.toLowerCase();
-      // 廃止した図の要素は、中身ごと落として廃止した図の記載の警告にする
+      // 廃止した図の要素は、中身ごと落として廃止した図の要素の記載の警告にする
       if (isRetiredDiagram(lower)) {
         const warning = warningBlock(state, {
-          message: retiredDiagramMessage(lower),
+          message: retiredElementMessage(lower),
           kind: "retired_diagram",
         });
         warnings.push(warning.meta?.warning as WarningMeta);
