@@ -43,6 +43,220 @@ function nameOf(row: HTMLTableRowElement): string {
   return row.querySelector(".mdmark-tree-array") ? `${name}[]` : name;
 }
 
+/** 行の開閉のボタン（子を持たない行は同じ幅の空き）を、最後の罫線の後か先頭に配置する */
+function insertToggle(cell: HTMLElement, row: HTMLTableRowElement): Element[] {
+  const guides = cell.querySelectorAll(".mdmark-tree-guide");
+  const anchor = guides[guides.length - 1] ?? null;
+  let element: Element | null;
+  if (row.classList.contains("has-children")) {
+    const template = document.createElement("template");
+    template.innerHTML = renderTreeTools({
+      kind: "toggle",
+      path: row.dataset.path ?? "",
+      expanded: true,
+    });
+    element = template.content.firstElementChild;
+  } else {
+    element = document.createElement("span");
+    element.className = "mdmark-tree-spacer";
+    element.setAttribute("aria-hidden", "true");
+  }
+  if (!element) {
+    return [];
+  }
+  if (anchor) {
+    anchor.after(element);
+  } else {
+    cell.prepend(element);
+  }
+  return [element];
+}
+
+/** 行の名前に全体のパスのツールチップと、パスのコピーのボタンを配置する。配置した要素を返却する */
+function insertTipAndCopy(options: {
+  cell: HTMLElement;
+  name: HTMLElement;
+  path: string;
+  tipId: string;
+}): HTMLElement[] {
+  const { cell, name, path, tipId } = options;
+  const tip = document.createElement("span");
+  tip.className = "mdmark-tree-tip";
+  tip.setAttribute("role", "tooltip");
+  tip.id = tipId;
+  tip.textContent = path;
+  tip.hidden = true;
+  name.setAttribute("aria-describedby", tip.id);
+  const copyTemplate = document.createElement("template");
+  copyTemplate.innerHTML = renderTreeTools({ kind: "copy" });
+  const copy = copyTemplate.content.firstElementChild;
+  cell.append(tip);
+  if (!(copy instanceof HTMLElement)) {
+    return [tip];
+  }
+  cell.append(copy);
+  return [tip, copy];
+}
+
+/** 行に開閉のボタン・パスのツールチップ・コピーのボタンを配置し、ツールチップの出し入れを付ける。元に戻す関数を返却する（名前の無い行は何もしない） */
+function attachRowTools(
+  row: HTMLTableRowElement,
+  tipId: string,
+): (() => void) | undefined {
+  const cell = row.querySelector<HTMLElement>(".mdmark-tree-cell");
+  const name = cell?.querySelector<HTMLElement>(".mdmark-tree-name");
+  if (!cell || !name) {
+    return undefined;
+  }
+  const added = [
+    ...insertToggle(cell, row),
+    ...insertTipAndCopy({ cell, name, path: row.dataset.path ?? "", tipId }),
+  ];
+  const tip = added.find((element) => element.id === tipId) as HTMLElement;
+  const show = (): void => {
+    tip.hidden = false;
+  };
+  const hide = (): void => {
+    tip.hidden = true;
+  };
+  const onKey = (event: KeyboardEvent): void => {
+    if (event.key === "Escape") {
+      hide();
+    }
+  };
+  name.addEventListener("pointerenter", show);
+  name.addEventListener("pointerleave", hide);
+  name.addEventListener("focus", show);
+  name.addEventListener("blur", hide);
+  name.addEventListener("keydown", onKey);
+  return () => {
+    name.removeEventListener("pointerenter", show);
+    name.removeEventListener("pointerleave", hide);
+    name.removeEventListener("focus", show);
+    name.removeEventListener("blur", hide);
+    name.removeEventListener("keydown", onKey);
+    name.removeAttribute("aria-describedby");
+    for (const element of added) {
+      element.remove();
+    }
+  };
+}
+
+/** 行の名前の中の該当した単語にマーカーを付ける。単語が空なら、名前をマーカーの無い文字に戻す */
+function markTreeHit(row: HTMLTableRowElement, word: string): void {
+  const name = row.querySelector<HTMLElement>(".mdmark-tree-name");
+  if (!name) {
+    return;
+  }
+  const text = name.textContent ?? "";
+  name.textContent = text;
+  const at = word === "" ? -1 : text.toLowerCase().indexOf(word.toLowerCase());
+  if (at < 0) {
+    return;
+  }
+  name.innerHTML = "";
+  const mark = document.createElement("mark");
+  mark.className = "mdmark-tree-hit";
+  mark.textContent = text.slice(at, at + word.length);
+  name.append(text.slice(0, at), mark, text.slice(at + word.length));
+}
+
+/** 行の開閉のボタンの `aria-expanded` と名前を、開いているかに合わせる */
+function labelToggle(row: HTMLTableRowElement, expanded: boolean): void {
+  const toggle = row.querySelector<HTMLButtonElement>(
+    "button.mdmark-tree-toggle",
+  );
+  if (!toggle) {
+    return;
+  }
+  toggle.setAttribute("aria-expanded", String(expanded));
+  toggle.setAttribute(
+    "aria-label",
+    `${row.dataset.path ?? ""} を${expanded ? "畳む" : "開く"}`,
+  );
+}
+
+/** 子を持つ行のパス */
+function foldablePaths(rows: HTMLTableRowElement[]): string[] {
+  return rows
+    .filter((row) => row.classList.contains("has-children"))
+    .map((row) => row.dataset.path ?? "");
+}
+
+/** 選んだ行と同じ親の行と、その子孫の行の、選んだ行の深さの罫線を強調する */
+function activateGuides(
+  rows: HTMLTableRowElement[],
+  selected: HTMLTableRowElement,
+): void {
+  const parent = selected.dataset.parent ?? "";
+  const depth = Number(selected.dataset.depth ?? 0);
+  const siblings = rows.filter((row) => row.dataset.parent === parent);
+  const scope = rows.filter((candidate) => {
+    const path = candidate.dataset.path ?? "";
+    return (
+      candidate.dataset.parent === parent ||
+      siblings.some((sibling) =>
+        path.startsWith(`${sibling.dataset.path ?? ""}.`),
+      )
+    );
+  });
+  for (const candidate of scope) {
+    candidate
+      .querySelectorAll(".mdmark-tree-guide")
+      [depth - 1]?.classList.add("is-active");
+  }
+}
+
+/** 表の上に見本の表示を切り替えるボタンの帯を配置する。元に戻す関数を返却する */
+function attachExampleBar(options: {
+  wrapper: HTMLElement;
+  layout: HTMLElement;
+  example: HTMLElement;
+}): () => void {
+  const { wrapper, layout, example } = options;
+  const bar = document.createElement("div");
+  bar.className = "mdmark-tree-bar";
+  bar.innerHTML = renderTreeTools({
+    kind: "example",
+    expanded: true,
+    controls: example.id,
+  });
+  wrapper.before(bar);
+  const button = bar.querySelector<HTMLButtonElement>(
+    "button.mdmark-tree-example-toggle",
+  );
+  const onToggle = (): void => {
+    const hidden = !layout.classList.contains("is-example-hidden");
+    layout.classList.toggle("is-example-hidden", hidden);
+    example.hidden = hidden;
+    if (button) {
+      button.setAttribute("aria-expanded", String(!hidden));
+      button.textContent = hidden ? "見本を表示" : "見本を隠す";
+    }
+  };
+  button?.addEventListener("click", onToggle);
+  return () => {
+    button?.removeEventListener("click", onToggle);
+    bar.remove();
+    layout.classList.remove("is-example-hidden");
+    example.hidden = false;
+  };
+}
+
+/** 階層の表の行の開閉の記録の鍵の頭。記録しないときは空 */
+function treeStateBase(
+  wrapper: HTMLElement,
+  states: PartStates | undefined,
+): string {
+  if (states === undefined) {
+    return "";
+  }
+  const root =
+    wrapper.parentElement?.closest<HTMLElement>(".mdmark") ??
+    wrapper.ownerDocument.body;
+  return partKey({ root, part: wrapper, kind: "table-tree" });
+}
+
 /** `data-tree` の表の子を持つ行に開閉のボタン、各行にパスのコピーのボタンと全体のパスのツールチップを配置し、開閉・行の選択・見本との連動と見本の表示の切り替えを付ける */
 export function attachTableTree(options: {
   /** `div.mdmark-table[data-tree]` */
@@ -53,14 +267,8 @@ export function attachTableTree(options: {
   states?: PartStates;
 }): TableTreeHandle {
   const { wrapper, states } = options;
-  const root =
-    wrapper.parentElement?.closest<HTMLElement>(".mdmark") ??
-    wrapper.ownerDocument.body;
   /** 行の記録の鍵 */
-  const base =
-    states === undefined
-      ? ""
-      : partKey({ root, part: wrapper, kind: "table-tree" });
+  const base = treeStateBase(wrapper, states);
   const keyOf = (path: string): string => `${base}|${path}`;
   const rows = [
     ...wrapper.querySelectorAll<HTMLTableRowElement>(
@@ -70,90 +278,16 @@ export function attachTableTree(options: {
   const cleanups: Array<() => void> = [];
   const descendantsOf = (path: string): HTMLTableRowElement[] =>
     rows.filter((row) => (row.dataset.path ?? "").startsWith(`${path}.`));
-  const toggleOf = (row: HTMLTableRowElement): HTMLButtonElement | null =>
-    row.querySelector<HTMLButtonElement>("button.mdmark-tree-toggle");
 
   // ─── ボタンとツールチップ ───
-  for (const row of rows) {
-    const cell = row.querySelector<HTMLElement>(".mdmark-tree-cell");
-    const name = cell?.querySelector<HTMLElement>(".mdmark-tree-name");
-    if (!cell || !name) {
-      continue;
+  for (const [index, row] of rows.entries()) {
+    const cleanup = attachRowTools(
+      row,
+      `${wrapper.id || "mdmark-tree"}-tip-${index}`,
+    );
+    if (cleanup) {
+      cleanups.push(cleanup);
     }
-    const path = row.dataset.path ?? "";
-    const added: Element[] = [];
-    const guides = cell.querySelectorAll(".mdmark-tree-guide");
-    const anchor = guides[guides.length - 1] ?? null;
-    if (row.classList.contains("has-children")) {
-      const template = document.createElement("template");
-      template.innerHTML = renderTreeTools({
-        kind: "toggle",
-        path,
-        expanded: true,
-      });
-      const toggle = template.content.firstElementChild;
-      if (toggle) {
-        if (anchor) {
-          anchor.after(toggle);
-        } else {
-          cell.prepend(toggle);
-        }
-        added.push(toggle);
-      }
-    } else {
-      const spacer = document.createElement("span");
-      spacer.className = "mdmark-tree-spacer";
-      spacer.setAttribute("aria-hidden", "true");
-      if (anchor) {
-        anchor.after(spacer);
-      } else {
-        cell.prepend(spacer);
-      }
-      added.push(spacer);
-    }
-    const tip = document.createElement("span");
-    tip.className = "mdmark-tree-tip";
-    tip.setAttribute("role", "tooltip");
-    tip.id = `${wrapper.id || "mdmark-tree"}-tip-${rows.indexOf(row)}`;
-    tip.textContent = path;
-    tip.hidden = true;
-    name.setAttribute("aria-describedby", tip.id);
-    const copyTemplate = document.createElement("template");
-    copyTemplate.innerHTML = renderTreeTools({ kind: "copy" });
-    const copy = copyTemplate.content.firstElementChild;
-    cell.append(tip);
-    added.push(tip);
-    if (copy) {
-      cell.append(copy);
-      added.push(copy);
-    }
-    const show = (): void => {
-      tip.hidden = false;
-    };
-    const hide = (): void => {
-      tip.hidden = true;
-    };
-    const onKey = (event: KeyboardEvent): void => {
-      if (event.key === "Escape") {
-        hide();
-      }
-    };
-    name.addEventListener("pointerenter", show);
-    name.addEventListener("pointerleave", hide);
-    name.addEventListener("focus", show);
-    name.addEventListener("blur", hide);
-    name.addEventListener("keydown", onKey);
-    cleanups.push(() => {
-      name.removeEventListener("pointerenter", show);
-      name.removeEventListener("pointerleave", hide);
-      name.removeEventListener("focus", show);
-      name.removeEventListener("blur", hide);
-      name.removeEventListener("keydown", onKey);
-      name.removeAttribute("aria-describedby");
-      for (const element of added) {
-        element.remove();
-      }
-    });
   }
 
   // ─── 開閉 ───
@@ -174,19 +308,36 @@ export function attachTableTree(options: {
   let matches: (row: HTMLTableRowElement) => boolean = () => true;
   let foldedBeforeFilter: Set<string> | undefined;
   /** 行の表示と該当した単語のマーカーをもう一度決め、表示した補った行でない行の数を返却する */
-  const refresh: TableTreeHandle["refresh"] = (next) => {
-    const nextWord = next.word.trim();
+  /** 絞り込みを始めたら開閉の状態を控え、絞り込みを解くと控えた開閉の状態に戻す */
+  const keepFolds = (nextWord: string): void => {
     if (nextWord !== "" && word === "") {
       foldedBeforeFilter = new Set(collapsed);
     }
     if (nextWord === "" && word !== "" && foldedBeforeFilter) {
-      // 絞り込みを解くと、絞り込む前の開閉の状態に戻す
       collapsed.clear();
       for (const path of foldedBeforeFilter) {
         collapsed.add(path);
       }
       foldedBeforeFilter = undefined;
     }
+  };
+  /** 行の表示・畳んだ印・該当した単語のマーカーを決め、表示したかを返却する */
+  const showRow = (
+    row: HTMLTableRowElement,
+    result: ReturnType<typeof filterTreeRows>,
+  ): boolean => {
+    const path = row.dataset.path ?? "";
+    const folded = word === "" && hiddenByFold(row);
+    const visible =
+      matches(row) && (word === "" ? !folded : result.keep.has(path));
+    row.hidden = !visible;
+    row.toggleAttribute(TREE_FOLDED_ATTRIBUTE, folded && matches(row));
+    markTreeHit(row, word === "" || !result.hits.has(path) ? "" : word);
+    return visible;
+  };
+  const refresh: TableTreeHandle["refresh"] = (next) => {
+    const nextWord = next.word.trim();
+    keepFolds(nextWord);
     word = nextWord;
     matches = next.matches;
     const result = filterTreeRows({
@@ -195,43 +346,30 @@ export function attachTableTree(options: {
     });
     let shown = 0;
     for (const row of rows) {
-      const path = row.dataset.path ?? "";
-      const name = row.querySelector<HTMLElement>(".mdmark-tree-name");
-      if (name) {
-        name.textContent = name.textContent ?? "";
-      }
-      const folded = word === "" && hiddenByFold(row);
-      const visible =
-        matches(row) && (word === "" ? !folded : result.keep.has(path));
-      row.hidden = !visible;
-      row.toggleAttribute(TREE_FOLDED_ATTRIBUTE, folded && matches(row));
-      if (name && word !== "" && result.hits.has(path)) {
-        const text = name.textContent ?? "";
-        const at = text.toLowerCase().indexOf(word.toLowerCase());
-        if (at >= 0) {
-          name.innerHTML = "";
-          const mark = document.createElement("mark");
-          mark.className = "mdmark-tree-hit";
-          mark.textContent = text.slice(at, at + word.length);
-          name.append(text.slice(0, at), mark, text.slice(at + word.length));
-        }
-      }
-      if (visible && !row.classList.contains("is-virtual")) {
+      if (showRow(row, result) && !row.classList.contains("is-virtual")) {
         shown += 1;
       }
     }
     for (const row of rows) {
-      const toggle = toggleOf(row);
-      if (toggle) {
-        const expanded = !collapsed.has(row.dataset.path ?? "");
-        toggle.setAttribute("aria-expanded", String(expanded));
-        toggle.setAttribute(
-          "aria-label",
-          `${row.dataset.path ?? ""} を${expanded ? "畳む" : "開く"}`,
-        );
-      }
+      labelToggle(row, !collapsed.has(row.dataset.path ?? ""));
     }
     return shown;
+  };
+  /** 記録した開閉のとおりに子を持つ行を畳む */
+  const restoreFolds = (): void => {
+    if (states === undefined) {
+      return;
+    }
+    for (const path of foldablePaths(rows)) {
+      if (
+        !startOpen({ states, key: keyOf(path), marker: "", markerOpen: true })
+      ) {
+        collapsed.add(path);
+      }
+    }
+    if (collapsed.size > 0) {
+      refresh({ word, matches });
+    }
   };
   /** 行の子孫を畳む・開く。`deep` なら入れ子の行も同じにする */
   const setFolded = (
@@ -240,20 +378,14 @@ export function attachTableTree(options: {
     deep: boolean,
   ): void => {
     const path = row.dataset.path ?? "";
-    if (fold) {
-      collapsed.add(path);
-    } else {
-      collapsed.delete(path);
-    }
-    if (deep) {
-      for (const descendant of descendantsOf(path)) {
-        if (descendant.classList.contains("has-children")) {
-          if (fold) {
-            collapsed.add(descendant.dataset.path ?? "");
-          } else {
-            collapsed.delete(descendant.dataset.path ?? "");
-          }
-        }
+    const targets = deep
+      ? [path, ...foldablePaths(descendantsOf(path))]
+      : [path];
+    for (const target of targets) {
+      if (fold) {
+        collapsed.add(target);
+      } else {
+        collapsed.delete(target);
       }
     }
     refresh({ word, matches });
@@ -262,15 +394,9 @@ export function attachTableTree(options: {
   const record = (row: HTMLTableRowElement, deep: boolean): void => {
     const path = row.dataset.path ?? "";
     const targets = deep
-      ? [
-          row,
-          ...descendantsOf(path).filter((d) =>
-            d.classList.contains("has-children"),
-          ),
-        ]
-      : [row];
-    for (const target of targets) {
-      const targetPath = target.dataset.path ?? "";
+      ? [path, ...foldablePaths(descendantsOf(path))]
+      : [path];
+    for (const targetPath of targets) {
       recordOpen({
         states,
         key: keyOf(targetPath),
@@ -280,20 +406,7 @@ export function attachTableTree(options: {
     }
   };
   // 記録した開閉で始める
-  if (states !== undefined) {
-    for (const row of rows) {
-      const path = row.dataset.path ?? "";
-      if (
-        row.classList.contains("has-children") &&
-        !startOpen({ states, key: keyOf(path), marker: "", markerOpen: true })
-      ) {
-        collapsed.add(path);
-      }
-    }
-    if (collapsed.size > 0) {
-      refresh({ word, matches });
-    }
-  }
+  restoreFolds();
 
   // ─── 行の選択と見本 ───
   const layout = wrapper.closest<HTMLElement>(".mdmark-tree-layout");
@@ -324,24 +437,7 @@ export function attachTableTree(options: {
     }
     selected = next;
     if (next) {
-      const parent = next.dataset.parent ?? "";
-      const depth = Number(next.dataset.depth ?? 0);
-      const scope = rows.filter((candidate) => {
-        const path = candidate.dataset.path ?? "";
-        return (
-          candidate.dataset.parent === parent ||
-          rows.some(
-            (sibling) =>
-              sibling.dataset.parent === parent &&
-              path.startsWith(`${sibling.dataset.path ?? ""}.`),
-          )
-        );
-      });
-      for (const candidate of scope) {
-        candidate
-          .querySelectorAll(".mdmark-tree-guide")
-          [depth - 1]?.classList.add("is-active");
-      }
+      activateGuides(rows, next);
     }
     linkExample(next?.dataset.path);
   };
@@ -417,33 +513,10 @@ export function attachTableTree(options: {
       attributeFilter: ["hidden"],
     });
     cleanups.push(() => panels.disconnect());
-    const bar = document.createElement("div");
-    bar.className = "mdmark-tree-bar";
-    bar.innerHTML = renderTreeTools({
-      kind: "example",
-      expanded: true,
-      controls: example.id,
-    });
-    wrapper.before(bar);
-    const button = bar.querySelector<HTMLButtonElement>(
-      "button.mdmark-tree-example-toggle",
-    );
-    const onToggle = (): void => {
-      const hidden = !layout.classList.contains("is-example-hidden");
-      layout.classList.toggle("is-example-hidden", hidden);
-      example.hidden = hidden;
-      button?.setAttribute("aria-expanded", String(!hidden));
-      if (button) {
-        button.textContent = hidden ? "見本を表示" : "見本を隠す";
-      }
-    };
-    button?.addEventListener("click", onToggle);
+    const detachBar = attachExampleBar({ wrapper, layout, example });
     cleanups.push(() => {
       example.removeEventListener("click", onExampleClick);
-      button?.removeEventListener("click", onToggle);
-      bar.remove();
-      layout.classList.remove("is-example-hidden");
-      example.hidden = false;
+      detachBar();
     });
   }
   cleanups.push(() => {
