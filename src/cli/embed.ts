@@ -19,6 +19,7 @@ import { mediaKindOf } from "../render/syntax/images.ts";
 import { collectRangeScripts } from "../render/used.ts";
 import { findAssetRefs, resolveAssetFile } from "./assets.ts";
 import { ASSET_SCHEME } from "./html.ts";
+import { HTML_SCRIPT_KEY_PREFIX, hideScript } from "./traces.ts";
 
 export { usedSyntaxLanguages, usesMermaid } from "../render/used.ts";
 
@@ -140,6 +141,8 @@ export function createViewerEntry(options: {
   map?: string | undefined;
   /** まとめるモジュールの読み込み先 */
   embeds: ViewerEmbeds;
+  /** 範囲のスクリプトの表の鍵を、`bundleViewer` が隠した後に戻す仮の文字列で記載するか */
+  hideTraces?: boolean | undefined;
 }): string {
   const { viewer, view, embeds } = options;
   const literal = (value: string): string => JSON.stringify(value);
@@ -182,8 +185,8 @@ export function createViewerEntry(options: {
   const htmlScripts = embeds.htmlScripts?.length
     ? `, htmlScripts: new Map([${embeds.htmlScripts
         .map(
-          ({ source, code }) =>
-            `[${literal(source)}, () => { const module = { exports: {} }; (function (module, exports, require) {\n${code}\n})(module, module.exports, (name) => { throw new Error("範囲のスクリプトでは require を使用できません: " + name); }); return module.exports.default; }]`,
+          ({ source, code }, position) =>
+            `[${literal(options.hideTraces ? `${HTML_SCRIPT_KEY_PREFIX}${position}@@` : source)}, () => { const module = { exports: {} }; (function (module, exports, require) {\n${code}\n})(module, module.exports, (name) => { throw new Error("範囲のスクリプトでは require を使用できません: " + name); }); return module.exports.default; }]`,
         )
         .join(", ")}])`
     : "";
@@ -201,6 +204,8 @@ export async function bundleViewer(options: {
   baseDir: string;
   /** URL を読み込む関数 */
   fetchText: FetchText;
+  /** 隠すときだけ指定する。`keys` は `createViewerEntry` に指定した範囲のスクリプトの `source` の並び */
+  hideTraces?: { keys: string[] } | undefined;
 }): Promise<string> {
   const { entry, baseDir, fetchText } = options;
   const result = await build({
@@ -216,10 +221,13 @@ export async function bundleViewer(options: {
     plugins: [urlPlugin(fetchText)],
     logLevel: "silent",
   });
-  const code = result.outputFiles[0]?.text;
-  if (code === undefined) {
+  const bundled = result.outputFiles[0]?.text;
+  if (bundled === undefined) {
     throw new Error("起動の処理をまとめた結果がありません");
   }
+  const code = options.hideTraces
+    ? hideScript({ code: bundled, keys: options.hideTraces.keys })
+    : bundled;
   // `script` 要素が途中で閉じない・script data escaped state に入らないように替える（どちらも文字列・正規表現・コメントの中にしか現れない）
   return code.replace(/<\/(script)/gi, "<\\/$1").replaceAll("<!--", "<\\x21--");
 }

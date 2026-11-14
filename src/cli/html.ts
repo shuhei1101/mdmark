@@ -5,6 +5,7 @@ import type { MdmarkIndex } from "../knowledge/index-shape.ts";
 import type { MdmarkReferences } from "../knowledge/references.ts";
 import { escapeHtml } from "../parts/escape.ts";
 import type { MdmarkIconNode } from "../parts/inline-icon.ts";
+import { hideCss, hideNames, hidePayload } from "./traces.ts";
 
 /** `bundle` で埋めた画像を指す `src` の頭 */
 export const ASSET_SCHEME = "mdmark-asset:";
@@ -95,15 +96,26 @@ export function assembleHtml(parts: {
   themeCss?: string | undefined;
   /** `bundleViewer` が起動の処理と埋めるモジュールをまとめたスクリプト（`</script` と `<!--` の並びは替えてある） */
   script: string;
+  /** mdmark の名前・HTML のコメント・バージョンを隠すか（`script` は `bundleViewer` が隠したものを指定する） */
+  hideTraces?: boolean | undefined;
 }): string {
-  const { payload, distCss, themeCss, script } = parts;
+  const { distCss, themeCss, script } = parts;
+  const hide = parts.hideTraces === true;
+  const payload = hide ? hidePayload(parts.payload) : parts.payload;
   const entry = payload.docs.find((doc) => doc.path === payload.entry);
   const title = escapeHtml(entry?.title ?? payload.entry);
-  const body = payload.kind === "bundle" ? BUNDLE_BODY : DOCUMENT_BODY;
+  const skeleton = payload.kind === "bundle" ? BUNDLE_BODY : DOCUMENT_BODY;
+  const body = hide ? hideNames(skeleton) : skeleton;
+  const payloadId = hide ? hideNames(PAYLOAD_ID) : PAYLOAD_ID;
   const styles = [distCss, themeCss ?? ""]
     .filter((css) => css !== "")
-    .map((css) => `<style>${escapeStyle(css)}</style>`)
+    .map((css) => `<style>${escapeStyle(hide ? hideCss(css) : css)}</style>`)
     .join("");
+  const hasIcons = payload.icons && Object.keys(payload.icons).length > 0;
+  const lucideLicense = `lucide ${LUCIDE_VERSION} - ISC License (c) Lucide Contributors / MIT License (c) 2013-present Cole Bemis`;
+  // 隠すときはライセンスの表記を HTML のコメントにせず、スクリプトの先頭の注釈に置く
+  const moduleScript =
+    hide && hasIcons ? `/*! ${lucideLicense} */\n${script}` : script;
   return [
     "<!doctype html>",
     '<html lang="ja">',
@@ -116,11 +128,9 @@ export function assembleHtml(parts: {
     "</head>",
     "<body>",
     body,
-    payload.icons && Object.keys(payload.icons).length > 0
-      ? `<!-- lucide ${LUCIDE_VERSION} - ISC License (c) Lucide Contributors / MIT License (c) 2013-present Cole Bemis -->`
-      : "",
-    `<script type="application/json" id="${PAYLOAD_ID}">${encodePayload(payload)}</script>`,
-    `<script type="module">${script}</script>`,
+    hasIcons && !hide ? `<!-- ${lucideLicense} -->` : "",
+    `<script type="application/json" id="${payloadId}">${encodePayload(payload)}</script>`,
+    `<script type="module">${moduleScript}</script>`,
     "</body>",
     "</html>",
     "",

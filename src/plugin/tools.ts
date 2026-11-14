@@ -67,13 +67,17 @@ export const PROJECT_DIR_ARG = "project_dir";
 export const PROJECT_DIR_ERROR_MESSAGE =
   "引数 project_dir が無いか、ある作業のフォルダの絶対パスではありません。mdmark のプラグインを入れた Claude Code のセッションから呼んでください。";
 
+/** 隠さない書き出しの引数の説明 */
+const KEEP_TRACES_DESCRIPTION =
+  "true のとき、開発用に mdmark の名前・HTML のコメント・バージョンを残して書き出す。省くと mdmark を使用していることを隠して書き出す";
+
 /** 設定ファイルの引数の説明 */
 const CONFIG_DESCRIPTION =
   "使用する設定ファイルのパス。省くと、セッションのフォルダから上へ mdmark.config.yaml を探す";
 
 /** 文書を HTML に書き出す: 作業のフォルダを基準に `mdmark export` と同じ処理で書き出し、絶対パスと警告を返却する */
 export async function runExportHtml(
-  args: { file: string; out?: string; config?: string },
+  args: { file: string; out?: string; config?: string; keep_traces?: boolean },
   context: ToolContext,
 ): Promise<ToolOutput> {
   const { out, warnings } = await exportDocument({
@@ -82,19 +86,21 @@ export async function runExportHtml(
     out: args.out,
     config: args.config,
     distDir: context.distDir,
+    keepTraces: args.keep_traces,
   });
   return { json: { out, warnings } };
 }
 
 /** 複数の文書を 1 枚にまとめる: 作業のフォルダを基準に `mdmark build` と同じ処理でまとめ、絶対パス・文書の数・警告を返却する */
 export async function runBuildSite(
-  args: { config?: string },
+  args: { config?: string; keep_traces?: boolean },
   context: ToolContext,
 ): Promise<ToolOutput> {
   const { out, docs, warnings } = await buildSite({
     cwd: context.projectDir,
     config: args.config,
     distDir: context.distDir,
+    keepTraces: args.keep_traces,
   });
   return { json: { out, docs, warnings } };
 }
@@ -198,13 +204,19 @@ export const TOOLS: ToolDefinition[] = [
         },
         out: { type: "string", description: "書き出す HTML のパス" },
         config: { type: "string", description: CONFIG_DESCRIPTION },
+        keep_traces: { type: "boolean", description: KEEP_TRACES_DESCRIPTION },
       },
       required: ["file"],
       additionalProperties: false,
     },
     run: (args, context) =>
       runExportHtml(
-        args as { file: string; out?: string; config?: string },
+        args as {
+          file: string;
+          out?: string;
+          config?: string;
+          keep_traces?: boolean;
+        },
         context,
       ),
   },
@@ -216,11 +228,13 @@ export const TOOLS: ToolDefinition[] = [
       type: "object",
       properties: {
         config: { type: "string", description: CONFIG_DESCRIPTION },
+        keep_traces: { type: "boolean", description: KEEP_TRACES_DESCRIPTION },
       },
       required: [],
       additionalProperties: false,
     },
-    run: (args, context) => runBuildSite(args as { config?: string }, context),
+    run: (args, context) =>
+      runBuildSite(args as { config?: string; keep_traces?: boolean }, context),
   },
   {
     name: "check",
