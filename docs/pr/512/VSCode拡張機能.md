@@ -90,4 +90,9 @@ diff の見どころ: `vscode/package.json` の `@vscode/vsce` を 4.1.1 に上�
 
 ### 結合
 
-結合テスト作成で記入する。
+| ファイル | メソッド | 変更種別 | 結果 | 補足 |
+| --- | --- | --- | --- | --- |
+| [vscode/tests/integration/release.test.ts](https://github.com/shuhei1101/mdmark/blob/d79a9dfb/vscode/tests/integration/release.test.ts) | `test_normal`・`test_error_when_version_mismatch` | 変更 | ✅ | 0.1.3・`id-token: write`・最後の公開の工程（Release に添える工程より後・`--skip-duplicate` なし）・`secrets.` を含まないことを追加<br>`テスト結果/20261114124650_d79a9dfb_VSCode拡張機能の結合テスト.log` |
+| `vscode/tests/integration/*.test.ts`（上記以外） | 全実行 | 実行のみ | ✅ | VS Code 1.141.0 と stable の両方で 83 passing<br>`テスト結果/20261114124650_d79a9dfb_VSCode拡張機能の結合テスト.log` |
+
+1 回目の実行では、この PR が触れていない `preview-open.test.ts` の `test_normal_when_version_pinned` が 1 件 fail した（`map.js` の要求が検証の時点で記録されていなかった）。テストコードも実装も変えずに実行し直して全 pass したため、`map.js` の読み込みと検証のタイミングによる不安定な fail と判断した。
