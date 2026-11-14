@@ -1,0 +1,6 @@
+.mdmark {
+  --mdmark-content-width: 46rem;
+  --mdmark-radius: 8px;
+  --mdmark-color-accent: rgb(200, 30, 30);
+}
+.mdmark h1 { letter-spacing: 3px; }

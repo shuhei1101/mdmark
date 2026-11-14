@@ -1,0 +1,51 @@
+## node poc/verify.mjs out/export.html out/export.hidden.html document
+OK  残り: HTML の文字列（<title> を除く）の mdmark  — 0 件
+OK  残り: 埋め込みの JSON の生成した値の mdmark  — 0 件
+OK  残り: 本文の部品の要素名・CSS 変数・class の mdmark  — 0 件
+OK  コメント: HTML の文字列の <!--  — 0 件
+OK  コメント: 埋め込みの Markdown のマーカーでない <!--  — 0 件
+OK  残す: 本文の地の文の mdmark
+OK  残す: 文書のタイトル・パス・索引の用語
+OK  表示: コンソールのエラー（隠した HTML）
+OK  表示: コンソールのエラー（隠さない HTML、比較用）
+OK  コメント: 開いた後の DOM のコメントのノード  — 0 件（隠さない HTML は 0 件）
+OK  表示: 要素・class・計算後のスタイルが同じ（本文のコードの例の中を除く）  — 要素 247 / 247、差 0 件（コードの例の中の要素 6 件は除外） 
+OK  表示: mermaid の図（既定のテーマ）  — 隠さない "rgb(244, 244, 245)" / 隠した "rgb(244, 244, 245)"
+OK  本文の名前: <mdmark-chart> のグラフ  — 隠さない 11 / 隠した 11
+OK  本文の名前: 範囲の css の var(--mdmark-*) と theme.css の上書き  — 隠さない "rgb(200, 30, 30)" / 隠した "rgb(200, 30, 30)"
+OK  本文の名前: mdmark-align-center のクラス  — 隠さない "start" / 隠した "start"
+OK  利用側の CSS: theme.css の h1 と --mdmark-radius  — 隠さない ["3px","8px"] / 隠した ["3px","8px"]
+OK  拡張: greet の拡張が描く  — 隠さない true / 隠した true
+OK  置き換えない語: 本文の地の文の mdmark  — 隠さない true / 隠した true
+OK  操作: タブの切り替え  — 隠さない ["false","true"] / 隠した ["false","true"]
+OK  操作: 表の並べ替え  — 隠さない ["a","b","c"] / 隠した ["a","b","c"]
+OK  操作: 用語のツールチップ（ワークスペース）  — 隠さない true / 隠した true
+OK  受け入れる違い: 本文のコードの例の名前は別名で表示される  — 隠さない "<mdmark-chart>{}</mdmark-chart>\n" / 隠した "<zq-chart>{}</zq-chart>\n"
+22/22 OK
+
+## node poc/verify.mjs dist/docs.html dist/docs.hidden.html bundle
+OK  残り: HTML の文字列（<title> を除く）の mdmark  — 0 件
+OK  残り: 埋め込みの JSON の生成した値の mdmark  — 0 件
+OK  残り: 本文の部品の要素名・CSS 変数・class の mdmark  — 0 件
+OK  コメント: HTML の文字列の <!--  — 0 件
+OK  コメント: 埋め込みの Markdown のマーカーでない <!--  — 0 件
+OK  残す: 本文の地の文の mdmark
+OK  残す: 文書のタイトル・パス・索引の用語
+OK  表示: コンソールのエラー（隠した HTML）
+OK  表示: コンソールのエラー（隠さない HTML、比較用）
+OK  コメント: 開いた後の DOM のコメントのノード  — 0 件（隠さない HTML は 0 件）
+OK  表示: 要素・class・計算後のスタイルが同じ（本文のコードの例の中を除く）  — 要素 274 / 274、差 0 件（コードの例の中の要素 6 件は除外） 
+OK  表示: mermaid の図（既定のテーマ）  — 隠さない "rgb(244, 244, 245)" / 隠した "rgb(244, 244, 245)"
+OK  本文の名前: <mdmark-chart> のグラフ  — 隠さない 11 / 隠した 11
+OK  本文の名前: 範囲の css の var(--mdmark-*) と theme.css の上書き  — 隠さない "rgb(200, 30, 30)" / 隠した "rgb(200, 30, 30)"
+OK  本文の名前: mdmark-align-center のクラス  — 隠さない "start" / 隠した "start"
+OK  利用側の CSS: theme.css の h1 と --mdmark-radius  — 隠さない ["3px","8px"] / 隠した ["3px","8px"]
+OK  拡張: greet の拡張が描く  — 隠さない true / 隠した true
+OK  置き換えない語: 本文の地の文の mdmark  — 隠さない true / 隠した true
+OK  操作: タブの切り替え  — 隠さない ["false","true"] / 隠した ["false","true"]
+OK  操作: 表の並べ替え  — 隠さない ["a","b","c"] / 隠した ["a","b","c"]
+OK  操作: 用語のツールチップ（ワークスペース）  — 隠さない true / 隠した true
+OK  受け入れる違い: 本文のコードの例の名前は別名で表示される  — 隠さない "<mdmark-chart>{}</mdmark-chart>\n" / 隠した "<zq-chart>{}</zq-chart>\n"
+OK  操作: まとめた HTML の行き来（リンクと戻る）  — 隠さない ["使い方","mdmark の紹介","使い方"] / 隠した ["使い方","mdmark の紹介","使い方"]
+OK  表示: 文書の一覧  — 隠さない ["使い方","mdmark の紹介"] / 隠した ["使い方","mdmark の紹介"]
+24/24 OK

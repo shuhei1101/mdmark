@@ -1,0 +1,16 @@
+schema: 2
+docs:
+  - id: intro
+    path: mdmark-intro.md
+    title: mdmark の紹介
+    description: mdmark で書いた文書の紹介
+  - id: guide
+    path: guide.md
+    title: 使い方
+terms:
+  - id: mdmark
+    term: mdmark
+    meaning: Markdown を描くライブラリ
+  - id: ws
+    term: ワークスペース
+    meaning: 作業のフォルダ

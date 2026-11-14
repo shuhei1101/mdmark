@@ -1,0 +1,23 @@
+# mdmark の設定。パスと glob は、このファイルのあるフォルダからの相対パスで記載する
+# 端末の設定（~/.config/mdmark/settings.yaml）に重ねて読み込む。端末の設定の config.cascade を true にすると、上のフォルダの mdmark.config.yaml も重ねる
+
+# この設定・索引・文書が合わせてある mdmark のバージョン（mdmark upgrade が書き換える）
+version: v0.12.0
+
+# 索引の YAML
+index: index.yaml
+
+# 書き出した HTML に埋める、利用側の CSS
+theme: theme.css
+
+# 書き出した HTML に埋める拡張のモジュール（使用するときは次の行の # を削除する）
+extensions: [extensions/example.ts]
+
+# 配色のテーマ。dev-swiss・theme-paper・theme-slate・theme-contrast のどれか（使用するときは次の行の # を削除する）
+# colorTheme: theme-paper
+
+# mdmark build がまとめる文書と、書き出す先
+build:
+  include: ["**/*.md"]
+  exclude: ["node_modules/**"]
+  out: dist/docs.html
