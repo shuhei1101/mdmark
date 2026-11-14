@@ -4,7 +4,7 @@ import type { MarkNote } from "../mark-schema.ts";
 import type { Mark } from "../marks.ts";
 import type { RenderEnv } from "../parser.ts";
 /** 集める警告の種類。マーカーの注記（`MarkNote` の種類）は画面に出さず、点検だけが返却する */
-export type WarningKind = "diagram_invalid" | "syntax_warning" | MarkNote["kind"] | "map";
+export type WarningKind = "diagram_invalid" | "retired_diagram" | "syntax_warning" | MarkNote["kind"] | "map";
 /** 記載の警告に指定する値 */
 export type SyntaxWarning = {
     /** 読み込めない指定を記載したマーカーの文字 */
@@ -16,7 +16,7 @@ export type SyntaxWarning = {
     /** 枠の `id` */
     id?: string;
     /** 警告の種類（省くと `syntax_warning`） */
-    kind?: "diagram_invalid" | "syntax_warning" | "map";
+    kind?: "diagram_invalid" | "retired_diagram" | "syntax_warning" | "map";
     /** 警告の元のマーカーのトークンの `map[0]`（マーカーのトークンを持たない警告は省く） */
     line?: number;
     /** include のマーカーの取り込み先が無い警告か（`mdmark check --text`・`--file` が除く） */

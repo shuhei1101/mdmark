@@ -48,6 +48,11 @@ export type TableSpec = {
     }>;
     /** 真偽値を ✓ と空欄で出す列の位置 */
     check: number[];
+    /** `columns.{列名}.sort` を記載した列と値（`sort` の機能を持たない表では入れない） */
+    sorts: Array<{
+        column: number;
+        sort: boolean;
+    }>;
     /** 階層にするキーの列の位置 */
     tree?: number | undefined;
     /** 型の列の位置 */

@@ -67,6 +67,12 @@ export declare function diagramTermMatches(options: {
     dictionary: Dictionary;
     html: boolean;
 }): Found[];
+/** map の範囲の `mermaid` のブロックの、ノード・参加者の名前とメッセージ・注記の文のうち、意味のある用語の位置を返却する */
+export declare function mapTermMatches(options: {
+    body: string;
+    tokens: Token[];
+    dictionary: Dictionary;
+}): Found[];
 /** 索引と文書の本文から、文書ごとの本文の一致と、重なりを除いた参照先を返却する */
 export declare function collectMatches(input: {
     /** 索引 */

@@ -8700,4824 +8700,6 @@ var require_punycode = __commonJS({
   }
 });
 
-// node_modules/htmlparser2/dist/Tokenizer.js
-function isWhitespace(c) {
-  return c === CharCodes2.Space || c === CharCodes2.NewLine || c === CharCodes2.Tab || c === CharCodes2.FormFeed || c === CharCodes2.CarriageReturn;
-}
-function isEndOfTagSection(c) {
-  return c === CharCodes2.Slash || c === CharCodes2.Gt || isWhitespace(c);
-}
-function isASCIIAlpha(c) {
-  return c >= CharCodes2.LowerA && c <= CharCodes2.LowerZ || c >= CharCodes2.UpperA && c <= CharCodes2.UpperZ;
-}
-var CharCodes2, State, QuoteType, Sequences, specialStartSequences, Tokenizer;
-var init_Tokenizer = __esm({
-  "node_modules/htmlparser2/dist/Tokenizer.js"() {
-    init_decode();
-    (function(CharCodes3) {
-      CharCodes3[CharCodes3["Tab"] = 9] = "Tab";
-      CharCodes3[CharCodes3["NewLine"] = 10] = "NewLine";
-      CharCodes3[CharCodes3["FormFeed"] = 12] = "FormFeed";
-      CharCodes3[CharCodes3["CarriageReturn"] = 13] = "CarriageReturn";
-      CharCodes3[CharCodes3["Space"] = 32] = "Space";
-      CharCodes3[CharCodes3["ExclamationMark"] = 33] = "ExclamationMark";
-      CharCodes3[CharCodes3["Number"] = 35] = "Number";
-      CharCodes3[CharCodes3["Amp"] = 38] = "Amp";
-      CharCodes3[CharCodes3["SingleQuote"] = 39] = "SingleQuote";
-      CharCodes3[CharCodes3["DoubleQuote"] = 34] = "DoubleQuote";
-      CharCodes3[CharCodes3["Dash"] = 45] = "Dash";
-      CharCodes3[CharCodes3["Slash"] = 47] = "Slash";
-      CharCodes3[CharCodes3["Zero"] = 48] = "Zero";
-      CharCodes3[CharCodes3["Nine"] = 57] = "Nine";
-      CharCodes3[CharCodes3["Semi"] = 59] = "Semi";
-      CharCodes3[CharCodes3["Lt"] = 60] = "Lt";
-      CharCodes3[CharCodes3["Eq"] = 61] = "Eq";
-      CharCodes3[CharCodes3["Gt"] = 62] = "Gt";
-      CharCodes3[CharCodes3["Questionmark"] = 63] = "Questionmark";
-      CharCodes3[CharCodes3["UpperA"] = 65] = "UpperA";
-      CharCodes3[CharCodes3["LowerA"] = 97] = "LowerA";
-      CharCodes3[CharCodes3["UpperF"] = 70] = "UpperF";
-      CharCodes3[CharCodes3["LowerF"] = 102] = "LowerF";
-      CharCodes3[CharCodes3["UpperZ"] = 90] = "UpperZ";
-      CharCodes3[CharCodes3["LowerZ"] = 122] = "LowerZ";
-      CharCodes3[CharCodes3["LowerX"] = 120] = "LowerX";
-      CharCodes3[CharCodes3["OpeningSquareBracket"] = 91] = "OpeningSquareBracket";
-    })(CharCodes2 || (CharCodes2 = {}));
-    (function(State2) {
-      State2[State2["Text"] = 1] = "Text";
-      State2[State2["BeforeTagName"] = 2] = "BeforeTagName";
-      State2[State2["InTagName"] = 3] = "InTagName";
-      State2[State2["InSelfClosingTag"] = 4] = "InSelfClosingTag";
-      State2[State2["BeforeClosingTagName"] = 5] = "BeforeClosingTagName";
-      State2[State2["InClosingTagName"] = 6] = "InClosingTagName";
-      State2[State2["AfterClosingTagName"] = 7] = "AfterClosingTagName";
-      State2[State2["BeforeAttributeName"] = 8] = "BeforeAttributeName";
-      State2[State2["InAttributeName"] = 9] = "InAttributeName";
-      State2[State2["AfterAttributeName"] = 10] = "AfterAttributeName";
-      State2[State2["BeforeAttributeValue"] = 11] = "BeforeAttributeValue";
-      State2[State2["InAttributeValueDq"] = 12] = "InAttributeValueDq";
-      State2[State2["InAttributeValueSq"] = 13] = "InAttributeValueSq";
-      State2[State2["InAttributeValueNq"] = 14] = "InAttributeValueNq";
-      State2[State2["BeforeDeclaration"] = 15] = "BeforeDeclaration";
-      State2[State2["InDeclaration"] = 16] = "InDeclaration";
-      State2[State2["InProcessingInstruction"] = 17] = "InProcessingInstruction";
-      State2[State2["BeforeComment"] = 18] = "BeforeComment";
-      State2[State2["CDATASequence"] = 19] = "CDATASequence";
-      State2[State2["DeclarationSequence"] = 20] = "DeclarationSequence";
-      State2[State2["InSpecialComment"] = 21] = "InSpecialComment";
-      State2[State2["InCommentLike"] = 22] = "InCommentLike";
-      State2[State2["SpecialStartSequence"] = 23] = "SpecialStartSequence";
-      State2[State2["InSpecialTag"] = 24] = "InSpecialTag";
-      State2[State2["InPlainText"] = 25] = "InPlainText";
-      State2[State2["InEntity"] = 26] = "InEntity";
-    })(State || (State = {}));
-    (function(QuoteType2) {
-      QuoteType2[QuoteType2["NoValue"] = 0] = "NoValue";
-      QuoteType2[QuoteType2["Unquoted"] = 1] = "Unquoted";
-      QuoteType2[QuoteType2["Single"] = 2] = "Single";
-      QuoteType2[QuoteType2["Double"] = 3] = "Double";
-    })(QuoteType || (QuoteType = {}));
-    Sequences = {
-      Empty: new Uint8Array(0),
-      Cdata: new Uint8Array([67, 68, 65, 84, 65, 91]),
-      // CDATA[
-      CdataEnd: new Uint8Array([93, 93, 62]),
-      // ]]>
-      CommentEnd: new Uint8Array([45, 45, 33, 62]),
-      // `--!>`
-      Doctype: new Uint8Array([100, 111, 99, 116, 121, 112, 101]),
-      // `doctype`
-      IframeEnd: new Uint8Array([60, 47, 105, 102, 114, 97, 109, 101]),
-      // `</iframe`
-      NoembedEnd: new Uint8Array([
-        60,
-        47,
-        110,
-        111,
-        101,
-        109,
-        98,
-        101,
-        100
-      ]),
-      // `</noembed`
-      NoframesEnd: new Uint8Array([
-        60,
-        47,
-        110,
-        111,
-        102,
-        114,
-        97,
-        109,
-        101,
-        115
-      ]),
-      // `</noframes`
-      Plaintext: new Uint8Array([
-        60,
-        47,
-        112,
-        108,
-        97,
-        105,
-        110,
-        116,
-        101,
-        120,
-        116
-      ]),
-      // `</plaintext`
-      ScriptEnd: new Uint8Array([60, 47, 115, 99, 114, 105, 112, 116]),
-      // `</script`
-      StyleEnd: new Uint8Array([60, 47, 115, 116, 121, 108, 101]),
-      // `</style`
-      TitleEnd: new Uint8Array([60, 47, 116, 105, 116, 108, 101]),
-      // `</title`
-      TextareaEnd: new Uint8Array([
-        60,
-        47,
-        116,
-        101,
-        120,
-        116,
-        97,
-        114,
-        101,
-        97
-      ]),
-      // `</textarea`
-      XmpEnd: new Uint8Array([60, 47, 120, 109, 112])
-      // `</xmp`
-    };
-    specialStartSequences = /* @__PURE__ */ new Map([
-      [Sequences.IframeEnd[2], Sequences.IframeEnd],
-      [Sequences.NoembedEnd[2], Sequences.NoembedEnd],
-      [Sequences.Plaintext[2], Sequences.Plaintext],
-      [Sequences.ScriptEnd[2], Sequences.ScriptEnd],
-      [Sequences.TitleEnd[2], Sequences.TitleEnd],
-      [Sequences.XmpEnd[2], Sequences.XmpEnd]
-    ]);
-    Tokenizer = class {
-      cbs;
-      /** The current state the tokenizer is in. */
-      state = State.Text;
-      /** The read buffer. */
-      buffer = "";
-      /** The beginning of the section that is currently being read. */
-      sectionStart = 0;
-      /** The index within the buffer that we are currently looking at. */
-      index = 0;
-      /** The start of the last entity. */
-      entityStart = 0;
-      /** Some behavior, eg. when decoding entities, is done while we are in another state. This keeps track of the other state type. */
-      baseState = State.Text;
-      /** For special parsing behavior inside of script and style tags. */
-      isSpecial = false;
-      /** Indicates whether the tokenizer has been paused. */
-      running = true;
-      /** The offset of the current buffer. */
-      offset = 0;
-      xmlMode;
-      decodeEntities;
-      recognizeSelfClosing;
-      entityDecoder;
-      constructor({ xmlMode = false, decodeEntities = true, recognizeSelfClosing = xmlMode }, cbs) {
-        this.cbs = cbs;
-        this.xmlMode = xmlMode;
-        this.decodeEntities = decodeEntities;
-        this.recognizeSelfClosing = recognizeSelfClosing;
-        this.entityDecoder = new EntityDecoder(xmlMode ? xmlDecodeTree : htmlDecodeTree, (cp, consumed) => this.emitCodePoint(cp, consumed));
-      }
-      reset() {
-        this.state = State.Text;
-        this.buffer = "";
-        this.sectionStart = 0;
-        this.index = 0;
-        this.baseState = State.Text;
-        this.isSpecial = false;
-        this.currentSequence = Sequences.Empty;
-        this.sequenceIndex = 0;
-        this.running = true;
-        this.offset = 0;
-      }
-      write(chunk) {
-        this.offset += this.buffer.length;
-        this.buffer = chunk;
-        this.parse();
-      }
-      end() {
-        if (this.running)
-          this.finish();
-      }
-      pause() {
-        this.running = false;
-      }
-      resume() {
-        this.running = true;
-        if (this.index < this.buffer.length + this.offset) {
-          this.parse();
-        }
-      }
-      stateText(c) {
-        if (c === CharCodes2.Lt || !this.decodeEntities && this.fastForwardTo(CharCodes2.Lt)) {
-          if (this.index > this.sectionStart) {
-            this.cbs.ontext(this.sectionStart, this.index);
-          }
-          this.state = State.BeforeTagName;
-          this.sectionStart = this.index;
-        } else if (this.decodeEntities && c === CharCodes2.Amp) {
-          this.startEntity();
-        }
-      }
-      currentSequence = Sequences.Empty;
-      sequenceIndex = 0;
-      enterTagBody() {
-        if (this.currentSequence === Sequences.Plaintext) {
-          this.currentSequence = Sequences.Empty;
-          this.state = State.InPlainText;
-        } else if (this.isSpecial) {
-          this.state = State.InSpecialTag;
-          this.sequenceIndex = 0;
-        } else {
-          this.state = State.Text;
-        }
-      }
-      /**
-       * Match the opening tag name against an HTML text-only tag sequence.
-       *
-       * Some tags share an initial prefix (`script`/`style`, `title`/`textarea`,
-       * `noembed`/`noframes`), so we may switch to an alternate sequence at the
-       * first distinguishing byte.  On a successful full match we fall back to
-       * the normal tag-name state; a later `>` will enter raw-text, RCDATA, or
-       * plaintext mode based on `currentSequence` / `isSpecial`.
-       * @param c Current character code point.
-       */
-      stateSpecialStartSequence(c) {
-        const lower = c | 32;
-        if (this.sequenceIndex < this.currentSequence.length) {
-          if (lower === this.currentSequence[this.sequenceIndex]) {
-            this.sequenceIndex++;
-            return;
-          }
-          if (this.sequenceIndex === 3) {
-            if (this.currentSequence === Sequences.ScriptEnd && lower === Sequences.StyleEnd[3]) {
-              this.currentSequence = Sequences.StyleEnd;
-              this.sequenceIndex = 4;
-              return;
-            }
-            if (this.currentSequence === Sequences.TitleEnd && lower === Sequences.TextareaEnd[3]) {
-              this.currentSequence = Sequences.TextareaEnd;
-              this.sequenceIndex = 4;
-              return;
-            }
-          } else if (this.sequenceIndex === 4 && this.currentSequence === Sequences.NoembedEnd && lower === Sequences.NoframesEnd[4]) {
-            this.currentSequence = Sequences.NoframesEnd;
-            this.sequenceIndex = 5;
-            return;
-          }
-        } else if (isEndOfTagSection(c)) {
-          this.sequenceIndex = 0;
-          this.state = State.InTagName;
-          this.stateInTagName(c);
-          return;
-        }
-        this.isSpecial = false;
-        this.currentSequence = Sequences.Empty;
-        this.sequenceIndex = 0;
-        this.state = State.InTagName;
-        this.stateInTagName(c);
-      }
-      stateCDATASequence(c) {
-        if (c === Sequences.Cdata[this.sequenceIndex]) {
-          if (++this.sequenceIndex === Sequences.Cdata.length) {
-            this.state = State.InCommentLike;
-            this.currentSequence = Sequences.CdataEnd;
-            this.sequenceIndex = 0;
-            this.sectionStart = this.index + 1;
-          }
-        } else {
-          this.sequenceIndex = 0;
-          if (this.xmlMode) {
-            this.state = State.InDeclaration;
-            this.stateInDeclaration(c);
-          } else {
-            this.state = State.InSpecialComment;
-            this.stateInSpecialComment(c);
-          }
-        }
-      }
-      /**
-       * When we wait for one specific character, we can speed things up
-       * by skipping through the buffer until we find it.
-       * @param c Current character code point.
-       * @returns Whether the character was found.
-       */
-      fastForwardTo(c) {
-        while (++this.index < this.buffer.length + this.offset) {
-          if (this.buffer.charCodeAt(this.index - this.offset) === c) {
-            return true;
-          }
-        }
-        this.index = this.buffer.length + this.offset - 1;
-        return false;
-      }
-      /**
-       * Emit a comment token and return to the text state.
-       * @param offset Number of characters in the end sequence that have already been matched.
-       */
-      emitComment(offset) {
-        this.cbs.oncomment(this.sectionStart, this.index, offset);
-        this.sequenceIndex = 0;
-        this.sectionStart = this.index + 1;
-        this.state = State.Text;
-      }
-      /**
-       * Comments and CDATA end with `-->` and `]]>`.
-       *
-       * Their common qualities are:
-       * - Their end sequences have a distinct character they start with.
-       * - That character is then repeated, so we have to check multiple repeats.
-       * - All characters but the start character of the sequence can be skipped.
-       * @param c Current character code point.
-       */
-      stateInCommentLike(c) {
-        if (!this.xmlMode && this.currentSequence === Sequences.CommentEnd && this.sequenceIndex <= 1 && /*
-         * We're still at the very start of the comment: the only
-         * characters consumed since `<!--` are the dashes that
-         * advanced sequenceIndex (0 for `<!-->`, 1 for `<!--->`).
-         */
-        this.index === this.sectionStart + this.sequenceIndex && c === CharCodes2.Gt) {
-          this.emitComment(this.sequenceIndex);
-        } else if (this.currentSequence === Sequences.CommentEnd && this.sequenceIndex === 2 && c === CharCodes2.Gt) {
-          this.emitComment(2);
-        } else if (this.currentSequence === Sequences.CommentEnd && this.sequenceIndex === this.currentSequence.length - 1 && c !== CharCodes2.Gt) {
-          this.sequenceIndex = Number(c === CharCodes2.Dash);
-        } else if (c === this.currentSequence[this.sequenceIndex]) {
-          if (++this.sequenceIndex === this.currentSequence.length) {
-            if (this.currentSequence === Sequences.CdataEnd) {
-              this.cbs.oncdata(this.sectionStart, this.index, 2);
-            } else {
-              this.cbs.oncomment(this.sectionStart, this.index, 3);
-            }
-            this.sequenceIndex = 0;
-            this.sectionStart = this.index + 1;
-            this.state = State.Text;
-          }
-        } else if (this.sequenceIndex === 0) {
-          if (this.fastForwardTo(this.currentSequence[0])) {
-            this.sequenceIndex = 1;
-          }
-        } else if (c !== this.currentSequence[this.sequenceIndex - 1]) {
-          this.sequenceIndex = 0;
-        }
-      }
-      /**
-       * HTML only allows ASCII alpha characters (a-z and A-Z) at the beginning of a tag name.
-       *
-       * XML allows a lot more characters here (@see https://www.w3.org/TR/REC-xml/#NT-NameStartChar).
-       * We allow anything that wouldn't end the tag.
-       * @param c Current character code point.
-       */
-      isTagStartChar(c) {
-        return this.xmlMode ? !isEndOfTagSection(c) : isASCIIAlpha(c);
-      }
-      /**
-       * Scan raw-text / RCDATA content for the matching end tag.
-       *
-       * For RCDATA tags (`<title>`, `<textarea>`) entities are decoded inline.
-       * For raw-text tags (`<script>`, `<style>`, etc.) we fast-forward to `<`.
-       * @param c Current character code point.
-       */
-      stateInSpecialTag(c) {
-        if (this.sequenceIndex === this.currentSequence.length) {
-          if (isEndOfTagSection(c)) {
-            const endOfText = this.index - this.currentSequence.length;
-            if (this.sectionStart < endOfText) {
-              const actualIndex = this.index;
-              this.index = endOfText;
-              this.cbs.ontext(this.sectionStart, endOfText);
-              this.index = actualIndex;
-            }
-            this.isSpecial = false;
-            this.sectionStart = endOfText + 2;
-            this.stateInClosingTagName(c);
-            return;
-          }
-          this.sequenceIndex = 0;
-        }
-        if ((c | 32) === this.currentSequence[this.sequenceIndex]) {
-          this.sequenceIndex += 1;
-        } else if (this.sequenceIndex === 0) {
-          if (this.currentSequence === Sequences.TitleEnd || this.currentSequence === Sequences.TextareaEnd) {
-            if (this.decodeEntities && c === CharCodes2.Amp) {
-              this.startEntity();
-            }
-          } else if (this.fastForwardTo(CharCodes2.Lt)) {
-            this.sequenceIndex = 1;
-          }
-        } else {
-          this.sequenceIndex = Number(c === CharCodes2.Lt);
-        }
-      }
-      stateBeforeTagName(c) {
-        if (c === CharCodes2.ExclamationMark) {
-          this.state = State.BeforeDeclaration;
-          this.sectionStart = this.index + 1;
-        } else if (c === CharCodes2.Questionmark) {
-          if (this.xmlMode) {
-            this.state = State.InProcessingInstruction;
-            this.sequenceIndex = 0;
-            this.sectionStart = this.index + 1;
-          } else {
-            this.state = State.InSpecialComment;
-            this.sectionStart = this.index;
-          }
-        } else if (this.isTagStartChar(c)) {
-          this.sectionStart = this.index;
-          const special = this.xmlMode || this.cbs.isInForeignContext?.() ? void 0 : specialStartSequences.get(c | 32);
-          if (special === void 0) {
-            this.state = State.InTagName;
-          } else {
-            this.isSpecial = true;
-            this.currentSequence = special;
-            this.sequenceIndex = 3;
-            this.state = State.SpecialStartSequence;
-          }
-        } else if (c === CharCodes2.Slash) {
-          this.state = State.BeforeClosingTagName;
-        } else {
-          this.state = State.Text;
-          this.stateText(c);
-        }
-      }
-      stateInTagName(c) {
-        if (isEndOfTagSection(c)) {
-          this.cbs.onopentagname(this.sectionStart, this.index);
-          this.sectionStart = -1;
-          this.state = State.BeforeAttributeName;
-          this.stateBeforeAttributeName(c);
-        }
-      }
-      stateBeforeClosingTagName(c) {
-        if (isWhitespace(c)) {
-          if (this.xmlMode) {
-          } else {
-            this.state = State.InSpecialComment;
-            this.sectionStart = this.index;
-          }
-        } else if (c === CharCodes2.Gt) {
-          this.state = State.Text;
-          if (!this.xmlMode) {
-            this.sectionStart = this.index + 1;
-          }
-        } else {
-          this.state = this.isTagStartChar(c) ? State.InClosingTagName : State.InSpecialComment;
-          this.sectionStart = this.index;
-        }
-      }
-      stateInClosingTagName(c) {
-        if (isEndOfTagSection(c)) {
-          this.cbs.onclosetag(this.sectionStart, this.index);
-          this.sectionStart = -1;
-          this.state = State.AfterClosingTagName;
-          this.stateAfterClosingTagName(c);
-        }
-      }
-      stateAfterClosingTagName(c) {
-        if (c === CharCodes2.Gt || this.fastForwardTo(CharCodes2.Gt)) {
-          this.state = State.Text;
-          this.sectionStart = this.index + 1;
-        }
-      }
-      stateBeforeAttributeName(c) {
-        if (c === CharCodes2.Gt) {
-          this.cbs.onopentagend(this.index);
-          this.enterTagBody();
-          this.sectionStart = this.index + 1;
-        } else if (c === CharCodes2.Slash) {
-          this.state = State.InSelfClosingTag;
-        } else if (!isWhitespace(c)) {
-          this.state = State.InAttributeName;
-          this.sectionStart = this.index;
-        }
-      }
-      /**
-       * Handle `/` before `>` in an opening tag.
-       *
-       * In HTML mode, text-only tags ignore the self-closing flag and still enter
-       * their raw-text/RCDATA/plaintext state unless self-closing tags are being
-       * recognized. In XML mode, or for ordinary tags, the tokenizer returns to
-       * regular text parsing after emitting the self-closing callback.
-       * @param c Current character code point.
-       */
-      stateInSelfClosingTag(c) {
-        if (c === CharCodes2.Gt) {
-          this.cbs.onselfclosingtag(this.index);
-          this.sectionStart = this.index + 1;
-          if (!this.recognizeSelfClosing) {
-            this.enterTagBody();
-            return;
-          }
-          this.state = State.Text;
-          this.isSpecial = false;
-          this.currentSequence = Sequences.Empty;
-        } else if (!isWhitespace(c)) {
-          this.state = State.BeforeAttributeName;
-          this.stateBeforeAttributeName(c);
-        }
-      }
-      stateInAttributeName(c) {
-        if (c === CharCodes2.Eq || isEndOfTagSection(c)) {
-          this.cbs.onattribname(this.sectionStart, this.index);
-          this.sectionStart = this.index;
-          this.state = State.AfterAttributeName;
-          this.stateAfterAttributeName(c);
-        }
-      }
-      stateAfterAttributeName(c) {
-        if (c === CharCodes2.Eq) {
-          this.state = State.BeforeAttributeValue;
-        } else if (c === CharCodes2.Slash || c === CharCodes2.Gt) {
-          this.cbs.onattribend(QuoteType.NoValue, this.sectionStart);
-          this.sectionStart = -1;
-          this.state = State.BeforeAttributeName;
-          this.stateBeforeAttributeName(c);
-        } else if (!isWhitespace(c)) {
-          this.cbs.onattribend(QuoteType.NoValue, this.sectionStart);
-          this.state = State.InAttributeName;
-          this.sectionStart = this.index;
-        }
-      }
-      stateBeforeAttributeValue(c) {
-        if (c === CharCodes2.DoubleQuote) {
-          this.state = State.InAttributeValueDq;
-          this.sectionStart = this.index + 1;
-        } else if (c === CharCodes2.SingleQuote) {
-          this.state = State.InAttributeValueSq;
-          this.sectionStart = this.index + 1;
-        } else if (!isWhitespace(c)) {
-          this.sectionStart = this.index;
-          this.state = State.InAttributeValueNq;
-          this.stateInAttributeValueNoQuotes(c);
-        }
-      }
-      handleInAttributeValue(c, quote) {
-        if (c === quote || !this.decodeEntities && this.fastForwardTo(quote)) {
-          this.cbs.onattribdata(this.sectionStart, this.index);
-          this.sectionStart = -1;
-          this.cbs.onattribend(quote === CharCodes2.DoubleQuote ? QuoteType.Double : QuoteType.Single, this.index + 1);
-          this.state = State.BeforeAttributeName;
-        } else if (this.decodeEntities && c === CharCodes2.Amp) {
-          this.startEntity();
-        }
-      }
-      stateInAttributeValueDoubleQuotes(c) {
-        this.handleInAttributeValue(c, CharCodes2.DoubleQuote);
-      }
-      stateInAttributeValueSingleQuotes(c) {
-        this.handleInAttributeValue(c, CharCodes2.SingleQuote);
-      }
-      stateInAttributeValueNoQuotes(c) {
-        if (isWhitespace(c) || c === CharCodes2.Gt) {
-          this.cbs.onattribdata(this.sectionStart, this.index);
-          this.sectionStart = -1;
-          this.cbs.onattribend(QuoteType.Unquoted, this.index);
-          this.state = State.BeforeAttributeName;
-          this.stateBeforeAttributeName(c);
-        } else if (this.decodeEntities && c === CharCodes2.Amp) {
-          this.startEntity();
-        }
-      }
-      /**
-       * Distinguish between CDATA, declarations, HTML comments, and HTML bogus
-       * comments after `<!`.
-       *
-       * In HTML mode, only real comments and doctypes stay on declaration paths;
-       * everything else becomes a bogus comment terminated by the next `>`.
-       * @param c Current character code point.
-       */
-      stateBeforeDeclaration(c) {
-        if (c === CharCodes2.OpeningSquareBracket) {
-          this.state = State.CDATASequence;
-          this.sequenceIndex = 0;
-        } else if (this.xmlMode) {
-          this.state = c === CharCodes2.Dash ? State.BeforeComment : State.InDeclaration;
-        } else if ((c | 32) === Sequences.Doctype[0]) {
-          this.state = State.DeclarationSequence;
-          this.currentSequence = Sequences.Doctype;
-          this.sequenceIndex = 1;
-        } else if (c === CharCodes2.Gt) {
-          this.cbs.oncomment(this.sectionStart, this.index, 0);
-          this.state = State.Text;
-          this.sectionStart = this.index + 1;
-        } else if (c === CharCodes2.Dash) {
-          this.state = State.BeforeComment;
-        } else {
-          this.state = State.InSpecialComment;
-        }
-      }
-      /**
-       * Continue matching `doctype` after `<!d`.
-       *
-       * A full `doctype` match stays on the declaration path; any other name falls
-       * back to an HTML bogus comment, which matches browser behavior for
-       * non-doctype `<!...>` constructs.
-       * @param c Current character code point.
-       */
-      stateDeclarationSequence(c) {
-        if (this.sequenceIndex === this.currentSequence.length) {
-          this.state = State.InDeclaration;
-          this.stateInDeclaration(c);
-        } else if ((c | 32) === this.currentSequence[this.sequenceIndex]) {
-          this.sequenceIndex += 1;
-        } else if (c === CharCodes2.Gt) {
-          this.cbs.oncomment(this.sectionStart, this.index, 0);
-          this.state = State.Text;
-          this.sectionStart = this.index + 1;
-        } else {
-          this.state = State.InSpecialComment;
-        }
-      }
-      stateInDeclaration(c) {
-        if (c === CharCodes2.Gt || this.fastForwardTo(CharCodes2.Gt)) {
-          this.cbs.ondeclaration(this.sectionStart, this.index);
-          this.state = State.Text;
-          this.sectionStart = this.index + 1;
-        }
-      }
-      /**
-       * XML processing instructions (`<?...?>`).
-       *
-       * In HTML mode `<?` is routed to `InSpecialComment` instead, so this
-       * state is only reachable in XML mode.
-       * @param c Current character code point.
-       */
-      stateInProcessingInstruction(c) {
-        if (c === CharCodes2.Questionmark) {
-          this.sequenceIndex = 1;
-        } else if (c === CharCodes2.Gt && this.sequenceIndex === 1) {
-          this.cbs.onprocessinginstruction(this.sectionStart, this.index - 1);
-          this.sequenceIndex = 0;
-          this.state = State.Text;
-          this.sectionStart = this.index + 1;
-        } else {
-          this.sequenceIndex = Number(this.fastForwardTo(CharCodes2.Questionmark));
-        }
-      }
-      stateBeforeComment(c) {
-        if (c === CharCodes2.Dash) {
-          this.state = State.InCommentLike;
-          this.currentSequence = Sequences.CommentEnd;
-          this.sequenceIndex = 0;
-          this.sectionStart = this.index + 1;
-        } else if (this.xmlMode) {
-          this.state = State.InDeclaration;
-        } else if (c === CharCodes2.Gt) {
-          this.cbs.oncomment(this.sectionStart, this.index, 0);
-          this.state = State.Text;
-          this.sectionStart = this.index + 1;
-        } else {
-          this.state = State.InSpecialComment;
-        }
-      }
-      stateInSpecialComment(c) {
-        if (c === CharCodes2.Gt || this.fastForwardTo(CharCodes2.Gt)) {
-          this.cbs.oncomment(this.sectionStart, this.index, 0);
-          this.state = State.Text;
-          this.sectionStart = this.index + 1;
-        }
-      }
-      startEntity() {
-        this.baseState = this.state;
-        this.state = State.InEntity;
-        this.entityStart = this.index;
-        this.entityDecoder.startEntity(this.xmlMode ? DecodingMode.Strict : this.baseState === State.Text || this.baseState === State.InSpecialTag ? DecodingMode.Legacy : DecodingMode.Attribute);
-      }
-      stateInEntity() {
-        const indexInBuffer = this.index - this.offset;
-        const length = this.entityDecoder.write(this.buffer, indexInBuffer);
-        if (length >= 0) {
-          this.state = this.baseState;
-          if (length === 0) {
-            this.index -= 1;
-          }
-        } else {
-          if (indexInBuffer < this.buffer.length && this.buffer.charCodeAt(indexInBuffer) === CharCodes2.Amp) {
-            this.state = this.baseState;
-            this.index -= 1;
-            return;
-          }
-          this.index = this.offset + this.buffer.length - 1;
-        }
-      }
-      /**
-       * Remove data that has already been consumed from the buffer.
-       */
-      cleanup() {
-        if (this.running && this.sectionStart !== this.index) {
-          if (this.state === State.Text || this.state === State.InPlainText || this.state === State.InSpecialTag && this.sequenceIndex === 0) {
-            this.cbs.ontext(this.sectionStart, this.index);
-            this.sectionStart = this.index;
-          } else if (this.state === State.InAttributeValueDq || this.state === State.InAttributeValueSq || this.state === State.InAttributeValueNq) {
-            this.cbs.onattribdata(this.sectionStart, this.index);
-            this.sectionStart = this.index;
-          }
-        }
-      }
-      shouldContinue() {
-        return this.index < this.buffer.length + this.offset && this.running;
-      }
-      /**
-       * Iterates through the buffer, calling the function corresponding to the current state.
-       *
-       * States that are more likely to be hit are higher up, as a performance improvement.
-       */
-      parse() {
-        while (this.shouldContinue()) {
-          const c = this.buffer.charCodeAt(this.index - this.offset);
-          switch (this.state) {
-            case State.Text: {
-              this.stateText(c);
-              break;
-            }
-            case State.InPlainText: {
-              this.index = this.buffer.length + this.offset - 1;
-              break;
-            }
-            case State.SpecialStartSequence: {
-              this.stateSpecialStartSequence(c);
-              break;
-            }
-            case State.InSpecialTag: {
-              this.stateInSpecialTag(c);
-              break;
-            }
-            case State.CDATASequence: {
-              this.stateCDATASequence(c);
-              break;
-            }
-            case State.DeclarationSequence: {
-              this.stateDeclarationSequence(c);
-              break;
-            }
-            case State.InAttributeValueDq: {
-              this.stateInAttributeValueDoubleQuotes(c);
-              break;
-            }
-            case State.InAttributeName: {
-              this.stateInAttributeName(c);
-              break;
-            }
-            case State.InCommentLike: {
-              this.stateInCommentLike(c);
-              break;
-            }
-            case State.InSpecialComment: {
-              this.stateInSpecialComment(c);
-              break;
-            }
-            case State.BeforeAttributeName: {
-              this.stateBeforeAttributeName(c);
-              break;
-            }
-            case State.InTagName: {
-              this.stateInTagName(c);
-              break;
-            }
-            case State.InClosingTagName: {
-              this.stateInClosingTagName(c);
-              break;
-            }
-            case State.BeforeTagName: {
-              this.stateBeforeTagName(c);
-              break;
-            }
-            case State.AfterAttributeName: {
-              this.stateAfterAttributeName(c);
-              break;
-            }
-            case State.InAttributeValueSq: {
-              this.stateInAttributeValueSingleQuotes(c);
-              break;
-            }
-            case State.BeforeAttributeValue: {
-              this.stateBeforeAttributeValue(c);
-              break;
-            }
-            case State.BeforeClosingTagName: {
-              this.stateBeforeClosingTagName(c);
-              break;
-            }
-            case State.AfterClosingTagName: {
-              this.stateAfterClosingTagName(c);
-              break;
-            }
-            case State.InAttributeValueNq: {
-              this.stateInAttributeValueNoQuotes(c);
-              break;
-            }
-            case State.InSelfClosingTag: {
-              this.stateInSelfClosingTag(c);
-              break;
-            }
-            case State.InDeclaration: {
-              this.stateInDeclaration(c);
-              break;
-            }
-            case State.BeforeDeclaration: {
-              this.stateBeforeDeclaration(c);
-              break;
-            }
-            case State.BeforeComment: {
-              this.stateBeforeComment(c);
-              break;
-            }
-            case State.InProcessingInstruction: {
-              this.stateInProcessingInstruction(c);
-              break;
-            }
-            case State.InEntity: {
-              this.stateInEntity();
-              break;
-            }
-          }
-          this.index++;
-        }
-        this.cleanup();
-      }
-      finish() {
-        if (this.state === State.InEntity) {
-          this.entityDecoder.end();
-          this.state = this.baseState;
-        }
-        this.handleTrailingData();
-        this.cbs.onend();
-      }
-      handleTrailingCommentLikeData(endIndex) {
-        if (this.state !== State.InCommentLike) {
-          return false;
-        }
-        if (this.currentSequence === Sequences.CdataEnd) {
-          if (this.xmlMode) {
-            if (this.sectionStart < endIndex) {
-              this.cbs.oncdata(this.sectionStart, endIndex, 0);
-            }
-          } else {
-            const cdataStart = this.sectionStart - Sequences.Cdata.length - 1;
-            this.cbs.oncomment(cdataStart, endIndex, 0);
-          }
-        } else {
-          const offset = this.xmlMode ? 0 : Math.min(this.sequenceIndex, Sequences.CommentEnd.length - 1);
-          this.cbs.oncomment(this.sectionStart, endIndex, offset);
-        }
-        return true;
-      }
-      handleTrailingMarkupDeclaration(endIndex) {
-        if (this.xmlMode) {
-          switch (this.state) {
-            case State.InSpecialComment:
-            case State.BeforeComment:
-            case State.CDATASequence:
-            case State.DeclarationSequence:
-            case State.InDeclaration: {
-              this.cbs.ontext(this.sectionStart, endIndex);
-              return true;
-            }
-            default: {
-              return false;
-            }
-          }
-        }
-        switch (this.state) {
-          case State.BeforeDeclaration:
-          case State.InSpecialComment:
-          case State.BeforeComment:
-          case State.CDATASequence: {
-            this.cbs.oncomment(this.sectionStart, endIndex, 0);
-            return true;
-          }
-          case State.DeclarationSequence: {
-            if (this.sequenceIndex !== Sequences.Doctype.length) {
-              this.cbs.oncomment(this.sectionStart, endIndex, 0);
-            }
-            return true;
-          }
-          case State.InDeclaration: {
-            return true;
-          }
-          default: {
-            return false;
-          }
-        }
-      }
-      /** Handle any trailing data. */
-      handleTrailingData() {
-        const endIndex = this.buffer.length + this.offset;
-        if (this.handleTrailingCommentLikeData(endIndex) || this.handleTrailingMarkupDeclaration(endIndex)) {
-          return;
-        }
-        if (this.sectionStart >= endIndex) {
-          return;
-        }
-        switch (this.state) {
-          case State.InTagName:
-          case State.BeforeAttributeName:
-          case State.BeforeAttributeValue:
-          case State.AfterAttributeName:
-          case State.InAttributeName:
-          case State.InAttributeValueSq:
-          case State.InAttributeValueDq:
-          case State.InAttributeValueNq:
-          case State.InClosingTagName: {
-            break;
-          }
-          default: {
-            this.cbs.ontext(this.sectionStart, endIndex);
-          }
-        }
-      }
-      emitCodePoint(cp, consumed) {
-        if (this.baseState !== State.Text && this.baseState !== State.InSpecialTag) {
-          if (this.sectionStart < this.entityStart) {
-            this.cbs.onattribdata(this.sectionStart, this.entityStart);
-          }
-          this.sectionStart = this.entityStart + consumed;
-          this.index = this.sectionStart - 1;
-          this.cbs.onattribentity(cp);
-        } else {
-          if (this.sectionStart < this.entityStart) {
-            this.cbs.ontext(this.sectionStart, this.entityStart);
-          }
-          this.sectionStart = this.entityStart + consumed;
-          this.index = this.sectionStart - 1;
-          this.cbs.ontextentity(cp, this.sectionStart);
-        }
-      }
-    };
-  }
-});
-
-// node_modules/htmlparser2/dist/Parser.js
-var fromCodePoint2, formTags, pTag, headingTags, tableSectionTags, ddtTags, rtpTags, openImpliesClose, DOCUMENT_TYPE, voidElements, foreignContextElements, htmlIntegrationElements, svgTagNameAdjustments, ForeignContext, reNameEnd, Parser;
-var init_Parser = __esm({
-  "node_modules/htmlparser2/dist/Parser.js"() {
-    init_Tokenizer();
-    ({ fromCodePoint: fromCodePoint2 } = String);
-    formTags = /* @__PURE__ */ new Set([
-      "input",
-      "option",
-      "optgroup",
-      "select",
-      "button",
-      "datalist",
-      "textarea"
-    ]);
-    pTag = /* @__PURE__ */ new Set(["p"]);
-    headingTags = /* @__PURE__ */ new Set(["h1", "h2", "h3", "h4", "h5", "h6", "p"]);
-    tableSectionTags = /* @__PURE__ */ new Set(["thead", "tbody"]);
-    ddtTags = /* @__PURE__ */ new Set(["dd", "dt"]);
-    rtpTags = /* @__PURE__ */ new Set(["rt", "rp"]);
-    openImpliesClose = /* @__PURE__ */ new Map([
-      ["tr", /* @__PURE__ */ new Set(["tr", "th", "td"])],
-      ["th", /* @__PURE__ */ new Set(["th"])],
-      ["td", /* @__PURE__ */ new Set(["thead", "th", "td"])],
-      ["body", /* @__PURE__ */ new Set(["head", "link", "script"])],
-      ["a", /* @__PURE__ */ new Set(["a"])],
-      ["li", /* @__PURE__ */ new Set(["li"])],
-      ["p", pTag],
-      ["h1", headingTags],
-      ["h2", headingTags],
-      ["h3", headingTags],
-      ["h4", headingTags],
-      ["h5", headingTags],
-      ["h6", headingTags],
-      ["select", formTags],
-      ["input", formTags],
-      ["output", formTags],
-      ["button", formTags],
-      ["datalist", formTags],
-      ["textarea", formTags],
-      ["option", /* @__PURE__ */ new Set(["option"])],
-      ["optgroup", /* @__PURE__ */ new Set(["optgroup", "option"])],
-      ["dd", ddtTags],
-      ["dt", ddtTags],
-      ["address", pTag],
-      ["article", pTag],
-      ["aside", pTag],
-      ["blockquote", pTag],
-      ["details", pTag],
-      ["div", pTag],
-      ["dl", pTag],
-      ["fieldset", pTag],
-      ["figcaption", pTag],
-      ["figure", pTag],
-      ["footer", pTag],
-      ["form", pTag],
-      ["header", pTag],
-      ["hr", pTag],
-      ["main", pTag],
-      ["nav", pTag],
-      ["ol", pTag],
-      ["pre", pTag],
-      ["section", pTag],
-      ["table", pTag],
-      ["ul", pTag],
-      ["rt", rtpTags],
-      ["rp", rtpTags],
-      ["tbody", tableSectionTags],
-      ["tfoot", tableSectionTags]
-    ]);
-    DOCUMENT_TYPE = "doctype";
-    voidElements = /* @__PURE__ */ new Set([
-      "area",
-      "base",
-      "basefont",
-      "br",
-      "col",
-      "command",
-      "embed",
-      "frame",
-      "hr",
-      "img",
-      "input",
-      "isindex",
-      "keygen",
-      "link",
-      "meta",
-      "param",
-      "source",
-      "track",
-      "wbr"
-    ]);
-    foreignContextElements = /* @__PURE__ */ new Set(["math", "svg"]);
-    htmlIntegrationElements = /* @__PURE__ */ new Set([
-      "mi",
-      "mo",
-      "mn",
-      "ms",
-      "mtext",
-      "annotation-xml",
-      "foreignObject",
-      "desc",
-      "title"
-    ]);
-    svgTagNameAdjustments = /* @__PURE__ */ new Map([
-      ["altglyph", "altGlyph"],
-      ["altglyphdef", "altGlyphDef"],
-      ["altglyphitem", "altGlyphItem"],
-      ["animatecolor", "animateColor"],
-      ["animatemotion", "animateMotion"],
-      ["animatetransform", "animateTransform"],
-      ["clippath", "clipPath"],
-      ["feblend", "feBlend"],
-      ["fecolormatrix", "feColorMatrix"],
-      ["fecomponenttransfer", "feComponentTransfer"],
-      ["fecomposite", "feComposite"],
-      ["feconvolvematrix", "feConvolveMatrix"],
-      ["fediffuselighting", "feDiffuseLighting"],
-      ["fedisplacementmap", "feDisplacementMap"],
-      ["fedistantlight", "feDistantLight"],
-      ["fedropshadow", "feDropShadow"],
-      ["feflood", "feFlood"],
-      ["fefunca", "feFuncA"],
-      ["fefuncb", "feFuncB"],
-      ["fefuncg", "feFuncG"],
-      ["fefuncr", "feFuncR"],
-      ["fegaussianblur", "feGaussianBlur"],
-      ["feimage", "feImage"],
-      ["femerge", "feMerge"],
-      ["femergenode", "feMergeNode"],
-      ["femorphology", "feMorphology"],
-      ["feoffset", "feOffset"],
-      ["fepointlight", "fePointLight"],
-      ["fespecularlighting", "feSpecularLighting"],
-      ["fespotlight", "feSpotLight"],
-      ["fetile", "feTile"],
-      ["feturbulence", "feTurbulence"],
-      ["foreignobject", "foreignObject"],
-      ["glyphref", "glyphRef"],
-      ["lineargradient", "linearGradient"],
-      ["radialgradient", "radialGradient"],
-      ["textpath", "textPath"]
-    ]);
-    (function(ForeignContext2) {
-      ForeignContext2[ForeignContext2["None"] = 0] = "None";
-      ForeignContext2[ForeignContext2["Svg"] = 1] = "Svg";
-      ForeignContext2[ForeignContext2["MathML"] = 2] = "MathML";
-    })(ForeignContext || (ForeignContext = {}));
-    reNameEnd = /\s|\//;
-    Parser = class {
-      options;
-      /** The start index of the last event. */
-      startIndex = 0;
-      /** The end index of the last event. */
-      endIndex = 0;
-      /**
-       * Store the start index of the current open tag,
-       * so we can update the start index for attributes.
-       */
-      openTagStart = 0;
-      tagname = "";
-      attribname = "";
-      attribvalue = "";
-      attribs = null;
-      stack = [];
-      foreignContext;
-      cbs;
-      lowerCaseTagNames;
-      lowerCaseAttributeNames;
-      recognizeSelfClosing;
-      /** We are parsing HTML. Inverse of the `xmlMode` option. */
-      htmlMode;
-      tokenizer;
-      buffers = [];
-      bufferOffset = 0;
-      /** The index of the last written buffer. Used when resuming after a `pause()`. */
-      writeIndex = 0;
-      /** Indicates whether the parser has finished running / `.end` has been called. */
-      ended = false;
-      constructor(cbs, options = {}) {
-        this.options = options;
-        this.cbs = cbs ?? {};
-        this.htmlMode = !this.options.xmlMode;
-        this.lowerCaseTagNames = options.lowerCaseTags ?? this.htmlMode;
-        this.lowerCaseAttributeNames = options.lowerCaseAttributeNames ?? this.htmlMode;
-        this.recognizeSelfClosing = options.recognizeSelfClosing ?? !this.htmlMode;
-        this.tokenizer = new (options.Tokenizer ?? Tokenizer)(this.options, this);
-        this.foreignContext = [ForeignContext.None];
-        this.cbs.onparserinit?.(this);
-      }
-      // Tokenizer event handlers
-      /**
-       * @param start Start index for the current parser event.
-       * @param endIndex End index for the current parser event.
-       * @internal
-       */
-      ontext(start, endIndex) {
-        const data = this.getSlice(start, endIndex);
-        this.endIndex = endIndex - 1;
-        this.cbs.ontext?.(data);
-        this.startIndex = endIndex;
-      }
-      /**
-       * @param cp Current Unicode code point.
-       * @param endIndex End index for the current parser event.
-       * @internal
-       */
-      ontextentity(cp, endIndex) {
-        this.endIndex = endIndex - 1;
-        this.cbs.ontext?.(fromCodePoint2(cp));
-        this.startIndex = endIndex;
-      }
-      /** @internal */
-      isInForeignContext() {
-        return this.foreignContext[0] !== ForeignContext.None;
-      }
-      /**
-       * Checks if the current tag is a void element. Override this if you want
-       * to specify your own additional void elements.
-       * @param name Name of the pseudo selector.
-       */
-      isVoidElement(name) {
-        return this.htmlMode && voidElements.has(name);
-      }
-      /**
-       * Read a tag name from the buffer.
-       *
-       * When `lowerCaseTagNames` is enabled (the default in HTML mode), the name
-       * is lowercased and may be adjusted for SVG casing or the `image` → `img`
-       * alias.
-       * @param start Start index of the tag name in the buffer.
-       * @param endIndex End index of the tag name in the buffer.
-       */
-      readTagName(start, endIndex) {
-        const name = this.lowerCaseTagNames ? this.getSlice(start, endIndex).toLowerCase() : this.getSlice(start, endIndex);
-        if (!(this.lowerCaseTagNames && this.htmlMode)) {
-          return name;
-        }
-        if (this.foreignContext[0] === ForeignContext.Svg) {
-          return svgTagNameAdjustments.get(name) ?? name;
-        }
-        if (this.foreignContext.length > 1) {
-          const adjusted = svgTagNameAdjustments.get(name);
-          if (adjusted !== void 0 && this.stack.includes(adjusted)) {
-            return adjusted;
-          }
-        }
-        if (!this.isInForeignContext()) {
-          return name === "image" ? "img" : name;
-        }
-        return name;
-      }
-      /**
-       * @param start Start index for the current parser event.
-       * @param endIndex End index for the current parser event.
-       * @internal
-       */
-      onopentagname(start, endIndex) {
-        this.endIndex = endIndex;
-        this.emitOpenTag(this.readTagName(start, endIndex));
-      }
-      emitOpenTag(name) {
-        this.openTagStart = this.startIndex;
-        this.tagname = name;
-        if (this.htmlMode && name === "form" && this.stack.includes("form")) {
-          this.tagname = "";
-          return;
-        }
-        const impliesClose = this.htmlMode && openImpliesClose.get(name);
-        if (impliesClose) {
-          while (this.stack.length > 0 && impliesClose.has(this.stack[0])) {
-            this.popElement(true);
-          }
-        }
-        if (!this.isVoidElement(name)) {
-          this.stack.unshift(name);
-          if (this.htmlMode) {
-            if (name === "svg") {
-              this.foreignContext.unshift(ForeignContext.Svg);
-            } else if (name === "math") {
-              this.foreignContext.unshift(ForeignContext.MathML);
-            } else if (htmlIntegrationElements.has(name)) {
-              this.foreignContext.unshift(ForeignContext.None);
-            }
-          }
-        }
-        this.cbs.onopentagname?.(name);
-        if (this.cbs.onopentag)
-          this.attribs = {};
-      }
-      endOpenTag(isImplied) {
-        this.startIndex = this.openTagStart;
-        if (this.attribs) {
-          this.cbs.onopentag?.(this.tagname, this.attribs, isImplied);
-          this.attribs = null;
-        }
-        if (this.cbs.onclosetag && this.isVoidElement(this.tagname)) {
-          this.cbs.onclosetag(this.tagname, true);
-        }
-        this.tagname = "";
-      }
-      /**
-       * @param endIndex End index for the current parser event.
-       * @internal
-       */
-      onopentagend(endIndex) {
-        this.endIndex = endIndex;
-        this.endOpenTag(false);
-        this.startIndex = endIndex + 1;
-      }
-      /**
-       * @param start Start index for the current parser event.
-       * @param endIndex End index for the current parser event.
-       * @internal
-       */
-      onclosetag(start, endIndex) {
-        this.endIndex = endIndex;
-        const name = this.readTagName(start, endIndex);
-        if (!this.isVoidElement(name)) {
-          const pos = this.stack.indexOf(name);
-          if (pos !== -1) {
-            for (let index = 0; index < pos; index++) {
-              this.popElement(true);
-            }
-            this.popElement(false);
-          } else if (this.htmlMode && name === "p") {
-            this.emitOpenTag("p");
-            this.closeCurrentTag(true);
-          }
-        } else if (this.htmlMode && name === "br") {
-          this.cbs.onopentagname?.("br");
-          this.cbs.onopentag?.("br", {}, true);
-          this.cbs.onclosetag?.("br", false);
-        }
-        this.startIndex = endIndex + 1;
-      }
-      /**
-       * @param endIndex End index for the current parser event.
-       * @internal
-       */
-      onselfclosingtag(endIndex) {
-        this.endIndex = endIndex;
-        if (this.recognizeSelfClosing || this.isInForeignContext()) {
-          this.closeCurrentTag(false);
-          this.startIndex = endIndex + 1;
-        } else {
-          this.onopentagend(endIndex);
-        }
-      }
-      /**
-       * Pop the top element off the stack, emit a close event, and maintain
-       * the foreign context stack.
-       * @param implied Whether this close is implied (not from an explicit end tag).
-       */
-      popElement(implied) {
-        const element = this.stack.shift();
-        if (this.htmlMode && (foreignContextElements.has(element) || htmlIntegrationElements.has(element))) {
-          this.foreignContext.shift();
-        }
-        this.cbs.onclosetag?.(element, implied);
-      }
-      closeCurrentTag(isOpenImplied) {
-        const name = this.tagname;
-        this.endOpenTag(isOpenImplied);
-        if (this.stack[0] === name) {
-          this.popElement(!isOpenImplied);
-        }
-      }
-      /**
-       * @param start Start index for the current parser event.
-       * @param endIndex End index for the current parser event.
-       * @internal
-       */
-      onattribname(start, endIndex) {
-        this.startIndex = start;
-        const name = this.getSlice(start, endIndex);
-        this.attribname = this.lowerCaseAttributeNames ? name.toLowerCase() : name;
-      }
-      /**
-       * @param start Start index for the current parser event.
-       * @param endIndex End index for the current parser event.
-       * @internal
-       */
-      onattribdata(start, endIndex) {
-        this.attribvalue += this.getSlice(start, endIndex);
-      }
-      /**
-       * @param cp Current Unicode code point.
-       * @internal
-       */
-      onattribentity(cp) {
-        this.attribvalue += fromCodePoint2(cp);
-      }
-      /**
-       * @param quote Quote type used for the current attribute.
-       * @param endIndex End index for the current parser event.
-       * @internal
-       */
-      onattribend(quote, endIndex) {
-        this.endIndex = endIndex;
-        this.cbs.onattribute?.(this.attribname, this.attribvalue, quote === QuoteType.Double ? '"' : quote === QuoteType.Single ? "'" : quote === QuoteType.NoValue ? void 0 : null);
-        if (this.attribs && !Object.hasOwn(this.attribs, this.attribname)) {
-          this.attribs[this.attribname] = this.attribvalue;
-        }
-        this.attribvalue = "";
-      }
-      getInstructionName(value) {
-        const index = value.search(reNameEnd);
-        let name = index < 0 ? value : value.substr(0, index);
-        if (this.lowerCaseTagNames) {
-          name = name.toLowerCase();
-        }
-        return name;
-      }
-      /**
-       * @param start Start index for the current parser event.
-       * @param endIndex End index for the current parser event.
-       * @internal
-       */
-      ondeclaration(start, endIndex) {
-        this.endIndex = endIndex;
-        const value = this.getSlice(start, endIndex);
-        if (this.cbs.onprocessinginstruction) {
-          const name = this.htmlMode ? this.lowerCaseTagNames ? DOCUMENT_TYPE : value.slice(0, DOCUMENT_TYPE.length) : this.getInstructionName(value);
-          this.cbs.onprocessinginstruction(`!${name}`, `!${value}`);
-        }
-        this.startIndex = endIndex + 1;
-      }
-      /**
-       * @param start Start index for the current parser event.
-       * @param endIndex End index for the current parser event.
-       * @internal
-       */
-      onprocessinginstruction(start, endIndex) {
-        this.endIndex = endIndex;
-        const value = this.getSlice(start, endIndex);
-        if (this.cbs.onprocessinginstruction) {
-          const name = this.getInstructionName(value);
-          this.cbs.onprocessinginstruction(`?${name}`, `?${value}`);
-        }
-        this.startIndex = endIndex + 1;
-      }
-      /**
-       * @param start Start index for the current parser event.
-       * @param endIndex End index for the current parser event.
-       * @param offset Offset applied when computing parser indices.
-       * @internal
-       */
-      oncomment(start, endIndex, offset) {
-        this.endIndex = endIndex;
-        this.cbs.oncomment?.(this.getSlice(start, endIndex - offset));
-        this.cbs.oncommentend?.();
-        this.startIndex = endIndex + 1;
-      }
-      /**
-       * @param start Start index for the current parser event.
-       * @param endIndex End index for the current parser event.
-       * @param offset Offset applied when computing parser indices.
-       * @internal
-       */
-      oncdata(start, endIndex, offset) {
-        this.endIndex = endIndex;
-        const value = this.getSlice(start, endIndex - offset);
-        if (!this.htmlMode || this.options.recognizeCDATA) {
-          this.cbs.oncdatastart?.();
-          this.cbs.ontext?.(value);
-          this.cbs.oncdataend?.();
-        } else if (this.isInForeignContext()) {
-          this.cbs.ontext?.(value);
-        } else {
-          this.cbs.oncomment?.(`[CDATA[${value}]]`);
-          this.cbs.oncommentend?.();
-        }
-        this.startIndex = endIndex + 1;
-      }
-      /** @internal */
-      onend() {
-        if (this.cbs.onclosetag) {
-          this.endIndex = this.startIndex;
-          for (let index = 0; index < this.stack.length; index++) {
-            this.cbs.onclosetag(this.stack[index], true);
-          }
-        }
-        this.cbs.onend?.();
-      }
-      /**
-       * Resets the parser to a blank state, ready to parse a new HTML document
-       */
-      reset() {
-        this.cbs.onreset?.();
-        this.tokenizer.reset();
-        this.tagname = "";
-        this.attribname = "";
-        this.attribvalue = "";
-        this.attribs = null;
-        this.stack.length = 0;
-        this.startIndex = 0;
-        this.endIndex = 0;
-        this.cbs.onparserinit?.(this);
-        this.buffers.length = 0;
-        this.foreignContext.length = 0;
-        this.foreignContext.unshift(ForeignContext.None);
-        this.bufferOffset = 0;
-        this.writeIndex = 0;
-        this.ended = false;
-      }
-      /**
-       * Resets the parser, then parses a complete document and
-       * pushes it to the handler.
-       * @param data Document to parse.
-       */
-      parseComplete(data) {
-        this.reset();
-        this.end(data);
-      }
-      getSlice(start, end) {
-        if (start === end) {
-          return "";
-        }
-        while (start - this.bufferOffset >= this.buffers[0].length) {
-          this.shiftBuffer();
-        }
-        let slice = this.buffers[0].slice(start - this.bufferOffset, end - this.bufferOffset);
-        while (end - this.bufferOffset > this.buffers[0].length) {
-          this.shiftBuffer();
-          slice += this.buffers[0].slice(0, end - this.bufferOffset);
-        }
-        return slice;
-      }
-      shiftBuffer() {
-        this.bufferOffset += this.buffers[0].length;
-        this.writeIndex--;
-        this.buffers.shift();
-      }
-      /**
-       * Parses a chunk of data and calls the corresponding callbacks.
-       * @param chunk Chunk to parse.
-       */
-      write(chunk) {
-        if (this.ended) {
-          this.cbs.onerror?.(new Error(".write() after done!"));
-          return;
-        }
-        this.buffers.push(chunk);
-        if (this.tokenizer.running) {
-          this.tokenizer.write(chunk);
-          this.writeIndex++;
-        }
-      }
-      /**
-       * Parses the end of the buffer and clears the stack, calls onend.
-       * @param chunk Optional final chunk to parse.
-       */
-      end(chunk) {
-        if (this.ended) {
-          this.cbs.onerror?.(new Error(".end() after done!"));
-          return;
-        }
-        if (chunk)
-          this.write(chunk);
-        this.ended = true;
-        this.tokenizer.end();
-      }
-      /**
-       * Pauses parsing. The parser won't emit events until `resume` is called.
-       */
-      pause() {
-        this.tokenizer.pause();
-      }
-      /**
-       * Resumes parsing after `pause` was called.
-       */
-      resume() {
-        this.tokenizer.resume();
-        while (this.tokenizer.running && this.writeIndex < this.buffers.length) {
-          this.tokenizer.write(this.buffers[this.writeIndex++]);
-        }
-        if (this.ended)
-          this.tokenizer.end();
-      }
-    };
-  }
-});
-
-// node_modules/domelementtype/dist/index.js
-var dist_exports = {};
-__export(dist_exports, {
-  CDATA: () => CDATA,
-  Comment: () => Comment,
-  Directive: () => Directive,
-  Doctype: () => Doctype,
-  ElementType: () => ElementType,
-  Root: () => Root,
-  Script: () => Script,
-  Style: () => Style,
-  Tag: () => Tag,
-  Text: () => Text,
-  isTag: () => isTag
-});
-function isTag(element) {
-  return element.type === ElementType.Tag || element.type === ElementType.Script || element.type === ElementType.Style;
-}
-var ElementType, Root, Text, Directive, Comment, Script, Style, Tag, CDATA, Doctype;
-var init_dist2 = __esm({
-  "node_modules/domelementtype/dist/index.js"() {
-    (function(ElementType2) {
-      ElementType2["Root"] = "root";
-      ElementType2["Text"] = "text";
-      ElementType2["Directive"] = "directive";
-      ElementType2["Comment"] = "comment";
-      ElementType2["Script"] = "script";
-      ElementType2["Style"] = "style";
-      ElementType2["Tag"] = "tag";
-      ElementType2["CDATA"] = "cdata";
-      ElementType2["Doctype"] = "doctype";
-    })(ElementType || (ElementType = {}));
-    Root = ElementType.Root;
-    Text = ElementType.Text;
-    Directive = ElementType.Directive;
-    Comment = ElementType.Comment;
-    Script = ElementType.Script;
-    Style = ElementType.Style;
-    Tag = ElementType.Tag;
-    CDATA = ElementType.CDATA;
-    Doctype = ElementType.Doctype;
-  }
-});
-
-// node_modules/domhandler/dist/node.js
-function isTag2(node2) {
-  return isTag(node2);
-}
-function isCDATA(node2) {
-  return node2.type === ElementType.CDATA;
-}
-function isText(node2) {
-  return node2.type === ElementType.Text;
-}
-function isComment(node2) {
-  return node2.type === ElementType.Comment;
-}
-function isDirective(node2) {
-  return node2.type === ElementType.Directive;
-}
-function isDocument(node2) {
-  return node2.type === ElementType.Root;
-}
-function hasChildren(node2) {
-  return Object.hasOwn(node2, "children");
-}
-function cloneNode(node2, recursive2 = false) {
-  let result;
-  if (isText(node2)) {
-    result = new Text2(node2.data);
-  } else if (isComment(node2)) {
-    result = new Comment2(node2.data);
-  } else if (isTag2(node2)) {
-    const children = recursive2 ? cloneChildren(node2.children) : [];
-    const clone2 = new Element(node2.name, { ...node2.attribs }, children);
-    for (const child of children) {
-      child.parent = clone2;
-    }
-    if (node2.namespace != null) {
-      clone2.namespace = node2.namespace;
-    }
-    if (node2["x-attribsNamespace"]) {
-      clone2["x-attribsNamespace"] = { ...node2["x-attribsNamespace"] };
-    }
-    if (node2["x-attribsPrefix"]) {
-      clone2["x-attribsPrefix"] = { ...node2["x-attribsPrefix"] };
-    }
-    result = clone2;
-  } else if (isCDATA(node2)) {
-    const children = recursive2 ? cloneChildren(node2.children) : [];
-    const clone2 = new CDATA2(children);
-    for (const child of children) {
-      child.parent = clone2;
-    }
-    result = clone2;
-  } else if (isDocument(node2)) {
-    const children = recursive2 ? cloneChildren(node2.children) : [];
-    const clone2 = new Document(children);
-    for (const child of children) {
-      child.parent = clone2;
-    }
-    if (node2["x-mode"]) {
-      clone2["x-mode"] = node2["x-mode"];
-    }
-    result = clone2;
-  } else if (isDirective(node2)) {
-    const instruction = new ProcessingInstruction(node2.name, node2.data);
-    if (node2["x-name"] != null) {
-      instruction["x-name"] = node2["x-name"];
-      instruction["x-publicId"] = node2["x-publicId"];
-      instruction["x-systemId"] = node2["x-systemId"];
-    }
-    result = instruction;
-  } else {
-    throw new Error(`Not implemented yet: ${node2.type}`);
-  }
-  result.startIndex = node2.startIndex;
-  result.endIndex = node2.endIndex;
-  if (node2.sourceCodeLocation != null) {
-    result.sourceCodeLocation = node2.sourceCodeLocation;
-  }
-  return result;
-}
-function cloneChildren(childs) {
-  const children = childs.map((child) => cloneNode(child, true));
-  for (let index = 1; index < children.length; index++) {
-    children[index].prev = children[index - 1];
-    children[index - 1].next = children[index];
-  }
-  return children;
-}
-var Node, DataNode, Text2, Comment2, ProcessingInstruction, NodeWithChildren, CDATA2, Document, Element;
-var init_node = __esm({
-  "node_modules/domhandler/dist/node.js"() {
-    init_dist2();
-    Node = class {
-      /** Parent of the node */
-      parent = null;
-      /** Previous sibling */
-      prev = null;
-      /** Next sibling */
-      next = null;
-      /** The start index of the node. Requires `withStartIndices` on the handler to be `true. */
-      startIndex = null;
-      /** The end index of the node. Requires `withEndIndices` on the handler to be `true. */
-      endIndex = null;
-      // Read-write aliases for properties
-      /**
-       * Same as {@link parent}.
-       * [DOM spec](https://dom.spec.whatwg.org)-compatible alias.
-       */
-      get parentNode() {
-        return this.parent;
-      }
-      set parentNode(parent) {
-        this.parent = parent;
-      }
-      /**
-       * Same as {@link prev}.
-       * [DOM spec](https://dom.spec.whatwg.org)-compatible alias.
-       */
-      get previousSibling() {
-        return this.prev;
-      }
-      set previousSibling(previous) {
-        this.prev = previous;
-      }
-      /**
-       * Same as {@link next}.
-       * [DOM spec](https://dom.spec.whatwg.org)-compatible alias.
-       */
-      get nextSibling() {
-        return this.next;
-      }
-      set nextSibling(next) {
-        this.next = next;
-      }
-      /**
-       * Clone this node, and optionally its children.
-       * @param recursive Clone child nodes as well.
-       * @returns A clone of the node.
-       */
-      cloneNode(recursive2 = false) {
-        return cloneNode(this, recursive2);
-      }
-    };
-    DataNode = class extends Node {
-      data;
-      /**
-       * @param data The content of the data node
-       */
-      constructor(data) {
-        super();
-        this.data = data;
-      }
-      /**
-       * Same as {@link data}.
-       * [DOM spec](https://dom.spec.whatwg.org)-compatible alias.
-       */
-      get nodeValue() {
-        return this.data;
-      }
-      set nodeValue(data) {
-        this.data = data;
-      }
-    };
-    Text2 = class extends DataNode {
-      type = ElementType.Text;
-      get nodeType() {
-        return 3;
-      }
-    };
-    Comment2 = class extends DataNode {
-      type = ElementType.Comment;
-      get nodeType() {
-        return 8;
-      }
-    };
-    ProcessingInstruction = class extends DataNode {
-      type = ElementType.Directive;
-      name;
-      constructor(name, data) {
-        super(data);
-        this.name = name;
-      }
-      get nodeType() {
-        return 1;
-      }
-      /** If this is a doctype, the document type name (parse5 only). */
-      "x-name";
-      /** If this is a doctype, the document type public identifier (parse5 only). */
-      "x-publicId";
-      /** If this is a doctype, the document type system identifier (parse5 only). */
-      "x-systemId";
-    };
-    NodeWithChildren = class extends Node {
-      children;
-      /**
-       * @param children Children of the node. Only certain node types can have children.
-       */
-      constructor(children) {
-        super();
-        this.children = children;
-      }
-      // Aliases
-      /** First child of the node. */
-      get firstChild() {
-        return this.children[0] ?? null;
-      }
-      /** Last child of the node. */
-      get lastChild() {
-        return this.children.length > 0 ? this.children[this.children.length - 1] : null;
-      }
-      /**
-       * Same as {@link children}.
-       * [DOM spec](https://dom.spec.whatwg.org)-compatible alias.
-       */
-      get childNodes() {
-        return this.children;
-      }
-      set childNodes(children) {
-        this.children = children;
-      }
-    };
-    CDATA2 = class extends NodeWithChildren {
-      type = ElementType.CDATA;
-      get nodeType() {
-        return 4;
-      }
-    };
-    Document = class extends NodeWithChildren {
-      type = ElementType.Root;
-      get nodeType() {
-        return 9;
-      }
-    };
-    Element = class extends NodeWithChildren {
-      name;
-      attribs;
-      type;
-      /**
-       * @param name Name of the tag, eg. `div`, `span`.
-       * @param attribs Object mapping attribute names to attribute values.
-       * @param children Children of the node.
-       * @param type Node type used for the new node instance.
-       */
-      constructor(name, attribs, children = [], type = name === "script" ? ElementType.Script : name === "style" ? ElementType.Style : ElementType.Tag) {
-        super(children);
-        this.name = name;
-        this.attribs = attribs;
-        this.type = type;
-      }
-      get nodeType() {
-        return 1;
-      }
-      // DOM Level 1 aliases
-      /**
-       * Same as {@link name}.
-       * [DOM spec](https://dom.spec.whatwg.org)-compatible alias.
-       */
-      get tagName() {
-        return this.name;
-      }
-      set tagName(name) {
-        this.name = name;
-      }
-      get attributes() {
-        return Object.keys(this.attribs).map((name) => ({
-          name,
-          value: this.attribs[name],
-          namespace: this["x-attribsNamespace"]?.[name],
-          prefix: this["x-attribsPrefix"]?.[name]
-        }));
-      }
-      /** Element namespace (parse5 only). */
-      namespace;
-      /** Element attribute namespaces (parse5 only). */
-      "x-attribsNamespace";
-      /** Element attribute namespace-related prefixes (parse5 only). */
-      "x-attribsPrefix";
-    };
-  }
-});
-
-// node_modules/domhandler/dist/index.js
-var defaultOptions2, DomHandler;
-var init_dist3 = __esm({
-  "node_modules/domhandler/dist/index.js"() {
-    init_dist2();
-    init_node();
-    init_node();
-    defaultOptions2 = {
-      withStartIndices: false,
-      withEndIndices: false,
-      xmlMode: false
-    };
-    DomHandler = class {
-      /** The elements of the DOM */
-      dom = [];
-      /** The root element for the DOM */
-      root = new Document(this.dom);
-      /** Called once parsing has completed. */
-      callback;
-      /** Settings for the handler. */
-      options;
-      /** Callback whenever a tag is closed. */
-      elementCB;
-      /** Indicated whether parsing has been completed. */
-      done = false;
-      /** Stack of open tags. */
-      tagStack = [this.root];
-      /** A data node that is still being written to. */
-      lastNode = null;
-      /** Reference to the parser instance. Used for location information. */
-      parser = null;
-      /**
-       * @param callback Called once parsing has completed.
-       * @param options Settings for the handler.
-       * @param elementCB Callback whenever a tag is closed.
-       */
-      constructor(callback, options, elementCB) {
-        if (typeof options === "function") {
-          elementCB = options;
-          options = defaultOptions2;
-        }
-        if (typeof callback === "object") {
-          options = callback;
-          callback = void 0;
-        }
-        this.callback = callback ?? null;
-        this.options = options ?? defaultOptions2;
-        this.elementCB = elementCB ?? null;
-      }
-      onparserinit(parser3) {
-        this.parser = parser3;
-      }
-      // Resets the handler back to starting state
-      onreset() {
-        this.dom = [];
-        this.root = new Document(this.dom);
-        this.done = false;
-        this.tagStack = [this.root];
-        this.lastNode = null;
-        this.parser = null;
-      }
-      // Signals the handler that parsing is done
-      onend() {
-        if (this.done)
-          return;
-        this.done = true;
-        this.parser = null;
-        this.handleCallback(null);
-      }
-      onerror(error2) {
-        this.handleCallback(error2);
-      }
-      onclosetag() {
-        this.lastNode = null;
-        const element = this.tagStack.pop();
-        if (this.options.withEndIndices && this.parser) {
-          element.endIndex = this.parser.endIndex;
-        }
-        if (this.elementCB)
-          this.elementCB(element);
-      }
-      onopentag(name, attribs) {
-        const type = this.options.xmlMode ? ElementType.Tag : void 0;
-        const element = new Element(name, attribs, void 0, type);
-        this.addNode(element);
-        this.tagStack.push(element);
-      }
-      ontext(data) {
-        const { lastNode } = this;
-        if (lastNode && lastNode.type === ElementType.Text) {
-          lastNode.data += data;
-          if (this.options.withEndIndices && this.parser) {
-            lastNode.endIndex = this.parser.endIndex;
-          }
-        } else {
-          const node2 = new Text2(data);
-          this.addNode(node2);
-          this.lastNode = node2;
-        }
-      }
-      oncomment(data) {
-        if (this.lastNode && this.lastNode.type === ElementType.Comment) {
-          this.lastNode.data += data;
-          return;
-        }
-        const node2 = new Comment2(data);
-        this.addNode(node2);
-        this.lastNode = node2;
-      }
-      oncommentend() {
-        this.lastNode = null;
-      }
-      oncdatastart() {
-        const text2 = new Text2("");
-        const node2 = new CDATA2([text2]);
-        this.addNode(node2);
-        text2.parent = node2;
-        this.lastNode = text2;
-      }
-      oncdataend() {
-        this.lastNode = null;
-      }
-      onprocessinginstruction(name, data) {
-        const node2 = new ProcessingInstruction(name, data);
-        this.addNode(node2);
-      }
-      handleCallback(error2) {
-        if (typeof this.callback === "function") {
-          this.callback(error2, this.dom);
-        } else if (error2) {
-          throw error2;
-        }
-      }
-      addNode(node2) {
-        const parent = this.tagStack[this.tagStack.length - 1];
-        const previousSibling = parent.children[parent.children.length - 1];
-        if (this.options.withStartIndices && this.parser) {
-          node2.startIndex = this.parser.startIndex;
-        }
-        if (this.options.withEndIndices && this.parser) {
-          node2.endIndex = this.parser.endIndex;
-        }
-        parent.children.push(node2);
-        if (previousSibling) {
-          node2.prev = previousSibling;
-          previousSibling.next = node2;
-        }
-        node2.parent = parent;
-        this.lastNode = null;
-      }
-    };
-  }
-});
-
-// node_modules/domutils/dist/querying.js
-function filter(test, node2, recurse = true, limit = Number.POSITIVE_INFINITY) {
-  return find(test, Array.isArray(node2) ? node2 : [node2], recurse, limit);
-}
-function find(test, nodes, recurse, limit) {
-  const result = [];
-  const nodeStack = [Array.isArray(nodes) ? nodes : [nodes]];
-  const indexStack = [0];
-  for (; ; ) {
-    if (indexStack[0] >= nodeStack[0].length) {
-      if (indexStack.length === 1) {
-        return result;
-      }
-      nodeStack.shift();
-      indexStack.shift();
-      continue;
-    }
-    const element = nodeStack[0][indexStack[0]++];
-    if (test(element)) {
-      result.push(element);
-      if (--limit <= 0)
-        return result;
-    }
-    if (recurse && hasChildren(element) && element.children.length > 0) {
-      indexStack.unshift(0);
-      nodeStack.unshift(element.children);
-    }
-  }
-}
-function findOne(test, nodes, recurse = true) {
-  const searchedNodes = Array.isArray(nodes) ? nodes : [nodes];
-  for (const node2 of searchedNodes) {
-    if (isTag2(node2) && test(node2)) {
-      return node2;
-    }
-    if (recurse && hasChildren(node2) && node2.children.length > 0) {
-      const found = findOne(test, node2.children, true);
-      if (found)
-        return found;
-    }
-  }
-  return null;
-}
-function existsOne(test, nodes) {
-  return (Array.isArray(nodes) ? nodes : [nodes]).some((node2) => isTag2(node2) && test(node2) || hasChildren(node2) && existsOne(test, node2.children));
-}
-function findAll(test, nodes) {
-  const result = [];
-  const nodeStack = [Array.isArray(nodes) ? nodes : [nodes]];
-  const indexStack = [0];
-  for (; ; ) {
-    if (indexStack[0] >= nodeStack[0].length) {
-      if (nodeStack.length === 1) {
-        return result;
-      }
-      nodeStack.shift();
-      indexStack.shift();
-      continue;
-    }
-    const element = nodeStack[0][indexStack[0]++];
-    if (isTag2(element) && test(element))
-      result.push(element);
-    if (hasChildren(element) && element.children.length > 0) {
-      indexStack.unshift(0);
-      nodeStack.unshift(element.children);
-    }
-  }
-}
-var init_querying = __esm({
-  "node_modules/domutils/dist/querying.js"() {
-    init_dist3();
-  }
-});
-
-// node_modules/domutils/dist/legacy.js
-function getAttribCheck(attrib, value) {
-  if (typeof value === "function") {
-    return (element) => isTag2(element) && value(element.attribs[attrib]);
-  }
-  return (element) => isTag2(element) && element.attribs[attrib] === value;
-}
-function combineFuncs(a, b) {
-  return (element) => a(element) || b(element);
-}
-function compileTest(options) {
-  const funcs = Object.keys(options).map((key) => {
-    const value = options[key];
-    return Object.hasOwn(Checks, key) ? Checks[key](value) : getAttribCheck(key, value);
-  });
-  return funcs.length === 0 ? null : funcs.reduce(combineFuncs);
-}
-function testElement(options, node2) {
-  const test = compileTest(options);
-  return test ? test(node2) : true;
-}
-function getElements(options, nodes, recurse, limit = Number.POSITIVE_INFINITY) {
-  const test = compileTest(options);
-  return test ? filter(test, nodes, recurse, limit) : [];
-}
-function getElementById(id, nodes, recurse = true) {
-  if (!Array.isArray(nodes))
-    nodes = [nodes];
-  return findOne(getAttribCheck("id", id), nodes, recurse);
-}
-function getElementsByTagName(tagName, nodes, recurse = true, limit = Number.POSITIVE_INFINITY) {
-  return filter(Checks["tag_name"](tagName), nodes, recurse, limit);
-}
-function getElementsByClassName(className, nodes, recurse = true, limit = Number.POSITIVE_INFINITY) {
-  return filter(getAttribCheck("class", className), nodes, recurse, limit);
-}
-function getElementsByTagType(type, nodes, recurse = true, limit = Number.POSITIVE_INFINITY) {
-  return filter(Checks["tag_type"](type), nodes, recurse, limit);
-}
-var Checks;
-var init_legacy = __esm({
-  "node_modules/domutils/dist/legacy.js"() {
-    init_dist3();
-    init_querying();
-    Checks = {
-      tag_name(name) {
-        if (typeof name === "function") {
-          return (element) => isTag2(element) && name(element.name);
-        }
-        if (name === "*") {
-          return isTag2;
-        }
-        return (element) => isTag2(element) && element.name === name;
-      },
-      tag_type(type) {
-        if (typeof type === "function") {
-          return (element) => type(element.type);
-        }
-        return (element) => element.type === type;
-      },
-      tag_contains(data) {
-        if (typeof data === "function") {
-          return (element) => isText(element) && data(element.data);
-        }
-        return (element) => isText(element) && element.data === data;
-      }
-    };
-  }
-});
-
-// node_modules/dom-serializer/dist/foreign-names.js
-var elementNames, attributeNames;
-var init_foreign_names = __esm({
-  "node_modules/dom-serializer/dist/foreign-names.js"() {
-    elementNames = new Map("altGlyph altGlyphDef altGlyphItem animateColor animateMotion animateTransform clipPath feBlend feColorMatrix feComponentTransfer feComposite feConvolveMatrix feDiffuseLighting feDisplacementMap feDistantLight feDropShadow feFlood feFuncA feFuncB feFuncG feFuncR feGaussianBlur feImage feMerge feMergeNode feMorphology feOffset fePointLight feSpecularLighting feSpotLight feTile feTurbulence foreignObject glyphRef linearGradient radialGradient textPath".split(" ").map((name) => [name.toLowerCase(), name]));
-    attributeNames = new Map("definitionURL attributeName attributeType baseFrequency baseProfile calcMode clipPathUnits diffuseConstant edgeMode filterUnits glyphRef gradientTransform gradientUnits kernelMatrix kernelUnitLength keyPoints keySplines keyTimes lengthAdjust limitingConeAngle markerHeight markerUnits markerWidth maskContentUnits maskUnits numOctaves pathLength patternContentUnits patternTransform patternUnits pointsAtX pointsAtY pointsAtZ preserveAlpha preserveAspectRatio primitiveUnits refX refY repeatCount repeatDur requiredExtensions requiredFeatures specularConstant specularExponent spreadMethod startOffset stdDeviation stitchTiles surfaceScale systemLanguage tableValues targetX targetY textLength viewBox viewTarget xChannelSelector yChannelSelector zoomAndPan".split(" ").map((name) => [name.toLowerCase(), name]));
-  }
-});
-
-// node_modules/dom-serializer/dist/index.js
-function render(node2, options = {}) {
-  const nodes = "length" in node2 ? node2 : [node2];
-  const xmlMode = options.xmlMode ?? false;
-  let output = "";
-  for (let index = 0; index < nodes.length; index++) {
-    output += renderNode(nodes[index], options, xmlMode);
-  }
-  return output;
-}
-function renderChildren(children, options, xmlMode) {
-  let output = "";
-  for (let index = 0; index < children.length; index++) {
-    output += renderNode(children[index], options, xmlMode);
-  }
-  return output;
-}
-function renderNode(node2, options, xmlMode) {
-  switch (node2.type) {
-    case Root: {
-      return renderChildren(node2.children, options, xmlMode);
-    }
-    case Directive: {
-      return `<${node2.data}>`;
-    }
-    case Comment: {
-      return `<!--${node2.data}-->`;
-    }
-    case CDATA: {
-      return `<![CDATA[${node2.children[0].data}]]>`;
-    }
-    case Script:
-    case Style:
-    case Tag: {
-      return renderTag(node2, options, xmlMode);
-    }
-    case Text: {
-      const element = node2;
-      const data = element.data || "";
-      if ((options.encodeEntities ?? options.decodeEntities) !== false && !(!xmlMode && element.parent && unencodedElements.has(element.parent.name))) {
-        return xmlMode || options.encodeEntities !== "utf8" ? encodeXML(data) : escapeText(data);
-      }
-      return data;
-    }
-  }
-}
-function renderTag(element, options, xmlMode) {
-  if (xmlMode === "foreign") {
-    element.name = elementNames.get(element.name) ?? element.name;
-    if (element.parent && foreignModeIntegrationPoints.has(element.parent.name)) {
-      xmlMode = false;
-    }
-  }
-  if (!xmlMode && foreignElements.has(element.name)) {
-    xmlMode = "foreign";
-  }
-  const { name, children } = element;
-  const isVoid = !xmlMode && voidElements2.has(name);
-  let tag = `<${name}${formatAttributes(element.attribs, options, xmlMode)}`;
-  if (children.length === 0 && (xmlMode ? options.selfClosingTags !== false : options.selfClosingTags && isVoid)) {
-    tag += xmlMode ? "/>" : " />";
-  } else {
-    tag += ">";
-    if (children.length > 0) {
-      tag += renderChildren(children, options, xmlMode);
-    }
-    if (!isVoid) {
-      tag += `</${name}>`;
-    }
-  }
-  return tag;
-}
-function replaceQuotes(value) {
-  return value.replaceAll('"', "&quot;");
-}
-function formatAttributes(attributes, options, xmlMode) {
-  if (!attributes)
-    return "";
-  const encode3 = (options.encodeEntities ?? options.decodeEntities) === false ? replaceQuotes : xmlMode || options.encodeEntities !== "utf8" ? encodeXML : escapeAttribute;
-  const isForeign = xmlMode === "foreign";
-  const showEmpty = !!(options.emptyAttrs ?? xmlMode);
-  let result = "";
-  for (const key in attributes) {
-    if (!Object.hasOwn(attributes, key))
-      continue;
-    const value = attributes[key];
-    const k = isForeign ? attributeNames.get(key) ?? key : key;
-    result += !showEmpty && (value == null || value === "") ? ` ${k}` : ` ${k}="${encode3(value == null ? "" : String(value))}"`;
-  }
-  return result;
-}
-var unencodedElements, voidElements2, foreignElements, foreignModeIntegrationPoints, dist_default;
-var init_dist4 = __esm({
-  "node_modules/dom-serializer/dist/index.js"() {
-    init_dist2();
-    init_dist();
-    init_foreign_names();
-    unencodedElements = new Set("style script xmp iframe noembed noframes plaintext noscript".split(" "));
-    voidElements2 = new Set("area base basefont br col command embed frame hr img input isindex keygen link meta param source track wbr".split(" "));
-    foreignElements = /* @__PURE__ */ new Set(["svg", "math"]);
-    foreignModeIntegrationPoints = new Set("mi mo mn ms mtext annotation-xml foreignObject desc title".split(" "));
-    dist_default = render;
-  }
-});
-
-// node_modules/domutils/dist/stringify.js
-function getOuterHTML(node2, options) {
-  return dist_default(node2, options);
-}
-function getInnerHTML(node2, options) {
-  return hasChildren(node2) ? node2.children.map((node3) => getOuterHTML(node3, options)).join("") : "";
-}
-function getText(node2) {
-  if (Array.isArray(node2))
-    return node2.map(getText).join("");
-  if (isTag2(node2))
-    return node2.name === "br" ? "\n" : getText(node2.children);
-  if (isCDATA(node2))
-    return getText(node2.children);
-  if (isText(node2))
-    return node2.data;
-  return "";
-}
-function textContent(node2) {
-  if (Array.isArray(node2))
-    return node2.map(textContent).join("");
-  if (hasChildren(node2) && !isComment(node2)) {
-    return textContent(node2.children);
-  }
-  if (isText(node2))
-    return node2.data;
-  return "";
-}
-function innerText(node2) {
-  if (Array.isArray(node2))
-    return node2.map(innerText).join("");
-  if (hasChildren(node2) && (node2.type === ElementType.Tag || isCDATA(node2))) {
-    return innerText(node2.children);
-  }
-  if (isText(node2))
-    return node2.data;
-  return "";
-}
-var init_stringify = __esm({
-  "node_modules/domutils/dist/stringify.js"() {
-    init_dist4();
-    init_dist2();
-    init_dist3();
-  }
-});
-
-// node_modules/domutils/dist/feeds.js
-function getFeed(document2) {
-  const feedRoot = getOneElement(isValidFeed, document2);
-  return feedRoot ? feedRoot.name === "feed" ? getAtomFeed(feedRoot) : getRssFeed(feedRoot) : null;
-}
-function getAtomFeed(feedRoot) {
-  const childs = feedRoot.children;
-  const feed = {
-    type: "atom",
-    items: getElementsByTagName("entry", childs).map((item) => {
-      const { children } = item;
-      const entry = { media: getMediaElements(children) };
-      addConditionally(entry, "id", "id", children);
-      addConditionally(entry, "title", "title", children);
-      const href2 = getOneElement("link", children)?.attribs["href"];
-      if (href2) {
-        entry.link = href2;
-      }
-      const description = fetch2("summary", children) || fetch2("content", children);
-      if (description) {
-        entry.description = description;
-      }
-      const pubDate = fetch2("updated", children);
-      if (pubDate) {
-        entry.pubDate = new Date(pubDate);
-      }
-      return entry;
-    })
-  };
-  addConditionally(feed, "id", "id", childs);
-  addConditionally(feed, "title", "title", childs);
-  const href = getOneElement("link", childs)?.attribs["href"];
-  if (href) {
-    feed.link = href;
-  }
-  addConditionally(feed, "description", "subtitle", childs);
-  const updated = fetch2("updated", childs);
-  if (updated) {
-    feed.updated = new Date(updated);
-  }
-  addConditionally(feed, "author", "email", childs, true);
-  return feed;
-}
-function getRssFeed(feedRoot) {
-  const childs = getOneElement("channel", feedRoot.children)?.children ?? [];
-  const feed = {
-    type: feedRoot.name.substr(0, 3),
-    id: "",
-    items: getElementsByTagName("item", feedRoot.children).map((item) => {
-      const { children } = item;
-      const entry = { media: getMediaElements(children) };
-      addConditionally(entry, "id", "guid", children);
-      addConditionally(entry, "title", "title", children);
-      addConditionally(entry, "link", "link", children);
-      addConditionally(entry, "description", "description", children);
-      const pubDate = fetch2("pubDate", children) || fetch2("dc:date", children);
-      if (pubDate)
-        entry.pubDate = new Date(pubDate);
-      return entry;
-    })
-  };
-  addConditionally(feed, "title", "title", childs);
-  addConditionally(feed, "link", "link", childs);
-  addConditionally(feed, "description", "description", childs);
-  const updated = fetch2("lastBuildDate", childs);
-  if (updated) {
-    feed.updated = new Date(updated);
-  }
-  addConditionally(feed, "author", "managingEditor", childs, true);
-  return feed;
-}
-function getMediaElements(where) {
-  return getElementsByTagName("media:content", where).map((element) => {
-    const { attribs } = element;
-    const media = {
-      medium: attribs["medium"],
-      isDefault: !!attribs["isDefault"]
-    };
-    for (const attrib of MEDIA_KEYS_STRING) {
-      if (attribs[attrib]) {
-        media[attrib] = attribs[attrib];
-      }
-    }
-    for (const attrib of MEDIA_KEYS_INT) {
-      if (attribs[attrib]) {
-        media[attrib] = Number.parseInt(attribs[attrib], 10);
-      }
-    }
-    if (attribs["expression"]) {
-      media.expression = attribs["expression"];
-    }
-    return media;
-  });
-}
-function getOneElement(tagName, node2) {
-  return getElementsByTagName(tagName, node2, true, 1)[0];
-}
-function fetch2(tagName, where, recurse = false) {
-  return textContent(getElementsByTagName(tagName, where, recurse, 1)).trim();
-}
-function addConditionally(object2, property, tagName, where, recurse = false) {
-  const value = fetch2(tagName, where, recurse);
-  if (value)
-    object2[property] = value;
-}
-function isValidFeed(value) {
-  return value === "rss" || value === "feed" || value === "rdf:RDF";
-}
-var MEDIA_KEYS_STRING, MEDIA_KEYS_INT;
-var init_feeds = __esm({
-  "node_modules/domutils/dist/feeds.js"() {
-    init_legacy();
-    init_stringify();
-    MEDIA_KEYS_STRING = ["url", "type", "lang"];
-    MEDIA_KEYS_INT = [
-      "fileSize",
-      "bitrate",
-      "framerate",
-      "samplingrate",
-      "channels",
-      "duration",
-      "height",
-      "width"
-    ];
-  }
-});
-
-// node_modules/domutils/dist/helpers.js
-function removeSubsets(nodes) {
-  let index = nodes.length;
-  while (--index >= 0) {
-    const node2 = nodes[index];
-    if (index > 0 && nodes.lastIndexOf(node2, index - 1) >= 0) {
-      nodes.splice(index, 1);
-      continue;
-    }
-    for (let ancestor = node2.parent; ancestor; ancestor = ancestor.parent) {
-      if (nodes.includes(ancestor)) {
-        nodes.splice(index, 1);
-        break;
-      }
-    }
-  }
-  return nodes;
-}
-function compareDocumentPosition(nodeA, nodeB) {
-  const aParents = [];
-  const bParents = [];
-  if (nodeA === nodeB) {
-    return 0;
-  }
-  let current = hasChildren(nodeA) ? nodeA : nodeA.parent;
-  while (current) {
-    aParents.unshift(current);
-    current = current.parent;
-  }
-  current = hasChildren(nodeB) ? nodeB : nodeB.parent;
-  while (current) {
-    bParents.unshift(current);
-    current = current.parent;
-  }
-  const maxIndex = Math.min(aParents.length, bParents.length);
-  let index = 0;
-  while (index < maxIndex && aParents[index] === bParents[index]) {
-    index++;
-  }
-  if (index === 0) {
-    return DocumentPosition.DISCONNECTED;
-  }
-  const sharedParent = aParents[index - 1];
-  const siblings = sharedParent.children;
-  const aSibling = aParents[index];
-  const bSibling = bParents[index];
-  if (siblings.indexOf(aSibling) > siblings.indexOf(bSibling)) {
-    if (sharedParent === nodeB) {
-      return DocumentPosition.FOLLOWING | DocumentPosition.CONTAINED_BY;
-    }
-    return DocumentPosition.FOLLOWING;
-  }
-  if (sharedParent === nodeA) {
-    return DocumentPosition.PRECEDING | DocumentPosition.CONTAINS;
-  }
-  return DocumentPosition.PRECEDING;
-}
-function uniqueSort(nodes) {
-  nodes = nodes.filter((node2, index, array2) => !array2.includes(node2, index + 1));
-  nodes.sort((a, b) => {
-    const relative13 = compareDocumentPosition(a, b);
-    if (relative13 & DocumentPosition.PRECEDING) {
-      return -1;
-    }
-    if (relative13 & DocumentPosition.FOLLOWING) {
-      return 1;
-    }
-    return 0;
-  });
-  return nodes;
-}
-var DocumentPosition;
-var init_helpers = __esm({
-  "node_modules/domutils/dist/helpers.js"() {
-    init_dist3();
-    (function(DocumentPosition2) {
-      DocumentPosition2[DocumentPosition2["DISCONNECTED"] = 1] = "DISCONNECTED";
-      DocumentPosition2[DocumentPosition2["PRECEDING"] = 2] = "PRECEDING";
-      DocumentPosition2[DocumentPosition2["FOLLOWING"] = 4] = "FOLLOWING";
-      DocumentPosition2[DocumentPosition2["CONTAINS"] = 8] = "CONTAINS";
-      DocumentPosition2[DocumentPosition2["CONTAINED_BY"] = 16] = "CONTAINED_BY";
-    })(DocumentPosition || (DocumentPosition = {}));
-  }
-});
-
-// node_modules/domutils/dist/manipulation.js
-function removeElement(element) {
-  if (element.prev)
-    element.prev.next = element.next;
-  if (element.next)
-    element.next.prev = element.prev;
-  if (element.parent) {
-    const childs = element.parent.children;
-    const childsIndex = childs.lastIndexOf(element);
-    if (childsIndex !== -1) {
-      childs.splice(childsIndex, 1);
-    }
-  }
-  element.next = null;
-  element.prev = null;
-  element.parent = null;
-}
-function replaceElement(element, replacement) {
-  replacement.prev = element.prev;
-  if (replacement.prev) {
-    replacement.prev.next = replacement;
-  }
-  replacement.next = element.next;
-  if (replacement.next) {
-    replacement.next.prev = replacement;
-  }
-  replacement.parent = element.parent;
-  if (replacement.parent) {
-    const { children } = replacement.parent;
-    const elementIndex = children.lastIndexOf(element);
-    if (elementIndex === -1) {
-      return;
-    }
-    children[elementIndex] = replacement;
-    element.parent = null;
-  }
-}
-function appendChild(parent, child) {
-  removeElement(child);
-  child.next = null;
-  child.parent = parent;
-  if (parent.children.push(child) > 1) {
-    const sibling = parent.children[parent.children.length - 2];
-    sibling.next = child;
-    child.prev = sibling;
-  } else {
-    child.prev = null;
-  }
-}
-function append(element, next) {
-  removeElement(next);
-  const { parent } = element;
-  const currentNext = element.next;
-  next.next = currentNext;
-  next.prev = element;
-  element.next = next;
-  next.parent = parent;
-  if (currentNext) {
-    currentNext.prev = next;
-    if (parent) {
-      const childs = parent.children;
-      childs.splice(childs.lastIndexOf(currentNext), 0, next);
-    }
-  } else if (parent) {
-    parent.children.push(next);
-  }
-}
-function prependChild(parent, child) {
-  removeElement(child);
-  child.parent = parent;
-  child.prev = null;
-  if (parent.children.unshift(child) === 1) {
-    child.next = null;
-  } else {
-    const sibling = parent.children[1];
-    sibling.prev = child;
-    child.next = sibling;
-  }
-}
-function prepend(element, previous) {
-  removeElement(previous);
-  const { parent } = element;
-  if (parent) {
-    const childs = parent.children;
-    childs.splice(childs.indexOf(element), 0, previous);
-  }
-  if (element.prev) {
-    element.prev.next = previous;
-  }
-  previous.parent = parent;
-  previous.prev = element.prev;
-  previous.next = element;
-  element.prev = previous;
-}
-var init_manipulation = __esm({
-  "node_modules/domutils/dist/manipulation.js"() {
-  }
-});
-
-// node_modules/domutils/dist/traversal.js
-function getChildren(element) {
-  return hasChildren(element) ? element.children : [];
-}
-function getParent(element) {
-  return element.parent || null;
-}
-function getSiblings(element) {
-  const parent = getParent(element);
-  if (parent != null)
-    return getChildren(parent);
-  const siblings = [element];
-  let { prev, next } = element;
-  while (prev != null) {
-    siblings.unshift(prev);
-    ({ prev } = prev);
-  }
-  while (next != null) {
-    siblings.push(next);
-    ({ next } = next);
-  }
-  return siblings;
-}
-function getAttributeValue(element, name) {
-  const { attribs } = element;
-  return attribs?.[name];
-}
-function hasAttrib(element, name) {
-  const { attribs } = element;
-  return attribs != null && Object.hasOwn(attribs, name) && attribs[name] != null;
-}
-function getName(element) {
-  return element.name;
-}
-function nextElementSibling(element) {
-  let { next } = element;
-  while (next !== null && !isTag2(next))
-    ({ next } = next);
-  return next;
-}
-function prevElementSibling(element) {
-  let { prev } = element;
-  while (prev !== null && !isTag2(prev))
-    ({ prev } = prev);
-  return prev;
-}
-var init_traversal = __esm({
-  "node_modules/domutils/dist/traversal.js"() {
-    init_dist3();
-  }
-});
-
-// node_modules/domutils/dist/index.js
-var dist_exports2 = {};
-__export(dist_exports2, {
-  DocumentPosition: () => DocumentPosition,
-  append: () => append,
-  appendChild: () => appendChild,
-  compareDocumentPosition: () => compareDocumentPosition,
-  existsOne: () => existsOne,
-  filter: () => filter,
-  find: () => find,
-  findAll: () => findAll,
-  findOne: () => findOne,
-  getAttributeValue: () => getAttributeValue,
-  getChildren: () => getChildren,
-  getElementById: () => getElementById,
-  getElements: () => getElements,
-  getElementsByClassName: () => getElementsByClassName,
-  getElementsByTagName: () => getElementsByTagName,
-  getElementsByTagType: () => getElementsByTagType,
-  getFeed: () => getFeed,
-  getInnerHTML: () => getInnerHTML,
-  getName: () => getName,
-  getOuterHTML: () => getOuterHTML,
-  getParent: () => getParent,
-  getSiblings: () => getSiblings,
-  getText: () => getText,
-  hasAttrib: () => hasAttrib,
-  innerText: () => innerText,
-  nextElementSibling: () => nextElementSibling,
-  prepend: () => prepend,
-  prependChild: () => prependChild,
-  prevElementSibling: () => prevElementSibling,
-  removeElement: () => removeElement,
-  removeSubsets: () => removeSubsets,
-  replaceElement: () => replaceElement,
-  testElement: () => testElement,
-  textContent: () => textContent,
-  uniqueSort: () => uniqueSort
-});
-var init_dist5 = __esm({
-  "node_modules/domutils/dist/index.js"() {
-    init_feeds();
-    init_helpers();
-    init_legacy();
-    init_manipulation();
-    init_querying();
-    init_stringify();
-    init_traversal();
-  }
-});
-
-// node_modules/htmlparser2/dist/index.js
-var dist_exports3 = {};
-__export(dist_exports3, {
-  DefaultHandler: () => DomHandler,
-  DomHandler: () => DomHandler,
-  DomUtils: () => dist_exports2,
-  ElementType: () => dist_exports,
-  Parser: () => Parser,
-  QuoteType: () => QuoteType,
-  Tokenizer: () => Tokenizer,
-  createDocumentStream: () => createDocumentStream,
-  getFeed: () => getFeed,
-  parseDocument: () => parseDocument,
-  parseFeed: () => parseFeed
-});
-function parseDocument(data, options) {
-  const handler = new DomHandler(void 0, options);
-  new Parser(handler, options).end(data);
-  return handler.root;
-}
-function createDocumentStream(callback, options, elementCallback) {
-  const handler = new DomHandler((error2) => callback(error2, handler.root), options, elementCallback);
-  return new Parser(handler, options);
-}
-function parseFeed(feed, options = parseFeedDefaultOptions) {
-  return getFeed(parseDocument(feed, options).children);
-}
-var parseFeedDefaultOptions;
-var init_dist6 = __esm({
-  "node_modules/htmlparser2/dist/index.js"() {
-    init_Parser();
-    init_Parser();
-    init_dist3();
-    init_dist3();
-    init_dist2();
-    init_Tokenizer();
-    init_dist5();
-    init_dist5();
-    init_dist5();
-    parseFeedDefaultOptions = { xmlMode: true };
-  }
-});
-
-// node_modules/escape-string-regexp/index.js
-var require_escape_string_regexp = __commonJS({
-  "node_modules/escape-string-regexp/index.js"(exports, module) {
-    "use strict";
-    module.exports = (string4) => {
-      if (typeof string4 !== "string") {
-        throw new TypeError("Expected a string");
-      }
-      return string4.replace(/[|\\{}()[\]^$+*?.]/g, "\\$&").replace(/-/g, "\\x2d");
-    };
-  }
-});
-
-// node_modules/is-plain-object/dist/is-plain-object.js
-var require_is_plain_object = __commonJS({
-  "node_modules/is-plain-object/dist/is-plain-object.js"(exports) {
-    "use strict";
-    function isObject5(o) {
-      return Object.prototype.toString.call(o) === "[object Object]";
-    }
-    function isPlainObject3(o) {
-      var ctor, prot;
-      if (isObject5(o) === false) return false;
-      ctor = o.constructor;
-      if (ctor === void 0) return true;
-      prot = ctor.prototype;
-      if (isObject5(prot) === false) return false;
-      if (prot.hasOwnProperty("isPrototypeOf") === false) {
-        return false;
-      }
-      return true;
-    }
-    exports.isPlainObject = isPlainObject3;
-  }
-});
-
-// node_modules/parse-srcset/src/parse-srcset.js
-var require_parse_srcset = __commonJS({
-  "node_modules/parse-srcset/src/parse-srcset.js"(exports, module) {
-    (function(root, factory) {
-      if (typeof define === "function" && define.amd) {
-        define([], factory);
-      } else if (typeof module === "object" && module.exports) {
-        module.exports = factory();
-      } else {
-        root.parseSrcset = factory();
-      }
-    })(exports, function() {
-      return function(input) {
-        function isSpace2(c2) {
-          return c2 === " " || // space
-          c2 === "	" || // horizontal tab
-          c2 === "\n" || // new line
-          c2 === "\f" || // form feed
-          c2 === "\r";
-        }
-        function collectCharacters(regEx) {
-          var chars, match = regEx.exec(input.substring(pos));
-          if (match) {
-            chars = match[0];
-            pos += chars.length;
-            return chars;
-          }
-        }
-        var inputLength = input.length, regexLeadingSpaces = /^[ \t\n\r\u000c]+/, regexLeadingCommasOrSpaces = /^[, \t\n\r\u000c]+/, regexLeadingNotSpaces = /^[^ \t\n\r\u000c]+/, regexTrailingCommas = /[,]+$/, regexNonNegativeInteger = /^\d+$/, regexFloatingPoint = /^-?(?:[0-9]+|[0-9]*\.[0-9]+)(?:[eE][+-]?[0-9]+)?$/, url2, descriptors, currentDescriptor, state, c, pos = 0, candidates = [];
-        while (true) {
-          collectCharacters(regexLeadingCommasOrSpaces);
-          if (pos >= inputLength) {
-            return candidates;
-          }
-          url2 = collectCharacters(regexLeadingNotSpaces);
-          descriptors = [];
-          if (url2.slice(-1) === ",") {
-            url2 = url2.replace(regexTrailingCommas, "");
-            parseDescriptors();
-          } else {
-            tokenize2();
-          }
-        }
-        function tokenize2() {
-          collectCharacters(regexLeadingSpaces);
-          currentDescriptor = "";
-          state = "in descriptor";
-          while (true) {
-            c = input.charAt(pos);
-            if (state === "in descriptor") {
-              if (isSpace2(c)) {
-                if (currentDescriptor) {
-                  descriptors.push(currentDescriptor);
-                  currentDescriptor = "";
-                  state = "after descriptor";
-                }
-              } else if (c === ",") {
-                pos += 1;
-                if (currentDescriptor) {
-                  descriptors.push(currentDescriptor);
-                }
-                parseDescriptors();
-                return;
-              } else if (c === "(") {
-                currentDescriptor = currentDescriptor + c;
-                state = "in parens";
-              } else if (c === "") {
-                if (currentDescriptor) {
-                  descriptors.push(currentDescriptor);
-                }
-                parseDescriptors();
-                return;
-              } else {
-                currentDescriptor = currentDescriptor + c;
-              }
-            } else if (state === "in parens") {
-              if (c === ")") {
-                currentDescriptor = currentDescriptor + c;
-                state = "in descriptor";
-              } else if (c === "") {
-                descriptors.push(currentDescriptor);
-                parseDescriptors();
-                return;
-              } else {
-                currentDescriptor = currentDescriptor + c;
-              }
-            } else if (state === "after descriptor") {
-              if (isSpace2(c)) {
-              } else if (c === "") {
-                parseDescriptors();
-                return;
-              } else {
-                state = "in descriptor";
-                pos -= 1;
-              }
-            }
-            pos += 1;
-          }
-        }
-        function parseDescriptors() {
-          var pError = false, w, d, h, i, candidate = {}, desc, lastChar, value, intVal, floatVal;
-          for (i = 0; i < descriptors.length; i++) {
-            desc = descriptors[i];
-            lastChar = desc[desc.length - 1];
-            value = desc.substring(0, desc.length - 1);
-            intVal = parseInt(value, 10);
-            floatVal = parseFloat(value);
-            if (regexNonNegativeInteger.test(value) && lastChar === "w") {
-              if (w || d) {
-                pError = true;
-              }
-              if (intVal === 0) {
-                pError = true;
-              } else {
-                w = intVal;
-              }
-            } else if (regexFloatingPoint.test(value) && lastChar === "x") {
-              if (w || d || h) {
-                pError = true;
-              }
-              if (floatVal < 0) {
-                pError = true;
-              } else {
-                d = floatVal;
-              }
-            } else if (regexNonNegativeInteger.test(value) && lastChar === "h") {
-              if (h || d) {
-                pError = true;
-              }
-              if (intVal === 0) {
-                pError = true;
-              } else {
-                h = intVal;
-              }
-            } else {
-              pError = true;
-            }
-          }
-          if (!pError) {
-            candidate.url = url2;
-            if (w) {
-              candidate.w = w;
-            }
-            if (d) {
-              candidate.d = d;
-            }
-            if (h) {
-              candidate.h = h;
-            }
-            candidates.push(candidate);
-          } else if (console && console.log) {
-            console.log("Invalid srcset descriptor found in '" + input + "' at '" + desc + "'.");
-          }
-        }
-      };
-    });
-  }
-});
-
-// stub:postcss
-var require_postcss = __commonJS({
-  "stub:postcss"(exports, module) {
-    module.exports = { parse() {
-      throw new Error("postcss \u306F\u914D\u5E03\u7269\u306B\u542B\u3081\u306A\u3044");
-    } };
-  }
-});
-
-// node_modules/dayjs/dayjs.min.js
-var require_dayjs_min = __commonJS({
-  "node_modules/dayjs/dayjs.min.js"(exports, module) {
-    !(function(t, e) {
-      "object" == typeof exports && "undefined" != typeof module ? module.exports = e() : "function" == typeof define && define.amd ? define(e) : (t = "undefined" != typeof globalThis ? globalThis : t || self).dayjs = e();
-    })(exports, (function() {
-      "use strict";
-      var t = 1e3, e = 6e4, n = 36e5, r = "millisecond", i = "second", s = "minute", u = "hour", a = "day", o = "week", c = "month", f = "quarter", h = "year", d = "date", l = "Invalid Date", $ = /^(\d{4})[-/]?(\d{1,2})?[-/]?(\d{0,2})[Tt\s]*(\d{1,2})?:?(\d{1,2})?:?(\d{1,2})?[.:]?(\d+)?$/, y = /\[([^\]]+)]|YYYY|YY|M{1,4}|D{1,2}|d{1,4}|H{1,2}|h{1,2}|a|A|m{1,2}|s{1,2}|Z{1,2}|SSS/g, M = { name: "en", weekdays: "Sunday_Monday_Tuesday_Wednesday_Thursday_Friday_Saturday".split("_"), months: "January_February_March_April_May_June_July_August_September_October_November_December".split("_"), ordinal: function(t2) {
-        var e2 = ["th", "st", "nd", "rd"], n2 = t2 % 100;
-        return "[" + t2 + (e2[(n2 - 20) % 10] || e2[n2] || e2[0]) + "]";
-      } }, m = function(t2, e2, n2) {
-        var r2 = String(t2);
-        return !r2 || r2.length >= e2 ? t2 : "" + Array(e2 + 1 - r2.length).join(n2) + t2;
-      }, v = { s: m, z: function(t2) {
-        var e2 = -t2.utcOffset(), n2 = Math.abs(e2), r2 = Math.floor(n2 / 60), i2 = n2 % 60;
-        return (e2 <= 0 ? "+" : "-") + m(r2, 2, "0") + ":" + m(i2, 2, "0");
-      }, m: function t2(e2, n2) {
-        if (e2.date() < n2.date()) return -t2(n2, e2);
-        var r2 = 12 * (n2.year() - e2.year()) + (n2.month() - e2.month()), i2 = e2.clone().add(r2, c), s2 = n2 - i2 < 0, u2 = e2.clone().add(r2 + (s2 ? -1 : 1), c);
-        return +(-(r2 + (n2 - i2) / (s2 ? i2 - u2 : u2 - i2)) || 0);
-      }, a: function(t2) {
-        return t2 < 0 ? Math.ceil(t2) || 0 : Math.floor(t2);
-      }, p: function(t2) {
-        return { M: c, y: h, w: o, d: a, D: d, h: u, m: s, s: i, ms: r, Q: f }[t2] || String(t2 || "").toLowerCase().replace(/s$/, "");
-      }, u: function(t2) {
-        return void 0 === t2;
-      } }, g = "en", D = {};
-      D[g] = M;
-      var p = "$isDayjsObject", S2 = function(t2) {
-        return t2 instanceof _ || !(!t2 || !t2[p]);
-      }, w = function t2(e2, n2, r2) {
-        var i2;
-        if (!e2) return g;
-        if ("string" == typeof e2) {
-          var s2 = e2.toLowerCase();
-          D[s2] && (i2 = s2), n2 && (D[s2] = n2, i2 = s2);
-          var u2 = e2.split("-");
-          if (!i2 && u2.length > 1) return t2(u2[0]);
-        } else {
-          var a2 = e2.name;
-          D[a2] = e2, i2 = a2;
-        }
-        return !r2 && i2 && (g = i2), i2 || !r2 && g;
-      }, O = function(t2, e2) {
-        if (S2(t2)) return t2.clone();
-        var n2 = "object" == typeof e2 ? e2 : {};
-        return n2.date = t2, n2.args = arguments, new _(n2);
-      }, b = v;
-      b.l = w, b.i = S2, b.w = function(t2, e2) {
-        return O(t2, { locale: e2.$L, utc: e2.$u, x: e2.$x, $offset: e2.$offset });
-      };
-      var _ = (function() {
-        function M2(t2) {
-          this.$L = w(t2.locale, null, true), this.parse(t2), this.$x = this.$x || t2.x || {}, this[p] = true;
-        }
-        var m2 = M2.prototype;
-        return m2.parse = function(t2) {
-          this.$d = (function(t3) {
-            var e2 = t3.date, n2 = t3.utc;
-            if (null === e2) return /* @__PURE__ */ new Date(NaN);
-            if (b.u(e2)) return /* @__PURE__ */ new Date();
-            if (e2 instanceof Date) return new Date(e2);
-            if ("string" == typeof e2 && !/Z$/i.test(e2)) {
-              var r2 = e2.match($);
-              if (r2) {
-                var i2 = r2[2] - 1 || 0, s2 = (r2[7] || "0").substring(0, 3);
-                return n2 ? new Date(Date.UTC(r2[1], i2, r2[3] || 1, r2[4] || 0, r2[5] || 0, r2[6] || 0, s2)) : new Date(r2[1], i2, r2[3] || 1, r2[4] || 0, r2[5] || 0, r2[6] || 0, s2);
-              }
-            }
-            return new Date(e2);
-          })(t2), this.init();
-        }, m2.init = function() {
-          var t2 = this.$d;
-          this.$y = t2.getFullYear(), this.$M = t2.getMonth(), this.$D = t2.getDate(), this.$W = t2.getDay(), this.$H = t2.getHours(), this.$m = t2.getMinutes(), this.$s = t2.getSeconds(), this.$ms = t2.getMilliseconds();
-        }, m2.$utils = function() {
-          return b;
-        }, m2.isValid = function() {
-          return !(this.$d.toString() === l);
-        }, m2.isSame = function(t2, e2) {
-          var n2 = O(t2);
-          return this.startOf(e2) <= n2 && n2 <= this.endOf(e2);
-        }, m2.isAfter = function(t2, e2) {
-          return O(t2) < this.startOf(e2);
-        }, m2.isBefore = function(t2, e2) {
-          return this.endOf(e2) < O(t2);
-        }, m2.$g = function(t2, e2, n2) {
-          return b.u(t2) ? this[e2] : this.set(n2, t2);
-        }, m2.unix = function() {
-          return Math.floor(this.valueOf() / 1e3);
-        }, m2.valueOf = function() {
-          return this.$d.getTime();
-        }, m2.startOf = function(t2, e2) {
-          var n2 = this, r2 = !!b.u(e2) || e2, f2 = b.p(t2), l2 = function(t3, e3) {
-            var i2 = b.w(n2.$u ? Date.UTC(n2.$y, e3, t3) : new Date(n2.$y, e3, t3), n2);
-            return r2 ? i2 : i2.endOf(a);
-          }, $2 = function(t3, e3) {
-            return b.w(n2.toDate()[t3].apply(n2.toDate("s"), (r2 ? [0, 0, 0, 0] : [23, 59, 59, 999]).slice(e3)), n2);
-          }, y2 = this.$W, M3 = this.$M, m3 = this.$D, v2 = "set" + (this.$u ? "UTC" : "");
-          switch (f2) {
-            case h:
-              return r2 ? l2(1, 0) : l2(31, 11);
-            case c:
-              return r2 ? l2(1, M3) : l2(0, M3 + 1);
-            case o:
-              var g2 = this.$locale().weekStart || 0, D2 = (y2 < g2 ? y2 + 7 : y2) - g2;
-              return l2(r2 ? m3 - D2 : m3 + (6 - D2), M3);
-            case a:
-            case d:
-              return $2(v2 + "Hours", 0);
-            case u:
-              return $2(v2 + "Minutes", 1);
-            case s:
-              return $2(v2 + "Seconds", 2);
-            case i:
-              return $2(v2 + "Milliseconds", 3);
-            default:
-              return this.clone();
-          }
-        }, m2.endOf = function(t2) {
-          return this.startOf(t2, false);
-        }, m2.$set = function(t2, e2) {
-          var n2, o2 = b.p(t2), f2 = "set" + (this.$u ? "UTC" : ""), l2 = (n2 = {}, n2[a] = f2 + "Date", n2[d] = f2 + "Date", n2[c] = f2 + "Month", n2[h] = f2 + "FullYear", n2[u] = f2 + "Hours", n2[s] = f2 + "Minutes", n2[i] = f2 + "Seconds", n2[r] = f2 + "Milliseconds", n2)[o2], $2 = o2 === a ? this.$D + (e2 - this.$W) : e2;
-          if (o2 === c || o2 === h) {
-            var y2 = this.clone().set(d, 1);
-            y2.$d[l2]($2), y2.init(), this.$d = y2.set(d, Math.min(this.$D, y2.daysInMonth())).$d;
-          } else l2 && this.$d[l2]($2);
-          return this.init(), this;
-        }, m2.set = function(t2, e2) {
-          return this.clone().$set(t2, e2);
-        }, m2.get = function(t2) {
-          return this[b.p(t2)]();
-        }, m2.add = function(r2, f2) {
-          var d2, l2 = this;
-          r2 = Number(r2);
-          var $2 = b.p(f2), y2 = function(t2) {
-            var e2 = O(l2);
-            return b.w(e2.date(e2.date() + Math.round(t2 * r2)), l2);
-          };
-          if ($2 === c) return this.set(c, this.$M + r2);
-          if ($2 === h) return this.set(h, this.$y + r2);
-          if ($2 === a) return y2(1);
-          if ($2 === o) return y2(7);
-          var M3 = (d2 = {}, d2[s] = e, d2[u] = n, d2[i] = t, d2)[$2] || 1, m3 = this.$d.getTime() + r2 * M3;
-          return b.w(m3, this);
-        }, m2.subtract = function(t2, e2) {
-          return this.add(-1 * t2, e2);
-        }, m2.format = function(t2) {
-          var e2 = this, n2 = this.$locale();
-          if (!this.isValid()) return n2.invalidDate || l;
-          var r2 = t2 || "YYYY-MM-DDTHH:mm:ssZ", i2 = b.z(this), s2 = this.$H, u2 = this.$m, a2 = this.$M, o2 = n2.weekdays, c2 = n2.months, f2 = n2.meridiem, h2 = function(t3, n3, i3, s3) {
-            return t3 && (t3[n3] || t3(e2, r2)) || i3[n3].slice(0, s3);
-          }, d2 = function(t3) {
-            return b.s(s2 % 12 || 12, t3, "0");
-          }, $2 = f2 || function(t3, e3, n3) {
-            var r3 = t3 < 12 ? "AM" : "PM";
-            return n3 ? r3.toLowerCase() : r3;
-          };
-          return r2.replace(y, (function(t3, r3) {
-            return r3 || (function(t4) {
-              switch (t4) {
-                case "YY":
-                  return String(e2.$y).slice(-2);
-                case "YYYY":
-                  return b.s(e2.$y, 4, "0");
-                case "M":
-                  return a2 + 1;
-                case "MM":
-                  return b.s(a2 + 1, 2, "0");
-                case "MMM":
-                  return h2(n2.monthsShort, a2, c2, 3);
-                case "MMMM":
-                  return h2(c2, a2);
-                case "D":
-                  return e2.$D;
-                case "DD":
-                  return b.s(e2.$D, 2, "0");
-                case "d":
-                  return String(e2.$W);
-                case "dd":
-                  return h2(n2.weekdaysMin, e2.$W, o2, 2);
-                case "ddd":
-                  return h2(n2.weekdaysShort, e2.$W, o2, 3);
-                case "dddd":
-                  return o2[e2.$W];
-                case "H":
-                  return String(s2);
-                case "HH":
-                  return b.s(s2, 2, "0");
-                case "h":
-                  return d2(1);
-                case "hh":
-                  return d2(2);
-                case "a":
-                  return $2(s2, u2, true);
-                case "A":
-                  return $2(s2, u2, false);
-                case "m":
-                  return String(u2);
-                case "mm":
-                  return b.s(u2, 2, "0");
-                case "s":
-                  return String(e2.$s);
-                case "ss":
-                  return b.s(e2.$s, 2, "0");
-                case "SSS":
-                  return b.s(e2.$ms, 3, "0");
-                case "Z":
-                  return i2;
-              }
-              return null;
-            })(t3) || i2.replace(":", "");
-          }));
-        }, m2.utcOffset = function() {
-          return 15 * -Math.round(this.$d.getTimezoneOffset() / 15);
-        }, m2.diff = function(r2, d2, l2) {
-          var $2, y2 = this, M3 = b.p(d2), m3 = O(r2), v2 = (m3.utcOffset() - this.utcOffset()) * e, g2 = this - m3, D2 = function() {
-            return b.m(y2, m3);
-          };
-          switch (M3) {
-            case h:
-              $2 = D2() / 12;
-              break;
-            case c:
-              $2 = D2();
-              break;
-            case f:
-              $2 = D2() / 3;
-              break;
-            case o:
-              $2 = (g2 - v2) / 6048e5;
-              break;
-            case a:
-              $2 = (g2 - v2) / 864e5;
-              break;
-            case u:
-              $2 = g2 / n;
-              break;
-            case s:
-              $2 = g2 / e;
-              break;
-            case i:
-              $2 = g2 / t;
-              break;
-            default:
-              $2 = g2;
-          }
-          return l2 ? $2 : b.a($2);
-        }, m2.daysInMonth = function() {
-          return this.endOf(c).$D;
-        }, m2.$locale = function() {
-          return D[this.$L];
-        }, m2.locale = function(t2, e2) {
-          if (!t2) return this.$L;
-          var n2 = this.clone(), r2 = w(t2, e2, true);
-          return r2 && (n2.$L = r2), n2;
-        }, m2.clone = function() {
-          return b.w(this.$d, this);
-        }, m2.toDate = function() {
-          return new Date(this.valueOf());
-        }, m2.toJSON = function() {
-          return this.isValid() ? this.toISOString() : null;
-        }, m2.toISOString = function() {
-          return this.$d.toISOString();
-        }, m2.toString = function() {
-          return this.$d.toUTCString();
-        }, M2;
-      })(), Y = _.prototype;
-      return O.prototype = Y, [["$ms", r], ["$s", i], ["$m", s], ["$H", u], ["$W", a], ["$M", c], ["$y", h], ["$D", d]].forEach((function(t2) {
-        Y[t2[1]] = function(e2) {
-          return this.$g(e2, t2[0], t2[1]);
-        };
-      })), O.extend = function(t2, e2) {
-        return t2.$i || (t2(e2, _, O), t2.$i = true), O;
-      }, O.locale = w, O.isDayjs = S2, O.unix = function(t2) {
-        return O(1e3 * t2);
-      }, O.en = D[g], O.Ls = D, O.p = {}, O;
-    }));
-  }
-});
-
-// node_modules/launder/index.js
-var require_launder = __commonJS({
-  "node_modules/launder/index.js"(exports, module) {
-    var dayjs = require_dayjs_min();
-    function cleanHref(href) {
-      href = href.replace(/[\x00-\x20]+/g, "");
-      while (true) {
-        const firstIndex = href.indexOf("<!--");
-        if (firstIndex === -1) {
-          break;
-        }
-        const lastIndex = href.indexOf("-->", firstIndex + 4);
-        if (lastIndex === -1) {
-          break;
-        }
-        href = href.substring(0, firstIndex) + href.substring(lastIndex + 3);
-      }
-      return href;
-    }
-    function naughtyHref(href, options) {
-      options = options || {};
-      const allowedSchemes = options.allowedSchemes || ["http", "https", "ftp", "mailto", "tel", "sms"];
-      const allowProtocolRelative = options.allowProtocolRelative !== false;
-      if (typeof href !== "string") {
-        return false;
-      }
-      href = cleanHref(href);
-      const matches = href.match(/^([a-zA-Z][a-zA-Z0-9.\-+]*):/);
-      if (!matches) {
-        if (href.match(/^[/\\]{2}/)) {
-          return !allowProtocolRelative;
-        }
-        return false;
-      }
-      const scheme = matches[1].toLowerCase();
-      return allowedSchemes.indexOf(scheme) === -1;
-    }
-    module.exports = function(options) {
-      const self2 = {};
-      self2.options = options || {};
-      self2.filterTag = self2.options.filterTag || function(tag) {
-        tag = tag.trim();
-        return tag.toLowerCase();
-      };
-      self2.string = function(s, def) {
-        if (typeof s !== "string") {
-          if (typeof s === "number" || typeof s === "boolean") {
-            s += "";
-          } else {
-            s = "";
-          }
-        }
-        s = s.trim();
-        if (def !== void 0) {
-          if (s === "") {
-            s = def;
-          }
-        }
-        return s;
-      };
-      self2.strings = function(strings) {
-        if (!Array.isArray(strings)) {
-          return [];
-        }
-        return strings.map(function(s) {
-          return self2.string(s);
-        });
-      };
-      self2.integer = function(i, def, min, max) {
-        if (def === void 0) {
-          def = 0;
-        }
-        if (typeof i === "number") {
-          i = Math.floor(i);
-        } else {
-          try {
-            i = parseInt(i, 10);
-            if (isNaN(i)) {
-              i = def;
-            }
-          } catch (e) {
-            i = def;
-          }
-        }
-        if (typeof min === "number" && i < min) {
-          i = min;
-        }
-        if (typeof max === "number" && i > max) {
-          i = max;
-        }
-        return i;
-      };
-      self2.padInteger = function(i, places) {
-        let s = i + "";
-        while (s.length < places) {
-          s = "0" + s;
-        }
-        return s;
-      };
-      self2.float = function(i, def, min, max) {
-        if (def === void 0) {
-          def = 0;
-        }
-        if (!(typeof i === "number")) {
-          try {
-            i = parseFloat(i, 10);
-            if (isNaN(i)) {
-              i = def;
-            }
-          } catch (e) {
-            i = def;
-          }
-        }
-        if (typeof min === "number" && i < min) {
-          i = min;
-        }
-        if (typeof max === "number" && i > max) {
-          i = max;
-        }
-        return i;
-      };
-      self2.naughtyHref = naughtyHref;
-      self2.url = function(s, def, httpsFix) {
-        s = self2.string(s, def);
-        if (s === def) {
-          return s;
-        }
-        s = cleanHref(s);
-        if (naughtyHref(s)) {
-          return def;
-        }
-        s = fixUrl(s);
-        if (s === null) {
-          return def;
-        }
-        return s;
-        function fixUrl(href) {
-          if (href.match(/^(((https?|ftp):\/\/)|((mailto|tel|sms):)|#|([^/.]+)?\/|[^/.]+$)/)) {
-            return href;
-          } else if (href.match(/^[^/.]+\.[^/.]+/)) {
-            const protocol = httpsFix ? "https://" : "http://";
-            return protocol + href;
-          } else {
-            return null;
-          }
-        }
-        ;
-      };
-      self2.select = function(s, choices, def) {
-        s = self2.string(s);
-        if (!choices || !choices.length) {
-          return def;
-        }
-        let choice;
-        if (typeof choices[0] === "object") {
-          choice = choices.find(function(choice2) {
-            if (choice2.value === null || choice2.value === void 0) {
-              return false;
-            }
-            return choice2.value.toString() === s;
-          });
-          if (choice != null) {
-            return choice.value;
-          }
-          return def;
-        }
-        choice = choices.find(function(choice2) {
-          if (choice2 === null || choice2 === void 0) {
-            return false;
-          }
-          return choice2.toString() === s;
-        });
-        if (choice !== void 0) {
-          return choice;
-        }
-        return def;
-      };
-      self2.boolean = function(b, def) {
-        if (b === true) {
-          return true;
-        }
-        if (b === false) {
-          return false;
-        }
-        b = self2.string(b, def);
-        if (b === def) {
-          if (b === void 0) {
-            return false;
-          }
-          return b;
-        }
-        b = b.toLowerCase().charAt(0);
-        if (b === "" || b === "n" || b === "0" || b === "f") {
-          return false;
-        }
-        if (b === "t" || b === "y" || b === "1") {
-          return true;
-        }
-        return false;
-      };
-      self2.addBooleanFilterToCriteria = function(options2, name, criteria, def) {
-        if (def === void 0) {
-          def = null;
-        }
-        let value = typeof options2 === "object" && options2 !== null ? options2[name] : options2;
-        value = value === void 0 ? def : value;
-        value = self2.booleanOrNull(value);
-        if (value === null) {
-        } else if (!value) {
-          criteria[name] = { $ne: true };
-        } else {
-          criteria[name] = true;
-        }
-      };
-      self2.booleanOrNull = function(b, def) {
-        if (b === true) {
-          return b;
-        }
-        if (b === false) {
-          return b;
-        }
-        if (b === null) {
-          return b;
-        }
-        b = self2.string(b, def);
-        if (b === def) {
-          if (def === void 0) {
-            return null;
-          }
-          return b;
-        }
-        if (b === "null") {
-          return null;
-        }
-        b = b.toLowerCase().charAt(0);
-        if (b === "" || b === "n" || b === "0" || b === "f") {
-          return false;
-        }
-        if (b === "t" || b === "y" || b === "1") {
-          return true;
-        }
-        if (b === "a") {
-          return null;
-        }
-        return def;
-      };
-      self2.date = function(date4, def, now) {
-        let components;
-        function returnDefault() {
-          if (def === void 0) {
-            def = dayjs().format("YYYY-MM-DD");
-          }
-          return def;
-        }
-        if (typeof date4 === "string") {
-          if (date4.match(/\//)) {
-            components = date4.split("/");
-            if (components.length === 2) {
-              return (now || /* @__PURE__ */ new Date()).getFullYear() + "-" + self2.padInteger(components[0], 2) + "-" + self2.padInteger(components[1], 2);
-            } else if (components.length === 3) {
-              if (components[2] < 100) {
-                const d = now || /* @__PURE__ */ new Date();
-                const nowYear = d.getFullYear() % 100;
-                const nowCentury = d.getFullYear() - nowYear;
-                let theirYear = parseInt(components[2]) + nowCentury;
-                if (theirYear - d.getFullYear() > 50) {
-                  theirYear -= 100;
-                }
-                components[2] = theirYear;
-              }
-              return self2.padInteger(components[2], 4) + "-" + self2.padInteger(components[0], 2) + "-" + self2.padInteger(components[1], 2);
-            } else {
-              return returnDefault();
-            }
-          } else if (date4.match(/-/)) {
-            components = date4.split("-");
-            if (components.length === 2) {
-              return (now || /* @__PURE__ */ new Date()).getFullYear() + "-" + self2.padInteger(components[0], 2) + "-" + self2.padInteger(components[1], 2);
-            } else if (components.length === 3) {
-              return self2.padInteger(components[0], 4) + "-" + self2.padInteger(components[1], 2) + "-" + self2.padInteger(components[2], 2);
-            } else {
-              return returnDefault();
-            }
-          }
-        }
-        try {
-          if (date4 === null) {
-            return returnDefault();
-          }
-          date4 = now || new Date(date4);
-          if (isNaN(date4.getTime())) {
-            return returnDefault();
-          }
-          return date4.getFullYear() + "-" + self2.padInteger(date4.getMonth() + 1, 2) + "-" + self2.padInteger(date4.getDate(), 2);
-        } catch (e) {
-          return returnDefault();
-        }
-      };
-      self2.formatDate = function(date4) {
-        return dayjs(date4).format("YYYY-MM-DD");
-      };
-      self2.time = function(time3, def) {
-        time3 = self2.string(time3).toLowerCase();
-        time3 = time3.trim();
-        const components = time3.match(/^(\d+)([:|.](\d+))?([:|.](\d+))?\s*(am|pm|AM|PM|a|p|A|M)?$/);
-        if (components) {
-          let hours = parseInt(components[1], 10);
-          const minutes = components[3] !== void 0 ? parseInt(components[3], 10) : 0;
-          const seconds = components[5] !== void 0 ? parseInt(components[5], 10) : 0;
-          let ampm = components[6] ? components[6].toLowerCase() : components[6];
-          ampm = ampm && ampm.charAt(0);
-          if (hours === 12 && ampm === "a") {
-            hours -= 12;
-          } else if (hours === 12 && ampm === "p") {
-          } else if (ampm === "p") {
-            hours += 12;
-          }
-          if (hours === 24 || hours === "24") {
-            hours = 0;
-          }
-          return self2.padInteger(hours, 2) + ":" + self2.padInteger(minutes, 2) + ":" + self2.padInteger(seconds, 2);
-        } else {
-          if (def !== void 0) {
-            return def;
-          }
-          return dayjs().format("HH:mm");
-        }
-      };
-      self2.formatTime = function(date4) {
-        return dayjs(date4).format("HH:mm:ss");
-      };
-      self2.tags = function(tags, filter2) {
-        if (typeof tags === "string") {
-          tags = tags.split(/,\s*/);
-        }
-        if (!Array.isArray(tags)) {
-          return [];
-        }
-        const strings = tags.map((tag) => self2.string(tag));
-        const rewritten = strings.map(filter2 || self2.filterTag);
-        const filtered = rewritten.filter((tag) => tag.length > 0);
-        return filtered;
-      };
-      self2.idRegExp = self2.options.idRegExp || /^[A-Za-z0-9_]+$/;
-      self2.id = function(s, def) {
-        const id = self2.string(s, def);
-        if (id === def) {
-          return id;
-        }
-        if (!id.match(self2.idRegExp)) {
-          return def;
-        }
-        return id;
-      };
-      self2.ids = function(ids) {
-        if (!Array.isArray(ids)) {
-          return [];
-        }
-        const result = ids.filter(function(id) {
-          return self2.id(id) !== void 0;
-        });
-        return result;
-      };
-      return self2;
-    };
-    module.exports.naughtyHref = naughtyHref;
-  }
-});
-
-// node_modules/sanitize-html/index.js
-var require_sanitize_html = __commonJS({
-  "node_modules/sanitize-html/index.js"(exports, module) {
-    var htmlparser = (init_dist6(), __toCommonJS(dist_exports3));
-    var escapeStringRegexp = require_escape_string_regexp();
-    var { isPlainObject: isPlainObject3 } = require_is_plain_object();
-    var parseSrcset = require_parse_srcset();
-    var { parse: postcssParse } = require_postcss();
-    var { naughtyHref: launderNaughtyHref } = require_launder();
-    var mediaTags = [
-      "img",
-      "audio",
-      "video",
-      "picture",
-      "svg",
-      "object",
-      "map",
-      "iframe",
-      "embed"
-    ];
-    var vulnerableTags = ["script", "style"];
-    var svgAnimationTags = [
-      "animate",
-      "animatecolor",
-      "animatemotion",
-      "animatetransform",
-      "set"
-    ];
-    var alwaysUrlAttributes = ["href"];
-    var severities = ["debug", "info", "warn", "error"];
-    function loggerFor(options) {
-      const source = options && options.logger || console;
-      const logger = {};
-      for (const severity of severities) {
-        logger[severity] = typeof source[severity] === "function" ? (...args) => source[severity](...args) : (...args) => console[severity](...args);
-      }
-      return logger;
-    }
-    function each(obj, cb) {
-      if (obj) {
-        Object.keys(obj).forEach(function(key) {
-          cb(obj[key], key);
-        });
-      }
-    }
-    function has(obj, key) {
-      return {}.hasOwnProperty.call(obj, key);
-    }
-    function mergeClasses(specific, wildcard) {
-      if (!Array.isArray(specific) || !Array.isArray(wildcard)) {
-        return wildcard;
-      }
-      return specific.concat(wildcard);
-    }
-    function mergeStyles(specific, wildcard) {
-      const merged = /* @__PURE__ */ Object.create(null);
-      for (const rules of [specific, wildcard]) {
-        for (const prop of Object.keys(rules)) {
-          merged[prop] = has(merged, prop) ? merged[prop].concat(rules[prop]) : rules[prop];
-        }
-      }
-      return merged;
-    }
-    function filter2(a, cb) {
-      const n = [];
-      each(a, function(v) {
-        if (cb(v)) {
-          n.push(v);
-        }
-      });
-      return n;
-    }
-    function isEmptyObject(obj) {
-      for (const key in obj) {
-        if (has(obj, key)) {
-          return false;
-        }
-      }
-      return true;
-    }
-    function stringifySrcset(parsedSrcset) {
-      return parsedSrcset.map(function(part) {
-        if (!part.url) {
-          throw new Error("URL missing");
-        }
-        return part.url + (part.w ? ` ${part.w}w` : "") + (part.h ? ` ${part.h}h` : "") + (part.d ? ` ${part.d}x` : "");
-      }).join(", ");
-    }
-    module.exports = sanitizeHtml2;
-    var VALID_HTML_ATTRIBUTE_NAME = /^[^\0\t\n\f\r /<=>]+$/;
-    var MAX_IFRAME_FALLBACK_DEPTH = 8;
-    function sanitizeHtml2(html, options, _fallback) {
-      if (html == null) {
-        return "";
-      }
-      const baseDepth = _fallback && _fallback.depth || 0;
-      const iframeFallbackDepth = _fallback && _fallback.iframeFallbackDepth || 0;
-      if (typeof html === "number") {
-        html = html.toString();
-      }
-      let result = "";
-      let tempResult = "";
-      function Frame(tag, attribs) {
-        const that = this;
-        this.tag = tag;
-        this.attribs = attribs || {};
-        this.tagPosition = result.length;
-        this.text = "";
-        this.openingTagLength = 0;
-        this.mediaChildren = [];
-        this.updateParentNodeText = function() {
-          if (stack.length) {
-            const parentFrame = stack[stack.length - 1];
-            parentFrame.text += that.text;
-          }
-        };
-        this.updateParentNodeMediaChildren = function() {
-          if (stack.length && mediaTags.includes(this.tag)) {
-            const parentFrame = stack[stack.length - 1];
-            parentFrame.mediaChildren.push(this.tag);
-          }
-        };
-      }
-      options = Object.assign({}, sanitizeHtml2.defaults, options);
-      options.parser = Object.assign({}, htmlParserDefaults, options.parser);
-      const logger = loggerFor(options);
-      const tagAllowed = function(name) {
-        return options.allowedTags === false || (options.allowedTags || []).indexOf(name) > -1;
-      };
-      vulnerableTags.forEach(function(tag) {
-        if (tagAllowed(tag) && !options.allowVulnerableTags) {
-          logger.warn(
-            `Your \`allowedTags\` option includes \`${tag}\`, which is inherently vulnerable to XSS attacks. Please remove it from \`allowedTags\`, or, to disable this warning, add the \`allowVulnerableTags\` option and ensure you are accounting for this risk.`
-          );
-        }
-      });
-      const nonTextTagsArray = options.nonTextTags || [
-        "script",
-        "style",
-        "textarea",
-        "option",
-        "xmp"
-      ];
-      let allowedAttributesMap;
-      let allowedAttributesGlobMap;
-      if (options.allowedAttributes) {
-        allowedAttributesMap = {};
-        allowedAttributesGlobMap = {};
-        each(options.allowedAttributes, function(attributes, tag) {
-          allowedAttributesMap[tag] = [];
-          const globRegex = [];
-          attributes.forEach(function(obj) {
-            if (typeof obj === "string" && obj.indexOf("*") >= 0) {
-              globRegex.push(escapeStringRegexp(obj).replace(/\\\*/g, ".*"));
-            } else {
-              allowedAttributesMap[tag].push(obj);
-            }
-          });
-          if (globRegex.length) {
-            allowedAttributesGlobMap[tag] = new RegExp("^(" + globRegex.join("|") + ")$");
-          }
-        });
-      }
-      const allowedClassesMap = {};
-      const allowedClassesGlobMap = {};
-      const allowedClassesRegexMap = {};
-      each(options.allowedClasses, function(classes, tag) {
-        if (allowedAttributesMap) {
-          if (!has(allowedAttributesMap, tag)) {
-            allowedAttributesMap[tag] = [];
-          }
-          allowedAttributesMap[tag].push("class");
-        }
-        allowedClassesMap[tag] = classes;
-        if (Array.isArray(classes)) {
-          const globRegex = [];
-          allowedClassesMap[tag] = [];
-          allowedClassesRegexMap[tag] = [];
-          classes.forEach(function(obj) {
-            if (typeof obj === "string" && obj.indexOf("*") >= 0) {
-              globRegex.push(escapeStringRegexp(obj).replace(/\\\*/g, ".*"));
-            } else if (obj instanceof RegExp) {
-              allowedClassesRegexMap[tag].push(obj);
-            } else {
-              allowedClassesMap[tag].push(obj);
-            }
-          });
-          if (globRegex.length) {
-            allowedClassesGlobMap[tag] = new RegExp("^(" + globRegex.join("|") + ")$");
-          }
-        }
-      });
-      const transformTagsMap = {};
-      let transformTagsAll;
-      each(options.transformTags, function(transform3, tag) {
-        let transFun;
-        if (typeof transform3 === "function") {
-          transFun = transform3;
-        } else if (typeof transform3 === "string") {
-          transFun = sanitizeHtml2.simpleTransform(transform3);
-        }
-        if (tag === "*") {
-          transformTagsAll = transFun;
-        } else {
-          transformTagsMap[tag] = transFun;
-        }
-      });
-      let depth;
-      let stack;
-      let skipMap;
-      let transformMap;
-      let skipText;
-      let skipTextDepth;
-      let rawTextEnd;
-      let skipRawText;
-      let addedText = false;
-      initializeState();
-      const parser3 = new htmlparser.Parser({
-        onopentag: function(name, attribs) {
-          if (options.onOpenTag) {
-            options.onOpenTag(name, attribs);
-          }
-          updateRawTextRegion();
-          if (options.enforceHtmlBoundary && name === "html") {
-            initializeState();
-          }
-          if (skipRawText) {
-            return;
-          }
-          if (skipText) {
-            skipTextDepth++;
-            return;
-          }
-          const frame = new Frame(name, attribs);
-          stack.push(frame);
-          let skip = false;
-          const hasText = !!frame.text;
-          let transformedTag;
-          if (has(transformTagsMap, name)) {
-            transformedTag = transformTagsMap[name](name, attribs);
-            frame.attribs = attribs = transformedTag.attribs;
-            if (transformedTag.text !== void 0) {
-              frame.innerText = transformedTag.text;
-            }
-            if (name !== transformedTag.tagName) {
-              frame.name = name = transformedTag.tagName;
-              transformMap[depth] = transformedTag.tagName;
-            }
-          }
-          if (transformTagsAll) {
-            transformedTag = transformTagsAll(name, attribs);
-            frame.attribs = attribs = transformedTag.attribs;
-            if (name !== transformedTag.tagName) {
-              frame.name = name = transformedTag.tagName;
-              transformMap[depth] = transformedTag.tagName;
-            }
-          }
-          if (!tagAllowed(name) || animatesUrlAttribute(name, attribs) || options.disallowedTagsMode === "recursiveEscape" && !isEmptyObject(skipMap) || options.nestingLimit != null && depth >= options.nestingLimit) {
-            skip = true;
-            skipMap[depth] = true;
-            if (options.disallowedTagsMode === "discard" || options.disallowedTagsMode === "completelyDiscard") {
-              if (nonTextTagsArray.indexOf(name) !== -1) {
-                skipText = true;
-                skipTextDepth = 1;
-                if (frame.tag.toLowerCase() === "noscript") {
-                  rawTextEnd = findRawTextEnd("noscript", parser3.endIndex + 1);
-                }
-              }
-            }
-          }
-          depth++;
-          if (skip) {
-            if (options.disallowedTagsMode === "discard" || options.disallowedTagsMode === "completelyDiscard") {
-              if (frame.innerText && !hasText) {
-                const escaped = escapeHtml3(frame.innerText);
-                if (options.textFilter) {
-                  result += options.textFilter(escaped, name);
-                } else {
-                  result += escaped;
-                }
-                addedText = true;
-              }
-              return;
-            }
-            tempResult = result;
-            result = "";
-          }
-          result += "<" + name;
-          if (name === "script") {
-            if (options.allowedScriptHostnames || options.allowedScriptDomains) {
-              frame.innerText = "";
-            }
-          }
-          const isBeingEscaped = skip && (options.disallowedTagsMode === "escape" || options.disallowedTagsMode === "recursiveEscape");
-          const shouldPreserveEscapedAttributes = isBeingEscaped && options.preserveEscapedAttributes;
-          if (shouldPreserveEscapedAttributes) {
-            each(attribs, function(value, a) {
-              result += " " + a + '="' + escapeHtml3(value || "", true) + '"';
-            });
-          } else if (!allowedAttributesMap || has(allowedAttributesMap, name) || allowedAttributesMap["*"]) {
-            each(attribs, function(value, a) {
-              if (!VALID_HTML_ATTRIBUTE_NAME.test(a)) {
-                delete frame.attribs[a];
-                return;
-              }
-              if (value === "" && !options.allowedEmptyAttributes.includes(a) && (options.nonBooleanAttributes.includes(a) || options.nonBooleanAttributes.includes("*"))) {
-                delete frame.attribs[a];
-                return;
-              }
-              let passedAllowedAttributesMapCheck = false;
-              if (!allowedAttributesMap || has(allowedAttributesMap, name) && allowedAttributesMap[name].indexOf(a) !== -1 || allowedAttributesMap["*"] && allowedAttributesMap["*"].indexOf(a) !== -1 || has(allowedAttributesGlobMap, name) && allowedAttributesGlobMap[name].test(a) || allowedAttributesGlobMap["*"] && allowedAttributesGlobMap["*"].test(a)) {
-                passedAllowedAttributesMapCheck = true;
-              } else if (allowedAttributesMap && allowedAttributesMap[name]) {
-                for (const o of allowedAttributesMap[name]) {
-                  if (isPlainObject3(o) && o.name && o.name === a) {
-                    passedAllowedAttributesMapCheck = true;
-                    let newValue = "";
-                    if (o.multiple === true) {
-                      const splitStrArray = value.split(" ");
-                      for (const s of splitStrArray) {
-                        if (o.values.indexOf(s) !== -1) {
-                          if (newValue === "") {
-                            newValue = s;
-                          } else {
-                            newValue += " " + s;
-                          }
-                        }
-                      }
-                    } else if (o.values.indexOf(value) >= 0) {
-                      newValue = value;
-                    }
-                    value = newValue;
-                  }
-                }
-              }
-              if (passedAllowedAttributesMapCheck) {
-                if (options.allowedSchemesAppliedToAttributes.indexOf(a) !== -1) {
-                  if (naughtyHref(name, value)) {
-                    delete frame.attribs[a];
-                    return;
-                  }
-                }
-                if (name === "meta" && a.toLowerCase() === "content" && isRefresh(attribs) && naughtyRefresh(value)) {
-                  delete frame.attribs[a];
-                  return;
-                }
-                if (name === "script" && a === "src") {
-                  let allowed = true;
-                  try {
-                    const parsed = parseUrl(value);
-                    if (options.allowedScriptHostnames || options.allowedScriptDomains) {
-                      const allowedHostname = (options.allowedScriptHostnames || []).find(function(hostname) {
-                        return hostname === parsed.url.hostname;
-                      });
-                      const allowedDomain = (options.allowedScriptDomains || []).find(function(domain) {
-                        return parsed.url.hostname === domain || parsed.url.hostname.endsWith(`.${domain}`);
-                      });
-                      allowed = allowedHostname || allowedDomain;
-                    }
-                  } catch (e) {
-                    allowed = false;
-                  }
-                  if (!allowed) {
-                    delete frame.attribs[a];
-                    return;
-                  }
-                }
-                if (name === "iframe" && a === "src") {
-                  let allowed = true;
-                  try {
-                    const parsed = parseUrl(value);
-                    if (parsed.isRelativeUrl) {
-                      allowed = has(options, "allowIframeRelativeUrls") ? options.allowIframeRelativeUrls : !options.allowedIframeHostnames && !options.allowedIframeDomains;
-                    } else if (options.allowedIframeHostnames || options.allowedIframeDomains) {
-                      const allowedHostname = (options.allowedIframeHostnames || []).find(function(hostname) {
-                        return hostname === parsed.url.hostname;
-                      });
-                      const allowedDomain = (options.allowedIframeDomains || []).find(function(domain) {
-                        return parsed.url.hostname === domain || parsed.url.hostname.endsWith(`.${domain}`);
-                      });
-                      allowed = allowedHostname || allowedDomain;
-                    }
-                  } catch (e) {
-                    allowed = false;
-                  }
-                  if (!allowed) {
-                    delete frame.attribs[a];
-                    return;
-                  }
-                }
-                if (a === "srcset" || a === "imagesrcset") {
-                  try {
-                    let parsed = parseSrcset(value);
-                    parsed.forEach(function(value2) {
-                      if (naughtyHref(name, value2.url)) {
-                        value2.evil = true;
-                      }
-                    });
-                    parsed = filter2(parsed, function(v) {
-                      return !v.evil;
-                    });
-                    if (!parsed.length) {
-                      delete frame.attribs[a];
-                      return;
-                    } else {
-                      value = stringifySrcset(filter2(parsed, function(v) {
-                        return !v.evil;
-                      }));
-                      frame.attribs[a] = value;
-                    }
-                  } catch (e) {
-                    delete frame.attribs[a];
-                    return;
-                  }
-                }
-                if (a === "class") {
-                  const allowedSpecificClasses = allowedClassesMap[name];
-                  const allowedWildcardClasses = allowedClassesMap["*"];
-                  const allowedSpecificClassesGlob = allowedClassesGlobMap[name];
-                  const allowedSpecificClassesRegex = allowedClassesRegexMap[name];
-                  const allowedWildcardClassesRegex = allowedClassesRegexMap["*"];
-                  const allowedWildcardClassesGlob = allowedClassesGlobMap["*"];
-                  const allowedClassesGlobs = [
-                    allowedSpecificClassesGlob,
-                    allowedWildcardClassesGlob
-                  ].concat(allowedSpecificClassesRegex, allowedWildcardClassesRegex).filter(function(t) {
-                    return t;
-                  });
-                  if (allowedSpecificClasses && allowedWildcardClasses) {
-                    value = filterClasses(
-                      value,
-                      mergeClasses(allowedSpecificClasses, allowedWildcardClasses),
-                      allowedClassesGlobs
-                    );
-                  } else {
-                    value = filterClasses(
-                      value,
-                      allowedSpecificClasses || allowedWildcardClasses,
-                      allowedClassesGlobs
-                    );
-                  }
-                  if (!value.length) {
-                    delete frame.attribs[a];
-                    return;
-                  }
-                }
-                if (a === "style") {
-                  if (options.parseStyleAttributes) {
-                    try {
-                      const abstractSyntaxTree = postcssParse(name + " {" + value + "}", { map: false });
-                      const filteredAST = filterCss(
-                        abstractSyntaxTree,
-                        options.allowedStyles
-                      );
-                      value = stringifyStyleAttributes(filteredAST);
-                      if (value.length === 0) {
-                        delete frame.attribs[a];
-                        return;
-                      }
-                    } catch (e) {
-                      if (typeof window !== "undefined") {
-                        logger.warn(
-                          `Failed to parse "${name} {${value}}". If you are running this in a browser, we recommend disabling style parsing with the parseStyleAttributes option, since it only works in a node environment due to a postcss dependency. More info: https://github.com/apostrophecms/sanitize-html/issues/547`
-                        );
-                      }
-                      delete frame.attribs[a];
-                      return;
-                    }
-                  } else if (options.allowedStyles) {
-                    throw new Error("allowedStyles option cannot be used together with parseStyleAttributes: false.");
-                  }
-                }
-                result += " " + a;
-                if (value && value.length) {
-                  result += '="' + escapeHtml3(value, true) + '"';
-                } else if (options.allowedEmptyAttributes.includes(a)) {
-                  result += '=""';
-                }
-              } else {
-                delete frame.attribs[a];
-              }
-            });
-          }
-          if (options.selfClosing.indexOf(name) !== -1) {
-            result += " />";
-          } else {
-            result += ">";
-            if (frame.innerText && !hasText) {
-              const escaped = escapeHtml3(frame.innerText);
-              if (options.textFilter) {
-                result += options.textFilter(escaped, name);
-              } else {
-                result += escaped;
-              }
-              addedText = true;
-            }
-          }
-          if (skip) {
-            result = tempResult + escapeHtml3(result);
-            tempResult = "";
-          }
-          frame.openingTagLength = result.length - frame.tagPosition;
-        },
-        ontext: function(text2) {
-          updateRawTextRegion();
-          if (skipText || skipRawText) {
-            return;
-          }
-          const lastFrame = stack[stack.length - 1];
-          let tag;
-          if (lastFrame) {
-            tag = lastFrame.tag;
-            text2 = lastFrame.innerText !== void 0 ? lastFrame.innerText : text2;
-          }
-          if (options.disallowedTagsMode === "completelyDiscard" && !tagAllowed(tag)) {
-            text2 = "";
-          } else if (tag && tagAllowed(tag) && (options.disallowedTagsMode === "discard" || options.disallowedTagsMode === "completelyDiscard") && (tag === "script" || tag === "style")) {
-            result += text2;
-          } else if (tag && tagAllowed(tag) && (options.disallowedTagsMode === "discard" || options.disallowedTagsMode === "completelyDiscard") && (tag === "textarea" || tag === "xmp")) {
-            if (tag === "xmp") {
-              result += text2.replace(/</g, "&lt;").replace(/>/g, "&gt;");
-            } else {
-              result += escapeHtml3(text2, false);
-            }
-          } else if (
-            // htmlparser2 treats <iframe> as a raw-text element, so markup inside
-            // (including after an unclosed <iframe>) arrives as a single text node.
-            // When the iframe is discarded, re-sanitize that fallback markup as HTML
-            // instead of escaping it as plain text (issue #5550).
-            // The nested call continues from the current depth so that
-            // `nestingLimit` applies to the whole output.
-            tag === "iframe" && !tagAllowed(tag) && options.disallowedTagsMode === "discard" && iframeFallbackDepth < MAX_IFRAME_FALLBACK_DEPTH
-          ) {
-            result += sanitizeHtml2(text2, options, {
-              depth,
-              iframeFallbackDepth: iframeFallbackDepth + 1
-            });
-          } else if (!addedText) {
-            const escaped = escapeHtml3(text2, false);
-            if (options.textFilter) {
-              result += options.textFilter(escaped, tag);
-            } else {
-              result += escaped;
-            }
-          }
-          if (stack.length) {
-            const frame = stack[stack.length - 1];
-            frame.text += text2;
-          }
-        },
-        onclosetag: function(name, isImplied) {
-          if (options.onCloseTag) {
-            options.onCloseTag(name, isImplied);
-          }
-          updateRawTextRegion();
-          if (skipRawText) {
-            const lastFrame = stack[stack.length - 1];
-            if (!lastFrame || lastFrame.tag !== name) {
-              return;
-            }
-          } else if (skipText) {
-            skipTextDepth--;
-            if (!skipTextDepth) {
-              skipText = false;
-              if (rawTextEnd !== null) {
-                skipRawText = true;
-              }
-            } else {
-              return;
-            }
-          }
-          const frame = stack.pop();
-          if (!frame) {
-            return;
-          }
-          if (frame.tag !== name) {
-            stack.push(frame);
-            return;
-          }
-          skipText = options.enforceHtmlBoundary ? name === "html" : false;
-          depth--;
-          const skip = skipMap[depth];
-          if (skip) {
-            delete skipMap[depth];
-            if (options.disallowedTagsMode === "discard" || options.disallowedTagsMode === "completelyDiscard") {
-              frame.updateParentNodeText();
-              return;
-            }
-            tempResult = result;
-            result = "";
-          }
-          if (transformMap[depth]) {
-            name = transformMap[depth];
-            delete transformMap[depth];
-          }
-          if (options.exclusiveFilter) {
-            const filterResult = options.exclusiveFilter(frame);
-            if (filterResult === "excludeTag") {
-              if (skip) {
-                result = tempResult;
-                tempResult = "";
-              }
-              result = result.substring(0, frame.tagPosition) + result.substring(frame.tagPosition + frame.openingTagLength);
-              return;
-            } else if (filterResult) {
-              result = result.substring(0, frame.tagPosition);
-              return;
-            }
-          }
-          frame.updateParentNodeMediaChildren();
-          frame.updateParentNodeText();
-          if (
-            // Already output />
-            options.selfClosing.indexOf(name) !== -1 || // Escaped tag, closing tag is implied
-            isImplied && !tagAllowed(name) && ["escape", "recursiveEscape"].indexOf(options.disallowedTagsMode) >= 0
-          ) {
-            if (skip) {
-              result = tempResult;
-              tempResult = "";
-            }
-            return;
-          }
-          result += "</" + name + ">";
-          if (skip) {
-            result = tempResult + escapeHtml3(result);
-            tempResult = "";
-          }
-          addedText = false;
-        }
-      }, options.parser);
-      parser3.write(html);
-      parser3.end();
-      if (options.disallowedTagsMode === "escape" || options.disallowedTagsMode === "recursiveEscape") {
-        const lastParsedIndex = parser3.endIndex;
-        if (lastParsedIndex != null && lastParsedIndex >= 0 && lastParsedIndex < html.length) {
-          const unparsed = html.substring(lastParsedIndex);
-          result += escapeHtml3(unparsed);
-        } else if ((lastParsedIndex == null || lastParsedIndex < 0) && html.length > 0 && result === "") {
-          result = escapeHtml3(html);
-        }
-      }
-      return result;
-      function initializeState() {
-        result = "";
-        depth = baseDepth;
-        stack = [];
-        skipMap = {};
-        transformMap = {};
-        skipText = false;
-        skipTextDepth = 0;
-        rawTextEnd = null;
-        skipRawText = false;
-      }
-      function updateRawTextRegion() {
-        if (rawTextEnd !== null && parser3.startIndex >= rawTextEnd) {
-          rawTextEnd = null;
-          skipRawText = false;
-        }
-      }
-      function findRawTextEnd(tagName, from) {
-        const re = new RegExp("</" + tagName + "[\\t\\n\\f\\r />]", "ig");
-        re.lastIndex = from;
-        const match = re.exec(html);
-        return match ? match.index : Infinity;
-      }
-      function escapeHtml3(s, quote) {
-        if (typeof s !== "string") {
-          s = s + "";
-        }
-        if (options.parser.decodeEntities) {
-          s = s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-          if (quote) {
-            s = s.replace(/"/g, "&quot;");
-          }
-        }
-        s = s.replace(/&(?![a-zA-Z0-9#]{1,20};)/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-        if (quote) {
-          s = s.replace(/"/g, "&quot;");
-        }
-        return s;
-      }
-      function naughtyHref(name, href) {
-        const allowedSchemes = has(options.allowedSchemesByTag, name) ? options.allowedSchemesByTag[name] : options.allowedSchemes || [];
-        return launderNaughtyHref(href, {
-          allowedSchemes,
-          allowProtocolRelative: options.allowProtocolRelative
-        });
-      }
-      function isRefresh(attribs) {
-        return Object.keys(attribs).some(function(a) {
-          return a.toLowerCase() === "http-equiv" && String(attribs[a]).trim().toLowerCase() === "refresh";
-        });
-      }
-      function naughtyRefresh(content) {
-        const input = String(content);
-        const isWhitespace3 = function(c) {
-          return c === " " || c === "	" || c === "\n" || c === "\f" || c === "\r";
-        };
-        let position = 0;
-        const skipWhitespace = function() {
-          while (position < input.length && isWhitespace3(input[position])) {
-            position++;
-          }
-        };
-        const lowerAt = function(i) {
-          return (input[i] || "").toLowerCase();
-        };
-        skipWhitespace();
-        const timeStart = position;
-        while (position < input.length && /[0-9.]/.test(input[position])) {
-          position++;
-        }
-        if (position === timeStart) {
-          return true;
-        }
-        if (position < input.length) {
-          const c = input[position];
-          if (c !== ";" && c !== "," && !isWhitespace3(c)) {
-            return true;
-          }
-          skipWhitespace();
-          if (input[position] === ";" || input[position] === ",") {
-            position++;
-          }
-          skipWhitespace();
-        }
-        if (position >= input.length) {
-          return false;
-        }
-        let url2 = input.slice(position);
-        let quoted = true;
-        if (lowerAt(position) === "u") {
-          quoted = false;
-          if (lowerAt(position + 1) === "r" && lowerAt(position + 2) === "l") {
-            position += 3;
-            skipWhitespace();
-            if (input[position] === "=") {
-              position++;
-              skipWhitespace();
-              quoted = true;
-            }
-          }
-        }
-        if (quoted) {
-          const quote = input[position];
-          if (quote === '"' || quote === "'") {
-            position++;
-          }
-          url2 = input.slice(position);
-          if (quote === '"' || quote === "'") {
-            const end = url2.indexOf(quote);
-            if (end !== -1) {
-              url2 = url2.slice(0, end);
-            }
-          }
-        }
-        return naughtyHref("meta", url2);
-      }
-      function animatesUrlAttribute(name, attribs) {
-        if (svgAnimationTags.indexOf(localPart(name)) === -1) {
-          return false;
-        }
-        const schemeCheckedAttributes = options.allowedSchemesAppliedToAttributes || [];
-        return Object.keys(attribs || {}).some(function(attributeName) {
-          if (localPart(attributeName) !== "attributename") {
-            return false;
-          }
-          const target = (attribs[attributeName] || "").trim().toLowerCase();
-          const localName = target.slice(target.lastIndexOf(":") + 1);
-          return alwaysUrlAttributes.indexOf(localName) !== -1 || schemeCheckedAttributes.indexOf(target) !== -1 || schemeCheckedAttributes.indexOf(localName) !== -1;
-        });
-      }
-      function localPart(name) {
-        const lower = name.toLowerCase();
-        return lower.slice(lower.lastIndexOf(":") + 1);
-      }
-      function parseUrl(value) {
-        value = value.replace(/^(\w+:)?\s*[\\/]\s*[\\/]/, "$1//");
-        if (value.startsWith("relative:")) {
-          throw new Error("relative: exploit attempt");
-        }
-        let base = "relative://relative-site";
-        for (let i = 0; i < 100; i++) {
-          base += `/${i}`;
-        }
-        const parsed = new URL(value, base);
-        const isRelativeUrl = parsed && parsed.hostname === "relative-site" && parsed.protocol === "relative:";
-        return {
-          isRelativeUrl,
-          url: parsed
-        };
-      }
-      function filterCss(abstractSyntaxTree, allowedStyles) {
-        if (!allowedStyles) {
-          return abstractSyntaxTree;
-        }
-        const astRules = abstractSyntaxTree.nodes[0];
-        let selectedRule;
-        if (allowedStyles[astRules.selector] && allowedStyles["*"]) {
-          selectedRule = mergeStyles(
-            allowedStyles[astRules.selector],
-            allowedStyles["*"]
-          );
-        } else {
-          selectedRule = allowedStyles[astRules.selector] || allowedStyles["*"];
-        }
-        if (selectedRule) {
-          abstractSyntaxTree.nodes[0].nodes = astRules.nodes.reduce(filterDeclarations(selectedRule), []);
-        }
-        return abstractSyntaxTree;
-      }
-      function stringifyStyleAttributes(filteredAST) {
-        return filteredAST.nodes[0].nodes.reduce(function(extractedAttributes, attrObject) {
-          extractedAttributes.push(
-            `${attrObject.prop}:${attrObject.value}${attrObject.important ? " !important" : ""}`
-          );
-          return extractedAttributes;
-        }, []).join(";");
-      }
-      function filterDeclarations(selectedRule) {
-        return function(allowedDeclarationsList, attributeObject) {
-          if (has(selectedRule, attributeObject.prop)) {
-            const matchesRegex = selectedRule[attributeObject.prop].some(function(regularExpression) {
-              return regularExpression.test(attributeObject.value);
-            });
-            if (matchesRegex) {
-              allowedDeclarationsList.push(attributeObject);
-            }
-          }
-          return allowedDeclarationsList;
-        };
-      }
-      function filterClasses(classes, allowed, allowedGlobs) {
-        if (!allowed) {
-          return classes;
-        }
-        classes = classes.split(/\s+/);
-        return classes.filter(function(clss) {
-          return allowed.indexOf(clss) !== -1 || allowedGlobs.some(function(glob2) {
-            return glob2.test(clss);
-          });
-        }).join(" ");
-      }
-    }
-    var htmlParserDefaults = {
-      decodeEntities: true
-    };
-    sanitizeHtml2.defaults = {
-      allowedTags: [
-        // Sections derived from MDN element categories and limited to the more
-        // benign categories.
-        // https://developer.mozilla.org/en-US/docs/Web/HTML/Element
-        // Content sectioning
-        "address",
-        "article",
-        "aside",
-        "footer",
-        "header",
-        "h1",
-        "h2",
-        "h3",
-        "h4",
-        "h5",
-        "h6",
-        "hgroup",
-        "main",
-        "nav",
-        "section",
-        // Text content
-        "blockquote",
-        "dd",
-        "div",
-        "dl",
-        "dt",
-        "figcaption",
-        "figure",
-        "hr",
-        "li",
-        "menu",
-        "ol",
-        "p",
-        "pre",
-        "ul",
-        // Inline text semantics
-        "a",
-        "abbr",
-        "b",
-        "bdi",
-        "bdo",
-        "br",
-        "cite",
-        "code",
-        "data",
-        "dfn",
-        "em",
-        "i",
-        "kbd",
-        "mark",
-        "q",
-        "rb",
-        "rp",
-        "rt",
-        "rtc",
-        "ruby",
-        "s",
-        "samp",
-        "small",
-        "span",
-        "strong",
-        "sub",
-        "sup",
-        "time",
-        "u",
-        "var",
-        "wbr",
-        // Table content
-        "caption",
-        "col",
-        "colgroup",
-        "table",
-        "tbody",
-        "td",
-        "tfoot",
-        "th",
-        "thead",
-        "tr"
-      ],
-      // Tags that cannot be boolean
-      nonBooleanAttributes: [
-        "abbr",
-        "accept",
-        "accept-charset",
-        "accesskey",
-        "action",
-        "allow",
-        "alt",
-        "as",
-        "autocapitalize",
-        "autocomplete",
-        "blocking",
-        "charset",
-        "cite",
-        "class",
-        "color",
-        "cols",
-        "colspan",
-        "content",
-        "contenteditable",
-        "coords",
-        "crossorigin",
-        "data",
-        "datetime",
-        "decoding",
-        "dir",
-        "dirname",
-        "download",
-        "draggable",
-        "enctype",
-        "enterkeyhint",
-        "fetchpriority",
-        "for",
-        "form",
-        "formaction",
-        "formenctype",
-        "formmethod",
-        "formtarget",
-        "headers",
-        "height",
-        "hidden",
-        "high",
-        "href",
-        "hreflang",
-        "http-equiv",
-        "id",
-        "imagesizes",
-        "imagesrcset",
-        "inputmode",
-        "integrity",
-        "is",
-        "itemid",
-        "itemprop",
-        "itemref",
-        "itemtype",
-        "kind",
-        "label",
-        "lang",
-        "list",
-        "loading",
-        "low",
-        "max",
-        "maxlength",
-        "media",
-        "method",
-        "min",
-        "minlength",
-        "name",
-        "nonce",
-        "optimum",
-        "pattern",
-        "ping",
-        "placeholder",
-        "popover",
-        "popovertarget",
-        "popovertargetaction",
-        "poster",
-        "preload",
-        "referrerpolicy",
-        "rel",
-        "rows",
-        "rowspan",
-        "sandbox",
-        "scope",
-        "shape",
-        "size",
-        "sizes",
-        "slot",
-        "span",
-        "spellcheck",
-        "src",
-        "srcdoc",
-        "srclang",
-        "srcset",
-        "start",
-        "step",
-        "style",
-        "tabindex",
-        "target",
-        "title",
-        "translate",
-        "type",
-        "usemap",
-        "value",
-        "width",
-        "wrap",
-        // Event handlers
-        "onauxclick",
-        "onafterprint",
-        "onbeforematch",
-        "onbeforeprint",
-        "onbeforeunload",
-        "onbeforetoggle",
-        "onblur",
-        "oncancel",
-        "oncanplay",
-        "oncanplaythrough",
-        "onchange",
-        "onclick",
-        "onclose",
-        "oncontextlost",
-        "oncontextmenu",
-        "oncontextrestored",
-        "oncopy",
-        "oncuechange",
-        "oncut",
-        "ondblclick",
-        "ondrag",
-        "ondragend",
-        "ondragenter",
-        "ondragleave",
-        "ondragover",
-        "ondragstart",
-        "ondrop",
-        "ondurationchange",
-        "onemptied",
-        "onended",
-        "onerror",
-        "onfocus",
-        "onformdata",
-        "onhashchange",
-        "oninput",
-        "oninvalid",
-        "onkeydown",
-        "onkeypress",
-        "onkeyup",
-        "onlanguagechange",
-        "onload",
-        "onloadeddata",
-        "onloadedmetadata",
-        "onloadstart",
-        "onmessage",
-        "onmessageerror",
-        "onmousedown",
-        "onmouseenter",
-        "onmouseleave",
-        "onmousemove",
-        "onmouseout",
-        "onmouseover",
-        "onmouseup",
-        "onoffline",
-        "ononline",
-        "onpagehide",
-        "onpageshow",
-        "onpaste",
-        "onpause",
-        "onplay",
-        "onplaying",
-        "onpopstate",
-        "onprogress",
-        "onratechange",
-        "onreset",
-        "onresize",
-        "onrejectionhandled",
-        "onscroll",
-        "onscrollend",
-        "onsecuritypolicyviolation",
-        "onseeked",
-        "onseeking",
-        "onselect",
-        "onslotchange",
-        "onstalled",
-        "onstorage",
-        "onsubmit",
-        "onsuspend",
-        "ontimeupdate",
-        "ontoggle",
-        "onunhandledrejection",
-        "onunload",
-        "onvolumechange",
-        "onwaiting",
-        "onwheel"
-      ],
-      disallowedTagsMode: "discard",
-      allowedAttributes: {
-        a: ["href", "name", "target"],
-        // We don't currently allow img itself by default, but
-        // these attributes would make sense if we did.
-        img: ["src", "srcset", "alt", "title", "width", "height", "loading"]
-      },
-      allowedEmptyAttributes: [
-        "alt"
-      ],
-      // Lots of these won't come up by default because we don't allow them
-      selfClosing: ["img", "br", "hr", "area", "base", "basefont", "input", "link", "meta", "col"],
-      // URL schemes we permit
-      allowedSchemes: ["http", "https", "ftp", "mailto", "tel"],
-      allowedSchemesByTag: {},
-      allowedSchemesAppliedToAttributes: [
-        "href",
-        "src",
-        "cite",
-        "action",
-        "formaction",
-        "data",
-        "xlink:href",
-        "poster",
-        "background",
-        "ping",
-        "longdesc",
-        "usemap",
-        "codebase",
-        "classid",
-        "archive",
-        "profile",
-        "manifest",
-        "itemid",
-        "dynsrc",
-        "lowsrc"
-      ],
-      allowProtocolRelative: true,
-      enforceHtmlBoundary: false,
-      parseStyleAttributes: true,
-      preserveEscapedAttributes: false
-    };
-    sanitizeHtml2.simpleTransform = function(newTagName, newAttribs, merge2) {
-      merge2 = merge2 === void 0 ? true : merge2;
-      newAttribs = newAttribs || {};
-      return function(tagName, attribs) {
-        let attrib;
-        if (merge2) {
-          for (attrib in newAttribs) {
-            attribs[attrib] = newAttribs[attrib];
-          }
-        } else {
-          attribs = newAttribs;
-        }
-        return {
-          tagName: newTagName,
-          attribs
-        };
-      };
-    };
-  }
-});
-
 // node_modules/lucide/dist/cjs/lucide.js
 var require_lucide = __commonJS({
   "node_modules/lucide/dist/cjs/lucide.js"(exports) {
@@ -33470,6 +28652,4824 @@ var require_lucide = __commonJS({
   }
 });
 
+// node_modules/htmlparser2/dist/Tokenizer.js
+function isWhitespace2(c) {
+  return c === CharCodes2.Space || c === CharCodes2.NewLine || c === CharCodes2.Tab || c === CharCodes2.FormFeed || c === CharCodes2.CarriageReturn;
+}
+function isEndOfTagSection(c) {
+  return c === CharCodes2.Slash || c === CharCodes2.Gt || isWhitespace2(c);
+}
+function isASCIIAlpha(c) {
+  return c >= CharCodes2.LowerA && c <= CharCodes2.LowerZ || c >= CharCodes2.UpperA && c <= CharCodes2.UpperZ;
+}
+var CharCodes2, State, QuoteType, Sequences, specialStartSequences, Tokenizer;
+var init_Tokenizer = __esm({
+  "node_modules/htmlparser2/dist/Tokenizer.js"() {
+    init_decode();
+    (function(CharCodes3) {
+      CharCodes3[CharCodes3["Tab"] = 9] = "Tab";
+      CharCodes3[CharCodes3["NewLine"] = 10] = "NewLine";
+      CharCodes3[CharCodes3["FormFeed"] = 12] = "FormFeed";
+      CharCodes3[CharCodes3["CarriageReturn"] = 13] = "CarriageReturn";
+      CharCodes3[CharCodes3["Space"] = 32] = "Space";
+      CharCodes3[CharCodes3["ExclamationMark"] = 33] = "ExclamationMark";
+      CharCodes3[CharCodes3["Number"] = 35] = "Number";
+      CharCodes3[CharCodes3["Amp"] = 38] = "Amp";
+      CharCodes3[CharCodes3["SingleQuote"] = 39] = "SingleQuote";
+      CharCodes3[CharCodes3["DoubleQuote"] = 34] = "DoubleQuote";
+      CharCodes3[CharCodes3["Dash"] = 45] = "Dash";
+      CharCodes3[CharCodes3["Slash"] = 47] = "Slash";
+      CharCodes3[CharCodes3["Zero"] = 48] = "Zero";
+      CharCodes3[CharCodes3["Nine"] = 57] = "Nine";
+      CharCodes3[CharCodes3["Semi"] = 59] = "Semi";
+      CharCodes3[CharCodes3["Lt"] = 60] = "Lt";
+      CharCodes3[CharCodes3["Eq"] = 61] = "Eq";
+      CharCodes3[CharCodes3["Gt"] = 62] = "Gt";
+      CharCodes3[CharCodes3["Questionmark"] = 63] = "Questionmark";
+      CharCodes3[CharCodes3["UpperA"] = 65] = "UpperA";
+      CharCodes3[CharCodes3["LowerA"] = 97] = "LowerA";
+      CharCodes3[CharCodes3["UpperF"] = 70] = "UpperF";
+      CharCodes3[CharCodes3["LowerF"] = 102] = "LowerF";
+      CharCodes3[CharCodes3["UpperZ"] = 90] = "UpperZ";
+      CharCodes3[CharCodes3["LowerZ"] = 122] = "LowerZ";
+      CharCodes3[CharCodes3["LowerX"] = 120] = "LowerX";
+      CharCodes3[CharCodes3["OpeningSquareBracket"] = 91] = "OpeningSquareBracket";
+    })(CharCodes2 || (CharCodes2 = {}));
+    (function(State2) {
+      State2[State2["Text"] = 1] = "Text";
+      State2[State2["BeforeTagName"] = 2] = "BeforeTagName";
+      State2[State2["InTagName"] = 3] = "InTagName";
+      State2[State2["InSelfClosingTag"] = 4] = "InSelfClosingTag";
+      State2[State2["BeforeClosingTagName"] = 5] = "BeforeClosingTagName";
+      State2[State2["InClosingTagName"] = 6] = "InClosingTagName";
+      State2[State2["AfterClosingTagName"] = 7] = "AfterClosingTagName";
+      State2[State2["BeforeAttributeName"] = 8] = "BeforeAttributeName";
+      State2[State2["InAttributeName"] = 9] = "InAttributeName";
+      State2[State2["AfterAttributeName"] = 10] = "AfterAttributeName";
+      State2[State2["BeforeAttributeValue"] = 11] = "BeforeAttributeValue";
+      State2[State2["InAttributeValueDq"] = 12] = "InAttributeValueDq";
+      State2[State2["InAttributeValueSq"] = 13] = "InAttributeValueSq";
+      State2[State2["InAttributeValueNq"] = 14] = "InAttributeValueNq";
+      State2[State2["BeforeDeclaration"] = 15] = "BeforeDeclaration";
+      State2[State2["InDeclaration"] = 16] = "InDeclaration";
+      State2[State2["InProcessingInstruction"] = 17] = "InProcessingInstruction";
+      State2[State2["BeforeComment"] = 18] = "BeforeComment";
+      State2[State2["CDATASequence"] = 19] = "CDATASequence";
+      State2[State2["DeclarationSequence"] = 20] = "DeclarationSequence";
+      State2[State2["InSpecialComment"] = 21] = "InSpecialComment";
+      State2[State2["InCommentLike"] = 22] = "InCommentLike";
+      State2[State2["SpecialStartSequence"] = 23] = "SpecialStartSequence";
+      State2[State2["InSpecialTag"] = 24] = "InSpecialTag";
+      State2[State2["InPlainText"] = 25] = "InPlainText";
+      State2[State2["InEntity"] = 26] = "InEntity";
+    })(State || (State = {}));
+    (function(QuoteType2) {
+      QuoteType2[QuoteType2["NoValue"] = 0] = "NoValue";
+      QuoteType2[QuoteType2["Unquoted"] = 1] = "Unquoted";
+      QuoteType2[QuoteType2["Single"] = 2] = "Single";
+      QuoteType2[QuoteType2["Double"] = 3] = "Double";
+    })(QuoteType || (QuoteType = {}));
+    Sequences = {
+      Empty: new Uint8Array(0),
+      Cdata: new Uint8Array([67, 68, 65, 84, 65, 91]),
+      // CDATA[
+      CdataEnd: new Uint8Array([93, 93, 62]),
+      // ]]>
+      CommentEnd: new Uint8Array([45, 45, 33, 62]),
+      // `--!>`
+      Doctype: new Uint8Array([100, 111, 99, 116, 121, 112, 101]),
+      // `doctype`
+      IframeEnd: new Uint8Array([60, 47, 105, 102, 114, 97, 109, 101]),
+      // `</iframe`
+      NoembedEnd: new Uint8Array([
+        60,
+        47,
+        110,
+        111,
+        101,
+        109,
+        98,
+        101,
+        100
+      ]),
+      // `</noembed`
+      NoframesEnd: new Uint8Array([
+        60,
+        47,
+        110,
+        111,
+        102,
+        114,
+        97,
+        109,
+        101,
+        115
+      ]),
+      // `</noframes`
+      Plaintext: new Uint8Array([
+        60,
+        47,
+        112,
+        108,
+        97,
+        105,
+        110,
+        116,
+        101,
+        120,
+        116
+      ]),
+      // `</plaintext`
+      ScriptEnd: new Uint8Array([60, 47, 115, 99, 114, 105, 112, 116]),
+      // `</script`
+      StyleEnd: new Uint8Array([60, 47, 115, 116, 121, 108, 101]),
+      // `</style`
+      TitleEnd: new Uint8Array([60, 47, 116, 105, 116, 108, 101]),
+      // `</title`
+      TextareaEnd: new Uint8Array([
+        60,
+        47,
+        116,
+        101,
+        120,
+        116,
+        97,
+        114,
+        101,
+        97
+      ]),
+      // `</textarea`
+      XmpEnd: new Uint8Array([60, 47, 120, 109, 112])
+      // `</xmp`
+    };
+    specialStartSequences = /* @__PURE__ */ new Map([
+      [Sequences.IframeEnd[2], Sequences.IframeEnd],
+      [Sequences.NoembedEnd[2], Sequences.NoembedEnd],
+      [Sequences.Plaintext[2], Sequences.Plaintext],
+      [Sequences.ScriptEnd[2], Sequences.ScriptEnd],
+      [Sequences.TitleEnd[2], Sequences.TitleEnd],
+      [Sequences.XmpEnd[2], Sequences.XmpEnd]
+    ]);
+    Tokenizer = class {
+      cbs;
+      /** The current state the tokenizer is in. */
+      state = State.Text;
+      /** The read buffer. */
+      buffer = "";
+      /** The beginning of the section that is currently being read. */
+      sectionStart = 0;
+      /** The index within the buffer that we are currently looking at. */
+      index = 0;
+      /** The start of the last entity. */
+      entityStart = 0;
+      /** Some behavior, eg. when decoding entities, is done while we are in another state. This keeps track of the other state type. */
+      baseState = State.Text;
+      /** For special parsing behavior inside of script and style tags. */
+      isSpecial = false;
+      /** Indicates whether the tokenizer has been paused. */
+      running = true;
+      /** The offset of the current buffer. */
+      offset = 0;
+      xmlMode;
+      decodeEntities;
+      recognizeSelfClosing;
+      entityDecoder;
+      constructor({ xmlMode = false, decodeEntities: decodeEntities2 = true, recognizeSelfClosing = xmlMode }, cbs) {
+        this.cbs = cbs;
+        this.xmlMode = xmlMode;
+        this.decodeEntities = decodeEntities2;
+        this.recognizeSelfClosing = recognizeSelfClosing;
+        this.entityDecoder = new EntityDecoder(xmlMode ? xmlDecodeTree : htmlDecodeTree, (cp, consumed) => this.emitCodePoint(cp, consumed));
+      }
+      reset() {
+        this.state = State.Text;
+        this.buffer = "";
+        this.sectionStart = 0;
+        this.index = 0;
+        this.baseState = State.Text;
+        this.isSpecial = false;
+        this.currentSequence = Sequences.Empty;
+        this.sequenceIndex = 0;
+        this.running = true;
+        this.offset = 0;
+      }
+      write(chunk) {
+        this.offset += this.buffer.length;
+        this.buffer = chunk;
+        this.parse();
+      }
+      end() {
+        if (this.running)
+          this.finish();
+      }
+      pause() {
+        this.running = false;
+      }
+      resume() {
+        this.running = true;
+        if (this.index < this.buffer.length + this.offset) {
+          this.parse();
+        }
+      }
+      stateText(c) {
+        if (c === CharCodes2.Lt || !this.decodeEntities && this.fastForwardTo(CharCodes2.Lt)) {
+          if (this.index > this.sectionStart) {
+            this.cbs.ontext(this.sectionStart, this.index);
+          }
+          this.state = State.BeforeTagName;
+          this.sectionStart = this.index;
+        } else if (this.decodeEntities && c === CharCodes2.Amp) {
+          this.startEntity();
+        }
+      }
+      currentSequence = Sequences.Empty;
+      sequenceIndex = 0;
+      enterTagBody() {
+        if (this.currentSequence === Sequences.Plaintext) {
+          this.currentSequence = Sequences.Empty;
+          this.state = State.InPlainText;
+        } else if (this.isSpecial) {
+          this.state = State.InSpecialTag;
+          this.sequenceIndex = 0;
+        } else {
+          this.state = State.Text;
+        }
+      }
+      /**
+       * Match the opening tag name against an HTML text-only tag sequence.
+       *
+       * Some tags share an initial prefix (`script`/`style`, `title`/`textarea`,
+       * `noembed`/`noframes`), so we may switch to an alternate sequence at the
+       * first distinguishing byte.  On a successful full match we fall back to
+       * the normal tag-name state; a later `>` will enter raw-text, RCDATA, or
+       * plaintext mode based on `currentSequence` / `isSpecial`.
+       * @param c Current character code point.
+       */
+      stateSpecialStartSequence(c) {
+        const lower = c | 32;
+        if (this.sequenceIndex < this.currentSequence.length) {
+          if (lower === this.currentSequence[this.sequenceIndex]) {
+            this.sequenceIndex++;
+            return;
+          }
+          if (this.sequenceIndex === 3) {
+            if (this.currentSequence === Sequences.ScriptEnd && lower === Sequences.StyleEnd[3]) {
+              this.currentSequence = Sequences.StyleEnd;
+              this.sequenceIndex = 4;
+              return;
+            }
+            if (this.currentSequence === Sequences.TitleEnd && lower === Sequences.TextareaEnd[3]) {
+              this.currentSequence = Sequences.TextareaEnd;
+              this.sequenceIndex = 4;
+              return;
+            }
+          } else if (this.sequenceIndex === 4 && this.currentSequence === Sequences.NoembedEnd && lower === Sequences.NoframesEnd[4]) {
+            this.currentSequence = Sequences.NoframesEnd;
+            this.sequenceIndex = 5;
+            return;
+          }
+        } else if (isEndOfTagSection(c)) {
+          this.sequenceIndex = 0;
+          this.state = State.InTagName;
+          this.stateInTagName(c);
+          return;
+        }
+        this.isSpecial = false;
+        this.currentSequence = Sequences.Empty;
+        this.sequenceIndex = 0;
+        this.state = State.InTagName;
+        this.stateInTagName(c);
+      }
+      stateCDATASequence(c) {
+        if (c === Sequences.Cdata[this.sequenceIndex]) {
+          if (++this.sequenceIndex === Sequences.Cdata.length) {
+            this.state = State.InCommentLike;
+            this.currentSequence = Sequences.CdataEnd;
+            this.sequenceIndex = 0;
+            this.sectionStart = this.index + 1;
+          }
+        } else {
+          this.sequenceIndex = 0;
+          if (this.xmlMode) {
+            this.state = State.InDeclaration;
+            this.stateInDeclaration(c);
+          } else {
+            this.state = State.InSpecialComment;
+            this.stateInSpecialComment(c);
+          }
+        }
+      }
+      /**
+       * When we wait for one specific character, we can speed things up
+       * by skipping through the buffer until we find it.
+       * @param c Current character code point.
+       * @returns Whether the character was found.
+       */
+      fastForwardTo(c) {
+        while (++this.index < this.buffer.length + this.offset) {
+          if (this.buffer.charCodeAt(this.index - this.offset) === c) {
+            return true;
+          }
+        }
+        this.index = this.buffer.length + this.offset - 1;
+        return false;
+      }
+      /**
+       * Emit a comment token and return to the text state.
+       * @param offset Number of characters in the end sequence that have already been matched.
+       */
+      emitComment(offset) {
+        this.cbs.oncomment(this.sectionStart, this.index, offset);
+        this.sequenceIndex = 0;
+        this.sectionStart = this.index + 1;
+        this.state = State.Text;
+      }
+      /**
+       * Comments and CDATA end with `-->` and `]]>`.
+       *
+       * Their common qualities are:
+       * - Their end sequences have a distinct character they start with.
+       * - That character is then repeated, so we have to check multiple repeats.
+       * - All characters but the start character of the sequence can be skipped.
+       * @param c Current character code point.
+       */
+      stateInCommentLike(c) {
+        if (!this.xmlMode && this.currentSequence === Sequences.CommentEnd && this.sequenceIndex <= 1 && /*
+         * We're still at the very start of the comment: the only
+         * characters consumed since `<!--` are the dashes that
+         * advanced sequenceIndex (0 for `<!-->`, 1 for `<!--->`).
+         */
+        this.index === this.sectionStart + this.sequenceIndex && c === CharCodes2.Gt) {
+          this.emitComment(this.sequenceIndex);
+        } else if (this.currentSequence === Sequences.CommentEnd && this.sequenceIndex === 2 && c === CharCodes2.Gt) {
+          this.emitComment(2);
+        } else if (this.currentSequence === Sequences.CommentEnd && this.sequenceIndex === this.currentSequence.length - 1 && c !== CharCodes2.Gt) {
+          this.sequenceIndex = Number(c === CharCodes2.Dash);
+        } else if (c === this.currentSequence[this.sequenceIndex]) {
+          if (++this.sequenceIndex === this.currentSequence.length) {
+            if (this.currentSequence === Sequences.CdataEnd) {
+              this.cbs.oncdata(this.sectionStart, this.index, 2);
+            } else {
+              this.cbs.oncomment(this.sectionStart, this.index, 3);
+            }
+            this.sequenceIndex = 0;
+            this.sectionStart = this.index + 1;
+            this.state = State.Text;
+          }
+        } else if (this.sequenceIndex === 0) {
+          if (this.fastForwardTo(this.currentSequence[0])) {
+            this.sequenceIndex = 1;
+          }
+        } else if (c !== this.currentSequence[this.sequenceIndex - 1]) {
+          this.sequenceIndex = 0;
+        }
+      }
+      /**
+       * HTML only allows ASCII alpha characters (a-z and A-Z) at the beginning of a tag name.
+       *
+       * XML allows a lot more characters here (@see https://www.w3.org/TR/REC-xml/#NT-NameStartChar).
+       * We allow anything that wouldn't end the tag.
+       * @param c Current character code point.
+       */
+      isTagStartChar(c) {
+        return this.xmlMode ? !isEndOfTagSection(c) : isASCIIAlpha(c);
+      }
+      /**
+       * Scan raw-text / RCDATA content for the matching end tag.
+       *
+       * For RCDATA tags (`<title>`, `<textarea>`) entities are decoded inline.
+       * For raw-text tags (`<script>`, `<style>`, etc.) we fast-forward to `<`.
+       * @param c Current character code point.
+       */
+      stateInSpecialTag(c) {
+        if (this.sequenceIndex === this.currentSequence.length) {
+          if (isEndOfTagSection(c)) {
+            const endOfText = this.index - this.currentSequence.length;
+            if (this.sectionStart < endOfText) {
+              const actualIndex = this.index;
+              this.index = endOfText;
+              this.cbs.ontext(this.sectionStart, endOfText);
+              this.index = actualIndex;
+            }
+            this.isSpecial = false;
+            this.sectionStart = endOfText + 2;
+            this.stateInClosingTagName(c);
+            return;
+          }
+          this.sequenceIndex = 0;
+        }
+        if ((c | 32) === this.currentSequence[this.sequenceIndex]) {
+          this.sequenceIndex += 1;
+        } else if (this.sequenceIndex === 0) {
+          if (this.currentSequence === Sequences.TitleEnd || this.currentSequence === Sequences.TextareaEnd) {
+            if (this.decodeEntities && c === CharCodes2.Amp) {
+              this.startEntity();
+            }
+          } else if (this.fastForwardTo(CharCodes2.Lt)) {
+            this.sequenceIndex = 1;
+          }
+        } else {
+          this.sequenceIndex = Number(c === CharCodes2.Lt);
+        }
+      }
+      stateBeforeTagName(c) {
+        if (c === CharCodes2.ExclamationMark) {
+          this.state = State.BeforeDeclaration;
+          this.sectionStart = this.index + 1;
+        } else if (c === CharCodes2.Questionmark) {
+          if (this.xmlMode) {
+            this.state = State.InProcessingInstruction;
+            this.sequenceIndex = 0;
+            this.sectionStart = this.index + 1;
+          } else {
+            this.state = State.InSpecialComment;
+            this.sectionStart = this.index;
+          }
+        } else if (this.isTagStartChar(c)) {
+          this.sectionStart = this.index;
+          const special = this.xmlMode || this.cbs.isInForeignContext?.() ? void 0 : specialStartSequences.get(c | 32);
+          if (special === void 0) {
+            this.state = State.InTagName;
+          } else {
+            this.isSpecial = true;
+            this.currentSequence = special;
+            this.sequenceIndex = 3;
+            this.state = State.SpecialStartSequence;
+          }
+        } else if (c === CharCodes2.Slash) {
+          this.state = State.BeforeClosingTagName;
+        } else {
+          this.state = State.Text;
+          this.stateText(c);
+        }
+      }
+      stateInTagName(c) {
+        if (isEndOfTagSection(c)) {
+          this.cbs.onopentagname(this.sectionStart, this.index);
+          this.sectionStart = -1;
+          this.state = State.BeforeAttributeName;
+          this.stateBeforeAttributeName(c);
+        }
+      }
+      stateBeforeClosingTagName(c) {
+        if (isWhitespace2(c)) {
+          if (this.xmlMode) {
+          } else {
+            this.state = State.InSpecialComment;
+            this.sectionStart = this.index;
+          }
+        } else if (c === CharCodes2.Gt) {
+          this.state = State.Text;
+          if (!this.xmlMode) {
+            this.sectionStart = this.index + 1;
+          }
+        } else {
+          this.state = this.isTagStartChar(c) ? State.InClosingTagName : State.InSpecialComment;
+          this.sectionStart = this.index;
+        }
+      }
+      stateInClosingTagName(c) {
+        if (isEndOfTagSection(c)) {
+          this.cbs.onclosetag(this.sectionStart, this.index);
+          this.sectionStart = -1;
+          this.state = State.AfterClosingTagName;
+          this.stateAfterClosingTagName(c);
+        }
+      }
+      stateAfterClosingTagName(c) {
+        if (c === CharCodes2.Gt || this.fastForwardTo(CharCodes2.Gt)) {
+          this.state = State.Text;
+          this.sectionStart = this.index + 1;
+        }
+      }
+      stateBeforeAttributeName(c) {
+        if (c === CharCodes2.Gt) {
+          this.cbs.onopentagend(this.index);
+          this.enterTagBody();
+          this.sectionStart = this.index + 1;
+        } else if (c === CharCodes2.Slash) {
+          this.state = State.InSelfClosingTag;
+        } else if (!isWhitespace2(c)) {
+          this.state = State.InAttributeName;
+          this.sectionStart = this.index;
+        }
+      }
+      /**
+       * Handle `/` before `>` in an opening tag.
+       *
+       * In HTML mode, text-only tags ignore the self-closing flag and still enter
+       * their raw-text/RCDATA/plaintext state unless self-closing tags are being
+       * recognized. In XML mode, or for ordinary tags, the tokenizer returns to
+       * regular text parsing after emitting the self-closing callback.
+       * @param c Current character code point.
+       */
+      stateInSelfClosingTag(c) {
+        if (c === CharCodes2.Gt) {
+          this.cbs.onselfclosingtag(this.index);
+          this.sectionStart = this.index + 1;
+          if (!this.recognizeSelfClosing) {
+            this.enterTagBody();
+            return;
+          }
+          this.state = State.Text;
+          this.isSpecial = false;
+          this.currentSequence = Sequences.Empty;
+        } else if (!isWhitespace2(c)) {
+          this.state = State.BeforeAttributeName;
+          this.stateBeforeAttributeName(c);
+        }
+      }
+      stateInAttributeName(c) {
+        if (c === CharCodes2.Eq || isEndOfTagSection(c)) {
+          this.cbs.onattribname(this.sectionStart, this.index);
+          this.sectionStart = this.index;
+          this.state = State.AfterAttributeName;
+          this.stateAfterAttributeName(c);
+        }
+      }
+      stateAfterAttributeName(c) {
+        if (c === CharCodes2.Eq) {
+          this.state = State.BeforeAttributeValue;
+        } else if (c === CharCodes2.Slash || c === CharCodes2.Gt) {
+          this.cbs.onattribend(QuoteType.NoValue, this.sectionStart);
+          this.sectionStart = -1;
+          this.state = State.BeforeAttributeName;
+          this.stateBeforeAttributeName(c);
+        } else if (!isWhitespace2(c)) {
+          this.cbs.onattribend(QuoteType.NoValue, this.sectionStart);
+          this.state = State.InAttributeName;
+          this.sectionStart = this.index;
+        }
+      }
+      stateBeforeAttributeValue(c) {
+        if (c === CharCodes2.DoubleQuote) {
+          this.state = State.InAttributeValueDq;
+          this.sectionStart = this.index + 1;
+        } else if (c === CharCodes2.SingleQuote) {
+          this.state = State.InAttributeValueSq;
+          this.sectionStart = this.index + 1;
+        } else if (!isWhitespace2(c)) {
+          this.sectionStart = this.index;
+          this.state = State.InAttributeValueNq;
+          this.stateInAttributeValueNoQuotes(c);
+        }
+      }
+      handleInAttributeValue(c, quote) {
+        if (c === quote || !this.decodeEntities && this.fastForwardTo(quote)) {
+          this.cbs.onattribdata(this.sectionStart, this.index);
+          this.sectionStart = -1;
+          this.cbs.onattribend(quote === CharCodes2.DoubleQuote ? QuoteType.Double : QuoteType.Single, this.index + 1);
+          this.state = State.BeforeAttributeName;
+        } else if (this.decodeEntities && c === CharCodes2.Amp) {
+          this.startEntity();
+        }
+      }
+      stateInAttributeValueDoubleQuotes(c) {
+        this.handleInAttributeValue(c, CharCodes2.DoubleQuote);
+      }
+      stateInAttributeValueSingleQuotes(c) {
+        this.handleInAttributeValue(c, CharCodes2.SingleQuote);
+      }
+      stateInAttributeValueNoQuotes(c) {
+        if (isWhitespace2(c) || c === CharCodes2.Gt) {
+          this.cbs.onattribdata(this.sectionStart, this.index);
+          this.sectionStart = -1;
+          this.cbs.onattribend(QuoteType.Unquoted, this.index);
+          this.state = State.BeforeAttributeName;
+          this.stateBeforeAttributeName(c);
+        } else if (this.decodeEntities && c === CharCodes2.Amp) {
+          this.startEntity();
+        }
+      }
+      /**
+       * Distinguish between CDATA, declarations, HTML comments, and HTML bogus
+       * comments after `<!`.
+       *
+       * In HTML mode, only real comments and doctypes stay on declaration paths;
+       * everything else becomes a bogus comment terminated by the next `>`.
+       * @param c Current character code point.
+       */
+      stateBeforeDeclaration(c) {
+        if (c === CharCodes2.OpeningSquareBracket) {
+          this.state = State.CDATASequence;
+          this.sequenceIndex = 0;
+        } else if (this.xmlMode) {
+          this.state = c === CharCodes2.Dash ? State.BeforeComment : State.InDeclaration;
+        } else if ((c | 32) === Sequences.Doctype[0]) {
+          this.state = State.DeclarationSequence;
+          this.currentSequence = Sequences.Doctype;
+          this.sequenceIndex = 1;
+        } else if (c === CharCodes2.Gt) {
+          this.cbs.oncomment(this.sectionStart, this.index, 0);
+          this.state = State.Text;
+          this.sectionStart = this.index + 1;
+        } else if (c === CharCodes2.Dash) {
+          this.state = State.BeforeComment;
+        } else {
+          this.state = State.InSpecialComment;
+        }
+      }
+      /**
+       * Continue matching `doctype` after `<!d`.
+       *
+       * A full `doctype` match stays on the declaration path; any other name falls
+       * back to an HTML bogus comment, which matches browser behavior for
+       * non-doctype `<!...>` constructs.
+       * @param c Current character code point.
+       */
+      stateDeclarationSequence(c) {
+        if (this.sequenceIndex === this.currentSequence.length) {
+          this.state = State.InDeclaration;
+          this.stateInDeclaration(c);
+        } else if ((c | 32) === this.currentSequence[this.sequenceIndex]) {
+          this.sequenceIndex += 1;
+        } else if (c === CharCodes2.Gt) {
+          this.cbs.oncomment(this.sectionStart, this.index, 0);
+          this.state = State.Text;
+          this.sectionStart = this.index + 1;
+        } else {
+          this.state = State.InSpecialComment;
+        }
+      }
+      stateInDeclaration(c) {
+        if (c === CharCodes2.Gt || this.fastForwardTo(CharCodes2.Gt)) {
+          this.cbs.ondeclaration(this.sectionStart, this.index);
+          this.state = State.Text;
+          this.sectionStart = this.index + 1;
+        }
+      }
+      /**
+       * XML processing instructions (`<?...?>`).
+       *
+       * In HTML mode `<?` is routed to `InSpecialComment` instead, so this
+       * state is only reachable in XML mode.
+       * @param c Current character code point.
+       */
+      stateInProcessingInstruction(c) {
+        if (c === CharCodes2.Questionmark) {
+          this.sequenceIndex = 1;
+        } else if (c === CharCodes2.Gt && this.sequenceIndex === 1) {
+          this.cbs.onprocessinginstruction(this.sectionStart, this.index - 1);
+          this.sequenceIndex = 0;
+          this.state = State.Text;
+          this.sectionStart = this.index + 1;
+        } else {
+          this.sequenceIndex = Number(this.fastForwardTo(CharCodes2.Questionmark));
+        }
+      }
+      stateBeforeComment(c) {
+        if (c === CharCodes2.Dash) {
+          this.state = State.InCommentLike;
+          this.currentSequence = Sequences.CommentEnd;
+          this.sequenceIndex = 0;
+          this.sectionStart = this.index + 1;
+        } else if (this.xmlMode) {
+          this.state = State.InDeclaration;
+        } else if (c === CharCodes2.Gt) {
+          this.cbs.oncomment(this.sectionStart, this.index, 0);
+          this.state = State.Text;
+          this.sectionStart = this.index + 1;
+        } else {
+          this.state = State.InSpecialComment;
+        }
+      }
+      stateInSpecialComment(c) {
+        if (c === CharCodes2.Gt || this.fastForwardTo(CharCodes2.Gt)) {
+          this.cbs.oncomment(this.sectionStart, this.index, 0);
+          this.state = State.Text;
+          this.sectionStart = this.index + 1;
+        }
+      }
+      startEntity() {
+        this.baseState = this.state;
+        this.state = State.InEntity;
+        this.entityStart = this.index;
+        this.entityDecoder.startEntity(this.xmlMode ? DecodingMode.Strict : this.baseState === State.Text || this.baseState === State.InSpecialTag ? DecodingMode.Legacy : DecodingMode.Attribute);
+      }
+      stateInEntity() {
+        const indexInBuffer = this.index - this.offset;
+        const length = this.entityDecoder.write(this.buffer, indexInBuffer);
+        if (length >= 0) {
+          this.state = this.baseState;
+          if (length === 0) {
+            this.index -= 1;
+          }
+        } else {
+          if (indexInBuffer < this.buffer.length && this.buffer.charCodeAt(indexInBuffer) === CharCodes2.Amp) {
+            this.state = this.baseState;
+            this.index -= 1;
+            return;
+          }
+          this.index = this.offset + this.buffer.length - 1;
+        }
+      }
+      /**
+       * Remove data that has already been consumed from the buffer.
+       */
+      cleanup() {
+        if (this.running && this.sectionStart !== this.index) {
+          if (this.state === State.Text || this.state === State.InPlainText || this.state === State.InSpecialTag && this.sequenceIndex === 0) {
+            this.cbs.ontext(this.sectionStart, this.index);
+            this.sectionStart = this.index;
+          } else if (this.state === State.InAttributeValueDq || this.state === State.InAttributeValueSq || this.state === State.InAttributeValueNq) {
+            this.cbs.onattribdata(this.sectionStart, this.index);
+            this.sectionStart = this.index;
+          }
+        }
+      }
+      shouldContinue() {
+        return this.index < this.buffer.length + this.offset && this.running;
+      }
+      /**
+       * Iterates through the buffer, calling the function corresponding to the current state.
+       *
+       * States that are more likely to be hit are higher up, as a performance improvement.
+       */
+      parse() {
+        while (this.shouldContinue()) {
+          const c = this.buffer.charCodeAt(this.index - this.offset);
+          switch (this.state) {
+            case State.Text: {
+              this.stateText(c);
+              break;
+            }
+            case State.InPlainText: {
+              this.index = this.buffer.length + this.offset - 1;
+              break;
+            }
+            case State.SpecialStartSequence: {
+              this.stateSpecialStartSequence(c);
+              break;
+            }
+            case State.InSpecialTag: {
+              this.stateInSpecialTag(c);
+              break;
+            }
+            case State.CDATASequence: {
+              this.stateCDATASequence(c);
+              break;
+            }
+            case State.DeclarationSequence: {
+              this.stateDeclarationSequence(c);
+              break;
+            }
+            case State.InAttributeValueDq: {
+              this.stateInAttributeValueDoubleQuotes(c);
+              break;
+            }
+            case State.InAttributeName: {
+              this.stateInAttributeName(c);
+              break;
+            }
+            case State.InCommentLike: {
+              this.stateInCommentLike(c);
+              break;
+            }
+            case State.InSpecialComment: {
+              this.stateInSpecialComment(c);
+              break;
+            }
+            case State.BeforeAttributeName: {
+              this.stateBeforeAttributeName(c);
+              break;
+            }
+            case State.InTagName: {
+              this.stateInTagName(c);
+              break;
+            }
+            case State.InClosingTagName: {
+              this.stateInClosingTagName(c);
+              break;
+            }
+            case State.BeforeTagName: {
+              this.stateBeforeTagName(c);
+              break;
+            }
+            case State.AfterAttributeName: {
+              this.stateAfterAttributeName(c);
+              break;
+            }
+            case State.InAttributeValueSq: {
+              this.stateInAttributeValueSingleQuotes(c);
+              break;
+            }
+            case State.BeforeAttributeValue: {
+              this.stateBeforeAttributeValue(c);
+              break;
+            }
+            case State.BeforeClosingTagName: {
+              this.stateBeforeClosingTagName(c);
+              break;
+            }
+            case State.AfterClosingTagName: {
+              this.stateAfterClosingTagName(c);
+              break;
+            }
+            case State.InAttributeValueNq: {
+              this.stateInAttributeValueNoQuotes(c);
+              break;
+            }
+            case State.InSelfClosingTag: {
+              this.stateInSelfClosingTag(c);
+              break;
+            }
+            case State.InDeclaration: {
+              this.stateInDeclaration(c);
+              break;
+            }
+            case State.BeforeDeclaration: {
+              this.stateBeforeDeclaration(c);
+              break;
+            }
+            case State.BeforeComment: {
+              this.stateBeforeComment(c);
+              break;
+            }
+            case State.InProcessingInstruction: {
+              this.stateInProcessingInstruction(c);
+              break;
+            }
+            case State.InEntity: {
+              this.stateInEntity();
+              break;
+            }
+          }
+          this.index++;
+        }
+        this.cleanup();
+      }
+      finish() {
+        if (this.state === State.InEntity) {
+          this.entityDecoder.end();
+          this.state = this.baseState;
+        }
+        this.handleTrailingData();
+        this.cbs.onend();
+      }
+      handleTrailingCommentLikeData(endIndex) {
+        if (this.state !== State.InCommentLike) {
+          return false;
+        }
+        if (this.currentSequence === Sequences.CdataEnd) {
+          if (this.xmlMode) {
+            if (this.sectionStart < endIndex) {
+              this.cbs.oncdata(this.sectionStart, endIndex, 0);
+            }
+          } else {
+            const cdataStart = this.sectionStart - Sequences.Cdata.length - 1;
+            this.cbs.oncomment(cdataStart, endIndex, 0);
+          }
+        } else {
+          const offset = this.xmlMode ? 0 : Math.min(this.sequenceIndex, Sequences.CommentEnd.length - 1);
+          this.cbs.oncomment(this.sectionStart, endIndex, offset);
+        }
+        return true;
+      }
+      handleTrailingMarkupDeclaration(endIndex) {
+        if (this.xmlMode) {
+          switch (this.state) {
+            case State.InSpecialComment:
+            case State.BeforeComment:
+            case State.CDATASequence:
+            case State.DeclarationSequence:
+            case State.InDeclaration: {
+              this.cbs.ontext(this.sectionStart, endIndex);
+              return true;
+            }
+            default: {
+              return false;
+            }
+          }
+        }
+        switch (this.state) {
+          case State.BeforeDeclaration:
+          case State.InSpecialComment:
+          case State.BeforeComment:
+          case State.CDATASequence: {
+            this.cbs.oncomment(this.sectionStart, endIndex, 0);
+            return true;
+          }
+          case State.DeclarationSequence: {
+            if (this.sequenceIndex !== Sequences.Doctype.length) {
+              this.cbs.oncomment(this.sectionStart, endIndex, 0);
+            }
+            return true;
+          }
+          case State.InDeclaration: {
+            return true;
+          }
+          default: {
+            return false;
+          }
+        }
+      }
+      /** Handle any trailing data. */
+      handleTrailingData() {
+        const endIndex = this.buffer.length + this.offset;
+        if (this.handleTrailingCommentLikeData(endIndex) || this.handleTrailingMarkupDeclaration(endIndex)) {
+          return;
+        }
+        if (this.sectionStart >= endIndex) {
+          return;
+        }
+        switch (this.state) {
+          case State.InTagName:
+          case State.BeforeAttributeName:
+          case State.BeforeAttributeValue:
+          case State.AfterAttributeName:
+          case State.InAttributeName:
+          case State.InAttributeValueSq:
+          case State.InAttributeValueDq:
+          case State.InAttributeValueNq:
+          case State.InClosingTagName: {
+            break;
+          }
+          default: {
+            this.cbs.ontext(this.sectionStart, endIndex);
+          }
+        }
+      }
+      emitCodePoint(cp, consumed) {
+        if (this.baseState !== State.Text && this.baseState !== State.InSpecialTag) {
+          if (this.sectionStart < this.entityStart) {
+            this.cbs.onattribdata(this.sectionStart, this.entityStart);
+          }
+          this.sectionStart = this.entityStart + consumed;
+          this.index = this.sectionStart - 1;
+          this.cbs.onattribentity(cp);
+        } else {
+          if (this.sectionStart < this.entityStart) {
+            this.cbs.ontext(this.sectionStart, this.entityStart);
+          }
+          this.sectionStart = this.entityStart + consumed;
+          this.index = this.sectionStart - 1;
+          this.cbs.ontextentity(cp, this.sectionStart);
+        }
+      }
+    };
+  }
+});
+
+// node_modules/htmlparser2/dist/Parser.js
+var fromCodePoint2, formTags, pTag, headingTags, tableSectionTags, ddtTags, rtpTags, openImpliesClose, DOCUMENT_TYPE, voidElements, foreignContextElements, htmlIntegrationElements, svgTagNameAdjustments, ForeignContext, reNameEnd, Parser;
+var init_Parser = __esm({
+  "node_modules/htmlparser2/dist/Parser.js"() {
+    init_Tokenizer();
+    ({ fromCodePoint: fromCodePoint2 } = String);
+    formTags = /* @__PURE__ */ new Set([
+      "input",
+      "option",
+      "optgroup",
+      "select",
+      "button",
+      "datalist",
+      "textarea"
+    ]);
+    pTag = /* @__PURE__ */ new Set(["p"]);
+    headingTags = /* @__PURE__ */ new Set(["h1", "h2", "h3", "h4", "h5", "h6", "p"]);
+    tableSectionTags = /* @__PURE__ */ new Set(["thead", "tbody"]);
+    ddtTags = /* @__PURE__ */ new Set(["dd", "dt"]);
+    rtpTags = /* @__PURE__ */ new Set(["rt", "rp"]);
+    openImpliesClose = /* @__PURE__ */ new Map([
+      ["tr", /* @__PURE__ */ new Set(["tr", "th", "td"])],
+      ["th", /* @__PURE__ */ new Set(["th"])],
+      ["td", /* @__PURE__ */ new Set(["thead", "th", "td"])],
+      ["body", /* @__PURE__ */ new Set(["head", "link", "script"])],
+      ["a", /* @__PURE__ */ new Set(["a"])],
+      ["li", /* @__PURE__ */ new Set(["li"])],
+      ["p", pTag],
+      ["h1", headingTags],
+      ["h2", headingTags],
+      ["h3", headingTags],
+      ["h4", headingTags],
+      ["h5", headingTags],
+      ["h6", headingTags],
+      ["select", formTags],
+      ["input", formTags],
+      ["output", formTags],
+      ["button", formTags],
+      ["datalist", formTags],
+      ["textarea", formTags],
+      ["option", /* @__PURE__ */ new Set(["option"])],
+      ["optgroup", /* @__PURE__ */ new Set(["optgroup", "option"])],
+      ["dd", ddtTags],
+      ["dt", ddtTags],
+      ["address", pTag],
+      ["article", pTag],
+      ["aside", pTag],
+      ["blockquote", pTag],
+      ["details", pTag],
+      ["div", pTag],
+      ["dl", pTag],
+      ["fieldset", pTag],
+      ["figcaption", pTag],
+      ["figure", pTag],
+      ["footer", pTag],
+      ["form", pTag],
+      ["header", pTag],
+      ["hr", pTag],
+      ["main", pTag],
+      ["nav", pTag],
+      ["ol", pTag],
+      ["pre", pTag],
+      ["section", pTag],
+      ["table", pTag],
+      ["ul", pTag],
+      ["rt", rtpTags],
+      ["rp", rtpTags],
+      ["tbody", tableSectionTags],
+      ["tfoot", tableSectionTags]
+    ]);
+    DOCUMENT_TYPE = "doctype";
+    voidElements = /* @__PURE__ */ new Set([
+      "area",
+      "base",
+      "basefont",
+      "br",
+      "col",
+      "command",
+      "embed",
+      "frame",
+      "hr",
+      "img",
+      "input",
+      "isindex",
+      "keygen",
+      "link",
+      "meta",
+      "param",
+      "source",
+      "track",
+      "wbr"
+    ]);
+    foreignContextElements = /* @__PURE__ */ new Set(["math", "svg"]);
+    htmlIntegrationElements = /* @__PURE__ */ new Set([
+      "mi",
+      "mo",
+      "mn",
+      "ms",
+      "mtext",
+      "annotation-xml",
+      "foreignObject",
+      "desc",
+      "title"
+    ]);
+    svgTagNameAdjustments = /* @__PURE__ */ new Map([
+      ["altglyph", "altGlyph"],
+      ["altglyphdef", "altGlyphDef"],
+      ["altglyphitem", "altGlyphItem"],
+      ["animatecolor", "animateColor"],
+      ["animatemotion", "animateMotion"],
+      ["animatetransform", "animateTransform"],
+      ["clippath", "clipPath"],
+      ["feblend", "feBlend"],
+      ["fecolormatrix", "feColorMatrix"],
+      ["fecomponenttransfer", "feComponentTransfer"],
+      ["fecomposite", "feComposite"],
+      ["feconvolvematrix", "feConvolveMatrix"],
+      ["fediffuselighting", "feDiffuseLighting"],
+      ["fedisplacementmap", "feDisplacementMap"],
+      ["fedistantlight", "feDistantLight"],
+      ["fedropshadow", "feDropShadow"],
+      ["feflood", "feFlood"],
+      ["fefunca", "feFuncA"],
+      ["fefuncb", "feFuncB"],
+      ["fefuncg", "feFuncG"],
+      ["fefuncr", "feFuncR"],
+      ["fegaussianblur", "feGaussianBlur"],
+      ["feimage", "feImage"],
+      ["femerge", "feMerge"],
+      ["femergenode", "feMergeNode"],
+      ["femorphology", "feMorphology"],
+      ["feoffset", "feOffset"],
+      ["fepointlight", "fePointLight"],
+      ["fespecularlighting", "feSpecularLighting"],
+      ["fespotlight", "feSpotLight"],
+      ["fetile", "feTile"],
+      ["feturbulence", "feTurbulence"],
+      ["foreignobject", "foreignObject"],
+      ["glyphref", "glyphRef"],
+      ["lineargradient", "linearGradient"],
+      ["radialgradient", "radialGradient"],
+      ["textpath", "textPath"]
+    ]);
+    (function(ForeignContext2) {
+      ForeignContext2[ForeignContext2["None"] = 0] = "None";
+      ForeignContext2[ForeignContext2["Svg"] = 1] = "Svg";
+      ForeignContext2[ForeignContext2["MathML"] = 2] = "MathML";
+    })(ForeignContext || (ForeignContext = {}));
+    reNameEnd = /\s|\//;
+    Parser = class {
+      options;
+      /** The start index of the last event. */
+      startIndex = 0;
+      /** The end index of the last event. */
+      endIndex = 0;
+      /**
+       * Store the start index of the current open tag,
+       * so we can update the start index for attributes.
+       */
+      openTagStart = 0;
+      tagname = "";
+      attribname = "";
+      attribvalue = "";
+      attribs = null;
+      stack = [];
+      foreignContext;
+      cbs;
+      lowerCaseTagNames;
+      lowerCaseAttributeNames;
+      recognizeSelfClosing;
+      /** We are parsing HTML. Inverse of the `xmlMode` option. */
+      htmlMode;
+      tokenizer;
+      buffers = [];
+      bufferOffset = 0;
+      /** The index of the last written buffer. Used when resuming after a `pause()`. */
+      writeIndex = 0;
+      /** Indicates whether the parser has finished running / `.end` has been called. */
+      ended = false;
+      constructor(cbs, options = {}) {
+        this.options = options;
+        this.cbs = cbs ?? {};
+        this.htmlMode = !this.options.xmlMode;
+        this.lowerCaseTagNames = options.lowerCaseTags ?? this.htmlMode;
+        this.lowerCaseAttributeNames = options.lowerCaseAttributeNames ?? this.htmlMode;
+        this.recognizeSelfClosing = options.recognizeSelfClosing ?? !this.htmlMode;
+        this.tokenizer = new (options.Tokenizer ?? Tokenizer)(this.options, this);
+        this.foreignContext = [ForeignContext.None];
+        this.cbs.onparserinit?.(this);
+      }
+      // Tokenizer event handlers
+      /**
+       * @param start Start index for the current parser event.
+       * @param endIndex End index for the current parser event.
+       * @internal
+       */
+      ontext(start, endIndex) {
+        const data = this.getSlice(start, endIndex);
+        this.endIndex = endIndex - 1;
+        this.cbs.ontext?.(data);
+        this.startIndex = endIndex;
+      }
+      /**
+       * @param cp Current Unicode code point.
+       * @param endIndex End index for the current parser event.
+       * @internal
+       */
+      ontextentity(cp, endIndex) {
+        this.endIndex = endIndex - 1;
+        this.cbs.ontext?.(fromCodePoint2(cp));
+        this.startIndex = endIndex;
+      }
+      /** @internal */
+      isInForeignContext() {
+        return this.foreignContext[0] !== ForeignContext.None;
+      }
+      /**
+       * Checks if the current tag is a void element. Override this if you want
+       * to specify your own additional void elements.
+       * @param name Name of the pseudo selector.
+       */
+      isVoidElement(name) {
+        return this.htmlMode && voidElements.has(name);
+      }
+      /**
+       * Read a tag name from the buffer.
+       *
+       * When `lowerCaseTagNames` is enabled (the default in HTML mode), the name
+       * is lowercased and may be adjusted for SVG casing or the `image` → `img`
+       * alias.
+       * @param start Start index of the tag name in the buffer.
+       * @param endIndex End index of the tag name in the buffer.
+       */
+      readTagName(start, endIndex) {
+        const name = this.lowerCaseTagNames ? this.getSlice(start, endIndex).toLowerCase() : this.getSlice(start, endIndex);
+        if (!(this.lowerCaseTagNames && this.htmlMode)) {
+          return name;
+        }
+        if (this.foreignContext[0] === ForeignContext.Svg) {
+          return svgTagNameAdjustments.get(name) ?? name;
+        }
+        if (this.foreignContext.length > 1) {
+          const adjusted = svgTagNameAdjustments.get(name);
+          if (adjusted !== void 0 && this.stack.includes(adjusted)) {
+            return adjusted;
+          }
+        }
+        if (!this.isInForeignContext()) {
+          return name === "image" ? "img" : name;
+        }
+        return name;
+      }
+      /**
+       * @param start Start index for the current parser event.
+       * @param endIndex End index for the current parser event.
+       * @internal
+       */
+      onopentagname(start, endIndex) {
+        this.endIndex = endIndex;
+        this.emitOpenTag(this.readTagName(start, endIndex));
+      }
+      emitOpenTag(name) {
+        this.openTagStart = this.startIndex;
+        this.tagname = name;
+        if (this.htmlMode && name === "form" && this.stack.includes("form")) {
+          this.tagname = "";
+          return;
+        }
+        const impliesClose = this.htmlMode && openImpliesClose.get(name);
+        if (impliesClose) {
+          while (this.stack.length > 0 && impliesClose.has(this.stack[0])) {
+            this.popElement(true);
+          }
+        }
+        if (!this.isVoidElement(name)) {
+          this.stack.unshift(name);
+          if (this.htmlMode) {
+            if (name === "svg") {
+              this.foreignContext.unshift(ForeignContext.Svg);
+            } else if (name === "math") {
+              this.foreignContext.unshift(ForeignContext.MathML);
+            } else if (htmlIntegrationElements.has(name)) {
+              this.foreignContext.unshift(ForeignContext.None);
+            }
+          }
+        }
+        this.cbs.onopentagname?.(name);
+        if (this.cbs.onopentag)
+          this.attribs = {};
+      }
+      endOpenTag(isImplied) {
+        this.startIndex = this.openTagStart;
+        if (this.attribs) {
+          this.cbs.onopentag?.(this.tagname, this.attribs, isImplied);
+          this.attribs = null;
+        }
+        if (this.cbs.onclosetag && this.isVoidElement(this.tagname)) {
+          this.cbs.onclosetag(this.tagname, true);
+        }
+        this.tagname = "";
+      }
+      /**
+       * @param endIndex End index for the current parser event.
+       * @internal
+       */
+      onopentagend(endIndex) {
+        this.endIndex = endIndex;
+        this.endOpenTag(false);
+        this.startIndex = endIndex + 1;
+      }
+      /**
+       * @param start Start index for the current parser event.
+       * @param endIndex End index for the current parser event.
+       * @internal
+       */
+      onclosetag(start, endIndex) {
+        this.endIndex = endIndex;
+        const name = this.readTagName(start, endIndex);
+        if (!this.isVoidElement(name)) {
+          const pos = this.stack.indexOf(name);
+          if (pos !== -1) {
+            for (let index = 0; index < pos; index++) {
+              this.popElement(true);
+            }
+            this.popElement(false);
+          } else if (this.htmlMode && name === "p") {
+            this.emitOpenTag("p");
+            this.closeCurrentTag(true);
+          }
+        } else if (this.htmlMode && name === "br") {
+          this.cbs.onopentagname?.("br");
+          this.cbs.onopentag?.("br", {}, true);
+          this.cbs.onclosetag?.("br", false);
+        }
+        this.startIndex = endIndex + 1;
+      }
+      /**
+       * @param endIndex End index for the current parser event.
+       * @internal
+       */
+      onselfclosingtag(endIndex) {
+        this.endIndex = endIndex;
+        if (this.recognizeSelfClosing || this.isInForeignContext()) {
+          this.closeCurrentTag(false);
+          this.startIndex = endIndex + 1;
+        } else {
+          this.onopentagend(endIndex);
+        }
+      }
+      /**
+       * Pop the top element off the stack, emit a close event, and maintain
+       * the foreign context stack.
+       * @param implied Whether this close is implied (not from an explicit end tag).
+       */
+      popElement(implied) {
+        const element = this.stack.shift();
+        if (this.htmlMode && (foreignContextElements.has(element) || htmlIntegrationElements.has(element))) {
+          this.foreignContext.shift();
+        }
+        this.cbs.onclosetag?.(element, implied);
+      }
+      closeCurrentTag(isOpenImplied) {
+        const name = this.tagname;
+        this.endOpenTag(isOpenImplied);
+        if (this.stack[0] === name) {
+          this.popElement(!isOpenImplied);
+        }
+      }
+      /**
+       * @param start Start index for the current parser event.
+       * @param endIndex End index for the current parser event.
+       * @internal
+       */
+      onattribname(start, endIndex) {
+        this.startIndex = start;
+        const name = this.getSlice(start, endIndex);
+        this.attribname = this.lowerCaseAttributeNames ? name.toLowerCase() : name;
+      }
+      /**
+       * @param start Start index for the current parser event.
+       * @param endIndex End index for the current parser event.
+       * @internal
+       */
+      onattribdata(start, endIndex) {
+        this.attribvalue += this.getSlice(start, endIndex);
+      }
+      /**
+       * @param cp Current Unicode code point.
+       * @internal
+       */
+      onattribentity(cp) {
+        this.attribvalue += fromCodePoint2(cp);
+      }
+      /**
+       * @param quote Quote type used for the current attribute.
+       * @param endIndex End index for the current parser event.
+       * @internal
+       */
+      onattribend(quote, endIndex) {
+        this.endIndex = endIndex;
+        this.cbs.onattribute?.(this.attribname, this.attribvalue, quote === QuoteType.Double ? '"' : quote === QuoteType.Single ? "'" : quote === QuoteType.NoValue ? void 0 : null);
+        if (this.attribs && !Object.hasOwn(this.attribs, this.attribname)) {
+          this.attribs[this.attribname] = this.attribvalue;
+        }
+        this.attribvalue = "";
+      }
+      getInstructionName(value) {
+        const index = value.search(reNameEnd);
+        let name = index < 0 ? value : value.substr(0, index);
+        if (this.lowerCaseTagNames) {
+          name = name.toLowerCase();
+        }
+        return name;
+      }
+      /**
+       * @param start Start index for the current parser event.
+       * @param endIndex End index for the current parser event.
+       * @internal
+       */
+      ondeclaration(start, endIndex) {
+        this.endIndex = endIndex;
+        const value = this.getSlice(start, endIndex);
+        if (this.cbs.onprocessinginstruction) {
+          const name = this.htmlMode ? this.lowerCaseTagNames ? DOCUMENT_TYPE : value.slice(0, DOCUMENT_TYPE.length) : this.getInstructionName(value);
+          this.cbs.onprocessinginstruction(`!${name}`, `!${value}`);
+        }
+        this.startIndex = endIndex + 1;
+      }
+      /**
+       * @param start Start index for the current parser event.
+       * @param endIndex End index for the current parser event.
+       * @internal
+       */
+      onprocessinginstruction(start, endIndex) {
+        this.endIndex = endIndex;
+        const value = this.getSlice(start, endIndex);
+        if (this.cbs.onprocessinginstruction) {
+          const name = this.getInstructionName(value);
+          this.cbs.onprocessinginstruction(`?${name}`, `?${value}`);
+        }
+        this.startIndex = endIndex + 1;
+      }
+      /**
+       * @param start Start index for the current parser event.
+       * @param endIndex End index for the current parser event.
+       * @param offset Offset applied when computing parser indices.
+       * @internal
+       */
+      oncomment(start, endIndex, offset) {
+        this.endIndex = endIndex;
+        this.cbs.oncomment?.(this.getSlice(start, endIndex - offset));
+        this.cbs.oncommentend?.();
+        this.startIndex = endIndex + 1;
+      }
+      /**
+       * @param start Start index for the current parser event.
+       * @param endIndex End index for the current parser event.
+       * @param offset Offset applied when computing parser indices.
+       * @internal
+       */
+      oncdata(start, endIndex, offset) {
+        this.endIndex = endIndex;
+        const value = this.getSlice(start, endIndex - offset);
+        if (!this.htmlMode || this.options.recognizeCDATA) {
+          this.cbs.oncdatastart?.();
+          this.cbs.ontext?.(value);
+          this.cbs.oncdataend?.();
+        } else if (this.isInForeignContext()) {
+          this.cbs.ontext?.(value);
+        } else {
+          this.cbs.oncomment?.(`[CDATA[${value}]]`);
+          this.cbs.oncommentend?.();
+        }
+        this.startIndex = endIndex + 1;
+      }
+      /** @internal */
+      onend() {
+        if (this.cbs.onclosetag) {
+          this.endIndex = this.startIndex;
+          for (let index = 0; index < this.stack.length; index++) {
+            this.cbs.onclosetag(this.stack[index], true);
+          }
+        }
+        this.cbs.onend?.();
+      }
+      /**
+       * Resets the parser to a blank state, ready to parse a new HTML document
+       */
+      reset() {
+        this.cbs.onreset?.();
+        this.tokenizer.reset();
+        this.tagname = "";
+        this.attribname = "";
+        this.attribvalue = "";
+        this.attribs = null;
+        this.stack.length = 0;
+        this.startIndex = 0;
+        this.endIndex = 0;
+        this.cbs.onparserinit?.(this);
+        this.buffers.length = 0;
+        this.foreignContext.length = 0;
+        this.foreignContext.unshift(ForeignContext.None);
+        this.bufferOffset = 0;
+        this.writeIndex = 0;
+        this.ended = false;
+      }
+      /**
+       * Resets the parser, then parses a complete document and
+       * pushes it to the handler.
+       * @param data Document to parse.
+       */
+      parseComplete(data) {
+        this.reset();
+        this.end(data);
+      }
+      getSlice(start, end) {
+        if (start === end) {
+          return "";
+        }
+        while (start - this.bufferOffset >= this.buffers[0].length) {
+          this.shiftBuffer();
+        }
+        let slice = this.buffers[0].slice(start - this.bufferOffset, end - this.bufferOffset);
+        while (end - this.bufferOffset > this.buffers[0].length) {
+          this.shiftBuffer();
+          slice += this.buffers[0].slice(0, end - this.bufferOffset);
+        }
+        return slice;
+      }
+      shiftBuffer() {
+        this.bufferOffset += this.buffers[0].length;
+        this.writeIndex--;
+        this.buffers.shift();
+      }
+      /**
+       * Parses a chunk of data and calls the corresponding callbacks.
+       * @param chunk Chunk to parse.
+       */
+      write(chunk) {
+        if (this.ended) {
+          this.cbs.onerror?.(new Error(".write() after done!"));
+          return;
+        }
+        this.buffers.push(chunk);
+        if (this.tokenizer.running) {
+          this.tokenizer.write(chunk);
+          this.writeIndex++;
+        }
+      }
+      /**
+       * Parses the end of the buffer and clears the stack, calls onend.
+       * @param chunk Optional final chunk to parse.
+       */
+      end(chunk) {
+        if (this.ended) {
+          this.cbs.onerror?.(new Error(".end() after done!"));
+          return;
+        }
+        if (chunk)
+          this.write(chunk);
+        this.ended = true;
+        this.tokenizer.end();
+      }
+      /**
+       * Pauses parsing. The parser won't emit events until `resume` is called.
+       */
+      pause() {
+        this.tokenizer.pause();
+      }
+      /**
+       * Resumes parsing after `pause` was called.
+       */
+      resume() {
+        this.tokenizer.resume();
+        while (this.tokenizer.running && this.writeIndex < this.buffers.length) {
+          this.tokenizer.write(this.buffers[this.writeIndex++]);
+        }
+        if (this.ended)
+          this.tokenizer.end();
+      }
+    };
+  }
+});
+
+// node_modules/domelementtype/dist/index.js
+var dist_exports = {};
+__export(dist_exports, {
+  CDATA: () => CDATA,
+  Comment: () => Comment,
+  Directive: () => Directive,
+  Doctype: () => Doctype,
+  ElementType: () => ElementType,
+  Root: () => Root,
+  Script: () => Script,
+  Style: () => Style,
+  Tag: () => Tag,
+  Text: () => Text,
+  isTag: () => isTag
+});
+function isTag(element) {
+  return element.type === ElementType.Tag || element.type === ElementType.Script || element.type === ElementType.Style;
+}
+var ElementType, Root, Text, Directive, Comment, Script, Style, Tag, CDATA, Doctype;
+var init_dist2 = __esm({
+  "node_modules/domelementtype/dist/index.js"() {
+    (function(ElementType2) {
+      ElementType2["Root"] = "root";
+      ElementType2["Text"] = "text";
+      ElementType2["Directive"] = "directive";
+      ElementType2["Comment"] = "comment";
+      ElementType2["Script"] = "script";
+      ElementType2["Style"] = "style";
+      ElementType2["Tag"] = "tag";
+      ElementType2["CDATA"] = "cdata";
+      ElementType2["Doctype"] = "doctype";
+    })(ElementType || (ElementType = {}));
+    Root = ElementType.Root;
+    Text = ElementType.Text;
+    Directive = ElementType.Directive;
+    Comment = ElementType.Comment;
+    Script = ElementType.Script;
+    Style = ElementType.Style;
+    Tag = ElementType.Tag;
+    CDATA = ElementType.CDATA;
+    Doctype = ElementType.Doctype;
+  }
+});
+
+// node_modules/domhandler/dist/node.js
+function isTag2(node2) {
+  return isTag(node2);
+}
+function isCDATA(node2) {
+  return node2.type === ElementType.CDATA;
+}
+function isText(node2) {
+  return node2.type === ElementType.Text;
+}
+function isComment(node2) {
+  return node2.type === ElementType.Comment;
+}
+function isDirective(node2) {
+  return node2.type === ElementType.Directive;
+}
+function isDocument(node2) {
+  return node2.type === ElementType.Root;
+}
+function hasChildren(node2) {
+  return Object.hasOwn(node2, "children");
+}
+function cloneNode(node2, recursive2 = false) {
+  let result;
+  if (isText(node2)) {
+    result = new Text2(node2.data);
+  } else if (isComment(node2)) {
+    result = new Comment2(node2.data);
+  } else if (isTag2(node2)) {
+    const children = recursive2 ? cloneChildren(node2.children) : [];
+    const clone2 = new Element(node2.name, { ...node2.attribs }, children);
+    for (const child of children) {
+      child.parent = clone2;
+    }
+    if (node2.namespace != null) {
+      clone2.namespace = node2.namespace;
+    }
+    if (node2["x-attribsNamespace"]) {
+      clone2["x-attribsNamespace"] = { ...node2["x-attribsNamespace"] };
+    }
+    if (node2["x-attribsPrefix"]) {
+      clone2["x-attribsPrefix"] = { ...node2["x-attribsPrefix"] };
+    }
+    result = clone2;
+  } else if (isCDATA(node2)) {
+    const children = recursive2 ? cloneChildren(node2.children) : [];
+    const clone2 = new CDATA2(children);
+    for (const child of children) {
+      child.parent = clone2;
+    }
+    result = clone2;
+  } else if (isDocument(node2)) {
+    const children = recursive2 ? cloneChildren(node2.children) : [];
+    const clone2 = new Document(children);
+    for (const child of children) {
+      child.parent = clone2;
+    }
+    if (node2["x-mode"]) {
+      clone2["x-mode"] = node2["x-mode"];
+    }
+    result = clone2;
+  } else if (isDirective(node2)) {
+    const instruction = new ProcessingInstruction(node2.name, node2.data);
+    if (node2["x-name"] != null) {
+      instruction["x-name"] = node2["x-name"];
+      instruction["x-publicId"] = node2["x-publicId"];
+      instruction["x-systemId"] = node2["x-systemId"];
+    }
+    result = instruction;
+  } else {
+    throw new Error(`Not implemented yet: ${node2.type}`);
+  }
+  result.startIndex = node2.startIndex;
+  result.endIndex = node2.endIndex;
+  if (node2.sourceCodeLocation != null) {
+    result.sourceCodeLocation = node2.sourceCodeLocation;
+  }
+  return result;
+}
+function cloneChildren(childs) {
+  const children = childs.map((child) => cloneNode(child, true));
+  for (let index = 1; index < children.length; index++) {
+    children[index].prev = children[index - 1];
+    children[index - 1].next = children[index];
+  }
+  return children;
+}
+var Node, DataNode, Text2, Comment2, ProcessingInstruction, NodeWithChildren, CDATA2, Document, Element;
+var init_node = __esm({
+  "node_modules/domhandler/dist/node.js"() {
+    init_dist2();
+    Node = class {
+      /** Parent of the node */
+      parent = null;
+      /** Previous sibling */
+      prev = null;
+      /** Next sibling */
+      next = null;
+      /** The start index of the node. Requires `withStartIndices` on the handler to be `true. */
+      startIndex = null;
+      /** The end index of the node. Requires `withEndIndices` on the handler to be `true. */
+      endIndex = null;
+      // Read-write aliases for properties
+      /**
+       * Same as {@link parent}.
+       * [DOM spec](https://dom.spec.whatwg.org)-compatible alias.
+       */
+      get parentNode() {
+        return this.parent;
+      }
+      set parentNode(parent) {
+        this.parent = parent;
+      }
+      /**
+       * Same as {@link prev}.
+       * [DOM spec](https://dom.spec.whatwg.org)-compatible alias.
+       */
+      get previousSibling() {
+        return this.prev;
+      }
+      set previousSibling(previous) {
+        this.prev = previous;
+      }
+      /**
+       * Same as {@link next}.
+       * [DOM spec](https://dom.spec.whatwg.org)-compatible alias.
+       */
+      get nextSibling() {
+        return this.next;
+      }
+      set nextSibling(next) {
+        this.next = next;
+      }
+      /**
+       * Clone this node, and optionally its children.
+       * @param recursive Clone child nodes as well.
+       * @returns A clone of the node.
+       */
+      cloneNode(recursive2 = false) {
+        return cloneNode(this, recursive2);
+      }
+    };
+    DataNode = class extends Node {
+      data;
+      /**
+       * @param data The content of the data node
+       */
+      constructor(data) {
+        super();
+        this.data = data;
+      }
+      /**
+       * Same as {@link data}.
+       * [DOM spec](https://dom.spec.whatwg.org)-compatible alias.
+       */
+      get nodeValue() {
+        return this.data;
+      }
+      set nodeValue(data) {
+        this.data = data;
+      }
+    };
+    Text2 = class extends DataNode {
+      type = ElementType.Text;
+      get nodeType() {
+        return 3;
+      }
+    };
+    Comment2 = class extends DataNode {
+      type = ElementType.Comment;
+      get nodeType() {
+        return 8;
+      }
+    };
+    ProcessingInstruction = class extends DataNode {
+      type = ElementType.Directive;
+      name;
+      constructor(name, data) {
+        super(data);
+        this.name = name;
+      }
+      get nodeType() {
+        return 1;
+      }
+      /** If this is a doctype, the document type name (parse5 only). */
+      "x-name";
+      /** If this is a doctype, the document type public identifier (parse5 only). */
+      "x-publicId";
+      /** If this is a doctype, the document type system identifier (parse5 only). */
+      "x-systemId";
+    };
+    NodeWithChildren = class extends Node {
+      children;
+      /**
+       * @param children Children of the node. Only certain node types can have children.
+       */
+      constructor(children) {
+        super();
+        this.children = children;
+      }
+      // Aliases
+      /** First child of the node. */
+      get firstChild() {
+        return this.children[0] ?? null;
+      }
+      /** Last child of the node. */
+      get lastChild() {
+        return this.children.length > 0 ? this.children[this.children.length - 1] : null;
+      }
+      /**
+       * Same as {@link children}.
+       * [DOM spec](https://dom.spec.whatwg.org)-compatible alias.
+       */
+      get childNodes() {
+        return this.children;
+      }
+      set childNodes(children) {
+        this.children = children;
+      }
+    };
+    CDATA2 = class extends NodeWithChildren {
+      type = ElementType.CDATA;
+      get nodeType() {
+        return 4;
+      }
+    };
+    Document = class extends NodeWithChildren {
+      type = ElementType.Root;
+      get nodeType() {
+        return 9;
+      }
+    };
+    Element = class extends NodeWithChildren {
+      name;
+      attribs;
+      type;
+      /**
+       * @param name Name of the tag, eg. `div`, `span`.
+       * @param attribs Object mapping attribute names to attribute values.
+       * @param children Children of the node.
+       * @param type Node type used for the new node instance.
+       */
+      constructor(name, attribs, children = [], type = name === "script" ? ElementType.Script : name === "style" ? ElementType.Style : ElementType.Tag) {
+        super(children);
+        this.name = name;
+        this.attribs = attribs;
+        this.type = type;
+      }
+      get nodeType() {
+        return 1;
+      }
+      // DOM Level 1 aliases
+      /**
+       * Same as {@link name}.
+       * [DOM spec](https://dom.spec.whatwg.org)-compatible alias.
+       */
+      get tagName() {
+        return this.name;
+      }
+      set tagName(name) {
+        this.name = name;
+      }
+      get attributes() {
+        return Object.keys(this.attribs).map((name) => ({
+          name,
+          value: this.attribs[name],
+          namespace: this["x-attribsNamespace"]?.[name],
+          prefix: this["x-attribsPrefix"]?.[name]
+        }));
+      }
+      /** Element namespace (parse5 only). */
+      namespace;
+      /** Element attribute namespaces (parse5 only). */
+      "x-attribsNamespace";
+      /** Element attribute namespace-related prefixes (parse5 only). */
+      "x-attribsPrefix";
+    };
+  }
+});
+
+// node_modules/domhandler/dist/index.js
+var defaultOptions2, DomHandler;
+var init_dist3 = __esm({
+  "node_modules/domhandler/dist/index.js"() {
+    init_dist2();
+    init_node();
+    init_node();
+    defaultOptions2 = {
+      withStartIndices: false,
+      withEndIndices: false,
+      xmlMode: false
+    };
+    DomHandler = class {
+      /** The elements of the DOM */
+      dom = [];
+      /** The root element for the DOM */
+      root = new Document(this.dom);
+      /** Called once parsing has completed. */
+      callback;
+      /** Settings for the handler. */
+      options;
+      /** Callback whenever a tag is closed. */
+      elementCB;
+      /** Indicated whether parsing has been completed. */
+      done = false;
+      /** Stack of open tags. */
+      tagStack = [this.root];
+      /** A data node that is still being written to. */
+      lastNode = null;
+      /** Reference to the parser instance. Used for location information. */
+      parser = null;
+      /**
+       * @param callback Called once parsing has completed.
+       * @param options Settings for the handler.
+       * @param elementCB Callback whenever a tag is closed.
+       */
+      constructor(callback, options, elementCB) {
+        if (typeof options === "function") {
+          elementCB = options;
+          options = defaultOptions2;
+        }
+        if (typeof callback === "object") {
+          options = callback;
+          callback = void 0;
+        }
+        this.callback = callback ?? null;
+        this.options = options ?? defaultOptions2;
+        this.elementCB = elementCB ?? null;
+      }
+      onparserinit(parser3) {
+        this.parser = parser3;
+      }
+      // Resets the handler back to starting state
+      onreset() {
+        this.dom = [];
+        this.root = new Document(this.dom);
+        this.done = false;
+        this.tagStack = [this.root];
+        this.lastNode = null;
+        this.parser = null;
+      }
+      // Signals the handler that parsing is done
+      onend() {
+        if (this.done)
+          return;
+        this.done = true;
+        this.parser = null;
+        this.handleCallback(null);
+      }
+      onerror(error2) {
+        this.handleCallback(error2);
+      }
+      onclosetag() {
+        this.lastNode = null;
+        const element = this.tagStack.pop();
+        if (this.options.withEndIndices && this.parser) {
+          element.endIndex = this.parser.endIndex;
+        }
+        if (this.elementCB)
+          this.elementCB(element);
+      }
+      onopentag(name, attribs) {
+        const type = this.options.xmlMode ? ElementType.Tag : void 0;
+        const element = new Element(name, attribs, void 0, type);
+        this.addNode(element);
+        this.tagStack.push(element);
+      }
+      ontext(data) {
+        const { lastNode } = this;
+        if (lastNode && lastNode.type === ElementType.Text) {
+          lastNode.data += data;
+          if (this.options.withEndIndices && this.parser) {
+            lastNode.endIndex = this.parser.endIndex;
+          }
+        } else {
+          const node2 = new Text2(data);
+          this.addNode(node2);
+          this.lastNode = node2;
+        }
+      }
+      oncomment(data) {
+        if (this.lastNode && this.lastNode.type === ElementType.Comment) {
+          this.lastNode.data += data;
+          return;
+        }
+        const node2 = new Comment2(data);
+        this.addNode(node2);
+        this.lastNode = node2;
+      }
+      oncommentend() {
+        this.lastNode = null;
+      }
+      oncdatastart() {
+        const text2 = new Text2("");
+        const node2 = new CDATA2([text2]);
+        this.addNode(node2);
+        text2.parent = node2;
+        this.lastNode = text2;
+      }
+      oncdataend() {
+        this.lastNode = null;
+      }
+      onprocessinginstruction(name, data) {
+        const node2 = new ProcessingInstruction(name, data);
+        this.addNode(node2);
+      }
+      handleCallback(error2) {
+        if (typeof this.callback === "function") {
+          this.callback(error2, this.dom);
+        } else if (error2) {
+          throw error2;
+        }
+      }
+      addNode(node2) {
+        const parent = this.tagStack[this.tagStack.length - 1];
+        const previousSibling = parent.children[parent.children.length - 1];
+        if (this.options.withStartIndices && this.parser) {
+          node2.startIndex = this.parser.startIndex;
+        }
+        if (this.options.withEndIndices && this.parser) {
+          node2.endIndex = this.parser.endIndex;
+        }
+        parent.children.push(node2);
+        if (previousSibling) {
+          node2.prev = previousSibling;
+          previousSibling.next = node2;
+        }
+        node2.parent = parent;
+        this.lastNode = null;
+      }
+    };
+  }
+});
+
+// node_modules/domutils/dist/querying.js
+function filter(test, node2, recurse = true, limit = Number.POSITIVE_INFINITY) {
+  return find(test, Array.isArray(node2) ? node2 : [node2], recurse, limit);
+}
+function find(test, nodes, recurse, limit) {
+  const result = [];
+  const nodeStack = [Array.isArray(nodes) ? nodes : [nodes]];
+  const indexStack = [0];
+  for (; ; ) {
+    if (indexStack[0] >= nodeStack[0].length) {
+      if (indexStack.length === 1) {
+        return result;
+      }
+      nodeStack.shift();
+      indexStack.shift();
+      continue;
+    }
+    const element = nodeStack[0][indexStack[0]++];
+    if (test(element)) {
+      result.push(element);
+      if (--limit <= 0)
+        return result;
+    }
+    if (recurse && hasChildren(element) && element.children.length > 0) {
+      indexStack.unshift(0);
+      nodeStack.unshift(element.children);
+    }
+  }
+}
+function findOne(test, nodes, recurse = true) {
+  const searchedNodes = Array.isArray(nodes) ? nodes : [nodes];
+  for (const node2 of searchedNodes) {
+    if (isTag2(node2) && test(node2)) {
+      return node2;
+    }
+    if (recurse && hasChildren(node2) && node2.children.length > 0) {
+      const found = findOne(test, node2.children, true);
+      if (found)
+        return found;
+    }
+  }
+  return null;
+}
+function existsOne(test, nodes) {
+  return (Array.isArray(nodes) ? nodes : [nodes]).some((node2) => isTag2(node2) && test(node2) || hasChildren(node2) && existsOne(test, node2.children));
+}
+function findAll(test, nodes) {
+  const result = [];
+  const nodeStack = [Array.isArray(nodes) ? nodes : [nodes]];
+  const indexStack = [0];
+  for (; ; ) {
+    if (indexStack[0] >= nodeStack[0].length) {
+      if (nodeStack.length === 1) {
+        return result;
+      }
+      nodeStack.shift();
+      indexStack.shift();
+      continue;
+    }
+    const element = nodeStack[0][indexStack[0]++];
+    if (isTag2(element) && test(element))
+      result.push(element);
+    if (hasChildren(element) && element.children.length > 0) {
+      indexStack.unshift(0);
+      nodeStack.unshift(element.children);
+    }
+  }
+}
+var init_querying = __esm({
+  "node_modules/domutils/dist/querying.js"() {
+    init_dist3();
+  }
+});
+
+// node_modules/domutils/dist/legacy.js
+function getAttribCheck(attrib, value) {
+  if (typeof value === "function") {
+    return (element) => isTag2(element) && value(element.attribs[attrib]);
+  }
+  return (element) => isTag2(element) && element.attribs[attrib] === value;
+}
+function combineFuncs(a, b) {
+  return (element) => a(element) || b(element);
+}
+function compileTest(options) {
+  const funcs = Object.keys(options).map((key) => {
+    const value = options[key];
+    return Object.hasOwn(Checks, key) ? Checks[key](value) : getAttribCheck(key, value);
+  });
+  return funcs.length === 0 ? null : funcs.reduce(combineFuncs);
+}
+function testElement(options, node2) {
+  const test = compileTest(options);
+  return test ? test(node2) : true;
+}
+function getElements(options, nodes, recurse, limit = Number.POSITIVE_INFINITY) {
+  const test = compileTest(options);
+  return test ? filter(test, nodes, recurse, limit) : [];
+}
+function getElementById(id, nodes, recurse = true) {
+  if (!Array.isArray(nodes))
+    nodes = [nodes];
+  return findOne(getAttribCheck("id", id), nodes, recurse);
+}
+function getElementsByTagName(tagName, nodes, recurse = true, limit = Number.POSITIVE_INFINITY) {
+  return filter(Checks["tag_name"](tagName), nodes, recurse, limit);
+}
+function getElementsByClassName(className, nodes, recurse = true, limit = Number.POSITIVE_INFINITY) {
+  return filter(getAttribCheck("class", className), nodes, recurse, limit);
+}
+function getElementsByTagType(type, nodes, recurse = true, limit = Number.POSITIVE_INFINITY) {
+  return filter(Checks["tag_type"](type), nodes, recurse, limit);
+}
+var Checks;
+var init_legacy = __esm({
+  "node_modules/domutils/dist/legacy.js"() {
+    init_dist3();
+    init_querying();
+    Checks = {
+      tag_name(name) {
+        if (typeof name === "function") {
+          return (element) => isTag2(element) && name(element.name);
+        }
+        if (name === "*") {
+          return isTag2;
+        }
+        return (element) => isTag2(element) && element.name === name;
+      },
+      tag_type(type) {
+        if (typeof type === "function") {
+          return (element) => type(element.type);
+        }
+        return (element) => element.type === type;
+      },
+      tag_contains(data) {
+        if (typeof data === "function") {
+          return (element) => isText(element) && data(element.data);
+        }
+        return (element) => isText(element) && element.data === data;
+      }
+    };
+  }
+});
+
+// node_modules/dom-serializer/dist/foreign-names.js
+var elementNames, attributeNames;
+var init_foreign_names = __esm({
+  "node_modules/dom-serializer/dist/foreign-names.js"() {
+    elementNames = new Map("altGlyph altGlyphDef altGlyphItem animateColor animateMotion animateTransform clipPath feBlend feColorMatrix feComponentTransfer feComposite feConvolveMatrix feDiffuseLighting feDisplacementMap feDistantLight feDropShadow feFlood feFuncA feFuncB feFuncG feFuncR feGaussianBlur feImage feMerge feMergeNode feMorphology feOffset fePointLight feSpecularLighting feSpotLight feTile feTurbulence foreignObject glyphRef linearGradient radialGradient textPath".split(" ").map((name) => [name.toLowerCase(), name]));
+    attributeNames = new Map("definitionURL attributeName attributeType baseFrequency baseProfile calcMode clipPathUnits diffuseConstant edgeMode filterUnits glyphRef gradientTransform gradientUnits kernelMatrix kernelUnitLength keyPoints keySplines keyTimes lengthAdjust limitingConeAngle markerHeight markerUnits markerWidth maskContentUnits maskUnits numOctaves pathLength patternContentUnits patternTransform patternUnits pointsAtX pointsAtY pointsAtZ preserveAlpha preserveAspectRatio primitiveUnits refX refY repeatCount repeatDur requiredExtensions requiredFeatures specularConstant specularExponent spreadMethod startOffset stdDeviation stitchTiles surfaceScale systemLanguage tableValues targetX targetY textLength viewBox viewTarget xChannelSelector yChannelSelector zoomAndPan".split(" ").map((name) => [name.toLowerCase(), name]));
+  }
+});
+
+// node_modules/dom-serializer/dist/index.js
+function render(node2, options = {}) {
+  const nodes = "length" in node2 ? node2 : [node2];
+  const xmlMode = options.xmlMode ?? false;
+  let output = "";
+  for (let index = 0; index < nodes.length; index++) {
+    output += renderNode2(nodes[index], options, xmlMode);
+  }
+  return output;
+}
+function renderChildren(children, options, xmlMode) {
+  let output = "";
+  for (let index = 0; index < children.length; index++) {
+    output += renderNode2(children[index], options, xmlMode);
+  }
+  return output;
+}
+function renderNode2(node2, options, xmlMode) {
+  switch (node2.type) {
+    case Root: {
+      return renderChildren(node2.children, options, xmlMode);
+    }
+    case Directive: {
+      return `<${node2.data}>`;
+    }
+    case Comment: {
+      return `<!--${node2.data}-->`;
+    }
+    case CDATA: {
+      return `<![CDATA[${node2.children[0].data}]]>`;
+    }
+    case Script:
+    case Style:
+    case Tag: {
+      return renderTag(node2, options, xmlMode);
+    }
+    case Text: {
+      const element = node2;
+      const data = element.data || "";
+      if ((options.encodeEntities ?? options.decodeEntities) !== false && !(!xmlMode && element.parent && unencodedElements.has(element.parent.name))) {
+        return xmlMode || options.encodeEntities !== "utf8" ? encodeXML(data) : escapeText(data);
+      }
+      return data;
+    }
+  }
+}
+function renderTag(element, options, xmlMode) {
+  if (xmlMode === "foreign") {
+    element.name = elementNames.get(element.name) ?? element.name;
+    if (element.parent && foreignModeIntegrationPoints.has(element.parent.name)) {
+      xmlMode = false;
+    }
+  }
+  if (!xmlMode && foreignElements.has(element.name)) {
+    xmlMode = "foreign";
+  }
+  const { name, children } = element;
+  const isVoid = !xmlMode && voidElements2.has(name);
+  let tag = `<${name}${formatAttributes(element.attribs, options, xmlMode)}`;
+  if (children.length === 0 && (xmlMode ? options.selfClosingTags !== false : options.selfClosingTags && isVoid)) {
+    tag += xmlMode ? "/>" : " />";
+  } else {
+    tag += ">";
+    if (children.length > 0) {
+      tag += renderChildren(children, options, xmlMode);
+    }
+    if (!isVoid) {
+      tag += `</${name}>`;
+    }
+  }
+  return tag;
+}
+function replaceQuotes(value) {
+  return value.replaceAll('"', "&quot;");
+}
+function formatAttributes(attributes, options, xmlMode) {
+  if (!attributes)
+    return "";
+  const encode3 = (options.encodeEntities ?? options.decodeEntities) === false ? replaceQuotes : xmlMode || options.encodeEntities !== "utf8" ? encodeXML : escapeAttribute;
+  const isForeign = xmlMode === "foreign";
+  const showEmpty = !!(options.emptyAttrs ?? xmlMode);
+  let result = "";
+  for (const key in attributes) {
+    if (!Object.hasOwn(attributes, key))
+      continue;
+    const value = attributes[key];
+    const k = isForeign ? attributeNames.get(key) ?? key : key;
+    result += !showEmpty && (value == null || value === "") ? ` ${k}` : ` ${k}="${encode3(value == null ? "" : String(value))}"`;
+  }
+  return result;
+}
+var unencodedElements, voidElements2, foreignElements, foreignModeIntegrationPoints, dist_default;
+var init_dist4 = __esm({
+  "node_modules/dom-serializer/dist/index.js"() {
+    init_dist2();
+    init_dist();
+    init_foreign_names();
+    unencodedElements = new Set("style script xmp iframe noembed noframes plaintext noscript".split(" "));
+    voidElements2 = new Set("area base basefont br col command embed frame hr img input isindex keygen link meta param source track wbr".split(" "));
+    foreignElements = /* @__PURE__ */ new Set(["svg", "math"]);
+    foreignModeIntegrationPoints = new Set("mi mo mn ms mtext annotation-xml foreignObject desc title".split(" "));
+    dist_default = render;
+  }
+});
+
+// node_modules/domutils/dist/stringify.js
+function getOuterHTML(node2, options) {
+  return dist_default(node2, options);
+}
+function getInnerHTML(node2, options) {
+  return hasChildren(node2) ? node2.children.map((node3) => getOuterHTML(node3, options)).join("") : "";
+}
+function getText(node2) {
+  if (Array.isArray(node2))
+    return node2.map(getText).join("");
+  if (isTag2(node2))
+    return node2.name === "br" ? "\n" : getText(node2.children);
+  if (isCDATA(node2))
+    return getText(node2.children);
+  if (isText(node2))
+    return node2.data;
+  return "";
+}
+function textContent(node2) {
+  if (Array.isArray(node2))
+    return node2.map(textContent).join("");
+  if (hasChildren(node2) && !isComment(node2)) {
+    return textContent(node2.children);
+  }
+  if (isText(node2))
+    return node2.data;
+  return "";
+}
+function innerText(node2) {
+  if (Array.isArray(node2))
+    return node2.map(innerText).join("");
+  if (hasChildren(node2) && (node2.type === ElementType.Tag || isCDATA(node2))) {
+    return innerText(node2.children);
+  }
+  if (isText(node2))
+    return node2.data;
+  return "";
+}
+var init_stringify = __esm({
+  "node_modules/domutils/dist/stringify.js"() {
+    init_dist4();
+    init_dist2();
+    init_dist3();
+  }
+});
+
+// node_modules/domutils/dist/feeds.js
+function getFeed(document2) {
+  const feedRoot = getOneElement(isValidFeed, document2);
+  return feedRoot ? feedRoot.name === "feed" ? getAtomFeed(feedRoot) : getRssFeed(feedRoot) : null;
+}
+function getAtomFeed(feedRoot) {
+  const childs = feedRoot.children;
+  const feed = {
+    type: "atom",
+    items: getElementsByTagName("entry", childs).map((item) => {
+      const { children } = item;
+      const entry = { media: getMediaElements(children) };
+      addConditionally(entry, "id", "id", children);
+      addConditionally(entry, "title", "title", children);
+      const href2 = getOneElement("link", children)?.attribs["href"];
+      if (href2) {
+        entry.link = href2;
+      }
+      const description = fetch2("summary", children) || fetch2("content", children);
+      if (description) {
+        entry.description = description;
+      }
+      const pubDate = fetch2("updated", children);
+      if (pubDate) {
+        entry.pubDate = new Date(pubDate);
+      }
+      return entry;
+    })
+  };
+  addConditionally(feed, "id", "id", childs);
+  addConditionally(feed, "title", "title", childs);
+  const href = getOneElement("link", childs)?.attribs["href"];
+  if (href) {
+    feed.link = href;
+  }
+  addConditionally(feed, "description", "subtitle", childs);
+  const updated = fetch2("updated", childs);
+  if (updated) {
+    feed.updated = new Date(updated);
+  }
+  addConditionally(feed, "author", "email", childs, true);
+  return feed;
+}
+function getRssFeed(feedRoot) {
+  const childs = getOneElement("channel", feedRoot.children)?.children ?? [];
+  const feed = {
+    type: feedRoot.name.substr(0, 3),
+    id: "",
+    items: getElementsByTagName("item", feedRoot.children).map((item) => {
+      const { children } = item;
+      const entry = { media: getMediaElements(children) };
+      addConditionally(entry, "id", "guid", children);
+      addConditionally(entry, "title", "title", children);
+      addConditionally(entry, "link", "link", children);
+      addConditionally(entry, "description", "description", children);
+      const pubDate = fetch2("pubDate", children) || fetch2("dc:date", children);
+      if (pubDate)
+        entry.pubDate = new Date(pubDate);
+      return entry;
+    })
+  };
+  addConditionally(feed, "title", "title", childs);
+  addConditionally(feed, "link", "link", childs);
+  addConditionally(feed, "description", "description", childs);
+  const updated = fetch2("lastBuildDate", childs);
+  if (updated) {
+    feed.updated = new Date(updated);
+  }
+  addConditionally(feed, "author", "managingEditor", childs, true);
+  return feed;
+}
+function getMediaElements(where) {
+  return getElementsByTagName("media:content", where).map((element) => {
+    const { attribs } = element;
+    const media = {
+      medium: attribs["medium"],
+      isDefault: !!attribs["isDefault"]
+    };
+    for (const attrib of MEDIA_KEYS_STRING) {
+      if (attribs[attrib]) {
+        media[attrib] = attribs[attrib];
+      }
+    }
+    for (const attrib of MEDIA_KEYS_INT) {
+      if (attribs[attrib]) {
+        media[attrib] = Number.parseInt(attribs[attrib], 10);
+      }
+    }
+    if (attribs["expression"]) {
+      media.expression = attribs["expression"];
+    }
+    return media;
+  });
+}
+function getOneElement(tagName, node2) {
+  return getElementsByTagName(tagName, node2, true, 1)[0];
+}
+function fetch2(tagName, where, recurse = false) {
+  return textContent(getElementsByTagName(tagName, where, recurse, 1)).trim();
+}
+function addConditionally(object2, property, tagName, where, recurse = false) {
+  const value = fetch2(tagName, where, recurse);
+  if (value)
+    object2[property] = value;
+}
+function isValidFeed(value) {
+  return value === "rss" || value === "feed" || value === "rdf:RDF";
+}
+var MEDIA_KEYS_STRING, MEDIA_KEYS_INT;
+var init_feeds = __esm({
+  "node_modules/domutils/dist/feeds.js"() {
+    init_legacy();
+    init_stringify();
+    MEDIA_KEYS_STRING = ["url", "type", "lang"];
+    MEDIA_KEYS_INT = [
+      "fileSize",
+      "bitrate",
+      "framerate",
+      "samplingrate",
+      "channels",
+      "duration",
+      "height",
+      "width"
+    ];
+  }
+});
+
+// node_modules/domutils/dist/helpers.js
+function removeSubsets(nodes) {
+  let index = nodes.length;
+  while (--index >= 0) {
+    const node2 = nodes[index];
+    if (index > 0 && nodes.lastIndexOf(node2, index - 1) >= 0) {
+      nodes.splice(index, 1);
+      continue;
+    }
+    for (let ancestor = node2.parent; ancestor; ancestor = ancestor.parent) {
+      if (nodes.includes(ancestor)) {
+        nodes.splice(index, 1);
+        break;
+      }
+    }
+  }
+  return nodes;
+}
+function compareDocumentPosition(nodeA, nodeB) {
+  const aParents = [];
+  const bParents = [];
+  if (nodeA === nodeB) {
+    return 0;
+  }
+  let current = hasChildren(nodeA) ? nodeA : nodeA.parent;
+  while (current) {
+    aParents.unshift(current);
+    current = current.parent;
+  }
+  current = hasChildren(nodeB) ? nodeB : nodeB.parent;
+  while (current) {
+    bParents.unshift(current);
+    current = current.parent;
+  }
+  const maxIndex = Math.min(aParents.length, bParents.length);
+  let index = 0;
+  while (index < maxIndex && aParents[index] === bParents[index]) {
+    index++;
+  }
+  if (index === 0) {
+    return DocumentPosition.DISCONNECTED;
+  }
+  const sharedParent = aParents[index - 1];
+  const siblings = sharedParent.children;
+  const aSibling = aParents[index];
+  const bSibling = bParents[index];
+  if (siblings.indexOf(aSibling) > siblings.indexOf(bSibling)) {
+    if (sharedParent === nodeB) {
+      return DocumentPosition.FOLLOWING | DocumentPosition.CONTAINED_BY;
+    }
+    return DocumentPosition.FOLLOWING;
+  }
+  if (sharedParent === nodeA) {
+    return DocumentPosition.PRECEDING | DocumentPosition.CONTAINS;
+  }
+  return DocumentPosition.PRECEDING;
+}
+function uniqueSort(nodes) {
+  nodes = nodes.filter((node2, index, array2) => !array2.includes(node2, index + 1));
+  nodes.sort((a, b) => {
+    const relative13 = compareDocumentPosition(a, b);
+    if (relative13 & DocumentPosition.PRECEDING) {
+      return -1;
+    }
+    if (relative13 & DocumentPosition.FOLLOWING) {
+      return 1;
+    }
+    return 0;
+  });
+  return nodes;
+}
+var DocumentPosition;
+var init_helpers = __esm({
+  "node_modules/domutils/dist/helpers.js"() {
+    init_dist3();
+    (function(DocumentPosition2) {
+      DocumentPosition2[DocumentPosition2["DISCONNECTED"] = 1] = "DISCONNECTED";
+      DocumentPosition2[DocumentPosition2["PRECEDING"] = 2] = "PRECEDING";
+      DocumentPosition2[DocumentPosition2["FOLLOWING"] = 4] = "FOLLOWING";
+      DocumentPosition2[DocumentPosition2["CONTAINS"] = 8] = "CONTAINS";
+      DocumentPosition2[DocumentPosition2["CONTAINED_BY"] = 16] = "CONTAINED_BY";
+    })(DocumentPosition || (DocumentPosition = {}));
+  }
+});
+
+// node_modules/domutils/dist/manipulation.js
+function removeElement(element) {
+  if (element.prev)
+    element.prev.next = element.next;
+  if (element.next)
+    element.next.prev = element.prev;
+  if (element.parent) {
+    const childs = element.parent.children;
+    const childsIndex = childs.lastIndexOf(element);
+    if (childsIndex !== -1) {
+      childs.splice(childsIndex, 1);
+    }
+  }
+  element.next = null;
+  element.prev = null;
+  element.parent = null;
+}
+function replaceElement(element, replacement) {
+  replacement.prev = element.prev;
+  if (replacement.prev) {
+    replacement.prev.next = replacement;
+  }
+  replacement.next = element.next;
+  if (replacement.next) {
+    replacement.next.prev = replacement;
+  }
+  replacement.parent = element.parent;
+  if (replacement.parent) {
+    const { children } = replacement.parent;
+    const elementIndex = children.lastIndexOf(element);
+    if (elementIndex === -1) {
+      return;
+    }
+    children[elementIndex] = replacement;
+    element.parent = null;
+  }
+}
+function appendChild(parent, child) {
+  removeElement(child);
+  child.next = null;
+  child.parent = parent;
+  if (parent.children.push(child) > 1) {
+    const sibling = parent.children[parent.children.length - 2];
+    sibling.next = child;
+    child.prev = sibling;
+  } else {
+    child.prev = null;
+  }
+}
+function append(element, next) {
+  removeElement(next);
+  const { parent } = element;
+  const currentNext = element.next;
+  next.next = currentNext;
+  next.prev = element;
+  element.next = next;
+  next.parent = parent;
+  if (currentNext) {
+    currentNext.prev = next;
+    if (parent) {
+      const childs = parent.children;
+      childs.splice(childs.lastIndexOf(currentNext), 0, next);
+    }
+  } else if (parent) {
+    parent.children.push(next);
+  }
+}
+function prependChild(parent, child) {
+  removeElement(child);
+  child.parent = parent;
+  child.prev = null;
+  if (parent.children.unshift(child) === 1) {
+    child.next = null;
+  } else {
+    const sibling = parent.children[1];
+    sibling.prev = child;
+    child.next = sibling;
+  }
+}
+function prepend(element, previous) {
+  removeElement(previous);
+  const { parent } = element;
+  if (parent) {
+    const childs = parent.children;
+    childs.splice(childs.indexOf(element), 0, previous);
+  }
+  if (element.prev) {
+    element.prev.next = previous;
+  }
+  previous.parent = parent;
+  previous.prev = element.prev;
+  previous.next = element;
+  element.prev = previous;
+}
+var init_manipulation = __esm({
+  "node_modules/domutils/dist/manipulation.js"() {
+  }
+});
+
+// node_modules/domutils/dist/traversal.js
+function getChildren(element) {
+  return hasChildren(element) ? element.children : [];
+}
+function getParent(element) {
+  return element.parent || null;
+}
+function getSiblings(element) {
+  const parent = getParent(element);
+  if (parent != null)
+    return getChildren(parent);
+  const siblings = [element];
+  let { prev, next } = element;
+  while (prev != null) {
+    siblings.unshift(prev);
+    ({ prev } = prev);
+  }
+  while (next != null) {
+    siblings.push(next);
+    ({ next } = next);
+  }
+  return siblings;
+}
+function getAttributeValue(element, name) {
+  const { attribs } = element;
+  return attribs?.[name];
+}
+function hasAttrib(element, name) {
+  const { attribs } = element;
+  return attribs != null && Object.hasOwn(attribs, name) && attribs[name] != null;
+}
+function getName(element) {
+  return element.name;
+}
+function nextElementSibling(element) {
+  let { next } = element;
+  while (next !== null && !isTag2(next))
+    ({ next } = next);
+  return next;
+}
+function prevElementSibling(element) {
+  let { prev } = element;
+  while (prev !== null && !isTag2(prev))
+    ({ prev } = prev);
+  return prev;
+}
+var init_traversal = __esm({
+  "node_modules/domutils/dist/traversal.js"() {
+    init_dist3();
+  }
+});
+
+// node_modules/domutils/dist/index.js
+var dist_exports2 = {};
+__export(dist_exports2, {
+  DocumentPosition: () => DocumentPosition,
+  append: () => append,
+  appendChild: () => appendChild,
+  compareDocumentPosition: () => compareDocumentPosition,
+  existsOne: () => existsOne,
+  filter: () => filter,
+  find: () => find,
+  findAll: () => findAll,
+  findOne: () => findOne,
+  getAttributeValue: () => getAttributeValue,
+  getChildren: () => getChildren,
+  getElementById: () => getElementById,
+  getElements: () => getElements,
+  getElementsByClassName: () => getElementsByClassName,
+  getElementsByTagName: () => getElementsByTagName,
+  getElementsByTagType: () => getElementsByTagType,
+  getFeed: () => getFeed,
+  getInnerHTML: () => getInnerHTML,
+  getName: () => getName,
+  getOuterHTML: () => getOuterHTML,
+  getParent: () => getParent,
+  getSiblings: () => getSiblings,
+  getText: () => getText,
+  hasAttrib: () => hasAttrib,
+  innerText: () => innerText,
+  nextElementSibling: () => nextElementSibling,
+  prepend: () => prepend,
+  prependChild: () => prependChild,
+  prevElementSibling: () => prevElementSibling,
+  removeElement: () => removeElement,
+  removeSubsets: () => removeSubsets,
+  replaceElement: () => replaceElement,
+  testElement: () => testElement,
+  textContent: () => textContent,
+  uniqueSort: () => uniqueSort
+});
+var init_dist5 = __esm({
+  "node_modules/domutils/dist/index.js"() {
+    init_feeds();
+    init_helpers();
+    init_legacy();
+    init_manipulation();
+    init_querying();
+    init_stringify();
+    init_traversal();
+  }
+});
+
+// node_modules/htmlparser2/dist/index.js
+var dist_exports3 = {};
+__export(dist_exports3, {
+  DefaultHandler: () => DomHandler,
+  DomHandler: () => DomHandler,
+  DomUtils: () => dist_exports2,
+  ElementType: () => dist_exports,
+  Parser: () => Parser,
+  QuoteType: () => QuoteType,
+  Tokenizer: () => Tokenizer,
+  createDocumentStream: () => createDocumentStream,
+  getFeed: () => getFeed,
+  parseDocument: () => parseDocument,
+  parseFeed: () => parseFeed
+});
+function parseDocument(data, options) {
+  const handler = new DomHandler(void 0, options);
+  new Parser(handler, options).end(data);
+  return handler.root;
+}
+function createDocumentStream(callback, options, elementCallback) {
+  const handler = new DomHandler((error2) => callback(error2, handler.root), options, elementCallback);
+  return new Parser(handler, options);
+}
+function parseFeed(feed, options = parseFeedDefaultOptions) {
+  return getFeed(parseDocument(feed, options).children);
+}
+var parseFeedDefaultOptions;
+var init_dist6 = __esm({
+  "node_modules/htmlparser2/dist/index.js"() {
+    init_Parser();
+    init_Parser();
+    init_dist3();
+    init_dist3();
+    init_dist2();
+    init_Tokenizer();
+    init_dist5();
+    init_dist5();
+    init_dist5();
+    parseFeedDefaultOptions = { xmlMode: true };
+  }
+});
+
+// node_modules/escape-string-regexp/index.js
+var require_escape_string_regexp = __commonJS({
+  "node_modules/escape-string-regexp/index.js"(exports, module) {
+    "use strict";
+    module.exports = (string4) => {
+      if (typeof string4 !== "string") {
+        throw new TypeError("Expected a string");
+      }
+      return string4.replace(/[|\\{}()[\]^$+*?.]/g, "\\$&").replace(/-/g, "\\x2d");
+    };
+  }
+});
+
+// node_modules/is-plain-object/dist/is-plain-object.js
+var require_is_plain_object = __commonJS({
+  "node_modules/is-plain-object/dist/is-plain-object.js"(exports) {
+    "use strict";
+    function isObject5(o) {
+      return Object.prototype.toString.call(o) === "[object Object]";
+    }
+    function isPlainObject3(o) {
+      var ctor, prot;
+      if (isObject5(o) === false) return false;
+      ctor = o.constructor;
+      if (ctor === void 0) return true;
+      prot = ctor.prototype;
+      if (isObject5(prot) === false) return false;
+      if (prot.hasOwnProperty("isPrototypeOf") === false) {
+        return false;
+      }
+      return true;
+    }
+    exports.isPlainObject = isPlainObject3;
+  }
+});
+
+// node_modules/parse-srcset/src/parse-srcset.js
+var require_parse_srcset = __commonJS({
+  "node_modules/parse-srcset/src/parse-srcset.js"(exports, module) {
+    (function(root, factory) {
+      if (typeof define === "function" && define.amd) {
+        define([], factory);
+      } else if (typeof module === "object" && module.exports) {
+        module.exports = factory();
+      } else {
+        root.parseSrcset = factory();
+      }
+    })(exports, function() {
+      return function(input) {
+        function isSpace2(c2) {
+          return c2 === " " || // space
+          c2 === "	" || // horizontal tab
+          c2 === "\n" || // new line
+          c2 === "\f" || // form feed
+          c2 === "\r";
+        }
+        function collectCharacters(regEx) {
+          var chars, match = regEx.exec(input.substring(pos));
+          if (match) {
+            chars = match[0];
+            pos += chars.length;
+            return chars;
+          }
+        }
+        var inputLength = input.length, regexLeadingSpaces = /^[ \t\n\r\u000c]+/, regexLeadingCommasOrSpaces = /^[, \t\n\r\u000c]+/, regexLeadingNotSpaces = /^[^ \t\n\r\u000c]+/, regexTrailingCommas = /[,]+$/, regexNonNegativeInteger = /^\d+$/, regexFloatingPoint = /^-?(?:[0-9]+|[0-9]*\.[0-9]+)(?:[eE][+-]?[0-9]+)?$/, url2, descriptors, currentDescriptor, state, c, pos = 0, candidates = [];
+        while (true) {
+          collectCharacters(regexLeadingCommasOrSpaces);
+          if (pos >= inputLength) {
+            return candidates;
+          }
+          url2 = collectCharacters(regexLeadingNotSpaces);
+          descriptors = [];
+          if (url2.slice(-1) === ",") {
+            url2 = url2.replace(regexTrailingCommas, "");
+            parseDescriptors();
+          } else {
+            tokenize2();
+          }
+        }
+        function tokenize2() {
+          collectCharacters(regexLeadingSpaces);
+          currentDescriptor = "";
+          state = "in descriptor";
+          while (true) {
+            c = input.charAt(pos);
+            if (state === "in descriptor") {
+              if (isSpace2(c)) {
+                if (currentDescriptor) {
+                  descriptors.push(currentDescriptor);
+                  currentDescriptor = "";
+                  state = "after descriptor";
+                }
+              } else if (c === ",") {
+                pos += 1;
+                if (currentDescriptor) {
+                  descriptors.push(currentDescriptor);
+                }
+                parseDescriptors();
+                return;
+              } else if (c === "(") {
+                currentDescriptor = currentDescriptor + c;
+                state = "in parens";
+              } else if (c === "") {
+                if (currentDescriptor) {
+                  descriptors.push(currentDescriptor);
+                }
+                parseDescriptors();
+                return;
+              } else {
+                currentDescriptor = currentDescriptor + c;
+              }
+            } else if (state === "in parens") {
+              if (c === ")") {
+                currentDescriptor = currentDescriptor + c;
+                state = "in descriptor";
+              } else if (c === "") {
+                descriptors.push(currentDescriptor);
+                parseDescriptors();
+                return;
+              } else {
+                currentDescriptor = currentDescriptor + c;
+              }
+            } else if (state === "after descriptor") {
+              if (isSpace2(c)) {
+              } else if (c === "") {
+                parseDescriptors();
+                return;
+              } else {
+                state = "in descriptor";
+                pos -= 1;
+              }
+            }
+            pos += 1;
+          }
+        }
+        function parseDescriptors() {
+          var pError = false, w, d, h, i, candidate = {}, desc, lastChar, value, intVal, floatVal;
+          for (i = 0; i < descriptors.length; i++) {
+            desc = descriptors[i];
+            lastChar = desc[desc.length - 1];
+            value = desc.substring(0, desc.length - 1);
+            intVal = parseInt(value, 10);
+            floatVal = parseFloat(value);
+            if (regexNonNegativeInteger.test(value) && lastChar === "w") {
+              if (w || d) {
+                pError = true;
+              }
+              if (intVal === 0) {
+                pError = true;
+              } else {
+                w = intVal;
+              }
+            } else if (regexFloatingPoint.test(value) && lastChar === "x") {
+              if (w || d || h) {
+                pError = true;
+              }
+              if (floatVal < 0) {
+                pError = true;
+              } else {
+                d = floatVal;
+              }
+            } else if (regexNonNegativeInteger.test(value) && lastChar === "h") {
+              if (h || d) {
+                pError = true;
+              }
+              if (intVal === 0) {
+                pError = true;
+              } else {
+                h = intVal;
+              }
+            } else {
+              pError = true;
+            }
+          }
+          if (!pError) {
+            candidate.url = url2;
+            if (w) {
+              candidate.w = w;
+            }
+            if (d) {
+              candidate.d = d;
+            }
+            if (h) {
+              candidate.h = h;
+            }
+            candidates.push(candidate);
+          } else if (console && console.log) {
+            console.log("Invalid srcset descriptor found in '" + input + "' at '" + desc + "'.");
+          }
+        }
+      };
+    });
+  }
+});
+
+// stub:postcss
+var require_postcss = __commonJS({
+  "stub:postcss"(exports, module) {
+    module.exports = { parse() {
+      throw new Error("postcss \u306F\u914D\u5E03\u7269\u306B\u542B\u3081\u306A\u3044");
+    } };
+  }
+});
+
+// node_modules/dayjs/dayjs.min.js
+var require_dayjs_min = __commonJS({
+  "node_modules/dayjs/dayjs.min.js"(exports, module) {
+    !(function(t, e) {
+      "object" == typeof exports && "undefined" != typeof module ? module.exports = e() : "function" == typeof define && define.amd ? define(e) : (t = "undefined" != typeof globalThis ? globalThis : t || self).dayjs = e();
+    })(exports, (function() {
+      "use strict";
+      var t = 1e3, e = 6e4, n = 36e5, r = "millisecond", i = "second", s = "minute", u = "hour", a = "day", o = "week", c = "month", f = "quarter", h = "year", d = "date", l = "Invalid Date", $ = /^(\d{4})[-/]?(\d{1,2})?[-/]?(\d{0,2})[Tt\s]*(\d{1,2})?:?(\d{1,2})?:?(\d{1,2})?[.:]?(\d+)?$/, y = /\[([^\]]+)]|YYYY|YY|M{1,4}|D{1,2}|d{1,4}|H{1,2}|h{1,2}|a|A|m{1,2}|s{1,2}|Z{1,2}|SSS/g, M = { name: "en", weekdays: "Sunday_Monday_Tuesday_Wednesday_Thursday_Friday_Saturday".split("_"), months: "January_February_March_April_May_June_July_August_September_October_November_December".split("_"), ordinal: function(t2) {
+        var e2 = ["th", "st", "nd", "rd"], n2 = t2 % 100;
+        return "[" + t2 + (e2[(n2 - 20) % 10] || e2[n2] || e2[0]) + "]";
+      } }, m = function(t2, e2, n2) {
+        var r2 = String(t2);
+        return !r2 || r2.length >= e2 ? t2 : "" + Array(e2 + 1 - r2.length).join(n2) + t2;
+      }, v = { s: m, z: function(t2) {
+        var e2 = -t2.utcOffset(), n2 = Math.abs(e2), r2 = Math.floor(n2 / 60), i2 = n2 % 60;
+        return (e2 <= 0 ? "+" : "-") + m(r2, 2, "0") + ":" + m(i2, 2, "0");
+      }, m: function t2(e2, n2) {
+        if (e2.date() < n2.date()) return -t2(n2, e2);
+        var r2 = 12 * (n2.year() - e2.year()) + (n2.month() - e2.month()), i2 = e2.clone().add(r2, c), s2 = n2 - i2 < 0, u2 = e2.clone().add(r2 + (s2 ? -1 : 1), c);
+        return +(-(r2 + (n2 - i2) / (s2 ? i2 - u2 : u2 - i2)) || 0);
+      }, a: function(t2) {
+        return t2 < 0 ? Math.ceil(t2) || 0 : Math.floor(t2);
+      }, p: function(t2) {
+        return { M: c, y: h, w: o, d: a, D: d, h: u, m: s, s: i, ms: r, Q: f }[t2] || String(t2 || "").toLowerCase().replace(/s$/, "");
+      }, u: function(t2) {
+        return void 0 === t2;
+      } }, g = "en", D = {};
+      D[g] = M;
+      var p = "$isDayjsObject", S2 = function(t2) {
+        return t2 instanceof _ || !(!t2 || !t2[p]);
+      }, w = function t2(e2, n2, r2) {
+        var i2;
+        if (!e2) return g;
+        if ("string" == typeof e2) {
+          var s2 = e2.toLowerCase();
+          D[s2] && (i2 = s2), n2 && (D[s2] = n2, i2 = s2);
+          var u2 = e2.split("-");
+          if (!i2 && u2.length > 1) return t2(u2[0]);
+        } else {
+          var a2 = e2.name;
+          D[a2] = e2, i2 = a2;
+        }
+        return !r2 && i2 && (g = i2), i2 || !r2 && g;
+      }, O = function(t2, e2) {
+        if (S2(t2)) return t2.clone();
+        var n2 = "object" == typeof e2 ? e2 : {};
+        return n2.date = t2, n2.args = arguments, new _(n2);
+      }, b = v;
+      b.l = w, b.i = S2, b.w = function(t2, e2) {
+        return O(t2, { locale: e2.$L, utc: e2.$u, x: e2.$x, $offset: e2.$offset });
+      };
+      var _ = (function() {
+        function M2(t2) {
+          this.$L = w(t2.locale, null, true), this.parse(t2), this.$x = this.$x || t2.x || {}, this[p] = true;
+        }
+        var m2 = M2.prototype;
+        return m2.parse = function(t2) {
+          this.$d = (function(t3) {
+            var e2 = t3.date, n2 = t3.utc;
+            if (null === e2) return /* @__PURE__ */ new Date(NaN);
+            if (b.u(e2)) return /* @__PURE__ */ new Date();
+            if (e2 instanceof Date) return new Date(e2);
+            if ("string" == typeof e2 && !/Z$/i.test(e2)) {
+              var r2 = e2.match($);
+              if (r2) {
+                var i2 = r2[2] - 1 || 0, s2 = (r2[7] || "0").substring(0, 3);
+                return n2 ? new Date(Date.UTC(r2[1], i2, r2[3] || 1, r2[4] || 0, r2[5] || 0, r2[6] || 0, s2)) : new Date(r2[1], i2, r2[3] || 1, r2[4] || 0, r2[5] || 0, r2[6] || 0, s2);
+              }
+            }
+            return new Date(e2);
+          })(t2), this.init();
+        }, m2.init = function() {
+          var t2 = this.$d;
+          this.$y = t2.getFullYear(), this.$M = t2.getMonth(), this.$D = t2.getDate(), this.$W = t2.getDay(), this.$H = t2.getHours(), this.$m = t2.getMinutes(), this.$s = t2.getSeconds(), this.$ms = t2.getMilliseconds();
+        }, m2.$utils = function() {
+          return b;
+        }, m2.isValid = function() {
+          return !(this.$d.toString() === l);
+        }, m2.isSame = function(t2, e2) {
+          var n2 = O(t2);
+          return this.startOf(e2) <= n2 && n2 <= this.endOf(e2);
+        }, m2.isAfter = function(t2, e2) {
+          return O(t2) < this.startOf(e2);
+        }, m2.isBefore = function(t2, e2) {
+          return this.endOf(e2) < O(t2);
+        }, m2.$g = function(t2, e2, n2) {
+          return b.u(t2) ? this[e2] : this.set(n2, t2);
+        }, m2.unix = function() {
+          return Math.floor(this.valueOf() / 1e3);
+        }, m2.valueOf = function() {
+          return this.$d.getTime();
+        }, m2.startOf = function(t2, e2) {
+          var n2 = this, r2 = !!b.u(e2) || e2, f2 = b.p(t2), l2 = function(t3, e3) {
+            var i2 = b.w(n2.$u ? Date.UTC(n2.$y, e3, t3) : new Date(n2.$y, e3, t3), n2);
+            return r2 ? i2 : i2.endOf(a);
+          }, $2 = function(t3, e3) {
+            return b.w(n2.toDate()[t3].apply(n2.toDate("s"), (r2 ? [0, 0, 0, 0] : [23, 59, 59, 999]).slice(e3)), n2);
+          }, y2 = this.$W, M3 = this.$M, m3 = this.$D, v2 = "set" + (this.$u ? "UTC" : "");
+          switch (f2) {
+            case h:
+              return r2 ? l2(1, 0) : l2(31, 11);
+            case c:
+              return r2 ? l2(1, M3) : l2(0, M3 + 1);
+            case o:
+              var g2 = this.$locale().weekStart || 0, D2 = (y2 < g2 ? y2 + 7 : y2) - g2;
+              return l2(r2 ? m3 - D2 : m3 + (6 - D2), M3);
+            case a:
+            case d:
+              return $2(v2 + "Hours", 0);
+            case u:
+              return $2(v2 + "Minutes", 1);
+            case s:
+              return $2(v2 + "Seconds", 2);
+            case i:
+              return $2(v2 + "Milliseconds", 3);
+            default:
+              return this.clone();
+          }
+        }, m2.endOf = function(t2) {
+          return this.startOf(t2, false);
+        }, m2.$set = function(t2, e2) {
+          var n2, o2 = b.p(t2), f2 = "set" + (this.$u ? "UTC" : ""), l2 = (n2 = {}, n2[a] = f2 + "Date", n2[d] = f2 + "Date", n2[c] = f2 + "Month", n2[h] = f2 + "FullYear", n2[u] = f2 + "Hours", n2[s] = f2 + "Minutes", n2[i] = f2 + "Seconds", n2[r] = f2 + "Milliseconds", n2)[o2], $2 = o2 === a ? this.$D + (e2 - this.$W) : e2;
+          if (o2 === c || o2 === h) {
+            var y2 = this.clone().set(d, 1);
+            y2.$d[l2]($2), y2.init(), this.$d = y2.set(d, Math.min(this.$D, y2.daysInMonth())).$d;
+          } else l2 && this.$d[l2]($2);
+          return this.init(), this;
+        }, m2.set = function(t2, e2) {
+          return this.clone().$set(t2, e2);
+        }, m2.get = function(t2) {
+          return this[b.p(t2)]();
+        }, m2.add = function(r2, f2) {
+          var d2, l2 = this;
+          r2 = Number(r2);
+          var $2 = b.p(f2), y2 = function(t2) {
+            var e2 = O(l2);
+            return b.w(e2.date(e2.date() + Math.round(t2 * r2)), l2);
+          };
+          if ($2 === c) return this.set(c, this.$M + r2);
+          if ($2 === h) return this.set(h, this.$y + r2);
+          if ($2 === a) return y2(1);
+          if ($2 === o) return y2(7);
+          var M3 = (d2 = {}, d2[s] = e, d2[u] = n, d2[i] = t, d2)[$2] || 1, m3 = this.$d.getTime() + r2 * M3;
+          return b.w(m3, this);
+        }, m2.subtract = function(t2, e2) {
+          return this.add(-1 * t2, e2);
+        }, m2.format = function(t2) {
+          var e2 = this, n2 = this.$locale();
+          if (!this.isValid()) return n2.invalidDate || l;
+          var r2 = t2 || "YYYY-MM-DDTHH:mm:ssZ", i2 = b.z(this), s2 = this.$H, u2 = this.$m, a2 = this.$M, o2 = n2.weekdays, c2 = n2.months, f2 = n2.meridiem, h2 = function(t3, n3, i3, s3) {
+            return t3 && (t3[n3] || t3(e2, r2)) || i3[n3].slice(0, s3);
+          }, d2 = function(t3) {
+            return b.s(s2 % 12 || 12, t3, "0");
+          }, $2 = f2 || function(t3, e3, n3) {
+            var r3 = t3 < 12 ? "AM" : "PM";
+            return n3 ? r3.toLowerCase() : r3;
+          };
+          return r2.replace(y, (function(t3, r3) {
+            return r3 || (function(t4) {
+              switch (t4) {
+                case "YY":
+                  return String(e2.$y).slice(-2);
+                case "YYYY":
+                  return b.s(e2.$y, 4, "0");
+                case "M":
+                  return a2 + 1;
+                case "MM":
+                  return b.s(a2 + 1, 2, "0");
+                case "MMM":
+                  return h2(n2.monthsShort, a2, c2, 3);
+                case "MMMM":
+                  return h2(c2, a2);
+                case "D":
+                  return e2.$D;
+                case "DD":
+                  return b.s(e2.$D, 2, "0");
+                case "d":
+                  return String(e2.$W);
+                case "dd":
+                  return h2(n2.weekdaysMin, e2.$W, o2, 2);
+                case "ddd":
+                  return h2(n2.weekdaysShort, e2.$W, o2, 3);
+                case "dddd":
+                  return o2[e2.$W];
+                case "H":
+                  return String(s2);
+                case "HH":
+                  return b.s(s2, 2, "0");
+                case "h":
+                  return d2(1);
+                case "hh":
+                  return d2(2);
+                case "a":
+                  return $2(s2, u2, true);
+                case "A":
+                  return $2(s2, u2, false);
+                case "m":
+                  return String(u2);
+                case "mm":
+                  return b.s(u2, 2, "0");
+                case "s":
+                  return String(e2.$s);
+                case "ss":
+                  return b.s(e2.$s, 2, "0");
+                case "SSS":
+                  return b.s(e2.$ms, 3, "0");
+                case "Z":
+                  return i2;
+              }
+              return null;
+            })(t3) || i2.replace(":", "");
+          }));
+        }, m2.utcOffset = function() {
+          return 15 * -Math.round(this.$d.getTimezoneOffset() / 15);
+        }, m2.diff = function(r2, d2, l2) {
+          var $2, y2 = this, M3 = b.p(d2), m3 = O(r2), v2 = (m3.utcOffset() - this.utcOffset()) * e, g2 = this - m3, D2 = function() {
+            return b.m(y2, m3);
+          };
+          switch (M3) {
+            case h:
+              $2 = D2() / 12;
+              break;
+            case c:
+              $2 = D2();
+              break;
+            case f:
+              $2 = D2() / 3;
+              break;
+            case o:
+              $2 = (g2 - v2) / 6048e5;
+              break;
+            case a:
+              $2 = (g2 - v2) / 864e5;
+              break;
+            case u:
+              $2 = g2 / n;
+              break;
+            case s:
+              $2 = g2 / e;
+              break;
+            case i:
+              $2 = g2 / t;
+              break;
+            default:
+              $2 = g2;
+          }
+          return l2 ? $2 : b.a($2);
+        }, m2.daysInMonth = function() {
+          return this.endOf(c).$D;
+        }, m2.$locale = function() {
+          return D[this.$L];
+        }, m2.locale = function(t2, e2) {
+          if (!t2) return this.$L;
+          var n2 = this.clone(), r2 = w(t2, e2, true);
+          return r2 && (n2.$L = r2), n2;
+        }, m2.clone = function() {
+          return b.w(this.$d, this);
+        }, m2.toDate = function() {
+          return new Date(this.valueOf());
+        }, m2.toJSON = function() {
+          return this.isValid() ? this.toISOString() : null;
+        }, m2.toISOString = function() {
+          return this.$d.toISOString();
+        }, m2.toString = function() {
+          return this.$d.toUTCString();
+        }, M2;
+      })(), Y = _.prototype;
+      return O.prototype = Y, [["$ms", r], ["$s", i], ["$m", s], ["$H", u], ["$W", a], ["$M", c], ["$y", h], ["$D", d]].forEach((function(t2) {
+        Y[t2[1]] = function(e2) {
+          return this.$g(e2, t2[0], t2[1]);
+        };
+      })), O.extend = function(t2, e2) {
+        return t2.$i || (t2(e2, _, O), t2.$i = true), O;
+      }, O.locale = w, O.isDayjs = S2, O.unix = function(t2) {
+        return O(1e3 * t2);
+      }, O.en = D[g], O.Ls = D, O.p = {}, O;
+    }));
+  }
+});
+
+// node_modules/launder/index.js
+var require_launder = __commonJS({
+  "node_modules/launder/index.js"(exports, module) {
+    var dayjs = require_dayjs_min();
+    function cleanHref(href) {
+      href = href.replace(/[\x00-\x20]+/g, "");
+      while (true) {
+        const firstIndex = href.indexOf("<!--");
+        if (firstIndex === -1) {
+          break;
+        }
+        const lastIndex = href.indexOf("-->", firstIndex + 4);
+        if (lastIndex === -1) {
+          break;
+        }
+        href = href.substring(0, firstIndex) + href.substring(lastIndex + 3);
+      }
+      return href;
+    }
+    function naughtyHref(href, options) {
+      options = options || {};
+      const allowedSchemes = options.allowedSchemes || ["http", "https", "ftp", "mailto", "tel", "sms"];
+      const allowProtocolRelative = options.allowProtocolRelative !== false;
+      if (typeof href !== "string") {
+        return false;
+      }
+      href = cleanHref(href);
+      const matches = href.match(/^([a-zA-Z][a-zA-Z0-9.\-+]*):/);
+      if (!matches) {
+        if (href.match(/^[/\\]{2}/)) {
+          return !allowProtocolRelative;
+        }
+        return false;
+      }
+      const scheme = matches[1].toLowerCase();
+      return allowedSchemes.indexOf(scheme) === -1;
+    }
+    module.exports = function(options) {
+      const self2 = {};
+      self2.options = options || {};
+      self2.filterTag = self2.options.filterTag || function(tag) {
+        tag = tag.trim();
+        return tag.toLowerCase();
+      };
+      self2.string = function(s, def) {
+        if (typeof s !== "string") {
+          if (typeof s === "number" || typeof s === "boolean") {
+            s += "";
+          } else {
+            s = "";
+          }
+        }
+        s = s.trim();
+        if (def !== void 0) {
+          if (s === "") {
+            s = def;
+          }
+        }
+        return s;
+      };
+      self2.strings = function(strings) {
+        if (!Array.isArray(strings)) {
+          return [];
+        }
+        return strings.map(function(s) {
+          return self2.string(s);
+        });
+      };
+      self2.integer = function(i, def, min, max) {
+        if (def === void 0) {
+          def = 0;
+        }
+        if (typeof i === "number") {
+          i = Math.floor(i);
+        } else {
+          try {
+            i = parseInt(i, 10);
+            if (isNaN(i)) {
+              i = def;
+            }
+          } catch (e) {
+            i = def;
+          }
+        }
+        if (typeof min === "number" && i < min) {
+          i = min;
+        }
+        if (typeof max === "number" && i > max) {
+          i = max;
+        }
+        return i;
+      };
+      self2.padInteger = function(i, places) {
+        let s = i + "";
+        while (s.length < places) {
+          s = "0" + s;
+        }
+        return s;
+      };
+      self2.float = function(i, def, min, max) {
+        if (def === void 0) {
+          def = 0;
+        }
+        if (!(typeof i === "number")) {
+          try {
+            i = parseFloat(i, 10);
+            if (isNaN(i)) {
+              i = def;
+            }
+          } catch (e) {
+            i = def;
+          }
+        }
+        if (typeof min === "number" && i < min) {
+          i = min;
+        }
+        if (typeof max === "number" && i > max) {
+          i = max;
+        }
+        return i;
+      };
+      self2.naughtyHref = naughtyHref;
+      self2.url = function(s, def, httpsFix) {
+        s = self2.string(s, def);
+        if (s === def) {
+          return s;
+        }
+        s = cleanHref(s);
+        if (naughtyHref(s)) {
+          return def;
+        }
+        s = fixUrl(s);
+        if (s === null) {
+          return def;
+        }
+        return s;
+        function fixUrl(href) {
+          if (href.match(/^(((https?|ftp):\/\/)|((mailto|tel|sms):)|#|([^/.]+)?\/|[^/.]+$)/)) {
+            return href;
+          } else if (href.match(/^[^/.]+\.[^/.]+/)) {
+            const protocol = httpsFix ? "https://" : "http://";
+            return protocol + href;
+          } else {
+            return null;
+          }
+        }
+        ;
+      };
+      self2.select = function(s, choices, def) {
+        s = self2.string(s);
+        if (!choices || !choices.length) {
+          return def;
+        }
+        let choice;
+        if (typeof choices[0] === "object") {
+          choice = choices.find(function(choice2) {
+            if (choice2.value === null || choice2.value === void 0) {
+              return false;
+            }
+            return choice2.value.toString() === s;
+          });
+          if (choice != null) {
+            return choice.value;
+          }
+          return def;
+        }
+        choice = choices.find(function(choice2) {
+          if (choice2 === null || choice2 === void 0) {
+            return false;
+          }
+          return choice2.toString() === s;
+        });
+        if (choice !== void 0) {
+          return choice;
+        }
+        return def;
+      };
+      self2.boolean = function(b, def) {
+        if (b === true) {
+          return true;
+        }
+        if (b === false) {
+          return false;
+        }
+        b = self2.string(b, def);
+        if (b === def) {
+          if (b === void 0) {
+            return false;
+          }
+          return b;
+        }
+        b = b.toLowerCase().charAt(0);
+        if (b === "" || b === "n" || b === "0" || b === "f") {
+          return false;
+        }
+        if (b === "t" || b === "y" || b === "1") {
+          return true;
+        }
+        return false;
+      };
+      self2.addBooleanFilterToCriteria = function(options2, name, criteria, def) {
+        if (def === void 0) {
+          def = null;
+        }
+        let value = typeof options2 === "object" && options2 !== null ? options2[name] : options2;
+        value = value === void 0 ? def : value;
+        value = self2.booleanOrNull(value);
+        if (value === null) {
+        } else if (!value) {
+          criteria[name] = { $ne: true };
+        } else {
+          criteria[name] = true;
+        }
+      };
+      self2.booleanOrNull = function(b, def) {
+        if (b === true) {
+          return b;
+        }
+        if (b === false) {
+          return b;
+        }
+        if (b === null) {
+          return b;
+        }
+        b = self2.string(b, def);
+        if (b === def) {
+          if (def === void 0) {
+            return null;
+          }
+          return b;
+        }
+        if (b === "null") {
+          return null;
+        }
+        b = b.toLowerCase().charAt(0);
+        if (b === "" || b === "n" || b === "0" || b === "f") {
+          return false;
+        }
+        if (b === "t" || b === "y" || b === "1") {
+          return true;
+        }
+        if (b === "a") {
+          return null;
+        }
+        return def;
+      };
+      self2.date = function(date4, def, now) {
+        let components;
+        function returnDefault() {
+          if (def === void 0) {
+            def = dayjs().format("YYYY-MM-DD");
+          }
+          return def;
+        }
+        if (typeof date4 === "string") {
+          if (date4.match(/\//)) {
+            components = date4.split("/");
+            if (components.length === 2) {
+              return (now || /* @__PURE__ */ new Date()).getFullYear() + "-" + self2.padInteger(components[0], 2) + "-" + self2.padInteger(components[1], 2);
+            } else if (components.length === 3) {
+              if (components[2] < 100) {
+                const d = now || /* @__PURE__ */ new Date();
+                const nowYear = d.getFullYear() % 100;
+                const nowCentury = d.getFullYear() - nowYear;
+                let theirYear = parseInt(components[2]) + nowCentury;
+                if (theirYear - d.getFullYear() > 50) {
+                  theirYear -= 100;
+                }
+                components[2] = theirYear;
+              }
+              return self2.padInteger(components[2], 4) + "-" + self2.padInteger(components[0], 2) + "-" + self2.padInteger(components[1], 2);
+            } else {
+              return returnDefault();
+            }
+          } else if (date4.match(/-/)) {
+            components = date4.split("-");
+            if (components.length === 2) {
+              return (now || /* @__PURE__ */ new Date()).getFullYear() + "-" + self2.padInteger(components[0], 2) + "-" + self2.padInteger(components[1], 2);
+            } else if (components.length === 3) {
+              return self2.padInteger(components[0], 4) + "-" + self2.padInteger(components[1], 2) + "-" + self2.padInteger(components[2], 2);
+            } else {
+              return returnDefault();
+            }
+          }
+        }
+        try {
+          if (date4 === null) {
+            return returnDefault();
+          }
+          date4 = now || new Date(date4);
+          if (isNaN(date4.getTime())) {
+            return returnDefault();
+          }
+          return date4.getFullYear() + "-" + self2.padInteger(date4.getMonth() + 1, 2) + "-" + self2.padInteger(date4.getDate(), 2);
+        } catch (e) {
+          return returnDefault();
+        }
+      };
+      self2.formatDate = function(date4) {
+        return dayjs(date4).format("YYYY-MM-DD");
+      };
+      self2.time = function(time3, def) {
+        time3 = self2.string(time3).toLowerCase();
+        time3 = time3.trim();
+        const components = time3.match(/^(\d+)([:|.](\d+))?([:|.](\d+))?\s*(am|pm|AM|PM|a|p|A|M)?$/);
+        if (components) {
+          let hours = parseInt(components[1], 10);
+          const minutes = components[3] !== void 0 ? parseInt(components[3], 10) : 0;
+          const seconds = components[5] !== void 0 ? parseInt(components[5], 10) : 0;
+          let ampm = components[6] ? components[6].toLowerCase() : components[6];
+          ampm = ampm && ampm.charAt(0);
+          if (hours === 12 && ampm === "a") {
+            hours -= 12;
+          } else if (hours === 12 && ampm === "p") {
+          } else if (ampm === "p") {
+            hours += 12;
+          }
+          if (hours === 24 || hours === "24") {
+            hours = 0;
+          }
+          return self2.padInteger(hours, 2) + ":" + self2.padInteger(minutes, 2) + ":" + self2.padInteger(seconds, 2);
+        } else {
+          if (def !== void 0) {
+            return def;
+          }
+          return dayjs().format("HH:mm");
+        }
+      };
+      self2.formatTime = function(date4) {
+        return dayjs(date4).format("HH:mm:ss");
+      };
+      self2.tags = function(tags, filter2) {
+        if (typeof tags === "string") {
+          tags = tags.split(/,\s*/);
+        }
+        if (!Array.isArray(tags)) {
+          return [];
+        }
+        const strings = tags.map((tag) => self2.string(tag));
+        const rewritten = strings.map(filter2 || self2.filterTag);
+        const filtered = rewritten.filter((tag) => tag.length > 0);
+        return filtered;
+      };
+      self2.idRegExp = self2.options.idRegExp || /^[A-Za-z0-9_]+$/;
+      self2.id = function(s, def) {
+        const id = self2.string(s, def);
+        if (id === def) {
+          return id;
+        }
+        if (!id.match(self2.idRegExp)) {
+          return def;
+        }
+        return id;
+      };
+      self2.ids = function(ids) {
+        if (!Array.isArray(ids)) {
+          return [];
+        }
+        const result = ids.filter(function(id) {
+          return self2.id(id) !== void 0;
+        });
+        return result;
+      };
+      return self2;
+    };
+    module.exports.naughtyHref = naughtyHref;
+  }
+});
+
+// node_modules/sanitize-html/index.js
+var require_sanitize_html = __commonJS({
+  "node_modules/sanitize-html/index.js"(exports, module) {
+    var htmlparser = (init_dist6(), __toCommonJS(dist_exports3));
+    var escapeStringRegexp = require_escape_string_regexp();
+    var { isPlainObject: isPlainObject3 } = require_is_plain_object();
+    var parseSrcset = require_parse_srcset();
+    var { parse: postcssParse } = require_postcss();
+    var { naughtyHref: launderNaughtyHref } = require_launder();
+    var mediaTags = [
+      "img",
+      "audio",
+      "video",
+      "picture",
+      "svg",
+      "object",
+      "map",
+      "iframe",
+      "embed"
+    ];
+    var vulnerableTags = ["script", "style"];
+    var svgAnimationTags = [
+      "animate",
+      "animatecolor",
+      "animatemotion",
+      "animatetransform",
+      "set"
+    ];
+    var alwaysUrlAttributes = ["href"];
+    var severities = ["debug", "info", "warn", "error"];
+    function loggerFor(options) {
+      const source = options && options.logger || console;
+      const logger = {};
+      for (const severity of severities) {
+        logger[severity] = typeof source[severity] === "function" ? (...args) => source[severity](...args) : (...args) => console[severity](...args);
+      }
+      return logger;
+    }
+    function each(obj, cb) {
+      if (obj) {
+        Object.keys(obj).forEach(function(key) {
+          cb(obj[key], key);
+        });
+      }
+    }
+    function has(obj, key) {
+      return {}.hasOwnProperty.call(obj, key);
+    }
+    function mergeClasses(specific, wildcard) {
+      if (!Array.isArray(specific) || !Array.isArray(wildcard)) {
+        return wildcard;
+      }
+      return specific.concat(wildcard);
+    }
+    function mergeStyles(specific, wildcard) {
+      const merged = /* @__PURE__ */ Object.create(null);
+      for (const rules of [specific, wildcard]) {
+        for (const prop of Object.keys(rules)) {
+          merged[prop] = has(merged, prop) ? merged[prop].concat(rules[prop]) : rules[prop];
+        }
+      }
+      return merged;
+    }
+    function filter2(a, cb) {
+      const n = [];
+      each(a, function(v) {
+        if (cb(v)) {
+          n.push(v);
+        }
+      });
+      return n;
+    }
+    function isEmptyObject(obj) {
+      for (const key in obj) {
+        if (has(obj, key)) {
+          return false;
+        }
+      }
+      return true;
+    }
+    function stringifySrcset(parsedSrcset) {
+      return parsedSrcset.map(function(part) {
+        if (!part.url) {
+          throw new Error("URL missing");
+        }
+        return part.url + (part.w ? ` ${part.w}w` : "") + (part.h ? ` ${part.h}h` : "") + (part.d ? ` ${part.d}x` : "");
+      }).join(", ");
+    }
+    module.exports = sanitizeHtml2;
+    var VALID_HTML_ATTRIBUTE_NAME = /^[^\0\t\n\f\r /<=>]+$/;
+    var MAX_IFRAME_FALLBACK_DEPTH = 8;
+    function sanitizeHtml2(html, options, _fallback) {
+      if (html == null) {
+        return "";
+      }
+      const baseDepth = _fallback && _fallback.depth || 0;
+      const iframeFallbackDepth = _fallback && _fallback.iframeFallbackDepth || 0;
+      if (typeof html === "number") {
+        html = html.toString();
+      }
+      let result = "";
+      let tempResult = "";
+      function Frame(tag, attribs) {
+        const that = this;
+        this.tag = tag;
+        this.attribs = attribs || {};
+        this.tagPosition = result.length;
+        this.text = "";
+        this.openingTagLength = 0;
+        this.mediaChildren = [];
+        this.updateParentNodeText = function() {
+          if (stack.length) {
+            const parentFrame = stack[stack.length - 1];
+            parentFrame.text += that.text;
+          }
+        };
+        this.updateParentNodeMediaChildren = function() {
+          if (stack.length && mediaTags.includes(this.tag)) {
+            const parentFrame = stack[stack.length - 1];
+            parentFrame.mediaChildren.push(this.tag);
+          }
+        };
+      }
+      options = Object.assign({}, sanitizeHtml2.defaults, options);
+      options.parser = Object.assign({}, htmlParserDefaults, options.parser);
+      const logger = loggerFor(options);
+      const tagAllowed = function(name) {
+        return options.allowedTags === false || (options.allowedTags || []).indexOf(name) > -1;
+      };
+      vulnerableTags.forEach(function(tag) {
+        if (tagAllowed(tag) && !options.allowVulnerableTags) {
+          logger.warn(
+            `Your \`allowedTags\` option includes \`${tag}\`, which is inherently vulnerable to XSS attacks. Please remove it from \`allowedTags\`, or, to disable this warning, add the \`allowVulnerableTags\` option and ensure you are accounting for this risk.`
+          );
+        }
+      });
+      const nonTextTagsArray = options.nonTextTags || [
+        "script",
+        "style",
+        "textarea",
+        "option",
+        "xmp"
+      ];
+      let allowedAttributesMap;
+      let allowedAttributesGlobMap;
+      if (options.allowedAttributes) {
+        allowedAttributesMap = {};
+        allowedAttributesGlobMap = {};
+        each(options.allowedAttributes, function(attributes, tag) {
+          allowedAttributesMap[tag] = [];
+          const globRegex = [];
+          attributes.forEach(function(obj) {
+            if (typeof obj === "string" && obj.indexOf("*") >= 0) {
+              globRegex.push(escapeStringRegexp(obj).replace(/\\\*/g, ".*"));
+            } else {
+              allowedAttributesMap[tag].push(obj);
+            }
+          });
+          if (globRegex.length) {
+            allowedAttributesGlobMap[tag] = new RegExp("^(" + globRegex.join("|") + ")$");
+          }
+        });
+      }
+      const allowedClassesMap = {};
+      const allowedClassesGlobMap = {};
+      const allowedClassesRegexMap = {};
+      each(options.allowedClasses, function(classes, tag) {
+        if (allowedAttributesMap) {
+          if (!has(allowedAttributesMap, tag)) {
+            allowedAttributesMap[tag] = [];
+          }
+          allowedAttributesMap[tag].push("class");
+        }
+        allowedClassesMap[tag] = classes;
+        if (Array.isArray(classes)) {
+          const globRegex = [];
+          allowedClassesMap[tag] = [];
+          allowedClassesRegexMap[tag] = [];
+          classes.forEach(function(obj) {
+            if (typeof obj === "string" && obj.indexOf("*") >= 0) {
+              globRegex.push(escapeStringRegexp(obj).replace(/\\\*/g, ".*"));
+            } else if (obj instanceof RegExp) {
+              allowedClassesRegexMap[tag].push(obj);
+            } else {
+              allowedClassesMap[tag].push(obj);
+            }
+          });
+          if (globRegex.length) {
+            allowedClassesGlobMap[tag] = new RegExp("^(" + globRegex.join("|") + ")$");
+          }
+        }
+      });
+      const transformTagsMap = {};
+      let transformTagsAll;
+      each(options.transformTags, function(transform3, tag) {
+        let transFun;
+        if (typeof transform3 === "function") {
+          transFun = transform3;
+        } else if (typeof transform3 === "string") {
+          transFun = sanitizeHtml2.simpleTransform(transform3);
+        }
+        if (tag === "*") {
+          transformTagsAll = transFun;
+        } else {
+          transformTagsMap[tag] = transFun;
+        }
+      });
+      let depth;
+      let stack;
+      let skipMap;
+      let transformMap;
+      let skipText;
+      let skipTextDepth;
+      let rawTextEnd;
+      let skipRawText;
+      let addedText = false;
+      initializeState();
+      const parser3 = new htmlparser.Parser({
+        onopentag: function(name, attribs) {
+          if (options.onOpenTag) {
+            options.onOpenTag(name, attribs);
+          }
+          updateRawTextRegion();
+          if (options.enforceHtmlBoundary && name === "html") {
+            initializeState();
+          }
+          if (skipRawText) {
+            return;
+          }
+          if (skipText) {
+            skipTextDepth++;
+            return;
+          }
+          const frame = new Frame(name, attribs);
+          stack.push(frame);
+          let skip = false;
+          const hasText = !!frame.text;
+          let transformedTag;
+          if (has(transformTagsMap, name)) {
+            transformedTag = transformTagsMap[name](name, attribs);
+            frame.attribs = attribs = transformedTag.attribs;
+            if (transformedTag.text !== void 0) {
+              frame.innerText = transformedTag.text;
+            }
+            if (name !== transformedTag.tagName) {
+              frame.name = name = transformedTag.tagName;
+              transformMap[depth] = transformedTag.tagName;
+            }
+          }
+          if (transformTagsAll) {
+            transformedTag = transformTagsAll(name, attribs);
+            frame.attribs = attribs = transformedTag.attribs;
+            if (name !== transformedTag.tagName) {
+              frame.name = name = transformedTag.tagName;
+              transformMap[depth] = transformedTag.tagName;
+            }
+          }
+          if (!tagAllowed(name) || animatesUrlAttribute(name, attribs) || options.disallowedTagsMode === "recursiveEscape" && !isEmptyObject(skipMap) || options.nestingLimit != null && depth >= options.nestingLimit) {
+            skip = true;
+            skipMap[depth] = true;
+            if (options.disallowedTagsMode === "discard" || options.disallowedTagsMode === "completelyDiscard") {
+              if (nonTextTagsArray.indexOf(name) !== -1) {
+                skipText = true;
+                skipTextDepth = 1;
+                if (frame.tag.toLowerCase() === "noscript") {
+                  rawTextEnd = findRawTextEnd("noscript", parser3.endIndex + 1);
+                }
+              }
+            }
+          }
+          depth++;
+          if (skip) {
+            if (options.disallowedTagsMode === "discard" || options.disallowedTagsMode === "completelyDiscard") {
+              if (frame.innerText && !hasText) {
+                const escaped = escapeHtml3(frame.innerText);
+                if (options.textFilter) {
+                  result += options.textFilter(escaped, name);
+                } else {
+                  result += escaped;
+                }
+                addedText = true;
+              }
+              return;
+            }
+            tempResult = result;
+            result = "";
+          }
+          result += "<" + name;
+          if (name === "script") {
+            if (options.allowedScriptHostnames || options.allowedScriptDomains) {
+              frame.innerText = "";
+            }
+          }
+          const isBeingEscaped = skip && (options.disallowedTagsMode === "escape" || options.disallowedTagsMode === "recursiveEscape");
+          const shouldPreserveEscapedAttributes = isBeingEscaped && options.preserveEscapedAttributes;
+          if (shouldPreserveEscapedAttributes) {
+            each(attribs, function(value, a) {
+              result += " " + a + '="' + escapeHtml3(value || "", true) + '"';
+            });
+          } else if (!allowedAttributesMap || has(allowedAttributesMap, name) || allowedAttributesMap["*"]) {
+            each(attribs, function(value, a) {
+              if (!VALID_HTML_ATTRIBUTE_NAME.test(a)) {
+                delete frame.attribs[a];
+                return;
+              }
+              if (value === "" && !options.allowedEmptyAttributes.includes(a) && (options.nonBooleanAttributes.includes(a) || options.nonBooleanAttributes.includes("*"))) {
+                delete frame.attribs[a];
+                return;
+              }
+              let passedAllowedAttributesMapCheck = false;
+              if (!allowedAttributesMap || has(allowedAttributesMap, name) && allowedAttributesMap[name].indexOf(a) !== -1 || allowedAttributesMap["*"] && allowedAttributesMap["*"].indexOf(a) !== -1 || has(allowedAttributesGlobMap, name) && allowedAttributesGlobMap[name].test(a) || allowedAttributesGlobMap["*"] && allowedAttributesGlobMap["*"].test(a)) {
+                passedAllowedAttributesMapCheck = true;
+              } else if (allowedAttributesMap && allowedAttributesMap[name]) {
+                for (const o of allowedAttributesMap[name]) {
+                  if (isPlainObject3(o) && o.name && o.name === a) {
+                    passedAllowedAttributesMapCheck = true;
+                    let newValue = "";
+                    if (o.multiple === true) {
+                      const splitStrArray = value.split(" ");
+                      for (const s of splitStrArray) {
+                        if (o.values.indexOf(s) !== -1) {
+                          if (newValue === "") {
+                            newValue = s;
+                          } else {
+                            newValue += " " + s;
+                          }
+                        }
+                      }
+                    } else if (o.values.indexOf(value) >= 0) {
+                      newValue = value;
+                    }
+                    value = newValue;
+                  }
+                }
+              }
+              if (passedAllowedAttributesMapCheck) {
+                if (options.allowedSchemesAppliedToAttributes.indexOf(a) !== -1) {
+                  if (naughtyHref(name, value)) {
+                    delete frame.attribs[a];
+                    return;
+                  }
+                }
+                if (name === "meta" && a.toLowerCase() === "content" && isRefresh(attribs) && naughtyRefresh(value)) {
+                  delete frame.attribs[a];
+                  return;
+                }
+                if (name === "script" && a === "src") {
+                  let allowed = true;
+                  try {
+                    const parsed = parseUrl(value);
+                    if (options.allowedScriptHostnames || options.allowedScriptDomains) {
+                      const allowedHostname = (options.allowedScriptHostnames || []).find(function(hostname) {
+                        return hostname === parsed.url.hostname;
+                      });
+                      const allowedDomain = (options.allowedScriptDomains || []).find(function(domain) {
+                        return parsed.url.hostname === domain || parsed.url.hostname.endsWith(`.${domain}`);
+                      });
+                      allowed = allowedHostname || allowedDomain;
+                    }
+                  } catch (e) {
+                    allowed = false;
+                  }
+                  if (!allowed) {
+                    delete frame.attribs[a];
+                    return;
+                  }
+                }
+                if (name === "iframe" && a === "src") {
+                  let allowed = true;
+                  try {
+                    const parsed = parseUrl(value);
+                    if (parsed.isRelativeUrl) {
+                      allowed = has(options, "allowIframeRelativeUrls") ? options.allowIframeRelativeUrls : !options.allowedIframeHostnames && !options.allowedIframeDomains;
+                    } else if (options.allowedIframeHostnames || options.allowedIframeDomains) {
+                      const allowedHostname = (options.allowedIframeHostnames || []).find(function(hostname) {
+                        return hostname === parsed.url.hostname;
+                      });
+                      const allowedDomain = (options.allowedIframeDomains || []).find(function(domain) {
+                        return parsed.url.hostname === domain || parsed.url.hostname.endsWith(`.${domain}`);
+                      });
+                      allowed = allowedHostname || allowedDomain;
+                    }
+                  } catch (e) {
+                    allowed = false;
+                  }
+                  if (!allowed) {
+                    delete frame.attribs[a];
+                    return;
+                  }
+                }
+                if (a === "srcset" || a === "imagesrcset") {
+                  try {
+                    let parsed = parseSrcset(value);
+                    parsed.forEach(function(value2) {
+                      if (naughtyHref(name, value2.url)) {
+                        value2.evil = true;
+                      }
+                    });
+                    parsed = filter2(parsed, function(v) {
+                      return !v.evil;
+                    });
+                    if (!parsed.length) {
+                      delete frame.attribs[a];
+                      return;
+                    } else {
+                      value = stringifySrcset(filter2(parsed, function(v) {
+                        return !v.evil;
+                      }));
+                      frame.attribs[a] = value;
+                    }
+                  } catch (e) {
+                    delete frame.attribs[a];
+                    return;
+                  }
+                }
+                if (a === "class") {
+                  const allowedSpecificClasses = allowedClassesMap[name];
+                  const allowedWildcardClasses = allowedClassesMap["*"];
+                  const allowedSpecificClassesGlob = allowedClassesGlobMap[name];
+                  const allowedSpecificClassesRegex = allowedClassesRegexMap[name];
+                  const allowedWildcardClassesRegex = allowedClassesRegexMap["*"];
+                  const allowedWildcardClassesGlob = allowedClassesGlobMap["*"];
+                  const allowedClassesGlobs = [
+                    allowedSpecificClassesGlob,
+                    allowedWildcardClassesGlob
+                  ].concat(allowedSpecificClassesRegex, allowedWildcardClassesRegex).filter(function(t) {
+                    return t;
+                  });
+                  if (allowedSpecificClasses && allowedWildcardClasses) {
+                    value = filterClasses(
+                      value,
+                      mergeClasses(allowedSpecificClasses, allowedWildcardClasses),
+                      allowedClassesGlobs
+                    );
+                  } else {
+                    value = filterClasses(
+                      value,
+                      allowedSpecificClasses || allowedWildcardClasses,
+                      allowedClassesGlobs
+                    );
+                  }
+                  if (!value.length) {
+                    delete frame.attribs[a];
+                    return;
+                  }
+                }
+                if (a === "style") {
+                  if (options.parseStyleAttributes) {
+                    try {
+                      const abstractSyntaxTree = postcssParse(name + " {" + value + "}", { map: false });
+                      const filteredAST = filterCss(
+                        abstractSyntaxTree,
+                        options.allowedStyles
+                      );
+                      value = stringifyStyleAttributes(filteredAST);
+                      if (value.length === 0) {
+                        delete frame.attribs[a];
+                        return;
+                      }
+                    } catch (e) {
+                      if (typeof window !== "undefined") {
+                        logger.warn(
+                          `Failed to parse "${name} {${value}}". If you are running this in a browser, we recommend disabling style parsing with the parseStyleAttributes option, since it only works in a node environment due to a postcss dependency. More info: https://github.com/apostrophecms/sanitize-html/issues/547`
+                        );
+                      }
+                      delete frame.attribs[a];
+                      return;
+                    }
+                  } else if (options.allowedStyles) {
+                    throw new Error("allowedStyles option cannot be used together with parseStyleAttributes: false.");
+                  }
+                }
+                result += " " + a;
+                if (value && value.length) {
+                  result += '="' + escapeHtml3(value, true) + '"';
+                } else if (options.allowedEmptyAttributes.includes(a)) {
+                  result += '=""';
+                }
+              } else {
+                delete frame.attribs[a];
+              }
+            });
+          }
+          if (options.selfClosing.indexOf(name) !== -1) {
+            result += " />";
+          } else {
+            result += ">";
+            if (frame.innerText && !hasText) {
+              const escaped = escapeHtml3(frame.innerText);
+              if (options.textFilter) {
+                result += options.textFilter(escaped, name);
+              } else {
+                result += escaped;
+              }
+              addedText = true;
+            }
+          }
+          if (skip) {
+            result = tempResult + escapeHtml3(result);
+            tempResult = "";
+          }
+          frame.openingTagLength = result.length - frame.tagPosition;
+        },
+        ontext: function(text2) {
+          updateRawTextRegion();
+          if (skipText || skipRawText) {
+            return;
+          }
+          const lastFrame = stack[stack.length - 1];
+          let tag;
+          if (lastFrame) {
+            tag = lastFrame.tag;
+            text2 = lastFrame.innerText !== void 0 ? lastFrame.innerText : text2;
+          }
+          if (options.disallowedTagsMode === "completelyDiscard" && !tagAllowed(tag)) {
+            text2 = "";
+          } else if (tag && tagAllowed(tag) && (options.disallowedTagsMode === "discard" || options.disallowedTagsMode === "completelyDiscard") && (tag === "script" || tag === "style")) {
+            result += text2;
+          } else if (tag && tagAllowed(tag) && (options.disallowedTagsMode === "discard" || options.disallowedTagsMode === "completelyDiscard") && (tag === "textarea" || tag === "xmp")) {
+            if (tag === "xmp") {
+              result += text2.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+            } else {
+              result += escapeHtml3(text2, false);
+            }
+          } else if (
+            // htmlparser2 treats <iframe> as a raw-text element, so markup inside
+            // (including after an unclosed <iframe>) arrives as a single text node.
+            // When the iframe is discarded, re-sanitize that fallback markup as HTML
+            // instead of escaping it as plain text (issue #5550).
+            // The nested call continues from the current depth so that
+            // `nestingLimit` applies to the whole output.
+            tag === "iframe" && !tagAllowed(tag) && options.disallowedTagsMode === "discard" && iframeFallbackDepth < MAX_IFRAME_FALLBACK_DEPTH
+          ) {
+            result += sanitizeHtml2(text2, options, {
+              depth,
+              iframeFallbackDepth: iframeFallbackDepth + 1
+            });
+          } else if (!addedText) {
+            const escaped = escapeHtml3(text2, false);
+            if (options.textFilter) {
+              result += options.textFilter(escaped, tag);
+            } else {
+              result += escaped;
+            }
+          }
+          if (stack.length) {
+            const frame = stack[stack.length - 1];
+            frame.text += text2;
+          }
+        },
+        onclosetag: function(name, isImplied) {
+          if (options.onCloseTag) {
+            options.onCloseTag(name, isImplied);
+          }
+          updateRawTextRegion();
+          if (skipRawText) {
+            const lastFrame = stack[stack.length - 1];
+            if (!lastFrame || lastFrame.tag !== name) {
+              return;
+            }
+          } else if (skipText) {
+            skipTextDepth--;
+            if (!skipTextDepth) {
+              skipText = false;
+              if (rawTextEnd !== null) {
+                skipRawText = true;
+              }
+            } else {
+              return;
+            }
+          }
+          const frame = stack.pop();
+          if (!frame) {
+            return;
+          }
+          if (frame.tag !== name) {
+            stack.push(frame);
+            return;
+          }
+          skipText = options.enforceHtmlBoundary ? name === "html" : false;
+          depth--;
+          const skip = skipMap[depth];
+          if (skip) {
+            delete skipMap[depth];
+            if (options.disallowedTagsMode === "discard" || options.disallowedTagsMode === "completelyDiscard") {
+              frame.updateParentNodeText();
+              return;
+            }
+            tempResult = result;
+            result = "";
+          }
+          if (transformMap[depth]) {
+            name = transformMap[depth];
+            delete transformMap[depth];
+          }
+          if (options.exclusiveFilter) {
+            const filterResult = options.exclusiveFilter(frame);
+            if (filterResult === "excludeTag") {
+              if (skip) {
+                result = tempResult;
+                tempResult = "";
+              }
+              result = result.substring(0, frame.tagPosition) + result.substring(frame.tagPosition + frame.openingTagLength);
+              return;
+            } else if (filterResult) {
+              result = result.substring(0, frame.tagPosition);
+              return;
+            }
+          }
+          frame.updateParentNodeMediaChildren();
+          frame.updateParentNodeText();
+          if (
+            // Already output />
+            options.selfClosing.indexOf(name) !== -1 || // Escaped tag, closing tag is implied
+            isImplied && !tagAllowed(name) && ["escape", "recursiveEscape"].indexOf(options.disallowedTagsMode) >= 0
+          ) {
+            if (skip) {
+              result = tempResult;
+              tempResult = "";
+            }
+            return;
+          }
+          result += "</" + name + ">";
+          if (skip) {
+            result = tempResult + escapeHtml3(result);
+            tempResult = "";
+          }
+          addedText = false;
+        }
+      }, options.parser);
+      parser3.write(html);
+      parser3.end();
+      if (options.disallowedTagsMode === "escape" || options.disallowedTagsMode === "recursiveEscape") {
+        const lastParsedIndex = parser3.endIndex;
+        if (lastParsedIndex != null && lastParsedIndex >= 0 && lastParsedIndex < html.length) {
+          const unparsed = html.substring(lastParsedIndex);
+          result += escapeHtml3(unparsed);
+        } else if ((lastParsedIndex == null || lastParsedIndex < 0) && html.length > 0 && result === "") {
+          result = escapeHtml3(html);
+        }
+      }
+      return result;
+      function initializeState() {
+        result = "";
+        depth = baseDepth;
+        stack = [];
+        skipMap = {};
+        transformMap = {};
+        skipText = false;
+        skipTextDepth = 0;
+        rawTextEnd = null;
+        skipRawText = false;
+      }
+      function updateRawTextRegion() {
+        if (rawTextEnd !== null && parser3.startIndex >= rawTextEnd) {
+          rawTextEnd = null;
+          skipRawText = false;
+        }
+      }
+      function findRawTextEnd(tagName, from) {
+        const re = new RegExp("</" + tagName + "[\\t\\n\\f\\r />]", "ig");
+        re.lastIndex = from;
+        const match = re.exec(html);
+        return match ? match.index : Infinity;
+      }
+      function escapeHtml3(s, quote) {
+        if (typeof s !== "string") {
+          s = s + "";
+        }
+        if (options.parser.decodeEntities) {
+          s = s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+          if (quote) {
+            s = s.replace(/"/g, "&quot;");
+          }
+        }
+        s = s.replace(/&(?![a-zA-Z0-9#]{1,20};)/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+        if (quote) {
+          s = s.replace(/"/g, "&quot;");
+        }
+        return s;
+      }
+      function naughtyHref(name, href) {
+        const allowedSchemes = has(options.allowedSchemesByTag, name) ? options.allowedSchemesByTag[name] : options.allowedSchemes || [];
+        return launderNaughtyHref(href, {
+          allowedSchemes,
+          allowProtocolRelative: options.allowProtocolRelative
+        });
+      }
+      function isRefresh(attribs) {
+        return Object.keys(attribs).some(function(a) {
+          return a.toLowerCase() === "http-equiv" && String(attribs[a]).trim().toLowerCase() === "refresh";
+        });
+      }
+      function naughtyRefresh(content) {
+        const input = String(content);
+        const isWhitespace3 = function(c) {
+          return c === " " || c === "	" || c === "\n" || c === "\f" || c === "\r";
+        };
+        let position = 0;
+        const skipWhitespace = function() {
+          while (position < input.length && isWhitespace3(input[position])) {
+            position++;
+          }
+        };
+        const lowerAt = function(i) {
+          return (input[i] || "").toLowerCase();
+        };
+        skipWhitespace();
+        const timeStart = position;
+        while (position < input.length && /[0-9.]/.test(input[position])) {
+          position++;
+        }
+        if (position === timeStart) {
+          return true;
+        }
+        if (position < input.length) {
+          const c = input[position];
+          if (c !== ";" && c !== "," && !isWhitespace3(c)) {
+            return true;
+          }
+          skipWhitespace();
+          if (input[position] === ";" || input[position] === ",") {
+            position++;
+          }
+          skipWhitespace();
+        }
+        if (position >= input.length) {
+          return false;
+        }
+        let url2 = input.slice(position);
+        let quoted = true;
+        if (lowerAt(position) === "u") {
+          quoted = false;
+          if (lowerAt(position + 1) === "r" && lowerAt(position + 2) === "l") {
+            position += 3;
+            skipWhitespace();
+            if (input[position] === "=") {
+              position++;
+              skipWhitespace();
+              quoted = true;
+            }
+          }
+        }
+        if (quoted) {
+          const quote = input[position];
+          if (quote === '"' || quote === "'") {
+            position++;
+          }
+          url2 = input.slice(position);
+          if (quote === '"' || quote === "'") {
+            const end = url2.indexOf(quote);
+            if (end !== -1) {
+              url2 = url2.slice(0, end);
+            }
+          }
+        }
+        return naughtyHref("meta", url2);
+      }
+      function animatesUrlAttribute(name, attribs) {
+        if (svgAnimationTags.indexOf(localPart(name)) === -1) {
+          return false;
+        }
+        const schemeCheckedAttributes = options.allowedSchemesAppliedToAttributes || [];
+        return Object.keys(attribs || {}).some(function(attributeName) {
+          if (localPart(attributeName) !== "attributename") {
+            return false;
+          }
+          const target = (attribs[attributeName] || "").trim().toLowerCase();
+          const localName = target.slice(target.lastIndexOf(":") + 1);
+          return alwaysUrlAttributes.indexOf(localName) !== -1 || schemeCheckedAttributes.indexOf(target) !== -1 || schemeCheckedAttributes.indexOf(localName) !== -1;
+        });
+      }
+      function localPart(name) {
+        const lower = name.toLowerCase();
+        return lower.slice(lower.lastIndexOf(":") + 1);
+      }
+      function parseUrl(value) {
+        value = value.replace(/^(\w+:)?\s*[\\/]\s*[\\/]/, "$1//");
+        if (value.startsWith("relative:")) {
+          throw new Error("relative: exploit attempt");
+        }
+        let base = "relative://relative-site";
+        for (let i = 0; i < 100; i++) {
+          base += `/${i}`;
+        }
+        const parsed = new URL(value, base);
+        const isRelativeUrl = parsed && parsed.hostname === "relative-site" && parsed.protocol === "relative:";
+        return {
+          isRelativeUrl,
+          url: parsed
+        };
+      }
+      function filterCss(abstractSyntaxTree, allowedStyles) {
+        if (!allowedStyles) {
+          return abstractSyntaxTree;
+        }
+        const astRules = abstractSyntaxTree.nodes[0];
+        let selectedRule;
+        if (allowedStyles[astRules.selector] && allowedStyles["*"]) {
+          selectedRule = mergeStyles(
+            allowedStyles[astRules.selector],
+            allowedStyles["*"]
+          );
+        } else {
+          selectedRule = allowedStyles[astRules.selector] || allowedStyles["*"];
+        }
+        if (selectedRule) {
+          abstractSyntaxTree.nodes[0].nodes = astRules.nodes.reduce(filterDeclarations(selectedRule), []);
+        }
+        return abstractSyntaxTree;
+      }
+      function stringifyStyleAttributes(filteredAST) {
+        return filteredAST.nodes[0].nodes.reduce(function(extractedAttributes, attrObject) {
+          extractedAttributes.push(
+            `${attrObject.prop}:${attrObject.value}${attrObject.important ? " !important" : ""}`
+          );
+          return extractedAttributes;
+        }, []).join(";");
+      }
+      function filterDeclarations(selectedRule) {
+        return function(allowedDeclarationsList, attributeObject) {
+          if (has(selectedRule, attributeObject.prop)) {
+            const matchesRegex = selectedRule[attributeObject.prop].some(function(regularExpression) {
+              return regularExpression.test(attributeObject.value);
+            });
+            if (matchesRegex) {
+              allowedDeclarationsList.push(attributeObject);
+            }
+          }
+          return allowedDeclarationsList;
+        };
+      }
+      function filterClasses(classes, allowed, allowedGlobs) {
+        if (!allowed) {
+          return classes;
+        }
+        classes = classes.split(/\s+/);
+        return classes.filter(function(clss) {
+          return allowed.indexOf(clss) !== -1 || allowedGlobs.some(function(glob2) {
+            return glob2.test(clss);
+          });
+        }).join(" ");
+      }
+    }
+    var htmlParserDefaults = {
+      decodeEntities: true
+    };
+    sanitizeHtml2.defaults = {
+      allowedTags: [
+        // Sections derived from MDN element categories and limited to the more
+        // benign categories.
+        // https://developer.mozilla.org/en-US/docs/Web/HTML/Element
+        // Content sectioning
+        "address",
+        "article",
+        "aside",
+        "footer",
+        "header",
+        "h1",
+        "h2",
+        "h3",
+        "h4",
+        "h5",
+        "h6",
+        "hgroup",
+        "main",
+        "nav",
+        "section",
+        // Text content
+        "blockquote",
+        "dd",
+        "div",
+        "dl",
+        "dt",
+        "figcaption",
+        "figure",
+        "hr",
+        "li",
+        "menu",
+        "ol",
+        "p",
+        "pre",
+        "ul",
+        // Inline text semantics
+        "a",
+        "abbr",
+        "b",
+        "bdi",
+        "bdo",
+        "br",
+        "cite",
+        "code",
+        "data",
+        "dfn",
+        "em",
+        "i",
+        "kbd",
+        "mark",
+        "q",
+        "rb",
+        "rp",
+        "rt",
+        "rtc",
+        "ruby",
+        "s",
+        "samp",
+        "small",
+        "span",
+        "strong",
+        "sub",
+        "sup",
+        "time",
+        "u",
+        "var",
+        "wbr",
+        // Table content
+        "caption",
+        "col",
+        "colgroup",
+        "table",
+        "tbody",
+        "td",
+        "tfoot",
+        "th",
+        "thead",
+        "tr"
+      ],
+      // Tags that cannot be boolean
+      nonBooleanAttributes: [
+        "abbr",
+        "accept",
+        "accept-charset",
+        "accesskey",
+        "action",
+        "allow",
+        "alt",
+        "as",
+        "autocapitalize",
+        "autocomplete",
+        "blocking",
+        "charset",
+        "cite",
+        "class",
+        "color",
+        "cols",
+        "colspan",
+        "content",
+        "contenteditable",
+        "coords",
+        "crossorigin",
+        "data",
+        "datetime",
+        "decoding",
+        "dir",
+        "dirname",
+        "download",
+        "draggable",
+        "enctype",
+        "enterkeyhint",
+        "fetchpriority",
+        "for",
+        "form",
+        "formaction",
+        "formenctype",
+        "formmethod",
+        "formtarget",
+        "headers",
+        "height",
+        "hidden",
+        "high",
+        "href",
+        "hreflang",
+        "http-equiv",
+        "id",
+        "imagesizes",
+        "imagesrcset",
+        "inputmode",
+        "integrity",
+        "is",
+        "itemid",
+        "itemprop",
+        "itemref",
+        "itemtype",
+        "kind",
+        "label",
+        "lang",
+        "list",
+        "loading",
+        "low",
+        "max",
+        "maxlength",
+        "media",
+        "method",
+        "min",
+        "minlength",
+        "name",
+        "nonce",
+        "optimum",
+        "pattern",
+        "ping",
+        "placeholder",
+        "popover",
+        "popovertarget",
+        "popovertargetaction",
+        "poster",
+        "preload",
+        "referrerpolicy",
+        "rel",
+        "rows",
+        "rowspan",
+        "sandbox",
+        "scope",
+        "shape",
+        "size",
+        "sizes",
+        "slot",
+        "span",
+        "spellcheck",
+        "src",
+        "srcdoc",
+        "srclang",
+        "srcset",
+        "start",
+        "step",
+        "style",
+        "tabindex",
+        "target",
+        "title",
+        "translate",
+        "type",
+        "usemap",
+        "value",
+        "width",
+        "wrap",
+        // Event handlers
+        "onauxclick",
+        "onafterprint",
+        "onbeforematch",
+        "onbeforeprint",
+        "onbeforeunload",
+        "onbeforetoggle",
+        "onblur",
+        "oncancel",
+        "oncanplay",
+        "oncanplaythrough",
+        "onchange",
+        "onclick",
+        "onclose",
+        "oncontextlost",
+        "oncontextmenu",
+        "oncontextrestored",
+        "oncopy",
+        "oncuechange",
+        "oncut",
+        "ondblclick",
+        "ondrag",
+        "ondragend",
+        "ondragenter",
+        "ondragleave",
+        "ondragover",
+        "ondragstart",
+        "ondrop",
+        "ondurationchange",
+        "onemptied",
+        "onended",
+        "onerror",
+        "onfocus",
+        "onformdata",
+        "onhashchange",
+        "oninput",
+        "oninvalid",
+        "onkeydown",
+        "onkeypress",
+        "onkeyup",
+        "onlanguagechange",
+        "onload",
+        "onloadeddata",
+        "onloadedmetadata",
+        "onloadstart",
+        "onmessage",
+        "onmessageerror",
+        "onmousedown",
+        "onmouseenter",
+        "onmouseleave",
+        "onmousemove",
+        "onmouseout",
+        "onmouseover",
+        "onmouseup",
+        "onoffline",
+        "ononline",
+        "onpagehide",
+        "onpageshow",
+        "onpaste",
+        "onpause",
+        "onplay",
+        "onplaying",
+        "onpopstate",
+        "onprogress",
+        "onratechange",
+        "onreset",
+        "onresize",
+        "onrejectionhandled",
+        "onscroll",
+        "onscrollend",
+        "onsecuritypolicyviolation",
+        "onseeked",
+        "onseeking",
+        "onselect",
+        "onslotchange",
+        "onstalled",
+        "onstorage",
+        "onsubmit",
+        "onsuspend",
+        "ontimeupdate",
+        "ontoggle",
+        "onunhandledrejection",
+        "onunload",
+        "onvolumechange",
+        "onwaiting",
+        "onwheel"
+      ],
+      disallowedTagsMode: "discard",
+      allowedAttributes: {
+        a: ["href", "name", "target"],
+        // We don't currently allow img itself by default, but
+        // these attributes would make sense if we did.
+        img: ["src", "srcset", "alt", "title", "width", "height", "loading"]
+      },
+      allowedEmptyAttributes: [
+        "alt"
+      ],
+      // Lots of these won't come up by default because we don't allow them
+      selfClosing: ["img", "br", "hr", "area", "base", "basefont", "input", "link", "meta", "col"],
+      // URL schemes we permit
+      allowedSchemes: ["http", "https", "ftp", "mailto", "tel"],
+      allowedSchemesByTag: {},
+      allowedSchemesAppliedToAttributes: [
+        "href",
+        "src",
+        "cite",
+        "action",
+        "formaction",
+        "data",
+        "xlink:href",
+        "poster",
+        "background",
+        "ping",
+        "longdesc",
+        "usemap",
+        "codebase",
+        "classid",
+        "archive",
+        "profile",
+        "manifest",
+        "itemid",
+        "dynsrc",
+        "lowsrc"
+      ],
+      allowProtocolRelative: true,
+      enforceHtmlBoundary: false,
+      parseStyleAttributes: true,
+      preserveEscapedAttributes: false
+    };
+    sanitizeHtml2.simpleTransform = function(newTagName, newAttribs, merge2) {
+      merge2 = merge2 === void 0 ? true : merge2;
+      newAttribs = newAttribs || {};
+      return function(tagName, attribs) {
+        let attrib;
+        if (merge2) {
+          for (attrib in newAttribs) {
+            attribs[attrib] = newAttribs[attrib];
+          }
+        } else {
+          attribs = newAttribs;
+        }
+        return {
+          tagName: newTagName,
+          attribs
+        };
+      };
+    };
+  }
+});
+
 // src/cli/main.ts
 import { existsSync } from "node:fs";
 import { dirname as dirname15, join as join16, resolve as resolve16 } from "node:path";
@@ -44595,15 +44595,15 @@ function stripHttpOws(value) {
   }
   return start === 0 && end === value.length ? value : value.slice(start, end);
 }
-function validateStandardRequestHeaders(request, route2) {
-  if (route2.messageKind !== "request") return;
-  const method = route2.message.method;
+function validateStandardRequestHeaders(request, route) {
+  if (route.messageKind !== "request") return;
+  const method = route.message.method;
   if (request.protocolVersionHeader === void 0) {
-    const claimed = route2.classification.revision;
+    const claimed = route.classification.revision;
     return crossCheckMismatch("version-header-missing", "(missing)", claimed === void 0 ? "the body carries a modern per-request envelope but the required MCP-Protocol-Version header is absent" : `the body envelope names protocol version ${claimed} but the required MCP-Protocol-Version header is absent`, "standard-header-validation");
   }
   if (request.mcpMethodHeader === void 0) return crossCheckMismatch("method-header-missing", "(missing)", `the body names method ${method} but the required Mcp-Method header is absent`, "standard-header-validation");
-  const source = mcpNameSource(method, route2.message.params);
+  const source = mcpNameSource(method, route.message.params);
   if (source === void 0) return;
   const { field: sourceField, value: bodyValue } = source;
   if (request.mcpNameHeader === void 0) {
@@ -44747,8 +44747,8 @@ function classifyInboundRequest(request) {
   if (isPlainObject$2(body) && isJSONRPCNotification(body)) return classifyNotificationBody(request, body);
   return rejection("jsonrpc-shape", "invalid-json-rpc-body", 400, new ProtocolError(ProtocolErrorCode.InvalidRequest, "Bad Request: the request body is not a valid JSON-RPC message"), true);
 }
-function modernOnlyStrictRejection(route2, supportedVersions) {
-  switch (route2.reason) {
+function modernOnlyStrictRejection(route, supportedVersions) {
+  switch (route.reason) {
     case "http-method":
       return rejection("http-method", "modern-only-method-not-allowed", 405, new ProtocolError(-32e3, "Method not allowed."), true);
     case "batch":
@@ -44759,7 +44759,7 @@ function modernOnlyStrictRejection(route2, supportedVersions) {
       return;
     case "initialize":
     case "no-claim": {
-      const requested = route2.requestedVersion;
+      const requested = route.requestedVersion;
       return rejection("era-classification", "modern-only-missing-envelope", 400, requested === void 0 ? new ProtocolError(ProtocolErrorCode.UnsupportedProtocolVersion, "Unsupported protocol version: the request did not name a protocol version", { supported: [...supportedVersions] }) : new UnsupportedProtocolVersionError({
         supported: [...supportedVersions],
         requested
@@ -56085,34 +56085,34 @@ function createMcpHandler(factory, options = {}) {
   });
   if (responseMode === "json") console.warn("responseMode: 'json' drops mid-call notifications. subscriptions/listen streams are always served over SSE regardless; other notifications emitted before a result are dropped.");
   const legacyHandler = legacy === "reject" ? void 0 : createLegacyStatelessFallback(factory, reportError, options.keepAliveMs, maxRequestBodySize);
-  async function serveModern(route2, request, authInfo) {
-    const claimedRevision = route2.classification.revision;
+  async function serveModern(route, request, authInfo) {
+    const claimedRevision = route.classification.revision;
     if (claimedRevision === void 0 || !SUPPORTED_MODERN_PROTOCOL_VERSIONS.includes(claimedRevision)) {
       const error2 = new UnsupportedProtocolVersionError({
         supported: [...SUPPORTED_MODERN_PROTOCOL_VERSIONS],
         requested: claimedRevision ?? "unknown"
       });
       reportError(error2);
-      return jsonRpcErrorResponse(400, error2.code, error2.message, error2.data, echoableRequestId(route2.message));
+      return jsonRpcErrorResponse(400, error2.code, error2.message, error2.data, echoableRequestId(route.message));
     }
     const stdHeaderRejection = validateStandardRequestHeaders({
       httpMethod: request.method,
       ...standardHeadersOf(request)
-    }, route2);
+    }, route);
     if (stdHeaderRejection !== void 0) {
       reportError(/* @__PURE__ */ new Error(`Rejected inbound request (${stdHeaderRejection.cell}): ${stdHeaderRejection.message}`));
-      return rejectionResponse(stdHeaderRejection, echoableRequestId(route2.message));
+      return rejectionResponse(stdHeaderRejection, echoableRequestId(route.message));
     }
-    const meta2 = route2.messageKind === "request" ? requestMetaOf(route2.message.params) : void 0;
+    const meta2 = route.messageKind === "request" ? requestMetaOf(route.message.params) : void 0;
     const declaredClientCapabilities = meta2?.[CLIENT_CAPABILITIES_META_KEY];
-    if (route2.messageKind === "request") {
-      const required2 = requiredClientCapabilitiesForRequest(route2.message.method);
+    if (route.messageKind === "request") {
+      const required2 = requiredClientCapabilitiesForRequest(route.message.method);
       if (required2 !== void 0) {
         const missing = missingClientCapabilities(required2, declaredClientCapabilities);
         if (missing !== void 0) {
           const error2 = new MissingRequiredClientCapabilityError({ requiredCapabilities: missing });
           reportError(error2);
-          return jsonRpcErrorResponse(httpStatusForErrorCode(error2.code, "ladder"), error2.code, error2.message, error2.data, route2.message.id);
+          return jsonRpcErrorResponse(httpStatusForErrorCode(error2.code, "ladder"), error2.code, error2.message, error2.data, route.message.id);
         }
       }
     }
@@ -56123,14 +56123,14 @@ function createMcpHandler(factory, options = {}) {
     });
     const server = product instanceof McpServer ? product.server : product;
     assertNotServing(server);
-    if (route2.messageKind === "request" && route2.message.method === "subscriptions/listen") {
+    if (route.messageKind === "request" && route.message.method === "subscriptions/listen") {
       const capabilities = server.getCapabilities();
       const serverInfo = serverIdentityOf(server);
       product.close().catch(reportError);
-      return listenRouter.serve(route2.message, request.signal, capabilities, serverInfo);
+      return listenRouter.serve(route.message, request.signal, capabilities, serverInfo);
     }
-    if (route2.messageKind === "request" && route2.message.method === "tools/call" && product instanceof McpServer) {
-      const callParams = route2.message.params;
+    if (route.messageKind === "request" && route.message.method === "tools/call" && product instanceof McpServer) {
+      const callParams = route.message.params;
       const toolName = typeof callParams?.name === "string" ? callParams.name : void 0;
       const inputSchema = toolName === void 0 ? void 0 : product.toolInputSchemaJson(toolName);
       if (inputSchema !== void 0) {
@@ -56140,13 +56140,13 @@ function createMcpHandler(factory, options = {}) {
           if (rejection2 !== void 0) {
             product.close().catch(reportError);
             reportError(/* @__PURE__ */ new Error(`Rejected inbound request (${rejection2.cell}): ${rejection2.message}`));
-            return rejectionResponse(rejection2, route2.message.id);
+            return rejectionResponse(rejection2, route.message.id);
           }
         }
       }
     }
-    if (route2.messageKind === "request" && product instanceof McpServer) try {
-      const challenge = await findScopeChallenge([route2.message], authInfo, (context) => product.resolveScopeChallenge(context));
+    if (route.messageKind === "request" && product instanceof McpServer) try {
+      const challenge = await findScopeChallenge([route.message], authInfo, (context) => product.resolveScopeChallenge(context));
       if (challenge !== void 0) {
         product.close().catch(reportError);
         return createScopeChallengeResponse(challenge, scopeChallengeResourceMetadataUrl(authInfo));
@@ -56154,7 +56154,7 @@ function createMcpHandler(factory, options = {}) {
     } catch (error2) {
       product.close().catch(reportError);
       reportError(toError(error2));
-      return internalServerErrorResponse(route2.message.id);
+      return internalServerErrorResponse(route.message.id);
     }
     assertNotServing(server);
     setNegotiatedProtocolVersion(server, claimedRevision);
@@ -56172,14 +56172,14 @@ function createMcpHandler(factory, options = {}) {
     };
     server.onclose = onExchangeClose;
     try {
-      const response = await invoke(product, route2.message, {
-        classification: route2.classification,
+      const response = await invoke(product, route.message, {
+        classification: route.classification,
         request,
         ...authInfo !== void 0 && { authInfo },
         ...responseMode !== void 0 && { responseMode },
         ...options.keepAliveMs !== void 0 && { keepAliveMs: options.keepAliveMs }
       });
-      if (route2.messageKind === "notification") queueMicrotask(() => void server.close().catch(() => {
+      if (route.messageKind === "notification") queueMicrotask(() => void server.close().catch(() => {
       }));
       return response;
     } catch (error2) {
@@ -56188,15 +56188,15 @@ function createMcpHandler(factory, options = {}) {
       });
       inflight.delete(server);
       reportError(toError(error2));
-      return internalServerErrorResponse(echoableRequestId(route2.message));
+      return internalServerErrorResponse(echoableRequestId(route.message));
     }
   }
-  async function serveLegacyRoute(route2, forwardRequest, authInfo, parsedBody) {
+  async function serveLegacyRoute(route, forwardRequest, authInfo, parsedBody) {
     if (legacyHandler !== void 0) return legacyHandler(forwardRequest, {
       ...authInfo !== void 0 && { authInfo },
       ...parsedBody !== void 0 && { parsedBody }
     });
-    const strict = modernOnlyStrictRejection(route2, SUPPORTED_MODERN_PROTOCOL_VERSIONS);
+    const strict = modernOnlyStrictRejection(route, SUPPORTED_MODERN_PROTOCOL_VERSIONS);
     if (strict === void 0) return new Response(null, { status: 202 });
     reportError(/* @__PURE__ */ new Error(`Rejected 2025-era request on a modern-only endpoint (${strict.cell}): ${strict.message}`));
     return rejectionResponse(strict, echoableRequestId(parsedBody));
@@ -56840,7 +56840,7 @@ function compareVersions(a, b) {
   return 0;
 }
 function cliVersion() {
-  return "v0.12.0";
+  return "v0.13.0";
 }
 
 // src/table-logic.ts
@@ -56989,6 +56989,15 @@ var findLongColumns = (columns) => columns.flatMap((column, index) => {
   );
   return !allCompact && (column.head.some(isLongLine) || longCell) ? [index] : [];
 });
+var findNoSortColumns = (options) => {
+  const { long, sorts } = options;
+  const sortOf = new Map(sorts.map(({ column, sort }) => [column, sort]));
+  const columns = /* @__PURE__ */ new Set([
+    ...long.filter((column) => sortOf.get(column) !== true),
+    ...sorts.filter(({ sort }) => !sort).map(({ column }) => column)
+  ]);
+  return [...columns].sort((a, b) => a - b);
+};
 var defaultFilterKind = (long) => long ? "text" : "select";
 
 // src/config.ts
@@ -57935,7 +57944,7 @@ var readLayer = async (path, readFile15) => {
 };
 var loadLayeredConfig = async (options) => {
   const issues = [];
-  let unreadable3;
+  let unreadable5;
   const layers = [];
   const take = async (path, layer) => {
     const read = await readLayer(path, options.readFile);
@@ -57943,7 +57952,7 @@ var loadLayeredConfig = async (options) => {
       return void 0;
     }
     if (read.kind === "unreadable") {
-      unreadable3 ??= { path, line: read.line, message: read.message };
+      unreadable5 ??= { path, line: read.line, message: read.message };
       return void 0;
     }
     const raw = layer === "folder" && isRecord3(read.raw) && "config" in read.raw ? Object.fromEntries(
@@ -58004,7 +58013,7 @@ var loadLayeredConfig = async (options) => {
     config: mergeConfigs(used.map((layer) => layer.config)),
     files: used.map((layer) => layer.file),
     nearest: paths.at(-1),
-    unreadable: unreadable3,
+    unreadable: unreadable5,
     issues
   };
 };
@@ -63265,827 +63274,16 @@ function isColorName(value) {
   return COLOR_NAMES.includes(value);
 }
 
-// src/render/sanitize.ts
-var import_sanitize_html = __toESM(require_sanitize_html(), 1);
-var ALIGN_VALUES = ["left", "center", "right"];
-var TEXT_ALIGN_PATTERN = /(?:^|;)\s*text-align\s*:\s*([a-z]+)/;
-var OWN_ATTRIBUTE = "data-mdmark-own";
-var KEEP_CLASS_ATTRIBUTE = "data-mdmark-keep-class";
-var RAW_CLASS_PATTERN = /^(?:mdmark-align-|mdmark-embed$)/;
-var SYNTAX_CLASS_PATTERN = /^(?:mdmark-|markdown-alert|has-tip$|has-link$|has-children$|is-virtual$)/;
-var DIAGRAM_ONLY_TAGS = /* @__PURE__ */ new Set([
-  "svg",
-  "defs",
-  "marker",
-  "pattern",
-  "g",
-  "path",
-  "rect",
-  "circle",
-  "ellipse",
-  "line",
-  "polyline",
-  "polygon",
-  "text",
-  "button",
-  "output",
-  "label"
-]);
-var DROP_ATTRIBUTE = "data-mdmark-drop";
-var DIAGRAM_STYLE_PATTERN = /^(?:\s*(?:(?:left|top|width|height):-?\d+(?:\.\d+)?px|padding:\d+(?:\.\d+)?px(?: \d+(?:\.\d+)?px)?|transform:scale\(\d+(?:\.\d+)?\))\s*;?)+$/;
-var CODE_DIGITS_PATTERN = /^\s*--mdmark-code-digits\s*:\s*(\d+)\s*;?\s*$/;
-var IMAGE_WIDTH_PATTERN = /^\s*--mdmark-image-width\s*:\s*(\d+(?:px|%))\s*;?\s*$/;
-var GALLERY_COLS_PATTERN = /^\s*--mdmark-gallery-cols\s*:\s*([1-6])\s*;?\s*$/;
-var MEDIA_TAGS = /* @__PURE__ */ new Set(["video", "audio"]);
-var SOURCE_LINE_ATTRIBUTE = "data-source-line";
-var SOURCE_LINE_PATTERN = /^\d+$/;
-var DATA_IMAGE_PATTERN = /^data:image\/(?:png|jpeg|gif|webp|svg\+xml);base64,[A-Za-z0-9+/=]*(?:#only-(?:light|dark))?$/;
-function dropDataUrls(tagName, attribs) {
-  const imageAttribute = tagName === "img" ? "src" : tagName === "video" ? "poster" : void 0;
-  const imageUrl = imageAttribute === void 0 ? void 0 : attribs[imageAttribute];
-  if (imageAttribute !== void 0 && imageUrl?.startsWith("data:") && !DATA_IMAGE_PATTERN.test(imageUrl)) {
-    delete attribs[imageAttribute];
-  }
-  if (MEDIA_TAGS.has(tagName) && attribs.src?.startsWith("data:")) {
-    delete attribs.src;
-  }
-}
-function fixTabindex(tagName, attribs) {
-  const next = { ...attribs };
-  if (next.tabindex !== void 0) {
-    next.tabindex = "0";
-  }
-  return { tagName, attribs: next };
-}
-function dropSyntaxAttributes(tagName, attribs) {
-  const next = {};
-  for (const [name, value] of Object.entries(attribs)) {
-    if (name === "class") {
-      const classes = value.split(/\s+/).filter(
-        (name2) => !SYNTAX_CLASS_PATTERN.test(name2) || RAW_CLASS_PATTERN.test(name2)
-      );
-      if (classes.length) {
-        next.class = classes.join(" ");
-      }
-    } else if (name === "role") {
-      if (tagName === "div" && value === "status") {
-        next[name] = value;
-      }
-    } else if (name === "aria-label") {
-      if (tagName === "pre" || tagName === "table") {
-        next[name] = value;
-      }
-    } else if (name === "tabindex") {
-      if (tagName === "pre" || tagName === "table") {
-        next[name] = value;
-      }
-    } else if (name === SOURCE_LINE_ATTRIBUTE) {
-      next[name] = value;
-    } else if (name.startsWith("data-")) {
-      const keep = tagName === "td" && name === "data-label" || tagName === "div" && (name === "data-mdmark-slot" || name === "data-mdmark-args");
-      if (keep) {
-        next[name] = value;
-      }
-    } else if (!(tagName === "abbr" && name === "title") && name !== "id" && name !== "hidden" && name !== "colspan" && name !== "rowspan" && name !== "scope" && !name.startsWith("aria-") && // 図の部品の属性は、図の部品が出した要素だけが持つ（`input` の `type`・`disabled` は、描くときにもう一度付けた値）
-    (!DIAGRAM_ATTRIBUTE_SET.has(name) || tagName === "input" && (name === "type" || name === "disabled"))) {
-      next[name] = value;
-    }
-  }
-  return next;
-}
-var DIAGRAM_ATTRIBUTES = [
-  "tabindex",
-  "style",
-  "for",
-  "type",
-  "min",
-  "max",
-  "step",
-  "value",
-  "disabled",
-  "datetime",
-  "d",
-  "viewbox",
-  "width",
-  "height",
-  "x",
-  "y",
-  "x1",
-  "y1",
-  "x2",
-  "y2",
-  "cx",
-  "cy",
-  "r",
-  "rx",
-  "ry",
-  "points",
-  "fill",
-  "stroke",
-  "stroke-width",
-  "stroke-dasharray",
-  "stroke-linecap",
-  "stroke-linejoin",
-  "marker-end",
-  "markerwidth",
-  "markerheight",
-  "markerunits",
-  "patternunits",
-  "refx",
-  "refy",
-  "orient",
-  "transform",
-  "text-anchor"
-];
-var RANGE_SCRIPT_TAGS = /* @__PURE__ */ new Set(["style", "template"]);
-var DIAGRAM_ATTRIBUTE_SET = new Set(DIAGRAM_ATTRIBUTES);
-var SANITIZE_OPTIONS = {
-  allowedTags: [
-    ...import_sanitize_html.default.defaults.allowedTags,
-    "img",
-    "del",
-    "details",
-    "summary",
-    "input",
-    "nav",
-    "figure",
-    "figcaption",
-    "style",
-    "template",
-    ...MEDIA_TAGS,
-    ...DIAGRAM_ONLY_TAGS
-  ],
-  allowedAttributes: {
-    "*": [
-      "id",
-      "role",
-      "aria-*",
-      "data-*",
-      "hidden",
-      "colspan",
-      "rowspan",
-      "scope",
-      ...DIAGRAM_ATTRIBUTES
-    ],
-    a: ["href", "title"],
-    img: ["src", "alt", "title"],
-    // ER 図の列のマーカーの名前（文書に記載した `abbr` の `title` は `dropSyntaxAttributes` が落とす）
-    abbr: ["title"],
-    details: ["open"],
-    input: ["type", "disabled", "checked"],
-    pre: ["tabindex"],
-    table: ["tabindex"],
-    span: ["tabindex"],
-    video: [
-      "src",
-      "controls",
-      "autoplay",
-      "muted",
-      "loop",
-      "playsinline",
-      "preload",
-      "poster"
-    ],
-    audio: ["src", "controls", "autoplay", "muted", "loop", "preload"]
-  },
-  // 図の部品の要素以外から取り除く要素は、マーカーを付けた要素を中身ごと削除する
-  exclusiveFilter: (frame) => frame.attribs[DROP_ATTRIBUTE] !== void 0,
-  // 記法の class は、mdmark が出した要素だけが持つ（生の HTML のものは `transformTags` が先に落とす）
-  allowedClasses: {
-    "*": [
-      "mdmark-*",
-      "markdown-alert*",
-      "has-tip",
-      "has-link",
-      "has-children",
-      "is-virtual"
-    ],
-    code: ["language-*"],
-    li: ["task-list-item"]
-  },
-  allowedSchemes: ["http", "https", "mailto"],
-  // 画像の `src` と動画の `poster` は `data:` URL も許す（残す構造は `transformTags` が絞る）
-  allowedSchemesByTag: {
-    img: ["http", "https", "data"],
-    video: ["http", "https", "data"],
-    audio: ["http", "https", "data"]
-  },
-  // postcss を呼ばない。`style` 属性は許可せず、列の配置だけを class に移す
-  parseStyleAttributes: false,
-  // 範囲の `style` は mdmark が根の要素の中に限って出したものだけを残す（文書に記載したものは `transformTags` が落とす）
-  allowVulnerableTags: true,
-  // 値の無い `hidden`（CSV の表の元の CSV）を残す。文書に記載した `hidden` は `dropSyntaxAttributes` が先に落とす
-  nonBooleanAttributes: import_sanitize_html.default.defaults.nonBooleanAttributes.filter(
-    (name) => name !== "hidden"
-  )
-};
-var CONTROL_OR_SPACE_MAX = 32;
-function isAllowedUrl(url2) {
-  const trimmed = Array.from(url2).filter((char) => char.charCodeAt(0) > CONTROL_OR_SPACE_MAX).join("");
-  const scheme = /^([a-z][a-z0-9+.-]*):/i.exec(trimmed)?.[1];
-  if (scheme === void 0) {
-    return true;
-  }
-  const allowed = SANITIZE_OPTIONS.allowedSchemes;
-  return Array.isArray(allowed) && allowed.includes(scheme.toLowerCase());
-}
-var EMBED_STYLES = (() => {
-  const length = String.raw`-?(?:\d+|\d*\.\d+)(?:px|rem|em|%|ch|pt|fr)?`;
-  const unsigned = String.raw`(?:\d+|\d*\.\d+)(?:px|rem|em|%|ch|pt|fr)?`;
-  const keyword = "[a-z]+(?:-[a-z]+)*";
-  const color = String.raw`#[0-9a-f]{3,8}|[a-z]+|(?:rgb|hsl)a?\(\s*[0-9.%\s,/-]+\)|var\(--mdmark-[a-z0-9-]+\)`;
-  const fn = String.raw`(?:repeat|minmax)\([a-z0-9\s,.%-]*\)`;
-  const words = (tokens) => new RegExp(`^(?:${tokens})(?:\\s+(?:${tokens}))*$`, "i");
-  return [
-    {
-      name: /^display$/,
-      value: /^(?:block|inline|inline-block|flex|inline-flex|grid|inline-grid|none)$/i
-    },
-    {
-      name: /^(?:flex(?:-(?:direction|wrap|grow|shrink|basis))?|align-items|justify-content|align-self)$/,
-      value: words(`${keyword}|${length}`)
-    },
-    {
-      name: /^(?:grid-template-columns|grid-template-rows|grid-column|grid-row|gap|row-gap|column-gap)$/,
-      value: words(`${keyword}|${length}|${fn}`)
-    },
-    {
-      name: /^(?:margin|padding)(?:-[a-z-]+)?$/,
-      value: words(`${unsigned}|auto`)
-    },
-    {
-      name: /^border(?:-(?!image)[a-z-]+)?$/,
-      value: words(`${length}|${color}`)
-    },
-    {
-      name: /^(?:width|max-width|min-width|height)$/,
-      value: words(`${length}|${keyword}`)
-    },
-    { name: /^(?:color|background-color)$/, value: words(color) },
-    {
-      name: /^(?:font-size|font-weight|text-align)$/,
-      value: words(`${length}|${keyword}`)
-    }
-  ];
-})();
-var EMBED_STYLE_FORBIDDEN = /\/\*|["'\\]|url\(|expression\(|\d\s*(?:dvw|dvh|svw|svh|lvw|lvh|vmin|vmax|vw|vh)\b/i;
-function filterEmbeddedStyle(style) {
-  const kept = [];
-  for (const declaration of style.split(";")) {
-    const colon = declaration.indexOf(":");
-    if (colon < 0) {
-      continue;
-    }
-    const name = declaration.slice(0, colon).trim().toLowerCase();
-    const value = declaration.slice(colon + 1).trim().replace(/\s+/g, " ");
-    if (value !== "" && !EMBED_STYLE_FORBIDDEN.test(value) && EMBED_STYLES.some(
-      (entry) => entry.name.test(name) && entry.value.test(value)
-    )) {
-      kept.push(`${name}:${value}`);
-    }
-  }
-  return kept.join(";");
-}
-function ownStyle(style) {
-  if (DIAGRAM_STYLE_PATTERN.test(style)) {
-    return style;
-  }
-  if (style.includes("--mdmark-image-width")) {
-    const width = IMAGE_WIDTH_PATTERN.exec(style)?.[1];
-    return width === void 0 ? "" : `--mdmark-image-width: ${width}`;
-  }
-  if (style.includes("--mdmark-gallery-cols")) {
-    const cols = GALLERY_COLS_PATTERN.exec(style)?.[1];
-    return cols === void 0 ? "" : `--mdmark-gallery-cols: ${cols}`;
-  }
-  if (style.includes("--mdmark-code-digits")) {
-    const digits = CODE_DIGITS_PATTERN.exec(style)?.[1];
-    return digits === void 0 ? "" : `--mdmark-code-digits:${digits}`;
-  }
-  return filterEmbeddedStyle(style);
-}
-var EMBED_PART_TAG = "mdmark-part";
-var EMBED_PART_ATTRIBUTE = "data-part";
-var TEXT_FILTER_SKIP_TAGS = /* @__PURE__ */ new Set([
-  "a",
-  "code",
-  "pre",
-  "button",
-  "h1",
-  "h2",
-  "h3",
-  "h4",
-  "h5",
-  "h6"
-]);
-var EMBEDDED_NON_TEXT_TAGS = [
-  "script",
-  "style",
-  "textarea",
-  "option",
-  "xmp"
-];
-var EMBEDDED_OPTIONS = {
-  ...SANITIZE_OPTIONS,
-  allowedTags: [
-    ...SANITIZE_OPTIONS.allowedTags,
-    "button",
-    EMBED_PART_TAG
-  ],
-  allowedAttributes: {
-    "*": ["data-hint", "style", "colspan", DROP_ATTRIBUTE],
-    a: ["href", "title"],
-    img: ["src", "alt", "title"],
-    details: ["open"],
-    input: ["type", "disabled", "checked"],
-    button: ["type"],
-    [EMBED_PART_TAG]: [EMBED_PART_ATTRIBUTE]
-  },
-  allowedClasses: {},
-  nonTextTags: EMBEDDED_NON_TEXT_TAGS
-};
-function sanitizeEmbedded(html, onText, keepClasses = false) {
-  return (0, import_sanitize_html.default)(html, {
-    ...EMBEDDED_OPTIONS,
-    ...keepClasses ? {
-      allowedAttributes: {
-        ...EMBEDDED_OPTIONS.allowedAttributes,
-        "*": [
-          ...EMBEDDED_OPTIONS.allowedAttributes["*"] ?? [],
-          "class",
-          KEEP_CLASS_ATTRIBUTE
-        ]
-      },
-      allowedClasses: void 0
-    } : {},
-    textFilter: (text2, tagName) => TEXT_FILTER_SKIP_TAGS.has(tagName) ? text2 : onText(text2),
-    transformTags: {
-      "*": (tagName, attribs) => {
-        if (tagName === "input") {
-          const checkbox = {
-            type: "checkbox",
-            disabled: ""
-          };
-          if (attribs.checked !== void 0) {
-            checkbox.checked = "";
-          }
-          return { tagName, attribs: checkbox };
-        }
-        const next = { ...attribs };
-        const style = filterEmbeddedStyle(attribs.style ?? "");
-        if (style === "") {
-          delete next.style;
-        } else {
-          next.style = style;
-        }
-        if (tagName === "button") {
-          next.type = "button";
-        }
-        delete next[KEEP_CLASS_ATTRIBUTE];
-        if (keepClasses && next.class !== void 0) {
-          const classes = next.class.split(/\s+/).filter((name) => name !== "" && !SYNTAX_CLASS_PATTERN.test(name));
-          if (classes.length > 0) {
-            next.class = classes.join(" ");
-            next[KEEP_CLASS_ATTRIBUTE] = "";
-          } else {
-            delete next.class;
-          }
-        }
-        dropDataUrls(tagName, next);
-        if (DIAGRAM_ONLY_TAGS.has(tagName) && tagName !== "button") {
-          next[DROP_ATTRIBUTE] = "1";
-        }
-        return { tagName, attribs: next };
-      }
-    }
-  });
-}
-function isAllowedClass(tagName, name) {
-  const allowed = SANITIZE_OPTIONS.allowedClasses;
-  return [...allowed["*"] ?? [], ...allowed[tagName] ?? []].some(
-    (pattern) => pattern.endsWith("*") ? name.startsWith(pattern.slice(0, -1)) : name === pattern
-  );
-}
-function sanitize(html, nonce) {
-  return (0, import_sanitize_html.default)(html, {
-    ...SANITIZE_OPTIONS,
-    // class は `transformTags` で `SANITIZE_OPTIONS` の `allowedClasses` のとおりに絞る
-    allowedClasses: { "*": [/^\S+$/] },
-    transformTags: {
-      // 全ての要素: mdmark が出した要素以外から記法の属性を落とし、`text-align` の値を class に移し、`style` は常に削除する
-      "*": (tagName, attribs) => {
-        const own2 = attribs[OWN_ATTRIBUTE] === nonce;
-        const next = own2 ? { ...attribs } : dropSyntaxAttributes(tagName, attribs);
-        delete next[OWN_ATTRIBUTE];
-        const keepClass = own2 && attribs[KEEP_CLASS_ATTRIBUTE] !== void 0;
-        delete next[KEEP_CLASS_ATTRIBUTE];
-        if (!keepClass && next.class !== void 0) {
-          const classes = next.class.split(/\s+/).filter((name) => name !== "" && isAllowedClass(tagName, name));
-          if (classes.length > 0) {
-            next.class = classes.join(" ");
-          } else {
-            delete next.class;
-          }
-        }
-        if (next[SOURCE_LINE_ATTRIBUTE] !== void 0 && !SOURCE_LINE_PATTERN.test(next[SOURCE_LINE_ATTRIBUTE])) {
-          delete next[SOURCE_LINE_ATTRIBUTE];
-        }
-        dropDataUrls(tagName, next);
-        const align = TEXT_ALIGN_PATTERN.exec(attribs.style ?? "")?.[1];
-        if (align && ALIGN_VALUES.includes(align)) {
-          next.class = [next.class, `mdmark-align-${align}`].filter(Boolean).join(" ");
-        }
-        const style = attribs.style ?? "";
-        const kept = own2 ? ownStyle(style) : "";
-        if (kept === "") {
-          delete next.style;
-        } else {
-          next.style = kept;
-        }
-        if (!own2 && (DIAGRAM_ONLY_TAGS.has(tagName) || MEDIA_TAGS.has(tagName) || RANGE_SCRIPT_TAGS.has(tagName))) {
-          next[DROP_ATTRIBUTE] = "1";
-        }
-        return { tagName, attribs: next };
-      },
-      // 入力欄: 常に無効のチェックボックスにし、元の属性からは `checked` だけを引き継ぐ。図の部品が出したスライダーはそのまま残す
-      input: (tagName, attribs) => {
-        if (attribs[OWN_ATTRIBUTE] === nonce && attribs.type === "range") {
-          return { tagName, attribs };
-        }
-        const next = { type: "checkbox", disabled: "" };
-        if (attribs.checked !== void 0) {
-          next.checked = "";
-        }
-        return { tagName, attribs: next };
-      },
-      pre: fixTabindex,
-      table: fixTabindex
-    }
-  });
-}
-
-// src/diagram/check.ts
-var LABEL_METRICS = {
-  kindSize: 11,
-  nameSize: 14,
-  subSize: 12,
-  lineHeight: 1.4,
-  padY: 6,
-  padX: 10
-};
-var HALF_WIDTH = 0.6;
-function isWide(char) {
-  const code2 = char.codePointAt(0) ?? 0;
-  return !(code2 <= 126 || code2 >= 65377 && code2 <= 65439);
-}
-function labelLineCount(options) {
-  const { text: text2, fontSize, width } = options;
-  if (text2 === "") {
-    return 0;
-  }
-  let lines = 1;
-  let used = 0;
-  for (const char of text2) {
-    const advance = isWide(char) ? fontSize : fontSize * HALF_WIDTH;
-    if (used > 0 && used + advance > width) {
-      lines += 1;
-      used = 0;
-    }
-    used += advance;
-  }
-  return lines;
-}
-function overlaps(a, b) {
-  return a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h;
-}
-function inside(rect, outer) {
-  return rect.x >= outer.x && rect.y >= outer.y && rect.x + rect.w <= outer.x + outer.w && rect.y + rect.h <= outer.y + outer.h;
-}
-function crosses(from, to, rect) {
-  const [x1, y1] = from;
-  const dx = to[0] - x1;
-  const dy = to[1] - y1;
-  let enter = 0;
-  let leave = 1;
-  const edges = [
-    [-dx, x1 - rect.x],
-    [dx, rect.x + rect.w - x1],
-    [-dy, y1 - rect.y],
-    [dy, rect.y + rect.h - y1]
-  ];
-  for (const [p, q] of edges) {
-    if (p === 0) {
-      if (q <= 0) {
-        return false;
-      }
-      continue;
-    }
-    const t = q / p;
-    if (p < 0) {
-      enter = Math.max(enter, t);
-    } else {
-      leave = Math.min(leave, t);
-    }
-  }
-  return enter < leave;
-}
-function drawnText(text2) {
-  return text2.replace(/\{\{(.+?)\}\}/g, "$1");
-}
-function labelTooLong(node2) {
-  const { kindSize, nameSize, subSize, lineHeight, padX } = LABEL_METRICS;
-  const width = node2.w - padX * 2;
-  const nameLines = labelLineCount({
-    text: drawnText(node2.name),
-    fontSize: nameSize,
-    width
-  });
-  const subLines = labelLineCount({
-    text: drawnText(node2.sub ?? ""),
-    fontSize: subSize,
-    width
-  });
-  const height = (kindSize + nameLines * nameSize + subLines * subSize) * lineHeight;
-  return height > node2.h;
-}
-function checkFlowLayout(definition) {
-  const { nodes, wires, frame } = definition;
-  const issues = [];
-  nodes.forEach((node2, index) => {
-    for (const other of nodes.slice(index + 1)) {
-      if (overlaps(node2, other)) {
-        issues.push({ kind: "diagram_node_overlap", ids: [node2.id, other.id] });
-      }
-    }
-  });
-  const canvas = {
-    x: 0,
-    y: 0,
-    w: definition.width,
-    h: definition.height
-  };
-  for (const node2 of nodes) {
-    const straddles = frame !== void 0 && overlaps(node2, frame) && !inside(node2, frame);
-    if (!inside(node2, canvas) || straddles) {
-      issues.push({ kind: "diagram_node_overflow", ids: [node2.id] });
-    }
-  }
-  for (const wire of wires) {
-    const segments = wire.points.slice(1).map((point, index) => [
-      wire.points[index] ?? point,
-      point
-    ]);
-    for (const node2 of nodes) {
-      if (node2.id === wire.from || node2.id === wire.to) {
-        continue;
-      }
-      if (segments.some(([from, to]) => crosses(from, to, node2))) {
-        issues.push({
-          kind: "diagram_wire_crosses_node",
-          ids: [wire.id, node2.id]
-        });
-      }
-    }
-  }
-  for (const node2 of nodes) {
-    if (labelTooLong(node2)) {
-      issues.push({ kind: "diagram_label_too_long", ids: [node2.id] });
-    }
-  }
-  return issues;
-}
-
-// src/diagram/layout.ts
-var FLOWCHART_LAYOUT = {
-  sizes: {
-    start: { w: 100, h: 100 },
-    question: { w: 280, h: 136 },
-    action: { w: 200, h: 72 },
-    result: { w: 200, h: 60 }
-  },
-  gapY: 40,
-  gapX: 120,
-  margin: 16,
-  lineStep: 20
-};
-var MAX_GROW = 20;
-function sizeOf(node2) {
-  const base = FLOWCHART_LAYOUT.sizes[node2.kind] ?? { w: 200, h: 72 };
-  let h = base.h;
-  for (let count = 0; count < MAX_GROW && labelTooLong({ ...node2, w: base.w, h }); count++) {
-    h += FLOWCHART_LAYOUT.lineStep;
-  }
-  return { w: base.w, h };
-}
-function splitQuestion(outgoing, kindOf2) {
-  const toQuestion = outgoing.find((wire) => kindOf2(wire.to) === "question");
-  if (toQuestion) {
-    return {
-      down: toQuestion,
-      right: outgoing.filter((wire) => wire !== toQuestion)
-    };
-  }
-  const no = outgoing.find((wire) => wire.label?.trim().toUpperCase() === "NO") ?? outgoing[outgoing.length - 1];
-  return { down: no, right: outgoing.filter((wire) => wire !== no) };
-}
-function layoutFlowchart(definition) {
-  const { gapX, gapY, margin } = FLOWCHART_LAYOUT;
-  const byId = new Map(definition.nodes.map((node2) => [node2.id, node2]));
-  const kindOf2 = (id) => byId.get(id)?.kind;
-  const outgoingOf = (id) => definition.wires.filter((wire) => wire.from === id);
-  const cells = /* @__PURE__ */ new Map();
-  const taken = (cell) => [...cells.values()].some(
-    (other) => other.row === cell.row && other.col === cell.col
-  );
-  const place = (id, cell) => {
-    if (!cells.has(id) && byId.has(id)) {
-      cells.set(id, cell);
-    }
-  };
-  const rightAt = [];
-  const start = definition.nodes.find((node2) => node2.kind === "start") ?? definition.nodes[0];
-  let current = start?.id;
-  let row = 0;
-  if (current !== void 0) {
-    place(current, { row, col: 0 });
-  }
-  while (current !== void 0) {
-    const outgoing = outgoingOf(current);
-    const kind = kindOf2(current);
-    let down;
-    if (kind === "question") {
-      const split = splitQuestion(outgoing, kindOf2);
-      down = split.down;
-      for (const wire of split.right) {
-        rightAt.push({ id: wire.to, row });
-      }
-    } else if (kind !== "result") {
-      down = outgoing[0];
-    }
-    if (down === void 0 || cells.has(down.to)) {
-      break;
-    }
-    row += 1;
-    place(down.to, { row, col: 0 });
-    current = down.to;
-  }
-  for (const { id, row: at } of rightAt) {
-    place(id, { row: at, col: 1 });
-  }
-  for (const { id } of rightAt) {
-    let from = id;
-    while (kindOf2(from) === "action") {
-      const next = outgoingOf(from)[0]?.to;
-      const at = cells.get(from);
-      if (next === void 0 || at === void 0 || cells.has(next)) {
-        break;
-      }
-      let nextRow = at.row + 1;
-      while (taken({ row: nextRow, col: 1 })) {
-        nextRow += 1;
-      }
-      place(next, { row: nextRow, col: 1 });
-      from = next;
-    }
-  }
-  let lastRow = Math.max(-1, ...[...cells.values()].map((cell) => cell.row));
-  for (const node2 of definition.nodes) {
-    if (!cells.has(node2.id)) {
-      lastRow += 1;
-      place(node2.id, { row: lastRow, col: 0 });
-    }
-  }
-  const sizes = new Map(
-    definition.nodes.map((node2) => [node2.id, sizeOf(node2)])
-  );
-  const colWidth = [0, 0];
-  const rowHeight = [];
-  for (const [id, cell] of cells) {
-    const size = sizes.get(id) ?? { w: 0, h: 0 };
-    colWidth[cell.col] = Math.max(colWidth[cell.col] ?? 0, size.w);
-    rowHeight[cell.row] = Math.max(rowHeight[cell.row] ?? 0, size.h);
-  }
-  const colLeft = [margin, margin + (colWidth[0] ?? 0) + gapX];
-  const rowTop = [];
-  let top = margin;
-  for (let index = 0; index < rowHeight.length; index++) {
-    rowTop[index] = top;
-    top += (rowHeight[index] ?? 0) + gapY;
-  }
-  const nodes = definition.nodes.map((node2) => {
-    const cell = cells.get(node2.id) ?? { row: 0, col: 0 };
-    const size = sizes.get(node2.id) ?? { w: 0, h: 0 };
-    return {
-      ...node2,
-      x: (colLeft[cell.col] ?? 0) + ((colWidth[cell.col] ?? 0) - size.w) / 2,
-      y: (rowTop[cell.row] ?? 0) + ((rowHeight[cell.row] ?? 0) - size.h) / 2,
-      w: size.w,
-      h: size.h
-    };
-  });
-  const laid = new Map(nodes.map((node2) => [node2.id, node2]));
-  const rightEdge = Math.max(...nodes.map((node2) => node2.x + node2.w));
-  const wires = definition.wires.map((wire) => {
-    const from = laid.get(wire.from);
-    const to = laid.get(wire.to);
-    if (from === void 0 || to === void 0) {
-      return { ...wire, points: [] };
-    }
-    const points = route(from, to, cells, rightEdge + gapX / 2);
-    const [first, second] = points;
-    return {
-      ...wire,
-      points,
-      ...wire.label !== void 0 && first && second ? {
-        labelAt: [(first[0] + second[0]) / 2, (first[1] + second[1]) / 2]
-      } : {}
-    };
-  });
-  const xs = [
-    ...nodes.map((node2) => node2.x + node2.w),
-    ...wires.flatMap((wire) => wire.points.map((point) => point[0]))
-  ];
-  const ys = [
-    ...nodes.map((node2) => node2.y + node2.h),
-    ...wires.flatMap((wire) => wire.points.map((point) => point[1]))
-  ];
-  return {
-    ...definition,
-    width: Math.max(0, ...xs) + margin,
-    height: Math.max(0, ...ys) + margin,
-    nodes,
-    wires
-  };
-}
-function route(from, to, cells, detourX) {
-  const a = cells.get(from.id) ?? { row: 0, col: 0 };
-  const b = cells.get(to.id) ?? { row: 0, col: 0 };
-  const fromCx = from.x + from.w / 2;
-  const fromCy = from.y + from.h / 2;
-  const toCx = to.x + to.w / 2;
-  const toCy = to.y + to.h / 2;
-  if (b.col > a.col) {
-    if (b.row === a.row) {
-      return [
-        [from.x + from.w, fromCy],
-        [to.x, fromCy]
-      ];
-    }
-    return [
-      [from.x + from.w, fromCy],
-      [toCx, fromCy],
-      [toCx, b.row > a.row ? to.y : to.y + to.h]
-    ];
-  }
-  if (b.col === a.col && b.row > a.row) {
-    return [
-      [fromCx, from.y + from.h],
-      [toCx, to.y]
-    ];
-  }
-  if (b.col < a.col && b.row > a.row) {
-    return [
-      [fromCx, from.y + from.h],
-      [fromCx, toCy],
-      [to.x + to.w, toCy]
-    ];
-  }
-  return [
-    [from.x + from.w, fromCy],
-    [detourX, fromCy],
-    [detourX, toCy],
-    [to.x + to.w, toCy]
-  ];
-}
-
 // src/diagram/definition.ts
+var RETIRED_DIAGRAM_DIRECTIVES = [
+  "flow",
+  "sequence"
+];
 var DIAGRAM_DIRECTIVES = {
-  flow: { name: "\u30D5\u30ED\u30FC\u56F3", call: "\u3053\u306E\u56F3" },
-  sequence: { name: "\u30B7\u30FC\u30B1\u30F3\u30B9\u56F3", call: "\u3053\u306E\u56F3" },
   chart: { name: "\u30B0\u30E9\u30D5", call: "\u3053\u306E\u30B0\u30E9\u30D5" },
   param: { name: "\u64CD\u4F5C\u3067\u304D\u308B\u90E8\u54C1", call: "\u3053\u306E\u90E8\u54C1" },
   er: { name: "ER \u56F3", call: "\u3053\u306E ER \u56F3" }
 };
-var NODE_KINDS = [
-  "llm",
-  "dm",
-  "script",
-  "mcp",
-  "data",
-  "external",
-  "start",
-  "question",
-  "action",
-  "result"
-];
-var LANE_KINDS = ["llm", "mcp", "data"];
-var LINE_KINDS = [
-  "flow",
-  "read",
-  "write",
-  "reply",
-  "loop"
-];
 var SERIES_RANGE = { min: 1, max: 6 };
 var CHART_TYPES = [
   "line",
@@ -64202,15 +63400,6 @@ function checkOptionalText(value, path, problems) {
     problems.expect(value, "\u6587\u5B57", path);
   }
 }
-function checkKind(value, label, problems) {
-  if (typeof value !== "string") {
-    problems.add(`${label}\u306E\u7A2E\u985E\uFF08kind\uFF09\u304C\u3042\u308A\u307E\u305B\u3093\u3002\u6587\u5B57\u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044`);
-  } else if (!NODE_KINDS.includes(value)) {
-    problems.add(
-      `${label}\u306E\u7A2E\u985E ${value} \u306F\u4F7F\u7528\u3067\u304D\u307E\u305B\u3093\u3002\u4F7F\u7528\u3067\u304D\u308B\u7A2E\u985E\u306F ${NODE_KINDS.join("\u30FB")} \u3067\u3059`
-    );
-  }
-}
 function checkDuplicates(ids, noun, problems) {
   const seen = /* @__PURE__ */ new Set();
   const reported = /* @__PURE__ */ new Set();
@@ -64223,281 +63412,6 @@ function checkDuplicates(ids, noun, problems) {
       );
     }
     seen.add(id);
-  }
-}
-function checkNode(value, index, problems, omitted = false) {
-  const node2 = asObject(value, `nodes[${index}]`, problems);
-  if (!node2) {
-    return void 0;
-  }
-  const name = typeof node2.name === "string" ? node2.name : `${index + 1} \u3064\u76EE`;
-  const label = `\u30CE\u30FC\u30C9\u300C${name}\u300D`;
-  problems.expect(node2.name, "\u6587\u5B57", `nodes[${index}].name`);
-  const id = typeof node2.id === "string" ? node2.id : void 0;
-  problems.expect(node2.id, "\u6587\u5B57", `${label}\u306E id`);
-  checkKind(node2.kind, label, problems);
-  if (!omitted) {
-    for (const key of ["x", "y", "w", "h"]) {
-      problems.expect(node2[key], "\u6570", `${label}\u306E ${key}`);
-    }
-  }
-  checkOptionalText(node2.tag, `${label}\u306E tag`, problems);
-  checkOptionalText(node2.href, `${label}\u306E href`, problems);
-  checkOptionalText(node2.sub, `${label}\u306E sub`, problems);
-  checkOptionalText(node2.hint, `${label}\u306E hint`, problems);
-  if (node2.io !== void 0) {
-    const io = asObject(node2.io, `${label}\u306E io`, problems);
-    if (io) {
-      for (const key of ["in", "do", "out"]) {
-        problems.expect(io[key], "\u6587\u5B57", `${label}\u306E io.${key}`);
-      }
-    }
-  }
-  return id;
-}
-function checkPoints(value, label, problems) {
-  const points = asArray(value, `${label}\u306E points`, problems);
-  if (!points) {
-    return;
-  }
-  if (points.length < 2) {
-    problems.add(
-      `${label}\u306E points \u304C ${points.length} \u3064\u3067\u3059\u30022 \u3064\u4EE5\u4E0A\u306E\u70B9\u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044`
-    );
-    return;
-  }
-  const valid = [];
-  for (const point of points) {
-    if (Array.isArray(point) && point.length === 2 && isType(point[0], "\u6570") && isType(point[1], "\u6570")) {
-      valid.push([point[0], point[1]]);
-    } else {
-      problems.add(
-        `${label}\u306E points \u306B [x, y] \u3067\u306A\u3044\u70B9\u304C\u3042\u308A\u307E\u3059\u3002[x, y] \u306E\u6570 2 \u3064\u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044`
-      );
-      return;
-    }
-  }
-  for (let index = 1; index < valid.length; index++) {
-    const from = valid[index - 1];
-    const to = valid[index];
-    if (from && to && from[0] !== to[0] && from[1] !== to[1]) {
-      problems.add(
-        `${label}\u306E ${index} \u3064\u76EE\u304B\u3089 ${index + 1} \u3064\u76EE\u306E\u70B9\u304C\u659C\u3081\u3067\u3059\u3002\u7E26\u304B\u6A2A\u3060\u3051\u306E\u6298\u308C\u7DDA\u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044`
-      );
-      return;
-    }
-  }
-}
-function checkWire(value, index, nodeIds, problems, omitted = false) {
-  const wire = asObject(value, `wires[${index}]`, problems);
-  if (!wire) {
-    return void 0;
-  }
-  const id = typeof wire.id === "string" ? wire.id : void 0;
-  problems.expect(wire.id, "\u6587\u5B57", `wires[${index}].id`);
-  const label = `\u7DDA ${id ?? `${index + 1} \u3064\u76EE`} `;
-  if (typeof wire.line !== "string") {
-    problems.add(`${label}\u306E\u7A2E\u985E\uFF08line\uFF09\u304C\u3042\u308A\u307E\u305B\u3093\u3002\u6587\u5B57\u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044`);
-  } else if (!LINE_KINDS.includes(wire.line)) {
-    problems.add(
-      `${label}\u306E\u7A2E\u985E ${wire.line} \u306F\u4F7F\u7528\u3067\u304D\u307E\u305B\u3093\u3002\u4F7F\u7528\u3067\u304D\u308B\u7A2E\u985E\u306F ${LINE_KINDS.join("\u30FB")} \u3067\u3059`
-    );
-  }
-  for (const key of ["from", "to"]) {
-    const end = wire[key];
-    if (typeof end !== "string") {
-      problems.add(
-        `${label}\u306E ${key} \u304C\u3042\u308A\u307E\u305B\u3093\u3002\u7AEF\u306E\u30CE\u30FC\u30C9\u306E id \u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044`
-      );
-    } else if (!nodeIds.has(end)) {
-      problems.add(
-        `${label}\u306E\u7AEF\u306E\u30CE\u30FC\u30C9 ${end} \u304C\u3042\u308A\u307E\u305B\u3093\u3002\u30CE\u30FC\u30C9\u306E id \u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044`
-      );
-    }
-  }
-  if (!omitted) {
-    checkPoints(wire.points, label, problems);
-  }
-  checkOptionalText(wire.label, `${label}\u306E label`, problems);
-  checkOptionalText(wire.tip, `${label}\u306E tip`, problems);
-  if (wire.labelAt !== void 0) {
-    const at = wire.labelAt;
-    if (!Array.isArray(at) || at.length !== 2 || !isType(at[0], "\u6570") || !isType(at[1], "\u6570")) {
-      problems.add(
-        `${label}\u306E labelAt \u304C [x, y] \u3067\u306F\u3042\u308A\u307E\u305B\u3093\u3002\u6570 2 \u3064\u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044`
-      );
-    }
-  }
-  return id;
-}
-function checkFrame(source, problems) {
-  if (source.frame !== void 0) {
-    const frame = asObject(source.frame, "frame", problems);
-    if (frame) {
-      problems.expect(frame.title, "\u6587\u5B57", "frame.title");
-      for (const key of ["x", "y", "w", "h"]) {
-        problems.expect(frame[key], "\u6570", `frame.${key}`);
-      }
-      if (frame.hint !== void 0) {
-        problems.expect(frame.hint, "\u6587\u5B57", "frame.hint");
-      }
-    }
-  }
-  if (source.lanes !== void 0) {
-    const lanes = asArray(source.lanes, "lanes", problems);
-    lanes?.forEach((value, index) => {
-      const lane = asObject(value, `lanes[${index}]`, problems);
-      if (!lane) {
-        return;
-      }
-      problems.expect(lane.label, "\u6587\u5B57", `lanes[${index}].label`);
-      problems.expect(lane.y, "\u6570", `lanes[${index}].y`);
-      problems.expect(lane.h, "\u6570", `lanes[${index}].h`);
-      if (lane.hint !== void 0) {
-        problems.expect(lane.hint, "\u6587\u5B57", `lanes[${index}].hint`);
-      }
-      if (typeof lane.kind !== "string" || !LANE_KINDS.includes(lane.kind)) {
-        problems.add(
-          `\u5C64\u300C${String(lane.label)}\u300D\u306E\u7A2E\u985E ${String(lane.kind)} \u306F\u4F7F\u7528\u3067\u304D\u307E\u305B\u3093\u3002\u4F7F\u7528\u3067\u304D\u308B\u7A2E\u985E\u306F ${LANE_KINDS.join("\u30FB")} \u3067\u3059`
-        );
-      }
-    });
-  }
-}
-var JUDGEMENT_KINDS = [
-  "start",
-  "question",
-  "action",
-  "result"
-];
-function coordinateMode(source) {
-  const present = [
-    source.width !== void 0,
-    source.height !== void 0
-  ];
-  for (const node2 of Array.isArray(source.nodes) ? source.nodes : []) {
-    if (node2 !== null && typeof node2 === "object") {
-      for (const key of ["x", "y", "w", "h"]) {
-        present.push(node2[key] !== void 0);
-      }
-    }
-  }
-  for (const wire of Array.isArray(source.wires) ? source.wires : []) {
-    if (wire !== null && typeof wire === "object") {
-      present.push(wire.points !== void 0);
-    }
-  }
-  if (present.every(Boolean)) {
-    return "written";
-  }
-  return present.some(Boolean) ? "mixed" : "omitted";
-}
-function nodeNotJudgement(source) {
-  for (const node2 of Array.isArray(source.nodes) ? source.nodes : []) {
-    if (node2 === null || typeof node2 !== "object") {
-      continue;
-    }
-    const { kind, name } = node2;
-    if (typeof kind === "string" && NODE_KINDS.includes(kind) && !JUDGEMENT_KINDS.includes(kind)) {
-      return { name: String(name), kind };
-    }
-  }
-  return void 0;
-}
-function checkFlow(source, problems) {
-  checkHead(source, problems);
-  const mode = coordinateMode(source);
-  const omitted = mode === "omitted";
-  if (mode === "mixed") {
-    problems.add(
-      "\u5EA7\u6A19\uFF08x\u30FBy\u30FBw\u30FBh\u30FBpoints\u30FBwidth\u30FBheight\uFF09\u3092\u8A18\u8F09\u3057\u305F\u3082\u306E\u3068\u7701\u3044\u305F\u3082\u306E\u304C\u6DF7\u3056\u3063\u3066\u3044\u307E\u3059\u3002\u5168\u3066\u8A18\u8F09\u3059\u308B\u304B\u3001\u5168\u3066\u7701\u3044\u3066\u304F\u3060\u3055\u3044"
-    );
-  } else if (omitted) {
-    const other = nodeNotJudgement(source);
-    if (other) {
-      problems.add(
-        `\u30CE\u30FC\u30C9\u300C${other.name}\u300D\u306E\u7A2E\u985E ${other.kind} \u3067\u306F\u5EA7\u6A19\u3092\u7701\u3051\u307E\u305B\u3093\u3002\u5EA7\u6A19\u3092\u7701\u3051\u308B\u306E\u306F\u3001\u7A2E\u985E\u304C ${JUDGEMENT_KINDS.join("\u30FB")} \u3060\u3051\u306E\u5224\u5B9A\u30D5\u30ED\u30FC\u30C1\u30E3\u30FC\u30C8\u3067\u3059\u3002\u5EA7\u6A19\u3092\u8A18\u8F09\u3059\u308B\u304B\u3001\u7A2E\u985E\u3092\u5909\u3048\u3066\u304F\u3060\u3055\u3044`
-      );
-    }
-  } else {
-    problems.expect(source.width, "\u6570", "width");
-    problems.expect(source.height, "\u6570", "height");
-  }
-  checkFrame(source, problems);
-  if (source.stickyTitles !== void 0) {
-    problems.expect(source.stickyTitles, "\u771F\u507D\u5024", "stickyTitles");
-  }
-  const nodes = asArray(source.nodes, "nodes", problems);
-  const nodeIds = (nodes ?? []).map(
-    (value, index) => checkNode(value, index, problems, mode !== "written")
-  );
-  checkDuplicates(
-    nodeIds.filter((id) => id !== void 0),
-    "\u30CE\u30FC\u30C9",
-    problems
-  );
-  const wires = asArray(source.wires, "wires", problems);
-  const known = new Set(nodeIds.filter((id) => id !== void 0));
-  const wireIds = (wires ?? []).map(
-    (value, index) => checkWire(value, index, known, problems, mode !== "written")
-  );
-  checkDuplicates(
-    wireIds.filter((id) => id !== void 0),
-    "\u7DDA",
-    problems
-  );
-}
-function checkSequence(source, problems) {
-  checkHead(source, problems);
-  const participants = asArray(source.participants, "participants", problems);
-  const ids = [];
-  participants?.forEach((value, index) => {
-    const participant = asObject(value, `participants[${index}]`, problems);
-    if (!participant) {
-      return;
-    }
-    const name = typeof participant.name === "string" ? participant.name : `${index + 1} \u3064\u76EE`;
-    problems.expect(participant.name, "\u6587\u5B57", `participants[${index}].name`);
-    if (problems.expect(participant.id, "\u6587\u5B57", `\u76F8\u624B\u300C${name}\u300D\u306E id`)) {
-      ids.push(participant.id);
-    }
-    checkKind(participant.kind, `\u76F8\u624B\u300C${name}\u300D`, problems);
-    checkOptionalText(participant.tag, `\u76F8\u624B\u300C${name}\u300D\u306E tag`, problems);
-  });
-  checkDuplicates(ids, "\u76F8\u624B", problems);
-  const steps = asArray(source.steps, "steps", problems);
-  steps?.forEach((value, index) => {
-    const step = asObject(value, `steps[${index}]`, problems);
-    if (!step) {
-      return;
-    }
-    const label = `\u30E1\u30C3\u30BB\u30FC\u30B8 ${index + 1} \u3064\u76EE`;
-    problems.expect(step.label, "\u6587\u5B57", `${label}\u306E label`);
-    for (const key of ["from", "to"]) {
-      const end = step[key];
-      if (typeof end !== "string") {
-        problems.add(
-          `${label}\u306E ${key} \u304C\u3042\u308A\u307E\u305B\u3093\u3002\u76F8\u624B\u306E id \u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044`
-        );
-      } else if (!ids.includes(end)) {
-        problems.add(
-          `${label}\u306E\u76F8\u624B ${end} \u304C\u3042\u308A\u307E\u305B\u3093\u3002\u76F8\u624B\u306E id \u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044`
-        );
-      }
-    }
-    if (step.reply !== void 0) {
-      problems.expect(step.reply, "\u771F\u507D\u5024", `${label}\u306E reply`);
-    }
-    checkOptionalText(step.tip, `${label}\u306E tip`, problems);
-  });
-  if (steps?.length === 0) {
-    problems.add("steps \u304C\u7A7A\u3067\u3059\u3002\u30E1\u30C3\u30BB\u30FC\u30B8\u3092 1 \u3064\u4EE5\u4E0A\u66F8\u3044\u3066\u304F\u3060\u3055\u3044");
-  }
-  if (source.loop !== void 0) {
-    const loop = asObject(source.loop, "loop", problems);
-    if (loop) {
-      problems.expect(loop.label, "\u6587\u5B57", "loop.label");
-    }
   }
 }
 function checkAxes(source, problems) {
@@ -64936,8 +63850,6 @@ function checkEr(source, problems) {
   });
 }
 var CHECKERS = {
-  flow: checkFlow,
-  sequence: checkSequence,
   chart: checkChart,
   param: checkParam,
   er: checkEr
@@ -64970,17 +63882,11 @@ function readDefinition(directive, blocks) {
   if (problems.list.length > 0) {
     return { ok: false, problems: problems.list };
   }
-  const definition = parsed.value;
   return {
     ok: true,
-    definition: directive === "flow" && coordinateMode(parsed.value) === "omitted" ? layoutFlowchart(definition) : definition,
+    definition: parsed.value,
     problems: []
   };
-}
-function nodeLinkProblems(definition) {
-  return definition.nodes.flatMap(
-    (node2) => node2.href !== void 0 && !isAllowedUrl(node2.href) ? [{ id: node2.id, href: node2.href }] : []
-  );
 }
 function definitionWarning(directive, problems) {
   const { name, call } = DIAGRAM_DIRECTIVES[directive];
@@ -65262,12 +64168,12 @@ var ICONS = {
 };
 var OWN_ICON_NAMES = /* @__PURE__ */ new Set(["wide-expand", "wide-shrink"]);
 var bundledIconNode = (name) => Object.hasOwn(ICONS, name) && !OWN_ICON_NAMES.has(name) ? ICONS[name] : void 0;
-function renderNode2([tag, attributes]) {
+function renderNode([tag, attributes]) {
   const attrs = Object.entries(attributes).filter(([, value]) => value !== void 0).map(([name, value]) => ` ${name}="${value}"`).join("");
   return `<${tag}${attrs}></${tag}>`;
 }
 function iconSvg(name) {
-  const body = ICONS[name].map(renderNode2).join("");
+  const body = ICONS[name].map(renderNode).join("");
   return `<svg class="mdmark-diagram-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${body}</svg>`;
 }
 
@@ -65350,6 +64256,7 @@ function renderTableTools(options) {
     column,
     label,
     features,
+    sortable = true,
     filter: filter2,
     active = false,
     pinVisible = false,
@@ -65361,7 +64268,7 @@ function renderTableTools(options) {
   const escapedLabel = escapeHtml2(label);
   const controls = drawerId(id, column);
   const filterable = features.includes("filter") && filter2 !== void 0;
-  const title = features.includes("sort") ? `<button class="mdmark-sort" type="button">${escapedLabel}</button>` : `<span class="mdmark-th-label">${escapedLabel}</span>`;
+  const title = features.includes("sort") && sortable ? `<button class="mdmark-sort" type="button">${escapedLabel}</button>` : `<span class="mdmark-th-label">${escapedLabel}</span>`;
   const filterButton = filterable ? `<button class="mdmark-filter${active ? " is-active" : ""}" type="button" aria-label="\u300C${escapedLabel}\u300D\u3067\u7D5E\u308A\u8FBC\u3080" aria-expanded="${open2}" aria-controls="${escapeHtml2(controls)}"><span class="mdmark-visually-hidden">${active ? "\uFF08\u7D5E\u308A\u8FBC\u307F\u4E2D\uFF09" : ""}</span></button>` : "";
   const pinLabel = pinButtonLabel({
     label: escapedLabel,
@@ -65643,6 +64550,7 @@ function renderTableBody(options, id) {
       column: index,
       label: plainText2(column),
       features: options.features,
+      sortable: !(options.noSort ?? []).includes(index),
       filter: filter2 && {
         kind: filter2.kind,
         values: [...new Set(rows.map((row) => plainText2(row[index] ?? "")))]
@@ -65734,7 +64642,7 @@ function renderTableBody(options, id) {
   }).join("");
   const empty = `<tr class="mdmark-table-empty"${shownRows.length > 0 ? " hidden" : ""}><td colspan="${columns.length - hidden.size}">\u4E00\u81F4\u3059\u308B\u884C\u304C\u3042\u308A\u307E\u305B\u3093</td></tr>`;
   const totals = options.features.includes("total") ? options.totals ?? [] : [];
-  const unreadable3 = findUnreadableTotals({
+  const unreadable5 = findUnreadableTotals({
     rows: rows.map((row) => row.map(plainText2)),
     totals
   });
@@ -65742,7 +64650,7 @@ function renderTableBody(options, id) {
     columns: columns.length,
     totals: totals.map((total) => ({
       ...total,
-      value: unreadable3.some(
+      value: unreadable5.some(
         (item) => item.column === total.column && item.calc === total.calc
       ) ? "" : computeTotal(
         shownRows.map((row) => plainText2(row[total.column] ?? "")),
@@ -65993,12 +64901,14 @@ function renderTable(options) {
   const inner = collapse === "none" ? content : `<details class="mdmark-table-details"${collapse === "open" ? " open" : ""}><summary>${escapeHtml2(title)}</summary>${content}</details>`;
   const long = options.long ?? [];
   const longAttribute = long.length ? ` data-long="${long.join(" ")}"` : "";
+  const noSort = options.noSort ?? [];
+  const noSortAttribute = noSort.length ? ` data-no-sort="${noSort.join(" ")}"` : "";
   const ranges = options.widthRanges ?? [];
   const widthAttribute = ranges.length ? ` data-width="${ranges.map((range) => `${range.column}:${range.min ?? ""}-${range.max ?? ""}`).join(" ")}"` : "";
   const mergeColumns = options.mergeColumns ?? [];
   const mergeAttribute = mergeColumns.length ? ` data-merge-columns="${mergeColumns.join(" ")}"` : "";
   if (options.rawCsv === void 0) {
-    return `<div class="mdmark-table" data-kind="${kind}" data-features="${options.features.join(" ")}"${filterAttribute}${hideAttribute}${totalAttribute}${pinAttribute}${unpinAttribute}${checkAttribute}${treeAttribute}${mergeAttribute}${longAttribute}${widthAttribute}>${inner}</div>`;
+    return `<div class="mdmark-table" data-kind="${kind}" data-features="${options.features.join(" ")}"${filterAttribute}${hideAttribute}${totalAttribute}${pinAttribute}${unpinAttribute}${checkAttribute}${treeAttribute}${mergeAttribute}${longAttribute}${noSortAttribute}${widthAttribute}>${inner}</div>`;
   }
   const shown = options.rawShown ?? false;
   const bar = options.body === void 0 ? renderRawBar(shown) : "";
@@ -66008,7 +64918,7 @@ function renderTable(options) {
     '<div class="mdmark-table-scroll">',
     '<div class="mdmark-table-scroll" hidden>'
   ) : inner.replace(/^<table(?=[\s>])/, "<table hidden") : inner;
-  return `<div class="mdmark-table" data-kind="${kind}" data-features="${options.features.join(" ")}" data-source="csv"${viewAttribute}${filterAttribute}${hideAttribute}${totalAttribute}${pinAttribute}${unpinAttribute}${checkAttribute}${treeAttribute}${mergeAttribute}${longAttribute}${widthAttribute}>${bar}${shownInner}${raw}</div>`;
+  return `<div class="mdmark-table" data-kind="${kind}" data-features="${options.features.join(" ")}" data-source="csv"${viewAttribute}${filterAttribute}${hideAttribute}${totalAttribute}${pinAttribute}${unpinAttribute}${checkAttribute}${treeAttribute}${mergeAttribute}${longAttribute}${noSortAttribute}${widthAttribute}>${bar}${shownInner}${raw}</div>`;
 }
 
 // src/parts/footnote.ts
@@ -66130,13 +65040,13 @@ function footnoteStateOf(env) {
   };
   return env.mdmarkFootnotes;
 }
-function isWhitespace2(code2) {
+function isWhitespace(code2) {
   return code2 === SPACE || code2 === TAB || code2 === NEWLINE;
 }
 function labelEnd(src, pos, max) {
   for (let at = pos + 2; at < max; at++) {
     const code2 = src.charCodeAt(at);
-    if (isWhitespace2(code2)) {
+    if (isWhitespace(code2)) {
       return -1;
     }
     if (code2 === CLOSE_BRACKET) {
@@ -67130,6 +66040,7 @@ function readTableSpec(options, headers, rowCount) {
   const unpinned = [];
   const widths = [];
   const check2 = [];
+  const sorts = [];
   const columns = isObject2(spec.columns) ? spec.columns : {};
   for (const [name, settings] of Object.entries(columns)) {
     if (!isObject2(settings)) {
@@ -67195,6 +66106,12 @@ function readTableSpec(options, headers, rowCount) {
     if (isObject2(settings.format) && settings.format.type === "check") {
       check2.push(column);
     }
+    if (typeof settings.sort === "boolean" && !disabled.has("sort")) {
+      if (settings.sort) {
+        add("sort");
+      }
+      sorts.push({ column, sort: settings.sort });
+    }
   }
   const header = isObject2(spec.header) ? spec.header : {};
   let headRows = 1;
@@ -67249,7 +66166,9 @@ function readTableSpec(options, headers, rowCount) {
     pin: features.includes("pin") && pinned.length > 0 ? [...pinned].sort((a, b) => a - b) : void 0,
     unpinned,
     widths,
-    check: check2
+    check: check2,
+    // `sort` の機能を持たない表（階層の表を含む）には列ごとの並べ替えの指定を当てない
+    sorts: features.includes("sort") ? sorts : []
   };
 }
 function readTree(options) {
@@ -67908,6 +66827,7 @@ function decorateTables(state) {
     }
     const filtering = spec.features.includes("filter");
     const long = findLongColumns(columnLinesOf(tokens, index));
+    const noSort = spec.features.includes("sort") && !viewSpec ? findNoSortColumns({ long, sorts: spec.sorts }) : [];
     const filters = spec.filters.map((filter2) => ({
       column: filter2.column,
       kind: filter2.kind ?? defaultFilterKind(long.includes(filter2.column))
@@ -67937,6 +66857,7 @@ function decorateTables(state) {
       unpin: spec.unpinned,
       check: spec.check,
       tree: spec.tree,
+      noSort,
       body: SLOT_MARKER,
       rawCsv: token.meta?.rawCsv
     });
@@ -69050,6 +67971,9 @@ var table_schema_default = {
             type: "boolean"
           },
           pinned: {
+            type: "boolean"
+          },
+          sort: {
             type: "boolean"
           },
           total: {
@@ -70356,6 +69280,465 @@ function buildCalloutsIn(state, tokens) {
   return out;
 }
 
+// src/render/sanitize.ts
+var import_sanitize_html = __toESM(require_sanitize_html(), 1);
+var ALIGN_VALUES = ["left", "center", "right"];
+var TEXT_ALIGN_PATTERN = /(?:^|;)\s*text-align\s*:\s*([a-z]+)/;
+var OWN_ATTRIBUTE = "data-mdmark-own";
+var KEEP_CLASS_ATTRIBUTE = "data-mdmark-keep-class";
+var RAW_CLASS_PATTERN = /^(?:mdmark-align-|mdmark-embed$)/;
+var SYNTAX_CLASS_PATTERN = /^(?:mdmark-|markdown-alert|has-tip$|has-link$|has-children$|is-virtual$)/;
+var DIAGRAM_ONLY_TAGS = /* @__PURE__ */ new Set([
+  "svg",
+  "defs",
+  "marker",
+  "pattern",
+  "g",
+  "path",
+  "rect",
+  "circle",
+  "ellipse",
+  "line",
+  "polyline",
+  "polygon",
+  "text",
+  "button",
+  "output",
+  "label"
+]);
+var DROP_ATTRIBUTE = "data-mdmark-drop";
+var DIAGRAM_STYLE_PATTERN = /^(?:\s*(?:(?:left|top|width|height):-?\d+(?:\.\d+)?px|padding:\d+(?:\.\d+)?px(?: \d+(?:\.\d+)?px)?|transform:scale\(\d+(?:\.\d+)?\))\s*;?)+$/;
+var CODE_DIGITS_PATTERN = /^\s*--mdmark-code-digits\s*:\s*(\d+)\s*;?\s*$/;
+var IMAGE_WIDTH_PATTERN = /^\s*--mdmark-image-width\s*:\s*(\d+(?:px|%))\s*;?\s*$/;
+var GALLERY_COLS_PATTERN = /^\s*--mdmark-gallery-cols\s*:\s*([1-6])\s*;?\s*$/;
+var MEDIA_TAGS = /* @__PURE__ */ new Set(["video", "audio"]);
+var SOURCE_LINE_ATTRIBUTE = "data-source-line";
+var SOURCE_LINE_PATTERN = /^\d+$/;
+var DATA_IMAGE_PATTERN = /^data:image\/(?:png|jpeg|gif|webp|svg\+xml);base64,[A-Za-z0-9+/=]*(?:#only-(?:light|dark))?$/;
+function dropDataUrls(tagName, attribs) {
+  const imageAttribute = tagName === "img" ? "src" : tagName === "video" ? "poster" : void 0;
+  const imageUrl = imageAttribute === void 0 ? void 0 : attribs[imageAttribute];
+  if (imageAttribute !== void 0 && imageUrl?.startsWith("data:") && !DATA_IMAGE_PATTERN.test(imageUrl)) {
+    delete attribs[imageAttribute];
+  }
+  if (MEDIA_TAGS.has(tagName) && attribs.src?.startsWith("data:")) {
+    delete attribs.src;
+  }
+}
+function fixTabindex(tagName, attribs) {
+  const next = { ...attribs };
+  if (next.tabindex !== void 0) {
+    next.tabindex = "0";
+  }
+  return { tagName, attribs: next };
+}
+function dropSyntaxAttributes(tagName, attribs) {
+  const next = {};
+  for (const [name, value] of Object.entries(attribs)) {
+    if (name === "class") {
+      const classes = value.split(/\s+/).filter(
+        (name2) => !SYNTAX_CLASS_PATTERN.test(name2) || RAW_CLASS_PATTERN.test(name2)
+      );
+      if (classes.length) {
+        next.class = classes.join(" ");
+      }
+    } else if (name === "role") {
+      if (tagName === "div" && value === "status") {
+        next[name] = value;
+      }
+    } else if (name === "aria-label") {
+      if (tagName === "pre" || tagName === "table") {
+        next[name] = value;
+      }
+    } else if (name === "tabindex") {
+      if (tagName === "pre" || tagName === "table") {
+        next[name] = value;
+      }
+    } else if (name === SOURCE_LINE_ATTRIBUTE) {
+      next[name] = value;
+    } else if (name.startsWith("data-")) {
+      const keep = tagName === "td" && name === "data-label" || tagName === "div" && (name === "data-mdmark-slot" || name === "data-mdmark-args");
+      if (keep) {
+        next[name] = value;
+      }
+    } else if (!(tagName === "abbr" && name === "title") && name !== "id" && name !== "hidden" && name !== "colspan" && name !== "rowspan" && name !== "scope" && !name.startsWith("aria-") && // 図の部品の属性は、図の部品が出した要素だけが持つ（`input` の `type`・`disabled` は、描くときにもう一度付けた値）
+    (!DIAGRAM_ATTRIBUTE_SET.has(name) || tagName === "input" && (name === "type" || name === "disabled"))) {
+      next[name] = value;
+    }
+  }
+  return next;
+}
+var DIAGRAM_ATTRIBUTES = [
+  "tabindex",
+  "style",
+  "for",
+  "type",
+  "min",
+  "max",
+  "step",
+  "value",
+  "disabled",
+  "datetime",
+  "d",
+  "viewbox",
+  "width",
+  "height",
+  "x",
+  "y",
+  "x1",
+  "y1",
+  "x2",
+  "y2",
+  "cx",
+  "cy",
+  "r",
+  "rx",
+  "ry",
+  "points",
+  "fill",
+  "stroke",
+  "stroke-width",
+  "stroke-dasharray",
+  "stroke-linecap",
+  "stroke-linejoin",
+  "marker-end",
+  "markerwidth",
+  "markerheight",
+  "markerunits",
+  "patternunits",
+  "refx",
+  "refy",
+  "orient",
+  "transform",
+  "text-anchor"
+];
+var RANGE_SCRIPT_TAGS = /* @__PURE__ */ new Set(["style", "template"]);
+var DIAGRAM_ATTRIBUTE_SET = new Set(DIAGRAM_ATTRIBUTES);
+var SANITIZE_OPTIONS = {
+  allowedTags: [
+    ...import_sanitize_html.default.defaults.allowedTags,
+    "img",
+    "del",
+    "details",
+    "summary",
+    "input",
+    "nav",
+    "figure",
+    "figcaption",
+    "style",
+    "template",
+    ...MEDIA_TAGS,
+    ...DIAGRAM_ONLY_TAGS
+  ],
+  allowedAttributes: {
+    "*": [
+      "id",
+      "role",
+      "aria-*",
+      "data-*",
+      "hidden",
+      "colspan",
+      "rowspan",
+      "scope",
+      ...DIAGRAM_ATTRIBUTES
+    ],
+    a: ["href", "title"],
+    img: ["src", "alt", "title"],
+    // ER 図の列のマーカーの名前（文書に記載した `abbr` の `title` は `dropSyntaxAttributes` が落とす）
+    abbr: ["title"],
+    details: ["open"],
+    input: ["type", "disabled", "checked"],
+    pre: ["tabindex"],
+    table: ["tabindex"],
+    span: ["tabindex"],
+    video: [
+      "src",
+      "controls",
+      "autoplay",
+      "muted",
+      "loop",
+      "playsinline",
+      "preload",
+      "poster"
+    ],
+    audio: ["src", "controls", "autoplay", "muted", "loop", "preload"]
+  },
+  // 図の部品の要素以外から取り除く要素は、マーカーを付けた要素を中身ごと削除する
+  exclusiveFilter: (frame) => frame.attribs[DROP_ATTRIBUTE] !== void 0,
+  // 記法の class は、mdmark が出した要素だけが持つ（生の HTML のものは `transformTags` が先に落とす）
+  allowedClasses: {
+    "*": [
+      "mdmark-*",
+      "markdown-alert*",
+      "has-tip",
+      "has-link",
+      "has-children",
+      "is-virtual"
+    ],
+    code: ["language-*"],
+    li: ["task-list-item"]
+  },
+  allowedSchemes: ["http", "https", "mailto"],
+  // 画像の `src` と動画の `poster` は `data:` URL も許す（残す構造は `transformTags` が絞る）
+  allowedSchemesByTag: {
+    img: ["http", "https", "data"],
+    video: ["http", "https", "data"],
+    audio: ["http", "https", "data"]
+  },
+  // postcss を呼ばない。`style` 属性は許可せず、列の配置だけを class に移す
+  parseStyleAttributes: false,
+  // 範囲の `style` は mdmark が根の要素の中に限って出したものだけを残す（文書に記載したものは `transformTags` が落とす）
+  allowVulnerableTags: true,
+  // 値の無い `hidden`（CSV の表の元の CSV）を残す。文書に記載した `hidden` は `dropSyntaxAttributes` が先に落とす
+  nonBooleanAttributes: import_sanitize_html.default.defaults.nonBooleanAttributes.filter(
+    (name) => name !== "hidden"
+  )
+};
+var CONTROL_OR_SPACE_MAX = 32;
+function isAllowedUrl(url2) {
+  const trimmed = Array.from(url2).filter((char) => char.charCodeAt(0) > CONTROL_OR_SPACE_MAX).join("");
+  const scheme = /^([a-z][a-z0-9+.-]*):/i.exec(trimmed)?.[1];
+  if (scheme === void 0) {
+    return true;
+  }
+  const allowed = SANITIZE_OPTIONS.allowedSchemes;
+  return Array.isArray(allowed) && allowed.includes(scheme.toLowerCase());
+}
+var EMBED_STYLES = (() => {
+  const length = String.raw`-?(?:\d+|\d*\.\d+)(?:px|rem|em|%|ch|pt|fr)?`;
+  const unsigned = String.raw`(?:\d+|\d*\.\d+)(?:px|rem|em|%|ch|pt|fr)?`;
+  const keyword = "[a-z]+(?:-[a-z]+)*";
+  const color = String.raw`#[0-9a-f]{3,8}|[a-z]+|(?:rgb|hsl)a?\(\s*[0-9.%\s,/-]+\)|var\(--mdmark-[a-z0-9-]+\)`;
+  const fn = String.raw`(?:repeat|minmax)\([a-z0-9\s,.%-]*\)`;
+  const words = (tokens) => new RegExp(`^(?:${tokens})(?:\\s+(?:${tokens}))*$`, "i");
+  return [
+    {
+      name: /^display$/,
+      value: /^(?:block|inline|inline-block|flex|inline-flex|grid|inline-grid|none)$/i
+    },
+    {
+      name: /^(?:flex(?:-(?:direction|wrap|grow|shrink|basis))?|align-items|justify-content|align-self)$/,
+      value: words(`${keyword}|${length}`)
+    },
+    {
+      name: /^(?:grid-template-columns|grid-template-rows|grid-column|grid-row|gap|row-gap|column-gap)$/,
+      value: words(`${keyword}|${length}|${fn}`)
+    },
+    {
+      name: /^(?:margin|padding)(?:-[a-z-]+)?$/,
+      value: words(`${unsigned}|auto`)
+    },
+    {
+      name: /^border(?:-(?!image)[a-z-]+)?$/,
+      value: words(`${length}|${color}`)
+    },
+    {
+      name: /^(?:width|max-width|min-width|height)$/,
+      value: words(`${length}|${keyword}`)
+    },
+    { name: /^(?:color|background-color)$/, value: words(color) },
+    {
+      name: /^(?:font-size|font-weight|text-align)$/,
+      value: words(`${length}|${keyword}`)
+    }
+  ];
+})();
+var EMBED_STYLE_FORBIDDEN = /\/\*|["'\\]|url\(|expression\(|\d\s*(?:dvw|dvh|svw|svh|lvw|lvh|vmin|vmax|vw|vh)\b/i;
+function filterEmbeddedStyle(style) {
+  const kept = [];
+  for (const declaration of style.split(";")) {
+    const colon = declaration.indexOf(":");
+    if (colon < 0) {
+      continue;
+    }
+    const name = declaration.slice(0, colon).trim().toLowerCase();
+    const value = declaration.slice(colon + 1).trim().replace(/\s+/g, " ");
+    if (value !== "" && !EMBED_STYLE_FORBIDDEN.test(value) && EMBED_STYLES.some(
+      (entry) => entry.name.test(name) && entry.value.test(value)
+    )) {
+      kept.push(`${name}:${value}`);
+    }
+  }
+  return kept.join(";");
+}
+function ownStyle(style) {
+  if (DIAGRAM_STYLE_PATTERN.test(style)) {
+    return style;
+  }
+  if (style.includes("--mdmark-image-width")) {
+    const width = IMAGE_WIDTH_PATTERN.exec(style)?.[1];
+    return width === void 0 ? "" : `--mdmark-image-width: ${width}`;
+  }
+  if (style.includes("--mdmark-gallery-cols")) {
+    const cols = GALLERY_COLS_PATTERN.exec(style)?.[1];
+    return cols === void 0 ? "" : `--mdmark-gallery-cols: ${cols}`;
+  }
+  if (style.includes("--mdmark-code-digits")) {
+    const digits = CODE_DIGITS_PATTERN.exec(style)?.[1];
+    return digits === void 0 ? "" : `--mdmark-code-digits:${digits}`;
+  }
+  return filterEmbeddedStyle(style);
+}
+var EMBED_PART_TAG = "mdmark-part";
+var EMBED_PART_ATTRIBUTE = "data-part";
+var TEXT_FILTER_SKIP_TAGS = /* @__PURE__ */ new Set([
+  "a",
+  "code",
+  "pre",
+  "button",
+  "h1",
+  "h2",
+  "h3",
+  "h4",
+  "h5",
+  "h6"
+]);
+var EMBEDDED_NON_TEXT_TAGS = [
+  "script",
+  "style",
+  "textarea",
+  "option",
+  "xmp"
+];
+var EMBEDDED_OPTIONS = {
+  ...SANITIZE_OPTIONS,
+  allowedTags: [
+    ...SANITIZE_OPTIONS.allowedTags,
+    "button",
+    EMBED_PART_TAG
+  ],
+  allowedAttributes: {
+    "*": ["data-hint", "style", "colspan", DROP_ATTRIBUTE],
+    a: ["href", "title"],
+    img: ["src", "alt", "title"],
+    details: ["open"],
+    input: ["type", "disabled", "checked"],
+    button: ["type"],
+    [EMBED_PART_TAG]: [EMBED_PART_ATTRIBUTE]
+  },
+  allowedClasses: {},
+  nonTextTags: EMBEDDED_NON_TEXT_TAGS
+};
+function sanitizeEmbedded(html, onText, keepClasses = false) {
+  return (0, import_sanitize_html.default)(html, {
+    ...EMBEDDED_OPTIONS,
+    ...keepClasses ? {
+      allowedAttributes: {
+        ...EMBEDDED_OPTIONS.allowedAttributes,
+        "*": [
+          ...EMBEDDED_OPTIONS.allowedAttributes["*"] ?? [],
+          "class",
+          KEEP_CLASS_ATTRIBUTE
+        ]
+      },
+      allowedClasses: void 0
+    } : {},
+    textFilter: (text2, tagName) => TEXT_FILTER_SKIP_TAGS.has(tagName) ? text2 : onText(text2),
+    transformTags: {
+      "*": (tagName, attribs) => {
+        if (tagName === "input") {
+          const checkbox = {
+            type: "checkbox",
+            disabled: ""
+          };
+          if (attribs.checked !== void 0) {
+            checkbox.checked = "";
+          }
+          return { tagName, attribs: checkbox };
+        }
+        const next = { ...attribs };
+        const style = filterEmbeddedStyle(attribs.style ?? "");
+        if (style === "") {
+          delete next.style;
+        } else {
+          next.style = style;
+        }
+        if (tagName === "button") {
+          next.type = "button";
+        }
+        delete next[KEEP_CLASS_ATTRIBUTE];
+        if (keepClasses && next.class !== void 0) {
+          const classes = next.class.split(/\s+/).filter((name) => name !== "" && !SYNTAX_CLASS_PATTERN.test(name));
+          if (classes.length > 0) {
+            next.class = classes.join(" ");
+            next[KEEP_CLASS_ATTRIBUTE] = "";
+          } else {
+            delete next.class;
+          }
+        }
+        dropDataUrls(tagName, next);
+        if (DIAGRAM_ONLY_TAGS.has(tagName) && tagName !== "button") {
+          next[DROP_ATTRIBUTE] = "1";
+        }
+        return { tagName, attribs: next };
+      }
+    }
+  });
+}
+function isAllowedClass(tagName, name) {
+  const allowed = SANITIZE_OPTIONS.allowedClasses;
+  return [...allowed["*"] ?? [], ...allowed[tagName] ?? []].some(
+    (pattern) => pattern.endsWith("*") ? name.startsWith(pattern.slice(0, -1)) : name === pattern
+  );
+}
+function sanitize(html, nonce) {
+  return (0, import_sanitize_html.default)(html, {
+    ...SANITIZE_OPTIONS,
+    // class は `transformTags` で `SANITIZE_OPTIONS` の `allowedClasses` のとおりに絞る
+    allowedClasses: { "*": [/^\S+$/] },
+    transformTags: {
+      // 全ての要素: mdmark が出した要素以外から記法の属性を落とし、`text-align` の値を class に移し、`style` は常に削除する
+      "*": (tagName, attribs) => {
+        const own2 = attribs[OWN_ATTRIBUTE] === nonce;
+        const next = own2 ? { ...attribs } : dropSyntaxAttributes(tagName, attribs);
+        delete next[OWN_ATTRIBUTE];
+        const keepClass = own2 && attribs[KEEP_CLASS_ATTRIBUTE] !== void 0;
+        delete next[KEEP_CLASS_ATTRIBUTE];
+        if (!keepClass && next.class !== void 0) {
+          const classes = next.class.split(/\s+/).filter((name) => name !== "" && isAllowedClass(tagName, name));
+          if (classes.length > 0) {
+            next.class = classes.join(" ");
+          } else {
+            delete next.class;
+          }
+        }
+        if (next[SOURCE_LINE_ATTRIBUTE] !== void 0 && !SOURCE_LINE_PATTERN.test(next[SOURCE_LINE_ATTRIBUTE])) {
+          delete next[SOURCE_LINE_ATTRIBUTE];
+        }
+        dropDataUrls(tagName, next);
+        const align = TEXT_ALIGN_PATTERN.exec(attribs.style ?? "")?.[1];
+        if (align && ALIGN_VALUES.includes(align)) {
+          next.class = [next.class, `mdmark-align-${align}`].filter(Boolean).join(" ");
+        }
+        const style = attribs.style ?? "";
+        const kept = own2 ? ownStyle(style) : "";
+        if (kept === "") {
+          delete next.style;
+        } else {
+          next.style = kept;
+        }
+        if (!own2 && (DIAGRAM_ONLY_TAGS.has(tagName) || MEDIA_TAGS.has(tagName) || RANGE_SCRIPT_TAGS.has(tagName))) {
+          next[DROP_ATTRIBUTE] = "1";
+        }
+        return { tagName, attribs: next };
+      },
+      // 入力欄: 常に無効のチェックボックスにし、元の属性からは `checked` だけを引き継ぐ。図の部品が出したスライダーはそのまま残す
+      input: (tagName, attribs) => {
+        if (attribs[OWN_ATTRIBUTE] === nonce && attribs.type === "range") {
+          return { tagName, attribs };
+        }
+        const next = { type: "checkbox", disabled: "" };
+        if (attribs.checked !== void 0) {
+          next.checked = "";
+        }
+        return { tagName, attribs: next };
+      },
+      pre: fixTabindex,
+      table: fixTabindex
+    }
+  });
+}
+
 // src/parts/inline-icon.ts
 var ALLOWED_ELEMENTS = /* @__PURE__ */ new Set([
   "path",
@@ -71603,6 +70986,9 @@ var mapKindOf = (mermaid) => {
   const first = mermaid.trimStart().split(/\s/, 1)[0] ?? "";
   if (first === "flowchart" || first === "graph") return "flowchart";
   if (first === "sequenceDiagram") return "sequenceDiagram";
+  if (first === "erDiagram") return "erDiagram";
+  if (first === "stateDiagram-v2" || first === "stateDiagram")
+    return "stateDiagram";
   return void 0;
 };
 var collectMapStructure = (range) => {
@@ -71627,7 +71013,7 @@ var collectMapStructure = (range) => {
     const first = range.mermaid.trimStart().split(/\s/, 1)[0] ?? "";
     problems.unshift({
       kind: "map_invalid",
-      message: `\u3053\u306E\u7248\u306E map \u3067\u63CF\u3051\u308B\u56F3\u306E\u7A2E\u985E\u306F \`flowchart\`\u30FB\`sequenceDiagram\` \u3067\u3059\u3002\`${first}\` \u306E\u56F3\u306F\u30B3\u30FC\u30C9\u30D6\u30ED\u30C3\u30AF\u306E\u307E\u307E\u8868\u793A\u3057\u3066\u3044\u307E\u3059\u3002`
+      message: `\u3053\u306E\u7248\u306E map \u3067\u63CF\u3051\u308B\u56F3\u306E\u7A2E\u985E\u306F \`flowchart\`\u30FB\`sequenceDiagram\`\u30FB\`erDiagram\`\u30FB\`stateDiagram-v2\` \u3067\u3059\u3002\`${first}\` \u306E\u56F3\u306F\u30B3\u30FC\u30C9\u30D6\u30ED\u30C3\u30AF\u306E\u307E\u307E\u8868\u793A\u3057\u3066\u3044\u307E\u3059\u3002`
     });
   }
   return { problems, kind, args: parsedArgs };
@@ -72326,108 +71712,7 @@ function erRelationRoute(options) {
 }
 
 // src/diagram/geometry.ts
-var JUMP_RADIUS = 6;
-var OVERLAP_OFFSET = 4;
 var ZOOM = { step: 1.25, max: 3, pan: 80 };
-function polylinePath(points) {
-  return points.map(([x, y], index) => `${index === 0 ? "M" : "L"}${x},${y}`).join(" ");
-}
-function segmentOf(from, to) {
-  const horizontal = from[1] === to[1];
-  const start = horizontal ? from[0] : from[1];
-  const end = horizontal ? to[0] : to[1];
-  return {
-    horizontal,
-    fixed: horizontal ? from[1] : from[0],
-    low: Math.min(start, end),
-    high: Math.max(start, end),
-    direction: Math.sign(end - start)
-  };
-}
-function overlaps2(a, b) {
-  return a.horizontal === b.horizontal && a.direction === b.direction && a.fixed === b.fixed && Math.min(a.high, b.high) > Math.max(a.low, b.low);
-}
-function offsetOverlaps(wires) {
-  const placed = [];
-  const result = /* @__PURE__ */ new Map();
-  for (const wire of wires) {
-    const points = wire.points.map((point) => [point[0], point[1]]);
-    for (let index = 0; index < points.length - 1; index++) {
-      const from = points[index];
-      const to = points[index + 1];
-      if (!from || !to) {
-        continue;
-      }
-      let segment = segmentOf(from, to);
-      const count = placed.filter((other) => overlaps2(segment, other)).length;
-      if (count > 0) {
-        const axis = segment.horizontal ? 1 : 0;
-        from[axis] += count * OVERLAP_OFFSET;
-        to[axis] += count * OVERLAP_OFFSET;
-        segment = segmentOf(from, to);
-      }
-      placed.push(segment);
-    }
-    result.set(wire.id, points);
-  }
-  return result;
-}
-function crossings(segment, owner, all) {
-  const xs = [];
-  for (const [id, points] of all) {
-    if (id === owner) {
-      continue;
-    }
-    for (let index = 0; index < points.length - 1; index++) {
-      const from = points[index];
-      const to = points[index + 1];
-      if (!from || !to) {
-        continue;
-      }
-      const vertical = segmentOf(from, to);
-      if (vertical.horizontal) {
-        continue;
-      }
-      const x = vertical.fixed;
-      if (x > segment.low + JUMP_RADIUS && x < segment.high - JUMP_RADIUS && segment.fixed > vertical.low && segment.fixed < vertical.high) {
-        xs.push(x);
-      }
-    }
-  }
-  return xs;
-}
-function jumpPaths(wires) {
-  const shifted = offsetOverlaps(wires);
-  const paths = /* @__PURE__ */ new Map();
-  for (const [id, points] of shifted) {
-    const first = points[0];
-    if (!first) {
-      continue;
-    }
-    let path = `M${first[0]},${first[1]}`;
-    for (let index = 0; index < points.length - 1; index++) {
-      const from = points[index];
-      const to = points[index + 1];
-      if (!from || !to) {
-        continue;
-      }
-      const segment = segmentOf(from, to);
-      if (segment.horizontal && segment.direction !== 0) {
-        const direction = segment.direction;
-        const xs = crossings(segment, id, shifted).sort(
-          (a, b) => (a - b) * direction
-        );
-        for (const x of xs) {
-          const sweep = direction > 0 ? 1 : 0;
-          path += ` L${x - JUMP_RADIUS * direction},${from[1]} A${JUMP_RADIUS},${JUMP_RADIUS} 0 0 ${sweep} ${x + JUMP_RADIUS * direction},${from[1]}`;
-        }
-      }
-      path += ` L${to[0]},${to[1]}`;
-    }
-    paths.set(id, path);
-  }
-  return paths;
-}
 var STEP_BASES = [1, 2, 5, 10];
 var TICK_TARGET = 5;
 function tidy(value) {
@@ -73324,49 +72609,6 @@ function erEndSvg(options) {
 }
 
 // src/parts/diagram.ts
-var LINE_STYLES = {
-  flow: { dash: "", width: 1.5, head: "filled", label: "\u51E6\u7406\u306E\u6D41\u308C" },
-  read: { dash: "6 4", width: 1.5, head: "open", label: "\u8AAD\u307F\u8FBC\u3080" },
-  write: { dash: "", width: 2.5, head: "filled", label: "\u66F8\u304D\u8FBC\u3080" },
-  reply: { dash: "4 3", width: 1.5, head: "open", label: "\u8FD4\u5374\u3059\u308B" },
-  loop: { dash: "8 4", width: 1.5, head: "open", label: "\u623B\u308B\uFF08\u30EB\u30FC\u30D7\uFF09" }
-};
-var KIND_STYLES = {
-  llm: { tag: "LLM", legend: "LLM", icon: "bot" },
-  dm: { tag: "\u610F\u601D\u6C7A\u5B9A\u30E2\u30C7\u30EB", legend: "\u610F\u601D\u6C7A\u5B9A\u30E2\u30C7\u30EB", icon: "split" },
-  script: { tag: "\u30B9\u30AF\u30EA\u30D7\u30C8", legend: "\u30B9\u30AF\u30EA\u30D7\u30C8", icon: "code-xml" },
-  mcp: { tag: "MCP", legend: "MCP", icon: "plug" },
-  data: {
-    tag: "\u30C7\u30FC\u30BF",
-    legend: "\u30C7\u30FC\u30BF\uFF08\u4E0B\u306E\u89D2\u304C\u4E38\u3044\u30CE\u30FC\u30C9\uFF09",
-    icon: "database"
-  },
-  external: { tag: "\u5916\u90E8", legend: "\u5916\u90E8\u306E\u30B7\u30B9\u30C6\u30E0", icon: "globe" },
-  start: { tag: "\u958B\u59CB", legend: "\u958B\u59CB", icon: "play" },
-  question: { tag: "\u8CEA\u554F", legend: "\u8CEA\u554F", icon: "circle-question-mark" },
-  action: { tag: "\u30A2\u30AF\u30B7\u30E7\u30F3", legend: "\u30A2\u30AF\u30B7\u30E7\u30F3", icon: "wrench" },
-  result: { tag: "\u7D50\u679C", legend: "\u7D50\u679C", icon: "flag" }
-};
-var CIRCLE_INSET = 0.1464;
-var KIND_SAMPLES = {
-  data: '<path d="M1,1 H17 V9 Q17,13 13,13 H5 Q1,13 1,9 Z"></path>',
-  start: '<circle cx="9" cy="7" r="6"></circle>',
-  question: '<polygon points="9,0.5 17.5,7 9,13.5 0.5,7"></polygon>',
-  action: '<rect x="1" y="1" width="16" height="12" rx="1"></rect>',
-  result: '<rect x="1" y="1" width="16" height="12" rx="6"></rect>'
-};
-var OUTSIDE_FRAME = "\uFF08\u67A0\u306E\u5916\uFF09";
-var HEAD_SIZE = 9;
-var SEQ = {
-  colGap: 180,
-  firstX: 92,
-  headW: 150,
-  headH: 56,
-  headTop: 16,
-  rowH: 52,
-  firstY: 116,
-  bandW: 200
-};
 var VIEWPORT_KEYS = "+ - 0 ArrowLeft ArrowUp ArrowDown ArrowRight";
 function num2(value) {
   return String(Number(value.toFixed(2)));
@@ -73393,7 +72635,7 @@ function renderDiagramTip(tip) {
     const columns = rows ? `<dl class="mdmark-diagram-tip-io mdmark-diagram-er-tip-columns">${rows}</dl>` : "";
     return `<div class="mdmark-diagram-tip" id="${escapeHtml2(tip.id)}" role="tooltip" data-tip-for="${owner}"${hidden}><span class="mdmark-term-tip-section"><span class="mdmark-term-tip-heading">${escapeHtml2(plainDefinitionText(table2.label))}\uFF08${escapeHtml2(plainDefinitionText(table2.name))}\uFF09</span>${desc}${columns}</span></div>`;
   }
-  const body = tip.kind === "io" && tip.io ? `<dl class="mdmark-diagram-tip-io"><dt>\u5165\u529B</dt><dd>${escapeHtml2(tip.io.in)}</dd><dt>\u51E6\u7406</dt><dd>${escapeHtml2(tip.io.do)}</dd><dt>\u51FA\u529B</dt><dd>${escapeHtml2(tip.io.out)}</dd></dl>${hint}` : `<span class="mdmark-term-tip-meaning">${escapeHtml2((tip.kind === "item" ? tip.value : tip.tip) ?? "")}</span>`;
+  const body = `<span class="mdmark-term-tip-meaning">${escapeHtml2((tip.kind === "item" ? tip.value : tip.tip) ?? "")}</span>`;
   return `<div class="mdmark-diagram-tip" id="${escapeHtml2(tip.id)}" role="tooltip" data-tip-for="${owner}"${hidden}><span class="mdmark-term-tip-section"><span class="mdmark-term-tip-heading">${escapeHtml2(tip.label)}</span>${body}</span></div>`;
 }
 function createTips(prefix) {
@@ -73427,326 +72669,6 @@ function renderText(text2, tips, lookup, found) {
     return `<span class="mdmark-term" tabindex="0" aria-describedby="${id}" data-tip-owner="${escapeHtml2(owner)}">${escapeHtml2(piece)}</span>`;
   }).join("");
 }
-function boxStyle(box) {
-  const size = box.w === void 0 || box.h === void 0 ? "" : `;width:${num2(box.w)}px;height:${num2(box.h)}px`;
-  return ` style="left:${num2(box.x)}px;top:${num2(box.y)}px${size}${box.inset ?? ""}"`;
-}
-function markerDefs(id) {
-  return Object.keys(LINE_STYLES).map((line) => {
-    const shape = LINE_STYLES[line].head === "filled" ? '<path d="M0,0 L9,4.5 L0,9 z"></path>' : '<path d="M1,1 L8,4.5 L1,8"></path>';
-    return `<marker id="${id}-head-${line}" class="mdmark-diagram-arrowhead" data-line="${line}" viewBox="0 0 9 9" refX="8.5" refY="4.5" markerWidth="${HEAD_SIZE}" markerHeight="${HEAD_SIZE}" markerUnits="userSpaceOnUse" orient="auto-start-reverse">${shape}</marker>`;
-  }).join("");
-}
-function renderWire(options) {
-  const { id, wireId, line, d, hit, custom } = options;
-  if (custom !== void 0) {
-    return renderStyledWire({ ...options, custom, index: options.index ?? 0 });
-  }
-  const style = LINE_STYLES[line];
-  const dash = style.dash ? ` stroke-dasharray="${style.dash}"` : "";
-  const visible = `<path class="mdmark-diagram-wire" data-line="${line}" data-wire="${escapeHtml2(wireId)}" d="${d}"${dash} stroke-width="${style.width}" marker-end="url(#${id}-head-${line})"></path>`;
-  const target = hit ? `<path class="mdmark-diagram-wire-hit" data-tip-owner="${escapeHtml2(wireId)}" d="${d}"></path>` : "";
-  return visible + target;
-}
-var MAP_DASHES2 = {
-  solid: "",
-  dashed: "6 4",
-  dotted: "2 4",
-  "dash-dot": "8 3 2 3",
-  "long-dash": "12 5"
-};
-var MAP_WIDTHS2 = {
-  thin: 1,
-  normal: 1.5,
-  thick: 3
-};
-var wireColor = (color) => color === void 0 || !isColorName(color) ? "var(--mdmark-color-diagram-line)" : `var(--mdmark-color-accent-${color}-text, var(--mdmark-color-diagram-line))`;
-function renderStyledWire(options) {
-  const { id, wireId, d, hit, custom, index } = options;
-  const color = wireColor(custom.color);
-  const dash = MAP_DASHES2[custom.dash ?? "solid"];
-  const width = MAP_WIDTHS2[custom.width ?? "normal"];
-  const head = custom.head ?? "filled";
-  const markerId = `${id}-head-map-${index}`;
-  const shape = head === "filled" ? `<path d="M0,0 L9,4.5 L0,9 z" fill="${color}"></path>` : `<path d="M1,1 L8,4.5 L1,8" fill="none" stroke="${color}" stroke-width="1.5"></path>`;
-  const marker = head === "none" ? "" : `<marker id="${markerId}" class="mdmark-diagram-arrowhead" viewBox="0 0 9 9" refX="8.5" refY="4.5" markerWidth="${HEAD_SIZE}" markerHeight="${HEAD_SIZE}" markerUnits="userSpaceOnUse" orient="auto-start-reverse">${shape}</marker>`;
-  const ends = head === "none" ? "" : ` marker-end="url(#${markerId})"${custom.both ? ` marker-start="url(#${markerId})"` : ""}`;
-  const visible = `${marker === "" ? "" : `<defs>${marker}</defs>`}<path class="mdmark-diagram-wire" data-line="map" data-wire="${escapeHtml2(wireId)}" d="${d}"${dash ? ` stroke-dasharray="${dash}"` : ""} stroke-width="${width}" style="stroke:${color}"${ends}></path>`;
-  const target = hit ? `<path class="mdmark-diagram-wire-hit" data-tip-owner="${escapeHtml2(wireId)}" d="${d}"></path>` : "";
-  return visible + target;
-}
-function renderLabel(options) {
-  const { wireId, line, label, tip, at, tips } = options;
-  if (label === void 0 || label === "") {
-    return "";
-  }
-  const style = boxStyle({ x: at[0], y: at[1] });
-  if (tip === void 0 || tip === "") {
-    return `<span class="mdmark-diagram-label" data-line="${line}" data-wire="${escapeHtml2(wireId)}"${style}>${escapeHtml2(label)}</span>`;
-  }
-  const id = tips.add({ kind: "wire", label, tip, owner: wireId });
-  return `<span class="mdmark-diagram-label has-tip" data-line="${line}" data-wire="${escapeHtml2(wireId)}" tabindex="0" aria-describedby="${id}" data-tip-owner="${escapeHtml2(wireId)}"${style}>${escapeHtml2(label)}</span>`;
-}
-function labelPosition(points) {
-  let best = points[0] ?? [0, 0];
-  let longest = -1;
-  for (let index = 1; index < points.length; index++) {
-    const from = points[index - 1];
-    const to = points[index];
-    if (!from || !to) {
-      continue;
-    }
-    const length = Math.abs(to[0] - from[0]) + Math.abs(to[1] - from[1]);
-    if (length > longest) {
-      longest = length;
-      best = [(from[0] + to[0]) / 2, (from[1] + to[1]) / 2];
-    }
-  }
-  return best;
-}
-function nodeInset(kind, box) {
-  if (kind === "question") {
-    return `;padding:${num2(box.h / 4)}px ${num2(box.w / 4)}px`;
-  }
-  if (kind === "start") {
-    return `;padding:${Number((box.w * CIRCLE_INSET).toFixed(1))}px`;
-  }
-  return "";
-}
-function diamondSvg(box) {
-  const w = num2(box.w);
-  const h = num2(box.h);
-  const points = `${num2(box.w / 2)},0 ${w},${num2(box.h / 2)} ${num2(box.w / 2)},${h} 0,${num2(box.h / 2)}`;
-  return `<svg class="mdmark-diagram-node-shape" viewBox="0 0 ${w} ${h}" aria-hidden="true"><polygon points="${points}"></polygon></svg>`;
-}
-function renderNode3(options) {
-  const { node: node2, box, tips, lookup, found, hints } = options;
-  const kind = KIND_STYLES[node2.kind];
-  const tag = renderText(node2.tag ?? kind.tag, tips, lookup, found);
-  const name = renderText(node2.name, tips, lookup, found);
-  const sub = node2.sub === void 0 ? "" : `<span class="mdmark-diagram-node-sub">${renderText(node2.sub, tips, lookup, found)}</span>`;
-  const hasTip = hints && (node2.io !== void 0 || node2.hint !== void 0);
-  let info = "";
-  if (hasTip) {
-    const owner = `node:${node2.id}`;
-    const id = tips.add({
-      kind: node2.io ? "io" : "hint",
-      label: node2.name,
-      ...node2.io ? { io: node2.io } : {},
-      ...node2.hint === void 0 ? {} : { hint: node2.hint },
-      owner
-    });
-    const what = node2.io ? "\u5165\u529B\u30FB\u51E6\u7406\u30FB\u51FA\u529B" : "\u8AAC\u660E";
-    info = `<button class="mdmark-diagram-info" type="button" aria-label="\u300C${escapeHtml2(node2.name)}\u300D\u306E${what}" aria-describedby="${id}" data-tip-owner="${escapeHtml2(owner)}">${iconSvg("info")}</button>`;
-  }
-  const link2 = node2.href === void 0 ? "" : `<a class="mdmark-diagram-node-link" href="${escapeHtml2(node2.href)}" aria-label="${escapeHtml2(node2.name)}"></a>`;
-  const classes = `mdmark-diagram-node${hasTip ? " has-tip" : ""}${node2.href === void 0 ? "" : " has-link"}`;
-  if (node2.style !== void 0) {
-    return renderStyledNode({
-      node: node2,
-      style: node2.style,
-      box,
-      classes,
-      name,
-      sub,
-      link: link2,
-      info
-    });
-  }
-  return `<div class="${classes}" data-kind="${node2.kind}" data-node="${escapeHtml2(node2.id)}"${boxStyle({ ...box, inset: nodeInset(node2.kind, box) })}>${node2.kind === "question" ? diamondSvg(box) : ""}<span class="mdmark-diagram-node-kind">${iconSvg(kind.icon)}<span>${tag}</span></span><span class="mdmark-diagram-node-name">${name}</span>${sub}${link2}${info}</div>`;
-}
-function renderStyledNode(options) {
-  const { node: node2, style, box, classes, name, sub, link: link2, info } = options;
-  const bundled = style.icon === void 0 ? void 0 : bundledIconNode(style.icon);
-  const icon = style.icon === void 0 ? "" : bundled ? iconNodeSvg(bundled) : `<span class="mdmark-map-icon" data-icon="${escapeHtml2(style.icon)}" aria-hidden="true"></span>`;
-  const label = style.label === void 0 ? "" : `<span>${escapeHtml2(style.label)}</span>`;
-  const empty = icon === "" && label === "" ? " is-empty" : "";
-  const named = style.color !== void 0 && isColorName(style.color);
-  const color = named ? ` data-color="${style.color}"` : "";
-  const tint = named ? `;--map-kind:var(--mdmark-color-accent-${style.color}-text)` : "";
-  return `<div class="${classes} map-kinded" data-kind="map" data-shape="${style.shape ?? "rounded"}"${color} data-node="${escapeHtml2(node2.id)}"${boxStyle({ ...box, inset: tint })}><span class="mdmark-diagram-node-kind${empty}">${icon}${label}</span><span class="mdmark-diagram-node-name">${name}</span>${sub}${link2}${info}</div>`;
-}
-function groupInfo(options) {
-  const { hint, label, owner, tips } = options;
-  if (hint === void 0 || hint === "") {
-    return "";
-  }
-  const id = tips.add({ kind: "hint", label, hint, owner });
-  return `<button class="mdmark-diagram-info mdmark-diagram-group-info" type="button" aria-label="\u300C${escapeHtml2(label)}\u300D\u306E\u8AAC\u660E" aria-describedby="${id}" data-tip-owner="${escapeHtml2(owner)}">${iconSvg("info")}</button>`;
-}
-function renderFlow(definition, id, hints, lookup) {
-  const tips = createTips(id);
-  const found = { terms: false };
-  const parts = [];
-  const { frame } = definition;
-  if (frame) {
-    parts.push(`<div class="mdmark-diagram-frame"${boxStyle(frame)}></div>`);
-    for (const lane of definition.lanes ?? []) {
-      parts.push(
-        `<div class="mdmark-diagram-lane" data-kind="${lane.kind}"${boxStyle({ x: frame.x + 1.5, y: lane.y, w: frame.w - 3, h: lane.h })}></div>`,
-        `<span class="mdmark-diagram-lane-label" data-sticky-top="${num2(lane.y)}" data-sticky-bottom="${num2(lane.y + lane.h)}"${boxStyle({ x: frame.x + 12, y: lane.y + 6 })}>${escapeHtml2(lane.label)}${groupInfo({ hint: hints ? lane.hint : void 0, label: lane.label, owner: `lane:${lane.label}`, tips })}</span>`
-      );
-    }
-    parts.push(
-      `<span class="mdmark-diagram-frame-title" data-sticky-top="${num2(frame.y)}" data-sticky-bottom="${num2(frame.y + frame.h)}"${boxStyle({ x: frame.x + 12, y: frame.y + 8 })}>${iconSvg("server")}${escapeHtml2(frame.title)}${groupInfo({ hint: hints ? frame.hint : void 0, label: frame.title, owner: "frame", tips })}</span>`
-    );
-  }
-  const paths = jumpPaths(definition.wires);
-  const wires = definition.wires.map(
-    (wire, index) => renderWire({
-      id,
-      wireId: wire.id,
-      line: wire.line,
-      d: paths.get(wire.id) ?? "",
-      hit: hints && wire.tip !== void 0 && wire.tip !== "",
-      custom: wire.style,
-      index
-    })
-  ).join("");
-  parts.push(
-    `<svg class="mdmark-diagram-wires" width="${num2(definition.width)}" height="${num2(definition.height)}" aria-hidden="true">${wires}</svg>`
-  );
-  for (const node2 of definition.nodes) {
-    parts.push(renderNode3({ node: node2, box: node2, tips, lookup, found, hints }));
-  }
-  for (const wire of definition.wires) {
-    parts.push(
-      renderLabel({
-        wireId: wire.id,
-        line: wire.line,
-        label: wire.label,
-        tip: hints ? wire.tip : void 0,
-        at: wire.labelAt ?? labelPosition(wire.points),
-        tips
-      })
-    );
-  }
-  return {
-    html: parts.join(""),
-    width: definition.width,
-    height: definition.height,
-    tips: tips.html(),
-    jumps: [...paths.values()].some((path) => path.includes(" A")),
-    terms: found.terms
-  };
-}
-function renderSequence(definition, id, lookup, hints = true) {
-  const tips = createTips(id);
-  const found = { terms: false };
-  const column = new Map(
-    definition.participants.map((participant, index) => [
-      participant.id,
-      SEQ.firstX + index * SEQ.colGap
-    ])
-  );
-  const lastX = SEQ.firstX + (definition.participants.length - 1) * SEQ.colGap;
-  const rowY = (index) => SEQ.firstY + index * SEQ.rowH;
-  const lastY = rowY(definition.steps.length - 1);
-  const width = lastX + SEQ.headW / 2 + SEQ.bandW;
-  const height = lastY + SEQ.rowH + 24;
-  const bandX = lastX + SEQ.headW / 2 + 40;
-  const svg = [];
-  const labels = [];
-  const first = definition.steps[0];
-  const last = definition.steps.at(-1);
-  if (definition.loop && first && last) {
-    const backY = rowY(0) - 27;
-    svg.push(
-      `<rect class="mdmark-diagram-loop-band" x="12" y="${num2(rowY(0) - 30)}" width="${num2(bandX)}" height="${num2(lastY - rowY(0) + 48)}" rx="8"></rect>`
-    );
-    const points = [
-      [column.get(last.to) ?? 0, lastY + 14],
-      [bandX, lastY + 14],
-      [bandX, backY],
-      [(column.get(first.to) ?? 0) + 2, backY]
-    ];
-    const loopId = `${id}-loop`;
-    svg.push(
-      renderWire({
-        id,
-        wireId: loopId,
-        line: "loop",
-        d: polylinePath(points),
-        hit: false
-      })
-    );
-    labels.push(
-      renderLabel({
-        wireId: loopId,
-        line: "loop",
-        label: definition.loop.label,
-        tip: void 0,
-        at: [bandX, (lastY + rowY(0)) / 2],
-        tips
-      })
-    );
-  }
-  for (const x of column.values()) {
-    svg.push(
-      `<line class="mdmark-diagram-lifeline" x1="${num2(x)}" y1="${SEQ.headTop + SEQ.headH}" x2="${num2(x)}" y2="${num2(height - 12)}"></line>`
-    );
-  }
-  definition.steps.forEach((step, index) => {
-    const x1 = column.get(step.from) ?? 0;
-    const x2 = column.get(step.to) ?? 0;
-    const y = rowY(index);
-    const line = step.reply ? "reply" : "flow";
-    const wireId = `${id}-step-${index + 1}`;
-    const end = x2 + Math.sign(x1 - x2) * 2;
-    const points = [
-      [x1, y],
-      [end, y]
-    ];
-    svg.push(
-      renderWire({
-        id,
-        wireId,
-        line,
-        d: polylinePath(points),
-        hit: hints && step.tip !== void 0 && step.tip !== ""
-      })
-    );
-    labels.push(
-      renderLabel({
-        wireId,
-        line,
-        label: `${index + 1} ${step.label}`,
-        tip: hints ? step.tip : void 0,
-        at: [(x1 + x2) / 2, y - 14],
-        tips
-      })
-    );
-  });
-  const heads = definition.participants.map(
-    (participant) => renderNode3({
-      node: participant,
-      box: {
-        x: (column.get(participant.id) ?? 0) - SEQ.headW / 2,
-        y: SEQ.headTop,
-        w: SEQ.headW,
-        h: SEQ.headH
-      },
-      tips,
-      lookup,
-      found,
-      hints
-    })
-  ).join("");
-  const html = [
-    `<svg class="mdmark-diagram-wires" width="${num2(width)}" height="${num2(height)}" aria-hidden="true">${svg.join("")}</svg>`,
-    ...labels,
-    // 相手の名前の行: 別の層にし、縦に動かしても表示する枠の上端に留める
-    `<div class="mdmark-diagram-seq-heads" style="width:${num2(width)}px;height:${SEQ.headTop + SEQ.headH + 8}px">${heads}</div>`
-  ].join("");
-  return {
-    html,
-    width,
-    height,
-    tips: tips.html(),
-    jumps: false,
-    terms: found.terms
-  };
-}
 function renderEr(definition, id, hints, lookup) {
   const tips = createTips(id);
   const found = { terms: false };
@@ -73761,14 +72683,14 @@ function renderEr(definition, id, hints, lookup) {
     if (!from || !to) {
       return;
     }
-    const route2 = erRelationRoute({ relation, from, to, folded });
+    const route = erRelationRoute({ relation, from, to, folded });
     const mid = relation.midX === void 0 ? "" : ` data-er-mid-x="${relation.midX}"`;
     svg.push(
-      `<g data-er-relation="${index}" data-er-from="${escapeHtml2(relation.from)}" data-er-from-column="${escapeHtml2(relation.fromColumn)}" data-er-from-card="${relation.fromCard}" data-er-to="${escapeHtml2(relation.to)}" data-er-to-column="${escapeHtml2(relation.toColumn)}" data-er-to-card="${relation.toCard}"${mid}><path class="mdmark-diagram-wire" data-line="er" d="${route2.d}"></path><g class="mdmark-diagram-er-ends">${erEndSvg({ ...route2.start, card: relation.fromCard })}${erEndSvg({ ...route2.end, card: relation.toCard })}</g></g>`
+      `<g data-er-relation="${index}" data-er-from="${escapeHtml2(relation.from)}" data-er-from-column="${escapeHtml2(relation.fromColumn)}" data-er-from-card="${relation.fromCard}" data-er-to="${escapeHtml2(relation.to)}" data-er-to-column="${escapeHtml2(relation.toColumn)}" data-er-to-card="${relation.toCard}"${mid}><path class="mdmark-diagram-wire" data-line="er" d="${route.d}"></path><g class="mdmark-diagram-er-ends">${erEndSvg({ ...route.start, card: relation.fromCard })}${erEndSvg({ ...route.end, card: relation.toCard })}</g></g>`
     );
     if (relation.label) {
       labels.push(
-        `<span class="mdmark-diagram-label" data-line="er" data-er-relation="${index}" style="left:${route2.label.x}px;top:${route2.label.y}px">${text2(relation.label)}</span>`
+        `<span class="mdmark-diagram-label" data-line="er" data-er-relation="${index}" style="left:${route.label.x}px;top:${route.label.y}px">${text2(relation.label)}</span>`
       );
     }
   });
@@ -73803,9 +72725,6 @@ function renderEr(definition, id, hints, lookup) {
 }
 function isErDefinition(definition) {
   return "tables" in definition;
-}
-function isChartDefinition(definition) {
-  return !("wires" in definition) && !("participants" in definition) && !("tables" in definition);
 }
 function erLegend(definition) {
   const items = [];
@@ -73894,42 +72813,7 @@ function chartLegend(definition) {
   return items;
 }
 function legendFor(definition) {
-  if (isErDefinition(definition)) {
-    return erLegend(definition);
-  }
-  if (isChartDefinition(definition)) {
-    return chartLegend(definition);
-  }
-  const isFlow = "wires" in definition;
-  const nodes = isFlow ? definition.nodes : definition.participants;
-  const frame = isFlow ? definition.frame : void 0;
-  const kinds = Object.keys(KIND_STYLES).filter(
-    (kind) => nodes.some((node2) => node2.kind === kind)
-  );
-  const lines = new Set(
-    isFlow ? definition.wires.map((wire) => wire.line) : definition.steps.map((step) => step.reply ? "reply" : "flow")
-  );
-  if (!isFlow && definition.loop) {
-    lines.add("loop");
-  }
-  const usedLines = Object.keys(LINE_STYLES).filter(
-    (line) => lines.has(line)
-  );
-  const items = [];
-  if (kinds.length >= 2) {
-    for (const kind of kinds) {
-      items.push({
-        sample: kind,
-        label: kind === "external" && frame ? KIND_STYLES[kind].legend + OUTSIDE_FRAME : KIND_STYLES[kind].legend
-      });
-    }
-  }
-  if (usedLines.length >= 2) {
-    for (const line of usedLines) {
-      items.push({ sample: line, label: LINE_STYLES[line].label });
-    }
-  }
-  return items;
+  return isErDefinition(definition) ? erLegend(definition) : chartLegend(definition);
 }
 function legendSample(id, sample) {
   if (sample === "underline") {
@@ -73938,16 +72822,6 @@ function legendSample(id, sample) {
   const er = erLegendSample(sample);
   if (er !== void 0) {
     return er;
-  }
-  if (sample in KIND_STYLES) {
-    const shape = KIND_SAMPLES[sample] ?? '<rect x="1" y="1" width="16" height="12" rx="3"></rect>';
-    return `<svg class="mdmark-diagram-legend-sample" data-kind="${sample}" width="18" height="14" aria-hidden="true">${shape}</svg>`;
-  }
-  if (sample in LINE_STYLES) {
-    const line = sample;
-    const style = LINE_STYLES[line];
-    const dash = style.dash ? ` stroke-dasharray="${style.dash}"` : "";
-    return `<svg class="mdmark-diagram-legend-sample" width="34" height="12" aria-hidden="true"><path class="mdmark-diagram-wire" data-line="${line}" d="M1,6 H32"${dash} stroke-width="${style.width}" marker-end="url(#${id}-head-${line})"></path></svg>`;
   }
   if (sample.startsWith("fill-")) {
     const n = Number(sample.slice("fill-".length));
@@ -73963,15 +72837,6 @@ function legendSample(id, sample) {
   }
   if (sample === "bubble") {
     return '<svg class="mdmark-diagram-legend-sample mdmark-diagram-legend-bubble" width="30" height="16" aria-hidden="true"><circle cx="5" cy="11" r="3"></circle><circle cx="20" cy="8" r="7"></circle></svg>';
-  }
-  if (sample === "frame") {
-    return '<svg class="mdmark-diagram-legend-sample mdmark-diagram-legend-frame" width="18" height="14" aria-hidden="true"><rect x="1" y="1" width="16" height="12" rx="4"></rect></svg>';
-  }
-  if (sample === "lane") {
-    return '<svg class="mdmark-diagram-legend-sample mdmark-diagram-legend-lane" width="18" height="14" aria-hidden="true"><rect x="0" y="0" width="18" height="14" rx="2"></rect></svg>';
-  }
-  if (sample === "jump") {
-    return '<svg class="mdmark-diagram-legend-sample mdmark-diagram-legend-jump" width="34" height="14" aria-hidden="true"><path d="M17,0 V14"></path><path d="M1,9 H11 A6,6 0 0 1 23,9 H33"></path></svg>';
   }
   return `<span class="mdmark-diagram-legend-info">${iconSvg("info")}</span>`;
 }
@@ -74008,12 +72873,11 @@ function renderDiagramFrame(frame, body) {
   const stage = `width:${num2(body.width)}px;height:${num2(body.height)}px${zoom === 1 ? "" : `;transform:scale(${num2(zoom)})`}`;
   const legend = renderLegendItems(id, frame.legend);
   const resize = frame.resizable !== false && frame.modal !== true ? `<div class="mdmark-diagram-resize" role="separator" tabindex="0" aria-orientation="horizontal" aria-label="\u300C${escapeHtml2(frame.title)}\u300D\u306E\u8868\u793A\u306E\u9AD8\u3055" aria-keyshortcuts="ArrowUp ArrowDown" title="\u30C9\u30E9\u30C3\u30B0\u304B \u2191 \u2193 \u3067\u9AD8\u3055\u3092\u5909\u3048\u308B\u3002\u30C0\u30D6\u30EB\u30AF\u30EA\u30C3\u30AF\u3067\u56F3\u306E\u5168\u4F53\u304C\u53CE\u307E\u308B\u9AD8\u3055\u306B\u3059\u308B">${iconSvg("equal")}</div>` : "";
-  const sticky = frame.stickyTitles === false ? ' data-sticky-titles="off"' : "";
   const fitMin = frame.fitMin === void 0 ? "" : ` data-fit-min="${num2(frame.fitMin)}"`;
   const meta2 = frame.scope === void 0 || frame.updated === void 0 ? "" : `<span class="mdmark-diagram-meta">\u7BC4\u56F2: ${escapeHtml2(frame.scope)}\u30FB\u66F4\u65B0\u65E5: <time datetime="${escapeHtml2(frame.updated)}">${escapeHtml2(frame.updated)}</time></span>`;
   const wide = frame.wide === true ? ' data-wide="true"' : "";
   const touchActive = frame.touchActive === true ? " data-touch-active" : "";
-  return `<figure class="mdmark-diagram" data-diagram="${frame.kind}"${sticky}${fitMin}${wide}><figcaption class="mdmark-diagram-head" id="${id}-title"><span class="mdmark-diagram-title">${escapeHtml2(frame.title)}</span>${meta2}</figcaption><div class="mdmark-diagram-box"${touchActive}>${renderTools(frame)}<div class="mdmark-diagram-viewport" tabindex="0" role="group" aria-roledescription="\u56F3" aria-labelledby="${id}-title" aria-keyshortcuts="${VIEWPORT_KEYS}"><div class="mdmark-diagram-sizer" style="${sizer}"><div class="mdmark-diagram-stage" style="${stage}">${body.html}</div></div></div>${resize}${body.tips}</div><ul class="mdmark-diagram-legend" aria-label="\u51E1\u4F8B"${frame.legend.length === 0 ? ' hidden="hidden"' : ""}>${legend}</ul><svg class="mdmark-diagram-defs" width="0" height="0" aria-hidden="true"><defs>${markerDefs(id)}</defs></svg></figure>`;
+  return `<figure class="mdmark-diagram" data-diagram="${frame.kind}"${fitMin}${wide}><figcaption class="mdmark-diagram-head" id="${id}-title"><span class="mdmark-diagram-title">${escapeHtml2(frame.title)}</span>${meta2}</figcaption><div class="mdmark-diagram-box"${touchActive}>${renderTools(frame)}<div class="mdmark-diagram-viewport" tabindex="0" role="group" aria-roledescription="\u56F3" aria-labelledby="${id}-title" aria-keyshortcuts="${VIEWPORT_KEYS}"><div class="mdmark-diagram-sizer" style="${sizer}"><div class="mdmark-diagram-stage" style="${stage}">${body.html}</div></div></div>${resize}${body.tips}</div><ul class="mdmark-diagram-legend" aria-label="\u51E1\u4F8B"${frame.legend.length === 0 ? ' hidden="hidden"' : ""}>${legend}</ul></figure>`;
 }
 function renderDiagram(options) {
   const {
@@ -74028,21 +72892,7 @@ function renderDiagram(options) {
     hints = true,
     resizable = true
   } = options;
-  let part;
-  if (kind === "flow") {
-    part = renderFlow(definition, id, hints, lookup);
-  } else if (kind === "sequence") {
-    part = renderSequence(
-      definition,
-      id,
-      lookup,
-      hints
-    );
-  } else if (kind === "er") {
-    part = renderEr(definition, id, hints, lookup);
-  } else {
-    part = renderChart(definition, id);
-  }
+  const part = kind === "er" ? renderEr(definition, id, hints, lookup) : renderChart(definition, id);
   return renderDiagramFrame(
     {
       kind,
@@ -74051,7 +72901,6 @@ function renderDiagram(options) {
       updated: definition.updated,
       legend: legendFor(definition),
       resizable,
-      ..."stickyTitles" in definition && definition.stickyTitles === false ? { stickyTitles: false } : {},
       id,
       ...zoom === void 0 ? {} : { zoom },
       ...fit === void 0 ? {} : { fit },
@@ -74119,7 +72968,41 @@ function jsonFences(tokens) {
 function jsonBlocks(tokens) {
   return jsonFences(tokens).map((token) => token.content);
 }
+function retiredDiagramMessage(directive) {
+  return `\`<!-- ${directive} -->\` \u306E\u56F3\u306E\u8A18\u8F09\u65B9\u6CD5\u306F\u5EC3\u6B62\u3057\u307E\u3057\u305F\u3002\`mdmark upgrade\` \u3092\u5B9F\u884C\u3059\u308B\u3068\u3001map \u306E\u7BC4\u56F2\uFF08Mermaid \u3068\u88DC\u8DB3\uFF09\u3078\u66F8\u304D\u63DB\u3048\u307E\u3059\u3002\u3053\u306E\u56F3\u306F\u63CF\u3044\u3066\u3044\u307E\u305B\u3093\u3002`;
+}
+function retiredElementMessage(directive) {
+  return `\`<mdmark-${directive}>\` \u306E\u8981\u7D20\u306F\u5EC3\u6B62\u3057\u307E\u3057\u305F\u3002\u57CB\u3081\u8FBC\u3093\u3060 HTML \u306E\u5916\u306B \`<!-- map -->\` \u306E\u7BC4\u56F2\u3067\u8A18\u8F09\u3057\u76F4\u3057\u3066\u304F\u3060\u3055\u3044\u3002\u3053\u306E\u56F3\u306F\u63CF\u3044\u3066\u3044\u307E\u305B\u3093\u3002`;
+}
+function isRetiredDiagram(name) {
+  return RETIRED_DIAGRAM_DIRECTIVES.includes(name);
+}
+function replaceRetiredDiagrams(state) {
+  const tokens = state.tokens;
+  const out = [];
+  for (let index = 0; index < tokens.length; index++) {
+    const token = tokens[index];
+    const mark = markOf(token);
+    if (!token || !mark || mark.closing || !isRetiredDiagram(mark.name)) {
+      if (token) {
+        out.push(token);
+      }
+      continue;
+    }
+    const closeIndex = findClose(tokens, index, mark.name);
+    out.push(
+      warningBlock(state, {
+        message: retiredDiagramMessage(mark.name),
+        kind: "retired_diagram",
+        ...token.map ? { line: token.map[0] } : {}
+      })
+    );
+    index = closeIndex < 0 ? tokens.length : closeIndex;
+  }
+  state.tokens = out;
+}
 function buildDiagrams(state) {
+  replaceRetiredDiagrams(state);
   if (!featureOn(state, "diagrams")) {
     return;
   }
@@ -74156,7 +73039,7 @@ function buildDiagrams(state) {
       directive,
       jsonBlocks(tokens.slice(index + 1, end))
     );
-    let definition = result.definition;
+    const definition = result.definition;
     if (!result.ok || definition === void 0) {
       out.push(
         warningBlock(state, {
@@ -74166,33 +73049,6 @@ function buildDiagrams(state) {
         })
       );
     } else {
-      if (directive === "flow") {
-        const flow = definition;
-        const problems = nodeLinkProblems(flow);
-        if (problems.length > 0) {
-          out.push(
-            warningBlock(state, {
-              message: "\u30D5\u30ED\u30FC\u56F3\u306E\u30CE\u30FC\u30C9\u306E\u30EA\u30F3\u30AF\u5148\u306B\u4F7F\u7528\u3067\u304D\u306A\u3044\u3082\u306E\u304C\u3042\u308A\u307E\u3059\u3002\u4F7F\u7528\u3067\u304D\u308B\u30EA\u30F3\u30AF\u5148\u306F http\u30FBhttps\u30FBmailto \u3068\u76F8\u5BFE\u30D1\u30B9\u3067\u3059\u3002\u3053\u306E\u30CE\u30FC\u30C9\u306F\u30EA\u30F3\u30AF\u306B\u305B\u305A\u306B\u63CF\u3044\u3066\u3044\u307E\u3059\u3002",
-              items: problems.map(({ id, href }) => ({
-                label: id,
-                message: `\`${href.replaceAll("`", "'")}\``
-              })),
-              ...token.map ? { line: token.map[0] } : {}
-            })
-          );
-          const blocked = new Set(problems.map(({ id }) => id));
-          definition = {
-            ...flow,
-            nodes: flow.nodes.map((node2) => {
-              if (!blocked.has(node2.id)) {
-                return node2;
-              }
-              const { href: _href, ...rest2 } = node2;
-              return rest2;
-            })
-          };
-        }
-      }
       env.diagramCount = (env.diagramCount ?? 0) + 1;
       const count = env.diagramCount;
       let html;
@@ -74238,11 +73094,13 @@ function blockMark(token) {
 }
 function findDiagramBlocks(markdown) {
   const tokens = new MarkdownItCallable({ html: true }).parse(markdown, {});
+  const lines = markdown.split("\n");
+  const lastLine = lines.at(-1) === "" ? lines.length - 1 : lines.length;
   const found = [];
   for (let index = 0; index < tokens.length; index++) {
     const token = tokens[index];
     const mark = token ? blockMark(token) : void 0;
-    if (!token || !mark || mark.closing || !Object.hasOwn(DIAGRAM_DIRECTIVES, mark.name)) {
+    if (!token || !mark || mark.closing || !(Object.hasOwn(DIAGRAM_DIRECTIVES, mark.name) || isRetiredDiagram(mark.name))) {
       continue;
     }
     let end = tokens.length;
@@ -74254,9 +73112,11 @@ function findDiagramBlocks(markdown) {
         break;
       }
     }
+    const closeToken = tokens[end];
     found.push({
       directive: mark.name,
       line: (token.map?.[0] ?? 0) + 1,
+      end: closeToken?.map ? closeToken.map[0] + 1 : lastLine,
       blocks: jsonBlocks(tokens.slice(index + 1, end)).map(
         (block2) => block2.replace(/\n$/, "")
       )
@@ -74394,17 +73254,17 @@ function readImageAttributes(text2, kind, inline2) {
     items: []
   };
   const media = kind === "video" || kind === "audio";
-  const unreadable3 = (label, message) => attributes.items.push({ label, message });
+  const unreadable5 = (label, message) => attributes.items.push({ label, message });
   for (const part of text2.split(/\s+/).filter((item) => item !== "")) {
     const equals = part.indexOf("=");
     const name = equals < 0 ? part : part.slice(0, equals);
     const value = equals < 0 ? void 0 : part.slice(equals + 1);
     if (MEDIA_ONLY_ATTRIBUTES.includes(name) && !media) {
-      unreadable3(part, "\u52D5\u753B\u3068\u97F3\u58F0\u306B\u3060\u3051\u8A18\u8F09\u3067\u304D\u308B\u5C5E\u6027\u3067\u3059\u3002");
+      unreadable5(part, "\u52D5\u753B\u3068\u97F3\u58F0\u306B\u3060\u3051\u8A18\u8F09\u3067\u304D\u308B\u5C5E\u6027\u3067\u3059\u3002");
     } else if (name === "width" && value !== void 0) {
       const width = readWidth(value);
       if (width === void 0) {
-        unreadable3(
+        unreadable5(
           part,
           `\u5E45\u306F \`300\`\u30FB\`300px\` \u306E px \u304B\u3001\`1%\`\u301C\`${MAX_WIDTH_PERCENT}%\` \u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
         );
@@ -74412,14 +73272,14 @@ function readImageAttributes(text2, kind, inline2) {
         attributes.width = width;
       }
     } else if (name === "align" && inline2) {
-      unreadable3(
+      unreadable5(
         name,
         "\u6587\u306E\u4E2D\u306E\u753B\u50CF\u306B\u306F\u8A18\u8F09\u3067\u304D\u306A\u3044\u5C5E\u6027\u3067\u3059\u3002\u753B\u50CF\u3060\u3051\u306E\u6BB5\u843D\u306B\u3057\u3066\u304F\u3060\u3055\u3044\u3002"
       );
     } else if (name === "align" && ALIGNS.includes(value)) {
       attributes.align = value;
     } else if (name === "align") {
-      unreadable3(part, `\u914D\u7F6E\u306F ${codes(ALIGNS)} \u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002`);
+      unreadable5(part, `\u914D\u7F6E\u306F ${codes(ALIGNS)} \u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002`);
     } else if (part === "nolightbox") {
       attributes.lightbox = false;
     } else if (part === "autoplay" || part === "muted" || part === "loop") {
@@ -74427,12 +73287,12 @@ function readImageAttributes(text2, kind, inline2) {
     } else if (name === "poster" && kind === "video" && value) {
       attributes.poster = value;
     } else if (name === "poster") {
-      unreadable3(
+      unreadable5(
         part,
         "\u52D5\u753B\u306B\u3060\u3051\u3001`poster=\u30D1\u30B9` \u306E\u69CB\u9020\u3067\u8A18\u8F09\u3067\u304D\u308B\u5C5E\u6027\u3067\u3059\u3002"
       );
     } else {
-      unreadable3(part, "\u4F7F\u7528\u3067\u304D\u306A\u3044\u5C5E\u6027\u3067\u3059\u3002");
+      unreadable5(part, "\u4F7F\u7528\u3067\u304D\u306A\u3044\u5C5E\u6027\u3067\u3059\u3002");
     }
   }
   if (attributes.autoplay) {
@@ -75794,10 +74654,20 @@ function takeParts(options) {
   const html = source.replace(
     PART_PATTERN,
     (_match, name, text2) => {
+      const lower = name.toLowerCase();
+      if (isRetiredDiagram(lower)) {
+        const warning = warningBlock(state, {
+          message: retiredElementMessage(lower),
+          kind: "retired_diagram"
+        });
+        warnings.push(warning.meta?.warning);
+        parts.push(warning.content);
+        return `<${EMBED_PART_TAG} ${EMBED_PART_ATTRIBUTE}="${env.nonce}:${parts.length - 1}"></${EMBED_PART_TAG}>`;
+      }
       if (!diagrams) {
         return "";
       }
-      const directive = name.toLowerCase();
+      const directive = lower;
       const result = readDefinition(directive, [text2.trim()]);
       const definition = result.definition;
       let part;
@@ -77170,7 +76040,7 @@ function renderTreeBar(options) {
   const state = options.copyState ?? "idle";
   return `<div class="mdmark-tree-bar"><span class="mdmark-tree-kind" aria-hidden="true">tree</span><span class="mdmark-tree-meta"><button class="mdmark-tree-copy" type="button" data-state="${state}">${renderTreeCopyContent(state)}</button><span class="mdmark-visually-hidden mdmark-tree-status" role="status"></span></span></div>`;
 }
-function renderNode4(node2, context, depth, path) {
+function renderNode3(node2, context, depth, path) {
   const note = node2.note ? `<span class="mdmark-tree-note">${node2.note}</span>` : "";
   if (node2.name === TREE_MORE_NAME) {
     return `<li class="mdmark-tree-more"><span class="mdmark-tree-row"><span class="mdmark-tree-name"><span class="mdmark-visually-hidden">\u307B\u304B\u306B\u3082\u3042\u308A\u307E\u3059</span></span>${note}</span></li>`;
@@ -77184,7 +76054,7 @@ function renderNode4(node2, context, depth, path) {
     return `<li class="mdmark-tree-folder"><span class="mdmark-tree-row">${name}${note}</span></li>`;
   }
   const nested = children.map(
-    (child, index) => renderNode4(child, context, depth + 1, `${path}-${index}`)
+    (child, index) => renderNode3(child, context, depth + 1, `${path}-${index}`)
   ).join("");
   if (!context.interactive) {
     return `<li class="mdmark-tree-folder"><span class="mdmark-tree-row">${name}${note}</span><ul>${nested}</ul></li>`;
@@ -77206,7 +76076,7 @@ function renderTree(options) {
   const context = { interactive, open: open2, id };
   const openAttribute = open2 === void 0 ? "" : ` data-open="${escapeHtml2(open2)}"`;
   const bar = interactive ? renderTreeBar({ copyState: copyState ?? "idle" }) : "";
-  const list2 = `<ul class="mdmark-tree-list" aria-label="\u30D5\u30A1\u30A4\u30EB\u30C4\u30EA\u30FC">${nodes.map((node2, index) => renderNode4(node2, context, 0, String(index))).join("")}</ul>`;
+  const list2 = `<ul class="mdmark-tree-list" aria-label="\u30D5\u30A1\u30A4\u30EB\u30C4\u30EA\u30FC">${nodes.map((node2, index) => renderNode3(node2, context, 0, String(index))).join("")}</ul>`;
   const panel = interactive && copyFallback ? renderCopyPanel({ id: `${id}-panel`, format: "tree", text: source }) : "";
   const holderClass = options.wrap ? "mdmark-tree mdmark-tree-wrap" : "mdmark-tree";
   return `<div class="${holderClass}"${openAttribute} data-source="${escapeHtml2(source)}">${bar}${list2}${panel}</div>`;
@@ -77398,6 +76268,7 @@ function readView(options) {
       unpinned: [],
       widths: [],
       check: [],
+      sorts: [],
       collapse: "none",
       warnings: [],
       headRows: 1,
@@ -77980,9 +76851,9 @@ function toPosix2(path) {
   return path.split(sep3).join("/");
 }
 function copyTargetOf(file, baseDir, used) {
-  const inside2 = relative3(baseDir, file);
-  if (inside2 !== "" && !inside2.startsWith("..") && !isAbsolute3(inside2)) {
-    return toPosix2(inside2);
+  const inside = relative3(baseDir, file);
+  if (inside !== "" && !inside.startsWith("..") && !isAbsolute3(inside)) {
+    return toPosix2(inside);
   }
   const extension = extname3(file);
   const stem = basename3(file, extension);
@@ -79604,8 +78475,10 @@ var MAP_DATA_KEYS = [
   "notes",
   "walkthroughs",
   "layout",
-  "plays_over"
+  "plays_over",
+  "groups"
 ];
+var GROUP_KEYS = ["title", "tables", "parent"];
 var STEP_KEYS = ["title", "text", "nodes", "edges", "enter"];
 var LAYOUT_KEYS = [
   "align",
@@ -79628,7 +78501,8 @@ var emptyMapData = () => ({
   notes: {},
   walkthroughs: [],
   layout: {},
-  plays_over: void 0
+  plays_over: void 0,
+  groups: {}
 });
 var jsonPathLines = (source) => {
   const lines = /* @__PURE__ */ new Map();
@@ -79911,6 +78785,34 @@ var parseMapData = (source) => {
         if (target !== void 0) data.plays_over = target;
         break;
       }
+      case "groups":
+        if (!isObject4(value)) {
+          invalid("groups", ' \u5206\u985E\u306E ID \u3054\u3068\u306E `{"title", "tables"}` ');
+          break;
+        }
+        for (const [id, group] of Object.entries(value)) {
+          const path = `groups.${id}`;
+          if (!isObject4(group)) {
+            invalid(path, ' `{"title", "tables"}` ');
+            continue;
+          }
+          let title;
+          let tables;
+          let parent;
+          for (const [name, field] of Object.entries(group)) {
+            if (name === "title") title = text2(field, `${path}.title`);
+            else if (name === "tables") tables = ids(field, `${path}.tables`);
+            else if (name === "parent") parent = text2(field, `${path}.parent`);
+            else unknown2(path, name, GROUP_KEYS);
+          }
+          if (title === void 0 && group.title === void 0)
+            invalid(`${path}.title`, "\u6587\u5B57");
+          if (tables === void 0 && group.tables === void 0)
+            invalid(`${path}.tables`, "\u30C6\u30FC\u30D6\u30EB\u540D\u306E\u914D\u5217");
+          if (title !== void 0 && tables !== void 0)
+            data.groups[id] = { title, tables, parent };
+        }
+        break;
       default:
         unknown2("", key, MAP_DATA_KEYS);
     }
@@ -79918,7 +78820,55 @@ var parseMapData = (source) => {
   return { data, problems, lines };
 };
 
+// src/map/layout.ts
+var MAP_LAYOUT = {
+  maxWidth: 220,
+  maxWidthWide: 360,
+  minWidth: 120,
+  gapItem: 48,
+  gapRank: 64,
+  groupPad: 24,
+  groupTitle: 36,
+  margin: 24,
+  /** 線を引く通り道の、矩形からの離れ */
+  clearance: 12,
+  bendCost: 30,
+  /** 祖先でないグループの枠を出入りする 1 回の重み。最短より出入りを増やさないために大きくする */
+  borderCost: 1e5,
+  /** ドラッグで近づけられる間の下限 */
+  minGap: 16
+};
+
 // src/map/flowchart.ts
+var NAMED_ENTITIES = {
+  quot: '"',
+  amp: "&",
+  lt: "<",
+  gt: ">"
+};
+var decodeEntities = (text2) => text2.replace(/#([a-z]+|\d+);/g, (whole, name) => {
+  if (/^\d+$/.test(name)) {
+    const code2 = Number(name);
+    return code2 <= 1114111 ? String.fromCodePoint(code2) : whole;
+  }
+  return NAMED_ENTITIES[name] ?? whole;
+});
+var LINK_NOT_ALLOWED = "\u30CE\u30FC\u30C9\u306E\u30EA\u30F3\u30AF\u5148\u306B\u4F7F\u7528\u3067\u304D\u306A\u3044\u3082\u306E\u304C\u3042\u308A\u307E\u3059\u3002\u4F7F\u7528\u3067\u304D\u308B\u30EA\u30F3\u30AF\u5148\u306F http\u30FBhttps\u30FBmailto \u3068\u76F8\u5BFE\u30D1\u30B9\u3067\u3059\u3002\u3053\u306E\u30CE\u30FC\u30C9\u306F\u30EA\u30F3\u30AF\u306B\u305B\u305A\u306B\u63CF\u3044\u3066\u3044\u307E\u3059\u3002";
+var mapLinkProblems = (links) => {
+  const allowed = {};
+  const problems = [];
+  for (const [id, href] of Object.entries(links)) {
+    if (isAllowedUrl(href)) {
+      allowed[id] = href;
+      continue;
+    }
+    problems.push({
+      kind: "map_invalid_value",
+      message: `${LINK_NOT_ALLOWED} ${id}: ${href}`
+    });
+  }
+  return { allowed, problems };
+};
 var SHAPES = [
   { open: "([", close: "])", shape: "stadium" },
   { open: "((", close: "))", shape: "circle" },
@@ -79948,6 +78898,7 @@ var ARROWS = [
 var ID_RE = /^[A-Za-z0-9_\u0080-￿]+/;
 var EDGE_ID_RE = /^([A-Za-z0-9_]+)@(?=[-=<])/;
 var IGNORED_RE = /^(classDef|style|linkStyle|click|accTitle|accDescr)\b/;
+var CLICK_RE = /^click\s+([^\s]+)\s+(?:href\s+)?"([^"]*)"/;
 var skipSpace = (cursor) => {
   while (cursor.pos < cursor.text.length && /\s/.test(cursor.text[cursor.pos] ?? "")) {
     cursor.pos += 1;
@@ -79975,7 +78926,10 @@ var readShape = (cursor) => {
       consumed += end;
     }
     cursor.pos += consumed + close.length;
-    return { label: label.replace(/<br\s*\/?>/g, "\n"), shape };
+    return {
+      label: decodeEntities(label.replace(/<br\s*\/?>/g, "\n")),
+      shape
+    };
   }
   return void 0;
 };
@@ -80026,7 +78980,12 @@ var readArrow = (cursor) => {
       label = pipe2[1];
       cursor.pos += pipe2[0].length;
     }
-    return { id, arrow, both, label: label?.replace(/^"|"$/g, "") };
+    return {
+      id,
+      arrow,
+      both,
+      label: label === void 0 ? void 0 : decodeEntities(label.replace(/^"|"$/g, ""))
+    };
   }
   return void 0;
 };
@@ -80068,6 +79027,7 @@ var parseFlowchart = (source) => {
   const nodes = /* @__PURE__ */ new Map();
   const groups = [];
   const edges = [];
+  const links = {};
   const problems = [];
   const stack = [];
   const groupIds = /* @__PURE__ */ new Set();
@@ -80110,7 +79070,7 @@ var parseFlowchart = (source) => {
     if (subgraph?.[1]) {
       const group = {
         id: subgraph[1],
-        title: subgraph[2] ?? subgraph[1],
+        title: decodeEntities(subgraph[2] ?? subgraph[1]),
         parent: stack.at(-1)?.id,
         direction: void 0
       };
@@ -80142,6 +79102,11 @@ var parseFlowchart = (source) => {
         nodes.get(id)?.classes.push(classLine[2]);
       return;
     }
+    const click = CLICK_RE.exec(text2);
+    if (click?.[1] && click[2] !== void 0) {
+      links[click[1]] = click[2];
+      return;
+    }
     if (IGNORED_RE.test(text2)) return;
     const statement = readStatement(text2);
     if (!statement) {
@@ -80170,16 +79135,14 @@ var parseFlowchart = (source) => {
       message: `\`subgraph ${group.id}\` \u306B\u9589\u3058\u306E \`end\` \u304C\u3042\u308A\u307E\u305B\u3093\u3002\u6700\u5F8C\u306E\u884C\u3067\u9589\u3058\u305F\u3082\u306E\u3068\u3057\u3066\u63CF\u3044\u3066\u3044\u307E\u3059\u3002`
     });
   }
-  return { direction, nodes: [...nodes.values()], groups, edges, problems };
-};
-
-// src/map/lucide-names.ts
-var import_lucide4 = __toESM(require_lucide(), 1);
-var kebab = (name) => name.replace(/([a-z0-9])([A-Z])/g, "$1-$2").replace(/([A-Z])([A-Z][a-z])/g, "$1-$2").replace(/([a-zA-Z])([0-9])/g, "$1-$2").toLowerCase();
-var names;
-var lucideIconNames = () => {
-  names ??= new Set(Object.keys(import_lucide4.icons).map(kebab));
-  return names;
+  return {
+    direction,
+    nodes: [...nodes.values()],
+    groups,
+    edges,
+    links,
+    problems
+  };
 };
 
 // src/map/sequence.ts
@@ -80286,7 +79249,7 @@ var parseSequence = (source) => {
     if (decl?.[1] && decl[2]) {
       participants.set(decl[2], {
         id: decl[2],
-        label: decl[3] ?? decl[2],
+        label: decodeEntities(decl[3] ?? decl[2]),
         actor: decl[1] === "actor"
       });
       box?.members.push(decl[2]);
@@ -80295,7 +79258,7 @@ var parseSequence = (source) => {
     if (IGNORED_RE2.test(text2)) return;
     const fragment = FRAGMENT_RE.exec(text2);
     if (fragment?.[1]) {
-      const label = fragment[1] === "rect" ? blockName ?? "" : fragment[2] ?? "";
+      const label = fragment[1] === "rect" ? blockName ?? "" : decodeEntities(fragment[2] ?? "");
       const item = {
         kind: fragment[1],
         label,
@@ -80314,7 +79277,7 @@ var parseSequence = (source) => {
       if (current)
         current.sections.push({
           start: messages.length,
-          label: section[2] ?? ""
+          label: decodeEntities(section[2] ?? "")
         });
       else problems.push(unreadable2(line, raw));
       return;
@@ -80345,7 +79308,7 @@ var parseSequence = (source) => {
         after: messages.length,
         placement: where.startsWith("left") ? "left" : where.startsWith("right") ? "right" : "over",
         of,
-        text: note[3] ?? ""
+        text: decodeEntities(note[3] ?? "")
       });
       return;
     }
@@ -80357,7 +79320,7 @@ var parseSequence = (source) => {
       messages.push({
         from: message[1],
         to: message[4],
-        text: message[5] ?? "",
+        text: decodeEntities(message[5] ?? ""),
         arrow: message[2],
         activation
       });
@@ -80387,12 +79350,311 @@ var parseSequence = (source) => {
   };
 };
 
+// src/parts/map.ts
+var MAP_ER = {
+  width: 240,
+  /** テーブル名の行（種類の行と名前）の高さ */
+  head: 56,
+  row: 28,
+  foot: 6,
+  /** ノードの左右に空ける幅（関連の端と多重度の置き場所） */
+  aside: 32,
+  /** 関連の端の、ノードの辺から外へ出す長さ（同じ辺から出る 2 本目からは step ずつ延ばす） */
+  endOut: 14,
+  step: MAP_LAYOUT.clearance,
+  /** 同じ列の行から同じ辺へ出る 2 本目からの端の縦のずれ */
+  shift: 6,
+  /** 多重度の文字の 1 文字の幅と、文字の高さ（重なりの見積もり） */
+  cardinalityChar: 7,
+  cardinalityLine: 13,
+  /** 関連の端の辺を、反対の辺へ移す隣のノードまでの空き（両側の端と多重度が収まる幅） */
+  crowd: 120,
+  /** 関連のラベルの 1 文字の幅と、1 行の高さ（ラベルどうしの重なりの見積もり） */
+  labelChar: 12,
+  labelLine: 16,
+  /** 多重度の文字の、端からの離れ */
+  cardinalityGap: 4,
+  /** 行が増える関連のマーカーの、線からの離れ */
+  fanoutGap: 22,
+  /** 行が増える関連のマーカーの一辺 */
+  fanoutSize: 24
+};
+
+// src/map/er.ts
+var CARDINALITY = {
+  "||": "1",
+  "|o": "0..1",
+  "o|": "0..1",
+  "}|": "1..n",
+  "|{": "1..n",
+  "}o": "0..n",
+  "o{": "0..n"
+};
+var NAME = '[^\\s{}:"|]+';
+var TABLE_OPEN_RE = new RegExp(`^(${NAME})\\s*\\{$`);
+var COLUMN_RE = /^(\S+)\s+(\S+)(?:\s+((?:PK|FK|UK)(?:\s*,\s*(?:PK|FK|UK))*))?(?:\s+"([^"]*)")?$/;
+var RELATION_RE = new RegExp(
+  `^(${NAME})\\s+([|}o][|o])(--|\\.\\.)([|o][|{o])\\s+(${NAME})\\s*:\\s*(?:"([^"]*)"|(.*))$`
+);
+var unreadable3 = (line, raw) => ({
+  kind: "map_invalid",
+  line,
+  message: `${line + 1} \u884C\u76EE \`${raw.trim()}\` \u3092\u8AAD\u3081\u307E\u305B\u3093\u3002Mermaid \u306E erDiagram \u306E\u8A18\u6CD5\uFF08\`{\u30C6\u30FC\u30D6\u30EB} ||--o{ {\u30C6\u30FC\u30D6\u30EB} : "{\u30E9\u30D9\u30EB}"\` \u306A\u3069\uFF09\u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
+});
+var parseErDiagram = (source) => {
+  const tables = /* @__PURE__ */ new Map();
+  const relations = [];
+  const problems = [];
+  const tableOf = (name) => {
+    const found = tables.get(name);
+    if (found) return found;
+    const table2 = { name, columns: [] };
+    tables.set(name, table2);
+    return table2;
+  };
+  let current;
+  for (const [line, raw] of source.split("\n").entries()) {
+    const text2 = raw.replace(/%%.*$/, "").trim();
+    if (line === 0 || text2 === "") continue;
+    if (current) {
+      if (text2 === "}") {
+        current = void 0;
+        continue;
+      }
+      const column = COLUMN_RE.exec(text2);
+      if (column?.[1] && column[2]) {
+        current.table.columns.push({
+          type: column[1],
+          name: column[2],
+          keys: column[3]?.split(/\s*,\s*/) ?? [],
+          comment: column[4]
+        });
+      } else problems.push(unreadable3(line, raw));
+      continue;
+    }
+    const open2 = TABLE_OPEN_RE.exec(text2);
+    if (open2?.[1]) {
+      current = { table: tableOf(open2[1]), line };
+      continue;
+    }
+    const relation = RELATION_RE.exec(text2);
+    const left = relation?.[2] ? CARDINALITY[relation[2]] : void 0;
+    const right = relation?.[4] ? CARDINALITY[relation[4]] : void 0;
+    if (!relation?.[1] || !relation[5] || !left || !right) {
+      problems.push(unreadable3(line, raw));
+      continue;
+    }
+    tableOf(relation[1]);
+    tableOf(relation[5]);
+    const label = (relation[6] ?? relation[7] ?? "").trim();
+    relations.push({
+      id: `r${relations.length + 1}`,
+      from: relation[1],
+      to: relation[5],
+      fromCardinality: left,
+      toCardinality: right,
+      dashed: relation[3] === "..",
+      label: label === "" ? void 0 : label
+    });
+  }
+  if (current) {
+    problems.push({
+      kind: "map_invalid",
+      line: current.line,
+      message: `\u30C6\u30FC\u30D6\u30EB \`${current.table.name}\` \u306E \`{\` \u306B\u5BFE\u5FDC\u3059\u308B \`}\` \u304C\u3042\u308A\u307E\u305B\u3093\u3002\u30C6\u30FC\u30D6\u30EB\u306E\u6700\u5F8C\u306E\u884C\u306E\u5F8C\u306B \`}\` \u3092\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
+    });
+  }
+  return { tables: [...tables.values()], relations, problems };
+};
+
+// src/map/lucide-names.ts
+var import_lucide4 = __toESM(require_lucide(), 1);
+var kebab = (name) => name.replace(/([a-z0-9])([A-Z])/g, "$1-$2").replace(/([A-Z])([A-Z][a-z])/g, "$1-$2").replace(/([a-zA-Z])([0-9])/g, "$1-$2").toLowerCase();
+var names;
+var lucideIconNames = () => {
+  names ??= new Set(Object.keys(import_lucide4.icons).map(kebab));
+  return names;
+};
+
+// src/map/state-diagram.ts
+var ID = "[A-Za-z0-9_\\u0080-\\uffff]+";
+var DIRECTION_RE = /^direction\s+(TB|TD|BT|LR|RL)$/;
+var ALIAS_RE = new RegExp(`^state\\s+"([^"]+)"\\s+as\\s+(${ID})$`);
+var CHOICE_RE = new RegExp(`^state\\s+(${ID})\\s+<<choice>>$`);
+var OPEN_RE = new RegExp(`^state\\s+(?:"([^"]+)"\\s+as\\s+)?(${ID})\\s*\\{$`);
+var NOTE_RE2 = new RegExp(
+  `^note\\s+(left|right)\\s+of\\s+(${ID})\\s*:\\s*(.+)$`
+);
+var DECLARE_RE = new RegExp(`^(${ID})$`);
+var MOVE_RE = new RegExp(
+  `^(\\[\\*\\]|${ID})\\s*-->\\s*(\\[\\*\\]|${ID})(?:\\s*:\\s*(.+))?$`
+);
+var IGNORED_RE3 = /^(classDef|class|style|accTitle|accDescr|title)\b/;
+var toDirection2 = (value) => value === "LR" || value === "RL" ? "LR" : "TB";
+var unreadable4 = (line, raw) => ({
+  kind: "map_invalid",
+  line,
+  message: `${line + 1} \u884C\u76EE \`${raw.trim()}\` \u3092\u8AAD\u3081\u307E\u305B\u3093\u3002Mermaid \u306E stateDiagram-v2 \u306E\u8A18\u6CD5\uFF08\`{\u72B6\u614B} --> {\u72B6\u614B} : {\u30E9\u30D9\u30EB}\` \u306A\u3069\uFF09\u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
+});
+var parseStateDiagram = (source) => {
+  const states = /* @__PURE__ */ new Map();
+  const composites = [];
+  const transitions = [];
+  const notes = [];
+  const problems = [];
+  const stack = [];
+  let direction = "TB";
+  const scope = () => stack.at(-1)?.composite.id;
+  const ensure = (id) => {
+    const found = states.get(id);
+    if (found) return found;
+    const state = { id, label: id, kind: "state", parent: scope() };
+    states.set(id, state);
+    return state;
+  };
+  const endpoint = (token, side) => {
+    if (token !== "[*]") return ensure(token).id;
+    const id = `${side}_${scope() ?? "root"}`;
+    if (!states.has(id))
+      states.set(id, {
+        id,
+        label: side === "start" ? "\u958B\u59CB" : "\u7D42\u4E86",
+        kind: side,
+        parent: scope()
+      });
+    return id;
+  };
+  for (const [line, raw] of source.split("\n").entries()) {
+    const text2 = raw.replace(/%%.*$/, "").trim();
+    if (line === 0 || text2 === "" || IGNORED_RE3.test(text2)) continue;
+    const dir = DIRECTION_RE.exec(text2);
+    if (dir?.[1]) {
+      const current = stack.at(-1)?.composite;
+      if (current) current.direction = toDirection2(dir[1]);
+      else direction = toDirection2(dir[1]);
+      continue;
+    }
+    const alias = ALIAS_RE.exec(text2);
+    if (alias?.[1] && alias[2]) {
+      ensure(alias[2]).label = alias[1];
+      continue;
+    }
+    const choice = CHOICE_RE.exec(text2);
+    if (choice?.[1]) {
+      ensure(choice[1]).kind = "choice";
+      continue;
+    }
+    const open2 = OPEN_RE.exec(text2);
+    if (open2?.[2]) {
+      const composite = {
+        id: open2[2],
+        title: open2[1] ?? open2[2],
+        parent: scope(),
+        direction: void 0
+      };
+      composites.push(composite);
+      stack.push({ composite, line });
+      continue;
+    }
+    if (text2 === "}") {
+      if (!stack.pop()) problems.push(unreadable4(line, raw));
+      continue;
+    }
+    const note = NOTE_RE2.exec(text2);
+    if (note?.[1] && note[2] && note[3]) {
+      notes.push({
+        id: `n${notes.length + 1}`,
+        of: note[2],
+        side: note[1] === "left" ? "left" : "right",
+        text: note[3].trim()
+      });
+      continue;
+    }
+    const move = MOVE_RE.exec(text2);
+    if (move?.[1] && move[2]) {
+      const label = move[3]?.trim();
+      transitions.push({
+        id: `t${transitions.length + 1}`,
+        from: endpoint(move[1], "start"),
+        to: endpoint(move[2], "end"),
+        label: label === "" ? void 0 : label
+      });
+      continue;
+    }
+    const declared = DECLARE_RE.exec(text2);
+    if (declared?.[1]) {
+      ensure(declared[1]).parent = scope();
+      continue;
+    }
+    problems.push(unreadable4(line, raw));
+  }
+  for (const open2 of stack) {
+    problems.push({
+      kind: "map_invalid",
+      line: open2.line,
+      message: `\u5165\u308C\u5B50\u306E\u72B6\u614B \`${open2.composite.id}\` \u306E \`{\` \u306B\u5BFE\u5FDC\u3059\u308B \`}\` \u304C\u3042\u308A\u307E\u305B\u3093\u3002\u5165\u308C\u5B50\u306E\u72B6\u614B\u306E\u6700\u5F8C\u306E\u884C\u306E\u5F8C\u306B \`}\` \u3092\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
+    });
+  }
+  const compositeIds = new Set(composites.map((item) => item.id));
+  return {
+    direction,
+    states: [...states.values()].filter((item) => !compositeIds.has(item.id)),
+    composites,
+    transitions,
+    notes,
+    problems
+  };
+};
+
 // src/map/check.ts
+var REF_HINTS = {
+  flowchart: "Mermaid \u306E\u30CE\u30FC\u30C9\u30FB\u7DDA\u30FB\u30B0\u30EB\u30FC\u30D7\u306E ID \u306B\u3057\u3066\u304F\u3060\u3055\u3044\u3002",
+  sequenceDiagram: "Mermaid \u306E\u53C2\u52A0\u8005\u306E ID \u304B\u3001\u30E1\u30C3\u30BB\u30FC\u30B8\u30FB\u30D6\u30ED\u30C3\u30AF\u306E\u756A\u53F7\u306B\u3057\u3066\u304F\u3060\u3055\u3044\u3002",
+  erDiagram: "\u30C6\u30FC\u30D6\u30EB\u540D\u30FB`{\u30C6\u30FC\u30D6\u30EB}.{\u5217}`\u30FB\u95A2\u9023\u306E\u8A18\u8F09\u9806\u306E `r{\u756A\u53F7}`\u30FB\u5206\u985E\u306E ID \u306B\u3057\u3066\u304F\u3060\u3055\u3044\u3002",
+  stateDiagram: "\u72B6\u614B\u306E ID \u304B\u3001\u9077\u79FB\u306E ID \u3092\u8A18\u8F09\u9806\u306E `t{\u756A\u53F7}` \u306B\u3057\u3066\u304F\u3060\u3055\u3044\u3002"
+};
+var groupProblems = (data, tables, lineOf) => {
+  const problems = [];
+  const owner = /* @__PURE__ */ new Map();
+  for (const [id, group] of Object.entries(data.groups)) {
+    const path = `groups.${id}`;
+    if (tables.has(id))
+      problems.push({
+        kind: "map_invalid_value",
+        line: lineOf(path),
+        message: `\u5206\u985E\u306E ID \`${id}\` \u304C\u30C6\u30FC\u30D6\u30EB\u540D\u3068\u540C\u3058\u3067\u3059\u3002\u5206\u985E\u306E ID \u3092\u4ED8\u3051\u76F4\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
+      });
+    for (const table2 of group.tables) {
+      const first = owner.get(table2);
+      if (!tables.has(table2))
+        problems.push({
+          kind: "map_unknown_ref",
+          line: lineOf(`${path}.tables`),
+          message: `\u88DC\u8DB3\u306E \`${path}.tables\` \u306E \`${table2}\` \u304C Mermaid \u306E\u30C6\u30FC\u30D6\u30EB\u306B\u3042\u308A\u307E\u305B\u3093\u3002\u30C6\u30FC\u30D6\u30EB\u540D\u306B\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
+        });
+      else if (first !== void 0)
+        problems.push({
+          kind: "map_invalid_value",
+          line: lineOf(`${path}.tables`),
+          message: `\u30C6\u30FC\u30D6\u30EB \`${table2}\` \u304C\u5206\u985E \`${first}\` \u3068 \`${id}\` \u306E 2 \u3064\u306B\u5165\u3063\u3066\u3044\u307E\u3059\u30021 \u3064\u306E\u5206\u985E\u306B\u3060\u3051\u5165\u308C\u3066\u304F\u3060\u3055\u3044\u3002`
+        });
+      else owner.set(table2, id);
+    }
+    if (group.parent !== void 0 && !(group.parent in data.groups))
+      problems.push({
+        kind: "map_unknown_ref",
+        line: lineOf(`${path}.parent`),
+        message: `\u88DC\u8DB3\u306E \`${path}.parent\` \u306E \`${group.parent}\` \u304C\u88DC\u8DB3\u306E\u5206\u985E\u306B\u3042\u308A\u307E\u305B\u3093\u3002\u5206\u985E\u306E ID \u306B\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
+      });
+  }
+  return problems;
+};
 var collectMapProblems = (range, config3, includeUnknownKeys) => {
   const structure = collectMapStructure(range);
   if (structure.kind === void 0 || range.mermaid === void 0)
     return structure.problems;
   const problems = [...structure.problems];
+  const kind = structure.kind;
   if (includeUnknownKeys) {
     for (const key of structure.args.unknownKeys) {
       problems.push({
@@ -80408,9 +79670,12 @@ var collectMapProblems = (range, config3, includeUnknownKeys) => {
   const ids = /* @__PURE__ */ new Set();
   const edgeIds = /* @__PURE__ */ new Set();
   const classes = /* @__PURE__ */ new Set();
+  const tables = /* @__PURE__ */ new Set();
+  const linkProblems = [];
   if (structure.kind === "flowchart") {
     const chart = parseFlowchart(range.mermaid);
     problems.push(...shift(chart.problems, range.mermaidLine));
+    linkProblems.push(...mapLinkProblems(chart.links).problems);
     for (const node2 of chart.nodes) {
       ids.add(node2.id);
       for (const name of node2.classes) classes.add(name);
@@ -80419,6 +79684,29 @@ var collectMapProblems = (range, config3, includeUnknownKeys) => {
     for (const edge of chart.edges) {
       ids.add(edge.id);
       edgeIds.add(edge.id);
+    }
+  } else if (structure.kind === "erDiagram") {
+    const er = parseErDiagram(range.mermaid);
+    problems.push(...shift(er.problems, range.mermaidLine));
+    for (const table2 of er.tables) {
+      ids.add(table2.name);
+      tables.add(table2.name);
+      for (const column of table2.columns)
+        ids.add(`${table2.name}.${column.name}`);
+    }
+    for (const relation of er.relations) {
+      ids.add(relation.id);
+      edgeIds.add(relation.id);
+    }
+    for (const id of Object.keys(data.groups)) ids.add(id);
+  } else if (structure.kind === "stateDiagram") {
+    const diagram = parseStateDiagram(range.mermaid);
+    problems.push(...shift(diagram.problems, range.mermaidLine));
+    for (const state of diagram.states) ids.add(state.id);
+    for (const composite of diagram.composites) ids.add(composite.id);
+    for (const transition of diagram.transitions) {
+      ids.add(transition.id);
+      edgeIds.add(transition.id);
     }
   } else {
     const sequence = parseSequence(range.mermaid);
@@ -80437,11 +79725,22 @@ var collectMapProblems = (range, config3, includeUnknownKeys) => {
       problems.push({
         kind: "map_unknown_ref",
         line: lineOf(path),
-        message: `\u88DC\u8DB3\u306E \`${path}\` \u304C\u6307\u3059 \`${id}\` \u304C Mermaid \u306B\u3042\u308A\u307E\u305B\u3093\u3002Mermaid \u306E\u30CE\u30FC\u30C9\u30FB\u7DDA\u30FB\u30B0\u30EB\u30FC\u30D7\u306E ID \u306B\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
+        message: `\u88DC\u8DB3\u306E \`${path}\` \u304C\u6307\u3059 \`${id}\` \u304C Mermaid \u306B\u3042\u308A\u307E\u305B\u3093\u3002${REF_HINTS[kind]}`
       });
     }
   };
   for (const id of Object.keys(data.notes)) ref(`notes.${id}`, id);
+  if (structure.kind === "erDiagram")
+    problems.push(...groupProblems(data, tables, lineOf));
+  for (const id of ids) {
+    if (edgeIds.has(id) || !/^[rt]\d+$/.test(id)) continue;
+    if (structure.kind !== "erDiagram" && structure.kind !== "stateDiagram")
+      continue;
+    problems.push({
+      kind: "map_invalid_value",
+      message: `\`${id}\` \u306F\u95A2\u9023\u30FB\u9077\u79FB\u306E ID\uFF08\u8A18\u8F09\u9806\u306E \`r{\u756A\u53F7}\`\u30FB\`t{\u756A\u53F7}\`\uFF09\u3068\u540C\u3058\u540D\u524D\u3067\u3059\u3002\u30C6\u30FC\u30D6\u30EB\u540D\u30FB\u72B6\u614B\u306E ID \u3092\u4ED8\u3051\u76F4\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
+    });
+  }
   data.walkthroughs.forEach((step, index) => {
     for (const id of step.nodes) ref(`walkthroughs[${index}].nodes`, id);
     for (const id of step.edges ?? []) ref(`walkthroughs[${index}].edges`, id);
@@ -80469,6 +79768,7 @@ var collectMapProblems = (range, config3, includeUnknownKeys) => {
       });
     }
   }
+  problems.push(...linkProblems);
   for (const name of classes) {
     if (!(name in config3.kinds)) {
       problems.push({
@@ -80573,7 +79873,7 @@ var TEXT_FILE = "-";
 var KEY_PART_PATTERN = /([^.[\]]+)|\[(\d+)\]/g;
 var KEY_PATH_PATTERN = /^[^.[\]]+(?:\[\d+\])*(?:\.[^.[\]]+(?:\[\d+\])*)*$/;
 function issueRank(issue2) {
-  if (issue2.kind === "diagram_invalid" || issue2.kind === "syntax_warning") {
+  if (issue2.kind === "diagram_invalid" || issue2.kind === "retired_diagram" || issue2.kind === "syntax_warning") {
     return 0;
   }
   return issue2.kind === "unknown_mark" || issue2.kind === "unknown_mark_arg" ? 1 : 2;
@@ -80728,10 +80028,7 @@ async function checkMarkdownSource(options) {
   }
   const maps2 = checkMaps(document2, resolveConfig({ config: config3 }));
   const unknownMarks = checkUnknownMarks(document2, config3, directives);
-  const layout = checkDiagrams(document2).filter(
-    (issue2) => issue2.kind !== "diagram_invalid"
-  );
-  return [...warnings, ...unknownMarks, ...layout, ...maps2].map((issue2, order) => ({ issue: issue2, order })).sort(
+  return [...warnings, ...unknownMarks, ...maps2].map((issue2, order) => ({ issue: issue2, order })).sort(
     (a, b) => Number(a.issue.where) - Number(b.issue.where) || issueRank(a.issue) - issueRank(b.issue) || a.order - b.order
   ).map(({ issue: issue2 }) => ({
     ...issue2,
@@ -81201,24 +80498,23 @@ function checkMaps(documents, config3) {
   }
   return issues;
 }
-function flowLayoutMessage(title, issue2) {
-  const [first = "", second = ""] = issue2.ids;
-  switch (issue2.kind) {
-    case "diagram_node_overlap":
-      return `${title}: \u30CE\u30FC\u30C9 \`${first}\` \u3068 \`${second}\` \u304C\u91CD\u306A\u3063\u3066\u3044\u307E\u3059\u3002\u3069\u3061\u3089\u304B\u306E \`x\`\u30FB\`y\`\u30FB\`w\`\u30FB\`h\` \u3092\u4FEE\u6B63\u3057\u3066\u304F\u3060\u3055\u3044\u3002`;
-    case "diagram_node_overflow":
-      return `${title}: \u30CE\u30FC\u30C9 \`${first}\` \u304C\u56F3\u306E\u5E45\u30FB\u9AD8\u3055\u306E\u5916\u306B\u51FA\u3066\u3044\u308B\u304B\u3001\u30B7\u30B9\u30C6\u30E0\u306E\u67A0\u306E\u7E01\u306B\u307E\u305F\u304C\u3063\u3066\u3044\u307E\u3059\u3002\u30CE\u30FC\u30C9\u306E \`x\`\u30FB\`y\`\u30FB\`w\`\u30FB\`h\` \u304B\u3001\u56F3\u306E \`width\`\u30FB\`height\`\u30FB\`frame\` \u3092\u4FEE\u6B63\u3057\u3066\u304F\u3060\u3055\u3044\u3002`;
-    case "diagram_wire_crosses_node":
-      return `${title}: \u7DDA \`${first}\` \u304C\u30CE\u30FC\u30C9 \`${second}\` \u306E\u4E2D\u3092\u901A\u3063\u3066\u3044\u307E\u3059\u3002\u7DDA\u306E \`points\` \u304B\u3001\u30CE\u30FC\u30C9\u306E \`x\`\u30FB\`y\` \u3092\u4FEE\u6B63\u3057\u3066\u304F\u3060\u3055\u3044\u3002`;
-    case "diagram_label_too_long":
-      return `${title}: \u30CE\u30FC\u30C9 \`${first}\` \u306E\u6587\u5B57\u304C\u3001\u6298\u308A\u8FD4\u3057\u3066\u3082\u30CE\u30FC\u30C9\u306B\u53CE\u307E\u308A\u307E\u305B\u3093\u3002\u30CE\u30FC\u30C9\u306E \`w\`\u30FB\`h\` \u3092\u5E83\u3052\u308B\u304B\u3001\u6587\u5B57\u3092\u77ED\u304F\u3057\u3066\u304F\u3060\u3055\u3044\u3002`;
-  }
-}
-function checkDiagrams(documents) {
+function checkDiagrams(documents, directives) {
   const issues = [];
   for (const document2 of documents) {
     for (const found of findDiagramBlocks(document2.markdown)) {
+      if (directives.has(found.directive)) {
+        continue;
+      }
       const where = String(found.line);
+      if (isRetiredDiagram(found.directive)) {
+        issues.push({
+          file: document2.path,
+          where,
+          kind: "retired_diagram",
+          message: retiredDiagramMessage(found.directive)
+        });
+        continue;
+      }
       const result = readDefinition(found.directive, found.blocks);
       if (!result.ok || result.definition === void 0) {
         const warning = definitionWarning(found.directive, result.problems);
@@ -81230,20 +80526,6 @@ function checkDiagrams(documents) {
             warning.message,
             ...warning.items.map((item) => item.message)
           ].join(" ")
-        });
-        continue;
-      }
-      if (found.directive !== "flow") {
-        continue;
-      }
-      const definition = result.definition;
-      const title = definition.title || found.directive;
-      for (const issue2 of checkFlowLayout(definition)) {
-        issues.push({
-          file: document2.path,
-          where,
-          kind: issue2.kind,
-          message: flowLayoutMessage(title, issue2)
         });
       }
     }
@@ -81313,7 +80595,9 @@ async function collectCheckIssues(path, options = {}) {
     ])
   );
   const includes = await checkIncludes({ documents, root: loaded.dir });
-  const diagrams = checkDiagrams(documents);
+  const diagrams = checkDiagrams(documents, extensions2.directives).filter(
+    (issue2) => checkMarks || issue2.kind !== "retired_diagram"
+  );
   const maps2 = checkMaps(documents, resolveConfig({ config: config3 }));
   const plainMarkdown = checkMarks && config3.check?.suggestMarkExtension !== false ? checkPlainMarkdown(
     documents,
@@ -83269,20 +82553,20 @@ export {
 };
 /*! Bundled license information:
 
-is-plain-object/dist/is-plain-object.js:
-  (*!
-   * is-plain-object <https://github.com/jonschlinkert/is-plain-object>
-   *
-   * Copyright (c) 2014-2017, Jon Schlinkert.
-   * Released under the MIT License.
-   *)
-
 lucide/dist/cjs/lucide.js:
   (**
    * @license lucide v1.59.0 - ISC
    *
    * This source code is licensed under the ISC license.
    * See the LICENSE file in the root directory of this source tree.
+   *)
+
+is-plain-object/dist/is-plain-object.js:
+  (*!
+   * is-plain-object <https://github.com/jonschlinkert/is-plain-object>
+   *
+   * Copyright (c) 2014-2017, Jon Schlinkert.
+   * Released under the MIT License.
    *)
 
 @modelcontextprotocol/server/dist/src-Cqbh3MYc.mjs:

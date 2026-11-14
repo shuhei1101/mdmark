@@ -1,23 +1,8 @@
 import { type ColorName } from "../parts/colors.ts";
-/** ノードの種類（`start`・`question`・`action`・`result` は判定フローチャートの開始・質問・アクション・結果） */
-export type MdmarkDiagramKind = "llm" | "dm" | "script" | "mcp" | "data" | "external" | "start" | "question" | "action" | "result";
-/** 線の種類 */
-export type MdmarkDiagramLine = "flow" | "read" | "write" | "reply" | "loop";
-/** ノードの入力・処理・出力 */
-export type MdmarkDiagramIo = {
-    /** 入力 */
-    in: string;
-    /** 処理 */
-    do: string;
-    /** 出力 */
-    out: string;
-};
-/** フロー図のノード */
+/** map の構成図のノード */
 export type MdmarkDiagramNode = {
     /** 線が端に指す id */
     id: string;
-    /** ノードの種類 */
-    kind: MdmarkDiagramKind;
     /** 左上の x（px） */
     x: number;
     /** 左上の y（px） */
@@ -28,18 +13,14 @@ export type MdmarkDiagramNode = {
     h: number;
     /** 名前 */
     name: string;
-    /** 種類の行に出す名前。省くと種類の既定の名前 */
-    tag?: string;
     /** 補足 */
     sub?: string;
-    /** 入力・処理・出力。持つノードにマーカーを付ける */
-    io?: MdmarkDiagramIo;
-    /** ノードの右上のマーカーに出す文。`io` と一緒に持つと、入力・処理・出力の後に出す */
+    /** ノードの右上のマーカーに出す説明（補足の `notes`） */
     hint?: string;
-    /** リンク先。`http`・`https`・`mailto` の URL か相対パス */
+    /** 許可したリンク先 */
     href?: string;
-    /** map の構成図が指定する、設定の map.kinds の種類（`kind` の既定の名前・アイコン・構造の代わりに使う） */
-    style?: MdmarkNodeStyle;
+    /** 設定の map.kinds の種類（種類の行の名前・アイコン・構造・色） */
+    style: MdmarkNodeStyle;
 };
 /** map の構成図のノードの種類（種類の行の名前・Lucide のアイコンの名前・構造・色の名前） */
 export type MdmarkNodeStyle = {
@@ -57,7 +38,7 @@ export type MdmarkWireStyle = {
     /** 両端に矢じりを付けるか（`<-->`） */
     both?: boolean | undefined;
 };
-/** フロー図の線 */
+/** map の構成図の線 */
 export type MdmarkDiagramWire = {
     /** 線の id */
     id: string;
@@ -65,8 +46,6 @@ export type MdmarkDiagramWire = {
     from: string;
     /** 先のノードの id */
     to: string;
-    /** 線の種類 */
-    line: MdmarkDiagramLine;
     /** 縦横だけの折れ線の点 */
     points: Array<[number, number]>;
     /** 線のラベル */
@@ -75,72 +54,19 @@ export type MdmarkDiagramWire = {
     labelAt?: [number, number];
     /** ラベルの詳細。持つラベルにツールチップを付ける */
     tip?: string;
-    /** map の構成図が指定する、設定の map.lines の線の種類（`line` の見た目の代わりに使う） */
-    style?: MdmarkWireStyle;
+    /** 設定の map.lines の線の種類（模様・太さ・矢じり・色） */
+    style: MdmarkWireStyle;
 };
-/** フロー図の定義 */
+/** map の構成図のノードと線（自動配置の結果から作り、`renderFlow` に渡す） */
 export type MdmarkFlowDefinition = {
-    /** 題名 */
-    title: string;
-    /** 範囲 */
-    scope: string;
-    /** 更新日（`YYYY-MM-DD`） */
-    updated: string;
     /** 図の幅（px） */
     width: number;
     /** 図の高さ（px） */
     height: number;
-    /** システムの枠。`hint` はタイトルの右のマーカーに出す文 */
-    frame?: {
-        title: string;
-        x: number;
-        y: number;
-        w: number;
-        h: number;
-        hint?: string;
-    };
-    /** 枠の中の層。層のノードの色をうっすら敷く。`hint` はタイトルの右のマーカーに出す文 */
-    lanes?: Array<{
-        label: string;
-        kind: "llm" | "mcp" | "data";
-        y: number;
-        h: number;
-        hint?: string;
-    }>;
-    /** 拡大して動かしたときに、見えている枠と層のタイトルを表示する枠の上端に留めるか（省いたとき `true`） */
-    stickyTitles?: boolean;
     /** ノード */
     nodes: MdmarkDiagramNode[];
     /** 線 */
     wires: MdmarkDiagramWire[];
-};
-/** シーケンス図の定義 */
-export type MdmarkSequenceDefinition = {
-    /** 題名 */
-    title: string;
-    /** 範囲 */
-    scope: string;
-    /** 更新日 */
-    updated: string;
-    /** 相手。左から右へ並べる順 */
-    participants: Array<{
-        id: string;
-        kind: MdmarkDiagramNode["kind"];
-        name: string;
-        tag?: string;
-    }>;
-    /** メッセージ。時刻の順 */
-    steps: Array<{
-        from: string;
-        to: string;
-        label: string;
-        reply?: boolean;
-        tip?: string;
-    }>;
-    /** 最後のメッセージから最初へ戻る繰り返し */
-    loop?: {
-        label: string;
-    };
 };
 /** グラフの種類 */
 export type MdmarkChartType = "line" | "bar" | "pie" | "scatter" | "area" | "stacked-bar" | "stacked-area" | "horizontal-bar" | "donut" | "radar" | "bubble" | "combo";
@@ -304,7 +230,7 @@ export type MdmarkErDefinition = {
     relations: MdmarkErRelation[];
 };
 /** 読み込めた定義の種類 */
-export type MdmarkDefinition = MdmarkFlowDefinition | MdmarkSequenceDefinition | MdmarkChartDefinition | MdmarkParamDefinition | MdmarkErDefinition;
+export type MdmarkDefinition = MdmarkChartDefinition | MdmarkParamDefinition | MdmarkErDefinition;
 /** 定義を読み込んだ結果 */
 export type DefinitionResult = {
     /** 読み込めたか */
@@ -315,7 +241,11 @@ export type DefinitionResult = {
     problems: string[];
 };
 /** 図の部品のマーカーの名前 */
-export type DiagramDirective = "flow" | "sequence" | "chart" | "param" | "er";
+export type DiagramDirective = "chart" | "param" | "er";
+/** 廃止した図の部品のマーカーの名前 */
+export type RetiredDiagramDirective = "flow" | "sequence";
+/** 廃止した図の部品のマーカー。同じ名前の拡張が無い範囲を、描く処理・点検・参照の取り出し・移行の手順が廃止した図として扱う */
+export declare const RETIRED_DIAGRAM_DIRECTIVES: readonly RetiredDiagramDirective[];
 /** 図の部品のマーカーの名前と、記載の警告に出す図の種類の名前・呼び名 */
 export declare const DIAGRAM_DIRECTIVES: Readonly<Record<DiagramDirective, {
     name: string;
@@ -331,15 +261,8 @@ export declare function parseDefinitionJson(text: string): {
     after: string;
     missing: string;
 };
-/** 座標を省けるノードの種類（判定フローチャート） */
-export declare const JUDGEMENT_KINDS: readonly MdmarkDiagramKind[];
 /** マーカーの範囲の `json` のコードブロックを読み込み、種類ごとの構造を確認する。読み込めない箇所は記載の警告の文にして返却する */
 export declare function readDefinition(directive: DiagramDirective, blocks: string[]): DefinitionResult;
-/** フロー図の定義の、本文のリンクと同じ許可に該当しないリンク先を持つノードを定義の順に返却する */
-export declare function nodeLinkProblems(definition: MdmarkFlowDefinition): Array<{
-    id: string;
-    href: string;
-}>;
 /** 読み込めない定義の記載の警告の本文と項目。読み込めない箇所が 2 つ以上あるときは、1 つ目を本文に記載し、残りを項目に並べる */
 export declare function definitionWarning(directive: DiagramDirective, problems: string[]): {
     message: string;
