@@ -20,6 +20,12 @@ import {
   VIEW_SOURCE,
   writeFiles,
 } from "../cli.ts";
+import {
+  countCommentNodes,
+  reportTraces,
+  snapshotDom,
+  TRACES_FILES,
+} from "../traces.ts";
 
 const createTempDir = useTempDirs();
 const browser = useBrowser(createTempDir);
@@ -105,29 +111,27 @@ test("test_normal", async () => {
   const { page, externalRequests } = await browser.openHtml(
     join(dir, "dist", "docs.html"),
   );
-  await page.waitForSelector("article.mdmark h1");
+  await page.waitForSelector("article.zq h1");
+  await expect(page.locator("article.zq h1").textContent()).resolves.toContain(
+    "入口",
+  );
   await expect(
-    page.locator("article.mdmark h1").textContent(),
-  ).resolves.toContain("入口");
-  await expect(
-    page.locator(".mdmark-bundle-side .mdmark-doc-list a").count(),
+    page.locator(".zq-bundle-side .zq-doc-list a").count(),
   ).resolves.toBe(3);
   await expect(
-    page.locator("article .mdmark-term").first().textContent(),
+    page.locator("article .zq-term").first().textContent(),
   ).resolves.toBe("マーカー");
   await page.locator('article p a[href="#/使い方/guide.md"]').click();
   await page.waitForFunction(() =>
-    document
-      .querySelector("article.mdmark h1")
-      ?.textContent?.includes("使用方法"),
+    document.querySelector("article.zq h1")?.textContent?.includes("使用方法"),
   );
   await page.waitForFunction(
     () =>
-      document.querySelector("article [data-mdmark-slot]")?.textContent ===
+      document.querySelector("article [data-zq-slot]")?.textContent ===
       "drawn:a",
   );
   await expect(
-    page.locator(".mdmark-backlinks a").allTextContents(),
+    page.locator(".zq-backlinks a").allTextContents(),
   ).resolves.toContain("入口");
   await expect(
     page
@@ -163,11 +167,11 @@ test("test_normal_when_link_outside_bundle", async () => {
     ),
   ).toBe(true);
   const { page } = await browser.openHtml(join(dir, "dist", "docs.html"));
-  await page.waitForSelector("article.mdmark h1");
+  await page.waitForSelector("article.zq h1");
   const href = await page.locator("article p a").first().getAttribute("href");
   expect(decodeURI(href ?? "")).toBe("下書き/メモ.md");
   const titles = await page
-    .locator(".mdmark-bundle-side .mdmark-doc-list a")
+    .locator(".zq-bundle-side .zq-doc-list a")
     .allTextContents();
   expect(titles).not.toContain("メモ");
   await page.close();
@@ -264,28 +268,28 @@ test("test_normal_when_aliases", async () => {
     join(dir, "dist", "docs.html"),
   );
   // 1 つ目の文書: コマンドの名前だけに下線が付き、ツールチップに npm test が出る
-  await page.waitForSelector("article .mdmark-term");
+  await page.waitForSelector("article .zq-term");
   await expect(
-    page.locator("article .mdmark-term").allTextContents(),
+    page.locator("article .zq-term").allTextContents(),
   ).resolves.toEqual(["テストを実行する"]);
   await expect(
-    page.locator("article .mdmark-term-tip code").textContent(),
+    page.locator("article .zq-term-tip code").textContent(),
   ).resolves.toBe("npm test");
   // 2 つ目の文書へ移っても同じ
   await page.locator('article p a[href="#/b.md"]').click();
   await page.waitForFunction(() =>
-    document.querySelector("article.mdmark h1")?.textContent?.includes("B"),
+    document.querySelector("article.zq h1")?.textContent?.includes("B"),
   );
   await page.waitForFunction(
     () =>
-      document.querySelector("article .mdmark-term")?.textContent ===
+      document.querySelector("article .zq-term")?.textContent ===
       "テストを実行する",
   );
   await expect(
-    page.locator("article .mdmark-term").allTextContents(),
+    page.locator("article .zq-term").allTextContents(),
   ).resolves.toEqual(["テストを実行する"]);
   await expect(
-    page.locator("article .mdmark-term-tip code").textContent(),
+    page.locator("article .zq-term-tip code").textContent(),
   ).resolves.toBe("npm test");
   expect(externalRequests()).toEqual([]);
   await page.close();
@@ -314,18 +318,18 @@ test("test_normal_when_color_theme", async () => {
   await page.emulateMedia({ colorScheme: "light" });
   const readBackground = () =>
     page.evaluate(() => {
-      const root = document.querySelector("article.mdmark");
+      const root = document.querySelector("article.zq");
       return root ? getComputedStyle(root).backgroundColor : "";
     });
   // 最初に開いた文書
   await page.waitForFunction(() =>
-    document.querySelector("article.mdmark h1")?.textContent?.includes("A"),
+    document.querySelector("article.zq h1")?.textContent?.includes("A"),
   );
   await expect(readBackground()).resolves.toBe("rgb(248, 250, 252)");
   // 文書の一覧から移った 2 つ目の文書
   await page.locator('article p a[href="#/b.md"]').click();
   await page.waitForFunction(() =>
-    document.querySelector("article.mdmark h1")?.textContent?.includes("B"),
+    document.querySelector("article.zq h1")?.textContent?.includes("B"),
   );
   await expect(readBackground()).resolves.toBe("rgb(248, 250, 252)");
   await page.close();
@@ -357,16 +361,16 @@ test("test_normal_when_page_settings_per_document", async () => {
   await page.emulateMedia({ colorScheme: "light" });
   const readRoot = () =>
     page.evaluate(() => {
-      const root = document.querySelector("article.mdmark");
+      const root = document.querySelector("article.zq");
       return {
-        dark: root?.classList.contains("mdmark-theme-dark") ?? false,
-        light: root?.classList.contains("mdmark-theme-light") ?? false,
-        theme: root?.getAttribute("data-mdmark-color-theme") ?? null,
+        dark: root?.classList.contains("zq-theme-dark") ?? false,
+        light: root?.classList.contains("zq-theme-light") ?? false,
+        theme: root?.getAttribute("data-zq-color-theme") ?? null,
       };
     });
   // 最初に開いた文書
   await page.waitForFunction(() =>
-    document.querySelector("article.mdmark h1")?.textContent?.includes("A"),
+    document.querySelector("article.zq h1")?.textContent?.includes("A"),
   );
   await expect(readRoot()).resolves.toEqual({
     dark: true,
@@ -376,7 +380,7 @@ test("test_normal_when_page_settings_per_document", async () => {
   // マーカーを持たない文書
   await page.locator('article p a[href="#/b.md"]').click();
   await page.waitForFunction(() =>
-    document.querySelector("article.mdmark h1")?.textContent?.includes("B"),
+    document.querySelector("article.zq h1")?.textContent?.includes("B"),
   );
   await expect(readRoot()).resolves.toEqual({
     dark: false,
@@ -462,7 +466,7 @@ test("test_normal_when_media_embedded", async () => {
   await expect(ready("video")).resolves.toBe("docs_files/media/demo.mp4");
   await page.locator('article p a[href="#/sub/b.md"]').click();
   await page.waitForFunction(() =>
-    document.querySelector("article.mdmark h1")?.textContent?.includes("B"),
+    document.querySelector("article.zq h1")?.textContent?.includes("B"),
   );
   await expect(ready("audio")).resolves.toBe("docs_files/sub/media/voice.mp3");
   expect(externalRequests()).toEqual([]);
@@ -537,18 +541,18 @@ test("test_normal_when_blob_and_dynamic_import_blocked", async () => {
   const { page } = opened;
   await page.waitForFunction(
     () =>
-      document.querySelector("article [data-mdmark-slot]")?.textContent ===
+      document.querySelector("article [data-zq-slot]")?.textContent ===
       "greet:読み込んだ:世界",
   );
   await page.waitForSelector('article code.language-ts span[class^="hljs-"]');
   await page.locator('article p a[href="#/guide.md"]').click();
-  await page.waitForSelector("article .mdmark-view");
+  await page.waitForSelector("article .zq-view");
   await page.waitForFunction(() =>
-    [...document.querySelectorAll("article [data-mdmark-slot]")].some(
+    [...document.querySelectorAll("article [data-zq-slot]")].some(
       (slot) => slot.textContent === "drawn:a",
     ),
   );
-  await expect(page.locator("article .mdmark-notice").count()).resolves.toBe(0);
+  await expect(page.locator("article .zq-notice").count()).resolves.toBe(0);
   await expect(opened.violations()).resolves.toEqual([]);
   expect(opened.inlineUrlScripts()).toEqual([]);
   await opened.close();
@@ -585,15 +589,13 @@ test("test_normal_when_includes_and_icons", async () => {
   const { page, externalRequests } = await browser.openHtml(
     join(dir, "dist", "docs.html"),
   );
-  await page.waitForSelector("article.mdmark h1");
-  await page.waitForSelector('.mdmark-inline-icon[data-icon="sailboat"] svg');
-  const includes = await page
-    .locator("article .mdmark-include")
-    .allTextContents();
+  await page.waitForSelector("article.zq h1");
+  await page.waitForSelector('.zq-inline-icon[data-icon="sailboat"] svg');
+  const includes = await page.locator("article .zq-include").allTextContents();
   expect(includes.some((text) => text.includes("使用方法の段落"))).toBe(true);
   expect(includes.some((text) => text.includes("手順の段落"))).toBe(true);
   const listed = await page
-    .locator(".mdmark-bundle-side .mdmark-doc-list a")
+    .locator(".zq-bundle-side .zq-doc-list a")
     .allTextContents();
   expect(listed.some((text) => text.includes("手順"))).toBe(false);
   expect(externalRequests()).toEqual([]);
@@ -653,18 +655,16 @@ test("test_normal_when_range_scripts", async () => {
   expect(result.code).toBe(0);
   const opened = await browser.openWithCsp(join(dir, "dist", "docs.html"));
   const { page } = opened;
-  const box = page.locator("article div.mdmark-html .box");
+  const box = page.locator("article div.zq-html .box");
   await box.waitFor();
   await expect(
     box.evaluate((el) => getComputedStyle(el).backgroundColor),
   ).resolves.toBe("rgb(255, 0, 0)");
   await page.waitForFunction(() => {
-    document
-      .querySelector<HTMLElement>("article div.mdmark-html .box")
-      ?.click();
+    document.querySelector<HTMLElement>("article div.zq-html .box")?.click();
     return (
       document
-        .querySelector("article div.mdmark-html")
+        .querySelector("article div.zq-html")
         ?.classList.contains("is-open") === true
     );
   });
@@ -673,10 +673,10 @@ test("test_normal_when_range_scripts", async () => {
     document.querySelector("article h1")?.textContent?.includes("ガイド"),
   );
   await expect(
-    page.evaluate(() => Reflect.get(window, "__mdmarkDestroyed")),
+    page.evaluate(() => Reflect.get(window, "__zqDestroyed")),
   ).resolves.toBe(1);
   await expect(
-    page.locator("article style.mdmark-html-style").count(),
+    page.locator("article style.zq-html-style").count(),
   ).resolves.toBe(0);
   await expect(opened.violations()).resolves.toEqual([]);
   expect(opened.inlineUrlScripts()).toEqual([]);
@@ -719,10 +719,10 @@ test("test_normal_when_mermaid_embedded", async () => {
   const { page, externalRequests } = await browser.openHtml(
     join(dir, "dist", "docs.html"),
   );
-  await page.waitForSelector("article.mdmark h1");
+  await page.waitForSelector("article.zq h1");
   await page.locator('article p a[href="#/b.md"]').click();
   await page.waitForSelector(
-    'article figure.mdmark-diagram[data-diagram="mermaid"] .mdmark-mermaid > svg',
+    'article figure.zq-diagram[data-diagram="mermaid"] .zq-mermaid > svg',
     {
       timeout: 60_000,
     },
@@ -763,7 +763,7 @@ async function createLongDir(): Promise<string> {
 async function waitForTitle(page: Page, title: string): Promise<void> {
   await page.waitForFunction(
     (text) =>
-      document.querySelector("article.mdmark h1")?.textContent?.includes(text),
+      document.querySelector("article.zq h1")?.textContent?.includes(text),
     title,
   );
 }
@@ -893,12 +893,10 @@ test("test_normal_when_back_restore_folds_and_tabs", async () => {
     height: 800,
   });
   await waitForTitle(page, "A");
-  await page
-    .locator("article .mdmark-section-toggle", { hasText: "導入" })
-    .click();
-  await page.locator("article details.mdmark-table-details > summary").click();
-  await page.locator("article .mdmark-tree-toggle").first().click();
-  await page.locator("article .mdmark-tab", { hasText: "二つ目" }).click();
+  await page.locator("article .zq-section-toggle", { hasText: "導入" }).click();
+  await page.locator("article details.zq-table-details > summary").click();
+  await page.locator("article .zq-tree-toggle").first().click();
+  await page.locator("article .zq-tab", { hasText: "二つ目" }).click();
   const toB = page.locator('article a[href="#/b.md"]');
   await toB.scrollIntoViewIfNeeded();
   const leftAt = await page.evaluate(() => window.scrollY);
@@ -910,7 +908,7 @@ test("test_normal_when_back_restore_folds_and_tabs", async () => {
   await expect(
     page.evaluate(() => {
       const section = document.querySelector(
-        "article .mdmark-section-toggle[aria-controls='section-導入']",
+        "article .zq-section-toggle[aria-controls='section-導入']",
       );
       const body = document.querySelector('[id="section-導入"]');
       return {
@@ -918,18 +916,18 @@ test("test_normal_when_back_restore_folds_and_tabs", async () => {
         hidden: body?.hasAttribute("hidden") ?? null,
         table:
           document
-            .querySelector("article details.mdmark-table-details")
+            .querySelector("article details.zq-table-details")
             ?.hasAttribute("open") ?? null,
         tree:
           document
-            .querySelector("article .mdmark-tree-toggle")
+            .querySelector("article .zq-tree-toggle")
             ?.getAttribute("aria-expanded") ?? null,
         tab:
-          [...document.querySelectorAll("article .mdmark-tab")]
+          [...document.querySelectorAll("article .zq-tab")]
             .find((tab) => tab.textContent?.includes("二つ目"))
             ?.getAttribute("aria-selected") ?? null,
         stored: Object.keys(localStorage).filter((key) =>
-          key.startsWith("mdmark-tabs:"),
+          key.startsWith("zq-tabs:"),
         ),
       };
     }),
@@ -1045,9 +1043,7 @@ test("test_normal_when_switch_clears_map_query", async () => {
     new URL(page.url()).searchParams.toString().split("&").sort();
   await expect(params()).resolves.toEqual(["keep=1", "map-1=place"]);
   // 実行: 文書の一覧で b.md へ移る
-  await page
-    .locator('.mdmark-bundle-side .mdmark-doc-list a[href="#/b.md"]')
-    .click();
+  await page.locator('.zq-bundle-side .zq-doc-list a[href="#/b.md"]').click();
   await waitForTitle(page, "B");
   // 検証: map- のキーが消え、ほかのキーは変わらず、b.md の図を全体から描く
   await page
@@ -1107,3 +1103,102 @@ test("test_normal_when_map_config", async () => {
   await expect(readMapStore(page)).resolves.toEqual(expected);
   await page.close();
 }, 180_000);
+
+/** 隠す書き出しの結合テストのフォルダを 2 つ作り、隠したまとめと `--keep-traces` のまとめを書き出す */
+async function buildBothTraces(): Promise<{
+  hiddenDir: string;
+  keptDir: string;
+  hidden: Awaited<ReturnType<typeof runCli>>;
+  kept: Awaited<ReturnType<typeof runCli>>;
+}> {
+  const hiddenDir = await createTempDir();
+  const keptDir = await createTempDir();
+  for (const dir of [hiddenDir, keptDir]) {
+    await copyMermaidVendor(dir);
+    await writeFiles(dir, TRACES_FILES);
+  }
+  const hidden = await runCli(["build"], hiddenDir);
+  const kept = await runCli(["build", "--keep-traces"], keptDir);
+  return { hiddenDir, keptDir, hidden, kept };
+}
+
+/** CSP を付けて開き、入口の文書の mermaid の図と拡張が描かれるまで待つ */
+async function openBundleTraces(file: string) {
+  const opened = await browser.openWithCsp(file);
+  await opened.page.waitForSelector(
+    'article figure[data-diagram="mermaid"] svg[aria-roledescription]',
+    {
+      timeout: 60_000,
+    },
+  );
+  await opened.page.waitForFunction(
+    () =>
+      document
+        .querySelector("article")
+        ?.textContent?.includes("greet:利用者") === true,
+  );
+  return opened;
+}
+
+// 隠さない書き出しを指定しないとき、文書をHTMLに書き出すと同じく隠し、ファイル名に mdmark を含む文書へも行き来できる（正常系（mdmark を使用していることを隠す））
+test("test_normal_when_traces_hidden", async () => {
+  // 準備
+  const { hiddenDir, keptDir, hidden, kept } = await buildBothTraces();
+  // 実行
+  const html = await readFile(join(hiddenDir, "dist", "docs.html"), "utf8");
+  const report = reportTraces(html);
+  // 検証
+  expect(hidden.code).toBe(0);
+  expect(linesOf(hidden.stdout)).toEqual([
+    "書き出した: dist/docs.html（文書 2 件）",
+  ]);
+  expect(kept.code).toBe(0);
+  expect(report.outside).toBe(0);
+  expect(report.generated).toBe(0);
+  expect(report.markdownNames).toBe(0);
+  expect(report.comments).toBe(0);
+  expect(report.markdown).not.toContain("<!-- todo -->");
+  expect(report.markdown).toContain("<!-- /table -->");
+  expect(html).not.toMatch(/-version:"v/);
+  expect(html).toMatch(/\/\*! lucide /);
+  const hiddenPage = await openBundleTraces(
+    join(hiddenDir, "dist", "docs.html"),
+  );
+  const keptPage = await openBundleTraces(join(keptDir, "dist", "docs.html"));
+  const { page } = hiddenPage;
+  expect(hiddenPage.consoleErrors()).toEqual([]);
+  await expect(countCommentNodes(page)).resolves.toBe(0);
+  await expect(snapshotDom(page)).resolves.toEqual(
+    await snapshotDom(keptPage.page),
+  );
+  await expect(
+    page.locator(".zq-bundle-side .zq-doc-list a").allTextContents(),
+  ).resolves.toEqual(["使い方", "mdmark の紹介"]);
+  await page.locator('article p a[href="#/guide.md"]').click();
+  await page.waitForFunction(
+    () => document.querySelector("article h1")?.textContent === "使い方",
+  );
+  await page.locator('article p a[href="#/mdmark-intro.md"]').click();
+  await page.waitForFunction(
+    () => document.querySelector("article h1")?.textContent === "mdmark の紹介",
+  );
+  await page.evaluate(() => history.back());
+  await page.waitForFunction(
+    () => document.querySelector("article h1")?.textContent === "使い方",
+  );
+  await hiddenPage.close();
+  await keptPage.close();
+}, 240_000);
+
+// --keep-traces のとき、名前を置き換えず、コメントとバージョンを残してまとめる（正常系（隠さない書き出しを指定する））
+test("test_normal_when_traces_kept", async () => {
+  // 準備
+  const { keptDir, kept } = await buildBothTraces();
+  // 実行
+  const html = await readFile(join(keptDir, "dist", "docs.html"), "utf8");
+  // 検証
+  expect(kept.code).toBe(0);
+  expect(html).toContain('class="mdmark"');
+  expect(html).toContain(":root{--mdmark-version:");
+  expect(html).toContain('id="mdmark-payload"');
+}, 240_000);

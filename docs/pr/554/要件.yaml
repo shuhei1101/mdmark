@@ -1,0 +1,107 @@
+use_cases:
+  - kind: single
+    scenario: docs/scenario/SC-472-56.yaml
+    impact: changed
+    detail: 指定が無くても、書き出した HTML から mdmark の名前・コメント・バージョン・mdmark 自身のライセンスの表記が読み取れない。開発のときだけ隠さない書き出しを指定できる
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-76.yaml
+    impact: changed
+    detail: まとめた HTML も、指定が無くても mdmark を使用していることが読み取れない。開発のときだけ隠さない書き出しを指定できる
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-3.yaml
+    impact: changed
+    detail: Claude Code から呼ぶ書き出し・まとめも既定で隠し、開発のときだけ隠さない書き出しを指定できる
+    depends_on:
+      - docs/scenario/SC-472-56.yaml
+      - docs/scenario/SC-472-76.yaml
+  - kind: single
+    scenario: docs/scenario/SC-472-13.yaml
+    impact: run_only
+    detail: 名前を置き換えたまとめた HTML でも、文書の一覧・リンク・戻ると進むで行き来できる
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-25.yaml
+    impact: run_only
+    detail: 利用側の CSS の上書きが、名前を置き換えた書き出しでも効く
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-44.yaml
+    impact: run_only
+    detail: 固有の部品と CSS が、名前を置き換えた書き出しでも当たる
+    depends_on: []
+  - kind: composite
+    scenario: docs/scenario/SC-472-95.yaml
+    impact: run_only
+    detail: 雛形から書き出した 1 枚の HTML を配る流れが、隠した書き出しでも成り立つ
+    depends_on: []
+  - kind: composite
+    scenario: docs/scenario/SC-472-84.yaml
+    impact: run_only
+    detail: 別のリポジトリに置いた CSS のテンプレートで書き出す流れが、隠した書き出しでも成り立つ
+    depends_on: []
+  - kind: composite
+    scenario: docs/scenario/SC-472-94.yaml
+    impact: run_only
+    detail: 端末の設定を重ねた書き出しが、隠した書き出しでもプレビューとそろう
+    depends_on: []
+docs:
+  - page: docs/guide/書き出す-文書を書き出す.md
+    new: false
+    change: 既定で mdmark を使用していることを隠して書き出すことと、開発のときに隠さない書き出しを指定する手順を追加する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-14T06:21:17.686710+00:00'
+  - page: docs/guide/書き出す-文書を1枚にまとめる.md
+    new: false
+    change: まとめた HTML も既定で隠すことと、隠さないまとめを指定する手順を追加する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-14T06:21:17.686710+00:00'
+  - page: docs/guide/コアコンセプト-1枚にまとめる仕組み.md
+    new: false
+    change: 1 枚に埋める流れに、名前の置き換えと、コメント・バージョン・mdmark 自身のライセンスの表記の削除を追加する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-14T06:21:17.686710+00:00'
+  - page: docs/guide/CLI.md
+    new: false
+    change: '`export`・`build` に隠さない書き出しを指定する引数を追加する'
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-14T06:21:17.686710+00:00'
+  - page: docs/guide/MCP.md
+    new: false
+    change: '`export_html`・`build_site` に隠さない書き出しを指定する引数を追加する'
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-14T06:21:17.686710+00:00'
+  - page: docs/guide/カスタマイズ-テーマを上書きする.md
+    new: false
+    change: 書き出しで名前を置き換えても、利用側の theme.css の上書きが効く範囲を追記する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-14T06:21:17.686710+00:00'
+  - page: docs/guide/カスタマイズ-拡張を登録する.md
+    new: false
+    change: 書き出しで名前を置き換えても、拡張が参照する名前が効く範囲を追記する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-14T06:21:17.686710+00:00'
+scope_out:
+  - item: 元の Markdown を書き出した HTML に埋め込まず、書き出すときに描画した HTML から起動する（D-453 No 5）
+    reason: 起動の経路の変更で、受付判断で別の Issue に分けた
+    plan: '#532'
+  - item: 純粋な Markdown への書き出しでマーカーを含む HTML のコメントを削除する
+    reason: 受付判断で純粋な Markdown への書き出しの Issue へ移した
+    plan: '#313'
+  - item: MindStella と dev-docs の画面が読み込む配布物と、VS Code 拡張機能の書き出し（`mdmark.exportHtml`・`mdmark.printToPdf`）で mdmark を隠す
+    reason: D-453 No 7 で対象を `export_html`・`build_site`（CLI の `export`・`build`）の書き出しに限った。VS Code 拡張機能の書き出しは jsDelivr の配布物を読み込むため、URL に mdmark が出る。含めるかはレビューで確定する
+    plan: none
+  - item: 同梱する第三者のライブラリ（Mermaid・Lucide など）のライセンスの表記の削除
+    reason: D-453 No 4 で、条件で削除できないため残すと決めた
+    plan: none
+  - item: 見た目・操作の特徴と、名前を置き換えた後の構造からの推測を防ぐ
+    reason: D-453 No 6 で、mdmark を知っている人が推測できることは受け入れると決めた
+    plan: none

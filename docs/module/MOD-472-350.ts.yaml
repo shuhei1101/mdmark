@@ -1,0 +1,170 @@
+id: MOD-472-350
+visibility: internal
+title: ライブラリ本体 / CLI / traces.ts
+test_files:
+  - tests/unit/src/cli/traces.test.ts
+constants:
+  - name: TRACE_ALIAS
+    title: mdmark の名前の別名
+    container: src/cli/traces.ts
+    usecase: 共通
+    summary: 隠す書き出しで、単語の一部として出る `mdmark` を置き換える別名
+    value: zq
+    refs:
+      - IF-472-33#constraints[mdmark の痕跡]
+    status: planned
+    introduced:
+      pr: 554
+  - name: HTML_SCRIPT_KEY_PREFIX
+    title: 範囲のスクリプトの表の鍵の仮の文字列の頭
+    container: src/cli/traces.ts
+    usecase: 共通
+    summary: '`createViewerEntry` が範囲のスクリプトの表の鍵の代わりに記載する文字列リテラルの頭。後ろに鍵の番号と `@@` を付ける'
+    value: '@@html-script-key-'
+    status: planned
+    introduced:
+      pr: 554
+functions:
+  - name: hideNames
+    title: mdmark の名前を別名へ置き換える
+    container: src/cli/traces.ts
+    usecase: 共通
+    summary: 単語の一部として出る `mdmark`（大文字・小文字を区別しない）を、大文字・小文字の構成を保って `TRACE_ALIAS` へ置き換える
+    description: '`MDMARK` は `ZQ`、先頭だけ大文字の `Mdmark` は `Zq`、それ以外は `zq` にする。制約「mdmark の痕跡」の (2)'
+    kind: 関数
+    scope: internal
+    args:
+      - name: text
+        type: string
+        required: true
+        description: CSS・スクリプト・HTML・JSON の文字列
+    returns:
+      type: string
+      description: 置き換えた文字列
+    unit_tests:
+      - name: test_hide_names
+        case: 正常
+        summary: 大文字・小文字の構成を保って置き換える
+        condition: '`.mdmark-table{} __mdmarkHtmlScript MDMARK Mdmark @layer mdmark`'
+        mock: なし
+        expected: '`.zq-table{} __zqHtmlScript ZQ Zq @layer zq`'
+    status: planned
+    introduced:
+      pr: 554
+  - name: hideMarkdown
+    title: 埋め込みの Markdown の名前とコメントを隠す
+    container: src/cli/traces.ts
+    usecase: 共通
+    summary: '`<mdmark-`・`</mdmark-`・`--mdmark-`・`class` の属性の値の `mdmark-`・`mdmark-asset:` を別名へ置き換え、マーカーでない HTML のコメントを削除する'
+    description: 制約「mdmark の痕跡」の (3)。地の文の `mdmark`・リンクの `href`・`window` の鍵などの単語は置き換えない。削除するコメントは、`findMarkTexts` と同じく生の HTML のブロックと行内の HTML の中のコメントのうち、`MARK_PATTERN` に該当しないか、該当しても名前が `markNames` に無いもの。コードブロックと行内のコードの中のコメントは削除しない
+    kind: 関数
+    scope: internal
+    args:
+      - name: options
+        type: '{ markdown: string; markNames: ReadonlySet<string> }'
+        required: true
+        description: 埋める文書の Markdown と、描画が参照するマーカーの名前（`check.ts` の `collectMarkNames` の戻り値）
+    returns:
+      type: string
+      description: 隠した Markdown
+    unit_tests:
+      - name: test_hide_markdown
+        case: 正常
+        summary: 部品の要素名・CSS 変数・class の値だけを置き換える
+        condition: '`mdmark は描く。<mdmark-chart>{}</mdmark-chart> <p class="mdmark-align-center">x</p> [紹介](./mdmark-intro.md) var(--mdmark-color-fg)`'
+        mock: なし
+        expected: '`mdmark は描く。<zq-chart>{}</zq-chart> <p class="zq-align-center">x</p> [紹介](./mdmark-intro.md) var(--zq-color-fg)`'
+      - name: test_hide_markdown_when_comments
+        case: 正常
+        summary: マーカーの名前でないコメントだけを削除する
+        condition: '`<!-- todo -->`・`<!-- 補足: あとで -->`・`<!-- table: data -->`・`<!-- /table -->`・`<!-- greet -->` と、コードブロックの中の `<!-- todo -->`。`markNames` は `table`・`greet`'
+        mock: なし
+        expected: 'コードブロックの外の `<!-- todo -->` と `<!-- 補足: あとで -->` が消え、`<!-- table: data -->`・`<!-- /table -->`・`<!-- greet -->` とコードブロックの中の `<!-- todo -->` が残る'
+    status: planned
+    introduced:
+      pr: 554
+  - name: hidePayload
+    title: 書き出しの中身の名前を隠す
+    container: src/cli/traces.ts
+    usecase: 共通
+    summary: 利用者が記載した値を除く項目に `hideNames` を適用した書き出しの中身を返却する
+    description: '`docs[]`（`title`・`path`・`docId`・`markdown`・`includes`）・`index`・`references`・`aliases`・`entry`・`includes`・`assets`（画像の `data:` URL）は置き換えず、それ以外（`config`・`icons`）は `JSON.stringify` した文字に `hideNames` を適用して戻す。`docs[].markdown` と `includes` の値は、`prepareEmbeds` が `hideMarkdown` を適用したものが入っている'
+    kind: 関数
+    scope: internal
+    args:
+      - name: payload
+        type: ExportPayload
+        required: true
+        description: 書き出しの中身
+    returns:
+      type: ExportPayload
+      description: 隠した中身
+    unit_tests:
+      - name: test_hide_payload
+        case: 正常
+        summary: 設定の値だけを置き換え、利用者が記載した値を残す
+        condition: '`config.mermaid.theme` が `mdmark`、`docs[0]` の `title` が `mdmark の紹介`・`path` が `mdmark-intro.md`、`index` の用語が `mdmark`'
+        mock: なし
+        expected: '`config.mermaid.theme` が `zq` で、`title`・`path`・`index` の用語は `mdmark` のまま'
+    status: planned
+    introduced:
+      pr: 554
+  - name: hideCss
+    title: CSS の痕跡を隠す
+    container: src/cli/traces.ts
+    usecase: 共通
+    summary: '`:root{--mdmark-version:"…"}` の宣言を削除し、`hideNames` を適用して返却する'
+    kind: 関数
+    scope: internal
+    args:
+      - name: css
+        type: string
+        required: true
+        description: 配布物の CSS か利用側の CSS
+    returns:
+      type: string
+      description: 隠した CSS
+    unit_tests:
+      - name: test_hide_css
+        case: 正常
+        summary: バージョンを削除し、名前を置き換える
+        condition: '`:root{--mdmark-version:"v0.12.0"}` の行と `@layer mdmark{.mdmark{--mdmark-radius:3px}}`'
+        mock: なし
+        expected: '`v0.12.0` と `mdmark` が無く、`@layer zq{.zq{--zq-radius:3px}}` がある'
+    status: planned
+    introduced:
+      pr: 554
+  - name: hideScript
+    title: まとめたスクリプトの痕跡を隠す
+    container: src/cli/traces.ts
+    usecase: 共通
+    summary: '`hideNames` を適用してから、範囲のスクリプトの表の鍵の仮の文字列を元の鍵に戻して返却する'
+    description: 'まとめたスクリプトの `/*! … */` のライセンスの注釈（`dist/viewer.js`・`dist/view.js` が持つ第三者の `Bundled license information` と、利用者の拡張の注釈）は削除しない。仮の文字列（`HTML_SCRIPT_KEY_PREFIX` に番号と `@@` を付けたもの）は、囲むクオートごと `JSON.stringify(keys[番号])` に置き換える'
+    kind: 関数
+    scope: internal
+    args:
+      - name: options
+        type: '{ code: string; keys: string[] }'
+        required: true
+        description: esbuild がまとめたスクリプト（`</script`・`<!--` を替える前）と、範囲のスクリプトの表の鍵（`createViewerEntry` に指定した順）
+    returns:
+      type: string
+      description: 隠したスクリプト
+    unit_tests:
+      - name: test_hide_script
+        case: 正常
+        summary: 鍵を残して名前を置き換える
+        condition: '`window.__mdmarkHtmlScript=new Map([["@@html-script-key-0@@",f]])` と、鍵 `window.__mdmarkOpened = true`'
+        mock: なし
+        expected: '`window.__zqHtmlScript=new Map([["window.__mdmarkOpened = true",f]])`'
+      - name: test_hide_script_when_license
+        case: 正常
+        summary: ライセンスの注釈をそのまま残す
+        condition: '計画書の実測と同じ形の、`/*! greet-ext (c) user - MIT */` と、`is-plain-object/dist/is-plain-object.js:` の入口の下に `(*! … *)` の注釈を持つ `/*! Bundled license information: … */` を含むコード'
+        mock: なし
+        expected: 2 つの `/*!` の注釈が元の文字のまま残る
+    status: planned
+    introduced:
+      pr: 554
+refs:
+  - IF-472-33#constraints[mdmark の痕跡]

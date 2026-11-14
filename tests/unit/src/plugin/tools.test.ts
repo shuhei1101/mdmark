@@ -1,4 +1,5 @@
 import { existsSync } from "node:fs";
+import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { expect, test, vi } from "vitest";
 import type { ToolDefinition } from "../../../../src/plugin/tools.ts";
@@ -249,6 +250,24 @@ test("test_run_export_html", async () => {
   expect(result.json?.warnings).toEqual([]);
 });
 
+// keep_traces を exportDocument の keepTraces にする（正常系）
+test("test_run_export_html_when_keep_traces", async () => {
+  // 準備
+  const { runExportHtml } = await loadTools();
+  const context = await createContext();
+  await writeFiles(context.projectDir, {
+    "mdmark.config.yaml": "features:\n  print: true\n",
+    "guide.md": "# タイトル\n",
+  });
+  await writeDist(context.packageDir);
+  // 実行
+  await runExportHtml({ file: "guide.md", keep_traces: true }, context);
+  // 検証
+  expect(
+    await readFile(join(context.projectDir, "guide.html"), "utf8"),
+  ).toContain('id="mdmark-payload"');
+});
+
 // サーバーの cwd が作業のフォルダと違っても、相対パスの out と config を作業のフォルダから解く（正常系）
 test("test_run_export_html_when_cwd_differs", async () => {
   // 準備
@@ -293,6 +312,30 @@ test("test_run_build_site", async () => {
   // 検証
   expect(result.json?.out).toBe(`${context.projectDir}/dist/docs.html`);
   expect(result.json?.docs).toBe(2);
+});
+
+// keep_traces を buildSite の keepTraces にする（正常系）
+test("test_run_build_site_when_keep_traces", async () => {
+  // 準備
+  const { runBuildSite } = await loadTools();
+  const context = await createContext();
+  await writeFiles(context.projectDir, {
+    "mdmark.config.yaml": [
+      "build:",
+      '  include: ["**/*.md"]',
+      "  out: dist/docs.html",
+      "",
+    ].join("\n"),
+    "a.md": "# A\n",
+    "b.md": "# B\n",
+  });
+  await writeDist(context.packageDir);
+  // 実行
+  await runBuildSite({ keep_traces: true }, context);
+  // 検証
+  expect(
+    await readFile(join(context.projectDir, "dist", "docs.html"), "utf8"),
+  ).toContain('id="mdmark-payload"');
 });
 
 // サーバーの cwd が作業のフォルダと違っても、作業のフォルダの設定と build.out で記載する（正常系）

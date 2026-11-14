@@ -3,7 +3,7 @@ visibility: internal
 title: "文書をHTMLに書き出す"
 entry:
   kind: operation
-  value: '`mdmark export {文書} [--out {出力}] [--config {設定ファイル}]`（CLI。`npx github:shuhei1101/mdmark#v{バージョン} export` で呼ぶ）'
+  value: '`mdmark export {文書} [--out {出力}] [--config {設定ファイル}] [--keep-traces]`（CLI。`npx github:shuhei1101/mdmark#v{バージョン} export` で呼ぶ）'
 flows:
   - name: 正常系
     summary: 設定・索引・外部ライブラリ・拡張・画像を埋めた HTML を書き出す
@@ -443,6 +443,55 @@ flows:
       - '`-.->` の線が破線'
       - HTML だけを空のフォルダへコピーして file:// で開くと、描き終えるまでにページ自身と画像の `data:` のほかの要求が 0 件
     test: test_normal_when_map_config
+  - name: 正常系（mdmark を使用していることを隠す）
+    summary: 隠さない書き出しを指定しないとき、mdmark の名前を別名へ置き換え、コメント・バージョン・mdmark 自身のライセンスの表記を削除して書き出す
+    setup:
+      - name: mdmark の名前を持つフォルダ
+        description: 'タイトルに `mdmark` を含む文書 `mdmark-intro.md` と、`theme`（`--mdmark-radius` の上書きと `.mdmark h1` のセレクタ）・`extensions`（マーカー `greet` の拡張）・`index`（用語 `mdmark`）を記載した設定。文書は、地の文の `mdmark`・`<mdmark-chart>` の要素・`<!-- html -->` の範囲（`css` の `var(--mdmark-*)` と、ノードを押すと `window.__mdmarkOpened` を `true` にして根の要素に class `is-open` を付ける `ts`）・class `mdmark-align-center` の段落・`<mdmark-chart>` を書いたコードの例・`<!-- todo -->`・`<!-- table: data -->` と `<!-- /table -->` で囲んだ表・既定のテーマの mermaid の図・`icon:` のアイコンを持つ'
+      - name: Mock
+        description: 正常系（mermaid のコードブロック）と同じく `mermaid.url` を手元のフォルダに向ける。比べる HTML は、同じフォルダを `--keep-traces` で書き出したもの
+    flow: |-
+      sequenceDiagram
+        actor W as 文書の作成者
+        participant C as mdmark CLI
+        participant H as 出力の HTML
+        W->>C: mdmark export mdmark-intro.md
+        C->>C: 隠さない HTML を組み立てる
+        C->>C: 名前を別名へ置き換え、コメント・バージョン・mdmark 自身のライセンスの表記を削除する
+        C->>H: mdmark-intro.html を書き込む
+        C-->>W: 書き出した: mdmark-intro.html・終了コード 0
+    expected:
+      - '終了コードが 0 で、標準出力が `書き出した: mdmark-intro.html`'
+      - 'HTML の文字列（`<title>` の中身と、範囲のスクリプトの表の鍵を除く）と、埋め込みの JSON の利用者が記載した値の項目を除いた値に、`mdmark`（大文字・小文字を区別しない）が 0 件'
+      - '埋め込みの Markdown で、`<mdmark-`・`--mdmark-`・class の値の `mdmark-` が 0 件で、地の文の `mdmark` と `mdmark-intro.md` へのリンクの `href` が残る'
+      - 'HTML の文字列に `<!--` が 0 件。埋め込みの Markdown から `<!-- todo -->` が消え、`<!-- html -->`・`<!-- table: data -->`・`<!-- /table -->` が残る'
+      - HTML の文字列に `version.ini` の先頭行のバージョンが 0 件
+      - Lucide と mermaid のライセンスの表記が、スクリプトの `/*!` で始まるコメントに残る
+      - file:// で開くと、コンソールのエラーとコメントのノードが 0 件で、要素・別名を `mdmark` に戻した class・計算後のスタイルが、比べる HTML と本文のコードの例の中を除いて同じ
+      - '`greet` のマーカーと `theme` の上書きが、比べる HTML と同じに描かれる'
+      - 範囲のノードを押すと、根の要素に class `is-open` が付き、`window.__zqOpened` が `true` になる（範囲の記載の警告が出ない）
+      - '`<title>` が `mdmark-intro.md` のタイトルのまま'
+    test: test_normal_when_traces_hidden
+  - name: 正常系（隠さない書き出しを指定する）
+    summary: '`--keep-traces` のとき、名前を置き換えず、コメントとバージョンを残して書き出す'
+    setup:
+      - name: mdmark の名前を持つフォルダ
+        description: 正常系（mdmark を使用していることを隠す）と同じ
+      - name: Mock
+        description: 正常系（mdmark を使用していることを隠す）と同じ
+    flow: |-
+      sequenceDiagram
+        actor W as 文書の作成者
+        participant C as mdmark CLI
+        participant H as 出力の HTML
+        W->>C: mdmark export mdmark-intro.md --keep-traces
+        C->>H: 隠さない HTML を書き込む
+        C-->>W: 書き出した: mdmark-intro.html・終了コード 0
+    expected:
+      - 終了コードが 0
+      - HTML に `class="mdmark"`・`:root{--mdmark-version:`・`id="mdmark-payload"`・`<!-- lucide` が残る
+      - 埋め込みの Markdown が文書の本文と同じ（`<!-- todo -->` を含む）
+    test: test_normal_when_traces_kept
 lead: 文書の作成者が Markdown を 1 つ、配布物・利用側の CSS・外部ライブラリのモジュール・拡張・画像を埋めた 1 枚の HTML に書き出す。開いた HTML は `mount` で文書を描き、外へ要求しない。
 idempotent: true
 side_effects: 出力のパスに HTML を書き込む（既にあれば上書きする）。文書が指す動画・音声を、出力の隣の `_files/` のフォルダへコピーする（同じ名前のファイルは上書きする）。文書が使用する外部ライブラリの設定の `libraries` の URL の先と、そのモジュールが import する先を読み込む。色分けの対象のコードブロックがあるとき、`syntax.url` の先の core と、使用する言語のモジュールを読み込む
@@ -469,6 +518,13 @@ request:
     location: argument
     description: 使用する設定ファイルのパス
     notes: 探し方はインターフェース定義『設定と索引を点検する』と同じ
+  - name: --keep-traces
+    type: boolean
+    required: false
+    default: なし（制約「mdmark の痕跡」のとおり隠して書き出す）
+    location: argument
+    description: 開発のときに、mdmark の名前・HTML のコメント・バージョン・mdmark 自身のライセンスの表記を残して書き出す
+    notes: 値を取らないフラグ
 response:
   - name: 標準出力
     type: string
@@ -482,7 +538,7 @@ response:
     description: 書き出したら（警告があっても）0、書き出せなかったら 1
   - name: 出力の HTML
     type: ファイル
-    description: 配布物の CSS・`theme` の CSS・配布物の JavaScript・まとめたモジュールと拡張・画像を替えた文書の Markdown・設定・索引・参照の表を埋めた 1 枚の HTML。起動の処理と埋めるモジュール・拡張をまとめた 1 つのスクリプトを `script` 要素で直接動かす。開くと、読み込み済みのモジュールを外部ライブラリ・部品・色分けの読み込みに指定し、埋めた拡張を `registerExtension` で登録してから `mount` で文書を描く。`blob:` URL と動的 `import()` を使用しない
+    description: 配布物の CSS・`theme` の CSS・配布物の JavaScript・まとめたモジュールと拡張・画像を替えた文書の Markdown・設定・索引・参照の表を埋めた 1 枚の HTML。起動の処理と埋めるモジュール・拡張をまとめた 1 つのスクリプトを `script` 要素で直接動かす。開くと、読み込み済みのモジュールを外部ライブラリ・部品・色分けの読み込みに指定し、埋めた拡張を `registerExtension` で登録してから `mount` で文書を描く。`blob:` URL と動的 `import()` を使用しない。`--keep-traces` が無ければ、制約「mdmark の痕跡」のとおり隠す
 response_example: |-
   ```text
   書き出した: docs/使用方法/guide.html
@@ -568,9 +624,12 @@ constraints:
   - item: 埋める取り込み
     constraint: '文書の include のマーカーの取り込み先を、インターフェース定義『文書をHTML文字列にする』の制約「取り込み」と同じパスの解き方でファイルから読み込み（取り込んだ文書の中のマーカーもたどり、同じファイルは 1 回だけ読み込む）、キーを書き出す文書のフォルダからのパスにした取り込む文書の表を `opts.includes` として埋める。読み込むのは設定ファイルのフォルダ（設定ファイルが無ければ文書のフォルダ）の中のファイルだけで、その外を指すパスと読み込めないファイルは表に入れず、警告に出す（書き出しは止めない。開いたときはそのマーカーの場所に記載の警告が出る）。文書の `<!-- features: {"include": false} -->` の文書は読み込まない'
   - item: 埋めるアイコン
-    constraint: 文書（取り込む文書を含む）の `icon:` のうち配布物にまとめていない名前の IconNode を、依存の lucide から取り出して `opts.icons` として埋め、開いたとき jsDelivr を読み込まない。lucide に無い名前は埋めず警告に出し（書き出しは止めない）、開いたときはその場所を行内のコードのままにして記載の警告を配置する。`opts.icons` を埋める `script` の直前に、注釈 `<!-- lucide {バージョン} - ISC License (c) Lucide Contributors / MIT License (c) 2013-present Cole Bemis -->` を 1 行置く（埋める名前が無いときは配置しない）
+    constraint: 文書（取り込む文書を含む）の `icon:` のうち配布物にまとめていない名前の IconNode を、依存の lucide から取り出して `opts.icons` として埋め、開いたとき jsDelivr を読み込まない。lucide に無い名前は埋めず警告に出し（書き出しは止めない）、開いたときはその場所を行内のコードのままにして記載の警告を配置する。`opts.icons` を埋める `script` の直前に、注釈 `<!-- lucide {バージョン} - ISC License (c) Lucide Contributors / MIT License (c) 2013-present Cole Bemis -->` を 1 行置く（埋める名前が無いときは配置しない。隠す書き出しでは、同じ文をまとめたスクリプトの先頭の `/*! … */` に置く）
     notes: ライセンスの表示を残すことは外部ライブラリ『lucide』の `license`
   - item: map の設定
     constraint: 設定の `map` を、`tooltips.placement` と同じく埋める設定にコピーして `mount` の `opts.config` に指定する。無いときは写さず、`mount` の既定に任せる。`map` がマップでないときは設定ファイルの誤り（終了コード 1）にする。記載できる値に無い値（`node_fit` の知らない値・`url_state` が真偽値でない・知らない形・模様・太さ・矢じり・色の名前）は書き出しを止めずにコピーし、`mount` が無視して既定にする（`mdmark check` が `schema` のずれにする）。Lucide に無いアイコンの名前はコピーし、`mount` が無視する（`mdmark check` が `map_unknown_icon` にする）
     decided_by: IF-472-35#request[opts.config.map.kinds]
+  - item: mdmark の痕跡
+    constraint: '`--keep-traces` が無いとき、組み立てた HTML の全体に次を当ててから書き込む。(1) 埋め込みの JSON を除く HTML・CSS（配布物と `theme`）・まとめたスクリプト（拡張・範囲のスクリプトを含む）から、HTML のコメントと `:root{--mdmark-version:…}` の宣言を削除する。まとめたスクリプトの `/*! … */` のライセンスの注釈は残す。(2) その全体（`<title>` の中身と、まとめたスクリプトの範囲のスクリプトの表の鍵を除く）と、埋め込みの JSON の利用者が記載した値（`docs[].title`・`docs[].path`・`docs[].markdown`・`index`・`references`・`aliases`・`entry`・`includes`・画像の `data:` URL の `assets`）を除く値で、語の一部として出る `mdmark` を、大文字・小文字の形を保って別名 `zq` へ置き換える（`#mdmark-payload` の `id` を含む）。(3) 埋め込みの Markdown（`docs[].markdown` と `includes` の値）では、`<mdmark-`・`</mdmark-`・`--mdmark-`・`class` の属性の値の `mdmark-`・`mdmark-asset:` だけを別名へ置き換え、描画が読むマーカーの名前でない HTML のコメントを削除する。範囲のスクリプトの表の鍵（範囲のコードの文字）は、(3) を当てた後の埋め込みの Markdown から取り出し、鍵から変換したコードには (2) を当てる。開いた文書の DOM にコメントのノードを残さない。同梱する第三者のライブラリのライセンスの表記は、HTML のコメントでない形で残す'
+    notes: 'まとめたスクリプトのライセンスの注釈は第三者のライブラリと利用者の拡張のものだけで、mdmark 自身のものは無い（計画書『ライブラリ本体』の実測）。PoC #556 で、この規則の HTML が隠さない HTML と同じ表示と操作になることを確認した。マーカーのコメントは #532 で埋め込みと一緒に消える。本文のコードの例の `<mdmark-*>` も別名で表示される。`--keep-traces` を指定しない流れの期待値に出る mdmark の名前（セレクタ・class・属性・`window` の鍵）は、(2) と同じ規則で別名に置き換えて確かめる（「無い」を確かめる行も別名で確かめる）。'
 test_file: tests/integration/lib/export.test.ts

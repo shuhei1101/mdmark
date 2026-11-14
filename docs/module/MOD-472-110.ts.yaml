@@ -397,7 +397,7 @@ functions:
     container: src/cli/check.ts
     usecase: 設定と索引を点検する
     summary: '`FEATURES_MARK`・`SYNTAX_MARKS` の名前・`resolveConfig` が設定の `libraries` に既定を適用した対応表の名前・`directives` を合わせた名前の集合を返却する'
-    description: '`checkUnknownMarks` はこれに設定の `check.ignore` の名前を加えて知っているマーカーにし、`checkPlainMarkdown` はこれをそのまま使用する'
+    description: '`checkUnknownMarks` はこれに設定の `check.ignore` の名前を加えて知っているマーカーにし、`checkPlainMarkdown` はこれをそのまま使用する。`collectMarkNames` も使用する'
     kind: 関数
     scope: internal
     args:
@@ -411,6 +411,36 @@ functions:
     status: planned
     introduced:
       pr: 541
+  - name: collectMarkNames
+    title: 描画が参照するマーカーの名前を集める
+    container: src/cli/check.ts
+    usecase: 共通
+    summary: '`knownMarkNames` の名前に、`PAGE_MARK`・`loadExtensionDirectives` の `directive`・設定の `check.ignore` の名前を加えた集合を返却する'
+    description: '`loadExtensionDirectives` のずれは捨てる（拡張の誤りは `prepareEmbeds` の警告が出す）。書き出しの `prepareEmbeds` が呼ぶ'
+    kind: 関数
+    scope: public
+    is_async: true
+    args:
+      - name: loaded
+        type: LoadedConfig
+        required: true
+        description: 読み込んだ設定
+    returns:
+      type: Promise<Set<string>>
+      description: マーカーの名前の集合
+    unit_tests:
+      - name: test_collect_mark_names
+        case: 正常
+        summary: 記法・外部ライブラリ・拡張・`check.ignore` の名前を集める
+        condition: '`libraries` に `test-lib`、`extensions` に `directive: "greet"` の拡張、`check.ignore` に `memo` を持つ設定'
+        mock: なし（一時フォルダ）
+        expected: '`table`・`html`・`features`・`page`・`test-lib`・`greet`・`memo` を含む'
+    callees:
+      - MOD-472-110#functions[knownMarkNames]
+      - MOD-472-110#functions[loadExtensionDirectives]
+    status: planned
+    introduced:
+      pr: 554
   - name: checkDiagrams
     title: 図の定義と廃止した図の範囲を点検する
     container: src/cli/check.ts

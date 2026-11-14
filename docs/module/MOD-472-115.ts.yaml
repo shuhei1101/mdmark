@@ -9,7 +9,7 @@ functions:
     container: src/cli/main.ts
     usecase: 共通
     summary: 最初の引数のコマンド名で `init`・`check`・`export`・`build`・`upgrade`・`serve` を呼び分け、終了コードを返却する
-    description: '引数は `node:util` の `parseArgs`（`--out`・`--config`・`--base`・`--text`・`--file`・`--key` は文字列、`--js`・`--plan`・`--yes` は真偽値、位置引数を許す）で読み込む。`upgrade` はパッケージの直下・`cliVersion()`・今の時刻・`ask` を `runUpgrade` に指定する。`init` は `cliVersion()` を `runInit` に指定する。`serve` は `process.env`・パッケージの直下・`cliVersion()`・`SIGINT` か `SIGTERM` で止める合図になる `AbortSignal` を `runServe` に指定する。コマンドが投げた `CliError` はその文を標準エラーに出して 1 を返却する。知らないコマンド・知らない引数・引数が無いときは、使用できるコマンドの一覧を標準エラーに出して 1 を返却する。`check` の `--text -` は標準入力を終わりまで読み込んだ文字を `text` にして `runCheck` に指定する。`src/cli/main.ts` の末尾で、入口として実行されたときだけ `main(process.argv.slice(2), 標準の入出力, createLinePrompter({ input: process.stdin, write: 標準エラー }))` を呼び、戻り値を `process.exitCode` に入れる'
+    description: '引数は `node:util` の `parseArgs`（`--out`・`--config`・`--base`・`--text`・`--file`・`--key` は文字列、`--js`・`--plan`・`--yes`・`--keep-traces` は真偽値、位置引数を許す）で読み込む。`export`・`build` は `--keep-traces` を `keepTraces` にして `runExport`・`runBuild` に指定する。`upgrade` はパッケージの直下・`cliVersion()`・今の時刻・`ask` を `runUpgrade` に指定する。`init` は `cliVersion()` を `runInit` に指定する。`serve` は `process.env`・パッケージの直下・`cliVersion()`・`SIGINT` か `SIGTERM` で止める合図になる `AbortSignal` を `runServe` に指定する。コマンドが投げた `CliError` はその文を標準エラーに出して 1 を返却する。知らないコマンド・知らない引数・引数が無いときは、使用できるコマンドの一覧を標準エラーに出して 1 を返却する。`check` の `--text -` は標準入力を終わりまで読み込んだ文字を `text` にして `runCheck` に指定する。`src/cli/main.ts` の末尾で、入口として実行されたときだけ `main(process.argv.slice(2), 標準の入出力, createLinePrompter({ input: process.stdin, write: 標準エラー }))` を呼び、戻り値を `process.exitCode` に入れる'
     kind: 関数
     scope: public
     is_async: true
@@ -36,6 +36,12 @@ functions:
         condition: '`["init", "{一時フォルダ}"]`'
         mock: 出力を配列に貯める `CliIo`、`vi.stubGlobal("__MDMARK_VERSION__", "v0.5.0")`（`init` が `cliVersion()` を読み込むため）
         expected: 0 を返却し、標準出力に `配置した:` の行がある
+      - name: test_main_when_keep_traces
+        case: 正常
+        summary: '`--keep-traces` を `keepTraces` にして書き出しへ指定する'
+        condition: '設定と `guide.md` を持つ一時フォルダで `["export", "guide.md", "--keep-traces"]`'
+        mock: 出力を配列に貯める `CliIo`
+        expected: 0 を返却し、書き出した `guide.html` に `id="mdmark-payload"` がある
       - name: test_main_when_command_unknown
         case: 異常
         summary: 知らないコマンドは一覧を出して 1 を返却する

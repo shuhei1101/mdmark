@@ -87,6 +87,7 @@ export async function main(
         plan: { type: "boolean" },
         yes: { type: "boolean" },
         settings: { type: "boolean" },
+        "keep-traces": { type: "boolean" },
       },
       allowPositionals: true,
     });
@@ -125,13 +126,18 @@ export async function main(
             out: values.out,
             config: values.config,
             distDir: join(root, "dist"),
+            keepTraces: values["keep-traces"] === true,
           },
           io,
         );
       }
       case "build":
         return await runBuild(
-          { config: values.config, distDir: join(root, "dist") },
+          {
+            config: values.config,
+            distDir: join(root, "dist"),
+            keepTraces: values["keep-traces"] === true,
+          },
           io,
         );
       case "upgrade":

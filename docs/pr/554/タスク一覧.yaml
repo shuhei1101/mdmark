@@ -1,0 +1,86 @@
+tasks:
+  - process: 初期構築
+    status: skipped
+    reason: 既存のリポジトリのため対象外
+    updated_by: planner
+    updated_at: '2026-11-14T01:06:56.833998+00:00'
+  - process: リバースエンジニアリング
+    status: skipped
+    reason: 書き出しの設計書が既にあるため対象外
+    updated_by: planner
+    updated_at: '2026-11-14T01:06:56.833998+00:00'
+  - process: 方針決め
+    status: skipped
+    reason: 方針決めを依頼する Issue ではない
+    updated_by: planner
+    updated_at: '2026-11-14T01:06:56.833998+00:00'
+  - process: PoC 検証
+    status: done
+    reason: 成立（export 22/22・build 24/24。#556）
+    updated_by: planner
+    updated_at: '2026-11-14T04:58:42.285036+00:00'
+  - process: 複合ユースケース設計
+    status: skipped
+    reason: 業務フローの連鎖は変わらない。書き出しを含む複合 UC は実行のみ
+    updated_by: planner
+    updated_at: '2026-11-14T01:06:56.833998+00:00'
+  - process: デザインスタイル選定
+    status: skipped
+    reason: 'モック要否: 書き出した HTML の見た目は変わらない（※1 が NO）'
+    updated_by: planner
+    updated_at: '2026-11-14T01:06:56.833998+00:00'
+  - process: 画面一覧・画面遷移
+    status: skipped
+    reason: 'モック要否: 書き出した HTML の見た目は変わらない（※1 が NO）'
+    updated_by: planner
+    updated_at: '2026-11-14T01:06:56.833998+00:00'
+  - process: 単一ユースケース設計
+    status: done
+    reason: SC-472-56・SC-472-76・SC-472-3 に隠すシナリオと隠さない書き出しのシナリオを追加
+    updated_by: planner
+    updated_at: '2026-11-14T05:03:40.131540+00:00'
+  - process: モック作成
+    status: skipped
+    reason: 'モック要否: 書き出した HTML の見た目は変わらない（※1 が NO）'
+    updated_by: planner
+    updated_at: '2026-11-14T01:06:56.833998+00:00'
+  - process: インターフェース定義設計
+    status: done
+    reason: IF-472-33・IF-472-38・IF-472-9・IF-472-13 に `--keep-traces`・`keep_traces` と制約「mdmark の痕跡」を追加
+    updated_by: planner
+    updated_at: '2026-11-14T05:31:39.339210+00:00'
+  - process: 部品設計
+    status: skipped
+    reason: 部品の引数・状態は変わらない
+    updated_by: planner
+    updated_at: '2026-11-14T01:06:56.833998+00:00'
+  - process: 画面設計
+    status: skipped
+    reason: '画面設計要否: まとめた HTML の UI 項目と操作は変わらない（名前の置き換えは書き出しのときの処理で、当たる UI 項目は同じ）'
+    updated_by: planner
+    updated_at: '2026-11-14T01:06:56.833998+00:00'
+  - process: モジュール構成設計
+    status: done
+    reason: MOD-472-350（traces.ts）を追加し、html.ts・embed.ts・export.ts・build.ts・main.ts・check.ts・tools.ts の設計書を修正
+    updated_by: planner
+    updated_at: '2026-11-14T05:57:28.649567+00:00'
+  - process: ドキュメント修正
+    status: done
+    reason: 更新ドキュメント 7 件を修正（用語集は新しい用語を決めなかったため行を削除）
+    updated_by: planner
+    updated_at: '2026-11-14T06:21:51.754882+00:00'
+  - process: 単体テスト作成
+    status: done
+    reason: 'traces.test.ts と、html・embed・export・build・main・tools の単体テストを追加（Red: dee2981d）'
+    updated_by: planner
+    updated_at: '2026-11-14T06:35:17.753817+00:00'
+  - process: 実装
+    status: done
+    reason: traces.ts を追加し、書き出し・まとめ・CLI・MCP に隠す既定と --keep-traces・keep_traces を実装（単体 2205 件 pass・lint 通過）
+    updated_by: planner
+    updated_at: '2026-11-14T07:03:22.534511+00:00'
+  - process: 結合テスト作成
+    status: done
+    reason: 隠す・隠さない書き出しの結合テストを export・bundle・export_html・build_site に追加（結合 1115 件 pass）
+    updated_by: planner
+    updated_at: '2026-11-14T08:47:08.852854+00:00'

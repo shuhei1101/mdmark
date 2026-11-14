@@ -20,6 +20,8 @@ export async function buildSite(options: {
   config?: string | undefined;
   /** `dist/` の場所 */
   distDir: string;
+  /** 開発のときに mdmark の名前・HTML のコメント・バージョンを残すか */
+  keepTraces?: boolean | undefined;
 }): Promise<{
   out: string;
   display: string;
@@ -27,6 +29,7 @@ export async function buildSite(options: {
   warnings: string[];
 }> {
   const loaded = await requireConfig(options.cwd, options.config);
+  const hide = options.keepTraces !== true;
   const build = loaded.config.build;
   if (!build) {
     throw new CliError(
@@ -78,6 +81,7 @@ export async function buildSite(options: {
     entry,
     out,
     fetchText,
+    hideTraces: hide,
   });
   warnings.unshift(...embedWarnings);
   // 1 枚に含まれない文書へのリンクを持つ文書とリンク先
@@ -94,14 +98,27 @@ export async function buildSite(options: {
     kind: "bundle",
   });
   const script = await bundleViewer({
-    entry: createViewerEntry({ viewer, view, map, embeds }),
+    entry: createViewerEntry({ viewer, view, map, embeds, hideTraces: hide }),
     baseDir: loaded.dir,
     fetchText,
+    ...(hide
+      ? {
+          hideTraces: {
+            keys: (embeds.htmlScripts ?? []).map(({ source }) => source),
+          },
+        }
+      : {}),
   });
   await writeHtml({
     file: out,
     display: build.out,
-    html: assembleHtml({ payload, distCss, themeCss, script }),
+    html: assembleHtml({
+      payload,
+      distCss,
+      themeCss,
+      script,
+      hideTraces: hide,
+    }),
   });
   return { out, display: build.out, docs: paths.length, warnings };
 }
@@ -113,6 +130,8 @@ export async function runBuild(
     config?: string | undefined;
     /** `dist/` の場所 */
     distDir: string;
+    /** 開発のときに mdmark の名前・HTML のコメント・バージョンを残すか */
+    keepTraces?: boolean | undefined;
   },
   io: CliIo,
 ): Promise<0> {

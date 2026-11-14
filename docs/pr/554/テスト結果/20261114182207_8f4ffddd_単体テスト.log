@@ -1,0 +1,83 @@
+$ npm run test:unit
+
+> test:unit
+> vitest run --project 'unit*'
+
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-export-hide-mdmark-traces
+
+ ❯ |unit| tests/unit/src/cli/check.test.ts (37 tests | 1 failed) 38303ms
+   × test_run_check 30009ms
+ ❯ |unit| tests/unit/src/cli/main.test.ts (5 tests | 1 failed) 40251ms
+   × test_main 30008ms
+ ❯ |unit| tests/unit/src/plugin/tools.test.ts (20 tests | 1 failed) 40275ms
+   × test_call_tool 30010ms
+ ❯ |unit| tests/unit/src/cli/export.test.ts (26 tests | 2 failed) 50178ms
+   × test_prepare_embeds 30027ms
+   × test_prepare_embeds_when_unreadable 14571ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 5 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit| tests/unit/src/cli/check.test.ts > test_run_check
+Error: Test timed out in 30000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/unit/src/cli/check.test.ts:51:1
+     49|
+     50| // ずれの無いフォルダで 0 件（正常系）
+     51| test("test_run_check", async () => {
+       | ^
+     52|   // 準備
+     53|   const { runCheck } = await loadCheck();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/5]⎯
+
+ FAIL  |unit| tests/unit/src/cli/export.test.ts > test_prepare_embeds
+Error: Test timed out in 30000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/unit/src/cli/export.test.ts:31:1
+     29|
+     30| // マーカーのあるモジュールだけをまとめ、拡張と theme を読み込む（正常系）
+     31| test("test_prepare_embeds", async () => {
+       | ^
+     32|   // 準備
+     33|   const { prepareEmbeds } = await loadExport();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/5]⎯
+
+ FAIL  |unit| tests/unit/src/cli/export.test.ts > test_prepare_embeds_when_unreadable
+Error: ENOTEMPTY: directory not empty, rmdir '/tmp/mdmark-cli-ZTQpFw'
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/5]⎯
+
+ FAIL  |unit| tests/unit/src/cli/main.test.ts > test_main
+Error: Test timed out in 30000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/unit/src/cli/main.test.ts:21:1
+     19|
+     20| // コマンド名で init を呼び、その終了コードを返却する（正常系）
+     21| test("test_main", async () => {
+       | ^
+     22|   // 準備
+     23|   const { main } = await loadMain();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/5]⎯
+
+ FAIL  |unit| tests/unit/src/plugin/tools.test.ts > test_call_tool
+Error: Test timed out in 30000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/unit/src/plugin/tools.test.ts:58:1
+     56|
+     57| // json を 1 つのテキストにする（正常系）
+     58| test("test_call_tool", async () => {
+       | ^
+     59|   // 準備
+     60|   const { callTool } = await loadTools();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/5]⎯
+
+
+ Test Files  4 failed | 291 passed (295)
+      Tests  5 failed | 2224 passed (2229)
+   Start at  18:01:55
+   Duration  186.66s (worker 68%, tests 21%, import 10%, transform 1%)
+
+exit=1

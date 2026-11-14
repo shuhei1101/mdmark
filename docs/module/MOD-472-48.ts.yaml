@@ -78,10 +78,10 @@ constants:
     summary: 登録するツールの定義（`ToolDefinition`）の並び
     entries:
       - key: export_html
-        value: file（必須）・out・config（文字列）
+        value: file（必須）・out・config（文字列）・keep_traces（真偽値）
         description: '`mdmark export` と同じ処理で文書を 1 枚の HTML に書き出し、書き出した絶対パス `out` と警告 `warnings` を返却する'
       - key: build_site
-        value: config（文字列）
+        value: config（文字列）・keep_traces（真偽値）
         description: '`mdmark build` と同じ処理で設定の `build` の文書を 1 枚にまとめ、`out`・文書の数 `docs`・`warnings` を返却する'
       - key: check
         value: config・base・text・file・key（文字列）
@@ -209,7 +209,7 @@ functions:
     side_effects: 出力のパスに HTML を書き込む
     args:
       - name: args
-        type: '{ file: string; out?: string; config?: string }'
+        type: '{ file: string; out?: string; config?: string; keep_traces?: boolean }'
         required: true
         description: 検査を通った引数
       - name: context
@@ -220,7 +220,7 @@ functions:
       type: Promise<ToolOutput>
       description: '`json` が `{ out, warnings }`'
     process: |-
-      1. `cwd` を `projectDir`、`distDir` を `context.distDir` にして書き出す（文書を HTML に書き出して結果を返却する）。相対パスの `file`・`out`・`config` は `projectDir` を基準にする
+      1. `cwd` を `projectDir`、`distDir` を `context.distDir` にして書き出す（文書を HTML に書き出して結果を返却する）。相対パスの `file`・`out`・`config` は `projectDir` を基準にする。`keep_traces` は `keepTraces` にして指定する
       2. `out`（絶対パス）と `warnings` を返却する
     unit_tests:
       - name: test_run_export_html
@@ -235,6 +235,12 @@ functions:
         condition: '`process.cwd()` と別の一時フォルダを `projectDir` にし、`file: guide.md`・`out: out/a.html`・`config: conf/mdmark.config.yaml`'
         mock: なし（一時フォルダ）
         expected: '`json.out` が `{projectDir}/out/a.html` で、そのファイルがあり、`process.cwd()` の下に `out/` が無い'
+      - name: test_run_export_html_when_keep_traces
+        case: 正常
+        summary: '`keep_traces` を `exportDocument` の `keepTraces` にする'
+        condition: '`file: guide.md`・`keep_traces: true`'
+        mock: なし（一時フォルダ）
+        expected: 書き出した HTML に `id="mdmark-payload"` がある
     callees:
       - MOD-472-120#functions[exportDocument]
     refs:
@@ -254,7 +260,7 @@ functions:
     side_effects: '`build.out` に HTML を書き込む'
     args:
       - name: args
-        type: '{ config?: string }'
+        type: '{ config?: string; keep_traces?: boolean }'
         required: true
         description: 検査を通った引数
       - name: context
@@ -265,7 +271,7 @@ functions:
       type: Promise<ToolOutput>
       description: '`json` が `{ out, docs, warnings }`'
     process: |-
-      1. `cwd` を `projectDir`、`distDir` を `context.distDir` にしてまとめる（複数の文書を 1 枚にまとめて結果を返却する）。相対パスの `config` と設定の `build.out` は `projectDir` を基準にする
+      1. `cwd` を `projectDir`、`distDir` を `context.distDir` にしてまとめる（複数の文書を 1 枚にまとめて結果を返却する）。相対パスの `config` と設定の `build.out` は `projectDir` を基準にする。`keep_traces` は `keepTraces` にして指定する
       2. `out`（絶対パス）・`docs`・`warnings` を返却する
     unit_tests:
       - name: test_run_build_site
@@ -280,6 +286,12 @@ functions:
         condition: '`process.cwd()` と別の一時フォルダを `projectDir` にし、設定の `build.out` が相対パス'
         mock: なし（一時フォルダ）
         expected: '`json.out` が `{projectDir}/{build.out}` で、そのファイルがある'
+      - name: test_run_build_site_when_keep_traces
+        case: 正常
+        summary: '`keep_traces` を `buildSite` の `keepTraces` にする'
+        condition: '`projectDir` の設定の `build` が文書 2 つに該当し、`keep_traces: true`'
+        mock: なし（一時フォルダ）
+        expected: 書き出した HTML に `id="mdmark-payload"` がある
     callees:
       - MOD-472-121#functions[buildSite]
     refs:

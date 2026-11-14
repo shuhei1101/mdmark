@@ -326,6 +326,32 @@ test("test_create_viewer_entry_when_mermaid", async () => {
   expect(source).toMatch(/startViewer\(document,[\s\S]*\bmermaid\b/);
 });
 
+// 隠すときは範囲のスクリプトの表の鍵を仮の文字列で記載する（正常系）
+test("test_create_viewer_entry_when_traces_hidden", async () => {
+  // 準備
+  const { createViewerEntry } = await loadEmbed();
+  // 実行
+  const source = createViewerEntry({
+    viewer: "/w/dist/viewer.js",
+    view: "/w/dist/view.js",
+    embeds: {
+      view: false,
+      libraries: {},
+      extensions: [],
+      htmlScripts: [
+        {
+          source: "window.__mdmarkOpened = true",
+          code: "module.exports.default = () => {};",
+        },
+      ],
+    },
+    hideTraces: true,
+  });
+  // 検証
+  expect(source).toContain('"@@html-script-key-0@@"');
+  expect(source).not.toContain("window.__mdmarkOpened");
+});
+
 /** startViewer を export する起動の処理と、load の中で ./part.js を動的 import で読み込む拡張を配置する */
 async function writeViewerFixture(
   dir: string,
@@ -409,6 +435,31 @@ test("test_bundle_viewer_when_html_comment_open", async () => {
     /* @vite-ignore */ pathToFileURL(join(dir, "out.mjs")).href
   )) as { value: string };
   expect(evaluated.value).toBe("<!-- <script>");
+});
+
+// 隠すときは名前を置き換え、範囲のスクリプトの表の鍵を元の文字に戻す（正常系）
+test("test_bundle_viewer_when_traces_hidden", async () => {
+  // 準備
+  const { bundleViewer } = await loadEmbed();
+  const dir = await createTempDir();
+  // 実行
+  const script = await bundleViewer({
+    entry: [
+      "globalThis.__mdmarkHtmlScript = 1;",
+      'export const table = new Map([["@@html-script-key-0@@", () => 1]]);',
+    ].join("\n"),
+    baseDir: dir,
+    fetchText: vi.fn(),
+    hideTraces: { keys: ["window.__mdmarkOpened = true"] },
+  });
+  // 検証
+  expect(script).toContain("__zqHtmlScript");
+  expect(script).not.toContain("__mdmarkHtmlScript");
+  await writeFiles(dir, { "out.mjs": script });
+  const evaluated = (await import(
+    /* @vite-ignore */ pathToFileURL(join(dir, "out.mjs")).href
+  )) as { table: Map<string, unknown> };
+  expect([...evaluated.table.keys()]).toEqual(["window.__mdmarkOpened = true"]);
 });
 
 /** 範囲に `html` と、言語 `lang` のコードブロックを配置した文書 */

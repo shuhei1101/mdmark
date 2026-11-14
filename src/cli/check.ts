@@ -458,6 +458,19 @@ function knownMarkNames(options: {
   ]);
 }
 
+/** 記法・外部ライブラリ・拡張の `directive`・設定の `check.ignore` の、描画が参照するマーカーの名前を集める */
+export async function collectMarkNames(
+  loaded: LoadedConfig,
+): Promise<Set<string>> {
+  // 拡張の誤りは書き出しの警告が出すため、ずれは捨てる
+  const { directives } = await loadExtensionDirectives(loaded, loaded.path);
+  return new Set([
+    ...knownMarkNames({ config: loaded.config, directives }),
+    PAGE_MARK,
+    ...(loaded.config.check?.ignore ?? []),
+  ]);
+}
+
 /** 文書ごとに取得したマーカーのうち、知っているマーカーに該当しないものを 1 つにつき 1 件の `unknown_mark` のずれにする */
 export function checkUnknownMarks(
   documents: Array<{ path: string; markdown: string }>,

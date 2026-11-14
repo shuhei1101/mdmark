@@ -526,6 +526,9 @@ files:
   - path: integration/story.ts
     description: 結合テストでストーリーを開いて描画を確認する処理と画面の大きさを受け持つ。結合テストの準備や確認方法を変えるときに参照する。
     tags: [topic:結合テスト, tool:vitest, topic:ストーリー, tool:storybook]
+  - path: integration/traces.ts
+    description: 結合テストで、mdmark を使用していることを隠した書き出しの fixture と、隠した HTML の残りと開いた文書の比べ方を受け持つ。隠す書き出しの結合テストの準備や確認方法を変えるときに参照する。
+    tags: [topic:結合テスト, tool:vitest, topic:cli, tool:html]
   - path: integration/storybook-setup.ts
     description: 結合テストの前に Storybook の開発サーバーと、各ファイルが接続する Chromium を起動する処理を受け持つ。結合テストの準備や確認方法を変えるときに参照する。
     tags: [topic:結合テスト, tool:vitest, topic:ストーリー, tool:storybook]
@@ -775,6 +778,12 @@ files:
     tags: [topic:単体テスト, tool:vitest, topic:バージョン, topic:移行, topic:cli]
     related:
       - to: src/cli/prompt
+        type: tests
+  - path: unit/src/cli/traces.test.ts
+    description: src/cli/traces.ts（「書き出した HTML の mdmark の痕跡を隠す処理」）を確認する単体テスト。traces.ts を変えたときに、合わせて再確認するケースを探すときに参照する。
+    tags: [topic:単体テスト, tool:vitest, topic:cli, tool:html]
+    related:
+      - to: src/cli/traces
         type: tests
   - path: unit/src/cli/upgrade.test.ts
     description: src/cli/upgrade.ts（「mdmark upgrade」）を確認する単体テスト。upgrade.ts を変えたときに、合わせて再確認するケースを探すときに参照する。

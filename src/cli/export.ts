@@ -20,6 +20,7 @@ import {
 import { usedLibraryMarks } from "../render/used.ts";
 import { loadAliases } from "./aliases.ts";
 import { copyMedia } from "./assets.ts";
+import { collectMarkNames } from "./check.ts";
 import { type LoadedConfig, requireConfig } from "./config.ts";
 import { documentTitle, readIndexWithDocuments } from "./documents.ts";
 import {
@@ -41,6 +42,7 @@ import { assembleHtml, type ExportPayload } from "./html.ts";
 import { collectIconNodes } from "./icons.ts";
 import { collectIncludes, includeProblemMessage } from "./includes.ts";
 import { formatCheckIssue } from "./issues.ts";
+import { hideMarkdown, hideNames } from "./traces.ts";
 
 /** 索引に追加する、用語集の文書の `id` の頭 */
 const GLOSSARY_ID_PREFIX = "mdmark-glossary-";
@@ -72,6 +74,8 @@ type EmbedOptions = {
   out: string;
   /** URL を読み込む関数（`bundleViewer` と共有する `cacheFetchText` の関数） */
   fetchText: FetchText;
+  /** 埋め込みの Markdown の mdmark の名前とマーカーでないコメントを隠すか */
+  hideTraces?: boolean | undefined;
 };
 
 /** URL の先頭 */
@@ -116,7 +120,7 @@ async function prepareReferences(
     documents[key] = markdown;
     if (!referenceDocs.some((doc) => normalizePath(doc.path) === key)) {
       referenceDocs.push({
-        id: `${GLOSSARY_ID_PREFIX}${position}`,
+        id: `${options.hideTraces ? hideNames(GLOSSARY_ID_PREFIX) : GLOSSARY_ID_PREFIX}${position}`,
         path: key,
         title: documentTitle({ path, markdown }),
       });
@@ -410,7 +414,7 @@ export async function prepareEmbeds(options: EmbedOptions): Promise<{
   }
 
   const refs = await prepareReferences({ ...options, markdowns: originals });
-  const payload: ExportPayload = {
+  const shown: ExportPayload = {
     kind,
     config: {
       ...(loaded.config.features ? { features: loaded.config.features } : {}),
@@ -465,11 +469,36 @@ export async function prepareEmbeds(options: EmbedOptions): Promise<{
         }
       : {}),
   };
+  // 隠すときは埋め込みの Markdown を隠し、範囲のスクリプトの鍵も隠した Markdown から取り出す
+  const markNames = options.hideTraces
+    ? await collectMarkNames(loaded)
+    : undefined;
+  const hideText = (markdown: string): string =>
+    markNames ? hideMarkdown({ markdown, markNames }) : markdown;
+  const payload: ExportPayload = markNames
+    ? {
+        ...shown,
+        docs: shown.docs.map((doc) => ({
+          ...doc,
+          markdown: hideText(doc.markdown),
+        })),
+        ...(shown.includes
+          ? {
+              includes: Object.fromEntries(
+                Object.entries(shown.includes).map(([key, text]) => [
+                  key,
+                  hideText(text),
+                ]),
+              ),
+            }
+          : {}),
+      }
+    : shown;
   // `html-scripts` がオンの文書の範囲の `ts`・`js` を、開いたときに変換のライブラリを読み込まずに動かせるよう変えておく
   const compiled = await compileHtmlScripts({
     documents: [...originals.entries()].map(([path, markdown]) => ({
       path,
-      markdown,
+      markdown: hideText(markdown),
     })),
     config: loaded.config,
   });
@@ -558,6 +587,8 @@ export async function exportDocument(options: {
   config?: string | undefined;
   /** `dist/` の場所 */
   distDir: string;
+  /** 開発のときに mdmark の名前・HTML のコメント・バージョンを残すか */
+  keepTraces?: boolean | undefined;
 }): Promise<{ out: string; display: string; warnings: string[] }> {
   const { cwd } = options;
   const loaded = await requireConfig(cwd, options.config);
@@ -575,6 +606,7 @@ export async function exportDocument(options: {
     : join(dirname(docFile), `${basename(docFile, extname(docFile))}.html`);
   const display = options.out ?? toPosix(relative(cwd, outFile));
   const fetchText = cacheFetchText();
+  const hide = options.keepTraces !== true;
   const { payload, embeds, themeCss, warnings } = await prepareEmbeds({
     loaded,
     docs: [{ path, file: docFile }],
@@ -582,20 +614,34 @@ export async function exportDocument(options: {
     entry: path,
     out: outFile,
     fetchText,
+    hideTraces: hide,
   });
   const { distCss, viewer, view, map } = await readDistAssets({
     distDir: options.distDir,
     kind: "document",
   });
   const script = await bundleViewer({
-    entry: createViewerEntry({ viewer, view, map, embeds }),
+    entry: createViewerEntry({ viewer, view, map, embeds, hideTraces: hide }),
     baseDir: loaded.dir,
     fetchText,
+    ...(hide
+      ? {
+          hideTraces: {
+            keys: (embeds.htmlScripts ?? []).map(({ source }) => source),
+          },
+        }
+      : {}),
   });
   await writeHtml({
     file: outFile,
     display,
-    html: assembleHtml({ payload, distCss, themeCss, script }),
+    html: assembleHtml({
+      payload,
+      distCss,
+      themeCss,
+      script,
+      hideTraces: hide,
+    }),
   });
   return { out: outFile, display, warnings };
 }
@@ -611,6 +657,8 @@ export async function runExport(
     config?: string | undefined;
     /** `dist/` の場所 */
     distDir: string;
+    /** 開発のときに mdmark の名前・HTML のコメント・バージョンを残すか */
+    keepTraces?: boolean | undefined;
   },
   io: CliIo,
 ): Promise<0> {

@@ -74,6 +74,8 @@ items:
   summary: ライブラリ本体 / CLI / main.ts
 - page: MOD-472-127.ts.yaml
   summary: ライブラリ本体 / CLI / markdown-check.ts
+- page: MOD-472-350.ts.yaml
+  summary: ライブラリ本体 / CLI / traces.ts
 - page: MOD-472-146.ts.yaml
   summary: ライブラリ本体 / バージョンを上げる / migrations.ts
 - page: MOD-472-151.ts.yaml

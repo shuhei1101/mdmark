@@ -144,6 +144,12 @@ files:
     related:
       - to: docs/module/MOD-472-151.ts
         type: implements
+  - path: cli/traces.ts
+    description: モジュール構成『ライブラリ本体 / CLI』のうち「書き出した HTML の mdmark の痕跡を隠す処理」を受け持つ。書き出しで隠す範囲を変えるときに参照する。
+    tags: [topic:cli, tool:html]
+    related:
+      - to: docs/module/MOD-472-350.ts
+        type: implements
   - path: cli/upgrade.ts
     description: モジュール構成『ライブラリ本体 / バージョンを上げる』のうち「mdmark upgrade」を受け持つ。mdmark upgrade の移行の流れを変えるときに参照する。
     tags: [topic:バージョン, topic:移行, topic:cli]

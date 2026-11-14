@@ -71,6 +71,7 @@ dev-docs が無い、または配信元 `mdmark` が登録されていないと�
 | `file` | 必須 | 書き出す Markdown のパス |
 | `out` | 任意 | 書き出す HTML のパス。省くと、文書と同じフォルダの拡張子を `.html` にしたパス |
 | `config` | 任意 | 使用する設定ファイルのパス |
+| `keep_traces` | 任意 | `true` のとき、`mdmark export --keep-traces` と同じく mdmark の名前を残して書き出す。省くと隠して書き出す |
 
 ### レスポンス
 
@@ -105,6 +106,7 @@ dev-docs が無い、または配信元 `mdmark` が登録されていないと�
 | フィールド | 必須 / 任意 | 説明 |
 | --- | --- | --- |
 | `config` | 任意 | 使用する設定ファイルのパス |
+| `keep_traces` | 任意 | `true` のとき、`mdmark build --keep-traces` と同じく mdmark の名前を残してまとめる。省くと隠してまとめる |
 
 ### レスポンス
 
