@@ -50,35 +50,45 @@ docs:
   - page: docs/guide/書き出す-文書を書き出す.md
     new: false
     change: 既定で mdmark を使用していることを隠して書き出すことと、開発のときに隠さない書き出しを指定する手順を追加する
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-14T06:21:17.686710+00:00'
   - page: docs/guide/書き出す-文書を1枚にまとめる.md
     new: false
     change: まとめた HTML も既定で隠すことと、隠さないまとめを指定する手順を追加する
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-14T06:21:17.686710+00:00'
   - page: docs/guide/コアコンセプト-1枚にまとめる仕組み.md
     new: false
     change: 1 枚に埋める流れに、名前の置き換えと、コメント・バージョン・mdmark 自身のライセンスの表記の削除を追加する
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-14T06:21:17.686710+00:00'
   - page: docs/guide/CLI.md
     new: false
     change: '`export`・`build` に隠さない書き出しを指定する引数を追加する'
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-14T06:21:17.686710+00:00'
   - page: docs/guide/MCP.md
     new: false
     change: '`export_html`・`build_site` に隠さない書き出しを指定する引数を追加する'
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-14T06:21:17.686710+00:00'
   - page: docs/guide/カスタマイズ-テーマを上書きする.md
     new: false
     change: 書き出しで名前を置き換えても、利用側の theme.css の上書きが効く範囲を追記する
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-14T06:21:17.686710+00:00'
   - page: docs/guide/カスタマイズ-拡張を登録する.md
     new: false
     change: 書き出しで名前を置き換えても、拡張が参照する名前が効く範囲を追記する
-    status: todo
-  - page: docs/guide/用語集.md
-    new: false
-    change: 書き出しで名前を置き換えることを表す用語を追加する（設計で用語が決まった場合）
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-14T06:21:17.686710+00:00'
 scope_out:
   - item: 元の Markdown を書き出した HTML に埋め込まず、書き出すときに描画した HTML から起動する（D-453 No 5）
     reason: 起動の経路の変更で、受付判断で別の Issue に分けた
