@@ -13,12 +13,15 @@ VS Code で Markdown を編集しながら、mdmark で描いた外観を確認�
 
 ### 拡張機能を入れる
 
+#### Marketplace から入れる
+
+VS Code の拡張機能の画面で `ShuheiNishikawa.mdmark-vscode` を検索し、表示名 `mdmark for VS Code` の拡張機能を入れる。
+拡張機能のタグ `vscode-v{バージョン}` を打ったバージョンが Visual Studio Marketplace に公開され、入れた拡張機能は VS Code の拡張機能の更新で新しいバージョンになる。
+
 #### .vsix を入れる
 
 1. GitHub の Release（タグ `vscode-v{バージョン}`）から、`mdmark-{バージョン}.vsix` を落とす
 2. VS Code のコマンドパレットで `Extensions: Install from VSIX...` を選び、落とした .vsix を指す
-
-Visual Studio Marketplace と Open VSX に登録したバージョンは、拡張機能の画面で `ShuheiNishikawa.mdmark-vscode` を検索し、表示名 `mdmark for VS Code` の拡張機能を入れられる。
 
 拡張機能のタグ `vscode-v{バージョン}` は、スプリントの区切りに develop の commit へ打つ。mdmark 本体のタグ `v{バージョン}` とは別で、拡張機能のバージョンと、プレビューが読み込む mdmark のバージョンは一致しない。
 
