@@ -168,8 +168,8 @@ functions:
     title: まとめたスクリプトの痕跡を隠す
     container: src/cli/traces.ts
     usecase: 共通
-    summary: 'esbuild の `Bundled license information` から mdmark 自身の行を削除し、`hideNames` を適用してから、範囲のスクリプトの表の鍵の仮の文字列を元の鍵に戻して返却する'
-    description: '`Bundled license information` の中の、パスが `node_modules/` の下にない入口（mdmark 自身のファイル）とその注釈を削除する。仮の文字列（`HTML_SCRIPT_KEY_PREFIX` に番号と `@@` を付けたもの）は、囲むクオートごと `JSON.stringify(keys[番号])` に置き換える'
+    summary: '`hideNames` を適用してから、範囲のスクリプトの表の鍵の仮の文字列を元の鍵に戻して返却する'
+    description: 'まとめたスクリプトの `/*! … */` のライセンスの注釈（`dist/viewer.js`・`dist/view.js` が持つ第三者の `Bundled license information` と、利用者の拡張の注釈）は削除しない。仮の文字列（`HTML_SCRIPT_KEY_PREFIX` に番号と `@@` を付けたもの）は、囲むクオートごと `JSON.stringify(keys[番号])` に置き換える'
     kind: 関数
     scope: internal
     args:
@@ -189,10 +189,10 @@ functions:
         expected: '`window.__zqHtmlScript=new Map([["window.__mdmarkOpened = true",f]])`'
       - name: test_hide_script_when_license
         case: 正常
-        summary: 第三者のライセンスの表記を残し、mdmark 自身の行を削除する
-        condition: '`Bundled license information` に `node_modules/is-plain-object/dist/is-plain-object.js` と `src/viewer/index.ts` の入口を持つ'
+        summary: ライセンスの注釈をそのまま残す
+        condition: '計画書の実測と同じ形の、`/*! greet-ext (c) user - MIT */` と、`is-plain-object/dist/is-plain-object.js:` の入口の下に `(*! … *)` の注釈を持つ `/*! Bundled license information: … */` を含むコード'
         mock: なし
-        expected: '`is-plain-object` の注釈が残り、`src/viewer/index.ts` の入口が無い'
+        expected: 2 つの `/*!` の注釈が元の文字のまま残る
     status: planned
     introduced:
       pr: 554
