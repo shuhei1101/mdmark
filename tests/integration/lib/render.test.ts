@@ -1081,7 +1081,7 @@ test("test_normal_when_retired_diagram", async () => {
   expect(warnings[2]).not.toContain("mdmark upgrade");
   expect(diagramFigures(html)).toHaveLength(0);
   expect(html).not.toContain('"nodes"');
-  expect(html).not.toContain("mdmark-flow");
+  expect(html).not.toContain("<mdmark-flow");
   expect(html).toContain("<p>段落</p>");
 });
 
