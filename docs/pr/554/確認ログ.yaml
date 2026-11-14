@@ -1,0 +1,13 @@
+confirmations:
+  - topic: 書き出した HTML の埋め込みの Markdown のマーカーのコメントの扱い
+    decision: '#532 で埋め込みを無くすまで残す。HTML の本文のコメントと、埋め込みの Markdown のマーカーでない HTML のコメントは削除し、開いた後の文書にコメントを残さない（推奨案 A）'
+    decided_by: thumbs_up
+    approver: shuhei1101
+    commit:
+    thread: https://github.com/shuhei1101/mdmark/pull/554#discussion_r4570562398
+  - topic: 隠した書き出しで mdmark が残る範囲
+    decision: 利用者が記載した値（本文の地の文・タイトル・索引・パス）の mdmark は残し、本文のコードの例の mdmark の名前は別名で表示する（推奨案 A）
+    decided_by: thumbs_up
+    approver: shuhei1101
+    commit:
+    thread: https://github.com/shuhei1101/mdmark/pull/554#discussion_r4570563116
