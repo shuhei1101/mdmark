@@ -187,7 +187,7 @@ scenarios:
       - 同じフォルダで `mdmark check` を実行したときと同じずれが返る
       - 設定・索引・文書が変わっていない
     test: test_normal_when_plain_md_has_marks
-  - name: 正常シナリオ（隠さない書き出しを指定する）
+  - name: 正常シナリオ（隠す既定と隠さない指定）
     setup:
       - name: ずれの無い作業のフォルダ
         description: 正常シナリオと同じ
@@ -201,6 +201,9 @@ scenarios:
         C->>S: export_html（文書のパス）
         S->>F: mdmark の名前を別名へ置き換えた HTML を書き込む
         S-->>C: 書き出したパス
+        C->>S: build_site
+        S->>F: mdmark の名前を別名へ置き換えた 1 枚の HTML を書き込む
+        S-->>C: 書き出したパス・入れた文書の数・警告
         C->>S: export_html（文書のパス・隠さない書き出しを指定する）
         S->>F: 名前を置き換えない HTML を書き込む
         S-->>C: 書き出したパス
@@ -209,8 +212,9 @@ scenarios:
         S-->>C: 書き出したパス・入れた文書の数・警告
     expected:
       - 引数を指定しない `export_html` が書き出した HTML が、同じ文書で `mdmark export` を実行して書き出した HTML と同じで、class `mdmark` と `--mdmark-version` を持たない
+      - 引数を指定しない `build_site` が書き出した HTML が、同じフォルダで `mdmark build` を実行して書き出した HTML と同じで、class `mdmark` と `--mdmark-version` を持たない
       - 隠さない書き出しを指定した `export_html`・`build_site` が書き出した HTML が、同じ指定で `mdmark export`・`mdmark build` を実行して書き出した HTML と同じで、class `mdmark` と `--mdmark-version` を持つ
-    test: test_normal_when_traces_kept
+    test: test_normal_when_traces_hidden_by_default_and_kept_on_request
     refs:
       - SC-472-56#scenarios[正常シナリオ（隠さない書き出しを指定する）]
       - SC-472-76#scenarios[正常シナリオ（隠さない書き出しを指定する）]

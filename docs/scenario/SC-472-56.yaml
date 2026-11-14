@@ -421,7 +421,7 @@ scenarios:
   - name: 正常シナリオ（mdmark を使用していることを隠す）
     setup:
       - name: mdmark の名前を持つ文書
-        description: タイトルとファイル名に `mdmark` を含む文書（`mdmark-intro.md`）1 つ。本文に、地の文の `mdmark`・`<mdmark-chart>` の要素・`<!-- html -->` の範囲の `css` で使う `var(--mdmark-*)`・class `mdmark-align-center` の段落・`<mdmark-chart>` を記載したコードの例・マーカーでない HTML のコメント・既定のテーマの mermaid の図・表のマーカー・タブ・索引の用語 `mdmark` を記載する
+        description: 'タイトルとファイル名に `mdmark` を含む文書（`mdmark-intro.md`）1 つ。本文に、地の文の `mdmark`・`<mdmark-chart>` の要素・`<!-- html -->` の範囲の `css` で使う `var(--mdmark-*)`・class `mdmark-align-center` の段落・`<mdmark-chart>` を記載したコードの例・マーカーと同じ形でマーカーの名前ではないコメント `<!-- todo -->`・既定のテーマの mermaid の図・Lucide のインラインのアイコン・表のマーカー（`<!-- table: data -->` と閉じの `<!-- /table -->`）・タブ・索引の用語 `mdmark` を記載する'
       - name: 利用側の CSS と拡張
         description: '`--mdmark-*` の上書きと `.mdmark` のセレクタを持つ `theme.css` と、`registerExtension` で印を足す拡張のモジュールを指す設定'
       - name: Mock
@@ -442,6 +442,9 @@ scenarios:
       - 終了コードが 0 で、指定した出力に HTML が 1 つある
       - HTML の文字列と、埋め込みの JSON を復号した中身に、`mdmark`（大文字・小文字を区別しない）が、第三者のライブラリのライセンスの表記と、利用者が記載した値（本文の地の文・文書のタイトル・索引・参照の表・エイリアス・文書のパス・`includes` のキー）を除いて 0 件
       - HTML の文字列と、埋め込みの JSON を復号した中身に、`<!--` が埋め込みの Markdown のマーカーのコメントを除いて 0 件
+      - '埋め込みの Markdown から `<!-- todo -->` が削除され、`<!-- html -->`・`<!-- table: data -->`・`<!-- /table -->` のマーカーは残って範囲と表が描かれる'
+      - HTML の文字列に、配布物のバージョンの文字列（`package.json` の `version`）が 0 件
+      - Lucide と mermaid のライセンスの表記が残り、HTML のコメントの中にない
       - 開いた文書の DOM にコメントのノードが 0 件で、コンソールのエラーが 0 件
       - 同じ文書を隠さない書き出しで書き出した HTML と比べ、要素・別名を戻した class・計算後のスタイルが、本文のコードの例の中を除いて同じ
       - '`<mdmark-chart>` のグラフ・範囲の `css` の色・`mdmark-align-center` の配置・mermaid の図・`theme.css` の上書き・拡張の印が、隠さない書き出しと同じに描かれる'
