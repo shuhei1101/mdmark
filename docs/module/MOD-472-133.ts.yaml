@@ -389,9 +389,9 @@ functions:
       - name: test_render_map_er_when_annotations
         case: 正常
         summary: 説明を持たず注記だけを持つ列に、ボタンと注記の区分を出す
-        condition: 部品の Default の「注文」で、説明を持たない列 `注文ID` に注記 1 を指定し、`ownerPrefix` を `mdmark-note-owner-1-`
+        condition: 部品の Default の「注文」で、説明を持たない列 `注文日` に注記 1 を指定し、`ownerPrefix` を `mdmark-note-owner-1-`
         mock: なし
-        expected: '`注文ID` の行に `id="mdmark-note-owner-1-注文.注文ID"` と `aria-label="注文IDの注記"` の説明のボタンがあり、`tips` のそのボタンのツールチップに見出し `注記 1` の区分がある'
+        expected: '`注文日` の行に `id="mdmark-note-owner-1-注文.注文日"` と `aria-label="注文日の注記"` の説明のボタンがあり、`tips` のそのボタンのツールチップに見出し `注記 1` の区分がある'
   - name: renderMapState
     title: mapの状態遷移図の同じ状態への遷移のHTML
     kind: 関数

@@ -105,3 +105,31 @@ test("test_build_map_ranges_when_terms", () => {
   expect(terms).toEqual({ 補足: "map の範囲の上書きと説明" });
   expect(off).not.toContain("data-map-terms");
 });
+
+// 補足が参照する注記の番号を範囲に入れる（正常系）
+test("test_build_map_ranges_when_annotations", () => {
+  // 準備
+  const markdown = [
+    "画像を埋める※[img]。",
+    "",
+    mapRange({
+      mermaid: FLOW,
+      data: '{"version": 1, "notes": {"mount": {"annotations": ["cond", "img", "missing"]}}}',
+    }),
+    "※[cond]: 条件の補足",
+    "",
+    "※[img]: 画像の補足",
+    "",
+  ].join("\n");
+  // 実行
+  const on = renderDoc(markdown);
+  const off = renderDoc(markdown, { annotations: false });
+  // 検証
+  const attribute = /data-map-annotations="([^"]*)"/.exec(on.html)?.[1] ?? "";
+  expect(JSON.parse(attribute.replaceAll("&quot;", '"'))).toEqual({
+    cond: 2,
+    img: 1,
+  });
+  expect(off.html).toContain('class="mdmark-map"');
+  expect(off.html).not.toContain("data-map-annotations");
+});

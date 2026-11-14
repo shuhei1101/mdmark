@@ -1,6 +1,8 @@
 id: MOD-562-1
 visibility: internal
 title: ライブラリ本体 / 記法 / annotations.ts
+test_files:
+  - tests/unit/src/render/syntax/annotations.test.ts
 data_models:
   - name: AnnotationState
     title: 注記の状態

@@ -1,6 +1,8 @@
 id: MOD-562-2
 visibility: internal
 title: ライブラリ本体 / map / 描画と操作 / annotations.ts
+test_files:
+  - tests/unit/src/map/annotations.browser.test.ts
 functions:
   - name: readMapAnnotations
     title: 図の要素ごとの注記を読み込む
