@@ -41,3 +41,8 @@ confirmations:
     approver: shuhei1101
     commit:
     thread: https://github.com/shuhei1101/mdmark/pull/534#discussion_r4565782040
+  - topic: 埋め込んだ HTML の <mdmark-flow>・<mdmark-sequence> の記載の警告の文言
+    decision: 「<{要素}> の要素は廃止しました。埋め込んだ HTML の外に <!-- map --> の範囲で記載し直してください。この図は描いていません。」のままにする（推奨案 A）
+    decided_by: thumbs_up
+    approver: shuhei1101
+    thread: https://github.com/shuhei1101/mdmark/pull/534#discussion_r4570251694
