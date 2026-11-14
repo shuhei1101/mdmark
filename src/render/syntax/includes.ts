@@ -1,6 +1,7 @@
 import type { StateCore, Token } from "markdown-it";
 import { escapeHtml } from "../../parts/escape.ts";
 import { splitFrontmatter } from "../frontmatter.ts";
+import type { MarkOptions } from "../mark-options.ts";
 import { takeMarks } from "../marks.ts";
 import type { RenderEnv } from "../parser.ts";
 import { slugBase } from "./headings.ts";
@@ -177,6 +178,89 @@ const placeAt = (tokens: Token[], marker: Token): Token[] => {
   return tokens;
 };
 
+/** 取り込んだ中身のトークンか、取り込めない警告の本文 */
+type Included = { tokens: Token[] } | { message: string };
+
+/** 取り込む前に分かる誤り（`heading` と `lines` の同時の記載・Markdown への `lines`・循環）の警告の本文。誤りが無ければ `undefined` */
+const specProblem = (
+  spec: MarkOptions,
+  key: string,
+  chain: string[],
+): string | undefined => {
+  if (spec.lines !== undefined && spec.heading !== undefined) {
+    return "の `heading` と `lines` は同時に記載できません。どちらか 1 つにしてください。この場所では取り込んでいません。";
+  }
+  if (spec.lines !== undefined && isMarkdownPath(key)) {
+    return "の `lines` は Markdown 以外のファイルにだけ記載できます。Markdown のファイルは `heading` で見出しを指してください。この場所では取り込んでいません。";
+  }
+  if (chain.includes(key)) {
+    return problemMessage({ kind: "circular", key, chain: [...chain, key] });
+  }
+  return undefined;
+};
+
+/** Markdown のファイルを解析し、`heading` の見出しの節を選んで、中の include のマーカーも取り込む */
+const includeMarkdown = (
+  state: StateCore,
+  file: { key: string; text: string; target: IncludeTarget },
+  chain: string[],
+): Included => {
+  const { key, text, target } = file;
+  const tokens = tokenize(state, text);
+  const selected =
+    target.kind === "heading"
+      ? selectHeadingSection(tokens, target.id)
+      : tokens;
+  if (selected === null) {
+    return {
+      message: problemMessage({
+        kind: "heading",
+        key,
+        id: target.kind === "heading" ? target.id : "",
+      }),
+    };
+  }
+  return {
+    tokens: expandTokens({
+      state,
+      tokens: selected,
+      fromPath: key,
+      chain: [...chain, key],
+    }),
+  };
+};
+
+/** Markdown 以外のファイルの、`lines` の行の範囲を、拡張子を言語にしたコードブロックにする */
+const includeFile = (
+  state: StateCore,
+  file: { key: string; text: string; target: IncludeTarget },
+): Included => {
+  const { key, text, target } = file;
+  let content = text;
+  if (target.kind === "lines") {
+    const lines = selectLines(text, target.from, target.to);
+    if ("lineCount" in lines) {
+      return {
+        message: problemMessage({
+          kind: "lines",
+          key,
+          lineCount: lines.lineCount,
+          from: target.from,
+          to: target.to,
+        }),
+      };
+    }
+    content = lines.text;
+  }
+  const fence = new state.Token("fence", "code", 0);
+  fence.block = true;
+  fence.markup = "```";
+  fence.info = /\.([^./]+)$/.exec(key)?.[1] ?? "";
+  fence.content = content.endsWith("\n") ? content : `${content}\n`;
+  fence.map = [0, 1];
+  return { tokens: [fence] };
+};
+
 /** 1 つの include のマーカーを、取り込んだ中身か記載の警告のトークンにする */
 const expandMarker = (options: {
   state: StateCore;
@@ -200,75 +284,20 @@ const expandMarker = (options: {
     block.map = marker.map ? [...marker.map] : null;
     return [block];
   };
-  if (spec.lines !== undefined && spec.heading !== undefined) {
-    return warn(
-      "の `heading` と `lines` は同時に記載できません。どちらか 1 つにしてください。この場所では取り込んでいません。",
-      false,
-    );
-  }
-  if (spec.lines !== undefined && isMarkdownPath(key)) {
-    return warn(
-      "の `lines` は Markdown 以外のファイルにだけ記載できます。Markdown のファイルは `heading` で見出しを指してください。この場所では取り込んでいません。",
-      false,
-    );
-  }
-  if (chain.includes(key)) {
-    return warn(
-      problemMessage({ kind: "circular", key, chain: [...chain, key] }),
-      false,
-    );
+  const problem = specProblem(spec, key, chain);
+  if (problem !== undefined) {
+    return warn(problem, false);
   }
   const includes = envOf(state).includes ?? {};
   const text = Object.hasOwn(includes, key) ? includes[key] : undefined;
   if (text === undefined) {
     return warn(problemMessage({ kind: "missing", key }));
   }
-  let inner: Token[];
-  if (isMarkdownPath(key)) {
-    const tokens = tokenize(state, text);
-    const selected =
-      target.kind === "heading"
-        ? selectHeadingSection(tokens, target.id)
-        : tokens;
-    if (selected === null) {
-      return warn(
-        problemMessage({
-          kind: "heading",
-          key,
-          id: target.kind === "heading" ? target.id : "",
-        }),
-      );
-    }
-    inner = expandTokens({
-      state,
-      tokens: selected,
-      fromPath: key,
-      chain: [...chain, key],
-    });
-  } else {
-    let content = text;
-    if (target.kind === "lines") {
-      const lines = selectLines(text, target.from, target.to);
-      if ("lineCount" in lines) {
-        return warn(
-          problemMessage({
-            kind: "lines",
-            key,
-            lineCount: lines.lineCount,
-            from: target.from,
-            to: target.to,
-          }),
-        );
-      }
-      content = lines.text;
-    }
-    const fence = new state.Token("fence", "code", 0);
-    fence.block = true;
-    fence.markup = "```";
-    fence.info = /\.([^./]+)$/.exec(key)?.[1] ?? "";
-    fence.content = content.endsWith("\n") ? content : `${content}\n`;
-    fence.map = [0, 1];
-    inner = [fence];
+  const included = isMarkdownPath(key)
+    ? includeMarkdown(state, { key, text, target }, chain)
+    : includeFile(state, { key, text, target });
+  if ("message" in included) {
+    return warn(included.message);
   }
   return [
     tabBoundaryBlock({
@@ -277,7 +306,7 @@ const expandMarker = (options: {
       boundary: "start",
       source: marker,
     }),
-    ...placeAt(inner, marker),
+    ...placeAt(included.tokens, marker),
     tabBoundaryBlock({
       state,
       html: "</div>",
