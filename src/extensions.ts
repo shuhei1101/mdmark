@@ -51,27 +51,34 @@ export const RESERVED_DIRECTIVES: ReadonlySet<string> = new Set([
 /** 拡張の登録表: `directive` から拡張を参照する。ページに 1 つ */
 const extensions = new Map<string, MdmarkExtension>();
 
-/** 拡張の構造を確認して登録表に追加する。合わない項目があれば `TypeError`、名前が重なれば `Error` を投げて登録しない */
-export function registerExtension(extension: MdmarkExtension): void {
+/** 拡張の `name`・`directive`・`load`・`schema` が型に合わなければ、合わないところの文言 */
+function shapeError(extension: MdmarkExtension): string | undefined {
   if (typeof extension.name !== "string" || extension.name === "") {
-    throw new TypeError("name が空");
+    return "name が空";
   }
   if (
     typeof extension.directive !== "string" ||
     !MARK_NAME_PATTERN.test(extension.directive)
   ) {
-    throw new TypeError(
-      `directive がマーカーの名前の書式に合わない: ${String(extension.directive)}`,
-    );
+    return `directive がマーカーの名前の書式に合わない: ${String(extension.directive)}`;
   }
   if (typeof extension.load !== "function") {
-    throw new TypeError("load が関数でない");
+    return "load が関数でない";
   }
   if (
     extension.schema !== undefined &&
     typeof extension.schema["~standard"]?.validate !== "function"
   ) {
-    throw new TypeError("schema が ~standard.validate を持たない");
+    return "schema が ~standard.validate を持たない";
+  }
+  return undefined;
+}
+
+/** 拡張の構造を確認して登録表に追加する。合わない項目があれば `TypeError`、名前が重なれば `Error` を投げて登録しない */
+export function registerExtension(extension: MdmarkExtension): void {
+  const error = shapeError(extension);
+  if (error !== undefined) {
+    throw new TypeError(error);
   }
   if (
     RESERVED_DIRECTIVES.has(extension.directive) ||

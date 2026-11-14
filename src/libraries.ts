@@ -85,41 +85,20 @@ export async function loadLibraries(options: {
       }
       const url = new URL(entry.url, document.baseURI).href;
       try {
-        let loading = modules.get(name);
-        if (!loading) {
-          // 埋めた外部ライブラリがあれば URL を読み込まない。表に無い名前は埋めていないものとして通知ブロックにする
-          const embedded = embeddedLibraries;
-          const loader =
-            embedded && Object.hasOwn(embedded, name)
-              ? embedded[name]
-              : undefined;
-          loading = embedded
-            ? loader
-              ? loader()
-              : Promise.reject(new Error(`埋めていない: ${name}`))
-            : importModule(url);
-          modules.set(name, loading);
-        }
-        const { draw } = await loading;
-        if (typeof draw !== "function") {
-          throw new Error("モジュールが draw を export していない");
-        }
-        await draw(slot, options);
+        const module = await cached(modules, name, () =>
+          loadLibraryModule({ name, url, importModule }),
+        );
+        await callDraw(module, slot, options);
         // 待っている間に再描画された文書のマーカーの場所には手を付けない
-        if (!isCurrent()) {
-          return;
+        if (isCurrent()) {
+          markDrawn(slot);
         }
-        slot.removeAttribute("role");
-        slot.setAttribute(DRAWN_ATTRIBUTE, "");
       } catch (error) {
         if (!isCurrent()) {
           return;
         }
         console.error("外部ライブラリを読み込めない", name, url, error);
-        // `draw` が要素を取り除いていたら、替える先が無い
-        if (root.contains(slot)) {
-          slot.outerHTML = renderNotice({ name, figure: entry.figure });
-        }
+        replaceSlot(root, slot, renderNotice({ name, figure: entry.figure }));
       }
     }),
   );
@@ -140,47 +119,109 @@ export async function loadLibraries(options: {
       value.definition = definitions[Number(definitionIndex)];
     }
     try {
-      if (extension.schema) {
-        const items = await validateMarkArgs(extension.schema, value);
-        if (items.length > 0) {
-          if (isCurrent() && root.contains(slot)) {
-            slot.outerHTML = renderSyntaxWarning({
-              mark: `<!-- ${extension.directive}${argsText && argsText !== "{}" ? `: ${argsText}` : ""} -->`,
-              message: `の引数が、拡張 \`${extension.name}\` の決まりに合いません。修正してから再読み込みしてください。`,
-              items,
-            });
-          }
-          return;
+      const warning = await argsWarning({ extension, value, argsText });
+      if (warning !== undefined) {
+        if (isCurrent()) {
+          replaceSlot(root, slot, warning);
         }
-      }
-      let loading = extensionModules.get(extension.directive);
-      if (!loading) {
-        loading = extension.load();
-        extensionModules.set(extension.directive, loading);
-      }
-      const { draw } = await loading;
-      if (typeof draw !== "function") {
-        throw new Error("モジュールが draw を export していない");
-      }
-      await draw(slot, value);
-      if (!isCurrent()) {
         return;
       }
-      slot.removeAttribute("role");
-      slot.setAttribute(DRAWN_ATTRIBUTE, "");
+      const module = await cached(extensionModules, extension.directive, () =>
+        extension.load(),
+      );
+      await callDraw(module, slot, value);
+      if (isCurrent()) {
+        markDrawn(slot);
+      }
     } catch (error) {
       if (!isCurrent()) {
         return;
       }
       console.error("拡張を読み込めない", extension.name, error);
-      if (root.contains(slot)) {
-        slot.outerHTML = renderNotice({
-          name: extension.name,
-          source: "extension",
-        });
-      }
+      replaceSlot(
+        root,
+        slot,
+        renderNotice({ name: extension.name, source: "extension" }),
+      );
     }
   }
+}
+
+/** 同じ鍵のモジュールは 1 回だけ読み込む */
+function cached<T>(
+  cache: Map<string, Promise<T>>,
+  key: string,
+  load: () => Promise<T>,
+): Promise<T> {
+  let loading = cache.get(key);
+  if (!loading) {
+    loading = load();
+    cache.set(key, loading);
+  }
+  return loading;
+}
+
+/** 外部ライブラリのモジュールを読み込む。埋めた外部ライブラリがあれば URL を読み込まない。表に無い名前は埋めていないものとして失敗にする */
+function loadLibraryModule(options: {
+  name: string;
+  url: string;
+  importModule: ImportModule;
+}): Promise<LibraryModule> {
+  const { name, url, importModule } = options;
+  const embedded = embeddedLibraries;
+  if (!embedded) {
+    return importModule(url);
+  }
+  const loader = Object.hasOwn(embedded, name) ? embedded[name] : undefined;
+  return loader ? loader() : Promise.reject(new Error(`埋めていない: ${name}`));
+}
+
+/** モジュールの `draw` を呼ぶ。`draw` が関数でなければ例外を投げる */
+async function callDraw<T>(
+  module: { draw?: unknown },
+  slot: HTMLElement,
+  value: T,
+): Promise<void> {
+  const { draw } = module;
+  if (typeof draw !== "function") {
+    throw new Error("モジュールが draw を export していない");
+  }
+  await (draw as (slot: HTMLElement, value: T) => unknown)(slot, value);
+}
+
+/** 描き終えたマーカーの場所に印を付ける */
+function markDrawn(slot: HTMLElement): void {
+  slot.removeAttribute("role");
+  slot.setAttribute(DRAWN_ATTRIBUTE, "");
+}
+
+/** マーカーの場所を HTML に替える。`draw` が要素を取り除いていたら、替える先が無い */
+function replaceSlot(root: HTMLElement, slot: HTMLElement, html: string): void {
+  if (root.contains(slot)) {
+    slot.outerHTML = html;
+  }
+}
+
+/** 拡張の決まりに引数が合わなければ、記載の警告の HTML */
+async function argsWarning(options: {
+  extension: MdmarkExtension;
+  value: MdmarkMarkArgs;
+  argsText: string;
+}): Promise<string | undefined> {
+  const { extension, value, argsText } = options;
+  if (!extension.schema) {
+    return undefined;
+  }
+  const items = await validateMarkArgs(extension.schema, value);
+  if (items.length === 0) {
+    return undefined;
+  }
+  const args = argsText && argsText !== "{}" ? `: ${argsText}` : "";
+  return renderSyntaxWarning({
+    mark: `<!-- ${extension.directive}${args} -->`,
+    message: `の引数が、拡張 \`${extension.name}\` の決まりに合いません。修正してから再読み込みしてください。`,
+    items,
+  });
 }
 
 /** マーカーの場所の `data-mdmark-args` の JSON を読み込む。属性が無いか読めなければ `{}` */

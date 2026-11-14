@@ -28,8 +28,8 @@ export function splitKeyPath(path: string): {
   return { names, parents };
 }
 
-/** 表の行のキーの並びから、表に無い親を子の最初の行の前に補った行の並びを返却する */
-export function planTreeRows(keys: string[]): TreeRowPlan[] {
+/** 空でないキーのパスごとの、最初に記載した行の位置 */
+function firstPositions(keys: string[]): Map<string, number> {
   const positions = new Map<string, number>();
   for (const [index, key] of keys.entries()) {
     const path = key.trim();
@@ -37,6 +37,12 @@ export function planTreeRows(keys: string[]): TreeRowPlan[] {
       positions.set(path, index);
     }
   }
+  return positions;
+}
+
+/** 表の行のキーの並びから、表に無い親を子の最初の行の前に補った行の並びを返却する */
+export function planTreeRows(keys: string[]): TreeRowPlan[] {
+  const positions = firstPositions(keys);
   const rows: TreeRowPlan[] = [];
   const placed = new Set<string>();
   const place = (path: string, source: number | undefined): void => {
@@ -106,66 +112,97 @@ function isContent(line: string): boolean {
   return trimmed !== "" && !trimmed.startsWith("#");
 }
 
+/** キーのパスを求める間の、親のキーのインデントとパスの並び */
+type PathStack = Array<{ indent: number; path: string }>;
+
+/** インデントより浅い親のキーのパス（無ければ `""`）。深い・同じインデントの行は並びから取り除く */
+function parentPath(stack: PathStack, indent: number): string {
+  while (stack.length > 0 && (stack.at(-1)?.indent ?? 0) >= indent) {
+    stack.pop();
+  }
+  return stack.at(-1)?.path ?? "";
+}
+
+/** 行の中身が `- ` の配列の要素なら、親のキーのパス（`[]` 付き）の下に配置し、`- ` の後ろの列と中身を返却する */
+function enterItem(
+  stack: PathStack,
+  at: { column: number; rest: string },
+): { column: number; rest: string } {
+  const { column, rest } = at;
+  if (rest !== "-" && !rest.startsWith("- ")) {
+    return at;
+  }
+  const parent = parentPath(stack, column);
+  stack.push({
+    indent: column,
+    path: parent.endsWith("[]") ? parent : `${parent}[]`,
+  });
+  const after = rest.slice(1);
+  return {
+    column: column + 1 + (after.length - after.trimStart().length),
+    rest: after.trimStart(),
+  };
+}
+
+/** 値の無いキーの次の中身の行が、キーを持つ `- ` の要素か（このキーの値はキーを持つ要素の配列） */
+function opensKeyedItems(next: string | undefined, column: number): boolean {
+  const nextRest = next?.trimStart() ?? "";
+  return (
+    next !== undefined &&
+    indentOf(next) >= column &&
+    nextRest.startsWith("- ") &&
+    YAML_KEY.test(nextRest.slice(2).trimStart())
+  );
+}
+
+/** キーの行のパスと、値が複数行の文字列を始めるか。キーを持たない行は `undefined` */
+function keyLine(options: {
+  stack: PathStack;
+  at: { column: number; rest: string };
+  /** 後ろの最初の中身の行 */
+  next: () => string | undefined;
+}): { path: string; block: boolean } | undefined {
+  const { stack, at, next } = options;
+  const key = YAML_KEY.exec(at.rest);
+  if (key?.[1] === undefined) {
+    return undefined;
+  }
+  const parent = parentPath(stack, at.column);
+  const name = unquote(key[1]);
+  const value = at.rest.slice(key[0].length).trim();
+  const path = parent === "" ? name : `${parent}.${name}`;
+  if (value === "" || value.startsWith("#")) {
+    const items = opensKeyedItems(next(), at.column);
+    return { path: items ? `${path}[]` : path, block: false };
+  }
+  return { path, block: BLOCK_SCALAR.test(value) };
+}
+
 /** YAML の行ごとに、インデントと `- ` から求めたキーのパスを返却する（キーを持たない行は `undefined`） */
 export function yamlLinePaths(lines: string[]): Array<string | undefined> {
-  const stack: Array<{ indent: number; path: string }> = [];
+  const stack: PathStack = [];
   const paths: Array<string | undefined> = [];
   let blockIndent: number | undefined;
-  const parentPath = (indent: number): string => {
-    while (stack.length > 0 && (stack.at(-1)?.indent ?? 0) >= indent) {
-      stack.pop();
-    }
-    return stack.at(-1)?.path ?? "";
-  };
   for (const [index, line] of lines.entries()) {
     const indent = indentOf(line);
-    if (blockIndent !== undefined) {
-      if (!isContent(line) || indent > blockIndent) {
-        paths.push(undefined);
-        continue;
-      }
-      blockIndent = undefined;
-    }
-    if (!isContent(line)) {
+    const inBlock =
+      blockIndent !== undefined && (!isContent(line) || indent > blockIndent);
+    if (inBlock || !isContent(line)) {
       paths.push(undefined);
       continue;
     }
-    let column = indent;
-    let rest = line.slice(indent);
-    let path: string | undefined;
-    if (rest === "-" || rest.startsWith("- ")) {
-      // 配列の要素は、親のキーのパス（`[]` 付き）の下に配置する
-      const parent = parentPath(column);
-      const item = parent.endsWith("[]") ? parent : `${parent}[]`;
-      stack.push({ indent: column, path: item });
-      const after = rest.slice(1);
-      column += 1 + (after.length - after.trimStart().length);
-      rest = after.trimStart();
+    blockIndent = undefined;
+    const at = enterItem(stack, { column: indent, rest: line.slice(indent) });
+    const found = keyLine({
+      stack,
+      at,
+      next: () => lines.slice(index + 1).find(isContent),
+    });
+    if (found) {
+      blockIndent = found.block ? at.column : undefined;
+      stack.push({ indent: at.column, path: found.path });
     }
-    const key = YAML_KEY.exec(rest);
-    if (key?.[1] !== undefined) {
-      const parent = parentPath(column);
-      const name = unquote(key[1]);
-      const value = rest.slice(key[0].length).trim();
-      path = parent === "" ? name : `${parent}.${name}`;
-      if (value === "" || value.startsWith("#")) {
-        // 次の中身の行がキーを持つ `- ` の要素のとき、このキーの値はキーを持つ要素の配列
-        const next = lines.slice(index + 1).find(isContent);
-        const nextRest = next?.trimStart() ?? "";
-        if (
-          next !== undefined &&
-          indentOf(next) >= column &&
-          nextRest.startsWith("- ") &&
-          YAML_KEY.test(nextRest.slice(2).trimStart())
-        ) {
-          path = `${path}[]`;
-        }
-      } else if (BLOCK_SCALAR.test(value)) {
-        blockIndent = column;
-      }
-      stack.push({ indent: column, path });
-    }
-    paths.push(path);
+    paths.push(found?.path);
   }
   return paths;
 }

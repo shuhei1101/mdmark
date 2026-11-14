@@ -140,6 +140,164 @@ function inDiff(template: Element): boolean {
   );
 }
 
+/** 範囲のスクリプト 1 つを読み込んだ・動かした結果。失敗したときは範囲の前に出す文言と、コンソールに出す例外 */
+type ScriptOutcome =
+  | { ok: true; value: unknown }
+  | { ok: false; message: string; error: unknown };
+
+/** 構文エラーで読み込めないときの文言 */
+const syntaxErrorMessage = (lang: ScriptLanguage): string =>
+  `範囲の \`${lang}\` をスクリプトとして読み込めません（構文エラー）。内容はブラウザのコンソールに出しています。`;
+
+/** 例外を投げたときの文言 */
+const thrownMessage = (lang: ScriptLanguage): string =>
+  `範囲の \`${lang}\` が例外を投げたため、動きを付けずに描いています。内容はブラウザのコンソールに出しています。`;
+
+/** 関数を呼び、例外を投げたら例外を投げたときの失敗にする */
+function attempt(lang: ScriptLanguage, run: () => unknown): ScriptOutcome {
+  try {
+    return { ok: true, value: run() };
+  } catch (error) {
+    return { ok: false, message: thrownMessage(lang), error };
+  }
+}
+
+/** 書き出した HTML に埋めた範囲のスクリプトから、既定のエクスポートを得る */
+function exportEmbedded(options: {
+  embedded: Map<string, () => unknown>;
+  code: string;
+  lang: ScriptLanguage;
+}): ScriptOutcome {
+  const { embedded, code, lang } = options;
+  const load = embedded.get(code);
+  if (!load) {
+    return {
+      ok: false,
+      message: syntaxErrorMessage(lang),
+      error: new Error("書き出した HTML に範囲のスクリプトがありません"),
+    };
+  }
+  return attempt(lang, load);
+}
+
+/** 範囲のコードを CommonJS に変えて `script` 要素で動かし、既定のエクスポートを得る */
+function exportTranspiled(options: {
+  transpiler: Transpiler;
+  code: string;
+  lang: ScriptLanguage;
+  index: number;
+}): ScriptOutcome {
+  const { transpiler, code, lang, index } = options;
+  let compiled: string;
+  try {
+    compiled = transpiler.transform(code, TRANSPILE_OPTIONS[lang]).code;
+  } catch (error) {
+    return { ok: false, message: syntaxErrorMessage(lang), error };
+  }
+  let scriptError: unknown;
+  const run = evaluateScript({
+    code: compiled,
+    index,
+    onError: (error) => {
+      scriptError = error;
+    },
+  });
+  if (!run) {
+    return { ok: false, message: syntaxErrorMessage(lang), error: scriptError };
+  }
+  const module: { exports: Record<string, unknown> } = { exports: {} };
+  return attempt(lang, () => {
+    run(module, module.exports, rejectRequire);
+    return module.exports.default;
+  });
+}
+
+/** 既定のエクスポートの関数を範囲の根の要素で呼び、返却した値を結果にする */
+function startScript(options: {
+  exported: unknown;
+  scope: HTMLElement;
+  lang: ScriptLanguage;
+}): ScriptOutcome {
+  const { exported, scope, lang } = options;
+  if (typeof exported !== "function") {
+    return {
+      ok: false,
+      message: `範囲の \`${lang}\` の既定のエクスポートが関数ではありません。\`export default\` で、範囲の根の要素を受け取る関数を記載してください。`,
+      error: new TypeError("既定のエクスポートが関数ではありません"),
+    };
+  }
+  return attempt(lang, () =>
+    (exported as (root: HTMLElement) => unknown)(scope),
+  );
+}
+
+/** 変換のライブラリを読み込めないとき、今の文書なら全ての範囲の前に通知ブロックを配置する */
+function noticeTranspilerFailure(
+  templates: HTMLTemplateElement[],
+  isCurrent: () => boolean,
+): void {
+  if (!isCurrent()) {
+    return;
+  }
+  for (const template of templates) {
+    template.parentElement?.insertAdjacentHTML(
+      "beforebegin",
+      TRANSPILER_NOTICE,
+    );
+  }
+}
+
+/** 範囲が返却した `destroy` を、1 回だけまとめて呼ぶ関数。投げた例外はコンソールに出す */
+function destroyOnce(destroys: Array<() => void>): () => void {
+  let called = false;
+  return () => {
+    if (called) {
+      return;
+    }
+    called = true;
+    for (const destroy of destroys) {
+      try {
+        destroy();
+      } catch (error) {
+        console.error("mdmark: 範囲のスクリプトの destroy", error);
+      }
+    }
+  };
+}
+
+/** 範囲のスクリプト 1 つを変換して動かし、範囲が返却した `destroy`（無ければ `undefined`）を返却する。失敗したら範囲の前に警告を配置する */
+function runTemplate(options: {
+  template: HTMLTemplateElement;
+  index: number;
+  embedded: Map<string, () => unknown> | undefined;
+  transpiler: Transpiler | undefined;
+}): (() => void) | undefined {
+  const { template, index, embedded, transpiler } = options;
+  const scope = template.parentElement as HTMLElement;
+  const lang: ScriptLanguage = template.dataset.lang === "js" ? "js" : "ts";
+  const code = template.content.textContent ?? "";
+  // 既定のエクスポートを得て、範囲の根の要素で呼ぶ
+  const loaded = embedded
+    ? exportEmbedded({ embedded, code, lang })
+    : exportTranspiled({
+        transpiler: transpiler as Transpiler,
+        code,
+        lang,
+        index,
+      });
+  const started = loaded.ok
+    ? startScript({ exported: loaded.value, scope, lang })
+    : loaded;
+  if (!started.ok) {
+    warnBefore(scope, started.message);
+    console.error(`mdmark: 範囲のスクリプト ${index}`, started.error);
+    return undefined;
+  }
+  return typeof started.value === "function"
+    ? (started.value as () => void)
+    : undefined;
+}
+
 /** 描いた要素の中の `template.mdmark-html-script` を文書の順に変換して動かし、既定のエクスポートの関数を範囲の根の要素で呼ぶ。範囲が返却した `destroy` をまとめて呼ぶ関数を返却する */
 export async function runHtmlScripts(options: {
   root: HTMLElement;
@@ -172,14 +330,7 @@ export async function runHtmlScripts(options: {
         `mdmark: 範囲のスクリプトを変換するライブラリを読み込めません: ${options.url}`,
         error,
       );
-      if (isCurrent()) {
-        for (const template of templates) {
-          template.parentElement?.insertAdjacentHTML(
-            "beforebegin",
-            TRANSPILER_NOTICE,
-          );
-        }
-      }
+      noticeTranspilerFailure(templates, isCurrent);
       return noop;
     }
   }
@@ -188,105 +339,10 @@ export async function runHtmlScripts(options: {
   }
   const destroys: Array<() => void> = [];
   for (const [index, template] of templates.entries()) {
-    const scope = template.parentElement as HTMLElement;
-    const lang: ScriptLanguage = template.dataset.lang === "js" ? "js" : "ts";
-    const code = template.content.textContent ?? "";
-    const fail = (message: string, error: unknown): void => {
-      warnBefore(scope, message);
-      console.error(`mdmark: 範囲のスクリプト ${index}`, error);
-    };
-    // 既定のエクスポートを得る
-    let exported: unknown;
-    if (embedded) {
-      const load = embedded.get(code);
-      if (!load) {
-        fail(
-          `範囲の \`${lang}\` をスクリプトとして読み込めません（構文エラー）。内容はブラウザのコンソールに出しています。`,
-          new Error("書き出した HTML に範囲のスクリプトがありません"),
-        );
-        continue;
-      }
-      try {
-        exported = load();
-      } catch (error) {
-        fail(
-          `範囲の \`${lang}\` が例外を投げたため、動きを付けずに描いています。内容はブラウザのコンソールに出しています。`,
-          error,
-        );
-        continue;
-      }
-    } else {
-      let compiled: string;
-      try {
-        compiled = (transpiler as Transpiler).transform(
-          code,
-          TRANSPILE_OPTIONS[lang],
-        ).code;
-      } catch (error) {
-        fail(
-          `範囲の \`${lang}\` をスクリプトとして読み込めません（構文エラー）。内容はブラウザのコンソールに出しています。`,
-          error,
-        );
-        continue;
-      }
-      let scriptError: unknown;
-      const run = evaluateScript({
-        code: compiled,
-        index,
-        onError: (error) => {
-          scriptError = error;
-        },
-      });
-      if (!run) {
-        fail(
-          `範囲の \`${lang}\` をスクリプトとして読み込めません（構文エラー）。内容はブラウザのコンソールに出しています。`,
-          scriptError,
-        );
-        continue;
-      }
-      const module: { exports: Record<string, unknown> } = { exports: {} };
-      try {
-        run(module, module.exports, rejectRequire);
-        exported = module.exports.default;
-      } catch (error) {
-        fail(
-          `範囲の \`${lang}\` が例外を投げたため、動きを付けずに描いています。内容はブラウザのコンソールに出しています。`,
-          error,
-        );
-        continue;
-      }
-    }
-    if (typeof exported !== "function") {
-      fail(
-        `範囲の \`${lang}\` の既定のエクスポートが関数ではありません。\`export default\` で、範囲の根の要素を受け取る関数を記載してください。`,
-        new TypeError("既定のエクスポートが関数ではありません"),
-      );
-      continue;
-    }
-    try {
-      const destroy = (exported as (root: HTMLElement) => unknown)(scope);
-      if (typeof destroy === "function") {
-        destroys.push(destroy as () => void);
-      }
-    } catch (error) {
-      fail(
-        `範囲の \`${lang}\` が例外を投げたため、動きを付けずに描いています。内容はブラウザのコンソールに出しています。`,
-        error,
-      );
+    const destroy = runTemplate({ template, index, embedded, transpiler });
+    if (destroy) {
+      destroys.push(destroy);
     }
   }
-  let called = false;
-  return () => {
-    if (called) {
-      return;
-    }
-    called = true;
-    for (const destroy of destroys) {
-      try {
-        destroy();
-      } catch (error) {
-        console.error("mdmark: 範囲のスクリプトの destroy", error);
-      }
-    }
-  };
+  return destroyOnce(destroys);
 }

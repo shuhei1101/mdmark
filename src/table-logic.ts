@@ -64,14 +64,20 @@ export function matchesFilter(
   if (kind === "text") {
     return !value.text || cell.toLowerCase().includes(value.text.toLowerCase());
   }
-  if (!value.from && !value.to) {
+  return matchesDateRange(cell, value);
+}
+
+/** セルの日付が、絞り込みの期間（`from`・`to`。両方空なら全て）に入るか。日付として読めないセルは入らない */
+function matchesDateRange(cell: string, value: FilterValue): boolean {
+  const { from, to } = value;
+  if (!from && !to) {
     return true;
   }
   const date = toIsoDate(cell);
   if (date === undefined) {
     return false;
   }
-  return (!value.from || date >= value.from) && (!value.to || date <= value.to);
+  return (!from || date >= from) && (!to || date <= to);
 }
 
 /** 集計の計算 */
@@ -230,6 +236,25 @@ export function rowIdFromHash(hash: string): string {
   }
 }
 
+/** 見出しの格子のうち、セルが覆うマス（格子の最下段まで）にセルの位置を記録する */
+function fillGrid(
+  grid: Array<Array<{ row: number; cell: number; colSpan: number }>>,
+  at: {
+    row: number;
+    cell: number;
+    column: number;
+    span: { rowSpan: number; colSpan: number };
+  },
+): void {
+  const { row, cell, column, span } = at;
+  const end = Math.min(grid.length, row + span.rowSpan);
+  for (const line of grid.slice(row, end)) {
+    for (let c = column; c < column + span.colSpan; c++) {
+      line[c] = { row, cell, colSpan: span.colSpan };
+    }
+  }
+}
+
 /** 見出しの行ごとのセルの `rowspan`・`colspan` から、列ごとに、その列だけを覆い最下段まで届くセルの位置を返却する。複数の列をまたぐセルしか無い列は `undefined` */
 export function bottomHeadCells(
   rows: Array<Array<{ rowSpan: number; colSpan: number }>>,
@@ -243,14 +268,7 @@ export function bottomHeadCells(
       while (grid[row]?.[column]) {
         column += 1;
       }
-      for (let r = row; r < Math.min(rows.length, row + span.rowSpan); r++) {
-        for (let c = column; c < column + span.colSpan; c++) {
-          const line = grid[r];
-          if (line) {
-            line[c] = { row, cell, colSpan: span.colSpan };
-          }
-        }
-      }
+      fillGrid(grid, { row, cell, column, span });
       column += span.colSpan;
     }
   }
@@ -258,6 +276,19 @@ export function bottomHeadCells(
   return Array.from(bottom, (item) =>
     item && item.colSpan === 1 ? { row: item.row, cell: item.cell } : undefined,
   );
+}
+
+/** 結合する列の範囲に行を加える: 範囲の始まりの行の `rowspan` を 1 つ増やし、加えた行を 0 にする */
+function joinSpan(
+  spans: number[][],
+  at: { start: number; row: number; index: number },
+): void {
+  const startSpans = spans[at.start];
+  const rowSpans = spans[at.row];
+  if (startSpans && rowSpans) {
+    startSpans[at.index] = (startSpans[at.index] ?? 1) + 1;
+    rowSpans[at.index] = 0;
+  }
 }
 
 /** 表示している行の結合する列の値から、列ごとに隣り合う同じ値の範囲の `rowspan` を決める。範囲の始まりは覆う行の数、続く行は 0。左にある結合する列の範囲の切れ目でも切る */
@@ -270,20 +301,17 @@ export function mergeSpans(options: {
   // 列ごとの、今の範囲の始まりの行
   const starts = columns.map(() => 0);
   for (let row = 1; row < values.length; row++) {
-    let broken = false;
+    // 最初に値が変わった列から右は、範囲を切る
+    const found = columns.findIndex(
+      (_, index) =>
+        values[row]?.[index] !== values[starts[index] ?? 0]?.[index],
+    );
+    const breakAt = found === -1 ? columns.length : found;
     for (const [index] of columns.entries()) {
-      const start = starts[index] ?? 0;
-      const same = values[row]?.[index] === values[start]?.[index];
-      if (broken || !same) {
-        broken = true;
+      if (index >= breakAt) {
         starts[index] = row;
-        continue;
-      }
-      const startSpans = spans[start];
-      const rowSpans = spans[row];
-      if (startSpans && rowSpans) {
-        startSpans[index] = (startSpans[index] ?? 1) + 1;
-        rowSpans[index] = 0;
+      } else {
+        joinSpan(spans, { start: starts[index] ?? 0, row, index });
       }
     }
   }

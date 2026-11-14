@@ -32,6 +32,100 @@ function reportFailure(what: string, url: string, error: unknown): void {
   console.error(`${what}を読み込めません:`, url, error);
 }
 
+/** 読み込む言語のモジュール 1 つ */
+type LanguageTarget = {
+  name: string;
+  url: string;
+  read: () => Promise<SyntaxModule>;
+};
+
+/** 色分けのライブラリの本体。埋めたモジュールがあれば URL を読み込まず、埋めていなければ `undefined`。読み込めなければ `console.error` に出して `undefined` */
+async function loadCore(options: {
+  embedded: EmbeddedSyntax | undefined;
+  folder: URL;
+  load: (target: string) => Promise<SyntaxModule>;
+}): Promise<HLJSApi | undefined> {
+  const { embedded, folder, load } = options;
+  if (embedded) {
+    return embedded.core?.default as HLJSApi | undefined;
+  }
+  const coreUrl = new URL("core.min.js", folder).href;
+  try {
+    return (await load(coreUrl)).default as HLJSApi;
+  } catch (error) {
+    reportFailure("色分けのライブラリ", coreUrl, error);
+    return undefined;
+  }
+}
+
+/** 言語のモジュールの読み込み先。埋めたモジュールがあれば埋めた言語だけ、無ければ `languages/{名前}.min.js` */
+function languageTargets(options: {
+  names: string[];
+  embedded: EmbeddedSyntax | undefined;
+  folder: URL;
+  load: (target: string) => Promise<SyntaxModule>;
+}): LanguageTarget[] {
+  const { names, embedded, folder, load } = options;
+  return names.flatMap((name) => {
+    if (embedded) {
+      const module = Object.hasOwn(embedded.languages, name)
+        ? embedded.languages[name]
+        : undefined;
+      return module === undefined
+        ? []
+        : [{ name, url: name, read: () => Promise.resolve(module) }];
+    }
+    const target = new URL(`languages/${name}.min.js`, folder).href;
+    return [{ name, url: target, read: () => load(target) }];
+  });
+}
+
+/** 言語のモジュールを読み込んで本体に登録し、読み込めた言語の名前を返却する。読み込めないモジュールは `console.error` に出す */
+async function registerLanguages(
+  hljs: HLJSApi,
+  targets: LanguageTarget[],
+): Promise<Set<string>> {
+  const settled = await Promise.allSettled(
+    targets.map((target) => target.read()),
+  );
+  const ready = new Set<string>();
+  for (const [index, result] of settled.entries()) {
+    const target = targets[index];
+    if (!target) {
+      continue;
+    }
+    if (result.status === "rejected") {
+      reportFailure("色分けの言語のモジュール", target.url, result.reason);
+      continue;
+    }
+    if (!hljs.getLanguage(target.name)) {
+      hljs.registerLanguage(target.name, result.value.default as LanguageFn);
+    }
+    ready.add(target.name);
+  }
+  return ready;
+}
+
+/** `code` の中身を色分けした HTML に置き換える。行に分けた `code` は行ごとに置き換える */
+function paintCode(hljs: HLJSApi, code: HTMLElement, language: string): void {
+  const texts = [...code.querySelectorAll<HTMLElement>(".mdmark-code-text")];
+  if (texts.length === 0) {
+    code.innerHTML = hljs.highlight(code.textContent ?? "", {
+      language,
+      ignoreIllegals: true,
+    }).value;
+    return;
+  }
+  const lines = highlightLines({
+    hljs,
+    language,
+    lines: texts.map((text) => text.textContent ?? ""),
+  });
+  for (const [index, text] of texts.entries()) {
+    text.innerHTML = lines[index] ?? "";
+  }
+}
+
 /** 要素の中の `code[data-mdmark-syntax]` が 1 つ以上あれば、色分けのライブラリの本体と使用する言語のモジュールを読み込み、読み込めた言語の `code` の中身を色分けした HTML に置き換える。読み込めないモジュールは `console.error` に出して色分けせずに残し、例外は投げない */
 export async function highlightCodeBlocks(options: {
   /** 描いた要素 */
@@ -64,78 +158,25 @@ export async function highlightCodeBlocks(options: {
   const folder = new URL(url, document.baseURI);
   // 埋めたモジュールがあれば URL を読み込まない。埋めていない本体・言語は色分けせずに残す
   const embedded = embeddedSyntax;
-  let hljs: HLJSApi;
-  if (embedded) {
-    if (embedded.core === undefined) {
-      return;
-    }
-    hljs = embedded.core.default as HLJSApi;
-  } else {
-    const coreUrl = new URL("core.min.js", folder).href;
-    try {
-      hljs = (await load(coreUrl)).default as HLJSApi;
-    } catch (error) {
-      reportFailure("色分けのライブラリ", coreUrl, error);
-      return;
-    }
+  const hljs = await loadCore({ embedded, folder, load });
+  if (!hljs) {
+    return;
   }
   const names = [
     ...new Set(codes.map((code) => code.getAttribute(SYNTAX_ATTRIBUTE) ?? "")),
   ];
-  const targets = names.flatMap((name) => {
-    if (embedded) {
-      const module = Object.hasOwn(embedded.languages, name)
-        ? embedded.languages[name]
-        : undefined;
-      return module === undefined
-        ? []
-        : [{ name, url: name, read: () => Promise.resolve(module) }];
-    }
-    const target = new URL(`languages/${name}.min.js`, folder).href;
-    return [{ name, url: target, read: () => load(target) }];
-  });
-  const settled = await Promise.allSettled(
-    targets.map((target) => target.read()),
+  const ready = await registerLanguages(
+    hljs,
+    languageTargets({ names, embedded, folder, load }),
   );
-  const ready = new Set<string>();
-  for (const [index, result] of settled.entries()) {
-    const target = targets[index];
-    if (!target) {
-      continue;
-    }
-    if (result.status === "rejected") {
-      reportFailure("色分けの言語のモジュール", target.url, result.reason);
-      continue;
-    }
-    if (!hljs.getLanguage(target.name)) {
-      hljs.registerLanguage(target.name, result.value.default as LanguageFn);
-    }
-    ready.add(target.name);
-  }
   // 読み込んでいる間に再描画した文書には、色を適用しない
   if (!isCurrent()) {
     return;
   }
   for (const code of codes) {
     const language = code.getAttribute(SYNTAX_ATTRIBUTE) ?? "";
-    if (!ready.has(language)) {
-      continue;
-    }
-    const texts = [...code.querySelectorAll<HTMLElement>(".mdmark-code-text")];
-    if (texts.length > 0) {
-      const lines = highlightLines({
-        hljs,
-        language,
-        lines: texts.map((text) => text.textContent ?? ""),
-      });
-      for (const [index, text] of texts.entries()) {
-        text.innerHTML = lines[index] ?? "";
-      }
-    } else {
-      code.innerHTML = hljs.highlight(code.textContent ?? "", {
-        language,
-        ignoreIllegals: true,
-      }).value;
+    if (ready.has(language)) {
+      paintCode(hljs, code, language);
     }
   }
 }
