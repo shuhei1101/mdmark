@@ -10,7 +10,7 @@ functions:
     container: src/map/state-view.ts
     usecase: Mermaidと補足で図を描く
     role: 処理
-    summary: '`stateDiagram-v2`・`stateDiagram` を読み取って構成図の入力にし、構成図と同じ配置・開閉・中へ入る・強調を付けたうえで、開始・終了・分岐の形状、同じ状態への遷移、注記、遷移の再生を追加する'
+    summary: '`stateDiagram-v2`・`stateDiagram` を読み取って構成図の入力にし、構成図と同じ配置・開閉・中へ入る・強調を付けたうえで、開始・終了・分岐の形状、同じ状態への遷移、ノート、遷移の再生を追加する'
     scope: public
     callees:
       - MOD-531-2#functions[parseStateDiagram]
@@ -40,7 +40,7 @@ functions:
       2. 補足の `walkthroughs` が無ければ、遷移を記載順の手順（`title` は「{遷移元} → {遷移先}：{ラベル}」、`text` は補足の `t{番号}` の説明、強調は遷移元と遷移先）にし、`bandMode` を `playback`、`bandUnit` を `transition` にして、`attachMapFlow` に `extension` と一緒に指定する。`walkthroughs` があれば `bandMode` を `walkthrough` にする
       3. `extension.render` に、形状と同じ状態への遷移を指定した `renderMapStateDiagram` を指定する
       4. `extension.afterRender` で、同じ状態への遷移を `renderMapStateLoops` で描き直し、手順がその遷移のときは太く、ほかの手順と選択では `map-dim` にする
-      5. `extension.selectionOf` で、1 つ選んだ状態の入る遷移・出る遷移と相手を残す。開始・終了・分岐・注記は選ばない
+      5. `extension.selectionOf` で、1 つ選んだ状態の入る遷移・出る遷移と相手を残す。開始・終了・分岐・ノートは選ばない
       6. `extension.collapsedTag` で、閉じた入れ子の状態に「状態 {数} 件」を返却する
     unit_tests:
       - name: test_attach_map_state

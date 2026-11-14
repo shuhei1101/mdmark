@@ -17,8 +17,8 @@ data_models:
         type: string[]
         description: 最初に参照した順の ID。位置 + 1 が番号
       - name: refs
-        type: 'Map<string, Array<{ href: string }>>'
-        description: ID ごとの参照の戻り先（参照の順）。本文の参照は `#mdmark-noteref-{番号}-{i}`、map の補足の参照は持ち主の `#mdmark-note-owner-{図の通し番号}-{要素の ID}`
+        type: 'Map<string, Array<{ href: string; owner?: string }>>'
+        description: ID ごとの参照の戻り先（参照の順）。本文の参照は `#mdmark-noteref-{番号}-{i}`、map の補足の参照は持ち主の `#mdmark-note-owner-{図の通し番号}-{要素の ID}` で、`owner` に持ち主の `id`（`#` を除いた値）を持つ
 functions:
   - name: useAnnotations
     title: 注記のルールを登録する
@@ -163,7 +163,7 @@ functions:
         summary: map の補足の注記の参照を数え、戻り先を持ち主の id にする
         condition: '本文で参照しない `cond` を、map の補足の `notes.judge.annotations` で参照する文書'
         mock: なし
-        expected: '`order` が `["cond"]` で、`refs` の `cond` が `[{ href: "#mdmark-note-owner-1-judge" }]`'
+        expected: '`order` が `["cond"]` で、`refs` の `cond` が `[{ href: "#mdmark-note-owner-1-judge", owner: "mdmark-note-owner-1-judge" }]`'
   - name: buildAnnotationList
     title: 注記の一覧を配置する
     container: src/render/syntax/annotations.ts

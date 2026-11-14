@@ -119,6 +119,7 @@
 | [ライブラリ本体 / map / 点検 / check.ts](./MOD-472-135.ts.yaml) | ライブラリ本体 / map / 点検 / check.ts |
 | [ライブラリ本体 / map / 読み取り / data.ts](./MOD-472-139.ts.yaml) | ライブラリ本体 / map / 読み取り / data.ts |
 | [ライブラリ本体 / map / 描画と操作 / drag.ts](./MOD-472-134.ts.yaml) | ライブラリ本体 / map / 描画と操作 / drag.ts |
+| [ライブラリ本体 / map / 描画と操作 / annotations.ts](./MOD-562-2.ts.yaml) | ライブラリ本体 / map / 描画と操作 / annotations.ts |
 | [ライブラリ本体 / map / 描画と操作 / flow-view.ts](./MOD-472-130.ts.yaml) | ライブラリ本体 / map / 描画と操作 / flow-view.ts |
 | [ライブラリ本体 / map / 読み取り / flowchart.ts](./MOD-472-137.ts.yaml) | ライブラリ本体 / map / 読み取り / flowchart.ts |
 | [ライブラリ本体 / map / 描画と操作 / index.ts](./MOD-472-128.ts.yaml) | ライブラリ本体 / map / 描画と操作 / index.ts |

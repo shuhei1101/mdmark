@@ -19,7 +19,7 @@ data_models:
         description: 補足の `notes` の ID ごとの説明（ノード・グループ・線）
       - name: annotations
         type: 'Record<string, Array<{ number: number; html: string }>> | undefined'
-        description: 補足の `notes.{ID}.annotations` の、要素の ID ごとの注記（番号の順）。持つ要素は、説明を持たなくても持ち主（線の押せる帯・ノードやグループのマーカーのボタン）を持ち、持ち主に `id="mdmark-note-owner-{図の通し番号}-{要素の ID}"` を付けて、`renderDiagramTip` の `annotations` に指定する。ER 図・状態遷移図・シーケンス図の引数も同じ項目を持つ
+        description: 補足の `notes.{ID}.annotations` の、要素の ID ごとの注記（番号の順）。持つ要素は、説明を持たなくても持ち主（線の押せる帯・ノードやグループのマーカーのボタン）を持ち、持ち主に `id="mdmark-note-owner-{図の通し番号}-{要素の ID}"`（図の通し番号は `id` の `map-` の後ろ）を付けて、`renderDiagramTip` の `annotations` に指定する（ノードと線は `renderFlow` の `annotations` に任せる）。ER 図・状態遷移図・シーケンス図の引数も同じ項目を持つ
       - name: links
         type: Record<string, string> | undefined
         description: '`mapLinkProblems` が許したノードのリンク先'
@@ -207,7 +207,7 @@ functions:
     container: src/parts/map.ts
     usecase: Mermaidと補足で図を描く
     role: 処理
-    summary: 部品設計『mapのシーケンス図』の HTML。参加者の箱・ライフライン・メッセージの線とラベルを `mdmark-diagram-seq-*` の class で描き、ブロックの枠とタブの開閉と名前のボタン・区間・注記・活性化の帯・参加者の選択を重ねる
+    summary: 部品設計『mapのシーケンス図』の HTML。参加者の箱・ライフライン・メッセージの線とラベルを `mdmark-diagram-seq-*` の class で描き、ブロックの枠とタブの開閉と名前のボタン・区間・ノート・活性化の帯・参加者の選択を重ねる
     description: 寸法は `MAP_SEQ` で決める
     scope: public
     args:

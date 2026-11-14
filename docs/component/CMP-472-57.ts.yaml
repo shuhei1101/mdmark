@@ -34,7 +34,7 @@ args:
     type: オブジェクトの配列
     required: false
     enabled_when: '`kind` が `annotation` のとき'
-    description: '参照ごとの戻り先（`{ href }`。参照の順）。指定したときは `refCount` の代わりに使用し、要素ごとに戻るリンク（`href` は要素の値。2 つ以上なら a・b… の文字を添える）を配置する。本文の参照は `#mdmark-noteref-{number}-{i}`、map の図の要素の参照は、部品設計『図のツールチップ』の持ち主の `id`（`#mdmark-note-owner-…`）を渡す'
+    description: '参照ごとの戻り先（`{ href, owner }`。参照の順）。指定したときは `refCount` の代わりに使用し、要素ごとに戻るリンク（`href` は要素の値。2 つ以上なら a・b… の文字を添える。`owner` があれば `data-note-owner` にする）を配置する。本文の参照は `#mdmark-noteref-{number}-{i}`、map の図の要素の参照は、部品設計『図のツールチップ』の持ち主の `id`（`#mdmark-note-owner-…`）を渡す'
   - name: open
     type: 真偽値
     required: false
@@ -73,7 +73,7 @@ states:
       - name: kind
         value: annotation
       - name: items
-        value: '[{"number":1,"html":"<p>条件を満たさないときは次の工程へ進む。</p>","refCount":2,"refs":[{"href":"#mdmark-noteref-1-0"},{"href":"#mdmark-note-owner-1-judge"}]},{"number":2,"html":"<p>画像は data URL で埋める。</p>","refCount":1,"refs":[{"href":"#mdmark-noteref-2-0"}]}]'
+        value: '[{"number":1,"html":"<p>条件を満たさないときは次の工程へ進む。</p>","refCount":2,"refs":[{"href":"#mdmark-noteref-1-0"},{"href":"#mdmark-note-owner-1-judge","owner":"mdmark-note-owner-1-judge"}]},{"number":2,"html":"<p>画像は data URL で埋める。</p>","refCount":1,"refs":[{"href":"#mdmark-noteref-2-0"}]}]'
       - name: open
         value: 'true'
 css_properties:

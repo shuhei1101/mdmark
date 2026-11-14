@@ -222,6 +222,8 @@ items:
   summary: ライブラリ本体 / map / 読み取り / data.ts
 - page: MOD-472-134.ts.yaml
   summary: ライブラリ本体 / map / 描画と操作 / drag.ts
+- page: MOD-562-2.ts.yaml
+  summary: ライブラリ本体 / map / 描画と操作 / annotations.ts
 - page: MOD-472-130.ts.yaml
   summary: ライブラリ本体 / map / 描画と操作 / flow-view.ts
 - page: MOD-472-137.ts.yaml
