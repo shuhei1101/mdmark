@@ -1,0 +1,522 @@
+$ npm run test:unit
+# commit 83b47073（テストコードの末尾。実装の前の Red）
+
+> test:unit
+> vitest run --project 'unit*'
+
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-notation-reusable-notes
+
+ ❯ |unit| tests/unit/src/parts/footnote.test.ts (9 tests | 3 failed) 233ms
+   × test_render_footnote_ref_when_annotation 4ms
+   × test_render_footnote_ref_when_after_ref 1ms
+   × test_render_footnotes_when_annotation 6ms
+ ❯ |unit| tests/unit/src/parts/map.test.ts (25 tests | 3 failed) 6237ms
+   × test_render_map_flow_when_annotations 6ms
+   × test_render_map_er_when_annotations 1ms
+   × test_render_map_state_diagram 99ms
+ ❯ |unit| tests/unit/src/parts/diagram.test.ts (22 tests | 1 failed) 4244ms
+   × test_render_diagram_tip_when_annotations 7ms
+ ❯ |unit-browser (chromium)| tests/unit/src/interact/footnotes.browser.test.ts (11 tests | 1 failed) 270ms
+   × test_attach_footnotes_when_annotations 209ms
+ ❯ |unit| tests/unit/src/render/syntax/map.test.ts (6 tests | 1 failed) 57ms
+   × test_build_map_ranges_when_annotations 15ms
+ ❯ |unit| tests/unit/src/render/syntax/annotations.test.ts (13 tests | 10 failed) 81ms
+   × test_use_annotations 43ms
+   × test_use_annotations_when_link_reference 20ms
+   × test_read_annotation_definition 1ms
+   × test_read_annotation_definition_when_duplicate 1ms
+   × test_read_annotation_reference 1ms
+   × test_collect_annotations 1ms
+   × test_collect_annotations_when_mismatch 2ms
+   × test_collect_annotations_when_map 3ms
+   × test_build_annotation_list 2ms
+   × test_take_annotation_definitions 1ms
+3:37:02 PM [vite] Internal server error: Failed to resolve import "../../../../src/map/annotations.ts" from "tests/unit/src/map/annotations.browser.test.ts". Does the file exist?
+  Plugin: vite:import-analysis
+  File: /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-notation-reusable-notes/tests/unit/src/map/annotations.browser.test.ts:5:37
+  2  |  import { createRootFromHtml, removeRoots } from "../../helpers/dom.ts";
+  3  |  /** map の図の注記の処理を読み込む（実装が無い間は各テストが個別に失敗する） */
+  4  |  const loadAnnotations = () => import("../../../../src/map/annotations.ts");
+     |                                       ^
+  5  |  /** 脚注の部品を読み込む（実装が無い間は各テストが個別に失敗する） */
+  6  |  const loadFootnotePart = () => import("../../../../src/parts/footnote.ts");
+      at TransformPluginContext._formatLog (file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-notation-reusable-notes/node_modules/vite/dist/node/chunks/node.js:8861:39)
+      at TransformPluginContext.error (file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-notation-reusable-notes/node_modules/vite/dist/node/chunks/node.js:8858:14)
+      at resolveId (file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-notation-reusable-notes/node_modules/vite/dist/node/chunks/node.js:26533:18)
+      at async file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-notation-reusable-notes/node_modules/vite/dist/node/chunks/node.js:26632:23
+      at async Promise.all (index 2)
+      at async TransformPluginContext.transform (file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-notation-reusable-notes/node_modules/vite/dist/node/chunks/node.js:26605:4)
+      at async EnvironmentPluginContainer.transform (file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-notation-reusable-notes/node_modules/vite/dist/node/chunks/node.js:8632:14)
+      at async loadAndTransform (file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-notation-reusable-notes/node_modules/vite/dist/node/chunks/node.js:20108:26)
+ ❯ |unit-browser (chromium)| tests/unit/src/map/annotations.browser.test.ts (0 test)
+ ❯ |unit-browser (chromium)| tests/unit/vscode/src/webview/features/preview/panel/hooks/use-link-clicks.browser.test.tsx (3 tests | 1 failed) 15307ms
+   × test_use_link_clicks_when_open_asset 15053ms
+ ❯ |unit-browser (chromium)| tests/unit/vscode/src/webview/shared/components/config-band.browser.test.tsx (3 tests | 1 failed) 15271ms
+   × test_config_band_when_clicked 15109ms
+ ❯ |unit-browser (chromium)| tests/unit/vscode/src/webview/app/app.browser.test.tsx (1 test | 1 failed) 15058ms
+   × test_app_when_render_error 15057ms
+
+⎯⎯⎯⎯⎯⎯ Failed Suites 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/map/annotations.browser.test.ts [ tests/unit/src/map/annotations.browser.test.ts ]
+Error: Failed to import test file /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-notation-reusable-notes/tests/unit/src/map/annotations.browser.test.ts
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=b21aa0b9:5843:5
+ ❯ collectTests node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=b21aa0b9:5819:3
+ ❯ startTests node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=b21aa0b9:6503:17
+
+Caused by: TypeError: Failed to fetch dynamically imported module: http://localhost:63316/mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-notation-reusable-notes/tests/unit/src/map/annotations.browser.test.ts?import&browserv=1794638220836
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/23]⎯
+
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 22 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/interact/footnotes.browser.test.ts > test_attach_footnotes_when_annotations
+AssertionError: expected undefined to be true // Object.is equality
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/footnotes.browser.test.ts/test_attach_footnotes_when_annotations.png
+
+[32m- Expected:[39m
+true
+
+[31m+ Received:[39m
+undefined
+
+ ❯ tests/unit/src/interact/footnotes.browser.test.ts:220:26
+    218|   noteLink?.click();
+    219|   // 検証
+    220|   expect(noteList?.open).toBe(true);
+       |                          ^
+    221|   expect(footnoteList?.open).toBe(false);
+    222|   expect(document.activeElement).toBe(noteItem);
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=b21aa0b9:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/23]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/vscode/src/webview/app/app.browser.test.tsx > test_app_when_render_error
+TimeoutError: locator.click: Timeout 14789ms exceeded.
+Call log:
+[2m  - waiting for locator('[data-vitest="true"]').contentFrame().getByRole('button', { name: 'リロード' })[22m
+[2m    - locator resolved to <button type="button" data-slot="button" data-action="reload" class="inline-flex h-9 min-w-9 cursor-pointer touch-manipulation items-center justify-center gap-2 rounded-md border px-4 text-sm font-medium whitespace-nowrap focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring border-transparent bg-primary text-primary-foreground hover:bg-primary-hover">リロード</button>[22m
+[2m  - attempting click action[22m
+[2m    2 × waiting for element to be visible, enabled and stable[22m
+[2m      - element is visible, enabled and stable[22m
+[2m      - scrolling into view if needed[22m
+[2m      - done scrolling[22m
+[2m      - <vite-error-overlay></vite-error-overlay> intercepts pointer events[22m
+[2m    - retrying click action[22m
+[2m    - waiting 20ms[22m
+[2m    2 × waiting for element to be visible, enabled and stable[22m
+[2m      - element is visible, enabled and stable[22m
+[2m      - scrolling into view if needed[22m
+[2m      - done scrolling[22m
+[2m      - <vite-error-overlay></vite-error-overlay> intercepts pointer events[22m
+[2m    - retrying click action[22m
+[2m      - waiting 100ms[22m
+[2m    28 × waiting for element to be visible, enabled and stable[22m
+[2m       - element is visible, enabled and stable[22m
+[2m       - scrolling into view if needed[22m
+[2m       - done scrolling[22m
+[2m       - <vite-error-overlay></vite-error-overlay> intercepts pointer events[22m
+[2m     - retrying click action[22m
+[2m       - waiting 500ms[22m
+
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/app.browser.test.tsx/test_app_when_render_error.png
+
+ ❯ tests/unit/vscode/src/webview/app/app.browser.test.tsx:44:19
+     42|   // 実行
+     43|   render(<App boot={boot} api={api} />);
+     44|   await userEvent.click(screen.getByRole("button", { name: "リロード" }));
+       |                   ^
+     45|   // 検証
+     46|   const status = screen.getByRole("status");
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=b21aa0b9:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/23]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/vscode/src/webview/shared/components/config-band.browser.test.tsx > test_config_band_when_clicked
+TimeoutError: locator.click: Timeout 14892ms exceeded.
+Call log:
+[2m  - waiting for locator('[data-vitest="true"]').contentFrame().getByRole('button', { name: '設定ファイルを開く' })[22m
+[2m    - locator resolved to <button type="button" data-slot="button" data-action="openConfig" class="inline-flex h-9 min-w-9 cursor-pointer touch-manipulation items-center justify-center gap-2 rounded-md border px-4 text-sm font-medium whitespace-nowrap focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring border-warning-border bg-background text-foreground hover:bg-secondary">設定ファイルを開く</button>[22m
+[2m  - attempting click action[22m
+[2m    2 × waiting for element to be visible, enabled and stable[22m
+[2m      - element is visible, enabled and stable[22m
+[2m      - scrolling into view if needed[22m
+[2m      - done scrolling[22m
+[2m      - <vite-error-overlay></vite-error-overlay> intercepts pointer events[22m
+[2m    - retrying click action[22m
+[2m    - waiting 20ms[22m
+[2m    2 × waiting for element to be visible, enabled and stable[22m
+[2m      - element is visible, enabled and stable[22m
+[2m      - scrolling into view if needed[22m
+[2m      - done scrolling[22m
+[2m      - <vite-error-overlay></vite-error-overlay> intercepts pointer events[22m
+[2m    - retrying click action[22m
+[2m      - waiting 100ms[22m
+[2m    28 × waiting for element to be visible, enabled and stable[22m
+[2m       - element is visible, enabled and stable[22m
+[2m       - scrolling into view if needed[22m
+[2m       - done scrolling[22m
+[2m       - <vite-error-overlay></vite-error-overlay> intercepts pointer events[22m
+[2m     - retrying click action[22m
+[2m       - waiting 500ms[22m
+
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/config-band.browser.test.tsx/test_config_band_when_clicked.png
+
+ ❯ tests/unit/vscode/src/webview/shared/components/config-band.browser.test.tsx:52:19
+     50|   );
+     51|   // 実行
+     52|   await userEvent.click(
+       |                   ^
+     53|     screen.getByRole("button", { name: "設定ファイルを開く" }),
+     54|   );
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=b21aa0b9:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/23]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/vscode/src/webview/features/preview/panel/hooks/use-link-clicks.browser.test.tsx > test_use_link_clicks_when_open_asset
+TimeoutError: locator.click: Timeout 14898ms exceeded.
+Call log:
+[2m  - waiting for locator('[data-vitest="true"]').contentFrame().getByRole('link', { name: '既定のアプリで開く' })[22m
+[2m    - locator resolved to <a href="#" data-action="openAsset" data-path="media/a.webm">既定のアプリで開く</a>[22m
+[2m  - attempting click action[22m
+[2m    2 × waiting for element to be visible, enabled and stable[22m
+[2m      - element is visible, enabled and stable[22m
+[2m      - scrolling into view if needed[22m
+[2m      - done scrolling[22m
+[2m      - <vite-error-overlay></vite-error-overlay> intercepts pointer events[22m
+[2m    - retrying click action[22m
+[2m    - waiting 20ms[22m
+[2m    2 × waiting for element to be visible, enabled and stable[22m
+[2m      - element is visible, enabled and stable[22m
+[2m      - scrolling into view if needed[22m
+[2m      - done scrolling[22m
+[2m      - <vite-error-overlay></vite-error-overlay> intercepts pointer events[22m
+[2m    - retrying click action[22m
+[2m      - waiting 100ms[22m
+[2m    28 × waiting for element to be visible, enabled and stable[22m
+[2m       - element is visible, enabled and stable[22m
+[2m       - scrolling into view if needed[22m
+[2m       - done scrolling[22m
+[2m       - <vite-error-overlay></vite-error-overlay> intercepts pointer events[22m
+[2m     - retrying click action[22m
+[2m       - waiting 500ms[22m
+
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/use-link-clicks.browser.test.tsx/test_use_link_clicks_when_open_asset.png
+
+ ❯ tests/unit/vscode/src/webview/features/preview/panel/hooks/use-link-clicks.browser.test.tsx:96:19
+     94|   renderHook(() => useLinkClicks(api));
+     95|   // 実行
+     96|   await userEvent.click(holder.querySelector("a") as HTMLElement);
+       |                   ^
+     97|   // 検証
+     98|   expect(api.posted).toEqual([{ type: "openAsset", path: "media/a.webm…
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=b21aa0b9:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/23]⎯
+
+ FAIL  |unit| tests/unit/src/parts/diagram.test.ts > test_render_diagram_tip_when_annotations
+AssertionError: expected [ Array(1) ] to have a length of 2 but got 1
+
+- Expected
++ Received
+
+- 2
++ 1
+
+ ❯ tests/unit/src/parts/diagram.test.ts:297:20
+    295|     .split('<span class="mdmark-term-tip-section">')
+    296|     .slice(1);
+    297|   expect(sections).toHaveLength(2);
+       |                    ^
+    298|   expect(sections[0]).toContain("入力の値を判定の条件と比べる");
+    299|   const heading = findTag(sections[1] ?? "", "mdmark-term-tip-heading"…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/23]⎯
+
+ FAIL  |unit| tests/unit/src/parts/footnote.test.ts > test_render_footnote_ref_when_annotation
+AssertionError: expected '<sup class="mdmark-fn-ref">' to be '<sup class="mdmark-fn-ref mdmark-note…' // Object.is equality
+
+Expected: "<sup class="mdmark-fn-ref mdmark-note-ref">"
+Received: "<sup class="mdmark-fn-ref">"
+
+ ❯ tests/unit/src/parts/footnote.test.ts:167:33
+    165|   });
+    166|   // 検証
+    167|   expect(findTag(html, "<sup")).toBe(
+       |                                 ^
+    168|     '<sup class="mdmark-fn-ref mdmark-note-ref">',
+    169|   );
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/23]⎯
+
+ FAIL  |unit| tests/unit/src/parts/footnote.test.ts > test_render_footnote_ref_when_after_ref
+AssertionError: expected '<sup class="mdmark-fn-ref">' to be '<sup class="mdmark-fn-ref mdmark-note…' // Object.is equality
+
+Expected: "<sup class="mdmark-fn-ref mdmark-note-ref is-after-ref">"
+Received: "<sup class="mdmark-fn-ref">"
+
+ ❯ tests/unit/src/parts/footnote.test.ts:195:33
+    193|   });
+    194|   // 検証
+    195|   expect(findTag(html, "<sup")).toBe(
+       |                                 ^
+    196|     '<sup class="mdmark-fn-ref mdmark-note-ref is-after-ref">',
+    197|   );
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/23]⎯
+
+ FAIL  |unit| tests/unit/src/parts/footnote.test.ts > test_render_footnotes_when_annotation
+AssertionError: expected '<details class="mdmark-footnotes" ope…' to be '<details class="mdmark-footnotes mdma…' // Object.is equality
+
+Expected: "<details class="mdmark-footnotes mdmark-notes" open>"
+Received: "<details class="mdmark-footnotes" open>"
+
+ ❯ tests/unit/src/parts/footnote.test.ts:230:37
+    228|   });
+    229|   // 検証
+    230|   expect(findTag(html, "<details")).toBe(
+       |                                     ^
+    231|     '<details class="mdmark-footnotes mdmark-notes" open>',
+    232|   );
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/23]⎯
+
+ FAIL  |unit| tests/unit/src/parts/map.test.ts > test_render_map_flow_when_annotations
+Error: 開始タグが無い: id="mdmark-note-owner-1-mount"
+ ❯ findTag tests/unit/helpers/html.ts:10:11
+      8|   const tag = startTags(html).find((candidate) => candidate.includes(n…
+      9|   if (tag === undefined) {
+     10|     throw new Error(`開始タグが無い: ${needle}`);
+       |           ^
+     11|   }
+     12|   return tag;
+ ❯ tests/unit/src/parts/map.test.ts:421:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/23]⎯
+
+ FAIL  |unit| tests/unit/src/parts/map.test.ts > test_render_map_er_when_annotations
+Error: 開始タグが無い: id="mdmark-note-owner-1-注文.注文日"
+ ❯ findTag tests/unit/helpers/html.ts:10:11
+      8|   const tag = startTags(html).find((candidate) => candidate.includes(n…
+      9|   if (tag === undefined) {
+     10|     throw new Error(`開始タグが無い: ${needle}`);
+       |           ^
+     11|   }
+     12|   return tag;
+ ❯ tests/unit/src/parts/map.test.ts:540:18
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/23]⎯
+
+ FAIL  |unit| tests/unit/src/parts/map.test.ts > test_render_map_state_diagram
+AssertionError: expected '<div class="map-group map-movable" da…' to match /data-node="n1"[\s\S]*?mdmark-diagram-…/
+
+- Expected:
+/data-node="n1"[\s\S]*?mdmark-diagram-node-kind[^>]*>[\s\S]*?ノート/
+
++ Received:
+"<div class=\"map-group map-movable\" data-group=\"保留\" style=\"left:24px;top:24px;width:168px;height:307px\"><div class=\"map-group-bar\" tabindex=\"0\" role=\"button\" aria-label=\"保留を動かす\" aria-keyshortcuts=\"Alt+ArrowUp Alt+ArrowDown Alt+ArrowLeft Alt+ArrowRight\" title=\"ドラッグでグループを動かす\"></div><div class=\"map-group-head\"><button class=\"map-disclosure\" type=\"button\" data-group-toggle=\"保留\" aria-expanded=\"true\" aria-label=\"保留を閉じる\" title=\"閉じる\"><svg class=\"mdmark-diagram-icon\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"m6 9 6 6 6-6\"></path></svg></button><button class=\"map-group-title\" type=\"button\" data-group-enter=\"保留\" aria-label=\"保留の中へ入る\" title=\"中へ入る\">保留</button></div></div><div class=\"map-group map-movable\" data-group=\"実行中\" style=\"left:1114px;top:104px;width:352px;height:227px\"><div class=\"map-group-bar\" tabindex=\"0\" role=\"button\" aria-label=\"実行中を動かす\" aria-keyshortcuts=\"Alt+ArrowUp Alt+ArrowDown Alt+ArrowLeft Alt+ArrowRight\" title=\"ドラッグでグループを動かす\"></div><div class=\"map-group-head\"><button class=\"map-disclosure\" type=\"button\" data-group-toggle=\"実行中\" aria-expanded=\"true\" aria-label=\"実行中を閉じる\" title=\"閉じる\"><svg class=\"mdmark-diagram-icon\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"m6 9 6 6 6-6\"></path></svg></button><button class=\"map-group-title\" type=\"button\" data-group-enter=\"実行中\" aria-label=\"実行中の中へ入る\" title=\"中へ入る\">実行中</button></div></div><svg class=\"mdmark-diagram-wires\" width=\"1770\" height=\"435\" aria-hidden=\"true\"><defs><marker id=\"map-head-map-0\" class=\"mdmark-diagram-arrowhead\" viewBox=\"0 0 9 9\" refX=\"8.5\" refY=\"4.5\" markerWidth=\"9\" markerHeight=\"9\" markerUnits=\"userSpaceOnUse\" orient=\"auto-start-reverse\"><path d=\"M0,0 L9,4.5 L0,9 z\" fill=\"var(--mdmark-color-diagram-line)\"></path></marker></defs><path class=\"mdmark-diagram-wire\" data-line=\"map\" data-wire=\"t1\" d=\"M124,395 L244,395 L244,245.5 L256,245.5\" stroke-width=\"1.5\" style=\"stroke:var(--mdmark-color-diagram-line)\" marker-end=\"url(#map-head-map-0)\"></path><defs><marker id=\"map-head-map-1\" class=\"mdmark-diagram-arrowhead\" viewBox=\"0 0 9 9\" refX=\"8.5\" refY=\"4.5\" markerWidth=\"9\" markerHeight=\"9\" markerUnits=\"userSpaceOnUse\" orient=\"auto-start-reverse\"><path d=\"M0,0 L9,4.5 L0,9 z\" fill=\"var(--mdmark-color-diagram-line)\"></path></marker></defs><path class=\"mdmark-diagram-wire\" data-line=\"map\" data-wire=\"t3\" d=\"M376,245.5 L428,245.5 L428,217.5 L440,217.5\" stroke-width=\"1.5\" style=\"stroke:var(--mdmark-color-diagram-line)\" marker-end=\"url(#map-head-map-1)\"></path><defs><marker id=\"map-head-map-2\" class=\"mdmark-diagram-arrowhead\" viewBox=\"0 0 9 9\" refX=\"8.5\" refY=\"4.5\" markerWidth=\"9\" markerHeight=\"9\" markerUnits=\"userSpaceOnUse\" orient=\"auto-start-reverse\"><path d=\"M0,0 L9,4.5 L0,9 z\" fill=\"var(--mdmark-color-diagram-line)\"></path></marker></defs><path class=\"mdmark-diagram-wire\" data-line=\"map\" data-wire=\"t4\" d=\"M560,217.5 L679,217.5 L679,162 L691,162\" stroke-width=\"1.5\" style=\"stroke:var(--mdmark-color-diagram-line)\" marker-end=\"url(#map-head-map-2)\"></path><defs><marker id=\"map-head-map-3\" class=\"mdmark-diagram-arrowhead\" viewBox=\"0 0 9 9\" refX=\"8.5\" refY=\"4.5\" markerWidth=\"9\" markerHeight=\"9\" markerUnits=\"userSpaceOnUse\" orient=\"auto-start-reverse\"><path d=\"M0,0 L9,4.5 L0,9 z\" fill=\"var(--mdmark-color-diagram-line)\"></path></marker></defs><path class=\"mdmark-diagram-wire\" data-line=\"map\" data-wire=\"t5\" d=\"M731,162 L1126,162 L1126,291 L1182,291\" stroke-width=\"1.5\" style=\"stroke:var(--mdmark-color-diagram-line)\" marker-end=\"url(#map-head-map-3)\"></path><defs><marker id=\"map-head-map-4\" class=\"mdmark-diagram-arrowhead\" viewBox=\"0 0 9 9\" refX=\"8.5\" refY=\"4.5\" markerWidth=\"9\" markerHeight=\"9\" markerUnits=\"userSpaceOnUse\" orient=\"auto-start-reverse\"><path d=\"M0,0 L9,4.5 L0,9 z\" fill=\"var(--mdmark-color-diagram-line)\"></path></marker></defs><path class=\"mdmark-diagram-wire\" data-line=\"map\" data-wire=\"t6\" d=\"M711,182 L711,217.5 L862,217.5\" stroke-width=\"1.5\" style=\"stroke:var(--mdmark-color-diagram-line)\" marker-end=\"url(#map-head-map-4)\"></path><defs><marker id=\"map-head-map-5\" class=\"mdmark-diagram-arrowhead\" viewBox=\"0 0 9 9\" refX=\"8.5\" refY=\"4.5\" markerWidth=\"9\" markerHeight=\"9\" markerUnits=\"userSpaceOnUse\" orient=\"auto-start-reverse\"><path d=\"M0,0 L9,4.5 L0,9 z\" fill=\"var(--mdmark-color-diagram-line)\"></path></marker></defs><path class=\"mdmark-diagram-wire\" data-line=\"map\" data-wire=\"t7\" d=\"M1050,217.5 L1126,217.5 L1126,195.5 L1138,195.5\" stroke-width=\"1.5\" style=\"stroke:var(--mdmark-color-diagram-line)\" marker-end=\"url(#map-head-map-5)\"></path><defs><marker id=\"map-head-map-6\" class=\"mdmark-diagram-arrowhead\" viewBox=\"0 0 9 9\" refX=\"8.5\" refY=\"4.5\" markerWidth=\"9\" markerHeight=\"9\" markerUnits=\"userSpaceOnUse\" orient=\"auto-start-reverse\"><path d=\"M0,0 L9,4.5 L0,9 z\" fill=\"var(--mdmark-color-diagram-line)\"></path></marker></defs><path class=\"mdmark-diagram-wire\" data-line=\"map\" data-wire=\"t8\" d=\"M1382,196 L1382,217.5 L1530,217.5\" stroke-width=\"1.5\" style=\"stroke:var(--mdmark-color-diagram-line)\" marker-end=\"url(#map-head-map-6)\"></path><defs><marker id=\"map-head-map-7\" class=\"mdmark-diagram-arrowhead\" viewBox=\"0 0 9 9\" refX=\"8.5\" refY=\"4.5\" markerWidth=\"9\" markerHeight=\"9\" markerUnits=\"userSpaceOnUse\" orient=\"auto-start-reverse\"><path d=\"M0,0 L9,4.5 L0,9 z\" fill=\"var(--mdmark-color-diagram-line)\"></path></marker></defs><path class=\"mdmark-diagram-wire\" data-line=\"map\" data-wire=\"t9\" d=\"M1214,291 L1310,291 L1310,275.5 L1322,275.5\" stroke-width=\"1.5\" style=\"stroke:var(--mdmark-color-diagram-line)\" marker-end=\"url(#map-head-map-7)\"></path><defs><marker id=\"map-head-map-8\" class=\"mdmark-diagram-arrowhead\" viewBox=\"0 0 9 9\" refX=\"8.5\" refY=\"4.5\" markerWidth=\"9\" markerHeight=\"9\" markerUnits=\"userSpaceOnUse\" orient=\"auto-start-reverse\"><path d=\"M0,0 L9,4.5 L0,9 z\" fill=\"var(--mdmark-color-diagram-line)\"></path></marker></defs><path class=\"mdmark-diagram-wire\" data-line=\"map\" data-wire=\"t10\" d=\"M1258,195.5 L1354,195.5 L1354,180 L1366,180\" stroke-width=\"1.5\" style=\"stroke:var(--mdmark-color-diagram-line)\" marker-end=\"url(#map-head-map-8)\"></path><defs><marker id=\"map-head-map-9\" class=\"mdmark-diagram-arrowhead\" viewBox=\"0 0 9 9\" refX=\"8.5\" refY=\"4.5\" markerWidth=\"9\" markerHeight=\"9\" markerUnits=\"userSpaceOnUse\" orient=\"auto-start-reverse\"><path d=\"M0,0 L9,4.5 L0,9 z\" fill=\"var(--mdmark-color-diagram-line)\"></path></marker></defs><path class=\"mdmark-diagram-wire\" data-line=\"map\" data-wire=\"t11\" d=\"M1650,217.5 L1714,217.5\" stroke-width=\"1.5\" style=\"stroke:var(--mdmark-color-diagram-line)\" marker-end=\"url(#map-head-map-9)\"></path><defs><marker id=\"map-head-map-10\" class=\"mdmark-diagram-arrowhead\" viewBox=\"0 0 9 9\" refX=\"8.5\" refY=\"4.5\" markerWidth=\"9\" markerHeight=\"9\" markerUnits=\"userSpaceOnUse\" orient=\"auto-start-reverse\"><path d=\"M0,0 L9,4.5 L0,9 z\" fill=\"var(--mdmark-color-diagram-line)\"></path></marker></defs><path class=\"mdmark-diagram-wire\" data-line=\"map\" data-wire=\"t12\" d=\"M500,186 L500,152 L108,152 L108,195\" stroke-width=\"1.5\" style=\"stroke:var(--mdmark-color-diagram-line)\" marker-end=\"url(#map-head-map-10)\"></path><defs><marker id=\"map-head-map-11\" class=\"mdmark-diagram-arrowhead\" viewBox=\"0 0 9 9\" refX=\"8.5\" refY=\"4.5\" markerWidth=\"9\" markerHeight=\"9\" markerUnits=\"userSpaceOnUse\" orient=\"auto-start-reverse\"><path d=\"M0,0 L9,4.5 L0,9 z\" fill=\"var(--mdmark-color-diagram-line)\"></path></marker></defs><path class=\"mdmark-diagram-wire\" data-line=\"map\" data-wire=\"t13\" d=\"M124,291 L238,291 A6,6 0 0 1 250,291 L432,291 L432,221.5 L440,221.5\" stroke-width=\"1.5\" style=\"stroke:var(--mdmark-color-diagram-line)\" marker-end=\"url(#map-head-map-11)\"></path><defs><marker id=\"map-head-map-12\" class=\"mdmark-diagram-arrowhead\" viewBox=\"0 0 9 9\" refX=\"8.5\" refY=\"4.5\" markerWidth=\"9\" markerHeight=\"9\" markerUnits=\"userSpaceOnUse\" orient=\"auto-start-reverse\"><path d=\"M0,0 L9,4.5 L0,9 z\" fill=\"var(--mdmark-color-diagram-line)\"></path></marker></defs><path class=\"mdmark-diagram-wire\" data-line=\"map\" data-wire=\"n1\" d=\"M560,221.5 L612,221.5 L612,261.5 L624,261.5\" stroke-width=\"1.5\" style=\"stroke:var(--mdmark-color-diagram-line)\" marker-end=\"url(#map-head-map-12)\"></path></svg><div class=\"mdmark-diagram-node map-kinded\" data-kind=\"map\" data-shape=\"rounded\" data-node=\"待機\" tabindex=\"0\" role=\"button\" aria-roledescription=\"ノード\" aria-keyshortcuts=\"Enter Space Alt+ArrowLeft Alt+ArrowUp Alt+ArrowDown Alt+ArrowRight\" aria-label=\"待機\" style=\"left:48px;top:84px;width:120px;height:63px\"><span class=\"mdmark-diagram-node-kind is-empty\"></span><span class=\"mdmark-diagram-node-name\">待機</span></div><div class=\"mdmark-diagram-node map-kinded\" data-kind=\"map\" data-shape=\"start\" data-node=\"start_保留\" role=\"img\" aria-label=\"開始\" style=\"left:92px;top:195px;width:32px;height:32px\"><span class=\"mdmark-diagram-node-kind is-empty\"></span><span class=\"mdmark-diagram-node-name\">開始</span></div><div class=\"mdmark-diagram-node map-kinded\" data-kind=\"map\" data-shape=\"end\" data-node=\"end_保留\" role=\"img\" aria-label=\"終了\" style=\"left:92px;top:275px;width:32px;height:32px\"><span class=\"mdmark-diagram-node-kind is-empty\"></span><span class=\"mdmark-diagram-node-name\">終了</span></div><div class=\"mdmark-diagram-node map-kinded\" data-kind=\"map\" data-shape=\"start\" data-node=\"start_root\" role=\"img\" aria-label=\"開始\" style=\"left:92px;top:379px;width:32px;height:32px\"><span class=\"mdmark-diagram-node-kind is-empty\"></span><span class=\"mdmark-diagram-node-name\">開始</span></div><div class=\"mdmark-diagram-node map-kinded\" data-kind=\"map\" data-shape=\"rounded\" data-node=\"下書き\" tabindex=\"0\" role=\"button\" aria-roledescription=\"ノード\" aria-keyshortcuts=\"Enter Space Alt+ArrowLeft Alt+ArrowUp Alt+ArrowDown Alt+ArrowRight\" aria-label=\"下書き\" style=\"left:256px;top:214px;width:120px;height:63px\"><span class=\"mdmark-diagram-node-kind is-empty\"></span><span class=\"mdmark-diagram-node-name\">下書き</span></div><div class=\"mdmark-diagram-node map-kinded\" data-kind=\"map\" data-shape=\"rounded\" data-node=\"確認待ち\" tabindex=\"0\" role=\"button\" aria-roledescription=\"ノード\" aria-keyshortcuts=\"Enter Space Alt+ArrowLeft Alt+ArrowUp Alt+ArrowDown Alt+ArrowRight\" aria-label=\"確認待ち\" style=\"left:440px;top:186px;width:120px;height:63px\"><span class=\"mdmark-diagram-node-kind is-empty\"></span><span class=\"mdmark-diagram-node-name\">確認待ち</span></div><div class=\"mdmark-diagram-node map-kinded\" data-kind=\"map\" data-shape=\"choice\" data-node=\"判定\" role=\"img\" aria-label=\"分岐\" style=\"left:691px;top:142px;width:40px;height:40px\"><span class=\"mdmark-diagram-node-kind is-empty\"></span><span class=\"mdmark-diagram-node-name\">判定</span></div><div class=\"mdmark-diagram-node map-kinded\" data-kind=\"map\" data-shape=\"rounded\" data-node=\"n1\" tabindex=\"0\" role=\"button\" aria-roledescription=\"ノード\" aria-keyshortcuts=\"Enter Space Alt+ArrowLeft Alt+ArrowUp Alt+ArrowDown Alt+ArrowRight\" aria-label=\"担当者が内容を確認する\" style=\"left:624px;top:230px;width:174px;height:63px\"><span class=\"mdmark-diagram-node-kind\"><span>注記</span></span><span class=\"mdmark-diagram-node-name\">担当者が内容を確認する</span></div><div class=\"mdmark-diagram-node map-kinded\" data-kind=\"map\" data-shape=\"rounded\" data-node=\"s1\" tabindex=\"0\" role=\"button\" aria-roledescription=\"ノード\" aria-keyshortcuts=\"Enter Space Alt+ArrowLeft Alt+ArrowUp Alt+ArrowDown Alt+ArrowRight\" aria-label=\"差し戻しの理由を確認する\" style=\"left:862px;top:186px;width:188px;height:63px\"><span class=\"mdmark-diagram-node-kind is-empty\"></span><span class=\"mdmark-diagram-node-name\">差し戻しの理由を確認する</span></div><div class=\"mdmark-diagram-node map-kinded\" data-kind=\"map\" data-shape=\"rounded\" data-node=\"処理\" tabindex=\"0\" role=\"button\" aria-roledescription=\"ノード\" aria-keyshortcuts=\"Enter Space Alt+ArrowLeft Alt+ArrowUp Alt+ArrowDown Alt+ArrowRight\" aria-label=\"処理\" style=\"left:1138px;top:164px;width:120px;height:63px\"><span class=\"mdmark-diagram-node-kind is-empty\"></span><span class=\"mdmark-diagram-node-name\">処理</span></div><div class=\"mdmark-diagram-node map-kinded\" data-kind=\"map\" data-shape=\"start\" data-node=\"start_実行中\" role=\"img\" aria-label=\"開始\" style=\"left:1182px;top:275px;width:32px;height:32px\"><span class=\"mdmark-diagram-node-kind is-empty\"></span><span class=\"mdmark-diagram-node-name\">開始</span></div><div class=\"mdmark-diagram-node map-kinded\" data-kind=\"map\" data-shape=\"end\" data-node=\"end_実行中\" role=\"img\" aria-label=\"終了\" style=\"left:1366px;top:164px;width:32px;height:32px\"><span class=\"mdmark-diagram-node-kind is-empty\"></span><span class=\"mdmark-diagram-node-name\">終了</span></div><div class=\"mdmark-diagram-node map-kinded\" data-kind=\"map\" data-shape=\"rounded\" data-node=\"準備\" tabindex=\"0\" role=\"button\" aria-roledescription=\"ノード\" aria-keyshortcuts=\"Enter Space Alt+ArrowLeft Alt+ArrowUp Alt+ArrowDown Alt+ArrowRight\" aria-label=\"準備\" style=\"left:1322px;top:244px;width:120px;height:63px\"><span class=\"mdmark-diagram-node-kind is-empty\"></span><span class=\"mdmark-diagram-node-name\">準備</span></div><div class=\"mdmark-diagram-node map-kinded\" data-kind=\"map\" data-shape=\"rounded\" data-node=\"完了\" tabindex=\"0\" role=\"button\" aria-roledescription=\"ノード\" aria-keyshortcuts=\"Enter Space Alt+ArrowLeft Alt+ArrowUp Alt+ArrowDown Alt+ArrowRight\" aria-label=\"完了\" style=\"left:1530px;top:186px;width:120px;height:63px\"><span class=\"mdmark-diagram-node-kind is-empty\"></span><span class=\"mdmark-diagram-node-name\">完了</span></div><div class=\"mdmark-diagram-node map-kinded\" data-kind=\"map\" data-shape=\"end\" data-node=\"end_root\" role=\"img\" aria-label=\"終了\" style=\"left:1714px;top:201.5px;width:32px;height:32px\"><span class=\"mdmark-diagram-node-kind is-empty\"></span><span class=\"mdmark-diagram-node-name\">終了</span></div><span class=\"mdmark-diagram-label\" data-line=\"map\" data-wire=\"t3\" style=\"left:402px;top:245.5px\">提出する</span><span class=\"mdmark-diagram-label\" data-line=\"map\" data-wire=\"t4\" style=\"left:619.5px;top:217.5px\">確認する</span><span class=\"mdmark-diagram-label\" data-line=\"map\" data-wire=\"t5\" style=\"left:928.5px;top:162px\">承認</span><span class=\"mdmark-diagram-label\" data-line=\"map\" data-wire=\"t6\" style=\"left:786.5px;top:217.5px\">差し戻し</span><span class=\"mdmark-diagram-label\" data-line=\"map\" data-wire=\"t7\" style=\"left:1088px;top:217.5px\">再開する</span><span class=\"mdmark-diagram-label\" data-line=\"map\" data-wire=\"t8\" style=\"left:1456px;top:217.5px\">終える</span><span class=\"mdmark-diagram-label\" data-line=\"map\" data-wire=\"t12\" style=\"left:304px;top:152px\">保留する</span><span class=\"mdmark-diagram-label\" data-line=\"map\" data-wire=\"t13\" style=\"left:276px;top:291px\">戻す</span><svg class=\"map-wire-hits\" width=\"1770\" height=\"435\"><path class=\"map-wire-hit\" data-wire=\"t1\" tabindex=\"0\" role=\"button\" aria-label=\"開始から下書きへの線\" d=\"M124 395L244 395L244 245.5L256 245.5\"></path><path class=\"map-wire-hit\" data-wire=\"t3\" tabindex=\"0\" role=\"button\" aria-label=\"下書きから確認待ちへの線「提出する」\" d=\"M376 245.5L428 245.5L428 217.5L440 217.5\"></path><path class=\"map-wire-hit\" data-wire=\"t4\" tabindex=\"0\" role=\"button\" aria-label=\"確認待ちから判定への線「確認する」\" d=\"M560 217.5L679 217.5L679 162L691 162\"></path><path class=\"map-wire-hit\" data-wire=\"t5\" tabindex=\"0\" role=\"button\" aria-label=\"判定から開始への線「承認」\" d=\"M731 162L1126 162L1126 291L1182 291\"></path><path class=\"map-wire-hit\" data-wire=\"t6\" tabindex=\"0\" role=\"button\" aria-label=\"判定から差し戻しの理由を確認するへの線「差し戻し」\" d=\"M711 182L711 217.5L862 217.5\"></path><path class=\"map-wire-hit\" data-wire=\"t7\" tabindex=\"0\" role=\"button\" aria-label=\"差し戻しの理由を確認するから処理への線「再開する」\" d=\"M1050 217.5L1126 217.5L1126 195.5L1138 195.5\"></path><path class=\"map-wire-hit\" data-wire=\"t8\" tabindex=\"0\" role=\"button\" aria-label=\"終了から完了への線「終える」\" d=\"M1382 196L1382 217.5L1530 217.5\"></path><path class=\"map-wire-hit\" data-wire=\"t9\" tabindex=\"0\" role=\"button\" aria-label=\"開始から準備への線\" d=\"M1214 291L1310 291L1310 275.5L1322 275.5\"></path><path class=\"map-wire-hit\" data-wire=\"t10\" tabindex=\"0\" role=\"button\" aria-label=\"処理から終了への線\" d=\"M1258 195.5L1354 195.5L1354 180L1366 180\"></path><path class=\"map-wire-hit\" data-wire=\"t11\" tabindex=\"0\" role=\"button\" aria-label=\"完了から終了への線\" d=\"M1650 217.5L1714 217.5\"></path><path class=\"map-wire-hit\" data-wire=\"t12\" tabindex=\"0\" role=\"button\" aria-label=\"確認待ちから開始への線「保留する」\" d=\"M500 186L500 152L108 152L108 195\"></path><path class=\"map-wire-hit\" data-wire=\"t13\" tabindex=\"0\" role=\"button\" aria-label=\"終了から確認待ちへの線「戻す」\" d=\"M124 291L428 291L428 217.5L440 217.5\"></path><path class=\"map-wire-hit\" data-wire=\"n1\" tabindex=\"0\" role=\"button\" aria-label=\"確認待ちから担当者が内容を確認するへの線\" d=\"M560 217.5L612 217.5L612 261.5L624 261.5\"></path></svg><svg class=\"map-packets\" width=\"1770\" height=\"435\" aria-hidden=\"true\"></svg><svg class=\"map-state-loops\" width=\"1770\" height=\"435\"><g data-loop=\"t2\"><path class=\"map-state-loop\" data-wire=\"t2\" d=\"M376 228L396 228L396 194L316 194L316 214\"></path><path class=\"map-wire-hit\" data-wire=\"t2\" tabindex=\"0\" role=\"button\" aria-label=\"保存する（同じ状態への遷移）\" d=\"M376 228L396 228L396 194L316 194L316 214\"></path><text class=\"map-state-loop-label\" x=\"324\" y=\"188\">保存する</text></g></svg>"
+
+ ❯ tests/unit/src/parts/map.test.ts:729:21
+    727|   expect(start).not.toContain("tabindex");
+    728|   expect(part.html).toMatch(/<div[^>]*data-shape="choice"[^>]*>/);
+    729|   expect(part.html).toMatch(
+       |                     ^
+    730|     /data-node="n1"[\s\S]*?mdmark-diagram-node-kind[^>]*>[\s\S]*?ノート/,
+    731|   );
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[12/23]⎯
+
+ FAIL  |unit| tests/unit/src/render/syntax/annotations.test.ts > test_use_annotations
+Error: 開始タグが無い: id="mdmark-noteref-1-0"
+ ❯ findTag tests/unit/helpers/html.ts:10:11
+      8|   const tag = startTags(html).find((candidate) => candidate.includes(n…
+      9|   if (tag === undefined) {
+     10|     throw new Error(`開始タグが無い: ${needle}`);
+       |           ^
+     11|   }
+     12|   return tag;
+ ❯ tests/unit/src/render/syntax/annotations.test.ts:80:12
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[13/23]⎯
+
+ FAIL  |unit| tests/unit/src/render/syntax/annotations.test.ts > test_use_annotations_when_link_reference
+AssertionError: expected [] to have a length of 1 but got +0
+
+- Expected
++ Received
+
+- 1
++ 0
+
+ ❯ tests/unit/src/render/syntax/annotations.test.ts:128:45
+    126|   const { html, warnings } = renderDoc(markdown);
+    127|   // 検証
+    128|   expect(findTags(html, "mdmark-note-ref")).toHaveLength(1);
+       |                                             ^
+    129|   expect(html).toContain('id="mdmark-noteref-1-0"');
+    130|   expect(
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[14/23]⎯
+
+ FAIL  |unit| tests/unit/src/render/syntax/annotations.test.ts > test_read_annotation_definition
+Error: 注記の状態が無い
+ ❯ annotationsOf tests/unit/src/render/syntax/annotations.test.ts:40:11
+     38|     .mdmarkAnnotations;
+     39|   if (state === undefined) {
+     40|     throw new Error("注記の状態が無い");
+       |           ^
+     41|   }
+     42|   return state;
+ ❯ tests/unit/src/render/syntax/annotations.test.ts:161:22
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[15/23]⎯
+
+ FAIL  |unit| tests/unit/src/render/syntax/annotations.test.ts > test_read_annotation_definition_when_duplicate
+Error: 注記の状態が無い
+ ❯ annotationsOf tests/unit/src/render/syntax/annotations.test.ts:40:11
+     38|     .mdmarkAnnotations;
+     39|   if (state === undefined) {
+     40|     throw new Error("注記の状態が無い");
+       |           ^
+     41|   }
+     42|   return state;
+ ❯ tests/unit/src/render/syntax/annotations.test.ts:176:17
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[16/23]⎯
+
+ FAIL  |unit| tests/unit/src/render/syntax/annotations.test.ts > test_read_annotation_reference
+AssertionError: expected [] to have a length of 1 but got +0
+
+- Expected
++ Received
+
+- 1
++ 0
+
+ ❯ tests/unit/src/render/syntax/annotations.test.ts:195:16
+    193|     (token) => token.type === "mdmark_annotation_ref",
+    194|   );
+    195|   expect(refs).toHaveLength(1);
+       |                ^
+    196|   expect(refs[0]?.meta?.id).toBe("cond");
+    197|   const before = children[children.indexOf(refs[0] as Token) - 1];
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[17/23]⎯
+
+ FAIL  |unit| tests/unit/src/render/syntax/annotations.test.ts > test_collect_annotations
+Error: 注記の状態が無い
+ ❯ annotationsOf tests/unit/src/render/syntax/annotations.test.ts:40:11
+     38|     .mdmarkAnnotations;
+     39|   if (state === undefined) {
+     40|     throw new Error("注記の状態が無い");
+       |           ^
+     41|   }
+     42|   return state;
+ ❯ tests/unit/src/render/syntax/annotations.test.ts:248:10
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[18/23]⎯
+
+ FAIL  |unit| tests/unit/src/render/syntax/annotations.test.ts > test_collect_annotations_when_mismatch
+AssertionError: expected [] to deeply equal [ [ 'annotation_undefined', 1 ], …(2) ]
+
+- Expected
++ Received
+
+- [
+-   [
+-     "annotation_undefined",
+-     1,
+-   ],
+-   [
+-     "annotation_duplicate",
+-     5,
+-   ],
+-   [
+-     "annotation_unused",
+-     7,
+-   ],
+- ]
++ []
+
+ ❯ tests/unit/src/render/syntax/annotations.test.ts:267:67
+    265|   const { html, warnings } = renderDoc(markdown);
+    266|   // 検証
+    267|   expect(warnings.map((warning) => [warning.kind, warning.line])).toEq…
+       |                                                                   ^
+    268|     ["annotation_undefined", 1],
+    269|     ["annotation_duplicate", 5],
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[19/23]⎯
+
+ FAIL  |unit| tests/unit/src/render/syntax/annotations.test.ts > test_collect_annotations_when_map
+Error: 注記の状態が無い
+ ❯ annotationsOf tests/unit/src/render/syntax/annotations.test.ts:40:11
+     38|     .mdmarkAnnotations;
+     39|   if (state === undefined) {
+     40|     throw new Error("注記の状態が無い");
+       |           ^
+     41|   }
+     42|   return state;
+ ❯ tests/unit/src/render/syntax/annotations.test.ts:290:17
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[20/23]⎯
+
+ FAIL  |unit| tests/unit/src/render/syntax/annotations.test.ts > test_build_annotation_list
+AssertionError: expected -1 to be greater than 390
+ ❯ tests/unit/src/render/syntax/annotations.test.ts:310:31
+    308|   const notes = '<details class="mdmark-footnotes mdmark-notes">';
+    309|   expect(html).toContain(footnotes);
+    310|   expect(html.indexOf(notes)).toBeGreaterThan(html.indexOf(footnotes));
+       |                               ^
+    311|   // 2 つの一覧の間に別の要素を挟まない
+    312|   const between = html.slice(html.indexOf(footnotes), html.indexOf(not…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[21/23]⎯
+
+ FAIL  |unit| tests/unit/src/render/syntax/annotations.test.ts > test_take_annotation_definitions
+AssertionError: expected 1 to be 2 // Object.is equality
+
+- Expected
++ Received
+
+- 2
++ 1
+
+ ❯ tests/unit/src/render/syntax/annotations.test.ts:324:42
+    322|   // 検証
+    323|   expect(html).not.toContain("<p>定義の本文</p>");
+    324|   expect(html.split("定義の本文").length - 1).toBe(2);
+       |                                          ^
+    325|   expect(byId(html, "mdmark-note-tip-1-0")).toContain("定義の本文");
+    326|   expect(byId(html, "mdmark-note-1")).toContain("定義の本文");
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[22/23]⎯
+
+ FAIL  |unit| tests/unit/src/render/syntax/map.test.ts > test_build_map_ranges_when_annotations
+SyntaxError: Unexpected end of JSON input
+ ❯ tests/unit/src/render/syntax/map.test.ts:129:15
+    127|   // 検証
+    128|   const attribute = /data-map-annotations="([^"]*)"/.exec(on.html)?.[1…
+    129|   expect(JSON.parse(attribute.replaceAll("&quot;", '"'))).toEqual({
+       |               ^
+    130|     cond: 2,
+    131|     img: 1,
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[23/23]⎯
+
+
+ Test Files  10 failed | 284 passed (294)
+      Tests  22 failed | 2188 passed (2210)
+   Start at  15:36:13
+   Duration  192.78s (worker 68%, tests 18%, import 11%, transform 3%)
+
+exit=1
