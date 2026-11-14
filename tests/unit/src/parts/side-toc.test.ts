@@ -142,8 +142,10 @@ test("test_render_side_toc_when_changed", async () => {
     `<a href="#使用方法" data-heading-id="使用方法" data-changed aria-label="使用方法（変更）">使用方法${marker}</a>`,
   );
   expect(html).toContain('<a href="#導入" data-heading-id="導入">導入</a>');
-  const bars = findTags(html, "<span class=\"mdmark-side-toc-bar\"");
-  expect(bars.map((bar) => hasBooleanAttribute(bar, "data-changed"))).toEqual(
-    [true, false, true],
-  );
+  const bars = findTags(html, '<span class="mdmark-side-toc-bar"');
+  expect(bars.map((bar) => hasBooleanAttribute(bar, "data-changed"))).toEqual([
+    true,
+    false,
+    true,
+  ]);
 });
