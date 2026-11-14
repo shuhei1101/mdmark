@@ -637,11 +637,11 @@ function linkRows(
       const id = rowIdOf(text, taken);
       token.attrSet("id", id);
       token.attrSet("data-mdmark-own", nonce);
-      const [open = "", close = ""] = renderRowLink(
-        SLOT_MARKER,
+      const [open = "", close = ""] = renderRowLink({
+        content: SLOT_MARKER,
         id,
-        text,
-      ).split(SLOT_MARKER);
+        label: text,
+      }).split(SLOT_MARKER);
       inline.children = [
         inlineHtml(open),
         ...(inline.children ?? []),
