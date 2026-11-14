@@ -36,6 +36,11 @@ use_cases:
     impact: new
     detail: ID つきで定義した注記を本文・表のセルの複数の場所から参照し、マーカーのツールチップと末尾の閉じた一覧で確認する。定義の無い参照・参照されていない定義・同じ ID の 2 つ目の定義に記載の警告を出す
     depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-8.yaml
+    impact: changed
+    detail: map のシーケンス図・状態遷移図の Mermaid の `note` の呼び名を「注記」から「ノート」に改める（状態遷移図の種類の行の表示を含む）。配置と操作は変えない
+    depends_on: []
 docs:
   - page: docs/guide/記法.md
     new: false
@@ -43,7 +48,7 @@ docs:
     status: todo
   - page: docs/guide/図を描く-Mermaidと補足で図を描く.md
     new: false
-    change: 補足で map のノードと線から注記を参照する書き方と、補足の notes（説明）との使い分けを追加する（使用方法集 map）
+    change: 補足で map のノードと線から注記を参照する書き方と、補足の notes（説明）との使い分けを追加する（使用方法集 map）。状態遷移図の Mermaid の `note` の呼び名を「ノート」に改める
     status: todo
   - page: docs/guide/図を描く-図を描く.md
     new: false
@@ -77,6 +82,12 @@ docs:
     new: false
     change: notation ・ map ・ diagrams の summary に注記を追加する
     status: todo
+  - page: docs/guide/コアコンセプト-図を自動配置して辿る仕組み.md
+    new: false
+    change: Mermaid の `note` の呼び名を「注記」から「ノート」に改める
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-14T04:54:49.802782+00:00'
 scope_out:
   - item: knowledge のテンプレート『判定フローチャート』の `※n` の注記を注記の記法へ書き換える
     reason: 別のリポジトリの後続で、この記法が develop に入ってから着手する。close のときに着手できる旨をコメントする

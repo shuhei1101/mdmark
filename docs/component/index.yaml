@@ -49,7 +49,7 @@ items:
 - page: CMP-531-1.ts.yaml
   summary: map の erDiagram を、列の行を持つテーブルのノードと分類のグループにし、関連を列の行から引いて多重度・経路・行が増える関連のマーカーを付けた ER 図
 - page: CMP-531-2.ts.yaml
-  summary: map の stateDiagram-v2 を、開始・終了・分岐・入れ子の状態・同じ状態への遷移・注記を描き分けた状態遷移図
+  summary: map の stateDiagram-v2 を、開始・終了・分岐・入れ子の状態・同じ状態への遷移・ノートを描き分けた状態遷移図
 - page: CMP-472-4.ts.yaml
   summary: map の sequenceDiagram を全ての記法で描き、ブロックの開閉と中だけを描く操作・参加者の選択と並べ替え・強調を付けたシーケンス図
 - page: CMP-472-50.ts.yaml

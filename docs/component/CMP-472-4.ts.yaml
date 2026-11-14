@@ -35,7 +35,7 @@ states:
   - name: Reordering
     description: 5 人目の参加者を 2 人目の位置へドラッグしている。移す先に縦の線が出る
     screenshot: false
-lead: map の `sequenceDiagram` の全ての記法（参加者・ライフライン・メッセージ・複合フラグメント・注記・活性化）を描き、ブロックの開閉と中だけを描く操作、参加者の選択と並べ替え、強調しない要素を薄くする表示を加える。
+lead: map の `sequenceDiagram` の全ての記法（参加者・ライフライン・メッセージ・複合フラグメント・ノート・活性化）を描き、ブロックの開閉と中だけを描く操作、参加者の選択と並べ替え、強調しない要素を薄くする表示を加える。
 args:
   - name: sequence
     type: オブジェクト
@@ -70,7 +70,7 @@ args:
     type: オブジェクト
     required: false
     default: なし（下線を付けない）
-    description: 用語から意味への対応（`data-map-terms`）。参加者の名前・メッセージの文・注記の文の中の用語を `span.mdmark-term` にし、意味を図のツールチップにする。ブロックのタブには付けない
+    description: 用語から意味への対応（`data-map-terms`）。参加者の名前・メッセージの文・ノートの文の中の用語を `span.mdmark-term` にし、意味を図のツールチップにする。ブロックのタブには付けない
   - name: notes
     type: オブジェクト
     required: false

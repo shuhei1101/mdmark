@@ -23,3 +23,9 @@ confirmations:
     approver: shuhei1101
     commit:
     thread: https://github.com/shuhei1101/mdmark/pull/562#discussion_r4571297183
+  - topic: 新しい機能の名前「注記」と、map の図の Mermaid の `note` の呼び名「注記」の重なり
+    decision: 新しい機能は「注記」のまま。Mermaid の `note` の呼び名を「ノート」に改め、ガイドの記載と状態遷移図の種類の行の表示を書き換える（推奨案 A）
+    decided_by: thumbs_up
+    approver: shuhei1101
+    commit:
+    thread: https://github.com/shuhei1101/mdmark/pull/562#discussion_r4571540879
