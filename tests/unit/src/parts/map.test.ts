@@ -598,7 +598,11 @@ test("test_render_map_er_diagram", async () => {
         : table,
     ),
     relations,
-    fanouts: [{ wire: "r1", from: "顧客", to: "注文" }],
+    fanouts: [
+      { wire: "r1", from: "顧客", to: "注文" },
+      { wire: "r2", from: "注文", to: "明細" },
+      { wire: "r3", from: "商品", to: "明細" },
+    ],
   });
   // 検証
   expect(part.html).toMatch(
@@ -610,7 +614,23 @@ test("test_render_map_er_diagram", async () => {
   expect(matches(part.html, /class="map-er-label"/g)).toHaveLength(
     relations.filter((item) => item.label !== undefined).length,
   );
-  expect(part.html).toContain('class="map-er-fanout"');
+  const { MAP_ER } = await loadParts();
+  const half = MAP_ER.fanoutSize / 2;
+  const marks = [
+    ...part.html.matchAll(
+      /class="map-er-fanout"[^>]*style="left:([-\d.]+)px;top:([-\d.]+)px"/g,
+    ),
+  ].map((match) => ({ x: Number(match[1]), y: Number(match[2]) }));
+  expect(marks).toHaveLength(3);
+  // マーカーの矩形は、どのノードの矩形（左右に空ける幅を含む）とも重ならない
+  for (const mark of marks)
+    for (const node of layout.nodes)
+      expect(
+        mark.x + half <= node.x - MAP_ER.aside ||
+          node.x + node.w + MAP_ER.aside <= mark.x - half ||
+          mark.y + half <= node.y ||
+          node.y + node.h <= mark.y - half,
+      ).toBe(true);
   expect(part.tips).toContain("下書き・確定・発送済み・取り消し");
   expect(part.tips).toContain("行が増える関連");
 });
