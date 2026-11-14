@@ -527,3 +527,6 @@ scope_out:
   - item: 設定ファイル（`.storybook/`・`vitest.config.ts`・`vscode/vite.config.ts`）・拡張の雛形（`templates/extensions/example.ts`）・移行の手順（`migrations/**/*.mts`）への複雑さの規則の適用
     reason: Issue の「やること」の範囲に入らない。移行の手順は版ごとに固定し、版を出した後に書き換えない
     plan: none
+  - item: '`vscode/tests/integration/preview-open.test.ts` の `test_normal`・`test_normal_when_version_pinned` の、配布物の要求の検証'
+    reason: '`waitForRendered` の後に `distRequests` を参照すると、遅れて読み込む `map.js` の要求がまだ記録されていないことがあり、テストが不安定に fail する（PR #569・#512 のログ）。今回の要望は複雑さの lint の適用で、テストコードの修正を含まない'
+    plan: to_file
