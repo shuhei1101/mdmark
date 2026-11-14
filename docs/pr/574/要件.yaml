@@ -1,0 +1,25 @@
+use_cases: []
+docs:
+  - page: docs/layout/LAY-472-1.yaml
+    new: true
+    change: テンプレート『フォルダ構成』（knowledge の template-layout）の書式で、リポジトリの直下からの全てのフォルダとファイルを entries[] の入れ子で記載し、生成物・複製は generated_from、Git で管理しないものは gitignore[]、中身の種類は content_types で記載する
+    status: todo
+  - page: docs/layout/index.yaml
+    new: true
+    change: フォルダ構成の目次を新設し、LAY-472-1.yaml の行を置く
+    status: todo
+  - page: dev-docs.yaml
+    new: false
+    change: 'documents に layout の行（paths: docs/layout/*.yaml・schema は knowledge の schemas/design/layout.schema.yaml）を追加する'
+    status: todo
+  - page: docs/index.yaml
+    new: false
+    change: items に layout/ の行を追加する
+    status: todo
+scope_out:
+  - item: レビューの観点で見つかった問題への対処（ファイルの移動・削除・.gitignore の変更）
+    reason: Issue の「やりたいこと」で別の Issue で対処すると決まっている。問題ごとに起票する
+    plan: to_file
+  - item: Issue に挙がった plugin/guide/docs/（docs/ の複製）と tmp/screenshots/ の除去
+    reason: develop では既に Git から消えている（tmp/ は中身が * の .gitignore だけ。#454 で対処済み）ため、設計書の gitignore[] への記載だけにとどめる
+    plan: none
