@@ -1,0 +1,277 @@
+$ npx vitest run --project 'unit*' tests/unit/src/parts/side-toc.test.ts tests/unit/src/interact/side-toc.browser.test.ts tests/unit/src/interact/tables.browser.test.ts tests/unit/src/render/syntax/tables.test.ts tests/unit/src/parts/table.test.ts
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-view-side-toc-diff-marker-and-long-text-sort
+
+ ❯ |unit| tests/unit/src/parts/side-toc.test.ts (6 tests | 1 failed) 2397ms
+   × test_render_side_toc_when_changed 17ms
+ ❯ |unit| tests/unit/src/parts/table.test.ts (38 tests | 2 failed) 7663ms
+   × test_render_table_tools_when_not_sortable 6ms
+   × test_render_table_when_long_columns 1ms
+ ❯ |unit| tests/unit/src/render/syntax/tables.test.ts (33 tests | 2 failed) 93ms
+   × test_read_table_spec_when_column_sort 4ms
+   × test_decorate_tables_when_no_sort 9ms
+ ❯ |unit-browser (chromium)| tests/unit/src/interact/side-toc.browser.test.ts (26 tests | 5 failed) 1669ms
+   × test_find_changed_headings 135ms
+   × test_find_changed_headings_when_section_deleted 89ms
+   × test_find_changed_headings_when_heading_rewritten 83ms
+   × test_find_changed_headings_when_no_diff 85ms
+   × test_collect_side_toc_headings_when_changed 87ms
+ ❯ |unit-browser (chromium)| tests/unit/src/interact/tables.browser.test.ts (80 tests | 3 failed) 2235ms
+   × test_find_no_sort_columns 121ms
+   × test_find_no_sort_columns_when_empty 99ms
+   × test_attach_tables_when_no_sort 128ms
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 13 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/interact/side-toc.browser.test.ts > test_find_changed_headings
+TypeError: findChangedHeadings is not a function
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/side-toc.browser.test.ts/test_find_changed_headings.png
+
+ ❯ tests/unit/src/interact/side-toc.browser.test.ts:832:19
+    830|   );
+    831|   // 実行
+    832|   const changed = findChangedHeadings(root);
+       |                   ^
+    833|   // 検証
+    834|   expect([...changed].sort()).toEqual(["B", "文書"].sort());
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=c8cd480c:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/13]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/interact/side-toc.browser.test.ts > test_find_changed_headings_when_section_deleted
+TypeError: findChangedHeadings is not a function
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/side-toc.browser.test.ts/test_find_changed_headings_when_section_deleted.png
+
+ ❯ tests/unit/src/interact/side-toc.browser.test.ts:854:19
+    852|   );
+    853|   // 実行
+    854|   const changed = findChangedHeadings(root);
+       |                   ^
+    855|   // 検証
+    856|   expect([...changed]).toEqual(["文書"]);
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=c8cd480c:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/13]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/interact/side-toc.browser.test.ts > test_find_changed_headings_when_heading_rewritten
+TypeError: findChangedHeadings is not a function
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/side-toc.browser.test.ts/test_find_changed_headings_when_heading_rewritten.png
+
+ ❯ tests/unit/src/interact/side-toc.browser.test.ts:871:19
+    869|   );
+    870|   // 実行
+    871|   const changed = findChangedHeadings(root);
+       |                   ^
+    872|   // 検証
+    873|   expect([...changed].sort()).toEqual(["文書", "新しい名前"].sort());
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=c8cd480c:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/13]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/interact/side-toc.browser.test.ts > test_find_changed_headings_when_no_diff
+TypeError: findChangedHeadings is not a function
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/side-toc.browser.test.ts/test_find_changed_headings_when_no_diff.png
+
+ ❯ tests/unit/src/interact/side-toc.browser.test.ts:884:19
+    882|   );
+    883|   // 実行
+    884|   const changed = findChangedHeadings(root);
+       |                   ^
+    885|   // 検証
+    886|   expect(changed.size).toBe(0);
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=c8cd480c:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/13]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/interact/side-toc.browser.test.ts > test_collect_side_toc_headings_when_changed
+AssertionError: expected [ { level: 1, id: '手引き', …(1) }, …(2) ] to deeply equal [ { level: 1, id: '手引き', …(2) }, …(2) ]
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/side-toc.browser.test.ts/test_collect_side_toc_headings_when_changed.png
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[2m  [[22m
+[2m    {[22m
+[32m-     "changed": true,[39m
+[2m      "id": "手引き",[22m
+[2m      "level": 1,[22m
+[2m      "text": "手引き",[22m
+[2m    },[22m
+[2m    {[22m
+[2m      "id": "導入",[22m
+[2m      "level": 2,[22m
+[2m      "text": "導入",[22m
+[2m    },[22m
+[2m    {[22m
+[32m-     "changed": true,[39m
+[2m      "id": "使用方法",[22m
+[2m      "level": 2,[22m
+[2m      "text": "使用方法",[22m
+[2m    },[22m
+[2m  ][22m
+
+ ❯ tests/unit/src/interact/side-toc.browser.test.ts:905:20
+    903|   const headings = collectSideTocHeadings(root);
+    904|   // 検証
+    905|   expect(headings).toEqual([
+       |                    ^
+    906|     { level: 1, id: "手引き", text: "手引き", changed: true },
+    907|     { level: 2, id: "導入", text: "導入" },
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=c8cd480c:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/13]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/interact/tables.browser.test.ts > test_find_no_sort_columns
+TypeError: findNoSortColumns is not a function
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/tables.browser.test.ts/test_find_no_sort_columns.png
+
+ ❯ tests/unit/src/interact/tables.browser.test.ts:405:18
+    403|   const { findNoSortColumns } = await loadLogic();
+    404|   // 実行
+    405|   const result = findNoSortColumns({
+       |                  ^
+    406|     long: [1, 3],
+    407|     sorts: [
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=c8cd480c:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/13]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/interact/tables.browser.test.ts > test_find_no_sort_columns_when_empty
+TypeError: findNoSortColumns is not a function
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/tables.browser.test.ts/test_find_no_sort_columns_when_empty.png
+
+ ❯ tests/unit/src/interact/tables.browser.test.ts:422:18
+    420|   const { findNoSortColumns } = await loadLogic();
+    421|   // 実行
+    422|   const result = findNoSortColumns({ long: [], sorts: [] });
+       |                  ^
+    423|   // 検証
+    424|   expect(result).toEqual([]);
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=c8cd480c:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/13]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/interact/tables.browser.test.ts > test_attach_tables_when_no_sort
+AssertionError: expected <button …(2)></button> to be null
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/tables.browser.test.ts/test_attach_tables_when_no_sort.png
+
+[32m- Expected:[39m
+null
+
+[31m+ Received:[39m
+<button
+  class="mdmark-sort"
+  type="button"
+>
+  説明
+</button>
+
+ ❯ tests/unit/src/interact/tables.browser.test.ts:732:59
+    730|   const headers = [...root.querySelectorAll("thead th")];
+    731|   // 検証
+    732|   expect(headers[2]?.querySelector("button.mdmark-sort")).toBeNull();
+       |                                                           ^
+    733|   expect(headers[2]?.querySelector("span.mdmark-th-label")?.textConten…
+    734|     "説明",
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=c8cd480c:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/13]⎯
+
+ FAIL  |unit| tests/unit/src/parts/side-toc.test.ts > test_render_side_toc_when_changed
+AssertionError: expected '<aside class="mdmark-side-toc" data-m…' to contain '<a href="#手引き" data-heading-id="手引き" …'
+
+Expected: "<a href="#手引き" data-heading-id="手引き" data-changed aria-label="手引き（変更）">手引き<span class="mdmark-side-toc-changed" aria-hidden="true"></span></a>"
+Received: "<aside class="mdmark-side-toc" data-mode="hover"><button class="mdmark-side-toc-toggle" type="button" aria-expanded="false" aria-controls="mdmark-side-toc-panel" aria-label="目次を表示" title="目次を表示"><span class="mdmark-side-toc-current"></span><svg class="mdmark-diagram-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="1"></circle><circle cx="19" cy="12" r="1"></circle><circle cx="5" cy="12" r="1"></circle></svg></button><div class="mdmark-side-toc-rail" aria-hidden="true"><span class="mdmark-side-toc-bar" data-level="1"></span><span class="mdmark-side-toc-bar" data-level="2"></span><span class="mdmark-side-toc-bar" data-level="2"></span></div><nav class="mdmark-side-toc-panel" id="mdmark-side-toc-panel" aria-label="右側の目次"><div class="mdmark-side-toc-head"><div class="mdmark-side-toc-actions"><button class="mdmark-fold-all" type="button" data-fold-all="open" aria-label="すべて展開" title="すべて展開"><svg class="mdmark-diagram-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m7 15 5 5 5-5"></path><path d="m7 9 5-5 5 5"></path></svg></button><button class="mdmark-fold-all" type="button" data-fold-all="close" aria-label="すべて折りたたむ" title="すべて折りたたむ"><svg class="mdmark-diagram-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m7 20 5-5 5 5"></path><path d="m7 4 5 5 5-5"></path></svg></button></div><button class="mdmark-side-toc-pin" type="button" aria-pressed="false" aria-label="目次をピン止め" title="目次をピン止め"><span class="mdmark-side-toc-pin-off"><svg class="mdmark-diagram-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="18" height="18" x="3" y="3" rx="2"></rect><path d="M15 14v1"></path><path d="M15 19v2"></path><path d="M15 3v2"></path><path d="M15 9v1"></path></svg></span><span class="mdmark-side-toc-pin-on"><svg class="mdmark-diagram-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="18" height="18" x="3" y="3" rx="2"></rect><path d="M15 3v18"></path></svg></span></button></div><ul class="mdmark-side-toc-list"><li><a href="#手引き" data-heading-id="手引き">手引き</a><ul><li><a href="#導入" data-heading-id="導入">導入</a></li><li><a href="#使用方法" data-heading-id="使用方法">使用方法</a></li></ul></li></ul></nav></aside>"
+
+ ❯ tests/unit/src/parts/side-toc.test.ts:138:16
+    136|   const marker =
+    137|     '<span class="mdmark-side-toc-changed" aria-hidden="true"></span>';
+    138|   expect(html).toContain(
+       |                ^
+    139|     `<a href="#手引き" data-heading-id="手引き" data-changed aria-label="手引き…
+    140|   );
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/13]⎯
+
+ FAIL  |unit| tests/unit/src/parts/table.test.ts > test_render_table_tools_when_not_sortable
+AssertionError: expected '<span class="mdmark-th"><button class…' not to contain 'mdmark-sort'
+
+Expected: "mdmark-sort"
+Received: "<span class="mdmark-th"><button class="mdmark-sort" type="button">説明</button><span class="mdmark-th-tools"><button class="mdmark-filter" type="button" aria-label="「説明」で絞り込む" aria-expanded="false" aria-controls="t1-drawer-2"><span class="mdmark-visually-hidden"></span></button><button class="mdmark-pin" type="button" aria-label="「説明」の列をピン止め" aria-pressed="false" hidden></button></span></span>"
+
+ ❯ tests/unit/src/parts/table.test.ts:505:22
+    503|   });
+    504|   // 検証
+    505|   expect(header).not.toContain("mdmark-sort");
+       |                      ^
+    506|   expect(header).toContain('<span class="mdmark-th-label">説明</span>');
+    507|   expect(header).toContain("mdmark-filter");
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/13]⎯
+
+ FAIL  |unit| tests/unit/src/parts/table.test.ts > test_render_table_when_long_columns
+AssertionError: expected '<div class="mdmark-table" data-kind="…' to contain 'data-no-sort="2"'
+
+Expected: "data-no-sort="2""
+Received: "<div class="mdmark-table" data-kind="data" data-features="sort pin filter" data-long="2">"
+
+ ❯ tests/unit/src/parts/table.test.ts:715:56
+    713|     noSort: [2],
+    714|   });
+    715|   expect(findTag(notSortable, 'class="mdmark-table"')).toContain(
+       |                                                        ^
+    716|     'data-no-sort="2"',
+    717|   );
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/13]⎯
+
+ FAIL  |unit| tests/unit/src/render/syntax/tables.test.ts > test_read_table_spec_when_column_sort
+AssertionError: expected [] to include 'sort'
+ ❯ tests/unit/src/render/syntax/tables.test.ts:893:26
+    891|   const second = readTableSpec(disabled, ["名前", "説明"], 10);
+    892|   // 検証
+    893|   expect(first.features).toContain("sort");
+       |                          ^
+    894|   expect(first.sorts).toEqual([
+    895|     { column: 0, sort: true },
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[12/13]⎯
+
+ FAIL  |unit| tests/unit/src/render/syntax/tables.test.ts > test_decorate_tables_when_no_sort
+AssertionError: expected '<div class="mdmark-table" data-kind="…' to contain 'data-no-sort="2"'
+
+Expected: "data-no-sort="2""
+Received: "<div class="mdmark-table" data-kind="data" data-features="sort pin filter resize" data-long="2">"
+
+ ❯ tests/unit/src/render/syntax/tables.test.ts:934:13
+    932|   expect(wrappers).toHaveLength(5);
+    933|   const [a, b, c, d, e] = wrappers.map((wrapper) => wrapper ?? "");
+    934|   expect(a).toContain('data-no-sort="2"');
+       |             ^
+    935|   expect(b).toContain('data-no-sort="0"');
+    936|   expect(c).toMatch(/data-features="[^"]*\bsort\b/);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[13/13]⎯
+
+
+ Test Files  5 failed (5)
+      Tests  13 failed | 170 passed (183)
+   Start at  09:31:59
+   Duration  32.74s (worker 52%, transform 28%, tests 14%, import 7%)
+
