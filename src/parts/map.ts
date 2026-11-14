@@ -987,6 +987,11 @@ export const MAP_ER = {
   /** 関連の端の、ノードの辺から外へ出す長さ（同じ辺から出る 2 本目からは step ずつ延ばす） */
   endOut: 14,
   step: 6,
+  /** 関連の端の辺を、反対の辺へ移す隣のノードまでの空き（両側の端と多重度が収まる幅） */
+  crowd: 120,
+  /** 関連のラベルの 1 文字の幅と、1 行の高さ（ラベルどうしの重なりの見積もり） */
+  labelChar: 12,
+  labelLine: 16,
   /** 多重度の文字の、端からの離れ */
   cardinalityGap: 4,
   /** 行が増える関連のマーカーの、線からの離れ */
@@ -1061,33 +1066,43 @@ type Point = [number, number];
 
 /**
  * 自動配置の経路の元の端を、高さ y の左右の辺へ付け替える。経路の残りは自動配置のまま使い、ノードを横切らない。
- * 上下の辺から出ていた端は、次の点がある側の辺から出して、ノードの外で元の経路へ戻す
+ * 辺は、補足の指定 → 元の辺（隣のノードまでの空きが `MAP_ER.crowd` 以上のとき）→ 空きが広い側 → 次の点がある側の順に選ぶ。
+ * 元の辺と反対の辺から出すときは、ノードの上を回って元の経路へ戻す
  */
-const reanchor = (
-  points: Point[],
-  rect: { x: number; y: number; w: number; h: number },
-  y: number,
-  side: "left" | "right" | undefined,
+const reanchor = (args: {
+  points: Point[];
+  rect: { x: number; y: number; w: number; h: number };
+  y: number;
+  side: "left" | "right" | undefined;
   /** 辺ごとに、その辺から出す長さを返す */
-  outOf: (side: "left" | "right") => number,
-): Point[] => {
+  outOf: (side: "left" | "right") => number;
+  /** 辺ごとの、高さ y で隣のノードまでの空き */
+  freeOf: (side: "left" | "right") => number;
+}): Point[] => {
+  const { points, rect, y, side } = args;
   const [p0, p1] = points;
   if (!p0 || !p1) return points;
-  const onSide = p0[0] === rect.x || p0[0] === rect.x + rect.w;
+  const original =
+    p0[0] === rect.x ? "left" : p0[0] === rect.x + rect.w ? "right" : undefined;
+  const left = args.freeOf("left");
+  const right = args.freeOf("right");
+  const wider = left > right ? "left" : right > left ? "right" : undefined;
   const chosen =
     side ??
-    (onSide
-      ? p0[0] === rect.x
-        ? "left"
-        : "right"
-      : p1[0] >= rect.x + rect.w / 2
-        ? "right"
-        : "left");
+    (original !== undefined && args.freeOf(original) >= MAP_ER.crowd
+      ? original
+      : (wider ??
+        original ??
+        (p1[0] >= rect.x + rect.w / 2 ? "right" : "left")));
   const sx = chosen === "right" ? rect.x + rect.w : rect.x;
-  const out = outOf(chosen);
+  const out = args.outOf(chosen);
   const ox = sx + (chosen === "right" ? out : -out);
-  const back = onSide && side === undefined ? p0[1] : p1[1];
-  return [[sx, y], [ox, y], [ox, back], ...points.slice(1)];
+  if (original === undefined || side !== undefined)
+    return [[sx, y], [ox, y], [ox, p1[1]], ...points.slice(1)];
+  if (chosen === original)
+    return [[sx, y], [ox, y], [ox, p0[1]], ...points.slice(1)];
+  const top = rect.y - out;
+  return [[sx, y], [ox, y], [ox, top], [p1[0], top], ...points.slice(1)];
 };
 
 /**
@@ -1118,6 +1133,24 @@ export const rewireMapEr = (args: {
     used.set(key, count + 1);
     return MAP_ER.endOut + count * MAP_ER.step;
   };
+  /** 高さ y で、ノードの辺から同じ高さにある隣のノードまでの空き（無ければ Infinity） */
+  const freeOf =
+    (node: { id: string; x: number; w: number }, y: number) =>
+    (side: "left" | "right"): number =>
+      Math.min(
+        Number.POSITIVE_INFINITY,
+        ...args.layout.nodes
+          .filter(
+            (other) =>
+              other.id !== node.id && other.y <= y && y <= other.y + other.h,
+          )
+          .map((other) =>
+            side === "right"
+              ? other.x - (node.x + node.w)
+              : node.x - (other.x + other.w),
+          )
+          .filter((gap) => gap >= 0),
+      );
   return args.layout.wires.map((wire) => {
     const relation = relations.get(wire.id);
     const from = args.layout.nodes.find((node) => node.id === wire.from);
@@ -1140,20 +1173,24 @@ export const rewireMapEr = (args: {
     const toColumn =
       wire.to === relation.to ? relation.toColumn : relation.fromColumn;
     const ends = args.ends?.[wire.id];
-    let points = reanchor(
-      wire.points as Point[],
-      from,
-      yOf(from, fromColumn),
-      sideOf(ends?.from),
-      outFor(from.id),
-    );
-    points = reanchor(
-      [...points].reverse(),
-      to,
-      yOf(to, toColumn),
-      sideOf(ends?.to),
-      outFor(to.id),
-    ).reverse();
+    const fromY = yOf(from, fromColumn);
+    let points = reanchor({
+      points: wire.points as Point[],
+      rect: from,
+      y: fromY,
+      side: sideOf(ends?.from),
+      outOf: outFor(from.id),
+      freeOf: freeOf(from, fromY),
+    });
+    const toY = yOf(to, toColumn);
+    points = reanchor({
+      points: [...points].reverse(),
+      rect: to,
+      y: toY,
+      side: sideOf(ends?.to),
+      outOf: outFor(to.id),
+      freeOf: freeOf(to, toY),
+    }).reverse();
     return { ...wire, points };
   });
 };
@@ -1201,6 +1238,8 @@ export const renderMapErMarks = (args: {
 }): string => {
   const relations = new Map(args.relations.map((item) => [item.id, item]));
   const texts: string[] = [];
+  /** 配置したラベルの左端・ベースライン・幅 */
+  const labels: Array<{ x: number; y: number; w: number }> = [];
   const text = (options: {
     wire: string;
     at: Point;
@@ -1246,9 +1285,23 @@ export const renderMapErMarks = (args: {
     }
     if (relation.label === undefined) continue;
     const place = erMarkOf(points);
+    // 先に配置したラベルと重なるときは、1 行分ずつ下へずらす
+    const width = relation.label.length * MAP_ER.labelChar;
+    let [x, y] = place.label;
+    const left = () => (place.vertical ? x : x - width / 2);
+    while (
+      labels.some(
+        (other) =>
+          left() < other.x + other.w &&
+          other.x < left() + width &&
+          Math.abs(other.y - y) < MAP_ER.labelLine,
+      )
+    )
+      y += MAP_ER.labelLine;
+    labels.push({ x: left(), y, w: width });
     text({
       wire: wire.id,
-      at: place.label,
+      at: [x, y],
       value: relation.label,
       className: "map-er-label",
       anchor: place.vertical ? "start" : "middle",
