@@ -110,15 +110,15 @@ export function fileIconOf(name: string): FileIcon {
   return ICON_BY_EXTENSION.get(extension) ?? "file";
 }
 
-/** ルートを 0 としたフォルダの深さと `data-open` の値から、既定で開くかを返却する。`all` は常に開き、数は深さがその数より浅いとき、値が無ければルートだけを開く */
+/** ルートを 0 としたフォルダの深さと `data-open` の値から、既定で開くかを返却する。`all` と値が無いときは常に開き、数は深さがその数より浅いときに開く */
 export function folderOpenByDefault(
   depth: number,
   open: string | undefined,
 ): boolean {
-  if (open === "all") {
+  if (open === undefined || open === "all") {
     return true;
   }
-  return depth < (open === undefined ? 1 : Number(open));
+  return depth < Number(open);
 }
 
 /** コピーのボタンの中身（アイコンと文言）の HTML を返却する */

@@ -68,14 +68,14 @@ functions:
     kind: 関数
     container: vscode/src/export/html.ts
     usecase: HTMLに書き出す
-    summary: '`<base>`・そのバージョンの `index.css` の `<link>`・`theme` の CSS の `<style>`・本文と設定の JSON の `<script type="application/json">`・`importMap` が空でないときの `<script type="importmap">`・`index.js` を読み込んで拡張を `registerExtension` で登録してから `mount(document.querySelector("main"), { markdown, config })` を呼ぶ `<script type="module">` を持つ HTML を組む'
+    summary: '`<base>`・そのバージョンの `index.css` の `<link>`・`theme` の CSS の `<style>`・本文と設定の JSON の `<script type="application/json">`・`importMap` が空でないときの `<script type="importmap">`・`index.js` を読み込んで拡張を `registerExtension` で登録してから `mount(document.querySelector("main"), { markdown, config })` を呼ぶ `<script type="module">` を持つ HTML を組む。`aliases` があるときは JSON に埋め、`mount` の `opts.aliases` に指定する'
     description: '`print` が `true` のときだけ、`mount` の後に「外部ライブラリのマーカーの場所（class `mdmark-embed` と `role="status"` の要素）が無くなり、`document.fonts.ready` が解決したら `window.print()` を 1 回呼ぶ。`PRINT_WAIT_MS` を超えたらそのまま呼ぶ」処理を追加する。マーカーの場所は `MutationObserver` で待つ。`title` は Markdown のファイル名をエスケープして入れる。拡張のコードは `moduleDataUrl` で `data:` の URL にする'
     scope: public
     args:
       - name: options
-        type: '{ markdown: string; config: PreviewConfig; title: string; distJs: string; distCss: string; baseHref: string; print: boolean; themeCss?: string; extensions: string[]; importMap?: Record<string, string> }'
+        type: '{ markdown: string; config: PreviewConfig; title: string; distJs: string; distCss: string; baseHref: string; print: boolean; themeCss?: string; extensions: string[]; importMap?: Record<string, string>; aliases?: MdmarkAlias[] }'
         required: true
-        description: 全文・設定（相対パスの `libraries`・`html-scripts.url` は `embedLocalLibraries` が `data:` の URL にした値）・タイトル・配布物の URL・Markdown のフォルダの `file:` の URL に `/` を付けたもの・印刷を待つか・重ねた設定の `theme` の CSS の中身・拡張をまとめた ES モジュールのコード（設定の順）
+        description: 全文・設定（相対パスの `libraries`・`html-scripts.url` は `embedLocalLibraries` が `data:` の URL にした値）・タイトル・配布物の URL・Markdown のフォルダの `file:` の URL に `/` を付けたもの・印刷を待つか・重ねた設定の `theme` の CSS の中身・拡張をまとめた ES モジュールのコード（設定の順）・設定の `aliases` から作ったエイリアス（無いときは指定しない）
     returns:
       type: string
       description: HTML 文字列
@@ -104,12 +104,19 @@ functions:
         condition: '`importMap` が `{ "file:///ws/hljs/core.min.js": "data:text/javascript;charset=utf-8,a" }` のときと空のとき'
         mock: なし
         expected: '前者は `<script type="importmap">` が `type="module"` の `script` より前にあり、中身を JSON として読むと `{ imports: importMap }`。後者は `importmap` を含まない'
+      - name: test_build_export_html_when_aliases
+        case: 正常
+        summary: エイリアスを JSON に埋め、mount の opts.aliases に指定する
+        condition: '`aliases` が `alias_type` `term`・`name` `描画`・`aliases` `["レンダリング"]` の 1 件のときと、`aliases` を指定しないとき'
+        mock: なし
+        expected: '前者は `type="application/json"` の `script` の中身を JSON として読むと `aliases` が指定した配列で、`type="module"` の `script` が `mount` に `aliases: data.aliases` を指定する。後者は JSON が `aliases` を持たず、`mount` に `aliases` を指定しない'
     callees:
       - '#functions[escapeScriptJson]'
     refs:
       - IF-472-15#constraints[書き出す中身]
       - IF-472-15#constraints[設定と相対パス]
       - IF-472-16#constraints[印刷する時]
+      - IF-472-15#constraints[エイリアス]
       - MOD-472-104#data_models[PreviewConfig]
     status: planned
   - name: moduleDataUrl

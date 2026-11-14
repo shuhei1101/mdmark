@@ -11,7 +11,7 @@
 | [esbuild](./LIB-472-10.yaml) | TS と CSS を配布物の ES モジュールの JS と CSS にまとめる |
 | [esbuild-wasm](./LIB-472-11.yaml) | VS Code 拡張機能が拡張機能ホストの中で設定の extensions をまとめる |
 | [vitest](./LIB-472-33.yaml) | 単体テスト（Node）と結合テスト（実ブラウザ）のランナー |
-| [playwright](./LIB-472-20.yaml) | E2E のブラウザ操作と、結合テストのブラウザの起動 |
+| [playwright](./LIB-472-20.yaml) | 結合テストのブラウザの起動と操作 |
 | [biome](./LIB-472-7.yaml) | lint と整形の検査 |
 | [typescript](./LIB-472-30.yaml) | 型の検査 |
 | [markdown-it](./LIB-472-16.yaml) | GitHub Flavored Markdown をトークンに解析し、HTML 文字列にする |

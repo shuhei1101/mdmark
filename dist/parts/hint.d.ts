@@ -1,19 +1,19 @@
-/** 印の付け方: ブロックの要素は右上の印、行内の要素は要素そのもの */
+/** マーカーの付け方: ブロックの要素は右上のマーカー、行内の要素は要素そのもの */
 export type HintPlacement = "block" | "inline";
-/** 要素に足す属性と、閉じタグの前と要素の後ろに置く HTML */
+/** 要素に追加する属性と、閉じタグの前と要素の後ろに配置する HTML */
 export type HintMarkup = {
-    /** 印の付け方 */
+    /** マーカーの付け方 */
     placement: HintPlacement;
-    /** 要素の開きタグに足す属性 */
+    /** 要素の開きタグに追加する属性 */
     attributes: Record<string, string>;
-    /** 閉じタグの前（要素の最後の子）に置く HTML。ブロックの要素の印のボタン */
+    /** 閉じタグの前（要素の最後の子）に配置する HTML。ブロックの要素のマーカーのボタン */
     inside: string;
-    /** 要素の後ろに置く HTML。ツールチップの中身 */
+    /** 要素の後ろに配置する HTML。ツールチップの中身 */
     after: string;
 };
-/** `data-hint` を持つ要素の種類から印の付け方を決める */
+/** `data-hint` を持つ要素の種類からマーカーの付け方を決める */
 export declare function placementOf(tag: string): HintPlacement;
-/** ヒントの印と中身を作る。ブロックの要素には右上の印のボタンを、行内の要素には `tabindex` を付け、ツールチップの中身を要素の後ろに置く */
+/** ヒントのマーカーと中身を作る。ブロックの要素には右上のマーカーのボタンを、行内の要素には `tabindex` を付け、ツールチップの中身を要素の後ろに配置する */
 export declare function renderHintMarkup(hint: {
     /** 要素のタグ名 */
     tag: string;
@@ -22,16 +22,16 @@ export declare function renderHintMarkup(hint: {
     /** ツールチップの `id`（`mdmark-hint-{n}`） */
     id: string;
 }): HintMarkup;
-/** 部品設計『ヒント』: `data-hint` を持つ要素に印か下線とツールチップを付けた HTML（Storybook のストーリーが開く）。`open` のときはツールチップを開いて見せる */
+/** 部品設計『ヒント』: `data-hint` を持つ要素にマーカーか下線とツールチップを付けた HTML（Storybook のストーリーが開く）。`open` のときはツールチップを開いて見せる */
 export declare function renderHint(props: {
     /** `data-hint` の文 */
     text: string;
-    /** 印の付け方 */
+    /** マーカーの付け方 */
     placement: HintPlacement;
     /** ツールチップを開いているか（既定 `false`） */
     open?: boolean;
     /** 要素の中身（既定は見本の文字） */
     body?: string;
-    /** 要素に足す `style`（書いた人が地の色を付けたブロックの要素を見せるときに使う） */
+    /** 要素に追加する `style`（記載した人が地の色を付けたブロックの要素を見せるときに使用する） */
     style?: string;
 }): string;

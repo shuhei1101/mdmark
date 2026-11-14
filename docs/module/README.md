@@ -81,6 +81,7 @@
 | [ライブラリ本体 / 操作 / code-folds.ts](./MOD-472-225.ts.yaml) | ライブラリ本体 / 操作 / code-folds.ts |
 | [ライブラリ本体 / 操作 / csv-raw.ts](./MOD-472-243.ts.yaml) | ライブラリ本体 / 操作 / csv-raw.ts |
 | [ライブラリ本体 / 図 / diagram-resize.ts](./MOD-472-179.ts.yaml) | ライブラリ本体 / 図 / diagram-resize.ts |
+| [ライブラリ本体 / 図 / diagram-touch.ts](./MOD-472-346.ts.yaml) | ライブラリ本体 / 図 / diagram-touch.ts |
 | [ライブラリ本体 / 図 / diagram-tips.ts](./MOD-472-184.ts.yaml) | ライブラリ本体 / 図 / diagram-tips.ts |
 | [ライブラリ本体 / 図 / diagrams.ts](./MOD-472-183.ts.yaml) | ライブラリ本体 / 図 / diagrams.ts |
 | [ライブラリ本体 / 操作 / embedded-html.ts](./MOD-472-230.ts.yaml) | ライブラリ本体 / 操作 / embedded-html.ts |
@@ -90,6 +91,7 @@
 | [ライブラリ本体 / 操作 / index.ts](./MOD-472-227.ts.yaml) | ライブラリ本体 / 操作 / index.ts |
 | [ライブラリ本体 / 操作 / lightbox.ts](./MOD-472-224.ts.yaml) | ライブラリ本体 / 操作 / lightbox.ts |
 | [ライブラリ本体 / 図 / params.ts](./MOD-472-185.ts.yaml) | ライブラリ本体 / 図 / params.ts |
+| [ライブラリ本体 / 操作 / part-states.ts](./MOD-472-348.ts.yaml) | ライブラリ本体 / 操作 / part-states.ts |
 | [ライブラリ本体 / 操作 / placement.ts](./MOD-472-231.ts.yaml) | ライブラリ本体 / 操作 / placement.ts |
 | [ライブラリ本体 / 操作 / scroller.ts](./MOD-472-234.ts.yaml) | ライブラリ本体 / 操作 / scroller.ts |
 | [ライブラリ本体 / 操作 / sections.ts](./MOD-472-222.ts.yaml) | ライブラリ本体 / 操作 / sections.ts |
@@ -98,6 +100,7 @@
 | [ライブラリ本体 / 操作 / table-resize.ts](./MOD-472-226.ts.yaml) | ライブラリ本体 / 操作 / table-resize.ts |
 | [ライブラリ本体 / 操作 / table-settings.ts](./MOD-472-240.ts.yaml) | ライブラリ本体 / 操作 / table-settings.ts |
 | [ライブラリ本体 / 操作 / table-tree.ts](./MOD-472-241.ts.yaml) | ライブラリ本体 / 操作 / table-tree.ts |
+| [ライブラリ本体 / 操作 / table-width.ts](./MOD-472-347.ts.yaml) | ライブラリ本体 / 操作 / table-width.ts |
 | [ライブラリ本体 / 操作 / tables.ts](./MOD-472-228.ts.yaml) | ライブラリ本体 / 操作 / tables.ts |
 | [ライブラリ本体 / 操作 / tabs.ts](./MOD-472-220.ts.yaml) | ライブラリ本体 / 操作 / tabs.ts |
 | [ライブラリ本体 / 索引と用語 / terms.ts](./MOD-472-266.ts.yaml) | ライブラリ本体 / 索引と用語 / terms.ts |
@@ -193,6 +196,7 @@
 | [ClaudeCodeプラグイン / MCPサーバー / http.ts](./MOD-472-51.ts.yaml) | ClaudeCodeプラグイン / MCPサーバー / http.ts |
 | [ClaudeCodeプラグイン / MCPサーバー / mcp.ts](./MOD-472-50.ts.yaml) | ClaudeCodeプラグイン / MCPサーバー / mcp.ts |
 | [ClaudeCodeプラグイン / ポート / port.ts](./MOD-472-15.ts.yaml) | `127.0.0.1` のポートが待ち受けているかの確認と、待ち受けるポートの読み取り（`mdmark serve`・SessionStart のフック・`setup.js` が使用する）。 |
+| [ClaudeCodeプラグイン / フック / guide-notice.ts](./MOD-472-349.ts.yaml) | プラグインの `hooks/hooks.json` の `Write\|Edit` の PreToolUse・UserPromptSubmit・PreCompact が `node` で起動する処理。`.mark.md` の記載と語 mdmark を含む発言で、記法のルールの参照をセッションに 1 回だけ案内する。 |
 | [ClaudeCodeプラグイン / フック / pre-tool-use.ts](./MOD-472-13.ts.yaml) | プラグインの `hooks/hooks.json` が `node` で起動する処理。PreToolUse で作業のフォルダを MCP のツールの引数 `project_dir` に入れる。 |
 | [ClaudeCodeプラグイン / SessionStartのフック / session-start.ts](./MOD-472-3.ts.yaml) | プラグインの `hooks/hooks.json` の SessionStart が `node` で起動する処理。常駐サーバーが待ち受けていないときだけ、そのことを 1 行で指定する。 |
 | [ClaudeCodeプラグイン / セットアップ / キーの一覧 / keys.ts](./MOD-472-6.ts.yaml) | `keys` の結果を作る。 |

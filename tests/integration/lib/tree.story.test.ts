@@ -64,7 +64,7 @@ test("test_basic", async () => {
   expect(icons["mdmark/"]?.mask).not.toBe(icons["package.json"]?.mask);
 });
 
-// 指定の無い開き方で、ルートだけを開き、src/ は閉じたアイコンで中身を隠す。上に種類 tree とコピーの帯がある（Interactive）
+// 指定の無い開き方で、全てのフォルダを開いたアイコンで開く。上に種類 tree とコピーの帯がある（Interactive）
 test("test_interactive", async () => {
   // 準備・実行
   const page = await open("interactive");
@@ -75,11 +75,10 @@ test("test_interactive", async () => {
   await expect(
     page.locator("button.mdmark-tree-copy").innerText(),
   ).resolves.toBe("コピー");
-  await expect(expandedStates(page)).resolves.toEqual(["true", "false"]);
-  await expect(nameVisible(page, "src/")).resolves.toBe(true);
-  await expect(nameVisible(page, "index.ts")).resolves.toBe(false);
+  await expect(expandedStates(page)).resolves.toEqual(["true", "true"]);
+  await expect(nameVisible(page, "index.ts")).resolves.toBe(true);
   const icons = await iconsOf(page);
-  expect(icons["mdmark/"]?.mask).not.toBe(icons["src/"]?.mask);
+  expect(icons["mdmark/"]?.mask).toBe(icons["src/"]?.mask);
 });
 
 // open=all で、全てのフォルダが開いたアイコンで開いている（OpenAll）
@@ -91,6 +90,22 @@ test("test_open_all", async () => {
   await expect(nameVisible(page, "tree.ts")).resolves.toBe(true);
   const icons = await iconsOf(page);
   expect(icons["app/"]?.mask).toBe(icons["parts/"]?.mask);
+});
+
+// depth が 1 で、app/ だけを開き、src/ は閉じたアイコンで中身を隠す（OpenRoot）
+test("test_open_root", async () => {
+  // 準備・実行
+  const page = await open("open-root");
+  // 検証
+  await expect(expandedStates(page)).resolves.toEqual([
+    "true",
+    "false",
+    "false",
+  ]);
+  await expect(nameVisible(page, "src/")).resolves.toBe(true);
+  await expect(nameVisible(page, "parts/")).resolves.toBe(false);
+  const icons = await iconsOf(page);
+  expect(icons["app/"]?.mask).not.toBe(icons["src/"]?.mask);
 });
 
 // open=2 で、app/ と src/ が開き、parts/ が閉じている（OpenLevels）

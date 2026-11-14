@@ -327,20 +327,217 @@ test("test_table_to_markdown", async () => {
   );
 });
 
-// 幅と折り返しと列の位置で畳むかを決める（正常系）
-test("test_should_fold", async () => {
+// 数値・日付・✓・空だけを短い値にする（正常系）
+test("test_is_compact_cell_text", async () => {
   // 準備
-  const { shouldFold } = await loadLogic();
+  const { isCompactCellText } = await loadLogic();
+  const texts = [
+    "",
+    "1,234",
+    "12.5%",
+    "2026-11-01",
+    "2026/1/2",
+    "✓",
+    "りんご",
+    "v1.0 を出す",
+  ];
+  // 実行
+  const result = texts.map((text) => isCompactCellText(text));
+  // 検証
+  expect(result).toEqual([true, true, true, true, true, true, false, false]);
+});
+
+/** 全角の文字を指定した数だけ並べる */
+const wide = (count: number): string => "あ".repeat(count);
+
+// 20 文字以上の行を持つ文の列だけを長文の列にする（正常系）
+test("test_find_long_columns", async () => {
+  // 準備
+  const { findLongColumns } = await loadLogic();
+  const columns = [
+    {
+      head: ["No"],
+      cells: [
+        { lines: ["1"], compact: true },
+        { lines: ["2"], compact: true },
+      ],
+    },
+    { head: ["名前"], cells: [{ lines: [wide(6)], compact: false }] },
+    {
+      head: ["手順"],
+      cells: [{ lines: [wide(10), wide(10), wide(10)], compact: false }],
+    },
+    {
+      head: ["説明"],
+      cells: [
+        { lines: [wide(20)], compact: false },
+        { lines: [wide(19)], compact: false },
+      ],
+    },
+    {
+      head: ["更新日"],
+      cells: [{ lines: ["12345678901234567890"], compact: true }],
+    },
+  ];
+  // 実行
+  const result = findLongColumns(columns);
+  // 検証: 列 4 は全てのセルが短い値のため長文の列にしない
+  expect(result).toEqual([3]);
+});
+
+// 見出しだけが 20 文字以上の列も長文の列にする（正常系）
+test("test_find_long_columns_when_head", async () => {
+  // 準備
+  const { findLongColumns } = await loadLogic();
+  // 実行
+  const result = findLongColumns([
+    { head: [wide(20)], cells: [{ lines: [wide(2)], compact: false }] },
+  ]);
+  // 検証
+  expect(result).toEqual([0]);
+});
+
+// 長文の列は text、ほかは select（正常系）
+test("test_default_filter_kind", async () => {
+  // 準備
+  const { defaultFilterKind } = await loadLogic();
+  // 実行
+  const result = [defaultFilterKind(true), defaultFilterKind(false)];
+  // 検証
+  expect(result).toEqual(["text", "select"]);
+});
+
+/** `columnBounds` の結果を `{wraps, min, wanted}` の並びの配列にする */
+const boundsOf = (result: {
+  wraps: boolean;
+  min: number;
+  wanted: number;
+}): [boolean, number, number] => [result.wraps, result.min, result.wanted];
+
+// 折り返さない列・長文の列・幅の範囲の列の最小の幅と望む幅（正常系）
+test("test_column_bounds", async () => {
+  // 準備
+  const { columnBounds } = await loadLogic();
+  const base = {
+    nowrap: false,
+    long: false,
+    longest: 0,
+    longestWord: 0,
+    em: 14,
+    longColumnMin: 45,
+  };
   // 実行
   const result = [
-    { width: 390, lastColumn: 2, wraps: true },
-    { width: 719, lastColumn: 2, wraps: true },
-    { width: 720, lastColumn: 2, wraps: true },
-    { width: 390, lastColumn: 2, wraps: false },
-    { width: 390, lastColumn: 0, wraps: true },
-  ].map((options) => shouldFold(options));
+    { ...base, longest: 80 },
+    { ...base, long: true, longest: 1700, longestWord: 60 },
+    { ...base, long: true, longest: 323 },
+    { ...base, long: true, longest: 1700, longestWord: 700 },
+    { ...base, nowrap: true, long: true, longest: 1700 },
+  ].map((options) => boundsOf(columnBounds(options)));
   // 検証
-  expect(result).toEqual([true, true, false, false, false]);
+  expect(result).toEqual([
+    [false, 80, 80],
+    [true, 630, 1700],
+    [true, 323, 323],
+    [true, 700, 1700],
+    [false, 1700, 1700],
+  ]);
+});
+
+// width.min・width.max で最小の幅と望む幅を決め、最小の幅は最大の幅を超えない（正常系）
+test("test_column_bounds_when_range", async () => {
+  // 準備
+  const { columnBounds } = await loadLogic();
+  const base = {
+    nowrap: false,
+    long: false,
+    longest: 0,
+    longestWord: 0,
+    em: 14,
+    longColumnMin: 45,
+  };
+  // 実行
+  const result = [
+    { ...base, range: { min: 20, max: 30 }, longest: 2800 },
+    { ...base, range: { max: 12 }, long: true, longest: 1120 },
+    { ...base, range: { min: 30, max: 20 }, longest: 2800 },
+    { ...base, range: { min: 10 }, longest: 60 },
+  ].map((options) => boundsOf(columnBounds(options)));
+  // 検証
+  expect(result).toEqual([
+    [true, 280, 420],
+    [true, 168, 168],
+    [true, 280, 280],
+    [true, 140, 140],
+  ]);
+});
+
+/** `distributeColumnWidths` に渡す列の並びを `[wraps, min, wanted]` から作る */
+const columnsOf = (
+  values: Array<[boolean, number, number]>,
+): Array<{ wraps: boolean; min: number; wanted: number }> =>
+  values.map(([wraps, min, wanted]) => ({ wraps, min, wanted }));
+
+// 収まる・分ける・最小の幅で止めて分け直す・はみ出す（正常系）
+test("test_distribute_column_widths", async () => {
+  // 準備
+  const { distributeColumnWidths } = await loadLogic();
+  // 実行
+  const result = [
+    distributeColumnWidths(
+      columnsOf([
+        [false, 80, 80],
+        [true, 323, 323],
+      ]),
+      1000,
+    ),
+    distributeColumnWidths(
+      columnsOf([
+        [false, 388, 388],
+        [true, 630, 1700],
+      ]),
+      1145,
+    ),
+    distributeColumnWidths(
+      columnsOf([
+        [false, 67, 67],
+        [true, 630, 1700],
+        [true, 323, 323],
+      ]),
+      1145,
+    ),
+    distributeColumnWidths(
+      columnsOf([
+        [false, 67, 67],
+        [true, 630, 1700],
+        [true, 630, 1100],
+      ]),
+      390,
+    ),
+  ];
+  // 検証
+  expect(result).toEqual([
+    { widths: [80, 323], overflow: false },
+    { widths: [388, 757], overflow: false },
+    { widths: [67, 755, 323], overflow: false },
+    { widths: [67, 630, 630], overflow: true },
+  ]);
+});
+
+// 読者が幅を変えた列は分けずにその幅のまま残す（正常系）
+test("test_distribute_column_widths_when_fixed", async () => {
+  // 準備
+  const { distributeColumnWidths } = await loadLogic();
+  // 実行
+  const result = distributeColumnWidths(
+    [
+      { wraps: false, min: 118, wanted: 118, fixed: true },
+      { wraps: true, min: 630, wanted: 1700 },
+    ],
+    1145,
+  );
+  // 検証
+  expect(result).toEqual({ widths: [118, 1027], overflow: false });
 });
 
 /** 画面に収まる表の位置（上端 0・下端 800 の画面で、本文の 140〜500） */
@@ -572,7 +769,8 @@ test("test_attach_tables_when_pinned", async () => {
       "\n",
     ),
   );
-  root.style.width = "320px";
+  // 留める 1・3 列目が見えている範囲に収まる幅
+  root.style.width = "800px";
   detachers.push(attachTables(root));
   const [wide, narrow] = [
     ...root.querySelectorAll<HTMLElement>(".mdmark-table"),
@@ -1271,7 +1469,7 @@ test("test_attach_tables_when_row_link_copied", async () => {
   }
 });
 
-/** 390px の幅で 1 行に収まらない説明を最終列に持つ、3 列 3 行の表 */
+/** 390px の幅で 1 行に収まらない長文の説明を最終列に持つ、3 列 3 行の表 */
 const FOLDABLE_TABLE = [
   "| 名前 | 状態 | 説明 |",
   "| --- | --- | --- |",
@@ -1286,108 +1484,6 @@ function setRootWidth(root: HTMLElement, width: number): void {
   root.style.boxSizing = "border-box";
   root.style.width = `${width}px`;
 }
-
-// 狭い幅で折り返す最終列を畳み、開閉し、広げると畳みを削除する（正常系）
-test("test_attach_tables_when_folded", async () => {
-  // 準備
-  addStyles();
-  const { attachTables } = await loadTables();
-  const { root } = createRoot(
-    `${FOLDABLE_TABLE}\n| A | B |\n| --- | --- |\n| 1 | 2 |\n`,
-  );
-  setRootWidth(root, 390);
-  detachers.push(attachTables(root));
-  const [folded, short] = [
-    ...root.querySelectorAll<HTMLElement>(".mdmark-table"),
-  ];
-  // 検証: 付けた後は 1 つ目の表だけ畳み、各行に開閉のボタンがある
-  await vi.waitFor(() => {
-    expect(folded.classList.contains("is-folded")).toBe(true);
-  });
-  expect(short.classList.contains("is-folded")).toBe(false);
-  const toggles = [
-    ...folded.querySelectorAll<HTMLButtonElement>("button.mdmark-fold-toggle"),
-  ];
-  expect(toggles).toHaveLength(3);
-  for (const toggle of toggles) {
-    expect(toggle.getAttribute("aria-expanded")).toBe("false");
-  }
-  expect(short.querySelector(".mdmark-fold-toggle")).toBeNull();
-  // 実行・検証: 1 行目のボタンを押すと、直後に最終列の見出しと中身が開く
-  toggles[0].click();
-  expect(toggles[0].getAttribute("aria-expanded")).toBe("true");
-  const detail = toggles[0].closest("tr")?.nextElementSibling;
-  expect(detail?.classList.contains("mdmark-fold-detail")).toBe(true);
-  expect(detail?.hasAttribute("hidden")).toBe(false);
-  expect(detail?.querySelector(".mdmark-fold-name")?.textContent).toBe("説明");
-  // 実行・検証: 幅を広げると畳みを削除する
-  setRootWidth(root, 800);
-  await vi.waitFor(() => {
-    expect(folded.classList.contains("is-folded")).toBe(false);
-  });
-  expect(folded.querySelector(".mdmark-fold-toggle")).toBeNull();
-  expect(folded.querySelector(".mdmark-fold-detail")).toBeNull();
-});
-
-// 行の詳細を持つ行は、詳細の中身の上に最終列を配置して詳細のボタンだけで開閉する（正常系）
-test("test_attach_tables_when_folded_with_row_detail", async () => {
-  // 準備
-  addStyles();
-  const { attachTables } = await loadTables();
-  const { attachSections } = await import(
-    "../../../../src/interact/sections.ts"
-  );
-  const { root } = createRoot(
-    `${FOLDABLE_TABLE}\n<!-- row-detail: {"at": 2} -->\n\nみかんの詳細\n\n<!-- /row-detail -->\n`,
-  );
-  setRootWidth(root, 390);
-  detachers.push(attachSections({ root, sections: true, rowDetails: true }));
-  detachers.push(attachTables(root));
-  const table = root.querySelector<HTMLElement>(".mdmark-table");
-  await vi.waitFor(() => {
-    expect(table?.classList.contains("is-folded")).toBe(true);
-  });
-  const rows = bodyRows(root);
-  // 検証: 2 行目は最終列の開閉のボタンを持たず、1・3 行目は持つ
-  expect(rows[1].querySelector(".mdmark-fold-toggle")).toBeNull();
-  expect(rows[0].querySelector(".mdmark-fold-toggle")).not.toBeNull();
-  expect(rows[2].querySelector(".mdmark-fold-toggle")).not.toBeNull();
-  // 検証: 詳細の行の中身の先頭に最終列がある
-  const detail = rows[1].nextElementSibling;
-  expect(detail?.classList.contains("mdmark-row-detail")).toBe(true);
-  expect(detail?.querySelector(".mdmark-fold-part")).not.toBeNull();
-  expect(detail?.querySelector(".mdmark-fold-name")?.textContent).toBe("説明");
-  // 実行・検証: 詳細のボタンを押すと詳細の行が開く
-  rows[1].querySelector<HTMLButtonElement>("button.mdmark-row-toggle")?.click();
-  expect(detail?.hasAttribute("hidden")).toBe(false);
-});
-
-// テーブル設定で最終列を隠すと畳みを削除し、前の列を最終列としてもう一度決める（正常系）
-test("test_attach_tables_when_fold_column_hidden", async () => {
-  // 準備
-  addStyles();
-  const { attachTables } = await loadTables();
-  const { root } = createRoot(
-    `<!-- table: {"kind": "data", "features": {"columns": {}}} -->\n\n${FOLDABLE_TABLE}\n<!-- /table -->\n`,
-  );
-  setRootWidth(root, 390);
-  detachers.push(attachTables(root));
-  const table = root.querySelector<HTMLElement>(".mdmark-table");
-  await vi.waitFor(() => {
-    expect(table?.classList.contains("is-folded")).toBe(true);
-  });
-  // 実行: テーブル設定で説明を目のアイコンで隠す
-  columnEyes(root)[2]?.click();
-  // 検証: 畳みを削除し、説明の列を隠す
-  await vi.waitFor(() => {
-    expect(table?.classList.contains("is-folded")).toBe(false);
-  });
-  expect(table?.querySelector(".mdmark-fold-toggle")).toBeNull();
-  expect(table?.querySelector(".mdmark-fold-detail")).toBeNull();
-  expect(root.querySelectorAll("thead th")[2]?.hasAttribute("hidden")).toBe(
-    true,
-  );
-});
 
 /** 描画の更新を 2 回待つ（`ResizeObserver` の呼び出しが済むまで） */
 function nextFrames(): Promise<void> {
@@ -1630,7 +1726,8 @@ test("test_attach_tables_when_row_header_pinned", async () => {
       "",
     ].join("\n"),
   );
-  setRootWidth(root, 320);
+  // 行見出しの 2 列が見えている範囲に収まる幅
+  setRootWidth(root, 800);
   // 実行
   detachers.push(attachTables(root));
   // 検証: 1・2 列目のピン止めが押した状態で、行見出しの全ての列を留める
@@ -1698,7 +1795,8 @@ test("test_attach_tables_when_pinned_through", async () => {
   addStyles();
   const { attachTables } = await loadTables();
   const { root } = createRoot(wideTable(10).join("\n"));
-  setRootWidth(root, 320);
+  // 1〜3 列目の幅の合計が見えている範囲に収まる幅
+  setRootWidth(root, 800);
   detachers.push(attachTables(root, { pinMode: "through" }));
   const table = root.querySelector<HTMLElement>(".mdmark-table");
   const pins = root.querySelectorAll<HTMLButtonElement>("button.mdmark-pin");
@@ -1728,6 +1826,197 @@ test("test_attach_tables_when_pinned_through", async () => {
   expect(stickyColumns(table).some(Boolean)).toBe(false);
 });
 
+/** どの列も同じ長さの値を持つ 10 列の表の Markdown（390px では留める列が 2 列までしか収まらない） */
+function evenTable(): string {
+  const names = Array.from({ length: 10 }, (_, i) => `列名${i + 1}`);
+  return [
+    `| ${names.join(" | ")} |`,
+    `| ${names.map(() => "---").join(" | ")} |`,
+    `| ${names.map(() => "あいうえおかきくけこ").join(" | ")} |`,
+    "",
+  ].join("\n");
+}
+
+/** 見出しのセルの指定した列の `offsetWidth` の合計 */
+function headWidths(table: HTMLElement, columns: number[]): number {
+  const heads = table.querySelectorAll<HTMLTableCellElement>("thead th");
+  return columns.reduce(
+    (sum, column) => sum + (heads[column]?.offsetWidth ?? 0),
+    0,
+  );
+}
+
+const UNPINNED_SUFFIX = "（表の幅に収まらないため留まっていません）";
+
+// 見えている幅に収まらない選んだ列は留めず、ボタンを留まっていない状態にし、幅が広がれば再び留める（正常系）
+test("test_attach_tables_when_pinned_exceed_visible_width", async () => {
+  // 準備
+  addStyles();
+  const { attachTables } = await loadTables();
+  const { root } = createRoot(evenTable());
+  setRootWidth(root, 390);
+  detachers.push(attachTables(root));
+  const table = root.querySelector<HTMLElement>(".mdmark-table");
+  const scroller = root.querySelector<HTMLElement>(".mdmark-table-scroll");
+  const pins = root.querySelectorAll<HTMLButtonElement>("button.mdmark-pin");
+  if (!table || !scroller) {
+    throw new Error("表が無い");
+  }
+  await vi.waitFor(() => {
+    expect(pins[8]?.hasAttribute("hidden")).toBe(false);
+  });
+  // 前提: 1・3 列目は収まり、1・3・9 列目は収まらない
+  expect(headWidths(table, [0, 2])).toBeLessThanOrEqual(scroller.clientWidth);
+  expect(headWidths(table, [0, 2, 8])).toBeGreaterThan(scroller.clientWidth);
+  // 実行: 3 列目と 9 列目を押す
+  pins[2].click();
+  pins[8].click();
+  // 検証
+  const cells = table.querySelector<HTMLTableRowElement>("tbody tr")?.cells;
+  if (!cells) {
+    throw new Error("本文の行が無い");
+  }
+  expect(stickyColumns(table).slice(0, 9)).toEqual([
+    true,
+    false,
+    true,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+  ]);
+  expect(cells[8].style.left).toBe("");
+  expect(cells[8].style.right).toBe("");
+  expect(pins[8].getAttribute("aria-pressed")).toBe("true");
+  expect(pins[8].classList.contains("is-unpinned")).toBe(true);
+  expect(pins[8].getAttribute("aria-label")).toBe(
+    `「列名9」の列をピン止め${UNPINNED_SUFFIX}`,
+  );
+  expect(pins[8].getAttribute("title")).toBe(
+    `「列名9」の列をピン止め${UNPINNED_SUFFIX}`,
+  );
+  expect(pins[0].classList.contains("is-unpinned")).toBe(false);
+  expect(pins[2].classList.contains("is-unpinned")).toBe(false);
+  // 実行・検証: 幅を広げると 9 列目も留まる
+  setRootWidth(root, 800);
+  await vi.waitFor(() => {
+    expect(getComputedStyle(cells[8]).position).toBe("sticky");
+  });
+  expect(pins[8].classList.contains("is-unpinned")).toBe(false);
+  expect(pins[8].getAttribute("aria-label")).toBe("「列名9」の列をピン止め");
+  // 実行・検証: 幅を戻すと 9 列目は再び留まらない
+  setRootWidth(root, 390);
+  await vi.waitFor(() => {
+    expect(getComputedStyle(cells[8]).position).not.toBe("sticky");
+  });
+  expect(pins[8].classList.contains("is-unpinned")).toBe(true);
+});
+
+// through の表は、押した列までのうち収まる列だけを留め、押した列のボタンを留まっていない状態にする（正常系）
+test("test_attach_tables_when_pinned_through_exceed_visible_width", async () => {
+  // 準備
+  addStyles();
+  const { attachTables } = await loadTables();
+  const { root } = createRoot(evenTable());
+  setRootWidth(root, 390);
+  detachers.push(attachTables(root, { pinMode: "through" }));
+  const table = root.querySelector<HTMLElement>(".mdmark-table");
+  const scroller = root.querySelector<HTMLElement>(".mdmark-table-scroll");
+  const pins = root.querySelectorAll<HTMLButtonElement>("button.mdmark-pin");
+  if (!table || !scroller) {
+    throw new Error("表が無い");
+  }
+  await vi.waitFor(() => {
+    expect(pins[2]?.hasAttribute("hidden")).toBe(false);
+  });
+  expect(headWidths(table, [0, 1, 2])).toBeGreaterThan(scroller.clientWidth);
+  // 実行
+  pins[2].click();
+  // 検証
+  expect(stickyColumns(table).slice(0, 4)).toEqual([true, true, false, false]);
+  expect([...pins].map((pin) => pin.getAttribute("aria-pressed"))).toEqual([
+    "false",
+    "false",
+    "true",
+    ...Array.from({ length: 7 }, () => "false"),
+  ]);
+  expect([...pins].map((pin) => pin.classList.contains("is-unpinned"))).toEqual(
+    [false, false, true, ...Array.from({ length: 7 }, () => false)],
+  );
+  expect(pins[2].getAttribute("aria-label")).toBe(
+    `「列名3」の列までピン止め${UNPINNED_SUFFIX}`,
+  );
+});
+
+// 留まっていない列があるとき、列の幅の上限は実際に留まっている列だけを引き、列を狭めて収まれば再び留める（正常系）
+test("test_attach_tables_when_resized_with_unpinned", async () => {
+  // 準備
+  addStyles();
+  const { attachTables } = await loadTables();
+  const names = Array.from({ length: 10 }, (_, i) => `列${i + 1}`);
+  const values = names.map((_, i) =>
+    i === 2 ? "とても長い説明の文".repeat(3).slice(0, 30) : "値",
+  );
+  const { root } = createRoot(
+    [
+      '<!-- table: {"kind": "data", "columns": {"列3": {"width": {"mode": "nowrap"}}}} -->',
+      "",
+      `| ${names.join(" | ")} |`,
+      `| ${names.map(() => "---").join(" | ")} |`,
+      `| ${values.join(" | ")} |`,
+      "",
+      "<!-- /table -->",
+      "",
+    ].join("\n"),
+  );
+  setRootWidth(root, 390);
+  detachers.push(attachTables(root));
+  const table = root.querySelector<HTMLElement>(".mdmark-table");
+  const scroller = root.querySelector<HTMLElement>(".mdmark-table-scroll");
+  const pins = root.querySelectorAll<HTMLButtonElement>("button.mdmark-pin");
+  const handles = root.querySelectorAll<HTMLElement>(".mdmark-col-resize");
+  const heads = root.querySelectorAll<HTMLTableCellElement>("thead th");
+  if (!table || !scroller) {
+    throw new Error("表が無い");
+  }
+  await vi.waitFor(() => {
+    expect(pins[8]?.hasAttribute("hidden")).toBe(false);
+  });
+  pins[2].click();
+  pins[8].click();
+  handles[2].focus();
+  // 検証: 狭める前は 3 列の合計が見えている幅を超え、9 列目は留まらず、上限は 1 列目の幅だけを引く
+  expect(headWidths(table, [0, 2, 8])).toBeGreaterThan(scroller.clientWidth);
+  expect(pins[8].classList.contains("is-unpinned")).toBe(true);
+  expect(handles[2].getAttribute("aria-valuemax")).toBe(
+    String(Math.floor(scroller.clientWidth - heads[0].offsetWidth)),
+  );
+  // 実行: 3 列目を列の最小幅まで狭める
+  for (let i = 0; i < 200; i += 1) {
+    if (
+      handles[2].getAttribute("aria-valuenow") ===
+      handles[2].getAttribute("aria-valuemin")
+    ) {
+      break;
+    }
+    pressResizeKey(handles[2], "ArrowLeft");
+  }
+  // 検証: 収まり、9 列目が留まる
+  expect(handles[2].getAttribute("aria-valuenow")).toBe(
+    handles[2].getAttribute("aria-valuemin"),
+  );
+  expect(headWidths(table, [0, 2, 8])).toBeLessThanOrEqual(
+    scroller.clientWidth,
+  );
+  const cells = table.querySelector<HTMLTableRowElement>("tbody tr")?.cells;
+  await vi.waitFor(() => {
+    expect(cells && getComputedStyle(cells[8]).position).toBe("sticky");
+  });
+  expect(pins[8].classList.contains("is-unpinned")).toBe(false);
+});
+
 // 結合した見出しの下の 1 列だけを留めると、結合したセルは留めない（正常系）
 test("test_attach_tables_when_pinned_under_merged_header", async () => {
   // 準備
@@ -1747,7 +2036,8 @@ test("test_attach_tables_when_pinned_under_merged_header", async () => {
       "",
     ].join("\n"),
   );
-  setRootWidth(root, 320);
+  // 留める名前と既定の列が見えている範囲に収まる幅
+  setRootWidth(root, 1000);
   detachers.push(attachTables(root));
   const table = root.querySelector<HTMLElement>(".mdmark-table");
   if (!table) {
@@ -1832,6 +2122,41 @@ test("test_pin_offsets", async () => {
   expect(offsets.get(4)).toEqual({ start: 160, end: 0 });
   expect(offsets.has(1)).toBe(false);
   expect(offsets.has(3)).toBe(false);
+});
+
+// 見えている幅を超える列から右を留めない（正常系）
+test("test_fit_pinned_columns", async () => {
+  // 準備
+  const { fitPinnedColumns } = await loadLogic();
+  const widths = [125, 125, 111, 40, 40, 40, 40, 40, 143, 40];
+  const pinned = [0, 2, 8];
+  // 実行・検証
+  expect(fitPinnedColumns({ widths, pinned, visibleWidth: 303 })).toEqual({
+    fitted: [0, 2],
+    unpinned: [8],
+  });
+  expect(fitPinnedColumns({ widths, pinned, visibleWidth: 379 })).toEqual({
+    fitted: [0, 2, 8],
+    unpinned: [],
+  });
+  expect(fitPinnedColumns({ widths, pinned, visibleWidth: 200 })).toEqual({
+    fitted: [0],
+    unpinned: [2, 8],
+  });
+});
+
+// 超えた列より右の列は、幅が小さくても留めない（境界）
+test("test_fit_pinned_columns_when_later_column_narrow", async () => {
+  // 準備
+  const { fitPinnedColumns } = await loadLogic();
+  // 実行
+  const result = fitPinnedColumns({
+    widths: [100, 200, 10],
+    pinned: [0, 1, 2],
+    visibleWidth: 250,
+  });
+  // 検証
+  expect(result).toEqual({ fitted: [0], unpinned: [1, 2] });
 });
 
 // 同じ範囲と同じピン止めの側だけを許す（正常系）
@@ -2181,12 +2506,12 @@ test("test_attach_tables_when_scroll_wrapper", async () => {
     ),
   ).toBe(true);
   const table = narrow.querySelector("table");
-  expect(
-    Math.abs(
-      (table?.getBoundingClientRect().width ?? 0) -
-        narrowScroll.getBoundingClientRect().width,
-    ),
-  ).toBeLessThanOrEqual(1);
+  expect(table?.getBoundingClientRect().width ?? 0).toBeLessThan(
+    narrowScroll.getBoundingClientRect().width,
+  );
+  expect(narrowScroll.scrollWidth).toBeLessThanOrEqual(
+    narrowScroll.clientWidth,
+  );
   expect(
     [...many.querySelectorAll<HTMLElement>("button.mdmark-pin")].some(
       (pin) => !pin.hidden,
@@ -2293,65 +2618,6 @@ test("test_attach_tables_when_column_resized", async () => {
   );
 });
 
-// 最終列を畳む判定は描く先の要素の幅の変化でだけやり直し、幅を指定した最終列は畳まない（正常系）
-test("test_attach_tables_when_resized_column_not_folded", async () => {
-  // 準備: 最終列が 600px の幅で 1 行に収まる 3 列の表
-  addStyles();
-  const { attachTables } = await loadTables();
-  const { root } = createRoot(
-    [
-      '<!-- table: {"kind": "data"} -->',
-      "",
-      "| 名前 | 状態 | 説明 |",
-      "| --- | --- | --- |",
-      "| りんご | 新規 | 描画を速くする改善の説明 |",
-      "| みかん | 進行 | 印刷を直す変更の説明 |",
-      "",
-      "<!-- /table -->",
-      "",
-    ].join("\n"),
-  );
-  setRootWidth(root, 600);
-  detachers.push(attachTables(root));
-  const table = root.querySelector<HTMLElement>(".mdmark-table");
-  const handles = root.querySelectorAll<HTMLElement>(".mdmark-col-resize");
-  if (!table) {
-    throw new Error("表が無い");
-  }
-  const lastCells = () =>
-    root.querySelectorAll<HTMLElement>("tbody td:last-child");
-  // 実行: 最終列のつまみで ← を押して折り返させる
-  for (let i = 0; i < 20; i += 1) {
-    pressResizeKey(handles[2], "ArrowLeft");
-  }
-  await new Promise((resolve) => requestAnimationFrame(resolve));
-  // 検証の前提: 最終列のセルが、畳む判定の折り返し（行の高さの 1.5 倍を超える）になっている
-  expect(
-    [...lastCells()].some((cell) => {
-      const style = getComputedStyle(cell);
-      const content =
-        cell.scrollHeight -
-        Number.parseFloat(style.paddingTop) -
-        Number.parseFloat(style.paddingBottom);
-      return content > Number.parseFloat(style.lineHeight) * 1.5;
-    }),
-  ).toBe(true);
-  // 検証
-  expect(
-    [...lastCells()].some((cell) => cell.classList.contains("mdmark-fold-col")),
-  ).toBe(false);
-  expect(table.classList.contains("is-folded")).toBe(false);
-  // 実行: 描く先の要素の幅を変える
-  setRootWidth(root, 590);
-  await new Promise((resolve) => requestAnimationFrame(resolve));
-  await new Promise((resolve) => requestAnimationFrame(resolve));
-  // 検証
-  expect(
-    [...lastCells()].some((cell) => cell.classList.contains("mdmark-fold-col")),
-  ).toBe(false);
-  expect(table.classList.contains("is-folded")).toBe(false);
-});
-
 // resize を持たない表には、つまみの操作を付けない（正常系）
 test("test_attach_tables_when_resize_off", async () => {
   // 準備
@@ -2367,4 +2633,113 @@ test("test_attach_tables_when_resize_off", async () => {
   detachers.push(attachTables(root));
   // 検証
   expect(root.querySelector(".mdmark-col-resize")).toBeNull();
+});
+// 狭い幅でも最終列を畳まず、列の幅を自動で決めてから、はみ出す表にピン止めを付ける（正常系）
+test("test_attach_tables_when_auto_width", async () => {
+  // 準備
+  addStyles();
+  const { attachTables } = await loadTables();
+  const { root } = createRoot(
+    `<!-- table: {"kind": "data"} -->\n\n${FOLDABLE_TABLE}\n<!-- /table -->\n`,
+  );
+  setRootWidth(root, 390);
+  // 実行
+  detachers.push(attachTables(root));
+  // 検証
+  const wrapper = root.querySelector<HTMLElement>(".mdmark-table");
+  const table = wrapper?.querySelector("table");
+  const scroller = wrapper?.querySelector<HTMLElement>(".mdmark-table-scroll");
+  if (!wrapper || !table || !scroller) {
+    throw new Error("表が無い");
+  }
+  expect(wrapper.dataset.long).toBe("2");
+  await vi.waitFor(() => {
+    expect(table.hasAttribute("data-auto-width")).toBe(true);
+  });
+  const lastCells = [
+    ...table.querySelectorAll<HTMLElement>("tbody td:last-child"),
+  ];
+  expect(
+    lastCells.every((cell) => getComputedStyle(cell).display !== "none"),
+  ).toBe(true);
+  expect(
+    root.querySelector(".mdmark-fold-toggle, .mdmark-fold-col"),
+  ).toBeNull();
+  expect(scroller.scrollWidth).toBeGreaterThan(scroller.clientWidth);
+  await vi.waitFor(() => {
+    expect(getComputedStyle(table.rows[1].cells[0]).position).toBe("sticky");
+  });
+});
+
+// 列を隠しても、残った列の幅を変えない（正常系）
+test("test_attach_tables_when_column_hidden_keeps_widths", async () => {
+  // 準備
+  addStyles();
+  const { attachTables } = await loadTables();
+  const { root } = createRoot(
+    `<!-- table: {"kind": "data", "features": {"columns": {"enabled": true}}} -->\n\n${FOLDABLE_TABLE}\n<!-- /table -->\n`,
+  );
+  setRootWidth(root, 1280);
+  detachers.push(attachTables(root));
+  const table = root.querySelector<HTMLTableElement>(".mdmark-table table");
+  if (!table) {
+    throw new Error("表が無い");
+  }
+  await vi.waitFor(() => {
+    expect(table.hasAttribute("data-auto-width")).toBe(true);
+  });
+  const heads = [...table.querySelectorAll<HTMLElement>("thead th")];
+  const before = heads.map((th) => th.offsetWidth);
+  // 実行: 状態の列を隠す
+  clickEye(root, 1);
+  // 検証: 残った名前・説明の列の幅は隠す前と同じ
+  expect(heads[1]?.hidden).toBe(true);
+  for (const column of [0, 2]) {
+    expect(
+      Math.abs((heads[column]?.offsetWidth ?? 0) - (before[column] ?? 0)),
+    ).toBeLessThanOrEqual(1);
+  }
+});
+
+// つまみで列の幅を変えた後と戻した後に、列の幅を決め直す（正常系）
+test("test_attach_tables_when_resized_refreshes_width", async () => {
+  // 準備
+  addStyles();
+  const { attachTables } = await loadTables();
+  const { root } = createRoot(
+    `<!-- table: {"kind": "data"} -->\n\n${FOLDABLE_TABLE}\n<!-- /table -->\n`,
+  );
+  setRootWidth(root, 1280);
+  detachers.push(attachTables(root));
+  const table = root.querySelector<HTMLTableElement>(".mdmark-table table");
+  const handle = root.querySelector<HTMLElement>(".mdmark-col-resize");
+  const nameHead = root.querySelector<HTMLElement>("thead th");
+  if (!table || !handle || !nameHead) {
+    throw new Error("表かつまみが無い");
+  }
+  await vi.waitFor(() => {
+    expect(table.hasAttribute("data-auto-width")).toBe(true);
+  });
+  // 実行: 名前の列のつまみで → を 2 回押す
+  pressResizeKey(handle, "ArrowRight");
+  pressResizeKey(handle, "ArrowRight");
+  // 検証: 名前の列は自動の幅を持たず、表の幅の合計に広げた幅が入る
+  await vi.waitFor(() => {
+    expect(nameHead.style.getPropertyValue("--mdmark-auto-width")).toBe("");
+  });
+  const sum = [...table.querySelectorAll<HTMLElement>("thead th")].reduce(
+    (total, th) => total + th.offsetWidth,
+    0,
+  );
+  expect(
+    Number.parseFloat(
+      table.style.getPropertyValue("--mdmark-auto-table-width"),
+    ),
+  ).toBeCloseTo(sum, -1);
+  // 実行: Enter で戻す
+  pressResizeKey(handle, "Enter");
+  // 検証: 名前の列に自動の幅が入り直す
+  await vi.waitFor(() => {
+    expect(nameHead.style.getPropertyValue("--mdmark-auto-width")).not.toBe("");
+  });
 });

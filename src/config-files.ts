@@ -41,6 +41,8 @@ export type CliConfig = MdmarkConfig & {
 export type CheckConfig = {
   /** 知らないマーカーとして通知しないマーカーの名前の並び */
   ignore?: string[];
+  /** 記法を含む純粋な `.md` に、拡張子を `.mark.md` に変えるよう提案するか（省略時は提案する） */
+  suggestMarkExtension?: boolean;
 };
 
 /** 値が連想配列（`null`・配列を除くオブジェクト）か */
@@ -470,7 +472,7 @@ function isValidSideToc(
   return true;
 }
 
-/** 設定の `table` を検める。キーと値の構造でなければ、`pin` が `each` と `through` のどちらでもなければ、`schema` のずれを追加して `false` を返却する */
+/** 設定の `table` を検める。キーと値の構造でなければ、`pin` が `each` と `through` のどちらでもなければ、`long_column_min` が 0 より大きい有限の数でなければ、`schema` のずれを追加して `false` を返却する */
 function isValidTable(
   value: unknown,
   file: string,
@@ -496,6 +498,20 @@ function isValidTable(
         file,
         "table.pin",
         "`table.pin` は `each` か `through` で記載してください。",
+      ),
+    );
+    return false;
+  }
+  const min = value.long_column_min;
+  if (
+    min !== undefined &&
+    (typeof min !== "number" || !Number.isFinite(min) || min <= 0)
+  ) {
+    issues.push(
+      schemaIssue(
+        file,
+        "table.long_column_min",
+        "`table.long_column_min` は 0 より大きい数で記載してください。",
       ),
     );
     return false;
@@ -639,7 +655,7 @@ function isValidMermaid(
   return true;
 }
 
-/** 設定の `check` を検める。オブジェクトでなければ `schema` のずれにして `undefined` を返却し、`ignore` はマーカーの名前の書式に合う値だけを残す */
+/** 設定の `check` を検める。オブジェクトでなければ `schema` のずれにして `undefined` を返却し、`ignore` はマーカーの名前の書式に合う値だけを残し、真偽値でない `suggestMarkExtension` を落とす */
 function validateCheck(
   value: unknown,
   file: string,
@@ -654,6 +670,21 @@ function validateCheck(
       ),
     );
     return undefined;
+  }
+  if (
+    value.suggestMarkExtension !== undefined &&
+    typeof value.suggestMarkExtension !== "boolean"
+  ) {
+    issues.push(
+      schemaIssue(
+        file,
+        "check.suggestMarkExtension",
+        "`check.suggestMarkExtension` は `true` か `false` で記載してください。",
+      ),
+    );
+    const rest = { ...value };
+    delete rest.suggestMarkExtension;
+    return validateCheck(rest, file, issues);
   }
   if (value.ignore === undefined) {
     return value as CheckConfig;

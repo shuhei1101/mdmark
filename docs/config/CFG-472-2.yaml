@@ -298,11 +298,12 @@ settings:
     type: object[]
     required: false
     default: なし（エイリアスを指定しない）
-    description: プレビューで、重ねた設定の行の `paths` の YAML を CLI と同じく読み込んでエイリアスを作り、`mount` の `opts.aliases` に指定する。行の `paths` はその値を記載した設定ファイルのフォルダから解決する。使用できない行・レコードは除き、出力チャネルに警告を記載する。行の `paths` に該当した YAML を保存すると再描画する。書き出した HTML には指定しない
+    description: プレビューと書き出す HTML で、重ねた設定の行の `paths` の YAML を CLI と同じく読み込んでエイリアスを作り、`mount` の `opts.aliases` に指定する。行の `paths` はその値を記載した設定ファイルのフォルダから解決する。使用できない行・レコードは除き、出力チャネルに警告を記載する。プレビューは、行の `paths` に該当した YAML を保存すると再描画する
     reload: immediate
     refs:
       - CFG-472-3#settings[aliases]
       - IF-472-22#constraints[エイリアス]
+      - IF-472-15#constraints[エイリアス]
     status: planned
     visibility: user
     introduced:

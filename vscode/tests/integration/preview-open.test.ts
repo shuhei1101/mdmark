@@ -627,14 +627,16 @@ suite("プレビューを開く", () => {
     await stub.clear();
     await openMarkdown("guide.md");
     const logOffset = await extensionLogSize();
-    // 実行
+    // 実行: 経過時間は performance.now の差で測る（WSL2 の時計の補正で Date.now が戻ると短く出るため）
     const start = Date.now();
+    const startMonotonic = performance.now();
     await vscode.commands.executeCommand("mdmark.openPreviewToSide");
     const record = lastPanel();
     await waitFor(async () =>
       (await distRequests()).includes(distPath("v0.6.0", "index.js")),
     );
-    const elapsed = Date.now() - start;
+    const elapsed = performance.now() - startMonotonic;
+    const elapsedWall = Date.now() - start;
     await waitForRendered(record);
     // 検証: 待ちの上限（3 秒）より前には要求せず、待ちの上限の中断の合図で /tags の要求を打ち切ってから要求する
     // 負荷で遅れるコマンドの経過時間には上限を置かず、/tags の要求を受けてから打ち切られるまでの時間に上限を置く
@@ -642,13 +644,12 @@ suite("プレビューを開く", () => {
       const tagRequests = await stub.tagRequests();
       return (
         tagRequests.length > 0 &&
-        tagRequests.every(({ closedAt }) => closedAt !== null)
+        tagRequests.every(({ openMs }) => openMs !== null)
       );
     };
     await waitFor(tagsClosed, { timeout: 5000 }).catch(() => undefined);
     const abortedWithin = (await stub.tagRequests()).every(
-      ({ receivedAt, closedAt }) =>
-        closedAt !== null && closedAt - receivedAt < 6000,
+      ({ openMs }) => openMs !== null && openMs < 6000,
     );
     // 前回のバージョンは、タグ一覧を取れない旨を記録した後に決めて要求する。出力チャネルがログファイルへ書き込むまで待つ
     const loggedTimeout = async () =>
@@ -664,15 +665,15 @@ suite("プレビューを開く", () => {
       // 出力チャネルがログファイルへ書き込み終えるのを待つ
       await sleep(1000);
       const timings = (await stub.tagRequests()).map(
-        ({ receivedAt, closedAt }) =>
-          `受けた +${receivedAt - start} ms・閉じられた ${closedAt === null ? "まだ" : `+${closedAt - start} ms`}`,
+        ({ receivedAt, closedAt, openMs }) =>
+          `受けた +${receivedAt - start} ms・閉じられた ${closedAt === null ? "まだ" : `+${closedAt - start} ms`}（Date.now）・受けてから閉じられるまで ${openMs === null ? "まだ" : `${Math.round(openMs)} ms`}（performance.now）`,
       );
       const reasons = (await extensionLogSince(logOffset)).filter((line) =>
         line.includes("タグ一覧を取れない"),
       );
       assert.fail(
         [
-          `要求まで ${elapsed} ms ${JSON.stringify(await stub.requests())}`,
+          `要求まで ${Math.round(elapsed)} ms（performance.now）・${elapsedWall} ms（Date.now） ${JSON.stringify(await stub.requests())}`,
           `/tags の要求（開いた時刻から）: ${timings.join(" / ") || "なし"}`,
           `拡張機能のログ: ${reasons.join(" / ") || "なし"}`,
         ].join("\n"),
@@ -684,10 +685,10 @@ suite("プレビューを開く", () => {
     await stub.setMode({ tags: "forbidden", dist: "ok" });
     await stub.clear();
     await openMarkdown("guide.md");
-    const startForbidden = Date.now();
+    const startForbidden = performance.now();
     await vscode.commands.executeCommand("mdmark.openPreviewToSide");
     await waitForRendered(lastPanel());
-    assert.ok(Date.now() - startForbidden < 2800);
+    assert.ok(performance.now() - startForbidden < 2800);
     assert.ok((await distRequests()).includes(distPath("v0.6.0", "index.js")));
   });
 
@@ -866,20 +867,23 @@ suite("プレビューを開く", () => {
     await vscode.commands.executeCommand("mdmark.openPreviewToSide");
     const record = lastPanel();
     // 検証: 開いてから 1 秒を過ぎるまでは出さず、過ぎると出る
-    const opened = Date.now();
+    const opened = performance.now();
     let shownAfter = 0;
     await waitFor(
       async () => {
         const found = await inspect(".mdmark-preview-loading").catch(() => []);
         if (found.length === 1) {
-          shownAfter = Date.now() - opened;
+          shownAfter = performance.now() - opened;
           return true;
         }
         return false;
       },
       { message: "読み込み中が出ない" },
     );
-    assert.ok(shownAfter >= 900, `読み込み中が ${shownAfter} ms で出た`);
+    assert.ok(
+      shownAfter >= 900,
+      `読み込み中が ${Math.round(shownAfter)} ms で出た`,
+    );
     const [loading] = await inspect(".mdmark-preview-loading");
     assert.strictEqual(loading?.attributes.role, "status");
     assert.ok(loading?.text.includes("mdmark を読み込んでいます"));

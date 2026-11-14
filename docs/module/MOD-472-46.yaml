@@ -11,8 +11,9 @@ directory: |-
   ├── notice.stories.yaml          # 通知ブロックのストーリー（Figure・Block・LongName・Extension）
   ├── embed.ts                     # 読み込み中のブロックの renderEmbed
   ├── embed.stories.yaml           # 読み込み中のブロックのストーリー（Loading）
+  ├── embedded-html.ts             # 埋め込んだ HTML を包む枠の renderEmbeddedHtml
   ├── syntax-warning.ts            # 記載の警告の renderSyntaxWarning
-  ├── table.ts                     # 表の renderTable・renderTableTools・renderTableBar・renderTableSettings・renderTreeKeyCell・renderTypeCell・renderTreeTools・renderTotalRows・renderCopyPanel・renderFoldedColumn・renderCheckCell
+  ├── table.ts                     # 表の renderTable・renderTableTools・renderTableBar・renderTableSettings・renderTreeKeyCell・renderTypeCell・renderTreeTools・renderTotalRows・renderCopyPanel・renderCheckCell
   ├── callout.ts                   # 注意書きの renderCallout
   ├── tabs.ts                      # タブの renderTabs
   ├── steps.ts                     # ステップの renderSteps
@@ -20,6 +21,7 @@ directory: |-
   ├── tree.ts                      # ファイルツリーの renderTree・renderTreeBar・fileIconOf・folderOpenByDefault
   ├── badge.ts                     # バッジの renderBadge（色を含む）
   ├── inline-icon.ts               # 行内のアイコンの renderInlineIcon と IconNode の svg の iconNodeSvg
+  ├── icon-node.ts                 # lucide のアイコンの形状を svg の中身にする iconNodeBody と、svg の文字にする iconSvgOf
   ├── kbd.ts                       # キーの renderKbd
   ├── highlight.ts                 # 蛍光ペンの renderHighlight
   ├── layout-columns.ts            # 段組みの renderLayoutColumns

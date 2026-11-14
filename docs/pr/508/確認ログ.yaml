@@ -1,0 +1,31 @@
+confirmations:
+  - topic: map のシーケンス図で参加者を非表示にしたときに隠すメッセージの範囲
+    decision: 非表示の参加者が送信・受信するメッセージを、相手が表示されていても全て隠す（推奨案 A）
+    decided_by: thumbs_up
+    approver: shuhei1101
+    commit: fddb8ac03c1f30a0d8637803d766bfc401146c92
+    thread: https://github.com/shuhei1101/mdmark/pull/508#discussion_r4554494291
+  - topic: map のシーケンス図の参加者の表示と非表示の操作の置き場所
+    decision: 参加者の非表示の機能そのものを追加しない（案 A・B のどちらも採らない）
+    decided_by: reply
+    approver: shuhei1101
+    commit:
+    thread: https://github.com/shuhei1101/mdmark/pull/508#discussion_r4555208208
+  - topic: 図の枠を指で動かすときの操作中の見せ方
+    decision: 枠線をリンクの色の 2px にする（推奨案 A）
+    decided_by: thumbs_up
+    approver: shuhei1101
+    commit:
+    thread: https://github.com/shuhei1101/mdmark/pull/508#discussion_r4555209406
+  - topic: 罫線のコードブロックの警告の文言と警告を止める指定
+    decision: モックの文言と、code のマーカーのキー tree_warning を false にして止める指定（推奨案 A）
+    decided_by: thumbs_up
+    approver: shuhei1101
+    commit:
+    thread: https://github.com/shuhei1101/mdmark/pull/508#discussion_r4555211773
+  - topic: 3 つのモックの全体への合意
+    decision: モックのとおりに設計・実装へ進める（推奨案 A。参加者の表示と非表示のモックは取り下げ）
+    decided_by: thumbs_up
+    approver: shuhei1101
+    commit:
+    thread: https://github.com/shuhei1101/mdmark/pull/508#discussion_r4555215585

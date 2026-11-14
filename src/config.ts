@@ -1,4 +1,5 @@
 import type { MapKind, MapLine, ResolvedMapConfig } from "./map/spec.ts";
+import { DEFAULT_LONG_COLUMN_MIN_EM } from "./table-logic.ts";
 
 /** 利用側が `opts.config` に指定する設定。他のキーを持っていても読み込まない */
 export type MdmarkConfig = {
@@ -15,7 +16,7 @@ export type MdmarkConfig = {
   /** 右側の目次の設定。`mode` は出し方（`hover` / `fixed`）。知らない値も受けて `resolveConfig` が `hover` にするため、型は `string` */
   "side-toc"?: { mode?: string };
   /** 表の設定。`pin` はピン止めの動き（`each` / `through`）。知らない値も受けて `resolveConfig` が `each` にするため、型は `string` */
-  table?: { pin?: string };
+  table?: { pin?: string; long_column_min?: unknown };
   /** 配色のテーマの名前（`COLOR_THEMES` のどれか）。知らない値も受けて `resolveConfig` が `DEFAULT_COLOR_THEME` にするため、型は `string` */
   colorTheme?: string;
   /** 配色の明暗（`COLOR_SCHEMES` のどれか）。知らない値も受けて `resolveConfig` が `DEFAULT_COLOR_SCHEME` にするため、型は `string` */
@@ -97,8 +98,8 @@ export type ResolvedConfig = {
   syntax: { url: string };
   /** 設定の `side-toc.mode` が `fixed` のときだけ `fixed`、それ以外は `hover` */
   sideToc: { mode: SideTocMode };
-  /** 設定の `table.pin` が `through` のときだけ `through`、それ以外は `each` */
-  table: { pin: TablePinMode };
+  /** `pin` は設定の `table.pin` が `through` のときだけ `through`、それ以外は `each`。`longColumnMin` は設定の `table.long_column_min` が 0 より大きい有限の数ならその値、それ以外は `DEFAULT_LONG_COLUMN_MIN_EM` */
+  table: { pin: TablePinMode; longColumnMin: number };
   /** 設定の `colorTheme` が `COLOR_THEMES` にあればその値、それ以外は `DEFAULT_COLOR_THEME` */
   colorTheme: ColorTheme;
   /** 設定の `colorScheme` が `COLOR_SCHEMES` にあればその値、それ以外は `DEFAULT_COLOR_SCHEME` */
@@ -294,6 +295,14 @@ export function resolveConfig(options: {
   // 表のピン止めの動きは、through だけを受け、他の値は each にする
   const pin: TablePinMode =
     config?.table?.pin === "through" ? "through" : "each";
+  // 長文の列の最小の幅は、0 より大きい有限の数だけを受け、他の値は既定にする
+  const requestedMin = config?.table?.long_column_min;
+  const longColumnMin =
+    typeof requestedMin === "number" &&
+    Number.isFinite(requestedMin) &&
+    requestedMin > 0
+      ? requestedMin
+      : DEFAULT_LONG_COLUMN_MIN_EM;
   // テーマは、COLOR_THEMES にある名前だけを受け、他の値は既定にする
   const colorTheme =
     COLOR_THEMES.find((name) => name === config?.colorTheme) ??
@@ -318,7 +327,7 @@ export function resolveConfig(options: {
     htmlScripts,
     mermaid: resolveMermaid(config?.mermaid),
     sideToc: { mode },
-    table: { pin },
+    table: { pin, longColumnMin },
     colorTheme,
     colorScheme,
     labels,

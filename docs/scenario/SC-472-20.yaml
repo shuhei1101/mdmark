@@ -182,7 +182,7 @@ scenarios:
       - name: mdmark を読み込むページ
         description: 正常シナリオと同じ
       - name: 入れ子の深いファイルツリーの Markdown
-        description: 'マーカーの無い言語 `tree` のコードブロックと、`<!-- tree: {"depth": 2} -->` の後ろの言語 `tree` のコードブロックを並べた文書。どちらも `app/` の下に `src/`、その下に `parts/`、その下に `tree.ts` を持つ'
+        description: 'マーカーの無い言語 `tree` のコードブロックと、`<!-- tree: {"depth": 2} -->` の後ろの言語 `tree` のコードブロックと、`<!-- tree: {"depth": 1} -->` の後ろの言語 `tree` のコードブロックを並べた文書。どれも `app/` の下に `src/`、その下に `parts/`、その下に `tree.ts` を持つ'
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
@@ -191,16 +191,17 @@ scenarios:
         participant P as 利用側のページ
         participant M as mdmark
         P->>M: 設定と Markdown を指定して描かせる
-        M-->>P: 1 つ目はルートだけ、2 つ目は 2 階層まで開いたツリーを描く
-        U->>P: 1 つ目のツリーの src/ の名前を押す
+        M-->>P: 1 つ目は全てのフォルダ、2 つ目は 2 階層まで、3 つ目はルートだけを開いたツリーを描く
+        U->>P: 3 つ目のツリーの src/ の名前を押す
         P-->>U: src/ を開いたツリー
-        U->>P: 1 つ目のツリーの app/ のアイコンを Shift を押しながら押す
+        U->>P: 3 つ目のツリーの app/ のアイコンを Shift を押しながら押す
         P-->>U: app/ と入れ子を全て閉じたツリー
         U->>P: もう一度 Shift を押しながら app/ のアイコンを押す
         P-->>U: 入れ子を全て開いたツリー
     expected:
-      - 描いた直後、1 つ目のツリーは `app/` だけが開き、`src/` が閉じて `parts/` が表示されていない
+      - 描いた直後、1 つ目のツリーは `app/`・`src/`・`parts/` が開き、`tree.ts` が表示されている
       - 描いた直後、2 つ目のツリーは `app/` と `src/` が開き、`parts/` が閉じて `tree.ts` が表示されていない
+      - 描いた直後、3 つ目のツリーは `app/` だけが開き、`src/` が閉じて `parts/` が表示されていない
       - '`src/` の名前を押した後、`parts/` が表示され、`src/` の開閉のボタンの `aria-expanded` が `true`'
       - Shift を押しながら押すたびに、`app/` の入れ子のフォルダが全て閉じ、次に全て開いて `tree.ts` が表示される
       - フォルダの開閉は、フォーカスして Enter でもできる
@@ -281,7 +282,7 @@ scenarios:
       - name: mdmark を読み込むページ
         description: 正常シナリオと同じ
       - name: 読み込めない depth の Markdown
-        description: '`<!-- tree: {"depth": "deep"} -->` の後ろに、正常シナリオ（ファイルツリーのフォルダを開閉する）と同じコードブロックを持つ文書'
+        description: '`<!-- tree: {"depth": "deep"} -->` の後ろに、正常シナリオ（ファイルツリーのフォルダを開閉する）の 1 つ目と同じコードブロックを持つ文書'
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
@@ -295,7 +296,7 @@ scenarios:
         P-->>U: 記載の警告とツリーを表示
     expected:
       - ツリーの上に、`depth` には `"all"` か 1 以上の整数を記載することを記載した記載の警告がある
-      - ツリーは既定のとおり `app/` だけを開いて描かれている
+      - ツリーは既定のとおり全てのフォルダを開いて描かれ、`tree.ts` が表示されている
     test: test_error_when_tree_open_invalid
   - name: 正常シナリオ（アイコン・キー・ルビ）
     setup:
@@ -387,6 +388,76 @@ scenarios:
       - 折り返した名前の続きが、その項目のアイコンの右の名前の頭に一致し、罫線と入れ子の位置が `wrap` の無いツリーと同じ
       - '`wrap` の無いツリーは折り返さず、横にスクロールできる'
     test: test_normal_when_tree_wrap
+  - name: 異常シナリオ（罫線のフォルダ構成の言語が tree でない）
+    setup:
+      - name: mdmark を読み込むページ
+        description: 正常シナリオと同じ
+      - name: 罫線を言語 tree でないコードブロックに記載した Markdown
+        description: 正常シナリオの罫線（`├── `・`└── ` の行が 2 行以上）を言語 `text` のコードブロックに、ASCII の罫線（`|-- `・`` `-- `` の行が 2 行以上）を言語の無いコードブロックに記載し、`├── ` の行を 1 行だけ持つ言語 `text` のコードブロックも持つ文書
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 利用側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を指定して描かせる
+        M->>M: 言語が tree でないコードブロックに、罫線の行が 2 行以上ある
+        M-->>P: 記載の警告と、元のコードブロックを描く
+        P-->>U: 記載の警告とコードブロックを表示
+    expected:
+      - 罫線の行を 2 行以上持つ 2 つのコードブロックの上に、言語を `tree` にするとファイルツリーに描かれることと、警告を止める指定を記載した記載の警告がある
+      - 2 つのコードブロックは、記載したとおりの言語のコードブロックのまま描かれ、ファイルツリーにならない
+      - 罫線の行を 1 行だけ持つコードブロックには、記載の警告が無い
+    test: test_error_when_tree_lines_without_tree_language
+  - name: 正常シナリオ（罫線の例の警告を止める）
+    setup:
+      - name: mdmark を読み込むページ
+        description: 正常シナリオと同じ
+      - name: 警告を止めた Markdown
+        description: 異常シナリオ（罫線のフォルダ構成の言語が tree でない）と同じ文書で、罫線の行を 2 行以上持つ言語 `text` のコードブロックの直前にだけ、警告を止める指定を記載したもの
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 利用側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を指定して描かせる
+        M-->>P: 警告を止めたコードブロックを、記載の警告を付けずに描く
+        P-->>U: 文書を表示
+    expected:
+      - 警告を止めたコードブロックの上に記載の警告が無く、罫線の文字のまま言語 `text` のコードブロックで描かれている
+      - 警告を止めていない言語の無いコードブロックの上には、記載の警告が残っている
+    test: test_normal_when_tree_lines_warning_suppressed
+  - name: 正常シナリオ（描き直しても手で開閉したフォルダを保つ）
+    setup:
+      - name: mdmark を読み込むページ
+        description: 正常シナリオと同じ
+        notes: '`mount` の戻り値の `update` で、本文を差し替えて描き直す'
+      - name: 入れ子の深いファイルツリーの Markdown
+        description: 正常シナリオ（ファイルツリーのフォルダを開閉する）と同じ文書
+      - name: 描き直す Markdown
+        description: 3 つのツリーの `tree.ts` を `tree-view.ts` に書き換え、末尾にマーカーの無い言語 `tree` のコードブロックを追加した文書
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 利用側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を指定して描かせる
+        M-->>P: depth のとおりに開いたツリーを描く
+        U->>P: 1 つ目のツリーの src/ を閉じ、3 つ目のツリーの src/ を開く
+        P-->>U: 開閉を変えたツリー
+        P->>M: 書き換えた Markdown で描き直させる
+        M-->>P: 手で変えた開閉のまま描き、追加したツリーは全てのフォルダを開いて描く
+        P-->>U: 書き換えた本文を表示
+    expected:
+      - 描き直した後、1 つ目のツリーの `src/` が閉じ、開閉のボタンの `aria-expanded` が `false`
+      - 描き直した後、3 つ目のツリーの `src/` が開き、`parts/` が表示されている
+      - 描き直した後、追加したツリーは全てのフォルダが開き、`tree-view.ts` が表示されている
+    test: test_normal_when_tree_folders_updated_after_toggle
 lead: 文書の作成者が、`<!-- steps -->` 〜 `<!-- /steps -->` で囲んだ番号付きリスト・言語 `tree` のコードブロック・頭に `badge:` を付けた行内のコードを記載すると、mdmark がそれぞれ手順・ファイルツリー・バッジに描く。手順は `closed`・`open` で見出し付きの折りたたみに入れられ、ファイルツリーは `#` の後ろの注釈を列に統一し、読者がフォルダを開閉して元の罫線のテキストをコピーできる。
 issue: 4
 primary_actor: 文書の作成者
@@ -397,7 +468,7 @@ trigger: 利用側のページが、ステップ・ファイルツリー・バ�
 preconditions:
   - ページがバージョンを固定した URL で mdmark の JavaScript と CSS を読み込んでいる
   - ステップ・ファイルツリー・バッジの機能（`steps`・`tree`・`badge`）がオン（既定）
-success_guarantee: 番号付きリストが番号と線でつないだ手順に、罫線のフォルダ構成が入れ子のツリーに、`badge:` の行内のコードが札になる。GitHub ではリスト・コードブロック・行内のコードとして読み込める。
+success_guarantee: 番号付きリストが番号と線でつないだ手順に、罫線のフォルダ構成が入れ子のツリーに、`badge:` の行内のコードが札になる。利用側のページが本文を描き直しても、読者が手で開閉したフォルダは保たれる。GitHub ではリスト・コードブロック・行内のコードとして読み込める。
 minimal_guarantee: 読み込めない記載方法の部品は、記載したとおりのリスト・コードブロックで描かれ、上に記載の警告が出る。
 test_file: tests/e2e/単一ユースケース/ステップ・ファイルツリー・バッジで本文を組む.spec.ts
 refs:

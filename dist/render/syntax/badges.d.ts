@@ -5,5 +5,5 @@ export declare function splitBadgeColor(text: string): {
     color?: ColorName;
     label: string;
 };
-/** `badge` がオンなら、頭が `badge:` で後ろに空白以外の文字を持つ行内のコードをバッジにし、`badge\:` のものは `\` を外したコードにする */
+/** `badge` がオンなら、頭が `badge:` で後ろに空白以外の文字を持つ行内のコードをバッジにし、`badge\:` のものは `\` を削除したコードにする */
 export declare function buildBadges(state: StateCore): void;

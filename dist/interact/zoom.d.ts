@@ -2,22 +2,22 @@
 export declare const DRAG_THRESHOLD = 4;
 /** 倍率が変わったときに呼ぶ関数 */
 export type ZoomChange = (zoom: number, fit: number) => void;
-/** `attachZoom` が返す操作 */
+/** `attachZoom` が返却する操作 */
 export type ZoomControl = {
     /** 全体が収まる倍率と位置に戻す */
     reset(): void;
-    /** 今の全体が収まる倍率を返す */
+    /** 今の全体が収まる倍率を返却する */
     fit(): number;
-    /** 今の倍率と位置を保ったまま、全体が収まる倍率とボタンの状態を求め直す */
+    /** 今の倍率と位置を保ったまま、全体が収まる倍率とボタンの状態をもう一度求める */
     refit(): void;
-    /** 付けた操作と監視を外す */
+    /** 付けた操作と監視を解除する */
     detach(): void;
 };
 /** 表示する枠と中身に、全体が収まる倍率から `ZOOM.max` までの拡大・縮小と、拡大中の移動（ボタン・キー・ドラッグ）を付ける */
 export declare function attachZoom(options: {
     /** 表示する枠 */
     viewport: HTMLElement;
-    /** 倍率を掛ける中身（親の要素を倍率を掛けた大きさの箱にする） */
+    /** 倍率を掛ける中身（親の要素を倍率を掛けた大きさのノードにする） */
     content: HTMLElement;
     /** 中身の大きさ */
     size: {

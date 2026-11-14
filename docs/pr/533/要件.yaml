@@ -1,0 +1,26 @@
+use_cases:
+  - kind: single
+    scenario: docs/scenario/SC-472-73.yaml
+    impact: changed
+    detail: 列を留め（選んだ列だけを留める設定と、押した列までを留める設定の両方）、留めた列の幅の合計が表の見える幅を超えたときも、留めた列どうしが重ならずに読める。留められない列はそのことが読む人に伝わる
+    depends_on: []
+docs:
+  - page: docs/guide/記載する-表に機能を付ける.md
+    new: false
+    change: 「ピン止めが働く」に、留めた列の幅の合計が表の見える幅を超えたときの動きを足す
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-13T17:05:09.573897+00:00'
+  - page: docs/config/CFG-472-3.yaml
+    new: false
+    change: '`table.pin` の `each`・`through` の説明に、見える幅を超えた列の扱いを足す'
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-13T17:05:09.573897+00:00'
+  - page: docs/guide/設定.md
+    new: false
+    change: 「表のピン止めの動き」の `each`・`through` の説明に、見える幅を超えた列の扱いを足す
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-13T17:05:09.573897+00:00'
+scope_out: []

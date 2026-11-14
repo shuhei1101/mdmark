@@ -1732,166 +1732,11 @@ const FOLD_TABLE_MARKDOWN = [
   "",
 ].join("\n");
 
-/** 名前・状態の 2 列で、短い文字の表を `data` のマーカーで囲んだ Markdown */
-const SHORT_TABLE_MARKDOWN = [
-  '<!-- table: {"kind": "data"} -->',
-  "",
-  "| 名前 | 状態 |",
-  "| --- | --- |",
-  "| a | 新規 |",
-  "| b | 進行 |",
-  "",
-  "<!-- /table -->",
-  "",
-].join("\n");
-
 /** 描く先の要素の幅を決める */
 function setElementWidth(el: HTMLElement, width: number): void {
   el.style.boxSizing = "border-box";
   el.style.width = `${width}px`;
 }
-
-// 描く先の要素が 720px 未満で最終列が 1 行に収まらないとき、最終列を畳み、行の開閉のボタンで開き、広げると畳まない（正常系）
-test("test_normal_when_last_column_collapsed", async () => {
-  // 準備
-  const el = createElement();
-  setElementWidth(el, 390);
-  await mountTracked(el, {
-    markdown: `${FOLD_TABLE_MARKDOWN}\n${SHORT_TABLE_MARKDOWN}`,
-  });
-  const [folded, short] = [
-    ...el.querySelectorAll<HTMLElement>(".mdmark-table"),
-  ] as [HTMLElement, HTMLElement];
-  const rowsOf = (table: HTMLElement): HTMLTableRowElement[] => [
-    ...table.querySelectorAll<HTMLTableRowElement>(
-      "tbody tr:not(.mdmark-row-detail):not(.mdmark-table-empty)",
-    ),
-  ];
-  const toggles = (): HTMLButtonElement[] => [
-    ...folded.querySelectorAll<HTMLButtonElement>("button.mdmark-fold-toggle"),
-  ];
-  // 検証: 描いた直後、説明の列は表示されず、名前と状態の列は表示される
-  await vi.waitFor(() => {
-    expect(folded.classList.contains("is-folded")).toBe(true);
-  });
-  const heads = [...folded.querySelectorAll<HTMLElement>("thead th")];
-  expect(heads.map((head) => isShown(head))).toEqual([true, true, false]);
-  for (const row of rowsOf(folded)) {
-    expect([...row.cells].map((cell) => isShown(cell))).toEqual([
-      true,
-      true,
-      false,
-    ]);
-  }
-  // 検証: 各行の先頭のセルに、スクリーンリーダー向けの名前を持つ開閉のボタンが 1 つずつある
-  expect(toggles()).toHaveLength(3);
-  rowsOf(folded).forEach((row, i) => {
-    const inRow = row.cells[0]?.querySelectorAll("button.mdmark-fold-toggle");
-    expect(inRow).toHaveLength(1);
-    const button = toggles()[i] as HTMLButtonElement;
-    expect(button.getAttribute("aria-expanded")).toBe("false");
-    expect(button.getAttribute("aria-controls")).toBeTruthy();
-    expect(button.getAttribute("aria-label")).toBe(
-      `「${["りんご", "みかん", "ぶどう"][i]}」の説明`,
-    );
-  });
-  // 検証: 2 列で短い文字の表は畳まず、ボタンも無い
-  expect(short.classList.contains("is-folded")).toBe(false);
-  expect(short.querySelector(".mdmark-fold-toggle")).toBeNull();
-  // 実行・検証: 2 行目のボタンを押す
-  const second = toggles()[1] as HTMLButtonElement;
-  second.click();
-  expect(second.getAttribute("aria-expanded")).toBe("true");
-  const detail = document.getElementById(
-    second.getAttribute("aria-controls") ?? "",
-  ) as HTMLElement;
-  expect(detail).toBe(rowsOf(folded)[1]?.nextElementSibling);
-  expect(detail.hasAttribute("hidden")).toBe(false);
-  expect(detail.textContent).toContain("説明");
-  expect(detail.textContent).toContain("印刷で折り畳みを開き");
-  // 実行・検証: 名前の列を並べ替えても、開いた行は 2 行目だった行の直後にある
-  find<HTMLButtonElement>(
-    heads[0] as HTMLElement,
-    "button.mdmark-sort",
-  ).click();
-  expect(detail.previousElementSibling?.textContent).toContain("みかん");
-  // 実行・検証: もう一度押す
-  second.click();
-  expect(second.getAttribute("aria-expanded")).toBe("false");
-  expect(detail.hasAttribute("hidden")).toBe(true);
-  // 実行・検証: ボタンにフォーカスして Enter と Space を押す
-  const first = toggles()[0] as HTMLButtonElement;
-  first.focus();
-  await userEvent.keyboard("{Enter}");
-  expect(first.getAttribute("aria-expanded")).toBe("true");
-  await userEvent.keyboard(" ");
-  expect(first.getAttribute("aria-expanded")).toBe("false");
-  // 実行・検証: 印刷の媒体では、390px でも説明の列を表示し、ボタンは表示しない
-  try {
-    await cdp().send("Emulation.setEmulatedMedia", { media: "print" });
-    await vi.waitFor(() => {
-      for (const row of rowsOf(folded)) {
-        expect(isShown(row.cells[2])).toBe(true);
-      }
-    });
-    expect(isShown(first)).toBe(false);
-  } finally {
-    await cdp().send("Emulation.setEmulatedMedia", { media: "", features: [] });
-  }
-  // 実行・検証: 幅を 1280px にすると、説明の列を表示し、ボタンと開いた行は表示しない
-  setElementWidth(el, 1280);
-  await vi.waitFor(() => {
-    expect(folded.classList.contains("is-folded")).toBe(false);
-  });
-  expect(isShown(heads[2])).toBe(true);
-  expect(isShown(folded.querySelector(".mdmark-fold-toggle"))).toBe(false);
-  expect(isShown(folded.querySelector(".mdmark-fold-detail"))).toBe(false);
-});
-
-// 行の詳細を持つ行は、行の詳細の開閉のボタン 1 つで最終列と詳細を一緒に開閉する（正常系）
-test("test_normal_when_row_detail_with_collapsed_column", async () => {
-  // 準備
-  const el = createElement();
-  setElementWidth(el, 390);
-  await mountTracked(el, {
-    markdown: `${FOLD_TABLE_MARKDOWN}\n<!-- row-detail: {"at": 2} -->\n\nみかんの詳細\n\n<!-- /row-detail -->\n`,
-  });
-  const table = find<HTMLElement>(el, ".mdmark-table");
-  await vi.waitFor(() => {
-    expect(table.classList.contains("is-folded")).toBe(true);
-  });
-  const rows = [
-    ...table.querySelectorAll<HTMLTableRowElement>(
-      "tbody tr:not(.mdmark-row-detail):not(.mdmark-table-empty)",
-    ),
-  ];
-  // 検証: 各行の開閉のボタンは 1 つずつで、2 行目にも 1 つだけ
-  for (const row of rows) {
-    expect(row.querySelectorAll("button.mdmark-row-toggle")).toHaveLength(1);
-  }
-  // 実行
-  const toggle = find<HTMLButtonElement>(
-    rows[1] as HTMLElement,
-    "button.mdmark-row-toggle",
-  );
-  toggle.click();
-  // 検証: 行の詳細の行に、最終列の中身とその下に行の詳細の段落がある
-  const detail = rows[1]?.nextElementSibling as HTMLElement;
-  expect(detail.classList.contains("mdmark-row-detail")).toBe(true);
-  expect(detail.hasAttribute("hidden")).toBe(false);
-  const part = find<HTMLElement>(detail, ".mdmark-fold-part");
-  expect(part.textContent).toContain("説明");
-  expect(part.textContent).toContain("印刷で折り畳みを開き");
-  expect(detail.textContent).toContain("みかんの詳細");
-  expect(
-    part.compareDocumentPosition(find(detail, "p:not(.mdmark-fold-name)")) &
-      Node.DOCUMENT_POSITION_FOLLOWING,
-  ).toBeTruthy();
-  // 実行・検証: もう一度押すと、最終列の中身と行の詳細が一緒に隠れる
-  toggle.click();
-  expect(detail.hasAttribute("hidden")).toBe(true);
-  expect(isShown(part)).toBe(false);
-});
 
 /** コードの行のマーカーと、言語の無いコードブロックと、ファイルツリーに描く `tree` のコードブロックを持つ Markdown */
 const CODE_COPY_MARKDOWN = [
@@ -2209,7 +2054,7 @@ test("test_normal_when_tabs_switched", async () => {
   expect(tabs[2]?.getAttribute("aria-selected")).toBe("true");
 });
 
-// 見出しでセクションを、行のボタンで行の詳細を開閉し、閉じたセクションの中への #ID でそのセクションを開く（正常系）
+// 見出しでセクションを、行のボタンで行の詳細を開閉し、閉じたセクションの中の見出しへの #ID で、囲むセクションと見出し自身のセクションを開く（正常系）
 test("test_normal_when_sections_and_row_details_toggled", async () => {
   // 準備
   const el = createElement();
@@ -2225,6 +2070,10 @@ test("test_normal_when_sections_and_row_details_toggled", async () => {
     "補足の段落",
     "",
     "### 注意",
+    "",
+    '<!-- section: {"open": false} -->',
+    "",
+    "注意の段落",
     "",
     "| 名前 | 値 |",
     "| --- | --- |",
@@ -2267,8 +2116,17 @@ test("test_normal_when_sections_and_row_details_toggled", async () => {
     location.hash = "#注意";
     await vi.waitFor(() => {
       expect(bodyOf("補足").hasAttribute("hidden")).toBe(false);
+      expect(bodyOf("注意").hasAttribute("hidden")).toBe(false);
     });
     expect(toggleOf("補足").getAttribute("aria-expanded")).toBe("true");
+    expect(toggleOf("注意").getAttribute("aria-expanded")).toBe("true");
+    expect(
+      isShown(
+        [...el.querySelectorAll("p")].find(
+          (p) => p.textContent === "注意の段落",
+        ),
+      ),
+    ).toBe(true);
   } finally {
     history.replaceState(null, "", location.pathname);
   }
@@ -2355,6 +2213,291 @@ test("test_normal_when_sections_kept_on_update", async () => {
   }
 });
 
+// 読者が開閉した部品を update の後も同じ開閉で描き、マーカーを変えた要素と新しい要素はマーカーのとおりに描く（正常系）
+test("test_normal_when_parts_kept_on_update", async () => {
+  // 準備
+  const el = createElement();
+  const parts = (texts: {
+    detail: string;
+    noticeOpen: boolean;
+    appendix: boolean;
+  }): string =>
+    [
+      "| 名前 | 値 |",
+      "| --- | --- |",
+      "| a | 1 |",
+      "| b | 2 |",
+      "",
+      '<!-- row-detail: {"at": 2} -->',
+      "",
+      texts.detail,
+      "",
+      "<!-- /row-detail -->",
+      "",
+      '<!-- details: {"title": "手順"} -->',
+      "",
+      `${texts.detail}の手順`,
+      "",
+      "<!-- /details -->",
+      "",
+      texts.noticeOpen
+        ? '<!-- details: {"title": "注意", "open": true} -->'
+        : '<!-- details: {"title": "注意"} -->',
+      "",
+      "注意の段落",
+      "",
+      "<!-- /details -->",
+      "",
+      "> [!NOTE]+ 詳細",
+      `> ${texts.detail}の注意書き`,
+      "",
+      wrapDirective("er", erText(foldEr())),
+      "",
+      "```tree",
+      "app/",
+      "├── src/",
+      "│   └── index.ts",
+      "└── docs/",
+      "    └── guide.md",
+      "```",
+      "",
+      '<!-- code: {"fold": [2]} -->',
+      "",
+      "```yaml",
+      "a:",
+      "  b:",
+      "    c: 1",
+      "  d: 2",
+      "e:",
+      "  f:",
+      "    g: 3",
+      "  h: 4",
+      "```",
+      "",
+      '<!-- table: {"kind": "data", "tree": {"key": {"column": "キー"}}} -->',
+      "",
+      "| キー | 説明 |",
+      "| --- | --- |",
+      "| features.table | 表の機能 |",
+      "| aliases[].id | 別名の ID |",
+      `| aliases[].metadata.type | ${texts.detail} |`,
+      "",
+      "<!-- /table -->",
+      "",
+      ...(texts.appendix
+        ? [
+            '<!-- details: {"title": "付録"} -->',
+            "",
+            "付録の段落",
+            "",
+            "<!-- /details -->",
+            "",
+          ]
+        : []),
+    ].join("\n");
+  const markdown = parts({
+    detail: "詳細",
+    noticeOpen: false,
+    appendix: false,
+  });
+  const updated = parts({
+    detail: "書き換えた詳細",
+    noticeOpen: true,
+    appendix: true,
+  });
+  const collapsible = (title: string): HTMLDetailsElement => {
+    const found = [
+      ...el.querySelectorAll<HTMLDetailsElement>("details.mdmark-collapsible"),
+    ].find(
+      (details) => details.querySelector("summary")?.textContent === title,
+    );
+    if (!found) {
+      throw new Error(`details が無い: ${title}`);
+    }
+    return found;
+  };
+  const clickSummary = async (details: HTMLDetailsElement): Promise<void> => {
+    const toggled = new Promise((resolve) =>
+      details.addEventListener("toggle", resolve, { once: true }),
+    );
+    details.querySelector("summary")?.click();
+    await toggled;
+  };
+  const folderToggle = (name: string): HTMLButtonElement => {
+    const found = [
+      ...el.querySelectorAll<HTMLButtonElement>("button.mdmark-tree-toggle"),
+    ].find(
+      (button) =>
+        button.closest(".mdmark-tree") !== null &&
+        button.textContent?.trim().startsWith(name),
+    );
+    if (!found) {
+      throw new Error(`フォルダが無い: ${name}`);
+    }
+    return found;
+  };
+  const codeToggle = (line: number): HTMLButtonElement =>
+    find<HTMLButtonElement>(
+      [...el.querySelectorAll<HTMLElement>(".mdmark-code-line")][
+        line - 1
+      ] as HTMLElement,
+      "button.mdmark-code-fold",
+    );
+  const treeRow = (path: string): HTMLTableRowElement => {
+    const found = [
+      ...el.querySelectorAll<HTMLTableRowElement>("tr.mdmark-tree-row"),
+    ].find((row) => row.dataset.path === path);
+    if (!found) {
+      throw new Error(`行が無い: ${path}`);
+    }
+    return found;
+  };
+  const handle = await mountTracked(el, { markdown });
+  find<HTMLButtonElement>(el, "button.mdmark-row-toggle").click();
+  await clickSummary(collapsible("手順"));
+  await clickSummary(find<HTMLDetailsElement>(el, "details.markdown-alert"));
+  await clickSummary(collapsible("注意"));
+  await clickSummary(collapsible("注意"));
+  await userEvent.click(
+    find<HTMLButtonElement>(
+      find(el, '.mdmark-diagram-er-table[data-node="orders"]'),
+      ".mdmark-diagram-er-fold",
+    ),
+  );
+  folderToggle("src/").click();
+  codeToggle(2).click();
+  codeToggle(6).click();
+  find<HTMLButtonElement>(
+    treeRow("aliases[]"),
+    "button.mdmark-tree-toggle",
+  ).click();
+  // 実行
+  handle.update(updated);
+  // 検証: 読者が変えた開閉で描く
+  expect(
+    find<HTMLButtonElement>(el, "button.mdmark-row-toggle").getAttribute(
+      "aria-expanded",
+    ),
+  ).toBe("true");
+  expect(find<HTMLElement>(el, "tr.mdmark-row-detail").hidden).toBe(false);
+  expect(collapsible("手順").open).toBe(true);
+  expect(find<HTMLDetailsElement>(el, "details.markdown-alert").open).toBe(
+    false,
+  );
+  const orders = find<HTMLElement>(
+    el,
+    '.mdmark-diagram-er-table[data-node="orders"]',
+  );
+  expect(
+    find(orders, ".mdmark-diagram-er-fold").getAttribute("aria-expanded"),
+  ).toBe("false");
+  expect(isShown(find(orders, ".mdmark-diagram-er-rest"))).toBe(true);
+  expect(folderToggle("src/").getAttribute("aria-expanded")).toBe("false");
+  expect(codeToggle(2).getAttribute("aria-expanded")).toBe("true");
+  expect(codeToggle(6).getAttribute("aria-expanded")).toBe("false");
+  expect(treeRow("aliases[].id").hidden).toBe(true);
+  // 検証: マーカーを変えた注意と追加した付録はマーカーのとおり
+  expect(collapsible("注意").open).toBe(true);
+  expect(collapsible("付録").open).toBe(false);
+  // 実行・検証: もう一度 mount すると、全ての部品がマーカーのとおりに描かれる
+  handle.destroy();
+  await mountTracked(el, { markdown: updated });
+  expect(find<HTMLElement>(el, "tr.mdmark-row-detail").hidden).toBe(true);
+  expect(collapsible("手順").open).toBe(false);
+  expect(find<HTMLDetailsElement>(el, "details.markdown-alert").open).toBe(
+    true,
+  );
+  expect(folderToggle("src/").getAttribute("aria-expanded")).toBe("true");
+  expect(codeToggle(2).getAttribute("aria-expanded")).toBe("false");
+  expect(codeToggle(6).getAttribute("aria-expanded")).toBe("true");
+  expect(treeRow("aliases[].id").hidden).toBe(false);
+});
+
+// 読者がタブを選ぶと押したタブのボタンの画面の位置を保ち、戻しきれないときはスクロール位置の上限まで戻す（正常系）
+test("test_normal_when_tab_position_kept", async () => {
+  // 準備
+  const el = createElement();
+  const paragraphs = (count: number): string[] =>
+    Array.from({ length: count }, (_, index) => [
+      `段落 ${index + 1}`,
+      "",
+    ]).flat();
+  const tabs = (group: boolean): string[] => [
+    group ? '<!-- tabs: {"group": "len"} -->' : "<!-- tabs -->",
+    "",
+    "### 長文",
+    "",
+    ...paragraphs(30),
+    "### 短文",
+    "",
+    "短文の段落",
+    "",
+    "<!-- /tabs -->",
+    "",
+  ];
+  const markdown = [
+    ...tabs(true),
+    ...paragraphs(60),
+    ...tabs(true),
+    ...paragraphs(60),
+    ...tabs(false),
+  ].join("\n");
+  document.documentElement.style.overflowAnchor = "none";
+  const tabOf = (index: number, name: string): HTMLButtonElement => {
+    const found = [
+      ...(el
+        .querySelectorAll(".mdmark-tabs")
+        [index]?.querySelectorAll<HTMLButtonElement>('[role="tab"]') ?? []),
+    ].find((button) => button.textContent === name);
+    if (!found) {
+      throw new Error(`タブが無い: ${name}`);
+    }
+    return found;
+  };
+  const scrollTo = (button: HTMLButtonElement): void => {
+    window.scrollBy(0, button.getBoundingClientRect().top - 400);
+  };
+  try {
+    await mountTracked(el, { markdown });
+    // 実行: 2 つ目のタブの短文を押す
+    const second = tabOf(1, "短文");
+    scrollTo(second);
+    const before = second.getBoundingClientRect().top;
+    second.click();
+    // 検証: 1 つ目も短文へ切り替わり、押したボタンの位置は変わらない
+    expect(tabOf(0, "短文").getAttribute("aria-selected")).toBe("true");
+    expect(
+      Math.abs(second.getBoundingClientRect().top - before),
+    ).toBeLessThanOrEqual(1);
+    // 実行: 末尾のタブの短文を押す
+    const last = tabOf(2, "短文");
+    scrollTo(last);
+    last.click();
+    // 検証: スクロール位置が上限で、押したボタンが画面の中にある
+    expect(
+      Math.abs(
+        window.scrollY -
+          (document.documentElement.scrollHeight - window.innerHeight),
+      ),
+    ).toBeLessThanOrEqual(1);
+    const top = last.getBoundingClientRect().top;
+    expect(top).toBeGreaterThanOrEqual(0);
+    expect(top).toBeLessThan(window.innerHeight);
+    // 実行: 末尾のタブの長文を押す
+    const long = tabOf(2, "長文");
+    const beforeLong = long.getBoundingClientRect().top;
+    long.click();
+    // 検証
+    expect(
+      Math.abs(long.getBoundingClientRect().top - beforeLong),
+    ).toBeLessThanOrEqual(1);
+  } finally {
+    document.documentElement.style.removeProperty("overflow-anchor");
+    window.scrollTo(0, 0);
+    localStorage.removeItem("mdmark-tabs:len");
+  }
+});
+
 // 印刷の前にタブの全ての中身と閉じた記法を開き、印刷の後に戻す（正常系）
 test("test_normal_when_printed_with_syntax", async () => {
   // 準備
@@ -2411,6 +2554,8 @@ test("test_normal_when_printed_with_syntax", async () => {
     "2. 二つ目",
     "",
     "<!-- /steps -->",
+    "",
+    '<!-- tree: {"depth": 1} -->',
     "",
     "```tree",
     "app/",
@@ -3330,6 +3475,94 @@ test("test_normal_when_diagram_tooltip_touch", async () => {
   // 図の外の段落の pointerdown だけで閉じる
   firePointer(outside, "pointerdown", "touch");
   expect(hintTip.hidden).toBe(true);
+});
+
+/** 表示する枠の中の位置に、`pointerType` が `touch` のポインターのイベントを発火する */
+function fireTouchAt(
+  target: Element,
+  type: string,
+  point: { x: number; y: number },
+): void {
+  target.dispatchEvent(
+    new PointerEvent(type, {
+      pointerType: "touch",
+      pointerId: 7,
+      button: 0,
+      bubbles: true,
+      clientX: point.x,
+      clientY: point.y,
+    }),
+  );
+}
+
+// タッチでは余白をタップするまで縦のドラッグを文書のスクロールにし、タップした後は図の外をタップするまで縦にも横にも図を動かす（正常系）
+test("test_normal_when_diagram_touch_drag", async () => {
+  // 準備: 画面の幅を 390px にし、表示する枠より広いフロー図を拡大して描く
+  await withViewport(390, async () => {
+    const el = createElement();
+    await mountTracked(el, {
+      markdown: `${wrapDirective("flow", INQUIRY_TEXT)}\n\n図の外の段落。`,
+    });
+    const box = find<HTMLElement>(el, ".mdmark-diagram-box");
+    const viewport = find<HTMLElement>(el, ".mdmark-diagram-viewport");
+    buttonOf(el, "拡大").click();
+    buttonOf(el, "拡大").click();
+    const outside = find<HTMLElement>(el, ":scope > p");
+    const node = find<HTMLElement>(el, ".mdmark-diagram-node");
+    const rect = viewport.getBoundingClientRect();
+    // 余白: 表示する枠の中で、ノード・線・ボタンの上でない位置
+    const blank = (() => {
+      for (let y = rect.top + 8; y < rect.bottom - 8; y += 8) {
+        for (let x = rect.left + 8; x < rect.right - 8; x += 8) {
+          const hit = document.elementFromPoint(x, y);
+          if (
+            hit &&
+            viewport.contains(hit) &&
+            !hit.closest(
+              ".mdmark-diagram-node, .mdmark-diagram-wire-hit, [data-tip-owner], button, a",
+            )
+          ) {
+            return { x, y };
+          }
+        }
+      }
+      throw new Error("表示する枠に余白が無い");
+    })();
+    // 検証: 描いた直後は縦のドラッグが文書のスクロール
+    expect(getComputedStyle(viewport).touchAction).toBe("pan-y");
+    expect(box.hasAttribute("data-touch-active")).toBe(false);
+    // ノードの上のタップでは操作中にしない
+    const nodeRect = node.getBoundingClientRect();
+    const onNode = { x: nodeRect.left + 4, y: nodeRect.top + 4 };
+    fireTouchAt(node, "pointerdown", onNode);
+    fireTouchAt(node, "pointerup", onNode);
+    expect(box.hasAttribute("data-touch-active")).toBe(false);
+    // mouse のクリックでは操作中にしない
+    firePointer(viewport, "pointerdown", "mouse");
+    firePointer(viewport, "pointerup", "mouse");
+    expect(box.hasAttribute("data-touch-active")).toBe(false);
+    // 余白のタップで操作中にする
+    fireTouchAt(viewport, "pointerdown", blank);
+    fireTouchAt(viewport, "pointerup", blank);
+    expect(box.hasAttribute("data-touch-active")).toBe(true);
+    expect(getComputedStyle(viewport).touchAction).toBe("none");
+    const linkColor = getComputedStyle(box)
+      .getPropertyValue("--mdmark-color-link")
+      .trim();
+    expect(linkColor).not.toBe("");
+    expect(getComputedStyle(box).boxShadow).toContain("2px inset");
+    // 操作中のドラッグで縦にも横にも動く（合成のイベントはブラウザのポインターを持たないため、捕まえる処理を差し替える）
+    vi.spyOn(viewport, "setPointerCapture").mockImplementation(() => {});
+    const before = { left: viewport.scrollLeft, top: viewport.scrollTop };
+    fireTouchAt(viewport, "pointerdown", blank);
+    fireTouchAt(viewport, "pointermove", { x: blank.x - 40, y: blank.y - 40 });
+    fireTouchAt(viewport, "pointerup", { x: blank.x - 40, y: blank.y - 40 });
+    expect(viewport.scrollLeft).toBeGreaterThan(before.left);
+    expect(viewport.scrollTop).toBeGreaterThan(before.top);
+    // 図の外の段落のタップで操作中を解く
+    fireTouchAt(outside, "pointerdown", { x: 1, y: 1 });
+    expect(box.hasAttribute("data-touch-active")).toBe(false);
+  });
 });
 
 /** 操作できる部品を描いた要素と、その要素の部品の要素 */
@@ -7489,7 +7722,7 @@ function shiftClick(element: Element): void {
   );
 }
 
-// ファイルツリーを open= の階層まで開いて描き、フォルダの名前・アイコンの押下と Enter で開閉し、Shift を押しながらなら入れ子も同じ状態にする（正常系）
+// ファイルツリーを depth の階層まで（省くと全てのフォルダを）開いて描き、フォルダの名前・アイコンの押下と Enter で開閉し、Shift を押しながらなら入れ子も同じ状態にする（正常系）
 test("test_normal_when_tree_folders_toggled", async () => {
   // 準備
   const el = createElement();
@@ -7501,11 +7734,15 @@ test("test_normal_when_tree_folders_toggled", async () => {
       "",
       ...NESTED_TREE_LINES,
       "",
+      '<!-- tree: {"depth": 1} -->',
+      "",
+      ...NESTED_TREE_LINES,
+      "",
     ].join("\n"),
   });
-  const [first, second] = [
+  const [all, second, first] = [
     ...el.querySelectorAll<HTMLElement>(".mdmark-tree"),
-  ] as [HTMLElement, HTMLElement];
+  ] as [HTMLElement, HTMLElement, HTMLElement];
   const names = ["app/", "src/", "parts/"];
   // 検証: mount の直後
   for (const toggle of first.querySelectorAll<HTMLButtonElement>(
@@ -7514,11 +7751,13 @@ test("test_normal_when_tree_folders_toggled", async () => {
     expect(toggle.type).toBe("button");
     expect(foldedList(toggle).tagName).toBe("UL");
   }
+  expect(foldersExpanded(all, names)).toEqual(["true", "true", "true"]);
+  expect(isShown(find(all, ".mdmark-tree-file .mdmark-tree-name"))).toBe(true);
+  expect(foldersExpanded(second, names)).toEqual(["true", "true", "false"]);
   expect(foldersExpanded(first, names)).toEqual(["true", "false", "false"]);
   expect(foldedList(folderToggle(first, "src/")).getAttribute("hidden")).toBe(
     "until-found",
   );
-  expect(foldersExpanded(second, names)).toEqual(["true", "true", "false"]);
   // 検証: フォルダのアイコンは、開いたフォルダと閉じたフォルダで構造が違う
   expect(folderIcon(folderToggle(first, "app/"))).not.toBe(
     folderIcon(folderToggle(first, "src/")),
@@ -7572,7 +7811,8 @@ test("test_normal_when_tree_copied", async () => {
   expect(find(bar, ".mdmark-tree-kind").textContent).toBe("tree");
   expect(button.type).toBe("button");
   expect(button.textContent).toBe("コピー");
-  // 実行: フォルダが閉じている状態で押す
+  // 実行: src/ を閉じてから押す
+  folderToggle(tree, "src/").click();
   expect(folderToggle(tree, "src/").getAttribute("aria-expanded")).toBe(
     "false",
   );
@@ -9624,6 +9864,121 @@ test("test_normal_when_code_guide_hovered", async () => {
   selection?.removeAllRanges();
 });
 
+/** 開閉のボタンの `opacity` の計算値 */
+function foldOpacity(toggle: HTMLElement | undefined): number {
+  return toggle ? Number(getComputedStyle(toggle).opacity) : Number.NaN;
+}
+
+// 開閉のボタンは乗せた行だけに出し、開閉のボタンの列に乗せたときは全てのボタンを出す（正常系（開閉のボタンの列にポインターを乗せる））
+test("test_normal_when_code_fold_column_hovered", async () => {
+  // 準備・実行
+  const el = createElement();
+  await mountTracked(el, {
+    markdown: [
+      '<!-- code: {"lines": {}} -->',
+      "",
+      ...CODE_FOLD_MARKDOWN.split("\n").slice(0, 7),
+      "",
+    ].join("\n"),
+    config: { features: { syntax: false } },
+  });
+  const lines = codeLines(el);
+  const [first, second] = [foldToggle(lines[0]), foldToggle(lines[1])] as [
+    HTMLButtonElement,
+    HTMLButtonElement,
+  ];
+  // 検証: ポインターをコードブロックの外に置くと出さず、ボタンは行番号の右
+  const away = createElement();
+  away.textContent = "コードブロックの外";
+  await userEvent.hover(away);
+  await vi.waitFor(() => {
+    expect([foldOpacity(first), foldOpacity(second)]).toEqual([0, 0]);
+  });
+  const number = getComputedStyle(lines[0] as HTMLElement, "::before");
+  expect(number.content).not.toBe("none");
+  // 実行・検証: 3 行目の文字に乗せる
+  await userEvent.hover(
+    find<HTMLElement>(lines[2] as HTMLElement, ".mdmark-code-text"),
+  );
+  await vi.waitFor(() => {
+    expect([foldOpacity(first), foldOpacity(second)]).toEqual([0, 0]);
+  });
+  // 実行・検証: 1 行目の文字に乗せる
+  await userEvent.hover(
+    find<HTMLElement>(lines[0] as HTMLElement, ".mdmark-code-text"),
+  );
+  await vi.waitFor(() => {
+    expect([foldOpacity(first), foldOpacity(second)]).toEqual([1, 0]);
+  });
+  // 実行・検証: 4 行目の開閉のボタンの列に乗せる
+  const column = first.getBoundingClientRect();
+  const fourth = (lines[3] as HTMLElement).getBoundingClientRect();
+  await userEvent.hover(lines[3] as HTMLElement, {
+    position: {
+      x: column.left + column.width / 2 - fourth.left,
+      y: fourth.height / 2,
+    },
+  });
+  await vi.waitFor(() => {
+    expect([foldOpacity(first), foldOpacity(second)]).toEqual([1, 1]);
+  });
+  // 実行・検証: 2 行目を畳み、キーボードで 1 行目にフォーカスしてから、ポインターを開閉のボタンの列の外に出す
+  second.click();
+  await userEvent.keyboard("{Shift}");
+  first.focus();
+  await userEvent.hover(el.querySelector("pre") as HTMLElement, {
+    position: { x: 1, y: 1 },
+  });
+  await vi.waitFor(() => {
+    expect(second.getAttribute("aria-expanded")).toBe("false");
+    expect([foldOpacity(first), foldOpacity(second)]).toEqual([1, 1]);
+  });
+  first.blur();
+  // 検証: ポインターで乗せられない画面（`(hover: none)`。ブラウザの代役で切り替えられない）では、開閉のボタンを常に出す CSS を持つ
+  expect(hoverNoneOpacity(".mdmark-code-fold")).toBe("1");
+});
+
+/** 配布物の CSS のうち `(hover: none)` の中で `selector` に当てる `opacity` を返却する（無ければ undefined） */
+function hoverNoneOpacity(selector: string): string | undefined {
+  const visit = (
+    rules: CSSRuleList,
+    inHoverNone: boolean,
+  ): string | undefined => {
+    for (const rule of rules) {
+      const hoverNone =
+        inHoverNone ||
+        (rule instanceof CSSMediaRule &&
+          rule.conditionText.includes("hover: none"));
+      if (
+        hoverNone &&
+        rule instanceof CSSStyleRule &&
+        rule.selectorText.split(",").some((text) => {
+          const trimmed = text.trim();
+          return trimmed === selector || trimmed.endsWith(` ${selector}`);
+        }) &&
+        rule.style.opacity
+      ) {
+        return rule.style.opacity;
+      }
+      const children = (rule as CSSGroupingRule).cssRules;
+      if (children) {
+        const found = visit(children, hoverNone);
+        if (found !== undefined) {
+          return found;
+        }
+      }
+    }
+    return undefined;
+  };
+  for (const sheet of document.styleSheets) {
+    const found = visit(sheet.cssRules, false);
+    if (found !== undefined) {
+      return found;
+    }
+  }
+  return undefined;
+}
+
 /** 2 行目と 6 行目が畳める行の 8 行の yaml を、`fold=2,6` で畳んで描く Markdown */
 const CODE_FOLD_INITIAL_MARKDOWN = [
   '<!-- code: {"lines": {}, "fold": [2, 6]} -->',
@@ -9641,7 +9996,7 @@ const CODE_FOLD_INITIAL_MARKDOWN = [
   "",
 ].join("\n");
 
-// `fold=` の行を畳んで描き、畳んだ行を含めてコピーし、`update` で畳んだ状態に戻す（正常系）
+// `fold=` の行を畳んで描き、畳んだ行を含めてコピーし、`update` で読者が開いた行を開いたまま描く（正常系）
 test("test_normal_when_code_fold_initial", async () => {
   // 準備
   const writeText = vi.fn<(text: string) => Promise<void>>(() =>
@@ -9685,9 +10040,10 @@ test("test_normal_when_code_fold_initial", async () => {
   foldToggle(lines[1])?.click();
   expect(foldToggle(lines[1])?.getAttribute("aria-expanded")).toBe("true");
   handle.update(CODE_FOLD_INITIAL_MARKDOWN);
-  // 検証: 2 行目を畳んだ状態に戻す
+  // 検証: 読者が開いた 2 行目は開いたまま、6 行目は畳んだまま描く
   lines = codeLines(el);
-  expect(foldToggle(lines[1])?.getAttribute("aria-expanded")).toBe("false");
+  expect(foldToggle(lines[1])?.getAttribute("aria-expanded")).toBe("true");
+  expect(foldToggle(lines[5])?.getAttribute("aria-expanded")).toBe("false");
 });
 
 // 印刷の前に畳んだコードの行と閉じた注意書きを開き、印刷の後に開いたものだけを戻す（正常系）
@@ -10622,6 +10978,13 @@ let lucideResponder:
 const lucideRequests: string[] = [];
 /** CDP の受信を登録したか（受信は削除できないため、ページで 1 回だけ登録する） */
 let lucideListening = false;
+/** 差し替えが効いたかを確かめる要求の URL（記録せず 204 を返却する） */
+const LUCIDE_PROBE_URL = "https://cdn.jsdelivr.net/npm/lucide@0.0.0/__probe__";
+/** 差し替えで受けた確かめる要求の数 */
+let lucideProbes = 0;
+/** 確かめる要求 1 回の待ちの上限と、確かめ終えるまでの上限（Vitest の `probeInterception` と同じ値） */
+const LUCIDE_PROBE_TIMEOUT_MS = 1_000;
+const LUCIDE_PROBE_DEADLINE_MS = 5_000;
 
 /** jsDelivr の Lucide のアイコンへの要求を差し替え、受けた要求を記録する。返却する関数で差し替えを削除する */
 async function stubLucide(
@@ -10634,6 +10997,17 @@ async function stubLucide(
     lucideListening = true;
     session.on("Fetch.requestPaused", (params: unknown) => {
       const { requestId, request } = params as PausedRequest;
+      if (request.url.startsWith(LUCIDE_PROBE_URL)) {
+        lucideProbes += 1;
+        void session.send("Fetch.fulfillRequest", {
+          requestId,
+          responseCode: 204,
+          responseHeaders: [
+            { name: "Access-Control-Allow-Origin", value: "*" },
+          ],
+        });
+        return;
+      }
       lucideRequests.push(`${request.method} ${request.url}`);
       const answer = lucideResponder?.(request) ?? "fail";
       if (answer === "fail") {
@@ -10657,6 +11031,18 @@ async function stubLucide(
   await session.send("Fetch.enable", {
     patterns: [{ urlPattern: "https://cdn.jsdelivr.net/npm/lucide@*" }],
   });
+  // Fetch.enable の応答の後も、続く要求が差し替えを通らずに jsDelivr へ出ることがあるため、確かめる要求を受けるまで送り直す
+  const probes = lucideProbes;
+  const deadline = Date.now() + LUCIDE_PROBE_DEADLINE_MS;
+  for (let attempt = 0; lucideProbes === probes; attempt += 1) {
+    if (Date.now() >= deadline) {
+      throw new Error("jsDelivr の Lucide への要求の差し替えが効かない");
+    }
+    await fetch(`${LUCIDE_PROBE_URL}?${probes}-${attempt}`, {
+      cache: "no-store",
+      signal: AbortSignal.timeout(LUCIDE_PROBE_TIMEOUT_MS),
+    }).catch(() => undefined);
+  }
   return {
     requests: lucideRequests,
     restore: async () => {
@@ -11444,7 +11830,8 @@ function wideTableMarkdown(): string {
 test("test_normal_when_table_pinned_through", async () => {
   // 準備
   const el = createElement();
-  el.style.width = "320px";
+  // 1〜3 列目の幅の合計が見えている範囲に収まる幅
+  el.style.width = "800px";
   await mountTracked(el, {
     markdown: wideTableMarkdown(),
     config: { table: { pin: "through" } },
@@ -12813,75 +13200,6 @@ function textLineCount(element: Element): number {
   return tops.size;
 }
 
-// 列の少ない表を本文の幅まで広げ、本文の幅に収まらない表だけ表の中で横にスクロールさせる（正常系（表を本文の幅に広げる））
-test("test_normal_when_table_fills_width", async () => {
-  // 準備: 描く先の要素の幅 1000px が収まる画面にする
-  const original = { width: window.innerWidth, height: window.innerHeight };
-  await page.viewport(1280, 800);
-  try {
-    await checkTableFillsWidth();
-  } finally {
-    await page.viewport(original.width, original.height);
-  }
-});
-
-/** 正常系（表を本文の幅に広げる）の確認 */
-async function checkTableFillsWidth(): Promise<void> {
-  const el = createElement();
-  el.style.width = "1000px";
-  const wide = Array.from({ length: 12 }, (_, i) => `列の見出し ${i + 1}`);
-  // 実行
-  await mountTracked(el, {
-    markdown: [
-      "本文の段落。",
-      "",
-      dataTableMarkdown(["名前", "数量"]),
-      dataTableMarkdown(wide),
-    ].join("\n"),
-    config: { features: { "side-toc": false } },
-  });
-  // 検証
-  const body = find<HTMLElement>(el, "p").getBoundingClientRect().width;
-  const [narrow, many] = [
-    ...el.querySelectorAll<HTMLElement>(".mdmark-table"),
-  ] as [HTMLElement, HTMLElement];
-  const narrowTable = find<HTMLElement>(narrow, "table");
-  expect(
-    Math.abs(narrow.getBoundingClientRect().width - body),
-  ).toBeLessThanOrEqual(1);
-  expect(
-    Math.abs(narrowTable.getBoundingClientRect().width - body),
-  ).toBeLessThanOrEqual(1);
-  const heads = [...narrowTable.querySelectorAll<HTMLElement>("thead th")];
-  expect(
-    Math.abs(
-      (heads.at(-1)?.getBoundingClientRect().right ?? 0) -
-        narrowTable.getBoundingClientRect().right,
-    ),
-  ).toBeLessThanOrEqual(1);
-  const narrowScroll = find<HTMLElement>(narrow, ".mdmark-table-scroll");
-  expect(narrowScroll.scrollWidth).toBeLessThanOrEqual(
-    narrowScroll.clientWidth,
-  );
-  for (const head of heads) {
-    expect(textLineCount(head)).toBe(1);
-  }
-  expect(
-    Math.abs(many.getBoundingClientRect().width - body),
-  ).toBeLessThanOrEqual(1);
-  const manyScroll = find<HTMLElement>(many, ".mdmark-table-scroll");
-  expect(manyScroll.scrollWidth).toBeGreaterThan(manyScroll.clientWidth);
-  manyScroll.scrollLeft = 120;
-  expect(manyScroll.scrollLeft).toBeGreaterThan(0);
-  for (const head of many.querySelectorAll<HTMLElement>("thead th")) {
-    const min = Number.parseFloat(getComputedStyle(head).minWidth) || 0;
-    expect(head.getBoundingClientRect().width).toBeGreaterThanOrEqual(min - 1);
-  }
-  expect(document.documentElement.scrollWidth).toBeLessThanOrEqual(
-    document.documentElement.clientWidth,
-  );
-}
-
 /** h2 を 3 つと段落を持つ本文（page のマーカーの後ろに続ける） */
 const PAGE_BODY = [
   "## 概要",
@@ -14041,7 +14359,7 @@ test("test_normal_when_pinned_column_resized", async () => {
   // 準備: 表がはみ出す幅に、10 列 30 行の既定の種類の表を描く
   vi.spyOn(Element.prototype, "setPointerCapture").mockImplementation(() => {});
   const el = createElement();
-  el.style.width = "800px";
+  el.style.width = "500px";
   const headers = Array.from({ length: 10 }, (_, i) => `列${i + 1}`);
   const markdown = [
     `| ${headers.join(" | ")} |`,
@@ -14095,6 +14413,144 @@ test("test_normal_when_pinned_column_resized", async () => {
   for (const index of [0, 2, 8]) {
     expect(pins[index]?.getAttribute("aria-pressed")).toBe("true");
   }
+});
+
+/** どの列も同じ長さの値を持つ 10 列 30 行の表の Markdown（390px では留める列が 2 列までしか収まらない） */
+function evenTableMarkdown(): string {
+  const headers = Array.from({ length: 10 }, (_, i) => `列名${i + 1}`);
+  return [
+    `| ${headers.join(" | ")} |`,
+    `| ${headers.map(() => "---").join(" | ")} |`,
+    ...Array.from(
+      { length: 30 },
+      () => `| ${headers.map(() => "あいうえおかきくけこ").join(" | ")} |`,
+    ),
+    "",
+  ].join("\n");
+}
+
+/** 留まっていない列のボタンの名前に付く文言 */
+const UNPINNED_SUFFIX = "（表の幅に収まらないため留まっていません）";
+
+// 選んだ列を左から順に足し、表の見えている幅に収まらない列は留めず、そのボタンを押したまま留まっていない状態にし、幅が広がれば再び留める（正常系（留めた列の幅の合計が見えている幅を超える））
+test("test_normal_when_pinned_columns_exceed_visible_width", async () => {
+  // 準備
+  vi.spyOn(Element.prototype, "setPointerCapture").mockImplementation(() => {});
+  const el = createElement();
+  el.style.width = "390px";
+  await mountTracked(el, { markdown: evenTableMarkdown() });
+  const table = find<HTMLElement>(el, ".mdmark-table");
+  const scroller = find<HTMLElement>(table, ".mdmark-table-scroll");
+  const pins = [
+    ...table.querySelectorAll<HTMLButtonElement>("button.mdmark-pin"),
+  ];
+  await vi.waitFor(() => expect(pins[8]?.hidden).toBe(false));
+  const { heads, handles } = resizeParts(table);
+  const firstRow = find<HTMLTableRowElement>(table, "tbody tr");
+  const sticky = (index: number) =>
+    getComputedStyle(firstRow.cells[index] as HTMLElement).position ===
+    "sticky";
+  const ninthLabel = "「列名9」の列をピン止め";
+  // 前提: 1・3 列目は収まり、1・3・9 列目は収まらない
+  const sum = (indexes: number[]) =>
+    indexes.reduce(
+      (total, index) => total + (heads[index]?.offsetWidth ?? 0),
+      0,
+    );
+  expect(sum([0, 2])).toBeLessThanOrEqual(scroller.clientWidth);
+  expect(sum([0, 2, 8])).toBeGreaterThan(scroller.clientWidth);
+  // 実行: 3 列目と 9 列目のピン止めを押し、右端までスクロールする
+  pins[2]?.click();
+  pins[8]?.click();
+  scroller.scrollLeft = scroller.scrollWidth;
+  await nextFrames();
+  // 検証: 1・3 列目だけを留め、9 列目は留めない
+  expect([sticky(0), sticky(2), sticky(8)]).toEqual([true, true, false]);
+  const ninthCell = firstRow.cells[8] as HTMLElement;
+  expect(getComputedStyle(ninthCell).left).toBe("auto");
+  expect(getComputedStyle(ninthCell).right).toBe("auto");
+  expect(pins[8]?.getAttribute("aria-pressed")).toBe("true");
+  expect(pins[8]?.classList.contains("is-unpinned")).toBe(true);
+  expect(pins[8]?.getAttribute("aria-label")).toBe(
+    `${ninthLabel}${UNPINNED_SUFFIX}`,
+  );
+  expect(pins[8]?.getAttribute("title")).toBe(
+    `${ninthLabel}${UNPINNED_SUFFIX}`,
+  );
+  expect(pins[0]?.classList.contains("is-unpinned")).toBe(false);
+  expect(pins[2]?.classList.contains("is-unpinned")).toBe(false);
+  // 検証: 1 列目は見えている範囲の左端、3 列目は 1 列目の右端に並ぶ
+  const visibleLeft =
+    scroller.getBoundingClientRect().left + scroller.clientLeft;
+  const firstRect = (firstRow.cells[0] as HTMLElement).getBoundingClientRect();
+  const thirdRect = (firstRow.cells[2] as HTMLElement).getBoundingClientRect();
+  expect(Math.round(firstRect.left)).toBe(Math.round(visibleLeft));
+  expect(Math.round(thirdRect.left)).toBe(Math.round(firstRect.right));
+  // 実行・検証: el の幅を広げると、9 列目を右端に留める
+  el.style.width = "800px";
+  await vi.waitFor(() => expect(sticky(8)).toBe(true));
+  expect(ninthCell.style.right).toBe("0px");
+  expect(pins[8]?.classList.contains("is-unpinned")).toBe(false);
+  expect(pins[8]?.getAttribute("aria-label")).toBe(ninthLabel);
+  // 実行・検証: el の幅を戻すと、9 列目は再び留まらない
+  el.style.width = "390px";
+  await vi.waitFor(() => expect(sticky(8)).toBe(false));
+  expect(pins[8]?.classList.contains("is-unpinned")).toBe(true);
+  // 実行: 3 列目のつまみを、見えている幅を超えるまで右へドラッグする
+  dragResizeHandle(handles[2] as HTMLElement, 5000);
+  // 検証: 上限は 1 列目の幅だけを引き（9 列目の幅は引かない）、9 列目は留まらない
+  const limit = Math.floor(scroller.clientWidth - (heads[0]?.offsetWidth ?? 0));
+  expect(handles[2]?.getAttribute("aria-valuemax")).toBe(String(limit));
+  expect(heads[2]?.offsetWidth).toBeLessThanOrEqual(limit);
+  expect([sticky(0), sticky(2), sticky(8)]).toEqual([true, true, false]);
+  // 実行・検証: 3 列目のピン止めをもう一度押すと、1・9 列目を留める
+  pins[2]?.click();
+  await vi.waitFor(() => expect(sticky(8)).toBe(true));
+  expect(sticky(0)).toBe(true);
+  expect(pins[8]?.classList.contains("is-unpinned")).toBe(false);
+});
+
+// table.pin: through の表で、押した列までのうち見えている幅に収まる列だけを左端に留め、押した列のボタンを留まっていない状態にする（正常系（押した列までを留める設定で、見えている幅を超える））
+test("test_normal_when_pinned_through_exceed_visible_width", async () => {
+  // 準備
+  const el = createElement();
+  el.style.width = "390px";
+  await mountTracked(el, {
+    markdown: evenTableMarkdown(),
+    config: { table: { pin: "through" } },
+  });
+  const table = find<HTMLElement>(el, ".mdmark-table");
+  const scroller = find<HTMLElement>(table, ".mdmark-table-scroll");
+  const pins = [
+    ...table.querySelectorAll<HTMLButtonElement>("button.mdmark-pin"),
+  ];
+  await vi.waitFor(() => expect(pins[2]?.hidden).toBe(false));
+  const firstRow = find<HTMLTableRowElement>(table, "tbody tr");
+  const sticky = (index: number) =>
+    getComputedStyle(firstRow.cells[index] as HTMLElement).position ===
+    "sticky";
+  // 実行: 3 列目のピン止めを押し、右端までスクロールする
+  pins[2]?.click();
+  scroller.scrollLeft = scroller.scrollWidth;
+  await nextFrames();
+  // 検証
+  expect([sticky(0), sticky(1), sticky(2)]).toEqual([true, true, false]);
+  expect(pins.map((pin) => pin.getAttribute("aria-pressed"))).toEqual([
+    "false",
+    "false",
+    "true",
+    ...Array.from({ length: 7 }, () => "false"),
+  ]);
+  expect(pins[2]?.classList.contains("is-unpinned")).toBe(true);
+  expect(pins[2]?.getAttribute("aria-label")).toBe(
+    `「列名3」の列までピン止め${UNPINNED_SUFFIX}`,
+  );
+  expect(pins[2]?.getAttribute("title")).toBe(
+    `「列名3」の列までピン止め${UNPINNED_SUFFIX}`,
+  );
+  const firstRect = (firstRow.cells[0] as HTMLElement).getBoundingClientRect();
+  const secondRect = (firstRow.cells[1] as HTMLElement).getBoundingClientRect();
+  expect(Math.round(secondRect.left)).toBe(Math.round(firstRect.right));
 });
 
 // タッチのドラッグで幅を変え、ダブルタップで描いた直後の幅に戻し、ポインターが粗い画面ではつまみを常に出す（正常系（タッチで列の幅を変える））
@@ -15536,4 +15992,671 @@ test("test_normal_when_map_terms", async () => {
   find<HTMLButtonElement>(seq, '[data-band="stop"]').click();
   // 検証: グループのタイトルのボタンには付けない
   expect(flow.querySelector(".map-group-title .mdmark-term")).toBeNull();
+});
+
+/** 全角の文字を `count` 文字並べる */
+function fullWidth(count: number): string {
+  return "あ".repeat(count);
+}
+
+/** 列の幅を中身から決める確認の 6 列 3 行の表（`No`・`状態`・`更新日`・`名前`・`手順`・`説明`）の Markdown（`mark` は表のマーカーの中身） */
+function contentTableMarkdown(mark = '{"kind": "data"}'): string {
+  return [
+    `<!-- table: ${mark} -->`,
+    "",
+    "| No | 状態 | 更新日 | 名前 | 手順 | 説明 |",
+    "| --- | --- | --- | --- | --- | --- |",
+    ...[1, 2, 3].map(
+      (no) =>
+        `| ${no} | \`badge:対応中\` | 2026-11-0${no} | ${fullWidth(6)} | ${fullWidth(10)}<br>${fullWidth(8)}<br>${fullWidth(6)} | ${fullWidth(120)} |`,
+    ),
+    "",
+    "<!-- /table -->",
+    "",
+  ].join("\n");
+}
+
+/** 列名と行ごとのセルの文字から、表のマーカーで囲んだ表の Markdown を作る */
+function markedTableMarkdown(
+  mark: string,
+  columns: string[],
+  rows: string[][],
+): string {
+  return [
+    `<!-- table: ${mark} -->`,
+    "",
+    `| ${columns.join(" | ")} |`,
+    `| ${columns.map(() => "---").join(" | ")} |`,
+    ...rows.map((row) => `| ${row.join(" | ")} |`),
+    "",
+    "<!-- /table -->",
+    "",
+  ].join("\n");
+}
+
+/** 名前・説明（全角 120 文字）・備考（全角 80 文字）の 3 列 3 行の表の Markdown */
+const LONG_NOTE_TABLE_MARKDOWN = markedTableMarkdown(
+  '{"kind": "data"}',
+  ["名前", "説明", "備考"],
+  [1, 2, 3].map((no) => [`名前${no}`, fullWidth(120), fullWidth(80)]),
+);
+
+/** 本文の段落と表を描き、全ての表に自動の列の幅が入るまで待って、表の囲みを返却する */
+async function mountAutoTables(
+  el: HTMLElement,
+  markdown: string,
+  config: Record<string, unknown> = {},
+): Promise<HTMLElement[]> {
+  await mountTracked(el, {
+    markdown: `本文の段落。\n\n${markdown}`,
+    config: { features: { "side-toc": false }, ...config },
+  });
+  const wrappers = [...el.querySelectorAll<HTMLElement>(".mdmark-table")];
+  await vi.waitFor(() => {
+    for (const wrapper of wrappers) {
+      expect(find(wrapper, "table").hasAttribute("data-auto-width")).toBe(true);
+    }
+  });
+  return wrappers;
+}
+
+/** 本文の段落の幅 */
+function bodyWidth(el: HTMLElement): number {
+  return find<HTMLElement>(el, "p").getBoundingClientRect().width;
+}
+
+/** 表の左右の枠線を除いた幅 */
+function innerTableWidth(wrapper: HTMLElement): number {
+  const table = find<HTMLElement>(wrapper, "table");
+  const style = getComputedStyle(table);
+  return (
+    table.getBoundingClientRect().width -
+    Number.parseFloat(style.borderLeftWidth) -
+    Number.parseFloat(style.borderRightWidth)
+  );
+}
+
+/** 最下段の見出しのセルを左から並べて返却する */
+function headCellsOf(wrapper: HTMLElement): HTMLElement[] {
+  return [...wrapper.querySelectorAll<HTMLElement>("thead th")];
+}
+
+/** セルの中に文字を折り返さずに置いたときの幅に、余白と罫線と 2px を足して切り上げた幅（列の最も長い行の幅） */
+function lineWidthIn(cell: HTMLElement, text: string): number {
+  const probe = document.createElement("span");
+  probe.style.cssText =
+    "position:absolute;visibility:hidden;white-space:nowrap";
+  probe.textContent = text;
+  cell.append(probe);
+  const width = probe.getBoundingClientRect().width;
+  probe.remove();
+  const style = getComputedStyle(cell);
+  return Math.ceil(
+    width +
+      Number.parseFloat(style.paddingLeft) +
+      Number.parseFloat(style.paddingRight) +
+      Number.parseFloat(style.borderLeftWidth) +
+      Number.parseFloat(style.borderRightWidth) +
+      2,
+  );
+}
+
+/** 見出しのセルの文字の大きさ（px）に `em` を掛けた幅 */
+function emWidth(head: HTMLElement, em: number): number {
+  return Number.parseFloat(getComputedStyle(head).fontSize) * em;
+}
+
+/** ページが横にはみ出していないことを確認する */
+function expectNoPageOverflow(): void {
+  expect(document.documentElement.scrollWidth).toBeLessThanOrEqual(
+    document.documentElement.clientWidth,
+  );
+}
+
+// 列ごとに最も長い行の幅を測り、長文でない列を最も長い行の幅で、長文の説明の列を残りの幅で折り返して描く（正常系（列の幅を中身から決める））
+test("test_normal_when_column_widths_fit_content", async () => {
+  await withViewport(1280, async () => {
+    // 準備・実行
+    const el = createElement();
+    const [wrapper] = (await mountAutoTables(el, contentTableMarkdown())) as [
+      HTMLElement,
+    ];
+    // 検証: No・状態・更新日・名前の列は 1 行
+    for (const column of [0, 1, 2, 3]) {
+      for (const cell of columnCells(wrapper, column)) {
+        expect(textLineCount(cell)).toBe(1);
+      }
+    }
+    // 検証: 手順の列の幅は 3 行のうち最も長い行の幅
+    const heads = headCellsOf(wrapper);
+    const step = columnCells(wrapper, 4)[1] as HTMLElement;
+    expect(
+      Math.abs(
+        (heads[4]?.getBoundingClientRect().width ?? 0) -
+          lineWidthIn(step, fullWidth(10)),
+      ),
+    ).toBeLessThanOrEqual(1);
+    // 検証: 説明の列は折り返し、45em 以上
+    const note = columnCells(wrapper, 5)[1] as HTMLElement;
+    expect(textLineCount(note)).toBeGreaterThan(1);
+    expect(heads[5]?.getBoundingClientRect().width ?? 0).toBeGreaterThanOrEqual(
+      emWidth(heads[5] as HTMLElement, 45) - 1,
+    );
+    // 検証: 表は本文の幅に広がり、横にスクロールしない
+    const body = bodyWidth(el);
+    expect(
+      Math.abs(wrapper.getBoundingClientRect().width - body),
+    ).toBeLessThanOrEqual(1);
+    const table = find<HTMLElement>(wrapper, "table").getBoundingClientRect();
+    expect(body - table.width).toBeGreaterThanOrEqual(0);
+    expect(body - table.width).toBeLessThanOrEqual(heads.length);
+    const scroller = find<HTMLElement>(wrapper, ".mdmark-table-scroll");
+    expect(scroller.scrollWidth).toBeLessThanOrEqual(scroller.clientWidth);
+    expectNoPageOverflow();
+  });
+});
+
+// 1 行で収まる長文の列は折り返さず、本文の幅まで広げずに列の幅の合計で描く（正常系（長文の列が折り返さずに収まる））
+test("test_normal_when_long_column_fits", async () => {
+  await withViewport(1280, async () => {
+    // 準備・実行
+    const el = createElement();
+    el.style.width = "1000px";
+    const [wrapper] = (await mountAutoTables(
+      el,
+      markedTableMarkdown(
+        '{"kind": "data"}',
+        ["名前", "説明"],
+        [20, 22, 24].map((count, index) => [
+          `名前${index + 1}あ`,
+          fullWidth(count),
+        ]),
+      ),
+    )) as [HTMLElement];
+    // 検証
+    for (const cell of columnCells(wrapper, 1).slice(1)) {
+      expect(textLineCount(cell)).toBe(1);
+    }
+    const sum = headCellsOf(wrapper).reduce(
+      (total, head) => total + head.getBoundingClientRect().width,
+      0,
+    );
+    expect(innerTableWidth(wrapper)).toBeLessThan(bodyWidth(el));
+    expect(Math.abs(innerTableWidth(wrapper) - sum)).toBeLessThanOrEqual(1);
+  });
+});
+
+// 長文の列が 2 つあるとき、最小の幅を下回る備考の列を最も長い行の幅で止め、残りの幅を説明の列へ分ける（正常系（長文の列が 2 つある））
+test("test_normal_when_two_long_columns", async () => {
+  await withViewport(1280, async () => {
+    // 準備・実行
+    const el = createElement();
+    const notes = [fullWidth(20), fullWidth(24)];
+    const [wrapper] = (await mountAutoTables(
+      el,
+      markedTableMarkdown(
+        '{"kind": "data"}',
+        ["名前", "説明", "備考"],
+        notes.map((note) => ["あいう", fullWidth(120), note]),
+      ),
+    )) as [HTMLElement];
+    // 検証: 備考の列は最も長い行の幅で 1 行
+    const heads = headCellsOf(wrapper);
+    const noteCells = columnCells(wrapper, 2).slice(1);
+    expect(
+      Math.abs(
+        (heads[2]?.getBoundingClientRect().width ?? 0) -
+          lineWidthIn(noteCells[1] as HTMLElement, fullWidth(24)),
+      ),
+    ).toBeLessThanOrEqual(1);
+    for (const cell of noteCells) {
+      expect(textLineCount(cell)).toBe(1);
+    }
+    // 検証: 説明の列が残りの幅を使い、表が本文の幅に広がる
+    const body = bodyWidth(el);
+    const table = find<HTMLElement>(wrapper, "table").getBoundingClientRect();
+    expect(body - table.width).toBeGreaterThanOrEqual(0);
+    expect(body - table.width).toBeLessThanOrEqual(heads.length);
+    const scroller = find<HTMLElement>(wrapper, ".mdmark-table-scroll");
+    expect(scroller.scrollWidth).toBeLessThanOrEqual(scroller.clientWidth);
+  });
+});
+
+// 列の少ない表は、マーカーの有無によらず本文の幅まで広げず列の幅の合計で描く（正常系（余白の多い表を中身の幅で描く））
+test("test_normal_when_table_fits_content", async () => {
+  await withViewport(1280, async () => {
+    // 準備・実行
+    const el = createElement();
+    el.style.width = "1000px";
+    const rows = [
+      ["りんご", "3"],
+      ["みかん", "5"],
+      ["ぶどう", "2"],
+    ];
+    const plain = [
+      "| 名前 | 数量 |",
+      "| --- | --- |",
+      ...rows.map((row) => `| ${row.join(" | ")} |`),
+      "",
+    ].join("\n");
+    const wrappers = await mountAutoTables(
+      el,
+      `${markedTableMarkdown('{"kind": "data"}', ["名前", "数量"], rows)}\n${plain}`,
+    );
+    // 検証
+    expect(wrappers).toHaveLength(2);
+    for (const wrapper of wrappers) {
+      const sum = headCellsOf(wrapper).reduce(
+        (total, head) => total + head.getBoundingClientRect().width,
+        0,
+      );
+      expect(innerTableWidth(wrapper)).toBeLessThan(bodyWidth(el));
+      expect(Math.abs(innerTableWidth(wrapper) - sum)).toBeLessThanOrEqual(1);
+      for (const column of [0, 1]) {
+        for (const cell of columnCells(wrapper, column)) {
+          expect(textLineCount(cell)).toBe(1);
+        }
+      }
+      const scroller = find<HTMLElement>(wrapper, ".mdmark-table-scroll");
+      expect(scroller.scrollWidth).toBeLessThanOrEqual(scroller.clientWidth);
+    }
+  });
+});
+
+// 狭い幅では長文の列を最小の幅で折り返し、全ての列の最小の幅の合計が見える幅を超える表は表の中で横にスクロールする（正常系（狭い幅で横にスクロールする））
+test("test_normal_when_table_scrolls_in_narrow_width", async () => {
+  await withViewport(390, async () => {
+    // 準備・実行
+    const el = createElement();
+    const many = Array.from({ length: 12 }, (_, i) => `列${i + 1}`);
+    const [first, second] = (await mountAutoTables(
+      el,
+      `${LONG_NOTE_TABLE_MARKDOWN}\n${dataTableMarkdown(many)}`,
+    )) as [HTMLElement, HTMLElement];
+    // 検証: 説明・備考の列は 45em で折り返す
+    const heads = headCellsOf(first);
+    for (const column of [1, 2]) {
+      const head = heads[column] as HTMLElement;
+      expect(
+        Math.abs(head.getBoundingClientRect().width - emWidth(head, 45)),
+      ).toBeLessThanOrEqual(1);
+      expect(
+        textLineCount(columnCells(first, column)[1] as HTMLElement),
+      ).toBeGreaterThan(1);
+    }
+    // 検証: 2 つの表とも本文の幅で、表の中で横にスクロールする
+    for (const wrapper of [first, second]) {
+      expect(
+        Math.abs(wrapper.getBoundingClientRect().width - bodyWidth(el)),
+      ).toBeLessThanOrEqual(1);
+      const scroller = find<HTMLElement>(wrapper, ".mdmark-table-scroll");
+      expect(scroller.scrollWidth).toBeGreaterThan(scroller.clientWidth);
+    }
+    // 検証: 12 列の表の各列は、その列の最も長い行の幅以上
+    headCellsOf(second).forEach((head, column) => {
+      const cells = columnCells(second, column);
+      const longest = Math.max(
+        ...cells
+          .slice(1)
+          .map((cell) => lineWidthIn(cell, cell.textContent ?? "")),
+      );
+      expect(head.getBoundingClientRect().width).toBeGreaterThanOrEqual(
+        longest - 1,
+      );
+    });
+    expectNoPageOverflow();
+  });
+});
+
+// 列の幅の範囲と width.mode: nowrap を、自動の判定より優先する（正常系（列の幅の範囲を指定する））
+test("test_normal_when_column_width_range_specified", async () => {
+  await withViewport(1280, async () => {
+    // 準備・実行
+    const el = createElement();
+    el.style.width = "1000px";
+    const [wrapper] = (await mountAutoTables(
+      el,
+      markedTableMarkdown(
+        '{"kind": "data", "columns": {"説明": {"width": {"min": 20, "max": 30}}, "名前": {"width": {"mode": "nowrap"}}}}',
+        ["名前", "説明", "備考"],
+        [1, 2, 3].map(() => [fullWidth(30), fullWidth(200), fullWidth(4)]),
+      ),
+    )) as [HTMLElement];
+    // 検証
+    const head = headCellsOf(wrapper)[1] as HTMLElement;
+    const width = head.getBoundingClientRect().width;
+    expect(width).toBeGreaterThanOrEqual(emWidth(head, 20) - 1);
+    expect(width).toBeLessThanOrEqual(emWidth(head, 30) + 1);
+    expect(
+      textLineCount(columnCells(wrapper, 1)[1] as HTMLElement),
+    ).toBeGreaterThan(1);
+    expect(textLineCount(columnCells(wrapper, 0)[1] as HTMLElement)).toBe(1);
+    expect(textLineCount(columnCells(wrapper, 2)[1] as HTMLElement)).toBe(1);
+  });
+});
+
+// 並べ替え・絞り込み・列の表示の切り替えでは列の幅を変えず、表の見える幅が変わったらつまみで変えていない列の幅を決め直す（正常系（表の見える幅が変わったら列の幅を決め直す））
+test("test_normal_when_column_widths_recalculated_on_resize", async () => {
+  await withViewport(1280, async () => {
+    // 準備
+    vi.spyOn(Element.prototype, "setPointerCapture").mockImplementation(
+      () => {},
+    );
+    const el = createElement();
+    el.style.width = "1280px";
+    const [wrapper] = (await mountAutoTables(
+      el,
+      contentTableMarkdown(
+        '{"kind": "data", "features": {"columns": {}}, "columns": {"状態": {"filter": {}}}}',
+      ),
+    )) as [HTMLElement];
+    const heads = headCellsOf(wrapper);
+    const widths = () =>
+      heads.map((head) => head.getBoundingClientRect().width);
+    const expectSame = (actual: number[], expected: number[]) => {
+      actual.forEach((width, index) => {
+        expect(Math.abs(width - (expected[index] ?? 0))).toBeLessThanOrEqual(1);
+      });
+    };
+    const before = widths();
+    // 実行: 名前の列で並べ替え、状態の列で絞り込む
+    find<HTMLButtonElement>(heads[3] as HTMLElement, ".mdmark-sort").click();
+    find<HTMLButtonElement>(heads[1] as HTMLElement, ".mdmark-filter").click();
+    const drawer = find<HTMLElement>(
+      wrapper,
+      ".mdmark-filter-drawer:not([hidden])",
+    );
+    find<HTMLInputElement>(drawer, 'input[type="checkbox"]').click();
+    await nextFrames();
+    // 検証: 列の幅は変わらない
+    expectSame(widths(), before);
+    // 実行: 手順の列を隠す
+    find<HTMLButtonElement>(
+      wrapper,
+      '.mdmark-table-settings-item[data-column="4"] button.mdmark-table-settings-eye',
+    ).click();
+    await nextFrames();
+    // 検証: 残った列の幅は変わらない
+    expect(heads[4]?.hidden).toBe(true);
+    const shown = [0, 1, 2, 3, 5];
+    expectSame(
+      shown.map((column) => widths()[column] ?? 0),
+      shown.map((column) => before[column] ?? 0),
+    );
+    // 実行: 名前の列のつまみを右へ 40px ドラッグする
+    const handle = find<HTMLElement>(
+      heads[3] as HTMLElement,
+      ":scope > .mdmark-col-resize",
+    );
+    dragResizeHandle(handle, 40);
+    const dragged = heads[3]?.getBoundingClientRect().width ?? 0;
+    // 実行: 描く先の幅を 900px にする
+    el.style.width = "900px";
+    // 検証: 説明の列は 45em に狭まり、表の中で横にスクロールし、短い列は 1 行のまま
+    const note = heads[5] as HTMLElement;
+    await vi.waitFor(() => {
+      expect(
+        Math.abs(note.getBoundingClientRect().width - emWidth(note, 45)),
+      ).toBeLessThanOrEqual(1);
+    });
+    const scroller = find<HTMLElement>(wrapper, ".mdmark-table-scroll");
+    expect(scroller.scrollWidth).toBeGreaterThan(scroller.clientWidth);
+    for (const column of [0, 1, 2]) {
+      for (const cell of columnCells(wrapper, column).slice(1)) {
+        expect(textLineCount(cell)).toBe(1);
+      }
+    }
+    // 検証: つまみで変えた名前の列の幅は変わらない
+    expect(
+      Math.abs((heads[3]?.getBoundingClientRect().width ?? 0) - dragged),
+    ).toBeLessThanOrEqual(1);
+    expectNoPageOverflow();
+  });
+});
+
+// 設定の table.long_column_min で長文の列の最小の幅を変え、数でない値は既定の 45em にする（正常系（長文の列の最小の幅を設定で変える））
+test("test_normal_when_long_column_min_configured", async () => {
+  await withViewport(390, async () => {
+    for (const [value, em] of [
+      [30, 30],
+      ["wide", 45],
+    ] as const) {
+      // 準備・実行
+      const el = createElement();
+      const [wrapper] = (await mountAutoTables(el, LONG_NOTE_TABLE_MARKDOWN, {
+        table: { long_column_min: value },
+      })) as [HTMLElement];
+      // 検証
+      const heads = headCellsOf(wrapper);
+      for (const column of [1, 2]) {
+        const head = heads[column] as HTMLElement;
+        expect(
+          Math.abs(head.getBoundingClientRect().width - emWidth(head, em)),
+        ).toBeLessThanOrEqual(1);
+      }
+    }
+  });
+});
+
+// 狭い幅でも最終列を畳まず、表の中で横にスクロールして全ての列を出す（正常系（狭い幅でも最終列を畳まない））
+test("test_normal_when_last_column_not_collapsed", async () => {
+  await withViewport(390, async () => {
+    // 準備・実行
+    const el = createElement();
+    const [wrapper] = (await mountAutoTables(el, FOLD_TABLE_MARKDOWN)) as [
+      HTMLElement,
+    ];
+    // 検証: 3 列の見出しとセルが表示され、行に開閉のボタンが無い
+    for (const column of [0, 1, 2]) {
+      for (const cell of columnCells(wrapper, column)) {
+        expect(isShown(cell)).toBe(true);
+      }
+    }
+    expect(wrapper.querySelectorAll("tbody button")).toHaveLength(0);
+    // 検証: 表は本文の幅で、横にスクロールすると説明の列が見える
+    expect(
+      Math.abs(wrapper.getBoundingClientRect().width - bodyWidth(el)),
+    ).toBeLessThanOrEqual(1);
+    const scroller = find<HTMLElement>(wrapper, ".mdmark-table-scroll");
+    expect(scroller.scrollWidth).toBeGreaterThan(scroller.clientWidth);
+    scroller.scrollLeft = scroller.scrollWidth;
+    await nextFrames();
+    const note = columnCells(wrapper, 2)[1] as HTMLElement;
+    const view = scroller.getBoundingClientRect();
+    const rect = note.getBoundingClientRect();
+    expect(rect.left).toBeLessThan(view.right);
+    expect(rect.right).toBeGreaterThan(view.left);
+    expectNoPageOverflow();
+    // 検証: 印刷の媒体でも行に開閉のボタンが無い
+    await cdp().send("Emulation.setEmulatedMedia", { media: "print" });
+    try {
+      expect(wrapper.querySelectorAll("tbody button")).toHaveLength(0);
+      expect(isShown(columnCells(wrapper, 2)[1])).toBe(true);
+    } finally {
+      await cdp().send("Emulation.setEmulatedMedia", {
+        media: "",
+        features: [],
+      });
+    }
+  });
+});
+
+// 狭い幅でも最終列を畳まず、行の詳細を持つ行にだけ開閉のボタンを配置し、行の詳細だけを開閉する（正常系（狭い幅の行の詳細））
+test("test_normal_when_row_detail_in_narrow_width", async () => {
+  await withViewport(390, async () => {
+    // 準備・実行
+    const el = createElement();
+    const [wrapper] = (await mountAutoTables(
+      el,
+      [
+        FOLD_TABLE_MARKDOWN,
+        '<!-- row-detail: {"at": 2} -->',
+        "",
+        "行の詳細の段落",
+        "",
+        "<!-- /row-detail -->",
+        "",
+      ].join("\n"),
+    )) as [HTMLElement];
+    // 検証: 説明の列が表示され、開閉のボタンは 2 行目に 1 つだけ
+    for (const cell of columnCells(wrapper, 2)) {
+      expect(isShown(cell)).toBe(true);
+    }
+    const toggles = [
+      ...wrapper.querySelectorAll<HTMLButtonElement>("tbody button"),
+    ];
+    expect(toggles).toHaveLength(1);
+    const toggle = toggles[0] as HTMLButtonElement;
+    const rows = [
+      ...wrapper.querySelectorAll<HTMLTableRowElement>(
+        "tbody tr:not(.mdmark-row-detail):not(.mdmark-table-empty)",
+      ),
+    ];
+    expect(rows[1]?.contains(toggle)).toBe(true);
+    // 実行・検証: 開く
+    toggle.click();
+    const detail = rows[1]?.nextElementSibling as HTMLElement;
+    expect(toggle.getAttribute("aria-expanded")).toBe("true");
+    expect(detail.classList.contains("mdmark-row-detail")).toBe(true);
+    expect(detail.hidden).toBe(false);
+    expect(detail.textContent).toContain("行の詳細の段落");
+    expect(detail.textContent).not.toContain("印刷で折り畳みを開き");
+    // 実行・検証: 閉じる
+    toggle.click();
+    expect(detail.hidden).toBe(true);
+  });
+});
+
+/** 帯と、帯の直後の `pre` と、言語のラベルの計算値 */
+function codeBarStyles(bar: HTMLElement): {
+  bar: CSSStyleDeclaration;
+  pre: CSSStyleDeclaration;
+  lang: HTMLElement;
+} {
+  const pre = bar.nextElementSibling as HTMLElement;
+  return {
+    bar: getComputedStyle(bar),
+    pre: getComputedStyle(pre),
+    lang: find<HTMLElement>(bar, ".mdmark-code-lang"),
+  };
+}
+
+// コードブロックの帯を本文と同じ地にし、帯と本文の間に線を出さず、言語のラベルを帯の上端に接した塗りのタブにする（正常系（コードブロックの帯と本文の間に線を出さない））
+test("test_normal_when_code_bar_without_divider", async () => {
+  const markdown = [
+    "```ts",
+    "const a = 1;",
+    "```",
+    "",
+    '<!-- code: {"title": "設定 例.ts"} -->',
+    "",
+    "```ts",
+    "const b = 2;",
+    "```",
+    "",
+  ].join("\n");
+  for (const colorScheme of ["light", "dark"]) {
+    // 準備・実行
+    const el = createElement();
+    await mountTracked(el, { markdown, config: { colorScheme } });
+    const bars = [...el.querySelectorAll<HTMLElement>(".mdmark-code-bar")];
+    expect(bars).toHaveLength(2);
+    for (const element of bars) {
+      // 検証
+      const { bar, pre, lang } = codeBarStyles(element);
+      expect(pre.borderTopWidth).toBe("0px");
+      expect(bar.borderBottomWidth).toBe("0px");
+      expect(bar.backgroundColor).toBe(pre.backgroundColor);
+      expect(Number.parseFloat(bar.borderTopWidth)).toBeGreaterThanOrEqual(1);
+      expect(Number.parseFloat(bar.borderLeftWidth)).toBeGreaterThanOrEqual(1);
+      expect(Number.parseFloat(bar.borderRightWidth)).toBeGreaterThanOrEqual(1);
+      expect(Number.parseFloat(pre.borderBottomWidth)).toBeGreaterThanOrEqual(
+        1,
+      );
+      expect(Number.parseFloat(pre.borderLeftWidth)).toBeGreaterThanOrEqual(1);
+      expect(Number.parseFloat(pre.borderRightWidth)).toBeGreaterThanOrEqual(1);
+      expect(bar.borderTopLeftRadius).not.toBe("0px");
+      expect(pre.borderBottomLeftRadius).not.toBe("0px");
+      const langStyle = getComputedStyle(lang);
+      expect(langStyle.borderTopWidth).toBe("0px");
+      expect(langStyle.backgroundColor).not.toBe(bar.backgroundColor);
+      expect(
+        Math.abs(
+          lang.getBoundingClientRect().top -
+            element.getBoundingClientRect().top,
+        ),
+      ).toBeLessThanOrEqual(1);
+    }
+    // 検証: 印刷の媒体でも、帯の直後の pre の上の線が無い
+    await cdp().send("Emulation.setEmulatedMedia", { media: "print" });
+    try {
+      for (const element of bars) {
+        expect(codeBarStyles(element).pre.borderTopWidth).toBe("0px");
+      }
+    } finally {
+      await cdp().send("Emulation.setEmulatedMedia", {
+        media: "",
+        features: [],
+      });
+    }
+  }
+});
+
+// 右側の目次で閉じたセクションの見出しを押すと、囲むセクションと見出し自身のセクションを開いてから移り、描き直しても開いたまま（正常系（右側の目次で閉じたセクションの見出しを押す））
+test("test_normal_when_side_toc_opens_own_section", async () => {
+  await withViewport(1280, async () => {
+    // 準備
+    const el = createElement();
+    const lines = (note: string) => [
+      sideTocFiller(),
+      "## 補足",
+      "",
+      '<!-- section: {"open": false} -->',
+      "",
+      "### 注意",
+      "",
+      '<!-- section: {"open": false} -->',
+      "",
+      note,
+      "",
+      "## 付録",
+      "",
+      '<!-- section: {"open": false} -->',
+      "",
+      "付録の段落",
+      "",
+    ];
+    const handle = await mountTracked(el, {
+      markdown: lines("注意の段落").join("\n"),
+    });
+    const { linkOf } = sideTocOf(el);
+    const paragraph = (text: string) =>
+      [...el.querySelectorAll("p")].find((p) => p.textContent === text);
+    // 実行・検証: 「注意」を押す（ほかのテストの重なりに左右されないよう、項目を直に押す）
+    linkOf("注意").click();
+    await vi.waitFor(() => {
+      expect(expandedOf(el, ["補足", "注意"])).toEqual(["true", "true"]);
+      expect(isShown(paragraph("注意の段落"))).toBe(true);
+    });
+    // 実行・検証: 「付録」を押す
+    linkOf("付録").click();
+    await vi.waitFor(() => {
+      expect(expandedOf(el, ["補足", "注意", "付録"])).toEqual([
+        "true",
+        "true",
+        "true",
+      ]);
+      expect(isShown(paragraph("付録の段落"))).toBe(true);
+      expect(decodeURIComponent(location.hash)).toBe("#付録");
+    });
+    // 実行・検証: 段落の文字を書き換えて描き直しても開いたまま
+    handle.update(lines("注意の段落を書き換えた").join("\n"));
+    await vi.waitFor(() => {
+      expect(expandedOf(el, ["補足", "注意", "付録"])).toEqual([
+        "true",
+        "true",
+        "true",
+      ]);
+    });
+  });
 });

@@ -119,6 +119,33 @@ test("test_attach_column_resize_when_dragged", async () => {
   );
 });
 
+// 自動で列の幅を決めた表では、ほかの列の幅を止めず、幅を入れた後・測る前に onWidthWritten を呼ぶ（正常系）
+test("test_attach_column_resize_when_auto_width", async () => {
+  // 準備
+  addStyles();
+  stubPointerCapture();
+  const { attachColumnResize } = await loadResize();
+  const { table, headCells, handles } = resizableTable();
+  table.setAttribute("data-auto-width", "");
+  const calls: string[] = [];
+  detachers.push(
+    attachColumnResize(table, {
+      headCells,
+      maxWidth: () => 2000,
+      onResize: () => calls.push("resize"),
+      onWidthWritten: () => calls.push("written"),
+    }),
+  );
+  // 実行: 1 列目のつまみを右へ 80px 動かす
+  drag(handles[0], 80);
+  // 検証: ほかの列にインラインの幅が入らず、幅を入れるたびに onResize の前に onWidthWritten が呼ばれる
+  expect(headCells[1].style.width).toBe("");
+  expect(headCells[2].style.width).toBe("");
+  expect(calls[0]).toBe("written");
+  expect(calls.at(-1)).toBe("resize");
+  expect(calls.indexOf("written")).toBeLessThan(calls.indexOf("resize"));
+});
+
 // ←→ キーで 16px ずつ変え、Enter で戻し、つまみの値を書き換える（正常系）
 test("test_attach_column_resize_when_key", async () => {
   // 準備

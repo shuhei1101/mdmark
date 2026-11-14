@@ -28,7 +28,7 @@ export declare function planCellMerges(options: {
     cells: string[][];
     headRows: number;
 }): CellMergePlan;
-/** 見出しの結合の計画から、最下段の列ごとに、その列を覆う上の段の `colspan` を持つ見出しの `{段}:{位置}` を返す（無ければ `undefined`） */
+/** 見出しの結合の計画から、最下段の列ごとに、その列を覆う上の行の `colspan` を持つ見出しの `{行}:{位置}` を返却する（無ければ `undefined`） */
 export declare function headerGroupsOf(options: {
     /** 見出しの行のセルの文字 */
     head: string[][];

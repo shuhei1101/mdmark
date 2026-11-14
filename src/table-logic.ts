@@ -167,19 +167,6 @@ export function tableToMarkdown(rows: string[][]): string {
   return [line(head), separator, ...body.map(line)].join("\n");
 }
 
-/** 描く先の要素の中身の幅（px）がこの値未満のときだけ最終列を畳む */
-export const FOLD_MAX_WIDTH = 720;
-
-/** 最終列を畳むか。幅が `FOLD_MAX_WIDTH` 未満で、表示している最終列が先頭の列でなく、そのセルのどれかが 1 行に収まらないときだけ `true` */
-export function shouldFold(options: {
-  width: number;
-  lastColumn: number;
-  wraps: boolean;
-}): boolean {
-  const { width, lastColumn, wraps } = options;
-  return width < FOLD_MAX_WIDTH && lastColumn > 0 && wraps;
-}
-
 /** `animation-timeline` を持たないブラウザで、見出し行を下げる量（0 以上）と集計の行を動かす量（0 以下。集計の行が無ければ 0）を、ずらす前の位置から求める */
 export function stickyShift(options: {
   stickyTop: number;
@@ -372,6 +359,30 @@ export const pinOffsets = (options: {
   return offsets;
 };
 
+/** 選んだ列を左から順に幅を足し、表の見えている幅に収まる列（`fitted`）と、見えている幅を超える列から右の列（`unpinned`）に分けて返却する */
+export const fitPinnedColumns = (options: {
+  /** 列ごとの幅（隠した列は 0） */
+  widths: number[];
+  /** 選んだ列の位置 */
+  pinned: number[];
+  /** 表を包む要素の `clientWidth` */
+  visibleWidth: number;
+}): { fitted: number[]; unpinned: number[] } => {
+  const { widths, pinned, visibleWidth } = options;
+  const sorted = [...new Set(pinned)].sort((a, b) => a - b);
+  const fitted: number[] = [];
+  let total = 0;
+  for (const [index, column] of sorted.entries()) {
+    total += widths[column] ?? 0;
+    // 超えた列より右の列は、幅が小さくても留めない
+    if (total > visibleWidth) {
+      return { fitted, unpinned: sorted.slice(index) };
+    }
+    fitted.push(column);
+  }
+  return { fitted, unpinned: [] };
+};
+
 /** 列の幅を、列の最小幅から上限までに収めた値を返却する。上限が最小幅より小さいときは最小幅を返す */
 export const clampColumnWidth = (options: {
   /** 指定したい幅（px） */
@@ -406,6 +417,148 @@ export const columnWidthLimit = (options: {
     .filter((item) => item !== column)
     .reduce((sum, item) => sum + (widths[item] ?? 0), 0);
   return visibleWidth - others;
+};
+
+/** 改行で分けた 1 行がこの文字数（コードポイントの数）以上のセルを持つ列を長文の列にする */
+export const LONG_COLUMN_CHARS = 20;
+
+/** 設定の `table.long_column_min` が無いか読み込めないときの、長文の列の最小の幅（em） */
+export const DEFAULT_LONG_COLUMN_MIN_EM = 45;
+
+/** 数値（`,`・`.`・`%` を含む）の文字 */
+const NUMBER_TEXT = /^[-+]?[\d,.]+%?$/;
+
+/** 日付（`YYYY-MM-DD`・`YYYY/M/D`）の文字 */
+const DATE_TEXT = /^\d{4}[-/]\d{1,2}[-/]\d{1,2}$/;
+
+/** チェックの印 */
+const CHECK_TEXT = /^[✓✔]$/;
+
+/** セルの文字が、空・数値・日付・✓ のどれかなら `true` */
+export const isCompactCellText = (text: string): boolean =>
+  text === "" ||
+  NUMBER_TEXT.test(text) ||
+  DATE_TEXT.test(text) ||
+  CHECK_TEXT.test(text);
+
+/** 列ごとのセルを改行で分けた行（`findLongColumns` の引数） */
+export type ColumnLines = {
+  /** 見出しのセルの行 */
+  head: string[];
+  /** 本文のセルごとの行と、短い値だけのセルか */
+  cells: { lines: string[]; compact: boolean }[];
+};
+
+/** 行の文字数（コードポイントの数）が `LONG_COLUMN_CHARS` 以上か */
+const isLongLine = (line: string): boolean =>
+  [...line].length >= LONG_COLUMN_CHARS;
+
+/** 本文のセルが全て短い値でなく、見出しか本文のセルの行のどれかが `LONG_COLUMN_CHARS` 文字以上の列の位置を、小さい順に返却する */
+export const findLongColumns = (columns: ColumnLines[]): number[] =>
+  columns.flatMap((column, index) => {
+    const allCompact =
+      column.cells.length > 0 && column.cells.every((cell) => cell.compact);
+    const longCell = column.cells.some(
+      (cell) => !cell.compact && cell.lines.some(isLongLine),
+    );
+    return !allCompact && (column.head.some(isLongLine) || longCell)
+      ? [index]
+      : [];
+  });
+
+/** `filter.type` を省いた列の絞り込みの種類。長文の列なら `text`、ほかは `select` */
+export const defaultFilterKind = (long: boolean): FilterKind =>
+  long ? "text" : "select";
+
+/** 列の折り返すかと最小の幅・望む幅（px） */
+export type ColumnBounds = { wraps: boolean; min: number; wanted: number };
+
+/** 列が折り返すかと最小の幅・望む幅を決める（読者がつまみで幅を変えた列は呼ぶ側で除く） */
+export const columnBounds = (options: {
+  /** `width.mode` が `nowrap` か */
+  nowrap: boolean;
+  /** 長文の列か */
+  long: boolean;
+  /** `data-width` の範囲（em） */
+  range?: { min?: number; max?: number };
+  /** 最も長い行の幅（px。セルの余白と罫線を含む） */
+  longest: number;
+  /** 最も長い半角の単語の幅（px。セルの余白と罫線を含む） */
+  longestWord: number;
+  /** 表の文字の大きさ（px） */
+  em: number;
+  /** 長文の列の最小の幅（em） */
+  longColumnMin: number;
+}): ColumnBounds => {
+  const { nowrap, long, range, longest, longestWord, em, longColumnMin } =
+    options;
+  if (nowrap || (range === undefined && !long)) {
+    return { wraps: false, min: longest, wanted: longest };
+  }
+  const max =
+    range?.max === undefined ? Number.POSITIVE_INFINITY : range.max * em;
+  const base =
+    range?.min === undefined
+      ? Math.min(longest, Math.max(longColumnMin * em, longestWord))
+      : range.min * em;
+  const min = Math.min(base, max);
+  return { wraps: true, min, wanted: Math.max(min, Math.min(longest, max)) };
+};
+
+/** 折り返す列へ、残りの幅を望む幅の比で分ける。最小の幅を下回る列は最小の幅で止めて、止めた列を除いた残りを分け直す */
+const shareRest = (
+  wrapping: Array<{ index: number; min: number; wanted: number }>,
+  rest: number,
+  widths: number[],
+): void => {
+  let open = wrapping;
+  let left = rest;
+  for (;;) {
+    const total = open.reduce((sum, column) => sum + column.wanted, 0);
+    const stopped = open.filter(
+      (column) => (left * column.wanted) / total < column.min,
+    );
+    if (stopped.length === 0) {
+      for (const column of open) {
+        widths[column.index] = (left * column.wanted) / total;
+      }
+      return;
+    }
+    for (const column of stopped) {
+      widths[column.index] = column.min;
+      left -= column.min;
+    }
+    open = open.filter((column) => !stopped.includes(column));
+    if (open.length === 0) {
+      return;
+    }
+  }
+};
+
+/** 列ごとの最小の幅・望む幅と表の見える幅から、列の幅（px）と横にスクロールさせるかを返却する */
+export const distributeColumnWidths = (
+  columns: Array<ColumnBounds & { fixed?: boolean }>,
+  available: number,
+): { widths: number[]; overflow: boolean } => {
+  const minimum = columns.reduce((sum, column) => sum + column.min, 0);
+  if (minimum > available) {
+    return { widths: columns.map((column) => column.min), overflow: true };
+  }
+  const widths = columns.map((column) => column.wanted);
+  const wanted = widths.reduce((sum, width) => sum + width, 0);
+  if (wanted <= available) {
+    return { widths, overflow: false };
+  }
+  const wrapping = columns.flatMap((column, index) =>
+    column.wraps && !column.fixed
+      ? [{ index, min: column.min, wanted: column.wanted }]
+      : [],
+  );
+  const fixed = columns
+    .filter((column) => !column.wraps || column.fixed)
+    .reduce((sum, column) => sum + column.wanted, 0);
+  shareRest(wrapping, available - fixed, widths);
+  return { widths, overflow: false };
 };
 
 /** 列が属する結合した見出しの範囲とピン止めの側 */

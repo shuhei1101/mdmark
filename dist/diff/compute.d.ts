@@ -7,21 +7,21 @@ export type DiffChange = {
     /** 前にだけある切れか */
     removed: boolean;
 };
-/** 行と語の比較。既定は jsdiff を包む `jsdiffEngine`、単体テストで差し替える */
+/** 行と単語の比較。既定は jsdiff を包む `jsdiffEngine`、単体テストで差し替える */
 export type DiffEngine = {
     /** 行ごとに比べる */
     lines: (pair: {
         before: string;
         after: string;
     }) => DiffChange[];
-    /** 語ごとに比べる。`segmenter` が無いときは 1 文字ずつ比べる */
+    /** 単語ごとに比べる。`segmenter` が無いときは 1 文字ずつ比べる */
     words: (pair: {
         before: string;
         after: string;
         segmenter: Intl.Segmenter | undefined;
     }) => DiffChange[];
 };
-/** 差分の行の切れ（語）。対の行で変わった語だけ `changed` が true */
+/** 差分の行の切れ（単語）。対の行で変わった単語だけ `changed` が true */
 export type DiffPart = {
     text: string;
     changed: boolean;
@@ -59,13 +59,13 @@ export type DiffResult = {
 };
 /** jsdiff の `diffLines`・`diffWords`・`diffChars` を包んだ既定の計算 */
 export declare const jsdiffEngine: DiffEngine;
-/** 2 つの Markdown のソースを行ごとに比べ、対の行を語ごとに比べ、埋め込んだ HTML の範囲を塊に分ける */
+/** 2 つの Markdown のソースを、空白だけの行を除いて行ごとに比べ、対の行を単語ごとに比べ、埋め込んだ HTML の範囲を塊に分ける */
 export declare function computeDiff(options: {
     /** 前の Markdown */
     before: string;
     /** 後の Markdown */
     after: string;
-    /** 語の区切り。持たないブラウザでは `undefined` */
+    /** 単語の区切り。持たないブラウザでは `undefined` */
     segmenter: Intl.Segmenter | undefined;
     /** 比較の計算。既定は `jsdiffEngine` */
     engine?: DiffEngine;

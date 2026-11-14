@@ -1,4 +1,5 @@
 import { afterEach, expect, test, vi } from "vitest";
+import type { PartStates } from "../../../../src/interact/part-states.ts";
 import { restoreClipboard, stubClipboard } from "../../helpers/clipboard.ts";
 import { addStyles, createRoot, removeRoots } from "../../helpers/dom.ts";
 
@@ -221,4 +222,40 @@ test("test_attach_table_tree_when_example_hidden", async () => {
   ).toBe(true);
   expect(toggle.getAttribute("aria-expanded")).toBe("false");
   expect(toggle.textContent?.trim()).toBe("見本を表示");
+});
+
+// 記録した開閉で始め、押した開閉を記録する（正常系）
+test("test_attach_table_tree_when_states", async () => {
+  // 準備
+  addStyles();
+  const { attachInteractions } = await loadInteract();
+  const markdown = treeTable({
+    kind: "data",
+    tree: { key: { column: "キー" } },
+  });
+  const partStates: PartStates = new Map();
+  const first = createRoot(markdown);
+  const detachFirst = attachInteractions({
+    root: first.root,
+    features: first.features,
+    placement: "top",
+    partStates,
+  });
+  rowOf(first.root, "aliases[]")
+    .querySelector<HTMLButtonElement>("button.mdmark-tree-toggle")
+    ?.click();
+  detachFirst();
+  first.root.remove();
+  const { root, features } = createRoot(markdown);
+  // 実行
+  detachers.push(
+    attachInteractions({ root, features, placement: "top", partStates }),
+  );
+  // 検証: aliases[] の子孫は畳んだまま始まる
+  expect(rowOf(root, "aliases[].id").hidden).toBe(true);
+  expect(
+    rowOf(root, "aliases[]")
+      .querySelector("button.mdmark-tree-toggle")
+      ?.getAttribute("aria-expanded"),
+  ).toBe("false");
 });

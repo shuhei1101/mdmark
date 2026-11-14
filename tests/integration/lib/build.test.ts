@@ -18,6 +18,7 @@ import { pathToFileURL } from "node:url";
 import { promisify } from "node:util";
 import { afterAll, afterEach, beforeAll, expect, test, vi } from "vitest";
 import { main } from "../../../scripts/build.ts";
+import { migrationsDirOf } from "../../migrations-dir.ts";
 import { copyPluginInputs, writeRootPackageJson } from "../plugin-inputs.ts";
 
 const execFileAsync = promisify(execFile);
@@ -182,6 +183,16 @@ afterEach(async () => {
 test("test_normal", { timeout: BUILD_TIMEOUT_MS }, async () => {
   // 準備
   const root = await createWorkTree("v0.0.0\n");
+  // `marker-json.mjs` を持つ移行の手順のフォルダ
+  await cp(
+    migrationsDirOf("marker-json.mjs"),
+    join(root, "migrations", "next"),
+    { recursive: true },
+  );
+  // 書き込み済みのライセンスは消し、ビルドが書き込むことを確かめる
+  await rm(join(root, "migrations", "next", "THIRD_PARTY_LICENSES.txt"), {
+    force: true,
+  });
   const manifestBefore = await readPluginManifest(root);
   // 実行
   const { code } = await runBuild(root, []);
@@ -202,6 +213,18 @@ test("test_normal", { timeout: BUILD_TIMEOUT_MS }, async () => {
     expect(licenses).toContain(name);
   }
   expect(licenses).toMatch(/permission is hereby granted|MIT|BSD/i);
+  // 移行の手順のフォルダの `legacy-marks.js` にまとめた依存
+  expect(existsSync(join(root, "migrations", "next", "legacy-marks.js"))).toBe(
+    true,
+  );
+  const legacyLicenses = await readFile(
+    join(root, "migrations", "next", "THIRD_PARTY_LICENSES.txt"),
+    "utf8",
+  );
+  for (const name of ["sanitize-html", "dayjs"]) {
+    expect(legacyLicenses).toContain(name);
+  }
+  expect(legacyLicenses).toMatch(/permission is hereby granted/i);
   const declarations = await readFile(join(root, "dist", "index.d.ts"), "utf8");
   for (const name of [
     "version",

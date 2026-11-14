@@ -19,6 +19,7 @@ import {
 const PLUGIN_ENTRY_POINTS = [
   { in: "src/plugin/pre-tool-use.ts", out: "scripts/pre-tool-use" },
   { in: "src/plugin/session-start.ts", out: "scripts/session-start" },
+  { in: "src/plugin/guide-notice.ts", out: "scripts/guide-notice" },
   { in: "src/plugin/setup/main.ts", out: "bin/setup" },
 ];
 /** ビルドの最初と失敗したときに削除する、`plugin/` の中の生成物 */

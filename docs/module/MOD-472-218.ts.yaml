@@ -1,6 +1,8 @@
 id: MOD-472-218
 visibility: internal
 title: ライブラリ本体 / 操作 / table-logic.ts
+test_files:
+  - tests/unit/src/interact/tables.browser.test.ts
 data_models:
   - name: FilterValue
     title: 適用した絞り込み
@@ -23,26 +25,36 @@ data_models:
         type: string | undefined
         description: '`date` の終了日（`YYYY-MM-DD`）'
 constants:
-  - name: FOLD_MAX_WIDTH
-    title: 最終列を畳む幅
-    container: src/table-logic.ts
-    summary: 描く先の要素の中身の幅がこの値（px）未満のときだけ最終列を畳む
-    value: '720'
-    refs:
-      - IF-472-35#constraints[最終列を畳む]
-    status: planned
-    introduced:
-      pr: 151
   - name: FILTER_KINDS
     title: 絞り込みの種類
     container: src/table-logic.ts
-    summary: '`columns.{列名}.filter.type` に記載できる種類。省いたときは先頭'
+    summary: '`columns.{列名}.filter.type` に記載できる種類。省いたときは `defaultFilterKind` で決める'
     value: '["select", "text", "date"]'
   - name: TOTAL_CALCS
     title: 集計の計算
     container: src/table-logic.ts
     summary: '`columns.{列名}.total[].calc` に記載できる計算。集計の行のタイトルはそれぞれ `合計`・`平均`・`件数`'
     value: '["sum", "avg", "count"]'
+  - name: LONG_COLUMN_CHARS
+    title: 長文の列とみなす文字数
+    container: src/table-logic.ts
+    summary: 改行で分けた 1 行がこの文字数（コードポイントの数）以上のセルを持つ列を長文の列にする
+    value: '20'
+    refs:
+      - CMP-472-61#notes
+    status: planned
+    introduced:
+      pr: 505
+  - name: DEFAULT_LONG_COLUMN_MIN_EM
+    title: 長文の列の最小の幅の既定
+    container: src/table-logic.ts
+    summary: 設定の `table.long_column_min` が無いか読み込めないときの、長文の列の最小の幅（em）
+    value: '45'
+    refs:
+      - IF-472-35#request[opts.config.table.long_column_min]
+    status: planned
+    introduced:
+      pr: 505
 functions:
   - name: compareCells
     title: セルを比べる
@@ -272,30 +284,6 @@ functions:
         condition: '`[["名前", "式"], ["a", "x | y"], ["b", "1\n2"]]`'
         mock: なし
         expected: '`| 名前 | 式 |\n| --- | --- |\n| a | x \| y |\n| b | 1 2 |`'
-    status: planned
-    introduced:
-      pr: 151
-  - name: shouldFold
-    title: 最終列を畳むかを決める
-    container: src/table-logic.ts
-    summary: 描く先の要素の中身の幅が `FOLD_MAX_WIDTH` 未満で、表示している最終列が先頭の列でなく、そのセルのどれかが 1 行に収まらないときだけ `true` を返却する
-    kind: 関数
-    scope: internal
-    args:
-      - name: options
-        type: '{ width: number; lastColumn: number; wraps: boolean }'
-        required: true
-        description: 描く先の要素の中身の幅（px）、表示している最終列の位置、その列のセルが 1 行に収まらないか
-    returns:
-      type: boolean
-      description: 畳むか
-    unit_tests:
-      - name: test_should_fold
-        case: 正常
-        summary: 幅と折り返しと列の位置で決める
-        condition: '`{390, 2, true}`・`{719, 2, true}`・`{720, 2, true}`・`{390, 2, false}`・`{390, 0, true}`'
-        mock: なし
-        expected: '`true`・`true`・`false`・`false`・`false`'
     status: planned
     introduced:
       pr: 151
@@ -542,6 +530,37 @@ functions:
     status: planned
     introduced:
       pr: 438
+  - name: fitPinnedColumns
+    title: 見えている幅に収まる留める列を選ぶ
+    container: src/table-logic.ts
+    kind: 関数
+    scope: internal
+    summary: 選んだ列を左から順に幅を足し、表の見えている幅に収まる列（`fitted`）と、見えている幅を超える列から右の列（`unpinned`）に分けて返却する
+    description: 幅は整数（`offsetWidth`）のまま足し合わせ、合計が見えている幅と等しい列までを収まる列にする。超えた列より右の列は、幅が小さくても収まる列に入れない
+    args:
+      - name: options
+        type: '{ widths: number[]; pinned: number[]; visibleWidth: number }'
+        required: true
+        description: 列ごとの幅（隠した列は 0）、選んだ列の位置、表を包む要素の `clientWidth`
+    returns:
+      type: '{ fitted: number[]; unpinned: number[] }'
+      description: 収まる列と収まらない列の位置（どちらも小さい順）
+    unit_tests:
+      - name: test_fit_pinned_columns
+        case: 正常
+        summary: 見えている幅を超える列から右を留めない
+        condition: '`widths` が `[125, 125, 111, 40, 40, 40, 40, 40, 143, 40]`、`pinned` が `[0, 2, 8]` で、`visibleWidth` が `303`・`379`・`200`'
+        mock: なし
+        expected: '`303` は `fitted` が `[0, 2]`・`unpinned` が `[8]`、`379` は `fitted` が `[0, 2, 8]`・`unpinned` が `[]`、`200` は `fitted` が `[0]`・`unpinned` が `[2, 8]`'
+      - name: test_fit_pinned_columns_when_later_column_narrow
+        case: 正常
+        summary: 超えた列より右の列は、幅が小さくても留めない
+        condition: '`widths` が `[100, 200, 10]`、`pinned` が `[0, 1, 2]`、`visibleWidth` が `250`'
+        mock: なし
+        expected: '`fitted` が `[0]`、`unpinned` が `[1, 2]`'
+    status: planned
+    introduced:
+      pr: 533
   - name: clampColumnWidth
     title: 列の幅を範囲に収める
     container: src/table-logic.ts
@@ -592,3 +611,148 @@ functions:
     status: planned
     introduced:
       pr: 449
+  - name: isCompactCellText
+    title: 短い値だけのセルか
+    container: src/table-logic.ts
+    kind: 関数
+    scope: internal
+    summary: セルの文字が、空・数値（`,`・`.`・`%` を含む）・日付（`YYYY-MM-DD`・`YYYY/M/D`）・✓ のどれかなら `true` を返却する
+    args:
+      - name: text
+        type: string
+        required: true
+        description: 前後の空白を除いたセルの文字
+    returns:
+      type: boolean
+      description: 短い値だけのセルか
+    unit_tests:
+      - name: test_is_compact_cell_text
+        case: 正常
+        summary: 数値・日付・✓・空だけを短い値にする
+        condition: '`""`・`"1,234"`・`"12.5%"`・`"2026-11-01"`・`"2026/1/2"`・`"✓"`・`"りんご"`・`"v1.0 を出す"`'
+        mock: なし
+        expected: '`true`・`true`・`true`・`true`・`true`・`true`・`false`・`false`'
+    status: planned
+    introduced:
+      pr: 505
+  - name: findLongColumns
+    title: 長文の列を決める
+    container: src/table-logic.ts
+    kind: 関数
+    scope: internal
+    summary: 列ごとに、本文のセルが全て短い値でなく、見出しか本文のセルの改行で分けた行のどれかが `LONG_COLUMN_CHARS` 文字以上の列の位置を、小さい順に返却する
+    description: セルの `compact` は呼ぶ側が決める（`render` は `isCompactCellText` に加えて、中身が行内のコードだけのセル（`badge:` のバッジを含む）を `true` にする）。見出しのセルは `compact` を見ずに行の文字数だけで数える
+    args:
+      - name: columns
+        type: '{ head: string[]; cells: { lines: string[]; compact: boolean }[] }[]'
+        required: true
+        description: 列ごとの、見出しのセルの改行で分けた行と、本文のセルの改行で分けた行と短い値だけのセルか
+    returns:
+      type: number[]
+      description: 長文の列の位置
+    unit_tests:
+      - name: test_find_long_columns
+        case: 正常
+        summary: 20 文字以上の行を持つ文の列だけを長文の列にする
+        condition: 列 0 が `No`（`1`・`2`）、列 1 が `名前`（全角 6 文字）、列 2 が `手順`（`<br>` で分けた全角 10 文字の 3 行）、列 3 が `説明`（全角 20 文字の 1 行と全角 19 文字）、列 4 が `更新日`（20 桁の数値 `12345678901234567890`）
+        mock: なし
+        expected: '`[3]`（列 4 は全てのセルが短い値のため長文の列にしない）'
+      - name: test_find_long_columns_when_head
+        case: 正常
+        summary: 見出しだけが 20 文字以上の列も長文の列にする
+        condition: 見出しが全角 20 文字で、本文のセルが全角 2 文字の列
+        mock: なし
+        expected: '`[0]`'
+    status: planned
+    introduced:
+      pr: 505
+  - name: defaultFilterKind
+    title: 省いた絞り込みの種類を決める
+    container: src/table-logic.ts
+    kind: 関数
+    scope: internal
+    summary: '`filter.type` を省いた列の絞り込みの種類を、長文の列なら `text`、ほかは `select` にして返却する'
+    args:
+      - name: long
+        type: boolean
+        required: true
+        description: 長文の列か
+    returns:
+      type: FilterKind
+      description: 絞り込みの種類
+    unit_tests:
+      - name: test_default_filter_kind
+        case: 正常
+        summary: 長文の列は text、ほかは select
+        condition: '`true`・`false`'
+        mock: なし
+        expected: '`text`・`select`'
+    status: planned
+    introduced:
+      pr: 505
+  - name: columnBounds
+    title: 列の最小の幅と望む幅を決める
+    container: src/table-logic.ts
+    kind: 関数
+    scope: internal
+    summary: 部品設計『表』の注記「列の幅」の 1 つ目の図（読者が幅を変えた列を除く）で、列が折り返すかと最小の幅・望む幅（px）を返却する
+    description: '`nowrap` か、`range` も `long` も持たない列は、折り返さず最小の幅も望む幅も `longest`。`range` を持つか `long` の列は折り返し、最小の幅は `range.min` の em（無ければ `longColumnMin` の em と `longestWord` の広い方を `longest` で抑えた幅）、最大の幅は `range.max` の em（無ければ上限なし）にし、最小の幅を最大の幅で抑える。望む幅は `longest` を最大の幅で抑え、最小の幅を下回らない幅'
+    args:
+      - name: options
+        type: '{ nowrap: boolean; long: boolean; range?: { min?: number; max?: number }; longest: number; longestWord: number; em: number; longColumnMin: number }'
+        required: true
+        description: '`width.mode` が `nowrap` か、長文の列か、`data-width` の範囲（em）、最も長い行の幅と最も長い半角の単語の幅（px。セルの余白と罫線を含む）、表の文字の大きさ（px）、長文の列の最小の幅（em）'
+    returns:
+      type: '{ wraps: boolean; min: number; wanted: number }'
+      description: 折り返すか・最小の幅・望む幅（px）
+    unit_tests:
+      - name: test_column_bounds
+        case: 正常
+        summary: 折り返さない列・長文の列・幅の範囲の列の最小の幅と望む幅
+        condition: '`em: 14`・`longColumnMin: 45` で、(a) `long: false`・`longest: 80`、(b) `long: true`・`longest: 1700`・`longestWord: 60`、(c) `long: true`・`longest: 323`、(d) `long: true`・`longest: 1700`・`longestWord: 700`、(e) `nowrap: true`・`long: true`・`longest: 1700`'
+        mock: なし
+        expected: (a) `{false, 80, 80}`、(b) `{true, 630, 1700}`、(c) `{true, 323, 323}`、(d) `{true, 700, 1700}`、(e) `{false, 1700, 1700}`
+      - name: test_column_bounds_when_range
+        case: 正常
+        summary: '`width.min`・`width.max` で最小の幅と望む幅を決め、最小の幅は最大の幅を超えない'
+        condition: '`em: 14` で、(a) `range: {min: 20, max: 30}`・`longest: 2800`、(b) `range: {max: 12}`・`long: true`・`longest: 1120`、(c) `range: {min: 30, max: 20}`・`longest: 2800`、(d) `range: {min: 10}`・`long: false`・`longest: 60`'
+        mock: なし
+        expected: (a) `{true, 280, 420}`、(b) `{true, 168, 168}`、(c) `{true, 280, 280}`、(d) `{true, 140, 140}`
+    status: planned
+    introduced:
+      pr: 505
+  - name: distributeColumnWidths
+    title: 表の列の幅を決める
+    container: src/table-logic.ts
+    kind: 関数
+    scope: internal
+    summary: 部品設計『表』の注記「列の幅」の 2 つ目の図で、列ごとの最小の幅・望む幅と表の見える幅から、列の幅（px）と横にスクロールするかを返却する
+    description: '最小の幅の合計が `available` を超えるときは各列を最小の幅にして `overflow` を `true` にする。望む幅の合計が `available` 以下なら望む幅にする。どちらでもなければ、`available` から折り返さない列の幅を引いた残りを、折り返す列へ望む幅の比で分け、最小の幅を下回る列は最小の幅で止めて、止めた列を除いた残りをほかの列へ分け直す（止める列が出なくなるまで繰り返す）。`fixed` の列（読者がつまみで幅を変えた列）は `wanted` の幅のまま分けない'
+    args:
+      - name: columns
+        type: '{ wraps: boolean; min: number; wanted: number; fixed?: boolean }[]'
+        required: true
+        description: '列ごとの `columnBounds` の結果（読者が幅を変えた列は、その幅を `min`・`wanted` に入れて `fixed` を `true` にする）'
+      - name: available
+        type: number
+        required: true
+        description: 表の見える幅から、表の左右の枠線と列ごとに切り上げる 1px を引いた幅（px）
+    returns:
+      type: '{ widths: number[]; overflow: boolean }'
+      description: 列ごとの幅（px）と、最小の幅で横にスクロールさせるか
+    unit_tests:
+      - name: test_distribute_column_widths
+        case: 正常
+        summary: 収まる・分ける・最小の幅で止めて分け直す・はみ出す
+        condition: '(a) `[{false, 80, 80}, {true, 323, 323}]`・`available: 1000`、(b) `[{false, 388, 388}, {true, 630, 1700}]`・`available: 1145`、(c) `[{false, 67, 67}, {true, 630, 1700}, {true, 323, 323}]`・`available: 1145`、(d) `[{false, 67, 67}, {true, 630, 1700}, {true, 630, 1100}]`・`available: 390`'
+        mock: なし
+        expected: (a) `{[80, 323], false}`、(b) `{[388, 757], false}`、(c) `{[67, 755, 323], false}`、(d) `{[67, 630, 630], true}`
+      - name: test_distribute_column_widths_when_fixed
+        case: 正常
+        summary: 読者が幅を変えた列は分けずにその幅のまま残す
+        condition: '`[{false, 118, 118, fixed: true}, {true, 630, 1700}]`・`available: 1145`'
+        mock: なし
+        expected: '`{[118, 1027], false}`'
+    status: planned
+    introduced:
+      pr: 505

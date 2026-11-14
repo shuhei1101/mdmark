@@ -31,9 +31,9 @@ import { checkMigrations } from "./migrations.ts";
 
 // 埋めるバージョンが合うべき書式
 const VERSION_PATTERN = /^v\d+\.\d+\.\d+$/;
-// 配布ファイル 1 つの上限（非機能要件の 656KB）
-const MAX_DIST_FILE_BYTES = 656 * 1024;
-// 配布物にまとめた依存のライセンスを記載する、`dist/` の中のファイル名
+// 配布ファイル 1 つの上限（非機能要件の 672KB）
+const MAX_DIST_FILE_BYTES = 672 * 1024;
+// まとめた依存のライセンスを記載する、`dist/` と移行の手順のフォルダの中のファイル名
 const LICENSES_FILE = "THIRD_PARTY_LICENSES.txt";
 // サイズを検めない配布ファイル（利用側のページが jsDelivr から読み込まない出力）
 const UNSIZED_OUTPUTS = ["dist/cli.js", "dist/viewer.js", "dist/viewer.css"];
@@ -69,14 +69,16 @@ export function resolveVersion(argv: string[], root: string): string {
   return version;
 }
 
-/** まとめたパッケージと、その中に取り込まれたパッケージの名前・バージョン・ライセンス・ライセンスの本文を、名前の順に `dist/` の `LICENSES_FILE` に書き込む。複数の `metafile` で同じパッケージは 1 回だけ記載する */
+/** まとめたパッケージと、その中に取り込まれたパッケージの名前・バージョン・ライセンス・ライセンスの本文を、名前の順に `outfile` に書き込む。複数の `metafile` で同じパッケージは 1 回だけ記載する */
 export async function writeThirdPartyLicenses(options: {
-  /** 配布物と CLI の esbuild の出力 */
+  /** まとめた esbuild の出力 */
   metafiles: Metafile[];
   /** 作業ツリーの場所 */
   root: string;
+  /** 書き込むファイルの `root` からのパス */
+  outfile: string;
 }): Promise<void> {
-  const { metafiles, root } = options;
+  const { metafiles, root, outfile } = options;
   const bundled = new Set(metafiles.flatMap(listBundledPackages));
   const embedded = new Set(
     metafiles.flatMap((metafile) => listEmbeddedPackages({ metafile, root })),
@@ -87,7 +89,7 @@ export async function writeThirdPartyLicenses(options: {
       ? readLicenseBlock({ root, name })
       : readEmbeddedLicenseBlock({ root, name }),
   );
-  writeFileSync(join(root, "dist", LICENSES_FILE), blocks.join("\n\n"));
+  writeFileSync(join(root, outfile), blocks.join("\n\n"));
 }
 
 /** 作業ツリーの `tsc` を実行し、`src/index.ts` から辿れる型定義を `dist/` に書き込む。`tsc` が失敗したら、その出力を含む例外を投げる */
@@ -210,7 +212,7 @@ async function buildCli(
   };
 }
 
-/** `src/render/legacy-marks.ts` を、依存を含めて Node で動く 1 つのファイルにまとめ、`migrations/` の中の `marker-json.mjs` を持つフォルダごとに `legacy-marks.js` として書き込み、書き込んだパスを返却する。ソースが無ければ何も書き込まない（今の書き方を読む処理を消した後も、書き込み済みのファイルで移行の手順が動く） */
+/** `src/render/legacy-marks.ts` を、依存を含めて Node で動く 1 つのファイルにまとめ、`migrations/` の中の `marker-json.mjs` を持つフォルダごとに `legacy-marks.js` として書き込み、まとめた依存のライセンスを同じフォルダの `LICENSES_FILE` に書き込み、書き込んだ `legacy-marks.js` のパスを返却する。ソースが無ければ何も書き込まない（今の書き方を読む処理を消した後も、書き込み済みのファイルで移行の手順が動く） */
 export async function buildLegacyMarks(
   version: string,
   root: string,
@@ -231,7 +233,7 @@ export async function buildLegacyMarks(
     .map((entry) => `migrations/${entry.name}`)
     .sort();
   for (const folder of folders) {
-    await build({
+    const result = await build({
       absWorkingDir: root,
       entryPoints: ["src/render/legacy-marks.ts"],
       outfile: `${folder}/${LEGACY_MARKS_FILE}`,
@@ -242,7 +244,13 @@ export async function buildLegacyMarks(
       target: NODE_TARGET,
       plugins: [postcssStubPlugin],
       define: bundleDefines(version),
+      metafile: true,
       logLevel: "silent",
+    });
+    await writeThirdPartyLicenses({
+      metafiles: [result.metafile],
+      root,
+      outfile: `${folder}/${LICENSES_FILE}`,
     });
   }
   return folders.map((folder) => `${folder}/${LEGACY_MARKS_FILE}`);
@@ -283,6 +291,7 @@ export async function buildDist(
   await writeThirdPartyLicenses({
     metafiles: [result.metafile, ...(cli.metafile ? [cli.metafile] : [])],
     root,
+    outfile: `dist/${LICENSES_FILE}`,
   });
   outputs[`dist/${LICENSES_FILE}`] = statSync(
     join(root, "dist", LICENSES_FILE),

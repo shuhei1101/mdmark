@@ -37,6 +37,7 @@ Claude Code で mdmark の文書を記載し始める前に実行する。
 ターミナルからは `claude plugin install mdmark@mdmark` で入れられる。
 Claude Code が `plugin/` をキャッシュへ写す。
 プラグインはまとめたフック・スクリプトとスキル（`global-setup`・`setup`）だけを持ち、依存を入れない。
+フックは、MCP のツールの呼び出しの前に作業のフォルダを引数に入れ、`.mark.md` のファイルへの Write・Edit と語 mdmark を含む発言で、ガイドを参照してから記載するよう 1 つのセッションに 1 回案内する。
 
 ### 次のセッションを開く
 

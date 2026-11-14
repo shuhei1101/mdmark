@@ -1,0 +1,14 @@
+$ npm run test:unit
+
+> test:unit
+> vitest run --project 'unit*'
+
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/chore-build-legacy-marks-licenses
+
+
+ Test Files  284 passed (284)
+      Tests  2070 passed (2070)
+   Start at  13:19:27
+   Duration  108.87s (worker 69%, tests 18%, import 12%, transform 1%)
+

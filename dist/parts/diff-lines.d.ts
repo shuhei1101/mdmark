@@ -1,5 +1,5 @@
 import type { DiffBlock } from "../diff/compute.ts";
-/** 部品設計『差分の行』: 比べた行を並べた HTML を返す。埋め込んだ HTML の範囲の塊は `renderDiffHtml` で描く */
+/** 部品設計『差分の行』: 比べた行を並べた HTML を返却する。埋め込んだ HTML の範囲の塊は `renderDiffHtml` で描く */
 export declare function renderDiffLines(options: {
     /** 上から順の塊。埋め込んだ HTML の範囲の `before`・`after` は、スクリプトとイベントの属性を落とした HTML */
     blocks: DiffBlock[];

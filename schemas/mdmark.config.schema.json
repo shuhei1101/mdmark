@@ -336,6 +336,13 @@
           "description": "`each` は押した列だけを留め、複数の列を留められる。留めた列は、左の列が見えている間は右端に、左の列を越えてスクロールすると左端に留まる。`through` は押した列までの列を左端に留める。`mount` は他の値を無視して `each` にし、CLI は他の値を設定ファイルの誤りにする。",
           "enum": ["each", "through"],
           "default": "each"
+        },
+        "long_column_min": {
+          "title": "長文の列の最小の幅",
+          "description": "表の長文の列の最小の幅の em の数。列の最も長い行の幅の方が狭ければ、その幅を最小の幅にする。列ごとの `width.min` があればそちらを優先する。`mount` は他の値を無視して `45` にし、CLI は他の値を設定ファイルの誤りにする。",
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "default": 45
         }
       }
     },
@@ -573,6 +580,12 @@
             "pattern": "^[a-z][a-z0-9-]*$"
           },
           "default": []
+        },
+        "suggestMarkExtension": {
+          "title": "記法を含む純粋な .md の拡張子の提案",
+          "description": "`mdmark check` が、拡張子が `.md` で `.mark.md` でない文書が mdmark の記法を含むとき、拡張子を `.mark.md` に変えるよう提案するか。既存の文書の拡張子を移すまで `false` にして止められる。",
+          "type": "boolean",
+          "default": true
         }
       }
     },

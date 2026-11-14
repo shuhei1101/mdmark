@@ -109,7 +109,7 @@ states:
       - name: lines
         value: '[{"text":"@dataclass"},{"text":"class Doc:"},{"text":"    # 文書のタイトル"},{"text":"    title: str = \"README\""},{"text":"    lines: int = 300"},{"text":""},{"text":"print(len(Doc().title))"}]'
   - name: LanguageLabel
-    description: タイトルも行のマーカーも持たない ts のコードブロック。帯の左端に `ts`、右端に `コピー` のボタン
+    description: タイトルも行のマーカーも持たない ts のコードブロック。帯の左端の上端に `ts` のタブ、右端に `コピー` のボタン。帯は本文と同じ地で、帯と本文の間に線が無い
     args:
       - name: language
         value: ts
@@ -193,6 +193,17 @@ states:
         value: 'true'
       - name: lines
         value: '[{"text":"export function mount(element, markdown, options = {}) {","foldLines":10},{"text":"  const config = withDefaults(options);","indent":1},{"text":"  for (const block of parse(markdown)) {","indent":1,"foldLines":4},{"text":"    if (block.kind === \"table\") {","indent":2,"foldLines":1},{"text":"      attachTable(block, config.features);","indent":3},{"text":"    }","indent":2},{"text":"    element.append(render(block));","indent":2},{"text":"  }","indent":1},{"text":"  return () => {","indent":1,"foldLines":1},{"text":"    element.replaceChildren();","indent":2},{"text":"  };","indent":1},{"text":"}"}]'
+  - name: FoldColumnHovered
+    description: ポインターが開閉のボタンの列に乗っている。そのコードブロックの畳める全ての行の開閉のボタンを出す
+    args:
+      - name: language
+        value: ts
+      - name: lineNumbers
+        value: 'true'
+      - name: lines
+        value: '[{"text":"export function mount(element, markdown, options = {}) {","foldLines":10},{"text":"  const config = withDefaults(options);","indent":1},{"text":"  for (const block of parse(markdown)) {","indent":1,"foldLines":4},{"text":"    if (block.kind === \"table\") {","indent":2,"foldLines":1},{"text":"      attachTable(block, config.features);","indent":3},{"text":"    }","indent":2},{"text":"    element.append(render(block));","indent":2},{"text":"  }","indent":1},{"text":"  return () => {","indent":1,"foldLines":1},{"text":"    element.replaceChildren();","indent":2},{"text":"  };","indent":1},{"text":"}"}]'
+      - name: foldColumnHovered
+        value: 'true'
   - name: Folded
     description: '`fold` の `[3]` で 3 行目を畳んだ状態。3 行目の開閉のボタンを常に出し、行の後ろに `⋯` のボタン。閉じ括弧の 8 行目は残す'
     args:
@@ -259,6 +270,10 @@ args:
     type: オブジェクトの配列
     required: true
     description: コードの行（`{ text, kind, indent, foldLines, folded }`）。`text` はマーカーを削除した行の文字、`kind` は `add`・`del`・`highlight`・`focus`・`error`・`warning` か空、`indent` はインデントのレベル（`data-indent`）、`foldLines` は畳める行の後ろの畳む行の数（`data-fold-lines`）、`folded` は畳んだ状態か（`fold=` の行は `data-folded`。`mount` が後ろの `foldLines` の行を `hidden` にし、行の末尾に `⋯` のボタンを配置する）
+  - name: foldColumnHovered
+    type: 真偽値
+    default: 'false'
+    description: ポインターが開閉のボタンの列（行番号の右の `--mdmark-code-fold-width` の幅。行番号を持たないときは行の頭の同じ幅）に乗っているか（`mount` が付けた状態）。`true` のとき `pre` に `data-fold-hover` を付け、畳める全ての行の開閉のボタンを出す。`mount` は `pre` の `pointermove`（ポインターの横の位置が列にあるか）と `pointerleave` で付け外しする
   - name: highlight
     type: 真偽値
     default: 'false'
@@ -366,9 +381,9 @@ status: planned
 introduced:
   pr: 65
 notes:
-  出す HTML: '構造はインターフェース定義『文書をHTML文字列にする』の制約「コードブロック」。コードブロックを `<div class="mdmark-code">`（タイトルを持てば `<figure class="mdmark-code">`）で囲み、`pre` の前に帯 `<div class="mdmark-code-bar">`（タイトルを持てば `<figcaption class="mdmark-code-title mdmark-code-bar">`）を配置する。帯は左から `<span class="mdmark-code-lang"><span class="mdmark-code-lang-name" aria-hidden="true">{言語}</span><span class="mdmark-code-file">{ファイル名}</span></span>`・タイトルの文字・`<span class="mdmark-code-meta"><button class="mdmark-code-copy" type="button" data-state="{copyState}">{アイコン}{文言}</button><span class="mdmark-visually-hidden mdmark-code-status" role="status"></span></span>`（`mdmark-code-meta` は `mount` が付ける）。タイトルの前のファイルのアイコンは CSS で付ける。タイトルが無く、行番号も行の種類も無いときは、帯で囲むほかは今の `pre` のまま描く。言語のラベルは本文より淡い `--mdmark-color-muted` の文字で、ファイル名は `--mdmark-color-border` の縦線で区切って本文の色で出し、`overflow-wrap: anywhere` で折り返す。コピーのボタンは折り返さず帯の右端に配置し、アイコンは lucide（`copy`・`check`・`circle-alert`）。印刷ではコピーのボタンを出さない。モックは `docs/mock/components/code-block/`'
+  出す HTML: '構造はインターフェース定義『文書をHTML文字列にする』の制約「コードブロック」。コードブロックを `<div class="mdmark-code">`（タイトルを持てば `<figure class="mdmark-code">`）で囲み、`pre` の前に帯 `<div class="mdmark-code-bar">`（タイトルを持てば `<figcaption class="mdmark-code-title mdmark-code-bar">`）を配置する。帯は左から `<span class="mdmark-code-lang"><span class="mdmark-code-lang-name" aria-hidden="true">{言語}</span><span class="mdmark-code-file">{ファイル名}</span></span>`・タイトルの文字・`<span class="mdmark-code-meta"><button class="mdmark-code-copy" type="button" data-state="{copyState}">{アイコン}{文言}</button><span class="mdmark-visually-hidden mdmark-code-status" role="status"></span></span>`（`mdmark-code-meta` は `mount` が付ける）。タイトルの前のファイルのアイコンは CSS で付ける。タイトルが無く、行番号も行の種類も無いときは、帯で囲むほかは今の `pre` のまま描く。帯は本文と同じ `--mdmark-color-surface` の地にし、帯に続く `pre` は上の枠線を持たず、帯と `pre` を 1 つの外側の枠線と角丸で囲む（帯と本文の間に線を出さない。ダークの配色と印刷でも同じ）。言語のラベルは帯の上端に接したタブで、枠線を持たず、下の 2 つの角だけを `calc(var(--mdmark-radius) - 2px)` で丸め、`color-mix(in oklab, var(--mdmark-color-text) 14%, var(--mdmark-color-surface))` の地に本文の色の文字で出す。ファイル名はタブの地に合わせた `color-mix(in oklab, var(--mdmark-color-text) 35%, var(--mdmark-color-surface))` の縦線で区切って本文の色で出し、`overflow-wrap: anywhere` で折り返す。コピーのボタンは折り返さず帯の右端に配置し、アイコンは lucide（`copy`・`check`・`circle-alert`）。印刷ではコピーのボタンを出さない。モックは `docs/mock/components/code-block/` と、帯は `docs/mock/refs/505/assets/code-block.css`'
   行の地の色: '追加した行・削除した行・強調した行の地は、不透明の変数をそのまま適用した後に `color-mix(in srgb, {変数} 60%, transparent)` を重ねて 2 回書く（例: `background: var(--mdmark-color-diff-add-bg); background: color-mix(in srgb, var(--mdmark-color-diff-add-bg) 60%, transparent);`）。`color-mix()` が有効になるブラウザでは `pre` の横スクロールの影が行の地を透けて見え、有効にならないブラウザ（Chrome 99〜110）では不透明の地になる。半透明の地と `--mdmark-color-surface` を混ぜた色に対するコントラストは、明るい配色で行頭のマーカーと線 4.53〜4.71・行番号 5.49〜5.69・文字 14.19〜14.71、ダークで行頭のマーカーと線 5.17〜6.49・行番号 5.37〜5.95・文字 14.37〜15.91（WCAG の相対輝度で計算）'
-  行の開閉: 開閉のボタンは行番号の右（行番号を持たないときは行の頭の余白）の `--mdmark-code-fold-width` の列に配置し、開いた行は `chevron-down`、畳んだ行は `chevron-right`（lucide）。開いた行のボタンはポインターを乗せた行とフォーカスのときだけ出し、畳んだ行のボタンは常に出す。Shift を押しながら押すと、範囲の中の畳める行も同じ状態にする。`⋯` は `--mdmark-color-surface` の地と `--mdmark-color-border` の枠のボタンで、押すと開く。ポインターを乗せた行を含む最も内側の畳める範囲の縦線を `--mdmark-color-muted` で濃くし、ほかの縦線は `--mdmark-color-border`。エラーと警告の行の地と開閉のボタンのポインターを乗せた地は、行の地の色と同じく不透明の色（`--mdmark-color-surface`）を先に記載してから `color-mix()` の宣言を重ねる。帯の言語のラベルは後ろのファイルのアイコンとの間に `0.6em` を空ける。モックは `docs/mock/components/code-block/` と `docs/mock/refs/275/assets/`
+  行の開閉: 開閉のボタンは行番号の右（行番号を持たないときは行の頭の余白）の `--mdmark-code-fold-width` の列に配置し、開いた行は `chevron-down`、畳んだ行は `chevron-right`（lucide）。開いた行のボタンはポインターを乗せた行・ポインターが開閉のボタンの列に乗っているとき（そのコードブロックの全てのボタン）・フォーカスのときだけ出し、ほかは透明にして押せる場所は残す。畳んだ行のボタンは常に出す。Shift を押しながら押すと、範囲の中の畳める行も同じ状態にする。`⋯` は `--mdmark-color-surface` の地と `--mdmark-color-border` の枠のボタンで、押すと開く。ポインターを乗せた行を含む最も内側の畳める範囲の縦線を `--mdmark-color-muted` で濃くし、ほかの縦線は `--mdmark-color-border`。エラーと警告の行の地と開閉のボタンのポインターを乗せた地は、行の地の色と同じく不透明の色（`--mdmark-color-surface`）を先に記載してから `color-mix()` の宣言を重ねる。帯の言語のラベルは後ろのファイルのアイコンとの間に `0.6em` を空ける。モックは `docs/mock/components/code-block/` と `docs/mock/refs/275/assets/`
   色分けの種類: '色分けのライブラリが付ける `hljs-*` の class を 6 つの CSS 変数へ統一する。キーワード: `hljs-keyword`・`hljs-meta`・`hljs-variable.language_`・`hljs-doctag`／文字列: `hljs-string`・`hljs-regexp`・`hljs-char`・`hljs-link`／数値: `hljs-number`・`hljs-literal`・`hljs-symbol`・`hljs-bullet`／型: `hljs-type`・`hljs-title.class_`・`hljs-built_in`・`hljs-name`・`hljs-selector-*`／名前: `hljs-title`・`hljs-attr`・`hljs-attribute`・`hljs-property`・`hljs-section`／コメント: `hljs-comment`・`hljs-quote`。テンプレート文字列に埋めた式 `hljs-subst` は本文の色に戻し、Markdown の `hljs-strong` は太字、`hljs-emphasis` は斜体にする。ここに無い class（変数名・引数・記号）は本文の色のまま。モックは `docs/mock/components/code-block/` と `docs/mock/refs/97/assets/syntax-highlight.css`'
 test_file: tests/integration/lib/code-block.story.test.ts
 events:
@@ -379,4 +394,4 @@ events:
   - name: 行を畳む・開く
     when: 開閉のボタンか `⋯` のボタンを押す（Enter・Space を含む）
     value: ボタンの `aria-expanded`
-    description: '`mount` が行の後ろの `foldLines` の行を `hidden` にして `⋯` を配置するか、`hidden` を削除して `⋯` を削除する。開いたとき、畳む前に畳んでいた内側の行は畳んだまま残す。Shift を押しながらなら範囲の中の畳める行も同じ状態にする。畳んだ状態は覚えず、再描画すると `folded` のとおりに戻す'
+    description: '`mount` が行の後ろの `foldLines` の行を `hidden` にして `⋯` を配置するか、`hidden` を削除して `⋯` を削除する。開いたとき、畳む前に畳んでいた内側の行は畳んだまま残す。Shift を押しながらなら範囲の中の畳める行も同じ状態にする。畳んだ状態は再読み込みでは覚えず `folded` のとおりに戻し、`update` で描き直すと読者が手で変えた畳みを保つ'

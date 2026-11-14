@@ -23,7 +23,6 @@
     ".storybook/*.ts",
     ".storybook/*.tsx",
     "vscode/src/webview/vite-env.d.ts",
-    "playwright.config.ts",
     "scripts",
     "src",
     "tests",

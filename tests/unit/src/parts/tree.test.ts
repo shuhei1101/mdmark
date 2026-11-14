@@ -117,6 +117,7 @@ test("test_render_tree_when_interactive", async () => {
   const basic = renderTree({
     nodes: BASIC_NODES,
     source: "mdmark/\n├── src/\n│   └── index.ts\n└── package.json",
+    open: "1",
     interactive: true,
   });
   const levels = renderTree({
@@ -237,7 +238,7 @@ test("test_folder_open_by_default", async () => {
   const all = depths.map((depth) => folderOpenByDefault(depth, "all"));
   const two = depths.map((depth) => folderOpenByDefault(depth, "2"));
   // 検証
-  expect(unset).toEqual([true, false, false]);
+  expect(unset).toEqual([true, true, true]);
   expect(all).toEqual([true, true, true]);
   expect(two).toEqual([true, true, false]);
 });

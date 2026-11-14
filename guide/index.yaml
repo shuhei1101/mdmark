@@ -1,7 +1,7 @@
 schema: 1
 guides:
   - name: notation
-    when: マーカーと記法を文書に記載するとき
+    when: マーカーと記法を文書に記載するとき・拡張子が `.mark.md` の文書を記載するとき
     summary: マーカーの引数を JSON のオブジェクトで記載する決まりと、表・注意書き・タブ・ステップ・ファイルツリー・バッジ・セクションの開閉・行の詳細などのマーカーと記法の一覧
     page: docs/guide/記法.md
   - name: tables
@@ -9,7 +9,7 @@ guides:
     summary: 表をマーカーで囲み、種類・機能・列の設定を JSON のキーで選ぶ手順
     page: docs/guide/記載する-表に機能を付ける.md
   - name: components
-    when: 注意書き・タブ・ステップ・ファイルツリー・バッジ・目次などで本文を組むとき
+    when: 注意書き・タブ・ステップ・ファイルツリー・バッジ・目次などで本文を組むとき・フォルダ構成を記載するとき
     summary: 本文の部品を記載する手順
     page: docs/guide/記載する-本文を部品で組む.md
   - name: glossary

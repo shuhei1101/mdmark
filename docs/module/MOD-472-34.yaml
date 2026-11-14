@@ -24,7 +24,8 @@ directory: |-
       ├── diagrams.ts     # 拡大・縮小・移動・全画面
       ├── zoom.ts         # 図とライトボックスが共有する拡大・縮小・移動
       ├── diagram-tips.ts # 図のツールチップ
-        ├── diagram-resize.ts # 表示する枠の高さを変えるリサイズハンドルと高さの保持
+      ├── diagram-resize.ts # 表示する枠の高さを変えるリサイズハンドルと高さの保持
+      ├── diagram-touch.ts # 指で図を動かす操作中
       ├── er-folds.ts     # ER 図の列の開閉
       └── params.ts       # 操作できる部品の値と写す
   ```

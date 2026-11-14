@@ -9,10 +9,10 @@ functions:
     container: src/parts/row-detail.ts
     kind: 関数
     scope: internal
-    summary: 部品設計『行の詳細』の詳細の行と、`toggle` のときは行の先頭のセルの開閉のボタンの HTML を返却する。`foldedColumn` を指定すると、詳細の中身の上に `mdmark-fold-part`（`mdmark-fold-name` と `mdmark-fold-value`）を配置する
+    summary: 部品設計『行の詳細』の詳細の行と、`toggle` のときは行の先頭のセルの開閉のボタンの HTML を返却する
     args:
       - name: options
-        type: '{ id: string; row: number; columns: number; label: string; open?: boolean; toggle?: boolean; foldedColumn?: { name: string; html: string }; body: string }'
+        type: '{ id: string; row: number; columns: number; label: string; open?: boolean; toggle?: boolean; body: string }'
         required: true
         description: 部品設計の引数と中身の HTML（`SLOT_MARKER` を指定できる）
     returns:
@@ -25,9 +25,3 @@ functions:
         condition: '`row: 1`、`columns: 3`、`label: table`'
         mock: なし
         expected: '`row` が `<tr class="mdmark-row-detail" data-row="1" … hidden><td colspan="3">`、`toggle` が `aria-expanded="false"` と `aria-label="「table」の詳細"`'
-      - name: test_render_row_detail_when_folded_column
-        case: 正常
-        summary: 畳んだ最終列を詳細の中身の上に配置する
-        condition: '`foldedColumn: { name: "説明", html: "描画を速くする" }`、`body: "<p>詳細</p>"`'
-        mock: なし
-        expected: '`row` の中で `mdmark-fold-part`（`mdmark-fold-name` が `説明`）が `<p>詳細</p>` より前にある'

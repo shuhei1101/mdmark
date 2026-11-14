@@ -1,0 +1,15 @@
+$ npm run test:unit
+
+> test:unit
+> vitest run --project 'unit*'
+
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-document-table-width-tree-code-toc
+
+
+ Test Files  286 passed (286)
+      Tests  2099 passed (2099)
+   Start at  20:16:20
+   Duration  89.21s (worker 67%, tests 21%, import 11%, transform 1%)
+
+exit=0

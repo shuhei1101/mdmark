@@ -1,4 +1,5 @@
 import { rowIdFromHash } from "../table-logic.ts";
+import { findScrollContainer } from "./scroller.ts";
 
 // 矢印キーで移る向き
 const ARROW_STEPS: Record<string, number> = { ArrowRight: 1, ArrowLeft: -1 };
@@ -108,11 +109,25 @@ function attachTabGroup(tabs: HTMLElement): () => void {
   };
   /** 読者が選んだタブを選び、組を持つなら同じ組のタブを統一して、タブ名を残す */
   const choose = (selected: number): void => {
+    const pressed = buttons[selected];
+    const before = pressed?.getBoundingClientRect().top;
     select(selected, true);
     const name = titles[selected];
     if (group !== undefined && name !== undefined) {
       syncTabGroup({ tabs, group, name });
       saveTabChoice({ group, name });
+    }
+    // 押したタブのボタンの画面の位置を、選ぶ前と同じに戻す（戻しきれない分はスクロール位置の上限で止まる）
+    if (pressed !== undefined && before !== undefined) {
+      const delta = pressed.getBoundingClientRect().top - before;
+      if (delta !== 0) {
+        const { target, page } = findScrollContainer(tabs);
+        if (page) {
+          window.scrollBy(0, delta);
+        } else {
+          target.scrollTop += delta;
+        }
+      }
     }
   };
   /** 押したタブを選ぶ */

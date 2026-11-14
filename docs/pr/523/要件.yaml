@@ -1,0 +1,25 @@
+use_cases:
+  - kind: single
+    scenario: docs/scenario/SC-472-10.yaml
+    impact: run_only
+    detail: タグ一覧が返らないとき、待ちの上限まで待ってから前回のバージョンで描く流れは変えず、経過時間の確かめ方だけを直す
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-6.yaml
+    impact: none
+    detail: 書き出しが使う fetchLatestVersion は変えない
+    depends_on: []
+scope_out:
+  - item: 待ちの上限（TAGS_TIMEOUT_MS = 3000、非機能要件『タグ一覧を取る待ちの上限』の 3 秒）の値の見直し
+    reason: 上限より早く見えたのは測る時計の戻りで、上限の値は原因ではない
+    plan: none
+  - item: test_normal_when_tags_unreachable の経過時間の期待の範囲（2800 ms 以上 6000 ms 未満）の見直し
+    reason: '#485 で見直した後で、範囲はそのままに、経過時間を測る時計だけを Date.now から performance.now へ替える'
+    plan: none
+  - item: preview-rerender.test.ts の test_normal が helpers.ts の sentAt（Date.now）で最後の書き換えからの時間を比べている箇所
+    reason: 同じ Date.now の戻りが原因になりうるが、別の open な Issue がある
+    plan: '#474'
+  - item: vscode/src/version.ts の fetchLatestVersion の中断の合図の作り方の変更
+    reason: AbortSignal.timeout は単調な時計で測り、時計の補正では早まらない
+    plan: none
+docs: []

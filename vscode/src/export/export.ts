@@ -3,6 +3,8 @@ import { homedir } from "node:os";
 import { basename, dirname } from "node:path";
 import { pathToFileURL } from "node:url";
 import { env, type TextDocument, Uri, window, workspace } from "vscode";
+import { formatCheckIssue } from "../../../src/cli/issues.ts";
+import type { MdmarkAlias } from "../../../src/knowledge/aliases.ts";
 import type { PreviewConfig } from "../config.ts";
 import { applyColorTheme, isFile, loadConfig } from "../config.ts";
 import { type ExtensionDeps, LAST_VERSION_KEY } from "../deps.ts";
@@ -43,6 +45,7 @@ async function readExportConfig(options: {
   themeCss: string | undefined;
   extensions: string[];
   importMap: Record<string, string>;
+  aliases: MdmarkAlias[] | undefined;
 }> {
   const { document, configPath, deps } = options;
   const { log } = deps;
@@ -66,7 +69,13 @@ async function readExportConfig(options: {
       configPath,
       error instanceof Error ? error : String(error),
     );
-    return { config: {}, themeCss: undefined, extensions: [], importMap: {} };
+    return {
+      config: {},
+      themeCss: undefined,
+      extensions: [],
+      importMap: {},
+      aliases: undefined,
+    };
   }
   if (load.problem) {
     log.warn(
@@ -75,6 +84,9 @@ async function readExportConfig(options: {
       load.problem.line ?? load.problem.settingKey ?? "",
       load.problem.message,
     );
+  }
+  for (const issue of load.aliasIssues) {
+    log.warn(formatCheckIssue(issue));
   }
   const {
     libraries,
@@ -139,7 +151,13 @@ async function readExportConfig(options: {
       extensions.push(result.code);
     }
   }
-  return { config, themeCss, extensions, importMap: embeddedSyntax.imports };
+  return {
+    config,
+    themeCss,
+    extensions,
+    importMap: embeddedSyntax.imports,
+    aliases: load.aliases,
+  };
 }
 
 /** Markdown を HTML に書き出し、`mode` に合わせて通知するか開く。書き出した HTML の `Uri` を返却する。書き出せなかったときは `undefined` */
@@ -212,6 +230,7 @@ export async function exportMarkdown(options: {
     themeCss: exported.themeCss,
     extensions: exported.extensions,
     importMap: exported.importMap,
+    aliases: exported.aliases,
   });
   try {
     await writeFileAtomically({ path, content: html });

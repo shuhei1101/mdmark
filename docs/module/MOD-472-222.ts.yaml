@@ -21,14 +21,17 @@ functions:
     summary: '`sections` がオンならセクションの見出し（h1〜h4）を開閉のボタンにして `data-section="closed"` の中身を `hidden="until-found"` にし、`row-details` がオンなら詳細を持つ行に開閉のボタンを配置して詳細の行を閉じる。見出しが差分のブロック（`div.mdmark-diff-block`）の中にあるときは、そのブロックの次の兄弟の `mdmark-section-body` をセクションの中身にする。セクションの開閉の関数を `sectionSetters` に記録する。`states` を指定したときは、`states` に中身の `id` があり `data-section` が記録した `marker` と同じセクションを記録の開閉で始め、それ以外をマーカーのとおりの開閉で始める。開閉の関数と `beforematch` で開閉が変わるたびに、中身の `id` で開閉と `data-section` を `states` に書く。Shift を押しながら開閉のボタンを押したとき（`click` の `shiftKey`）と、ボタンで Shift を押しながら Enter・Space を押したとき（`keydown` の `shiftKey`。既定の動きを止め、`click` を発生させない）は、そのセクションを今と逆の状態にし、中の入れ子の全てのセクション（中身の中の `mdmark-section-body`）を同じ状態にする。URL の `#ID`（`rowIdFromHash` で読み込む。まとめた HTML の `#/{文書のパス}#{ID}` も同じ）が指す要素があるとき（`revealHash` が `true` のときの付けたときと、`hashchange`）は `revealTarget` を呼び、`beforematch` でそのセクションを開く'
     args:
       - name: options
-        type: '{ root: HTMLElement; sections: boolean; rowDetails: boolean; states?: SectionStates; revealHash?: boolean }'
+        type: '{ root: HTMLElement; sections: boolean; rowDetails: boolean; states?: SectionStates; partStates?: PartStates; revealHash?: boolean }'
         required: true
-        description: 描いた要素と、セクション・行の詳細の機能と、セクションの開閉の記録（省くと記録しない）と、付けたときに URL の `#ID` で開くか（既定 `true`）
+        description: 描いた要素と、セクション・行の詳細の機能と、セクションの開閉の記録（省くと記録しない）と、部品の開閉の記録（省くと記録しない。行の詳細を持つ表を `partKey` の種類 `row-detail`、部品の中の鍵をマーカーの `at` の行の位置（並べ替え・絞り込みに左右されない値）で引き、`startOpen` の開閉（マーカーは無く、既定は閉じる）で始め、読者が開閉のボタンを押すたびに `recordOpen` で書き込む）と、付けたときに URL の `#ID` で開くか（既定 `true`）
     returns:
       type: () => void
       description: ボタン・`hashchange` の受け取りを解除する関数
     side_effects: セクション・行の DOM を書き換え、`window` の `hashchange` を受け取る
     callees:
+      - MOD-472-348#functions[partKey]
+      - MOD-472-348#functions[startOpen]
+      - MOD-472-348#functions[recordOpen]
       - MOD-472-320#functions[renderSection]
       - MOD-472-321#functions[renderRowDetail]
       - 'MOD-472-229#functions[visibleText]'
@@ -124,6 +127,12 @@ functions:
         condition: '閉じた `## A` の中の `### 注意`、`location.hash` を `#注意` にして `revealHash: false` で付け、続けて `hashchange` を発生させる'
         mock: なし
         expected: 付けた直後は `A` の中身が `hidden="until-found"`、`hashchange` の後は `hidden` を持たない
+      - name: test_attach_sections_when_row_detail_states
+        case: 正常
+        summary: 記録した行の詳細の開閉で始め、押した開閉を記録する
+        condition: 2 行目に詳細を持つ表に空の `partStates` を指定して付け、2 行目の開閉のボタンを押してから削除し、同じ HTML を描き直した要素に同じ `partStates` でもう一度付ける
+        mock: なし
+        expected: 2 回目に付けた後、2 行目のボタンが `aria-expanded="true"` で詳細の行が `hidden` を持たない
     refs:
       - 'MOD-472-218#functions[rowIdFromHash]'
   - name: openEnclosing
@@ -156,7 +165,7 @@ functions:
   - name: revealTarget
     title: 要素へ移る
     container: src/interact/sections.ts
-    summary: 要素を囲む閉じたセクションを外側から `sectionSetters` の関数で開き、選ばれていないタブの中なら `revealTabTarget` でそのタブを選び、表の行（`tr`）でなければ `scrollIntoView` する。URL の `#ID` で移るときと右側の目次の項目で移るときに使用する
+    summary: 要素を囲む閉じたセクションを外側から `sectionSetters` の関数で開き、要素がセクションの見出し（`sectionSetters` に記録した見出しの要素）なら、続けて見出し自身の閉じたセクションも開く。選ばれていないタブの中なら `revealTabTarget` でそのタブを選び、表の行（`tr`）でなければ `scrollIntoView` する。URL の `#ID` で移るときと右側の目次の項目で移るときに使用する
     kind: 関数
     scope: internal
     side_effects: セクションの中身の `hidden`・タブの選択を書き換え、スクロールする
@@ -181,6 +190,12 @@ functions:
         condition: 閉じたセクションの中の表の `tr` を指定する
         mock: '`Element.prototype.scrollIntoView` を記録する関数に差し替える'
         expected: セクションが開き、`scrollIntoView` は呼ばれない
+      - name: test_reveal_target_when_heading
+        case: 正常
+        summary: 見出しを指定すると、囲むセクションに加えて見出し自身の閉じたセクションも開く
+        condition: 閉じた `## A` の中の閉じた `### B` の見出しを指定し、続けて閉じたセクションの中の段落を指定する
+        mock: '`Element.prototype.scrollIntoView` を記録する関数に差し替える'
+        expected: 見出しを指定した後、`A`・`B` の中身が `hidden` を持たず、2 つのボタンが `aria-expanded="true"`。段落を指定したときは、段落を囲むセクションだけが開き、段落の後ろの見出しのセクションは開かない
     status: planned
     introduced:
       pr: 166

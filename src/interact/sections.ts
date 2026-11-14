@@ -1,4 +1,10 @@
 import { rowIdFromHash } from "../table-logic.ts";
+import {
+  type PartStates,
+  partKey,
+  recordOpen,
+  startOpen,
+} from "./part-states.ts";
 import { revealTabTarget } from "./tabs.ts";
 import { visibleText } from "./text.ts";
 
@@ -10,6 +16,9 @@ export type SectionStates = Map<string, { open: boolean; marker: string }>;
 
 /** セクションの開閉の関数の記録。`attachSections` が操作を付けたセクションの中身から、そのセクションを開くか閉じる関数を参照する。削除する関数が取り除く */
 const sectionSetters = new WeakMap<HTMLElement, SetOpen>();
+
+/** セクションの見出しの要素から、そのセクションの中身を引く記録。`attachSections` が付け、削除する関数が取り除く */
+const headingBodies = new WeakMap<HTMLElement, HTMLElement>();
 
 /** セクションの中身に入っている、操作を付けた入れ子のセクションの中身 */
 function nestedBodies(body: HTMLElement): HTMLElement[] {
@@ -78,6 +87,7 @@ function attachSection(
     remember(open);
   };
   sectionSetters.set(body, setOpen);
+  headingBodies.set(heading, body);
   const saved = states?.get(body.id);
   show(saved?.marker === marker ? saved.open : marker !== "closed");
   /** そのセクションを今と逆の状態にし、中の入れ子の全てのセクションを同じ状態にする */
@@ -116,6 +126,7 @@ function attachSection(
     button.remove();
     body.removeAttribute("hidden");
     sectionSetters.delete(body);
+    headingBodies.delete(heading);
   };
 }
 
@@ -137,9 +148,13 @@ function openSectionsAndTabs(target: HTMLElement): void {
   revealTabTarget(target);
 }
 
-/** 要素を囲む閉じたセクションを外側から開き、選ばれていないタブの中ならそのタブも選び、表の行（`tr`）でなければ `scrollIntoView` する。URL の `#ID` で移るときと右側の目次の項目で移るときに使用する */
+/** 要素を囲む閉じたセクションを外側から開き、要素がセクションの見出しなら見出し自身のセクションも開き、選ばれていないタブの中ならそのタブも選び、表の行（`tr`）でなければ `scrollIntoView` する。URL の `#ID` で移るときと右側の目次の項目で移るときに使用する */
 export function revealTarget(target: HTMLElement): void {
   openSectionsAndTabs(target);
+  const ownBody = headingBodies.get(target);
+  if (ownBody) {
+    sectionSetters.get(ownBody)?.(true);
+  }
   // 表の行へは、`attachTables` が絞り込みを解除してから送信する
   if (target.tagName !== "TR") {
     target.scrollIntoView();
@@ -201,7 +216,10 @@ function revealHashTarget(root: HTMLElement): void {
 }
 
 /** 行の詳細を持つ行の先頭のセルに開閉のボタンを配置し、詳細の行を閉じる。削除する関数を返却する */
-function attachRowDetails(root: HTMLElement): () => void {
+function attachRowDetails(
+  root: HTMLElement,
+  partStates: PartStates | undefined,
+): () => void {
   const owners = new Map<HTMLTableRowElement, HTMLTableRowElement[]>();
   for (const detail of root.querySelectorAll<HTMLTableRowElement>(
     "tr.mdmark-row-detail",
@@ -215,6 +233,8 @@ function attachRowDetails(root: HTMLElement): () => void {
     }
   }
   const cleanups: Array<() => void> = [];
+  /** 表ごとの記録の鍵（表の中の行の詳細で使い回す） */
+  const tableKeys = new Map<HTMLTableElement, string>();
   for (const [owner, details] of owners) {
     const cell = owner.cells[0];
     if (!cell) {
@@ -234,14 +254,35 @@ function attachRowDetails(root: HTMLElement): () => void {
     button.setAttribute("aria-label", `「${label}」の詳細`);
     head.append(button, ...cell.childNodes);
     cell.append(head);
-    for (const detail of details) {
-      detail.hidden = true;
+    const table = owner.closest("table");
+    const base =
+      table === null || partStates === undefined
+        ? undefined
+        : (tableKeys.get(table) ??
+          partKey({ root, part: table, kind: "row-detail" }));
+    if (table !== null && base !== undefined) {
+      tableKeys.set(table, base);
     }
-    const onClick = (): void => {
-      const open = button.getAttribute("aria-expanded") !== "true";
+    const key =
+      base === undefined
+        ? undefined
+        : `${base}|${details[0]?.dataset.row ?? ""}`;
+    /** 詳細の行を開閉し、ボタンの `aria-expanded` に写す */
+    const setOpen = (open: boolean): void => {
       button.setAttribute("aria-expanded", String(open));
       for (const detail of details) {
         detail.hidden = !open;
+      }
+    };
+    setOpen(
+      key !== undefined &&
+        startOpen({ states: partStates, key, marker: "", markerOpen: false }),
+    );
+    const onClick = (): void => {
+      const open = button.getAttribute("aria-expanded") !== "true";
+      setOpen(open);
+      if (key !== undefined) {
+        recordOpen({ states: partStates, key, open, marker: "" });
       }
     };
     button.addEventListener("click", onClick);
@@ -270,10 +311,19 @@ export function attachSections(options: {
   rowDetails: boolean;
   /** セクションの開閉の記録（省くと記録しない） */
   states?: SectionStates;
+  /** 部品の開閉の記録（省くと記録しない） */
+  partStates?: PartStates;
   /** 付けたときに URL の `#ID` で開くか（既定 `true`） */
   revealHash?: boolean;
 }): () => void {
-  const { root, sections, rowDetails, states, revealHash = true } = options;
+  const {
+    root,
+    sections,
+    rowDetails,
+    states,
+    partStates,
+    revealHash = true,
+  } = options;
   const cleanups: Array<() => void> = [];
   if (sections) {
     for (const heading of root.querySelectorAll<HTMLElement>(
@@ -292,7 +342,7 @@ export function attachSections(options: {
     }
   }
   if (rowDetails) {
-    cleanups.push(attachRowDetails(root));
+    cleanups.push(attachRowDetails(root, partStates));
   }
   return () => {
     for (const cleanup of cleanups.reverse()) {

@@ -63,12 +63,14 @@ function frameColor(page: Page): Promise<string> {
     .evaluate((el) => getComputedStyle(el).borderTopColor);
 }
 
-/** 表の右端から 10px 内側（右の角の丸みと、右端のセルの文字の間）の x と、表の下端の y を返却する */
+/** 表の見えている右端（表と、表を包む要素の右端のうち左のほう）から 10px 内側（右の角の丸みと、右端のセルの文字の間）の x と、表の下端の y を返却する */
 function tableBottom(page: Page): Promise<{ x: number; y: number }> {
   return page.locator(".mdmark-table table").evaluate((el) => {
     const rect = el.getBoundingClientRect();
+    const scroller = el.parentElement?.getBoundingClientRect();
+    const right = Math.min(rect.right, scroller?.right ?? rect.right);
     return {
-      x: Math.floor(rect.right + window.scrollX) - 10,
+      x: Math.floor(right + window.scrollX) - 10,
       y: Math.floor(rect.bottom + window.scrollY),
     };
   });
@@ -458,6 +460,95 @@ test("test_pinned_each", async () => {
       .getAttribute("aria-label"),
   ).resolves.toBe("「文書」の列をピン止め");
   await expect(pinnedColumns(page)).resolves.toEqual([0, 2]);
+});
+
+/** ピン止めのボタンごとの、押した状態・留まっていない状態・名前 */
+function pinStates(page: Page): Promise<
+  Array<{
+    pressed: string | null;
+    unpinned: boolean;
+    label: string | null;
+    title: string | null;
+  }>
+> {
+  return page
+    .locator("#storybook-root thead button.mdmark-pin")
+    .evaluateAll((buttons) =>
+      buttons.map((button) => ({
+        pressed: button.getAttribute("aria-pressed"),
+        unpinned: button.classList.contains("is-unpinned"),
+        label: button.getAttribute("aria-label"),
+        title: button.getAttribute("title"),
+      })),
+    );
+}
+
+// pinMode: each で 1・3・9 列目を選び、unpinned の 9 列目を留めず、ボタンを押したまま破線のピンにする（PinnedOverflowEach）
+test("test_pinned_overflow_each", async () => {
+  // 準備・実行
+  const page = await open("pinned-overflow-each");
+  // 検証
+  await expect(pinnedColumns(page)).resolves.toEqual([0, 2]);
+  const states = await pinStates(page);
+  expect(states.map((state) => state.pressed)).toEqual([
+    "true",
+    "false",
+    "true",
+    "false",
+    "false",
+    "false",
+    "false",
+    "false",
+    "true",
+    "false",
+  ]);
+  expect(states.map((state) => state.unpinned)).toEqual([
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    false,
+    true,
+    false,
+  ]);
+  const label =
+    "「iOS Safari」の列をピン止め（表の幅に収まらないため留まっていません）";
+  expect(states[8]?.label).toBe(label);
+  expect(states[8]?.title).toBe(label);
+  expect(states[0]?.title).toBeNull();
+  // 検証: 破線の枠線
+  await expect(
+    page
+      .locator("#storybook-root thead button.mdmark-pin.is-unpinned")
+      .evaluate((button) => getComputedStyle(button).borderTopStyle),
+  ).resolves.toBe("dashed");
+});
+
+// pinMode: through で 3 列目までを押し、unpinned の 3 列目を留めず、押した 3 列目のボタンだけを破線のピンにする（PinnedOverflowThrough）
+test("test_pinned_overflow_through", async () => {
+  // 準備・実行
+  const page = await open("pinned-overflow-through");
+  // 検証
+  await expect(pinnedColumns(page)).resolves.toEqual([0, 1]);
+  const states = await pinStates(page);
+  expect(states.map((state) => state.pressed)).toEqual([
+    "false",
+    "false",
+    "true",
+    ...Array.from({ length: 7 }, () => "false"),
+  ]);
+  expect(states.map((state) => state.unpinned)).toEqual([
+    false,
+    false,
+    true,
+    ...Array.from({ length: 7 }, () => false),
+  ]);
+  expect(states[2]?.label).toBe(
+    "「表」の列までピン止め（表の幅に収まらないため留まっていません）",
+  );
 });
 
 // pinMode: each で結合した見出しの下の既定だけを名前と一緒に留め、結合した設定のセルは留めない（PinnedUnderMergedHeader）
@@ -1001,78 +1092,150 @@ test("test_row_link_failed", async () => {
   await expect(pageOverflows(page)).resolves.toBe(false);
 });
 
-/** 畳んだ表の最終列の見出しとセルが画面に出ているかを、見出し・本文の行の順に返却する */
-function lastColumnShown(page: Page): Promise<boolean[]> {
-  return page.evaluate(() => {
+/** 広い画面（自動で決めた幅の合計が 420px を超えるストーリー） */
+const WIDE_VIEWPORT = { width: 1280, height: 400 };
+
+/** 最下段の見出しのセルの外側の幅と、表の左右の枠線を除いた幅・表を包む要素のはみ出し、本文の 1 行目のセルの文字の行の数を返却する */
+function widthLayout(page: Page): Promise<{
+  heads: number[];
+  table: number;
+  autoWidth: boolean;
+  scrollWidth: number;
+  clientWidth: number;
+  lines: number[];
+}> {
+  return page.locator(".mdmark-table table").evaluate((table) => {
+    const scroller = table.parentElement as HTMLElement;
     const cells = [
-      document.querySelector("#storybook-root thead th:last-child"),
-      ...[
-        ...document.querySelectorAll(
-          "#storybook-root tbody tr:not(.mdmark-fold-detail):not(.mdmark-table-empty)",
-        ),
-      ].map((row) => row.querySelector("td:last-child")),
+      ...(table.querySelector("tbody tr")?.querySelectorAll("td") ?? []),
     ];
-    return cells.map((cell) => (cell?.getClientRects().length ?? 0) > 0);
+    return {
+      heads: [...table.querySelectorAll("thead th")].map(
+        (th) => th.getBoundingClientRect().width,
+      ),
+      table:
+        table.getBoundingClientRect().width -
+        Number.parseFloat(getComputedStyle(table).borderLeftWidth) -
+        Number.parseFloat(getComputedStyle(table).borderRightWidth),
+      autoWidth: table.hasAttribute("data-auto-width"),
+      scrollWidth: scroller.scrollWidth,
+      clientWidth: scroller.clientWidth,
+      lines: cells.map((cell) => {
+        const tops = new Set<number>();
+        const walker = document.createTreeWalker(cell, NodeFilter.SHOW_TEXT);
+        for (let node = walker.nextNode(); node; node = walker.nextNode()) {
+          const range = document.createRange();
+          range.selectNodeContents(node);
+          for (const rect of range.getClientRects()) {
+            tops.add(Math.round(rect.top));
+          }
+        }
+        return tops.size;
+      }),
+    };
   });
 }
 
-// 最終列を畳むと、説明の列を出さず、各行の先頭のセルに開閉のボタンが付く（Folded）
-test("test_folded", async () => {
+/** 幅の並びが、期待した幅の並びと 1px 以内で一致することを確認する */
+function expectWidths(actual: number[], expected: number[]): void {
+  expect(actual).toHaveLength(expected.length);
+  actual.forEach((width, index) => {
+    expect(Math.abs(width - (expected[index] ?? 0))).toBeLessThanOrEqual(1);
+  });
+}
+
+// 列の少ない表を、本文の幅まで広げず列の幅の合計で描き、横にスクロールしない（FitsContent）
+test("test_fits_content", async () => {
   // 準備・実行
-  const page = await open("folded");
+  const page = await open("fits-content");
   // 検証
+  const layout = await widthLayout(page);
+  expect(layout.autoWidth).toBe(true);
+  expectWidths(layout.heads, [80, 72]);
+  expect(Math.abs(layout.table - 152)).toBeLessThanOrEqual(1);
+  expect(layout.scrollWidth).toBeLessThanOrEqual(layout.clientWidth);
+  expect(layout.lines).toEqual([1, 1]);
+});
+
+// 長文の説明の列だけを折り返し、ほかの列は最も長い行の幅で 1 行に収める（AutoWidth）
+test("test_auto_width", async () => {
+  // 準備・実行
+  const page = await holder.openStory("parts-table--auto-width", WIDE_VIEWPORT);
+  // 検証
+  const layout = await widthLayout(page);
+  expectWidths(layout.heads, [60, 90, 112, 78, 92, 713]);
+  expect(layout.lines.slice(0, 4)).toEqual([1, 1, 1, 1]);
+  expect(layout.lines[4]).toBe(3);
+  expect(layout.lines[5]).toBeGreaterThan(1);
+  expect(layout.scrollWidth).toBeLessThanOrEqual(layout.clientWidth);
   await expect(
-    page
-      .locator(".mdmark-table")
-      .evaluate((el) => el.classList.contains("is-folded")),
-  ).resolves.toBe(true);
-  await expect(lastColumnShown(page)).resolves.toEqual([false, false, false]);
-  const toggles = page.locator("button.mdmark-fold-toggle");
-  await expect(toggles.count()).resolves.toBe(2);
-  await expect(
-    toggles.evaluateAll((buttons) =>
-      buttons.map((button) => ({
-        expanded: button.getAttribute("aria-expanded"),
-        label: button.getAttribute("aria-label"),
-        inFirstCell:
-          button.closest("td") === button.closest("tr")?.querySelector("td"),
-      })),
-    ),
-  ).resolves.toEqual([
-    { expanded: "false", label: "「りんご」の説明", inFirstCell: true },
-    { expanded: "false", label: "「みかん」の説明", inFirstCell: true },
-  ]);
-  await expect(
-    page.locator("tr.mdmark-fold-detail:visible").count(),
-  ).resolves.toBe(0);
+    page.locator(".mdmark-table").getAttribute("data-long"),
+  ).resolves.toBe("5");
+});
+
+// 長文の列が 2 つある表は、1 行で収まる備考の列を 1 行のまま、説明の列を折り返す（TwoLongColumns）
+test("test_two_long_columns", async () => {
+  // 準備・実行
+  const page = await holder.openStory(
+    "parts-table--two-long-columns",
+    WIDE_VIEWPORT,
+  );
+  // 検証
+  const layout = await widthLayout(page);
+  expectWidths(layout.heads, [82, 740, 323]);
+  expect(layout.lines[0]).toBe(1);
+  expect(layout.lines[1]).toBeGreaterThan(1);
+  expect(layout.lines[2]).toBe(1);
+  expect(layout.scrollWidth).toBeLessThanOrEqual(layout.clientWidth);
+});
+
+// 狭い画面では長文の列を最小の幅（45em）で折り返し、表の中で横にスクロールする（NarrowScroll）
+test("test_narrow_scroll", async () => {
+  // 準備・実行
+  const page = await open("narrow-scroll");
+  // 検証
+  const layout = await widthLayout(page);
+  expectWidths(layout.heads, [82, 630, 630]);
+  expect(layout.lines[1]).toBeGreaterThan(1);
+  expect(layout.scrollWidth).toBeGreaterThan(layout.clientWidth);
   await expect(pageOverflows(page)).resolves.toBe(false);
 });
 
-// 最終列を畳み、1 行目を開くと、行の直後に説明の見出しと中身を出す（FoldedOpen）
-test("test_folded_open", async () => {
+// width.min・width.max を記載した説明の列を、記載した範囲の幅で折り返す（WidthRange）
+test("test_width_range", async () => {
   // 準備・実行
-  const page = await open("folded-open");
-  // 検証
-  const toggles = page.locator("button.mdmark-fold-toggle");
-  await expect(
-    toggles.evaluateAll((buttons) =>
-      buttons.map((button) => button.getAttribute("aria-expanded")),
-    ),
-  ).resolves.toEqual(["true", "false"]);
-  const detail = page.locator("tr.mdmark-fold-detail:visible");
-  await expect(detail.count()).resolves.toBe(1);
-  await expect(
-    detail.evaluate(
-      (el) => el.previousElementSibling?.querySelector("td")?.textContent,
-    ),
-  ).resolves.toContain("りんご");
-  await expect(detail.locator(".mdmark-fold-name").innerText()).resolves.toBe(
-    "説明",
+  const page = await holder.openStory(
+    "parts-table--width-range",
+    WIDE_VIEWPORT,
   );
+  // 検証
   await expect(
-    detail.locator(".mdmark-fold-value").innerText(),
-  ).resolves.toContain("見出しの ID を作る処理を 1 回にまとめる");
-  await expect(pageOverflows(page)).resolves.toBe(false);
+    page.locator(".mdmark-table").getAttribute("data-width"),
+  ).resolves.toBe("1:20-30");
+  const layout = await widthLayout(page);
+  expectWidths(layout.heads, [82, 420, 72]);
+  expect(layout.lines[0]).toBe(1);
+  expect(layout.lines[1]).toBeGreaterThan(1);
+  expect(layout.lines[2]).toBe(1);
+});
+
+// filter.type を省いた長文の説明の列は、文字で絞り込むドロワーを開く（LongColumnTextFilter）
+test("test_long_column_text_filter", async () => {
+  // 準備・実行
+  const page = await holder.openStory(
+    "parts-table--long-column-text-filter",
+    WIDE_VIEWPORT,
+  );
+  // 検証
+  await expect(
+    page.locator(".mdmark-table").getAttribute("data-filter"),
+  ).resolves.toBe("0:select 1:text");
+  const drawer = page.locator(".mdmark-filter-drawer:not([hidden])");
+  await expect(drawer.count()).resolves.toBe(1);
+  await expect(drawer.getAttribute("data-filter-kind")).resolves.toBe("text");
+  await expect(drawer.locator("input[type='checkbox']").count()).resolves.toBe(
+    0,
+  );
 });
 
 // 30 行と集計の行を持つ表は、枠を縦にスクロールすると、表が枠に残っている間、見出し行が上端に、集計の行が下端に留まる（StickyRows）
@@ -1454,10 +1617,10 @@ test("test_csv_table", async () => {
   );
   await expect(button.getAttribute("aria-pressed")).resolves.toBe("false");
   const box = await button.boundingBox();
-  const table = await page.locator(".mdmark-table table").boundingBox();
+  const wrapper = await page.locator(".mdmark-table").boundingBox();
   expect(box?.width).toBeGreaterThanOrEqual(24);
   expect((box?.x ?? 0) + (box?.width ?? 0)).toBeCloseTo(
-    (table?.x ?? 0) + (table?.width ?? 0),
+    (wrapper?.x ?? 0) + (wrapper?.width ?? 0),
     0,
   );
   await expect(
@@ -1822,49 +1985,6 @@ test("test_columns_button_a", async () => {
       .locator(".mdmark-table-settings-toggle .mdmark-table-tool-badge")
       .innerText(),
   ).resolves.toBe("1");
-  await expect(pageOverflows(page)).resolves.toBe(false);
-});
-
-// 列の少ない表は本文の幅いっぱいに広げ、横にスクロールせず、端の影が無い（FillsWidth）
-test("test_fills_width", async () => {
-  // 準備・実行
-  const page = await open("fills-width");
-  // 検証
-  const sizes = await page
-    .locator("#storybook-root .mdmark-table")
-    .evaluate((wrapper) => {
-      const scroller = wrapper.querySelector<HTMLElement>(
-        ".mdmark-table-scroll",
-      );
-      const table = wrapper.querySelector("table");
-      const lastHead = table?.querySelector("thead th:last-child");
-      return {
-        outer: (() => {
-          const parent = wrapper.parentElement;
-          if (!parent) {
-            return 0;
-          }
-          const style = getComputedStyle(parent);
-          return (
-            parent.clientWidth -
-            Number.parseFloat(style.paddingLeft) -
-            Number.parseFloat(style.paddingRight)
-          );
-        })(),
-        wrapper: wrapper.getBoundingClientRect().width,
-        table: table?.getBoundingClientRect().width ?? 0,
-        tableRight: table?.getBoundingClientRect().right ?? 0,
-        headRight: lastHead?.getBoundingClientRect().right ?? 0,
-        overflow: scroller ? scroller.scrollWidth > scroller.clientWidth : true,
-      };
-    });
-  expect(Math.abs(sizes.wrapper - sizes.outer)).toBeLessThanOrEqual(1);
-  expect(Math.abs(sizes.table - sizes.wrapper)).toBeLessThanOrEqual(1);
-  expect(Math.abs(sizes.headRight - sizes.tableRight)).toBeLessThanOrEqual(1);
-  expect(sizes.overflow).toBe(false);
-  await expect(page.locator("button.mdmark-pin:visible").count()).resolves.toBe(
-    0,
-  );
   await expect(pageOverflows(page)).resolves.toBe(false);
 });
 

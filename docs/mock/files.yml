@@ -417,6 +417,12 @@ files:
   - path: pages/document/422/index.md
     description: '#422 の画面のモックの案の一覧。この PR で作った画面の案を探すときに参照する。'
     tags: [topic:モック]
+  - path: pages/document/505/a-auto-width/index.html
+    description: '#505 の画面のモックの案『a-auto-width』: 配布物の mount で画面の幅いっぱいに描いた文書に、長文の列だけを本文の幅いっぱいまで広げる表の列の幅と、帯を本文と同じ色にして言語のラベルを上端のタブにしたコードブロックを当てる。明暗を操作列で切り替える。画面の外観や振る舞いを決めるときに参照する。'
+    tags: [topic:モック, topic:表, topic:コードブロック]
+  - path: pages/document/505/index.md
+    description: '#505 の画面のモックの案の一覧。この PR で作った画面の案を探すときに参照する。'
+    tags: [topic:モック]
   - path: pages/document/45/embedded-html/app.js
     description: 'モック『embedded-html』の動き: モックの「HTML の表示」「ヒント」の切り替え（設定の features.html・features.hints に該当する）。このモックの動きを変えるときに参照する。'
     tags: [topic:モック, tool:javascript]
@@ -919,6 +925,36 @@ files:
     tags: [topic:モック, tool:css]
   - path: refs/449/index.md
     description: '#449（表の列の幅を、見出しの右端をドラッグして変えられるようにし、ダブルクリックで元の幅に戻す）の PR のモックへのリンク集。この PR で作ったモックを探すときに参照する。'
+    tags: [topic:モック]
+  - path: refs/533/assets/table-pin-fit.js
+    description: '#533 のモックが共通で読み込む素材: 表を組み、選んだ列（`through` は押した列までの列）を左から順に足して見える幅に収まる列だけを留め、選んだのに留まっていない列のボタンを押したまま留まっていない状態にする。複数のモックに有効になる外観や動きを変えるときに参照する。'
+    tags: [topic:モック, tool:javascript]
+  - path: refs/533/assets/table-samples.js
+    description: '#533 のモックが共通で読み込む素材: 選んだ列が見える幅に収まらない `each` の表・`through` の表（留まっていないことを示すボタンの案 A・案 B）と、全て収まる表の定義の見本。複数のモックに有効になる外観や動きを変えるときに参照する。'
+    tags: [topic:モック, tool:javascript]
+  - path: refs/533/assets/table.css
+    description: '#533 のモックが共通で読み込む素材: 見える幅に収まらず留まっていない列のピン止めのボタンの規則（案 A の破線のピン・案 B の注意の色の丸）。複数のモックに有効になる外観や動きを変えるときに参照する。'
+    tags: [topic:モック, tool:css]
+  - path: refs/533/index.md
+    description: '#533（表の留めた列の幅の合計が見える幅を超えても、留めた列が重なって見えなくならないようにする）の PR のモックへのリンク集。この PR で作ったモックを探すときに参照する。'
+    tags: [topic:モック]
+  - path: refs/505/assets/code-block.css
+    description: '#505 のモックが共通で読み込む素材: コードブロックの帯（言語のラベル・タイトル）に続く pre の上の枠線を削除し、帯の背景を本文と同じ色にし、言語のラベルを帯の上端に付けたタブにする規則。複数のモックに有効になる外観や動きを変えるときに参照する。'
+    tags: [topic:モック, tool:css]
+  - path: refs/505/assets/scene.css
+    description: '#505 の画面のモックが読み込む素材: 文書を描く先の要素を画面の幅いっぱいに広げ、配布物の表の規則より後に列の幅の規則を当てる。複数のモックに有効になる外観や動きを変えるときに参照する。'
+    tags: [topic:モック, tool:css]
+  - path: refs/505/assets/scene.js
+    description: '#505 の画面のモックが読み込む素材: 配布物の mount で表とコードブロックを持つ文書を描く。複数のモックに有効になる外観や動きを変えるときに参照する。'
+    tags: [topic:モック, tool:javascript]
+  - path: refs/505/assets/table-width.css
+    description: '#505 のモックが共通で読み込む素材: 表を本文の幅まで広げず列の幅の合計で描き、折り返さない列を 1 行で出す規則と、描く先の幅の見本。複数のモックに有効になる外観や動きを変えるときに参照する。'
+    tags: [topic:モック, tool:css]
+  - path: refs/505/assets/table-width.js
+    description: '#505 のモックが共通で読み込む素材: 長文の列だけを折り返して本文の幅いっぱいまで広げ、ほかの列を最も長い行の幅にし、最小の幅の合計が収まらなければ横にスクロールさせ、表を包む要素の幅が変わったときだけ決め直す。複数のモックに有効になる外観や動きを変えるときに参照する。'
+    tags: [topic:モック, tool:javascript]
+  - path: refs/505/index.md
+    description: '#505（表の列の幅の自動計算・ファイルツリーの既定の全開き・コードブロックの帯の線の削除・目次で押した見出しのセクションを開く）の PR のモックへのリンク集。この PR で作ったモックを探すときに参照する。'
     tags: [topic:モック]
   - path: refs/45/assets/embed.css
     id: docs/mock/refs/45/assets/embed.css

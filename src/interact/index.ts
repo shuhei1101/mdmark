@@ -11,6 +11,7 @@ import { attachFootnotes } from "./footnotes.ts";
 import { attachGifs } from "./gif.ts";
 import { attachLightbox } from "./lightbox.ts";
 import { attachParams } from "./params.ts";
+import { attachDetailsStates, type PartStates } from "./part-states.ts";
 import { attachSections, type SectionStates } from "./sections.ts";
 import { attachStickyRows } from "./sticky.ts";
 import { attachTables } from "./tables.ts";
@@ -33,10 +34,14 @@ export function attachInteractions(options: {
   paramDefinitions?: MdmarkParamDefinition[];
   /** 既定を適用した設定の、表のピン止めの動き（既定 `each`） */
   pinMode?: TablePinMode;
+  /** 既定を適用した設定の、長文の列の最小の幅（em） */
+  longColumnMin?: number;
   /** 列の表示を切り替えたときに通知する */
   onColumnsChange?: (event: MdmarkColumnsChange) => void;
   /** セクションの開閉の記録（省くと記録しない） */
   sectionStates?: SectionStates;
+  /** 部品の開閉の記録（省くと記録しない） */
+  partStates?: PartStates;
   /** 付けたときに URL の `#ID` で開くか（既定 `true`） */
   revealHash?: boolean;
 }): () => void {
@@ -47,8 +52,10 @@ export function attachInteractions(options: {
     diagramPlacement = "bottom",
     paramDefinitions = [],
     pinMode = "each",
+    longColumnMin,
     onColumnsChange,
     sectionStates,
+    partStates,
     revealHash,
   } = options;
   const detachers: Array<() => void> = [];
@@ -62,12 +69,20 @@ export function attachInteractions(options: {
         sections,
         rowDetails,
         states: sectionStates,
+        partStates,
         revealHash,
       }),
     );
   }
   if (features.table === true) {
-    detachers.push(attachTables(root, { onColumnsChange, pinMode }));
+    detachers.push(
+      attachTables(root, {
+        onColumnsChange,
+        pinMode,
+        longColumnMin,
+        partStates,
+      }),
+    );
     detachers.push(attachStickyRows(root));
   }
   // RAW のボタンは、表の操作の帯ができてからその帯に追加する
@@ -82,13 +97,15 @@ export function attachInteractions(options: {
   }
   if (features.code === true) {
     detachers.push(attachCodeCopy(root));
-    detachers.push(attachCodeFolds(root));
+    detachers.push(attachCodeFolds(root, partStates));
   }
   if (features.tree === true) {
-    detachers.push(attachFileTrees(root));
+    detachers.push(attachFileTrees(root, partStates));
   }
   if (features.diagrams === true) {
-    detachers.push(attachDiagrams({ root, placement: diagramPlacement }));
+    detachers.push(
+      attachDiagrams({ root, placement: diagramPlacement, partStates }),
+    );
     detachers.push(attachParams(root, paramDefinitions));
   }
   if (features.footnotes === true) {
@@ -113,6 +130,9 @@ export function attachInteractions(options: {
   }
   if (features.lightbox === true) {
     detachers.push(attachLightbox(root));
+  }
+  if (partStates !== undefined) {
+    detachers.push(attachDetailsStates({ root, states: partStates }));
   }
   // GIF の包みは拡大のボタンごと包むため、拡大の後に付ける
   if (features.gif === true) {

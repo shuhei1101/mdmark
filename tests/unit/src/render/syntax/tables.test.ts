@@ -1,3 +1,4 @@
+import MarkdownIt from "markdown-it";
 import { expect, test } from "vitest";
 import {
   findTags,
@@ -22,14 +23,12 @@ test("test_read_table_spec", async () => {
   };
   // 実行
   const spec = readTableSpec(options, ["名前", "値", "更新日"], 10);
-  // 検証
+  // 検証: kind を省いた列は kind を持たない
+  expect(spec.filters[0]).not.toHaveProperty("kind");
   expect(spec).toMatchObject({
     kind: "data",
     features: ["pin", "filter", "resize"],
-    filters: [
-      { column: 0, kind: "select" },
-      { column: 2, kind: "date" },
-    ],
+    filters: [{ column: 0 }, { column: 2, kind: "date" }],
     collapse: "closed",
     warnings: [],
   });
@@ -509,6 +508,88 @@ test("test_decorate_tables_when_columns_specified", () => {
   expect(other).not.toContain("data-value");
   expect(plainText(other)).toBe("未定");
   expect(html).not.toContain("mdmark-syntax-warning");
+});
+
+/** 全角の文字を指定した数だけ並べる */
+const wide = (count: number): string => "あ".repeat(count);
+
+// 長文の列と列の幅の範囲を囲みに写し、種類を省いた絞り込みを長文の列なら text にする（正常系）
+test("test_decorate_tables_when_long_columns", () => {
+  // 準備: インターフェース定義『文書をHTML文字列にする』の「正常系（長文の列と列の幅の範囲）」の文書
+  const markdown = [
+    '<!-- table: {"kind": "data", "columns": {"名前": {"filter": {}}, "説明": {"filter": {}, "width": {"min": 20, "max": 30}}, "備考": {"filter": {"type": "select"}, "width": {"max": 12}}}} -->',
+    "",
+    "| 名前 | 説明 | 手順 | 備考 |",
+    "| --- | --- | --- | --- |",
+    `| ${wide(6)} | ${wide(120)} | ${wide(10)}<br>${wide(10)}<br>${wide(10)} | ${wide(80)} |`,
+    `| ${wide(4)} | ${wide(100)} | ${wide(8)} | ${wide(60)} |`,
+    "",
+    "<!-- /table -->",
+    "",
+  ].join("\n");
+  // 実行
+  const { html } = renderDoc(markdown);
+  // 検証
+  const wrapper = findTags(html, 'class="mdmark-table"')[0] ?? "";
+  expect(wrapper).toContain('data-long="1 3"');
+  expect(wrapper).toContain('data-width="1:20-30 3:-12"');
+  expect(wrapper).toContain('data-filter="0:select 1:text 3:select"');
+  expect(html).not.toContain("mdmark-syntax-warning");
+});
+
+// width.mode が nowrap の長文の列も data-long に入れ、種類を省いた絞り込みを text にする（正常系）
+test("test_decorate_tables_when_nowrap_long_column", () => {
+  // 準備
+  const markdown = [
+    '<!-- table: {"kind": "data", "columns": {"説明": {"width": {"mode": "nowrap"}, "filter": {}}}} -->',
+    "",
+    "| 名前 | 説明 |",
+    "| --- | --- |",
+    `| ${wide(4)} | ${wide(120)} |`,
+    "",
+    "<!-- /table -->",
+    "",
+  ].join("\n");
+  // 実行
+  const { html } = renderDoc(markdown);
+  // 検証
+  const wrapper = findTags(html, 'class="mdmark-table"')[0] ?? "";
+  expect(wrapper).toContain('data-long="1"');
+  expect(wrapper).toContain('data-filter="1:text"');
+  const wideTags = findTags(html, "mdmark-wide");
+  expect(wideTags.filter((tag) => tag.startsWith("<th"))).toHaveLength(1);
+  expect(wideTags.filter((tag) => tag.startsWith("<td"))).toHaveLength(1);
+});
+
+// <br> で行を分け、行内のコードとバッジだけのセルを短い値にする（正常系）
+test("test_column_lines_of", async () => {
+  // 準備
+  const { columnLinesOf } = await loadTables();
+  const tokens = new MarkdownIt({ html: true }).parse(
+    [
+      "| 手順 | 状態 | コード | 説明 |",
+      "| --- | --- | --- | --- |",
+      "| 測る<br>分ける | `badge:対応中` | `npm run build` | 描画を速くする |",
+      "",
+    ].join("\n"),
+    {},
+  );
+  const tableOpen = tokens.findIndex((token) => token.type === "table_open");
+  // 実行
+  const columns = columnLinesOf(tokens, tableOpen);
+  // 検証
+  expect(columns.map((column) => column.head)).toEqual([
+    ["手順"],
+    ["状態"],
+    ["コード"],
+    ["説明"],
+  ]);
+  expect(columns.map((column) => column.cells[0])).toEqual([
+    { lines: ["測る", "分ける"], compact: false },
+    { lines: ["対応中"], compact: true },
+    { lines: ["npm run build"], compact: true },
+    { lines: ["描画を速くする"], compact: false },
+  ]);
 });
 
 // 列の強調と、値と位置の行の色を読み込む（正常系）

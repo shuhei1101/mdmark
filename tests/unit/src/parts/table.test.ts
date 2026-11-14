@@ -394,47 +394,6 @@ test("test_render_copy_panel", async () => {
   expect(findTag(html, 'aria-label="閉じる"')).toContain("<button");
 });
 
-// 閉じた開閉の行とボタンを返却する（正常系）
-test("test_render_folded_column", async () => {
-  // 準備
-  const { renderFoldedColumn } = await loadTable();
-  // 実行
-  const { toggle, row } = renderFoldedColumn({
-    id: "t1-fold-0",
-    columns: 3,
-    label: "りんご",
-    name: "説明",
-    html: "描画を速くする",
-  });
-  // 検証
-  expect(toggle).toContain('aria-expanded="false"');
-  expect(toggle).toContain('aria-controls="t1-fold-0"');
-  expect(toggle).toContain('aria-label="「りんご」の説明"');
-  expect(row).toContain(
-    '<tr class="mdmark-row-detail mdmark-fold-detail" id="t1-fold-0" hidden><td colspan="3">',
-  );
-  expect(innerHtml(row, "mdmark-fold-name")).toBe("説明");
-  expect(innerHtml(row, "mdmark-fold-value")).toBe("描画を速くする");
-});
-
-// 開いた行は隠さない（正常系）
-test("test_render_folded_column_when_open", async () => {
-  // 準備
-  const { renderFoldedColumn } = await loadTable();
-  // 実行
-  const { toggle, row } = renderFoldedColumn({
-    id: "t1-fold-0",
-    columns: 3,
-    label: "りんご",
-    name: "説明",
-    html: "描画を速くする",
-    open: true,
-  });
-  // 検証
-  expect(toggle).toContain('aria-expanded="true"');
-  expect(findTag(row, "<tr")).not.toMatch(/\shidden\b/);
-});
-
 // 値を選ぶドロワーとボタンを返却する（正常系）
 test("test_render_table_tools", async () => {
   // 準備
@@ -481,6 +440,34 @@ test("test_render_table_tools_when_pin_mode", async () => {
   expect(throughPin).toContain('aria-label="「名前」の列までピン止め"');
   expect(eachPin).toContain('aria-pressed="true"');
   expect(throughPin).toContain('aria-pressed="true"');
+});
+
+// 見えている幅に収まらず留まっていない列のボタンに、留まっていないことを付ける（正常系）
+test("test_render_table_tools_when_unpinned", async () => {
+  // 準備
+  const { renderTableTools } = await loadTable();
+  const options = {
+    id: "t1",
+    column: 0,
+    label: "名前",
+    features: ["pin"],
+    pinVisible: true,
+    pinPressed: true,
+  };
+  // 実行
+  const unpinned = renderTableTools({ ...options, pinUnpinned: true });
+  const pinned = renderTableTools(options);
+  // 検証
+  const unpinnedPin = findTag(unpinned.header, "mdmark-pin");
+  const pinnedPin = findTag(pinned.header, "mdmark-pin");
+  const label =
+    "「名前」の列をピン止め（表の幅に収まらないため留まっていません）";
+  expect(unpinnedPin).toMatch(/class="[^"]*\bis-unpinned\b/);
+  expect(unpinnedPin).toContain(`aria-label="${label}"`);
+  expect(unpinnedPin).toContain(`title="${label}"`);
+  expect(unpinnedPin).toContain('aria-pressed="true"');
+  expect(pinnedPin).not.toContain("is-unpinned");
+  expect(pinnedPin).toContain('aria-label="「名前」の列をピン止め"');
 });
 
 // 日付のドロワーは開始日と終了日の欄を持つ（正常系）
@@ -627,49 +614,6 @@ test("test_render_table_when_row_link_notice", async () => {
   );
 });
 
-// 最終列を畳み、開いた行の直後に最終列を出す（正常系）
-test("test_render_table_when_folded", async () => {
-  // 準備
-  const { renderTable } = await loadTable();
-  // 実行
-  const html = renderTable({
-    kind: "data",
-    features: ["sort", "pin", "filter"],
-    columns: ["名前", "更新日", "説明"],
-    rows: [
-      [
-        "りんご",
-        "2026-10-01",
-        "描画を速くするために、見出しの ID を作る処理を 1 回にまとめる",
-      ],
-      ["みかん", "2026-10-10", "印刷で折り畳みを開き、リンクの URL を併記する"],
-    ],
-    folded: true,
-    unfoldedRows: [0],
-  });
-  // 検証: 囲みと最終列のセル
-  expect(findTag(html, 'class="mdmark-table')).toContain("is-folded");
-  const bodyRows = rowsOf(innerHtml(html, "<tbody")).filter(
-    (row) =>
-      !row.includes("mdmark-fold-detail") &&
-      !row.includes("mdmark-table-empty"),
-  );
-  expect(bodyRows).toHaveLength(2);
-  for (const row of bodyRows) {
-    expect(findTags(row, "<td").at(-1)).toContain("mdmark-fold-col");
-  }
-  // 検証: 開閉のボタンは各行に 1 つで、1 行目だけ開いている
-  const toggles = findTags(html, "mdmark-fold-toggle");
-  expect(toggles).toHaveLength(2);
-  expect(toggles[0]).toContain('aria-expanded="true"');
-  expect(toggles[1]).toContain('aria-expanded="false"');
-  // 検証: 1 行目の直後の開閉の行は隠さず、最終列の見出しを持つ
-  const details = findTags(html, "mdmark-fold-detail");
-  expect(details[0]).not.toMatch(/\shidden\b/);
-  expect(details[1]).toMatch(/\shidden\b/);
-  expect(innerHtml(html, "mdmark-fold-name")).toBe("説明");
-});
-
 // 開いた折り畳みの見出しを title にし、エスケープする（正常系）
 test("test_render_table_when_title", async () => {
   // 準備
@@ -693,6 +637,46 @@ test("test_render_table_when_title", async () => {
     '<details class="mdmark-table-details" open><summary>リリースの一覧</summary>',
   );
   expect(escaped).toContain("<summary>a&lt;b</summary>");
+});
+
+// 長文の列と列の幅の範囲を囲みに写し、自動の列の幅を入れる（正常系）
+test("test_render_table_when_long_columns", async () => {
+  // 準備
+  const { renderTable } = await loadTable();
+  const { SLOT_MARKER } = await loadOwn();
+  const widths = [47, 71, 100, 78, 92, 757];
+  // 実行
+  const wrapper = renderTable({
+    kind: "data",
+    features: ["sort", "pin", "filter"],
+    long: [1, 3],
+    widthRanges: [
+      { column: 1, min: 20, max: 30 },
+      { column: 3, max: 12 },
+    ],
+    body: SLOT_MARKER,
+  });
+  const auto = renderTable({
+    kind: "data",
+    features: ["sort", "pin", "filter"],
+    columns: ["No", "状態", "更新日", "名前", "手順", "説明"],
+    rows: [["1", "対応中", "2026-11-01", "表の幅", "測る", "描画を速くする"]],
+    long: [5],
+    autoWidths: widths.map((width, column) => ({ column, width })),
+  });
+  // 検証: 囲みに長文の列と幅の範囲を写す
+  const open = findTag(wrapper, 'class="mdmark-table"');
+  expect(open).toContain('data-long="1 3"');
+  expect(open).toContain('data-width="1:20-30 3:-12"');
+  // 検証: 自動の列の幅を表と見出しのセルに入れる
+  const table = findTag(auto, "<table");
+  expect(table).toContain("data-auto-width");
+  expect(table).toContain("--mdmark-auto-table-width:1145px");
+  const heads = findTags(innerHtml(auto, "<thead"), "<th");
+  expect(heads).toHaveLength(6);
+  heads.forEach((head, column) => {
+    expect(head).toContain(`--mdmark-auto-width:${widths[column]}px`);
+  });
 });
 
 // ツリーのパネルはツリーの案内を出す（正常系）

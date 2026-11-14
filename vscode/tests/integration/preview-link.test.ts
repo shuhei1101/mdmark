@@ -145,7 +145,7 @@ suite("プレビューのリンクを開く", () => {
     assert.deepStrictEqual(opened, []);
   });
 
-  // 右側の目次の項目を押すと、閉じたセクションを開いて見出しへ移り、拡張機能へは送信しない
+  // 右側の目次の項目を押すと、囲む閉じたセクションと見出し自身の閉じたセクションを開いて見出しへ移り、拡張機能へは送信しない
   test("test_normal_when_side_toc_link", async () => {
     // 準備: 閉じたセクションの中の見出しが画面の外にある長い文書。スクロールの同期は切り、リンクの移動だけを確認する
     await setSetting("preview.scrollPreviewWithEditor", false);
@@ -167,6 +167,10 @@ suite("プレビューのリンクを開く", () => {
         "",
         "### 注意",
         "",
+        "<!-- section: closed -->",
+        "",
+        "注意の段落",
+        "",
         ...filler("後の段落"),
       ].join("\n"),
     );
@@ -174,14 +178,15 @@ suite("プレビューのリンクを開く", () => {
     await vscode.commands.executeCommand("mdmark.openPreviewToSide");
     const record = lastPanel();
     await waitForRendered(record);
-    const sectionBody = async () => (await inspect('[id="section-導入"]'))[0];
+    const sectionBody = async (id = "導入") =>
+      (await inspect(`[id="section-${id}"]`))[0];
     assert.ok(
       "hidden" in ((await sectionBody())?.attributes ?? {}),
       "導入のセクションが閉じていない",
     );
     // 実行: 右側の目次の「注意」を押す
     clickInPreview(record, 'aside.mdmark-side-toc a[data-heading-id="注意"]');
-    // 検証: 導入のセクションが開き、注意の見出しが見えている範囲に入る
+    // 検証: 導入と注意のセクションが開き、注意の見出しが見えている範囲に入り、注意の段落が表示されている
     await waitFor(
       async () => {
         const top = (await inspect("h3")).find((item) =>
@@ -192,6 +197,11 @@ suite("プレビューのリンクを開く", () => {
       { message: "注意の見出しへ移らない" },
     );
     assert.ok(!("hidden" in ((await sectionBody())?.attributes ?? {})));
+    assert.ok(!("hidden" in ((await sectionBody("注意"))?.attributes ?? {})));
+    const note = (await inspect("p")).find(
+      (item) => item.text === "注意の段落",
+    );
+    assert.ok((note?.height ?? 0) > 0, "注意の段落が表示されていない");
     await sleep(300);
     assert.strictEqual(
       record.received.filter((message) => message.type === "openLink").length,

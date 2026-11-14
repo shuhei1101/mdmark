@@ -12,14 +12,14 @@ constants:
   - name: MAX_DIST_FILE_BYTES
     title: 配布ファイル 1 つの上限
     container: scripts/build.ts
-    summary: 非機能要件の配布ファイル 1 つの上限（656KB）
-    value: 656 * 1024
+    summary: 非機能要件の配布ファイル 1 つの上限（672KB）
+    value: 672 * 1024
     refs:
       - NFR-472-1#requirements[配布ファイル 1 つのサイズ]
   - name: LICENSES_FILE
     title: ライセンスの書き出し先
     container: scripts/build.ts
-    summary: 配布物にまとめた依存のライセンスを記載する、`dist/` の中のファイル名
+    summary: まとめた依存のライセンスを記載する、`dist/` と移行の手順のフォルダの中のファイル名
     value: '"THIRD_PARTY_LICENSES.txt"'
   - name: UNSIZED_OUTPUTS
     title: サイズを検めない配布ファイル
@@ -39,7 +39,7 @@ functions:
     scope: public
     is_async: true
     summary: 前回の `dist/` を削除してから、バージョンを決めて検査し、移行の手順を点検し、`dist/` を書き込んでサイズを検査し、プラグインをビルドし、終了コードを返却する
-    side_effects: 最初に `dist/` を削除してからもう一度書き込む。失敗したとき（バージョンの書式の誤り・`version.ini` を読み込めない・esbuild の失敗・上限超過・対応ブラウザの下限に無い API）は `dist/` を残さず、標準エラーに理由を出す
+    side_effects: 最初に `dist/` を削除してからもう一度書き込み、`migrations/` の中の `marker-json.mjs` を持つフォルダの `legacy-marks.js`・`THIRD_PARTY_LICENSES.txt` を書き換える。失敗したとき（バージョンの書式の誤り・`version.ini` を読み込めない・esbuild の失敗・上限超過・対応ブラウザの下限に無い API）は `dist/` を残さず、標準エラーに理由を出す
     args:
       - name: argv
         type: string[]
@@ -172,7 +172,7 @@ functions:
     is_async: true
     summary: esbuild で `src/index.ts` と `src/index.css` を、バージョンを埋めた `dist/index.js` と `dist/index.css` に、ビューとコメントと map の部品の `src/views/index.ts`・`src/comments/index.ts`・`src/map/index.ts` を `dist/view.js`・`dist/comments.js`・`dist/map.js` にまとめ、`emitDeclarations` で型定義を書き込む。続けて、書き出した HTML の起動の処理 `src/viewer/index.ts` と `src/viewer/viewer.css` を `dist/viewer.js` と `dist/viewer.css` に、CLI の `src/cli/main.ts` を `dist/cli.js` ににまとめ、`buildLegacyMarks` で移行の手順のスクリプトが読み込む書き換えの処理をまとめ、配布物と CLI にまとめた依存のライセンスを書き込む
     description: '`format: esm`・`bundle: true`・`minify: true`・`target: BROWSER_TARGETS`・`plugins: [postcssStubPlugin]`・`define` で `__MDMARK_VERSION__` を、`banner.css` で `:root{--mdmark-version:"{バージョン}"}` を埋め、`metafile` を取る。続けて `metafile` を指定してまとめた依存のライセンスを記載する。'
-    side_effects: '`dist/` を書き換える'
+    side_effects: '`dist/` と、`migrations/` の中の `marker-json.mjs` を持つフォルダの `legacy-marks.js`・`THIRD_PARTY_LICENSES.txt` を書き換える'
     args:
       - name: version
         type: string
@@ -226,9 +226,9 @@ functions:
     kind: 関数
     scope: public
     is_async: true
-    summary: '`src/render/legacy-marks.ts` を依存を含めて Node で動く 1 つのファイルにまとめ、`migrations/` の中の `marker-json.mjs` を持つフォルダごとに `legacy-marks.js` として書き込む'
-    description: '`entryPoints: ["src/render/legacy-marks.ts"]`・`bundle: true`・`minify: true`・`format: esm`・`platform: node`・`target: NODE_TARGET`・`plugins: [postcssStubPlugin]`・`define` で、フォルダごとに `outfile` を変えてまとめる。`src/render/legacy-marks.ts` か `migrations/` が無ければ何も書き込まない。書き込んだファイルは移行の手順と一緒に commit し、release で `migrations/next/` をバージョンのフォルダへ移すと一緒に移る。今の書き方を読む処理（`src/render/legacy-marks.ts`）を消した後は書き込まず、commit 済みのファイルで、古いバージョンから上げる利用者に移行の手順が動く。配布物ではないため、配布ファイル 1 つの上限を検めない'
-    side_effects: '`migrations/{フォルダ}/legacy-marks.js` を書き換える'
+    summary: '`src/render/legacy-marks.ts` を依存を含めて Node で動く 1 つのファイルにまとめ、`migrations/` の中の `marker-json.mjs` を持つフォルダごとに `legacy-marks.js` として書き込み、まとめた依存のライセンスを同じフォルダの `LICENSES_FILE` に書き込む'
+    description: '`entryPoints: ["src/render/legacy-marks.ts"]`・`bundle: true`・`minify: true`・`format: esm`・`platform: node`・`target: NODE_TARGET`・`plugins: [postcssStubPlugin]`・`define`・`metafile: true` で、フォルダごとに `outfile` を変えてまとめ、その `metafile` を `writeThirdPartyLicenses` に指定する。`src/render/legacy-marks.ts` か `migrations/` が無ければ何も書き込まない。書き込んだファイルは移行の手順と一緒に commit し、release で `migrations/next/` をバージョンのフォルダへ移すと一緒に移る。今の書き方を読む処理（`src/render/legacy-marks.ts`）を消した後は書き込まず、commit 済みのファイルで、古いバージョンから上げる利用者に移行の手順が動く。配布物ではないため、配布ファイル 1 つの上限を検めない'
+    side_effects: '`migrations/{フォルダ}/legacy-marks.js` と `migrations/{フォルダ}/{LICENSES_FILE}` を書き換える'
     args:
       - name: version
         type: string
@@ -241,32 +241,40 @@ functions:
       description: 書き込んだファイルの作業ツリーの直下からのパス（フォルダの名前の順）
     refs:
       - ER-472-5#tables[migrations/{バージョン}/steps.yaml]
+    callees:
+      - '#functions[writeThirdPartyLicenses]'
     unit_tests:
       - name: test_build_legacy_marks
         case: 正常
         summary: 書き換えの処理を、移行のスクリプトを持つフォルダにだけまとめる
         condition: '`src/render/legacy-marks.ts` があり、`migrations/next/` は `marker-json.mjs`、`migrations/v0.1.0/` は `steps.yaml` だけを持つ'
         mock: 一時フォルダ
-        expected: 戻り値が `["migrations/next/legacy-marks.js"]` で、読み込んだ `rewriteLegacyMarks` がソースのとおりに動き、`migrations/v0.1.0/legacy-marks.js` が無い
+        expected: 戻り値が `["migrations/next/legacy-marks.js"]` で、読み込んだ `rewriteLegacyMarks` がソースのとおりに動き、`migrations/v0.1.0/legacy-marks.js` と `migrations/v0.1.0/THIRD_PARTY_LICENSES.txt` が無い
+      - name: test_build_legacy_marks_when_package_bundled
+        case: 正常
+        summary: まとめた依存のライセンスを同じフォルダに記載する
+        condition: '`src/render/legacy-marks.ts` が `node_modules` のパッケージを import し、`migrations/next/` が `marker-json.mjs` を持つ'
+        mock: 一時フォルダにそのパッケージの `package.json`・`LICENSE` を配置する
+        expected: '`migrations/next/THIRD_PARTY_LICENSES.txt` にそのパッケージの名前と本文がある'
       - name: test_build_legacy_marks_when_source_removed
         case: 正常
         summary: ソースの無いときは何も書き込まない
-        condition: '`src/render/legacy-marks.ts` が無く、`migrations/v0.11.0/` が `marker-json.mjs` と書き込み済みの `legacy-marks.js` を持つ'
+        condition: '`src/render/legacy-marks.ts` が無く、`migrations/v0.11.0/` が `marker-json.mjs` と書き込み済みの `legacy-marks.js`・`THIRD_PARTY_LICENSES.txt` を持つ'
         mock: 一時フォルダ
-        expected: 戻り値が空で、`legacy-marks.js` の中身が変わらない
+        expected: 戻り値が空で、`legacy-marks.js`・`THIRD_PARTY_LICENSES.txt` の中身が変わらない
   - name: writeThirdPartyLicenses
     title: まとめた依存のライセンスを記載する
     container: scripts/build.ts
     kind: 関数
     scope: internal
-    summary: esbuild の `metafile` の入力からまとめたパッケージと、その中に取り込まれたパッケージを取得し、名前の順にパッケージ名・バージョン・ライセンス・ライセンスの本文を `dist/` の `LICENSES_FILE` に書き込む
+    summary: esbuild の `metafile` の入力からまとめたパッケージと、その中に取り込まれたパッケージを取得し、名前の順にパッケージ名・バージョン・ライセンス・ライセンスの本文を `outfile` に書き込む
     description: 入力のパスの最後の `node_modules/` の後ろ（`@scope/name` か `name`）をパッケージとし、その `package.json` の `version`・`license` と、直下の `LICENSE*` の本文を読み込む。パッケージの配布物に取り込まれたパッケージは `listEmbeddedPackages` で取得し、`EMBEDDED_LICENSES_DIR` の本文を並べる。複数の `metafile` で同じパッケージは 1 回だけ記載する。まとめたパッケージが無いときも空のファイルを書き込む
-    side_effects: '`dist/` に `LICENSES_FILE` を書き込む'
+    side_effects: '`outfile` を書き込む'
     args:
       - name: options
-        type: '{ metafiles: Metafile[]; root: string }'
+        type: '{ metafiles: Metafile[]; root: string; outfile: string }'
         required: true
-        description: '`metafiles` は配布物と CLI の esbuild の出力、`root` は作業ツリーの場所'
+        description: '`metafiles` はまとめた esbuild の出力、`root` は作業ツリーの場所、`outfile` は書き込むファイルの `root` からのパス（`buildDist` は `dist/{LICENSES_FILE}`、`buildLegacyMarks` は `migrations/{フォルダ}/{LICENSES_FILE}`）'
     returns:
       type: Promise<void>
       description: 書き込み終えたら解決する

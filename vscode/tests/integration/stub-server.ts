@@ -26,6 +26,8 @@ export type TagRequestTiming = {
   receivedAt: number;
   /** まだ閉じられていなければ `null` */
   closedAt: number | null;
+  /** 受けてから閉じられるまでを `performance.now` の差で測った時間。時計の補正で `Date.now` が戻っても短くならない。まだ閉じられていなければ `null` */
+  openMs: number | null;
 };
 
 /** 代役の配信が受けた要求と、テストが切り替える状態 */
@@ -132,13 +134,16 @@ export function createStubServer(stub: Stub, distDir: string): Server {
     }
     if (path === "/tags") {
       stub.requests.push(path);
+      const received = performance.now();
       const timing: TagRequestTiming = {
         receivedAt: Date.now(),
         closedAt: null,
+        openMs: null,
       };
       stub.tagRequests.push(timing);
       request.on("close", () => {
         timing.closedAt = Date.now();
+        timing.openMs = performance.now() - received;
       });
       if (stub.mode.tags === "hang") {
         return;

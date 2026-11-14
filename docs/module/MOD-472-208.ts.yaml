@@ -56,7 +56,7 @@ functions:
       - name: test_attach_print_when_tree
         case: 正常
         summary: 印刷の前にファイルツリーの閉じたフォルダを開き、後にもう一度閉じる
-        condition: 操作を付けた、`src/` が閉じたファイルツリー。`isEnabled` は `true`
+        condition: '操作を付けた、`depth` が `1` で `src/` が閉じたファイルツリー。`isEnabled` は `true`'
         mock: なし
         expected: '`beforeprint` の後に `src/` の入れ子の `ul` が `hidden` を持たず `src/` のボタンが `aria-expanded="true"`、`afterprint` の後に `ul` が `hidden="until-found"` を持ちボタンが `aria-expanded="false"`'
       - name: test_attach_print_when_code_folded

@@ -10,5 +10,5 @@ export declare const FLOWCHART_LAYOUT: {
     margin: number;
     lineStep: number;
 };
-/** 座標を省いた判定フローチャートの定義に、ノードの座標・線の点・図の大きさを入れた定義を返す */
+/** 座標を省いた判定フローチャートの定義に、ノードの座標・線の点・図の大きさを入れた定義を返却する */
 export declare function layoutFlowchart(definition: MdmarkFlowDefinition): MdmarkFlowDefinition;

@@ -468,6 +468,22 @@ test("test_validate_config_when_version_invalid", async () => {
   expect(issues[0]).toMatchObject({ where: "version", kind: "schema" });
 });
 
+// 真偽値でない check.suggestMarkExtension を schema のずれにし、設定から落とす（異常系）
+test("test_validate_config_when_suggest_mark_extension_invalid", async () => {
+  // 準備
+  const { validateConfig } = await loadModule();
+  const raw = { check: { suggestMarkExtension: "no" } };
+  // 実行
+  const { config, issues } = validateConfig(raw, "mdmark.config.yaml");
+  // 検証
+  expect(issues).toHaveLength(1);
+  expect(issues[0]).toMatchObject({
+    where: "check.suggestMarkExtension",
+    kind: "schema",
+  });
+  expect(config.check?.suggestMarkExtension).toBeUndefined();
+});
+
 // マーカーの名前の書式に合わない check.ignore の値を schema のずれにし、設定から落とす（正常系）
 test("test_validate_config_when_check_ignore_invalid", async () => {
   // 準備
@@ -655,6 +671,31 @@ test("test_validate_config_when_table_pin_invalid", async () => {
   expect(invalid.config.table).toBeUndefined();
   expect(valid.issues).toEqual([]);
   expect(valid.config.table?.pin).toBe("through");
+});
+
+// 0 より大きい数でない table.long_column_min を schema のずれにし、設定から落とす（正常系）
+test("test_validate_config_when_table_long_column_min_invalid", async () => {
+  // 準備
+  const { validateConfig } = await loadModule();
+  // 実行
+  const invalid = [0, "wide"].map((value) =>
+    validateConfig({ table: { long_column_min: value } }, "mdmark.config.yaml"),
+  );
+  const valid = validateConfig(
+    { table: { long_column_min: 30 } },
+    "mdmark.config.yaml",
+  );
+  // 検証
+  for (const result of invalid) {
+    expect(result.issues).toHaveLength(1);
+    expect(result.issues[0]).toMatchObject({
+      where: "table.long_column_min",
+      kind: "schema",
+    });
+    expect(result.config.table).toBeUndefined();
+  }
+  expect(valid.issues).toEqual([]);
+  expect(valid.config.table?.long_column_min).toBe(30);
 });
 
 // オブジェクトでない map を schema のずれにして落とし、知らない値はそのまま残す（正常系）

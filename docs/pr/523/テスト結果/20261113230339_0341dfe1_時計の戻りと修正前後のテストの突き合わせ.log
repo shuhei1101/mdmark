@@ -1,0 +1,388 @@
+# 端末: WSL2 6.6.87.2-microsoft-standard-WSL2、node v24.14.0
+
+## 1. ジャーナルの残り（#504 の 2026-11-13 01:52 JST の記録を引けるか）
+$ journalctl -D /var/log/journal --since "2026-11-13 01:40" --until "2026-11-13 02:00" --no-pager
+-- No entries --
+$ journalctl -D /var/log/journal --no-pager -o short-iso | head -1
+2026-11-13T22:40:01+09:00 NISHIKAWA-DESKTOP systemd-resolved[57577]: Clock change detected. Flushing caches.
+（journald は時計が戻るたびにファイルを替え、残るのは直近の 100 ファイル。#504・#485 の時刻の記録は残っていない）
+
+## 2. ループを止めた後に作った AbortSignal.timeout(3000) が早まるか
+$ for b in 0 1000 2700 3500; do node block.mjs $b; done
+// 同じループの回の中で同期の処理が blockMs 止めた後に AbortSignal.timeout(3000) を作り、中断までを performance.now で測る
+const blockMs = Number(process.argv[2]);
+const keep = setInterval(() => {}, 1000);
+setTimeout(() => {
+  const until = performance.now() + blockMs;
+  while (performance.now() < until) {}
+  const ps = performance.now(), ds = Date.now();
+  AbortSignal.timeout(3000).addEventListener("abort", () => {
+    console.log(JSON.stringify({ blockMs, performanceNow: Math.round(performance.now() - ps), dateNow: Date.now() - ds })); clearInterval(keep);
+  });
+}, 10);
+---
+{"blockMs":0,"performanceNow":3002,"dateNow":3001}
+{"blockMs":1000,"performanceNow":3002,"dateNow":3002}
+{"blockMs":2700,"performanceNow":3002,"dateNow":3001}
+{"blockMs":3500,"performanceNow":3002,"dateNow":3002}
+
+## 3. 開始からの Date.now の進みと performance.now の進みの差（1 秒ごと、65 秒）
+$ node net.mjs 65
+// 1 秒ごとに、開始からの Date.now の進みと performance.now の進みの差（net）を出す
+const d0 = Date.now(), p0 = performance.now(); const rows = [];
+const iv = setInterval(() => {
+  rows.push(Math.round((Date.now() - d0) - (performance.now() - p0)));
+  if (rows.length >= Number(process.argv[2])) { clearInterval(iv); console.log(rows.join(" ")); }
+}, 1000);
+---
+1 0 0 1 0 0 0 0 0 0 0 0 0 1 0 1 0 0 0 0 0 0 0 0 1 0 -1365 -1365 -1365 -1365 -1364 -1365 -1365 -1365 -1365 -1365 -1365 -1365 -1365 -1365 -1365 -1365 -1365 -1365 -1365 -1365 -1365 -1365 -1365 -1365 -1365 -1364 -1365 -1365 -1364 -1364 -2765 -2765 -2764 -2765 -2765 -2764 -2765 -2765 -2765
+
+## 4. 結合テストの全件を 2 回流す間の時計の戻り（jumps.mjs 900。20 ms 以上の戻りの数と範囲）
+2026-11-13T12:38:42.257Z から 2026-11-13T12:52:37.111Z: 60 回、-699〜-467 ms
+
+## 5. 修正前（4337fd42）と修正後のテストの test_normal_when_tags_unreachable を test.only にして 20 回ずつ（1 回で 1.141.0 と 1.146.0）。並べて jumps.mjs 3000 を流す
+$ repeat.sh old 20; repeat.sh new 20
+#!/bin/bash
+# 引数: old|new 回数。test_normal_when_tags_unreachable だけを test.only にして繰り返す（作業ツリーは最後に戻す）
+set -u
+W=/mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/fix-vscode-tags-timeout-early-abort
+cd "$W"
+if [ "$1" = old ]; then
+  cp /tmp/pr523/old-preview-open.test.ts vscode/tests/integration/preview-open.test.ts
+  cp /tmp/pr523/old-stub-server.ts vscode/tests/integration/stub-server.ts
+fi
+sed -i 's/  test("test_normal_when_tags_unreachable"/  test.only("test_normal_when_tags_unreachable"/' vscode/tests/integration/preview-open.test.ts
+for i in $(seq "$2"); do
+  echo "=== $1 $i 回目 開始 $(date -u +%H:%M:%S.%3N)"
+  timeout 600 xvfb-run -a npm --prefix vscode run test:integration 2>&1 | command grep -E 'Validated version|✔ test_|^\s+[0-9]+\) |要求まで|/tags の要求|拡張機能のログ|passing|failing'
+done
+git checkout -- vscode/tests/integration/preview-open.test.ts vscode/tests/integration/stub-server.ts
+git status -s
+---
+修正前: pass 32 / fail 5（40 回）
+修正後: pass 40 / fail 0（40 回）
+
+### 修正前の fail のメッセージ
+     AssertionError [ERR_ASSERTION]: 要求まで 1829 ms ["/tags","/mdmark@v0.6.0/dist/index.css","/mdmark@v0.6.0/dist/index.js"]
+/tags の要求（開いた時刻から）: 受けた +2 ms・閉じられた +1770 ms
+拡張機能のログ: 2026-11-13 22:00:18.755 [warning] タグ一覧を取れない http://127.0.0.1:56966/tags TimeoutError The operation was aborted due to timeout
+     AssertionError [ERR_ASSERTION]: 要求まで 1827 ms ["/tags","/mdmark@v0.6.0/dist/index.css","/mdmark@v0.6.0/dist/index.js"]
+/tags の要求（開いた時刻から）: 受けた +3 ms・閉じられた +1769 ms
+拡張機能のログ: 2026-11-13 22:01:44.790 [warning] タグ一覧を取れない http://127.0.0.1:57904/tags TimeoutError The operation was aborted due to timeout
+     AssertionError [ERR_ASSERTION]: 要求まで 1843 ms ["/tags","/mdmark@v0.6.0/dist/index.css","/mdmark@v0.6.0/dist/index.js"]
+/tags の要求（開いた時刻から）: 受けた +2 ms・閉じられた +1734 ms
+拡張機能のログ: 2026-11-13 22:03:10.552 [warning] タグ一覧を取れない http://127.0.0.1:57136/tags TimeoutError The operation was aborted due to timeout
+     AssertionError [ERR_ASSERTION]: 要求まで 1770 ms ["/tags","/mdmark@v0.6.0/dist/index.css","/mdmark@v0.6.0/dist/index.js"]
+/tags の要求（開いた時刻から）: 受けた +1 ms・閉じられた +1710 ms
+拡張機能のログ: 2026-11-13 22:17:04.605 [warning] タグ一覧を取れない http://127.0.0.1:58094/tags TimeoutError The operation was aborted due to timeout
+     AssertionError [ERR_ASSERTION]: 要求まで 2510 ms ["/tags","/mdmark@v0.6.0/dist/index.css","/mdmark@v0.6.0/dist/index.js"]
+/tags の要求（開いた時刻から）: 受けた +2 ms・閉じられた +3003 ms
+拡張機能のログ: 2026-11-13 22:18:30.855 [warning] タグ一覧を取れない http://127.0.0.1:58222/tags TimeoutError The operation was aborted due to timeout
+
+### 修正前の fail の中断の時刻（拡張機能のログ、JST）から 3.5 秒前〜0.5 秒後の時計の戻り（秒は中断の時刻からの差）
+jumps.mjs の戻り: 200 回、-754〜-512 ms
+22:00:18.755 [(-0.75, -528), (-1.25, -703)] 合計 -1231 ms
+22:01:44.790 [(-0.51, -532), (-1.01, -702)] 合計 -1234 ms
+22:03:10.552 [(0.01, -560), (-0.51, -712)] 合計 -1272 ms
+22:17:04.605 [(-0.46, -570), (-0.88, -721)] 合計 -1291 ms
+22:18:30.855 [(-0.49, -549), (-1.02, -728)] 合計 -1277 ms
+
+### 修正前・修正後の繰り返しの出力
+#### 修正前
+=== old 1 回目 開始 12:54:51.121
+✔ Validated version: 1.141.0
+    ✔ test_normal_when_tags_unreachable (6453ms)
+  1 passing (8s)
+✔ Validated version: 1.146.0
+    ✔ test_normal_when_tags_unreachable (6248ms)
+  1 passing (8s)
+=== old 2 回目 開始 12:56:44.490
+✔ Validated version: 1.141.0
+    ✔ test_normal_when_tags_unreachable (6355ms)
+  1 passing (8s)
+✔ Validated version: 1.146.0
+    ✔ test_normal_when_tags_unreachable (6251ms)
+  1 passing (8s)
+=== old 3 回目 開始 12:58:37.008
+✔ Validated version: 1.141.0
+    ✔ test_normal_when_tags_unreachable (6208ms)
+  1 passing (8s)
+✔ Validated version: 1.146.0
+    1) test_normal_when_tags_unreachable
+  0 passing (7s)
+  1 failing
+  1) プレビューを開く
+     AssertionError [ERR_ASSERTION]: 要求まで 1829 ms ["/tags","/mdmark@v0.6.0/dist/index.css","/mdmark@v0.6.0/dist/index.js"]
+/tags の要求（開いた時刻から）: 受けた +2 ms・閉じられた +1770 ms
+拡張機能のログ: 2026-11-13 22:00:18.755 [warning] タグ一覧を取れない http://127.0.0.1:56966/tags TimeoutError The operation was aborted due to timeout
+=== old 4 回目 開始 13:00:21.632
+✔ Validated version: 1.141.0
+    1) test_normal_when_tags_unreachable
+  0 passing (7s)
+  1 failing
+  1) プレビューを開く
+     AssertionError [ERR_ASSERTION]: 要求まで 1827 ms ["/tags","/mdmark@v0.6.0/dist/index.css","/mdmark@v0.6.0/dist/index.js"]
+/tags の要求（開いた時刻から）: 受けた +3 ms・閉じられた +1769 ms
+拡張機能のログ: 2026-11-13 22:01:44.790 [warning] タグ一覧を取れない http://127.0.0.1:57904/tags TimeoutError The operation was aborted due to timeout
+=== old 5 回目 開始 13:01:47.625
+✔ Validated version: 1.141.0
+    1) test_normal_when_tags_unreachable
+  0 passing (8s)
+  1 failing
+  1) プレビューを開く
+     AssertionError [ERR_ASSERTION]: 要求まで 1843 ms ["/tags","/mdmark@v0.6.0/dist/index.css","/mdmark@v0.6.0/dist/index.js"]
+/tags の要求（開いた時刻から）: 受けた +2 ms・閉じられた +1734 ms
+拡張機能のログ: 2026-11-13 22:03:10.552 [warning] タグ一覧を取れない http://127.0.0.1:57136/tags TimeoutError The operation was aborted due to timeout
+=== old 6 回目 開始 13:03:14.779
+✔ Validated version: 1.141.0
+    ✔ test_normal_when_tags_unreachable (6391ms)
+  1 passing (8s)
+✔ Validated version: 1.146.0
+    ✔ test_normal_when_tags_unreachable (6597ms)
+  1 passing (8s)
+=== old 7 回目 開始 13:05:05.619
+✔ Validated version: 1.141.0
+    ✔ test_normal_when_tags_unreachable (5828ms)
+  1 passing (7s)
+✔ Validated version: 1.146.0
+    ✔ test_normal_when_tags_unreachable (6480ms)
+  1 passing (8s)
+=== old 8 回目 開始 13:06:50.702
+✔ Validated version: 1.141.0
+    ✔ test_normal_when_tags_unreachable (6967ms)
+  1 passing (9s)
+✔ Validated version: 1.146.0
+    ✔ test_normal_when_tags_unreachable (6337ms)
+  1 passing (8s)
+=== old 9 回目 開始 13:08:37.720
+✔ Validated version: 1.141.0
+    ✔ test_normal_when_tags_unreachable (6485ms)
+  1 passing (8s)
+✔ Validated version: 1.146.0
+    ✔ test_normal_when_tags_unreachable (6351ms)
+  1 passing (8s)
+=== old 10 回目 開始 13:10:21.940
+✔ Validated version: 1.141.0
+    ✔ test_normal_when_tags_unreachable (6522ms)
+  1 passing (7s)
+✔ Validated version: 1.146.0
+    ✔ test_normal_when_tags_unreachable (6164ms)
+  1 passing (8s)
+=== old 11 回目 開始 13:12:03.962
+✔ Validated version: 1.141.0
+    ✔ test_normal_when_tags_unreachable (6319ms)
+  1 passing (8s)
+✔ Validated version: 1.146.0
+    ✔ test_normal_when_tags_unreachable (5105ms)
+  1 passing (7s)
+=== old 12 回目 開始 13:13:44.471
+✔ Validated version: 1.141.0
+    ✔ test_normal_when_tags_unreachable (5031ms)
+  1 passing (7s)
+✔ Validated version: 1.146.0
+    ✔ test_normal_when_tags_unreachable (6419ms)
+  1 passing (8s)
+=== old 13 回目 開始 13:15:27.524
+✔ Validated version: 1.141.0
+    ✔ test_normal_when_tags_unreachable (6462ms)
+  1 passing (8s)
+✔ Validated version: 1.146.0
+    1) test_normal_when_tags_unreachable
+  0 passing (7s)
+  1 failing
+  1) プレビューを開く
+     AssertionError [ERR_ASSERTION]: 要求まで 1770 ms ["/tags","/mdmark@v0.6.0/dist/index.css","/mdmark@v0.6.0/dist/index.js"]
+/tags の要求（開いた時刻から）: 受けた +1 ms・閉じられた +1710 ms
+拡張機能のログ: 2026-11-13 22:17:04.605 [warning] タグ一覧を取れない http://127.0.0.1:58094/tags TimeoutError The operation was aborted due to timeout
+=== old 14 回目 開始 13:17:07.445
+✔ Validated version: 1.141.0
+    1) test_normal_when_tags_unreachable
+  0 passing (7s)
+  1 failing
+  1) プレビューを開く
+     AssertionError [ERR_ASSERTION]: 要求まで 2510 ms ["/tags","/mdmark@v0.6.0/dist/index.css","/mdmark@v0.6.0/dist/index.js"]
+/tags の要求（開いた時刻から）: 受けた +2 ms・閉じられた +3003 ms
+拡張機能のログ: 2026-11-13 22:18:30.855 [warning] タグ一覧を取れない http://127.0.0.1:58222/tags TimeoutError The operation was aborted due to timeout
+=== old 15 回目 開始 13:18:32.572
+✔ Validated version: 1.141.0
+    ✔ test_normal_when_tags_unreachable (6236ms)
+  1 passing (6s)
+✔ Validated version: 1.146.0
+    ✔ test_normal_when_tags_unreachable (6330ms)
+  1 passing (8s)
+=== old 16 回目 開始 13:20:13.258
+✔ Validated version: 1.141.0
+    ✔ test_normal_when_tags_unreachable (6344ms)
+  1 passing (8s)
+✔ Validated version: 1.146.0
+    ✔ test_normal_when_tags_unreachable (4912ms)
+  1 passing (6s)
+=== old 17 回目 開始 13:21:53.067
+✔ Validated version: 1.141.0
+    ✔ test_normal_when_tags_unreachable (6423ms)
+  1 passing (7s)
+✔ Validated version: 1.146.0
+    ✔ test_normal_when_tags_unreachable (6248ms)
+  1 passing (8s)
+=== old 18 回目 開始 13:23:34.352
+✔ Validated version: 1.141.0
+    ✔ test_normal_when_tags_unreachable (6315ms)
+  1 passing (8s)
+✔ Validated version: 1.146.0
+    ✔ test_normal_when_tags_unreachable (5023ms)
+  1 passing (7s)
+=== old 19 回目 開始 13:25:14.280
+✔ Validated version: 1.141.0
+    ✔ test_normal_when_tags_unreachable (6518ms)
+  1 passing (7s)
+✔ Validated version: 1.146.0
+    ✔ test_normal_when_tags_unreachable (6289ms)
+  1 passing (8s)
+=== old 20 回目 開始 13:26:55.693
+✔ Validated version: 1.141.0
+    ✔ test_normal_when_tags_unreachable (6491ms)
+  1 passing (8s)
+✔ Validated version: 1.146.0
+    ✔ test_normal_when_tags_unreachable (6304ms)
+  1 passing (8s)
+#### 修正後
+=== new 1 回目 開始 13:28:50.972
+✔ Validated version: 1.141.0
+    ✔ test_normal_when_tags_unreachable (6246ms)
+  1 passing (8s)
+✔ Validated version: 1.146.0
+    ✔ test_normal_when_tags_unreachable (5070ms)
+  1 passing (7s)
+=== new 2 回目 開始 13:30:33.539
+✔ Validated version: 1.141.0
+    ✔ test_normal_when_tags_unreachable (5076ms)
+  1 passing (7s)
+✔ Validated version: 1.146.0
+    ✔ test_normal_when_tags_unreachable (6435ms)
+  1 passing (8s)
+=== new 3 回目 開始 13:32:15.987
+✔ Validated version: 1.141.0
+    ✔ test_normal_when_tags_unreachable (6255ms)
+  1 passing (8s)
+✔ Validated version: 1.146.0
+    ✔ test_normal_when_tags_unreachable (6220ms)
+  1 passing (8s)
+=== new 4 回目 開始 13:33:57.083
+✔ Validated version: 1.141.0
+    ✔ test_normal_when_tags_unreachable (6297ms)
+  1 passing (8s)
+✔ Validated version: 1.146.0
+    ✔ test_normal_when_tags_unreachable (6266ms)
+  1 passing (8s)
+=== new 5 回目 開始 13:35:40.900
+✔ Validated version: 1.141.0
+    ✔ test_normal_when_tags_unreachable (6581ms)
+  1 passing (8s)
+✔ Validated version: 1.146.0
+    ✔ test_normal_when_tags_unreachable (6309ms)
+  1 passing (8s)
+=== new 6 回目 開始 13:37:24.227
+✔ Validated version: 1.141.0
+    ✔ test_normal_when_tags_unreachable (6410ms)
+  1 passing (8s)
+✔ Validated version: 1.146.0
+    ✔ test_normal_when_tags_unreachable (6102ms)
+  1 passing (7s)
+=== new 7 回目 開始 13:39:04.203
+✔ Validated version: 1.141.0
+    ✔ test_normal_when_tags_unreachable (6226ms)
+  1 passing (8s)
+✔ Validated version: 1.146.0
+    ✔ test_normal_when_tags_unreachable (6278ms)
+  1 passing (8s)
+=== new 8 回目 開始 13:40:45.027
+✔ Validated version: 1.141.0
+    ✔ test_normal_when_tags_unreachable (6369ms)
+  1 passing (8s)
+✔ Validated version: 1.146.0
+    ✔ test_normal_when_tags_unreachable (6183ms)
+  1 passing (8s)
+=== new 9 回目 開始 13:42:25.496
+✔ Validated version: 1.141.0
+    ✔ test_normal_when_tags_unreachable (6258ms)
+  1 passing (8s)
+✔ Validated version: 1.146.0
+    ✔ test_normal_when_tags_unreachable (6303ms)
+  1 passing (8s)
+=== new 10 回目 開始 13:44:05.434
+✔ Validated version: 1.141.0
+    ✔ test_normal_when_tags_unreachable (6479ms)
+  1 passing (8s)
+✔ Validated version: 1.146.0
+    ✔ test_normal_when_tags_unreachable (6341ms)
+  1 passing (8s)
+=== new 11 回目 開始 13:45:46.144
+✔ Validated version: 1.141.0
+    ✔ test_normal_when_tags_unreachable (6240ms)
+  1 passing (8s)
+✔ Validated version: 1.146.0
+    ✔ test_normal_when_tags_unreachable (6404ms)
+  1 passing (8s)
+=== new 12 回目 開始 13:47:26.458
+✔ Validated version: 1.141.0
+    ✔ test_normal_when_tags_unreachable (6655ms)
+  1 passing (8s)
+✔ Validated version: 1.146.0
+    ✔ test_normal_when_tags_unreachable (6319ms)
+  1 passing (8s)
+=== new 13 回目 開始 13:49:06.718
+✔ Validated version: 1.141.0
+    ✔ test_normal_when_tags_unreachable (6211ms)
+  1 passing (8s)
+✔ Validated version: 1.146.0
+    ✔ test_normal_when_tags_unreachable (6157ms)
+  1 passing (8s)
+=== new 14 回目 開始 13:50:46.321
+✔ Validated version: 1.141.0
+    ✔ test_normal_when_tags_unreachable (6492ms)
+  1 passing (8s)
+✔ Validated version: 1.146.0
+    ✔ test_normal_when_tags_unreachable (6218ms)
+  1 passing (8s)
+=== new 15 回目 開始 13:52:27.270
+✔ Validated version: 1.141.0
+    ✔ test_normal_when_tags_unreachable (6271ms)
+  1 passing (8s)
+✔ Validated version: 1.146.0
+    ✔ test_normal_when_tags_unreachable (6561ms)
+  1 passing (8s)
+=== new 16 回目 開始 13:54:07.337
+✔ Validated version: 1.141.0
+    ✔ test_normal_when_tags_unreachable (6352ms)
+  1 passing (8s)
+✔ Validated version: 1.146.0
+    ✔ test_normal_when_tags_unreachable (5087ms)
+  1 passing (7s)
+=== new 17 回目 開始 13:55:49.721
+✔ Validated version: 1.141.0
+    ✔ test_normal_when_tags_unreachable (4964ms)
+  1 passing (7s)
+✔ Validated version: 1.146.0
+    ✔ test_normal_when_tags_unreachable (6267ms)
+  1 passing (8s)
+=== new 18 回目 開始 13:57:32.295
+✔ Validated version: 1.141.0
+    ✔ test_normal_when_tags_unreachable (6248ms)
+  1 passing (8s)
+✔ Validated version: 1.146.0
+    ✔ test_normal_when_tags_unreachable (6428ms)
+  1 passing (8s)
+=== new 19 回目 開始 13:59:17.325
+✔ Validated version: 1.141.0
+    ✔ test_normal_when_tags_unreachable (6615ms)
+  1 passing (8s)
+✔ Validated version: 1.146.0
+    ✔ test_normal_when_tags_unreachable (5063ms)
+  1 passing (7s)
+=== new 20 回目 開始 14:01:05.166
+✔ Validated version: 1.141.0
+    ✔ test_normal_when_tags_unreachable (5109ms)
+  1 passing (7s)
+✔ Validated version: 1.146.0
+    ✔ test_normal_when_tags_unreachable (6235ms)
+  1 passing (8s)

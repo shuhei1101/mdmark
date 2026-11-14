@@ -21,6 +21,7 @@ import { runHtmlScripts, type Transpiler } from "./html-scripts.ts";
 import { loadInlineIcons } from "./inline-icons.ts";
 import { attachBackToTop } from "./interact/back-to-top.ts";
 import { attachInteractions } from "./interact/index.ts";
+import type { PartStates } from "./interact/part-states.ts";
 import type { SectionStates } from "./interact/sections.ts";
 import { attachSideToc, type SideTocState } from "./interact/side-toc.ts";
 import type { MdmarkAlias } from "./knowledge/aliases.ts";
@@ -148,6 +149,7 @@ function createDiffHtmlRenderer(options: {
           placement: config.tooltips.placement,
           diagramPlacement: config.tooltips.diagramPlacement,
           pinMode: config.table.pin,
+          longColumnMin: config.table.longColumnMin,
         }),
     };
   };
@@ -251,6 +253,8 @@ export function mount(el: HTMLElement, opts: MountOptions): MountHandle {
   const sideTocState: SideTocState = { open: false, pinned: false };
   // 読者が開閉したセクションの開閉の記録（`mount` ごとに 1 つ。再描画でも保つ）
   const sectionStates: SectionStates = new Map();
+  // 読者が開閉した部品の開閉の記録（`mount` ごとに 1 つ。再描画でも保つ）
+  const partStates: PartStates = new Map();
   // 前の描画の右側の目次の出し方（出し方が変わったら目次の状態を戻す）
   let lastTocMode: ResolvedConfig["sideToc"]["mode"] | undefined;
   // 色分けのライブラリのモジュールの記録（`mount` ごとに 1 つ。再描画では再読み込みしない）
@@ -371,8 +375,10 @@ export function mount(el: HTMLElement, opts: MountOptions): MountHandle {
       placement: config.tooltips.placement,
       diagramPlacement: config.tooltips.diagramPlacement,
       pinMode: config.table.pin,
+      longColumnMin: config.table.longColumnMin,
       onColumnsChange,
       sectionStates,
+      partStates,
       revealHash: !fromUpdate,
     });
     // まとめていない名前のアイコンを読み込む。読み込みの完了は待たない
@@ -501,6 +507,7 @@ export function mount(el: HTMLElement, opts: MountOptions): MountHandle {
       }
       destroyed = true;
       sectionStates.clear();
+      partStates.clear();
       destroyScripts?.();
       destroyScripts = undefined;
       detachMermaid?.();

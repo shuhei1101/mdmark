@@ -3,17 +3,17 @@ import type { MdmarkComment, MdmarkCommentDraft } from "./spec.ts";
 export declare const CONTEXT_CHARS = 32;
 /** コメントを付けない場所: この中の選びにはボタンを出さない */
 export declare const COMMENT_EXCLUDED = "input, textarea, pre, code, .mdmark-view-switch, .mdmark-view-board, .mdmark-filter-drawer, .mdmark-comment-mark, .mdmark-comment-popover, .mdmark-comment-add, .mdmark-comment-orphans";
-/** 本文の文字と、文字の節ごとの始まりの位置 */
+/** 本文の文字と、文字のセクションごとの始まりの位置 */
 export type CommentText = {
-    /** 文字の節をつないだ本文の文字 */
+    /** 文字のセクションをつないだ本文の文字 */
     text: string;
-    /** 文字の節と、`text` の中の始まりの位置 */
+    /** 文字のセクションと、`text` の中の始まりの位置 */
     nodes: Array<{
         node: Text;
         start: number;
     }>;
 };
-/** `root` の中の、`TEXT_EXCLUDED` に入らない文字の節を順に集め、つないだ文字と節ごとの始まりの位置を返す */
+/** `root` の中の、`TEXT_EXCLUDED` に入らない文字のセクションを順に集め、つないだ文字とセクションごとの始まりの位置を返却する */
 export declare function commentText(root: HTMLElement): CommentText;
 /** 範囲の文字と、範囲の前後の本文の文字から、コメントの下書きを作る */
 export declare function draftFromRange(options: {
@@ -37,7 +37,7 @@ export type CommentAnchor = {
 export declare function locateComments(options: {
     /** 本文の文字 */
     text: string;
-    /** 読んだコメント */
+    /** 読み込んだコメント */
     comments: MdmarkComment[];
 }): {
     anchors: CommentAnchor[];

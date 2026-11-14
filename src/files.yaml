@@ -12,8 +12,6 @@ files:
     related:
       - to: docs/module/MOD-472-116.ts
         type: implements
-      - to: docs/module/MOD-472-116.ts
-        type: implements
   - path: cli/alias-schema.ts
     description: モジュール構成『ライブラリ本体 / CLI』のうち「設定の aliases の行の JSON Schema での検査」を受け持つ。CLI のコマンドの振る舞いを変えるときに参照する。
     tags: [topic:cli, tool:ajv]
@@ -348,6 +346,12 @@ files:
     tags: [topic:図, tool:svg]
     related:
       - to: docs/module/MOD-472-179.ts
+        type: implements
+  - path: interact/diagram-touch.ts
+    description: モジュール構成『ライブラリ本体 / 図』のうち「指で図を動かす操作中」を受け持つ。図の部品の描き方や操作を変えるときに参照する。
+    tags: [topic:図]
+    related:
+      - to: docs/module/MOD-472-346.ts
         type: implements
   - path: interact/diagram-tips.ts
     description: モジュール構成『ライブラリ本体 / 図』のうち「図のツールチップ」を受け持つ。図の部品の描き方や操作を変えるときに参照する。
@@ -1522,6 +1526,12 @@ files:
     tags: [tool:claude-code, topic:設定]
     related:
       - to: docs/module/MOD-472-15.ts
+        type: implements
+  - path: plugin/guide-notice.ts
+    description: モジュール構成『ClaudeCodeプラグイン / フック』のうち「記法のルールの参照の案内のフックの入口」を受け持つ。`.mark.md` の記載と mdmark で記載する指示での案内を変えるときに参照する。
+    tags: [topic:フック, tool:claude-code]
+    related:
+      - to: docs/module/MOD-472-349.ts
         type: implements
   - path: plugin/pre-tool-use.ts
     description: モジュール構成『ClaudeCodeプラグイン / フック』のうち「PreToolUse のフックの入口」を受け持つ。Claude Code のフックの振る舞いを変えるときに参照する。
