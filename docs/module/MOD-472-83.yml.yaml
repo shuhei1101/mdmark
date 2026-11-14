@@ -5,7 +5,7 @@ constants:
   - name: releaseWorkflow
     title: リリースのワークフロー
     container: .github/workflows/vscode-release.yml
-    summary: '`vscode-v*` のタグの push で、バージョンの照合 → `npm --prefix vscode ci` → `npm --prefix vscode run package` → `gh release upload`（Release が無ければ `gh release create`）→ `npm --prefix vscode exec -- vsce publish --oidc --packagePath vscode/mdmark-{バージョン}.vsix` を `ubuntu-latest` で実行する'
+    summary: '`vscode-v*` のタグの push で、バージョンの照合 → `npm ci`（リポジトリの直下）→ `npm --prefix vscode ci` → `npm --prefix vscode run package` → `gh release upload`（Release が無ければ `gh release create`）→ `npm --prefix vscode exec -- vsce publish --oidc --packagePath vscode/mdmark-{バージョン}.vsix` を `ubuntu-latest` で実行する'
     entries:
       - key: on.push.tags
         value: '`vscode-v*`'

@@ -67,7 +67,7 @@ constraints:
   - item: 起きるタグ
     constraint: '`on.push.tags` は `vscode-v*` だけ。mdmark の `v*` のタグでは起きない'
   - item: 工程の並び
-    constraint: バージョンの比較（`npm --prefix vscode run release:check -- {タグ}`）→ 依存を入れる（`npm --prefix vscode ci`）→ .vsix を作る（`npm --prefix vscode run package`。`vsce package --no-dependencies --out mdmark-{バージョン}.vsix`）→ Release に添える（`gh release upload`。Release が無ければ `gh release create`）→ Marketplace へ公開する（`npm --prefix vscode exec -- vsce publish --oidc --packagePath vscode/mdmark-{バージョン}.vsix`）
+    constraint: バージョンの比較（`npm --prefix vscode run release:check -- {タグ}`）→ 依存を入れる（リポジトリの直下の `npm ci` と `npm --prefix vscode ci`。拡張機能のビルドがリポジトリの直下の `src/` を読み込み、その依存を使用する）→ .vsix を作る（`npm --prefix vscode run package`。`vsce package --no-dependencies --out mdmark-{バージョン}.vsix`）→ Release に添える（`gh release upload`。Release が無ければ `gh release create`）→ Marketplace へ公開する（`npm --prefix vscode exec -- vsce publish --oidc --packagePath vscode/mdmark-{バージョン}.vsix`）
     notes: 結合テストはバージョンの比較と .vsix を作る工程を手元で実行し、公開の工程はワークフローの YAML で確認する。Release に添える工程と公開の工程は GitHub Actions でだけ流れる
   - item: 公開のツール
     constraint: '`vscode/package.json` の devDependencies の `@vscode/vsce`（4.1.0 以上。4.0.0 の OIDC の交換は Marketplace の仕様と合わない）を `npm --prefix vscode ci` で入れて使用する'
