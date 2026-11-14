@@ -397,6 +397,33 @@ test("test_find_long_columns_when_head", async () => {
   expect(result).toEqual([0]);
 });
 
+// 長文の列に並べ替えを付けず、列ごとの指定で付け外しする（正常系）
+test("test_find_no_sort_columns", async () => {
+  // 準備
+  const { findNoSortColumns } = await loadLogic();
+  // 実行
+  const result = findNoSortColumns({
+    long: [1, 3],
+    sorts: [
+      { column: 1, sort: true },
+      { column: 0, sort: false },
+      { column: 2, sort: true },
+    ],
+  });
+  // 検証
+  expect(result).toEqual([0, 3]);
+});
+
+// 長文の列も指定も無ければ空（正常系）
+test("test_find_no_sort_columns_when_empty", async () => {
+  // 準備
+  const { findNoSortColumns } = await loadLogic();
+  // 実行
+  const result = findNoSortColumns({ long: [], sorts: [] });
+  // 検証
+  expect(result).toEqual([]);
+});
+
 // 長文の列は text、ほかは select（正常系）
 test("test_default_filter_kind", async () => {
   // 準備
@@ -676,6 +703,42 @@ test("test_attach_tables_when_sorted", async () => {
   button?.click();
   expect(columnTexts(root, 1)).toEqual(["10", "2", "33"]);
   expect(header?.hasAttribute("aria-sort")).toBe(false);
+});
+
+// data-no-sort の列の見出しに並べ替えのボタンを付けない（正常系）
+test("test_attach_tables_when_no_sort", async () => {
+  // 準備
+  const { attachTables } = await loadTables();
+  const { root } = createRoot(
+    [
+      '<!-- table: {"kind": "data"} -->',
+      "",
+      "| 名前 | 値 | 説明 |",
+      "| --- | --- | --- |",
+      "| a | 10 | x |",
+      "| b | 2 | y |",
+      "| c | 33 | z |",
+      "",
+      "<!-- /table -->",
+      "",
+    ].join("\n"),
+  );
+  const wrapper = root.querySelector<HTMLElement>(".mdmark-table");
+  wrapper?.setAttribute("data-features", "sort pin filter");
+  wrapper?.setAttribute("data-no-sort", "2");
+  detachers.push(attachTables(root));
+  const headers = [...root.querySelectorAll("thead th")];
+  // 検証
+  expect(headers[2]?.querySelector("button.mdmark-sort")).toBeNull();
+  expect(headers[2]?.querySelector("span.mdmark-th-label")?.textContent).toBe(
+    "説明",
+  );
+  expect(headers[0]?.querySelector("button.mdmark-sort")).not.toBeNull();
+  expect(headers[1]?.querySelector("button.mdmark-sort")).not.toBeNull();
+  // 実行・検証: 説明の列の見出しを押しても並びが変わらない
+  headers[2]?.querySelector<HTMLElement>(".mdmark-th-label")?.click();
+  expect(columnTexts(root, 2)).toEqual(["x", "y", "z"]);
+  expect(headers[2]?.hasAttribute("aria-sort")).toBe(false);
 });
 
 // ドロワーで絞って除外し、外の押下で閉じる（正常系）
