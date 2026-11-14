@@ -1,0 +1,41 @@
+/* 注釈の部品のモックの固有の規則: 開いたツールチップを見せる見本の高さと、map の図のノードと線の見本 */
+
+/* 開いたツールチップを見せる見本: 下に開くツールチップが次の見本に重ならない高さを取る */
+.catalog-tip-space {
+  padding-block-end: 6rem;
+}
+
+/* map の図の見本: ノードと線を横に並べ、狭い幅では縦に並べる */
+.catalog-map {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+}
+
+/* 見本 1 つ: ノードか線の下に、開いたツールチップを置く */
+.catalog-map-item {
+  display: grid;
+  gap: 0.25rem;
+  justify-items: start;
+}
+
+/* ノードの見本: 図のノードと同じ枠線と角丸 */
+.catalog-map-node {
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--mdmark-color-diagram-line, var(--mdmark-color-muted));
+  border-radius: var(--mdmark-radius);
+  background: var(--mdmark-color-bg);
+  font-size: 0.875rem;
+}
+
+/* 線の見本: ラベルを持つ横の線 */
+.catalog-map-edge {
+  padding: 0.25rem 2rem;
+  border-block-end: 1.5px solid var(--mdmark-color-diagram-line, var(--mdmark-color-muted));
+  font-size: 0.8125rem;
+}
+
+/* 開いた図のツールチップの見本: 図の表示の箱に対して置く代わりに、見本の流れの中に置く */
+.catalog-map .mdmark-diagram-tip {
+  position: static;
+}
