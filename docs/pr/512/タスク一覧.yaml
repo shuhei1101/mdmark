@@ -15,8 +15,10 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-12T20:49:21.445655+00:00'
   - process: PoC 検証
-    status: todo
+    status: done
     note: vsce 4.1.1 の getOIDCCredential で、GitHub Actions の OIDC トークンを Marketplace のセッショントークンに交換できるか
+    updated_by: planner
+    updated_at: '2026-11-14T01:45:35.728347+00:00'
   - process: 複合ユースケース設計
     status: skipped
     reason: 拡張機能の配布物を作る単一ユースケースに閉じ、複合ユースケースから参照されていない

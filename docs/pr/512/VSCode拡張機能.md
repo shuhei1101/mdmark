@@ -26,6 +26,42 @@
 | Open VSX | 公開しない | 要件.md の `## 要望` |
 | 既存機能への影響 | GitHub Release に .vsix を添える工程は変えない | - |
 
+## PoC 結果
+
+| 検証構成 | 成功条件 | 結果 | PoC PR | 補足 |
+| --- | --- | --- | --- | --- |
+| PoC ブランチへの push で `vscode-release.yml`（`id-token: write`）を動かし、`npm --prefix vscode ci` で入れた vsce 4.1.1 の `getOIDCCredential('ShuheiNishikawa')` で交換する | 例外なく返り、トークンの長さが 1 以上、終了コード 0 | ✅ 長さ 942 | [#555](https://github.com/shuhei1101/mdmark/pull/555)（closed） | [run 43542400400](https://github.com/shuhei1101/mdmark/actions/runs/43542400400) |
+| 同上 | workflow が `secrets.*` を参照しない | ✅ 参照なし | 同上 | - |
+| 同上 | PoC の後も Marketplace のバージョンが 0.1.0・0.1.1 のまま | ✅ 0.1.0・0.1.1 | 同上 | - |
+
+成立。登録したポリシー（Workflow `vscode-release.yml`・Environment なし）は、タグではなくブランチへの push の実行でも交換を許した。本番の `vsce publish --oidc` は同じ `getOIDCCredential` で得たトークンで公開する。
+
+最小再現コードの要点（PoC PR の `.github/workflows/vscode-release.yml`）:
+
+```yaml
+permissions:
+  contents: read
+  id-token: write
+jobs:
+  exchange:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - run: npm --prefix vscode ci --ignore-scripts
+      - run: |
+          node -e "
+          require('./vscode/node_modules/@vscode/vsce/out/oidc.js')
+            .getOIDCCredential('ShuheiNishikawa')
+            .then(c => console.log('Marketplace credential issued, length=' + c.length))
+            .catch(e => { console.error(e.message); process.exit(1); });
+          "
+```
+
+diff の見どころ: `vscode/package.json` の `@vscode/vsce` を 4.1.1 に上げた行と、`permissions` の `id-token: write`。
+
 ## テスト結果
 
 なし（テスト作成・実装で記入する）
