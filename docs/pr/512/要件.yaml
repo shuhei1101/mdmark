@@ -2,15 +2,21 @@ docs:
   - page: docs/architecture/ARCH-472-1.yaml
     new: false
     change: 外部システムに Visual Studio Marketplace（trusted publishing で公開）を加え、リポジトリ構成の `vscode/`・`.github/workflows/` の行と構成図の線を Marketplace への公開に合わせる。Open VSX の記述を削除する
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-14T02:37:14.320114+00:00'
   - page: docs/dev-command/CMD-472-1.yaml
     new: false
     change: 拡張機能のタグを打つ手順に、タグで Marketplace にも公開される旨を加える
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-14T02:37:14.320114+00:00'
   - page: docs/guide/VSCodeで確認する-プレビューを開く.md
     new: false
     change: Marketplace にはタグを打ったバージョンが届く旨に合わせ、Open VSX から入れる記述を削除する
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-14T02:37:14.320114+00:00'
   - page: docs/library/LIB-472-34.yaml
     new: false
     change: vsce のバージョンを 4.0.0 から 4.1.1 に更新し、用途に `publish --oidc` での Marketplace への公開を加え、確認結果を記載する
@@ -18,7 +24,9 @@ docs:
   - page: docs/nonfunctional/NFR-472-1.yaml
     new: false
     change: VS Code の下限の行の「Marketplace と Open VSX」から Open VSX を削除する
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-14T02:37:14.320114+00:00'
 scope_out:
   - item: E2E `tests/e2e/単一ユースケース/拡張機能の配布物を作る.spec.ts` の追従
     reason: '#450 で develop から E2E を削除した（この PR に取り込み済み）。シナリオの `test_file` が削除した spec を指すのは他のシナリオも同じで、#450 の扱いに従う'
