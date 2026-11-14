@@ -11,3 +11,9 @@ confirmations:
     approver: shuhei1101
     commit:
     thread: https://github.com/shuhei1101/mdmark/pull/512#discussion_r4571168056
+  - topic: 反映作業「拡張機能の最初のタグ」を実行してよいか
+    decision: 実行する。マージの後に tester が vscode-v0.1.3 を打ち、Marketplace へ公開する（推奨案 A）
+    decided_by: thumbs_up
+    approver: shuhei1101
+    commit: 800afcfe
+    thread: https://github.com/shuhei1101/mdmark/pull/512#discussion_r4571226378
