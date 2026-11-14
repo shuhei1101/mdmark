@@ -132,4 +132,11 @@ test("test_build_map_ranges_when_annotations", () => {
   });
   expect(off.html).toContain('class="mdmark-map"');
   expect(off.html).not.toContain("data-map-annotations");
+  const missing = renderDoc(
+    `${mapRange({
+      mermaid: FLOW,
+      data: '{"version": 1, "notes": {"mount": {"annotations": ["missing"]}}}',
+    })}\n※[cond]: 条件の補足\n\n本文※[cond]。\n`,
+  );
+  expect(missing.html).toContain('data-map-annotations="{}"');
 });
