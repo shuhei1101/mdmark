@@ -22,7 +22,7 @@
 | vsce のバージョン | `vscode/package.json` の devDependencies の `@vscode/vsce` を 4.0.0 から 4.1.1 に上げ、`package-lock.json` を更新する | 4.0.0 の OIDC のトークン交換は Marketplace の仕様と合わない（api-version なし・`Bearer`）。v4.1.0 の「oidc: align token exchange with the Marketplace contract」で `FederatedToken` に修正された |
 | 認証 | Marketplace の trusted publishing（OIDC）。`permissions` に `id-token: write` を加え、シークレットを使用しない | ポリシーはユーザーが登録済み（要件.md の `## 要望`） |
 | 工程の並び | バージョンの比較 → 依存 → .vsix → Release に添える → Marketplace へ公開 | Release に添えてから公開し、公開の失敗で Release の .vsix を消さない |
-| 異常系 | バージョンが合わないときは公開しない。公開済みのバージョン・認証の失敗はワークフローを失敗させ、ログに Marketplace の応答を出す | - |
+| 異常系 | バージョンが合わないときは公開しない。公開済みのバージョンは vsce がアップロードの前に `{publisher}.{name} v{バージョン} already exists.` で止め、ワークフローを失敗させる。認証の失敗は交換の応答（`Marketplace OIDC token exchange failed with {status}: {message}`）でワークフローを失敗させる | `--skip-duplicate` は付けない |
 | Open VSX | 公開しない | 要件.md の `## 要望` |
 | 既存機能への影響 | GitHub Release に .vsix を添える工程は変えない | - |
 
