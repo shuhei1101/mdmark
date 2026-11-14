@@ -310,8 +310,8 @@ export function renderTableTools(options: TableToolsOptions): {
   const filterable = features.includes("filter") && filter !== undefined;
   const title =
     features.includes("sort") && sortable
-    ? `<button class="mdmark-sort" type="button">${escapedLabel}</button>`
-    : `<span class="mdmark-th-label">${escapedLabel}</span>`;
+      ? `<button class="mdmark-sort" type="button">${escapedLabel}</button>`
+      : `<span class="mdmark-th-label">${escapedLabel}</span>`;
   const filterButton = filterable
     ? `<button class="mdmark-filter${active ? " is-active" : ""}" type="button" aria-label="「${escapedLabel}」で絞り込む" aria-expanded="${open}" aria-controls="${escapeHtml(controls)}"><span class="mdmark-visually-hidden">${active ? "（絞り込み中）" : ""}</span></button>`
     : "";

@@ -74,8 +74,7 @@ export function findChangedHeadings(content: HTMLElement): Set<string> {
   const headings = [
     ...content.querySelectorAll<HTMLElement>(ALL_HEADING_SELECTOR),
   ].filter((heading) => heading.closest(EMBEDDED_HTML_SELECTOR) === null);
-  const levelOf = (heading: HTMLElement): number =>
-    Number(heading.tagName[1]);
+  const levelOf = (heading: HTMLElement): number => Number(heading.tagName[1]);
   for (const block of blocks) {
     const own = headings.find((heading) => block.contains(heading));
     // 文書の順でブロックより前にある見出し（ブロックが含む見出しを除く）
