@@ -46,13 +46,13 @@ functions:
         required: true
         description: 差し込むトークンの位置
       - name: warning
-        type: '{ mark?: string; message: string; items?: WarningItem[]; kind?: "diagram_invalid" | "syntax_warning" | "map"; problems?: MapProblem[]; line?: number }'
+        type: '{ mark?: string; message: string; items?: WarningItem[]; kind?: "diagram_invalid" | "syntax_warning" | "map"; problems?: MapProblem[]; line?: number; source?: Token }'
         required: true
         description: 部品へ指定する値（文言は画面設計『文書』の記載の警告）。`kind` は省くと `syntax_warning`、`line` は警告の元のマーカーのトークンの `map[0]`（マーカーのトークンを持たない警告は省く）
-      - name: source
+      - name: warning.source
         type: Token | undefined
         required: false
-        description: 警告の元になったマーカーのトークン（範囲なら開きのマーカー）。`warning.line` が無ければ、その `map[0]` を警告の行にする。マーカーを持つ警告は全て指定する（`warningBlock` も同じ）
+        description: 警告の元になったマーカーのトークン（範囲なら開きのマーカー）。`warning.line` が無ければ、その `map[0]` を警告の行にする。部品（`renderSyntaxWarning`）へは指定しない。マーカーを持つ警告は全て指定する（`warningBlock` も同じ）
     side_effects: '`state.tokens` に追加する'
     callees:
       - MOD-472-314#functions[renderSyntaxWarning]

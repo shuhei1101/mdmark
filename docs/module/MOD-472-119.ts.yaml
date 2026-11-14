@@ -21,13 +21,18 @@ functions:
         type: string
         required: true
         description: 相対パスの基準（設定ファイルのフォルダ）
-      - name: fetchText
+      - name: deps
+        type: '{ fetchText?: FetchText; build: BuildFunction }'
+        required: true
+        passing: injected
+        description: 読み込みとまとめに使用する関数
+      - name: deps.fetchText
         type: '(url: string) => Promise<string>'
         required: false
         default: '`fetch` で本文を読み込む'
         passing: injected
         description: URL を読み込む関数（テストで差し替える）
-      - name: build
+      - name: deps.build
         type: BuildFunction
         required: true
         default: ネイティブの esbuild の `build`（`src/cli/embed.ts` が指定する）

@@ -5,7 +5,7 @@ constants:
   - name: eslintConfig
     title: ESLint の設定
     container: tools/eslint/eslint.config.js
-    summary: '`export default` する Flat Config の配列。`basePath` をリポジトリの直下にし、`files` は `vscode/src/webview/**/*.{ts,tsx}`（ストーリーと `testing/` を含む）'
+    summary: '`export default` する Flat Config の配列。`basePath` をリポジトリの直下にし、`ignores` で `**/node_modules/**`・`**/dist/**` を除外する。複雑さの規則のまとまりの `files` は `src/**/*.ts`・`scripts/**/*.ts`・`vscode/src/**/*.{ts,tsx}`・`plugin/**/*.ts`、他の規則のまとまりの `files` は `vscode/src/webview/**/*.{ts,tsx}`（ストーリーと `testing/` を含む）'
     entries:
       - key: 型の情報
         value: 'typescript-eslint の `recommendedTypeChecked`、`parserOptions.projectService: true`、`@typescript-eslint/no-deprecated`・`no-non-null-assertion`・`consistent-type-definitions: ["error", "type"]`'
@@ -18,7 +18,7 @@ constants:
       - key: Tailwind
         value: '`eslint-plugin-better-tailwindcss` の `recommended-error`（`entryPoint` は `vscode/src/webview/shared/styles/panel.css`）から、整形の規則 `enforce-consistent-line-wrapping` を削除したものと、任意値の class（`[` を含む class）を禁じる `better-tailwindcss/no-restricted-classes`。登録の無い class の検査は、結合テストが探す `mdmark-` で始まる class を除く'
       - key: 複雑さ
-        value: '`complexity: ["error", 10]`・`max-depth: ["error", 4]`・`max-params: ["error", 3]`・`sonarjs/cognitive-complexity: ["error", 15]`（`eslint-plugin-sonarjs`）'
+        value: '`complexity: ["error", 10]`・`max-depth: ["error", 4]`・`max-params: ["error", 3]`・`sonarjs/cognitive-complexity: ["error", 15]`（`eslint-plugin-sonarjs`）。このまとまりは typescript-eslint のパーサーだけを指定し、`projectService` を指定しない（4 規則は型の情報を使用しない）'
       - key: 記載方法
         value: '`func-style: ["error", "expression"]`・`no-restricted-syntax` で `TSEnumDeclaration` を禁じる・`import/no-default-export`（`*.stories.ts`・`*.stories.tsx` は除く）'
       - key: Biome との重なり
