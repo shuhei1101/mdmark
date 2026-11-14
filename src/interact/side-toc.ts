@@ -88,8 +88,11 @@ export function findChangedHeadings(content: HTMLElement): Set<string> {
       continue;
     }
     if (element.matches(DIFF_BLOCK_SELECTOR)) {
-      // 見出しを含むブロックは、その見出しに着いたときに集める
-      if (element.querySelector(ALL_HEADING_SELECTOR) === null) {
+      // 埋め込んだ HTML の外の見出しを含むブロックは、その見出しに着いたときに集める
+      const ownHeading = [
+        ...element.querySelectorAll(ALL_HEADING_SELECTOR),
+      ].some((heading) => heading.closest(EMBEDDED_HTML_SELECTOR) === null);
+      if (!ownHeading) {
         markAncestors();
       }
       continue;
