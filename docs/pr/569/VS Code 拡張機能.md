@@ -24,7 +24,7 @@
 | 検査の範囲 | `vscode/src/**/*.ts` を複雑さの 4 規則の `files` に含める（設定はライブラリ本体の計画書の `tools/eslint/eslint.config.js`） | Webview（`vscode/src/webview/`）の他の規則は今のまま |
 | 違反の修正 | ライブラリ本体の計画書の「違反の修正」「分けた関数の配置」と同じ方針で、違反した関数を分ける | 拡張機能のコマンド・設定・Webview との通信の挙動を変えない |
 | 設計書 | `libraryOrigins` の引数を、設定から取り出した値の 1 つのオブジェクトにまとめる。他の分けた関数は設計書に追加しない | ライブラリ本体の計画書の「設計書」と同じ |
-| 回帰の確認 | ルートの単体テスト（`vscode/src/` の単体テストを含む）・`vscode/` の結合テスト（`npm --prefix vscode run test:integration`）・型検査（`npm --prefix vscode run typecheck`）を全て回し、全 pass を確認する | - |
+| 回帰の確認 | ルートの単体テスト（`vscode/src/` の単体テストを含む）・型検査（`npm --prefix vscode run typecheck`）を全て回し、全 pass を確認する。`vscode/` の結合テストは「テスト結果」の「結合テストの実行範囲」の表のとおり | - |
 
 ## 設計書の確定コミット
 
@@ -34,4 +34,24 @@
 
 ## テスト結果
 
-なし（テスト作成・実装で記入する）
+### 単体
+
+| ファイル | メソッド | 変更種別 | 結果 | 補足 |
+| --- | --- | --- | --- | --- |
+| [tests/unit/vscode/](https://github.com/shuhei1101/mdmark/blob/develop/tests/unit/vscode)（ルートの `npm run test:unit` で実行） | 全実行 | 実行のみ | ✅ | `テスト結果/20261115062845_271cb637_単体テスト.log` |
+| 型検査（`npm --prefix vscode run typecheck`） | 全実行 | 実行のみ | ✅ | `テスト結果/20261115062845_271cb637_lint.log` |
+
+### 結合
+
+なし。
+
+#### 結合テストの実行範囲
+
+<!-- table: data -->
+
+| 変更したファイル | 関係する結合テスト | 回すか | 理由 |
+| --- | --- | --- | --- |
+| `vscode/src/`（`config.ts`・`export/`・`preview/`・`version.ts`・`extensions-bundle.ts`） | [vscode/tests/integration/](https://github.com/shuhei1101/mdmark/blob/develop/vscode/tests/integration)（`xvfb-run -a npm --prefix vscode run test:integration`） | 回さない | 関数を分けた処理は `tests/unit/vscode/src/` の単体テスト（`config`・`export/`・`preview/`・`version`・`extensions-bundle`）が覆う。拡張機能のコマンド・設定・Webview との通信の入口は変えていない。VS Code を 2 つの版で起動し、時間がかかる |
+
+<!-- /table -->
+
