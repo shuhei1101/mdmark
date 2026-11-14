@@ -1,34 +1,34 @@
 docs:
   - page: docs/architecture/ARCH-472-1.yaml
     new: false
-    change: 外部システムに Open VSX（trusted publisher で公開）を加え、リポジトリ構成の `.github/workflows/` の行と構成図の線を Open VSX への公開に合わせる
-    status: todo
-  - page: docs/library/LIB-472-37.yaml
-    new: true
-    change: Open VSX へ .vsix を公開する CLI ovsx の外部ライブラリの設計書を作る（trusted publisher での認証の確認結果を含める）
-    status: todo
-  - page: docs/library/index.yaml
-    new: false
-    change: ovsx の行を加える
+    change: 外部システムに Visual Studio Marketplace（trusted publishing で公開）を加え、リポジトリ構成の `vscode/`・`.github/workflows/` の行と構成図の線を Marketplace への公開に合わせる。Open VSX の記述を削除する
     status: todo
   - page: docs/dev-command/CMD-472-1.yaml
     new: false
-    change: 拡張機能のタグを打つ手順に、タグで Open VSX にも公開される旨と、trusted publisher の前提を加える
+    change: 拡張機能のタグを打つ手順に、タグで Marketplace にも公開される旨を加える
     status: todo
   - page: docs/guide/VSCodeで確認する-プレビューを開く.md
     new: false
-    change: Open VSX にはタグを打った版が届く旨に合わせる
+    change: Marketplace にはタグを打ったバージョンが届く旨に合わせ、Open VSX から入れる記述を削除する
+    status: todo
+  - page: docs/library/LIB-472-34.yaml
+    new: false
+    change: vsce の用途に `publish --oidc` での Marketplace への公開を加え、確認結果を記載する
+    status: todo
+  - page: docs/nonfunctional/NFR-472-1.yaml
+    new: false
+    change: VS Code の下限の行の「Marketplace と Open VSX」から Open VSX を削除する
     status: todo
 scope_out:
-  - item: Marketplace への公開の自動化（`vsce publish`）
-    reason: Marketplace が OIDC に未対応で、PAT は 2026-12-01 に止まる。公開済みの掲載の扱いも未決
-    plan: to_file
   - item: E2E `tests/e2e/単一ユースケース/拡張機能の配布物を作る.spec.ts` の追従
     reason: '#450 で develop から E2E を削除する。削除前にこの PR がマージされた場合は、ワークフローの YAML を読む検証に公開の工程が加わっても既存の期待は変わらない'
     plan: '#450'
+  - item: Open VSX への公開
+    reason: ユーザーが VS Code だけを使用するため公開しないと決めた（確認ログ）
+    plan: none
 use_cases:
   - kind: single
     scenario: docs/scenario/SC-472-50.yaml
     impact: changed
-    detail: タグを打った版の拡張機能が GitHub Release に加えて Open VSX にも公開される。公開に失敗したときの保証を加える
+    detail: タグを打ったバージョンの拡張機能が GitHub Release に加えて Marketplace にも公開される。公開に失敗したときの保証を加える
     depends_on: []

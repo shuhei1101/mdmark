@@ -1,0 +1,7 @@
+confirmations:
+  - topic: Open VSX の自動公開の前提の作業
+    decision: Open VSX には公開しない（案 A・B のどちらも採らない）。PR の範囲を、Marketplace の trusted publishing（vsce publish --oidc）でタグから Marketplace へ公開することに変える。ポリシーは publisher ShuheiNishikawa に登録済み（Owner shuhei1101・Repository mdmark・Workflow vscode-release.yml・Environment なし）。最初のタグは vscode-v0.1.2 以上
+    decided_by: reply
+    approver: shuhei1101
+    commit:
+    thread: https://github.com/shuhei1101/mdmark/pull/512#discussion_r4570559008
