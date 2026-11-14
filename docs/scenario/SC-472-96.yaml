@@ -121,7 +121,7 @@ scenarios:
     setup:
       - name: mdmark を読み込むページ
         description: 正常シナリオと同じ
-      - name: 定義の無い参照と参照されていない定義を持つ Markdown
+      - name: 参照と定義が合わない Markdown
         description: 段落で定義の無い ID `missing` と ID `cond` を参照し、どこからも参照しない ID `unused` の注釈を定義し、`cond` を本文 `前の定義` と本文 `後の定義` で 2 回定義する文書
         notes: 同じ ID の 2 つの定義の本文を変え、どちらを使用したかを決定的に見分ける
       - name: Mock
