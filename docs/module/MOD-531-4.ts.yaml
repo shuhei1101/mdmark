@@ -36,7 +36,7 @@ functions:
       type: MapFlowHandle
       description: 構成図と同じ操作の口
     process: |-
-      1. `parseStateDiagram` と `stateToFlowchart` で `Flowchart` を作り、`statePartInputs` で形状・同じ状態への遷移と、開始・終了を 32px 四方・分岐を 40px 四方・同じ状態への遷移を持つ状態の上に 40px 空ける上書きを作り、`extension.overrides` に指定する
+      1. `parseStateDiagram` と `stateToFlowchart` で `Flowchart` を作り、`statePartInputs` で形状・同じ状態への遷移と、開始・終了を 32px 四方・分岐を 40px 四方・同じ状態への遷移を持つ状態の上に 56px 空ける上書きを作り、`extension.overrides` に指定する
       2. 補足の `walkthroughs` が無ければ、遷移を記載順の手順（`title` は「{遷移元} → {遷移先}：{ラベル}」、`text` は補足の `t{番号}` の説明、強調は遷移元と遷移先）にし、`bandMode` を `playback`、`bandUnit` を `transition` にして、`attachMapFlow` に `extension` と一緒に指定する。`walkthroughs` があれば `bandMode` を `walkthrough` にする
       3. `extension.render` に、形状と同じ状態への遷移を指定した `renderMapStateDiagram` を指定する
       4. `extension.afterRender` で、同じ状態への遷移を `renderMapStateLoops` で描き直し、手順がその遷移のときは太く、ほかの手順と選択では `map-dim` にする
