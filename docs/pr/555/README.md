@@ -1,0 +1,1 @@
+# PoC: GitHub Actions の OIDC トークンを Marketplace のトークンに交換する
