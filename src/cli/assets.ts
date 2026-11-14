@@ -134,6 +134,20 @@ function childSources(
   return [];
 }
 
+/** 本文の位置から `src` を探し、記載したままの `src` と位置を返却する（無ければ位置は -1）。markdown-it が符号化した `src` は、記載したままの構造に戻して探す */
+function locateSrc(
+  markdown: string,
+  parsed: string,
+  cursor: number,
+): { src: string; offset: number } {
+  const src = [parsed, decodeSrc(parsed)].find(
+    (candidate) => markdown.indexOf(candidate, cursor) >= 0,
+  );
+  return src === undefined
+    ? { src: parsed, offset: -1 }
+    : { src, offset: markdown.indexOf(src, cursor) };
+}
+
 /** トークンが参照するファイル（行内の子の順、HTML のブロックの `img` は最後） */
 function tokenSources(
   token: Token,
@@ -164,20 +178,14 @@ export function findAssetRefs(markdown: string): LocatedAssetRef[] {
     }
     const [startLine] = token.map;
     let cursor = lineStarts[startLine] ?? 0;
-    for (const { src: parsed, kind } of tokenSources(token)) {
-      if (!isRelative(parsed)) {
-        continue;
+    const relatives = tokenSources(token).filter(({ src }) => isRelative(src));
+    for (const { src: parsed, kind } of relatives) {
+      const found = locateSrc(markdown, parsed, cursor);
+      if (found.offset >= 0) {
+        cursor = found.offset + found.src.length;
       }
-      // markdown-it が符号化した `src` は、記載したままの構造に戻して探す
-      const src = [parsed, decodeSrc(parsed)].find(
-        (candidate) => markdown.indexOf(candidate, cursor) >= 0,
-      );
-      const at = src === undefined ? -1 : markdown.indexOf(src, cursor);
-      if (src !== undefined) {
-        cursor = at + src.length;
-      }
-      const line = at >= 0 ? lineOf(at) : startLine + 1;
-      refs.push({ src: src ?? parsed, kind, line, offset: at });
+      const line = found.offset >= 0 ? lineOf(found.offset) : startLine + 1;
+      refs.push({ src: found.src, kind, line, offset: found.offset });
     }
   }
   return refs;
