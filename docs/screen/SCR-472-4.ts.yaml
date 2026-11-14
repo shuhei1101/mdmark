@@ -81,7 +81,7 @@ elements:
       - name: unpinned
         value: '`pinned` のうち、左から順に幅を足して表の見えている幅を超える列の位置（`mount` が表の幅・列の幅・ピン止め・列の表示と並びが変わるたびに求め直す）'
       - name: noSort
-        value: 長文の列（見出しとセルを改行で分けた 1 行の文字数で決める）のうちマーカーの `columns.{列名}.sort` が `true` でない列と、`columns.{列名}.sort` が `false` の列（列名を列の位置として解釈する）
+        value: '`render` が写した長文の列（`data-long`）のうちマーカーの `columns.{列名}.sort` が `true` でない列と、`columns.{列名}.sort` が `false` の列（列名を列の位置として解釈する）'
       - name: wide
         value: マーカーの `columns.{列名}.width.mode` の `nowrap` の列（列名を列の位置として解釈する）
       - name: check

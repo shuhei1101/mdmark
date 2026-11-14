@@ -53,12 +53,12 @@ states:
       - name: headings
         value: '[{"level":2,"id":"long","text":"読み込みに失敗したときに通知ブロックが出る箇所と、ほかの本文の扱い"},{"level":3,"id":"long-2","text":"社内のネットワークから jsDelivr へ出られないときに書き出した 1 枚の HTML を使用する手順"}]'
   - name: HoverChanged
-    description: hover の出し方で目次を出し、比較元から変わったセクションの項目の右端に変更のマーカー（橙の塗った円）を出している。変わったセクションの右端の線も橙にし、今いるセクションの線は今いるセクションの色のまま
+    description: hover の出し方で目次を出し、比較元から変わったセクションの項目の右端に変更のマーカー（橙の塗った円）を出している。変わったセクションの右端の線も橙にし、変わったセクションでもある今いるセクション（手順）の線は今いるセクションの色を優先する
     args:
       - name: open
         value: 'true'
       - name: current
-        value: 前提
+        value: steps
       - name: headings
         value: '[{"level":1,"id":"doc","text":"文書","changed":true},{"level":2,"id":"premise","text":"前提"},{"level":2,"id":"steps","text":"手順","changed":true},{"level":3,"id":"steps-1","text":"準備"},{"level":2,"id":"added","text":"追加した節","changed":true}]'
   - name: FixedChanged
