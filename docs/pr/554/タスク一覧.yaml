@@ -35,7 +35,10 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-14T01:06:56.833998+00:00'
   - process: 単一ユースケース設計
-    status: todo
+    status: done
+    reason: SC-472-56・SC-472-76・SC-472-3 に隠すシナリオと隠さない書き出しのシナリオを追加
+    updated_by: planner
+    updated_at: '2026-11-14T05:03:40.131540+00:00'
   - process: モック作成
     status: skipped
     reason: 'モック要否: 書き出した HTML の見た目は変わらない（※1 が NO）'
