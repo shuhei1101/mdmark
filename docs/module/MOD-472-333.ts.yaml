@@ -12,9 +12,9 @@ functions:
     summary: 部品設計『脚注の番号』の HTML を返却する。`bodies` のどれかが `<a ` を持つときはツールチップを `role="group"`・`aria-label="脚注 {number}"` にして番号のリンクから `aria-details` で指し、持たないときは `role="tooltip"` にして `aria-describedby` で指す。`bodies` は描いた HTML なのでエスケープしない
     args:
       - name: options
-        type: '{ number: number; refIndex?: number; bodies: string[]; below?: boolean }'
+        type: '{ number: number; refIndex?: number; bodies: string[]; below?: boolean; kind?: "footnote" | "annotation"; afterRef?: boolean }'
         required: true
-        description: 部品設計の引数（`refIndex` の既定は 0、`below` の既定は `false`）
+        description: 部品設計の引数（`refIndex` の既定は 0、`below`・`afterRef` の既定は `false`、`kind` の既定は `footnote`）
     returns:
       type: string
       description: '`<sup class="mdmark-fn-ref">` の HTML'
@@ -37,6 +37,18 @@ functions:
         condition: '`number: 12`・`refIndex: 1`・`below: true`'
         mock: なし
         expected: '`sup` が class `is-below` を持ち、`id="mdmark-fnref-12-1"`・`id="mdmark-fn-tip-12-1"`'
+      - name: test_render_footnote_ref_when_annotation
+        case: 正常
+        summary: kind annotation で注記のマーカーにする
+        condition: 部品設計の `Annotation`
+        mock: なし
+        expected: '`sup` が class `mdmark-note-ref` を持ち、リンクが `id="mdmark-noteref-1-0"`・`href="#mdmark-note-1"` で、中に視覚で隠す `注記 ` と `1`。ツールチップの `id` が `mdmark-note-tip-1-0` で、タイトルが `注記 1`'
+      - name: test_render_footnote_ref_when_after_ref
+        case: 正常
+        summary: afterRef で is-after-ref を付ける
+        condition: 部品設計の `AnnotationAfterRef`
+        mock: なし
+        expected: '`sup` が class `is-after-ref` を持つ'
   - name: renderFootnotes
     title: 脚注の一覧を描く
     container: src/parts/footnote.ts
@@ -45,9 +57,9 @@ functions:
     summary: 部品設計『脚注の一覧』の HTML を返却する。`items` が空なら空文字。項目の最後の `</p>` の前（`p` が無ければ末尾）に、`refCount` の数の戻るリンクを配置する。`html` は描いた HTML なのでエスケープしない
     args:
       - name: options
-        type: '{ items: Array<{ number: number; html: string; refCount: number }>; open?: boolean }'
+        type: '{ items: Array<{ number: number; html: string; refCount: number; refs?: Array<{ href: string }> }>; open?: boolean; kind?: "footnote" | "annotation" }'
         required: true
-        description: 部品設計の引数（`open` の既定は `false`）
+        description: 部品設計の引数（`open` の既定は `false`、`kind` の既定は `footnote`。`refs` があれば `refCount` の代わりに戻るリンクの `href` にする）
     returns:
       type: string
       description: '`<details class="mdmark-footnotes">` の HTML か空文字'
@@ -64,6 +76,12 @@ functions:
         condition: 部品設計の `ReferencedTwice`
         mock: なし
         expected: 戻るリンクが 2 つで、`href` が `#mdmark-fnref-1-0`・`#mdmark-fnref-1-1`、文字に `a`・`b` を持つ
+      - name: test_render_footnotes_when_annotation
+        case: 正常
+        summary: kind annotation と refs で注記の一覧を組む
+        condition: 部品設計の `Annotations`
+        mock: なし
+        expected: '`details` が class `mdmark-notes` を持ち、`summary` が `注記（2 件）`、`li#mdmark-note-1` の戻るリンクが 2 つで `href` が `#mdmark-noteref-1-0`・`#mdmark-note-owner-1-judge`、文字が `a`・`b`'
       - name: test_render_footnotes_when_empty
         case: 正常
         summary: 項目が無ければ一覧を配置しない

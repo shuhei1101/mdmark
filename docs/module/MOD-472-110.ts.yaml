@@ -17,7 +17,7 @@ data_models:
         type: string
         description: キーのパスか行。ファイル全体は空文字
       - name: kind
-        type: "'schema' | 'unknown_color_theme' | 'unknown_color_scheme' | 'no_documents' | MdmarkIndexIssue['kind'] | 'alias_no_files' | 'alias_unreadable' | MdmarkAliasProblem['kind'] | 'missing_file' | 'unknown_mark' | 'diagram_invalid' | 'retired_diagram' | 'syntax_warning' | 'unknown_mark_arg' | 'legacy_mark' | 'mark_option_unapplied' | 'mark_option_invalid' | 'map_invalid' | 'map_unknown_ref' | 'map_unknown_key' | 'map_invalid_value' | 'map_unknown_icon' | 'map_unknown_class' | 'map_unknown_line' | 'plain_md_with_marks'"
+        type: "'schema' | 'unknown_color_theme' | 'unknown_color_scheme' | 'no_documents' | MdmarkIndexIssue['kind'] | 'alias_no_files' | 'alias_unreadable' | MdmarkAliasProblem['kind'] | 'missing_file' | 'unknown_mark' | 'diagram_invalid' | 'retired_diagram' | 'syntax_warning' | 'unknown_mark_arg' | 'legacy_mark' | 'mark_option_unapplied' | 'mark_option_invalid' | 'map_invalid' | 'map_unknown_ref' | 'map_unknown_key' | 'map_invalid_value' | 'map_unknown_icon' | 'map_unknown_class' | 'map_unknown_line' | 'plain_md_with_marks' | 'annotation_undefined' | 'annotation_unused' | 'annotation_duplicate'"
         description: ずれの種類
       - name: message
         type: string

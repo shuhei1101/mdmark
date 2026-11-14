@@ -157,9 +157,9 @@ functions:
     summary: 部品設計『図のツールチップ』の中身。`role="tooltip"` と `hidden` を持つ
     args:
       - name: tip
-        type: '{ id: string; kind: "wire" | "hint" | "table" | "item" | "merged"; label: string; value?: string; tip?: string; hint?: string; table?: MdmarkErTable }'
+        type: '{ id: string; kind: "wire" | "hint" | "table" | "item" | "merged"; label: string; value?: string; tip?: string; hint?: string; table?: MdmarkErTable; annotations?: Array<{ number: number; html: string }> }'
         required: true
-        description: 部品設計の引数。`item` は見出しに `label`、本文に `value` を出す。`table` はタイトルを `{論理名}（{物理名}）`（どちらも `{{`・`}}` を除いた文字）にし、概要と、`desc` を持つ列の名前と説明を並べる
+        description: 部品設計の引数。`item` は見出しに `label`、本文に `value` を出す。`table` はタイトルを `{論理名}（{物理名}）`（どちらも `{{`・`}}` を除いた文字）にし、概要と、`desc` を持つ列の名前と説明を並べる。`annotations` があれば、どの `kind` でも末尾に注記ごとの `span.mdmark-term-tip-section`（見出し `span.mdmark-term-tip-heading.mdmark-note-tip-heading` の `注記 {number}` と本文。`html` は描いた HTML なのでエスケープしない）を追加する
     returns:
       type: string
       description: ツールチップの HTML
@@ -176,6 +176,12 @@ functions:
         condition: '`kind` が `hint`、`hint` が `<b>太字</b>`'
         mock: なし
         expected: 見出しを持たず、文字が `&lt;b&gt;太字&lt;/b&gt;` で `hidden` を持つ
+      - name: test_render_diagram_tip_when_annotations
+        case: 正常
+        summary: 説明の後ろに注記の区分を追加する
+        condition: 部品設計『図のツールチップ』の `Annotation`
+        mock: なし
+        expected: 区分が 2 つで、2 つ目の見出しが class `mdmark-note-tip-heading` の `注記 1`、本文が `条件を満たさないときは次の工程へ進む。`
       - name: test_render_diagram_tip_when_table
         case: 正常
         summary: テーブルの概要と列の説明を出す

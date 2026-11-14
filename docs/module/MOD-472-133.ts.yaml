@@ -17,6 +17,9 @@ data_models:
       - name: notes
         type: Record<string, string> | undefined
         description: 補足の `notes` の ID ごとの説明（ノード・グループ・線）
+      - name: annotations
+        type: 'Record<string, Array<{ number: number; html: string }>> | undefined'
+        description: 補足の `notes.{ID}.annotations` の、要素の ID ごとの注記（番号の順）。持つ要素は、説明を持たなくても持ち主（線の押せる帯・ノードやグループのマーカーのボタン）を持ち、持ち主に `id="mdmark-note-owner-{図の通し番号}-{要素の ID}"` を付けて、`renderDiagramTip` の `annotations` に指定する。ER 図・状態遷移図・シーケンス図の引数も同じ項目を持つ
       - name: links
         type: Record<string, string> | undefined
         description: '`mapLinkProblems` が許したノードのリンク先'
@@ -40,7 +43,7 @@ data_models:
         description: 動かしている要素
       - name: shapes
         type: Record<string, MapStateShape> | undefined
-        description: ノードの ID ごとの状態遷移図の形状。`start`・`end`・`choice` は `data-shape` をその値にし、名前と種類の行を出さず、`role="img"` と `aria-label`（開始・終了・分岐）を持ちフォーカスを持たない。`note` は種類の行「注記」
+        description: ノードの ID ごとの状態遷移図の形状。`start`・`end`・`choice` は `data-shape` をその値にし、名前と種類の行を出さず、`role="img"` と `aria-label`（開始・終了・分岐）を持ちフォーカスを持たない。`note` は種類の行「ノート」
       - name: keep
         type: '{ nodes: string[]; wires: string[] } | undefined'
         description: 選択と強調の代わりに残すノードと線（ほかを薄くする）
@@ -174,6 +177,12 @@ functions:
         condition: '`collapsed: ["read"]`'
         mock: なし
         expected: '`.map-closed-group[data-group="read"]` の中に「ノード 3 件」がある'
+      - name: test_render_map_flow_when_annotations
+        case: 正常
+        summary: 注記だけを持つ線と、説明と注記を持つノードに持ち主とツールチップの注記の区分を付ける
+        condition: '`notes` がノード `judge` の説明だけ、`annotations` がノード `judge` と線 `e1` に注記 1'
+        mock: なし
+        expected: 'ノード `judge` のマーカーのボタンと線 `e1` の押せる帯が `id="mdmark-note-owner-{図の通し番号}-judge"`・`…-e1` を持ち、`tips` のどちらのツールチップにも見出し `注記 1` の区分がある'
       - name: test_render_map_flow_when_merged_notes
         case: 正常
         summary: まとめた線の説明
@@ -331,7 +340,7 @@ functions:
         summary: 状態遷移図の部品
         condition: モックの `STATE` を `statePartInputs` の上書きで配置する
         mock: なし
-        expected: '`start_root` が `data-shape="start"` と `aria-label="開始"` を持ち `tabindex` を持たず、`data-shape="choice"` のノードがあり、注記のノードの種類の行が「注記」で、同じ状態への遷移の `g` が `loops` の数だけある'
+        expected: '`start_root` が `data-shape="start"` と `aria-label="開始"` を持ち `tabindex` を持たず、`data-shape="choice"` のノードがあり、ノートのノードの種類の行が「ノート」で、同じ状態への遷移の `g` が `loops` の数だけある'
   - name: renderMapStateLoops
     title: 同じ状態への遷移の層のHTML
     kind: 関数

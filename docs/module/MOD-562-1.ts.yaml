@@ -1,0 +1,198 @@
+id: MOD-562-1
+visibility: internal
+title: ライブラリ本体 / 記法 / annotations.ts
+data_models:
+  - name: AnnotationState
+    title: 注記の状態
+    container: src/render/syntax/annotations.ts
+    summary: 1 回の解析で読み込んだ注記の定義と参照。`RenderEnv` の `mdmarkAnnotations` に入れ、描くごとに再作成する
+    properties:
+      - name: definitions
+        type: 'Map<string, { tokens: Token[]; line: number }>'
+        description: ID ごとの最初の定義のブロックのトークンと、定義の行（1 から）。2 つ目以降の定義は入れず、`duplicates` に記録する
+      - name: duplicates
+        type: 'Array<{ id: string; line: number }>'
+        description: 同じ ID の 2 つ目以降の定義の ID と行
+      - name: order
+        type: string[]
+        description: 最初に参照した順の ID。位置 + 1 が番号
+      - name: refs
+        type: 'Map<string, Array<{ href: string }>>'
+        description: ID ごとの参照の戻り先（参照の順）。本文の参照は `#mdmark-noteref-{番号}-{i}`、map の補足の参照は持ち主の `#mdmark-note-owner-{図の通し番号}-{要素の ID}`
+functions:
+  - name: useAnnotations
+    title: 注記のルールを登録する
+    container: src/render/syntax/annotations.ts
+    kind: 関数
+    scope: internal
+    summary: '解析器に、block の `mdmark_annotation_def`（`mdmark_footnote_def` の後・`reference` の前。`alt` は `paragraph`・`reference`）と、inline の `mdmark_annotation_ref`（`mdmark_footnote_ref` の後。`link` より後なので、インラインのリンクと、リンクの参照の定義があるときの省略形・完全形・簡略形はリンクを優先する）を登録し、`mdmark_annotation_ref`（マーカーとツールチップ）と `mdmark_annotation_list`（末尾の一覧）のトークンの描き方を `renderer.rules` に配置する。コアルールの `collectAnnotations`（`collectFootnotes` の後）・`buildAnnotationList`（`buildFootnoteList` の後・関連文書の一覧の前）・`takeAnnotationDefinitions`（`takeFootnoteDefinitions` の後）は `createParser` が登録する'
+    args:
+      - name: parser
+        type: MarkdownIt
+        required: true
+        description: '`createParser` が作った解析器'
+    side_effects: 解析器のルールと `renderer.rules` に追加する
+    callees:
+      - '#functions[readAnnotationDefinition]'
+      - '#functions[readAnnotationReference]'
+      - MOD-472-274#functions[footnoteBodies]
+      - MOD-472-333#functions[renderFootnoteRef]
+      - MOD-472-333#functions[renderFootnotes]
+    unit_tests:
+      - name: test_use_annotations
+        case: 正常
+        summary: 定義と参照を、参照の順の番号のマーカーと末尾の一覧にする
+        condition: インターフェース定義『文書をHTML文字列にする』の「正常系（注記）」の文書
+        mock: なし
+        expected: '`cond` の 2 つの参照が文字 `1` の `mdmark-noteref-1-0`・`mdmark-noteref-1-1`、`img` の参照が文字 `2` で class `is-after-ref` を持ち、脚注の番号は `1`。脚注の一覧の後ろに `details.mdmark-notes`（`注記（2 件）`）があり、`※[` と定義の行が残らない'
+      - name: test_use_annotations_when_link_reference
+        case: 正常
+        summary: リンクになる `[ID]` はリンクを優先する
+        condition: インターフェース定義の「正常系（注記とリンクの参照の定義が同じラベル）」の文書
+        mock: なし
+        expected: '`※[site]`・`※[site][]`・`※[cond](URL)` がリンクで、注記の参照は `※[cond]` の 1 つだけ。`site` の定義は参照されていない警告になる'
+      - name: test_use_annotations_when_disabled
+        case: 正常
+        summary: 機能のオフで記載した文字のまま残す
+        condition: '`features.annotations` を `false` にした文書'
+        mock: なし
+        expected: '`※[cond]` と定義の段落 `※[cond]: 条件の補足` が記載した文字のまま残り、class `mdmark-note-ref` の要素が無い'
+  - name: readAnnotationDefinition
+    title: 注記の定義を読み込む
+    container: src/render/syntax/annotations.ts
+    kind: 関数
+    scope: internal
+    summary: 'block のルール。行頭（字下げ 3 まで）の `※[ID]:`（ID は英数字・`-`・`_`）を読み込み、`:` の後ろから字下げ 4 で続く行までを `blkIndent` を 4 増やして解析し、`mdmark_annotation_def_open`（`meta.id`・`meta.line`・`meta.source`）と `mdmark_annotation_def_close` で囲む。最初に出た ID は `AnnotationState.definitions` に、2 つ目以降は `duplicates` に記録する。書き換えた行の位置は戻す（`readFootnoteDefinition` と同じ）'
+    args:
+      - name: state
+        type: StateBlock
+        required: true
+        description: block の状態
+      - name: startLine
+        type: number
+        required: true
+        description: 開始行
+      - name: endLine
+        type: number
+        required: true
+        description: 終了行
+      - name: silent
+        type: boolean
+        required: true
+        description: 判定だけのとき `true`
+    returns:
+      type: boolean
+      description: 定義を読み込んだか
+    unit_tests:
+      - name: test_read_annotation_definition
+        case: 正常
+        summary: 字下げ 4 で続く段落を定義に含める
+        condition: '`※[cond]: 1 段落目` と、字下げ 4 の `2 段落目`'
+        mock: なし
+        expected: '`definitions` の `cond` が 2 段落のトークンを持ち、`line` が 1'
+      - name: test_read_annotation_definition_when_duplicate
+        case: 異常
+        summary: 同じ ID の 2 つ目の定義を duplicates に記録する
+        condition: '`※[cond]: 前の定義` と `※[cond]: 後の定義`'
+        mock: なし
+        expected: '`definitions` の `cond` が `前の定義` を持ち、`duplicates` が `{ id: "cond", line: 3 }`'
+  - name: readAnnotationReference
+    title: 注記の参照を読み込む
+    container: src/render/syntax/annotations.ts
+    kind: 関数
+    scope: internal
+    summary: 'inline のルール。`※[ID]` を読み込み、`mdmark_annotation_ref`（`meta.id`）のトークンにする。`[ID]` の直後が `(`・`[` のとき、または `normalizeReference(ID)` が `state.env.references` にあるときは読み込まない（リンクを優先する）'
+    args:
+      - name: state
+        type: StateInline
+        required: true
+        description: inline の状態
+      - name: silent
+        type: boolean
+        required: true
+        description: 判定だけのとき `true`
+    returns:
+      type: boolean
+      description: 参照を読み込んだか
+    unit_tests:
+      - name: test_read_annotation_reference
+        case: 正常
+        summary: '`※[ID]` を参照のトークンにする'
+        condition: 段落 `判定する※[cond]。`
+        mock: なし
+        expected: '`mdmark_annotation_ref` のトークンが 1 つで `meta.id` が `cond`'
+      - name: test_read_annotation_reference_when_link_definition
+        case: 正常
+        summary: リンクの参照の定義がある ID は読み込まない
+        condition: '`※[Site]` と、リンクの参照の定義 `[site]: https://example.com`'
+        mock: なし
+        expected: 注記の参照のトークンが無い
+  - name: collectAnnotations
+    title: 注記に番号を振る
+    container: src/render/syntax/annotations.ts
+    kind: 関数
+    scope: internal
+    summary: 'コアルール。本文の参照のトークンを文書の順にたどり、定義のある ID に最初に参照した順の番号を振って `meta.number`・`meta.refIndex` を入れ、`refs` に戻り先を追加する。文字を挟まずに脚注か注記の参照の直後に続く参照は `meta.afterRef` を `true` にする。map の範囲の補足の `notes.{ID}.annotations` も、範囲の位置の順に参照として数え、戻り先を持ち主の `id` にする。定義の無い参照は記載した文字のトークンに戻し、定義の無い参照・参照されていない定義・`duplicates` に記載の警告（種類 `annotation_undefined`・`annotation_unused`・`annotation_duplicate`）を追加する'
+    args:
+      - name: state
+        type: StateCore
+        required: true
+        description: core の状態
+    side_effects: トークンの `meta` と `AnnotationState` を書き換え、記載の警告を追加する
+    unit_tests:
+      - name: test_collect_annotations
+        case: 正常
+        summary: 定義の順によらず最初に参照した順に番号を振る
+        condition: '定義 `img`・`cond` の順、参照 `cond`・`img` の順'
+        mock: なし
+        expected: '`order` が `["cond", "img"]`'
+      - name: test_collect_annotations_when_mismatch
+        case: 異常
+        summary: 定義の無い参照・参照されていない定義・2 つ目の定義を警告にする
+        condition: インターフェース定義の「異常系（注記の参照と定義が合わない）」の文書
+        mock: なし
+        expected: 警告が `annotation_undefined`（`missing`）・`annotation_duplicate`（`cond` の 2 つ目）・`annotation_unused`（`unused`）の 3 件で、`※[missing]` が文字のまま残る
+      - name: test_collect_annotations_when_map
+        case: 正常
+        summary: map の補足の注記の参照を数え、戻り先を持ち主の id にする
+        condition: '本文で参照しない `cond` を、map の補足の `notes.judge.annotations` で参照する文書'
+        mock: なし
+        expected: '`order` が `["cond"]` で、`refs` の `cond` が `[{ href: "#mdmark-note-owner-1-judge" }]`'
+  - name: buildAnnotationList
+    title: 注記の一覧を配置する
+    container: src/render/syntax/annotations.ts
+    kind: 関数
+    scope: internal
+    summary: コアルール。番号のある注記が 1 つ以上あれば、脚注の一覧の後ろ・関連文書の一覧の前に `mdmark_annotation_list` のトークンを追加する。描き方は `renderFootnotes` に `kind` `annotation` と、番号の順の `{ number, html, refCount, refs }` を渡す
+    args:
+      - name: state
+        type: StateCore
+        required: true
+        description: core の状態
+    side_effects: トークンを追加する
+    unit_tests:
+      - name: test_build_annotation_list
+        case: 正常
+        summary: 脚注の一覧の後ろに注記の一覧を配置する
+        condition: 脚注 1 つと注記 1 つを持つ文書
+        mock: なし
+        expected: '`details.mdmark-footnotes` の次に `details.mdmark-footnotes.mdmark-notes` がある'
+  - name: takeAnnotationDefinitions
+    title: 注記の定義を本文から取り除く
+    container: src/render/syntax/annotations.ts
+    kind: 関数
+    scope: internal
+    summary: コアルール。`mdmark_annotation_def_open` 〜 `close` のトークンを本文から取り除く（`collectAnnotations` が定義の位置に追加した警告は残す）。機能のオフのときは取り除かず、`meta.source` の文字を段落の先頭に戻す
+    args:
+      - name: state
+        type: StateCore
+        required: true
+        description: core の状態
+    side_effects: トークンを取り除くか書き換える
+    unit_tests:
+      - name: test_take_annotation_definitions
+        case: 正常
+        summary: 定義を出力しない
+        condition: 定義 1 つと参照 1 つの文書
+        mock: なし
+        expected: 出力に定義の本文の段落が無く、ツールチップと一覧にだけ本文がある

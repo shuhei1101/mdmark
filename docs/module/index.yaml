@@ -444,6 +444,8 @@ items:
   summary: ライブラリ本体 / 記法 / figures.ts
 - page: MOD-472-274.ts.yaml
   summary: ライブラリ本体 / 記法 / footnotes.ts
+- page: MOD-562-1.ts.yaml
+  summary: ライブラリ本体 / 記法 / annotations.ts
 - page: MOD-472-302.ts.yaml
   summary: ライブラリ本体 / 記法 / frontmatter.ts
 - page: MOD-472-277.ts.yaml
