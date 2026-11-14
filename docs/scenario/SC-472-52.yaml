@@ -231,12 +231,12 @@ scenarios:
       - 各行の内容が、同じ文字列を描いたときの書き方の警告と同じ
       - 終了コードが 0 以外
     test: test_normal_when_map_warnings
-  - name: 正常シナリオ（注釈の参照と定義が合わない）
+  - name: 正常シナリオ（注記の参照と定義が合わない）
     setup:
       - name: 作業のフォルダ
         description: 正常シナリオと同じ
-      - name: 注釈の参照と定義が合わない文字列
-        description: 本文で定義の無い注釈の ID `missing` を参照し、どこからも参照しない ID `unused` の注釈を定義し、参照する ID `cond` の注釈を 2 回定義し、map の補足のノード 1 つから定義の無い ID `gone` を参照する Markdown の文字列
+      - name: 注記の参照と定義が合わない文字列
+        description: 本文で定義の無い注記の ID `missing` を参照し、どこからも参照しない ID `unused` の注記を定義し、参照する ID `cond` の注記を 2 回定義し、map の補足のノード 1 つから定義の無い ID `gone` を参照する Markdown の文字列
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
@@ -246,11 +246,11 @@ scenarios:
         participant R as mdmark の描画の処理
         W->>C: mdmark check（Markdown の文字列）
         C->>R: 文字列を描くときと同じ読み取りで、記載の警告を集める
-        R-->>C: 注釈の記載の警告 4 件
+        R-->>C: 注記の記載の警告 4 件
         C-->>W: 場所・種類・内容の一覧・終了コード 0 以外
     expected:
       - ずれの行が 4 つあり、`missing` の参照・`unused` の定義・`cond` の 2 つ目の定義・補足の `gone` の参照をそれぞれ指す
-      - '`missing` と `gone` の行は定義の無い注釈の参照、`unused` の行は参照されていない注釈の定義、`cond` の行は重複した注釈の定義の種類を持つ'
+      - '`missing` と `gone` の行は定義の無い注記の参照、`unused` の行は参照されていない注記の定義、`cond` の行は重複した注記の定義の種類を持つ'
       - 各行の内容が、同じ文字列を描いたときの記載の警告と同じ
       - 終了コードが 0 以外
     test: test_normal_when_annotation_mismatch
