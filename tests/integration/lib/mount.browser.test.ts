@@ -17669,7 +17669,9 @@ test("test_normal_when_map_annotations", async () => {
   await userEvent.unhover(mark);
   // 検証: 説明を持たない線にも押せる帯があり、ツールチップは注記の区分だけ
   const hit = find<HTMLElement>(figure, '.map-wire-hit[data-wire="e1"]');
-  await userEvent.hover(hit);
+  // 透明な押せる帯は Playwright の hover の対象にならないため、ポインターのイベントを送信する
+  hit.dispatchEvent(new PointerEvent("pointerover", { bubbles: true }));
+  hit.dispatchEvent(new PointerEvent("pointerenter", { bubbles: true }));
   const wireTip = find<HTMLElement>(
     figure,
     '.mdmark-diagram-tip[data-tip-for="e1"]',
@@ -17680,7 +17682,7 @@ test("test_normal_when_map_annotations", async () => {
       (section) => section.textContent,
     ),
   ).toEqual(["注記 1条件を満たさないときは次の工程へ進む。"]);
-  await userEvent.unhover(hit);
+  hit.dispatchEvent(new PointerEvent("pointerleave", { bubbles: true }));
   // 検証: 一覧の注記 1 はノードと線の 2 つへ戻るリンクを持ち、押すと持ち主にフォーカスが移ってツールチップが開く
   const item = find<HTMLElement>(el, "details.mdmark-notes .mdmark-fn-item");
   const backs = [...item.querySelectorAll<HTMLElement>(".mdmark-fn-back")];
