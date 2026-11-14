@@ -158,6 +158,16 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
+/** 文字列のキーの値を確かめ、合わなければ理由を返却する。空にできるキーだけ空文字を受ける */
+function checkString(key: string, value: unknown): string | undefined {
+  if (typeof value !== "string") {
+    return `${key} は文字列にします`;
+  }
+  return value === "" && !EMPTY_ALLOWED.has(key)
+    ? `${key} は空にできません`
+    : undefined;
+}
+
 /** 値が型に合うか。合わなければ理由を返却する */
 function checkType(
   key: string,
@@ -174,12 +184,7 @@ function checkType(
     return typeof value === "boolean" ? undefined : `${key} は真偽値にします`;
   }
   if (shape.type === "string") {
-    if (typeof value !== "string") {
-      return `${key} は文字列にします`;
-    }
-    return value === "" && !EMPTY_ALLOWED.has(key)
-      ? `${key} は空にできません`
-      : undefined;
+    return checkString(key, value);
   }
   const ok =
     Array.isArray(value) &&
@@ -288,6 +293,34 @@ function checkDocRelated(options: {
   return valid;
 }
 
+/** 項目の 1 つのキーの値を確かめ、合わなければ `problems` に追加して偽を返却する。無いキーは必須のときだけ合わない */
+function checkKey(options: {
+  value: unknown;
+  key: string;
+  shape: KeyShape;
+  where: string;
+  problems: IndexProblem[];
+}): boolean {
+  const { value, key, shape, where, problems } = options;
+  if (value === undefined) {
+    if (shape.required) {
+      problems.push({ where, message: `${key} がありません` });
+    }
+    return !shape.required;
+  }
+  if (shape.type === "doc_tags") {
+    return checkDocTags({ value, where, problems });
+  }
+  if (shape.type === "doc_related") {
+    return checkDocRelated({ value, where, problems });
+  }
+  const message = checkType(key, value, shape);
+  if (message) {
+    problems.push({ where, message });
+  }
+  return message === undefined;
+}
+
 /** 要素 1 つをキーごとに検査し、合わない場所を `problems` に追加する。1 つでも合わなければ `false` */
 function checkItem(options: {
   item: unknown;
@@ -302,36 +335,14 @@ function checkItem(options: {
   }
   let valid = true;
   for (const [key, keyShape] of Object.entries(shape)) {
-    const value = item[key];
-    if (value === undefined) {
-      if (keyShape.required) {
-        problems.push({
-          where: `${where}.${key}`,
-          message: `${key} がありません`,
-        });
-        valid = false;
-      }
-      continue;
-    }
-    if (keyShape.type === "doc_tags") {
-      const tagsWhere = `${where}.${key}`;
-      if (!checkDocTags({ value, where: tagsWhere, problems })) {
-        valid = false;
-      }
-      continue;
-    }
-    if (keyShape.type === "doc_related") {
-      const relatedWhere = `${where}.${key}`;
-      if (!checkDocRelated({ value, where: relatedWhere, problems })) {
-        valid = false;
-      }
-      continue;
-    }
-    const message = checkType(key, value, keyShape);
-    if (message) {
-      problems.push({ where: `${where}.${key}`, message });
-      valid = false;
-    }
+    const checked = checkKey({
+      value: item[key],
+      key,
+      shape: keyShape,
+      where: `${where}.${key}`,
+      problems,
+    });
+    valid = checked && valid;
   }
   for (const key of Object.keys(item)) {
     if (!Object.hasOwn(shape, key)) {

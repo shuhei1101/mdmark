@@ -86,6 +86,31 @@ function encodePayload(payload: ExportPayload): string {
   return JSON.stringify(payload).replaceAll("<", "\\u003c");
 }
 
+/** 空でない CSS の `style` 要素（隠すときは mdmark の名前を隠す） */
+function styleTags(styles: string[], hide: boolean): string {
+  return styles
+    .filter((css) => css !== "")
+    .map((css) => `<style>${escapeStyle(hide ? hideCss(css) : css)}</style>`)
+    .join("");
+}
+
+/** アイコンを埋めたときの lucide のライセンスの表記。隠すときはライセンスの表記を HTML のコメントにせず、スクリプトの先頭の注釈に置く */
+function lucideLicense(options: {
+  payload: ExportPayload;
+  script: string;
+  hide: boolean;
+}): { comment: string; script: string } {
+  const { payload, script, hide } = options;
+  const hasIcons = payload.icons && Object.keys(payload.icons).length > 0;
+  if (!hasIcons) {
+    return { comment: "", script };
+  }
+  const license = `lucide ${LUCIDE_VERSION} - ISC License (c) Lucide Contributors / MIT License (c) 2013-present Cole Bemis`;
+  return hide
+    ? { comment: "", script: `/*! ${license} */\n${script}` }
+    : { comment: `<!-- ${license} -->`, script };
+}
+
 /** 配布物の CSS・利用側の CSS・書き出しの中身・まとめたスクリプトを埋めた 1 枚の HTML を返却する */
 export function assembleHtml(parts: {
   /** 埋める中身 */
@@ -107,15 +132,8 @@ export function assembleHtml(parts: {
   const skeleton = payload.kind === "bundle" ? BUNDLE_BODY : DOCUMENT_BODY;
   const body = hide ? hideNames(skeleton) : skeleton;
   const payloadId = hide ? hideNames(PAYLOAD_ID) : PAYLOAD_ID;
-  const styles = [distCss, themeCss ?? ""]
-    .filter((css) => css !== "")
-    .map((css) => `<style>${escapeStyle(hide ? hideCss(css) : css)}</style>`)
-    .join("");
-  const hasIcons = payload.icons && Object.keys(payload.icons).length > 0;
-  const lucideLicense = `lucide ${LUCIDE_VERSION} - ISC License (c) Lucide Contributors / MIT License (c) 2013-present Cole Bemis`;
-  // 隠すときはライセンスの表記を HTML のコメントにせず、スクリプトの先頭の注釈に置く
-  const moduleScript =
-    hide && hasIcons ? `/*! ${lucideLicense} */\n${script}` : script;
+  const styles = styleTags([distCss, themeCss ?? ""], hide);
+  const license = lucideLicense({ payload, script, hide });
   return [
     "<!doctype html>",
     '<html lang="ja">',
@@ -128,9 +146,9 @@ export function assembleHtml(parts: {
     "</head>",
     "<body>",
     body,
-    hasIcons && !hide ? `<!-- ${lucideLicense} -->` : "",
+    license.comment,
     `<script type="application/json" id="${payloadId}">${encodePayload(payload)}</script>`,
-    `<script type="module">${moduleScript}</script>`,
+    `<script type="module">${license.script}</script>`,
     "</body>",
     "</html>",
     "",

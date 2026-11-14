@@ -12,12 +12,30 @@ import tseslint from "typescript-eslint";
 const REPO_ROOT = fileURLToPath(new URL("../..", import.meta.url));
 /** ESLint を適用する Webview のフォルダ */
 const WEBVIEW = "vscode/src/webview";
+/** 複雑さの規則を適用する TypeScript */
+const COMPLEXITY_FILES = [
+  "src/**/*.ts",
+  "scripts/**/*.ts",
+  "vscode/src/**/*.{ts,tsx}",
+  "plugin/**/*.ts",
+];
 
 export default defineConfig([
-  // 引数が無いときも Webview の外（dist/ の JS など）を検査しない
   {
     basePath: REPO_ROOT,
-    ignores: ["**", "!vscode/", "!vscode/src/", `!${WEBVIEW}/**`],
+    ignores: ["**/node_modules/**", "**/dist/**", "**/*.{js,mjs,cjs}"],
+  },
+  {
+    basePath: REPO_ROOT,
+    files: COMPLEXITY_FILES,
+    languageOptions: { parser: tseslint.parser },
+    plugins: { sonarjs },
+    rules: {
+      complexity: ["error", 10],
+      "max-depth": ["error", 4],
+      "max-params": ["error", 3],
+      "sonarjs/cognitive-complexity": ["error", 15],
+    },
   },
   {
     basePath: REPO_ROOT,
@@ -117,10 +135,6 @@ export default defineConfig([
           ],
         },
       ],
-      complexity: ["error", 10],
-      "max-depth": ["error", 4],
-      "max-params": ["error", 3],
-      "sonarjs/cognitive-complexity": ["error", 15],
       "func-style": ["error", "expression"],
       "no-restricted-syntax": [
         "error",

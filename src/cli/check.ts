@@ -2,6 +2,7 @@ import { readFile, stat } from "node:fs/promises";
 import { homedir } from "node:os";
 import { basename, dirname, join, relative, resolve, sep } from "node:path";
 import { build } from "esbuild";
+import type { Token } from "markdown-it";
 import MarkdownIt from "markdown-it";
 import { bundleModule } from "../bundle-module.ts";
 import {
@@ -276,6 +277,39 @@ export async function importBundledCode(code: string): Promise<unknown> {
   return import(url);
 }
 
+/** 拡張のモジュール 1 つをまとめて読み込み、既定の書き出しの `directive` を返却する。まとめられない・読み込めない・`directive` が無いときは、ずれの文言 */
+async function readExtensionDirective(options: {
+  loaded: LoadedConfig;
+  path: string;
+  where: string;
+  importCode: (code: string) => Promise<unknown>;
+}): Promise<{ directive: string } | { message: string }> {
+  const { loaded, path, where, importCode } = options;
+  const bundled = await bundleModule(path, loaded.dir, { build });
+  if ("error" in bundled) {
+    return {
+      message: `\`${where}\` の \`${path}\` をまとめられません（${bundled.error}）。拡張のモジュールを修正してください。`,
+    };
+  }
+  let module: unknown;
+  try {
+    module = await importCode(bundled.code);
+  } catch (error) {
+    const reason =
+      error instanceof Error ? error.message.split("\n")[0] : String(error);
+    return {
+      message: `\`${where}\` の \`${path}\` を読み込めません（${reason}）。モジュールの読み込みの時点でブラウザの API を使用する処理は、\`load\` の中へ移してください。`,
+    };
+  }
+  const directive = (module as { default?: { directive?: unknown } } | null)
+    ?.default?.directive;
+  return typeof directive === "string" && MARK_NAME_PATTERN.test(directive)
+    ? { directive }
+    : {
+        message: `\`${where}\` の \`${path}\` の既定の書き出しに \`directive\` がありません。英小文字で始まるマーカーの名前を \`directive\` に記載してください。`,
+      };
+}
+
 /** 設定の `extensions` の拡張をまとめて Node で読み込み、既定の書き出しの `directive` を集める。まとめられない・読み込めない・`directive` がマーカーの名前でない拡張は `schema` のずれにする */
 export async function loadExtensionDirectives(
   loaded: LoadedConfig,
@@ -290,42 +324,16 @@ export async function loadExtensionDirectives(
     if (!(await exists(resolve(loaded.dir, path)))) {
       continue;
     }
-    const bundled = await bundleModule(path, loaded.dir, undefined, build);
-    if ("error" in bundled) {
-      issues.push({
-        file,
-        where,
-        kind: "schema",
-        message: `\`${where}\` の \`${path}\` をまとめられません（${bundled.error}）。拡張のモジュールを修正してください。`,
-      });
-      continue;
-    }
-    let module: unknown;
-    try {
-      module = await importCode(bundled.code);
-    } catch (error) {
-      const reason =
-        error instanceof Error ? error.message.split("\n")[0] : String(error);
-      issues.push({
-        file,
-        where,
-        kind: "schema",
-        message: `\`${where}\` の \`${path}\` を読み込めません（${reason}）。モジュールの読み込みの時点でブラウザの API を使用する処理は、\`load\` の中へ移してください。`,
-      });
-      continue;
-    }
-    const extension = (module as { default?: { directive?: unknown } } | null)
-      ?.default;
-    const directive = extension?.directive;
-    if (typeof directive === "string" && MARK_NAME_PATTERN.test(directive)) {
-      directives.add(directive);
+    const read = await readExtensionDirective({
+      loaded,
+      path,
+      where,
+      importCode,
+    });
+    if ("directive" in read) {
+      directives.add(read.directive);
     } else {
-      issues.push({
-        file,
-        where,
-        kind: "schema",
-        message: `\`${where}\` の \`${path}\` の既定の書き出しに \`directive\` がありません。英小文字で始まるマーカーの名前を \`directive\` に記載してください。`,
-      });
+      issues.push({ file, where, kind: "schema", message: read.message });
     }
   }
   return { directives, issues };
@@ -356,6 +364,34 @@ const MAP_ENUMS = {
   head: ["filled", "open", "none"],
 } as const;
 
+/** 設定の `map` の `kinds`・`lines` の行の、値を決めたキーの場所と値と取れる値 */
+function mapRowValues(
+  value: Record<string, unknown>,
+): Array<{ where: string; item: unknown; allowed: readonly string[] }> {
+  const values: Array<{
+    where: string;
+    item: unknown;
+    allowed: readonly string[];
+  }> = [];
+  for (const [group, keys] of [
+    ["kinds", ["shape"]],
+    ["lines", ["dash", "width", "head"]],
+  ] as const) {
+    const rows = value[group];
+    if (typeof rows !== "object" || rows === null) continue;
+    for (const [name, row] of Object.entries(rows)) {
+      if (typeof row !== "object" || row === null) continue;
+      for (const key of keys)
+        values.push({
+          where: `map.${group}.${name}.${key}`,
+          item: (row as Record<string, unknown>)[key],
+          allowed: MAP_ENUMS[key],
+        });
+    }
+  }
+  return values;
+}
+
 /** 設定の `map` の値のうち、記載できる値に無いものを `schema` のずれにして返却する（描くときは既定にする） */
 function checkMapValues(map: unknown, file: string): CheckIssue[] {
   const issues: CheckIssue[] = [];
@@ -378,21 +414,8 @@ function checkMapValues(map: unknown, file: string): CheckIssue[] {
       kind: "schema",
       message: "`map.url_state` は `true` か `false` で記載してください。",
     });
-  for (const [group, keys] of [
-    ["kinds", ["shape"]],
-    ["lines", ["dash", "width", "head"]],
-  ] as const) {
-    const rows = value[group];
-    if (typeof rows !== "object" || rows === null) continue;
-    for (const [name, row] of Object.entries(rows)) {
-      if (typeof row !== "object" || row === null) continue;
-      for (const key of keys)
-        check(
-          `map.${group}.${name}.${key}`,
-          (row as Record<string, unknown>)[key],
-          MAP_ENUMS[key],
-        );
-    }
+  for (const { where, item, allowed } of mapRowValues(value)) {
+    check(where, item, allowed);
   }
   return issues;
 }
@@ -530,57 +553,80 @@ const UNCHECKED_MARKS = new Set(["map", "map-data"]);
 /** 記載の警告の文から、行内のコードの `` ` `` を除く */
 const plainOf = (text: string): string => text.replaceAll("`", "");
 
+/** 点検するマーカーなら、mdmark のマーカーか、拡張のマーカーか（閉じ・点検しないマーカー・知らないマーカーは `undefined`） */
+function markKind(
+  mark: ReturnType<typeof findMarkTexts>[number],
+  embedNames: Set<string>,
+): { own: boolean; isExtension: boolean } | undefined {
+  if (mark.closing || UNCHECKED_MARKS.has(mark.name)) {
+    return undefined;
+  }
+  const own =
+    mark.name === FEATURES_MARK ||
+    mark.name === PAGE_MARK ||
+    Object.hasOwn(SYNTAX_MARKS, mark.name);
+  const isExtension = !own && embedNames.has(mark.name);
+  return own || isExtension ? { own, isExtension } : undefined;
+}
+
+/** マーカー 1 つの引数のずれと注意（`mark` は `findMarkTexts` の 1 件）。点検しないマーカーは空 */
+function markIssues(
+  mark: ReturnType<typeof findMarkTexts>[number],
+  embedNames: Set<string>,
+): Array<{ kind: CheckIssue["kind"]; message: string }> {
+  const checked = markKind(mark, embedNames);
+  if (checked === undefined) {
+    return [];
+  }
+  const { own, isExtension } = checked;
+  const args = readMarkArgs(mark.args);
+  if (args.kind === "invalid") {
+    return [
+      {
+        kind: "mark_option_invalid",
+        message: plainOf(`${mark.raw}${args.message}`),
+      },
+    ];
+  }
+  const found: Array<{ kind: CheckIssue["kind"]; message: string }> = [];
+  let options = args.kind === "json" ? args.options : {};
+  let unknownKeys: string[] = [];
+  if (args.kind === "json" && own) {
+    const checked = validateMarkOptions({ name: mark.name, options });
+    options = checked.options;
+    unknownKeys = checked.unknownKeys;
+    for (const problem of checked.problems) {
+      found.push({
+        kind: "mark_option_invalid",
+        message: plainOf(`${mark.raw}${problem.message}`),
+      });
+    }
+  }
+  const notes = markOptionNotes({
+    name: mark.name,
+    source: args.kind,
+    options,
+    unknownKeys,
+    isExtension,
+  });
+  return [...found, ...notes];
+}
+
 /** 文書ごとに取得した記法のマーカーと、拡張・`libraries` のマーカーの引数を読み、引数の誤りを `mark_option_invalid`、注記をその種類のずれにする */
 export function checkMarkOptions(
   documents: Array<{ path: string; markdown: string }>,
   embedNames: Set<string>,
 ): CheckIssue[] {
-  const issues: CheckIssue[] = [];
-  for (const document of documents) {
-    for (const mark of findMarkTexts(document.markdown)) {
-      if (mark.closing || UNCHECKED_MARKS.has(mark.name)) {
-        continue;
-      }
-      const own =
-        mark.name === FEATURES_MARK ||
-        mark.name === PAGE_MARK ||
-        Object.hasOwn(SYNTAX_MARKS, mark.name);
-      const isExtension = !own && embedNames.has(mark.name);
-      if (!own && !isExtension) {
-        continue;
-      }
-      const where = String(mark.line);
-      const args = readMarkArgs(mark.args);
-      const push = (kind: CheckIssue["kind"], message: string): void => {
-        issues.push({ file: document.path, where, kind, message });
-      };
-      if (args.kind === "invalid") {
-        push("mark_option_invalid", plainOf(`${mark.raw}${args.message}`));
-        continue;
-      }
-      const source = args.kind;
-      let options = args.kind === "json" ? args.options : {};
-      let unknownKeys: string[] = [];
-      if (args.kind === "json" && own) {
-        const checked = validateMarkOptions({ name: mark.name, options });
-        options = checked.options;
-        unknownKeys = checked.unknownKeys;
-        for (const problem of checked.problems) {
-          push("mark_option_invalid", plainOf(`${mark.raw}${problem.message}`));
-        }
-      }
-      for (const note of markOptionNotes({
-        name: mark.name,
-        source,
-        options,
-        unknownKeys,
-        isExtension,
-      })) {
-        push(note.kind, note.message);
-      }
-    }
-  }
-  return issues;
+  return documents.flatMap((document) =>
+    findMarkTexts(document.markdown).flatMap((mark) =>
+      markIssues(mark, embedNames).map(({ kind, message }) => ({
+        file: document.path,
+        where: String(mark.line),
+        kind,
+        message,
+      })),
+    ),
+  );
 }
 
 /** html_block の中身が、名前のマーカー 1 つだけなら、その引数（無ければ空）と閉じかを返す */
@@ -601,6 +647,62 @@ const onlyMark = (
   };
 };
 
+/** map の範囲の中のトークン 1 つを、範囲の中身へ加える。最初の mermaid のコードブロックと最初の map-data の引数を取り、数を数える */
+const addMapInner = (range: MapRangeSource, inner: Token, at: number): void => {
+  if (
+    inner.type === "fence" &&
+    inner.info.trim().split(/\s+/)[0] === "mermaid"
+  ) {
+    range.mermaidCount += 1;
+    if (range.mermaid === undefined) {
+      range.mermaid = inner.content;
+      range.mermaidLine = at + 1;
+    }
+    return;
+  }
+  const data =
+    inner.type === "html_block"
+      ? onlyMark(inner.content, "map-data")
+      : undefined;
+  if (data) {
+    range.dataCount += 1;
+    if (range.data === undefined) {
+      range.data = data.rest;
+      range.dataLine = at + data.offset;
+    }
+  }
+};
+
+/** map の閉じのマーカーの html_block か */
+const isMapClose = (inner: Token): boolean =>
+  inner.type === "html_block" &&
+  onlyMark(inner.content, "map")?.closing === true;
+
+/** 開きのマーカーの次のトークンから閉じのマーカーまでを範囲の中身にし、閉じのマーカーの位置（閉じが無ければトークンの数）を返却する */
+const readMapRange = (options: {
+  tokens: Token[];
+  from: number;
+  args: string;
+  start: number;
+}): { range: MapRangeSource; next: number } => {
+  const { tokens, from, args, start } = options;
+  const range: MapRangeSource = {
+    args,
+    mermaid: undefined,
+    mermaidCount: 0,
+    data: undefined,
+    dataCount: 0,
+  };
+  let next = from;
+  for (; next < tokens.length; next++) {
+    const inner = tokens[next];
+    if (!inner) continue;
+    if (isMapClose(inner)) break;
+    addMapInner(range, inner, (inner.map?.[0] ?? start) - start);
+  }
+  return { range, next };
+};
+
 /** 文書の map の範囲ごとに、開きのマーカーの行（1 から）と、範囲の中身を返却する（`buildMapRanges` と同じ範囲の読み込み方） */
 const findMapRanges = (
   markdown: string,
@@ -613,41 +715,12 @@ const findMapRanges = (
       token?.type === "html_block" ? onlyMark(token.content, "map") : undefined;
     if (!token || !open || open.closing) continue;
     const start = token.map?.[0] ?? 0;
-    const range: MapRangeSource = {
+    const { range, next } = readMapRange({
+      tokens,
+      from: index + 1,
       args: open.rest,
-      mermaid: undefined,
-      mermaidCount: 0,
-      data: undefined,
-      dataCount: 0,
-    };
-    let next = index + 1;
-    for (; next < tokens.length; next++) {
-      const inner = tokens[next];
-      if (!inner) continue;
-      const mark =
-        inner.type === "html_block"
-          ? (onlyMark(inner.content, "map") ??
-            onlyMark(inner.content, "map-data"))
-          : undefined;
-      if (mark?.closing && onlyMark(inner.content, "map")) break;
-      const at = (inner.map?.[0] ?? start) - start;
-      if (
-        inner.type === "fence" &&
-        inner.info.trim().split(/\s+/)[0] === "mermaid"
-      ) {
-        range.mermaidCount += 1;
-        if (range.mermaid === undefined) {
-          range.mermaid = inner.content;
-          range.mermaidLine = at + 1;
-        }
-      } else if (mark && onlyMark(inner.content, "map-data")) {
-        range.dataCount += 1;
-        if (range.data === undefined) {
-          range.data = mark.rest;
-          range.dataLine = at + mark.offset;
-        }
-      }
-    }
+      start,
+    });
     ranges.push({ line: start + 1, range });
     index = next;
   }
@@ -671,10 +744,9 @@ export function checkMaps(
       features.annotations === false ? undefined : new Set(annotationIds);
     for (const { line, range } of findMapRanges(document.markdown)) {
       for (const problem of collectMapProblems(
-        range,
+        { ...range, annotationIds: annotations },
         config.map,
         true,
-        annotations,
       )) {
         issues.push({
           file: document.path,
@@ -781,8 +853,18 @@ export async function collectCheckIssues(
 ): Promise<CheckIssue[]> {
   const cwd = options.cwd ?? dirname(path);
   const layered = options.explicit
-    ? await readLayeredConfig(cwd, path, "export", true)
-    : await readLayeredConfig(dirname(path), undefined, "export", true);
+    ? await readLayeredConfig({
+        cwd,
+        explicit: path,
+        purpose: "export",
+        keepInvalid: true,
+      })
+    : await readLayeredConfig({
+        cwd: dirname(path),
+        explicit: undefined,
+        purpose: "export",
+        keepInvalid: true,
+      });
   const shown = (target: string) =>
     displayConfigPath({ path: target, base: cwd, home: homedir() });
   if (layered.unreadable) {
@@ -862,6 +944,25 @@ export async function collectCheckIssues(
   ];
 }
 
+/** `--text` と一緒に指定できない引数を指定していれば、例外を投げる */
+function checkTextArgs(options: {
+  file?: string | undefined;
+  key?: string | undefined;
+  base?: string | undefined;
+}): void {
+  const { file, key, base } = options;
+  const others = [
+    ...(base !== undefined ? ["--base"] : []),
+    ...(file !== undefined ? ["--file"] : []),
+    ...(key !== undefined ? ["--key"] : []),
+  ];
+  if (others.length > 0) {
+    throw new CliError(
+      `--text は ${others.join("・")} と一緒に指定できません。Markdown の文字列は --text だけで、YAML のキーの値は --file と --key で点検してください。`,
+    );
+  }
+}
+
 /** `--text`・`--file`・`--key`・`--base` の組を確認し、一緒に指定できない引数か足りない引数があれば `CliError` を投げる */
 export function validateSourceArgs(options: {
   text?: string | undefined;
@@ -871,16 +972,7 @@ export function validateSourceArgs(options: {
 }): void {
   const { text, file, key, base } = options;
   if (text !== undefined) {
-    const others = [
-      ...(base !== undefined ? ["--base"] : []),
-      ...(file !== undefined ? ["--file"] : []),
-      ...(key !== undefined ? ["--key"] : []),
-    ];
-    if (others.length > 0) {
-      throw new CliError(
-        `--text は ${others.join("・")} と一緒に指定できません。Markdown の文字列は --text だけで、YAML のキーの値は --file と --key で点検してください。`,
-      );
-    }
+    checkTextArgs(options);
     return;
   }
   if (file === undefined && key === undefined) {

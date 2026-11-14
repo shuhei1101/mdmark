@@ -146,11 +146,15 @@ functions:
         type: MapView
         required: true
         description: 見せ方
-      - name: overrides
+      - name: options
+        type: '{ overrides: Record<string, MapOverride>; nodeFit: "height" | "width" }'
+        required: true
+        description: ID ごとの上書きと、ノードの大きさの合わせ方
+      - name: options.overrides
         type: Record<string, MapOverride>
         required: true
         description: ID ごとの上書き
-      - name: nodeFit
+      - name: options.nodeFit
         type: '"height" | "width"'
         required: true
         description: 設定の `map.node_fit`

@@ -158,20 +158,17 @@ const DECIDING_KEYS: Readonly<Record<string, readonly string[]>> = {
   filter: ["type"],
 };
 
-/** スキーマから見本の値を作る */
-const exampleOf = (node: MarkSchema, root: MarkSchema): unknown => {
-  const resolved = resolve(node, root);
-  if (resolved.anyOf?.[0]) {
-    return exampleOf(resolved.anyOf[0], root);
-  }
-  if (resolved.enum?.[0] !== undefined) {
-    return resolved.enum[0];
-  }
+/** オブジェクトのスキーマの見本の値（最初のキーだけを持つ） */
+const exampleObject = (resolved: MarkSchema, root: MarkSchema): unknown => {
+  const [first] = Object.entries(resolved.properties ?? {});
+  return first ? { [first[0]]: exampleOf(first[1], root) } : {};
+};
+
+/** スキーマの型から見本の値を作る */
+const exampleOfType = (resolved: MarkSchema, root: MarkSchema): unknown => {
   switch (resolved.type) {
-    case "object": {
-      const [first] = Object.entries(resolved.properties ?? {});
-      return first ? { [first[0]]: exampleOf(first[1], root) } : {};
-    }
+    case "object":
+      return exampleObject(resolved, root);
     case "array":
       return resolved.items ? [exampleOf(resolved.items, root)] : [];
     case "string":
@@ -186,22 +183,40 @@ const exampleOf = (node: MarkSchema, root: MarkSchema): unknown => {
   }
 };
 
-/** スキーマが受け付ける値の説明 */
-const expectedOf = (node: MarkSchema, root: MarkSchema): string => {
+/** スキーマから見本の値を作る */
+const exampleOf = (node: MarkSchema, root: MarkSchema): unknown => {
   const resolved = resolve(node, root);
-  if (resolved.anyOf) {
-    return resolved.anyOf.map((item) => expectedOf(item, root)).join("か、");
+  if (resolved.anyOf?.[0]) {
+    return exampleOf(resolved.anyOf[0], root);
   }
-  if (resolved.enum) {
-    return `${resolved.enum.map((value) => `\`${show(value)}\``).join("・")} のどれか`;
+  if (resolved.enum?.[0] !== undefined) {
+    return resolved.enum[0];
   }
+  return exampleOfType(resolved, root);
+};
+
+/** 整数のスキーマが受け付ける値の説明 */
+const expectedInteger = (resolved: MarkSchema): string => {
+  const { minimum, maximum } = resolved;
+  if (minimum !== undefined && maximum !== undefined) {
+    return `${minimum}〜${maximum} の整数`;
+  }
+  return minimum !== undefined ? `${minimum} 以上の整数` : "整数";
+};
+
+/** オブジェクトのスキーマが受け付ける値の説明 */
+const expectedObject = (resolved: MarkSchema): string => {
+  const keys = Object.keys(resolved.properties ?? {});
+  return keys.length > 0
+    ? `${keys.map((key) => `\`${key}\``).join("・")} を持つオブジェクト`
+    : "オブジェクト";
+};
+
+/** スキーマの型が受け付ける値の説明 */
+const expectedOfType = (resolved: MarkSchema): string => {
   switch (resolved.type) {
-    case "object": {
-      const keys = Object.keys(resolved.properties ?? {});
-      return keys.length > 0
-        ? `${keys.map((key) => `\`${key}\``).join("・")} を持つオブジェクト`
-        : "オブジェクト";
-    }
+    case "object":
+      return expectedObject(resolved);
     case "array":
       return "配列";
     case "string":
@@ -209,11 +224,7 @@ const expectedOf = (node: MarkSchema, root: MarkSchema): string => {
         ? `${resolved.minLength} 文字以上の文字`
         : "文字";
     case "integer":
-      return resolved.minimum !== undefined && resolved.maximum !== undefined
-        ? `${resolved.minimum}〜${resolved.maximum} の整数`
-        : resolved.minimum !== undefined
-          ? `${resolved.minimum} 以上の整数`
-          : "整数";
+      return expectedInteger(resolved);
     case "number":
       return resolved.minimum !== undefined
         ? `${resolved.minimum} 以上の数`
@@ -223,6 +234,18 @@ const expectedOf = (node: MarkSchema, root: MarkSchema): string => {
     default:
       return "値";
   }
+};
+
+/** スキーマが受け付ける値の説明 */
+const expectedOf = (node: MarkSchema, root: MarkSchema): string => {
+  const resolved = resolve(node, root);
+  if (resolved.anyOf) {
+    return resolved.anyOf.map((item) => expectedOf(item, root)).join("か、");
+  }
+  if (resolved.enum) {
+    return `${resolved.enum.map((value) => `\`${show(value)}\``).join("・")} のどれか`;
+  }
+  return expectedOfType(resolved);
 };
 
 /** 値がスキーマの型に合うか */
@@ -247,13 +270,12 @@ const matchesType = (type: string | undefined, value: unknown): boolean => {
   }
 };
 
+/** 検証する場所（スキーマの根・値・キーのパス） */
+type CheckAt = { root: MarkSchema; value: unknown; path: string };
+
 /** 型・選べる値・範囲の誤りの文 */
-const mismatchMessage = (
-  path: string,
-  node: MarkSchema,
-  root: MarkSchema,
-  value: unknown,
-): string => {
+const mismatchMessage = (node: MarkSchema, at: CheckAt): string => {
+  const { root, value, path } = at;
   const resolved = resolve(node, root);
   if (resolved.enum && matchesType(resolved.type, value)) {
     const values = resolved.enum
@@ -264,61 +286,64 @@ const mismatchMessage = (
   return `の \`${path}\` には ${expectedOf(node, root)} を記載してください（例 \`${show(exampleOf(node, root))}\`）。この設定を当てずに描いています。`;
 };
 
-/** 値をスキーマで検証し、誤りと知らないキーを除いた値を返却する */
-const check = (
-  node: MarkSchema,
-  root: MarkSchema,
-  value: unknown,
-  path: string,
-): Checked => {
-  const resolved = resolve(node, root);
-  if (resolved.anyOf) {
-    for (const alternative of resolved.anyOf) {
-      const result = check(alternative, root, value, path);
-      if (result.value !== REMOVED && result.problems.length === 0) {
-        return result;
-      }
-    }
-    return {
-      value: REMOVED,
-      problems: [{ path, message: mismatchMessage(path, node, root, value) }],
-      unknownKeys: [],
-    };
-  }
-  const invalid = (): Checked => ({
-    value: REMOVED,
-    problems: [{ path, message: mismatchMessage(path, node, root, value) }],
-    unknownKeys: [],
-  });
-  if (!matchesType(resolved.type, value)) {
-    return invalid();
-  }
-  if (resolved.enum && !resolved.enum.includes(value)) {
-    return invalid();
-  }
-  if (resolved.const !== undefined && resolved.const !== value) {
-    return invalid();
-  }
+/** 値を取り除き、誤りの文を持つ結果 */
+const invalidResult = (node: MarkSchema, at: CheckAt): Checked => ({
+  value: REMOVED,
+  problems: [{ path: at.path, message: mismatchMessage(node, at) }],
+  unknownKeys: [],
+});
+
+/** 数・文字の値が、範囲・最短の長さから外れるか */
+const outOfRange = (resolved: MarkSchema, value: unknown): boolean => {
   if (typeof value === "number") {
-    if (
+    return (
       (resolved.minimum !== undefined && value < resolved.minimum) ||
       (resolved.maximum !== undefined && value > resolved.maximum)
-    ) {
-      return invalid();
-    }
+    );
   }
-  if (
+  return (
     typeof value === "string" &&
     resolved.minLength !== undefined &&
     value.length < resolved.minLength
-  ) {
-    return invalid();
+  );
+};
+
+/** 値がスキーマの型・選べる値・定数・範囲に合わないか */
+const violates = (resolved: MarkSchema, value: unknown): boolean =>
+  !matchesType(resolved.type, value) ||
+  (resolved.enum !== undefined && !resolved.enum.includes(value)) ||
+  (resolved.const !== undefined && resolved.const !== value) ||
+  outOfRange(resolved, value);
+
+/** 候補のスキーマのうち、誤り無く合う最初の結果（無ければ取り除く） */
+const checkAnyOf = (
+  node: MarkSchema,
+  context: { alternatives: MarkSchema[]; at: CheckAt },
+): Checked => {
+  for (const alternative of context.alternatives) {
+    const result = check(alternative, context.at);
+    if (result.value !== REMOVED && result.problems.length === 0) {
+      return result;
+    }
+  }
+  return invalidResult(node, context.at);
+};
+
+/** 値をスキーマで検証し、誤りと知らないキーを除いた値を返却する */
+const check = (node: MarkSchema, at: CheckAt): Checked => {
+  const { root, value, path } = at;
+  const resolved = resolve(node, root);
+  if (resolved.anyOf) {
+    return checkAnyOf(node, { alternatives: resolved.anyOf, at });
+  }
+  if (violates(resolved, value)) {
+    return invalidResult(node, at);
   }
   if (Array.isArray(value)) {
-    return checkArray(resolved, root, value, path);
+    return checkArray(resolved, { root, value, path });
   }
   if (isMarkOptions(value) && resolved.type === "object") {
-    return checkObject(resolved, root, value, path);
+    return checkObject(resolved, { root, value, path });
   }
   return { value, problems: [], unknownKeys: [] };
 };
@@ -326,16 +351,15 @@ const check = (
 /** 配列の要素を検証し、取り除いた要素を詰める */
 const checkArray = (
   node: MarkSchema,
-  root: MarkSchema,
-  value: unknown[],
-  path: string,
+  at: { root: MarkSchema; value: unknown[]; path: string },
 ): Checked => {
+  const { root, value, path } = at;
   const out: unknown[] = [];
   const problems: MarkProblem[] = [];
   const unknownKeys: string[] = [];
   value.forEach((item, index) => {
     const result = node.items
-      ? check(node.items, root, item, childPath(path, index))
+      ? check(node.items, { root, value: item, path: childPath(path, index) })
       : { value: item, problems: [], unknownKeys: [] };
     problems.push(...result.problems);
     unknownKeys.push(...result.unknownKeys);
@@ -346,29 +370,40 @@ const checkArray = (
   return { value: out, problems, unknownKeys };
 };
 
-/** オブジェクトのキーを検証し、知らないキーと誤りの値を除き、必須のキーが欠けたら取り除く */
-const checkObject = (
+/** オブジェクトの値 */
+type ObjectAt = { root: MarkSchema; value: MarkOptions; path: string };
+
+/** キーのスキーマ（`properties` に無ければ `additionalProperties`） */
+const propertySchemaOf = (
   node: MarkSchema,
-  root: MarkSchema,
-  value: MarkOptions,
-  path: string,
-): Checked => {
+  key: string,
+): MarkSchema | undefined =>
+  node.properties?.[key] ??
+  (typeof node.additionalProperties === "object"
+    ? node.additionalProperties
+    : undefined);
+
+/** オブジェクトのキーごとに検証し、知らないキーと誤りの値を除く */
+const checkProperties = (
+  node: MarkSchema,
+  at: ObjectAt,
+): Checked & { value: MarkOptions; removed: Set<string> } => {
+  const { root, value, path } = at;
   const out: MarkOptions = {};
   const problems: MarkProblem[] = [];
   const unknownKeys: string[] = [];
   const removed = new Set<string>();
   for (const [key, child] of Object.entries(value)) {
-    const property = node.properties?.[key];
-    const schema =
-      property ??
-      (typeof node.additionalProperties === "object"
-        ? node.additionalProperties
-        : undefined);
+    const schema = propertySchemaOf(node, key);
     if (schema === undefined) {
       unknownKeys.push(childPath(path, key));
       continue;
     }
-    const result = check(schema, root, child, childPath(path, key));
+    const result = check(schema, {
+      root,
+      value: child,
+      path: childPath(path, key),
+    });
     problems.push(...result.problems);
     unknownKeys.push(...result.unknownKeys);
     if (result.value === REMOVED) {
@@ -377,41 +412,60 @@ const checkObject = (
       out[key] = result.value;
     }
   }
-  const missing = (node.required ?? []).filter(
-    (key) => !Object.hasOwn(value, key),
-  );
-  if (missing.length > 0) {
-    for (const key of missing) {
-      const where = childPath(path, key);
-      const example = node.properties?.[key]
-        ? ` \`${show({ [key]: exampleOf(node.properties[key], root) })}\` のように記載してください。`
+  return { value: out, problems, unknownKeys, removed };
+};
+
+/** 必須のキーが欠けた誤り */
+const missingProblems = (node: MarkSchema, at: ObjectAt): MarkProblem[] => {
+  const { root, value, path } = at;
+  return (node.required ?? [])
+    .filter((key) => !Object.hasOwn(value, key))
+    .map((key) => {
+      const property = node.properties?.[key];
+      const example = property
+        ? ` \`${show({ [key]: exampleOf(property, root) })}\` のように記載してください。`
         : "";
       const owner = path === "" ? "" : `の \`${path}\` `;
-      problems.push({
-        path: where,
+      return {
+        path: childPath(path, key),
         message: `${owner}に必須の \`${key}\` がありません。${example}この設定を当てずに描いています。`,
-      });
-    }
-    // 引数そのもの（最上位）は取り除かない
-    if (path !== "") {
-      return { value: REMOVED, problems, unknownKeys };
-    }
+      };
+    });
+};
+
+/** 誤りで取り除いたキーが必須か、オブジェクトの振る舞いを決めるキーなら、このオブジェクトも当てない */
+const removesOwner = (
+  node: MarkSchema,
+  context: { path: string; removed: Set<string> },
+): boolean => {
+  const { path, removed } = context;
+  if (path === "") {
+    return false;
   }
-  // 誤りで取り除いたキーが必須か、オブジェクトの振る舞いを決めるキーなら、このオブジェクトも当てない
   const owner =
     path
       .split(/\.|\[\d+\]/)
       .filter(Boolean)
       .at(-1) ?? "";
+  return [...(node.required ?? []), ...(DECIDING_KEYS[owner] ?? [])].some(
+    (key) => removed.has(key),
+  );
+};
+
+/** オブジェクトのキーを検証し、知らないキーと誤りの値を除き、必須のキーが欠けたら取り除く */
+const checkObject = (node: MarkSchema, at: ObjectAt): Checked => {
+  const { path } = at;
+  const { removed, ...checked } = checkProperties(node, at);
+  const missing = missingProblems(node, at);
+  checked.problems.push(...missing);
+  // 引数そのもの（最上位）は取り除かない
   if (
-    path !== "" &&
-    [...(node.required ?? []), ...(DECIDING_KEYS[owner] ?? [])].some((key) =>
-      removed.has(key),
-    )
+    (missing.length > 0 && path !== "") ||
+    removesOwner(node, { path, removed })
   ) {
-    return { value: REMOVED, problems, unknownKeys };
+    return { ...checked, value: REMOVED };
   }
-  return { value: out, problems, unknownKeys };
+  return checked;
 };
 
 /** マーカーの設定を、マーカーの JSON Schema で確かめ、誤りの値と知らないキーを除いた設定を返却する。スキーマの無い名前は確かめない */
@@ -427,12 +481,11 @@ export const validateMarkOptions = (options: {
   if (schema === undefined) {
     return { options: options.options, problems: [], unknownKeys: [] };
   }
-  const result = checkObject(
-    resolve(schema, schema),
-    schema,
-    options.options,
-    "",
-  );
+  const result = checkObject(resolve(schema, schema), {
+    root: schema,
+    value: options.options,
+    path: "",
+  });
   const checked = isMarkOptions(result.value) ? result.value : {};
   if (options.name === "features") {
     // 機能のマーカーのキーは、設定の `features` の機能の名前に照らす
@@ -450,6 +503,20 @@ export const validateMarkOptions = (options: {
   };
 };
 
+/** キーのパスの 1 段の子のスキーマ（配列は要素のスキーマ） */
+const segmentSchemaOf = (
+  node: MarkSchema,
+  context: { schema: MarkSchema; segment: string },
+): MarkSchema | undefined => {
+  const resolved: MarkSchema = resolve(node, context.schema);
+  const child =
+    resolved.properties?.[context.segment] ??
+    (typeof resolved.additionalProperties === "object"
+      ? resolved.additionalProperties
+      : resolved.items);
+  return child?.items && !child.properties ? child.items : child;
+};
+
 /** キーのパスの場所で使用できるキーの並び */
 const usableKeysAt = (schema: MarkSchema, path: string): string[] => {
   const segments = path.split(/\.|\[\d+\]/).filter(Boolean);
@@ -459,15 +526,7 @@ const usableKeysAt = (schema: MarkSchema, path: string): string[] => {
     if (node === undefined) {
       return [];
     }
-    const resolved: MarkSchema = resolve(node, schema);
-    node =
-      resolved.properties?.[segment] ??
-      (typeof resolved.additionalProperties === "object"
-        ? resolved.additionalProperties
-        : resolved.items);
-    if (node?.items && !node.properties) {
-      node = node.items;
-    }
+    node = segmentSchemaOf(node, { schema, segment });
   }
   if (node === undefined) {
     return [];

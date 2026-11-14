@@ -17,6 +17,37 @@ export function renderImageOpener(options: {
   return `<button class="mdmark-image-open" type="button" aria-label="画像を拡大: ${escapeHtml(alt)}">${img}${iconHtml}</button>`;
 }
 
+/** 画像の図の `figure` の属性を返却する */
+function figureAttributes(options: {
+  only: "light" | "dark" | undefined;
+  id: string | undefined;
+  align: "left" | "center" | "right" | undefined;
+  width: string | undefined;
+}): string {
+  const { only, id, align, width } = options;
+  const className = `mdmark-figure mdmark-image${only ? ` mdmark-only-${only}` : ""}`;
+  const idAttribute = id === undefined ? "" : ` id="${escapeHtml(id)}"`;
+  const alignAttribute = align === undefined ? "" : ` data-align="${align}"`;
+  const style =
+    width === undefined
+      ? ""
+      : ` style="--mdmark-image-width: ${escapeHtml(width)}"`;
+  return `class="${className}"${idAttribute}${alignAttribute}${style}`;
+}
+
+/** 画像の図のキャプションの HTML を返却する（番号もキャプションも無ければ空） */
+function renderFigcaption(options: {
+  label: string | undefined;
+  caption: string | undefined;
+}): string {
+  const { label, caption } = options;
+  const head = label === undefined ? "" : `<b>${escapeHtml(label)}</b>`;
+  const text = caption === undefined ? "" : escapeHtml(caption);
+  return head === "" && text === ""
+    ? ""
+    : `<figcaption class="mdmark-figure-caption">${head}${text}</figcaption>`;
+}
+
 /** 画像の図の HTML を返却する */
 export function renderImageFigure(options: {
   /** 画像の URL */
@@ -55,22 +86,11 @@ export function renderImageFigure(options: {
     opener = true,
     gif = false,
   } = options;
-  const className = `mdmark-figure mdmark-image${only ? ` mdmark-only-${only}` : ""}`;
-  const idAttribute = id === undefined ? "" : ` id="${escapeHtml(id)}"`;
-  const alignAttribute = align === undefined ? "" : ` data-align="${align}"`;
-  const style =
-    width === undefined
-      ? ""
-      : ` style="--mdmark-image-width: ${escapeHtml(width)}"`;
+  const attributes = figureAttributes({ only, id, align, width });
   const flags = `${lightbox ? "" : " data-nolightbox"}${gif ? " data-gif" : ""}`;
   const img = `<img src="${escapeHtml(src)}" alt="${escapeHtml(alt)}"${flags}>`;
   const body =
     opener && lightbox ? renderImageOpener({ alt, img, icon: !gif }) : img;
-  const head = label === undefined ? "" : `<b>${escapeHtml(label)}</b>`;
-  const text = caption === undefined ? "" : escapeHtml(caption);
-  const figcaption =
-    head === "" && text === ""
-      ? ""
-      : `<figcaption class="mdmark-figure-caption">${head}${text}</figcaption>`;
-  return `<figure class="${className}"${idAttribute}${alignAttribute}${style}>${body}${figcaption}</figure>`;
+  const figcaption = renderFigcaption({ label, caption });
+  return `<figure ${attributes}>${body}${figcaption}</figure>`;
 }

@@ -33,6 +33,23 @@ const POINTER_ATTRIBUTES = ["aria-describedby", "aria-details"];
 // `id` を重ならせないための、操作を付けた回数の通し番号
 let attachCounter = 0;
 
+/** もう一度振った `id` を指す `href`。まだ描かれていない持ち主へ戻るリンクは、持ち主の `id` を図を描くときに合わせる値にする。変えないリンクは `undefined` */
+function renumberedHref(options: {
+  href: string;
+  renamed: Map<string, string>;
+  base: number;
+}): string | undefined {
+  const { href, renamed, base } = options;
+  const target = renamed.get(href.slice(1));
+  if (href.startsWith("#") && target !== undefined) {
+    return `#${target}`;
+  }
+  if (href.startsWith(`#${OWNER_PREFIX}`)) {
+    return `#${OWNER_PREFIX}${base}-${href.slice(OWNER_PREFIX.length + 1)}`;
+  }
+  return undefined;
+}
+
 /** 番号・ツールチップ・一覧の項目の `id` を、ページの中で一意な値にもう一度振り、それを指す `href`・`aria-describedby`・`aria-details` も修正する */
 function renumberIds(root: HTMLElement, base: number): void {
   const renamed = new Map<string, string>();
@@ -50,16 +67,13 @@ function renumberIds(root: HTMLElement, base: number): void {
   for (const element of root.querySelectorAll<HTMLElement>(
     ".mdmark-fn-link, .mdmark-fn-back",
   )) {
-    const href = element.getAttribute("href") ?? "";
-    const target = renamed.get(href.slice(1));
-    if (href.startsWith("#") && target !== undefined) {
-      element.setAttribute("href", `#${target}`);
-    } else if (href.startsWith(`#${OWNER_PREFIX}`)) {
-      // まだ描かれていない持ち主へ戻るリンク: 持ち主の `id` は図を描くときに合わせる
-      element.setAttribute(
-        "href",
-        `#${OWNER_PREFIX}${base}-${href.slice(OWNER_PREFIX.length + 1)}`,
-      );
+    const href = renumberedHref({
+      href: element.getAttribute("href") ?? "",
+      renamed,
+      base,
+    });
+    if (href !== undefined) {
+      element.setAttribute("href", href);
     }
     for (const name of POINTER_ATTRIBUTES) {
       const pointed = renamed.get(element.getAttribute(name) ?? "");

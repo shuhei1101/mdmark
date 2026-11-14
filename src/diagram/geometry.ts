@@ -96,6 +96,30 @@ function offsetOverlaps(wires: MdmarkDiagramWire[]): Map<string, Point[]> {
   return result;
 }
 
+/** 点の並びの隣り合う 2 点ごとの区間 */
+function segmentsOf(points: Point[]): Array<{ from: Point; to: Point }> {
+  const pairs: Array<{ from: Point; to: Point }> = [];
+  for (let index = 0; index < points.length - 1; index++) {
+    const from = points[index];
+    const to = points[index + 1];
+    if (from && to) {
+      pairs.push({ from, to });
+    }
+  }
+  return pairs;
+}
+
+/** 横の区間が縦の区間と交わるか。端の点どうしが接するものは交差にしない */
+function crossesVertical(segment: Segment, vertical: Segment): boolean {
+  const x = vertical.fixed;
+  return (
+    x > segment.low + JUMP_RADIUS &&
+    x < segment.high - JUMP_RADIUS &&
+    segment.fixed > vertical.low &&
+    segment.fixed < vertical.high
+  );
+}
+
 /** 横の区間 `segment` が、ほかの線の縦の区間と交わる x を集める。端の点どうしが接するものは交差にしない */
 function crossings(
   segment: Segment,
@@ -107,28 +131,37 @@ function crossings(
     if (id === owner) {
       continue;
     }
-    for (let index = 0; index < points.length - 1; index++) {
-      const from = points[index];
-      const to = points[index + 1];
-      if (!from || !to) {
-        continue;
-      }
+    for (const { from, to } of segmentsOf(points)) {
       const vertical = segmentOf(from, to);
-      if (vertical.horizontal) {
-        continue;
-      }
-      const x = vertical.fixed;
-      if (
-        x > segment.low + JUMP_RADIUS &&
-        x < segment.high - JUMP_RADIUS &&
-        segment.fixed > vertical.low &&
-        segment.fixed < vertical.high
-      ) {
-        xs.push(x);
+      if (!vertical.horizontal && crossesVertical(segment, vertical)) {
+        xs.push(vertical.fixed);
       }
     }
   }
   return xs;
+}
+
+/** 線の 1 つの区間の svg のパスを返却する。横の区間はほかの線の縦の区間と交わる点に半円の弧を入れる */
+function segmentPath(
+  pair: { from: Point; to: Point },
+  owner: string,
+  all: Map<string, Point[]>,
+): string {
+  const { from, to } = pair;
+  const segment = segmentOf(from, to);
+  let path = "";
+  if (segment.horizontal && segment.direction !== 0) {
+    const direction = segment.direction;
+    // 進む向きの順に飛び越える。右へも左へも上へふくらませる
+    const xs = crossings(segment, owner, all).sort(
+      (a, b) => (a - b) * direction,
+    );
+    const sweep = direction > 0 ? 1 : 0;
+    for (const x of xs) {
+      path += ` L${x - JUMP_RADIUS * direction},${from[1]} A${JUMP_RADIUS},${JUMP_RADIUS} 0 0 ${sweep} ${x + JUMP_RADIUS * direction},${from[1]}`;
+    }
+  }
+  return `${path} L${to[0]},${to[1]}`;
 }
 
 /** 全ての線の横の区間が、ほかの線の縦の区間と交わる点に半円の弧を入れた svg のパスを、線の `id` から参照できる構造で返却する。同じ向きで重なる区間はずらす */
@@ -141,25 +174,8 @@ export function jumpPaths(wires: MdmarkDiagramWire[]): Map<string, string> {
       continue;
     }
     let path = `M${first[0]},${first[1]}`;
-    for (let index = 0; index < points.length - 1; index++) {
-      const from = points[index];
-      const to = points[index + 1];
-      if (!from || !to) {
-        continue;
-      }
-      const segment = segmentOf(from, to);
-      if (segment.horizontal && segment.direction !== 0) {
-        const direction = segment.direction;
-        // 進む向きの順に飛び越える。右へも左へも上へふくらませる
-        const xs = crossings(segment, id, shifted).sort(
-          (a, b) => (a - b) * direction,
-        );
-        for (const x of xs) {
-          const sweep = direction > 0 ? 1 : 0;
-          path += ` L${x - JUMP_RADIUS * direction},${from[1]} A${JUMP_RADIUS},${JUMP_RADIUS} 0 0 ${sweep} ${x + JUMP_RADIUS * direction},${from[1]}`;
-        }
-      }
-      path += ` L${to[0]},${to[1]}`;
+    for (const pair of segmentsOf(points)) {
+      path += segmentPath(pair, id, shifted);
     }
     paths.set(id, path);
   }

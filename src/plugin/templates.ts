@@ -81,6 +81,49 @@ const whereOf = (pointer: string): string =>
       "",
     );
 
+/** JSON Schema の検査の誤り */
+type SchemaError = NonNullable<ValidateFunction["errors"]>[number];
+
+/** キーが無い・記載できないキーの誤りを、キーのパスと修正方法にする。ほかの誤りは `undefined` */
+const describeKeyError = (
+  error: SchemaError,
+  base: string,
+): string | undefined => {
+  const params = error.params as Record<string, unknown>;
+  const join = (key: unknown) =>
+    [base, String(key)].filter((part) => part !== "").join(".");
+  if (error.keyword === "required") {
+    return `${join(params.missingProperty)} がありません。記載してください`;
+  }
+  if (error.keyword === "additionalProperties") {
+    return `${join(params.additionalProperty)} は記載できません。削除してください`;
+  }
+  return undefined;
+};
+
+/** JSON Schema の検査の誤りを、索引のパス・キーのパス・修正方法の 1 文にする */
+const describeSchemaError = (
+  error: SchemaError | undefined,
+  path: string,
+): string => {
+  const base = whereOf(error?.instancePath ?? "");
+  const keyError =
+    error === undefined ? undefined : describeKeyError(error, base);
+  if (keyError !== undefined) {
+    return `${path} の ${keyError}。`;
+  }
+  const where = base === "" ? "(最上位)" : base;
+  const description =
+    (error?.parentSchema as { description?: string } | undefined)
+      ?.description ?? "索引の決まりに合う値にしてください。";
+  const reason =
+    `の値 ${JSON.stringify(error?.data)} は使用できません。${description}`.replace(
+      /。$/,
+      "",
+    );
+  return `${path} の ${where} ${reason}。`;
+};
+
 /** 値を索引の JSON Schema で検査し、最初に合わないところを、索引のパス・キーのパス・修正方法の 1 文で返却する */
 export const validateTemplatesIndex = (options: {
   value: unknown;
@@ -93,31 +136,7 @@ export const validateTemplatesIndex = (options: {
     verbose: true,
   }).compile(templatesSchema);
   if (!validator(value)) {
-    const error = validator.errors?.[0];
-    const params = (error?.params ?? {}) as Record<string, unknown>;
-    const base = whereOf(error?.instancePath ?? "");
-    const where =
-      error?.keyword === "required"
-        ? [base, String(params.missingProperty)]
-            .filter((part) => part !== "")
-            .join(".")
-        : error?.keyword === "additionalProperties"
-          ? [base, String(params.additionalProperty)]
-              .filter((part) => part !== "")
-              .join(".")
-          : base === ""
-            ? "(最上位)"
-            : base;
-    const reason =
-      error?.keyword === "required"
-        ? "がありません。記載してください"
-        : error?.keyword === "additionalProperties"
-          ? "は記載できません。削除してください"
-          : `の値 ${JSON.stringify(error?.data)} は使用できません。${(error?.parentSchema as { description?: string } | undefined)?.description ?? "索引の決まりに合う値にしてください。"}`.replace(
-              /。$/,
-              "",
-            );
-    return `${path} の ${where} ${reason}。`;
+    return describeSchemaError(validator.errors?.[0], path);
   }
   const names = new Set<string>();
   const rows = (value as { templates: { name: string }[] }).templates;
@@ -297,6 +316,53 @@ const isDirectory = async (path: string): Promise<boolean> =>
 const isFile = async (path: string): Promise<boolean> =>
   (await stat(path).catch(() => undefined))?.isFile() === true;
 
+/** 配置先のフォルダと、基準の設定ファイル（配置先か作業のフォルダから上へ探して最初の `mdmark.config.yaml`）を決める */
+const findDestination = async (options: {
+  cwd: string;
+  target: string | undefined;
+}): Promise<{ config: string | undefined; destination: string }> => {
+  const { cwd, target } = options;
+  if (target !== undefined && !(await isDirectory(target))) {
+    throw new CliError(
+      `配置先のフォルダ ${target} が見つかりません。ある配置先を dir に指定してください。`,
+    );
+  }
+  const [config] = await findConfigChain({
+    cwd: target ?? cwd,
+    cascade: false,
+    isFile,
+  });
+  if (target !== undefined) {
+    return { config, destination: target };
+  }
+  if (config === undefined) {
+    throw new CliError(
+      `${cwd} とその上のフォルダに mdmark.config.yaml がありません。配置先を dir に指定するか、mdmark init で設定ファイルを配置してください。`,
+    );
+  }
+  return { config, destination: dirname(config) };
+};
+
+/** CSS を配置先へ書き込む。中身の違うファイルが既にあれば、`overwrite` のときだけ置き換える。置き換えたかを返却する */
+const copyTemplateCss = async (options: {
+  path: string;
+  css: Buffer;
+  overwrite: boolean;
+}): Promise<boolean> => {
+  const { path, css, overwrite } = options;
+  const existing = await readIfExists(path);
+  if (existing !== undefined && !existing.equals(css) && !overwrite) {
+    throw new CliError(
+      `${path} は既にあり、テンプレートと中身が違います。置き換えるときは overwrite を true にしてください。`,
+    );
+  }
+  const replaced = existing !== undefined && !existing.equals(css);
+  if (existing === undefined || replaced) {
+    await fs.writeFile(path, css);
+  }
+  return replaced;
+};
+
 /** テンプレートの CSS を配置先へコピーし、配置したパスと基準の設定ファイルからの `theme` の値を返却する */
 export const applyTemplate = async (options: {
   dir: string;
@@ -318,17 +384,7 @@ export const applyTemplate = async (options: {
       `配置先のフォルダ ${target} が見つかりません。ある配置先を dir に指定してください。`,
     );
   }
-  const [config] = await findConfigChain({
-    cwd: target ?? cwd,
-    cascade: false,
-    isFile,
-  });
-  if (target === undefined && config === undefined) {
-    throw new CliError(
-      `${cwd} とその上のフォルダに mdmark.config.yaml がありません。配置先を dir に指定するか、mdmark init で設定ファイルを配置してください。`,
-    );
-  }
-  const destination = target ?? dirname(config as string);
+  const { config, destination } = await findDestination({ cwd, target });
   const path = join(destination, `${name}.css`);
   const sourcePath = join(dir, row.file);
   const css = await readIfExists(sourcePath);
@@ -337,16 +393,7 @@ export const applyTemplate = async (options: {
       `テンプレート ${name} の CSS ${sourcePath} がありません。add_template でもう一度登録するか、索引の行を削除してください。`,
     );
   }
-  const existing = await readIfExists(path);
-  if (existing !== undefined && !existing.equals(css) && !overwrite) {
-    throw new CliError(
-      `${path} は既にあり、テンプレートと中身が違います。置き換えるときは overwrite を true にしてください。`,
-    );
-  }
-  const replaced = existing !== undefined && !existing.equals(css);
-  if (existing === undefined || replaced) {
-    await fs.writeFile(path, css);
-  }
+  const replaced = await copyTemplateCss({ path, css, overwrite });
   const theme =
     config === undefined
       ? undefined

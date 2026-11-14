@@ -134,46 +134,40 @@ export function resolveConfigPath(options: {
   return isAbsolute(configPath) ? configPath : resolve(baseDir, configPath);
 }
 
+/** `mount` に指定するキーのうち、マップの値だけを取り出すキー */
+const PREVIEW_MAP_KEYS = [
+  "features",
+  "libraries",
+  "html-scripts",
+  "side-toc",
+  "table",
+  "labels",
+  "mermaid",
+  "map",
+  "tooltips",
+  "syntax",
+] as const satisfies ReadonlyArray<keyof PreviewConfig>;
+
+/** `mount` に指定するキーのうち、文字列の値だけを取り出すキー */
+const PREVIEW_STRING_KEYS = [
+  "colorTheme",
+  "colorScheme",
+] as const satisfies ReadonlyArray<keyof PreviewConfig>;
+
 /** 重ねた設定から `mount` に指定するキー（マップの `features`・`libraries`・`html-scripts`・`side-toc`・`table`・`labels`・`mermaid`・`map`・`tooltips`・`syntax` と文字列の `colorTheme`・`colorScheme`）だけを取り出す */
 function pickPreviewConfig(config: Record<string, unknown>): PreviewConfig {
-  const picked: PreviewConfig = {};
-  if (isMap(config.features)) {
-    picked.features = config.features;
+  const picked: Record<string, unknown> = {};
+  for (const key of PREVIEW_MAP_KEYS) {
+    if (isMap(config[key])) {
+      picked[key] = config[key];
+    }
   }
-  if (isMap(config.libraries)) {
-    picked.libraries = config.libraries;
+  for (const key of PREVIEW_STRING_KEYS) {
+    if (typeof config[key] === "string") {
+      picked[key] = config[key];
+    }
   }
-  if (isMap(config["html-scripts"])) {
-    picked["html-scripts"] = config["html-scripts"];
-  }
-  if (isMap(config["side-toc"])) {
-    picked["side-toc"] = config["side-toc"];
-  }
-  if (isMap(config.table)) {
-    picked.table = config.table;
-  }
-  if (isMap(config.labels)) {
-    picked.labels = config.labels;
-  }
-  if (isMap(config.mermaid)) {
-    picked.mermaid = config.mermaid;
-  }
-  if (isMap(config.map)) {
-    picked.map = config.map;
-  }
-  if (isMap(config.tooltips)) {
-    picked.tooltips = config.tooltips;
-  }
-  if (isMap(config.syntax)) {
-    picked.syntax = config.syntax;
-  }
-  if (typeof config.colorTheme === "string") {
-    picked.colorTheme = config.colorTheme;
-  }
-  if (typeof config.colorScheme === "string") {
-    picked.colorScheme = config.colorScheme;
-  }
-  return picked;
+  return picked as PreviewConfig;
 }
 
 /** ライブラリ本体の `loadLayeredConfig` で設定を重ねて読み込み、`ConfigLoad` にする。設定ファイルが 1 つも無ければ端末の設定だけで返却する */
@@ -336,12 +330,13 @@ export function resolveSyntax(options: {
 }
 
 /** `libraries` の値と `html-scripts.url`・`mermaid.url`・`syntax.url`（文字列でなければライブラリ本体の既定の URL）のうち `http:`・`https:` の URL の origin を、重なりを除いて返却する */
-export function libraryOrigins(
-  libraries: Record<string, unknown> | undefined,
-  htmlScripts?: Record<string, unknown>,
-  mermaid?: Record<string, unknown>,
-  syntax?: Record<string, unknown>,
-): string[] {
+export function libraryOrigins(settings: {
+  libraries: Record<string, unknown> | undefined;
+  htmlScripts?: Record<string, unknown>;
+  mermaid?: Record<string, unknown>;
+  syntax?: Record<string, unknown>;
+}): string[] {
+  const { libraries, htmlScripts, mermaid, syntax } = settings;
   const origins = new Set<string>();
   const urlOrDefault = (setting?: Record<string, unknown>): string =>
     typeof setting?.url === "string"

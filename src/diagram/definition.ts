@@ -325,22 +325,29 @@ function missingSymbols(text: string): string {
   for (let index = 0; index < text.length; index++) {
     const char = text[index];
     if (inString) {
+      // 文字列の中は、エスケープの次の文字を飛ばし、`"` で文字列を閉じる
       if (char === "\\") {
         index += 1;
       } else if (char === '"') {
         inString = false;
       }
-    } else if (char === '"') {
-      inString = true;
-    } else if (char === "{") {
-      stack.push("}");
-    } else if (char === "[") {
-      stack.push("]");
-    } else if (char === "}" || char === "]") {
-      stack.pop();
+      continue;
     }
+    inString = char === '"';
+    trackBracket(stack, char);
   }
   return `${inString ? '"' : ""}${stack.reverse().join("")}`;
+}
+
+/** 開き括弧なら閉じる記号を積み、閉じ括弧なら 1 つ下ろす */
+function trackBracket(stack: string[], char: string | undefined): void {
+  if (char === "{") {
+    stack.push("}");
+  } else if (char === "[") {
+    stack.push("]");
+  } else if (char === "}" || char === "]") {
+    stack.pop();
+  }
 }
 
 /** `JSON.parse` の例外の文から、読み込めなかった位置を取り出す。位置が無ければ終わりを返却する */
@@ -484,51 +491,64 @@ function checkAxes(
 ): number | undefined {
   const x = asObject(source.x, "x", problems);
   const y = asObject(source.y, "y", problems);
-  let tickCount: number | undefined;
-  if (x) {
-    problems.expect(x.label, "文字", "x.label");
-    const ticks = asArray(x.ticks, "x.ticks", problems);
-    if (ticks) {
-      if (ticks.length < 2) {
-        problems.add(
-          "x.ticks が 2 つに満たないです。目盛りを 2 つ以上書いてください",
-        );
-      }
-      if (ticks.every((tick) => typeof tick === "string")) {
-        tickCount = ticks.length;
-      } else {
-        problems.add(
-          "x.ticks に文字でない目盛りがあります。目盛りは文字で記載してください",
-        );
-      }
-    }
-  }
+  const tickCount = x ? checkTicksAxis(x, problems) : undefined;
   if (y) {
-    problems.expect(y.label, "文字", "y.label");
-    const numbers = ["min", "max", "step"].map((key) =>
-      problems.expect(y[key], "数", `y.${key}`),
-    );
-    if (numbers.every(Boolean)) {
-      if ((y.min as number) >= (y.max as number)) {
-        problems.add(
-          "y.min が y.max 以上です。min は max より小さくしてください",
-        );
-      }
-      if ((y.step as number) <= 0) {
-        problems.add("y.step が 0 以下です。step は正の数にしてください");
-      }
-    }
+    checkRangeAxis(y, problems);
   }
   return tickCount;
 }
 
+/** 操作できる部品のグラフの横の軸（目盛りは 2 つ以上の文字）を確認する。目盛りの数を返却する */
+function checkTicksAxis(
+  x: Record<string, unknown>,
+  problems: Problems,
+): number | undefined {
+  problems.expect(x.label, "文字", "x.label");
+  const ticks = asArray(x.ticks, "x.ticks", problems);
+  if (!ticks) {
+    return undefined;
+  }
+  if (ticks.length < 2) {
+    problems.add(
+      "x.ticks が 2 つに満たないです。目盛りを 2 つ以上書いてください",
+    );
+  }
+  if (ticks.every((tick) => typeof tick === "string")) {
+    return ticks.length;
+  }
+  problems.add(
+    "x.ticks に文字でない目盛りがあります。目盛りは文字で記載してください",
+  );
+  return undefined;
+}
+
+/** 操作できる部品のグラフの縦の軸（`min`・`max`・`step` は必須）を確認する */
+function checkRangeAxis(y: Record<string, unknown>, problems: Problems): void {
+  problems.expect(y.label, "文字", "y.label");
+  const numbers = ["min", "max", "step"].map((key) =>
+    problems.expect(y[key], "数", `y.${key}`),
+  );
+  if (!numbers.every(Boolean)) {
+    return;
+  }
+  if ((y.min as number) >= (y.max as number)) {
+    problems.add("y.min が y.max 以上です。min は max より小さくしてください");
+  }
+  if ((y.step as number) <= 0) {
+    problems.add("y.step が 0 以下です。step は正の数にしてください");
+  }
+}
+
+/** 記載の警告の文の頭（どの系列・表の行か）と、警告を集める先 */
+type CheckAt = { label: string; problems: Problems };
+
 /** 点の並びが数だけで、数が目盛りと合うかを確認する */
 function checkPointList(
   points: unknown,
-  label: string,
   tickCount: number | undefined,
-  problems: Problems,
+  at: CheckAt,
 ): void {
+  const { label, problems } = at;
   const list = asArray(points, `${label}の points`, problems);
   if (!list) {
     return;
@@ -627,12 +647,8 @@ function checkYAxis(
 }
 
 /** 散布図の点が `[x, y]`、バブルの点が `[x, y, size]` の数の組だけかを確認する */
-function checkTupleList(
-  points: unknown,
-  label: string,
-  bubble: boolean,
-  problems: Problems,
-): void {
+function checkTupleList(points: unknown, bubble: boolean, at: CheckAt): void {
+  const { label, problems } = at;
   const list = asArray(points, `${label}の points`, problems);
   const shape = bubble ? "[x, y, size]" : "[x, y]";
   if (
@@ -653,10 +669,10 @@ function checkTupleList(
 /** 組み合わせのグラフの系列の `as`・`axis` を確認する */
 function checkComboSeries(
   entry: Record<string, unknown>,
-  label: string,
   hasY2: boolean,
-  problems: Problems,
+  at: CheckAt,
 ): void {
+  const { label, problems } = at;
   if (entry.as !== undefined && entry.as !== "line" && entry.as !== "bar") {
     problems.add(
       `${label}の as ${String(entry.as)} は使用できません。as は line・bar のどちらかで記載してください`,
@@ -724,6 +740,35 @@ function checkChart(source: Record<string, unknown>, problems: Problems): void {
     checkPieItems(source, problems);
     return;
   }
+  const tickCount = checkChartAxes(source, type, problems);
+  const series = asArray(source.series, "series", problems);
+  if (!series) {
+    return;
+  }
+  if (series.length < SERIES_RANGE.min || series.length > SERIES_RANGE.max) {
+    problems.add(
+      `系列が ${series.length} つです。系列は ${SERIES_RANGE.min}〜${SERIES_RANGE.max} つで記載してください`,
+    );
+  }
+  series.forEach((value, index) => {
+    const entry = asObject(value, `series[${index}]`, problems);
+    if (entry) {
+      checkChartSeries(entry, index, {
+        type,
+        tickCount,
+        hasY2: source.y2 !== undefined,
+        problems,
+      });
+    }
+  });
+}
+
+/** 軸を持つグラフの横・縦の軸と、バブルの大きさを確認する。横の目盛りの数を返却する */
+function checkChartAxes(
+  source: Record<string, unknown>,
+  type: string,
+  problems: Problems,
+): number | undefined {
   let tickCount: number | undefined;
   if (NUMERIC_X_CHART_TYPES.includes(type)) {
     checkNumericXAxis(source, problems);
@@ -740,42 +785,33 @@ function checkChart(source: Record<string, unknown>, problems: Problems): void {
       problems.expect(size.label, "文字", "size.label");
     }
   }
-  const series = asArray(source.series, "series", problems);
-  if (!series) {
-    return;
+  return tickCount;
+}
+
+/** 軸を持つグラフの系列 1 つの名前・点・組み合わせの指定を確認する */
+function checkChartSeries(
+  entry: Record<string, unknown>,
+  index: number,
+  chart: {
+    type: string;
+    tickCount: number | undefined;
+    hasY2: boolean;
+    problems: Problems;
+  },
+): void {
+  const { type, tickCount, hasY2, problems } = chart;
+  const name =
+    typeof entry.name === "string" ? entry.name : `${index + 1} つ目`;
+  problems.expect(entry.name, "文字", `series[${index}].name`);
+  const at = { label: `系列「${name}」`, problems };
+  if (NUMERIC_X_CHART_TYPES.includes(type)) {
+    checkTupleList(entry.points, type === "bubble", at);
+  } else {
+    checkPointList(entry.points, tickCount, at);
   }
-  if (series.length < SERIES_RANGE.min || series.length > SERIES_RANGE.max) {
-    problems.add(
-      `系列が ${series.length} つです。系列は ${SERIES_RANGE.min}〜${SERIES_RANGE.max} つで記載してください`,
-    );
+  if (type === "combo") {
+    checkComboSeries(entry, hasY2, at);
   }
-  series.forEach((value, index) => {
-    const entry = asObject(value, `series[${index}]`, problems);
-    if (!entry) {
-      return;
-    }
-    const name =
-      typeof entry.name === "string" ? entry.name : `${index + 1} つ目`;
-    problems.expect(entry.name, "文字", `series[${index}].name`);
-    if (NUMERIC_X_CHART_TYPES.includes(type)) {
-      checkTupleList(
-        entry.points,
-        `系列「${name}」`,
-        type === "bubble",
-        problems,
-      );
-    } else {
-      checkPointList(entry.points, `系列「${name}」`, tickCount, problems);
-    }
-    if (type === "combo") {
-      checkComboSeries(
-        entry,
-        `系列「${name}」`,
-        source.y2 !== undefined,
-        problems,
-      );
-    }
-  });
 }
 
 /** スライダーの値を `min` から `max` まで `step` ごとに並べる */
@@ -792,29 +828,64 @@ function knobValues(knob: {
   return values;
 }
 
+/** スライダーの指定を確認する。値の並びを作れる指定なら `min`・`max`・`step`・`value` を返却する */
+function checkKnob(
+  knob: Record<string, unknown>,
+  problems: Problems,
+): { min: number; max: number; step: number; value: number } | undefined {
+  problems.expect(knob.key, "文字", "knob.key");
+  problems.expect(knob.label, "文字", "knob.label");
+  const numbers = ["min", "max", "step", "value"].map((key) =>
+    problems.expect(knob[key], "数", `knob.${key}`),
+  );
+  if (!numbers.every(Boolean)) {
+    return undefined;
+  }
+  const checked = knob as {
+    min: number;
+    max: number;
+    step: number;
+    value: number;
+  };
+  if (checked.min >= checked.max) {
+    problems.add(
+      "knob.min が knob.max 以上です。min は max より小さくしてください",
+    );
+    return undefined;
+  }
+  if (checked.step <= 0) {
+    problems.add("knob.step が 0 以下です。step は正の数にしてください");
+    return undefined;
+  }
+  return checked;
+}
+
+/** スライダーの全ての値の点が表にあり、既定の値が値の並びに該当するかを確認する */
+function checkKnobValues(
+  knob: { min: number; max: number; step: number; value: number },
+  table: Record<string, unknown>,
+  problems: Problems,
+): void {
+  const values = knobValues(knob);
+  for (const value of values) {
+    if (!Object.hasOwn(table, String(value))) {
+      problems.add(
+        `スライダーの値 ${value} の点が table にありません。min から max まで step ごとの全ての値を記載してください`,
+      );
+    }
+  }
+  if (!values.includes(knob.value)) {
+    problems.add(
+      `knob.value ${String(knob.value)} が min から step ごとの値に該当しません。既定の値は step ごとの値で記載してください`,
+    );
+  }
+}
+
 /** 操作できる部品の定義を確認する */
 function checkParam(source: Record<string, unknown>, problems: Problems): void {
   problems.expect(source.title, "文字", "title");
-  const knob = asObject(source.knob, "knob", problems);
-  let knobOk = false;
-  if (knob) {
-    problems.expect(knob.key, "文字", "knob.key");
-    problems.expect(knob.label, "文字", "knob.label");
-    const numbers = ["min", "max", "step", "value"].map((key) =>
-      problems.expect(knob[key], "数", `knob.${key}`),
-    );
-    knobOk = numbers.every(Boolean);
-    if (knobOk && (knob.min as number) >= (knob.max as number)) {
-      problems.add(
-        "knob.min が knob.max 以上です。min は max より小さくしてください",
-      );
-      knobOk = false;
-    }
-    if (knobOk && (knob.step as number) <= 0) {
-      problems.add("knob.step が 0 以下です。step は正の数にしてください");
-      knobOk = false;
-    }
-  }
+  const knobSource = asObject(source.knob, "knob", problems);
+  const knob = knobSource ? checkKnob(knobSource, problems) : undefined;
   const chart = asObject(source.chart, "chart", problems);
   let tickCount: number | undefined;
   if (chart) {
@@ -826,24 +897,10 @@ function checkParam(source: Record<string, unknown>, problems: Problems): void {
     return;
   }
   for (const [key, points] of Object.entries(table)) {
-    checkPointList(points, `table の ${key}`, tickCount, problems);
+    checkPointList(points, tickCount, { label: `table の ${key}`, problems });
   }
-  if (knobOk && knob) {
-    const values = knobValues(
-      knob as { min: number; max: number; step: number },
-    );
-    for (const value of values) {
-      if (!Object.hasOwn(table, String(value))) {
-        problems.add(
-          `スライダーの値 ${value} の点が table にありません。min から max まで step ごとの全ての値を記載してください`,
-        );
-      }
-    }
-    if (!values.includes(knob.value as number)) {
-      problems.add(
-        `knob.value ${String(knob.value)} が min から step ごとの値に該当しません。既定の値は step ごとの値で記載してください`,
-      );
-    }
+  if (knob) {
+    checkKnobValues(knob, table, problems);
   }
 }
 
@@ -893,21 +950,34 @@ function checkErTable(
   }
   checkOptionalText(table.desc, `${label}の desc`, problems);
   checkOptionalBoolean(table.folded, `${label}の folded`, problems);
-  if (table.kind !== undefined) {
-    if (
-      typeof table.kind !== "string" ||
-      !(ER_TABLE_KIND_LIST as readonly string[]).includes(table.kind)
-    ) {
-      problems.add(
-        `${label}の種類 ${String(table.kind)} は使用できません。使用できる種類は ${ER_TABLE_KIND_LIST.join("・")} です`,
-      );
-    }
+  checkErTableLook(table, { label, problems });
+  const columns = checkErColumns(table, { label, problems });
+  return typeof table.id === "string" ? { id: table.id, columns } : undefined;
+}
+
+/** ER 図のテーブルの種類と色を確認する */
+function checkErTableLook(table: Record<string, unknown>, at: CheckAt): void {
+  const { label, problems } = at;
+  const kind = table.kind;
+  if (
+    kind !== undefined &&
+    (typeof kind !== "string" ||
+      !(ER_TABLE_KIND_LIST as readonly string[]).includes(kind))
+  ) {
+    problems.add(
+      `${label}の種類 ${String(kind)} は使用できません。使用できる種類は ${ER_TABLE_KIND_LIST.join("・")} です`,
+    );
   }
   if (table.color !== undefined && !isColorName(String(table.color))) {
     problems.add(
       `${label}の色 ${String(table.color)} は色の名前ではありません。使用できる色の名前は ${COLOR_NAMES.join("・")} です`,
     );
   }
+}
+
+/** ER 図のテーブルの列を確認し、列の名前を返却する */
+function checkErColumns(table: Record<string, unknown>, at: CheckAt): string[] {
+  const { label, problems } = at;
   const columns: string[] = [];
   const list = asArray(table.columns, `${label}の columns`, problems) ?? [];
   list.forEach((item, i) => {
@@ -938,7 +1008,7 @@ function checkErTable(
     }
     seen.add(column);
   }
-  return typeof table.id === "string" ? { id: table.id, columns } : undefined;
+  return columns;
 }
 
 /** ER 図の関係 1 つの多重度を確認する */
@@ -963,10 +1033,9 @@ function checkErCardinality(
 function checkErEnd(
   relation: Record<string, unknown>,
   side: "from" | "to",
-  label: string,
-  tables: Map<string, string[]>,
-  problems: Problems,
+  context: CheckAt & { tables: Map<string, string[]> },
 ): void {
+  const { label, tables, problems } = context;
   const tableId = relation[side];
   const column = relation[side === "from" ? "fromColumn" : "toColumn"];
   const where = side === "from" ? "元" : "先";
@@ -1019,8 +1088,8 @@ function checkEr(source: Record<string, unknown>, problems: Problems): void {
       typeof relation.label === "string"
         ? `関係「${relation.label}」`
         : `${index + 1} つ目の関係`;
-    checkErEnd(relation, "from", label, tables, problems);
-    checkErEnd(relation, "to", label, tables, problems);
+    checkErEnd(relation, "from", { label, tables, problems });
+    checkErEnd(relation, "to", { label, tables, problems });
     checkErCardinality(relation.fromCard, `${label}の fromCard`, problems);
     checkErCardinality(relation.toCard, `${label}の toCard`, problems);
     checkOptionalText(relation.label, `${label}の label`, problems);

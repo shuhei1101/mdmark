@@ -70,6 +70,9 @@ export function renderDocument(options: {
     options.index === undefined
       ? undefined
       : normalizeIndex(options.index).index;
+  const docId = index?.docs.some((doc) => doc.id === options.docId)
+    ? options.docId
+    : undefined;
   // 呼び出しごとの値は env で指定し、前の呼び出しのマーカーを持ち越さない
   const env: RenderEnv = {
     libraries: options.config.libraries,
@@ -81,9 +84,7 @@ export function renderDocument(options: {
     headings: [],
     nonce: createNonce(),
     index,
-    docId: index?.docs.some((doc) => doc.id === options.docId)
-      ? options.docId
-      : undefined,
+    docId,
     mdmarkReferences: options.references,
     aliases: options.aliases,
     includes: options.includes,
@@ -98,8 +99,12 @@ export function renderDocument(options: {
     env.frontmatter = { content, endLine };
   }
   const html = sanitize(parser.render(body, env), env.nonce);
+  return { html, ...renderedOf(env) };
+}
+
+/** 描いた後の環境から、描いた文書の HTML のほかの値 */
+function renderedOf(env: RenderEnv): Omit<RenderedDocument, "html"> {
   return {
-    html,
     features: env.features,
     extensionDefinitions: env.extensionDefinitions ?? [],
     paramDefinitions: env.paramDefinitions ?? [],

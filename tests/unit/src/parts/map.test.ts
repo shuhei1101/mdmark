@@ -14,7 +14,11 @@ async function flowArgs(entered?: string) {
   const { parseFlowchart } = await loadFlowchart();
   const { layoutMap } = await loadLayout();
   const chart = parseFlowchart(FLOW);
-  const layout = layoutMap(chart, { collapsed: [], entered }, {}, "height");
+  const layout = layoutMap(
+    chart,
+    { collapsed: [], entered },
+    { overrides: {}, nodeFit: "height" },
+  );
   return {
     layout,
     kinds: CONFIG.kinds,
@@ -243,8 +247,7 @@ test("test_render_map_flow_when_terms", async () => {
   const layout = layoutMap(
     chart,
     { collapsed: [], entered: undefined },
-    {},
-    "height",
+    { overrides: {}, nodeFit: "height" },
   );
   // 実行
   const { html, tips } = renderMapFlow({
@@ -385,8 +388,7 @@ test("test_render_map_flow_when_collapsed_count", async () => {
   const layout = layoutMap(
     parseFlowchart(FLOW),
     { collapsed: ["read"], entered: undefined },
-    {},
-    "height",
+    { overrides: {}, nodeFit: "height" },
   );
   // 実行
   const { html } = renderMapFlow({
@@ -444,8 +446,7 @@ test("test_render_map_flow_when_merged_notes", async () => {
   const layout = layoutMap(
     parseFlowchart(FLOW),
     { collapsed: ["read"], entered: undefined },
-    {},
-    "height",
+    { overrides: {}, nodeFit: "height" },
   );
   const args = { ...(await flowArgs()), layout, collapsed: ["read"] };
   // 実行
@@ -602,8 +603,7 @@ async function erArgs(collapsed: string[]) {
   const placed = layoutMap(
     erToFlowchart(er, {}),
     { collapsed },
-    erOverrides(er, new Set(collapsed)),
-    "height",
+    { overrides: erOverrides(er, new Set(collapsed)), nodeFit: "height" },
   );
   const layout = {
     ...placed,
@@ -705,7 +705,11 @@ test("test_render_map_state_diagram", async () => {
     parseStateDiagram(STATE),
   );
   const { shapes, loops, overrides } = statePartInputs(chart, selfLoops);
-  const layout = layoutMap(chart, { collapsed: [] }, overrides, "height");
+  const layout = layoutMap(
+    chart,
+    { collapsed: [] },
+    { overrides, nodeFit: "height" },
+  );
   // 実行
   const part = renderMapStateDiagram({
     layout,
@@ -768,8 +772,7 @@ test("test_render_map_flow_when_group_note", async () => {
     layout: layoutMap(
       parseFlowchart(FLOW),
       { collapsed: ["read"], entered: undefined },
-      {},
-      "height",
+      { overrides: {}, nodeFit: "height" },
     ),
     collapsed: ["read"],
   };

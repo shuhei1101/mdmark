@@ -266,6 +266,14 @@ export function openDiagramDialog(options: {
   };
 }
 
+/** 図の見出しの `id`。無ければ空 */
+const titleIdOf = (figure: HTMLElement): string =>
+  figure.querySelector(".mdmark-diagram-head")?.id ?? "";
+
+/** 図のタイトルの文字。無ければ空 */
+const titleTextOf = (figure: HTMLElement): string =>
+  figure.querySelector(".mdmark-diagram-title")?.textContent ?? "";
+
 /** `root` の中の図ごとに、開いたときの倍率を当て、拡大・縮小・移動・全画面のボタンとキー・ドラッグ、ツールチップを付ける。付けた操作と監視を解除し、開いている全画面を閉じる関数を返却する */
 export function attachDiagrams(options: {
   /** 描いた要素 */
@@ -290,11 +298,10 @@ export function attachDiagrams(options: {
     if (targets && !targets.has(figure)) {
       return;
     }
-    const title = figure.querySelector(".mdmark-diagram-head")?.id ?? "";
     // 同じページに文書を 2 つ以上描いても `id` が重ならないようもう一度振る
     renumberIds(
       figure,
-      title.replace(/-title$/, ""),
+      titleIdOf(figure).replace(/-title$/, ""),
       `mdmark-diagram-${attachCounter}-${index}`,
     );
     let tips = attachDiagramTips({ figure, placement });
@@ -307,7 +314,7 @@ export function attachDiagrams(options: {
     const key = diagramHeightKey({
       pathname: window.location.pathname,
       index,
-      title: figure.querySelector(".mdmark-diagram-title")?.textContent ?? "",
+      title: titleTextOf(figure),
     });
     detachers.push(
       attachView(figure, {

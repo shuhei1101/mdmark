@@ -27,7 +27,7 @@
 | [mocha](./LIB-472-18.yaml) | 拡張機能ホストの中で結合テストを走らせるテストフレームワーク |
 | [MCP-SDK](./LIB-472-2.yaml) | Claude Code のプラグインの MCP サーバーとテストのクライアント |
 | [ClaudeCode](./LIB-472-1.yaml) | プラグインの導入・PreToolUse のフック・プラグインの MCP サーバーの起動 |
-| [eslint](./LIB-472-12.yaml) | まとめた JS を構文木にして規則を適用する（対応ブラウザの下限の確認と、Webview の React の規則） |
+| [eslint](./LIB-472-12.yaml) | まとめた JS を構文木にして規則を適用する（対応ブラウザの下限の確認と、既存の TypeScript の複雑さと Webview の React の規則） |
 | [eslint-plugin-compat](./LIB-472-13.yaml) | 対応ブラウザの下限のバージョンに無い API の使用を報告する |
 | [highlight.js](./LIB-472-14.yaml) | コードブロックを言語に応じて色分けする（配布物にまとめず jsDelivr から読み込む） |
 | [mermaid](./LIB-472-17.yaml) | 言語 mermaid のコードブロックを図にする（配布物にまとめず jsDelivr から読み込む） |

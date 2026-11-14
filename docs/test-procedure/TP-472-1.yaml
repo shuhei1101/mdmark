@@ -71,7 +71,7 @@ layers:
     run_all: 未確定
   - id: TL-8
     name: lint
-    description: Biome の check（lint と整形）と、Webview（`vscode/src/webview/`）の ESLint（`tools/eslint/` の ESLint 9）と、ルートと VS Code 拡張機能（`vscode/`）の tsc の型検査。どれかが失敗しても全てを最後まで回し、1 つでも失敗したら失敗で終える。
+    description: Biome の check（lint と整形）と、ESLint（`tools/eslint/` の ESLint 9。`src/`・`scripts/`・`vscode/src/`・`plugin/` の TypeScript に複雑さの規則、Webview（`vscode/src/webview/`）に React などの規則）と、ルートと VS Code 拡張機能（`vscode/`）の tsc の型検査。どれかが失敗しても全てを最後まで回し、1 つでも失敗したら失敗で終える。
     prerequisites:
       - '`npm ci` で依存を入れてある（`tools/eslint/` の依存は、無ければ `npm run lint:eslint` が起動の前に入れる）'
       - '`vscode/` の依存を入れてある（`npm --prefix vscode ci`）'

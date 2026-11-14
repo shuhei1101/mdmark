@@ -39,12 +39,10 @@ export async function bundleExtensions(options: {
     { path: string; code: string } | { path: string; error: string }
   > = [];
   for (const path of options.paths) {
-    const result = await bundleModule(
-      path,
-      dirname(path),
+    const result = await bundleModule(path, dirname(path), {
       fetchText,
-      esbuild.build as BuildFunction,
-    );
+      build: esbuild.build as BuildFunction,
+    });
     results.push({ path, ...result });
   }
   return results;

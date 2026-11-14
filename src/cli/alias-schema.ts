@@ -54,33 +54,50 @@ function titleOf(error: ErrorObject): string {
   return parent?.title ?? "";
 }
 
+/** `required` の Schema のずれの文言。足りないキーの `title` があれば添える */
+function requiredMessage(error: ErrorObject, where: string): string {
+  const name = String(
+    (error.params as Record<string, unknown>).missingProperty,
+  );
+  const child = (
+    error.parentSchema as
+      | { properties?: Record<string, { title?: string }> }
+      | undefined
+  )?.properties?.[name]?.title;
+  return `\`${where}\` に \`${name}\`${child === undefined ? "" : `（${child}）`}がありません。記載してください。`;
+}
+
+/** Schema のキーワードごとの、ずれの文言の作り方（`label` は場所の `title` を括弧で囲んだもの） */
+const KEYWORD_MESSAGES: Record<
+  string,
+  (where: string, label: string, params: Record<string, unknown>) => string
+> = {
+  type: (where, label, params) =>
+    `\`${where}\`${label}は${TYPE_NAMES[String(params.type)] ?? String(params.type)}にしてください。`,
+  minLength: (where, label) =>
+    `\`${where}\`${label}が空です。記載してください。`,
+  minItems: (where, label) =>
+    `\`${where}\`${label}が空です。記載してください。`,
+  enum: (where, label, params) =>
+    `\`${where}\`${label}は ${(params.allowedValues as unknown[]).join("・")} のどれかにしてください。`,
+  additionalProperties: (where, _, params) =>
+    `\`${where}\` の \`${String(params.additionalProperty)}\` は記載できません。削除してください。`,
+};
+
 /** エラーを、日本語の 1 文にする */
 function messageOf(error: ErrorObject, where: string): string {
+  if (error.keyword === "required") {
+    return requiredMessage(error, where);
+  }
   const title = titleOf(error);
   const label = title === "" ? "" : `（${title}）`;
   const params = error.params as Record<string, unknown>;
-  switch (error.keyword) {
-    case "required": {
-      const name = String(params.missingProperty);
-      const child = (
-        error.parentSchema as
-          | { properties?: Record<string, { title?: string }> }
-          | undefined
-      )?.properties?.[name]?.title;
-      return `\`${where}\` に \`${name}\`${child === undefined ? "" : `（${child}）`}がありません。記載してください。`;
-    }
-    case "type":
-      return `\`${where}\`${label}は${TYPE_NAMES[String(params.type)] ?? String(params.type)}にしてください。`;
-    case "minLength":
-    case "minItems":
-      return `\`${where}\`${label}が空です。記載してください。`;
-    case "enum":
-      return `\`${where}\`${label}は ${(params.allowedValues as unknown[]).join("・")} のどれかにしてください。`;
-    case "additionalProperties":
-      return `\`${where}\` の \`${String(params.additionalProperty)}\` は記載できません。削除してください。`;
-    default:
-      return `\`${where}\`${label}が Schema に合いません（${error.message ?? ""}）。`;
-  }
+  const message = Object.hasOwn(KEYWORD_MESSAGES, error.keyword)
+    ? KEYWORD_MESSAGES[error.keyword]
+    : undefined;
+  return message
+    ? message(where, label, params)
+    : `\`${where}\`${label}が Schema に合いません（${error.message ?? ""}）。`;
 }
 
 /** 設定の `aliases` の配列に、取り込んだ alias-inject の Schema を当て、合わない行を `null` にした配列と、日本語の 1 文の `schema` のずれを返却する */

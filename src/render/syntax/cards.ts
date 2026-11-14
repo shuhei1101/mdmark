@@ -100,6 +100,31 @@ function soleLinkOf(
   return { open, text: inner.map((child) => child.content).join("") };
 }
 
+/** 脚注と注記の定義の開きなら 1、閉じなら -1、それ以外は 0 */
+function definitionStep(token: Token): number {
+  if (token.type === DEF_OPEN || token.type === ANNOTATION_DEF_OPEN) {
+    return 1;
+  }
+  return token.type === DEF_CLOSE || token.type === ANNOTATION_DEF_CLOSE
+    ? -1
+    : 0;
+}
+
+/** 段落の行内がリンク 1 つだけでカードになるなら、カードの指定（スキームの無いドメインの自動リンクは、後で文字に戻すためカードにしない） */
+function cardSpecOf(
+  inline: Token | undefined,
+): ReturnType<typeof cardOf> | undefined {
+  const link = soleLinkOf(inline);
+  if (!link) {
+    return undefined;
+  }
+  const autolinked = AUTOLINK_MARKUPS.includes(link.open.markup);
+  if (autolinked && !WEB_URL_PATTERN.test(link.text)) {
+    return undefined;
+  }
+  return cardOf(String(link.open.attrGet("href") ?? ""), link.text, autolinked);
+}
+
 /** `cards` がオンなら、リンク 1 つだけの段落のうちカードになるものを、リンクと添付のカードに置き換える */
 export function buildCards(state: StateCore): void {
   if (!featureOn(state, "cards")) {
@@ -111,23 +136,10 @@ export function buildCards(state: StateCore): void {
   let definitionDepth = 0;
   for (let index = 0; index < tokens.length; index++) {
     const token = tokens[index] as Token;
-    if (token.type === DEF_OPEN || token.type === ANNOTATION_DEF_OPEN) {
-      definitionDepth += 1;
-    } else if (
-      token.type === DEF_CLOSE ||
-      token.type === ANNOTATION_DEF_CLOSE
-    ) {
-      definitionDepth -= 1;
-    }
-    const link =
-      token.type === "paragraph_open" && definitionDepth === 0
-        ? soleLinkOf(tokens[index + 1])
-        : undefined;
-    const autolinked = AUTOLINK_MARKUPS.includes(link?.open.markup ?? "");
-    // スキームの無いドメインの自動リンクは、後で文字に戻すためカードにしない
+    definitionDepth += definitionStep(token);
     const spec =
-      link && (!autolinked || WEB_URL_PATTERN.test(link.text))
-        ? cardOf(String(link.open.attrGet("href") ?? ""), link.text, autolinked)
+      token.type === "paragraph_open" && definitionDepth === 0
+        ? cardSpecOf(tokens[index + 1])
         : undefined;
     if (!spec) {
       out.push(token);

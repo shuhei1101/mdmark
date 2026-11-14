@@ -64,17 +64,13 @@ export function planCellMerges(options: {
   const mergeColumns = new Set<number>();
   for (const [row, values] of texts.entries()) {
     for (const [column, text] of values.entries()) {
-      const cell = cells[row]?.[column];
-      if (!cell || (text !== MERGE_UP && text !== MERGE_LEFT)) {
+      if (!cells[row]?.[column] || (text !== MERGE_UP && text !== MERGE_LEFT)) {
         continue;
       }
-      const up = text === MERGE_UP;
-      const reason = up
-        ? planUp({ cells, row, column, headRows })
-        : planLeft({ cells, row, column });
+      const reason = planMerge({ cells, row, column, headRows, text });
       if (reason) {
         warnings.push(mergeWarning({ label: text, row, column, reason }));
-      } else if (up && row >= headRows) {
+      } else if (text === MERGE_UP && row >= headRows) {
         mergeColumns.add(column);
       }
     }
@@ -84,6 +80,18 @@ export function planCellMerges(options: {
     mergeColumns: [...mergeColumns].sort((a, b) => a - b),
     warnings,
   };
+}
+
+/** `^^` は上へ、`<<` は左へ結合する。結合できないときは理由を返却する */
+function planMerge(options: {
+  cells: PlannedCell[][];
+  row: number;
+  column: number;
+  headRows: number;
+  text: string;
+}): string | undefined {
+  const { text, ...place } = options;
+  return text === MERGE_UP ? planUp(place) : planLeft(place);
 }
 
 /** `^^` のセルを上のセルの始まりのセルに結合する。結合できないときは理由を返却する */

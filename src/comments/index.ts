@@ -110,6 +110,59 @@ type OpenPopover = {
   returnTo: HTMLElement;
 };
 
+/** 今の選びの範囲と、その範囲にコメントを付けられるブロック。選びが無い・空・付けられないときは無い */
+function selectedBlock(root: HTMLElement): {
+  range?: Range;
+  block?: HTMLElement;
+} {
+  const selection = window.getSelection();
+  if (!selection || selection.rangeCount === 0 || selection.isCollapsed) {
+    return {};
+  }
+  const range = selection.getRangeAt(0);
+  if (range.toString().trim() === "") {
+    return { range };
+  }
+  return { range, block: blockOf(root, range) };
+}
+
+/** 真なら属性に `true` を入れ、偽なら属性を削除する */
+function setFlag(element: Element | null, name: string, on: boolean): void {
+  if (on) {
+    element?.setAttribute(name, "true");
+  } else {
+    element?.removeAttribute(name);
+  }
+}
+
+/** 入力欄の状態を DOM に記載する */
+function setFormState(
+  form: HTMLElement,
+  state: "idle" | "saving" | "empty" | "failed",
+): void {
+  const error = form.querySelector<HTMLElement>(".mdmark-comment-error");
+  const submit = form.querySelector<HTMLButtonElement>(".is-primary");
+  const message = state === "empty" || state === "failed" ? state : undefined;
+  if (error) {
+    error.hidden = message === undefined;
+    const text = error.querySelector("span");
+    if (text) {
+      text.textContent = message ? COMMENT_MESSAGES[message] : "";
+    }
+  }
+  setFlag(
+    form.querySelector("textarea"),
+    "aria-invalid",
+    message !== undefined,
+  );
+  if (submit) {
+    submit.disabled = state === "saving";
+    submit.textContent =
+      state === "saving" ? "保存しています…" : "コメントを保存";
+  }
+  setFlag(form, "aria-busy", state === "saving");
+}
+
 /** 範囲の端の要素から、同じ 1 つのコメントを付けられるブロックを返却する。付けられなければ `undefined` */
 function blockOf(root: HTMLElement, range: Range): HTMLElement | undefined {
   const closest = (node: Node): HTMLElement | null =>
@@ -255,15 +308,7 @@ export async function attachComments(options: {
     if (destroyed || open) {
       return;
     }
-    const selection = window.getSelection();
-    const range =
-      selection && selection.rangeCount > 0 && !selection.isCollapsed
-        ? selection.getRangeAt(0)
-        : undefined;
-    const block =
-      range && range.toString().trim() !== ""
-        ? blockOf(root, range)
-        : undefined;
+    const { range, block } = selectedBlock(root);
     if (!range || !block) {
       // ボタンにフォーカスがあるうちは隠さない
       if (document.activeElement !== addButton) {
@@ -316,38 +361,6 @@ export async function attachComments(options: {
   };
 
   // ─── 入力欄 ───
-  /** 入力欄の状態を DOM に記載する */
-  const setFormState = (
-    form: HTMLElement,
-    state: "idle" | "saving" | "empty" | "failed",
-  ): void => {
-    const field = form.querySelector("textarea");
-    const error = form.querySelector<HTMLElement>(".mdmark-comment-error");
-    const submit = form.querySelector<HTMLButtonElement>(".is-primary");
-    const message = state === "empty" || state === "failed" ? state : undefined;
-    if (error) {
-      error.hidden = message === undefined;
-      const text = error.querySelector("span");
-      if (text) {
-        text.textContent = message ? COMMENT_MESSAGES[message] : "";
-      }
-    }
-    if (message) {
-      field?.setAttribute("aria-invalid", "true");
-    } else {
-      field?.removeAttribute("aria-invalid");
-    }
-    if (submit) {
-      submit.disabled = state === "saving";
-      submit.textContent =
-        state === "saving" ? "保存しています…" : "コメントを保存";
-    }
-    if (state === "saving") {
-      form.setAttribute("aria-busy", "true");
-    } else {
-      form.removeAttribute("aria-busy");
-    }
-  };
   /** 保存の関数を呼び、保存できたら入力欄を閉じて選んだ箇所にマーカーを付ける */
   const save = async (form: HTMLElement, range: Range): Promise<void> => {
     const field = form.querySelector("textarea");
@@ -359,25 +372,14 @@ export async function attachComments(options: {
       return;
     }
     setFormState(form, "saving");
-    let saved: unknown;
-    try {
-      saved = await store.save({
-        docId,
-        comment: draftFromRange({ root, range, body }),
-      });
-      if (!isComment(saved)) {
-        throw new Error("save が返却した値がコメントの構造に合いません");
-      }
-    } catch (error) {
-      console.error("[mdmark] コメントを保存できません", "save", docId, error);
-      if (!destroyed) {
-        setFormState(form, "failed");
-        placePopover({ element: form, rect: range.getBoundingClientRect() });
-        field?.focus();
-      }
+    const saved = await saveComment(range, body);
+    if (destroyed) {
       return;
     }
-    if (destroyed) {
+    if (saved === undefined) {
+      setFormState(form, "failed");
+      placePopover({ element: form, rect: range.getBoundingClientRect() });
+      field?.focus();
       return;
     }
     closeForm(true);
@@ -386,9 +388,28 @@ export async function attachComments(options: {
     comments = [...comments, saved];
     applyMarks();
     const mark = [...marked].find(([, list]) =>
-      list.some((comment) => comment.id === (saved as MdmarkComment).id),
+      list.some((comment) => comment.id === saved.id),
     );
     mark?.[0].focus();
+  };
+  /** 保存の関数を呼び、保存できたコメントを返却する。保存できなければエラーを出して `undefined` */
+  const saveComment = async (
+    range: Range,
+    body: string,
+  ): Promise<MdmarkComment | undefined> => {
+    try {
+      const saved: unknown = await store.save({
+        docId,
+        comment: draftFromRange({ root, range, body }),
+      });
+      if (!isComment(saved)) {
+        throw new Error("save が返却した値がコメントの構造に合いません");
+      }
+      return saved;
+    } catch (error) {
+      console.error("[mdmark] コメントを保存できません", "save", docId, error);
+      return undefined;
+    }
   };
   /** 選んだ範囲の下に入力欄を開く */
   const openForm = (range: Range): void => {
@@ -441,24 +462,30 @@ export async function attachComments(options: {
   };
 
   // ─── 吹き出し ───
+  /** マーカーに付いたコメントの吹き出しの要素を作る */
+  const renderBubble = (
+    mark: HTMLElement,
+    can: { canEdit: boolean; canRemove: boolean },
+  ): HTMLElement => {
+    const list = marked.get(mark) ?? [];
+    return elementFrom(
+      renderCommentBubble({
+        quote: list[0]?.quote ?? mark.textContent ?? "",
+        bodies: list.map((comment) => comment.body),
+        ids: list.map((comment) => comment.id),
+        ...can,
+      }),
+    );
+  };
   /** マーカーの下に、付いたコメントの吹き出しを開く */
   const openBubble = (mark: HTMLElement): void => {
     if (open?.kind === "form" && !closeForm(false)) {
       return;
     }
     closeBubble(false);
-    const list = marked.get(mark) ?? [];
     const canEdit = typeof store.update === "function";
     const canRemove = typeof store.remove === "function";
-    const bubble = elementFrom(
-      renderCommentBubble({
-        quote: list[0]?.quote ?? mark.textContent ?? "",
-        bodies: list.map((comment) => comment.body),
-        ids: list.map((comment) => comment.id),
-        canEdit,
-        canRemove,
-      }),
-    );
+    const bubble = renderBubble(mark, { canEdit, canRemove });
     document.body.append(bubble);
     open = {
       element: bubble,

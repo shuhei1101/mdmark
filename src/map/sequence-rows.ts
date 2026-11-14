@@ -1,4 +1,4 @@
-import type { Sequence } from "./sequence.ts";
+import type { Sequence, SequenceFragment } from "./sequence.ts";
 
 /** シーケンス図の表示する 1 行 */
 export type SequenceRow =
@@ -41,17 +41,17 @@ export const sequenceRows = (
   const participants =
     entered === undefined ? order : order.filter((id) => used.has(id));
   const collapsed = new Set(view.collapsed);
+  /** 中だけを描くブロックの外にはみ出すブロックか */
+  const outsideEntered = (fragment: SequenceFragment): boolean =>
+    entered !== undefined &&
+    (fragment.start < entered.start || fragment.end > entered.end);
   /** メッセージを含む最も外側の閉じたブロック（中だけを描くブロックの外は数えない） */
   const closedOf = (message: number): number | undefined => {
     let found: number | undefined;
     sequence.fragments.forEach((fragment, index) => {
       if (!collapsed.has(index) || index === view.entered) return;
       if (message < fragment.start || message >= fragment.end) return;
-      if (
-        entered !== undefined &&
-        (fragment.start < entered.start || fragment.end > entered.end)
-      )
-        return;
+      if (outsideEntered(fragment)) return;
       const current =
         found === undefined ? undefined : sequence.fragments[found];
       if (current === undefined || fragment.depth < current.depth)
@@ -74,12 +74,7 @@ export const sequenceRows = (
         closedOf(index) !== undefined
       )
         return;
-      if (
-        entered !== undefined &&
-        f !== view.entered &&
-        (fragment.start < entered.start || fragment.end > entered.end)
-      )
-        return;
+      if (f !== view.entered && outsideEntered(fragment)) return;
       rows.push({ kind: "gap" }, { kind: "fragment", fragment: f });
       fragment.sections.forEach((section, s) => {
         if (s > 0 && section.start === index)

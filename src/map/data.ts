@@ -127,34 +127,45 @@ export const jsonPathLines = (source: string): Map<string, number> => {
     at += 1;
     return JSON.parse(source.slice(start, at)) as string;
   };
+  /** オブジェクトのキーか配列の要素のパスを、始まる行とともに記録する */
+  const childPath = (
+    char: string,
+    context: { path: string; index: number },
+  ): string => {
+    const { path, index } = context;
+    if (char !== "{") {
+      const child = `${path}[${index}]`;
+      lines.set(child, line);
+      return child;
+    }
+    const keyLine = line;
+    const key = readString();
+    const child = path === "" ? key : `${path}.${key}`;
+    lines.set(child, keyLine);
+    skip();
+    at += 1;
+    return child;
+  };
+  /** オブジェクトか配列の中を走査する */
+  const container = (char: string, path: string): void => {
+    const close = char === "{" ? "}" : "]";
+    at += 1;
+    skip();
+    let index = 0;
+    while (at < source.length && source[at] !== close) {
+      value(childPath(char, { path, index }));
+      index += 1;
+      skip();
+      if (source[at] === ",") at += 1;
+      skip();
+    }
+    at += 1;
+  };
   const value = (path: string): void => {
     skip();
     const char = source[at];
     if (char === "{" || char === "[") {
-      const close = char === "{" ? "}" : "]";
-      at += 1;
-      skip();
-      let index = 0;
-      while (at < source.length && source[at] !== close) {
-        let child: string;
-        if (char === "{") {
-          const keyLine = line;
-          const key = readString();
-          child = path === "" ? key : `${path}.${key}`;
-          lines.set(child, keyLine);
-          skip();
-          at += 1;
-        } else {
-          child = `${path}[${index}]`;
-          lines.set(child, line);
-          index += 1;
-        }
-        value(child);
-        skip();
-        if (source[at] === ",") at += 1;
-        skip();
-      }
-      at += 1;
+      container(char, path);
     } else if (char === '"') {
       readString();
     } else {
@@ -178,6 +189,426 @@ const errorLine = (source: string, error: unknown): number | undefined => {
 
 const isObject = (value: unknown): value is Record<string, unknown> =>
   typeof value === "object" && value !== null && !Array.isArray(value);
+
+/** 補足を読むときに、項目とパスごとの行を持つ読み手 */
+type DataReader = { problems: MapProblem[]; lines: Map<string, number> };
+
+/** 値の型が合わない項目を足す */
+const invalid = (reader: DataReader, path: string, expected: string): void => {
+  reader.problems.push({
+    kind: "map_invalid_value",
+    line: reader.lines.get(path),
+    message: `補足の \`${path}\` は${expected}で記載してください。`,
+  });
+};
+
+/** 知らないキーの項目を足す */
+const unknownKey = (
+  reader: DataReader,
+  item: { path: string; key: string; keys: readonly string[] },
+): void => {
+  const { path, key, keys } = item;
+  reader.problems.push({
+    kind: "map_unknown_key",
+    line: reader.lines.get(path === "" ? key : `${path}.${key}`),
+    message: `補足${path === "" ? "" : `の \`${path}\``}に知らないキー \`${key}\` があります。使用できるキーは ${keys.map((name) => `\`${name}\``).join("・")} です。`,
+  });
+};
+
+/** 文字の値。`--` を含めば項目にする */
+const readText = (
+  reader: DataReader,
+  value: unknown,
+  path: string,
+): string | undefined => {
+  if (typeof value !== "string") {
+    invalid(reader, path, "文字");
+    return undefined;
+  }
+  if (value.includes("--")) {
+    reader.problems.push({
+      kind: "map_invalid_value",
+      line: reader.lines.get(path),
+      message: `補足の \`${path}\` に \`--\` があります。HTML コメントを閉じてしまうため、\`--\` を含めずに記載してください。`,
+    });
+    return undefined;
+  }
+  return value;
+};
+
+/** ID の配列（読めない ID は除く） */
+const readIds = (
+  reader: DataReader,
+  value: unknown,
+  path: string,
+): string[] | undefined => {
+  if (!Array.isArray(value)) {
+    invalid(reader, path, "ID の配列");
+    return undefined;
+  }
+  const out: string[] = [];
+  for (const [i, item] of value.entries()) {
+    const id = readText(reader, item, `${path}[${i}]`);
+    if (id !== undefined) out.push(id);
+  }
+  return out;
+};
+
+/** 数の値 */
+const readNumber = (
+  reader: DataReader,
+  value: unknown,
+  path: string,
+): number | undefined => {
+  if (typeof value === "number" && Number.isFinite(value)) return value;
+  invalid(reader, path, "数");
+  return undefined;
+};
+
+/** `{"x", "y"}` の値 */
+const readPoint = (
+  reader: DataReader,
+  value: unknown,
+  path: string,
+): { x: number; y: number } | undefined => {
+  if (!isObject(value)) {
+    invalid(reader, path, ' `{"x", "y"}` ');
+    return undefined;
+  }
+  const x = readNumber(reader, value.x, `${path}.x`);
+  const y = readNumber(reader, value.y, `${path}.y`);
+  return x === undefined || y === undefined ? undefined : { x, y };
+};
+
+/** 選べる値のどれか */
+const readChoice = <T extends string>(
+  reader: DataReader,
+  value: unknown,
+  place: { path: string; choices: readonly string[] },
+): T | undefined => {
+  const { path, choices } = place;
+  if (typeof value === "string" && choices.includes(value)) return value as T;
+  invalid(reader, path, ` ${choices.map((name) => `\`${name}\``).join("・")} `);
+  return undefined;
+};
+
+/** 線の両端の辺 */
+const readEnds = (
+  reader: DataReader,
+  value: unknown,
+  path: string,
+): MapLayoutEntry["ends"] | undefined => {
+  if (!isObject(value)) {
+    invalid(reader, path, ' `{"from": {"side"}, "to": {"side"}}` ');
+    return undefined;
+  }
+  const out: { from?: MapSide; to?: MapSide } = {};
+  for (const end of ["from", "to"] as const) {
+    const item = value[end];
+    if (item === undefined) continue;
+    if (!isObject(item)) {
+      invalid(reader, `${path}.${end}`, ' `{"side"}` ');
+      return undefined;
+    }
+    const side = readChoice<MapSide>(reader, item.side, {
+      path: `${path}.${end}.side`,
+      choices: SIDES,
+    });
+    if (side === undefined) return undefined;
+    out[end] = side;
+  }
+  return out;
+};
+
+/** データの印の色と形状 */
+const readPacket = (
+  reader: DataReader,
+  value: unknown,
+  path: string,
+): MapPacket | undefined => {
+  if (!isObject(value)) {
+    invalid(reader, path, ' `{"color", "shape"}` ');
+    return undefined;
+  }
+  const out: MapPacket = {};
+  if (value.color !== undefined)
+    out.color = readText(reader, value.color, `${path}.color`);
+  if (value.shape !== undefined)
+    out.shape = readChoice(reader, value.shape, {
+      path: `${path}.shape`,
+      choices: PACKET_SHAPES,
+    });
+  return out;
+};
+
+/** 線が通る点の並び */
+const readVia = (
+  reader: DataReader,
+  value: unknown,
+  path: string,
+): Array<{ x: number; y: number }> | undefined => {
+  if (!Array.isArray(value)) {
+    invalid(reader, path, ' `[{"x", "y"}]` ');
+    return undefined;
+  }
+  const points = value.map((item, i) =>
+    readPoint(reader, item, `${path}[${i}]`),
+  );
+  return points.every((item) => item !== undefined)
+    ? (points as Array<{ x: number; y: number }>)
+    : undefined;
+};
+
+/** layout のキーごとの値の読み方 */
+const LAYOUT_FIELD_READERS: Record<
+  string,
+  (reader: DataReader, field: unknown, at: string) => MapLayoutEntry
+> = {
+  align: (reader, field, at) => ({ align: readText(reader, field, at) }),
+  color: (reader, field, at) => ({ color: readText(reader, field, at) }),
+  line: (reader, field, at) => ({ line: readText(reader, field, at) }),
+  order: (reader, field, at) => ({ order: readNumber(reader, field, at) }),
+  width: (reader, field, at) => ({ width: readNumber(reader, field, at) }),
+  justify: (reader, field, at) => ({
+    justify: readChoice(reader, field, { path: at, choices: JUSTIFIES }),
+  }),
+  pos: (reader, field, at) => ({ pos: readPoint(reader, field, at) }),
+  packet: (reader, field, at) => ({ packet: readPacket(reader, field, at) }),
+  ends: (reader, field, at) => ({ ends: readEnds(reader, field, at) }),
+  via: (reader, field, at) => ({ via: readVia(reader, field, at) }),
+  collapsed: (reader, field, at) => {
+    if (typeof field === "boolean") return { collapsed: field };
+    invalid(reader, at, "真偽値");
+    return {};
+  },
+};
+
+/** layout の ID ごとの上書き（読めない値のキーは持たない） */
+const readLayoutEntry = (
+  reader: DataReader,
+  value: Record<string, unknown>,
+  path: string,
+): MapLayoutEntry => {
+  const entry: MapLayoutEntry = {};
+  for (const [name, field] of Object.entries(value)) {
+    if (Object.hasOwn(LAYOUT_FIELD_READERS, name)) {
+      const read = LAYOUT_FIELD_READERS[
+        name
+      ] as (typeof LAYOUT_FIELD_READERS)[string];
+      Object.assign(entry, read(reader, field, `${path}.${name}`));
+    } else unknownKey(reader, { path, key: name, keys: LAYOUT_KEYS });
+  }
+  for (const key of Object.keys(entry) as Array<keyof MapLayoutEntry>)
+    if (entry[key] === undefined) delete entry[key];
+  return entry;
+};
+
+/** 手順のキー 1 つを読んで `out` に入れる。本文が読めなければ `false` を返却する */
+const applyStepField = (
+  reader: DataReader,
+  out: MapStep,
+  item: { name: string; field: unknown; path: string },
+): boolean => {
+  const { name, field, path } = item;
+  if (name === "title") out.title = readText(reader, field, `${path}.title`);
+  else if (name === "text") {
+    const body = readText(reader, field, `${path}.text`);
+    if (body === undefined) return false;
+    out.text = body;
+  } else if (name === "nodes")
+    out.nodes = readIds(reader, field, `${path}.nodes`) ?? [];
+  else if (name === "edges")
+    out.edges = readIds(reader, field, `${path}.edges`);
+  else if (name === "enter")
+    out.enter = readText(reader, field, `${path}.enter`);
+  else unknownKey(reader, { path, key: name, keys: STEP_KEYS });
+  return true;
+};
+
+/** 案内の 1 手順（本文が読めなければ `undefined`） */
+const readStep = (
+  reader: DataReader,
+  value: unknown,
+  path: string,
+): MapStep | undefined => {
+  if (!isObject(value)) {
+    invalid(reader, path, " JSON のオブジェクト ");
+    return undefined;
+  }
+  const out: MapStep = {
+    title: undefined,
+    text: "",
+    nodes: [],
+    edges: undefined,
+    enter: undefined,
+  };
+  let ok = true;
+  for (const [name, field] of Object.entries(value)) {
+    if (!applyStepField(reader, out, { name, field, path })) ok = false;
+  }
+  return ok ? out : undefined;
+};
+
+/** 説明か注記の ID の並びの、少なくとも一方を持つ notes の 1 件（読めなければ `undefined`） */
+const readNote = (
+  reader: DataReader,
+  note: unknown,
+  path: string,
+): MapNote | undefined => {
+  if (!isObject(note)) {
+    invalid(reader, path, ' `{"text": 説明の文}` ');
+    return undefined;
+  }
+  if (note.text === undefined && note.annotations === undefined) {
+    invalid(
+      reader,
+      path,
+      ' `{"text": 説明の文}` か `{"annotations": [注記の ID]}` ',
+    );
+    return undefined;
+  }
+  const parsed: MapNote = {};
+  if (note.text !== undefined) {
+    const body = readText(reader, note.text, `${path}.text`);
+    if (body === undefined) return undefined;
+    parsed.text = body;
+  }
+  if (note.annotations === undefined) return parsed;
+  const ids = note.annotations;
+  if (!Array.isArray(ids) || !ids.every((item) => typeof item === "string")) {
+    invalid(reader, `${path}.annotations`, " 注記の ID の配列 ");
+    return undefined;
+  }
+  parsed.annotations = ids;
+  return parsed;
+};
+
+/** notes を読んで `data` に入れる */
+const readNotes = (reader: DataReader, value: unknown, data: MapData): void => {
+  if (!isObject(value)) {
+    invalid(reader, "notes", ' ID ごとの `{"text"}` ');
+    return;
+  }
+  for (const [id, note] of Object.entries(value)) {
+    const parsed = readNote(reader, note, `notes.${id}`);
+    if (parsed !== undefined) data.notes[id] = parsed;
+  }
+};
+
+/** walkthroughs を読んで `data` に入れる */
+const readWalkthroughs = (
+  reader: DataReader,
+  value: unknown,
+  data: MapData,
+): void => {
+  if (!Array.isArray(value)) {
+    invalid(reader, "walkthroughs", "手順の配列");
+    return;
+  }
+  for (const [i, item] of value.entries()) {
+    const parsed = readStep(reader, item, `walkthroughs[${i}]`);
+    if (parsed) data.walkthroughs.push(parsed);
+  }
+};
+
+/** layout を読んで `data` に入れる */
+const readLayout = (
+  reader: DataReader,
+  value: unknown,
+  data: MapData,
+): void => {
+  if (!isObject(value)) {
+    invalid(reader, "layout", " ID ごとの上書き ");
+    return;
+  }
+  for (const [id, entry] of Object.entries(value)) {
+    const path = `layout.${id}`;
+    if (isObject(entry)) data.layout[id] = readLayoutEntry(reader, entry, path);
+    else invalid(reader, path, " JSON のオブジェクト ");
+  }
+};
+
+/** 分類の 1 件のキー（知らないキーは項目にする） */
+const readGroupFields = (
+  reader: DataReader,
+  group: Record<string, unknown>,
+  path: string,
+): Partial<MapGroup> => {
+  const out: Partial<MapGroup> = {};
+  for (const [name, field] of Object.entries(group)) {
+    if (name === "title") out.title = readText(reader, field, `${path}.title`);
+    else if (name === "tables")
+      out.tables = readIds(reader, field, `${path}.tables`);
+    else if (name === "parent")
+      out.parent = readText(reader, field, `${path}.parent`);
+    else unknownKey(reader, { path, key: name, keys: GROUP_KEYS });
+  }
+  return out;
+};
+
+/** 分類の 1 件（名前とテーブルが読めなければ `undefined`） */
+const readGroup = (
+  reader: DataReader,
+  group: unknown,
+  path: string,
+): MapGroup | undefined => {
+  if (!isObject(group)) {
+    invalid(reader, path, ' `{"title", "tables"}` ');
+    return undefined;
+  }
+  const { title, tables, parent } = readGroupFields(reader, group, path);
+  if (title === undefined && group.title === undefined)
+    invalid(reader, `${path}.title`, "文字");
+  if (tables === undefined && group.tables === undefined)
+    invalid(reader, `${path}.tables`, "テーブル名の配列");
+  if (title === undefined || tables === undefined) return undefined;
+  return { title, tables, parent };
+};
+
+/** groups を読んで `data` に入れる */
+const readGroups = (
+  reader: DataReader,
+  value: unknown,
+  data: MapData,
+): void => {
+  if (!isObject(value)) {
+    invalid(reader, "groups", ' 分類の ID ごとの `{"title", "tables"}` ');
+    return;
+  }
+  for (const [id, group] of Object.entries(value)) {
+    const parsed = readGroup(reader, group, `groups.${id}`);
+    if (parsed !== undefined) data.groups[id] = parsed;
+  }
+};
+
+/** トップレベルのキー 1 つを読んで `data` に入れる */
+const readRootKey = (
+  reader: DataReader,
+  data: MapData,
+  item: { key: string; value: unknown },
+): void => {
+  const { key, value } = item;
+  switch (key) {
+    case "version":
+      if (value !== 1) invalid(reader, "version", " `1` ");
+      return;
+    case "notes":
+      return readNotes(reader, value, data);
+    case "walkthroughs":
+      return readWalkthroughs(reader, value, data);
+    case "layout":
+      return readLayout(reader, value, data);
+    case "plays_over": {
+      const target = readNumber(reader, value, "plays_over");
+      if (target !== undefined) data.plays_over = target;
+      return;
+    }
+    case "groups":
+      return readGroups(reader, value, data);
+    default:
+      unknownKey(reader, { path: "", key, keys: MAP_DATA_KEYS });
+  }
+};
 
 /** 補足の JSON のオブジェクトを読み込み、スキーマに合う部分を MapData にし、合わない箇所を項目にする（line は補足の中の 0 からの行。lines はパスごとの行） */
 export const parseMapData = (
@@ -209,272 +640,8 @@ export const parseMapData = (
     return { data, problems, lines: new Map() };
   }
   const lines = jsonPathLines(source);
-  const invalid = (path: string, expected: string) =>
-    problems.push({
-      kind: "map_invalid_value",
-      line: lines.get(path),
-      message: `補足の \`${path}\` は${expected}で記載してください。`,
-    });
-  const unknown = (path: string, key: string, keys: readonly string[]) =>
-    problems.push({
-      kind: "map_unknown_key",
-      line: lines.get(path === "" ? key : `${path}.${key}`),
-      message: `補足${path === "" ? "" : `の \`${path}\``}に知らないキー \`${key}\` があります。使用できるキーは ${keys.map((name) => `\`${name}\``).join("・")} です。`,
-    });
-  /** 文字の値。`--` を含めば項目にする */
-  const text = (value: unknown, path: string): string | undefined => {
-    if (typeof value !== "string") {
-      invalid(path, "文字");
-      return undefined;
-    }
-    if (value.includes("--")) {
-      problems.push({
-        kind: "map_invalid_value",
-        line: lines.get(path),
-        message: `補足の \`${path}\` に \`--\` があります。HTML コメントを閉じてしまうため、\`--\` を含めずに記載してください。`,
-      });
-      return undefined;
-    }
-    return value;
-  };
-  const ids = (value: unknown, path: string): string[] | undefined => {
-    if (!Array.isArray(value)) {
-      invalid(path, "ID の配列");
-      return undefined;
-    }
-    const out: string[] = [];
-    for (const [i, item] of value.entries()) {
-      const id = text(item, `${path}[${i}]`);
-      if (id !== undefined) out.push(id);
-    }
-    return out;
-  };
-  const number = (value: unknown, path: string): number | undefined => {
-    if (typeof value === "number" && Number.isFinite(value)) return value;
-    invalid(path, "数");
-    return undefined;
-  };
-  const point = (
-    value: unknown,
-    path: string,
-  ): { x: number; y: number } | undefined => {
-    if (!isObject(value)) {
-      invalid(path, ' `{"x", "y"}` ');
-      return undefined;
-    }
-    const x = number(value.x, `${path}.x`);
-    const y = number(value.y, `${path}.y`);
-    return x === undefined || y === undefined ? undefined : { x, y };
-  };
-  const choice = <T extends string>(
-    value: unknown,
-    path: string,
-    choices: readonly string[],
-  ): T | undefined => {
-    if (typeof value === "string" && choices.includes(value)) return value as T;
-    invalid(path, ` ${choices.map((name) => `\`${name}\``).join("・")} `);
-    return undefined;
-  };
-  const ends = (
-    value: unknown,
-    path: string,
-  ): MapLayoutEntry["ends"] | undefined => {
-    if (!isObject(value)) {
-      invalid(path, ' `{"from": {"side"}, "to": {"side"}}` ');
-      return undefined;
-    }
-    const out: { from?: MapSide; to?: MapSide } = {};
-    for (const end of ["from", "to"] as const) {
-      const item = value[end];
-      if (item === undefined) continue;
-      if (!isObject(item)) {
-        invalid(`${path}.${end}`, ' `{"side"}` ');
-        return undefined;
-      }
-      const side = choice<MapSide>(item.side, `${path}.${end}.side`, SIDES);
-      if (side === undefined) return undefined;
-      out[end] = side;
-    }
-    return out;
-  };
-  const packet = (value: unknown, path: string): MapPacket | undefined => {
-    if (!isObject(value)) {
-      invalid(path, ' `{"color", "shape"}` ');
-      return undefined;
-    }
-    const out: MapPacket = {};
-    if (value.color !== undefined)
-      out.color = text(value.color, `${path}.color`);
-    if (value.shape !== undefined)
-      out.shape = choice(value.shape, `${path}.shape`, PACKET_SHAPES);
-    return out;
-  };
-  const via = (
-    value: unknown,
-    path: string,
-  ): Array<{ x: number; y: number }> | undefined => {
-    if (!Array.isArray(value)) {
-      invalid(path, ' `[{"x", "y"}]` ');
-      return undefined;
-    }
-    const points = value.map((item, i) => point(item, `${path}[${i}]`));
-    return points.every((item) => item !== undefined)
-      ? (points as Array<{ x: number; y: number }>)
-      : undefined;
-  };
-  const layoutEntry = (
-    value: Record<string, unknown>,
-    path: string,
-  ): MapLayoutEntry => {
-    const entry: MapLayoutEntry = {};
-    for (const [name, field] of Object.entries(value)) {
-      const at = `${path}.${name}`;
-      if (name === "align" || name === "color" || name === "line")
-        entry[name] = text(field, at);
-      else if (name === "order" || name === "width")
-        entry[name] = number(field, at);
-      else if (name === "justify") entry.justify = choice(field, at, JUSTIFIES);
-      else if (name === "pos") entry.pos = point(field, at);
-      else if (name === "packet") entry.packet = packet(field, at);
-      else if (name === "ends") entry.ends = ends(field, at);
-      else if (name === "via") entry.via = via(field, at);
-      else if (name === "collapsed") {
-        if (typeof field === "boolean") entry.collapsed = field;
-        else invalid(at, "真偽値");
-      } else unknown(path, name, LAYOUT_KEYS);
-    }
-    for (const key of Object.keys(entry) as Array<keyof MapLayoutEntry>)
-      if (entry[key] === undefined) delete entry[key];
-    return entry;
-  };
-  const step = (value: unknown, path: string): MapStep | undefined => {
-    if (!isObject(value)) {
-      invalid(path, " JSON のオブジェクト ");
-      return undefined;
-    }
-    const out: MapStep = {
-      title: undefined,
-      text: "",
-      nodes: [],
-      edges: undefined,
-      enter: undefined,
-    };
-    let ok = true;
-    for (const [name, field] of Object.entries(value)) {
-      if (name === "title") out.title = text(field, `${path}.title`);
-      else if (name === "text") {
-        const body = text(field, `${path}.text`);
-        if (body === undefined) ok = false;
-        else out.text = body;
-      } else if (name === "nodes")
-        out.nodes = ids(field, `${path}.nodes`) ?? [];
-      else if (name === "edges") out.edges = ids(field, `${path}.edges`);
-      else if (name === "enter") out.enter = text(field, `${path}.enter`);
-      else unknown(path, name, STEP_KEYS);
-    }
-    return ok ? out : undefined;
-  };
-  for (const [key, value] of Object.entries(root)) {
-    switch (key) {
-      case "version":
-        if (value !== 1) invalid("version", " `1` ");
-        break;
-      case "notes":
-        if (!isObject(value)) {
-          invalid("notes", ' ID ごとの `{"text"}` ');
-          break;
-        }
-        for (const [id, note] of Object.entries(value)) {
-          const path = `notes.${id}`;
-          if (!isObject(note)) {
-            invalid(path, ' `{"text": 説明の文}` ');
-            continue;
-          }
-          // 説明か注記の ID の並びの、少なくとも一方を持つ
-          if (note.text === undefined && note.annotations === undefined) {
-            invalid(
-              path,
-              ' `{"text": 説明の文}` か `{"annotations": [注記の ID]}` ',
-            );
-            continue;
-          }
-          const parsed: MapNote = {};
-          if (note.text !== undefined) {
-            const body = text(note.text, `${path}.text`);
-            if (body === undefined) continue;
-            parsed.text = body;
-          }
-          if (note.annotations !== undefined) {
-            const ids = note.annotations;
-            if (
-              !Array.isArray(ids) ||
-              !ids.every((item) => typeof item === "string")
-            ) {
-              invalid(`${path}.annotations`, " 注記の ID の配列 ");
-              continue;
-            }
-            parsed.annotations = ids;
-          }
-          data.notes[id] = parsed;
-        }
-        break;
-      case "walkthroughs":
-        if (!Array.isArray(value)) {
-          invalid("walkthroughs", "手順の配列");
-          break;
-        }
-        for (const [i, item] of value.entries()) {
-          const parsed = step(item, `walkthroughs[${i}]`);
-          if (parsed) data.walkthroughs.push(parsed);
-        }
-        break;
-      case "layout":
-        if (!isObject(value)) {
-          invalid("layout", " ID ごとの上書き ");
-          break;
-        }
-        for (const [id, entry] of Object.entries(value)) {
-          const path = `layout.${id}`;
-          if (isObject(entry)) data.layout[id] = layoutEntry(entry, path);
-          else invalid(path, " JSON のオブジェクト ");
-        }
-        break;
-      case "plays_over": {
-        const target = number(value, "plays_over");
-        if (target !== undefined) data.plays_over = target;
-        break;
-      }
-      case "groups":
-        if (!isObject(value)) {
-          invalid("groups", ' 分類の ID ごとの `{"title", "tables"}` ');
-          break;
-        }
-        for (const [id, group] of Object.entries(value)) {
-          const path = `groups.${id}`;
-          if (!isObject(group)) {
-            invalid(path, ' `{"title", "tables"}` ');
-            continue;
-          }
-          let title: string | undefined;
-          let tables: string[] | undefined;
-          let parent: string | undefined;
-          for (const [name, field] of Object.entries(group)) {
-            if (name === "title") title = text(field, `${path}.title`);
-            else if (name === "tables") tables = ids(field, `${path}.tables`);
-            else if (name === "parent") parent = text(field, `${path}.parent`);
-            else unknown(path, name, GROUP_KEYS);
-          }
-          if (title === undefined && group.title === undefined)
-            invalid(`${path}.title`, "文字");
-          if (tables === undefined && group.tables === undefined)
-            invalid(`${path}.tables`, "テーブル名の配列");
-          if (title !== undefined && tables !== undefined)
-            data.groups[id] = { title, tables, parent };
-        }
-        break;
-      default:
-        unknown("", key, MAP_DATA_KEYS);
-    }
-  }
+  const reader: DataReader = { problems, lines };
+  for (const [key, value] of Object.entries(root))
+    readRootKey(reader, data, { key, value });
   return { data, problems, lines };
 };

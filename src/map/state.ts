@@ -62,6 +62,12 @@ const readStored = (
   }
 };
 
+/** 保った値がオブジェクトならその値、それ以外は空のオブジェクト */
+const objectOr = <T extends object>(
+  value: T | undefined,
+): T | Record<never, never> =>
+  typeof value === "object" && value !== null ? value : {};
+
 /** クエリ文字列 → sessionStorage → マーカーの focus の順に入るグループかブロックを決め、ほかの状態を sessionStorage から読む */
 export const readMapState = (options: {
   index: number;
@@ -96,18 +102,9 @@ export const readMapState = (options: {
       : options.collapsed.filter(known),
     entered,
     selected: list(stored.selected),
-    positions:
-      typeof stored.positions === "object" && stored.positions !== null
-        ? stored.positions
-        : {},
-    wireShifts:
-      typeof stored.wireShifts === "object" && stored.wireShifts !== null
-        ? stored.wireShifts
-        : {},
-    attachments:
-      typeof stored.attachments === "object" && stored.attachments !== null
-        ? stored.attachments
-        : {},
+    positions: objectOr(stored.positions),
+    wireShifts: objectOr(stored.wireShifts),
+    attachments: objectOr(stored.attachments),
     order: Array.isArray(stored.order)
       ? stored.order.filter((id): id is string => typeof id === "string")
       : undefined,

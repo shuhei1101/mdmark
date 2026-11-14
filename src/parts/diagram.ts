@@ -1,5 +1,6 @@
 import type {
   MdmarkChartDefinition,
+  MdmarkChartSeries,
   MdmarkDiagramNode,
   MdmarkErCardinality,
   MdmarkErDefinition,
@@ -177,40 +178,58 @@ export function ownerIdAttribute(
   return ` id="${escapeHtml(noteOwnerId(annotations.ownerPrefix, elementId))}"`;
 }
 
-/** 図のツールチップを描く。文だけの `hint` は、行内の要素の後ろにも配置できるよう `span` で出す */
-export function renderDiagramTip(tip: DiagramTip): string {
+/** 説明・注記のツールチップ。説明を持たず注記だけを持つ持ち主は、説明の区分を出さない */
+function renderHintTip(
+  tip: DiagramTip,
+  parts: { owner: string; hidden: string; notes: string },
+): string {
+  const { owner, hidden, notes } = parts;
   const hint =
     tip.hint === undefined || tip.hint === ""
       ? ""
       : `<span class="mdmark-term-tip-meaning">${escapeHtml(tip.hint)}</span>`;
+  const described =
+    hint === "" && notes !== ""
+      ? ""
+      : `<span class="mdmark-term-tip-section">${hint}</span>`;
+  return `<span class="mdmark-diagram-tip mdmark-hint-tip" id="${escapeHtml(tip.id)}" role="tooltip" data-tip-for="${owner}"${hidden}>${described}${notes}</span>`;
+}
+
+/** ER 図のテーブルのツールチップ: テーブルの名前・説明と、説明を持つ列 */
+function renderTableTip(
+  tip: DiagramTip & { table: NonNullable<DiagramTip["table"]> },
+  parts: { owner: string; hidden: string; notes: string },
+): string {
+  const { owner, hidden, notes } = parts;
+  const table = tip.table;
+  const desc =
+    table.desc === undefined
+      ? ""
+      : `<span class="mdmark-term-tip-meaning">${escapeHtml(table.desc)}</span>`;
+  const rows = table.columns
+    .filter((column) => column.desc)
+    .map(
+      (column) =>
+        `<dt><code>${escapeHtml(column.name)}</code></dt><dd>${escapeHtml(column.desc ?? "")}</dd>`,
+    )
+    .join("");
+  const columns = rows
+    ? `<dl class="mdmark-diagram-tip-io mdmark-diagram-er-tip-columns">${rows}</dl>`
+    : "";
+  return `<div class="mdmark-diagram-tip" id="${escapeHtml(tip.id)}" role="tooltip" data-tip-for="${owner}"${hidden}><span class="mdmark-term-tip-section"><span class="mdmark-term-tip-heading">${escapeHtml(plainDefinitionText(table.label))}（${escapeHtml(plainDefinitionText(table.name))}）</span>${desc}${columns}</span>${notes}</div>`;
+}
+
+/** 図のツールチップを描く。文だけの `hint` は、行内の要素の後ろにも配置できるよう `span` で出す */
+export function renderDiagramTip(tip: DiagramTip): string {
   const owner = escapeHtml(tip.owner ?? tip.label);
   const hidden = tip.open ? "" : ' hidden="hidden"';
   const notes = annotationSections(tip.annotations);
+  const parts = { owner, hidden, notes };
   if (tip.kind === "hint") {
-    // 説明を持たず注記だけを持つ持ち主は、説明の区分を出さない
-    const described =
-      hint === "" && notes !== ""
-        ? ""
-        : `<span class="mdmark-term-tip-section">${hint}</span>`;
-    return `<span class="mdmark-diagram-tip mdmark-hint-tip" id="${escapeHtml(tip.id)}" role="tooltip" data-tip-for="${owner}"${hidden}>${described}${notes}</span>`;
+    return renderHintTip(tip, parts);
   }
   if (tip.kind === "table" && tip.table) {
-    const table = tip.table;
-    const desc =
-      table.desc === undefined
-        ? ""
-        : `<span class="mdmark-term-tip-meaning">${escapeHtml(table.desc)}</span>`;
-    const rows = table.columns
-      .filter((column) => column.desc)
-      .map(
-        (column) =>
-          `<dt><code>${escapeHtml(column.name)}</code></dt><dd>${escapeHtml(column.desc ?? "")}</dd>`,
-      )
-      .join("");
-    const columns = rows
-      ? `<dl class="mdmark-diagram-tip-io mdmark-diagram-er-tip-columns">${rows}</dl>`
-      : "";
-    return `<div class="mdmark-diagram-tip" id="${escapeHtml(tip.id)}" role="tooltip" data-tip-for="${owner}"${hidden}><span class="mdmark-term-tip-section"><span class="mdmark-term-tip-heading">${escapeHtml(plainDefinitionText(table.label))}（${escapeHtml(plainDefinitionText(table.name))}）</span>${desc}${columns}</span>${notes}</div>`;
+    return renderTableTip({ ...tip, table: tip.table }, parts);
   }
   const text = (tip.kind === "item" ? tip.value : tip.tip) ?? "";
   // 線の詳細を持たず注記だけを持つ線は、線の詳細の区分の代わりに注記の区分だけを出す
@@ -245,10 +264,13 @@ export function createTips(prefix: string): TipList {
 /** 定義の文字の `{{単語}}` を、意味のある用語なら下線とツールチップの持ち主にし、それ以外は単語だけにして、文字を逃がして返却する */
 export function renderText(
   text: string,
-  tips: TipList,
-  lookup: TermLookup | undefined,
-  found: { terms: boolean },
+  context: {
+    tips: TipList;
+    lookup: TermLookup | undefined;
+    found: { terms: boolean };
+  },
 ): string {
+  const { tips, lookup, found } = context;
   return text
     .split(/\{\{(.+?)\}\}/)
     .map((piece, index) => {
@@ -310,6 +332,27 @@ const wireColor = (color: string | undefined): string =>
     ? "var(--mdmark-color-diagram-line)"
     : `var(--mdmark-color-accent-${color}-text, var(--mdmark-color-diagram-line))`;
 
+/** 線の矢じりの `marker` と、線に付ける端の属性（矢じりが無ければ空） */
+function wireHead(options: {
+  markerId: string;
+  head: NonNullable<MdmarkWireStyle["head"]>;
+  color: string;
+  both: boolean | undefined;
+}): { defs: string; ends: string } {
+  const { markerId, head, color, both } = options;
+  if (head === "none") {
+    return { defs: "", ends: "" };
+  }
+  const shape =
+    head === "filled"
+      ? `<path d="M0,0 L9,4.5 L0,9 z" fill="${color}"></path>`
+      : `<path d="M1,1 L8,4.5 L1,8" fill="none" stroke="${color}" stroke-width="1.5"></path>`;
+  return {
+    defs: `<defs><marker id="${markerId}" class="mdmark-diagram-arrowhead" viewBox="0 0 9 9" refX="8.5" refY="4.5" markerWidth="${HEAD_SIZE}" markerHeight="${HEAD_SIZE}" markerUnits="userSpaceOnUse" orient="auto-start-reverse">${shape}</marker></defs>`,
+    ends: ` marker-end="url(#${markerId})"${both ? ` marker-start="url(#${markerId})"` : ""}`,
+  };
+}
+
 /** 設定の線の種類で描く線と、`tip` を持つ線のツールチップを取得する透明の太い線。矢じりは線ごとに線と同じ色の marker を持つ */
 function renderWire(options: {
   id: string;
@@ -323,21 +366,13 @@ function renderWire(options: {
   const color = wireColor(custom.color);
   const dash = MAP_DASHES[custom.dash ?? "solid"];
   const width = MAP_WIDTHS[custom.width ?? "normal"];
-  const head = custom.head ?? "filled";
-  const markerId = `${id}-head-map-${index}`;
-  const shape =
-    head === "filled"
-      ? `<path d="M0,0 L9,4.5 L0,9 z" fill="${color}"></path>`
-      : `<path d="M1,1 L8,4.5 L1,8" fill="none" stroke="${color}" stroke-width="1.5"></path>`;
-  const marker =
-    head === "none"
-      ? ""
-      : `<marker id="${markerId}" class="mdmark-diagram-arrowhead" viewBox="0 0 9 9" refX="8.5" refY="4.5" markerWidth="${HEAD_SIZE}" markerHeight="${HEAD_SIZE}" markerUnits="userSpaceOnUse" orient="auto-start-reverse">${shape}</marker>`;
-  const ends =
-    head === "none"
-      ? ""
-      : ` marker-end="url(#${markerId})"${custom.both ? ` marker-start="url(#${markerId})"` : ""}`;
-  const visible = `${marker === "" ? "" : `<defs>${marker}</defs>`}<path class="mdmark-diagram-wire" data-line="map" data-wire="${escapeHtml(wireId)}" d="${d}"${dash ? ` stroke-dasharray="${dash}"` : ""} stroke-width="${width}" style="stroke:${color}"${ends}></path>`;
+  const { defs, ends } = wireHead({
+    markerId: `${id}-head-map-${index}`,
+    head: custom.head ?? "filled",
+    color,
+    both: custom.both,
+  });
+  const visible = `${defs}<path class="mdmark-diagram-wire" data-line="map" data-wire="${escapeHtml(wireId)}" d="${d}"${dash ? ` stroke-dasharray="${dash}"` : ""} stroke-width="${width}" style="stroke:${color}"${ends}></path>`;
   const target = hit
     ? `<path class="mdmark-diagram-wire-hit" data-tip-owner="${escapeHtml(wireId)}" d="${d}"></path>`
     : "";
@@ -391,6 +426,32 @@ function labelPosition(points: Array<[number, number]>): [number, number] {
   return best;
 }
 
+/** 説明か注記を持つノードの、右上のマーカー（ツールチップを追加する）。持たないか `hints` がオフなら空 */
+function nodeInfo(options: {
+  node: MdmarkDiagramNode;
+  tips: TipList;
+  hints: boolean;
+  annotations?: DiagramAnnotations | undefined;
+}): string {
+  const { node, tips, hints, annotations } = options;
+  const described = node.hint !== undefined && node.hint !== "";
+  const notes = annotations?.items[node.id];
+  const annotated = (notes?.length ?? 0) > 0;
+  if (!hints || !(described || annotated)) {
+    return "";
+  }
+  const owner = `node:${node.id}`;
+  const id = tips.add({
+    kind: "hint",
+    label: node.name,
+    hint: node.hint,
+    owner,
+    annotations: notes,
+  });
+  const label = infoLabel({ name: node.name, described, annotated });
+  return `<button class="mdmark-diagram-info" type="button"${ownerIdAttribute(annotations, node.id)} aria-label="${escapeHtml(label)}" aria-describedby="${id}" data-tip-owner="${escapeHtml(owner)}">${iconSvg("info")}</button>`;
+}
+
 /** ノード 1 つ（種類の行・名前・補足と、`hint` を持つノードの右上のマーカー）の HTML。`hints` がオフならマーカーを配置しない */
 function renderNode(options: {
   node: MdmarkDiagramNode;
@@ -401,36 +462,20 @@ function renderNode(options: {
   hints: boolean;
   annotations?: DiagramAnnotations | undefined;
 }): string {
-  const { node, box, tips, lookup, found, hints, annotations } = options;
-  const name = renderText(node.name, tips, lookup, found);
+  const { node, box, tips, lookup, found } = options;
+  const context = { tips, lookup, found };
+  const name = renderText(node.name, context);
   const sub =
     node.sub === undefined
       ? ""
-      : `<span class="mdmark-diagram-node-sub">${renderText(node.sub, tips, lookup, found)}</span>`;
-  const described = node.hint !== undefined && node.hint !== "";
-  const notes = annotations?.items[node.id];
-  const annotated = (notes?.length ?? 0) > 0;
-  // 説明か注記を持つノードは、右上のマーカーとツールチップを持つ
-  const hasTip = hints && (described || annotated);
-  let info = "";
-  if (hasTip) {
-    const owner = `node:${node.id}`;
-    const id = tips.add({
-      kind: "hint",
-      label: node.name,
-      hint: node.hint,
-      owner,
-      annotations: notes,
-    });
-    const label = infoLabel({ name: node.name, described, annotated });
-    info = `<button class="mdmark-diagram-info" type="button"${ownerIdAttribute(annotations, node.id)} aria-label="${escapeHtml(label)}" aria-describedby="${id}" data-tip-owner="${escapeHtml(owner)}">${iconSvg("info")}</button>`;
-  }
+      : `<span class="mdmark-diagram-node-sub">${renderText(node.sub, context)}</span>`;
+  const info = nodeInfo(options);
   // リンク先を持つノード: ノードの全体を覆うリンクを配置し、右上のマーカーはリンクの後ろ（リンクの外）に配置する
   const link =
     node.href === undefined
       ? ""
       : `<a class="mdmark-diagram-node-link" href="${escapeHtml(node.href)}" aria-label="${escapeHtml(node.name)}"></a>`;
-  const classes = `mdmark-diagram-node${hasTip ? " has-tip" : ""}${node.href === undefined ? "" : " has-link"}`;
+  const classes = `mdmark-diagram-node${info === "" ? "" : " has-tip"}${node.href === undefined ? "" : " has-link"}`;
   return renderStyledNode({
     node,
     style: node.style,
@@ -441,6 +486,28 @@ function renderNode(options: {
     link,
     info,
   });
+}
+
+/** 種類の行のアイコン。まとめたアイコンはその場で描き、まとめていないアイコンは読み込む場所を配置する */
+function kindIcon(icon: string | undefined): string {
+  if (icon === undefined) {
+    return "";
+  }
+  const bundled = bundledIconNode(icon);
+  return bundled
+    ? iconNodeSvg(bundled as unknown as MdmarkIconNode)
+    : `<span class="mdmark-map-icon" data-icon="${escapeHtml(icon)}" aria-hidden="true"></span>`;
+}
+
+/** 種類の色の `data-color` と、枠線と種類の行の色（`--map-kind`）。色の名前の一覧に無い値は当てない */
+function kindColor(color: string | undefined): { data: string; tint: string } {
+  if (color === undefined || !isColorName(color)) {
+    return { data: "", tint: "" };
+  }
+  return {
+    data: ` data-color="${color}"`,
+    tint: `;--map-kind:var(--mdmark-color-accent-${color}-text)`,
+  };
 }
 
 /** map の構成図のノード: 設定の種類の名前・アイコン・構造・色で描く。種類の行は名前もアイコンも無いときも高さを取る空の行にする */
@@ -455,24 +522,12 @@ function renderStyledNode(options: {
   info: string;
 }): string {
   const { node, style, box, classes, name, sub, link, info } = options;
-  const bundled =
-    style.icon === undefined ? undefined : bundledIconNode(style.icon);
-  const icon =
-    style.icon === undefined
-      ? ""
-      : bundled
-        ? iconNodeSvg(bundled as unknown as MdmarkIconNode)
-        : `<span class="mdmark-map-icon" data-icon="${escapeHtml(style.icon)}" aria-hidden="true"></span>`;
+  const icon = kindIcon(style.icon);
   const label =
     style.label === undefined ? "" : `<span>${escapeHtml(style.label)}</span>`;
   const empty = icon === "" && label === "" ? " is-empty" : "";
-  const named = style.color !== undefined && isColorName(style.color);
-  const color = named ? ` data-color="${style.color}"` : "";
-  // 種類の色は枠線と種類の行の色に当てる（`--map-kind`。色の名前の一覧に無い値は当てない）
-  const tint = named
-    ? `;--map-kind:var(--mdmark-color-accent-${style.color}-text)`
-    : "";
-  return `<div class="${classes} map-kinded" data-kind="map" data-shape="${style.shape ?? "rounded"}"${color} data-node="${escapeHtml(node.id)}"${boxStyle({ ...box, inset: tint })}><span class="mdmark-diagram-node-kind${empty}">${icon}${label}</span><span class="mdmark-diagram-node-name">${name}</span>${sub}${link}${info}</div>`;
+  const color = kindColor(style.color);
+  return `<div class="${classes} map-kinded" data-kind="map" data-shape="${style.shape ?? "rounded"}"${color.data} data-node="${escapeHtml(node.id)}"${boxStyle({ ...box, inset: color.tint })}><span class="mdmark-diagram-node-kind${empty}">${icon}${label}</span><span class="mdmark-diagram-node-name">${name}</span>${sub}${link}${info}</div>`;
 }
 
 /** 説明を持つグループのタイトルの右のマーカー（説明が無ければ空） */
@@ -503,10 +558,13 @@ export function groupInfo(options: {
 export function renderFlow(
   definition: MdmarkFlowDefinition,
   id: string,
-  hints: boolean,
-  lookup?: TermLookup,
-  annotations?: DiagramAnnotations,
+  options: {
+    hints: boolean;
+    lookup?: TermLookup;
+    annotations?: DiagramAnnotations;
+  },
 ): DiagramPart {
+  const { hints, lookup, annotations } = options;
   const tips = createTips(id);
   const found = { terms: false };
   const parts: string[] = [];
@@ -557,13 +615,13 @@ export function renderFlow(
 export function renderEr(
   definition: MdmarkErDefinition,
   id: string,
-  hints: boolean,
-  lookup?: TermLookup,
+  options: { hints: boolean; lookup?: TermLookup },
 ): DiagramPart {
+  const { hints, lookup } = options;
   const tips = createTips(id);
   const found = { terms: false };
   const text = (value: string): string =>
-    renderText(value, tips, lookup, found);
+    renderText(value, { tips, lookup, found });
   const tables = new Map(definition.tables.map((table) => [table.id, table]));
   const folded = (tableId: string): boolean =>
     tables.get(tableId)?.folded === true;
@@ -692,43 +750,59 @@ const FILL_LEGEND_TYPES: readonly string[] = [
   "bubble",
 ];
 
+/** 複合グラフの系列の凡例。`y2` があれば、どちらの軸かを添える */
+function comboLegendItem(
+  definition: MdmarkChartDefinition,
+  series: MdmarkChartSeries,
+  n: number,
+): DiagramLegendItem {
+  const side =
+    definition.y2 === undefined
+      ? ""
+      : series.axis === "y2"
+        ? "（右の軸）"
+        : "（左の軸）";
+  return {
+    sample: series.as === "bar" ? `fill-${n}` : `series-${n}`,
+    label: `${series.name}${side}`,
+  };
+}
+
+/** 系列の凡例の見本の種類（塗り・点・線） */
+function seriesSample(
+  type: NonNullable<MdmarkChartDefinition["type"]>,
+): string {
+  if (FILL_LEGEND_TYPES.includes(type)) {
+    return "fill";
+  }
+  return type === "scatter" ? "point" : "series";
+}
+
+/** 円グラフ・ドーナツの項目の凡例 */
+function pieLegend(
+  definition: MdmarkChartDefinition,
+  donut: boolean,
+): DiagramLegendItem[] {
+  const unit = definition.unit ?? "";
+  return (definition.items ?? []).map((item, index) => ({
+    sample: `fill-${index + 1}`,
+    label: donut
+      ? `${item.name}: ${item.value}${unit}`
+      : `${item.name}（${item.value}${unit}）`,
+  }));
+}
+
 /** グラフの凡例の項目: 種類ごとの見本（折れ線・面・レーダーは線と点、棒・積み上げ・横棒・円・バブルは塗りの模様、散布図は点の形状）に、系列か項目の名前を添える */
 function chartLegend(definition: MdmarkChartDefinition): DiagramLegendItem[] {
   const type = definition.type ?? "line";
-  const unit = definition.unit ?? "";
-  if (type === "pie") {
-    return (definition.items ?? []).map((item, index) => ({
-      sample: `fill-${index + 1}`,
-      label: `${item.name}（${item.value}${unit}）`,
-    }));
+  if (type === "pie" || type === "donut") {
+    return pieLegend(definition, type === "donut");
   }
-  if (type === "donut") {
-    return (definition.items ?? []).map((item, index) => ({
-      sample: `fill-${index + 1}`,
-      label: `${item.name}: ${item.value}${unit}`,
-    }));
-  }
-  const items = (definition.series ?? []).map((series, index) => {
-    const n = index + 1;
-    if (type === "combo") {
-      const side =
-        definition.y2 === undefined
-          ? ""
-          : series.axis === "y2"
-            ? "（右の軸）"
-            : "（左の軸）";
-      return {
-        sample: series.as === "bar" ? `fill-${n}` : `series-${n}`,
-        label: `${series.name}${side}`,
-      };
-    }
-    const sample = FILL_LEGEND_TYPES.includes(type)
-      ? "fill"
-      : type === "scatter"
-        ? "point"
-        : "series";
-    return { sample: `${sample}-${n}`, label: series.name };
-  });
+  const items = (definition.series ?? []).map((series, index) =>
+    type === "combo"
+      ? comboLegendItem(definition, series, index + 1)
+      : { sample: `${seriesSample(type)}-${index + 1}`, label: series.name },
+  );
   if (type === "bubble") {
     items.push({
       sample: "bubble",
@@ -760,11 +834,11 @@ function legendSample(id: string, sample: string): string {
   }
   if (sample.startsWith("point-")) {
     const n = Number(sample.slice("point-".length));
-    return `<svg class="mdmark-diagram-legend-sample" width="14" height="14" aria-hidden="true"><g data-series="${n}">${pointSvg(n, 7, 7, SCATTER_POINT_SIZE)}</g></svg>`;
+    return `<svg class="mdmark-diagram-legend-sample" width="14" height="14" aria-hidden="true"><g data-series="${n}">${pointSvg(n, [7, 7], SCATTER_POINT_SIZE)}</g></svg>`;
   }
   if (sample.startsWith("series-")) {
     const n = Number(sample.slice("series-".length));
-    return `<svg class="mdmark-diagram-legend-sample" width="34" height="12" aria-hidden="true"><path class="mdmark-diagram-series" data-series="${n}" d="M1,6 H33"></path><g data-series="${n}">${pointSvg(n, 17, 6)}</g></svg>`;
+    return `<svg class="mdmark-diagram-legend-sample" width="34" height="12" aria-hidden="true"><path class="mdmark-diagram-series" data-series="${n}" d="M1,6 H33"></path><g data-series="${n}">${pointSvg(n, [17, 6])}</g></svg>`;
   }
   if (sample === "bubble") {
     return '<svg class="mdmark-diagram-legend-sample mdmark-diagram-legend-bubble" width="30" height="16" aria-hidden="true"><circle cx="5" cy="11" r="3"></circle><circle cx="20" cy="8" r="7"></circle></svg>';
@@ -795,11 +869,10 @@ function renderTools(frame: DiagramFrame): string {
   const fit = frame.fit ?? 1;
   const tool = (
     name: string,
-    label: string,
-    icon: IconName,
+    face: { label: string; icon: IconName },
     disabled = false,
   ): string =>
-    `<button class="mdmark-diagram-tool" type="button" data-tool="${name}" aria-label="${label}"${disabled ? ' disabled="disabled"' : ""}>${iconSvg(icon)}</button>`;
+    `<button class="mdmark-diagram-tool" type="button" data-tool="${name}" aria-label="${face.label}"${disabled ? ' disabled="disabled"' : ""}>${iconSvg(face.icon)}</button>`;
   const extra =
     frame.tools === undefined || frame.tools.length === 0
       ? ""
@@ -810,21 +883,43 @@ function renderTools(frame: DiagramFrame): string {
           )
           .join("")}</div>`;
   const pan = [
-    tool("left", "左へ動かす", "chevron-left"),
-    tool("up", "上へ動かす", "chevron-up"),
-    tool("down", "下へ動かす", "chevron-down"),
-    tool("right", "右へ動かす", "chevron-right"),
+    tool("left", { label: "左へ動かす", icon: "chevron-left" }),
+    tool("up", { label: "上へ動かす", icon: "chevron-up" }),
+    tool("down", { label: "下へ動かす", icon: "chevron-down" }),
+    tool("right", { label: "右へ動かす", icon: "chevron-right" }),
   ].join("");
   const screen = frame.modal
-    ? tool("close", "全画面を閉じる", "x")
-    : tool("fullscreen", "全画面で開く", "expand");
+    ? tool("close", { label: "全画面を閉じる", icon: "x" })
+    : tool("fullscreen", { label: "全画面で開く", icon: "expand" });
   const percent = `${Math.round((zoom / fit) * 100)}%`;
   const zoomButton = `<button class="mdmark-diagram-tool mdmark-diagram-zoom" type="button" data-tool="fit" aria-label="倍率 ${percent}。全体が収まる倍率に戻す">${percent}</button>`;
   const panGroup =
     frame.kind === "map"
       ? ""
       : `<div class="mdmark-diagram-tools-group" data-group="pan"${zoom > fit ? "" : ' hidden="hidden"'}>${pan}</div>`;
-  return `<div class="mdmark-diagram-tools" role="toolbar" aria-label="「${escapeHtml(frame.title)}」の表示">${extra}${panGroup}<div class="mdmark-diagram-tools-group" data-group="zoom">${tool("out", "縮小", "minus", zoom <= fit)}${zoomButton}${tool("in", "拡大", "plus", zoom >= ZOOM.max)}</div><div class="mdmark-diagram-tools-group" data-group="screen">${screen}</div></div>`;
+  return `<div class="mdmark-diagram-tools" role="toolbar" aria-label="「${escapeHtml(frame.title)}」の表示">${extra}${panGroup}<div class="mdmark-diagram-tools-group" data-group="zoom">${tool("out", { label: "縮小", icon: "minus" }, zoom <= fit)}${zoomButton}${tool("in", { label: "拡大", icon: "plus" }, zoom >= ZOOM.max)}</div><div class="mdmark-diagram-tools-group" data-group="screen">${screen}</div></div>`;
+}
+
+/** 図の枠の高さを変えるつまみ（変えられないかモーダルの中なら空） */
+function resizeHandle(frame: DiagramFrame): string {
+  return frame.resizable !== false && frame.modal !== true
+    ? `<div class="mdmark-diagram-resize" role="separator" tabindex="0" aria-orientation="horizontal" aria-label="「${escapeHtml(frame.title)}」の表示の高さ" aria-keyshortcuts="ArrowUp ArrowDown" title="ドラッグか ↑ ↓ で高さを変える。ダブルクリックで図の全体が収まる高さにする">${iconSvg("equal")}</div>`
+    : "";
+}
+
+/** タイトルの横の範囲と更新日（どちらかが無ければ空） */
+function frameMeta(frame: DiagramFrame): string {
+  return frame.scope === undefined || frame.updated === undefined
+    ? ""
+    : `<span class="mdmark-diagram-meta">範囲: ${escapeHtml(frame.scope)}・更新日: <time datetime="${escapeHtml(frame.updated)}">${escapeHtml(frame.updated)}</time></span>`;
+}
+
+/** 図の枠の印の属性（収める最小の高さ・広げるか） */
+function frameAttributes(frame: DiagramFrame): string {
+  const fitMin =
+    frame.fitMin === undefined ? "" : ` data-fit-min="${num(frame.fitMin)}"`;
+  const wide = frame.wide === true ? ' data-wide="true"' : "";
+  return `${fitMin}${wide}`;
 }
 
 /** 図の枠を描く: タイトル・ボタンの帯・表示する枠・ツールチップの中身・凡例を並べる */
@@ -837,19 +932,8 @@ export function renderDiagramFrame(
   const sizer = `width:${num(body.width * zoom)}px;height:${num(body.height * zoom)}px`;
   const stage = `width:${num(body.width)}px;height:${num(body.height)}px${zoom === 1 ? "" : `;transform:scale(${num(zoom)})`}`;
   const legend = renderLegendItems(id, frame.legend);
-  const resize =
-    frame.resizable !== false && frame.modal !== true
-      ? `<div class="mdmark-diagram-resize" role="separator" tabindex="0" aria-orientation="horizontal" aria-label="「${escapeHtml(frame.title)}」の表示の高さ" aria-keyshortcuts="ArrowUp ArrowDown" title="ドラッグか ↑ ↓ で高さを変える。ダブルクリックで図の全体が収まる高さにする">${iconSvg("equal")}</div>`
-      : "";
-  const fitMin =
-    frame.fitMin === undefined ? "" : ` data-fit-min="${num(frame.fitMin)}"`;
-  const meta =
-    frame.scope === undefined || frame.updated === undefined
-      ? ""
-      : `<span class="mdmark-diagram-meta">範囲: ${escapeHtml(frame.scope)}・更新日: <time datetime="${escapeHtml(frame.updated)}">${escapeHtml(frame.updated)}</time></span>`;
-  const wide = frame.wide === true ? ' data-wide="true"' : "";
   const touchActive = frame.touchActive === true ? " data-touch-active" : "";
-  return `<figure class="mdmark-diagram" data-diagram="${frame.kind}"${fitMin}${wide}><figcaption class="mdmark-diagram-head" id="${id}-title"><span class="mdmark-diagram-title">${escapeHtml(frame.title)}</span>${meta}</figcaption><div class="mdmark-diagram-box"${touchActive}>${renderTools(frame)}<div class="mdmark-diagram-viewport" tabindex="0" role="group" aria-roledescription="図" aria-labelledby="${id}-title" aria-keyshortcuts="${VIEWPORT_KEYS}"><div class="mdmark-diagram-sizer" style="${sizer}"><div class="mdmark-diagram-stage" style="${stage}">${body.html}</div></div></div>${resize}${body.tips}</div><ul class="mdmark-diagram-legend" aria-label="凡例"${frame.legend.length === 0 ? ' hidden="hidden"' : ""}>${legend}</ul></figure>`;
+  return `<figure class="mdmark-diagram" data-diagram="${frame.kind}"${frameAttributes(frame)}><figcaption class="mdmark-diagram-head" id="${id}-title"><span class="mdmark-diagram-title">${escapeHtml(frame.title)}</span>${frameMeta(frame)}</figcaption><div class="mdmark-diagram-box"${touchActive}>${renderTools(frame)}<div class="mdmark-diagram-viewport" tabindex="0" role="group" aria-roledescription="図" aria-labelledby="${id}-title" aria-keyshortcuts="${VIEWPORT_KEYS}"><div class="mdmark-diagram-sizer" style="${sizer}"><div class="mdmark-diagram-stage" style="${stage}">${body.html}</div></div></div>${resizeHandle(frame)}${body.tips}</div><ul class="mdmark-diagram-legend" aria-label="凡例"${frame.legend.length === 0 ? ' hidden="hidden"' : ""}>${legend}</ul></figure>`;
 }
 
 /** 図の種類 */
@@ -887,7 +971,7 @@ export function renderDiagram(options: {
   } = options;
   const part =
     kind === "er"
-      ? renderEr(definition as MdmarkErDefinition, id, hints, lookup)
+      ? renderEr(definition as MdmarkErDefinition, id, { hints, lookup })
       : renderChart(definition as MdmarkChartDefinition, id);
   return renderDiagramFrame(
     {

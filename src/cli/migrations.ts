@@ -151,6 +151,140 @@ function isFilled(value: unknown): value is string {
   return typeof value === "string" && value !== "";
 }
 
+/** 手順 1 つを検める間に使う、手順の値と、合わないところを指定する関数 */
+type StepCheck = {
+  item: Record<string, unknown>;
+  where: string;
+  problem: (where: string, message: string) => void;
+  /** 空でない文字列の必須のプロパティを検める */
+  requireString: (key: string) => void;
+  /** `file` が設定か索引を指すことを検める */
+  requireStepFile: () => void;
+};
+
+/** `set_default` の `value` と `ask` を検める */
+function checkSetDefault(check: StepCheck): void {
+  const { item, where, problem, requireString, requireStepFile } = check;
+  requireStepFile();
+  requireString("key");
+  const hasValue = "value" in item;
+  const hasAsk = item.ask !== undefined;
+  if (hasValue === hasAsk) {
+    problem(
+      `${where}.value`,
+      "value か ask のどちらか 1 つだけを記載してください。",
+    );
+  }
+  if (hasAsk) {
+    requireString("ask");
+  }
+}
+
+/** `map_values` の `mapping` を検める。新しい値が元の値にあると、もう一度適用するたびに値が変わる */
+function checkMapValues(check: StepCheck): void {
+  const { item, where, problem, requireString, requireStepFile } = check;
+  requireStepFile();
+  requireString("key");
+  const mapping = item.mapping;
+  if (!isRecord(mapping)) {
+    problem(
+      `${where}.mapping`,
+      "mapping は元の値と新しい値の表で記載してください。",
+    );
+    return;
+  }
+  for (const [from, to] of Object.entries(mapping)) {
+    if (typeof to === "string" && Object.hasOwn(mapping, to)) {
+      problem(
+        `${where}.mapping`,
+        `${from} の新しい値 ${to} が元の値にもあります。もう一度適用しても変わらないよう、新しい値は元の値にしないでください。`,
+      );
+    }
+  }
+}
+
+/** `replace_mark` の `from`・`to` を検める */
+function checkReplaceMark(check: StepCheck): void {
+  const { item, where, problem, requireString } = check;
+  requireString("from");
+  requireString("to");
+  if (isFilled(item.from) && isFilled(item.to) && item.to.includes(item.from)) {
+    problem(
+      `${where}.to`,
+      "to が from を含みます。もう一度適用しても変わらないよう、to は from を含まないようにしてください。",
+    );
+  }
+}
+
+/** `call` の `script`・`files` を検める */
+function checkCall(check: StepCheck): void {
+  const { item, where, problem, requireString } = check;
+  requireString("script");
+  const script = item.script;
+  if (
+    isFilled(script) &&
+    !SCRIPT_EXTENSIONS.some((extension) => script.endsWith(extension))
+  ) {
+    problem(
+      `${where}.script`,
+      `script の拡張子は ${SCRIPT_EXTENSIONS.join(" か ")} で記載してください。TypeScript は JavaScript にしたものを配置します。`,
+    );
+  }
+  const files = item.files;
+  const valid =
+    Array.isArray(files) &&
+    files.length > 0 &&
+    files.every(
+      (file) => typeof file === "string" && CALL_FILES.includes(file),
+    );
+  if (!valid) {
+    problem(
+      `${where}.files`,
+      "files は config・index・documents のうち 1 つ以上の並びで記載してください。",
+    );
+  }
+}
+
+/** 手順の種類ごとの、種類が持つプロパティの検め方 */
+const STEP_CHECKS: Record<keyof typeof STEP_KEYS, (check: StepCheck) => void> =
+  {
+    rename_key: ({ requireString, requireStepFile }) => {
+      requireStepFile();
+      requireString("from");
+      requireString("to");
+    },
+    set_default: checkSetDefault,
+    map_values: checkMapValues,
+    replace_mark: checkReplaceMark,
+    call: checkCall,
+  };
+
+/** 手順の共通のプロパティと、種類が持たないキーを検める */
+function checkCommonKeys(check: StepCheck, op: keyof typeof STEP_KEYS): void {
+  const { item, where, problem } = check;
+  if (!isFilled(item.description)) {
+    problem(
+      `${where}.description`,
+      "description は空でない文字列で記載してください。",
+    );
+  }
+  if (item.destructive !== undefined && typeof item.destructive !== "boolean") {
+    problem(
+      `${where}.destructive`,
+      "destructive は true か false で記載してください。",
+    );
+  }
+  const allowed: string[] = [...COMMON_KEYS, ...STEP_KEYS[op]];
+  for (const key of Object.keys(item)) {
+    if (!allowed.includes(key)) {
+      problem(
+        `${where}.${key}`,
+        `${op} が持たないキーです。削除してください。`,
+      );
+    }
+  }
+}
+
 /** 手順 1 つの構造を検め、合わないところを `problem` に指定する */
 function validateStep(
   item: unknown,
@@ -170,126 +304,29 @@ function validateStep(
     return;
   }
   const kind = op as keyof typeof STEP_KEYS;
-  if (!isFilled(item.description)) {
-    problem(
-      `${where}.description`,
-      "description は空でない文字列で記載してください。",
-    );
-  }
-  if (item.destructive !== undefined && typeof item.destructive !== "boolean") {
-    problem(
-      `${where}.destructive`,
-      "destructive は true か false で記載してください。",
-    );
-  }
-  const allowed: string[] = [...COMMON_KEYS, ...STEP_KEYS[kind]];
-  for (const key of Object.keys(item)) {
-    if (!allowed.includes(key)) {
-      problem(
-        `${where}.${key}`,
-        `${op} が持たないキーです。削除してください。`,
-      );
-    }
-  }
-  /** 空でない文字列の必須のプロパティを検める */
-  const requireString = (key: string) => {
-    if (!isFilled(item[key])) {
-      problem(`${where}.${key}`, `${key} は空でない文字列で記載してください。`);
-    }
+  const check: StepCheck = {
+    item,
+    where,
+    problem,
+    requireString: (key) => {
+      if (!isFilled(item[key])) {
+        problem(
+          `${where}.${key}`,
+          `${key} は空でない文字列で記載してください。`,
+        );
+      }
+    },
+    requireStepFile: () => {
+      if (typeof item.file !== "string" || !STEP_FILES.includes(item.file)) {
+        problem(
+          `${where}.file`,
+          "file は config か index で記載してください。",
+        );
+      }
+    },
   };
-  /** `file` が設定か索引を指すことを検める */
-  const requireStepFile = () => {
-    if (typeof item.file !== "string" || !STEP_FILES.includes(item.file)) {
-      problem(`${where}.file`, "file は config か index で記載してください。");
-    }
-  };
-  switch (kind) {
-    case "rename_key":
-      requireStepFile();
-      requireString("from");
-      requireString("to");
-      break;
-    case "set_default": {
-      requireStepFile();
-      requireString("key");
-      const hasValue = "value" in item;
-      const hasAsk = item.ask !== undefined;
-      if (hasValue === hasAsk) {
-        problem(
-          `${where}.value`,
-          "value か ask のどちらか 1 つだけを記載してください。",
-        );
-      }
-      if (hasAsk) {
-        requireString("ask");
-      }
-      break;
-    }
-    case "map_values": {
-      requireStepFile();
-      requireString("key");
-      const mapping = item.mapping;
-      if (!isRecord(mapping)) {
-        problem(
-          `${where}.mapping`,
-          "mapping は元の値と新しい値の表で記載してください。",
-        );
-        break;
-      }
-      for (const [from, to] of Object.entries(mapping)) {
-        // 新しい値が元の値にあると、もう一度適用するたびに値が変わる
-        if (typeof to === "string" && Object.hasOwn(mapping, to)) {
-          problem(
-            `${where}.mapping`,
-            `${from} の新しい値 ${to} が元の値にもあります。もう一度適用しても変わらないよう、新しい値は元の値にしないでください。`,
-          );
-        }
-      }
-      break;
-    }
-    case "replace_mark":
-      requireString("from");
-      requireString("to");
-      if (
-        isFilled(item.from) &&
-        isFilled(item.to) &&
-        item.to.includes(item.from)
-      ) {
-        problem(
-          `${where}.to`,
-          "to が from を含みます。もう一度適用しても変わらないよう、to は from を含まないようにしてください。",
-        );
-      }
-      break;
-    case "call": {
-      requireString("script");
-      if (
-        isFilled(item.script) &&
-        !SCRIPT_EXTENSIONS.some((extension) =>
-          (item.script as string).endsWith(extension),
-        )
-      ) {
-        problem(
-          `${where}.script`,
-          `script の拡張子は ${SCRIPT_EXTENSIONS.join(" か ")} で記載してください。TypeScript は JavaScript にしたものを配置します。`,
-        );
-      }
-      const files = item.files;
-      if (
-        !Array.isArray(files) ||
-        files.length === 0 ||
-        !files.every(
-          (file) => typeof file === "string" && CALL_FILES.includes(file),
-        )
-      ) {
-        problem(
-          `${where}.files`,
-          "files は config・index・documents のうち 1 つ以上の並びで記載してください。",
-        );
-      }
-      break;
-    }
-  }
+  checkCommonKeys(check, kind);
+  STEP_CHECKS[kind](check);
 }
 
 /** 読み込んだ `steps.yaml` を `schemas/mdmark.steps.schema.json` と同じ構造で検め、構造の合う手順と、合わないところ 1 つ 1 文を返却する */
@@ -499,6 +536,24 @@ export function replaceMark(text: string, from: string, to: string): string {
   return text.split(from).join(to);
 }
 
+/** 手順が書き換える索引と文書 */
+function stepTouches(step: MigrationStep): {
+  index: boolean;
+  documents: boolean;
+} {
+  switch (step.op) {
+    case "replace_mark":
+      return { index: false, documents: true };
+    case "call":
+      return {
+        index: step.files.includes("index"),
+        documents: step.files.includes("documents"),
+      };
+    default:
+      return { index: step.file === "index", documents: false };
+  }
+}
+
 /** 適用する全ての手順が書き換えうるファイルを、設定ファイルを先頭に重なりなく返却する */
 export function stepFiles(
   versions: MigrationVersion[],
@@ -506,34 +561,14 @@ export function stepFiles(
 ): string[] {
   // 設定ファイルはバージョンを書き換えるため、手順に関わらず含める
   const files = new Set<string>([target.configPath]);
-  const addIndex = () => {
-    if (target.indexPath !== undefined) {
+  for (const step of versions.flatMap(({ steps }) => steps)) {
+    const touches = stepTouches(step);
+    if (touches.index && target.indexPath !== undefined) {
       files.add(target.indexPath);
     }
-  };
-  const addDocuments = () => {
-    for (const document of target.documents) {
-      files.add(document);
-    }
-  };
-  for (const { steps } of versions) {
-    for (const step of steps) {
-      switch (step.op) {
-        case "replace_mark":
-          addDocuments();
-          break;
-        case "call":
-          if (step.files.includes("index")) {
-            addIndex();
-          }
-          if (step.files.includes("documents")) {
-            addDocuments();
-          }
-          break;
-        default:
-          if (step.file === "index") {
-            addIndex();
-          }
+    if (touches.documents) {
+      for (const document of target.documents) {
+        files.add(document);
       }
     }
   }
@@ -564,6 +599,75 @@ function outputLines(output: unknown): string[] {
     : [];
 }
 
+/** 文書のマーカーの名前を置き換える */
+async function replaceDocumentMarks(
+  step: Extract<MigrationStep, { op: "replace_mark" }>,
+  documents: string[],
+): Promise<void> {
+  for (const path of documents) {
+    const text = await readFile(path, "utf8");
+    const replaced = replaceMark(text, step.from, step.to);
+    if (replaced !== text) {
+      await writeFile(path, replaced);
+    }
+  }
+}
+
+/** `call` のスクリプトを動かし、標準出力の行を返却する。失敗したら、標準エラーへ書き込んだ行を `onStderr` に渡して例外を投げる */
+async function runCallStep(options: {
+  step: Extract<MigrationStep, { op: "call" }>;
+  version: MigrationVersion;
+  target: MigrationTarget;
+  onStderr: (lines: string[]) => void;
+}): Promise<string[]> {
+  const { step, version, target, onStderr } = options;
+  const script = resolve(version.dir, step.script);
+  try {
+    const { stdout } = await execFileAsync(
+      process.execPath,
+      [script, "--config", target.configPath],
+      { cwd: dirname(target.configPath) },
+    );
+    return outputLines(stdout);
+  } catch (error) {
+    onStderr(isRecord(error) ? outputLines(error.stderr) : []);
+    const code =
+      isRecord(error) && typeof error.code === "number"
+        ? `終了コード ${error.code} で終わりました`
+        : reasonOf(error);
+    throw new Error(`スクリプト ${step.script} が${code}`);
+  }
+}
+
+/** 設定か索引の YAML のキーを書き換える。設定に `index` が無ければ、索引の手順は何もしない */
+async function editStepYaml(
+  step: Exclude<MigrationStep, { op: "replace_mark" | "call" }>,
+  target: MigrationTarget,
+): Promise<void> {
+  const path = step.file === "config" ? target.configPath : target.indexPath;
+  if (path === undefined) {
+    return;
+  }
+  await editYaml(path, (doc) => {
+    switch (step.op) {
+      case "rename_key":
+        return renameKey(doc, step.from, step.to);
+      case "map_values":
+        return mapValues(doc, step.key, step.mapping);
+      case "set_default": {
+        if (step.ask === undefined) {
+          return setDefault(doc, step.key, step.value);
+        }
+        const answer = target.answers.get(step);
+        // 値を聞かなかった（キーが既にあった）ときは追加しない
+        return answer === undefined
+          ? false
+          : setDefault(doc, step.key, parse(answer));
+      }
+    }
+  });
+}
+
 /** 手順 1 つを当て先へ当て、`call` のスクリプトが標準出力に書き込んだ行を返却する */
 export async function applyStep(options: {
   step: MigrationStep;
@@ -576,59 +680,20 @@ export async function applyStep(options: {
   try {
     switch (step.op) {
       case "replace_mark":
-        for (const path of target.documents) {
-          const text = await readFile(path, "utf8");
-          const replaced = replaceMark(text, step.from, step.to);
-          if (replaced !== text) {
-            await writeFile(path, replaced);
-          }
-        }
+        await replaceDocumentMarks(step, target.documents);
         return [];
-      case "call": {
-        const script = resolve(version.dir, step.script);
-        try {
-          const { stdout } = await execFileAsync(
-            process.execPath,
-            [script, "--config", target.configPath],
-            { cwd: dirname(target.configPath) },
-          );
-          return outputLines(stdout);
-        } catch (error) {
-          stderrLines = isRecord(error) ? outputLines(error.stderr) : [];
-          const code =
-            isRecord(error) && typeof error.code === "number"
-              ? `終了コード ${error.code} で終わりました`
-              : reasonOf(error);
-          throw new Error(`スクリプト ${step.script} が${code}`);
-        }
-      }
-      default: {
-        const path =
-          step.file === "config" ? target.configPath : target.indexPath;
-        // 設定に `index` が無ければ、索引の手順は何もしない
-        if (path === undefined) {
-          return [];
-        }
-        await editYaml(path, (doc) => {
-          switch (step.op) {
-            case "rename_key":
-              return renameKey(doc, step.from, step.to);
-            case "map_values":
-              return mapValues(doc, step.key, step.mapping);
-            case "set_default": {
-              if (step.ask === undefined) {
-                return setDefault(doc, step.key, step.value);
-              }
-              const answer = target.answers.get(step);
-              // 値を聞かなかった（キーが既にあった）ときは追加しない
-              return answer === undefined
-                ? false
-                : setDefault(doc, step.key, parse(answer));
-            }
-          }
+      case "call":
+        return await runCallStep({
+          step,
+          version,
+          target,
+          onStderr: (lines) => {
+            stderrLines = lines;
+          },
         });
+      default:
+        await editStepYaml(step, target);
         return [];
-      }
     }
   } catch (error) {
     throw new CliError(

@@ -266,9 +266,12 @@ function attachCodeBlock(
   pre?.addEventListener("pointermove", onPointerMove);
   pre?.addEventListener("pointerleave", onPointerLeave);
   return () => {
-    pre?.removeEventListener("pointermove", onPointerMove);
-    pre?.removeEventListener("pointerleave", onPointerLeave);
-    pre?.removeAttribute("data-fold-hover");
+    if (pre) {
+      pre.removeEventListener("pointermove", onPointerMove);
+      pre.removeEventListener("pointerleave", onPointerLeave);
+      pre.removeAttribute("data-fold-hover");
+      pre.classList.remove("mdmark-code-foldable");
+    }
     code.removeEventListener("click", onClick);
     code.removeEventListener("keydown", onKeyDown);
     code.removeEventListener("keyup", onKeyUp);
@@ -281,14 +284,8 @@ function attachCodeBlock(
     for (const more of code.querySelectorAll(".mdmark-code-fold-more")) {
       more.remove();
     }
-    pre?.classList.remove("mdmark-code-foldable");
     for (const line of lines) {
-      line.hidden = false;
-      line.removeAttribute("data-guide-active");
-      line.style.removeProperty("--mdmark-code-guide-depth");
-      if (line.getAttribute("style") === "") {
-        line.removeAttribute("style");
-      }
+      resetFoldLine(line);
     }
     for (const line of addedIds) {
       line.removeAttribute("id");
@@ -297,6 +294,16 @@ function attachCodeBlock(
       lineBreak?.replaceWith(...lineBreak.childNodes);
     }
   };
+}
+
+/** 行を見せ、ガイドの印と深さを除く（空になった `style` も除く） */
+function resetFoldLine(line: HTMLElement): void {
+  line.hidden = false;
+  line.removeAttribute("data-guide-active");
+  line.style.removeProperty("--mdmark-code-guide-depth");
+  if (line.getAttribute("style") === "") {
+    line.removeAttribute("style");
+  }
 }
 
 /** `data-fold-lines` の行を持つコードブロックに、行の開閉のボタン・`⋯`・縦線の範囲を付け、削除する関数を返却する */

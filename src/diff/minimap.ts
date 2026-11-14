@@ -122,18 +122,11 @@ function createEntry(target: HTMLElement, page: boolean): Entry {
         if (shown === null) {
           continue;
         }
-        const kind = line.dataset.kind === "del" ? "del" : "add";
-        const top = ratioOf(shown, "top");
-        const bottom = ratioOf(shown, "bottom");
-        const last = marks.at(-1);
-        if (
-          last?.kind === kind &&
-          top <= last.top + last.height + MERGE_TOLERANCE
-        ) {
-          last.height = Math.max(last.top + last.height, bottom) - last.top;
-          continue;
-        }
-        marks.push({ kind, top, height: bottom - top });
+        addMark(marks, {
+          kind: line.dataset.kind === "del" ? "del" : "add",
+          top: ratioOf(shown, "top"),
+          bottom: ratioOf(shown, "bottom"),
+        });
       }
     }
     const next = parseElement(
@@ -227,6 +220,20 @@ function createEntry(target: HTMLElement, page: boolean): Entry {
       band.remove();
     },
   };
+}
+
+/** 行のマーカーを並びに追加する。直前のマーカーと同じ種類で続いていれば、直前のマーカーを伸ばす */
+function addMark(
+  marks: DiffMinimapMark[],
+  line: { kind: "del" | "add"; top: number; bottom: number },
+): void {
+  const { kind, top, bottom } = line;
+  const last = marks.at(-1);
+  if (last?.kind === kind && top <= last.top + last.height + MERGE_TOLERANCE) {
+    last.height = Math.max(last.top + last.height, bottom) - last.top;
+    return;
+  }
+  marks.push({ kind, top, height: bottom - top });
 }
 
 /** 差分の行の並びのスクロール先（一番近いスクロールする祖先、無ければ画面）の右端に、帯を 1 本だけ配置してマーカーと今見えている範囲の枠を並べ、押す・押したまま動かすで送信する。同じスクロール先の 2 つ目以降の差分は同じ帯にマーカーを追加する。返却する関数でこの行を帯から除外し、行が無くなったら帯と受け取りを解除する */

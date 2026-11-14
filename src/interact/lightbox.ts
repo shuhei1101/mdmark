@@ -32,6 +32,26 @@ export function collectLightboxImages(root: HTMLElement): HTMLButtonElement[] {
   );
 }
 
+/** 本文の画像を包む `figure` のキャプションの文字。無ければ空 */
+function captionOf(source: HTMLImageElement | null): string {
+  return (
+    source?.closest("figure")?.querySelector("figcaption")?.textContent ?? ""
+  );
+}
+
+/** 本文の画像の URL・代替テキスト・キャプションを、拡大の画像とキャプションに写す */
+function copyImage(
+  source: HTMLImageElement | null,
+  target: { img: HTMLImageElement; caption: HTMLElement },
+): void {
+  const { img, caption } = target;
+  img.src = source?.currentSrc || source?.src || "";
+  img.alt = source?.alt ?? "";
+  const text = captionOf(source);
+  caption.textContent = text;
+  caption.hidden = text === "";
+}
+
 /** 画像を拡大のボタンで包み、押すとライトボックスで開いて切り替え・拡大・縮小・移動を付ける。削除する関数を返却する */
 export function attachLightbox(root: HTMLElement): () => void {
   const controller = new AbortController();
@@ -94,16 +114,9 @@ export function attachLightbox(root: HTMLElement): () => void {
     const show = (): void => {
       zoom?.detach();
       zoom = undefined;
-      const source = items[index]?.querySelector("img");
       sizer.removeAttribute("style");
       img.removeAttribute("style");
-      img.src = source?.currentSrc || source?.src || "";
-      img.alt = source?.alt ?? "";
-      const text =
-        source?.closest("figure")?.querySelector("figcaption")?.textContent ??
-        "";
-      caption.textContent = text;
-      caption.hidden = text === "";
+      copyImage(items[index]?.querySelector("img") ?? null, { img, caption });
       if (count) {
         count.textContent = `${index + 1} / ${items.length}`;
       }

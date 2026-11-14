@@ -166,17 +166,17 @@ export function attachTableSettings(options: {
       return;
     }
     event.preventDefault();
+    moveByKey(item, event.key === "ArrowUp" ? "before" : "after");
+    grip.focus();
+  };
+  /** 項目を、同じ範囲の上（`before`）か下（`after`）の隣の列と入れ替える */
+  const moveByKey = (item: HTMLElement, side: "before" | "after"): void => {
     const all = items();
     const index = all.indexOf(item);
-    const neighbor = all[event.key === "ArrowUp" ? index - 1 : index + 1];
+    const neighbor = all[side === "before" ? index - 1 : index + 1];
     if (neighbor) {
-      move(
-        Number(item.dataset.column),
-        Number(neighbor.dataset.column),
-        event.key === "ArrowUp" ? "before" : "after",
-      );
+      move(Number(item.dataset.column), Number(neighbor.dataset.column), side);
     }
-    grip.focus();
   };
   list.addEventListener("dragstart", onDragStart);
   list.addEventListener("dragenter", onDragOver);

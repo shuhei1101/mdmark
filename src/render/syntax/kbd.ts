@@ -1,4 +1,4 @@
-import type { StateCore } from "markdown-it";
+import type { StateCore, Token } from "markdown-it";
 import { renderKbd } from "../../parts/kbd.ts";
 import { markOwn } from "../../parts/own.ts";
 import { envOf, featureOn } from "./tokens.ts";
@@ -33,6 +33,23 @@ export const splitKeys = (text: string): string[] => {
   return keys.map((key) => key.trim()).filter((key) => key !== "");
 };
 
+/** 頭が `kbd:` で後ろに空白以外の文字を持つ行内のコードをキーにし、`kbd\:` のものは `\` を削除したコードにする */
+const buildKbd = (child: Token, nonce: string): void => {
+  if (child.content.startsWith(ESCAPED_PREFIX)) {
+    child.content = `${KBD_PREFIX}${child.content.slice(ESCAPED_PREFIX.length)}`;
+    return;
+  }
+  if (!child.content.startsWith(KBD_PREFIX)) {
+    return;
+  }
+  const keys = splitKeys(child.content.slice(KBD_PREFIX.length));
+  if (keys.length === 0) {
+    return;
+  }
+  child.type = "html_inline";
+  child.content = markOwn(renderKbd({ keys }), nonce);
+};
+
 /** `kbd` がオンなら、頭が `kbd:` で後ろに空白以外の文字を持つ行内のコードをキーにし、`kbd\:` のものは `\` を削除したコードにする */
 export const buildKbds = (state: StateCore): void => {
   if (!featureOn(state, "kbd")) {
@@ -41,22 +58,9 @@ export const buildKbds = (state: StateCore): void => {
   const nonce = envOf(state).nonce;
   for (const token of state.tokens) {
     for (const child of token.children ?? []) {
-      if (child.type !== "code_inline") {
-        continue;
+      if (child.type === "code_inline") {
+        buildKbd(child, nonce);
       }
-      if (child.content.startsWith(ESCAPED_PREFIX)) {
-        child.content = `${KBD_PREFIX}${child.content.slice(ESCAPED_PREFIX.length)}`;
-        continue;
-      }
-      if (!child.content.startsWith(KBD_PREFIX)) {
-        continue;
-      }
-      const keys = splitKeys(child.content.slice(KBD_PREFIX.length));
-      if (keys.length === 0) {
-        continue;
-      }
-      child.type = "html_inline";
-      child.content = markOwn(renderKbd({ keys }), nonce);
     }
   }
 };

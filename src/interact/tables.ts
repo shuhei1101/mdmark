@@ -42,7 +42,11 @@ import { COPIED_NOTICE_MS, copyText } from "./clipboard.ts";
 import type { PartStates } from "./part-states.ts";
 import { attachColumnResize } from "./table-resize.ts";
 import { attachTableSettings, reorderRowCells } from "./table-settings.ts";
-import { attachTableTree, TREE_FOLDED_ATTRIBUTE } from "./table-tree.ts";
+import {
+  attachTableTree,
+  type TableTreeHandle,
+  TREE_FOLDED_ATTRIBUTE,
+} from "./table-tree.ts";
 import { attachAutoColumnWidths } from "./table-width.ts";
 import { cellValue, visibleText } from "./text.ts";
 
@@ -135,6 +139,23 @@ function ownElement<T extends Element>(
   return ownElements<T>(wrapper, selector)[0] ?? null;
 }
 
+/** 見出しのセルがまたぐ格子のマスを、埋まったマスに加える */
+function markTaken(options: {
+  taken: Array<Set<number>>;
+  row: number;
+  column: number;
+  cell: HTMLTableCellElement;
+}): void {
+  const { taken, row, column, cell } = options;
+  for (let r = row; r < row + cell.rowSpan; r++) {
+    const line = taken[r] ?? new Set<number>();
+    taken[r] = line;
+    for (let c = column; c < column + cell.colSpan; c++) {
+      line.add(c);
+    }
+  }
+}
+
 /** 見出しの行ごとのセルの左端の列の位置を、`rowspan`・`colspan` の格子から決める */
 function headColumnsOf(
   table: HTMLTableElement,
@@ -148,12 +169,7 @@ function headColumnsOf(
         column += 1;
       }
       columns.set(cell, column);
-      for (let r = row; r < row + cell.rowSpan; r++) {
-        taken[r] ??= new Set();
-        for (let c = column; c < column + cell.colSpan; c++) {
-          taken[r]?.add(c);
-        }
-      }
+      markTaken({ taken, row, column, cell });
       column += cell.colSpan;
     }
   }
@@ -203,38 +219,239 @@ function initialPinned(options: {
   });
 }
 
-/** 表 1 つに、並べ替え・ピン止め・絞り込みを付け、削除する関数を返却する */
-function attachTable(
-  wrapper: HTMLElement,
+/** 見出しの `aria-sort` の次の並べ替えの向き（降順 → 昇順 → 元の並び） */
+function nextSortDirection(
+  cell: HTMLTableCellElement,
+): (typeof SORT_CYCLE)[number] {
+  const current = (cell.getAttribute("aria-sort") ??
+    "none") as (typeof SORT_CYCLE)[number];
+  return (
+    SORT_CYCLE[(SORT_CYCLE.indexOf(current) + 1) % SORT_CYCLE.length] ?? "none"
+  );
+}
+
+/** 今の列の並びでの、列ごとの幅（`offsetWidth`。隠した列は 0）と留める列の位置 */
+type PinLayout = {
+  /** 並びの位置ごとの元の列の位置 */
+  order: number[];
+  /** 並びの位置ごとの幅 */
+  widths: number[];
+  /** 並びの位置ごとの、それより左の列の幅の合計 */
+  naturalLefts: number[];
+  /** 留める列の並びの位置から左右の位置 */
+  offsets: Map<number, { start: number; end: number }>;
+};
+
+/** 左端に留まった最も右の列と、右端に留まった最も左の列（元の列の位置） */
+type PinnedEdges = {
+  startColumn: number | undefined;
+  endColumn: number | undefined;
+};
+
+/** 見えている範囲（スクロールの位置からの左右）で、左端に留まった最も右の列と、右端に留まった最も左の列を決める。`through` は留めた列の最も右の列だけ */
+function pinnedEdges(options: {
+  layout: PinLayout;
+  view: { start: number; end: number };
+  mode: TablePinMode;
+}): PinnedEdges {
+  const { layout, view, mode } = options;
+  const { order: positions, widths, naturalLefts, offsets } = layout;
+  const starts: number[] = [];
+  const ends: number[] = [];
+  for (const [position, offset] of offsets) {
+    const left = naturalLefts[position] ?? 0;
+    const right = left + (widths[position] ?? 0);
+    if (mode === "through" || left < view.start + offset.start + 1) {
+      starts.push(position);
+    }
+    if (mode !== "through" && right > view.end - offset.end - 1) {
+      ends.push(position);
+    }
+  }
+  return {
+    startColumn: starts.length > 0 ? positions[Math.max(...starts)] : undefined,
+    endColumn: ends.length > 0 ? positions[Math.min(...ends)] : undefined,
+  };
+}
+
+/** 留めたセルが左端・右端の境の列なら、境の線の class を付ける */
+function markEdgeCell(options: {
+  cell: HTMLTableCellElement;
+  headColumns: Map<HTMLTableCellElement, number>;
+  edges: PinnedEdges;
+}): void {
+  const { cell, headColumns, edges } = options;
+  const first = Number(cell.dataset.col);
+  const last = first + (headColumns.has(cell) ? cell.colSpan : 1) - 1;
+  const isPinned = cell.classList.contains("is-pinned-col");
+  cell.classList.toggle(
+    "is-pinned-edge",
+    isPinned && edges.startColumn !== undefined && last === edges.startColumn,
+  );
+  cell.classList.toggle(
+    "is-pinned-edge-end",
+    isPinned && edges.endColumn !== undefined && first === edges.endColumn,
+  );
+}
+
+/** 並びの位置ごとの、それより左の列の幅の合計 */
+function cumulativeLefts(widths: number[]): number[] {
+  const lefts: number[] = [];
+  let left = 0;
+  for (const width of widths) {
+    lefts.push(left);
+    left += width;
+  }
+  return lefts;
+}
+
+/** 1 つのセルが全ての列にまたがる行（行の詳細の行と一致なしの行）か */
+function isWideRow(row: HTMLTableRowElement): boolean {
+  return (
+    row.classList.contains("mdmark-row-detail") ||
+    row.classList.contains("mdmark-table-empty")
+  );
+}
+
+/** セルを、またぐ列が全て留める列のときだけ `left`（`each` は `right` も）で留め、それ以外は留めを外す。見出しのセルは格子の列で数える */
+function pinCell(options: {
+  cell: HTMLTableCellElement;
+  /** セルがまたぐ列の数 */
+  span: number;
+  /** 留める列（元の列の位置） */
+  applied: Set<number>;
+  positionOf: Map<number, number>;
+  offsets: PinLayout["offsets"];
+  mode: TablePinMode;
+}): void {
+  const { cell, span, applied, positionOf, offsets, mode } = options;
+  const first =
+    cell.dataset.col === undefined ? cell.cellIndex : Number(cell.dataset.col);
+  const covered = Array.from({ length: span }, (_, i) => first + i);
+  const isPinned =
+    applied.size > 0 && covered.every((column) => applied.has(column));
+  cell.classList.toggle("is-pinned-col", isPinned);
+  if (!isPinned) {
+    cell.style.left = "";
+    cell.style.right = "";
+    return;
+  }
+  const positions = covered.map((column) => positionOf.get(column) ?? 0);
+  const startOffset = offsets.get(Math.min(...positions));
+  const endOffset = offsets.get(Math.max(...positions));
+  cell.style.left = `${startOffset?.start ?? 0}px`;
+  cell.style.right = mode === "each" ? `${endOffset?.end ?? 0}px` : "";
+}
+
+/** ピン止めのボタンに、押した状態と、収まらずに留まっていないことを示す */
+function updatePinButton(
+  pin: HTMLElement,
+  state: { pressed: boolean; notFit: boolean },
+): void {
+  const { pressed, notFit } = state;
+  pin.setAttribute("aria-pressed", String(pressed));
+  pin.classList.toggle("is-unpinned", notFit);
+  const current = pin.getAttribute("aria-label") ?? "";
+  const base = current.endsWith(PIN_UNPINNED_SUFFIX)
+    ? current.slice(0, -PIN_UNPINNED_SUFFIX.length)
+    : current;
+  if (notFit) {
+    pin.setAttribute("aria-label", `${base}${PIN_UNPINNED_SUFFIX}`);
+    pin.setAttribute("title", `${base}${PIN_UNPINNED_SUFFIX}`);
+  } else {
+    pin.setAttribute("aria-label", base);
+    pin.removeAttribute("title");
+  }
+}
+
+/** 隠している列のセルを隠す。行の詳細の行と一致なしの行（1 つのセルが全ての列にまたがる）は、表示している列の数にまたがらせる */
+function hideColumnCells(
   table: HTMLTableElement,
-  notifyColumns?: (hidden: string[]) => void,
-  pinMode: TablePinMode = "each",
-  longColumnMin: number = DEFAULT_LONG_COLUMN_MIN_EM,
-  partStates: PartStates | undefined = undefined,
-): () => void {
-  tableCounter += 1;
-  const id = `mdmark-table-${tableCounter}`;
-  // 横にスクロールさせる、表を包む要素（包まれていない表はその表）
-  const scroller =
-    table.parentElement?.classList.contains(SCROLL_CLASS) === true
-      ? table.parentElement
-      : table;
-  const features = (wrapper.dataset.features ?? "")
-    .split(/\s+/)
-    .filter(Boolean);
-  const filterKinds = readFilterKinds(wrapper.dataset.filter);
-  // 並べ替えを付けない列（長文の列と `columns.{列名}.sort` の `false`）
-  const noSort = new Set(readColumnList(wrapper.dataset.noSort));
-  const headCells = columnHeadsOf(table);
-  const headColumns = headColumnsOf(table);
-  /** 見出しのセルの列の位置（`cellIndex` は多段の見出しで列と合わないため使用しない） */
-  const columnOf = (cell: HTMLTableCellElement | null | undefined): number =>
-    cell ? headCells.indexOf(cell) : -1;
-  const mergeColumns = readColumnList(wrapper.dataset.mergeColumns);
-  const tbody = table.tBodies[0];
-  const originalRows = bodyRows(table);
-  // 列を並べ替えてもセルの元の列の位置で参照できるよう、各セルに描いたときの列の位置を持たせる
-  for (const row of originalRows) {
+  options: { hiddenColumns: Set<number>; shownCount: number },
+): void {
+  const { hiddenColumns, shownCount } = options;
+  for (const row of table.rows) {
+    if (isWideRow(row)) {
+      const cell = row.cells[0];
+      if (cell) {
+        cell.colSpan = shownCount;
+      }
+      continue;
+    }
+    [...row.cells].forEach((cell, index) => {
+      const column =
+        cell.dataset.col === undefined ? index : Number(cell.dataset.col);
+      cell.hidden = hiddenColumns.has(column);
+    });
+  }
+}
+
+/** 列の表示のメニューの目のボタンに、列を隠しているかを示す。Markdown に記載した先頭の列は隠せない */
+function updateEyeButton(
+  eye: HTMLButtonElement,
+  hiddenColumns: Set<number>,
+): void {
+  const item = eye.closest<HTMLElement>(".mdmark-table-settings-item");
+  const column = Number(item?.dataset.column);
+  const hidden = hiddenColumns.has(column);
+  eye.setAttribute("aria-pressed", String(hidden));
+  eye.setAttribute(
+    "aria-label",
+    `「${item?.dataset.name ?? ""}」を${hidden ? "表示" : "隠す"}`,
+  );
+  eye.innerHTML = iconSvg(hidden ? "eye-off" : "eye");
+  eye.disabled = column === 0;
+}
+
+/** 適用している、列の絞り込み */
+type ActiveFilter = { value: FilterValue; kind: FilterKind };
+
+/** 行の詳細の行を、親の行が隠れたら一緒に隠す。出すときは開閉の状態に戻す */
+function hideDetails(row: HTMLTableRowElement, shown: boolean): void {
+  const toggle = row.querySelector(".mdmark-row-toggle");
+  const folded =
+    toggle !== null && toggle.getAttribute("aria-expanded") !== "true";
+  for (const detail of detailsOf(row)) {
+    detail.hidden = !shown || folded;
+  }
+}
+
+/** 横にスクロールさせる、表を包む要素（包まれていない表はその表） */
+function scrollerOf(table: HTMLTableElement): HTMLElement {
+  const parent = table.parentElement;
+  return parent?.classList.contains(SCROLL_CLASS) === true ? parent : table;
+}
+
+/** 囲みの `data-*` から、表の機能・絞り込みの種類・並べ替えない列・結合する列・隠す列・集計を読み込む */
+function readTableSpec(wrapper: HTMLElement): {
+  features: string[];
+  filterKinds: ReturnType<typeof readFilterKinds>;
+  noSort: Set<number>;
+  mergeColumns: number[];
+  hiddenColumns: Set<number>;
+  totalSpecs: ReturnType<typeof readTotalSpecs>;
+} {
+  const { dataset } = wrapper;
+  const features = (dataset.features ?? "").split(/\s+/).filter(Boolean);
+  return {
+    features,
+    filterKinds: readFilterKinds(dataset.filter),
+    // 並べ替えを付けない列（長文の列と `columns.{列名}.sort` の `false`）
+    noSort: new Set(readColumnList(dataset.noSort)),
+    mergeColumns: readColumnList(dataset.mergeColumns),
+    hiddenColumns: new Set(
+      features.includes("columns") ? readColumnList(dataset.hide) : [],
+    ),
+    totalSpecs: features.includes("total") ? readTotalSpecs(dataset.total) : [],
+  };
+}
+
+/** 列を並べ替えてもセルの元の列の位置で参照できるよう、各セルに描いたときの列の位置を持たせる */
+function numberCells(
+  rows: HTMLTableRowElement[],
+  headColumns: Map<HTMLTableCellElement, number>,
+): void {
+  for (const row of rows) {
     [...row.cells].forEach((cell, column) => {
       cell.dataset.col = String(column);
     });
@@ -242,6 +459,183 @@ function attachTable(
   for (const [cell, column] of headColumns) {
     cell.dataset.col = String(column);
   }
+}
+
+/** 階層の表なら、キーの列の位置と階層の操作の取っ手 */
+function treeOf(
+  wrapper: HTMLElement,
+  partStates: PartStates | undefined,
+): { treeColumn: number | undefined; tree: TableTreeHandle | undefined } {
+  if (wrapper.dataset.tree === undefined) {
+    return { treeColumn: undefined, tree: undefined };
+  }
+  return {
+    treeColumn: Number(wrapper.dataset.tree),
+    tree: attachTableTree({ wrapper, placement: "top", states: partStates }),
+  };
+}
+
+/** 並べ替え・絞り込み・ピン止め・列の幅の機能があれば、見出しにボタンを、囲みに絞り込みのドロワーを配置し、列の位置からドロワーを参照できる構造で返却する */
+function insertHeadTools(options: {
+  wrapper: HTMLElement;
+  id: string;
+  headCells: HTMLTableCellElement[];
+  features: string[];
+  filter: {
+    kinds: ReturnType<typeof readFilterKinds>;
+    noSort: Set<number>;
+  };
+  pinMode: TablePinMode;
+  valuesOf: (column: number) => string[];
+}): Map<number, HTMLElement> {
+  const { wrapper, id, headCells, features, filter, pinMode, valuesOf } =
+    options;
+  const drawers = new Map<number, HTMLElement>();
+  const tools = features.some((feature) =>
+    ["sort", "filter", "pin", "resize"].includes(feature),
+  );
+  if (!tools) {
+    return drawers;
+  }
+  headCells.forEach((cell, column) => {
+    const kind = filter.kinds.get(column);
+    const parts = renderTableTools({
+      id,
+      column,
+      label: visibleText(cell),
+      features,
+      sortable: !filter.noSort.has(column),
+      pinMode,
+      filter: kind && { kind, values: valuesOf(column) },
+    });
+    cell.innerHTML = parts.header;
+    if (parts.drawer) {
+      wrapper.insertAdjacentHTML("beforeend", parts.drawer);
+    }
+  });
+  for (const drawer of ownElements<HTMLElement>(
+    wrapper,
+    ".mdmark-filter-drawer",
+  )) {
+    drawers.set(Number(drawer.dataset.column), drawer);
+  }
+  return drawers;
+}
+
+/** 本文の幅に広げる前の見出しのセルの幅を、列の最小の幅にする */
+function fixMinWidths(
+  table: HTMLTableElement,
+  headCells: HTMLTableCellElement[],
+): void {
+  const width = table.style.width;
+  table.style.width = "auto";
+  for (const cell of headCells) {
+    cell.style.setProperty(
+      "--mdmark-column-min-width",
+      `${cell.offsetWidth}px`,
+    );
+  }
+  table.style.width = width;
+}
+
+/** 絞り込みで 1 行も無いときに出す、一致なしの行 */
+function emptyRow(columns: number): HTMLTableRowElement {
+  const empty = document.createElement("tr");
+  empty.className = "mdmark-table-empty";
+  empty.hidden = true;
+  empty.innerHTML = `<td colspan="${columns}">一致する行がありません</td>`;
+  return empty;
+}
+
+/** 列のまとまりの見出しのセルの文字を、まとまりの鍵（`{見出しの行}:{列}`）から参照できる構造で返却する */
+function groupLabelsOf(
+  headColumns: Map<HTMLTableCellElement, number>,
+  groups: Array<string | undefined>,
+): Record<string, string> {
+  const labels: Record<string, string> = {};
+  for (const [cell, column] of headColumns) {
+    const row = (cell.parentElement as HTMLTableRowElement | null)
+      ?.sectionRowIndex;
+    const key = `${row}:${column}`;
+    if (groups.includes(key)) {
+      labels[key] = visibleText(cell);
+    }
+  }
+  return labels;
+}
+
+/** 列の表示の一覧を分ける、留めた列の数。分けるのは `through` の表の `pin=` で留めた列だけ（既定の先頭の列の留めは、表がはみ出す間だけ該当する。`each` の表は分けない） */
+function barPinnedCount(options: {
+  wrapper: HTMLElement;
+  features: string[];
+  originalRows: HTMLTableRowElement[];
+  mode: TablePinMode;
+}): number {
+  if (options.mode !== "through" || options.wrapper.dataset.pin === undefined) {
+    return 0;
+  }
+  return initialPinned(options).length;
+}
+
+/** 表の上の帯と、帯のメニューを配置する。取り除く関数を返却する */
+function insertTableBar(options: {
+  wrapper: HTMLElement;
+  scroller: HTMLElement;
+  parts: { bar?: string; menus?: string };
+}): () => void {
+  const { wrapper, scroller, parts } = options;
+  const added: Element[] = [];
+  if (parts.bar) {
+    scroller.insertAdjacentHTML("beforebegin", parts.bar);
+    const bar = scroller.previousElementSibling;
+    if (bar) {
+      added.push(bar);
+    }
+  }
+  if (parts.menus) {
+    const before = new Set(wrapper.children);
+    scroller.insertAdjacentHTML("afterend", parts.menus);
+    added.push(...[...wrapper.children].filter((child) => !before.has(child)));
+  }
+  return () => {
+    for (const element of added) {
+      element.remove();
+    }
+  };
+}
+
+/** 表 1 つに、並べ替え・ピン止め・絞り込みを付け、削除する関数を返却する */
+function attachTable(
+  wrapper: HTMLElement,
+  table: HTMLTableElement,
+  options: {
+    notifyColumns: ((hidden: string[]) => void) | undefined;
+    pinMode: TablePinMode;
+    longColumnMin: number;
+    partStates: PartStates | undefined;
+  },
+): () => void {
+  const { notifyColumns, pinMode, longColumnMin, partStates } = options;
+  tableCounter += 1;
+  const id = `mdmark-table-${tableCounter}`;
+  // 横にスクロールさせる、表を包む要素（包まれていない表はその表）
+  const scroller = scrollerOf(table);
+  const {
+    features,
+    filterKinds,
+    noSort,
+    mergeColumns,
+    hiddenColumns,
+    totalSpecs,
+  } = readTableSpec(wrapper);
+  const headCells = columnHeadsOf(table);
+  const headColumns = headColumnsOf(table);
+  /** 見出しのセルの列の位置（`cellIndex` は多段の見出しで列と合わないため使用しない） */
+  const columnOf = (cell: HTMLTableCellElement | null | undefined): number =>
+    cell ? headCells.indexOf(cell) : -1;
+  const tbody = table.tBodies[0];
+  const originalRows = bodyRows(table);
+  numberCells(originalRows, headColumns);
   /** 行の元の列の位置のセル（並べ替えた後もセルの `data-col` で参照する） */
   const cellAt = (
     row: HTMLTableRowElement,
@@ -254,26 +648,13 @@ function attachTable(
     undefined;
   const originalHeads = headCells.map((cell) => cell.innerHTML);
   // 階層の表は、キーの列の絞り込み・開閉・行の選択を階層の操作に任せる
-  const treeColumn =
-    wrapper.dataset.tree === undefined
-      ? undefined
-      : Number(wrapper.dataset.tree);
-  const tree =
-    treeColumn === undefined
-      ? undefined
-      : attachTableTree({ wrapper, placement: "top", states: partStates });
+  const { treeColumn, tree } = treeOf(wrapper, partStates);
   /** 件数に数える本文の行（階層の表の補った行を除く） */
   const countedRows = originalRows.filter(
     (row) => !row.classList.contains("is-virtual"),
   );
   // 見出しのボタンを配置する前の列名（列の表示のメニューとコピーの見出しの行に使用する）
   const labels = headCells.map((cell) => visibleText(cell));
-  const hiddenColumns = new Set(
-    features.includes("columns") ? readColumnList(wrapper.dataset.hide) : [],
-  );
-  const totalSpecs = features.includes("total")
-    ? readTotalSpecs(wrapper.dataset.total)
-    : [];
   const shownCalcs = new Set<TotalCalc>(totalSpecs.map((total) => total.calc));
   const cleanups: Array<() => void> = [];
   /** 行の指定した列のセルの値（`data-value` があればその値） */
@@ -334,53 +715,20 @@ function attachTable(
   applyMerges();
 
   // ─── 見出しのボタンとドロワー ───
-  const drawers = new Map<number, HTMLElement>();
-  const tools = features.some((feature) =>
-    ["sort", "filter", "pin", "resize"].includes(feature),
-  );
-  if (tools) {
-    headCells.forEach((cell, column) => {
-      const kind = filterKinds.get(column);
-      const parts = renderTableTools({
-        id,
-        column,
-        label: visibleText(cell),
-        features,
-        sortable: !noSort.has(column),
-        pinMode,
-        filter: kind && {
-          kind,
-          values: [
-            ...new Set(originalRows.map((row) => cellText(row, column))),
-          ],
-        },
-      });
-      cell.innerHTML = parts.header;
-      if (parts.drawer) {
-        wrapper.insertAdjacentHTML("beforeend", parts.drawer);
-      }
-    });
-    for (const drawer of ownElements<HTMLElement>(
-      wrapper,
-      ".mdmark-filter-drawer",
-    )) {
-      drawers.set(Number(drawer.dataset.column), drawer);
-    }
-  }
+  const drawers = insertHeadTools({
+    wrapper,
+    id,
+    headCells,
+    features,
+    filter: { kinds: filterKinds, noSort },
+    pinMode,
+    valuesOf: (column) => [
+      ...new Set(originalRows.map((row) => cellText(row, column))),
+    ],
+  });
   // 絞り込み・並べ替えで列の幅が変わらないよう、描いたときの幅を最小の幅にする（本文の幅に広げる前の幅で測る）
-  const width = table.style.width;
-  table.style.width = "auto";
-  for (const cell of headCells) {
-    cell.style.setProperty(
-      "--mdmark-column-min-width",
-      `${cell.offsetWidth}px`,
-    );
-  }
-  table.style.width = width;
-  const empty = document.createElement("tr");
-  empty.className = "mdmark-table-empty";
-  empty.hidden = true;
-  empty.innerHTML = `<td colspan="${headCells.length}">一致する行がありません</td>`;
+  fixMinWidths(table, headCells);
+  const empty = emptyRow(headCells.length);
   if (drawers.size > 0) {
     tbody?.append(empty);
   }
@@ -389,15 +737,6 @@ function attachTable(
   // 今の列の順（元の列の位置の並び）。覚えず、再描画すると Markdown に記載した順に戻る
   let order = labels.map((_, column) => column);
   const groups = headCells.map((cell) => cell.dataset.group);
-  const groupLabels: Record<string, string> = {};
-  for (const [cell, column] of headColumns) {
-    const row = (cell.parentElement as HTMLTableRowElement | null)
-      ?.sectionRowIndex;
-    const key = `${row}:${column}`;
-    if (groups.includes(key)) {
-      groupLabels[key] = visibleText(cell);
-    }
-  }
   const barParts = renderTableBar({
     id,
     features,
@@ -408,31 +747,10 @@ function attachTable(
     totals: totalSpecs.map((total) => total.calc),
     order,
     groups,
-    groupLabels,
-    // 一覧を分けるのは `through` の表の `pin=` で留めた列だけ（既定の先頭の列の留めは、表がはみ出す間だけ該当する。`each` の表は分けない）
-    pinned:
-      pinMode === "through" && wrapper.dataset.pin !== undefined
-        ? initialPinned({ wrapper, features, originalRows, mode: pinMode })
-            .length
-        : 0,
+    groupLabels: groupLabelsOf(headColumns, groups),
+    pinned: barPinnedCount({ wrapper, features, originalRows, mode: pinMode }),
   });
-  if (barParts.bar) {
-    scroller.insertAdjacentHTML("beforebegin", barParts.bar);
-    const bar = scroller.previousElementSibling;
-    if (bar) {
-      cleanups.push(() => bar.remove());
-    }
-  }
-  if (barParts.menus) {
-    const before = new Set(wrapper.children);
-    scroller.insertAdjacentHTML("afterend", barParts.menus);
-    const added = [...wrapper.children].filter((child) => !before.has(child));
-    cleanups.push(() => {
-      for (const menuElement of added) {
-        menuElement.remove();
-      }
-    });
-  }
+  cleanups.push(insertTableBar({ wrapper, scroller, parts: barParts }));
   const menu = ownElement<HTMLElement>(wrapper, ".mdmark-table-settings");
   const totalsMenu = ownElement<HTMLElement>(wrapper, ".mdmark-totals-menu");
   const copyMenu = ownElement<HTMLElement>(wrapper, ".mdmark-copy-menu");
@@ -459,11 +777,7 @@ function attachTable(
   /** 列の値で行を並べ替える。向きを降順 → 昇順 → 元の並びの順に進める */
   const sortBy = (cell: HTMLTableCellElement): void => {
     const column = columnOf(cell);
-    const current = (cell.getAttribute("aria-sort") ??
-      "none") as (typeof SORT_CYCLE)[number];
-    const direction =
-      SORT_CYCLE[(SORT_CYCLE.indexOf(current) + 1) % SORT_CYCLE.length] ??
-      "none";
+    const direction = nextSortDirection(cell);
     const rows = [...originalRows];
     if (direction !== "none") {
       const sign = direction === "ascending" ? 1 : -1;
@@ -509,57 +823,68 @@ function attachTable(
   const isActive = (value: FilterValue): boolean =>
     Boolean(value.values?.length || value.text || value.from || value.to);
   /** 全ての列の絞り込みを当て、絞り込み中の列のボタンを示し、1 行も無ければ一致なしの行を出す */
-  const applyFilters = (): void => {
-    const values: Array<{ value: FilterValue; kind: FilterKind }> = [];
+  /** 列の絞り込みのボタンに、絞り込み中かを示す */
+  const markFilterButton = (drawer: HTMLElement, active: boolean): void => {
+    const button = ownElement(wrapper, `[aria-controls="${drawer.id}"]`);
+    button?.classList.toggle("is-active", active);
+    const status = button?.querySelector(".mdmark-visually-hidden");
+    if (status) {
+      status.textContent = active ? "（絞り込み中）" : "";
+    }
+  };
+  /** 全ての列のドロワーから、適用している絞り込みを読み込み、ボタンに絞り込み中かを示す */
+  const collectFilters = (): ActiveFilter[] => {
+    const values: ActiveFilter[] = [];
     for (const [column, drawer] of drawers) {
       const kind = filterKinds.get(column) ?? "select";
       const value = readFilterValue(column, kind, drawer);
       const active = isActive(value);
-      const button = ownElement(wrapper, `[aria-controls="${drawer.id}"]`);
-      button?.classList.toggle("is-active", active);
-      const status = button?.querySelector(".mdmark-visually-hidden");
-      if (status) {
-        status.textContent = active ? "（絞り込み中）" : "";
-      }
+      markFilterButton(drawer, active);
       if (active) {
         values.push({ value, kind });
       }
     }
+    return values;
+  };
+  /** 行が全ての絞り込みに一致するか */
+  const matchesAll = (
+    row: HTMLTableRowElement,
+    values: ActiveFilter[],
+  ): boolean =>
+    values.every(({ value, kind }) =>
+      matchesFilter(cellText(row, value.column), kind, value),
+    );
+  /** 階層の表に絞り込みを当て、表示している行の数を返却する。キーの列の文字の絞り込みは、末尾の名前で照合して祖先の行を残す */
+  const filterTree = (
+    handle: TableTreeHandle,
+    values: ActiveFilter[],
+  ): number => {
+    const keyFilter = values.find(
+      ({ value, kind }) => kind === "text" && value.column === treeColumn,
+    );
+    const others = values.filter((entry) => entry !== keyFilter);
+    return handle.refresh({
+      word: keyFilter?.value.text ?? "",
+      matches: (row) => matchesAll(row, others),
+    });
+  };
+  /** 階層でない表の行に絞り込みを当て、表示している行の数を返却する */
+  const filterRows = (values: ActiveFilter[]): number => {
     let shown = 0;
-    if (tree) {
-      // キーの列の文字の絞り込みは、末尾の名前で照合して祖先の行を残す
-      const keyFilter = values.find(
-        ({ value, kind }) => kind === "text" && value.column === treeColumn,
-      );
-      const others = values.filter((entry) => entry !== keyFilter);
-      shown = tree.refresh({
-        word: keyFilter?.value.text ?? "",
-        matches: (row) =>
-          others.every(({ value, kind }) =>
-            matchesFilter(cellText(row, value.column), kind, value),
-          ),
-      });
-      empty.hidden = shown > 0;
-      applyMerges();
-      updateSummary();
-      return;
-    }
     for (const row of originalRows) {
-      const match = values.every(({ value, kind }) =>
-        matchesFilter(cellText(row, value.column), kind, value),
-      );
+      const match = matchesAll(row, values);
       row.hidden = !match;
-      // 行の詳細の行は、親の行が隠れたら一緒に隠す。出すときは開閉の状態に戻す
-      const toggle = row.querySelector(".mdmark-row-toggle");
-      for (const detail of detailsOf(row)) {
-        detail.hidden =
-          !match ||
-          (toggle !== null && toggle.getAttribute("aria-expanded") !== "true");
-      }
+      hideDetails(row, match);
       if (match) {
         shown += 1;
       }
     }
+    return shown;
+  };
+  /** 全ての列の絞り込みを当て、絞り込み中の列のボタンを示し、1 行も無ければ一致なしの行を出す */
+  const applyFilters = (): void => {
+    const values = collectFilters();
+    const shown = tree ? filterTree(tree, values) : filterRows(values);
     empty.hidden = shown > 0;
     applyMerges();
     updateSummary();
@@ -711,55 +1036,23 @@ function attachTable(
     scroller.scrollWidth > scroller.clientWidth ||
     (scroller === table && table.scrollWidth > wrapper.clientWidth);
   /** 今の列の並びでの、列ごとの幅（`offsetWidth`。隠した列は 0）と留める列の位置 */
-  let pinLayout: {
-    /** 並びの位置ごとの元の列の位置 */
-    order: number[];
-    /** 並びの位置ごとの幅 */
-    widths: number[];
-    /** 並びの位置ごとの、それより左の列の幅の合計 */
-    naturalLefts: number[];
-    /** 留める列の並びの位置から左右の位置 */
-    offsets: Map<number, { start: number; end: number }>;
-  } = { order: [], widths: [], naturalLefts: [], offsets: new Map() };
+  let pinLayout: PinLayout = {
+    order: [],
+    widths: [],
+    naturalLefts: [],
+    offsets: new Map(),
+  };
   /** 左端に留まった最も右の列に `is-pinned-edge`、右端に留まった最も左の列に `is-pinned-edge-end` を付ける */
   const markPinnedEdges = (): void => {
-    const { order: positions, widths, naturalLefts, offsets } = pinLayout;
     const viewStart = scroller.scrollLeft;
-    const viewEnd = viewStart + scroller.clientWidth;
-    let startEdge = -1;
-    let endEdge = -1;
-    for (const [position, offset] of offsets) {
-      const left = naturalLefts[position] ?? 0;
-      const width = widths[position] ?? 0;
-      if (pinMode === "through") {
-        startEdge = Math.max(startEdge, position);
-        continue;
-      }
-      if (left < viewStart + offset.start + 1) {
-        startEdge = Math.max(startEdge, position);
-      }
-      if (
-        left + width > viewEnd - offset.end - 1 &&
-        (endEdge < 0 || position < endEdge)
-      ) {
-        endEdge = position;
-      }
-    }
-    const startColumn = startEdge >= 0 ? positions[startEdge] : undefined;
-    const endColumn = endEdge >= 0 ? positions[endEdge] : undefined;
+    const edges = pinnedEdges({
+      layout: pinLayout,
+      view: { start: viewStart, end: viewStart + scroller.clientWidth },
+      mode: pinMode,
+    });
     for (const row of [...table.rows]) {
       for (const cell of row.cells) {
-        const first = Number(cell.dataset.col);
-        const last = first + (headColumns.has(cell) ? cell.colSpan : 1) - 1;
-        const isPinned = cell.classList.contains("is-pinned-col");
-        cell.classList.toggle(
-          "is-pinned-edge",
-          isPinned && startColumn !== undefined && last === startColumn,
-        );
-        cell.classList.toggle(
-          "is-pinned-edge-end",
-          isPinned && endColumn !== undefined && first === endColumn,
-        );
+        markEdgeCell({ cell, headColumns, edges });
       }
     }
   };
@@ -791,46 +1084,30 @@ function attachTable(
     const applied = new Set(columnsAt(fit.fitted));
     const unpinned = new Set(columnsAt(fit.unpinned));
     stuckColumns = [...applied];
-    const naturalLefts: number[] = [];
-    let left = 0;
-    for (const width of widths) {
-      naturalLefts.push(left);
-      left += width;
-    }
     const offsets = pinOffsets({
       widths,
       pinned: [...applied].map((column) => positionOf.get(column) ?? -1),
     });
-    pinLayout = { order: [...order], widths, naturalLefts, offsets };
+    pinLayout = {
+      order: [...order],
+      widths,
+      naturalLefts: cumulativeLefts(widths),
+      offsets,
+    };
     for (const row of [...table.rows]) {
       // 行の詳細の行（1 つのセルが全ての列にまたがる）は留めない
-      if (
-        row.classList.contains("mdmark-row-detail") ||
-        row.classList.contains("mdmark-table-empty")
-      ) {
+      if (isWideRow(row)) {
         continue;
       }
       for (const cell of row.cells) {
-        // 見出しのセルは格子の列で数え、またぐ列が全て留める列のときだけ留める
-        const first =
-          cell.dataset.col === undefined
-            ? cell.cellIndex
-            : Number(cell.dataset.col);
-        const span = headColumns.has(cell) ? cell.colSpan : 1;
-        const covered = Array.from({ length: span }, (_, i) => first + i);
-        const isPinned =
-          applied.size > 0 && covered.every((column) => applied.has(column));
-        cell.classList.toggle("is-pinned-col", isPinned);
-        if (!isPinned) {
-          cell.style.left = "";
-          cell.style.right = "";
-          continue;
-        }
-        const positions = covered.map((column) => positionOf.get(column) ?? 0);
-        const startOffset = offsets.get(Math.min(...positions));
-        const endOffset = offsets.get(Math.max(...positions));
-        cell.style.left = `${startOffset?.start ?? 0}px`;
-        cell.style.right = pinMode === "each" ? `${endOffset?.end ?? 0}px` : "";
+        pinCell({
+          cell,
+          span: headColumns.has(cell) ? cell.colSpan : 1,
+          applied,
+          positionOf,
+          offsets,
+          mode: pinMode,
+        });
       }
     }
     const last = Math.max(-1, ...columns);
@@ -839,25 +1116,12 @@ function attachTable(
       if (!pin) {
         return;
       }
-      const pressed =
-        pinMode === "each" ? columns.includes(column) : column === last;
+      const each = pinMode === "each";
+      const pressed = each ? columns.includes(column) : column === last;
       // 押した列（`each` はその列、`through` は最も右の列）が収まらないときは、留まっていないことを示す
       const notFit =
-        pressed &&
-        (pinMode === "each" ? unpinned.has(column) : unpinned.size > 0);
-      pin.setAttribute("aria-pressed", String(pressed));
-      pin.classList.toggle("is-unpinned", notFit);
-      const current = pin.getAttribute("aria-label") ?? "";
-      const base = current.endsWith(PIN_UNPINNED_SUFFIX)
-        ? current.slice(0, -PIN_UNPINNED_SUFFIX.length)
-        : current;
-      if (notFit) {
-        pin.setAttribute("aria-label", `${base}${PIN_UNPINNED_SUFFIX}`);
-        pin.setAttribute("title", `${base}${PIN_UNPINNED_SUFFIX}`);
-      } else {
-        pin.setAttribute("aria-label", base);
-        pin.removeAttribute("title");
-      }
+        pressed && (each ? unpinned.has(column) : unpinned.size > 0);
+      updatePinButton(pin, { pressed, notFit });
     });
     markPinnedEdges();
   };
@@ -978,40 +1242,15 @@ function attachTable(
   // ─── 列の表示の切り替え ───
   /** 隠している列を見出し・セル・集計のセルに当て、メニューとボタンの状態を合わせる */
   const applyColumns = (): void => {
-    const shownCount = headCells.length - hiddenColumns.size;
-    for (const row of table.rows) {
-      // 行の詳細の行と一致なしの行（1 つのセルが全ての列にまたがる）は、表示している列の数にまたがらせる
-      if (
-        row.classList.contains("mdmark-row-detail") ||
-        row.classList.contains("mdmark-table-empty")
-      ) {
-        const cell = row.cells[0];
-        if (cell) {
-          cell.colSpan = shownCount;
-        }
-        continue;
-      }
-      [...row.cells].forEach((cell, index) => {
-        const column =
-          cell.dataset.col === undefined ? index : Number(cell.dataset.col);
-        cell.hidden = hiddenColumns.has(column);
-      });
-    }
+    hideColumnCells(table, {
+      hiddenColumns,
+      shownCount: headCells.length - hiddenColumns.size,
+    });
     applyMerges();
     for (const eye of menu?.querySelectorAll<HTMLButtonElement>(
       ".mdmark-table-settings-eye",
     ) ?? []) {
-      const item = eye.closest<HTMLElement>(".mdmark-table-settings-item");
-      const column = Number(item?.dataset.column);
-      const hidden = hiddenColumns.has(column);
-      eye.setAttribute("aria-pressed", String(hidden));
-      eye.setAttribute(
-        "aria-label",
-        `「${item?.dataset.name ?? ""}」を${hidden ? "表示" : "隠す"}`,
-      );
-      eye.innerHTML = iconSvg(hidden ? "eye-off" : "eye");
-      // Markdown に記載した先頭の列は隠せない
-      eye.disabled = column === 0;
+      updateEyeButton(eye, hiddenColumns);
     }
     const toggle = ownElement<HTMLElement>(
       wrapper,
@@ -1186,77 +1425,149 @@ function attachTable(
   }
 
   // ─── 受け取り ───
+  /** 見出しの絞り込みのボタンで、列のドロワーを開く・閉じる */
+  const toggleFilterDrawer = (filter: HTMLElement): void => {
+    const drawer = drawers.get(columnOf(filter.closest("th")));
+    if (!drawer) {
+      return;
+    }
+    if (drawer.hidden) {
+      openDrawer(drawer, filter);
+    } else {
+      closeDrawer(false);
+    }
+  };
+  /** 列の表示のメニューの目のボタンで、列を隠す・出す */
+  const toggleColumn = (eye: HTMLButtonElement): void => {
+    const column = Number(
+      eye.closest<HTMLElement>(".mdmark-table-settings-item")?.dataset.column,
+    );
+    if (hiddenColumns.has(column)) {
+      hiddenColumns.delete(column);
+    } else {
+      hiddenColumns.add(column);
+    }
+    applyColumns();
+    autoWidths.columnsChanged();
+    notifyHidden();
+    eye.focus();
+  };
+  /** 押した要素の selector と、その要素での動き。動きが偽を返却したら、次の selector を探す */
+  const clickActions: Array<{
+    selector: string;
+    run: (element: HTMLElement, cell: HTMLTableCellElement | null) => boolean;
+  }> = [
+    {
+      selector: ".mdmark-sort",
+      run: (_, cell) => {
+        if (cell) {
+          sortBy(cell);
+        }
+        return cell !== null;
+      },
+    },
+    {
+      selector: ".mdmark-filter",
+      run: (filter) => {
+        toggleFilterDrawer(filter);
+        return true;
+      },
+    },
+    {
+      selector: ".mdmark-pin",
+      run: (_, cell) => {
+        if (cell) {
+          pinColumns(
+            togglePinnedColumn({
+              pinned,
+              column: columnOf(cell),
+              mode: pinMode,
+            }),
+          );
+        }
+        return cell !== null;
+      },
+    },
+    {
+      selector: ".mdmark-filter-clear",
+      run: (clear) => {
+        const drawer = clear.closest<HTMLElement>(".mdmark-filter-drawer");
+        if (drawer) {
+          clearDrawer(drawer);
+          applyFilters();
+        }
+        return true;
+      },
+    },
+    {
+      selector: ".mdmark-table-settings-toggle",
+      run: (toggle) => menuAction(menu, toggle),
+    },
+    {
+      selector: ".mdmark-table-settings-eye",
+      run: (eye) => {
+        const button = eye as HTMLButtonElement;
+        if (!button.disabled) {
+          toggleColumn(button);
+        }
+        return !button.disabled;
+      },
+    },
+    {
+      selector: ".mdmark-totals-toggle",
+      run: (toggle) => menuAction(totalsMenu, toggle),
+    },
+    {
+      selector: ".mdmark-copy",
+      run: (copy) => menuAction(copyMenu, copy),
+    },
+    {
+      selector: ".mdmark-copy-format",
+      run: (copyFormat) => {
+        closeDrawer(true);
+        void copyTable(
+          copyFormat.dataset.format === "tsv" ? "tsv" : "markdown",
+        );
+        return true;
+      },
+    },
+    {
+      selector: ".mdmark-copy-panel-close",
+      run: () => {
+        closeCopyPanel(true);
+        return true;
+      },
+    },
+    {
+      selector: ".mdmark-row-anchor",
+      run: (anchor) => {
+        void copyRowLink(anchor as HTMLAnchorElement);
+        return true;
+      },
+    },
+  ];
   const onClick = (event: Event): void => {
     const target = event.target as HTMLElement;
     if (target.closest(".mdmark-table") !== wrapper) {
       return;
     }
-    const sort = target.closest<HTMLElement>(".mdmark-sort");
-    const filter = target.closest<HTMLElement>(".mdmark-filter");
-    const pin = target.closest<HTMLElement>(".mdmark-pin");
-    const clear = target.closest<HTMLElement>(".mdmark-filter-clear");
-    const columnsToggle = target.closest<HTMLElement>(
-      ".mdmark-table-settings-toggle",
-    );
-    const eye = target.closest<HTMLButtonElement>(".mdmark-table-settings-eye");
-    const copy = target.closest<HTMLElement>(".mdmark-copy");
-    const copyFormat = target.closest<HTMLElement>(".mdmark-copy-format");
-    const totalsToggle = target.closest<HTMLElement>(".mdmark-totals-toggle");
-    const panelClose = target.closest<HTMLElement>(".mdmark-copy-panel-close");
-    const rowAnchor = target.closest<HTMLAnchorElement>(".mdmark-row-anchor");
     const cell = target.closest<HTMLTableCellElement>("th");
-    if (sort && cell) {
-      sortBy(cell);
-    } else if (filter) {
-      const drawer = drawers.get(columnOf(filter.closest("th")));
-      if (drawer) {
-        if (drawer.hidden) {
-          openDrawer(drawer, filter);
-        } else {
-          closeDrawer(false);
-        }
+    for (const { selector, run } of clickActions) {
+      const element = target.closest<HTMLElement>(selector);
+      if (element && run(element, cell)) {
+        return;
       }
-    } else if (pin && cell) {
-      pinColumns(
-        togglePinnedColumn({ pinned, column: columnOf(cell), mode: pinMode }),
-      );
-    } else if (clear) {
-      const drawer = clear.closest<HTMLElement>(".mdmark-filter-drawer");
-      if (drawer) {
-        clearDrawer(drawer);
-        applyFilters();
-      }
-    } else if (columnsToggle && menu) {
-      if (menu.hidden) {
-        openDrawer(menu, columnsToggle);
-      } else {
-        closeDrawer(false);
-      }
-    } else if (eye && !eye.disabled) {
-      const column = Number(
-        eye.closest<HTMLElement>(".mdmark-table-settings-item")?.dataset.column,
-      );
-      if (hiddenColumns.has(column)) {
-        hiddenColumns.delete(column);
-      } else {
-        hiddenColumns.add(column);
-      }
-      applyColumns();
-      autoWidths.columnsChanged();
-      notifyHidden();
-      eye.focus();
-    } else if (totalsToggle && totalsMenu) {
-      toggleMenu(totalsMenu, totalsToggle);
-    } else if (copy && copyMenu) {
-      toggleMenu(copyMenu, copy);
-    } else if (copyFormat) {
-      closeDrawer(true);
-      void copyTable(copyFormat.dataset.format === "tsv" ? "tsv" : "markdown");
-    } else if (panelClose) {
-      closeCopyPanel(true);
-    } else if (rowAnchor) {
-      void copyRowLink(rowAnchor);
     }
+  };
+  /** 帯のメニューがあれば開く・閉じ、メニューがあるかを返却する */
+  const menuAction = (
+    menuElement: HTMLElement | null,
+    button: HTMLElement,
+  ): boolean => {
+    if (menuElement) {
+      toggleMenu(menuElement, button);
+    }
+    return menuElement !== null;
   };
   /** 帯のメニューを開く・閉じる */
   const toggleMenu = (menuElement: HTMLElement, button: HTMLElement): void => {
@@ -1425,6 +1736,27 @@ function attachTable(
   };
 }
 
+/** 表の列の表示の切り替えを、文書の順の位置を添えて通知する関数。通知が例外を投げたらコンソールに出す（通知を指定しなければ `undefined`） */
+function columnsNotifier(
+  onColumnsChange: ((event: MdmarkColumnsChange) => void) | undefined,
+  tableIndex: number,
+): ((hidden: string[]) => void) | undefined {
+  if (!onColumnsChange) {
+    return undefined;
+  }
+  return (hidden) => {
+    try {
+      onColumnsChange({ tableIndex, hidden });
+    } catch (error) {
+      console.error(
+        "[mdmark] 列の表示の通知が例外を投げました",
+        "onColumnsChange",
+        error,
+      );
+    }
+  };
+}
+
 /** 各 `mdmark-table` の `data-features`・`data-filter`・`data-pin` を読み込み、見出しにボタンとドロワーを配置して、並べ替え・ピン止め・絞り込みを付ける。`onColumnsChange` を指定したときは列の表示を切り替えるたびに通知する。ボタン・ドロワー・受け取り・`ResizeObserver` を削除する関数を返却する */
 export function attachTables(
   root: HTMLElement,
@@ -1460,22 +1792,15 @@ export function attachTables(
     if (counted) {
       columnsIndex += 1;
     }
-    const notify =
-      onColumnsChange && counted
-        ? (hidden: string[]): void => {
-            try {
-              onColumnsChange({ tableIndex, hidden });
-            } catch (error) {
-              console.error(
-                "[mdmark] 列の表示の通知が例外を投げました",
-                "onColumnsChange",
-                error,
-              );
-            }
-          }
-        : undefined;
     detachers.push(
-      attachTable(wrapper, table, notify, pinMode, longColumnMin, partStates),
+      attachTable(wrapper, table, {
+        notifyColumns: counted
+          ? columnsNotifier(onColumnsChange, tableIndex)
+          : undefined,
+        pinMode,
+        longColumnMin,
+        partStates,
+      }),
     );
   }
   return () => {

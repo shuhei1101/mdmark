@@ -86,15 +86,19 @@ functions:
         type: string
         required: true
         description: ツールチップと矢じりの `id` の頭
-      - name: hints
+      - name: options
+        type: '{ hints: boolean; lookup?: TermLookup; annotations?: DiagramAnnotations }'
+        required: true
+        description: 機能のオン・オフと、名前の中の用語・注記を描く値
+      - name: options.hints
         type: boolean
         required: true
         description: 機能 `hints` がオンか
-      - name: lookup
+      - name: options.lookup
         type: TermLookup
         required: false
         description: ノードの名前の中の用語の意味を参照する関数。省くと単語だけを出す
-      - name: annotations
+      - name: options.annotations
         type: '{ items: Record<string, Array<{ number: number; html: string }>>; ownerPrefix: string }'
         required: false
         description: 'ノード・線の ID ごとの注記と、持ち主の `id` の頭。注記を持つノード・線は、`hint`・`tip` が無くても右上のマーカー・押せる帯を持ち、ツールチップの `annotations` に注記を指定する。マーカーと押せる帯に `id="{ownerPrefix}{要素の ID}"`（要素の ID の空白は `_`）を付ける。マーカーの `aria-label` は、注記だけなら `「{名前}」の注記`、説明と注記なら `「{名前}」の説明と注記`。`hints` がオフなら付けない'
@@ -213,11 +217,15 @@ functions:
         type: string
         required: true
         description: '`id` の頭'
-      - name: hints
+      - name: options
+        type: '{ hints: boolean; lookup?: TermLookup }'
+        required: true
+        description: 機能のオン・オフと、定義の中の用語を描く値（`renderFlow` と同じ形の `annotations` を除いたもの）
+      - name: options.hints
         type: boolean
         required: true
         description: '`hints` がオンか'
-      - name: lookup
+      - name: options.lookup
         type: TermLookup | undefined
         required: false
         description: 用語から意味を参照する関数（`renderFlow` と同じ）

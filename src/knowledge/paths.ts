@@ -17,6 +17,15 @@ function directoryOf(path: string): string[] {
   return normalizePath(path).split("/").filter(Boolean).slice(0, -1);
 }
 
+/** パーセントエンコードを戻す。戻せないときは、そのまま比べる */
+function decodeOrKeep(target: string): string {
+  try {
+    return decodeURI(target);
+  } catch {
+    return target;
+  }
+}
+
 /** 文書の `path` を基準に、本文のリンクの `href` を索引のファイルからのパスにする。参照にしないリンクは `undefined` */
 export function resolveLink(
   fromPath: string,
@@ -29,14 +38,8 @@ export function resolveLink(
   if (target === "") {
     return undefined;
   }
-  let decoded = target;
-  try {
-    decoded = decodeURI(target);
-  } catch {
-    // 戻せないときは、そのまま比べる
-  }
   const segments = directoryOf(fromPath);
-  for (const segment of decoded.split("/")) {
+  for (const segment of decodeOrKeep(target).split("/")) {
     if (segment === "" || segment === ".") {
       continue;
     }

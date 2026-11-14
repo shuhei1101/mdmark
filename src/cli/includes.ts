@@ -67,24 +67,35 @@ export const findIncludeMarkers = (
   return found;
 };
 
+/** `features` のマーカーの引数が取り込みを切り替えるなら、取り込むか（切り替えなければ `undefined`。後に記載した切り替えが勝つ） */
+const includeSwitch = (argsText: string): boolean | undefined => {
+  const args = readMarkArgs(argsText);
+  if (args.kind === "json") {
+    const { include } = args.options;
+    return typeof include === "boolean" ? include : undefined;
+  }
+  if (args.kind !== "legacy") {
+    return undefined;
+  }
+  let include: boolean | undefined;
+  for (const arg of args.text.split(/\s+/)) {
+    if (arg === "-include" || arg === "+include") {
+      include = arg === "+include";
+    }
+  }
+  return include;
+};
+
 /** 文書が `<!-- features: {"include": false} -->`（今の書き方の `-include`）で取り込みを削除しているか */
 const includeDisabled = (markdown: string): boolean => {
   let disabled = false;
   for (const match of markdown.matchAll(MARK_PATTERN)) {
-    if (match[1] === undefined && match[2] === "features") {
-      const args = readMarkArgs(match[3] ?? "");
-      if (args.kind === "json" && typeof args.options.include === "boolean") {
-        disabled = !args.options.include;
-      }
-      if (args.kind === "legacy") {
-        for (const arg of args.text.split(/\s+/)) {
-          if (arg === "-include") {
-            disabled = true;
-          } else if (arg === "+include") {
-            disabled = false;
-          }
-        }
-      }
+    if (match[1] !== undefined || match[2] !== "features") {
+      continue;
+    }
+    const include = includeSwitch(match[3] ?? "");
+    if (include !== undefined) {
+      disabled = !include;
     }
   }
   return disabled;
@@ -114,6 +125,30 @@ const headingLines = (
   const end = next?.map?.[0] ?? markdown.split("\n").length;
   return { start, end };
 };
+
+/** 取り込み先の指定（ファイル全体・見出し・行の範囲） */
+type IncludeTarget = ReturnType<typeof resolveIncludePath>["target"];
+
+/** Markdown でないファイルの行の範囲が無いとき、ファイルの行の数（範囲があるか、行の範囲の指定でなければ `undefined`） */
+const missingLineCount = (
+  content: string,
+  target: IncludeTarget,
+): number | undefined => {
+  if (target.kind !== "lines") {
+    return undefined;
+  }
+  const lines = selectLines(content, target.from, target.to);
+  return "lineCount" in lines ? lines.lineCount : undefined;
+};
+
+/** 取り込む Markdown の、たどる行の範囲（0 から）。見出しの指定は見出しの範囲で、見出しが無ければ `null` */
+const sectionLines = (
+  content: string,
+  target: IncludeTarget,
+): { start: number; end: number } | null =>
+  target.kind === "heading"
+    ? headingLines(content, target.id)
+    : { start: 0, end: content.split("\n").length };
 
 /** 文書の include のマーカーを解き、根のフォルダの中のファイルだけを読み込んで、キーを文書のフォルダからのパスにした取り込む文書の表を作る。取り込めないマーカーを問題として返却する */
 export const collectIncludes = async (options: {
@@ -152,61 +187,74 @@ export const collectIncludes = async (options: {
     }
   };
 
-  /** `text`（`from` のファイルの `offset` 行目からの本文）のマーカーをたどる */
-  const visit = async (
-    text: string,
-    from: string,
-    offset: number,
-    chain: string[],
-  ): Promise<void> => {
-    for (const { written, line } of findIncludeMarkers(text)) {
-      const at = { file: from, line: offset + line, target: written };
-      const { key, target } = resolveIncludePath(from, written);
-      const file = resolve(docDir, key);
-      if (!isInside(root, file)) {
-        add({ ...at, kind: "outside" });
-        continue;
+  /** たどっている本文（`from` のファイルの `offset` 行目からの本文）と、そこまでの取り込みの順 */
+  type Scope = { text: string; from: string; offset: number; chain: string[] };
+  /** マーカー 1 つの取り込み先を読み込んで取り込む文書の表に入れ、Markdown ならたどる本文を返却する。取り込めないマーカーは問題を加える */
+  const follow = async (
+    marker: { written: string; line: number },
+    scope: Scope,
+  ): Promise<Scope | undefined> => {
+    const at = {
+      file: scope.from,
+      line: scope.offset + marker.line,
+      target: marker.written,
+    };
+    const { key, target } = resolveIncludePath(scope.from, marker.written);
+    const file = resolve(docDir, key);
+    if (!isInside(root, file)) {
+      add({ ...at, kind: "outside" });
+      return undefined;
+    }
+    const { chain } = scope;
+    if (chain.includes(key)) {
+      // 循環の順は、同じキーが最初に現れたところから示す
+      add({
+        ...at,
+        kind: "circular",
+        chain: [...chain.slice(chain.indexOf(key)), key],
+      });
+      return undefined;
+    }
+    const content = await read(file);
+    if (content === undefined) {
+      add({ ...at, kind: "missing" });
+      return undefined;
+    }
+    includes[key] = content;
+    if (!isMarkdownPath(key)) {
+      const lineCount = missingLineCount(content, target);
+      if (lineCount !== undefined) {
+        add({ ...at, kind: "lines", lineCount });
       }
-      if (chain.includes(key)) {
-        // 循環の順は、同じキーが最初に現れたところから示す
-        add({
-          ...at,
-          kind: "circular",
-          chain: [...chain.slice(chain.indexOf(key)), key],
-        });
-        continue;
+      return undefined;
+    }
+    const range = sectionLines(content, target);
+    if (range === null) {
+      add({ ...at, kind: "heading" });
+      return undefined;
+    }
+    return {
+      text: content.split("\n").slice(range.start, range.end).join("\n"),
+      from: key,
+      offset: range.start,
+      chain: [...chain, key],
+    };
+  };
+  const visit = async (scope: Scope): Promise<void> => {
+    for (const marker of findIncludeMarkers(scope.text)) {
+      const next = await follow(marker, scope);
+      if (next) {
+        await visit(next);
       }
-      const content = await read(file);
-      if (content === undefined) {
-        add({ ...at, kind: "missing" });
-        continue;
-      }
-      includes[key] = content;
-      if (!isMarkdownPath(key)) {
-        if (target.kind === "lines") {
-          const lines = selectLines(content, target.from, target.to);
-          if ("lineCount" in lines) {
-            add({ ...at, kind: "lines", lineCount: lines.lineCount });
-          }
-        }
-        continue;
-      }
-      let start = 0;
-      let end = content.split("\n").length;
-      if (target.kind === "heading") {
-        const range = headingLines(content, target.id);
-        if (range === null) {
-          add({ ...at, kind: "heading" });
-          continue;
-        }
-        ({ start, end } = range);
-      }
-      const section = content.split("\n").slice(start, end).join("\n");
-      await visit(section, key, start, [...chain, key]);
     }
   };
   // 点検する文書そのものも取り込みの順に入れ、文書へ戻る取り込みを循環として見つける
-  await visit(markdown, "", 0, [basename(docPath)]);
+  await visit({
+    text: markdown,
+    from: "",
+    offset: 0,
+    chain: [basename(docPath)],
+  });
   return { includes, problems };
 };
 

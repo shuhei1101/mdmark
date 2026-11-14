@@ -122,6 +122,21 @@ export type ReadYaml =
   | { text: string; raw: Record<string, unknown> }
   | undefined;
 
+/** YAML の文字を読み込む。読み込めなければパスと行を添えて `SetupError`（1）を投げる */
+const parseYaml = (text: string, path: string): unknown => {
+  try {
+    return parse(text);
+  } catch (error) {
+    if (error instanceof YAMLParseError) {
+      const line = error.linePos?.[0].line ?? 1;
+      throw new SetupError(
+        `${path} の ${line} 行目を YAML として読み込めません。${error.message.split("\n")[0] ?? ""}`,
+      );
+    }
+    throw error;
+  }
+};
+
 /** YAML のファイルを読み込む。無ければ `undefined`、YAML として読み込めないかキーと値の構造でなければ、パスと行を添えて `SetupError`（1）を投げる */
 export const readYamlFile = async (options: {
   path: string;
@@ -136,18 +151,7 @@ export const readYamlFile = async (options: {
     }
     throw error;
   }
-  let raw: unknown;
-  try {
-    raw = parse(text);
-  } catch (error) {
-    if (error instanceof YAMLParseError) {
-      const line = error.linePos?.[0].line ?? 1;
-      throw new SetupError(
-        `${options.path} の ${line} 行目を YAML として読み込めません。${error.message.split("\n")[0] ?? ""}`,
-      );
-    }
-    throw error;
-  }
+  const raw = parseYaml(text, options.path);
   if (raw === null || raw === undefined) {
     return { text, raw: {} };
   }

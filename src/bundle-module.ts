@@ -95,9 +95,9 @@ const localPlugin: Plugin = {
 export async function bundleModule(
   entry: string,
   baseDir: string,
-  fetchText: FetchText | undefined,
-  build: BuildFunction,
+  deps: { fetchText?: FetchText; build: BuildFunction },
 ): Promise<{ code: string } | { error: string }> {
+  const { fetchText, build } = deps;
   try {
     const result = await build({
       absWorkingDir: baseDir,

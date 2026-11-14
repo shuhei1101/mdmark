@@ -9,6 +9,7 @@ import {
   resolve,
   sep,
 } from "node:path";
+import type { Token } from "markdown-it";
 import MarkdownIt from "markdown-it";
 import { ATTACHMENT_KINDS } from "../render/syntax/cards.ts";
 import { mediaKindOf } from "../render/syntax/images.ts";
@@ -69,9 +70,11 @@ function refKindOf(src: string): AssetRef["kind"] {
   return kind === "video" || kind === "audio" ? kind : "image";
 }
 
-/** markdown-it のトークンから相対パスの参照を、記載した場所つきで記載した順に返却する */
-export function findAssetRefs(markdown: string): LocatedAssetRef[] {
-  const tokens = new MarkdownIt({ html: true }).parse(markdown, {});
+/** 本文の位置から行（1 から）を返却する関数 */
+function lineFinder(markdown: string): {
+  lineStarts: number[];
+  lineOf: (offset: number) => number;
+} {
   const lineStarts = [0];
   for (const [index, char] of [...markdown].entries()) {
     if (char === "\n") {
@@ -88,6 +91,86 @@ export function findAssetRefs(markdown: string): LocatedAssetRef[] {
     }
     return line + 1;
   };
+  return { lineStarts, lineOf };
+}
+
+/** 画像の `src`。直後の文字に動画の `poster` があれば、それも加える */
+function imageSources(
+  children: Token[],
+  position: number,
+): Array<{ src: string; kind: AssetRef["kind"] }> {
+  const child = children[position] as Token;
+  const src = String(child.attrGet("src") ?? "");
+  const next = children[position + 1];
+  const poster =
+    next?.type === "text" ? POSTER_PATTERN.exec(next.content)?.[1] : undefined;
+  return [
+    { src, kind: refKindOf(src) },
+    ...(poster === undefined ? [] : [{ src: poster, kind: "poster" as const }]),
+  ];
+}
+
+/** 行内の子 1 つが参照するファイル: 画像・添付のリンク・行内の HTML の `img` */
+function childSources(
+  children: Token[],
+  position: number,
+): Array<{ src: string; kind: AssetRef["kind"] }> {
+  const child = children[position] as Token;
+  if (child.type === "image") {
+    return imageSources(children, position);
+  }
+  if (child.type === "link_open") {
+    const href = String(child.attrGet("href") ?? "");
+    return ATTACHMENT_KINDS[extensionOf(href)] === undefined
+      ? []
+      : [{ src: href, kind: "attachment" }];
+  }
+  if (child.type === "html_inline") {
+    return imgSources(child.content).map((src) => ({
+      src,
+      kind: "image" as const,
+    }));
+  }
+  return [];
+}
+
+/** 本文の位置から `src` を探し、記載したままの `src` と位置を返却する（無ければ位置は -1）。markdown-it が符号化した `src` は、記載したままの構造に戻して探す */
+function locateSrc(
+  markdown: string,
+  parsed: string,
+  cursor: number,
+): { src: string; offset: number } {
+  const src = [parsed, decodeSrc(parsed)].find(
+    (candidate) => markdown.indexOf(candidate, cursor) >= 0,
+  );
+  return src === undefined
+    ? { src: parsed, offset: -1 }
+    : { src, offset: markdown.indexOf(src, cursor) };
+}
+
+/** トークンが参照するファイル（行内の子の順、HTML のブロックの `img` は最後） */
+function tokenSources(
+  token: Token,
+): Array<{ src: string; kind: AssetRef["kind"] }> {
+  const children = token.children ?? [];
+  const sources = children.flatMap((_, position) =>
+    childSources(children, position),
+  );
+  if (token.type === "html_block") {
+    sources.push(
+      ...imgSources(token.content).map((src) => ({
+        src,
+        kind: "image" as const,
+      })),
+    );
+  }
+  return sources;
+}
+
+/** markdown-it のトークンから相対パスの参照を、記載した場所つきで記載した順に返却する */
+export function findAssetRefs(markdown: string): LocatedAssetRef[] {
+  const tokens = new MarkdownIt({ html: true }).parse(markdown, {});
+  const { lineStarts, lineOf } = lineFinder(markdown);
   const refs: LocatedAssetRef[] = [];
   for (const token of tokens) {
     if (!token.map) {
@@ -95,52 +178,14 @@ export function findAssetRefs(markdown: string): LocatedAssetRef[] {
     }
     const [startLine] = token.map;
     let cursor = lineStarts[startLine] ?? 0;
-    const push = (parsed: string, kind: AssetRef["kind"]) => {
-      // markdown-it が符号化した `src` は、記載したままの構造に戻して探す
-      const src = [parsed, decodeSrc(parsed)].find(
-        (candidate) => markdown.indexOf(candidate, cursor) >= 0,
-      );
-      const at = src === undefined ? -1 : markdown.indexOf(src, cursor);
-      if (src !== undefined) {
-        cursor = at + src.length;
+    const relatives = tokenSources(token).filter(({ src }) => isRelative(src));
+    for (const { src: parsed, kind } of relatives) {
+      const found = locateSrc(markdown, parsed, cursor);
+      if (found.offset >= 0) {
+        cursor = found.offset + found.src.length;
       }
-      const line = at >= 0 ? lineOf(at) : startLine + 1;
-      refs.push({ src: src ?? parsed, kind, line, offset: at });
-    };
-    const sources: Array<{ src: string; kind: AssetRef["kind"] }> = [];
-    const children = token.children ?? [];
-    for (const [position, child] of children.entries()) {
-      if (child.type === "image") {
-        const src = String(child.attrGet("src") ?? "");
-        sources.push({ src, kind: refKindOf(src) });
-        const next = children[position + 1];
-        const poster =
-          next?.type === "text"
-            ? POSTER_PATTERN.exec(next.content)?.[1]
-            : undefined;
-        if (poster !== undefined) {
-          sources.push({ src: poster, kind: "poster" });
-        }
-      } else if (child.type === "link_open") {
-        const href = String(child.attrGet("href") ?? "");
-        if (ATTACHMENT_KINDS[extensionOf(href)] !== undefined) {
-          sources.push({ src: href, kind: "attachment" });
-        }
-      } else if (child.type === "html_inline") {
-        for (const src of imgSources(child.content)) {
-          sources.push({ src, kind: "image" });
-        }
-      }
-    }
-    if (token.type === "html_block") {
-      for (const src of imgSources(token.content)) {
-        sources.push({ src, kind: "image" });
-      }
-    }
-    for (const { src, kind } of sources) {
-      if (isRelative(src)) {
-        push(src, kind);
-      }
+      const line = found.offset >= 0 ? lineOf(found.offset) : startLine + 1;
+      refs.push({ src: found.src, kind, line, offset: found.offset });
     }
   }
   return refs;
@@ -229,6 +274,33 @@ function copyTargetOf(
   return name;
 }
 
+/** ファイルを `_files/` へコピーし、`_files/` の中のパスを返却する。この書き出しでコピー済みのファイルはコピーしない */
+async function copyOnce(options: {
+  file: string;
+  baseDir: string;
+  filesDir: string;
+  copied: Map<string, string>;
+}): Promise<string> {
+  const { file, baseDir, filesDir, copied } = options;
+  const known = copied.get(file);
+  if (known !== undefined) {
+    return known;
+  }
+  const target = copyTargetOf(file, baseDir, new Set(copied.values()));
+  const dest = join(filesDir, ...target.split("/"));
+  try {
+    await mkdir(dirname(dest), { recursive: true });
+    await copyFile(file, dest);
+  } catch (error) {
+    const reason = error instanceof Error ? error.message : String(error);
+    throw new CliError(
+      `${filesDir} に書き込めません（${reason}）。出力先のフォルダを確認してください。`,
+    );
+  }
+  copied.set(file, target);
+  return target;
+}
+
 /** 文書の動画と音声を `{出力の名前}_files/` へコピーし、Markdown の `src` を HTML からの相対パスに替える。`copied` のファイルはコピーせず同じパスを使用する */
 export async function copyMedia(options: {
   /** 文書の Markdown */
@@ -249,10 +321,10 @@ export async function copyMedia(options: {
   const filesDir = join(dirname(out), filesName);
   const warnings: string[] = [];
   const replacements: Array<{ offset: number; src: string; to: string }> = [];
-  for (const ref of findAssetRefs(markdown)) {
-    if (ref.kind !== "video" && ref.kind !== "audio") {
-      continue;
-    }
+  const media = findAssetRefs(markdown).filter(
+    (ref) => ref.kind === "video" || ref.kind === "audio",
+  );
+  for (const ref of media) {
     const file = await resolveAssetFile(ref.src, {
       docDir: dirname(docFile),
       assetsRoot,
@@ -263,21 +335,7 @@ export async function copyMedia(options: {
       );
       continue;
     }
-    let target = copied.get(file);
-    if (target === undefined) {
-      target = copyTargetOf(file, baseDir, new Set(copied.values()));
-      const dest = join(filesDir, ...target.split("/"));
-      try {
-        await mkdir(dirname(dest), { recursive: true });
-        await copyFile(file, dest);
-      } catch (error) {
-        const reason = error instanceof Error ? error.message : String(error);
-        throw new CliError(
-          `${filesDir} に書き込めません（${reason}）。出力先のフォルダを確認してください。`,
-        );
-      }
-      copied.set(file, target);
-    }
+    const target = await copyOnce({ file, baseDir, filesDir, copied });
     if (ref.offset >= 0) {
       replacements.push({
         offset: ref.offset,

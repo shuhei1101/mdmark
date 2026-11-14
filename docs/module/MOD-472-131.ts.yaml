@@ -45,15 +45,19 @@ functions:
         type: ResolvedConfig
         required: true
         description: 既定を当てた設定
-      - name: args
+      - name: options
+        type: '{ args: MapArgs; onStep?: (message: number | undefined) => void; follow?: { start: () => void; step: (message: number) => void } }'
+        required: true
+        description: 印の引数と、再生の通知を受け取る関数
+      - name: options.args
         type: MapArgs
         required: true
         description: 印の引数
-      - name: onStep
+      - name: options.onStep
         type: '(message: number | undefined) => void'
         required: false
         description: 再生で進めたメッセージの番号を受け取る関数（止めたときは `undefined`）
-      - name: follow
+      - name: options.follow
         type: '{ start: () => void; step: (message: number) => void }'
         required: false
         description: 再生を自動で進め始めたとき（`start`）と、自動で次のメッセージへ進めたとき（`step`。メッセージの番号）に呼ぶ関数

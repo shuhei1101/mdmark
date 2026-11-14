@@ -215,11 +215,10 @@ function revealHashTarget(root: HTMLElement): void {
   }
 }
 
-/** 行の詳細を持つ行の先頭のセルに開閉のボタンを配置し、詳細の行を閉じる。削除する関数を返却する */
-function attachRowDetails(
+/** 行の詳細の行を、詳細を持つ行ごとにまとめる */
+function detailOwners(
   root: HTMLElement,
-  partStates: PartStates | undefined,
-): () => void {
+): Map<HTMLTableRowElement, HTMLTableRowElement[]> {
   const owners = new Map<HTMLTableRowElement, HTMLTableRowElement[]>();
   for (const detail of root.querySelectorAll<HTMLTableRowElement>(
     "tr.mdmark-row-detail",
@@ -232,67 +231,102 @@ function attachRowDetails(
       owners.set(owner, [...(owners.get(owner) ?? []), detail]);
     }
   }
+  return owners;
+}
+
+/** 先頭のセルの中身を、開閉のボタンと中身を並べた `span` に包む */
+function wrapRowHead(
+  cell: HTMLTableCellElement,
+  details: HTMLTableRowElement[],
+): { head: HTMLElement; button: HTMLButtonElement } {
+  const label = visibleText(cell);
+  const head = document.createElement("span");
+  head.className = "mdmark-row-head";
+  const button = document.createElement("button");
+  button.className = "mdmark-row-toggle";
+  button.type = "button";
+  button.setAttribute("aria-expanded", "false");
+  button.setAttribute(
+    "aria-controls",
+    details.map((detail) => detail.id).join(" "),
+  );
+  button.setAttribute("aria-label", `「${label}」の詳細`);
+  head.append(button, ...cell.childNodes);
+  cell.append(head);
+  return { head, button };
+}
+
+/** 行の詳細の開閉の記録の鍵。記録しないときは `undefined`。表ごとの鍵は `tableKeys` に使い回す */
+function rowDetailKey(options: {
+  root: HTMLElement;
+  owner: HTMLTableRowElement;
+  details: HTMLTableRowElement[];
+  partStates: PartStates | undefined;
+  tableKeys: Map<HTMLTableElement, string>;
+}): string | undefined {
+  const { root, owner, details, partStates, tableKeys } = options;
+  const table = owner.closest("table");
+  if (table === null || partStates === undefined) {
+    return undefined;
+  }
+  const base =
+    tableKeys.get(table) ?? partKey({ root, part: table, kind: "row-detail" });
+  tableKeys.set(table, base);
+  return `${base}|${details[0]?.dataset.row ?? ""}`;
+}
+
+/** 詳細を持つ行 1 つに開閉のボタンを配置し、記録のとおりに開閉する。元に戻す関数を返却する */
+function attachRowDetail(options: {
+  cell: HTMLTableCellElement;
+  details: HTMLTableRowElement[];
+  key: string | undefined;
+  partStates: PartStates | undefined;
+}): () => void {
+  const { cell, details, key, partStates } = options;
+  const { head, button } = wrapRowHead(cell, details);
+  /** 詳細の行を開閉し、ボタンの `aria-expanded` に写す */
+  const setOpen = (open: boolean): void => {
+    button.setAttribute("aria-expanded", String(open));
+    for (const detail of details) {
+      detail.hidden = !open;
+    }
+  };
+  setOpen(
+    key !== undefined &&
+      startOpen({ states: partStates, key, marker: "", markerOpen: false }),
+  );
+  const onClick = (): void => {
+    const open = button.getAttribute("aria-expanded") !== "true";
+    setOpen(open);
+    if (key !== undefined) {
+      recordOpen({ states: partStates, key, open, marker: "" });
+    }
+  };
+  button.addEventListener("click", onClick);
+  return () => {
+    cell.append(...[...head.childNodes].filter((node) => node !== button));
+    head.remove();
+    for (const detail of details) {
+      detail.hidden = false;
+    }
+  };
+}
+
+/** 行の詳細を持つ行の先頭のセルに開閉のボタンを配置し、詳細の行を閉じる。削除する関数を返却する */
+function attachRowDetails(
+  root: HTMLElement,
+  partStates: PartStates | undefined,
+): () => void {
   const cleanups: Array<() => void> = [];
   /** 表ごとの記録の鍵（表の中の行の詳細で使い回す） */
   const tableKeys = new Map<HTMLTableElement, string>();
-  for (const [owner, details] of owners) {
+  for (const [owner, details] of detailOwners(root)) {
     const cell = owner.cells[0];
     if (!cell) {
       continue;
     }
-    const label = visibleText(cell);
-    const head = document.createElement("span");
-    head.className = "mdmark-row-head";
-    const button = document.createElement("button");
-    button.className = "mdmark-row-toggle";
-    button.type = "button";
-    button.setAttribute("aria-expanded", "false");
-    button.setAttribute(
-      "aria-controls",
-      details.map((detail) => detail.id).join(" "),
-    );
-    button.setAttribute("aria-label", `「${label}」の詳細`);
-    head.append(button, ...cell.childNodes);
-    cell.append(head);
-    const table = owner.closest("table");
-    const base =
-      table === null || partStates === undefined
-        ? undefined
-        : (tableKeys.get(table) ??
-          partKey({ root, part: table, kind: "row-detail" }));
-    if (table !== null && base !== undefined) {
-      tableKeys.set(table, base);
-    }
-    const key =
-      base === undefined
-        ? undefined
-        : `${base}|${details[0]?.dataset.row ?? ""}`;
-    /** 詳細の行を開閉し、ボタンの `aria-expanded` に写す */
-    const setOpen = (open: boolean): void => {
-      button.setAttribute("aria-expanded", String(open));
-      for (const detail of details) {
-        detail.hidden = !open;
-      }
-    };
-    setOpen(
-      key !== undefined &&
-        startOpen({ states: partStates, key, marker: "", markerOpen: false }),
-    );
-    const onClick = (): void => {
-      const open = button.getAttribute("aria-expanded") !== "true";
-      setOpen(open);
-      if (key !== undefined) {
-        recordOpen({ states: partStates, key, open, marker: "" });
-      }
-    };
-    button.addEventListener("click", onClick);
-    cleanups.push(() => {
-      cell.append(...[...head.childNodes].filter((node) => node !== button));
-      head.remove();
-      for (const detail of details) {
-        detail.hidden = false;
-      }
-    });
+    const key = rowDetailKey({ root, owner, details, partStates, tableKeys });
+    cleanups.push(attachRowDetail({ cell, details, key, partStates }));
   }
   return () => {
     for (const cleanup of cleanups) {
