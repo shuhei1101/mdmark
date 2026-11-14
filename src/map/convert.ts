@@ -268,32 +268,83 @@ const missingText = (
 /** 線・メッセージの端が、ノード・相手の `id` を指しているかを確かめる */
 const missingEnd = (
   links: Array<{ from: string; to: string; id?: unknown }>,
-  ids: Set<string>,
-  noun: string,
-  owner: string,
+  target: { ids: Set<string>; noun: string; owner: string },
 ): string | undefined => {
+  const { ids, noun, owner } = target;
   for (const [index, link] of links.entries()) {
-    for (const end of [link.from, link.to]) {
-      if (!ids.has(end)) {
-        const name =
-          typeof link.id === "string" ? link.id : `${index + 1} 番目`;
-        return `${owner} ${name} の端の${noun} ${end} がありません。${noun}の id で記載してください`;
-      }
-    }
+    const end = [link.from, link.to].find((item) => !ids.has(item));
+    if (end === undefined) continue;
+    const name = typeof link.id === "string" ? link.id : `${index + 1} 番目`;
+    return `${owner} ${name} の端の${noun} ${end} がありません。${noun}の id で記載してください`;
   }
   return undefined;
+};
+
+/** 廃止した図の定義を読んだ結果 */
+type RetiredRead =
+  | {
+      ok: true;
+      definition: RetiredFlowDefinition | RetiredSequenceDefinition;
+    }
+  | { ok: false; reason: string };
+
+/** フロー図の定義の誤り（無ければ `undefined`） */
+const flowProblem = (source: Record<string, unknown>): string | undefined => {
+  const problem =
+    missingText(source.nodes, "nodes", ["id", "kind", "name"]) ??
+    missingText(source.wires, "wires", ["from", "to", "line"]);
+  if (problem !== undefined) return problem;
+  const definition = source as RetiredFlowDefinition;
+  const node = definition.nodes.find(
+    (item) => !Object.hasOwn(RETIRED_KIND_STYLES, item.kind),
+  );
+  if (node)
+    return `ノード「${node.name}」の種類 ${node.kind} は使用できません。使用できる種類は ${Object.keys(RETIRED_KIND_STYLES).join("・")} です`;
+  const wire = definition.wires.find(
+    (item) =>
+      item.line !== "flow" && !Object.hasOwn(RETIRED_LINE_STYLES, item.line),
+  );
+  if (wire)
+    return `線の種類 ${wire.line} は使用できません。使用できる種類は flow・${Object.keys(RETIRED_LINE_STYLES).join("・")} です`;
+  return missingEnd(definition.wires, {
+    ids: new Set(definition.nodes.map((item) => item.id)),
+    noun: "ノード",
+    owner: "線",
+  });
+};
+
+/** シーケンス図の定義の誤り（無ければ `undefined`） */
+const sequenceProblem = (
+  source: Record<string, unknown>,
+): string | undefined => {
+  const problem =
+    missingText(source.participants, "participants", ["id", "name"]) ??
+    missingText(source.steps, "steps", ["from", "to", "label"]);
+  if (problem !== undefined) return problem;
+  const definition = source as RetiredSequenceDefinition;
+  return missingEnd(definition.steps, {
+    ids: new Set(definition.participants.map((participant) => participant.id)),
+    noun: "相手",
+    owner: "メッセージ",
+  });
+};
+
+/** JSON として読めない定義の理由 */
+const unparsedReason = (
+  name: string,
+  parsed: { line: number; after: string; missing: string },
+): string => {
+  const where = `${parsed.line} 行目の ${parsed.after} の後`;
+  return parsed.missing === ""
+    ? `${name}の部品の定義を JSON として読み込めません（${where}が読み込めません）`
+    : `${name}の部品の定義を JSON として読み込めません（${where}に ${parsed.missing} がありません）`;
 };
 
 /** 範囲の `json` のコードブロックを読み、廃止した図の定義の必須の項目と線の端の `id` を確かめる */
 export const readRetiredDefinition = (
   directive: "flow" | "sequence",
   blocks: string[],
-):
-  | {
-      ok: true;
-      definition: RetiredFlowDefinition | RetiredSequenceDefinition;
-    }
-  | { ok: false; reason: string } => {
+): RetiredRead => {
   const name = DIRECTIVE_NAMES[directive];
   const [block] = blocks;
   if (blocks.length !== 1 || block === undefined) {
@@ -303,71 +354,22 @@ export const readRetiredDefinition = (
     };
   }
   const parsed = parseDefinitionJson(block);
-  if (!parsed.ok) {
-    const where = `${parsed.line} 行目の ${parsed.after} の後`;
+  if (!parsed.ok) return { ok: false, reason: unparsedReason(name, parsed) };
+  const source = parsed.value;
+  const problem = !isRecord(source)
+    ? "定義がオブジェクトではありません"
+    : directive === "flow"
+      ? flowProblem(source)
+      : sequenceProblem(source);
+  if (problem !== undefined)
     return {
       ok: false,
-      reason:
-        parsed.missing === ""
-          ? `${name}の部品の定義を JSON として読み込めません（${where}が読み込めません）`
-          : `${name}の部品の定義を JSON として読み込めません（${where}に ${parsed.missing} がありません）`,
+      reason: `${name}の部品の定義を読み込めません。${problem}`,
     };
-  }
-  const fail = (problem: string) => ({
-    ok: false as const,
-    reason: `${name}の部品の定義を読み込めません。${problem}`,
-  });
-  const source = parsed.value;
-  if (!isRecord(source)) {
-    return fail("定義がオブジェクトではありません");
-  }
-  if (directive === "flow") {
-    const problem =
-      missingText(source.nodes, "nodes", ["id", "kind", "name"]) ??
-      missingText(source.wires, "wires", ["from", "to", "line"]);
-    if (problem !== undefined) {
-      return fail(problem);
-    }
-    const definition = source as RetiredFlowDefinition;
-    for (const node of definition.nodes) {
-      if (!Object.hasOwn(RETIRED_KIND_STYLES, node.kind)) {
-        return fail(
-          `ノード「${node.name}」の種類 ${node.kind} は使用できません。使用できる種類は ${Object.keys(RETIRED_KIND_STYLES).join("・")} です`,
-        );
-      }
-    }
-    for (const wire of definition.wires) {
-      if (
-        wire.line !== "flow" &&
-        !Object.hasOwn(RETIRED_LINE_STYLES, wire.line)
-      ) {
-        return fail(
-          `線の種類 ${wire.line} は使用できません。使用できる種類は flow・${Object.keys(RETIRED_LINE_STYLES).join("・")} です`,
-        );
-      }
-    }
-    const end = missingEnd(
-      definition.wires,
-      new Set(definition.nodes.map((node) => node.id)),
-      "ノード",
-      "線",
-    );
-    return end === undefined ? { ok: true, definition } : fail(end);
-  }
-  const problem =
-    missingText(source.participants, "participants", ["id", "name"]) ??
-    missingText(source.steps, "steps", ["from", "to", "label"]);
-  if (problem !== undefined) {
-    return fail(problem);
-  }
-  const definition = source as RetiredSequenceDefinition;
-  const end = missingEnd(
-    definition.steps,
-    new Set(definition.participants.map((participant) => participant.id)),
-    "相手",
-    "メッセージ",
-  );
-  return end === undefined ? { ok: true, definition } : fail(end);
+  return {
+    ok: true,
+    definition: source as RetiredFlowDefinition | RetiredSequenceDefinition,
+  };
 };
 
 /** map で読めない ID と予約語の ID を、ほかの ID と重ならない `{頭}{番号}` に置き換える対応を作る */
@@ -432,6 +434,155 @@ const mapRangeLines = (
   "<!-- /map -->",
 ];
 
+/** フロー図のノード */
+type RetiredNode = RetiredFlowDefinition["nodes"][number];
+
+/** フロー図のレーン（グループの ID を付けたもの） */
+type RetiredLane = NonNullable<RetiredFlowDefinition["lanes"]>[number] & {
+  id: string;
+};
+
+/** フロー図を写すときに繰り返し引く値 */
+type FlowContext = {
+  definition: RetiredFlowDefinition;
+  /** 元の ID から map の ID */
+  idOf: (id: string) => string;
+  /** 説明を補足の notes に足す（空なら足さない） */
+  note: (id: string, text: string | undefined) => void;
+  /** 写したノードの種類 */
+  kinds: string[];
+  /** 枠のグループの ID */
+  frameId: string | undefined;
+  lanes: RetiredLane[];
+};
+
+/** ノードの mermaid の行（種類を `kinds` に足す） */
+const flowNodeLine = (context: FlowContext, node: RetiredNode): string => {
+  const style =
+    RETIRED_KIND_STYLES[node.kind as keyof typeof RETIRED_KIND_STYLES];
+  if (!context.kinds.includes(node.kind)) context.kinds.push(node.kind);
+  const half = style.mermaid.length / 2;
+  const label =
+    node.tag === undefined
+      ? flowText(node.name)
+      : `${flowText(node.tag)}<br>${flowText(node.name)}`;
+  return `${context.idOf(node.id)}${style.mermaid.slice(0, half)}${label}${style.mermaid.slice(half)}:::${node.kind}`;
+};
+
+/** ノードが入るレーン */
+const flowLaneOf = (
+  lanes: RetiredLane[],
+  node: RetiredNode,
+): RetiredLane | undefined => {
+  const { y } = node;
+  if (y === undefined) return undefined;
+  return lanes.find((lane) => y >= lane.y && y < lane.y + lane.h);
+};
+
+/** 行の頭の字下げ */
+const pad = (level: number) => "  ".repeat(level);
+
+/** 枠・レーンのグループと、ノードの mermaid の行 */
+const flowNodeLines = (context: FlowContext): string[] => {
+  const { definition, frameId, lanes } = context;
+  const outside = definition.nodes.filter(
+    (node) => definition.frame !== undefined && node.kind === "external",
+  );
+  const inside = definition.nodes.filter((node) => !outside.includes(node));
+  const depth = definition.frame ? 2 : 1;
+  const out: string[] = [];
+  if (definition.frame && frameId) {
+    out.push(
+      `${pad(1)}subgraph ${frameId}["${flowText(definition.frame.title)}"]`,
+    );
+  }
+  for (const lane of lanes) {
+    out.push(`${pad(depth)}subgraph ${lane.id}["${flowText(lane.label)}"]`);
+    for (const node of inside.filter(
+      (item) => flowLaneOf(lanes, item) === lane,
+    )) {
+      out.push(`${pad(depth + 1)}${flowNodeLine(context, node)}`);
+    }
+    out.push(`${pad(depth)}end`);
+  }
+  for (const node of inside.filter(
+    (item) => flowLaneOf(lanes, item) === undefined,
+  )) {
+    out.push(`${pad(depth)}${flowNodeLine(context, node)}`);
+  }
+  if (definition.frame) out.push(`${pad(1)}end`);
+  for (const node of outside)
+    out.push(`${pad(1)}${flowNodeLine(context, node)}`);
+  return out;
+};
+
+/** ノードの補足の説明（下の行・入出力・説明） */
+const flowNodeNote = (node: RetiredNode): string | undefined => {
+  const io = node.io
+    ? `入力: ${node.io.in}\n処理: ${node.io.do}\n出力: ${node.io.out}`
+    : undefined;
+  const text = [node.sub, io, node.hint].filter(
+    (item): item is string => item !== undefined && item !== "",
+  );
+  return text.length === 0 ? undefined : text.join("\n");
+};
+
+/** 線の mermaid の行と、線の種類を上書きする layout・使った線の種類 */
+const flowWireLines = (
+  context: FlowContext,
+): {
+  lines: string[];
+  layout: Record<string, { line: string }>;
+  lineKinds: string[];
+} => {
+  const { definition, idOf, note } = context;
+  const lines: string[] = [];
+  const layout: Record<string, { line: string }> = {};
+  const lineKinds: string[] = [];
+  const edgeCounts = new Map<string, number>();
+  for (const wire of definition.wires) {
+    const from = idOf(wire.from);
+    const to = idOf(wire.to);
+    const base = `${from}->${to}`;
+    const count = (edgeCounts.get(base) ?? 0) + 1;
+    edgeCounts.set(base, count);
+    const edgeId = count === 1 ? base : `${base}#${count}`;
+    lines.push(
+      wire.label === undefined || wire.label === ""
+        ? `${pad(1)}${from} --> ${to}`
+        : `${pad(1)}${from} -->|${flowText(wire.label)}| ${to}`,
+    );
+    if (wire.line !== "flow") {
+      layout[edgeId] = { line: wire.line };
+      if (!lineKinds.includes(wire.line)) lineKinds.push(wire.line);
+    }
+    note(edgeId, wire.tip);
+  }
+  return { lines, layout, lineKinds };
+};
+
+/** 枠とレーンのグループの ID を、ノードの ID と重ならないように付ける */
+const flowGroupsOf = (
+  definition: RetiredFlowDefinition,
+  context: { nodeIds: Set<string>; note: FlowContext["note"] },
+): { frameId: string | undefined; lanes: RetiredLane[] } => {
+  const { nodeIds, note } = context;
+  const groupId = (base: string): string => {
+    let id = base;
+    while (nodeIds.has(id)) id += "_";
+    nodeIds.add(id);
+    return id;
+  };
+  const frameId = definition.frame ? groupId("frame") : undefined;
+  if (definition.frame && frameId) note(frameId, definition.frame.hint);
+  const lanes = (definition.lanes ?? []).map((lane, index) => {
+    const id = groupId(`lane${index + 1}`);
+    note(id, lane.hint);
+    return { ...lane, id };
+  });
+  return { frameId, lanes };
+};
+
 /** フロー図を map の範囲の行にする */
 export const flowToMap = (
   definition: RetiredFlowDefinition,
@@ -446,129 +597,36 @@ export const flowToMap = (
     "n",
   );
   const idOf = (id: string): string => replaced.map.get(id) ?? id;
-  const nodeIds = new Set(replaced.map.values());
-  const groupId = (base: string): string => {
-    let id = base;
-    while (nodeIds.has(id)) {
-      id += "_";
-    }
-    nodeIds.add(id);
-    return id;
-  };
   const notes: Record<string, { text: string }> = {};
   const note = (id: string, text: string | undefined) => {
-    if (text !== undefined && text !== "") {
-      notes[id] = { text };
-    }
+    if (text !== undefined && text !== "") notes[id] = { text };
   };
-  const frameId = definition.frame ? groupId("frame") : undefined;
-  if (definition.frame && frameId) {
-    note(frameId, definition.frame.hint);
-  }
-  const lanes = (definition.lanes ?? []).map((lane, index) => {
-    const id = groupId(`lane${index + 1}`);
-    note(id, lane.hint);
-    return { ...lane, id };
+  const groups = flowGroupsOf(definition, {
+    nodeIds: new Set(replaced.map.values()),
+    note,
   });
-  const kinds: string[] = [];
-  const nodeLine = (node: RetiredFlowDefinition["nodes"][number]): string => {
-    const style =
-      RETIRED_KIND_STYLES[node.kind as keyof typeof RETIRED_KIND_STYLES];
-    if (!kinds.includes(node.kind)) {
-      kinds.push(node.kind);
-    }
-    const half = style.mermaid.length / 2;
-    const label =
-      node.tag === undefined
-        ? flowText(node.name)
-        : `${flowText(node.tag)}<br>${flowText(node.name)}`;
-    return `${idOf(node.id)}${style.mermaid.slice(0, half)}${label}${style.mermaid.slice(half)}:::${node.kind}`;
+  const context: FlowContext = {
+    definition,
+    idOf,
+    note,
+    kinds: [],
+    ...groups,
   };
-  const laneOf = (node: RetiredFlowDefinition["nodes"][number]) =>
-    node.y === undefined
-      ? undefined
-      : lanes.find(
-          (lane) =>
-            node.y !== undefined &&
-            node.y >= lane.y &&
-            node.y < lane.y + lane.h,
-        );
-  const outside = definition.nodes.filter(
-    (node) => definition.frame !== undefined && node.kind === "external",
-  );
-  const inside = definition.nodes.filter((node) => !outside.includes(node));
-  const mermaid = ["flowchart TB"];
-  const depth = definition.frame ? 2 : 1;
-  const pad = (level: number) => "  ".repeat(level);
-  if (definition.frame && frameId) {
-    mermaid.push(
-      `${pad(1)}subgraph ${frameId}["${flowText(definition.frame.title)}"]`,
-    );
-  }
-  for (const lane of lanes) {
-    mermaid.push(`${pad(depth)}subgraph ${lane.id}["${flowText(lane.label)}"]`);
-    for (const node of inside.filter((item) => laneOf(item) === lane)) {
-      mermaid.push(`${pad(depth + 1)}${nodeLine(node)}`);
-    }
-    mermaid.push(`${pad(depth)}end`);
-  }
-  for (const node of inside.filter((item) => laneOf(item) === undefined)) {
-    mermaid.push(`${pad(depth)}${nodeLine(node)}`);
-  }
-  if (definition.frame) {
-    mermaid.push(`${pad(1)}end`);
-  }
-  for (const node of outside) {
-    mermaid.push(`${pad(1)}${nodeLine(node)}`);
-  }
+  const mermaid = ["flowchart TB", ...flowNodeLines(context)];
+  for (const node of definition.nodes) note(idOf(node.id), flowNodeNote(node));
+  const wires = flowWireLines(context);
+  mermaid.push(...wires.lines);
   for (const node of definition.nodes) {
-    const io = node.io
-      ? `入力: ${node.io.in}\n処理: ${node.io.do}\n出力: ${node.io.out}`
-      : undefined;
-    const text = [node.sub, io, node.hint].filter(
-      (item): item is string => item !== undefined && item !== "",
-    );
-    note(idOf(node.id), text.length === 0 ? undefined : text.join("\n"));
-  }
-  const layout: Record<string, { line: string }> = {};
-  const lineKinds: string[] = [];
-  const edgeCounts = new Map<string, number>();
-  for (const wire of definition.wires) {
-    const from = idOf(wire.from);
-    const to = idOf(wire.to);
-    const base = `${from}->${to}`;
-    const count = (edgeCounts.get(base) ?? 0) + 1;
-    edgeCounts.set(base, count);
-    const edgeId = count === 1 ? base : `${base}#${count}`;
-    mermaid.push(
-      wire.label === undefined || wire.label === ""
-        ? `${pad(1)}${from} --> ${to}`
-        : `${pad(1)}${from} -->|${flowText(wire.label)}| ${to}`,
-    );
-    if (wire.line !== "flow") {
-      layout[edgeId] = { line: wire.line };
-      if (!lineKinds.includes(wire.line)) {
-        lineKinds.push(wire.line);
-      }
-    }
-    note(edgeId, wire.tip);
-  }
-  for (const node of definition.nodes) {
-    if (node.href !== undefined) {
+    if (node.href !== undefined)
       mermaid.push(`${pad(1)}click ${idOf(node.id)} "${node.href}"`);
-    }
   }
   const data: Record<string, unknown> = {};
-  if (Object.keys(notes).length > 0) {
-    data.notes = notes;
-  }
-  if (Object.keys(layout).length > 0) {
-    data.layout = layout;
-  }
+  if (Object.keys(notes).length > 0) data.notes = notes;
+  if (Object.keys(wires.layout).length > 0) data.layout = wires.layout;
   return {
     lines: mapRangeLines(definition.title, mermaid, data),
-    kinds,
-    lineKinds,
+    kinds: context.kinds,
+    lineKinds: wires.lineKinds,
     dropped: [...headDropped(definition), ...replaced.dropped],
   };
 };
@@ -619,6 +677,37 @@ export const sequenceToMap = (
 const reasonOf = (item: string): string =>
   item.startsWith("id ") ? ID_REASON : NO_TARGET_REASON;
 
+/** フロー図を map の範囲の行にし、使ったノードと線の種類を設定に足す */
+const convertFlow = (
+  definition: RetiredFlowDefinition,
+  styles: {
+    kinds: Record<string, MapKind>;
+    lineStyles: Record<string, MapLine>;
+  },
+): { lines: string[]; dropped: string[] } => {
+  const flow = flowToMap(definition);
+  for (const kind of flow.kinds) {
+    const { mermaid: _mermaid, ...style } =
+      RETIRED_KIND_STYLES[kind as keyof typeof RETIRED_KIND_STYLES];
+    styles.kinds[kind] = { ...style };
+  }
+  for (const kind of flow.lineKinds) {
+    styles.lineStyles[kind] = {
+      ...RETIRED_LINE_STYLES[kind as keyof typeof RETIRED_LINE_STYLES],
+    };
+  }
+  return flow;
+};
+
+/** 書き換える廃止した範囲の名前（`flow`・`sequence` のほかと、`skip` の名前は `undefined`） */
+const retiredNameOf = (
+  directive: string,
+  skip: Set<string>,
+): "flow" | "sequence" | undefined =>
+  (directive === "flow" || directive === "sequence") && !skip.has(directive)
+    ? directive
+    : undefined;
+
 /** 本文の廃止した `flow`・`sequence` の範囲（コードブロックと行内のコードの中と、`skip` の名前の範囲を除く）を、map の範囲に書き換える。読めない範囲は書き換えず、報告に挙げる */
 export const convertRetiredDiagrams = (options: {
   markdown: string;
@@ -633,13 +722,8 @@ export const convertRetiredDiagrams = (options: {
   const replacements: Array<{ start: number; end: number; lines: string[] }> =
     [];
   for (const found of findDiagramBlocks(markdown)) {
-    if (
-      (found.directive !== "flow" && found.directive !== "sequence") ||
-      skip.has(found.directive)
-    ) {
-      continue;
-    }
-    const name = found.directive;
+    const name = retiredNameOf(found.directive, skip);
+    if (name === undefined) continue;
     const read = readRetiredDefinition(name, found.blocks);
     if (!read.ok) {
       report.push({
@@ -650,23 +734,13 @@ export const convertRetiredDiagrams = (options: {
       });
       continue;
     }
-    let converted: { lines: string[]; dropped: string[] };
-    if (name === "flow") {
-      const flow = flowToMap(read.definition as RetiredFlowDefinition);
-      for (const kind of flow.kinds) {
-        const { mermaid: _mermaid, ...style } =
-          RETIRED_KIND_STYLES[kind as keyof typeof RETIRED_KIND_STYLES];
-        kinds[kind] = { ...style };
-      }
-      for (const kind of flow.lineKinds) {
-        lineStyles[kind] = {
-          ...RETIRED_LINE_STYLES[kind as keyof typeof RETIRED_LINE_STYLES],
-        };
-      }
-      converted = flow;
-    } else {
-      converted = sequenceToMap(read.definition as RetiredSequenceDefinition);
-    }
+    const converted =
+      name === "flow"
+        ? convertFlow(read.definition as RetiredFlowDefinition, {
+            kinds,
+            lineStyles,
+          })
+        : sequenceToMap(read.definition as RetiredSequenceDefinition);
     for (const item of converted.dropped) {
       report.push({ line: found.line, name, item, reason: reasonOf(item) });
     }
