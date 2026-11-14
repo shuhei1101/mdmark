@@ -323,17 +323,10 @@ docs:
     updated_at: '2026-11-13T19:29:03.836433+00:00'
   - page: schemas/mdmark.config.schema.json
     new: false
-    change: 図の機能のキーの description から `flow`・`sequence` を削除する（`migrations/no-steps.yaml` に行を置く）
+    change: 図の機能のキーの description から `flow`・`sequence` を削除する（`migrations/next/steps.yaml` に移行の手順を置くため、`no-steps.yaml` の行は要らない）
     status: done
     updated_by: planner
     updated_at: '2026-11-13T17:49:11.553897+00:00'
-  - page: migrations/no-steps.yaml
-    new: false
-    change: description だけを変えた `mdmark.config.schema.json` の行を追加する
-    status: done
-    content: '`migrations/next/steps.yaml` に移行の手順を置いたため、`mdmark.config.schema.json` の行は置かない（`checkMigrations` が空を返す）'
-    updated_by: planner
-    updated_at: '2026-11-13T19:29:03.836433+00:00'
 scope_out:
   - item: 既存の文書（mdmark の使い方集のほか、mdmark を使う各リポジトリ）の flow・sequence を、用意した変換で map へ書き換える移行
     reason: 変換を使う側の作業で、この Issue では変換と廃止までを扱う。ただし、このリポジトリの使い方集・見本・設計書の図は、廃止で描けなくなるためこの PR で書き換える（更新ドキュメント）
