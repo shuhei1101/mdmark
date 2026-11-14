@@ -1453,7 +1453,17 @@ export const renderMapErDiagram = (args: MapErArgs): MapPart => {
           nodes: [only, ...near.flatMap((item) => [item.from, item.to])],
           wires: near.map((item) => item.id),
         };
-  const flow = renderMapFlow({ ...args, nodeParts, keep });
+  // 関連の線は設定の線の種類によらず矢じりを持たず、`..` の関連は破線
+  const lines = {
+    ...args.lines,
+    "---": { ...args.lines["---"], head: "none" as const },
+    "-.->": {
+      ...args.lines["-.->"],
+      dash: "dashed" as const,
+      head: "none" as const,
+    },
+  };
+  const flow = renderMapFlow({ ...args, lines, nodeParts, keep });
   const kept = keptOf({ ...args, keep });
   const dim = new Set(
     kept === undefined
