@@ -8197,6 +8197,11 @@
         width: 0.5rem;
       }
 
+      /* 比較元から変わったセクションの線: 変更のマーカーと同じ橙にする（今いるセクションの線は今いるセクションの色を優先する） */
+      &[data-changed]:not([data-current]) {
+        background: var(--mdmark-color-callout-warning);
+      }
+
       /* 今いるセクションの線: マーカーの色にする */
       &[data-current] {
         background: var(--mdmark-color-link);
@@ -8332,6 +8337,22 @@
           background: var(--mdmark-color-current-bg);
           color: var(--mdmark-color-link);
         }
+        /* 比較元から変わったセクションの項目: 文字と変更のマーカーを 1 行に並べ、マーカーを右端に配置する */
+        &[data-changed] {
+          display: flex;
+          gap: 0.5rem;
+          align-items: baseline;
+          justify-content: space-between;
+        }
+      }
+
+      /* 変更のマーカー: 橙の塗った円。長い見出しが折り返しても 1 行目の高さに置き、縮めない */
+      .mdmark-side-toc-changed {
+        flex: none;
+        width: 0.5rem;
+        height: 0.5rem;
+        border-radius: 50%;
+        background: var(--mdmark-color-callout-warning);
       }
     }
 
@@ -10226,6 +10247,151 @@
     .mdmark-diagram-node.map-kinded
     .mdmark-diagram-node-kind {
     color: var(--map-kind, var(--mdmark-color-muted));
+  }
+
+  /* map の ER 図: テーブルの列の行（キー・名前・型・説明のボタン）と列の開閉のボタン */
+  .mdmark-diagram[data-diagram="map"]
+  .mdmark-diagram-node:has(> .map-er-columns) {
+    justify-content: flex-start;
+  }
+  /* 列の行はテーブル名の行の下から同じ高さで並べる（top と行の高さは部品が指定する） */
+  .map-er-columns {
+    position: absolute;
+    inset-inline: 0;
+    display: grid;
+    font-size: 12px;
+  }
+  .map-er-column {
+    display: grid;
+    grid-template-columns: 4em 1fr auto 24px;
+    gap: 4px;
+    align-items: center;
+    padding: 0 10px;
+    border-top: 1px solid var(--mdmark-color-border);
+  }
+  .map-er-key {
+    color: var(--mdmark-color-accent-orange-text);
+    font-weight: 700;
+  }
+  .map-er-name {
+    overflow-wrap: anywhere;
+    user-select: text;
+  }
+  .map-er-type {
+    color: var(--mdmark-color-muted);
+  }
+  .map-er-note,
+  .map-er-toggle {
+    min-width: 24px;
+    min-height: 24px;
+    padding: 0 6px;
+    border: 1px solid var(--mdmark-color-border);
+    border-radius: var(--mdmark-radius);
+    background: var(--mdmark-color-bg);
+    color: inherit;
+    font-size: 12px;
+    cursor: pointer;
+  }
+  .map-er-note {
+    border-radius: 50%;
+    padding: 0;
+    cursor: help;
+  }
+  .map-er-toggle {
+    margin-left: auto;
+  }
+  .mdmark-diagram-node-kind:has(.map-er-toggle) {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  /* map の ER 図の多重度とラベル・状態遷移図の同じ状態への遷移の層 */
+  :is(.map-er-marks, .map-state-loops) {
+    position: absolute;
+    inset: 0 auto auto 0;
+    overflow: visible;
+    pointer-events: none;
+  }
+  /* map の ER 図: 関連の端の多重度とラベル、2 つのテーブルの経路の行が増える関連のマーカー */
+  .map-er-cardinality {
+    font-size: 11px;
+    fill: var(--mdmark-color-muted);
+  }
+  .map-er-label {
+    font-size: 12px;
+    fill: var(--mdmark-color-text);
+    paint-order: stroke;
+    stroke: var(--mdmark-color-bg);
+    stroke-width: 4px;
+  }
+  :is(.map-er-cardinality, .map-er-label).map-dim {
+    opacity: var(--mdmark-map-dim-opacity, 0.25);
+  }
+  .map-er-fanout {
+    position: absolute;
+    z-index: 3;
+    transform: translate(-50%, -50%);
+    min-width: 24px;
+    min-height: 24px;
+    padding: 0 4px;
+    border: 1px solid var(--mdmark-color-accent-red-text);
+    border-radius: 999px;
+    background: var(--mdmark-color-accent-red-bg);
+    color: var(--mdmark-color-accent-red-text);
+    font-size: 11px;
+    font-weight: 700;
+  }
+
+  /* map の状態遷移図: 開始（黒丸）・終了（二重丸）・分岐（ひし形）。名前と種類の行は出さない */
+  /* ノードの中身の右の余白より後に当てる */
+  .mdmark-diagram[data-diagram="map"]
+    .mdmark-diagram-stage
+    > .mdmark-diagram-node:is([data-shape="start"], [data-shape="end"]) {
+    min-height: 32px;
+    padding: 0;
+    border-radius: 50%;
+    background: var(--mdmark-color-text);
+    border-color: var(--mdmark-color-text);
+  }
+  .mdmark-diagram[data-diagram="map"]
+    .mdmark-diagram-stage
+    > .mdmark-diagram-node[data-shape="end"] {
+    border: 6px double var(--mdmark-color-text);
+    background: var(--mdmark-color-bg);
+  }
+  .mdmark-diagram[data-diagram="map"]
+    .mdmark-diagram-stage
+    > .mdmark-diagram-node[data-shape="choice"] {
+    clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%);
+    padding: 0;
+    border-radius: 0;
+    background: var(--mdmark-color-text);
+  }
+  .mdmark-diagram[data-diagram="map"]
+    .mdmark-diagram-node:is(
+      [data-shape="start"],
+      [data-shape="end"],
+      [data-shape="choice"]
+    )
+    > * {
+    display: none;
+  }
+  /* map の状態遷移図: 同じ状態への遷移の線（再生で今の遷移なら太くする） */
+  .map-state-loop {
+    fill: none;
+    stroke: var(--mdmark-color-diagram-line);
+    stroke-width: 1.5;
+  }
+  .map-state-loop.is-active {
+    stroke: var(--mdmark-color-link);
+    stroke-width: 2.5;
+  }
+  .map-state-loop-label {
+    font-size: 12px;
+    fill: var(--mdmark-color-text);
+  }
+  :is(.map-state-loop, .map-state-loop-label).map-dim {
+    opacity: var(--mdmark-map-dim-opacity, 0.25);
   }
 
   /* 書き方の警告: 今の記載の警告と同じ破線の枠 */

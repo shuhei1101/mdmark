@@ -117,6 +117,7 @@ function readView(options: {
       unpinned: [],
       widths: [],
       check: [],
+      sorts: [],
       collapse: "none",
       warnings: [],
       headRows: 1,

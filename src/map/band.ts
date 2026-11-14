@@ -118,6 +118,8 @@ export const observeEnter: ObserveEnter = (target, onEnter) => {
 export const attachBand = (options: {
   figure: HTMLElement;
   mode: "walkthrough" | "playback";
+  /** 再生で進める単位（既定 message。状態遷移図は transition） */
+  unit?: "message" | "transition";
   steps: BandStep[];
   /** 自動で進める間隔（秒） */
   interval: number;
@@ -154,6 +156,7 @@ export const attachBand = (options: {
         : undefined;
     holder.innerHTML = renderMapBand({
       mode,
+      unit: options.unit,
       total: steps.length,
       index,
       title: step?.title ?? "",

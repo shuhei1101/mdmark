@@ -1,0 +1,370 @@
+$ npx vitest run --project 'unit*' tests/unit/src/map/er.test.ts tests/unit/src/map/state-diagram.test.ts tests/unit/src/map/check.test.ts tests/unit/src/parts/map.test.ts tests/unit/src/map/er-view.browser.test.ts tests/unit/src/map/state-view.browser.test.ts
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-map-er-state-diagram
+
+ ❯ |unit| tests/unit/src/map/state-diagram.test.ts (3 tests | 3 failed) 1956ms
+   × test_parse_state_diagram 917ms
+   × test_parse_state_diagram_when_unclosed 711ms
+   × test_state_to_flowchart 326ms
+ ❯ |unit| tests/unit/src/map/er.test.ts (7 tests | 7 failed) 3942ms
+   × test_parse_er_diagram 2200ms
+   × test_parse_er_diagram_when_unreadable 616ms
+   × test_parse_er_diagram_when_unclosed 261ms
+   × test_er_column_for 236ms
+   × test_er_fanouts 151ms
+   × test_er_fanouts_when_disconnected 96ms
+   × test_er_to_flowchart 380ms
+ ❯ |unit| tests/unit/src/map/check.test.ts (16 tests | 4 failed) 6160ms
+   × test_collect_map_problems_when_unsupported_kind 9ms
+   × test_collect_map_structure_when_er_and_state 4ms
+   × test_collect_map_problems_when_er 1ms
+   × test_collect_map_problems_when_state 1ms
+ ❯ |unit| tests/unit/src/parts/map.test.ts (18 tests | 4 failed) 5498ms
+   × test_render_map_band_when_transition 6ms
+   × test_render_map_er 3ms
+   × test_render_map_er_when_collapsed 3ms
+   × test_render_map_state 0ms
+8:15:24 AM [vite] Internal server error: Failed to resolve import "../../../../src/map/er-view.ts" from "tests/unit/src/map/er-view.browser.test.ts". Does the file exist?
+  Plugin: vite:import-analysis
+  File: /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-map-er-state-diagram/tests/unit/src/map/er-view.browser.test.ts:7:32
+  4  |  import { renderDoc } from "../../helpers/render.ts";
+  5  |  /** ER 図を付ける処理を読み込む（実装が無い間は各テストが個別に失敗する） */
+  6  |  const loadErView = () => import("../../../../src/map/er-view.ts");
+     |                                  ^
+  7  |  const loadSpec = () => import("../../../../src/map/spec.ts");
+  8  |  const loadConfig = () => import("../../../../src/config.ts");
+      at TransformPluginContext._formatLog (file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-map-er-state-diagram/node_modules/vite/dist/node/chunks/node.js:8861:39)
+      at TransformPluginContext.error (file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-map-er-state-diagram/node_modules/vite/dist/node/chunks/node.js:8858:14)
+      at resolveId (file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-map-er-state-diagram/node_modules/vite/dist/node/chunks/node.js:26533:18)
+      at async file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-map-er-state-diagram/node_modules/vite/dist/node/chunks/node.js:26632:23
+      at async Promise.all (index 4)
+      at async TransformPluginContext.transform (file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-map-er-state-diagram/node_modules/vite/dist/node/chunks/node.js:26605:4)
+      at async EnvironmentPluginContainer.transform (file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-map-er-state-diagram/node_modules/vite/dist/node/chunks/node.js:8632:14)
+      at async loadAndTransform (file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-map-er-state-diagram/node_modules/vite/dist/node/chunks/node.js:20108:26)
+      at async viteTransformMiddleware (file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-map-er-state-diagram/node_modules/vite/dist/node/chunks/node.js:20328:20)
+ ❯ |unit-browser (chromium)| tests/unit/src/map/er-view.browser.test.ts (0 test)
+8:15:25 AM [vite] Internal server error: Failed to resolve import "../../../../src/map/state-view.ts" from "tests/unit/src/map/state-view.browser.test.ts". Does the file exist?
+  Plugin: vite:import-analysis
+  File: /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-map-er-state-diagram/tests/unit/src/map/state-view.browser.test.ts:7:35
+  4  |  import { renderDoc } from "../../helpers/render.ts";
+  5  |  /** 状態遷移図を付ける処理を読み込む（実装が無い間は各テストが個別に失敗する） */
+  6  |  const loadStateView = () => import("../../../../src/map/state-view.ts");
+     |                                     ^
+  7  |  const loadSpec = () => import("../../../../src/map/spec.ts");
+  8  |  const loadConfig = () => import("../../../../src/config.ts");
+      at TransformPluginContext._formatLog (file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-map-er-state-diagram/node_modules/vite/dist/node/chunks/node.js:8861:39)
+      at TransformPluginContext.error (file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-map-er-state-diagram/node_modules/vite/dist/node/chunks/node.js:8858:14)
+      at resolveId (file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-map-er-state-diagram/node_modules/vite/dist/node/chunks/node.js:26533:18)
+      at async file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-map-er-state-diagram/node_modules/vite/dist/node/chunks/node.js:26632:23
+      at async Promise.all (index 4)
+      at async TransformPluginContext.transform (file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-map-er-state-diagram/node_modules/vite/dist/node/chunks/node.js:26605:4)
+      at async EnvironmentPluginContainer.transform (file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-map-er-state-diagram/node_modules/vite/dist/node/chunks/node.js:8632:14)
+      at async loadAndTransform (file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-map-er-state-diagram/node_modules/vite/dist/node/chunks/node.js:20108:26)
+      at async viteTransformMiddleware (file:///mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-map-er-state-diagram/node_modules/vite/dist/node/chunks/node.js:20328:20)
+ ❯ |unit-browser (chromium)| tests/unit/src/map/state-view.browser.test.ts (0 test)
+
+⎯⎯⎯⎯⎯⎯ Failed Suites 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/map/er-view.browser.test.ts [ tests/unit/src/map/er-view.browser.test.ts ]
+Error: Failed to import test file /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-map-er-state-diagram/tests/unit/src/map/er-view.browser.test.ts
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=8dc4d731:5843:5
+ ❯ collectTests node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=8dc4d731:5819:3
+ ❯ startTests node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=8dc4d731:6503:17
+
+Caused by: TypeError: Failed to fetch dynamically imported module: http://localhost:63315/mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-map-er-state-diagram/tests/unit/src/map/er-view.browser.test.ts?import&browserv=1794611724275
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/20]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/map/state-view.browser.test.ts [ tests/unit/src/map/state-view.browser.test.ts ]
+Error: Failed to import test file /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-map-er-state-diagram/tests/unit/src/map/state-view.browser.test.ts
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=8dc4d731:5843:5
+ ❯ collectTests node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=8dc4d731:5819:3
+ ❯ startTests node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=8dc4d731:6503:17
+
+Caused by: TypeError: Failed to fetch dynamically imported module: http://localhost:63315/mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-map-er-state-diagram/tests/unit/src/map/state-view.browser.test.ts?import&browserv=1794611724275
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/20]⎯
+
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 18 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit| tests/unit/src/map/check.test.ts > test_collect_map_problems_when_unsupported_kind
+AssertionError: expected 'この版の map で描ける図の種類は `flowchart`・`seque…' to contain 'erDiagram'
+
+Expected: "erDiagram"
+Received: "この版の map で描ける図の種類は `flowchart`・`sequenceDiagram` です。`pie` の図はコードブロックのまま表示しています。"
+
+ ❯ tests/unit/src/map/check.test.ts:173:32
+    171|   expect(problems[0]?.message).toContain("flowchart");
+    172|   expect(problems[0]?.message).toContain("sequenceDiagram");
+    173|   expect(problems[0]?.message).toContain("erDiagram");
+       |                                ^
+    174|   expect(problems[0]?.message).toContain("stateDiagram-v2");
+    175| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/20]⎯
+
+ FAIL  |unit| tests/unit/src/map/check.test.ts > test_collect_map_structure_when_er_and_state
+AssertionError: expected [ …(3) ] to deeply equal [ [], [], [] ]
+
+- Expected
++ Received
+
+  [
+-   [],
+-   [],
+-   [],
++   [
++     {
++       "kind": "map_invalid",
++       "message": "この版の map で描ける図の種類は `flowchart`・`sequenceDiagram` です。`erDiagram` の図はコードブロックのまま表示しています。",
++     },
++   ],
++   [
++     {
++       "kind": "map_invalid",
++       "message": "この版の map で描ける図の種類は `flowchart`・`sequenceDiagram` です。`stateDiagram-v2` の図はコードブロックのまま表示しています。",
++     },
++   ],
++   [
++     {
++       "kind": "map_invalid",
++       "message": "この版の map で描ける図の種類は `flowchart`・`sequenceDiagram` です。`stateDiagram` の図はコードブロックのまま表示しています。",
++     },
++   ],
+  ]
+
+ ❯ tests/unit/src/map/check.test.ts:226:52
+    224|   ];
+    225|   // 検証
+    226|   expect(results.map((result) => result.problems)).toEqual([[], [], []…
+       |                                                    ^
+    227|   expect(results.map((result) => result.kind)).toEqual([
+    228|     "erDiagram",
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/20]⎯
+
+ FAIL  |unit| tests/unit/src/map/check.test.ts > test_collect_map_problems_when_er
+AssertionError: expected [] to have a length of 3 but got +0
+
+- Expected
++ Received
+
+- 3
++ 0
+
+ ❯ tests/unit/src/map/check.test.ts:251:70
+    249|   const problems = collectMapProblems(range(mermaid, data), CONFIG, tr…
+    250|   // 検証
+    251|   expect(problems.filter((item) => item.kind === "map_unknown_ref")).t…
+       |                                                                      ^
+    252|   expect(problems.filter((item) => item.kind === "map_invalid_value"))…
+    253| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/20]⎯
+
+ FAIL  |unit| tests/unit/src/map/check.test.ts > test_collect_map_problems_when_state
+AssertionError: expected 'map_invalid' to be 'map_unknown_ref' // Object.is equality
+
+Expected: "map_unknown_ref"
+Received: "map_invalid"
+
+ ❯ tests/unit/src/map/check.test.ts:268:29
+    266|   // 検証
+    267|   expect(problems).toHaveLength(1);
+    268|   expect(problems[0]?.kind).toBe("map_unknown_ref");
+       |                             ^
+    269|   expect(problems[0]?.message).toContain("notes.t2");
+    270| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/20]⎯
+
+ FAIL  |unit| tests/unit/src/map/er.test.ts > test_parse_er_diagram
+Error: Cannot find module '/src/map/er.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-map-er-state-diagram/tests/unit/src/map/er.test.ts
+ ❯ tests/unit/src/map/er.test.ts:10:30
+      8| test("test_parse_er_diagram", async () => {
+      9|   // 準備
+     10|   const { parseErDiagram } = await loadEr();
+       |                              ^
+     11|   // 実行
+     12|   const er = parseErDiagram(ER);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/20]⎯
+
+ FAIL  |unit| tests/unit/src/map/er.test.ts > test_parse_er_diagram_when_unreadable
+Error: Cannot find module '/src/map/er.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-map-er-state-diagram/tests/unit/src/map/er.test.ts
+ ❯ tests/unit/src/map/er.test.ts:43:30
+     41| test("test_parse_er_diagram_when_unreadable", async () => {
+     42|   // 準備
+     43|   const { parseErDiagram } = await loadEr();
+       |                              ^
+     44|   // 実行
+     45|   const er = parseErDiagram(
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/20]⎯
+
+ FAIL  |unit| tests/unit/src/map/er.test.ts > test_parse_er_diagram_when_unclosed
+Error: Cannot find module '/src/map/er.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-map-er-state-diagram/tests/unit/src/map/er.test.ts
+ ❯ tests/unit/src/map/er.test.ts:60:30
+     58| test("test_parse_er_diagram_when_unclosed", async () => {
+     59|   // 準備
+     60|   const { parseErDiagram } = await loadEr();
+       |                              ^
+     61|   // 実行
+     62|   const er = parseErDiagram("erDiagram\n  注文 {\n    int id PK\n");
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/20]⎯
+
+ FAIL  |unit| tests/unit/src/map/er.test.ts > test_er_column_for
+Error: Cannot find module '/src/map/er.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-map-er-state-diagram/tests/unit/src/map/er.test.ts
+ ❯ tests/unit/src/map/er.test.ts:71:43
+     69| test("test_er_column_for", async () => {
+     70|   // 準備
+     71|   const { erColumnFor, parseErDiagram } = await loadEr();
+       |                                           ^
+     72|   const er = parseErDiagram(
+     73|     'erDiagram\n  申請 {\n    int id PK\n    int 承認者ID FK "参照: 社員.ID"\n …
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/20]⎯
+
+ FAIL  |unit| tests/unit/src/map/er.test.ts > test_er_fanouts
+Error: Cannot find module '/src/map/er.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-map-er-state-diagram/tests/unit/src/map/er.test.ts
+ ❯ tests/unit/src/map/er.test.ts:86:41
+     84| test("test_er_fanouts", async () => {
+     85|   // 準備
+     86|   const { erFanouts, parseErDiagram } = await loadEr();
+       |                                         ^
+     87|   const er = parseErDiagram(ER);
+     88|   // 実行
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/20]⎯
+
+ FAIL  |unit| tests/unit/src/map/er.test.ts > test_er_fanouts_when_disconnected
+Error: Cannot find module '/src/map/er.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-map-er-state-diagram/tests/unit/src/map/er.test.ts
+ ❯ tests/unit/src/map/er.test.ts:103:41
+    101| test("test_er_fanouts_when_disconnected", async () => {
+    102|   // 準備
+    103|   const { erFanouts, parseErDiagram } = await loadEr();
+       |                                         ^
+    104|   const er = parseErDiagram(
+    105|     "erDiagram\n  A {\n    int id PK\n  }\n  B {\n    int id PK\n  }\n…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[12/20]⎯
+
+ FAIL  |unit| tests/unit/src/map/er.test.ts > test_er_to_flowchart
+Error: Cannot find module '/src/map/er.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-map-er-state-diagram/tests/unit/src/map/er.test.ts
+ ❯ tests/unit/src/map/er.test.ts:114:45
+    112| test("test_er_to_flowchart", async () => {
+    113|   // 準備
+    114|   const { erToFlowchart, parseErDiagram } = await loadEr();
+       |                                             ^
+    115|   const { parseMapData } = await import("../../../../src/map/data.ts");
+    116|   const er = parseErDiagram(ER);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[13/20]⎯
+
+ FAIL  |unit| tests/unit/src/map/state-diagram.test.ts > test_parse_state_diagram
+Error: Cannot find module '/src/map/state-diagram.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-map-er-state-diagram/tests/unit/src/map/state-diagram.test.ts
+ ❯ tests/unit/src/map/state-diagram.test.ts:10:33
+      8| test("test_parse_state_diagram", async () => {
+      9|   // 準備
+     10|   const { parseStateDiagram } = await loadState();
+       |                                 ^
+     11|   // 実行
+     12|   const diagram = parseStateDiagram(STATE);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[14/20]⎯
+
+ FAIL  |unit| tests/unit/src/map/state-diagram.test.ts > test_parse_state_diagram_when_unclosed
+Error: Cannot find module '/src/map/state-diagram.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-map-er-state-diagram/tests/unit/src/map/state-diagram.test.ts
+ ❯ tests/unit/src/map/state-diagram.test.ts:30:33
+     28| test("test_parse_state_diagram_when_unclosed", async () => {
+     29|   // 準備
+     30|   const { parseStateDiagram } = await loadState();
+       |                                 ^
+     31|   // 実行
+     32|   const diagram = parseStateDiagram(
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[15/20]⎯
+
+ FAIL  |unit| tests/unit/src/map/state-diagram.test.ts > test_state_to_flowchart
+Error: Cannot find module '/src/map/state-diagram.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-map-er-state-diagram/tests/unit/src/map/state-diagram.test.ts
+ ❯ tests/unit/src/map/state-diagram.test.ts:43:51
+     41| test("test_state_to_flowchart", async () => {
+     42|   // 準備
+     43|   const { parseStateDiagram, stateToFlowchart } = await loadState();
+       |                                                   ^
+     44|   const diagram = parseStateDiagram(STATE);
+     45|   // 実行
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[16/20]⎯
+
+ FAIL  |unit| tests/unit/src/parts/map.test.ts > test_render_map_band_when_transition
+AssertionError: expected [ '作業の状態の再生', '前のメッセージ', …(3) ] to deeply equal ArrayContaining{…}
+
+- Expected
++ Received
+
+- ArrayContaining [
+-   "前の遷移",
++ [
++   "作業の状態の再生",
++   "前のメッセージ",
+    "再生をやめる",
+    "自動で進める",
+-   "次の遷移",
++   "次のメッセージ",
+  ]
+
+ ❯ tests/unit/src/parts/map.test.ts:457:18
+    455|     item.replace(/^aria-label="|"$/g, ""),
+    456|   );
+    457|   expect(labels).toEqual(
+       |                  ^
+    458|     expect.arrayContaining(["前の遷移", "再生をやめる", "自動で進める", "次の遷移"]),
+    459|   );
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[17/20]⎯
+
+ FAIL  |unit| tests/unit/src/parts/map.test.ts > test_render_map_er
+Error: Cannot find module '/src/map/er.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-map-er-state-diagram/tests/unit/src/parts/map.test.ts
+ ❯ orderTable tests/unit/src/parts/map.test.ts:465:30
+    463| /** 部品『mapのER図』の Default の「注文」 */
+    464| async function orderTable(collapsed: boolean) {
+    465|   const { parseErDiagram } = await import("../../../../src/map/er.ts");
+       |                              ^
+    466|   const { ER } = await import("../../helpers/map.ts");
+    467|   const table = parseErDiagram(ER).tables[1];
+ ❯ tests/unit/src/parts/map.test.ts:482:30
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[18/20]⎯
+
+ FAIL  |unit| tests/unit/src/parts/map.test.ts > test_render_map_er_when_collapsed
+Error: Cannot find module '/src/map/er.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-map-er-state-diagram/tests/unit/src/parts/map.test.ts
+ ❯ orderTable tests/unit/src/parts/map.test.ts:465:30
+    463| /** 部品『mapのER図』の Default の「注文」 */
+    464| async function orderTable(collapsed: boolean) {
+    465|   const { parseErDiagram } = await import("../../../../src/map/er.ts");
+       |                              ^
+    466|   const { ER } = await import("../../helpers/map.ts");
+    467|   const table = parseErDiagram(ER).tables[1];
+ ❯ tests/unit/src/parts/map.test.ts:494:30
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[19/20]⎯
+
+ FAIL  |unit| tests/unit/src/parts/map.test.ts > test_render_map_state
+TypeError: renderMapState is not a function
+ ❯ tests/unit/src/parts/map.test.ts:506:16
+    504|   const { renderMapState } = await loadParts();
+    505|   // 実行
+    506|   const html = renderMapState({
+       |                ^
+    507|     wire: "t2",
+    508|     x: 100,
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[20/20]⎯
+
+
+ Test Files  6 failed (6)
+      Tests  18 failed | 26 passed (44)
+   Start at  08:15:05
+   Duration  21.96s (worker 52%, tests 24%, transform 22%, import 2%)
+

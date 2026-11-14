@@ -651,6 +651,34 @@ flows:
     refs:
       - SC-472-73#scenarios[正常シナリオ（長文の列を文字で絞り込む）]
       - SC-472-73#scenarios[正常シナリオ（列の幅の範囲を指定する）]
+  - name: 正常系（長文の列と並べ替えの指定）
+    summary: '`sort` の機能を持つ表で、並べ替えを付けない長文の列と `columns.{列名}.sort` が `false` の列を `data-no-sort` に写す'
+    setup:
+      - name: 配布物を読み込んだ Node の処理
+        description: 正常系と同じ
+      - name: 並べ替えの指定が違う 5 つの表の Markdown
+        description: '名前（全角 6 文字以内）・更新日（`YYYY-MM-DD`）・説明（全角 40 文字の文）の 3 列 2 行の同じ表を、表 A `{"kind": "data"}`・表 B `{"kind": "data", "columns": {"説明": {"sort": true}, "名前": {"sort": false}}}`・表 C `{"kind": "plain", "features": {"sort": {}}}`・表 D `{"kind": "plain", "columns": {"名前": {"sort": true}}}`・表 E `{"kind": "data", "features": {"sort": {"enabled": false}}, "columns": {"説明": {"sort": true}}}` のマーカーで囲んだ文書'
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        participant C as 利用側の処理
+        participant M as mdmark
+        C->>M: render(markdown)
+        M->>M: 長文の列と columns.{列名}.sort から並べ替えを付けない列を決める
+        M-->>C: HTML 文字列
+    expected:
+      - 表 A が `data-no-sort="2"` を持つ
+      - 表 B が `data-no-sort="0"` を持つ
+      - 表 C が `data-features` に `sort` を持ち、`data-no-sort="2"` を持つ
+      - 表 D が `data-features` に `sort` を持ち、`data-no-sort="2"` を持つ
+      - 表 E が `data-features` に `sort` を持たず、`data-no-sort` を持たない
+      - 文字列に `mdmark-syntax-warning` が無い
+    test: test_normal_when_table_sort_columns
+    refs:
+      - SC-472-73#scenarios[正常シナリオ（長文の列に並べ替えを付けない）]
+      - SC-472-73#scenarios[正常シナリオ（列ごとに並べ替えを指定する）]
+      - SC-472-73#scenarios[正常シナリオ（並べ替えを記載した表の長文の列）]
   - name: 正常系（ビューのマーカー）
     summary: ビューのマーカーの範囲を、引数を持つ `mdmark-view` の中に表を残した HTML にする
     setup:
@@ -2258,6 +2286,7 @@ flows:
       - それぞれの `div.mdmark-map` の中に、Mermaid のソースを持つ `div.mdmark-code`（`code` が `language-mermaid`。属性 `data-mdmark-mermaid` を持たない）と、補足の JSON の文字を持つ `pre.mdmark-map-data`（`hidden`）がある
       - 補足の HTML コメントの区切り（`<!-- map-data:`・`-->`）とマーカーの文字が出力に無い
       - '`svg` と `figure.mdmark-diagram` が無い（図にするのは `mount`）'
+      - '`erDiagram` の範囲は `data-map-kind="erDiagram"`、`stateDiagram-v2` と `stateDiagram` の範囲は `data-map-kind="stateDiagram"` の `div.mdmark-map` になる'
       - 同じ Markdown を 2 回描くと同じ文字列が返る
     test: test_normal_when_map_range
   - name: 正常系（map の書き方の誤り）
@@ -2279,7 +2308,7 @@ flows:
     expected:
       - 1 つ目の範囲の場所に書き方の警告が無く（読めない行・閉じの無い `subgraph`・補足の知らないキーは `mount` が警告にする）、`div.mdmark-map` があり、その `data-map-args` に `mdoe` が無い
       - 印の引数が JSON として読めない範囲の場所に、印の引数を JSON のオブジェクトで記載する直し方の書き方の警告があり、引数なしとして `div.mdmark-map` がある
-      - '`pie` の範囲の場所に、この版で描ける種類（`flowchart`・`sequenceDiagram`）を記載した書き方の警告があり、`div.mdmark-map` を持たず、ソースのコードブロックがある'
+      - '`pie` の範囲の場所に、この版で描ける種類（`flowchart`・`sequenceDiagram`・`erDiagram`・`stateDiagram-v2`）を記載した書き方の警告があり、`div.mdmark-map` を持たず、ソースのコードブロックがある'
       - mermaid のブロックの無い範囲と、補足を 2 つ持つ範囲の場所に書き方の警告があり、`div.mdmark-map` が無い
       - ほかの本文は描かれている
     test: test_normal_when_map_written_wrongly
@@ -2531,7 +2560,7 @@ constraints:
   - item: 入力の大きさ
     constraint: 制限なし
   - item: 表
-    constraint: 表のマーカーで囲んだ表と、囲まない表を `<div class="mdmark-table" data-kind="{種類}" data-features="{機能}">` で囲む。種類は `default`（囲まない表と、知らない種類）・`data`・`plain`。種類は引数の `kind`。機能は種類の機能（`default` は `pin`・`resize`、`data` は `sort`・`pin`・`filter`・`resize`、`plain` は無し）に、`features.{機能}` で追加した機能を加え、`enabled` を `false` にした機能を除き、`columns.{列名}` に列の設定（`filter`・`hidden`・`pinned` の `true`・`total`）を記載した機能（`filter`・`columns`・`pin`・`total`）を加えたものを空白で並べる。`enabled` を `false` にした機能の列の設定は適用しない。列名は見出しの文字（多段の見出しは最下段の文字。同じ文字の列は最初の列）と照合する。`columns.{列名}.filter` は、列の位置（0 から）と `type` を `data-filter="{位置}:{種類} …"` に写す。`type` は `select`・`text`・`date`。`type` を省いたときは、長文の列なら `text`、ほかは `select` にする。見出しと本文のセルを改行（`<br>`・リストの項目・段落）で分けた 1 行の文字数が部品設計『表』の長文の列とみなす文字数以上の行を持つ列を長文の列にし、列の位置を `data-long="{位置} …"` に写す（`width.mode` が `nowrap` の列も文字数で決める。折り返さないのは `mdmark-wide` で決まる）。`collapse` は表を `<details class="mdmark-table-details">` と `<summary>{collapse.title、省くと 表を開く}</summary>` に入れ、`collapse.open` が `true` なら `details` に `open` を付ける。`features` で追加できる機能に `count`・`columns`・`total`・`copy`・`rowlink`・`reorder` があり、どの種類の既定にも入らない。`columns.{列名}.hidden` の `true` は、先頭を除く列の位置を `data-hide="{位置} …"` に写す。`columns.{列名}.total[].calc` は、列の位置と計算（`sum`・`avg`・`count`）を `data-total="{位置}:{計算} …"` に写す。`columns.{列名}.pinned` の `true` は、記載した列の位置を小さい順に半角の空白で区切って `data-pin="{位置} {位置}"` に写す（`false` は既定で留める列を留めない）。`columns.{列名}.width.mode` の `nowrap` はその列の `th`・`td` に class `mdmark-wide` を付ける。`columns.{列名}.width.min`・`width.max`（0 より大きい em の数）は、列の位置と値を `data-width="{位置}:{min}-{max} …"` に写し、記載しない側は空にする（`1:20-`・`3:-12`）。`columns.{列名}.format.type` の `check` は列の位置を `data-check="{位置} …"` に設定し、その列の文字が `true` のセルを `data-value="true"` と `<span class="mdmark-check" role="img" aria-label="はい">`（lucide の `check`）に、`false` のセルを `data-value="false"` と `<span class="mdmark-visually-hidden">いいえ</span>` に替え、その列の `th`・`td` に class `mdmark-align-center` を付ける（ほかの文字のセルは替えない）。見出しに無い列名の `columns.{列名}` は、その列名の設定だけを記載の警告にして適用しない。並べ替え・ピン止め・絞り込みのボタンと、列の幅のつまみ、表の上の件数・テーブル設定・コピーの帯、集計の行は `mount` が付ける。表のマーカーの `header.rows`（既定 1）は表の先頭からその数の行を `thead` の行にし、`header.columns` は本文の各行の先頭からその数の列のセルを `<th scope="row">` にする。表のマーカーで囲んだ表で、セルの文字がちょうど `^^` のセルは上のセル、`<<` のセルは左のセルと結合する。見出しの行では、結合の始まりのセルに `rowspan`・`colspan` を付け、結合したセルを出さない。本文の行では、`^^`・`<<` のセルに始まりのセルと同じ値を入れて `data-merge="up"`・`data-merge="left"` と `hidden` を付けて残し、始まりのセルに `rowspan`・`colspan` を付ける。`^^` を持つ本文の列の位置を `data-merge-columns="{位置} …"` に写す。見出しと本文をまたぐ `^^`・上のセルの無い `^^`・左のセルの無い `<<` は結合せず、記載した文字のまま出す。表のマーカーで囲まない表の `^^`・`<<` は文字のまま出す。セルの `rowspan`・`colspan`・`scope`・`hidden` は記法が出したセルだけが持つ
+    constraint: 表のマーカーで囲んだ表と、囲まない表を `<div class="mdmark-table" data-kind="{種類}" data-features="{機能}">` で囲む。種類は `default`（囲まない表と、知らない種類）・`data`・`plain`。種類は引数の `kind`。機能は種類の機能（`default` は `pin`・`resize`、`data` は `sort`・`pin`・`filter`・`resize`、`plain` は無し）に、`features.{機能}` で追加した機能を加え、`enabled` を `false` にした機能を除き、`columns.{列名}` に列の設定（`filter`・`hidden`・`pinned` の `true`・`total`・`sort` の `true`）を記載した機能（`filter`・`columns`・`pin`・`total`・`sort`）を加えたものを空白で並べる。`enabled` を `false` にした機能の列の設定は適用しない。列名は見出しの文字（多段の見出しは最下段の文字。同じ文字の列は最初の列）と照合する。`columns.{列名}.filter` は、列の位置（0 から）と `type` を `data-filter="{位置}:{種類} …"` に写す。`type` は `select`・`text`・`date`。`type` を省いたときは、長文の列なら `text`、ほかは `select` にする。見出しと本文のセルを改行（`<br>`・リストの項目・段落）で分けた 1 行の文字数が部品設計『表』の長文の列とみなす文字数以上の行を持つ列を長文の列にし、列の位置を `data-long="{位置} …"` に写す（`width.mode` が `nowrap` の列も文字数で決める。折り返さないのは `mdmark-wide` で決まる）。`sort` の機能を持つ表は、長文の列（`columns.{列名}.sort` が `true` の列を除く）と `columns.{列名}.sort` が `false` の列の位置を `data-no-sort="{位置} …"` に写す（表の種類と、`features.sort` を記載したかによらない）。`columns.{列名}.sort` の `true` は `sort` の機能を加える（`enabled` を `false` にしたときは適用しない）。`sort` の機能を持たない表と、ビューのマーカーの範囲の表（制約「ビューのマーカー」）には `data-no-sort` を付けない。`collapse` は表を `<details class="mdmark-table-details">` と `<summary>{collapse.title、省くと 表を開く}</summary>` に入れ、`collapse.open` が `true` なら `details` に `open` を付ける。`features` で追加できる機能に `count`・`columns`・`total`・`copy`・`rowlink`・`reorder` があり、どの種類の既定にも入らない。`columns.{列名}.hidden` の `true` は、先頭を除く列の位置を `data-hide="{位置} …"` に写す。`columns.{列名}.total[].calc` は、列の位置と計算（`sum`・`avg`・`count`）を `data-total="{位置}:{計算} …"` に写す。`columns.{列名}.pinned` の `true` は、記載した列の位置を小さい順に半角の空白で区切って `data-pin="{位置} {位置}"` に写す（`false` は既定で留める列を留めない）。`columns.{列名}.width.mode` の `nowrap` はその列の `th`・`td` に class `mdmark-wide` を付ける。`columns.{列名}.width.min`・`width.max`（0 より大きい em の数）は、列の位置と値を `data-width="{位置}:{min}-{max} …"` に写し、記載しない側は空にする（`1:20-`・`3:-12`）。`columns.{列名}.format.type` の `check` は列の位置を `data-check="{位置} …"` に設定し、その列の文字が `true` のセルを `data-value="true"` と `<span class="mdmark-check" role="img" aria-label="はい">`（lucide の `check`）に、`false` のセルを `data-value="false"` と `<span class="mdmark-visually-hidden">いいえ</span>` に替え、その列の `th`・`td` に class `mdmark-align-center` を付ける（ほかの文字のセルは替えない）。見出しに無い列名の `columns.{列名}` は、その列名の設定だけを記載の警告にして適用しない。並べ替え・ピン止め・絞り込みのボタンと、列の幅のつまみ、表の上の件数・テーブル設定・コピーの帯、集計の行は `mount` が付ける。表のマーカーの `header.rows`（既定 1）は表の先頭からその数の行を `thead` の行にし、`header.columns` は本文の各行の先頭からその数の列のセルを `<th scope="row">` にする。表のマーカーで囲んだ表で、セルの文字がちょうど `^^` のセルは上のセル、`<<` のセルは左のセルと結合する。見出しの行では、結合の始まりのセルに `rowspan`・`colspan` を付け、結合したセルを出さない。本文の行では、`^^`・`<<` のセルに始まりのセルと同じ値を入れて `data-merge="up"`・`data-merge="left"` と `hidden` を付けて残し、始まりのセルに `rowspan`・`colspan` を付ける。`^^` を持つ本文の列の位置を `data-merge-columns="{位置} …"` に写す。見出しと本文をまたぐ `^^`・上のセルの無い `^^`・左のセルの無い `<<` は結合せず、記載した文字のまま出す。表のマーカーで囲まない表の `^^`・`<<` は文字のまま出す。セルの `rowspan`・`colspan`・`scope`・`hidden` は記法が出したセルだけが持つ
   - item: 注意書き
     constraint: '1 行目が `[!NOTE]`・`[!TIP]`・`[!IMPORTANT]`・`[!WARNING]`・`[!CAUTION]` の引用を、`<div class="markdown-alert markdown-alert-{種類の小文字}">` とタイトル `<p class="markdown-alert-title">{補足・ヒント・重要・警告・注意}</p>` にし、種類の文字を本文から除外する。末尾に `-` を付けた種類は `<details class="markdown-alert markdown-alert-{種類}">` と `<summary class="markdown-alert-title">` にし、`+` を付けた種類は同じ `details` に `open` を付ける。種類（と `-`・`+`）の後ろに文字があれば、タイトルの文字をその文字にし、タイトルの頭に `<span class="mdmark-visually-hidden">{補足・ヒント・重要・警告・注意}: </span>` を配置する。注意書きの本文の中の引用も同じ規則で注意書きにする（入れ子）。知らない種類は `note` として出す'
   - item: タブ
@@ -2688,7 +2717,7 @@ constraints:
   - item: フロントマター
     constraint: Markdown の 1 行目が `---` だけの行で、2 行目以降に `---` か `...` だけの行があるとき、1 行目からその最初の行までをフロントマターとし、解析の前に本文から除外する。開く行と閉じる行は、行末の空白と CR（改行が CRLF の文書）を許す。先頭の BOM（U+FEFF）は判定の前に除く。閉じる行が無ければフロントマターとして扱わない。除外した範囲は、段落・見出し・目次・用語の下線・記載の警告の対象にしない。後ろのブロックの `data-source-line` は、元の Markdown の行番号のままにする。機能 `frontmatter`（既定 `false`）がオンのときだけ、本文の先頭に `<details class="mdmark-collapsible mdmark-frontmatter">`（`open` を持たない。制約「details の範囲」と同じ折りたたみ）を配置し、`<summary>` の文字を `フロントマター` にし、中にフロントマターの中身（開く行と閉じる行を除いた行）を制約「コードブロック」と同じ言語 `yaml` のコードブロックとして描く（コードブロックの `data-source-line` はフロントマターの 2 行目の行番号）。中身が空の行だけのフロントマターは、オンでも表示を配置しない。機能のオン・オフは、フロントマターの後ろの `features` のマーカーでも上書きできる。取り込む Markdown（制約「取り込み」）の先頭のフロントマターは、機能によらず除外して表示を配置しない。フロントマターとその表示は、制約「ページの設定のマーカー」の文書の先頭の判定に数えない
   - item: map の範囲
-    constraint: '機能 `map` がオンの文書で、`<!-- map: {JSON のオブジェクト} -->`（引数が無ければ `<!-- map -->`）〜 `<!-- /map -->` の範囲にある、情報文字列の最初の単語が `mermaid` のコードブロック 1 つと、補足の HTML コメント（`<!-- map-data: {JSON のオブジェクト} -->`。JSON は複数の行にわたってよい）0〜1 つを 1 つの図にする。範囲は `<div class="mdmark-map" data-map="{図の番号}" data-map-kind="{図の種類}" data-map-args="{引数}">` にし（`{引数}` は印の JSON のオブジェクトから知っているキーだけを残し、空白なしの JSON にした文字）、中に Mermaid のソースのコードブロック（制約『コードブロック』のとおり。`data-mdmark-mermaid` と色分けの属性を付けない）と、補足の JSON の文字（マーカーの名前の後ろから `-->` の前まで）を持つ `<pre class="mdmark-map-data" hidden>` を配置する。機能 `glossary` がオンで、範囲の Mermaid と補足の文字に索引か用語集の表の用語（意味を持つもの。エイリアスと文書の別名は除く）があれば、`div.mdmark-map` に `data-map-terms`（文字に出たままの用語から意味への JSON のオブジェクト）を付ける。図の番号は文書の中の map の範囲の順で 1 から。図の種類は Mermaid の 1 行目の最初の単語で、この版で描くのは `flowchart`（`graph` を含む）と `sequenceDiagram`。範囲の中のほかの Markdown とマーカーの文字は出力に残さない。`render` は配置と図を描かない（図にするのは `mount`。文書を描く.ts の制約『map の図』）。範囲の中の mermaid のブロックは、制約『mermaid のコードブロック』の対象にしない。機能 `map` は文書の `<!-- features: {"map": false} -->` を受け、返却する `features` に含める'
+    constraint: '機能 `map` がオンの文書で、`<!-- map: {JSON のオブジェクト} -->`（引数が無ければ `<!-- map -->`）〜 `<!-- /map -->` の範囲にある、情報文字列の最初の単語が `mermaid` のコードブロック 1 つと、補足の HTML コメント（`<!-- map-data: {JSON のオブジェクト} -->`。JSON は複数の行にわたってよい）0〜1 つを 1 つの図にする。範囲は `<div class="mdmark-map" data-map="{図の番号}" data-map-kind="{図の種類}" data-map-args="{引数}">` にし（`{引数}` は印の JSON のオブジェクトから知っているキーだけを残し、空白なしの JSON にした文字）、中に Mermaid のソースのコードブロック（制約『コードブロック』のとおり。`data-mdmark-mermaid` と色分けの属性を付けない）と、補足の JSON の文字（マーカーの名前の後ろから `-->` の前まで）を持つ `<pre class="mdmark-map-data" hidden>` を配置する。機能 `glossary` がオンで、範囲の Mermaid と補足の文字に索引か用語集の表の用語（意味を持つもの。エイリアスと文書の別名は除く）があれば、`div.mdmark-map` に `data-map-terms`（文字に出たままの用語から意味への JSON のオブジェクト）を付ける。図の番号は文書の中の map の範囲の順で 1 から。図の種類は Mermaid の 1 行目の最初の単語で、この版で描くのは `flowchart`（`graph` を含む）・`sequenceDiagram`・`erDiagram`・`stateDiagram`（`stateDiagram-v2` を含む。`data-map-kind` は `stateDiagram`）。範囲の中のほかの Markdown とマーカーの文字は出力に残さない。`render` は配置と図を描かない（図にするのは `mount`。文書を描く.ts の制約『map の図』）。範囲の中の mermaid のブロックは、制約『mermaid のコードブロック』の対象にしない。機能 `map` は文書の `<!-- features: {"map": false} -->` を受け、返却する `features` に含める'
     notes: 印の引数（`title`・`focus`・`play`・`interval`・`collapse`）の構成は shuhei1101/mdmark#451 の資料 A-128 のとおりで、意味は文書を描く.ts の制約『map の印の引数』。補足の構造は ER 図『mapの補足』
   - item: map の書き方の誤り
     constraint: map の範囲で、JSON のオブジェクトとして読めない印の引数と型の合わない印の引数の値を集め、範囲の場所の前に書き方の警告を 1 つ配置する。印の知らないキーは警告にせず無視する（点検が `map_unknown_key` で通知する）。Mermaid の読めない行・閉じの無い `subgraph` と複合フラグメント・補足の JSON の誤り（JSON のオブジェクトとして読めない・スキーマに合わない）・補足が指す Mermaid に無い ID・`--` を含む補足の文字は `render` では確かめず、`mount` が図の前の書き方の警告にする（文書を描く.ts の制約『map の書き方の警告』。Mermaid と補足を読む処理を `dist/index.js` に入れず、配布物の大きさの上限に収めるため）。mermaid のブロックが無い・2 つ以上ある・補足が 2 つ以上ある範囲と、描かない図の種類の範囲は図にせず、警告とソースのコードブロックだけを配置する

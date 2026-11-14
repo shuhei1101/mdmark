@@ -1,0 +1,236 @@
+id: MOD-531-1
+visibility: internal
+title: ライブラリ本体 / map / 読み取り / er.ts
+test_files:
+  - tests/unit/src/map/er.test.ts
+data_models:
+  - name: ErDiagram
+    title: ER図の読み取り結果
+    container: src/map/er.ts
+    usecase: Mermaidと補足で図を描く
+    role: データモデル
+    summary: '`parseErDiagram` の戻り値'
+    properties:
+      - name: tables
+        type: ErTable[]
+        description: テーブル（`name`・`columns`）。記載の順で、関連で初めて出たテーブルは列を持たない。列は `{ type, name, keys, comment }`（`keys` は `PK`・`FK`・`UK` の並び）
+      - name: relations
+        type: ErRelation[]
+        description: 関連（`id`・`from`・`to`・`fromCardinality`・`toCardinality`・`dashed`・`label`）。`id` は記載順の `r{番号}`（1 から）。多重度は `1`・`0..1`・`1..n`・`0..n`
+      - name: problems
+        type: MapProblem[]
+        description: 読めない行と閉じの無いテーブル
+  - name: ErFanout
+    title: 行が増える関連
+    container: src/map/er.ts
+    usecase: Mermaidと補足で図を描く
+    role: データモデル
+    summary: 2 つのテーブルの経路を 1 の側から多の側へたどる関連
+    properties:
+      - name: relation
+        type: string
+        description: 関連の ID（`r{番号}`）
+      - name: from
+        type: string
+        description: たどる元のテーブル名
+      - name: to
+        type: string
+        description: たどる先のテーブル名（多の側）
+functions:
+  - name: parseErDiagram
+    title: erDiagramを読む
+    kind: 関数
+    container: src/map/er.ts
+    usecase: Mermaidと補足で図を描く
+    role: 処理
+    summary: '`erDiagram` の Mermaid を、テーブル・列・関連と読めない行の項目に読む'
+    scope: public
+    args:
+      - name: source
+        type: string
+        required: true
+        description: mermaid のブロックの中身
+    returns:
+      type: ErDiagram
+      description: 読み取り結果
+    process: |-
+      1. 行ごとに、`{テーブル} {` で始まるテーブルの区間（`}` まで）・関連の行（`{元} {左の記号}{--|..}{右の記号} {先} : {ラベル}`）・`%%`・空の行に分けて読む
+      2. テーブルの区間の行は `{型} {名前} [PK|FK|UK[, …]] ["{コメント}"]` として列に読む
+      3. 関連の左右の記号（`||`・`|o`・`o|`・`}|`・`|{`・`}o`・`o{`）を多重度にし、`..` を破線にする
+         - 読めない行・閉じの無いテーブルは `map_invalid` の項目（行番号・行の文字・直し方）にする
+    unit_tests:
+      - name: test_parse_er_diagram
+        case: 正常
+        summary: モックの ER 図
+        condition: モックの `ER`
+        mock: なし
+        expected: テーブル 5・関連 5（`r1`〜`r5`）で、「注文」の列が 8 つ、「顧客」の列 `メール` が `UK` とコメント `ログインに使う` を持ち、`r4` が破線、`r2` の多重度が `1`・`1..n`
+      - name: test_parse_er_diagram_when_unreadable
+        case: 異常
+        summary: 読めない行
+        condition: '関連の行 `顧客 -> 注文`'
+        mock: なし
+        expected: '`map_invalid` が 1 件で、行番号と `||--o{` の記載例を含み、ほかのテーブルと関連は読める'
+      - name: test_parse_er_diagram_when_unclosed
+        case: 異常
+        summary: 閉じの無いテーブル
+        condition: '`注文 {` の後に `}` が無い'
+        mock: なし
+        expected: '`map_invalid` が 1 件'
+  - name: erColumnFor
+    title: 関連の端の列を決める
+    kind: 関数
+    container: src/map/er.ts
+    usecase: Mermaidと補足で図を描く
+    role: 処理
+    summary: テーブルが相手のテーブルとの関連の端をつなぐ列を返す
+    scope: public
+    args:
+      - name: table
+        type: ErTable
+        required: true
+        description: 端のテーブル
+      - name: other
+        type: string
+        required: true
+        description: 相手のテーブル名
+    returns:
+      type: ErColumn | undefined
+      description: つなぐ列。列を持たないテーブルは無し
+    process: |-
+      1. コメントが `参照: {other}.{列}` の FK の列
+      2. 無ければ、名前が `other` で始まる FK の列
+      3. 無ければ PK の列
+    unit_tests:
+      - name: test_er_column_for
+        case: 正常
+        summary: 3 段の選び方
+        condition: 'コメント `参照: 社員.ID` を持つ `承認者ID`、名前が `顧客` で始まる `顧客ID`、FK を持たないテーブル'
+        mock: なし
+        expected: '`社員` には `承認者ID`、`顧客` には `顧客ID`、ほかは PK の列'
+  - name: erFanouts
+    title: 行が増える関連を求める
+    kind: 関数
+    container: src/map/er.ts
+    usecase: Mermaidと補足で図を描く
+    role: 処理
+    summary: 2 つのテーブルをつなぐ最短の経路に乗る全ての関連と、1 の側から多の側へたどる関連を返す
+    scope: public
+    args:
+      - name: relations
+        type: ErRelation[]
+        required: true
+        description: 関連
+      - name: a
+        type: string
+        required: true
+        description: 選んだテーブル
+      - name: b
+        type: string
+        required: true
+        description: 選んだもう 1 つのテーブル
+    returns:
+      type: '{ tables: string[]; relations: string[]; fanouts: ErFanout[] } | undefined'
+      description: 経路のテーブルと関連と行が増える関連。つながらなければ無し
+    process: |-
+      1. `a`・`b` のそれぞれから関連を無向の辺として幅優先でたどった距離を求める
+      2. 関連の両方の向き（u → v）のうち、`a` から u の距離 + 1 + v から `b` の距離が最短の距離に等しいものを経路に乗る関連にする
+      3. 経路に乗る向きの先の多重度が `1..n`・`0..n` の関連を `ErFanout` にする
+    unit_tests:
+      - name: test_er_fanouts
+        case: 正常
+        summary: 最短の経路が 2 本
+        condition: モックの `ER` の「顧客」と「明細」
+        mock: なし
+        expected: テーブルが 4（顧客・注文・商品・明細）、関連が `r1`・`r2`・`r3`・`r5`、`fanouts` が `r1`（顧客 → 注文）・`r2`（注文 → 明細）・`r3`（商品 → 明細）
+      - name: test_er_fanouts_when_disconnected
+        case: 正常
+        summary: つながらない
+        condition: 関連の無いテーブル 2 つ
+        mock: なし
+        expected: 無し
+  - name: erToFlowchart
+    title: ER図を構成図の入力にする
+    kind: 関数
+    container: src/map/er.ts
+    usecase: Mermaidと補足で図を描く
+    role: 処理
+    summary: テーブルをノード、補足の `groups` の分類をグループ、関連を線にした `Flowchart` を作り、配置に使用する
+    scope: public
+    args:
+      - name: er
+        type: ErDiagram
+        required: true
+        description: 読み取り結果
+      - name: groups
+        type: MapData["groups"]
+        required: true
+        description: 補足の分類
+    returns:
+      type: Flowchart
+      description: '向きは `LR`、分類のグループの向きは `TB`。線の ID は関連の ID（`r{番号}`）'
+    unit_tests:
+      - name: test_er_to_flowchart
+        case: 正常
+        summary: 分類
+        condition: モックの `ER` と `ER_DATA.groups`
+        mock: なし
+        expected: ノード 5・グループ 1（`記録`。子が注文・明細・支払い）・線 5（ID が `r1`〜`r5`）
+  - name: erPartRelations
+    title: ER図の部品の関連
+    kind: 関数
+    container: src/map/er.ts
+    usecase: Mermaidと補足で図を描く
+    role: 処理
+    summary: 関連に、両端のテーブルで `erColumnFor` が選ぶ列の名前（`fromColumn`・`toColumn`）を加えた `MapErRelation` の並びを作る
+    scope: public
+    args:
+      - name: er
+        type: ErDiagram
+        required: true
+        description: 読み取り結果
+    returns:
+      type: MapErRelation[]
+      description: 部品『mapのER図』の関連
+  - name: erColumnNotes
+    title: 列の説明
+    kind: 関数
+    container: src/map/er.ts
+    usecase: Mermaidと補足で図を描く
+    role: 処理
+    summary: テーブルの列の名前ごとの説明（補足の `{テーブル}.{列}` の説明、無ければ列のコメント）
+    scope: public
+    args:
+      - name: table
+        type: ErTable
+        required: true
+        description: テーブル
+      - name: notes
+        type: MapData["notes"]
+        required: true
+        description: 補足の説明
+    returns:
+      type: Record<string, string>
+      description: 列の名前から説明
+  - name: erOverrides
+    title: テーブルの配置の上書き
+    kind: 関数
+    container: src/map/er.ts
+    usecase: Mermaidと補足で図を描く
+    role: 処理
+    summary: テーブルごとに、幅 `MAP_ER.width`・`mapErNodeSize` の大きさ・左右に空ける幅 `MAP_ER.aside` の上書きを作る
+    scope: public
+    args:
+      - name: er
+        type: ErDiagram
+        required: true
+        description: 読み取り結果
+      - name: collapsed
+        type: ReadonlySet<string>
+        required: true
+        description: 列を閉じたテーブル名
+    returns:
+      type: Record<string, MapOverride>
+      description: テーブル名ごとの上書き
+refs:
+  - IF-472-35#constraints[map の ER 図]

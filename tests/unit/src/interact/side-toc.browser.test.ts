@@ -1,13 +1,21 @@
 import { afterEach, expect, test, vi } from "vitest";
 import type { SideTocState } from "../../../../src/interact/side-toc.ts";
 import { wrapHtml } from "../../helpers/charts.ts";
-import { addStyles, createRoot, removeRoots } from "../../helpers/dom.ts";
+import {
+  addStyles,
+  createRoot,
+  createRootFromHtml,
+  removeRoots,
+} from "../../helpers/dom.ts";
 
 /** 右側の目次の操作を読み込む（実装が無い間は各テストが個別に失敗する） */
 const loadSideToc = () => import("../../../../src/interact/side-toc.ts");
 
 /** セクションの操作を読み込む */
 const loadSections = () => import("../../../../src/interact/sections.ts");
+
+/** 差分のブロックの部品を読み込む */
+const loadDiffBlocks = () => import("../../../../src/parts/diff-blocks.ts");
 
 /** 記法の操作をまとめて付ける処理を読み込む */
 const loadInteractions = () => import("../../../../src/interact/index.ts");
@@ -787,4 +795,138 @@ test("test_attach_side_toc_when_hover_edge_clamped", async () => {
   expect(panelVariable(aside, "--mdmark-side-toc-panel-end")).toBe(
     `${rootFontSize()}px`,
   );
+});
+
+/** 段落の HTML */
+function paragraph(text: string): string {
+  return `<p>${text}</p>`;
+}
+
+/** 見出しの HTML（`id` を持つ） */
+function heading(level: 1 | 2 | 3, text: string): string {
+  return `<h${level} id="${text}">${text}</h${level}>`;
+}
+
+/** `renderDiffBlock` で包んだブロックの HTML */
+async function diffBlock(kind: "add" | "del", html: string): Promise<string> {
+  const { renderDiffBlock } = await loadDiffBlocks();
+  return renderDiffBlock({ kind, unit: "block", html });
+}
+
+// 色分けしたブロックを持つセクションと、その祖先の見出しを集める（正常系）
+test("test_find_changed_headings", async () => {
+  // 準備
+  const { findChangedHeadings } = await loadSideToc();
+  const root = createRootFromHtml(
+    [
+      heading(1, "文書"),
+      heading(2, "A"),
+      paragraph("変えていない段落"),
+      heading(2, "B"),
+      await diffBlock("add", paragraph("書き換えた段落")),
+      heading(3, "B1"),
+      paragraph("変えていない段落"),
+    ].join(""),
+  );
+  // 実行
+  const changed = findChangedHeadings(root);
+  // 検証
+  expect([...changed].sort()).toEqual(["B", "文書"].sort());
+});
+
+// 見出しごと削除したセクションは祖先にだけ付け、前のセクションに付けない（正常系）
+test("test_find_changed_headings_when_section_deleted", async () => {
+  // 準備
+  const { findChangedHeadings } = await loadSideToc();
+  const root = createRootFromHtml(
+    [
+      heading(1, "文書"),
+      heading(2, "A"),
+      heading(3, "A1"),
+      paragraph("変えていない段落"),
+      await diffBlock("del", heading(2, "E")),
+      await diffBlock("del", paragraph("削除した段落")),
+      heading(2, "C"),
+      paragraph("変えていない段落"),
+    ].join(""),
+  );
+  // 実行
+  const changed = findChangedHeadings(root);
+  // 検証
+  expect([...changed]).toEqual(["文書"]);
+});
+
+// 見出しの文字を書き換えたときは新しい見出しに付ける（正常系）
+test("test_find_changed_headings_when_heading_rewritten", async () => {
+  // 準備
+  const { findChangedHeadings } = await loadSideToc();
+  const root = createRootFromHtml(
+    [
+      heading(1, "文書"),
+      await diffBlock("del", heading(2, "古い名前")),
+      await diffBlock("add", heading(2, "新しい名前")),
+    ].join(""),
+  );
+  // 実行
+  const changed = findChangedHeadings(root);
+  // 検証
+  expect([...changed].sort()).toEqual(["文書", "新しい名前"].sort());
+});
+
+// 埋め込んだ HTML の中の見出しを数えず、前にある見出しのセクションに付ける（正常系）
+test("test_find_changed_headings_when_embedded_html", async () => {
+  // 準備
+  const { findChangedHeadings } = await loadSideToc();
+  const root = createRootFromHtml(
+    [
+      heading(1, "文書"),
+      heading(2, "A"),
+      paragraph("変えていない段落"),
+      heading(2, "B"),
+      await diffBlock(
+        "add",
+        '<div class="mdmark-html"><h2 id="embedded">埋め込み</h2></div>',
+      ),
+    ].join(""),
+  );
+  // 実行
+  const changed = findChangedHeadings(root);
+  // 検証
+  expect([...changed].sort()).toEqual(["B", "文書"].sort());
+});
+
+// 色分けしたブロックが無ければ何も集めない（正常系）
+test("test_find_changed_headings_when_no_diff", async () => {
+  // 準備
+  const { findChangedHeadings } = await loadSideToc();
+  const root = createRootFromHtml(
+    [heading(1, "文書"), heading(2, "A"), paragraph("段落")].join(""),
+  );
+  // 実行
+  const changed = findChangedHeadings(root);
+  // 検証
+  expect(changed.size).toBe(0);
+});
+
+// 色分けしたブロックを持つセクションの見出しに changed を付ける（正常系）
+test("test_collect_side_toc_headings_when_changed", async () => {
+  // 準備
+  const { collectSideTocHeadings } = await loadSideToc();
+  const root = createRootFromHtml(
+    [
+      heading(1, "手引き"),
+      heading(2, "導入"),
+      paragraph("変えていない段落"),
+      heading(2, "使用方法"),
+      await diffBlock("add", paragraph("追加した段落")),
+    ].join(""),
+  );
+  // 実行
+  const headings = collectSideTocHeadings(root);
+  // 検証
+  expect(headings).toEqual([
+    { level: 1, id: "手引き", text: "手引き", changed: true },
+    { level: 2, id: "導入", text: "導入" },
+    { level: 2, id: "使用方法", text: "使用方法", changed: true },
+  ]);
 });

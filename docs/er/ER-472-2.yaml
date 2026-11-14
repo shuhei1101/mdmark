@@ -2,23 +2,35 @@ id: ER-472-2
 visibility: internal
 title: 'ER 図: map の補足'
 lead: 'map の範囲の `<!-- map-data: {JSON のオブジェクト} -->` に記載する補足の構造。'
-overview: データストアは文書の中の HTML コメントの JSON のオブジェクト 1 つ（複数の行にわたってよい）。キーの構成は shuhei1101/mdmark#451 の資料 A-128 の方針に従い、後から引数が付きうる値はオブジェクトにする。最上位は `version`（補足のバージョン。整数で今は `1`、必須）・`notes`・`walkthroughs`・`layout`・`plays_over`（どれも任意）のキーを持ち、ほかのキーは `map_unknown_key` にする。文字の値に `--` を含めない（HTML コメントを閉じてしまう）
+overview: データストアは文書の中の HTML コメントの JSON のオブジェクト 1 つ（複数の行にわたってよい）。キーの構成は shuhei1101/mdmark#451 の資料 A-128 の方針に従い、後から引数が付きうる値はオブジェクトにする。最上位は `version`（補足のバージョン。整数で今は `1`、必須）・`notes`・`walkthroughs`・`layout`・`plays_over`・`groups`（どれも任意）のキーを持ち、ほかのキーは `map_unknown_key` にする。文字の値に `--` を含めない（HTML コメントを閉じてしまう）
 er:
   entities:
     - name: 補足
     - name: 案内の手順
     - name: 配置の上書き
+    - name: 分類
   relations:
     - from: 補足
       to: 案内の手順
       from_cardinality: '1'
+      from_column: walkthroughs
+      to_column: index
       to_cardinality: 0..n
       label: walkthroughs
     - from: 補足
       to: 配置の上書き
       from_cardinality: '1'
+      from_column: layout
+      to_column: id
       to_cardinality: 0..n
       label: layout
+    - from: 補足
+      to: 分類
+      from_cardinality: '1'
+      from_column: groups
+      to_column: id
+      to_cardinality: 0..n
+      label: groups
 tables:
   - name: map_data
     title: 補足
@@ -40,13 +52,39 @@ tables:
         default: '`{}`'
         description: 'ノード・線の ID ごとの説明と注記の参照（`{ "text": 説明の文, "annotations": [注記の ID] }`。どちらか一方だけでもよい）。線にポインターを当てたツールチップと、再生の帯の説明に出す。`annotations` の注記は、ツールチップの説明の下に区分を分けて出す'
         example: '{"mount": {"text": "文書を描く公開関数", "annotations": ["cond"]}}'
-        notes: キーは Mermaid のノード・線の ID（シーケンス図はメッセージの番号）。無い ID は `map_unknown_ref`。`annotations` の定義の無い注記の ID は `annotation_undefined`
+        notes: キーは Mermaid のノード・線の ID（シーケンス図はメッセージの番号、ER 図はテーブル名・`{テーブル名}.{列名}`・関連の記載順の `r{番号}`・分類の ID（グループの説明）、状態遷移図は状態の ID・遷移の記載順の `t{番号}`）。無い ID は `map_unknown_ref`。ER 図のテーブル名・状態遷移図の状態の ID が、同じ図の関連・遷移の `r{番号}`・`t{番号}` か ER 図の分類の ID と同じときは `map_invalid_value`。`annotations` の定義の無い注記の ID は `annotation_undefined`
       - name: plays_over
         title: 再生を重ねる構成図
         type: integer
         description: シーケンス図の補足だけが持つ。再生の強調を重ねる構成図の図の番号
         example: '1'
         notes: 無い番号は `map_unknown_ref`
+  - name: groups
+    title: 分類
+    summary: ER 図だけが持つ。テーブルをまとめる分類の箱 1 つ（キーが分類の ID）
+    datastore: JSON
+    access: 全件
+    scale: ~20
+    columns:
+      - name: title
+        title: タイトル
+        type: string
+        not_null: true
+        description: 分類の箱のタイトル
+        example: 記録
+      - name: tables
+        title: テーブル
+        type: array
+        not_null: true
+        description: 箱に入れるテーブル名。1 つのテーブルは 1 つの分類にだけ入る
+        example: '["注文", "明細", "支払い"]'
+        notes: 無いテーブル名は `map_unknown_ref`、2 つの分類に入るテーブルと、テーブル名と同じ分類の ID は `map_invalid_value`
+      - name: parent
+        title: 親の分類
+        type: string
+        description: 入れ子にするときの外の分類の ID
+        example: 業務
+        notes: 無い ID と循環は `map_unknown_ref`
   - name: walkthroughs
     title: 案内の手順
     summary: 構成図の案内の 1 手順
@@ -149,7 +187,7 @@ tables:
         title: 最初に閉じる
         type: boolean
         default: '`false`'
-        description: グループの ID のときだけ。`true` なら、開閉の状態が保たれていないときにそのグループを閉じて描く
+        description: グループ（構成図の `subgraph`、ER 図の分類、状態遷移図の入れ子の状態）の ID と、ER 図のテーブル名のときだけ。`true` なら、開閉の状態が保たれていないときに、グループを閉じて描き、テーブルは列を閉じて描く
         example: 'true'
 refs:
   - IF-472-34#constraints[map の範囲]

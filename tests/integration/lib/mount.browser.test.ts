@@ -26,8 +26,12 @@ import { erText, foldEr, shopEr, shopErFolded } from "../../unit/helpers/er.ts";
 import {
   CONFIG as MAP_CONFIG,
   DATA as MAP_DATA,
+  ER as MAP_ER,
+  ER_DATA as MAP_ER_DATA,
   FLOW as MAP_FLOW,
   SEQUENCE as MAP_SEQUENCE,
+  STATE as MAP_STATE,
+  STATE_DATA as MAP_STATE_DATA,
   mapRange,
 } from "../../unit/helpers/map.ts";
 import { stripSourceLine } from "../../unit/helpers/source-line.ts";
@@ -646,6 +650,49 @@ test("test_normal_when_table_sorted_and_filtered", async () => {
   );
   expect(drawer.hasAttribute("hidden")).toBe(true);
   expect(filterButton.getAttribute("aria-expanded")).toBe("false");
+});
+// data-no-sort の列の見出しには並べ替えのボタンを付けず、ほかの列は並べ替えられる（正常系）
+test("test_normal_when_long_column_not_sortable", async () => {
+  // 準備
+  const wide = "あ".repeat(40);
+  const el = createElement();
+  await mountTracked(el, {
+    markdown: [
+      '<!-- table: {"kind": "data", "columns": {"説明": {"filter": {}}}} -->',
+      "",
+      "| 名前 | 更新日 | 説明 |",
+      "| --- | --- | --- |",
+      `| 目次 | 2026-11-01 | ${wide} |`,
+      `| 表 | 2026-11-12 | ${wide} |`,
+      `| 差分 | 2026-11-05 | ${wide} |`,
+      "",
+      "<!-- /table -->",
+      "",
+    ].join("\n"),
+  });
+  const heads = [...el.querySelectorAll<HTMLElement>("thead th")];
+  // 検証
+  expect(find<HTMLElement>(el, ".mdmark-table").dataset.noSort).toBe("2");
+  expect(heads[2]?.querySelector("button.mdmark-sort")).toBeNull();
+  expect(heads[2]?.querySelector("span.mdmark-th-label")?.textContent).toBe(
+    "説明",
+  );
+  expect(heads[0]?.querySelector("button.mdmark-sort")).not.toBeNull();
+  // 検証: 説明の列の見出しは、並べ替えのほかの機能（ピン止め・絞り込み）のボタンを持つ
+  expect(heads[2]?.querySelector("button.mdmark-pin")).not.toBeNull();
+  expect(heads[2]?.querySelector("button.mdmark-filter")).not.toBeNull();
+  // 実行: 更新日の列の見出しを押す
+  find<HTMLButtonElement>(
+    heads[1] as HTMLElement,
+    "button.mdmark-sort",
+  ).click();
+  // 検証
+  expect(columnTexts(el, 1)).toEqual([
+    "2026-11-12",
+    "2026-11-05",
+    "2026-11-01",
+  ]);
+  expect(heads[1]?.getAttribute("aria-sort")).toBe("descending");
 });
 
 /** 表の本文の行の指定した列のセル（隠れた行も含む）と、その列の見出し・集計のセルを返却する */
@@ -9117,6 +9164,144 @@ test("test_normal_when_base_with_diff_source", async () => {
   expect(source.revisionsCalls).toEqual(["guide"]);
 });
 
+/** 右側の目次の変更のマーカーを確かめる比較元: h1 の下に h2 の A・B・E・C、B に h3 の B1 */
+const TOC_BASE = [
+  "# 文書",
+  "",
+  "## A",
+  "",
+  "A の段落です。",
+  "",
+  "## B",
+  "",
+  "書き換える前の B の段落です。",
+  "",
+  "### B1",
+  "",
+  "B1 の段落です。",
+  "",
+  "## E",
+  "",
+  "E の段落です。",
+  "",
+  "## C",
+  "",
+  "削除する C の段落です。",
+  "",
+].join("\n");
+
+/** 比較元の B の段落を書き換え、E を見出しごと削除し、C の段落を削除し、末尾に D を追加した文書 */
+const TOC_TARGET = [
+  "# 文書",
+  "",
+  "## A",
+  "",
+  "A の段落です。",
+  "",
+  "## B",
+  "",
+  "書き換えた後の B の段落です。",
+  "",
+  "### B1",
+  "",
+  "B1 の段落です。",
+  "",
+  "## C",
+  "",
+  "## D",
+  "",
+  "追加した D の段落です。",
+  "",
+].join("\n");
+
+/** 右側の目次の項目のリンクのうち、変更のマーカーを持つものの見出しの ID */
+function changedTocIds(el: HTMLElement): string[] {
+  return [
+    ...el.querySelectorAll<HTMLAnchorElement>(
+      ".mdmark-side-toc-list a[data-changed]",
+    ),
+  ].map((link) => link.dataset.headingId ?? "");
+}
+
+// 色分けしたブロックを持つセクションと祖先の項目と線に変更のマーカーを付け、比較元を解除すると消す（正常系）
+test("test_normal_when_side_toc_marked", async () => {
+  // 準備
+  const el = createElement();
+  // 実行
+  const handle = await mountTracked(el, {
+    markdown: TOC_TARGET,
+    baseMarkdown: TOC_BASE,
+    config: { "side-toc": { mode: "hover" } },
+  });
+  await settle();
+  // 検証: h1・B・C・D に付き、A・B1 と見出しごと削除した E の前の B1 には付かない
+  expect(changedTocIds(el).sort()).toEqual(["b", "c", "d", "文書"].sort());
+  expect(
+    el.querySelector('.mdmark-side-toc-list a[data-heading-id="e"]'),
+  ).toBeNull();
+  const link = find<HTMLAnchorElement>(
+    el,
+    '.mdmark-side-toc-list a[data-heading-id="b"]',
+  );
+  expect(link.getAttribute("aria-label")).toBe("B（変更）");
+  const marker = find<HTMLElement>(link, "span.mdmark-side-toc-changed");
+  expect(marker.getAttribute("aria-hidden")).toBe("true");
+  expect(link.lastElementChild).toBe(marker);
+  // 検証: 右端の線は見出しの順に並び、h1・B・C・D の線に付く
+  const bars = [...el.querySelectorAll(".mdmark-side-toc-bar")];
+  const ids = [
+    ...el.querySelectorAll<HTMLAnchorElement>(".mdmark-side-toc-list a"),
+  ].map((item) => item.dataset.headingId ?? "");
+  expect(
+    bars
+      .map((bar, index) => (bar.hasAttribute("data-changed") ? ids[index] : ""))
+      .filter(Boolean)
+      .sort(),
+  ).toEqual(["b", "c", "d", "文書"].sort());
+  // 検証: 目次を出すボタンの今いる見出しの文字に（変更）が無い
+  expect(find(el, ".mdmark-side-toc-current").textContent).not.toContain(
+    "（変更）",
+  );
+  // 実行: 比較元を解除する
+  handle.update(TOC_TARGET, { baseMarkdown: null });
+  await settle();
+  // 検証
+  expect(changedTocIds(el)).toEqual([]);
+  expect(
+    el.querySelectorAll(".mdmark-side-toc-bar[data-changed]"),
+  ).toHaveLength(0);
+  expect(
+    el.querySelectorAll(".mdmark-side-toc-list a[aria-label]"),
+  ).toHaveLength(0);
+});
+
+// diffMode が blocks のとき、取り出し元のリビジョンで色分けしたブロックから同じ変更のマーカーを付ける（正常系）
+test("test_normal_when_blocks_side_toc_marked", async () => {
+  // 準備
+  const before =
+    "## A\n\nA の段落です。\n\n## B\n\n書き換える前の B の段落です。\n";
+  const after =
+    "## A\n\nA の段落です。\n\n## B\n\n書き換えた後の B の段落です。\n";
+  const source = createBlocksSource({ r1: before, r2: after });
+  const el = createElement();
+  // 実行
+  await mountTracked(el, {
+    markdown: after,
+    docId: "guide",
+    diffSource: source,
+    diffMode: "blocks",
+    config: { "side-toc": { mode: "hover" } },
+  });
+  await vi.waitFor(() => {
+    expect(changedTocIds(el).length).toBeGreaterThan(0);
+  });
+  // 検証
+  expect(changedTocIds(el)).toEqual(["b"]);
+  const bars = el.querySelectorAll(".mdmark-side-toc-bar");
+  expect(bars[0]?.hasAttribute("data-changed")).toBe(false);
+  expect(bars[1]?.hasAttribute("data-changed")).toBe(true);
+});
+
 // 比較元が文字列でも null でもないと、描かずに TypeError を投げる（異常系）
 test("test_error_when_base_not_string", async () => {
   // 準備
@@ -16161,6 +16346,550 @@ test("test_normal_when_map_terms", async () => {
   find<HTMLButtonElement>(seq, '[data-band="stop"]').click();
   // 検証: グループのタイトルのボタンには付けない
   expect(flow.querySelector(".map-group-title .mdmark-term")).toBeNull();
+});
+
+/** ER 図の map を持つ Markdown */
+const MAP_ER_MARKDOWN = mapRange({
+  args: '{"title": "記録の構造"}',
+  mermaid: MAP_ER,
+  data: MAP_ER_DATA,
+});
+
+/** 状態遷移図の map を持つ Markdown */
+const MAP_STATE_MARKDOWN = mapRange({
+  args: '{"title": "作業の状態"}',
+  mermaid: MAP_STATE,
+  data: MAP_STATE_DATA,
+});
+
+/** 線の終わりの点（画面の座標） */
+function mapWireEnd(figure: Element, wire: string): { x: number; y: number } {
+  const path = find<SVGPathElement>(
+    figure,
+    `.mdmark-diagram-wire[data-wire="${wire}"]`,
+  );
+  const point = path.getPointAtLength(path.getTotalLength());
+  const ctm = path.getScreenCTM();
+  const at = ctm ? new DOMPoint(point.x, point.y).matrixTransform(ctm) : point;
+  return { x: at.x, y: at.y };
+}
+
+/** 要素の aria-describedby が指すツールチップが開いているときの文字（閉じていれば undefined） */
+function openTipText(owner: Element): string | undefined {
+  const tip = document.getElementById(
+    owner.getAttribute("aria-describedby") ?? "",
+  );
+  return tip && !tip.hidden ? (tip.textContent ?? "") : undefined;
+}
+
+/** ノードの種類の行を押して選ぶ */
+const pressKind = (figure: Element, id: string): void =>
+  pressMap(find(mapNode(figure, id), ".mdmark-diagram-node-kind"));
+
+/** 線か、多重度とラベルの文字が薄いか */
+const wireDimmed = (figure: Element, id: string): boolean =>
+  mapDimmed(find(figure, `.mdmark-diagram-wire[data-wire="${id}"]`));
+
+// map の ER 図を描く（正常系）
+test("test_normal_when_map_er_drawn", async () => {
+  // 準備・実行（分類「記録」の説明を補足の notes に追加する）
+  const data = JSON.parse(MAP_ER_DATA);
+  data.notes.記録 = { text: "注文に付く記録" };
+  const { figures } = await mountMap(
+    mapRange({
+      args: '{"title": "記録の構造"}',
+      mermaid: MAP_ER,
+      data: JSON.stringify(data),
+    }),
+  );
+  const figure = figures()[0] as HTMLElement;
+  // 検証: タイトル
+  expect(figure.querySelector(".mdmark-diagram-title")?.textContent).toBe(
+    "記録の構造",
+  );
+  // 検証: テーブルの列の行と、ノード・グループの重なり
+  const nodes = [
+    ...figure.querySelectorAll<HTMLElement>(
+      ".mdmark-diagram-stage > .mdmark-diagram-node[data-node]",
+    ),
+  ];
+  expect(nodes.map((node) => node.dataset.node).sort()).toEqual(
+    ["支払い", "明細", "注文", "商品", "顧客"].sort(),
+  );
+  for (const [i, a] of nodes.entries()) {
+    for (const b of nodes.slice(i + 1))
+      expect(
+        mapOverlaps(a.getBoundingClientRect(), b.getBoundingClientRect()),
+        `${a.dataset.node} と ${b.dataset.node}`,
+      ).toBe(false);
+    expect(a.querySelectorAll(".map-er-column").length).toBeGreaterThan(0);
+    expect(a.querySelector(".mdmark-diagram-node-name")?.textContent).toBe(
+      a.dataset.node,
+    );
+  }
+  const order = mapNode(figure, "注文");
+  expect(order.querySelectorAll(".map-er-column")).toHaveLength(8);
+  const keyOf = (column: string) =>
+    order.querySelector(`[data-column="${column}"] .map-er-key`)?.textContent;
+  expect(keyOf("id")).toBe("PK");
+  expect(keyOf("顧客ID")).toBe("FK");
+  expect(
+    order.querySelector('[data-column="注文日"] .map-er-type')?.textContent,
+  ).toBe("date");
+  // 検証: 分類のグループ
+  const group = find<HTMLElement>(figure, '.map-group[data-group="記録"]');
+  expect(group.textContent).toContain("記録");
+  // 検証: 分類の説明は、タイトルの右のマーカーのツールチップに出る
+  const groupInfo = find<HTMLButtonElement>(
+    group,
+    "button.mdmark-diagram-group-info",
+  );
+  groupInfo.focus();
+  await vi.waitFor(() =>
+    expect(openTipText(groupInfo)).toContain("注文に付く記録"),
+  );
+  groupInfo.blur();
+  const box = group.getBoundingClientRect();
+  for (const node of nodes) {
+    const rect = node.getBoundingClientRect();
+    const inside =
+      rect.left >= box.left &&
+      rect.right <= box.right &&
+      rect.top >= box.top &&
+      rect.bottom <= box.bottom;
+    expect(inside, node.dataset.node).toBe(
+      ["注文", "明細", "支払い"].includes(node.dataset.node ?? ""),
+    );
+  }
+  // 検証: 「顧客」→「注文」の端が、「注文」の左右の辺の列 顧客ID の行の高さにある。矢じりを持たない
+  const row = find<HTMLElement>(order, '[data-column="顧客ID"]');
+  const end = mapWireEnd(figure, "r1");
+  const rowBox = row.getBoundingClientRect();
+  const orderBox = order.getBoundingClientRect();
+  expect(end.y).toBeGreaterThanOrEqual(rowBox.top);
+  expect(end.y).toBeLessThanOrEqual(rowBox.bottom);
+  expect(
+    Math.min(Math.abs(end.x - orderBox.left), Math.abs(end.x - orderBox.right)),
+  ).toBeLessThanOrEqual(1);
+  for (const wire of figure.querySelectorAll(".mdmark-diagram-wire[data-wire]"))
+    expect(wire.getAttribute("marker-end")).toBeFalsy();
+  expect(
+    find(figure, '.mdmark-diagram-wire[data-wire="r4"]').getAttribute(
+      "stroke-dasharray",
+    ),
+  ).toBeTruthy();
+  // 検証: 両端の多重度
+  const cardinalities = (wire: string) =>
+    [
+      ...figure.querySelectorAll(
+        `.map-er-cardinality[data-wire-mark="${wire}"]`,
+      ),
+    ]
+      .map((text) => text.textContent)
+      .sort();
+  expect(cardinalities("r1")).toEqual(["0..n", "1"]);
+  expect(cardinalities("r2")).toEqual(["1", "1..n"]);
+  expect(cardinalities("r3")).toEqual(["0..n", "1"]);
+  expect(cardinalities("r5")).toEqual(["0..1", "1"]);
+  // 実行・検証: 列の説明のボタンにフォーカスすると、補足の説明とコメントがツールチップに出る
+  const state = find<HTMLButtonElement>(
+    order,
+    '[data-column="状態"] button.map-er-note',
+  );
+  state.focus();
+  await vi.waitFor(() =>
+    expect(openTipText(state)).toContain("下書き・確定・発送済み・取り消し"),
+  );
+  state.blur();
+  const mail = find<HTMLButtonElement>(
+    mapNode(figure, "顧客"),
+    '[data-column="メール"] button.map-er-note',
+  );
+  mail.focus();
+  await vi.waitFor(() => expect(openTipText(mail)).toContain("ログインに使う"));
+  mail.blur();
+  // 検証: テーブルと関連の説明は、構成図のノード・線と同じツールチップに入る
+  const tips = [...figure.querySelectorAll(".mdmark-diagram-tip")].map(
+    (tip) => tip.textContent ?? "",
+  );
+  expect(
+    tips.some((tip) => tip.includes("1 回の注文。明細と支払いを持つ")),
+  ).toBe(true);
+  expect(
+    tips.some((tip) => tip.includes("注文 1 件に明細が 1 件以上つながる")),
+  ).toBe(true);
+  // 検証: mermaid のライブラリを読み込まない
+  expect(
+    performance
+      .getEntriesByType("resource")
+      .filter((entry) => entry.name.includes("/npm/mermaid@"))
+      .map((entry) => entry.name),
+  ).toEqual([]);
+});
+
+// map の ER 図のテーブルを選んで経路を強調する（正常系）
+test("test_normal_when_map_er_path_selected", async () => {
+  // 準備
+  const { figures } = await mountMap(MAP_ER_MARKDOWN);
+  const figure = () => figures()[0] as HTMLElement;
+  // 実行: 「明細」を押す
+  pressKind(figure(), "明細");
+  // 検証: その関連と相手のテーブルのほかが薄い
+  for (const id of ["明細", "注文", "商品"])
+    expect(mapDimmed(mapNode(figure(), id)), id).toBe(false);
+  for (const id of ["顧客", "支払い"])
+    expect(mapDimmed(mapNode(figure(), id)), id).toBe(true);
+  await vi.waitFor(() =>
+    expect(
+      Number(getComputedStyle(mapNode(figure(), "支払い")).opacity),
+    ).toBeCloseTo(0.25, 2),
+  );
+  expect(wireDimmed(figure(), "r2")).toBe(false);
+  expect(wireDimmed(figure(), "r4")).toBe(true);
+  // 実行: Esc の後に「顧客」と「明細」を押す
+  figure().dispatchEvent(
+    new KeyboardEvent("keydown", { key: "Escape", bubbles: true }),
+  );
+  pressKind(figure(), "顧客");
+  pressKind(figure(), "明細");
+  // 検証: 2 本の最短の経路のテーブルと関連が残る
+  for (const id of ["顧客", "注文", "明細", "商品"])
+    expect(mapDimmed(mapNode(figure(), id)), id).toBe(false);
+  expect(mapDimmed(mapNode(figure(), "支払い"))).toBe(true);
+  for (const id of ["r1", "r2", "r3", "r5"])
+    expect(wireDimmed(figure(), id), id).toBe(false);
+  expect(wireDimmed(figure(), "r4")).toBe(true);
+  // 検証: 行が増える関連 3 本にマーカーがあり、ラベルと多重度に重ならない
+  const fanouts = () => [
+    ...figure().querySelectorAll<HTMLButtonElement>("button.map-er-fanout"),
+  ];
+  expect(
+    fanouts()
+      .map((button) => button.getAttribute("aria-label"))
+      .sort(),
+  ).toEqual(
+    [
+      "顧客 から 注文 で行が増える",
+      "注文 から 明細 で行が増える",
+      "商品 から 明細 で行が増える",
+    ].sort(),
+  );
+  const texts = [...figure().querySelectorAll("[data-wire-mark]")];
+  for (const button of fanouts())
+    for (const text of texts)
+      expect(
+        mapOverlaps(
+          button.getBoundingClientRect(),
+          text.getBoundingClientRect(),
+        ),
+        `${button.getAttribute("aria-label")} と ${text.textContent}`,
+      ).toBe(false);
+  // 実行・検証: マーカーにフォーカスすると、行が増える旨がツールチップに出る
+  const first = fanouts().find(
+    (button) =>
+      button.getAttribute("aria-label") === "顧客 から 注文 で行が増える",
+  ) as HTMLButtonElement;
+  first.focus();
+  await vi.waitFor(() =>
+    expect(openTipText(first)).toContain(
+      "顧客 から 注文 へたどると、顧客 の 1 行に 注文 の行が複数つながり",
+    ),
+  );
+  first.blur();
+  // 検証: 列の行を押しても選択は変わらず、列の名前の文字を選べる
+  const name = find<HTMLElement>(
+    mapNode(figure(), "注文"),
+    '[data-column="状態"] .map-er-name',
+  );
+  pressMap(name);
+  expect(fanouts()).toHaveLength(3);
+  expect(getComputedStyle(name).userSelect).not.toBe("none");
+  // 実行・検証: 配置と選択を元に戻すで選択が解け、マーカーが消える
+  find<HTMLButtonElement>(figure(), '[data-tool="reset"]').click();
+  expect(figure().querySelectorAll(".is-selected")).toHaveLength(0);
+  expect(fanouts()).toHaveLength(0);
+});
+
+// map の状態遷移図を描いて遷移を再生する（正常系）
+test("test_normal_when_map_state_played", async () => {
+  // 準備・実行
+  const { figures } = await mountMap(MAP_STATE_MARKDOWN);
+  const figure = () => figures()[0] as HTMLElement;
+  // 検証: 開始・終了・分岐の形状と、as で付けた名前
+  expect(mapNode(figure(), "start_root").dataset.shape).toBe("start");
+  expect(mapNode(figure(), "end_root").dataset.shape).toBe("end");
+  expect(mapNode(figure(), "判定").dataset.shape).toBe("choice");
+  expect(
+    getComputedStyle(mapNode(figure(), "start_root")).borderTopLeftRadius,
+  ).toBe("50%");
+  expect(
+    mapNode(figure(), "s1").querySelector(".mdmark-diagram-node-name")
+      ?.textContent,
+  ).toBe("差し戻しの理由を確認する");
+  // 検証: 入れ子の状態への遷移の付け替えと、開始・終了の補い
+  const inner = mapNode(figure(), "start_実行中").getBoundingClientRect();
+  const t5 = mapWireEnd(figure(), "t5");
+  expect(t5.x).toBeGreaterThanOrEqual(inner.left - 1);
+  expect(t5.x).toBeLessThanOrEqual(inner.right + 1);
+  expect(t5.y).toBeGreaterThanOrEqual(inner.top - 1);
+  expect(t5.y).toBeLessThanOrEqual(inner.bottom + 1);
+  expect(figure().querySelector('[data-node="start_保留"]')).not.toBeNull();
+  expect(figure().querySelector('[data-node="end_保留"]')).not.toBeNull();
+  // 検証: 同じ状態への遷移と、注記
+  expect(
+    figure().querySelector('[data-loop="t2"] .map-state-loop-label')
+      ?.textContent,
+  ).toBe("保存する");
+  const note = mapNode(figure(), "n1");
+  expect(note.querySelector(".mdmark-diagram-node-kind")?.textContent).toBe(
+    "注記",
+  );
+  expect(note.getBoundingClientRect().left).toBeGreaterThanOrEqual(
+    mapNode(figure(), "確認待ち").getBoundingClientRect().right,
+  );
+  expect(
+    find(figure(), '.mdmark-diagram-wire[data-wire="n1"]').getAttribute(
+      "stroke-dasharray",
+    ),
+  ).toBeTruthy();
+  // 検証: 遷移の再生の帯
+  const band = () =>
+    find<HTMLElement>(figure().parentElement as HTMLElement, ".map-band");
+  expect(band().querySelector(".map-band-count")?.textContent).toBe("–/13");
+  expect(band().querySelectorAll("button[data-band]")).toHaveLength(4);
+  expect(
+    band().querySelector<HTMLButtonElement>('[data-band="stop"]')?.disabled,
+  ).toBe(true);
+  // 実行: 次へを 6 回押す
+  for (let step = 0; step < 6; step++)
+    find<HTMLButtonElement>(band(), '[data-band="next"]').click();
+  // 検証
+  expect(band().querySelector(".map-band-count")?.textContent).toBe("6/13");
+  expect(band().querySelector(".map-band-title")?.textContent).toBe(
+    "判定 → 差し戻しの理由を確認する：差し戻し",
+  );
+  expect(band().querySelector(".map-band-text")?.textContent).toBe(
+    "差し戻しの理由はコメントに残る",
+  );
+  expect(wireDimmed(figure(), "t6")).toBe(false);
+  expect(wireDimmed(figure(), "t3")).toBe(true);
+  expect(mapDimmed(mapNode(figure(), "判定"))).toBe(false);
+  expect(mapDimmed(mapNode(figure(), "s1"))).toBe(false);
+  expect(mapDimmed(mapNode(figure(), "下書き"))).toBe(true);
+  expect(
+    figure().querySelectorAll('.map-packet[data-wire="t6"]').length,
+  ).toBeGreaterThan(0);
+  // 実行・検証: 停止で強調が解ける
+  find<HTMLButtonElement>(band(), '[data-band="stop"]').click();
+  expect(figure().querySelectorAll(".map-dim")).toHaveLength(0);
+});
+
+// map の状態遷移図の状態を選ぶ（正常系）
+test("test_normal_when_map_state_selected", async () => {
+  // 準備
+  const { figures } = await mountMap(MAP_STATE_MARKDOWN);
+  const figure = () => figures()[0] as HTMLElement;
+  // 実行: 「確認待ち」を押す
+  pressKind(figure(), "確認待ち");
+  // 検証: 入る 2 本と出る 2 本の遷移と相手の状態のほかが薄く、その遷移にマーカーが流れる
+  for (const id of ["t3", "t4", "t12", "t13"])
+    expect(wireDimmed(figure(), id), id).toBe(false);
+  expect(wireDimmed(figure(), "t8")).toBe(true);
+  for (const id of ["確認待ち", "下書き", "判定"])
+    expect(mapDimmed(mapNode(figure(), id)), id).toBe(false);
+  expect(mapDimmed(mapNode(figure(), "完了"))).toBe(true);
+  expect(
+    figure().querySelectorAll('.map-packet[data-wire="t4"]').length,
+  ).toBeGreaterThan(0);
+  expect(mapNode(figure(), "確認待ち").getAttribute("aria-label")).toBe(
+    "確認待ち（選択中）",
+  );
+  // 実行・検証: もう一度押すと選択が解ける。Esc でも解ける
+  pressKind(figure(), "確認待ち");
+  expect(figure().querySelectorAll(".is-selected")).toHaveLength(0);
+  pressKind(figure(), "確認待ち");
+  figure().dispatchEvent(
+    new KeyboardEvent("keydown", { key: "Escape", bubbles: true }),
+  );
+  expect(figure().querySelectorAll(".is-selected")).toHaveLength(0);
+  // 検証: 名前の文字の上を押しても選択は変わらず、名前の文字を選べる
+  const name = find<HTMLElement>(
+    mapNode(figure(), "下書き"),
+    ".mdmark-diagram-node-name",
+  );
+  pressMap(name);
+  expect(figure().querySelectorAll(".is-selected")).toHaveLength(0);
+  expect(getComputedStyle(name).userSelect).not.toBe("none");
+  // 検証: 状態のノードはキーボードで選べる
+  const node = mapNode(figure(), "下書き");
+  expect(node.getAttribute("tabindex")).toBe("0");
+  node.dispatchEvent(
+    new KeyboardEvent("keydown", { key: "Enter", bubbles: true }),
+  );
+  expect(mapNode(figure(), "下書き").classList.contains("is-selected")).toBe(
+    true,
+  );
+  // 実行・検証: 入れ子の状態のタイトルを押すと中へ入る
+  find<HTMLButtonElement>(figure(), '[data-group-enter="実行中"]').click();
+  expect(
+    figure().querySelector(".map-group-title.is-current")?.textContent,
+  ).toBe("実行中");
+});
+
+// map の ER 図・状態遷移図を案内する（正常系）
+test("test_normal_when_map_er_state_walked", async () => {
+  // 準備
+  const erData = JSON.stringify({
+    ...JSON.parse(MAP_ER_DATA),
+    walkthroughs: [
+      { title: "顧客", text: "顧客を見る", nodes: ["顧客"] },
+      {
+        title: "記録",
+        text: "注文と明細",
+        nodes: ["注文", "明細"],
+        edges: ["r2"],
+        enter: "記録",
+      },
+    ],
+  });
+  const stateData = JSON.stringify({
+    ...JSON.parse(MAP_STATE_DATA),
+    walkthroughs: [
+      { title: "下書き", text: "下書きから始まる", nodes: ["下書き"] },
+      { title: "処理", text: "処理する", nodes: ["処理"], enter: "実行中" },
+    ],
+  });
+  const { figures } = await mountMap(
+    `${mapRange({ mermaid: MAP_ER, data: erData })}\n${mapRange({ mermaid: MAP_STATE, data: stateData })}`,
+  );
+  await vi.waitFor(() => expect(figures()).toHaveLength(2), {
+    timeout: MAP_WAIT_MS,
+  });
+  const er = () => figures()[0] as HTMLElement;
+  const state = () => figures()[1] as HTMLElement;
+  const press = (figure: HTMLElement, action: string) =>
+    find<HTMLButtonElement>(figure, `[data-band="${action}"]`).click();
+  // 検証: 帯は案内の手順の数
+  expect(er().querySelector(".map-band-count")?.textContent).toBe("–/2");
+  expect(state().querySelector(".map-band-count")?.textContent).toBe("–/2");
+  // 実行・検証: ER 図の手順 2 で分類の中へ入り、注文と明細のほかが薄く、その関連にマーカーが流れる
+  press(er(), "next");
+  press(er(), "next");
+  expect(er().querySelector(".map-band-count")?.textContent).toBe("2/2");
+  expect(er().querySelector(".map-group-title.is-current")?.textContent).toBe(
+    "記録",
+  );
+  expect(mapDimmed(mapNode(er(), "注文"))).toBe(false);
+  expect(mapDimmed(mapNode(er(), "明細"))).toBe(false);
+  expect(mapDimmed(mapNode(er(), "支払い"))).toBe(true);
+  expect(
+    er().querySelectorAll('.map-packet[data-wire="r2"]').length,
+  ).toBeGreaterThan(0);
+  // 実行・検証: 停止で強調が解け、全体の図に戻る
+  press(er(), "stop");
+  expect(er().querySelectorAll(".map-dim")).toHaveLength(0);
+  expect(er().querySelector(".map-group-title.is-current")).toBeNull();
+  // 実行・検証: 状態遷移図の手順 2 で入れ子の状態の中へ入り、処理のほかが薄い
+  press(state(), "next");
+  press(state(), "next");
+  expect(
+    state().querySelector(".map-group-title.is-current")?.textContent,
+  ).toBe("実行中");
+  expect(mapDimmed(mapNode(state(), "処理"))).toBe(false);
+  expect(mapDimmed(mapNode(state(), "準備"))).toBe(true);
+  press(state(), "stop");
+  expect(state().querySelectorAll(".map-dim")).toHaveLength(0);
+  expect(state().querySelector(".map-group-title.is-current")).toBeNull();
+});
+
+// map の ER 図・状態遷移図を開閉する・中へ入る（正常系）
+test("test_normal_when_map_er_state_toggled", async () => {
+  // 準備
+  const erData = JSON.stringify({
+    ...JSON.parse(MAP_ER_DATA),
+    layout: { 注文: { collapsed: true } },
+  });
+  const { figures } = await mountMap(
+    `${mapRange({ mermaid: MAP_ER, data: erData })}\n${MAP_STATE_MARKDOWN}`,
+  );
+  await vi.waitFor(() => expect(figures()).toHaveLength(2), {
+    timeout: MAP_WAIT_MS,
+  });
+  const er = () => figures()[0] as HTMLElement;
+  const state = () => figures()[1] as HTMLElement;
+  const toggleOf = (table: string) =>
+    find<HTMLButtonElement>(mapNode(er(), table), "button.map-er-toggle");
+  // 検証: 列を閉じた「注文」は 1 行で、関連の端はノードの辺の中ほど
+  expect(mapNode(er(), "注文").querySelectorAll(".map-er-column")).toHaveLength(
+    0,
+  );
+  expect(toggleOf("注文").textContent).toBe("列 8");
+  expect(toggleOf("注文").getAttribute("aria-expanded")).toBe("false");
+  expect(toggleOf("注文").getAttribute("aria-label")).toBe("注文の列を開く");
+  const closedBox = mapNode(er(), "注文").getBoundingClientRect();
+  expect(
+    Math.abs(mapWireEnd(er(), "r1").y - (closedBox.top + closedBox.bottom) / 2),
+  ).toBeLessThanOrEqual(1);
+  // 実行・検証: 列を開くと、関連の端が列 顧客ID の行の高さへつなぎ直される
+  toggleOf("注文").click();
+  expect(mapNode(er(), "注文").querySelectorAll(".map-er-column")).toHaveLength(
+    8,
+  );
+  expect(toggleOf("注文").getAttribute("aria-label")).toBe("注文の列を閉じる");
+  const row = find<HTMLElement>(
+    mapNode(er(), "注文"),
+    '[data-column="顧客ID"]',
+  ).getBoundingClientRect();
+  const end = mapWireEnd(er(), "r1");
+  expect(end.y).toBeGreaterThanOrEqual(row.top);
+  expect(end.y).toBeLessThanOrEqual(row.bottom);
+  // 実行・検証: 分類を閉じると「テーブル 3 件」が出て、中への関連が相手ごとに 1 本にまとまる
+  find<HTMLButtonElement>(er(), 'button[aria-label="記録を閉じる"]').click();
+  expect(
+    find<HTMLElement>(er(), '.map-closed-group[data-group="記録"]').textContent,
+  ).toContain("テーブル 3 件");
+  const into = [
+    ...er().querySelectorAll<SVGPathElement>(".mdmark-diagram-wire[data-wire]"),
+  ]
+    .map((path) => path.dataset.wire ?? "")
+    .filter((id) => id.includes("記録"));
+  expect(into.sort()).toEqual(["記録->商品", "顧客->記録"].sort());
+  // 実行・検証: 全て開く・全て閉じるは、テーブルの列と分類の両方に適用される
+  find<HTMLButtonElement>(er(), '[data-tool="collapseAll"]').click();
+  expect(
+    er().querySelector('.map-closed-group[data-group="記録"]'),
+  ).not.toBeNull();
+  expect(toggleOf("顧客").textContent).toBe("列 3");
+  find<HTMLButtonElement>(er(), '[data-tool="expandAll"]').click();
+  expect(er().querySelector(".map-closed-group")).toBeNull();
+  expect(mapNode(er(), "注文").querySelectorAll(".map-er-column")).toHaveLength(
+    8,
+  );
+  // 実行・検証: 「実行中」の中へ入ると、中だけを配置し直し、クエリ文字列に入る
+  find<HTMLButtonElement>(state(), '[data-group-enter="実行中"]').click();
+  expect(new URLSearchParams(location.search).get("map-2")).toBe("実行中");
+  const shown = [
+    ...state().querySelectorAll<HTMLElement>(
+      ".mdmark-diagram-stage > .mdmark-diagram-node[data-node]:not(.map-faded)",
+    ),
+  ].map((node) => node.dataset.node);
+  expect(shown.sort()).toEqual(
+    ["start_実行中", "準備", "処理", "end_実行中"].sort(),
+  );
+  expect(mapNode(state(), "判定").classList.contains("map-faded")).toBe(true);
+  expect(
+    state().querySelector('.mdmark-diagram-wire[data-wire="t5"]'),
+  ).not.toBeNull();
+  // 実行・検証: 外へ戻って「実行中」を閉じると「状態 2 件」が出る
+  find<HTMLButtonElement>(state(), '[data-tool="back"]').click();
+  find<HTMLButtonElement>(
+    state(),
+    'button[aria-label="実行中を閉じる"]',
+  ).click();
+  expect(
+    find<HTMLElement>(state(), '.map-closed-group[data-group="実行中"]')
+      .textContent,
+  ).toContain("状態 2 件");
 });
 
 /** 全角の文字を `count` 文字並べる */

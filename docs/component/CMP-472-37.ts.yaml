@@ -52,6 +52,33 @@ states:
         value: 'true'
       - name: headings
         value: '[{"level":2,"id":"long","text":"読み込みに失敗したときに通知ブロックが出る箇所と、ほかの本文の扱い"},{"level":3,"id":"long-2","text":"社内のネットワークから jsDelivr へ出られないときに書き出した 1 枚の HTML を使用する手順"}]'
+  - name: HoverChanged
+    description: hover の出し方で目次を出し、比較元から変わったセクションの項目の右端に変更のマーカー（橙の塗った円）を出している。変わったセクションの右端の線も橙にし、変わったセクションでもある今いるセクション（手順）の線は今いるセクションの色を優先する
+    args:
+      - name: open
+        value: 'true'
+      - name: current
+        value: steps
+      - name: headings
+        value: '[{"level":1,"id":"doc","text":"文書","changed":true},{"level":2,"id":"premise","text":"前提"},{"level":2,"id":"steps","text":"手順","changed":true},{"level":3,"id":"steps-1","text":"準備"},{"level":2,"id":"added","text":"追加した節","changed":true}]'
+  - name: FixedChanged
+    description: fixed の出し方でサイドバーを開き、変わったセクションの項目に変更のマーカーを出している
+    args:
+      - name: mode
+        value: fixed
+      - name: open
+        value: 'true'
+      - name: headings
+        value: '[{"level":1,"id":"doc","text":"文書","changed":true},{"level":2,"id":"premise","text":"前提"},{"level":2,"id":"steps","text":"手順","changed":true},{"level":3,"id":"steps-1","text":"準備"},{"level":2,"id":"added","text":"追加した節","changed":true}]'
+  - name: LongHeadingChanged
+    description: 長い見出しの項目に変更のマーカーを出し、折り返した文字とマーカーが重ならない（マーカーは項目の右端の 1 行目の高さ）
+    args:
+      - name: mode
+        value: fixed
+      - name: open
+        value: 'true'
+      - name: headings
+        value: '[{"level":2,"id":"long","text":"読み込みに失敗したときに通知ブロックが出る箇所と、ほかの本文の扱い","changed":true}]'
 lead: |-
   描いた文書の右側に配置し、h1〜h3 を入れ子にした目次・右端の線・目次を出すボタン・ピン止め・すべて展開とすべて折りたたむを持つ。
   出し方（hover・fixed）と、描く先の要素の幅 48rem 未満の狭い幅の帯を CSS で切り替える。
@@ -59,7 +86,7 @@ args:
   - name: headings
     type: オブジェクトの配列
     required: true
-    description: 文書の頭からの h1・h2・h3（`{ level, id, text }`）。閉じたセクションと選ばれていないタブの中の見出しも含める。深い階層は直前の浅い階層の入れ子にする
+    description: 文書の頭からの h1・h2・h3（`{ level, id, text, changed }`）。閉じたセクションと選ばれていないタブの中の見出しも含める。深い階層は直前の浅い階層の入れ子にする。`changed` が `true` の見出しは比較元から変わったセクションで、項目のリンクに `data-changed`・`aria-label="{text}（変更）"` と末尾の変更のマーカー、右端の線に `data-changed` を付ける（省くと付けない）
   - name: mode
     type: 列挙
     required: false
@@ -112,6 +139,10 @@ css_properties:
     syntax: <color>
     default: '#0f766e（ダーク #2dd4bf）'
     description: 今いるセクションの項目の文字、右端の線、ピン止めした後のピン止めのアイコンの色
+  - name: --mdmark-color-callout-warning
+    syntax: <color>
+    default: '#b45309'
+    description: 変更のマーカー（塗った円）と、変わったセクションの右端の線の色。今いるセクションの線は `--mdmark-color-link` を優先する
   - name: --mdmark-color-current-bg
     syntax: <color>
     default: '#e6f3f1（ダーク #10302c）'
@@ -140,6 +171,7 @@ accessibility:
   - 今いるセクションの項目は `aria-current="location"` を持ち、背景と文字の色で示す（太さは変えない）
   - 右端の線は `aria-hidden="true"` でスクリーンリーダーに伝えない。hover の出し方でも、キーボードのフォーカス（`:focus-visible` の要素）が目次の中に入れば目次を出す。ポインターで押したボタンに残るフォーカスでは出し続けない
   - 出している目次の中で Esc を押すと目次を隠し、目次を出すボタンへフォーカスを戻す
+  - 変更のマーカーの付いた項目は、リンクの `aria-label` を `{見出しの文字}（変更）` にして読み上げで伝え、マーカーの円は `aria-hidden="true"` にする。リンクの文字には足さない（目次を出すボタンの今いる見出しの文字に写さないため）。マーカーは色のほかに円の有無で示す
 refs:
   - IF-472-35#constraints[右側の目次]
   - IF-472-35#constraints[右側の目次の出し方]
@@ -147,6 +179,7 @@ refs:
   - IF-472-35#constraints[今いるセクション]
   - IF-472-35#constraints[すべて展開・すべて折りたたむ]
   - IF-472-35#constraints[右側の目次の重なりと留める位置]
+  - IF-472-35#constraints[右側の目次の変更のマーカー]
 status: planned
 introduced:
   pr: 166
@@ -154,5 +187,5 @@ aliases:
   - サイドの目次
   - side-toc
 notes:
-  補足: '`<aside class="mdmark-side-toc" data-mode="{mode}"><button class="mdmark-side-toc-toggle" type="button" aria-expanded="{open}" aria-controls="{パネルの ID}" aria-label="目次を表示" title="目次を表示"><span class="mdmark-side-toc-current">{今いるセクションの見出し}</span>{三点リーダーのアイコン}</button><div class="mdmark-side-toc-rail" aria-hidden="true"><span class="mdmark-side-toc-bar" data-level="{level}"></span>…</div><nav class="mdmark-side-toc-panel" id="{パネルの ID}" aria-label="右側の目次"><div class="mdmark-side-toc-head"><div class="mdmark-side-toc-actions"><button class="mdmark-fold-all" type="button" data-fold-all="open" aria-label="すべて展開" title="すべて展開">…</button><button class="mdmark-fold-all" type="button" data-fold-all="close" aria-label="すべて折りたたむ" title="すべて折りたたむ">…</button></div><button class="mdmark-side-toc-pin" type="button" aria-pressed="{pinned}" aria-label="目次をピン止め" title="目次をピン止め">{ピン止めのアイコン}</button></div><ul class="mdmark-side-toc-list"><li><a href="#{id}">{text}</a><ul>…</ul></li></ul></nav></aside>`。アイコンは lucide の ellipsis・panel-right-dashed（ピン止めを押す前）・panel-right（ピン止めを押した後）・chevrons-up-down・chevrons-down-up。まとめて開閉するボタンの並びは `sections` がオフのとき配置せず、ピン止めのボタンは fixed の出し方では CSS で隠す。狭い幅の帯は描く先の要素の幅で切り替えるため、ストーリーではなく `mount` の結合テスト（`test_normal_when_side_toc_in_narrow_width`）で確認する。ストーリーの結合テストは `tests/integration/lib/side-toc.story.test.ts`。モックは `docs/mock/components/toc/`・`docs/mock/refs/166/assets/side-toc.js` と、上端の並び・ピン止めのアイコン・hover で開く位置の `docs/mock/components/side-toc-head/`・`docs/mock/refs/320/assets/proposal.js`'
+  補足: '`<aside class="mdmark-side-toc" data-mode="{mode}"><button class="mdmark-side-toc-toggle" type="button" aria-expanded="{open}" aria-controls="{パネルの ID}" aria-label="目次を表示" title="目次を表示"><span class="mdmark-side-toc-current">{今いるセクションの見出し}</span>{三点リーダーのアイコン}</button><div class="mdmark-side-toc-rail" aria-hidden="true"><span class="mdmark-side-toc-bar" data-level="{level}"></span>…</div><nav class="mdmark-side-toc-panel" id="{パネルの ID}" aria-label="右側の目次"><div class="mdmark-side-toc-head"><div class="mdmark-side-toc-actions"><button class="mdmark-fold-all" type="button" data-fold-all="open" aria-label="すべて展開" title="すべて展開">…</button><button class="mdmark-fold-all" type="button" data-fold-all="close" aria-label="すべて折りたたむ" title="すべて折りたたむ">…</button></div><button class="mdmark-side-toc-pin" type="button" aria-pressed="{pinned}" aria-label="目次をピン止め" title="目次をピン止め">{ピン止めのアイコン}</button></div><ul class="mdmark-side-toc-list"><li><a href="#{id}" data-heading-id="{id}">{text}</a><ul>…</ul></li>（`changed` の項目は `<a href="#{id}" data-heading-id="{id}" data-changed aria-label="{text}（変更）">{text}<span class="mdmark-side-toc-changed" aria-hidden="true"></span></a>`）</ul></nav></aside>`。アイコンは lucide の ellipsis・panel-right-dashed（ピン止めを押す前）・panel-right（ピン止めを押した後）・chevrons-up-down・chevrons-down-up。まとめて開閉するボタンの並びは `sections` がオフのとき配置せず、ピン止めのボタンは fixed の出し方では CSS で隠す。狭い幅の帯は描く先の要素の幅で切り替えるため、ストーリーではなく `mount` の結合テスト（`test_normal_when_side_toc_in_narrow_width`）で確認する。ストーリーの結合テストは `tests/integration/lib/side-toc.story.test.ts`。モックは `docs/mock/components/toc/`・`docs/mock/refs/166/assets/side-toc.js` と、上端の並び・ピン止めのアイコン・hover で開く位置の `docs/mock/components/side-toc-head/`・`docs/mock/refs/320/assets/proposal.js`、変更のマーカーの `docs/mock/pages/document/550/a-dot-end/`・`docs/mock/refs/550/assets/toc-marker.css`'
 test_file: tests/integration/lib/side-toc.story.test.ts

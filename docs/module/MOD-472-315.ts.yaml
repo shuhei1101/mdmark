@@ -14,7 +14,7 @@ functions:
       - name: options
         type: TableOptions
         required: true
-        description: 部品設計の引数（`kind`・`features`・`columns`・`rows`・`filters`・`collapse`・`title`・`rowCount`（`rows` を省いたときの本文の行の数）・`hide`・`totals`・`rowIds`・`highlight`・`rowColors`・`pin`（`data-pin` に写す列の位置の並び）・`unpin`（`data-unpin` に写す、既定で留める列から除く列の位置の並び）・`pinMode`（ピン止めのボタンの名前と押した状態を決める。既定 `each`）・`widths`（`{ column, width }` の並び。指定した列の見出しのセルの `width`・`min-width`・`--mdmark-column-min-width` に入れ、セルに `is-resized` を付ける）・`resizing`（つまみの線を出したままにする列の位置）・`long`（`data-long` に写す長文の列の位置の並び）・`widthRanges`（`{ column, min?, max? }` の並び。`data-width` に `{位置}:{min}-{max}` を空白で区切って写し、記載しない側は空にする）・`autoWidths`（`{ column, width }` の並び。表に `data-auto-width` と `--mdmark-auto-table-width`（幅の合計）、見出しのセルに `--mdmark-auto-width` を入れる）・`wide`・`check`・`headRows`・`rowHeader`・`mergeColumns`・状態の引数）。`rows` を省いて `body` に `SLOT_MARKER` を指定すると囲みだけを作る
+        description: 部品設計の引数（`kind`・`features`・`columns`・`rows`・`filters`・`collapse`・`title`・`rowCount`（`rows` を省いたときの本文の行の数）・`hide`・`totals`・`rowIds`・`highlight`・`rowColors`・`pin`（`data-pin` に写す列の位置の並び）・`unpin`（`data-unpin` に写す、既定で留める列から除く列の位置の並び）・`pinMode`（ピン止めのボタンの名前と押した状態を決める。既定 `each`）・`widths`（`{ column, width }` の並び。指定した列の見出しのセルの `width`・`min-width`・`--mdmark-column-min-width` に入れ、セルに `is-resized` を付ける）・`resizing`（つまみの線を出したままにする列の位置）・`long`（`data-long` に写す長文の列の位置の並び）・`noSort`（`data-no-sort` に写す並べ替えを付けない列の位置の並び。空なら属性を付けない）・`widthRanges`（`{ column, min?, max? }` の並び。`data-width` に `{位置}:{min}-{max}` を空白で区切って写し、記載しない側は空にする）・`autoWidths`（`{ column, width }` の並び。表に `data-auto-width` と `--mdmark-auto-table-width`（幅の合計）、見出しのセルに `--mdmark-auto-width` を入れる）・`wide`・`check`・`headRows`・`rowHeader`・`mergeColumns`・状態の引数）。`rows` を省いて `body` に `SLOT_MARKER` を指定すると囲みだけを作る
     returns:
       type: string
       description: '`<div class="mdmark-table"` で始まる HTML'
@@ -93,7 +93,7 @@ functions:
         summary: 長文の列と列の幅の範囲を囲みに写し、自動の列の幅を入れる
         condition: '`body: SLOT_MARKER`・`long: [1, 3]`・`widthRanges: [{1, min: 20, max: 30}, {3, max: 12}]` と、部品設計の `AutoWidth`'
         mock: なし
-        expected: 1 つ目の囲みが `data-long="1 3"`・`data-width="1:20-30 3:-12"` を持つ。`AutoWidth` の表が `data-auto-width` と `--mdmark-auto-table-width:1145px` を持ち、6 列の見出しのセルが `autoWidths` の幅の `--mdmark-auto-width` を持つ
+        expected: 1 つ目の囲みが `data-long="1 3"`・`data-width="1:20-30 3:-12"` を持つ。部品設計の `LongColumnNotSortable` の囲みが `data-no-sort="2"` を持ち、説明の列の見出しが `mdmark-sort` を持たない。`AutoWidth` の表が `data-auto-width` と `--mdmark-auto-table-width:1145px` を持ち、6 列の見出しのセルが `autoWidths` の幅の `--mdmark-auto-width` を持つ
       - name: test_render_table_when_colors
         case: 正常
         summary: 強調する列と色を付ける行を属性にする
@@ -154,9 +154,9 @@ functions:
     summary: 列 1 つの見出しの中身（並べ替え・絞り込み・ピン止めのボタンと、`features` に `resize` を含むときは `.mdmark-th` の後ろに列の幅のつまみ `span.mdmark-col-resize`）と、その列の絞り込みのドロワーの HTML を返却する。`mount` が描いた表に追加するのにも使用する
     args:
       - name: options
-        type: '{ id: string; column: number; label: string; features: string[]; filter?: { kind: "select" | "text" | "date"; values: string[] }; active?: boolean; open?: boolean; value?: FilterValue; pinVisible?: boolean; pinPressed?: boolean; pinUnpinned?: boolean; pinMode?: TablePinMode }'
+        type: '{ id: string; column: number; label: string; features: string[]; sortable?: boolean; filter?: { kind: "select" | "text" | "date"; values: string[] }; active?: boolean; open?: boolean; value?: FilterValue; pinVisible?: boolean; pinPressed?: boolean; pinUnpinned?: boolean; pinMode?: TablePinMode }'
         required: true
-        description: ドロワーの id の頭、列の位置、列名、機能、絞り込み（`select` は候補の値）、絞り込み中か、ドロワーを開いているか、適用している絞り込み、ピン止めのボタンを出すか（既定 `false`。`mount` が幅を測って決め、Storybook は `overflow` で出す）、ピン止めのボタンを押した状態にするか、ピン止めのボタンを見えている幅に収まらず留まっていない状態にするか（既定 `false`。`true` なら `is-unpinned` を付け、`aria-label` と `title` に `（表の幅に収まらないため留まっていません）` を付ける。`mount` が入れ、Storybook は `unpinned` で入れる）、ピン止めの動き（既定 `each`。ボタンの `aria-label` は `each` なら `「{列名}」の列をピン止め`、`through` なら `「{列名}」の列までピン止め`）
+        description: ドロワーの id の頭、列の位置、列名、機能、並べ替えのボタンにするか（既定 `true`。`false` なら `features` に `sort` があっても列名を `span.mdmark-th-label` にする）、絞り込み（`select` は候補の値）、絞り込み中か、ドロワーを開いているか、適用している絞り込み、ピン止めのボタンを出すか（既定 `false`。`mount` が幅を測って決め、Storybook は `overflow` で出す）、ピン止めのボタンを押した状態にするか、ピン止めのボタンを見えている幅に収まらず留まっていない状態にするか（既定 `false`。`true` なら `is-unpinned` を付け、`aria-label` と `title` に `（表の幅に収まらないため留まっていません）` を付ける。`mount` が入れ、Storybook は `unpinned` で入れる）、ピン止めの動き（既定 `each`。ボタンの `aria-label` は `each` なら `「{列名}」の列をピン止め`、`through` なら `「{列名}」の列までピン止め`）
     returns:
       type: '{ header: string; drawer: string }'
       description: 見出しの中身とドロワー（絞り込みが無ければ空）
@@ -169,6 +169,12 @@ functions:
         condition: '`features: [sort, pin, filter]`、`filter: { kind: select, values: ["りんご", "みかん"] }`、列名 `名前`'
         mock: なし
         expected: '`header` に `mdmark-sort`・`mdmark-filter`（`aria-label="「名前」で絞り込む"`）・`mdmark-pin`（`hidden`）、`drawer` に `hidden` の `mdmark-filter-drawer`・候補の検索欄・2 つのチェックボックス・`絞り込みを解除`'
+      - name: test_render_table_tools_when_not_sortable
+        case: 正常
+        summary: sortable が false の列は並べ替えのボタンにせず、ほかのボタンは付ける
+        condition: '`features: [sort, pin, filter]`、`sortable: false`、`filter: { kind: text }`、列名 `説明`'
+        mock: なし
+        expected: '`header` に `mdmark-sort` が無く、`<span class="mdmark-th-label">説明</span>`・`mdmark-filter`・`mdmark-pin` がある'
       - name: test_render_table_tools_when_date
         case: 正常
         summary: 日付のドロワーは開始日と終了日の欄を持つ

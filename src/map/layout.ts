@@ -46,6 +46,10 @@ export type MapOverride = {
   /** 線の経由点（両端の共通の祖先の中身の左上からの座標） */
   via?: Array<{ x: number; y: number }> | undefined;
   size?: { w: number; h: number } | undefined;
+  /** ノードの上に空ける高さ（同じ状態への遷移の線とラベルの置き場所。線も通さない） */
+  above?: number | undefined;
+  /** ノードの左右に空ける幅（ER 図の関連の端と多重度の置き場所。線は通す） */
+  aside?: number | undefined;
 };
 
 /** 辺ごとの、線が辺から出ていく向き（routeEdges の向きの番号） */
@@ -67,6 +71,10 @@ type ViewLeaf = {
   w: number;
   h: number;
   lines: string[];
+  /** h のうち、ノードの上に空ける高さ */
+  above: number;
+  /** w のうち、ノードの左右それぞれに空ける幅 */
+  aside: number;
 };
 type ViewBox = {
   kind: "box";
@@ -309,14 +317,28 @@ const buildView = (
     label: string,
     faded: boolean,
     collapsedGroup = false,
-  ): ViewLeaf => ({
-    kind: "leaf",
-    id,
-    label,
-    faded,
-    collapsed: collapsedGroup,
-    ...sizeLeaf(label, maxWidth, overrides[id]?.width, overrides[id]?.size),
-  });
+  ): ViewLeaf => {
+    const size = sizeLeaf(
+      label,
+      maxWidth,
+      overrides[id]?.width,
+      overrides[id]?.size,
+    );
+    const above = collapsedGroup ? 0 : (overrides[id]?.above ?? 0);
+    const aside = collapsedGroup ? 0 : (overrides[id]?.aside ?? 0);
+    return {
+      kind: "leaf",
+      id,
+      label,
+      faded,
+      collapsed: collapsedGroup,
+      ...size,
+      w: size.w + aside * 2,
+      h: size.h + above,
+      above,
+      aside,
+    };
+  };
   const makeBox = (
     boxId: string | undefined,
     title: string,
@@ -561,8 +583,9 @@ const layoutBox = (
   );
   for (const local of fixed) {
     const pos = overrides[local.item.id]?.pos as { x: number; y: number };
-    local.x = pos.x;
-    local.y = pos.y;
+    // 固定の位置はノードの左上。ノードの左と上に空ける分だけずらして配置する
+    local.x = pos.x - (local.item.kind === "leaf" ? local.item.aside : 0);
+    local.y = pos.y - (local.item.kind === "leaf" ? local.item.above : 0);
   }
   const gap = MAP_LAYOUT.gapItem;
   for (let pass = 0; pass < locals.length * 2; pass++) {
@@ -696,12 +719,13 @@ const createHeap = (): Heap => {
 const strictlyInside = (x: number, y: number, rect: Rect): boolean =>
   x > rect.x && x < rect.x + rect.w && y > rect.y && y < rect.y + rect.h;
 
-/** 縦横の折れ線で線を引く。端点とその祖先以外の矩形を通らず、祖先の箱の枠の出入りを最少にする */
+/** 縦横の折れ線で線を引く。端点とその祖先以外の矩形と、ノードの上に空けた場所を通らず、祖先の箱の枠の出入りを最少にする */
 const routeEdges = (
   leaves: InnerLeaf[],
   boxes: Array<Rect & { id: string }>,
   edges: ViewWire[],
   overrides: Record<string, MapOverride>,
+  reserved: Array<Rect & { id: string }> = [],
 ): PlacedWire[] => {
   const m = MAP_LAYOUT.clearance;
   /** 経由点を図の座標にする（両端の共通の祖先のグループの中身の左上、無ければ図の外の余白の内側が原点） */
@@ -723,6 +747,7 @@ const routeEdges = (
   const rects: Array<Rect & { id: string; leaf: boolean }> = [
     ...leaves.map((leaf) => ({ ...leaf, leaf: true })),
     ...boxes.map((box) => ({ ...box, leaf: false })),
+    ...reserved.map((rect) => ({ ...rect, leaf: true })),
   ];
   const xsSet = new Set<number>();
   const ysSet = new Set<number>();
@@ -1024,6 +1049,8 @@ export const layoutMap = (
   layoutBox(root, links, overrides, placed);
   const leaves: InnerLeaf[] = [];
   const boxes: Array<PlacedGroup> = [];
+  /** ノードの上に空けた場所 */
+  const reserved: Array<Rect & { id: string }> = [];
   const walk = (
     box: ViewBox,
     ox: number,
@@ -1035,12 +1062,20 @@ export const layoutMap = (
       const y = oy + local.y;
       const item = local.item;
       if (item.kind === "leaf") {
+        if (item.above > 0)
+          reserved.push({
+            id: `${item.id}::above`,
+            x: x + item.aside,
+            y,
+            w: item.w - item.aside * 2,
+            h: item.above,
+          });
         leaves.push({
           id: item.id,
-          x,
-          y,
-          w: item.w,
-          h: item.h,
+          x: x + item.aside,
+          y: y + item.above,
+          w: item.w - item.aside * 2,
+          h: item.h - item.above,
           lines: item.lines,
           faded: item.faded,
           ancestors,
@@ -1067,21 +1102,23 @@ export const layoutMap = (
   walk(root, margin, margin, []);
   const edgeById = new Map(chart.edges.map((edge) => [edge.id, edge]));
   const nodeById = new Map(chart.nodes.map((node) => [node.id, node]));
-  const wires = routeEdges(leaves, boxes, edges, overrides).map((wire) => {
-    const first = wire.merged?.[0];
-    const source =
-      edgeById.get(wire.id) ??
-      (first === undefined
-        ? undefined
-        : chart.edges.find(
-            (edge) => edge.from === first.from && edge.to === first.to,
-          ));
-    return {
-      ...wire,
-      arrow: source?.arrow ?? "-->",
-      both: source?.both ?? false,
-    };
-  });
+  const wires = routeEdges(leaves, boxes, edges, overrides, reserved).map(
+    (wire) => {
+      const first = wire.merged?.[0];
+      const source =
+        edgeById.get(wire.id) ??
+        (first === undefined
+          ? undefined
+          : chart.edges.find(
+              (edge) => edge.from === first.from && edge.to === first.to,
+            ));
+      return {
+        ...wire,
+        arrow: source?.arrow ?? "-->",
+        both: source?.both ?? false,
+      };
+    },
+  );
   const nodes: PlacedNode[] = [];
   const groups: PlacedGroup[] = [...boxes];
   const groupParent = new Map(

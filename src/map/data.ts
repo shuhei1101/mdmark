@@ -36,6 +36,13 @@ export type MapLayoutEntry = {
 /** ノード・線の説明 */
 export type MapNote = { text: string };
 
+/** ER 図の分類（テーブルをまとめるグループ） */
+export type MapGroup = {
+  title: string;
+  tables: string[];
+  parent: string | undefined;
+};
+
 /** 補足 */
 export type MapData = {
   version: 1;
@@ -43,6 +50,8 @@ export type MapData = {
   walkthroughs: MapStep[];
   layout: Record<string, MapLayoutEntry>;
   plays_over: number | undefined;
+  /** ER 図の分類（分類の ID ごと） */
+  groups: Record<string, MapGroup>;
 };
 
 /** 補足のトップレベルのキー */
@@ -52,7 +61,9 @@ export const MAP_DATA_KEYS = [
   "walkthroughs",
   "layout",
   "plays_over",
+  "groups",
 ] as const;
+const GROUP_KEYS = ["title", "tables", "parent"];
 const STEP_KEYS = ["title", "text", "nodes", "edges", "enter"];
 const LAYOUT_KEYS = [
   "align",
@@ -78,6 +89,7 @@ export const emptyMapData = (): MapData => ({
   walkthroughs: [],
   layout: {},
   plays_over: undefined,
+  groups: {},
 });
 
 /**
@@ -395,6 +407,34 @@ export const parseMapData = (
         if (target !== undefined) data.plays_over = target;
         break;
       }
+      case "groups":
+        if (!isObject(value)) {
+          invalid("groups", ' 分類の ID ごとの `{"title", "tables"}` ');
+          break;
+        }
+        for (const [id, group] of Object.entries(value)) {
+          const path = `groups.${id}`;
+          if (!isObject(group)) {
+            invalid(path, ' `{"title", "tables"}` ');
+            continue;
+          }
+          let title: string | undefined;
+          let tables: string[] | undefined;
+          let parent: string | undefined;
+          for (const [name, field] of Object.entries(group)) {
+            if (name === "title") title = text(field, `${path}.title`);
+            else if (name === "tables") tables = ids(field, `${path}.tables`);
+            else if (name === "parent") parent = text(field, `${path}.parent`);
+            else unknown(path, name, GROUP_KEYS);
+          }
+          if (title === undefined && group.title === undefined)
+            invalid(`${path}.title`, "文字");
+          if (tables === undefined && group.tables === undefined)
+            invalid(`${path}.tables`, "テーブル名の配列");
+          if (title !== undefined && tables !== undefined)
+            data.groups[id] = { title, tables, parent };
+        }
+        break;
       default:
         unknown("", key, MAP_DATA_KEYS);
     }
