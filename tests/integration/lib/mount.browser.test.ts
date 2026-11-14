@@ -616,7 +616,7 @@ test("test_normal_when_long_column_not_sortable", async () => {
   const el = createElement();
   await mountTracked(el, {
     markdown: [
-      '<!-- table: {"kind": "data"} -->',
+      '<!-- table: {"kind": "data", "columns": {"説明": {"filter": {}}}} -->',
       "",
       "| 名前 | 更新日 | 説明 |",
       "| --- | --- | --- |",
@@ -636,6 +636,9 @@ test("test_normal_when_long_column_not_sortable", async () => {
     "説明",
   );
   expect(heads[0]?.querySelector("button.mdmark-sort")).not.toBeNull();
+  // 検証: 説明の列の見出しは、並べ替えのほかの機能（ピン止め・絞り込み）のボタンを持つ
+  expect(heads[2]?.querySelector("button.mdmark-pin")).not.toBeNull();
+  expect(heads[2]?.querySelector("button.mdmark-filter")).not.toBeNull();
   // 実行: 更新日の列の見出しを押す
   find<HTMLButtonElement>(
     heads[1] as HTMLElement,
