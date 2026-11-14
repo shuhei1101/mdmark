@@ -1165,9 +1165,11 @@ export function decorateTables(state: StateCore): void {
     }
     const filtering = spec.features.includes("filter");
     const long = findLongColumns(columnLinesOf(tokens, index));
-    const noSort = spec.features.includes("sort")
-      ? findNoSortColumns({ long, sorts: spec.sorts })
-      : [];
+    // ビューの表は長文の列の並べ替えを戻す指定を持たないため、並べ替えを外さない
+    const noSort =
+      spec.features.includes("sort") && !viewSpec
+        ? findNoSortColumns({ long, sorts: spec.sorts })
+        : [];
     const filters: TableFilter[] = spec.filters.map((filter) => ({
       column: filter.column,
       kind: filter.kind ?? defaultFilterKind(long.includes(filter.column)),
