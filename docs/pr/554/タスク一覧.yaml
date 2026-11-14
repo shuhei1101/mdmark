@@ -60,7 +60,10 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-14T01:06:56.833998+00:00'
   - process: モジュール構成設計
-    status: todo
+    status: done
+    reason: MOD-472-350（traces.ts）を追加し、html.ts・embed.ts・export.ts・build.ts・main.ts・check.ts・tools.ts の設計書を修正
+    updated_by: planner
+    updated_at: '2026-11-14T05:57:28.649567+00:00'
   - process: ドキュメント修正
     status: todo
   - process: 単体テスト作成
