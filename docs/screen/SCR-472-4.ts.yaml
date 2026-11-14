@@ -1487,6 +1487,48 @@ elements:
       - IF-472-34#constraints[脚注]
       - IF-472-35#constraints[脚注の操作]
     status: planned
+  - name: 注記のマーカー
+    id: annotation-ref
+    kind: tooltip
+    component: CMP-472-58#
+    args:
+      - name: kind
+        value: '`annotation`'
+      - name: number
+        value: 文書の中で最初に参照した順に 1 から振った注記の番号（脚注の番号とは別に数える。map の補足の `annotations` の参照も数える）
+      - name: refIndex
+        value: その注記の何回目の参照か（0 から）。`mount` はページの中で一意な `id` にもう一度振り、`href`・`aria-describedby`・`aria-details` も合わせて修正する
+      - name: afterRef
+        value: 文字を挟まずに脚注の番号か注記のマーカーの直後に続く参照なら `true`
+      - name: bodies
+        value: '定義（`※[ID]: 本文` と字下げ 4 で続く段落）を描いた段落ごとの行内の HTML。用語の下線とやめた言い方のマーカーを付けない'
+    position: 描く先の要素 > 本文の文字・表のセル・見出し
+    description: 注記の参照の場所に、マーカーの色で「※」と番号の上付きのマーカーを出し、ポインターとフォーカスで「注記 {番号}」のツールチップを出す
+    label: 注記 {番号}（ツールチップのタイトルと、マーカーのリンクのスクリーンリーダー向けの名前）
+    visible_when: '`annotations` がオンで、定義のある参照があるとき'
+    action: 脚注の番号と同じ（ポインター・フォーカスでツールチップを出し、Esc で削除する。押すと閉じた注記の一覧を開いて該当の項目へフォーカスを移す。タッチと印刷の振る舞いも脚注と同じ）
+    refs:
+      - IF-472-34#constraints[注記]
+      - IF-472-35#constraints[脚注の操作]
+    status: planned
+  - name: 注記の一覧
+    id: annotations
+    kind: details
+    component: CMP-472-57#
+    args:
+      - name: kind
+        value: '`annotation`'
+      - name: items
+        value: 参照された注記を番号の順に並べたもの。`number` は本文の番号、`html` は定義を描いた HTML（用語の下線とやめた言い方のマーカーを付けない）、`refCount` は本文と map の補足で参照した回数。参照されない定義は入れない
+    position: 描く先の要素 > 本文の後（脚注の一覧の後・関連文書の一覧の前）
+    description: 本文の注記を、見出し「注記（{件数} 件）」の閉じた一覧にまとめ、項目ごとに参照の場所へ戻るリンクを配置する
+    label: 注記（{件数} 件）
+    visible_when: '`annotations` がオンで、参照された注記が 1 つ以上あるとき'
+    action: 見出しを押すと開閉する。戻るリンクを押すと参照の場所のマーカー（map の図の要素の参照なら、その要素のツールチップの持ち主）へフォーカスを移す。印刷では開いて出し、戻るリンクを出さない
+    refs:
+      - IF-472-34#constraints[注記]
+      - IF-472-35#constraints[map の図の注記の区分]
+    status: planned
   - name: 表のテーブル設定のボタン
     id: table-settings-toggle
     kind: button

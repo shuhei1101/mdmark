@@ -60,6 +60,28 @@ states:
         value: '''true'''
     notes:
       定義: 部品設計『mapの構成図』の Collapsed
+  - name: Annotation
+    description: map の構成図のノードの説明の下に、線で分けた注記の区分（見出し `注記 1` と本文）を出した
+    args:
+      - name: kind
+        value: hint
+      - name: hint
+        value: 入力の値を判定の条件と比べる
+      - name: annotations
+        value: '[{"number":1,"html":"条件を満たさないときは次の工程へ進む。"}]'
+      - name: open
+        value: 'true'
+    notes:
+      定義: モック `docs/mock/components/annotation/` の「map の図のノードと線のツールチップ」
+  - name: AnnotationOnlyWire
+    description: 説明を持たず注記だけを持つ線のツールチップ。線の詳細の区分の代わりに、注記の区分だけを出す
+    args:
+      - name: kind
+        value: wire
+      - name: annotations
+        value: '[{"number":1,"html":"条件を満たさないときは次の工程へ進む。"}]'
+      - name: open
+        value: 'true'
 lead: map の構成図の線・ノードのマーカー・グループのタイトルのマーカー、ER 図のテーブルの説明のボタン、グラフの項目、埋め込んだ HTML の `data-hint` に付くツールチップ。map の構成図は補足の `notes` の説明を、ER 図はテーブルの概要と列の説明を、グラフは系列か項目の名前と値を出す。ノードの中の用語は用語のツールチップを使用する。
 args:
   - name: kind
@@ -103,6 +125,10 @@ args:
     required: false
     enabled_when: '`kind` が `merged` のとき'
     description: まとめた元の線（`{ from, to, label }`）。`{元} → {先}` とラベルを 1 行ずつ並べる
+  - name: annotations
+    type: オブジェクトの配列
+    required: false
+    description: '持ち主が補足の `notes.{ID}.annotations` で参照する注記（`{ number, html }`。番号の順）。どの `kind` でも、ツールチップの末尾に注記ごとに `span.mdmark-term-tip-section`（見出し `span.mdmark-term-tip-heading.mdmark-note-tip-heading` の `注記 {number}` と本文）を追加し、前の区分と線で分ける。空か省いたときは追加しない'
 events:
   - name: 開く・閉じる
     when: 持ち主にポインターを乗せるかフォーカスする。離すか Esc を押す。タッチの端末では持ち主をタップする。もう一度タップするか、ツールチップと持ち主の外をタップする
@@ -118,6 +144,7 @@ accessibility:
   - ホバーとフォーカスの両方で出し、Esc で消え、上に乗っても消えない（WCAG 1.4.13）。タッチの端末では持ち主のタップで開閉を切り替え、ツールチップと持ち主の外のタップで閉じる。ポインターの形状は変えない
   - 理解に必須のことは入れず、線とノードの要約だけで図を理解できるようにする。印刷では出さない
   - グループのタイトルのマーカーのボタンは `aria-label="「{タイトル}」の説明"` を持つ。グラフの項目はフォーカスしたときに輪で示す
+  - 注記だけを持つノード・グループのマーカーのボタンは `aria-label="「{名前}」の注記"`、説明と注記の両方を持つときは `aria-label="「{名前}」の説明と注記"` を持つ。注記だけを持つ線も、説明を持つ線と同じ押せる帯を持つ
 status: planned
 introduced:
   pr: 42

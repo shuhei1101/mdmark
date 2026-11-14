@@ -1,11 +1,17 @@
 id: CMP-472-57
 visibility: internal
 title: 脚注の一覧
-lead: 描いた文書の本文の後ろ・関連文書の一覧の前に、「脚注（{件数} 件）」の見出しで閉じた脚注の一覧を配置し、項目ごとに脚注の中身と本文の参照へ戻るリンクを並べる。HTML 文字列を返却し、ブラウザと Node で同じ出力になる。
+lead: 描いた文書の本文の後ろ・関連文書の一覧の前に、「脚注（{件数} 件）」の見出しで閉じた脚注の一覧を配置し、項目ごとに脚注の中身と本文の参照へ戻るリンクを並べる。注記の一覧は同じ部品で「注記（{件数} 件）」の見出しにし、脚注の一覧の後ろに配置する。HTML 文字列を返却し、ブラウザと Node で同じ出力になる。
 implementation: src/parts/footnote.ts#renderFootnotes
 story: Parts/Footnotes
 test_file: tests/integration/lib/footnote.story.test.ts
 args:
+  - name: kind
+    type: 列挙
+    required: false
+    default: '`footnote`'
+    choices: '`footnote`（脚注）・`annotation`（注記）'
+    description: 脚注の一覧か注記の一覧か。`annotation` は `details` に `mdmark-notes` を付け、見出しを `注記（{件数} 件）`、項目の頭を「※{番号}」、項目の `id` を `mdmark-note-{number}`、戻るリンクの `href` を `#mdmark-noteref-{number}-{i}`、読み上げの名前を `本文の注記 {番号} へ戻る` にする
   - name: items
     type: オブジェクトの配列
     required: true
@@ -56,11 +62,24 @@ states:
         value: '[{"number":11,"html":"<p>既定のテーマは dev-swiss で、<code>colorTheme</code> で選べる。</p><p>明暗は OS の配色に合わせ、<a href=\"../使い方/カスタマイズ/テーマを上書きする.md\">テーマを選ぶ</a> の手順で固定できる。</p>","refCount":1},{"number":12,"html":"<p>短い補足。</p>","refCount":1}]'
       - name: open
         value: 'true'
+  - name: Annotations
+    description: 開いた注記の一覧。見出し `注記（2 件）` と、「※1」・「※2」の頭と本文、戻るリンクが並ぶ。1 つ目は 2 か所から参照され、戻るリンクが `a`・`b` の 2 つ
+    args:
+      - name: kind
+        value: annotation
+      - name: items
+        value: '[{"number":1,"html":"<p>条件を満たさないときは次の工程へ進む。</p>","refCount":2},{"number":2,"html":"<p>画像は data URL で埋める。</p>","refCount":1}]'
+      - name: open
+        value: 'true'
 css_properties:
   - name: --mdmark-color-footnote-ref
     syntax: <color>
     default: var(--mdmark-color-link)
     description: 一覧の番号の色（本文の番号と同じ変数）
+  - name: --mdmark-color-annotation-ref
+    syntax: <color>
+    default: var(--mdmark-color-footnote-ref)
+    description: 注記の一覧の「※{番号}」の色（本文の注記のマーカーと同じ変数）
 uses:
   - component: CMP-472-58#
     how: 一覧の番号を本文の番号と同じ角括弧・マーカーの色にする
@@ -72,7 +91,9 @@ accessibility:
 refs:
   - IF-472-34#constraints[脚注]
   - IF-472-35#constraints[脚注の操作]
+  - IF-472-34#constraints[注記]
 status: planned
 notes:
   出力の構造: '`<details class="mdmark-footnotes"><summary>脚注（{件数} 件）</summary><ol class="mdmark-footnotes-list"><li class="mdmark-fn-item" id="mdmark-fn-{number}">{html の最後の p の末尾に <a class="mdmark-fn-back" href="#mdmark-fnref-{number}-{i}" aria-label="…">{lucide の corner-up-left}{a・b}</a>}</li>…</ol></details>`。見出しの文言と配置場所は確認ログの決定。モックは `docs/mock/components/footnote/`'
   印刷: 印刷では `mount` が一覧を開き、戻るリンクと `summary` の開閉のマーカーを出さない
+  注記の一覧: '`kind` が `annotation` のとき `<details class="mdmark-footnotes mdmark-notes"><summary>注記（{件数} 件）</summary><ol class="mdmark-footnotes-list"><li class="mdmark-fn-item" id="mdmark-note-{number}">…</li>…</ol></details>`。脚注の一覧と分けて並べることは確認ログの決定（案 A）。モックは `docs/mock/components/annotation/`'

@@ -46,10 +46,6 @@
       font-variant-numeric: tabular-nums;
     }
 
-    /* 案 C のツールチップのタイトル: 「注記 1」の頭の「※」は付けない（番号で対応が分かるため） */
-    .mdmark-note-ref[data-mock-variant="number"] .mdmark-fn-tip-title::before {
-      content: none;
-    }
 
     /* 脚注の番号か注記のマーカーの直後に続くマーカー（間に文字が無い。描くときに is-after-ref を付ける）: 押す範囲が重ならないよう、マーカーの中心の間を 24px 以上空ける */
     .mdmark-note-ref.is-after-ref {
@@ -101,12 +97,5 @@
       border-block-start: 1px solid var(--mdmark-color-border);
     }
 
-    /* 本文のマーカーのツールチップのタイトルと、図のツールチップの注記の区分の見出しの頭: マーカーと同じ「※」 */
-    .mdmark-note-ref .mdmark-fn-tip-title::before,
-    .mdmark-note-tip-heading::before {
-      margin-inline-end: 0.2em;
-      color: var(--mdmark-color-annotation-ref);
-      content: "※";
-    }
   }
 }
