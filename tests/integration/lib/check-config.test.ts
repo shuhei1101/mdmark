@@ -1276,6 +1276,72 @@ test("test_normal_when_map_data_drift", async () => {
   expect(await snapshotFiles(dir, MAP_FILES)).toEqual(before);
 });
 
+// ER 図・状態遷移図の map の補足が指す無いテーブル・列・関連・遷移の ID と、groups の誤りをずれにする（正常系（ER 図・状態遷移図の map の補足にずれがある））
+test("test_normal_when_map_er_state_data_drift", async () => {
+  // 準備
+  const a = [
+    "# A",
+    "",
+    "<!-- map -->",
+    "```mermaid",
+    "erDiagram",
+    '  注文 ||--|{ 明細 : "含む"',
+    '  注文 ||..o{ 明細 : "控える"',
+    "```",
+    "",
+    '<!-- map-data: {"version": 1, "notes": {"注文.幽霊": {"text": "無い列"}, "r3": {"text": "無い関連"}}, "groups": {"記録": {"title": "記録", "tables": ["注文", "支払い"]}, "明細": {"title": "明細", "tables": ["明細"]}}} -->',
+    "",
+    "<!-- /map -->",
+    "",
+    ...Array.from({ length: 6 }, () => ""),
+    "<!-- map -->",
+    "```mermaid",
+    "stateDiagram-v2",
+    "  [*] --> 下書き",
+    "```",
+    "",
+    "",
+    '<!-- map-data: {"version": 1, "notes": {"t2": {"text": "無い遷移"}}} -->',
+    "",
+    "<!-- /map -->",
+    "",
+  ];
+  expect(a.indexOf("<!-- map -->") + 1).toBe(3);
+  expect(a.lastIndexOf("<!-- map -->") + 1).toBe(20);
+  const data = a.flatMap((line, index) =>
+    line.startsWith("<!-- map-data") ? [index + 1] : [],
+  );
+  expect(data).toEqual([10, 27]);
+  const dir = await createMapDir(a);
+  const before = await snapshotFiles(dir, MAP_FILES);
+  // 実行
+  const result = await runCli(["check"], dir);
+  // 検証
+  expect(result.code).toBe(1);
+  const lines = linesOf(result.stdout);
+  const at = (line: number, kind: string) =>
+    lines.filter((item) => item.startsWith(`docs/a.mark.md:${line}: ${kind}:`));
+  const refs = at(10, "map_unknown_ref");
+  expect(refs).toHaveLength(3);
+  expect(refs.some((item) => item.includes("notes.注文.幽霊"))).toBe(true);
+  expect(refs.some((item) => item.includes("notes.r3"))).toBe(true);
+  expect(
+    refs.some(
+      (item) => item.includes("groups.記録.tables") && item.includes("支払い"),
+    ),
+  ).toBe(true);
+  const invalid = at(10, "map_invalid_value");
+  expect(invalid).toHaveLength(1);
+  expect(invalid[0]).toContain("明細");
+  expect(invalid[0]).toContain("付け直して");
+  const state = at(27, "map_unknown_ref");
+  expect(state).toHaveLength(1);
+  expect(state[0]).toContain("notes.t2");
+  expect(state[0]).toContain("t{番号}");
+  expect(lines.at(-1)).toBe("ずれ 5 件");
+  expect(await snapshotFiles(dir, MAP_FILES)).toEqual(before);
+});
+
 // --text の Markdown の map の範囲の書き方の警告を、警告の項目ごとのずれにする（正常系（文字列の map の書き方の警告））
 test("test_normal_when_text_map_warnings", async () => {
   // 準備

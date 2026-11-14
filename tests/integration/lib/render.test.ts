@@ -37,8 +37,11 @@ import {
 } from "../../unit/helpers/html.ts";
 import {
   DATA as MAP_DATA,
+  ER as MAP_ER,
+  ER_DATA as MAP_ER_DATA,
   FLOW as MAP_FLOW,
   SEQUENCE as MAP_SEQUENCE,
+  STATE as MAP_STATE,
   mapRange,
 } from "../../unit/helpers/map.ts";
 import { stripSourceLine } from "../../unit/helpers/source-line.ts";
@@ -4582,12 +4585,15 @@ test("test_normal_when_map_range", async () => {
       data: MAP_DATA,
     }),
     mapRange({ mermaid: MAP_SEQUENCE }),
+    mapRange({ mermaid: MAP_ER, data: MAP_ER_DATA }),
+    mapRange({ mermaid: MAP_STATE }),
+    mapRange({ mermaid: MAP_STATE.replace("stateDiagram-v2", "stateDiagram") }),
   ].join("\n");
   // 実行
   const html = render(markdown);
   // 検証
   const ranges = findTags(html, 'class="mdmark-map"');
-  expect(ranges).toHaveLength(2);
+  expect(ranges).toHaveLength(5);
   expect(ranges[0]).toContain('data-map="1"');
   expect(ranges[0]).toContain('data-map-kind="flowchart"');
   expect(ranges[0]).toContain(
@@ -4595,12 +4601,17 @@ test("test_normal_when_map_range", async () => {
   );
   expect(ranges[1]).toContain('data-map="2"');
   expect(ranges[1]).toContain('data-map-kind="sequenceDiagram"');
+  // ER 図と状態遷移図（stateDiagram-v2・stateDiagram）の範囲
+  expect(ranges[2]).toContain('data-map="3"');
+  expect(ranges[2]).toContain('data-map-kind="erDiagram"');
+  expect(ranges[3]).toContain('data-map-kind="stateDiagram"');
+  expect(ranges[4]).toContain('data-map-kind="stateDiagram"');
   const codes = findTags(html, 'class="mdmark-code"');
-  expect(codes).toHaveLength(2);
+  expect(codes).toHaveLength(5);
   for (const code of codes) expect(code).not.toContain("data-mdmark-mermaid");
-  expect(findTags(html, 'class="language-mermaid"')).toHaveLength(2);
+  expect(findTags(html, 'class="language-mermaid"')).toHaveLength(5);
   const data = findTags(html, 'class="mdmark-map-data"');
-  expect(data).toHaveLength(1);
+  expect(data).toHaveLength(2);
   expect(data[0]).toMatch(/^<pre /);
   expect(data[0]).toContain("hidden");
   expect(plainText(html)).toContain('"walkthroughs"');
@@ -4651,6 +4662,8 @@ test("test_normal_when_map_written_wrongly", async () => {
   expect(warning(pieces[2] ?? "")).toBe(1);
   expect(plainText(pieces[2] ?? "")).toContain("flowchart");
   expect(plainText(pieces[2] ?? "")).toContain("sequenceDiagram");
+  expect(plainText(pieces[2] ?? "")).toContain("erDiagram");
+  expect(plainText(pieces[2] ?? "")).toContain("stateDiagram-v2");
   expect(findTags(pieces[2] ?? "", 'class="mdmark-map"')).toHaveLength(0);
   expect(findTags(pieces[2] ?? "", "language-mermaid")).toHaveLength(1);
   // 4・5 つ目: mermaid のブロックが無い範囲・補足が 2 つの範囲
