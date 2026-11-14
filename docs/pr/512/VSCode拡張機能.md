@@ -86,7 +86,7 @@ diff の見どころ: `vscode/package.json` の `@vscode/vsce` を 4.1.1 に上�
 
 | ファイル | メソッド | 変更種別 | 結果 | 補足 |
 | --- | --- | --- | --- | --- |
-| `npm run lint`・`npm run lint:eslint`・`npm run typecheck`・`npm --prefix vscode run typecheck` | 全実行 | 実行のみ | ✅ | `テスト結果/20261114132814_37ca2837_lint.log`（直下の依存を確認する結合テストの追加の後。前回は `テスト結果/20261114125608_d79a9dfb_lint.log`） |
+| `npm run lint`・`npm run lint:eslint`・`npm run typecheck`・`npm --prefix vscode run typecheck` | 全実行 | 実行のみ | ✅ | `テスト結果/20261114134826_a8655737_lint.log`（develop の取り込み `a8655737` の後。前回は `テスト結果/20261114132814_37ca2837_lint.log`） |
 
 ### 結合
 
@@ -96,6 +96,8 @@ diff の見どころ: `vscode/package.json` の `@vscode/vsce` を 4.1.1 に上�
 | `vscode/tests/integration/*.test.ts`（上記以外） | 全実行 | 実行のみ | ✅ | VS Code 1.141.0 と stable の両方で 83 passing<br>`テスト結果/20261114124650_d79a9dfb_VSCode拡張機能の結合テスト.log` |
 
 | [vscode/tests/integration/release.test.ts](https://github.com/shuhei1101/mdmark/blob/37ca2837/vscode/tests/integration/release.test.ts) | `test_normal` | 変更 | ✅ | レビューの任意の指摘で、リポジトリの直下の `npm ci` が `npm --prefix vscode run package` より前にあることの確認を追加。37ca2837 で 2 回実行し、2 回とも両方のバージョンで pass<br>`テスト結果/20261114130458_37ca2837_VSCode拡張機能の結合テスト.log`・`テスト結果/20261114131254_37ca2837_VSCode拡張機能の結合テスト.log` |
+
+| `vscode/tests/integration/*.test.ts` | 全実行 | 実行のみ | ✅ | develop の取り込み（`a8655737`。#531 の `src/map/` を拡張機能が読み込む）の後、VS Code 1.141.0 と stable の両方で 83 passing・終了コード 0<br>`テスト結果/20261114135109_a8655737_VSCode拡張機能の結合テスト.log` |
 
 37ca2837 の 2 回の実行では、この PR が触れていない既知の不安定なテストが 1 件ずつ fail した（1 回目は stable の `preview-rerender.test.ts` の `test_normal_when_map_configured`（#535）、2 回目は stable の `preview-open.test.ts` の `test_normal_when_version_pinned`（#563））。`拡張機能の配布物を作る` の 2 件は全ての実行で pass し、その他の fail はどちらもこの PR の変更（ワークフロー・`vscode/package.json`・`release.test.ts`）に関わらないため、実行し直しを止めた。
 
