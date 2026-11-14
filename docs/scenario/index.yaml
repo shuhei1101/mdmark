@@ -115,7 +115,7 @@ items:
 - page: SC-472-6.yaml
   summary: 開いている Markdown を HTML に書き出し、既定のブラウザで開く
 - page: SC-472-50.yaml
-  summary: 開発者が `vscode-v{バージョン}` のタグを打つと、GitHub Actions が .vsix を作って GitHub Release に添える
+  summary: 開発者が `vscode-v{バージョン}` のタグを打つと、GitHub Actions が .vsix を作って GitHub Release に添え、Marketplace へ公開する
 - page: SC-472-9.yaml
   summary: 開いている Markdown を書き出した HTML をブラウザで開き、印刷のダイアログで PDF にする
 - page: SC-472-60.yaml
