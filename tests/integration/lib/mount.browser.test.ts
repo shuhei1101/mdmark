@@ -16392,8 +16392,16 @@ const wireDimmed = (figure: Element, id: string): boolean =>
 
 // map の ER 図を描く（正常系）
 test("test_normal_when_map_er_drawn", async () => {
-  // 準備・実行
-  const { figures } = await mountMap(MAP_ER_MARKDOWN);
+  // 準備・実行（分類「記録」の説明を補足の notes に追加する）
+  const data = JSON.parse(MAP_ER_DATA);
+  data.notes.記録 = { text: "注文に付く記録" };
+  const { figures } = await mountMap(
+    mapRange({
+      args: '{"title": "記録の構造"}',
+      mermaid: MAP_ER,
+      data: JSON.stringify(data),
+    }),
+  );
   const figure = figures()[0] as HTMLElement;
   // 検証: タイトル
   expect(figure.querySelector(".mdmark-diagram-title")?.textContent).toBe(
@@ -16431,6 +16439,16 @@ test("test_normal_when_map_er_drawn", async () => {
   // 検証: 分類のグループ
   const group = find<HTMLElement>(figure, '.map-group[data-group="記録"]');
   expect(group.textContent).toContain("記録");
+  // 検証: 分類の説明は、タイトルの右のマーカーのツールチップに出る
+  const groupInfo = find<HTMLButtonElement>(
+    group,
+    "button.mdmark-diagram-group-info",
+  );
+  groupInfo.focus();
+  await vi.waitFor(() =>
+    expect(openTipText(groupInfo)).toContain("注文に付く記録"),
+  );
+  groupInfo.blur();
   const box = group.getBoundingClientRect();
   for (const node of nodes) {
     const rect = node.getBoundingClientRect();

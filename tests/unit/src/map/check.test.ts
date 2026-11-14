@@ -274,7 +274,11 @@ test("test_collect_map_problems_when_er", async () => {
     'erDiagram\n  注文 {\n    int id PK\n  }\n  明細 {\n    int id PK\n    int 注文ID FK\n  }\n  注文 ||--|{ 明細 : "含む"\n  明細 }o--|| 注文 : "戻る"\n';
   const data = JSON.stringify({
     version: 1,
-    notes: { "注文.幽霊": { text: "a" }, r3: { text: "b" } },
+    notes: {
+      "注文.幽霊": { text: "a" },
+      r3: { text: "b" },
+      記録: { text: "分類の説明" },
+    },
     groups: {
       記録: { title: "記録", tables: ["注文", "支払い"] },
       明細: { title: "明細の分類", tables: ["明細"] },
@@ -289,6 +293,10 @@ test("test_collect_map_problems_when_er", async () => {
   expect(
     problems.filter((item) => item.kind === "map_invalid_value"),
   ).toHaveLength(1);
+  // 分類の ID の説明はずれにしない
+  expect(problems.some((item) => item.message.includes("notes.記録"))).toBe(
+    false,
+  );
 });
 
 // 状態遷移図の補足のずれ（異常系）
