@@ -1038,9 +1038,12 @@ const routeEdges = (
 export const layoutMap = (
   chart: Flowchart,
   view: MapView,
-  overrides: Record<string, MapOverride>,
-  nodeFit: "height" | "width",
+  options: {
+    overrides: Record<string, MapOverride>;
+    nodeFit: "height" | "width";
+  },
 ): MapLayout => {
+  const { overrides, nodeFit } = options;
   const maxWidth =
     nodeFit === "width" ? MAP_LAYOUT.maxWidthWide : MAP_LAYOUT.maxWidth;
   const { root, edges } = buildView(chart, view, overrides, maxWidth);

@@ -215,12 +215,12 @@ export class PreviewPanel {
       return;
     }
     this.ready = false;
-    this.cspLibraryOrigins = libraryOrigins(
-      this.rawLibraries,
-      this.rawHtmlScripts,
-      this.rawMermaid,
-      this.rawSyntax,
-    );
+    this.cspLibraryOrigins = libraryOrigins({
+      libraries: this.rawLibraries,
+      htmlScripts: this.rawHtmlScripts,
+      mermaid: this.rawMermaid,
+      syntax: this.rawSyntax,
+    });
     const webview = this.webviewPanel.webview;
     this.updateResourceRoots();
     const nonce = createNonce();
@@ -463,12 +463,12 @@ export class PreviewPanel {
     if (!(await this.reloadConfig())) {
       return;
     }
-    const next = libraryOrigins(
-      this.rawLibraries,
-      this.rawHtmlScripts,
-      this.rawMermaid,
-      this.rawSyntax,
-    );
+    const next = libraryOrigins({
+      libraries: this.rawLibraries,
+      htmlScripts: this.rawHtmlScripts,
+      mermaid: this.rawMermaid,
+      syntax: this.rawSyntax,
+    });
     const sameOrigins =
       next.length === this.cspLibraryOrigins.length &&
       next.every((origin) => this.cspLibraryOrigins.includes(origin));

@@ -865,10 +865,13 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
     const layout = layoutMap(
       parseFlowchart(args.source === "long" ? MAP_FLOW_LONG : MAP_FLOW),
       { collapsed, entered },
-      jsonObject(args.ends) === undefined
-        ? {}
-        : { "mount->marker": { ends: jsonObject(args.ends) } },
-      args.node_fit === "width" ? "width" : "height",
+      {
+        overrides:
+          jsonObject(args.ends) === undefined
+            ? {}
+            : { "mount->marker": { ends: jsonObject(args.ends) } },
+        nodeFit: args.node_fit === "width" ? "width" : "height",
+      },
     );
     const focus = jsonObject<{ nodes: string[]; wires: string[] }>(args.focus);
     const selected = jsonList(args.selected);
@@ -930,8 +933,7 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
     const placed = layoutMap(
       erToFlowchart(er, data.groups),
       { collapsed, entered },
-      erOverrides(er, new Set(collapsed)),
-      "height",
+      { overrides: erOverrides(er, new Set(collapsed)), nodeFit: "height" },
     );
     const layout = {
       ...placed,
@@ -982,8 +984,7 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
     const layout = layoutMap(
       chart,
       { collapsed, entered },
-      overrides,
-      "height",
+      { overrides, nodeFit: "height" },
     );
     const part = renderMapStateDiagram({
       layout,

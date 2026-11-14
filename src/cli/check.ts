@@ -290,7 +290,7 @@ export async function loadExtensionDirectives(
     if (!(await exists(resolve(loaded.dir, path)))) {
       continue;
     }
-    const bundled = await bundleModule(path, loaded.dir, undefined, build);
+    const bundled = await bundleModule(path, loaded.dir, { build });
     if ("error" in bundled) {
       issues.push({
         file,

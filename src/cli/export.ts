@@ -156,12 +156,10 @@ async function bundleSyntax(options: {
   }
   const folder = url.endsWith("/") ? url : `${url}/`;
   const bundle = async (path: string): Promise<string | undefined> => {
-    const result = await bundleModule(
-      `${folder}${path}`,
-      loaded.dir,
+    const result = await bundleModule(`${folder}${path}`, loaded.dir, {
       fetchText,
       build,
-    );
+    });
     if ("code" in result) {
       return moduleSource(`${folder}${path}`, loaded.dir);
     }
@@ -303,7 +301,7 @@ export async function prepareEmbeds(options: EmbedOptions): Promise<{
     const url = urls[mark] ?? "";
     let pending = bundled.get(url);
     if (!pending) {
-      pending = bundleModule(url, loaded.dir, fetchText, build);
+      pending = bundleModule(url, loaded.dir, { fetchText, build });
       bundled.set(url, pending);
     }
     const result = await pending;
@@ -324,7 +322,7 @@ export async function prepareEmbeds(options: EmbedOptions): Promise<{
   // 設定の拡張を 1 つずつまとめてみる
   const extensions: string[] = [];
   for (const path of loaded.config.extensions ?? []) {
-    const result = await bundleModule(path, loaded.dir, fetchText, build);
+    const result = await bundleModule(path, loaded.dir, { fetchText, build });
     if ("code" in result) {
       extensions.push(moduleSource(path, loaded.dir));
       if (hasDynamicImport(result.code)) {
@@ -382,12 +380,10 @@ export async function prepareEmbeds(options: EmbedOptions): Promise<{
       config: loaded.config,
     })
   ) {
-    const result = await bundleModule(
-      mermaidConfig.url,
-      loaded.dir,
+    const result = await bundleModule(mermaidConfig.url, loaded.dir, {
       fetchText,
       build,
-    );
+    });
     if ("code" in result) {
       mermaid = moduleSource(mermaidConfig.url, loaded.dir);
     } else {

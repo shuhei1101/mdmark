@@ -33,10 +33,13 @@ export type MapSequenceHandle = {
 export const attachMapSequence = (
   range: HTMLElement,
   config: ResolvedConfig,
-  args: MapArgs,
-  onStep?: (message: number | undefined) => void,
-  follow?: { start: () => void; step: (message: number) => void },
+  options: {
+    args: MapArgs;
+    onStep?: (message: number | undefined) => void;
+    follow?: { start: () => void; step: (message: number) => void };
+  },
 ): MapSequenceHandle => {
+  const { args, onStep, follow } = options;
   const index = Number(range.dataset.map ?? "1");
   const sequence = parseSequence(
     range.querySelector("code")?.textContent ?? "",

@@ -486,13 +486,10 @@ export const renderMapFlow = (args: MapFlowArgs): MapPart => {
     args.annotations === undefined
       ? undefined
       : { items: args.annotations, ownerPrefix };
-  const part = renderFlow(
-    definition,
-    args.id ?? "map",
-    true,
-    undefined,
+  const part = renderFlow(definition, args.id ?? "map", {
+    hints: true,
     annotations,
-  );
+  });
   // ラベルを持たない線の説明とまとめた元の線、注記だけを持つ線は、線の押せる帯を持ち主にしたツールチップにする
   const wireTips = createTips(`${args.id ?? "map"}-wire`);
   const tipped = new Set<string>();

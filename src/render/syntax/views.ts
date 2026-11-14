@@ -183,7 +183,7 @@ export function buildViews(state: StateCore): void {
     // 警告は、範囲の前（マーカーの位置）に差し込む。閉じのマーカーが無い警告は、読み込めない指定の警告の後に並べる
     const source = tokens[open];
     for (const [offset, warning] of warnings.entries()) {
-      pushWarning(state, open + offset, warning, source);
+      pushWarning(state, open + offset, { ...warning, source });
     }
   }
 }

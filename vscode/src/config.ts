@@ -336,12 +336,13 @@ export function resolveSyntax(options: {
 }
 
 /** `libraries` の値と `html-scripts.url`・`mermaid.url`・`syntax.url`（文字列でなければライブラリ本体の既定の URL）のうち `http:`・`https:` の URL の origin を、重なりを除いて返却する */
-export function libraryOrigins(
-  libraries: Record<string, unknown> | undefined,
-  htmlScripts?: Record<string, unknown>,
-  mermaid?: Record<string, unknown>,
-  syntax?: Record<string, unknown>,
-): string[] {
+export function libraryOrigins(settings: {
+  libraries: Record<string, unknown> | undefined;
+  htmlScripts?: Record<string, unknown>;
+  mermaid?: Record<string, unknown>;
+  syntax?: Record<string, unknown>;
+}): string[] {
+  const { libraries, htmlScripts, mermaid, syntax } = settings;
   const origins = new Set<string>();
   const urlOrDefault = (setting?: Record<string, unknown>): string =>
     typeof setting?.url === "string"

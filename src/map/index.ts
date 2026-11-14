@@ -113,7 +113,11 @@ export const attachMap = (
         driving: false,
         clear: () => {},
         attach: (onStep, follow) => {
-          const handle = attachMapSequence(range, config, args, onStep, follow);
+          const handle = attachMapSequence(range, config, {
+            args,
+            onStep,
+            follow,
+          });
           destroyers.push(handle.destroy);
           entry.playsOver = handle.playsOver;
           entry.clear = handle.clear;
@@ -126,12 +130,15 @@ export const attachMap = (
       destroyers.push(attachMapState(range, config, args).destroy);
     } else {
       // 構成図の案内を始めたら、この構成図の上で再生しているシーケンス図の強調を解く（構成図の強調は残す）
-      const handle = attachMapFlow(range, config, args, () => {
-        for (const entry of sequences) {
-          if (entry.playsOver !== number || !entry.driving) continue;
-          entry.driving = false;
-          entry.clear();
-        }
+      const handle = attachMapFlow(range, config, {
+        args,
+        onWalk: () => {
+          for (const entry of sequences) {
+            if (entry.playsOver !== number || !entry.driving) continue;
+            entry.driving = false;
+            entry.clear();
+          }
+        },
       });
       flows.set(number, handle);
       flowIds.set(

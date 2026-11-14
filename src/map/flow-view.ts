@@ -160,10 +160,9 @@ const parentOf = (chart: Flowchart, id: string): string | undefined =>
 export const attachMapFlow = (
   range: HTMLElement,
   config: ResolvedConfig,
-  args: MapArgs,
-  onWalk?: () => void,
-  extension?: MapFlowExtension,
+  options: { args: MapArgs; onWalk?: () => void; extension?: MapFlowExtension },
 ): MapFlowHandle => {
+  const { args, onWalk, extension } = options;
   const index = Number(range.dataset.map ?? "1");
   const source = range.querySelector("code")?.textContent ?? "";
   const chart = extension?.chart ?? parseFlowchart(source);
@@ -212,13 +211,15 @@ export const attachMapFlow = (
     const placed = layoutMap(
       chart,
       { collapsed: state.collapsed, entered: state.entered },
-      overridesOf(
-        data,
-        state,
-        sizes,
-        extension?.overrides?.({ collapsed: new Set(state.collapsed) }),
-      ),
-      config.map.node_fit,
+      {
+        overrides: overridesOf(
+          data,
+          state,
+          sizes,
+          extension?.overrides?.({ collapsed: new Set(state.collapsed) }),
+        ),
+        nodeFit: config.map.node_fit,
+      },
     );
     return extension?.rewire
       ? {

@@ -503,10 +503,13 @@ export function groupInfo(options: {
 export function renderFlow(
   definition: MdmarkFlowDefinition,
   id: string,
-  hints: boolean,
-  lookup?: TermLookup,
-  annotations?: DiagramAnnotations,
+  options: {
+    hints: boolean;
+    lookup?: TermLookup;
+    annotations?: DiagramAnnotations;
+  },
 ): DiagramPart {
+  const { hints, lookup, annotations } = options;
   const tips = createTips(id);
   const found = { terms: false };
   const parts: string[] = [];
@@ -557,9 +560,9 @@ export function renderFlow(
 export function renderEr(
   definition: MdmarkErDefinition,
   id: string,
-  hints: boolean,
-  lookup?: TermLookup,
+  options: { hints: boolean; lookup?: TermLookup },
 ): DiagramPart {
+  const { hints, lookup } = options;
   const tips = createTips(id);
   const found = { terms: false };
   const text = (value: string): string =>
@@ -887,7 +890,7 @@ export function renderDiagram(options: {
   } = options;
   const part =
     kind === "er"
-      ? renderEr(definition as MdmarkErDefinition, id, hints, lookup)
+      ? renderEr(definition as MdmarkErDefinition, id, { hints, lookup })
       : renderChart(definition as MdmarkChartDefinition, id);
   return renderDiagramFrame(
     {
