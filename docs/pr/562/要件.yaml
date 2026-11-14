@@ -59,7 +59,7 @@ docs:
     status: todo
   - page: docs/guide/設定.md
     new: false
-    change: 注記の機能のオン・オフを設定の features に持つ場合、そのキーを追加する（持つかは設計で決める）
+    change: 設定の features に annotations（注記の機能。既定はオン）のキーを追加する
     status: todo
   - page: docs/guide/カスタマイズ-印刷する.md
     new: false
