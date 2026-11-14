@@ -98,12 +98,13 @@ export async function loadConfig(
 }
 
 /** 端末の設定と、今のフォルダから上の設定ファイルを重ねて読み込む。`--config` のファイルが無ければ `CliError` を投げる */
-export async function readLayeredConfig(
-  cwd: string,
-  explicit: string | undefined,
-  purpose: "preview" | "export",
-  keepInvalid = false,
-): Promise<LayeredConfig> {
+export async function readLayeredConfig(options: {
+  cwd: string;
+  explicit: string | undefined;
+  purpose: "preview" | "export";
+  keepInvalid?: boolean;
+}): Promise<LayeredConfig> {
+  const { cwd, explicit, purpose, keepInvalid = false } = options;
   try {
     return await loadLayeredConfig({
       cwd,
@@ -129,7 +130,7 @@ export async function requireConfig(
   cwd: string,
   explicit: string | undefined,
 ): Promise<LoadedConfig> {
-  const layered = await readLayeredConfig(cwd, explicit, "export");
+  const layered = await readLayeredConfig({ cwd, explicit, purpose: "export" });
   const shown = (path: string) =>
     displayConfigPath({ path, base: cwd, home: homedir() });
   if (layered.nearest === undefined) {

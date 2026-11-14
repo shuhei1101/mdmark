@@ -10,6 +10,7 @@ import {
 
 export { cacheFetchText, type FetchText };
 
+import type { Token } from "markdown-it";
 import MarkdownIt from "markdown-it";
 import { type MdmarkConfig, resolveConfig } from "../config.ts";
 import { resolveLink } from "../knowledge/paths.ts";
@@ -131,6 +132,76 @@ export function usesMap(options: {
   );
 }
 
+/** 文字列を JavaScript の文字列のリテラルにする */
+const literal = (value: string): string => JSON.stringify(value);
+
+/** まとめる色分けのモジュールの `import` の行と、`startViewer` の `syntax` の引数（埋めないときは空） */
+function syntaxEntry(syntax: ViewerEmbeds["syntax"]): {
+  imports: string[];
+  argument: string;
+} {
+  if (!syntax) {
+    return { imports: [], argument: "" };
+  }
+  const languages = Object.entries(syntax.languages);
+  const imports = [
+    `import syntaxCore from ${literal(syntax.core)};`,
+    ...languages.map(
+      ([, path], position) =>
+        `import syntaxLanguage${position} from ${literal(path)};`,
+    ),
+  ];
+  const entries = languages
+    .map(
+      ([name], position) =>
+        `${literal(name)}: { default: syntaxLanguage${position} }`,
+    )
+    .join(", ");
+  return {
+    imports,
+    argument: `, syntax: { core: { default: syntaxCore }, languages: { ${entries} } }`,
+  };
+}
+
+/** 範囲のスクリプトの表の引数。範囲のスクリプトは、範囲のコードの文字を鍵に、CommonJS のコードを包んだ関数で既定のエクスポートを返却する（無いときは空） */
+function htmlScriptsArgument(
+  htmlScripts: ViewerEmbeds["htmlScripts"],
+  hideTraces: boolean | undefined,
+): string {
+  if (!htmlScripts?.length) {
+    return "";
+  }
+  const entries = htmlScripts
+    .map(
+      ({ source, code }, position) =>
+        `[${literal(hideTraces ? `${HTML_SCRIPT_KEY_PREFIX}${position}@@` : source)}, () => { const module = { exports: {} }; (function (module, exports, require) {\n${code}\n})(module, module.exports, (name) => { throw new Error("範囲のスクリプトでは require を使用できません: " + name); }); return module.exports.default; }]`,
+    )
+    .join(", ");
+  return `, htmlScripts: new Map([${entries}])`;
+}
+
+/** まとめる部品のモジュールの `import` の行と、`startViewer` の `parts` の引数 */
+function partsEntry(options: {
+  view: string;
+  map?: string | undefined;
+  embeds: ViewerEmbeds;
+}): { imports: string[]; argument: string } {
+  const { view, map, embeds } = options;
+  const withMap = embeds.map && map !== undefined;
+  const imports = [
+    ...(embeds.view ? [`import * as viewPart from ${literal(view)};`] : []),
+    ...(withMap ? [`import * as mapPart from ${literal(map)};`] : []),
+  ];
+  const parts = [
+    ...(embeds.view ? ["view: viewPart"] : []),
+    ...(withMap ? ["map: mapPart"] : []),
+  ];
+  return {
+    imports,
+    argument: parts.length > 0 ? `{ ${parts.join(", ")} }` : "{}",
+  };
+}
+
 /** 起動の処理・部品・色分けを静的な `import`、外部ライブラリと拡張をリテラルの動的 `import()` を返却する関数で取り込み、`startViewer(document, 埋めたモジュール)` を呼ぶ入口のモジュールのソースを返却する */
 export function createViewerEntry(options: {
   /** `dist/viewer.js` の絶対パス */
@@ -144,26 +215,14 @@ export function createViewerEntry(options: {
   /** 範囲のスクリプトの表の鍵を、`bundleViewer` が隠した後に戻す仮の文字列で記載するか */
   hideTraces?: boolean | undefined;
 }): string {
-  const { viewer, view, embeds } = options;
-  const literal = (value: string): string => JSON.stringify(value);
-  const lines = [`import { startViewer } from ${literal(viewer)};`];
-  if (embeds.view) {
-    lines.push(`import * as viewPart from ${literal(view)};`);
-  }
-  if (embeds.map && options.map !== undefined) {
-    lines.push(`import * as mapPart from ${literal(options.map)};`);
-  }
-  const parts = [
-    ...(embeds.view ? ["view: viewPart"] : []),
-    ...(embeds.map && options.map !== undefined ? ["map: mapPart"] : []),
+  const { viewer, embeds } = options;
+  const parts = partsEntry(options);
+  const syntax = syntaxEntry(embeds.syntax);
+  const lines = [
+    `import { startViewer } from ${literal(viewer)};`,
+    ...parts.imports,
+    ...syntax.imports,
   ];
-  const languages = Object.entries(embeds.syntax?.languages ?? {});
-  if (embeds.syntax) {
-    lines.push(`import syntaxCore from ${literal(embeds.syntax.core)};`);
-    languages.forEach(([, path], position) => {
-      lines.push(`import syntaxLanguage${position} from ${literal(path)};`);
-    });
-  }
   if (embeds.mermaid) {
     // mermaid が中で読み込む chunk の動的 `import()` も、同じスクリプトに取り込まれる
     lines.push(`import * as mermaidModule from ${literal(embeds.mermaid)};`);
@@ -173,25 +232,13 @@ export function createViewerEntry(options: {
     .map(([name, path]) => `${literal(name)}: ${lazy(path)}`)
     .join(", ");
   const extensions = embeds.extensions.map(lazy).join(", ");
-  const syntax = embeds.syntax
-    ? `, syntax: { core: { default: syntaxCore }, languages: { ${languages
-        .map(
-          ([name], position) =>
-            `${literal(name)}: { default: syntaxLanguage${position} }`,
-        )
-        .join(", ")} } }`
-    : "";
-  // 範囲のスクリプトは、範囲のコードの文字を鍵に、CommonJS のコードを包んだ関数で既定のエクスポートを返却する
-  const htmlScripts = embeds.htmlScripts?.length
-    ? `, htmlScripts: new Map([${embeds.htmlScripts
-        .map(
-          ({ source, code }, position) =>
-            `[${literal(options.hideTraces ? `${HTML_SCRIPT_KEY_PREFIX}${position}@@` : source)}, () => { const module = { exports: {} }; (function (module, exports, require) {\n${code}\n})(module, module.exports, (name) => { throw new Error("範囲のスクリプトでは require を使用できません: " + name); }); return module.exports.default; }]`,
-        )
-        .join(", ")}])`
-    : "";
+  const htmlScripts = htmlScriptsArgument(
+    embeds.htmlScripts,
+    options.hideTraces,
+  );
+  const mermaid = embeds.mermaid ? ", mermaid: mermaidModule" : "";
   lines.push(
-    `startViewer(document, { parts: ${parts.length > 0 ? `{ ${parts.join(", ")} }` : "{}"}${syntax}${embeds.mermaid ? ", mermaid: mermaidModule" : ""}, libraries: { ${libraries} }, extensions: [${extensions}]${htmlScripts} });`,
+    `startViewer(document, { parts: ${parts.argument}${syntax.argument}${mermaid}, libraries: { ${libraries} }, extensions: [${extensions}]${htmlScripts} });`,
   );
   return `${lines.join("\n")}\n`;
 }
@@ -232,36 +279,35 @@ export async function bundleViewer(options: {
   return code.replace(/<\/(script)/gi, "<\\/$1").replaceAll("<!--", "<\\x21--");
 }
 
+/** トークンが表示する画像の `src`（行内の子の順、HTML のブロックの `img` は最後） */
+function tokenImageSources(token: Token): string[] {
+  const sources = (token.children ?? []).flatMap((child) => {
+    if (child.type === "image") {
+      const src = child.attrGet("src");
+      return [typeof src === "string" ? src : ""];
+    }
+    return child.type === "html_inline" ? imgSources(child.content) : [];
+  });
+  if (token.type === "html_block") {
+    sources.push(...imgSources(token.content));
+  }
+  return sources;
+}
+
 /** Markdown の画像の場所の一覧: その場所を含む行の範囲と、`src` の文字 */
 function findImageSources(
   markdown: string,
 ): Array<{ start: number; end: number; src: string }> {
   const tokens = new MarkdownIt({ html: true }).parse(markdown, {});
-  const found: Array<{ start: number; end: number; src: string }> = [];
-  for (const token of tokens) {
+  return tokens.flatMap((token) => {
     if (!token.map) {
-      continue;
+      return [];
     }
     const [start, end] = token.map;
-    const sources: string[] = [];
-    for (const child of token.children ?? []) {
-      if (child.type === "image") {
-        const src = child.attrGet("src");
-        sources.push(typeof src === "string" ? src : "");
-      } else if (child.type === "html_inline") {
-        sources.push(...imgSources(child.content));
-      }
-    }
-    if (token.type === "html_block") {
-      sources.push(...imgSources(token.content));
-    }
-    for (const src of sources) {
-      if (src !== "") {
-        found.push({ start, end, src });
-      }
-    }
-  }
-  return found;
+    return tokenImageSources(token)
+      .filter((src) => src !== "")
+      .map((src) => ({ start, end, src }));
+  });
 }
 
 /** HTML の文字列の `img` の `src` を取得する */
@@ -269,6 +315,21 @@ function imgSources(html: string): string[] {
   return [
     ...html.matchAll(/<img\b[^>]*?\bsrc\s*=\s*(?:"([^"]*)"|'([^']*)')/gi),
   ].map((match) => match[1] ?? match[2] ?? "");
+}
+
+/** 絶対 URL の画像（動画・音声を除く）を、`src` ごとに 1 回だけ警告する文言 */
+function absoluteImageWarnings(markdown: string): string[] {
+  const warned = new Set<string>();
+  for (const { src } of findImageSources(markdown)) {
+    const media = ["video", "audio"].includes(mediaKindOf(src));
+    if (isAbsoluteSrc(src) && !media) {
+      warned.add(src);
+    }
+  }
+  return [...warned].map(
+    (src) =>
+      `画像 \`${src}\` は絶対 URL のため埋めません。開いたときに外へ要求します。`,
+  );
 }
 
 /** Markdown の画像の相対パス（画像の属性の `poster=` を含む）を、文書のフォルダか `assetsRoot` で探して読み込んだ `data:` URL に替える（フラグメントは後ろに残す）。`assets` を指定したときは `mdmark-asset:{キー}` に替え、`data:` URL を `assets` に入れる。動画・音声は替えない。読み込めない画像は記載したまま残して警告に、絶対 URL の画像は読み込まずに残して警告にする */
@@ -282,26 +343,19 @@ export async function inlineImages(
     assets?: Map<string, { key: string; url: string }>;
   } = {},
 ): Promise<{ markdown: string; warnings: string[] }> {
-  const warnings: string[] = [];
-  const warned = new Set<string>();
-  for (const { src } of findImageSources(markdown)) {
-    const media = ["video", "audio"].includes(mediaKindOf(src));
-    if (isAbsoluteSrc(src) && !media && !warned.has(src)) {
-      warned.add(src);
-      warnings.push(
-        `画像 \`${src}\` は絶対 URL のため埋めません。開いたときに外へ要求します。`,
-      );
-    }
-  }
+  const warnings = absoluteImageWarnings(markdown);
   // 同じ `src` は 1 回だけ読み込む
   const urls = new Map<string, string | undefined>();
   const replacements: Array<{ offset: number; src: string; to: string }> = [];
-  for (const ref of findAssetRefs(markdown)) {
-    if (ref.kind !== "image" && ref.kind !== "poster") {
-      continue;
-    }
+  const images = findAssetRefs(markdown).filter(
+    (ref) => ref.kind === "image" || ref.kind === "poster",
+  );
+  for (const ref of images) {
     if (!urls.has(ref.src)) {
-      urls.set(ref.src, await readImage(ref.src, docFile, options, warnings));
+      urls.set(
+        ref.src,
+        await readImage({ src: ref.src, docFile, options, warnings }),
+      );
     }
     const url = urls.get(ref.src);
     if (url !== undefined && ref.offset >= 0) {
@@ -334,15 +388,16 @@ function fragmentOf(src: string): string {
 }
 
 /** 画像 1 つを探して読み込み、`data:` URL（`assets` を指定したときは `mdmark-asset:{キー}`）にする。埋められないときは理由を `warnings` に追加して `undefined` を返却する */
-async function readImage(
-  src: string,
-  docFile: string,
+async function readImage(target: {
+  src: string;
+  docFile: string;
   options: {
     assetsRoot?: string | undefined;
     assets?: Map<string, { key: string; url: string }>;
-  },
-  warnings: string[],
-): Promise<string | undefined> {
+  };
+  warnings: string[];
+}): Promise<string | undefined> {
+  const { src, docFile, options, warnings } = target;
   const mime = IMAGE_MIME[extname(src.split(/[?#]/)[0] ?? "").toLowerCase()];
   if (mime === undefined) {
     warnings.push(
@@ -394,7 +449,7 @@ export function findOutsideLinks(
   paths: ReadonlySet<string>,
 ): string[] {
   const tokens = new MarkdownIt({ html: true }).parse(markdown, {});
-  const outside: string[] = [];
+  const outside = new Set<string>();
   for (const token of tokens) {
     for (const child of token.children ?? []) {
       const href = child.type === "link_open" ? child.attrGet("href") : null;
@@ -402,17 +457,15 @@ export function findOutsideLinks(
         continue;
       }
       const target = resolveLink(docPath, href);
-      // markdown-it が符号化したリンクを、記載したままの構造に戻す
-      const written = decodeHref(href);
       if (
         target !== undefined &&
         extname(target) === ".md" &&
-        !paths.has(target) &&
-        !outside.includes(written)
+        !paths.has(target)
       ) {
-        outside.push(written);
+        // markdown-it が符号化したリンクを、記載したままの構造に戻す
+        outside.add(decodeHref(href));
       }
     }
   }
-  return outside;
+  return [...outside];
 }
