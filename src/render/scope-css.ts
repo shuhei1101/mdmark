@@ -44,6 +44,29 @@ function stripComments(css: string): string {
   return result;
 }
 
+/** `{` の次の位置から、文字列とコメントを飛ばしながら対応する `}` を探し、中身の終わりと `}` の次の位置を返却する（閉じなければ両方とも末尾） */
+function findBlockEnd(
+  css: string,
+  bodyStart: number,
+): { bodyEnd: number; next: number } {
+  let depth = 1;
+  let index = bodyStart;
+  while (index < css.length && depth > 0) {
+    const skipped = skipQuoted(css, index);
+    if (skipped !== index) {
+      index = skipped;
+      continue;
+    }
+    if (css[index] === "{") {
+      depth += 1;
+    } else if (css[index] === "}") {
+      depth -= 1;
+    }
+    index += 1;
+  }
+  return { bodyEnd: depth === 0 ? index - 1 : index, next: index };
+}
+
 /** 文字列とコメントを飛ばしながら、最上位の規則を `{` と対応する `}`、または `;` で切り出す */
 function splitRules(css: string): CssRule[] {
   const rules: CssRule[] = [];
@@ -61,27 +84,13 @@ function splitRules(css: string): CssRule[] {
       preludeStart = index + 1;
     } else if (char === "{") {
       const bodyStart = index + 1;
-      let depth = 1;
-      index += 1;
-      while (index < css.length && depth > 0) {
-        const skipped = skipQuoted(css, index);
-        if (skipped !== index) {
-          index = skipped;
-          continue;
-        }
-        if (css[index] === "{") {
-          depth += 1;
-        } else if (css[index] === "}") {
-          depth -= 1;
-        }
-        index += 1;
-      }
-      const bodyEnd = depth === 0 ? index - 1 : index;
+      const { bodyEnd, next: after } = findBlockEnd(css, bodyStart);
       rules.push({
-        prelude: css.slice(preludeStart, bodyStart - 1),
+        prelude: css.slice(preludeStart, index),
         body: css.slice(bodyStart, bodyEnd),
       });
-      preludeStart = index;
+      preludeStart = after;
+      index = after;
       continue;
     }
     index += 1;
@@ -130,34 +139,45 @@ function scopeSelector(selector: string, root: string): string {
   return `${root} ${selector}`;
 }
 
+/** `@` の規則 1 つを根の要素の中に限った CSS にする。範囲の外へ該当しうる規則（`@import`・`@scope`・`@starting-style` など）は `undefined` */
+function scopeAtRule(
+  rule: { head: string; body: string | undefined },
+  root: string,
+): string | undefined {
+  const { head, body } = rule;
+  const name = /^@([\w-]+)/.exec(head)?.[1]?.toLowerCase() ?? "";
+  if (NESTING_AT_RULES.has(name)) {
+    return body === undefined
+      ? `${head};`
+      : `${head} { ${scopeRules(body, root)} }`;
+  }
+  if (KEPT_AT_RULES.has(name) && body !== undefined) {
+    return `${head} {${body}}`;
+  }
+  return undefined;
+}
+
+/** 規則 1 つを根の要素の中に限った CSS にする。中身の無い文と落とす `@` の規則は `undefined` */
+function scopeRule(rule: CssRule, root: string): string | undefined {
+  const head = rule.prelude.trim();
+  if (head.startsWith("@")) {
+    return scopeAtRule({ head, body: rule.body }, root);
+  }
+  if (rule.body === undefined) {
+    return undefined;
+  }
+  const selectors = splitSelectors(head).map((selector) =>
+    scopeSelector(selector, root),
+  );
+  return `${selectors.join(", ")} {${rule.body}}`;
+}
+
 /** 規則の並びを根の要素の中に限った CSS にする */
 function scopeRules(css: string, root: string): string {
-  const parts: string[] = [];
-  for (const { prelude, body } of splitRules(css)) {
-    const head = prelude.trim();
-    if (head.startsWith("@")) {
-      const name = /^@([\w-]+)/.exec(head)?.[1]?.toLowerCase() ?? "";
-      if (NESTING_AT_RULES.has(name)) {
-        parts.push(
-          body === undefined
-            ? `${head};`
-            : `${head} { ${scopeRules(body, root)} }`,
-        );
-      } else if (KEPT_AT_RULES.has(name) && body !== undefined) {
-        parts.push(`${head} {${body}}`);
-      }
-      // 他の `@` の規則（`@import`・`@scope`・`@starting-style` など）は範囲の外へ該当しうるため落とす
-      continue;
-    }
-    if (body === undefined) {
-      continue;
-    }
-    const selectors = splitSelectors(head).map((selector) =>
-      scopeSelector(selector, root),
-    );
-    parts.push(`${selectors.join(", ")} {${body}}`);
-  }
-  return parts.join("\n");
+  return splitRules(css)
+    .map((rule) => scopeRule(rule, root))
+    .filter((part) => part !== undefined)
+    .join("\n");
 }
 
 /** 範囲の `css` の各規則を、範囲の根の要素 `.mdmark-html[data-html-scope="{scope}"]` の中だけに該当する CSS にする */
