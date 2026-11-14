@@ -12,7 +12,7 @@ use_cases:
   - kind: single
     scenario: docs/scenario/SC-472-52.yaml
     impact: changed
-    detail: 記法の点検で、定義の無い注釈の ID の参照と、参照されていない注釈の定義を警告として受け取る
+    detail: 記法の点検で、定義の無い注釈の ID の参照・参照されていない注釈の定義・同じ ID の 2 つ目の定義を警告として受け取る
     depends_on: []
   - kind: composite
     scenario: docs/scenario/SC-472-87.yaml
@@ -21,18 +21,20 @@ use_cases:
     depends_on: []
   - kind: single
     scenario: docs/scenario/SC-472-58.yaml
-    impact: run_only
-    detail: 印刷で末尾の注釈の一覧を開いて出す。脚注の一覧の印刷を壊さないかを確かめる
-    depends_on: []
+    impact: changed
+    detail: 注釈を持つ文書の印刷で、末尾の注釈の一覧を開いて出し、印刷の後に閉じるシナリオを足す。脚注の一覧の印刷は変えない
+    depends_on:
+      - docs/scenario/SC-472-96.yaml
   - kind: single
     scenario: docs/scenario/SC-472-76.yaml
-    impact: run_only
-    detail: 1 枚にまとめた HTML でも注釈のマーカーとツールチップが働くかを確かめる
-    depends_on: []
+    impact: changed
+    detail: 1 枚にまとめた HTML で、文書ごとの注釈のマーカーのツールチップと末尾の一覧の戻るリンクが、同じ ID でも文書を取り違えずに働くシナリオを足す
+    depends_on:
+      - docs/scenario/SC-472-96.yaml
   - kind: single
     scenario: docs/scenario/SC-472-96.yaml
     impact: new
-    detail: ID つきで定義した注釈を本文・表のセルの複数の場所から参照し、マーカーのツールチップと末尾の閉じた一覧で確認する。定義の無い参照と参照されていない定義に記載の警告を出す
+    detail: ID つきで定義した注釈を本文・表のセルの複数の場所から参照し、マーカーのツールチップと末尾の閉じた一覧で確認する。定義の無い参照・参照されていない定義・同じ ID の 2 つ目の定義に記載の警告を出す
     depends_on: []
 docs:
   - page: docs/guide/記法.md

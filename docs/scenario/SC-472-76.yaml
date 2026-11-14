@@ -221,6 +221,33 @@ scenarios:
     test: test_normal_when_footnotes
     refs:
       - SC-472-71#scenarios[正常シナリオ（末尾の一覧から本文へ戻る）]
+  - name: 正常シナリオ（注釈を持つ文書）
+    setup:
+      - name: 注釈を持つ文書群
+        description: 入口の文書と、入口からリンクする文書の 2 つ。どちらも同じ ID `cond` の注釈を定義して段落から参照し、注釈の本文は入口が `入口の注記`、もう 1 つが `別の文書の注記`。`build` の設定
+        notes: 2 つの文書で同じ ID `cond` を使用し、文書をまたいだ本文と戻るリンクの取り違えを決定的に発生させる
+      - name: Mock
+        description: 外部ライブラリは相対パスの手元のモジュール
+    flow: |-
+      sequenceDiagram
+        actor W as 文書の作成者
+        participant C as mdmark CLI
+        participant F as build.out
+        actor R as 読者
+        W->>C: mdmark build
+        C->>F: 2 つの文書を埋めた HTML を書き込む
+        C-->>W: 出力のパス・入れた文書の数・終了コード 0
+        R->>F: file:// で開き、リンクで別の文書へ移る
+        R->>F: 注釈のマーカーにポインターを乗せ、末尾の注釈の一覧を開いて cond の戻るリンクを押す
+        F-->>R: 同じ文書の注釈のマーカーの場所
+    expected:
+      - 終了コードが 0 で、`build.out` に HTML が 1 つある
+      - リンクで移った文書の注釈のマーカーにポインターを乗せると `別の文書の注記` のツールチップが出る
+      - 末尾の注釈の一覧の戻るリンクを押すと、開いている文書は入れ替わらず、その文書の注釈のマーカーが画面の中に入る
+      - 外への要求が 0 件
+    test: test_normal_when_annotations
+    refs:
+      - SC-472-96#scenarios[正常シナリオ（末尾の一覧と行き来する）]
   - name: 正常シナリオ（範囲のスクリプトと CSS）
     setup:
       - name: 範囲のスクリプトを持つ文書
