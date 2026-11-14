@@ -102,6 +102,11 @@ docs:
     status: done
     updated_by: planner
     updated_at: '2026-11-14T04:54:49.802782+00:00'
+  - page: docs/guide/API.md
+    change: CSS 変数の一覧に、注記のマーカーと注記の一覧の項目の頭の色 `--mdmark-color-annotation-ref` を追加する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-14T07:12:12.608980+00:00'
 scope_out:
   - item: knowledge のテンプレート『判定フローチャート』の `※n` の注記を注記の記法へ書き換える
     reason: 別のリポジトリの後続で、この記法が develop に入ってから着手する。close のときに着手できる旨をコメントする
