@@ -1,0 +1,362 @@
+$ npx vitest run --project unit tests/unit/src/cli/traces.test.ts tests/unit/src/cli/html.test.ts tests/unit/src/cli/embed.test.ts tests/unit/src/cli/export.test.ts tests/unit/src/cli/build.test.ts tests/unit/src/cli/main.test.ts tests/unit/src/plugin/tools.test.ts
+# Red: fail は実装が無いことによるもの。test_call_tool・test_main・test_run_build・test_prepare_embeds の 4 件は並列の負荷で 30 秒の時間切れになり、単独で回すと pass する（下に単独の実行を付ける）
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-export-hide-mdmark-traces
+
+ ❯ |unit| tests/unit/src/cli/traces.test.ts (8 tests | 8 failed) 2593ms
+   × test_hide_names 230ms
+   × test_hide_markdown 383ms
+   × test_hide_markdown_when_comments 313ms
+   × test_collect_mark_names 158ms
+   × test_hide_payload 468ms
+   × test_hide_css 181ms
+   × test_hide_script 470ms
+   × test_hide_script_when_license 390ms
+ ❯ |unit| tests/unit/src/cli/html.test.ts (4 tests | 1 failed) 5772ms
+   × test_assemble_html_when_traces_hidden 5ms
+ ❯ |unit| tests/unit/src/cli/embed.test.ts (25 tests | 2 failed) 31278ms
+   × test_create_viewer_entry_when_traces_hidden 6ms
+   × test_bundle_viewer_when_traces_hidden 5ms
+ ❯ |unit| tests/unit/src/plugin/tools.test.ts (20 tests | 1 failed) 36452ms
+   × test_call_tool 30005ms
+ ❯ |unit| tests/unit/src/cli/main.test.ts (5 tests | 2 failed) 37174ms
+   × test_main 30005ms
+   × test_main_when_keep_traces 7122ms
+ ❯ |unit| tests/unit/src/cli/build.test.ts (10 tests | 2 failed) 38331ms
+   × test_run_build 30007ms
+   × test_build_site_when_traces_kept 62ms
+ ❯ |unit| tests/unit/src/cli/export.test.ts (26 tests | 2 failed) 44294ms
+   × test_prepare_embeds 32394ms
+   × test_export_document_when_traces_kept 51ms
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 18 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit| tests/unit/src/cli/build.test.ts > test_run_build
+Error: Test timed out in 30000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/unit/src/cli/build.test.ts:27:1
+     25|
+     26| // 3 つの文書をまとめて build.out に記載する（正常系）
+     27| test("test_run_build", async () => {
+       | ^
+     28|   // 準備
+     29|   const { runBuild } = await loadBuild();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/18]⎯
+
+ FAIL  |unit| tests/unit/src/cli/build.test.ts > test_build_site_when_traces_kept
+AssertionError: expected '<!doctype html>\n<html lang="ja">\n<h…' not to contain 'id="mdmark-payload"'
+
+- Expected
++ Received
+
+- id="mdmark-payload"
++ <!doctype html>
++ <html lang="ja">
++ <head>
++ <meta charset="utf-8">
++ <meta name="viewport" content="width=device-width, initial-scale=1">
++ <meta name="color-scheme" content="light dark">
++ <title>A</title>
++ <style>:root{--mdmark-version:"v0.12.0"}
++ .mdmark{}</style>
++ </head>
++ <body>
++ <div class="mdmark-bundle"><aside class="mdmark-bundle-side"></aside><main class="mdmark-bundle-main"><div class="mdmark-bundle-bar"><button class="mdmark-bundle-button" type="button" aria-haspopup="dialog" aria-expanded="false" aria-controls="mdmark-doc-list-panel" data-panel-open><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M2.75 4h10.5"/><path d="M2.75 8h10.5"/><path d="M2.75 12h10.5"/></svg>文書の一覧</button><span class="mdmark-bundle-bar-title" data-bar-title></span></div><article class="mdmark" data-doc-view></article></main></div><dialog class="mdmark-bundle-panel" id="mdmark-doc-list-panel" closedby="any" aria-labelledby="mdmark-doc-list-panel-title"><div class="mdmark-bundle-panel-head"><p class="mdmark-bundle-panel-title" id="mdmark-doc-list-panel-title">文書の一覧</p><button class="mdmark-bundle-button is-icon" type="button" aria-label="文書の一覧を閉じる" data-panel-close><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4 4l8 8"/><path d="M12 4l-8 8"/></svg></button></div><div data-panel-body></div></dialog>
++
++ <script type="application/json" id="mdmark-payload">{"kind":"bundle","config":{"libraries":{}},"docs":[{"path":"a.md","title":"A","markdown":"# A\n"},{"path":"b.md","title":"B","markdown":"# B\n"}],"entry":"a.md","assets":{}}</script>
++ <script type="module">async function r(){}r(document,{parts:{},libraries:{},extensions:[]});
++ </script>
++ </body>
++ </html>
++
+
+ ❯ tests/unit/src/cli/build.test.ts:218:26
+    216|   expect(keptHtml).toContain('id="mdmark-payload"');
+    217|   expect(keptHtml).toContain("--mdmark-version");
+    218|   expect(hiddenHtml).not.toContain('id="mdmark-payload"');
+       |                          ^
+    219|   expect(hiddenHtml).not.toContain("--mdmark-version");
+    220| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/18]⎯
+
+ FAIL  |unit| tests/unit/src/cli/embed.test.ts > test_create_viewer_entry_when_traces_hidden
+AssertionError: expected 'import { startViewer } from "/w/dist/…' to contain '"@@html-script-key-0@@"'
+
+- Expected
++ Received
+
+- "@@html-script-key-0@@"
++ import { startViewer } from "/w/dist/viewer.js";
++ startViewer(document, { parts: {}, libraries: {  }, extensions: [], htmlScripts: new Map([["window.__mdmarkOpened = true", () => { const module = { exports: {} }; (function (module, exports, require) {
++ module.exports.default = () => {};
++ })(module, module.exports, (name) => { throw new Error("範囲のスクリプトでは require を使用できません: " + name); }); return module.exports.default; }]]) });
++
+
+ ❯ tests/unit/src/cli/embed.test.ts:351:18
+    349|   });
+    350|   // 検証
+    351|   expect(source).toContain('"@@html-script-key-0@@"');
+       |                  ^
+    352|   expect(source).not.toContain("window.__mdmarkOpened");
+    353| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/18]⎯
+
+ FAIL  |unit| tests/unit/src/cli/embed.test.ts > test_bundle_viewer_when_traces_hidden
+AssertionError: expected 'globalThis.__mdmarkHtmlScript=1;var t…' to contain '__zqHtmlScript'
+
+- Expected
++ Received
+
+- __zqHtmlScript
++ globalThis.__mdmarkHtmlScript=1;var t=new Map([["@@html-script-key-0@@",()=>1]]);export{t as table};
++
+
+ ❯ tests/unit/src/cli/embed.test.ts:456:18
+    454|   });
+    455|   // 検証
+    456|   expect(script).toContain("__zqHtmlScript");
+       |                  ^
+    457|   expect(script).not.toContain("__mdmarkHtmlScript");
+    458|   await writeFiles(dir, { "out.mjs": script });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/18]⎯
+
+ FAIL  |unit| tests/unit/src/cli/export.test.ts > test_prepare_embeds
+Error: Test timed out in 30000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/unit/src/cli/export.test.ts:31:1
+     29|
+     30| // マーカーのあるモジュールだけをまとめ、拡張と theme を読み込む（正常系）
+     31| test("test_prepare_embeds", async () => {
+       | ^
+     32|   // 準備
+     33|   const { prepareEmbeds } = await loadExport();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/18]⎯
+
+ FAIL  |unit| tests/unit/src/cli/export.test.ts > test_export_document_when_traces_kept
+AssertionError: expected '<!doctype html>\n<html lang="ja">\n<h…' not to contain 'id="mdmark-payload"'
+
+- Expected
++ Received
+
+- id="mdmark-payload"
++ <!doctype html>
++ <html lang="ja">
++ <head>
++ <meta charset="utf-8">
++ <meta name="viewport" content="width=device-width, initial-scale=1">
++ <meta name="color-scheme" content="light dark">
++ <title>タイトル</title>
++ <style>:root{--mdmark-version:"v0.12.0"}
++ .mdmark{}</style>
++ </head>
++ <body>
++ <article class="mdmark"></article>
++
++ <script type="application/json" id="mdmark-payload">{"kind":"document","config":{"features":{"print":true},"libraries":{}},"docs":[{"path":"guide.md","title":"タイトル","markdown":"# タイトル\n"}],"entry":"guide.md"}</script>
++ <script type="module">async function r(){}r(document,{parts:{},libraries:{},extensions:[]});
++ </script>
++ </body>
++ </html>
++
+
+ ❯ tests/unit/src/cli/export.test.ts:245:26
+    243|   expect(keptHtml).toContain('id="mdmark-payload"');
+    244|   expect(keptHtml).toContain("--mdmark-version");
+    245|   expect(hiddenHtml).not.toContain('id="mdmark-payload"');
+       |                          ^
+    246|   expect(hiddenHtml).not.toContain("--mdmark-version");
+    247| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/18]⎯
+
+ FAIL  |unit| tests/unit/src/cli/html.test.ts > test_assemble_html_when_traces_hidden
+AssertionError: expected '<!doctype html>\n<html lang="ja">\n<h…' not to match /mdmark/i
+
+- Expected:
+/mdmark/i
+
++ Received:
+"<!doctype html>
+<html lang=\"ja\">
+<head>
+<meta charset=\"utf-8\">
+<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">
+<meta name=\"color-scheme\" content=\"light dark\">
+
+<style>:root{--mdmark-version:\"v0.12.0\"}
+.mdmark{color:red}</style>
+</head>
+<body>
+<div class=\"mdmark-bundle\"><aside class=\"mdmark-bundle-side\"></aside><main class=\"mdmark-bundle-main\"><div class=\"mdmark-bundle-bar\"><button class=\"mdmark-bundle-button\" type=\"button\" aria-haspopup=\"dialog\" aria-expanded=\"false\" aria-controls=\"mdmark-doc-list-panel\" data-panel-open><svg viewBox=\"0 0 16 16\" aria-hidden=\"true\"><path d=\"M2.75 4h10.5\"/><path d=\"M2.75 8h10.5\"/><path d=\"M2.75 12h10.5\"/></svg>文書の一覧</button><span class=\"mdmark-bundle-bar-title\" data-bar-title></span></div><article class=\"mdmark\" data-doc-view></article></main></div><dialog class=\"mdmark-bundle-panel\" id=\"mdmark-doc-list-panel\" closedby=\"any\" aria-labelledby=\"mdmark-doc-list-panel-title\"><div class=\"mdmark-bundle-panel-head\"><p class=\"mdmark-bundle-panel-title\" id=\"mdmark-doc-list-panel-title\">文書の一覧</p><button class=\"mdmark-bundle-button is-icon\" type=\"button\" aria-label=\"文書の一覧を閉じる\" data-panel-close><svg viewBox=\"0 0 16 16\" aria-hidden=\"true\"><path d=\"M4 4l8 8\"/><path d=\"M12 4l-8 8\"/></svg></button></div><div data-panel-body></div></dialog>
+<!-- lucide 1.59.0 - ISC License (c) Lucide Contributors / MIT License (c) 2013-present Cole Bemis -->
+<script type=\"application/json\" id=\"mdmark-payload\"></script>
+<script type=\"module\">console.log(1);</script>
+</body>
+</html>
+"
+
+ ❯ tests/unit/src/cli/html.test.ts:100:23
+     98|     .replace(/<title>[\s\S]*?<\/title>/, "")
+     99|     .replace(/(<script type="application\/json"[^>]*>)[\s\S]*?(<\/scri…
+    100|   expect(outside).not.toMatch(/mdmark/i);
+       |                       ^
+    101|   expect(outside).not.toContain("v0.12.0");
+    102|   expect(outside).not.toContain("<!--");
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/18]⎯
+
+ FAIL  |unit| tests/unit/src/cli/main.test.ts > test_main
+Error: Test timed out in 30000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/unit/src/cli/main.test.ts:21:1
+     19|
+     20| // コマンド名で init を呼び、その終了コードを返却する（正常系）
+     21| test("test_main", async () => {
+       | ^
+     22|   // 準備
+     23|   const { main } = await loadMain();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/18]⎯
+
+ FAIL  |unit| tests/unit/src/cli/main.test.ts > test_main_when_keep_traces
+AssertionError: expected 1 to be +0 // Object.is equality
+
+- Expected
++ Received
+
+- 0
++ 1
+
+ ❯ tests/unit/src/cli/main.test.ts:51:16
+     49|   );
+     50|   // 検証
+     51|   expect(code).toBe(0);
+       |                ^
+     52|   expect(await readFile(join(dir, "guide.html"), "utf8")).toContain(
+     53|     'id="mdmark-payload"',
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/18]⎯
+
+ FAIL  |unit| tests/unit/src/cli/traces.test.ts > test_hide_names
+Error: Cannot find module '/src/cli/traces.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-export-hide-mdmark-traces/tests/unit/src/cli/traces.test.ts
+ ❯ tests/unit/src/cli/traces.test.ts:19:25
+     17| test("test_hide_names", async () => {
+     18|   // 準備
+     19|   const { hideNames } = await loadTraces();
+       |                         ^
+     20|   // 実行
+     21|   const hidden = hideNames(
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/18]⎯
+
+ FAIL  |unit| tests/unit/src/cli/traces.test.ts > test_hide_markdown
+Error: Cannot find module '/src/cli/traces.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-export-hide-mdmark-traces/tests/unit/src/cli/traces.test.ts
+ ❯ tests/unit/src/cli/traces.test.ts:31:28
+     29| test("test_hide_markdown", async () => {
+     30|   // 準備
+     31|   const { hideMarkdown } = await loadTraces();
+       |                            ^
+     32|   const markdown =
+     33|     'mdmark は描く。<mdmark-chart>{}</mdmark-chart> <p class="mdmark-align…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/18]⎯
+
+ FAIL  |unit| tests/unit/src/cli/traces.test.ts > test_hide_markdown_when_comments
+Error: Cannot find module '/src/cli/traces.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-export-hide-mdmark-traces/tests/unit/src/cli/traces.test.ts
+ ❯ tests/unit/src/cli/traces.test.ts:45:28
+     43| test("test_hide_markdown_when_comments", async () => {
+     44|   // 準備
+     45|   const { hideMarkdown } = await loadTraces();
+       |                            ^
+     46|   const markdown = [
+     47|     "<!-- todo -->",
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[12/18]⎯
+
+ FAIL  |unit| tests/unit/src/cli/traces.test.ts > test_collect_mark_names
+Error: Cannot find module '/src/cli/traces.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-export-hide-mdmark-traces/tests/unit/src/cli/traces.test.ts
+ ❯ tests/unit/src/cli/traces.test.ts:83:32
+     81| test("test_collect_mark_names", async () => {
+     82|   // 準備
+     83|   const { collectMarkNames } = await loadTraces();
+       |                                ^
+     84|   const dir = await createTempDir();
+     85|   await writeFiles(dir, {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[13/18]⎯
+
+ FAIL  |unit| tests/unit/src/cli/traces.test.ts > test_hide_payload
+Error: Cannot find module '/src/cli/traces.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-export-hide-mdmark-traces/tests/unit/src/cli/traces.test.ts
+ ❯ tests/unit/src/cli/traces.test.ts:118:27
+    116| test("test_hide_payload", async () => {
+    117|   // 準備
+    118|   const { hidePayload } = await loadTraces();
+       |                           ^
+    119|   const index = {
+    120|     docs: [{ id: "intro", path: "mdmark-intro.md", title: "mdmark の紹介"…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[14/18]⎯
+
+ FAIL  |unit| tests/unit/src/cli/traces.test.ts > test_hide_css
+Error: Cannot find module '/src/cli/traces.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-export-hide-mdmark-traces/tests/unit/src/cli/traces.test.ts
+ ❯ tests/unit/src/cli/traces.test.ts:150:23
+    148| test("test_hide_css", async () => {
+    149|   // 準備
+    150|   const { hideCss } = await loadTraces();
+       |                       ^
+    151|   const css =
+    152|     ':root{--mdmark-version:"v0.12.0"}\n@layer mdmark{.mdmark{--mdmark…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[15/18]⎯
+
+ FAIL  |unit| tests/unit/src/cli/traces.test.ts > test_hide_script
+Error: Cannot find module '/src/cli/traces.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-export-hide-mdmark-traces/tests/unit/src/cli/traces.test.ts
+ ❯ tests/unit/src/cli/traces.test.ts:164:26
+    162| test("test_hide_script", async () => {
+    163|   // 準備
+    164|   const { hideScript } = await loadTraces();
+       |                          ^
+    165|   // 実行
+    166|   const hidden = hideScript({
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[16/18]⎯
+
+ FAIL  |unit| tests/unit/src/cli/traces.test.ts > test_hide_script_when_license
+Error: Cannot find module '/src/cli/traces.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-export-hide-mdmark-traces/tests/unit/src/cli/traces.test.ts
+ ❯ tests/unit/src/cli/traces.test.ts:179:26
+    177| test("test_hide_script_when_license", async () => {
+    178|   // 準備
+    179|   const { hideScript } = await loadTraces();
+       |                          ^
+    180|   const extensionLicense = "/*! greet-ext (c) user - MIT */";
+    181|   const bundledLicense = [
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[17/18]⎯
+
+ FAIL  |unit| tests/unit/src/plugin/tools.test.ts > test_call_tool
+Error: Test timed out in 30000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/unit/src/plugin/tools.test.ts:58:1
+     56|
+     57| // json を 1 つのテキストにする（正常系）
+     58| test("test_call_tool", async () => {
+       | ^
+     59|   // 準備
+     60|   const { callTool } = await loadTools();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[18/18]⎯
+
+
+ Test Files  7 failed (7)
+      Tests  18 failed | 80 passed (98)
+   Start at  15:32:31
+   Duration  47.07s (tests 94%, transform 4%, import 2%)
+
+
+$ npx vitest run --project unit -t '^(test_call_tool|test_main|test_run_build|test_prepare_embeds)$' tests/unit/src/cli/main.test.ts tests/unit/src/cli/build.test.ts tests/unit/src/cli/export.test.ts tests/unit/src/plugin/tools.test.ts
+Tests  4 passed | 57 skipped (61)
