@@ -25,7 +25,7 @@ functions:
     container: src/render/syntax/annotations.ts
     kind: 関数
     scope: internal
-    summary: '解析器に、block の `mdmark_annotation_def`（`mdmark_footnote_def` の後・`reference` の前。`alt` は `paragraph`・`reference`）と、inline の `mdmark_annotation_ref`（`mdmark_footnote_ref` の後。`link` より後なので、インラインのリンクと、リンクの参照の定義があるときの省略形・完全形・簡略形はリンクを優先する）を登録し、`mdmark_annotation_ref`（マーカーとツールチップ）と `mdmark_annotation_list`（末尾の一覧）のトークンの描き方を `renderer.rules` に配置する。コアルールの `collectAnnotations`（`collectFootnotes` の後）・`buildAnnotationList`（`buildFootnoteList` の後・関連文書の一覧の前）・`takeAnnotationDefinitions`（`takeFootnoteDefinitions` の後）は `createParser` が登録する'
+    summary: '解析器に、block の `mdmark_annotation_def`（`mdmark_footnote_def` の後・`reference` の前。`alt` は `paragraph`・`reference`）と、inline の `mdmark_annotation_ref`（`link` と `mdmark_footnote_ref` の後。`※` は markdown-it の `text` のルールの区切りの文字ではないため、ルールは `[` の位置で動く。`link` が先に試されるので、インラインのリンクと、リンクの参照の定義があるときの省略形・完全形・簡略形は markdown-it がリンクにし、このルールは呼ばれない）を登録し、`mdmark_annotation_ref`（マーカーとツールチップ）と `mdmark_annotation_list`（末尾の一覧）のトークンの描き方を `renderer.rules` に配置する。コアルールの `collectAnnotations`（`collectFootnotes` の後）・`buildAnnotationList`（`buildFootnoteList` の後・関連文書の一覧の前）・`takeAnnotationDefinitions`（`takeFootnoteDefinitions` の後）は `createParser` が登録する'
     args:
       - name: parser
         type: MarkdownIt
@@ -101,7 +101,7 @@ functions:
     container: src/render/syntax/annotations.ts
     kind: 関数
     scope: internal
-    summary: 'inline のルール。`※[ID]` を読み込み、`mdmark_annotation_ref`（`meta.id`）のトークンにする。`[ID]` の直後が `(`・`[` のとき、または `normalizeReference(ID)` が `state.env.references` にあるときは読み込まない（リンクを優先する）'
+    summary: 'inline のルール。`[` の位置で、`state.pending` の末尾が `※` のときだけ `[ID]`（ID は英数字・`-`・`_`）を読み込み、`pending` の末尾の `※` を取り除いて `mdmark_annotation_ref`（`meta.id`）のトークンにする。リンクになる `[ID]` は、先に登録された `link` が読み込むため、このルールでは判定しない'
     args:
       - name: state
         type: StateInline
@@ -117,16 +117,22 @@ functions:
     unit_tests:
       - name: test_read_annotation_reference
         case: 正常
-        summary: '`※[ID]` を参照のトークンにする'
-        condition: 段落 `判定する※[cond]。`
+        summary: 直前の文字に続く `※[ID]` を参照のトークンにする
+        condition: 段落 `判定する※[cond]。`（`※` の直前が文字）
         mock: なし
-        expected: '`mdmark_annotation_ref` のトークンが 1 つで `meta.id` が `cond`'
+        expected: '`mdmark_annotation_ref` のトークンが 1 つで `meta.id` が `cond`、その前の文字のトークンが `判定する` で `※` を持たない'
+      - name: test_read_annotation_reference_when_no_mark
+        case: 正常
+        summary: '`※` の無い `[ID]` は読み込まない'
+        condition: 段落 `判定する[cond]。`
+        mock: なし
+        expected: 注記の参照のトークンが無く、`[cond]` が文字のまま残る
       - name: test_read_annotation_reference_when_link_definition
         case: 正常
-        summary: リンクの参照の定義がある ID は読み込まない
+        summary: リンクの参照の定義がある ID は link がリンクにする
         condition: '`※[Site]` と、リンクの参照の定義 `[site]: https://example.com`'
         mock: なし
-        expected: 注記の参照のトークンが無い
+        expected: 注記の参照のトークンが無く、文字 `※` の後ろに `Site` のリンクがある
   - name: collectAnnotations
     title: 注記に番号を振る
     container: src/render/syntax/annotations.ts
