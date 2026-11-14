@@ -20,7 +20,9 @@ docs:
   - page: docs/library/LIB-472-34.yaml
     new: false
     change: vsce のバージョンを 4.0.0 から 4.1.1 に更新し、用途に `publish --oidc` での Marketplace への公開を加え、確認結果を記載する
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-14T02:52:51.868771+00:00'
   - page: docs/nonfunctional/NFR-472-1.yaml
     new: false
     change: VS Code の下限の行の「Marketplace と Open VSX」から Open VSX を削除する
