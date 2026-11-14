@@ -52,7 +52,7 @@ tables:
         default: '`{}`'
         description: 'ノード・線の ID ごとの説明（`{ "text": 説明の文 }`）。線にポインターを当てたツールチップと、再生の帯の説明に出す'
         example: '{"mount": {"text": "文書を描く公開関数"}}'
-        notes: キーは Mermaid のノード・線の ID（シーケンス図はメッセージの番号、ER 図はテーブル名・`{テーブル名}.{列名}`・関連の記載順の `r{番号}`、状態遷移図は状態の ID・遷移の記載順の `t{番号}`）。無い ID は `map_unknown_ref`。ER 図のテーブル名・状態遷移図の状態の ID が、同じ図の関連・遷移の `r{番号}`・`t{番号}` か ER 図の分類の ID と同じときは `map_invalid_value`
+        notes: キーは Mermaid のノード・線の ID（シーケンス図はメッセージの番号、ER 図はテーブル名・`{テーブル名}.{列名}`・関連の記載順の `r{番号}`・分類の ID（グループの説明）、状態遷移図は状態の ID・遷移の記載順の `t{番号}`）。無い ID は `map_unknown_ref`。ER 図のテーブル名・状態遷移図の状態の ID が、同じ図の関連・遷移の `r{番号}`・`t{番号}` か ER 図の分類の ID と同じときは `map_invalid_value`
       - name: plays_over
         title: 再生を重ねる構成図
         type: integer

@@ -156,9 +156,9 @@ functions:
       - name: test_collect_map_problems_when_er
         case: 異常
         summary: ER 図の補足のずれ
-        condition: テーブル「注文」「明細」・関連 2 本と、補足の `notes` の `注文.幽霊`・`r3`、`groups` の `記録`（無いテーブル「支払い」）と `明細`
+        condition: テーブル「注文」「明細」・関連 2 本と、補足の `notes` の `注文.幽霊`・`r3`・分類の ID `記録`、`groups` の `記録`（無いテーブル「支払い」）と `明細`
         mock: なし
-        expected: '`map_unknown_ref` が 3 件と `map_invalid_value` が 1 件'
+        expected: '`map_unknown_ref` が 3 件と `map_invalid_value` が 1 件で、`notes.記録` の項目は無い'
       - name: test_collect_map_problems_when_state
         case: 異常
         summary: 状態遷移図の補足のずれ
