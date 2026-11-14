@@ -1,0 +1,15 @@
+$ npm run test:unit  # develop de2762ce
+
+> test:unit
+> vitest run --project 'unit*'
+
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/develop
+
+
+ Test Files  288 passed (288)
+      Tests  2138 passed (2138)
+   Start at  09:57:55
+   Duration  158.45s (worker 68%, tests 18%, import 12%, transform 1%)
+
+exit=0

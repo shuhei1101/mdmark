@@ -236,8 +236,16 @@ items:
   summary: ライブラリ本体 / map / 配置 / sequence-rows.ts
 - page: MOD-472-131.ts.yaml
   summary: ライブラリ本体 / map / 描画と操作 / sequence-view.ts
+- page: MOD-531-3.ts.yaml
+  summary: ライブラリ本体 / map / 描画と操作 / er-view.ts
+- page: MOD-531-4.ts.yaml
+  summary: ライブラリ本体 / map / 描画と操作 / state-view.ts
 - page: MOD-472-138.ts.yaml
   summary: ライブラリ本体 / map / 読み取り / sequence.ts
+- page: MOD-531-1.ts.yaml
+  summary: ライブラリ本体 / map / 読み取り / er.ts
+- page: MOD-531-2.ts.yaml
+  summary: ライブラリ本体 / map / 読み取り / state-diagram.ts
 - page: MOD-472-140.ts.yaml
   summary: ライブラリ本体 / map / 読み取り / spec.ts
 - page: MOD-472-129.ts.yaml
@@ -653,7 +661,7 @@ items:
 - page: MOD-472-26.yaml
   summary: map の範囲の読み取りの項目に、補足が指す ID と設定の `map` の種類・線・アイコンの照合を加え、書き方の警告と点検のずれにする項目を集める。
 - page: MOD-472-27.yaml
-  summary: map の範囲の `flowchart`・`sequenceDiagram` の Mermaid と、補足の JSON のオブジェクトを読み取る。描画を止めず、読めない行と箇所を項目にして返す。
+  summary: map の範囲の `flowchart`・`sequenceDiagram`・`erDiagram`・`stateDiagram-v2` の Mermaid と、補足の JSON のオブジェクトを読み取る。描画を止めず、読めない行と箇所を項目にして返す。
 - page: MOD-472-28.yaml
   summary: 構成図を、表示するノードとグループの集合を決めてから入れ子の内側から配置し、線の経路を引く。シーケンス図の表示する行を決める。
 - page: MOD-472-29.yaml

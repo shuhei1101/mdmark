@@ -19,10 +19,23 @@ import type { WarningItem } from "../src/extensions.ts";
 import { highlightLines } from "../src/highlight-lines.ts";
 import type { MdmarkAlias } from "../src/knowledge/aliases.ts";
 import { parseMapData } from "../src/map/data.ts";
+import {
+  erColumnNotes,
+  erFanouts,
+  erOverrides,
+  erPartRelations,
+  erToFlowchart,
+  parseErDiagram,
+} from "../src/map/er.ts";
 import { parseFlowchart } from "../src/map/flowchart.ts";
 import { layoutMap } from "../src/map/layout.ts";
 import { parseSequence } from "../src/map/sequence.ts";
 import { sequenceRows } from "../src/map/sequence-rows.ts";
+import {
+  parseStateDiagram,
+  statePartInputs,
+  stateToFlowchart,
+} from "../src/map/state-diagram.ts";
 import { renderBackToTop } from "../src/parts/back-to-top.ts";
 import { renderBacklinks } from "../src/parts/backlinks.ts";
 import { renderBadge } from "../src/parts/badge.ts";
@@ -77,9 +90,13 @@ import { renderKbd } from "../src/parts/kbd.ts";
 import { renderLayoutColumns } from "../src/parts/layout-columns.ts";
 import { renderLightbox } from "../src/parts/lightbox.ts";
 import {
+  type MapErFanout,
   renderMapBand,
+  renderMapErDiagram,
   renderMapFlow,
   renderMapSequence,
+  renderMapStateDiagram,
+  rewireMapEr,
 } from "../src/parts/map.ts";
 import { renderMedia } from "../src/parts/media.ts";
 import { renderMermaidDiagram } from "../src/parts/mermaid.ts";
@@ -111,8 +128,12 @@ import { warningsOf } from "../src/render/syntax/tables.ts";
 import {
   CONFIG as MAP_CONFIG,
   DATA as MAP_DATA,
+  ER as MAP_ER,
+  ER_DATA as MAP_ER_DATA,
   FLOW as MAP_FLOW,
   SEQUENCE as MAP_SEQUENCE,
+  STATE as MAP_STATE,
+  STATE_DATA as MAP_STATE_DATA,
 } from "../tests/unit/helpers/map.ts";
 import { renderMediaError } from "../vscode/src/webview/shared/lib/media-error.ts";
 
@@ -895,6 +916,100 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
       layout,
     );
   },
+  "map-er": (args) => {
+    const er = parseErDiagram(MAP_ER);
+    const { data } = parseMapData(MAP_ER_DATA);
+    const collapsed = jsonList(args.collapsed);
+    const entered = typeof args.entered === "string" ? args.entered : undefined;
+    const selected = jsonList(args.selected);
+    const fanouts = jsonObject<MapErFanout[]>(args.fanouts) ?? [];
+    const relations = erPartRelations(er);
+    const tables = er.tables.map((table) => ({
+      name: table.name,
+      columns: table.columns,
+      notes: erColumnNotes(table, data.notes),
+    }));
+    const placed = layoutMap(
+      erToFlowchart(er, data.groups),
+      { collapsed, entered },
+      erOverrides(er, new Set(collapsed)),
+      "height",
+    );
+    const layout = {
+      ...placed,
+      wires: rewireMapEr({ layout: placed, tables, relations, collapsed }),
+    };
+    // 2 つのテーブルを選んだときは、経路のテーブルと関連を強調する（mount の attachMapEr の選び方）
+    const path =
+      selected.length === 2
+        ? erFanouts(er.relations, selected[0] as string, selected[1] as string)
+        : undefined;
+    const part = renderMapErDiagram({
+      layout,
+      kinds: {},
+      lines: {
+        "-.->": { dash: "dashed", head: "none" },
+        "---": { head: "none" },
+      },
+      notes: Object.fromEntries(
+        Object.entries(data.notes).map(([id, note]) => [id, note.text]),
+      ),
+      collapsed,
+      entered,
+      selected: path === undefined ? selected : [],
+      focus:
+        path === undefined
+          ? undefined
+          : { nodes: path.tables, wires: path.relations },
+      packets: [],
+      dragging: undefined,
+      id: "story-map-er",
+      collapsedTag: (group) =>
+        `テーブル ${data.groups[group]?.tables.length ?? 0} 件`,
+      tables,
+      relations,
+      fanouts,
+    });
+    const frame = mapFrame("記録の構造", part, layout);
+    // 行が増える関連のマーカーにフォーカスしたストーリーは、図の操作を付けてから最初のマーカーにフォーカスする
+    return args.focusFanout === true
+      ? frame + storyMarker(args, "button.map-er-fanout")
+      : frame;
+  },
+  "map-state": (args) => {
+    const diagram = parseStateDiagram(MAP_STATE);
+    const { data } = parseMapData(MAP_STATE_DATA);
+    const { chart, loops: selfLoops } = stateToFlowchart(diagram);
+    const { shapes, loops, overrides } = statePartInputs(chart, selfLoops);
+    const collapsed = jsonList(args.collapsed);
+    const entered = typeof args.entered === "string" ? args.entered : undefined;
+    const layout = layoutMap(
+      chart,
+      { collapsed, entered },
+      overrides,
+      "height",
+    );
+    const part = renderMapStateDiagram({
+      layout,
+      kinds: {},
+      lines: { "-.->": { dash: "dashed", head: "none" } },
+      notes: Object.fromEntries(
+        Object.entries(data.notes).map(([id, note]) => [id, note.text]),
+      ),
+      collapsed,
+      entered,
+      selected: jsonList(args.selected),
+      focus: jsonObject<{ nodes: string[]; wires: string[] }>(args.focus),
+      packets: [],
+      dragging: undefined,
+      id: "story-map-state",
+      collapsedTag: (group) =>
+        `状態 ${diagram.states.filter((state) => state.parent === group && state.kind === "state").length} 件`,
+      shapes,
+      loops,
+    });
+    return mapFrame("作業の状態", part, layout);
+  },
   "map-sequence": (args) => {
     const sequence = parseSequence(
       args.source === "arrows"
@@ -938,6 +1053,7 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
   "map-band": (args) =>
     renderMapBand({
       mode: args.mode === "playback" ? "playback" : "walkthrough",
+      unit: args.unit === "transition" ? "transition" : "message",
       total: typeof args.total === "number" ? args.total : 4,
       index: typeof args.index === "number" ? args.index : undefined,
       title: typeof args.title === "string" ? args.title : "",

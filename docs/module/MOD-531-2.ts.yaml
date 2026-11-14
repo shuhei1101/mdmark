@@ -1,0 +1,115 @@
+id: MOD-531-2
+visibility: internal
+title: ライブラリ本体 / map / 読み取り / state-diagram.ts
+test_files:
+  - tests/unit/src/map/state-diagram.test.ts
+data_models:
+  - name: StateDiagram
+    title: 状態遷移図の読み取り結果
+    container: src/map/state-diagram.ts
+    usecase: Mermaidと補足で図を描く
+    role: データモデル
+    summary: '`parseStateDiagram` の戻り値'
+    properties:
+      - name: direction
+        type: Direction
+        description: '最上位の `direction`（既定 `TB`）'
+      - name: states
+        type: StateNode[]
+        description: 状態（`id`・`label`・`kind`・`parent`）。`kind` は `state`・`start`・`end`・`choice`。`[*]` は入れ子の状態ごとに `start_{入れ子の状態か root}`・`end_{…}` にする
+      - name: composites
+        type: StateComposite[]
+        description: 入れ子の状態（`id`・`title`・`parent`・`direction`）
+      - name: transitions
+        type: StateTransition[]
+        description: 遷移（`id`・`from`・`to`・`label`）。`id` は記載順の `t{番号}`（1 から）
+      - name: notes
+        type: StateNote[]
+        description: 注記（`id`・`of`・`side`・`text`）。`side` は `left`・`right`
+      - name: problems
+        type: MapProblem[]
+        description: 読めない行と閉じの無い入れ子の状態
+functions:
+  - name: parseStateDiagram
+    title: stateDiagramを読む
+    kind: 関数
+    container: src/map/state-diagram.ts
+    usecase: Mermaidと補足で図を描く
+    role: 処理
+    summary: '`stateDiagram-v2`・`stateDiagram` の Mermaid を、状態・入れ子の状態・遷移・注記と読めない行の項目に読む'
+    scope: public
+    args:
+      - name: source
+        type: string
+        required: true
+        description: mermaid のブロックの中身
+    returns:
+      type: StateDiagram
+      description: 読み取り結果
+    process: |-
+      1. 行ごとに、`direction`・`state "{名前}" as {ID}`・`state {ID} <<choice>>`・`state {ID} {`・`}`・`note left of`・`note right of`・入れ子の中の状態の宣言・遷移の行（`{元} --> {先} [: {ラベル}]`）・`%%`・空の行に分けて読む
+      2. 遷移の `[*]` は、元なら今の入れ子の状態の開始、先なら終了にする
+      3. 入れ子の中で宣言した状態は、外で先に出ていてもその入れ子の状態の中へ移す
+         - 読めない行・閉じの無い入れ子の状態は `map_invalid` の項目にする
+    unit_tests:
+      - name: test_parse_state_diagram
+        case: 正常
+        summary: モックの状態遷移図
+        condition: モックの `STATE`
+        mock: なし
+        expected: 遷移 13（`t1`〜`t13`）・入れ子の状態 2（`実行中`・`保留`）・注記 1・分岐 1 で、`s1` の名前が `差し戻しの理由を確認する`、`処理` と `準備` の親が `実行中`
+      - name: test_parse_state_diagram_when_unclosed
+        case: 異常
+        summary: 閉じの無い入れ子の状態
+        condition: '`state 実行中 {` の後に `}` が無い'
+        mock: なし
+        expected: '`map_invalid` が 1 件'
+  - name: stateToFlowchart
+    title: 状態遷移図を構成図の入力にする
+    kind: 関数
+    container: src/map/state-diagram.ts
+    usecase: Mermaidと補足で図を描く
+    role: 処理
+    summary: 状態をノード、入れ子の状態をグループ、遷移を線、注記を破線でつないだノードにした `Flowchart` と、同じ状態への遷移を作る
+    scope: public
+    args:
+      - name: diagram
+        type: StateDiagram
+        required: true
+        description: 読み取り結果
+    returns:
+      type: '{ chart: Flowchart; loops: StateTransition[] }'
+      description: 線の ID は遷移の ID（`t{番号}`）と注記の点線（`n{番号}`）。同じ状態への遷移は `chart` に入れず `loops` に返す
+    process: |-
+      1. 入れ子の状態そのものへの遷移の先を中の開始、入れ子の状態からの遷移の元を中の終了にする。中に開始・終了が無ければ作る
+      2. 同じ状態への遷移を `loops` に分ける
+      3. 注記を種類 `note` のノードにし、`side` が `right` なら状態から注記へ、`left` なら注記から状態へ破線の線を作る
+    unit_tests:
+      - name: test_state_to_flowchart
+        case: 正常
+        summary: 付け替えと補い
+        condition: モックの `STATE`
+        mock: なし
+        expected: '`t5` の先が `start_実行中`、`t12` の先が `start_保留`、`t13` の元が `end_保留` で、`保留` の中に開始・終了のノードがあり、`loops` が `t2` の 1 件、注記の線が 1 本'
+  - name: statePartInputs
+    title: 状態遷移図の部品の入力
+    kind: 関数
+    container: src/map/state-diagram.ts
+    usecase: Mermaidと補足で図を描く
+    role: 処理
+    summary: ノードの種類から部品に指定する形状と同じ状態への遷移を作り、開始・終了を `MAP_STATE.point` 四方、分岐を `MAP_STATE.choice` 四方、同じ状態への遷移を持つ状態の上に `MAP_STATE.loopSpace` を空ける配置の上書きを作る
+    scope: public
+    args:
+      - name: chart
+        type: Flowchart
+        required: true
+        description: '`stateToFlowchart` の `chart`'
+      - name: loops
+        type: StateTransition[]
+        required: true
+        description: '`stateToFlowchart` の `loops`'
+    returns:
+      type: '{ shapes: Record<string, MapStateShape>; loops: MapStateLoop[]; overrides: Record<string, MapOverride> }'
+      description: 形状（`start`・`end`・`choice`・`note`）・同じ状態への遷移・配置の上書き
+refs:
+  - IF-472-35#constraints[map の状態遷移図]

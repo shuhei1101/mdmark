@@ -30,6 +30,18 @@ export const Playback: Story = {
   args: { mode: "playback", index: 2, total: 9, title: "mount を呼ぶ" },
 };
 
+export const StatePlayback: Story = {
+  name: "StatePlayback",
+  parameters: { server: { id: "map-band" } },
+  args: {
+    mode: "playback",
+    unit: "transition",
+    index: 5,
+    total: 13,
+    title: "判定 → 差し戻しの理由を確認する：差し戻し",
+  },
+};
+
 export const Narrow: Story = {
   name: "Narrow",
   parameters: { server: { id: "map-band" } },
