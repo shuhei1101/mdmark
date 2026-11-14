@@ -62,6 +62,63 @@ function schemaIssue(file: string, where: string, message: string): CheckIssue {
   return { file, where, kind: "schema", message };
 }
 
+/** `build` のキー 1 つを検め、合わなければ通知する場所と文言を返却する */
+type BuildRule = (
+  value: Record<string, unknown>,
+) => { where: string; message: string } | undefined;
+
+/** `build` のキーの検め方を、検める順に並べた表 */
+const BUILD_RULES: BuildRule[] = [
+  ({ include }) => {
+    if (include === undefined) {
+      return {
+        where: "build",
+        message:
+          "`build.include` がありません。まとめる Markdown の glob を記載してください。",
+      };
+    }
+    return isStringArray(include) && include.length > 0
+      ? undefined
+      : {
+          where: "build.include",
+          message:
+            "`build.include` は 1 つ以上の glob の並びで記載してください。",
+        };
+  },
+  ({ out }) => {
+    if (out === undefined) {
+      return {
+        where: "build",
+        message:
+          "`build.out` がありません。書き出す HTML のパスを記載してください。",
+      };
+    }
+    return typeof out === "string" && out.endsWith(".html")
+      ? undefined
+      : {
+          where: "build.out",
+          message: "`build.out` は拡張子 `.html` のパスで記載してください。",
+        };
+  },
+  ...(["exclude", "glossary"] as const).map(
+    (key): BuildRule =>
+      (value) =>
+        value[key] === undefined || isStringArray(value[key])
+          ? undefined
+          : {
+              where: `build.${key}`,
+              message: `\`build.${key}\` は文字列の並びで記載してください。`,
+            },
+  ),
+  ({ entry }) =>
+    entry === undefined || typeof entry === "string"
+      ? undefined
+      : {
+          where: "build.entry",
+          message: "`build.entry` は文書のパスの文字列で記載してください。",
+        },
+];
+
 /** `build` の構造を検め、合うときだけ `build` を返却する。合わないところは `issues` に追加する */
 function validateBuild(
   value: unknown,
@@ -75,62 +132,186 @@ function validateBuild(
     return undefined;
   }
   const before = issues.length;
-  if (value.include === undefined) {
-    issues.push(
-      schemaIssue(
-        file,
-        "build",
-        "`build.include` がありません。まとめる Markdown の glob を記載してください。",
-      ),
-    );
-  } else if (!isStringArray(value.include) || value.include.length === 0) {
-    issues.push(
-      schemaIssue(
-        file,
-        "build.include",
-        "`build.include` は 1 つ以上の glob の並びで記載してください。",
-      ),
-    );
+  for (const rule of BUILD_RULES) {
+    const found = rule(value);
+    if (found) {
+      issues.push(schemaIssue(file, found.where, found.message));
+    }
   }
-  if (value.out === undefined) {
+  return issues.length === before ? (value as BuildConfig) : undefined;
+}
+
+/** 設定のキーの値を検めた結果。`value` があればその値で残し、`undefined` なら設定から取り除く */
+type KeyChecked = { value: unknown } | undefined;
+
+/** 設定のキー 1 つの値を検める。合わないところは `at.issues` に追加する */
+type KeyValidator = (
+  value: unknown,
+  at: { key: string; file: string; issues: CheckIssue[] },
+) => KeyChecked;
+
+/** 値が型に合えば残し、合わなければ `message` を通知して取り除く検め方 */
+function typed(
+  test: (value: unknown) => boolean,
+  message: string,
+): KeyValidator {
+  return (value, { key, file, issues }) => {
+    if (test(value)) {
+      return { value };
+    }
+    issues.push(schemaIssue(file, key, message));
+    return undefined;
+  };
+}
+
+/** 真偽を返却する検め方から、合えば値をそのまま残す検め方を作る */
+function kept(
+  valid: (value: unknown, file: string, issues: CheckIssue[]) => boolean,
+): KeyValidator {
+  return (value, { file, issues }) =>
+    valid(value, file, issues) ? { value } : undefined;
+}
+
+/** 合うときだけ検めた値を返却する検め方から、検めた値に置き換える検め方を作る */
+function replaced(
+  validate: (value: unknown, file: string, issues: CheckIssue[]) => unknown,
+): KeyValidator {
+  return (value, { file, issues }) => {
+    const checked = validate(value, file, issues);
+    return checked === undefined ? undefined : { value: checked };
+  };
+}
+
+/** `features` を検め、真偽の機能だけを残す */
+const validateFeatures: KeyValidator = (value, { file, issues }) => {
+  if (!isRecord(value)) {
     issues.push(
       schemaIssue(
         file,
-        "build",
-        "`build.out` がありません。書き出す HTML のパスを記載してください。",
+        "features",
+        "`features` は機能名と true / false で記載してください。",
       ),
     );
-  } else if (typeof value.out !== "string" || !value.out.endsWith(".html")) {
-    issues.push(
-      schemaIssue(
-        file,
-        "build.out",
-        "`build.out` は拡張子 `.html` のパスで記載してください。",
-      ),
-    );
+    return undefined;
   }
-  for (const key of ["exclude", "glossary"] as const) {
-    if (value[key] !== undefined && !isStringArray(value[key])) {
+  const features: Record<string, boolean> = {};
+  for (const [name, enabled] of Object.entries(value)) {
+    if (typeof enabled === "boolean") {
+      features[name] = enabled;
+    } else {
       issues.push(
         schemaIssue(
           file,
-          `build.${key}`,
-          `\`build.${key}\` は文字列の並びで記載してください。`,
+          `features.${name}`,
+          `\`features.${name}\` は true か false で記載してください。`,
         ),
       );
     }
   }
-  if (value.entry !== undefined && typeof value.entry !== "string") {
+  return { value: features };
+};
+
+/** `libraries` を検め、マーカーの名前と URL の行だけを残す */
+const validateLibraries: KeyValidator = (value, { file, issues }) => {
+  if (!isRecord(value)) {
     issues.push(
       schemaIssue(
         file,
-        "build.entry",
-        "`build.entry` は文書のパスの文字列で記載してください。",
+        "libraries",
+        "`libraries` はマーカーの名前と URL で記載してください。",
       ),
     );
+    return undefined;
   }
-  return issues.length === before ? (value as BuildConfig) : undefined;
-}
+  const libraries: Record<string, string> = {};
+  for (const [name, url] of Object.entries(value)) {
+    if (!MARK_NAME_PATTERN.test(name) || typeof url !== "string") {
+      issues.push(
+        schemaIssue(
+          file,
+          `libraries.${name}`,
+          `\`libraries.${name}\` は、英小文字で始まるマーカーの名前と URL の文字列で記載してください。`,
+        ),
+      );
+    } else {
+      libraries[name] = url;
+    }
+  }
+  return { value: libraries };
+};
+
+/** `aliases` を検め、Schema に合わない行を `null` にした並びにする */
+const validateAliases: KeyValidator = (value, { file, issues }) => {
+  if (!Array.isArray(value)) {
+    issues.push(
+      schemaIssue(
+        file,
+        "aliases",
+        "`aliases` はエイリアスの元の行の並びで記載してください。",
+      ),
+    );
+    return undefined;
+  }
+  const checked = validateAliasRows(value, file);
+  issues.push(...checked.issues);
+  return { value: checked.rows };
+};
+
+/** 文字列か */
+const isString = (value: unknown): boolean => typeof value === "string";
+
+/** 設定のキーと検め方を、検める順に並べた表 */
+const CONFIG_KEY_VALIDATORS: Array<[string, KeyValidator]> = [
+  ["features", validateFeatures],
+  ["libraries", validateLibraries],
+  [
+    "version",
+    typed(
+      (value) => typeof value === "string" && VERSION_PATTERN.test(value),
+      "`version` は v{MAJOR}.{MINOR}.{PATCH} の構造で記載してください。",
+    ),
+  ],
+  [
+    "index",
+    typed(isString, "`index` はファイルのパスの文字列で記載してください。"),
+  ],
+  [
+    "theme",
+    typed(isString, "`theme` はファイルのパスの文字列で記載してください。"),
+  ],
+  // 知らない名前はここでは拒まず、設定に残す（`mdmark check` と書き出しの警告が通知する）
+  [
+    "colorTheme",
+    typed(isString, "`colorTheme` はテーマの名前の文字列で記載してください。"),
+  ],
+  // 知らない値はここでは拒まず、設定に残す（`mdmark check` が通知する）
+  [
+    "colorScheme",
+    typed(
+      isString,
+      "`colorScheme` は `light`・`dark`・`auto` のどれかの文字列で記載してください。",
+    ),
+  ],
+  [
+    "extensions",
+    typed(
+      isStringArray,
+      "`extensions` は拡張のモジュールのパスの並びで記載してください。",
+    ),
+  ],
+  ["build", replaced(validateBuild)],
+  ["tooltips", kept(isValidTooltips)],
+  ["labels", kept(isValidLabels)],
+  ["syntax", kept(isValidSyntax)],
+  ["html-scripts", kept(isValidHtmlScripts)],
+  ["mermaid", kept(isValidMermaid)],
+  ["assets", kept(isValidAssets)],
+  ["side-toc", kept(isValidSideToc)],
+  ["table", kept(isValidTable)],
+  ["map", kept(isValidMap)],
+  ["aliases", validateAliases],
+  ["check", replaced(validateCheck)],
+];
 
 /** 読み込んだ値を `schemas/mdmark.config.schema.json` と同じ構造で検め、合うところだけを残した設定と、合わないところごとの `schema` のずれを返却する */
 export function validateConfig(
@@ -150,206 +331,17 @@ export function validateConfig(
   }
   // 知らないキーは拒まず、そのまま残す
   const config: Record<string, unknown> = { ...raw };
-
-  if (raw.features !== undefined) {
-    const features: Record<string, boolean> = {};
-    if (isRecord(raw.features)) {
-      for (const [name, value] of Object.entries(raw.features)) {
-        if (typeof value === "boolean") {
-          features[name] = value;
-        } else {
-          issues.push(
-            schemaIssue(
-              file,
-              `features.${name}`,
-              `\`features.${name}\` は true か false で記載してください。`,
-            ),
-          );
-        }
-      }
-      config.features = features;
+  for (const [key, validate] of CONFIG_KEY_VALIDATORS) {
+    if (raw[key] === undefined) {
+      continue;
+    }
+    const checked = validate(raw[key], { key, file, issues });
+    if (checked) {
+      config[key] = checked.value;
     } else {
-      issues.push(
-        schemaIssue(
-          file,
-          "features",
-          "`features` は機能名と true / false で記載してください。",
-        ),
-      );
-      delete config.features;
-    }
-  }
-
-  if (raw.libraries !== undefined) {
-    if (isRecord(raw.libraries)) {
-      const libraries: Record<string, string> = {};
-      for (const [name, url] of Object.entries(raw.libraries)) {
-        if (!MARK_NAME_PATTERN.test(name) || typeof url !== "string") {
-          issues.push(
-            schemaIssue(
-              file,
-              `libraries.${name}`,
-              `\`libraries.${name}\` は、英小文字で始まるマーカーの名前と URL の文字列で記載してください。`,
-            ),
-          );
-        } else {
-          libraries[name] = url;
-        }
-      }
-      config.libraries = libraries;
-    } else {
-      issues.push(
-        schemaIssue(
-          file,
-          "libraries",
-          "`libraries` はマーカーの名前と URL で記載してください。",
-        ),
-      );
-      delete config.libraries;
-    }
-  }
-
-  if (raw.version !== undefined) {
-    if (typeof raw.version !== "string" || !VERSION_PATTERN.test(raw.version)) {
-      issues.push(
-        schemaIssue(
-          file,
-          "version",
-          "`version` は v{MAJOR}.{MINOR}.{PATCH} の構造で記載してください。",
-        ),
-      );
-      delete config.version;
-    }
-  }
-
-  for (const key of ["index", "theme"] as const) {
-    if (raw[key] !== undefined && typeof raw[key] !== "string") {
-      issues.push(
-        schemaIssue(
-          file,
-          key,
-          `\`${key}\` はファイルのパスの文字列で記載してください。`,
-        ),
-      );
       delete config[key];
     }
   }
-
-  // 知らない名前はここでは拒まず、設定に残す（`mdmark check` と書き出しの警告が通知する）
-  if (raw.colorTheme !== undefined && typeof raw.colorTheme !== "string") {
-    issues.push(
-      schemaIssue(
-        file,
-        "colorTheme",
-        "`colorTheme` はテーマの名前の文字列で記載してください。",
-      ),
-    );
-    delete config.colorTheme;
-  }
-
-  // 知らない値はここでは拒まず、設定に残す（`mdmark check` が通知する）
-  if (raw.colorScheme !== undefined && typeof raw.colorScheme !== "string") {
-    issues.push(
-      schemaIssue(
-        file,
-        "colorScheme",
-        "`colorScheme` は `light`・`dark`・`auto` のどれかの文字列で記載してください。",
-      ),
-    );
-    delete config.colorScheme;
-  }
-
-  if (raw.extensions !== undefined && !isStringArray(raw.extensions)) {
-    issues.push(
-      schemaIssue(
-        file,
-        "extensions",
-        "`extensions` は拡張のモジュールのパスの並びで記載してください。",
-      ),
-    );
-    delete config.extensions;
-  }
-
-  if (raw.build !== undefined) {
-    const build = validateBuild(raw.build, file, issues);
-    if (build) {
-      config.build = build;
-    } else {
-      delete config.build;
-    }
-  }
-
-  if (
-    raw.tooltips !== undefined &&
-    !isValidTooltips(raw.tooltips, file, issues)
-  ) {
-    delete config.tooltips;
-  }
-
-  if (raw.labels !== undefined && !isValidLabels(raw.labels, file, issues)) {
-    delete config.labels;
-  }
-
-  if (raw.syntax !== undefined && !isValidSyntax(raw.syntax, file, issues)) {
-    delete config.syntax;
-  }
-
-  if (
-    raw["html-scripts"] !== undefined &&
-    !isValidHtmlScripts(raw["html-scripts"], file, issues)
-  ) {
-    delete config["html-scripts"];
-  }
-
-  if (raw.mermaid !== undefined && !isValidMermaid(raw.mermaid, file, issues)) {
-    delete config.mermaid;
-  }
-
-  if (raw.assets !== undefined && !isValidAssets(raw.assets, file, issues)) {
-    delete config.assets;
-  }
-
-  if (
-    raw["side-toc"] !== undefined &&
-    !isValidSideToc(raw["side-toc"], file, issues)
-  ) {
-    delete config["side-toc"];
-  }
-
-  if (raw.table !== undefined && !isValidTable(raw.table, file, issues)) {
-    delete config.table;
-  }
-
-  if (raw.map !== undefined && !isValidMap(raw.map, file, issues)) {
-    delete config.map;
-  }
-
-  if (raw.aliases !== undefined) {
-    if (Array.isArray(raw.aliases)) {
-      const checked = validateAliasRows(raw.aliases, file);
-      issues.push(...checked.issues);
-      config.aliases = checked.rows;
-    } else {
-      issues.push(
-        schemaIssue(
-          file,
-          "aliases",
-          "`aliases` はエイリアスの元の行の並びで記載してください。",
-        ),
-      );
-      delete config.aliases;
-    }
-  }
-
-  if (raw.check !== undefined) {
-    const check = validateCheck(raw.check, file, issues);
-    if (check) {
-      config.check = check;
-    } else {
-      delete config.check;
-    }
-  }
-
   return { config: config as CliConfig, issues };
 }
 
@@ -802,12 +794,68 @@ const relativize = (value: string, dir: string): string =>
     ? relative(dir, value).split(sep).join("/")
     : value;
 
+/** 設定の値が `url`（`root`）の文字列を持つときだけ、そのパスを `map` で写す */
+function mapNestedPath<T>(
+  value: T,
+  key: "url" | "root",
+  map: (value: string) => string,
+): T | undefined {
+  if (!isRecord(value) || typeof value[key] !== "string") {
+    return undefined;
+  }
+  return { ...value, [key]: map(value[key]) } as T;
+}
+
+/** `build` のパスを `map` で写す */
+function mapBuildPaths(
+  config: BuildConfig,
+  map: (value: string) => string,
+): BuildConfig {
+  const build = { ...config };
+  build.include = build.include.map(map);
+  build.out = map(build.out);
+  if (build.exclude) {
+    build.exclude = build.exclude.map(map);
+  }
+  if (build.glossary) {
+    build.glossary = build.glossary.map(map);
+  }
+  if (build.entry !== undefined) {
+    build.entry = map(build.entry);
+  }
+  return build;
+}
+
+/** エイリアスの元の行の `paths` を `map` で写す */
+function mapAliasPaths(
+  rows: unknown[],
+  map: (value: string) => string,
+): unknown[] {
+  return rows.map((row) =>
+    isRecord(row) && Array.isArray(row.paths)
+      ? {
+          ...row,
+          paths: row.paths.map((path: unknown) =>
+            typeof path === "string" ? map(path) : path,
+          ),
+        }
+      : row,
+  );
+}
+
+/** `url`・`root` の文字列を持つ設定のキーと、そのパスのキー */
+const NESTED_PATH_KEYS = [
+  ["html-scripts", "url"],
+  ["mermaid", "url"],
+  ["syntax", "url"],
+  ["assets", "root"],
+] as const;
+
 /** 設定のパスの値（`theme`・`index`・`assets.root`・`build`・`extensions`・`libraries`・`html-scripts.url`・`mermaid.url`・`syntax.url`・`aliases` の `paths`）を `map` で替えた設定を返却する（指定した設定は書き換えない） */
 const mapConfigPaths = (
   config: CliConfig,
   map: (value: string) => string,
 ): CliConfig => {
-  const all = (values: string[]) => values.map(map);
   const result: CliConfig = { ...config };
   if (typeof config.theme === "string") {
     result.theme = map(config.theme);
@@ -816,7 +864,7 @@ const mapConfigPaths = (
     result.index = map(config.index);
   }
   if (config.extensions) {
-    result.extensions = all(config.extensions);
+    result.extensions = config.extensions.map(map);
   }
   if (isRecord(config.libraries)) {
     result.libraries = Object.fromEntries(
@@ -826,46 +874,18 @@ const mapConfigPaths = (
       ]),
     ) as CliConfig["libraries"];
   }
-  const htmlScripts = config["html-scripts"];
-  if (isRecord(htmlScripts) && typeof htmlScripts.url === "string") {
-    result["html-scripts"] = { ...htmlScripts, url: map(htmlScripts.url) };
-  }
-  const mermaid = config.mermaid;
-  if (isRecord(mermaid) && typeof mermaid.url === "string") {
-    result.mermaid = { ...mermaid, url: map(mermaid.url) };
-  }
-  if (isRecord(config.syntax) && typeof config.syntax.url === "string") {
-    result.syntax = { ...config.syntax, url: map(config.syntax.url) };
-  }
-  if (isRecord(config.assets) && typeof config.assets.root === "string") {
-    result.assets = { ...config.assets, root: map(config.assets.root) };
+  const nested = result as Record<string, unknown>;
+  for (const [key, pathKey] of NESTED_PATH_KEYS) {
+    const mapped = mapNestedPath(config[key], pathKey, map);
+    if (mapped !== undefined) {
+      nested[key] = mapped;
+    }
   }
   if (config.build) {
-    const build = { ...config.build };
-    build.include = all(build.include);
-    build.out = map(build.out);
-    if (build.exclude) {
-      build.exclude = all(build.exclude);
-    }
-    if (build.glossary) {
-      build.glossary = all(build.glossary);
-    }
-    if (build.entry !== undefined) {
-      build.entry = map(build.entry);
-    }
-    result.build = build;
+    result.build = mapBuildPaths(config.build, map);
   }
   if (config.aliases) {
-    result.aliases = config.aliases.map((row) =>
-      isRecord(row) && Array.isArray(row.paths)
-        ? {
-            ...row,
-            paths: row.paths.map((path: unknown) =>
-              typeof path === "string" ? map(path) : path,
-            ),
-          }
-        : row,
-    );
+    result.aliases = mapAliasPaths(config.aliases, map);
   }
   return result;
 };
@@ -1034,6 +1054,30 @@ const readLayer = async (
 };
 
 /** 端末の設定と上のフォルダの設定ファイルを読み込み、構造を検めて、相対パスを絶対パスにしてから重ねる */
+/** 重ねる文書のフォルダの設定ファイルのパス（上のフォルダから順）。指定したファイルがあればそれだけ、無ければ見つからないエラーを投げる */
+const folderConfigPaths = async (options: {
+  cwd: string;
+  explicit?: string | undefined;
+  explicitName: string;
+  cascade: boolean;
+  isFile: (path: string) => Promise<boolean>;
+}): Promise<string[]> => {
+  if (options.explicit === undefined) {
+    return findConfigChain({
+      cwd: options.cwd,
+      cascade: options.cascade,
+      isFile: options.isFile,
+    });
+  }
+  const path = resolve(options.cwd, options.explicit);
+  if (!(await options.isFile(path))) {
+    throw new ConfigNotFoundError(
+      `${options.explicit} が見つかりません（${options.explicitName}）。パスを修正するか、mdmark init で配置してください。`,
+    );
+  }
+  return [path];
+};
+
 export const loadLayeredConfig = async (options: {
   cwd: string;
   explicit?: string | undefined;
@@ -1096,22 +1140,7 @@ export const loadLayeredConfig = async (options: {
     });
   }
 
-  let paths: string[];
-  if (options.explicit !== undefined) {
-    const path = resolve(options.cwd, options.explicit);
-    if (!(await options.isFile(path))) {
-      throw new ConfigNotFoundError(
-        `${options.explicit} が見つかりません（${options.explicitName}）。パスを修正するか、mdmark init で配置してください。`,
-      );
-    }
-    paths = [path];
-  } else {
-    paths = await findConfigChain({
-      cwd: options.cwd,
-      cascade,
-      isFile: options.isFile,
-    });
-  }
+  const paths = await folderConfigPaths({ ...options, cascade });
   for (const path of paths) {
     const taken = await take(path, "folder");
     if (taken) {
