@@ -4760,6 +4760,80 @@ flows:
     test: test_normal_when_footnotes_printed
     refs:
       - SC-472-58#scenarios[正常シナリオ（脚注の一覧を開いて出す）]
+  - name: 正常系（注記のツールチップと一覧）
+    summary: 注記のマーカーにポインター・フォーカスでツールチップを出し、マーカーを押すと閉じた注記の一覧を開いて項目へ移り、戻るリンクで参照の場所へ戻る
+    setup:
+      - name: 配布物を読み込んだページ
+        description: 正常系と同じ
+      - name: 注記を持つ Markdown
+        description: インターフェース定義『文書をHTML文字列にする』の正常系（注記）と同じ文書
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        participant P as 利用側のページ
+        participant M as mdmark
+        P->>M: mount(el, { markdown })
+        M->>P: 参照の場所に注記のマーカーを配置し、末尾に閉じた注記の一覧を配置して描く
+        P->>P: 表のセルのマーカーにフォーカスし、Esc を押す
+        P->>P: 表のセルのマーカーを押し、注記 1 の 2 つ目の戻るリンクを押す
+    expected:
+      - 表のセルのマーカーにフォーカスすると `注記 1` のツールチップが出て、Esc で消え、フォーカスがマーカーに残る
+      - マーカーを押した後、`details.mdmark-notes` が `open` を持ち、`details.mdmark-footnotes:not(.mdmark-notes)`（脚注の一覧）は閉じたままで、注記 1 の項目にフォーカスがある
+      - 2 つ目の戻るリンクを押した後、表のセルのマーカーのリンクにフォーカスがあり、`location.hash` が変わっていない
+      - マーカー・ツールチップ・一覧の項目の `id` がページの中で一意な値にもう一度振られ、脚注の `id` と重ならない
+    test: test_normal_when_annotation_tooltip_and_list
+    refs:
+      - SC-472-96#scenarios[正常シナリオ（キーボードで読み込む）]
+      - SC-472-96#scenarios[正常シナリオ（末尾の一覧と行き来する）]
+  - name: 正常系（印刷の前に注記の一覧を開く）
+    summary: 印刷の前に閉じた注記の一覧を開き、印刷の後にもう一度閉じる
+    setup:
+      - name: 配布物を読み込んだページ
+        description: 正常系と同じ
+      - name: 注記を持つ Markdown
+        description: 正常系（注記のツールチップと一覧）と同じ文書
+        notes: '`print` は既定のオン'
+      - name: Mock
+        description: 差し替える依存は無い。印刷は `beforeprint`・`afterprint` のイベントを送信することで代える
+    flow: |-
+      sequenceDiagram
+        participant P as 利用側のページ
+        participant M as mdmark
+        P->>M: mount(el, { markdown })
+        P->>M: beforeprint
+        M->>P: 閉じた注記の一覧を開く
+        P->>M: afterprint
+        M->>P: 開いた一覧をもう一度閉じる
+    expected:
+      - '`beforeprint` の後、`details.mdmark-notes` が `open` を持ち、注記のツールチップが出ていない'
+      - '`afterprint` の後、`details.mdmark-notes` が `open` を持たない'
+    test: test_normal_when_annotations_printed
+    refs:
+      - SC-472-58#scenarios[正常シナリオ（注記の一覧を開いて出す）]
+  - name: 正常系（map のノードと線の注記）
+    summary: 補足の `notes.{ID}.annotations` で注記を参照するノードと線のツールチップに、説明の下へ注記の区分を出す
+    setup:
+      - name: 配布物を読み込んだページ
+        description: 正常系と同じ
+      - name: 注記を参照する map の Markdown
+        description: '定義 `※[cond]: 条件を満たさないときは次の工程へ進む。` と、補足 `{"version": 1, "notes": {"judge": {"text": "入力の値を判定の条件と比べる", "annotations": ["cond"]}, "e1": {"annotations": ["cond"]}}}` で、ノード `judge` と線 `e1` から `cond` を参照する map の範囲を持つ文書'
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        participant P as 利用側のページ
+        participant M as mdmark
+        P->>M: mount(el, { markdown })
+        M->>P: map の図と末尾の注記の一覧を描く
+        P->>P: ノード judge のマーカーと線 e1 に順にポインターを乗せる
+    expected:
+      - ノード `judge` のツールチップに、説明 `入力の値を判定の条件と比べる` の区分と、見出し `注記 1` の区分（`条件を満たさないときは次の工程へ進む。`）が、この順で線で分かれて出る
+      - 説明を持たない線 `e1` にも押せる帯があり、ツールチップに見出し `注記 1` の区分だけが出る
+      - 末尾の注記の一覧の項目 `注記 1` が、ノードと線の 2 つの参照へ戻るリンクを持ち、戻るリンクを押すと持ち主にフォーカスが移ってツールチップが開く
+    test: test_normal_when_map_annotations
+    refs:
+      - SC-472-40#scenarios[正常シナリオ（ノードと線の注記）]
   - name: 正常系（表と重なる位置で右側の目次を出す）
     summary: 表の見出し行を画面の上端に留めた位置で、hover で開いた右側の目次を表より手前に出す
     setup:
@@ -6898,7 +6972,7 @@ request:
     default: '`comments`・`html-scripts`・`frontmatter` を除く全ての機能が `true`'
     location: argument
     description: '機能のオン・オフの既定。文書の `<!-- features: {"機能": false} -->` がその文書だけ上書きする'
-    notes: 知らない機能名は無視する。機能は `print`（印刷の前に折り畳みと記法を開く）と、記法ごとの `table`・`callout`・`tabs`・`steps`・`tree`・`badge`・`code`・`toc`・`side-toc`（右側の目次）・`anchors`・`sections`・`row-details`・`figures`、先頭へ戻るボタンの `back-to-top`、図の部品の `diagrams`、図の表示する枠の高さを変えるリサイズハンドルの `diagram-resize`、埋め込んだ HTML の `html`、埋め込んだ HTML と図のヒント（`data-hint`・ER 図のテーブルと列の説明）のツールチップの `hints`、用語のツールチップの `glossary`、被参照の一覧と文書の別名の `backlinks`、ビューのマーカーの `views`、脚注の `footnotes`、選んだ箇所へのコメントの `comments`、埋め込んだ HTML の範囲の `css`・`ts`・`js` の `html-scripts`、文書の先頭のフロントマターの表示の `frontmatter`（`comments`・`html-scripts`・`frontmatter` だけ既定は `false`）、アイコンの `icon`・段組みの `columns`・蛍光ペンの `highlight`・キーの `kbd`・details の範囲の `details`・改ページの `pagebreak`・取り込みの `include`・wide の範囲の `wide`・CSV の表の `csv`・カードの格子の `card-grid`・mermaid のコードブロックを図にする `mermaid`
+    notes: 知らない機能名は無視する。機能は `print`（印刷の前に折り畳みと記法を開く）と、記法ごとの `table`・`callout`・`tabs`・`steps`・`tree`・`badge`・`code`・`toc`・`side-toc`（右側の目次）・`anchors`・`sections`・`row-details`・`figures`、先頭へ戻るボタンの `back-to-top`、図の部品の `diagrams`、図の表示する枠の高さを変えるリサイズハンドルの `diagram-resize`、埋め込んだ HTML の `html`、埋め込んだ HTML と図のヒント（`data-hint`・ER 図のテーブルと列の説明）のツールチップの `hints`、用語のツールチップの `glossary`、被参照の一覧と文書の別名の `backlinks`、ビューのマーカーの `views`、脚注の `footnotes`、注記の `annotations`、選んだ箇所へのコメントの `comments`、埋め込んだ HTML の範囲の `css`・`ts`・`js` の `html-scripts`、文書の先頭のフロントマターの表示の `frontmatter`（`comments`・`html-scripts`・`frontmatter` だけ既定は `false`）、アイコンの `icon`・段組みの `columns`・蛍光ペンの `highlight`・キーの `kbd`・details の範囲の `details`・改ページの `pagebreak`・取り込みの `include`・wide の範囲の `wide`・CSV の表の `csv`・カードの格子の `card-grid`・mermaid のコードブロックを図にする `mermaid`
   - name: opts.config.libraries
     type: Record<string, string>
     required: false
@@ -6967,7 +7041,7 @@ request:
     required: false
     default: '`top`'
     location: argument
-    description: 本文の用語・文書の別名・脚注のツールチップを、持ち主の上と下のどちらに先に出すか
+    description: 本文の用語・文書の別名・脚注・注記のツールチップを、持ち主の上と下のどちらに先に出すか
     notes: '`top` は上に出し、上に収まらないときだけ下に出す。`bottom` は下に出し、下に収まらず上に収まるときだけ上に出す。他の値は無視して `top` にする。図の部品の中の用語もこの値に従う。図・ヒント・グラフの項目のツールチップは `tooltips.diagramPlacement` に従い、この値に影響されない'
   - name: opts.config.syntax.url
     type: string
@@ -7257,7 +7331,7 @@ constraints:
   - item: 描き直しで部品の開閉を保つ
     constraint: '読者が手で開閉した行の詳細・details の範囲（`collapse` で折りたたみに入れたタブ・ステップを含み、同じ種類として数える）・折りたたみの注意書き・ER 図の列・ファイルツリーのフォルダ・コードの折りたたみ・階層の表の行の開閉を `mount` ごとに覚え、`update` で描き直すと同じ要素をその開閉で描く。同じ部品は、囲む最も内側の見出しのセクションの `mdmark-section-body` の `id`（見出しより前の部品は文書の先頭として扱う）と、そのセクションの中で同じ種類の部品の何番目か（入れ子のセクションの中の部品は数えない）で対応を取り、部品の中の要素は鍵で対応を取る（行の詳細はマーカーの `at` の行の位置（並べ替え・絞り込みに左右されない）、ER 図はテーブルの名前 `data-node`、ファイルツリーはフォルダのパス、コードの折りたたみは行番号、階層の表は行の `data-path`。details の範囲と注意書きは部品そのものが要素）。押した回数によらず最後の開閉を覚える。覚えていない要素と、開閉のマーカー（details の `open`・注意書きの `+`/`-`・ER 図の `folded`・ファイルツリーの `data-open`・コードの `data-folded`）の指定が覚えたときと変わった要素は、マーカーのとおりの開閉で描く。印刷の前後の開閉は覚えず、同じ要素への 2 回目の `mount` と `destroy` で覚えた開閉を捨てる'
   - item: 印刷で記法を開く
-    constraint: '`print` がオンのとき、`beforeprint` で閉じた `details`（閉じた表・閉じた注意書きと入れ子の注意書きを含む）・閉じたセクション・行の詳細・閉じたツリーのフォルダ・畳んだコードの行・列を畳んだ ER 図のテーブル（全ての列を出し、関係の線をもう一度結ぶ）・閉じた脚注の一覧・畳んだ階層の表の行・隠した YAML の見本を開き、タブの全ての中身をタブ名をタイトルにして縦に並べる。`afterprint` で、開いたものだけをもう一度閉じ、印刷の前に選んでいたタブだけを出す'
+    constraint: '`print` がオンのとき、`beforeprint` で閉じた `details`（閉じた表・閉じた注意書きと入れ子の注意書きを含む）・閉じたセクション・行の詳細・閉じたツリーのフォルダ・畳んだコードの行・列を畳んだ ER 図のテーブル（全ての列を出し、関係の線をもう一度結ぶ）・閉じた脚注の一覧・閉じた注記の一覧・畳んだ階層の表の行・隠した YAML の見本を開き、タブの全ての中身をタブ名をタイトルにして縦に並べる。`afterprint` で、開いたものだけをもう一度閉じ、印刷の前に選んでいたタブだけを出す'
   - item: 拡張のマーカー
     constraint: 登録した拡張のマーカーの場所は、拡張の `schema` で `{ options, definition }`（`options` はマーカーの引数の JSON のオブジェクト、`definition` は範囲の中の部品の定義）を検査し、合えば `load` で読み込んだモジュールの `draw` に同じ値で描かせる。引数が JSON のオブジェクトでない（今の書き方の）拡張のマーカーは `schema` も `load` も呼ばず、`render` と同じ記載の警告をその場所に描く。合わなければ記載の警告、読み込めなければ通知ブロックに替える
     notes: docs/interface/IF-472-32.ts
@@ -7284,7 +7358,7 @@ constraints:
     constraint: 全画面のボタンで、タイトル・図・凡例を `<dialog>` のモーダル（`showModal()`）に出し、モーダルの中の図をモーダルの幅と高さに収まる倍率で開く。モーダルの右上の帯は文書の中と同じボタンで、全画面のボタンの位置に閉じるボタン（lucide の `x`）を配置する。閉じるボタンか Esc で閉じ、フォーカスを全画面のボタンへ戻す。ツールチップを開いている間の Esc はツールチップだけを閉じる。閉じたときに、モーダルのために付けた受け取りと大きさの監視を解除する
     notes: 全画面のモーダルは確認ログの決定（要件.md の `拡大・縮小`）
   - item: 図のツールチップ
-    constraint: 'map の補足の `notes` で説明を持つ線の押せる帯とノードの右上のマーカーとグループのタイトルの右のマーカーと、グラフの項目（点・棒・扇形など）と、ER 図のテーブルの見出しの説明のボタンを、`aria-describedby` でそのツールチップを指すフォーカスできる要素にする。ポインターを乗せたときとフォーカスしたときに出し、ツールチップの上へポインターを移しても出したままにし、Esc で削除してフォーカスを持ち主に残す（WCAG 1.4.13）。`pointerType` が `touch` のときは `pointerenter` で開かず、持ち主の `pointerdown` で開閉を切り替え、開いている間はツールチップと持ち主の外の `pointerdown` で閉じる。同時に出すのは 1 つだけ。出す場所は `opts.config.tooltips.diagramPlacement` に従い（map の図は常に `bottom`）、`bottom`（既定）なら持ち主の下に開いて下に収まらず上に収まれば上に、`top` なら上に開いて上に収まらなければ下に開く。ノードのマーカーのツールチップはノードの下（上）、テーブルの説明のボタンのツールチップはテーブルの下（上）に配置する。グラフの項目のツールチップは系列か項目の名前と値を出し、点は外観の点より広いクリックを受ける範囲で開く（種類ごとの中身は部品設計）。ノードのマーカーの外では開かず、リンク先を持つノードのマーカーはリンクと別にフォーカスでき（Tab の順はリンク、マーカー）、マーカーを押してもリンク先を開かない。線とマーカーの上でポインターの形状を変えない。図を動かしたときと文書をスクロールしたときは持ち主に付いて動かし、`beforeprint` で閉じる。ノードの中の用語は、本文の用語と同じ下線の要素とツールチップの操作（制約の「用語と文書の別名の下線」「ツールチップの操作」）にする'
+    constraint: 'map の補足の `notes` で説明か注記（`annotations`）を持つ線の押せる帯とノードの右上のマーカーとグループのタイトルの右のマーカーと、グラフの項目（点・棒・扇形など）と、ER 図のテーブルの見出しの説明のボタンを、`aria-describedby` でそのツールチップを指すフォーカスできる要素にする。ポインターを乗せたときとフォーカスしたときに出し、ツールチップの上へポインターを移しても出したままにし、Esc で削除してフォーカスを持ち主に残す（WCAG 1.4.13）。`pointerType` が `touch` のときは `pointerenter` で開かず、持ち主の `pointerdown` で開閉を切り替え、開いている間はツールチップと持ち主の外の `pointerdown` で閉じる。同時に出すのは 1 つだけ。出す場所は `opts.config.tooltips.diagramPlacement` に従い（map の図は常に `bottom`）、`bottom`（既定）なら持ち主の下に開いて下に収まらず上に収まれば上に、`top` なら上に開いて上に収まらなければ下に開く。ノードのマーカーのツールチップはノードの下（上）、テーブルの説明のボタンのツールチップはテーブルの下（上）に配置する。グラフの項目のツールチップは系列か項目の名前と値を出し、点は外観の点より広いクリックを受ける範囲で開く（種類ごとの中身は部品設計）。ノードのマーカーの外では開かず、リンク先を持つノードのマーカーはリンクと別にフォーカスでき（Tab の順はリンク、マーカー）、マーカーを押してもリンク先を開かない。線とマーカーの上でポインターの形状を変えない。図を動かしたときと文書をスクロールしたときは持ち主に付いて動かし、`beforeprint` で閉じる。ノードの中の用語は、本文の用語と同じ下線の要素とツールチップの操作（制約の「用語と文書の別名の下線」「ツールチップの操作」）にする'
     notes: WAI-ARIA の役割とフォーカスの出入りは部品設計で決める
   - item: ER 図の列の開閉
     constraint: ER 図のテーブルの列の開閉のボタンを押すと（Enter・Space を含む）、全ての列を出しているテーブルは主キーと外部キーの列だけを出して `非表示 {数} 列` の行を配置し、畳んでいるテーブルは全ての列を出す。ボタンの `aria-expanded` とアイコン（lucide の `chevrons-down-up`・`chevrons-up-down`）を切り替え、関係の線・多重度の記号・ラベルを今の列の行の位置へもう一度結び、図の倍率を保ち、フォーカスをボタンに残す。全画面のモーダルは開いたときの開閉の状態で描く。`update` では制約「描き直しで部品の開閉を保つ」のとおりに描く

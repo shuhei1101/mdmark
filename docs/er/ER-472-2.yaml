@@ -38,9 +38,9 @@ tables:
         title: 説明
         type: object
         default: '`{}`'
-        description: 'ノード・線の ID ごとの説明（`{ "text": 説明の文 }`）。線にポインターを当てたツールチップと、再生の帯の説明に出す'
-        example: '{"mount": {"text": "文書を描く公開関数"}}'
-        notes: キーは Mermaid のノード・線の ID（シーケンス図はメッセージの番号）。無い ID は `map_unknown_ref`
+        description: 'ノード・線の ID ごとの説明と注記の参照（`{ "text": 説明の文, "annotations": [注記の ID] }`。どちらか一方だけでもよい）。線にポインターを当てたツールチップと、再生の帯の説明に出す。`annotations` の注記は、ツールチップの説明の下に区分を分けて出す'
+        example: '{"mount": {"text": "文書を描く公開関数", "annotations": ["cond"]}}'
+        notes: キーは Mermaid のノード・線の ID（シーケンス図はメッセージの番号）。無い ID は `map_unknown_ref`。`annotations` の定義の無い注記の ID は `annotation_undefined`
       - name: plays_over
         title: 再生を重ねる構成図
         type: integer

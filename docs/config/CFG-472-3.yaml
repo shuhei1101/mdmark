@@ -654,6 +654,17 @@ settings:
     status: planned
     introduced:
       pr: 311
+  - key: features.annotations
+    title: 注記の機能
+    file: mdmark.config.yaml
+    type: boolean
+    required: false
+    default: 'true'
+    description: '行頭の `※[ID]: 本文` で定義した注記を、本文・表のセルの `※[ID]` と map の補足の `notes.{ID}.annotations` から参照し、`※` と番号のマーカー・マーカーのツールチップ・文書の末尾の閉じた注記の一覧にする。オフのときは、参照と定義を記載した文字のまま描く'
+    reload: reload
+    status: planned
+    introduced:
+      pr: 562
   - key: features.html-scripts
     title: 範囲のスクリプトの機能
     file: mdmark.config.yaml
