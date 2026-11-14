@@ -55,6 +55,26 @@ import { EditorScrollGuard } from "./scroll-guard.ts";
 /** `inspect` の結果を待つ上限（ミリ秒） */
 const INSPECT_TIMEOUT_MS = 5000;
 
+/** 重ねた設定ファイル・`theme`・`extensions`・用語のファイル・`mdmark.configPath`・読み込めない設定ファイルの、見張るパスの並び */
+function watchedFiles(options: {
+  load: Awaited<ReturnType<typeof loadConfig>>;
+  configPath: string;
+  baseDir: string;
+}): string[] {
+  const { load, configPath, baseDir } = options;
+  const watched = [
+    ...load.files,
+    ...(load.theme === undefined ? [] : [load.theme]),
+    ...load.extensions,
+    ...load.aliasFiles,
+    ...(configPath === "" ? [] : [resolveConfigPath({ configPath, baseDir })]),
+  ];
+  if (load.problem) {
+    watched.push(load.problem.path);
+  }
+  return watched;
+}
+
 /** 1 つの Markdown のパネル。読み込むバージョンと設定を決めて HTML を入れ、Webview とメッセージをやり取りし、再描画の待ちを 1 つだけ持つ */
 export class PreviewPanel {
   /** VS Code のパネル */
@@ -250,31 +270,28 @@ export class PreviewPanel {
       ),
       test: deps.test,
     };
-    const distJs =
-      decision.kind === "decided"
-        ? distUrl({
-            base: deps.distBase,
-            version: decision.version,
-            file: "index.js",
-          })
-        : undefined;
-    this.loaded =
-      decision.kind === "decided" && distJs !== undefined
-        ? { version: decision.version, distJs }
-        : undefined;
-    webview.html =
-      decision.kind === "decided" && distJs !== undefined
-        ? buildPreviewHtml({
-            ...common,
-            distJs,
-            distCss: distUrl({
-              base: deps.distBase,
-              version: decision.version,
-              file: "index.css",
-            }),
-            version: decision.version,
-          })
-        : buildPreviewHtml(common);
+    const version = decision.kind === "decided" ? decision.version : undefined;
+    webview.html = this.previewHtml(common, version);
+  }
+
+  /** 決めたバージョンの配布物を読み込む HTML を返却する。バージョンが無ければ配布物を読み込まない HTML */
+  private previewHtml(
+    common: Parameters<typeof buildPreviewHtml>[0],
+    version: string | undefined,
+  ): string {
+    if (version === undefined) {
+      this.loaded = undefined;
+      return buildPreviewHtml(common);
+    }
+    const { distBase } = this.deps;
+    const distJs = distUrl({ base: distBase, version, file: "index.js" });
+    this.loaded = { version, distJs };
+    return buildPreviewHtml({
+      ...common,
+      distJs,
+      distCss: distUrl({ base: distBase, version, file: "index.css" }),
+      version,
+    });
   }
 
   /** 設定を重ねて読み込み、読み込めない設定ファイルが無ければ `config` を替えて（前に帯を出していたら）`configOk` を、あれば前に使用した `config` を残して `configError` を送信する。読み込めない設定ファイルが無いかを返却する */
@@ -303,25 +320,9 @@ export class PreviewPanel {
       );
       return false;
     }
-    const watched = [
-      ...load.files,
-      ...(load.theme === undefined ? [] : [load.theme]),
-      ...load.extensions,
-      ...load.aliasFiles,
-      ...(settings.configPath === ""
-        ? []
-        : [resolveConfigPath({ configPath: settings.configPath, baseDir })]),
-    ];
-    if (load.problem) {
-      watched.push(load.problem.path);
-    }
-    const changed =
-      watched.length !== this.watched.length ||
-      watched.some((path, index) => path !== this.watched[index]);
-    this.watched = watched;
-    if (changed) {
-      this.onWatchedChange();
-    }
+    this.updateWatched(
+      watchedFiles({ load, configPath: settings.configPath, baseDir }),
+    );
     this.nearest = load.nearest;
     this.includeRoot =
       load.nearest === undefined
@@ -331,6 +332,35 @@ export class PreviewPanel {
       this.reportProblem(load.problem);
       return false;
     }
+    this.applyLoadedConfig(load);
+    this.aliases = load.aliases;
+    for (const issue of load.aliasIssues) {
+      log.warn(formatCheckIssue(issue));
+    }
+    this.configUsed = true;
+    if (load.problem) {
+      this.reportProblem(load.problem);
+      return false;
+    }
+    this.markConfigOk();
+    return true;
+  }
+
+  /** 見張るファイルを入れ替え、変わっていれば知らせる */
+  private updateWatched(watched: string[]): void {
+    const changed =
+      watched.length !== this.watched.length ||
+      watched.some((path, index) => path !== this.watched[index]);
+    this.watched = watched;
+    if (changed) {
+      this.onWatchedChange();
+    }
+  }
+
+  /** 重ねた設定の値を取り込み、相対パスの URL を Webview の URL にした `config` にする */
+  private applyLoadedConfig(
+    load: Awaited<ReturnType<typeof loadConfig>>,
+  ): void {
     const {
       libraries,
       "html-scripts": htmlScripts,
@@ -348,38 +378,24 @@ export class PreviewPanel {
     const configDir = dirname(this.fileUri.fsPath);
     const toUrl = (target: string) =>
       this.webviewPanel.webview.asWebviewUri(Uri.file(target)).toString();
-    this.config = {
-      ...rest,
-      ...(libraries === undefined
-        ? {}
-        : { libraries: resolveLibraries({ libraries, configDir, toUrl }) }),
-      ...(htmlScripts === undefined
-        ? {}
-        : {
-            "html-scripts": resolveHtmlScripts({
-              htmlScripts,
-              configDir,
-              toUrl,
-            }),
-          }),
-      ...(mermaid === undefined
-        ? {}
-        : { mermaid: resolveMermaid({ mermaid, configDir, toUrl }) }),
-      ...(syntax === undefined
-        ? {}
-        : { syntax: resolveSyntax({ syntax, configDir, toUrl }) }),
-    };
-    this.aliases = load.aliases;
-    for (const issue of load.aliasIssues) {
-      log.warn(formatCheckIssue(issue));
+    const resolved: PreviewConfig = { ...rest };
+    if (libraries !== undefined) {
+      resolved.libraries = resolveLibraries({ libraries, configDir, toUrl });
     }
-    this.configUsed = true;
-    if (load.problem) {
-      this.reportProblem(load.problem);
-      return false;
+    if (htmlScripts !== undefined) {
+      resolved["html-scripts"] = resolveHtmlScripts({
+        htmlScripts,
+        configDir,
+        toUrl,
+      });
     }
-    this.markConfigOk();
-    return true;
+    if (mermaid !== undefined) {
+      resolved.mermaid = resolveMermaid({ mermaid, configDir, toUrl });
+    }
+    if (syntax !== undefined) {
+      resolved.syntax = resolveSyntax({ syntax, configDir, toUrl });
+    }
+    this.config = resolved;
   }
 
   /** 読み込めない設定ファイルを帯に出す */
@@ -463,6 +479,23 @@ export class PreviewPanel {
     if (!(await this.reloadConfig())) {
       return;
     }
+    if (this.needsHtmlReload(path)) {
+      await this.load();
+      return;
+    }
+    if (path !== undefined && path === this.wanted.theme) {
+      this.themeVersion += 1;
+      const href = this.webviewPanel.webview
+        .asWebviewUri(Uri.file(path))
+        .toString();
+      void this.post({ type: "theme", href: `${href}?v=${this.themeVersion}` });
+      return;
+    }
+    this.renderNow();
+  }
+
+  /** `libraries` の origin の集まり・`extensions`（変わったファイルが拡張なら中身も）・`theme` のパスが今の HTML と違うか */
+  private needsHtmlReload(path: string | undefined): boolean {
     const next = libraryOrigins({
       libraries: this.rawLibraries,
       htmlScripts: this.rawHtmlScripts,
@@ -479,19 +512,7 @@ export class PreviewPanel {
       ) &&
       (path === undefined || !this.wanted.extensions.includes(path));
     const sameTheme = this.wanted.theme === this.embedded.theme;
-    if (!sameOrigins || !sameExtensions || !sameTheme) {
-      await this.load();
-      return;
-    }
-    if (path !== undefined && path === this.wanted.theme) {
-      this.themeVersion += 1;
-      const href = this.webviewPanel.webview
-        .asWebviewUri(Uri.file(path))
-        .toString();
-      void this.post({ type: "theme", href: `${href}?v=${this.themeVersion}` });
-      return;
-    }
-    this.renderNow();
+    return !sameOrigins || !sameExtensions || !sameTheme;
   }
 
   /** 前に帯を出していたときだけ `configOk` を送信する */
@@ -568,14 +589,9 @@ export class PreviewPanel {
 
   /** Webview のメッセージを `type` ごとに処理する */
   async handleMessage(message: WebviewMessage): Promise<void> {
-    const { log } = this.deps;
     switch (message.type) {
       case "ready":
-        this.ready = true;
-        this.renderNow();
-        if (this.configProblem !== undefined) {
-          void this.post(this.configErrorMessage(this.configProblem));
-        }
+        this.onReady();
         return;
       case "revealLine":
         this.revealEditorLine(message.line);
@@ -586,42 +602,23 @@ export class PreviewPanel {
       case "reload":
         await this.load();
         return;
-      case "openConfig": {
-        const configuration = workspace.getConfiguration(
-          "mdmark",
-          this.fileUri,
-        );
-        const settings = readSettings((key) => configuration.get(key));
-        await openConfigFile({
-          path: this.configProblem?.path ?? this.nearest,
-          cwd: dirname(this.fileUri.fsPath),
-          configPath: settings.configPath,
-          baseDir: baseDirOf(this.fileUri),
-          log,
-        });
+      case "openConfig":
+        await this.openConfig();
         return;
-      }
-      case "resolveAssets": {
-        const urls: Record<string, string | null> = {};
-        for (const path of message.paths) {
-          const found = await this.findAsset(path);
-          urls[path] =
-            found === undefined
-              ? null
-              : `${this.webviewPanel.webview.asWebviewUri(Uri.file(found.file)).toString()}${found.suffix}`;
-        }
-        void this.post({ type: "assetsResolved", id: message.id, urls });
+      case "resolveAssets":
+        await this.resolveAssets(message.id, message.paths);
         return;
-      }
-      case "openAsset": {
-        const found = await this.findAsset(message.path);
-        if (found === undefined) {
-          log.warn("開けないファイル", message.path);
-          return;
-        }
-        await env.openExternal(Uri.file(found.file));
+      case "openAsset":
+        await this.openAsset(message.path);
         return;
-      }
+      default:
+        this.handleReply(message);
+    }
+  }
+
+  /** テストの問い合わせの返事と、描いた結果の知らせを処理する */
+  private handleReply(message: WebviewMessage): void {
+    switch (message.type) {
       case "inspected":
         this.pendingInspects.get(message.id)?.(message.elements);
         this.pendingInspects.delete(message.id);
@@ -631,20 +628,69 @@ export class PreviewPanel {
         this.pendingAudits.delete(message.id);
         return;
       case "loadFailed":
-        if (message.reason === "diffUnsupported") {
-          log.warn("差分の色分けに対応しないバージョン", this.loaded?.version);
-          return;
-        }
-        log.warn(
-          "配布物を読み込めない",
-          message.reason,
-          this.loaded?.version,
-          this.loaded?.distJs,
-        );
-        return;
-      case "rendered":
+        this.reportLoadFailed(message.reason);
         return;
     }
+  }
+
+  /** `ready` を受けて描き、読み込めない設定ファイルがあれば帯を出し直す */
+  private onReady(): void {
+    this.ready = true;
+    this.renderNow();
+    if (this.configProblem !== undefined) {
+      void this.post(this.configErrorMessage(this.configProblem));
+    }
+  }
+
+  /** 読み込めない設定ファイル、無ければ近い設定ファイルを開く */
+  private async openConfig(): Promise<void> {
+    const configuration = workspace.getConfiguration("mdmark", this.fileUri);
+    const settings = readSettings((key) => configuration.get(key));
+    await openConfigFile({
+      path: this.configProblem?.path ?? this.nearest,
+      cwd: dirname(this.fileUri.fsPath),
+      configPath: settings.configPath,
+      baseDir: baseDirOf(this.fileUri),
+      log: this.deps.log,
+    });
+  }
+
+  /** 記載したパスごとにファイルを探し、Webview の URL（無ければ `null`）を `assetsResolved` で送信する */
+  private async resolveAssets(id: number, paths: string[]): Promise<void> {
+    const urls: Record<string, string | null> = {};
+    for (const path of paths) {
+      const found = await this.findAsset(path);
+      urls[path] =
+        found === undefined
+          ? null
+          : `${this.webviewPanel.webview.asWebviewUri(Uri.file(found.file)).toString()}${found.suffix}`;
+    }
+    void this.post({ type: "assetsResolved", id, urls });
+  }
+
+  /** 記載したパスのファイルを既定のアプリで開く */
+  private async openAsset(path: string): Promise<void> {
+    const found = await this.findAsset(path);
+    if (found === undefined) {
+      this.deps.log.warn("開けないファイル", path);
+      return;
+    }
+    await env.openExternal(Uri.file(found.file));
+  }
+
+  /** 配布物を読み込めなかった理由をログに出す */
+  private reportLoadFailed(reason: string): void {
+    const { log } = this.deps;
+    if (reason === "diffUnsupported") {
+      log.warn("差分の色分けに対応しないバージョン", this.loaded?.version);
+      return;
+    }
+    log.warn(
+      "配布物を読み込めない",
+      reason,
+      this.loaded?.version,
+      this.loaded?.distJs,
+    );
   }
 
   /** `localResourceRoots` に `assets.root` のフォルダ・`theme` のファイルのフォルダ・まとめた拡張のフォルダを加えてもう一度入れる（前に加えたものは削除する） */

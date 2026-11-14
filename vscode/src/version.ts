@@ -55,6 +55,37 @@ export function nextPageUrl(link: string | null): string | undefined {
   return link === null ? undefined : NEXT_LINK_PATTERN.exec(link)?.[1];
 }
 
+/** タグ一覧の 1 ページを読み込み、タグの名前と次のページの URL を返却する。取れなければログを出して `undefined` */
+async function fetchTagPage(options: {
+  url: string;
+  signal: AbortSignal;
+  fetch: typeof fetch;
+  log: Logger;
+}): Promise<{ names: string[]; next: string | undefined } | undefined> {
+  const { url, signal, log } = options;
+  let response: Response;
+  let body: unknown;
+  try {
+    response = await options.fetch(url, {
+      headers: { Accept: "application/vnd.github+json" },
+      signal,
+    });
+    body = response.ok ? await response.json() : undefined;
+  } catch (error) {
+    const reason = error instanceof Error ? error : new Error(String(error));
+    log.warn("タグ一覧を取れない", url, reason.name, reason.message);
+    return undefined;
+  }
+  if (!response.ok || !Array.isArray(body)) {
+    log.warn("タグ一覧を取れない", url, response.status);
+    return undefined;
+  }
+  const names = body
+    .filter((entry) => typeof entry?.name === "string")
+    .map((entry) => entry.name as string);
+  return { names, next: nextPageUrl(response.headers.get("Link")) };
+}
+
 /** タグ一覧を `rel="next"` が無くなるまで辿り、最新のバージョンを返却する。取れなければ例外を投げず `undefined` */
 export async function fetchLatestVersion(options: {
   /** 最初のページの URL */
@@ -72,29 +103,12 @@ export async function fetchLatestVersion(options: {
   const names: string[] = [];
   let url: string | undefined = options.url;
   while (url !== undefined) {
-    let response: Response;
-    let body: unknown;
-    try {
-      response = await options.fetch(url, {
-        headers: { Accept: "application/vnd.github+json" },
-        signal,
-      });
-      body = response.ok ? await response.json() : undefined;
-    } catch (error) {
-      const reason = error instanceof Error ? error : new Error(String(error));
-      log.warn("タグ一覧を取れない", url, reason.name, reason.message);
+    const page = await fetchTagPage({ url, signal, fetch: options.fetch, log });
+    if (page === undefined) {
       return undefined;
     }
-    if (!response.ok || !Array.isArray(body)) {
-      log.warn("タグ一覧を取れない", url, response.status);
-      return undefined;
-    }
-    for (const entry of body) {
-      if (typeof entry?.name === "string") {
-        names.push(entry.name);
-      }
-    }
-    url = nextPageUrl(response.headers.get("Link"));
+    names.push(...page.names);
+    url = page.next;
   }
   const latest = pickLatestVersion(names);
   if (latest === undefined) {

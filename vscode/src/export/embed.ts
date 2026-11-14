@@ -23,6 +23,79 @@ export type BundleModules = (paths: string[]) => Promise<BundleResult[]>;
 const isLocal = (value: unknown): value is string =>
   typeof value === "string" && !HTTP_URL_PATTERN.test(value);
 
+/** `libraries` の相対パスの値のうち文書が使用するものを、名前 → 絶対パスで返却する */
+function usedLocalLibraries(
+  markdown: string,
+  libraries: Record<string, unknown> | undefined,
+): Map<string, string> {
+  const localLibraries = Object.fromEntries(
+    Object.entries(libraries ?? {}).filter((entry): entry is [string, string] =>
+      isLocal(entry[1]),
+    ),
+  );
+  const used = usedLibraryMarks([markdown], localLibraries);
+  return new Map(
+    [...used].flatMap((name): Array<[string, string]> => {
+      const path = localLibraries[name];
+      return path === undefined ? [] : [[name, path]];
+    }),
+  );
+}
+
+/** 絶対パスのモジュールを `bundle` でまとめ、パスごとの `data:` の URL と、まとめられなかったパスを返却する */
+async function bundleDataUrls(
+  paths: Set<string>,
+  bundle: BundleModules,
+): Promise<{
+  urls: Map<string, string>;
+  failures: Array<{ path: string; error: string }>;
+}> {
+  const urls = new Map<string, string>();
+  const failures: Array<{ path: string; error: string }> = [];
+  for (const result of paths.size === 0 ? [] : await bundle([...paths])) {
+    if ("error" in result) {
+      failures.push(result);
+    } else {
+      urls.set(result.path, moduleDataUrl(result.code));
+    }
+  }
+  return { urls, failures };
+}
+
+/** `libraries` の相対パスの値を、文書が使用してまとめられた `data:` の URL に替える。使用しない・まとめられない値は削除する */
+function embedLibraryValues(options: {
+  libraries: Record<string, unknown> | undefined;
+  used: Set<string>;
+  urls: Map<string, string>;
+}): Record<string, unknown> | undefined {
+  const { libraries, used, urls } = options;
+  if (libraries === undefined) {
+    return undefined;
+  }
+  return Object.fromEntries(
+    Object.entries(libraries).flatMap(([name, value]) => {
+      if (!isLocal(value)) {
+        return [[name, value]];
+      }
+      const url = used.has(name) ? urls.get(value) : undefined;
+      return url === undefined ? [] : [[name, url]];
+    }),
+  );
+}
+
+/** `replace` のとき、設定の `url` を指定した URL に替える（URL が無ければ `url` を削除する）。設定が無いか `replace` でなければそのまま返却する */
+function replaceUrl(
+  setting: Record<string, unknown> | undefined,
+  replace: boolean,
+  url: string | undefined,
+): Record<string, unknown> | undefined {
+  if (setting === undefined || !replace) {
+    return setting;
+  }
+  const { url: _, ...rest } = setting;
+  return url === undefined ? rest : { ...rest, url };
+}
+
 /** 文書が使用する相対パスの `libraries` と `html-scripts.url`・`mermaid.url` を `bundle` でまとめ、`data:` の URL に替える。使用しない・まとめられない相対パスの値は削除し、`http:`・`https:` の値と文字列でない値はそのまま返却する */
 export async function embedLocalLibraries(options: {
   /** 書き出す全文 */
@@ -44,66 +117,38 @@ export async function embedLocalLibraries(options: {
   failures: Array<{ path: string; error: string }>;
 }> {
   const { markdown, libraries, htmlScripts, mermaid, config, bundle } = options;
-  const localLibraries = Object.fromEntries(
-    Object.entries(libraries ?? {}).filter((entry): entry is [string, string] =>
-      isLocal(entry[1]),
-    ),
-  );
-  const used = usedLibraryMarks([markdown], localLibraries);
+  const used = usedLocalLibraries(markdown, libraries);
   const scriptUrl = htmlScripts?.url;
   const embedScript =
     isLocal(scriptUrl) && collectRangeScripts({ markdown, config }).length > 0;
-  const paths = new Set(
-    [...used].flatMap((name) => {
-      const path = localLibraries[name];
-      return path === undefined ? [] : [path];
-    }),
-  );
-  if (embedScript) {
-    paths.add(scriptUrl);
-  }
   // mermaid が中で読み込む chunk の動的 `import()` も、`bundle` が同じモジュールに取り込む
   const mermaidUrl = mermaid?.url;
   const embedMermaid =
     isLocal(mermaidUrl) && usesMermaid({ markdowns: [markdown], config });
+  const paths = new Set(used.values());
+  if (embedScript) {
+    paths.add(scriptUrl);
+  }
   if (embedMermaid) {
     paths.add(mermaidUrl);
   }
-  const urls = new Map<string, string>();
-  const failures: Array<{ path: string; error: string }> = [];
-  for (const result of paths.size === 0 ? [] : await bundle([...paths])) {
-    if ("error" in result) {
-      failures.push(result);
-    } else {
-      urls.set(result.path, moduleDataUrl(result.code));
-    }
-  }
-  const embeddedLibraries =
-    libraries === undefined
-      ? undefined
-      : Object.fromEntries(
-          Object.entries(libraries).flatMap(([name, value]) => {
-            if (!isLocal(value)) {
-              return [[name, value]];
-            }
-            const url = used.has(name) ? urls.get(value) : undefined;
-            return url === undefined ? [] : [[name, url]];
-          }),
-        );
-  let embeddedScripts = htmlScripts;
-  if (htmlScripts !== undefined && isLocal(scriptUrl)) {
-    const { url: _, ...rest } = htmlScripts;
-    const url = embedScript ? urls.get(scriptUrl) : undefined;
-    embeddedScripts = url === undefined ? rest : { ...rest, url };
-  }
-  let embeddedMermaid = mermaid;
-  if (mermaid !== undefined && embedMermaid) {
-    const { url: _, ...rest } = mermaid;
-    const url = urls.get(mermaidUrl);
-    embeddedMermaid = url === undefined ? rest : { ...rest, url };
-  }
+  const { urls, failures } = await bundleDataUrls(paths, bundle);
+  const embeddedScripts = replaceUrl(
+    htmlScripts,
+    isLocal(scriptUrl),
+    embedScript ? urls.get(scriptUrl) : undefined,
+  );
+  const embeddedMermaid = replaceUrl(
+    mermaid,
+    embedMermaid,
+    embedMermaid ? urls.get(mermaidUrl) : undefined,
+  );
   return {
-    libraries: embeddedLibraries,
+    libraries: embedLibraryValues({
+      libraries,
+      used: new Set(used.keys()),
+      urls,
+    }),
     htmlScripts: embeddedScripts,
     mermaid: embeddedMermaid,
     failures,

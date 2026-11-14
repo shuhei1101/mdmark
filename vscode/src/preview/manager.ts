@@ -61,6 +61,32 @@ export class PreviewManager {
     return focused?.uri ?? window.activeTextEditor?.document.uri;
   }
 
+  /** プレビューする Markdown（差分ビューのときは変更前と変更後）を開く。Markdown でなければ `undefined` */
+  private async openMarkdown(
+    uri: Uri | undefined,
+    diff: { original: string; modified: string } | undefined,
+  ): Promise<{ document: TextDocument; original?: TextDocument } | undefined> {
+    if (diff === undefined) {
+      const target = this.targetUri(uri);
+      if (target === undefined) {
+        return undefined;
+      }
+      const document = await workspace.openTextDocument(target);
+      return document.languageId === "markdown" ? { document } : undefined;
+    }
+    const [original, document] = await Promise.all([
+      workspace.openTextDocument(Uri.parse(diff.original)),
+      workspace.openTextDocument(Uri.parse(diff.modified)),
+    ]);
+    if (
+      original.languageId !== "markdown" ||
+      document.languageId !== "markdown"
+    ) {
+      return undefined;
+    }
+    return { document, original };
+  }
+
   /** プレビューを開く。差分ビューのときは変更後の文書を色分けする差分のパネルを開く。同じ Markdown（差分は変更前と変更後の組）のパネルがあれば今の列のまま表に出し、無ければ作って読み込ませる */
   async open(options: { uri?: Uri; column: OpenColumn }): Promise<void> {
     const input = window.tabGroups.activeTabGroup.activeTab?.input;
@@ -74,26 +100,11 @@ export class PreviewManager {
           : undefined,
       uri: options.uri?.toString(),
     });
-    let document: TextDocument;
-    let original: TextDocument | undefined;
-    if (diff === undefined) {
-      const uri = this.targetUri(options.uri);
-      if (uri === undefined) {
-        return;
-      }
-      document = await workspace.openTextDocument(uri);
-    } else {
-      [original, document] = await Promise.all([
-        workspace.openTextDocument(Uri.parse(diff.original)),
-        workspace.openTextDocument(Uri.parse(diff.modified)),
-      ]);
-      if (original.languageId !== "markdown") {
-        return;
-      }
-    }
-    if (document.languageId !== "markdown") {
+    const opened = await this.openMarkdown(options.uri, diff);
+    if (opened === undefined) {
       return;
     }
+    const { document, original } = opened;
     const key = panelKey({
       uri: document.uri.toString(),
       ...(diff === undefined ? {} : { original: diff.original }),
