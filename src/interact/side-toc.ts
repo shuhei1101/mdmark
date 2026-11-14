@@ -65,37 +65,45 @@ const ALL_HEADING_SELECTOR = "h1, h2, h3";
 /** 本文の中の色分けしたブロックごとに、そのブロックが含む見出しか前にある最後の見出しと、その祖先の見出しを集め、`id` を持つ見出しの ID を返却する */
 export function findChangedHeadings(content: HTMLElement): Set<string> {
   const changed = new Set<string>();
-  const blocks = [
-    ...content.querySelectorAll<HTMLElement>(DIFF_BLOCK_SELECTOR),
-  ];
-  if (blocks.length === 0) {
+  if (content.querySelector(DIFF_BLOCK_SELECTOR) === null) {
     return changed;
   }
-  const headings = [
-    ...content.querySelectorAll<HTMLElement>(ALL_HEADING_SELECTOR),
-  ].filter((heading) => heading.closest(EMBEDDED_HTML_SELECTOR) === null);
+  // 今の見出しと、その祖先の見出し（浅いレベルから順）
+  const ancestors: HTMLElement[] = [];
   const levelOf = (heading: HTMLElement): number => Number(heading.tagName[1]);
-  for (const block of blocks) {
-    const own = headings.find((heading) => block.contains(heading));
-    // 文書の順でブロックより前にある見出し（ブロックが含む見出しを除く）
-    const before = headings.filter(
-      (heading) =>
-        !block.contains(heading) &&
-        (block.compareDocumentPosition(heading) &
-          Node.DOCUMENT_POSITION_PRECEDING) !==
-          0,
-    );
-    let target = own ?? before.at(-1);
-    while (target !== undefined) {
-      // `id` を持たない見出し（削除のブロックの中）は目次の項目を持たないため、祖先だけを集める
-      if (target.id !== "") {
-        changed.add(target.id);
+  // `id` を持たない見出し（削除のブロックの中）は目次の項目を持たないため、祖先だけを集める
+  const markAncestors = (): void => {
+    for (const heading of ancestors) {
+      if (heading.id !== "") {
+        changed.add(heading.id);
       }
-      const level = levelOf(target);
-      const index = before.indexOf(target);
-      target = (index < 0 ? before : before.slice(0, index))
-        .filter((heading) => levelOf(heading) < level)
-        .at(-1);
+    }
+  };
+  // 見出しと色分けしたブロックを文書の順に 1 回だけたどる
+  const elements = content.querySelectorAll<HTMLElement>(
+    `${ALL_HEADING_SELECTOR}, ${DIFF_BLOCK_SELECTOR}`,
+  );
+  for (const element of elements) {
+    if (element.closest(EMBEDDED_HTML_SELECTOR) !== null) {
+      continue;
+    }
+    if (element.matches(DIFF_BLOCK_SELECTOR)) {
+      // 見出しを含むブロックは、その見出しに着いたときに集める
+      if (element.querySelector(ALL_HEADING_SELECTOR) === null) {
+        markAncestors();
+      }
+      continue;
+    }
+    const level = levelOf(element);
+    // 同じか浅いレベルの見出しは祖先にならない
+    let last = ancestors.at(-1);
+    while (last !== undefined && levelOf(last) >= level) {
+      ancestors.pop();
+      last = ancestors.at(-1);
+    }
+    ancestors.push(element);
+    if (element.closest(DIFF_BLOCK_SELECTOR) !== null) {
+      markAncestors();
     }
   }
   return changed;
