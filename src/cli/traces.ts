@@ -1,6 +1,4 @@
 import MarkdownIt from "markdown-it";
-import { knownMarkNames, loadExtensionDirectives } from "./check.ts";
-import type { LoadedConfig } from "./config.ts";
 import type { ExportPayload } from "./html.ts";
 
 /** 隠す書き出しで、単語の一部として出る `mdmark` を置き換える別名 */
@@ -115,18 +113,6 @@ export const hideMarkdown = (options: {
         head + value.replace(/\bmdmark-/g, `${TRACE_ALIAS}-`),
     )
     .replace(/\bmdmark-asset:/g, `${TRACE_ALIAS}-asset:`);
-};
-
-/** 記法・外部ライブラリ・拡張の `directive`・設定の `check.ignore` の、描画が参照するマーカーの名前を集める */
-export const collectMarkNames = async (
-  loaded: LoadedConfig,
-): Promise<Set<string>> => {
-  // 拡張の誤りは書き出しの警告が出すため、ずれは捨てる
-  const { directives } = await loadExtensionDirectives(loaded, loaded.path);
-  return new Set([
-    ...knownMarkNames({ config: loaded.config, directives }),
-    ...(loaded.config.check?.ignore ?? []),
-  ]);
 };
 
 /** 値を JSON にして名前を置き換え、元の構造に戻す */

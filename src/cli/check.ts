@@ -443,7 +443,7 @@ export async function collectCheckDocuments(
 }
 
 /** 記法のマーカー・`features`・設定の `libraries` に既定を適用した対応表・拡張の `directive` の名前を集める（`check.ignore` の名前は含まない） */
-export function knownMarkNames(options: {
+function knownMarkNames(options: {
   config: CliConfig;
   directives: Set<string>;
 }): Set<string> {
@@ -452,6 +452,18 @@ export function knownMarkNames(options: {
     ...Object.keys(SYNTAX_MARKS),
     ...Object.keys(resolveConfig({ config: options.config }).libraries),
     ...options.directives,
+  ]);
+}
+
+/** 記法・外部ライブラリ・拡張の `directive`・設定の `check.ignore` の、描画が参照するマーカーの名前を集める */
+export async function collectMarkNames(
+  loaded: LoadedConfig,
+): Promise<Set<string>> {
+  // 拡張の誤りは書き出しの警告が出すため、ずれは捨てる
+  const { directives } = await loadExtensionDirectives(loaded, loaded.path);
+  return new Set([
+    ...knownMarkNames({ config: loaded.config, directives }),
+    ...(loaded.config.check?.ignore ?? []),
   ]);
 }
 

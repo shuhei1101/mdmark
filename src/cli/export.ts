@@ -20,6 +20,7 @@ import {
 import { usedLibraryMarks } from "../render/used.ts";
 import { loadAliases } from "./aliases.ts";
 import { copyMedia } from "./assets.ts";
+import { collectMarkNames } from "./check.ts";
 import { type LoadedConfig, requireConfig } from "./config.ts";
 import { documentTitle, readIndexWithDocuments } from "./documents.ts";
 import {
@@ -41,7 +42,7 @@ import { assembleHtml, type ExportPayload } from "./html.ts";
 import { collectIconNodes } from "./icons.ts";
 import { collectIncludes, includeProblemMessage } from "./includes.ts";
 import { formatCheckIssue } from "./issues.ts";
-import { collectMarkNames, hideMarkdown } from "./traces.ts";
+import { hideMarkdown } from "./traces.ts";
 
 /** 索引に追加する、用語集の文書の `id` の頭 */
 const GLOSSARY_ID_PREFIX = "mdmark-glossary-";
