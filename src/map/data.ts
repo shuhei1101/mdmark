@@ -593,18 +593,22 @@ const readRootKey = (
       if (value !== 1) invalid(reader, "version", " `1` ");
       return;
     case "notes":
-      return readNotes(reader, value, data);
+      readNotes(reader, value, data);
+      return;
     case "walkthroughs":
-      return readWalkthroughs(reader, value, data);
+      readWalkthroughs(reader, value, data);
+      return;
     case "layout":
-      return readLayout(reader, value, data);
+      readLayout(reader, value, data);
+      return;
     case "plays_over": {
       const target = readNumber(reader, value, "plays_over");
       if (target !== undefined) data.plays_over = target;
       return;
     }
     case "groups":
-      return readGroups(reader, value, data);
+      readGroups(reader, value, data);
+      return;
     default:
       unknownKey(reader, { path: "", key, keys: MAP_DATA_KEYS });
   }

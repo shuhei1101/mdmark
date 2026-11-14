@@ -12,7 +12,7 @@ import {
   sessionStorageOf,
   termsOf,
 } from "./flow-view.ts";
-import { parseSequence, type Sequence, SEQ_ARROW_STYLES } from "./sequence.ts";
+import { parseSequence, SEQ_ARROW_STYLES, type Sequence } from "./sequence.ts";
 import { sequenceRows } from "./sequence-rows.ts";
 import type { MapArgs } from "./spec.ts";
 import {

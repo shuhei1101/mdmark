@@ -1,8 +1,8 @@
 import type { StateCore, Token } from "markdown-it";
 import { SLOT_MARKER, splitSlots } from "../../parts/own.ts";
 import { renderWide } from "../../parts/wide.ts";
-import { outermostRanges, pairRanges } from "./blocks.ts";
 import type { Mark } from "../marks.ts";
+import { outermostRanges, pairRanges } from "./blocks.ts";
 import { featureOn, markOf, tabBoundaryBlock } from "./tokens.ts";
 import { unclosedWarning, warningBlock } from "./warnings.ts";
 
