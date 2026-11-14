@@ -48,38 +48,37 @@ const tokenizeHighlight = (state: StateInline, silent: boolean): boolean => {
   return true;
 };
 
-/** 組になった `==` の区切りを `mark_open`・`mark_close` にする */
-const pairHighlights = (state: StateInline, delimiters: Delimiter[]): void => {
-  const lone: number[] = [];
-  for (const start of delimiters) {
-    if (start.marker !== EQUALS || start.end === -1) {
-      continue;
-    }
-    const end = delimiters[start.end];
-    if (!end) {
-      continue;
-    }
-    const open = state.tokens[start.token];
-    const close = state.tokens[end.token];
-    if (!open || !close) {
-      continue;
-    }
-    open.type = "mark_open";
-    open.tag = "mark";
-    open.nesting = 1;
-    open.markup = "==";
-    open.content = "";
-    close.type = "mark_close";
-    close.tag = "mark";
-    close.nesting = -1;
-    close.markup = "==";
-    close.content = "";
-    const before = state.tokens[end.token - 1];
-    if (before?.type === "text" && before.content === "=") {
-      lone.push(end.token - 1);
-    }
+/** トークンを蛍光ペンの開きか閉じにする */
+const toMarkToken = (token: Token, nesting: 1 | -1): void => {
+  token.type = nesting === 1 ? "mark_open" : "mark_close";
+  token.tag = "mark";
+  token.nesting = nesting;
+  token.markup = "==";
+  token.content = "";
+};
+
+/** 組になった `==` の区切り 1 つを `mark_open`・`mark_close` にし、閉じの前に余った `=` があればその位置を返却する */
+const pairHighlight = (
+  state: StateInline,
+  start: Delimiter,
+  delimiters: Delimiter[],
+): number | undefined => {
+  const end = start.end === -1 ? undefined : delimiters[start.end];
+  const open = state.tokens[start.token];
+  const close = end ? state.tokens[end.token] : undefined;
+  if (start.marker !== EQUALS || !end || !open || !close) {
+    return undefined;
   }
-  // 閉じの前に余った `=` は閉じの後ろへ回す（markdown-it の取り消し線と同じ扱い）
+  toMarkToken(open, 1);
+  toMarkToken(close, -1);
+  const before = state.tokens[end.token - 1];
+  return before?.type === "text" && before.content === "="
+    ? end.token - 1
+    : undefined;
+};
+
+/** 閉じの前に余った `=` を閉じの後ろへ回す（markdown-it の取り消し線と同じ扱い） */
+const moveLoneEquals = (state: StateInline, lone: number[]): void => {
   for (const at of lone.reverse()) {
     let swap = at;
     while (
@@ -92,6 +91,14 @@ const pairHighlights = (state: StateInline, delimiters: Delimiter[]): void => {
       swap += 1;
     }
   }
+};
+
+/** 組になった `==` の区切りを `mark_open`・`mark_close` にする */
+const pairHighlights = (state: StateInline, delimiters: Delimiter[]): void => {
+  const lone = delimiters
+    .map((start) => pairHighlight(state, start, delimiters))
+    .filter((at) => at !== undefined);
+  moveLoneEquals(state, lone);
 };
 
 /** 行内の後処理: 入れ子の区切りの並びも含めて `==` を組にする */
@@ -112,6 +119,52 @@ const textToken = (state: StateCore, content: string): Token => {
   return token;
 };
 
+/** 蛍光ペンの開きと閉じを、記載した `==` の文字に戻す */
+const restoreHighlights = (state: StateCore, children: Token[]): void => {
+  for (const [at, child] of children.entries()) {
+    if (child.type === "mark_open" || child.type === "mark_close") {
+      children[at] = textToken(state, "==");
+    }
+  }
+};
+
+/** 閉じの直後の `{color=…}` を取り除き、色の名前なら開きに色を当てる。色の名前でなければその名前を返却する */
+const applyColor = (
+  next: Token | undefined,
+  open: Token | undefined,
+): string | undefined => {
+  const color = next?.type === "text" ? COLOR_PATTERN.exec(next.content) : null;
+  if (!next || !color) {
+    return undefined;
+  }
+  next.content = next.content.slice(color[0].length);
+  const name = color[1] ?? "";
+  if (!isColorName(name)) {
+    return name;
+  }
+  open?.attrSet("data-color", name);
+  return undefined;
+};
+
+/** 蛍光ペンに class と色を当て、色の名前でない名前を返却する */
+const applyHighlights = (children: Token[], nonce: string): string[] => {
+  const opens: Token[] = [];
+  const unknown: string[] = [];
+  for (const [at, child] of children.entries()) {
+    if (child.type === "mark_open") {
+      child.attrSet("data-mdmark-own", nonce);
+      child.attrSet("class", "mdmark-highlight");
+      opens.push(child);
+    } else if (child.type === "mark_close") {
+      const name = applyColor(children[at + 1], opens.pop());
+      if (name !== undefined) {
+        unknown.push(name);
+      }
+    }
+  }
+  return unknown;
+};
+
 /** コアルール: `highlight` がオンなら蛍光ペンに class と色を当て、オフなら `==` を記載した文字に戻す */
 const finishHighlights = (state: StateCore): void => {
   const on = featureOn(state, "highlight");
@@ -122,42 +175,11 @@ const finishHighlights = (state: StateCore): void => {
     if (token.type !== "inline" || !children) {
       continue;
     }
-    const opens: Token[] = [];
-    const unknown: string[] = [];
-    for (let at = 0; at < children.length; at++) {
-      const child = children[at] as Token;
-      if (child.type === "mark_open") {
-        if (!on) {
-          children[at] = textToken(state, "==");
-          continue;
-        }
-        child.attrSet("data-mdmark-own", nonce);
-        child.attrSet("class", "mdmark-highlight");
-        opens.push(child);
-        continue;
-      }
-      if (child.type !== "mark_close") {
-        continue;
-      }
-      if (!on) {
-        children[at] = textToken(state, "==");
-        continue;
-      }
-      const open = opens.pop();
-      const next = children[at + 1];
-      const color =
-        next?.type === "text" ? COLOR_PATTERN.exec(next.content) : null;
-      if (!next || !color) {
-        continue;
-      }
-      next.content = next.content.slice(color[0].length);
-      const name = color[1] ?? "";
-      if (isColorName(name)) {
-        open?.attrSet("data-color", name);
-      } else {
-        unknown.push(name);
-      }
+    if (!on) {
+      restoreHighlights(state, children);
+      continue;
     }
+    const unknown = applyHighlights(children, nonce);
     if (unknown.length) {
       const names = unknown.map((name) => `\`${name}\``).join("・");
       warnings.push({
