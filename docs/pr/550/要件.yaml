@@ -18,30 +18,36 @@ docs:
   - page: docs/guide/導入-差分を表示する.md
     new: false
     change: '`baseMarkdown` を指定すると右側の目次の変わったセクションにマーカーが出ることを追加'
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-14T00:13:30.613221+00:00'
   - page: docs/guide/API.md
     new: false
     change: '`opts.baseMarkdown` の説明に右側の目次のマーカーを追加'
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-14T00:13:30.613221+00:00'
   - page: docs/guide/記載する-表に機能を付ける.md
     new: false
     change: 長文の列には並べ替えが既定で付かないこと（列ごとに戻す指定を足すならその書き方）を追加
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-14T00:13:30.613221+00:00'
   - page: docs/guide/記法.md
     new: false
     change: 表のマーカーの `sort` の説明に長文の列の扱いを追加
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-14T00:13:30.613221+00:00'
   - page: docs/guide/用語集.md
     new: false
-    change: 新しい用語（長文の列・変更のマーカー）を足すなら追加
-    status: todo
+    change: 用語「変更のマーカー」を追加（長文の列は各ページの本文で定義しているため追加しない）
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-14T00:13:30.613221+00:00'
   - page: schemas/marks/table.schema.json
     new: false
     change: '`columns.{列名}.sort`（真偽値）を追加'
-    status: todo
-  - page: migrations/no-steps.yaml
-    new: false
-    change: 任意のキー `columns.{列名}.sort` の追加は既存の文書を書き換えないため、移行の手順を持たない行を追加
     status: todo
 scope_out:
   - item: dev-docs の文書の画面で、比較中に目次の見出しの変更のマーカーを出す対応
