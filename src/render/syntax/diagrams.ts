@@ -89,14 +89,83 @@ function replaceRetiredDiagrams(state: StateCore): void {
   state.tokens = out;
 }
 
-/** 拡張に無い廃止した図の範囲を記載の警告にする。`diagrams` がオンなら、図の部品のマーカーの範囲の `json` のコードブロックを定義として読み込み、図か操作できる部品の HTML にする。読み込めない定義は記載の警告にする。範囲の中身は出力に残さない。オフのときはマーカーだけを取り除く */
-export function buildDiagrams(state: StateCore): void {
-  replaceRetiredDiagrams(state);
-  if (!featureOn(state, "diagrams")) {
-    return;
+/** 図の部品を描くときに、文書の全ての図で共通に使用するもの */
+type DiagramContext = {
+  env: ReturnType<typeof envOf>;
+  lookup: TermLookup;
+  hints: boolean;
+  resizable: boolean;
+};
+
+/** 開きの図の部品のマーカーなら、マーカーの名前を返却する */
+function openDiagramDirective(
+  token: Token | undefined,
+): DiagramDirective | undefined {
+  const mark = markOf(token);
+  if (!mark || mark.closing || !Object.hasOwn(DIAGRAM_DIRECTIVES, mark.name)) {
+    return undefined;
   }
-  const env = envOf(state);
-  // ノードの中の `{{単語}}` の意味は、本文の用語と同じ辞書から参照する
+  return mark.name as DiagramDirective;
+}
+
+/** 読み込んだ定義を、図か操作できる部品の HTML にする。操作できる部品の定義は文書の環境に追加する */
+function diagramHtml(
+  directive: DiagramDirective,
+  definition: NonNullable<ReturnType<typeof readDefinition>["definition"]>,
+  context: DiagramContext,
+): string {
+  const { env, lookup, hints, resizable } = context;
+  env.diagramCount = (env.diagramCount ?? 0) + 1;
+  const count = env.diagramCount;
+  if (directive === "param") {
+    const param = definition as MdmarkParamDefinition;
+    env.paramDefinitions?.push(param);
+    return renderParam(param, {
+      id: `${PARAM_ID_PREFIX}-${count}`,
+      copyLabel: env.labels?.paramCopy,
+      resizable,
+    });
+  }
+  return renderDiagram({
+    kind: directive,
+    definition: definition as MdmarkChartDefinition | MdmarkErDefinition,
+    id: `${DIAGRAM_ID_PREFIX}-${count}`,
+    lookup,
+    hints,
+    resizable,
+  });
+}
+
+/** 図の部品の範囲 1 つの定義を読み込み、図か操作できる部品のトークンにする。読み込めない定義は記載の警告にする */
+function diagramToken(
+  state: StateCore,
+  range: { token: Token; directive: DiagramDirective; blocks: string[] },
+  context: DiagramContext,
+): Token {
+  const { token, directive, blocks } = range;
+  const result = readDefinition(directive, blocks);
+  const definition = result.definition;
+  if (!result.ok || definition === undefined) {
+    return warningBlock(state, {
+      ...definitionWarning(directive, result.problems),
+      kind: "diagram_invalid",
+      ...(token.map ? { line: token.map[0] } : {}),
+    });
+  }
+  const block = ownBlock(
+    state,
+    diagramHtml(directive, definition, context),
+    token,
+  );
+  block.meta = {
+    [DIAGRAM_META]: true,
+    [PARAM_COUNT_META]: directive === "param" ? 1 : 0,
+  };
+  return block;
+}
+
+/** 本文の用語と同じ辞書から、ノードの中の `{{単語}}` の意味を参照する関数を作る */
+function termLookupOf(env: ReturnType<typeof envOf>): TermLookup {
   const dictionary = buildDictionary({
     index: env.index,
     docId: env.docId,
@@ -104,74 +173,51 @@ export function buildDiagrams(state: StateCore): void {
     references: env.mdmarkReferences,
     features: env.features,
   });
-  const lookup: TermLookup = (word) => dictionary.term(word)?.meaning;
+  return (word) => dictionary.term(word)?.meaning;
+}
+
+/** 拡張に無い廃止した図の範囲を記載の警告にする。`diagrams` がオンなら、図の部品のマーカーの範囲の `json` のコードブロックを定義として読み込み、図か操作できる部品の HTML にする。読み込めない定義は記載の警告にする。範囲の中身は出力に残さない。オフのときはマーカーだけを取り除く */
+export function buildDiagrams(state: StateCore): void {
+  replaceRetiredDiagrams(state);
+  if (!featureOn(state, "diagrams")) {
+    return;
+  }
+  const env = envOf(state);
   env.paramDefinitions ??= [];
-  const hints = featureOn(state, "hints");
-  const resizable = featureOn(state, "diagram-resize");
+  const context: DiagramContext = {
+    env,
+    lookup: termLookupOf(env),
+    hints: featureOn(state, "hints"),
+    resizable: featureOn(state, "diagram-resize"),
+  };
   const tokens = state.tokens;
   const out: Token[] = [];
   for (let index = 0; index < tokens.length; index++) {
     const token = tokens[index];
-    const mark = markOf(token);
-    if (
-      !token ||
-      !mark ||
-      mark.closing ||
-      !Object.hasOwn(DIAGRAM_DIRECTIVES, mark.name)
-    ) {
+    const directive = openDiagramDirective(token);
+    if (!token || !directive) {
       if (token) {
         out.push(token);
       }
       continue;
     }
-    const directive = mark.name as DiagramDirective;
-    const closeIndex = findClose(tokens, index, mark.name);
+    const closeIndex = findClose(tokens, index, directive);
     const end = closeIndex < 0 ? tokens.length : closeIndex;
-    if (closeIndex < 0) {
+    const mark = markOf(token);
+    if (closeIndex < 0 && mark) {
       out.push(warningBlock(state, unclosedWarning(mark), token));
     }
-    const result = readDefinition(
-      directive,
-      jsonBlocks(tokens.slice(index + 1, end)),
+    out.push(
+      diagramToken(
+        state,
+        {
+          token,
+          directive,
+          blocks: jsonBlocks(tokens.slice(index + 1, end)),
+        },
+        context,
+      ),
     );
-    const definition = result.definition;
-    if (!result.ok || definition === undefined) {
-      out.push(
-        warningBlock(state, {
-          ...definitionWarning(directive, result.problems),
-          kind: "diagram_invalid",
-          ...(token.map ? { line: token.map[0] } : {}),
-        }),
-      );
-    } else {
-      env.diagramCount = (env.diagramCount ?? 0) + 1;
-      const count = env.diagramCount;
-      let html: string;
-      if (directive === "param") {
-        const param = definition as MdmarkParamDefinition;
-        env.paramDefinitions.push(param);
-        html = renderParam(param, {
-          id: `${PARAM_ID_PREFIX}-${count}`,
-          copyLabel: env.labels?.paramCopy,
-          resizable,
-        });
-      } else {
-        html = renderDiagram({
-          kind: directive,
-          definition: definition as MdmarkChartDefinition | MdmarkErDefinition,
-          id: `${DIAGRAM_ID_PREFIX}-${count}`,
-          lookup,
-          hints,
-          resizable,
-        });
-      }
-      const block = ownBlock(state, html, token);
-      block.meta = {
-        [DIAGRAM_META]: true,
-        [PARAM_COUNT_META]: directive === "param" ? 1 : 0,
-      };
-      out.push(block);
-    }
     index = end;
   }
   state.tokens = out;
@@ -204,6 +250,33 @@ function blockMark(
   return { name: only[2] ?? "", closing: only[1] === "/" };
 }
 
+/** 図の部品か廃止した図の部品の開きのマーカーなら、そのマーカーを返却する */
+function openBlockMark(
+  token: Token | undefined,
+): { name: string; closing: boolean } | undefined {
+  const mark = token ? blockMark(token) : undefined;
+  if (!mark || mark.closing) {
+    return undefined;
+  }
+  return Object.hasOwn(DIAGRAM_DIRECTIVES, mark.name) ||
+    isRetiredDiagram(mark.name)
+    ? mark
+    : undefined;
+}
+
+/** `index` の開きのマーカーと同じ名前・同じ深さの閉じのマーカーの位置を返却する。無ければ `tokens.length` */
+function findBlockClose(tokens: Token[], index: number, name: string): number {
+  const level = tokens[index]?.level;
+  for (let next = index + 1; next < tokens.length; next++) {
+    const candidate = tokens[next];
+    const close = candidate ? blockMark(candidate) : undefined;
+    if (close?.closing && close.name === name && candidate?.level === level) {
+      return next;
+    }
+  }
+  return tokens.length;
+}
+
 /** Markdown の図の部品のマーカーと廃止した図の部品のマーカーの範囲ごとに、マーカーの名前・開きと閉じのマーカーの行の番号・`json` のコードブロックの中身を返却する（`buildDiagrams` と同じ範囲の読み込み方。埋め込んだ HTML の中の custom element は返却しない） */
 export function findDiagramBlocks(markdown: string): DiagramBlocks[] {
   const tokens = new MarkdownIt({ html: true }).parse(markdown, {});
@@ -212,31 +285,11 @@ export function findDiagramBlocks(markdown: string): DiagramBlocks[] {
   const found: DiagramBlocks[] = [];
   for (let index = 0; index < tokens.length; index++) {
     const token = tokens[index];
-    const mark = token ? blockMark(token) : undefined;
-    if (
-      !token ||
-      !mark ||
-      mark.closing ||
-      !(
-        Object.hasOwn(DIAGRAM_DIRECTIVES, mark.name) ||
-        isRetiredDiagram(mark.name)
-      )
-    ) {
+    const mark = openBlockMark(token);
+    if (!token || !mark) {
       continue;
     }
-    let end = tokens.length;
-    for (let next = index + 1; next < tokens.length; next++) {
-      const candidate = tokens[next];
-      const close = candidate ? blockMark(candidate) : undefined;
-      if (
-        close?.closing &&
-        close.name === mark.name &&
-        candidate?.level === token.level
-      ) {
-        end = next;
-        break;
-      }
-    }
+    const end = findBlockClose(tokens, index, mark.name);
     const closeToken = tokens[end];
     found.push({
       directive: mark.name as DiagramDirective | RetiredDiagramDirective,
