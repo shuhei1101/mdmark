@@ -19,7 +19,7 @@ data_models:
         description: 補足の `notes` の ID ごとの説明（ノード・グループ・線）
       - name: annotations
         type: 'Record<string, Array<{ number: number; html: string }>> | undefined'
-        description: 補足の `notes.{ID}.annotations` の、要素の ID ごとの注記（番号の順）。持つ要素は、説明を持たなくても持ち主（線の押せる帯・ノードやグループのマーカーのボタン）を持ち、持ち主に `id="mdmark-note-owner-{図の通し番号}-{要素の ID}"`（図の通し番号は `id` の `map-` の後ろ）を付けて、`renderDiagramTip` の `annotations` に指定する（ノードと線は `renderFlow` の `annotations` に任せる）。ER 図・状態遷移図・シーケンス図の引数も同じ項目を持つ
+        description: 補足の `notes.{ID}.annotations` の、要素の ID ごとの注記（番号の順）。持つ要素は、説明を持たなくても持ち主（線の押せる帯・ノードやグループのマーカーのボタン。ER 図の列は `renderMapEr` の説明のボタン）を持ち、持ち主に `id="mdmark-note-owner-{図の通し番号}-{要素の ID}"`（図の通し番号は `id` の `map-` の後ろ）を付けて、`renderDiagramTip` の `annotations` に指定する（ノードと線は `renderFlow` の `annotations` に任せる）。ER 図・状態遷移図・シーケンス図の引数も同じ項目を持つ
       - name: links
         type: Record<string, string> | undefined
         description: '`mapLinkProblems` が許したノードのリンク先'
@@ -249,7 +249,7 @@ functions:
       - name: args
         type: 'MapFlowArgs & { tables: Array<{ name: string; columns: ErColumn[]; notes: Record<string, string> }>; relations: MapErRelation[]; fanouts: MapErFanout[] }'
         required: true
-        description: '構成図の部品の引数（`layout` の関連の線は `rewireMapEr` で付け替えた線）と、テーブル・関連・行が増える関連（`{ wire, from, to }`）'
+        description: '構成図の部品の引数（`layout` の関連の線は `rewireMapEr` で付け替えた線）と、テーブル・関連・行が増える関連（`{ wire, from, to }`）。`annotations` の `{テーブル}.{列}` のキーの注記は、そのテーブルの `renderMapEr` に列の名前ごとの注記として渡す（`ownerPrefix` は `mdmark-note-owner-{図の通し番号}-`）'
     returns:
       type: MapPart
       description: 図の中身とツールチップの HTML
@@ -367,9 +367,9 @@ functions:
     scope: public
     args:
       - name: table
-        type: '{ name: string; columns: ErColumn[]; notes: Record<string, string>; collapsed: boolean }'
+        type: '{ name: string; columns: ErColumn[]; notes: Record<string, string>; collapsed: boolean; annotations?: Record<string, Array<{ number: number; html: string }>>; ownerPrefix?: string }'
         required: true
-        description: テーブルと、列ごとの説明（補足の `{テーブル}.{列}` かコメント）と、列を閉じているか
+        description: 'テーブルと、列ごとの説明（補足の `{テーブル}.{列}` かコメント）と、列を閉じているかと、列の名前ごとの注記（番号の順）と持ち主の `id` の頭。注記を持つ列は、説明を持たなくても説明のボタンを持ち、ボタンに `id="{ownerPrefix}{テーブル}.{列}"`（空白は `_`）を付け、ツールチップの末尾に注記ごとの `注記 {番号}` の区分を出す。ボタンの `aria-label` は、注記だけなら `{列}の注記`、説明と注記なら `{列}の説明と注記`'
     returns:
       type: '{ toggle: string; columns: string; tips: string }'
       description: 開閉のボタン・列の行・説明のツールチップの HTML
@@ -386,6 +386,12 @@ functions:
         condition: '`collapsed: true`'
         mock: なし
         expected: 列の行が無く、開閉のボタンの文字が `列 8`
+      - name: test_render_map_er_when_annotations
+        case: 正常
+        summary: 説明を持たず注記だけを持つ列に、ボタンと注記の区分を出す
+        condition: 部品の Default の「注文」で、説明を持たない列 `注文ID` に注記 1 を指定し、`ownerPrefix` を `mdmark-note-owner-1-`
+        mock: なし
+        expected: '`注文ID` の行に `id="mdmark-note-owner-1-注文.注文ID"` と `aria-label="注文IDの注記"` の説明のボタンがあり、`tips` のそのボタンのツールチップに見出し `注記 1` の区分がある'
   - name: renderMapState
     title: mapの状態遷移図の同じ状態への遷移のHTML
     kind: 関数
