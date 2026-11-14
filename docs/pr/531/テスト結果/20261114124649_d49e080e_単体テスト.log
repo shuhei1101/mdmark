@@ -1,0 +1,15 @@
+$ npm run test:unit
+
+> test:unit
+> vitest run --project 'unit*'
+
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-map-er-state-diagram
+
+
+ Test Files  292 passed (292)
+      Tests  2189 passed (2189)
+   Start at  12:49:08
+   Duration  138.57s (worker 66%, tests 22%, import 11%, transform 1%)
+
+exit=0
