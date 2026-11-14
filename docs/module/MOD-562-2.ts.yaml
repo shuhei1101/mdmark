@@ -1,0 +1,52 @@
+id: MOD-562-2
+visibility: internal
+title: ライブラリ本体 / map / 描画と操作 / annotations.ts
+test_files:
+  - tests/unit/src/map/annotations.browser.test.ts
+functions:
+  - name: readMapAnnotations
+    title: 図の要素ごとの注記を読み込む
+    container: src/map/annotations.ts
+    kind: 関数
+    scope: internal
+    summary: '範囲の `data-map-annotations`（注記の ID から番号）と補足の `notes.{ID}.annotations` から、要素の ID ごとの注記 `{ number, html }`（番号の順）を返却する'
+    description: '本文は、範囲を含む `.mdmark` の要素（無ければ `document`）の中の `details.mdmark-notes` の `li.mdmark-fn-item` のうち、番号 - 1 番目の項目から読み込む。項目の `p` ごとの中身（`a.mdmark-fn-back` を除く）を `<br>` でつなぎ、`p` が無ければ項目の中身を使用する。項目は `render` が描いてサニタイズした HTML のため、補足の文字から HTML を作らない'
+    args:
+      - name: range
+        type: HTMLElement
+        required: true
+        description: '`div.mdmark-map`'
+      - name: notes
+        type: 'Record<string, { text?: string; annotations?: string[] }>'
+        required: true
+        description: '`parseMapData` が読み込んだ補足の `notes`'
+    returns:
+      type: 'Record<string, Array<{ number: number; html: string }>>'
+      description: 要素の ID ごとの注記。番号の無い ID（定義の無い注記・機能のオフ）は除き、注記を 1 つも持たない要素は持たない
+    unit_tests:
+      - name: test_read_map_annotations
+        case: 正常
+        summary: 範囲の番号と一覧の項目から要素ごとの注記を組む
+        condition: '`data-map-annotations` が `{"cond": 1, "img": 2}` の範囲と、2 段落の項目と 1 段落の項目を持つ注記の一覧。`notes` が `judge` に `["img", "cond"]`、`e1` に `["missing"]`'
+        mock: なし（Chromium）
+        expected: '`judge` が番号 `1`・`2` の順の 2 つで、1 つ目の `html` が 2 段落を `<br>` でつなぎ戻るリンクを持たない。`e1` を持たない'
+  - name: linkAnnotationOwners
+    title: 持ち主の id を一覧の戻るリンクに合わせる
+    container: src/map/annotations.ts
+    kind: 関数
+    scope: internal
+    summary: '範囲の中の `id` が `mdmark-note-owner-` で始まる持ち主ごとに、範囲を含む `.mdmark` の要素の中で `data-note-owner` がその `id` の戻るリンクを引き、リンクの `href` の `#` の後ろを持ち主の `id` にする'
+    description: '`attachFootnotes` が戻るリンクの `href` をページの中で一意な値に振り替え、持ち主は図を描くたびに新しく作るため、描くたびに呼ぶ。リンクが無ければ `id` を変えない'
+    args:
+      - name: range
+        type: HTMLElement
+        required: true
+        description: 描き終えた `div.mdmark-map`
+    side_effects: 持ち主の `id` を書き換える
+    unit_tests:
+      - name: test_link_annotation_owners
+        case: 正常
+        summary: 振り替えた戻るリンクの行き先に持ち主の id を合わせる
+        condition: '`id="mdmark-note-owner-1-judge"` の持ち主を持つ範囲と、`data-note-owner="mdmark-note-owner-1-judge"`・`href="#mdmark-note-owner-3-1-judge"` の戻るリンク'
+        mock: なし（Chromium）
+        expected: 持ち主の `id` が `mdmark-note-owner-3-1-judge`

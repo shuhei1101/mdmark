@@ -81,6 +81,30 @@ test("test_attach_map_when_problems", async () => {
   ).toBe(true);
 });
 
+// 補足の定義の無い注記の参照（異常系）
+test("test_attach_map_when_annotation_undefined", async () => {
+  // 準備
+  const markdown = `${mapRange({
+    mermaid: FLOW,
+    data: '{"version": 1, "notes": {"mount": {"annotations": ["cond", "gone"]}}}',
+  })}\n※[cond]: 条件の補足\n`;
+  const { attachMap } = await loadMap();
+  const { resolveConfig } = await loadConfig();
+  const config = resolveConfig({ config: { map: CONFIG } });
+  // 実行
+  const { root } = await attach(markdown);
+  const off = createRootFromHtml(
+    renderDoc(markdown, { annotations: false }).html,
+  );
+  detachers.push(attachMap(off, config));
+  // 検証
+  const warnings = root.querySelectorAll(".mdmark-syntax-warning");
+  expect(warnings).toHaveLength(1);
+  expect(warnings[0]?.textContent).toContain("gone");
+  expect(warnings[0]?.textContent).not.toContain("※[cond]");
+  expect(off.querySelectorAll(".mdmark-syntax-warning")).toHaveLength(0);
+});
+
 // 構成図に無い再生の相手（正常系）
 test("test_attach_map_when_missing_participant", async () => {
   // 準備・実行

@@ -402,6 +402,39 @@ test("test_render_map_flow_when_collapsed_count", async () => {
   expect(closed).toContain("ノード 3 件");
 });
 
+// 注記だけを持つ線と、説明と注記を持つノードに持ち主とツールチップの注記の区分を付ける（正常系）
+test("test_render_map_flow_when_annotations", async () => {
+  // 準備
+  const { renderMapFlow } = await loadParts();
+  const annotation = {
+    number: 1,
+    html: "条件を満たさないときは次の工程へ進む。",
+  };
+  // 実行
+  const { html, tips } = renderMapFlow({
+    ...(await flowArgs()),
+    id: "map-1",
+    notes: { mount: "文書を描く公開関数" },
+    annotations: { mount: [annotation], "mount->marker": [annotation] },
+  });
+  // 検証
+  const nodeMark = findTag(html, 'id="mdmark-note-owner-1-mount"');
+  expect(nodeMark).toContain("mdmark-diagram-info");
+  expect(nodeMark).toContain('aria-label="「mount」の説明と注記"');
+  const wireHit = findTag(html, 'id="mdmark-note-owner-1-mount-&gt;marker"');
+  expect(wireHit).toContain("map-wire-hit");
+  expect(wireHit).toContain("data-tip-owner");
+  for (const owner of ["node:mount", "mount-&gt;marker"]) {
+    const tip =
+      tips
+        .split('<span class="mdmark-diagram-tip')
+        .find((part) => part.includes(`data-tip-for="${owner}"`)) ?? "";
+    expect(tip).toContain("mdmark-note-tip-heading");
+    expect(plainText(tip)).toContain("注記 1");
+    expect(plainText(tip)).toContain("条件を満たさないときは次の工程へ進む。");
+  }
+});
+
 // まとめた線の説明（正常系）
 test("test_render_map_flow_when_merged_notes", async () => {
   // 準備
@@ -491,6 +524,30 @@ test("test_render_map_er", async () => {
     /data-column="状態"[\s\S]*?<button[^>]*map-er-note/,
   );
   expect(result.toggle).toContain('aria-expanded="true"');
+});
+
+// 説明を持たず注記だけを持つ列に、ボタンと注記の区分を出す（正常系）
+test("test_render_map_er_when_annotations", async () => {
+  // 準備
+  const { renderMapEr } = await loadParts();
+  // 実行
+  const result = renderMapEr({
+    ...(await orderTable(false)),
+    annotations: { 注文日: [{ number: 1, html: "注文を確定した日" }] },
+    ownerPrefix: "mdmark-note-owner-1-",
+  });
+  // 検証
+  const button = findTag(
+    result.columns,
+    'id="mdmark-note-owner-1-注文.注文日"',
+  );
+  expect(button).toContain("map-er-note");
+  expect(button).toContain('aria-label="注文日の注記"');
+  const tipId = /aria-describedby="([^"]+)"/.exec(button)?.[1] ?? "";
+  const tip = outerHtml(result.tips, `id="${tipId}"`);
+  expect(tip).toContain("mdmark-note-tip-heading");
+  expect(plainText(tip)).toContain("注記 1");
+  expect(plainText(tip)).toContain("注文を確定した日");
 });
 
 // 列を閉じた（正常系）
@@ -670,7 +727,7 @@ test("test_render_map_state_diagram", async () => {
   expect(start).not.toContain("tabindex");
   expect(part.html).toMatch(/<div[^>]*data-shape="choice"[^>]*>/);
   expect(part.html).toMatch(
-    /data-node="n1"[\s\S]*?mdmark-diagram-node-kind[^>]*>[\s\S]*?注記/,
+    /data-node="n1"[\s\S]*?mdmark-diagram-node-kind[^>]*>[\s\S]*?ノート/,
   );
   expect(matches(part.html, /<g data-loop=/g)).toHaveLength(loops.length);
 });

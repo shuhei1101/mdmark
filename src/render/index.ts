@@ -31,6 +31,8 @@ export type RenderedDocument = {
   warnings: CollectedWarning[];
   /** 文書の先頭の page のマーカーから読み込んだページの設定 */
   page: PageSettings;
+  /** 文書の注記の定義の ID（注記の機能がオフなら空） */
+  annotationIds: string[];
 };
 
 /** 描くごとに作る、mdmark が出した要素のマーカーの値（乱数 16 バイトの 16 進） */
@@ -103,6 +105,7 @@ export function renderDocument(options: {
     paramDefinitions: env.paramDefinitions ?? [],
     warnings: env.warnings ?? [],
     page: env.page ?? {},
+    annotationIds: [...(env.mdmarkAnnotations?.definitions.keys() ?? [])],
   };
 }
 

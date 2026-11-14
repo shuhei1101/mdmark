@@ -297,6 +297,33 @@ scenarios:
     test: test_normal_when_footnotes_printed
     refs:
       - SC-472-71#scenarios[正常シナリオ]
+  - name: 正常シナリオ（注記の一覧を開いて出す）
+    setup:
+      - name: 文書を描いたページ
+        description: 正常シナリオ（記法を開いて出す）と同じ
+      - name: 注記を持つ Markdown
+        description: ID `cond` で本文 `条件を満たさないときは次の工程へ進む` の注記を 1 つ定義し、段落から `cond` を参照する文書
+      - name: Mock
+        description: 正常シナリオ（脚注の一覧を開いて出す）と同じ
+    flow: |-
+      sequenceDiagram
+        actor U as 利用者
+        participant B as ブラウザ
+        participant M as mdmark
+        U->>B: 印刷を始める
+        B->>M: 印刷の前のイベント
+        M->>M: 閉じた注記の一覧を開く
+        B-->>U: 印刷の出力
+        B->>M: 印刷の後のイベント
+        M->>M: 注記の一覧をもう一度閉じる
+        B-->>U: 画面の表示に戻る
+    expected:
+      - 印刷の前のイベントの後、文書の末尾の注記の一覧が開いていて、`cond` の項目の `条件を満たさないときは次の工程へ進む` が表示されている
+      - 印刷の前のイベントの後も、段落の注記のマーカーは出ていて、注記のツールチップが出ていない
+      - 印刷の後のイベントの後、注記の一覧が閉じている
+    test: test_normal_when_annotations_printed
+    refs:
+      - SC-472-96#scenarios[正常シナリオ]
   - name: 正常シナリオ（畳んだ階層の行と隠した見本を開いて出す）
     setup:
       - name: 文書を描いたページ

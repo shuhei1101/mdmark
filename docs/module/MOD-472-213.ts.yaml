@@ -13,8 +13,8 @@ data_models:
         type: number
         description: 警告の元になったマーカー（範囲なら開きのマーカー）の元の行番号（1 から）。マーカーを持たない警告は、警告のトークンの後ろで最初に `map` を持つトークンの開始の行（無ければ前で最後に `map` を持つトークンの終わりの行）
       - name: kind
-        type: '"diagram_invalid" | "syntax_warning" | MarkNote["kind"] | MapProblem["kind"]'
-        description: map の書き方の警告は項目ごとに 1 件で、項目の `kind`（`line` は範囲の開きのマーカーの行に項目の `line` を足した行）。図の部品の定義の警告は `diagram_invalid`、画面には出さない記法のマーカーの注記は `MarkNote` の `kind`（`unknown_mark_arg`・`legacy_mark`・`mark_option_unapplied`）、ほかは `syntax_warning`（`render` は知らないマーカーに警告を配置しない）
+        type: '"diagram_invalid" | "syntax_warning" | "annotation_undefined" | "annotation_unused" | "annotation_duplicate" | MarkNote["kind"] | MapProblem["kind"]'
+        description: map の書き方の警告は項目ごとに 1 件で、項目の `kind`（`line` は範囲の開きのマーカーの行に項目の `line` を足した行）。図の部品の定義の警告は `diagram_invalid`、画面には出さない記法のマーカーの注記は `MarkNote` の `kind`（`unknown_mark_arg`・`legacy_mark`・`mark_option_unapplied`）、注記の定義の無い参照・参照されていない定義・同じ ID の 2 つ目の定義は `annotation_undefined`・`annotation_unused`・`annotation_duplicate`、ほかは `syntax_warning`（`render` は知らないマーカーに警告を配置しない）
       - name: message
         type: string
         description: 警告の本文と項目を、HTML のタグを除いた文字にして空白 1 つでつないだもの（画面で読み込む文と同じ順）

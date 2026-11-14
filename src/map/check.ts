@@ -75,6 +75,7 @@ export const collectMapProblems = (
   range: MapRangeSource,
   config: ResolvedMapConfig,
   includeUnknownKeys: boolean,
+  annotationIds?: ReadonlySet<string>,
 ): MapProblem[] => {
   const structure = collectMapStructure(range);
   if (structure.kind === undefined || range.mermaid === undefined)
@@ -163,6 +164,19 @@ export const collectMapProblems = (
     }
   };
   for (const id of Object.keys(data.notes)) ref(`notes.${id}`, id);
+  // 文書の注記の定義の ID を受けたときだけ、定義の無い注記の参照を確かめる
+  if (annotationIds !== undefined) {
+    for (const [id, note] of Object.entries(data.notes)) {
+      for (const annotation of note.annotations ?? []) {
+        if (annotationIds.has(annotation)) continue;
+        problems.push({
+          kind: "annotation_undefined",
+          line: lineOf(`notes.${id}.annotations`),
+          message: `補足の \`notes.${id}.annotations\` が指す注記 \`※[${annotation}]\` の定義がありません。\`※[${annotation}]: 本文\` を記載するか、ID を修正してください。`,
+        });
+      }
+    }
+  }
   if (structure.kind === "erDiagram")
     problems.push(...groupProblems(data, tables, lineOf));
   for (const id of ids) {

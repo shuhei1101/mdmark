@@ -152,3 +152,100 @@ test("test_render_footnotes_when_empty", async () => {
   // 検証
   expect(html).toBe("");
 });
+
+// kind annotation で注記のマーカーにする（正常系）
+test("test_render_footnote_ref_when_annotation", async () => {
+  // 準備
+  const { renderFootnoteRef } = await loadFootnote();
+  // 実行
+  const html = renderFootnoteRef({
+    kind: "annotation",
+    number: 1,
+    bodies: ["条件を満たさないときは次の工程へ進む。"],
+  });
+  // 検証
+  expect(findTag(html, "<sup")).toBe(
+    '<sup class="mdmark-fn-ref mdmark-note-ref">',
+  );
+  const link = findTag(html, "mdmark-fn-link");
+  expect(link).toContain('id="mdmark-noteref-1-0"');
+  expect(link).toContain('href="#mdmark-note-1"');
+  expect(link).toContain('aria-describedby="mdmark-note-tip-1-0"');
+  expect(innerHtml(html, "mdmark-fn-link")).toBe(
+    '<span class="mdmark-visually-hidden">注記 </span>1',
+  );
+  expect(findTag(html, 'class="mdmark-fn-tip"')).toContain(
+    'id="mdmark-note-tip-1-0"',
+  );
+  expect(plainText(innerHtml(html, "mdmark-fn-tip-title"))).toBe("注記 1");
+});
+
+// afterRef で is-after-ref を付ける（正常系）
+test("test_render_footnote_ref_when_after_ref", async () => {
+  // 準備
+  const { renderFootnoteRef } = await loadFootnote();
+  // 実行
+  const html = renderFootnoteRef({
+    kind: "annotation",
+    number: 1,
+    afterRef: true,
+    bodies: ["古い記録は 30 日で消える。"],
+  });
+  // 検証
+  expect(findTag(html, "<sup")).toBe(
+    '<sup class="mdmark-fn-ref mdmark-note-ref is-after-ref">',
+  );
+});
+
+// kind annotation と refs で注記の一覧を組む（正常系）
+test("test_render_footnotes_when_annotation", async () => {
+  // 準備
+  const { renderFootnotes } = await loadFootnote();
+  // 実行
+  const html = renderFootnotes({
+    kind: "annotation",
+    items: [
+      {
+        number: 1,
+        html: "<p>条件を満たさないときは次の工程へ進む。</p>",
+        refCount: 2,
+        refs: [
+          { href: "#mdmark-noteref-1-0" },
+          {
+            href: "#mdmark-note-owner-1-judge",
+            owner: "mdmark-note-owner-1-judge",
+          },
+        ],
+      },
+      {
+        number: 2,
+        html: "<p>画像は data URL で埋める。</p>",
+        refCount: 1,
+        refs: [{ href: "#mdmark-noteref-2-0" }],
+      },
+    ],
+    open: true,
+  });
+  // 検証
+  expect(findTag(html, "<details")).toBe(
+    '<details class="mdmark-footnotes mdmark-notes" open>',
+  );
+  expect(innerHtml(html, "<summary")).toBe("注記（2 件）");
+  expect(findTags(html, "mdmark-fn-item")).toHaveLength(2);
+  const backs = findTags(
+    innerHtml(html, 'id="mdmark-note-1"'),
+    "mdmark-fn-back",
+  );
+  expect(backs).toHaveLength(2);
+  expect(backs[0]).toContain('href="#mdmark-noteref-1-0"');
+  expect(backs[0]).not.toContain("data-note-owner");
+  expect(backs[1]).toContain('href="#mdmark-note-owner-1-judge"');
+  expect(backs[1]).toContain('data-note-owner="mdmark-note-owner-1-judge"');
+  const texts = innerHtml(html, 'id="mdmark-note-1"')
+    .split('<a class="mdmark-fn-back"')
+    .slice(1)
+    .map((part) =>
+      plainText(part.slice(part.indexOf(">") + 1).split("</a>")[0] ?? ""),
+    );
+  expect(texts).toEqual(["a", "b"]);
+});

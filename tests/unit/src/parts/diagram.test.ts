@@ -7,7 +7,13 @@ import type {
 import { iconSvg } from "../../../../src/parts/icons.ts";
 import { parsed } from "../../helpers/diagrams.ts";
 import { shopEr } from "../../helpers/er.ts";
-import { findTag, matches, outerHtml, plainText } from "../../helpers/html.ts";
+import {
+  findTag,
+  innerHtml,
+  matches,
+  outerHtml,
+  plainText,
+} from "../../helpers/html.ts";
 import { CONFIG, DATA, FLOW } from "../../helpers/map.ts";
 
 /** 図の部品を読み込む（実装が無い間は各テストが個別に失敗する） */
@@ -268,6 +274,37 @@ test("test_render_diagram_tip_when_hint", async () => {
   expect(html).not.toContain("<b>");
   expect(html).toContain('role="tooltip"');
   expect(html).toMatch(/\bhidden\b/);
+});
+
+// 説明の後ろに注記の区分を追加する（正常系）
+test("test_render_diagram_tip_when_annotations", async () => {
+  // 準備
+  const { renderDiagramTip } = await loadDiagram();
+  // 実行
+  const html = renderDiagramTip({
+    id: "t1",
+    kind: "hint",
+    label: "判定",
+    hint: "入力の値を判定の条件と比べる",
+    annotations: [
+      { number: 1, html: "条件を満たさないときは<b>次の工程</b>へ進む。" },
+    ],
+  });
+  // 検証
+  const sections = html
+    .split('<span class="mdmark-term-tip-section">')
+    .slice(1);
+  expect(sections).toHaveLength(2);
+  expect(sections[0]).toContain("入力の値を判定の条件と比べる");
+  const heading = findTag(sections[1] ?? "", "mdmark-term-tip-heading");
+  expect(heading).toContain("mdmark-note-tip-heading");
+  expect(
+    plainText(innerHtml(sections[1] ?? "", "mdmark-note-tip-heading")),
+  ).toBe("注記 1");
+  expect(sections[1]).toContain("<b>次の工程</b>");
+  expect(plainText(sections[1] ?? "")).toContain(
+    "条件を満たさないときは次の工程へ進む。",
+  );
 });
 
 // 戻すのボタンを配置せず、倍率をボタンにする（正常系）

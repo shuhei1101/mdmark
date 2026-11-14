@@ -1562,6 +1562,105 @@ flows:
     test: test_normal_when_footnotes_disabled
     refs:
       - SC-472-62#scenarios[正常シナリオ（脚注の機能を解除する）]
+  - name: 正常系（注記）
+    summary: '行頭の `※[ID]: 本文` で定義した注記を、本文と表のセルの `※[ID]` から参照し、番号・ツールチップ・末尾の閉じた注記の一覧にする'
+    setup:
+      - name: 配布物を読み込んだ Node の処理
+        description: 正常系と同じ
+      - name: 注記を持つ Markdown
+        description: '1 つ目の段落に `※[cond]`、表の 2 行目のセルに `※[cond]`、2 つ目の段落に脚注の参照 `[^1]` の直後の `※[img]` を持ち、定義 `※[img]: 画像は data URL で埋める。` を `※[cond]: 条件を満たさないときは次の工程へ進む。` より前に配置し、脚注の定義 `[^1]: 補足の文` を持つ文書'
+        notes: 定義の順と参照の順を逆にし、番号が参照の順に振られることを決定的に発生させる
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        participant C as 利用側の処理
+        participant M as mdmark
+        C->>M: render(markdown)
+        M->>M: 注記の定義と参照を読み込み、最初に参照した順に番号を振る
+        M-->>C: 注記のマーカー・ツールチップ・末尾の注記の一覧を持つ HTML 文字列
+    expected:
+      - 1 つ目の段落と表のセルに `sup.mdmark-fn-ref.mdmark-note-ref` があり、どちらもリンク `a.mdmark-fn-link` の文字が `1` で `href="#mdmark-note-1"`、`id` が `mdmark-noteref-1-0`・`mdmark-noteref-1-1`
+      - 注記 1 のツールチップが `role="tooltip"` で、タイトル `注記 1` と `条件を満たさないときは次の工程へ進む。` を持ち、リンクの `aria-describedby` がその `id` を指す
+      - 2 つ目の段落の注記のマーカーは文字 `2` で、class `is-after-ref` を持つ。脚注の番号は `1` のまま
+      - 文字列の末尾に、`details.mdmark-footnotes`（脚注）の後ろに `open` を持たない `details.mdmark-footnotes.mdmark-notes` があり、`summary` が `注記（2 件）` で、`li#mdmark-note-1`（`条件を満たさないときは次の工程へ進む。`。戻るリンク 2 つ）と `li#mdmark-note-2` がこの順
+      - 文字列に `※[cond]`・`※[img]` と定義の行の文字が無い
+    test: test_normal_when_annotations
+    refs:
+      - SC-472-96#scenarios[正常シナリオ]
+      - SC-472-96#scenarios[正常シナリオ（脚注・用語と同じ段落に出る）]
+  - name: 異常系（注記の参照と定義が合わない）
+    summary: 定義の無い参照・参照されていない定義・同じ ID の 2 つ目の定義に記載の警告を配置し、前の定義を使用する
+    setup:
+      - name: 配布物を読み込んだ Node の処理
+        description: 正常系と同じ
+      - name: 参照と定義が合わない Markdown
+        description: '段落に `※[missing]` と `※[cond]` を持ち、定義 `※[cond]: 前の定義`・`※[cond]: 後の定義`・`※[unused]: 使用しない` を持つ文書'
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        participant C as 利用側の処理
+        participant M as mdmark
+        C->>M: render(markdown)
+        M->>M: 定義の無い参照・参照されていない定義・2 つ目の定義を見つける
+        M-->>C: 記載の警告を持つ HTML 文字列
+    expected:
+      - '`※[missing]` が記載した文字のまま残り、その段落の前に `※[missing]` の定義が無いことを示す記載の警告がある'
+      - '`※[cond]` のツールチップの中身が `前の定義` で、`後の定義` の位置に同じ ID の定義が既にあることを示す記載の警告がある'
+      - '`※[unused]` の定義の位置に参照されていないことを示す記載の警告があり、`使用しない` は末尾の一覧に無い'
+      - 末尾の注記の一覧の項目は `li#mdmark-note-1` の 1 つだけ
+    test: test_error_when_annotations_mismatch
+    refs:
+      - SC-472-96#scenarios[異常シナリオ（参照と定義が合わない）]
+  - name: 正常系（注記とリンクの参照の定義が同じラベル）
+    summary: '`※` の直後の `[ID]` がリンクの参照になるときは、リンクを優先して注記の参照にしない'
+    setup:
+      - name: 配布物を読み込んだ Node の処理
+        description: 正常系と同じ
+      - name: 注記とリンクの参照の定義が重なる Markdown
+        description: '段落に `※[cond]`・`※[site]`・`※[site][]`・`※[cond](https://example.com/a)` を持ち、リンクの参照の定義 `[Site]: https://example.com/b` と、注記の定義 `※[cond]: 条件の補足`・`※[site]: 使われない補足` を持つ文書'
+        notes: リンクの参照の定義のラベルと注記の ID が大文字小文字だけ違う場合を含め、一般的な Markdown と同じリンクになることを決定的に発生させる
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        participant C as 利用側の処理
+        participant M as mdmark
+        C->>M: render(markdown)
+        M->>M: リンクになる [ID] を先に決め、残りの ※[ID] を注記の参照にする
+        M-->>C: HTML 文字列
+    expected:
+      - 1 つ目の `※[cond]` が注記 1 の参照になる
+      - '`※[site]` と `※[site][]` が、どちらも文字 `※` と、文字 `site` の `https://example.com/b` へのリンクになる（リンクの参照の定義のラベル `Site` と大文字小文字によらず照合する）'
+      - '`※[cond](https://example.com/a)` が、文字 `※` と、文字 `cond` の `https://example.com/a` へのリンクになる'
+      - '`※[site]: 使われない補足` の定義の位置に、参照されていないことを示す記載の警告がある'
+    test: test_normal_when_annotations_and_link_references
+    refs:
+      - SC-472-96#scenarios[正常シナリオ]
+  - name: 正常系（注記の機能を解除する）
+    summary: 文書のマーカーで `annotations` を削除し、参照と定義を記載した文字のまま記載した位置に残す
+    setup:
+      - name: 配布物を読み込んだ Node の処理
+        description: 正常系と同じ
+      - name: 注記を削除する Markdown
+        description: '先頭に `<!-- features: {"annotations": false} -->` を持ち、段落に `※[cond]`、その次の段落に定義 `※[cond]: 条件の補足` を持つ文書'
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        participant C as 利用側の処理
+        participant M as mdmark
+        C->>M: render(markdown)
+        M->>M: 文書のマーカーで注記の機能を解除する
+        M-->>C: HTML 文字列
+    expected:
+      - 段落に `※[cond]` が記載した文字のままある
+      - '定義が `<p>※[cond]: 条件の補足</p>` として記載した位置にある'
+      - 文字列に class `mdmark-note-ref` を持つ要素と `details.mdmark-notes` と注記の記載の警告が無い
+    test: test_normal_when_annotations_disabled
+    refs:
+      - SC-472-96#scenarios[正常シナリオ]
   - name: 正常系（列の並べ替えのマーカー）
     summary: '`features.reorder` を `data-features` に設定し、結合した見出しの範囲を列ごとに写す'
     setup:
@@ -2568,6 +2667,9 @@ constraints:
   - item: 脚注
     constraint: '`footnotes` がオンのとき、`[^ラベル]`（ラベルは空白を含まない）、行頭の `[^ラベル]: 中身`（4 文字の字下げで続く段落を含む）、行内の `^[中身]` を脚注として読み込む。ラベルは markdown-it の `normalizeReference`（大文字小文字と空白の正規化）で照合し、同じラベルの定義が複数あるときは最初の定義を採る。番号は本文で最初に参照した順に 1 から振り、同じ脚注の 2 回目以降の参照も同じ番号にする。定義の無い参照は記載した文字のまま出し、参照されない定義は出さない。`[^ラベル](URL)` はリンクを優先する。参照の場所には `sup.mdmark-fn-ref` を配置し、その中に番号のリンク `a.mdmark-fn-link`（`id="mdmark-fnref-{番号}-{その脚注の参照の通し番号}"`・`href="#mdmark-fn-{番号}"`）とツールチップ `span.mdmark-fn-tip`（`id="mdmark-fn-tip-{番号}-{参照の通し番号}"`。タイトル `脚注 {番号}` と、定義の段落ごとの中身）を配置する。ツールチップの中身がリンクを持つときは `role="group"`・`aria-label="脚注 {番号}"` と番号のリンクの `aria-details`、持たないときは `role="tooltip"` と `aria-describedby` にする。脚注が 1 つ以上ある文書は、本文のセクションの後ろ・関連文書の一覧の前に、閉じた `details.mdmark-footnotes`（`summary` は `脚注（{件数} 件）`）とその中の `ol.mdmark-footnotes-list` を配置し、脚注ごとの項目 `li.mdmark-fn-item`（`id="mdmark-fn-{番号}"`）に、定義の中身と参照ごとの戻るリンク `a.mdmark-fn-back`（`href="#mdmark-fnref-{番号}-{参照の通し番号}"`。参照が 2 つ以上のときは a・b の文字を添える）を配置する。ツールチップと一覧の中の脚注の中身には、用語の下線とやめた言い方のマーカーを付けない。`footnotes` がオフのとき（設定か文書の `features` のマーカー）、参照・定義・行内の脚注は記載した文字のまま出し、定義は記載した位置に段落として残す'
     notes: 部品の要素の構造とアイコンは部品設計で決める。読み取りは自前の block・inline・core のルール（ライブラリ選定で決定）
+  - item: 注記
+    constraint: '`annotations` がオンのとき、行頭の `※[ID]: 本文`（ID は英数字・`-`・`_`。4 文字の字下げで続く段落を含む）を注記の定義、本文・表のセル・見出しの行内の `※[ID]` を注記の参照として読み込む。ID は大文字小文字を区別して照合する。`※` の直後の `[ID]` が Markdown のリンクになるとき（インラインの `※[ID](URL)`、文書にリンクの参照の定義 `[ID]: URL` があるときの省略形 `※[ID]`・完全形 `※[ID][ラベル]`・簡略形 `※[ID][]`）は、リンクを優先して注記の参照にしない（リンクの参照の定義のラベルの照合は markdown-it の `normalizeReference`）。番号は文書の中で最初に参照した順に 1 から振り、脚注の番号とは別に数え、同じ注記の 2 回目以降の参照も同じ番号にする。参照の場所には `sup.mdmark-fn-ref.mdmark-note-ref` を配置し、その中に番号のリンク `a.mdmark-fn-link`（`id="mdmark-noteref-{番号}-{その注記の参照の通し番号}"`・`href="#mdmark-note-{番号}"`。文字は番号）とツールチップ `span.mdmark-fn-tip`（`id="mdmark-note-tip-{番号}-{参照の通し番号}"`。タイトル `注記 {番号}` と、定義の段落ごとの本文）を配置する。直前の兄弟が文字を挟まない `sup.mdmark-fn-ref` の参照には class `is-after-ref` を付ける。`role`・`aria-describedby`・`aria-details` は脚注と同じにする。注記が 1 つ以上参照された文書は、脚注の一覧の後ろ・関連文書の一覧の前に、閉じた `details.mdmark-footnotes.mdmark-notes`（`summary` は `注記（{件数} 件）`）とその中の `ol.mdmark-footnotes-list` を配置し、注記ごとの項目 `li.mdmark-fn-item`（`id="mdmark-note-{番号}"`。番号の順）に、定義の本文と参照ごとの戻るリンク `a.mdmark-fn-back`（脚注と同じ）を配置する。定義は記載した位置に出力しない。定義の無い参照は記載した文字のまま出し、参照の段落の前に記載の警告を配置する。参照されていない定義と、同じ ID の 2 つ目以降の定義は出力せず、記載した位置に記載の警告を配置する（同じ ID の注記は最初の定義を使用する）。map の補足の `notes.{ID}.annotations` が指す注記も参照として数え、番号を振る。ツールチップと一覧の中の注記の本文には、用語の下線とやめた言い方のマーカーを付けない。`annotations` がオフのとき（設定か文書の `features` のマーカー）、参照と定義は記載した文字のまま出し、定義は記載した位置に段落として残す'
+    notes: 記載方法は確認ログ（マーカーは案 C・一覧は分ける案 A）とインターフェース定義設計の判断。行頭の `※[ID]:` は一般的な Markdown でも本文の `※[ID]` と並べて読める。部品の要素は脚注の部品を拡張する（部品設計で決める）
   - item: 列の並べ替えのマーカー
     constraint: '`features.reorder` を記載した表は `data-features` に `reorder` を持つ。列の順は Markdown に記載した順のまま出し、列の一覧・つまみ・目のアイコンは `mount` が付ける。`thead` が複数の行を持つ表は、最下段の各列の見出しに、その列を覆う上の行の結合した見出しの位置（上の行の結合が無ければ無し）を `data-group="{行}:{位置}"` に写す'
   - item: 階層の表

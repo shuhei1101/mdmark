@@ -156,6 +156,84 @@ test("test_attach_footnotes_when_jump", async () => {
   expect(location.hash).toBe(hash);
 });
 
+// 注記のマーカーで注記の一覧を開き、map の持ち主へ戻る（正常系）
+test("test_attach_footnotes_when_annotations", async () => {
+  // 準備
+  const { attachFootnotes } = await loadFootnotes();
+  const { attachDiagramTips } = await import(
+    "../../../../src/interact/diagram-tips.ts"
+  );
+  const { renderFootnoteRef, renderFootnotes } = await loadFootnotePart();
+  const footnoteRef = renderFootnoteRef({
+    number: 1,
+    bodies: ["脚注の中身。"],
+  });
+  const noteRef = renderFootnoteRef({
+    kind: "annotation",
+    number: 1,
+    bodies: ["条件の補足。"],
+  });
+  const figure =
+    '<figure class="mdmark-diagram"><div class="mdmark-diagram-box"><button class="mdmark-diagram-info" type="button" id="mdmark-note-owner-1-judge" data-tip-owner="node:judge" aria-describedby="map-1-tip-1">i</button><span class="mdmark-diagram-tip" id="map-1-tip-1" role="tooltip" data-tip-for="node:judge" hidden>条件の補足。</span></div></figure>';
+  const footnotes = renderFootnotes({
+    items: [{ number: 1, html: "<p>脚注の中身。</p>", refCount: 1 }],
+  });
+  const notes = renderFootnotes({
+    kind: "annotation",
+    items: [
+      {
+        number: 1,
+        html: "<p>条件の補足。</p>",
+        refCount: 2,
+        refs: [
+          { href: "#mdmark-noteref-1-0" },
+          {
+            href: "#mdmark-note-owner-1-judge",
+            owner: "mdmark-note-owner-1-judge",
+          },
+        ],
+      },
+    ],
+  });
+  const root = createRootFromHtml(
+    `<p>本文${footnoteRef}と${noteRef}。</p>${figure}${footnotes}${notes}`,
+  );
+  const figureElement = root.querySelector<HTMLElement>("figure");
+  if (!figureElement) throw new Error("図が無い");
+  const tips = attachDiagramTips({ figure: figureElement, placement: "top" });
+  detachers.push(tips.detach);
+  detachers.push(attachFootnotes({ root, placement: "top" }));
+  const hash = location.hash;
+  const noteLink = root.querySelector<HTMLElement>(
+    ".mdmark-note-ref .mdmark-fn-link",
+  );
+  const footnoteList = root.querySelector<HTMLDetailsElement>(
+    "details.mdmark-footnotes:not(.mdmark-notes)",
+  );
+  const noteList = root.querySelector<HTMLDetailsElement>(
+    "details.mdmark-notes",
+  );
+  const noteItem = noteList?.querySelector<HTMLElement>(".mdmark-fn-item");
+  // 実行
+  noteLink?.click();
+  // 検証
+  expect(noteList?.open).toBe(true);
+  expect(footnoteList?.open).toBe(false);
+  expect(document.activeElement).toBe(noteItem);
+  // 実行
+  const backs = noteItem?.querySelectorAll<HTMLElement>(".mdmark-fn-back");
+  backs?.[1]?.click();
+  // 検証
+  const owner = root.querySelector<HTMLElement>(".mdmark-diagram-info");
+  expect(document.activeElement).toBe(owner);
+  expect(root.querySelector<HTMLElement>(".mdmark-diagram-tip")?.hidden).toBe(
+    false,
+  );
+  expect(location.hash).toBe(hash);
+  const ids = [...root.querySelectorAll("[id]")].map((element) => element.id);
+  expect(new Set(ids).size).toBe(ids.length);
+});
+
 // 同じページに 2 回描いても id が重ならない（正常系）
 test("test_attach_footnotes_unique_ids", async () => {
   // 準備

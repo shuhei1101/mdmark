@@ -2,8 +2,9 @@ import type { ResolvedConfig } from "../config.ts";
 import { attachDiagrams } from "../interact/diagrams.ts";
 import { renderDiagramFrame } from "../parts/diagram.ts";
 import { renderMapSequence, renderPackets } from "../parts/map.ts";
+import { linkAnnotationOwners, readMapAnnotations } from "./annotations.ts";
 import { attachBand, type BandHandle } from "./band.ts";
-import { parseMapData } from "./data.ts";
+import { noteTexts, parseMapData } from "./data.ts";
 import { DRAG_THRESHOLD_PX } from "./drag.ts";
 import { replaceTips, termsOf } from "./flow-view.ts";
 import { parseSequence, SEQ_ARROW_STYLES } from "./sequence.ts";
@@ -76,9 +77,8 @@ export const attachMapSequence = (
   );
   const frameId = `map-${index}`;
   const terms = termsOf(range);
-  const notes = Object.fromEntries(
-    Object.entries(data.notes).map(([key, note]) => [key, note.text]),
-  );
+  const notes = noteTexts(data.notes);
+  const annotations = readMapAnnotations({ range, notes: data.notes });
   const view = () => {
     const rows = sequenceRows(sequence, {
       order: order(),
@@ -97,6 +97,7 @@ export const attachMapSequence = (
       id: frameId,
       terms,
       notes,
+      annotations,
     });
     return { html: part.html, tips: part.tips, rows };
   };
@@ -135,6 +136,7 @@ export const attachMapSequence = (
     },
     { html: first.html, ...sizeOf(first.html), tips: first.tips },
   );
+  linkAnnotationOwners(range);
   const figure = range.querySelector<HTMLElement>("figure") as HTMLElement;
   const detachDiagrams = attachDiagrams({
     root: range,
@@ -177,6 +179,7 @@ export const attachMapSequence = (
       sizer.style.height = `${height}px`;
     }
     replaceTips(figure, tips);
+    linkAnnotationOwners(range);
     for (const item of tools()) {
       const button = figure.querySelector<HTMLButtonElement>(
         `[data-tool="${item.name}"]`,

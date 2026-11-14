@@ -1,0 +1,101 @@
+/* 注記: 本文の参照の場所のマーカー・マーカーのツールチップ・文書の末尾の注記の一覧・図のツールチップの注記の区分。
+   脚注の規則（refs/311/assets/footnote.css）の後に読み込み、脚注の部品のクラスに注記のクラスを重ねて違う所だけを上書きする */
+
+/* 注記の変数の既定: 使用する側が上書きするインターフェース。脚注の番号と同じ色から始める */
+:root {
+  --mdmark-color-annotation-ref: var(--mdmark-color-footnote-ref);
+}
+
+/* mdmark の層: 使用する側が層の外に記載した CSS が勝つ */
+@layer mdmark {
+  .mdmark {
+    /* ---------- 本文のマーカー ---------- */
+
+    /* マーカー（案 A）: 角括弧と番号の代わりに上付きの「※」。番号を振らず、脚注の [1] と形状で見分ける */
+    .mdmark-note-ref .mdmark-fn-link {
+      padding-inline: 0.05em;
+      color: var(--mdmark-color-annotation-ref);
+
+      &::before {
+        content: "※";
+        font-size: 1.2em;
+      }
+
+      &::after {
+        content: none;
+      }
+    }
+
+    /* マーカー（案 B）: 角括弧と番号の代わりに上付きの丸の i のアイコン */
+    .mdmark-note-ref[data-mock-variant="icon"] .mdmark-fn-link {
+      display: inline-flex;
+      vertical-align: -0.1em;
+
+      &::before {
+        content: none;
+      }
+
+      .mdmark-icon {
+        width: 1.15em;
+        height: 1.15em;
+      }
+    }
+
+    /* マーカー（案 C）: 「※」の後ろに、最初に参照した順の番号（リンクの文字）を続ける */
+    .mdmark-note-ref[data-mock-variant="number"] .mdmark-fn-link {
+      font-variant-numeric: tabular-nums;
+    }
+
+
+    /* 脚注の番号か注記のマーカーの直後に続くマーカー（間に文字が無い。描くときに is-after-ref を付ける）: 押す範囲が重ならないよう、マーカーの中心の間を 24px 以上空ける */
+    .mdmark-note-ref.is-after-ref {
+      margin-inline-start: 1rem;
+    }
+
+    /* ---------- 末尾の注記の一覧 ---------- */
+
+    /* 注記の一覧の項目の頭: 脚注の [n] の代わりに本文と同じ「※」 */
+    .mdmark-notes .mdmark-fn-item::before {
+      color: var(--mdmark-color-annotation-ref);
+      content: "※";
+    }
+
+    /* 案 C の一覧の項目の頭: 本文と同じ「※」と番号 */
+    .mdmark-notes[data-mock-variant="number"] .mdmark-fn-item::before {
+      content: "※" counter(mdmark-fn);
+    }
+
+    /* 案 B の一覧の項目の頭: 本文と同じ丸の i のアイコン */
+    .mdmark-notes[data-mock-variant="icon"] .mdmark-fn-item::before {
+      content: none;
+    }
+
+    .mdmark-notes[data-mock-variant="icon"] .mdmark-note-item-icon {
+      position: absolute;
+      inset-inline-start: -2.2em;
+      inset-block-start: 0.2em;
+      width: 1.1em;
+      height: 1.1em;
+      color: var(--mdmark-color-annotation-ref);
+    }
+
+    /* 脚注と注記を 1 つの一覧にまとめたとき: 区分ごとの小見出し */
+    .mdmark-footnotes-group-title {
+      margin: 0.75em 0 0.25em;
+      color: var(--mdmark-color-muted);
+      font-size: 0.8125rem;
+      font-weight: 600;
+    }
+
+    /* ---------- 図のツールチップの注記の区分 ---------- */
+
+    /* 図のツールチップのノードの説明と注記の区分の間: 線で分ける */
+    .mdmark-diagram-tip .mdmark-term-tip-section + .mdmark-term-tip-section {
+      display: block;
+      margin-block-start: 0.5em;
+      padding-block-start: 0.5em;
+      border-block-start: 1px solid var(--mdmark-color-border);
+    }
+
+  }
+}

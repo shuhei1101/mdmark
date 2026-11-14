@@ -140,3 +140,39 @@ test("test_group_hint", async () => {
   );
   await expect(pageOverflows(page)).resolves.toBe(false);
 });
+
+// ノードの説明の下に、線で分けた注記の区分（見出し `注記 1` と本文）を出す（Annotation）
+test("test_annotation", async () => {
+  // 準備・実行
+  const page = await holder.openStory("parts-diagramtooltip--annotation");
+  // 検証
+  const sections = page.locator('[role="tooltip"] .mdmark-term-tip-section');
+  await expect(sections.count()).resolves.toBe(2);
+  await expect(sections.nth(0).innerText()).resolves.toContain(
+    "入力の値を判定の条件と比べる",
+  );
+  await expect(
+    sections.nth(1).locator(".mdmark-note-tip-heading").innerText(),
+  ).resolves.toBe("注記 1");
+  await expect(
+    sections
+      .nth(1)
+      .evaluate((element) => getComputedStyle(element).borderTopStyle),
+  ).resolves.toBe("solid");
+  await expect(pageOverflows(page)).resolves.toBe(false);
+});
+
+// 説明を持たず注記だけを持つ線は、注記の区分だけを出す（AnnotationOnlyWire）
+test("test_annotation_only_wire", async () => {
+  // 準備・実行
+  const page = await holder.openStory(
+    "parts-diagramtooltip--annotation-only-wire",
+  );
+  // 検証
+  const sections = page.locator('[role="tooltip"] .mdmark-term-tip-section');
+  await expect(sections.count()).resolves.toBe(1);
+  await expect(sections.first().innerText()).resolves.toContain("注記 1");
+  await expect(sections.first().innerText()).resolves.toContain(
+    "条件を満たさないときは次の工程へ進む。",
+  );
+});

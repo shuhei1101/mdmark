@@ -262,7 +262,7 @@ functions:
     container: src/knowledge/matches.ts
     kind: 関数
     scope: internal
-    summary: map の範囲の `mermaid` のブロックの、ノード・参加者の名前とメッセージ・注記の文のうち、意味のある用語の位置を返却する
+    summary: map の範囲の `mermaid` のブロックの、ノード・参加者の名前とメッセージ・ノートの文のうち、意味のある用語の位置を返却する
     description: 範囲の見つけ方は `buildMapRanges`（`map` のマーカーの範囲の情報文字列が `mermaid` のコードブロック）と同じ。Mermaid を図の読み取り（`dist/map.js`）に頼らず、行ごとの字句で照合する文字を取る。`flowchart`（`graph`）は角括弧・丸括弧・波括弧・`|` で囲んだラベルと `"` で囲んだ文字、`sequenceDiagram` は `participant`・`actor` の `as` の後ろと、メッセージ・`Note` の行の `:` の後ろ。取った文字を `findWords` で照合し、`dictionary.term` で参照した用語の意味が空でないものだけを返却する（`data-map-terms` と同じく、エイリアスと文書の別名は参照しない）。位置はコードブロックの中身の行と列から本文の位置へ戻す
     args:
       - name: options
@@ -285,7 +285,7 @@ functions:
         expected: '`ワークスペース` の 1 件だけで、本文の行を切り出した文字が `ワークスペース`'
       - name: test_map_term_matches_when_sequence
         case: 正常
-        summary: シーケンス図の参加者の名前とメッセージ・注記の文を照合する
+        summary: シーケンス図の参加者の名前とメッセージ・ノートの文を照合する
         condition: 'map の範囲の sequenceDiagram に `participant W as ワークスペース`・`W->>M: ワークスペースを読む`・`Note over W: ワークスペース`'
         mock: なし
         expected: 3 件で、どれも本文の行を切り出した文字が `ワークスペース`

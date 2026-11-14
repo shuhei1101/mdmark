@@ -1,7 +1,7 @@
 id: CMP-472-58
 visibility: internal
 title: 脚注の番号
-lead: 本文の脚注の参照の場所に、マーカーの色で角括弧付きの上付きの番号を配置し、隣に「脚注 {番号}」のタイトルと脚注の中身を持つツールチップを配置する。HTML 文字列を返却し、ブラウザと Node で同じ出力になる。開閉・配置場所・一覧への移動は `mount` の操作が付ける。
+lead: 本文の脚注の参照の場所に、マーカーの色で角括弧付きの上付きの番号を配置し、隣に「脚注 {番号}」のタイトルと脚注の中身を持つツールチップを配置する。注記の参照の場所には、同じ部品で「※」と番号の上付きのマーカーと「注記 {番号}」のツールチップを配置する。HTML 文字列を返却し、ブラウザと Node で同じ出力になる。開閉・配置場所・一覧への移動は `mount` の操作が付ける。
 implementation: src/parts/footnote.ts#renderFootnoteRef
 story: Parts/FootnoteRef
 test_file: tests/integration/lib/footnote.story.test.ts
@@ -26,6 +26,17 @@ args:
     required: false
     default: 'false'
     description: 番号の下に開いた外観にするか。`true` なら `sup.mdmark-fn-ref` に `is-below` を付ける（`mount` が上に収まらない番号に付けるのと同じ class）。`render` は指定しない
+  - name: kind
+    type: 列挙
+    required: false
+    default: '`footnote`'
+    choices: '`footnote`（脚注）・`annotation`（注記）'
+    description: 脚注か注記か。`annotation` は `sup` に `mdmark-note-ref` を付け、番号の頭に「※」を出し（角括弧を付けない）、`id` を `mdmark-noteref-{number}-{refIndex}`・`mdmark-note-tip-{number}-{refIndex}`、`href` を `#mdmark-note-{number}`、タイトルと読み上げの名前を `注記 {number}` にする
+  - name: afterRef
+    type: 真偽値
+    required: false
+    default: 'false'
+    description: 文字を挟まずに脚注の番号か注記のマーカーの直後に続く参照か。`true` なら `sup` に `is-after-ref` を付け、押す範囲が重ならないよう前を 1rem 空ける
 states:
   - name: Closed
     description: 開く前。マーカーの色の `[1]` だけが出て、ツールチップは隠れている
@@ -73,22 +84,52 @@ states:
         value: '1'
       - name: bodies
         value: '["同じ脚注の 2 回目の参照。"]'
+  - name: Annotation
+    description: 注記の参照。マーカーの色の「※1」が出て、開くとタイトル `注記 1` と本文のツールチップを出す
+    args:
+      - name: kind
+        value: annotation
+      - name: number
+        value: '1'
+      - name: bodies
+        value: '["条件を満たさないときは次の工程へ進む。"]'
+  - name: AnnotationAfterRef
+    description: 脚注の番号の直後に続く注記の参照。`[1]` と「※1」の間を 1rem 空け、押す範囲が重ならない
+    args:
+      - name: kind
+        value: annotation
+      - name: number
+        value: '1'
+      - name: afterRef
+        value: 'true'
+      - name: bodies
+        value: '["古い記録は 30 日で消える。"]'
+    notes:
+      定義: 直前に脚注の番号を並べたストーリー（モック `docs/mock/components/annotation/` の「脚注・用語と同じ段落」）
 css_properties:
   - name: --mdmark-color-footnote-ref
     syntax: <color>
     default: var(--mdmark-color-link)
     description: 本文の番号と一覧の番号の色
+  - name: --mdmark-color-annotation-ref
+    syntax: <color>
+    default: var(--mdmark-color-footnote-ref)
+    description: 本文の注記のマーカーと一覧の「※{番号}」の色
 accessibility:
   - 番号のリンクのスクリーンリーダー向けの名前は `脚注 {番号}`（`脚注 ` は `mdmark-visually-hidden` で隠して配置し、角括弧は CSS で付ける）
   - 中身がリンクを持たないときは `role="tooltip"` と番号のリンクの `aria-describedby`、持つときは `role="group"`・`aria-label="脚注 {番号}"` と `aria-details` にする（用語のツールチップと同じ分け方）
   - 用語の破線の下線と、上付き・角括弧・マーカーの色の構造で見分け、色だけに頼らない
   - フォーカスの枠をマーカーの色の 2px の線で出す
+  - 注記のマーカーのリンクのスクリーンリーダー向けの名前は `注記 {番号}`（`注記 ` は `mdmark-visually-hidden` で隠し、「※」は CSS で付ける）。脚注の `[1]` と「※」の形状で見分ける
+  - 並んだマーカーは、押す範囲（24px）が重ならないよう `is-after-ref` で間を空ける（WCAG 2.5.8）
 refs:
   - IF-472-34#constraints[脚注]
   - IF-472-35#constraints[脚注の操作]
+  - IF-472-34#constraints[注記]
 status: planned
 notes:
   出力の構造: '`<sup class="mdmark-fn-ref"><a class="mdmark-fn-link" id="mdmark-fnref-{number}-{refIndex}" href="#mdmark-fn-{number}" aria-describedby|aria-details="mdmark-fn-tip-{number}-{refIndex}"><span class="mdmark-visually-hidden">脚注 </span>{number}</a><span class="mdmark-fn-tip" id="mdmark-fn-tip-{number}-{refIndex}" role="tooltip|group"><span class="mdmark-fn-tip-title">脚注 {number}</span><span class="mdmark-fn-tip-body">{bodies[i]}</span>…</span></sup>`。`bodies` が `a` 要素を持つかで `role` を選ぶ。モックは `docs/mock/components/footnote/`（[確認ログ](../../pr/311/確認ログ.md)）'
   ツールチップの段落: '`sup` の中にブロック要素（`p`）を配置しないよう、定義の段落の `p` を削除して `span.mdmark-fn-tip-body` に入れる（PoC の所見）。段落以外のブロック（リスト・コードブロック）は文字にして段落として追加する'
   番号の文字の大きさ: 本文の 0.75 倍の上付きにし、操作できる文字の下限の 11px を下回らない（`max(0.75em, 11px)`）
   狭い画面: 71rem 以下でスクリプトが位置を指していないときは、用語のツールチップと同じく、上下とも描く先の要素の左端から番号の直後に出す
+  注記の出力: '`kind` が `annotation` のとき `<sup class="mdmark-fn-ref mdmark-note-ref[ is-after-ref]"><a class="mdmark-fn-link" id="mdmark-noteref-{number}-{refIndex}" href="#mdmark-note-{number}" …><span class="mdmark-visually-hidden">注記 </span>{number}</a><span class="mdmark-fn-tip" id="mdmark-note-tip-{number}-{refIndex}" …><span class="mdmark-fn-tip-title">注記 {number}</span>…</span></sup>`。「※」はリンクの `::before` で付け、タイトルには付けない。モックは `docs/mock/components/annotation/` の案 C（[確認ログ](../pr/562/確認ログ.yaml)）'

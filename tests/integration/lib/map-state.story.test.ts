@@ -126,7 +126,7 @@ test("test_default", async () => {
     page
       .locator('.mdmark-diagram-node[data-node="n1"] .mdmark-diagram-node-kind')
       .innerText(),
-  ).resolves.toBe("注記");
+  ).resolves.toBe("ノート");
   await expect(
     page
       .locator('path.mdmark-diagram-wire[data-wire="n1"]')

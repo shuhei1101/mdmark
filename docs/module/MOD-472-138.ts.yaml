@@ -22,7 +22,7 @@ data_models:
         description: '複合フラグメントと `rect`（`kind`・`label`・`depth`・`sections`・`start`・`end`）。記載の順（0 から番号を振る）。名前の無い `rect` の `label` は直前の `%% block: 名前` の値'
       - name: notes
         type: SequenceNote[]
-        description: 注記（`after`・`placement`・`of`・`text`）
+        description: ノート（`after`・`placement`・`of`・`text`）
       - name: activations
         type: SequenceActivation[]
         description: 活性化の区間（`id`・`start`・`end`・`depth`）。`+`・`-` と `activate`・`deactivate` から作る
@@ -39,7 +39,7 @@ functions:
     container: src/map/sequence.ts
     usecase: Mermaidと補足で図を描く
     role: 処理
-    summary: '`sequenceDiagram` の Mermaid を、参加者・メッセージ・ブロック・注記・活性化と読めない行の項目に読む'
+    summary: '`sequenceDiagram` の Mermaid を、参加者・メッセージ・ブロック・ノート・活性化と読めない行の項目に読む'
     scope: public
     args:
       - name: source
@@ -54,14 +54,14 @@ functions:
       2. メッセージは長い矢印から順に照らし、受け手の前の `+`・送り手の `-` で活性化の区間を開閉する
       3. ブロックは開いた順に番号を振り、区切りの行で `sections` を足し、`end` で `end` を記録する
          - 読めない行・閉じの無いブロック・対の無い `deactivate` は `map_invalid` の項目にする
-      4. 参加者の名前・メッセージ・注記・ブロックのラベルを、`decodeEntities` で文字の参照から戻す
+      4. 参加者の名前・メッセージ・ノート・ブロックのラベルを、`decodeEntities` で文字の参照から戻す
     unit_tests:
       - name: test_parse_sequence
         case: 正常
         summary: 全ての記法
         condition: モックの `SEQUENCE`
         mock: なし
-        expected: 参加者 5・メッセージ 7・ブロック 3（`rect`・`loop`・`alt`。番号 0・1・2）・注記 1・活性化 1 で、`autonumber` が `true`、`rect` の `label` が `描く前の準備`
+        expected: 参加者 5・メッセージ 7・ブロック 3（`rect`・`loop`・`alt`。番号 0・1・2）・ノート 1・活性化 1 で、`autonumber` が `true`、`rect` の `label` が `描く前の準備`
       - name: test_parse_sequence_when_arrows
         case: 正常
         summary: 矢印の種類

@@ -18,7 +18,7 @@ import { computeDiff } from "../src/diff/compute.ts";
 import type { WarningItem } from "../src/extensions.ts";
 import { highlightLines } from "../src/highlight-lines.ts";
 import type { MdmarkAlias } from "../src/knowledge/aliases.ts";
-import { parseMapData } from "../src/map/data.ts";
+import { noteTexts, parseMapData } from "../src/map/data.ts";
 import {
   erColumnNotes,
   erFanouts,
@@ -879,9 +879,7 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
         kinds: MAP_CONFIG.kinds,
         lines: MAP_CONFIG.lines,
         notes: {
-          ...Object.fromEntries(
-            Object.entries(data.notes).map(([id, note]) => [id, note.text]),
-          ),
+          ...noteTexts(data.notes),
           ...jsonObject<Record<string, string>>(args.notes),
         },
         links: jsonObject<Record<string, string>>(args.links),
@@ -951,9 +949,7 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
         "-.->": { dash: "dashed", head: "none" },
         "---": { head: "none" },
       },
-      notes: Object.fromEntries(
-        Object.entries(data.notes).map(([id, note]) => [id, note.text]),
-      ),
+      notes: noteTexts(data.notes),
       collapsed,
       entered,
       selected: path === undefined ? selected : [],
@@ -993,9 +989,7 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
       layout,
       kinds: {},
       lines: { "-.->": { dash: "dashed", head: "none" } },
-      notes: Object.fromEntries(
-        Object.entries(data.notes).map(([id, note]) => [id, note.text]),
-      ),
+      notes: noteTexts(data.notes),
       collapsed,
       entered,
       selected: jsonList(args.selected),
@@ -1270,14 +1264,21 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
       refIndex: args.refIndex === undefined ? 0 : Number(args.refIndex),
       bodies: args.bodies as string[],
       below: args.below === true,
+      kind: args.kind === "annotation" ? "annotation" : "footnote",
+      afterRef: args.afterRef === true,
     });
     // 開いた状態を見せるストーリーは、番号に `is-open` を付け、ツールチップの上と下に余白を取る
     const open = args.open === true;
     const ref = open
       ? html.replace('class="mdmark-fn-ref', 'class="mdmark-fn-ref is-open')
       : html;
+    // 脚注の番号の直後に続く注記の参照は、前に脚注の番号を並べる
+    const before =
+      args.afterRef === true
+        ? renderFootnoteRef({ number: 1, bodies: ["保存の期間の補足。"] })
+        : "";
     const space = open ? "12rem" : "0";
-    return `<p style="padding-block:${space}">本文の補足${ref}を読み込む。</p>`;
+    return `<p style="padding-block:${space}">本文の補足${before}${ref}を読み込む。</p>`;
   },
   footnotes: (args) =>
     renderFootnotes({
@@ -1285,8 +1286,10 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
         number: number;
         html: string;
         refCount: number;
+        refs?: Array<{ href: string; owner?: string }>;
       }>,
       open: args.open === true,
+      kind: args.kind === "annotation" ? "annotation" : "footnote",
     }),
   "text-color": storyTextColor,
   "inline-icon": (args) => {
@@ -1535,6 +1538,28 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
   },
   "diagram-tooltip": (args) => {
     const open = args.open === true;
+    if (args.annotations !== undefined) {
+      // 注記の区分を持つツールチップ: ノードのマーカーか、注記だけを持つ線の押せる帯の上に出す
+      const hint = args.kind === "hint";
+      const tip = renderDiagramTip({
+        id: "story-tip",
+        kind: hint ? "hint" : "wire",
+        label: hint ? "判定" : "判定 → 次の工程",
+        ...(typeof args.hint === "string" ? { hint: args.hint } : {}),
+        annotations: args.annotations as Array<{
+          number: number;
+          html: string;
+        }>,
+        open,
+      }).replace(
+        'role="tooltip"',
+        'role="tooltip" style="position:absolute;inset-block:auto 100%;inset-inline-start:0.5rem"',
+      );
+      const owner = hint
+        ? '<button class="mdmark-diagram-info" type="button" aria-label="「判定」の説明と注記" aria-describedby="story-tip">i</button>'
+        : '<svg width="160" height="40" aria-hidden="true"><path class="mdmark-diagram-wire" d="M0 20 L160 20" stroke-width="1.5" style="stroke:var(--mdmark-color-diagram-line)"></path></svg>';
+      return `<div style="padding-block-start:${open ? "11rem" : "0"}"><div class="mdmark-diagram-box" style="min-height:11rem;padding:1rem">${owner}${tip}</div></div>`;
+    }
     if (args.kind === "table") {
       // ER 図の注文のテーブルの説明のボタンで開いた状態: テーブルの上に出す
       const orders = mockEr("shop-er").tables.find((t) => t.id === "orders");

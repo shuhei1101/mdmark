@@ -12,6 +12,12 @@ files:
   - path: assets/themes/theme-slate.css
     description: 'モック『themes』の外観: テーマ「theme-slate」の配色の値: 青灰: 青みの灰の地と面に、青のリンク。このモックの外観を変えるときに参照する。'
     tags: [topic:モック, topic:テーマ, tool:css]
+  - path: components/annotation/index.html
+    description: '部品『annotation』のモック: ID つきで定義した注記を参照する本文と表のセルのマーカー（上付きの「※」と丸の i のアイコンの案）とツールチップ、文書の末尾の閉じた注記の一覧と戻るリンク、同じ場所の 2 つの注記、脚注・用語と並ぶときの一覧の分け方の案、map の図のノードと線のツールチップの注記の区分、記載の警告・印刷の見え方。部品の外観や状態を決めるときに参照する。'
+    tags: [topic:モック]
+  - path: components/annotation/style.css
+    description: 'モック『annotation』の外観: 注記の部品のカタログだけの規則（開いたツールチップの見本の高さと map の図のノードと線の見本）。このモックの外観を変えるときに参照する。'
+    tags: [topic:モック, tool:css]
   - path: components/backlinks/index.html
     description: '部品『backlinks』のモック: 描いた文書を参照している文書の一覧（文書の末尾の「関連文書」のセクション）。部品の外観や状態を決めるときに参照する。'
     tags: [topic:モック]
@@ -1026,6 +1032,15 @@ files:
     tags: [topic:モック, topic:ビュー, tool:javascript]
   - path: refs/55/index.md
     description: '#55（ビュー・検索・コメントの部品を文書と利用側の JavaScript・TypeScript から使用できるようにする）の PR のモックへのリンク集。この PR で作ったモックを探すときに参照する。'
+    tags: [topic:モック]
+  - path: refs/562/assets/annotation-print.css
+    description: '#562 のモックが共通で読み込む素材: 注記の印刷の規則（脚注の印刷の規則が付ける閉じの角括弧をマーカーに付けない）。複数のモックに有効になる外観や動きを変えるときに参照する。'
+    tags: [topic:モック, tool:css]
+  - path: refs/562/assets/annotation.css
+    description: '#562 のモックが共通で読み込む素材: 注記の本文のマーカー・末尾の注記の一覧・図のツールチップの注記の区分の規則（脚注の部品のクラスに重ねて上書きする）。複数のモックに有効になる外観や動きを変えるときに参照する。'
+    tags: [topic:モック, tool:css]
+  - path: refs/562/index.md
+    description: '#562（本文・表・図のノードと線から参照できる注記の記法を追加する）の PR のモックへのリンク集。この PR で作ったモックを探すときに参照する。'
     tags: [topic:モック]
   - path: refs/57/assets/catalog.css
     description: '#57 のモックが共通で読み込む素材: 表の部品のカタログのモック専用の追加分: 開いたまま見せるメニューの配置方法と余白、URL の #ID を変える移る先のリンク。複数のモックに有効になる外観や動きを変えるときに参照する。'

@@ -26,6 +26,7 @@ const DEFAULT_FEATURES = {
   tree: true,
   badge: true,
   footnotes: true,
+  annotations: true,
   code: true,
   syntax: true,
   toc: true,

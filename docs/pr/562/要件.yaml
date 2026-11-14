@@ -1,0 +1,116 @@
+use_cases:
+  - kind: single
+    scenario: docs/scenario/SC-472-71.yaml
+    impact: run_only
+    detail: 脚注の番号・ツールチップ・末尾の一覧の部品を注記と共用するため、脚注の表示と操作を壊さないかを確かめる。注記の流れは SC-472-96 に分けた
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-40.yaml
+    impact: changed
+    detail: map の図のノードと線から注記を参照し、図のツールチップで注記の本文を読む（ノードの説明とは別に出す）
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-52.yaml
+    impact: changed
+    detail: 記法の点検で、定義の無い注記の ID の参照・参照されていない注記の定義・同じ ID の 2 つ目の定義を警告として受け取る
+    depends_on: []
+  - kind: composite
+    scenario: docs/scenario/SC-472-87.yaml
+    impact: run_only
+    detail: 補足に注記の参照のキーが増えても、補足で書いた図を辿って読む流れが壊れないかを確かめる。複合ユースケースの流れは変えない
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-58.yaml
+    impact: changed
+    detail: 注記を持つ文書の印刷で、末尾の注記の一覧を開いて出し、印刷の後に閉じるシナリオを足す。脚注の一覧の印刷は変えない
+    depends_on:
+      - docs/scenario/SC-472-96.yaml
+  - kind: single
+    scenario: docs/scenario/SC-472-76.yaml
+    impact: changed
+    detail: 1 枚にまとめた HTML で、文書ごとの注記のマーカーのツールチップと末尾の一覧の戻るリンクが、同じ ID でも文書を取り違えずに働くシナリオを足す
+    depends_on:
+      - docs/scenario/SC-472-96.yaml
+  - kind: single
+    scenario: docs/scenario/SC-472-96.yaml
+    impact: new
+    detail: ID つきで定義した注記を本文・表のセルの複数の場所から参照し、マーカーのツールチップと末尾の閉じた一覧で確認する。定義の無い参照・参照されていない定義・同じ ID の 2 つ目の定義に記載の警告を出す
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-8.yaml
+    impact: changed
+    detail: map のシーケンス図・状態遷移図の Mermaid の `note` の呼び名を「注記」から「ノート」に改める（状態遷移図の種類の行の表示を含む）。配置と操作は変えない
+    depends_on: []
+docs:
+  - page: docs/guide/記法.md
+    new: false
+    change: 注記の定義と参照（本文・表のセル）の記法の行と節を追加する（使用方法集 notation）
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-14T05:55:20.089186+00:00'
+  - page: docs/guide/図を描く-Mermaidと補足で図を描く.md
+    new: false
+    change: 補足で map のノードと線から注記を参照する書き方と、補足の notes（説明）との使い分けを追加する（使用方法集 map）。状態遷移図の Mermaid の `note` の呼び名を「ノート」に改める
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-14T05:55:20.089186+00:00'
+  - page: docs/guide/図を描く-図を描く.md
+    new: false
+    change: 図の `※n` の注記の表を、注記の記法で記載する案内を追加する（使用方法集 diagrams）
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-14T05:55:20.089186+00:00'
+  - page: docs/guide/記載する-本文を部品で組む.md
+    new: false
+    change: 脚注の節の横に、注記の定義と参照の手順と、脚注との使い分けを追加する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-14T05:55:20.089186+00:00'
+  - page: docs/guide/用語集.md
+    new: false
+    change: 注記・注記の一覧の用語を追加する。ファイルツリーの用語「注釈」との違いが分かる意味にする
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-14T05:55:20.089186+00:00'
+  - page: docs/guide/設定.md
+    new: false
+    change: 設定の features に annotations（注記の機能。既定はオン）のキーを追加する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-14T05:55:20.089186+00:00'
+  - page: docs/guide/カスタマイズ-印刷する.md
+    new: false
+    change: 印刷で末尾の注記の一覧を開いて出すことを追加する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-14T05:55:20.089186+00:00'
+  - page: docs/guide/CLI.md
+    new: false
+    change: check が返すずれに、定義の無い注記の参照・参照されていない注記の定義・同じ ID の 2 つ目の定義を追加する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-14T05:55:20.089186+00:00'
+  - page: guide/index.yaml
+    new: false
+    change: notation ・ map ・ diagrams の summary に注記を追加する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-14T05:55:20.089186+00:00'
+  - page: docs/guide/コアコンセプト-図を自動配置して辿る仕組み.md
+    new: false
+    change: Mermaid の `note` の呼び名を「注記」から「ノート」に改める
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-14T04:54:49.802782+00:00'
+  - page: docs/guide/API.md
+    change: CSS 変数の一覧に、注記のマーカーと注記の一覧の項目の頭の色 `--mdmark-color-annotation-ref` を追加する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-14T07:12:12.608980+00:00'
+scope_out:
+  - item: knowledge のテンプレート『判定フローチャート』の `※n` の注記を注記の記法へ書き換える
+    reason: 別のリポジトリの後続で、この記法が develop に入ってから着手する。close のときに着手できる旨をコメントする
+    plan: shuhei1101/knowledge#173
+  - item: map 以外の図（ER 図・グラフ・補足を持たない mermaid のコードブロック・コードブロックの HTML）の要素から注記を参照する
+    reason: '要望はフロー図とシーケンス図のノードと線。両方とも #534 で map に移ったため、map のノードと線だけを対象にする'
+    plan: none

@@ -1,0 +1,112 @@
+$ npm run test:unit
+# commit f73ecef1
+
+> test:unit
+> vitest run --project 'unit*'
+
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-notation-reusable-notes
+
+ ❯ |unit| tests/unit/src/plugin/pre-tool-use.test.ts (4 tests | 1 failed) 30057ms
+   × test_run_pre_tool_use_when_matcher 30013ms
+ ❯ |unit| tests/unit/src/cli/backup.test.ts (4 tests | 1 failed) 30113ms
+   × test_take_backup_when_outside 30006ms
+ ❯ |unit| tests/unit/src/cli/markdown-check.test.ts (10 tests | 1 failed) 37997ms
+   × test_check_markdown_source 30004ms
+ ❯ |unit| tests/unit/src/cli/migrations.test.ts (23 tests | 1 failed) 39058ms
+   × test_load_migration_versions_when_steps_invalid 30004ms
+ ❯ |unit| tests/unit/src/cli/export.test.ts (25 tests | 2 failed) 44621ms
+   × test_prepare_embeds 30009ms
+   × test_prepare_embeds_when_unreadable 9023ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 6 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit| tests/unit/src/cli/backup.test.ts > test_take_backup_when_outside
+Error: Test timed out in 30000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/unit/src/cli/backup.test.ts:59:1
+     57|
+     58| // 設定ファイルのフォルダの外のファイルは拒む（異常系）
+     59| test("test_take_backup_when_outside", async () => {
+       | ^
+     60|   // 準備
+     61|   const { takeBackup } = await loadModule();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/6]⎯
+
+ FAIL  |unit| tests/unit/src/cli/export.test.ts > test_prepare_embeds
+Error: Test timed out in 30000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/unit/src/cli/export.test.ts:31:1
+     29|
+     30| // マーカーのあるモジュールだけをまとめ、拡張と theme を読み込む（正常系）
+     31| test("test_prepare_embeds", async () => {
+       | ^
+     32|   // 準備
+     33|   const { prepareEmbeds } = await loadExport();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/6]⎯
+
+ FAIL  |unit| tests/unit/src/cli/export.test.ts > test_prepare_embeds_when_unreadable
+Error: ENOTEMPTY: directory not empty, rmdir '/tmp/mdmark-cli-IOPMcL'
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/6]⎯
+
+ FAIL  |unit| tests/unit/src/cli/markdown-check.test.ts > test_check_markdown_source
+Error: Test timed out in 30000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/unit/src/cli/markdown-check.test.ts:41:1
+     39|
+     40| // 警告・知らないマーカーを行の順に返却し、廃止した図の範囲を 1 件にする（正常系）
+     41| test("test_check_markdown_source", async () => {
+       | ^
+     42|   // 準備
+     43|   const { checkMarkdownSource } = await loadMarkdownCheck();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/6]⎯
+
+ FAIL  |unit| tests/unit/src/cli/migrations.test.ts > test_load_migration_versions_when_steps_invalid
+Error: Test timed out in 30000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/unit/src/cli/migrations.test.ts:226:1
+    224|
+    225| // 構造の合わないバージョンがあれば CliError（異常系）
+    226| test("test_load_migration_versions_when_steps_invalid", async () => {
+       | ^
+    227|   // 準備
+    228|   const { loadMigrationVersions } = await loadModule();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/6]⎯
+
+ FAIL  |unit| tests/unit/src/plugin/pre-tool-use.test.ts > test_run_pre_tool_use_when_matcher
+Error: Test timed out in 30000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/unit/src/plugin/pre-tool-use.test.ts:79:1
+     77|
+     78| // hooks.json の matcher が `PROJECT_DIR_TOOLS` のツールだけに該当する（正常系）
+     79| test("test_run_pre_tool_use_when_matcher", async () => {
+       | ^
+     80|   // 準備
+     81|   const { PROJECT_DIR_TOOLS, TOOL_NAME_PREFIX } = await loadPreToolUse…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/6]⎯
+
+
+ Test Files  5 failed | 289 passed (294)
+      Tests  6 failed | 2207 passed (2213)
+   Start at  16:24:42
+   Duration  174.68s (worker 69%, tests 19%, import 11%, transform 1%)
+
+exit=1
+
+# 全件実行で時間切れ・一時フォルダの削除の競合で fail したテストを、同じ commit で単独に流し直した結果
+$ npx vitest run --project unit tests/unit/src/cli/backup.test.ts tests/unit/src/cli/export.test.ts tests/unit/src/cli/markdown-check.test.ts tests/unit/src/cli/migrations.test.ts tests/unit/src/plugin/pre-tool-use.test.ts
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-notation-reusable-notes
+
+
+ Test Files  5 passed (5)
+      Tests  66 passed (66)
+   Start at  16:31:01
+   Duration  23.82s (tests 95%, import 3%, transform 2%)
+
+exit=0

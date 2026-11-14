@@ -1,6 +1,11 @@
 import type { StateCore, Token } from "markdown-it";
 import { type AttachmentKind, renderCard } from "../../parts/card.ts";
-import { DEF_CLOSE, DEF_OPEN } from "./footnotes.ts";
+import {
+  ANNOTATION_DEF_CLOSE,
+  ANNOTATION_DEF_OPEN,
+  DEF_CLOSE,
+  DEF_OPEN,
+} from "./footnotes.ts";
 import { featureOn, ownBlock } from "./tokens.ts";
 
 /** 添付の拡張子（小文字）から添付の種類を参照する */
@@ -102,13 +107,16 @@ export function buildCards(state: StateCore): void {
   }
   const tokens = state.tokens;
   const out: Token[] = [];
-  // 脚注の定義の中のリンクは、ツールチップでリンクのまま読み込めるようにカードにしない
+  // 脚注と注記の定義の中のリンクは、ツールチップでリンクのまま読み込めるようにカードにしない
   let definitionDepth = 0;
   for (let index = 0; index < tokens.length; index++) {
     const token = tokens[index] as Token;
-    if (token.type === DEF_OPEN) {
+    if (token.type === DEF_OPEN || token.type === ANNOTATION_DEF_OPEN) {
       definitionDepth += 1;
-    } else if (token.type === DEF_CLOSE) {
+    } else if (
+      token.type === DEF_CLOSE ||
+      token.type === ANNOTATION_DEF_CLOSE
+    ) {
       definitionDepth -= 1;
     }
     const link =
