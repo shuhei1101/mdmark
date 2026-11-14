@@ -1,0 +1,914 @@
+$ npm run test:unit
+
+> test:unit
+> vitest run --project 'unit*'
+
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-diagram-retire-flow-sequence
+
+ ❯ |unit| tests/unit/src/map/convert.test.ts (13 tests | 13 failed) 8322ms
+   × test_convert_retired_diagrams 695ms
+   × test_convert_retired_diagrams_when_unreadable 915ms
+   × test_convert_retired_diagrams_when_skipped 327ms
+   × test_convert_retired_diagrams_when_in_code 109ms
+   × test_convert_retired_diagrams_when_rerun 272ms
+   × test_read_retired_definition 293ms
+   × test_read_retired_definition_when_wire_end_missing 804ms
+   × test_flow_to_map 239ms
+   × test_flow_to_map_when_judgement 987ms
+   × test_flow_to_map_when_id_unreadable 1925ms
+   × test_flow_to_map_when_name_has_symbols 967ms
+   × test_sequence_to_map 524ms
+   × test_sequence_to_map_when_id_unreadable 262ms
+ ❯ |unit-browser (chromium)| tests/unit/src/interact/diagram-tips.browser.test.ts (12 tests | 8 failed) 2399ms
+   × test_attach_diagram_tips 1393ms
+   × test_attach_diagram_tips_when_hovered 128ms
+   × test_attach_diagram_tips_when_box_hovered 101ms
+   × test_attach_diagram_tips_when_placed 141ms
+   × test_attach_diagram_tips_when_touch_tapped 102ms
+   × test_attach_diagram_tips_when_touch_outside 123ms
+   × test_attach_diagram_tips_when_mouse_pressed 156ms
+   × test_attach_diagram_tips_when_touch_tip_tapped 145ms
+ ❯ |unit| tests/unit/src/parts/map.test.ts (16 tests | 2 failed) 1444ms
+   × test_render_map_flow_when_links 27ms
+   × test_render_map_flow_when_group_note 12ms
+ ❯ |unit-browser (chromium)| tests/unit/src/map/flow-view.browser.test.ts (8 tests | 1 failed) 3402ms
+   × test_attach_map_flow_when_node_link 385ms
+ ❯ |unit| tests/unit/src/knowledge/matches.test.ts (19 tests | 3 failed) 2623ms
+   × test_diagram_term_matches 8ms
+   × test_map_term_matches 1ms
+   × test_map_term_matches_when_sequence 1ms
+ ❯ |unit| tests/unit/src/parts/diagram.test.ts (21 tests | 4 failed) 156ms
+   × test_render_flow 58ms
+   × test_render_flow_when_text_escaped 1ms
+   × test_render_flow_when_hint 1ms
+   × test_render_flow_when_node_link 1ms
+ ❯ |unit| tests/unit/src/map/check.test.ts (15 tests | 1 failed) 163ms
+   × test_collect_map_problems_when_link_not_allowed 5ms
+ ❯ |unit| tests/unit/src/render/index.test.ts (10 tests | 1 failed) 22650ms
+   × test_collect_warnings 25ms
+ ❯ |unit| tests/unit/src/cli/check.test.ts (34 tests | 3 failed) 25595ms
+   × test_check_diagrams 8ms
+   × test_check_diagrams_when_extension_named 1ms
+   × test_run_check_when_text 9ms
+ ❯ |unit| tests/unit/src/map/flowchart.test.ts (10 tests | 4 failed) 28ms
+   × test_parse_flowchart_when_click 6ms
+   × test_parse_flowchart_when_entity 2ms
+   × test_decode_entities 1ms
+   × test_map_link_problems 0ms
+ ❯ |unit| tests/unit/migrations/retired-diagrams.test.ts (5 tests | 5 failed) 78ms
+   × test_migrate_retired_diagrams 18ms
+   × test_migrate_retired_diagrams_when_kind_defined 15ms
+   × test_migrate_retired_diagrams_when_extension 15ms
+   × test_migrate_retired_diagrams_when_rerun 13ms
+   × test_migrate_retired_diagrams_when_bundled 16ms
+ ❯ |unit| tests/unit/src/cli/markdown-check.test.ts (10 tests | 1 failed) 28445ms
+   × test_check_markdown_source 28316ms
+ ❯ |unit| tests/unit/src/map/sequence.test.ts (6 tests | 1 failed) 22ms
+   × test_parse_sequence_when_entity 5ms
+ ❯ |unit| tests/unit/src/render/syntax/diagrams.test.ts (7 tests | 2 failed) 275ms
+   × test_build_diagrams_when_retired 72ms
+   × test_find_diagram_blocks 8ms
+ ❯ |unit| tests/unit/scripts/build.test.ts (29 tests | 1 failed) 60173ms
+   × test_build_retired_diagrams 18ms
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 50 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit| tests/unit/migrations/retired-diagrams.test.ts > test_migrate_retired_diagrams
+Error: /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-diagram-retire-flow-sequence/migrations の下で retired-diagrams.mjs を持つフォルダが 1 つではありません: 0 件
+ ❯ migrationsDirOf tests/migrations-dir.ts:23:11
+     21|   const [dir] = found;
+     22|   if (found.length !== 1 || dir === undefined) {
+     23|     throw new Error(
+       |           ^
+     24|       `${root} の下で ${script} を持つフォルダが 1 つではありません: ${found.length} 件`,
+     25|     );
+ ❯ loadMigrateRetiredDiagrams tests/unit/migrations/retired-diagrams.test.ts:40:45
+ ❯ tests/unit/migrations/retired-diagrams.test.ts:101:40
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/50]⎯
+
+ FAIL  |unit| tests/unit/migrations/retired-diagrams.test.ts > test_migrate_retired_diagrams_when_kind_defined
+Error: /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-diagram-retire-flow-sequence/migrations の下で retired-diagrams.mjs を持つフォルダが 1 つではありません: 0 件
+ ❯ migrationsDirOf tests/migrations-dir.ts:23:11
+     21|   const [dir] = found;
+     22|   if (found.length !== 1 || dir === undefined) {
+     23|     throw new Error(
+       |           ^
+     24|       `${root} の下で ${script} を持つフォルダが 1 つではありません: ${found.length} 件`,
+     25|     );
+ ❯ loadMigrateRetiredDiagrams tests/unit/migrations/retired-diagrams.test.ts:40:45
+ ❯ tests/unit/migrations/retired-diagrams.test.ts:134:40
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/50]⎯
+
+ FAIL  |unit| tests/unit/migrations/retired-diagrams.test.ts > test_migrate_retired_diagrams_when_extension
+Error: /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-diagram-retire-flow-sequence/migrations の下で retired-diagrams.mjs を持つフォルダが 1 つではありません: 0 件
+ ❯ migrationsDirOf tests/migrations-dir.ts:23:11
+     21|   const [dir] = found;
+     22|   if (found.length !== 1 || dir === undefined) {
+     23|     throw new Error(
+       |           ^
+     24|       `${root} の下で ${script} を持つフォルダが 1 つではありません: ${found.length} 件`,
+     25|     );
+ ❯ loadMigrateRetiredDiagrams tests/unit/migrations/retired-diagrams.test.ts:40:45
+ ❯ tests/unit/migrations/retired-diagrams.test.ts:152:40
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/50]⎯
+
+ FAIL  |unit| tests/unit/migrations/retired-diagrams.test.ts > test_migrate_retired_diagrams_when_rerun
+Error: /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-diagram-retire-flow-sequence/migrations の下で retired-diagrams.mjs を持つフォルダが 1 つではありません: 0 件
+ ❯ migrationsDirOf tests/migrations-dir.ts:23:11
+     21|   const [dir] = found;
+     22|   if (found.length !== 1 || dir === undefined) {
+     23|     throw new Error(
+       |           ^
+     24|       `${root} の下で ${script} を持つフォルダが 1 つではありません: ${found.length} 件`,
+     25|     );
+ ❯ loadMigrateRetiredDiagrams tests/unit/migrations/retired-diagrams.test.ts:40:45
+ ❯ tests/unit/migrations/retired-diagrams.test.ts:179:40
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/50]⎯
+
+ FAIL  |unit| tests/unit/migrations/retired-diagrams.test.ts > test_migrate_retired_diagrams_when_bundled
+Error: /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-diagram-retire-flow-sequence/migrations の下で retired-diagrams.mjs を持つフォルダが 1 つではありません: 0 件
+ ❯ migrationsDirOf tests/migrations-dir.ts:23:11
+     21|   const [dir] = found;
+     22|   if (found.length !== 1 || dir === undefined) {
+     23|     throw new Error(
+       |           ^
+     24|       `${root} の下で ${script} を持つフォルダが 1 つではありません: ${found.length} 件`,
+     25|     );
+ ❯ loadMigrateRetiredDiagrams tests/unit/migrations/retired-diagrams.test.ts:40:45
+ ❯ tests/unit/migrations/retired-diagrams.test.ts:203:40
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/50]⎯
+
+ FAIL  |unit| tests/unit/scripts/build.test.ts > test_build_retired_diagrams
+TypeError: buildRetiredDiagrams is not a function
+ ❯ tests/unit/scripts/build.test.ts:578:25
+    576|   }
+    577|   // 実行
+    578|   const written = await buildRetiredDiagrams("v0.0.1", root);
+       |                         ^
+    579|   // 検証
+    580|   expect(written).toEqual(["migrations/next/retired-diagrams.js"]);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/50]⎯
+
+ FAIL  |unit| tests/unit/src/cli/check.test.ts > test_check_diagrams
+AssertionError: expected [ { file: 'a.md', where: '3', …(1) } ] to deeply equal [ …(3) ]
+
+- Expected
++ Received
+
+@@ -2,16 +2,6 @@
+    {
+      "file": "a.md",
+      "kind": "diagram_invalid",
+      "where": "3",
+    },
+-   {
+-     "file": "a.md",
+-     "kind": "retired_diagram",
+-     "where": "10",
+-   },
+-   {
+-     "file": "a.md",
+-     "kind": "retired_diagram",
+-     "where": "20",
+-   },
+  ]
+
+ ❯ tests/unit/src/cli/check.test.ts:690:5
+    688|   expect(
+    689|     issues.map(({ file, where, kind }) => ({ file, where, kind })),
+    690|   ).toEqual([
+       |     ^
+    691|     { file: "a.md", where: "3", kind: "diagram_invalid" },
+    692|     { file: "a.md", where: "10", kind: "retired_diagram" },
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/50]⎯
+
+ FAIL  |unit| tests/unit/src/cli/check.test.ts > test_check_diagrams_when_extension_named
+AssertionError: expected [ { where: '3', …(1) } ] to deeply equal [ { where: '3', …(1) }, …(1) ]
+
+- Expected
++ Received
+
+  [
+    {
+      "kind": "diagram_invalid",
+      "where": "3",
+    },
+-   {
+-     "kind": "retired_diagram",
+-     "where": "20",
+-   },
+  ]
+
+ ❯ tests/unit/src/cli/check.test.ts:710:62
+    708|   );
+    709|   // 検証
+    710|   expect(issues.map(({ where, kind }) => ({ where, kind }))).toEqual([
+       |                                                              ^
+    711|     { where: "3", kind: "diagram_invalid" },
+    712|     { where: "20", kind: "retired_diagram" },
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/50]⎯
+
+ FAIL  |unit| tests/unit/src/cli/check.test.ts > test_run_check_when_text
+AssertionError: expected '-:1: diagram_invalid: フロー図の部品の定義を読み込め…' to match /^-:1: retired_diagram: /
+
+- Expected:
+/^-:1: retired_diagram: /
+
++ Received:
+"-:1: diagram_invalid: フロー図の部品の定義を読み込めません。ノード「始める」の種類 begin は使用できません。使用できる種類は llm・dm・script・mcp・data・external・start・question・action・result です。この図は描いていません。"
+
+ ❯ tests/unit/src/cli/check.test.ts:789:21
+    787|     "ずれ 3 件",
+    788|   ]);
+    789|   expect(stdout[0]).toMatch(/^-:1: retired_diagram: /);
+       |                     ^
+    790|   expect(stdout[1]).toMatch(/^-:20: unknown_mark: /);
+    791|   expect(stdout[2]).toMatch(/^-:22: syntax_warning: /);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/50]⎯
+
+ FAIL  |unit| tests/unit/src/cli/markdown-check.test.ts > test_check_markdown_source
+AssertionError: expected [ …(3) ] to deeply equal [ …(3) ]
+
+- Expected
++ Received
+
+@@ -1,9 +1,9 @@
+  [
+    {
+      "file": "-",
+-     "kind": "retired_diagram",
++     "kind": "diagram_invalid",
+      "where": "1",
+    },
+    {
+      "file": "-",
+      "kind": "unknown_mark",
+
+ ❯ tests/unit/src/cli/markdown-check.test.ts:54:5
+     52|   expect(
+     53|     issues.map(({ file, where, kind }) => ({ file, where, kind })),
+     54|   ).toEqual([
+       |     ^
+     55|     { file: "-", where: "1", kind: "retired_diagram" },
+     56|     { file: "-", where: "20", kind: "unknown_mark" },
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/50]⎯
+
+ FAIL  |unit| tests/unit/src/knowledge/matches.test.ts > test_diagram_term_matches
+AssertionError: expected [ 'ワークスペース', 'ワークスペース', 'ワークスペース' ] to deeply equal [ 'ワークスペース', 'ワークスペース' ]
+
+- Expected
++ Received
+
+  [
+    "ワークスペース",
+    "ワークスペース",
++   "ワークスペース",
+  ]
+
+ ❯ tests/unit/src/knowledge/matches.test.ts:575:46
+    573|   // 検証
+    574|   // `{{公開関数}}` は文書の別名で用語ではないため返らない
+    575|   expect(matches.map((match) => match.word)).toEqual([
+       |                                              ^
+    576|     "ワークスペース",
+    577|     "ワークスペース",
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/50]⎯
+
+ FAIL  |unit| tests/unit/src/knowledge/matches.test.ts > test_map_term_matches
+TypeError: mapTermMatches is not a function
+ ❯ tests/unit/src/knowledge/matches.test.ts:636:19
+    634|   const { tokens, dictionary } = prepare(body);
+    635|   // 実行
+    636|   const matches = mapTermMatches({ body, tokens, dictionary });
+       |                   ^
+    637|   // 検証
+    638|   expect(matches.map((match) => match.word)).toEqual(["ワークスペース"]);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[12/50]⎯
+
+ FAIL  |unit| tests/unit/src/knowledge/matches.test.ts > test_map_term_matches_when_sequence
+TypeError: mapTermMatches is not a function
+ ❯ tests/unit/src/knowledge/matches.test.ts:664:19
+    662|   const { tokens, dictionary } = prepare(body);
+    663|   // 実行
+    664|   const matches = mapTermMatches({ body, tokens, dictionary });
+       |                   ^
+    665|   // 検証
+    666|   expect(matches).toHaveLength(3);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[13/50]⎯
+
+ FAIL  |unit| tests/unit/src/map/check.test.ts > test_collect_map_problems_when_link_not_allowed
+AssertionError: expected [] to deeply equal [ 'map_invalid_value' ]
+
+- Expected
++ Received
+
+- [
+-   "map_invalid_value",
+- ]
++ []
+
+ ❯ tests/unit/src/map/check.test.ts:118:51
+    116|   );
+    117|   // 検証
+    118|   expect(problems.map((problem) => problem.kind)).toEqual([
+       |                                                   ^
+    119|     "map_invalid_value",
+    120|   ]);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[14/50]⎯
+
+ FAIL  |unit| tests/unit/src/map/convert.test.ts > test_convert_retired_diagrams
+Error: Cannot find module '/src/map/convert.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-diagram-retire-flow-sequence/tests/unit/src/map/convert.test.ts
+ ❯ tests/unit/src/map/convert.test.ts:46:38
+     44| test("test_convert_retired_diagrams", async () => {
+     45|   // 準備
+     46|   const { convertRetiredDiagrams } = await loadConvert();
+       |                                      ^
+     47|   const lines = RETIRED_DOCUMENT.split("\n");
+     48|   const firstFlow = lines.indexOf("<!-- flow -->") + 1;
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[15/50]⎯
+
+ FAIL  |unit| tests/unit/src/map/convert.test.ts > test_convert_retired_diagrams_when_unreadable
+Error: Cannot find module '/src/map/convert.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-diagram-retire-flow-sequence/tests/unit/src/map/convert.test.ts
+ ❯ tests/unit/src/map/convert.test.ts:79:38
+     77| test("test_convert_retired_diagrams_when_unreadable", async () => {
+     78|   // 準備
+     79|   const { convertRetiredDiagrams } = await loadConvert();
+       |                                      ^
+     80|   const broken = retiredRange("flow", '{ "title": "壊れた図", "nodes": [');
+     81|   const markdown = [
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[16/50]⎯
+
+ FAIL  |unit| tests/unit/src/map/convert.test.ts > test_convert_retired_diagrams_when_skipped
+Error: Cannot find module '/src/map/convert.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-diagram-retire-flow-sequence/tests/unit/src/map/convert.test.ts
+ ❯ tests/unit/src/map/convert.test.ts:105:38
+    103| test("test_convert_retired_diagrams_when_skipped", async () => {
+    104|   // 準備
+    105|   const { convertRetiredDiagrams } = await loadConvert();
+       |                                      ^
+    106|   const markdown = `${retiredRange("flow", INQUIRY_TEXT, ': {"target":…
+    107|   // 実行
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[17/50]⎯
+
+ FAIL  |unit| tests/unit/src/map/convert.test.ts > test_convert_retired_diagrams_when_in_code
+Error: Cannot find module '/src/map/convert.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-diagram-retire-flow-sequence/tests/unit/src/map/convert.test.ts
+ ❯ tests/unit/src/map/convert.test.ts:117:38
+    115| test("test_convert_retired_diagrams_when_in_code", async () => {
+    116|   // 準備
+    117|   const { convertRetiredDiagrams } = await loadConvert();
+       |                                      ^
+    118|   const markdown = [
+    119|     "````markdown",
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[18/50]⎯
+
+ FAIL  |unit| tests/unit/src/map/convert.test.ts > test_convert_retired_diagrams_when_rerun
+Error: Cannot find module '/src/map/convert.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-diagram-retire-flow-sequence/tests/unit/src/map/convert.test.ts
+ ❯ tests/unit/src/map/convert.test.ts:133:38
+    131| test("test_convert_retired_diagrams_when_rerun", async () => {
+    132|   // 準備
+    133|   const { convertRetiredDiagrams } = await loadConvert();
+       |                                      ^
+    134|   const first = convertRetiredDiagrams({
+    135|     markdown: RETIRED_DOCUMENT,
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[19/50]⎯
+
+ FAIL  |unit| tests/unit/src/map/convert.test.ts > test_read_retired_definition
+Error: Cannot find module '/src/map/convert.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-diagram-retire-flow-sequence/tests/unit/src/map/convert.test.ts
+ ❯ tests/unit/src/map/convert.test.ts:151:37
+    149| test("test_read_retired_definition", async () => {
+    150|   // 準備
+    151|   const { readRetiredDefinition } = await loadConvert();
+       |                                     ^
+    152|   // 実行
+    153|   const results = [
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[20/50]⎯
+
+ FAIL  |unit| tests/unit/src/map/convert.test.ts > test_read_retired_definition_when_wire_end_missing
+Error: Cannot find module '/src/map/convert.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-diagram-retire-flow-sequence/tests/unit/src/map/convert.test.ts
+ ❯ tests/unit/src/map/convert.test.ts:167:37
+    165| test("test_read_retired_definition_when_wire_end_missing", async () =>…
+    166|   // 準備
+    167|   const { readRetiredDefinition } = await loadConvert();
+       |                                     ^
+    168|   const definition = JSON.parse(INQUIRY_TEXT) as {
+    169|     wires: Array<Record<string, unknown>>;
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[21/50]⎯
+
+ FAIL  |unit| tests/unit/src/map/convert.test.ts > test_flow_to_map
+Error: Cannot find module '/src/map/convert.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-diagram-retire-flow-sequence/tests/unit/src/map/convert.test.ts
+ ❯ tests/unit/src/map/convert.test.ts:184:48
+    182| test("test_flow_to_map", async () => {
+    183|   // 準備
+    184|   const { flowToMap, readRetiredDefinition } = await loadConvert();
+       |                                                ^
+    185|   const source = JSON.parse(INQUIRY_TEXT) as {
+    186|     nodes: Array<Record<string, unknown>>;
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[22/50]⎯
+
+ FAIL  |unit| tests/unit/src/map/convert.test.ts > test_flow_to_map_when_judgement
+Error: Cannot find module '/src/map/convert.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-diagram-retire-flow-sequence/tests/unit/src/map/convert.test.ts
+ ❯ tests/unit/src/map/convert.test.ts:234:48
+    232| test("test_flow_to_map_when_judgement", async () => {
+    233|   // 準備
+    234|   const { flowToMap, readRetiredDefinition } = await loadConvert();
+       |                                                ^
+    235|   const read = readRetiredDefinition("flow", [JUDGEMENT_TEXT]);
+    236|   if (!read.ok) throw new Error(read.reason);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[23/50]⎯
+
+ FAIL  |unit| tests/unit/src/map/convert.test.ts > test_flow_to_map_when_id_unreadable
+Error: Cannot find module '/src/map/convert.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-diagram-retire-flow-sequence/tests/unit/src/map/convert.test.ts
+ ❯ tests/unit/src/map/convert.test.ts:261:48
+    259| test("test_flow_to_map_when_id_unreadable", async () => {
+    260|   // 準備
+    261|   const { flowToMap, readRetiredDefinition } = await loadConvert();
+       |                                                ^
+    262|   const read = readRetiredDefinition("flow", [
+    263|     JSON.stringify({
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[24/50]⎯
+
+ FAIL  |unit| tests/unit/src/map/convert.test.ts > test_flow_to_map_when_name_has_symbols
+Error: Cannot find module '/src/map/convert.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-diagram-retire-flow-sequence/tests/unit/src/map/convert.test.ts
+ ❯ tests/unit/src/map/convert.test.ts:297:48
+    295| test("test_flow_to_map_when_name_has_symbols", async () => {
+    296|   // 準備
+    297|   const { flowToMap, readRetiredDefinition } = await loadConvert();
+       |                                                ^
+    298|   const read = readRetiredDefinition("flow", [
+    299|     JSON.stringify({
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[25/50]⎯
+
+ FAIL  |unit| tests/unit/src/map/convert.test.ts > test_sequence_to_map
+Error: Cannot find module '/src/map/convert.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-diagram-retire-flow-sequence/tests/unit/src/map/convert.test.ts
+ ❯ tests/unit/src/map/convert.test.ts:317:52
+    315| test("test_sequence_to_map", async () => {
+    316|   // 準備
+    317|   const { sequenceToMap, readRetiredDefinition } = await loadConvert();
+       |                                                    ^
+    318|   const read = readRetiredDefinition("sequence", [INQUIRY_SEQ_TEXT]);
+    319|   if (!read.ok) throw new Error(read.reason);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[26/50]⎯
+
+ FAIL  |unit| tests/unit/src/map/convert.test.ts > test_sequence_to_map_when_id_unreadable
+Error: Cannot find module '/src/map/convert.ts' imported from /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-diagram-retire-flow-sequence/tests/unit/src/map/convert.test.ts
+ ❯ tests/unit/src/map/convert.test.ts:346:52
+    344| test("test_sequence_to_map_when_id_unreadable", async () => {
+    345|   // 準備
+    346|   const { sequenceToMap, readRetiredDefinition } = await loadConvert();
+       |                                                    ^
+    347|   const read = readRetiredDefinition("sequence", [
+    348|     JSON.stringify({
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[27/50]⎯
+
+ FAIL  |unit| tests/unit/src/map/flowchart.test.ts > test_parse_flowchart_when_click
+AssertionError: expected undefined to deeply equal { a: 'https://example.com/spec', …(1) }
+
+- Expected:
+{
+  "a": "https://example.com/spec",
+  "b": "./other.md",
+}
+
++ Received:
+undefined
+
+ ❯ tests/unit/src/map/flowchart.test.ts:127:23
+    125|   );
+    126|   // 検証
+    127|   expect(chart.links).toEqual({
+       |                       ^
+    128|     a: "https://example.com/spec",
+    129|     b: "./other.md",
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[28/50]⎯
+
+ FAIL  |unit| tests/unit/src/map/flowchart.test.ts > test_parse_flowchart_when_entity
+AssertionError: expected '#91;枠#93;' to be '[枠]' // Object.is equality
+
+Expected: "[枠]"
+Received: "#91;枠#93;"
+
+ ❯ tests/unit/src/map/flowchart.test.ts:150:34
+    148|   // 検証
+    149|   expect(chart.problems).toEqual([]);
+    150|   expect(chart.groups[0]?.title).toBe("[枠]");
+       |                                  ^
+    151|   expect(chart.nodes.find((node) => node.id === "a")?.label).toBe(
+    152|     '"a" [b]\n#c',
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[29/50]⎯
+
+ FAIL  |unit| tests/unit/src/map/flowchart.test.ts > test_decode_entities
+TypeError: decodeEntities is not a function
+ ❯ tests/unit/src/map/flowchart.test.ts:162:16
+    160|   const { decodeEntities } = await loadFlowchart();
+    161|   // 実行
+    162|   const text = decodeEntities("#quot;a#quot; #91;b#93; #35;1 #amp; #x;…
+       |                ^
+    163|   // 検証
+    164|   expect(text).toBe('"a" [b] #1 & #x; #');
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[30/50]⎯
+
+ FAIL  |unit| tests/unit/src/map/flowchart.test.ts > test_map_link_problems
+TypeError: mapLinkProblems is not a function
+ ❯ tests/unit/src/map/flowchart.test.ts:172:18
+    170|   const { mapLinkProblems } = await loadFlowchart();
+    171|   // 実行
+    172|   const result = mapLinkProblems({
+       |                  ^
+    173|     a: "https://example.com/spec",
+    174|     b: "./other.md",
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[31/50]⎯
+
+ FAIL  |unit| tests/unit/src/map/sequence.test.ts > test_parse_sequence_when_entity
+AssertionError: expected '#35;1#59; 受付' to be '#1; 受付' // Object.is equality
+
+Expected: "#1; 受付"
+Received: "#35;1#59; 受付"
+
+ ❯ tests/unit/src/map/sequence.test.ts:117:43
+    115|   // 検証
+    116|   expect(sequence.problems).toEqual([]);
+    117|   expect(sequence.participants[0]?.label).toBe("#1; 受付");
+       |                                           ^
+    118|   expect(sequence.messages[0]?.text).toBe("a; b");
+    119|   expect(sequence.fragments[0]?.label).toBe('"x"');
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[32/50]⎯
+
+ FAIL  |unit| tests/unit/src/parts/diagram.test.ts > test_render_flow
+TypeError: Cannot read properties of undefined (reading 'tag')
+ ❯ renderNode src/parts/diagram.ts:472:43
+    470|   const { node, box, tips, lookup, found, hints } = options;
+    471|   const kind = KIND_STYLES[node.kind];
+    472|   const tag = renderText(node.tag ?? kind.tag, tips, lookup, found);
+       |                                           ^
+    473|   const name = renderText(node.name, tips, lookup, found);
+    474|   const sub =
+ ❯ renderFlow src/parts/diagram.ts:601:16
+ ❯ tests/unit/src/parts/diagram.test.ts:185:26
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[33/50]⎯
+
+ FAIL  |unit| tests/unit/src/parts/diagram.test.ts > test_render_flow_when_text_escaped
+TypeError: Cannot read properties of undefined (reading 'tag')
+ ❯ renderNode src/parts/diagram.ts:472:43
+    470|   const { node, box, tips, lookup, found, hints } = options;
+    471|   const kind = KIND_STYLES[node.kind];
+    472|   const tag = renderText(node.tag ?? kind.tag, tips, lookup, found);
+       |                                           ^
+    473|   const name = renderText(node.name, tips, lookup, found);
+    474|   const sub =
+ ❯ renderFlow src/parts/diagram.ts:601:16
+ ❯ tests/unit/src/parts/diagram.test.ts:210:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[34/50]⎯
+
+ FAIL  |unit| tests/unit/src/parts/diagram.test.ts > test_render_flow_when_hint
+TypeError: Cannot read properties of undefined (reading 'tag')
+ ❯ renderNode src/parts/diagram.ts:472:43
+    470|   const { node, box, tips, lookup, found, hints } = options;
+    471|   const kind = KIND_STYLES[node.kind];
+    472|   const tag = renderText(node.tag ?? kind.tag, tips, lookup, found);
+       |                                           ^
+    473|   const name = renderText(node.name, tips, lookup, found);
+    474|   const sub =
+ ❯ renderFlow src/parts/diagram.ts:601:16
+ ❯ tests/unit/src/parts/diagram.test.ts:292:14
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[35/50]⎯
+
+ FAIL  |unit| tests/unit/src/parts/diagram.test.ts > test_render_flow_when_node_link
+TypeError: Cannot read properties of undefined (reading 'tag')
+ ❯ renderNode src/parts/diagram.ts:472:43
+    470|   const { node, box, tips, lookup, found, hints } = options;
+    471|   const kind = KIND_STYLES[node.kind];
+    472|   const tag = renderText(node.tag ?? kind.tag, tips, lookup, found);
+       |                                           ^
+    473|   const name = renderText(node.name, tips, lookup, found);
+    474|   const sub =
+ ❯ renderFlow src/parts/diagram.ts:601:16
+ ❯ tests/unit/src/parts/diagram.test.ts:528:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[36/50]⎯
+
+ FAIL  |unit| tests/unit/src/parts/map.test.ts > test_render_map_flow_when_links
+AssertionError: expected '<div class="mdmark-diagram-node has-t…' to contain 'has-link'
+
+Expected: "has-link"
+Received: "<div class="mdmark-diagram-node has-tip map-kinded" data-kind="map" data-shape="rounded" data-node="mount" tabindex="0" role="button" aria-roledescription="ノード" aria-keyshortcuts="Enter Space Alt+ArrowLeft Alt+ArrowUp Alt+ArrowDown Alt+ArrowRight" aria-label="mount" style="left:466px;top:189.5px;width:120px;height:63px">"
+
+ ❯ tests/unit/src/parts/map.test.ts:450:46
+    448|   // 検証
+    449|   const node = outerHtml(html, 'data-node="mount"');
+    450|   expect(findTag(node, 'data-node="mount"')).toContain("has-link");
+       |                                              ^
+    451|   expect(node).toMatch(
+    452|     /<a class="mdmark-diagram-node-link" href="https:\/\/example\.com\…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[37/50]⎯
+
+ FAIL  |unit| tests/unit/src/parts/map.test.ts > test_render_map_flow_when_group_note
+AssertionError: expected [] to have a length of 1 but got +0
+
+- Expected
++ Received
+
+- 1
++ 0
+
+ ❯ tests/unit/src/parts/map.test.ts:483:21
+    481|       /<button class="mdmark-diagram-info mdmark-diagram-group-info"[^…
+    482|     );
+    483|     expect(markers).toHaveLength(1);
+       |                     ^
+    484|     const [marker = ""] = markers;
+    485|     expect(marker).toContain('aria-label="「記法の読み取り」の説明"');
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[38/50]⎯
+
+ FAIL  |unit| tests/unit/src/render/index.test.ts > test_collect_warnings
+AssertionError: expected [ { line: 1, …(1) }, …(1) ] to deeply equal [ { line: 1, …(1) }, …(1) ]
+
+- Expected
++ Received
+
+@@ -1,8 +1,8 @@
+  [
+    {
+-     "kind": "retired_diagram",
++     "kind": "diagram_invalid",
+      "line": 1,
+    },
+    {
+      "kind": "syntax_warning",
+      "line": 22,
+
+ ❯ tests/unit/src/render/index.test.ts:168:62
+    166|   const warnings = collectWarnings(WARNINGS_MARKDOWN);
+    167|   // 検証
+    168|   expect(warnings.map(({ line, kind }) => ({ line, kind }))).toEqual([
+       |                                                              ^
+    169|     { line: 1, kind: "retired_diagram" },
+    170|     { line: 22, kind: "syntax_warning" },
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[39/50]⎯
+
+ FAIL  |unit| tests/unit/src/render/syntax/diagrams.test.ts > test_build_diagrams_when_retired
+AssertionError: expected [] to have a length of 2 but got +0
+
+- Expected
++ Received
+
+- 2
++ 0
+
+ ❯ tests/unit/src/render/syntax/diagrams.test.ts:113:22
+    111|       /<div class="mdmark-syntax-warning"[\s\S]*?<\/div>/g,
+    112|     ).map(plainText);
+    113|     expect(warnings).toHaveLength(2);
+       |                      ^
+    114|     expect(warnings[0]).toContain(
+    115|       "<!-- flow --> の図の記載方法は廃止しました。",
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[40/50]⎯
+
+ FAIL  |unit| tests/unit/src/render/syntax/diagrams.test.ts > test_find_diagram_blocks
+AssertionError: expected { directive: 'flow', line: 3, …(1) } to deeply equal { directive: 'flow', line: 3, …(2) }
+
+- Expected
++ Received
+
+@@ -48,8 +48,7 @@
+      { \"id\": \"w-loop\", \"from\": \"send\", \"to\": \"recv\", \"line\": \"loop\", \"points\": [[850, 282], [850, 497], [270, 497], [270, 282]], \"label\": \"次の問い合わせへ（受け取りへ戻る）\", \"labelAt\": [560, 497] }
+    ]
+  }",
+    ],
+    "directive": "flow",
+-   "end": 56,
+    "line": 3,
+  }
+
+ ❯ tests/unit/src/render/syntax/diagrams.test.ts:168:20
+    166|   // 検証
+    167|   expect(found).toHaveLength(2);
+    168|   expect(found[0]).toEqual({
+       |                    ^
+    169|     directive: "flow",
+    170|     line: 3,
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[41/50]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/interact/diagram-tips.browser.test.ts > test_attach_diagram_tips
+TypeError: Cannot read properties of undefined (reading 'tag')
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/diagram-tips.browser.test.ts/test_attach_diagram_tips.png
+
+ ❯ renderNode src/parts/diagram.ts:472:43
+    470|   const { node, box, tips, lookup, found, hints } = options;
+    471|   const kind = KIND_STYLES[node.kind];
+    472|   const tag = renderText(node.tag ?? kind.tag, tips, lookup, found);
+       |                                           ^
+    473|   const name = renderText(node.name, tips, lookup, found);
+    474|   const sub =
+ ❯ renderFlow src/parts/diagram.ts:601:16
+ ❯ createFigure tests/unit/src/interact/diagram-tips.browser.test.ts:105:7
+ ❯ tests/unit/src/interact/diagram-tips.browser.test.ts:119:18
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=9da1a78f:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[42/50]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/interact/diagram-tips.browser.test.ts > test_attach_diagram_tips_when_hovered
+TypeError: Cannot read properties of undefined (reading 'tag')
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/diagram-tips.browser.test.ts/test_attach_diagram_tips_when_hovered.png
+
+ ❯ renderNode src/parts/diagram.ts:472:43
+    470|   const { node, box, tips, lookup, found, hints } = options;
+    471|   const kind = KIND_STYLES[node.kind];
+    472|   const tag = renderText(node.tag ?? kind.tag, tips, lookup, found);
+       |                                           ^
+    473|   const name = renderText(node.name, tips, lookup, found);
+    474|   const sub =
+ ❯ renderFlow src/parts/diagram.ts:601:16
+ ❯ createFigure tests/unit/src/interact/diagram-tips.browser.test.ts:105:7
+ ❯ tests/unit/src/interact/diagram-tips.browser.test.ts:138:18
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=9da1a78f:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[43/50]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/interact/diagram-tips.browser.test.ts > test_attach_diagram_tips_when_box_hovered
+TypeError: Cannot read properties of undefined (reading 'tag')
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/diagram-tips.browser.test.ts/test_attach_diagram_tips_when_box_hovered.png
+
+ ❯ renderNode src/parts/diagram.ts:472:43
+    470|   const { node, box, tips, lookup, found, hints } = options;
+    471|   const kind = KIND_STYLES[node.kind];
+    472|   const tag = renderText(node.tag ?? kind.tag, tips, lookup, found);
+       |                                           ^
+    473|   const name = renderText(node.name, tips, lookup, found);
+    474|   const sub =
+ ❯ renderFlow src/parts/diagram.ts:601:16
+ ❯ createFigure tests/unit/src/interact/diagram-tips.browser.test.ts:105:7
+ ❯ tests/unit/src/interact/diagram-tips.browser.test.ts:156:18
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=9da1a78f:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[44/50]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/interact/diagram-tips.browser.test.ts > test_attach_diagram_tips_when_placed
+TypeError: Cannot read properties of undefined (reading 'tag')
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/diagram-tips.browser.test.ts/test_attach_diagram_tips_when_placed.png
+
+ ❯ renderNode src/parts/diagram.ts:472:43
+    470|   const { node, box, tips, lookup, found, hints } = options;
+    471|   const kind = KIND_STYLES[node.kind];
+    472|   const tag = renderText(node.tag ?? kind.tag, tips, lookup, found);
+       |                                           ^
+    473|   const name = renderText(node.name, tips, lookup, found);
+    474|   const sub =
+ ❯ renderFlow src/parts/diagram.ts:601:16
+ ❯ Object.createFigure [as create] tests/unit/src/interact/diagram-tips.browser.test.ts:105:7
+ ❯ tests/unit/src/interact/diagram-tips.browser.test.ts:287:27
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=9da1a78f:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[45/50]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/interact/diagram-tips.browser.test.ts > test_attach_diagram_tips_when_touch_tapped
+TypeError: Cannot read properties of undefined (reading 'tag')
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/diagram-tips.browser.test.ts/test_attach_diagram_tips_when_touch_tapped.png
+
+ ❯ renderNode src/parts/diagram.ts:472:43
+    470|   const { node, box, tips, lookup, found, hints } = options;
+    471|   const kind = KIND_STYLES[node.kind];
+    472|   const tag = renderText(node.tag ?? kind.tag, tips, lookup, found);
+       |                                           ^
+    473|   const name = renderText(node.name, tips, lookup, found);
+    474|   const sub =
+ ❯ renderFlow src/parts/diagram.ts:601:16
+ ❯ createFigure tests/unit/src/interact/diagram-tips.browser.test.ts:105:7
+ ❯ tests/unit/src/interact/diagram-tips.browser.test.ts:363:18
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=9da1a78f:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[46/50]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/interact/diagram-tips.browser.test.ts > test_attach_diagram_tips_when_touch_outside
+TypeError: Cannot read properties of undefined (reading 'tag')
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/diagram-tips.browser.test.ts/test_attach_diagram_tips_when_touch_outside.png
+
+ ❯ renderNode src/parts/diagram.ts:472:43
+    470|   const { node, box, tips, lookup, found, hints } = options;
+    471|   const kind = KIND_STYLES[node.kind];
+    472|   const tag = renderText(node.tag ?? kind.tag, tips, lookup, found);
+       |                                           ^
+    473|   const name = renderText(node.name, tips, lookup, found);
+    474|   const sub =
+ ❯ renderFlow src/parts/diagram.ts:601:16
+ ❯ createFigure tests/unit/src/interact/diagram-tips.browser.test.ts:105:7
+ ❯ tests/unit/src/interact/diagram-tips.browser.test.ts:384:18
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=9da1a78f:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[47/50]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/interact/diagram-tips.browser.test.ts > test_attach_diagram_tips_when_mouse_pressed
+TypeError: Cannot read properties of undefined (reading 'tag')
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/diagram-tips.browser.test.ts/test_attach_diagram_tips_when_mouse_pressed.png
+
+ ❯ renderNode src/parts/diagram.ts:472:43
+    470|   const { node, box, tips, lookup, found, hints } = options;
+    471|   const kind = KIND_STYLES[node.kind];
+    472|   const tag = renderText(node.tag ?? kind.tag, tips, lookup, found);
+       |                                           ^
+    473|   const name = renderText(node.name, tips, lookup, found);
+    474|   const sub =
+ ❯ renderFlow src/parts/diagram.ts:601:16
+ ❯ createFigure tests/unit/src/interact/diagram-tips.browser.test.ts:105:7
+ ❯ tests/unit/src/interact/diagram-tips.browser.test.ts:437:18
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=9da1a78f:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[48/50]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/interact/diagram-tips.browser.test.ts > test_attach_diagram_tips_when_touch_tip_tapped
+TypeError: Cannot read properties of undefined (reading 'tag')
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/diagram-tips.browser.test.ts/test_attach_diagram_tips_when_touch_tip_tapped.png
+
+ ❯ renderNode src/parts/diagram.ts:472:43
+    470|   const { node, box, tips, lookup, found, hints } = options;
+    471|   const kind = KIND_STYLES[node.kind];
+    472|   const tag = renderText(node.tag ?? kind.tag, tips, lookup, found);
+       |                                           ^
+    473|   const name = renderText(node.name, tips, lookup, found);
+    474|   const sub =
+ ❯ renderFlow src/parts/diagram.ts:601:16
+ ❯ createFigure tests/unit/src/interact/diagram-tips.browser.test.ts:105:7
+ ❯ tests/unit/src/interact/diagram-tips.browser.test.ts:454:18
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=9da1a78f:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[49/50]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/map/flow-view.browser.test.ts > test_attach_map_flow_when_node_link
+TypeError: Cannot read properties of null (reading 'dispatchEvent')
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/flow-view.browser.test.ts/test_attach_map_flow_when_node_link.png
+
+ ❯ tests/unit/src/map/flow-view.browser.test.ts:262:10
+    260|     kind().dispatchEvent(new PointerEvent("pointerdown", point(40)));
+    261|     window.dispatchEvent(new PointerEvent("pointerup", point(40)));
+    262|     link.dispatchEvent(new MouseEvent("click", { ...point(40), cancela…
+       |          ^
+    263|     // 検証
+    264|     expect(moved).not.toBe(before);
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=9da1a78f:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[50/50]⎯
+
+
+ Test Files  15 failed | 271 passed (286)
+      Tests  50 failed | 2058 passed (2108)
+   Start at  03:30:18
+   Duration  145.70s (worker 67%, tests 21%, import 10%, transform 1%)
+
+exit 1

@@ -36,14 +36,24 @@ states:
     description: '`map.node_fit` が `width`。名前の長いノードが幅 360px まで広がってから折り返す'
     notes:
       定義: モックの `docs/mock/components/map-kinds/` の「長い名前のノードの広げ方」
+  - name: LinkedNode
+    description: Mermaid の `click` の行でリンク先を持つノード。名前が本文のリンクと同じ色と下線で、ノードの全体がリンクになり、説明のマーカーはリンクの後ろにある。リンク先を持たないノードは今のまま
+    args:
+      - name: links
+        value: '{"mount": "https://example.com/spec"}'
+  - name: GroupNote
+    description: 補足の `notes` で説明を持つグループ。タイトルの右にノードと同じマーカーがあり、説明を持たないグループには無い
+    args:
+      - name: notes
+        value: '{"lib": "記法を読み取る部分"}'
   - name: Narrow
     description: 幅 390px の置き場所。図は倍率 1 のまま表示する枠の中で横にスクロールする
-lead: map の `flowchart` を自動配置した結果を、フロー図の部品の上に入れ子のグループの面を重ねて描く。グループの開閉と中へ入るボタン、ノードと線の選択・移動、強調しない要素を薄くする表示、線の上を流れるデータの印を持つ。
+lead: map の `flowchart` を自動配置した結果のノードと線（線の交差の飛び越えを含む）を描き、その上に入れ子のグループの面を重ねる。グループの開閉と中へ入るボタン、ノードと線の選択・移動、強調しない要素を薄くする表示、線の上を流れるデータの印を持つ。
 args:
   - name: layout
     type: オブジェクト
     required: true
-    description: 自動配置の結果（`MapLayout`。`width`・`height`・`nodes`・`groups`・`wires`）。ノードと線はフロー図の部品の定義にして描き、グループは外側から順に面とタイトルの行を重ねる
+    description: 自動配置の結果（`MapLayout`。`width`・`height`・`nodes`・`groups`・`wires`）。ノードと線を描き、グループは外側から順に面とタイトルの行を重ねる
   - name: layout.groups[].id
     type: 文字列
     required: true
@@ -61,16 +71,26 @@ args:
     type: オブジェクト
     required: false
     default: なし（種類の行を空にし、角の丸い四角で描く）
-    description: 設定の `map.kinds` のそのノードのクラスの値（`{ label, icon, shape, color }`）。フロー図の部品のノードの `style` に指定する
+    description: 設定の `map.kinds` のそのノードのクラスの値（`{ label, icon, shape, color }`）。ノードの種類の行・形・色に使う
   - name: layout.wires[].line
     type: オブジェクト
     required: false
     default: なし（実線・太さ normal・塗りの矢じり）
-    description: 設定の `map.lines` のその線の矢印か名前の値（`{ dash, width, head, color }`）。フロー図の部品の線の `style` に指定する
+    description: 設定の `map.lines` のその線の矢印か名前の値（`{ dash, width, head, color }`）。線の模様・太さ・矢じり・色に使う
   - name: layout.wires[].merged
     type: オブジェクトの配列
     required: false
     description: 閉じたグループへの線を 1 本にまとめたときの元の線（`{ from, to, label }`）。まとめた線は本数とラベルを出さず、補足の `notes` に説明を持つ元の線だけを「{元の名前} → {先の名前}：{説明}」で図のツールチップに並べる（説明を持つ元の線が無ければツールチップを付けない）
+  - name: notes
+    type: オブジェクト
+    required: false
+    default: '{}'
+    description: 補足の `notes` の ID ごとの説明。ノードとグループの説明は右上（グループはタイトルの右）のマーカーと `hint` のツールチップ、線の説明は線の押せる帯の `wire` のツールチップにする
+  - name: links
+    type: オブジェクト
+    required: false
+    default: '{}'
+    description: Mermaid の `click` の行のノードの ID からリンク先への対応（許可したものだけ）。ノードの全体を覆う `a.mdmark-diagram-node-link` にし、ノードに class `has-link` を付ける
   - name: collapsed
     type: 配列
     required: false
@@ -137,10 +157,8 @@ css_properties:
     default: color-mix(in srgb, var(--mdmark-color-muted) 70%, transparent)
     description: 色を持たないグループの枠線の色
 uses:
-  - component: CMP-472-28#
-    how: ノードと線、線の交差の飛び越え
   - component: CMP-472-38#
-    how: 置き場所の無い線のラベル・補足の `notes`・まとめた線の元の線
+    how: 置き場所の無い線のラベル・ノード・グループ・線の補足の `notes`・まとめた線の元の線
   - component: CMP-472-8#
     how: ノードの種類の行の Lucide のアイコンと、開閉の山形
 accessibility:
@@ -150,6 +168,7 @@ accessibility:
   - 'ノードの名前の文字は選んでコピーでき（ポインターの形状は `text`）、種類の行の文字は選べない（`user-select: none`）。ドラッグできる場所のポインターの形状は `grab`'
   - 強調は薄くするだけで色を変えず、データの印は `aria-hidden`。読者が始めた印は `prefers-reduced-motion` でも流し、配置し直したときのノードとグループの移動は止める
   - 色を持たないグループの枠線は背景とのコントラスト比 3:1 以上
+  - リンク先を持つノードは、ノードの `div` がフォーカスを受けず、`a.mdmark-diagram-node-link` がノードの代わりにフォーカスを受ける（ノードの中にフォーカスできる要素を入れ子にしない）。リンクはスクリーンリーダー向けの名前がノードの名前（選んでいれば `（選択中）`）で、`aria-roledescription="ノード"`・`aria-keyshortcuts="Space Alt+ArrowLeft Alt+ArrowUp Alt+ArrowDown Alt+ArrowRight"` を持ち、Enter でリンク先を開き、Space で選び、Alt + 矢印キーで動かす。説明のマーカーとは別にフォーカスできる（Tab の順はリンク、マーカー）。グループの説明のマーカーはタイトルのボタンの外にあり、`aria-describedby` で説明のツールチップを指す
 refs:
   - IF-472-35#
 status: planned

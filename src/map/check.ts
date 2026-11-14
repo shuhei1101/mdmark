@@ -1,5 +1,5 @@
 import { parseMapData } from "./data.ts";
-import { parseFlowchart } from "./flowchart.ts";
+import { mapLinkProblems, parseFlowchart } from "./flowchart.ts";
 import { lucideIconNames } from "./lucide-names.ts";
 import { parseSequence } from "./sequence.ts";
 import {
@@ -44,9 +44,11 @@ export const collectMapProblems = (
   const ids = new Set<string>();
   const edgeIds = new Set<string>();
   const classes = new Set<string>();
+  const linkProblems: MapProblem[] = [];
   if (structure.kind === "flowchart") {
     const chart = parseFlowchart(range.mermaid);
     problems.push(...shift(chart.problems, range.mermaidLine));
+    linkProblems.push(...mapLinkProblems(chart.links).problems);
     for (const node of chart.nodes) {
       ids.add(node.id);
       for (const name of node.classes) classes.add(name);
@@ -112,6 +114,7 @@ export const collectMapProblems = (
       });
     }
   }
+  problems.push(...linkProblems);
   for (const name of classes) {
     if (!(name in config.kinds)) {
       problems.push({

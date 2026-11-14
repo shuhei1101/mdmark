@@ -3,24 +3,87 @@ import type {
   MdmarkChartDefinition,
   MdmarkErDefinition,
   MdmarkFlowDefinition,
-  MdmarkSequenceDefinition,
 } from "../../../../src/diagram/definition.ts";
 import { iconSvg } from "../../../../src/parts/icons.ts";
-import { INQUIRY_HINT_TEXT } from "../../helpers/charts.ts";
-import {
-  INQUIRY_GROUPS_TEXT,
-  INQUIRY_SEQ_TEXT,
-  INQUIRY_TEXT,
-  JUDGEMENT_TEXT,
-  LINKED_TEXT,
-  parsed,
-  SINGLE_KINDS_TEXT,
-} from "../../helpers/diagrams.ts";
+import { parsed } from "../../helpers/diagrams.ts";
 import { shopEr } from "../../helpers/er.ts";
 import { findTag, matches, outerHtml, plainText } from "../../helpers/html.ts";
+import { CONFIG, DATA, FLOW } from "../../helpers/map.ts";
 
 /** 図の部品を読み込む（実装が無い間は各テストが個別に失敗する） */
 const loadDiagram = () => import("../../../../src/parts/diagram.ts");
+
+/** 部品設計『mapの構成図』の Default（`FLOW` と補足 `DATA`）の自動配置の結果から作ったノードと線 */
+const defaultFlow = async (): Promise<MdmarkFlowDefinition> => {
+  const { parseFlowchart } = await import("../../../../src/map/flowchart.ts");
+  const { layoutMap } = await import("../../../../src/map/layout.ts");
+  const notes = parsed<{ notes: Record<string, { text: string }> }>(DATA).notes;
+  const layout = layoutMap(
+    parseFlowchart(FLOW),
+    { collapsed: [], entered: undefined },
+    {},
+    "height",
+  );
+  const kinds: Record<string, { label?: string; icon?: string }> = CONFIG.kinds;
+  return {
+    width: layout.width,
+    height: layout.height,
+    nodes: layout.nodes.map((node) => {
+      const kind = (node.classes ?? [])
+        .map((name) => kinds[name])
+        .find(Boolean);
+      const note = notes[node.id]?.text;
+      return {
+        id: node.id,
+        x: node.x,
+        y: node.y,
+        w: node.w,
+        h: node.h,
+        name: node.label ?? node.lines.join(""),
+        style: { label: kind?.label, icon: kind?.icon },
+        ...(note === undefined ? {} : { hint: note }),
+      };
+    }),
+    wires: layout.wires.map((wire) => ({
+      id: wire.id,
+      from: wire.from,
+      to: wire.to,
+      points: wire.points,
+      ...(wire.label === undefined ? {} : { label: wire.label }),
+      style: {},
+    })),
+  };
+};
+
+/** 名前・`hint`・`href` を指定した 3 つのノードを横に並べ、線でつないだ定義 */
+const threeNodes = (
+  nodes: Array<{ id: string; name: string; hint?: string; href?: string }>,
+): MdmarkFlowDefinition => ({
+  width: 720,
+  height: 160,
+  nodes: nodes.map((node, index) => ({
+    ...node,
+    x: 24 + index * 240,
+    y: 40,
+    w: 180,
+    h: 72,
+    style: { label: "処理", icon: "cog" },
+  })),
+  wires: nodes.slice(1).map((node, index) => {
+    const from = nodes[index]?.id ?? "";
+    return {
+      id: `${from}->${node.id}`,
+      from,
+      to: node.id,
+      points: [
+        [204 + index * 240, 76],
+        [264 + index * 240, 76],
+      ] as Array<[number, number]>,
+      label: `線${index + 1}`,
+      style: {},
+    };
+  }),
+});
 
 /** 図の枠を描くときの本体 */
 const BODY = {
@@ -43,35 +106,18 @@ function inOrder(html: string, needles: string[]): boolean {
   return true;
 }
 
-/** `data-wire` を持つ線のパスの最初の点の y を、現れた順に返却する（`loop` の線を除く） */
-function wireStartYs(html: string): number[] {
-  return matches(html, /<path[^>]*class="mdmark-diagram-wire"[^>]*>/g)
-    .filter((tag) => !tag.includes('data-line="loop"'))
-    .map((tag) => {
-      const d = /\sd="([^"]*)"/.exec(tag)?.[1] ?? "";
-      const numbers = (d.match(/-?\d+(?:\.\d+)?/g) ?? []).map(Number);
-      return numbers[1] ?? Number.NaN;
-    });
-}
-
-/** ノード `id` の `left` を返却する */
-function leftOf(html: string, id: string): number {
-  const tag = findTag(html, `data-node="${id}"`);
-  return Number(/left:\s*(-?\d+(?:\.\d+)?)px/.exec(tag)?.[1] ?? Number.NaN);
-}
-
 // タイトル・ボタンの帯・凡例をこの順に出す（正常系）
 test("test_render_diagram_frame", async () => {
   // 準備
   const { renderDiagramFrame } = await loadDiagram();
   const frame = {
-    kind: "flow" as const,
+    kind: "er" as const,
     title: "問い合わせへの自動返信の構成",
     scope: "メールを受け取ってから返信するまで",
     updated: "2026-10-17",
     legend: [
-      { sample: "script", label: "スクリプト" },
-      { sample: "flow", label: "処理の流れ" },
+      { sample: "er-kind-master", label: "マスターのテーブル" },
+      { sample: "er-key-pk", label: "主キー" },
     ],
     id: "d1",
   };
@@ -100,7 +146,7 @@ test("test_render_diagram_frame_when_modal", async () => {
   // 準備
   const { renderDiagramFrame } = await loadDiagram();
   const frame = {
-    kind: "flow" as const,
+    kind: "er" as const,
     title: "タイトル",
     scope: "範囲",
     updated: "2026-10-17",
@@ -115,70 +161,71 @@ test("test_render_diagram_frame_when_modal", async () => {
   expect(html).not.toContain('aria-label="全画面で開く"');
 });
 
-// 枠・層・ノード・線・ツールチップを出す（正常系）
+// ノード・線・ツールチップを出す（正常系）
 test("test_render_flow", async () => {
   // 準備
   const { renderFlow } = await loadDiagram();
-  const definition = parsed<MdmarkFlowDefinition>(INQUIRY_TEXT);
+  const definition = await defaultFlow();
+  const crossing: MdmarkFlowDefinition = {
+    width: 200,
+    height: 200,
+    nodes: ["a", "b", "c", "d"].map((id, index) => ({
+      id,
+      name: id,
+      x: [0, 160, 80, 80][index] ?? 0,
+      y: [80, 80, 0, 160][index] ?? 0,
+      w: 40,
+      h: 40,
+      style: {},
+    })),
+    wires: [
+      {
+        id: "a->b",
+        from: "a",
+        to: "b",
+        points: [
+          [40, 100],
+          [160, 100],
+        ],
+        style: {},
+      },
+      {
+        id: "c->d",
+        from: "c",
+        to: "d",
+        points: [
+          [100, 40],
+          [100, 160],
+        ],
+        style: {},
+      },
+    ],
+  };
   // 実行
   const { html, tips } = renderFlow(definition, "d1", true);
+  const jumped = renderFlow(crossing, "d2", true);
   // 検証
-  expect(matches(html, /class="mdmark-diagram-lane"/g)).toHaveLength(3);
-  expect(matches(html, /class="mdmark-diagram-node[ "]/g)).toHaveLength(9);
-  expect(matches(html, /class="mdmark-diagram-wire"/g)).toHaveLength(10);
-  const withTip = definition.wires.filter((wire) => wire.tip).length;
-  const withIo = definition.nodes.filter((node) => node.io).length;
-  expect(matches(tips, /role="tooltip"/g)).toHaveLength(withTip + withIo);
-  expect(html).toMatch(
-    /<path[^>]*data-line="loop"[^>]*stroke-dasharray="8 4"|<path[^>]*stroke-dasharray="8 4"[^>]*data-line="loop"/,
+  expect(matches(html, /class="mdmark-diagram-node[ "]/g)).toHaveLength(
+    definition.nodes.length,
   );
-});
-
-// 判定フローチャートのノードを種類ごとの構造と余白で描く（正常系）
-test("test_render_flow_when_judgement", async () => {
-  // 準備
-  const { renderFlow } = await loadDiagram();
-  const definition = parsed<MdmarkFlowDefinition>(JUDGEMENT_TEXT);
-  // 実行
-  const { html } = renderFlow(definition, "d1", true);
-  // 検証
-  const counts = ["start", "question", "action", "result"].map(
-    (kind) =>
-      matches(
-        html,
-        new RegExp(
-          `<div[^>]*class="mdmark-diagram-node[ "][^>]*data-kind="${kind}"`,
-          "g",
-        ),
-      ).length,
+  expect(matches(html, /class="mdmark-diagram-wire"/g)).toHaveLength(
+    definition.wires.length,
   );
-  expect(counts).toEqual([1, 2, 1, 2]);
-  const diamonds = matches(
-    html,
-    /<svg[^>]*viewBox="0 0 280 136"[^>]*>[\s\S]*?<\/svg>/g,
+  expect(matches(tips, /role="tooltip"/g)).toHaveLength(
+    definition.nodes.filter((node) => node.hint !== undefined).length,
   );
-  expect(diamonds).toHaveLength(2);
-  for (const diamond of diamonds) {
-    expect(diamond).toContain('aria-hidden="true"');
-    expect(diamond).toContain('points="140,0 280,68 140,136 0,68"');
-  }
-  expect(findTag(html, 'data-node="q0"')).toContain("padding:34px 70px");
-  expect(findTag(html, 'data-node="start"')).toContain("padding:14.6px");
-  expect(findTag(html, 'data-node="a1"')).not.toContain("padding:");
-  expect(html).toContain(">YES<");
-  expect(html).toContain(">NO<");
+  expect(jumped.html).toMatch(/<path[^>]*data-wire="a-&gt;b"[^>]*d="[^"]* A\d/);
 });
 
 // 定義の文字の HTML を文字にする（異常系）
 test("test_render_flow_when_text_escaped", async () => {
   // 準備
   const { renderFlow } = await loadDiagram();
-  const definition = parsed<MdmarkFlowDefinition>(INQUIRY_TEXT);
-  const first = definition.nodes[0];
-  if (first === undefined) {
-    throw new Error("見本のノードが無い");
-  }
-  first.name = "<img src=x onerror=alert(1)>";
+  const definition = threeNodes([
+    { id: "a", name: "<img src=x onerror=alert(1)>" },
+    { id: "b", name: "b" },
+    { id: "c", name: "c" },
+  ]);
   // 実行
   const { html } = renderFlow(definition, "d1", true);
   // 検証
@@ -186,109 +233,19 @@ test("test_render_flow_when_text_escaped", async () => {
   expect(html).toContain("&lt;img");
 });
 
-// 相手とメッセージを順に配置する（正常系）
-test("test_render_sequence", async () => {
-  // 準備
-  const { renderSequence } = await loadDiagram();
-  const definition = parsed<MdmarkSequenceDefinition>(INQUIRY_SEQ_TEXT);
-  // 実行
-  const { html } = renderSequence(definition, "d1");
-  // 検証
-  const lefts = definition.participants.map((p) => leftOf(html, p.id));
-  expect(lefts).toEqual([...lefts].sort((a, b) => a - b));
-  expect(new Set(lefts).size).toBe(lefts.length);
-  const ys = wireStartYs(html);
-  expect(ys).toHaveLength(definition.steps.length);
-  expect(ys).toEqual([...ys].sort((a, b) => a - b));
-  expect(matches(html, /data-line="reply"/g).length).toBeGreaterThanOrEqual(2);
-  expect(html).toMatch(/data-line="loop"/);
-  expect(html).toContain("stroke-dasharray");
-  expect(html).toContain(definition.loop?.label ?? "");
-});
-
-// 出るものだけを記載する（正常系）
-test("test_legend_for", async () => {
-  // 準備
-  const { legendFor } = await loadDiagram();
-  const definition: MdmarkFlowDefinition = {
-    title: "小さな図",
-    scope: "確認",
-    updated: "2026-10-18",
-    width: 400,
-    height: 200,
-    nodes: [
-      { id: "a", kind: "external", x: 0, y: 0, w: 100, h: 60, name: "外" },
-      { id: "b", kind: "script", x: 200, y: 0, w: 100, h: 60, name: "中" },
-    ],
-    wires: [
-      {
-        id: "w1",
-        from: "a",
-        to: "b",
-        line: "flow",
-        points: [
-          [100, 30],
-          [200, 30],
-        ],
-      },
-      {
-        id: "w2",
-        from: "b",
-        to: "a",
-        line: "read",
-        points: [
-          [200, 45],
-          [100, 45],
-        ],
-      },
-    ],
-  };
-  // 実行
-  const items = legendFor(definition);
-  // 検証
-  const labels = items.map((item) => item.label);
-  expect(labels).toContain("処理の流れ");
-  expect(labels).toContain("読み込む");
-  expect(
-    labels.filter((label) =>
-      /処理の流れ|読み込む|書き込む|返却する|戻る/.test(label),
-    ),
-  ).toHaveLength(2);
-  expect(labels.some((label) => label.includes("システムの枠"))).toBe(false);
-  expect(labels.some((label) => label.includes("交差"))).toBe(false);
-  expect(labels.some((label) => label.includes("（枠の外）"))).toBe(false);
-});
-
-// 判定フローチャートは追加した種類だけを凡例に出す（正常系）
-test("test_legend_for_when_judgement", async () => {
-  // 準備
-  const { legendFor } = await loadDiagram();
-  const definition = parsed<MdmarkFlowDefinition>(JUDGEMENT_TEXT);
-  // 実行
-  const items = legendFor(definition);
-  // 検証
-  const labels = items.map((item) => item.label);
-  const kinds = ["開始", "質問", "アクション", "結果"];
-  expect(labels.filter((label) => kinds.includes(label))).toEqual(kinds);
-  expect(labels).not.toContain("意思決定モデル");
-  expect(labels).not.toContain("データ（下の角が丸いノード）");
-});
-
-// 入力・処理・出力を 3 行に出す（正常系）
+// 線の説明を見出しと文で出す（正常系）
 test("test_render_diagram_tip", async () => {
   // 準備
   const { renderDiagramTip } = await loadDiagram();
   // 実行
   const html = renderDiagramTip({
     id: "t1",
-    kind: "io",
-    label: "分類",
-    io: { in: "本文", do: "種類を選ぶ", out: "返信の種類" },
+    kind: "wire",
+    label: "補足を渡す",
+    tip: "検査した補足",
   });
   // 検証
-  expect(
-    inOrder(html, ["入力", "本文", "処理", "種類を選ぶ", "出力", "返信の種類"]),
-  ).toBe(true);
+  expect(inOrder(html, ["補足を渡す", "検査した補足"])).toBe(true);
   expect(html).toContain('role="tooltip"');
   expect(html).toMatch(/\bhidden\b/);
 });
@@ -318,7 +275,7 @@ test("test_render_diagram_frame_when_zoom_button", async () => {
   // 準備
   const { renderDiagramFrame } = await loadDiagram();
   const frame = {
-    kind: "flow" as const,
+    kind: "er" as const,
     title: "タイトル",
     scope: "範囲",
     updated: "2026-10-17",
@@ -342,26 +299,26 @@ test("test_render_diagram_frame_when_zoom_button", async () => {
   expect(html).not.toContain(iconSvg("rotate-ccw"));
 });
 
-// hint だけを持つノードにもマーカーを配置し、hints がオフならマーカーもツールチップも配置しない（正常系）
+// hint を持つノードにマーカーを配置し、hints がオフならマーカーもツールチップも配置しない（正常系）
 test("test_render_flow_when_hint", async () => {
   // 準備
   const { renderFlow } = await loadDiagram();
-  const definition = parsed<MdmarkFlowDefinition>(INQUIRY_HINT_TEXT);
-  const label = definition.wires.find((wire) => wire.label)?.label ?? "";
+  const definition = threeNodes([
+    { id: "mcp", name: "窓口の MCP", hint: "保存と送信のツールだけを持つ" },
+    { id: "send", name: "送信" },
+  ]);
   const mark = 'aria-label="「窓口の MCP」の説明"';
   // 実行
   const on = renderFlow(definition, "d1", true);
   const off = renderFlow(definition, "d1", false);
   // 検証
+  expect(matches(on.html, /class="mdmark-diagram-info"/g)).toHaveLength(1);
   expect(on.html).toContain(mark);
-  expect(on.tips).toContain("保存と送信のツールだけを持つ MCP サーバー");
-  expect(off.html).not.toContain(mark);
+  expect(on.tips).toContain("保存と送信のツールだけを持つ");
   expect(off.html).not.toContain("mdmark-diagram-info");
   expect(off.tips).not.toContain('role="tooltip"');
   expect(off.html).not.toContain("aria-describedby");
   expect(off.html).toContain("窓口の MCP");
-  expect(label).not.toBe("");
-  expect(off.html).toContain(label);
 });
 
 // 組み合わせ・バブル・ドーナツの凡例を出す（正常系）
@@ -577,31 +534,36 @@ test("test_render_er_when_terms", async () => {
 test("test_render_flow_when_node_link", async () => {
   // 準備
   const { renderFlow } = await loadDiagram();
-  const definition = parsed<MdmarkFlowDefinition>(LINKED_TEXT);
+  const definition = threeNodes([
+    {
+      id: "recv",
+      name: "問い合わせを受け取る",
+      hint: "1 通ずつ読む",
+      href: "https://example.com/spec",
+    },
+    { id: "classify", name: "分類する", href: "./other.md" },
+    { id: "store", name: "記録する" },
+  ]);
   // 実行
   const { html } = renderFlow(definition, "d1", true);
   // 検証
-  const links = matches(
-    html,
-    /<a class="mdmark-diagram-node-link" href="([^"]*)" aria-label="([^"]*)"><\/a>/g,
-  );
-  expect(links).toEqual([
+  expect(
+    matches(
+      html,
+      /<a class="mdmark-diagram-node-link" href="[^"]*" aria-label="[^"]*"><\/a>/g,
+    ),
+  ).toEqual([
     '<a class="mdmark-diagram-node-link" href="https://example.com/spec" aria-label="問い合わせを受け取る"></a>',
     '<a class="mdmark-diagram-node-link" href="./other.md" aria-label="分類する"></a>',
   ]);
   expect(
     matches(html, /class="mdmark-diagram-node[^"]*\bhas-link\b[^"]*"/g),
   ).toHaveLength(2);
-  const classify = html.slice(html.indexOf('data-node="classify"'));
-  const linkAt = classify.indexOf("mdmark-diagram-node-link");
-  const tipAt = classify.indexOf("aria-describedby");
-  expect(linkAt).toBeGreaterThan(-1);
-  expect(tipAt).toBeGreaterThan(linkAt);
-  const store = html.slice(
-    html.indexOf('data-node="store"'),
-    html.indexOf("</div>", html.indexOf('data-node="store"')),
+  const recv = outerHtml(html, 'data-node="recv"');
+  expect(recv).toMatch(
+    /<a class="mdmark-diagram-node-link"[^>]*><\/a>[\s\S]*<button class="mdmark-diagram-info"/,
   );
-  expect(store).not.toContain("<a ");
+  expect(outerHtml(html, 'data-node="store"')).not.toContain("<a ");
 });
 
 // リサイズハンドルを配置し、モーダルと `resizable: false` では配置しない（正常系）
@@ -609,7 +571,7 @@ test("test_render_diagram_frame_when_resizable", async () => {
   // 準備
   const { renderDiagramFrame } = await loadDiagram();
   const base = {
-    kind: "flow" as const,
+    kind: "er" as const,
     title: "問い合わせの流れ",
     scope: "範囲",
     updated: "2026-11-05",
@@ -633,24 +595,22 @@ test("test_render_diagram_frame_when_resizable", async () => {
   expect(modal).not.toContain("mdmark-diagram-resize");
 });
 
-// 凡例の項目が空なら凡例を隠し、タイトルを留めない図にマーカーを付ける（正常系）
+// 凡例の項目が空なら凡例を隠す（正常系）
 test("test_render_diagram_frame_when_no_legend", async () => {
   // 準備
   const { renderDiagramFrame } = await loadDiagram();
   const frame = {
-    kind: "flow" as const,
+    kind: "er" as const,
     title: "タイトル",
     scope: "範囲",
     updated: "2026-11-05",
     legend: [],
-    stickyTitles: false,
     id: "d1",
   };
   // 実行
   const html = renderDiagramFrame(frame, BODY);
   // 検証
   expect(findTag(html, 'aria-label="凡例"')).toMatch(/\bhidden\b/);
-  expect(findTag(html, "<figure")).toContain('data-sticky-titles="off"');
 });
 
 // 種類 mermaid は範囲と更新日を出さず、倍率の下限を付ける（正常系）
@@ -715,7 +675,7 @@ test("test_render_diagram_frame_when_resize_strip", async () => {
   // 準備
   const { renderDiagramFrame } = await loadDiagram();
   const frame = {
-    kind: "flow" as const,
+    kind: "er" as const,
     title: "図",
     legend: [],
     resizable: true,
@@ -731,57 +691,6 @@ test("test_render_diagram_frame_when_resize_strip", async () => {
     html.indexOf("mdmark-diagram-viewport"),
   );
   expect(handle?.[1]).toContain(iconSvg("equal"));
-});
-
-// 枠と層の hint のマーカーと留める範囲を配置する（正常系）
-test("test_render_flow_when_group_hint", async () => {
-  // 準備
-  const { renderFlow } = await loadDiagram();
-  const definition = parsed<MdmarkFlowDefinition>(INQUIRY_GROUPS_TEXT);
-  const frame = definition.frame;
-  const lanes = definition.lanes ?? [];
-  if (frame === undefined) {
-    throw new Error("見本の定義に枠が無い");
-  }
-  const llm = lanes.find((lane) => lane.kind === "llm");
-  const others = lanes.filter((lane) => lane.kind !== "llm");
-  // 実行
-  const on = renderFlow(definition, "d1", true);
-  const off = renderFlow(definition, "d1", false);
-  // 検証
-  expect(on.html).toContain(`aria-label="「${frame.title}」の説明"`);
-  expect(on.html).toContain(`aria-label="「${llm?.label}」の説明"`);
-  for (const lane of others) {
-    expect(on.html).not.toContain(`aria-label="「${lane.label}」の説明"`);
-  }
-  const title = findTag(on.html, "mdmark-diagram-frame-title");
-  expect(title).toContain(`data-sticky-top="${frame.y}"`);
-  expect(title).toContain(`data-sticky-bottom="${frame.y + frame.h}"`);
-  expect(on.tips).toContain("メールの受け取りから返信までを受け持つ範囲");
-  expect(off.html).not.toContain("mdmark-diagram-group-info");
-});
-
-// 1 種類だけのノードと線を記載しない（正常系）
-test("test_legend_for_when_single_kinds", async () => {
-  // 準備
-  const { legendFor } = await loadDiagram();
-  const single = parsed<MdmarkFlowDefinition>(SINGLE_KINDS_TEXT);
-  const twoKinds = parsed<MdmarkFlowDefinition>(SINGLE_KINDS_TEXT);
-  const last = twoKinds.nodes[2];
-  if (last === undefined) {
-    throw new Error("見本の 3 つ目のノードが無い");
-  }
-  Object.assign(last, { kind: "data" });
-  // 実行
-  const none = legendFor(single);
-  const items = legendFor(twoKinds);
-  // 検証
-  expect(none).toEqual([]);
-  const labels = items.map((item) => item.label);
-  expect(labels).toHaveLength(2);
-  expect(
-    labels.some((label) => /処理の流れ|枠|層|交差|出る|下線/.test(label)),
-  ).toBe(false);
 });
 
 // グラフの項目の名前と値を出す（正常系）

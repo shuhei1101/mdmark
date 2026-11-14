@@ -170,7 +170,7 @@ functions:
     kind: 関数
     scope: public
     is_async: true
-    summary: esbuild で `src/index.ts` と `src/index.css` を、バージョンを埋めた `dist/index.js` と `dist/index.css` に、ビューとコメントと map の部品の `src/views/index.ts`・`src/comments/index.ts`・`src/map/index.ts` を `dist/view.js`・`dist/comments.js`・`dist/map.js` にまとめ、`emitDeclarations` で型定義を書き込む。続けて、書き出した HTML の起動の処理 `src/viewer/index.ts` と `src/viewer/viewer.css` を `dist/viewer.js` と `dist/viewer.css` に、CLI の `src/cli/main.ts` を `dist/cli.js` ににまとめ、`buildLegacyMarks` で移行の手順のスクリプトが読み込む書き換えの処理をまとめ、配布物と CLI にまとめた依存のライセンスを書き込む
+    summary: esbuild で `src/index.ts` と `src/index.css` を、バージョンを埋めた `dist/index.js` と `dist/index.css` に、ビューとコメントと map の部品の `src/views/index.ts`・`src/comments/index.ts`・`src/map/index.ts` を `dist/view.js`・`dist/comments.js`・`dist/map.js` にまとめ、`emitDeclarations` で型定義を書き込む。続けて、書き出した HTML の起動の処理 `src/viewer/index.ts` と `src/viewer/viewer.css` を `dist/viewer.js` と `dist/viewer.css` に、CLI の `src/cli/main.ts` を `dist/cli.js` ににまとめ、`buildLegacyMarks`・`buildRetiredDiagrams` で移行の手順のスクリプトが読み込む書き換えの処理をまとめ、配布物と CLI にまとめた依存のライセンスを書き込む
     description: '`format: esm`・`bundle: true`・`minify: true`・`target: BROWSER_TARGETS`・`plugins: [postcssStubPlugin]`・`define` で `__MDMARK_VERSION__` を、`banner.css` で `:root{--mdmark-version:"{バージョン}"}` を埋め、`metafile` を取る。続けて `metafile` を指定してまとめた依存のライセンスを記載する。'
     side_effects: '`dist/` と、`migrations/` の中の `marker-json.mjs` を持つフォルダの `legacy-marks.js`・`THIRD_PARTY_LICENSES.txt` を書き換える'
     args:
@@ -262,6 +262,37 @@ functions:
         condition: '`src/render/legacy-marks.ts` が無く、`migrations/v0.11.0/` が `marker-json.mjs` と書き込み済みの `legacy-marks.js`・`THIRD_PARTY_LICENSES.txt` を持つ'
         mock: 一時フォルダ
         expected: 戻り値が空で、`legacy-marks.js`・`THIRD_PARTY_LICENSES.txt` の中身が変わらない
+  - name: buildRetiredDiagrams
+    title: 移行の手順のフォルダに廃止した図の書き換えの処理をまとめる
+    container: scripts/build.ts
+    kind: 関数
+    scope: public
+    is_async: true
+    summary: '`src/map/convert.ts` の `convertRetiredDiagrams` と、`src/cli/check.ts` の `loadExtensionDirectives`・`src/cli/config.ts` の `loadConfig` を、Node で動く 1 つのファイルにまとめ、`migrations/` の中の `retired-diagrams.mjs` を持つフォルダごとに `retired-diagrams.js` として書き込み、まとめた依存のライセンスを同じフォルダの `LICENSES_FILE` に書き込む'
+    description: 'esbuild の `stdin`（3 つの関数を re-export する文字）・`bundle: true`・`minify: true`・`format: esm`・`platform: node`・`target: NODE_TARGET`・`plugins: [postcssStubPlugin]`・`define`・`metafile: true`・`external: ["esbuild", "yaml"]`（拡張をまとめる esbuild と YAML の読み書きは、`npx` が入れた依存をそのまま import する）で、フォルダごとに `outfile` を変えてまとめ、その `metafile` を `writeThirdPartyLicenses` に指定する（同じフォルダが `marker-json.mjs` も持つときは、`buildLegacyMarks` の `metafile` と合わせて書き込む）。`src/map/convert.ts` か `migrations/` が無ければ何も書き込まない。書き込んだファイルは移行の手順と一緒に commit する。配布物ではないため、配布ファイル 1 つの上限を検めない'
+    side_effects: '`migrations/{フォルダ}/retired-diagrams.js` と `migrations/{フォルダ}/{LICENSES_FILE}` を書き換える'
+    args:
+      - name: version
+        type: string
+        description: 埋めるバージョン
+      - name: root
+        type: string
+        description: 作業ツリーの直下
+    returns:
+      type: Promise<string[]>
+      description: 書き込んだファイルの作業ツリーの直下からのパス（フォルダの名前の順）
+    refs:
+      - ER-472-5#tables[migrations/{バージョン}/steps.yaml]
+      - IF-472-28#constraints[廃止した図の範囲の移行]
+    callees:
+      - '#functions[writeThirdPartyLicenses]'
+    unit_tests:
+      - name: test_build_retired_diagrams
+        case: 正常
+        summary: 書き換えの処理を、廃止した図の移行のスクリプトを持つフォルダにだけまとめる
+        condition: '`src/map/convert.ts` があり、`migrations/next/` は `retired-diagrams.mjs`、`migrations/v0.11.0/` は `marker-json.mjs` を持つ'
+        mock: 一時フォルダ
+        expected: 戻り値が `["migrations/next/retired-diagrams.js"]` で、読み込んだ `convertRetiredDiagrams`・`loadExtensionDirectives`・`loadConfig` がソースのとおりに動き、`migrations/v0.11.0/retired-diagrams.js` が無い
   - name: writeThirdPartyLicenses
     title: まとめた依存のライセンスを記載する
     container: scripts/build.ts

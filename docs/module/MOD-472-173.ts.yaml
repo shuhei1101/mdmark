@@ -174,27 +174,3 @@ functions:
     status: planned
     introduced:
       pr: 308
-  - name: stickyTitleShifts
-    title: グループのタイトルをずらす量
-    container: src/diagram/geometry.ts
-    kind: 関数
-    scope: internal
-    summary: 表示する枠の上端（定義の座標）から、タイトルごとの下へずらす量と留めているかを求める。`top + gap` から始め、タイトルごとに `limit = bottom - height - gap`、`shift = max(0, min(今の上端, limit) - base)`、留めているのは `shift > 0` かつ `今の上端 <= limit`。枠のタイトルを留めている間は、後の層の今の上端を枠のタイトルの高さと `gap` だけ下げる（`docs/mock/refs/42/assets/diagram.js` の `stickTitles`）
-    args:
-      - name: options
-        type: '{ top: number; gap: number; titles: { base: number; bottom: number; height: number; frame: boolean }[] }'
-        required: true
-        description: 表示する枠の上端の定義の座標（`scrollTop / 倍率`）、タイトルの間の余白、タイトルごとの元の位置・グループの下端・タイトルの高さ・枠のタイトルか（枠、層の順）
-    returns:
-      type: '{ shift: number; stuck: boolean }[]'
-      description: タイトルごとのずらす量と留めているか
-    unit_tests:
-      - name: test_sticky_title_shifts
-        case: 正常
-        summary: 見えているグループのタイトルを留め、層は枠のタイトルの下に留める
-        condition: '`gap: 4`。枠 `{ base: 8, bottom: 600, height: 20, frame: true }`、層 A `{ base: 40, bottom: 200 }`、層 B `{ base: 206, bottom: 400 }`（どちらも `height: 18`）。`top` が `0`・`100`・`250`'
-        mock: なし
-        expected: '`0` では全て `shift: 0` で留めない。`100` では枠と層 A を留め、層 A の `shift` が `100 + 4 + 20 + 4 - 40`。`250` では層 A は `stuck: false`（下端で止める）、層 B を留める'
-    status: planned
-    introduced:
-      pr: 308

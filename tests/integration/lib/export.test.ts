@@ -249,6 +249,7 @@ test("test_normal_when_tooltip_placement", async () => {
       "index: index.yaml",
       "tooltips:",
       "  placement: bottom",
+      "  diagramPlacement: top",
       "",
     ].join("\n"),
     "index.yaml": [
@@ -272,6 +273,15 @@ test("test_normal_when_tooltip_placement", async () => {
       "索引を読み込む。",
       "",
       ...filler,
+      "<!-- er -->",
+      "",
+      "```json",
+      JSON.stringify(TOOLTIP_ER),
+      "```",
+      "",
+      "<!-- /er -->",
+      "",
+      ...filler,
     ].join("\n"),
   });
   // 実行
@@ -293,8 +303,44 @@ test("test_normal_when_tooltip_placement", async () => {
     };
   });
   expect(rects.tipTop).toBeGreaterThanOrEqual(rects.termBottom);
+  // ER 図のテーブルの説明のボタンにポインターを乗せると、ツールチップをテーブルの上に出す
+  const info = page.locator(".mdmark-diagram .mdmark-diagram-info");
+  await info.evaluate((element) => element.scrollIntoView({ block: "center" }));
+  await info.hover();
+  const tableRects = await info.evaluate((element) => {
+    const tip = document.getElementById(
+      element.getAttribute("aria-describedby") ?? "",
+    );
+    const table = element.closest(".mdmark-diagram-er-table") ?? element;
+    return {
+      tableTop: table.getBoundingClientRect().top,
+      tipBottom: tip?.getBoundingClientRect().bottom ?? Number.NaN,
+    };
+  });
+  expect(tableRects.tipBottom).toBeLessThanOrEqual(tableRects.tableTop);
   await page.close();
 });
+
+/** 概要を持つテーブル 1 つの ER 図の定義 */
+const TOOLTIP_ER = {
+  title: "問い合わせのデータ",
+  scope: "問い合わせの DB",
+  updated: "2026-11-14",
+  width: 320,
+  tables: [
+    {
+      id: "inquiries",
+      name: "inquiries",
+      label: "問い合わせ",
+      desc: "受け取った問い合わせ",
+      x: 24,
+      y: 24,
+      w: 240,
+      columns: [{ name: "id", type: "bigint", pk: true }],
+    },
+  ],
+  relations: [],
+};
 
 // 文書が使用する言語の分だけ色分けのモジュールを埋め、開いたときに外へ要求せずに色分けする（正常系（色分けするコードブロック））
 test("test_normal_when_syntax_highlighted", async () => {

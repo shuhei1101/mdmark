@@ -224,6 +224,7 @@ suite("プレビューを開く", () => {
     assert.deepStrictEqual((await distRequests()).sort(), [
       distPath("v0.10.0", "index.css"),
       distPath("v0.10.0", "index.js"),
+      distPath("v0.10.0", "map.js"),
     ]);
     assert.strictEqual(await tagRequestCount(), 1);
     // 前回のバージョンが v0.10.0 になったことを、タグ一覧が応えない状態のリロードで確認する
@@ -237,12 +238,11 @@ suite("プレビューを開く", () => {
       "h1",
       ".mdmark-table",
       ".markdown-alert",
-      ".mdmark-diagram-frame",
+      'figure.mdmark-diagram[data-diagram="map"]',
     ]) {
-      assert.ok(
-        (await inspect(selector)).length > 0,
-        `${selector} が描かれていない`,
-      );
+      await waitFor(async () => (await inspect(selector)).length > 0, {
+        message: `${selector} が描かれていない`,
+      });
     }
     // パネルの部品にアクセシビリティの違反が無い
     assert.deepStrictEqual(await audit(), []);
@@ -600,6 +600,7 @@ suite("プレビューを開く", () => {
     assert.deepStrictEqual((await distRequests()).sort(), [
       distPath("v0.6.0", "index.css"),
       distPath("v0.6.0", "index.js"),
+      distPath("v0.6.0", "map.js"),
     ]);
     assert.strictEqual(await tagRequestCount(), 0);
     // 前回のバージョンが v0.7.0 のままであることを、固定を削除してタグ一覧が応えない状態で開いて確認する

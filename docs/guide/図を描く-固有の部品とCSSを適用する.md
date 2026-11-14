@@ -76,7 +76,7 @@ JavaScript は変換せずにそのまま配る。
 }
 
 .mdmark {
-  --mdmark-color-diagram-llm: #be185d;
+  --mdmark-color-diagram-line: #be185d;
 }
 ```
 
@@ -177,12 +177,12 @@ getComputedStyle(document.querySelector(".team-milestones")).borderTopWidth
 ```
 
 `1px` が出る。
-`--mdmark-color-diagram-llm` を上書きしたとき、LLM のノードの色が変わっている。
+`--mdmark-color-diagram-line` を上書きしたとき、map の図の色を指定しない線の色が変わっている。
 
 #### 別の場所の文書に該当していない
 
 固有の部品を読み込まないページで同じ文書を描く。
-固有の部品の場所には何も描かれず、フロー図の色は mdmark の既定のままで、本文は描かれる。
+固有の部品の場所には何も描かれず、map の図の色は mdmark の既定のままで、本文は描かれる。
 
 #### 型の点検が通る
 

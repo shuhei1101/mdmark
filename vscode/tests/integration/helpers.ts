@@ -36,7 +36,7 @@ export const STUB_ORIGIN = new URL(
 /** 代役の配信が配布物を返却する経路 `/mdmark@{バージョン}/dist/{ファイル}` */
 export function distPath(
   version: string,
-  file: "index.js" | "index.css",
+  file: "index.js" | "index.css" | "map.js",
 ): string {
   return `/mdmark@${version}/dist/${file}`;
 }
@@ -128,7 +128,7 @@ export function installRecorder(): void {
   };
 }
 
-/** Webview に追加する、テストの操作の中継のスクリプト。`testClick` はセレクタに該当する最初の要素を押し、`testFocus` はその要素にフォーカスを移し、`testDrag` はその要素の中央で押して横に `dx` 動かして離し、続く `click` を送信する（合成のポインターは捕捉できないため、`setPointerCapture` を何もしない関数にする） */
+/** Webview に追加する、テストの操作の中継のスクリプト。`testClick` はセレクタに該当する最初の要素を押し、`testFocus` はその要素にフォーカスを移し、`testDrag` はその要素の中央で押して横に `dx` 動かして離す（動かす・離すは `window` へ送信し、`click` は送信しない）（合成のポインターは捕捉できないため、`setPointerCapture` を何もしない関数にする） */
 const RELAY_SCRIPT = [
   'window.addEventListener("message", (event) => {',
   "  const data = event.data;",
@@ -143,9 +143,8 @@ const RELAY_SCRIPT = [
   "    const y = rect.top + rect.height / 2;",
   "    const point = { bubbles: true, cancelable: true, pointerId: 1, button: 0, clientY: y };",
   '    element.dispatchEvent(new PointerEvent("pointerdown", { ...point, clientX: x }));',
-  '    element.dispatchEvent(new PointerEvent("pointermove", { ...point, clientX: x + data.dx }));',
-  '    element.dispatchEvent(new PointerEvent("pointerup", { ...point, clientX: x + data.dx }));',
-  '    element.dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true }));',
+  '    window.dispatchEvent(new PointerEvent("pointermove", { ...point, clientX: x + data.dx }));',
+  '    window.dispatchEvent(new PointerEvent("pointerup", { ...point, clientX: x + data.dx }));',
   "  }",
   "});",
 ].join("");
@@ -450,15 +449,15 @@ export async function tagRequestCount(): Promise<number> {
   return (await stub.requests()).filter((path) => path === "/tags").length;
 }
 
-/** 見本の流れ図の定義（`docs/guide/図を描く-見本.md` の最初の `json`） */
-export async function sampleFlowJson(): Promise<string> {
+/** 見本の map の構成図の範囲（`docs/guide/図を描く-見本.md` の最初の `<!-- map -->` から `<!-- /map -->` まで） */
+export async function sampleMapRange(): Promise<string> {
   const sample = await readFile(
     join(REPO_ROOT, "docs", "guide", "図を描く-見本.md"),
     "utf8",
   );
-  const match = /```json\n([\s\S]*?)\n```/.exec(sample);
-  assert.ok(match?.[1], "見本の定義が無い");
-  return match[1];
+  const range = /<!-- map: [\s\S]*?<!-- \/map -->/.exec(sample)?.[0];
+  assert.ok(range, "見本に map の構成図の範囲が無い");
+  return range;
 }
 
 /** 見本の操作できる部品の範囲（`docs/guide/図を描く-見本.md` の `<!-- param -->` から `<!-- /param -->` まで）を持つ Markdown */
@@ -472,7 +471,7 @@ export async function paramMarkdown(): Promise<string> {
   return ["# 部品", "", range, ""].join("\n");
 }
 
-/** 見出し・表・注意書き・流れ図を持つ Markdown */
+/** 見出し・表・注意書き・map の構成図を持つ Markdown */
 export async function guideMarkdown(): Promise<string> {
   return [
     "# 見出し",
@@ -484,13 +483,7 @@ export async function guideMarkdown(): Promise<string> {
     "> [!NOTE]",
     "> 注意書き",
     "",
-    "<!-- flow -->",
-    "",
-    "```json",
-    await sampleFlowJson(),
-    "```",
-    "",
-    "<!-- /flow -->",
+    await sampleMapRange(),
     "",
   ].join("\n");
 }

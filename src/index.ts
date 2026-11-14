@@ -8,9 +8,7 @@ export type { MdmarkConfig } from "./config.ts";
 export type {
   MdmarkChartDefinition,
   MdmarkErDefinition,
-  MdmarkFlowDefinition,
   MdmarkParamDefinition,
-  MdmarkSequenceDefinition,
 } from "./diagram/definition.ts";
 export type { DiffMode, DiffRevision, DiffSource } from "./diff/source.ts";
 export { diffModes } from "./diff/source.ts";

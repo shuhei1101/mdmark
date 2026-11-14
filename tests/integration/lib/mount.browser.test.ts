@@ -1,5 +1,6 @@
 import { afterEach, expect, inject, test, vi } from "vitest";
 import { cdp, page, userEvent } from "vitest/browser";
+import type { MdmarkErDefinition } from "../../../src/diagram/definition.ts";
 import type {
   DiffRevision,
   MdmarkAlias,
@@ -12,16 +13,16 @@ import { VIEW_ICON_PATHS } from "../../../src/parts/view.ts";
 import {
   ADDED_CHART_DEFINITIONS,
   INQUIRY_COUNT_TEXT,
-  INQUIRY_HINT_TEXT,
   wrapHtml,
 } from "../../unit/helpers/charts.ts";
 import {
-  INQUIRY_GROUPS_TEXT,
+  INQUIRY_SEQ_TEXT,
   INQUIRY_TEXT,
+  REPLY_TIME_TEXT,
   STRENGTH_TEXT,
   wrapDirective,
 } from "../../unit/helpers/diagrams.ts";
-import { erText, foldEr, shopErFolded } from "../../unit/helpers/er.ts";
+import { erText, foldEr, shopEr, shopErFolded } from "../../unit/helpers/er.ts";
 import {
   CONFIG as MAP_CONFIG,
   DATA as MAP_DATA,
@@ -300,6 +301,43 @@ test("test_normal_when_unknown_mark", async () => {
   expect(paragraphTexts(el)).toEqual(["前の段落", "後の段落"]);
   expect(el.innerHTML).not.toContain("<!--");
   expect(el.innerHTML).not.toContain("unknown");
+});
+
+// 廃止した flow・sequence の範囲は図を描かずに、map へ変換できる旨の書き方の警告を範囲ごとに出し、ほかの本文と図を描く（正常系）
+test("test_normal_when_retired_diagram", async () => {
+  // 準備
+  const el = createElement();
+  const markdown = [
+    wrapDirective("flow", INQUIRY_TEXT),
+    "間の段落",
+    "",
+    wrapDirective("sequence", INQUIRY_SEQ_TEXT),
+    "後の段落",
+    "",
+    wrapDirective("chart", REPLY_TIME_TEXT),
+  ].join("\n");
+  // 実行
+  await mountTracked(el, { markdown });
+  // 検証
+  const warnings = [
+    ...el.querySelectorAll<HTMLElement>(".mdmark-syntax-warning"),
+  ];
+  expect(warnings).toHaveLength(2);
+  for (const [index, name] of ["flow", "sequence"].entries()) {
+    const text = warnings[index]?.textContent ?? "";
+    expect(text).toContain(`<!-- ${name} --> の図の記載方法は廃止しました。`);
+    expect(text).toContain("mdmark upgrade");
+    expect(text).toContain("map の範囲");
+  }
+  expect(el.querySelectorAll("pre")).toHaveLength(0);
+  expect(el.textContent).not.toContain('"nodes"');
+  expect(el.textContent).not.toContain('"participants"');
+  expect(paragraphTexts(el)).toEqual(["間の段落", "後の段落"]);
+  const figures = [
+    ...el.querySelectorAll<HTMLElement>("figure.mdmark-diagram"),
+  ];
+  expect(figures).toHaveLength(1);
+  expect(figures[0]?.dataset.diagram).toBe("chart");
 });
 
 // 文書に記載したスクリプトを落として描き、実行しない（正常系）
@@ -1641,13 +1679,19 @@ async function checkStickyRows(mode: "timeline" | "script"): Promise<void> {
     const body = find<HTMLElement>(table, "tbody tr");
     await vi.waitFor(() => {
       headCells.forEach((head, column) => {
-        const bodyBox = cellBox(body.querySelectorAll("td")[column] as Element);
+        const figureBox = cellBox(
+          body.querySelectorAll("td")[column] as Element,
+        );
         const headBox = cellBox(head);
-        expect(Math.abs(headBox.left - bodyBox.left)).toBeLessThanOrEqual(1);
-        expect(Math.abs(headBox.width - bodyBox.width)).toBeLessThanOrEqual(1);
+        expect(Math.abs(headBox.left - figureBox.left)).toBeLessThanOrEqual(1);
+        expect(Math.abs(headBox.width - figureBox.width)).toBeLessThanOrEqual(
+          1,
+        );
         const footBox = cellBox(footCells[column] as Element);
-        expect(Math.abs(footBox.left - bodyBox.left)).toBeLessThanOrEqual(1);
-        expect(Math.abs(footBox.width - bodyBox.width)).toBeLessThanOrEqual(1);
+        expect(Math.abs(footBox.left - figureBox.left)).toBeLessThanOrEqual(1);
+        expect(Math.abs(footBox.width - figureBox.width)).toBeLessThanOrEqual(
+          1,
+        );
       });
     });
     // 留めた 1・2 列目は表の左端に並ぶ
@@ -2811,7 +2855,7 @@ test("test_normal_when_avoided_term", async () => {
   expect(document.activeElement).toBe(avoided);
 });
 
-// 全角と半角・大文字と小文字だけが違う本文の単語と図の `{{単語}}` にも、用語の下線とツールチップを付ける（正常系）
+// 全角と半角・大文字と小文字だけが違う本文の単語と map の構成図のノードの名前の単語にも、用語の下線とツールチップを付ける（正常系）
 test("test_normal_when_notation_differs", async () => {
   // 準備
   const el = createElement();
@@ -2829,19 +2873,6 @@ test("test_normal_when_notation_differs", async () => {
       { id: "mcp", term: "MCP", meaning: "Model Context Protocol" },
     ],
   };
-  const flow = [
-    "{",
-    '  "title": "受け取り",',
-    '  "scope": "範囲",',
-    '  "updated": "2026-10-23",',
-    '  "width": 520,',
-    '  "height": 160,',
-    '  "nodes": [',
-    '    { "id": "recv", "kind": "script", "x": 20, "y": 48, "w": 140, "h": 64, "name": "{{ｍｃｐ}}", "sub": "" }',
-    "  ],",
-    '  "wires": []',
-    "}",
-  ].join("\n");
   const markdown = [
     "## 一つ目",
     "",
@@ -2851,10 +2882,14 @@ test("test_normal_when_notation_differs", async () => {
     "",
     "ws と WorkPlace を記載する。",
     "",
-    wrapDirective("flow", flow),
+    mapRange({ mermaid: 'flowchart LR\n  recv["ｍｃｐ"]\n' }),
   ].join("\n");
   // 実行
   await mountTracked(el, { markdown, index, docId: "cur" });
+  await vi.waitFor(
+    () => find(el, 'figure.mdmark-diagram[data-diagram="map"]'),
+    { timeout: MAP_WAIT_MS },
+  );
   // 検証
   // 本文の下線の単語は、本文に記載したままの文字
   const body = [...el.querySelectorAll<HTMLElement>("p .mdmark-term")].filter(
@@ -2890,7 +2925,7 @@ test("test_normal_when_notation_differs", async () => {
   expect(
     find<HTMLElement>(avoidedTip, ".mdmark-term-tip-replacement").textContent,
   ).toBe("ワークスペース");
-  // 図のノードの `{{単語}}` も用語の下線で、意味が出る
+  // 図のノードの名前の単語も用語の下線で、意味が出る
   const boxTerm = find<HTMLElement>(el, ".mdmark-diagram-node .mdmark-term");
   expect(boxTerm.textContent).toBe("ｍｃｐ");
   boxTerm.focus();
@@ -3094,8 +3129,66 @@ test("test_normal_when_index_in_browser", async () => {
   expect(stripSourceLine(html)).toBe(EXPECTED_HTML);
 });
 
-/** 幅 600px の描く先の要素に、幅 1100・高さ 560 のフロー図を描き、図と表示する枠を返却する */
-async function mountFlow(
+/** テーブル 6 つを関係でつなぎ、描くと幅が 1100px を超える ER 図の定義（顧客のテーブルが概要を持つ） */
+function wideEr(): MdmarkErDefinition {
+  const base = shopEr();
+  const keys = [
+    { name: "id", type: "bigint", pk: true, nn: true },
+    { name: "order_id", type: "bigint", fk: true, nn: true },
+  ];
+  return {
+    ...base,
+    title: "注文と出荷のデータ",
+    width: 1300,
+    tables: [
+      ...base.tables,
+      {
+        id: "payments",
+        name: "payments",
+        kind: "transaction",
+        label: "支払い",
+        x: 1014,
+        y: 24,
+        w: 240,
+        columns: [...keys, { name: "paid_at", type: "timestamp", nn: true }],
+      },
+      {
+        id: "shipments",
+        name: "shipments",
+        kind: "transaction",
+        label: "出荷",
+        x: 1014,
+        y: 560,
+        w: 240,
+        columns: [...keys, { name: "shipped_at", type: "timestamp" }],
+      },
+    ],
+    relations: [
+      ...base.relations,
+      {
+        from: "orders",
+        fromColumn: "id",
+        fromCard: "1",
+        to: "payments",
+        toColumn: "order_id",
+        toCard: "0..n",
+        label: "支払う",
+      },
+      {
+        from: "orders",
+        fromColumn: "id",
+        fromCard: "1",
+        to: "shipments",
+        toColumn: "order_id",
+        toCard: "0..1",
+        label: "出荷する",
+      },
+    ],
+  };
+}
+
+/** 幅 600px の描く先の要素に、描くと幅が 1100px を超える ER 図を描き、図と表示する枠を返却する */
+async function mountWideEr(
   options: { index?: MdmarkIndex; extra?: string } = {},
 ): Promise<{
   el: HTMLElement;
@@ -3106,7 +3199,7 @@ async function mountFlow(
   el.style.width = "600px";
   el.style.setProperty("--mdmark-padding", "0");
   await mountTracked(el, {
-    markdown: `${wrapDirective("flow", INQUIRY_TEXT)}\n${options.extra ?? ""}`,
+    markdown: `${wrapDirective("er", erText(wideEr()))}\n${options.extra ?? ""}`,
     ...(options.index ? { index: options.index } : {}),
   });
   const figure = find<HTMLElement>(el, "figure.mdmark-diagram");
@@ -3144,7 +3237,7 @@ function zoomText(figure: Element): string {
 // 図を収まる倍率で描き、右上のボタンとキーで拡大・縮小・戻す。ホイールは受け取らない（正常系）
 test("test_normal_when_diagram_zoomed", async () => {
   // 準備
-  const { figure, viewport } = await mountFlow();
+  const { figure, viewport } = await mountWideEr();
   const sizer = find<HTMLElement>(figure, ".mdmark-diagram-sizer");
   // 描いた直後の倍率は収まる倍率で、倍率のボタンは 100% と出し、図の幅が表示する枠の幅を超えない
   await vi.waitFor(() => {
@@ -3218,36 +3311,76 @@ test("test_normal_when_diagram_zoomed", async () => {
   expect(viewport.scrollTop).toBe(0);
 });
 
+/** 表示する枠の中で、テーブル・線・ボタンの上でない位置（表示する枠の左上からの px）。左へ 100px 動かせるよう、左端から 100px より右を探す */
+function blankPointOf(viewport: HTMLElement): { x: number; y: number } {
+  const rect = viewport.getBoundingClientRect();
+  for (let y = rect.bottom - 8; y > rect.top + 8; y -= 8) {
+    for (let x = rect.left + 120; x < rect.right - 8; x += 8) {
+      const hit = document.elementFromPoint(x, y);
+      if (
+        hit &&
+        viewport.contains(hit) &&
+        !hit.closest(
+          "[data-node], .mdmark-diagram-wire, .mdmark-diagram-label, [data-tip-owner], button, a",
+        )
+      ) {
+        return { x: x - rect.left, y: y - rect.top };
+      }
+    }
+  }
+  throw new Error("表示する枠に余白が無い");
+}
+
 // 拡大した図を、余白のドラッグ・矢印キー・移動のボタンで動かし、文字の上では動かさず文字を選ばせる（正常系）
 test("test_normal_when_diagram_panned", async () => {
   // 準備
-  const { figure, viewport } = await mountFlow();
+  const { figure, viewport } = await mountWideEr();
   buttonOf(figure, "拡大").click();
   buttonOf(figure, "拡大").click();
   const panGroup = find<HTMLElement>(figure, '[data-group="pan"]');
   expect(panGroup.hidden).toBe(false);
   // 余白を 100px 左へドラッグすると、図が 100px 動き、文字は選ばれない
   const start = viewport.scrollLeft;
+  const blank = blankPointOf(viewport);
   await userEvent.dragAndDrop(viewport, viewport, {
-    sourcePosition: { x: 300, y: 4 },
-    targetPosition: { x: 200, y: 4 },
+    sourcePosition: blank,
+    targetPosition: { x: blank.x - 100, y: blank.y },
   });
   expect(viewport.scrollLeft - start).toBe(100);
   expect(getSelection()?.toString()).toBe("");
   expect(getComputedStyle(viewport).cursor).toBe("grab");
-  const name = find<HTMLElement>(
-    figure,
-    '[data-node="mcp"] .mdmark-diagram-node-name',
-  );
+  // テーブルの名前のうち、表示する枠と画面に収まっているもの
+  const viewportBox = viewport.getBoundingClientRect();
+  const name = [
+    ...figure.querySelectorAll<HTMLElement>(".mdmark-diagram-er-physical"),
+  ].find((element) => {
+    const box = element.getBoundingClientRect();
+    return (
+      box.left >= Math.max(viewportBox.left, 0) &&
+      box.right + 60 <= Math.min(viewportBox.right, window.innerWidth) &&
+      box.top >= viewportBox.top &&
+      box.bottom <= viewportBox.bottom
+    );
+  });
+  if (!name) {
+    throw new Error("表示する枠に収まるテーブルの名前が無い");
+  }
   expect(getComputedStyle(name).cursor).toBe("text");
-  // ノードの名前の上のドラッグは、図を動かさず、名前の文字を選ばせる
+  // テーブルの名前の上のドラッグは、図を動かさず、名前の文字を選ばせる
   const moved = viewport.scrollLeft;
-  await userEvent.dragAndDrop(name, name, {
-    sourcePosition: { x: 1, y: 5 },
-    targetPosition: { x: 60, y: 5 },
+  const nameBox = name.getBoundingClientRect();
+  const from = {
+    x: nameBox.left - viewportBox.left + 1,
+    y: nameBox.top - viewportBox.top + nameBox.height / 2,
+  };
+  await userEvent.dragAndDrop(viewport, viewport, {
+    sourcePosition: from,
+    targetPosition: { x: from.x + 60, y: from.y },
   });
   expect(viewport.scrollLeft).toBe(moved);
-  expect(getSelection()?.toString()).toContain("窓口");
+  const selected = getSelection()?.toString() ?? "";
+  expect(selected).not.toBe("");
+  expect(name.textContent).toContain(selected.trim());
   // 矢印キーで 80px、下の移動のボタンで縦に 80px
   getSelection()?.removeAllRanges();
   viewport.focus();
@@ -3262,13 +3395,6 @@ test("test_normal_when_diagram_panned", async () => {
   expect(panGroup.hidden).toBe(true);
 });
 
-/** 図の `tip` を持つ線のラベルを全て返却する */
-function tipLabels(root: ParentNode): HTMLElement[] {
-  return [
-    ...root.querySelectorAll<HTMLElement>(".mdmark-diagram-label.has-tip"),
-  ];
-}
-
 /** 持ち主が指すツールチップ */
 function tipOf(owner: Element): HTMLElement {
   const id = owner.getAttribute("aria-describedby") ?? "";
@@ -3282,7 +3408,7 @@ function tipOf(owner: Element): HTMLElement {
 // 全画面のボタンで図をモーダルに開き、Esc でツールチップ→モーダルの順に閉じる（正常系）
 test("test_normal_when_diagram_fullscreen", async () => {
   // 準備
-  const { el, figure } = await mountFlow();
+  const { el, figure } = await mountWideEr();
   // ポインターを図から離しておく（前のテストの位置が図の上だと、図のツールチップが開き、閉じるのを待つ）
   await userEvent.unhover(document.body);
   await new Promise((resolve) => setTimeout(resolve, 400));
@@ -3332,13 +3458,10 @@ test("test_normal_when_diagram_fullscreen", async () => {
   expect(inner.left).toBeGreaterThanOrEqual(box.left);
   expect(inner.right).toBeLessThanOrEqual(box.right);
   expect(inner.bottom).toBeLessThanOrEqual(box.bottom);
-  // tip を持つ線にフォーカスして Esc: ツールチップだけが閉じる
-  const label = tipLabels(dialog)[0];
-  if (!label) {
-    throw new Error("tip を持つ線のラベルが無い");
-  }
-  label.focus();
-  const tip = tipOf(label);
+  // 概要を持つテーブルの説明のボタンにフォーカスして Esc: ツールチップだけが閉じる
+  const info = buttonOf(dialog, "「顧客」の説明");
+  info.focus();
+  const tip = tipOf(info);
   expect(tip.hidden).toBe(false);
   await userEvent.keyboard("{Escape}");
   expect(tip.hidden).toBe(true);
@@ -3366,49 +3489,107 @@ const TERM_INDEX: MdmarkIndex = {
   ],
 };
 
-// 線・ノード・ノードの中の用語に、ポインターとフォーカスでツールチップを出し、Esc で削除する（正常系）
+/** 説明を持つ線・ノード・システムの枠のグループと、説明を持たないノード・名前に `意思決定モデル` を持つノードの map の構成図 */
+const TOOLTIP_MAP = mapRange({
+  mermaid: `flowchart LR
+  user(["利用者"]):::outside
+  subgraph frame [返信のシステム]
+    classify["分類"]:::step
+    mcp["窓口"]:::step
+    model["意思決定モデル"]:::step
+  end
+  user -->|問い合わせ| classify
+  classify --> mcp
+  mcp --> model
+`,
+  data: JSON.stringify({
+    version: 1,
+    notes: {
+      "user->classify": { text: "件名・本文・送信者のアドレス" },
+      classify: { text: "問い合わせを種類に分ける" },
+      frame: { text: "問い合わせを受けて返信するまで" },
+    },
+  }),
+});
+
+// map の構成図の線・ノード・グループ・ノードの中の用語に、ポインターとフォーカスでツールチップを出し、Esc で削除する（正常系）
 test("test_normal_when_diagram_tooltip", async () => {
   // 準備
-  const { el, figure } = await mountFlow({
+  sessionStorage.clear();
+  clearMapQuery();
+  const el = createElement();
+  await mountTracked(el, {
+    markdown: `${TOOLTIP_MAP}\n図の外の意思決定モデル。\n`,
+    config: { map: MAP_CONFIG } as Parameters<Built["mount"]>[1]["config"],
     index: TERM_INDEX,
-    extra: "\n図の外の意思決定モデル。\n",
   });
-  // 線のラベルにポインターを乗せ、ツールチップの上へ動かしても出したままにする
-  const label = tipLabels(figure)[0];
-  if (!label) {
-    throw new Error("tip を持つ線のラベルが無い");
-  }
-  await userEvent.hover(label);
-  const wireTip = tipOf(label);
+  const figure = await vi.waitFor(
+    () => find<HTMLElement>(el, 'figure.mdmark-diagram[data-diagram="map"]'),
+    { timeout: MAP_WAIT_MS },
+  );
+  // 説明を持つ線にポインターを乗せ、ツールチップの上へ動かしても出したままにする
+  const wireLabel = find<HTMLElement>(
+    figure,
+    '.mdmark-diagram-label.has-tip[data-wire="user->classify"]',
+  );
+  const hit = find<SVGPathElement>(
+    figure,
+    '.map-wire-hit[data-wire="user->classify"]',
+  );
+  hit.dispatchEvent(new PointerEvent("pointerover", { bubbles: true }));
+  hit.dispatchEvent(new PointerEvent("pointerenter", { bubbles: true }));
+  const wireTip = tipOf(wireLabel);
   expect(wireTip.hidden).toBe(false);
   expect(wireTip.textContent).toContain("件名・本文・送信者のアドレス");
   await userEvent.hover(wireTip);
   await new Promise((resolve) => setTimeout(resolve, 400));
   expect(wireTip.hidden).toBe(false);
-  // LLM のノードのマーカーにフォーカスすると、入力・処理・出力を出す。io を持たないノードにマーカーは無い
-  const info = buttonOf(figure, "「分類」の入力・処理・出力");
+  // 説明を持つノードのマーカーにフォーカスすると、ノードの説明を出す。説明を持たないノードにマーカーは無い
+  const info = buttonOf(figure, "「分類」の説明");
   info.focus();
-  const ioTip = tipOf(info);
-  expect(ioTip.hidden).toBe(false);
-  expect(ioTip.querySelectorAll("dt")).toHaveLength(3);
-  expect([...ioTip.querySelectorAll("dt")].map((dt) => dt.textContent)).toEqual(
-    ["入力", "処理", "出力"],
+  const nodeTip = tipOf(info);
+  expect(nodeTip.hidden).toBe(false);
+  expect(nodeTip.textContent).toContain("問い合わせを種類に分ける");
+  expect(nodeTip.getBoundingClientRect().top).toBeGreaterThanOrEqual(
+    mapNode(figure, "classify").getBoundingClientRect().bottom - 1,
   );
   expect(
-    figure.querySelector('[data-node="mcp"] .mdmark-diagram-info'),
+    mapNode(figure, "mcp").querySelector(".mdmark-diagram-info"),
   ).toBeNull();
   // Esc でツールチップを削除し、フォーカスをマーカーに残す
   await userEvent.keyboard("{Escape}");
-  expect(ioTip.hidden).toBe(true);
+  expect(nodeTip.hidden).toBe(true);
   expect(document.activeElement).toBe(info);
   // ノードの中の用語は、本文の用語と同じ破線の下線で、ポインターで意味を出す
-  const term = find<HTMLElement>(figure, ".mdmark-diagram-node .mdmark-term");
+  const term = find<HTMLElement>(
+    mapNode(figure, "model"),
+    ".mdmark-diagram-node-name .mdmark-term",
+  );
   await userEvent.hover(term);
   expect(tipOf(term).hidden).toBe(false);
   expect(tipOf(term).textContent).toContain("選択肢から選ぶだけの");
   const outside = find<HTMLElement>(el, ":scope > p .mdmark-term");
   expect(getComputedStyle(term).textDecorationStyle).toBe("dashed");
   expect(getComputedStyle(outside).textDecorationStyle).toBe("dashed");
+  // システムの枠のグループのタイトルの右のマーカーにポインターを乗せると、グループの説明を出す
+  const group = find<HTMLButtonElement>(
+    figure,
+    '.map-group[data-group="frame"] button.mdmark-diagram-group-info',
+  );
+  const title = find<HTMLElement>(
+    figure,
+    '.map-group[data-group="frame"] .map-group-title',
+  );
+  expect(group.getBoundingClientRect().left).toBeGreaterThanOrEqual(
+    title.getBoundingClientRect().right - 1,
+  );
+  await userEvent.hover(group);
+  const groupTip = tipOf(group);
+  expect(groupTip.hidden).toBe(false);
+  expect(groupTip.textContent).toContain("問い合わせを受けて返信するまで");
+  expect(groupTip.getBoundingClientRect().top).toBeGreaterThanOrEqual(
+    group.getBoundingClientRect().bottom - 1,
+  );
 });
 
 /** `pointerType` の種類を持つポインターの操作を発火する */
@@ -3443,21 +3624,28 @@ test("test_normal_when_diagram_tooltip_touch", async () => {
   // 準備
   await userEvent.unhover(document.body);
   const markdown = [
-    wrapDirective("flow", INQUIRY_TEXT),
+    mapRange({
+      mermaid:
+        'flowchart LR\n  classify["分類"]\n  reply["返信"]\n  classify --> reply\n',
+      data: '{"version": 1, "notes": {"classify": {"text": "問い合わせを種類に分ける"}}}',
+    }),
     wrapHtml(
       '<div data-hint="返信の種類を 1 つ選ぶ" style="display: inline-block; padding: 1rem 2rem">自動返信</div>',
     ),
     "図の外の段落。",
   ].join("\n\n");
   const el = await mountEmbedded(markdown);
-  const info = buttonOf(el, "「分類」の入力・処理・出力");
+  const info = await vi.waitFor(() => buttonOf(el, "「分類」の説明"), {
+    timeout: MAP_WAIT_MS,
+  });
   const ioTip = tipOf(info);
   const mark = find<HTMLElement>(el, ".mdmark-hint-block .mdmark-hint-mark");
   const hintTip = tipOf(mark);
   const outside = find<HTMLElement>(el, ":scope > p");
-  // 実行・検証: 閉じたマーカーへのタップで開く
+  // 実行・検証: 閉じたマーカーへのタップで開き、ノードの説明を出す
   tapOwner(info);
   expect(ioTip.hidden).toBe(false);
+  expect(ioTip.textContent).toContain("問い合わせを種類に分ける");
   // 開いているマーカーへのタップで閉じる
   tapOwner(info);
   expect(ioTip.hidden).toBe(true);
@@ -3497,20 +3685,20 @@ function fireTouchAt(
 
 // タッチでは余白をタップするまで縦のドラッグを文書のスクロールにし、タップした後は図の外をタップするまで縦にも横にも図を動かす（正常系）
 test("test_normal_when_diagram_touch_drag", async () => {
-  // 準備: 画面の幅を 390px にし、表示する枠より広いフロー図を拡大して描く
+  // 準備: 画面の幅を 390px にし、表示する枠より広い ER 図を拡大して描く
   await withViewport(390, async () => {
     const el = createElement();
     await mountTracked(el, {
-      markdown: `${wrapDirective("flow", INQUIRY_TEXT)}\n\n図の外の段落。`,
+      markdown: `${wrapDirective("er", erText(wideEr()))}\n\n図の外の段落。`,
     });
     const box = find<HTMLElement>(el, ".mdmark-diagram-box");
     const viewport = find<HTMLElement>(el, ".mdmark-diagram-viewport");
     buttonOf(el, "拡大").click();
     buttonOf(el, "拡大").click();
     const outside = find<HTMLElement>(el, ":scope > p");
-    const node = find<HTMLElement>(el, ".mdmark-diagram-node");
+    const node = find<HTMLElement>(el, ".mdmark-diagram-er-table");
     const rect = viewport.getBoundingClientRect();
-    // 余白: 表示する枠の中で、ノード・線・ボタンの上でない位置
+    // 余白: 表示する枠の中で、テーブル・線・ボタンの上でない位置
     const blank = (() => {
       for (let y = rect.top + 8; y < rect.bottom - 8; y += 8) {
         for (let x = rect.left + 8; x < rect.right - 8; x += 8) {
@@ -3519,7 +3707,7 @@ test("test_normal_when_diagram_touch_drag", async () => {
             hit &&
             viewport.contains(hit) &&
             !hit.closest(
-              ".mdmark-diagram-node, .mdmark-diagram-wire-hit, [data-tip-owner], button, a",
+              "[data-node], .mdmark-diagram-wire, [data-tip-owner], button, a",
             )
           ) {
             return { x, y };
@@ -3531,7 +3719,7 @@ test("test_normal_when_diagram_touch_drag", async () => {
     // 検証: 描いた直後は縦のドラッグが文書のスクロール
     expect(getComputedStyle(viewport).touchAction).toBe("pan-y");
     expect(box.hasAttribute("data-touch-active")).toBe(false);
-    // ノードの上のタップでは操作中にしない
+    // テーブルの上のタップでは操作中にしない
     const nodeRect = node.getBoundingClientRect();
     const onNode = { x: nodeRect.left + 4, y: nodeRect.top + 4 };
     fireTouchAt(node, "pointerdown", onNode);
@@ -3750,7 +3938,7 @@ test("test_normal_when_embedded_hint", async () => {
     '<div data-hint="返信の種類を 1 つ選ぶ" style="display: inline-block; padding: 1rem 2rem">自動返信</div>',
     '<p>問い合わせは <span data-hint="本文を読み込んで種類を決める処理">分類</span> する。</p>',
   ].join("\n");
-  const markdown = `${wrapHtml(body)}\n${wrapDirective("flow", INQUIRY_HINT_TEXT)}`;
+  const markdown = wrapHtml(body);
   // ポインターを前のテストの位置から離しておく
   await userEvent.unhover(document.body);
   const el = await mountEmbedded(markdown);
@@ -3776,21 +3964,6 @@ test("test_normal_when_embedded_hint", async () => {
   expect(tipOf(inline).hidden).toBe(true);
   expect(document.activeElement).toBe(inline);
   expect(getComputedStyle(inline).cursor).not.toBe("help");
-  // 図のノードの hint: 名前の上では開かず、右上のマーカーの上で hint の文を出す
-  const name = find<HTMLElement>(
-    el,
-    '[data-node="mcp"] .mdmark-diagram-node-name',
-  );
-  const info = find<HTMLElement>(
-    el,
-    'button[aria-label="「窓口の MCP」の説明"]',
-  );
-  await userEvent.hover(name);
-  await new Promise((resolve) => setTimeout(resolve, 400));
-  expect(tipOf(info).hidden).toBe(true);
-  await userEvent.hover(info);
-  expect(tipOf(info).hidden).toBe(false);
-  expect(tipOf(info).textContent).toContain("保存と送信のツールだけを持つ");
   // ページの中のツールチップの id が重ならない
   const ids = [...el.querySelectorAll("[id]")].map((element) => element.id);
   expect(new Set(ids).size).toBe(ids.length);
@@ -5504,7 +5677,18 @@ const PLACEMENT_INDEX: MdmarkIndex = {
   ],
 };
 
-/** ツールチップの配置する側を確認する文書: 1 行目の用語、2 つ目のセクションの用語・`tip` を持つ線のフロー図・`data-hint` を持つ `div`。`tail` を指定すると、末尾に用語を追加する */
+/** ツールチップの配置する側を確認する ER 図: 概要を持つテーブル `顧客` 1 つ */
+function placementEr(): MdmarkErDefinition {
+  const base = shopEr();
+  return {
+    ...base,
+    width: 320,
+    tables: base.tables.slice(0, 1),
+    relations: [],
+  };
+}
+
+/** ツールチップの配置する側を確認する文書: 1 行目の用語、2 つ目のセクションの用語・概要を持つテーブル 1 つの ER 図・`data-hint` を持つ `div`。`tail` を指定すると、末尾に用語を追加する */
 function placementMarkdown(options: { tail: boolean }): string {
   const filler = Array.from({ length: 80 }, (_, i) => `詰め物の段落 ${i}\n`);
   return [
@@ -5514,7 +5698,7 @@ function placementMarkdown(options: { tail: boolean }): string {
     "",
     "索引を 2 つ目のセクションに配置する。",
     "",
-    wrapDirective("flow", INQUIRY_TEXT),
+    wrapDirective("er", erText(placementEr())),
     wrapHtml(
       '<div data-hint="ブロックの説明" style="width: 20rem; padding: 1rem">ブロックの文字</div>',
     ),
@@ -5546,7 +5730,7 @@ async function hoverAndMeasure(
   };
 }
 
-/** 文書の持ち主: 用語の並びと、2 つ目のセクションの線のラベル・ヒントのマーカー */
+/** 文書の持ち主: 用語の並びと、2 つ目のセクションのテーブルの説明のボタン・ヒントのマーカー */
 function placementOwners(el: HTMLElement): {
   terms: HTMLElement[];
   label: HTMLElement;
@@ -5554,12 +5738,12 @@ function placementOwners(el: HTMLElement): {
 } {
   return {
     terms: [...el.querySelectorAll<HTMLElement>(".mdmark-term")],
-    label: find<HTMLElement>(el, ".mdmark-diagram-label.has-tip"),
+    label: buttonOf(el, "「顧客」の説明"),
     mark: find<HTMLElement>(el, ".mdmark-hint-mark"),
   };
 }
 
-// 用語のツールチップを単語の上に、線・ヒントのツールチップを持ち主の下に出し、上に収まらない単語だけ下に出す（正常系（ツールチップを上に出す））
+// 用語のツールチップを単語の上に、図・ヒントのツールチップを持ち主の下に出し、上に収まらない単語だけ下に出す（正常系（ツールチップを上に出す））
 test("test_normal_when_tooltip_above", async () => {
   // 準備
   const el = createElement();
@@ -5575,11 +5759,18 @@ test("test_normal_when_tooltip_above", async () => {
   // 実行・検証: 2 つ目のセクションの用語は、単語の上に出る
   const section = await hoverAndMeasure(sectionTerm, "center");
   expect(section.tip.bottom).toBeLessThanOrEqual(section.owner.top);
-  // 実行・検証: 線のラベル・ヒントのマーカーは、tooltips.diagramPlacement の既定の bottom で持ち主の下に出る
+  // 実行・検証: テーブル・ヒントのマーカーは、tooltips.diagramPlacement の既定の bottom で持ち主の下に出る
   for (const owner of [label, mark]) {
     const rects = await hoverAndMeasure(owner, "center");
     expect(rects.tip.top).toBeGreaterThanOrEqual(rects.owner.bottom);
   }
+  const tableRect = (
+    label.closest(".mdmark-diagram-er-table") as HTMLElement
+  ).getBoundingClientRect();
+  await userEvent.hover(label);
+  expect(tooltipOf(label).getBoundingClientRect().top).toBeGreaterThanOrEqual(
+    tableRect.bottom - 1,
+  );
   // 実行・検証: 1 行目の用語は上に収まらないので、単語の下に出る
   window.scrollTo(0, 0);
   await userEvent.hover(firstTerm);
@@ -5607,7 +5798,7 @@ test("test_normal_when_tooltip_placement_bottom", async () => {
     HTMLElement,
     HTMLElement,
   ];
-  // 実行・検証: 2 つ目のセクションの用語・線のラベル・ヒントのマーカーは、持ち主の下に出る
+  // 実行・検証: 2 つ目のセクションの用語・テーブルの説明のボタン・ヒントのマーカーは、持ち主の下に出る
   for (const owner of [sectionTerm, label, mark]) {
     const rects = await hoverAndMeasure(owner, "center");
     expect(rects.tip.top).toBeGreaterThanOrEqual(rects.owner.bottom);
@@ -5907,14 +6098,11 @@ async function pixelAt(
   return `rgb(${data?.[0]}, ${data?.[1]}, ${data?.[2]})`;
 }
 
-/** 線のラベルにポインターを乗せて開いた、図のツールチップ */
+/** テーブルの説明のボタンにポインターを乗せて開いた、図のツールチップ */
 async function openDiagramTip(figure: Element): Promise<HTMLElement> {
-  const label = tipLabels(figure)[0];
-  if (!label) {
-    throw new Error("tip を持つ線のラベルが無い");
-  }
-  await userEvent.hover(label);
-  const tip = tipOf(label);
+  const info = buttonOf(figure, "「顧客」の説明");
+  await userEvent.hover(info);
+  const tip = tipOf(info);
   expect(tip.hidden).toBe(false);
   return tip;
 }
@@ -5929,7 +6117,7 @@ test("test_normal_when_bg_transparent_with_opaque", async () => {
   await emulateColorScheme("light");
   try {
     // 実行
-    const { el, figure } = await mountFlow({ extra: `\n${SMALL_TABLE}` });
+    const { el, figure } = await mountWideEr({ extra: `\n${SMALL_TABLE}` });
     // 検証: 本文の地は透ける
     expect(getComputedStyle(el).backgroundColor).toBe("rgba(0, 0, 0, 0)");
     // 検証: 表の本文の行の高さの真ん中で、左右の枠の内側は周りの面の色（端の影が出ない）
@@ -5964,7 +6152,7 @@ test("test_normal_when_bg_overridden", async () => {
   await emulateColorScheme("light");
   try {
     // 実行
-    const { el, figure } = await mountFlow({ extra: `\n${SMALL_TABLE}` });
+    const { el, figure } = await mountWideEr({ extra: `\n${SMALL_TABLE}` });
     const tip = await openDiagramTip(figure);
     // 検証
     expect(getComputedStyle(el).backgroundColor).toBe("rgb(34, 34, 34)");
@@ -10705,85 +10893,111 @@ test("test_normal_when_side_toc_at_scroll_edge", async () => {
   });
 });
 
-/** リンク先を持つノード `a`（`io` を持つ）とリンク先を持たないノード `e` のフロー図の定義 */
-const LINKED_FLOW_TEXT = JSON.stringify({
-  title: "リンク",
-  scope: "点検",
-  updated: "2026-11-05",
-  width: 760,
-  height: 152,
-  nodes: [
-    {
-      id: "a",
-      kind: "script",
-      x: 20,
-      y: 40,
-      w: 200,
-      h: 72,
-      name: "仕様を開く",
-      href: "https://example.com/spec",
-      io: { in: "本文", do: "分ける", out: "種類" },
-    },
-    { id: "e", kind: "script", x: 520, y: 40, w: 200, h: 72, name: "記録する" },
-  ],
-  wires: [],
+/** `click` のリンク先を持つノード `a`（説明を持つ）・`b` と、リンク先を持たないノード `e` の map の構成図 */
+const LINKED_MAP = mapRange({
+  mermaid: `flowchart TB
+  a["仕様を開く"]:::step
+  b["別の文書"]:::step
+  e["記録する"]:::step
+  a --> b
+  b --> e
+  click a "https://example.com/spec"
+  click b "./other.md"
+`,
+  data: '{"version": 1, "notes": {"a": {"text": "仕様の文書を開く"}}}',
 });
 
-// リンク先を持つノードをクリックと Enter で開き、ノードの上から始めたドラッグでは図を動かすだけにする（正常系）
+// map の構成図の click のリンク先を持つノードをクリックと Enter で開き、ノードの上から始めたドラッグではノードを動かすだけにする（正常系）
 test("test_normal_when_node_link_opened", async () => {
   // 準備
-  const el = createElement();
-  el.style.width = "600px";
-  el.style.setProperty("--mdmark-padding", "0");
-  await mountTracked(el, { markdown: wrapDirective("flow", LINKED_FLOW_TEXT) });
-  const figure = find<HTMLElement>(el, "figure.mdmark-diagram");
-  const viewport = find<HTMLElement>(figure, ".mdmark-diagram-viewport");
-  buttonOf(figure, "拡大").click();
-  buttonOf(figure, "拡大").click();
-  const link = find<HTMLAnchorElement>(
-    figure,
-    '[data-node="a"] a.mdmark-diagram-node-link',
+  const { figures } = await mountMap(LINKED_MAP);
+  const figure = figures()[0] as HTMLElement;
+  let link = find<HTMLAnchorElement>(
+    mapNode(figure, "a"),
+    "a.mdmark-diagram-node-link",
   );
-  const info = find<HTMLButtonElement>(
-    figure,
-    '[data-node="a"] .mdmark-diagram-info',
+  let info = find<HTMLButtonElement>(
+    mapNode(figure, "a"),
+    ".mdmark-diagram-info",
   );
   // 開いた URL を記録し、ページを移らせない（リンク先への遷移の代役）
   const opened: string[] = [];
   const record = (event: MouseEvent) => {
     const anchor = (event.target as Element).closest("a");
     if (anchor && !event.defaultPrevented) {
-      opened.push(anchor.href);
+      opened.push(anchor.getAttribute("href") ?? "");
     }
     event.preventDefault();
   };
   window.addEventListener("click", record);
   try {
+    // 検証: a・b はノードの全体を覆うリンクを持ち、e はリンクを持たない
+    for (const [id, href] of [
+      ["a", "https://example.com/spec"],
+      ["b", "./other.md"],
+    ] as const) {
+      const node = mapNode(figure, id);
+      expect(node.classList.contains("has-link")).toBe(true);
+      const anchor = find<HTMLAnchorElement>(
+        node,
+        "a.mdmark-diagram-node-link",
+      );
+      expect(anchor.getAttribute("href")).toBe(href);
+    }
+    expect(link.getAttribute("aria-label")).toBe("仕様を開く");
+    expect(mapNode(figure, "e").classList.contains("has-link")).toBe(false);
+    expect(mapNode(figure, "e").querySelector("a")).toBeNull();
+    // 検証: 説明のマーカーはリンクの中に無く、その後ろにある
+    expect(link.contains(info)).toBe(false);
+    expect(
+      link.compareDocumentPosition(info) & Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
     // 検証: ノードの名前の上の構造
     expect(
-      getComputedStyle(
-        find(figure, '[data-node="a"] .mdmark-diagram-node-name'),
-      ).cursor,
+      getComputedStyle(find(mapNode(figure, "a"), ".mdmark-diagram-node-name"))
+        .cursor,
     ).toBe("pointer");
     expect(
-      getComputedStyle(
-        find(figure, '[data-node="e"] .mdmark-diagram-node-name'),
-      ).cursor,
+      getComputedStyle(find(mapNode(figure, "e"), ".mdmark-diagram-node-name"))
+        .cursor,
     ).toBe("text");
-    // 実行: リンクの上で押したまま 100px 動かして離す
-    viewport.scrollLeft = 0;
-    const start = viewport.scrollLeft;
-    await userEvent.dragAndDrop(link, link, {
-      sourcePosition: { x: 150, y: 30 },
-      targetPosition: { x: 50, y: 30 },
+    // 実行: a の種類の行の上（ノードの全体を覆うリンクの上）で押したまま 100px 右へ動かして離す
+    const kind = find<HTMLElement>(
+      mapNode(figure, "a"),
+      ".mdmark-diagram-node-kind",
+    ).getBoundingClientRect();
+    const linkBox = link.getBoundingClientRect();
+    const at = {
+      x: 8,
+      y: kind.top - linkBox.top + kind.height / 2,
+    };
+    const before = mapNode(figure, "a").getBoundingClientRect();
+    const figureBox = figure.getBoundingClientRect();
+    await userEvent.dragAndDrop(link, figure, {
+      sourcePosition: at,
+      targetPosition: {
+        x: linkBox.left - figureBox.left + at.x + 100,
+        y: linkBox.top - figureBox.top + at.y,
+      },
     });
-    // 検証: 図だけが動き、リンク先を開かない
-    expect(viewport.scrollLeft - start).toBe(100);
-    expect(getSelection()?.toString()).toBe("");
+    // 検証: ノードだけが動き、リンク先を開かない
+    const after = mapNode(figure, "a").getBoundingClientRect();
+    expect(after.left - before.left).toBeCloseTo(100, -1);
+    expect(after.top - before.top).toBeCloseTo(0, -1);
     expect(opened).toEqual([]);
+    // 動かすと図を描き直すため、リンクとマーカーを参照し直す
+    link = find<HTMLAnchorElement>(
+      mapNode(figure, "a"),
+      "a.mdmark-diagram-node-link",
+    );
+    info = find<HTMLButtonElement>(
+      mapNode(figure, "a"),
+      ".mdmark-diagram-info",
+    );
     // 実行・検証: マーカーを押すとツールチップを出し、リンク先を開かない
     await userEvent.click(info);
     expect(tipOf(info).hidden).toBe(false);
+    expect(tipOf(info).textContent).toContain("仕様の文書を開く");
     expect(opened).toEqual([]);
     await userEvent.keyboard("{Escape}");
     // 実行・検証: Tab の順はリンク、マーカー
@@ -10803,6 +11017,51 @@ test("test_normal_when_node_link_opened", async () => {
   } finally {
     window.removeEventListener("click", record);
   }
+});
+
+// map の click の許さないリンク先のノードをリンクにせず、図の前の書き方の警告に並べる（異常系）
+test("test_error_when_map_node_link_not_allowed", async () => {
+  // 準備
+  const markdown = `${mapRange({
+    mermaid: `flowchart LR
+  c["スクリプト"]
+  d["仕様の項目"]
+  c --> d
+  click c "javascript:alert(1)"
+  click d "id:spec#items"
+`,
+  })}\n図の後の段落。\n`;
+  // 実行
+  const { el, figures } = await mountMap(markdown);
+  const figure = figures()[0] as HTMLElement;
+  // 検証: c・d はリンクにせず、名前を描く
+  for (const [id, name] of [
+    ["c", "スクリプト"],
+    ["d", "仕様の項目"],
+  ] as const) {
+    const node = mapNode(figure, id);
+    expect(node.classList.contains("has-link")).toBe(false);
+    expect(node.querySelector("a")).toBeNull();
+    expect(find(node, ".mdmark-diagram-node-name").textContent).toBe(name);
+  }
+  // 検証: 図の枠の前の書き方の警告に、ノードとリンク先と使用できるリンク先が並ぶ
+  const warnings = [
+    ...el.querySelectorAll<HTMLElement>(".mdmark-syntax-warning"),
+  ];
+  expect(warnings).toHaveLength(1);
+  const warning = warnings[0] as HTMLElement;
+  expect(
+    warning.compareDocumentPosition(figure) & Node.DOCUMENT_POSITION_FOLLOWING,
+  ).toBeTruthy();
+  for (const text of [
+    "c: javascript:alert(1)",
+    "d: id:spec#items",
+    "http・https・mailto と相対パス",
+  ]) {
+    expect(warning.textContent).toContain(text);
+  }
+  expect(el.querySelector('[href^="javascript:"]')).toBeNull();
+  expect(paragraphTexts(el)).toContain("図の後の段落。");
 });
 
 /** 折り返しの結合テストの長い行 */
@@ -12113,7 +12372,7 @@ test("test_normal_when_diagram_placement_top", async () => {
   const sectionTerm = terms[1] as HTMLElement;
   const chart = diagramFiguresOf(el).at(-1) as HTMLElement;
   const point = itemOwners(chart)[1] as HTMLElement;
-  // 実行・検証: 線のラベル・div のマーカー・グラフの点は、持ち主の上に出る
+  // 実行・検証: テーブルの説明のボタン・div のマーカー・グラフの点は、持ち主の上に出る
   for (const owner of [label, mark, point]) {
     const rects = await hoverAndMeasure(owner, "center");
     expect(rects.tip.bottom).toBeLessThanOrEqual(rects.owner.top);
@@ -12121,7 +12380,7 @@ test("test_normal_when_diagram_placement_top", async () => {
   // 実行・検証: 2 つ目のセクションの用語は、placement の bottom のとおり単語の下に出る
   const term = await hoverAndMeasure(sectionTerm, "center");
   expect(term.tip.top).toBeGreaterThanOrEqual(term.owner.bottom);
-  // 実行・検証: 知らない値は bottom として扱い、線のラベルの下に出る
+  // 実行・検証: 知らない値は bottom として扱い、テーブルの説明のボタンの下に出る
   const el2 = createElement();
   await mountTracked(el2, {
     markdown,
@@ -12309,142 +12568,45 @@ test("test_normal_when_drag_on_chart_item", async () => {
   );
 });
 
-/** タイトルの上端が `top` から、図の座標で 8px（倍率を掛けた px）以内の下にあるか */
-function stuckBelow(top: number, title: Element, scale: number): boolean {
-  const rect = title.getBoundingClientRect();
-  return rect.top >= top - 1 && rect.top <= top + 8 * scale + 1;
-}
-
-/** タイトルの高さの真ん中・左端から 24px 内側（拡大したタイトルは画面より長いため）の位置で、最も手前の要素がタイトルかその子か */
-function frontAtCenter(title: Element): boolean {
-  const rect = title.getBoundingClientRect();
-  const hit = document.elementFromPoint(
-    rect.left + Math.min(rect.width / 2, 24),
-    rect.top + rect.height / 2,
-  );
-  return hit !== null && (hit === title || title.contains(hit));
-}
-
-// 拡大して動かした間、見えているシステムの枠と層のタイトルを上端に留め、stickyTitles: false の図では留めない（正常系（グループのタイトルを留める））
-test("test_normal_when_group_titles_stuck", async () => {
-  // 準備
-  const definition = JSON.parse(INQUIRY_GROUPS_TEXT) as {
-    frame: { title: string; hint: string; x: number };
-    lanes: Array<{ label: string; kind: string; y: number; h: number }>;
-  };
-  const off = { ...definition, stickyTitles: false };
-  const el = createElement();
-  el.style.width = "600px";
-  await mountTracked(el, {
-    markdown: [
-      wrapDirective("flow", INQUIRY_GROUPS_TEXT),
-      wrapDirective("flow", JSON.stringify(off)),
-    ].join("\n"),
-  });
-  const [stuck, plain] = diagramFiguresOf(el) as [HTMLElement, HTMLElement];
-  const process = definition.lanes.find((lane) => lane.kind === "mcp");
-  const data = definition.lanes.find((lane) => lane.kind === "data");
-  if (!process || !data) {
-    throw new Error("見本の定義に処理とデータの層が無い");
-  }
-  const labelOf = (figure: Element, label: string) =>
-    [
-      ...figure.querySelectorAll<HTMLElement>(".mdmark-diagram-lane-label"),
-    ].find((element) => element.textContent?.startsWith(label)) as HTMLElement;
-  // 処理の層が表示する枠の上へ出るまで縦に動かせるよう、拡大できるだけ拡大する
-  for (const figure of [stuck, plain]) {
-    for (let i = 0; i < 12 && !buttonOf(figure, "拡大").disabled; i += 1) {
-      buttonOf(figure, "拡大").click();
-    }
-  }
-  const viewport = viewportOf(stuck);
-  const scale = scaleOf(stuck);
-  const frameTitle = find<HTMLElement>(stuck, ".mdmark-diagram-frame-title");
-  const processLabel = labelOf(stuck, process.label);
-  // 実行: 処理の層の途中を見せる（狭い画面でもタイトルが画面に入るよう、枠の左端まで横にも動かす）
-  const middle = Math.round((process.y + process.h / 2) * scale);
-  viewport.scrollLeft = Math.round(definition.frame.x * scale);
-  viewport.scrollTop = middle;
-  await nextFrames();
-  // 検証
-  expect(viewport.scrollTop).toBeGreaterThan(process.y * scale);
-  const viewportTop = viewport.getBoundingClientRect().top;
-  expect(stuckBelow(viewportTop, frameTitle, scale)).toBe(true);
-  expect(
-    stuckBelow(frameTitle.getBoundingClientRect().bottom, processLabel, scale),
-  ).toBe(true);
-  expect(frontAtCenter(frameTitle)).toBe(true);
-  expect(frontAtCenter(processLabel)).toBe(true);
-  // 実行・検証: 留めた枠のタイトルのマーカーで、枠の hint を出す
-  const info = buttonOf(stuck, `「${definition.frame.title}」の説明`);
-  await userEvent.hover(info);
-  const tip = tipOf(info);
-  expect(tip.hidden).toBe(false);
-  expect(tip.textContent).toContain(definition.frame.hint);
-  await userEvent.unhover(info);
-  // 実行: 処理の層が表示する枠の上へ出るまで動かす
-  viewport.scrollTop = Math.round((process.y + process.h) * scale) + 24;
-  await nextFrames();
-  // 検証
-  expect(processLabel.getBoundingClientRect().bottom).toBeLessThanOrEqual(
-    viewport.getBoundingClientRect().top,
-  );
-  expect(
-    stuckBelow(
-      frameTitle.getBoundingClientRect().bottom,
-      labelOf(stuck, data.label),
-      scale,
-    ),
-  ).toBe(true);
-  // 実行・検証: stickyTitles: false の図は、同じだけ動かしてもタイトルを留めない
-  const plainViewport = viewportOf(plain);
-  plainViewport.scrollIntoView({ block: "center" });
-  plainViewport.scrollTop = middle;
-  await nextFrames();
-  const plainTop = plainViewport.getBoundingClientRect().top;
-  expect(
-    find(plain, ".mdmark-diagram-frame-title").getBoundingClientRect().bottom,
-  ).toBeLessThanOrEqual(plainTop);
-  expect(
-    labelOf(plain, process.label).getBoundingClientRect().bottom,
-  ).toBeLessThanOrEqual(plainTop);
-});
-
-/** 幅 500・高さ 1600 のフロー図の定義の JSON */
-const TALL_FLOW_TEXT = JSON.stringify({
-  title: "縦に長い処理の流れ",
+/** テーブル 8 つを縦に並べ、描くと幅が 600px より狭く高さが 1600px を超える ER 図の定義の JSON */
+const TALL_ER_TEXT = erText({
+  title: "縦に長いデータ",
   scope: "高さの確認",
   updated: "2026-11-05",
   width: 500,
-  height: 1600,
-  nodes: [
-    { id: "a", kind: "script", x: 40, y: 40, w: 180, h: 72, name: "受け取る" },
-    { id: "b", kind: "script", x: 40, y: 760, w: 180, h: 72, name: "分ける" },
-    { id: "c", kind: "data", x: 40, y: 1480, w: 180, h: 72, name: "残す" },
-  ],
-  wires: [
-    {
-      id: "w1",
-      from: "a",
-      to: "b",
-      line: "flow",
-      points: [
-        [130, 112],
-        [130, 760],
-      ],
-    },
-    {
-      id: "w2",
-      from: "b",
-      to: "c",
-      line: "write",
-      points: [
-        [130, 832],
-        [130, 1480],
-      ],
-    },
-  ],
+  tables: Array.from({ length: 8 }, (_, i) => ({
+    id: `t${i + 1}`,
+    name: `table_${i + 1}`,
+    label: `テーブル ${i + 1}`,
+    kind: "transaction" as const,
+    x: 40,
+    y: 40 + i * 210,
+    w: 240,
+    columns: [
+      { name: "id", type: "bigint", pk: true, nn: true },
+      ...(i > 0
+        ? [{ name: "parent_id", type: "bigint", fk: true, nn: true }]
+        : []),
+    ],
+  })),
+  relations: Array.from({ length: 7 }, (_, i) => ({
+    from: `t${i + 1}`,
+    fromColumn: "id",
+    fromCard: "1" as const,
+    to: `t${i + 2}`,
+    toColumn: "parent_id",
+    toCard: "0..n" as const,
+  })),
 });
+
+/** 図の中身の幅と高さ（倍率を掛ける前の px） */
+function contentSize(figure: Element): { width: number; height: number } {
+  const wires = find<SVGSVGElement>(figure, ".mdmark-diagram-wires");
+  return {
+    width: Number(wires.getAttribute("width")),
+    height: Number(wires.getAttribute("height")),
+  };
+}
 
 /** 図の表示する枠の高さ（px） */
 function viewportHeight(figure: Element): number {
@@ -12458,16 +12620,19 @@ test("test_normal_when_diagram_resized", async () => {
   const el = createElement();
   el.style.width = "600px";
   el.style.setProperty("--mdmark-padding", "0");
-  const markdown = wrapDirective("flow", TALL_FLOW_TEXT);
+  const markdown = wrapDirective("er", TALL_ER_TEXT);
   const first = await mountTracked(el, { markdown });
   let figure = diagramFiguresOf(el)[0] as HTMLElement;
   let handle = find<HTMLElement>(figure, ".mdmark-diagram-resize");
+  const size = contentSize(figure);
+  expect(size.width).toBeLessThan(600);
+  expect(size.height).toBeGreaterThan(1600);
   // 検証: リサイズハンドルの属性
   expect(handle.getAttribute("role")).toBe("separator");
   expect(handle.getAttribute("aria-orientation")).toBe("horizontal");
   expect(handle.getAttribute("tabindex")).toBe("0");
   expect(handle.getAttribute("aria-label")).toBe(
-    "「縦に長い処理の流れ」の表示の高さ",
+    "「縦に長いデータ」の表示の高さ",
   );
   await vi.waitFor(() => expect(scaleOf(figure)).toBeGreaterThan(0));
   const opened = viewportHeight(figure);
@@ -12508,12 +12673,14 @@ test("test_normal_when_diagram_resized", async () => {
   viewport.focus();
   await userEvent.keyboard("0");
   const fit = Math.min(
-    viewport.clientWidth / 500,
-    viewport.clientHeight / 1600,
+    viewport.clientWidth / size.width,
+    viewport.clientHeight / size.height,
     1,
   );
   expect(scaleOf(figure)).toBeCloseTo(fit, 2);
-  expect(1600 * scaleOf(figure)).toBeLessThanOrEqual(viewport.clientHeight + 1);
+  expect(size.height * scaleOf(figure)).toBeLessThanOrEqual(
+    viewport.clientHeight + 1,
+  );
   // 実行・検証: ↑ で 32px 低く、↓ で 32px 高く
   handle.focus();
   await userEvent.keyboard("{ArrowUp}");
@@ -12523,7 +12690,9 @@ test("test_normal_when_diagram_resized", async () => {
   await userEvent.keyboard("{ArrowDown}");
   const kept = viewportHeight(figure);
   expect(Math.abs(kept - resized)).toBeLessThanOrEqual(1);
-  expect(viewport.clientHeight).toBeLessThanOrEqual(1600 * scaleOf(figure) + 2);
+  expect(viewport.clientHeight).toBeLessThanOrEqual(
+    size.height * scaleOf(figure) + 2,
+  );
   // 実行・検証: もう一度 mount すると、変えた高さで描く
   first.destroy();
   const second = await mountTracked(el, { markdown });
@@ -12535,7 +12704,7 @@ test("test_normal_when_diagram_resized", async () => {
   await userEvent.dblClick(handle);
   expect(scaleOf(figure)).toBeCloseTo(scale, 4);
   expect(
-    Math.abs(viewportOf(figure).clientHeight - 1600 * scale),
+    Math.abs(viewportOf(figure).clientHeight - size.height * scale),
   ).toBeLessThanOrEqual(1);
   const fitted = viewportHeight(figure);
   second.destroy();
@@ -12554,7 +12723,7 @@ test("test_normal_when_diagram_resized", async () => {
 // diagram-resize がオフの文書と設定では、図にリサイズハンドルを配置しない（正常系（図のリサイズハンドルの機能を解除する））
 test("test_normal_when_diagram_resize_disabled", async () => {
   // 準備
-  const flow = wrapDirective("flow", INQUIRY_TEXT);
+  const flow = wrapDirective("er", erText(shopEr()));
   const el = createElement();
   const el2 = createElement();
   const el3 = createElement();

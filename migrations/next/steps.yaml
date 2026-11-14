@@ -1,0 +1,6 @@
+steps:
+  - op: call
+    description: 文書の廃止した `flow`・`sequence` の範囲を map の範囲へ書き換え、使用していた種類を設定の `map.kinds`・`map.lines` へ書き足す（写さない値と読めない範囲は移行の報告に挙げる）
+    destructive: true
+    script: retired-diagrams.mjs
+    files: [config, documents]

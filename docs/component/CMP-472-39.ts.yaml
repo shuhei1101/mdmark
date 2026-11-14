@@ -7,7 +7,7 @@ states:
   - name: Fit
     description: 開いたとき。全体が収まる倍率（倍率のボタンは 100%）で、縮小は押せず（倍率のボタンは押せるが何も変わらない）、移動のボタンを出さない
     notes:
-      定義: モックの `inquiry`（`docs/mock/refs/42/assets/samples.js`）
+      定義: 部品設計『ER 図』の Default と同じ ER 図の定義
   - name: Zoomed
     description: 1 段拡大して位置を動かした。移動のボタンが出る
     args:
@@ -53,13 +53,6 @@ states:
     args:
       - name: resizable
         value: "'false'"
-  - name: NoLegendItems
-    description: ノードも線も 1 種類ずつのフロー図。凡例の項目が無く、凡例の場所を取らない
-    args:
-      - name: legend
-        value: "'[]'"
-    notes:
-      定義: モックの `single-kinds`（`docs/mock/refs/308/assets/samples.js`）
   - name: Mermaid
     description: 種類 `mermaid`。タイトルは題名だけで範囲と更新日を出さず、凡例の場所を取らない
     args:
@@ -97,7 +90,7 @@ states:
     notes:
       定義: モック `docs/mock/components/diagram-frame-touch/` の「操作中」。確認ログ『図の枠を指で動かすときの操作中の見せ方』
 lead: |-
-  図の部品（フロー図・シーケンス図・グラフ・ER 図）を囲む枠。タイトル（題名・範囲・更新日）・右上のボタンの帯・図を出す表示する枠・凡例をこの順に配置し、拡大・縮小・移動・全画面のモーダルと、表示する枠の高さを変える右下のリサイズハンドルを持つ。
+  図の部品（グラフ・ER 図・mermaid の図・map の図）を囲む枠。タイトル（題名・範囲・更新日）・右上のボタンの帯・図を出す表示する枠・凡例をこの順に配置し、拡大・縮小・移動・全画面のモーダルと、表示する枠の高さを変える右下のリサイズハンドルを持つ。
   右上のボタンの帯と表示する枠は、表示するノード（`.mdmark-diagram-box`）にまとめる。ボタンは 1.75rem 四方、帯の余白は 0.25rem。
 args:
   - name: kind
@@ -158,8 +151,6 @@ slots:
   - name: default
     description: 表示する枠の中に配置する図の本体
     accepts:
-      - CMP-472-28#
-      - CMP-472-19#
       - CMP-472-13#
       - CMP-472-1#
       - CMP-472-6#

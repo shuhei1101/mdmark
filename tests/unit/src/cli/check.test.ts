@@ -8,8 +8,13 @@ import {
   useTempDirs,
   writeFiles,
 } from "../../helpers/cli.ts";
-import { INQUIRY_TEXT, wrapDirective } from "../../helpers/diagrams.ts";
+import { wrapDirective } from "../../helpers/diagrams.ts";
+import { erText, shopEr } from "../../helpers/er.ts";
 import { BASE_TAG, setUpChangeTogetherRepository } from "../../helpers/git.ts";
+import {
+  INQUIRY_SEQ_TEXT,
+  INQUIRY_TEXT,
+} from "../../helpers/retired-diagrams.ts";
 
 /** 点検の処理を読み込む（実装が無い間は各テストが個別に失敗する） */
 const loadCheck = () => import("../../../../src/cli/check.ts");
@@ -707,25 +712,6 @@ test("test_collect_check_issues_when_missing_file", async () => {
 /** 読み込めないグラフの定義のマーカー（開きが先頭の行） */
 const BROKEN_CHART = wrapDirective("chart", '{ "type": "nope" }');
 
-/** 見本の `inquiry` の定義に、タイトルを `受付` にして `chat` のノードに重なるノード `extra` を加えた JSON */
-const OVERLAP_FLOW = (() => {
-  const definition = JSON.parse(INQUIRY_TEXT) as {
-    title: string;
-    nodes: Array<Record<string, unknown>>;
-  };
-  definition.title = "受付";
-  definition.nodes.push({
-    id: "extra",
-    kind: "data",
-    x: 1000,
-    y: 230,
-    w: 80,
-    h: 40,
-    name: "追加",
-  });
-  return JSON.stringify(definition, null, 2);
-})();
-
 // 図の点検のずれを最後に返却し、upgrade の呼び方でも点検する（正常系）
 test("test_collect_check_issues_when_diagram", async () => {
   // 準備
@@ -741,7 +727,7 @@ test("test_collect_check_issues_when_diagram", async () => {
     "docs/a.md": [
       "# A",
       "",
-      wrapDirective("flow", "{ broken"),
+      wrapDirective("chart", "{ broken"),
       "![図](x.png)",
       "",
     ].join("\n"),
@@ -769,36 +755,56 @@ test("test_collect_check_issues_when_diagram", async () => {
   }
 });
 
-// 読み込めない定義と配置のずれを返却する（正常系）
+/** 3 行目に読み込めないグラフの定義、10 行目に `flow` の範囲、20 行目に `sequence` の範囲を持つ文書 */
+const DIAGRAMS_MARKDOWN = (() => {
+  const lines = ["# A", "", ...BROKEN_CHART.split("\n").slice(0, -1)];
+  while (lines.length < 9) lines.push("");
+  // 定義は 1 行の JSON にして、範囲を 7 行に収める
+  const oneLine = (text: string) => JSON.stringify(JSON.parse(text));
+  lines.push(
+    ...wrapDirective("flow", oneLine(INQUIRY_TEXT)).split("\n").slice(0, -1),
+  );
+  while (lines.length < 19) lines.push("");
+  lines.push(
+    ...wrapDirective("sequence", oneLine(INQUIRY_SEQ_TEXT)).split("\n"),
+  );
+  return lines.join("\n");
+})();
+
+// 読み込めない定義と廃止した図の範囲を返却する（正常系）
 test("test_check_diagrams", async () => {
   // 準備
   const { checkDiagrams } = await loadCheck();
-  const chart = BROKEN_CHART.split("\n").slice(0, -1);
-  const markdown = [
-    "# A",
-    "",
-    ...chart,
-    wrapDirective("flow", OVERLAP_FLOW),
-  ].join("\n");
-  const flowLine = markdown.split("\n").indexOf("<!-- flow -->") + 1;
+  const markdown = DIAGRAMS_MARKDOWN;
   // 実行
-  const issues = checkDiagrams([{ path: "a.md", markdown }]);
+  const issues = checkDiagrams([{ path: "a.md", markdown }], new Set());
   // 検証
-  expect(flowLine).toBe(10);
-  expect(issues).toHaveLength(2);
-  expect(issues[0]).toMatchObject({
-    file: "a.md",
-    where: "3",
-    kind: "diagram_invalid",
-  });
-  expect(issues[1]).toMatchObject({
-    file: "a.md",
-    where: "10",
-    kind: "diagram_node_overlap",
-  });
-  for (const word of ["受付", "chat", "extra"]) {
-    expect(issues[1]?.message).toContain(word);
+  expect(
+    issues.map(({ file, where, kind }) => ({ file, where, kind })),
+  ).toEqual([
+    { file: "a.md", where: "3", kind: "diagram_invalid" },
+    { file: "a.md", where: "10", kind: "retired_diagram" },
+    { file: "a.md", where: "20", kind: "retired_diagram" },
+  ]);
+  for (const issue of issues.slice(1)) {
+    expect(issue.message).toContain("mdmark upgrade");
   }
+});
+
+// 同じ名前の拡張がある範囲を廃止した図にしない（正常系）
+test("test_check_diagrams_when_extension_named", async () => {
+  // 準備
+  const { checkDiagrams } = await loadCheck();
+  // 実行
+  const issues = checkDiagrams(
+    [{ path: "a.md", markdown: DIAGRAMS_MARKDOWN }],
+    new Set(["flow"]),
+  );
+  // 検証
+  expect(issues.map(({ where, kind }) => ({ where, kind }))).toEqual([
+    { where: "3", kind: "diagram_invalid" },
+    { where: "20", kind: "retired_diagram" },
+  ]);
 });
 
 // 整った図と図の無い文書はずれを返却しない（正常系）
@@ -806,11 +812,14 @@ test("test_check_diagrams_when_clean", async () => {
   // 準備
   const { checkDiagrams } = await loadCheck();
   const documents = [
-    { path: "a.md", markdown: `# A\n\n${wrapDirective("flow", INQUIRY_TEXT)}` },
+    {
+      path: "a.md",
+      markdown: `# A\n\n${wrapDirective("er", erText(shopEr()))}`,
+    },
     { path: "b.md", markdown: "# B\n\n本文\n" },
   ];
   // 実行
-  const issues = checkDiagrams(documents);
+  const issues = checkDiagrams(documents, new Set());
   // 検証
   expect(issues).toEqual([]);
 });
@@ -871,7 +880,7 @@ test("test_run_check_when_text", async () => {
     "-:22",
     "ずれ 3 件",
   ]);
-  expect(stdout[0]).toMatch(/^-:1: diagram_invalid: /);
+  expect(stdout[0]).toMatch(/^-:1: retired_diagram: /);
   expect(stdout[1]).toMatch(/^-:20: unknown_mark: /);
   expect(stdout[2]).toMatch(/^-:22: syntax_warning: /);
 });

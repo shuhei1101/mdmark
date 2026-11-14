@@ -1,11 +1,8 @@
 import { afterEach, beforeAll, expect, test, vi } from "vitest";
 import { userEvent } from "vitest/browser";
-import {
-  INQUIRY_GROUPS_TEXT,
-  INQUIRY_TEXT,
-  wrapDirective,
-} from "../../helpers/diagrams.ts";
+import { wrapDirective } from "../../helpers/diagrams.ts";
 import { addStyles, createRoot, removeRoots } from "../../helpers/dom.ts";
+import { erText, shopEr } from "../../helpers/er.ts";
 import { memoryStorage } from "../../helpers/storage.ts";
 
 /** 図の操作を読み込む（実装が無い間は各テストが個別に失敗する） */
@@ -25,30 +22,46 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
-/** 幅 600px の描く先の要素に、幅 1100 のフロー図を描く */
+/** 幅 1100 の ER 図（モックの `shop-er` の幅を広げたもの）の定義の JSON */
+const WIDE_TEXT = erText({ ...shopEr(), width: 1100 });
+
+/** 幅 `width`・高さ `height` の ER 図の定義の JSON（列 1 つのテーブルを、図の下端が `height` になる位置に配置する） */
+function sizedEr(width: number, height: number): string {
+  return erText({
+    title: "大きさを決めた図",
+    scope: "表示する枠の高さを確認する",
+    updated: "2026-11-05",
+    width,
+    tables: [
+      {
+        id: "items",
+        name: "items",
+        label: "項目",
+        x: 20,
+        // テーブルの高さ（見出し 44・列 26・枠 4）と図の下の余白 32 を引く
+        y: height - 106,
+        w: 140,
+        columns: [{ name: "id", type: "bigint", pk: true }],
+      },
+    ],
+    relations: [],
+  });
+}
+
+/** 幅 600px の描く先の要素に、幅 1100 の ER 図を描く */
 function createDiagramRoot(): HTMLElement {
-  const { root } = createRoot(wrapDirective("flow", INQUIRY_TEXT));
+  const { root } = createRoot(wrapDirective("er", WIDE_TEXT));
   root.style.width = "600px";
   root.style.setProperty("--mdmark-padding", "0");
   return root;
 }
 
-/** 幅 600・高さ 1200 のフロー図の定義（全体が収まる倍率が 1 になる縦長の図） */
-const TALL_TEXT = JSON.stringify({
-  title: "縦長の図",
-  scope: "表示する枠の高さを確認する",
-  updated: "2026-10-31",
-  width: 600,
-  height: 1200,
-  nodes: [
-    { id: "top", kind: "script", x: 230, y: 20, w: 140, h: 64, name: "上" },
-  ],
-  wires: [],
-});
+/** 幅 600・高さ 1200 の ER 図の定義（全体が収まる倍率が 1 になる縦長の図） */
+const TALL_TEXT = sizedEr(600, 1200);
 
-/** 幅 600px の描く先の要素に、幅 600・高さ 1200 のフロー図を描く */
+/** 幅 600px の描く先の要素に、幅 600・高さ 1200 の ER 図を描く */
 function createTallDiagramRoot(): HTMLElement {
-  const { root } = createRoot(wrapDirective("flow", TALL_TEXT));
+  const { root } = createRoot(wrapDirective("er", TALL_TEXT));
   root.style.width = "600px";
   root.style.setProperty("--mdmark-padding", "0");
   return root;
@@ -276,7 +289,9 @@ test("test_open_diagram_dialog_when_tip_open", async () => {
     throw new Error("全画面が開いていない");
   }
   const owners = [
-    ...dialog.querySelectorAll<HTMLElement>(".mdmark-diagram-label.has-tip"),
+    ...dialog.querySelectorAll<HTMLElement>(
+      ".mdmark-diagram-info[aria-describedby]",
+    ),
   ];
   expect(owners.length).toBeGreaterThanOrEqual(2);
   // 実行・検証
@@ -292,18 +307,8 @@ test("test_open_diagram_dialog_when_tip_open", async () => {
   }
 });
 
-/** 幅 500・高さ 1600 のフロー図の定義（全体が収まる倍率は幅で決まり 1 になる縦長の図） */
-const LONG_TEXT = JSON.stringify({
-  title: "縦に長い図",
-  scope: "リサイズハンドルを確認する",
-  updated: "2026-11-05",
-  width: 500,
-  height: 1600,
-  nodes: [
-    { id: "top", kind: "script", x: 180, y: 20, w: 140, h: 64, name: "上" },
-  ],
-  wires: [],
-});
+/** 幅 500・高さ 1600 の ER 図の定義（全体が収まる倍率は幅で決まり 1 になる縦長の図） */
+const LONG_TEXT = sizedEr(500, 1600);
 
 /** 表示する枠の右下のリサイズハンドル */
 function handleOf(root: ParentNode): HTMLElement {
@@ -319,7 +324,7 @@ test("test_attach_diagrams_when_handle_resized", async () => {
   // 準備
   vi.spyOn(Element.prototype, "setPointerCapture").mockImplementation(() => {});
   const { attachDiagrams } = await loadDiagrams();
-  const { root } = createRoot(wrapDirective("flow", LONG_TEXT));
+  const { root } = createRoot(wrapDirective("er", LONG_TEXT));
   root.style.width = "600px";
   root.style.setProperty("--mdmark-padding", "0");
   const storage = memoryStorage();
@@ -358,7 +363,7 @@ test("test_attach_diagrams_when_figures_given", async () => {
   // 準備
   const { attachDiagrams } = await loadDiagrams();
   const { root } = createRoot(
-    `${wrapDirective("flow", INQUIRY_TEXT)}\n\n${wrapDirective("flow", INQUIRY_TEXT)}`,
+    `${wrapDirective("er", WIDE_TEXT)}\n\n${wrapDirective("er", WIDE_TEXT)}`,
   );
   root.style.width = "300px";
   root.style.setProperty("--mdmark-padding", "0");
@@ -381,46 +386,4 @@ test("test_attach_diagrams_when_figures_given", async () => {
   const before = zoomText(other);
   button(other, "拡大").click();
   expect(zoomText(other)).toBe(before);
-});
-
-// 動かした間、グループのタイトルを上端に留め、off の図では留めない（正常系）
-test("test_attach_diagrams_when_titles_stuck", async () => {
-  // 準備
-  const { attachDiagrams } = await loadDiagrams();
-  const off = JSON.stringify({
-    ...JSON.parse(INQUIRY_GROUPS_TEXT),
-    stickyTitles: false,
-  });
-  const { root } = createRoot(
-    `${wrapDirective("flow", INQUIRY_GROUPS_TEXT)}\n\n${wrapDirective("flow", off)}`,
-  );
-  root.style.width = "600px";
-  root.style.setProperty("--mdmark-padding", "0");
-  detachers.push(attachDiagrams({ root, placement: "bottom" }));
-  const figures = [
-    ...root.querySelectorAll<HTMLElement>("figure.mdmark-diagram"),
-  ];
-  // 実行
-  for (const figure of figures) {
-    button(figure, "拡大").click();
-    button(figure, "拡大").click();
-    const viewport = viewportOf(figure);
-    viewport.scrollTop = viewport.scrollHeight * 0.4;
-    viewport.dispatchEvent(new Event("scroll"));
-  }
-  // 検証
-  const [on, stopped] = figures;
-  const frameTitle = on?.querySelector<HTMLElement>(
-    ".mdmark-diagram-frame-title",
-  );
-  expect(frameTitle?.classList.contains("is-stuck")).toBe(true);
-  expect(frameTitle?.style.transform).toContain("translateY");
-  expect(
-    on?.querySelectorAll(".mdmark-diagram-lane-label.is-stuck").length,
-  ).toBe(1);
-  for (const title of stopped?.querySelectorAll<HTMLElement>(
-    "[data-sticky-top]",
-  ) ?? []) {
-    expect(title.style.transform).toBe("");
-  }
 });
