@@ -3,14 +3,14 @@ visibility: internal
 title: "vsce"
 kind: "CLI"
 version:
-  current: 4.0.0
-  latest: 4.0.0
-  checked_on: '2026-10-23'
+  current: 4.1.1
+  latest: 4.1.1
+  checked_on: '2026-11-14'
   source: vscode/package.json
-  pinning: '`devDependencies` に完全一致で配置する'
+  pinning: '`devDependencies` に完全一致で配置する。`publish --oidc` は 4.1.0 以上（4.0.0 の OIDC の交換は Marketplace の仕様と合わない）'
 catalogs:
   - name: コマンド
-    version: 4.0.0
+    version: 4.1.1
     entries:
       - name: vsce package
         kind: コマンド
@@ -27,8 +27,28 @@ catalogs:
             required: false
             default: 'false'
             description: '`node_modules` を含めない（まとめた拡張機能で使用する）'
+      - name: vsce publish
+        kind: コマンド
+        purpose: .vsix を Visual Studio Marketplace へ公開する
+        description: '公開済みのバージョンを問い合わせ、同じバージョンがあれば `{publisher}.{name} v{version} already exists.` でアップロードせずに止める。`--oidc` は GitHub Actions の OIDC トークン（audience `marketplace.visualstudio.com`）を `POST /_apis/gallery/token?api-version=7.2-preview.1`（`Authorization: FederatedToken`）で公開用のトークンに交換し、失敗すると `Marketplace OIDC token exchange failed with {status}: {message}` で止める（PAT へは切り替えない）'
+        params:
+          - name: --oidc
+            type: boolean
+            required: false
+            default: 'false'
+            description: 'GitHub Actions の OIDC トークンで認証する（trusted publishing。ワークフローに `id-token: write` が要る）'
+          - name: --packagePath
+            type: string
+            required: false
+            default: なし（フォルダから .vsix を作って公開する）
+            description: 公開する .vsix のパス
+          - name: --skip-duplicate
+            type: boolean
+            required: false
+            default: 'false'
+            description: 同じバージョンが公開済みのとき、失敗せずに飛ばす（このリポジトリでは使用しない）
 lead: VS Code の拡張機能を .vsix にまとめ、Visual Studio Marketplace へ公開する CLI。
-purl: pkg:npm/%40vscode/vsce@4.0.0
+purl: pkg:npm/%40vscode/vsce@4.1.1
 supplier: Microsoft
 dependency_scope: 開発のみ
 adoption: 採用
@@ -37,12 +57,12 @@ used_in:
 upstream: microsoft/vscode-vsce
 verification:
   state: 済
-  date: '2026-10-23'
-  detail: '`dist/extension.js` だけを持ち `.vscodeignore` で `node_modules/**` を除いた最小の拡張機能で `npx @vscode/vsce@4.0.0 package --no-dependencies --out mdmark-0.1.0.vsix` を実行し、.vsix が `extension/package.json`（`version` が `0.1.0`）・`extension/dist/extension.js`・`extension/LICENSE.txt`・`extension/readme.md`・`extension.vsixmanifest`・`[Content_Types].xml` だけを持ち `node_modules/` を含まないことを確認した。`engines.vscode` を `^1.130.0`、`@types/vscode` を `1.140.0` にすると `@types/vscode 1.140.0 greater than engines.vscode ^1.130.0` で失敗し、.vsix を書き込まないことを確認した'
+  date: '2026-11-14'
+  detail: '`dist/extension.js` だけを持ち `.vscodeignore` で `node_modules/**` を除いた最小の拡張機能で `npx @vscode/vsce@4.0.0 package --no-dependencies --out mdmark-0.1.0.vsix` を実行し、.vsix が `extension/package.json`（`version` が `0.1.0`）・`extension/dist/extension.js`・`extension/LICENSE.txt`・`extension/readme.md`・`extension.vsixmanifest`・`[Content_Types].xml` だけを持ち `node_modules/` を含まないことを確認した。`engines.vscode` を `^1.130.0`、`@types/vscode` を `1.140.0` にすると `@types/vscode 1.140.0 greater than engines.vscode ^1.130.0` で失敗し、.vsix を書き込まないことを確認した。2026-11-14 に 4.1.1 で次を確認した。`npm --prefix vscode exec -- vsce publish --help` が `--oidc`・`--packagePath`・`--skip-duplicate` を持つ。リポジトリの直下の `npm ci` と `npm --prefix vscode ci` の後の `npm --prefix vscode run package` が `mdmark-0.1.2.vsix` を作る（直下の依存が無いと `yaml`・`ajv`・`lucide` を解決できず失敗する）。PoC（#555、run 43542400400）で、`id-token: write` のワークフローから `out/oidc.js` の `getOIDCCredential(''ShuheiNishikawa'')` が公開用のトークン（長さ 942）を返した。公開（`vsce publish --oidc`）は Marketplace へ書き込むため走らせておらず、マージの後の最初のタグで確認する'
 license: MIT（商用利用可）
 official_url: https://code.visualstudio.com/api/working-with-extensions/publishing-extension
 docs_url: https://github.com/microsoft/vscode-vsce
 install: |-
   ```bash
-  npm --prefix vscode i -D -E @vscode/vsce@4.0.0
+  npm --prefix vscode i -D -E @vscode/vsce@4.1.1
   ```

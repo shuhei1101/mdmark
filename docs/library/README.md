@@ -22,7 +22,7 @@
 | [lucide](./LIB-472-15.yaml) | 図と記法のアイコンの形状 |
 | [diff](./LIB-472-9.yaml) | 2 つのリビジョンの Markdown を行と単語で比べる（jsdiff） |
 | [vscode](./LIB-472-35.yaml) | VS Code の拡張機能の API（コマンド・設定・エディタ・Webview） |
-| [vsce](./LIB-472-34.yaml) | VS Code の拡張機能を .vsix にまとめる |
+| [vsce](./LIB-472-34.yaml) | VS Code の拡張機能を .vsix にまとめ、Marketplace へ公開する |
 | [test-electron](./LIB-472-27.yaml) | VS Code を取得して起動し、拡張機能ホストの中で結合テストを走らせる |
 | [mocha](./LIB-472-18.yaml) | 拡張機能ホストの中で結合テストを走らせるテストフレームワーク |
 | [MCP-SDK](./LIB-472-2.yaml) | Claude Code のプラグインの MCP サーバーとテストのクライアント |
