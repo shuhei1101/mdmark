@@ -95,4 +95,8 @@ diff の見どころ: `vscode/package.json` の `@vscode/vsce` を 4.1.1 に上�
 | [vscode/tests/integration/release.test.ts](https://github.com/shuhei1101/mdmark/blob/d79a9dfb/vscode/tests/integration/release.test.ts) | `test_normal`・`test_error_when_version_mismatch` | 変更 | ✅ | 0.1.3・`id-token: write`・最後の公開の工程（Release に添える工程より後・`--skip-duplicate` なし）・`secrets.` を含まないことを追加<br>`テスト結果/20261114124650_d79a9dfb_VSCode拡張機能の結合テスト.log` |
 | `vscode/tests/integration/*.test.ts`（上記以外） | 全実行 | 実行のみ | ✅ | VS Code 1.141.0 と stable の両方で 83 passing<br>`テスト結果/20261114124650_d79a9dfb_VSCode拡張機能の結合テスト.log` |
 
-1 回目の実行では、この PR が触れていない `preview-open.test.ts` の `test_normal_when_version_pinned` が 1 件 fail した（`map.js` の要求が検証の時点で記録されていなかった）。テストコードも実装も変えずに実行し直して全 pass したため、`map.js` の読み込みと検証のタイミングによる不安定な fail と判断した。
+| [vscode/tests/integration/release.test.ts](https://github.com/shuhei1101/mdmark/blob/37ca2837/vscode/tests/integration/release.test.ts) | `test_normal` | 変更 | ✅ | レビューの任意の指摘で、リポジトリの直下の `npm ci` が `npm --prefix vscode run package` より前にあることの確認を追加。37ca2837 で 2 回実行し、2 回とも両方のバージョンで pass<br>`テスト結果/20261114130458_37ca2837_VSCode拡張機能の結合テスト.log`・`テスト結果/20261114131254_37ca2837_VSCode拡張機能の結合テスト.log` |
+
+37ca2837 の 2 回の実行では、この PR が触れていない既知の不安定なテストが 1 件ずつ fail した（1 回目は stable の `preview-rerender.test.ts` の `test_normal_when_map_configured`（#535）、2 回目は stable の `preview-open.test.ts` の `test_normal_when_version_pinned`（#563））。`拡張機能の配布物を作る` の 2 件は全ての実行で pass し、その他の fail はどちらもこの PR の変更（ワークフロー・`vscode/package.json`・`release.test.ts`）に関わらないため、実行し直しを止めた。
+
+d79a9dfb の 1 回目の実行では、この PR が触れていない `preview-open.test.ts` の `test_normal_when_version_pinned` が 1 件 fail した（`map.js` の要求が検証の時点で記録されていなかった）。テストコードも実装も変えずに実行し直して全 pass したため、`map.js` の読み込みと検証のタイミングによる不安定な fail と判断した。

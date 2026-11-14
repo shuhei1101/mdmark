@@ -36,6 +36,12 @@ scope_out:
   - item: Open VSX への公開
     reason: ユーザーが VS Code だけを使用するため公開しないと決めた（確認ログ）
     plan: none
+  - item: 結合テスト `preview-open.test.ts` の `test_normal_when_version_pinned` の不安定な fail
+    reason: この PR が触れていないテストで、`map.js` の要求の記録と検証のタイミングに依る
+    plan: '#563'
+  - item: 結合テスト `preview-rerender.test.ts` の `test_normal_when_map_configured` の不安定な fail
+    reason: この PR が触れていないテストで、余分な再描画を数えてときどき fail する既知の事象
+    plan: '#535'
 use_cases:
   - kind: single
     scenario: docs/scenario/SC-472-50.yaml
