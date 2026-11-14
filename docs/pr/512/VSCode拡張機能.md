@@ -86,7 +86,7 @@ diff の見どころ: `vscode/package.json` の `@vscode/vsce` を 4.1.1 に上�
 
 | ファイル | メソッド | 変更種別 | 結果 | 補足 |
 | --- | --- | --- | --- | --- |
-| `npm run lint`・`npm run lint:eslint`・`npm run typecheck`・`npm --prefix vscode run typecheck` | 全実行 | 実行のみ | ✅ | `テスト結果/20261114125608_d79a9dfb_lint.log`（結合テストの変更の後。前回は `テスト結果/20261114121942_cbaeacba_lint.log`） |
+| `npm run lint`・`npm run lint:eslint`・`npm run typecheck`・`npm --prefix vscode run typecheck` | 全実行 | 実行のみ | ✅ | `テスト結果/20261114132814_37ca2837_lint.log`（直下の依存を確認する結合テストの追加の後。前回は `テスト結果/20261114125608_d79a9dfb_lint.log`） |
 
 ### 結合
 
