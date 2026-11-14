@@ -227,9 +227,9 @@ functions:
       - name: test_render_map_er_diagram
         case: 正常
         summary: ER 図の部品
-        condition: モックの `ER` を配置して `rewireMapEr` で付け替え、「注文」の列 `状態` に説明、`fanouts` に `r1` を指定する
+        condition: モックの `ER` を配置して `rewireMapEr` で付け替え、「注文」の列 `状態` に説明、`fanouts` に `r1`・`r2`・`r3` を指定する
         mock: なし
-        expected: 「注文」のノードに開閉のボタンと列の行があり、`map-er-cardinality` が関連の数の 2 倍、`map-er-label` がラベルを持つ関連の数だけあり、`map-er-fanout` のボタンがあり、ツールチップに列の説明と「行が増える関連」がある
+        expected: 「注文」のノードに開閉のボタンと列の行があり、`map-er-cardinality` が関連の数の 2 倍、`map-er-label` がラベルを持つ関連の数だけあり、`map-er-fanout` のボタンが 3 つあり、どのボタンの矩形もノードの矩形（`MAP_ER.aside` を含む）と重ならず、ツールチップに列の説明と「行が増える関連」がある
   - name: rewireMapEr
     title: ER図の関連の端の付け替え
     kind: 関数
@@ -248,7 +248,7 @@ functions:
       description: 付け替えた線
     process: |-
       1. 辺を、補足の `ends` → 元の辺（同じ高さの隣のノードまでの空きが `MAP_ER.crowd` 以上のとき）→ 空きが広い側 → 次の点がある側の順に選ぶ
-      2. 辺から `MAP_ER.endOut`（同じ辺から出る 2 本目からは `MAP_ER.step` ずつ延ばす）出て元の経路へ戻す。元の辺と反対の辺から出すときは、ノードの上を回って戻す
+      2. 辺から `MAP_ER.endOut`（同じ辺から出る 2 本目からは `MAP_ER.step`（構成図の線どうしの間隔 `MAP_LAYOUT.clearance`）ずつ延ばす）出て元の経路へ戻す。元の辺と反対の辺から出すときは、ノードの上を回って戻す
     unit_tests:
       - name: test_rewire_map_er
         case: 正常
@@ -278,7 +278,7 @@ functions:
     container: src/parts/map.ts
     usecase: Mermaidと補足で図を描く
     role: 処理
-    summary: 行が増える関連ごとに、両端を除いた最も長い区間の中ほどの、ラベルの反対側に `button.map-er-fanout`（「×n」）と、その説明のツールチップを描く
+    summary: 行が増える関連ごとに `button.map-er-fanout`（「×n」）と、その説明のツールチップを描く。置き場所は、両端を除いた区間を長い順に、区間の中ほど → 4 分の 1 → 4 分の 3 の位置で、ラベルの反対側 → ラベルの側の順に試し、どのノードの矩形（`MAP_ER.aside` を含む）とも重ならない最初の場所
     scope: public
     args:
       - name: args
