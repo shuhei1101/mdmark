@@ -39,6 +39,62 @@ const DROPPED_TAGS = new Set([
   ...[...DIAGRAM_ONLY_TAGS].filter((tag) => tag !== "button"),
 ]);
 
+/** 本文の位置の実体参照が、照合した文字の位置から始まる文字に戻るなら、実体参照とその戻した文字 */
+function entityAt(options: {
+  body: string;
+  at: number;
+  text: string;
+  position: number;
+}): { entity: string; decoded: string } | undefined {
+  const { body, at, text, position } = options;
+  if (body[at] !== "&") {
+    return undefined;
+  }
+  const entity = ENTITY_PATTERN.exec(
+    body.slice(at, at + ENTITY_MAX_LENGTH),
+  )?.[0];
+  if (entity === undefined) {
+    return undefined;
+  }
+  const decoded = unescapeAll(entity);
+  return decoded !== entity && text.startsWith(decoded, position)
+    ? { entity, decoded }
+    : undefined;
+}
+
+/** 照合した文字を本文へ当てる 1 歩: 当てた文字ごとの本文の位置と、次の本文の位置と照合した文字の位置 */
+function alignStep(options: {
+  body: string;
+  text: string;
+  at: number;
+  position: number;
+}): { offsets: number[]; at: number; position: number } {
+  const { body, text, at, position } = options;
+  // 本文の最後まで探しても該当しない文字は、本文の終わりを指す
+  if (at >= body.length) {
+    return { offsets: [body.length], at, position: position + 1 };
+  }
+  const char = text[position] as string;
+  // エスケープ（`\*`）は 2 文字で 1 文字
+  if (body[at] === "\\" && body[at + 1] === char) {
+    return { offsets: [at], at: at + 2, position: position + 1 };
+  }
+  // 実体参照は、戻した文字の長さぶん同じ位置を指す
+  const found = entityAt(options);
+  if (found) {
+    return {
+      offsets: Array.from({ length: found.decoded.length }, () => at),
+      at: at + found.entity.length,
+      position: position + found.decoded.length,
+    };
+  }
+  if (body[at] === char) {
+    return { offsets: [at], at: at + 1, position: position + 1 };
+  }
+  // どれにも該当しない本文の文字（記法の記号・字下げ・引用のマーカー）は飛ばす
+  return { offsets: [], at: at + 1, position };
+}
+
 /** 本文の位置 `cursor` から、照合した文字を 1 文字ずつ本文へ当て、各文字の本文の位置と当て終えた位置を返却する */
 export function alignText(options: {
   body: string;
@@ -50,51 +106,32 @@ export function alignText(options: {
   let at = options.cursor;
   let position = 0;
   while (position < text.length) {
-    // 本文の最後まで探しても該当しない文字は、本文の終わりを指す
-    if (at >= body.length) {
-      offsets.push(body.length);
-      position += 1;
-      continue;
-    }
-    const char = text[position] as string;
-    // エスケープ（`\*`）は 2 文字で 1 文字
-    if (body[at] === "\\" && body[at + 1] === char) {
-      offsets.push(at);
-      at += 2;
-      position += 1;
-      continue;
-    }
-    // 実体参照は、戻した文字の長さぶん同じ位置を指す
-    if (body[at] === "&") {
-      const entity = ENTITY_PATTERN.exec(
-        body.slice(at, at + ENTITY_MAX_LENGTH),
-      )?.[0];
-      const decoded = entity === undefined ? undefined : unescapeAll(entity);
-      if (
-        entity !== undefined &&
-        decoded !== undefined &&
-        decoded !== entity &&
-        text.startsWith(decoded, position)
-      ) {
-        for (let count = 0; count < decoded.length; count++) {
-          offsets.push(at);
-        }
-        at += entity.length;
-        position += decoded.length;
-        continue;
-      }
-    }
-    if (body[at] === char) {
-      offsets.push(at);
-      at += 1;
-      position += 1;
-      continue;
-    }
-    // どれにも該当しない本文の文字（記法の記号・字下げ・引用のマーカー）は飛ばす
-    at += 1;
+    const step = alignStep({ body, text, at, position });
+    offsets.push(...step.offsets);
+    at = step.at;
+    position = step.position;
   }
   offsets.push(at);
   return { offsets, end: at };
+}
+
+/** リンクのタイトルの引用符なら、閉じの引用符の位置（引用符でないか閉じが無ければ `position`）。引用符の中の括弧は数えない */
+function skipTitleQuote(options: {
+  body: string;
+  position: number;
+  open: string;
+}): number {
+  const { body, position, open } = options;
+  const char = body[position] ?? "";
+  const quote =
+    open === "(" &&
+    (char === '"' || char === "'") &&
+    /\s/.test(body[position - 1] ?? "");
+  if (!quote) {
+    return position;
+  }
+  const quoteEnd = body.indexOf(char, position + 1);
+  return quoteEnd >= 0 ? quoteEnd : position;
 }
 
 /** `at` の開き括弧から、入れ子を数えて閉じ括弧の次の位置を返却する。閉じが無いときは開き括弧の次の位置 */
@@ -110,23 +147,15 @@ function skipGroup(options: {
     const char = body[position];
     if (char === "\\") {
       position += 1;
-    } else if (
-      open === "(" &&
-      (char === '"' || char === "'") &&
-      /\s/.test(body[position - 1] ?? "")
-    ) {
-      // リンクのタイトルの引用符の中の括弧は数えない
-      const quoteEnd = body.indexOf(char, position + 1);
-      if (quoteEnd >= 0) {
-        position = quoteEnd;
-      }
-    } else if (char === open) {
+      continue;
+    }
+    position = skipTitleQuote({ body, position, open });
+    if (char === open) {
       depth += 1;
+    } else if (char === close && depth === 1) {
+      return position + 1;
     } else if (char === close) {
       depth -= 1;
-      if (depth === 0) {
-        return position + 1;
-      }
     }
   }
   return at + 1;
@@ -142,6 +171,132 @@ function locateLine(body: string, from: number, line: string): number {
   return at < 0 ? from : at;
 }
 
+/** 行内のトークンの子を本文へ当てる間に参照する、本文と行内のトークンの行 */
+type InlineContext = {
+  body: string;
+  /** 行内のトークンの最初の行の中身が始まる本文の位置 */
+  first: number;
+  /** 行内のトークンの中身の行 */
+  lines: string[];
+};
+
+/** 子 1 つを本文へ当て、当て終えた位置を返却する */
+type Advance = (child: Token, cursor: number, context: InlineContext) => number;
+
+/** `[`・`(` で始まるリンク先・参照の名前を飛ばした位置 */
+function skipDestination(body: string, cursor: number): number {
+  if (body[cursor] === "(") {
+    return skipGroup({ body, at: cursor, open: "(", close: ")" });
+  }
+  if (body[cursor] === "[") {
+    return skipGroup({ body, at: cursor, open: "[", close: "]" });
+  }
+  return cursor;
+}
+
+/** 開きと同じ長さのバッククォートの連なりの閉じの次の位置（無ければ `undefined`） */
+function codeClose(
+  body: string,
+  from: number,
+  length: number,
+): number | undefined {
+  let at = from;
+  while (at < body.length) {
+    const next = body.indexOf("`", at);
+    if (next < 0) {
+      return undefined;
+    }
+    let run = next;
+    while (body[run] === "`") {
+      run += 1;
+    }
+    if (run - next === length) {
+      return run;
+    }
+    at = run;
+  }
+  return undefined;
+}
+
+/** 行内のコード: 同じ長さのバッククォートの連なりが閉じ */
+const advanceCode: Advance = (child, cursor, { body }) => {
+  const open = body.indexOf(child.markup, cursor);
+  if (open < 0) {
+    return cursor;
+  }
+  const from = open + child.markup.length;
+  return (
+    codeClose(body, from, child.markup.length) ??
+    open + child.markup.length * 2 + child.content.length
+  );
+};
+
+/** リンクの開き: 自動リンクは `<`、リンクは `[` の次へ（自動で付けたリンクは本文に記号が無い） */
+const advanceLinkOpen: Advance = (child, cursor, { body }) => {
+  if (child.markup === "autolink") {
+    return Math.max(cursor, body.indexOf("<", cursor) + 1);
+  }
+  if (child.markup === "linkify") {
+    return cursor;
+  }
+  return Math.max(cursor, body.indexOf("[", cursor) + 1);
+};
+
+/** リンクの閉じ: 自動リンクの `>`、リンクの `]` とリンク先・参照の名前の次へ */
+const advanceLinkClose: Advance = (child, cursor, { body }) => {
+  if (child.markup === "linkify") {
+    return cursor;
+  }
+  if (body[cursor] === ">") {
+    return cursor + 1;
+  }
+  const close = body.indexOf("]", cursor);
+  return close < 0 ? cursor : skipDestination(body, close + 1);
+};
+
+/** 画像: `![…]` とリンク先・参照の名前の次へ */
+const advanceImage: Advance = (_, cursor, { body }) => {
+  const open = body.indexOf("![", cursor);
+  if (open < 0) {
+    return cursor;
+  }
+  return skipDestination(
+    body,
+    skipGroup({ body, at: open + 1, open: "[", close: "]" }),
+  );
+};
+
+/** 改行: 次の行の中身から始める（その行の頭の記号を飛ばす） */
+const advanceBreak: Advance = (_, cursor, { body, first, lines }) => {
+  const newline = body.indexOf("\n", cursor);
+  const next = newline < 0 ? body.length : newline + 1;
+  const passed = body.slice(first, next).split("\n").length - 1;
+  return locateLine(body, next, lines[passed] ?? "");
+};
+
+/** 行内の HTML: 同じ文字の次へ */
+const advanceHtml: Advance = (child, cursor, { body }) => {
+  const at = body.indexOf(child.content, cursor);
+  return at >= 0 ? at + child.content.length : cursor;
+};
+
+/** 強調などの記号: 本文の位置から記号が始まれば、その次へ */
+const advanceMarkup: Advance = (child, cursor, { body }) =>
+  child.markup !== "" && body.startsWith(child.markup, cursor)
+    ? cursor + child.markup.length
+    : cursor;
+
+/** 子のトークンの種類ごとの当て方（`text` を除く。無い種類は記号として当てる） */
+const ADVANCES = new Map<string, Advance>([
+  ["code_inline", advanceCode],
+  ["link_open", advanceLinkOpen],
+  ["link_close", advanceLinkClose],
+  ["image", advanceImage],
+  ["softbreak", advanceBreak],
+  ["hardbreak", advanceBreak],
+  ["html_inline", advanceHtml],
+]);
+
 /** 行内のトークンの子を頭から本文へ当て、照合してよい `text` の子ごとに各文字の本文の位置を返却する */
 export function inlineOffsets(options: {
   body: string;
@@ -153,105 +308,22 @@ export function inlineOffsets(options: {
   const byChild = new Map<number, number[]>();
   const lines = inline.content.split("\n");
   const first = locateLine(body, options.start, lines[0] ?? "");
+  const context: InlineContext = { body, first, lines };
   let cursor = first;
   (inline.children ?? []).forEach((child, position) => {
-    switch (child.type) {
-      case "text": {
-        const aligned = alignText({ body, cursor, text: child.content });
-        if (keep.has(position)) {
-          byChild.set(position, aligned.offsets);
-        }
-        cursor = aligned.end;
-        break;
-      }
-      case "code_inline": {
-        const open = body.indexOf(child.markup, cursor);
-        if (open < 0) {
-          break;
-        }
-        // 同じ長さのバッククォートの連なりが閉じ
-        let at = open + child.markup.length;
-        let closed = false;
-        while (at < body.length && !closed) {
-          const next = body.indexOf("`", at);
-          if (next < 0) {
-            break;
-          }
-          let run = next;
-          while (body[run] === "`") {
-            run += 1;
-          }
-          closed = run - next === child.markup.length;
-          at = run;
-        }
-        cursor = closed
-          ? at
-          : open + child.markup.length * 2 + child.content.length;
-        break;
-      }
-      case "link_open":
-        if (child.markup === "autolink") {
-          cursor = Math.max(cursor, body.indexOf("<", cursor) + 1);
-        } else if (child.markup !== "linkify") {
-          cursor = Math.max(cursor, body.indexOf("[", cursor) + 1);
-        }
-        break;
-      case "link_close": {
-        if (child.markup === "linkify") {
-          break;
-        }
-        if (body[cursor] === ">") {
-          // 自動リンクの閉じ
-          cursor += 1;
-          break;
-        }
-        const close = body.indexOf("]", cursor);
-        if (close < 0) {
-          break;
-        }
-        cursor = close + 1;
-        if (body[cursor] === "(") {
-          cursor = skipGroup({ body, at: cursor, open: "(", close: ")" });
-        } else if (body[cursor] === "[") {
-          cursor = skipGroup({ body, at: cursor, open: "[", close: "]" });
-        }
-        break;
-      }
-      case "image": {
-        const open = body.indexOf("![", cursor);
-        if (open < 0) {
-          break;
-        }
-        cursor = skipGroup({ body, at: open + 1, open: "[", close: "]" });
-        if (body[cursor] === "(") {
-          cursor = skipGroup({ body, at: cursor, open: "(", close: ")" });
-        } else if (body[cursor] === "[") {
-          cursor = skipGroup({ body, at: cursor, open: "[", close: "]" });
-        }
-        break;
-      }
-      case "softbreak":
-      case "hardbreak": {
-        const newline = body.indexOf("\n", cursor);
-        const next = newline < 0 ? body.length : newline + 1;
-        // 次の行の中身から始める（その行の頭の記号を飛ばす）
-        const passed = body.slice(first, next).split("\n").length - 1;
-        cursor = locateLine(body, next, lines[passed] ?? "");
-        break;
-      }
-      case "html_inline": {
-        const at = body.indexOf(child.content, cursor);
-        if (at >= 0) {
-          cursor = at + child.content.length;
-        }
-        break;
-      }
-      default:
-        // 強調などの記号
-        if (child.markup !== "" && body.startsWith(child.markup, cursor)) {
-          cursor += child.markup.length;
-        }
+    if (child.type !== "text") {
+      cursor = (ADVANCES.get(child.type) ?? advanceMarkup)(
+        child,
+        cursor,
+        context,
+      );
+      return;
     }
+    const aligned = alignText({ body, cursor, text: child.content });
+    if (keep.has(position)) {
+      byChild.set(position, aligned.offsets);
+    }
+    cursor = aligned.end;
   });
   return { byChild, end: cursor };
 }
@@ -277,73 +349,112 @@ function elementEnd(html: string, from: number, name: string): number {
   return html.length;
 }
 
+/** 伏せる範囲と、開いている要素の名前（外側から） */
+type MaskState = { hidden: Uint8Array; open: string[] };
+
+/** 位置から始まる範囲を伏せ、伏せた次の位置を返却する。範囲が始まらなければ `undefined` */
+type Masker = (
+  html: string,
+  at: number,
+  state: MaskState,
+) => number | undefined;
+
+/** コメントを伏せる */
+const maskComment: Masker = (html, at, { hidden }) => {
+  if (!html.startsWith("<!--", at)) {
+    return undefined;
+  }
+  const close = html.indexOf("-->", at + 4);
+  const end = close < 0 ? html.length : close + 3;
+  hidden.fill(1, at, end);
+  return end;
+};
+
+/** 正規表現が位置から一致する範囲を伏せる */
+const maskPattern =
+  (pattern: RegExp): Masker =>
+  (html, at, { hidden }) => {
+    pattern.lastIndex = at;
+    const found = pattern.exec(html);
+    if (!found) {
+      return undefined;
+    }
+    hidden.fill(1, at, at + found[0].length);
+    return at + found[0].length;
+  };
+
+/** タグを伏せる。閉じタグは同じ名前の一番内側の開いている要素までを閉じ、中身ごと落ちる要素は開きから閉じまでを伏せる */
+const maskTag: Masker = (html, at, { hidden, open }) => {
+  TAG_PATTERN.lastIndex = at;
+  const tag = TAG_PATTERN.exec(html);
+  if (!tag) {
+    return undefined;
+  }
+  const name = (tag[2] as string).toLowerCase();
+  const end = at + tag[0].length;
+  hidden.fill(1, at, end);
+  if (tag[1] === "/") {
+    const position = open.lastIndexOf(name);
+    if (position >= 0) {
+      open.length = position;
+    }
+    return end;
+  }
+  if ((tag[3] ?? "").endsWith("/") || VOID_TAGS.has(name)) {
+    return end;
+  }
+  if (DROPPED_TAGS.has(name)) {
+    const close = elementEnd(html, end, name);
+    hidden.fill(1, at, close);
+    return close;
+  }
+  open.push(name);
+  return end;
+};
+
+/** `<` から始まる範囲の伏せ方を、試す順に並べたもの。図の部品の custom element は、定義ごと落ちる */
+const MASKERS: Masker[] = [
+  maskComment,
+  maskPattern(PART_AT_PATTERN),
+  maskTag,
+  maskPattern(DECLARATION_PATTERN),
+];
+
+/** 位置から始まる `<` の範囲を伏せ、伏せた次の位置を返却する（どれも始まらなければ `undefined`） */
+function maskMarkup(
+  html: string,
+  at: number,
+  state: MaskState,
+): number | undefined {
+  for (const mask of MASKERS) {
+    const next = mask(html, at, state);
+    if (next !== undefined) {
+      return next;
+    }
+  }
+  return undefined;
+}
+
 /** 埋め込んだ HTML のうち、照合に渡らない範囲を、どの文字にも該当しない文字で伏せた同じ長さの文字列を返却する */
 export function maskEmbeddedHtml(html: string): string {
-  const hidden = new Uint8Array(html.length);
-  /** 開いている要素の名前（外側から） */
-  const open: string[] = [];
+  const state: MaskState = { hidden: new Uint8Array(html.length), open: [] };
   let at = 0;
   while (at < html.length) {
-    if (html[at] === "<") {
-      if (html.startsWith("<!--", at)) {
-        const close = html.indexOf("-->", at + 4);
-        const end = close < 0 ? html.length : close + 3;
-        hidden.fill(1, at, end);
-        at = end;
-        continue;
-      }
-      // 図の部品の custom element は、定義ごと落ちる
-      PART_AT_PATTERN.lastIndex = at;
-      const part = PART_AT_PATTERN.exec(html);
-      if (part) {
-        hidden.fill(1, at, at + part[0].length);
-        at += part[0].length;
-        continue;
-      }
-      TAG_PATTERN.lastIndex = at;
-      const tag = TAG_PATTERN.exec(html);
-      if (tag) {
-        const name = (tag[2] as string).toLowerCase();
-        const end = at + tag[0].length;
-        hidden.fill(1, at, end);
-        if (tag[1] === "/") {
-          // 閉じタグは、同じ名前の一番内側の開いている要素までを閉じる
-          const position = open.lastIndexOf(name);
-          if (position >= 0) {
-            open.length = position;
-          }
-          at = end;
-        } else if ((tag[3] ?? "").endsWith("/") || VOID_TAGS.has(name)) {
-          at = end;
-        } else if (DROPPED_TAGS.has(name)) {
-          // 中身ごと落ちる要素は、開きから閉じまでを伏せる
-          const close = elementEnd(html, end, name);
-          hidden.fill(1, at, close);
-          at = close;
-        } else {
-          open.push(name);
-          at = end;
-        }
-        continue;
-      }
-      DECLARATION_PATTERN.lastIndex = at;
-      const declaration = DECLARATION_PATTERN.exec(html);
-      if (declaration) {
-        hidden.fill(1, at, at + declaration[0].length);
-        at += declaration[0].length;
-        continue;
-      }
+    const next = html[at] === "<" ? maskMarkup(html, at, state) : undefined;
+    if (next !== undefined) {
+      at = next;
+      continue;
     }
     // 照合しない要素が直接持つ文字は伏せる（一番内側の要素で判定する）
-    const innermost = open[open.length - 1];
+    const innermost = state.open.at(-1);
     if (innermost !== undefined && TEXT_FILTER_SKIP_TAGS.has(innermost)) {
-      hidden[at] = 1;
+      state.hidden[at] = 1;
     }
     at += 1;
   }
   let masked = "";
   for (let position = 0; position < html.length; position++) {
-    masked += hidden[position] ? MASK_CHAR : html[position];
+    masked += state.hidden[position] ? MASK_CHAR : html[position];
   }
   return masked;
 }

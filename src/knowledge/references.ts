@@ -132,6 +132,46 @@ function matchedAliases(tokens: Token[], aliases: string[]): Set<string> {
   return matched;
 }
 
+/** 正規化した文書の別名から、その別名を持つ文書を参照する表 */
+function aliasOwnersOf(
+  scanned: ScannedDocument[],
+): Map<string, MdmarkIndexDoc[]> {
+  const aliasOwners = new Map<string, MdmarkIndexDoc[]>();
+  for (const { doc } of scanned) {
+    for (const alias of doc.aliases ?? []) {
+      const key = normalizeWord(alias);
+      aliasOwners.set(key, [...(aliasOwners.get(key) ?? []), doc]);
+    }
+  }
+  return aliasOwners;
+}
+
+/** 文書を探す表: パス・`id`・別名から */
+type DocLookup = {
+  byPath: Map<string, MdmarkIndexDoc>;
+  byId: Map<string, MdmarkIndexDoc>;
+  aliasOwners: Map<string, MdmarkIndexDoc[]>;
+};
+
+/** 文書が参照する文書: `related` の相手・本文のリンクが指す文書・本文に出る別名を持つ文書 */
+function targetsOf(
+  source: ScannedDocument,
+  lookup: DocLookup,
+): Set<MdmarkIndexDoc> {
+  const { byPath, byId, aliasOwners } = lookup;
+  const tokens = source.parsed?.tokens ?? [];
+  const found = [
+    ...(source.doc.related ?? []).map((item) => byId.get(readRelated(item).to)),
+    ...[...linkedPaths(source.doc, tokens)].map((path) => byPath.get(path)),
+    ...[...matchedAliases(tokens, [...aliasOwners.keys()])].flatMap(
+      (word) => aliasOwners.get(word) ?? [],
+    ),
+  ];
+  return new Set(
+    found.filter((target): target is MdmarkIndexDoc => target !== undefined),
+  );
+}
+
 /** 索引と全ての文書の本文から、文書ごとの被参照と、各文書の用語集の表から入れた用語を返却する */
 export function collectReferences(input: {
   /** 索引 */
@@ -162,54 +202,23 @@ export function collectReferences(input: {
   /** 文書の機能がオンか。本文が無い文書は設定のまま */
   const featureOn = (item: ScannedDocument, name: string): boolean =>
     (item.parsed?.features ?? defaults)[name] !== false;
-
-  // 正規化した文書の別名から、その別名を持つ文書を参照する
-  const aliasOwners = new Map<string, MdmarkIndexDoc[]>();
-  for (const { doc } of scanned) {
-    for (const alias of doc.aliases ?? []) {
-      const key = normalizeWord(alias);
-      aliasOwners.set(key, [...(aliasOwners.get(key) ?? []), doc]);
-    }
-  }
-  const aliases = [...aliasOwners.keys()];
-  const byPath = new Map(
-    index.docs.map((doc) => [normalizePath(doc.path), doc]),
-  );
-  const byId = new Map(index.docs.map((doc) => [doc.id, doc]));
+  const lookup: DocLookup = {
+    byPath: new Map(index.docs.map((doc) => [normalizePath(doc.path), doc])),
+    byId: new Map(index.docs.map((doc) => [doc.id, doc])),
+    aliasOwners: aliasOwnersOf(scanned),
+  };
+  /** 被参照を出す文書か（描く文書の被参照の機能がオン） */
+  const receives = (target: MdmarkIndexDoc): boolean => {
+    const targetItem = scanned.find((item) => item.doc === target);
+    return targetItem !== undefined && featureOn(targetItem, "backlinks");
+  };
 
   const referenced = new Map<string, Set<string>>(
     index.docs.map((doc) => [doc.id, new Set()]),
   );
-  for (const source of scanned) {
-    if (!featureOn(source, "backlinks")) {
-      continue;
-    }
-    const targets = new Set<MdmarkIndexDoc>();
-    for (const item of source.doc.related ?? []) {
-      const target = byId.get(readRelated(item).to);
-      if (target) {
-        targets.add(target);
-      }
-    }
-    const tokens = source.parsed?.tokens ?? [];
-    for (const path of linkedPaths(source.doc, tokens)) {
-      const target = byPath.get(path);
-      if (target) {
-        targets.add(target);
-      }
-    }
-    for (const word of matchedAliases(tokens, aliases)) {
-      for (const target of aliasOwners.get(word) ?? []) {
-        targets.add(target);
-      }
-    }
-    for (const target of targets) {
-      const targetItem = scanned.find((item) => item.doc === target);
-      if (
-        target !== source.doc &&
-        targetItem &&
-        featureOn(targetItem, "backlinks")
-      ) {
+  for (const source of scanned.filter((item) => featureOn(item, "backlinks"))) {
+    for (const target of targetsOf(source, lookup)) {
+      if (target !== source.doc && receives(target)) {
         referenced.get(target.id)?.add(source.doc.id);
       }
     }
