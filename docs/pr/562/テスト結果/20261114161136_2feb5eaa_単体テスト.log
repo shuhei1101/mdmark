@@ -1,0 +1,92 @@
+$ npm run test:unit
+# commit 2feb5eaa
+
+> test:unit
+> vitest run --project 'unit*'
+
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-notation-reusable-notes
+
+ ❯ |unit| tests/unit/src/cli/config.test.ts (6 tests | 1 failed) 37422ms
+   × test_find_config_file_when_missing 30030ms
+ ❯ |unit| tests/unit/src/cli/main.test.ts (4 tests | 1 failed) 36629ms
+   × test_main 30006ms
+ ❯ |unit| tests/unit/src/cli/build.test.ts (9 tests | 1 failed) 38333ms
+   × test_run_build 30004ms
+ ❯ |unit| tests/unit/src/cli/export.test.ts (25 tests | 1 failed) 42022ms
+   × test_prepare_embeds 30007ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit| tests/unit/src/cli/build.test.ts > test_run_build
+Error: Test timed out in 30000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/unit/src/cli/build.test.ts:27:1
+     25|
+     26| // 3 つの文書をまとめて build.out に記載する（正常系）
+     27| test("test_run_build", async () => {
+       | ^
+     28|   // 準備
+     29|   const { runBuild } = await loadBuild();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/4]⎯
+
+ FAIL  |unit| tests/unit/src/cli/config.test.ts > test_find_config_file_when_missing
+Error: Test timed out in 30000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/unit/src/cli/config.test.ts:44:1
+     42|
+     43| // 見つからないと CliError を投げる（異常系）
+     44| test("test_find_config_file_when_missing", async () => {
+       | ^
+     45|   // 準備
+     46|   const { findConfigFile } = await loadModule();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/4]⎯
+
+ FAIL  |unit| tests/unit/src/cli/export.test.ts > test_prepare_embeds
+Error: Test timed out in 30000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/unit/src/cli/export.test.ts:31:1
+     29|
+     30| // マーカーのあるモジュールだけをまとめ、拡張と theme を読み込む（正常系）
+     31| test("test_prepare_embeds", async () => {
+       | ^
+     32|   // 準備
+     33|   const { prepareEmbeds } = await loadExport();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/4]⎯
+
+ FAIL  |unit| tests/unit/src/cli/main.test.ts > test_main
+Error: Test timed out in 30000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/unit/src/cli/main.test.ts:19:1
+     17|
+     18| // コマンド名で init を呼び、その終了コードを返却する（正常系）
+     19| test("test_main", async () => {
+       | ^
+     20|   // 準備
+     21|   const { main } = await loadMain();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/4]⎯
+
+
+ Test Files  4 failed | 290 passed (294)
+      Tests  4 failed | 2208 passed (2212)
+   Start at  15:59:36
+   Duration  166.90s (worker 70%, tests 18%, import 10%, transform 1%)
+
+exit=1
+
+# 上の全件実行で 30 秒の時間切れになった CLI のテストを、同じ commit で単独に流し直した結果（同じ端末で別の作業のテストが並行して動いており、回すたびに時間切れになるテストが変わる）
+$ npx vitest run --project unit tests/unit/src/cli/build.test.ts tests/unit/src/cli/config.test.ts tests/unit/src/cli/export.test.ts tests/unit/src/cli/main.test.ts tests/unit/src/cli/check.test.ts tests/unit/src/cli/documents.test.ts tests/unit/src/plugin/setup/server.test.ts
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-notation-reusable-notes
+
+
+ Test Files  7 passed (7)
+      Tests  105 passed (105)
+   Start at  16:02:36
+   Duration  15.41s (tests 94%, transform 3%, import 2%)
+
+exit=0

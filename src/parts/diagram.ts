@@ -22,6 +22,7 @@ import { pointSvg, renderChart, SCATTER_POINT_SIZE } from "./chart.ts";
 import { isColorName } from "./colors.ts";
 import { erEndSvg, plainDefinitionText, renderErTable } from "./er.ts";
 import { escapeHtml } from "./escape.ts";
+import { noteOwnerId } from "./footnote.ts";
 import { bundledIconNode, type IconName, iconSvg } from "./icons.ts";
 import { iconNodeSvg, type MdmarkIconNode } from "./inline-icon.ts";
 
@@ -127,7 +128,54 @@ export type DiagramTip = {
   owner?: string;
   /** 開いているか */
   open?: boolean;
+  /** 持ち主が参照する注記（番号の順）。`html` は描いた HTML なのでエスケープしない */
+  annotations?: DiagramAnnotation[] | undefined;
 };
+
+/** 図のツールチップに出す注記 1 つ */
+export type DiagramAnnotation = { number: number; html: string };
+
+/** 図の要素の ID ごとの注記と、持ち主の `id` の頭（`renderFlow` の引数） */
+export type DiagramAnnotations = {
+  items: Record<string, DiagramAnnotation[]>;
+  ownerPrefix: string;
+};
+
+/** 注記ごとの区分（見出し `注記 {番号}` と本文） */
+function annotationSections(
+  annotations: DiagramAnnotation[] | undefined,
+): string {
+  return (annotations ?? [])
+    .map(
+      ({ number, html }) =>
+        `<span class="mdmark-term-tip-section"><span class="mdmark-term-tip-heading mdmark-note-tip-heading">注記 ${number}</span><span class="mdmark-term-tip-meaning">${html}</span></span>`,
+    )
+    .join("");
+}
+
+/** 説明と注記の有無から、マーカーのボタンのスクリーンリーダー向けの名前を返却する */
+export function infoLabel(options: {
+  name: string;
+  described: boolean;
+  annotated: boolean;
+}): string {
+  const { name, described, annotated } = options;
+  if (!annotated) {
+    return `「${name}」の説明`;
+  }
+  return described ? `「${name}」の説明と注記` : `「${name}」の注記`;
+}
+
+/** 注記を持つ要素の持ち主の `id` 属性（注記を持たなければ空） */
+export function ownerIdAttribute(
+  annotations: DiagramAnnotations | undefined,
+  elementId: string,
+): string {
+  if (annotations === undefined || !annotations.items[elementId]?.length) {
+    return "";
+  }
+  return ` id="${escapeHtml(noteOwnerId(annotations.ownerPrefix, elementId))}"`;
+}
 
 /** 図のツールチップを描く。文だけの `hint` は、行内の要素の後ろにも配置できるよう `span` で出す */
 export function renderDiagramTip(tip: DiagramTip): string {
@@ -137,8 +185,14 @@ export function renderDiagramTip(tip: DiagramTip): string {
       : `<span class="mdmark-term-tip-meaning">${escapeHtml(tip.hint)}</span>`;
   const owner = escapeHtml(tip.owner ?? tip.label);
   const hidden = tip.open ? "" : ' hidden="hidden"';
+  const notes = annotationSections(tip.annotations);
   if (tip.kind === "hint") {
-    return `<span class="mdmark-diagram-tip mdmark-hint-tip" id="${escapeHtml(tip.id)}" role="tooltip" data-tip-for="${owner}"${hidden}><span class="mdmark-term-tip-section">${hint}</span></span>`;
+    // 説明を持たず注記だけを持つ持ち主は、説明の区分を出さない
+    const described =
+      hint === "" && notes !== ""
+        ? ""
+        : `<span class="mdmark-term-tip-section">${hint}</span>`;
+    return `<span class="mdmark-diagram-tip mdmark-hint-tip" id="${escapeHtml(tip.id)}" role="tooltip" data-tip-for="${owner}"${hidden}>${described}${notes}</span>`;
   }
   if (tip.kind === "table" && tip.table) {
     const table = tip.table;
@@ -156,10 +210,15 @@ export function renderDiagramTip(tip: DiagramTip): string {
     const columns = rows
       ? `<dl class="mdmark-diagram-tip-io mdmark-diagram-er-tip-columns">${rows}</dl>`
       : "";
-    return `<div class="mdmark-diagram-tip" id="${escapeHtml(tip.id)}" role="tooltip" data-tip-for="${owner}"${hidden}><span class="mdmark-term-tip-section"><span class="mdmark-term-tip-heading">${escapeHtml(plainDefinitionText(table.label))}（${escapeHtml(plainDefinitionText(table.name))}）</span>${desc}${columns}</span></div>`;
+    return `<div class="mdmark-diagram-tip" id="${escapeHtml(tip.id)}" role="tooltip" data-tip-for="${owner}"${hidden}><span class="mdmark-term-tip-section"><span class="mdmark-term-tip-heading">${escapeHtml(plainDefinitionText(table.label))}（${escapeHtml(plainDefinitionText(table.name))}）</span>${desc}${columns}</span>${notes}</div>`;
   }
-  const body = `<span class="mdmark-term-tip-meaning">${escapeHtml((tip.kind === "item" ? tip.value : tip.tip) ?? "")}</span>`;
-  return `<div class="mdmark-diagram-tip" id="${escapeHtml(tip.id)}" role="tooltip" data-tip-for="${owner}"${hidden}><span class="mdmark-term-tip-section"><span class="mdmark-term-tip-heading">${escapeHtml(tip.label)}</span>${body}</span></div>`;
+  const text = (tip.kind === "item" ? tip.value : tip.tip) ?? "";
+  // 線の詳細を持たず注記だけを持つ線は、線の詳細の区分の代わりに注記の区分だけを出す
+  const section =
+    text === "" && notes !== ""
+      ? ""
+      : `<span class="mdmark-term-tip-section"><span class="mdmark-term-tip-heading">${escapeHtml(tip.label)}</span><span class="mdmark-term-tip-meaning">${escapeHtml(text)}</span></span>`;
+  return `<div class="mdmark-diagram-tip" id="${escapeHtml(tip.id)}" role="tooltip" data-tip-for="${owner}"${hidden}>${section}${notes}</div>`;
 }
 
 /** 図の中のツールチップを集める入れ物 */
@@ -292,8 +351,9 @@ function renderLabel(options: {
   tip: string | undefined;
   at: [number, number];
   tips: TipList;
+  annotations?: DiagramAnnotation[] | undefined;
 }): string {
-  const { wireId, label, tip, at, tips } = options;
+  const { wireId, label, tip, at, tips, annotations } = options;
   const line = "map";
   if (label === undefined || label === "") {
     return "";
@@ -302,7 +362,13 @@ function renderLabel(options: {
   if (tip === undefined || tip === "") {
     return `<span class="mdmark-diagram-label" data-line="${line}" data-wire="${escapeHtml(wireId)}"${style}>${escapeHtml(label)}</span>`;
   }
-  const id = tips.add({ kind: "wire", label, tip, owner: wireId });
+  const id = tips.add({
+    kind: "wire",
+    label,
+    tip,
+    owner: wireId,
+    annotations,
+  });
   return `<span class="mdmark-diagram-label has-tip" data-line="${line}" data-wire="${escapeHtml(wireId)}" tabindex="0" aria-describedby="${id}" data-tip-owner="${escapeHtml(wireId)}"${style}>${escapeHtml(label)}</span>`;
 }
 
@@ -333,14 +399,19 @@ function renderNode(options: {
   lookup: TermLookup | undefined;
   found: { terms: boolean };
   hints: boolean;
+  annotations?: DiagramAnnotations | undefined;
 }): string {
-  const { node, box, tips, lookup, found, hints } = options;
+  const { node, box, tips, lookup, found, hints, annotations } = options;
   const name = renderText(node.name, tips, lookup, found);
   const sub =
     node.sub === undefined
       ? ""
       : `<span class="mdmark-diagram-node-sub">${renderText(node.sub, tips, lookup, found)}</span>`;
-  const hasTip = hints && node.hint !== undefined && node.hint !== "";
+  const described = node.hint !== undefined && node.hint !== "";
+  const notes = annotations?.items[node.id];
+  const annotated = (notes?.length ?? 0) > 0;
+  // 説明か注記を持つノードは、右上のマーカーとツールチップを持つ
+  const hasTip = hints && (described || annotated);
   let info = "";
   if (hasTip) {
     const owner = `node:${node.id}`;
@@ -349,8 +420,10 @@ function renderNode(options: {
       label: node.name,
       hint: node.hint,
       owner,
+      annotations: notes,
     });
-    info = `<button class="mdmark-diagram-info" type="button" aria-label="「${escapeHtml(node.name)}」の説明" aria-describedby="${id}" data-tip-owner="${escapeHtml(owner)}">${iconSvg("info")}</button>`;
+    const label = infoLabel({ name: node.name, described, annotated });
+    info = `<button class="mdmark-diagram-info" type="button"${ownerIdAttribute(annotations, node.id)} aria-label="${escapeHtml(label)}" aria-describedby="${id}" data-tip-owner="${escapeHtml(owner)}">${iconSvg("info")}</button>`;
   }
   // リンク先を持つノード: ノードの全体を覆うリンクを配置し、右上のマーカーはリンクの後ろ（リンクの外）に配置する
   const link =
@@ -408,13 +481,22 @@ export function groupInfo(options: {
   label: string;
   owner: string;
   tips: TipList;
+  /** グループの注記 */
+  annotations?: DiagramAnnotation[] | undefined;
+  /** 注記を持つときの持ち主の `id` */
+  ownerId?: string | undefined;
 }): string {
-  const { hint, label, owner, tips } = options;
-  if (hint === undefined || hint === "") {
+  const { hint, label, owner, tips, annotations, ownerId } = options;
+  const described = hint !== undefined && hint !== "";
+  const annotated = (annotations?.length ?? 0) > 0;
+  if (!described && !annotated) {
     return "";
   }
-  const id = tips.add({ kind: "hint", label, hint, owner });
-  return `<button class="mdmark-diagram-info mdmark-diagram-group-info" type="button" aria-label="「${escapeHtml(label)}」の説明" aria-describedby="${id}" data-tip-owner="${escapeHtml(owner)}">${iconSvg("info")}</button>`;
+  const id = tips.add({ kind: "hint", label, hint, owner, annotations });
+  const name = infoLabel({ name: label, described, annotated });
+  const idAttribute =
+    annotated && ownerId !== undefined ? ` id="${escapeHtml(ownerId)}"` : "";
+  return `<button class="mdmark-diagram-info mdmark-diagram-group-info" type="button"${idAttribute} aria-label="${escapeHtml(name)}" aria-describedby="${id}" data-tip-owner="${escapeHtml(owner)}">${iconSvg("info")}</button>`;
 }
 
 /** map の構成図のノードと線を描く */
@@ -423,6 +505,7 @@ export function renderFlow(
   id: string,
   hints: boolean,
   lookup?: TermLookup,
+  annotations?: DiagramAnnotations,
 ): DiagramPart {
   const tips = createTips(id);
   const found = { terms: false };
@@ -444,7 +527,9 @@ export function renderFlow(
     `<svg class="mdmark-diagram-wires" width="${num(definition.width)}" height="${num(definition.height)}" aria-hidden="true">${wires}</svg>`,
   );
   for (const node of definition.nodes) {
-    parts.push(renderNode({ node, box: node, tips, lookup, found, hints }));
+    parts.push(
+      renderNode({ node, box: node, tips, lookup, found, hints, annotations }),
+    );
   }
   for (const wire of definition.wires) {
     parts.push(
@@ -454,6 +539,7 @@ export function renderFlow(
         tip: hints ? wire.tip : undefined,
         at: wire.labelAt ?? labelPosition(wire.points),
         tips,
+        annotations: annotations?.items[wire.id],
       }),
     );
   }

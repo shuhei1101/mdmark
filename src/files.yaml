@@ -563,6 +563,12 @@ files:
     related:
       - to: docs/module/MOD-477-5.ts
         type: implements
+  - path: map/annotations.ts
+    description: モジュール構成『ライブラリ本体 / map / 描画と操作』のうち「図の要素ごとの注記の readMapAnnotations と、持ち主の id を一覧の戻るリンクに合わせる linkAnnotationOwners」を受け持つ。map の図のツールチップに出す注記の取得を変えるときに参照する。
+    tags: [topic:図, topic:map, topic:注記]
+    related:
+      - to: docs/module/MOD-562-2.ts
+        type: implements
   - path: map/data.ts
     description: モジュール構成『ライブラリ本体 / map / 読み取り』のうち「補足の JSON の parseMapData」を受け持つ。補足のキーと読み取り方を変えるときに参照する。
     tags: [topic:図, topic:map]
@@ -1660,6 +1666,12 @@ files:
     tags: [topic:markdown, topic:css]
     related:
       - to: docs/module/MOD-472-216.ts
+        type: implements
+  - path: render/syntax/annotations.ts
+    description: モジュール構成『ライブラリ本体 / 記法』のうち「注記の定義・参照の読み取りと番号・記載の警告・末尾の一覧・機能のオフの文字への戻し」を受け持つ。記法の記載方法や出力する HTML を変えるときに参照する。
+    tags: [topic:markdown, topic:構文, tool:markdown-it, topic:注記]
+    related:
+      - to: docs/module/MOD-562-1.ts
         type: implements
   - path: render/syntax/backlinks.ts
     description: モジュール構成『ライブラリ本体 / 索引と用語』のうち「末尾の関連文書の一覧を配置するコアルール」を受け持つ。索引・用語・被参照の扱いを変えるときに参照する。

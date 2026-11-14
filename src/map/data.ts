@@ -33,8 +33,21 @@ export type MapLayoutEntry = {
   collapsed?: boolean | undefined;
 };
 
-/** ノード・線の説明 */
-export type MapNote = { text: string };
+/** ノード・線の説明と、参照する注記の ID の並び（どちらか一方だけでもよい） */
+export type MapNote = {
+  text?: string | undefined;
+  annotations?: string[] | undefined;
+};
+
+/** 補足の `notes` のうち説明を持つものを、ID ごとの説明の文にする */
+export const noteTexts = (
+  notes: Record<string, MapNote>,
+): Record<string, string> =>
+  Object.fromEntries(
+    Object.entries(notes).flatMap(([id, note]) =>
+      note.text === undefined ? [] : [[id, note.text]],
+    ),
+  );
 
 /** ER 図の分類（テーブルをまとめるグループ） */
 export type MapGroup = {
@@ -377,8 +390,32 @@ export const parseMapData = (
             invalid(path, ' `{"text": 説明の文}` ');
             continue;
           }
-          const body = text(note.text, `${path}.text`);
-          if (body !== undefined) data.notes[id] = { text: body };
+          // 説明か注記の ID の並びの、少なくとも一方を持つ
+          if (note.text === undefined && note.annotations === undefined) {
+            invalid(
+              path,
+              ' `{"text": 説明の文}` か `{"annotations": [注記の ID]}` ',
+            );
+            continue;
+          }
+          const parsed: MapNote = {};
+          if (note.text !== undefined) {
+            const body = text(note.text, `${path}.text`);
+            if (body === undefined) continue;
+            parsed.text = body;
+          }
+          if (note.annotations !== undefined) {
+            const ids = note.annotations;
+            if (
+              !Array.isArray(ids) ||
+              !ids.every((item) => typeof item === "string")
+            ) {
+              invalid(`${path}.annotations`, " 注記の ID の配列 ");
+              continue;
+            }
+            parsed.annotations = ids;
+          }
+          data.notes[id] = parsed;
         }
         break;
       case "walkthroughs":

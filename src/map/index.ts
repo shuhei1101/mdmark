@@ -78,9 +78,18 @@ export const attachMap = (
     const source = sourceOf(range);
     const structure = collectMapStructure(source);
     const known = new Set(structure.problems.map((item) => item.message));
+    // render が定義のある注記の ID を入れた範囲だけ、定義の無い注記の参照を確かめる
+    const annotations = range.dataset.mapAnnotations;
     addWarnings(
       range,
-      collectMapProblems(source, config.map, false)
+      collectMapProblems(
+        source,
+        config.map,
+        false,
+        annotations === undefined
+          ? undefined
+          : new Set(Object.keys(JSON.parse(annotations) as object)),
+      )
         .filter((item) => !known.has(item.message))
         .map((item) => item.message),
     );

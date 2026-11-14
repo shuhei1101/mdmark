@@ -119,6 +119,7 @@
 | [ライブラリ本体 / map / 点検 / check.ts](./MOD-472-135.ts.yaml) | ライブラリ本体 / map / 点検 / check.ts |
 | [ライブラリ本体 / map / 読み取り / data.ts](./MOD-472-139.ts.yaml) | ライブラリ本体 / map / 読み取り / data.ts |
 | [ライブラリ本体 / map / 描画と操作 / drag.ts](./MOD-472-134.ts.yaml) | ライブラリ本体 / map / 描画と操作 / drag.ts |
+| [ライブラリ本体 / map / 描画と操作 / annotations.ts](./MOD-562-2.ts.yaml) | ライブラリ本体 / map / 描画と操作 / annotations.ts |
 | [ライブラリ本体 / map / 描画と操作 / flow-view.ts](./MOD-472-130.ts.yaml) | ライブラリ本体 / map / 描画と操作 / flow-view.ts |
 | [ライブラリ本体 / map / 読み取り / flowchart.ts](./MOD-472-137.ts.yaml) | ライブラリ本体 / map / 読み取り / flowchart.ts |
 | [ライブラリ本体 / map / 描画と操作 / index.ts](./MOD-472-128.ts.yaml) | ライブラリ本体 / map / 描画と操作 / index.ts |
@@ -126,7 +127,11 @@
 | [ライブラリ本体 / map / 点検 / lucide-names.ts](./MOD-472-136.ts.yaml) | ライブラリ本体 / map / 点検 / lucide-names.ts |
 | [ライブラリ本体 / map / 配置 / sequence-rows.ts](./MOD-472-142.ts.yaml) | ライブラリ本体 / map / 配置 / sequence-rows.ts |
 | [ライブラリ本体 / map / 描画と操作 / sequence-view.ts](./MOD-472-131.ts.yaml) | ライブラリ本体 / map / 描画と操作 / sequence-view.ts |
+| [ライブラリ本体 / map / 描画と操作 / er-view.ts](./MOD-531-3.ts.yaml) | ライブラリ本体 / map / 描画と操作 / er-view.ts |
+| [ライブラリ本体 / map / 描画と操作 / state-view.ts](./MOD-531-4.ts.yaml) | ライブラリ本体 / map / 描画と操作 / state-view.ts |
 | [ライブラリ本体 / map / 読み取り / sequence.ts](./MOD-472-138.ts.yaml) | ライブラリ本体 / map / 読み取り / sequence.ts |
+| [ライブラリ本体 / map / 読み取り / er.ts](./MOD-531-1.ts.yaml) | ライブラリ本体 / map / 読み取り / er.ts |
+| [ライブラリ本体 / map / 読み取り / state-diagram.ts](./MOD-531-2.ts.yaml) | ライブラリ本体 / map / 読み取り / state-diagram.ts |
 | [ライブラリ本体 / map / 読み取り / spec.ts](./MOD-472-140.ts.yaml) | ライブラリ本体 / map / 読み取り / spec.ts |
 | [ライブラリ本体 / map / 描画と操作 / state.ts](./MOD-472-129.ts.yaml) | ライブラリ本体 / map / 描画と操作 / state.ts |
 | [ライブラリ本体 / mermaid / mermaid-source.ts](./MOD-472-144.ts.yaml) | ライブラリ本体 / mermaid / mermaid-source.ts |
@@ -194,8 +199,8 @@
 | [ClaudeCodeプラグイン / MCPサーバー / http.ts](./MOD-472-51.ts.yaml) | ClaudeCodeプラグイン / MCPサーバー / http.ts |
 | [ClaudeCodeプラグイン / MCPサーバー / mcp.ts](./MOD-472-50.ts.yaml) | ClaudeCodeプラグイン / MCPサーバー / mcp.ts |
 | [ClaudeCodeプラグイン / ポート / port.ts](./MOD-472-15.ts.yaml) | `127.0.0.1` のポートが待ち受けているかの確認と、待ち受けるポートの読み取り（`mdmark serve`・SessionStart のフック・`setup.js` が使用する）。 |
-| [ClaudeCodeプラグイン / フック / guide-notice.ts](./MOD-472-349.ts.yaml) | プラグインの `hooks/hooks.json` の `Write\|Edit` の PreToolUse・UserPromptSubmit・PreCompact が `node` で起動する処理。`.mark.md` の記載と語 mdmark を含む発言で、記法のルールの参照をセッションに 1 回だけ案内する。 |
 | [ClaudeCodeプラグイン / フック / pre-tool-use.ts](./MOD-472-13.ts.yaml) | プラグインの `hooks/hooks.json` が `node` で起動する処理。PreToolUse で作業のフォルダを MCP のツールの引数 `project_dir` に入れる。 |
+| [ClaudeCodeプラグイン / フック / guide-notice.ts](./MOD-472-349.ts.yaml) | プラグインの `hooks/hooks.json` の `Write\|Edit` の PreToolUse・UserPromptSubmit・PreCompact が `node` で起動する処理。`.mark.md` の記載と語 mdmark を含む発言で、記法のルールの参照をセッションに 1 回だけ案内する。 |
 | [ClaudeCodeプラグイン / SessionStartのフック / session-start.ts](./MOD-472-3.ts.yaml) | プラグインの `hooks/hooks.json` の SessionStart が `node` で起動する処理。常駐サーバーが待ち受けていないときだけ、そのことを 1 行で指定する。 |
 | [ClaudeCodeプラグイン / セットアップ / キーの一覧 / keys.ts](./MOD-472-6.ts.yaml) | `keys` の結果を作る。 |
 | [ClaudeCodeプラグイン / セットアップ / 入口 / main.ts](./MOD-472-8.ts.yaml) | `setup.js` の入口とサブコマンドの振り分け。 |
@@ -226,6 +231,7 @@
 | [ライブラリ本体 / 図 / diagrams.ts](./MOD-472-182.ts.yaml) | ライブラリ本体 / 図 / diagrams.ts |
 | [ライブラリ本体 / 記法 / figures.ts](./MOD-472-287.ts.yaml) | ライブラリ本体 / 記法 / figures.ts |
 | [ライブラリ本体 / 記法 / footnotes.ts](./MOD-472-274.ts.yaml) | ライブラリ本体 / 記法 / footnotes.ts |
+| [ライブラリ本体 / 記法 / annotations.ts](./MOD-562-1.ts.yaml) | ライブラリ本体 / 記法 / annotations.ts |
 | [ライブラリ本体 / 記法 / frontmatter.ts](./MOD-472-302.ts.yaml) | ライブラリ本体 / 記法 / frontmatter.ts |
 | [ライブラリ本体 / 記法 / gallery.ts](./MOD-472-277.ts.yaml) | ライブラリ本体 / 記法 / gallery.ts |
 | [ライブラリ本体 / 索引と用語 / glossary.ts](./MOD-472-259.ts.yaml) | ライブラリ本体 / 索引と用語 / glossary.ts |
@@ -334,14 +340,14 @@
 | [ライブラリ本体 / map / 全体](./MOD-472-24.yaml) | map の範囲の Mermaid と補足の読み取り・入れ子の自動配置・点検と、`dist/map.js` に分けた描画と操作。 |
 | [ライブラリ本体 / map / 描画と操作](./MOD-472-25.yaml) | `dist/map.js` の入口と、構成図・シーケンス図を描いて開閉・中へ入る・選択・移動・案内・再生の操作を付け、状態を sessionStorage とクエリ文字列に保つ処理と、部品の HTML。ブラウザでだけ動く（部品の HTML は Node でも動く）。 |
 | [ライブラリ本体 / map / 点検](./MOD-472-26.yaml) | map の範囲の読み取りの項目に、補足が指す ID と設定の `map` の種類・線・アイコンの照合を加え、書き方の警告と点検のずれにする項目を集める。 |
-| [ライブラリ本体 / map / 読み取り](./MOD-472-27.yaml) | map の範囲の `flowchart`・`sequenceDiagram` の Mermaid と、補足の JSON のオブジェクトを読み取る。描画を止めず、読めない行と箇所を項目にして返す。 |
+| [ライブラリ本体 / map / 読み取り](./MOD-472-27.yaml) | map の範囲の `flowchart`・`sequenceDiagram`・`erDiagram`・`stateDiagram-v2` の Mermaid と、補足の JSON のオブジェクトを読み取る。描画を止めず、読めない行と箇所を項目にして返す。 |
 | [ライブラリ本体 / map / 配置](./MOD-472-28.yaml) | 構成図を、表示するノードとグループの集合を決めてから入れ子の内側から配置し、線の経路を引く。シーケンス図の表示する行を決める。 |
 | [ライブラリ本体 / mermaid](./MOD-472-29.yaml) | `mount` が描いた mermaid のコードブロックを、mermaid で描いた SVG の図の枠に置き換える処理。描く先の CSS 変数から mermaid のテーマの変数を作り、配色の明暗が変わったら再描画する。ソースの読み取りと図の部品の HTML は DOM を使用せず、読み込みと描画はブラウザでだけ動く。 |
 | [ライブラリ本体 / バージョンを上げる](./MOD-472-30.yaml) | `mdmark upgrade` の処理。バージョンの読み取りと比較、移行の手順の読み取り・検め・適用、コピーと戻し、変更履歴の行の抽き出し、標準入力での質問を持ち、`runUpgrade` がこれらと CLI の点検をつなぐ。 |
 | [ライブラリ本体 / ビューとコメント](./MOD-472-31.yaml) | ビューとコメントの部品を `dist/index.js` と別の配布ファイル（`dist/view.js`・`dist/comments.js`）に分け、マーカーのある文書と `mountView`・`mountComments` を呼んだときにだけ読み込む処理と、その部品の HTML。ブラウザでだけ動く（部品の HTML と箇所の探し方は Node でも動く）。 |
 | [ライブラリ本体 / ビルド](./MOD-472-32.yaml) | `npm run build` が実行するビルドのスクリプト。バージョンを決めて検査し、esbuild で `dist/` を書き込み、配布ファイルのサイズを検査する。Node.js v24 が型を削除して `node scripts/build.ts` で直接実行する。 |
 | [ライブラリ本体 / 公開の入口](./MOD-472-33.yaml) | 配布物の入口の JavaScript と CSS。JavaScript は公開関数と公開の型を export し、CSS は描いた文書の外観を `@layer mdmark` に入れて持つ。 |
-| [ライブラリ本体 / 図](./MOD-472-34.yaml) | 図の部品（グラフ・ER 図・操作できる部品）の定義の型と確認し、線の形状の計算、部品の HTML、記法のコアルール、`mount` が付ける拡大・縮小・移動・全画面・ツールチップ・写す操作。定義から HTML までは DOM を使用せず Node でも動き、操作はブラウザでだけ動く。 |
+| [ライブラリ本体 / 図](./MOD-472-34.yaml) | 図の部品（グラフ・ER 図・操作できる部品）の定義の型と確認し、廃止した `flow`・`sequence` の範囲の扱い、線の形状の計算、部品の HTML、記法のコアルール、`mount` が付ける拡大・縮小・移動・全画面・ツールチップ・写す操作。定義から HTML までは DOM を使用せず Node でも動き、操作はブラウザでだけ動く。 |
 | [ライブラリ本体 / 差分](./MOD-472-35.yaml) | `mount` に指定した取り出し元から 2 つのリビジョンの本文を受け、行と単語を比べて描き、ミニマップでスクロールする処理と、描いた文書のブロックを追加と削除の色で塗り分ける処理と、その部品の HTML。ブラウザでだけ動く（部品の HTML と比較は Node でも動く）。 |
 | [ライブラリ本体 / 拡張](./MOD-472-36.yaml) | 利用側が `registerExtension` で追加したマーカーの登録表と、引数を Standard Schema で検査して記載の警告の項目にする処理。登録表はページに 1 つで、`render` と `mount` が読み込む。 |
 | [ライブラリ本体 / 描く](./MOD-472-37.yaml) | 利用側のページの要素に文書を描き、再描画と片付けを受け持つ処理。記法の操作を付け、文書のマーカーにある外部ライブラリと拡張のモジュールを読み込んでマーカーの場所に描かせ、色分けの対象のコードブロックを色分けし、印刷の前後で折り畳みと記法を開いて戻す。ブラウザでだけ動く（色分けの HTML を行に分ける `src/highlight-lines.ts` だけは DOM を使用せず、部品の描画のインターフェースも使用する）。 |

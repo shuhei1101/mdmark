@@ -835,6 +835,7 @@ handle.destroy();
 | `--mdmark-icon-inline-size` | `1em` | 行内のアイコン（`icon\:`）の幅と高さ |
 | `--mdmark-highlight-bg` | `var(--mdmark-color-accent-yellow-bg)` | 色を指定しない蛍光ペンの面の色 |
 | `--mdmark-color-footnote-ref` | `var(--mdmark-color-link)` | 本文の脚注の番号（`[1]`）の色 |
+| `--mdmark-color-annotation-ref` | `var(--mdmark-color-footnote-ref)` | 本文の注記のマーカー（`※1`）と注記の一覧の項目の頭の色 |
 | `--mdmark-color-term-underline` | `var(--mdmark-color-muted)` | 用語の単語と文書の別名の、破線の下線の色 |
 | `--mdmark-color-avoided-underline` | `var(--mdmark-color-notice-border)` | やめた言い方の単語の、波線の下線の色 |
 | `--mdmark-tooltip-max-width` | `22rem` | ツールチップの幅の上限。画面の幅から `2rem` を参照した幅を超えない |

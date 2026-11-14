@@ -75,6 +75,9 @@ export type CheckIssue = {
     | "mark_option_unapplied"
     | "mark_option_invalid"
     | "plain_md_with_marks"
+    | "annotation_undefined"
+    | "annotation_unused"
+    | "annotation_duplicate"
     | MapProblem["kind"]
     | "alias_no_files"
     | "alias_unreadable"
@@ -658,13 +661,21 @@ export function checkMaps(
 ): CheckIssue[] {
   const issues: CheckIssue[] = [];
   for (const document of documents) {
-    const { features } = renderDocument({
+    const { features, annotationIds } = renderDocument({
       markdown: document.markdown,
       config,
     });
     if (features.map === false) continue;
+    // 注記の機能がオフの文書は、補足の注記の参照を確かめない
+    const annotations =
+      features.annotations === false ? undefined : new Set(annotationIds);
     for (const { line, range } of findMapRanges(document.markdown)) {
-      for (const problem of collectMapProblems(range, config.map, true)) {
+      for (const problem of collectMapProblems(
+        range,
+        config.map,
+        true,
+        annotations,
+      )) {
         issues.push({
           file: document.path,
           where: String(line + (problem.line ?? 0)),

@@ -6,7 +6,8 @@ export type MapProblemKind =
   | "map_invalid_value"
   | "map_unknown_icon"
   | "map_unknown_class"
-  | "map_unknown_line";
+  | "map_unknown_line"
+  | "annotation_undefined";
 
 /** 読み取りと点検が返す、書き方の誤り 1 件 */
 export type MapProblem = {

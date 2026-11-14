@@ -11,8 +11,15 @@ export type WarningKind =
   | "diagram_invalid"
   | "retired_diagram"
   | "syntax_warning"
+  | AnnotationWarningKind
   | MarkNote["kind"]
   | "map";
+
+/** 注記の参照と定義が合わない警告の種類 */
+export type AnnotationWarningKind =
+  | "annotation_undefined"
+  | "annotation_unused"
+  | "annotation_duplicate";
 
 /** 記載の警告に指定する値 */
 export type SyntaxWarning = {
@@ -25,7 +32,12 @@ export type SyntaxWarning = {
   /** 枠の `id` */
   id?: string;
   /** 警告の種類（省くと `syntax_warning`） */
-  kind?: "diagram_invalid" | "retired_diagram" | "syntax_warning" | "map";
+  kind?:
+    | "diagram_invalid"
+    | "retired_diagram"
+    | "syntax_warning"
+    | "map"
+    | AnnotationWarningKind;
   /** 警告の元のマーカーのトークンの `map[0]`（マーカーのトークンを持たない警告は省く） */
   line?: number;
   /** include のマーカーの取り込み先が無い警告か（`mdmark check --text`・`--file` が除く） */

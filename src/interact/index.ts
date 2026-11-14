@@ -108,7 +108,7 @@ export function attachInteractions(options: {
     );
     detachers.push(attachParams(root, paramDefinitions));
   }
-  if (features.footnotes === true) {
+  if (features.footnotes === true || features.annotations === true) {
     detachers.push(attachFootnotes({ root, placement }));
   }
   if (features.glossary === true || features.backlinks === true) {

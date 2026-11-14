@@ -15,8 +15,8 @@ data_models:
         type: '1'
         description: 補足のバージョン
       - name: notes
-        type: 'Record<string, { text: string }>'
-        description: ノード・線の ID ごとの説明
+        type: 'Record<string, { text?: string; annotations?: string[] }>'
+        description: ノード・線の ID ごとの説明と、参照する注記の ID の並び（ER 図『map の補足』の `notes`。どちらか一方だけでもよい）
       - name: walkthroughs
         type: MapStep[]
         description: 案内の手順（`title`・`text`・`nodes`・`edges`・`enter`）

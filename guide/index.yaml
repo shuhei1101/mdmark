@@ -2,14 +2,14 @@ schema: 1
 guides:
   - name: notation
     when: マーカーと記法を文書に記載するとき・拡張子が `.mark.md` の文書を記載するとき
-    summary: マーカーの引数を JSON のオブジェクトで記載する決まりと、表・注意書き・タブ・ステップ・ファイルツリー・バッジ・セクションの開閉・行の詳細などのマーカーと記法の一覧
+    summary: マーカーの引数を JSON のオブジェクトで記載する決まりと、表・注意書き・タブ・ステップ・ファイルツリー・バッジ・脚注・注記・セクションの開閉・行の詳細などのマーカーと記法の一覧
     page: docs/guide/記法.md
   - name: tables
     when: 表に並べ替え・絞り込み・ピン止めなどの機能を付けるとき
     summary: 表をマーカーで囲み、種類・機能・列の設定を JSON のキーで選ぶ手順
     page: docs/guide/記載する-表に機能を付ける.md
   - name: components
-    when: 注意書き・タブ・ステップ・ファイルツリー・バッジ・目次などで本文を組むとき・フォルダ構成を記載するとき
+    when: 注意書き・タブ・ステップ・ファイルツリー・バッジ・脚注・注記・目次などで本文を組むとき・フォルダ構成を記載するとき
     summary: 本文の部品を記載する手順
     page: docs/guide/記載する-本文を部品で組む.md
   - name: glossary
@@ -34,11 +34,11 @@ guides:
     page: docs/guide/記載する-ビューとコメントを使用する.md
   - name: map
     when: 構成図・シーケンス図を新しく描くとき
-    summary: map のマーカー・Mermaid のブロック・補足の記載方法と、配置と色の上書き・案内・再生の書き方
+    summary: map のマーカー・Mermaid のブロック・補足の記載方法と、注記の参照・配置と色の上書き・案内・再生の書き方
     page: docs/guide/図を描く-Mermaidと補足で図を描く.md
   - name: diagrams
     when: グラフ・操作できる部品・ER 図を描くとき
-    summary: HTML の用途と、文書に部品の定義を記載して図を描く手順（構成図・シーケンス図は map を使用する）
+    summary: HTML の用途と、文書に部品の定義を記載して図を描く手順（構成図・シーケンス図は map を使用し、図の注意書きは注記で記載する）
     page: docs/guide/図を描く-図を描く.md
   - name: interactive-parts
     when: スライダーや今の値をコピーするボタンなど、操作できる部品を付けるとき

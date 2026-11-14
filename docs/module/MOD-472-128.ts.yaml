@@ -44,7 +44,7 @@ functions:
       description: 付けた操作と観察を外す関数
     process: |-
       1. `div.mdmark-map` ごとに `data-map-args` を `parseMapArgs` で読み、`data-map-kind`（`flowchart`・`sequenceDiagram`・`erDiagram`・`stateDiagram`）で `attachMapFlow`・`attachMapSequence`・`attachMapEr`・`attachMapState` のどれかに引数と一緒に指定する。`collapse` があれば図の枠を `details`（`open` は `collapse.open`、見出しは `collapse.title` か `title`）で包む
-      2. 範囲ごとに `collectMapProblems`（`includeUnknownKeys: false`）から `collectMapStructure` の項目を除いた項目があれば、`render` の記載の警告に足すか、無ければ図の枠の前に部品『書き方の警告』を配置する
+      2. 範囲ごとに `collectMapProblems`（`includeUnknownKeys: false`。範囲が `data-map-annotations` を持てば、そのキーを定義のある注記の ID として指定する）から `collectMapStructure` の項目を除いた項目があれば、`render` の記載の警告に足すか、無ければ図の枠の前に部品『書き方の警告』を配置する
       3. シーケンス図の補足の `plays_over` が指す構成図を探し、再生の強調を構成図にも当てる。片方の図で案内か再生を始めたら、もう片方の強調を解く。再生を自動で進め始めたら構成図の `resumeFollow`、自動で進めたら構成図の `follow` で送り手と受け手のノードへ構成図の表示する枠をスクロールする（構成図に無い相手のメッセージではスクロールしない）
     unit_tests:
       - name: test_attach_map
@@ -65,6 +65,12 @@ functions:
         condition: 読めない Mermaid の行と知らない補足のキー `layuot` を持つ範囲
         mock: なし（jsdom）
         expected: 図の枠の前の記載の警告が 1 つで、読めない行と `layuot` を含む
+      - name: test_attach_map_when_annotation_undefined
+        case: 異常
+        summary: 補足の定義の無い注記の参照
+        condition: '定義 `※[cond]` を持つ文書で、補足の `notes.mount.annotations` が `["cond", "gone"]` の範囲。同じ範囲を注記の機能をオフにして描いた文書'
+        mock: なし（jsdom）
+        expected: 図の枠の前の記載の警告が 1 つで `gone` を含み `cond` の警告を含まない。機能のオフの文書には記載の警告が無い
       - name: test_attach_map_when_missing_participant
         case: 正常
         summary: 構成図に無い再生の相手

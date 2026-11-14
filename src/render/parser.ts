@@ -23,6 +23,13 @@ import {
   resolvePageSettings,
   takeMarks,
 } from "./marks.ts";
+import {
+  type AnnotationState,
+  buildAnnotationList,
+  collectAnnotations,
+  takeAnnotationDefinitions,
+  useAnnotations,
+} from "./syntax/annotations.ts";
 import { backlinksRule } from "./syntax/backlinks.ts";
 import { buildBadges } from "./syntax/badges.ts";
 import { buildCallouts } from "./syntax/callouts.ts";
@@ -112,6 +119,8 @@ export type RenderEnv = {
   termTipCount?: number;
   /** 読み込んだ脚注の定義と参照（定義の block のルールが作り、機能がオフなら `collectFootnotes` が削除する） */
   mdmarkFootnotes?: FootnoteState | undefined;
+  /** 読み込んだ注記の定義と参照（定義の block のルールが作り、機能がオフなら `collectAnnotations` が削除する） */
+  mdmarkAnnotations?: AnnotationState | undefined;
   /** ヒントのツールチップの数（`id` の通し番号） */
   hintCount?: number;
   /** ビューの記載の警告の数（`id` の通し番号） */
@@ -319,7 +328,7 @@ export function createParser(): MarkdownItParser {
   const parser = new MarkdownIt(PARSER_OPTIONS);
   // スキームを持たないドメインも取得させ、後で文字に戻すものを選ぶ
   parser.linkify.set({ fuzzyLink: true });
-  // マーカー → 機能の重ね合わせ → 取り込み → フロントマターの表示 → 蛍光ペン（`useHighlight` が取り込みの後に追加する）→ 脚注の機能のオン・オフ → 記法（アイコン → 見出し → 用語集の表 → 行の詳細 → ビュー → CSV の表 → 表 → タブ → ステップ → 注意書き → ファイルツリー → バッジ → キー → 本文の文字の色 → 図の部品 → 埋め込んだ HTML → map の範囲 → コードブロックの飾り → 画像の属性と種類 → 図表の番号 → ギャラリー → 画像と動画と音声の図 → カード → 段組み → details の範囲 → wide の範囲 → 改ページ → 用語の下線 → セクション → 目次 → 脚注の一覧 → 関連文書の一覧）→ タスクリスト → www の自動リンク → 残ったマーカー → 元の行番号 → 脚注の定義の取り出し
+  // マーカー → 機能の重ね合わせ → 取り込み → フロントマターの表示 → 蛍光ペン（`useHighlight` が取り込みの後に追加する）→ 脚注の機能のオン・オフ → 注記の番号と機能のオン・オフ → 記法（アイコン → 見出し → 用語集の表 → 行の詳細 → ビュー → CSV の表 → 表 → タブ → ステップ → 注意書き → ファイルツリー → バッジ → キー → 本文の文字の色 → 図の部品 → 埋め込んだ HTML → map の範囲 → コードブロックの飾り → 画像の属性と種類 → 図表の番号 → ギャラリー → 画像と動画と音声の図 → カード → 段組み → details の範囲 → wide の範囲 → 改ページ → 用語の下線 → セクション → 目次 → 脚注の一覧 → 注記の一覧 → 関連文書の一覧）→ タスクリスト → www の自動リンク → 残ったマーカー → 元の行番号 → 脚注の定義の取り出し → 注記の定義の取り出し
   const rules: Array<[string, (state: StateCore) => void]> = [
     ["mdmark_take_marks", takeMarks],
     ["mdmark_resolve_features", resolveDocumentFeatures],
@@ -328,6 +337,7 @@ export function createParser(): MarkdownItParser {
     // 機能を決めた後、コードブロックの飾りより前に配置する
     ["mdmark_insert_frontmatter", insertFrontmatter],
     ["mdmark_collect_footnotes", collectFootnotes],
+    ["mdmark_collect_annotations", collectAnnotations],
     // 項目の `icon:` の行内のコードを読み込むため、行内のアイコンより前に配置する
     ["mdmark_build_card_grid", buildCardGrid],
     // 見出しの ID と文字から、アイコンにした行内のコードを削除するため、見出しの ID より前に配置する
@@ -364,18 +374,21 @@ export function createParser(): MarkdownItParser {
     ["mdmark_wrap_sections", wrapSections],
     ["mdmark_build_toc", buildToc],
     ["mdmark_build_footnote_list", buildFootnoteList],
+    ["mdmark_build_annotation_list", buildAnnotationList],
     ["mdmark_backlinks", backlinksRule],
     ["mdmark_task_list", taskList],
     ["mdmark_revert_fuzzy_links", revertFuzzyLinks],
     ["mdmark_drop_marks", dropMarks],
     ["mdmark_mark_source_lines", markSourceLines],
     ["mdmark_take_footnote_definitions", takeFootnoteDefinitions],
+    ["mdmark_take_annotation_definitions", takeAnnotationDefinitions],
     ["mdmark_collect_warnings", collectWarningsRule],
   ];
   for (const [name, rule] of rules) {
     parser.core.ruler.push(name, rule);
   }
   useFootnotes(parser);
+  useAnnotations(parser);
   useHighlight(parser);
   // マーカーのトークンは、残っていても何も出さない
   parser.renderer.rules[MARK_TOKEN] = () => "";

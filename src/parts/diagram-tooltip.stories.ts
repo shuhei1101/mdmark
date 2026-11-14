@@ -48,3 +48,26 @@ export const GroupHint: Story = {
   parameters: { server: { id: "diagram-tooltip" } },
   args: { kind: "hint", group: true, open: true },
 };
+
+export const Annotation: Story = {
+  name: "Annotation",
+  parameters: { server: { id: "diagram-tooltip" } },
+  args: {
+    kind: "hint",
+    hint: "入力の値を判定の条件と比べる",
+    annotations:
+      '[{"number":1,"html":"条件を満たさないときは次の工程へ進む。"}]',
+    open: true,
+  },
+};
+
+export const AnnotationOnlyWire: Story = {
+  name: "AnnotationOnlyWire",
+  parameters: { server: { id: "diagram-tooltip" } },
+  args: {
+    kind: "wire",
+    annotations:
+      '[{"number":1,"html":"条件を満たさないときは次の工程へ進む。"}]',
+    open: true,
+  },
+};

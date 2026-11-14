@@ -4,6 +4,7 @@ import { buildDictionary, findWords } from "../../knowledge/dictionary.ts";
 import type { MapProblem } from "../../map/spec.ts";
 import { collectMapStructure } from "../../map/structure.ts";
 import { escapeHtml } from "../../parts/escape.ts";
+import { mapNoteAnnotations } from "./annotations.ts";
 import { outermostRanges, pairRanges } from "./blocks.ts";
 import { envOf, featureOn, markOf, ownBlock } from "./tokens.ts";
 import { unclosedWarning, warningBlock } from "./warnings.ts";
@@ -50,6 +51,22 @@ const termsFinder = (
     }
     return terms;
   };
+};
+
+/** 補足が参照する注記のうち定義のあるものの、注記の ID から番号への `data-map-annotations`。補足が注記を参照する範囲は、定義のある ID が無くても `{}` で付ける（描く側が定義の無い参照を警告にする）。注記の機能がオフなら付けない */
+const annotationsAttr = (
+  state: StateCore,
+  rest: string | undefined,
+): string => {
+  const order = envOf(state).mdmarkAnnotations?.order;
+  const referenced = mapNoteAnnotations(rest).flatMap(([, ids]) => ids);
+  if (order === undefined || referenced.length === 0) return "";
+  const numbers: Record<string, number> = {};
+  for (const id of referenced) {
+    const at = order.indexOf(id);
+    if (at >= 0) numbers[id] = at + 1;
+  }
+  return ` data-map-annotations="${escapeHtml(JSON.stringify(numbers))}"`;
 };
 
 /** `map` がオンのとき、`<!-- map -->` 〜 `<!-- /map -->` の範囲を div.mdmark-map にし、範囲の形の誤りを記載の警告にする。オフのときはマーカーと補足を取り除き、mermaid のブロックを普通のコードブロックとして残す */
@@ -128,7 +145,7 @@ export const buildMapRanges = (state: StateCore): void => {
     out.push(
       ownBlock(
         state,
-        `<div class="mdmark-map" data-map="${number}" data-map-kind="${structure.kind}" data-map-args="${args}"${termsAttr}>`,
+        `<div class="mdmark-map" data-map="${number}" data-map-kind="${structure.kind}" data-map-args="${args}"${termsAttr}${annotationsAttr(state, data === undefined ? undefined : markOf(data)?.rest)}>`,
         openToken,
       ),
     );

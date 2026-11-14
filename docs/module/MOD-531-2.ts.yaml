@@ -25,7 +25,7 @@ data_models:
         description: 遷移（`id`・`from`・`to`・`label`）。`id` は記載順の `t{番号}`（1 から）
       - name: notes
         type: StateNote[]
-        description: 注記（`id`・`of`・`side`・`text`）。`side` は `left`・`right`
+        description: ノート（`id`・`of`・`side`・`text`）。`side` は `left`・`right`
       - name: problems
         type: MapProblem[]
         description: 読めない行と閉じの無い入れ子の状態
@@ -36,7 +36,7 @@ functions:
     container: src/map/state-diagram.ts
     usecase: Mermaidと補足で図を描く
     role: 処理
-    summary: '`stateDiagram-v2`・`stateDiagram` の Mermaid を、状態・入れ子の状態・遷移・注記と読めない行の項目に読む'
+    summary: '`stateDiagram-v2`・`stateDiagram` の Mermaid を、状態・入れ子の状態・遷移・ノートと読めない行の項目に読む'
     scope: public
     args:
       - name: source
@@ -57,7 +57,7 @@ functions:
         summary: モックの状態遷移図
         condition: モックの `STATE`
         mock: なし
-        expected: 遷移 13（`t1`〜`t13`）・入れ子の状態 2（`実行中`・`保留`）・注記 1・分岐 1 で、`s1` の名前が `差し戻しの理由を確認する`、`処理` と `準備` の親が `実行中`
+        expected: 遷移 13（`t1`〜`t13`）・入れ子の状態 2（`実行中`・`保留`）・ノート 1・分岐 1 で、`s1` の名前が `差し戻しの理由を確認する`、`処理` と `準備` の親が `実行中`
       - name: test_parse_state_diagram_when_unclosed
         case: 異常
         summary: 閉じの無い入れ子の状態
@@ -70,7 +70,7 @@ functions:
     container: src/map/state-diagram.ts
     usecase: Mermaidと補足で図を描く
     role: 処理
-    summary: 状態をノード、入れ子の状態をグループ、遷移を線、注記を破線でつないだノードにした `Flowchart` と、同じ状態への遷移を作る
+    summary: 状態をノード、入れ子の状態をグループ、遷移を線、ノートを破線でつないだノードにした `Flowchart` と、同じ状態への遷移を作る
     scope: public
     args:
       - name: diagram
@@ -79,18 +79,18 @@ functions:
         description: 読み取り結果
     returns:
       type: '{ chart: Flowchart; loops: StateTransition[] }'
-      description: 線の ID は遷移の ID（`t{番号}`）と注記の点線（`n{番号}`）。同じ状態への遷移は `chart` に入れず `loops` に返す
+      description: 線の ID は遷移の ID（`t{番号}`）とノートの点線（`n{番号}`）。同じ状態への遷移は `chart` に入れず `loops` に返す
     process: |-
       1. 入れ子の状態そのものへの遷移の先を中の開始、入れ子の状態からの遷移の元を中の終了にする。中に開始・終了が無ければ作る
       2. 同じ状態への遷移を `loops` に分ける
-      3. 注記を種類 `note` のノードにし、`side` が `right` なら状態から注記へ、`left` なら注記から状態へ破線の線を作る
+      3. ノートを種類 `note` のノードにし、`side` が `right` なら状態からノートへ、`left` ならノートから状態へ破線の線を作る
     unit_tests:
       - name: test_state_to_flowchart
         case: 正常
         summary: 付け替えと補い
         condition: モックの `STATE`
         mock: なし
-        expected: '`t5` の先が `start_実行中`、`t12` の先が `start_保留`、`t13` の元が `end_保留` で、`保留` の中に開始・終了のノードがあり、`loops` が `t2` の 1 件、注記の線が 1 本'
+        expected: '`t5` の先が `start_実行中`、`t12` の先が `start_保留`、`t13` の元が `end_保留` で、`保留` の中に開始・終了のノードがあり、`loops` が `t2` の 1 件、ノートの線が 1 本'
   - name: statePartInputs
     title: 状態遷移図の部品の入力
     kind: 関数

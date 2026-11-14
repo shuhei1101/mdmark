@@ -1,0 +1,12 @@
+/* 注記の印刷の規則。脚注の印刷の規則（refs/311/assets/footnote-print.css）の後に読み込む。
+   実装では @media print で適用する（このファイルは link の media="print" で読み込む） */
+
+/* mdmark の層: 印刷のときの注記 */
+@layer mdmark {
+  .mdmark {
+    /* マーカー: 脚注の印刷の規則が付ける閉じの角括弧を付けない */
+    .mdmark-note-ref .mdmark-fn-link::after {
+      content: none !important;
+    }
+  }
+}

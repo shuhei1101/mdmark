@@ -150,6 +150,7 @@ export const DEFAULT_FEATURES: Record<string, boolean> = {
   tree: true,
   badge: true,
   footnotes: true,
+  annotations: true,
   code: true,
   syntax: true,
   toc: true,
