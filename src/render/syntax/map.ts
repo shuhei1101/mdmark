@@ -53,23 +53,20 @@ const termsFinder = (
   };
 };
 
-/** 補足が参照する注記のうち番号のあるものの、注記の ID から番号への `data-map-annotations`（該当が無ければ空） */
+/** 補足が参照する注記のうち定義のあるものの、注記の ID から番号への `data-map-annotations`。補足が注記を参照する範囲は、定義のある ID が無くても `{}` で付ける（描く側が定義の無い参照を警告にする）。注記の機能がオフなら付けない */
 const annotationsAttr = (
   state: StateCore,
   rest: string | undefined,
 ): string => {
   const order = envOf(state).mdmarkAnnotations?.order;
-  if (order === undefined) return "";
+  const referenced = mapNoteAnnotations(rest).flatMap(([, ids]) => ids);
+  if (order === undefined || referenced.length === 0) return "";
   const numbers: Record<string, number> = {};
-  for (const [, ids] of mapNoteAnnotations(rest)) {
-    for (const id of ids) {
-      const at = order.indexOf(id);
-      if (at >= 0) numbers[id] = at + 1;
-    }
+  for (const id of referenced) {
+    const at = order.indexOf(id);
+    if (at >= 0) numbers[id] = at + 1;
   }
-  return Object.keys(numbers).length === 0
-    ? ""
-    : ` data-map-annotations="${escapeHtml(JSON.stringify(numbers))}"`;
+  return ` data-map-annotations="${escapeHtml(JSON.stringify(numbers))}"`;
 };
 
 /** `map` がオンのとき、`<!-- map -->` 〜 `<!-- /map -->` の範囲を div.mdmark-map にし、範囲の形の誤りを記載の警告にする。オフのときはマーカーと補足を取り除き、mermaid のブロックを普通のコードブロックとして残す */
