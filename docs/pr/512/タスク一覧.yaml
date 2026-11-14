@@ -62,7 +62,10 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-14T02:22:51.043162+00:00'
   - process: ドキュメント修正
-    status: todo
+    status: done
+    note: LIB-472-34 は vsce の更新と一緒に実装で修正する
+    updated_by: planner
+    updated_at: '2026-11-14T02:37:36.657959+00:00'
   - process: 単体テスト作成
     status: skipped
     reason: ワークフローの YAML だけを変え、単体テストの対象になるコードを変えない。ワークフローの構成は結合テストで確かめる
