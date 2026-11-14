@@ -82,16 +82,16 @@ docs:
 scope_out:
   - item: classDiagram・mindmap・gantt・timeline・gitGraph・journey・block-beta・architecture-beta・C4Context を map で描く
     reason: Issue の一案のとおり種類ごとに分け、優先の高い erDiagram・stateDiagram-v2 と種類に依らない共通の部分を先に作る。残りはこの PR で作る共通の部分を前提にする
-    plan: to_file
+    plan: '#564'
   - item: pie・xychart-beta・quadrantChart・sankey-beta を map で描く
     reason: 今の部品 chart と重なる（Issue の候補の対象外の案）
     plan: none
   - item: ER 図の部品（#244。部品設計 CMP-472-1）を map に統合して削除するか、残すか
     reason: '判断が分かれる。今の判断は、この PR では部品を残して記載方法を変えず（破壊的変更を付けない）、統合は flow・sequence を廃止する #467 と同じ形の後続にする。単一ユースケース設計のレビューで確定する'
-    plan: to_file
+    plan: '#566'
   - item: knowledge のテンプレート『ER図』（er.entities・er.relations）・『状態遷移』から Mermaid を生成して map で描く経路
     reason: knowledge のテンプレートと設計書を描く側（dev-docs）の変更で、このリポジトリの map で描けるようになった後に作る
-    plan: to_file
+    plan: '#565'
   - item: map を Markdown へ書き出すときの種類ごとの扱い
     reason: '#313 は Mermaid のブロックを残して補足を削除する方式で、種類が増えても変わらない'
     plan: '#313'
