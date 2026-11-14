@@ -88,9 +88,9 @@ const fitsAt = (layout: MapLayout, item: Item, rect: Rect): boolean => {
 export const moveItem = (
   layout: MapLayout,
   item: Item,
-  dx: number,
-  dy: number,
+  delta: { dx: number; dy: number },
 ): { x: number; y: number } => {
+  const { dx, dy } = delta;
   const origin = originOf(parentOf(layout, item));
   const steps = Math.ceil(Math.hypot(dx, dy));
   for (let step = steps; step >= 0; step -= 1) {
@@ -108,19 +108,36 @@ export const moveItem = (
 const inside = (rect: Rect, [x, y]: [number, number]) =>
   x > rect.x && x < rect.x + rect.w && y > rect.y && y < rect.y + rect.h;
 
-/** ノードの外の点から、ノードのどの辺へまっすぐ入れるか */
-const enterFrom = (
+/** ノードの上か下の点から、ノードの上下の辺へまっすぐ入れる点 */
+const enterVertically = (
   rect: Rect,
   [x, y]: [number, number],
 ): [number, number] | undefined => {
-  const insideX = x >= rect.x + EDGE_INSET && x <= rect.x + rect.w - EDGE_INSET;
-  const insideY = y >= rect.y + EDGE_INSET && y <= rect.y + rect.h - EDGE_INSET;
-  if (insideX && y >= rect.y + rect.h) return [x, rect.y + rect.h];
-  if (insideX && y <= rect.y) return [x, rect.y];
-  if (insideY && x >= rect.x + rect.w) return [rect.x + rect.w, y];
-  if (insideY && x <= rect.x) return [rect.x, y];
+  if (x < rect.x + EDGE_INSET || x > rect.x + rect.w - EDGE_INSET)
+    return undefined;
+  if (y >= rect.y + rect.h) return [x, rect.y + rect.h];
+  if (y <= rect.y) return [x, rect.y];
   return undefined;
 };
+
+/** ノードの左か右の点から、ノードの左右の辺へまっすぐ入れる点 */
+const enterHorizontally = (
+  rect: Rect,
+  [x, y]: [number, number],
+): [number, number] | undefined => {
+  if (y < rect.y + EDGE_INSET || y > rect.y + rect.h - EDGE_INSET)
+    return undefined;
+  if (x >= rect.x + rect.w) return [rect.x + rect.w, y];
+  if (x <= rect.x) return [rect.x, y];
+  return undefined;
+};
+
+/** ノードの外の点から、ノードのどの辺へまっすぐ入れるか */
+const enterFrom = (
+  rect: Rect,
+  point: [number, number],
+): [number, number] | undefined =>
+  enterVertically(rect, point) ?? enterHorizontally(rect, point);
 
 /** 端の点がノードのどの辺にあるか */
 const sideOf = (rect: Rect, [x, y]: [number, number]): MapSide | undefined => {
@@ -144,6 +161,57 @@ const fixEnd = (
   return end ? [...body, end] : points;
 };
 
+/** 線の区間のずらし */
+type WireShifts = MapState["wireShifts"][string];
+
+/** 区間のずらしを線の点に当てた点の並び */
+const shiftPoints = (
+  wire: PlacedWire,
+  shifts: WireShifts,
+): Array<[number, number]> => {
+  const points = wire.points.map((point): [number, number] => [
+    point[0],
+    point[1],
+  ]);
+  for (const { segment, offset } of shifts) {
+    const a = points[segment];
+    const b = points[segment + 1];
+    if (!a || !b) continue;
+    const axis = a[1] === b[1] ? 1 : 0;
+    a[axis] += offset;
+    b[axis] += offset;
+  }
+  return points;
+};
+
+/** 線の両端がつなぐ辺 */
+const attachmentOf = (
+  points: Array<[number, number]>,
+  ends: { from: Rect | undefined; to: Rect | undefined },
+): MapState["attachments"][string] => {
+  const fromSide = ends.from
+    ? sideOf(ends.from, points[0] as [number, number])
+    : undefined;
+  const toSide = ends.to
+    ? sideOf(ends.to, points.at(-1) as [number, number])
+    : undefined;
+  return {
+    ...(fromSide ? { from: fromSide } : {}),
+    ...(toSide ? { to: toSide } : {}),
+  };
+};
+
+/** ずらしが当てられるか（無い・空・点の数が変わった線のずらしは当てない） */
+const appliesTo = (
+  shifts: WireShifts | undefined,
+  wire: PlacedWire,
+): shifts is WireShifts =>
+  shifts !== undefined &&
+  shifts.length > 0 &&
+  shifts.every(
+    (shift) => shift.count === undefined || shift.count === wire.points.length,
+  );
+
 /** 動かした線の区間のずらしを線の点に当て、端のつなぐ辺を決め直す。点の数が変わった線のずらしは捨てる */
 export const applyWireShifts = (
   layout: MapLayout,
@@ -160,44 +228,148 @@ export const applyWireShifts = (
   const wireShifts: MapState["wireShifts"] = {};
   const wires = layout.wires.map((wire) => {
     const shifts = state.wireShifts[wire.id];
-    if (!shifts || shifts.length === 0) return wire;
-    if (
-      shifts.some(
-        (shift) =>
-          shift.count !== undefined && shift.count !== wire.points.length,
-      )
-    )
-      return wire;
+    if (!appliesTo(shifts, wire)) return wire;
     wireShifts[wire.id] = shifts;
-    let points = wire.points.map((point): [number, number] => [
-      point[0],
-      point[1],
-    ]);
-    for (const { segment, offset } of shifts) {
-      const a = points[segment];
-      const b = points[segment + 1];
-      if (!a || !b) continue;
-      const axis = a[1] === b[1] ? 1 : 0;
-      a[axis] += offset;
-      b[axis] += offset;
-    }
-    points = fixEnd(points, rectOf(wire.to));
-    points = fixEnd([...points].reverse(), rectOf(wire.from)).reverse();
     const from = rectOf(wire.from);
     const to = rectOf(wire.to);
-    const fromSide = from
-      ? sideOf(from, points[0] as [number, number])
-      : undefined;
-    const toSide = to
-      ? sideOf(to, points.at(-1) as [number, number])
-      : undefined;
-    attachments[wire.id] = {
-      ...(fromSide ? { from: fromSide } : {}),
-      ...(toSide ? { to: toSide } : {}),
-    };
+    let points = fixEnd(shiftPoints(wire, shifts), to);
+    points = fixEnd([...points].reverse(), from).reverse();
+    attachments[wire.id] = attachmentOf(points, { from, to });
     return { ...wire, points };
   });
   return { wires, attachments, wireShifts };
+};
+
+/** ドラッグで動かすノード・グループか、線と区間 */
+type DragTarget = {
+  item: Item | undefined;
+  wire: PlacedWire | undefined;
+  segment: number | undefined;
+};
+
+/** ノードかグループの ID から、配置したノードかグループ */
+const itemOf = (
+  layout: MapLayout,
+  ids: { node: string | undefined; group: string | undefined },
+): Item | undefined => {
+  if (ids.node !== undefined)
+    return layout.nodes.find((node) => node.id === ids.node);
+  if (ids.group !== undefined)
+    return layout.groups.find((group) => group.id === ids.group);
+  return undefined;
+};
+
+/** 押した要素の、ノードの ID・タイトルの行を押したグループの ID・線の押せる帯 */
+const pressedOf = (
+  event: PointerEvent,
+): {
+  node: string | undefined;
+  group: string | undefined;
+  hit: Element | null | undefined;
+} => {
+  const target = event.target instanceof Element ? event.target : undefined;
+  return {
+    node:
+      target?.closest("[data-node]")?.getAttribute("data-node") ?? undefined,
+    group:
+      target
+        ?.closest(".map-group-bar, .map-group-head")
+        ?.closest("[data-group]")
+        ?.getAttribute("data-group") ?? undefined,
+    hit: target?.closest(".map-wire-hit"),
+  };
+};
+
+/** 押した場所から、動かすノード・グループか、線と区間を決める */
+const dragTargetOf = (
+  layout: MapLayout,
+  context: {
+    event: PointerEvent;
+    pointOf: ((event: PointerEvent) => [number, number]) | undefined;
+  },
+): DragTarget => {
+  const { event, pointOf } = context;
+  const { node, group, hit } = pressedOf(event);
+  const wireId = hit?.getAttribute("data-wire") ?? undefined;
+  const wire =
+    wireId === undefined
+      ? undefined
+      : layout.wires.find((item) => item.id === wireId);
+  const given = hit?.getAttribute("data-segment");
+  return {
+    item: itemOf(layout, { node, group }),
+    wire,
+    segment: segmentOf(wire, {
+      given,
+      point: () => pointOf?.(event),
+    }),
+  };
+};
+
+/** 押した線の区間（`data-segment` が無ければ、ポインターに一番近い区間） */
+const segmentOf = (
+  wire: PlacedWire | undefined,
+  hit: {
+    given: string | null | undefined;
+    point: () => [number, number] | undefined;
+  },
+): number | undefined => {
+  if (!wire) return undefined;
+  return hit.given === null || hit.given === undefined
+    ? nearestSegment(wire, hit.point())
+    : Number(hit.given);
+};
+
+/** 線の区間を、区間と直角の向きへ動かした状態 */
+const dragWire = (
+  state: MapState,
+  move: {
+    layout: MapLayout;
+    wire: PlacedWire;
+    segment: number;
+    dx: number;
+    dy: number;
+  },
+): MapState | undefined => {
+  const { layout, wire, segment, dx, dy } = move;
+  const a = wire.points[segment];
+  const b = wire.points[segment + 1];
+  if (!a || !b) return undefined;
+  const offset = Math.round(a[1] === b[1] ? dy : dx);
+  const others = (state.wireShifts[wire.id] ?? []).filter(
+    (shift) => shift.segment !== segment,
+  );
+  const wireShifts = {
+    ...state.wireShifts,
+    [wire.id]: [{ segment, offset, count: wire.points.length }, ...others],
+  };
+  const applied = applyWireShifts(layout, { wireShifts });
+  return {
+    ...state,
+    wireShifts,
+    attachments: { ...state.attachments, ...applied.attachments },
+  };
+};
+
+/** ドラッグで (dx, dy) だけ動かした状態（動かせなければ `undefined`） */
+const dragged = (
+  state: MapState,
+  move: { layout: MapLayout; target: DragTarget; dx: number; dy: number },
+): MapState | undefined => {
+  const { layout, target, dx, dy } = move;
+  const { item, wire, segment } = target;
+  if (item) {
+    return {
+      ...state,
+      positions: {
+        ...state.positions,
+        [item.id]: moveItem(layout, item, { dx, dy }),
+      },
+    };
+  }
+  if (wire && segment !== undefined)
+    return dragWire(state, { layout, wire, segment, dx, dy });
+  return state;
 };
 
 /** 押した場所（ノード・グループのタイトルの行・線の区間）からドラッグを始める。4px 動くまでは押した扱い。`pointercancel` で動かした分を戻す */
@@ -214,34 +386,7 @@ export const startDrag = (options: {
 }): void => {
   const { event, layout, onMove, onClick } = options;
   const scale = options.scale ?? 1;
-  const target = event.target instanceof Element ? event.target : undefined;
-  const nodeId =
-    target?.closest("[data-node]")?.getAttribute("data-node") ?? undefined;
-  const groupId =
-    target
-      ?.closest(".map-group-bar, .map-group-head")
-      ?.closest("[data-group]")
-      ?.getAttribute("data-group") ?? undefined;
-  const hit = target?.closest(".map-wire-hit");
-  const wireId = hit?.getAttribute("data-wire") ?? undefined;
-  const wire =
-    wireId === undefined
-      ? undefined
-      : layout.wires.find((item) => item.id === wireId);
-  const item: Item | undefined =
-    nodeId !== undefined
-      ? layout.nodes.find((node) => node.id === nodeId)
-      : groupId !== undefined
-        ? layout.groups.find((group) => group.id === groupId)
-        : undefined;
-  let segment: number | undefined;
-  if (wire) {
-    const given = hit?.getAttribute("data-segment");
-    segment =
-      given === null || given === undefined
-        ? nearestSegment(wire, options.pointOf?.(event))
-        : Number(given);
-  }
+  const target = dragTargetOf(layout, { event, pointOf: options.pointOf });
   const startX = event.clientX;
   const startY = event.clientY;
   let moved = false;
@@ -253,34 +398,9 @@ export const startDrag = (options: {
     if (!moved)
       state = { ...state, positions: freezePositions(layout, state.positions) };
     moved = true;
-    if (item) {
-      state = {
-        ...state,
-        positions: {
-          ...state.positions,
-          [item.id]: moveItem(layout, item, dx, dy),
-        },
-      };
-    } else if (wire && segment !== undefined) {
-      const a = wire.points[segment];
-      const b = wire.points[segment + 1];
-      if (!a || !b) return;
-      const horizontal = a[1] === b[1];
-      const offset = Math.round(horizontal ? dy : dx);
-      const others = (state.wireShifts[wire.id] ?? []).filter(
-        (shift) => shift.segment !== segment,
-      );
-      const wireShifts = {
-        ...state.wireShifts,
-        [wire.id]: [{ segment, offset, count: wire.points.length }, ...others],
-      };
-      const applied = applyWireShifts(layout, { wireShifts });
-      state = {
-        ...state,
-        wireShifts,
-        attachments: { ...state.attachments, ...applied.attachments },
-      };
-    }
+    const after = dragged(state, { layout, target, dx, dy });
+    if (after === undefined) return;
+    state = after;
     onMove(state);
   };
   const release = () => {
@@ -315,30 +435,34 @@ export const moveByKey = (options: {
     ...options.state,
     positions: freezePositions(layout, options.state.positions),
   };
-  const item: Item | undefined =
-    target.node !== undefined
-      ? layout.nodes.find((node) => node.id === target.node)
-      : target.group !== undefined
-        ? layout.groups.find((group) => group.id === target.group)
-        : undefined;
+  const item = itemOf(layout, { node: target.node, group: target.group });
   if (item) {
-    const next = moveItem(layout, item, dx, dy);
+    const next = moveItem(layout, item, { dx, dy });
     const before = state.positions[item.id];
     if (before && before.x === next.x && before.y === next.y) return undefined;
     return { ...state, positions: { ...state.positions, [item.id]: next } };
   }
   const wire = layout.wires.find((one) => one.id === target.wire);
   if (!wire || wire.points.length < 2) return undefined;
+  return moveWireByKey(options.state, { layout, wire, dx, dy });
+};
+
+/** 線の真ん中の区間を、区間と直角の向きへ動かした状態（動かせなければ `undefined`） */
+const moveWireByKey = (
+  state: MapState,
+  move: { layout: MapLayout; wire: PlacedWire; dx: number; dy: number },
+): MapState | undefined => {
+  const { layout, wire, dx, dy } = move;
   const segment = Math.floor((wire.points.length - 2) / 2);
   const a = wire.points[segment];
   const b = wire.points[segment + 1];
   if (!a || !b) return undefined;
   const offset = a[1] === b[1] ? dy : dx;
   if (offset === 0) return undefined;
-  const shifts = options.state.wireShifts[wire.id] ?? [];
+  const shifts = state.wireShifts[wire.id] ?? [];
   const old = shifts.find((shift) => shift.segment === segment)?.offset ?? 0;
   const wireShifts = {
-    ...options.state.wireShifts,
+    ...state.wireShifts,
     [wire.id]: [
       { segment, offset: old + offset, count: wire.points.length },
       ...shifts.filter((shift) => shift.segment !== segment),
@@ -346,10 +470,24 @@ export const moveByKey = (options: {
   };
   const applied = applyWireShifts(layout, { wireShifts });
   return {
-    ...options.state,
+    ...state,
     wireShifts,
-    attachments: { ...options.state.attachments, ...applied.attachments },
+    attachments: { ...state.attachments, ...applied.attachments },
   };
+};
+
+/** 区間から点までの直角の向きの距離（点が区間の範囲の外なら `undefined`） */
+const segmentDistance = (
+  [a, b]: [[number, number], [number, number]],
+  point: [number, number],
+): number | undefined => {
+  const horizontal = a[1] === b[1];
+  const along = horizontal ? 0 : 1;
+  const across = horizontal ? 1 : 0;
+  const within =
+    point[along] >= Math.min(a[along], b[along]) - 4 &&
+    point[along] <= Math.max(a[along], b[along]) + 4;
+  return within ? Math.abs(point[across] - a[across]) : undefined;
 };
 
 /** 線の区間のうち、点に一番近い区間の番号 */
@@ -360,18 +498,17 @@ export const nearestSegment = (
   if (!point) return undefined;
   let best: { index: number; distance: number } | undefined;
   for (let index = 0; index < wire.points.length - 1; index += 1) {
-    const a = wire.points[index] as [number, number];
-    const b = wire.points[index + 1] as [number, number];
-    const horizontal = a[1] === b[1];
-    const within = horizontal
-      ? point[0] >= Math.min(a[0], b[0]) - 4 &&
-        point[0] <= Math.max(a[0], b[0]) + 4
-      : point[1] >= Math.min(a[1], b[1]) - 4 &&
-        point[1] <= Math.max(a[1], b[1]) + 4;
-    const distance = horizontal
-      ? Math.abs(point[1] - a[1])
-      : Math.abs(point[0] - a[0]);
-    if (within && (best === undefined || distance < best.distance))
+    const distance = segmentDistance(
+      [
+        wire.points[index] as [number, number],
+        wire.points[index + 1] as [number, number],
+      ],
+      point,
+    );
+    if (
+      distance !== undefined &&
+      (best === undefined || distance < best.distance)
+    )
       best = { index, distance };
   }
   return best?.index;

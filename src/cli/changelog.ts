@@ -25,6 +25,26 @@ function splitCells(line: string): string[] {
   return body.split(/(?<!\\)\|/).map((cell) => cell.trim());
 }
 
+/** 表の行の版・PR・変更（版として読めない行は `undefined`） */
+function rowOf(line: string): ChangelogRow | undefined {
+  const [version = "", pr = "", change = ""] = splitCells(line);
+  if (parseVersion(version) === undefined) {
+    return undefined;
+  }
+  return { version, pr: LINK_TEXT_PATTERN.exec(pr)?.[1] ?? pr, change };
+}
+
+/** 版が `from` より後で `to` 以前か */
+function inRange(
+  version: string,
+  range: { from: string; to: string },
+): boolean {
+  return (
+    compareVersions(version, range.from) > 0 &&
+    compareVersions(version, range.to) <= 0
+  );
+}
+
 /** 変更履歴の表から、バージョンの列が手元のバージョンより新しく目標のバージョン以下の行を、表の並びで返却する */
 export function changelogRows(options: {
   text: string;
@@ -42,19 +62,9 @@ export function changelogRows(options: {
     if (!line.trim().startsWith("|")) {
       break;
     }
-    const [version = "", pr = "", change = ""] = splitCells(line);
-    if (parseVersion(version) === undefined) {
-      continue;
-    }
-    if (
-      compareVersions(version, options.from) > 0 &&
-      compareVersions(version, options.to) <= 0
-    ) {
-      rows.push({
-        version,
-        pr: LINK_TEXT_PATTERN.exec(pr)?.[1] ?? pr,
-        change,
-      });
+    const row = rowOf(line);
+    if (row && inRange(row.version, options)) {
+      rows.push(row);
     }
   }
   return rows;

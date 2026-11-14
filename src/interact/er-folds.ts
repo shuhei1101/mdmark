@@ -103,33 +103,7 @@ function relayout(figure: HTMLElement): void {
   for (const group of figure.querySelectorAll<SVGGElement>(
     "g[data-er-relation]",
   )) {
-    const relation = relationFromElement(group);
-    const from = tables.get(relation.from);
-    const to = tables.get(relation.to);
-    if (!from || !to) {
-      continue;
-    }
-    const route = erRelationRoute({
-      relation,
-      from,
-      to,
-      folded: isTableFolded,
-    });
-    group.querySelector("path")?.setAttribute("d", route.d);
-    const ends = group.querySelector(".mdmark-diagram-er-ends");
-    const svg =
-      erEndSvg({ ...route.start, card: relation.fromCard }) +
-      erEndSvg({ ...route.end, card: relation.toCard });
-    if (ends && ends.innerHTML !== svg) {
-      ends.innerHTML = svg;
-    }
-    const label = figure.querySelector<HTMLElement>(
-      `.mdmark-diagram-label[data-er-relation="${group.dataset.erRelation ?? ""}"]`,
-    );
-    if (label) {
-      setPx(label, "left", route.label.x);
-      setPx(label, "top", route.label.y);
-    }
+    relinkRelation(group, { figure, tables, folded: isTableFolded });
   }
   // 図の高さ: テーブルの下端の最大に下の余白を加算する。倍率を掛けた大きさのノードも同じ割合で合わせる
   const height =
@@ -140,6 +114,45 @@ function relayout(figure: HTMLElement): void {
           table.y + erTableHeight({ table, folded: isTableFolded(table.id) }),
       ),
     ) + ER_METRICS.bottom;
+  resizeStage(figure, height);
+}
+
+/** 関係 1 つの線・両端の記号・ラベルを、今の列の行の位置へもう一度結ぶ */
+function relinkRelation(
+  group: SVGGElement,
+  context: {
+    figure: HTMLElement;
+    tables: Map<string, ReturnType<typeof tableFromElement>>;
+    folded: (id: string) => boolean;
+  },
+): void {
+  const { figure, tables, folded } = context;
+  const relation = relationFromElement(group);
+  const from = tables.get(relation.from);
+  const to = tables.get(relation.to);
+  if (!from || !to) {
+    return;
+  }
+  const route = erRelationRoute({ relation, from, to, folded });
+  group.querySelector("path")?.setAttribute("d", route.d);
+  const ends = group.querySelector(".mdmark-diagram-er-ends");
+  const svg =
+    erEndSvg({ ...route.start, card: relation.fromCard }) +
+    erEndSvg({ ...route.end, card: relation.toCard });
+  if (ends && ends.innerHTML !== svg) {
+    ends.innerHTML = svg;
+  }
+  const label = figure.querySelector<HTMLElement>(
+    `.mdmark-diagram-label[data-er-relation="${group.dataset.erRelation ?? ""}"]`,
+  );
+  if (label) {
+    setPx(label, "left", route.label.x);
+    setPx(label, "top", route.label.y);
+  }
+}
+
+/** 図の高さを合わせる。倍率を掛けた大きさのノードも同じ割合で合わせる */
+function resizeStage(figure: HTMLElement, height: number): void {
   const stage = figure.querySelector<HTMLElement>(".mdmark-diagram-stage");
   const sizer = figure.querySelector<HTMLElement>(".mdmark-diagram-sizer");
   const wires = figure.querySelector<SVGSVGElement>(".mdmark-diagram-wires");

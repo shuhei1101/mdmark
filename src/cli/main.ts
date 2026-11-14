@@ -67,6 +67,112 @@ function findPackageRoot(from: string): string {
   return dir;
 }
 
+/** コマンドの引数の決まり */
+const ARG_OPTIONS = {
+  out: { type: "string" },
+  config: { type: "string" },
+  base: { type: "string" },
+  text: { type: "string" },
+  file: { type: "string" },
+  key: { type: "string" },
+  js: { type: "boolean" },
+  plan: { type: "boolean" },
+  yes: { type: "boolean" },
+  settings: { type: "boolean" },
+  "keep-traces": { type: "boolean" },
+} as const;
+
+/** コマンドを動かすときに渡す、読み込んだ引数と入出力 */
+type CommandContext = {
+  values: ReturnType<
+    typeof parseArgs<{ options: typeof ARG_OPTIONS; allowPositionals: true }>
+  >["values"];
+  /** コマンドの名前の後ろの位置引数 */
+  rest: string[];
+  /** パッケージの根のフォルダ */
+  root: string;
+  io: CliIo;
+  ask: Prompter;
+};
+
+/** コマンドの名前から、動かす関数を参照する表 */
+const COMMANDS: Record<string, (context: CommandContext) => Promise<0 | 1>> = {
+  init: ({ values, rest, root, io }) =>
+    runInit(
+      {
+        dir: resolve(io.cwd, rest[0] ?? "."),
+        js: values.js === true,
+        templatesDir: join(root, "templates"),
+        version: cliVersion(),
+      },
+      io,
+    ),
+  check: async ({ values, io }) =>
+    runCheck(
+      {
+        config: values.config,
+        base: values.base,
+        text: values.text === STDIN_TEXT ? await readStdin() : values.text,
+        file: values.file,
+        key: values.key,
+      },
+      io,
+    ),
+  export: ({ values, rest, root, io }) => {
+    const file = rest[0];
+    if (file === undefined) {
+      throw new CliError("export には書き出す文書のパスが要ります。");
+    }
+    return runExport(
+      {
+        file,
+        out: values.out,
+        config: values.config,
+        distDir: join(root, "dist"),
+        keepTraces: values["keep-traces"] === true,
+      },
+      io,
+    );
+  },
+  build: ({ values, root, io }) =>
+    runBuild(
+      {
+        config: values.config,
+        distDir: join(root, "dist"),
+        keepTraces: values["keep-traces"] === true,
+      },
+      io,
+    ),
+  upgrade: ({ values, root, io, ask }) =>
+    runUpgrade(
+      {
+        config: values.config,
+        settings: values.settings === true,
+        plan: values.plan === true,
+        yes: values.yes === true,
+        packageDir: root,
+        cliVersion: cliVersion(),
+        now: new Date(),
+      },
+      io,
+      ask,
+    ),
+  serve: ({ root, io }) => {
+    // SIGINT と SIGTERM を、常駐サーバーを止める合図にする
+    const controller = new AbortController();
+    process.once("SIGINT", () => controller.abort());
+    process.once("SIGTERM", () => controller.abort());
+    return runServe({
+      env: process.env,
+      packageDir: root,
+      version: cliVersion(),
+      signal: controller.signal,
+      stdout: io.stdout,
+      stderr: io.stderr,
+    });
+  },
+};
+
 /** 最初の引数のコマンド名で `init`・`check`・`export`・`build`・`upgrade`・`serve` を呼び分け、終了コードを返却する */
 export async function main(
   argv: string[],
@@ -76,103 +182,21 @@ export async function main(
   try {
     const { values, positionals } = parseArgs({
       args: argv,
-      options: {
-        out: { type: "string" },
-        config: { type: "string" },
-        base: { type: "string" },
-        text: { type: "string" },
-        file: { type: "string" },
-        key: { type: "string" },
-        js: { type: "boolean" },
-        plan: { type: "boolean" },
-        yes: { type: "boolean" },
-        settings: { type: "boolean" },
-        "keep-traces": { type: "boolean" },
-      },
+      options: ARG_OPTIONS,
       allowPositionals: true,
     });
     const [command, ...rest] = positionals;
     const root = findPackageRoot(import.meta.dirname);
-    switch (command) {
-      case "init":
-        return await runInit(
-          {
-            dir: resolve(io.cwd, rest[0] ?? "."),
-            js: values.js === true,
-            templatesDir: join(root, "templates"),
-            version: cliVersion(),
-          },
-          io,
-        );
-      case "check":
-        return await runCheck(
-          {
-            config: values.config,
-            base: values.base,
-            text: values.text === STDIN_TEXT ? await readStdin() : values.text,
-            file: values.file,
-            key: values.key,
-          },
-          io,
-        );
-      case "export": {
-        const file = rest[0];
-        if (file === undefined) {
-          throw new CliError("export には書き出す文書のパスが要ります。");
-        }
-        return await runExport(
-          {
-            file,
-            out: values.out,
-            config: values.config,
-            distDir: join(root, "dist"),
-            keepTraces: values["keep-traces"] === true,
-          },
-          io,
-        );
-      }
-      case "build":
-        return await runBuild(
-          {
-            config: values.config,
-            distDir: join(root, "dist"),
-            keepTraces: values["keep-traces"] === true,
-          },
-          io,
-        );
-      case "upgrade":
-        return await runUpgrade(
-          {
-            config: values.config,
-            settings: values.settings === true,
-            plan: values.plan === true,
-            yes: values.yes === true,
-            packageDir: root,
-            cliVersion: cliVersion(),
-            now: new Date(),
-          },
-          io,
-          ask,
-        );
-      case "serve": {
-        // SIGINT と SIGTERM を、常駐サーバーを止める合図にする
-        const controller = new AbortController();
-        process.once("SIGINT", () => controller.abort());
-        process.once("SIGTERM", () => controller.abort());
-        return await runServe({
-          env: process.env,
-          packageDir: root,
-          version: cliVersion(),
-          signal: controller.signal,
-          stdout: io.stdout,
-          stderr: io.stderr,
-        });
-      }
-      default:
-        throw new CliError(
-          `知らないコマンドです: ${command ?? "（なし）"}\n${USAGE.join("\n")}`,
-        );
+    const run =
+      command !== undefined && Object.hasOwn(COMMANDS, command)
+        ? COMMANDS[command]
+        : undefined;
+    if (!run) {
+      throw new CliError(
+        `知らないコマンドです: ${command ?? "（なし）"}\n${USAGE.join("\n")}`,
+      );
     }
+    return await run({ values, rest, root, io, ask });
   } catch (error) {
     if (error instanceof CliError) {
       io.stderr(error.message);

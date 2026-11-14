@@ -143,33 +143,52 @@ const EXPLICIT_LINK_PATTERN = /^(?:[a-z][a-z0-9+.-]*:|www\.|[^@]*@)/i;
 /** タスクリストの項目の頭の `[ ]`・`[x]` */
 const TASK_MARKER_PATTERN = /^\[([ xX])\]\s+/;
 
+/** 項目の最初の段落の行内なら、項目の開始と行内のトークンを返却する */
+function taskItemAt(
+  tokens: Token[],
+  index: number,
+): { item: Token; inline: Token } | undefined {
+  const inline = tokens[index];
+  const item = tokens[index - 2];
+  if (
+    inline?.type !== "inline" ||
+    tokens[index - 1]?.type !== "paragraph_open" ||
+    item?.type !== "list_item_open"
+  ) {
+    return undefined;
+  }
+  return { item, inline };
+}
+
+/** 項目の頭の `[ ]`・`[x]` をチェックボックスに置き換える。頭が `[ ]`・`[x]` でなければ何もしない */
+function insertTaskCheckbox(
+  state: StateCore,
+  target: { item: Token; inline: Token },
+): void {
+  const { item, inline } = target;
+  const marker = TASK_MARKER_PATTERN.exec(inline.content);
+  const first = inline.children?.[0];
+  if (!marker || first?.type !== "text") {
+    return;
+  }
+  item.attrJoin("class", "task-list-item");
+  first.content = first.content.replace(TASK_MARKER_PATTERN, "");
+  const checkbox = new state.Token("html_inline", "", 0);
+  checkbox.content =
+    marker[1] === " "
+      ? '<input type="checkbox" disabled> '
+      : '<input type="checkbox" disabled checked> ';
+  inline.children?.unshift(checkbox);
+}
+
 /** タスクリストの項目の頭をチェックボックスにする */
 function taskList(state: StateCore): void {
   const tokens = state.tokens;
   for (let index = 2; index < tokens.length; index++) {
-    const inline = tokens[index];
-    const item = tokens[index - 2];
-    // 項目の最初の段落の行内だけを確認する
-    if (
-      inline?.type !== "inline" ||
-      tokens[index - 1]?.type !== "paragraph_open" ||
-      item?.type !== "list_item_open"
-    ) {
-      continue;
+    const target = taskItemAt(tokens, index);
+    if (target) {
+      insertTaskCheckbox(state, target);
     }
-    const marker = TASK_MARKER_PATTERN.exec(inline.content);
-    const first = inline.children?.[0];
-    if (!marker || first?.type !== "text") {
-      continue;
-    }
-    item.attrJoin("class", "task-list-item");
-    first.content = first.content.replace(TASK_MARKER_PATTERN, "");
-    const checkbox = new state.Token("html_inline", "", 0);
-    checkbox.content =
-      marker[1] === " "
-        ? '<input type="checkbox" disabled> '
-        : '<input type="checkbox" disabled checked> ';
-    inline.children?.unshift(checkbox);
   }
 }
 
@@ -287,37 +306,38 @@ export function findMarks(
   return findMarkTexts(markdown).map(({ name, line }) => ({ name, line }));
 }
 
+/** 生の HTML のブロックのマーカーを、ブロックの開始の行から数えた行と一緒に返却する */
+function htmlBlockMarks(token: Token, start: number): FoundMark[] {
+  return [...token.content.matchAll(MARK_PATTERN)].map((match) => ({
+    ...foundOf(match),
+    line: start + countNewlines(token.content.slice(0, match.index)),
+  }));
+}
+
+/** 行内の HTML のマーカーを、マーカーより前の子が持つ改行の数を足した行と一緒に返却する */
+function inlineMarks(token: Token, startLine: number): FoundMark[] {
+  const found: FoundMark[] = [];
+  let offset = startLine;
+  for (const child of token.children ?? []) {
+    if (child.type === "softbreak" || child.type === "hardbreak") {
+      offset += 1;
+    } else if (child.type === "html_inline") {
+      found.push(...htmlBlockMarks(child, offset));
+      offset += countNewlines(child.content);
+    }
+  }
+  return found;
+}
+
 /** `findMarks` と同じマーカーを、マーカーの文字と引数の文字と一緒に返却する */
 export function findMarkTexts(markdown: string): FoundMark[] {
   const tokens = new MarkdownIt(PARSER_OPTIONS).parse(markdown, {});
   const found: FoundMark[] = [];
   for (const [position, token] of tokens.entries()) {
     if (token.type === "html_block" && token.map) {
-      const start = token.map[0] + 1;
-      for (const match of token.content.matchAll(MARK_PATTERN)) {
-        const before = token.content.slice(0, match.index);
-        found.push({
-          ...foundOf(match),
-          line: start + countNewlines(before),
-        });
-      }
+      found.push(...htmlBlockMarks(token, token.map[0] + 1));
     } else if (token.type === "inline") {
-      // マーカーより前の子が持つ改行の数を追加しながら、行内の HTML のマーカーを取得する
-      let offset = inlineStartLine(tokens, position) + 1;
-      for (const child of token.children ?? []) {
-        if (child.type === "softbreak" || child.type === "hardbreak") {
-          offset += 1;
-        } else if (child.type === "html_inline") {
-          for (const match of child.content.matchAll(MARK_PATTERN)) {
-            const before = child.content.slice(0, match.index);
-            found.push({
-              ...foundOf(match),
-              line: offset + countNewlines(before),
-            });
-          }
-          offset += countNewlines(child.content);
-        }
-      }
+      found.push(...inlineMarks(token, inlineStartLine(tokens, position) + 1));
     }
   }
   return found;
@@ -397,10 +417,11 @@ export function createParser(): MarkdownItParser {
   parser.renderer.rules.s_close = () => "</del>";
   // コードブロック: `pre` にスクリーンリーダー向けの名前と tabindex を付ける
   const renderFence = parser.renderer.rules.fence;
-  parser.renderer.rules.fence = (tokens, index, options, env, self) => {
+  parser.renderer.rules.fence = (...args) => {
+    const [tokens, index] = args;
     const language = tokens[index]?.info.trim().split(/\s+/)[0] ?? "";
     const label = language ? `コード: ${language}` : "コード";
-    const html = renderFence?.(tokens, index, options, env, self) ?? "";
+    const html = renderFence?.(...args) ?? "";
     const line = tokens[index]?.map?.[0];
     const sourceLine = line === undefined ? "" : ` data-source-line="${line}"`;
     return html.replace(

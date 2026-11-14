@@ -150,6 +150,17 @@ export function renderViewBoard(props: {
   return `${open}${columnsHtml.join("")}</div>`;
 }
 
+/** 表形式に渡す絞り込みの状態を返却する */
+function tableFilterState(props: {
+  filterValues?: FilterValue[] | undefined;
+  openFilter?: number | undefined;
+}): { filterValues: FilterValue[]; openFilter?: number } {
+  return {
+    filterValues: props.filterValues ?? [],
+    ...(props.openFilter === undefined ? {} : { openFilter: props.openFilter }),
+  };
+}
+
 /** 項目の表を、`group` の列の値ごとに並べたボードと、表形式で切り替えて出す HTML を返却する */
 export function renderView(props: {
   /** 列名 */
@@ -195,8 +206,7 @@ export function renderView(props: {
     columns: columns.map(escapeHtml),
     rows: items.map((row) => row.map(escapeHtml)),
     filters,
-    filterValues: props.filterValues ?? [],
-    ...(props.openFilter === undefined ? {} : { openFilter: props.openFilter }),
+    ...tableFilterState(props),
     id: `${id}-table`,
   });
   return `<div class="mdmark-view">${head}<div class="mdmark-view-table"${hiddenIf(mode !== "table")}>${table}</div></div>`;

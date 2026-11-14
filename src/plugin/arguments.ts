@@ -82,6 +82,22 @@ function matchesType(schema: ArgumentSchema, value: unknown): boolean {
   });
 }
 
+/** 配列の引数の、合う値の説明 */
+function describeArray(schema: ArgumentSchema): string {
+  if (schema.items?.enum !== undefined) {
+    return `${schema.items.enum.join(" か ")} の配列`;
+  }
+  return schema.items === undefined ? "配列" : "文字列の配列";
+}
+
+/** 配列・整数・真偽値・文字列でない引数の、合う値の説明 */
+function describeObject(types: string[]): string {
+  if (types.includes("object") && types.includes("null")) {
+    return "オブジェクトか null";
+  }
+  return types.includes("object") ? "オブジェクト" : "null";
+}
+
 /** 型が合わないときに「〜で指定してください」へ入れる、合う値の説明 */
 function describeType(schema: ArgumentSchema): string {
   if (schema.enum !== undefined) {
@@ -89,10 +105,7 @@ function describeType(schema: ArgumentSchema): string {
   }
   const types = Array.isArray(schema.type) ? schema.type : [schema.type];
   if (types.includes("array")) {
-    if (schema.items?.enum !== undefined) {
-      return `${schema.items.enum.join(" か ")} の配列`;
-    }
-    return schema.items === undefined ? "配列" : "文字列の配列";
+    return describeArray(schema);
   }
   if (types.includes("integer")) {
     return schema.minimum !== undefined && schema.maximum !== undefined
@@ -105,37 +118,33 @@ function describeType(schema: ArgumentSchema): string {
   if (types.includes("string")) {
     return schema.minLength === undefined ? "文字列" : "空でない文字列";
   }
-  if (types.includes("object") && types.includes("null")) {
-    return "オブジェクトか null";
-  }
-  return types.includes("object") ? "オブジェクト" : "null";
+  return describeObject(types);
 }
 
-/** 引数 1 つを検査し、合わなければ合う値の説明を返却する */
-function describeMismatch(
-  schema: ArgumentSchema,
-  value: unknown,
-): string | undefined {
-  if (!matchesType(schema, value)) {
-    return describeType(schema);
-  }
-  if (schema.enum !== undefined && !schema.enum.includes(value as string)) {
-    return schema.enum.join(" か ");
-  }
-  if (
+/** 数の引数が `minimum`・`maximum` の外か */
+function outOfRange(schema: ArgumentSchema, value: unknown): boolean {
+  return (
     typeof value === "number" &&
     ((schema.minimum !== undefined && value < schema.minimum) ||
       (schema.maximum !== undefined && value > schema.maximum))
-  ) {
-    return describeType(schema);
-  }
-  if (
-    schema.items?.enum !== undefined &&
+  );
+}
+
+/** 配列の引数に、`items.enum` に無い要素があるか */
+function hasUnknownItem(schema: ArgumentSchema, value: unknown): boolean {
+  const allowed = schema.items?.enum;
+  return (
+    allowed !== undefined &&
     Array.isArray(value) &&
-    value.some((item) => !schema.items?.enum?.includes(item))
-  ) {
-    return describeType(schema);
-  }
+    value.some((item) => !allowed.includes(item))
+  );
+}
+
+/** 配列・文字列の引数の長さが足りないときの、合う値の説明 */
+function describeTooShort(
+  schema: ArgumentSchema,
+  value: unknown,
+): string | undefined {
   if (
     schema.minItems !== undefined &&
     Array.isArray(value) &&
@@ -151,6 +160,23 @@ function describeMismatch(
     return "空でない文字列";
   }
   return undefined;
+}
+
+/** 引数 1 つを検査し、合わなければ合う値の説明を返却する */
+function describeMismatch(
+  schema: ArgumentSchema,
+  value: unknown,
+): string | undefined {
+  if (!matchesType(schema, value)) {
+    return describeType(schema);
+  }
+  if (schema.enum !== undefined && !schema.enum.includes(value as string)) {
+    return schema.enum.join(" か ");
+  }
+  if (outOfRange(schema, value) || hasUnknownItem(schema, value)) {
+    return describeType(schema);
+  }
+  return describeTooShort(schema, value);
 }
 
 /** 引数をツールの引数の構造で検査し、最初に合わないところを、何が合わないかと修正方法の日本語の 1 文で返却する。合えば `undefined` */

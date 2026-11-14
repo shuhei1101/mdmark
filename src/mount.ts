@@ -155,6 +155,33 @@ function createDiffHtmlRenderer(options: {
   };
 }
 
+/** 描くたびに付け直すものを、片付ける順に並べた名前（範囲のスクリプト・mermaid の図・先頭へ戻るボタン・記法の操作・右側の目次・包んだ本文の列・差分・ビューとコメントの部品） */
+const DETACH_ORDER = [
+  "scripts",
+  "mermaid",
+  "backToTop",
+  "interactions",
+  "sideToc",
+  "content",
+  "diff",
+  "parts",
+] as const;
+
+/** 今の文書に付けたものを片付ける関数 */
+type Detachers = Partial<Record<(typeof DETACH_ORDER)[number], () => void>>;
+
+/** 片付ける順に全て片付け、空にする */
+function detachAll(detachers: Detachers): void {
+  for (const key of DETACH_ORDER) {
+    const detach = detachers[key];
+    delete detachers[key];
+    detach?.();
+  }
+}
+
+/** Markdown を描いた結果 */
+type RenderedDocument = ReturnType<typeof renderDocument>;
+
 /** 比較元が文字列か `null` か `undefined` かを確認し、違えば `baseMarkdown` を含む `TypeError` を投げる */
 export function checkBaseMarkdown(
   value: unknown,
@@ -237,18 +264,10 @@ export function mount(el: HTMLElement, opts: MountOptions): MountHandle {
   let destroyed = false;
   // 今の文書で決まった機能のオン・オフ
   let features = config.features;
-  // 今の文書に付けた記法の操作を削除する関数
-  let detachInteractions: (() => void) | undefined;
-  // 今の文書に付けた差分を削除する関数
-  let detachDiff: (() => void) | undefined;
+  // 今の文書に付けたものを片付ける関数
+  const detachers: Detachers = {};
   // 今の文書に付けたビューとコメントの部品
   let parts: PartsHandle | undefined;
-  // 今の文書に付けた右側の目次を削除する関数
-  let detachSideToc: (() => void) | undefined;
-  // 今の文書に付けた先頭へ戻るボタンを削除する関数
-  let detachBackToTop: (() => void) | undefined;
-  // 右側の目次を付けずにコメントの余白の列のために包んだ本文の列を、包む前に戻す関数
-  let detachContent: (() => void) | undefined;
   // 右側の目次の状態（`mount` ごとに 1 つ。再描画でも保つ）
   const sideTocState: SideTocState = { open: false, pinned: false };
   // 読者が開閉したセクションの開閉の記録（`mount` ごとに 1 つ。再描画でも保つ）
@@ -261,43 +280,14 @@ export function mount(el: HTMLElement, opts: MountOptions): MountHandle {
   const syntaxModules = new Map<string, Promise<{ default?: unknown }>>();
   // mermaid のモジュールの記録（`mount` ごとに 1 つ。再描画では再読み込みしない）
   const mermaidModules = new Map<string, Promise<{ default?: unknown }>>();
-  // 今の文書の mermaid の図を削除する関数
-  let detachMermaid: (() => void) | undefined;
   // 範囲のスクリプトの変換のライブラリの読み込みの記録（`mount` ごとに 1 つ）
   const transpilers = new Map<string, Promise<Transpiler>>();
-  // 今の文書の範囲のスクリプトが返却した `destroy` をまとめて呼ぶ関数
-  let destroyScripts: (() => void) | undefined;
   // コメントの機能に読み込みと保存の関数が要ることを出したか（`mount` ごとに 1 回だけ出す）
   const warned = { missingStore: false };
 
-  /** 文書を描く。`coloredFrom` は `blocks` で色分けするときの前の Markdown（`markdown` が後）、`fromUpdate` は `update` から始まった描画か */
-  const draw = (
-    markdown: string,
-    coloredFrom?: string,
-    fromUpdate = false,
-  ): void => {
-    generation += 1;
-    const current = generation;
-    destroyScripts?.();
-    destroyScripts = undefined;
-    detachMermaid?.();
-    detachMermaid = undefined;
-    detachBackToTop?.();
-    detachBackToTop = undefined;
-    detachInteractions?.();
-    detachSideToc?.();
-    detachSideToc = undefined;
-    detachContent?.();
-    detachContent = undefined;
-    detachDiff?.();
-    detachDiff = undefined;
-    parts?.detach();
-    parts = undefined;
-    // 比較元があって本文と違うときは、比較元と比べて色分けする
-    const from =
-      coloredFrom ??
-      (base !== undefined && base !== markdown ? base : undefined);
-    const rendered = renderDocument({
+  /** Markdown を、この `mount` の設定・索引・取り込む文書で描く */
+  const renderMarkdown = (markdown: string): RenderedDocument =>
+    renderDocument({
       markdown,
       config,
       index: opts.index,
@@ -307,30 +297,28 @@ export function mount(el: HTMLElement, opts: MountOptions): MountHandle {
       includes,
       icons: opts.icons,
     });
+  /** 描いた HTML を要素に入れる。`from` があれば、前の Markdown と比べて色分けする */
+  const paint = (target: {
+    rendered: RenderedDocument;
+    markdown: string;
+    from: string | undefined;
+  }): void => {
+    const { rendered, markdown, from } = target;
     if (from === undefined) {
       el.innerHTML = rendered.html;
-    } else {
-      el.replaceChildren(
-        drawColoredBlocks({
-          rendered: rendered.html,
-          after: markdown,
-          before: from,
-          render: (source) =>
-            renderDocument({
-              markdown: source,
-              config,
-              index: opts.index,
-              docId: opts.docId,
-              references: opts.references,
-              aliases: opts.aliases,
-              includes,
-              icons: opts.icons,
-            }).html,
-        }),
-      );
+      return;
     }
-    // 文書の page のマーカーを、既定を適用した設定に重ねてこの描画の設定にする
-    const drawn = applyPageSettings({ config, page: rendered.page });
+    el.replaceChildren(
+      drawColoredBlocks({
+        rendered: rendered.html,
+        after: markdown,
+        before: from,
+        render: (source) => renderMarkdown(source).html,
+      }),
+    );
+  };
+  /** この描画の設定のテーマと明暗を要素に適用する。右側の目次の出し方が変わったら、目次の状態を戻す */
+  const applyAppearance = (drawn: ResolvedConfig): void => {
     el.classList.add(ROOT_CLASS);
     el.setAttribute(COLOR_THEME_ATTRIBUTE, drawn.colorTheme);
     el.classList.remove(COLOR_SCHEME_CLASSES.light, COLOR_SCHEME_CLASSES.dark);
@@ -342,33 +330,168 @@ export function mount(el: HTMLElement, opts: MountOptions): MountHandle {
       sideTocState.pinned = false;
     }
     lastTocMode = drawn.sideToc.mode;
-    features = rendered.features;
-    // 右側の目次を付けたときは、以降の操作と部品を本文の列に付ける
-    let body = el;
-    let aside: HTMLElement | undefined;
-    if (features["side-toc"] === true) {
-      const sideToc = attachSideToc({
-        el,
-        mode: drawn.sideToc.mode,
-        sections: features.sections === true,
-        state: sideTocState,
-      });
-      body = sideToc.content;
-      aside = sideToc.aside;
-      detachSideToc = sideToc.detach;
-    }
-    // コメントの余白の列を本文の列の右に配置するため、右側の目次が包んでいなければ本文の列に包む
-    if (
+  };
+  /** 右側の目次を付け、以降の操作と部品を付ける本文の列を返却する。コメントの余白の列を本文の列の右に配置するため、右側の目次が包んでいなければ本文の列に包む */
+  const layoutBody = (
+    drawn: ResolvedConfig,
+  ): { body: HTMLElement; aside: HTMLElement | undefined } => {
+    const sideToc =
+      features["side-toc"] === true
+        ? attachSideToc({
+            el,
+            mode: drawn.sideToc.mode,
+            sections: features.sections === true,
+            state: sideTocState,
+          })
+        : undefined;
+    detachers.sideToc = sideToc?.detach;
+    const body = sideToc?.content ?? el;
+    const aside = sideToc?.aside;
+    const comments =
       features.comments === true &&
       commentStore !== undefined &&
-      docId !== undefined &&
-      body === el
-    ) {
-      body = wrapContent(el);
-      const content = body;
-      detachContent = () => content.replaceWith(...content.childNodes);
+      docId !== undefined;
+    if (!comments || body !== el) {
+      return { body, aside };
     }
-    detachInteractions = attachInteractions({
+    const content = wrapContent(el);
+    detachers.content = () => content.replaceWith(...content.childNodes);
+    return { body: content, aside };
+  };
+  /** まとめていない名前のアイコンを読み込む。読み込みの完了は待たない */
+  const loadIcons = (body: HTMLElement, isCurrent: () => boolean): void => {
+    void loadInlineIcons({
+      root: body,
+      icons: opts.icons ?? {},
+      isCurrent,
+      // 書き出した HTML（外部ライブラリを埋めたとき）は外へ要求せず、表に無い名前を Lucide に無い名前として扱う
+      ...(embeddedLibraries === undefined
+        ? {}
+        : {
+            importModule: () => Promise.reject(new Error("embedded")),
+            fetchHead: async () => new Response(null, { status: 404 }),
+          }),
+    });
+  };
+  /** 範囲のスクリプトを動かす。読み込みの完了は待たない。解決する前に再描画したときは、解決したときに片付ける */
+  const startScripts = (body: HTMLElement, isCurrent: () => boolean): void => {
+    void runHtmlScripts({
+      root: body,
+      url: config.htmlScripts.url,
+      isCurrent,
+      cache: transpilers,
+    }).then((destroy) => {
+      if (isCurrent()) {
+        detachers.scripts = destroy;
+      } else {
+        destroy();
+      }
+    });
+  };
+  /** アイコン・外部ライブラリと拡張・色分け・mermaid・範囲のスクリプトの読み込みを始める */
+  const startLoading = (target: {
+    body: HTMLElement;
+    rendered: RenderedDocument;
+    drawn: ResolvedConfig;
+    isCurrent: () => boolean;
+  }): void => {
+    const { body, rendered, drawn, isCurrent } = target;
+    if (features.icon === true) {
+      loadIcons(body, isCurrent);
+    }
+    // 読み込みの完了は待たない
+    void loadLibraries({
+      root: body,
+      libraries: config.libraries,
+      isCurrent,
+      definitions: rendered.extensionDefinitions,
+    });
+    // 色分けの対象があるときだけ読み込む。読み込みの完了は待たない
+    void highlightCodeBlocks({
+      root: body,
+      url: config.syntax.url,
+      isCurrent,
+      modules: syntaxModules,
+    });
+    // mermaid のコードブロックがあるときだけ読み込む。マーカーの場所を取得した後に読み込み中のブロックを配置する。描き終えるのは待たない
+    if (features.mermaid === true) {
+      detachers.mermaid = attachMermaid({
+        root: body,
+        scope: el,
+        config: drawn,
+        mountId,
+        isCurrent,
+        modules: mermaidModules,
+        placement: config.tooltips.diagramPlacement,
+      }).detach;
+    }
+    if (features["html-scripts"] === true) {
+      startScripts(body, isCurrent);
+    }
+  };
+  /** 差分の出し方に合わせて差分を付ける。`blocks` で比較元が無く、色分けせずに描いたときだけ、比べる 2 つの本文を取り出して描き直す（取り出しの完了は待たない） */
+  const startDiff = (target: {
+    body: HTMLElement;
+    aside: HTMLElement | undefined;
+    from: string | undefined;
+    fromUpdate: boolean;
+    isCurrent: () => boolean;
+  }): void => {
+    const { body, aside, from, fromUpdate, isCurrent } = target;
+    if (diffSource === undefined || docId === undefined) {
+      return;
+    }
+    if (diffMode !== "blocks") {
+      detachers.diff = attachDiff({
+        root: body,
+        source: diffSource,
+        docId,
+        renderHtml: renderDiffHtml,
+        hideWith: aside ? [aside] : [],
+        open: diffMode === "open",
+      });
+      return;
+    }
+    if (base !== undefined || from !== undefined) {
+      return;
+    }
+    void loadDiffPair({ source: diffSource, docId }).then((pair) => {
+      if (!isCurrent()) {
+        return;
+      }
+      if (pair.kind === "pair" && pair.before !== pair.after) {
+        draw(pair.after, pair.before, fromUpdate);
+      } else if (pair.kind === "failed") {
+        body.prepend(
+          parseElement(renderNotice({ name: docId, source: "diff-blocks" })),
+        );
+      }
+    });
+  };
+
+  /** 文書を描く。`coloredFrom` は `blocks` で色分けするときの前の Markdown（`markdown` が後）、`fromUpdate` は `update` から始まった描画か */
+  const draw = (
+    markdown: string,
+    coloredFrom?: string,
+    fromUpdate = false,
+  ): void => {
+    generation += 1;
+    const current = generation;
+    const isCurrent = (): boolean => !destroyed && generation === current;
+    detachAll(detachers);
+    parts = undefined;
+    // 比較元があって本文と違うときは、比較元と比べて色分けする
+    const from =
+      coloredFrom ??
+      (base !== undefined && base !== markdown ? base : undefined);
+    const rendered = renderMarkdown(markdown);
+    paint({ rendered, markdown, from });
+    // 文書の page のマーカーを、既定を適用した設定に重ねてこの描画の設定にする
+    const drawn = applyPageSettings({ config, page: rendered.page });
+    applyAppearance(drawn);
+    features = rendered.features;
+    const { body, aside } = layoutBody(drawn);
+    detachers.interactions = attachInteractions({
       root: body,
       features,
       paramDefinitions: rendered.paramDefinitions,
@@ -381,102 +504,22 @@ export function mount(el: HTMLElement, opts: MountOptions): MountHandle {
       partStates,
       revealHash: !fromUpdate,
     });
-    // まとめていない名前のアイコンを読み込む。読み込みの完了は待たない
-    if (features.icon === true) {
-      void loadInlineIcons({
-        root: body,
-        icons: opts.icons ?? {},
-        isCurrent: () => !destroyed && generation === current,
-        // 書き出した HTML（外部ライブラリを埋めたとき）は外へ要求せず、表に無い名前を Lucide に無い名前として扱う
-        ...(embeddedLibraries === undefined
-          ? {}
-          : {
-              importModule: () => Promise.reject(new Error("embedded")),
-              fetchHead: async () => new Response(null, { status: 404 }),
-            }),
-      });
-    }
-    // 読み込みの完了は待たない
-    void loadLibraries({
-      root: body,
-      libraries: config.libraries,
-      isCurrent: () => !destroyed && generation === current,
-      definitions: rendered.extensionDefinitions,
-    });
-    // 色分けの対象があるときだけ読み込む。読み込みの完了は待たない
-    void highlightCodeBlocks({
-      root: body,
-      url: config.syntax.url,
-      isCurrent: () => !destroyed && generation === current,
-      modules: syntaxModules,
-    });
-    // mermaid のコードブロックがあるときだけ読み込む。マーカーの場所を取得した後に読み込み中のブロックを配置する。描き終えるのは待たない
-    if (features.mermaid === true) {
-      detachMermaid = attachMermaid({
-        root: body,
-        scope: el,
-        config: drawn,
-        mountId,
-        isCurrent: () => !destroyed && generation === current,
-        modules: mermaidModules,
-        placement: config.tooltips.diagramPlacement,
-      }).detach;
-    }
-    if (features["html-scripts"] === true) {
-      // 読み込みの完了は待たない。解決する前に再描画したときは、解決したときに片付ける
-      void runHtmlScripts({
-        root: body,
-        url: config.htmlScripts.url,
-        isCurrent: () => !destroyed && generation === current,
-        cache: transpilers,
-      }).then((destroy) => {
-        if (destroyed || generation !== current) {
-          destroy();
-        } else {
-          destroyScripts = destroy;
-        }
-      });
-    }
-    parts = attachParts({
+    startLoading({ body, rendered, drawn, isCurrent });
+    const attached = attachParts({
       root: body,
       features,
       commentStore,
       docId,
-      isCurrent: () => !destroyed && generation === current,
+      isCurrent,
       warned,
       config: drawn,
     });
-    if (diffSource !== undefined && docId !== undefined) {
-      if (diffMode !== "blocks") {
-        detachDiff = attachDiff({
-          root: body,
-          source: diffSource,
-          docId,
-          renderHtml: renderDiffHtml,
-          hideWith: aside ? [aside] : [],
-          open: diffMode === "open",
-        });
-      } else if (base === undefined && from === undefined) {
-        // 比較元が無く、色分けせずに描いたときだけ、比べる 2 つの本文を取り出す。取り出しの完了は待たない
-        void loadDiffPair({ source: diffSource, docId }).then((pair) => {
-          if (destroyed || generation !== current) {
-            return;
-          }
-          if (pair.kind === "pair" && pair.before !== pair.after) {
-            draw(pair.after, pair.before, fromUpdate);
-          } else if (pair.kind === "failed") {
-            body.prepend(
-              parseElement(
-                renderNotice({ name: docId, source: "diff-blocks" }),
-              ),
-            );
-          }
-        });
-      }
-    }
+    parts = attached;
+    detachers.parts = () => attached.detach();
+    startDiff({ body, aside, from, fromUpdate, isCurrent });
     // 描くたびにもう一度付け、スクロールする場所をもう一度決める
     if (features["back-to-top"] === true) {
-      detachBackToTop = attachBackToTop({ el, content: body });
+      detachers.backToTop = attachBackToTop({ el, content: body });
     }
   };
 
@@ -508,15 +551,7 @@ export function mount(el: HTMLElement, opts: MountOptions): MountHandle {
       destroyed = true;
       sectionStates.clear();
       partStates.clear();
-      destroyScripts?.();
-      destroyScripts = undefined;
-      detachMermaid?.();
-      detachBackToTop?.();
-      detachInteractions?.();
-      detachSideToc?.();
-      detachContent?.();
-      detachDiff?.();
-      parts?.detach();
+      detachAll(detachers);
       detachPrint();
       el.innerHTML = "";
       el.classList.remove(

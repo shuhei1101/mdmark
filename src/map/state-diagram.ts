@@ -115,70 +115,95 @@ export const parseStateDiagram = (source: string): StateDiagram => {
       });
     return id;
   };
+  /** `direction` の行なら、開いた入れ子の状態か図の向きにする */
+  const readDirection = (text: string): boolean => {
+    const dir = DIRECTION_RE.exec(text);
+    if (!dir?.[1]) return false;
+    const current = stack.at(-1)?.composite;
+    if (current) current.direction = toDirection(dir[1]);
+    else direction = toDirection(dir[1]);
+    return true;
+  };
+  /** 状態の名前の行なら、名前を付ける */
+  const readAlias = (text: string): boolean => {
+    const alias = ALIAS_RE.exec(text);
+    if (!alias?.[1] || !alias[2]) return false;
+    ensure(alias[2]).label = alias[1];
+    return true;
+  };
+  /** 分岐の行なら、状態を分岐にする */
+  const readChoice = (text: string): boolean => {
+    const choice = CHOICE_RE.exec(text);
+    if (!choice?.[1]) return false;
+    ensure(choice[1]).kind = "choice";
+    return true;
+  };
+  /** 入れ子の状態を開く行なら、入れ子の状態を足す */
+  const readOpen = (text: string, line: number): boolean => {
+    const open = OPEN_RE.exec(text);
+    if (!open?.[2]) return false;
+    const composite: StateComposite = {
+      id: open[2],
+      title: open[1] ?? open[2],
+      parent: scope(),
+      direction: undefined,
+    };
+    composites.push(composite);
+    stack.push({ composite, line });
+    return true;
+  };
+  /** 注記の行なら、注記を足す */
+  const readNote = (text: string): boolean => {
+    const note = NOTE_RE.exec(text);
+    if (!note?.[1] || !note[2] || !note[3]) return false;
+    notes.push({
+      id: `n${notes.length + 1}`,
+      of: note[2],
+      side: note[1] === "left" ? "left" : "right",
+      text: note[3].trim(),
+    });
+    return true;
+  };
+  /** 遷移の行なら、遷移を足す */
+  const readMove = (text: string): boolean => {
+    const move = MOVE_RE.exec(text);
+    if (!move?.[1] || !move[2]) return false;
+    const label = move[3]?.trim();
+    transitions.push({
+      id: `t${transitions.length + 1}`,
+      from: endpoint(move[1], "start"),
+      to: endpoint(move[2], "end"),
+      label: label === "" ? undefined : label,
+    });
+    return true;
+  };
+  /** 状態の宣言の行なら、入れ子の中の状態の宣言は、外で先に出た状態もその入れ子の状態の中へ移す */
+  const readDeclare = (text: string): boolean => {
+    const declared = DECLARE_RE.exec(text);
+    if (!declared?.[1]) return false;
+    ensure(declared[1]).parent = scope();
+    return true;
+  };
+  /** 行の読み方（先に当たった読み方で読む。`}` は入れ子の状態を閉じる） */
+  const readers: Array<(text: string, line: number, raw: string) => boolean> = [
+    readDirection,
+    readAlias,
+    readChoice,
+    readOpen,
+    (text, line, raw) => {
+      if (text !== "}") return false;
+      if (!stack.pop()) problems.push(unreadable(line, raw));
+      return true;
+    },
+    readNote,
+    readMove,
+    readDeclare,
+  ];
   for (const [line, raw] of source.split("\n").entries()) {
     const text = raw.replace(/%%.*$/, "").trim();
     if (line === 0 || text === "" || IGNORED_RE.test(text)) continue;
-    const dir = DIRECTION_RE.exec(text);
-    if (dir?.[1]) {
-      const current = stack.at(-1)?.composite;
-      if (current) current.direction = toDirection(dir[1]);
-      else direction = toDirection(dir[1]);
-      continue;
-    }
-    const alias = ALIAS_RE.exec(text);
-    if (alias?.[1] && alias[2]) {
-      ensure(alias[2]).label = alias[1];
-      continue;
-    }
-    const choice = CHOICE_RE.exec(text);
-    if (choice?.[1]) {
-      ensure(choice[1]).kind = "choice";
-      continue;
-    }
-    const open = OPEN_RE.exec(text);
-    if (open?.[2]) {
-      const composite: StateComposite = {
-        id: open[2],
-        title: open[1] ?? open[2],
-        parent: scope(),
-        direction: undefined,
-      };
-      composites.push(composite);
-      stack.push({ composite, line });
-      continue;
-    }
-    if (text === "}") {
-      if (!stack.pop()) problems.push(unreadable(line, raw));
-      continue;
-    }
-    const note = NOTE_RE.exec(text);
-    if (note?.[1] && note[2] && note[3]) {
-      notes.push({
-        id: `n${notes.length + 1}`,
-        of: note[2],
-        side: note[1] === "left" ? "left" : "right",
-        text: note[3].trim(),
-      });
-      continue;
-    }
-    const move = MOVE_RE.exec(text);
-    if (move?.[1] && move[2]) {
-      const label = move[3]?.trim();
-      transitions.push({
-        id: `t${transitions.length + 1}`,
-        from: endpoint(move[1], "start"),
-        to: endpoint(move[2], "end"),
-        label: label === "" ? undefined : label,
-      });
-      continue;
-    }
-    // 入れ子の中の状態の宣言は、外で先に出た状態もその入れ子の状態の中へ移す
-    const declared = DECLARE_RE.exec(text);
-    if (declared?.[1]) {
-      ensure(declared[1]).parent = scope();
-      continue;
-    }
-    problems.push(unreadable(line, raw));
+    if (!readers.some((read) => read(text, line, raw)))
+      problems.push(unreadable(line, raw));
   }
   for (const open of stack) {
     problems.push({

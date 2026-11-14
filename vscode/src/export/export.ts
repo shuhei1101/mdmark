@@ -35,20 +35,13 @@ const features = (value: Record<string, unknown> | undefined) =>
     ),
   );
 
-/** 設定を重ねて読み込み、相対パスの `libraries`・`html-scripts.url`・`mermaid.url` を `data:` の URL で埋め、相対パスの `syntax.url` の本体と使用する言語のモジュールを import map で割り当て、`theme` の CSS を読み込み、`extensions` をまとめる。読み込めない設定ファイルは重ねずに残りで書き出す */
-async function readExportConfig(options: {
+/** 設定を重ねて読み込み、読み込めないファイルと用語の問題をログに出す。開けない設定ファイルでは `undefined` */
+async function loadExportConfig(options: {
   document: TextDocument;
   configPath: string;
-  deps: ExtensionDeps;
-}): Promise<{
-  config: PreviewConfig;
-  themeCss: string | undefined;
-  extensions: string[];
-  importMap: Record<string, string>;
-  aliases: MdmarkAlias[] | undefined;
-}> {
-  const { document, configPath, deps } = options;
-  const { log } = deps;
+  log: ExtensionDeps["log"];
+}): Promise<Awaited<ReturnType<typeof loadConfig>> | undefined> {
+  const { document, configPath, log } = options;
   const markdownPath = document.uri.fsPath;
   let load: Awaited<ReturnType<typeof loadConfig>>;
   try {
@@ -69,13 +62,7 @@ async function readExportConfig(options: {
       configPath,
       error instanceof Error ? error : String(error),
     );
-    return {
-      config: {},
-      themeCss: undefined,
-      extensions: [],
-      importMap: {},
-      aliases: undefined,
-    };
+    return undefined;
   }
   if (load.problem) {
     log.warn(
@@ -88,13 +75,25 @@ async function readExportConfig(options: {
   for (const issue of load.aliasIssues) {
     log.warn(formatCheckIssue(issue));
   }
+  return load;
+}
+
+/** 相対パスの `libraries`・`html-scripts.url`・`mermaid.url` を `data:` の URL で埋め、相対パスの `syntax.url` の本体と使用する言語のモジュールを import map で割り当てた設定を返却する */
+async function embedExportLibraries(options: {
+  document: TextDocument;
+  loaded: Record<string, unknown> & PreviewConfig;
+  deps: ExtensionDeps;
+}): Promise<{ config: PreviewConfig; importMap: Record<string, string> }> {
+  const { document, loaded, deps } = options;
   const {
     libraries,
     "html-scripts": htmlScripts,
     mermaid,
     syntax,
     ...rest
-  } = load.config;
+  } = loaded;
+  const bundle = (paths: string[]) =>
+    bundleExtensions({ paths, extensionPath: deps.context.extensionPath });
   // 相対パスは重ねる前に絶対パスにしてある
   const embedded = await embedLocalLibraries({
     markdown: document.getText(),
@@ -102,60 +101,106 @@ async function readExportConfig(options: {
     htmlScripts,
     mermaid,
     config: { features: features(rest.features) },
-    bundle: (paths) =>
-      bundleExtensions({ paths, extensionPath: deps.context.extensionPath }),
+    bundle,
   });
   const embeddedSyntax = await embedLocalSyntax({
     markdown: document.getText(),
     syntax,
     config: { features: features(rest.features) },
-    bundle: (paths) =>
-      bundleExtensions({ paths, extensionPath: deps.context.extensionPath }),
+    bundle,
   });
   for (const failure of [...embedded.failures, ...embeddedSyntax.failures]) {
-    log.warn("ライブラリをまとめられない", failure.path, failure.error);
+    deps.log.warn("ライブラリをまとめられない", failure.path, failure.error);
   }
   const config: PreviewConfig = {
     ...rest,
-    ...(embedded.libraries === undefined
-      ? {}
-      : { libraries: embedded.libraries }),
-    ...(embedded.htmlScripts === undefined
-      ? {}
-      : { "html-scripts": embedded.htmlScripts }),
-    ...(embedded.mermaid === undefined ? {} : { mermaid: embedded.mermaid }),
-    ...(embeddedSyntax.syntax === undefined
-      ? {}
-      : { syntax: embeddedSyntax.syntax }),
+    ...definedEntry("libraries", embedded.libraries),
+    ...definedEntry("html-scripts", embedded.htmlScripts),
+    ...definedEntry("mermaid", embedded.mermaid),
+    ...definedEntry("syntax", embeddedSyntax.syntax),
   };
-  let themeCss: string | undefined;
-  if (load.theme !== undefined) {
-    try {
-      themeCss = await readFile(load.theme, "utf8");
-    } catch (error) {
-      log.warn(
-        "theme の CSS を読み込めない",
-        load.theme,
-        error instanceof Error ? error.message : String(error),
-      );
-    }
+  return { config, importMap: embeddedSyntax.imports };
+}
+
+/** 値が `undefined` でなければ `{ [key]: value }`、`undefined` なら空のオブジェクト */
+const definedEntry = <K extends string, V>(
+  key: K,
+  value: V | undefined,
+): Partial<Record<K, V>> =>
+  value === undefined ? {} : ({ [key]: value } as Record<K, V>);
+
+/** `theme` の CSS を読み込む。無いか読み込めなければ `undefined` */
+async function readThemeCss(
+  theme: string | undefined,
+  log: ExtensionDeps["log"],
+): Promise<string | undefined> {
+  if (theme === undefined) {
+    return undefined;
   }
+  try {
+    return await readFile(theme, "utf8");
+  } catch (error) {
+    log.warn(
+      "theme の CSS を読み込めない",
+      theme,
+      error instanceof Error ? error.message : String(error),
+    );
+    return undefined;
+  }
+}
+
+/** `extensions` をまとめる。まとめられない拡張はログに出して除く */
+async function bundleExportExtensions(
+  paths: string[],
+  deps: ExtensionDeps,
+): Promise<string[]> {
   const extensions: string[] = [];
   for (const result of await bundleExtensions({
-    paths: load.extensions,
+    paths,
     extensionPath: deps.context.extensionPath,
   })) {
     if ("error" in result) {
-      log.warn("拡張をまとめられない", result.path, result.error);
+      deps.log.warn("拡張をまとめられない", result.path, result.error);
     } else {
       extensions.push(result.code);
     }
   }
+  return extensions;
+}
+
+/** 設定を重ねて読み込み、相対パスの `libraries`・`html-scripts.url`・`mermaid.url` を `data:` の URL で埋め、相対パスの `syntax.url` の本体と使用する言語のモジュールを import map で割り当て、`theme` の CSS を読み込み、`extensions` をまとめる。読み込めない設定ファイルは重ねずに残りで書き出す */
+async function readExportConfig(options: {
+  document: TextDocument;
+  configPath: string;
+  deps: ExtensionDeps;
+}): Promise<{
+  config: PreviewConfig;
+  themeCss: string | undefined;
+  extensions: string[];
+  importMap: Record<string, string>;
+  aliases: MdmarkAlias[] | undefined;
+}> {
+  const { document, configPath, deps } = options;
+  const load = await loadExportConfig({ document, configPath, log: deps.log });
+  if (load === undefined) {
+    return {
+      config: {},
+      themeCss: undefined,
+      extensions: [],
+      importMap: {},
+      aliases: undefined,
+    };
+  }
+  const { config, importMap } = await embedExportLibraries({
+    document,
+    loaded: load.config,
+    deps,
+  });
   return {
     config,
-    themeCss,
-    extensions,
-    importMap: embeddedSyntax.imports,
+    themeCss: await readThemeCss(load.theme, deps.log),
+    extensions: await bundleExportExtensions(load.extensions, deps),
+    importMap,
     aliases: load.aliases,
   };
 }

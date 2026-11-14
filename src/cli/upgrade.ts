@@ -5,8 +5,13 @@ import { isMap, parse, parseDocument } from "yaml";
 import { resolveSettingsPath, validateSettingsKeys } from "../config-files.ts";
 import { restoreBackup, takeBackup } from "./backup.ts";
 import { CHANGELOG_FILE, changelogRows } from "./changelog.ts";
-import { collectCheckIssues } from "./check.ts";
-import { findConfigFile, loadConfig, validateConfig } from "./config.ts";
+import { type CheckIssue, collectCheckIssues } from "./check.ts";
+import {
+  findConfigFile,
+  type LoadedConfig,
+  loadConfig,
+  validateConfig,
+} from "./config.ts";
 import { collectBuildDocuments, readIndexWithDocuments } from "./documents.ts";
 import { CliError, type CliIo } from "./errors.ts";
 import { formatCheckIssue } from "./issues.ts";
@@ -90,6 +95,40 @@ export async function writeConfigVersion(
   await writeFile(configPath, doc.toString({ flowCollectionPadding: false }));
 }
 
+/** `build` の対象と索引の文書の絶対パス（重なりなし）。索引を読み込めないことは、適用した後の点検が通知する */
+async function targetDocuments(loaded: LoadedConfig): Promise<string[]> {
+  const { dir, config } = loaded;
+  const documents = new Set<string>();
+  for (const path of config.build
+    ? await collectBuildDocuments(dir, config.build)
+    : []) {
+    documents.add(resolve(dir, path));
+  }
+  try {
+    const read = await readIndexWithDocuments(loaded);
+    for (const path of Object.keys(read?.documents ?? {})) {
+      documents.add(resolve(read?.indexDir ?? dir, path));
+    }
+  } catch (error) {
+    if (!(error instanceof CliError)) {
+      throw error;
+    }
+  }
+  return [...documents];
+}
+
+/** 設定の `index` が指す、ある索引の絶対パス（無ければ `undefined`） */
+async function existingIndex(
+  dir: string,
+  index: string | undefined,
+): Promise<string | undefined> {
+  if (index === undefined) {
+    return undefined;
+  }
+  const indexPath = resolve(dir, index);
+  return (await isFile(indexPath)) ? indexPath : undefined;
+}
+
 /** 手順を適用する設定・索引・文書の場所を作る（回答は適用する前に聞くため空） */
 async function createTarget(options: {
   configPath: string;
@@ -100,33 +139,10 @@ async function createTarget(options: {
   const file = basename(configPath);
   // 古い設定は新しい構造に合わないことがあるため、合うところだけを読み込む
   const { config } = validateConfig(raw, file);
-  const loaded = { path: configPath, dir, config };
-  const documents = new Set<string>();
-  if (config.build) {
-    for (const path of await collectBuildDocuments(dir, config.build)) {
-      documents.add(resolve(dir, path));
-    }
-  }
-  try {
-    const read = await readIndexWithDocuments(loaded);
-    for (const path of Object.keys(read?.documents ?? {})) {
-      documents.add(resolve(read?.indexDir ?? dir, path));
-    }
-  } catch (error) {
-    // 索引を読み込めないことは、適用した後の点検が通知する
-    if (!(error instanceof CliError)) {
-      throw error;
-    }
-  }
-  const indexPath =
-    config.index === undefined ? undefined : resolve(dir, config.index);
   return {
     configPath,
-    indexPath:
-      indexPath !== undefined && (await isFile(indexPath))
-        ? indexPath
-        : undefined,
-    documents: [...documents],
+    indexPath: await existingIndex(dir, config.index),
+    documents: await targetDocuments({ path: configPath, dir, config }),
     answers: new Map(),
   };
 }
@@ -168,6 +184,35 @@ async function printPlan(options: {
   }
 }
 
+/** 値を聞く `set_default` の手順 1 つの値を聞く。書き換える YAML が無いか、キーが既にあれば聞かない */
+async function askValue(options: {
+  step: MigrationStep;
+  target: MigrationTarget;
+  ask: Prompter;
+}): Promise<void> {
+  const { step, target, ask } = options;
+  if (step.op !== "set_default" || step.ask === undefined) {
+    return;
+  }
+  const path = step.file === "config" ? target.configPath : target.indexPath;
+  if (path === undefined) {
+    return;
+  }
+  const doc = parseDocument(await readFile(path, "utf8"));
+  if (doc.hasIn(step.key.split("."))) {
+    return;
+  }
+  const answer = await askRequired(ask, step.ask);
+  try {
+    parse(answer);
+  } catch {
+    throw new CliError(
+      `「${step.ask}」の回答 ${answer} を YAML の値として読み込めません。何も書き換えていません。`,
+    );
+  }
+  target.answers.set(step, answer);
+}
+
 /** キーが無い `set_default` の `ask` を適用する順に聞き、回答を当て先に入れる */
 async function askValues(options: {
   versions: MigrationVersion[];
@@ -175,31 +220,8 @@ async function askValues(options: {
   ask: Prompter;
 }): Promise<void> {
   const { versions, target, ask } = options;
-  for (const { steps } of versions) {
-    for (const step of steps) {
-      if (step.op !== "set_default" || step.ask === undefined) {
-        continue;
-      }
-      const path =
-        step.file === "config" ? target.configPath : target.indexPath;
-      if (path === undefined) {
-        continue;
-      }
-      const doc = parseDocument(await readFile(path, "utf8"));
-      // キーが既にあれば聞かない
-      if (doc.hasIn(step.key.split("."))) {
-        continue;
-      }
-      const answer = await askRequired(ask, step.ask);
-      try {
-        parse(answer);
-      } catch {
-        throw new CliError(
-          `「${step.ask}」の回答 ${answer} を YAML の値として読み込めません。何も書き換えていません。`,
-        );
-      }
-      target.answers.set(step, answer);
-    }
+  for (const step of versions.flatMap(({ steps }) => steps)) {
+    await askValue({ step, target, ask });
   }
 }
 
@@ -211,6 +233,120 @@ async function collectSettingsIssues(path: string) {
     ...validateConfig(raw, file).issues,
     ...validateSettingsKeys(raw, file),
   ];
+}
+
+/** 書き換える設定ファイルのパス。`--settings` は端末の設定 */
+async function upgradeConfigPath(
+  options: { config?: string | undefined; settings?: boolean | undefined },
+  cwd: string,
+): Promise<string> {
+  if (options.settings && options.config !== undefined) {
+    throw new CliError("--config と --settings は一緒に指定できません。");
+  }
+  return options.settings
+    ? resolveSettingsPath({ env: process.env, home: homedir() })
+    : await findConfigFile(cwd, options.config);
+}
+
+/** 手元のバージョン（設定に無ければ聞く） */
+async function localVersion(raw: unknown, ask: Prompter): Promise<string> {
+  return assertVersion(
+    isRecord(raw) && raw.version !== undefined
+      ? raw.version
+      : await askRequired(ask, VERSION_QUESTION),
+  );
+}
+
+/** 端末の設定は設定ファイルの手順（設定ファイルだけを書き換える call を含む）だけを当て、索引と文書の手順は飛ばす */
+function settingsVersions(versions: MigrationVersion[]): MigrationVersion[] {
+  return versions.map((version) => ({
+    ...version,
+    steps: version.steps.filter((step) =>
+      step.op === "call"
+        ? step.files.length > 0 && step.files.every((file) => file === "config")
+        : "file" in step && step.file === "config",
+    ),
+  }));
+}
+
+/** 壊す手順があれば、`--yes` が無いときは確認を聞き、確認の答えでなければ例外を投げる */
+async function confirmDestructive(options: {
+  steps: MigrationStep[];
+  yes: boolean;
+  ask: Prompter;
+}): Promise<void> {
+  const { steps, yes, ask } = options;
+  if (yes || !steps.some((step) => step.destructive === true)) {
+    return;
+  }
+  const answer = await askRequired(ask, CONFIRM_QUESTION);
+  if (answer !== CONFIRM_ANSWER) {
+    throw new CliError(
+      "何も適用していません。確認せずに適用するときは --yes を付けてください。",
+    );
+  }
+}
+
+/** 手順を順に適用し、スクリプトが出した行を手順ごとに出力する */
+async function applyVersions(options: {
+  versions: MigrationVersion[];
+  target: MigrationTarget;
+  io: CliIo;
+}): Promise<void> {
+  const { versions, target, io } = options;
+  for (const version of versions) {
+    for (const step of version.steps) {
+      const lines = await applyStep({ step, version, target });
+      if (lines.length === 0) {
+        continue;
+      }
+      io.stdout(`${version.version} の手順「${step.description}」:`);
+      for (const line of lines) {
+        io.stdout(`  ${line}`);
+      }
+    }
+  }
+}
+
+/** 適用した後の点検のずれ。移行の報告に挙げた今の書き方のマーカーは、点検の失敗に数えない */
+async function upgradeIssues(
+  configPath: string,
+  settings: boolean | undefined,
+): Promise<CheckIssue[]> {
+  if (settings) {
+    return collectSettingsIssues(configPath);
+  }
+  const issues = await collectCheckIssues(configPath, { unknownMarks: false });
+  return issues.filter((issue) => issue.kind !== "legacy_mark");
+}
+
+/** 手順を適用して点検し、ずれがあればコピーから戻してずれを出力する。点検が通ったかを返却する */
+async function applyAndCheck(options: {
+  versions: MigrationVersion[];
+  target: MigrationTarget;
+  settings: boolean | undefined;
+  backup: { dir: string; backupDir: string };
+  io: CliIo;
+}): Promise<boolean> {
+  const { versions, target, settings, backup, io } = options;
+  try {
+    await applyVersions({ versions, target, io });
+    const issues = await upgradeIssues(target.configPath, settings);
+    if (issues.length === 0) {
+      return true;
+    }
+    await restoreBackup(backup);
+    for (const issue of issues) {
+      io.stderr(formatCheckIssue(issue));
+    }
+    io.stderr(
+      `点検のずれが ${issues.length} 件あるため、コピーから戻しました。バージョンは書き換えていません。`,
+    );
+    return false;
+  } catch (error) {
+    await restoreBackup(backup);
+    throw error;
+  }
 }
 
 /** 手元のバージョンから呼んだ CLI のバージョンまでの移行の手順を当て、点検が通ったら設定のバージョンを書き換える */
@@ -227,19 +363,10 @@ export async function runUpgrade(
   io: CliIo,
   ask: Prompter,
 ): Promise<0 | 1> {
-  if (options.settings && options.config !== undefined) {
-    throw new CliError("--config と --settings は一緒に指定できません。");
-  }
-  const configPath = options.settings
-    ? resolveSettingsPath({ env: process.env, home: homedir() })
-    : await findConfigFile(io.cwd, options.config);
+  const configPath = await upgradeConfigPath(options, io.cwd);
   const loaded = await loadConfig(configPath);
   const dir = loaded.dir;
-  const local = assertVersion(
-    isRecord(loaded.raw) && loaded.raw.version !== undefined
-      ? loaded.raw.version
-      : await askRequired(ask, VERSION_QUESTION),
-  );
+  const local = await localVersion(loaded.raw, ask);
   const target = options.cliVersion;
   io.stdout(`手元のバージョン: ${local}`);
   io.stdout(`目標のバージョン: ${target}`);
@@ -260,17 +387,8 @@ export async function runUpgrade(
     from: local,
     to: target,
   });
-  // 端末の設定は設定ファイルの手順（設定ファイルだけを書き換える call を含む）だけを当て、索引と文書の手順は飛ばす
   const versions = options.settings
-    ? loadedVersions.map((version) => ({
-        ...version,
-        steps: version.steps.filter((step) =>
-          step.op === "call"
-            ? step.files.length > 0 &&
-              step.files.every((file) => file === "config")
-            : "file" in step && step.file === "config",
-        ),
-      }))
+    ? settingsVersions(loadedVersions)
     : loadedVersions;
   const migrationTarget = options.settings
     ? { configPath, indexPath: undefined, documents: [], answers: new Map() }
@@ -288,57 +406,25 @@ export async function runUpgrade(
   }
   // 書き換えの前に、値を聞く手順の質問と壊す手順の確認を聞く
   await askValues({ versions, target: migrationTarget, ask });
-  const steps: MigrationStep[] = versions.flatMap((version) => version.steps);
-  if (!options.yes && steps.some((step) => step.destructive === true)) {
-    const answer = await askRequired(ask, CONFIRM_QUESTION);
-    if (answer !== CONFIRM_ANSWER) {
-      throw new CliError(
-        "何も適用していません。確認せずに適用するときは --yes を付けてください。",
-      );
-    }
-  }
+  await confirmDestructive({
+    steps: versions.flatMap((version) => version.steps),
+    yes: options.yes,
+    ask,
+  });
   const backupDir = await takeBackup({
     dir,
     files: stepFiles(versions, migrationTarget),
     now: options.now,
   });
-  try {
-    for (const version of versions) {
-      for (const step of version.steps) {
-        const lines = await applyStep({
-          step,
-          version,
-          target: migrationTarget,
-        });
-        if (lines.length > 0) {
-          io.stdout(`${version.version} の手順「${step.description}」:`);
-          for (const line of lines) {
-            io.stdout(`  ${line}`);
-          }
-        }
-      }
-    }
-    // 移行の報告に挙げた今の書き方のマーカーは、適用した後の点検の失敗に数えない
-    const issues = options.settings
-      ? await collectSettingsIssues(configPath)
-      : (
-          await collectCheckIssues(configPath, {
-            unknownMarks: false,
-          })
-        ).filter((issue) => issue.kind !== "legacy_mark");
-    if (issues.length > 0) {
-      await restoreBackup({ dir, backupDir });
-      for (const issue of issues) {
-        io.stderr(formatCheckIssue(issue));
-      }
-      io.stderr(
-        `点検のずれが ${issues.length} 件あるため、コピーから戻しました。バージョンは書き換えていません。`,
-      );
-      return 1;
-    }
-  } catch (error) {
-    await restoreBackup({ dir, backupDir });
-    throw error;
+  const passed = await applyAndCheck({
+    versions,
+    target: migrationTarget,
+    settings: options.settings,
+    backup: { dir, backupDir },
+    io,
+  });
+  if (!passed) {
+    return 1;
   }
   await writeConfigVersion(configPath, target);
   io.stdout(`コピー: ${toPosix(relative(dir, backupDir))}`);

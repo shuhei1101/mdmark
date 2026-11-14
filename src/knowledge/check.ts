@@ -284,45 +284,18 @@ export function findMissedChangeTogether(options: {
   return issues;
 }
 
-/** 索引と文書の本文から、`schema`・`missing_doc`・`orphan_doc`・`broken_ref`・`untyped_related`・`one_sided_change_together`・`related_link_overlap`・`missed_change_together`・`duplicate_term`・`avoided_term` のずれをこの順で返却する */
-export function checkIndex(input: {
-  /** 索引の値（構造を確認する前のもの） */
-  index: unknown;
-  /** 文書のパスから本文を参照する表 */
-  documents: Record<string, string>;
-  /** ずれの `file` に出す索引のファイルの名前（既定 `index.yaml`） */
-  indexFile?: string;
-  /** 比べる基準から変わった文書のパス。指定したときだけ `change_together` の修正漏れを確認する */
-  changedPaths?: string[];
-}): MdmarkIndexIssue[] {
-  const indexFile = input.indexFile ?? DEFAULT_INDEX_FILE;
-  const { index, problems } = normalizeIndex(input.index);
-  const schema: MdmarkIndexIssue[] = problems.map((problem) => ({
-    file: indexFile,
-    where: problem.where,
-    kind: "schema",
-    message: `索引の ${problem.where === "" ? "全体" : `\`${problem.where}\``} が構造に合いません: ${problem.message}。修正してください。`,
-  }));
-  // 索引がオブジェクトでないときは、ほかのずれを確認しない
-  if (problems.some((problem) => problem.where === "")) {
-    return schema;
-  }
+/** 読み込んだ文書（正規化したパスから、記載したパスと本文） */
+type DocumentEntries = Map<string, { path: string; body: string }>;
 
-  // 検査で除かれる前の `docs` の並びでの位置を、ずれの場所に使用する
-  const rawDocs = (input.index as { docs?: unknown }).docs;
-  const positionOf = (doc: MdmarkIndexDoc): number =>
-    Array.isArray(rawDocs) ? rawDocs.indexOf(doc) : -1;
-  const documents = new Map(
-    Object.entries(input.documents).map(([path, body]) => [
-      normalizePath(path),
-      { path, body },
-    ]),
-  );
-  const indexedPaths = new Set(
-    index.docs.map((doc) => normalizePath(doc.path)),
-  );
+/** 索引の文書が見つからないずれと、`related` が索引の文書を指さないずれ */
+function findDocIssues(options: {
+  index: MdmarkIndex;
+  documents: DocumentEntries;
+  indexFile: string;
+  positionOf: (doc: MdmarkIndexDoc) => number;
+}): { missing: MdmarkIndexIssue[]; broken: MdmarkIndexIssue[] } {
+  const { index, documents, indexFile, positionOf } = options;
   const ids = new Set(index.docs.map((doc) => doc.id));
-
   const missing: MdmarkIndexIssue[] = [];
   const broken: MdmarkIndexIssue[] = [];
   for (const doc of index.docs) {
@@ -349,7 +322,18 @@ export function checkIndex(input: {
       }
     });
   }
-  const orphan: MdmarkIndexIssue[] = [...documents.entries()]
+  return { missing, broken };
+}
+
+/** 索引に無い文書のずれ（パスの順） */
+function orphanIssues(
+  index: MdmarkIndex,
+  documents: DocumentEntries,
+): MdmarkIndexIssue[] {
+  const indexedPaths = new Set(
+    index.docs.map((doc) => normalizePath(doc.path)),
+  );
+  return [...documents.entries()]
     .filter(([normalized]) => !indexedPaths.has(normalized))
     .map(([, { path }]) => path)
     .sort()
@@ -359,17 +343,27 @@ export function checkIndex(input: {
       kind: "orphan_doc" as const,
       message: `\`${path}\` が索引にありません。索引の \`docs\` に追加してください。`,
     }));
+}
 
-  // 文書は先に全て読み込む（やめた言い方は、表を持たない文書の本文からも探すため）
-  const parsedDocs: Array<{
-    doc: MdmarkIndexDoc;
-    path: string;
-    parsed: ReturnType<typeof parseDocument>;
-  }> = [];
-  for (const doc of index.docs) {
+/** 読み込んだ索引の文書 */
+type ParsedDoc = {
+  doc: MdmarkIndexDoc;
+  path: string;
+  parsed: ReturnType<typeof parseDocument>;
+};
+
+/** 索引の文書のうち、見つかった文書を全て読み込む（やめた言い方は、表を持たない文書の本文からも探すため） */
+function parseIndexedDocs(
+  index: MdmarkIndex,
+  documents: DocumentEntries,
+): ParsedDoc[] {
+  return index.docs.flatMap((doc) => {
     const entry = documents.get(normalizePath(doc.path));
-    if (entry) {
-      parsedDocs.push({
+    if (!entry) {
+      return [];
+    }
+    return [
+      {
         doc,
         path: entry.path,
         parsed: parseDocument({
@@ -377,14 +371,20 @@ export function checkIndex(input: {
           docId: doc.id,
           defaults: { ...DEFAULT_FEATURES },
         }),
-      });
-    }
-  }
-  // 用語は、索引の `terms`、索引の `docs` の順の文書の用語集の表の順に並べる
-  const sites: TermSite[] = (index.terms ?? []).map((term) => {
-    const position = (
-      (input.index as { terms?: unknown[] }).terms ?? []
-    ).indexOf(term);
+      },
+    ];
+  });
+}
+
+/** 索引の `terms` の用語の場所。索引の値の `terms` の並びでの位置で示す */
+function indexTermSites(options: {
+  index: MdmarkIndex;
+  rawTerms: unknown[];
+  indexFile: string;
+}): TermSite[] {
+  const { index, rawTerms, indexFile } = options;
+  return (index.terms ?? []).map((term) => {
+    const position = rawTerms.indexOf(term);
     const aliases = term.aliases ?? [];
     return {
       file: indexFile,
@@ -395,37 +395,100 @@ export function checkIndex(input: {
       ],
     };
   });
-  const avoidable: AvoidableTerm[] = [...(index.terms ?? [])];
-  // 本文のリンクが指す文書のパス（関連と重なるかの確認に使用する）
-  const links: Record<string, string[]> = {};
+}
+
+/** 文書の用語集の表の用語の場所と、やめた言い方を探す用語、本文のリンクが指す文書のパスを、索引の `docs` の順に集める */
+function collectGlossary(
+  parsedDocs: ParsedDoc[],
+  into: {
+    sites: TermSite[];
+    avoidable: AvoidableTerm[];
+    links: Record<string, string[]>;
+  },
+): void {
   for (const { doc, path, parsed } of parsedDocs) {
-    links[doc.id] = [...linkedPaths(doc, parsed.tokens)];
+    into.links[doc.id] = [...linkedPaths(doc, parsed.tokens)];
     for (const { entry: term, line } of parsed.glossary) {
-      sites.push({
+      into.sites.push({
         file: path,
         words: [term.term, ...term.aliases],
         wheres: [term.term, ...term.aliases].map(() => `${line} 行目`),
       });
-      avoidable.push({
+      into.avoidable.push({
         term: term.term,
         aliases: term.aliases,
         avoid: term.avoid ?? [],
       });
     }
   }
+}
+
+/** 索引と文書の本文から、`schema`・`missing_doc`・`orphan_doc`・`broken_ref`・`untyped_related`・`one_sided_change_together`・`related_link_overlap`・`missed_change_together`・`duplicate_term`・`avoided_term` のずれをこの順で返却する */
+export function checkIndex(input: {
+  /** 索引の値（構造を確認する前のもの） */
+  index: unknown;
+  /** 文書のパスから本文を参照する表 */
+  documents: Record<string, string>;
+  /** ずれの `file` に出す索引のファイルの名前（既定 `index.yaml`） */
+  indexFile?: string;
+  /** 比べる基準から変わった文書のパス。指定したときだけ `change_together` の修正漏れを確認する */
+  changedPaths?: string[];
+}): MdmarkIndexIssue[] {
+  const indexFile = input.indexFile ?? DEFAULT_INDEX_FILE;
+  const { index, problems } = normalizeIndex(input.index);
+  const schema: MdmarkIndexIssue[] = problems.map((problem) => ({
+    file: indexFile,
+    where: problem.where,
+    kind: "schema",
+    message: `索引の ${problem.where === "" ? "全体" : `\`${problem.where}\``} が構造に合いません: ${problem.message}。修正してください。`,
+  }));
+  // 索引がオブジェクトでないときは、ほかのずれを確認しない
+  if (problems.some((problem) => problem.where === "")) {
+    return schema;
+  }
+
+  // 検査で除かれる前の `docs` の並びでの位置を、ずれの場所に使用する
+  const raw = input.index as { docs?: unknown; terms?: unknown[] };
+  const positionOf = (doc: MdmarkIndexDoc): number =>
+    Array.isArray(raw.docs) ? raw.docs.indexOf(doc) : -1;
+  const documents: DocumentEntries = new Map(
+    Object.entries(input.documents).map(([path, body]) => [
+      normalizePath(path),
+      { path, body },
+    ]),
+  );
+  const { missing, broken } = findDocIssues({
+    index,
+    documents,
+    indexFile,
+    positionOf,
+  });
+  const parsedDocs = parseIndexedDocs(index, documents);
+  // 用語は、索引の `terms`、索引の `docs` の順の文書の用語集の表の順に並べる
+  const sites = indexTermSites({
+    index,
+    rawTerms: raw.terms ?? [],
+    indexFile,
+  });
+  const avoidable: AvoidableTerm[] = [...(index.terms ?? [])];
+  // 本文のリンクが指す文書のパス（関連と重なるかの確認に使用する）
+  const links: Record<string, string[]> = {};
+  collectGlossary(parsedDocs, { sites, avoidable, links });
   // やめた言い方は、索引の `docs` の順に文書ごとに探す
   const avoided = parsedDocs.flatMap(({ path, parsed }) =>
     findAvoidedTerms({ file: path, tokens: parsed.tokens, terms: avoidable }),
   );
+  const changed =
+    input.changedPaths === undefined
+      ? []
+      : findMissedChangeTogether({ index, changedPaths: input.changedPaths });
   return [
     ...schema,
     ...missing,
-    ...orphan,
+    ...orphanIssues(index, documents),
     ...broken,
     ...findRelatedIssues({ index, links, indexFile, positionOf }),
-    ...(input.changedPaths === undefined
-      ? []
-      : findMissedChangeTogether({ index, changedPaths: input.changedPaths })),
+    ...changed,
     ...duplicateTerms(sites),
     ...avoided,
   ];

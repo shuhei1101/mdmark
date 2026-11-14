@@ -1,0 +1,322 @@
+# 単体テスト（Red）: b6b89993 のテストコードを、実装を変える前のソースで実行
+# 全件（npm run test:unit）は、vscode/ の依存の未導入とタイムアウトで無関係の fail が出たため、vscode/ の依存を入れて、fail したファイルと引数を書き換えたテストのファイルだけを流し直した
+
+$ npx vitest run --project 'unit*' tests/unit/scripts/build.test.ts tests/unit/src/cli/check.test.ts tests/unit/src/cli/embed.test.ts tests/unit/src/cli/export.test.ts tests/unit/src/config-files.test.ts tests/unit/src/map/layout.test.ts tests/unit/src/parts/diagram.test.ts tests/unit/src/parts/table.test.ts tests/unit/vscode/scripts/build.test.ts tests/unit/vscode/src/config.test.ts tests/unit/vscode/src/extensions-bundle.test.ts tests/unit/src/map/flow-view.browser.test.ts tests/unit/src/map/sequence-view.browser.test.ts tests/unit/src/interact/diagram-tips.browser.test.ts tests/unit/src/parts/map.test.ts
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/refactor-lint-complexity-all-typescript
+
+ ❯ |unit| tests/unit/src/parts/diagram.test.ts (22 tests | 3 failed) 2724ms
+   × test_render_flow_when_hint 10ms
+   × test_render_er_when_hints_off 2ms
+   × test_render_er_when_terms 2ms
+ ❯ |unit| tests/unit/src/cli/embed.test.ts (25 tests | 2 failed) 15259ms
+   × test_bundle_module 6ms
+   × test_bundle_module_when_url 1ms
+ ❯ |unit| tests/unit/vscode/src/config.test.ts (24 tests | 4 failed) 6551ms
+   × test_library_origins 5ms
+   × test_library_origins_when_html_scripts 1ms
+   × test_library_origins_when_mermaid 1ms
+   × test_library_origins_when_syntax 1ms
+ ❯ |unit| tests/unit/src/map/layout.test.ts (14 tests | 6 failed) 2216ms
+   × test_layout_map_when_overrides 10ms
+   × test_layout_map_when_measured_size 6ms
+   × test_layout_map_when_node_fit_width 1ms
+   × test_layout_map_when_justify 2ms
+   × test_route_wires_when_ends 1ms
+   × test_route_wires_when_via 1ms
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 15 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit| tests/unit/src/cli/embed.test.ts > test_bundle_module
+Error: まとめられなかった: lib.ts: build is not a function
+ ❯ tests/unit/src/cli/embed.test.ts:50:11
+     48|   // 検証
+     49|   if (!("code" in result)) {
+     50|     throw new Error(`まとめられなかった: ${result.error}`);
+       |           ^
+     51|   }
+     52|   expect(result.code).not.toMatch(/\bimport\b/);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/15]⎯
+
+ FAIL  |unit| tests/unit/src/cli/embed.test.ts > test_bundle_module_when_url
+Error: まとめられなかった: https://cdn.example/npm/a/+esm: build is not a function
+ ❯ tests/unit/src/cli/embed.test.ts:82:11
+     80|   // 検証
+     81|   if (!("code" in result)) {
+     82|     throw new Error(`まとめられなかった: ${result.error}`);
+       |           ^
+     83|   }
+     84|   expect(fetchText).toHaveBeenCalledWith("https://cdn.example/npm/b/+e…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/15]⎯
+
+ FAIL  |unit| tests/unit/src/map/layout.test.ts > test_layout_map_when_overrides
+AssertionError: expected 1444 to be 466 // Object.is equality
+
+- Expected
++ Received
+
+- 466
++ 1444
+
+ ❯ tests/unit/src/map/layout.test.ts:128:32
+    126|   const byId = new Map(layout.nodes.map((node) => [node.id, node]));
+    127|   const lib = layout.groups.find((group) => group.id === "lib") as Rec…
+    128|   expect(byId.get("frame")?.x).toBe(lib.x + 24);
+       |                                ^
+    129|   expect(byId.get("frame")?.y).toBe(lib.y + 60);
+    130|   const marker = byId.get("marker") as Rect;
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/15]⎯
+
+ FAIL  |unit| tests/unit/src/map/layout.test.ts > test_layout_map_when_measured_size
+AssertionError: expected { id: 'mount', x: 466, y: 189.5, …(7) } to match object { w: 300, h: 90 }
+(8 matching properties omitted from actual)
+
+- Expected
++ Received
+
+  {
+-   "h": 90,
+-   "w": 300,
++   "h": 63,
++   "w": 120,
+  }
+
+ ❯ tests/unit/src/map/layout.test.ts:140:60
+    138|   const layout = await laid({}, { mount: { size: { w: 300, h: 90 } } }…
+    139|   // 検証
+    140|   expect(layout.nodes.find((node) => node.id === "mount")).toMatchObje…
+       |                                                            ^
+    141|     w: 300,
+    142|     h: 90,
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/15]⎯
+
+ FAIL  |unit| tests/unit/src/map/layout.test.ts > test_layout_map_when_node_fit_width
+AssertionError: expected 220 to be greater than 220
+ ❯ tests/unit/src/map/layout.test.ts:159:18
+    157|   // 検証
+    158|   const node = layout.nodes.find((item) => item.id === "A") as Rect;
+    159|   expect(node.w).toBeGreaterThan(220);
+       |                  ^
+    160|   expect(node.w).toBeLessThanOrEqual(360);
+    161| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/15]⎯
+
+ FAIL  |unit| tests/unit/src/map/layout.test.ts > test_layout_map_when_justify
+AssertionError: expected 216 to be 48 // Object.is equality
+
+- Expected
++ Received
+
+- 48
++ 216
+
+ ❯ tests/unit/src/map/layout.test.ts:219:16
+    217|   const left = start.groups.find((item) => item.id === "g") as Rect;
+    218|   const a1 = start.nodes.find((item) => item.id === "A") as Rect;
+    219|   expect(a1.x).toBe(left.x + 24);
+       |                ^
+    220|   const right = end.groups.find((item) => item.id === "g") as Rect;
+    221|   const a2 = end.nodes.find((item) => item.id === "A") as Rect;
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/15]⎯
+
+ FAIL  |unit| tests/unit/src/map/layout.test.ts > test_route_wires_when_ends
+AssertionError: expected [ 144, 55.5 ] to deeply equal [ 84, 87 ]
+
+- Expected
++ Received
+
+  [
+-   84,
+-   87,
++   144,
++   55.5,
+  ]
+
+ ❯ tests/unit/src/map/layout.test.ts:242:17
+    240|   const beforeLast = points.at(-2) as [number, number];
+    241|   const last = points.at(-1) as [number, number];
+    242|   expect(first).toEqual([a.x + a.w / 2, a.y + a.h]);
+       |                 ^
+    243|   expect(last).toEqual([b.x + b.w / 2, b.y]);
+    244|   expect(second[0]).toBe(first[0]);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/15]⎯
+
+ FAIL  |unit| tests/unit/src/map/layout.test.ts > test_route_wires_when_via
+AssertionError: expected [ [ 144, 55.5 ], [ 208, 55.5 ] ] to deep equally contain [ 264, 324 ]
+
+- Expected
++ Received
+
+  [
+-   264,
+-   324,
++   [
++     144,
++     55.5,
++   ],
++   [
++     208,
++     55.5,
++   ],
+  ]
+
+ ❯ tests/unit/src/map/layout.test.ts:259:18
+    257|   // 検証
+    258|   const points = layout.wires[0]?.points ?? [];
+    259|   expect(points).toContainEqual([264, 324]);
+       |                  ^
+    260|   for (const node of layout.nodes) {
+    261|     for (const [k, point] of points.slice(1).entries()) {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/15]⎯
+
+ FAIL  |unit| tests/unit/src/parts/diagram.test.ts > test_render_flow_when_hint
+AssertionError: expected '<svg class="mdmark-diagram-wires" wid…' not to contain 'mdmark-diagram-info'
+
+Expected: "mdmark-diagram-info"
+Received: "<svg class="mdmark-diagram-wires" width="720" height="160" aria-hidden="true"><defs><marker id="d1-head-map-0" class="mdmark-diagram-arrowhead" viewBox="0 0 9 9" refX="8.5" refY="4.5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto-start-reverse"><path d="M0,0 L9,4.5 L0,9 z" fill="var(--mdmark-color-diagram-line)"></path></marker></defs><path class="mdmark-diagram-wire" data-line="map" data-wire="mcp-&gt;send" d="M204,76 L264,76" stroke-width="1.5" style="stroke:var(--mdmark-color-diagram-line)" marker-end="url(#d1-head-map-0)"></path></svg><div class="mdmark-diagram-node has-tip map-kinded" data-kind="map" data-shape="rounded" data-node="mcp" style="left:24px;top:40px;width:180px;height:72px"><span class="mdmark-diagram-node-kind"><span class="mdmark-map-icon" data-icon="cog" aria-hidden="true"></span><span>処理</span></span><span class="mdmark-diagram-node-name">窓口の MCP</span><button class="mdmark-diagram-info" type="button" aria-label="「窓口の MCP」の説明" aria-describedby="d1-tip-1" data-tip-owner="node:mcp"><svg class="mdmark-diagram-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><path d="M12 16v-4"></path><path d="M12 8h.01"></path></svg></button></div><div class="mdmark-diagram-node map-kinded" data-kind="map" data-shape="rounded" data-node="send" style="left:264px;top:40px;width:180px;height:72px"><span class="mdmark-diagram-node-kind"><span class="mdmark-map-icon" data-icon="cog" aria-hidden="true"></span><span>処理</span></span><span class="mdmark-diagram-node-name">送信</span></div><span class="mdmark-diagram-label" data-line="map" data-wire="mcp-&gt;send" style="left:234px;top:76px">線1</span>"
+
+ ❯ tests/unit/src/parts/diagram.test.ts:354:24
+    352|   expect(on.html).toContain(mark);
+    353|   expect(on.tips).toContain("保存と送信のツールだけを持つ");
+    354|   expect(off.html).not.toContain("mdmark-diagram-info");
+       |                        ^
+    355|   expect(off.tips).not.toContain('role="tooltip"');
+    356|   expect(off.html).not.toContain("aria-describedby");
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/15]⎯
+
+ FAIL  |unit| tests/unit/src/parts/diagram.test.ts > test_render_er_when_hints_off
+AssertionError: expected '<svg class="mdmark-diagram-wires" wid…' not to contain 'mdmark-diagram-info'
+
+Expected: "mdmark-diagram-info"
+Received: "<svg class="mdmark-diagram-wires" width="1000" height="404" aria-hidden="true"><g data-er-relation="0" data-er-from="customers" data-er-from-column="id" data-er-from-card="1" data-er-to="orders" data-er-to-column="customer_id" data-er-to-card="0..n"><path class="mdmark-diagram-wire" data-line="er" d="M254,83 H299 V109 H344"></path><g class="mdmark-diagram-er-ends"><line class="mdmark-diagram-er-end" x1="260" y1="77" x2="260" y2="89"></line><line class="mdmark-diagram-er-end" x1="265" y1="77" x2="265" y2="89"></line><path class="mdmark-diagram-er-end" d="M334,109 L344,102 M334,109 L344,109 M334,109 L344,116"></path><circle class="mdmark-diagram-er-end" data-ring="" cx="329" cy="109" r="4"></circle></g></g><g data-er-relation="1" data-er-from="orders" data-er-from-column="id" data-er-from-card="1" data-er-to="order_items" data-er-to-column="order_id" data-er-to-card="1..n"><path class="mdmark-diagram-wire" data-line="er" d="M594,83 H639 V83 H684"></path><g class="mdmark-diagram-er-ends"><line class="mdmark-diagram-er-end" x1="600" y1="77" x2="600" y2="89"></line><line class="mdmark-diagram-er-end" x1="605" y1="77" x2="605" y2="89"></line><path class="mdmark-diagram-er-end" d="M674,83 L684,76 M674,83 L684,83 M674,83 L684,90"></path><line class="mdmark-diagram-er-end" x1="670" y1="77" x2="670" y2="89"></line></g></g><g data-er-relation="2" data-er-from="products" data-er-from-column="id" data-er-from-card="1" data-er-to="order_items" data-er-to-column="product_id" data-er-to-card="0..n" data-er-mid-x="954"><path class="mdmark-diagram-wire" data-line="er" d="M924,279 H954 V109 H924"></path><g class="mdmark-diagram-er-ends"><line class="mdmark-diagram-er-end" x1="930" y1="273" x2="930" y2="285"></line><line class="mdmark-diagram-er-end" x1="935" y1="273" x2="935" y2="285"></line><path class="mdmark-diagram-er-end" d="M934,109 L924,102 M934,109 L924,109 M934,109 L924,116"></path><circle class="mdmark-diagram-er-end" data-ring="" cx="939" cy="109" r="4"></circle></g></g></svg><div class="mdmark-diagram-er-table has-tip" data-node="customers" data-color="blue" style="left:24px;top:24px;width:230px"><div class="mdmark-diagram-er-head"><button class="mdmark-diagram-er-fold" type="button" aria-expanded="true" aria-label="「顧客」の主キーと外部キー以外の列" data-er-fold="customers"><svg class="mdmark-diagram-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m7 20 5-5 5 5"></path><path d="m7 4 5 5 5-5"></path></svg></button><span class="mdmark-diagram-er-title"><svg class="mdmark-diagram-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v18"></path><rect width="18" height="18" x="3" y="3" rx="2"></rect><path d="M3 9h18"></path><path d="M3 15h18"></path></svg><span class="mdmark-diagram-er-physical">customers</span></span><span class="mdmark-diagram-er-sub"><span class="mdmark-diagram-er-logical">顧客</span><span class="mdmark-diagram-er-kind">マスター</span></span><span class="mdmark-diagram-er-actions"><button class="mdmark-diagram-info" type="button" aria-label="「顧客」の説明" aria-describedby="d1-tip-1" data-tip-owner="table:customers"><svg class="mdmark-diagram-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><path d="M12 16v-4"></path><path d="M12 8h.01"></path></svg></button></span></div><ul class="mdmark-diagram-er-columns" aria-label="「顧客」の列"><li class="mdmark-diagram-er-column" data-column="id" data-pk=""><span class="mdmark-diagram-er-keys"><abbr class="mdmark-diagram-er-key" data-key="pk" title="主キー">PK</abbr><abbr class="mdmark-diagram-er-key" data-key="nn" title="NOT NULL">NN</abbr></span><span class="mdmark-diagram-er-name">id</span><span class="mdmark-diagram-er-type">bigint</span></li><li class="mdmark-diagram-er-column" data-column="email"><span class="mdmark-diagram-er-keys"><abbr class="mdmark-diagram-er-key" data-key="nn" title="NOT NULL">NN</abbr></span><span class="mdmark-diagram-er-name">email</span><span class="mdmark-diagram-er-type">varchar(255)</span></li><li class="mdmark-diagram-er-column" data-column="name"><span class="mdmark-diagram-er-keys"><abbr class="mdmark-diagram-er-key" data-key="nn" title="NOT NULL">NN</abbr></span><span class="mdmark-diagram-er-name">name</span><span class="mdmark-diagram-er-type">varchar(100)</span></li><li class="mdmark-diagram-er-column" data-column="created_at"><span class="mdmark-diagram-er-keys"><abbr class="mdmark-diagram-er-key" data-key="nn" title="NOT NULL">NN</abbr></span><span class="mdmark-diagram-er-name">created_at</span><span class="mdmark-diagram-er-type">timestamp</span></li><li class="mdmark-diagram-er-rest" hidden="hidden">非表示 3 列</li></ul></div><div class="mdmark-diagram-er-table has-tip" data-node="orders" data-color="orange" style="left:344px;top:24px;width:250px"><div class="mdmark-diagram-er-head"><button class="mdmark-diagram-er-fold" type="button" aria-expanded="true" aria-label="「注文」の主キーと外部キー以外の列" data-er-fold="orders"><svg class="mdmark-diagram-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m7 20 5-5 5 5"></path><path d="m7 4 5 5 5-5"></path></svg></button><span class="mdmark-diagram-er-title"><svg class="mdmark-diagram-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v18"></path><rect width="18" height="18" x="3" y="3" rx="2"></rect><path d="M3 9h18"></path><path d="M3 15h18"></path></svg><span class="mdmark-diagram-er-physical">orders</span></span><span class="mdmark-diagram-er-sub"><span class="mdmark-diagram-er-logical">注文</span><span class="mdmark-diagram-er-kind">トランザクション</span></span><span class="mdmark-diagram-er-actions"><button class="mdmark-diagram-info" type="button" aria-label="「注文」の説明" aria-describedby="d1-tip-2" data-tip-owner="table:orders"><svg class="mdmark-diagram-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><path d="M12 16v-4"></path><path d="M12 8h.01"></path></svg></button></span></div><ul class="mdmark-diagram-er-columns" aria-label="「注文」の列"><li class="mdmark-diagram-er-column" data-column="id" data-pk=""><span class="mdmark-diagram-er-keys"><abbr class="mdmark-diagram-er-key" data-key="pk" title="主キー">PK</abbr><abbr class="mdmark-diagram-er-key" data-key="nn" title="NOT NULL">NN</abbr></span><span class="mdmark-diagram-er-name">id</span><span class="mdmark-diagram-er-type">bigint</span></li><li class="mdmark-diagram-er-column" data-column="customer_id"><span class="mdmark-diagram-er-keys"><abbr class="mdmark-diagram-er-key" data-key="fk" title="外部キー">FK</abbr><abbr class="mdmark-diagram-er-key" data-key="nn" title="NOT NULL">NN</abbr></span><span class="mdmark-diagram-er-name">customer_id</span><span class="mdmark-diagram-er-type">bigint</span></li><li class="mdmark-diagram-er-column" data-column="status"><span class="mdmark-diagram-er-keys"><abbr class="mdmark-diagram-er-key" data-key="nn" title="NOT NULL">NN</abbr></span><span class="mdmark-diagram-er-name">status</span><span class="mdmark-diagram-er-type">varchar(20)</span></li><li class="mdmark-diagram-er-column" data-column="ordered_at"><span class="mdmark-diagram-er-keys"><abbr class="mdmark-diagram-er-key" data-key="nn" title="NOT NULL">NN</abbr></span><span class="mdmark-diagram-er-name">ordered_at</span><span class="mdmark-diagram-er-type">timestamp</span></li><li class="mdmark-diagram-er-column" data-column="paid_at"><span class="mdmark-diagram-er-keys"></span><span class="mdmark-diagram-er-name">paid_at</span><span class="mdmark-diagram-er-type">timestamp</span></li><li class="mdmark-diagram-er-column" data-column="shipped_at"><span class="mdmark-diagram-er-keys"></span><span class="mdmark-diagram-er-name">shipped_at</span><span class="mdmark-diagram-er-type">timestamp</span></li><li class="mdmark-diagram-er-column" data-column="total"><span class="mdmark-diagram-er-keys"><abbr class="mdmark-diagram-er-key" data-key="nn" title="NOT NULL">NN</abbr></span><span class="mdmark-diagram-er-name">total</span><span class="mdmark-diagram-er-type">integer</span></li><li class="mdmark-diagram-er-column" data-column="note"><span class="mdmark-diagram-er-keys"></span><span class="mdmark-diagram-er-name">note</span><span class="mdmark-diagram-er-type">text</span></li><li class="mdmark-diagram-er-rest" hidden="hidden">非表示 6 列</li></ul></div><div class="mdmark-diagram-er-table has-tip" data-node="order_items" data-color="orange" style="left:684px;top:24px;width:240px"><div class="mdmark-diagram-er-head"><button class="mdmark-diagram-er-fold" type="button" aria-expanded="true" aria-label="「注文の明細」の主キーと外部キー以外の列" data-er-fold="order_items"><svg class="mdmark-diagram-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m7 20 5-5 5 5"></path><path d="m7 4 5 5 5-5"></path></svg></button><span class="mdmark-diagram-er-title"><svg class="mdmark-diagram-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v18"></path><rect width="18" height="18" x="3" y="3" rx="2"></rect><path d="M3 9h18"></path><path d="M3 15h18"></path></svg><span class="mdmark-diagram-er-physical">order_items</span></span><span class="mdmark-diagram-er-sub"><span class="mdmark-diagram-er-logical">注文の明細</span><span class="mdmark-diagram-er-kind">トランザクション</span></span><span class="mdmark-diagram-er-actions"><button class="mdmark-diagram-info" type="button" aria-label="「注文の明細」の説明" aria-describedby="d1-tip-3" data-tip-owner="table:order_items"><svg class="mdmark-diagram-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><path d="M12 16v-4"></path><path d="M12 8h.01"></path></svg></button></span></div><ul class="mdmark-diagram-er-columns" aria-label="「注文の明細」の列"><li class="mdmark-diagram-er-column" data-column="order_id" data-pk=""><span class="mdmark-diagram-er-keys"><abbr class="mdmark-diagram-er-key" data-key="pk" title="主キー">PK</abbr><abbr class="mdmark-diagram-er-key" data-key="fk" title="外部キー">FK</abbr><abbr class="mdmark-diagram-er-key" data-key="nn" title="NOT NULL">NN</abbr></span><span class="mdmark-diagram-er-name">order_id</span><span class="mdmark-diagram-er-type">bigint</span></li><li class="mdmark-diagram-er-column" data-column="product_id" data-pk=""><span class="mdmark-diagram-er-keys"><abbr class="mdmark-diagram-er-key" data-key="pk" title="主キー">PK</abbr><abbr class="mdmark-diagram-er-key" data-key="fk" title="外部キー">FK</abbr><abbr class="mdmark-diagram-er-key" data-key="nn" title="NOT NULL">NN</abbr></span><span class="mdmark-diagram-er-name">product_id</span><span class="mdmark-diagram-er-type">bigint</span></li><li class="mdmark-diagram-er-column" data-column="quantity"><span class="mdmark-diagram-er-keys"><abbr class="mdmark-diagram-er-key" data-key="nn" title="NOT NULL">NN</abbr></span><span class="mdmark-diagram-er-name">quantity</span><span class="mdmark-diagram-er-type">integer</span></li><li class="mdmark-diagram-er-column" data-column="unit_price"><span class="mdmark-diagram-er-keys"><abbr class="mdmark-diagram-er-key" data-key="nn" title="NOT NULL">NN</abbr></span><span class="mdmark-diagram-er-name">unit_price</span><span class="mdmark-diagram-er-type">integer</span></li><li class="mdmark-diagram-er-rest" hidden="hidden">非表示 2 列</li></ul></div><div class="mdmark-diagram-er-table has-tip" data-node="products" data-color="blue" style="left:684px;top:220px;width:240px"><div class="mdmark-diagram-er-head"><button class="mdmark-diagram-er-fold" type="button" aria-expanded="true" aria-label="「商品」の主キーと外部キー以外の列" data-er-fold="products"><svg class="mdmark-diagram-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m7 20 5-5 5 5"></path><path d="m7 4 5 5 5-5"></path></svg></button><span class="mdmark-diagram-er-title"><svg class="mdmark-diagram-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v18"></path><rect width="18" height="18" x="3" y="3" rx="2"></rect><path d="M3 9h18"></path><path d="M3 15h18"></path></svg><span class="mdmark-diagram-er-physical">products</span></span><span class="mdmark-diagram-er-sub"><span class="mdmark-diagram-er-logical">商品</span><span class="mdmark-diagram-er-kind">マスター</span></span><span class="mdmark-diagram-er-actions"><button class="mdmark-diagram-info" type="button" aria-label="「商品」の説明" aria-describedby="d1-tip-4" data-tip-owner="table:products"><svg class="mdmark-diagram-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><path d="M12 16v-4"></path><path d="M12 8h.01"></path></svg></button></span></div><ul class="mdmark-diagram-er-columns" aria-label="「商品」の列"><li class="mdmark-diagram-er-column" data-column="id" data-pk=""><span class="mdmark-diagram-er-keys"><abbr class="mdmark-diagram-er-key" data-key="pk" title="主キー">PK</abbr><abbr class="mdmark-diagram-er-key" data-key="nn" title="NOT NULL">NN</abbr></span><span class="mdmark-diagram-er-name">id</span><span class="mdmark-diagram-er-type">bigint</span></li><li class="mdmark-diagram-er-column" data-column="name"><span class="mdmark-diagram-er-keys"><abbr class="mdmark-diagram-er-key" data-key="nn" title="NOT NULL">NN</abbr></span><span class="mdmark-diagram-er-name">name</span><span class="mdmark-diagram-er-type">varchar(100)</span></li><li class="mdmark-diagram-er-column" data-column="price"><span class="mdmark-diagram-er-keys"><abbr class="mdmark-diagram-er-key" data-key="nn" title="NOT NULL">NN</abbr></span><span class="mdmark-diagram-er-name">price</span><span class="mdmark-diagram-er-type">integer</span></li><li class="mdmark-diagram-er-column" data-column="discontinued"><span class="mdmark-diagram-er-keys"></span><span class="mdmark-diagram-er-name">discontinued</span><span class="mdmark-diagram-er-type">boolean</span></li><li class="mdmark-diagram-er-rest" hidden="hidden">非表示 3 列</li></ul></div><span class="mdmark-diagram-label" data-line="er" data-er-relation="0" style="left:299px;top:96px">注文する</span><span class="mdmark-diagram-label" data-line="er" data-er-relation="1" style="left:639px;top:83px">含む</span><span class="mdmark-diagram-label" data-line="er" data-er-relation="2" style="left:954px;top:194px">注文される</span>"
+
+ ❯ tests/unit/src/parts/diagram.test.ts:442:20
+    440|   const { html, tips } = renderEr(shopEr(), "d1", { hints: false });
+    441|   // 検証
+    442|   expect(html).not.toContain("mdmark-diagram-info");
+       |                    ^
+    443|   expect(tips).toBe("");
+    444| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/15]⎯
+
+ FAIL  |unit| tests/unit/src/parts/diagram.test.ts > test_render_er_when_terms
+AssertionError: expected [] to have a length of 2 but got +0
+
+- Expected
++ Received
+
+- 2
++ 0
+
+ ❯ tests/unit/src/parts/diagram.test.ts:559:49
+    557|   });
+    558|   // 検証
+    559|   expect(matches(html, /class="mdmark-term"/g)).toHaveLength(2);
+       |                                                 ^
+    560|   expect(plainText(html)).not.toContain("{{");
+    561|   expect(plainText(html)).not.toContain("}}");
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/15]⎯
+
+ FAIL  |unit| tests/unit/vscode/src/config.test.ts > test_library_origins
+AssertionError: expected [ 'https://cdn.jsdelivr.net' ] to deeply equal [ 'https://cdn.example.com', …(1) ]
+
+- Expected
++ Received
+
+  [
+-   "https://cdn.example.com",
+    "https://cdn.jsdelivr.net",
+  ]
+
+ ❯ tests/unit/vscode/src/config.test.ts:362:19
+    360|   const origins = libraryOrigins({ libraries });
+    361|   // 検証
+    362|   expect(origins).toEqual([
+       |                   ^
+    363|     "https://cdn.example.com",
+    364|     "https://cdn.jsdelivr.net",
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[12/15]⎯
+
+ FAIL  |unit| tests/unit/vscode/src/config.test.ts > test_library_origins_when_html_scripts
+AssertionError: expected [ 'https://cdn.jsdelivr.net' ] to deeply equal [ 'https://cdn.example.com', …(2) ]
+
+- Expected
++ Received
+
+  [
+-   "https://cdn.example.com",
+-   "https://babel.example.com",
+    "https://cdn.jsdelivr.net",
+  ]
+
+ ❯ tests/unit/vscode/src/config.test.ts:404:18
+    402|   // 検証
+    403|   // mermaid.url を省いたので、ライブラリ本体の既定の mermaid の URL の origin も入る
+    404|   expect(remote).toEqual([
+       |                  ^
+    405|     "https://cdn.example.com",
+    406|     "https://babel.example.com",
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[13/15]⎯
+
+ FAIL  |unit| tests/unit/vscode/src/config.test.ts > test_library_origins_when_mermaid
+AssertionError: expected [ 'https://cdn.jsdelivr.net' ] to deeply equal [ 'https://mermaid.example.com', …(1) ]
+
+- Expected
++ Received
+
+  [
+-   "https://mermaid.example.com",
+    "https://cdn.jsdelivr.net",
+  ]
+
+ ❯ tests/unit/vscode/src/config.test.ts:455:18
+    453|   });
+    454|   // 検証
+    455|   expect(remote).toEqual([
+       |                  ^
+    456|     "https://mermaid.example.com",
+    457|     "https://cdn.jsdelivr.net",
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[14/15]⎯
+
+ FAIL  |unit| tests/unit/vscode/src/config.test.ts > test_library_origins_when_syntax
+AssertionError: expected [ 'https://cdn.jsdelivr.net' ] to deeply equal [ 'https://hljs.example.com' ]
+
+- Expected
++ Received
+
+  [
+-   "https://hljs.example.com",
++   "https://cdn.jsdelivr.net",
+  ]
+
+ ❯ tests/unit/vscode/src/config.test.ts:482:18
+    480|   });
+    481|   // 検証
+    482|   expect(remote).toEqual(["https://hljs.example.com"]);
+       |                  ^
+    483|   expect(local).toEqual([]);
+    484| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[15/15]⎯
+
+
+ Test Files  4 failed | 11 passed (15)
+      Tests  15 failed | 297 passed (312)
+   Start at  20:16:33
+   Duration  71.30s (tests 82%, import 14%, transform 4%, worker 1%)
+
+rc=1

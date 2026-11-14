@@ -203,6 +203,35 @@ const numberAttribute = (
   return Number.isNaN(parsed) ? undefined : parsed;
 };
 
+/** 人の形のまとまりの、頭の円と手足の線を囲む枠（無ければ `undefined`） */
+const actorBox = (
+  group: Element,
+): { left: number; top: number; width: number; height: number } | undefined => {
+  const head = group.querySelector("circle");
+  if (!head) {
+    return undefined;
+  }
+  const cx = numberAttribute(head, "cx") ?? 0;
+  const cy = numberAttribute(head, "cy") ?? 0;
+  const r = numberAttribute(head, "r") ?? 0;
+  const lines = [...group.querySelectorAll("line")];
+  /** 線の座標の属性の値（無い属性を除く） */
+  const valuesOf = (names: string[]): number[] =>
+    lines.flatMap((line) =>
+      names.flatMap((name) => numberAttribute(line, name) ?? []),
+    );
+  const xs = [cx - r, cx + r, ...valuesOf(["x1", "x2"])];
+  const ys = [cy - r, cy + r, ...valuesOf(["y1", "y2"])];
+  const left = Math.min(...xs);
+  const top = Math.min(...ys);
+  return {
+    left,
+    top,
+    width: Math.max(...xs) - left,
+    height: Math.max(...ys) - top,
+  };
+};
+
 /** SVG の `g.actor-man` の棒人間を、子の属性から求めたノードの中央の lucide の `user` のアイコンに替える */
 export const replaceMermaidActors = (svg: SVGSVGElement): void => {
   const node = bundledIconNode("user");
@@ -218,35 +247,11 @@ export const replaceMermaidActors = (svg: SVGSVGElement): void => {
     })
     .join("");
   for (const group of svg.querySelectorAll("g.actor-man")) {
-    const head = group.querySelector("circle");
-    if (!head) {
+    const box = actorBox(group);
+    if (!box) {
       continue;
     }
-    const xs: number[] = [];
-    const ys: number[] = [];
-    const cx = numberAttribute(head, "cx") ?? 0;
-    const cy = numberAttribute(head, "cy") ?? 0;
-    const r = numberAttribute(head, "r") ?? 0;
-    xs.push(cx - r, cx + r);
-    ys.push(cy - r, cy + r);
-    for (const line of group.querySelectorAll("line")) {
-      for (const name of ["x1", "x2"]) {
-        const value = numberAttribute(line, name);
-        if (value !== undefined) {
-          xs.push(value);
-        }
-      }
-      for (const name of ["y1", "y2"]) {
-        const value = numberAttribute(line, name);
-        if (value !== undefined) {
-          ys.push(value);
-        }
-      }
-    }
-    const left = Math.min(...xs);
-    const top = Math.min(...ys);
-    const width = Math.max(...xs) - left;
-    const height = Math.max(...ys) - top;
+    const { left, top, width, height } = box;
     const size = Math.min(width, height);
     for (const child of [...group.children]) {
       if (child.tagName.toLowerCase() !== "text") {

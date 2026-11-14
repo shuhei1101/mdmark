@@ -23,8 +23,8 @@ catalogs:
     entries:
       - name: eslint -c tools/eslint/eslint.config.js --max-warnings 0
         kind: コマンド
-        purpose: Webview の TypeScript に React・アクセシビリティ・import の向き・Tailwind・複雑さの規則を適用する
-        description: '`tools/eslint/node_modules/eslint/bin/eslint.js` を node で呼ぶ（直下の `eslint` 10 ではない）。設定の `basePath` を直下にし、引数が無いときは Webview の外を `ignores` で削除する'
+        purpose: '`src/`・`scripts/`・`vscode/src/`・`plugin/` の TypeScript に複雑さの規則を、Webview の TypeScript に React・アクセシビリティ・import の向き・Tailwind の規則を適用する'
+        description: '`tools/eslint/node_modules/eslint/bin/eslint.js` を node で呼ぶ（直下の `eslint` 10 ではない）。設定の `basePath` を直下にし、引数が無いときは設定の `files` の全てを検査する（`node_modules/`・`dist/`・JavaScript は `ignores` で除外する）'
   - name: 同梱プラグイン
     version: 9.39.5
     entries:
@@ -74,7 +74,7 @@ install: '```bash
   ```
 
 
-  Webview の規則は `tools/eslint/` の package に入れる。
+  複雑さと Webview の規則は `tools/eslint/` の package に入れる。
 
 
   ```bash

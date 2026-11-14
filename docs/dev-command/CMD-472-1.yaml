@@ -25,7 +25,7 @@ categories:
       npm ci
       ```
 
-      Webview の ESLint の道具（`tools/eslint/package-lock.json`）が変わった取り込みの後は、その依存ももう一度入れる。
+      ESLint の道具（`tools/eslint/package-lock.json`）が変わった取り込みの後は、その依存ももう一度入れる。
 
       ```bash
       npm ci --prefix tools/eslint
@@ -157,7 +157,7 @@ categories:
       detail: '`npm run build` が終了コード 0 で終わり、`dist/` に `index.js`・`index.css`・`THIRD_PARTY_LICENSES.txt`・`cli.js` と型定義が書き込まれることを確認した。スキーマをタグ v0.3.0 から変えたのに `migrations/no-steps.yaml` の合う行が無いと終了コード 1 で `dist/` が残らず、行を配置すると通ること、`--version v0.4.0` のビルドで `migrations/next/` が残ると終了コード 1 で終わることを確認した。`--version` の指定と、バージョンの書式の誤り・`version.ini` の欠け・esbuild の失敗・上限超過のとき `dist/` が残らないこと、型定義が `--moduleResolution bundler` と `nodenext` の利用側で型検査を通ること、移行の手順の点検の分岐は、単体テストで確認した。2026-10-23 に、`npm run build` が終了コード 0 で `plugin/` の生成物を記載することを確認した。`plugin/` の失敗の分岐は単体テストで確認した。VS Code 拡張機能のコマンドは `vscode/` を実装して走らせた（2026-10-23）。`npm --prefix vscode run build` が終了コード 0 で終わり、`vscode/dist/extension.cjs`（`require("vscode")` を持つ）・`vscode/media/preview.js`・`vscode/media/preview.css` が書き込まれ、`npm --prefix vscode run typecheck` が終了コード 0 で通る。`npm --prefix vscode run package` が `vscode:prepublish` のビルドも実行して `vscode/mdmark-0.1.0.vsix`（`package.json`・`readme.md`・`dist/extension.cjs`・`media/preview.css`・`media/preview.js` の 7 ファイル、73KB。`src/`・`node_modules/` を含まない）を記載する。LICENSE が無いと `vsce` が警告を出すが、終了コードは 0。2026-10-24 に、対応ブラウザの下限の確認を追加した `npm run build` が終了コード 0 で通ること、下限に無い API を確認せずに使用すると終了コード 1 で `dist/` が残らず標準エラーに配布ファイル・行・列・報告の文が出ることを、単体テストで確認した。2026-11-08 に、`npm run fixtures:mermaid` が終了コード 0 で `tests/fixtures/mermaid-svg/` に 9 つの SVG（暗い配色の flowchart は明るい配色と塗りの色が違い、sequence は actor が `svg.mdmark-mermaid-actor`）を書き込み、書き込んだパスを標準出力に出すことを確認した'
   - name: 取り込み前の検査
     commands: |-
-      手で全件を検査する（Biome・Webview の ESLint・ルートと `vscode/` の型検査を順に実行し、最初の失敗で止まる）。
+      手で全件を検査する（Biome・ESLint・ルートと `vscode/` の型検査を順に実行し、最初の失敗で止まる）。
 
       ```bash
       npm run check

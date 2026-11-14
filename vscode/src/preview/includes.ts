@@ -49,6 +49,19 @@ const targetOf = (written: string): string | undefined => {
   }
 };
 
+/** フェンスの行の後の、開いているコードブロックのフェンス（閉じたら `undefined`） */
+const fenceAfter = (
+  fence: string | undefined,
+  opening: string,
+): string | undefined => {
+  if (fence === undefined) {
+    return opening;
+  }
+  return opening[0] === fence[0] && opening.length >= fence.length
+    ? undefined
+    : fence;
+};
+
 /** 本文の include のマーカー（コードブロックの中を除く）に記載した取り込み先を返却する */
 const findMarkers = (markdown: string): string[] => {
   const found: string[] = [];
@@ -56,11 +69,7 @@ const findMarkers = (markdown: string): string[] => {
   for (const line of markdown.split(/\r?\n/)) {
     const opening = FENCE_PATTERN.exec(line)?.[1];
     if (opening !== undefined) {
-      if (fence === undefined) {
-        fence = opening;
-      } else if (opening[0] === fence[0] && opening.length >= fence.length) {
-        fence = undefined;
-      }
+      fence = fenceAfter(fence, opening);
       continue;
     }
     const written =

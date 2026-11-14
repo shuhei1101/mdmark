@@ -37,7 +37,7 @@ async function setUp(search = "", mermaid = FLOW) {
   const handle = attachMapFlow(
     range,
     resolveConfig({ config: { map: CONFIG } }),
-    parseMapArgs("").args,
+    { args: parseMapArgs("").args },
   );
   handles.push(handle);
   return root;

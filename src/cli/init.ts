@@ -43,6 +43,35 @@ function reasonOf(error: unknown): string {
   return error instanceof Error ? error.message : String(error);
 }
 
+/** 書き込めないときの例外 */
+const writeError = (path: string, error: unknown): CliError =>
+  new CliError(
+    `${path} に書き込めません（${reasonOf(error)}）。配置先のフォルダを確認してください。`,
+  );
+
+/** 雛形 1 つを配置する。既にあるファイルは中身を読み込まずに飛ばし、配置したかを返却する */
+async function placeTemplate(options: {
+  target: string;
+  path: string;
+  content: string;
+}): Promise<boolean> {
+  const { target, path, content } = options;
+  try {
+    await mkdir(dirname(target), { recursive: true });
+  } catch (error) {
+    throw writeError(path, error);
+  }
+  try {
+    await writeFile(target, content, { flag: "wx" });
+    return true;
+  } catch (error) {
+    if (error instanceof Error && "code" in error && error.code === "EEXIST") {
+      return false;
+    }
+    throw writeError(path, error);
+  }
+}
+
 /** `TEMPLATE_FILES` のうち配置先に無いものをコピーし、配置した・配置しなかった行を出す */
 export async function runInit(
   options: {
@@ -59,40 +88,26 @@ export async function runInit(
 ): Promise<0> {
   const { dir, js, templatesDir, version } = options;
   const wanted = js ? "js" : "ts";
-  for (const template of TEMPLATE_FILES) {
-    if (template.language !== undefined && template.language !== wanted) {
-      continue;
-    }
-    const target = join(dir, template.path);
+  const templates = TEMPLATE_FILES.filter(
+    (template) =>
+      template.language === undefined || template.language === wanted,
+  );
+  for (const template of templates) {
     const source = await readFile(join(templatesDir, template.source), "utf8");
     const content =
       template.path === CONFIG_TEMPLATE
         ? source.replace(VERSION_LINE_PATTERN, `version: ${version}`)
         : source;
-    try {
-      await mkdir(dirname(target), { recursive: true });
-    } catch (error) {
-      throw new CliError(
-        `${template.path} に書き込めません（${reasonOf(error)}）。配置先のフォルダを確認してください。`,
-      );
-    }
-    try {
-      // 既にあるファイルは中身を読み込まずに飛ばす
-      await writeFile(target, content, { flag: "wx" });
-      io.stdout(`配置した: ${template.path}`);
-    } catch (error) {
-      if (
-        error instanceof Error &&
-        "code" in error &&
-        error.code === "EEXIST"
-      ) {
-        io.stdout(`配置しなかった（既にある）: ${template.path}`);
-        continue;
-      }
-      throw new CliError(
-        `${template.path} に書き込めません（${reasonOf(error)}）。配置先のフォルダを確認してください。`,
-      );
-    }
+    const placed = await placeTemplate({
+      target: join(dir, template.path),
+      path: template.path,
+      content,
+    });
+    io.stdout(
+      placed
+        ? `配置した: ${template.path}`
+        : `配置しなかった（既にある）: ${template.path}`,
+    );
   }
   return 0;
 }

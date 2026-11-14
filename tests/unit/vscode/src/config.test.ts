@@ -357,7 +357,7 @@ test("test_library_origins", async () => {
     d: 1,
   };
   // 実行
-  const origins = libraryOrigins(libraries);
+  const origins = libraryOrigins({ libraries });
   // 検証
   expect(origins).toEqual([
     "https://cdn.example.com",
@@ -391,10 +391,14 @@ test("test_library_origins_when_html_scripts", async () => {
   const { libraryOrigins } = await loadModule();
   const libraries = { a: "https://cdn.example.com/a.js" };
   // 実行
-  const remote = libraryOrigins(libraries, {
-    url: "https://babel.example.com/b.mjs",
+  const remote = libraryOrigins({
+    libraries,
+    htmlScripts: { url: "https://babel.example.com/b.mjs" },
   });
-  const local = libraryOrigins(libraries, { url: "./babel.mjs" });
+  const local = libraryOrigins({
+    libraries,
+    htmlScripts: { url: "./babel.mjs" },
+  });
   // 検証
   // mermaid.url を省いたので、ライブラリ本体の既定の mermaid の URL の origin も入る
   expect(remote).toEqual([
@@ -437,10 +441,16 @@ test("test_library_origins_when_mermaid", async () => {
   const { libraryOrigins } = await loadModule();
   const htmlScripts = { url: "./babel.mjs" };
   // 実行
-  const remote = libraryOrigins({}, htmlScripts, {
-    url: "https://mermaid.example.com/m.mjs",
+  const remote = libraryOrigins({
+    libraries: {},
+    htmlScripts,
+    mermaid: { url: "https://mermaid.example.com/m.mjs" },
   });
-  const local = libraryOrigins({}, htmlScripts, { url: "./m.mjs" });
+  const local = libraryOrigins({
+    libraries: {},
+    htmlScripts,
+    mermaid: { url: "./m.mjs" },
+  });
   // 検証
   expect(remote).toEqual([
     "https://mermaid.example.com",
@@ -456,10 +466,18 @@ test("test_library_origins_when_syntax", async () => {
   const htmlScripts = { url: "./babel.mjs" };
   const mermaid = { url: "./m.mjs" };
   // 実行
-  const remote = libraryOrigins({}, htmlScripts, mermaid, {
-    url: "https://hljs.example.com/es/",
+  const remote = libraryOrigins({
+    libraries: {},
+    htmlScripts,
+    mermaid,
+    syntax: { url: "https://hljs.example.com/es/" },
   });
-  const local = libraryOrigins({}, htmlScripts, mermaid, { url: "./hljs/" });
+  const local = libraryOrigins({
+    libraries: {},
+    htmlScripts,
+    mermaid,
+    syntax: { url: "./hljs/" },
+  });
   // 検証
   expect(remote).toEqual(["https://hljs.example.com"]);
   expect(local).toEqual([]);

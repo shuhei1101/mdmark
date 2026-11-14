@@ -69,6 +69,130 @@ const annotationsAttr = (
   return ` data-map-annotations="${escapeHtml(JSON.stringify(numbers))}"`;
 };
 
+/** 範囲の形の読み込みの結果 */
+type MapStructure = ReturnType<typeof collectMapStructure>;
+
+/** 範囲の形の誤りを、開きのマーカーの場所の記載の警告にする */
+const structureWarning = (
+  state: StateCore,
+  openToken: Token,
+  problems: MapProblem[],
+): Token => {
+  const mark = markOf(openToken);
+  const warning = warningBlock(
+    state,
+    {
+      mark: mark?.raw ?? "",
+      message: "の範囲の書き方に誤りがあります。読めた分で描いています。",
+      items: mapWarningItems(problems),
+      kind: "map",
+    },
+    openToken,
+  );
+  warning.meta = { ...(warning.meta ?? {}), mapProblems: problems };
+  return warning;
+};
+
+/** 描かない範囲の中身から補足を除き、mermaid のブロックをソースのコードブロックとして残す */
+const sourceTokens = (inner: Token[]): Token[] =>
+  inner.flatMap((token) => {
+    if (markOf(token)?.name === DATA_MARK) return [];
+    if (isMermaid(token))
+      token.meta = { ...(token.meta ?? {}), [MAP_SOURCE_META]: true };
+    return [token];
+  });
+
+/** 文字に出る意味を持つ用語の `data-map-terms`。用語が無ければ付けない */
+const termsAttrOf = (terms: Record<string, string> | undefined): string =>
+  terms === undefined || Object.keys(terms).length === 0
+    ? ""
+    : ` data-map-terms="${escapeHtml(JSON.stringify(terms))}"`;
+
+/** 描く範囲を、div.mdmark-map・mermaid のブロック・補足の pre のトークンにする */
+const drawnTokens = (
+  state: StateCore,
+  range: {
+    openToken: Token;
+    closeToken: Token | undefined;
+    fence: Token;
+    data: Token | undefined;
+    structure: MapStructure;
+    number: number;
+  },
+  findTerms: ((text: string) => Record<string, string>) | undefined,
+): Token[] => {
+  const { openToken, closeToken, fence, data, structure, number } = range;
+  fence.meta = { ...(fence.meta ?? {}), [MAP_SOURCE_META]: true };
+  const args = escapeHtml(structure.args.normalized);
+  const rest = data === undefined ? undefined : markOf(data)?.rest;
+  const terms = findTerms?.(
+    `${fence.content}\n${data === undefined ? "" : dataOf(rest)}`,
+  );
+  const out = [
+    ownBlock(
+      state,
+      `<div class="mdmark-map" data-map="${number}" data-map-kind="${structure.kind}" data-map-args="${args}"${termsAttrOf(terms)}${annotationsAttr(state, rest)}>`,
+      openToken,
+    ),
+    fence,
+  ];
+  if (data) {
+    out.push(
+      ownBlock(
+        state,
+        `<pre class="mdmark-map-data" hidden>${escapeHtml(dataOf(rest))}</pre>`,
+        data,
+      ),
+    );
+  }
+  out.push(ownBlock(state, "</div>", closeToken));
+  return out;
+};
+
+/** 閉じた範囲 1 つを、範囲の形の誤りの警告と、描いた範囲か描かない範囲の中身のトークンにする */
+const mapRangeTokens = (
+  state: StateCore,
+  range: { openToken: Token; inner: Token[]; closeToken: Token | undefined },
+  draw: {
+    number: number;
+    findTerms: ((text: string) => Record<string, string>) | undefined;
+  },
+): Token[] => {
+  const { openToken, inner, closeToken } = range;
+  const mark = markOf(openToken);
+  const fences = inner.filter(isMermaid);
+  const datas = inner.filter((token) => markOf(token)?.name === DATA_MARK);
+  const fence = fences[0];
+  const structure = collectMapStructure({
+    args: mark?.rest ?? "",
+    mermaid: fence?.content,
+    mermaidCount: fences.length,
+    dataCount: datas.length,
+  });
+  const out =
+    structure.problems.length > 0
+      ? [structureWarning(state, openToken, structure.problems)]
+      : [];
+  if (structure.kind === undefined || fence === undefined) {
+    return [...out, ...sourceTokens(inner)];
+  }
+  return [
+    ...out,
+    ...drawnTokens(
+      state,
+      {
+        openToken,
+        closeToken,
+        fence,
+        data: datas[0],
+        structure,
+        number: draw.number,
+      },
+      draw.findTerms,
+    ),
+  ];
+};
+
 /** `map` がオンのとき、`<!-- map -->` 〜 `<!-- /map -->` の範囲を div.mdmark-map にし、範囲の形の誤りを記載の警告にする。オフのときはマーカーと補足を取り除き、mermaid のブロックを普通のコードブロックとして残す */
 export const buildMapRanges = (state: StateCore): void => {
   const tokens = state.tokens;
@@ -94,72 +218,17 @@ export const buildMapRanges = (state: StateCore): void => {
       continue;
     }
     number += 1;
-    const inner = tokens.slice(open + 1, close);
-    const fences = inner.filter(isMermaid);
-    const datas = inner.filter((token) => markOf(token)?.name === DATA_MARK);
-    const fence = fences[0];
-    const data = datas[0];
-    const structure = collectMapStructure({
-      args: mark.rest ?? "",
-      mermaid: fence?.content,
-      mermaidCount: fences.length,
-      dataCount: datas.length,
-    });
-    if (structure.problems.length > 0) {
-      const warning = warningBlock(
+    out.push(
+      ...mapRangeTokens(
         state,
         {
-          mark: mark.raw,
-          message: "の範囲の書き方に誤りがあります。読めた分で描いています。",
-          items: mapWarningItems(structure.problems),
-          kind: "map",
+          openToken,
+          inner: tokens.slice(open + 1, close),
+          closeToken: tokens[close],
         },
-        openToken,
-      );
-      warning.meta = {
-        ...(warning.meta ?? {}),
-        mapProblems: structure.problems,
-      };
-      out.push(warning);
-    }
-    if (structure.kind === undefined || fence === undefined) {
-      // 描かない範囲は、範囲の中の mermaid のブロックをソースのコードブロックとして残す
-      for (const token of inner) {
-        if (markOf(token)?.name === DATA_MARK) continue;
-        if (isMermaid(token))
-          token.meta = { ...(token.meta ?? {}), [MAP_SOURCE_META]: true };
-        out.push(token);
-      }
-      cursor = close + 1;
-      continue;
-    }
-    fence.meta = { ...(fence.meta ?? {}), [MAP_SOURCE_META]: true };
-    const args = escapeHtml(structure.args.normalized);
-    const terms = findTerms?.(
-      `${fence.content}\n${data === undefined ? "" : dataOf(markOf(data)?.rest)}`,
-    );
-    const termsAttr =
-      terms === undefined || Object.keys(terms).length === 0
-        ? ""
-        : ` data-map-terms="${escapeHtml(JSON.stringify(terms))}"`;
-    out.push(
-      ownBlock(
-        state,
-        `<div class="mdmark-map" data-map="${number}" data-map-kind="${structure.kind}" data-map-args="${args}"${termsAttr}${annotationsAttr(state, data === undefined ? undefined : markOf(data)?.rest)}>`,
-        openToken,
+        { number, findTerms },
       ),
     );
-    out.push(fence);
-    if (data) {
-      out.push(
-        ownBlock(
-          state,
-          `<pre class="mdmark-map-data" hidden>${escapeHtml(dataOf(markOf(data)?.rest))}</pre>`,
-          data,
-        ),
-      );
-    }
-    out.push(ownBlock(state, "</div>", tokens[close]));
     cursor = close + 1;
   }
   out.push(...tokens.slice(cursor));

@@ -53,66 +53,69 @@ export const attachMapEr = (
     }).length;
   const frameId = `map-${range.dataset.map ?? "1"}`;
   let fanouts: MapErFanout[] = [];
-  return attachMapFlow(range, config, args, undefined, {
-    chart: erToFlowchart(er, data.groups),
-    overrides: ({ collapsed }) => erOverrides(er, collapsed),
-    collapsibles: er.tables.map((table) => table.name),
-    collapsedTag: (group) => `テーブル ${tablesUnder(group)} 件`,
-    rewire: (layout, view) =>
-      rewireMapEr({
-        layout,
-        tables,
-        relations,
-        collapsed: view.collapsed,
-        ends,
-      }),
-    render: (flowArgs) =>
-      renderMapErDiagram({ ...flowArgs, tables, relations, fanouts: [] }),
-    selectionOf: (selected) => {
-      fanouts = [];
-      const picked = [...selected];
-      if (picked.length === 1) {
-        const only = picked[0] as string;
-        const near = er.relations.filter(
-          (item) => item.from === only || item.to === only,
+  return attachMapFlow(range, config, {
+    args,
+    extension: {
+      chart: erToFlowchart(er, data.groups),
+      overrides: ({ collapsed }) => erOverrides(er, collapsed),
+      collapsibles: er.tables.map((table) => table.name),
+      collapsedTag: (group) => `テーブル ${tablesUnder(group)} 件`,
+      rewire: (layout, view) =>
+        rewireMapEr({
+          layout,
+          tables,
+          relations,
+          collapsed: view.collapsed,
+          ends,
+        }),
+      render: (flowArgs) =>
+        renderMapErDiagram({ ...flowArgs, tables, relations, fanouts: [] }),
+      selectionOf: (selected) => {
+        fanouts = [];
+        const picked = [...selected];
+        if (picked.length === 1) {
+          const only = picked[0] as string;
+          const near = er.relations.filter(
+            (item) => item.from === only || item.to === only,
+          );
+          return {
+            nodes: new Set([
+              only,
+              ...near.flatMap((item) => [item.from, item.to]),
+            ]),
+            wires: new Set(near.map((item) => item.id)),
+          };
+        }
+        if (picked.length !== 2) return undefined;
+        const path = erFanouts(
+          er.relations,
+          picked[0] as string,
+          picked[1] as string,
         );
-        return {
-          nodes: new Set([
-            only,
-            ...near.flatMap((item) => [item.from, item.to]),
-          ]),
-          wires: new Set(near.map((item) => item.id)),
-        };
-      }
-      if (picked.length !== 2) return undefined;
-      const path = erFanouts(
-        er.relations,
-        picked[0] as string,
-        picked[1] as string,
-      );
-      if (!path) return { nodes: new Set(picked), wires: new Set() };
-      fanouts = path.fanouts.map((item) => ({
-        wire: item.relation,
-        from: item.from,
-        to: item.to,
-      }));
-      return { nodes: new Set(path.tables), wires: new Set(path.relations) };
-    },
-    afterRender: (figure, layout, view) => {
-      const stage = figure.querySelector(".mdmark-diagram-stage");
-      const box = figure.querySelector(".mdmark-diagram-box");
-      if (!stage || !box) return;
-      const old = figure.querySelectorAll(
-        `.map-er-fanout, .mdmark-diagram-tip[id^="${frameId}-fanout-tip-"]`,
-      );
-      for (const element of old) element.remove();
-      if (view.selected.size !== 2) fanouts = [];
-      const part = renderMapErFanouts({ layout, fanouts, id: frameId });
-      stage.insertAdjacentHTML("beforeend", part.html);
-      box.insertAdjacentHTML("beforeend", part.tips);
-      // 図のツールチップを、追加・削除したマーカーの説明に付け替える
-      if (old.length > 0 || fanouts.length > 0)
-        figure.dispatchEvent(new Event(DIAGRAM_REDRAW_EVENT));
+        if (!path) return { nodes: new Set(picked), wires: new Set() };
+        fanouts = path.fanouts.map((item) => ({
+          wire: item.relation,
+          from: item.from,
+          to: item.to,
+        }));
+        return { nodes: new Set(path.tables), wires: new Set(path.relations) };
+      },
+      afterRender: (figure, layout, view) => {
+        const stage = figure.querySelector(".mdmark-diagram-stage");
+        const box = figure.querySelector(".mdmark-diagram-box");
+        if (!stage || !box) return;
+        const old = figure.querySelectorAll(
+          `.map-er-fanout, .mdmark-diagram-tip[id^="${frameId}-fanout-tip-"]`,
+        );
+        for (const element of old) element.remove();
+        if (view.selected.size !== 2) fanouts = [];
+        const part = renderMapErFanouts({ layout, fanouts, id: frameId });
+        stage.insertAdjacentHTML("beforeend", part.html);
+        box.insertAdjacentHTML("beforeend", part.tips);
+        // 図のツールチップを、追加・削除したマーカーの説明に付け替える
+        if (old.length > 0 || fanouts.length > 0)
+          figure.dispatchEvent(new Event(DIAGRAM_REDRAW_EVENT));
+      },
     },
   });
 };

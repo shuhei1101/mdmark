@@ -79,6 +79,66 @@ export function isViewIconName(name: string): name is ViewIconName {
   return (VIEW_ICON_NAMES as readonly string[]).includes(name);
 }
 
+/** 空でなく重ならない文字列を 1 つ以上並べた配列か */
+function isColumnList(columns: unknown): columns is string[] {
+  return (
+    Array.isArray(columns) &&
+    columns.length > 0 &&
+    columns.every((column) => typeof column === "string" && column !== "") &&
+    new Set(columns).size === columns.length
+  );
+}
+
+/** 文字列の値だけを持つオブジェクトの配列か */
+function isItemList(items: unknown): boolean {
+  return (
+    Array.isArray(items) &&
+    items.every(
+      (item) =>
+        isRecord(item) &&
+        Object.values(item).every((v) => typeof v === "string"),
+    )
+  );
+}
+
+/** 列名のどれかか（省略を含む） */
+function isGroupOption(group: unknown, names: string[]): boolean {
+  return (
+    group === undefined || (typeof group === "string" && names.includes(group))
+  );
+}
+
+/** 列名をキーに絞り込みの種類を値にしたオブジェクトか（省略を含む） */
+function isFilterOption(filter: unknown, names: string[]): boolean {
+  return (
+    filter === undefined ||
+    (isRecord(filter) &&
+      Object.entries(filter).every(
+        ([name, kind]) =>
+          names.includes(name) && FILTER_KINDS.includes(kind as FilterKind),
+      ))
+  );
+}
+
+/** `board` か `table`（`board` は `group` があるときだけ）か（省略を含む） */
+function isModeOption(mode: unknown, group: unknown): boolean {
+  if (mode === undefined || mode === "table") {
+    return true;
+  }
+  return mode === "board" && group !== undefined;
+}
+
+/** 値からアイコンの名前を参照するオブジェクトか（省略を含む） */
+function isIconsOption(icons: unknown): boolean {
+  return (
+    icons === undefined ||
+    (isRecord(icons) &&
+      Object.values(icons).every(
+        (name) => typeof name === "string" && isViewIconName(name),
+      ))
+  );
+}
+
 /** `mountView` の引数がインターフェース定義のとおりかを確認し、合わなければ誤った引数の名前を含む `TypeError` を投げる */
 export function checkViewOptions(
   el: unknown,
@@ -91,67 +151,32 @@ export function checkViewOptions(
     throw new TypeError("opts はオブジェクトで指定してください");
   }
   const { columns, items, group, filter, icons } = opts;
-  if (
-    !Array.isArray(columns) ||
-    columns.length === 0 ||
-    columns.some((column) => typeof column !== "string" || column === "") ||
-    new Set(columns).size !== columns.length
-  ) {
+  if (!isColumnList(columns)) {
     throw new TypeError(
       "opts.columns は、空でなく重ならない文字列を 1 つ以上並べた配列で指定してください",
     );
   }
-  const names = columns as string[];
-  if (
-    !Array.isArray(items) ||
-    items.some(
-      (item) =>
-        !isRecord(item) ||
-        Object.values(item).some((v) => typeof v !== "string"),
-    )
-  ) {
+  if (!isItemList(items)) {
     throw new TypeError(
       "opts.items は、列名をキーに文字列の値を持つオブジェクトの配列で指定してください",
     );
   }
-  if (
-    group !== undefined &&
-    (typeof group !== "string" || !names.includes(group))
-  ) {
+  if (!isGroupOption(group, columns)) {
     throw new TypeError(
       "opts.group は opts.columns のどれかで指定してください",
     );
   }
-  if (filter !== undefined) {
-    if (
-      !isRecord(filter) ||
-      Object.entries(filter).some(
-        ([name, kind]) =>
-          !names.includes(name) || !FILTER_KINDS.includes(kind as FilterKind),
-      )
-    ) {
-      throw new TypeError(
-        `opts.filter は、opts.columns のどれかをキーに ${FILTER_KINDS.join("・")} のどれかを値にしたオブジェクトで指定してください`,
-      );
-    }
+  if (!isFilterOption(filter, columns)) {
+    throw new TypeError(
+      `opts.filter は、opts.columns のどれかをキーに ${FILTER_KINDS.join("・")} のどれかを値にしたオブジェクトで指定してください`,
+    );
   }
-  const mode = opts.default;
-  if (
-    mode !== undefined &&
-    ((mode !== "board" && mode !== "table") ||
-      (mode === "board" && group === undefined))
-  ) {
+  if (!isModeOption(opts.default, group)) {
     throw new TypeError(
       "opts.default は board か table で指定してください（board は opts.group があるときだけ）",
     );
   }
-  if (
-    icons !== undefined &&
-    (!isRecord(icons) ||
-      Object.values(icons).some(
-        (name) => typeof name !== "string" || !isViewIconName(name),
-      ))
-  ) {
+  if (!isIconsOption(icons)) {
     throw new TypeError(
       `opts.icons は、値からアイコンの名前を参照するオブジェクトで指定してください。使用できるアイコンは ${VIEW_ICON_NAMES.join("・")} です`,
     );

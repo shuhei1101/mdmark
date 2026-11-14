@@ -154,6 +154,37 @@ export async function loadDiffPair(options: {
   };
 }
 
+/** 描いた文書の 1 つの要素を色分けの単位に分ける: リストは項目ごと、表は表と行ごと、それ以外は 1 つのブロック */
+function blockEntries(
+  child: HTMLElement,
+  start: number,
+): Omit<BlockRange, "end">[] {
+  if (child.matches("ul, ol")) {
+    return [...child.children]
+      .filter(
+        (item): item is HTMLElement =>
+          item instanceof HTMLElement && item.matches("li"),
+      )
+      .map((item) => ({
+        element: item,
+        unit: "item" as const,
+        start: lineOf(item) ?? start,
+      }));
+  }
+  const entries: Omit<BlockRange, "end">[] = [
+    { element: child, unit: "block", start },
+  ];
+  if (child.matches(TABLE)) {
+    for (const row of child.querySelectorAll<HTMLElement>("tbody > tr")) {
+      const rowStart = lineOf(row);
+      if (rowStart !== undefined) {
+        entries.push({ element: row, unit: "row", start: rowStart });
+      }
+    }
+  }
+  return entries;
+}
+
 /** 描いた文書の要素を色分けの単位のブロックに分け、元の行の範囲を付けて上から順に返却する */
 export function collectBlockRanges(options: {
   /** 描いた文書の中身 */
@@ -173,29 +204,8 @@ export function collectBlockRanges(options: {
         continue;
       }
       const start = lineOf(child);
-      if (start === undefined) {
-        continue;
-      }
-      if (child.matches("ul, ol")) {
-        for (const item of child.children) {
-          if (item instanceof HTMLElement && item.matches("li")) {
-            entries.push({
-              element: item,
-              unit: "item",
-              start: lineOf(item) ?? start,
-            });
-          }
-        }
-      } else if (child.matches(TABLE)) {
-        entries.push({ element: child, unit: "block", start });
-        for (const row of child.querySelectorAll<HTMLElement>("tbody > tr")) {
-          const rowStart = lineOf(row);
-          if (rowStart !== undefined) {
-            entries.push({ element: row, unit: "row", start: rowStart });
-          }
-        }
-      } else {
-        entries.push({ element: child, unit: "block", start });
+      if (start !== undefined) {
+        entries.push(...blockEntries(child, start));
       }
     }
   };
@@ -285,6 +295,157 @@ function classifyLines(options: {
   return map;
 }
 
+/** ブロックの範囲の、空白だけでない行番号 */
+function contentLines(texts: string[], range: BlockRange): number[] {
+  const result: number[] = [];
+  const last = Math.min(range.end, texts.length - 1);
+  for (let line = range.start; line <= last; line += 1) {
+    if (!isBlank(texts[line])) {
+      result.push(line);
+    }
+  }
+  return result;
+}
+
+/** 同じ単位のブロックのうち、行を範囲に含む最も狭いもの */
+function ownerOf(
+  ranges: BlockRange[],
+  unit: BlockUnit,
+  line: number,
+): BlockRange | undefined {
+  return ranges
+    .filter(
+      (candidate) =>
+        candidate.unit === unit &&
+        candidate.start <= line &&
+        line <= candidate.end,
+    )
+    .reduce<BlockRange | undefined>(
+      (narrowest, candidate) =>
+        narrowest === undefined ||
+        candidate.end - candidate.start < narrowest.end - narrowest.start
+          ? candidate
+          : narrowest,
+      undefined,
+    );
+}
+
+/** ブロックの開始の行が動いた（空行で分けた・つないだ）後のブロック */
+function regroupedRanges(options: {
+  lines: LineMap;
+  beforeRanges: BlockRange[];
+  afterRanges: BlockRange[];
+}): Set<BlockRange> {
+  const { lines, beforeRanges, afterRanges } = options;
+  /** `same` の後の行番号から前の行番号 */
+  const sameAfter = new Map(
+    [...lines.same].map(([beforeLine, afterLine]) => [afterLine, beforeLine]),
+  );
+  const regrouped = new Set<BlockRange>();
+  for (const range of afterRanges) {
+    const beforeLine = sameAfter.get(range.start);
+    const owner =
+      beforeLine === undefined
+        ? undefined
+        : ownerOf(beforeRanges, range.unit, beforeLine);
+    if (owner === undefined || owner.start === beforeLine) {
+      continue;
+    }
+    // 前の 1 つのブロックの途中から始まる後のブロックと、そのブロックの頭から始まる後のブロック
+    regrouped.add(range);
+    const head = lines.same.get(owner.start);
+    const headRange =
+      head === undefined ? undefined : ownerOf(afterRanges, range.unit, head);
+    if (headRange !== undefined) {
+      regrouped.add(headRange);
+    }
+  }
+  for (const owner of splitOwners({ lines, beforeRanges, afterRanges })) {
+    regrouped.add(owner);
+  }
+  return regrouped;
+}
+
+/** 前のブロックの開始の行を途中に含む後のブロック */
+function splitOwners(options: {
+  lines: LineMap;
+  beforeRanges: BlockRange[];
+  afterRanges: BlockRange[];
+}): BlockRange[] {
+  const { lines, beforeRanges, afterRanges } = options;
+  return beforeRanges.flatMap((range) => {
+    const afterLine = lines.same.get(range.start);
+    const owner =
+      afterLine === undefined
+        ? undefined
+        : ownerOf(afterRanges, range.unit, afterLine);
+    return owner !== undefined && owner.start !== afterLine ? [owner] : [];
+  });
+}
+
+/** 同じ変えた塊の中で、削除の候補と追加のブロックを前から順に対にし、書き換えの対の削除の候補を返却する */
+function rewrittenRemovals(options: {
+  removals: Removal[];
+  adds: BlockRange[];
+  chunkOf: (range: BlockRange) => number;
+  compare: { segmenter: Intl.Segmenter | undefined; engine: DiffEngine };
+}): Set<Removal> {
+  const { removals, adds, chunkOf, compare } = options;
+  const chunks = new Map<number, { removals: Removal[]; adds: BlockRange[] }>();
+  const chunkEntry = (chunk: number) => {
+    const entry = chunks.get(chunk) ?? { removals: [], adds: [] };
+    chunks.set(chunk, entry);
+    return entry;
+  };
+  for (const removal of removals) {
+    chunkEntry(removal.chunk).removals.push(removal);
+  }
+  for (const range of adds) {
+    chunkEntry(chunkOf(range)).adds.push(range);
+  }
+  const dropped = new Set<Removal>();
+  for (const entry of chunks.values()) {
+    entry.removals.forEach((removal, position) => {
+      const range = entry.adds[position];
+      if (
+        range !== undefined &&
+        isRewrite({
+          before: removal.text,
+          after: range.element.textContent ?? "",
+          ...compare,
+        })
+      ) {
+        dropped.add(removal);
+      }
+    });
+  }
+  return dropped;
+}
+
+/** 追加のブロックに色を適用する。本文のブロックは元の要素を包みの中へ移し（中の項目・行の範囲が指す要素を保つ）、項目と行は要素そのものに色を適用する */
+function colorAddedRanges(ranges: BlockRange[]): void {
+  for (const range of ranges) {
+    if (range.unit === "block") {
+      const wrapper = parseElement(
+        renderDiffBlock({ kind: "add", unit: "block", html: "" }),
+      );
+      range.element.replaceWith(wrapper);
+      wrapper.append(range.element);
+      range.element = wrapper;
+      continue;
+    }
+    const colored = parseElement(
+      renderDiffBlock({
+        kind: "add",
+        unit: range.unit,
+        html: range.element.outerHTML,
+      }),
+    );
+    range.element.replaceWith(colored);
+    range.element = colored;
+  }
+}
+
 /** 前と後の Markdown を行で比べ、後の文書を描いた中身に追加の色を当て、前の文書から削除したブロックを前の位置に差し込む。`after.root` を書き換え、`before.root` の要素を `after.root` へ複製する */
 export function colorDiffBlocks(options: {
   before: Side;
@@ -309,114 +470,38 @@ export function colorDiffBlocks(options: {
     return;
   }
   const lines = classifyLines({ diff, texts });
-  /** `same` の後の行番号から前の行番号 */
-  const sameAfter = new Map(
-    [...lines.same].map(([beforeLine, afterLine]) => [afterLine, beforeLine]),
-  );
-  const beforeCount = lines.texts.before.length;
-  const afterCount = lines.texts.after.length;
   const beforeRanges = collectBlockRanges({
     root: before.root,
-    lineCount: beforeCount,
+    lineCount: lines.texts.before.length,
   });
   const afterRanges = collectBlockRanges({
     root: after.root,
-    lineCount: afterCount,
+    lineCount: lines.texts.after.length,
   });
-
-  /** ブロックの範囲の、空白だけでない行番号 */
-  const contentLines = (
-    range: BlockRange,
-    side: "before" | "after",
-  ): number[] => {
-    const texts = lines.texts[side];
-    const result: number[] = [];
-    for (
-      let line = range.start;
-      line <= Math.min(range.end, texts.length - 1);
-      line += 1
-    ) {
-      if (!isBlank(texts[line])) {
-        result.push(line);
-      }
-    }
-    return result;
-  };
-  /** 同じ単位のブロックのうち、行を範囲に含む最も狭いもの */
-  const ownerOf = (
-    ranges: BlockRange[],
-    unit: BlockUnit,
-    line: number,
-  ): BlockRange | undefined =>
-    ranges
-      .filter(
-        (candidate) =>
-          candidate.unit === unit &&
-          candidate.start <= line &&
-          line <= candidate.end,
-      )
-      .reduce<BlockRange | undefined>(
-        (narrowest, candidate) =>
-          narrowest === undefined ||
-          candidate.end - candidate.start < narrowest.end - narrowest.start
-            ? candidate
-            : narrowest,
-        undefined,
-      );
-  /** ブロックの開始の行が動いた（空行で分けた・つないだ）後のブロック */
-  const regrouped = new Set<BlockRange>();
-  for (const range of afterRanges) {
-    const beforeLine = sameAfter.get(range.start);
-    if (beforeLine === undefined) {
-      continue;
-    }
-    const owner = ownerOf(beforeRanges, range.unit, beforeLine);
-    if (owner === undefined || owner.start === beforeLine) {
-      continue;
-    }
-    // 前の 1 つのブロックの途中から始まる後のブロックと、そのブロックの頭から始まる後のブロック
-    regrouped.add(range);
-    const head = lines.same.get(owner.start);
-    const headRange =
-      head === undefined ? undefined : ownerOf(afterRanges, range.unit, head);
-    if (headRange !== undefined) {
-      regrouped.add(headRange);
-    }
-  }
-  for (const range of beforeRanges) {
-    const afterLine = lines.same.get(range.start);
-    if (afterLine === undefined) {
-      continue;
-    }
-    // 前のブロックの開始の行を途中に含む後のブロック
-    const owner = ownerOf(afterRanges, range.unit, afterLine);
-    if (owner !== undefined && owner.start !== afterLine) {
-      regrouped.add(owner);
-    }
-  }
+  const regrouped = regroupedRanges({ lines, beforeRanges, afterRanges });
   /** 後のブロックの範囲に空白だけでない追加した行があるか、分け直したブロックか */
   const isAdded = (range: BlockRange): boolean =>
-    contentLines(range, "after").some((line) => lines.added.has(line)) ||
-    regrouped.has(range);
+    contentLines(lines.texts.after, range).some((line) =>
+      lines.added.has(line),
+    ) || regrouped.has(range);
   /** 前のブロックの範囲の行が全て削除した行か */
   const isRemoved = (range: BlockRange): boolean => {
-    const content = contentLines(range, "before");
+    const content = contentLines(lines.texts.before, range);
     return content.length > 0 && content.every((l) => lines.deleted.has(l));
   };
   /** ブロックが属する変えた塊の番号 */
   const chunkOf = (range: BlockRange, side: "before" | "after"): number => {
     const chunks = side === "before" ? lines.chunkBefore : lines.chunkAfter;
-    const line = contentLines(range, side).find((l) => chunks.has(l));
+    const line = contentLines(lines.texts[side], range).find((l) =>
+      chunks.has(l),
+    );
     return line === undefined ? -1 : (chunks.get(line) ?? -1);
   };
 
-  const beforeByElement = new Map(
-    beforeRanges.map((range) => [range.element, range]),
-  );
   const removals = collectRemovals({
     root: before.root,
     ranges: beforeRanges,
-    byElement: beforeByElement,
+    byElement: new Map(beforeRanges.map((range) => [range.element, range])),
     isRemoved,
     chunkOf: (range) => chunkOf(range, "before"),
   });
@@ -429,60 +514,14 @@ export function colorDiffBlocks(options: {
         (other) => other !== range && other.element.contains(range.element),
       ),
   );
-
-  // 同じ変えた塊の中で、削除の候補と追加のブロックを前から順に対にし、書き換えなら削除を出さない
-  const dropped = new Set<Removal>();
-  const chunks = new Map<number, { removals: Removal[]; adds: BlockRange[] }>();
-  const chunkEntry = (chunk: number) => {
-    const entry = chunks.get(chunk) ?? { removals: [], adds: [] };
-    chunks.set(chunk, entry);
-    return entry;
-  };
-  for (const removal of removals) {
-    chunkEntry(removal.chunk).removals.push(removal);
-  }
-  for (const range of outermostAdded) {
-    chunkEntry(chunkOf(range, "after")).adds.push(range);
-  }
-  for (const entry of chunks.values()) {
-    entry.removals.forEach((removal, position) => {
-      const range = entry.adds[position];
-      if (
-        range !== undefined &&
-        isRewrite({
-          before: removal.text,
-          after: range.element.textContent ?? "",
-          segmenter,
-          engine,
-        })
-      ) {
-        dropped.add(removal);
-      }
-    });
-  }
-
-  // 追加のブロックに色を適用する。本文のブロックは元の要素を包みの中へ移し（中の項目・行の範囲が指す要素を保つ）、項目と行は要素そのものに色を適用する
-  for (const range of outermostAdded) {
-    if (range.unit === "block") {
-      const wrapper = parseElement(
-        renderDiffBlock({ kind: "add", unit: "block", html: "" }),
-      );
-      range.element.replaceWith(wrapper);
-      wrapper.append(range.element);
-      range.element = wrapper;
-      continue;
-    }
-    const colored = parseElement(
-      renderDiffBlock({
-        kind: "add",
-        unit: range.unit,
-        html: range.element.outerHTML,
-      }),
-    );
-    range.element.replaceWith(colored);
-    range.element = colored;
-  }
-
+  // 書き換えなら削除を出さない
+  const dropped = rewrittenRemovals({
+    removals,
+    adds: outermostAdded,
+    chunkOf: (range) => chunkOf(range, "after"),
+    compare: { segmenter, engine },
+  });
+  colorAddedRanges(outermostAdded);
   insertRemovals({
     removals: removals.filter((removal) => !dropped.has(removal)),
     afterRoot: after.root,
@@ -518,51 +557,70 @@ function collectRemovals(options: {
       text: elements.map((element) => element.textContent ?? "").join(""),
     });
   };
+  /** 見出しとセクションの中身: 見出しと中身が全て消えたら 1 つにまとめる */
+  const visitSection = (
+    heading: HTMLElement,
+    body: HTMLElement,
+    range: BlockRange | undefined,
+  ): void => {
+    const headingRemoved = range !== undefined && isRemoved(range);
+    if (headingRemoved && allRemoved(body)) {
+      push([heading, body], "block", range);
+      return;
+    }
+    if (headingRemoved) {
+      push([heading], "block", range);
+    }
+    visit(body);
+  };
+  /** リスト: 項目が全て消えたら 1 つにまとめ、それ以外は消えた項目ごと */
+  const visitList = (list: HTMLElement): void => {
+    const items = [...list.children]
+      .map((item) => byElement.get(item))
+      .filter((item): item is BlockRange => item !== undefined);
+    const first = items[0];
+    if (first !== undefined && items.every(isRemoved)) {
+      push([list], "block", first);
+      return;
+    }
+    for (const item of items.filter(isRemoved)) {
+      push([item.element], "item", item);
+    }
+  };
+  /** 表: 表と行が全て消えたら 1 つにまとめ、それ以外は消えた行ごと */
+  const visitTable = (
+    table: HTMLElement,
+    range: BlockRange | undefined,
+  ): void => {
+    const rows = ranges.filter(
+      (item) => item.unit === "row" && table.contains(item.element),
+    );
+    if (range !== undefined && isRemoved(range) && rows.every(isRemoved)) {
+      push([table], "block", range);
+      return;
+    }
+    for (const row of rows.filter(isRemoved)) {
+      push([row.element], "row", row);
+    }
+  };
+  /** 要素 1 つを、種類ごとに消えたブロックにする */
+  const visitChild = (child: HTMLElement): void => {
+    const range = byElement.get(child);
+    const body = child.nextElementSibling;
+    if (HEADING.test(child.tagName) && body?.matches(SECTION_BODY)) {
+      visitSection(child, body as HTMLElement, range);
+    } else if (child.matches("ul, ol")) {
+      visitList(child);
+    } else if (child.matches(TABLE)) {
+      visitTable(child, range);
+    } else if (range !== undefined && isRemoved(range)) {
+      push([child], "block", range);
+    }
+  };
   const visit = (parent: ParentNode): void => {
     for (const child of [...parent.children]) {
-      if (!(child instanceof HTMLElement) || child.matches(SECTION_BODY)) {
-        continue;
-      }
-      const range = byElement.get(child);
-      const body = child.nextElementSibling;
-      if (HEADING.test(child.tagName) && body?.matches(SECTION_BODY)) {
-        if (range !== undefined && isRemoved(range) && allRemoved(body)) {
-          push([child, body as HTMLElement], "block", range);
-        } else {
-          if (range !== undefined && isRemoved(range)) {
-            push([child], "block", range);
-          }
-          visit(body);
-        }
-      } else if (child.matches("ul, ol")) {
-        const items = [...child.children]
-          .map((item) => byElement.get(item))
-          .filter((item): item is BlockRange => item !== undefined);
-        const first = items[0];
-        if (first !== undefined && items.every(isRemoved)) {
-          push([child], "block", first);
-        } else {
-          for (const item of items) {
-            if (isRemoved(item)) {
-              push([item.element], "item", item);
-            }
-          }
-        }
-      } else if (child.matches(TABLE)) {
-        const rows = ranges.filter(
-          (item) => item.unit === "row" && child.contains(item.element),
-        );
-        if (range !== undefined && isRemoved(range) && rows.every(isRemoved)) {
-          push([child], "block", range);
-        } else {
-          for (const row of rows) {
-            if (isRemoved(row)) {
-              push([row.element], "row", row);
-            }
-          }
-        }
-      } else if (range !== undefined && isRemoved(range)) {
-        push([child], "block", range);
+      if (child instanceof HTMLElement && !child.matches(SECTION_BODY)) {
+        visitChild(child);
       }
     }
   };
@@ -632,6 +690,76 @@ function insertRemovals(options: {
     lastFirst.set(parent, inserted);
   };
 
+  /** 項目と行: 前の文書で直前にあった項目・行の後ろ。無ければ、対応する項目・行を持つリスト・表の先頭 */
+  const insertItem = (
+    first: HTMLElement,
+    inserted: HTMLElement,
+    unit: BlockUnit,
+  ): void => {
+    for (
+      let sibling = first.previousElementSibling;
+      sibling !== null;
+      sibling = sibling.previousElementSibling
+    ) {
+      const range = counterpart(sibling, unit);
+      if (range !== undefined) {
+        insertAfter(range.element, inserted);
+        return;
+      }
+    }
+    for (
+      let sibling = first.nextElementSibling;
+      sibling !== null;
+      sibling = sibling.nextElementSibling
+    ) {
+      const parent = counterpart(sibling, unit)?.element.parentElement;
+      if (parent !== null && parent !== undefined) {
+        insertFirst(parent, inserted);
+        return;
+      }
+    }
+  };
+  /** 前の文書で同じ親の直前にあった、変えていないブロック（見出しならセクションの中身まで） */
+  const previousAnchor = (first: HTMLElement): HTMLElement | undefined => {
+    for (
+      let sibling = first.previousElementSibling;
+      sibling !== null;
+      sibling = sibling.previousElementSibling
+    ) {
+      const range = sibling.matches(SECTION_BODY)
+        ? undefined
+        : counterpart(sibling);
+      if (range !== undefined) {
+        return withSection(topOf(range.element));
+      }
+    }
+    return undefined;
+  };
+  /** ブロック: 前の文書で同じ親の直前にあった変えていないブロックの後ろ。直前に無ければ、前の文書で属していたセクションの中身の先頭。セクションに属さなければ本文の先頭 */
+  const insertBlock = (first: HTMLElement, inserted: HTMLElement): void => {
+    const anchor = previousAnchor(first);
+    if (anchor !== undefined) {
+      insertAfter(anchor, inserted);
+      return;
+    }
+    const parent = first.parentElement;
+    const heading = parent?.matches(SECTION_BODY)
+      ? parent.previousElementSibling
+      : null;
+    const headingRange = heading === null ? undefined : counterpart(heading);
+    if (headingRange === undefined) {
+      insertFirst(afterRoot, inserted);
+      return;
+    }
+    const top = topOf(headingRange.element);
+    const body = withSection(top);
+    if (body === top) {
+      insertAfter(top, inserted);
+    } else {
+      insertFirst(body, inserted);
+    }
+  };
+
   for (const removal of removals) {
     const first = removal.elements[0] as HTMLElement;
     const inserted = parseElement(
@@ -641,69 +769,10 @@ function insertRemovals(options: {
         html: removal.elements.map((element) => element.outerHTML).join(""),
       }),
     );
-    if (removal.unit !== "block") {
-      // 項目と行: 前の文書で直前にあった項目・行の後ろ。無ければ、対応する項目・行を持つリスト・表の先頭
-      let placed = false;
-      for (
-        let sibling = first.previousElementSibling;
-        sibling !== null && !placed;
-        sibling = sibling.previousElementSibling
-      ) {
-        const range = counterpart(sibling, removal.unit);
-        if (range !== undefined) {
-          insertAfter(range.element, inserted);
-          placed = true;
-        }
-      }
-      for (
-        let sibling = first.nextElementSibling;
-        sibling !== null && !placed;
-        sibling = sibling.nextElementSibling
-      ) {
-        const parent = counterpart(sibling, removal.unit)?.element
-          .parentElement;
-        if (parent !== null && parent !== undefined) {
-          insertFirst(parent, inserted);
-          placed = true;
-        }
-      }
-      continue;
-    }
-    // ブロック: 前の文書で同じ親の直前にあった変えていないブロックの後ろ
-    let anchor: HTMLElement | undefined;
-    for (
-      let sibling = first.previousElementSibling;
-      sibling !== null && anchor === undefined;
-      sibling = sibling.previousElementSibling
-    ) {
-      if (sibling.matches(SECTION_BODY)) {
-        continue;
-      }
-      const range = counterpart(sibling);
-      if (range !== undefined) {
-        anchor = withSection(topOf(range.element));
-      }
-    }
-    if (anchor !== undefined) {
-      insertAfter(anchor, inserted);
-      continue;
-    }
-    // 直前に無ければ、前の文書で属していたセクションの中身の先頭。セクションに属さなければ本文の先頭
-    const parent = first.parentElement;
-    const heading = parent?.matches(SECTION_BODY)
-      ? parent.previousElementSibling
-      : null;
-    const headingRange = heading === null ? undefined : counterpart(heading);
-    if (heading !== null && headingRange !== undefined) {
-      const top = topOf(headingRange.element);
-      const body = withSection(top);
-      if (body === top) {
-        insertAfter(top, inserted);
-      } else {
-        insertFirst(body, inserted);
-      }
+    if (removal.unit === "block") {
+      insertBlock(first, inserted);
     } else {
-      insertFirst(afterRoot, inserted);
+      insertItem(first, inserted, removal.unit);
     }
   }
 }

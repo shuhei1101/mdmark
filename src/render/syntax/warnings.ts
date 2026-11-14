@@ -83,14 +83,14 @@ function makeWarningToken(
   return token;
 }
 
-/** 記載の警告の HTML にマーカーを掛けて `html_block` にし、`index` の位置に差し込む。`source` は警告の元になったマーカーのトークン（範囲なら開きのマーカー）で、その行を警告の場所にする */
+/** 記載の警告の HTML にマーカーを掛けて `html_block` にし、`index` の位置に差し込む。`warning.source` は警告の元になったマーカーのトークン（範囲なら開きのマーカー）で、その行を警告の場所にする */
 export function pushWarning(
   state: StateCore,
   index: number,
-  warning: SyntaxWarning,
-  source?: Token,
+  warning: SyntaxWarning & { source?: Token },
 ): void {
-  state.tokens.splice(index, 0, makeWarningToken(state, warning, source));
+  const { source, ...rest } = warning;
+  state.tokens.splice(index, 0, makeWarningToken(state, rest, source));
 }
 
 /** 記載の警告の `html_block` を作る（差し込む位置を呼ぶ側が決めるとき）。`source` は `pushWarning` と同じ */

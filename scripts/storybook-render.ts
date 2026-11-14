@@ -857,6 +857,138 @@ const mapFrame = (
     { ...part, ...size },
   );
 
+/** 見本のグラフの部品の定義を、引数の見本・種類・系列の数から選ぶ */
+function chartStoryDefinition(args: PartArgs): MdmarkChartDefinition {
+  if (typeof args.sample === "string") {
+    return mockChart(args.sample);
+  }
+  if (args.type === "bar") {
+    return args.series === 4 ? BAR_FOUR_SAMPLE : BAR_SAMPLE;
+  }
+  if (args.type === "pie") {
+    return PIE_SAMPLE;
+  }
+  if (args.type === "scatter") {
+    return SCATTER_SAMPLE;
+  }
+  const definition = sampleDefinition<MdmarkChartDefinition>("reply-time");
+  if (args.series === 4) {
+    // 色と模様の組の全てを見せるため、見本の 2 つの系列に 2 つ追加する
+    definition.series?.push(
+      { name: "夜間", points: [20, 18, 25, 16, 22] },
+      { name: "休日", points: [30, 28, 35, 26, 32] },
+    );
+  }
+  return definition;
+}
+
+/** 注記の区分を持つツールチップのストーリー */
+function annotatedTipStory(args: PartArgs, open: boolean): string {
+  // 注記の区分を持つツールチップ: ノードのマーカーか、注記だけを持つ線の押せる帯の上に出す
+  const hint = args.kind === "hint";
+  const tip = renderDiagramTip({
+    id: "story-tip",
+    kind: hint ? "hint" : "wire",
+    label: hint ? "判定" : "判定 → 次の工程",
+    ...(typeof args.hint === "string" ? { hint: args.hint } : {}),
+    annotations: args.annotations as Array<{
+      number: number;
+      html: string;
+    }>,
+    open,
+  }).replace(
+    'role="tooltip"',
+    'role="tooltip" style="position:absolute;inset-block:auto 100%;inset-inline-start:0.5rem"',
+  );
+  const owner = hint
+    ? '<button class="mdmark-diagram-info" type="button" aria-label="「判定」の説明と注記" aria-describedby="story-tip">i</button>'
+    : '<svg width="160" height="40" aria-hidden="true"><path class="mdmark-diagram-wire" d="M0 20 L160 20" stroke-width="1.5" style="stroke:var(--mdmark-color-diagram-line)"></path></svg>';
+  return `<div style="padding-block-start:${open ? "11rem" : "0"}"><div class="mdmark-diagram-box" style="min-height:11rem;padding:1rem">${owner}${tip}</div></div>`;
+}
+
+/** ER 図のテーブルの説明のツールチップのストーリー */
+function tableTipStory(open: boolean): string {
+  // ER 図の注文のテーブルの説明のボタンで開いた状態: テーブルの上に出す
+  const orders = mockEr("shop-er").tables.find((t) => t.id === "orders");
+  const table = renderDiagramTip({
+    id: "story-tip",
+    kind: "table",
+    label: orders?.label ?? "",
+    ...(orders ? { table: orders } : {}),
+    open,
+  }).replace(
+    'role="tooltip"',
+    'role="tooltip" style="position:absolute;inset-block:auto 100%;inset-inline-start:0.5rem"',
+  );
+  return `<div style="padding-block-start:16rem"><div class="mdmark-diagram-box" style="min-height:11rem;padding:1rem"><button class="mdmark-diagram-info" type="button" aria-label="「注文」の説明" aria-describedby="story-tip">i</button>${table}</div></div>`;
+}
+
+/** 折れ線の点・map の構成図のグループのタイトルのマーカーのツールチップのストーリー */
+function itemOrGroupTipStory(args: PartArgs, open: boolean): string {
+  // 折れ線の点・map の構成図のグループのタイトルのマーカーで開いた状態: 持ち主の下に出す
+  const tip = (
+    args.kind === "item"
+      ? renderDiagramTip({
+          id: "story-tip",
+          kind: "item",
+          label: "一次回答",
+          value: "水: 18 分",
+          open,
+        })
+      : renderDiagramTip({
+          id: "story-tip",
+          kind: "hint",
+          label: "記法の読み取り",
+          hint: "記法を読み取る部分",
+          open,
+        })
+  ).replace(
+    'role="tooltip"',
+    'role="tooltip" style="position:absolute;inset-block-start:3rem;inset-inline-start:0.5rem"',
+  );
+  const owner =
+    args.kind === "item"
+      ? '<svg width="40" height="40" aria-hidden="true"><circle class="mdmark-diagram-item-hit" cx="20" cy="20" r="12" tabindex="0" aria-describedby="story-tip"></circle></svg>'
+      : '<div class="map-group-head"><button class="map-group-title" type="button">記法の読み取り</button><button class="mdmark-diagram-info mdmark-diagram-group-info" type="button" aria-label="「記法の読み取り」の説明" aria-describedby="story-tip">i</button></div>';
+  return `<div style="padding-block-end:${open ? "8rem" : "0"}"><div class="mdmark-diagram-box" style="min-height:11rem;padding:1rem">${owner}${tip}</div></div>`;
+}
+
+/** ノードのマーカー・線のラベル・用語のツールチップのストーリー */
+function plainTipStory(args: PartArgs, open: boolean): string {
+  const kind = args.kind === "hint" ? "hint" : "wire";
+  const tip =
+    args.term === true
+      ? renderDiagramTip({
+          id: "story-tip",
+          kind: "wire",
+          label: "用語",
+          tip: SAMPLE_TERMS.意思決定モデル ?? "",
+          open,
+        })
+      : renderDiagramTip({
+          id: "story-tip",
+          kind,
+          label: "本文",
+          tip: "件名を除いた本文。署名と引用は落とす",
+          ...(kind === "hint" ? { hint: NODE_HINT_TEXT } : {}),
+          open,
+        });
+  // 開いた状態は、ノードの上端の上に出す（画面に対する位置は操作が決める）。ノードの上に余白を取る
+  const placedTip = open
+    ? tip.replace(
+        'role="tooltip"',
+        'role="tooltip" style="position:absolute;inset-block:auto 100%;inset-inline-start:0.5rem"',
+      )
+    : tip;
+  const owner =
+    args.term === true
+      ? '<span class="mdmark-term" tabindex="0" aria-describedby="story-tip">意思決定モデル</span>'
+      : kind === "hint"
+        ? '<button class="mdmark-diagram-info" type="button" aria-label="「窓口の MCP」の説明" aria-describedby="story-tip">i</button>'
+        : '<span class="mdmark-diagram-label has-tip" tabindex="0" aria-describedby="story-tip">本文</span>';
+  return `<div style="padding-block-start:${open ? "11rem" : "0"}"><div class="mdmark-diagram-box" style="min-height:11rem;padding:1rem">${owner}${placedTip}</div></div>`;
+}
+
 const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
   "map-flow": (args) => {
     const entered = typeof args.entered === "string" ? args.entered : undefined;
@@ -865,10 +997,13 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
     const layout = layoutMap(
       parseFlowchart(args.source === "long" ? MAP_FLOW_LONG : MAP_FLOW),
       { collapsed, entered },
-      jsonObject(args.ends) === undefined
-        ? {}
-        : { "mount->marker": { ends: jsonObject(args.ends) } },
-      args.node_fit === "width" ? "width" : "height",
+      {
+        overrides:
+          jsonObject(args.ends) === undefined
+            ? {}
+            : { "mount->marker": { ends: jsonObject(args.ends) } },
+        nodeFit: args.node_fit === "width" ? "width" : "height",
+      },
     );
     const focus = jsonObject<{ nodes: string[]; wires: string[] }>(args.focus);
     const selected = jsonList(args.selected);
@@ -930,8 +1065,7 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
     const placed = layoutMap(
       erToFlowchart(er, data.groups),
       { collapsed, entered },
-      erOverrides(er, new Set(collapsed)),
-      "height",
+      { overrides: erOverrides(er, new Set(collapsed)), nodeFit: "height" },
     );
     const layout = {
       ...placed,
@@ -982,8 +1116,7 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
     const layout = layoutMap(
       chart,
       { collapsed, entered },
-      overrides,
-      "height",
+      { overrides, nodeFit: "height" },
     );
     const part = renderMapStateDiagram({
       layout,
@@ -1508,28 +1641,9 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
     if (args.tooMany === true) {
       return tooManySeriesDefinition();
     }
-    let definition: MdmarkChartDefinition;
-    if (typeof args.sample === "string") {
-      definition = mockChart(args.sample);
-    } else if (args.type === "bar") {
-      definition = args.series === 4 ? BAR_FOUR_SAMPLE : BAR_SAMPLE;
-    } else if (args.type === "pie") {
-      definition = PIE_SAMPLE;
-    } else if (args.type === "scatter") {
-      definition = SCATTER_SAMPLE;
-    } else {
-      definition = sampleDefinition<MdmarkChartDefinition>("reply-time");
-      if (args.series === 4) {
-        // 色と模様の組の全てを見せるため、見本の 2 つの系列に 2 つ追加する
-        definition.series?.push(
-          { name: "夜間", points: [20, 18, 25, 16, 22] },
-          { name: "休日", points: [30, 28, 35, 26, 32] },
-        );
-      }
-    }
     const chart = renderDiagram({
       kind: "chart",
-      definition,
+      definition: chartStoryDefinition(args),
       id: "story-chart",
     });
     return args.focusItem === true
@@ -1539,102 +1653,15 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
   "diagram-tooltip": (args) => {
     const open = args.open === true;
     if (args.annotations !== undefined) {
-      // 注記の区分を持つツールチップ: ノードのマーカーか、注記だけを持つ線の押せる帯の上に出す
-      const hint = args.kind === "hint";
-      const tip = renderDiagramTip({
-        id: "story-tip",
-        kind: hint ? "hint" : "wire",
-        label: hint ? "判定" : "判定 → 次の工程",
-        ...(typeof args.hint === "string" ? { hint: args.hint } : {}),
-        annotations: args.annotations as Array<{
-          number: number;
-          html: string;
-        }>,
-        open,
-      }).replace(
-        'role="tooltip"',
-        'role="tooltip" style="position:absolute;inset-block:auto 100%;inset-inline-start:0.5rem"',
-      );
-      const owner = hint
-        ? '<button class="mdmark-diagram-info" type="button" aria-label="「判定」の説明と注記" aria-describedby="story-tip">i</button>'
-        : '<svg width="160" height="40" aria-hidden="true"><path class="mdmark-diagram-wire" d="M0 20 L160 20" stroke-width="1.5" style="stroke:var(--mdmark-color-diagram-line)"></path></svg>';
-      return `<div style="padding-block-start:${open ? "11rem" : "0"}"><div class="mdmark-diagram-box" style="min-height:11rem;padding:1rem">${owner}${tip}</div></div>`;
+      return annotatedTipStory(args, open);
     }
     if (args.kind === "table") {
-      // ER 図の注文のテーブルの説明のボタンで開いた状態: テーブルの上に出す
-      const orders = mockEr("shop-er").tables.find((t) => t.id === "orders");
-      const table = renderDiagramTip({
-        id: "story-tip",
-        kind: "table",
-        label: orders?.label ?? "",
-        ...(orders ? { table: orders } : {}),
-        open,
-      }).replace(
-        'role="tooltip"',
-        'role="tooltip" style="position:absolute;inset-block:auto 100%;inset-inline-start:0.5rem"',
-      );
-      return `<div style="padding-block-start:16rem"><div class="mdmark-diagram-box" style="min-height:11rem;padding:1rem"><button class="mdmark-diagram-info" type="button" aria-label="「注文」の説明" aria-describedby="story-tip">i</button>${table}</div></div>`;
+      return tableTipStory(open);
     }
     if (args.kind === "item" || args.group === true) {
-      // 折れ線の点・map の構成図のグループのタイトルのマーカーで開いた状態: 持ち主の下に出す
-      const tip = (
-        args.kind === "item"
-          ? renderDiagramTip({
-              id: "story-tip",
-              kind: "item",
-              label: "一次回答",
-              value: "水: 18 分",
-              open,
-            })
-          : renderDiagramTip({
-              id: "story-tip",
-              kind: "hint",
-              label: "記法の読み取り",
-              hint: "記法を読み取る部分",
-              open,
-            })
-      ).replace(
-        'role="tooltip"',
-        'role="tooltip" style="position:absolute;inset-block-start:3rem;inset-inline-start:0.5rem"',
-      );
-      const owner =
-        args.kind === "item"
-          ? '<svg width="40" height="40" aria-hidden="true"><circle class="mdmark-diagram-item-hit" cx="20" cy="20" r="12" tabindex="0" aria-describedby="story-tip"></circle></svg>'
-          : '<div class="map-group-head"><button class="map-group-title" type="button">記法の読み取り</button><button class="mdmark-diagram-info mdmark-diagram-group-info" type="button" aria-label="「記法の読み取り」の説明" aria-describedby="story-tip">i</button></div>';
-      return `<div style="padding-block-end:${open ? "8rem" : "0"}"><div class="mdmark-diagram-box" style="min-height:11rem;padding:1rem">${owner}${tip}</div></div>`;
+      return itemOrGroupTipStory(args, open);
     }
-    const kind = args.kind === "hint" ? "hint" : "wire";
-    const tip =
-      args.term === true
-        ? renderDiagramTip({
-            id: "story-tip",
-            kind: "wire",
-            label: "用語",
-            tip: SAMPLE_TERMS.意思決定モデル ?? "",
-            open,
-          })
-        : renderDiagramTip({
-            id: "story-tip",
-            kind,
-            label: "本文",
-            tip: "件名を除いた本文。署名と引用は落とす",
-            ...(kind === "hint" ? { hint: NODE_HINT_TEXT } : {}),
-            open,
-          });
-    // 開いた状態は、ノードの上端の上に出す（画面に対する位置は操作が決める）。ノードの上に余白を取る
-    const placedTip = open
-      ? tip.replace(
-          'role="tooltip"',
-          'role="tooltip" style="position:absolute;inset-block:auto 100%;inset-inline-start:0.5rem"',
-        )
-      : tip;
-    const owner =
-      args.term === true
-        ? '<span class="mdmark-term" tabindex="0" aria-describedby="story-tip">意思決定モデル</span>'
-        : kind === "hint"
-          ? '<button class="mdmark-diagram-info" type="button" aria-label="「窓口の MCP」の説明" aria-describedby="story-tip">i</button>'
-          : '<span class="mdmark-diagram-label has-tip" tabindex="0" aria-describedby="story-tip">本文</span>';
-    return `<div style="padding-block-start:${open ? "11rem" : "0"}"><div class="mdmark-diagram-box" style="min-height:11rem;padding:1rem">${owner}${placedTip}</div></div>`;
+    return plainTipStory(args, open);
   },
   hint: (args) =>
     renderHint({
@@ -1737,6 +1764,58 @@ function highlightCodeBlock(
   );
 }
 
+/** 通知ブロックの部品を、問い合わせの引数で描く */
+function renderNoticePart(params: URLSearchParams): string {
+  const name = params.get("name") ?? "";
+  // 真偽値は問い合わせの文字列で届くため、`"false"` のときだけ偽にする
+  const figure = params.get("figure") !== "false";
+  const requested = params.get("source");
+  const source =
+    requested === "extension" ||
+    requested === "diff-revisions" ||
+    requested === "diff-content" ||
+    requested === "diff-blocks" ||
+    requested === "icons"
+      ? requested
+      : "library";
+  return `<div class="mdmark">${renderNotice({ name, figure, source })}</div>`;
+}
+
+/** 埋め込みの部品を、問い合わせの引数で描く */
+function renderEmbedPart(params: URLSearchParams): string {
+  const name = params.get("name") ?? "";
+  // 引数の JSON のオブジェクトは JSON の文字列で届く
+  const text = params.get("options");
+  const options = text ? (JSON.parse(text) as Record<string, unknown>) : {};
+  return `<div class="mdmark">${renderEmbed({ name, options })}</div>`;
+}
+
+/** mermaid の図の部品を、問い合わせの引数で描く。見本の SVG が無ければ `undefined` */
+function renderMermaidPart(params: URLSearchParams): string | undefined {
+  // 見本の SVG はファイルの名前で届く
+  const html = renderMermaidStory({
+    svg: params.get("svg") ?? "",
+    printSvg: params.get("printSvg") ?? undefined,
+    title: params.get("title") ?? "",
+  });
+  if (html === undefined) {
+    return undefined;
+  }
+  const className =
+    params.get("scheme") === "dark" ? "mdmark mdmark-theme-dark" : "mdmark";
+  return `<div class="${className}">${html}${DIAGRAM_FIT_MARKER}</div>`;
+}
+
+/** 問い合わせの引数をそのまま受けて描く部品 */
+const QUERY_PART_RENDERERS: Record<
+  string,
+  (params: URLSearchParams) => string | undefined
+> = {
+  notice: renderNoticePart,
+  embed: renderEmbedPart,
+  "mermaid-diagram": renderMermaidPart,
+};
+
 /** ストーリーの `server.id` の部品を、問い合わせの引数で描き、描く先の要素（class `mdmark`）で包んで返却する。知らない部品は `undefined` */
 export function renderPart(options: {
   /** 部品の id */
@@ -1745,40 +1824,11 @@ export function renderPart(options: {
   params: URLSearchParams;
 }): string | undefined {
   const { component, params } = options;
-  const name = params.get("name") ?? "";
-  if (component === "notice") {
-    // 真偽値は問い合わせの文字列で届くため、`"false"` のときだけ偽にする
-    const figure = params.get("figure") !== "false";
-    const requested = params.get("source");
-    const source =
-      requested === "extension" ||
-      requested === "diff-revisions" ||
-      requested === "diff-content" ||
-      requested === "diff-blocks" ||
-      requested === "icons"
-        ? requested
-        : "library";
-    return `<div class="mdmark">${renderNotice({ name, figure, source })}</div>`;
-  }
-  if (component === "embed") {
-    // 引数の JSON のオブジェクトは JSON の文字列で届く
-    const text = params.get("options");
-    const options = text ? (JSON.parse(text) as Record<string, unknown>) : {};
-    return `<div class="mdmark">${renderEmbed({ name, options })}</div>`;
-  }
-  if (component === "mermaid-diagram") {
-    // 見本の SVG はファイルの名前で届く
-    const html = renderMermaidStory({
-      svg: params.get("svg") ?? "",
-      printSvg: params.get("printSvg") ?? undefined,
-      title: params.get("title") ?? "",
-    });
-    if (html === undefined) {
-      return undefined;
-    }
-    const className =
-      params.get("scheme") === "dark" ? "mdmark mdmark-theme-dark" : "mdmark";
-    return `<div class="${className}">${html}${DIAGRAM_FIT_MARKER}</div>`;
+  const query = Object.hasOwn(QUERY_PART_RENDERERS, component)
+    ? QUERY_PART_RENDERERS[component]
+    : undefined;
+  if (query) {
+    return query(params);
   }
   const renderer = Object.hasOwn(PART_RENDERERS, component)
     ? PART_RENDERERS[component]

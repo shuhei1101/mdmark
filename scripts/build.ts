@@ -387,6 +387,45 @@ export function findTooLargeOutputs(
     .map(([path, bytes]) => ({ path, bytes }));
 }
 
+/** 問題を標準エラーへ 1 行ずつ出し、問題が無ければ `true` を返却する */
+function reportProblems(problems: string[]): boolean {
+  for (const problem of problems) {
+    console.error(problem);
+  }
+  return problems.length === 0;
+}
+
+/** `dist/` を書き込んでサイズと対応ブラウザの下限を検査し、プラグインをビルドする。どれかで問題があれば `false` を返却する */
+async function buildAndCheck(
+  version: string,
+  root: string,
+  maxBytes: number,
+): Promise<boolean> {
+  const outputs = await buildDist(version, root);
+  const tooLarge = findTooLargeOutputs(outputs, maxBytes);
+  const sized = reportProblems(
+    tooLarge.map(
+      ({ path, bytes }) =>
+        `配布ファイルが上限 ${maxBytes} バイトを超えた: ${path} ${bytes} バイト`,
+    ),
+  );
+  // 配布ファイルのサイズが上限内のときだけ、下限のブラウザに無い API を確認する
+  if (!sized) {
+    return false;
+  }
+  const violations = await findBaselineViolations({ root, version });
+  const supported = reportProblems(
+    violations.map(
+      ({ file, line, column, message }) =>
+        `${file}:${line}:${column} ${message}`,
+    ),
+  );
+  if (!supported) {
+    return false;
+  }
+  return reportProblems(await buildPlugin({ version, root }));
+}
+
 /** 前回の `dist/` とプラグインの生成物を削除してから、バージョンを決めて検査し、移行の手順を点検し、`dist/` を書き込んでサイズと対応ブラウザの下限を検査し、プラグインをビルドし、終了コードを返却する */
 export async function main(
   argv: string[],
@@ -406,35 +445,9 @@ export async function main(
   try {
     const version = resolveVersion(argv, root);
     // 移行の手順の配置漏れは、配布物を書き込む前に止める
-    const migrationProblems = await checkMigrations({ root, version });
-    for (const problem of migrationProblems) {
-      console.error(problem);
-    }
-    if (migrationProblems.length === 0) {
-      const outputs = await buildDist(version, root);
-      const tooLarge = findTooLargeOutputs(outputs, maxBytes);
-      for (const { path, bytes } of tooLarge) {
-        console.error(
-          `配布ファイルが上限 ${maxBytes} バイトを超えた: ${path} ${bytes} バイト`,
-        );
-      }
-      // 配布ファイルのサイズが上限内のときだけ、下限のブラウザに無い API を確認する
-      const violations =
-        tooLarge.length === 0
-          ? await findBaselineViolations({ root, version })
-          : [];
-      for (const { file, line, column, message } of violations) {
-        console.error(`${file}:${line}:${column} ${message}`);
-      }
-      if (tooLarge.length === 0 && violations.length === 0) {
-        const pluginProblems = await buildPlugin({ version, root });
-        for (const problem of pluginProblems) {
-          console.error(problem);
-        }
-        if (pluginProblems.length === 0) {
-          return 0;
-        }
-      }
+    const migrated = reportProblems(await checkMigrations({ root, version }));
+    if (migrated && (await buildAndCheck(version, root, maxBytes))) {
+      return 0;
     }
   } catch (error) {
     console.error(error instanceof Error ? error.message : String(error));

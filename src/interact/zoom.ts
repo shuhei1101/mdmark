@@ -122,14 +122,7 @@ export function attachZoom(options: {
     sizer.style.width = `${size.width * scale}px`;
     sizer.style.height = `${size.height * scale}px`;
     onChange?.(scale, state.fit);
-    if (zoomText) {
-      const base = percentBase === "fit" ? state.fit : 1;
-      zoomText.textContent = `${Math.round((scale / base) * 100)}%`;
-      zoomText.setAttribute(
-        "aria-label",
-        `倍率 ${zoomText.textContent}。全体が収まる倍率に戻す`,
-      );
-    }
+    showZoomText(scale);
     const out = button("out");
     const zoomIn = button("in");
     if (out) {
@@ -142,7 +135,22 @@ export function attachZoom(options: {
     if (panGroup) {
       panGroup.hidden = !overflows();
     }
-    // 押したボタンが押せなくなった・消えたときは、フォーカスを表示する枠へ移して失わせない
+    keepFocus();
+  };
+  /** 倍率の文字とスクリーンリーダー向けの名前を合わせる */
+  const showZoomText = (scale: number): void => {
+    if (!zoomText) {
+      return;
+    }
+    const base = percentBase === "fit" ? state.fit : 1;
+    zoomText.textContent = `${Math.round((scale / base) * 100)}%`;
+    zoomText.setAttribute(
+      "aria-label",
+      `倍率 ${zoomText.textContent}。全体が収まる倍率に戻す`,
+    );
+  };
+  /** 押したボタンが押せなくなった・消えたときは、フォーカスを表示する枠へ移して失わせない */
+  const keepFocus = (): void => {
     const active = document.activeElement;
     if (
       active instanceof HTMLButtonElement &&

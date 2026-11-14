@@ -185,6 +185,46 @@ function readColumn(
   return { found: true, value: current };
 }
 
+/** レコードからキー 1 つの値を取る。`metadata` に列名を記載したキーはその列、それ以外はキーの名前の列。列を記載したのに無ければ `missing` に列名 */
+function readAliasKey(options: {
+  record: Record<string, unknown>;
+  column: unknown;
+  key: string;
+}): { present: boolean; raw?: unknown; missing?: string } {
+  const { record, column, key } = options;
+  if (isFilled(column)) {
+    const read = readColumn(record, column);
+    return read.found
+      ? { present: true, raw: read.value }
+      : { present: false, missing: column };
+  }
+  return Object.hasOwn(record, key)
+    ? { present: true, raw: record[key] }
+    : { present: false };
+}
+
+/** 並びで持つキーは並びに、それ以外は文字列にする（合わない値は `undefined`） */
+function toAliasValue(
+  key: string,
+  raw: unknown,
+): string | string[] | undefined {
+  return LIST_KEYS.has(key) ? toList(raw) : toText(raw);
+}
+
+/** `name` が無いときの名前: `body_file` の列のパスの最後の名前、無ければ `fallbackName` */
+function nameOf(options: {
+  record: Record<string, unknown>;
+  bodyFile: string | undefined;
+  fallbackName: string;
+}): string {
+  const { record, bodyFile, fallbackName } = options;
+  const bodyPath =
+    bodyFile === undefined
+      ? undefined
+      : toText(readColumn(record, bodyFile).value);
+  return bodyPath === undefined ? fallbackName : baseName(bodyPath);
+}
+
 /** 1 つのレコードに行の `metadata` を適用して、エイリアスのキーごとの値と、`metadata` に記載した列が無いキーを返却する */
 export function readAliasRecord(options: {
   /** レコード */
@@ -203,42 +243,17 @@ export function readAliasRecord(options: {
   const values: AliasValues = {};
   const missing: Array<{ key: string; field: string }> = [];
   for (const key of ALIAS_KEYS) {
-    const column = metadata[key];
-    let raw: unknown;
-    let present = false;
-    if (isFilled(column)) {
-      const read = readColumn(record, column);
-      if (read.found) {
-        raw = read.value;
-        present = true;
-      } else {
-        missing.push({ key, field: column });
-      }
-    } else if (Object.hasOwn(record, key)) {
-      raw = record[key];
-      present = true;
+    const read = readAliasKey({ record, column: metadata[key], key });
+    if (read.missing !== undefined) {
+      missing.push({ key, field: read.missing });
     }
-    if (!present) {
-      continue;
-    }
-    if (LIST_KEYS.has(key)) {
-      const list = toList(raw);
-      if (list !== undefined) {
-        values[key] = list;
-      }
-    } else {
-      const text = toText(raw);
-      if (text !== undefined) {
-        values[key] = text;
-      }
+    const value = read.present ? toAliasValue(key, read.raw) : undefined;
+    if (value !== undefined) {
+      values[key] = value;
     }
   }
   if (values.name === undefined) {
-    const bodyPath =
-      bodyFile === undefined
-        ? undefined
-        : toText(readColumn(record, bodyFile).value);
-    const name = bodyPath === undefined ? fallbackName : baseName(bodyPath);
+    const name = nameOf({ record, bodyFile, fallbackName });
     if (name !== "") {
       values.name = name;
     }
@@ -265,52 +280,70 @@ export function checkAliasFields(options: {
   return keys.length === 0 ? undefined : { kind: "alias_required_empty", keys };
 }
 
+/** 照合に使用できるエイリアスの行なら、その種類（`env`・知らない種類・必須のキーが空・前と同じ `id` は `undefined`） */
+function usableType(
+  item: Record<string, unknown>,
+  seen: Set<string>,
+): MdmarkAliasType | undefined {
+  const type = ALIAS_TYPES.find((candidate) => candidate === item.alias_type);
+  if (type === undefined || type === "env") {
+    return undefined;
+  }
+  if (!isFilled(item.id) || !isFilled(item.name) || seen.has(item.id)) {
+    return undefined;
+  }
+  return ALIAS_REQUIRED_KEYS[type].every((key) => isFilled(item[key]))
+    ? type
+    : undefined;
+}
+
+/** 照合に使用できる行から、エイリアス 1 件を作る */
+function toUsableAlias(
+  item: Record<string, unknown> & { id: string; name: string },
+  type: MdmarkAliasType,
+): MdmarkAlias {
+  const list = (value: unknown): string[] =>
+    Array.isArray(value) ? value.filter(isFilled) : [];
+  const alias: MdmarkAlias = {
+    alias_type: type,
+    id: item.id,
+    name: item.name,
+    aliases: list(item.aliases),
+    avoid: list(item.avoid),
+  };
+  for (const key of [
+    "description",
+    "command",
+    "cwd",
+    "url",
+    "skill",
+    "tool",
+    "path",
+    "replacement",
+  ] as const) {
+    const value = item[key];
+    if (typeof value === "string") {
+      alias[key] = value;
+    }
+  }
+  if (Array.isArray(item.related)) {
+    alias.related = list(item.related);
+  }
+  return alias;
+}
+
 /** 照合に使用できるエイリアスだけを並びの順に返却する（`env`・知らない種類・必須のキーが空・前と同じ `id` を除く） */
 export function usableAliases(aliases: readonly unknown[]): MdmarkAlias[] {
   const seen = new Set<string>();
   const usable: MdmarkAlias[] = [];
   for (const item of aliases) {
-    if (!isRecord(item)) {
+    const type = isRecord(item) ? usableType(item, seen) : undefined;
+    if (!isRecord(item) || type === undefined) {
       continue;
     }
-    const type = ALIAS_TYPES.find((candidate) => candidate === item.alias_type);
-    if (type === undefined || type === "env") {
-      continue;
-    }
-    if (!isFilled(item.id) || !isFilled(item.name) || seen.has(item.id)) {
-      continue;
-    }
-    if (!ALIAS_REQUIRED_KEYS[type].every((key) => isFilled(item[key]))) {
-      continue;
-    }
-    seen.add(item.id);
-    const list = (value: unknown): string[] =>
-      Array.isArray(value) ? value.filter(isFilled) : [];
-    const alias: MdmarkAlias = {
-      alias_type: type,
-      id: item.id,
-      name: item.name,
-      aliases: list(item.aliases),
-      avoid: list(item.avoid),
-    };
-    for (const key of [
-      "description",
-      "command",
-      "cwd",
-      "url",
-      "skill",
-      "tool",
-      "path",
-      "replacement",
-    ] as const) {
-      if (typeof item[key] === "string") {
-        alias[key] = item[key];
-      }
-    }
-    if (Array.isArray(item.related)) {
-      alias.related = list(item.related);
-    }
-    usable.push(alias);
+    const row = item as Record<string, unknown> & { id: string; name: string };
+    seen.add(row.id);
+    usable.push(toUsableAlias(row, type));
   }
   return usable;
 }
@@ -365,6 +398,187 @@ function joinWhere(recordPath: string, key: string): string {
   return recordPath === "" ? key : `${recordPath}.${key}`;
 }
 
+/** `buildAliases` が積み上げるエイリアス・ずれと、見た行とエイリアスの `id` */
+type AliasBuild = {
+  aliases: MdmarkAlias[];
+  problems: MdmarkAliasProblem[];
+  rowIds: Set<string>;
+  aliasIds: Set<string>;
+  configFile: string;
+};
+
+/** 使用できる `aliases` の行の、レコードを読み込むための値 */
+type AliasRow = {
+  id: string;
+  aliasType: (typeof ALIAS_TYPES)[number];
+  metadata: Record<string, unknown>;
+  recordsKey: string | undefined;
+  bodyFile: string | undefined;
+};
+
+/** `metadata` に列名を記載したキーは列名、それ以外はエイリアスのキー */
+function columnOf(row: AliasRow, key: string): string {
+  const column = row.metadata[key];
+  return isFilled(column) ? column : key;
+}
+
+/** `id`・`paths`・`alias_type` を持ち、`enabled: false` でない行か */
+function isEnabledRow(row: unknown): row is Record<string, unknown> & {
+  id: string;
+  alias_type: string;
+} {
+  return (
+    isRecord(row) &&
+    isFilled(row.id) &&
+    Array.isArray(row.paths) &&
+    typeof row.alias_type === "string" &&
+    row.enabled !== false
+  );
+}
+
+/** 設定の `aliases` の行を読み込む。形の合わない行・`enabled: false` の行は `undefined`、前と同じ `id`・知らない種類の行はずれを加えて `undefined` */
+function acceptRow(
+  build: AliasBuild,
+  row: unknown,
+  rowPosition: number,
+): AliasRow | undefined {
+  if (!isEnabledRow(row)) {
+    return undefined;
+  }
+  if (build.rowIds.has(row.id)) {
+    build.problems.push({
+      file: build.configFile,
+      where: `aliases[${rowPosition}].id`,
+      kind: "duplicate_alias_row_id",
+      message: `行の \`id\` \`${row.id}\` が前の行と同じです。\`id\` を変えてください。`,
+    });
+    return undefined;
+  }
+  build.rowIds.add(row.id);
+  const aliasType = ALIAS_TYPES.find(
+    (candidate) => candidate === row.alias_type,
+  );
+  if (aliasType === undefined) {
+    build.problems.push({
+      file: build.configFile,
+      where: `aliases[${rowPosition}].alias_type`,
+      kind: "alias_unknown_type",
+      message: `\`alias_type\` の \`${row.alias_type}\` は種類にありません。\`term\`・\`doc\`・\`command\`・\`url\`・\`skill\`・\`tool\`・\`path\`・\`env\`・\`avoid\` のどれかにしてください。`,
+    });
+    return undefined;
+  }
+  return {
+    id: row.id,
+    aliasType,
+    metadata: isRecord(row.metadata) ? row.metadata : {},
+    recordsKey: isFilled(row.records) ? row.records : undefined,
+    bodyFile: isFilled(row.body_file) ? row.body_file : undefined,
+  };
+}
+
+/** ファイルの中身のレコードと、レコードのパス。`records` の配列が無ければずれを加えて `undefined` */
+function recordsOf(
+  build: AliasBuild,
+  row: AliasRow,
+  source: MdmarkAliasSource,
+): Array<{ record: unknown; path: string }> | undefined {
+  const { recordsKey } = row;
+  if (recordsKey === undefined) {
+    return [{ record: source.data, path: "" }];
+  }
+  const list = isRecord(source.data) ? source.data[recordsKey] : undefined;
+  if (!Array.isArray(list)) {
+    build.problems.push({
+      file: source.path,
+      where: "",
+      kind: "alias_records_missing",
+      message: `\`${recordsKey}\` の配列がありません。ファイルに \`${recordsKey}\` の配列を記載するか、\`records\` を修正してください。`,
+    });
+    return undefined;
+  }
+  return list.map((record, position) => ({
+    record,
+    path: `${recordsKey}[${position}]`,
+  }));
+}
+
+/** 必須のキーが空のずれを、空のキーごとに加える */
+function pushRequiredProblems(
+  build: AliasBuild,
+  row: AliasRow,
+  at: { source: MdmarkAliasSource; path: string; keys: string[] },
+): void {
+  const { source, path, keys } = at;
+  const head =
+    path === "" ? `\`${source.path}\`` : `\`${source.path}\` の \`${path}\``;
+  for (const key of keys) {
+    const column = columnOf(row, key);
+    const sentence =
+      key === "url" && row.aliasType === "env"
+        ? `${head} の \`url\` と \`port\` が両方空です。URL かポートを記載してください。`
+        : `${head} の \`${column}\` が空です。${ALIAS_KEY_LABELS[key] ?? key}を記載してください。`;
+    build.problems.push({
+      file: source.path,
+      where: joinWhere(path, column),
+      kind: "alias_required_empty",
+      message: sentence,
+    });
+  }
+}
+
+/** レコード 1 つに行の `metadata` を適用して、エイリアスを加える。列が無い・必須のキーが空・前と同じ `id` のレコードは、ずれを加えて飛ばす */
+function takeRecord(
+  build: AliasBuild,
+  row: AliasRow,
+  at: {
+    source: MdmarkAliasSource;
+    record: Record<string, unknown>;
+    path: string;
+  },
+): void {
+  const { source, record, path } = at;
+  const fallbackName =
+    row.recordsKey === undefined
+      ? baseName(source.path)
+      : (toText(record.id) ?? "");
+  const { values, missing } = readAliasRecord({
+    record,
+    metadata: row.metadata,
+    bodyFile: row.bodyFile,
+    fallbackName,
+  });
+  for (const { key, field } of missing) {
+    build.problems.push({
+      file: source.path,
+      where: joinWhere(path, field),
+      kind: "alias_field_missing",
+      message: `\`metadata.${key}\` が指す列 \`${field}\` がレコードにありません。列を記載するか、\`metadata.${key}\` を修正してください。`,
+    });
+  }
+  if (missing.length > 0) {
+    return;
+  }
+  const checked = checkAliasFields({ aliasType: row.aliasType, values });
+  if (checked !== undefined) {
+    pushRequiredProblems(build, row, { source, path, keys: checked.keys });
+    return;
+  }
+  const id = values.id as string;
+  if (build.aliasIds.has(id)) {
+    build.problems.push({
+      file: source.path,
+      where: joinWhere(path, columnOf(row, "id")),
+      kind: "duplicate_alias_id",
+      message: `エイリアスの \`id\` \`${id}\` が前のエイリアスと同じです。\`id\` を変えてください。`,
+    });
+    return;
+  }
+  build.aliasIds.add(id);
+  if (row.aliasType !== "env") {
+    build.aliases.push(toAlias(values, row.aliasType));
+  }
+}
+
 /** 設定の `aliases` の行と、行の `paths` に該当した YAML を読み込んだ中身から、`metadata` を適用したエイリアスの並びと、使用できない行・レコードのずれの一覧を返却する */
 export function buildAliases(input: {
   /** 設定の `aliases` の行 */
@@ -375,136 +589,25 @@ export function buildAliases(input: {
   configFile?: string;
 }): { aliases: MdmarkAlias[]; problems: MdmarkAliasProblem[] } {
   const { rows, sources, configFile = DEFAULT_CONFIG_FILE } = input;
-  const aliases: MdmarkAlias[] = [];
-  const problems: MdmarkAliasProblem[] = [];
-  const rowIds = new Set<string>();
-  const aliasIds = new Set<string>();
-  rows.forEach((row, rowPosition) => {
-    if (
-      !isRecord(row) ||
-      !isFilled(row.id) ||
-      !Array.isArray(row.paths) ||
-      typeof row.alias_type !== "string"
-    ) {
+  const build: AliasBuild = {
+    aliases: [],
+    problems: [],
+    rowIds: new Set(),
+    aliasIds: new Set(),
+    configFile,
+  };
+  rows.forEach((item, rowPosition) => {
+    const row = acceptRow(build, item, rowPosition);
+    if (!row) {
       return;
     }
-    if (row.enabled === false) {
-      return;
-    }
-    if (rowIds.has(row.id)) {
-      problems.push({
-        file: configFile,
-        where: `aliases[${rowPosition}].id`,
-        kind: "duplicate_alias_row_id",
-        message: `行の \`id\` \`${row.id}\` が前の行と同じです。\`id\` を変えてください。`,
-      });
-      return;
-    }
-    rowIds.add(row.id);
-    const aliasType = ALIAS_TYPES.find(
-      (candidate) => candidate === row.alias_type,
-    );
-    if (aliasType === undefined) {
-      problems.push({
-        file: configFile,
-        where: `aliases[${rowPosition}].alias_type`,
-        kind: "alias_unknown_type",
-        message: `\`alias_type\` の \`${row.alias_type}\` は種類にありません。\`term\`・\`doc\`・\`command\`・\`url\`・\`skill\`・\`tool\`・\`path\`・\`env\`・\`avoid\` のどれかにしてください。`,
-      });
-      return;
-    }
-    const metadata = isRecord(row.metadata) ? row.metadata : {};
-    const recordsKey = isFilled(row.records) ? row.records : undefined;
-    const bodyFile = isFilled(row.body_file) ? row.body_file : undefined;
-    /** `metadata` に列名を記載したキーは列名、それ以外はエイリアスのキー */
-    const columnOf = (key: string): string => {
-      const column = metadata[key];
-      return isFilled(column) ? column : key;
-    };
-    for (const source of sources.filter((item) => item.rowId === row.id)) {
-      let records: Array<{ record: unknown; path: string }>;
-      if (recordsKey === undefined) {
-        records = [{ record: source.data, path: "" }];
-      } else {
-        const list = isRecord(source.data)
-          ? source.data[recordsKey]
-          : undefined;
-        if (!Array.isArray(list)) {
-          problems.push({
-            file: source.path,
-            where: "",
-            kind: "alias_records_missing",
-            message: `\`${recordsKey}\` の配列がありません。ファイルに \`${recordsKey}\` の配列を記載するか、\`records\` を修正してください。`,
-          });
-          continue;
-        }
-        records = list.map((record, position) => ({
-          record,
-          path: `${recordsKey}[${position}]`,
-        }));
-      }
-      for (const { record, path } of records) {
-        if (!isRecord(record)) {
-          continue;
-        }
-        const fallbackName =
-          recordsKey === undefined
-            ? baseName(source.path)
-            : (toText(record.id) ?? "");
-        const { values, missing } = readAliasRecord({
-          record,
-          metadata,
-          bodyFile,
-          fallbackName,
-        });
-        for (const { key, field } of missing) {
-          problems.push({
-            file: source.path,
-            where: joinWhere(path, field),
-            kind: "alias_field_missing",
-            message: `\`metadata.${key}\` が指す列 \`${field}\` がレコードにありません。列を記載するか、\`metadata.${key}\` を修正してください。`,
-          });
-        }
-        if (missing.length > 0) {
-          continue;
-        }
-        const checked = checkAliasFields({ aliasType, values });
-        if (checked !== undefined) {
-          const head =
-            path === ""
-              ? `\`${source.path}\``
-              : `\`${source.path}\` の \`${path}\``;
-          for (const key of checked.keys) {
-            const column = columnOf(key);
-            const sentence =
-              key === "url" && aliasType === "env"
-                ? `${head} の \`url\` と \`port\` が両方空です。URL かポートを記載してください。`
-                : `${head} の \`${column}\` が空です。${ALIAS_KEY_LABELS[key] ?? key}を記載してください。`;
-            problems.push({
-              file: source.path,
-              where: joinWhere(path, column),
-              kind: "alias_required_empty",
-              message: sentence,
-            });
-          }
-          continue;
-        }
-        const id = values.id as string;
-        if (aliasIds.has(id)) {
-          problems.push({
-            file: source.path,
-            where: joinWhere(path, columnOf("id")),
-            kind: "duplicate_alias_id",
-            message: `エイリアスの \`id\` \`${id}\` が前のエイリアスと同じです。\`id\` を変えてください。`,
-          });
-          continue;
-        }
-        aliasIds.add(id);
-        if (aliasType !== "env") {
-          aliases.push(toAlias(values, aliasType));
+    for (const source of sources.filter((entry) => entry.rowId === row.id)) {
+      for (const { record, path } of recordsOf(build, row, source) ?? []) {
+        if (isRecord(record)) {
+          takeRecord(build, row, { source, record, path });
         }
       }
     }
   });
-  return { aliases, problems };
+  return { aliases: build.aliases, problems: build.problems };
 }

@@ -342,58 +342,65 @@ export const parseFlowchart = (source: string): Flowchart => {
     return count === 1 ? base : `${base}#${count}`;
   };
 
-  lines.slice(1).forEach((raw, index) => {
-    const line = index + 1;
-    const text = raw.replace(/%%.*$/, "").trim().replace(/;$/, "");
-    if (text === "") return;
+  /** `subgraph` の行なら、グループを開く */
+  const readSubgraph = (text: string): boolean => {
     const subgraph =
       /^subgraph\s+([^\s[]+)\s*(?:\[\s*"?([^"\]]*)"?\s*\])?\s*$/.exec(text);
-    if (subgraph?.[1]) {
-      const group: FlowGroup = {
-        id: subgraph[1],
-        title: decodeEntities(subgraph[2] ?? subgraph[1]),
-        parent: stack.at(-1)?.id,
-        direction: undefined,
-      };
-      groups.push(group);
-      groupIds.add(group.id);
-      stack.push(group);
-      return;
-    }
-    if (text === "end") {
-      if (!stack.pop())
-        problems.push({
-          kind: "map_invalid",
-          line,
-          message: `${line + 1} 行目の \`end\` に対応する \`subgraph\` がありません。`,
-        });
-      return;
-    }
+    if (!subgraph?.[1]) return false;
+    const group: FlowGroup = {
+      id: subgraph[1],
+      title: decodeEntities(subgraph[2] ?? subgraph[1]),
+      parent: stack.at(-1)?.id,
+      direction: undefined,
+    };
+    groups.push(group);
+    groupIds.add(group.id);
+    stack.push(group);
+    return true;
+  };
+  /** `end` の行なら、グループを閉じる（開いたグループが無ければ項目を足す） */
+  const readEnd = (text: string, line: number): boolean => {
+    if (text !== "end") return false;
+    if (!stack.pop())
+      problems.push({
+        kind: "map_invalid",
+        line,
+        message: `${line + 1} 行目の \`end\` に対応する \`subgraph\` がありません。`,
+      });
+    return true;
+  };
+  /** `direction` の行なら、開いたグループの向きにする */
+  const readDirection = (
+    text: string,
+    at: { line: number; raw: string },
+  ): boolean => {
     const dir = /^direction\s+(\w+)$/.exec(text);
-    if (dir?.[1]) {
-      const current = stack.at(-1);
-      const value = toDirection(dir[1]);
-      if (current && value) current.direction = value;
-      else problems.push(unreadable(line, raw));
-      return;
-    }
+    if (!dir?.[1]) return false;
+    const current = stack.at(-1);
+    const value = toDirection(dir[1]);
+    if (current && value) current.direction = value;
+    else problems.push(unreadable(at.line, at.raw));
+    return true;
+  };
+  /** `class` の行ならノードにクラスを足し、`click` の行ならリンク先にする */
+  const readClassOrClick = (text: string): boolean => {
     const classLine = /^class\s+([\w,\s]+?)\s+([\w-]+)$/.exec(text);
     if (classLine?.[1] && classLine[2]) {
       for (const id of classLine[1].split(",").map((part) => part.trim()))
         nodes.get(id)?.classes.push(classLine[2]);
-      return;
+      return true;
     }
     const click = CLICK_RE.exec(text);
     if (click?.[1] && click[2] !== undefined) {
       links[click[1]] = click[2];
-      return;
+      return true;
     }
-    if (IGNORED_RE.test(text)) return;
-    const statement = readStatement(text);
-    if (!statement) {
-      problems.push(unreadable(line, raw));
-      return;
-    }
+    return false;
+  };
+  /** ノードと線の文のノードを足し、隣り合うノードの組ごとに線を足す */
+  const addStatement = (
+    statement: NonNullable<ReturnType<typeof readStatement>>,
+  ): void => {
     for (const group of statement.groups) group.forEach(touch);
     statement.arrows.forEach((arrow, at) => {
       for (const from of statement.groups[at] ?? []) {
@@ -409,6 +416,26 @@ export const parseFlowchart = (source: string): Flowchart => {
         }
       }
     });
+  };
+
+  lines.slice(1).forEach((raw, index) => {
+    const line = index + 1;
+    const text = raw.replace(/%%.*$/, "").trim().replace(/;$/, "");
+    if (text === "") return;
+    if (
+      readSubgraph(text) ||
+      readEnd(text, line) ||
+      readDirection(text, { line, raw }) ||
+      readClassOrClick(text) ||
+      IGNORED_RE.test(text)
+    )
+      return;
+    const statement = readStatement(text);
+    if (!statement) {
+      problems.push(unreadable(line, raw));
+      return;
+    }
+    addStatement(statement);
   });
   for (const group of stack) {
     problems.push({

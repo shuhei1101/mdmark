@@ -20,7 +20,7 @@ import {
 import { type MdmarkIndex, normalizeIndex } from "./index-shape.ts";
 import { normalizePath } from "./paths.ts";
 import { alignText, inlineOffsets, maskEmbeddedHtml } from "./positions.ts";
-import { parseDocument } from "./references.ts";
+import { type MdmarkGlossaryEntry, parseDocument } from "./references.ts";
 
 /** `collectMatches` が返却する参照先 1 つ */
 export type MdmarkMatchTarget = {
@@ -237,6 +237,67 @@ export function embeddedHtmlMatches(options: {
   return found;
 }
 
+/** JSON の文字列の 1 文字だけのエスケープの読み */
+const JSON_SIMPLE_ESCAPES: Record<string, string> = {
+  '"': '"',
+  "\\": "\\",
+  "/": "/",
+  b: "\b",
+  f: "\f",
+  n: "\n",
+  r: "\r",
+  t: "\t",
+};
+
+/** 文字列の中の位置の 1 文字（エスケープはその読み）と、元の文字列での長さ */
+function decodeJsonChar(
+  raw: string,
+  position: number,
+): { decoded: string; length: number } {
+  const char = raw[position] as string;
+  if (char !== "\\") {
+    return { decoded: char, length: 1 };
+  }
+  const next = raw[position + 1] ?? "";
+  const hex = raw.slice(position + 2, position + 6);
+  if (next === "u" && /^[0-9a-fA-F]{4}$/.test(hex)) {
+    return {
+      decoded: String.fromCharCode(Number.parseInt(hex, 16)),
+      length: 6,
+    };
+  }
+  return { decoded: JSON_SIMPLE_ESCAPES[next] ?? next, length: 2 };
+}
+
+/** `"` の次の位置から閉じる `"` までの文字列を読み、読んだ文字列と文字ごとの元の位置、閉じる `"` の位置を返却する（閉じなければ `closed` が偽） */
+function readJsonString(
+  raw: string,
+  from: number,
+): {
+  string: { text: string; starts: number[]; ends: number[] };
+  closed: boolean;
+  end: number;
+} {
+  let text = "";
+  const starts: number[] = [];
+  const ends: number[] = [];
+  let position = from;
+  while (position < raw.length && raw[position] !== '"') {
+    const { decoded, length } = decodeJsonChar(raw, position);
+    text += decoded;
+    for (let count = 0; count < decoded.length; count++) {
+      starts.push(position);
+      ends.push(position + length);
+    }
+    position += length;
+  }
+  return {
+    string: { text, starts, ends },
+    closed: position < raw.length,
+    end: position,
+  };
+}
+
 /** 定義の JSON の文字列を、戻した文字と各文字の元の位置で返却する。位置は `raw` の頭からの位置 */
 function jsonStrings(raw: string): Array<{
   text: string;
@@ -244,57 +305,17 @@ function jsonStrings(raw: string): Array<{
   ends: number[];
 }> {
   const strings: Array<{ text: string; starts: number[]; ends: number[] }> = [];
-  const simple: Record<string, string> = {
-    '"': '"',
-    "\\": "\\",
-    "/": "/",
-    b: "\b",
-    f: "\f",
-    n: "\n",
-    r: "\r",
-    t: "\t",
-  };
   let at = 0;
   while (at < raw.length) {
     if (raw[at] !== '"') {
       at += 1;
       continue;
     }
-    let text = "";
-    const starts: number[] = [];
-    const ends: number[] = [];
-    let position = at + 1;
-    let closed = false;
-    while (position < raw.length) {
-      const char = raw[position] as string;
-      if (char === '"') {
-        closed = true;
-        break;
-      }
-      let length = 1;
-      let decoded = char;
-      if (char === "\\") {
-        const next = raw[position + 1] ?? "";
-        const hex = raw.slice(position + 2, position + 6);
-        if (next === "u" && /^[0-9a-fA-F]{4}$/.test(hex)) {
-          decoded = String.fromCharCode(Number.parseInt(hex, 16));
-          length = 6;
-        } else {
-          decoded = simple[next] ?? next;
-          length = 2;
-        }
-      }
-      text += decoded;
-      for (let count = 0; count < decoded.length; count++) {
-        starts.push(position);
-        ends.push(position + length);
-      }
-      position += length;
+    const read = readJsonString(raw, at + 1);
+    if (read.closed) {
+      strings.push(read.string);
     }
-    if (closed) {
-      strings.push({ text, starts, ends });
-    }
-    at = position + 1;
+    at = read.end + 1;
   }
   return strings;
 }
@@ -435,6 +456,67 @@ function mermaidTexts(
   return colon < 0 ? [] : [{ start: colon + 1, text: line.slice(colon + 1) }];
 }
 
+/** マップの mermaid の最初の行から、図の種類（流れ図か順番の図。それ以外は `undefined`） */
+function mapDiagramKind(lines: string[]): "flowchart" | "sequence" | undefined {
+  const head = lines.find((line) => line.trim() !== "")?.trim() ?? "";
+  if (/^(flowchart|graph)\b/.test(head)) {
+    return "flowchart";
+  }
+  return /^sequenceDiagram\b/.test(head) ? "sequence" : undefined;
+}
+
+/** 図の文字の中の、意味を持つ用語（エイリアスを除く）の一致を、本文の位置で返却する */
+function termOnlyMatches(options: {
+  text: string;
+  /** 文字の頭の本文の位置 */
+  offset: number;
+  dictionary: Dictionary;
+}): Found[] {
+  const { text, offset, dictionary } = options;
+  return findWords(text, dictionary.words).flatMap((word) => {
+    const meaning = dictionary.term(word.word)?.meaning;
+    if (meaning === undefined || meaning === "") {
+      return [];
+    }
+    const key = normalizeWord(word.word);
+    return [
+      {
+        word: dictionary.written.get(key) ?? word.word,
+        key,
+        offset: offset + word.start,
+        end: offset + word.end,
+        termOnly: true,
+      },
+    ];
+  });
+}
+
+/** マップの mermaid のコードブロックの行ごとの、ノードとメッセージの文字の中の用語の一致 */
+function mapBlockMatches(options: {
+  source: string;
+  /** コードブロックの頭の本文の位置 */
+  from: number;
+  dictionary: Dictionary;
+}): Found[] {
+  const { source, from, dictionary } = options;
+  const lines = source.split("\n");
+  const kind = mapDiagramKind(lines);
+  if (kind === undefined) {
+    return [];
+  }
+  const found: Found[] = [];
+  let lineStart = from;
+  for (const line of lines) {
+    for (const { start, text } of mermaidTexts(line, kind)) {
+      found.push(
+        ...termOnlyMatches({ text, offset: lineStart + start, dictionary }),
+      );
+    }
+    lineStart += line.length + 1;
+  }
+  return found;
+}
+
 /** map の範囲の `mermaid` のブロックの、ノード・参加者の名前とメッセージ・注記の文のうち、意味のある用語の位置を返却する */
 export function mapTermMatches(options: {
   body: string;
@@ -456,42 +538,33 @@ export function mapTermMatches(options: {
       body,
       lineStarts,
     });
-    if (block === undefined) {
-      continue;
-    }
-    const source = body.slice(block.from, block.to);
-    const lines = source.split("\n");
-    const head = lines.find((line) => line.trim() !== "")?.trim() ?? "";
-    const kind = /^(flowchart|graph)\b/.test(head)
-      ? "flowchart"
-      : /^sequenceDiagram\b/.test(head)
-        ? "sequence"
-        : undefined;
-    if (kind === undefined) {
-      continue;
-    }
-    let lineStart = block.from;
-    for (const line of lines) {
-      for (const { start, text } of mermaidTexts(line, kind)) {
-        for (const word of findWords(text, dictionary.words)) {
-          const meaning = dictionary.term(word.word)?.meaning;
-          if (meaning === undefined || meaning === "") {
-            continue;
-          }
-          const key = normalizeWord(word.word);
-          found.push({
-            word: dictionary.written.get(key) ?? word.word,
-            key,
-            offset: lineStart + start + word.start,
-            end: lineStart + start + word.end,
-            termOnly: true,
-          });
-        }
-      }
-      lineStart += line.length + 1;
+    if (block !== undefined) {
+      found.push(
+        ...mapBlockMatches({
+          source: body.slice(block.from, block.to),
+          from: block.from,
+          dictionary,
+        }),
+      );
     }
   }
   return found;
+}
+
+/** 行内のトークンの子の文字の一致を、子の文字ごとの本文の位置で返却する */
+function wordMatches(options: {
+  content: string;
+  offsets: number[];
+  body: string;
+  dictionary: Dictionary;
+}): Found[] {
+  const { content, offsets, body, dictionary } = options;
+  return findWords(content, dictionary.words).map((word) => ({
+    word: dictionary.written.get(word.word) ?? word.word,
+    key: word.word,
+    offset: offsets[word.start] as number,
+    end: wordEnd({ body, offsets, end: word.end }),
+  }));
 }
 
 /** 地の文（コード・リンク・見出し・用語集の表の中を除く）の一致を、本文の位置で返却する */
@@ -513,14 +586,7 @@ function paragraphMatches(options: {
     previous = { line, end: aligned.end };
     for (const [position, offsets] of aligned.byChild) {
       const content = inline.children?.[position]?.content ?? "";
-      for (const word of findWords(content, dictionary.words)) {
-        found.push({
-          word: dictionary.written.get(word.word) ?? word.word,
-          key: word.word,
-          offset: offsets[word.start] as number,
-          end: wordEnd({ body, offsets, end: word.end }),
-        });
-      }
+      found.push(...wordMatches({ content, offsets, body, dictionary }));
     }
   });
   return found;
@@ -585,6 +651,153 @@ function aliasTarget(alias: MdmarkAlias): MdmarkMatchTarget {
   };
 }
 
+/** 用語の参照先（文書・エイリアスを除く） */
+type TermTarget = Omit<MdmarkMatchTarget, "kind" | "aliasType"> & {
+  kind: MdmarkAvoidedMatch["kind"];
+};
+
+/** 辞書が返却する用語の `id` から、参照先の種類・タイトル・説明を参照する表 */
+function termTargetsOf(
+  glossary: MdmarkGlossaryEntry[],
+  terms: MdmarkIndex["terms"],
+): Map<string, TermTarget> {
+  const targets = new Map<string, TermTarget>();
+  for (const entry of glossary) {
+    const id = `glossary:${entry.docId}:${entry.term}`;
+    targets.set(id, {
+      kind: "glossary",
+      id,
+      title: entry.term,
+      description: entry.meaning,
+    });
+  }
+  for (const term of terms ?? []) {
+    targets.set(term.id, {
+      kind: "term",
+      id: term.id,
+      title: term.term,
+      description: term.meaning,
+    });
+  }
+  return targets;
+}
+
+/** 文書の地の文・埋め込んだ HTML・図・マップの、機能がオンの場所の一致（本文の頭からの順。同じ位置は用語、文書の順） */
+function documentFound(options: {
+  body: string;
+  parsed: ReturnType<typeof parseDocument>;
+  dictionary: Dictionary;
+  lineStarts: number[];
+}): Found[] {
+  const { body, parsed, dictionary, lineStarts } = options;
+  if (dictionary.words.length === 0) {
+    return [];
+  }
+  const { tokens, features } = parsed;
+  const html = features.html === true;
+  const found = [
+    ...paragraphMatches({ body, tokens, dictionary, lineStarts }),
+    ...(html ? embeddedHtmlMatches({ body, tokens, dictionary }) : []),
+    ...(features.diagrams === true
+      ? diagramTermMatches({ body, tokens, dictionary, html })
+      : []),
+    ...(features.map === true
+      ? mapTermMatches({ body, tokens, dictionary })
+      : []),
+  ];
+  return found.sort((a, b) => a.offset - b.offset);
+}
+
+/** 一致した単語の参照先: 用語（エイリアスを含む）と、図の部品の一致でなければ別名を持つ文書 */
+function referencedOf(options: {
+  item: Found;
+  dictionary: Dictionary;
+  termTargets: Map<string, TermTarget>;
+}): MdmarkMatchTarget[] {
+  const { item, dictionary, termTargets } = options;
+  const term = dictionary.terms.get(item.key);
+  const termTarget =
+    term?.alias === undefined
+      ? term && termTargets.get(term.id)
+      : aliasTarget(term.alias);
+  const docs = item.termOnly ? [] : (dictionary.docs.get(item.key) ?? []);
+  return [
+    ...(termTarget === undefined ? [] : [termTarget]),
+    ...docs.map(
+      (target): MdmarkMatchTarget => ({
+        kind: "doc",
+        id: target.id,
+        title: target.title,
+        ...(target.description === undefined
+          ? {}
+          : { description: target.description }),
+      }),
+    ),
+  ];
+}
+
+/** やめた言い方の代わりの用語 */
+type Replacement =
+  Dictionary["avoided"] extends Map<string, infer V> ? V : never;
+
+/** やめた言い方の一致の、位置を除いた参照先 */
+type AvoidedTarget = Omit<
+  MdmarkAvoidedMatch,
+  "text" | "line" | "start" | "end"
+>;
+
+/** やめた言い方の代わりの用語の参照先 */
+function avoidedTargetOf(
+  replacement: Replacement | undefined,
+  termTargets: Map<string, TermTarget>,
+): AvoidedTarget | undefined {
+  if (replacement === undefined) {
+    return undefined;
+  }
+  if (replacement.alias === undefined) {
+    return termTargets.get(replacement.id);
+  }
+  return {
+    kind: "alias",
+    aliasType: replacement.alias.alias_type as "term" | "avoid",
+    id: replacement.alias.id,
+    title: replacement.term,
+    ...(replacement.meaning === undefined
+      ? {}
+      : { description: replacement.meaning }),
+  };
+}
+
+/** やめた言い方の一致を、代わりの用語を参照する一致にする（本文の頭からの順） */
+function avoidedMatchesOf(options: {
+  body: string;
+  parsed: ReturnType<typeof parseDocument>;
+  dictionary: Dictionary;
+  lineStarts: number[];
+  termTargets: Map<string, TermTarget>;
+}): MdmarkAvoidedMatch[] {
+  const { body, parsed, dictionary, lineStarts, termTargets } = options;
+  if (dictionary.avoided.size === 0) {
+    return [];
+  }
+  const foundAvoided = avoidedFound({
+    body,
+    tokens: parsed.tokens,
+    dictionary,
+    lineStarts,
+    html: parsed.features.html === true,
+  }).sort((a, b) => a.offset - b.offset);
+  return foundAvoided.flatMap((item) => {
+    const target = avoidedTargetOf(
+      dictionary.avoided.get(item.key),
+      termTargets,
+    );
+    return target === undefined
+      ? []
+      : [{ ...target, ...locate({ found: item, lineStarts }) }];
+  });
+}
+
 /** 索引と文書の本文から、文書ごとの本文の一致と、重なりを除いた参照先を返却する */
 export function collectMatches(input: {
   /** 索引 */
@@ -619,30 +832,7 @@ export function collectMatches(input: {
   const glossary = scanned.flatMap((item) =>
     item.parsed.glossary.map((row) => row.entry),
   );
-  // 辞書が返却する用語の `id` から、参照先の種類・タイトル・説明を参照する
-  const termTargets = new Map<
-    string,
-    Omit<MdmarkMatchTarget, "kind" | "aliasType"> & {
-      kind: MdmarkAvoidedMatch["kind"];
-    }
-  >();
-  for (const entry of glossary) {
-    const id = `glossary:${entry.docId}:${entry.term}`;
-    termTargets.set(id, {
-      kind: "glossary",
-      id,
-      title: entry.term,
-      description: entry.meaning,
-    });
-  }
-  for (const term of index.terms ?? []) {
-    termTargets.set(term.id, {
-      kind: "term",
-      id: term.id,
-      title: term.term,
-      description: term.meaning,
-    });
-  }
+  const termTargets = termTargetsOf(glossary, index.terms);
   const byDocument: Record<string, MdmarkMatch[]> = {};
   const avoided: Record<string, MdmarkAvoidedMatch[]> = {};
   const targets = new Map<string, MdmarkMatchTarget>();
@@ -656,95 +846,28 @@ export function collectMatches(input: {
       features: parsed.features,
     });
     const lineStarts = lineStartsOf(body);
-    const found: Found[] = [];
-    if (dictionary.words.length > 0) {
-      const { tokens } = parsed;
-      found.push(...paragraphMatches({ body, tokens, dictionary, lineStarts }));
-      if (parsed.features.html === true) {
-        found.push(...embeddedHtmlMatches({ body, tokens, dictionary }));
-      }
-      if (parsed.features.diagrams === true) {
-        found.push(
-          ...diagramTermMatches({
-            body,
-            tokens,
-            dictionary,
-            html: parsed.features.html === true,
-          }),
-        );
-      }
-      if (parsed.features.map === true) {
-        found.push(...mapTermMatches({ body, tokens, dictionary }));
-      }
-    }
-    // 本文の頭からの順に並べる（同じ位置は用語、文書の順）
-    found.sort((a, b) => a.offset - b.offset);
     const matches: MdmarkMatch[] = [];
-    for (const item of found) {
-      const { key, termOnly } = item;
+    for (const item of documentFound({
+      body,
+      parsed,
+      dictionary,
+      lineStarts,
+    })) {
       const position = locate({ found: item, lineStarts });
-      const referenced: MdmarkMatchTarget[] = [];
-      const term = dictionary.terms.get(key);
-      const termTarget =
-        term === undefined
-          ? undefined
-          : term.alias === undefined
-            ? termTargets.get(term.id)
-            : aliasTarget(term.alias);
-      if (termTarget !== undefined) {
-        referenced.push(termTarget);
-      }
-      for (const target of termOnly ? [] : (dictionary.docs.get(key) ?? [])) {
-        referenced.push({
-          kind: "doc",
-          id: target.id,
-          title: target.title,
-          ...(target.description === undefined
-            ? {}
-            : { description: target.description }),
-        });
-      }
-      for (const target of referenced) {
+      for (const target of referencedOf({ item, dictionary, termTargets })) {
         matches.push({ ...target, ...position });
         targets.set(`${target.kind}\0${target.id}`, target);
       }
     }
     byDocument[doc.id] = matches;
     // やめた言い方は参照先に混ぜず、代わりの用語を参照して `avoided` にだけ入れる
-    const avoidedMatches: MdmarkAvoidedMatch[] = [];
-    if (dictionary.avoided.size > 0) {
-      const foundAvoided = avoidedFound({
-        body,
-        tokens: parsed.tokens,
-        dictionary,
-        lineStarts,
-        html: parsed.features.html === true,
-      }).sort((a, b) => a.offset - b.offset);
-      for (const item of foundAvoided) {
-        const replacement = dictionary.avoided.get(item.key);
-        const target =
-          replacement === undefined
-            ? undefined
-            : replacement.alias === undefined
-              ? termTargets.get(replacement.id)
-              : {
-                  kind: "alias" as const,
-                  aliasType: replacement.alias.alias_type as "term" | "avoid",
-                  id: replacement.alias.id,
-                  title: replacement.term,
-                  ...(replacement.meaning === undefined
-                    ? {}
-                    : { description: replacement.meaning }),
-                };
-        if (target !== undefined) {
-          avoidedMatches.push({
-            ...target,
-            ...locate({ found: item, lineStarts }),
-          });
-        }
-      }
-    }
-    avoided[doc.id] = avoidedMatches;
+    avoided[doc.id] = avoidedMatchesOf({
+      body,
+      parsed,
+      dictionary,
+      lineStarts,
+      termTargets,
+    });
   }
   return { byDocument, avoided, targets: [...targets.values()] };
 }

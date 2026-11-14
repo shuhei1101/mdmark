@@ -45,6 +45,55 @@ const resolveRef = (ref: string): JsonSchema => {
   return schema;
 };
 
+/** `keys` のサブコマンド: 端末の設定か文書のフォルダの設定のキーの一覧を返却する */
+const listKeys = async (options: {
+  env: NodeJS.ProcessEnv;
+  target: string | undefined;
+  dir: string | undefined;
+}): Promise<{ keys: ReturnType<typeof listConfigKeys> }> => {
+  const { env, target, dir } = options;
+  const read = (path: string) =>
+    readYamlFile({ path, readFile: (file) => readFile(file, "utf8") });
+  const settings = (await read(resolveSetupPaths(env).settingsPath))?.raw ?? {};
+  if (target === "settings") {
+    return {
+      keys: listConfigKeys({
+        target: "settings",
+        schema: resolveRef("mdmark.settings.schema.json"),
+        resolveRef,
+        current: settings,
+      }),
+    };
+  }
+  if (target === "config" && dir) {
+    const current = (await read(join(dir, "mdmark.config.yaml")))?.raw ?? {};
+    return {
+      keys: listConfigKeys({
+        target: "config",
+        schema: resolveRef("mdmark.config.schema.json"),
+        resolveRef,
+        current,
+        inherited: settings,
+      }),
+    };
+  }
+  throw new SetupError(
+    "keys は --target settings か、--target config と --dir {文書のフォルダ} で呼んでください。",
+  );
+};
+
+/** `start-server` の `--launcher` が `systemd`・`tmux`・省略のどれかかを確認する */
+const checkLauncher = (
+  launcher: string | undefined,
+): "systemd" | "tmux" | undefined => {
+  if (launcher === undefined || launcher === "systemd" || launcher === "tmux") {
+    return launcher;
+  }
+  throw new SetupError(
+    `start-server の --launcher には systemd か tmux を指定してください（${launcher}）。${USAGE}`,
+  );
+};
+
 /** サブコマンドを実行し、結果の値を返却する */
 const runCommand = async (options: {
   argv: string[];
@@ -72,53 +121,18 @@ const runCommand = async (options: {
   switch (positionals[0]) {
     case "status":
       return await readTerminalStatus({ ...base, run: options.run });
-    case "keys": {
-      const read = (path: string) =>
-        readYamlFile({ path, readFile: (file) => readFile(file, "utf8") });
-      const settings =
-        (await read(resolveSetupPaths(options.env).settingsPath))?.raw ?? {};
-      if (values.target === "settings") {
-        return {
-          keys: listConfigKeys({
-            target: "settings",
-            schema: resolveRef("mdmark.settings.schema.json"),
-            resolveRef,
-            current: settings,
-          }),
-        };
-      }
-      if (values.target === "config" && values.dir) {
-        const current =
-          (await read(join(values.dir, "mdmark.config.yaml")))?.raw ?? {};
-        return {
-          keys: listConfigKeys({
-            target: "config",
-            schema: resolveRef("mdmark.config.schema.json"),
-            resolveRef,
-            current,
-            inherited: settings,
-          }),
-        };
-      }
-      throw new SetupError(
-        "keys は --target settings か、--target config と --dir {文書のフォルダ} で呼んでください。",
-      );
-    }
+    case "keys":
+      return await listKeys({
+        env: options.env,
+        target: values.target,
+        dir: values.dir,
+      });
     case "write-settings":
       return await writeSettings({ ...base, sets });
     case "start-server":
-      if (
-        values.launcher !== undefined &&
-        values.launcher !== "systemd" &&
-        values.launcher !== "tmux"
-      ) {
-        throw new SetupError(
-          `start-server の --launcher には systemd か tmux を指定してください（${values.launcher}）。${USAGE}`,
-        );
-      }
       return await startServer({
         ...base,
-        launcher: values.launcher,
+        launcher: checkLauncher(values.launcher),
         run: options.run,
         sleep: (ms) => new Promise((resolve) => setTimeout(resolve, ms)),
         writeFile: (path, data) => writeFile(path, data, "utf8"),

@@ -299,13 +299,8 @@ const startWithSystemd = async (
 ): Promise<LaunchOutcome> => {
   const { paths, unit, run, sleep } = options;
   const changes: StartChange[] = [];
-  if (
-    options.migrate &&
-    (await hasSession({ run, session: options.session }))
-  ) {
-    await run("tmux", ["kill-session", "-t", `=${options.session}`]);
+  if (await closeTmuxSession(options)) {
     changes.push("tmux_session_closed");
-    await waitForPortReleased({ port: paths.port, sleep });
   }
   const unitPath = resolveUnitPath({ env: options.env, unit });
   const content = buildUnitFile({
@@ -322,29 +317,26 @@ const startWithSystemd = async (
     port: paths.port,
     timeoutMs: CONNECT_TIMEOUT_MS,
   });
-  if (active && same && listening) {
-    if (!state.enabled) {
-      await run("systemctl", ["--user", "enable", unit]);
-    }
+  if (
+    await isUnitRunning({
+      state,
+      same,
+      listening,
+      run,
+      unit,
+      port: paths.port,
+    })
+  ) {
     return { result: "already_running", changes, launcher: "systemd" };
   }
-  if (!active && listening) {
-    throw portInUse(
-      paths.port,
-      `unit ${unit} の外のプロセスが待ち受けているため、起動していません`,
-    );
-  }
   if (!same) {
-    await mkdir(dirname(unitPath), { recursive: true });
-    await options.writeFile(unitPath, content);
-    await run("systemctl", ["--user", "daemon-reload"]);
+    await writeUnitFile({ ...options, unitPath, content });
     changes.push("unit_written");
   }
-  if (active) {
-    await run("systemctl", ["--user", "restart", unit]);
-  } else {
-    await run("systemctl", ["--user", "enable", "--now", unit]);
-  }
+  await run(
+    "systemctl",
+    active ? ["--user", "restart", unit] : ["--user", "enable", "--now", unit],
+  );
   const waited = await waitForListening({
     port: paths.port,
     timeoutSec: readTimeoutSec(options.env),
@@ -358,6 +350,65 @@ const startWithSystemd = async (
       launcher: "systemd",
     };
   }
+  return await failSystemdStart({ waited, run, unit });
+};
+
+/** 同じ unit が待ち受けていれば（自動で起動しなければ自動で起動にして）`true` を返却する。unit の外のプロセスが待ち受けていればポートが使用されている `SetupError` を投げる */
+const isUnitRunning = async (options: {
+  state: Awaited<ReturnType<typeof readUnitState>>;
+  same: boolean;
+  listening: boolean;
+  run: RunCommand;
+  unit: string;
+  port: number;
+}): Promise<boolean> => {
+  const { state, same, listening, run, unit } = options;
+  const active = state.activeState === "active";
+  if (active && same && listening) {
+    if (!state.enabled) {
+      await run("systemctl", ["--user", "enable", unit]);
+    }
+    return true;
+  }
+  if (!active && listening) {
+    throw portInUse(
+      options.port,
+      `unit ${unit} の外のプロセスが待ち受けているため、起動していません`,
+    );
+  }
+  return false;
+};
+
+/** unit のファイルを書き、systemd に読み込み直させる */
+const writeUnitFile = async (options: {
+  unitPath: string;
+  content: string;
+  writeFile: WriteTextFile;
+  run: RunCommand;
+}): Promise<void> => {
+  await mkdir(dirname(options.unitPath), { recursive: true });
+  await options.writeFile(options.unitPath, options.content);
+  await options.run("systemctl", ["--user", "daemon-reload"]);
+};
+
+/** systemd へ移すときに、tmux のセッションで動いていれば閉じてポートが空くのを待つ。閉じたかを返却する */
+const closeTmuxSession = async (options: LaunchOptions): Promise<boolean> => {
+  const { paths, session, run, sleep } = options;
+  if (!options.migrate || !(await hasSession({ run, session }))) {
+    return false;
+  }
+  await run("tmux", ["kill-session", "-t", `=${session}`]);
+  await waitForPortReleased({ port: paths.port, sleep });
+  return true;
+};
+
+/** 待ち受けなかった unit を止め、journal の末尾を添えた `SetupError` を投げる */
+const failSystemdStart = async (options: {
+  waited: "exited" | "timed_out";
+  run: RunCommand;
+  unit: string;
+}): Promise<never> => {
+  const { waited, run, unit } = options;
   await run("systemctl", ["--user", "disable", "--now", unit]);
   const journal = await readJournalTail({ run, unit });
   if (waited === "exited") {
@@ -375,19 +426,17 @@ const startWithSystemd = async (
 const startWithTmux = async (
   options: LaunchOptions & { systemdAvailable: boolean },
 ): Promise<LaunchOutcome> => {
-  const { paths, unit, session, run, sleep } = options;
+  const { paths, session, run, sleep } = options;
   const changes: StartChange[] = [];
   const listening = () =>
     isPortListening({ port: paths.port, timeoutMs: CONNECT_TIMEOUT_MS });
   if (options.systemdAvailable) {
-    const state = await readUnitState({ run, unit });
-    const active = state.activeState === "active";
-    if (options.migrate && (active || state.enabled)) {
-      await run("systemctl", ["--user", "disable", "--now", unit]);
-      changes.push("unit_disabled");
-      await waitForPortReleased({ port: paths.port, sleep });
-    } else if (!options.migrate && active && (await listening())) {
+    const unitStep = await settleUnit({ ...options, listening });
+    if (unitStep === "running") {
       return { result: "already_running", changes, launcher: "systemd" };
+    }
+    if (unitStep === "disabled") {
+      changes.push("unit_disabled");
     }
   }
   let result: StartResult["result"] = "started";
@@ -425,16 +474,57 @@ const startWithTmux = async (
   if (waited === "listening") {
     return { result, changes, launcher: "tmux" };
   }
+  return await failTmuxStart({ waited, run, session, logPath: paths.logPath });
+};
+
+/** tmux で起動する前の unit の扱い: 移すときは動いている unit を止め（`disabled`）、移さないときに unit が待ち受けていれば `running`、どちらでもなければ `none` */
+const settleUnit = async (
+  options: LaunchOptions & { listening: () => Promise<boolean> },
+): Promise<"disabled" | "running" | "none"> => {
+  const { paths, unit, run, sleep } = options;
+  const state = await readUnitState({ run, unit });
+  const active = state.activeState === "active";
+  if (options.migrate && (active || state.enabled)) {
+    await run("systemctl", ["--user", "disable", "--now", unit]);
+    await waitForPortReleased({ port: paths.port, sleep });
+    return "disabled";
+  }
+  if (!options.migrate && active && (await options.listening())) {
+    return "running";
+  }
+  return "none";
+};
+
+/** 待ち受けなかった tmux のセッションの、ログの末尾を添えた `SetupError` を投げる（上限を超えたときはセッションを閉じる） */
+const failTmuxStart = async (options: {
+  waited: "exited" | "timed_out";
+  run: RunCommand;
+  session: string;
+  logPath: string;
+}): Promise<never> => {
+  const { waited, run, session, logPath } = options;
   if (waited === "exited") {
     throw new SetupError(
-      `mdmark serve が終わりました。${paths.logPath} の末尾:\n${await readLogTail(paths.logPath)}\nポートが使用されているときは、~/.claude/settings.json の env の MDMARK_PORT を空いたポートに変え、セッションをもう一度開いて /mdmark:global-setup をもう一度呼んでください。`,
+      `mdmark serve が終わりました。${logPath} の末尾:\n${await readLogTail(logPath)}\nポートが使用されているときは、~/.claude/settings.json の env の MDMARK_PORT を空いたポートに変え、セッションをもう一度開いて /mdmark:global-setup をもう一度呼んでください。`,
     );
   }
   await run("tmux", ["kill-session", "-t", `=${session}`]);
   throw new SetupError(
-    `常駐サーバーが待ち受けるまでの上限を超えたため、セッション ${session} を閉じました。${paths.logPath} の末尾:\n${await readLogTail(paths.logPath)}\n取得に時間がかかっているので、もう一度 /mdmark:global-setup を呼んでください。`,
+    `常駐サーバーが待ち受けるまでの上限を超えたため、セッション ${session} を閉じました。${logPath} の末尾:\n${await readLogTail(logPath)}\n取得に時間がかかっているので、もう一度 /mdmark:global-setup を呼んでください。`,
     3,
   );
+};
+
+/** 待ち受けているプロセスから MCP のツールの名前を受け取る。受け取れなければポートが使用されている `SetupError` を投げる */
+const listServerTools = async (port: number): Promise<string[]> => {
+  try {
+    return await listToolNames({ port });
+  } catch (error) {
+    throw portInUse(
+      port,
+      `待ち受けているプロセスから MCP のツールの一覧を受け取れません（${error instanceof Error ? error.message : String(error)}）`,
+    );
+  }
 };
 
 /** `start-server`: 起動の方法を決め、systemd --user の unit か tmux のセッションで `mdmark serve` を起動し、待ち受けと `tools/list` を確認する */
@@ -481,15 +571,7 @@ export const startServer = async (options: {
     choice.launcher === "systemd"
       ? await startWithSystemd({ ...launch, writeFile: options.writeFile })
       : await startWithTmux({ ...launch, systemdAvailable });
-  let tools: string[];
-  try {
-    tools = await listToolNames({ port: paths.port });
-  } catch (error) {
-    throw portInUse(
-      paths.port,
-      `待ち受けているプロセスから MCP のツールの一覧を受け取れません（${error instanceof Error ? error.message : String(error)}）`,
-    );
-  }
+  const tools = await listServerTools(paths.port);
   const bySystemd = outcome.launcher === "systemd";
   return {
     result: outcome.result,

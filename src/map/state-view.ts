@@ -68,40 +68,51 @@ export const attachMapState = (
         if (at === composite) return true;
       return false;
     }).length;
-  return attachMapFlow(range, config, args, undefined, {
-    chart,
-    overrides: () => overrides,
-    walkthroughs,
-    bandMode: walkthroughs === undefined ? "walkthrough" : "playback",
-    ...(walkthroughs === undefined ? {} : { bandUnit: "transition" as const }),
-    collapsedTag: (group) =>
-      composites.has(group) ? `状態 ${statesUnder(group)} 件` : undefined,
-    render: (flowArgs) => renderMapStateDiagram({ ...flowArgs, shapes, loops }),
-    selectionOf: (selected) => {
-      const picked = [...selected].filter((id) => kinds.get(id) === "state");
-      if (picked.length !== 1) return undefined;
-      const only = picked[0] as string;
-      const near = chart.edges.filter(
-        (edge) =>
-          !edge.id.startsWith("n") && (edge.from === only || edge.to === only),
-      );
-      return {
-        nodes: new Set([only, ...near.flatMap((edge) => [edge.from, edge.to])]),
-        wires: new Set(near.map((edge) => edge.id)),
-      };
-    },
-    afterRender: (figure, layout, view) => {
-      const old = figure.querySelector(".map-state-loops");
-      if (!old) return;
-      const step =
-        view.step === undefined ? undefined : walkthroughs?.[view.step];
-      const focus = step === undefined ? undefined : new Set(step.edges ?? []);
-      old.outerHTML = renderMapStateLoops({
-        layout,
-        loops,
-        active: focus ?? new Set(),
-        dim: mapStateLoopDim({ loops, selected: view.selected, focus }),
-      });
+  return attachMapFlow(range, config, {
+    args,
+    extension: {
+      chart,
+      overrides: () => overrides,
+      walkthroughs,
+      bandMode: walkthroughs === undefined ? "walkthrough" : "playback",
+      ...(walkthroughs === undefined
+        ? {}
+        : { bandUnit: "transition" as const }),
+      collapsedTag: (group) =>
+        composites.has(group) ? `状態 ${statesUnder(group)} 件` : undefined,
+      render: (flowArgs) =>
+        renderMapStateDiagram({ ...flowArgs, shapes, loops }),
+      selectionOf: (selected) => {
+        const picked = [...selected].filter((id) => kinds.get(id) === "state");
+        if (picked.length !== 1) return undefined;
+        const only = picked[0] as string;
+        const near = chart.edges.filter(
+          (edge) =>
+            !edge.id.startsWith("n") &&
+            (edge.from === only || edge.to === only),
+        );
+        return {
+          nodes: new Set([
+            only,
+            ...near.flatMap((edge) => [edge.from, edge.to]),
+          ]),
+          wires: new Set(near.map((edge) => edge.id)),
+        };
+      },
+      afterRender: (figure, layout, view) => {
+        const old = figure.querySelector(".map-state-loops");
+        if (!old) return;
+        const step =
+          view.step === undefined ? undefined : walkthroughs?.[view.step];
+        const focus =
+          step === undefined ? undefined : new Set(step.edges ?? []);
+        old.outerHTML = renderMapStateLoops({
+          layout,
+          loops,
+          active: focus ?? new Set(),
+          dim: mapStateLoopDim({ loops, selected: view.selected, focus }),
+        });
+      },
     },
   });
 };

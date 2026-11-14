@@ -61,6 +61,62 @@ function galleryWarnings(
   return warnings;
 }
 
+/** 番号を指定されていれば、図表の番号の部品の前と後ろの HTML を返却する。指定が無ければ両方とも空 */
+function figureSlots(figure: GalleryFigure | undefined): [string, string] {
+  if (!figure) {
+    return ["", ""];
+  }
+  const [head = "", tail = ""] = splitSlots(
+    renderFigure({
+      kind: "image",
+      ...(figure.id === undefined ? {} : { id: figure.id }),
+      number: figure.number,
+      body: SLOT_MARKER,
+    }),
+  );
+  return [head, tail];
+}
+
+/** 範囲の中で `position` 番目の画像のサブ図の番号と ID。番号を指定されていないか、文字が足りなければ付けない */
+function subfigureOf(
+  figure: GalleryFigure | undefined,
+  position: number,
+): { id?: string; label?: string } {
+  const letter = figure ? SUBFIGURE_LETTERS[position] : undefined;
+  if (!figure || !letter) {
+    return {};
+  }
+  return {
+    ...(figure.id === undefined ? {} : { id: `fig-${figure.id}-${letter}` }),
+    label: `図 ${figure.number}${letter}`,
+  };
+}
+
+/** ギャラリーの範囲 1 つを、警告と、画像の図を格子に並べたトークンにする */
+function galleryTokens(
+  state: StateCore,
+  range: { token: Token; mark: Mark; images: Token[]; closed: boolean },
+): Token[] {
+  const { token, mark, images, closed } = range;
+  const out = galleryWarnings(mark, { count: images.length, closed }).map(
+    (warning) => warningBlock(state, warning, token),
+  );
+  const { cols } = readGalleryOptions(mark);
+  const figure = (token.meta as { figure?: GalleryFigure }).figure;
+  const [figureHead, figureTail] = figureSlots(figure);
+  const [galleryHead = "", galleryTail = ""] = splitSlots(
+    renderGallery({ cols, body: SLOT_MARKER }),
+  );
+  out.push(ownBlock(state, `${figureHead}${galleryHead}`, token));
+  for (const [position, image] of images.entries()) {
+    out.push(
+      ownBlock(state, imageFigureHtml(image, subfigureOf(figure, position))),
+    );
+  }
+  out.push(ownBlock(state, `${galleryTail}${figureTail}`));
+  return out;
+}
+
 /** `gallery` がオンなら、ギャラリーのマーカーの範囲の画像を画像の図にして格子に並べ、画像以外のトークンを除く。番号を指定されていれば図表の番号で囲み、サブ図の番号を付ける */
 export function buildGallery(state: StateCore): void {
   if (!featureOn(state, "gallery")) {
@@ -77,49 +133,14 @@ export function buildGallery(state: StateCore): void {
     }
     const close = findClose(tokens, index, "gallery");
     const end = close < 0 ? tokens.length : close;
-    const images = imagesIn(tokens.slice(index + 1, end));
-    const { cols } = readGalleryOptions(mark);
-    const figure = (token.meta as { figure?: GalleryFigure }).figure;
-    for (const warning of galleryWarnings(mark, {
-      count: images.length,
-      closed: close >= 0,
-    })) {
-      out.push(warningBlock(state, warning, token));
-    }
-    const [figureHead = "", figureTail = ""] = figure
-      ? splitSlots(
-          renderFigure({
-            kind: "image",
-            ...(figure.id === undefined ? {} : { id: figure.id }),
-            number: figure.number,
-            body: SLOT_MARKER,
-          }),
-        )
-      : [];
-    const [galleryHead = "", galleryTail = ""] = splitSlots(
-      renderGallery({ cols, body: SLOT_MARKER }),
+    out.push(
+      ...galleryTokens(state, {
+        token,
+        mark,
+        images: imagesIn(tokens.slice(index + 1, end)),
+        closed: close >= 0,
+      }),
     );
-    out.push(ownBlock(state, `${figureHead}${galleryHead}`, token));
-    for (const [position, image] of images.entries()) {
-      const letter = figure ? SUBFIGURE_LETTERS[position] : undefined;
-      out.push(
-        ownBlock(
-          state,
-          imageFigureHtml(
-            image,
-            figure && letter
-              ? {
-                  ...(figure.id === undefined
-                    ? {}
-                    : { id: `fig-${figure.id}-${letter}` }),
-                  label: `図 ${figure.number}${letter}`,
-                }
-              : {},
-          ),
-        ),
-      );
-    }
-    out.push(ownBlock(state, `${galleryTail}${figureTail}`));
     index = end;
   }
   state.tokens = out;

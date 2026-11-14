@@ -85,6 +85,27 @@ function renderFoldAll(): string {
     .join("");
 }
 
+/** 右端の線を見出しの数だけ並べた HTML を返却する */
+function renderBars(headings: SideTocHeading[], current: string | undefined) {
+  return headings
+    .map(
+      ({ level, id, changed }) =>
+        `<span class="mdmark-side-toc-bar" data-level="${level}"${id === current ? " data-current" : ""}${changed === true ? " data-changed" : ""}></span>`,
+    )
+    .join("");
+}
+
+/** パネルの頭（すべて展開・すべて折りたたむのボタンとピン止めのボタン）の HTML を返却する */
+function renderHead(options: { sections: boolean; pinned: boolean }): string {
+  const { sections, pinned } = options;
+  const actions = sections
+    ? `<div class="mdmark-side-toc-actions">${renderFoldAll()}</div>`
+    : "";
+  // ピン止めのボタン: 押す前と押した後のアイコンを両方置き、CSS が aria-pressed で片方を出す
+  const pin = `<button class="mdmark-side-toc-pin" type="button" aria-pressed="${pinned}" aria-label="目次をピン止め" title="目次をピン止め"><span class="mdmark-side-toc-pin-off">${iconSvg("panel-right-dashed")}</span><span class="mdmark-side-toc-pin-on">${iconSvg("panel-right")}</span></button>`;
+  return `<div class="mdmark-side-toc-head">${actions}${pin}</div>`;
+}
+
 /** 右側の目次の HTML を返却する。深いレベルの見出しは直前の浅いレベルの入れ子にし、右端の線を見出しの数だけ並べる */
 export function renderSideToc(options: {
   /** 文書の頭からの h1・h2・h3 */
@@ -113,16 +134,8 @@ export function renderSideToc(options: {
   } = options;
   const escapedPanelId = escapeHtml(panelId);
   const currentText = headings.find((heading) => heading.id === current)?.text;
-  const bars = headings
-    .map(
-      ({ level, id, changed }) =>
-        `<span class="mdmark-side-toc-bar" data-level="${level}"${id === current ? " data-current" : ""}${changed === true ? " data-changed" : ""}></span>`,
-    )
-    .join("");
-  const actions = sections
-    ? `<div class="mdmark-side-toc-actions">${renderFoldAll()}</div>`
-    : "";
-  // ピン止めのボタン: 押す前と押した後のアイコンを両方置き、CSS が aria-pressed で片方を出す
-  const pin = `<button class="mdmark-side-toc-pin" type="button" aria-pressed="${pinned}" aria-label="目次をピン止め" title="目次をピン止め"><span class="mdmark-side-toc-pin-off">${iconSvg("panel-right-dashed")}</span><span class="mdmark-side-toc-pin-on">${iconSvg("panel-right")}</span></button>`;
-  return `<aside class="mdmark-side-toc" data-mode="${mode}"${open ? " data-open" : ""}${pinned ? " data-pinned" : ""}><button class="mdmark-side-toc-toggle" type="button" aria-expanded="${open}" aria-controls="${escapedPanelId}" aria-label="目次を表示" title="目次を表示"><span class="mdmark-side-toc-current">${currentText === undefined ? "" : escapeHtml(currentText)}</span>${iconSvg("ellipsis")}</button><div class="mdmark-side-toc-rail" aria-hidden="true">${bars}</div><nav class="mdmark-side-toc-panel" id="${escapedPanelId}" aria-label="右側の目次"><div class="mdmark-side-toc-head">${actions}${pin}</div><ul class="mdmark-side-toc-list">${renderItems(nestHeadings(headings), current)}</ul></nav></aside>`;
+  const bars = renderBars(headings, current);
+  const head = renderHead({ sections, pinned });
+  const flags = `${open ? " data-open" : ""}${pinned ? " data-pinned" : ""}`;
+  return `<aside class="mdmark-side-toc" data-mode="${mode}"${flags}><button class="mdmark-side-toc-toggle" type="button" aria-expanded="${open}" aria-controls="${escapedPanelId}" aria-label="目次を表示" title="目次を表示"><span class="mdmark-side-toc-current">${escapeHtml(currentText ?? "")}</span>${iconSvg("ellipsis")}</button><div class="mdmark-side-toc-rail" aria-hidden="true">${bars}</div><nav class="mdmark-side-toc-panel" id="${escapedPanelId}" aria-label="右側の目次">${head}<ul class="mdmark-side-toc-list">${renderItems(nestHeadings(headings), current)}</ul></nav></aside>`;
 }

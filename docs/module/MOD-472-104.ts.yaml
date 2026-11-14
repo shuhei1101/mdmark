@@ -371,19 +371,23 @@ functions:
     summary: '`libraries` の値と `html-scripts.url`・`mermaid.url`・`syntax.url`（それぞれ無ければライブラリ本体の既定の URL）のうち `http:`・`https:` の URL の origin を、重なりを除いて返却する（CSP の `script-src` に使用する）'
     scope: public
     args:
-      - name: libraries
+      - name: settings
+        type: '{ libraries: Record<string, unknown> | undefined; htmlScripts?: Record<string, unknown>; mermaid?: Record<string, unknown>; syntax?: Record<string, unknown> }'
+        required: true
+        description: 設定から取り出した値
+      - name: settings.libraries
         type: Record<string, unknown> | undefined
         required: true
         description: 取り出した `libraries`
-      - name: htmlScripts
+      - name: settings.htmlScripts
         type: Record<string, unknown> | undefined
         required: false
         description: 取り出した `html-scripts`
-      - name: mermaid
+      - name: settings.mermaid
         type: Record<string, unknown> | undefined
         required: false
         description: 取り出した `mermaid`
-      - name: syntax
+      - name: settings.syntax
         type: Record<string, unknown> | undefined
         required: false
         description: 取り出した `syntax`

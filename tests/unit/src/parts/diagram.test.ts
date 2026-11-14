@@ -27,8 +27,7 @@ const defaultFlow = async (): Promise<MdmarkFlowDefinition> => {
   const layout = layoutMap(
     parseFlowchart(FLOW),
     { collapsed: [], entered: undefined },
-    {},
-    "height",
+    { overrides: {}, nodeFit: "height" },
   );
   const kinds: Record<string, { label?: string; icon?: string }> = CONFIG.kinds;
   return {
@@ -208,8 +207,8 @@ test("test_render_flow", async () => {
     ],
   };
   // 実行
-  const { html, tips } = renderFlow(definition, "d1", true);
-  const jumped = renderFlow(crossing, "d2", true);
+  const { html, tips } = renderFlow(definition, "d1", { hints: true });
+  const jumped = renderFlow(crossing, "d2", { hints: true });
   // 検証
   expect(matches(html, /class="mdmark-diagram-node[ "]/g)).toHaveLength(
     definition.nodes.length,
@@ -233,7 +232,7 @@ test("test_render_flow_when_text_escaped", async () => {
     { id: "c", name: "c" },
   ]);
   // 実行
-  const { html } = renderFlow(definition, "d1", true);
+  const { html } = renderFlow(definition, "d1", { hints: true });
   // 検証
   expect(html).not.toContain("<img");
   expect(html).toContain("&lt;img");
@@ -346,8 +345,8 @@ test("test_render_flow_when_hint", async () => {
   ]);
   const mark = 'aria-label="「窓口の MCP」の説明"';
   // 実行
-  const on = renderFlow(definition, "d1", true);
-  const off = renderFlow(definition, "d1", false);
+  const on = renderFlow(definition, "d1", { hints: true });
+  const off = renderFlow(definition, "d1", { hints: false });
   // 検証
   expect(matches(on.html, /class="mdmark-diagram-info"/g)).toHaveLength(1);
   expect(on.html).toContain(mark);
@@ -409,7 +408,9 @@ test("test_render_er", async () => {
   const { renderEr } = await loadDiagram();
   const definition = shopEr();
   // 実行
-  const { html, tips, width, height } = renderEr(definition, "d1", true);
+  const { html, tips, width, height } = renderEr(definition, "d1", {
+    hints: true,
+  });
   // 検証
   expect(matches(html, /class="mdmark-diagram-er-table/g)).toHaveLength(
     definition.tables.length,
@@ -436,7 +437,7 @@ test("test_render_er_when_hints_off", async () => {
   // 準備
   const { renderEr } = await loadDiagram();
   // 実行
-  const { html, tips } = renderEr(shopEr(), "d1", false);
+  const { html, tips } = renderEr(shopEr(), "d1", { hints: false });
   // 検証
   expect(html).not.toContain("mdmark-diagram-info");
   expect(tips).toBe("");
@@ -550,12 +551,10 @@ test("test_render_er_when_terms", async () => {
     注文: "1 回の買い物",
   };
   // 実行
-  const { html, tips, terms } = renderEr(
-    definition,
-    "d1",
-    true,
-    (word) => meanings[word],
-  );
+  const { html, tips, terms } = renderEr(definition, "d1", {
+    hints: true,
+    lookup: (word) => meanings[word],
+  });
   // 検証
   expect(matches(html, /class="mdmark-term"/g)).toHaveLength(2);
   expect(plainText(html)).not.toContain("{{");
@@ -582,7 +581,7 @@ test("test_render_flow_when_node_link", async () => {
     { id: "store", name: "記録する" },
   ]);
   // 実行
-  const { html } = renderFlow(definition, "d1", true);
+  const { html } = renderFlow(definition, "d1", { hints: true });
   // 検証
   expect(
     matches(

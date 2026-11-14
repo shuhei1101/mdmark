@@ -9,7 +9,7 @@ directory: |-
   │   └── eslint/
   │       ├── package.json       # ESLint 9・TypeScript 6.0・typescript-eslint・plugin だけを持つ package
   │       ├── package-lock.json
-  │       └── eslint.config.js   # VS Code 拡張機能の Webview（vscode/src/webview/）に適用する ESLint の Flat Config
+  │       └── eslint.config.js   # 既存の TypeScript に複雑さの規則を、Webview（vscode/src/webview/）に他の規則も適用する ESLint の Flat Config
   ├── scripts/
   │   └── eslint.ts              # tools/eslint/ の ESLint が無ければ入れてから起動する
   ├── tests/
@@ -18,11 +18,12 @@ directory: |-
   └── package.json               # 検査の npm scripts（lint:eslint・typecheck:vscode・check）
   ```
 
-  整形とリポジトリ全体の lint は今と同じ Biome（`biome check .`）が受け持ち、ESLint は Biome に無い React・アクセシビリティ・import の向き・Tailwind・複雑さの規則だけを Webview に適用する。
+  整形とリポジトリ全体の lint は今と同じ Biome（`biome check .`）が受け持ち、ESLint は Biome に無い複雑さの規則を `src/`・`scripts/`・`vscode/src/`・`plugin/` の TypeScript に、React・アクセシビリティ・import の向き・Tailwind の規則を Webview に適用する。
   配布物の対応ブラウザの下限の確認（`eslint-plugin-compat`）は今と同じく `scripts/baseline.ts` が ESLint の `Linter` を直接呼ぶ（この設定を読み込まない）。
 notes:
   道具を分ける理由: 直下の `typescript` 7.0 は JavaScript の API（`createProgram` など）を持たず、typescript-eslint 8 は TypeScript 6.1 未満だけに対応する。`eslint-plugin-jsx-a11y` 6.10 は ESLint 9 までに対応する。このため ESLint の実行に要るものを `tools/eslint/` に分け、直下の型検査・`scripts/baseline.ts` の ESLint 10 には手を入れない
-  適用の範囲: 複雑さの規則を含む ESLint の規則は Webview（`vscode/src/webview/`）だけに適用する（要件.md の未確定「複雑さの lint を error にする範囲」の案 A）。リポジトリの他の TypeScript へ広げるのは別の Issue で扱う
+  適用の範囲: 複雑さの規則は `src/`・`scripts/`・`vscode/src/`・`plugin/` の TypeScript に適用し、`tests/` には適用しない。他の ESLint の規則は Webview（`vscode/src/webview/`）だけに適用する
+  外部が引数を決めるコールバック: 'markdown-it のルール・`String.prototype.replace` の置き換えの関数など、呼び出し元が 4 つ以上の引数を渡す関数は、残余引数（`...args: Parameters<RenderRule>` など）で 1 つの引数に受けて分割代入する。違反を `eslint-disable` のコメントで除外しない'
   閾値: knowledge の規約『設計原則』が上限の値を持たないため、`sonarjs/cognitive-complexity` は規則の既定（15）、`max-depth` は ESLint の既定（4）、`max-params` は 3（オブジェクトの引数にまとめる今の記載方法に合わせる）、`complexity` は 10 にする
   テストの環境変数: 削除する変数は Git が返却する一覧に任せ、名前を列挙しない。削除するのはテストの起動（`vitest.config.ts`）にし、Vitest の呼び出し元を問わず守る
   開発用の処理の配置場所: npm は GitHub の参照から入れるとき、バージョンのタグの中身で `prepare` を実行するため、`tools/eslint/` の依存の導入を `prepare` に配置しない。`tools/eslint/` の依存は `runEslint` が起動で無いときだけ入れる。`tools/eslint/package-lock.json` が変わった取り込みの後は、開発コマンドの取り込み後の追従でもう一度入れる

@@ -55,6 +55,58 @@ const blockOf = (root: HTMLElement, element: Element): Element => {
   return block;
 };
 
+/** アイコンの名前の描き方。`opts.icons` に無ければ Lucide のモジュールを読み込み、読み込めなければ `undefined` */
+async function iconNodeFor(options: {
+  name: string;
+  icons: Record<string, MdmarkIconNode>;
+  importModule: ImportIconModule;
+}): Promise<MdmarkIconNode | undefined> {
+  const { name, icons, importModule } = options;
+  const own = Object.hasOwn(icons, name) ? icons[name] : undefined;
+  if (own !== undefined) {
+    return own;
+  }
+  try {
+    return iconNodeOf(await importModule(lucideIconUrl(name)));
+  } catch {
+    return undefined;
+  }
+}
+
+/** Lucide に無いアイコンの名前か（`HEAD` が 404 を返却したか。送信できなければ偽） */
+async function isMissingIcon(
+  name: string,
+  fetchHead: FetchHead,
+): Promise<boolean> {
+  try {
+    return (await fetchHead(lucideIconUrl(name))).status === 404;
+  } catch {
+    return false;
+  }
+}
+
+/** 描けなかったアイコンを記載した文字に戻し、Lucide に無い名前なら、ブロックの前に記載の警告を配置する */
+function revertIcons(options: {
+  root: HTMLElement;
+  name: string;
+  elements: HTMLElement[];
+  notFound: boolean;
+}): void {
+  const { root, name, elements, notFound } = options;
+  for (const element of elements) {
+    const code = revertToCode(element, name);
+    if (notFound) {
+      blockOf(root, code).insertAdjacentHTML(
+        "beforebegin",
+        renderSyntaxWarning({
+          mark: `icon:${name}`,
+          message: `の \`${name}\` は Lucide に無いアイコンの名前です。https://lucide.dev/icons/ で名前を確認してください。記載した文字のまま表示しています。`,
+        }),
+      );
+    }
+  }
+}
+
 /** 中が空の行内のアイコンの名前ごとに、`icons` に無ければ jsDelivr のモジュールを 1 回だけ読み込み、svg を同じ名前の全ての場所に入れる。読み込めない名前は行内のコードに戻し、404 は記載の警告、それ以外は文書の先頭に通知ブロックを 1 つだけ配置する */
 export const loadInlineIcons = async (options: {
   /** 描く先の要素 */
@@ -88,14 +140,7 @@ export const loadInlineIcons = async (options: {
   let offline = false;
   await Promise.all(
     [...byName].map(async ([name, elements]) => {
-      let node = Object.hasOwn(icons, name) ? icons[name] : undefined;
-      if (node === undefined) {
-        try {
-          node = iconNodeOf(await importModule(lucideIconUrl(name)));
-        } catch {
-          node = undefined;
-        }
-      }
+      const node = await iconNodeFor({ name, icons, importModule });
       if (!isCurrent()) {
         return;
       }
@@ -106,27 +151,11 @@ export const loadInlineIcons = async (options: {
         }
         return;
       }
-      let notFound = false;
-      try {
-        notFound = (await fetchHead(lucideIconUrl(name))).status === 404;
-      } catch {
-        notFound = false;
-      }
+      const notFound = await isMissingIcon(name, fetchHead);
       if (!isCurrent()) {
         return;
       }
-      for (const element of elements) {
-        const code = revertToCode(element, name);
-        if (notFound) {
-          blockOf(root, code).insertAdjacentHTML(
-            "beforebegin",
-            renderSyntaxWarning({
-              mark: `icon:${name}`,
-              message: `の \`${name}\` は Lucide に無いアイコンの名前です。https://lucide.dev/icons/ で名前を確認してください。記載した文字のまま表示しています。`,
-            }),
-          );
-        }
-      }
+      revertIcons({ root, name, elements, notFound });
       if (!notFound) {
         offline = true;
         console.error(

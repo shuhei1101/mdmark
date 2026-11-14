@@ -71,6 +71,55 @@ const unreadable = (line: number, raw: string): MapProblem => ({
   message: `${line + 1} 行目 \`${raw.trim()}\` を読めません。Mermaid の erDiagram の記法（\`{テーブル} ||--o{ {テーブル} : "{ラベル}"\` など）で記載してください。`,
 });
 
+/** テーブルの `{` の中の列の行を読む（読めなければ `undefined`） */
+const readColumn = (text: string): ErColumn | undefined => {
+  const column = COLUMN_RE.exec(text);
+  if (!column?.[1] || !column[2]) return undefined;
+  return {
+    type: column[1],
+    name: column[2],
+    keys: column[3]?.split(/\s*,\s*/) ?? [],
+    comment: column[4],
+  };
+};
+
+/** 関連の端の記号の多重度（知らない記号は `undefined`） */
+const cardinalityOf = (mark: string | undefined) =>
+  mark ? CARDINALITY[mark] : undefined;
+
+/** 関連の行を読む（読めなければ `undefined`。`id` は付けない） */
+const readRelation = (text: string): Omit<ErRelation, "id"> | undefined => {
+  const relation = RELATION_RE.exec(text);
+  if (!relation?.[1] || !relation[5]) return undefined;
+  const left = cardinalityOf(relation[2]);
+  const right = cardinalityOf(relation[4]);
+  if (!left || !right) return undefined;
+  const label = (relation[6] ?? relation[7] ?? "").trim();
+  return {
+    from: relation[1],
+    to: relation[5],
+    fromCardinality: left,
+    toCardinality: right,
+    dashed: relation[3] === "..",
+    label: label === "" ? undefined : label,
+  };
+};
+
+/** `{` を開いたテーブルと、その行 */
+type OpenTable = { table: ErTable; line: number };
+
+/** テーブルの `{` の中の行を読む。`}` なら閉じて `undefined` を返却し、読めない行は項目を足す */
+const readInTable = (
+  current: OpenTable,
+  at: { text: string; line: number; raw: string; problems: MapProblem[] },
+): OpenTable | undefined => {
+  if (at.text === "}") return undefined;
+  const column = readColumn(at.text);
+  if (column) current.table.columns.push(column);
+  else at.problems.push(unreadable(at.line, at.raw));
+  return current;
+};
+
 /** `erDiagram` の Mermaid を、テーブル・列・関連と読めない行の項目に読む */
 export const parseErDiagram = (source: string): ErDiagram => {
   const tables = new Map<string, ErTable>();
@@ -83,24 +132,13 @@ export const parseErDiagram = (source: string): ErDiagram => {
     tables.set(name, table);
     return table;
   };
-  let current: { table: ErTable; line: number } | undefined;
+  let current: OpenTable | undefined;
   for (const [line, raw] of source.split("\n").entries()) {
     const text = raw.replace(/%%.*$/, "").trim();
     if (line === 0 || text === "") continue;
+    const at = { text, line, raw, problems };
     if (current) {
-      if (text === "}") {
-        current = undefined;
-        continue;
-      }
-      const column = COLUMN_RE.exec(text);
-      if (column?.[1] && column[2]) {
-        current.table.columns.push({
-          type: column[1],
-          name: column[2],
-          keys: column[3]?.split(/\s*,\s*/) ?? [],
-          comment: column[4],
-        });
-      } else problems.push(unreadable(line, raw));
+      current = readInTable(current, at);
       continue;
     }
     const open = TABLE_OPEN_RE.exec(text);
@@ -108,25 +146,14 @@ export const parseErDiagram = (source: string): ErDiagram => {
       current = { table: tableOf(open[1]), line };
       continue;
     }
-    const relation = RELATION_RE.exec(text);
-    const left = relation?.[2] ? CARDINALITY[relation[2]] : undefined;
-    const right = relation?.[4] ? CARDINALITY[relation[4]] : undefined;
-    if (!relation?.[1] || !relation[5] || !left || !right) {
+    const relation = readRelation(text);
+    if (!relation) {
       problems.push(unreadable(line, raw));
       continue;
     }
-    tableOf(relation[1]);
-    tableOf(relation[5]);
-    const label = (relation[6] ?? relation[7] ?? "").trim();
-    relations.push({
-      id: `r${relations.length + 1}`,
-      from: relation[1],
-      to: relation[5],
-      fromCardinality: left,
-      toCardinality: right,
-      dashed: relation[3] === "..",
-      label: label === "" ? undefined : label,
-    });
+    tableOf(relation.from);
+    tableOf(relation.to);
+    relations.push({ id: `r${relations.length + 1}`, ...relation });
   }
   if (current) {
     problems.push({

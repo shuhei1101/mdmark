@@ -102,7 +102,7 @@ function createFigure(): HTMLElement {
   const root = createRootFromHtml(
     renderDiagramFrame(
       { kind: "map", title: "問い合わせの処理", legend: [], id: "tips" },
-      renderFlow(TIP_FLOW, "tips", true),
+      renderFlow(TIP_FLOW, "tips", { hints: true }),
     ),
   );
   const figure = root.querySelector<HTMLElement>("figure.mdmark-diagram");

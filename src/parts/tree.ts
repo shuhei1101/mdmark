@@ -147,9 +147,9 @@ type RenderContext = {
 function renderNode(
   node: TreeNode,
   context: RenderContext,
-  depth: number,
-  path: string,
+  position: { depth: number; path: string },
 ): string {
+  const { depth, path } = position;
   const note = node.note
     ? `<span class="mdmark-tree-note">${node.note}</span>`
     : "";
@@ -166,7 +166,10 @@ function renderNode(
   }
   const nested = children
     .map((child, index) =>
-      renderNode(child, context, depth + 1, `${path}-${index}`),
+      renderNode(child, context, {
+        depth: depth + 1,
+        path: `${path}-${index}`,
+      }),
     )
     .join("");
   if (!context.interactive) {
@@ -212,7 +215,9 @@ export function renderTree(options: {
     ? renderTreeBar({ copyState: copyState ?? "idle" })
     : "";
   const list = `<ul class="mdmark-tree-list" aria-label="ファイルツリー">${nodes
-    .map((node, index) => renderNode(node, context, 0, String(index)))
+    .map((node, index) =>
+      renderNode(node, context, { depth: 0, path: String(index) }),
+    )
     .join("")}</ul>`;
   const panel =
     interactive && copyFallback

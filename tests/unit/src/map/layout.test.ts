@@ -37,8 +37,7 @@ async function laid(
   return layoutMap(
     parseFlowchart(source),
     { collapsed: [], ...view },
-    overrides,
-    nodeFit,
+    { overrides, nodeFit },
   );
 }
 

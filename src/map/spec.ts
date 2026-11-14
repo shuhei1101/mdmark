@@ -75,6 +75,82 @@ const invalidArg = (key: string, expected: string): MapProblem => ({
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === "object" && value !== null && !Array.isArray(value);
 
+/** JSON を読む（読めなければ `undefined`） */
+const parseJson = (text: string): unknown => {
+  try {
+    return JSON.parse(text);
+  } catch {
+    return undefined;
+  }
+};
+
+/** マーカーの引数のキー 1 つの読み方。読めたら `args` に入れて `true` を返却する */
+type MapArgReader = {
+  /** 読めないときの項目に出す、記載できる値 */
+  expected: string;
+  read: (item: unknown, args: MapArgs) => boolean;
+};
+
+/** 空でない文字か */
+const isNonEmptyText = (item: unknown): item is string =>
+  typeof item === "string" && item !== "";
+
+/** `collapse` の引数の構造か */
+const isCollapseArg = (
+  item: unknown,
+): item is { open?: boolean; title?: string } =>
+  isRecord(item) &&
+  (item.open === undefined || typeof item.open === "boolean") &&
+  (item.title === undefined || typeof item.title === "string");
+
+/** キーごとのマーカーの引数の読み方 */
+const MAP_ARG_READERS = {
+  title: {
+    expected: "空でない文字",
+    read: (item, args) => {
+      if (!isNonEmptyText(item)) return false;
+      args.title = item;
+      return true;
+    },
+  },
+  focus: {
+    expected: "空でない文字",
+    read: (item, args) => {
+      if (!isNonEmptyText(item)) return false;
+      args.focus = item;
+      return true;
+    },
+  },
+  play: {
+    expected: ' `"autoplay"` ',
+    read: (item, args) => {
+      if (item !== "autoplay") return false;
+      args.play = "autoplay";
+      return true;
+    },
+  },
+  interval: {
+    expected: "正の数（秒）",
+    read: (item, args) => {
+      if (typeof item !== "number" || !Number.isFinite(item) || item <= 0)
+        return false;
+      args.interval = item;
+      return true;
+    },
+  },
+  collapse: {
+    expected: ' `{"open": false, "title": "見出し"}` の構造',
+    read: (item, args) => {
+      if (!isCollapseArg(item)) return false;
+      args.collapse = {
+        open: item.open === true,
+        title: typeof item.title === "string" ? item.title : undefined,
+      };
+      return true;
+    },
+  },
+} satisfies Record<string, MapArgReader>;
+
 /** マーカーの引数の文字を JSON のオブジェクトとして読み、知っているキーだけを MapArgs にする */
 export const parseMapArgs = (
   source: string,
@@ -92,12 +168,7 @@ export const parseMapArgs = (
   if (text === "") {
     return { args, normalized: "{}", problems, unknownKeys };
   }
-  let value: unknown;
-  try {
-    value = JSON.parse(text);
-  } catch {
-    value = undefined;
-  }
+  const value = parseJson(text);
   if (!isRecord(value)) {
     problems.push({
       kind: "map_invalid_value",
@@ -106,52 +177,13 @@ export const parseMapArgs = (
     return { args, normalized: "{}", problems, unknownKeys };
   }
   for (const [key, item] of Object.entries(value)) {
-    switch (key) {
-      case "title":
-      case "focus":
-        if (typeof item === "string" && item !== "") {
-          args[key] = item;
-          known[key] = item;
-        } else {
-          problems.push(invalidArg(key, "空でない文字"));
-        }
-        break;
-      case "play":
-        if (item === "autoplay") {
-          args.play = "autoplay";
-          known.play = item;
-        } else {
-          problems.push(invalidArg(key, ' `"autoplay"` '));
-        }
-        break;
-      case "interval":
-        if (typeof item === "number" && Number.isFinite(item) && item > 0) {
-          args.interval = item;
-          known.interval = item;
-        } else {
-          problems.push(invalidArg(key, "正の数（秒）"));
-        }
-        break;
-      case "collapse":
-        if (
-          isRecord(item) &&
-          (item.open === undefined || typeof item.open === "boolean") &&
-          (item.title === undefined || typeof item.title === "string")
-        ) {
-          args.collapse = {
-            open: item.open === true,
-            title: typeof item.title === "string" ? item.title : undefined,
-          };
-          known.collapse = item;
-        } else {
-          problems.push(
-            invalidArg(key, ' `{"open": false, "title": "見出し"}` の構造'),
-          );
-        }
-        break;
-      default:
-        unknownKeys.push(key);
+    if (!Object.hasOwn(MAP_ARG_READERS, key)) {
+      unknownKeys.push(key);
+      continue;
     }
+    const reader = MAP_ARG_READERS[key as keyof typeof MAP_ARG_READERS];
+    if (reader.read(item, args)) known[key] = item;
+    else problems.push(invalidArg(key, reader.expected));
   }
   return { args, normalized: JSON.stringify(known), problems, unknownKeys };
 };

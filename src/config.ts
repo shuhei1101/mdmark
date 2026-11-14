@@ -216,32 +216,110 @@ export const MERMAID_THEMES: readonly MermaidTheme[] = [
 /** 設定の `themeVariables` でも変えさせない mermaid のテーマの変数 */
 const FIXED_MERMAID_VARIABLES = new Set(["useGradient", "dropShadow"]);
 
+/** テーマの変数は、マップのときだけ値が文字列のキーを取り、固定の変数は取らない */
+const pickThemeVariables = (given: unknown): Record<string, string> => {
+  const themeVariables: Record<string, string> = {};
+  if (given === null || typeof given !== "object" || Array.isArray(given)) {
+    return themeVariables;
+  }
+  for (const [key, value] of Object.entries(given)) {
+    if (typeof value === "string" && !FIXED_MERMAID_VARIABLES.has(key)) {
+      themeVariables[key] = value;
+    }
+  }
+  return themeVariables;
+};
+
 /** 設定の `mermaid` に既定を適用する */
 const resolveMermaid = (
   mermaid: MdmarkConfig["mermaid"],
-): ResolvedConfig["mermaid"] => {
-  const url =
-    typeof mermaid?.url === "string" ? mermaid.url : DEFAULT_MERMAID_URL;
-  const theme =
-    MERMAID_THEMES.find((name) => name === mermaid?.theme) ?? "mdmark";
-  // テーマの変数は、マップのときだけ値が文字列のキーを取り、固定の変数は取らない
-  const given = mermaid?.themeVariables;
-  const themeVariables: Record<string, string> = {};
-  if (given !== null && typeof given === "object" && !Array.isArray(given)) {
-    for (const [key, value] of Object.entries(given)) {
-      if (typeof value === "string" && !FIXED_MERMAID_VARIABLES.has(key)) {
-        themeVariables[key] = value;
-      }
-    }
-  }
-  return { url, theme, themeVariables };
-};
+): ResolvedConfig["mermaid"] => ({
+  url: urlOr(mermaid?.url, DEFAULT_MERMAID_URL),
+  theme: MERMAID_THEMES.find((name) => name === mermaid?.theme) ?? "mdmark",
+  themeVariables: pickThemeVariables(mermaid?.themeVariables),
+});
 
 /** マーカーの名前から `LibraryEntry` を参照する既定の対応表 */
 export const DEFAULT_LIBRARIES: Record<string, LibraryEntry> = {};
 
 /** マーカーの名前と設定の `libraries` のキーが合うべき書式 */
 export const MARK_NAME_PATTERN = /^[a-z][a-z0-9-]*$/;
+
+/** 機能は、知っているものだけを真偽値で置き換える */
+function resolveFeatures(
+  given: MdmarkConfig["features"],
+): Record<string, boolean> {
+  const features = { ...DEFAULT_FEATURES };
+  for (const name of Object.keys(DEFAULT_FEATURES)) {
+    const value = given?.[name];
+    if (typeof value === "boolean") {
+      features[name] = value;
+    }
+  }
+  return features;
+}
+
+/** 対応表は、既定の行をコピーしてから設定の行を重ねる。既定にある名前は URL だけを置き換え、無い名前は図のマーカーとして追加する */
+function resolveLibraries(
+  given: MdmarkConfig["libraries"],
+  defaultLibraries: Record<string, LibraryEntry>,
+): Record<string, LibraryEntry> {
+  const libraries: Record<string, LibraryEntry> = {};
+  for (const [name, entry] of Object.entries(defaultLibraries)) {
+    libraries[name] = { ...entry };
+  }
+  for (const [name, url] of Object.entries(given ?? {})) {
+    if (!MARK_NAME_PATTERN.test(name) || typeof url !== "string") {
+      continue;
+    }
+    const existing = Object.hasOwn(libraries, name)
+      ? libraries[name]
+      : undefined;
+    libraries[name] = existing ? { ...existing, url } : { url, figure: true };
+  }
+  return libraries;
+}
+
+/** 出す場所は、本文の用語などは bottom だけ、図は top だけを受け、他の値は既定にする */
+function resolveTooltips(
+  tooltips: MdmarkConfig["tooltips"],
+): ResolvedConfig["tooltips"] {
+  return {
+    placement: tooltips?.placement === "bottom" ? "bottom" : "top",
+    diagramPlacement: tooltips?.diagramPlacement === "top" ? "top" : "bottom",
+  };
+}
+
+/** 読み込み先の URL は、文字列のときだけ受け、他の値は既定にする */
+function urlOr(url: unknown, fallback: string): string {
+  return typeof url === "string" ? url : fallback;
+}
+
+/** 表の設定。ピン止めの動きは through だけを受け、他の値は each にする。長文の列の最小の幅は、0 より大きい有限の数だけを受け、他の値は既定にする */
+function resolveTable(table: MdmarkConfig["table"]): ResolvedConfig["table"] {
+  const requestedMin = table?.long_column_min;
+  const valid =
+    typeof requestedMin === "number" &&
+    Number.isFinite(requestedMin) &&
+    requestedMin > 0;
+  return {
+    pin: table?.pin === "through" ? "through" : "each",
+    longColumnMin: valid ? requestedMin : DEFAULT_LONG_COLUMN_MIN_EM,
+  };
+}
+
+/** 部品の文言は、空でない文字列だけを受け、他の値は既定にする */
+function resolveLabels(
+  labels: MdmarkConfig["labels"],
+): ResolvedConfig["labels"] {
+  const paramCopy = labels?.paramCopy;
+  return {
+    paramCopy:
+      typeof paramCopy === "string" && paramCopy !== ""
+        ? paramCopy
+        : DEFAULT_LABELS.paramCopy,
+  };
+}
 
 /** 利用側の設定に既定を当て、型の合わない値を落とした設定を返却する */
 export function resolveConfig(options: {
@@ -250,89 +328,25 @@ export function resolveConfig(options: {
   /** 既定の対応表（単体テストで差し替える） */
   defaultLibraries?: Record<string, LibraryEntry>;
 }): ResolvedConfig {
-  const { config, defaultLibraries = DEFAULT_LIBRARIES } = options;
-  // 機能は、知っているものだけを真偽値で置き換える
-  const features = { ...DEFAULT_FEATURES };
-  for (const name of Object.keys(DEFAULT_FEATURES)) {
-    const value = config?.features?.[name];
-    if (typeof value === "boolean") {
-      features[name] = value;
-    }
-  }
-  // 対応表は、既定の行をコピーしてから設定の行を重ねる
-  const libraries: Record<string, LibraryEntry> = {};
-  for (const [name, entry] of Object.entries(defaultLibraries)) {
-    libraries[name] = { ...entry };
-  }
-  for (const [name, url] of Object.entries(config?.libraries ?? {})) {
-    if (!MARK_NAME_PATTERN.test(name) || typeof url !== "string") {
-      continue;
-    }
-    // 既定にある名前は URL だけを置き換え、無い名前は図のマーカーとして追加する
-    const existing = Object.hasOwn(libraries, name)
-      ? libraries[name]
-      : undefined;
-    libraries[name] = existing ? { ...existing, url } : { url, figure: true };
-  }
-  // 出す場所は、bottom だけを受け、他の値は top にする
-  const placement: TooltipPlacement =
-    config?.tooltips?.placement === "bottom" ? "bottom" : "top";
-  const diagramPlacement: TooltipPlacement =
-    config?.tooltips?.diagramPlacement === "top" ? "top" : "bottom";
-  // 色分けのライブラリの読み込み先は、文字列のときだけ受け、他の値は既定にする
-  const url = config?.syntax?.url;
-  const syntax = { url: typeof url === "string" ? url : DEFAULT_SYNTAX_URL };
-  // 範囲のスクリプトの変換のライブラリの読み込み先は、文字列のときだけ受け、他の値は既定にする
-  const htmlScriptsUrl = config?.["html-scripts"]?.url;
-  const htmlScripts = {
-    url:
-      typeof htmlScriptsUrl === "string"
-        ? htmlScriptsUrl
-        : DEFAULT_HTML_SCRIPTS_URL,
-  };
-  // 右側の目次の出し方は、fixed だけを受け、他の値は hover にする
-  const mode: SideTocMode =
-    config?.["side-toc"]?.mode === "fixed" ? "fixed" : "hover";
-  // 表のピン止めの動きは、through だけを受け、他の値は each にする
-  const pin: TablePinMode =
-    config?.table?.pin === "through" ? "through" : "each";
-  // 長文の列の最小の幅は、0 より大きい有限の数だけを受け、他の値は既定にする
-  const requestedMin = config?.table?.long_column_min;
-  const longColumnMin =
-    typeof requestedMin === "number" &&
-    Number.isFinite(requestedMin) &&
-    requestedMin > 0
-      ? requestedMin
-      : DEFAULT_LONG_COLUMN_MIN_EM;
-  // テーマは、COLOR_THEMES にある名前だけを受け、他の値は既定にする
-  const colorTheme =
-    COLOR_THEMES.find((name) => name === config?.colorTheme) ??
-    DEFAULT_COLOR_THEME;
-  // 明暗は、COLOR_SCHEMES にある値だけを受け、他の値は既定にする
-  const colorScheme =
-    COLOR_SCHEMES.find((name) => name === config?.colorScheme) ??
-    DEFAULT_COLOR_SCHEME;
-  // 部品の文言は、空でない文字列だけを受け、他の値は既定にする
-  const paramCopy = config?.labels?.paramCopy;
-  const labels = {
-    paramCopy:
-      typeof paramCopy === "string" && paramCopy !== ""
-        ? paramCopy
-        : DEFAULT_LABELS.paramCopy,
-  };
+  const { config = {}, defaultLibraries = DEFAULT_LIBRARIES } = options;
   return {
-    features,
-    libraries,
-    tooltips: { placement, diagramPlacement },
-    syntax,
-    htmlScripts,
-    mermaid: resolveMermaid(config?.mermaid),
-    sideToc: { mode },
-    table: { pin, longColumnMin },
-    colorTheme,
-    colorScheme,
-    labels,
-    map: resolveMapConfig(config?.map),
+    features: resolveFeatures(config.features),
+    libraries: resolveLibraries(config.libraries, defaultLibraries),
+    tooltips: resolveTooltips(config.tooltips),
+    syntax: { url: urlOr(config.syntax?.url, DEFAULT_SYNTAX_URL) },
+    htmlScripts: {
+      url: urlOr(config["html-scripts"]?.url, DEFAULT_HTML_SCRIPTS_URL),
+    },
+    mermaid: resolveMermaid(config.mermaid),
+    // 右側の目次の出し方は、fixed だけを受け、他の値は hover にする
+    sideToc: { mode: config["side-toc"]?.mode === "fixed" ? "fixed" : "hover" },
+    table: resolveTable(config.table),
+    // テーマ・明暗は、COLOR_THEMES・COLOR_SCHEMES にある値だけを受け、他の値は既定にする
+    colorTheme: oneOf(COLOR_THEMES, config.colorTheme) ?? DEFAULT_COLOR_THEME,
+    colorScheme:
+      oneOf(COLOR_SCHEMES, config.colorScheme) ?? DEFAULT_COLOR_SCHEME,
+    labels: resolveLabels(config.labels),
+    map: resolveMapConfig(config.map),
   };
 }
 
@@ -363,36 +377,44 @@ const oneOf = <T extends string>(
     ? (value as T)
     : undefined;
 
+/** 値が連想配列ならその行、そうでなければ空の行 */
+const recordEntries = (value: unknown): Array<[string, unknown]> =>
+  Object.entries(isRecord(value) ? value : {});
+
+/** 種類の見た目の行から、知っているキーの値だけを取る */
+const resolveMapKind = (kind: Record<string, unknown>): MapKind => {
+  const entry: MapKind = {};
+  if (typeof kind.label === "string") entry.label = kind.label;
+  if (typeof kind.icon === "string") entry.icon = kind.icon;
+  const shape = oneOf(MAP_SHAPES, kind.shape);
+  if (shape) entry.shape = shape;
+  if (typeof kind.color === "string") entry.color = kind.color;
+  return entry;
+};
+
+/** 線の見た目の行から、知っているキーの値だけを取る */
+const resolveMapLine = (line: Record<string, unknown>): MapLine => {
+  const entry: MapLine = {};
+  const dash = oneOf(MAP_DASHES, line.dash);
+  if (dash) entry.dash = dash;
+  const width = oneOf(MAP_WIDTHS, line.width);
+  if (width) entry.width = width;
+  const head = oneOf(MAP_HEADS, line.head);
+  if (head) entry.head = head;
+  if (typeof line.color === "string") entry.color = line.color;
+  return entry;
+};
+
 /** 設定の map に既定を当て、知らない値を既定にする（キーごとの値のうち合わないものは捨てる） */
 export const resolveMapConfig = (value: unknown): ResolvedMapConfig => {
   const map = isRecord(value) ? value : {};
   const kinds: Record<string, MapKind> = {};
-  for (const [name, kind] of Object.entries(
-    isRecord(map.kinds) ? map.kinds : {},
-  )) {
-    if (!isRecord(kind)) continue;
-    const entry: MapKind = {};
-    if (typeof kind.label === "string") entry.label = kind.label;
-    if (typeof kind.icon === "string") entry.icon = kind.icon;
-    const shape = oneOf(MAP_SHAPES, kind.shape);
-    if (shape) entry.shape = shape;
-    if (typeof kind.color === "string") entry.color = kind.color;
-    kinds[name] = entry;
+  for (const [name, kind] of recordEntries(map.kinds)) {
+    if (isRecord(kind)) kinds[name] = resolveMapKind(kind);
   }
   const lines: Record<string, MapLine> = {};
-  for (const [name, line] of Object.entries(
-    isRecord(map.lines) ? map.lines : {},
-  )) {
-    if (!isRecord(line)) continue;
-    const entry: MapLine = {};
-    const dash = oneOf(MAP_DASHES, line.dash);
-    if (dash) entry.dash = dash;
-    const width = oneOf(MAP_WIDTHS, line.width);
-    if (width) entry.width = width;
-    const head = oneOf(MAP_HEADS, line.head);
-    if (head) entry.head = head;
-    if (typeof line.color === "string") entry.color = line.color;
-    lines[name] = entry;
+  for (const [name, line] of recordEntries(map.lines)) {
+    if (isRecord(line)) lines[name] = resolveMapLine(line);
   }
   return {
     node_fit: map.node_fit === "width" ? "width" : "height",

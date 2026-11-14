@@ -81,24 +81,35 @@ const collectKeys = (options: {
       push(path, node);
     }
   }
-  if (
-    schema.additionalProperties !== undefined &&
-    schema.additionalProperties !== false
-  ) {
-    const here = getIn(current, prefix);
-    if (typeof here === "object" && here !== null) {
-      for (const name of Object.keys(here)) {
-        if (!(name in properties)) {
-          push(
-            [...prefix, name],
-            typeof schema.additionalProperties === "object"
-              ? schema.additionalProperties
-              : undefined,
-          );
-        }
-      }
-    }
+  for (const name of additionalKeys({ properties, prefix, schema, current })) {
+    push(
+      [...prefix, name],
+      typeof schema.additionalProperties === "object"
+        ? schema.additionalProperties
+        : undefined,
+    );
   }
+};
+
+/** `additionalProperties` で受けるキーのうち、今の値にあるものの名前 */
+const additionalKeys = (options: {
+  properties: Record<string, JsonSchema>;
+  prefix: string[];
+  schema: JsonSchema;
+  current: Record<string, unknown>;
+}): string[] => {
+  const { properties, prefix, schema, current } = options;
+  if (
+    schema.additionalProperties === undefined ||
+    schema.additionalProperties === false
+  ) {
+    return [];
+  }
+  const here = getIn(current, prefix);
+  if (typeof here !== "object" || here === null) {
+    return [];
+  }
+  return Object.keys(here).filter((name) => !(name in properties));
 };
 
 /** Schema の葉のキーごとに、今の値・端末の設定の値・既定・説明を Schema の並びで返却する */

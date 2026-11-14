@@ -1,4 +1,5 @@
 import type { StateCore, Token } from "markdown-it";
+import type { MdmarkAlias } from "../../knowledge/aliases.ts";
 import {
   buildDictionary,
   type Dictionary,
@@ -34,6 +35,108 @@ function matchWords(dictionary: Dictionary): string[] {
     : [...new Set([...dictionary.words, ...dictionary.avoided.keys()])];
 }
 
+/** 単語にツールチップを付けるときに、文字の中の全ての単語で共通に使用するもの */
+type TipContext = {
+  text: string;
+  dictionary: Dictionary;
+  ownPath: string | undefined;
+  seen: SeenTerms;
+  nextTipId: () => string;
+};
+
+/** 文字の中で辞書の単語が該当した場所 */
+type FoundWord = ReturnType<typeof findWords>[number];
+
+/** やめた言い方に、言い換えのツールチップを付ける。同じ言い方に付けてあれば `undefined` */
+function avoidedTip(
+  found: FoundWord,
+  replacement: { term: string; meaning?: string | undefined },
+  context: TipContext,
+): string | undefined {
+  const { text, seen, nextTipId } = context;
+  if (seen.avoided.has(found.word)) {
+    return undefined;
+  }
+  seen.avoided.add(found.word);
+  return renderTermTip({
+    text: text.slice(found.start, found.end),
+    id: nextTipId(),
+    replacement: {
+      term: replacement.term,
+      ...(replacement.meaning === undefined
+        ? {}
+        : { meaning: replacement.meaning }),
+    },
+  });
+}
+
+/** エイリアスは、文書の別名と同じ単語でも関連文書を出さず、エイリアスごとに最初の 1 回だけ下線を付ける */
+function aliasTip(
+  found: FoundWord,
+  term: { id: string; alias: MdmarkAlias },
+  context: TipContext,
+): string | undefined {
+  const { text, seen, nextTipId } = context;
+  if (seen.terms.has(term.id)) {
+    return undefined;
+  }
+  seen.terms.add(term.id);
+  return renderTermTip({
+    text: text.slice(found.start, found.end),
+    id: nextTipId(),
+    alias: term.alias,
+  });
+}
+
+/** 用語の意味と、単語を別名に持つ関連文書のツールチップを付ける。用語にも文書にも付けてあれば `undefined` */
+function meaningTip(
+  found: FoundWord,
+  term: { id: string; meaning: string } | undefined,
+  context: TipContext,
+): string | undefined {
+  const { text, dictionary, ownPath, seen, nextTipId } = context;
+  const activeTerm =
+    term !== undefined && !seen.terms.has(term.id) ? term : undefined;
+  const docs = (dictionary.docs.get(found.word) ?? []).filter(
+    (doc) => !seen.docs.has(doc.id),
+  );
+  if (activeTerm === undefined && docs.length === 0) {
+    return undefined;
+  }
+  if (activeTerm) {
+    seen.terms.add(activeTerm.id);
+  }
+  for (const doc of docs) {
+    seen.docs.add(doc.id);
+  }
+  return renderTermTip({
+    text: text.slice(found.start, found.end),
+    id: nextTipId(),
+    meaning: activeTerm?.meaning ?? "",
+    docs: docs.map((doc) => ({
+      title: doc.title,
+      href: relativeHref(ownPath, doc.path),
+      ...(doc.description === undefined
+        ? {}
+        : { description: doc.description }),
+    })),
+  });
+}
+
+/** 該当した単語 1 つのツールチップの HTML。用語 → やめた言い方 → 文書の別名の順に参照する。文書の別名と同じやめた言い方は、関連文書を出さずにやめた言い方にする */
+function tipOf(found: FoundWord, context: TipContext): string | undefined {
+  const term = context.dictionary.terms.get(found.word);
+  const replacement =
+    term === undefined ? context.dictionary.avoided.get(found.word) : undefined;
+  if (replacement !== undefined) {
+    return avoidedTip(found, replacement, context);
+  }
+  if (term?.alias !== undefined) {
+    return aliasTip(found, { id: term.id, alias: term.alias }, context);
+  }
+  return meaningTip(found, term, context);
+}
+
 /** 文字を辞書の単語で区切る。同じ用語・文書は `seen` にあれば付けず、付けたら `seen` に追加する。ツールチップの `id` は `nextTipId` が決める。単語が 1 つも該当しなければ文字 1 つだけを返却する */
 export function termSegments(options: {
   /** 照合する文字 */
@@ -49,68 +152,13 @@ export function termSegments(options: {
   /** mdmark が出した要素のマーカーの値 */
   nonce: string;
 }): TermSegment[] {
-  const { text, dictionary, ownPath, seen, nextTipId, nonce } = options;
+  const { text, dictionary, nonce } = options;
   const segments: TermSegment[] = [];
   let cursor = 0;
   for (const found of findWords(text, matchWords(dictionary))) {
-    const term = dictionary.terms.get(found.word);
-    // 用語 → やめた言い方 → 文書の別名の順に参照する。文書の別名と同じやめた言い方は、関連文書を出さずにやめた言い方にする
-    const replacement =
-      term === undefined ? dictionary.avoided.get(found.word) : undefined;
-    let html: string;
-    if (replacement !== undefined) {
-      if (seen.avoided.has(found.word)) {
-        continue;
-      }
-      seen.avoided.add(found.word);
-      html = renderTermTip({
-        text: text.slice(found.start, found.end),
-        id: nextTipId(),
-        replacement: {
-          term: replacement.term,
-          ...(replacement.meaning === undefined
-            ? {}
-            : { meaning: replacement.meaning }),
-        },
-      });
-    } else if (term?.alias !== undefined) {
-      // エイリアスは、文書の別名と同じ単語でも関連文書を出さず、エイリアスごとに最初の 1 回だけ下線を付ける
-      if (seen.terms.has(term.id)) {
-        continue;
-      }
-      seen.terms.add(term.id);
-      html = renderTermTip({
-        text: text.slice(found.start, found.end),
-        id: nextTipId(),
-        alias: term.alias,
-      });
-    } else {
-      const activeTerm =
-        term !== undefined && !seen.terms.has(term.id) ? term : undefined;
-      const docs = (dictionary.docs.get(found.word) ?? []).filter(
-        (doc) => !seen.docs.has(doc.id),
-      );
-      if (activeTerm === undefined && docs.length === 0) {
-        continue;
-      }
-      if (activeTerm) {
-        seen.terms.add(activeTerm.id);
-      }
-      for (const doc of docs) {
-        seen.docs.add(doc.id);
-      }
-      html = renderTermTip({
-        text: text.slice(found.start, found.end),
-        id: nextTipId(),
-        meaning: activeTerm?.meaning ?? "",
-        docs: docs.map((doc) => ({
-          title: doc.title,
-          href: relativeHref(ownPath, doc.path),
-          ...(doc.description === undefined
-            ? {}
-            : { description: doc.description }),
-        })),
-      });
+    const html = tipOf(found, options);
+    if (html === undefined) {
+      continue;
     }
     if (found.start > cursor) {
       segments.push({ kind: "text", content: text.slice(cursor, found.start) });

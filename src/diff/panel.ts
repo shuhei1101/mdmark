@@ -86,34 +86,36 @@ export function scopeIds(options: {
     return;
   }
   for (const element of [root, ...root.querySelectorAll("*")]) {
-    for (const attribute of [...element.attributes]) {
-      const { name, value } = attribute;
-      if (ID_LIST_ATTRIBUTES.includes(name)) {
-        element.setAttribute(
-          name,
-          value
-            .split(/\s+/)
-            .map((id) => scoped.get(id) ?? id)
-            .join(" "),
-        );
-      } else if (
-        (name === "href" || name === "xlink:href") &&
-        value[0] === "#"
-      ) {
-        element.setAttribute(
-          name,
-          `#${scoped.get(value.slice(1)) ?? value.slice(1)}`,
-        );
-      } else if (value.includes("url(#")) {
-        element.setAttribute(
-          name,
-          value.replace(URL_REFERENCE, (match, id: string) =>
-            scoped.has(id) ? `url(#${scoped.get(id)})` : match,
-          ),
-        );
+    for (const { name, value } of [...element.attributes]) {
+      const next = scopedValue(name, value, scoped);
+      if (next !== undefined) {
+        element.setAttribute(name, next);
       }
     }
   }
+}
+
+/** `id` を指す属性の値を、頭を付けた `id` を指す値にする。`id` を指さない属性は `undefined` */
+function scopedValue(
+  name: string,
+  value: string,
+  scoped: Map<string, string>,
+): string | undefined {
+  if (ID_LIST_ATTRIBUTES.includes(name)) {
+    return value
+      .split(/\s+/)
+      .map((id) => scoped.get(id) ?? id)
+      .join(" ");
+  }
+  if ((name === "href" || name === "xlink:href") && value[0] === "#") {
+    return `#${scoped.get(value.slice(1)) ?? value.slice(1)}`;
+  }
+  if (value.includes("url(#")) {
+    return value.replace(URL_REFERENCE, (match, id: string) =>
+      scoped.has(id) ? `url(#${scoped.get(id)})` : match,
+    );
+  }
+  return undefined;
 }
 
 /** 埋め込んだ HTML の範囲の塊の前と後を、今の描画で描く。描いた中身に置き換えたブロックと、範囲ごとの操作を付ける関数を返却する */
@@ -122,12 +124,14 @@ function renderBlocks(
   renderHtml: DiffHtmlRenderer,
 ): { blocks: DiffBlock[]; ranges: RangeAttaches[] } {
   const ranges: RangeAttaches[] = [];
+  const render = (html: string | null) =>
+    html === null ? null : renderHtml(html);
   const rendered = blocks.map((block) => {
     if (block.type !== "html") {
       return block;
     }
-    const before = block.before === null ? null : renderHtml(block.before);
-    const after = block.after === null ? null : renderHtml(block.after);
+    const before = render(block.before);
+    const after = render(block.after);
     ranges.push({
       before: before?.attach ?? null,
       after: after?.attach ?? null,

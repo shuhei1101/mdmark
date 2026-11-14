@@ -9,7 +9,11 @@ import {
   type ResolvedMapConfig,
 } from "./spec.ts";
 import { parseStateDiagram } from "./state-diagram.ts";
-import { collectMapStructure, type MapRangeSource } from "./structure.ts";
+import {
+  collectMapStructure,
+  type MapKindName,
+  type MapRangeSource,
+} from "./structure.ts";
 
 export {
   collectMapStructure,
@@ -70,12 +74,214 @@ const groupProblems = (
   return problems;
 };
 
-/** 補足と Mermaid の中身・設定まで含めて、範囲の書き方の誤りを全て集める */
+/** 項目の行を、範囲の開きのマーカーからの行にずらす（`offset` が無ければ行を持たせたまま） */
+const shiftProblems = (
+  items: MapProblem[],
+  offset: number | undefined,
+): MapProblem[] =>
+  items.map((item) =>
+    item.line === undefined || offset === undefined
+      ? { ...item, line: item.line === undefined ? undefined : item.line }
+      : { ...item, line: item.line + offset },
+  );
+
+/** Mermaid が持つ ID と、その読み取りの項目 */
+type MermaidIds = {
+  /** ノード・線・グループ・参加者などの ID */
+  ids: Set<string>;
+  /** 線・関連・遷移の ID */
+  edgeIds: Set<string>;
+  /** ノードのクラス */
+  classes: Set<string>;
+  /** ER 図のテーブル名 */
+  tables: Set<string>;
+  /** Mermaid の読み取りの項目（範囲の開きのマーカーからの行） */
+  problems: MapProblem[];
+  /** ノードのリンク先の項目 */
+  linkProblems: MapProblem[];
+};
+
+/** 空の `MermaidIds` */
+const emptyMermaidIds = (problems: MapProblem[]): MermaidIds => ({
+  ids: new Set(),
+  edgeIds: new Set(),
+  classes: new Set(),
+  tables: new Set(),
+  problems,
+  linkProblems: [],
+});
+
+/** フローチャートの ID */
+const flowchartIds = (mermaid: string, line: number | undefined) => {
+  const chart = parseFlowchart(mermaid);
+  const found = emptyMermaidIds(shiftProblems(chart.problems, line));
+  found.linkProblems.push(...mapLinkProblems(chart.links).problems);
+  for (const node of chart.nodes) {
+    found.ids.add(node.id);
+    for (const name of node.classes) found.classes.add(name);
+  }
+  for (const group of chart.groups) found.ids.add(group.id);
+  for (const edge of chart.edges) {
+    found.ids.add(edge.id);
+    found.edgeIds.add(edge.id);
+  }
+  return found;
+};
+
+/** ER 図の ID（補足の分類の ID を含む） */
+const erIds = (
+  mermaid: string,
+  line: number | undefined,
+  data: MapData,
+): MermaidIds => {
+  const er = parseErDiagram(mermaid);
+  const found = emptyMermaidIds(shiftProblems(er.problems, line));
+  for (const table of er.tables) {
+    found.ids.add(table.name);
+    found.tables.add(table.name);
+    for (const column of table.columns)
+      found.ids.add(`${table.name}.${column.name}`);
+  }
+  for (const relation of er.relations) {
+    found.ids.add(relation.id);
+    found.edgeIds.add(relation.id);
+  }
+  for (const id of Object.keys(data.groups)) found.ids.add(id);
+  return found;
+};
+
+/** 状態遷移図の ID */
+const stateIds = (mermaid: string, line: number | undefined): MermaidIds => {
+  const diagram = parseStateDiagram(mermaid);
+  const found = emptyMermaidIds(shiftProblems(diagram.problems, line));
+  for (const state of diagram.states) found.ids.add(state.id);
+  for (const composite of diagram.composites) found.ids.add(composite.id);
+  for (const transition of diagram.transitions) {
+    found.ids.add(transition.id);
+    found.edgeIds.add(transition.id);
+  }
+  return found;
+};
+
+/** シーケンス図の ID（参加者の ID と、メッセージ・ブロックの番号） */
+const sequenceIds = (mermaid: string, line: number | undefined): MermaidIds => {
+  const sequence = parseSequence(mermaid);
+  const found = emptyMermaidIds(shiftProblems(sequence.problems, line));
+  for (const participant of sequence.participants)
+    found.ids.add(participant.id);
+  for (const index of sequence.messages.keys())
+    found.ids.add(String(index + 1));
+  for (const index of sequence.fragments.keys()) found.ids.add(String(index));
+  return found;
+};
+
+/** 図の種類ごとに Mermaid を読み、ID を集める */
+const mermaidIdsOf = (
+  kind: MapKindName,
+  source: { mermaid: string; line: number | undefined; data: MapData },
+): MermaidIds => {
+  const { mermaid, line, data } = source;
+  switch (kind) {
+    case "flowchart":
+      return flowchartIds(mermaid, line);
+    case "erDiagram":
+      return erIds(mermaid, line, data);
+    case "stateDiagram":
+      return stateIds(mermaid, line);
+    default:
+      return sequenceIds(mermaid, line);
+  }
+};
+
+/** 補足の項目を確かめるときに引く値 */
+type DataContext = {
+  kind: MapKindName;
+  found: MermaidIds;
+  data: MapData;
+  config: ResolvedMapConfig;
+  /** 補足の中のパスの行を、範囲の開きのマーカーからの行にする */
+  lineOf: (path: string) => number | undefined;
+  /** 補足の `path` が指す `id` が Mermaid に無ければ、項目を足す */
+  ref: (path: string, id: string | undefined) => void;
+  problems: MapProblem[];
+};
+
+/** 文書の注記の定義の ID を受けたときだけ、定義の無い注記の参照を確かめる */
+const annotationProblems = (
+  context: DataContext,
+  annotationIds: ReadonlySet<string> | undefined,
+): MapProblem[] => {
+  if (annotationIds === undefined) return [];
+  return Object.entries(context.data.notes).flatMap(([id, note]) =>
+    (note.annotations ?? [])
+      .filter((annotation) => !annotationIds.has(annotation))
+      .map(
+        (annotation): MapProblem => ({
+          kind: "annotation_undefined",
+          line: context.lineOf(`notes.${id}.annotations`),
+          message: `補足の \`notes.${id}.annotations\` が指す注記 \`※[${annotation}]\` の定義がありません。\`※[${annotation}]: 本文\` を記載するか、ID を修正してください。`,
+        }),
+      ),
+  );
+};
+
+/** ER 図・状態遷移図で、関連・遷移の ID と同じ名前のテーブル名・状態の ID の項目 */
+const reservedIdProblems = (context: DataContext): MapProblem[] => {
+  const { kind, found } = context;
+  if (kind !== "erDiagram" && kind !== "stateDiagram") return [];
+  return [...found.ids]
+    .filter((id) => !found.edgeIds.has(id) && /^[rt]\d+$/.test(id))
+    .map((id) => ({
+      kind: "map_invalid_value",
+      message: `\`${id}\` は関連・遷移の ID（記載順の \`r{番号}\`・\`t{番号}\`）と同じ名前です。テーブル名・状態の ID を付け直してください。`,
+    }));
+};
+
+/** 補足の layout の項目（無い ID・ノードとグループの線だけのキー・設定に無い線の種類） */
+const checkLayout = (context: DataContext): void => {
+  const { found, data, config, lineOf, ref, problems } = context;
+  const lineNames = new Set<string>();
+  for (const [id, entry] of Object.entries(data.layout)) {
+    ref(`layout.${id}`, id);
+    ref(`layout.${id}.align`, entry.align);
+    if (found.ids.has(id) && !found.edgeIds.has(id)) {
+      problems.push(...edgeOnlyProblems({ id, entry, lineOf }));
+    }
+    if (
+      entry.line !== undefined &&
+      !(entry.line in config.lines) &&
+      !lineNames.has(entry.line)
+    ) {
+      lineNames.add(entry.line);
+      problems.push({
+        kind: "map_unknown_line",
+        message: `補足の \`layout.${id}.line\` の \`${entry.line}\` が設定の \`map.lines\` にありません。\`map.lines\` に記載するか、名前を修正してください。既定の線で描いています。`,
+      });
+    }
+  }
+};
+
+/** ノードかグループの layout に、線の ID のときだけ記載できるキーがある項目 */
+const edgeOnlyProblems = (item: {
+  id: string;
+  entry: MapData["layout"][string];
+  lineOf: (path: string) => number | undefined;
+}): MapProblem[] => {
+  const { id, entry, lineOf } = item;
+  return (["ends", "via"] as const)
+    .filter((key) => entry[key] !== undefined)
+    .map((key) => ({
+      kind: "map_invalid_value",
+      line: lineOf(`layout.${id}.${key}`),
+      message: `補足の \`layout.${id}.${key}\` は線の ID のときだけ記載できます。\`${id}\` はノードかグループです。`,
+    }));
+};
+
+/** 補足と Mermaid の中身・設定まで含めて、範囲の書き方の誤りを全て集める。`range.annotationIds` を指定すると、定義の無い注記の参照も確かめる */
 export const collectMapProblems = (
-  range: MapRangeSource,
+  range: MapRangeSource & { annotationIds?: ReadonlySet<string> | undefined },
   config: ResolvedMapConfig,
   includeUnknownKeys: boolean,
-  annotationIds?: ReadonlySet<string>,
 ): MapProblem[] => {
   const structure = collectMapStructure(range);
   if (structure.kind === undefined || range.mermaid === undefined)
@@ -90,64 +296,16 @@ export const collectMapProblems = (
       });
     }
   }
-  const shift = (items: MapProblem[], offset: number | undefined) =>
-    items.map((item) =>
-      item.line === undefined || offset === undefined
-        ? { ...item, line: item.line === undefined ? undefined : item.line }
-        : { ...item, line: item.line + offset },
-    );
   const { data, problems: dataProblems, lines } = parseMapData(range.data);
-  const ids = new Set<string>();
-  const edgeIds = new Set<string>();
-  const classes = new Set<string>();
-  /** ER 図のテーブル名 */
-  const tables = new Set<string>();
-  const linkProblems: MapProblem[] = [];
-  if (structure.kind === "flowchart") {
-    const chart = parseFlowchart(range.mermaid);
-    problems.push(...shift(chart.problems, range.mermaidLine));
-    linkProblems.push(...mapLinkProblems(chart.links).problems);
-    for (const node of chart.nodes) {
-      ids.add(node.id);
-      for (const name of node.classes) classes.add(name);
-    }
-    for (const group of chart.groups) ids.add(group.id);
-    for (const edge of chart.edges) {
-      ids.add(edge.id);
-      edgeIds.add(edge.id);
-    }
-  } else if (structure.kind === "erDiagram") {
-    const er = parseErDiagram(range.mermaid);
-    problems.push(...shift(er.problems, range.mermaidLine));
-    for (const table of er.tables) {
-      ids.add(table.name);
-      tables.add(table.name);
-      for (const column of table.columns)
-        ids.add(`${table.name}.${column.name}`);
-    }
-    for (const relation of er.relations) {
-      ids.add(relation.id);
-      edgeIds.add(relation.id);
-    }
-    for (const id of Object.keys(data.groups)) ids.add(id);
-  } else if (structure.kind === "stateDiagram") {
-    const diagram = parseStateDiagram(range.mermaid);
-    problems.push(...shift(diagram.problems, range.mermaidLine));
-    for (const state of diagram.states) ids.add(state.id);
-    for (const composite of diagram.composites) ids.add(composite.id);
-    for (const transition of diagram.transitions) {
-      ids.add(transition.id);
-      edgeIds.add(transition.id);
-    }
-  } else {
-    const sequence = parseSequence(range.mermaid);
-    problems.push(...shift(sequence.problems, range.mermaidLine));
-    for (const participant of sequence.participants) ids.add(participant.id);
-    for (const index of sequence.messages.keys()) ids.add(String(index + 1));
-    for (const index of sequence.fragments.keys()) ids.add(String(index));
-  }
-  problems.push(...shift(dataProblems, range.dataLine));
-  /** 補足の中のパスの行を、範囲の開きのマーカーからの行にする */
+  const found = mermaidIdsOf(kind, {
+    mermaid: range.mermaid,
+    line: range.mermaidLine,
+    data,
+  });
+  problems.push(
+    ...found.problems,
+    ...shiftProblems(dataProblems, range.dataLine),
+  );
   const lineOf = (path: string) => {
     const local = lines.get(path);
     return local === undefined || range.dataLine === undefined
@@ -155,7 +313,7 @@ export const collectMapProblems = (
       : local + range.dataLine;
   };
   const ref = (path: string, id: string | undefined) => {
-    if (id !== undefined && !ids.has(id)) {
+    if (id !== undefined && !found.ids.has(id)) {
       problems.push({
         kind: "map_unknown_ref",
         line: lineOf(path),
@@ -163,64 +321,28 @@ export const collectMapProblems = (
       });
     }
   };
+  const context: DataContext = {
+    kind,
+    found,
+    data,
+    config,
+    lineOf,
+    ref,
+    problems,
+  };
   for (const id of Object.keys(data.notes)) ref(`notes.${id}`, id);
-  // 文書の注記の定義の ID を受けたときだけ、定義の無い注記の参照を確かめる
-  if (annotationIds !== undefined) {
-    for (const [id, note] of Object.entries(data.notes)) {
-      for (const annotation of note.annotations ?? []) {
-        if (annotationIds.has(annotation)) continue;
-        problems.push({
-          kind: "annotation_undefined",
-          line: lineOf(`notes.${id}.annotations`),
-          message: `補足の \`notes.${id}.annotations\` が指す注記 \`※[${annotation}]\` の定義がありません。\`※[${annotation}]: 本文\` を記載するか、ID を修正してください。`,
-        });
-      }
-    }
-  }
-  if (structure.kind === "erDiagram")
-    problems.push(...groupProblems(data, tables, lineOf));
-  for (const id of ids) {
-    if (edgeIds.has(id) || !/^[rt]\d+$/.test(id)) continue;
-    if (structure.kind !== "erDiagram" && structure.kind !== "stateDiagram")
-      continue;
-    problems.push({
-      kind: "map_invalid_value",
-      message: `\`${id}\` は関連・遷移の ID（記載順の \`r{番号}\`・\`t{番号}\`）と同じ名前です。テーブル名・状態の ID を付け直してください。`,
-    });
-  }
+  problems.push(...annotationProblems(context, range.annotationIds));
+  if (kind === "erDiagram")
+    problems.push(...groupProblems(data, found.tables, lineOf));
+  problems.push(...reservedIdProblems(context));
   data.walkthroughs.forEach((step, index) => {
     for (const id of step.nodes) ref(`walkthroughs[${index}].nodes`, id);
     for (const id of step.edges ?? []) ref(`walkthroughs[${index}].edges`, id);
     ref(`walkthroughs[${index}].enter`, step.enter);
   });
-  const lineNames = new Set<string>();
-  for (const [id, entry] of Object.entries(data.layout)) {
-    ref(`layout.${id}`, id);
-    ref(`layout.${id}.align`, entry.align);
-    if (ids.has(id) && !edgeIds.has(id)) {
-      for (const key of ["ends", "via"] as const) {
-        if (entry[key] === undefined) continue;
-        problems.push({
-          kind: "map_invalid_value",
-          line: lineOf(`layout.${id}.${key}`),
-          message: `補足の \`layout.${id}.${key}\` は線の ID のときだけ記載できます。\`${id}\` はノードかグループです。`,
-        });
-      }
-    }
-    if (
-      entry.line !== undefined &&
-      !(entry.line in config.lines) &&
-      !lineNames.has(entry.line)
-    ) {
-      lineNames.add(entry.line);
-      problems.push({
-        kind: "map_unknown_line",
-        message: `補足の \`layout.${id}.line\` の \`${entry.line}\` が設定の \`map.lines\` にありません。\`map.lines\` に記載するか、名前を修正してください。既定の線で描いています。`,
-      });
-    }
-  }
-  problems.push(...linkProblems);
-  for (const name of classes) {
+  checkLayout(context);
+  problems.push(...found.linkProblems);
+  for (const name of found.classes) {
     if (!(name in config.kinds)) {
       problems.push({
         kind: "map_unknown_class",

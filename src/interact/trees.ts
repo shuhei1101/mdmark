@@ -79,6 +79,64 @@ function depthOf(element: Element, list: Element): number {
   return depth;
 }
 
+/** 入れ子のリストの字下げの幅（左の余白・線・内側の余白）。入れ子が無ければ 0 */
+function nestedIndent(list: HTMLElement): number {
+  const nested = list.querySelector("ul");
+  if (!nested) {
+    return 0;
+  }
+  const style = getComputedStyle(nested);
+  return (
+    Number.parseFloat(style.marginInlineStart) +
+    Number.parseFloat(style.borderInlineStartWidth) +
+    Number.parseFloat(style.paddingInlineStart)
+  );
+}
+
+/** 行の名前の文字の幅（「ほかにもある」はスクリーンリーダーの文だけなので 0） */
+function nameWidth(
+  row: HTMLElement,
+  context: CanvasRenderingContext2D,
+): number {
+  if (row.closest(".mdmark-tree-more")) {
+    return 0;
+  }
+  const name = row.querySelector(".mdmark-tree-name")?.textContent?.trim();
+  return context.measureText(name ?? "").width;
+}
+
+/** 名前の塊の種類（開閉のボタンか、ボタンでない名前か） */
+function headKind(head: Element | null): "toggle" | "plain" {
+  return head?.classList.contains("mdmark-tree-toggle") ? "toggle" : "plain";
+}
+
+/** 見えている行の名前の塊の幅から文字の幅（注釈を持つ行は注釈の前の間も）を引き、名前の塊の種類ごとに文字の前の幅を求める */
+function measureLeads(
+  rows: HTMLElement[],
+  measure: { textWidth: (row: HTMLElement) => number; gap: number },
+): Map<string, number> {
+  const leads = new Map<string, number>();
+  for (const row of rows) {
+    const head = row.firstElementChild;
+    const kind = headKind(head);
+    if (
+      !(head instanceof HTMLElement) ||
+      !head.offsetParent ||
+      leads.has(kind)
+    ) {
+      continue;
+    }
+    const noted = row.querySelector(":scope > .mdmark-tree-note");
+    leads.set(
+      kind,
+      head.getBoundingClientRect().width -
+        measure.textWidth(row) -
+        (noted ? measure.gap : 0),
+    );
+  }
+  return leads;
+}
+
 /** 注釈の左端を、注釈を持つ全ての行で同じ位置にそろえる値（`--mdmark-tree-note-start`・`--mdmark-tree-indent` と各行の `--mdmark-tree-depth`）を `tree` に入れ、取り除く関数を返却する */
 function alignNotes(tree: HTMLElement, list: HTMLElement): () => void {
   const rows = [...list.querySelectorAll<HTMLElement>(".mdmark-tree-row")];
@@ -98,49 +156,15 @@ function alignNotes(tree: HTMLElement, list: HTMLElement): () => void {
   const style = getComputedStyle(list);
   measureContext.font = `${style.fontWeight} ${style.fontSize} ${style.fontFamily}`;
   const em = Number.parseFloat(style.fontSize);
-  const nested = list.querySelector("ul");
-  const nestedStyle = nested && getComputedStyle(nested);
-  const indent = nestedStyle
-    ? Number.parseFloat(nestedStyle.marginInlineStart) +
-      Number.parseFloat(nestedStyle.borderInlineStartWidth) +
-      Number.parseFloat(nestedStyle.paddingInlineStart)
-    : 0;
-  /** 行の名前の文字の幅（「ほかにもある」はスクリーンリーダーの文だけなので 0） */
-  const textWidth = (row: HTMLElement): number =>
-    row.closest(".mdmark-tree-more")
-      ? 0
-      : measureContext.measureText(
-          row.querySelector(".mdmark-tree-name")?.textContent?.trim() ?? "",
-        ).width;
+  const indent = nestedIndent(list);
+  const context = measureContext;
+  const textWidth = (row: HTMLElement): number => nameWidth(row, context);
   // 注釈の列の最小の幅を削除してから、見えている行の名前の塊の幅（山形・アイコンを含む）から文字の幅を参照して、名前の塊の種類ごとに文字の前の幅を求める
   tree.style.removeProperty("--mdmark-tree-note-start");
-  const leads = new Map<string, number>();
-  for (const row of rows) {
-    const head = row.firstElementChild;
-    if (head instanceof HTMLElement && head.offsetParent) {
-      const kind = head.classList.contains("mdmark-tree-toggle")
-        ? "toggle"
-        : "plain";
-      if (!leads.has(kind)) {
-        const noted = row.querySelector(":scope > .mdmark-tree-note");
-        leads.set(
-          kind,
-          head.getBoundingClientRect().width -
-            textWidth(row) -
-            (noted ? NOTE_GAP_EM * em : 0),
-        );
-      }
-    }
-  }
+  const leads = measureLeads(rows, { textWidth, gap: NOTE_GAP_EM * em });
   /** 行の名前の塊の、文字の前の幅 */
   const leadOf = (row: HTMLElement): number =>
-    leads.get(
-      row.firstElementChild?.classList.contains("mdmark-tree-toggle")
-        ? "toggle"
-        : "plain",
-    ) ??
-    [...leads.values()][0] ??
-    0;
+    leads.get(headKind(row.firstElementChild)) ?? [...leads.values()][0] ?? 0;
   tree.style.setProperty("--mdmark-tree-indent", `${indent}px`);
   let widest = 0;
   for (const row of noted) {

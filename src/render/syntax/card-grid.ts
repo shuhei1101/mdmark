@@ -41,19 +41,24 @@ const trimStart = (children: Token[]): Token[] => {
   return rest;
 };
 
+/** 頭の `icon:名前` の行内のコードをアイコンにし、残りの子の並びと一緒に返却する */
+const takeIcon = (
+  children: Token[],
+): { icon: string | undefined; rest: Token[] } => {
+  const [head] = children;
+  if (head?.type !== "code_inline" || !head.content.startsWith(ICON_PREFIX)) {
+    return { icon: undefined, rest: children };
+  }
+  const name = head.content.slice(ICON_PREFIX.length).trim();
+  if (!ICON_NAME_PATTERN.test(name)) {
+    return { icon: undefined, rest: children };
+  }
+  return { icon: name, rest: trimStart(children.slice(1)) };
+};
+
 /** 項目の行内の子の並びから、カードの中身を読み込む */
 const readItem = (state: StateCore, children: Token[]): CardGridItem => {
-  let rest = trimStart(children);
-  // 頭の `icon:名前` の行内のコードをアイコンにする
-  let icon: string | undefined;
-  const [head] = rest;
-  if (head?.type === "code_inline" && head.content.startsWith(ICON_PREFIX)) {
-    const name = head.content.slice(ICON_PREFIX.length).trim();
-    if (ICON_NAME_PATTERN.test(name)) {
-      icon = name;
-      rest = trimStart(rest.slice(1));
-    }
-  }
+  const { icon, rest } = takeIcon(trimStart(children));
   const openIndex = rest.findIndex((child) => child.type === "link_open");
   const closeIndex = rest.findIndex(
     (child, index) => index > openIndex && child.type === "link_close",

@@ -90,6 +90,47 @@ function renderError(message: string, id?: string): string {
   return `<p class="mdmark-comment-error"${idAttribute} role="alert"${message === "" ? " hidden" : ""}>${icon}<span>${escapeHtml(message)}</span></p>`;
 }
 
+/** 本文を書き換える入力欄の項目 */
+function renderEditItem(
+  edit: { draft: string; state: CommentFormState; fieldId: string },
+  idAttribute: string,
+): string {
+  const message =
+    edit.state === "empty"
+      ? COMMENT_MESSAGES.empty
+      : edit.state === "failed"
+        ? COMMENT_MESSAGES.updateFailed
+        : "";
+  const saving = edit.state === "saving";
+  const errorId = `${edit.fieldId}-error`;
+  return `<li class="mdmark-comment-item"${idAttribute}><form novalidate${saving ? ' aria-busy="true"' : ""}><label class="mdmark-comment-field">コメント<textarea name="body" rows="3" aria-describedby="${escapeHtml(errorId)}"${message === "" ? "" : ' aria-invalid="true"'}>${escapeHtml(edit.draft)}</textarea></label>${renderError(message, errorId)}<div class="mdmark-comment-actions"><button class="mdmark-comment-button" type="button" data-action="cancel-edit">キャンセル</button><button class="mdmark-comment-button is-primary" type="submit"${saving ? " disabled" : ""}>${saving ? "保存しています…" : "保存"}</button></div></form></li>`;
+}
+
+/** 削除の確認を出す項目 */
+function renderConfirmItem(options: {
+  text: string;
+  state: CommentRemoveState;
+  idAttribute: string;
+}): string {
+  const { text, state, idAttribute } = options;
+  const removing = state === "removing";
+  const error =
+    state === "failed" ? renderError(COMMENT_MESSAGES.removeFailed) : "";
+  return `<li class="mdmark-comment-item is-icon-actions"${idAttribute}>${text}${error}<div class="mdmark-comment-confirm"><p>${escapeHtml(COMMENT_MESSAGES.removeConfirm)}</p><div class="mdmark-comment-actions"><button class="mdmark-comment-button" type="button" data-action="cancel-remove">キャンセル</button><button class="mdmark-comment-button is-danger" type="button" data-action="confirm-remove"${removing ? " disabled" : ""}>${removing ? "削除しています…" : "削除"}</button></div></div></li>`;
+}
+
+/** 「編集」「削除」のアイコンのボタン */
+function renderIconButtons(canEdit: boolean, canRemove: boolean): string {
+  const iconButton = (action: string, label: string, icon: string): string =>
+    `<button class="mdmark-comment-icon-button" type="button" data-action="${action}" aria-label="${label}" title="${label}">${icon}</button>`;
+  return [
+    canEdit ? iconButton("edit", "編集", iconSvgOf(iconNodeBody(Pencil))) : "",
+    canRemove
+      ? iconButton("remove", "削除", iconSvgOf(iconNodeBody(Trash2)))
+      : "",
+  ].join("");
+}
+
 /** 吹き出しのコメント 1 件の `li` の HTML を、本文の表示・入力欄・削除の確認のどれかで返却する */
 export function renderCommentItem(props: {
   /** コメントの本文 */
@@ -109,37 +150,16 @@ export function renderCommentItem(props: {
   const idAttribute =
     id === undefined ? "" : ` data-comment-id="${escapeHtml(id)}"`;
   if (edit) {
-    const message =
-      edit.state === "empty"
-        ? COMMENT_MESSAGES.empty
-        : edit.state === "failed"
-          ? COMMENT_MESSAGES.updateFailed
-          : "";
-    const saving = edit.state === "saving";
-    const errorId = `${edit.fieldId}-error`;
-    return `<li class="mdmark-comment-item"${idAttribute}><form novalidate${saving ? ' aria-busy="true"' : ""}><label class="mdmark-comment-field">コメント<textarea name="body" rows="3" aria-describedby="${escapeHtml(errorId)}"${message === "" ? "" : ' aria-invalid="true"'}>${escapeHtml(edit.draft)}</textarea></label>${renderError(message, errorId)}<div class="mdmark-comment-actions"><button class="mdmark-comment-button" type="button" data-action="cancel-edit">キャンセル</button><button class="mdmark-comment-button is-primary" type="submit"${saving ? " disabled" : ""}>${saving ? "保存しています…" : "保存"}</button></div></form></li>`;
+    return renderEditItem(edit, idAttribute);
   }
   const text = `<p class="mdmark-comment-body">${escapeHtml(body)}</p>`;
   if (confirm) {
-    const removing = confirm.state === "removing";
-    const error =
-      confirm.state === "failed"
-        ? renderError(COMMENT_MESSAGES.removeFailed)
-        : "";
-    return `<li class="mdmark-comment-item is-icon-actions"${idAttribute}>${text}${error}<div class="mdmark-comment-confirm"><p>${escapeHtml(COMMENT_MESSAGES.removeConfirm)}</p><div class="mdmark-comment-actions"><button class="mdmark-comment-button" type="button" data-action="cancel-remove">キャンセル</button><button class="mdmark-comment-button is-danger" type="button" data-action="confirm-remove"${removing ? " disabled" : ""}>${removing ? "削除しています…" : "削除"}</button></div></div></li>`;
+    return renderConfirmItem({ text, state: confirm.state, idAttribute });
   }
   if (!canEdit && !canRemove) {
     return `<li${idAttribute}>${text}</li>`;
   }
-  const iconButton = (action: string, label: string, icon: string): string =>
-    `<button class="mdmark-comment-icon-button" type="button" data-action="${action}" aria-label="${label}" title="${label}">${icon}</button>`;
-  const buttons = [
-    canEdit ? iconButton("edit", "編集", iconSvgOf(iconNodeBody(Pencil))) : "",
-    canRemove
-      ? iconButton("remove", "削除", iconSvgOf(iconNodeBody(Trash2)))
-      : "",
-  ].join("");
-  return `<li class="mdmark-comment-item is-icon-actions"${idAttribute}>${text}<div class="mdmark-comment-icon-actions">${buttons}</div></li>`;
+  return `<li class="mdmark-comment-item is-icon-actions"${idAttribute}>${text}<div class="mdmark-comment-icon-actions">${renderIconButtons(canEdit, canRemove)}</div></li>`;
 }
 
 /** マーカーの下に開く、その箇所に付いたコメントの本文を並べた吹き出しの HTML を返却する */

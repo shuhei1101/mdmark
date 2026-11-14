@@ -1,5 +1,6 @@
 import type {
   MarkdownIt,
+  RendererRule,
   StateBlock,
   StateCore,
   StateInline,
@@ -104,33 +105,106 @@ function labelEnd(src: string, pos: number, max: number): number {
   return -1;
 }
 
-/** 行頭の `[^ラベル]:` を脚注の定義として読み込み、字下げ 4 で続く行までを中身として囲む */
-export function readFootnoteDefinition(
+/** markdown-it のブロックのルールの引数 */
+type BlockRuleArgs = Parameters<
+  Parameters<MarkdownIt["block"]["ruler"]["push"]>[1]
+>;
+
+/** 行頭の脚注の定義の始まりと、閉じの `]`・行末の位置（定義でなければ `undefined`。字下げ 4 以上はコードブロック） */
+function findDefinition(
   state: StateBlock,
   startLine: number,
-  endLine: number,
-  silent: boolean,
-): boolean {
+): { start: number; close: number; max: number } | undefined {
   const src = state.src;
   const start = (state.bMarks[startLine] ?? 0) + (state.tShift[startLine] ?? 0);
   const max = state.eMarks[startLine] ?? 0;
-  // 字下げ 4 以上はコードブロック
   if ((state.sCount[startLine] ?? 0) - state.blkIndent >= CONTINUATION_INDENT) {
-    return false;
+    return undefined;
   }
   if (
     src.charCodeAt(start) !== OPEN_BRACKET ||
     src.charCodeAt(start + 1) !== CARET
   ) {
-    return false;
+    return undefined;
   }
   const close = labelEnd(src, start, max);
   if (close < 0 || src.charCodeAt(close + 1) !== COLON) {
+    return undefined;
+  }
+  return { start, close, max };
+}
+
+/** `pos` から行末まで空白を飛ばし、飛ばした後の位置と字下げの幅を返却する */
+function skipIndent(
+  src: string,
+  from: { pos: number; max: number; offset: number },
+): { pos: number; offset: number } {
+  let { pos, offset } = from;
+  while (pos < from.max) {
+    const code = src.charCodeAt(pos);
+    if (code === TAB) {
+      offset += TAB_WIDTH - (offset % TAB_WIDTH);
+    } else if (code === SPACE) {
+      offset += 1;
+    } else {
+      break;
+    }
+    pos += 1;
+  }
+  return { pos, offset };
+}
+
+/** `:` の後ろの空白を飛ばし、その後ろを字下げ 4 の中身の 1 行目として、続く行までを解析する */
+function tokenizeBody(
+  state: StateBlock,
+  range: {
+    startLine: number;
+    endLine: number;
+    start: number;
+    afterColon: number;
+    max: number;
+  },
+): void {
+  const { startLine, endLine, start, afterColon, max } = range;
+  const oldBMark = state.bMarks[startLine] ?? 0;
+  const oldTShift = state.tShift[startLine] ?? 0;
+  const oldSCount = state.sCount[startLine] ?? 0;
+  const oldParentType = state.parentType;
+  const initial = oldSCount + afterColon - start;
+  const { pos, offset } = skipIndent(state.src, {
+    pos: afterColon,
+    max,
+    offset: initial,
+  });
+  state.tShift[startLine] = pos - afterColon;
+  state.sCount[startLine] = offset - initial;
+  state.bMarks[startLine] = afterColon;
+  state.blkIndent += CONTINUATION_INDENT;
+  state.parentType = "footnote" as typeof state.parentType;
+  const sCount = state.sCount[startLine] ?? 0;
+  if (sCount < state.blkIndent) {
+    state.sCount[startLine] = sCount + state.blkIndent;
+  }
+  state.md.block.tokenize(state, startLine, endLine);
+  state.parentType = oldParentType;
+  state.blkIndent -= CONTINUATION_INDENT;
+  state.tShift[startLine] = oldTShift;
+  state.sCount[startLine] = oldSCount;
+  state.bMarks[startLine] = oldBMark;
+}
+
+/** 行頭の `[^ラベル]:` を脚注の定義として読み込み、字下げ 4 で続く行までを中身として囲む */
+export function readFootnoteDefinition(...args: BlockRuleArgs): boolean {
+  const [state, startLine, endLine, silent] = args;
+  const found = findDefinition(state, startLine);
+  if (!found) {
     return false;
   }
   if (silent) {
     return true;
   }
+  const { start, close, max } = found;
+  const src = state.src;
   const afterColon = close + 2;
   const key = state.md.utils.normalizeReference(src.slice(start + 2, close));
   const footnotes = footnoteStateOf(state.env as RenderEnv);
@@ -145,41 +219,7 @@ export function readFootnoteDefinition(
     source: `${src.slice(start, afterColon)} `,
   } satisfies DefinitionMeta;
   open.map = [startLine, startLine];
-
-  // `:` の後ろの空白を飛ばし、その後ろを字下げ 4 の中身の 1 行目として解析する
-  const oldBMark = state.bMarks[startLine] ?? 0;
-  const oldTShift = state.tShift[startLine] ?? 0;
-  const oldSCount = state.sCount[startLine] ?? 0;
-  const oldParentType = state.parentType;
-  const initial = oldSCount + afterColon - start;
-  let offset = initial;
-  let pos = afterColon;
-  while (pos < max) {
-    const code = src.charCodeAt(pos);
-    if (code === TAB) {
-      offset += TAB_WIDTH - (offset % TAB_WIDTH);
-    } else if (code === SPACE) {
-      offset += 1;
-    } else {
-      break;
-    }
-    pos += 1;
-  }
-  state.tShift[startLine] = pos - afterColon;
-  state.sCount[startLine] = offset - initial;
-  state.bMarks[startLine] = afterColon;
-  state.blkIndent += CONTINUATION_INDENT;
-  state.parentType = "footnote" as typeof state.parentType;
-  if ((state.sCount[startLine] ?? 0) < state.blkIndent) {
-    state.sCount[startLine] = (state.sCount[startLine] ?? 0) + state.blkIndent;
-  }
-  state.md.block.tokenize(state, startLine, endLine);
-  state.parentType = oldParentType;
-  state.blkIndent -= CONTINUATION_INDENT;
-  state.tShift[startLine] = oldTShift;
-  state.sCount[startLine] = oldSCount;
-  state.bMarks[startLine] = oldBMark;
-
+  tokenizeBody(state, { startLine, endLine, start, afterColon, max });
   open.map = [startLine, state.line];
   state.push(DEF_CLOSE, "", -1);
   return true;
@@ -606,9 +646,12 @@ export function useFootnotes(parser: MarkdownIt): void {
     "mdmark_footnote_ref",
     readFootnoteReference,
   );
-  parser.renderer.rules[LIST] = (_tokens, _index, _options, env) =>
-    renderList(parser, env as RenderEnv);
-  parser.renderer.rules[REF] = (tokens, index, _options, env) => {
+  parser.renderer.rules[LIST] = (
+    ...[_tokens, _index, _options, env]: Parameters<RendererRule>
+  ) => renderList(parser, env as RenderEnv);
+  parser.renderer.rules[REF] = (
+    ...[tokens, index, _options, env]: Parameters<RendererRule>
+  ) => {
     const token = tokens[index];
     if (token === undefined) {
       throw new Error("脚注の参照のトークンが無い");

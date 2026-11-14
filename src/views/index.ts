@@ -118,6 +118,26 @@ function readRows(table: HTMLTableElement): string[][] {
     .map((row) => [...row.cells].map((cell) => visibleText(cell)));
 }
 
+/** 見出しの行のセルの文字を並べる */
+function readColumns(table: HTMLTableElement): string[] {
+  return [...(table.tHead?.rows[0]?.cells ?? [])].map((cell) =>
+    visibleText(cell),
+  );
+}
+
+/** 表（表の部品で包んでいればその枠）を `div.mdmark-view-table` で包み、包んだ要素と包みを返却する */
+function wrapTable(table: HTMLTableElement): {
+  target: HTMLElement;
+  holder: HTMLElement;
+} {
+  const target = table.closest<HTMLElement>(".mdmark-table") ?? table;
+  const holder = document.createElement("div");
+  holder.className = "mdmark-view-table";
+  target.before(holder);
+  holder.append(target);
+  return { target, holder };
+}
+
 /** `render` が描いた `div.mdmark-view` の `data-view` と中の表から、切り替えとボードを配置して付ける。追加した要素を取り除き、表を元に戻す関数を返却する */
 export function attachView(view: HTMLElement): () => void {
   const spec = readSpec(view);
@@ -125,14 +145,8 @@ export function attachView(view: HTMLElement): () => void {
   if (!spec || !table || (spec.group === null && spec.boardDisabled === "")) {
     return noop;
   }
-  const columns = [...(table.tHead?.rows[0]?.cells ?? [])].map((cell) =>
-    visibleText(cell),
-  );
-  const target = table.closest<HTMLElement>(".mdmark-table") ?? table;
-  const holder = document.createElement("div");
-  holder.className = "mdmark-view-table";
-  target.before(holder);
-  holder.append(target);
+  const columns = readColumns(table);
+  const { target, holder } = wrapTable(table);
   const mode = spec.boardDisabled === "" ? spec.mode : "table";
   holder.insertAdjacentHTML(
     "beforebegin",

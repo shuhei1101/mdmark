@@ -3,6 +3,7 @@ import { foldLinesOf, measureIndents } from "../../code-fold-logic.ts";
 import type { WarningItem } from "../../extensions.ts";
 import { type CodeLine, renderCodeBlock } from "../../parts/code-block.ts";
 import type { MarkOptions } from "../mark-options.ts";
+import type { Mark } from "../marks.ts";
 import { MAP_SOURCE_META } from "./map.ts";
 import { featureOn, markOf, ownBlock } from "./tokens.ts";
 import { warningBlock } from "./warnings.ts";
@@ -335,11 +336,208 @@ function plainLines(source: string): CodeLine[] {
   return body.split("\n").map((text): CodeLine => ({ text }));
 }
 
+/** `code`・`syntax`・`mermaid` の機能のオン・オフ */
+type CodeFeatures = { codeOn: boolean; syntaxOn: boolean; mermaidOn: boolean };
+
+/** 開きの `code` のマーカーなら、そのマーカーを返却する */
+function openCodeMark(token: Token | undefined): Mark | undefined {
+  const mark = markOf(token);
+  return mark?.name === "code" && !mark.closing ? mark : undefined;
+}
+
+/** 後ろが `fence` でない `code` のマーカーの場所に差し込む警告 */
+function missingFenceWarning(
+  state: StateCore,
+  target: { mark: Mark; token: Token },
+): Token {
+  const { mark, token } = target;
+  return warningBlock(state, {
+    mark: mark.raw,
+    ...(token.map ? { line: token.map[0] } : {}),
+    message:
+      "の直後にコードブロックがありません。マーカーの次の行にコードブロックを記載してください。",
+  });
+}
+
+/** コードブロックの中身を行に分け、`code` のマーカーの指定（`highlight`・`fold`）を当てる */
+function readFenceLines(options: {
+  token: Token;
+  code: Mark | undefined;
+  codeOn: boolean;
+}): {
+  lines: CodeLine[];
+  spec: ReturnType<typeof readCodeSpec> | undefined;
+  lineWarnings: WarningItem[];
+  foldWarnings: WarningItem[];
+} {
+  const { token, code, codeOn } = options;
+  const { lines: read, warnings: lineWarnings } = codeOn
+    ? readLineMarks(token.content)
+    : { lines: plainLines(token.content), warnings: [] };
+  const spec = code
+    ? readCodeSpec({ options: code.options, lineCount: read.length })
+    : undefined;
+  const highlights = spec?.highlights ?? new Set<number>();
+  const marked = read.map(
+    (line, position): CodeLine =>
+      line.kind === undefined && highlights.has(position + 1)
+        ? { ...line, kind: "highlight" }
+        : line,
+  );
+  const { lines, warnings: foldWarnings } = codeOn
+    ? readFolds({ lines: marked, folds: spec?.folds ?? new Set() })
+    : { lines: marked, warnings: [] };
+  return { lines, spec, lineWarnings, foldWarnings };
+}
+
+/** 言語が `tree` でないコードブロックが罫線の行を持てば、罫線のフォルダ構成の記載の警告を返却する */
+function treeWarning(
+  state: StateCore,
+  target: { token: Token; language: string; checked: boolean },
+): Token | undefined {
+  const { token, language, checked } = target;
+  if (!checked || countTreeLines(token.content) < TREE_WARNING_MIN_LINES) {
+    return undefined;
+  }
+  return warningBlock(state, {
+    message: treeLinesMessage(language),
+    ...(token.map ? { line: token.map[0] } : {}),
+  });
+}
+
+/** 読み込めない指定と知らない行のマーカーの警告を返却する。知らないマーカーは 1 つにつき 1 つの警告にする */
+function readWarnings(
+  state: StateCore,
+  read: {
+    code: Mark | undefined;
+    previous: Token | undefined;
+    spec: ReturnType<typeof readCodeSpec> | undefined;
+    lineWarnings: WarningItem[];
+    foldWarnings: WarningItem[];
+  },
+): Token[] {
+  const { code, previous, spec, lineWarnings, foldWarnings } = read;
+  const out: Token[] = [];
+  pushWarnings(out, state, {
+    mark: code?.raw,
+    line: code ? previous?.map?.[0] : undefined,
+    message: "の読み込めない指定を当てずに描いています。",
+    items: [...(spec?.warnings ?? []), ...foldWarnings],
+  });
+  for (const warning of lineWarnings) {
+    out.push(warningBlock(state, { message: warning.message }));
+  }
+  return out;
+}
+
+/** 情報文字列から、言語・ファイル名と、mermaid の対象か・色分けの言語・罫線の行を確かめるかを決める */
+function fenceKind(
+  token: Token,
+  target: { features: CodeFeatures; treeWarning: boolean },
+): {
+  language: string;
+  fileName: string;
+  mermaid: boolean;
+  syntax: string | undefined;
+  checkTree: boolean;
+} {
+  const { codeOn, syntaxOn, mermaidOn } = target.features;
+  const { language, fileName } = splitInfoString(token.info);
+  const isMermaid = token.info.trim().split(/\s+/)[0] === "mermaid";
+  const mapSource = token.meta?.[MAP_SOURCE_META] === true;
+  const mermaid = mermaidOn && isMermaid && !mapSource;
+  return {
+    language,
+    fileName,
+    mermaid,
+    syntax: syntaxOn && !mermaid ? syntaxLanguageOf(language) : undefined,
+    checkTree: codeOn && !isMermaid && !mapSource && target.treeWarning,
+  };
+}
+
+/** 部品『コードブロック』のトークン */
+function codeBlockToken(
+  state: StateCore,
+  block: {
+    token: Token;
+    kind: ReturnType<typeof fenceKind>;
+    lines: CodeLine[];
+    spec: ReturnType<typeof readCodeSpec> | undefined;
+    bar: boolean;
+  },
+): Token {
+  const { token, kind, lines, spec, bar } = block;
+  return ownBlock(
+    state,
+    renderCodeBlock({
+      language: kind.language,
+      fileName: kind.fileName,
+      title: spec?.title ?? "",
+      lineNumbers: spec?.lineNumbers ?? false,
+      lineStart: spec?.lineStart ?? 1,
+      wrap: spec?.wrap ?? false,
+      lines,
+      syntax: kind.syntax,
+      mermaid: kind.mermaid,
+      bar,
+    }),
+    token,
+  );
+}
+
+/** `fence` のトークン 1 つを、警告と部品『コードブロック』（部品にしないときは言語だけを書き換えた `fence`）のトークンにする */
+function renderFence(
+  state: StateCore,
+  target: {
+    token: Token;
+    previous: Token | undefined;
+    features: CodeFeatures;
+  },
+): Token[] {
+  const { token, previous, features } = target;
+  const code = features.codeOn ? openCodeMark(previous) : undefined;
+  const { lines, spec, lineWarnings, foldWarnings } = readFenceLines({
+    token,
+    code,
+    codeOn: features.codeOn,
+  });
+  const out = readWarnings(state, {
+    code,
+    previous,
+    spec,
+    lineWarnings,
+    foldWarnings,
+  });
+  const kind = fenceKind(token, {
+    features,
+    treeWarning: spec?.treeWarning ?? true,
+  });
+  const tree = treeWarning(state, {
+    token,
+    language: kind.language,
+    checked: kind.checkTree,
+  });
+  if (tree) {
+    out.push(tree);
+  }
+  if (!features.codeOn && kind.syntax === undefined && !kind.mermaid) {
+    keepLanguageOnly(token, kind.language);
+    out.push(token);
+    return out;
+  }
+  out.push(
+    codeBlockToken(state, { token, kind, lines, spec, bar: features.codeOn }),
+  );
+  return out;
+}
+
 /** 残っている `fence` のトークンごとに、情報文字列を `splitInfoString` で言語とファイル名に分けてから次の処理をする。`code` がオンのときは `readLineMarks` で行を読み込み、直前のトークンが `code` のマーカーなら `readCodeSpec` で指定を読み込み、全てのコードブロックを部品『コードブロック』（言語・ファイル名・タイトル・行番号・行と、`syntax` がオンなら言語を `syntaxLanguageOf` で参照した色分けの言語）に置き換える。帯の右端のコピーのボタンは `mount` が付ける。`code` がオフのときは行のマーカーを削除せず中身の行をそのまま使用し、`syntax` がオンで色分けの言語を持つコードブロックだけを帯を持たない部品に置き換え、それ以外は `fence` のまま情報文字列の最初の単語を言語に書き換える。読み込めない指定は、コードブロックの前に警告を差し込む。後ろが `fence` でない `code` のマーカーの場所にも警告を差し込む（`code` がオンのときだけ）。`mermaid` がオンで情報文字列の最初の単語がちょうど `mermaid` のコードブロックは、`code` のオン・オフによらず mermaid の対象の部品に置き換え、色分けしない */
 export function buildCodeBlocks(state: StateCore): void {
-  const codeOn = featureOn(state, "code");
-  const syntaxOn = featureOn(state, "syntax");
-  const mermaidOn = featureOn(state, "mermaid");
+  const features: CodeFeatures = {
+    codeOn: featureOn(state, "code"),
+    syntaxOn: featureOn(state, "syntax"),
+    mermaidOn: featureOn(state, "mermaid"),
+  };
   const tokens = state.tokens;
   const out: Token[] = [];
   for (let index = 0; index < tokens.length; index++) {
@@ -347,107 +545,21 @@ export function buildCodeBlocks(state: StateCore): void {
     if (!token) {
       continue;
     }
-    const mark = markOf(token);
-    const next = tokens[index + 1];
-    if (
-      codeOn &&
-      mark?.name === "code" &&
-      !mark.closing &&
-      next?.type !== "fence"
-    ) {
-      out.push(
-        warningBlock(state, {
-          mark: mark.raw,
-          ...(token.map ? { line: token.map[0] } : {}),
-          message:
-            "の直後にコードブロックがありません。マーカーの次の行にコードブロックを記載してください。",
-        }),
-      );
-      continue;
-    }
-    if (codeOn && mark?.name === "code" && !mark.closing) {
+    const mark = features.codeOn ? openCodeMark(token) : undefined;
+    if (mark) {
       // マーカーは読み込んだ後に取り除く（次の `fence` が使用する）
+      if (tokens[index + 1]?.type !== "fence") {
+        out.push(missingFenceWarning(state, { mark, token }));
+      }
       continue;
     }
     if (token.type !== "fence") {
       out.push(token);
       continue;
     }
-    const spec = markOf(tokens[index - 1]);
-    const code =
-      codeOn && spec?.name === "code" && !spec.closing ? spec : undefined;
-    const { lines: read, warnings: lineWarnings } = codeOn
-      ? readLineMarks(token.content)
-      : { lines: plainLines(token.content), warnings: [] };
-    const options = code
-      ? readCodeSpec({ options: code.options, lineCount: read.length })
-      : undefined;
-    const marked = read.map(
-      (line, position): CodeLine =>
-        line.kind === undefined && options?.highlights.has(position + 1)
-          ? { ...line, kind: "highlight" }
-          : line,
+    out.push(
+      ...renderFence(state, { token, previous: tokens[index - 1], features }),
     );
-    const { lines, warnings: foldWarnings } = codeOn
-      ? readFolds({ lines: marked, folds: options?.folds ?? new Set() })
-      : { lines: marked, warnings: [] };
-    pushWarnings(out, state, {
-      mark: code?.raw,
-      line: code ? tokens[index - 1]?.map?.[0] : undefined,
-      message: "の読み込めない指定を当てずに描いています。",
-      items: [...(options?.warnings ?? []), ...foldWarnings],
-    });
-    // 知らないマーカーは 1 つにつき 1 つの警告にする
-    for (const warning of lineWarnings) {
-      out.push(warningBlock(state, { message: warning.message }));
-    }
-    const title = options?.title ?? "";
-    const lineNumbers = options?.lineNumbers ?? false;
-    const { language, fileName } = splitInfoString(token.info);
-    const firstWord = token.info.trim().split(/\s+/)[0];
-    const mermaid =
-      mermaidOn &&
-      firstWord === "mermaid" &&
-      token.meta?.[MAP_SOURCE_META] !== true;
-    if (
-      codeOn &&
-      firstWord !== "mermaid" &&
-      token.meta?.[MAP_SOURCE_META] !== true &&
-      (options?.treeWarning ?? true) &&
-      countTreeLines(token.content) >= TREE_WARNING_MIN_LINES
-    ) {
-      out.push(
-        warningBlock(state, {
-          message: treeLinesMessage(language),
-          ...(token.map ? { line: token.map[0] } : {}),
-        }),
-      );
-    }
-    const syntax =
-      syntaxOn && !mermaid ? syntaxLanguageOf(language) : undefined;
-    if (codeOn || syntax !== undefined || mermaid) {
-      out.push(
-        ownBlock(
-          state,
-          renderCodeBlock({
-            language,
-            fileName,
-            title,
-            lineNumbers,
-            lineStart: options?.lineStart ?? 1,
-            wrap: options?.wrap ?? false,
-            lines,
-            syntax,
-            mermaid,
-            bar: codeOn,
-          }),
-          token,
-        ),
-      );
-      continue;
-    }
-    keepLanguageOnly(token, language);
-    out.push(token);
   }
   state.tokens = out;
 }

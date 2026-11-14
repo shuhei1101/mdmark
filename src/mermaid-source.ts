@@ -113,26 +113,36 @@ const unquote = (value: string): string => {
   return quoted ? (quoted[2] ?? "") : trimmed;
 };
 
+/** 先頭の front matter の `title:` の行を取り出し、題と、その行を除いた本文を返却する（`title:` の行が無ければ `undefined`） */
+const takeFrontTitle = (
+  source: string,
+): { title: string | undefined; body: string } | undefined => {
+  const front = FRONT_MATTER.exec(source);
+  const inner = front?.[1] ?? "";
+  const line = front ? TITLE_LINE.exec(inner) : null;
+  if (!front || !line) {
+    return undefined;
+  }
+  const rest = inner.replace(/^title:.*(?:\r?\n|$)/m, "").trimEnd();
+  return {
+    title: unquote(line[1] ?? "") || undefined,
+    body:
+      (rest.trim() === "" ? "" : `---\n${rest}\n---\n`) +
+      source.slice(front[0].length),
+  };
+};
+
+/** `accTitle:` の行の題（無ければ `undefined`） */
+const accTitleOf = (source: string): string | undefined => {
+  const acc = ACC_TITLE_LINE.exec(source);
+  return acc ? unquote(acc[1] ?? "") || undefined : undefined;
+};
+
 /** ソースの先頭の front matter の `title:` を取り出してその行を除き、無ければ `accTitle:` の値を取る。図の種類の行の最初の単語を `kind` にする */
 export const splitMermaidTitle = (source: string): MermaidSource => {
-  const front = FRONT_MATTER.exec(source);
-  let title: string | undefined;
-  let body = source;
-  if (front) {
-    const inner = front[1] ?? "";
-    const line = TITLE_LINE.exec(inner);
-    if (line) {
-      title = unquote(line[1] ?? "") || undefined;
-      const rest = inner.replace(/^title:.*(?:\r?\n|$)/m, "").trimEnd();
-      body =
-        (rest.trim() === "" ? "" : `---\n${rest}\n---\n`) +
-        source.slice(front[0].length);
-    }
-  }
-  if (title === undefined) {
-    const acc = ACC_TITLE_LINE.exec(source);
-    title = acc ? unquote(acc[1] ?? "") || undefined : undefined;
-  }
+  const front = takeFrontTitle(source);
+  const body = front?.body ?? source;
+  const title = front?.title ?? accTitleOf(source);
   const withoutFront = body.replace(FRONT_MATTER, "");
   const kind =
     withoutFront

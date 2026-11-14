@@ -85,58 +85,105 @@ export function renderTermTip(props: {
   if (replacement === undefined && meaning === "" && docs.length === 0) {
     return word;
   }
+  return renderWordTip({ word, id, meaning, docs, replacement, below });
+}
+
+/** 意味・関連文書か、代わりの用語のツールチップを単語の直後に配置した HTML を返却する */
+function renderWordTip(options: {
+  word: string;
+  id: string;
+  meaning: string;
+  docs: TermTipDoc[];
+  replacement: { term: string; meaning?: string } | undefined;
+  below: boolean;
+}): string {
+  const { word, id, meaning, docs, replacement, below } = options;
   const tipId = escapeHtml(id);
   const meaningId = `${tipId}-meaning`;
-  const sections: string[] = [];
-  if (replacement !== undefined) {
-    sections.push(
-      renderSection(
-        "代わりの用語",
-        `<span class="mdmark-term-tip-replacement">${escapeHtml(replacement.term)}</span>${replacement.meaning === undefined ? "" : `<span class="mdmark-term-tip-meaning">${escapeHtml(replacement.meaning)}</span>`}`,
-      ),
-    );
-  } else {
-    if (meaning !== "") {
-      // 関連文書もあるときだけ、意味の要素に `id` を付けて単語の説明にする
-      const idAttribute = docs.length > 0 ? ` id="${meaningId}"` : "";
-      sections.push(
-        renderSection(
-          "用語",
-          `<span class="mdmark-term-tip-meaning"${idAttribute}>${escapeHtml(meaning)}</span>`,
-        ),
-      );
-    }
-    if (docs.length > 0) {
-      const items = docs
-        .map((doc) => {
-          const description = doc.description
-            ? `<span class="mdmark-term-tip-doc-desc">${escapeHtml(doc.description)}</span>`
-            : "";
-          return `<span class="mdmark-term-tip-doc" role="listitem"><a href="${escapeHtml(doc.href)}">${escapeHtml(doc.title)}</a>${description}</span>`;
-        })
-        .join("");
-      sections.push(
-        renderSection(
-          "関連文書",
-          `<span class="mdmark-term-tip-docs" role="list">${items}</span>`,
-        ),
-      );
-    }
-  }
+  const sections =
+    replacement === undefined
+      ? renderTermSections({ meaning, docs, meaningId })
+      : [renderReplacementSection(replacement)];
   const role =
     docs.length > 0 && replacement === undefined ? "group" : "tooltip";
   const label =
-    role === "tooltip"
-      ? ""
-      : ` aria-label="「${word}」の${meaning === "" ? "" : "用語と"}関連文書"`;
-  const described =
-    replacement === undefined && meaning === ""
-      ? ""
-      : ` aria-describedby="${role === "group" ? meaningId : tipId}"`;
+    role === "tooltip" ? "" : ` aria-label="${docsLabel({ word, meaning })}"`;
+  const described = termDescribedBy({
+    described: replacement !== undefined || meaning !== "",
+    target: role === "group" ? meaningId : tipId,
+  });
   const details = role === "group" ? ` aria-details="${tipId}"` : "";
   const termClass = replacement === undefined ? "" : " mdmark-term-avoided";
   const wrapClass = below ? "mdmark-term-wrap is-below" : "mdmark-term-wrap";
   return `<span class="${wrapClass}"><span class="mdmark-term${termClass}" tabindex="0"${described}${details}>${word}</span><span class="mdmark-term-tip" id="${tipId}" role="${role}"${label}>${sections.join("")}</span></span>`;
+}
+
+/** 関連文書を持つツールチップの名前を返却する */
+function docsLabel(options: { word: string; meaning: string }): string {
+  return `「${options.word}」の${options.meaning === "" ? "" : "用語と"}関連文書`;
+}
+
+/** 単語に付ける `aria-describedby` の属性を返却する（説明が無ければ空） */
+function termDescribedBy(options: {
+  described: boolean;
+  target: string;
+}): string {
+  return options.described ? ` aria-describedby="${options.target}"` : "";
+}
+
+/** 「代わりの用語」の区分の HTML を返却する */
+function renderReplacementSection(replacement: {
+  term: string;
+  meaning?: string;
+}): string {
+  const meaning =
+    replacement.meaning === undefined
+      ? ""
+      : `<span class="mdmark-term-tip-meaning">${escapeHtml(replacement.meaning)}</span>`;
+  return renderSection(
+    "代わりの用語",
+    `<span class="mdmark-term-tip-replacement">${escapeHtml(replacement.term)}</span>${meaning}`,
+  );
+}
+
+/** 「用語」と「関連文書」の区分の HTML を返却する（空の区分は出さない） */
+function renderTermSections(options: {
+  meaning: string;
+  docs: TermTipDoc[];
+  meaningId: string;
+}): string[] {
+  const { meaning, docs, meaningId } = options;
+  const sections: string[] = [];
+  if (meaning !== "") {
+    // 関連文書もあるときだけ、意味の要素に `id` を付けて単語の説明にする
+    const idAttribute = docs.length > 0 ? ` id="${meaningId}"` : "";
+    sections.push(
+      renderSection(
+        "用語",
+        `<span class="mdmark-term-tip-meaning"${idAttribute}>${escapeHtml(meaning)}</span>`,
+      ),
+    );
+  }
+  if (docs.length > 0) {
+    sections.push(renderDocsSection(docs));
+  }
+  return sections;
+}
+
+/** 「関連文書」の区分の HTML を返却する */
+function renderDocsSection(docs: TermTipDoc[]): string {
+  const items = docs
+    .map((doc) => {
+      const description = doc.description
+        ? `<span class="mdmark-term-tip-doc-desc">${escapeHtml(doc.description)}</span>`
+        : "";
+      return `<span class="mdmark-term-tip-doc" role="listitem"><a href="${escapeHtml(doc.href)}">${escapeHtml(doc.title)}</a>${description}</span>`;
+    })
+    .join("");
+  return renderSection(
+    "関連文書",
+    `<span class="mdmark-term-tip-docs" role="list">${items}</span>`,
+  );
 }
 
 /** エイリアスの種類ごとの区分の中身（名前・説明・種類の項目）と、ツールチップの役割・単語に付ける属性を返却する */
@@ -159,46 +206,94 @@ function renderAliasTip(options: {
   if (hasDescription) {
     body += `<span class="mdmark-term-tip-meaning" id="${meaningId}">${escapeHtml(alias.description as string)}</span>`;
   }
-  // コマンドとリンクを持つツールチップは、中へ Tab で移れるよう `group` にする
-  let label = "";
-  if (alias.alias_type === "command" && alias.command !== undefined) {
-    const copyState = COMMAND_COPY_STATES[copy];
-    body += `<span class="mdmark-term-tip-command"><code>${escapeHtml(alias.command)}</code><button class="mdmark-term-tip-copy" type="button" data-state="${copy}">${renderTermTipCopy(copy)}</button></span>`;
-    if (alias.cwd !== undefined && alias.cwd !== "") {
-      body += `<span class="mdmark-term-tip-fields"><span class="mdmark-term-tip-label">実行場所</span><span class="mdmark-term-tip-value">${escapeHtml(alias.cwd)}</span></span>`;
-    }
-    const status = copy === "idle" ? "" : `コマンドを${copyState.text}`;
-    body += `<span class="mdmark-visually-hidden mdmark-term-tip-status" role="status">${status}</span>`;
-    label = `「${word}」のコマンド`;
-  } else if (alias.alias_type === "url" && alias.url !== undefined) {
-    if (isHttpUrl(alias.url)) {
-      body += `<a class="mdmark-term-tip-link" href="${escapeHtml(alias.url)}">${escapeHtml(alias.url)}</a>`;
-      label = `「${word}」の URL`;
-    } else {
-      body += `<span class="mdmark-term-tip-link">${escapeHtml(alias.url)}</span>`;
-    }
-  } else {
-    const value =
-      alias.alias_type === "skill"
-        ? alias.skill
-        : alias.alias_type === "tool"
-          ? alias.tool
-          : alias.alias_type === "path"
-            ? alias.path
-            : undefined;
-    if (value !== undefined) {
-      body += `<code class="mdmark-term-tip-code">${escapeHtml(value)}</code>`;
-    }
-  }
-  const role = label === "" ? "tooltip" : "group";
-  const labelAttribute = label === "" ? "" : ` aria-label="${label}"`;
+  const kind = renderAliasKind({ alias, copy, word });
+  body += kind.body;
+  const role = kind.label === "" ? "tooltip" : "group";
+  const labelAttribute = kind.label === "" ? "" : ` aria-label="${kind.label}"`;
   const described =
     role === "group"
-      ? hasDescription
-        ? ` aria-describedby="${meaningId}"`
-        : ""
+      ? termDescribedBy({ described: hasDescription, target: meaningId })
       : ` aria-describedby="${tipId}"`;
   const details = role === "group" ? ` aria-details="${tipId}"` : "";
   const wrapClass = below ? "mdmark-term-wrap is-below" : "mdmark-term-wrap";
   return `<span class="${wrapClass}"><span class="mdmark-term" tabindex="0"${described}${details}>${word}</span><span class="mdmark-term-tip" id="${tipId}" role="${role}"${labelAttribute}>${renderSection(heading, body)}</span></span>`;
+}
+
+/** 種類の項目の HTML と、ツールチップの名前（中へ Tab で移れる `group` にするときだけ。それ以外は空）の組 */
+type AliasKindPart = { body: string; label: string };
+
+/** エイリアスの種類の項目（コマンド・リンク・値）の HTML と、ツールチップの名前を返却する */
+function renderAliasKind(options: {
+  alias: MdmarkAlias;
+  copy: TermTipCopyState;
+  word: string;
+}): AliasKindPart {
+  const { alias, copy, word } = options;
+  // コマンドとリンクを持つツールチップは、中へ Tab で移れるよう `group` にする
+  if (alias.alias_type === "command" && alias.command !== undefined) {
+    return renderAliasCommand({
+      command: alias.command,
+      cwd: alias.cwd,
+      copy,
+      word,
+    });
+  }
+  if (alias.alias_type === "url" && alias.url !== undefined) {
+    return renderAliasUrl({ url: alias.url, word });
+  }
+  const value = aliasValueOf(alias);
+  return {
+    body:
+      value === undefined
+        ? ""
+        : `<code class="mdmark-term-tip-code">${escapeHtml(value)}</code>`,
+    label: "",
+  };
+}
+
+/** コマンドの種類の項目（コマンド・コピーのボタン・実行場所・通知）を返却する */
+function renderAliasCommand(options: {
+  command: string;
+  cwd: string | undefined;
+  copy: TermTipCopyState;
+  word: string;
+}): AliasKindPart {
+  const { command, cwd, copy, word } = options;
+  const copyState = COMMAND_COPY_STATES[copy];
+  let body = `<span class="mdmark-term-tip-command"><code>${escapeHtml(command)}</code><button class="mdmark-term-tip-copy" type="button" data-state="${copy}">${renderTermTipCopy(copy)}</button></span>`;
+  if (cwd !== undefined && cwd !== "") {
+    body += `<span class="mdmark-term-tip-fields"><span class="mdmark-term-tip-label">実行場所</span><span class="mdmark-term-tip-value">${escapeHtml(cwd)}</span></span>`;
+  }
+  const status = copy === "idle" ? "" : `コマンドを${copyState.text}`;
+  body += `<span class="mdmark-visually-hidden mdmark-term-tip-status" role="status">${status}</span>`;
+  return { body, label: `「${word}」のコマンド` };
+}
+
+/** URL の種類の項目を返却する。http・https 以外はリンクにしない */
+function renderAliasUrl(options: { url: string; word: string }): AliasKindPart {
+  const { url, word } = options;
+  if (isHttpUrl(url)) {
+    return {
+      body: `<a class="mdmark-term-tip-link" href="${escapeHtml(url)}">${escapeHtml(url)}</a>`,
+      label: `「${word}」の URL`,
+    };
+  }
+  return {
+    body: `<span class="mdmark-term-tip-link">${escapeHtml(url)}</span>`,
+    label: "",
+  };
+}
+
+/** スキル・ツール・パスの種類の値を返却する（それ以外の種類は `undefined`） */
+function aliasValueOf(alias: MdmarkAlias): string | undefined {
+  switch (alias.alias_type) {
+    case "skill":
+      return alias.skill;
+    case "tool":
+      return alias.tool;
+    case "path":
+      return alias.path;
+    default:
+      return undefined;
+  }
 }

@@ -33,6 +33,208 @@ export type Dictionary = {
   term: (word: string) => { id: string; meaning: string } | undefined;
 };
 
+/** 辞書の用語の値 */
+type TermValue = Dictionary["terms"] extends Map<string, infer V> ? V : never;
+
+/** 辞書のやめた言い方の値 */
+type AvoidedValue =
+  Dictionary["avoided"] extends Map<string, infer V> ? V : never;
+
+/** 作っている辞書の表 */
+type DictionaryMaps = Pick<
+  Dictionary,
+  "terms" | "docs" | "avoided" | "written"
+> & {
+  /** エイリアスを除いた用語（`term` が参照する） */
+  plainTerms: Map<string, { id: string; meaning: string }>;
+};
+
+/** 先に入れた用語を優先して、正規化した単語に用語と記載した表記を入れる */
+function addTerm(
+  maps: DictionaryMaps,
+  words: string[],
+  value: TermValue,
+): void {
+  const { id, meaning, alias } = value;
+  for (const word of words) {
+    const key = normalizeWord(word);
+    if (key === "") {
+      continue;
+    }
+    if (alias === undefined && !maps.plainTerms.has(key)) {
+      maps.plainTerms.set(key, { id, meaning });
+    }
+    if (!maps.terms.has(key)) {
+      maps.terms.set(key, value);
+      maps.written.set(key, word);
+    }
+  }
+}
+
+/** 用語の単語・別名と同じ単語は入れず、同じやめた言い方は先の用語を代わりにする */
+function addAvoided(
+  maps: DictionaryMaps,
+  words: string[],
+  value: AvoidedValue,
+): void {
+  for (const word of words) {
+    const key = normalizeWord(word);
+    if (key !== "" && !maps.terms.has(key) && !maps.avoided.has(key)) {
+      maps.avoided.set(key, value);
+      maps.written.set(key, word);
+    }
+  }
+}
+
+/** 用語集の表の用語の `id` */
+const glossaryId = (entry: MdmarkGlossaryEntry): string =>
+  `glossary:${entry.docId}:${entry.term}`;
+
+/** 索引の `docs` の文書の位置（無い文書は最後） */
+function docOrder(index: MdmarkIndex | undefined): (id: string) => number {
+  return (id) => {
+    const position = index?.docs.findIndex((doc) => doc.id === id) ?? -1;
+    return position === -1 ? Number.MAX_SAFE_INTEGER : position;
+  };
+}
+
+/** 用語を、索引の `terms`・エイリアス（指定した並び）・描く文書の表・ほかの文書の表（索引の `docs` で先に並ぶ文書から）の順に入れる */
+function addAllTerms(
+  maps: DictionaryMaps,
+  sources: {
+    index: MdmarkIndex | undefined;
+    usable: MdmarkAlias[];
+    ownGlossary: MdmarkGlossaryEntry[];
+    others: MdmarkGlossaryEntry[];
+  },
+): void {
+  const { index, usable, ownGlossary, others } = sources;
+  for (const term of index?.terms ?? []) {
+    addTerm(maps, [term.term, ...(term.aliases ?? [])], {
+      id: term.id,
+      meaning: term.meaning,
+    });
+  }
+  for (const alias of usable) {
+    if (alias.alias_type !== "avoid") {
+      addTerm(maps, [alias.name, ...alias.aliases], {
+        id: `alias:${alias.id}`,
+        meaning: alias.description ?? "",
+        alias,
+      });
+    }
+  }
+  for (const entry of [...ownGlossary, ...others]) {
+    addTerm(maps, [entry.term, ...entry.aliases], {
+      id: glossaryId(entry),
+      meaning: entry.meaning,
+    });
+  }
+}
+
+/** エイリアスのやめた言い方を入れる。`avoid` の種類は `name`・`aliases` を、`term` の種類は `avoid` を入れる */
+function addAliasAvoided(maps: DictionaryMaps, usable: MdmarkAlias[]): void {
+  for (const alias of usable) {
+    if (alias.alias_type === "avoid") {
+      addAvoided(maps, [alias.name, ...alias.aliases], {
+        id: `alias:${alias.id}`,
+        term: alias.replacement ?? "",
+        alias,
+      });
+    } else if (alias.alias_type === "term") {
+      addAvoided(maps, alias.avoid ?? [], {
+        id: `alias:${alias.id}`,
+        term: alias.name,
+        meaning: alias.description ?? "",
+        alias,
+      });
+    }
+  }
+}
+
+/** やめた言い方を、索引の `terms`、エイリアスの並び、索引の `docs` の順の文書の表の順に入れる。描く文書が索引の `docs` に無いときは描く文書の表を先にする */
+function addAllAvoided(
+  maps: DictionaryMaps,
+  sources: {
+    index: MdmarkIndex | undefined;
+    usable: MdmarkAlias[];
+    tables: Array<{ entry: MdmarkGlossaryEntry; position: number }>;
+  },
+): void {
+  const { index, usable, tables } = sources;
+  for (const term of index?.terms ?? []) {
+    addAvoided(maps, term.avoid ?? [], {
+      id: term.id,
+      term: term.term,
+      meaning: term.meaning,
+    });
+  }
+  addAliasAvoided(maps, usable);
+  const sorted = [...tables].sort((a, b) => a.position - b.position);
+  for (const { entry } of sorted) {
+    addAvoided(maps, entry.avoid ?? [], {
+      id: glossaryId(entry),
+      term: entry.term,
+      meaning: entry.meaning,
+    });
+  }
+}
+
+/** 描く文書を除く文書の別名を、その別名を持つ文書（索引の `docs` の順）に入れる */
+function addDocAliases(
+  maps: DictionaryMaps,
+  index: MdmarkIndex | undefined,
+  docId: string | undefined,
+): void {
+  for (const doc of index?.docs ?? []) {
+    if (doc.id === docId) {
+      continue;
+    }
+    for (const alias of doc.aliases ?? []) {
+      const key = normalizeWord(alias);
+      if (key === "") {
+        continue;
+      }
+      maps.docs.set(key, [...(maps.docs.get(key) ?? []), doc]);
+      if (!maps.written.has(key)) {
+        maps.written.set(key, alias);
+      }
+    }
+  }
+}
+
+/** 用語集の表の用語を辞書に入れる */
+function addGlossary(
+  maps: DictionaryMaps,
+  sources: {
+    index: MdmarkIndex | undefined;
+    docId: string | undefined;
+    ownGlossary: MdmarkGlossaryEntry[];
+    references: MdmarkReferences | undefined;
+    usable: MdmarkAlias[];
+  },
+): void {
+  const { index, docId, ownGlossary, references, usable } = sources;
+  const order = docOrder(index);
+  // ほかの文書の表は、索引の `docs` で先に並ぶ文書の用語を先にする
+  const others = (references?.glossary ?? [])
+    .filter((entry) => docId === undefined || entry.docId !== docId)
+    .sort((a, b) => order(a.docId) - order(b.docId));
+  addAllTerms(maps, { index, usable, ownGlossary, others });
+  const ownPosition =
+    docId !== undefined && order(docId) !== Number.MAX_SAFE_INTEGER
+      ? order(docId)
+      : -1;
+  addAllAvoided(maps, {
+    index,
+    usable,
+    tables: [
+      ...ownGlossary.map((entry) => ({ entry, position: ownPosition })),
+      ...others.map((entry) => ({ entry, position: order(entry.docId) })),
+    ],
+  });
+}
+
 /** 索引の用語・描く文書の表の用語・参照の表の用語・文書の別名から辞書を作る */
 export function buildDictionary(options: {
   /** 索引 */
@@ -50,155 +252,23 @@ export function buildDictionary(options: {
 }): Dictionary {
   const { index, docId, ownGlossary, references, features } = options;
   const usable = usableAliases(options.aliases ?? []);
-  const terms = new Map<
-    string,
-    { id: string; meaning: string; alias?: MdmarkAlias }
-  >();
-  // エイリアスを除いた用語（`term` が参照する）
-  const plainTerms = new Map<string, { id: string; meaning: string }>();
-  const docs = new Map<string, MdmarkIndexDoc[]>();
-  const avoided = new Map<
-    string,
-    { id: string; term: string; meaning?: string; alias?: MdmarkAlias }
-  >();
-  const written = new Map<string, string>();
-  /** 先に入れた用語を優先して、正規化した単語に用語と記載した表記を入れる */
-  const addTerm = (
-    words: string[],
-    id: string,
-    meaning: string,
-    alias?: MdmarkAlias,
-  ): void => {
-    for (const word of words) {
-      const key = normalizeWord(word);
-      if (key === "") {
-        continue;
-      }
-      if (alias === undefined && !plainTerms.has(key)) {
-        plainTerms.set(key, { id, meaning });
-      }
-      if (!terms.has(key)) {
-        terms.set(
-          key,
-          alias === undefined ? { id, meaning } : { id, meaning, alias },
-        );
-        written.set(key, word);
-      }
-    }
+  const maps: DictionaryMaps = {
+    terms: new Map(),
+    plainTerms: new Map(),
+    docs: new Map(),
+    avoided: new Map(),
+    written: new Map(),
   };
   if (features.glossary !== false) {
-    for (const term of index?.terms ?? []) {
-      addTerm([term.term, ...(term.aliases ?? [])], term.id, term.meaning);
-    }
-    for (const alias of usable) {
-      if (alias.alias_type !== "avoid") {
-        addTerm(
-          [alias.name, ...alias.aliases],
-          `alias:${alias.id}`,
-          alias.description ?? "",
-          alias,
-        );
-      }
-    }
-    for (const entry of ownGlossary) {
-      addTerm(
-        [entry.term, ...entry.aliases],
-        `glossary:${entry.docId}:${entry.term}`,
-        entry.meaning,
-      );
-    }
-    // ほかの文書の表は、索引の `docs` で先に並ぶ文書の用語を先にする
-    const order = (id: string): number => {
-      const position = index?.docs.findIndex((doc) => doc.id === id) ?? -1;
-      return position === -1 ? Number.MAX_SAFE_INTEGER : position;
-    };
-    const others = (references?.glossary ?? [])
-      .filter((entry) => docId === undefined || entry.docId !== docId)
-      .sort((a, b) => order(a.docId) - order(b.docId));
-    for (const entry of others) {
-      addTerm(
-        [entry.term, ...entry.aliases],
-        `glossary:${entry.docId}:${entry.term}`,
-        entry.meaning,
-      );
-    }
-    // 用語の単語・別名と同じ単語は用語にし、同じやめた言い方は先の用語を代わりにする（索引の `terms`、索引の `docs` の順の文書の表の順。描く文書が索引の `docs` に無いときは描く文書の表を先にする）
-    const addAvoided = (
-      words: string[],
-      value: {
-        id: string;
-        term: string;
-        meaning?: string;
-        alias?: MdmarkAlias;
-      },
-    ): void => {
-      for (const word of words) {
-        const key = normalizeWord(word);
-        if (key !== "" && !terms.has(key) && !avoided.has(key)) {
-          avoided.set(key, value);
-          written.set(key, word);
-        }
-      }
-    };
-    for (const term of index?.terms ?? []) {
-      addAvoided(term.avoid ?? [], {
-        id: term.id,
-        term: term.term,
-        meaning: term.meaning,
-      });
-    }
-    for (const alias of usable) {
-      if (alias.alias_type === "avoid") {
-        addAvoided([alias.name, ...alias.aliases], {
-          id: `alias:${alias.id}`,
-          term: alias.replacement ?? "",
-          alias,
-        });
-      } else if (alias.alias_type === "term") {
-        addAvoided(alias.avoid ?? [], {
-          id: `alias:${alias.id}`,
-          term: alias.name,
-          meaning: alias.description ?? "",
-          alias,
-        });
-      }
-    }
-    const ownPosition =
-      docId !== undefined && order(docId) !== Number.MAX_SAFE_INTEGER
-        ? order(docId)
-        : -1;
-    const tableEntries = [
-      ...ownGlossary.map((entry) => ({ entry, position: ownPosition })),
-      ...others.map((entry) => ({ entry, position: order(entry.docId) })),
-    ].sort((a, b) => a.position - b.position);
-    for (const { entry } of tableEntries) {
-      addAvoided(entry.avoid ?? [], {
-        id: `glossary:${entry.docId}:${entry.term}`,
-        term: entry.term,
-        meaning: entry.meaning,
-      });
-    }
+    addGlossary(maps, { index, docId, ownGlossary, references, usable });
   }
   if (features.backlinks !== false) {
-    for (const doc of index?.docs ?? []) {
-      if (doc.id === docId) {
-        continue;
-      }
-      for (const alias of doc.aliases ?? []) {
-        const key = normalizeWord(alias);
-        if (key === "") {
-          continue;
-        }
-        docs.set(key, [...(docs.get(key) ?? []), doc]);
-        if (!written.has(key)) {
-          written.set(key, alias);
-        }
-      }
-    }
+    addDocAliases(maps, index, docId);
   }
-  const words = [...new Set([...terms.keys(), ...docs.keys()])].sort(
+  const words = [...new Set([...maps.terms.keys(), ...maps.docs.keys()])].sort(
     (a, b) => b.length - a.length,
   );
+  const { terms, docs, avoided, written, plainTerms } = maps;
   return {
     words,
     terms,

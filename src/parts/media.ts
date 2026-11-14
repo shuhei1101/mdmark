@@ -1,5 +1,32 @@
 import { escapeHtml } from "./escape.ts";
 
+/** 再生の属性（`controls`・`autoplay` など）を、頭に空白を付けて返却する */
+function mediaFlags(options: {
+  video: boolean;
+  autoplay: boolean;
+  muted: boolean;
+  loop: boolean;
+}): string {
+  const { video, autoplay, muted, loop } = options;
+  return [
+    "controls",
+    autoplay ? "autoplay" : "",
+    autoplay || muted ? "muted" : "",
+    loop ? "loop" : "",
+    video ? "playsinline" : "",
+  ]
+    .filter((flag) => flag !== "")
+    .map((flag) => ` ${flag}`)
+    .join("");
+}
+
+/** キャプションの HTML を返却する（無ければ空） */
+function renderMediaCaption(caption: string | undefined): string {
+  return caption === undefined || caption === ""
+    ? ""
+    : `<figcaption class="mdmark-figure-caption">${escapeHtml(caption)}</figcaption>`;
+}
+
 /** 動画と音声の HTML を返却する */
 export function renderMedia(options: {
   /** 動画か音声か */
@@ -33,16 +60,7 @@ export function renderMedia(options: {
     loop = false,
   } = options;
   const video = kind === "video";
-  const flags = [
-    "controls",
-    autoplay ? "autoplay" : "",
-    autoplay || muted ? "muted" : "",
-    loop ? "loop" : "",
-    video ? "playsinline" : "",
-  ]
-    .filter((flag) => flag !== "")
-    .map((flag) => ` ${flag}`)
-    .join("");
+  const flags = mediaFlags({ video, autoplay, muted, loop });
   const posterUrl = video && poster !== undefined ? escapeHtml(poster) : "";
   const posterAttribute = posterUrl === "" ? "" : ` poster="${posterUrl}"`;
   const player = `<${kind} src="${escapeHtml(src)}"${flags} preload="metadata" aria-label="${escapeHtml(alt)}"${posterAttribute}></${kind}>`;
@@ -50,10 +68,7 @@ export function renderMedia(options: {
     posterUrl === ""
       ? ""
       : `<img class="mdmark-media-print" src="${posterUrl}" alt="">`;
-  const figcaption =
-    caption === undefined || caption === ""
-      ? ""
-      : `<figcaption class="mdmark-figure-caption">${escapeHtml(caption)}</figcaption>`;
+  const figcaption = renderMediaCaption(caption);
   const style =
     width === undefined
       ? ""
