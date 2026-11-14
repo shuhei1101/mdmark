@@ -1,0 +1,515 @@
+use_cases:
+  - kind: single
+    scenario: docs/scenario/SC-472-82.yaml
+    impact: run_only
+    detail: lint の検査の範囲が Webview から既存の TypeScript 全体へ広がる。シナリオの「lint の違反が 0 件」の記述は変わらない
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-1.yaml
+    impact: run_only
+    detail: 関数の分け方の変更が挙動を壊していないかを確かめる
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-2.yaml
+    impact: run_only
+    detail: 関数の分け方の変更が挙動を壊していないかを確かめる
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-3.yaml
+    impact: run_only
+    detail: 関数の分け方の変更が挙動を壊していないかを確かめる
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-4.yaml
+    impact: run_only
+    detail: 関数の分け方の変更が挙動を壊していないかを確かめる
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-5.yaml
+    impact: run_only
+    detail: 関数の分け方の変更が挙動を壊していないかを確かめる
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-6.yaml
+    impact: run_only
+    detail: 関数の分け方の変更が挙動を壊していないかを確かめる
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-7.yaml
+    impact: run_only
+    detail: 関数の分け方の変更が挙動を壊していないかを確かめる
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-8.yaml
+    impact: run_only
+    detail: 関数の分け方の変更が挙動を壊していないかを確かめる
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-9.yaml
+    impact: run_only
+    detail: 関数の分け方の変更が挙動を壊していないかを確かめる
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-10.yaml
+    impact: run_only
+    detail: 関数の分け方の変更が挙動を壊していないかを確かめる
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-11.yaml
+    impact: run_only
+    detail: 関数の分け方の変更が挙動を壊していないかを確かめる
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-12.yaml
+    impact: run_only
+    detail: 関数の分け方の変更が挙動を壊していないかを確かめる
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-13.yaml
+    impact: run_only
+    detail: 関数の分け方の変更が挙動を壊していないかを確かめる
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-14.yaml
+    impact: run_only
+    detail: 関数の分け方の変更が挙動を壊していないかを確かめる
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-15.yaml
+    impact: run_only
+    detail: 関数の分け方の変更が挙動を壊していないかを確かめる
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-16.yaml
+    impact: run_only
+    detail: 関数の分け方の変更が挙動を壊していないかを確かめる
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-17.yaml
+    impact: run_only
+    detail: 関数の分け方の変更が挙動を壊していないかを確かめる
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-18.yaml
+    impact: run_only
+    detail: 関数の分け方の変更が挙動を壊していないかを確かめる
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-19.yaml
+    impact: run_only
+    detail: 関数の分け方の変更が挙動を壊していないかを確かめる
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-20.yaml
+    impact: run_only
+    detail: 関数の分け方の変更が挙動を壊していないかを確かめる
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-21.yaml
+    impact: run_only
+    detail: 関数の分け方の変更が挙動を壊していないかを確かめる
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-22.yaml
+    impact: run_only
+    detail: 関数の分け方の変更が挙動を壊していないかを確かめる
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-23.yaml
+    impact: run_only
+    detail: 関数の分け方の変更が挙動を壊していないかを確かめる
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-24.yaml
+    impact: run_only
+    detail: 関数の分け方の変更が挙動を壊していないかを確かめる
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-25.yaml
+    impact: run_only
+    detail: 関数の分け方の変更が挙動を壊していないかを確かめる
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-26.yaml
+    impact: run_only
+    detail: 関数の分け方の変更が挙動を壊していないかを確かめる
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-27.yaml
+    impact: run_only
+    detail: 関数の分け方の変更が挙動を壊していないかを確かめる
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-28.yaml
+    impact: run_only
+    detail: 関数の分け方の変更が挙動を壊していないかを確かめる
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-29.yaml
+    impact: run_only
+    detail: 関数の分け方の変更が挙動を壊していないかを確かめる
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-30.yaml
+    impact: run_only
+    detail: 関数の分け方の変更が挙動を壊していないかを確かめる
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-31.yaml
+    impact: run_only
+    detail: 関数の分け方の変更が挙動を壊していないかを確かめる
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-32.yaml
+    impact: run_only
+    detail: 関数の分け方の変更が挙動を壊していないかを確かめる
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-33.yaml
+    impact: run_only
+    detail: 関数の分け方の変更が挙動を壊していないかを確かめる
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-34.yaml
+    impact: run_only
+    detail: 関数の分け方の変更が挙動を壊していないかを確かめる
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-35.yaml
+    impact: run_only
+    detail: 関数の分け方の変更が挙動を壊していないかを確かめる
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-36.yaml
+    impact: run_only
+    detail: 関数の分け方の変更が挙動を壊していないかを確かめる
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-37.yaml
+    impact: run_only
+    detail: 関数の分け方の変更が挙動を壊していないかを確かめる
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-38.yaml
+    impact: run_only
+    detail: 関数の分け方の変更が挙動を壊していないかを確かめる
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-39.yaml
+    impact: run_only
+    detail: 関数の分け方の変更が挙動を壊していないかを確かめる
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-40.yaml
+    impact: run_only
+    detail: 関数の分け方の変更が挙動を壊していないかを確かめる
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-41.yaml
+    impact: run_only
+    detail: 関数の分け方の変更が挙動を壊していないかを確かめる
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-42.yaml
+    impact: run_only
+    detail: 関数の分け方の変更が挙動を壊していないかを確かめる
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-43.yaml
+    impact: run_only
+    detail: 関数の分け方の変更が挙動を壊していないかを確かめる
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-44.yaml
+    impact: run_only
+    detail: 関数の分け方の変更が挙動を壊していないかを確かめる
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-45.yaml
+    impact: run_only
+    detail: 関数の分け方の変更が挙動を壊していないかを確かめる
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-46.yaml
+    impact: run_only
+    detail: 関数の分け方の変更が挙動を壊していないかを確かめる
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-47.yaml
+    impact: run_only
+    detail: 関数の分け方の変更が挙動を壊していないかを確かめる
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-48.yaml
+    impact: run_only
+    detail: 関数の分け方の変更が挙動を壊していないかを確かめる
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-49.yaml
+    impact: run_only
+    detail: 関数の分け方の変更が挙動を壊していないかを確かめる
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-50.yaml
+    impact: run_only
+    detail: 関数の分け方の変更が挙動を壊していないかを確かめる
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-51.yaml
+    impact: run_only
+    detail: 関数の分け方の変更が挙動を壊していないかを確かめる
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-52.yaml
+    impact: run_only
+    detail: 関数の分け方の変更が挙動を壊していないかを確かめる
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-53.yaml
+    impact: run_only
+    detail: 関数の分け方の変更が挙動を壊していないかを確かめる
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-54.yaml
+    impact: run_only
+    detail: 関数の分け方の変更が挙動を壊していないかを確かめる
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-55.yaml
+    impact: run_only
+    detail: 関数の分け方の変更が挙動を壊していないかを確かめる
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-56.yaml
+    impact: run_only
+    detail: 関数の分け方の変更が挙動を壊していないかを確かめる
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-57.yaml
+    impact: run_only
+    detail: 関数の分け方の変更が挙動を壊していないかを確かめる
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-58.yaml
+    impact: run_only
+    detail: 関数の分け方の変更が挙動を壊していないかを確かめる
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-59.yaml
+    impact: run_only
+    detail: 関数の分け方の変更が挙動を壊していないかを確かめる
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-60.yaml
+    impact: run_only
+    detail: 関数の分け方の変更が挙動を壊していないかを確かめる
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-61.yaml
+    impact: run_only
+    detail: 関数の分け方の変更が挙動を壊していないかを確かめる
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-62.yaml
+    impact: run_only
+    detail: 関数の分け方の変更が挙動を壊していないかを確かめる
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-63.yaml
+    impact: run_only
+    detail: 関数の分け方の変更が挙動を壊していないかを確かめる
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-64.yaml
+    impact: run_only
+    detail: 関数の分け方の変更が挙動を壊していないかを確かめる
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-65.yaml
+    impact: run_only
+    detail: 関数の分け方の変更が挙動を壊していないかを確かめる
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-66.yaml
+    impact: run_only
+    detail: 関数の分け方の変更が挙動を壊していないかを確かめる
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-67.yaml
+    impact: run_only
+    detail: 関数の分け方の変更が挙動を壊していないかを確かめる
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-68.yaml
+    impact: run_only
+    detail: 関数の分け方の変更が挙動を壊していないかを確かめる
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-69.yaml
+    impact: run_only
+    detail: 関数の分け方の変更が挙動を壊していないかを確かめる
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-70.yaml
+    impact: run_only
+    detail: 関数の分け方の変更が挙動を壊していないかを確かめる
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-71.yaml
+    impact: run_only
+    detail: 関数の分け方の変更が挙動を壊していないかを確かめる
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-72.yaml
+    impact: run_only
+    detail: 関数の分け方の変更が挙動を壊していないかを確かめる
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-73.yaml
+    impact: run_only
+    detail: 関数の分け方の変更が挙動を壊していないかを確かめる
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-74.yaml
+    impact: run_only
+    detail: 関数の分け方の変更が挙動を壊していないかを確かめる
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-75.yaml
+    impact: run_only
+    detail: 関数の分け方の変更が挙動を壊していないかを確かめる
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-76.yaml
+    impact: run_only
+    detail: 関数の分け方の変更が挙動を壊していないかを確かめる
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-77.yaml
+    impact: run_only
+    detail: 関数の分け方の変更が挙動を壊していないかを確かめる
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-78.yaml
+    impact: run_only
+    detail: 関数の分け方の変更が挙動を壊していないかを確かめる
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-79.yaml
+    impact: run_only
+    detail: 関数の分け方の変更が挙動を壊していないかを確かめる
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-80.yaml
+    impact: run_only
+    detail: 関数の分け方の変更が挙動を壊していないかを確かめる
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-81.yaml
+    impact: run_only
+    detail: 関数の分け方の変更が挙動を壊していないかを確かめる
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-83.yaml
+    impact: run_only
+    detail: 関数の分け方の変更が挙動を壊していないかを確かめる
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-96.yaml
+    impact: run_only
+    detail: 関数の分け方の変更が挙動を壊していないかを確かめる
+    depends_on: []
+  - kind: composite
+    scenario: docs/scenario/SC-472-84.yaml
+    impact: run_only
+    detail: 関数の分け方の変更が挙動を壊していないかを確かめる
+    depends_on: []
+  - kind: composite
+    scenario: docs/scenario/SC-472-85.yaml
+    impact: run_only
+    detail: 関数の分け方の変更が挙動を壊していないかを確かめる
+    depends_on: []
+  - kind: composite
+    scenario: docs/scenario/SC-472-86.yaml
+    impact: run_only
+    detail: 関数の分け方の変更が挙動を壊していないかを確かめる
+    depends_on: []
+  - kind: composite
+    scenario: docs/scenario/SC-472-87.yaml
+    impact: run_only
+    detail: 関数の分け方の変更が挙動を壊していないかを確かめる
+    depends_on: []
+  - kind: composite
+    scenario: docs/scenario/SC-472-88.yaml
+    impact: run_only
+    detail: 関数の分け方の変更が挙動を壊していないかを確かめる
+    depends_on: []
+  - kind: composite
+    scenario: docs/scenario/SC-472-89.yaml
+    impact: run_only
+    detail: 関数の分け方の変更が挙動を壊していないかを確かめる
+    depends_on: []
+  - kind: composite
+    scenario: docs/scenario/SC-472-90.yaml
+    impact: run_only
+    detail: 関数の分け方の変更が挙動を壊していないかを確かめる
+    depends_on: []
+  - kind: composite
+    scenario: docs/scenario/SC-472-91.yaml
+    impact: run_only
+    detail: 関数の分け方の変更が挙動を壊していないかを確かめる
+    depends_on: []
+  - kind: composite
+    scenario: docs/scenario/SC-472-92.yaml
+    impact: run_only
+    detail: 関数の分け方の変更が挙動を壊していないかを確かめる
+    depends_on: []
+  - kind: composite
+    scenario: docs/scenario/SC-472-93.yaml
+    impact: run_only
+    detail: 関数の分け方の変更が挙動を壊していないかを確かめる
+    depends_on: []
+  - kind: composite
+    scenario: docs/scenario/SC-472-94.yaml
+    impact: run_only
+    detail: 関数の分け方の変更が挙動を壊していないかを確かめる
+    depends_on: []
+  - kind: composite
+    scenario: docs/scenario/SC-472-95.yaml
+    impact: run_only
+    detail: 関数の分け方の変更が挙動を壊していないかを確かめる
+    depends_on: []
+  - kind: composite
+    scenario: docs/scenario/SC-477-1.yaml
+    impact: run_only
+    detail: 関数の分け方の変更が挙動を壊していないかを確かめる
+    depends_on: []
+  - kind: composite
+    scenario: docs/scenario/SC-477-2.yaml
+    impact: run_only
+    detail: 関数の分け方の変更が挙動を壊していないかを確かめる
+    depends_on: []
+docs:
+  - page: docs/test-procedure/TP-472-1.yaml
+    new: false
+    change: TL-8（lint）の説明の「Webview（`vscode/src/webview/`）の ESLint」を、複雑さの規則を既存の TypeScript 全体に適用する範囲に書き換える
+    status: todo
+  - page: docs/library/LIB-472-12.yaml
+    new: false
+    change: コマンドの `purpose`・`description`（Webview の TypeScript だけ・Webview の外を `ignores` で削除する）と導入の説明を、複雑さの規則を `src/`・`scripts/`・`vscode/src/` に適用する範囲に合わせる
+    status: todo
+  - page: docs/library/README.md
+    new: false
+    change: eslint の行の概要「Webview の React の規則」に、既存の TypeScript 全体の複雑さの規則を加える
+    status: todo
+  - page: docs/dev-command/CMD-472-1.yaml
+    new: false
+    change: 「Webview の ESLint の道具」の呼び名を、適用の範囲が広がった後の呼び名に合わせる
+    status: todo
+scope_out:
+  - item: '`tests/` の TypeScript（418 ファイル）への複雑さの規則の適用'
+    reason: Issue の「やること」は `src/`・`scripts/`・`vscode/src/` の Webview 以外・`plugin/` に限り、テストコードを含めない。含めるかは判断が分かれるため、レビューで確定する
+    plan: to_file
+  - item: Webview 以外への React・アクセシビリティ・import の向き・Tailwind・記載方法（`func-style`・enum の禁止・`no-default-export`）・型の情報を使う規則の適用
+    reason: Issue が広げるのは複雑さの 4 規則だけで、他の規則は Webview の React の規約に従うもの
+    plan: none
