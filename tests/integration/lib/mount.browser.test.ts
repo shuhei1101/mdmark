@@ -11237,6 +11237,13 @@ let lucideResponder:
 const lucideRequests: string[] = [];
 /** CDP の受信を登録したか（受信は削除できないため、ページで 1 回だけ登録する） */
 let lucideListening = false;
+/** 差し替えが効いたかを確かめる要求の URL（記録せず 204 を返却する） */
+const LUCIDE_PROBE_URL = "https://cdn.jsdelivr.net/npm/lucide@0.0.0/__probe__";
+/** 差し替えで受けた確かめる要求の数 */
+let lucideProbes = 0;
+/** 確かめる要求 1 回の待ちの上限と、確かめ終えるまでの上限（Vitest の `probeInterception` と同じ値） */
+const LUCIDE_PROBE_TIMEOUT_MS = 1_000;
+const LUCIDE_PROBE_DEADLINE_MS = 5_000;
 
 /** jsDelivr の Lucide のアイコンへの要求を差し替え、受けた要求を記録する。返却する関数で差し替えを削除する */
 async function stubLucide(
@@ -11249,6 +11256,17 @@ async function stubLucide(
     lucideListening = true;
     session.on("Fetch.requestPaused", (params: unknown) => {
       const { requestId, request } = params as PausedRequest;
+      if (request.url.startsWith(LUCIDE_PROBE_URL)) {
+        lucideProbes += 1;
+        void session.send("Fetch.fulfillRequest", {
+          requestId,
+          responseCode: 204,
+          responseHeaders: [
+            { name: "Access-Control-Allow-Origin", value: "*" },
+          ],
+        });
+        return;
+      }
       lucideRequests.push(`${request.method} ${request.url}`);
       const answer = lucideResponder?.(request) ?? "fail";
       if (answer === "fail") {
@@ -11272,6 +11290,18 @@ async function stubLucide(
   await session.send("Fetch.enable", {
     patterns: [{ urlPattern: "https://cdn.jsdelivr.net/npm/lucide@*" }],
   });
+  // Fetch.enable の応答の後も、続く要求が差し替えを通らずに jsDelivr へ出ることがあるため、確かめる要求を受けるまで送り直す
+  const probes = lucideProbes;
+  const deadline = Date.now() + LUCIDE_PROBE_DEADLINE_MS;
+  for (let attempt = 0; lucideProbes === probes; attempt += 1) {
+    if (Date.now() >= deadline) {
+      throw new Error("jsDelivr の Lucide への要求の差し替えが効かない");
+    }
+    await fetch(`${LUCIDE_PROBE_URL}?${probes}-${attempt}`, {
+      cache: "no-store",
+      signal: AbortSignal.timeout(LUCIDE_PROBE_TIMEOUT_MS),
+    }).catch(() => undefined);
+  }
   return {
     requests: lucideRequests,
     restore: async () => {

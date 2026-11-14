@@ -15384,6 +15384,12 @@ var mdmark_config_schema_default = {
             pattern: "^[a-z][a-z0-9-]*$"
           },
           default: []
+        },
+        suggestMarkExtension: {
+          title: "\u8A18\u6CD5\u3092\u542B\u3080\u7D14\u7C8B\u306A .md \u306E\u62E1\u5F35\u5B50\u306E\u63D0\u6848",
+          description: "`mdmark check` \u304C\u3001\u62E1\u5F35\u5B50\u304C `.md` \u3067 `.mark.md` \u3067\u306A\u3044\u6587\u66F8\u304C mdmark \u306E\u8A18\u6CD5\u3092\u542B\u3080\u3068\u304D\u3001\u62E1\u5F35\u5B50\u3092 `.mark.md` \u306B\u5909\u3048\u308B\u3088\u3046\u63D0\u6848\u3059\u308B\u304B\u3002\u65E2\u5B58\u306E\u6587\u66F8\u306E\u62E1\u5F35\u5B50\u3092\u79FB\u3059\u307E\u3067 `false` \u306B\u3057\u3066\u6B62\u3081\u3089\u308C\u308B\u3002",
+          type: "boolean",
+          default: true
         }
       }
     },
@@ -16346,6 +16352,18 @@ function validateCheck(value, file, issues) {
       )
     );
     return void 0;
+  }
+  if (value.suggestMarkExtension !== void 0 && typeof value.suggestMarkExtension !== "boolean") {
+    issues.push(
+      schemaIssue(
+        file,
+        "check.suggestMarkExtension",
+        "`check.suggestMarkExtension` \u306F `true` \u304B `false` \u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002"
+      )
+    );
+    const rest = { ...value };
+    delete rest.suggestMarkExtension;
+    return validateCheck(rest, file, issues);
   }
   if (value.ignore === void 0) {
     return value;
@@ -40958,7 +40976,7 @@ if (import.meta.main) {
     argv: process.argv.slice(2),
     env: process.env,
     pluginRoot: join5(import.meta.dirname, ".."),
-    version: "v0.11.0",
+    version: "v0.12.0",
     run: runExternal,
     stdout: (line) => console.log(line),
     stderr: (line) => console.error(line)

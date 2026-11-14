@@ -1,0 +1,11 @@
+use_cases:
+  - kind: single
+    scenario: docs/scenario/SC-472-46.yaml
+    impact: none
+    detail: まとめていない名前のアイコンを読み込む流れは変えず、それを確かめる結合テストの準備だけを変える
+    depends_on: []
+docs: []
+scope_out:
+  - item: 'タッチの代役が後のテストまで (hover: none)・(pointer: coarse) を残す事象'
+    reason: 同じ mount.browser.test.ts の別のテストの後始末の不具合で、アイコンの要求の記録とは原因が別
+    plan: '#530'
