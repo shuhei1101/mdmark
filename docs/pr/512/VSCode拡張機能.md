@@ -77,4 +77,16 @@ diff の見どころ: `vscode/package.json` の `@vscode/vsce` を 4.1.1 に上�
 
 ドキュメント修正（`d843f41a`。アーキテクチャ図・開発コマンド・ガイド・非機能要件）: 文書だけの変更で、規約『V字モデル』の対応表で関係する単体・結合テストが無いため実行していない。
 
-実装・結合テストの結果はテスト作成・実装で記入する。
+### 単体
+
+なし。実装（`bb11edbe`）はワークフローの YAML と `vscode/package.json`・`package-lock.json` だけを変え、規約『V字モデル』の対応表で対応する単体テストが無い。
+
+### lint
+
+| ファイル | メソッド | 変更種別 | 結果 | 補足 |
+| --- | --- | --- | --- | --- |
+| `npm run lint`・`npm run lint:eslint`・`npm run typecheck`・`npm --prefix vscode run typecheck` | 全実行 | 実行のみ | ✅ | `テスト結果/20261114115946_f5c35d92_lint.log` |
+
+### 結合
+
+結合テスト作成で記入する。
