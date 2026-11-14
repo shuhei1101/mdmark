@@ -43,7 +43,9 @@
 
 ### 結合
 
-なし。
+| ファイル | メソッド | 変更種別 | 結果 | 補足 |
+| --- | --- | --- | --- | --- |
+| [vscode/tests/integration/](https://github.com/shuhei1101/mdmark/blob/develop/vscode/tests/integration/) の `preview-open`・`preview-diff`・`preview-rerender`・`open-config`・`export`・`00-undecidable` | 全実行 | 実行のみ | ✅ | VS Code 1.141.0 と stable（1.146.0）の 2 つの版<br>1 回目は `preview-open` の `test_normal`（配布物の要求に `map.js` が無い）が 1.141.0 で fail した。コードを変えずに流し直して、2 つの版で pass<br>`テスト結果/20261115071422_5bf9c393_結合テスト_VSCode拡張機能.log` |
 
 #### 結合テストの実行範囲
 
