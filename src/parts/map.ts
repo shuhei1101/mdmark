@@ -7,8 +7,10 @@ import { MAP_LAYOUT, type MapLayout } from "../map/layout.ts";
 import {
   SEQ_ARROW_STYLES,
   type Sequence,
+  type SequenceArrowStyle,
   type SequenceFragment,
   type SequenceMessage,
+  type SequenceNote,
 } from "../map/sequence.ts";
 import type { SequenceRow } from "../map/sequence-rows.ts";
 import type { MapKind, MapLine } from "../map/spec.ts";
@@ -16,6 +18,7 @@ import { isColorName } from "./colors.ts";
 import {
   createTips,
   type DiagramAnnotation,
+  type DiagramAnnotations,
   groupInfo,
   infoLabel,
   ownerIdAttribute,
@@ -236,22 +239,63 @@ const markSelected = (html: string, value: string): string =>
     "$1 data-selected",
   );
 
-/** 描いた HTML の、属性 `{name}="{id}"` を持つ要素の class に名前を足す */
+/** ID を逃がして、正規表現に入れる値にする */
+const regExpValue = (id: string): string =>
+  escapeHtml(id).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
+/** 描いた HTML の、属性 `{attribute}="{id}"` を持つ要素の class に `name` を足す */
 const addClass = (
   html: string,
-  attribute: string,
-  id: string,
-  name: string,
+  target: { attribute: string; id: string; name: string },
 ): string => {
-  const value = escapeHtml(id).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const { attribute, id, name } = target;
   return html.replace(
     new RegExp(
-      `<([a-z]+) class="([^"]*)"([^>]*\\s${attribute}="${value}")`,
+      `<([a-z]+) class="([^"]*)"([^>]*\\s${attribute}="${regExpValue(id)}")`,
       "g",
     ),
-    (_all, tag: string, classes: string, rest: string) =>
-      `<${tag} class="${classes} ${name}"${rest}`,
+    (_all: string, ...groups: string[]) => {
+      const [tag = "", classes = "", rest = ""] = groups;
+      return `<${tag} class="${classes} ${name}"${rest}`;
+    },
   );
+};
+
+/** Mermaid のクラスから、設定の map.kinds の種類を返却する（無ければ `undefined`） */
+const kindOf = (
+  kinds: Record<string, MapKind>,
+  classes: string[] | undefined,
+): MapKind | undefined => {
+  const name = (classes ?? []).find((item) => item in kinds);
+  return name === undefined ? undefined : kinds[name];
+};
+
+/** 構成図の線 1 本 */
+type MapWire = MapLayout["wires"][number];
+
+/** 線の種類（補足の layout の line の名前を、矢印ごとの種類より優先する） */
+const wireLineOf = (
+  args: Pick<MapFlowArgs, "lines" | "wireLines">,
+  wire: MapWire,
+): MapLine | undefined => {
+  const named = args.wireLines?.[wire.id];
+  return (
+    (named === undefined ? undefined : args.lines[named]) ??
+    args.lines[wire.arrow ?? "-->"]
+  );
+};
+
+/** データの印の色（source・target はノードの種類の色、それ以外は色の名前か線の色） */
+const packetFill = (parts: {
+  color: string | undefined;
+  wire: MapWire;
+  nodeFill: (id: string) => string;
+  lineFill: string;
+}): string => {
+  const { color, wire, nodeFill, lineFill } = parts;
+  if (color === "source") return nodeFill(wire.from);
+  if (color === "target") return nodeFill(wire.to);
+  return colorVar(color) ?? lineFill;
 };
 
 /** 構成図の線の上のデータの印の SVG。色の名前・line・source・target を、線とノードの種類の色の変数にする */
@@ -263,37 +307,27 @@ export const renderMapPackets = (
   marks: MapPacketMark[],
 ): string => {
   const { layout } = args;
-  const kindOf = (classes: string[] | undefined): MapKind | undefined => {
-    const name = (classes ?? []).find((item) => item in args.kinds);
-    return name === undefined ? undefined : args.kinds[name];
-  };
   const nodeFill = (id: string): string =>
     colorVar(
-      kindOf(layout.nodes.find((node) => node.id === id)?.classes)?.color,
+      kindOf(args.kinds, layout.nodes.find((node) => node.id === id)?.classes)
+        ?.color,
     ) ?? LINE_FILL;
   const packetPaths = marks.flatMap((packet): PacketPath[] => {
     const wire = layout.wires.find((item) => item.id === packet.wire);
     if (!wire) return [];
-    const named = args.wireLines?.[wire.id];
     const lineColor = colorVar(
-      args.colors?.[wire.id] ??
-        (
-          (named === undefined ? undefined : args.lines[named]) ??
-          args.lines[wire.arrow ?? "-->"]
-        )?.color,
+      args.colors?.[wire.id] ?? wireLineOf(args, wire)?.color,
     );
-    const lineFill = lineColor ?? LINE_FILL;
-    const fill =
-      packet.color === "source"
-        ? nodeFill(wire.from)
-        : packet.color === "target"
-          ? nodeFill(wire.to)
-          : (colorVar(packet.color) ?? lineFill);
     return [
       {
         owner: `data-wire="${escapeHtml(wire.id)}"`,
         ...polyline(wire.points),
-        fill,
+        fill: packetFill({
+          color: packet.color,
+          wire,
+          nodeFill,
+          lineFill: lineColor ?? LINE_FILL,
+        }),
         shape: packet.shape,
         direction: packet.direction,
       },
@@ -400,15 +434,16 @@ export const selectableName = (name: string, selected: boolean): string =>
 export const noteOwnerPrefix = (id: string | undefined): string =>
   `${NOTE_OWNER_PREFIX}${(id ?? "map").replace(/^map-/, "")}-`;
 
-/** 部品『mapの構成図』の HTML。ノードと線（`notes` の説明を `hint`、`links` のリンク先を `href` にする）を renderFlow で描き、グループの面とタイトルの行・開閉と中へ入るボタン・説明のマーカー・閉じたグループを重ねる */
-export const renderMapFlow = (args: MapFlowArgs): MapPart => {
-  const { layout } = args;
-  const kindOf = (classes: string[] | undefined): MapKind | undefined => {
-    const name = (classes ?? []).find((item) => item in args.kinds);
-    return name === undefined ? undefined : args.kinds[name];
-  };
-  const open = layout.groups.filter((group) => !group.collapsed);
-  const closed = layout.groups.filter((group) => group.collapsed);
+/** 構成図の要素の名前を引く関数 */
+type FlowNames = {
+  /** ノード・グループの ID から名前（無ければ ID） */
+  nameOf: (id: string) => string;
+  /** 線の押せる帯のスクリーンリーダー向けの名前 */
+  wireName: (wire: MapWire) => string;
+};
+
+/** 構成図の要素の名前を引く関数を返却する */
+const flowNamesOf = (layout: MapLayout): FlowNames => {
   const names = new Map<string, string>([
     ...layout.groups.map((group): [string, string] => [group.id, group.title]),
     ...layout.nodes.map((node): [string, string] => [
@@ -417,82 +452,92 @@ export const renderMapFlow = (args: MapFlowArgs): MapPart => {
     ]),
   ]);
   const nameOf = (id: string): string => names.get(id) ?? id;
-  /** 線の押せる帯のスクリーンリーダー向けの名前 */
-  const wireName = (wire: MapLayout["wires"][number]): string =>
-    `${nameOf(wire.from)}から${nameOf(wire.to)}への線${wire.merged === undefined && wire.label !== undefined ? `「${wire.label}」` : ""}`;
-  const nodes: MdmarkDiagramNode[] = layout.nodes.map((node) => {
-    const kind = kindOf(node.classes);
-    const note = args.notes?.[node.id];
-    const href = args.links?.[node.id];
-    return {
-      id: node.id,
-      x: node.x,
-      y: node.y,
-      w: node.w,
-      h: node.h,
-      name: node.label ?? node.lines.join(""),
-      style: {
-        label:
-          args.shapes?.[node.id] === "note"
-            ? STATE_SHAPE_NAMES.note
-            : kind?.label,
-        icon: kind?.icon,
-        shape: kind?.shape,
-        color: args.colors?.[node.id] ?? kind?.color,
-      },
-      ...(note === undefined ? {} : { hint: note }),
-      ...(href === undefined ? {} : { href }),
-    };
-  });
-  const wires: MdmarkDiagramWire[] = layout.wires.map((wire) => {
-    const named = args.wireLines?.[wire.id];
-    const line =
-      (named === undefined ? undefined : args.lines[named]) ??
-      args.lines[wire.arrow ?? "-->"] ??
-      {};
-    // まとめた線は、補足の notes に説明を持つ元の線だけを並べる
-    const tip = [
-      ...(wire.merged ?? []).flatMap((item) => {
-        const note = args.notes?.[`${item.from}->${item.to}`];
-        return note === undefined || note === ""
-          ? []
-          : [`${item.fromLabel} → ${item.toLabel}：${note}`];
-      }),
-      ...(args.notes?.[wire.id] === undefined ? [] : [args.notes[wire.id]]),
-    ].join("\n");
-    return {
-      id: wire.id,
-      from: wire.from,
-      to: wire.to,
-      points: wire.points,
-      ...(wire.merged === undefined && wire.label !== undefined
-        ? { label: wire.label }
-        : {}),
-      ...(tip === "" ? {} : { tip }),
-      style: {
-        ...line,
-        color: args.colors?.[wire.id] ?? line.color,
-        both: wire.both ?? false,
-      },
-    };
-  });
-  const definition: MdmarkFlowDefinition = {
-    width: layout.width,
-    height: layout.height,
-    nodes,
-    wires,
+  return {
+    nameOf,
+    wireName: (wire) =>
+      `${nameOf(wire.from)}から${nameOf(wire.to)}への線${wire.merged === undefined && wire.label !== undefined ? `「${wire.label}」` : ""}`,
   };
-  const ownerPrefix = noteOwnerPrefix(args.id);
-  const annotations =
-    args.annotations === undefined
-      ? undefined
-      : { items: args.annotations, ownerPrefix };
-  const part = renderFlow(definition, args.id ?? "map", {
-    hints: true,
-    annotations,
-  });
-  // ラベルを持たない線の説明とまとめた元の線、注記だけを持つ線は、線の押せる帯を持ち主にしたツールチップにする
-  const wireTips = createTips(`${args.id ?? "map"}-wire`);
+};
+
+/** 構成図のノード 1 つ */
+type MapNode = MapLayout["nodes"][number];
+
+/** renderFlow に渡すノード（`notes` の説明を `hint`、`links` のリンク先を `href` にする） */
+const flowNode = (args: MapFlowArgs, node: MapNode): MdmarkDiagramNode => {
+  const note = args.notes?.[node.id];
+  const href = args.links?.[node.id];
+  return {
+    id: node.id,
+    x: node.x,
+    y: node.y,
+    w: node.w,
+    h: node.h,
+    name: node.label ?? node.lines.join(""),
+    style: flowNodeStyle(args, node),
+    ...(note === undefined ? {} : { hint: note }),
+    ...(href === undefined ? {} : { href }),
+  };
+};
+
+/** ノードの種類の行・アイコン・形状・色 */
+const flowNodeStyle = (
+  args: MapFlowArgs,
+  node: MapNode,
+): MdmarkDiagramNode["style"] => {
+  const kind = kindOf(args.kinds, node.classes);
+  return {
+    label:
+      args.shapes?.[node.id] === "note" ? STATE_SHAPE_NAMES.note : kind?.label,
+    icon: kind?.icon,
+    shape: kind?.shape,
+    color: args.colors?.[node.id] ?? kind?.color,
+  };
+};
+
+/** renderFlow に渡す線（まとめた線のラベルは出さない） */
+const flowWire = (args: MapFlowArgs, wire: MapWire): MdmarkDiagramWire => {
+  const line = wireLineOf(args, wire) ?? {};
+  const tip = flowWireTip(args, wire);
+  return {
+    id: wire.id,
+    from: wire.from,
+    to: wire.to,
+    points: wire.points,
+    ...(wire.merged === undefined && wire.label !== undefined
+      ? { label: wire.label }
+      : {}),
+    ...(tip === "" ? {} : { tip }),
+    style: {
+      ...line,
+      color: args.colors?.[wire.id] ?? line.color,
+      both: wire.both ?? false,
+    },
+  };
+};
+
+/** 線の説明。まとめた線は、補足の notes に説明を持つ元の線だけを並べる */
+const flowWireTip = (args: MapFlowArgs, wire: MapWire): string => {
+  const own = args.notes?.[wire.id];
+  return [
+    ...(wire.merged ?? []).flatMap((item) => {
+      const note = args.notes?.[`${item.from}->${item.to}`];
+      return note === undefined || note === ""
+        ? []
+        : [`${item.fromLabel} → ${item.toLabel}：${note}`];
+    }),
+    ...(own === undefined ? [] : [own]),
+  ].join("\n");
+};
+
+/** ラベルを持たない線の説明とまとめた元の線、注記だけを持つ線の、線の押せる帯を持ち主にしたツールチップと、ツールチップを持つ線 */
+const flowWireTips = (context: {
+  args: MapFlowArgs;
+  mapId: string;
+  wires: MdmarkDiagramWire[];
+  wireName: (wire: MapWire) => string;
+}): { tips: TipList; tipped: Set<string> } => {
+  const { args, mapId, wires, wireName } = context;
+  const tips = createTips(`${mapId}-wire`);
   const tipped = new Set<string>();
   for (const wire of wires) {
     const notes = args.annotations?.[wire.id];
@@ -500,8 +545,8 @@ export const renderMapFlow = (args: MapFlowArgs): MapPart => {
     tipped.add(wire.id);
     // ラベルと説明を持つ線は、ラベルのツールチップが説明と注記を出す
     if (wire.label !== undefined && wire.tip !== undefined) continue;
-    const shown = layout.wires.find((item) => item.id === wire.id);
-    wireTips.add({
+    const shown = args.layout.wires.find((item) => item.id === wire.id);
+    tips.add({
       kind: "wire",
       label: shown === undefined ? wire.id : wireName(shown),
       tip: wire.tip,
@@ -509,90 +554,255 @@ export const renderMapFlow = (args: MapFlowArgs): MapPart => {
       annotations: notes,
     });
   }
-  let html = part.html;
-  // ノードの名前の中の用語に下線を付ける（名前の文字は逃がしたまま、名前の要素の中に置く）
-  const marker = termMarker(args.terms, args.id ?? "map");
-  for (const node of layout.nodes) {
+  return { tips, tipped };
+};
+
+/** ノードの名前の中の用語に下線を付ける（名前の文字は逃がしたまま、名前の要素の中に置く） */
+const markNodeTerms = (
+  html: string,
+  context: { nodes: MapNode[]; marker: TermMarker },
+): string => {
+  let out = html;
+  for (const node of context.nodes) {
     const label = node.label ?? node.lines.join("");
-    const marked = marker.render(label);
+    const marked = context.marker.render(label);
     if (marked === escapeHtml(label)) continue;
-    const value = escapeHtml(node.id).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-    html = html.replace(
+    out = out.replace(
       new RegExp(
-        `(data-node="${value}"[^>]*>[\\s\\S]*?<span class="mdmark-diagram-node-name">)[\\s\\S]*?(</span>)`,
+        `(data-node="${regExpValue(node.id)}"[^>]*>[\\s\\S]*?<span class="mdmark-diagram-node-name">)[\\s\\S]*?(</span>)`,
       ),
       (_whole, head: string, tail: string) => `${head}${marked}${tail}`,
     );
   }
-  // ノードはフォーカスして Enter・Space で選び、Alt + 矢印キーで動かせる。リンク先を持つノードは、ノードの代わりにリンクがフォーカスを受ける
-  const selectedIds = new Set(args.selected);
-  for (const node of layout.nodes) {
-    const value = escapeHtml(node.id).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-    const shape = args.shapes?.[node.id];
-    // 開始・終了・分岐は形状だけを描き、選ばない
-    if (shape !== undefined && shape !== "note") {
-      html = html.replace(
-        new RegExp(
-          `(<div class="[^"]*map-kinded[^"]*"[^>]*?) data-shape="[^"]*"([^>]*\\sdata-node="${value}")`,
-        ),
-        `$1 data-shape="${shape}"$2 role="img" aria-label="${STATE_SHAPE_NAMES[shape]}"`,
-      );
-      continue;
-    }
-    const selected = selectedIds.has(node.id);
-    const name = escapeHtml(selectableName(nameOf(node.id), selected));
-    if (args.links?.[node.id] !== undefined) {
-      html = html.replace(
-        new RegExp(
-          `(<div class="[^"]*map-kinded[^"]*"[^>]*\\sdata-node="${value}"[^>]*>[\\s\\S]*?<a class="mdmark-diagram-node-link" href="[^"]*") aria-label="[^"]*"`,
-        ),
-        `$1 aria-roledescription="ノード" aria-keyshortcuts="${MAP_LINK_KEYS}" aria-label="${name}"`,
-      );
-      if (selected) html = markSelected(html, value);
-      continue;
-    }
-    html = html.replace(
+  return out;
+};
+
+/** ノードはフォーカスして Enter・Space で選び、Alt + 矢印キーで動かせる。リンク先を持つノードは、ノードの代わりにリンクがフォーカスを受ける */
+const markFlowNodes = (
+  html: string,
+  context: { args: MapFlowArgs; nameOf: (id: string) => string },
+): string => {
+  const selectedIds = new Set(context.args.selected);
+  return context.args.layout.nodes.reduce(
+    (out, node) => markFlowNode(out, { ...context, node, selectedIds }),
+    html,
+  );
+};
+
+/** ノード 1 つに、形状か、選ぶ・動かすキー操作の属性を付ける */
+const markFlowNode = (
+  html: string,
+  context: {
+    args: MapFlowArgs;
+    nameOf: (id: string) => string;
+    node: MapNode;
+    selectedIds: Set<string>;
+  },
+): string => {
+  const { args, nameOf, node, selectedIds } = context;
+  const value = regExpValue(node.id);
+  const shape = args.shapes?.[node.id];
+  // 開始・終了・分岐は形状だけを描き、選ばない
+  if (shape !== undefined && shape !== "note") {
+    return html.replace(
       new RegExp(
-        `(<div class="[^"]*map-kinded[^"]*"[^>]*\\sdata-node="${value}")`,
+        `(<div class="[^"]*map-kinded[^"]*"[^>]*?) data-shape="[^"]*"([^>]*\\sdata-node="${value}")`,
       ),
-      `$1 tabindex="0" role="button" aria-roledescription="ノード" aria-keyshortcuts="${MAP_NODE_KEYS}" aria-label="${name}"${selected ? " data-selected" : ""}`,
+      `$1 data-shape="${shape}"$2 role="img" aria-label="${STATE_SHAPE_NAMES[shape]}"`,
     );
   }
-  for (const node of layout.nodes) {
-    if (node.faded) html = addClass(html, "data-node", node.id, "map-faded");
+  const selected = selectedIds.has(node.id);
+  const name = escapeHtml(selectableName(nameOf(node.id), selected));
+  if (args.links?.[node.id] !== undefined) {
+    const linked = html.replace(
+      new RegExp(
+        `(<div class="[^"]*map-kinded[^"]*"[^>]*\\sdata-node="${value}"[^>]*>[\\s\\S]*?<a class="mdmark-diagram-node-link" href="[^"]*") aria-label="[^"]*"`,
+      ),
+      `$1 aria-roledescription="ノード" aria-keyshortcuts="${MAP_LINK_KEYS}" aria-label="${name}"`,
+    );
+    return selected ? markSelected(linked, value) : linked;
   }
-  let partTips = "";
-  for (const [id, part] of Object.entries(args.nodeParts ?? {})) {
-    html = insertNodePart(html, id, part);
-    partTips += part.tips;
+  return html.replace(
+    new RegExp(
+      `(<div class="[^"]*map-kinded[^"]*"[^>]*\\sdata-node="${value}")`,
+    ),
+    `$1 tabindex="0" role="button" aria-roledescription="ノード" aria-keyshortcuts="${MAP_NODE_KEYS}" aria-label="${name}"${selected ? " data-selected" : ""}`,
+  );
+};
+
+/** 薄く残したノードに `map-faded` を付ける */
+const fadeNodes = (html: string, nodes: MapNode[]): string =>
+  nodes
+    .filter((node) => node.faded)
+    .reduce(
+      (out, node) =>
+        addClass(out, {
+          attribute: "data-node",
+          id: node.id,
+          name: "map-faded",
+        }),
+      html,
+    );
+
+/** ノードの中へ HTML を入れ、入れた HTML のツールチップを返却する */
+const insertNodeParts = (
+  html: string,
+  nodeParts: Record<string, MapNodePart> | undefined,
+): { html: string; tips: string } => {
+  let out = html;
+  let tips = "";
+  for (const [id, part] of Object.entries(nodeParts ?? {})) {
+    out = insertNodePart(out, id, part);
+    tips += part.tips;
   }
+  return { html: out, tips };
+};
+
+/** 強調するノードと線のほかを薄くする */
+const dimUnkept = (html: string, args: MapFlowArgs): string => {
   const kept = keptOf(args);
-  if (kept) {
-    for (const node of layout.nodes) {
-      if (!kept.nodes.has(node.id))
-        html = addClass(html, "data-node", node.id, "map-dim");
-    }
-    for (const wire of layout.wires) {
-      if (!kept.wires.has(wire.id))
-        html = addClass(html, "data-wire", wire.id, "map-dim");
-    }
-  }
-  for (const id of args.selected)
-    html = addClass(html, "data-node", id, "is-selected");
-  if (args.dragging !== undefined)
-    html = addClass(html, "data-node", args.dragging, "is-dragging");
-  /** グループの色の名前を、面と文字の色の変数にする（知らない名前は色を持たない） */
-  const groupTint = (id: string): string => {
-    const name = args.colors?.[id];
-    const fill = colorVar(name, "bg");
-    const ink = colorVar(name);
-    return fill === undefined || ink === undefined
-      ? ""
-      : `;--map-fill:${fill};--map-ink:${ink}`;
+  if (!kept) return html;
+  const nodes = args.layout.nodes
+    .filter((node) => !kept.nodes.has(node.id))
+    .map((node) => ({ attribute: "data-node", id: node.id }));
+  const wires = args.layout.wires
+    .filter((wire) => !kept.wires.has(wire.id))
+    .map((wire) => ({ attribute: "data-wire", id: wire.id }));
+  return [...nodes, ...wires].reduce(
+    (out, target) => addClass(out, { ...target, name: "map-dim" }),
+    html,
+  );
+};
+
+/** 選んだノードと、ドラッグしているノードのクラスを付ける */
+const markFlowState = (html: string, args: MapFlowArgs): string => {
+  const selected = args.selected.reduce(
+    (out, id) =>
+      addClass(out, { attribute: "data-node", id, name: "is-selected" }),
+    html,
+  );
+  return args.dragging === undefined
+    ? selected
+    : addClass(selected, {
+        attribute: "data-node",
+        id: args.dragging,
+        name: "is-dragging",
+      });
+};
+
+/** グループの色の名前を、面と文字の色の変数にする（知らない名前は色を持たない） */
+const groupTint = (args: MapFlowArgs, id: string): string => {
+  const name = args.colors?.[id];
+  const fill = colorVar(name, "bg");
+  const ink = colorVar(name);
+  return fill === undefined || ink === undefined
+    ? ""
+    : `;--map-fill:${fill};--map-ink:${ink}`;
+};
+
+/** グループのタイトルの右に配置する説明のマーカー */
+type GroupMark = (id: string, title: string) => string;
+
+/** 構成図のグループ 1 つ */
+type MapGroup = MapLayout["groups"][number];
+
+/** 開いたグループの面とタイトルの行。グループは外側から順に、線とノードの下に重ねる */
+const renderOpenGroups = (args: MapFlowArgs, groupMark: GroupMark): string =>
+  args.layout.groups
+    .filter((group) => !group.collapsed)
+    .sort((a, b) => a.ancestors.length - b.ancestors.length)
+    .map((group) => renderOpenGroup({ args, group, groupMark }))
+    .join("");
+
+/** 開いたグループ 1 つの面とタイトルの行 */
+const renderOpenGroup = (context: {
+  args: MapFlowArgs;
+  group: MapGroup;
+  groupMark: GroupMark;
+}): string => {
+  const { args, group, groupMark } = context;
+  const current = group.id === args.entered;
+  // 中へ入ったグループと薄く残したグループのほかは、タイトルの行の帯をドラッグして動かせる
+  const movable = !current && !group.faded;
+  const classes = `map-group${group.faded ? " map-faded" : ""}${current ? " is-entered" : ""}${movable ? " map-movable" : ""}${args.dragging === group.id ? " is-dragging" : ""}`;
+  const bar = movable
+    ? `<div class="map-group-bar" tabindex="0" role="button" aria-label="${escapeHtml(`${group.title}を動かす`)}" aria-keyshortcuts="Alt+ArrowUp Alt+ArrowDown Alt+ArrowLeft Alt+ArrowRight" title="ドラッグでグループを動かす"></div>`
+    : "";
+  return `<div class="${classes}" data-group="${escapeHtml(group.id)}" style="left:${group.x}px;top:${group.y}px;width:${group.w}px;height:${group.h}px${groupTint(args, group.id)}">${bar}<div class="map-group-head">${disclosure(group.id, group.title, true)}${groupTitle(group.id, group.title, current)}${groupMark(group.id, group.title)}</div></div>`;
+};
+
+/** 閉じたグループの名前の後ろの文字（無ければ「ノード {数} 件」） */
+const closedCount = (args: MapFlowArgs, group: MapGroup): string => {
+  const tag =
+    args.collapsedTag?.(group.id) ??
+    (group.count === undefined ? undefined : `ノード ${group.count} 件`);
+  return tag === undefined
+    ? ""
+    : `<span class="map-closed-count">${escapeHtml(tag)}</span>`;
+};
+
+/** 閉じたグループは、二重の枠線の 1 つのノードにする（本数とラベルは出さない） */
+const renderClosedGroups = (args: MapFlowArgs, groupMark: GroupMark): string =>
+  args.layout.groups
+    .filter((group) => group.collapsed)
+    .map(
+      (group) =>
+        `<div class="mdmark-diagram-node map-closed-group${group.faded ? " map-faded" : ""}" data-group="${escapeHtml(group.id)}" style="left:${group.x}px;top:${group.y}px;width:${group.w}px;height:${group.h}px"><div class="map-group-head">${disclosure(group.id, group.title, false)}${groupTitle(group.id, group.title, false)}${groupMark(group.id, group.title)}</div>${closedCount(args, group)}</div>`,
+    )
+    .join("");
+
+/** 線を押す・指す場所: 見える線より太い透明の線（区間の移動にも使う） */
+const renderWireHits = (context: {
+  layout: MapLayout;
+  annotations: DiagramAnnotations | undefined;
+  tipped: Set<string>;
+  wireName: (wire: MapWire) => string;
+}): string => {
+  const { layout, annotations, tipped, wireName } = context;
+  const hits = layout.wires
+    .map(
+      (wire) =>
+        `<path class="map-wire-hit" data-wire="${escapeHtml(wire.id)}"${ownerIdAttribute(annotations, wire.id)}${tipped.has(wire.id) ? ` data-tip-owner="${escapeHtml(wire.id)}"` : ""} tabindex="0" role="button" aria-label="${escapeHtml(wireName(wire))}" d="${wire.points.map(([x, y], index) => `${index === 0 ? "M" : "L"}${x} ${y}`).join("")}"></path>`,
+    )
+    .join("");
+  return `<svg class="map-wire-hits" width="${layout.width}" height="${layout.height}">${hits}</svg>`;
+};
+
+/** 部品『mapの構成図』の HTML。ノードと線（`notes` の説明を `hint`、`links` のリンク先を `href` にする）を renderFlow で描き、グループの面とタイトルの行・開閉と中へ入るボタン・説明のマーカー・閉じたグループを重ねる */
+export const renderMapFlow = (args: MapFlowArgs): MapPart => {
+  const { layout } = args;
+  const mapId = args.id ?? "map";
+  const names = flowNamesOf(layout);
+  const wires = layout.wires.map((wire) => flowWire(args, wire));
+  const definition: MdmarkFlowDefinition = {
+    width: layout.width,
+    height: layout.height,
+    nodes: layout.nodes.map((node) => flowNode(args, node)),
+    wires,
   };
+  const ownerPrefix = noteOwnerPrefix(args.id);
+  const annotations =
+    args.annotations === undefined
+      ? undefined
+      : { items: args.annotations, ownerPrefix };
+  const part = renderFlow(definition, mapId, { hints: true, annotations });
+  const wireTips = flowWireTips({
+    args,
+    mapId,
+    wires,
+    wireName: names.wireName,
+  });
+  const marker = termMarker(args.terms, mapId);
+  let html = markNodeTerms(part.html, { nodes: layout.nodes, marker });
+  html = fadeNodes(
+    markFlowNodes(html, { args, nameOf: names.nameOf }),
+    layout.nodes,
+  );
+  const inserted = insertNodeParts(html, args.nodeParts);
+  html = markFlowState(dimUnkept(inserted.html, args), args);
   // 説明を持つグループは、タイトルの右にノードと同じマーカーを配置する
-  const groupTips = createTips(`${args.id ?? "map"}-group`);
-  const groupMark = (id: string, title: string): string =>
+  const groupTips = createTips(`${mapId}-group`);
+  const groupMark: GroupMark = (id, title) =>
     groupInfo({
       hint: args.notes?.[id],
       label: title,
@@ -601,47 +811,18 @@ export const renderMapFlow = (args: MapFlowArgs): MapPart => {
       annotations: args.annotations?.[id],
       ownerId: noteOwnerId(ownerPrefix, id),
     });
-  // グループは外側から順に、線とノードの下に重ねる
-  const groups = [...open]
-    .sort((a, b) => a.ancestors.length - b.ancestors.length)
-    .map((group) => {
-      const current = group.id === args.entered;
-      // 中へ入ったグループと薄く残したグループのほかは、タイトルの行の帯をドラッグして動かせる
-      const movable = !current && !group.faded;
-      const classes = `map-group${group.faded ? " map-faded" : ""}${current ? " is-entered" : ""}${movable ? " map-movable" : ""}${args.dragging === group.id ? " is-dragging" : ""}`;
-      const bar = movable
-        ? `<div class="map-group-bar" tabindex="0" role="button" aria-label="${escapeHtml(`${group.title}を動かす`)}" aria-keyshortcuts="Alt+ArrowUp Alt+ArrowDown Alt+ArrowLeft Alt+ArrowRight" title="ドラッグでグループを動かす"></div>`
-        : "";
-      return `<div class="${classes}" data-group="${escapeHtml(group.id)}" style="left:${group.x}px;top:${group.y}px;width:${group.w}px;height:${group.h}px${groupTint(group.id)}">${bar}<div class="map-group-head">${disclosure(group.id, group.title, true)}${groupTitle(group.id, group.title, current)}${groupMark(group.id, group.title)}</div></div>`;
-    })
-    .join("");
-  const closedCount = (id: string, count: number | undefined): string => {
-    const tag =
-      args.collapsedTag?.(id) ??
-      (count === undefined ? undefined : `ノード ${count} 件`);
-    return tag === undefined
-      ? ""
-      : `<span class="map-closed-count">${escapeHtml(tag)}</span>`;
-  };
-  // 閉じたグループは、二重の枠線の 1 つのノードにする（本数とラベルは出さない）
-  const closedHtml = closed
-    .map(
-      (group) =>
-        `<div class="mdmark-diagram-node map-closed-group${group.faded ? " map-faded" : ""}" data-group="${escapeHtml(group.id)}" style="left:${group.x}px;top:${group.y}px;width:${group.w}px;height:${group.h}px"><div class="map-group-head">${disclosure(group.id, group.title, false)}${groupTitle(group.id, group.title, false)}${groupMark(group.id, group.title)}</div>${closedCount(group.id, group.count)}</div>`,
-    )
-    .join("");
+  const groups = renderOpenGroups(args, groupMark);
+  const closedHtml = renderClosedGroups(args, groupMark);
   const packets = `<svg class="map-packets" width="${layout.width}" height="${layout.height}" aria-hidden="true">${renderMapPackets(args, args.packets)}</svg>`;
-  // 線を押す・指す場所: 見える線より太い透明の線（区間の移動にも使う）
-  const hits = layout.wires
-    .map(
-      (wire) =>
-        `<path class="map-wire-hit" data-wire="${escapeHtml(wire.id)}"${ownerIdAttribute(annotations, wire.id)}${tipped.has(wire.id) ? ` data-tip-owner="${escapeHtml(wire.id)}"` : ""} tabindex="0" role="button" aria-label="${escapeHtml(wireName(wire))}" d="${wire.points.map(([x, y], index) => `${index === 0 ? "M" : "L"}${x} ${y}`).join("")}"></path>`,
-    )
-    .join("");
-  const hitLayer = `<svg class="map-wire-hits" width="${layout.width}" height="${layout.height}">${hits}</svg>`;
+  const hitLayer = renderWireHits({
+    layout,
+    annotations,
+    tipped: wireTips.tipped,
+    wireName: names.wireName,
+  });
   return {
     html: `${groups}${html}${hitLayer}${closedHtml}${packets}`,
-    tips: `${markTipTerms(`${part.tips}${wireTips.html()}${groupTips.html()}`, args.terms)}${marker.tips.html()}${partTips}`,
+    tips: `${markTipTerms(`${part.tips}${wireTips.tips.html()}${groupTips.html()}`, args.terms)}${marker.tips.html()}${inserted.tips}`,
   };
 };
 
@@ -673,6 +854,15 @@ const NAMES = {
   },
 } as const;
 
+/** 案内の帯のボタン */
+const bandButton = (button: {
+  action: string;
+  label: string;
+  icon: Parameters<typeof iconSvg>[0];
+  extra?: string;
+}): string =>
+  `<button class="mdmark-diagram-tool" type="button" data-band="${button.action}" aria-label="${escapeHtml(button.label)}" title="${escapeHtml(button.label)}"${button.extra ?? ""}>${iconSvg(button.icon)}</button>`;
+
 /** 部品『案内の帯』の HTML */
 export const renderMapBand = (args: MapBandArgs): string => {
   const names =
@@ -681,31 +871,24 @@ export const renderMapBand = (args: MapBandArgs): string => {
         ? "transition"
         : args.mode
     ];
-  const button = (
-    action: string,
-    label: string,
-    icon: Parameters<typeof iconSvg>[0],
-    extra = "",
-  ) =>
-    `<button class="mdmark-diagram-tool" type="button" data-band="${action}" aria-label="${escapeHtml(label)}" title="${escapeHtml(label)}"${extra}>${iconSvg(icon)}</button>`;
   const count = `${args.index === undefined ? "–" : args.index + 1}/${args.total}`;
   const title = `<strong class="map-band-title"${args.title === "" ? " hidden" : ""}>${escapeHtml(args.title)}</strong>`;
   const text = `<p class="map-band-text" aria-live="polite"${args.text === "" ? " hidden" : ""}>${escapeHtml(args.text)}</p>`;
   const actions = [
-    button("prev", names.prev, "chevron-left"),
-    button(
-      "stop",
-      names.stop,
-      "square",
-      args.index === undefined ? ' disabled="disabled"' : "",
-    ),
-    button(
-      "auto",
-      args.auto ? "一時停止" : "自動で進める",
-      args.auto ? "pause" : "play",
-      ` aria-pressed="${args.auto}"`,
-    ),
-    button("next", names.next, "chevron-right"),
+    bandButton({ action: "prev", label: names.prev, icon: "chevron-left" }),
+    bandButton({
+      action: "stop",
+      label: names.stop,
+      icon: "square",
+      extra: args.index === undefined ? ' disabled="disabled"' : "",
+    }),
+    bandButton({
+      action: "auto",
+      label: args.auto ? "一時停止" : "自動で進める",
+      icon: args.auto ? "pause" : "play",
+      extra: ` aria-pressed="${args.auto}"`,
+    }),
+    bandButton({ action: "next", label: names.next, icon: "chevron-right" }),
   ].join("");
   return `<div class="map-band" role="region" aria-label="${escapeHtml(args.label)}" data-mode="${args.mode}"><div class="map-band-head"><span class="map-band-count">${count}</span>${title}<div class="map-band-actions">${actions}</div></div>${text}</div>`;
 };
@@ -747,299 +930,541 @@ export const MAP_SEQ = {
 const fragmentTitle = (fragment: SequenceFragment): string =>
   `${fragment.kind === "rect" ? "" : `<b>${fragment.kind}</b> `}${escapeHtml(fragment.label)}`;
 
+/** シーケンス図を描くときに繰り返し引く値 */
+type SeqContext = {
+  args: MapSequenceArgs;
+  /** 矢じりの id の頭 */
+  id: string;
+  /** 参加者の縦線の左右の位置 */
+  x: Map<string, number>;
+  /** 最も右の参加者の位置 */
+  lastX: number;
+  /** 選んだ参加者 */
+  selected: Set<string>;
+  /** メッセージの番号から行の位置 */
+  rowOfMessage: Map<number, number>;
+  marker: TermMarker;
+  /** 参加者を選ばずに再生しているか（今のメッセージのほかを薄くする） */
+  dimByPlay: boolean;
+  /** 再生している今のメッセージ */
+  focusEnds: SequenceMessage | undefined;
+};
+
+/** 行の位置の上下の位置 */
+const seqRowY = (index: number): number =>
+  MAP_SEQ.firstY + index * MAP_SEQ.rowH;
+
+/** 選んだ参加者に関わるメッセージか（選んでいなければ `undefined`） */
+const seqRelated = (
+  selected: Set<string>,
+  message: SequenceMessage,
+): boolean | undefined => {
+  if (selected.size === 0) return undefined;
+  return selected.size === 1
+    ? selected.has(message.from) || selected.has(message.to)
+    : selected.has(message.from) && selected.has(message.to);
+};
+
 /** 部品『mapのシーケンス図』の HTML。参加者・ライフライン・メッセージに、ブロックのタブの開閉と名前のボタン・区間・ノート・活性化の帯・参加者の選択を重ねる */
 export const renderMapSequence = (args: MapSequenceArgs): MapPart => {
-  const marker = termMarker(args.terms, `${args.id ?? "map"}-seq`);
+  const context = seqContextOf(args);
+  const { rows, participants } = args;
   const noteTips = createTips(`${args.id ?? "map"}-seq-note`);
-  const { sequence, rows, participants } = args;
-  const id = args.id ?? "map-seq";
-  const x = new Map(
-    participants.map((name, index) => [
-      name,
-      MAP_SEQ.firstX + index * MAP_SEQ.colGap,
-    ]),
-  );
-  const rowY = (index: number) => MAP_SEQ.firstY + index * MAP_SEQ.rowH;
-  const lastX =
-    MAP_SEQ.firstX + Math.max(0, participants.length - 1) * MAP_SEQ.colGap;
-  const width = lastX + MAP_SEQ.headW / 2 + MAP_SEQ.pad * 4;
+  const width = context.lastX + MAP_SEQ.headW / 2 + MAP_SEQ.pad * 4;
   const height =
-    rowY(Math.max(0, rows.length - 1)) + MAP_SEQ.rowH + MAP_SEQ.pad;
+    seqRowY(Math.max(0, rows.length - 1)) + MAP_SEQ.rowH + MAP_SEQ.pad;
+  const parts = rows.map((row, at) => renderSeqRow(context, { row, at }));
+  const under = parts.map((part) => part.under).join("");
+  const overlay = parts.map((part) => part.overlay).join("");
+  const above = renderSeqActivations(context);
+  const messages = [...context.rowOfMessage].flatMap(([message, at]) => {
+    const part = renderSeqMessage(context, { message, at, noteTips });
+    return part === undefined ? [] : [part];
+  });
+  const wires = messages.map((part) => part.wire).join("");
+  const labels = messages.map((part) => part.label).join("");
+  const packetPaths = messages.flatMap((part) =>
+    part.packet === undefined ? [] : [part.packet],
+  );
+  const lifelines = participants
+    .map(
+      (name) =>
+        `<line class="mdmark-diagram-lifeline${seqParticipantDim(context, name)}" data-lifeline="${escapeHtml(name)}" x1="${context.x.get(name)}" y1="${MAP_SEQ.headTop + MAP_SEQ.headH}" x2="${context.x.get(name)}" y2="${height - 12}"></line>`,
+    )
+    .join("");
+  const heads = participants
+    .map((name) => renderSeqHead(context, name))
+    .join("");
+  const html = [
+    `<svg class="mdmark-diagram-wires" width="${width}" height="${height}" aria-hidden="true"><defs>${renderSeqMarkers(context.id)}</defs><g class="map-seq-under">${under}</g>${lifelines}${wires}<g class="map-seq-above">${above}</g><g class="map-packets" aria-hidden="true">${renderPackets(packetPaths)}</g></svg>`,
+    labels,
+    overlay,
+    `<div class="mdmark-diagram-seq-heads" style="width:${width}px;height:${MAP_SEQ.headTop + MAP_SEQ.headH + 8}px">${heads}</div>`,
+  ].join("");
+  return {
+    html,
+    tips: `${markTipTerms(noteTips.html(), args.terms)}${context.marker.tips.html()}`,
+  };
+};
+
+/** シーケンス図を描くときに繰り返し引く値を返却する */
+const seqContextOf = (args: MapSequenceArgs): SeqContext => {
+  const { sequence, rows, participants } = args;
   const selected = new Set(args.selected);
-  const related = (message: SequenceMessage) =>
-    selected.size === 0
-      ? undefined
-      : selected.size === 1
-        ? selected.has(message.from) || selected.has(message.to)
-        : selected.has(message.from) && selected.has(message.to);
   const rowOfMessage = new Map<number, number>();
   rows.forEach((row, at) => {
     if (row.kind === "message") rowOfMessage.set(row.message, at);
   });
-  const under: string[] = [];
-  const above: string[] = [];
-  const overlay: string[] = [];
-  /** ブロックが囲む左右（関わる参加者の列） */
-  const spanOf = (fragment: SequenceFragment): [number, number] => {
-    const xs = sequence.messages
-      .slice(fragment.start, fragment.end)
-      .flatMap((message) => [x.get(message.from), x.get(message.to)])
-      .filter((value): value is number => value !== undefined);
-    const pad = 70 - fragment.depth * 10;
-    return xs.length === 0
-      ? [MAP_SEQ.firstX - pad, lastX + pad]
-      : [Math.min(...xs) - pad, Math.max(...xs) + pad];
+  return {
+    args,
+    id: args.id ?? "map-seq",
+    x: new Map(
+      participants.map((name, index) => [
+        name,
+        MAP_SEQ.firstX + index * MAP_SEQ.colGap,
+      ]),
+    ),
+    lastX:
+      MAP_SEQ.firstX + Math.max(0, participants.length - 1) * MAP_SEQ.colGap,
+    selected,
+    rowOfMessage,
+    marker: termMarker(args.terms, `${args.id ?? "map"}-seq`),
+    dimByPlay: args.focus !== undefined && selected.size === 0,
+    focusEnds:
+      args.focus === undefined
+        ? undefined
+        : sequence.messages[args.focus.message],
   };
-  const tab = (
-    fragment: SequenceFragment,
-    index: number,
-    expanded: boolean,
-    left: number,
-    top: number,
-    extra = "",
-  ) => {
-    const label = `${fragment.kind}「${fragment.label}」`;
-    const body =
-      index === args.entered
-        ? `<span class="map-seq-fragment-title is-current">${fragmentTitle(fragment)}</span>`
-        : `<button class="map-disclosure" type="button" data-fragment-toggle="${index}" aria-expanded="${expanded}" aria-label="${escapeHtml(`${label}を${expanded ? "閉じる" : "開く"}`)}">${iconSvg(expanded ? "chevron-down" : "chevron-right")}</button><button class="map-seq-fragment-title" type="button" data-fragment-enter="${index}" aria-label="${escapeHtml(`${label}の中だけを見る`)}" title="このブロックの中だけを見る">${fragmentTitle(fragment)}</button>`;
-    return `<span class="map-seq-fragment-tab" data-kind="${fragment.kind}" data-fragment="${index}" style="left:${left}px;top:${top}px">${body}${extra}</span>`;
+};
+
+/** ブロックが囲む左右（関わる参加者の列） */
+const seqSpanOf = (
+  context: SeqContext,
+  fragment: SequenceFragment,
+): [number, number] => {
+  const xs = context.args.sequence.messages
+    .slice(fragment.start, fragment.end)
+    .flatMap((message) => [
+      context.x.get(message.from),
+      context.x.get(message.to),
+    ])
+    .filter((value): value is number => value !== undefined);
+  const pad = 70 - fragment.depth * 10;
+  return xs.length === 0
+    ? [MAP_SEQ.firstX - pad, context.lastX + pad]
+    : [Math.min(...xs) - pad, Math.max(...xs) + pad];
+};
+
+/** ブロックのタブ（中へ入ったブロックは押せない名前、それ以外は開閉と名前のボタン） */
+const renderFragmentTab = (
+  context: SeqContext,
+  tab: {
+    fragment: SequenceFragment;
+    index: number;
+    expanded: boolean;
+    left: number;
+    top: number;
+    extra?: string;
+  },
+): string => {
+  const { fragment, index, expanded, left, top, extra = "" } = tab;
+  const label = `${fragment.kind}「${fragment.label}」`;
+  const body =
+    index === context.args.entered
+      ? `<span class="map-seq-fragment-title is-current">${fragmentTitle(fragment)}</span>`
+      : `<button class="map-disclosure" type="button" data-fragment-toggle="${index}" aria-expanded="${expanded}" aria-label="${escapeHtml(`${label}を${expanded ? "閉じる" : "開く"}`)}">${iconSvg(expanded ? "chevron-down" : "chevron-right")}</button><button class="map-seq-fragment-title" type="button" data-fragment-enter="${index}" aria-label="${escapeHtml(`${label}の中だけを見る`)}" title="このブロックの中だけを見る">${fragmentTitle(fragment)}</button>`;
+  return `<span class="map-seq-fragment-tab" data-kind="${fragment.kind}" data-fragment="${index}" style="left:${left}px;top:${top}px">${body}${extra}</span>`;
+};
+
+/** 行が線とノードの下（`under`）と、上（`overlay`）に重ねる HTML */
+type SeqRowPart = { under: string; overlay: string };
+
+/** 何も重ねない行 */
+const EMPTY_ROW: SeqRowPart = { under: "", overlay: "" };
+
+/** 行 1 つが重ねる HTML（閉じたブロック・ブロック・区間・ノート）を返却する */
+const renderSeqRow = (
+  context: SeqContext,
+  place: { row: SequenceRow; at: number },
+): SeqRowPart => {
+  const { row, at } = place;
+  switch (row.kind) {
+    case "collapsed":
+      return renderCollapsedRow(context, { row, at });
+    case "fragment":
+      return renderFragmentRow(context, { fragment: row.fragment, at });
+    case "section":
+      return renderSectionRow(context, { row, at });
+    case "note":
+      return renderNoteRow(context, { note: row.note, at });
+    default:
+      return EMPTY_ROW;
+  }
+};
+
+/** 閉じたブロックの行（枠とタブとメッセージの件数） */
+const renderCollapsedRow = (
+  context: SeqContext,
+  place: { row: { fragment: number; count: number }; at: number },
+): SeqRowPart => {
+  const { row, at } = place;
+  const fragment = context.args.sequence.fragments[row.fragment];
+  if (!fragment) return EMPTY_ROW;
+  const [left, right] = seqSpanOf(context, fragment);
+  const top = seqRowY(at) - 30;
+  return {
+    under: `<rect class="map-seq-fragment is-collapsed" x="${left}" y="${top}" width="${right - left}" height="40" rx="4"></rect>`,
+    overlay: renderFragmentTab(context, {
+      fragment,
+      index: row.fragment,
+      expanded: false,
+      left,
+      top,
+      extra: `<span class="map-seq-fragment-count">メッセージ ${row.count} 件</span>`,
+    }),
   };
-  rows.forEach((row, at) => {
-    if (row.kind === "collapsed") {
-      const fragment = sequence.fragments[row.fragment];
-      if (!fragment) return;
-      const [left, right] = spanOf(fragment);
-      const top = rowY(at) - 30;
-      under.push(
-        `<rect class="map-seq-fragment is-collapsed" x="${left}" y="${top}" width="${right - left}" height="40" rx="4"></rect>`,
-      );
-      overlay.push(
-        tab(
-          fragment,
-          row.fragment,
-          false,
-          left,
-          top,
-          `<span class="map-seq-fragment-count">メッセージ ${row.count} 件</span>`,
-        ),
-      );
-    } else if (row.kind === "fragment") {
-      const fragment = sequence.fragments[row.fragment];
-      if (!fragment) return;
-      const [left, right] = spanOf(fragment);
-      const inside = rows
-        .map((item, index) => ({ item, index }))
-        .filter(
-          ({ item }) =>
-            (item.kind === "message" &&
-              fragment.start <= item.message &&
-              item.message < fragment.end) ||
-            (item.kind === "collapsed" &&
-              (sequence.fragments[item.fragment]?.start ?? -1) >=
-                fragment.start &&
-              (sequence.fragments[item.fragment]?.end ?? Infinity) <=
-                fragment.end),
-        );
-      const lastRow = Math.max(at, ...inside.map(({ index }) => index));
-      const top = rowY(at) - 30;
-      const bottom = rowY(lastRow) + 14;
-      under.push(
-        `<rect class="map-seq-fragment${fragment.kind === "rect" ? " is-rect" : ""}" x="${left}" y="${top}" width="${right - left}" height="${bottom - top}" rx="4"></rect>`,
-      );
-      overlay.push(tab(fragment, row.fragment, true, left, top));
-    } else if (row.kind === "section") {
-      const fragment = sequence.fragments[row.fragment];
-      const section = fragment?.sections[row.section];
-      if (!fragment || !section) return;
-      const [left, right] = spanOf(fragment);
-      const y = rowY(at) - 14;
-      under.push(
-        `<line class="map-seq-section" x1="${left}" x2="${right}" y1="${y}" y2="${y}"></line>`,
-      );
-      overlay.push(
-        `<span class="map-seq-section-label" style="left:${left + 8}px;top:${y + 2}px">[${escapeHtml(section.label)}]</span>`,
-      );
-    } else if (row.kind === "note") {
-      const note = sequence.notes[row.note];
-      if (!note) return;
-      const xs = note.of
-        .map((name) => x.get(name))
-        .filter((value): value is number => value !== undefined);
-      if (xs.length === 0) return;
-      const [left, right] =
-        note.placement === "left"
-          ? [(xs[0] as number) - 170, (xs[0] as number) - 16]
-          : note.placement === "right"
-            ? [(xs[0] as number) + 16, (xs[0] as number) + 170]
-            : [Math.min(...xs) - 60, Math.max(...xs) + 60];
-      overlay.push(
-        `<div class="map-seq-note" style="left:${left}px;top:${rowY(at) - 32}px;width:${right - left}px">${marker.render(note.text)}</div>`,
-      );
-    }
-  });
-  // 活性化の帯: 参加者の縦線の上に、始まりの行から終わりの行まで（入れ子は右へずらす）
-  const rowOf = (message: number) =>
-    rowOfMessage.get(message) ??
+};
+
+/** 行がブロックの中にあるか（メッセージの行と、中の閉じたブロックの行） */
+const inFragment = (
+  sequence: Sequence,
+  fragment: SequenceFragment,
+  item: SequenceRow,
+): boolean => {
+  if (item.kind === "message") {
+    return fragment.start <= item.message && item.message < fragment.end;
+  }
+  if (item.kind !== "collapsed") return false;
+  const inner = sequence.fragments[item.fragment];
+  return (
+    (inner?.start ?? -1) >= fragment.start &&
+    (inner?.end ?? Infinity) <= fragment.end
+  );
+};
+
+/** 開いたブロックの行（中の行の最後まで囲む枠とタブ） */
+const renderFragmentRow = (
+  context: SeqContext,
+  place: { fragment: number; at: number },
+): SeqRowPart => {
+  const { at } = place;
+  const { sequence, rows } = context.args;
+  const fragment = sequence.fragments[place.fragment];
+  if (!fragment) return EMPTY_ROW;
+  const [left, right] = seqSpanOf(context, fragment);
+  const inside = rows.flatMap((item, index) =>
+    inFragment(sequence, fragment, item) ? [index] : [],
+  );
+  const lastRow = Math.max(at, ...inside);
+  const top = seqRowY(at) - 30;
+  const bottom = seqRowY(lastRow) + 14;
+  return {
+    under: `<rect class="map-seq-fragment${fragment.kind === "rect" ? " is-rect" : ""}" x="${left}" y="${top}" width="${right - left}" height="${bottom - top}" rx="4"></rect>`,
+    overlay: renderFragmentTab(context, {
+      fragment,
+      index: place.fragment,
+      expanded: true,
+      left,
+      top,
+    }),
+  };
+};
+
+/** ブロックの区間の行（区切りの線と名前） */
+const renderSectionRow = (
+  context: SeqContext,
+  place: { row: { fragment: number; section: number }; at: number },
+): SeqRowPart => {
+  const { row, at } = place;
+  const fragment = context.args.sequence.fragments[row.fragment];
+  const section = fragment?.sections[row.section];
+  if (!fragment || !section) return EMPTY_ROW;
+  const [left, right] = seqSpanOf(context, fragment);
+  const y = seqRowY(at) - 14;
+  return {
+    under: `<line class="map-seq-section" x1="${left}" x2="${right}" y1="${y}" y2="${y}"></line>`,
+    overlay: `<span class="map-seq-section-label" style="left:${left + 8}px;top:${y + 2}px">[${escapeHtml(section.label)}]</span>`,
+  };
+};
+
+/** ノートの左右（参加者の左・右・上） */
+const noteSpan = (note: SequenceNote, xs: number[]): [number, number] => {
+  const first = xs[0] as number;
+  if (note.placement === "left") return [first - 170, first - 16];
+  if (note.placement === "right") return [first + 16, first + 170];
+  return [Math.min(...xs) - 60, Math.max(...xs) + 60];
+};
+
+/** ノートの行 */
+const renderNoteRow = (
+  context: SeqContext,
+  place: { note: number; at: number },
+): SeqRowPart => {
+  const note = context.args.sequence.notes[place.note];
+  if (!note) return EMPTY_ROW;
+  const xs = note.of
+    .map((name) => context.x.get(name))
+    .filter((value): value is number => value !== undefined);
+  if (xs.length === 0) return EMPTY_ROW;
+  const [left, right] = noteSpan(note, xs);
+  return {
+    under: "",
+    overlay: `<div class="map-seq-note" style="left:${left}px;top:${seqRowY(place.at) - 32}px;width:${right - left}px">${context.marker.render(note.text)}</div>`,
+  };
+};
+
+/** メッセージの行の位置（閉じたブロックの中のメッセージは、閉じたブロックの行） */
+const seqRowOf = (context: SeqContext, message: number): number => {
+  const { sequence, rows } = context.args;
+  return (
+    context.rowOfMessage.get(message) ??
     rows.findIndex(
       (row) =>
         row.kind === "collapsed" &&
         (sequence.fragments[row.fragment]?.start ?? Infinity) <= message &&
         message < (sequence.fragments[row.fragment]?.end ?? -1),
-    );
-  for (const activation of sequence.activations) {
-    const center = x.get(activation.id);
-    const start = rowOf(activation.start);
-    const end = rowOf(activation.end);
-    if (center === undefined || start < 0 || end < 0) continue;
-    const left = center - 5 + activation.depth * 6;
-    above.push(
-      `<rect class="map-seq-activation" x="${left}" y="${rowY(start)}" width="10" height="${Math.max(12, rowY(end) - rowY(start))}"></rect>`,
-    );
+    )
+  );
+};
+
+/** 活性化の帯: 参加者の縦線の上に、始まりの行から終わりの行まで（入れ子は右へずらす） */
+const renderSeqActivations = (context: SeqContext): string =>
+  context.args.sequence.activations
+    .flatMap((activation) => {
+      const center = context.x.get(activation.id);
+      const start = seqRowOf(context, activation.start);
+      const end = seqRowOf(context, activation.end);
+      if (center === undefined || start < 0 || end < 0) return [];
+      const left = center - 5 + activation.depth * 6;
+      return [
+        `<rect class="map-seq-activation" x="${left}" y="${seqRowY(start)}" width="10" height="${Math.max(12, seqRowY(end) - seqRowY(start))}"></rect>`,
+      ];
+    })
+    .join("");
+
+/** メッセージの線の端（活性化の帯の上にいる参加者は、帯の縁） */
+const activeEdge = (
+  sequence: Sequence,
+  edge: { name: string; message: number; at: number; towards: number },
+): number => {
+  const { name, message, at, towards } = edge;
+  const depths = sequence.activations
+    .filter(
+      (item) =>
+        item.id === name && item.start <= message && message <= item.end,
+    )
+    .map((item) => item.depth);
+  if (depths.length === 0) return at;
+  return towards > at ? at + 5 + Math.max(...depths) * 6 : at - 5;
+};
+
+/** 参加者の名前（無ければ ID） */
+const seqLabelOf = (sequence: Sequence, name: string): string =>
+  sequence.participants.find((item) => item.id === name)?.label ?? name;
+
+/** メッセージ 1 つの線・ラベル・データの印 */
+type SeqMessagePart = {
+  wire: string;
+  label: string;
+  packet: PacketPath | undefined;
+};
+
+/** メッセージの線の形（自分へのメッセージは右へ折り返す） */
+type SeqGeometry = {
+  y: number;
+  self: boolean;
+  start: number;
+  end: number;
+  d: string;
+};
+
+/** メッセージの線の形を返却する（参加者が描かれていなければ `undefined`） */
+const seqMessageGeometry = (
+  context: SeqContext,
+  entry: { item: SequenceMessage; message: number; at: number },
+): SeqGeometry | undefined => {
+  const { item, message, at } = entry;
+  const x1 = context.x.get(item.from);
+  const x2 = context.x.get(item.to);
+  if (x1 === undefined || x2 === undefined) return undefined;
+  const y = seqRowY(at);
+  if (item.from === item.to) {
+    return {
+      y,
+      self: true,
+      start: x1,
+      end: x2,
+      d: `M${x1} ${y - 8}H${x1 + 40}V${y + 8}H${x1 + 4}`,
+    };
   }
-  const activeEdge = (
-    name: string,
-    message: number,
-    at: number,
-    towards: number,
-  ) => {
-    const depths = sequence.activations
-      .filter(
-        (item) =>
-          item.id === name && item.start <= message && message <= item.end,
-      )
-      .map((item) => item.depth);
-    if (depths.length === 0) return at;
-    return towards > at ? at + 5 + Math.max(...depths) * 6 : at - 5;
-  };
-  const labelOf = (name: string) =>
-    sequence.participants.find((item) => item.id === name)?.label ?? name;
-  const wires: string[] = [];
-  const labels: string[] = [];
-  const packetPaths: PacketPath[] = [];
-  const dimByPlay = args.focus !== undefined && selected.size === 0;
-  for (const [message, at] of rowOfMessage) {
-    const item = sequence.messages[message];
-    if (!item) continue;
-    const x1 = x.get(item.from);
-    const x2 = x.get(item.to);
-    if (x1 === undefined || x2 === undefined) continue;
-    const y = rowY(at);
-    const style = SEQ_ARROW_STYLES[item.arrow];
-    const hit = related(item);
-    const dim =
-      hit === false || (dimByPlay && message !== args.focus?.message)
-        ? " map-dim"
-        : "";
-    const self = item.from === item.to;
-    const start = self ? x1 : activeEdge(item.from, message, x1, x2);
-    const end = self ? x2 : activeEdge(item.to, message, x2, x1);
-    const d = self
-      ? `M${x1} ${y - 8}H${x1 + 40}V${y + 8}H${x1 + 4}`
-      : `M${start} ${y}H${end + Math.sign(start - end)}`;
-    const head =
-      style.head === "none"
-        ? ""
-        : ` marker-end="url(#${id}-head-${style.head})"`;
-    const both = style.both
-      ? ` marker-start="url(#${id}-head-${style.head})"`
-      : "";
-    // 補足の notes に説明があるメッセージは、線の押せる帯を持ち主にしたツールチップを持つ
-    const key = String(message + 1);
-    const note = args.notes?.[key];
-    const notes = args.annotations?.[key];
-    const annotated = (notes?.length ?? 0) > 0;
-    const noteOwner =
-      (note === undefined || note === "") && !annotated
-        ? ""
-        : `${annotated ? ` id="${escapeHtml(noteOwnerId(noteOwnerPrefix(args.id), key))}" tabindex="0"` : ""} data-tip-owner="${escapeHtml(`message:${message}`)}"`;
-    if (noteOwner !== "")
-      noteTips.add({
-        kind: "wire",
-        label: `${labelOf(item.from)} → ${labelOf(item.to)}`,
-        tip: note,
-        owner: `message:${message}`,
-        annotations: notes,
-      });
-    wires.push(
-      `<path class="mdmark-diagram-wire${dim}" data-line="map" data-message="${message}" d="${d}"${style.dotted ? ' stroke-dasharray="6 4"' : ""} stroke-width="1.5" style="stroke:var(--mdmark-color-diagram-line)"${head}${both}></path><path class="map-wire-hit" data-message="${message}"${noteOwner} d="${d}"></path>`,
-    );
-    // 選んだ参加者のメッセージと再生している今のメッセージの線に、データの印を送り手から受け手へ流す
-    if (hit === true || message === args.focus?.message) {
-      packetPaths.push({
-        owner: `data-message="${message}"`,
-        d,
-        length: self ? 64 : Math.abs(end - start),
-        fill: LINE_FILL,
-        shape: "circle",
-        direction: style.both ? "both" : "forward",
-      });
-    }
-    const number = sequence.autonumber ? `${message + 1} ` : "";
-    labels.push(
-      `<span class="mdmark-diagram-label${dim}" data-message="${message}" style="left:${(start + end) / 2}px;top:${y - 14}px">${escapeHtml(number)}${marker.render(item.text)}</span>`,
-    );
-  }
-  const focusEnds =
-    args.focus === undefined
-      ? undefined
-      : sequence.messages[args.focus.message];
-  const lifelines = participants
-    .map((name) => {
-      const dim =
-        (selected.size > 0 && !selected.has(name)) ||
-        (dimByPlay &&
-          focusEnds !== undefined &&
-          name !== focusEnds.from &&
-          name !== focusEnds.to)
-          ? " map-dim"
-          : "";
-      return `<line class="mdmark-diagram-lifeline${dim}" data-lifeline="${escapeHtml(name)}" x1="${x.get(name)}" y1="${MAP_SEQ.headTop + MAP_SEQ.headH}" x2="${x.get(name)}" y2="${height - 12}"></line>`;
-    })
-    .join("");
-  const markers = (["filled", "cross", "async"] as const)
-    .map((head) => {
-      const shape =
-        head === "filled"
-          ? '<path d="M0,0 L9,4.5 L0,9 z" style="fill:var(--mdmark-color-diagram-line)"></path>'
-          : head === "cross"
-            ? '<path d="M1,1 L8,8 M8,1 L1,8" fill="none" stroke-width="1.5" style="stroke:var(--mdmark-color-diagram-line)"></path>'
-            : '<path d="M1,1 L8,4.5 L1,8" fill="none" stroke-width="1.5" style="stroke:var(--mdmark-color-diagram-line)"></path>';
-      return `<marker id="${id}-head-${head}" class="mdmark-diagram-arrowhead" data-head="${head}" viewBox="0 0 9 9" refX="8.5" refY="4.5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto-start-reverse">${shape}</marker>`;
-    })
-    .join("");
-  const heads = participants
-    .map((name) => {
-      const kind = args.kinds?.[name];
-      const icon =
-        kind?.icon === undefined
-          ? ""
-          : `<span class="mdmark-map-icon" data-icon="${escapeHtml(kind.icon)}" aria-hidden="true"></span>`;
-      const tag =
-        kind?.label === undefined
-          ? ""
-          : `<span>${escapeHtml(kind.label)}</span>`;
-      const dim =
-        (selected.size > 0 && !selected.has(name)) ||
-        (dimByPlay &&
-          focusEnds !== undefined &&
-          name !== focusEnds.from &&
-          name !== focusEnds.to)
-          ? " map-dim"
-          : "";
-      return `<div class="mdmark-diagram-node map-participant map-kinded${dim}${selected.has(name) ? " is-selected" : ""}" data-kind="map" data-shape="${kind?.shape ?? "rounded"}"${kind?.color === undefined ? "" : ` data-color="${escapeHtml(kind.color)}"`} data-node="${escapeHtml(name)}" data-participant="${escapeHtml(name)}" role="button" tabindex="0" aria-keyshortcuts="Enter Space Alt+ArrowLeft Alt+ArrowRight" aria-label="${escapeHtml(selectableName(labelOf(name), selected.has(name)))}"${selected.has(name) ? " data-selected" : ""} style="left:${(x.get(name) ?? 0) - MAP_SEQ.headW / 2}px;top:${MAP_SEQ.headTop}px;width:${MAP_SEQ.headW}px"><span class="mdmark-diagram-node-kind${icon === "" && tag === "" ? " is-empty" : ""}">${icon}${tag}</span><span class="mdmark-diagram-node-name">${marker.render(labelOf(name))}</span></div>`;
-    })
-    .join("");
-  const html = [
-    `<svg class="mdmark-diagram-wires" width="${width}" height="${height}" aria-hidden="true"><defs>${markers}</defs><g class="map-seq-under">${under.join("")}</g>${lifelines}${wires.join("")}<g class="map-seq-above">${above.join("")}</g><g class="map-packets" aria-hidden="true">${renderPackets(packetPaths)}</g></svg>`,
-    labels.join(""),
-    overlay.join(""),
-    `<div class="mdmark-diagram-seq-heads" style="width:${width}px;height:${MAP_SEQ.headTop + MAP_SEQ.headH + 8}px">${heads}</div>`,
-  ].join("");
+  const { sequence } = context.args;
+  const start = activeEdge(sequence, {
+    name: item.from,
+    message,
+    at: x1,
+    towards: x2,
+  });
+  const end = activeEdge(sequence, {
+    name: item.to,
+    message,
+    at: x2,
+    towards: x1,
+  });
   return {
-    html,
-    tips: `${markTipTerms(noteTips.html(), args.terms)}${marker.tips.html()}`,
+    y,
+    self: false,
+    start,
+    end,
+    d: `M${start} ${y}H${end + Math.sign(start - end)}`,
   };
+};
+
+/** メッセージの線の矢じりの属性 */
+const seqArrowHeads = (id: string, style: SequenceArrowStyle): string => {
+  const head =
+    style.head === "none" ? "" : ` marker-end="url(#${id}-head-${style.head})"`;
+  const both = style.both
+    ? ` marker-start="url(#${id}-head-${style.head})"`
+    : "";
+  return `${head}${both}`;
+};
+
+/** 補足の notes に説明があるメッセージは、線の押せる帯を持ち主にしたツールチップを持つ。ツールチップを足し、持ち主の属性を返却する */
+const seqNoteOwner = (
+  context: SeqContext,
+  entry: { message: number; item: SequenceMessage; noteTips: TipList },
+): string => {
+  const { args } = context;
+  const { message, item, noteTips } = entry;
+  const key = String(message + 1);
+  const note = args.notes?.[key];
+  const notes = args.annotations?.[key];
+  const annotated = (notes?.length ?? 0) > 0;
+  if ((note === undefined || note === "") && !annotated) return "";
+  noteTips.add({
+    kind: "wire",
+    label: `${seqLabelOf(args.sequence, item.from)} → ${seqLabelOf(args.sequence, item.to)}`,
+    tip: note,
+    owner: `message:${message}`,
+    annotations: notes,
+  });
+  return `${annotated ? ` id="${escapeHtml(noteOwnerId(noteOwnerPrefix(args.id), key))}" tabindex="0"` : ""} data-tip-owner="${escapeHtml(`message:${message}`)}"`;
+};
+
+/** メッセージ 1 つの線・ラベル・データの印を返却する（描けなければ `undefined`） */
+const renderSeqMessage = (
+  context: SeqContext,
+  entry: { message: number; at: number; noteTips: TipList },
+): SeqMessagePart | undefined => {
+  const { args, selected } = context;
+  const { message, noteTips } = entry;
+  const item = args.sequence.messages[message];
+  if (!item) return undefined;
+  const geometry = seqMessageGeometry(context, { item, message, at: entry.at });
+  if (!geometry) return undefined;
+  const style = SEQ_ARROW_STYLES[item.arrow];
+  const hit = seqRelated(selected, item);
+  const playing = message === args.focus?.message;
+  const dim =
+    hit === false || (context.dimByPlay && !playing) ? " map-dim" : "";
+  const noteOwner = seqNoteOwner(context, { message, item, noteTips });
+  const { d } = geometry;
+  return {
+    wire: `<path class="mdmark-diagram-wire${dim}" data-line="map" data-message="${message}" d="${d}"${style.dotted ? ' stroke-dasharray="6 4"' : ""} stroke-width="1.5" style="stroke:var(--mdmark-color-diagram-line)"${seqArrowHeads(context.id, style)}></path><path class="map-wire-hit" data-message="${message}"${noteOwner} d="${d}"></path>`,
+    label: seqMessageLabel(context, { message, item, geometry, dim }),
+    // 選んだ参加者のメッセージと再生している今のメッセージの線に、データの印を送り手から受け手へ流す
+    packet:
+      hit === true || playing
+        ? seqPacket({ message, geometry, style })
+        : undefined,
+  };
+};
+
+/** メッセージのラベル（番号を振るときは番号を頭に付ける） */
+const seqMessageLabel = (
+  context: SeqContext,
+  entry: {
+    message: number;
+    item: SequenceMessage;
+    geometry: SeqGeometry;
+    dim: string;
+  },
+): string => {
+  const { message, item, geometry, dim } = entry;
+  const number = context.args.sequence.autonumber ? `${message + 1} ` : "";
+  return `<span class="mdmark-diagram-label${dim}" data-message="${message}" style="left:${(geometry.start + geometry.end) / 2}px;top:${geometry.y - 14}px">${escapeHtml(number)}${context.marker.render(item.text)}</span>`;
+};
+
+/** メッセージの線に流すデータの印 */
+const seqPacket = (entry: {
+  message: number;
+  geometry: SeqGeometry;
+  style: SequenceArrowStyle;
+}): PacketPath => {
+  const { message, geometry, style } = entry;
+  return {
+    owner: `data-message="${message}"`,
+    d: geometry.d,
+    length: geometry.self ? 64 : Math.abs(geometry.end - geometry.start),
+    fill: LINE_FILL,
+    shape: "circle",
+    direction: style.both ? "both" : "forward",
+  };
+};
+
+/** 参加者を薄くするか（選んだ参加者のほかと、再生している今のメッセージの両端のほか） */
+const seqParticipantDim = (context: SeqContext, name: string): string => {
+  const { selected, dimByPlay, focusEnds } = context;
+  if (selected.size > 0 && !selected.has(name)) return " map-dim";
+  return dimByPlay &&
+    focusEnds !== undefined &&
+    name !== focusEnds.from &&
+    name !== focusEnds.to
+    ? " map-dim"
+    : "";
+};
+
+/** 矢じりの形 */
+const SEQ_MARKER_SHAPES = {
+  filled:
+    '<path d="M0,0 L9,4.5 L0,9 z" style="fill:var(--mdmark-color-diagram-line)"></path>',
+  cross:
+    '<path d="M1,1 L8,8 M8,1 L1,8" fill="none" stroke-width="1.5" style="stroke:var(--mdmark-color-diagram-line)"></path>',
+  async:
+    '<path d="M1,1 L8,4.5 L1,8" fill="none" stroke-width="1.5" style="stroke:var(--mdmark-color-diagram-line)"></path>',
+} as const;
+
+/** 矢じりの `marker` */
+const renderSeqMarkers = (id: string): string =>
+  (["filled", "cross", "async"] as const)
+    .map(
+      (head) =>
+        `<marker id="${id}-head-${head}" class="mdmark-diagram-arrowhead" data-head="${head}" viewBox="0 0 9 9" refX="8.5" refY="4.5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto-start-reverse">${SEQ_MARKER_SHAPES[head]}</marker>`,
+    )
+    .join("");
+
+/** 参加者の種類の行（アイコンと種類の名前） */
+const seqHeadKind = (kind: MapKind | undefined): string => {
+  const icon =
+    kind?.icon === undefined
+      ? ""
+      : `<span class="mdmark-map-icon" data-icon="${escapeHtml(kind.icon)}" aria-hidden="true"></span>`;
+  const tag =
+    kind?.label === undefined ? "" : `<span>${escapeHtml(kind.label)}</span>`;
+  return `<span class="mdmark-diagram-node-kind${icon === "" && tag === "" ? " is-empty" : ""}">${icon}${tag}</span>`;
+};
+
+/** 参加者の形と色の属性 */
+const seqHeadLook = (kind: MapKind | undefined): string =>
+  ` data-shape="${kind?.shape ?? "rounded"}"${kind?.color === undefined ? "" : ` data-color="${escapeHtml(kind.color)}"`}`;
+
+/** 参加者 1 人の頭（選べるノード） */
+const renderSeqHead = (context: SeqContext, name: string): string => {
+  const { args, selected, marker } = context;
+  const kind = args.kinds?.[name];
+  const isSelected = selected.has(name);
+  const label = seqLabelOf(args.sequence, name);
+  return `<div class="mdmark-diagram-node map-participant map-kinded${seqParticipantDim(context, name)}${isSelected ? " is-selected" : ""}" data-kind="map"${seqHeadLook(kind)} data-node="${escapeHtml(name)}" data-participant="${escapeHtml(name)}" role="button" tabindex="0" aria-keyshortcuts="Enter Space Alt+ArrowLeft Alt+ArrowRight" aria-label="${escapeHtml(selectableName(label, isSelected))}"${isSelected ? " data-selected" : ""} style="left:${(context.x.get(name) ?? 0) - MAP_SEQ.headW / 2}px;top:${MAP_SEQ.headTop}px;width:${MAP_SEQ.headW}px">${seqHeadKind(kind)}<span class="mdmark-diagram-node-name">${marker.render(label)}</span></div>`;
 };
 
 /** 部品『mapのER図』のテーブルのノードの寸法（px）。列の行は、テーブル名の行の下から同じ高さで並ぶ */
@@ -1154,12 +1579,8 @@ export type MapErFanout = { wire: string; from: string; to: string };
 
 type Point = [number, number];
 
-/**
- * 自動配置の経路の元の端を、高さ y の左右の辺へ付け替える。経路の残りは自動配置のまま使い、ノードを横切らない。
- * 辺は、補足の指定 → 元の辺（隣のノードまでの空きが `MAP_ER.crowd` 以上のとき）→ 空きが広い側 → 次の点がある側の順に選ぶ。
- * 元の辺と反対の辺から出すときは、ノードの上を回って元の経路へ戻す
- */
-const reanchor = (args: {
+/** `reanchor` の引数 */
+type ReanchorArgs = {
   points: Point[];
   rect: { x: number; y: number; w: number; h: number };
   y: number;
@@ -1170,22 +1591,39 @@ const reanchor = (args: {
   freeOf: (side: "left" | "right") => number;
   /** 辺ごとに、同じ高さから出る端をずらす量を返す */
   shiftOf: (side: "left" | "right") => number;
-}): Point[] => {
+};
+
+/** ノードの左右の辺 */
+type ReanchorSide = "left" | "right";
+
+/** 付け替える辺を選ぶ: 補足の指定 → 元の辺（空きが `MAP_ER.crowd` 以上）→ 空きが広い側 → 元の辺 → 次の点がある側 */
+const chooseSide = (
+  args: ReanchorArgs,
+  ends: { p1: Point; original: ReanchorSide | undefined },
+): ReanchorSide => {
+  const { rect, side } = args;
+  const { p1, original } = ends;
+  if (side !== undefined) return side;
+  if (original !== undefined && args.freeOf(original) >= MAP_ER.crowd)
+    return original;
+  const left = args.freeOf("left");
+  const right = args.freeOf("right");
+  const wider = left > right ? "left" : right > left ? "right" : undefined;
+  return wider ?? original ?? (p1[0] >= rect.x + rect.w / 2 ? "right" : "left");
+};
+
+/**
+ * 自動配置の経路の元の端を、高さ y の左右の辺へ付け替える。経路の残りは自動配置のまま使い、ノードを横切らない。
+ * 辺は、補足の指定 → 元の辺（隣のノードまでの空きが `MAP_ER.crowd` 以上のとき）→ 空きが広い側 → 次の点がある側の順に選ぶ。
+ * 元の辺と反対の辺から出すときは、ノードの上を回って元の経路へ戻す
+ */
+const reanchor = (args: ReanchorArgs): Point[] => {
   const { points, rect, side } = args;
   const [p0, p1] = points;
   if (!p0 || !p1) return points;
   const original =
     p0[0] === rect.x ? "left" : p0[0] === rect.x + rect.w ? "right" : undefined;
-  const left = args.freeOf("left");
-  const right = args.freeOf("right");
-  const wider = left > right ? "left" : right > left ? "right" : undefined;
-  const chosen =
-    side ??
-    (original !== undefined && args.freeOf(original) >= MAP_ER.crowd
-      ? original
-      : (wider ??
-        original ??
-        (p1[0] >= rect.x + rect.w / 2 ? "right" : "left")));
+  const chosen = chooseSide(args, { p1, original });
   const sx = chosen === "right" ? rect.x + rect.w : rect.x;
   const y = args.y + args.shiftOf(chosen);
   const out = args.outOf(chosen);
@@ -1368,6 +1806,95 @@ const fanoutMarkOf = (points: Point[], nodes: MapLayout["nodes"]): Point => {
   return candidates.find(free) ?? (candidates[0] as Point);
 };
 
+/** 配置した文字の左端・ベースライン・幅 */
+type PlacedText = { x: number; y: number; w: number };
+
+/** 多重度とラベルの `text` */
+const erMarkText = (
+  dim: ReadonlySet<string>,
+  options: {
+    wire: string;
+    at: Point;
+    value: string;
+    className: string;
+    anchor: "start" | "middle" | "end";
+  },
+): string =>
+  `<text class="${options.className}${dim.has(options.wire) ? " map-dim" : ""}" data-wire-mark="${escapeHtml(options.wire)}" x="${options.at[0]}" y="${options.at[1]}" text-anchor="${options.anchor}">${escapeHtml(options.value)}</text>`;
+
+/** 関連の両端（端の点・隣の点・その端の多重度） */
+const erEnds = (
+  wire: MapLayout["wires"][number],
+  relation: MapErRelation,
+): Array<[Point, Point, string]> => {
+  const points = wire.points as Point[];
+  return [
+    [
+      points[0] as Point,
+      points[1] as Point,
+      wire.from === relation.from
+        ? relation.fromCardinality
+        : relation.toCardinality,
+    ],
+    [
+      points[points.length - 1] as Point,
+      points[points.length - 2] as Point,
+      wire.to === relation.to
+        ? relation.toCardinality
+        : relation.fromCardinality,
+    ],
+  ];
+};
+
+/** 多重度の位置。先に配置した多重度と重なるときは、ノードから離れる向きへずらし、配置した多重度に足す */
+const placeCardinality = (
+  placed: PlacedText[],
+  end: { x: number; y: number; nx: number; value: string },
+): { at: Point; right: boolean } => {
+  const { x, y, nx, value } = end;
+  const right = nx >= x;
+  const width = value.length * MAP_ER.cardinalityChar;
+  const baseline = y - 5;
+  let at = x + (right ? MAP_ER.cardinalityGap : -MAP_ER.cardinalityGap);
+  const leftOf = () => (right ? at : at - width);
+  const hits = (item: PlacedText, left: number) =>
+    left < item.x + item.w &&
+    item.x < left + width &&
+    Math.abs(item.y - baseline) < MAP_ER.cardinalityLine;
+  for (
+    let other = placed.find((item) => hits(item, leftOf()));
+    other !== undefined;
+    other = placed.find((item) => hits(item, leftOf()))
+  )
+    at = right
+      ? other.x + other.w + MAP_ER.cardinalityGap
+      : other.x - MAP_ER.cardinalityGap;
+  placed.push({ x: leftOf(), y: baseline, w: width });
+  return { at: [at, baseline], right };
+};
+
+/** ラベルの位置。先に配置したラベルと重なるときは、1 行分ずつ下へずらし、配置したラベルに足す */
+const placeLabel = (
+  placed: PlacedText[],
+  label: { at: Point; vertical: boolean; width: number },
+): Point => {
+  const { vertical, width } = label;
+  const [x, start] = label.at;
+  let y = start;
+  const left = vertical ? x : x - width / 2;
+  while (
+    placed.some(
+      (other) =>
+        left < other.x + other.w &&
+        other.x < left + width &&
+        Math.abs(other.y - y) < MAP_ER.labelLine,
+    )
+  )
+    y += MAP_ER.labelLine;
+  placed.push({ x: left, y, w: width });
+  return [x, y];
+};
+
 /** 関連の両端の多重度とラベルの SVG。文字は `data-wire-mark` に関連の ID を持ち、薄くする関連は `map-dim` */
 export const renderMapErMarks = (args: {
   layout: MapLayout;
@@ -1376,91 +1903,45 @@ export const renderMapErMarks = (args: {
 }): string => {
   const relations = new Map(args.relations.map((item) => [item.id, item]));
   const texts: string[] = [];
-  /** 配置した多重度の左端・ベースライン・幅 */
-  const cardinalities: Array<{ x: number; y: number; w: number }> = [];
-  /** 配置したラベルの左端・ベースライン・幅 */
-  const labels: Array<{ x: number; y: number; w: number }> = [];
-  const text = (options: {
-    wire: string;
-    at: Point;
-    value: string;
-    className: string;
-    anchor: "start" | "middle" | "end";
-  }) =>
-    texts.push(
-      `<text class="${options.className}${args.dim.has(options.wire) ? " map-dim" : ""}" data-wire-mark="${escapeHtml(options.wire)}" x="${options.at[0]}" y="${options.at[1]}" text-anchor="${options.anchor}">${escapeHtml(options.value)}</text>`,
-    );
+  const cardinalities: PlacedText[] = [];
+  const labels: PlacedText[] = [];
   for (const wire of args.layout.wires) {
     const relation = relations.get(wire.id);
     const points = wire.points as Point[];
     if (!relation || points.length < 2) continue;
-    const ends: Array<[Point, Point, string]> = [
-      [
-        points[0] as Point,
-        points[1] as Point,
-        wire.from === relation.from
-          ? relation.fromCardinality
-          : relation.toCardinality,
-      ],
-      [
-        points[points.length - 1] as Point,
-        points[points.length - 2] as Point,
-        wire.to === relation.to
-          ? relation.toCardinality
-          : relation.fromCardinality,
-      ],
-    ];
-    for (const [[x, y], [nx], value] of ends) {
-      const right = nx >= x;
-      const width = value.length * MAP_ER.cardinalityChar;
-      const baseline = y - 5;
-      // 先に配置した多重度と重なるときは、ノードから離れる向きへずらす
-      let at = x + (right ? MAP_ER.cardinalityGap : -MAP_ER.cardinalityGap);
-      const leftOf = () => (right ? at : at - width);
-      const hits = (item: { x: number; y: number; w: number }, left: number) =>
-        left < item.x + item.w &&
-        item.x < left + width &&
-        Math.abs(item.y - baseline) < MAP_ER.cardinalityLine;
-      for (
-        let other = cardinalities.find((item) => hits(item, leftOf()));
-        other !== undefined;
-        other = cardinalities.find((item) => hits(item, leftOf()))
-      )
-        at = right
-          ? other.x + other.w + MAP_ER.cardinalityGap
-          : other.x - MAP_ER.cardinalityGap;
-      cardinalities.push({ x: leftOf(), y: baseline, w: width });
-      text({
-        wire: wire.id,
-        at: [at, baseline],
+    for (const [[x, y], [nx], value] of erEnds(wire, relation)) {
+      const { at, right } = placeCardinality(cardinalities, {
+        x,
+        y,
+        nx,
         value,
-        className: "map-er-cardinality",
-        anchor: right ? "start" : "end",
       });
+      texts.push(
+        erMarkText(args.dim, {
+          wire: wire.id,
+          at,
+          value,
+          className: "map-er-cardinality",
+          anchor: right ? "start" : "end",
+        }),
+      );
     }
     if (relation.label === undefined) continue;
     const place = erMarkOf(points);
-    // 先に配置したラベルと重なるときは、1 行分ずつ下へずらす
-    const width = relation.label.length * MAP_ER.labelChar;
-    let [x, y] = place.label;
-    const left = () => (place.vertical ? x : x - width / 2);
-    while (
-      labels.some(
-        (other) =>
-          left() < other.x + other.w &&
-          other.x < left() + width &&
-          Math.abs(other.y - y) < MAP_ER.labelLine,
-      )
-    )
-      y += MAP_ER.labelLine;
-    labels.push({ x: left(), y, w: width });
-    text({
-      wire: wire.id,
-      at: [x, y],
-      value: relation.label,
-      className: "map-er-label",
-      anchor: place.vertical ? "start" : "middle",
+    const at = placeLabel(labels, {
+      at: place.label,
+      vertical: place.vertical,
+      width: relation.label.length * MAP_ER.labelChar,
     });
+    texts.push(
+      erMarkText(args.dim, {
+        wire: wire.id,
+        at,
+        value: relation.label,
+        className: "map-er-label",
+        anchor: place.vertical ? "start" : "middle",
+      }),
+    );
   }
   return `<svg class="map-er-marks" width="${args.layout.width}" height="${args.layout.height}" aria-hidden="true">${texts.join("")}</svg>`;
 };
