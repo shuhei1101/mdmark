@@ -91,5 +91,25 @@ functions:
         condition: モックの `STATE`
         mock: なし
         expected: '`t5` の先が `start_実行中`、`t12` の先が `start_保留`、`t13` の元が `end_保留` で、`保留` の中に開始・終了のノードがあり、`loops` が `t2` の 1 件、注記の線が 1 本'
+  - name: statePartInputs
+    title: 状態遷移図の部品の入力
+    kind: 関数
+    container: src/map/state-diagram.ts
+    usecase: Mermaidと補足で図を描く
+    role: 処理
+    summary: ノードの種類から部品に指定する形状と同じ状態への遷移を作り、開始・終了を `MAP_STATE.point` 四方、分岐を `MAP_STATE.choice` 四方、同じ状態への遷移を持つ状態の上に `MAP_STATE.loopSpace` を空ける配置の上書きを作る
+    scope: public
+    args:
+      - name: chart
+        type: Flowchart
+        required: true
+        description: '`stateToFlowchart` の `chart`'
+      - name: loops
+        type: StateTransition[]
+        required: true
+        description: '`stateToFlowchart` の `loops`'
+    returns:
+      type: '{ shapes: Record<string, MapStateShape>; loops: MapStateLoop[]; overrides: Record<string, MapOverride> }'
+      description: 形状（`start`・`end`・`choice`・`note`）・同じ状態への遷移・配置の上書き
 refs:
   - IF-472-35#constraints[map の状態遷移図]

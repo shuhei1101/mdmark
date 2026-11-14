@@ -1,7 +1,7 @@
 id: CMP-531-1
 visibility: internal
 title: mapのER図
-implementation: src/parts/map.ts#renderMapEr
+implementation: src/parts/map.ts#renderMapErDiagram
 story: Parts/MapEr
 states:
   - name: Default

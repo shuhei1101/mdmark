@@ -176,5 +176,61 @@ functions:
         condition: モックの `ER` と `ER_DATA.groups`
         mock: なし
         expected: ノード 5・グループ 1（`記録`。子が注文・明細・支払い）・線 5（ID が `r1`〜`r5`）
+  - name: erPartRelations
+    title: ER図の部品の関連
+    kind: 関数
+    container: src/map/er.ts
+    usecase: Mermaidと補足で図を描く
+    role: 処理
+    summary: 関連に、両端のテーブルで `erColumnFor` が選ぶ列の名前（`fromColumn`・`toColumn`）を加えた `MapErRelation` の並びを作る
+    scope: public
+    args:
+      - name: er
+        type: ErDiagram
+        required: true
+        description: 読み取り結果
+    returns:
+      type: MapErRelation[]
+      description: 部品『mapのER図』の関連
+  - name: erColumnNotes
+    title: 列の説明
+    kind: 関数
+    container: src/map/er.ts
+    usecase: Mermaidと補足で図を描く
+    role: 処理
+    summary: テーブルの列の名前ごとの説明（補足の `{テーブル}.{列}` の説明、無ければ列のコメント）
+    scope: public
+    args:
+      - name: table
+        type: ErTable
+        required: true
+        description: テーブル
+      - name: notes
+        type: MapData["notes"]
+        required: true
+        description: 補足の説明
+    returns:
+      type: Record<string, string>
+      description: 列の名前から説明
+  - name: erOverrides
+    title: テーブルの配置の上書き
+    kind: 関数
+    container: src/map/er.ts
+    usecase: Mermaidと補足で図を描く
+    role: 処理
+    summary: テーブルごとに、幅 `MAP_ER.width`・`mapErNodeSize` の大きさ・左右に空ける幅 `MAP_ER.aside` の上書きを作る
+    scope: public
+    args:
+      - name: er
+        type: ErDiagram
+        required: true
+        description: 読み取り結果
+      - name: collapsed
+        type: ReadonlySet<string>
+        required: true
+        description: 列を閉じたテーブル名
+    returns:
+      type: Record<string, MapOverride>
+      description: テーブル名ごとの上書き
 refs:
   - IF-472-35#constraints[map の ER 図]

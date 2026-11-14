@@ -32,6 +32,12 @@ data_models:
       - name: dragging
         type: string | undefined
         description: 動かしている要素
+      - name: shapes
+        type: Record<string, MapStateShape> | undefined
+        description: ノードの ID ごとの状態遷移図の形状。`start`・`end`・`choice` は `data-shape` をその値にし、名前と種類の行を出さず、`role="img"` と `aria-label`（開始・終了・分岐）を持ちフォーカスを持たない。`note` は種類の行「注記」
+      - name: nodeParts
+        type: 'Record<string, { head: string; body: string; tips: string }> | undefined'
+        description: ノードの ID ごとに、種類の行の末尾（`head`）とノードの末尾（`body`）へ入れる HTML と、そのツールチップ（ER 図の列の開閉のボタンと列の行）
   - name: MapSequenceArgs
     title: mapのシーケンス図の引数
     container: src/parts/map.ts
@@ -201,13 +207,133 @@ functions:
         condition: '`notes` が `{"2": "補足を渡す"}`、`terms` が `{"補足": "意味"}`'
         mock: なし
         expected: 2 つ目のメッセージ（`data-message="1"`）の `.map-wire-hit` だけが `data-tip-owner` を持ち、`tips` にその持ち主のツールチップがあり、説明の中の `補足` が `tabindex` を持たない `span.mdmark-term` で、末尾に「補足：意味」の行がある
+  - name: renderMapErDiagram
+    title: mapのER図のHTML
+    kind: 関数
+    container: src/parts/map.ts
+    usecase: Mermaidと補足で図を描く
+    role: 処理
+    summary: 部品設計『mapのER図』。`renderMapFlow` のテーブルのノードに `renderMapEr` の列の行と開閉のボタンを入れ、`renderMapErMarks` の多重度とラベル、`renderMapErFanouts` の行が増える関連のマーカーを重ねる
+    scope: public
+    args:
+      - name: args
+        type: 'MapFlowArgs & { tables: Array<{ name: string; columns: ErColumn[]; notes: Record<string, string> }>; relations: MapErRelation[]; fanouts: MapErFanout[] }'
+        required: true
+        description: '構成図の部品の引数（`layout` の関連の線は `rewireMapEr` で付け替えた線）と、テーブル・関連・行が増える関連（`{ wire, from, to }`）'
+    returns:
+      type: MapPart
+      description: 図の中身とツールチップの HTML
+    unit_tests:
+      - name: test_render_map_er_diagram
+        case: 正常
+        summary: ER 図の部品
+        condition: モックの `ER` を配置して `rewireMapEr` で付け替え、「注文」の列 `状態` に説明、`fanouts` に `r1` を指定する
+        mock: なし
+        expected: 「注文」のノードに開閉のボタンと列の行があり、`map-er-cardinality` が関連の数の 2 倍、`map-er-label` がラベルを持つ関連の数だけあり、`map-er-fanout` のボタンがあり、ツールチップに列の説明と「行が増える関連」がある
+  - name: rewireMapEr
+    title: ER図の関連の端の付け替え
+    kind: 関数
+    container: src/parts/map.ts
+    usecase: Mermaidと補足で図を描く
+    role: 処理
+    summary: 関連の線の両端を、つなぐ列の行の縦の中ほど（ノードの上端 + `MAP_ER.head` + 行の番号 × `MAP_ER.row` + `MAP_ER.row` の半分）の左右の辺へ付け替える。列を閉じたテーブルと列の無い端は、ノードの縦の中ほどにつなぐ
+    scope: public
+    args:
+      - name: args
+        type: '{ layout: MapLayout; tables: Array<{ name: string; columns: Array<{ name: string }> }>; relations: MapErRelation[]; collapsed: string[]; ends?: Record<string, { from?: string; to?: string }> }'
+        required: true
+        description: 配置の結果・テーブルの列・関連・列を閉じたテーブル・補足の `layout` の `{関連}.ends`
+    returns:
+      type: MapLayout["wires"]
+      description: 付け替えた線
+    process: |-
+      1. 辺を、補足の `ends` → 元の辺（同じ高さの隣のノードまでの空きが `MAP_ER.crowd` 以上のとき）→ 空きが広い側 → 次の点がある側の順に選ぶ
+      2. 辺から `MAP_ER.endOut`（同じ辺から出る 2 本目からは `MAP_ER.step` ずつ延ばす）出て元の経路へ戻す。元の辺と反対の辺から出すときは、ノードの上を回って戻す
+    unit_tests:
+      - name: test_rewire_map_er
+        case: 正常
+        summary: 関連の端を列の行へ付け替える
+        condition: モックの `ER` を配置する
+        mock: なし
+        expected: '`r1` の「注文」の側の端の y が列 `顧客ID` の行の縦の中ほどで、x が「注文」の左右の辺'
+  - name: renderMapErMarks
+    title: ER図の多重度とラベルのHTML
+    kind: 関数
+    container: src/parts/map.ts
+    usecase: Mermaidと補足で図を描く
+    role: 処理
+    summary: 関連の両端の多重度と、両端を除いた最も長い区間の中ほどのラベルの `svg.map-er-marks`。文字は `data-wire-mark` に関連の ID を持ち、先に配置したラベルと重なるラベルは 1 行分ずつ下へずらす
+    scope: public
+    args:
+      - name: args
+        type: '{ layout: MapLayout; relations: MapErRelation[]; dim: ReadonlySet<string> }'
+        required: true
+        description: 配置の結果・関連・薄くする関連の ID
+    returns:
+      type: string
+      description: SVG の HTML
+  - name: renderMapErFanouts
+    title: 行が増える関連のマーカーのHTML
+    kind: 関数
+    container: src/parts/map.ts
+    usecase: Mermaidと補足で図を描く
+    role: 処理
+    summary: 行が増える関連ごとに、両端を除いた最も長い区間の中ほどの、ラベルの反対側に `button.map-er-fanout`（「×n」）と、その説明のツールチップを描く
+    scope: public
+    args:
+      - name: args
+        type: '{ layout: MapLayout; fanouts: MapErFanout[]; id: string }'
+        required: true
+        description: 配置の結果・行が増える関連・ツールチップの id の頭
+    returns:
+      type: MapPart
+      description: マーカーとツールチップの HTML
+  - name: renderMapStateDiagram
+    title: mapの状態遷移図のHTML
+    kind: 関数
+    container: src/parts/map.ts
+    usecase: Mermaidと補足で図を描く
+    role: 処理
+    summary: 部品設計『mapの状態遷移図』。`shapes` を指定した `renderMapFlow` に、`renderMapStateLoops` の同じ状態への遷移を重ねる
+    scope: public
+    args:
+      - name: args
+        type: 'MapFlowArgs & { shapes: Record<string, MapStateShape>; loops: MapStateLoop[] }'
+        required: true
+        description: 構成図の部品の引数と、形状・同じ状態への遷移（`{ wire, node, label }`）
+    returns:
+      type: MapPart
+      description: 図の中身とツールチップの HTML
+    unit_tests:
+      - name: test_render_map_state_diagram
+        case: 正常
+        summary: 状態遷移図の部品
+        condition: モックの `STATE` を `statePartInputs` の上書きで配置する
+        mock: なし
+        expected: '`start_root` が `data-shape="start"` と `aria-label="開始"` を持ち `tabindex` を持たず、`data-shape="choice"` のノードがあり、注記のノードの種類の行が「注記」で、同じ状態への遷移の `g` が `loops` の数だけある'
+  - name: renderMapStateLoops
+    title: 同じ状態への遷移の層のHTML
+    kind: 関数
+    container: src/parts/map.ts
+    usecase: Mermaidと補足で図を描く
+    role: 処理
+    summary: 同じ状態への遷移ごとの `renderMapState` を並べた `svg.map-state-loops`
+    scope: public
+    args:
+      - name: args
+        type: '{ layout: MapLayout; loops: MapStateLoop[]; active: ReadonlySet<string>; dim: ReadonlySet<string> }'
+        required: true
+        description: 配置の結果・同じ状態への遷移・再生で今の遷移・薄くする遷移
+    returns:
+      type: string
+      description: SVG の HTML
   - name: renderMapEr
     title: mapのER図の列の行のHTML
     kind: 関数
     container: src/parts/map.ts
     usecase: Mermaidと補足で図を描く
     role: 処理
-    summary: 部品設計『mapのER図』のテーブルのノードの中身。列ごとにキー・名前・型・説明のボタンの行と、テーブル名の行の列の開閉のボタンを描く。行が増える旨のマーカーのボタンも返す
+    summary: 部品設計『mapのER図』のテーブルのノードの中身。列ごとにキー・名前・型・説明のボタンの行（テーブル名の行の下 `MAP_ER.head` から `MAP_ER.row` の高さで並べる）と、テーブル名の行の列の開閉のボタン（`data-node-toggle`）を描く
     scope: public
     args:
       - name: table

@@ -1,7 +1,7 @@
 id: CMP-531-2
 visibility: internal
 title: mapの状態遷移図
-implementation: src/parts/map.ts#renderMapState
+implementation: src/parts/map.ts#renderMapStateDiagram
 story: Parts/MapState
 states:
   - name: Default

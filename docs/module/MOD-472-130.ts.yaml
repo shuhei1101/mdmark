@@ -31,11 +31,17 @@ data_models:
     container: src/map/flow-view.ts
     usecase: Mermaidと補足で図を描く
     role: データモデル
-    summary: ER 図・状態遷移図が構成図の描画と操作に足す処理（`attachMapFlow` の `extension`）
+    summary: ER 図・状態遷移図が構成図の描画と操作に追加する処理（`attachMapFlow` の `extension`）
     properties:
       - name: chart
         type: Flowchart
         description: '`parseFlowchart` の代わりに配置するノード・グループ・線'
+      - name: overrides
+        type: '(view: { collapsed: ReadonlySet<string> }) => Record<string, MapOverride>'
+        description: 補足の `layout` の前に重ねる配置の上書き（ノードの幅・大きさ・上と左右に空ける幅）。配置するたびに、閉じた ID で呼ぶ
+      - name: collapsibles
+        type: string[]
+        description: 全て閉じるで閉じる、グループのほかの ID（ER 図のテーブル）
       - name: walkthroughs
         type: MapStep[] | undefined
         description: 補足の `walkthroughs` の代わりに帯で進める手順（状態遷移図の遷移の再生）
@@ -45,12 +51,15 @@ data_models:
       - name: bandUnit
         type: '"message" | "transition"'
         description: '`playback` で進める単位（部品設計『案内の帯』の `unit`。既定 `message`）'
-      - name: decorateNode
-        type: '(element: HTMLElement, id: string, view: { faded: boolean; collapsed: Set<string>; toggle: (id: string) => void }) => void'
-        description: ノードを描いた後、中身を測る前に呼ぶ（列の行・形状）
+      - name: rewire
+        type: '(layout: MapLayout, view: { collapsed: string[] }) => MapLayout["wires"]'
+        description: 自動配置の後に線の経路を引き直す（ER 図の関連の端の付け替え）
+      - name: render
+        type: '(args: MapFlowArgs) => MapPart'
+        description: '`renderMapFlow` の代わりに図の中身を描く部品（`renderMapErDiagram`・`renderMapStateDiagram`）'
       - name: afterRender
         type: '(figure: HTMLElement, layout: MapLayout, view: { selected: Set<string>; step: number | undefined }) => void'
-        description: 線を描いた後、データの印を流す前に呼ぶ（関連の端の付け替え・多重度・同じ状態への遷移）
+        description: 強調を当てた後に呼ぶ（行が増える関連のマーカー・同じ状態への遷移を、選択と再生の手順に合わせて描き直す）
       - name: selectionOf
         type: '(selected: Set<string>) => { nodes: Set<string>; wires: Set<string> } | undefined'
         description: 選んだノードから残すノードと線を決める。無しを返せば構成図の選び方
@@ -107,7 +116,7 @@ functions:
       description: 強調を外から当てる関数・表示する枠を外からスクロールする関数と片付ける関数
     process: |-
       1. `parseFlowchart`（`extension` があれば `extension.chart`）・`parseMapData` で読み、`readMapState`（印の `focus` と、補足の `layout` の `collapsed` が `true` の ID を指定する）で状態を読む
-      2. 補足の `layout` に状態の `positions`・`attachments`（`ends` に重ねる）を重ねた上書きで `layoutMap` を配置し、`renderDiagramFrame`（種類 `map`・`wide`・`tools`）と `renderMapFlow` で描く
+      2. `extension.overrides` に補足の `layout` と状態の `positions`・`attachments`（`ends` に重ねる）を重ねた上書きで `layoutMap` を配置し、`extension.rewire` があれば線を引き直す。`renderDiagramFrame`（種類 `map`・`wide`・`tools`）と `renderMapFlow`（`extension.render` があればそちら）で描く。`data-node-toggle` のボタンを押すと、その ID の `collapsed` を切り替え、測った大きさを捨てて配置し直す
       3. ノードの中身を測り、見積もりと違う大きさのノードを `size` にして配置し直す。以降はノードの大きさを `ResizeObserver` で見て同じく配置し直す
       4. 補足の `walkthroughs`（`extension.walkthroughs` があればそちら）を `attachBand`（モードは `extension.bandMode`、無ければ `walkthrough`。単位は `extension.bandUnit`）の手順にする。手順を進めるたびに `onWalk` を呼び、停止で案内を始めたときに中へ入っていたグループに戻す
       4. 開閉・中へ入る・選ぶ・線を指す・動かすの操作と、Esc（選択を解き、無ければ外へ戻る）、右上のボタンを付け、変わるたびに `writeMapState` で保つ。動かす操作は `startDrag` に任せ、`pointerup` か `pointercancel` で保つ（`pointercancel` では `startDrag` が戻した状態を保つ）

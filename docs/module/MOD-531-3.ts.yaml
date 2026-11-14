@@ -10,15 +10,18 @@ functions:
     container: src/map/er-view.ts
     usecase: Mermaidと補足で図を描く
     role: 処理
-    summary: '`erDiagram` を読み取って構成図の入力にし、構成図と同じ配置・開閉・中へ入る・案内・強調を付けたうえで、列の行・関連の端の付け替え・多重度・経路の選択・行が増える関連のマーカーを足す'
+    summary: '`erDiagram` を読み取って構成図の入力にし、構成図と同じ配置・開閉・中へ入る・案内・強調を付けたうえで、列の行・関連の端の付け替え・多重度・経路の選択・行が増える関連のマーカーを追加する'
     scope: public
     callees:
       - MOD-531-1#functions[parseErDiagram]
       - MOD-531-1#functions[erToFlowchart]
-      - MOD-531-1#functions[erColumnFor]
+      - MOD-531-1#functions[erPartRelations]
+      - MOD-531-1#functions[erOverrides]
       - MOD-531-1#functions[erFanouts]
       - MOD-472-130#functions[attachMapFlow]
-      - MOD-472-133#functions[renderMapEr]
+      - MOD-472-133#functions[rewireMapEr]
+      - MOD-472-133#functions[renderMapErDiagram]
+      - MOD-472-133#functions[renderMapErFanouts]
     args:
       - name: range
         type: HTMLElement
@@ -36,18 +39,18 @@ functions:
       type: MapFlowHandle
       description: 構成図と同じ操作の口
     process: |-
-      1. `parseErDiagram` と `erToFlowchart` で `Flowchart` を作り、テーブルの幅を 240px にした上書きを補足の `layout` の前に重ねて、`attachMapFlow` に `extension` と一緒に指定する
-      2. `extension.decorateNode` で、テーブルのノードに `renderMapEr` の列の行と列の開閉のボタンを描く（列を閉じた状態は `collapsed` に持つ）
-      3. `extension.afterRender` で、各関連の経路の両端を `erColumnFor` の列の行の縦の中ほどの左右の辺へ付け替え（次の点がある側の辺から 14px 出して元の経路へ戻す。`layout` の `r{番号}.ends` があればその辺）、線の `d` と押せる帯を書き換え、両端の多重度とラベルを描く
-      4. `extension.selectionOf` で、1 つ選べばその関連と相手、2 つ選べば `erFanouts` の経路を残し、`fanouts` のマーカー（最も長い内側の区間の中ほどの、ラベルの反対側）を描く
-      5. `extension.collapsedTag` で、閉じた分類に「テーブル {数} 件」を返す
+      1. `parseErDiagram` と `erToFlowchart` で `Flowchart` を作り、`erPartRelations` で関連の端をつなぐ列を選び、`attachMapFlow` に `extension` と一緒に指定する
+      2. `extension.overrides` に `erOverrides`（テーブルの幅・列の数と開閉で決まる大きさ・左右に空ける幅）、`extension.rewire` に `rewireMapEr`（`layout` の `r{番号}.ends` を指定する）、`extension.render` に `renderMapErDiagram` を指定する（列を閉じた状態は `collapsed` に持つ）
+      3. `extension.selectionOf` で、1 つ選べばその関連と相手、2 つ選べば `erFanouts` の経路を残す
+      4. `extension.afterRender` で、前の行が増える関連のマーカーとツールチップを削除し、2 つ選んでいれば `renderMapErFanouts` で描き直し、図のツールチップを付け替える
+      5. `extension.collapsedTag` で、閉じた分類に「テーブル {数} 件」を返却する
     unit_tests:
       - name: test_attach_map_er
         case: 正常
         summary: 列の行と関連の端
         condition: モックの `ER`・`ER_DATA` の範囲
         mock: なし
-        expected: 「注文」のノードに列の行が 8 つあり、`r1` の線の「注文」の側の端の y が列 `顧客ID` の行の縦の中ほどで、両端に多重度の文字がある
+        expected: 「注文」のノードに列の行が 8 つあり、`r1` の線の「注文」の側の端の y が列 `顧客ID` の行の縦の中ほど（ノードの上端 + `MAP_ER.head` + 行の番号 × `MAP_ER.row` + `MAP_ER.row` の半分）で、両端に多重度の文字がある
       - name: test_attach_map_er_when_path_selected
         case: 正常
         summary: 2 つのテーブルの経路
@@ -60,5 +63,11 @@ functions:
         condition: 「注文」の列の開閉のボタンを押す
         mock: なし
         expected: 「注文」に列の行が無く、ボタンの文字が `列 8` で `aria-expanded="false"`、`r1` の線の端がノードの辺の中ほど
+      - name: test_attach_map_er_when_relayout_column_tip
+        case: 正常
+        summary: 配置し直した後の列の説明のツールチップ
+        condition: 「注文」の列の開閉のボタンを 2 回押し、列 `状態` の説明のボタンにフォーカスする
+        mock: なし
+        expected: ボタンの `aria-describedby` が指す `role="tooltip"` の要素が `hidden` でない
 refs:
   - IF-472-35#constraints[map の ER 図]
