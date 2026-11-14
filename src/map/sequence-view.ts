@@ -6,8 +6,13 @@ import { linkAnnotationOwners, readMapAnnotations } from "./annotations.ts";
 import { attachBand, type BandHandle } from "./band.ts";
 import { noteTexts, parseMapData } from "./data.ts";
 import { DRAG_THRESHOLD_PX } from "./drag.ts";
-import { replaceTips, termsOf } from "./flow-view.ts";
-import { parseSequence, SEQ_ARROW_STYLES } from "./sequence.ts";
+import {
+  prefersReducedMotion,
+  replaceTips,
+  sessionStorageOf,
+  termsOf,
+} from "./flow-view.ts";
+import { parseSequence, type Sequence, SEQ_ARROW_STYLES } from "./sequence.ts";
 import { sequenceRows } from "./sequence-rows.ts";
 import type { MapArgs } from "./spec.ts";
 import {
@@ -29,6 +34,155 @@ export type MapSequenceHandle = {
   destroy: () => void;
 };
 
+/** 範囲の図の番号・Mermaid・補足を読む */
+const readSequenceRange = (range: HTMLElement) => ({
+  index: Number(range.dataset.map ?? "1"),
+  sequence: parseSequence(range.querySelector("code")?.textContent ?? ""),
+  data: parseMapData(
+    range.querySelector(".mdmark-map-data")?.textContent ?? undefined,
+  ).data,
+});
+
+/** 中だけを描いているブロックの、1 つ外のブロック（無ければ `undefined`） */
+const outerFragmentOf = (
+  sequence: Sequence,
+  entered: string,
+): string | undefined => {
+  const inner = sequence.fragments[Number(entered)];
+  if (inner === undefined) return undefined;
+  const outer = sequence.fragments
+    .map((item, n) => ({ item, n }))
+    .filter(
+      ({ item }) =>
+        item.depth < inner.depth &&
+        item.start <= inner.start &&
+        inner.end <= item.end,
+    )
+    .at(-1);
+  return outer === undefined ? undefined : String(outer.n);
+};
+
+/** 全て閉じるときに閉じるブロック（中だけを描いているブロックのすぐ内側の段） */
+const collapsibleOf = (
+  sequence: Sequence,
+  entered: string | undefined,
+): string[] => {
+  const depth =
+    entered === undefined
+      ? 0
+      : (sequence.fragments[Number(entered)]?.depth ?? -1) + 1;
+  return sequence.fragments.flatMap((item, n) =>
+    item.depth === depth && String(n) !== entered ? [String(n)] : [],
+  );
+};
+
+/** Alt + 左右の矢印の向き（ほかのキーは 0） */
+const sideStepOf = (event: KeyboardEvent): number => {
+  if (!event.altKey) return 0;
+  if (event.key === "ArrowRight") return 1;
+  return event.key === "ArrowLeft" ? -1 : 0;
+};
+
+/** 並べ替えを始める参加者の箱（名前の文字とボタンの上と、左ボタンのほかでは始めない） */
+const pressedHeadOf = (
+  event: PointerEvent,
+): { head: HTMLElement; id: string } | undefined => {
+  const target = event.target instanceof Element ? event.target : undefined;
+  const head = target?.closest<HTMLElement>(".map-participant");
+  const id = head?.dataset.participant;
+  if (event.button !== 0 || !head || id === undefined) return undefined;
+  if (target?.closest(".mdmark-diagram-node-name, button")) return undefined;
+  return { head, id };
+};
+
+/** 参加者の列の位置 */
+const columnRectsOf = (
+  figure: HTMLElement,
+  columns: { list: string[]; head: HTMLElement },
+): DOMRect[] =>
+  columns.list.map(
+    (name) =>
+      figure
+        .querySelector<HTMLElement>(
+          `.map-participant[data-participant="${CSS.escape(name)}"]`,
+        )
+        ?.getBoundingClientRect() ?? columns.head.getBoundingClientRect(),
+  );
+
+/** 左右の位置に最も近い列 */
+const nearestColumn = (rects: DOMRect[], x: number): number => {
+  const centers = rects.map((rect) => (rect.left + rect.right) / 2);
+  return centers.reduce(
+    (best, center, index) =>
+      Math.abs(center - x) < Math.abs((centers[best] ?? 0) - x) ? index : best,
+    0,
+  );
+};
+
+/** 移す先を示す線を出す。左へ移すときは移す先の列の左、右へ移すときは右に出し（図の倍率で割って図の座標にする）、移さないときは隠す */
+const placeInsertLine = (
+  marker: HTMLElement,
+  place: {
+    container: HTMLElement;
+    rect: DOMRect | undefined;
+    to: number;
+    at: number;
+  },
+): void => {
+  const { container, rect, to, at } = place;
+  if (!rect || to === at) {
+    marker.hidden = true;
+    return;
+  }
+  const base = container.getBoundingClientRect();
+  const scale = base.width / (container.offsetWidth || base.width || 1);
+  const edge = to < at ? rect.left - 8 : rect.right + 8;
+  marker.style.left = `${(edge - base.left) / (scale || 1)}px`;
+  marker.hidden = false;
+};
+
+/** 指している線に流すデータの印の層 */
+const hoverPacketLayer = (
+  hit: SVGPathElement,
+  message: { at: number; both: boolean },
+): SVGGElement => {
+  const { at, both } = message;
+  const layer = document.createElementNS("http://www.w3.org/2000/svg", "g");
+  layer.setAttribute("class", "map-packets map-packets-hover");
+  layer.innerHTML = renderPackets([
+    {
+      owner: `data-message="${at}"`,
+      d: hit.getAttribute("d") ?? "",
+      length: hit.getTotalLength(),
+      fill: "var(--mdmark-color-diagram-line)",
+      shape: "circle",
+      direction: both ? "both" : "forward",
+    },
+  ]);
+  return layer;
+};
+
+/** 指しているメッセージの線と、送り手・受け手のほかを薄くする（指している間だけの class も付ける） */
+const dimExceptMessage = (
+  figure: HTMLElement,
+  message: { at: number; from: string; to: string },
+): void => {
+  const kept = (element: Element): boolean => {
+    const own = element.getAttribute("data-message");
+    if (own !== null) return Number(own) === message.at;
+    const name =
+      element.getAttribute("data-participant") ??
+      element.getAttribute("data-lifeline");
+    return name === message.from || name === message.to;
+  };
+  for (const element of figure.querySelectorAll(
+    ".mdmark-diagram-stage :is(.mdmark-diagram-wire[data-message], .mdmark-diagram-label[data-message], .map-participant, .mdmark-diagram-lifeline)",
+  )) {
+    if (kept(element) || element.classList.contains("map-dim")) continue;
+    element.classList.add("map-dim", HOVER_DIM_CLASS);
+  }
+};
+
 /** シーケンス図を読み取り、状態を読んで表示する行を決めて描き、ブロックの開閉・中だけを描く・参加者の選択と並べ替えを付ける */
 export const attachMapSequence = (
   range: HTMLElement,
@@ -40,20 +194,13 @@ export const attachMapSequence = (
   },
 ): MapSequenceHandle => {
   const { args, onStep, follow } = options;
-  const index = Number(range.dataset.map ?? "1");
-  const sequence = parseSequence(
-    range.querySelector("code")?.textContent ?? "",
-  );
-  const { data } = parseMapData(
-    range.querySelector(".mdmark-map-data")?.textContent ?? undefined,
-  );
+  const { index, sequence, data } = readSequenceRange(range);
   const initialOrder = sequence.participants.map((item) => item.id);
   const ids = new Set([
     ...initialOrder,
     ...sequence.fragments.map((_fragment, at) => String(at)),
   ]);
-  const storage =
-    typeof sessionStorage === "undefined" ? undefined : sessionStorage;
+  const storage = sessionStorageOf();
   let state: MapState = {
     ...emptyMapState(),
     ...readMapState({
@@ -214,24 +361,33 @@ export const attachMapSequence = (
   };
   /** 並べ替えのドラッグを離した直後の click で選ばない */
   let suppressClick = false;
-  const onClick = (event: MouseEvent) => {
-    const target = event.target instanceof Element ? event.target : undefined;
-    if (suppressClick) {
-      suppressClick = false;
-      if (target?.closest(".map-participant")) return;
+  /** ブロックを開閉する（Shift を押すと中のブロックも） */
+  const toggleFragment = (at: number, all: boolean) => {
+    const targets = all ? fragmentsUnder(at) : [String(at)];
+    const closing = !state.collapsed.includes(String(at));
+    const set = new Set(state.collapsed);
+    for (const item of targets) {
+      if (closing) set.add(item);
+      else set.delete(item);
     }
+    change({ ...state, collapsed: [...set] });
+  };
+  /** ツールのボタンの操作 */
+  const runTool = (name: string | undefined) => {
+    if (name === "back" && state.entered !== undefined)
+      change({ ...state, entered: outerFragmentOf(sequence, state.entered) });
+    else if (name === "expandAll") change({ ...state, collapsed: [] });
+    else if (name === "collapseAll")
+      change({ ...state, collapsed: collapsibleOf(sequence, state.entered) });
+    else if (name === "reset")
+      change({ ...state, order: undefined, selected: [] });
+  };
+  /** ブロックのタブのボタンとツールのボタンなら操作し、`true` を返却する */
+  const clickControl = (target: Element | undefined, all: boolean) => {
     const toggle = target?.closest<HTMLElement>("[data-fragment-toggle]");
     if (toggle) {
-      const at = Number(toggle.dataset.fragmentToggle);
-      const targets = event.shiftKey ? fragmentsUnder(at) : [String(at)];
-      const closing = !state.collapsed.includes(String(at));
-      const set = new Set(state.collapsed);
-      for (const item of targets) {
-        if (closing) set.add(item);
-        else set.delete(item);
-      }
-      change({ ...state, collapsed: [...set] });
-      return;
+      toggleFragment(Number(toggle.dataset.fragmentToggle), all);
+      return true;
     }
     const enter = target?.closest<HTMLElement>("[data-fragment-enter]");
     if (enter) {
@@ -241,46 +397,15 @@ export const attachMapSequence = (
         entered: at,
         collapsed: state.collapsed.filter((item) => item !== at),
       });
-      return;
+      return true;
     }
     const tool = target?.closest<HTMLButtonElement>("[data-tool]");
-    if (tool && !tool.disabled) {
-      if (tool.dataset.tool === "back" && state.entered !== undefined) {
-        const inner = sequence.fragments[Number(state.entered)];
-        const outer = sequence.fragments
-          .map((item, n) => ({ item, n }))
-          .filter(
-            ({ item }) =>
-              inner !== undefined &&
-              item.depth < inner.depth &&
-              item.start <= inner.start &&
-              inner.end <= item.end,
-          )
-          .at(-1);
-        change({
-          ...state,
-          entered: outer === undefined ? undefined : String(outer.n),
-        });
-      } else if (tool.dataset.tool === "expandAll")
-        change({ ...state, collapsed: [] });
-      else if (tool.dataset.tool === "collapseAll") {
-        const depth =
-          state.entered === undefined
-            ? 0
-            : (sequence.fragments[Number(state.entered)]?.depth ?? -1) + 1;
-        change({
-          ...state,
-          collapsed: sequence.fragments.flatMap((item, n) =>
-            item.depth === depth && String(n) !== state.entered
-              ? [String(n)]
-              : [],
-          ),
-        });
-      } else if (tool.dataset.tool === "reset")
-        change({ ...state, order: undefined, selected: [] });
-      return;
-    }
-    // 参加者の箱の名前の文字の外を押すと、その参加者を選ぶ
+    if (!tool || tool.disabled) return false;
+    runTool(tool.dataset.tool);
+    return true;
+  };
+  /** 参加者の箱の名前の文字の外を押すとその参加者を、メッセージの線を押すと送り手と受け手を選ぶ */
+  const clickSelect = (target: Element | undefined) => {
     const participant = target?.closest<HTMLElement>("[data-participant]");
     if (
       participant?.classList.contains("map-participant") &&
@@ -289,70 +414,66 @@ export const attachMapSequence = (
       toggleSelected([participant.dataset.participant ?? ""]);
       return;
     }
-    // メッセージの線を押すと、送り手と受け手を選ぶ
     const hit = target?.closest<SVGElement>(".map-wire-hit[data-message]");
-    if (hit) {
-      const message = sequence.messages[Number(hit.dataset.message)];
-      if (message) toggleSelected([message.from, message.to]);
+    if (!hit) return;
+    const message = sequence.messages[Number(hit.dataset.message)];
+    if (message) toggleSelected([message.from, message.to]);
+  };
+  const onClick = (event: MouseEvent) => {
+    const target = event.target instanceof Element ? event.target : undefined;
+    if (suppressClick) {
+      suppressClick = false;
+      if (target?.closest(".map-participant")) return;
     }
+    if (clickControl(target, event.shiftKey)) return;
+    clickSelect(target);
+  };
+  /** 参加者を左右へ 1 つ移す */
+  const moveParticipant = (id: string, step: number) => {
+    const list = order();
+    const at = list.indexOf(id);
+    const to = at + step;
+    if (to < 0 || to >= list.length) return;
+    [list[at], list[to]] = [list[to] as string, list[at] as string];
+    change({ ...state, order: list });
+    figure
+      .querySelector<HTMLElement>(
+        `[data-participant="${CSS.escape(id)}"].map-participant`,
+      )
+      ?.focus();
+  };
+  /** 参加者の上のキー操作（Enter・Space で選び、Alt + 左右の矢印で並び順を変える）。操作したら `true` を返却する */
+  const participantKey = (id: string, event: KeyboardEvent) => {
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      toggleSelected([id]);
+      return true;
+    }
+    // ブロックの中だけを描いているときは並び順を変えない
+    const step = sideStepOf(event);
+    if (step === 0 || state.entered !== undefined) return false;
+    event.preventDefault();
+    moveParticipant(id, step);
+    return true;
   };
   const onKeyDown = (event: KeyboardEvent) => {
     const target = event.target instanceof Element ? event.target : undefined;
-    const participant = target?.closest<HTMLElement>(".map-participant");
-    const id = participant?.dataset.participant;
-    if (id !== undefined && (event.key === "Enter" || event.key === " ")) {
-      event.preventDefault();
-      toggleSelected([id]);
-      return;
-    }
-    // Alt + 左右の矢印で並び順を変える（ブロックの中だけを描いているときは変えない）
-    if (
-      id !== undefined &&
-      event.altKey &&
-      (event.key === "ArrowLeft" || event.key === "ArrowRight") &&
-      state.entered === undefined
-    ) {
-      event.preventDefault();
-      const list = order();
-      const at = list.indexOf(id);
-      const to = at + (event.key === "ArrowRight" ? 1 : -1);
-      if (to < 0 || to >= list.length) return;
-      [list[at], list[to]] = [list[to] as string, list[at] as string];
-      change({ ...state, order: list });
-      figure
-        .querySelector<HTMLElement>(
-          `[data-participant="${CSS.escape(id)}"].map-participant`,
-        )
-        ?.focus();
-      return;
-    }
+    const id =
+      target?.closest<HTMLElement>(".map-participant")?.dataset.participant;
+    if (id !== undefined && participantKey(id, event)) return;
     if (event.key === "Escape" && state.selected.length > 0)
       change({ ...state, selected: [] });
   };
   /** 参加者の箱の名前の文字の外を押したまま左右へ動かし（4px 動くまでは押した扱い）、離した位置に最も近い列へ移す */
   const onPointerDown = (event: PointerEvent) => {
-    const target = event.target instanceof Element ? event.target : undefined;
-    const head = target?.closest<HTMLElement>(".map-participant");
-    const id = head?.dataset.participant;
-    if (
-      event.button !== 0 ||
-      !head ||
-      id === undefined ||
-      state.entered !== undefined ||
-      target?.closest(".mdmark-diagram-node-name, button")
-    )
-      return;
+    const pressed =
+      state.entered === undefined ? pressedHeadOf(event) : undefined;
+    if (!pressed) return;
+    const { head, id } = pressed;
     const list = order();
     const at = list.indexOf(id);
     // 動かし始めたときの列の位置で判定する
-    const rects = list.map(
-      (name) =>
-        figure
-          .querySelector<HTMLElement>(
-            `.map-participant[data-participant="${CSS.escape(name)}"]`,
-          )
-          ?.getBoundingClientRect() ?? head.getBoundingClientRect(),
-    );
+    const rects = columnRectsOf(figure, { list, head });
     const container = head.parentElement as HTMLElement;
     const startX = event.clientX;
     const startY = event.clientY;
@@ -375,26 +496,9 @@ export const attachMapSequence = (
         head.classList.add("is-dragging");
       }
       head.style.translate = `${move.clientX - startX}px 0`;
-      const centers = rects.map((rect) => (rect.left + rect.right) / 2);
-      to = centers.reduce(
-        (best, center, index) =>
-          Math.abs(center - move.clientX) <
-          Math.abs((centers[best] ?? 0) - move.clientX)
-            ? index
-            : best,
-        0,
-      );
-      const rect = rects[to];
-      if (!marker || !rect || to === at) {
-        if (marker) marker.hidden = true;
-        return;
-      }
-      // 左へ移すときは移す先の列の左、右へ移すときは右に線を出す（図の倍率で割って図の座標にする）
-      const base = container.getBoundingClientRect();
-      const scale = base.width / (container.offsetWidth || base.width || 1);
-      const edge = to < at ? rect.left - 8 : rect.right + 8;
-      marker.style.left = `${(edge - base.left) / (scale || 1)}px`;
-      marker.hidden = false;
+      to = nearestColumn(rects, move.clientX);
+      if (marker)
+        placeInsertLine(marker, { container, rect: rects[to], to, at });
     };
     const release = () => {
       window.removeEventListener("pointermove", onMove);
@@ -429,35 +533,12 @@ export const attachMapSequence = (
     if (!hit || !message) return;
     const svg = hit.ownerSVGElement;
     if (!svg || svg.querySelector(`.map-packet[data-message="${at}"]`)) return;
-    const layer = document.createElementNS("http://www.w3.org/2000/svg", "g");
-    layer.setAttribute("class", "map-packets map-packets-hover");
-    layer.innerHTML = renderPackets([
-      {
-        owner: `data-message="${at}"`,
-        d: hit.getAttribute("d") ?? "",
-        length: hit.getTotalLength(),
-        fill: "var(--mdmark-color-diagram-line)",
-        shape: "circle",
-        direction: SEQ_ARROW_STYLES[message.arrow].both ? "both" : "forward",
-      },
-    ]);
-    svg.append(layer);
+    svg.append(
+      hoverPacketLayer(hit, { at, both: SEQ_ARROW_STYLES[message.arrow].both }),
+    );
     // 選択と再生の強調が無いときは、その線と送り手・受け手のほかを薄くする
     if (state.selected.length > 0 || current !== undefined) return;
-    const kept = (element: Element): boolean => {
-      const own = element.getAttribute("data-message");
-      if (own !== null) return Number(own) === at;
-      const name =
-        element.getAttribute("data-participant") ??
-        element.getAttribute("data-lifeline");
-      return name === message.from || name === message.to;
-    };
-    for (const element of figure.querySelectorAll(
-      ".mdmark-diagram-stage :is(.mdmark-diagram-wire[data-message], .mdmark-diagram-label[data-message], .map-participant, .mdmark-diagram-lifeline)",
-    )) {
-      if (kept(element) || element.classList.contains("map-dim")) continue;
-      element.classList.add("map-dim", HOVER_DIM_CLASS);
-    }
+    dimExceptMessage(figure, { at, from: message.from, to: message.to });
   };
   const onPointerOut = (event: PointerEvent) => {
     const target = event.target instanceof Element ? event.target : undefined;
@@ -504,9 +585,7 @@ export const attachMapSequence = (
       steps: stepsOf(shown),
       interval: args.interval,
       autoplay: args.play === "autoplay",
-      reducedMotion:
-        typeof matchMedia !== "undefined" &&
-        matchMedia("(prefers-reduced-motion: reduce)").matches,
+      reducedMotion: prefersReducedMotion(),
       apply: (step) => {
         current =
           step === undefined ? undefined : Number(step.wires[0] ?? Number.NaN);
