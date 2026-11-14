@@ -1,36 +1,34 @@
-# vscode-v* のタグで拡張機能の .vsix を作り、そのタグの GitHub Release に添える
+# PoC（#555）: GitHub Actions の OIDC トークンを Marketplace のセッショントークンに交換できるかだけを確かめる。公開はしない
 name: vscode-release
 
 on:
   push:
+    branches:
+      - "poc/vscode/marketplace-oidc"
     tags:
-      - "vscode-v*"
+      - "poc-oidc-exchange"
 
 permissions:
-  contents: write
-
-concurrency:
-  group: vscode-release-${{ github.ref }}
-  cancel-in-progress: false
+  contents: read
+  id-token: write
 
 jobs:
-  release:
+  exchange:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 24
-      # タグのバージョンと package.json の version が合わなければ、ここで止める
-      - name: タグと version を照合する
-        run: npm --prefix vscode run release:check -- "${GITHUB_REF_NAME}"
       - name: 依存を入れる
-        run: npm --prefix vscode ci
-      - name: .vsix を作る
-        run: npm --prefix vscode run package
-      - name: Release に添える
-        env:
-          GH_TOKEN: ${{ github.token }}
+        run: npm --prefix vscode ci --ignore-scripts
+      - name: vsce のバージョンを出す
+        run: node -p "require('./vscode/node_modules/@vscode/vsce/package.json').version"
+      - name: OIDC トークンを Marketplace のトークンに交換する
         run: |
-          gh release view "${GITHUB_REF_NAME}" >/dev/null 2>&1 || gh release create "${GITHUB_REF_NAME}" --title "${GITHUB_REF_NAME}" --notes ""
-          gh release upload "${GITHUB_REF_NAME}" vscode/mdmark-*.vsix --clobber
+          node -e "
+          require('./vscode/node_modules/@vscode/vsce/out/oidc.js')
+            .getOIDCCredential('ShuheiNishikawa')
+            .then(c => console.log('Marketplace credential issued, length=' + c.length))
+            .catch(e => { console.error(e.message); process.exit(1); });
+          "
