@@ -2,7 +2,9 @@ docs:
   - page: dev-docs.yaml
     new: false
     change: 使用する場面の行の並び when を記載し、1 行目に最もよく使用する場面（mdmark の記法・部品・図の描き方を確認するとき）を置く
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-14T00:22:24.796139+00:00'
 use_cases: []
 scope_out:
   - item: dev-docs.yaml の 1 行目の $schema の注釈を、when を持つ project-index のスキーマへ差し替える
