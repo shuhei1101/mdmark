@@ -806,32 +806,38 @@ const convertGlossary = (text: string): Converted => {
   return { options, dropped };
 };
 
-/** マーカーの名前ごとの変換 */
-const CONVERTERS: Readonly<Record<string, (text: string) => Converted>> = {
-  table: convertTable,
-  tabs: (text) => convertCollapseRange(text, true),
-  steps: (text) => convertCollapseRange(text, false),
-  code: convertCode,
-  tree: convertTree,
-  view: convertView,
-  include: convertInclude,
-  section: convertSection,
-  wide: convertWide,
-  details: convertDetails,
-  fig: convertFig,
-  "row-detail": convertRowDetail,
-  gallery: convertGallery,
-  [FEATURES_MARK]: convertFeatures,
-  [PAGE_MARK]: convertPage,
-  glossary: convertGlossary,
-};
+/** マーカーの名前ごとの変換の表 */
+type Converters = Readonly<Record<string, (text: string) => Converted>>;
+
+/** マーカーの名前ごとの変換。`marks.ts` の名前の定数を使用するため、読み込みの時点ではなく最初に変換するときに作る */
+let converters: Converters | undefined;
+
+/** マーカーの名前ごとの変換の表を返却する */
+const convertersOf = (): Converters =>
+  (converters ??= {
+    table: convertTable,
+    tabs: (text) => convertCollapseRange(text, true),
+    steps: (text) => convertCollapseRange(text, false),
+    code: convertCode,
+    tree: convertTree,
+    view: convertView,
+    include: convertInclude,
+    section: convertSection,
+    wide: convertWide,
+    details: convertDetails,
+    fig: convertFig,
+    "row-detail": convertRowDetail,
+    gallery: convertGallery,
+    [FEATURES_MARK]: convertFeatures,
+    [PAGE_MARK]: convertPage,
+    glossary: convertGlossary,
+  });
 
 /** マーカーの名前ごとに変換する */
 const convertByName = (options: { name: string; text: string }): Converted => {
   const { name, text } = options;
-  const convert = Object.hasOwn(CONVERTERS, name)
-    ? CONVERTERS[name]
-    : undefined;
+  const table = convertersOf();
+  const convert = Object.hasOwn(table, name) ? table[name] : undefined;
   return convert ? convert(text) : { options: {}, dropped: [] };
 };
 
