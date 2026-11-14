@@ -14,6 +14,7 @@ import { escapeHtml } from "../../parts/escape.ts";
 import { renderHintMarkup } from "../../parts/hint.ts";
 import { markOwn, SLOT_MARKER, splitSlots } from "../../parts/own.ts";
 import { renderParam } from "../../parts/param.ts";
+import type { Mark } from "../marks.ts";
 import type { RenderEnv } from "../parser.ts";
 import {
   EMBED_PART_ATTRIBUTE,
@@ -66,6 +67,29 @@ function isRangeScriptFence(token: Token): boolean {
   );
 }
 
+/** 範囲のスクリプトの言語ごとに、2 つ以上あるコードブロックと、`ts` と `js` が両方ある組み合わせの警告を返却する */
+function rangeScriptWarnings(
+  byLang: (lang: RangeScriptLanguage) => Token[],
+): WarningItem[] {
+  const warnings: WarningItem[] = [];
+  for (const lang of RANGE_SCRIPT_LANGUAGES) {
+    if (byLang(lang).length > 1) {
+      warnings.push({
+        label: lang,
+        message: `\`<!-- html -->\` の範囲に \`${lang}\` のコードブロックが ${byLang(lang).length} つあります。1 つにしてください。スクリプトを動かさずに描いています。`,
+      });
+    }
+  }
+  if (byLang("ts").length > 0 && byLang("js").length > 0) {
+    warnings.push({
+      label: "ts",
+      message:
+        "`<!-- html -->` の範囲に `ts` と `js` のコードブロックが両方あります。どちらか 1 つにしてください。スクリプトを動かさずに描いています。",
+    });
+  }
+  return warnings;
+}
+
 /** `<!-- html -->` の範囲の `fence` を言語ごとに数え、`html`・`css`・スクリプトと読み込めない組み合わせの警告を返却する */
 export function readRangeScripts(tokens: Token[]): {
   html: Token | undefined;
@@ -77,29 +101,14 @@ export function readRangeScripts(tokens: Token[]): {
   const html = fences.filter(isHtmlFence);
   const byLang = (lang: RangeScriptLanguage): Token[] =>
     fences.filter((token) => fenceLanguage(token) === lang);
-  const warnings: WarningItem[] = [];
-  for (const lang of RANGE_SCRIPT_LANGUAGES) {
-    if (byLang(lang).length > 1) {
-      warnings.push({
-        label: lang,
-        message: `\`<!-- html -->\` の範囲に \`${lang}\` のコードブロックが ${byLang(lang).length} つあります。1 つにしてください。スクリプトを動かさずに描いています。`,
-      });
-    }
-  }
+  const warnings = rangeScriptWarnings(byLang);
   const [ts] = byLang("ts");
   const [js] = byLang("js");
-  if (ts && js) {
-    warnings.push({
-      label: "ts",
-      message:
-        "`<!-- html -->` の範囲に `ts` と `js` のコードブロックが両方あります。どちらか 1 つにしてください。スクリプトを動かさずに描いています。",
-    });
-  }
   const scripted = warnings.length === 0 ? (ts ?? js) : undefined;
-  const [css] = byLang("css");
+  const css = byLang("css");
   return {
     html: html.length === 1 ? html[0] : undefined,
-    css: byLang("css").length === 1 ? css?.content : undefined,
+    css: css.length === 1 ? css[0]?.content : undefined,
     script: scripted
       ? { lang: scripted === ts ? "ts" : "js", code: scripted.content }
       : undefined,
@@ -225,6 +234,67 @@ function restoreParts(html: string, parts: string[], nonce: string): string {
   return restored.replace(new RegExp(`</?${tag}[^>]*>`, "g"), "");
 }
 
+/** 要素の `data-hint` の属性 */
+const HINT_ATTRIBUTE = /\sdata-hint="([^"]*)"/;
+
+/** 閉じタグの前と後ろに配置する HTML を持った、開いている要素 */
+type OpenElement = { name: string; inside: string; after: string };
+
+/** 開きタグの記載 */
+type OpenTag = {
+  raw: string;
+  rawName: string;
+  attributes: string;
+  selfClosing: string;
+  name: string;
+};
+
+/** 開きタグの HTML と、閉じタグを待つ要素（中身を持たない要素は `undefined`） */
+type OpenedTag = { text: string; open?: OpenElement };
+
+/** 閉じタグで閉じる要素か */
+function isContainer(tag: OpenTag): boolean {
+  return tag.selfClosing === "" && !VOID_TAGS.has(tag.name);
+}
+
+/** ヒントのマーカー・下線・ツールチップの中身を付けた開きタグ */
+function hintOpenTag(tag: OpenTag, text: string, env: RenderEnv): OpenedTag {
+  env.hintCount = (env.hintCount ?? 0) + 1;
+  const markup = renderHintMarkup({
+    tag: tag.name,
+    text: unescapeHtml(text),
+    id: `${HINT_ID_PREFIX}${env.hintCount}`,
+  });
+  const added = Object.entries(markup.attributes)
+    .map(([key, value]) => ` ${key}="${escapeHtml(value)}"`)
+    .join("");
+  const start = `<${tag.rawName}${tag.attributes}${added}${tag.selfClosing === "/" ? " /" : ""}>`;
+  if (!isContainer(tag)) {
+    return { text: `${start}${markup.after}` };
+  }
+  return {
+    text: start,
+    open: { name: tag.name, inside: markup.inside, after: markup.after },
+  };
+}
+
+/** 開きタグ 1 つを、`data-hint` があればヒントを付けた（`hints` がオフなら `data-hint` を削除した）HTML にする */
+function openTagHtml(tag: OpenTag, env: RenderEnv, hints: boolean): OpenedTag {
+  const found = HINT_ATTRIBUTE.exec(tag.attributes);
+  if (found !== null && hints) {
+    return hintOpenTag(tag, found[1] ?? "", env);
+  }
+  const text = found === null ? tag.raw : tag.raw.replace(HINT_ATTRIBUTE, "");
+  return isContainer(tag)
+    ? { text, open: { name: tag.name, inside: "", after: "" } }
+    : { text };
+}
+
+/** 閉じタグの前と後ろに、開いている要素のツールチップの中身を配置する */
+function closeTagHtml(raw: string, open: OpenElement | undefined): string {
+  return `${open?.inside ?? ""}${raw}${open?.after ?? ""}`;
+}
+
 /** `data-hint` を持つ要素にマーカー・下線・ツールチップの中身を付ける。`hints` がオフなら `data-hint` を削除する。入力は `sanitizeEmbedded` の出力で、タグは閉じてある */
 function applyHints(options: {
   html: string;
@@ -233,10 +303,7 @@ function applyHints(options: {
 }): string {
   const { html, env, hints } = options;
   const tag = /<(\/?)([a-z][a-z0-9-]*)\b([^>]*?)(\/?)>/gi;
-  const hintAttribute = /\sdata-hint="([^"]*)"/;
-  /** 閉じタグの前と後ろに配置する HTML を持った、開いている要素 */
-  type Open = { name: string; inside: string; after: string };
-  const stack: Open[] = [];
+  const stack: OpenElement[] = [];
   let out = "";
   let last = 0;
   for (const match of html.matchAll(tag)) {
@@ -244,42 +311,18 @@ function applyHints(options: {
     last = match.index + match[0].length;
     const [raw, closing = "", rawName = "", attributes = "", selfClosing = ""] =
       match;
-    const name = rawName.toLowerCase();
     if (closing === "/") {
-      const open = stack.pop();
-      out += `${open?.inside ?? ""}${raw}${open?.after ?? ""}`;
+      out += closeTagHtml(raw, stack.pop());
       continue;
     }
-    const found = hintAttribute.exec(attributes);
-    if (found === null) {
-      out += raw;
-      if (selfClosing === "" && !VOID_TAGS.has(name)) {
-        stack.push({ name, inside: "", after: "" });
-      }
-      continue;
-    }
-    if (!hints) {
-      out += raw.replace(hintAttribute, "");
-      if (selfClosing === "" && !VOID_TAGS.has(name)) {
-        stack.push({ name, inside: "", after: "" });
-      }
-      continue;
-    }
-    env.hintCount = (env.hintCount ?? 0) + 1;
-    const markup = renderHintMarkup({
-      tag: name,
-      text: unescapeHtml(found[1] ?? ""),
-      id: `${HINT_ID_PREFIX}${env.hintCount}`,
-    });
-    const added = Object.entries(markup.attributes)
-      .map(([key, value]) => ` ${key}="${escapeHtml(value)}"`)
-      .join("");
-    const start = `<${rawName}${attributes}${added}${selfClosing === "/" ? " /" : ""}>`;
-    if (selfClosing === "/" || VOID_TAGS.has(name)) {
-      out += `${start}${markup.after}`;
-    } else {
-      out += start;
-      stack.push({ name, inside: markup.inside, after: markup.after });
+    const opened = openTagHtml(
+      { raw, rawName, attributes, selfClosing, name: rawName.toLowerCase() },
+      env,
+      hints,
+    );
+    out += opened.text;
+    if (opened.open) {
+      stack.push(opened.open);
     }
   }
   return out + html.slice(last);
@@ -393,6 +436,71 @@ function buildHtml(options: {
   };
 }
 
+/** 開きの `html` のマーカーなら、そのマーカーを返却する */
+function openHtmlMark(token: Token): Mark | undefined {
+  const mark = markOf(token);
+  return mark && !mark.closing && mark.name === "html" ? mark : undefined;
+}
+
+/** トークンが持つ操作できる部品の数 */
+function paramCountOf(token: Token): number {
+  return Number(token.meta?.[PARAM_COUNT_META] ?? 0);
+}
+
+/** 範囲の言語 `html` のコードブロックが 1 つだけなら、そのコードブロックを返却する */
+function onlyHtmlFence(tokens: Token[]): Token | undefined {
+  const fences = tokens.filter(isHtmlFence);
+  return fences.length === 1 ? fences[0] : undefined;
+}
+
+/** 組み立てた HTML を、範囲の開きのマーカーの行で埋め込んだ図の部品の警告を集める `html_block` にする */
+function embeddedToken(
+  state: StateCore,
+  token: Token,
+  built: ReturnType<typeof buildHtml>,
+): Token {
+  const block = new state.Token("html_block", "", 0);
+  block.block = true;
+  block.content = built.html;
+  const line = token.map?.[0];
+  block.meta = {
+    [PARAM_COUNT_META]: built.params,
+    warnings: built.warnings.map((warning) =>
+      line === undefined ? warning : { ...warning, line },
+    ),
+  };
+  return block;
+}
+
+/** `<!-- html -->` の範囲 1 つを、範囲のスクリプトの警告と埋め込んだ HTML のトークンにし、範囲の中の操作できる部品の数を返却する。範囲のスクリプトの機能がオフのときは、`css`・`ts`・`js` をコードのまま範囲の後ろに残す */
+function embeddedRange(
+  state: StateCore,
+  range: { token: Token; inner: Token[]; fence: Token },
+  place: { scripting: boolean; scope: number; params: number },
+): { tokens: Token[]; params: number } {
+  const { token, inner, fence } = range;
+  const { scripting, scope, params } = place;
+  const scripts = readRangeScripts(inner);
+  const out = scripting
+    ? scripts.warnings.map((item) =>
+        warningBlock(state, { message: item.message }, token),
+      )
+    : [];
+  const built = buildHtml({
+    state,
+    source: fence.content,
+    paramsBefore: params,
+    scripts: scripting
+      ? { scope, css: scripts.css, script: scripts.script }
+      : undefined,
+  });
+  out.push(embeddedToken(state, token, built));
+  if (!scripting) {
+    out.push(...inner.filter(isRangeScriptFence));
+  }
+  return { tokens: out, params: built.params };
+}
+
 /** `html` がオンなら、`<!-- html -->` の範囲の `html` のコードブロックを、コードでなく生の HTML として描く。範囲のコードブロックが 1 つでないときは記載の警告を配置し、範囲の中身はそのまま残す。オフのときは何もしない（マーカーは `dropMarks` が取り除く） */
 export function buildEmbeddedHtml(state: StateCore): void {
   if (!featureOn(state, "html")) {
@@ -406,13 +514,11 @@ export function buildEmbeddedHtml(state: StateCore): void {
   // 範囲のスクリプトを適用する範囲の、文書の中の通し番号
   let scope = 0;
   for (let index = 0; index < tokens.length; index++) {
-    const token = tokens[index];
-    const mark = markOf(token);
-    if (!token || !mark || mark.closing || mark.name !== "html") {
-      if (token) {
-        out.push(token);
-        params += Number(token.meta?.[PARAM_COUNT_META] ?? 0);
-      }
+    const token = tokens[index] as Token;
+    const mark = openHtmlMark(token);
+    if (!mark) {
+      out.push(token);
+      params += paramCountOf(token);
       continue;
     }
     const closeIndex = findClose(tokens, index, mark.name);
@@ -420,46 +526,22 @@ export function buildEmbeddedHtml(state: StateCore): void {
     if (closeIndex < 0) {
       out.push(warningBlock(state, unclosedWarning(mark), token));
     }
-    const fences = tokens.slice(index + 1, end).filter(isHtmlFence);
-    const [fence] = fences;
-    if (fences.length !== 1 || fence === undefined) {
+    const inner = tokens.slice(index + 1, end);
+    const fence = onlyHtmlFence(inner);
+    if (fence === undefined) {
       // 記載の警告を配置し、範囲の中身はそのまま残す
       out.push(warningBlock(state, blockCountWarning(), token), token);
       continue;
     }
-    const range = readRangeScripts(tokens.slice(index + 1, end));
-    if (scripting) {
-      for (const item of range.warnings) {
-        out.push(warningBlock(state, { message: item.message }, token));
-      }
-    }
-    const built = buildHtml({
+    const built = embeddedRange(
       state,
-      source: fence.content,
-      paramsBefore: params,
-      scripts: scripting
-        ? { scope, css: range.css, script: range.script }
-        : undefined,
-    });
+      { token, inner, fence },
+      { scripting, scope, params },
+    );
+    out.push(...built.tokens);
+    params += built.params;
     if (scripting) {
       scope += 1;
-    }
-    params += built.params;
-    const block = new state.Token("html_block", "", 0);
-    block.block = true;
-    block.content = built.html;
-    // 埋め込んだ図の部品の警告は、範囲の開きのマーカーの行で集める
-    const line = token.map?.[0];
-    block.meta = {
-      [PARAM_COUNT_META]: built.params,
-      warnings: built.warnings.map((warning) =>
-        line === undefined ? warning : { ...warning, line },
-      ),
-    };
-    out.push(block);
-    if (!scripting) {
-      // 範囲のスクリプトの機能がオフのときは、`css`・`ts`・`js` をコードのまま範囲の後ろに残す
-      out.push(...tokens.slice(index + 1, end).filter(isRangeScriptFence));
     }
     index = end;
   }
