@@ -415,7 +415,7 @@ functions:
     title: 描画が参照するマーカーの名前を集める
     container: src/cli/check.ts
     usecase: 共通
-    summary: '`knownMarkNames` の名前に、`loadExtensionDirectives` の `directive` と設定の `check.ignore` の名前を加えた集合を返却する'
+    summary: '`knownMarkNames` の名前に、`PAGE_MARK`・`loadExtensionDirectives` の `directive`・設定の `check.ignore` の名前を加えた集合を返却する'
     description: '`loadExtensionDirectives` のずれは捨てる（拡張の誤りは `prepareEmbeds` の警告が出す）。書き出しの `prepareEmbeds` が呼ぶ'
     kind: 関数
     scope: public
@@ -434,7 +434,7 @@ functions:
         summary: 記法・外部ライブラリ・拡張・`check.ignore` の名前を集める
         condition: '`libraries` に `test-lib`、`extensions` に `directive: "greet"` の拡張、`check.ignore` に `memo` を持つ設定'
         mock: なし（一時フォルダ）
-        expected: '`table`・`html`・`features`・`test-lib`・`greet`・`memo` を含む'
+        expected: '`table`・`html`・`features`・`page`・`test-lib`・`greet`・`memo` を含む'
     callees:
       - MOD-472-110#functions[knownMarkNames]
       - MOD-472-110#functions[loadExtensionDirectives]
