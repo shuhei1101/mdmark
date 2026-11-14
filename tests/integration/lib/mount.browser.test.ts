@@ -630,7 +630,7 @@ test("test_normal_when_long_column_not_sortable", async () => {
   });
   const heads = [...el.querySelectorAll<HTMLElement>("thead th")];
   // 検証
-  expect(find(el, ".mdmark-table").dataset.noSort).toBe("2");
+  expect(find<HTMLElement>(el, ".mdmark-table").dataset.noSort).toBe("2");
   expect(heads[2]?.querySelector("button.mdmark-sort")).toBeNull();
   expect(heads[2]?.querySelector("span.mdmark-th-label")?.textContent).toBe(
     "説明",
