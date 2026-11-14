@@ -9,7 +9,7 @@ use_cases: []
 scope_out:
   - item: dev-docs.yaml の 1 行目の $schema の注釈を、when を持つ project-index のスキーマへ差し替える
     reason: 注釈はエディタの補完に使用されるだけで、配信元の検証は project-index のスキーマで行われる。今の注釈の dev-docs のスキーマは when を持たないため、エディタでは when が未知のキーとして警告される。project-index.yaml への改名と一緒に差し替えるのが妥当と判断したが、スコープに含めるかは判断が分かれるためレビューで確定する
-    plan: to_file
+    plan: '#553'
   - item: mdmark を project-index の端末の設定（~/.config/project-index/settings.yaml）の配信元に登録する
     reason: 今の project-index の端末の設定に mdmark は無く、describe の一覧にも出ないため、記載した when はまだ表示されない。登録はリポジトリの外の端末の設定で、Issue の要望（when の記載）に含まれない。スコープに含めるかは判断が分かれるためレビューで確定する
-    plan: to_file
+    plan: '#552'
