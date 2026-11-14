@@ -75,6 +75,9 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-14T06:35:17.753817+00:00'
   - process: 実装
-    status: todo
+    status: done
+    reason: traces.ts を追加し、書き出し・まとめ・CLI・MCP に隠す既定と --keep-traces・keep_traces を実装（単体 2205 件 pass・lint 通過）
+    updated_by: planner
+    updated_at: '2026-11-14T07:03:22.534511+00:00'
   - process: 結合テスト作成
     status: todo

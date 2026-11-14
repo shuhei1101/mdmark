@@ -36,8 +36,10 @@
 
 ### 単体
 
-なし（ドキュメント修正（f8fd19a9）は `docs/guide/` の Markdown だけを変え、規約『V字モデル』の対応表で対応する単体テストが無い）
+| ファイル | メソッド | 変更種別 | 結果 | 補足 |
+| --- | --- | --- | --- | --- |
+| [tests/unit/src/plugin/tools.test.ts](https://github.com/shuhei1101/mdmark/blob/d84a4f4a/tests/unit/src/plugin/tools.test.ts) | 全実行 | 変更 | ✅ | `test_run_export_html_when_keep_traces`・`test_run_build_site_when_keep_traces` を追加。ログは計画書『ライブラリ本体』の単体の表と同じ |
 
 ### 結合
 
-なし（同じ理由で、対応する結合テストが無い）
+なし（結合テスト作成の工程で記入する）
