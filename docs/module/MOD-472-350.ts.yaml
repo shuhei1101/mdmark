@@ -63,7 +63,7 @@ functions:
       - name: options
         type: '{ markdown: string; markNames: ReadonlySet<string> }'
         required: true
-        description: 埋める文書の Markdown と、描画が参照するマーカーの名前（`collectMarkNames` の戻り値）
+        description: 埋める文書の Markdown と、描画が参照するマーカーの名前（`check.ts` の `collectMarkNames` の戻り値）
     returns:
       type: string
       description: 隠した Markdown
@@ -80,36 +80,6 @@ functions:
         condition: '`<!-- todo -->`・`<!-- 補足: あとで -->`・`<!-- table: data -->`・`<!-- /table -->`・`<!-- greet -->` と、コードブロックの中の `<!-- todo -->`。`markNames` は `table`・`greet`'
         mock: なし
         expected: 'コードブロックの外の `<!-- todo -->` と `<!-- 補足: あとで -->` が消え、`<!-- table: data -->`・`<!-- /table -->`・`<!-- greet -->` とコードブロックの中の `<!-- todo -->` が残る'
-    status: planned
-    introduced:
-      pr: 554
-  - name: collectMarkNames
-    title: 描画が参照するマーカーの名前を集める
-    container: src/cli/traces.ts
-    usecase: 共通
-    summary: '`knownMarkNames` の名前に、`loadExtensionDirectives` の `directive` と設定の `check.ignore` の名前を加えた集合を返却する'
-    description: '`loadExtensionDirectives` のずれは捨てる（拡張の誤りは `prepareEmbeds` の警告が出す）'
-    kind: 関数
-    scope: internal
-    is_async: true
-    args:
-      - name: loaded
-        type: LoadedConfig
-        required: true
-        description: 読み込んだ設定
-    returns:
-      type: Promise<Set<string>>
-      description: マーカーの名前の集合
-    unit_tests:
-      - name: test_collect_mark_names
-        case: 正常
-        summary: 記法・外部ライブラリ・拡張・`check.ignore` の名前を集める
-        condition: '`libraries` に `test-lib`、`extensions` に `directive: "greet"` の拡張、`check.ignore` に `memo` を持つ設定'
-        mock: なし（一時フォルダ）
-        expected: '`table`・`html`・`features`・`test-lib`・`greet`・`memo` を含む'
-    callees:
-      - MOD-472-110#functions[knownMarkNames]
-      - MOD-472-110#functions[loadExtensionDirectives]
     status: planned
     introduced:
       pr: 554
