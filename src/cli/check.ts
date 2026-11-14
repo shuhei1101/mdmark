@@ -463,6 +463,7 @@ export async function collectMarkNames(
   const { directives } = await loadExtensionDirectives(loaded, loaded.path);
   return new Set([
     ...knownMarkNames({ config: loaded.config, directives }),
+    PAGE_MARK,
     ...(loaded.config.check?.ignore ?? []),
   ]);
 }
