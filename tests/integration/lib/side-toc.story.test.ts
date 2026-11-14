@@ -215,3 +215,95 @@ test("test_long_heading", async () => {
   await expect(pageOverflows(page)).resolves.toBe(false);
   await expect(panelInViewport(page)).resolves.toBe(true);
 });
+
+/** 変更のマーカーを持つ項目の `data-heading-id` を返却する */
+function changedIds(page: Page): Promise<(string | null)[]> {
+  return page
+    .locator(".mdmark-side-toc-list a[data-changed]")
+    .evaluateAll((links) =>
+      links.map((link) => link.getAttribute("data-heading-id")),
+    );
+}
+
+// 変わったセクションの項目に変更のマーカー、線に橙を出し、今いるセクションの線は今いるセクションの色を優先する（HoverChanged）
+test("test_hover_changed", async () => {
+  // 準備・実行
+  const page = await holder.openStory("parts-sidetoc--hover-changed", WIDE);
+  // 検証
+  await expect(changedIds(page)).resolves.toEqual(["doc", "steps", "added"]);
+  await expect(
+    page
+      .locator('.mdmark-side-toc-list a[data-heading-id="steps"]')
+      .getAttribute("aria-label"),
+  ).resolves.toBe("手順（変更）");
+  const warning = await styleOf(
+    page,
+    ".mdmark-side-toc-changed",
+    "background-color",
+  );
+  const bars = await page
+    .locator(".mdmark-side-toc-bar")
+    .evaluateAll((items) =>
+      items.map((bar) => getComputedStyle(bar).backgroundColor),
+    );
+  const link = await styleOf(
+    page,
+    ".mdmark-side-toc-bar[data-current]",
+    "background-color",
+  );
+  // 線の並び: 文書（変更）・前提・手順（変更・今いる）・準備・追加した節（変更）
+  expect(bars[0]).toBe(warning);
+  expect(bars[1]).not.toBe(warning);
+  expect(bars[2]).toBe(link);
+  expect(bars[2]).not.toBe(warning);
+  expect(bars[4]).toBe(warning);
+});
+
+// fixed のサイドバーの変わったセクションの項目の右端に変更のマーカーを出す（FixedChanged）
+test("test_fixed_changed", async () => {
+  // 準備・実行
+  const page = await holder.openStory("parts-sidetoc--fixed-changed", WIDE);
+  // 検証
+  await expect(changedIds(page)).resolves.toEqual(["doc", "steps", "added"]);
+  const rightGap = await page
+    .locator('.mdmark-side-toc-list a[data-heading-id="steps"]')
+    .evaluate((link) => {
+      const marker = link.querySelector(".mdmark-side-toc-changed");
+      const right = (marker?.getBoundingClientRect().right ?? 0) as number;
+      const style = getComputedStyle(link);
+      return (
+        link.getBoundingClientRect().right -
+        Number.parseFloat(style.paddingRight) -
+        right
+      );
+    });
+  expect(Math.abs(rightGap)).toBeLessThan(1);
+  await expect(
+    page
+      .locator('.mdmark-side-toc-list a[data-heading-id="premise"]')
+      .getAttribute("aria-label"),
+  ).resolves.toBeNull();
+});
+
+// 長い見出しが折り返しても、変更のマーカーが文字と重ならず、画面から溢れない（LongHeadingChanged）
+test("test_long_heading_changed", async () => {
+  // 準備・実行
+  const page = await holder.openStory(
+    "parts-sidetoc--long-heading-changed",
+    WIDE,
+  );
+  // 検証
+  const overlap = await page
+    .locator('.mdmark-side-toc-list a[data-heading-id="long"]')
+    .evaluate((link) => {
+      const marker = link.querySelector(".mdmark-side-toc-changed");
+      const range = document.createRange();
+      range.selectNodeContents(link.firstChild as Node);
+      const text = range.getBoundingClientRect();
+      const box = marker?.getBoundingClientRect();
+      return box === undefined ? true : box.left < text.right;
+    });
+  expect(overlap).toBe(false);
+  await expect(pageOverflows(page)).resolves.toBe(false);
+  await expect(panelInViewport(page)).resolves.toBe(true);
+});
