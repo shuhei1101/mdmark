@@ -136,6 +136,12 @@ functions:
         condition: '`# 文書` の後ろに、`renderDiffBlock` で包んだ、`id` を持たない `## 古い名前` の `data-kind="del"` の `.mdmark-diff-block` と、`## 新しい名前` の `data-kind="add"` の `.mdmark-diff-block`を持つ本文'
         mock: なし
         expected: '`文書`・`新しい名前` を持つ'
+      - name: test_find_changed_headings_when_embedded_html
+        case: 正常
+        summary: 埋め込んだ HTML の中の見出しを数えず、前にある見出しのセクションに付ける
+        condition: '`# 文書`・`## A`（段落）・`## B` の後ろに、`.mdmark-html` の中に `h2` を持つ要素を `renderDiffBlock` で `data-kind="add"` の `.mdmark-diff-block` に包んだブロックを持つ本文'
+        mock: なし
+        expected: '`文書`・`B` だけを持ち、`embedded` を持たない'
       - name: test_find_changed_headings_when_no_diff
         case: 正常
         summary: 色分けしたブロックが無ければ何も集めない

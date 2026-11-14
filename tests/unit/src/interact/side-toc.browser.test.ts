@@ -873,6 +873,28 @@ test("test_find_changed_headings_when_heading_rewritten", async () => {
   expect([...changed].sort()).toEqual(["文書", "新しい名前"].sort());
 });
 
+// 埋め込んだ HTML の中の見出しを数えず、前にある見出しのセクションに付ける（正常系）
+test("test_find_changed_headings_when_embedded_html", async () => {
+  // 準備
+  const { findChangedHeadings } = await loadSideToc();
+  const root = createRootFromHtml(
+    [
+      heading(1, "文書"),
+      heading(2, "A"),
+      paragraph("変えていない段落"),
+      heading(2, "B"),
+      await diffBlock(
+        "add",
+        '<div class="mdmark-html"><h2 id="embedded">埋め込み</h2></div>',
+      ),
+    ].join(""),
+  );
+  // 実行
+  const changed = findChangedHeadings(root);
+  // 検証
+  expect([...changed].sort()).toEqual(["B", "文書"].sort());
+});
+
 // 色分けしたブロックが無ければ何も集めない（正常系）
 test("test_find_changed_headings_when_no_diff", async () => {
   // 準備
