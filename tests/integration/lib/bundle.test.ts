@@ -1126,7 +1126,7 @@ async function buildBothTraces(): Promise<{
 async function openBundleTraces(file: string) {
   const opened = await browser.openWithCsp(file);
   await opened.page.waitForSelector(
-    'article figure[data-diagram="mermaid"] svg',
+    'article figure[data-diagram="mermaid"] svg[aria-roledescription]',
     {
       timeout: 60_000,
     },
@@ -1173,7 +1173,7 @@ test("test_normal_when_traces_hidden", async () => {
   );
   await expect(
     page.locator(".zq-bundle-side .zq-doc-list a").allTextContents(),
-  ).resolves.toEqual(["mdmark の紹介", "使い方"]);
+  ).resolves.toEqual(["使い方", "mdmark の紹介"]);
   await page.locator('article p a[href="#/guide.md"]').click();
   await page.waitForFunction(
     () => document.querySelector("article h1")?.textContent === "使い方",

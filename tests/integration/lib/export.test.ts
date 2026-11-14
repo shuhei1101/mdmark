@@ -1045,7 +1045,7 @@ async function exportBothTraces(): Promise<{
 async function openTraces(file: string) {
   const opened = await browser.openWithCsp(file);
   await opened.page.waitForSelector(
-    'article figure[data-diagram="mermaid"] svg',
+    'article figure[data-diagram="mermaid"] svg[aria-roledescription]',
     {
       timeout: 60_000,
     },
