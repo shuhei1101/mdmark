@@ -325,7 +325,7 @@
 | [ClaudeCodeプラグイン / MCPサーバー](./MOD-472-2.yaml) | `mdmark serve` が 127.0.0.1 の Streamable HTTP で待ち受ける MCP の常駐サーバー。`export_html`・`build_site`・`check`・`list_templates`・`add_template`・`apply_template` を登録し、作業のフォルダを引数の `project_dir` で受け、引数を検査してから CLI と同じ処理を呼ぶ。`src/cli/main.ts` は読み込まない。 |
 | [ClaudeCodeプラグイン / セットアップ / 全体](./MOD-472-9.yaml) | `global-setup`・`setup` のスキルが Bash で呼ぶ `plugin/bin/setup.js` のサブコマンド（`status`・`keys`・`write-settings`・`start-server`・`write-config`）と、スキルの本文。 |
 | [VS Code 拡張機能 / Webview](./MOD-472-16.yaml) | プレビューのパネルの中で動く React の画面と、配布物を読み込む前にも出す部品。jsDelivr の mdmark を読み込んで `mount`・`update` で描き、スクロール・リンク・状態の表示を担う。拡張機能とのメッセージの型も持つ。 |
-| [VS Code 拡張機能 / ビルドと配布](./MOD-472-17.yaml) | 拡張機能を esbuild、Webview を Vite で書き出し、タグとバージョンを照合して .vsix を GitHub Release に添える。拡張機能ホストで実行する結合テストの起動も持つ。配布物には入らない。 |
+| [VS Code 拡張機能 / ビルドと配布](./MOD-472-17.yaml) | 拡張機能を esbuild、Webview を Vite で書き出し、タグとバージョンを照合して .vsix を GitHub Release に添え、Marketplace へ公開する。拡張機能ホストで実行する結合テストの起動も持つ。配布物には入らない。 |
 | [VS Code 拡張機能 / プレビュー](./MOD-472-18.yaml) | Markdown ごとのプレビューのパネルを開き、Webview の HTML・CSP を組み、再描画し・スクロールの同期・リンクの振り分けを担う拡張機能の側の処理。 |
 | [VS Code 拡張機能 / 拡張機能の入口](./MOD-472-19.yaml) | 拡張機能の `activate` と、`vscode/package.json` の `contributes`（コマンド・ショートカット・メニュー・設定）。コマンドと VS Code の通知を各機能へつなぐ。 |
 | [VS Code 拡張機能 / 書き出し](./MOD-472-20.yaml) | 開いている Markdown を jsDelivr の配布物で描く 1 つの HTML に書き出し、ブラウザで開き、印刷のダイアログを出させる。 |

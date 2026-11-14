@@ -62,22 +62,22 @@ async function readVsix(path: string, name: string): Promise<string> {
 }
 
 suite("拡張機能の配布物を作る", () => {
-  const vsix = join(EXTENSION_DIR, "mdmark-0.1.0.vsix");
+  const vsix = join(EXTENSION_DIR, "mdmark-0.1.3.vsix");
 
   teardown(async () => {
     await rm(vsix, { force: true });
   });
 
-  // バージョンが合うとき、.vsix を作る
+  // バージョンが合うとき、.vsix を作り、ワークフローが Release に添えた後に Marketplace へ公開する構成になっている
   test("test_normal", async function () {
     this.timeout(PACKAGE_TIMEOUT_MS + 10000);
     // 準備
     const manifest = JSON.parse(
       await readFile(join(EXTENSION_DIR, "package.json"), "utf8"),
     ) as { version: string };
-    assert.strictEqual(manifest.version, "0.1.0");
+    assert.strictEqual(manifest.version, "0.1.3");
     // 実行
-    const check = await runScript("release:check", ["vscode-v0.1.0"]);
+    const check = await runScript("release:check", ["vscode-v0.1.3"]);
     const packaged = await runScript("package");
     // 検証
     assert.strictEqual(check.code, 0);
@@ -86,31 +86,53 @@ suite("拡張機能の配布物を作る", () => {
     const packageJson = JSON.parse(
       await readVsix(vsix, "extension/package.json"),
     ) as { version: string };
-    assert.strictEqual(packageJson.version, "0.1.0");
+    assert.strictEqual(packageJson.version, "0.1.3");
     assert.ok(files.some((name) => name.startsWith("extension/dist/")));
     assert.ok(!files.some((name) => name.includes("node_modules/")));
-    const workflow = parse(
-      await readFile(
-        join(REPO_ROOT, ".github", "workflows", "vscode-release.yml"),
-        "utf8",
-      ),
-    ) as {
+    const workflowText = await readFile(
+      join(REPO_ROOT, ".github", "workflows", "vscode-release.yml"),
+      "utf8",
+    );
+    const workflow = parse(workflowText) as {
       on: { push: { tags: string[] } };
-      permissions: { contents: string };
+      permissions: { contents: string; "id-token": string };
+      jobs: { release: { steps: { name?: string; run?: string }[] } };
     };
     assert.deepStrictEqual(workflow.on.push.tags, ["vscode-v*"]);
     assert.strictEqual(workflow.permissions.contents, "write");
+    assert.strictEqual(workflow.permissions["id-token"], "write");
+    const runs = workflow.jobs.release.steps.map((step) => step.run ?? "");
+    const publish = runs[runs.length - 1];
+    assert.ok(
+      publish.startsWith(
+        "npm --prefix vscode exec -- vsce publish --oidc --packagePath ",
+      ),
+      publish,
+    );
+    assert.ok(publish.includes("vscode/mdmark-"), publish);
+    assert.ok(!publish.includes("--skip-duplicate"), publish);
+    // 拡張機能のビルドはリポジトリの直下の src/ を読み込むため、.vsix を作る前に直下の依存を入れる
+    const rootInstall = runs.findIndex((run) =>
+      run.split("\n").some((line) => line.trim() === "npm ci"),
+    );
+    const packaging = runs.findIndex((run) =>
+      run.includes("npm --prefix vscode run package"),
+    );
+    assert.ok(rootInstall !== -1 && rootInstall < packaging);
+    const upload = runs.findIndex((run) => run.includes("gh release upload"));
+    assert.ok(upload !== -1 && upload < runs.length - 1);
+    assert.ok(!workflowText.includes("secrets."));
   });
 
   // タグと package.json のバージョンが違うとき、バージョンの比較で止める
   test("test_error_when_version_mismatch", async () => {
     // 実行
     const mismatch = await runScript("release:check", ["vscode-v0.2.0"]);
-    const malformed = await runScript("release:check", ["vscode-0.1.0"]);
+    const malformed = await runScript("release:check", ["vscode-0.1.3"]);
     // 検証
     assert.strictEqual(mismatch.code, 1);
     assert.ok(mismatch.stderr.includes("0.2.0"));
-    assert.ok(mismatch.stderr.includes("0.1.0"));
+    assert.ok(mismatch.stderr.includes("0.1.3"));
     assert.strictEqual(malformed.code, 1);
   });
 });
