@@ -24,6 +24,12 @@ import {
   VIEW_SOURCE,
   writeFiles,
 } from "../cli.ts";
+import {
+  countCommentNodes,
+  reportTraces,
+  snapshotDom,
+  TRACES_FILES,
+} from "../traces.ts";
 
 /** 色分けのライブラリ（`@highlightjs/cdn-assets@11.12.0` の `es/`）の場所 */
 const HIGHLIGHT_ES_ROOT = fileURLToPath(
@@ -122,22 +128,22 @@ test("test_normal", async () => {
   const { page, externalRequests } = await browser.openHtml(
     join(dir, "guide.html"),
   );
-  await page.waitForSelector("article.mdmark h1");
-  await page.waitForSelector("[data-mdmark-slot]:not(:empty)");
+  await page.waitForSelector("article.zq h1");
+  await page.waitForSelector("[data-zq-slot]:not(:empty)");
   await page.waitForFunction(() =>
-    [...document.querySelectorAll("[data-mdmark-slot]")].every(
+    [...document.querySelectorAll("[data-zq-slot]")].every(
       (slot) => slot.textContent !== "",
     ),
   );
   expect(externalRequests()).toEqual([]);
-  expect(await page.locator("button.mdmark-sort").count()).toBeGreaterThan(0);
+  expect(await page.locator("button.zq-sort").count()).toBeGreaterThan(0);
+  await expect(page.locator(".zq-term").first().textContent()).resolves.toBe(
+    "マーカー",
+  );
   await expect(
-    page.locator(".mdmark-term").first().textContent(),
-  ).resolves.toBe("マーカー");
-  await expect(
-    page.locator("article [data-mdmark-slot]").allTextContents(),
+    page.locator("article [data-zq-slot]").allTextContents(),
   ).resolves.toEqual(["drawn:a,b", "greet:世界"]);
-  await expect(page.locator(".mdmark-notice").count()).resolves.toBe(0);
+  await expect(page.locator(".zq-notice").count()).resolves.toBe(0);
   await expect(
     page
       .locator("article img")
@@ -145,13 +151,13 @@ test("test_normal", async () => {
   ).resolves.toBeGreaterThan(0);
   await expect(
     page.evaluate(() =>
-      getComputedStyle(document.querySelector("article.mdmark") as Element)
-        .getPropertyValue("--mdmark-radius")
+      getComputedStyle(document.querySelector("article.zq") as Element)
+        .getPropertyValue("--zq-radius")
         .trim(),
     ),
   ).resolves.toBe("0px");
   await expect(
-    page.locator('.mdmark-backlinks a[href="api.md"]').count(),
+    page.locator('.zq-backlinks a[href="api.md"]').count(),
   ).resolves.toBe(1);
   await expect(
     page.locator('article p a[href="api.md"]').count(),
@@ -180,8 +186,8 @@ test("test_normal_when_unreadable_assets", async () => {
   const { page, externalRequests } = await browser.openHtml(
     join(dir, "guide.html"),
   );
-  await page.waitForSelector(".mdmark-notice");
-  await expect(page.locator(".mdmark-notice").count()).resolves.toBe(1);
+  await page.waitForSelector(".zq-notice");
+  await expect(page.locator(".zq-notice").count()).resolves.toBe(1);
   await expect(page.locator("article p").allTextContents()).resolves.toContain(
     "本文のほかの部分",
   );
@@ -289,14 +295,14 @@ test("test_normal_when_tooltip_placement", async () => {
   // 検証
   expect(result.code).toBe(0);
   const { page } = await browser.openHtml(join(dir, "guide.html"));
-  await page.waitForSelector(".mdmark-term");
+  await page.waitForSelector(".zq-term");
   // 持ち主を画面の中ほどへスクロールし、ポインターを乗せる
-  const term = page.locator(".mdmark-term");
+  const term = page.locator(".zq-term");
   await term.evaluate((element) => element.scrollIntoView({ block: "center" }));
   await term.hover();
   const rects = await page.evaluate(() => {
-    const word = document.querySelector(".mdmark-term");
-    const tip = document.querySelector(".mdmark-term-tip");
+    const word = document.querySelector(".zq-term");
+    const tip = document.querySelector(".zq-term-tip");
     return {
       termBottom: word?.getBoundingClientRect().bottom ?? Number.NaN,
       tipTop: tip?.getBoundingClientRect().top ?? Number.NaN,
@@ -304,14 +310,14 @@ test("test_normal_when_tooltip_placement", async () => {
   });
   expect(rects.tipTop).toBeGreaterThanOrEqual(rects.termBottom);
   // ER 図のテーブルの説明のボタンにポインターを乗せると、ツールチップをテーブルの上に出す
-  const info = page.locator(".mdmark-diagram .mdmark-diagram-info");
+  const info = page.locator(".zq-diagram .zq-diagram-info");
   await info.evaluate((element) => element.scrollIntoView({ block: "center" }));
   await info.hover();
   const tableRects = await info.evaluate((element) => {
     const tip = document.getElementById(
       element.getAttribute("aria-describedby") ?? "",
     );
-    const table = element.closest(".mdmark-diagram-er-table") ?? element;
+    const table = element.closest(".zq-diagram-er-table") ?? element;
     return {
       tableTop: table.getBoundingClientRect().top,
       tipBottom: tip?.getBoundingClientRect().bottom ?? Number.NaN,
@@ -384,7 +390,7 @@ test("test_normal_when_syntax_highlighted", async () => {
   const { page, externalRequests } = await browser.openHtml(
     join(dir, "guide.html"),
   );
-  await page.waitForSelector("article.mdmark h1");
+  await page.waitForSelector("article.zq h1");
   await page.waitForSelector('article code.language-ts span[class^="hljs-"]');
   await page.waitForSelector(
     'article code.language-python span[class^="hljs-"]',
@@ -431,8 +437,9 @@ const ALIAS_RECORD_FILES: Record<string, string> = {
 
 /** 書き出した HTML に埋めたエイリアスの `id` を並べて返却する */
 function embeddedAliasIds(html: string): string[] {
-  const payload =
-    /<script[^>]*id="mdmark-payload"[^>]*>([\s\S]*?)<\/script>/.exec(html)?.[1];
+  const payload = /<script[^>]*id="zq-payload"[^>]*>([\s\S]*?)<\/script>/.exec(
+    html,
+  )?.[1];
   const parsed = JSON.parse(payload ?? "{}") as {
     aliases?: Array<{ id: string }>;
   };
@@ -465,14 +472,14 @@ test("test_normal_when_aliases", async () => {
   const { page, externalRequests } = await browser.openHtml(
     join(dir, "guide.html"),
   );
-  await page.waitForSelector(".mdmark-term");
-  await expect(page.locator(".mdmark-term").allTextContents()).resolves.toEqual(
-    ["テストを実行する"],
-  );
-  const tip = page.locator(".mdmark-term-tip");
+  await page.waitForSelector(".zq-term");
+  await expect(page.locator(".zq-term").allTextContents()).resolves.toEqual([
+    "テストを実行する",
+  ]);
+  const tip = page.locator(".zq-term-tip");
   await expect(tip.locator("code").textContent()).resolves.toBe("npm test");
   await expect(
-    tip.locator("button.mdmark-term-tip-copy").textContent(),
+    tip.locator("button.zq-term-tip-copy").textContent(),
   ).resolves.toContain("コピー");
   expect(externalRequests()).toEqual([]);
   await page.close();
@@ -492,9 +499,9 @@ test("test_normal_when_color_theme", async () => {
   expect(result.code).toBe(0);
   const { page } = await browser.openHtml(join(dir, "guide.html"));
   await page.emulateMedia({ colorScheme: "light" });
-  await page.waitForSelector(".mdmark");
+  await page.waitForSelector(".zq");
   const background = await page.evaluate(() => {
-    const root = document.querySelector(".mdmark");
+    const root = document.querySelector(".zq");
     return root ? getComputedStyle(root).backgroundColor : "";
   });
   expect(background).toBe("rgb(248, 250, 252)");
@@ -514,7 +521,7 @@ test("test_normal_when_param_copy_label", async () => {
   // 検証
   expect(result.code).toBe(0);
   const { page } = await browser.openHtml(join(dir, "guide.html"));
-  const button = page.locator("button.mdmark-param-copy");
+  const button = page.locator("button.zq-param-copy");
   await button.waitFor();
   expect(await button.textContent()).toBe("コピー");
   await page.close();
@@ -576,7 +583,7 @@ test("test_normal_when_media_embedded", async () => {
     join(dir, "docs", "guide.html"),
     join(dir, "docs", "guide_files"),
   );
-  await page.waitForSelector("article.mdmark figure.mdmark-media video");
+  await page.waitForSelector("article.zq figure.zq-media video");
   const embedded = await page.evaluate(() => {
     const src = (alt: string) =>
       document
@@ -593,7 +600,7 @@ test("test_normal_when_media_embedded", async () => {
       audio: document.querySelector("article audio")?.getAttribute("src") ?? "",
       card:
         document
-          .querySelector('article a.mdmark-card[data-card="file"]')
+          .querySelector('article a.zq-card[data-card="file"]')
           ?.getAttribute("href") ?? "",
     };
   });
@@ -679,24 +686,24 @@ test("test_normal_when_blob_and_dynamic_import_blocked", async () => {
   expect(html).not.toMatch(/<script[^>]*\ssrc=/);
   const opened = await browser.openWithCsp(join(dir, "guide.html"));
   const { page } = opened;
-  await page.waitForSelector("article.mdmark h1");
+  await page.waitForSelector("article.zq h1");
   await page.waitForFunction(() =>
-    [...document.querySelectorAll("article [data-mdmark-slot]")].some((slot) =>
+    [...document.querySelectorAll("article [data-zq-slot]")].some((slot) =>
       slot.textContent?.startsWith("greet:"),
     ),
   );
-  await page.waitForSelector("article .mdmark-view");
+  await page.waitForSelector("article .zq-view");
   await page.waitForSelector('article code.language-ts span[class^="hljs-"]');
-  await page.waitForSelector("article .mdmark-notice");
+  await page.waitForSelector("article .zq-notice");
   await expect(
-    page.locator("article [data-mdmark-slot]").allTextContents(),
+    page.locator("article [data-zq-slot]").allTextContents(),
   ).resolves.toContain("greet:読み込んだ:世界");
   await expect(
-    page.locator("article [data-mdmark-slot]").allTextContents(),
+    page.locator("article [data-zq-slot]").allTextContents(),
   ).resolves.toContain("drawn:a");
-  await expect(page.locator("article .mdmark-notice").count()).resolves.toBe(1);
+  await expect(page.locator("article .zq-notice").count()).resolves.toBe(1);
   await expect(
-    page.locator("article .mdmark-notice").textContent(),
+    page.locator("article .zq-notice").textContent(),
   ).resolves.toContain("missing-lib");
   expect(opened.consoleErrors().join("\n")).toContain("broken の評価で失敗");
   await expect(opened.violations()).resolves.toEqual([]);
@@ -751,9 +758,9 @@ test("test_normal_when_includes_and_icons", async () => {
   expect(stderr.some((line) => line.includes("no-such-icon"))).toBe(true);
   const htmlFile = join(dir, "docs", "guide.html");
   const { page, externalRequests } = await browser.openHtml(htmlFile);
-  await page.waitForSelector("article.mdmark h1");
-  await page.waitForSelector('.mdmark-inline-icon[data-icon="sailboat"] svg');
-  const article = page.locator("article.mdmark");
+  await page.waitForSelector("article.zq h1");
+  await page.waitForSelector('.zq-inline-icon[data-icon="sailboat"] svg');
+  const article = page.locator("article.zq");
   await expect(article.textContent()).resolves.toContain("実行の段落");
   await expect(article.textContent()).resolves.not.toContain("準備の段落");
   const codes = await page.locator("code.language-ts").allTextContents();
@@ -767,7 +774,7 @@ test("test_normal_when_includes_and_icons", async () => {
     ),
   ).toBe(true);
   await expect(
-    page.locator(".mdmark-syntax-warning", { hasText: "missing.md" }).count(),
+    page.locator(".zq-syntax-warning", { hasText: "missing.md" }).count(),
   ).resolves.toBe(1);
   await page.waitForFunction(() =>
     document
@@ -776,7 +783,7 @@ test("test_normal_when_includes_and_icons", async () => {
   );
   expect(externalRequests()).toEqual([]);
   const source = await readFile(htmlFile, "utf8");
-  expect(source).toContain("<!-- lucide ");
+  expect(source).toMatch(/\/\*! lucide /);
   expect(source).toContain("sailboat");
   expect(source).not.toContain('"anchor"');
 });
@@ -827,18 +834,16 @@ test("test_normal_when_range_scripts", async () => {
   expect(html).not.toMatch(/<script[^>]*\ssrc=/);
   const opened = await browser.openWithCsp(join(dir, "guide.html"));
   const { page } = opened;
-  const box = page.locator("article div.mdmark-html .box");
+  const box = page.locator("article div.zq-html .box");
   await box.waitFor();
   await expect(
     box.evaluate((el) => getComputedStyle(el).backgroundColor),
   ).resolves.toBe("rgb(255, 0, 0)");
   await page.waitForFunction(() => {
-    document
-      .querySelector<HTMLElement>("article div.mdmark-html .box")
-      ?.click();
+    document.querySelector<HTMLElement>("article div.zq-html .box")?.click();
     return (
       document
-        .querySelector("article div.mdmark-html")
+        .querySelector("article div.zq-html")
         ?.classList.contains("is-open") === true
     );
   });
@@ -900,20 +905,20 @@ test("test_normal_when_cascaded", async () => {
   const { page } = await browser.openHtml(
     join(dir, "work", "docs", "guide.html"),
   );
-  await page.waitForSelector("article.mdmark h1");
+  await page.waitForSelector("article.zq h1");
   await page.waitForFunction(
-    () => document.querySelector("[data-mdmark-slot]")?.textContent !== "",
+    () => document.querySelector("[data-zq-slot]")?.textContent !== "",
   );
   await expect(page.locator(".markdown-alert").count()).resolves.toBe(0);
   await expect(page.locator("article blockquote").count()).resolves.toBe(1);
-  await expect(page.locator("button.mdmark-sort").count()).resolves.toBe(0);
+  await expect(page.locator("button.zq-sort").count()).resolves.toBe(0);
   await expect(
-    page.locator("article [data-mdmark-slot]").allTextContents(),
+    page.locator("article [data-zq-slot]").allTextContents(),
   ).resolves.toEqual(["greet:世界"]);
   await expect(
     page.evaluate(() =>
-      getComputedStyle(document.querySelector("article.mdmark") as Element)
-        .getPropertyValue("--mdmark-radius")
+      getComputedStyle(document.querySelector("article.zq") as Element)
+        .getPropertyValue("--zq-radius")
         .trim(),
     ),
   ).resolves.toBe("0px");
@@ -985,7 +990,7 @@ test("test_normal_when_mermaid_embedded", async () => {
     join(dir, "guide.html"),
   );
   await page.waitForSelector(
-    'article figure.mdmark-diagram[data-diagram="mermaid"] .mdmark-mermaid > svg',
+    'article figure.zq-diagram[data-diagram="mermaid"] .zq-mermaid > svg',
     {
       timeout: 60_000,
     },
@@ -1018,3 +1023,119 @@ test("test_normal_when_map_config", async () => {
   expect(externalRequests()).toEqual([]);
   await page.close();
 }, 180_000);
+
+/** 隠す書き出しの結合テストのフォルダを作り、隠した書き出しと `--keep-traces` の書き出しの両方を書き出す */
+async function exportBothTraces(): Promise<{
+  dir: string;
+  hidden: Awaited<ReturnType<typeof runCli>>;
+  kept: Awaited<ReturnType<typeof runCli>>;
+}> {
+  const dir = await createTempDir();
+  await copyMermaidVendor(dir);
+  await writeFiles(dir, TRACES_FILES);
+  const hidden = await runCli(["export", "mdmark-intro.md"], dir);
+  const kept = await runCli(
+    ["export", "mdmark-intro.md", "--out", "kept.html", "--keep-traces"],
+    dir,
+  );
+  return { dir, hidden, kept };
+}
+
+/** CSP を付けて開き、mermaid の図と範囲の部品が描かれるまで待つ */
+async function openTraces(file: string) {
+  const opened = await browser.openWithCsp(file);
+  await opened.page.waitForSelector(
+    'article figure[data-diagram="mermaid"] svg',
+    {
+      timeout: 60_000,
+    },
+  );
+  await opened.page.waitForFunction(
+    () =>
+      document
+        .querySelector("article")
+        ?.textContent?.includes("greet:利用者") === true,
+  );
+  return opened;
+}
+
+// 隠さない書き出しを指定しないとき、mdmark の名前を別名へ置き換え、コメント・バージョン・mdmark 自身のライセンスの表記を削除して書き出す（正常系（mdmark を使用していることを隠す））
+test("test_normal_when_traces_hidden", async () => {
+  // 準備
+  const { dir, hidden, kept } = await exportBothTraces();
+  // 実行
+  const html = await readFile(join(dir, "mdmark-intro.html"), "utf8");
+  const report = reportTraces(html);
+  // 検証
+  expect(hidden.code).toBe(0);
+  expect(linesOf(hidden.stdout)).toEqual(["書き出した: mdmark-intro.html"]);
+  expect(kept.code).toBe(0);
+  expect(report.outside).toBe(0);
+  expect(report.generated).toBe(0);
+  expect(report.markdownNames).toBe(0);
+  expect(report.markdown).toContain("mdmark は Markdown を描きます");
+  expect(report.comments).toBe(0);
+  expect(report.markdown).not.toContain("<!-- todo -->");
+  for (const marker of [
+    "<!-- html -->",
+    "<!-- table: data -->",
+    "<!-- /table -->",
+  ]) {
+    expect(report.markdown).toContain(marker);
+  }
+  expect(html).not.toMatch(/-version:"v/);
+  expect(html).toMatch(/\/\*! lucide /);
+  expect(html).not.toContain("<!-- lucide");
+  expect(html).toContain("<title>mdmark の紹介</title>");
+  const hiddenPage = await openTraces(join(dir, "mdmark-intro.html"));
+  const keptPage = await openTraces(join(dir, "kept.html"));
+  expect(hiddenPage.consoleErrors()).toEqual([]);
+  await expect(countCommentNodes(hiddenPage.page)).resolves.toBe(0);
+  await expect(snapshotDom(hiddenPage.page)).resolves.toEqual(
+    await snapshotDom(keptPage.page),
+  );
+  await expect(
+    hiddenPage.page.evaluate(
+      () =>
+        getComputedStyle(document.querySelector("article h1") as Element)
+          .letterSpacing,
+    ),
+  ).resolves.toBe("3px");
+  await hiddenPage.page.locator("article .box").click();
+  await expect(
+    hiddenPage.page.evaluate(() => ({
+      open:
+        document
+          .querySelector("article .zq-html")
+          ?.classList.contains("is-open") ?? false,
+      flag: Reflect.get(window, "__zqOpened"),
+    })),
+  ).resolves.toEqual({ open: true, flag: true });
+  await expect(
+    hiddenPage.page.locator("article pre code").last().textContent(),
+  ).resolves.toContain("<zq-chart>{}</zq-chart>");
+  await hiddenPage.close();
+  await keptPage.close();
+}, 240_000);
+
+// --keep-traces のとき、名前を置き換えず、コメントとバージョンを残して書き出す（正常系（隠さない書き出しを指定する））
+test("test_normal_when_traces_kept", async () => {
+  // 準備
+  const { dir, kept } = await exportBothTraces();
+  // 実行
+  const html = await readFile(join(dir, "kept.html"), "utf8");
+  // 検証
+  expect(kept.code).toBe(0);
+  expect(html).toContain('class="mdmark"');
+  expect(html).toContain(":root{--mdmark-version:");
+  expect(html).toContain('id="mdmark-payload"');
+  expect(html).toContain("<!-- lucide");
+  const markdown = (
+    JSON.parse(
+      /<script type="application\/json" id="mdmark-payload">([\s\S]*?)<\/script>/.exec(
+        html,
+      )?.[1] ?? "{}",
+    ) as { docs: Array<{ markdown: string }> }
+  ).docs[0]?.markdown;
+  expect(markdown).toBe(TRACES_FILES["mdmark-intro.md"]);
+}, 240_000);

@@ -43,6 +43,35 @@ test("test_normal", async () => {
   );
 });
 
+// keep_traces が true のとき、CLI の --keep-traces と同じ HTML を書き込む（正常系（隠さない書き出しを指定する））
+test("test_normal_when_traces_kept", async () => {
+  // 準備
+  const dir = await createTempDir();
+  const plainDir = await createTempDir();
+  const cliDir = await createTempDir();
+  for (const target of [dir, plainDir, cliDir]) {
+    await writeFiles(target, PROJECT_FILES);
+  }
+  const client = await connectHttp({ projectDir: dir });
+  const plainClient = await connectHttp({ projectDir: plainDir });
+  // 実行
+  const result = await callTool(client, "build_site", { keep_traces: true });
+  const plain = await callTool(plainClient, "build_site", {});
+  // 検証
+  expect(result.isError).toBe(false);
+  const html = await readFile(JSON.parse(result.texts[0] ?? "").out, "utf8");
+  await runCli(["build", "--keep-traces"], cliDir);
+  expect(html).toBe(await readFile(join(cliDir, "dist", "docs.html"), "utf8"));
+  expect(html).toContain('class="mdmark"');
+  expect(html).toContain(":root{--mdmark-version:");
+  const plainHtml = await readFile(
+    JSON.parse(plain.texts[0] ?? "").out,
+    "utf8",
+  );
+  expect(plainHtml).not.toContain('class="mdmark"');
+  expect(plainHtml).not.toContain(":root{--mdmark-version:");
+});
+
 // build の無い設定では何も書き込まずにエラーにする（異常系）
 test("test_error_when_build_missing", async () => {
   // 準備

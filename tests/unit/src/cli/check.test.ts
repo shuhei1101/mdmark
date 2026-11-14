@@ -1038,6 +1038,7 @@ test("test_collect_mark_names", async () => {
     "table",
     "html",
     "features",
+    "page",
     "test-lib",
     "greet",
     "memo",

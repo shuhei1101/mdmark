@@ -453,7 +453,7 @@ export const mapStoreDoc = (title: string, links = ""): string =>
     "",
   ].join("\n");
 
-/** 開いた HTML の map の図で、`doc` のノードの種類の行と、`doc->read` の線を読む（図とアイコンが描かれるまで待つ） */
+/** 既定で隠して書き出した HTML の map の図で、`doc` のノードの種類の行と、`doc->read` の線を読む（図とアイコンが描かれるまで待つ） */
 export async function readMapStore(page: Page): Promise<{
   label: string;
   shape: string | undefined;
@@ -461,21 +461,20 @@ export async function readMapStore(page: Page): Promise<{
   dash: string | null;
 }> {
   await page.waitForSelector(
-    'article figure.mdmark-diagram[data-diagram="map"] .mdmark-diagram-node[data-node="doc"] .mdmark-diagram-node-kind svg',
+    'article figure.zq-diagram[data-diagram="map"] .zq-diagram-node[data-node="doc"] .zq-diagram-node-kind svg',
     { timeout: 60_000 },
   );
   return page.evaluate(() => {
     const node = document.querySelector<HTMLElement>(
-      'article figure[data-diagram="map"] .mdmark-diagram-node[data-node="doc"]',
+      'article figure[data-diagram="map"] .zq-diagram-node[data-node="doc"]',
     );
     return {
-      label:
-        node?.querySelector(".mdmark-diagram-node-kind")?.textContent ?? "",
+      label: node?.querySelector(".zq-diagram-node-kind")?.textContent ?? "",
       shape: node?.dataset.shape,
       color: node?.dataset.color,
       dash:
         document
-          .querySelector('article .mdmark-diagram-wire[data-wire="doc->read"]')
+          .querySelector('article .zq-diagram-wire[data-wire="doc->read"]')
           ?.getAttribute("stroke-dasharray") ?? null,
     };
   });
