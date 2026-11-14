@@ -75,6 +75,7 @@ Markdown を 1 つ、CDN を読み込まない 1 枚の HTML に書き出す。
 警告は、標準エラーに 1 つ 1 行（`警告: {ファイル}: {内容}`）で出す。
 警告の対象は、読み込めない画像・動画・音声・外部ライブラリのモジュール・拡張・`theme` の CSS と、埋めずに残した絶対 URL の画像・動画・音声と、まとめた後も動的 `import()` が残る外部ライブラリ・拡張（埋めたうえで出す）。
 文書間のリンクは記載したままの `href` で残し、警告に出さない。
+既定で mdmark を使用していることを隠して書き出す（[mdmark を使用していることを隠す](./書き出す-文書を書き出す.md#mdmark-を使用していることを隠す)）。
 
 文書の include のマーカーの取り込み先を、設定ファイルのフォルダ（無ければ文書のフォルダ）の中から読み込んで埋める。
 そのフォルダの外を指すパスと読み込めないファイルは埋めず、警告に出す（開いたときは、その場所に記載の警告が出る）。
@@ -109,7 +110,7 @@ Lucide に無い名前は埋めず、警告に出す。
 ### 使用方法
 
 ```bash
-npx github:shuhei1101/mdmark#v{バージョン} export {文書} [--out {出力}] [--config {設定ファイル}]
+npx github:shuhei1101/mdmark#v{バージョン} export {文書} [--out {出力}] [--config {設定ファイル}] [--keep-traces]
 ```
 
 ### 引数
@@ -119,6 +120,7 @@ npx github:shuhei1101/mdmark#v{バージョン} export {文書} [--out {出力}]
 | `{文書}` | 必須 | 書き出す Markdown のパス | `docs/使用方法/guide.md` |
 | `--out` | 任意 | 書き出す HTML のパス。省くと文書と同じフォルダの、拡張子を `.html` に替えたパス。親のフォルダが無ければ作り、既にあれば上書きする | `--out dist/guide.html` |
 | `--config` | 任意 | 使用する設定ファイルのパス。指定するとこのファイルと端末の設定だけを重ねる。省くと今のフォルダから上のフォルダへ `mdmark.config.yaml` を探して重ねる | `--config docs/mdmark.config.yaml` |
+| `--keep-traces` | 任意 | 開発のときに、mdmark の名前・HTML のコメント・バージョンを残して書き出す。省くと隠して書き出す | `--keep-traces` |
 
 ### 終了コード
 
@@ -153,7 +155,7 @@ include の取り込み先は文書ごとにその文書のフォルダから数
 ### 使用方法
 
 ```bash
-npx github:shuhei1101/mdmark#v{バージョン} build [--config {設定ファイル}]
+npx github:shuhei1101/mdmark#v{バージョン} build [--config {設定ファイル}] [--keep-traces]
 ```
 
 ### 引数
@@ -161,6 +163,7 @@ npx github:shuhei1101/mdmark#v{バージョン} build [--config {設定ファイ
 | 引数 | 必須 / 任意 | 説明 | 例 |
 | --- | --- | --- | --- |
 | `--config` | 任意 | 使用する設定ファイルのパス。指定するとこのファイルと端末の設定だけを重ねる。省くと今のフォルダから上のフォルダへ `mdmark.config.yaml` を探して重ねる。まとめる文書と書き出す先は、重ねた設定の `build` が持つ | `--config docs/mdmark.config.yaml` |
+| `--keep-traces` | 任意 | 開発のときに、mdmark の名前・HTML のコメント・バージョンを残してまとめる。省くと隠してまとめる | `--keep-traces` |
 
 ### 終了コード
 
