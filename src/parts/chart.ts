@@ -11,25 +11,38 @@ import { escapeHtml } from "./escape.ts";
 /** グラフの点の形状より広い、ツールチップを取得する透明の円の半径（px） */
 export const ITEM_HIT_RADIUS = 12;
 
-/** グラフの項目の値の文（部品設計『図のツールチップ』の `value`） */
-export function chartItemText(item: {
+/** グラフの項目 1 つ */
+type ChartItem = {
   type: MdmarkChartType;
   tick?: string;
   value?: number;
   point?: number[];
   percent?: number;
   definition: MdmarkChartDefinition;
-}): string {
+};
+
+/** 散布図・バブルの項目の値の文（バブルは大きさを添える） */
+function pointItemText(item: ChartItem): string {
+  const { type, definition } = item;
+  const [x = 0, y = 0, size = 0] = item.point ?? [];
+  const { x: xAxis, y: yAxis } = definition;
+  const base = `${xAxis?.label ?? "x"} ${x}・${yAxis?.label ?? "y"} ${y}`;
+  return type === "bubble" ? `${base}・${sizeLabel(definition)} ${size}` : base;
+}
+
+/** バブルの大きさの軸の名前（無いか空なら「大きさ」） */
+function sizeLabel(definition: MdmarkChartDefinition): string {
+  return definition.size?.label || "大きさ";
+}
+
+/** グラフの項目の値の文（部品設計『図のツールチップ』の `value`） */
+export function chartItemText(item: ChartItem): string {
   const { type, definition } = item;
   if (type === "pie" || type === "donut") {
     return `${item.value ?? 0}${definition.unit ?? ""}（${item.percent ?? 0}%）`;
   }
   if (type === "scatter" || type === "bubble") {
-    const [x = 0, y = 0, size = 0] = item.point ?? [];
-    const base = `${definition.x?.label ?? "x"} ${x}・${definition.y?.label ?? "y"} ${y}`;
-    return type === "bubble"
-      ? `${base}・${definition.size?.label || "大きさ"} ${size}`
-      : base;
+    return pointItemText(item);
   }
   return `${item.tick ?? ""}: ${item.value ?? 0}`;
 }
@@ -187,10 +200,10 @@ function polygonPoint(points: Array<[number, number]>): string {
 /** 系列の点のマーカー（`SERIES_STYLES` の点の形状） */
 export function pointSvg(
   series: number,
-  x: number,
-  y: number,
+  at: [number, number],
   size: number = POINT_SIZE,
 ): string {
+  const [x, y] = at;
   const s = size;
   const shape = pointShapeOf(series);
   switch (shape) {
@@ -363,12 +376,12 @@ function pathOf(points: Array<[number, number]>, close = false): string {
 function seriesLineSvg(
   n: number,
   points: Array<[number, number]>,
-  close = false,
-  hits: string[] = [],
+  options: { close?: boolean; hits?: string[] } = {},
 ): string[] {
+  const { close = false, hits = [] } = options;
   return [
     `<path class="mdmark-diagram-series" data-series="${n}" d="${pathOf(points, close)}"></path>`,
-    `<g data-series="${n}">${points.map(([x, y]) => pointSvg(n, x, y)).join("")}${points.map(([x, y], i) => (hits[i] === undefined ? "" : itemHit(hits[i], x, y))).join("")}</g>`,
+    `<g data-series="${n}">${points.map(([x, y]) => pointSvg(n, [x, y])).join("")}${points.map(([x, y], i) => (hits[i] === undefined ? "" : itemHit(hits[i], x, y))).join("")}</g>`,
   ];
 }
 
@@ -413,10 +426,9 @@ type TickedChart = {
 /** 目盛りの軸のグラフの項目 1 つに付ける属性 */
 function tickedAttrs(
   input: TickedChart,
-  name: string,
-  position: number,
-  value: number,
+  item: { name: string; position: number; value: number },
 ): string {
+  const { name, position, value } = item;
   return input.tips.attrs(name, `${input.ticks[position] ?? ""}: ${value}`);
 }
 
@@ -484,14 +496,11 @@ function lineChart(
       );
     }
     lines.push(
-      ...seriesLineSvg(
-        n,
-        points,
-        false,
-        entry.points.map((value, position) =>
-          tickedAttrs(input, entry.name, position, value),
+      ...seriesLineSvg(n, points, {
+        hits: entry.points.map((value, position) =>
+          tickedAttrs(input, { name: entry.name, position, value }),
         ),
-      ),
+      }),
     );
   });
   // 面の上に線と点を重ねる
@@ -548,12 +557,11 @@ function stackedAreaChart(
     const entry = series[index];
     const hits = ranges.map((range, position) =>
       itemHit(
-        tickedAttrs(
-          input,
-          entry?.name ?? "",
+        tickedAttrs(input, {
+          name: entry?.name ?? "",
           position,
-          entry?.points[position] ?? 0,
-        ),
+          value: entry?.points[position] ?? 0,
+        }),
         xAt(position),
         yAt(range.to),
       ),
@@ -590,7 +598,7 @@ function barChart(input: TickedChart, box: ChartBox, id: string): ChartBody {
         y: Math.min(yAt(value), yAt(0)),
         width: barWidth - 2,
         height: Math.abs(yAt(value) - yAt(0)),
-        attrs: tickedAttrs(input, entry.name, position, value),
+        attrs: tickedAttrs(input, { name: entry.name, position, value }),
       }),
     );
     svg.push(`<g data-series="${n}">${bars.join("")}</g>`);
@@ -629,12 +637,11 @@ function stackedBarChart(
         y: Math.min(yAt(range.from), yAt(range.to)),
         width: barWidth,
         height: Math.abs(yAt(range.to) - yAt(range.from)),
-        attrs: tickedAttrs(
-          input,
-          series[index]?.name ?? "",
+        attrs: tickedAttrs(input, {
+          name: series[index]?.name ?? "",
           position,
-          series[index]?.points[position] ?? 0,
-        ),
+          value: series[index]?.points[position] ?? 0,
+        }),
       }),
     );
     svg.push(`<g data-series="${n}">${bars.join("")}</g>`);
@@ -696,7 +703,7 @@ function horizontalBarChart(
           1,
         width: Math.abs(xAt(value) - zero),
         height: barHeight - 2,
-        attrs: tickedAttrs(input, entry.name, position, value),
+        attrs: tickedAttrs(input, { name: entry.name, position, value }),
       }),
     );
     svg.push(`<g data-series="${n}">${bars.join("")}</g>`);
@@ -864,14 +871,12 @@ function radarChart(input: TickedChart, id: string): ChartBody {
       seriesAreaSvg({ n, id, className: "mdmark-diagram-area", points }),
     );
     lines.push(
-      ...seriesLineSvg(
-        n,
-        points,
-        true,
-        entry.points.map((value, position) =>
-          tickedAttrs(input, entry.name, position, value),
+      ...seriesLineSvg(n, points, {
+        close: true,
+        hits: entry.points.map((value, position) =>
+          tickedAttrs(input, { name: entry.name, position, value }),
         ),
-      ),
+      }),
     );
   });
   svg.push(...lines);
@@ -937,7 +942,7 @@ function scatterChart(
       );
       if (!bubble) {
         return (
-          pointSvg(n, xAt(x), yAt(y), SCATTER_POINT_SIZE) +
+          pointSvg(n, [xAt(x), yAt(y)], SCATTER_POINT_SIZE) +
           itemHit(attrs, xAt(x), yAt(y))
         );
       }
@@ -965,14 +970,43 @@ function scatterChart(
   };
 }
 
-/** 折れ線と棒の組み合わせ: 系列ごとに `as` の描き方で重ね、`axis` が `y2` の系列を右の縦の軸で示す */
-function comboChart(
+/** 複合グラフの左の縦の軸と、`y2` があれば右の縦の軸 */
+function comboYAxesSvg(
+  definition: MdmarkChartDefinition,
+  axes: Omit<ReturnType<typeof comboAxes>, "onY2">,
+): string[] {
+  const { area, left, right, leftAt, rightAt } = axes;
+  return [
+    ...yAxisSvg({
+      axis: left,
+      label: definition.y?.label ?? "",
+      yAt: leftAt,
+      box: area,
+    }),
+    ...(right
+      ? yAxisSvg({
+          axis: right,
+          label: definition.y2?.label ?? "",
+          yAt: rightAt,
+          box: area,
+          side: "right",
+        })
+      : []),
+  ];
+}
+
+/** 複合グラフの縦の軸。`y2` があれば右の軸を加え、描く範囲の右を空ける */
+function comboAxes(
   definition: MdmarkChartDefinition,
   box: ChartBox,
-  id: string,
-  tips: ItemTips,
-): ChartBody {
-  const ticks = definition.x?.ticks ?? [];
+): {
+  area: ChartBox;
+  left: AxisRange;
+  right: AxisRange | undefined;
+  leftAt: (value: number) => number;
+  rightAt: (value: number) => number;
+  onY2: (entry: MdmarkChartSeries) => boolean;
+} {
   const series = definition.series ?? [];
   const pointsOf = (entry: MdmarkChartSeries): number[] =>
     entry.points as number[];
@@ -989,7 +1023,31 @@ function comboChart(
     ? axisOf(definition.y2, series.filter(onY2).flatMap(pointsOf))
     : undefined;
   const leftAt = yScale(left, area);
-  const rightAt = right ? yScale(right, area) : leftAt;
+  return {
+    area,
+    left,
+    right,
+    leftAt,
+    rightAt: right ? yScale(right, area) : leftAt,
+    onY2,
+  };
+}
+
+/** 折れ線と棒の組み合わせ: 系列ごとに `as` の描き方で重ね、`axis` が `y2` の系列を右の縦の軸で示す */
+function comboChart(
+  definition: MdmarkChartDefinition,
+  box: ChartBox,
+  context: { id: string; tips: ItemTips },
+): ChartBody {
+  const { id, tips } = context;
+  const ticks = definition.x?.ticks ?? [];
+  const series = definition.series ?? [];
+  const pointsOf = (entry: MdmarkChartSeries): number[] =>
+    entry.points as number[];
+  const { area, left, right, leftAt, rightAt, onY2 } = comboAxes(
+    definition,
+    box,
+  );
   const { band, xAt } = bandScale(ticks.length, area);
   const bars = series.filter((entry) => entry.as === "bar");
   const barWidth = Math.min(
@@ -998,23 +1056,12 @@ function comboChart(
   );
   const svg = [
     `<defs>${fillPatterns(id)}</defs>`,
-    ...yAxisSvg({
-      axis: left,
-      label: definition.y?.label ?? "",
-      yAt: leftAt,
-      box: area,
-    }),
-    ...(right
-      ? yAxisSvg({
-          axis: right,
-          label: definition.y2?.label ?? "",
-          yAt: rightAt,
-          box: area,
-          side: "right",
-        })
-      : []),
+    ...comboYAxesSvg(definition, { area, left, right, leftAt, rightAt }),
     ...xTicksSvg(ticks, xAt, area),
   ];
+  /** 項目のツールチップの属性 */
+  const attrsOf = (entry: MdmarkChartSeries, position: number, value: number) =>
+    tips.attrs(entry.name, `${ticks[position] ?? ""}: ${value}`);
   const lines: string[] = [];
   series.forEach((entry, index) => {
     const n = index + 1;
@@ -1027,10 +1074,11 @@ function comboChart(
             xAt(position),
             yAt(value),
           ]),
-          false,
-          pointsOf(entry).map((value, position) =>
-            tips.attrs(entry.name, `${ticks[position] ?? ""}: ${value}`),
-          ),
+          {
+            hits: pointsOf(entry).map((value, position) =>
+              attrsOf(entry, position, value),
+            ),
+          },
         ),
       );
       return;
@@ -1044,7 +1092,7 @@ function comboChart(
         y: Math.min(yAt(value), yAt(0)),
         width: barWidth - 2,
         height: Math.abs(yAt(value) - yAt(0)),
-        attrs: tips.attrs(entry.name, `${ticks[position] ?? ""}: ${value}`),
+        attrs: attrsOf(entry, position, value),
       }),
     );
     svg.push(`<g data-series="${n}">${rects.join("")}</g>`);
@@ -1123,7 +1171,7 @@ export function renderChart(
         box,
       ),
     radar: () => radarChart(input, id),
-    combo: () => comboChart(definition, box, id, tips),
+    combo: () => comboChart(definition, box, { id, tips }),
   };
   const body = bodies[type]();
   const label = `${definition.title}。${body.label}`;

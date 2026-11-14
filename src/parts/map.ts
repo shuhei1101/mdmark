@@ -378,7 +378,8 @@ const termMarker = (
   const tips = createTips(`${id}-term`);
   const found = { terms: false };
   return {
-    render: (text) => renderText(markTerms(text, words), tips, lookup, found),
+    render: (text) =>
+      renderText(markTerms(text, words), { tips, lookup, found }),
     tips,
   };
 };

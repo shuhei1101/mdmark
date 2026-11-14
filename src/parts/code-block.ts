@@ -61,6 +61,20 @@ export function codeLineId(base: string, index: number): string {
   return `${base}-line-${index + 1}`;
 }
 
+/** 行の印の属性（行番号・差分の種類・字下げ・畳む行の数・畳んだか） */
+function lineMarkAttributes(
+  line: CodeLine,
+  number: number | undefined,
+): string {
+  return [
+    number === undefined ? "" : ` data-line="${number}"`,
+    line.kind === undefined ? "" : ` data-kind="${line.kind}"`,
+    line.indent ? ` data-indent="${line.indent}"` : "",
+    line.foldLines === undefined ? "" : ` data-fold-lines="${line.foldLines}"`,
+    line.folded ? ' data-folded="true"' : "",
+  ].join("");
+}
+
 /** 行を `mdmark-code-line` にする。`data-line` は行番号を出すときだけ、`data-kind` は種類を持つ行だけ、`data-indent`・`data-fold-lines`・`data-folded` は持つ行だけ付ける。`fold` を指定すると開閉のボタンと `⋯` を配置する */
 function renderLine(options: {
   line: CodeLine;
@@ -70,11 +84,7 @@ function renderLine(options: {
   const { line, number, fold } = options;
   const attributes = [
     fold ? ` id="${escapeHtml(fold.id)}"` : "",
-    number === undefined ? "" : ` data-line="${number}"`,
-    line.kind === undefined ? "" : ` data-kind="${line.kind}"`,
-    line.indent ? ` data-indent="${line.indent}"` : "",
-    line.foldLines === undefined ? "" : ` data-fold-lines="${line.foldLines}"`,
-    line.folded ? ' data-folded="true"' : "",
+    lineMarkAttributes(line, number),
     fold?.hidden ? " hidden" : "",
   ].join("");
   return `<span class="mdmark-code-line"${attributes}>${fold?.toggle ?? ""}<span class="mdmark-code-text">${escapeHtml(line.text)}</span>${fold?.more ?? ""}</span>`;
@@ -124,6 +134,169 @@ function renderLanguageLabel(options: {
   return `<span class="mdmark-code-lang"><span class="mdmark-code-lang-name" aria-hidden="true">${escapeHtml(language)}</span>${file}</span>`;
 }
 
+/** 差分の種類・字下げ・畳む行の数の印を持つ行か（印を持つ行があれば行に分ける） */
+function isMarkedLine(line: CodeLine): boolean {
+  return (
+    line.kind !== undefined ||
+    Boolean(line.indent) ||
+    line.foldLines !== undefined
+  );
+}
+
+/** 行に分けたときの `pre` の class（行番号・差分の記号・強調・開閉のボタンの列・折り返し） */
+function lineClasses(options: {
+  lines: CodeLine[];
+  lineNumbers: boolean;
+  wrap: boolean;
+  foldButtons: boolean | undefined;
+}): string[] {
+  const { lines, lineNumbers, wrap, foldButtons } = options;
+  const has = (test: (line: CodeLine) => boolean): boolean => lines.some(test);
+  return [
+    "mdmark-code-lines",
+    ...(lineNumbers ? ["mdmark-code-numbered"] : []),
+    ...(has((line) => line.kind === "add" || line.kind === "del")
+      ? ["mdmark-code-signs"]
+      : []),
+    ...(has((line) => line.kind === "focus") ? ["mdmark-code-has-focus"] : []),
+    // 開閉のボタンを配置するときは、`mount` と同じく開閉のボタンの列の幅を取る
+    ...(foldButtons && has((line) => line.foldLines !== undefined)
+      ? ["mdmark-code-foldable"]
+      : []),
+    ...(wrap ? ["mdmark-code-wrap"] : []),
+  ];
+}
+
+/** `code` の属性（言語の class・色分けの言語・行番号の桁数） */
+function codeAttributesOf(options: {
+  language: string;
+  syntax: string | undefined;
+  lineNumbers: boolean;
+  lastNumber: number;
+}): string {
+  const { language, syntax, lineNumbers, lastNumber } = options;
+  return [
+    language ? `class="language-${escapeHtml(language)}"` : "",
+    syntax ? `${SYNTAX_ATTRIBUTE}="${escapeHtml(syntax)}"` : "",
+    lineNumbers
+      ? `style="--mdmark-code-digits: ${String(lastNumber).length}"`
+      : "",
+  ]
+    .filter(Boolean)
+    .map((attribute) => ` ${attribute}`)
+    .join("");
+}
+
+/** 開閉のボタンを配置するときの、行の `id`・隠すか・ボタン・`⋯` */
+function foldOf(
+  line: CodeLine,
+  index: number,
+  hidden: Set<number>,
+): { id: string; hidden: boolean; toggle: string; more: string } {
+  const count = line.foldLines ?? 0;
+  const range = { from: index + 2, to: index + 1 + count };
+  const controls = Array.from({ length: count }, (_, offset) =>
+    codeLineId("mdmark-code", index + 1 + offset),
+  ).join(" ");
+  return {
+    id: codeLineId("mdmark-code", index),
+    hidden: hidden.has(index),
+    toggle:
+      count > 0
+        ? renderCodeFoldToggle({ expanded: !line.folded, ...range, controls })
+        : "",
+    more: count > 0 && line.folded ? renderCodeFoldMore(range) : "",
+  };
+}
+
+/** `code` の中身。行に分けるときは行ごとの要素、分けないときはコードの文字 */
+function codeBody(options: {
+  lines: CodeLine[];
+  split: boolean;
+  lineNumbers: boolean;
+  lineStart: number;
+  foldButtons: boolean | undefined;
+}): string {
+  const { lines, split, lineNumbers, lineStart, foldButtons } = options;
+  if (!split) {
+    return (
+      escapeHtml(lines.map((line) => line.text).join("\n")) +
+      (lines.length > 0 ? "\n" : "")
+    );
+  }
+  const hidden = foldButtons
+    ? hiddenLinesOf({
+        foldLines: lines.map((line) => line.foldLines),
+        folded: lines.map((line) => line.folded === true),
+      })
+    : new Set<number>();
+  return lines
+    .map((line, index) =>
+      renderLine({
+        line,
+        number: lineNumbers ? lineStart + index : undefined,
+        fold: foldButtons ? foldOf(line, index, hidden) : undefined,
+      }),
+    )
+    .join("\n");
+}
+
+/** `pre` を帯で包む。タイトルがあれば `figure` の `figcaption` を帯にする */
+function wrapWithBar(options: {
+  pre: string;
+  language: string;
+  fileName: string;
+  title: string;
+  copyState: CodeCopyState | undefined;
+  mermaidAttribute: string;
+}): string {
+  const { pre, language, fileName, title, copyState, mermaidAttribute } =
+    options;
+  const barContent =
+    renderLanguageLabel({ language, fileName }) +
+    (title ? escapeHtml(title) : "") +
+    (copyState === undefined ? "" : renderCodeCopy({ state: copyState }));
+  if (title) {
+    return `<figure class="mdmark-code"${mermaidAttribute}><figcaption class="mdmark-code-title mdmark-code-bar">${barContent}</figcaption>${pre}</figure>`;
+  }
+  return `<div class="mdmark-code"${mermaidAttribute}><div class="mdmark-code-bar">${barContent}</div>${pre}</div>`;
+}
+
+/** コードブロックの `pre` の HTML を返却する */
+function renderPre(options: {
+  language: string;
+  fileName: string;
+  title: string;
+  lineNumbers: boolean;
+  lineStart?: number | undefined;
+  wrap?: boolean | undefined;
+  lines: CodeLine[];
+  syntax?: string | undefined;
+  foldButtons?: boolean | undefined;
+  foldColumnHovered?: boolean | undefined;
+}): string {
+  const { language, fileName, title, lineNumbers, lines, syntax } = options;
+  const { foldButtons } = options;
+  const wrap = options.wrap === true;
+  const lineStart = options.lineStart ?? 1;
+  const split = lineNumbers || wrap || lines.some(isMarkedLine);
+  const classes = split
+    ? lineClasses({ lines, lineNumbers, wrap, foldButtons })
+    : [];
+  const preClass = classes.length ? ` class="${classes.join(" ")}"` : "";
+  const label = escapeHtml(labelOf({ title, fileName, language }));
+  const codeAttributes = codeAttributesOf({
+    language,
+    syntax,
+    lineNumbers,
+    lastNumber: lineStart + lines.length - 1,
+  });
+  const body = codeBody({ lines, split, lineNumbers, lineStart, foldButtons });
+  const hoverAttribute =
+    options.foldColumnHovered === true ? " data-fold-hover" : "";
+  return `<pre${preClass}${hoverAttribute} tabindex="0" aria-label="${label}"><code${codeAttributes}>${body}</code></pre>`;
+}
+
 /** コードブロックの HTML を返却する。行番号か行の種類を持つときは行ごとの `mdmark-code-line` に分ける。`bar` が `true`（既定）のときは、言語のラベル・タイトル・コピーのボタンを持つ帯を `pre` の前に配置して包み、`false` のときは `pre` だけを返却する */
 export function renderCodeBlock(options: {
   /** 情報文字列の言語（無ければ空） */
@@ -153,104 +326,20 @@ export function renderCodeBlock(options: {
   /** ポインターが開閉のボタンの列に乗っているか。`true` なら `pre` に `data-fold-hover` を付ける（既定 `false`） */
   foldColumnHovered?: boolean | undefined;
 }): string {
-  const { language, title, lineNumbers, lines, syntax } = options;
-  const { fileName = "", bar = true, copyState, foldButtons } = options;
-  const wrap = options.wrap === true;
-  const lineStart = options.lineStart ?? 1;
+  const { language, title } = options;
+  const { fileName = "", bar = true, copyState } = options;
   const mermaidAttribute =
     options.mermaid === true ? ` ${MERMAID_ATTRIBUTE}` : "";
-  const split =
-    lineNumbers ||
-    wrap ||
-    lines.some(
-      (line) =>
-        line.kind !== undefined ||
-        Boolean(line.indent) ||
-        line.foldLines !== undefined,
-    );
-  const classes = split
-    ? [
-        "mdmark-code-lines",
-        ...(lineNumbers ? ["mdmark-code-numbered"] : []),
-        ...(lines.some((line) => line.kind === "add" || line.kind === "del")
-          ? ["mdmark-code-signs"]
-          : []),
-        ...(lines.some((line) => line.kind === "focus")
-          ? ["mdmark-code-has-focus"]
-          : []),
-        // 開閉のボタンを配置するときは、`mount` と同じく開閉のボタンの列の幅を取る
-        ...(foldButtons && lines.some((line) => line.foldLines !== undefined)
-          ? ["mdmark-code-foldable"]
-          : []),
-        ...(wrap ? ["mdmark-code-wrap"] : []),
-      ]
-    : [];
-  const preClass = classes.length ? ` class="${classes.join(" ")}"` : "";
-  const label = escapeHtml(labelOf({ title, fileName, language }));
-  const codeAttributes = [
-    language ? `class="language-${escapeHtml(language)}"` : "",
-    syntax ? `${SYNTAX_ATTRIBUTE}="${escapeHtml(syntax)}"` : "",
-    lineNumbers
-      ? `style="--mdmark-code-digits: ${String(lineStart + lines.length - 1).length}"`
-      : "",
-  ]
-    .filter(Boolean)
-    .map((attribute) => ` ${attribute}`)
-    .join("");
-  const hidden = foldButtons
-    ? hiddenLinesOf({
-        foldLines: lines.map((line) => line.foldLines),
-        folded: lines.map((line) => line.folded === true),
-      })
-    : new Set<number>();
-  /** 開閉のボタンを配置するときの、行の `id`・隠すか・ボタン・`⋯` */
-  const foldOf = (line: CodeLine, index: number) => {
-    if (!foldButtons) {
-      return undefined;
-    }
-    const count = line.foldLines ?? 0;
-    const range = { from: index + 2, to: index + 1 + count };
-    const controls = Array.from({ length: count }, (_, offset) =>
-      codeLineId("mdmark-code", index + 1 + offset),
-    ).join(" ");
-    return {
-      id: codeLineId("mdmark-code", index),
-      hidden: hidden.has(index),
-      toggle:
-        count > 0
-          ? renderCodeFoldToggle({
-              expanded: !line.folded,
-              ...range,
-              controls,
-            })
-          : "",
-      more: count > 0 && line.folded ? renderCodeFoldMore(range) : "",
-    };
-  };
-  const body = split
-    ? lines
-        .map((line, index) =>
-          renderLine({
-            line,
-            number: lineNumbers ? lineStart + index : undefined,
-            fold: foldOf(line, index),
-          }),
-        )
-        .join("\n")
-    : escapeHtml(lines.map((line) => line.text).join("\n")) +
-      (lines.length > 0 ? "\n" : "");
-  const hoverAttribute =
-    options.foldColumnHovered === true ? " data-fold-hover" : "";
-  const pre = `<pre${preClass}${hoverAttribute} tabindex="0" aria-label="${label}"><code${codeAttributes}>${body}</code></pre>`;
+  const pre = renderPre({ ...options, fileName });
   if (!bar) {
     return `<pre${mermaidAttribute}${pre.slice("<pre".length)}`;
   }
-  const barContent =
-    renderLanguageLabel({ language, fileName }) +
-    (title ? escapeHtml(title) : "") +
-    (copyState === undefined ? "" : renderCodeCopy({ state: copyState }));
-  if (title) {
-    return `<figure class="mdmark-code"${mermaidAttribute}><figcaption class="mdmark-code-title mdmark-code-bar">${barContent}</figcaption>${pre}</figure>`;
-  }
-  return `<div class="mdmark-code"${mermaidAttribute}><div class="mdmark-code-bar">${barContent}</div>${pre}</div>`;
+  return wrapWithBar({
+    pre,
+    language,
+    fileName,
+    title,
+    copyState,
+    mermaidAttribute,
+  });
 }
