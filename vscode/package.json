@@ -2,7 +2,7 @@
   "name": "mdmark-vscode",
   "displayName": "mdmark for VS Code",
   "description": "Markdown を mdmark で描いたプレビューを VS Code に出し、HTML への書き出しと PDF への印刷ができる",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "publisher": "ShuheiNishikawa",
   "license": "MIT",
   "private": true,
