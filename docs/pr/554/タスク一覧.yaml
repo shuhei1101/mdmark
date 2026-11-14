@@ -45,7 +45,10 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-14T01:06:56.833998+00:00'
   - process: インターフェース定義設計
-    status: todo
+    status: done
+    reason: IF-472-33・IF-472-38・IF-472-9・IF-472-13 に `--keep-traces`・`keep_traces` と制約「mdmark の痕跡」を追加
+    updated_by: planner
+    updated_at: '2026-11-14T05:31:39.339210+00:00'
   - process: 部品設計
     status: skipped
     reason: 部品の引数・状態は変わらない
