@@ -16,9 +16,9 @@ functions:
     side_effects: '`build.out` に HTML を書き込む'
     args:
       - name: options
-        type: '{ config?: string; distDir: string }'
+        type: '{ config?: string; distDir: string; keepTraces?: boolean }'
         required: true
-        description: '`--config` と `dist/` の場所'
+        description: '`--config`・`dist/` の場所・`--keep-traces`'
       - name: io
         type: CliIo
         required: true
@@ -82,9 +82,9 @@ functions:
     side_effects: '`build.out` に HTML を書き込む'
     args:
       - name: options
-        type: '{ cwd: string; config?: string; distDir: string }'
+        type: '{ cwd: string; config?: string; distDir: string; keepTraces?: boolean }'
         required: true
-        description: 今のフォルダ・設定ファイル・`dist/` の場所
+        description: 今のフォルダ・設定ファイル・`dist/` の場所・`--keep-traces`（省略時 `false`）
     returns:
       type: 'Promise<{ out: string; display: string; docs: number; warnings: string[] }>'
       description: 記載した HTML の絶対パス、`build.out` のままのパス、入れた文書の数、警告
@@ -93,7 +93,7 @@ functions:
       2. まとめる文書を集め、0 件なら例外にする（build の対象の文書を集める）
       3. 最初に開く文書を決め、`build.entry`・`build.glossary` がまとめる文書に該当しないことを警告にする
       4. URL を読み込む関数を `cacheFetchText` で作って埋めるものを用意し、1 枚に含まれない文書へのリンクを警告に追加する（埋めるものを用意する・1 枚に含まれない文書へのリンク）
-      5. 配布物を読み込み、起動の処理と埋めるモジュールを 1 つのスクリプトにまとめて HTML を書き込む（起動の処理の入口を作る・起動の処理と埋めるモジュールをまとめる）
+      5. 配布物を読み込み、起動の処理と埋めるモジュールを 1 つのスクリプトにまとめて HTML を書き込む（起動の処理の入口を作る・起動の処理と埋めるモジュールをまとめる）。`keepTraces` が `true` でなければ、`exportDocument` と同じく `hideTraces` を指定する
       6. 絶対パス・`build.out`・文書の数・警告を返却する
     exceptions:
       - name: CliError
@@ -106,6 +106,12 @@ functions:
         condition: '`include: ["**/*.md"]` が 2 つに該当し、`out: dist/docs.html`'
         mock: 一時フォルダと、中身を短くした `dist/index.css`・`startViewer` を export する `dist/viewer.js`・`dist/view.js`
         expected: '`out` が `dist/docs.html` の絶対パスでファイルがあり、`docs` が 2、`warnings` が空'
+      - name: test_build_site_when_traces_kept
+        case: 正常
+        summary: '`keepTraces` のときは名前を置き換えない'
+        condition: '`include: ["**/*.md"]` が 2 つに該当し、`keepTraces: true`'
+        mock: 一時フォルダと、中身を短くした配布物（`:root{--mdmark-version:"v0.12.0"}` を持つ `dist/index.css`）
+        expected: 書き出した HTML に `id="mdmark-payload"` と `--mdmark-version` があり、`keepTraces` を指定しないまとめの HTML には無い
       - name: test_build_site_when_entry_outside
         case: 正常
         summary: まとめる文書に該当しない build.entry を警告で返却する

@@ -9,14 +9,14 @@ functions:
     container: src/cli/export.ts
     usecase: 共通
     summary: 文書の画像を埋め、マーカーのある外部ライブラリと設定の拡張と色分けのモジュールがまとめられることを確認して読み込み先を集め、`html-scripts` がオンの文書の範囲の `ts`・`js` を `compileHtmlScripts` で変えて `embeds.htmlScripts` に入れ、`theme` を読み込み、索引があれば参照の表を作って、書き出しの中身と警告を返却する。設定に `assets.root` があれば設定ファイルのフォルダから解決し、文書ごとに `copyMedia`（書き出しの中で共有する `copied` を指定する）の後に `inlineImages` を呼ぶ。`bundle` では `inlineImages` に共有の表を指定し、埋めた画像を `payload.assets` に入れる。設定の `features` で `images`・`media` をオフにした文書も同じく扱う
-    description: '`export` と `build` に共通の処理。`usesMap` が `true` なら `embeds.map` を `true` にする。埋める設定には、設定の `features`・`tooltips`・`side-toc`・`table`・`colorTheme`・`colorScheme`・`labels`・`map` をあるときだけ写す（`map` の Schema に合わない値は `validateConfig` が設定の誤りにする）。`colorTheme` が `COLOR_THEMES` に無い名前のときもコピーしたうえで、警告 `{設定ファイル}: 不明なテーマ名 {名前} です。既定の dev-swiss で描画します。` を 1 件出す。外部ライブラリ・拡張・色分けのモジュールは 1 つずつ `bundleModule` でまとめてみて、まとめられたものだけの読み込み先（URL はそのまま、パスは設定ファイルのあるフォルダを基準にした絶対パス）を `embeds` に入れる。同じ URL のモジュールは 1 回だけまとめる。外部ライブラリと拡張で、まとめたコードに `hasDynamicImport` が該当するものは `embeds` に入れたうえで、警告 `{設定ファイル}: 拡張 \`{パス}\` はまとめた後も動的 import() が残り、blob: と動的 import を許さない環境では読み込めません。読み込む先をリテラルの文字列にしてください。`（外部ライブラリは `外部ライブラリ \`{マーカーの名前}\``）を 1 件出す。文書の色分けの言語を `usedSyntaxLanguages` で取得し、1 つ以上あれば設定の `syntax.url`（無ければ `DEFAULT_SYNTAX_URL`）の `core.min.js` と言語ごとの `languages/{モジュール名}.min.js` を確認して `embeds.syntax` に入れる（まとめたコードは esbuild の既定で頭の著作権表示を残す）。本体をまとめられなければ言語も確認せず `embeds.syntax` を持たない。言語のモジュールだけまとめられなければ、その言語を `embeds.syntax.languages` に入れず、警告を 1 件出す（その言語のコードブロックは色分けせずに描く）。埋める設定には `syntax` を写さない（開いたときに外へ要求しない）。文書に mermaid のコードブロックがあるかを `usesMermaid` で確認して、あれば設定の `mermaid.url`（無ければ `DEFAULT_MERMAID_URL`。パスは設定ファイルのあるフォルダを基準にした絶対パス）をまとめてみて `embeds.mermaid` に入れる。まとめられなければ `embeds.mermaid` を持たず、警告 `{設定ファイル}: mermaid \`{URL}\` をまとめられません（{理由}）。\`mermaid.url\` を修正してください。` を 1 件出す（mermaid のコードブロックは開いたときに通知ブロックとコードブロックになる）。埋める設定には `mermaid` の `theme`・`themeVariables` だけをコピーし、`url` を写さない。設定に `aliases` があれば `loadAliases` の `aliases` を `payload.aliases` に入れ、`issues` は 1 件ずつずれを 1 行にした（`formatCheckIssue`）警告にする（終了コードは変えない）。警告は `{ファイル}: {内容}` の文字列で、読み込めない画像・絶対 URL の画像・まとめられないモジュールと拡張・まとめられない色分けのライブラリ（`{設定ファイル}: 色分けのライブラリ \`{URL}\` をまとめられません（{理由}）。\`syntax.url\` を修正してください。`）・読み込めない `theme`・読み込めない索引の文書を出す'
+    description: '`export` と `build` に共通の処理。`usesMap` が `true` なら `embeds.map` を `true` にする。埋める設定には、設定の `features`・`tooltips`・`side-toc`・`table`・`colorTheme`・`colorScheme`・`labels`・`map` をあるときだけ写す（`map` の Schema に合わない値は `validateConfig` が設定の誤りにする）。`colorTheme` が `COLOR_THEMES` に無い名前のときもコピーしたうえで、警告 `{設定ファイル}: 不明なテーマ名 {名前} です。既定の dev-swiss で描画します。` を 1 件出す。外部ライブラリ・拡張・色分けのモジュールは 1 つずつ `bundleModule` でまとめてみて、まとめられたものだけの読み込み先（URL はそのまま、パスは設定ファイルのあるフォルダを基準にした絶対パス）を `embeds` に入れる。同じ URL のモジュールは 1 回だけまとめる。外部ライブラリと拡張で、まとめたコードに `hasDynamicImport` が該当するものは `embeds` に入れたうえで、警告 `{設定ファイル}: 拡張 \`{パス}\` はまとめた後も動的 import() が残り、blob: と動的 import を許さない環境では読み込めません。読み込む先をリテラルの文字列にしてください。`（外部ライブラリは `外部ライブラリ \`{マーカーの名前}\``）を 1 件出す。文書の色分けの言語を `usedSyntaxLanguages` で取得し、1 つ以上あれば設定の `syntax.url`（無ければ `DEFAULT_SYNTAX_URL`）の `core.min.js` と言語ごとの `languages/{モジュール名}.min.js` を確認して `embeds.syntax` に入れる（まとめたコードは esbuild の既定で頭の著作権表示を残す）。本体をまとめられなければ言語も確認せず `embeds.syntax` を持たない。言語のモジュールだけまとめられなければ、その言語を `embeds.syntax.languages` に入れず、警告を 1 件出す（その言語のコードブロックは色分けせずに描く）。埋める設定には `syntax` を写さない（開いたときに外へ要求しない）。文書に mermaid のコードブロックがあるかを `usesMermaid` で確認して、あれば設定の `mermaid.url`（無ければ `DEFAULT_MERMAID_URL`。パスは設定ファイルのあるフォルダを基準にした絶対パス）をまとめてみて `embeds.mermaid` に入れる。まとめられなければ `embeds.mermaid` を持たず、警告 `{設定ファイル}: mermaid \`{URL}\` をまとめられません（{理由}）。\`mermaid.url\` を修正してください。` を 1 件出す（mermaid のコードブロックは開いたときに通知ブロックとコードブロックになる）。埋める設定には `mermaid` の `theme`・`themeVariables` だけをコピーし、`url` を写さない。設定に `aliases` があれば `loadAliases` の `aliases` を `payload.aliases` に入れ、`issues` は 1 件ずつずれを 1 行にした（`formatCheckIssue`）警告にする（終了コードは変えない）。警告は `{ファイル}: {内容}` の文字列で、読み込めない画像・絶対 URL の画像・まとめられないモジュールと拡張・まとめられない色分けのライブラリ（`{設定ファイル}: 色分けのライブラリ \`{URL}\` をまとめられません（{理由}）。\`syntax.url\` を修正してください。`）・読み込めない `theme`・読み込めない索引の文書を出す。`hideTraces` が `true` のときは、`collectMarkNames` の名前で `payload.docs[].markdown` と `payload.includes` の値に `hideMarkdown` を適用し、`compileHtmlScripts` には元の文書に `hideMarkdown` を適用した Markdown を指定する（`usedParts`・`usesMap` は元の文書で判定する）'
     kind: 関数
     scope: internal
     is_async: true
     side_effects: 外部ライブラリの URL の先を読み込む
     args:
       - name: options
-        type: "{ loaded: LoadedConfig; docs: Array<{ path: string; file: string }>; kind: 'document' | 'bundle'; entry: string; out: string; fetchText: FetchText }"
+        type: "{ loaded: LoadedConfig; docs: Array<{ path: string; file: string }>; kind: 'document' | 'bundle'; entry: string; out: string; fetchText: FetchText; hideTraces?: boolean }"
         required: true
         description: 読み込んだ設定、埋める文書のパスと絶対パス、種類、最初に開く文書、出力の HTML の絶対パス、URL を読み込む関数（`bundleViewer` と共有する `cacheFetchText` の関数）
     returns:
@@ -163,9 +163,9 @@ functions:
     side_effects: 出力のパスに HTML を書き込む
     args:
       - name: options
-        type: '{ file: string; out?: string; config?: string; distDir: string }'
+        type: '{ file: string; out?: string; config?: string; distDir: string; keepTraces?: boolean }'
         required: true
-        description: 文書・`--out`・`--config`・`dist/` の場所
+        description: 文書・`--out`・`--config`・`dist/` の場所・`--keep-traces`
       - name: io
         type: CliIo
         required: true
@@ -265,9 +265,9 @@ functions:
     side_effects: 出力のパスに HTML を書き込む
     args:
       - name: options
-        type: '{ cwd: string; file: string; out?: string; config?: string; distDir: string }'
+        type: '{ cwd: string; file: string; out?: string; config?: string; distDir: string; keepTraces?: boolean }'
         required: true
-        description: 今のフォルダ・文書・出力・設定ファイル・`dist/` の場所
+        description: 今のフォルダ・文書・出力・設定ファイル・`dist/` の場所・`--keep-traces`（省略時 `false`）
     returns:
       type: 'Promise<{ out: string; display: string; warnings: string[] }>'
       description: '記載した HTML の絶対パス、利用者に見せるパス（`--out` か今のフォルダからの相対パス）、`{ファイル}: {内容}` の警告'
@@ -275,7 +275,7 @@ functions:
       1. 設定を読み込む（設定を読み込んで構造を検める）
       2. 文書が無ければ例外にする
       3. 出力のパスを決める。`out` が無ければ文書と同じフォルダの拡張子を `.html` にしたパス
-      4. URL を読み込む関数を `cacheFetchText` で作って埋めるものを用意し、配布物を読み込み、起動の処理と埋めるモジュールを 1 つのスクリプトにまとめて HTML を組み立てて記載する（埋めるものを用意する・配布物を読み込む・起動の処理の入口を作る・起動の処理と埋めるモジュールをまとめる・HTML を書き込む）
+      4. URL を読み込む関数を `cacheFetchText` で作って埋めるものを用意し、配布物を読み込み、起動の処理と埋めるモジュールを 1 つのスクリプトにまとめて HTML を組み立てて記載する（埋めるものを用意する・配布物を読み込む・起動の処理の入口を作る・起動の処理と埋めるモジュールをまとめる・HTML を書き込む）。`keepTraces` が `true` でなければ、`prepareEmbeds`・`createViewerEntry`・`assembleHtml` に `hideTraces: true`、`bundleViewer` に `hideTraces: { keys }`（`embeds.htmlScripts` の `source` の並び）を指定する
       5. 絶対パス・見せるパス・警告を返却する
     exceptions:
       - name: CliError
@@ -288,6 +288,12 @@ functions:
         condition: '`file: guide.md`、`out` 無し、文書に読み込めない画像が 1 つ'
         mock: 一時フォルダと、中身を短くした `dist/index.css`・`startViewer` を export する `dist/viewer.js`・`dist/view.js`
         expected: '`out` が `guide.html` の絶対パスでファイルがあり、`display` が `guide.html`、`warnings` が 1 件'
+      - name: test_export_document_when_traces_kept
+        case: 正常
+        summary: '`keepTraces` のときは名前を置き換えない'
+        condition: '`file: guide.md`、`keepTraces: true`'
+        mock: 一時フォルダと、中身を短くした配布物（`:root{--mdmark-version:"v0.12.0"}` を持つ `dist/index.css`）
+        expected: 書き出した HTML に `id="mdmark-payload"` と `--mdmark-version` があり、`keepTraces` を指定しない書き出しの HTML には無い
       - name: test_export_document_when_document_missing
         case: 異常
         summary: 無い文書は何も書き込まずに CliError

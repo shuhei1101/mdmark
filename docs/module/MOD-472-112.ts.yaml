@@ -70,9 +70,9 @@ functions:
     scope: internal
     args:
       - name: options
-        type: '{ viewer: string; view: string; embeds: ViewerEmbeds }'
+        type: '{ viewer: string; view: string; embeds: ViewerEmbeds; hideTraces?: boolean }'
         required: true
-        description: '`dist/viewer.js`・`dist/view.js`・`dist/map.js` の絶対パスと、まとめるモジュールの読み込み先'
+        description: '`dist/viewer.js`・`dist/view.js`・`dist/map.js` の絶対パスと、まとめるモジュールの読み込み先。`hideTraces` は省略時 `false`'
     returns:
       type: string
       description: 入口のモジュールの JavaScript のソース
@@ -80,7 +80,7 @@ functions:
       1. `viewer` から `startViewer` を import する行を配置する
       2. `embeds.view` が `true` なら `view` を、`embeds.map` が `true` なら `map`（`dist/map.js`）を名前空間で import する行を配置し、`parts` に入れる
       3. `embeds.syntax` があれば、本体と言語ごとに `default` を import する行を配置する。`embeds.mermaid` があれば、mermaid を名前空間で import する行を配置する（mermaid が中で読み込む chunk の動的 `import()` は同じスクリプトに取り込まれる）
-      4. `embeds.htmlScripts` があれば、範囲ごとに `compileHtmlScripts` の CommonJS のコードを `(module, exports, require) => { … }` で包んだ関数を、範囲のコードの文字を鍵にした `htmlScripts` の表に配置する行を配置する
+      4. `embeds.htmlScripts` があれば、範囲ごとに `compileHtmlScripts` の CommonJS のコードを `(module, exports, require) => { … }` で包んだ関数を、範囲のコードの文字を鍵にした `htmlScripts` の表に配置する行を配置する。`hideTraces` が `true` のときは、鍵の代わりに `"{HTML_SCRIPT_KEY_PREFIX}{番号}@@"`（番号は `embeds.htmlScripts` の添字）を記載する
       5. `startViewer(document, { parts, syntax, mermaid, libraries, extensions, htmlScripts })` を呼ぶ行を配置する。`mermaid` は `embeds.mermaid` があれば import した名前空間、無ければ持たない。`libraries` はマーカーの名前ごとの `() => import("{読み込み先}")`、`extensions` は `embeds.extensions` の順の `() => import("{読み込み先}")`
     unit_tests:
       - name: test_create_viewer_entry
@@ -101,6 +101,12 @@ functions:
         condition: '`embeds` が `{ view: false, libraries: {}, extensions: [], mermaid: "https://cdn.jsdelivr.net/npm/mermaid@12.3.0/dist/mermaid.esm.min.mjs" }`'
         mock: なし
         expected: ソースに `import * as` と mermaid の URL の静的な `import` が 1 行あり、`startViewer(document,` に `mermaid` を指定する
+      - name: test_create_viewer_entry_when_traces_hidden
+        case: 正常
+        summary: 隠すときは範囲のスクリプトの表の鍵を仮の文字列で記載する
+        condition: '`hideTraces: true`、`embeds.htmlScripts` が `[{ source: "window.__mdmarkOpened = true", code: "…" }]`'
+        mock: なし
+        expected: ソースに `"@@html-script-key-0@@"` があり、`window.__mdmarkOpened` が無い
     status: planned
     introduced:
       pr: 296
@@ -109,16 +115,16 @@ functions:
     container: src/cli/embed.ts
     usecase: 共通
     summary: '`createViewerEntry` のソースを入口に、esbuild で分割せずに 1 つの ES モジュールのスクリプトにまとめ、`</script` の並びを `<\/script` に、`<!--` の並びを `<\x21--` に替えて返却する'
-    description: '`bundleModule` と同じ設定（`bundle: true`・`format: esm`・`minify: true`・対応ブラウザの `target`・`http:`・`https:` の import を `fetchText` で読み込むプラグイン）で、入口は `stdin`（`resolveDir` は設定ファイルのあるフォルダ）。リテラルとパターンの動的 `import()` は同じスクリプトに取り込まれ、評価は呼び出しまで遅れる。`</script` の並び（大文字小文字を問わない）は `<\/script` に、`<!--` の並びは `<\x21--` に替え、HTML の `script` 要素が途中で閉じないように、また script data escaped state に入って閉じなくならないようにする。esbuild はコードのトークンとして `<!--` を出力せず、どちらの並びも文字列・テンプレート・正規表現・コメントの中にしか現れないため、替えても意味は変わらない（`String.raw` の raw の値だけが変わる）。`prepareEmbeds` が確認したモジュールだけを指定するため、まとめる失敗は例外のまま投げる'
+    description: '`bundleModule` と同じ設定（`bundle: true`・`format: esm`・`minify: true`・対応ブラウザの `target`・`http:`・`https:` の import を `fetchText` で読み込むプラグイン）で、入口は `stdin`（`resolveDir` は設定ファイルのあるフォルダ）。リテラルとパターンの動的 `import()` は同じスクリプトに取り込まれ、評価は呼び出しまで遅れる。`</script` の並び（大文字小文字を問わない）は `<\/script` に、`<!--` の並びは `<\x21--` に替え、HTML の `script` 要素が途中で閉じないように、また script data escaped state に入って閉じなくならないようにする。esbuild はコードのトークンとして `<!--` を出力せず、どちらの並びも文字列・テンプレート・正規表現・コメントの中にしか現れないため、替えても意味は変わらない（`String.raw` の raw の値だけが変わる）。`prepareEmbeds` が確認したモジュールだけを指定するため、まとめる失敗は例外のまま投げる。`hideTraces` があれば、替える前のまとめたコードを `hideScript` に通す'
     kind: 関数
     scope: internal
     is_async: true
     side_effects: URL の先を読み込む
     args:
       - name: options
-        type: '{ entry: string; baseDir: string; fetchText: FetchText }'
+        type: '{ entry: string; baseDir: string; fetchText: FetchText; hideTraces?: { keys: string[] } }'
         required: true
-        description: '`createViewerEntry` のソース、設定ファイルのあるフォルダ、URL を読み込む関数'
+        description: '`createViewerEntry` のソース、設定ファイルのあるフォルダ、URL を読み込む関数。`hideTraces` は隠すときだけ指定し、`keys` は `embeds.htmlScripts` の `source` の並び'
     returns:
       type: Promise<string>
       description: まとめたスクリプト
@@ -141,8 +147,17 @@ functions:
         condition: '`ext.js` が `"<!-- <script>"` の文字列を export する'
         mock: 一時フォルダ
         expected: 戻り値に `<!--` の並びが無く、戻り値を評価して取り出した文字列が `<!-- <script>`
+      - name: test_bundle_viewer_when_traces_hidden
+        case: 正常
+        summary: 隠すときは名前を置き換え、範囲のスクリプトの表の鍵を元の文字に戻す
+        condition: '`hideTraces: { keys: ["window.__mdmarkOpened = true"] }`、入口が `__mdmarkHtmlScript` を持ち、`"@@html-script-key-0@@"` を鍵にした表を export する'
+        mock: 一時フォルダ
+        expected: 戻り値に `__zqHtmlScript` があり `__mdmarkHtmlScript` が無く、評価して取り出した表の鍵が `window.__mdmarkOpened = true`
+    callees:
+      - MOD-472-350#functions[hideScript]
     refs:
       - IF-472-33#constraints[まとめるスクリプト]
+      - IF-472-33#constraints[mdmark の痕跡]
     status: planned
     introduced:
       pr: 296

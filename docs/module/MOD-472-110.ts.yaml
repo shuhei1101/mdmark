@@ -397,9 +397,9 @@ functions:
     container: src/cli/check.ts
     usecase: 設定と索引を点検する
     summary: '`FEATURES_MARK`・`SYNTAX_MARKS` の名前・`resolveConfig` が設定の `libraries` に既定を適用した対応表の名前・`directives` を合わせた名前の集合を返却する'
-    description: '`checkUnknownMarks` はこれに設定の `check.ignore` の名前を加えて知っているマーカーにし、`checkPlainMarkdown` はこれをそのまま使用する'
+    description: '`checkUnknownMarks` はこれに設定の `check.ignore` の名前を加えて知っているマーカーにし、`checkPlainMarkdown` はこれをそのまま使用する。書き出しの `collectMarkNames` も使用する'
     kind: 関数
-    scope: internal
+    scope: public
     args:
       - name: options
         type: '{ config: CliConfig; directives: Set<string> }'
