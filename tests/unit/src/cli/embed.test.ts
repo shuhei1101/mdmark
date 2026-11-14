@@ -44,7 +44,7 @@ test("test_bundle_module", async () => {
     "dep.ts": 'export const label: string = "ラベル";\n',
   });
   // 実行
-  const result = await bundleModule("lib.ts", dir, undefined, build);
+  const result = await bundleModule("lib.ts", dir, { build });
   // 検証
   if (!("code" in result)) {
     throw new Error(`まとめられなかった: ${result.error}`);
@@ -73,12 +73,10 @@ test("test_bundle_module_when_url", async () => {
     return body;
   });
   // 実行
-  const result = await bundleModule(
-    "https://cdn.example/npm/a/+esm",
-    dir,
+  const result = await bundleModule("https://cdn.example/npm/a/+esm", dir, {
     fetchText,
     build,
-  );
+  });
   // 検証
   if (!("code" in result)) {
     throw new Error(`まとめられなかった: ${result.error}`);
@@ -95,7 +93,7 @@ test("test_bundle_module_when_unreachable", async () => {
   const { build } = await import("esbuild");
   const dir = await createTempDir();
   // 実行
-  const result = await bundleModule("missing.js", dir, undefined, build);
+  const result = await bundleModule("missing.js", dir, { build });
   // 検証
   if (!("error" in result)) {
     throw new Error("まとめられてしまった");

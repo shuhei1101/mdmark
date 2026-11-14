@@ -37,11 +37,9 @@ async function setUp() {
   );
   const range = root.querySelector<HTMLElement>(".mdmark-map") as HTMLElement;
   handles.push(
-    attachMapSequence(
-      range,
-      resolveConfig({ config: { map: CONFIG } }),
-      parseMapArgs("").args,
-    ),
+    attachMapSequence(range, resolveConfig({ config: { map: CONFIG } }), {
+      args: parseMapArgs("").args,
+    }),
   );
   return root;
 }
