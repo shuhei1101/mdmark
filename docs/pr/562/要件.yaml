@@ -1,8 +1,8 @@
 use_cases:
   - kind: single
     scenario: docs/scenario/SC-472-71.yaml
-    impact: changed
-    detail: 脚注の参照の番号のツールチップと末尾の閉じた一覧を、ID で定義した注釈と共用する。注釈の定義・本文と表のセルからの参照・マーカーのツールチップ・末尾の注釈の一覧を読む流れを、このシナリオに足すか新しい単一ユースケースに分けるかは単一ユースケース設計で決める
+    impact: run_only
+    detail: 脚注の番号・ツールチップ・末尾の一覧の部品を注釈と共用するため、脚注の表示と操作を壊さないかを確かめる。注釈の流れは SC-472-96 に分けた
     depends_on: []
   - kind: single
     scenario: docs/scenario/SC-472-40.yaml
@@ -16,10 +16,9 @@ use_cases:
     depends_on: []
   - kind: composite
     scenario: docs/scenario/SC-472-87.yaml
-    impact: following
-    detail: map の補足でノードと線から注釈を参照できるようになることに、補足の記載と読み込みの流れを追随させる
-    depends_on:
-      - docs/scenario/SC-472-40.yaml
+    impact: run_only
+    detail: 補足に注釈の参照のキーが増えても、補足で書いた図を辿って読む流れが壊れないかを確かめる。複合ユースケースの流れは変えない
+    depends_on: []
   - kind: single
     scenario: docs/scenario/SC-472-58.yaml
     impact: run_only
@@ -29,6 +28,11 @@ use_cases:
     scenario: docs/scenario/SC-472-76.yaml
     impact: run_only
     detail: 1 枚にまとめた HTML でも注釈のマーカーとツールチップが働くかを確かめる
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-96.yaml
+    impact: new
+    detail: ID つきで定義した注釈を本文・表のセルの複数の場所から参照し、マーカーのツールチップと末尾の閉じた一覧で確認する。定義の無い参照と参照されていない定義に記載の警告を出す
     depends_on: []
 docs:
   - page: docs/guide/記法.md
