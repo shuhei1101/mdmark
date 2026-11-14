@@ -1517,7 +1517,7 @@ export const renderMapState = (args: MapStateLoopArgs): string => {
 };
 
 /** 部品『mapの状態遷移図』のノードの寸法（px）。`loopSpace` は同じ状態への遷移を持つ状態の上に空ける高さ */
-export const MAP_STATE = { point: 32, choice: 40, loopSpace: 40 } as const;
+export const MAP_STATE = { point: 32, choice: 40, loopSpace: 56 } as const;
 
 /** 部品『mapの状態遷移図』の同じ状態への遷移（`node` は状態の ID） */
 export type MapStateLoop = {
