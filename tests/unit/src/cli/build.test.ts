@@ -113,6 +113,8 @@ test("test_run_build_when_glossary_without_index", async () => {
   expect(payload.references?.glossary.map((entry) => entry.term)).toContain(
     "マーカー",
   );
+  // 既定で隠す書き出しでは、索引に追加した用語集の文書の id にも mdmark が残らない
+  expect(JSON.stringify(payload.references)).not.toMatch(/mdmark/i);
 });
 
 // build が無いと CliError（異常系）
