@@ -16,7 +16,7 @@ tasks:
     updated_at: '2026-11-12T20:49:21.445655+00:00'
   - process: PoC 検証
     status: todo
-    note: ovsx が GitHub Actions の OIDC トークン（trusted publisher）で公開できるか、拡張機能の初回の公開に使えるか
+    note: vsce 4.1.1 の getOIDCCredential で、GitHub Actions の OIDC トークンを Marketplace のセッショントークンに交換できるか
   - process: 複合ユースケース設計
     status: skipped
     reason: 拡張機能の配布物を作る単一ユースケースに閉じ、複合ユースケースから参照されていない

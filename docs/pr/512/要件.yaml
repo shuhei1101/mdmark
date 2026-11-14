@@ -13,7 +13,7 @@ docs:
     status: todo
   - page: docs/library/LIB-472-34.yaml
     new: false
-    change: vsce の用途に `publish --oidc` での Marketplace への公開を加え、確認結果を記載する
+    change: vsce のバージョンを 4.0.0 から 4.1.1 に更新し、用途に `publish --oidc` での Marketplace への公開を加え、確認結果を記載する
     status: todo
   - page: docs/nonfunctional/NFR-472-1.yaml
     new: false
