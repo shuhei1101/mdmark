@@ -15,7 +15,10 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-14T01:06:56.833998+00:00'
   - process: PoC 検証
-    status: todo
+    status: done
+    reason: 成立（export 22/22・build 24/24。#556）
+    updated_by: planner
+    updated_at: '2026-11-14T04:58:42.285036+00:00'
   - process: 複合ユースケース設計
     status: skipped
     reason: 業務フローの連鎖は変わらない。書き出しを含む複合 UC は実行のみ
