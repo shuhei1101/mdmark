@@ -86,7 +86,8 @@
       border-block-start: 1px solid var(--mdmark-color-border);
     }
 
-    /* 注釈の区分の見出し（「注釈」）の頭: 本文と同じ「※」 */
+    /* 本文のマーカーのツールチップのタイトルと、図のツールチップの注釈の区分の見出しの頭: マーカーと同じ「※」 */
+    .mdmark-note-ref .mdmark-fn-tip-title::before,
     .mdmark-note-tip-heading::before {
       margin-inline-end: 0.2em;
       color: var(--mdmark-color-annotation-ref);
