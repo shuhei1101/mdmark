@@ -41,8 +41,18 @@
       }
     }
 
-    /* 同じ場所に脚注の番号か注釈のマーカーを並べたとき: 押す範囲が重ならないよう、マーカーの中心の間を 24px 以上空ける */
-    .mdmark-fn-ref + .mdmark-note-ref {
+    /* マーカー（案 C）: 「※」の後ろに、最初に参照した順の番号（リンクの文字）を続ける */
+    .mdmark-note-ref[data-mock-variant="number"] .mdmark-fn-link {
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* 案 C のツールチップのタイトル: 「注記 1」の頭の「※」は付けない（番号で対応が分かるため） */
+    .mdmark-note-ref[data-mock-variant="number"] .mdmark-fn-tip-title::before {
+      content: none;
+    }
+
+    /* 脚注の番号か注記のマーカーの直後に続くマーカー（間に文字が無い。描くときに is-after-ref を付ける）: 押す範囲が重ならないよう、マーカーの中心の間を 24px 以上空ける */
+    .mdmark-note-ref.is-after-ref {
       margin-inline-start: 1rem;
     }
 
@@ -52,6 +62,11 @@
     .mdmark-notes .mdmark-fn-item::before {
       color: var(--mdmark-color-annotation-ref);
       content: "※";
+    }
+
+    /* 案 C の一覧の項目の頭: 本文と同じ「※」と番号 */
+    .mdmark-notes[data-mock-variant="number"] .mdmark-fn-item::before {
+      content: "※" counter(mdmark-fn);
     }
 
     /* 案 B の一覧の項目の頭: 本文と同じ丸の i のアイコン */

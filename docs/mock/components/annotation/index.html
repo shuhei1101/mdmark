@@ -18,9 +18,9 @@
   <link rel="stylesheet" href="../../refs/27/assets/glossary.css">
   <!-- 図のツールチップの規則（#42 で共有するアセット） -->
   <link rel="stylesheet" href="../../refs/42/assets/diagram.css">
-  <!-- 脚注の番号・ツールチップ・末尾の一覧の規則（#311 で共有するアセット）。注釈はこの部品を拡張する -->
+  <!-- 脚注の番号・ツールチップ・末尾の一覧の規則（#311 で共有するアセット）。注記はこの部品を拡張する -->
   <link rel="stylesheet" href="../../refs/311/assets/footnote.css">
-  <!-- 注釈のマーカー・末尾の注釈の一覧・図のツールチップの注釈の区分の規則（#562 で共有するアセット） -->
+  <!-- 注記のマーカー・末尾の注記の一覧・図のツールチップの注記の区分の規則（#562 で共有するアセット） -->
   <link rel="stylesheet" href="../../refs/562/assets/annotation.css">
   <!-- この部品のモックの固有の規則（見本の高さと図のノードの見本） -->
   <link rel="stylesheet" href="./style.css">
@@ -32,7 +32,7 @@
   <script src="../../refs/16/assets/sample.js" defer></script>
   <!-- 用語のツールチップの操作 -->
   <script src="../../refs/27/assets/glossary.js" defer></script>
-  <!-- 脚注の操作（ツールチップ・マーカーから一覧へ・戻るリンク・印刷の前後の開閉）。注釈のマーカーと一覧も同じ操作 -->
+  <!-- 脚注の操作（ツールチップ・マーカーから一覧へ・戻るリンク・印刷の前後の開閉）。注記のマーカーと一覧も同じ操作 -->
   <script src="../../refs/311/assets/footnote.js" defer></script>
   <!-- モックの「印刷の見え方」の切り替え -->
   <script src="../../refs/79/assets/avoided-term.js" defer></script>
@@ -53,36 +53,36 @@
 
   <main class="host">
     <div class="catalog">
-      <h1 class="catalog-title">注釈</h1>
+      <h1 class="catalog-title">注記</h1>
 
-      <!-- 通常（案 A）: 段落と表のセルから同じ注釈を参照する。マーカーは上付きの「※」。末尾の一覧は閉じる。マーカーを押すと一覧が開いて該当の注釈へ移る -->
+      <!-- 通常（案 A）: 段落と表のセルから同じ注記を参照する。マーカーは上付きの「※」。末尾の一覧は閉じる。マーカーを押すと一覧が開いて該当の注記へ移る -->
       <section aria-labelledby="state-default">
-        <h2 class="catalog-label" id="state-default">通常・案 A（上付きの「※」。段落と表のセルの 2 か所から同じ注釈を参照する。ポインターを乗せるか Tab でフォーカスするとツールチップが開き、Esc で閉じる）</h2>
+        <h2 class="catalog-label" id="state-default">通常・案 A（上付きの「※」。段落と表のセルの 2 か所から同じ注記を参照する。ポインターを乗せるか Tab でフォーカスするとツールチップが開き、Esc で閉じる）</h2>
         <article class="mdmark">
-<p>条件を満たすかを判定してから、次の処理へ進みます<sup class="mdmark-fn-ref mdmark-note-ref"><a class="mdmark-fn-link" id="d-noteref-cond-0" href="#d-note-cond" aria-describedby="d-ntip-cond-0"><span class="mdmark-visually-hidden">注釈</span></a><span class="mdmark-fn-tip" id="d-ntip-cond-0" role="tooltip"><span class="mdmark-fn-tip-title">注釈</span><span class="mdmark-fn-tip-body">条件を満たさないときは次の工程へ進む。</span></span></sup>。</p>
+<p>条件を満たすかを判定してから、次の処理へ進みます<sup class="mdmark-fn-ref mdmark-note-ref"><a class="mdmark-fn-link" id="d-noteref-cond-0" href="#d-note-cond" aria-describedby="d-ntip-cond-0"><span class="mdmark-visually-hidden">注記</span></a><span class="mdmark-fn-tip" id="d-ntip-cond-0" role="tooltip"><span class="mdmark-fn-tip-title">注記</span><span class="mdmark-fn-tip-body">条件を満たさないときは次の工程へ進む。</span></span></sup>。</p>
 <div class="mdmark-table" data-kind="default">
   <table tabindex="0" aria-label="表: 判定の結果">
     <thead><tr><th>判定</th><th>結果</th></tr></thead>
     <tbody>
       <tr><td data-label="判定">満たす</td><td data-label="結果">処理する</td></tr>
-      <tr><td data-label="判定">満たさない</td><td data-label="結果">処理しない<sup class="mdmark-fn-ref mdmark-note-ref"><a class="mdmark-fn-link" id="d-noteref-cond-1" href="#d-note-cond" aria-describedby="d-ntip-cond-1"><span class="mdmark-visually-hidden">注釈</span></a><span class="mdmark-fn-tip" id="d-ntip-cond-1" role="tooltip"><span class="mdmark-fn-tip-title">注釈</span><span class="mdmark-fn-tip-body">条件を満たさないときは次の工程へ進む。</span></span></sup></td></tr>
+      <tr><td data-label="判定">満たさない</td><td data-label="結果">処理しない<sup class="mdmark-fn-ref mdmark-note-ref"><a class="mdmark-fn-link" id="d-noteref-cond-1" href="#d-note-cond" aria-describedby="d-ntip-cond-1"><span class="mdmark-visually-hidden">注記</span></a><span class="mdmark-fn-tip" id="d-ntip-cond-1" role="tooltip"><span class="mdmark-fn-tip-title">注記</span><span class="mdmark-fn-tip-body">条件を満たさないときは次の工程へ進む。</span></span></sup></td></tr>
     </tbody>
   </table>
 </div>
 <details class="mdmark-footnotes mdmark-notes">
-  <summary>注釈（1 件）</summary>
+  <summary>注記（1 件）</summary>
   <ul class="mdmark-footnotes-list">
-    <li class="mdmark-fn-item" id="d-note-cond" tabindex="-1">条件を満たさないときは次の工程へ進む。 <a class="mdmark-fn-back" href="#d-noteref-cond-0" aria-label="本文の注釈の 1 つ目の参照へ戻る"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 14-5-5 5-5"/><path d="M20 20v-7a4 4 0 0 0-4-4H4"/></svg>a</a><a class="mdmark-fn-back" href="#d-noteref-cond-1" aria-label="本文の注釈の 2 つ目の参照へ戻る"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 14-5-5 5-5"/><path d="M20 20v-7a4 4 0 0 0-4-4H4"/></svg>b</a></li>
+    <li class="mdmark-fn-item" id="d-note-cond" tabindex="-1">条件を満たさないときは次の工程へ進む。 <a class="mdmark-fn-back" href="#d-noteref-cond-0" aria-label="本文の注記の 1 つ目の参照へ戻る"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 14-5-5 5-5"/><path d="M20 20v-7a4 4 0 0 0-4-4H4"/></svg>a</a><a class="mdmark-fn-back" href="#d-noteref-cond-1" aria-label="本文の注記の 2 つ目の参照へ戻る"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 14-5-5 5-5"/><path d="M20 20v-7a4 4 0 0 0-4-4H4"/></svg>b</a></li>
   </ul>
 </details>
         </article>
       </section>
 
-      <!-- マーカーのツールチップ（開いた）: タイトルは「注釈」。番号を出さない -->
+      <!-- マーカーのツールチップ（開いた）: タイトルは「注記」。番号を出さない -->
       <section aria-labelledby="state-open">
-        <h2 class="catalog-label" id="state-open">マーカーのツールチップ・案 A（開いた。タイトルは「注釈」で番号を出さない）</h2>
+        <h2 class="catalog-label" id="state-open">マーカーのツールチップ・案 A（開いた。タイトルは「注記」で番号を出さない）</h2>
         <article class="mdmark catalog-tip-space">
-<p>条件を満たすかを判定してから、次の処理へ進みます<sup class="mdmark-fn-ref mdmark-note-ref is-open" data-mock-static><a class="mdmark-fn-link" id="o-noteref-cond-0" href="#o-note-cond" aria-describedby="o-ntip-cond-0"><span class="mdmark-visually-hidden">注釈</span></a><span class="mdmark-fn-tip" id="o-ntip-cond-0" role="tooltip"><span class="mdmark-fn-tip-title">注釈</span><span class="mdmark-fn-tip-body">条件を満たさないときは次の工程へ進む。</span></span></sup>。</p>
+<p>条件を満たすかを判定してから、次の処理へ進みます<sup class="mdmark-fn-ref mdmark-note-ref is-open" data-mock-static><a class="mdmark-fn-link" id="o-noteref-cond-0" href="#o-note-cond" aria-describedby="o-ntip-cond-0"><span class="mdmark-visually-hidden">注記</span></a><span class="mdmark-fn-tip" id="o-ntip-cond-0" role="tooltip"><span class="mdmark-fn-tip-title">注記</span><span class="mdmark-fn-tip-body">条件を満たさないときは次の工程へ進む。</span></span></sup>。</p>
         </article>
       </section>
 
@@ -90,30 +90,53 @@
       <section aria-labelledby="state-icon">
         <h2 class="catalog-label" id="state-icon">マーカー・案 B（上付きの丸の i のアイコン。開いた）</h2>
         <article class="mdmark catalog-tip-space">
-<p>条件を満たすかを判定してから、次の処理へ進みます<sup class="mdmark-fn-ref mdmark-note-ref is-open" data-mock-static data-mock-variant="icon"><a class="mdmark-fn-link" id="i-noteref-cond-0" href="#i-note-cond" aria-describedby="i-ntip-cond-0"><span class="mdmark-visually-hidden">注釈</span><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg></a><span class="mdmark-fn-tip" id="i-ntip-cond-0" role="tooltip"><span class="mdmark-fn-tip-title">注釈</span><span class="mdmark-fn-tip-body">条件を満たさないときは次の工程へ進む。</span></span></sup>。</p>
+<p>条件を満たすかを判定してから、次の処理へ進みます<sup class="mdmark-fn-ref mdmark-note-ref is-open" data-mock-static data-mock-variant="icon"><a class="mdmark-fn-link" id="i-noteref-cond-0" href="#i-note-cond" aria-describedby="i-ntip-cond-0"><span class="mdmark-visually-hidden">注記</span><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg></a><span class="mdmark-fn-tip" id="i-ntip-cond-0" role="tooltip"><span class="mdmark-fn-tip-title">注記</span><span class="mdmark-fn-tip-body">条件を満たさないときは次の工程へ進む。</span></span></sup>。</p>
         </article>
       </section>
 
-      <!-- 同じ場所に注釈を 2 つ参照する: マーカーを並べ、それぞれが自分の注釈のツールチップを出す -->
-      <section aria-labelledby="state-two">
-        <h2 class="catalog-label" id="state-two">同じ場所に 2 つの注釈を参照する（マーカーを並べ、それぞれのツールチップを出す）</h2>
+      <!-- 案 C: マーカーを「※」と番号にする。番号は最初に参照した順に 1 から振り、脚注の番号とは別に数える。一覧の項目の頭も「※1」。同じ注記を 2 か所から参照すると同じ番号になる -->
+      <section aria-labelledby="state-number">
+        <h2 class="catalog-label" id="state-number">マーカー・案 C（上付きの「※」と番号。最初に参照した順に 1 から振り、脚注の番号とは別に数える。同じ注記は同じ番号。開いた・一覧を開いた）</h2>
         <article class="mdmark catalog-tip-space">
-<p>出力は 1 枚の HTML です<sup class="mdmark-fn-ref mdmark-note-ref"><a class="mdmark-fn-link" id="t-noteref-img-0" href="#t-note-img" aria-describedby="t-ntip-img-0"><span class="mdmark-visually-hidden">注釈</span></a><span class="mdmark-fn-tip" id="t-ntip-img-0" role="tooltip"><span class="mdmark-fn-tip-title">注釈</span><span class="mdmark-fn-tip-body">画像は data URL で埋める。</span></span></sup><sup class="mdmark-fn-ref mdmark-note-ref"><a class="mdmark-fn-link" id="t-noteref-net-0" href="#t-note-net" aria-describedby="t-ntip-net-0"><span class="mdmark-visually-hidden">注釈</span></a><span class="mdmark-fn-tip" id="t-ntip-net-0" role="tooltip"><span class="mdmark-fn-tip-title">注釈</span><span class="mdmark-fn-tip-body">外への要求は 0 件。</span></span></sup>。</p>
+<p>条件を満たすかを判定してから、次の処理へ進みます<sup class="mdmark-fn-ref mdmark-note-ref is-open" data-mock-static data-mock-variant="number"><a class="mdmark-fn-link" id="n-noteref-cond-0" href="#n-note-cond" aria-describedby="n-ntip-cond-0"><span class="mdmark-visually-hidden">注記 </span>1</a><span class="mdmark-fn-tip" id="n-ntip-cond-0" role="tooltip"><span class="mdmark-fn-tip-title">注記 1</span><span class="mdmark-fn-tip-body">条件を満たさないときは次の工程へ進む。</span></span></sup>。出力は 1 枚の HTML です<sup class="mdmark-fn-ref mdmark-note-ref" data-mock-variant="number"><a class="mdmark-fn-link" id="n-noteref-img-0" href="#n-note-img" aria-describedby="n-ntip-img-0"><span class="mdmark-visually-hidden">注記 </span>2</a><span class="mdmark-fn-tip" id="n-ntip-img-0" role="tooltip"><span class="mdmark-fn-tip-title">注記 2</span><span class="mdmark-fn-tip-body">画像は data URL で埋める。</span></span></sup>。</p>
+<div class="mdmark-table" data-kind="default">
+  <table tabindex="0" aria-label="表: 判定の結果">
+    <thead><tr><th>判定</th><th>結果</th></tr></thead>
+    <tbody>
+      <tr><td data-label="判定">満たさない</td><td data-label="結果">処理しない<sup class="mdmark-fn-ref mdmark-note-ref" data-mock-variant="number"><a class="mdmark-fn-link" id="n-noteref-cond-1" href="#n-note-cond" aria-describedby="n-ntip-cond-1"><span class="mdmark-visually-hidden">注記 </span>1</a><span class="mdmark-fn-tip" id="n-ntip-cond-1" role="tooltip"><span class="mdmark-fn-tip-title">注記 1</span><span class="mdmark-fn-tip-body">条件を満たさないときは次の工程へ進む。</span></span></sup></td></tr>
+    </tbody>
+  </table>
+</div>
+<details class="mdmark-footnotes mdmark-notes" data-mock-variant="number" open>
+  <summary>注記（2 件）</summary>
+  <ol class="mdmark-footnotes-list">
+    <li class="mdmark-fn-item" id="n-note-cond" tabindex="-1">条件を満たさないときは次の工程へ進む。 <a class="mdmark-fn-back" href="#n-noteref-cond-0" aria-label="本文の注記 1 の 1 つ目の参照へ戻る"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 14-5-5 5-5"/><path d="M20 20v-7a4 4 0 0 0-4-4H4"/></svg>a</a><a class="mdmark-fn-back" href="#n-noteref-cond-1" aria-label="本文の注記 1 の 2 つ目の参照へ戻る"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 14-5-5 5-5"/><path d="M20 20v-7a4 4 0 0 0-4-4H4"/></svg>b</a></li>
+    <li class="mdmark-fn-item" id="n-note-img" tabindex="-1">画像は data URL で埋める。 <a class="mdmark-fn-back" href="#n-noteref-img-0" aria-label="本文の注記 2 へ戻る"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 14-5-5 5-5"/><path d="M20 20v-7a4 4 0 0 0-4-4H4"/></svg></a></li>
+  </ol>
+</details>
+        </article>
+      </section>
+
+      <!-- 同じ場所に注記を 2 つ参照する: マーカーを並べ、それぞれが自分の注記のツールチップを出す -->
+      <section aria-labelledby="state-two">
+        <h2 class="catalog-label" id="state-two">同じ場所に 2 つの注記を参照する（マーカーを並べ、それぞれのツールチップを出す）</h2>
+        <article class="mdmark catalog-tip-space">
+<p>出力は 1 枚の HTML です<sup class="mdmark-fn-ref mdmark-note-ref"><a class="mdmark-fn-link" id="t-noteref-img-0" href="#t-note-img" aria-describedby="t-ntip-img-0"><span class="mdmark-visually-hidden">注記</span></a><span class="mdmark-fn-tip" id="t-ntip-img-0" role="tooltip"><span class="mdmark-fn-tip-title">注記</span><span class="mdmark-fn-tip-body">画像は data URL で埋める。</span></span></sup><sup class="mdmark-fn-ref mdmark-note-ref is-after-ref"><a class="mdmark-fn-link" id="t-noteref-net-0" href="#t-note-net" aria-describedby="t-ntip-net-0"><span class="mdmark-visually-hidden">注記</span></a><span class="mdmark-fn-tip" id="t-ntip-net-0" role="tooltip"><span class="mdmark-fn-tip-title">注記</span><span class="mdmark-fn-tip-body">外への要求は 0 件。</span></span></sup>。</p>
 <details class="mdmark-footnotes mdmark-notes">
-  <summary>注釈（2 件）</summary>
+  <summary>注記（2 件）</summary>
   <ul class="mdmark-footnotes-list">
-    <li class="mdmark-fn-item" id="t-note-img" tabindex="-1">画像は data URL で埋める。 <a class="mdmark-fn-back" href="#t-noteref-img-0" aria-label="本文の注釈の参照へ戻る"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 14-5-5 5-5"/><path d="M20 20v-7a4 4 0 0 0-4-4H4"/></svg></a></li>
-    <li class="mdmark-fn-item" id="t-note-net" tabindex="-1">外への要求は 0 件。 <a class="mdmark-fn-back" href="#t-noteref-net-0" aria-label="本文の注釈の参照へ戻る"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 14-5-5 5-5"/><path d="M20 20v-7a4 4 0 0 0-4-4H4"/></svg></a></li>
+    <li class="mdmark-fn-item" id="t-note-img" tabindex="-1">画像は data URL で埋める。 <a class="mdmark-fn-back" href="#t-noteref-img-0" aria-label="本文の注記の参照へ戻る"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 14-5-5 5-5"/><path d="M20 20v-7a4 4 0 0 0-4-4H4"/></svg></a></li>
+    <li class="mdmark-fn-item" id="t-note-net" tabindex="-1">外への要求は 0 件。 <a class="mdmark-fn-back" href="#t-noteref-net-0" aria-label="本文の注記の参照へ戻る"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 14-5-5 5-5"/><path d="M20 20v-7a4 4 0 0 0-4-4H4"/></svg></a></li>
   </ul>
 </details>
         </article>
       </section>
 
-      <!-- 脚注・用語と同じ段落・末尾の一覧の案 A: 脚注の一覧と注釈の一覧を分けて、本文 → 脚注 → 注釈 → 関連文書の順に並べる -->
+      <!-- 脚注・用語と同じ段落・末尾の一覧の案 A: 脚注の一覧と注記の一覧を分けて、本文 → 脚注 → 注記 → 関連文書の順に並べる -->
       <section aria-labelledby="state-with-footnote-a">
-        <h2 class="catalog-label" id="state-with-footnote-a">脚注・用語と同じ段落・末尾の一覧の案 A（脚注の一覧と注釈の一覧を分ける。本文 → 脚注 → 注釈 → 関連文書の順。一覧を開いた）</h2>
+        <h2 class="catalog-label" id="state-with-footnote-a">脚注・用語と同じ段落・末尾の一覧の案 A（脚注の一覧と注記の一覧を分ける。本文 → 脚注 → 注記 → 関連文書の順。一覧を開いた）</h2>
         <article class="mdmark catalog-tip-space">
-<p>記録は<span class="mdmark-term-wrap"><span class="mdmark-term" tabindex="0" aria-describedby="tip-fa-term">ワークスペース</span><span class="mdmark-term-tip" id="tip-fa-term" role="tooltip"><span class="mdmark-term-tip-section"><span class="mdmark-term-tip-heading">用語</span><span class="mdmark-term-tip-meaning">話し合いの記録を配置するフォルダ</span></span></span></span>に配置します<sup class="mdmark-fn-ref"><a class="mdmark-fn-link" id="fa-fnref-1-0" href="#fa-fn-1" aria-describedby="fa-tip-1-0"><span class="mdmark-visually-hidden">脚注 </span>1</a><span class="mdmark-fn-tip" id="fa-tip-1-0" role="tooltip"><span class="mdmark-fn-tip-title">脚注 1</span><span class="mdmark-fn-tip-body">補足の文。</span></span></sup><sup class="mdmark-fn-ref mdmark-note-ref"><a class="mdmark-fn-link" id="fa-noteref-cond-0" href="#fa-note-cond" aria-describedby="fa-ntip-cond-0"><span class="mdmark-visually-hidden">注釈</span></a><span class="mdmark-fn-tip" id="fa-ntip-cond-0" role="tooltip"><span class="mdmark-fn-tip-title">注釈</span><span class="mdmark-fn-tip-body">古い記録は 30 日で消える。</span></span></sup>。</p>
+<p>記録は<span class="mdmark-term-wrap"><span class="mdmark-term" tabindex="0" aria-describedby="tip-fa-term">ワークスペース</span><span class="mdmark-term-tip" id="tip-fa-term" role="tooltip"><span class="mdmark-term-tip-section"><span class="mdmark-term-tip-heading">用語</span><span class="mdmark-term-tip-meaning">話し合いの記録を配置するフォルダ</span></span></span></span>に配置します<sup class="mdmark-fn-ref"><a class="mdmark-fn-link" id="fa-fnref-1-0" href="#fa-fn-1" aria-describedby="fa-tip-1-0"><span class="mdmark-visually-hidden">脚注 </span>1</a><span class="mdmark-fn-tip" id="fa-tip-1-0" role="tooltip"><span class="mdmark-fn-tip-title">脚注 1</span><span class="mdmark-fn-tip-body">補足の文。</span></span></sup><sup class="mdmark-fn-ref mdmark-note-ref is-after-ref"><a class="mdmark-fn-link" id="fa-noteref-cond-0" href="#fa-note-cond" aria-describedby="fa-ntip-cond-0"><span class="mdmark-visually-hidden">注記</span></a><span class="mdmark-fn-tip" id="fa-ntip-cond-0" role="tooltip"><span class="mdmark-fn-tip-title">注記</span><span class="mdmark-fn-tip-body">古い記録は 30 日で消える。</span></span></sup>。</p>
 <details class="mdmark-footnotes" open>
   <summary>脚注（1 件）</summary>
   <ol class="mdmark-footnotes-list">
@@ -121,9 +144,9 @@
   </ol>
 </details>
 <details class="mdmark-footnotes mdmark-notes" open>
-  <summary>注釈（1 件）</summary>
+  <summary>注記（1 件）</summary>
   <ul class="mdmark-footnotes-list">
-    <li class="mdmark-fn-item" id="fa-note-cond" tabindex="-1">古い記録は 30 日で消える。 <a class="mdmark-fn-back" href="#fa-noteref-cond-0" aria-label="本文の注釈の参照へ戻る"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 14-5-5 5-5"/><path d="M20 20v-7a4 4 0 0 0-4-4H4"/></svg></a></li>
+    <li class="mdmark-fn-item" id="fa-note-cond" tabindex="-1">古い記録は 30 日で消える。 <a class="mdmark-fn-back" href="#fa-noteref-cond-0" aria-label="本文の注記の参照へ戻る"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 14-5-5 5-5"/><path d="M20 20v-7a4 4 0 0 0-4-4H4"/></svg></a></li>
   </ul>
 </details>
 <nav class="mdmark-backlinks" aria-labelledby="backlinks-fa-title">
@@ -133,37 +156,37 @@
         </article>
       </section>
 
-      <!-- 末尾の一覧の案 B: 脚注と注釈を 1 つの一覧にまとめ、区分ごとに小見出しを付ける -->
+      <!-- 末尾の一覧の案 B: 脚注と注記を 1 つの一覧にまとめ、区分ごとに小見出しを付ける -->
       <section aria-labelledby="state-with-footnote-b">
-        <h2 class="catalog-label" id="state-with-footnote-b">末尾の一覧の案 B（脚注と注釈を 1 つの一覧にまとめ、区分の小見出しで分ける。一覧を開いた）</h2>
+        <h2 class="catalog-label" id="state-with-footnote-b">末尾の一覧の案 B（脚注と注記を 1 つの一覧にまとめ、区分の小見出しで分ける。一覧を開いた）</h2>
         <article class="mdmark">
-<p>記録はワークスペースに配置します<sup class="mdmark-fn-ref"><a class="mdmark-fn-link" id="fb-fnref-1-0" href="#fb-fn-1" aria-describedby="fb-tip-1-0"><span class="mdmark-visually-hidden">脚注 </span>1</a><span class="mdmark-fn-tip" id="fb-tip-1-0" role="tooltip"><span class="mdmark-fn-tip-title">脚注 1</span><span class="mdmark-fn-tip-body">補足の文。</span></span></sup><sup class="mdmark-fn-ref mdmark-note-ref"><a class="mdmark-fn-link" id="fb-noteref-cond-0" href="#fb-note-cond" aria-describedby="fb-ntip-cond-0"><span class="mdmark-visually-hidden">注釈</span></a><span class="mdmark-fn-tip" id="fb-ntip-cond-0" role="tooltip"><span class="mdmark-fn-tip-title">注釈</span><span class="mdmark-fn-tip-body">古い記録は 30 日で消える。</span></span></sup>。</p>
+<p>記録はワークスペースに配置します<sup class="mdmark-fn-ref"><a class="mdmark-fn-link" id="fb-fnref-1-0" href="#fb-fn-1" aria-describedby="fb-tip-1-0"><span class="mdmark-visually-hidden">脚注 </span>1</a><span class="mdmark-fn-tip" id="fb-tip-1-0" role="tooltip"><span class="mdmark-fn-tip-title">脚注 1</span><span class="mdmark-fn-tip-body">補足の文。</span></span></sup><sup class="mdmark-fn-ref mdmark-note-ref is-after-ref"><a class="mdmark-fn-link" id="fb-noteref-cond-0" href="#fb-note-cond" aria-describedby="fb-ntip-cond-0"><span class="mdmark-visually-hidden">注記</span></a><span class="mdmark-fn-tip" id="fb-ntip-cond-0" role="tooltip"><span class="mdmark-fn-tip-title">注記</span><span class="mdmark-fn-tip-body">古い記録は 30 日で消える。</span></span></sup>。</p>
 <details class="mdmark-footnotes" open>
-  <summary>脚注と注釈（2 件）</summary>
+  <summary>脚注と注記（2 件）</summary>
   <p class="mdmark-footnotes-group-title">脚注</p>
   <ol class="mdmark-footnotes-list">
     <li class="mdmark-fn-item" id="fb-fn-1" tabindex="-1">補足の文。 <a class="mdmark-fn-back" href="#fb-fnref-1-0" aria-label="本文の脚注 1 へ戻る"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 14-5-5 5-5"/><path d="M20 20v-7a4 4 0 0 0-4-4H4"/></svg></a></li>
   </ol>
-  <p class="mdmark-footnotes-group-title">注釈</p>
+  <p class="mdmark-footnotes-group-title">注記</p>
   <ul class="mdmark-footnotes-list mdmark-notes">
-    <li class="mdmark-fn-item" id="fb-note-cond" tabindex="-1">古い記録は 30 日で消える。 <a class="mdmark-fn-back" href="#fb-noteref-cond-0" aria-label="本文の注釈の参照へ戻る"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 14-5-5 5-5"/><path d="M20 20v-7a4 4 0 0 0-4-4H4"/></svg></a></li>
+    <li class="mdmark-fn-item" id="fb-note-cond" tabindex="-1">古い記録は 30 日で消える。 <a class="mdmark-fn-back" href="#fb-noteref-cond-0" aria-label="本文の注記の参照へ戻る"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 14-5-5 5-5"/><path d="M20 20v-7a4 4 0 0 0-4-4H4"/></svg></a></li>
   </ul>
 </details>
         </article>
       </section>
 
-      <!-- map の図のノードのツールチップ: ノードの説明の区分の下に、線で分けた注釈の区分を追加する。線のツールチップは線の詳細の下に注釈の区分 -->
+      <!-- map の図のノードのツールチップ: ノードの説明の区分の下に、線で分けた注記の区分を追加する。線のツールチップは線の詳細の下に注記の区分 -->
       <section aria-labelledby="state-map">
-        <h2 class="catalog-label" id="state-map">map の図のノードと線のツールチップ（開いた。説明・線の詳細の下に、線で分けた注釈の区分）</h2>
+        <h2 class="catalog-label" id="state-map">map の図のノードと線のツールチップ（開いた。説明・線の詳細の下に、線で分けた注記の区分）</h2>
         <article class="mdmark">
           <div class="catalog-map">
             <div class="catalog-map-item">
               <div class="catalog-map-node" tabindex="0" aria-describedby="m-tip-node">条件を判定する</div>
-              <div class="mdmark-diagram-tip" id="m-tip-node" role="tooltip"><span class="mdmark-term-tip-section"><span class="mdmark-term-tip-meaning">入力の値を判定の条件と比べる</span></span><span class="mdmark-term-tip-section"><span class="mdmark-term-tip-heading mdmark-note-tip-heading">注釈</span><span class="mdmark-term-tip-meaning">条件を満たさないときは次の工程へ進む。</span></span></div>
+              <div class="mdmark-diagram-tip" id="m-tip-node" role="tooltip"><span class="mdmark-term-tip-section"><span class="mdmark-term-tip-meaning">入力の値を判定の条件と比べる</span></span><span class="mdmark-term-tip-section"><span class="mdmark-term-tip-heading mdmark-note-tip-heading">注記</span><span class="mdmark-term-tip-meaning">条件を満たさないときは次の工程へ進む。</span></span></div>
             </div>
             <div class="catalog-map-item">
               <div class="catalog-map-edge" tabindex="0" aria-describedby="m-tip-edge">NO</div>
-              <div class="mdmark-diagram-tip" id="m-tip-edge" role="tooltip"><span class="mdmark-term-tip-section"><span class="mdmark-term-tip-heading">判定する → 次の工程</span><span class="mdmark-term-tip-meaning">満たさない</span></span><span class="mdmark-term-tip-section"><span class="mdmark-term-tip-heading mdmark-note-tip-heading">注釈</span><span class="mdmark-term-tip-meaning">条件を満たさないときは次の工程へ進む。</span></span></div>
+              <div class="mdmark-diagram-tip" id="m-tip-edge" role="tooltip"><span class="mdmark-term-tip-section"><span class="mdmark-term-tip-heading">判定する → 次の工程</span><span class="mdmark-term-tip-meaning">満たさない</span></span><span class="mdmark-term-tip-section"><span class="mdmark-term-tip-heading mdmark-note-tip-heading">注記</span><span class="mdmark-term-tip-meaning">条件を満たさないときは次の工程へ進む。</span></span></div>
             </div>
           </div>
         </article>
@@ -175,16 +198,16 @@
         <article class="mdmark">
 <div class="mdmark-syntax-warning">
   <p class="mdmark-syntax-warning-title"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg>記載の警告</p>
-  <p>注釈 <code>missing</code> の定義がありません。マーカーを出さずに描いています。</p>
+  <p>注記 <code>missing</code> の定義がありません。マーカーを出さずに描いています。</p>
 </div>
 <p>この補足は後で記載します。</p>
 <div class="mdmark-syntax-warning">
   <p class="mdmark-syntax-warning-title"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg>記載の警告</p>
-  <p>注釈 <code>unused</code> はどこからも参照されていません。</p>
+  <p>注記 <code>unused</code> はどこからも参照されていません。</p>
 </div>
 <div class="mdmark-syntax-warning">
   <p class="mdmark-syntax-warning-title"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg>記載の警告</p>
-  <p>注釈 <code>cond</code> は前に定義があります。前の定義の本文を使用しています。</p>
+  <p>注記 <code>cond</code> は前に定義があります。前の定義の本文を使用しています。</p>
 </div>
         </article>
       </section>
