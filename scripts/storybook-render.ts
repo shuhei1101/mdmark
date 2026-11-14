@@ -1218,7 +1218,12 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
     const { shapes, loops, overrides } = statePartInputs(chart, selfLoops);
     const collapsed = jsonList(args.collapsed);
     const entered = typeof args.entered === "string" ? args.entered : undefined;
-    const layout = layoutMap(chart, { collapsed, entered }, overrides, "height");
+    const layout = layoutMap(
+      chart,
+      { collapsed, entered },
+      overrides,
+      "height",
+    );
     const part = renderMapStateDiagram({
       layout,
       kinds: {},
