@@ -66,7 +66,7 @@
 | [プレビューをVSCodeのテーマに合わせる](./SC-472-32.yaml) | プレビューの配色を VS Code のライト・ダークに合わせて切り替え、設定で固定もできる |
 | [プレビューのリンクと画像を開く](./SC-472-31.yaml) | プレビューの外部の URL・Markdown へのリンク・`#` のリンクを開き、相対パスの画像を出す |
 | [HTMLに書き出す](./SC-472-6.yaml) | 開いている Markdown を HTML に書き出し、既定のブラウザで開く |
-| [拡張機能の配布物を作る](./SC-472-50.yaml) | 開発者が `vscode-v{バージョン}` のタグを打つと、GitHub Actions が .vsix を作って GitHub Release に添える |
+| [拡張機能の配布物を作る](./SC-472-50.yaml) | 開発者が `vscode-v{バージョン}` のタグを打つと、GitHub Actions が .vsix を作って GitHub Release に添え、Marketplace へ公開する |
 | [PDFに印刷する](./SC-472-9.yaml) | 開いている Markdown を書き出した HTML をブラウザで開き、印刷のダイアログで PDF にする |
 | [本文に出た用語と文書の参照を取り出す](./SC-472-60.yaml) | 利用側の処理が画面を出さずに、本文に出た用語・文書の別名とその参照先を受け取る |
 | [ClaudeCodeにプラグインを入れる](./SC-472-4.yaml) | 文書の作成者が mdmark のリポジトリをマーケットプレイスとして追加し、mdmark のプラグインを Claude Code に入れる |

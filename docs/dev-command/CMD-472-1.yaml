@@ -216,14 +216,14 @@ categories:
       git push origin v{バージョン}
       ```
 
-      VS Code 拡張機能を出すときは、`vscode/package.json` の `version` を出すバージョンにした commit が develop に入った後、その commit でタグと `version` を照合してからタグを打つ（GitHub Actions の `vscode-release.yml` が .vsix を作り、そのタグの GitHub Release に添える）。mdmark の `v{バージョン}` のタグと混ぜない。
+      VS Code 拡張機能を出すときは、`vscode/package.json` の `version` を出すバージョンにした commit が develop に入った後、その commit でタグと `version` を照合してからタグを打つ（GitHub Actions の `vscode-release.yml` が .vsix を作り、そのタグの GitHub Release に添えて、Visual Studio Marketplace へ公開する）。`version` は Marketplace に公開済みのバージョンより上にする（同じバージョンは公開できず、ワークフローが `already exists.` で失敗する）。mdmark の `v{バージョン}` のタグと混ぜない。
 
       ```bash
       npm --prefix vscode run release:check -- vscode-v{バージョン}
       git tag vscode-v{バージョン}
       git push origin vscode-v{バージョン}
       ```
-    effects: 対象のブランチへ `dist/` と `plugin/` の commit を push する。どちらも変わらなければ commit は要らない。develop では `v{バージョン}` のタグも push し、jsDelivr の `@v{バージョン}` と `npx github:shuhei1101/mdmark#v{バージョン}` がその commit を指す
+    effects: 対象のブランチへ `dist/` と `plugin/` の commit を push する。どちらも変わらなければ commit は要らない。develop では `v{バージョン}` のタグも push し、jsDelivr の `@v{バージョン}` と `npx github:shuhei1101/mdmark#v{バージョン}` がその commit を指す。`vscode-v{バージョン}` のタグの push は、Release に .vsix を添え、Marketplace の `ShuheiNishikawa.mdmark-vscode` にそのバージョンを公開する（公開したバージョンは上書きできない）
     verification:
       state: 未確認
       detail: 手順 1・2・3・4（`npm ci`、移行の手順の移し、`npm run build -- --version v{バージョン}`、`git status --porcelain dist` が `dist/` の差分を出す）は、一時の clone で `--version v0.4.0` を使用して確認した。`migrations/next/` が無いときは `git mv` が失敗するので飛ばし、`sed` 以降でビルドが通る。`plugin/` を追加した手順 4・5 は、`npm run build` が `plugin/` の生成物を記載することまでを確認した。手順 5 は対象のブランチへ push して外へ書き込むため走らせていない。VS Code 拡張機能のタグの照合（`npm --prefix vscode run release:check -- vscode-v0.1.0`）は、`package.json` の `version` が `0.1.0` のとき終了コード 0 で通り、`vscode-v0.2.0` のときは両方のバージョンを標準エラーに出して終了コード 1 で止まることを確認した。タグの push は外へ書き込むため走らせていない

@@ -29,7 +29,7 @@ items:
 - page: LIB-472-35.yaml
   summary: VS Code の拡張機能の API（コマンド・設定・エディタ・Webview）
 - page: LIB-472-34.yaml
-  summary: VS Code の拡張機能を .vsix にまとめる
+  summary: VS Code の拡張機能を .vsix にまとめ、Marketplace へ公開する
 - page: LIB-472-27.yaml
   summary: VS Code を取得して起動し、拡張機能ホストの中で結合テストを走らせる
 - page: LIB-472-18.yaml

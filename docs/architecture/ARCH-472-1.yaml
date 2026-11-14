@@ -25,6 +25,9 @@ overview:
     - id: gha
       label: GitHub Actions と Releases
       kind: external
+    - id: mp
+      label: Visual Studio Marketplace
+      kind: external
     - id: plugin
       label: Claude Code プラグイン
       kind: system
@@ -65,6 +68,12 @@ overview:
     - from: gha
       to: writer
       label: .vsix
+    - from: gha
+      to: mp
+      label: 公開（OIDC）
+    - from: mp
+      to: writer
+      label: 拡張機能の更新
     - from: repo
       to: cc
       label: マーケットプレイス
@@ -106,8 +115,8 @@ repository:
     | `guide/` | ガイドの索引（`index.yaml`。本文は `docs/guide/` のページを指す） | 配布物のビルドが検査し、Claude Code が dev-docs の配信元 `mdmark` からタグ `topic:ガイド` で絞って参照する | #11 |
     | `.claude-plugin/` | マーケットプレイスの定義（`marketplace.json`。`plugin/` を記載する） | `/plugin marketplace add shuhei1101/mdmark` | #11 |
     | `plugin/` | Claude Code のプラグインの定義（`plugin.json`・`.mcp.json`・`hooks/hooks.json`）と、配布物のビルドが記載するまとめたフック（`dist/` と同じ時期にだけ commit する。`hooks.json` に行を追加する PR では、その行が起動するまとめたフックも入れる） | プラグインのマーケットプレイスから Claude Code が入れる。`plugin.json` は `version` を持たず、develop の commit がプラグインの更新で届く | #11 |
-    | `vscode/` | VS Code 拡張機能（独自の `package.json`。バージョンは develop の commit に打つ `vscode-v{バージョン}` のタグ） | GitHub Release に添えた .vsix と、Marketplace・Open VSX（拡張機能の ID `ShuheiNishikawa.mdmark-vscode`・表示名 `mdmark for VS Code`） | #22 |
-    | `.github/workflows/` | `vscode-v*` のタグで .vsix を作って Release に添えるワークフロー | 届けない | #22 |
+    | `vscode/` | VS Code 拡張機能（独自の `package.json`。バージョンは develop の commit に打つ `vscode-v{バージョン}` のタグ） | GitHub Release に添えた .vsix と、タグのワークフローが公開する Visual Studio Marketplace（拡張機能の ID `ShuheiNishikawa.mdmark-vscode`・表示名 `mdmark for VS Code`） | #22 |
+    | `.github/workflows/` | `vscode-v*` のタグで .vsix を作って Release に添え、Marketplace へ公開するワークフロー | 届けない | #22 |
     | `dev-docs.yaml` | dev-docs の配信元の設定（設計書の種類ごとの行と、各フォルダの `files.yaml` の行） | 届けない | #178 |
     | 各フォルダの `files.yaml`（`docs/` の下は `files.yml`） | YAML の設計書でないファイルの概要文・タグ・関連（1 ファイル 1 行。スキーマは `schemas/files.schema.yaml`） | 届けない | #178 |
 
@@ -181,6 +190,19 @@ external_systems:
     status: planned
     introduced:
       pr: 69
+  - name: Visual Studio Marketplace
+    purpose: '`vscode-v*` のタグのワークフローが、Release に添えた .vsix を拡張機能 `ShuheiNishikawa.mdmark-vscode` の新しいバージョンとして公開し、文書の作成者の VS Code へ更新を届ける'
+    direction: 送信のみ
+    protocol: '`vsce publish --oidc`（GitHub Actions の OIDC トークンを、publisher `ShuheiNishikawa` に登録した trusted publishing のポリシーで公開用のトークンに交換する）'
+    detail: LIB-472-34#
+    cost: 無料。公開したバージョンは上書きできない
+    refs:
+      - IF-472-23#
+    status: planned
+    introduced:
+      pr: 512
+    notes:
+      事前確認: 済。PoC（#555）で、ブランチへの push で動かした `vscode-release.yml` が vsce 4.1.1 の `getOIDCCredential` でトークンを交換できることを 2026-11-14 に確認した。公開は最初のタグで確認する
   - name: VS Code
     purpose: 拡張機能を動かし、コマンド・設定・エディタ・Webview の API を指定する
     direction: 双方向

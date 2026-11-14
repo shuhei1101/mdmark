@@ -1,0 +1,19 @@
+confirmations:
+  - topic: Open VSX の自動公開の前提の作業
+    decision: Open VSX には公開しない（案 A・B のどちらも採らない）。PR の範囲を、Marketplace の trusted publishing（vsce publish --oidc）でタグから Marketplace へ公開することに変える。ポリシーは publisher ShuheiNishikawa に登録済み（Owner shuhei1101・Repository mdmark・Workflow vscode-release.yml・Environment なし）。最初のタグは vscode-v0.1.2 以上
+    decided_by: reply
+    approver: shuhei1101
+    commit:
+    thread: https://github.com/shuhei1101/mdmark/pull/512#discussion_r4570559008
+  - topic: Marketplace の公開済みの 0.1.2 と、この PR で上げるバージョン
+    decision: 0.1.3 に上げ、マージの後に vscode-v0.1.3 を打つ。設計書・要件・反映作業の例のバージョンも 0.1.3 に統一する（推奨案 A）
+    decided_by: thumbs_up
+    approver: shuhei1101
+    commit:
+    thread: https://github.com/shuhei1101/mdmark/pull/512#discussion_r4571168056
+  - topic: 反映作業「拡張機能の最初のタグ」を実行してよいか
+    decision: 実行する。マージの後に tester が vscode-v0.1.3 を打ち、Marketplace へ公開する（推奨案 A）
+    decided_by: thumbs_up
+    approver: shuhei1101
+    commit: 800afcfe
+    thread: https://github.com/shuhei1101/mdmark/pull/512#discussion_r4571226378
