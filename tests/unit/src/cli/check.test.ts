@@ -1010,3 +1010,38 @@ test("test_check_mark_options_when_embed", async () => {
     issues.map(({ file, where, kind }) => ({ file, where, kind })),
   ).toEqual([{ file: "a.md", where: "1", kind: "legacy_mark" }]);
 });
+
+// 記法・外部ライブラリ・拡張・check.ignore の名前を集める（正常系）
+test("test_collect_mark_names", async () => {
+  // 準備
+  const { collectMarkNames } = await loadCheck();
+  const dir = await createTempDir();
+  await writeFiles(dir, {
+    "extensions/example.js": await readFile(
+      join(import.meta.dirname, "../../../../templates/extensions/example.js"),
+      "utf8",
+    ),
+  });
+  const loaded: LoadedConfig = {
+    path: join(dir, "mdmark.config.yaml"),
+    dir,
+    config: {
+      libraries: { "test-lib": "./vendor/test-lib.js" },
+      extensions: ["extensions/example.js"],
+      check: { ignore: ["memo"] },
+    },
+  };
+  // 実行
+  const names = await collectMarkNames(loaded);
+  // 検証
+  for (const name of [
+    "table",
+    "html",
+    "features",
+    "test-lib",
+    "greet",
+    "memo",
+  ]) {
+    expect(names.has(name)).toBe(true);
+  }
+});

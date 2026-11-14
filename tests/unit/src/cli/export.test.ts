@@ -147,7 +147,7 @@ test("test_run_export", async () => {
   // 検証
   expect(code).toBe(0);
   expect(await readFile(join(dir, "guide.html"), "utf8")).toContain(
-    "mdmark-payload",
+    "zq-payload",
   );
   expect(stdout).toEqual(["書き出した: guide.html"]);
 });
@@ -205,7 +205,7 @@ test("test_export_document", async () => {
   const result = await exportDocument({ cwd: dir, file: "guide.md", distDir });
   // 検証
   expect(result.out).toBe(join(dir, "guide.html"));
-  expect(await readFile(result.out, "utf8")).toContain("mdmark-payload");
+  expect(await readFile(result.out, "utf8")).toContain("zq-payload");
   expect(result.display).toBe("guide.html");
   expect(result.warnings).toHaveLength(1);
 });

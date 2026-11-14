@@ -82,12 +82,14 @@ export function createAnswers(answers: Array<string | undefined>): {
   };
 }
 
-/** 書き出した HTML から、埋めた中身（`#mdmark-payload` の JSON）を読み込む */
+/** 書き出した HTML から、埋めた中身（`#mdmark-payload` か、隠した書き出しの `#zq-payload` の JSON）を読み込む */
 export function readPayload(html: string): PayloadView {
   const match =
-    /<script[^>]*id="mdmark-payload"[^>]*>([\s\S]*?)<\/script>/.exec(html);
+    /<script[^>]*id="(?:mdmark|zq)-payload"[^>]*>([\s\S]*?)<\/script>/.exec(
+      html,
+    );
   if (!match?.[1]) {
-    throw new Error("#mdmark-payload が無い");
+    throw new Error("#mdmark-payload（隠した書き出しは #zq-payload）が無い");
   }
   return JSON.parse(match[1]) as PayloadView;
 }

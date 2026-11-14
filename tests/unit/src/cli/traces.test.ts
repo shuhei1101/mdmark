@@ -1,17 +1,8 @@
-import { readFile } from "node:fs/promises";
-import { join } from "node:path";
 import { expect, test } from "vitest";
-import type { LoadedConfig } from "../../../../src/cli/config.ts";
-import {
-  type PayloadView,
-  useTempDirs,
-  writeFiles,
-} from "../../helpers/cli.ts";
+import type { PayloadView } from "../../helpers/cli.ts";
 
 /** mdmark の痕跡を隠す処理を読み込む（実装が無い間は各テストが個別に失敗する） */
 const loadTraces = () => import("../../../../src/cli/traces.ts");
-
-const createTempDir = useTempDirs();
 
 // 大文字・小文字の構成を保って置き換える（正常系）
 test("test_hide_names", async () => {
@@ -75,41 +66,6 @@ test("test_hide_markdown_when_comments", async () => {
   expect(hidden).toContain("<!-- table: data -->");
   expect(hidden).toContain("<!-- /table -->");
   expect(hidden).toContain("<!-- greet -->");
-});
-
-// 記法・外部ライブラリ・拡張・check.ignore の名前を集める（正常系）
-test("test_collect_mark_names", async () => {
-  // 準備
-  const { collectMarkNames } = await loadTraces();
-  const dir = await createTempDir();
-  await writeFiles(dir, {
-    "extensions/example.js": await readFile(
-      join(import.meta.dirname, "../../../../templates/extensions/example.js"),
-      "utf8",
-    ),
-  });
-  const loaded: LoadedConfig = {
-    path: join(dir, "mdmark.config.yaml"),
-    dir,
-    config: {
-      libraries: { "test-lib": "./vendor/test-lib.js" },
-      extensions: ["extensions/example.js"],
-      check: { ignore: ["memo"] },
-    },
-  };
-  // 実行
-  const names = await collectMarkNames(loaded);
-  // 検証
-  for (const name of [
-    "table",
-    "html",
-    "features",
-    "test-lib",
-    "greet",
-    "memo",
-  ]) {
-    expect(names.has(name)).toBe(true);
-  }
 });
 
 // 設定の値だけを置き換え、利用者が記載した値を残す（正常系）
