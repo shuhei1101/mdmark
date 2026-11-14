@@ -19,4 +19,5 @@ constants:
         value: '`npm --prefix vscode exec -- vsce publish --oidc --packagePath vscode/mdmark-{バージョン}.vsix`。`--skip-duplicate` と `--pat`・`secrets.*` は使用しない'
     refs:
       - IF-472-23#
+      - LIB-472-34#
     status: planned
