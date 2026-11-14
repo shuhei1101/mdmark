@@ -11,6 +11,10 @@ instructions: |-
   人が読み込む資料を記載するときは、最初に『文書の記載方法』（guide/記載する-文書の記載方法.md）を読み込む。
   記法の記載方法を確認するときは『記法』（guide/記法.md）を読み込む。
   設計書は `docs/` の種類ごとのフォルダの YAML（`{ID}.yaml`）で、書式は `schemas/{種類}.schema.yaml` が持つ。各文書の公開範囲は `visibility`（`public` / `internal`）で、YAML の文書はキー、Markdown は `files.yml` の行が持つ。
+when:
+  - mdmark の記法・部品・図の描き方を確認するとき
+  - mdmark の CLI・公開関数・設定・索引のキーを確認するとき
+  - mdmark のライブラリ・CLI・VS Code 拡張機能・Claude Code プラグインの設計書・コード・テストを調べるとき
 documents:
   # 設計書は種類ごとの行。index.yaml は目次なので exclude で除く
   - id: architecture
