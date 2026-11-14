@@ -447,7 +447,7 @@ flows:
     summary: 隠さない書き出しを指定しないとき、mdmark の名前を別名へ置き換え、コメント・バージョン・mdmark 自身のライセンスの表記を削除して書き出す
     setup:
       - name: mdmark の名前を持つフォルダ
-        description: 'タイトルに `mdmark` を含む文書 `mdmark-intro.md` と、`theme`（`--mdmark-radius` の上書きと `.mdmark h1` のセレクタ）・`extensions`（マーカー `greet` の拡張）・`index`（用語 `mdmark`）を記載した設定。文書は、地の文の `mdmark`・`<mdmark-chart>` の要素・`<!-- html -->` の範囲の `css` の `var(--mdmark-*)`・class `mdmark-align-center` の段落・`<mdmark-chart>` を書いたコードの例・`<!-- todo -->`・`<!-- table: data -->` と `<!-- /table -->` で囲んだ表・既定のテーマの mermaid の図・`icon:` のアイコンを持つ'
+        description: 'タイトルに `mdmark` を含む文書 `mdmark-intro.md` と、`theme`（`--mdmark-radius` の上書きと `.mdmark h1` のセレクタ）・`extensions`（マーカー `greet` の拡張）・`index`（用語 `mdmark`）を記載した設定。文書は、地の文の `mdmark`・`<mdmark-chart>` の要素・`<!-- html -->` の範囲（`css` の `var(--mdmark-*)` と、ノードを押すと `window.__mdmarkOpened` を `true` にして根の要素に class `is-open` を付ける `ts`）・class `mdmark-align-center` の段落・`<mdmark-chart>` を書いたコードの例・`<!-- todo -->`・`<!-- table: data -->` と `<!-- /table -->` で囲んだ表・既定のテーマの mermaid の図・`icon:` のアイコンを持つ'
       - name: Mock
         description: 正常系（mermaid のコードブロック）と同じく `mermaid.url` を手元のフォルダに向ける。比べる HTML は、同じフォルダを `--keep-traces` で書き出したもの
     flow: |-
@@ -462,13 +462,15 @@ flows:
         C-->>W: 書き出した: mdmark-intro.html・終了コード 0
     expected:
       - '終了コードが 0 で、標準出力が `書き出した: mdmark-intro.html`'
-      - 'HTML の文字列（`<title>` を除く）と、埋め込みの JSON の利用者が記載した値の項目を除いた値に、`mdmark`（大文字・小文字を区別しない）が 0 件'
+      - 'HTML の文字列（`<title>` の中身と、範囲のスクリプトの表の鍵を除く）と、埋め込みの JSON の利用者が記載した値の項目を除いた値に、`mdmark`（大文字・小文字を区別しない）が 0 件'
       - '埋め込みの Markdown で、`<mdmark-`・`--mdmark-`・class の値の `mdmark-` が 0 件で、地の文の `mdmark` と `mdmark-intro.md` へのリンクの `href` が残る'
       - 'HTML の文字列に `<!--` が 0 件。埋め込みの Markdown から `<!-- todo -->` が消え、`<!-- html -->`・`<!-- table: data -->`・`<!-- /table -->` が残る'
       - HTML の文字列に `version.ini` の先頭行のバージョンが 0 件
       - Lucide と mermaid のライセンスの表記が、スクリプトの `/*!` で始まるコメントに残る
       - file:// で開くと、コンソールのエラーとコメントのノードが 0 件で、要素・別名を `mdmark` に戻した class・計算後のスタイルが、比べる HTML と本文のコードの例の中を除いて同じ
       - '`greet` のマーカーと `theme` の上書きが、比べる HTML と同じに描かれる'
+      - 範囲のノードを押すと、根の要素に class `is-open` が付き、`window.__zqOpened` が `true` になる（範囲の記載の警告が出ない）
+      - '`<title>` が `mdmark-intro.md` のタイトルのまま'
     test: test_normal_when_traces_hidden
   - name: 正常系（隠さない書き出しを指定する）
     summary: '`--keep-traces` のとき、名前を置き換えず、コメントとバージョンを残して書き出す'
@@ -628,6 +630,6 @@ constraints:
     constraint: 設定の `map` を、`tooltips.placement` と同じく埋める設定にコピーして `mount` の `opts.config` に指定する。無いときは写さず、`mount` の既定に任せる。`map` がマップでないときは設定ファイルの誤り（終了コード 1）にする。記載できる値に無い値（`node_fit` の知らない値・`url_state` が真偽値でない・知らない形・模様・太さ・矢じり・色の名前）は書き出しを止めずにコピーし、`mount` が無視して既定にする（`mdmark check` が `schema` のずれにする）。Lucide に無いアイコンの名前はコピーし、`mount` が無視する（`mdmark check` が `map_unknown_icon` にする）
     decided_by: IF-472-35#request[opts.config.map.kinds]
   - item: mdmark の痕跡
-    constraint: '`--keep-traces` が無いとき、組み立てた HTML の全体に次を当ててから書き込む。(1) 埋め込みの JSON を除く HTML・CSS（配布物と `theme`）・まとめたスクリプト（拡張・範囲のスクリプトを含む）から、HTML のコメントと `:root{--mdmark-version:…}` の宣言と、esbuild の `Bundled license information` の mdmark 自身の行を削除する。(2) その全体と、埋め込みの JSON の利用者が記載した値（`docs[].title`・`docs[].path`・`docs[].markdown`・`index`・`references`・`aliases`・`entry`・`includes`）を除く値で、語の一部として出る `mdmark` を、大文字・小文字の形を保って別名 `zq` へ置き換える（`#mdmark-payload` の `id` を含む）。(3) 埋め込みの Markdown（`docs[].markdown` と `includes` の値）では、`<mdmark-`・`</mdmark-`・`--mdmark-`・`class` の属性の値の `mdmark-`・`mdmark-asset:` だけを別名へ置き換え、描画が読むマーカーの名前でない HTML のコメントを削除する。開いた文書の DOM にコメントのノードを残さない。同梱する第三者のライブラリのライセンスの表記は、HTML のコメントでない形で残す'
+    constraint: '`--keep-traces` が無いとき、組み立てた HTML の全体に次を当ててから書き込む。(1) 埋め込みの JSON を除く HTML・CSS（配布物と `theme`）・まとめたスクリプト（拡張・範囲のスクリプトを含む）から、HTML のコメントと `:root{--mdmark-version:…}` の宣言と、esbuild の `Bundled license information` の mdmark 自身の行を削除する。(2) その全体（`<title>` の中身と、まとめたスクリプトの範囲のスクリプトの表の鍵を除く）と、埋め込みの JSON の利用者が記載した値（`docs[].title`・`docs[].path`・`docs[].markdown`・`index`・`references`・`aliases`・`entry`・`includes`）を除く値で、語の一部として出る `mdmark` を、大文字・小文字の形を保って別名 `zq` へ置き換える（`#mdmark-payload` の `id` を含む）。(3) 埋め込みの Markdown（`docs[].markdown` と `includes` の値）では、`<mdmark-`・`</mdmark-`・`--mdmark-`・`class` の属性の値の `mdmark-`・`mdmark-asset:` だけを別名へ置き換え、描画が読むマーカーの名前でない HTML のコメントを削除する。範囲のスクリプトの表の鍵（範囲のコードの文字）は、(3) を当てた後の埋め込みの Markdown から取り出し、鍵から変換したコードには (2) を当てる。開いた文書の DOM にコメントのノードを残さない。同梱する第三者のライブラリのライセンスの表記は、HTML のコメントでない形で残す'
     notes: 'PoC #556 で、この規則の HTML が隠さない HTML と同じ表示と操作になることを確認した。マーカーのコメントは #532 で埋め込みと一緒に消える。本文のコードの例の `<mdmark-*>` も別名で表示される'
 test_file: tests/integration/lib/export.test.ts
