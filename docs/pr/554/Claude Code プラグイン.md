@@ -42,4 +42,7 @@
 
 ### 結合
 
-なし（結合テスト作成の工程で記入する）
+| ファイル | メソッド | 変更種別 | 結果 | 補足 |
+| --- | --- | --- | --- | --- |
+| [tests/integration/ClaudeCodeプラグイン/export-html.test.ts](https://github.com/shuhei1101/mdmark/blob/9cb6ad9b/tests/integration/ClaudeCodeプラグイン/export-html.test.ts) | 全実行 | 変更 | ✅ | `test_normal_when_traces_kept` を追加。ログは計画書『ライブラリ本体』の結合の表と同じ |
+| [tests/integration/ClaudeCodeプラグイン/build-site.test.ts](https://github.com/shuhei1101/mdmark/blob/9cb6ad9b/tests/integration/ClaudeCodeプラグイン/build-site.test.ts) | 全実行 | 変更 | ✅ | `test_normal_when_traces_kept` を追加 |
