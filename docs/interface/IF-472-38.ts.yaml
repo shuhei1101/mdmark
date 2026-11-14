@@ -611,4 +611,5 @@ constraints:
   - item: mdmark の痕跡
     constraint: 文書をHTMLに書き出す.ts の制約「mdmark の痕跡」と同じ。まとめる全ての文書の本文・取り込む文書の表に同じ規則を当て、文書のパスと文書間のリンクの `href` は置き換えない
     decided_by: IF-472-33#constraints[mdmark の痕跡]
+    notes: '`--keep-traces` を指定しない流れの期待値に出る mdmark の名前（セレクタ・class・属性・`window` の鍵）は、(2) と同じ規則で別名に置き換えて確かめる（「無い」を確かめる行も別名で確かめる）。'
 test_file: tests/integration/lib/bundle.test.ts
