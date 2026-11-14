@@ -293,6 +293,56 @@ scenarios:
       - 終了コードが 0 で、`docs/site.html` に 1 枚の HTML がある
       - file:// で開くと、2 つの文書の注意書きが引用として描かれ、`theme.css` の規則が該当する
     test: test_normal_when_cascaded
+  - name: 正常シナリオ（mdmark を使用していることを隠す）
+    setup:
+      - name: mdmark の名前を持つ文書群
+        description: 『文書をHTMLに書き出す』の正常シナリオ（mdmark を使用していることを隠す）の文書（`mdmark-intro.md`）と、その本文からリンクされ、`mdmark-intro.md` へ戻るリンクを持つ文書（`guide.md`）の 2 つ。索引に 2 つと用語 `mdmark` を記載する
+      - name: 利用側の CSS と拡張
+        description: 『文書をHTMLに書き出す』の同じシナリオと同じ `theme.css` と拡張のモジュール。`build` の `include` が 2 つに該当する
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor W as 文書の作成者
+        participant C as mdmark CLI
+        participant F as まとめた HTML
+        actor R as 読者
+        W->>C: mdmark build（隠さない書き出しを指定しない）
+        C->>C: 配布物・CSS・まとめたスクリプト・埋め込みの JSON の mdmark の名前を別名へ置き換え、コメント・バージョン・mdmark 自身のライセンスの表記を削除する
+        C->>F: 置き換えた 1 枚の HTML を書き込む
+        C-->>W: 出力のパス・入れた文書の数・終了コード 0
+        R->>F: file:// で開き、本文のリンクで guide.md へ移って戻る
+        F-->>R: 隠さないまとめと同じ表示の文書
+    expected:
+      - 終了コードが 0 で、`build.out` に HTML が 1 つある
+      - HTML の文字列と、埋め込みの JSON を復号した中身に、`mdmark`（大文字・小文字を区別しない）が、第三者のライブラリのライセンスの表記と、利用者が記載した値（本文の地の文・文書のタイトル・索引・参照の表・エイリアス・文書のパス・`includes` のキー）を除いて 0 件
+      - HTML の文字列と、埋め込みの JSON を復号した中身に、`<!--` が埋め込みの Markdown のマーカーのコメントを除いて 0 件
+      - 開いた文書の DOM にコメントのノードが 0 件で、コンソールのエラーが 0 件
+      - 同じ文書群を隠さないまとめで書き出した HTML と比べ、要素・別名を戻した class・計算後のスタイルが、本文のコードの例の中を除いて同じ
+      - 文書の一覧に 2 つの文書のタイトルが並び、`#/mdmark-intro.md` で開ける
+      - 本文のリンクで `guide.md` へ移り、戻るリンクとブラウザの戻るで `mdmark-intro.md` へ戻れる
+    test: test_normal_when_traces_hidden
+    refs:
+      - SC-472-56#scenarios[正常シナリオ（mdmark を使用していることを隠す）]
+  - name: 正常シナリオ（隠さない書き出しを指定する）
+    setup:
+      - name: mdmark の名前を持つ文書群
+        description: 正常シナリオ（mdmark を使用していることを隠す）と同じ
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor W as 文書の作成者
+        participant C as mdmark CLI
+        participant F as まとめた HTML
+        W->>C: mdmark build（隠さない書き出しを指定する）
+        C->>F: 名前を置き換えず、コメントとバージョンを残した 1 枚の HTML を書き込む
+        C-->>W: 出力のパス・入れた文書の数・終了コード 0
+    expected:
+      - 終了コードが 0 で、`build.out` に HTML が 1 つある
+      - HTML に、class `mdmark`・`--mdmark-version`・`#mdmark-payload` の要素が残る
+      - file:// で開くと、正常シナリオ（mdmark を使用していることを隠す）と同じ表示の文書と文書の一覧が描かれる
+    test: test_normal_when_traces_kept
 lead: 文書の作成者が設定の `build` で対象を決めて `mdmark build` を実行し、参照・被参照・用語のツールチップが有効になる 1 枚の HTML にまとめる。
 issue: 9
 primary_actor: 文書の作成者
@@ -300,6 +350,6 @@ trigger: 文書の作成者が、複数の文書を行き来できる構造で�
 preconditions:
   - 文書の作成者の手元に Node 24 以降がある
   - 設定ファイルに `build` がある
-success_guarantee: '`build.out` に 1 枚の HTML ができ、`include` に該当し `exclude` に該当しない文書が、拡張子が `.mark.md` か純粋な `.md` かによらず全て入る。索引があれば、文書をまたぐ被参照と用語のツールチップが有効になる。1 枚に含まれる文書へのリンクは 1 枚の中の文書へ移り、含まれない文書へのリンクは記載したままの `href` で残る。埋めた拡張・部品・色分け・外部ライブラリは 1 つのスクリプトで動き、`blob:` URL と動的 `import()` を許さない環境でも同じに描かれる。'
+success_guarantee: '`build.out` に 1 枚の HTML ができ、`include` に該当し `exclude` に該当しない文書が、拡張子が `.mark.md` か純粋な `.md` かによらず全て入る。索引があれば、文書をまたぐ被参照と用語のツールチップが有効になる。1 枚に含まれる文書へのリンクは 1 枚の中の文書へ移り、含まれない文書へのリンクは記載したままの `href` で残る。埋めた拡張・部品・色分け・外部ライブラリは 1 つのスクリプトで動き、`blob:` URL と動的 `import()` を許さない環境でも同じに描かれる。隠さない書き出しを指定しなければ、HTML から mdmark を使用していることが読み取れない（mdmark の名前は別名へ置き換わり、HTML のコメント・バージョン・mdmark 自身のライセンスの表記は残らない。利用者が記載した値と第三者のライブラリのライセンスの表記は残る）。'
 minimal_guarantee: 対象の文書が 0 件のときは HTML を書き込まず、原因と修正方法の 1 文を出して 0 以外で終わる。CLI は文書と索引を書き換えない。
 test_file: tests/e2e/単一ユースケース/複数の文書を1枚のHTMLにまとめる.spec.ts

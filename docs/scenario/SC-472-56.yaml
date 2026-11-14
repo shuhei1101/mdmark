@@ -418,6 +418,55 @@ scenarios:
     test: test_normal_when_page_marker
     refs:
       - SC-472-33#scenarios[正常シナリオ]
+  - name: 正常シナリオ（mdmark を使用していることを隠す）
+    setup:
+      - name: mdmark の名前を持つ文書
+        description: タイトルとファイル名に `mdmark` を含む文書（`mdmark-intro.md`）1 つ。本文に、地の文の `mdmark`・`<mdmark-chart>` の要素・`<!-- html -->` の範囲の `css` で使う `var(--mdmark-*)`・class `mdmark-align-center` の段落・`<mdmark-chart>` を記載したコードの例・マーカーでない HTML のコメント・既定のテーマの mermaid の図・表のマーカー・タブ・索引の用語 `mdmark` を記載する
+      - name: 利用側の CSS と拡張
+        description: '`--mdmark-*` の上書きと `.mdmark` のセレクタを持つ `theme.css` と、`registerExtension` で印を足す拡張のモジュールを指す設定'
+      - name: Mock
+        description: 正常シナリオと同じく、書き出しがネットワークを読み込まない
+    flow: |-
+      sequenceDiagram
+        actor W as 文書の作成者
+        participant C as mdmark CLI
+        participant F as 出力の HTML
+        actor R as 読者
+        W->>C: mdmark export 文書のパス（隠さない書き出しを指定しない）
+        C->>C: 配布物・CSS・まとめたスクリプト・埋め込みの JSON の mdmark の名前を別名へ置き換え、コメント・バージョン・mdmark 自身のライセンスの表記を削除する
+        C->>F: 置き換えた HTML を書き込む
+        C-->>W: 出力のパス・終了コード 0
+        R->>F: file:// で開く
+        F-->>R: 隠さない書き出しと同じ表示の文書
+    expected:
+      - 終了コードが 0 で、指定した出力に HTML が 1 つある
+      - HTML の文字列と、埋め込みの JSON を復号した中身に、`mdmark`（大文字・小文字を区別しない）が、第三者のライブラリのライセンスの表記と、利用者が記載した値（本文の地の文・文書のタイトル・索引・参照の表・エイリアス・文書のパス・`includes` のキー）を除いて 0 件
+      - HTML の文字列と、埋め込みの JSON を復号した中身に、`<!--` が埋め込みの Markdown のマーカーのコメントを除いて 0 件
+      - 開いた文書の DOM にコメントのノードが 0 件で、コンソールのエラーが 0 件
+      - 同じ文書を隠さない書き出しで書き出した HTML と比べ、要素・別名を戻した class・計算後のスタイルが、本文のコードの例の中を除いて同じ
+      - '`<mdmark-chart>` のグラフ・範囲の `css` の色・`mdmark-align-center` の配置・mermaid の図・`theme.css` の上書き・拡張の印が、隠さない書き出しと同じに描かれる'
+      - タブの切り替え・表の並べ替え・用語 `mdmark` のツールチップが、隠さない書き出しと同じに動く
+      - 本文の地の文の `mdmark` とタイトルがそのまま表示され、コードの例の `<mdmark-chart>` は別名で表示される
+    test: test_normal_when_traces_hidden
+  - name: 正常シナリオ（隠さない書き出しを指定する）
+    setup:
+      - name: mdmark の名前を持つ文書
+        description: 正常シナリオ（mdmark を使用していることを隠す）と同じ
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        actor W as 文書の作成者
+        participant C as mdmark CLI
+        participant F as 出力の HTML
+        W->>C: mdmark export 文書のパス（隠さない書き出しを指定する）
+        C->>F: 名前を置き換えず、コメントとバージョンを残した HTML を書き込む
+        C-->>W: 出力のパス・終了コード 0
+    expected:
+      - 終了コードが 0 で、指定した出力に HTML が 1 つある
+      - HTML に、class `mdmark`・`--mdmark-version`・`#mdmark-payload` の要素が残る
+      - file:// で開くと、正常シナリオ（mdmark を使用していることを隠す）と同じ表示の文書が描かれる
+    test: test_normal_when_traces_kept
 lead: 文書の作成者が `mdmark export` で Markdown を 1 つ、配布物・利用側の CSS・外部ライブラリのモジュール・画像を埋めた 1 枚の HTML に書き出し、読者は file:// で開いて外を読み込まずに読み込む。
 issue: 9
 primary_actor: 文書の作成者
@@ -430,6 +479,6 @@ trigger: 文書の作成者が、1 つの文書をサーバー無しで指定し
 preconditions:
   - 文書の作成者の手元に Node 24 以降がある
   - 文書の作成者の手元から、設定の `libraries` に記載した URL の先へ届く
-success_guarantee: 指定した出力に 1 枚の HTML ができ、file:// で開くと外への要求 0 件で、`mount` と同じ本文・記法の操作・用語のツールチップ・外部ライブラリの図・画像が描かれる。埋めた拡張・部品・色分け・外部ライブラリは 1 つのスクリプトで動き、`blob:` URL と動的 `import()` を許さない環境でも同じに描かれる。他の文書へのリンクは記載したままの `href` で残る（文書間のリンクは全て 1 枚に含まれないため、警告には出さない）。
+success_guarantee: 指定した出力に 1 枚の HTML ができ、file:// で開くと外への要求 0 件で、`mount` と同じ本文・記法の操作・用語のツールチップ・外部ライブラリの図・画像が描かれる。埋めた拡張・部品・色分け・外部ライブラリは 1 つのスクリプトで動き、`blob:` URL と動的 `import()` を許さない環境でも同じに描かれる。他の文書へのリンクは記載したままの `href` で残る（文書間のリンクは全て 1 枚に含まれないため、警告には出さない）。隠さない書き出しを指定しなければ、HTML から mdmark を使用していることが読み取れない（mdmark の名前は別名へ置き換わり、HTML のコメント・バージョン・mdmark 自身のライセンスの表記は残らない。利用者が記載した値と第三者のライブラリのライセンスの表記は残る）。
 minimal_guarantee: 読み込めない画像とモジュールは書き出しを止めず警告に出す。出力先へ書き込めないときは、原因と修正方法の 1 文を出して 0 以外で終わる。文書に記載したスクリプトは書き出した HTML でも実行しない。
 test_file: tests/e2e/単一ユースケース/文書をHTMLに書き出す.spec.ts

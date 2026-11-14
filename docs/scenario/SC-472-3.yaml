@@ -187,13 +187,40 @@ scenarios:
       - 同じフォルダで `mdmark check` を実行したときと同じずれが返る
       - 設定・索引・文書が変わっていない
     test: test_normal_when_plain_md_has_marks
+  - name: 正常シナリオ（隠さない書き出しを指定する）
+    setup:
+      - name: ずれの無い作業のフォルダ
+        description: 正常シナリオと同じ
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      sequenceDiagram
+        participant C as Claude Code
+        participant S as MCP サーバー
+        participant F as 作業のフォルダ
+        C->>S: export_html（文書のパス）
+        S->>F: mdmark の名前を別名へ置き換えた HTML を書き込む
+        S-->>C: 書き出したパス
+        C->>S: export_html（文書のパス・隠さない書き出しを指定する）
+        S->>F: 名前を置き換えない HTML を書き込む
+        S-->>C: 書き出したパス
+        C->>S: build_site（隠さない書き出しを指定する）
+        S->>F: 名前を置き換えない 1 枚の HTML を書き込む
+        S-->>C: 書き出したパス・入れた文書の数・警告
+    expected:
+      - 引数を指定しない `export_html` が書き出した HTML が、同じ文書で `mdmark export` を実行して書き出した HTML と同じで、class `mdmark` と `--mdmark-version` を持たない
+      - 隠さない書き出しを指定した `export_html`・`build_site` が書き出した HTML が、同じ指定で `mdmark export`・`mdmark build` を実行して書き出した HTML と同じで、class `mdmark` と `--mdmark-version` を持つ
+    test: test_normal_when_traces_kept
+    refs:
+      - SC-472-56#scenarios[正常シナリオ（隠さない書き出しを指定する）]
+      - SC-472-76#scenarios[正常シナリオ（隠さない書き出しを指定する）]
 lead: Claude Code が MCP のツール `check`・`export_html`・`build_site` で、`mdmark check`・`export`・`build` と同じ点検・1 文書の書き出し・1 枚へのまとめを呼び、結果を受け取る。
 issue: 11
 primary_actor: Claude Code
 trigger: Claude Code が文書と索引を書き込み終え、点検してから配れる構造にしたくなる
 preconditions:
   - ビルドしたこのリポジトリの `mdmark serve` で、MCP の常駐サーバーが起動している
-success_guarantee: '`check` が `mdmark check` と同じずれの一覧を返却し、`export_html`・`build_site` が CLI と同じ HTML を書き込んで、書き出したパスを返却する。'
+success_guarantee: '`check` が `mdmark check` と同じずれの一覧を返却し、`export_html`・`build_site` が CLI と同じ HTML を書き込んで、書き出したパスを返却する。隠さない書き出しの指定も CLI と同じ意味で、指定しなければ mdmark を使用していることを隠す。'
 minimal_guarantee: '`check` は設定・索引・文書を書き換えない。設定ファイルが無いときは、何も書き込まずに、無いことと `mdmark init` で配置できることを返却する。'
 refs:
   - SC-472-78#
