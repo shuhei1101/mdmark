@@ -70,7 +70,10 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-14T10:55:59.481734+00:00'
   - process: 単体テスト作成
-    status: todo
+    status: done
+    note: 新しいテストは追加せず、引数をオブジェクトにまとめる関数の既存の単体テストの呼び出しを書き換えた
+    updated_by: planner
+    updated_at: '2026-11-14T11:18:16.480049+00:00'
   - process: 実装
     status: todo
   - process: 結合テスト作成
