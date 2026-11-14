@@ -1,10 +1,10 @@
 #!/bin/sh
-# develop の HEAD（vscode/package.json の version が 0.1.2）に vscode-v0.1.2 のタグを打って push し、
+# develop の HEAD（vscode/package.json の version が 0.1.3）に vscode-v0.1.3 のタグを打って push し、
 # vscode-release.yml に .vsix を GitHub Release へ添えさせ、Marketplace へ公開させる
 set -u
 
-TAG=vscode-v0.1.2
-VERSION=0.1.2
+TAG=vscode-v0.1.3
+VERSION=0.1.3
 
 # 前提確認
 if [ $# -gt 1 ] || { [ $# -eq 1 ] && [ "$1" != "--dry-run" ]; }; then

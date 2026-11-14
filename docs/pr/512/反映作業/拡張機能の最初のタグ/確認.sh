@@ -1,9 +1,9 @@
 #!/bin/sh
-# vscode-v0.1.2 のワークフローが成功し、Release に mdmark-0.1.2.vsix があり、Marketplace に 0.1.2 が公開されたかを読み取りだけで確かめる
+# vscode-v0.1.3 のワークフローが成功し、Release に mdmark-0.1.3.vsix があり、Marketplace に 0.1.3 が公開されたかを読み取りだけで確かめる
 set -u
 
-TAG=vscode-v0.1.2
-VERSION=0.1.2
+TAG=vscode-v0.1.3
+VERSION=0.1.3
 rc=0
 
 # ワークフローの完了を待つ（15 分で打ち切る）
