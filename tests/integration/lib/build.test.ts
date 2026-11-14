@@ -183,9 +183,9 @@ afterEach(async () => {
 test("test_normal", { timeout: BUILD_TIMEOUT_MS }, async () => {
   // 準備
   const root = await createWorkTree("v0.0.0\n");
-  // `marker-json.mjs` を持つ移行の手順のフォルダ
+  // `retired-diagrams.mjs` を持つ移行の手順のフォルダ
   await cp(
-    migrationsDirOf("marker-json.mjs"),
+    migrationsDirOf("retired-diagrams.mjs"),
     join(root, "migrations", "next"),
     { recursive: true },
   );
@@ -213,18 +213,21 @@ test("test_normal", { timeout: BUILD_TIMEOUT_MS }, async () => {
     expect(licenses).toContain(name);
   }
   expect(licenses).toMatch(/permission is hereby granted|MIT|BSD/i);
-  // 移行の手順のフォルダの `legacy-marks.js` にまとめた依存
-  expect(existsSync(join(root, "migrations", "next", "legacy-marks.js"))).toBe(
-    true,
-  );
-  const legacyLicenses = await readFile(
+  // 移行の手順のフォルダの `retired-diagrams.js` にまとめた依存（まとめずに読み込む esbuild・yaml を除く）
+  expect(
+    existsSync(join(root, "migrations", "next", "retired-diagrams.js")),
+  ).toBe(true);
+  const migrationLicenses = await readFile(
     join(root, "migrations", "next", "THIRD_PARTY_LICENSES.txt"),
     "utf8",
   );
-  for (const name of ["sanitize-html", "dayjs"]) {
-    expect(legacyLicenses).toContain(name);
+  for (const name of ["markdown-it", "sanitize-html"]) {
+    expect(migrationLicenses).toContain(name);
   }
-  expect(legacyLicenses).toMatch(/permission is hereby granted/i);
+  for (const name of ["esbuild ", "yaml "]) {
+    expect(migrationLicenses).not.toContain(`\n${name}`);
+  }
+  expect(migrationLicenses).toMatch(/permission is hereby granted/i);
   const declarations = await readFile(join(root, "dist", "index.d.ts"), "utf8");
   for (const name of [
     "version",

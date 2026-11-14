@@ -1,0 +1,74 @@
+# Fetch.enable の直後に jsDelivr の lucide の URL を import し、Fetch.requestPaused を受けなかった回数（misses）を数える。300 回 × 各 3 回
+# 使い捨てのテスト tests/integration/lib/zz-probe547.browser.test.ts（commit しない）。expect は misses を出すために必ず fail させている
+
+import { cdp } from "vitest/browser";
+import { expect, test } from "vitest";
+
+type CdpSession = {
+  send: (method: string, params?: unknown) => Promise<unknown>;
+  on: (event: string, handler: (params: unknown) => void) => void;
+};
+
+const USE_PROBE = true;
+
+test("probe547", async () => {
+  const session = cdp() as unknown as CdpSession;
+  let seen = 0;
+  let probed = 0;
+  session.on("Fetch.requestPaused", (params: unknown) => {
+    const { requestId, request } = params as { requestId: string; request: { url: string } };
+    if (request.url.includes("__probe__")) {
+      probed += 1;
+      void session.send("Fetch.fulfillRequest", { requestId, responseCode: 204, responseHeaders: [{ name: "Access-Control-Allow-Origin", value: "*" }] });
+      return;
+    }
+    seen += 1;
+    void session.send("Fetch.fulfillRequest", {
+      requestId,
+      responseCode: 200,
+      responseHeaders: [
+        { name: "Content-Type", value: "text/javascript" },
+        { name: "Access-Control-Allow-Origin", value: "*" },
+        { name: "x-stub", value: "1" },
+      ],
+      body: btoa("export default 1;"),
+    });
+  });
+  let misses = 0;
+  const missed: number[] = [];
+  const N = 300;
+  for (let i = 0; i < N; i += 1) {
+    await session.send("Fetch.enable", {
+      patterns: [{ urlPattern: "https://cdn.jsdelivr.net/npm/lucide@*" }],
+    });
+    const p0 = probed;
+    for (let t = 0; USE_PROBE && probed === p0 && t < 200; t += 1) {
+      await fetch(`https://cdn.jsdelivr.net/npm/lucide@0.0.0/__probe__?${i}-${t}`, { cache: "no-store" }).catch(() => undefined);
+    }
+    const before = seen;
+    try {
+      await import(/* @vite-ignore */ `https://cdn.jsdelivr.net/npm/lucide@0.0.0-probe${i}/x.mjs`);
+    } catch {
+      // network
+    }
+    if (seen === before) {
+      misses += 1;
+      missed.push(i);
+    }
+    await session.send("Fetch.disable");
+  }
+  console.error(`PROBE547 misses=${misses}/${N} at ${missed.join(",")}`);
+  expect(misses, `misses=${misses}/${N} at ${missed.join(",")}`).toBe(-1);
+}, 300_000);
+$ npx vitest run --project integration-browser tests/integration/lib/zz-probe547.browser.test.ts  # USE_PROBE=false 回目=1
+AssertionError: misses=1/300 at 37: expected 1 to be -1 // Object.is equality
+$ npx vitest run --project integration-browser tests/integration/lib/zz-probe547.browser.test.ts  # USE_PROBE=false 回目=2
+AssertionError: misses=1/300 at 15: expected 1 to be -1 // Object.is equality
+$ npx vitest run --project integration-browser tests/integration/lib/zz-probe547.browser.test.ts  # USE_PROBE=false 回目=3
+AssertionError: misses=1/300 at 20: expected 1 to be -1 // Object.is equality
+$ npx vitest run --project integration-browser tests/integration/lib/zz-probe547.browser.test.ts  # USE_PROBE=true 回目=1
+AssertionError: misses=0/300 at : expected +0 to be -1 // Object.is equality
+$ npx vitest run --project integration-browser tests/integration/lib/zz-probe547.browser.test.ts  # USE_PROBE=true 回目=2
+AssertionError: misses=0/300 at : expected +0 to be -1 // Object.is equality
+$ npx vitest run --project integration-browser tests/integration/lib/zz-probe547.browser.test.ts  # USE_PROBE=true 回目=3
+AssertionError: misses=0/300 at : expected +0 to be -1 // Object.is equality

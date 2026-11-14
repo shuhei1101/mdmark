@@ -2,7 +2,7 @@ import type { Token } from "markdown-it";
 import { type MdmarkConfig, resolveConfig } from "../config.ts";
 import { DIAGRAM_DIRECTIVES } from "../diagram/definition.ts";
 import { sanitizeEmbedded } from "../render/sanitize.ts";
-import { jsonFences } from "../render/syntax/diagrams.ts";
+import { isRetiredDiagram, jsonFences } from "../render/syntax/diagrams.ts";
 import {
   isHtmlFence,
   PART_PATTERN,
@@ -377,6 +377,10 @@ export function diagramTermMatches(options: {
     }
     const source = body.slice(block.from, block.to);
     for (const part of source.matchAll(new RegExp(PART_PATTERN))) {
+      // 廃止した図の要素は描かないため、照合しない
+      if (isRetiredDiagram((part[1] as string).toLowerCase())) {
+        continue;
+      }
       const definition = part[2] as string;
       found.push(
         ...definitionTerms({
@@ -385,6 +389,106 @@ export function diagramTermMatches(options: {
           dictionary,
         }),
       );
+    }
+  }
+  return found;
+}
+
+/** flowchart の行の中の、角括弧・丸括弧・波括弧・`|` で囲んだラベルの文字（開きの記号の後ろの位置と文字） */
+const FLOW_LABEL =
+  /\(\[([^\]]*)\]\)|\[\(([^)]*)\)\]|\[\[([^\]]*)\]\]|\(\(([^)]*)\)\)|\{\{([^}]*)\}\}|\[([^\]]*)\]|\(([^)]*)\)|\{([^}]*)\}|\|([^|]*)\|/g;
+
+/** flowchart の照合しない行（線の飾り・リンク・注記） */
+const FLOW_SKIPPED =
+  /^\s*(classDef|class|style|linkStyle|click|accTitle|accDescr|%%)\b/;
+
+/** sequenceDiagram の名前とメッセージを持たない行の頭の単語 */
+const SEQUENCE_KEYWORDS =
+  /^\s*(loop|alt|else|opt|par|and|critical|option|break|rect|end|autonumber|activate|deactivate|box|%%)\b/;
+
+/** Mermaid の 1 行の、照合する文字（行の中の始まりの位置と文字）を返却する */
+function mermaidTexts(
+  line: string,
+  kind: "flowchart" | "sequence",
+): Array<{ start: number; text: string }> {
+  if (kind === "flowchart") {
+    if (FLOW_SKIPPED.test(line)) {
+      return [];
+    }
+    return [...line.matchAll(FLOW_LABEL)].flatMap((match) => {
+      const index = match.slice(1).findIndex((group) => group !== undefined);
+      const text = match[index + 1] as string;
+      const open = match[0].indexOf(text);
+      return [{ start: match.index + open, text }];
+    });
+  }
+  const declared = /^(\s*(?:participant|actor)\s+\S+\s+as\s+)(.*)$/.exec(line);
+  if (declared) {
+    return [
+      { start: (declared[1] as string).length, text: declared[2] as string },
+    ];
+  }
+  if (SEQUENCE_KEYWORDS.test(line)) {
+    return [];
+  }
+  const colon = line.indexOf(":");
+  return colon < 0 ? [] : [{ start: colon + 1, text: line.slice(colon + 1) }];
+}
+
+/** map の範囲の `mermaid` のブロックの、ノード・参加者の名前とメッセージ・注記の文のうち、意味のある用語の位置を返却する */
+export function mapTermMatches(options: {
+  body: string;
+  tokens: Token[];
+  dictionary: Dictionary;
+}): Found[] {
+  const { body, tokens, dictionary } = options;
+  if (dictionary.words.length === 0) {
+    return [];
+  }
+  const lineStarts = lineStartsOf(body);
+  const found: Found[] = [];
+  for (const range of markedRanges(tokens, (name) => name === "map")) {
+    const block = singleFenceRange({
+      range,
+      isFence: (token) =>
+        token.type === "fence" &&
+        token.info.trim().split(/\s+/)[0] === "mermaid",
+      body,
+      lineStarts,
+    });
+    if (block === undefined) {
+      continue;
+    }
+    const source = body.slice(block.from, block.to);
+    const lines = source.split("\n");
+    const head = lines.find((line) => line.trim() !== "")?.trim() ?? "";
+    const kind = /^(flowchart|graph)\b/.test(head)
+      ? "flowchart"
+      : /^sequenceDiagram\b/.test(head)
+        ? "sequence"
+        : undefined;
+    if (kind === undefined) {
+      continue;
+    }
+    let lineStart = block.from;
+    for (const line of lines) {
+      for (const { start, text } of mermaidTexts(line, kind)) {
+        for (const word of findWords(text, dictionary.words)) {
+          const meaning = dictionary.term(word.word)?.meaning;
+          if (meaning === undefined || meaning === "") {
+            continue;
+          }
+          const key = normalizeWord(word.word);
+          found.push({
+            word: dictionary.written.get(key) ?? word.word,
+            key,
+            offset: lineStart + start + word.start,
+            end: lineStart + start + word.end,
+            termOnly: true,
+          });
+        }
+      }
+      lineStart += line.length + 1;
     }
   }
   return found;
@@ -568,6 +672,9 @@ export function collectMatches(input: {
             html: parsed.features.html === true,
           }),
         );
+      }
+      if (parsed.features.map === true) {
+        found.push(...mapTermMatches({ body, tokens, dictionary }));
       }
     }
     // 本文の頭からの順に並べる（同じ位置は用語、文書の順）

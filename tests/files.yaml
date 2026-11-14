@@ -551,6 +551,12 @@ files:
     related:
       - to: migrations/v0.10.0/drop-tag-vocabulary
         type: tests
+  - path: unit/migrations/retired-diagrams.test.ts
+    description: migrations/next/retired-diagrams.mjs（「文書の廃止した flow・sequence の範囲を map の範囲へ書き換える移行の手順」）を確認する単体テスト。retired-diagrams.mjs を変えたときに、合わせて再確認するケースを探すときに参照する。
+    tags: [topic:単体テスト, tool:vitest, topic:バージョン, topic:移行, topic:図]
+    related:
+      - to: migrations/next/retired-diagrams
+        type: tests
   - path: unit/helpers/charts.ts
     description: 単体テストが使用する見本のグラフの定義（棒・円）の JSON を受け持つ。単体テストの準備や比べ方を変えるときに参照する。
     tags: [topic:単体テスト, tool:vitest, topic:図, topic:フィクスチャ]
@@ -569,6 +575,12 @@ files:
   - path: unit/helpers/diagrams.ts
     description: 単体テストが使用する、見本の文書に記載した図の部品の定義を受け持つ。単体テストの準備や比べ方を変えるときに参照する。
     tags: [topic:単体テスト, tool:vitest, topic:図, topic:フィクスチャ]
+  - path: unit/helpers/retired-diagrams.ts
+    description: 単体テストが使用する、廃止した flow・sequence の範囲に記載していた図の定義（inquiry・inquiry-seq・judgement）を受け持つ。変換と廃止の警告の単体テストの準備を変えるときに参照する。
+    tags: [topic:単体テスト, tool:vitest, topic:図, topic:フィクスチャ]
+  - path: unit/helpers/retired-document.ts
+    description: 単体テストが使用する、廃止した図の範囲を持つ文書と、map の範囲へ書き換えた後の期待値を受け持つ。変換と移行の手順の単体テストの準備を変えるときに参照する。
+    tags: [topic:単体テスト, tool:vitest, topic:図, topic:フィクスチャ, topic:移行]
   - path: unit/helpers/er.ts
     description: 単体テストが使用する、ER 図の部品の定義の見本（モックの shop-er と、列の開閉を確認する定義）を受け持つ。単体テストの準備や比べ方を変えるときに参照する。
     tags: [topic:単体テスト, tool:vitest, topic:図, topic:フィクスチャ]
@@ -2002,6 +2014,12 @@ files:
   - path: unit/helpers/map.ts
     description: 単体テストが使用する、map の見本の Mermaid（構成図とシーケンス図）・補足の YAML・設定の map と、範囲の Markdown の組み立てを受け持つ。単体テストの準備や比べ方を変えるときに参照する。
     tags: [topic:単体テスト, tool:vitest, topic:図, topic:フィクスチャ]
+  - path: unit/src/map/convert.test.ts
+    description: src/map/convert.ts を確認する単体テスト。convert.ts を変えたときに、合わせて再確認するケースを探すときに参照する。
+    tags: [topic:単体テスト, tool:vitest, topic:図, topic:移行]
+    related:
+      - to: src/map/convert
+        type: tests
   - path: unit/src/map/flowchart.test.ts
     description: src/map/flowchart.ts を確認する単体テスト。flowchart.ts を変えたときに、合わせて再確認するケースを探すときに参照する。
     tags: [topic:単体テスト, tool:vitest, topic:図]

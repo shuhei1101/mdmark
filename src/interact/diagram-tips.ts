@@ -85,19 +85,19 @@ export function attachDiagramTips(options: {
 
   /** ツールチップを持ち主の上か下（`placement` の側を先に、収まらなければ反対側）に、画面からはみ出さないよう配置する */
   const place = (tip: HTMLElement, anchor: HTMLElement): void => {
-    if (tip.classList.contains(HINT_TIP_CLASS)) {
-      placeHint(tip, anchor);
-      return;
-    }
-    if (!box) {
-      return;
-    }
     // ノードのマーカーと ER 図のテーブルの説明のボタンは、マーカーでなくノード・テーブルに付けて配置する
     const target = anchor.classList.contains("mdmark-diagram-info")
       ? (anchor.closest<HTMLElement>(
           ".mdmark-diagram-node, .mdmark-diagram-er-table",
         ) ?? anchor)
       : anchor;
+    if (tip.classList.contains(HINT_TIP_CLASS)) {
+      placeHint(tip, target);
+      return;
+    }
+    if (!box) {
+      return;
+    }
     const a = target.getBoundingClientRect();
     const b = box.getBoundingClientRect();
     const { width, height } = tip.getBoundingClientRect();

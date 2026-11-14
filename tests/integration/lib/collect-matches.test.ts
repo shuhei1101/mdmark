@@ -67,23 +67,6 @@ const API_TARGET = {
   description: "公開関数の一覧",
 };
 
-/** ノードの `name` に `{{単語}}` を記載した、フロー図の定義の JSON */
-function flowDefinition(name: string): string[] {
-  return [
-    "{",
-    '  "title": "受け取り",',
-    '  "scope": "範囲",',
-    '  "updated": "2026-10-23",',
-    '  "width": 520,',
-    '  "height": 160,',
-    '  "nodes": [',
-    `    { "id": "recv", "kind": "script", "x": 20, "y": 48, "w": 140, "h": 64, "name": "${name}", "sub": "" }`,
-    "  ],",
-    '  "wires": []',
-    "}",
-  ];
-}
-
 /** 一致の行・始まり・終わりで本文を切り出した文字 */
 function cut(
   body: string,
@@ -192,7 +175,7 @@ test("test_normal_when_glossary_table", async () => {
   expect(matches.byDocument.glossary).toEqual([]);
 });
 
-// 埋め込んだ HTML の文字と、図の部品の定義の {{単語}} も照合し、本文の位置へ戻す（正常系）
+// 埋め込んだ HTML の文字と、map の範囲のノードの名前も照合し、本文の位置へ戻す（正常系）
 test("test_normal_when_embedded_html_and_diagram", async () => {
   // 準備
   const { collectMatches } = await loadBuilt();
@@ -204,20 +187,18 @@ test("test_normal_when_embedded_html_and_diagram", async () => {
     "```html",
     "<p>ワークスペースを開く。</p>",
     '<a href="#">ワークスペース</a>',
-    "<mdmark-flow>",
-    ...flowDefinition("{{ワークスペース}}"),
-    "</mdmark-flow>",
     "```",
     "",
     "<!-- /html -->",
     "",
-    "<!-- flow -->",
+    "<!-- map -->",
     "",
-    "```json",
-    ...flowDefinition("{{ワークスペース}} と {{公開関数}}"),
+    "```mermaid",
+    "flowchart LR",
+    "  ws[ワークスペース] --> fn[公開関数]",
     "```",
     "",
-    "<!-- /flow -->",
+    "<!-- /map -->",
     "",
   ].join("\n");
   // 実行
@@ -226,14 +207,13 @@ test("test_normal_when_embedded_html_and_diagram", async () => {
     documents: { "使い方/guide.md": guide },
   });
   // 検証
-  // HTML の段落・`<mdmark-flow>` のノード・`<!-- flow -->` のノードの 3 件で、リンクの文字と文書の別名の `{{公開関数}}` は無い
+  // HTML の段落と map のノードの名前の 2 件で、リンクの文字と文書の別名の `公開関数` は無い
   const inGuide = matches.byDocument.guide ?? [];
   expect(inGuide.map((match) => [match.id, match.text])).toEqual([
     ["ws", "ワークスペース"],
     ["ws", "ワークスペース"],
-    ["ws", "ワークスペース"],
   ]);
-  expect(inGuide.map((match) => match.line)).toEqual([6, 16, 35]);
+  expect(inGuide.map((match) => match.line)).toEqual([6, 16]);
   for (const match of inGuide) {
     expect(cut(guide, match)).toBe(match.text);
   }
@@ -350,13 +330,14 @@ test("test_normal_when_avoided_term", async () => {
     "",
     "<!-- /html -->",
     "",
-    "<!-- flow -->",
+    "<!-- map -->",
     "",
-    "```json",
-    ...flowDefinition("{{作業場}}"),
+    "```mermaid",
+    "flowchart LR",
+    "  a[作業場]",
     "```",
     "",
-    "<!-- /flow -->",
+    "<!-- /map -->",
     "",
   ].join("\n");
   const documents = {

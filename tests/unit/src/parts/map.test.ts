@@ -1,5 +1,5 @@
 import { expect, test } from "vitest";
-import { matches } from "../../helpers/html.ts";
+import { findTag, matches, outerHtml, plainText } from "../../helpers/html.ts";
 import { CONFIG, FLOW, SEQUENCE } from "../../helpers/map.ts";
 
 /** map の部品の HTML を読み込む（実装が無い間は各テストが個別に失敗する） */
@@ -673,4 +673,71 @@ test("test_render_map_state_diagram", async () => {
     /data-node="n1"[\s\S]*?mdmark-diagram-node-kind[^>]*>[\s\S]*?注記/,
   );
   expect(matches(part.html, /<g data-loop=/g)).toHaveLength(loops.length);
+});
+
+// リンク先を持つノードをリンクにし、説明のマーカーをリンクの外に配置する（正常系）
+test("test_render_map_flow_when_links", async () => {
+  // 準備
+  const { renderMapFlow } = await loadParts();
+  // 実行
+  const { html } = renderMapFlow({
+    ...(await flowArgs()),
+    links: { mount: "https://example.com/spec" },
+    notes: { mount: "文書を描く公開関数" },
+  });
+  // 検証
+  const node = outerHtml(html, 'data-node="mount"');
+  expect(findTag(node, 'data-node="mount"')).toContain("has-link");
+  expect(findTag(node, 'data-node="mount"')).not.toContain("tabindex");
+  const link = findTag(node, "mdmark-diagram-node-link");
+  expect(link).toContain('aria-roledescription="ノード"');
+  expect(link).toContain('aria-label="mount"');
+  expect(node).toMatch(
+    /<a class="mdmark-diagram-node-link" href="https:\/\/example\.com\/spec"[^>]*><\/a>[\s\S]*<button class="mdmark-diagram-info/,
+  );
+  expect(matches(html, /class="mdmark-diagram-node-link"/g)).toHaveLength(1);
+});
+
+// 説明を持つグループのタイトルの右にマーカーを配置する（正常系）
+test("test_render_map_flow_when_group_note", async () => {
+  // 準備
+  const { renderMapFlow } = await loadParts();
+  const { parseFlowchart } = await loadFlowchart();
+  const { layoutMap } = await loadLayout();
+  const notes = { read: "記法を読み取る部分" };
+  const opened = { ...(await flowArgs()), notes };
+  const closed = {
+    ...opened,
+    layout: layoutMap(
+      parseFlowchart(FLOW),
+      { collapsed: ["read"], entered: undefined },
+      {},
+      "height",
+    ),
+    collapsed: ["read"],
+  };
+  // 実行
+  const results = [renderMapFlow(opened), renderMapFlow(closed)];
+  // 検証
+  for (const { html, tips } of results) {
+    const markers = matches(
+      html,
+      /<button class="mdmark-diagram-info mdmark-diagram-group-info"[^>]*>/g,
+    );
+    expect(markers).toHaveLength(1);
+    const [marker = ""] = markers;
+    expect(marker).toContain('aria-label="「記法の読み取り」の説明"');
+    const id = /aria-describedby="([^"]+)"/.exec(marker)?.[1] ?? "";
+    expect(plainText(outerHtml(tips, `id="${id}"`))).toContain(
+      "記法を読み取る部分",
+    );
+    const head = outerHtml(
+      outerHtml(html, 'data-group="read"'),
+      'class="map-group-head"',
+    );
+    expect(head).toContain("mdmark-diagram-group-info");
+    expect(head).not.toMatch(
+      /<button class="map-group-title"[^>]*>[^<]*<button/,
+    );
+  }
 });

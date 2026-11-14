@@ -38,10 +38,6 @@ items:
   summary: まとめた HTML の文書をフォルダごとに並べ、開いている文書を示す一覧
 - page: CMP-472-39.ts.yaml
   summary: 図のタイトル・右上のボタンの帯・表示する枠・凡例と、拡大・縮小・移動・全画面
-- page: CMP-472-28.ts.yaml
-  summary: システムの枠と 3 つの層にノードと線を配置する構成図
-- page: CMP-472-19.ts.yaml
-  summary: 相手を左から右、メッセージを時刻の順に並べる図
 - page: CMP-472-13.ts.yaml
   summary: 系列を色と模様の組で分ける折れ線・棒・円・散布図のグラフ
 - page: CMP-472-1.ts.yaml

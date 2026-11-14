@@ -111,10 +111,10 @@ scenarios:
       - wide の範囲が本文の段落より広く描かれ、左の文書の一覧の列に重なっていない
       - 文書の一覧で B を選べ、B が出る
     test: test_normal_when_wide_range
-  - name: 正常シナリオ（フロー図のノードのリンク）
+  - name: 正常シナリオ（図のノードのリンク）
     setup:
       - name: まとめた HTML
-        description: 正常シナリオの B に、C を相対パスで指すリンク先を持つノード 1 つのフロー図を加えてまとめた HTML
+        description: 正常シナリオの B に、C を相対パスで指す `click` のリンク先を持つノード 1 つの map の構成図を加えてまとめた HTML
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
@@ -123,7 +123,7 @@ scenarios:
         participant P as まとめた HTML
         R->>P: 文書の一覧で B を選ぶ
         P-->>R: B
-        R->>P: B のフロー図の C を指すノードを押す
+        R->>P: B の map の図の C を指すノードを押す
         P-->>R: C
         R->>P: ブラウザの戻る
         P-->>R: B
@@ -131,7 +131,7 @@ scenarios:
       - ノードを押すと C が出て、URL が C を指す
       - 戻るで B が出る
       - 外への要求が 0 件
-    test: test_normal_when_flow_node_link
+    test: test_normal_when_map_node_link
   - name: 正常シナリオ（文書ごとのページの設定）
     setup:
       - name: まとめた HTML

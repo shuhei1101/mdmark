@@ -30,21 +30,6 @@ test("test_wire", async () => {
   await expect(pageOverflows(page)).resolves.toBe(false);
 });
 
-// ノードの入力・処理・出力を開いた状態は、3 行を見出しつきで出し、横にはみ出さない（Io）
-test("test_io", async () => {
-  // 準備・実行
-  const page = await holder.openStory("parts-diagramtooltip--io");
-  // 検証
-  const tip = page.locator('[role="tooltip"]');
-  await expect(tip.isVisible()).resolves.toBe(true);
-  await expect(tip.locator("dt").allInnerTexts()).resolves.toEqual([
-    "入力",
-    "処理",
-    "出力",
-  ]);
-  await expect(pageOverflows(page)).resolves.toBe(false);
-});
-
 // 用語を開いた状態は、本文の用語と同じ破線の下線で意味を出し、横にはみ出さない（Term）
 test("test_term", async () => {
   // 準備・実行

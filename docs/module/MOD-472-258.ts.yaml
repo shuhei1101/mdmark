@@ -99,7 +99,7 @@ functions:
     kind: 関数
     scope: public
     summary: 索引と文書の本文から、文書ごとの本文の一致と、重なりを除いた参照先を返却する
-    description: '`normalizeIndex` で合う文書・用語だけを使用する。本文のある索引の文書を `parseDocument` で 1 回ずつ読み込み、`glossary` がオンの文書の用語集の表の用語を集めて（`collectReferences` の `glossary` と同じ並び）、文書ごとに `buildDictionary`（`docId` に照合する文書、`ownGlossary` にその文書の表、`aliases` に `input.aliases`、`features` に文書のマーカーを重ねた機能）で辞書を作る。辞書の用語が `alias` を持つ一致は、参照先を `kind` `alias`・`aliasType` にその `alias_type`・`id` にエイリアスの `id`・`title` に `name`・`description` に `description`（無ければキーを持たない）にする。`avoided` の代わりの用語が `alias` を持つときは、`kind` `alias`・`aliasType` にその `alias_type`・`id` にエイリアスの `id`・`title` に代わりの用語の単語・`description` に意味（`avoid` の種類はキーを持たない）にする。地の文は `forEachInline`・`matchableChildren` の `text` の子を `findWords` で照合して `inlineOffsets` で本文の位置へ戻し、`html` がオンなら `embeddedHtmlMatches`、`diagrams` がオンなら `diagramTermMatches` の一致を追加する。辞書の `avoided` が空でない文書は、`words` に `avoided` の単語を加えた辞書で地の文と（`html` がオンなら）埋め込んだ HTML をもう 1 度照合し、`avoided` の単語の一致だけを、`avoided` の用語の `id` で参照した参照先と位置つきで `avoided` に入れる（`byDocument`・`targets` には入れない）。`collectReferences` を呼ばず、本文を 2 回解析しない。一致の `text` は、一致した単語を辞書の `written` で参照した索引・用語集の表に記載した表記'
+    description: '`normalizeIndex` で合う文書・用語だけを使用する。本文のある索引の文書を `parseDocument` で 1 回ずつ読み込み、`glossary` がオンの文書の用語集の表の用語を集めて（`collectReferences` の `glossary` と同じ並び）、文書ごとに `buildDictionary`（`docId` に照合する文書、`ownGlossary` にその文書の表、`aliases` に `input.aliases`、`features` に文書のマーカーを重ねた機能）で辞書を作る。辞書の用語が `alias` を持つ一致は、参照先を `kind` `alias`・`aliasType` にその `alias_type`・`id` にエイリアスの `id`・`title` に `name`・`description` に `description`（無ければキーを持たない）にする。`avoided` の代わりの用語が `alias` を持つときは、`kind` `alias`・`aliasType` にその `alias_type`・`id` にエイリアスの `id`・`title` に代わりの用語の単語・`description` に意味（`avoid` の種類はキーを持たない）にする。地の文は `forEachInline`・`matchableChildren` の `text` の子を `findWords` で照合して `inlineOffsets` で本文の位置へ戻し、`html` がオンなら `embeddedHtmlMatches`、`diagrams` がオンなら `diagramTermMatches`、`map` がオンなら `mapTermMatches` の一致を追加する。辞書の `avoided` が空でない文書は、`words` に `avoided` の単語を加えた辞書で地の文と（`html` がオンなら）埋め込んだ HTML をもう 1 度照合し、`avoided` の単語の一致だけを、`avoided` の用語の `id` で参照した参照先と位置つきで `avoided` に入れる（`byDocument`・`targets` には入れない）。`collectReferences` を呼ばず、本文を 2 回解析しない。一致の `text` は、一致した単語を辞書の `written` で参照した索引・用語集の表に記載した表記'
     args:
       - name: input
         type: '{ index: MdmarkIndex; documents: Record<string, string>; config?: MdmarkConfig; aliases?: MdmarkAlias[] }'
@@ -115,6 +115,7 @@ functions:
       - 'MOD-472-267#functions[inlineOffsets]'
       - '#functions[embeddedHtmlMatches]'
       - '#functions[diagramTermMatches]'
+      - '#functions[mapTermMatches]'
     unit_tests:
       - name: test_collect_matches
         case: 正常
@@ -155,7 +156,7 @@ functions:
       - name: test_collect_matches_when_diagram_term_is_alias
         case: 正常
         summary: 図の部品の `{{単語}}` は、単語が文書の別名でもあるときも用語の参照先だけを返却する
-        condition: 索引に用語 `公開関数`（`fn`）と、別名 `公開関数` を持つ文書 `api`。`guide` の `<!-- flow -->` の定義のノードの `name` に `{{公開関数}}`
+        condition: 索引に用語 `公開関数`（`fn`）と、別名 `公開関数` を持つ文書 `api`。`guide` の `<!-- er -->` の定義のテーブルの `label` に `{{公開関数}}`
         mock: なし
         expected: '`{{公開関数}}` の位置は `term` の `fn` の 1 件だけで、`targets` に `api` が入らない'
       - name: test_collect_matches_ignores_avoided_terms
@@ -197,7 +198,7 @@ functions:
       - name: test_collect_matches_when_diagram_term_is_alias_word
         case: 正常
         summary: 図の部品の `{{単語}}` はエイリアスを参照しない
-        condition: '`aliases` に `term` の `公開関数`（`fn`）だけを指定し、索引に用語が無い。`guide` の `<!-- flow -->` の定義のノードの `name` に `{{公開関数}}`、段落に `公開関数`'
+        condition: '`aliases` に `term` の `公開関数`（`fn`）だけを指定し、索引に用語が無い。`guide` の `<!-- er -->` の定義のテーブルの `label` に `{{公開関数}}`、段落に `公開関数`'
         mock: なし
         expected: '`byDocument.guide` が段落の `公開関数` の 1 件だけで、`{{公開関数}}` の位置が無い'
     refs:
@@ -233,7 +234,7 @@ functions:
     container: src/knowledge/matches.ts
     kind: 関数
     scope: internal
-    summary: 図の部品の範囲の定義と、埋め込んだ HTML の中の custom element の定義の `{{単語}}` のうち、意味のある用語の位置を返却する
+    summary: 図の部品（`chart`・`param`・`er`）の範囲の定義と、埋め込んだ HTML の中の custom element（`<mdmark-chart>`・`<mdmark-param>`）の定義の `{{単語}}` のうち、意味のある用語の位置を返却する。廃止した `flow`・`sequence` の範囲と `<mdmark-flow>`・`<mdmark-sequence>` は照合しない
     description: 範囲の見つけ方は `buildDiagrams`（マーカーの範囲の `json` のコードブロック）と `takeParts`（`PART_PATTERN`）と同じ。定義の JSON の文字列を戻して `{{単語}}` を探し、単語を `dictionary.term` で正規化して参照した用語の意味が空でないものだけを返却する（`lookup` と同じ。文書の別名は参照しない）。位置は JSON のエスケープ（`\"`・`ア`）を数えて本文の位置へ戻す
     args:
       - name: options
@@ -247,12 +248,44 @@ functions:
       - name: test_diagram_term_matches
         case: 正常
         summary: 定義の `{{単語}}` の用語の位置を返却し、用語でない単語は返却しない
-        condition: '`<!-- flow -->` の定義のノードの `name` に JSON のエスケープの後ろの `{{ワークスペース}}` と `{{公開関数}}`、`<!-- html -->` の中の `<mdmark-flow>` のノードに `{{ワークスペース}}`'
+        condition: '`<!-- er -->` の定義のテーブルの `label` に JSON のエスケープの後ろの `{{ワークスペース}}` と `{{公開関数}}`、`<!-- html -->` の中の `<mdmark-chart>` の系列の名前に `{{ワークスペース}}`、`<!-- flow -->` の範囲のノードの `name` に `{{ワークスペース}}`'
         mock: なし
-        expected: '`ワークスペース` の 2 件だけで、本文の行を切り出した文字が `ワークスペース`'
+        expected: '`ワークスペース` の 2 件だけ（`flow` の範囲の 1 件は入らない）で、本文の行を切り出した文字が `ワークスペース`'
       - name: test_diagram_term_matches_when_notation_differs
         case: 正常
         summary: 表記の違う `{{単語}}` も用語の位置として返却する
-        condition: 索引の用語 `MCP`。`<!-- flow -->` の定義のノードの `name` に `{{ｍｃｐ}}`
+        condition: 索引の用語 `MCP`。`<!-- er -->` の定義のテーブルの `label` に `{{ｍｃｐ}}`
         mock: なし
         expected: 1 件で、本文の行を切り出した文字が `ｍｃｐ`
+  - name: mapTermMatches
+    title: map の範囲の用語を照合する
+    container: src/knowledge/matches.ts
+    kind: 関数
+    scope: internal
+    summary: map の範囲の `mermaid` のブロックの、ノード・参加者の名前とメッセージ・注記の文のうち、意味のある用語の位置を返却する
+    description: 範囲の見つけ方は `buildMapRanges`（`map` のマーカーの範囲の情報文字列が `mermaid` のコードブロック）と同じ。Mermaid を図の読み取り（`dist/map.js`）に頼らず、行ごとの字句で照合する文字を取る。`flowchart`（`graph`）は角括弧・丸括弧・波括弧・`|` で囲んだラベルと `"` で囲んだ文字、`sequenceDiagram` は `participant`・`actor` の `as` の後ろと、メッセージ・`Note` の行の `:` の後ろ。取った文字を `findWords` で照合し、`dictionary.term` で参照した用語の意味が空でないものだけを返却する（`data-map-terms` と同じく、エイリアスと文書の別名は参照しない）。位置はコードブロックの中身の行と列から本文の位置へ戻す
+    args:
+      - name: options
+        type: '{ body: string; tokens: Token[]; dictionary: Dictionary }'
+        required: true
+        description: 本文・本文のトークン・辞書
+    returns:
+      type: 'Array<{ word: string; offset: number; end: number }>'
+      description: 一致した単語と、本文の頭からの始まりと終わり
+    callees:
+      - MOD-472-257#functions[findWords]
+    refs:
+      - IF-472-36#constraints[照合する範囲]
+    unit_tests:
+      - name: test_map_term_matches
+        case: 正常
+        summary: ノードの名前の用語の位置を返却し、ID・文書の別名・範囲の外は返却しない
+        condition: 索引の用語 `ワークスペース`（ID `ws`）と、別名 `公開関数` を持つ文書 `api`。map の範囲の flowchart に `ws[ワークスペース]`・`fn[公開関数]` と `ws --> fn`、範囲の外の `mermaid` のブロックに `ワークスペース`
+        mock: なし
+        expected: '`ワークスペース` の 1 件だけで、本文の行を切り出した文字が `ワークスペース`'
+      - name: test_map_term_matches_when_sequence
+        case: 正常
+        summary: シーケンス図の参加者の名前とメッセージ・注記の文を照合する
+        condition: 'map の範囲の sequenceDiagram に `participant W as ワークスペース`・`W->>M: ワークスペースを読む`・`Note over W: ワークスペース`'
+        mock: なし
+        expected: 3 件で、どれも本文の行を切り出した文字が `ワークスペース`

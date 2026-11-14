@@ -1,0 +1,10 @@
+$ npx vitest run --project 'unit*' tests/unit/src/interact/side-toc.browser.test.ts
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-view-side-toc-diff-marker-and-long-text-sort
+
+
+ Test Files  1 passed (1)
+      Tests  27 passed (27)
+   Start at  10:21:49
+   Duration  5.90s (import 66%, tests 28%, worker 6%)
+

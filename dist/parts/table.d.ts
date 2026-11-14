@@ -50,6 +50,8 @@ export type TableOptions = {
     overflow?: boolean;
     /** 留める列の位置（小さい順。省くと `rowHeader` の全ての列） */
     pinned?: number[];
+    /** `pinned` のうち、表の見えている幅に収まらず留めない列の位置 */
+    unpinned?: number[];
     /** ピン止めの動き（既定 `each`）。ボタンの名前と押した状態にする列が変わる */
     pinMode?: TablePinMode;
     /** 開いた絞り込みのドロワーの列の位置 */
@@ -208,9 +210,22 @@ export type TableToolsOptions = {
     pinVisible?: boolean;
     /** ピン止めのボタンを押した状態にするか */
     pinPressed?: boolean;
+    /** ピン止めのボタンを、表の見えている幅に収まらず留まっていない状態にするか */
+    pinUnpinned?: boolean;
     /** ピン止めの動き（既定 `each`）。ボタンの名前が変わる */
     pinMode?: TablePinMode;
 };
+/** 表の見えている幅に収まらず留まっていない列のピン止めのボタンの名前に付ける文言 */
+export declare const PIN_UNPINNED_SUFFIX = "\uFF08\u8868\u306E\u5E45\u306B\u53CE\u307E\u3089\u306A\u3044\u305F\u3081\u7559\u307E\u3063\u3066\u3044\u307E\u305B\u3093\uFF09";
+/** ピン止めのボタンの名前（`aria-label`）を返却する。留まっていない列は `PIN_UNPINNED_SUFFIX` を付ける */
+export declare function pinButtonLabel(options: {
+    /** 列名 */
+    label: string;
+    /** ピン止めの動き */
+    mode: TablePinMode;
+    /** 表の見えている幅に収まらず留まっていないか */
+    unpinned: boolean;
+}): string;
 /** 列 1 つの見出しの中身（並べ替え・絞り込み・ピン止めのボタンと、`resize` のときは列の幅のつまみ）と、その列の絞り込みのドロワーの HTML を返却する */
 export declare function renderTableTools(options: TableToolsOptions): {
     header: string;

@@ -24,7 +24,11 @@ import {
   nearestSegment,
   startDrag,
 } from "./drag.ts";
-import { type Flowchart, parseFlowchart } from "./flowchart.ts";
+import {
+  type Flowchart,
+  mapLinkProblems,
+  parseFlowchart,
+} from "./flowchart.ts";
 import { layoutMap, type MapLayout, type MapOverride } from "./layout.ts";
 import type { MapArgs } from "./spec.ts";
 import {
@@ -188,6 +192,7 @@ export const attachMapFlow = (
   const notes = Object.fromEntries(
     Object.entries(data.notes).map(([id, note]) => [id, note.text]),
   );
+  const links = mapLinkProblems(chart.links).allowed;
   const wireLines = Object.fromEntries(
     Object.entries(data.layout).flatMap(([id, entry]) =>
       entry.line === undefined ? [] : [[id, entry.line]],
@@ -254,6 +259,7 @@ export const attachMapFlow = (
       lines: config.map.lines,
       wireLines,
       notes,
+      links,
       colors,
       collapsed: state.collapsed,
       entered: state.entered,
@@ -585,6 +591,8 @@ export const attachMapFlow = (
     const head = target.closest(".map-group-head, .map-group-bar");
     if (!node && !wire && !head) return;
     event.preventDefault();
+    // 動かした後の click ではノードのリンクを開かない（動かさずに押したときだけ開く）
+    let moved = true;
     startDrag({
       event,
       layout: { ...layout, wires: applyWireShifts(layout, state).wires },
@@ -596,6 +604,7 @@ export const attachMapFlow = (
         refresh();
       },
       onClick: () => {
+        moved = false;
         if (node) select([node]);
         else if (wire) {
           const item = layout.wires.find((one) => one.id === wire);
@@ -607,16 +616,36 @@ export const attachMapFlow = (
       window.removeEventListener("pointerup", finish);
       window.removeEventListener("pointercancel", finish);
       save();
+      if (!moved || !node) return;
+      const suppress = (click: MouseEvent) => {
+        click.preventDefault();
+        // 動かしたノードの上の click は、利用側が document で受けてもリンク先を開かないよう、伝播も止める
+        const target = click.target instanceof Element ? click.target : null;
+        if (target?.closest(`[data-node="${CSS.escape(node)}"]`))
+          click.stopPropagation();
+        window.removeEventListener("click", suppress, true);
+      };
+      window.addEventListener("click", suppress, true);
+      // click が続かないとき（指を離した場所が別の要素）は、次の操作の click を止めない
+      setTimeout(() => window.removeEventListener("click", suppress, true));
     };
     window.addEventListener("pointerup", finish);
     window.addEventListener("pointercancel", finish);
   };
   /** キーで操作する要素（ノード・グループのタイトルの行の帯・線） */
   const keyTargetOf = (element: Element | undefined) => {
-    const node = element
-      ?.closest(".mdmark-diagram-node[data-node]")
-      ?.getAttribute("data-node");
-    if (node) return { node, selector: `[data-node="${CSS.escape(node)}"]` };
+    const nodeElement = element?.closest(".mdmark-diagram-node[data-node]");
+    const node = nodeElement?.getAttribute("data-node");
+    // リンク先を持つノードは、ノードの代わりにリンクがフォーカスを受ける
+    if (node) {
+      const linked = nodeElement?.querySelector(".mdmark-diagram-node-link");
+      const selector = `[data-node="${CSS.escape(node)}"]`;
+      return {
+        node,
+        linked: linked !== null && linked !== undefined,
+        selector: linked ? `${selector} .mdmark-diagram-node-link` : selector,
+      };
+    }
     const group = element
       ?.closest(".map-group-bar")
       ?.closest("[data-group]")
@@ -663,7 +692,9 @@ export const attachMapFlow = (
     // Enter・Space でノードを、Enter で線の両端を選ぶ
     if (
       keyTarget &&
-      (event.key === "Enter" || (event.key === " " && keyTarget.node))
+      (event.key === "Enter" || (event.key === " " && keyTarget.node)) &&
+      // リンクの Enter はリンクを開く
+      !(event.key === "Enter" && keyTarget.linked)
     ) {
       if (keyTarget.node) {
         event.preventDefault();

@@ -293,8 +293,8 @@ flows:
       - name: 配布物を読み込んだ Node の処理
         description: 正常系と同じ
       - name: 図の部品を持つ Markdown
-        description: '`<!-- flow -->` 〜 `<!-- /flow -->` にフロー図の定義、`<!-- sequence -->` 〜 `<!-- /sequence -->` にシーケンス図の定義、`<!-- chart -->` 〜 `<!-- /chart -->` にグラフの定義、`<!-- param -->` 〜 `<!-- /param -->` に操作できる部品の定義を配置し、`<script>` を 1 つ持つ文書'
-        notes: フロー図は `hint` を持つ `frame` と 3 つの `lanes`（1 つ目だけ `hint` を持つ）、枠の外の `external` のノード 1 つ、交わる横と縦の線 1 組、`loop` の線 1 本、`tip` を持つ線 1 本、`io` を持つノード 1 つを持つ。定義は `docs/mock/refs/42/assets/samples.js` の `inquiry`・`inquiry-seq`・`reply-time`・`strength` と同じ構造
+        description: '`<!-- chart -->` 〜 `<!-- /chart -->` にグラフの定義、`<!-- param -->` 〜 `<!-- /param -->` に操作できる部品の定義を配置し、`<script>` を 1 つ持つ文書'
+        notes: 定義は `docs/mock/refs/42/assets/samples.js` の `reply-time`・`strength` と同じ構造
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
@@ -306,15 +306,10 @@ flows:
         M->>M: タイトル・図・凡例を描く
         M-->>C: HTML 文字列
     expected:
-      - '`figure.mdmark-diagram` が 4 つあり、`data-diagram` が記載した順に `flow`・`sequence`・`chart`・`chart`（4 つ目は `div.mdmark-param` の中のグラフ）'
-      - 各図に題名・範囲・更新日のタイトルと凡例がある
-      - フロー図の枠の中に 3 つの層が定義の順にあり、`external` のノードが枠の外の座標にある
-      - 交わる横の線のパスが飛び越えの弧を持ち、`loop` の線が破線で戻り先のラベルを持つ
-      - '`tip` を持つ線と `io` を持つノードに、`role="tooltip"` と `hidden` を持つ中身があり、`io` を持つノードにだけマーカーがある'
+      - '`figure.mdmark-diagram` が 2 つあり、`data-diagram` がどちらも `chart`（2 つ目は `div.mdmark-param` の中のグラフ）'
+      - 各図に題名のタイトルと凡例がある
       - 操作できる部品に `input type="range"` があり、`value` が定義の既定の値
-      - 出力に定義の JSON の文字（`"nodes"`）と `script` 要素が無い
-      - フロー図とシーケンス図の凡例が、図に 2 種類以上あるノード（相手）の種類と線の種類の項目だけを持ち、システムの枠・層・線の交差・ツールチップのマーカーの項目を持たない
-      - '`hint` を持つ `frame` と 1 つ目の層のタイトルの右にマーカーと `role="tooltip"`・`hidden` を持つ中身があり、2 つ目と 3 つ目の層のタイトルにはマーカーが無い'
+      - 出力に定義の JSON の文字（`"series"`）と `script` 要素が無い
       - グラフの点がフォーカスできる要素で、系列の名前と値を持つ `role="tooltip"`・`hidden` の中身を持つ
     test: test_normal_when_diagram
   - name: 正常系（図の定義の誤り）
@@ -323,7 +318,7 @@ flows:
       - name: 配布物を読み込んだ Node の処理
         description: 正常系と同じ
       - name: 誤った定義を持つ Markdown
-        description: JSON として読み込めないフロー図の定義、3 つ目のノードの `kind` が `robot` のフロー図の定義、正しいフロー図の定義、段落を持つ文書
+        description: JSON として読み込めないグラフの定義、`type` が `robot` のグラフの定義、正しいグラフの定義、段落を持つ文書
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
@@ -334,10 +329,34 @@ flows:
         M->>M: 読み込めない定義の場所を記載の警告に替える
         M-->>C: HTML 文字列
     expected:
-      - 1 つ目の図の場所に記載の警告があり、`フロー図の部品の定義を JSON として読み込めません` で始まり、読み込めなかった行と足りない記号が記載されている
-      - 2 つ目の図の場所に記載の警告があり、3 つ目のノードの名前と種類 `robot` と使用できる種類が記載されている
+      - 1 つ目の図の場所に記載の警告があり、`グラフの部品の定義を JSON として読み込めません` で始まり、読み込めなかった行と足りない記号が記載されている
+      - 2 つ目の図の場所に記載の警告があり、`type` の `robot` と使用できる種類が記載されている
       - '`figure.mdmark-diagram` が 1 つだけあり、段落がある'
     test: test_normal_when_diagram_invalid
+  - name: 正常系（廃止した図の範囲）
+    summary: 廃止した `flow`・`sequence` の範囲は図にせず、範囲ごとに map へ変換できる旨の記載の警告を配置する
+    setup:
+      - name: 配布物を読み込んだ Node の処理
+        description: 正常系と同じ
+      - name: 廃止した図の範囲を持つ Markdown
+        description: '`<!-- flow -->` 〜 `<!-- /flow -->` と `<!-- sequence -->` 〜 `<!-- /sequence -->` の範囲に、廃止の前のバージョンで描けた部品の定義（`json` のコードブロック）を 1 つずつ配置し、その後に段落を持つ文書。埋め込んだ HTML の範囲に `<mdmark-flow>` の要素も 1 つ持つ'
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        participant C as 利用側の処理
+        participant M as mdmark
+        C->>M: render(markdown)
+        M->>M: flow・sequence の範囲を、廃止した記載方法として扱う
+        M-->>C: 範囲ごとに記載の警告を持つ HTML 文字列
+    expected:
+      - '`flow`・`sequence` の範囲の場所に `div.mdmark-syntax-warning` が 1 つずつあり、本文に廃止した記載方法であることと、`mdmark upgrade` で map の範囲へ変換できることが記載されている'
+      - '`figure.mdmark-diagram` が無く、出力に範囲の中の定義の JSON の文字（`"nodes"`）が無い'
+      - '埋め込んだ HTML の中の `<mdmark-flow>` の要素が中身ごと落ちていて、その場所に、要素を廃止したことと、埋め込んだ HTML の外に `<!-- map -->` の範囲で記載し直すことを記載した記載の警告がある（`mdmark upgrade` は記載しない）'
+      - 段落がある
+    test: test_normal_when_retired_diagram
+    refs:
+      - SC-472-43#scenarios[正常シナリオ（座標で書いた図の範囲）]
   - name: 正常系（ER 図）
     summary: ER 図の定義から、テーブル・列のマーカー・関係の線と多重度・種類の札と色・凡例を持つ図を描く
     setup:
@@ -420,7 +439,7 @@ flows:
       - name: 配布物を読み込んだ Node の処理
         description: 正常系と同じ
       - name: 機能を解除する Markdown
-        description: '先頭に `<!-- features: {"html": false} -->` を持ち、正常系（埋め込んだ HTML）と同じ範囲を持つ文書と、先頭に `<!-- features: {"hints": false} -->` を持ち、同じ範囲と `tip` を持つ線・`io` を持つノード・`hint` を持つノード・`hint` を持つ `frame` のフロー図を持つ文書'
+        description: '先頭に `<!-- features: {"html": false} -->` を持ち、正常系（埋め込んだ HTML）と同じ範囲を持つ文書と、先頭に `<!-- features: {"hints": false} -->` を持ち、同じ範囲と、概要を持つテーブルと説明を持つ列の ER 図を持つ文書'
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
@@ -434,7 +453,7 @@ flows:
     expected:
       - '`html` を `false` にした文書で、範囲のコードブロックが `<pre><code class="language-html">` で出て、文字列に `mdmark-html` と `<!--` が無い'
       - '`hints` を `false` にした文書で、埋め込んだ HTML が描かれ、文字列に `data-hint`・`mdmark-hint-` が無く、`role="tooltip"` はグラフの項目のツールチップ（`data-tip-for="item:{n}"`。設定の `features.hints` が受け持たない）だけ'
-      - '`hints` を `false` にした文書で、フロー図の線のラベルとノードの名前は出て、ノードとシステムの枠のタイトルにマーカーが無い'
+      - '`hints` を `false` にした文書で、ER 図のテーブルと列の名前は出て、テーブルの説明のボタンとツールチップの中身が無い'
     test: test_normal_when_html_and_hints_disabled
   - name: 正常系（埋め込んだ HTML の記載方法の誤り）
     summary: 範囲にコードブロックが 1 つでないときと、読み込めないチャートの定義の場所に記載の警告を配置する
@@ -632,6 +651,34 @@ flows:
     refs:
       - SC-472-73#scenarios[正常シナリオ（長文の列を文字で絞り込む）]
       - SC-472-73#scenarios[正常シナリオ（列の幅の範囲を指定する）]
+  - name: 正常系（長文の列と並べ替えの指定）
+    summary: '`sort` の機能を持つ表で、並べ替えを付けない長文の列と `columns.{列名}.sort` が `false` の列を `data-no-sort` に写す'
+    setup:
+      - name: 配布物を読み込んだ Node の処理
+        description: 正常系と同じ
+      - name: 並べ替えの指定が違う 5 つの表の Markdown
+        description: '名前（全角 6 文字以内）・更新日（`YYYY-MM-DD`）・説明（全角 40 文字の文）の 3 列 2 行の同じ表を、表 A `{"kind": "data"}`・表 B `{"kind": "data", "columns": {"説明": {"sort": true}, "名前": {"sort": false}}}`・表 C `{"kind": "plain", "features": {"sort": {}}}`・表 D `{"kind": "plain", "columns": {"名前": {"sort": true}}}`・表 E `{"kind": "data", "features": {"sort": {"enabled": false}}, "columns": {"説明": {"sort": true}}}` のマーカーで囲んだ文書'
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        participant C as 利用側の処理
+        participant M as mdmark
+        C->>M: render(markdown)
+        M->>M: 長文の列と columns.{列名}.sort から並べ替えを付けない列を決める
+        M-->>C: HTML 文字列
+    expected:
+      - 表 A が `data-no-sort="2"` を持つ
+      - 表 B が `data-no-sort="0"` を持つ
+      - 表 C が `data-features` に `sort` を持ち、`data-no-sort="2"` を持つ
+      - 表 D が `data-features` に `sort` を持ち、`data-no-sort="2"` を持つ
+      - 表 E が `data-features` に `sort` を持たず、`data-no-sort` を持たない
+      - 文字列に `mdmark-syntax-warning` が無い
+    test: test_normal_when_table_sort_columns
+    refs:
+      - SC-472-73#scenarios[正常シナリオ（長文の列に並べ替えを付けない）]
+      - SC-472-73#scenarios[正常シナリオ（列ごとに並べ替えを指定する）]
+      - SC-472-73#scenarios[正常シナリオ（並べ替えを記載した表の長文の列）]
   - name: 正常系（ビューのマーカー）
     summary: ビューのマーカーの範囲を、引数を持つ `mdmark-view` の中に表を残した HTML にする
     setup:
@@ -1960,57 +2007,6 @@ flows:
     test: test_normal_when_new_syntax_disabled
     refs:
       - SC-472-62#scenarios[正常シナリオ（新しい記法の機能を解除する）]
-  - name: 正常系（座標を省いた判定フローチャート）
-    summary: 座標を省いた判定フローチャートを配置して描き、座標を省けない定義を記載の警告にする
-    setup:
-      - name: 配布物を読み込んだ Node の処理
-        description: 正常系と同じ
-      - name: 座標を省いた定義を持つ Markdown
-        description: 『図を描く』の正常シナリオ（座標を省いた判定フローチャート）の定義、1 つのノードだけに `x`・`y`・`w`・`h` を記載した同じ定義、座標を省いた `llm` のノードを持つ定義、段落を持つ文書
-        notes: 定義はモック `docs/mock/components/flow-diagram/` の「座標を省いた判定フローチャート」と同じ構造
-      - name: Mock
-        description: 差し替える依存は無い
-    flow: |-
-      sequenceDiagram
-        participant C as 利用側の処理
-        participant M as mdmark
-        C->>M: render(markdown)
-        M->>M: 座標を省いた判定フローチャートを配置する
-        M->>M: 座標を省けない定義の場所を記載の警告に替える
-        M-->>C: HTML 文字列
-    expected:
-      - '`figure.mdmark-diagram` が 1 つだけあり、6 つのノードと 6 本の線がある'
-      - 開始のノードの `top` が最も小さく、質問 1・質問 2 のノードが同じ `left` で上から順に並ぶ
-      - 質問 1 の `YES` の先のアクションのノードが質問 1 の右にあり、質問 2 の `YES`・`NO` の先はそれぞれ右と下にある
-      - どの 2 つのノードの矩形も重ならず、全てのノードが図の幅と高さの中にある
-      - 線のパスが縦と横の線分だけで、`from`・`to` でないノードの矩形と交わらない
-      - 2 つ目と 3 つ目の図の場所に記載の警告があり、2 つ目は座標を全て記載するか全て省く修正方法、3 つ目は `llm` と座標を省けるのは判定フローチャートの 4 つの種類だけであることが記載されている
-      - 段落がある
-      - 同じ定義を 2 回描くと同じ文字列が返る
-    test: test_normal_when_flowchart_auto_layout
-  - name: 正常系（ノードのリンク先）
-    summary: リンク先を持つノードをリンクにし、許さないリンク先のノードをリンクにせず記載の警告にする
-    setup:
-      - name: 配布物を読み込んだ Node の処理
-        description: 正常系と同じ
-      - name: リンク先を持つ定義を持つ Markdown
-        description: ノード 5 つのフロー図の定義を持つ文書。`a` は `href` が `https://example.com/spec` で `io` を持つ。`b` は `./other.md`、`c` は `javascript:alert(1)`、`d` は `id:spec#items` を持ち、`e` は `href` を持たない
-      - name: Mock
-        description: 差し替える依存は無い
-    flow: |-
-      sequenceDiagram
-        participant C as 利用側の処理
-        participant M as mdmark
-        C->>M: render(markdown)
-        M->>M: ノードのリンク先を本文のリンクと同じ許可で確認する
-        M-->>C: HTML 文字列
-    expected:
-      - '`a`・`b` のノードが class `has-link` と、記載した `href` を持つ `a.mdmark-diagram-node-link` を持ち、`a.mdmark-diagram-node-link` のスクリーンリーダー向けの名前がノードの名前'
-      - '`a` のノードの `io` のマーカーが `a.mdmark-diagram-node-link` の中に無く、その後ろにある'
-      - '`c`・`d`・`e` のノードが `a` 要素と `has-link` を持たず、名前が描かれている'
-      - 図の前に記載の警告が 1 つあり、`c`・`d` と `javascript:alert(1)`・`id:spec#items` と使用できるリンク先が記載されている
-      - 文字列に `javascript:` が無い
-    test: test_normal_when_node_link
   - name: 正常系（折り返す）
     summary: '`wrap` が `true` のコードブロックとファイルツリーに折り返す class を付け、真偽でない `wrap` を記載の警告にする'
     setup:
@@ -2057,26 +2053,6 @@ flows:
       - '5 つ目はファイルツリー（`div.mdmark-tree`）で、記載の警告が無い'
       - '6 つ目のコードブロックの前には記載の警告が 2 つあり、1 つは `tree_warning` の `"no"` と `true`・`false` で記載する修正方法、もう 1 つは罫線の記載の警告（読めない値は既定の `true` として扱う）'
     test: test_normal_when_tree_lines_without_tree_language
-  - name: 正常系（種類が 1 つずつの図）
-    summary: ノードも線も 1 種類ずつのフロー図は、凡例の項目を持たずに描く
-    setup:
-      - name: 配布物を読み込んだ Node の処理
-        description: 正常系と同じ
-      - name: 種類が 1 つずつの図を持つ Markdown
-        description: 同じ種類のノード 3 つを同じ種類の線 2 本でつなぎ、`frame` と `lanes` を持たないフロー図の定義の文書
-      - name: Mock
-        description: 差し替える依存は無い
-    flow: |-
-      sequenceDiagram
-        participant C as 利用側の処理
-        participant M as mdmark
-        C->>M: render(markdown)
-        M->>M: 図に 2 種類以上あるノードの種類と線の種類を数える
-        M-->>C: 凡例の項目を持たない図の HTML 文字列
-    expected:
-      - '`figure.mdmark-diagram` が 1 つあり、ノード 3 つと線 2 本と題名を持つ'
-      - 凡例にノードの種類と線の種類の項目が無い
-    test: test_normal_when_single_kinds
   - name: 正常系（mermaid のコードブロック）
     summary: mermaid のコードブロックは図にせず、属性 `data-mdmark-mermaid` を付けたコードブロックとして返却する
     setup:
@@ -2469,7 +2445,7 @@ constraints:
   - item: マーカーの書式
     constraint: '1 か所に付けるマーカーは `<!-- {名前}: {引数} -->`、範囲を持つマーカーは `<!-- {名前}: {引数} -->` 〜 `<!-- /{名前} -->`。引数の無いマーカーは `<!-- {名前} -->` と記載できる。名前は英小文字で始まり、英小文字・数字・`-` だけを持つ。引数は、名前の後ろの空白から `-->` の前までの、最上位の波括弧を含む JSON のオブジェクト 1 つ（複数の行にわたってよい）。マーカーごとのキー・型・必須・既定と共通のオブジェクトは、ER 図『マーカーの設定の共通の決まり』と、そこから辿るマーカーごとの ER 図に従う。名前の後ろが `{` で始まらない引数は今の書き方（空白で区切った種類・`+機能`・`-機能`・`キー=値`・`closed`・`open`・位置の値）として、ER 図『マーカーの設定の共通の決まり』の「今の引数との対応」の表で同じ JSON のオブジェクトにしてから読む（この記載方法を入れたマイナーバージョンの間だけ。拡張と設定の `libraries` のマーカーは今の書き方を読まない。制約「マーカーの場所の要素」）。コードブロックと行内のコードの中はマーカーとして扱わない'
   - item: マーカーの扱い
-    constraint: '`features` のマーカーは機能のオン・オフとして取得する。記法のマーカー（`table`・`tabs`・`steps`・`section`・`row-detail`・`fig`・`toc`・`html`・`code`・`gallery`・`columns`・`column`・`details`・`pagebreak`・`include`・`wide`）と図の部品のマーカー（`flow`・`sequence`・`chart`・`param`）は、その記法の機能がオンなら記法にし、オフならマーカーだけを取り除いて囲んだ Markdown を普通の Markdown として描く。対応表にある名前と、`registerExtension` で登録した拡張の `directive` のマーカーは、マーカーの場所の要素に置き換える。図の部品のマーカーと同じ名前の拡張が登録されているときは、拡張を優先する（設定の `libraries` と同じ決まり）。それ以外は取り除く。どのマーカーも出力にコメントとして残さない'
+    constraint: '`features` のマーカーは機能のオン・オフとして取得する。記法のマーカー（`table`・`tabs`・`steps`・`section`・`row-detail`・`fig`・`toc`・`html`・`code`・`gallery`・`columns`・`column`・`details`・`pagebreak`・`include`・`wide`）と図の部品のマーカー（`chart`・`param`）は、その記法の機能がオンなら記法にし、オフならマーカーだけを取り除いて囲んだ Markdown を普通の Markdown として描く。対応表にある名前と、`registerExtension` で登録した拡張の `directive` のマーカーは、マーカーの場所の要素に置き換える。図の部品のマーカーと同じ名前の拡張が登録されているときは、拡張を優先する（設定の `libraries` と同じ決まり）。それ以外は取り除く。どのマーカーも出力にコメントとして残さない'
   - item: マーカーの場所の要素
     constraint: '`<div class="mdmark-embed" data-mdmark-slot="{名前}" data-mdmark-args="{引数}" role="status">図を読み込んでいます</div>`。`{引数}` は引数の JSON のオブジェクトを空白なしの JSON にした文字（引数の無いマーカーは `{}`）。登録した拡張のマーカーも同じ要素にする。引数が JSON のオブジェクトでない（今の書き方の）拡張と設定の `libraries` のマーカーは、要素に置き換えず、その場所に制約「作成者の誤り」の記載の警告（引数を JSON のオブジェクトで記載することと、`mdmark upgrade` の移行の報告で記載し直す箇所を確かめられること）を配置する。`render` は拡張の `load` も `schema` の検査も呼ばない'
   - item: 残す要素・属性
@@ -2485,7 +2461,7 @@ constraints:
   - item: 入力の大きさ
     constraint: 制限なし
   - item: 表
-    constraint: 表のマーカーで囲んだ表と、囲まない表を `<div class="mdmark-table" data-kind="{種類}" data-features="{機能}">` で囲む。種類は `default`（囲まない表と、知らない種類）・`data`・`plain`。種類は引数の `kind`。機能は種類の機能（`default` は `pin`・`resize`、`data` は `sort`・`pin`・`filter`・`resize`、`plain` は無し）に、`features.{機能}` で追加した機能を加え、`enabled` を `false` にした機能を除き、`columns.{列名}` に列の設定（`filter`・`hidden`・`pinned` の `true`・`total`）を記載した機能（`filter`・`columns`・`pin`・`total`）を加えたものを空白で並べる。`enabled` を `false` にした機能の列の設定は適用しない。列名は見出しの文字（多段の見出しは最下段の文字。同じ文字の列は最初の列）と照合する。`columns.{列名}.filter` は、列の位置（0 から）と `type` を `data-filter="{位置}:{種類} …"` に写す。`type` は `select`・`text`・`date`。`type` を省いたときは、長文の列なら `text`、ほかは `select` にする。見出しと本文のセルを改行（`<br>`・リストの項目・段落）で分けた 1 行の文字数が部品設計『表』の長文の列とみなす文字数以上の行を持つ列を長文の列にし、列の位置を `data-long="{位置} …"` に写す（`width.mode` が `nowrap` の列も文字数で決める。折り返さないのは `mdmark-wide` で決まる）。`collapse` は表を `<details class="mdmark-table-details">` と `<summary>{collapse.title、省くと 表を開く}</summary>` に入れ、`collapse.open` が `true` なら `details` に `open` を付ける。`features` で追加できる機能に `count`・`columns`・`total`・`copy`・`rowlink`・`reorder` があり、どの種類の既定にも入らない。`columns.{列名}.hidden` の `true` は、先頭を除く列の位置を `data-hide="{位置} …"` に写す。`columns.{列名}.total[].calc` は、列の位置と計算（`sum`・`avg`・`count`）を `data-total="{位置}:{計算} …"` に写す。`columns.{列名}.pinned` の `true` は、記載した列の位置を小さい順に半角の空白で区切って `data-pin="{位置} {位置}"` に写す（`false` は既定で留める列を留めない）。`columns.{列名}.width.mode` の `nowrap` はその列の `th`・`td` に class `mdmark-wide` を付ける。`columns.{列名}.width.min`・`width.max`（0 より大きい em の数）は、列の位置と値を `data-width="{位置}:{min}-{max} …"` に写し、記載しない側は空にする（`1:20-`・`3:-12`）。`columns.{列名}.format.type` の `check` は列の位置を `data-check="{位置} …"` に設定し、その列の文字が `true` のセルを `data-value="true"` と `<span class="mdmark-check" role="img" aria-label="はい">`（lucide の `check`）に、`false` のセルを `data-value="false"` と `<span class="mdmark-visually-hidden">いいえ</span>` に替え、その列の `th`・`td` に class `mdmark-align-center` を付ける（ほかの文字のセルは替えない）。見出しに無い列名の `columns.{列名}` は、その列名の設定だけを記載の警告にして適用しない。並べ替え・ピン止め・絞り込みのボタンと、列の幅のつまみ、表の上の件数・テーブル設定・コピーの帯、集計の行は `mount` が付ける。表のマーカーの `header.rows`（既定 1）は表の先頭からその数の行を `thead` の行にし、`header.columns` は本文の各行の先頭からその数の列のセルを `<th scope="row">` にする。表のマーカーで囲んだ表で、セルの文字がちょうど `^^` のセルは上のセル、`<<` のセルは左のセルと結合する。見出しの行では、結合の始まりのセルに `rowspan`・`colspan` を付け、結合したセルを出さない。本文の行では、`^^`・`<<` のセルに始まりのセルと同じ値を入れて `data-merge="up"`・`data-merge="left"` と `hidden` を付けて残し、始まりのセルに `rowspan`・`colspan` を付ける。`^^` を持つ本文の列の位置を `data-merge-columns="{位置} …"` に写す。見出しと本文をまたぐ `^^`・上のセルの無い `^^`・左のセルの無い `<<` は結合せず、記載した文字のまま出す。表のマーカーで囲まない表の `^^`・`<<` は文字のまま出す。セルの `rowspan`・`colspan`・`scope`・`hidden` は記法が出したセルだけが持つ
+    constraint: 表のマーカーで囲んだ表と、囲まない表を `<div class="mdmark-table" data-kind="{種類}" data-features="{機能}">` で囲む。種類は `default`（囲まない表と、知らない種類）・`data`・`plain`。種類は引数の `kind`。機能は種類の機能（`default` は `pin`・`resize`、`data` は `sort`・`pin`・`filter`・`resize`、`plain` は無し）に、`features.{機能}` で追加した機能を加え、`enabled` を `false` にした機能を除き、`columns.{列名}` に列の設定（`filter`・`hidden`・`pinned` の `true`・`total`・`sort` の `true`）を記載した機能（`filter`・`columns`・`pin`・`total`・`sort`）を加えたものを空白で並べる。`enabled` を `false` にした機能の列の設定は適用しない。列名は見出しの文字（多段の見出しは最下段の文字。同じ文字の列は最初の列）と照合する。`columns.{列名}.filter` は、列の位置（0 から）と `type` を `data-filter="{位置}:{種類} …"` に写す。`type` は `select`・`text`・`date`。`type` を省いたときは、長文の列なら `text`、ほかは `select` にする。見出しと本文のセルを改行（`<br>`・リストの項目・段落）で分けた 1 行の文字数が部品設計『表』の長文の列とみなす文字数以上の行を持つ列を長文の列にし、列の位置を `data-long="{位置} …"` に写す（`width.mode` が `nowrap` の列も文字数で決める。折り返さないのは `mdmark-wide` で決まる）。`sort` の機能を持つ表は、長文の列（`columns.{列名}.sort` が `true` の列を除く）と `columns.{列名}.sort` が `false` の列の位置を `data-no-sort="{位置} …"` に写す（表の種類と、`features.sort` を記載したかによらない）。`columns.{列名}.sort` の `true` は `sort` の機能を加える（`enabled` を `false` にしたときは適用しない）。`sort` の機能を持たない表と、ビューのマーカーの範囲の表（制約「ビューのマーカー」）には `data-no-sort` を付けない。`collapse` は表を `<details class="mdmark-table-details">` と `<summary>{collapse.title、省くと 表を開く}</summary>` に入れ、`collapse.open` が `true` なら `details` に `open` を付ける。`features` で追加できる機能に `count`・`columns`・`total`・`copy`・`rowlink`・`reorder` があり、どの種類の既定にも入らない。`columns.{列名}.hidden` の `true` は、先頭を除く列の位置を `data-hide="{位置} …"` に写す。`columns.{列名}.total[].calc` は、列の位置と計算（`sum`・`avg`・`count`）を `data-total="{位置}:{計算} …"` に写す。`columns.{列名}.pinned` の `true` は、記載した列の位置を小さい順に半角の空白で区切って `data-pin="{位置} {位置}"` に写す（`false` は既定で留める列を留めない）。`columns.{列名}.width.mode` の `nowrap` はその列の `th`・`td` に class `mdmark-wide` を付ける。`columns.{列名}.width.min`・`width.max`（0 より大きい em の数）は、列の位置と値を `data-width="{位置}:{min}-{max} …"` に写し、記載しない側は空にする（`1:20-`・`3:-12`）。`columns.{列名}.format.type` の `check` は列の位置を `data-check="{位置} …"` に設定し、その列の文字が `true` のセルを `data-value="true"` と `<span class="mdmark-check" role="img" aria-label="はい">`（lucide の `check`）に、`false` のセルを `data-value="false"` と `<span class="mdmark-visually-hidden">いいえ</span>` に替え、その列の `th`・`td` に class `mdmark-align-center` を付ける（ほかの文字のセルは替えない）。見出しに無い列名の `columns.{列名}` は、その列名の設定だけを記載の警告にして適用しない。並べ替え・ピン止め・絞り込みのボタンと、列の幅のつまみ、表の上の件数・テーブル設定・コピーの帯、集計の行は `mount` が付ける。表のマーカーの `header.rows`（既定 1）は表の先頭からその数の行を `thead` の行にし、`header.columns` は本文の各行の先頭からその数の列のセルを `<th scope="row">` にする。表のマーカーで囲んだ表で、セルの文字がちょうど `^^` のセルは上のセル、`<<` のセルは左のセルと結合する。見出しの行では、結合の始まりのセルに `rowspan`・`colspan` を付け、結合したセルを出さない。本文の行では、`^^`・`<<` のセルに始まりのセルと同じ値を入れて `data-merge="up"`・`data-merge="left"` と `hidden` を付けて残し、始まりのセルに `rowspan`・`colspan` を付ける。`^^` を持つ本文の列の位置を `data-merge-columns="{位置} …"` に写す。見出しと本文をまたぐ `^^`・上のセルの無い `^^`・左のセルの無い `<<` は結合せず、記載した文字のまま出す。表のマーカーで囲まない表の `^^`・`<<` は文字のまま出す。セルの `rowspan`・`colspan`・`scope`・`hidden` は記法が出したセルだけが持つ
   - item: 注意書き
     constraint: '1 行目が `[!NOTE]`・`[!TIP]`・`[!IMPORTANT]`・`[!WARNING]`・`[!CAUTION]` の引用を、`<div class="markdown-alert markdown-alert-{種類の小文字}">` とタイトル `<p class="markdown-alert-title">{補足・ヒント・重要・警告・注意}</p>` にし、種類の文字を本文から除外する。末尾に `-` を付けた種類は `<details class="markdown-alert markdown-alert-{種類}">` と `<summary class="markdown-alert-title">` にし、`+` を付けた種類は同じ `details` に `open` を付ける。種類（と `-`・`+`）の後ろに文字があれば、タイトルの文字をその文字にし、タイトルの頭に `<span class="mdmark-visually-hidden">{補足・ヒント・重要・警告・注意}: </span>` を配置する。注意書きの本文の中の引用も同じ規則で注意書きにする（入れ子）。知らない種類は `note` として出す'
   - item: タブ
@@ -2506,13 +2482,17 @@ constraints:
   - item: 図と表の番号
     constraint: '`<!-- fig: {"id": "ID"} -->` の直後の画像の段落と表を `<figure class="mdmark-figure" id="fig-{ID}">` に入れ、文書の頭から種類ごとに数えた番号を付ける。画像は下に `<figcaption class="mdmark-figure-caption"><b>図 {番号}</b>{画像の title}</figcaption>`、表は上に `<figcaption class="mdmark-figure-caption"><b>表 {番号}</b></figcaption>` を配置する。本文の `#fig-{ID}` へのリンクの文字を、その図表の `図 {番号}`・`表 {番号}` に替える'
   - item: 作成者の誤り
-    constraint: 記法のマーカーの、名前の後ろが `{` で始まるのに JSON のオブジェクトとして読めない引数（読めない位置と理由。値に `-->` を記載するとコメントがそこで閉じるため、`>` を `\u003e` にした `--\u003e` での記載方法も）、マーカーごとの JSON Schema（制約「マーカーの書式」の ER 図）の型・選べる値・必須に合わない値（その値を持つ設定だけを適用しない。必須の `tree.key` の無い `tree` は `tree` を適用しない）、表に無い列名の `columns.{列名}`・`tree.key.column` などの列を指す値、列に無い値の `board.values.{値}`、先頭の列の `columns.{列名}.hidden`、文書に無い見出しか直下にタブの範囲を持たない見出しの `tree.example.heading`、`ts` と `js` のコードブロックを両方置いた埋め込んだ HTML の範囲・同じ言語のコードブロックを 2 つ配置した範囲、閉じのマーカーの無い範囲（マーカーから文書の終わりまでを範囲にする）、見出しの無いタブの範囲、空の文字の `group`（組を持たないタブにする）、番号付きリストの無いステップの範囲、表に無い行を指す行の詳細、切れた図表の参照、重なった図表の ID、読み込めない行を持つファイルツリー、コードブロックに無い行の番号、直後にコードブロックの無いコードブロックのマーカー、フロー図のノードの許可しないリンク先（制約「ノードのリンク先」。場所は図の前）、知らないコードの行のマーカー（`[!code blink]` など。その行には当てず、記載した文字のまま出す）、`fold` の畳めない行（コードブロックに無い行と、次の空でない行が深くない行）の番号、表の行の数以上の `header.rows`、表の列の数以上の `header.columns`（行見出しを持たない表として描く）、結合するセルの無い `^^`・`<<`（制約「表」）、閉じの無い入れ子のタブの開き（場所は外側の開き）、`total` の表の `sum`・`avg` の列にある空でなく数として読み込めないセル（読み込み方は docs/interface/IF-472-35.ts の制約『表の操作』。その列のその集計のセルは `mount` が空にする）では、読み込めた指定だけを適用して描き、その箇所の前に `<div class="mdmark-syntax-warning" role="note">` とタイトル `<p class="mdmark-syntax-warning-title">記載の警告</p>` と、読み込めない指定と修正方法の本文を配置する。記法のマーカーの知らないキー（`features` のマーカーと表の `features` の知らない機能名を含む）と、`enabled` を `false` にした機能の列の設定は、記載の警告を配置せずに無視し、残りの指定で描く（点検が通知する）。今の書き方の記法のマーカーは、記載の警告を配置せずに制約「マーカーの書式」のとおり描く（点検が通知する）。今の書き方の中の読めない単語は、今の実装のとおり扱う
+    constraint: 記法のマーカーの、名前の後ろが `{` で始まるのに JSON のオブジェクトとして読めない引数（読めない位置と理由。値に `-->` を記載するとコメントがそこで閉じるため、`>` を `\u003e` にした `--\u003e` での記載方法も）、マーカーごとの JSON Schema（制約「マーカーの書式」の ER 図）の型・選べる値・必須に合わない値（その値を持つ設定だけを適用しない。必須の `tree.key` の無い `tree` は `tree` を適用しない）、表に無い列名の `columns.{列名}`・`tree.key.column` などの列を指す値、列に無い値の `board.values.{値}`、先頭の列の `columns.{列名}.hidden`、文書に無い見出しか直下にタブの範囲を持たない見出しの `tree.example.heading`、`ts` と `js` のコードブロックを両方置いた埋め込んだ HTML の範囲・同じ言語のコードブロックを 2 つ配置した範囲、閉じのマーカーの無い範囲（マーカーから文書の終わりまでを範囲にする）、見出しの無いタブの範囲、空の文字の `group`（組を持たないタブにする）、番号付きリストの無いステップの範囲、表に無い行を指す行の詳細、切れた図表の参照、重なった図表の ID、読み込めない行を持つファイルツリー、コードブロックに無い行の番号、直後にコードブロックの無いコードブロックのマーカー、知らないコードの行のマーカー（`[!code blink]` など。その行には当てず、記載した文字のまま出す）、`fold` の畳めない行（コードブロックに無い行と、次の空でない行が深くない行）の番号、表の行の数以上の `header.rows`、表の列の数以上の `header.columns`（行見出しを持たない表として描く）、結合するセルの無い `^^`・`<<`（制約「表」）、閉じの無い入れ子のタブの開き（場所は外側の開き）、`total` の表の `sum`・`avg` の列にある空でなく数として読み込めないセル（読み込み方は docs/interface/IF-472-35.ts の制約『表の操作』。その列のその集計のセルは `mount` が空にする）では、読み込めた指定だけを適用して描き、その箇所の前に `<div class="mdmark-syntax-warning" role="note">` とタイトル `<p class="mdmark-syntax-warning-title">記載の警告</p>` と、読み込めない指定と修正方法の本文を配置する。記法のマーカーの知らないキー（`features` のマーカーと表の `features` の知らない機能名を含む）と、`enabled` を `false` にした機能の列の設定は、記載の警告を配置せずに無視し、残りの指定で描く（点検が通知する）。今の書き方の記法のマーカーは、記載の警告を配置せずに制約「マーカーの書式」のとおり描く（点検が通知する）。今の書き方の中の読めない単語は、今の実装のとおり扱う
     notes: 本文の文言は画面設計『文書』
   - item: 図の部品
-    constraint: '`<!-- flow -->`・`<!-- sequence -->`・`<!-- chart -->`・`<!-- param -->`・`<!-- er -->` 〜 閉じのマーカーの範囲にある言語 `json` のコードブロック 1 つを部品の定義として読み込み、構造（`dist/index.d.ts` の `MdmarkFlowDefinition`・`MdmarkSequenceDefinition`・`MdmarkChartDefinition`・`MdmarkParamDefinition`・`MdmarkErDefinition`）を確認して、`<figure class="mdmark-diagram" data-diagram="{種類}">` にタイトル（題名・範囲・更新日）・図・凡例をこの順に描く（`param` は `div.mdmark-param` に描き、中のグラフを `data-diagram="chart"` の図の枠にする）。範囲の中のコードブロック以外の Markdown と定義の JSON は出力に残さない。定義の文字（ノードの名前・補足・線のラベル・テーブルと列の名前と型・ツールチップの中身）は文字として出し、`{{単語}}` はその単語を用語の照合に回す。ツールチップの中身は `role="tooltip"` と `hidden` を持つ要素で図の中に配置し、フロー図の `frame` と `lanes` の要素が文字の `hint` を持つときはタイトルの右にノードと同じマーカーとその中身を配置する。グラフの項目（点・棒・扇形など）は、フォーカスできる要素と、系列か項目の名前と値を持つツールチップの中身にし、点には外観の点より広い透明のクリックを受ける範囲を重ねる（要素の構造と種類ごとの中身は部品設計）。定義の `stickyTitles`（真偽値。省いたとき `true`）は `mount` がタイトルを留めるかを決める値で、図の要素に写す。拡大・縮小・移動・全画面のボタンと操作は `mount` が付ける。グラフの定義の `type` は `line`（省いたとき）・`bar`・`pie`・`scatter`・`area`・`stacked-bar`・`stacked-area`・`horizontal-bar`・`donut`・`radar`・`bubble`・`combo` で、系列（円とドーナツは項目）は 1〜6 つ。`stacked-bar`・`stacked-area` は同じ項目の系列の値を積み上げた高さ（負の値は 0 の下へ追加する。`stacked-bar` は棒の上に合計を出す）、`horizontal-bar` は項目を縦・値を横の軸、`donut` は中を空けた扇形と、中央の合計と `合計{unit}`、`radar` は `ticks` を軸にした多角形、`bubble` は点の 3 つ目の値に面積が比例する円（凡例に `円の面積: {size.label}`）、`combo` は系列ごとの `as`（`line`・`bar`）で折れ線と棒を同じ横の軸に描き、`axis` が `y2` の系列は `y2` の右の縦の軸で示す（`y2` を持つときは凡例の系列の名前に `（左の軸）`・`（右の軸）` を添える）。棒・面・円・ドーナツは系列を色と塗りの模様の組、折れ線・散布図・バブル・レーダーは色と点の形状の組で描き分け、円とドーナツは扇形の外に割合（整数の %）、凡例に項目の名前と値を出す。値の軸の範囲を省いたときは、データの最小と最大を含む 1・2・5×10 のべき乗の刻みで切る'
+    constraint: '`<!-- chart -->`・`<!-- param -->`・`<!-- er -->` 〜 閉じのマーカーの範囲にある言語 `json` のコードブロック 1 つを部品の定義として読み込み、構造（`dist/index.d.ts` の `MdmarkChartDefinition`・`MdmarkParamDefinition`・`MdmarkErDefinition`）を確認して、`<figure class="mdmark-diagram" data-diagram="{種類}">` にタイトル（題名・範囲・更新日）・図・凡例をこの順に描く（`param` は `div.mdmark-param` に描き、中のグラフを `data-diagram="chart"` の図の枠にする）。範囲の中のコードブロック以外の Markdown と定義の JSON は出力に残さない。定義の文字（テーブルと列の名前と型・関係のラベル・ツールチップの中身）は文字として出し、`{{単語}}` はその単語を用語の照合に回す。ツールチップの中身は `role="tooltip"` と `hidden` を持つ要素で図の中に配置する。グラフの項目（点・棒・扇形など）は、フォーカスできる要素と、系列か項目の名前と値を持つツールチップの中身にし、点には外観の点より広い透明のクリックを受ける範囲を重ねる（要素の構造と種類ごとの中身は部品設計）。拡大・縮小・移動・全画面のボタンと操作は `mount` が付ける。グラフの定義の `type` は `line`（省いたとき）・`bar`・`pie`・`scatter`・`area`・`stacked-bar`・`stacked-area`・`horizontal-bar`・`donut`・`radar`・`bubble`・`combo` で、系列（円とドーナツは項目）は 1〜6 つ。`stacked-bar`・`stacked-area` は同じ項目の系列の値を積み上げた高さ（負の値は 0 の下へ追加する。`stacked-bar` は棒の上に合計を出す）、`horizontal-bar` は項目を縦・値を横の軸、`donut` は中を空けた扇形と、中央の合計と `合計{unit}`、`radar` は `ticks` を軸にした多角形、`bubble` は点の 3 つ目の値に面積が比例する円（凡例に `円の面積: {size.label}`）、`combo` は系列ごとの `as`（`line`・`bar`）で折れ線と棒を同じ横の軸に描き、`axis` が `y2` の系列は `y2` の右の縦の軸で示す（`y2` を持つときは凡例の系列の名前に `（左の軸）`・`（右の軸）` を添える）。棒・面・円・ドーナツは系列を色と塗りの模様の組、折れ線・散布図・バブル・レーダーは色と点の形状の組で描き分け、円とドーナツは扇形の外に割合（整数の %）、凡例に項目の名前と値を出す。値の軸の範囲を省いたときは、データの最小と最大を含む 1・2・5×10 のべき乗の刻みで切る'
     notes: 定義の構造の項目はモジュール構成設計で型に記載する。見本は `docs/mock/refs/42/assets/samples.js`
+  - item: 廃止した図の範囲
+    constraint: '`<!-- flow -->`・`<!-- sequence -->` 〜 閉じのマーカーの範囲は図にせず、範囲の中の Markdown と定義の JSON を出力に残さずに、範囲の場所へ記載の警告を 1 つ配置する。本文は、その記載方法を廃止したことと、`mdmark upgrade` で map の範囲（Mermaid と補足）へ変換できることを記載する。閉じのマーカーの無い範囲は、マーカーから文書の終わりまでを範囲にする。機能 `diagrams` がオフでも同じ警告を配置する。`registerExtension` で `flow`・`sequence` と同じ `directive` の拡張を登録したページでは、その名前の範囲を廃止した図として扱わず、制約「マーカーの扱い」のとおり拡張のマーカーにする（インターフェース定義『拡張を登録する』の `directive`）'
+    decided_by: SC-472-43#scenarios[正常シナリオ（座標で書いた図の範囲）]
+    notes: 本文の文言は画面設計『文書』。変換は移行の手順（確認ログ）
   - item: 図の外観の決まり
-    constraint: フロー図は定義の座標のとおりにノードと線を配置し、座標を省いた判定フローチャートだけを制約「自動の配置」で配置する。`frame` をシステムの枠、`lanes` を枠の中の層（層のノードの色をうっすら敷く）にする。線の種類（`flow`・`read`・`write`・`reply`・`loop`）は色と模様（破線の間隔・太さ・矢じり）の組で描き分ける。横の線が縦の線と交わる点は横の線に飛び越えの弧（line jump）を入れ、同じ向きで重なる線はずらす。シーケンス図は相手を定義の順に左から右へ、メッセージを時刻の順に上から下へ並べ、`loop` は右の帯を通る破線と戻り先のラベルにする。グラフは系列を色と線の模様と点の形状の組で描き分ける。フロー図とシーケンス図の凡例には、図に 2 種類以上あるノード（シーケンス図は相手）の種類と線の種類だけを記載し、システムの枠・層の背景・線の交差・ツールチップのマーカー・用語の下線は記載しない（記載する項目が無い図の凡例の場所の扱いは部品設計）。グラフの凡例には系列（円とドーナツは項目）を記載する
+    constraint: グラフは系列を色と線の模様と点の形状の組で描き分ける。グラフの凡例には系列（円とドーナツは項目）を記載する
     notes: 色と模様の値はデザイン方針と CSS 変数（モジュール構成設計）
   - item: ER 図
     constraint: '`er` の定義は、テーブル（`id`・物理名 `name`・論理名 `label`・種類 `kind`・色 `color`・概要 `desc`・座標 `x`・`y`・幅 `w`・畳んだ状態で開く `folded`・列 `columns`）と関係（元 `from`・`fromColumn`・`fromCard`、先 `to`・`toColumn`・`toCard`、ラベル `label`、縦の線の位置 `midX`）を持つ。テーブルは定義の座標のとおりに配置し、自動配置はしない。テーブルの見出しに lucide の `table` のアイコンと物理名、論理名と種類の札（`master` は `マスター`、`transaction` は `トランザクション`。`kind` の無いテーブルは札を出さない）を出し、列（`name`・`type`・主キー `pk`・外部キー `fk`・NOT NULL `nn`・説明 `desc`）を定義の順に 1 行ずつ、`PK`・`FK`・`NN` のマーカー（`abbr`。`title` が `主キー`・`外部キー`・`NOT NULL`）・名前・型で並べる。テーブルの `data-color` は `color`、無ければ種類の既定の色（`master` は `blue`、`transaction` は `orange`）にし、どちらも無いテーブルは `data-color` を持たない。関係は、元の列の行から先の列の行へ横・縦・横の直角の線で結び（縦の線は `midX`、省いたときは両端の中間）、両端に多重度の記号（`1` は縦線 2 本、`0..1` は縦線と丸、`1..n` は鳥の足と縦線、`0..n` は鳥の足と丸）を配置し、`label` を縦の線の中ほどに出す。同じ `x` のテーブルどうしの関係は両方の右の辺から出す。主キーでも外部キーでもない列を持つテーブルの見出しに、列の開閉のボタン（スクリーンリーダー向けの名前 `「{論理名}」の主キーと外部キー以外の列`、`aria-expanded` は `folded` が `true` のとき `false`）を配置する。`folded` が `true` のテーブルは主キーと外部キーの列だけを出し、`非表示 {数} 列` の行を配置する。関係の列が畳まれて見えないときは、線を見出しの縦の中ほどへ結ぶ。`desc` を持つテーブルと、`desc` を持つ列のあるテーブルは、見出しに説明のボタン（スクリーンリーダー向けの名前 `「{論理名}」の説明`）を配置し、`role="tooltip"` と `hidden` を持つ中身に `{論理名}（{物理名}）`・概要・`desc` を持つ列の名前と説明を入れる（`hints` がオフのときは配置しない）。凡例には、図にあるテーブルの種類の札・列のマーカー・多重度の記号だけを記載する（説明のボタンと用語の下線は記載しない。制約「図の外観の決まり」の凡例の決まりより優先する）'
@@ -2521,7 +2501,7 @@ constraints:
     constraint: '`param` はタイトル・スライダー（`input type="range"`。`min`・`max`・`step` と既定の値を定義から写す）と今の値の `output`・今の値を写すボタン・既定の値の系列で描いたグラフを出す。グラフの系列は、定義の `table`（スライダーの値ごとの点の並び）から参照する。値を変えて再描画する操作と写す操作は `mount` が付ける'
     notes: 文書に式やスクリプトを記載させない（D-22）ため、計算した点を定義に持たせる
   - item: 図の定義の誤り
-    constraint: 図の部品の範囲に `json` のコードブロックが無いか 2 つ以上ある、JSON として読み込めない、または構造に合わないときは、その図だけを描かず、その場所に記載の警告を配置する。警告は図の種類の名前を主語にし、JSON として読み込めないときは行と読み込めた最後の部分と足りない記号、構造に合わないときは読み込めない箇所と修正方法を文で記載する。線の端が無いノードの `id` を指す・`id` が重なる・系列の点の数が横の目盛りの数と合わない・グラフの系列（円とドーナツは項目）が 7 つ以上ある・ER 図の関係の元か先が無いテーブルの `id` かそのテーブルに無い列を指す・テーブルの `id` か同じテーブルの列の名前が重なる・`kind` が `master`・`transaction` でない・`color` が色の名前でない・多重度が `1`・`0..1`・`1..n`・`0..n` でない・フロー図の座標（ノードの `x`・`y`・`w`・`h`、線の `points`、図の `width`・`height`）を記載したものと省いたものが混ざる・座標を省いたフロー図が `start`・`question`・`action`・`result` 以外の種類のノードを持つ（内容に、座標を省けるのは判定フローチャートの 4 つの種類だけであることと、座標を記載するか種類を変える修正方法を記載する）・フロー図の `frame` か `lanes` の `hint` が文字でない・`stickyTitles` が真偽値でないのも構造の誤りにする。ほかの図と本文は描く
+    constraint: 図の部品の範囲に `json` のコードブロックが無いか 2 つ以上ある、JSON として読み込めない、または構造に合わないときは、その図だけを描かず、その場所に記載の警告を配置する。警告は図の種類の名前を主語にし、JSON として読み込めないときは行と読み込めた最後の部分と足りない記号、構造に合わないときは読み込めない箇所と修正方法を文で記載する。線の端が無いノードの `id` を指す・`id` が重なる・系列の点の数が横の目盛りの数と合わない・グラフの系列（円とドーナツは項目）が 7 つ以上ある・ER 図の関係の元か先が無いテーブルの `id` かそのテーブルに無い列を指す・テーブルの `id` か同じテーブルの列の名前が重なる・`kind` が `master`・`transaction` でない・`color` が色の名前でない・多重度が `1`・`0..1`・`1..n`・`0..n` でないのも構造の誤りにする。ほかの図と本文は描く
     notes: 本文の文言は画面設計『文書』
   - item: 拡張のマーカーの定義
     constraint: 登録した拡張のマーカーを範囲で記載し、範囲に `json` のコードブロックを配置したときも、マーカーの場所の要素だけを出し、範囲の中身と定義の JSON は出力に残さない。登録していないマーカーの範囲のうち、中身が `json` のコードブロックだけのものは中身ごと取り除く（それ以外の範囲は今のとおりマーカーだけを取り除く）
@@ -2530,10 +2510,10 @@ constraints:
     constraint: '`html` がオンのとき、`<!-- html -->` 〜 `<!-- /html -->` の範囲にある言語 `html` のコードブロック 1 つの中身を、コードでなく生の HTML として `<div class="mdmark-html">` の中に描く。範囲の中のコードブロック以外の Markdown は出力に残さない。中身は文書に記載した生の HTML と同じ許可の検査（制約の「残す要素・属性」「URL のスキーム」）を経由し、`script` 要素・`on` で始まる属性・`javascript:` の URL を落とす。埋め込んだ HTML の中に限り `button` を残し、`type` を `button` に固定して `form` で始まる属性を落とす（押しても何も起きない）。中身の要素の `style` 属性は、レイアウト・余白・枠・色・文字の宣言（`display`・`flex*`・`align-items`・`align-self`・`justify-content`・`grid*`・`gap`・`row-gap`・`column-gap`・`margin*`・`padding*`・`border*`・`width`・`max-width`・`min-width`・`height`・`color`・`background-color`・`font-size`・`font-weight`・`text-align`）だけを残し、`url(` を含む値・単位 `vw`・`vh` を含む値・負の `margin`・`padding` と `position` を落とす。列より広い HTML は `mount` が中で横にスクロールさせる。範囲の外の `html` のコードブロックは今のとおりコードとして出す。`html` がオフのときはマーカーだけを取り除き、コードブロックをコードとして出す'
     notes: '`style` の残し方は #6 の確認ログの決定。宣言の一覧はモジュール構成『描画』の `EMBED_STYLES`。`button` を残すのはシナリオ『コードブロックのHTMLを描く』とモックに合わせるため'
   - item: 埋め込んだ HTML の中の図の部品
-    constraint: 埋め込んだ HTML の中の custom element `<mdmark-flow>`・`<mdmark-sequence>`・`<mdmark-chart>`・`<mdmark-param>` の中身の文字を、同じ名前の図の部品のマーカーの範囲の `json` のコードブロックと同じ定義として読み込み、制約の「図の部品」と同じ図に置き換える。読み込めない定義は制約の「図の定義の誤り」と同じく、その要素の場所を記載の警告にする。`diagrams` がオフのときは要素を中身ごと落とす。custom element の属性は読み込まない。埋め込んだ HTML の中の文字は用語の照合に回す
+    constraint: 埋め込んだ HTML の中の custom element `<mdmark-chart>`・`<mdmark-param>` の中身の文字を、同じ名前の図の部品のマーカーの範囲の `json` のコードブロックと同じ定義として読み込み、制約の「図の部品」と同じ図に置き換える。読み込めない定義は制約の「図の定義の誤り」と同じく、その要素の場所を記載の警告にする。`diagrams` がオフのときは要素を中身ごと落とす。custom element の属性は読み込まない。`<mdmark-flow>`・`<mdmark-sequence>` は、要素を中身ごと落とし、要素を廃止したことと、埋め込んだ HTML の外に `<!-- map -->` の範囲で記載し直すことを記載した記載の警告を配置する（移行の手順と点検はこの要素を扱わないため、`mdmark upgrade` は記載しない）。埋め込んだ HTML の中の文字は用語の照合に回す
     notes: 文書に式やスクリプトを記載させない（D-22）
   - item: ヒント
-    constraint: '`hints` がオンのとき、埋め込んだ HTML の中の `data-hint` を持つ要素と、図の部品の定義の `hint` を持つノードに、ツールチップの中身を `<span class="mdmark-hint-tip" role="tooltip" id="mdmark-hint-{n}" hidden>` で配置する（`{n}` は文書の頭からの通し番号）。`data-hint` の要素は、行内の要素（`span`・`a`・`abbr`・`b`・`strong`・`em`・`i`・`code`・`small`・`mark`・`sub`・`sup`・`time`・`kbd`・`q`・`s`・`u`）なら class `mdmark-hint-inline`・`tabindex="0"`・`aria-describedby` を付け、それ以外のブロックの要素は class `mdmark-hint-block` を付けて最後の子に `<button type="button" class="mdmark-hint-mark" aria-label="説明" aria-describedby="mdmark-hint-{n}">` を追加する。`hint` を持つノードは `io` を持つノードと同じ右上のマーカーを持ち、`io` と `hint` を両方持つノードは 1 つのマーカーに入力・処理・出力と `hint` をこの順に出す。`hints` がオフのときは、`data-hint` の属性・`hint`・`io`・線の `tip` のツールチップの中身とマーカーを出さない（線のラベルとノードの名前は出す）。`data-hint` の値は Markdown として解析せず、文字として出す'
+    constraint: '`hints` がオンのとき、埋め込んだ HTML の中の `data-hint` を持つ要素に、ツールチップの中身を `<span class="mdmark-hint-tip" role="tooltip" id="mdmark-hint-{n}" hidden>` で配置する（`{n}` は文書の頭からの通し番号）。`data-hint` の要素は、行内の要素（`span`・`a`・`abbr`・`b`・`strong`・`em`・`i`・`code`・`small`・`mark`・`sub`・`sup`・`time`・`kbd`・`q`・`s`・`u`）なら class `mdmark-hint-inline`・`tabindex="0"`・`aria-describedby` を付け、それ以外のブロックの要素は class `mdmark-hint-block` を付けて最後の子に `<button type="button" class="mdmark-hint-mark" aria-label="説明" aria-describedby="mdmark-hint-{n}">` を追加する。`hints` がオフのときは、`data-hint` の属性と ER 図のテーブルと列の説明のツールチップの中身とマーカーを出さない（テーブルと列の名前は出す）。`data-hint` の値は Markdown として解析せず、文字として出す'
     notes: マーカーのアイコンは CSS で付ける。開く操作は `mount`
   - item: 表の行の ID とリンク
     constraint: '`rowlink` の表の本文の各行に、先頭のセルの文字（タグを除いたもの）から見出しの ID と同じ規則で作った `id` を付ける。見出しの ID を先に決め、行の ID が文書の中の見出し・前の行の ID と重なれば `-1`・`-2` を付ける。先頭のセルの文字から ID が作れないときは `row` を元にする。先頭のセルの中身の後ろに `<a class="mdmark-row-anchor" href="#{ID}" aria-label="「{先頭のセルの文字}」の行へのリンク">` を配置する'
@@ -2632,14 +2612,6 @@ constraints:
   - item: カードの格子
     constraint: '`card-grid` がオンのとき、`<!-- cards -->` 〜 `<!-- /cards -->` の中身のリスト 1 つを `<ul class="mdmark-card-grid">` にし、項目ごとの `<li>` に、リンクを持つ項目は `<a class="mdmark-card-grid-item" href="{最初のリンク先}">`、持たない項目は `<div class="mdmark-card-grid-item">` を配置する。中に、項目の最初のリンクの前の行内の `icon:名前` のアイコン（制約「アイコン」と同じ要素に class `mdmark-card-grid-icon` を追加したもの）、`<span class="mdmark-card-grid-title">`（リンクの文字。URL をそのまま記載したリンクはスキームを除いた URL、リンクの無い項目は項目の最初の行の文字）、残りの文字があれば `<p class="mdmark-card-grid-desc">` を配置する。範囲の中のリンクは制約「リンクと添付のカード」にしない。中身がリスト 1 つでないときは範囲の前に記載の警告（囲めるのはリスト 1 つであること）を配置し、マーカーを取り除いて中身を順に出す。`card-grid` がオフのときはマーカーを取り除き、中身を順に出す'
     notes: class はリンクと添付のカードの `.mdmark-card` とビューのボードの `.mdmark-view-cards` と分ける。外観はモック `docs/mock/components/card-grid/`
-  - item: 自動の配置
-    constraint: フロー図の定義の全てのノードが `x`・`y`・`w`・`h` を、全ての線が `points` を持たず、図が `width`・`height` を持たず、ノードの種類が全て `start`・`question`・`action`・`result` のとき、mdmark が配置して描く。`start` を一番上に配置し、`start` から線をたどって `question` を左の列に上から下へ並べる。`question` から出る線は、先が `question` の線を下、先が `action`・`result` の線を右へ出し、両方の先が `action`・`result` ならラベル `NO` の線を下、`YES` の線を右へ出す。右へ出した線の先のノードはその `question` と同じ行の右の列に、下へ出した線の先の `action`・`result` はその `question` の下の左の列に配置し、`action` の先は同じ列の下へ続ける。複数の線が入るノードは、`question` から右へ出る線の先の位置（その `question` と同じ行）を優先して 1 つだけ配置し、その線が無ければ最初にたどった線の先の位置に配置する。線をたどって届かないノードは、届くノードの下に定義の順に並べる。ノードの大きさは種類と名前の文字から、インターフェース定義『設定と索引を点検する』の制約「ラベルの長さの目安」で収まる大きさにする。線は縦と横だけの折れ線で、`from`・`to` でないノードの中を通らない点を求める。図の `width`・`height` は、ノードと線を囲む大きさに余白を加算した値にする。配置した結果は、同じ座標を記載した定義と同じ HTML に描く
-    decided_by: SC-472-43#scenarios[正常シナリオ（座標を省いた判定フローチャート）]
-    notes: 配置の決まりはリファレンス『フローチャートの決まり』。列と行の関係はモックの素材 `docs/mock/refs/42/assets/samples.js` の `judgement-auto` と同じ。向きは確認ログの決定（自動の配置の向き、推奨案 A）。間隔・余白・大きさの値はモジュール構成設計
-  - item: ノードのリンク先
-    constraint: フロー図のノードはリンク先 `href`（文字列）を持てる。`href` を制約「URL のスキーム」と同じ許可（`http`・`https`・`mailto` と相対 URL）で確認し、許すノードはノードの全体を覆う `<a class="mdmark-diagram-node-link" href="{href}">`（スクリーンリーダー向けの名前はノードの名前。開く先は本文のリンクと同じく同じタブ）にし、ノードの要素（`div.mdmark-diagram-node`）に class `has-link` を付ける。`io`・`hint` のマーカーはリンクの中に入れず、リンクの後ろに配置する。許さないリンク先（`javascript:`・`id:` など）のノードはリンクにせず名前を描き、図の前に、ノードの `id` と記載したリンク先と使用できるリンク先を記載した記載の警告を配置する（許さないノードが複数なら 1 つの警告に並べる）。図は描く
-    decided_by: SC-472-43#scenarios[異常シナリオ（ノードのリンク先を許可しない）]
-    notes: '`id:` などの参照は利用側が URL に変えてから定義に記載する（要件.md の未確定、推奨 A）。リンクの外観は確認ログの決定（名前を本文のリンクと同じ色と下線、推奨案 A）'
   - item: フロントマター
     constraint: Markdown の 1 行目が `---` だけの行で、2 行目以降に `---` か `...` だけの行があるとき、1 行目からその最初の行までをフロントマターとし、解析の前に本文から除外する。開く行と閉じる行は、行末の空白と CR（改行が CRLF の文書）を許す。先頭の BOM（U+FEFF）は判定の前に除く。閉じる行が無ければフロントマターとして扱わない。除外した範囲は、段落・見出し・目次・用語の下線・記載の警告の対象にしない。後ろのブロックの `data-source-line` は、元の Markdown の行番号のままにする。機能 `frontmatter`（既定 `false`）がオンのときだけ、本文の先頭に `<details class="mdmark-collapsible mdmark-frontmatter">`（`open` を持たない。制約「details の範囲」と同じ折りたたみ）を配置し、`<summary>` の文字を `フロントマター` にし、中にフロントマターの中身（開く行と閉じる行を除いた行）を制約「コードブロック」と同じ言語 `yaml` のコードブロックとして描く（コードブロックの `data-source-line` はフロントマターの 2 行目の行番号）。中身が空の行だけのフロントマターは、オンでも表示を配置しない。機能のオン・オフは、フロントマターの後ろの `features` のマーカーでも上書きできる。取り込む Markdown（制約「取り込み」）の先頭のフロントマターは、機能によらず除外して表示を配置しない。フロントマターとその表示は、制約「ページの設定のマーカー」の文書の先頭の判定に数えない
   - item: map の範囲

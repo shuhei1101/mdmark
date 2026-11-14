@@ -134,10 +134,10 @@ flows:
       - ファイル `guide_files` が変わっておらず、`guide.html` が記載されていない
     test: test_error_when_media_copy_unwritable
   - name: 正常系（ツールチップを下に出す設定）
-    summary: 設定の `tooltips.placement` と `tooltips.diagramPlacement` を埋める設定にコピーし、開いた HTML で用語のツールチップを下に、図の線のツールチップを上に出す
+    summary: 設定の `tooltips.placement` と `tooltips.diagramPlacement` を埋める設定にコピーし、開いた HTML で用語のツールチップを下に、ER 図のテーブルのツールチップを上に出す
     setup:
       - name: 下に出す設定
-        description: '`tooltips.placement: bottom`・`tooltips.diagramPlacement: top` と、用語を 1 つ持つ `index` を持つ設定と、その用語が 2 つ目のセクションの段落に出て、その後ろに `tip` を持つ線 1 本のフロー図を持つ文書を持つフォルダ'
+        description: '`tooltips.placement: bottom`・`tooltips.diagramPlacement: top` と、用語を 1 つ持つ `index` を持つ設定と、その用語が 2 つ目のセクションの段落に出て、その後ろに概要を持つテーブル 1 つの ER 図を持つ文書を持つフォルダ'
       - name: Mock
         description: 差し替える依存は無い。書き出した HTML は Playwright で file:// として開く
     flow: |-
@@ -149,12 +149,12 @@ flows:
         C->>H: tooltips をコピーした設定を埋めて記載する
         W->>H: 開いて用語にポインターを乗せる
         H-->>W: 単語の下にツールチップを出す
-        W->>H: 線のラベルにポインターを乗せる
-        H-->>W: ラベルの上にツールチップを出す
+        W->>H: テーブルの説明のボタンにポインターを乗せる
+        H-->>W: テーブルの上にツールチップを出す
     expected:
       - 終了コードが 0
       - 開いた HTML で、用語のツールチップの `top` が単語の `bottom` 以上
-      - 開いた HTML で、線のラベルのツールチップの `bottom` がラベルの `top` 以下
+      - 開いた HTML で、テーブルのツールチップの `bottom` がテーブルの `top` 以下
     test: test_normal_when_tooltip_placement
   - name: 正常系（色分けするコードブロック）
     summary: 文書が使用する言語の分だけ色分けのモジュールを埋め、開いたときに外へ要求せずに色分けする

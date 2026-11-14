@@ -7,7 +7,7 @@ scenarios:
       - name: 作業のフォルダ
         description: '`mdmark init` の後のフォルダ'
       - name: 点検する文字列
-        description: '正しいフロー図の部品の定義と、`<!-- table: {"kind": "data"} -->` で囲んだ表を持つ Markdown の文字列'
+        description: '正しいグラフの部品の定義と、`<!-- table: {"kind": "data"} -->` で囲んだ表を持つ Markdown の文字列'
       - name: Mock
         description: 差し替える依存は無い。点検はブラウザを使用しない
     flow: |-
@@ -29,7 +29,7 @@ scenarios:
       - name: 作業のフォルダ
         description: 正常シナリオと同じ
       - name: 記載の警告を持つ文字列
-        description: 'ノードの種類に無い `begin` を記載したフロー図の定義、知らないマーカー `<!-- tabz -->`、`<!-- code: {"highlight": [9]} -->` の直後の 3 行のコードブロックを持つ Markdown の文字列'
+        description: '廃止した `<!-- flow -->` の範囲、知らないマーカー `<!-- tabz -->`、`<!-- code: {"highlight": [9]} -->` の直後の 3 行のコードブロックを持つ Markdown の文字列'
         notes: 同じ文字列を `render` で描いたときに、記載の警告が 3 つ出る
       - name: Mock
         description: 正常シナリオと同じ
@@ -43,7 +43,7 @@ scenarios:
         R-->>C: 記載の警告の一覧
         C-->>W: 場所・種類・内容の一覧・終了コード 0 以外
     expected:
-      - 'ずれの行が 3 つあり、それぞれが文字列の中のフロー図の定義・`<!-- tabz -->`・`<!-- code: {"highlight": [9]} -->` の行を指す'
+      - 'ずれの行が 3 つあり、それぞれが文字列の中の `<!-- flow -->`・`<!-- tabz -->`・`<!-- code: {"highlight": [9]} -->` の行を指す'
       - 各行の内容が、同じ文字列を `render` で描いたときの記載の警告の文言と同じ
       - 終了コードが 0 以外
     test: test_normal_when_warnings

@@ -17,6 +17,13 @@ import { afterAll, beforeAll, expect, test } from "vitest";
 import { parse } from "yaml";
 import { main as buildMain } from "../../../scripts/build.ts";
 import { migrationsDirOf } from "../../migrations-dir.ts";
+import { shopEr } from "../../unit/helpers/er.ts";
+import {
+  RETIRED_DOCUMENT,
+  RETIRED_DOCUMENT_CONVERTED,
+  RETIRED_KINDS,
+  RETIRED_LINES,
+} from "../../unit/helpers/retired-document.ts";
 import {
   type CliResult,
   GREET_SOURCE,
@@ -673,45 +680,115 @@ test("test_error_when_diagram_drift", async () => {
   const pkg = packageOf("v0.5.0");
   await setMigrations(pkg, migrationFiles());
   const dir = await createWork();
-  const overlap = {
-    title: "重なり",
-    scope: "点検",
-    updated: "2026-11-03",
-    width: 400,
-    height: 200,
-    nodes: [
-      { id: "web", kind: "script", x: 20, y: 20, w: 100, h: 60, name: "Web" },
-      { id: "db", kind: "data", x: 60, y: 40, w: 100, h: 60, name: "DB" },
-    ],
-    wires: [],
-  };
+  const missingTable = shopEr();
+  missingTable.relations = missingTable.relations.map((relation) =>
+    relation.label === "注文する" ? { ...relation, to: "payments" } : relation,
+  );
   const a = [
     WORK_FILES["docs/a.md"],
-    "<!-- flow -->",
+    "<!-- er -->",
     "",
     "```json",
-    JSON.stringify(overlap),
+    JSON.stringify(missingTable),
     "```",
     "",
-    "<!-- /flow -->",
+    "<!-- /er -->",
     "",
   ].join("\n");
   await writeFiles(dir, { "docs/a.md": a });
   // 実行
   const result = await runUpgrade(pkg, { cwd: dir });
   // 検証
-  expect(a.split("\n").indexOf("<!-- flow -->") + 1).toBe(5);
+  expect(a.split("\n").indexOf("<!-- er -->") + 1).toBe(5);
   expect(result.code).toBe(1);
-  const overlapLine = linesOf(result.stderr).find((line) =>
-    line.startsWith("docs/a.md:5: diagram_node_overlap:"),
+  const invalid = linesOf(result.stderr).find((line) =>
+    line.startsWith("docs/a.md:5: diagram_invalid:"),
   );
-  expect(overlapLine).toContain("web");
-  expect(overlapLine).toContain("db");
+  expect(invalid).toContain("payments");
   const work = await readWork(dir);
   expect(work.config).toBe(OLD_CONFIG);
   expect(parse(work.config).version).toBe("v0.3.0");
   expect(work.a).toBe(a);
   expect(work.b).toBe(WORK_FILES["docs/b.md"]);
+});
+
+// 廃止した図の範囲を map の範囲へ書き換える call の手順を当て、設定に種類を書き足し、写さない値と読めない範囲を移行の報告に出す（正常系（廃止した図の範囲を map へ書き換える））
+test("test_normal_when_retired_diagrams_migrated", async () => {
+  // 準備
+  const pkg = packageOf("v0.5.0");
+  const next = migrationsDirOf("retired-diagrams.mjs");
+  const files: Record<string, string> = {};
+  for (const name of await readdir(next)) {
+    files[`migrations/v0.5.0/${name}`] = await readFile(
+      join(next, name),
+      "utf8",
+    );
+  }
+  await setMigrations(pkg, { ...files, "docs/guide/変更履歴.md": CHANGELOG });
+  const dir = await createWork();
+  const unreadable = [
+    "# B",
+    "",
+    "<!-- flow -->",
+    "",
+    "```json",
+    '{ "title": "壊れた図", "nodes": [',
+    "```",
+    "",
+    "<!-- /flow -->",
+    "",
+  ].join("\n");
+  await writeFiles(dir, {
+    "docs/a.md": RETIRED_DOCUMENT,
+    "docs/b.md": unreadable,
+  });
+  // 実行
+  const result = await runUpgrade(pkg, { args: ["--yes"], cwd: dir });
+  // 検証
+  expect(result.code, result.stderr).toBe(0);
+  const read = (path: string) => readFile(join(dir, path), "utf8");
+  expect(await read("docs/a.md")).toBe(RETIRED_DOCUMENT_CONVERTED);
+  expect(await read("docs/b.md")).toBe(unreadable);
+  const configText = await read("mdmark.config.yaml");
+  const config = parse(configText) as {
+    version: string;
+    legacy: number;
+    map: { kinds: unknown; lines: unknown };
+  };
+  expect(config.version).toBe("v0.5.0");
+  expect(config.legacy).toBe(1);
+  expect(configText).toContain("# mdmark の設定");
+  expect(configText).toContain("legacy: 1 # 古いキー");
+  expect(config.map.kinds).toEqual(RETIRED_KINDS);
+  expect(config.map.lines).toEqual(RETIRED_LINES);
+  const report = linesOf(result.stdout).map((line) => line.trim());
+  for (const item of [
+    "scope: メールの受け取りから返信まで",
+    "updated: 2026-11-01",
+    "stickyTitles: false",
+    "scope: 依頼から回答まで",
+  ]) {
+    expect(
+      report.filter((line) =>
+        new RegExp(`^docs/a\\.md:\\d+: (flow|sequence): ${item}: .+`).test(
+          line,
+        ),
+      ),
+      item,
+    ).toHaveLength(1);
+  }
+  expect(
+    report.some((line) =>
+      /^docs\/b\.md:3: flow: 範囲: .*JSON として読み込めません/.test(line),
+    ),
+  ).toBe(true);
+  // 書き換えた文書を描くと map の範囲になり、記載の警告が無い
+  const { render } = (await import(
+    pathToFileURL(join(pkg, "dist", "index.js")).href
+  )) as { render: (markdown: string) => string };
+  const html = render(await read("docs/a.md"));
+  expect(html.match(/class="mdmark-map"/g)).toHaveLength(3);
+  expect(html).not.toContain("mdmark-syntax-warning");
 });
 
 /** 文書のマーカーを JSON の記載へ書き換える移行の、書き換える前の文書（シナリオ『バージョンを上げる』の 2 つの正常シナリオの文書） */

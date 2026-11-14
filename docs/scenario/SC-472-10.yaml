@@ -5,7 +5,7 @@ scenarios:
   - name: 正常シナリオ
     setup:
       - name: 見本のワークスペース
-        description: 見出し・表・注意書き・フロー図を持つ Markdown を 1 つ配置したフォルダ。`mdmark.version` は既定の `latest`
+        description: 見出し・表・注意書き・map の構成図を持つ Markdown を 1 つ配置したフォルダ。`mdmark.version` は既定の `latest`
       - name: Mock
         description: jsDelivr の代わりに、このブランチでビルドした配布物を版付きの構造の URL で配る手元のサーバー。GitHub のタグ一覧は `v0.7.0`・`v0.6.0`・`vscode-v0.1.0` を返却する代役
     flow: |-
@@ -30,7 +30,7 @@ scenarios:
         PV-->>W: 描いた文書を表示
     expected:
       - Markdown のエディタの横の列にプレビューのパネルが開く
-      - パネルに見出し・表・注意書き・フロー図が mdmark で描かれる
+      - パネルに見出し・表・注意書き・map の構成図が mdmark で描かれる
       - 読み込んだ配布物のバージョンが `v0.7.0` で、`vscode-v0.1.0` を選んでいない
       - 前回のバージョンとして `v0.7.0` が拡張機能の状態に残る
     test: test_normal

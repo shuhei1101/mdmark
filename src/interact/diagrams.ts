@@ -1,9 +1,5 @@
 import type { TooltipPlacement } from "../config.ts";
-import {
-  type StickyTitle,
-  stickyTitleShifts,
-  ZOOM,
-} from "../diagram/geometry.ts";
+import { ZOOM } from "../diagram/geometry.ts";
 import { iconSvg } from "../parts/icons.ts";
 import { attachDiagramResize, diagramHeightKey } from "./diagram-resize.ts";
 import { attachDiagramTips } from "./diagram-tips.ts";
@@ -19,16 +15,10 @@ const ZOOM_EPSILON = 0.001;
 
 // 文字を選べる所（ここではドラッグを始めない）
 const TEXT_SELECTOR =
-  ".mdmark-diagram-er-head, .mdmark-diagram-er-columns, .mdmark-diagram-node-kind, .mdmark-diagram-node-name, .mdmark-diagram-node-sub, .mdmark-diagram-label, .mdmark-diagram-frame-title, .mdmark-diagram-lane-label, .mdmark-diagram-axis-text, .mdmark-diagram-value-text, .mdmark-term";
+  ".mdmark-diagram-er-head, .mdmark-diagram-er-columns, .mdmark-diagram-node-kind, .mdmark-diagram-node-name, .mdmark-diagram-node-sub, .mdmark-diagram-label, .mdmark-diagram-axis-text, .mdmark-diagram-value-text, .mdmark-term";
 
 // 操作を付けた回数の通し番号。`id` を重ならせないために使用する
 let attachCounter = 0;
-
-// 上端に留めるグループのタイトルの間と、表示する枠の上端との余白（定義の座標の px）
-const STICKY_GAP_PX = 4;
-
-// 上端に留めているタイトルに付ける class
-const STUCK_CLASS = "is-stuck";
 
 /** 図の中身を再描画したときに `figure` へ送信するイベント（ツールチップをもう一度付ける） */
 export const DIAGRAM_REDRAW_EVENT = "mdmark-diagram-redraw";
@@ -105,39 +95,6 @@ function attachView(
   let scale = 1;
   // リサイズハンドルで変えた高さ（変えていなければ `null`）
   let userHeight: number | null = null;
-  // 上端に留めるグループのタイトル（枠・層の順）
-  const titles =
-    figure.dataset.stickyTitles === "off"
-      ? []
-      : [...figure.querySelectorAll<HTMLElement>("[data-sticky-top]")].sort(
-          (a, b) =>
-            Number(b.classList.contains("mdmark-diagram-frame-title")) -
-            Number(a.classList.contains("mdmark-diagram-frame-title")),
-        );
-
-  /** 見えているシステムの枠と層のタイトルを、表示する枠の上端に留める */
-  const stickTitles = (): void => {
-    if (titles.length === 0) {
-      return;
-    }
-    const rows: StickyTitle[] = titles.map((title) => ({
-      base: Number.parseFloat(title.style.top),
-      bottom: Number(title.dataset.stickyBottom),
-      height: title.offsetHeight,
-      frame: title.classList.contains("mdmark-diagram-frame-title"),
-    }));
-    const shifts = stickyTitleShifts({
-      top: viewport.scrollTop / scale,
-      gap: STICKY_GAP_PX,
-      titles: rows,
-    });
-    titles.forEach((title, index) => {
-      const { shift = 0, stuck = false } = shifts[index] ?? {};
-      title.style.transform = shift ? `translateY(${shift}px)` : "";
-      title.classList.toggle(STUCK_CLASS, stuck);
-    });
-  };
-
   /** シーケンス図の相手の名前の行を、表示する枠の上端に留める（図の座標で縦に動いた分だけ下げる） */
   const stickHeads = (): void => {
     if (!heads) {
@@ -165,15 +122,10 @@ function attachView(
           : `${content.height * zoom}px`;
     }
     stickHeads();
-    stickTitles();
   };
 
   const controller = new AbortController();
   viewport.addEventListener("scroll", stickHeads, {
-    passive: true,
-    signal: controller.signal,
-  });
-  viewport.addEventListener("scroll", stickTitles, {
     passive: true,
     signal: controller.signal,
   });

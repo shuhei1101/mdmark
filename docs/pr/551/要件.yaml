@@ -1,0 +1,15 @@
+docs:
+  - page: dev-docs.yaml
+    new: false
+    change: 使用する場面の行の並び when を記載し、1 行目に最もよく使用する場面（mdmark の記法・部品・図の描き方を確認するとき）を置く
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-14T00:22:24.796139+00:00'
+use_cases: []
+scope_out:
+  - item: dev-docs.yaml の 1 行目の $schema の注釈を、when を持つ project-index のスキーマへ差し替える
+    reason: 注釈はエディタの補完に使用されるだけで、配信元の検証は project-index のスキーマで行われる。今の注釈の dev-docs のスキーマは when を持たないため、エディタでは when が未知のキーとして警告される。project-index.yaml への改名と一緒に差し替えるのが妥当と判断したが、スコープに含めるかは判断が分かれるためレビューで確定する
+    plan: '#553'
+  - item: mdmark を project-index の端末の設定（~/.config/project-index/settings.yaml）の配信元に登録する
+    reason: 今の project-index の端末の設定に mdmark は無く、describe の一覧にも出ないため、記載した when はまだ表示されない。登録はリポジトリの外の端末の設定で、Issue の要望（when の記載）に含まれない。スコープに含めるかは判断が分かれるためレビューで確定する
+    plan: '#552'

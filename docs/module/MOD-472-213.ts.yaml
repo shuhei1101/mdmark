@@ -77,7 +77,7 @@ functions:
       - name: test_collect_warnings_rule
         case: 正常
         summary: マーカーの行を場所にし、マーカーを持たない警告は後ろのブロックの行にする
-        condition: '3 行目の `<!-- code: {"highlight": [9]} -->` と直後のコードブロック、10 行目の開きのマーカーから続く読み込めない `<!-- flow -->` の範囲、20 行目の、上の行より 2 階層深い行を持つ `tree` のコードブロック（マーカーを持たない警告）'
+        condition: '3 行目の `<!-- code: {"highlight": [9]} -->` と直後のコードブロック、10 行目の開きのマーカーから続く読み込めない `<!-- chart -->` の範囲、20 行目の、上の行より 2 階層深い行を持つ `tree` のコードブロック（マーカーを持たない警告）'
         mock: なし
         expected: '`env.warnings` が 3 件で、`line` が `3`・`10`・`20`、`kind` が `syntax_warning`・`diagram_invalid`・`syntax_warning`'
       - name: test_collect_warnings_rule_when_marks

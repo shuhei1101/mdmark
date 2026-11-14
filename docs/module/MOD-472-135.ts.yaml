@@ -67,6 +67,7 @@ functions:
       - MOD-531-2#functions[parseStateDiagram]
       - MOD-472-139#functions[parseMapData]
       - MOD-472-140#functions[parseMapArgs]
+      - MOD-472-137#functions[mapLinkProblems]
     args:
       - name: range
         type: '{ args: string; mermaid: string | undefined; mermaidCount: number; data: string | undefined; dataCount: number }'
@@ -87,9 +88,10 @@ functions:
       1. `collectMapStructure` で範囲の形を確かめ、`kind` が無ければその項目を返して終える
       2. 印の引数の`unknownKeys` は `includeUnknownKeys` が `true` のとき（点検）だけ `map_unknown_key` にする（描くときは警告にしない）
       3. 種類ごとに `parseFlowchart`・`parseSequence`・`parseErDiagram`・`parseStateDiagram` のどれかと `parseMapData` の項目を合わせる
-      4. 補足の `notes`・`walkthroughs`・`layout`・`plays_over` が指す ID が Mermaid に無いものを `map_unknown_ref` にする。`ends`・`via` を持つノード・グループの ID は `map_invalid_value` にする
-      5. ER 図は、補足の `notes` のキーのうちテーブル名・`{テーブル}.{列}`・関連の `r{番号}` に無いものと、`groups` の `tables` に無いテーブルと `parent` に無い分類を `map_unknown_ref`、2 つの分類に入るテーブル・テーブル名と同じ分類の ID・`r{番号}` と同じテーブル名を `map_invalid_value` にする。状態遷移図は、`notes` のキーのうち状態の ID・遷移の `t{番号}` に無いものを `map_unknown_ref`、`t{番号}` と同じ状態の ID を `map_invalid_value` にする
-      6. ノードのクラスが `config.kinds` に無いものを `map_unknown_class`、`layout` の `line` が `config.lines` に無いものを `map_unknown_line` にする（同じ名前は 1 件）
+      4. 補足の `notes`・`walkthroughs`・`layout`・`plays_over` が指す ID が Mermaid に無いものを `map_unknown_ref` にする。`ends`・`via` を持つノード・グループの ID は `map_invalid_value` にする（`notes` はノード・線・`subgraph` の ID を指せる）
+      5. ER 図は、補足の `notes` のキーのうちテーブル名・`{テーブル}.{列}`・関連の `r{番号}`・分類の ID に無いものと、`groups` の `tables` に無いテーブルと `parent` に無い分類を `map_unknown_ref`、2 つの分類に入るテーブル・テーブル名と同じ分類の ID・`r{番号}` と同じテーブル名を `map_invalid_value` にする。状態遷移図は、`notes` のキーのうち状態の ID・遷移の `t{番号}` に無いものを `map_unknown_ref`、`t{番号}` と同じ状態の ID を `map_invalid_value` にする
+      6. `flowchart` の `links` を `mapLinkProblems` で確かめ、許さないリンク先を `map_invalid_value` にする
+      7. ノードのクラスが `config.kinds` に無いものを `map_unknown_class`、`layout` の `line` が `config.lines` に無いものを `map_unknown_line` にする（同じ名前は 1 件）
     unit_tests:
       - name: test_collect_map_problems
         case: 正常
@@ -103,6 +105,18 @@ functions:
         condition: 補足の `notes.ghost`
         mock: なし
         expected: '`map_unknown_ref` が 1 件で `notes.ghost` を含む'
+      - name: test_collect_map_problems_when_group_note
+        case: 正常
+        summary: グループの ID を指す notes をずれにしない
+        condition: 補足の `notes.lib`（`lib` は `subgraph` の ID）
+        mock: なし
+        expected: 空
+      - name: test_collect_map_problems_when_link_not_allowed
+        case: 異常
+        summary: 許さないノードのリンク先
+        condition: '`click a "javascript:alert(1)"` の行'
+        mock: なし
+        expected: '`map_invalid_value` が 1 件で、`a` と `javascript:alert(1)` を含む'
       - name: test_collect_map_problems_when_wire_override_on_node
         case: 異常
         summary: 線の上書きをノードに指定した

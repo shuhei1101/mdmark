@@ -3,62 +3,16 @@ visibility: internal
 title: ライブラリ本体 / 図 / diagram.ts
 test_files:
   - tests/unit/src/parts/diagram.test.ts
-constants:
-  - name: LINE_STYLES
-    title: 線の種類の描き方
-    container: src/parts/diagram.ts
-    summary: 線の種類ごとの破線・太さ・矢じり・凡例の名前。色は CSS 変数で適用する
-    entries:
-      - key: flow
-        value: '{ dash: "", width: 1.5, head: "filled", label: "処理の流れ" }'
-      - key: read
-        value: '{ dash: "6 4", width: 1.5, head: "open", label: "読み込む" }'
-      - key: write
-        value: '{ dash: "", width: 2.5, head: "filled", label: "記載する" }'
-      - key: reply
-        value: '{ dash: "4 3", width: 1.5, head: "open", label: "返却する" }'
-      - key: loop
-        value: '{ dash: "8 4", width: 1.5, head: "open", label: "戻る（ループ）" }'
-  - name: KIND_STYLES
-    title: ノードの種類の描き方
-    container: src/parts/diagram.ts
-    summary: ノードの種類ごとの種類の行の既定の名前・凡例の名前・lucide のアイコン。色と構造は CSS が `data-kind` で適用する
-    entries:
-      - key: llm
-        value: '{ tag: "LLM", legend: "LLM", icon: "bot" }'
-      - key: dm
-        value: '{ tag: "意思決定モデル", legend: "意思決定モデル", icon: "split" }'
-      - key: script
-        value: '{ tag: "スクリプト", legend: "スクリプト", icon: "code-xml" }'
-      - key: mcp
-        value: '{ tag: "MCP", legend: "MCP", icon: "plug" }'
-      - key: data
-        value: '{ tag: "データ", legend: "データ（下の角が丸いノード）", icon: "database" }'
-      - key: external
-        value: '{ tag: "外部", legend: "外部のシステム", icon: "globe" }'
-      - key: start
-        value: '{ tag: "開始", legend: "開始", icon: "play" }'
-      - key: question
-        value: '{ tag: "質問", legend: "質問", icon: "circle-question-mark" }'
-      - key: action
-        value: '{ tag: "アクション", legend: "アクション", icon: "wrench" }'
-      - key: result
-        value: '{ tag: "結果", legend: "結果", icon: "flag" }'
-  - name: CIRCLE_INSET
-    title: 円に内接する正方形の外の余白の割合
-    container: src/parts/diagram.ts
-    summary: 開始のノードの直径に対する、名前を配置する内接の正方形の外の余白の割合（`(1 - 1/√2) / 2`）
-    value: '0.1464'
 functions:
   - name: renderDiagramFrame
     title: 図の枠を描く
     container: src/parts/diagram.ts
     kind: 関数
     scope: internal
-    summary: 部品設計『図の枠』の HTML。タイトル・ボタンの帯（縮小・倍率・拡大・全画面。倍率のボタンは全体が収まる倍率を 100% とした等幅の数字の `{倍率}%` とスクリーンリーダー向けの名前 `倍率 {倍率}%。全体が収まる倍率に戻す`。`zoom` は定義の大きさを 1 とする倍率で、大きさのノードと中身の `scale()` に使用する。倍率のボタンの文字は `zoom / fit`、縮小の `disabled` と移動のボタンの有無は `zoom <= fit`、拡大の `disabled` は `zoom >= ZOOM.max` で決める。`fit` は省くと 1）・表示する枠・ツールチップの中身・凡例を並べ、表示する枠に `body` を差す。`resizable` が `true`（既定。`modal` のときは配置しない）なら表示するノードの右下に部品設計『図の枠』のリサイズハンドル（`div.mdmark-diagram-resize`。`aria-valuenow` などは `mount` が付ける）を配置し、`legend` が空なら凡例の `ul` に `hidden` を付ける。`stickyTitles` が `false` のときは `figure` に `data-sticky-titles="off"` を付ける。`scope`・`updated` を持たない（種類 `mermaid`）ときは、タイトルに範囲と更新日を出さない。`fitMin` を指定したときは `figure` に `data-fit-min` を付ける。`id` は `render` の中の通し番号で文書の中で一意にする
+    summary: 部品設計『図の枠』の HTML。タイトル・ボタンの帯（縮小・倍率・拡大・全画面。倍率のボタンは全体が収まる倍率を 100% とした等幅の数字の `{倍率}%` とスクリーンリーダー向けの名前 `倍率 {倍率}%。全体が収まる倍率に戻す`。`zoom` は定義の大きさを 1 とする倍率で、大きさのノードと中身の `scale()` に使用する。倍率のボタンの文字は `zoom / fit`、縮小の `disabled` と移動のボタンの有無は `zoom <= fit`、拡大の `disabled` は `zoom >= ZOOM.max` で決める。`fit` は省くと 1）・表示する枠・ツールチップの中身・凡例を並べ、表示する枠に `body` を差す。`resizable` が `true`（既定。`modal` のときは配置しない）なら表示するノードの右下に部品設計『図の枠』のリサイズハンドル（`div.mdmark-diagram-resize`。`aria-valuenow` などは `mount` が付ける）を配置し、`legend` が空なら凡例の `ul` に `hidden` を付ける。`scope`・`updated` を持たない（種類 `mermaid`）ときは、タイトルに範囲と更新日を出さない。`fitMin` を指定したときは `figure` に `data-fit-min` を付ける。`id` は `render` の中の通し番号で文書の中で一意にする
     args:
       - name: frame
-        type: '{ kind; title; scope?; updated?; legend; zoom?; fit?; fitMin?: number; modal?; resizable?: boolean; stickyTitles?: boolean; wide?: boolean; touchActive?: boolean; tools?: Array<{ name: string; label: string; disabled?: boolean }>; id: string }'
+        type: '{ kind; title; scope?; updated?; legend; zoom?; fit?; fitMin?: number; modal?; resizable?: boolean; wide?: boolean; touchActive?: boolean; tools?: Array<{ name: string; label: string; disabled?: boolean }>; id: string }'
         required: true
         description: 部品設計の引数（`touchActive` は表示するノードに `data-touch-active` を付ける。ストーリーの状態 `TouchActive` だけが指定する）と、開いたときの倍率の下限（`fitMin`。mermaid の図が指定する。map の図は `1`）と、タイトル・ツールチップに使用する `id` の頭。`wide` は本文の幅との切り替えのボタンを出さず、`tools` は右上の帯の先頭に並べるボタン。リサイズハンドルは表示する枠の下端（横のスクロールバーの下）の帯にし、アイコンを `iconSvg("equal")` にする
       - name: body
@@ -72,7 +26,7 @@ functions:
       - name: test_render_diagram_frame
         case: 正常
         summary: タイトル・ボタンの帯・凡例をこの順に出す
-        condition: '`kind` が `flow`、`legend` が 2 項目'
+        condition: '`kind` が `er`、`legend` が 2 項目'
         mock: なし
         expected: '`figcaption`・`role="toolbar"`・`role="group"` の表示する枠・`aria-label="凡例"` の `ul` がこの順にあり、移動のボタンのまとまりが `hidden`'
       - name: test_render_diagram_frame_when_modal
@@ -95,10 +49,10 @@ functions:
         expected: 省いた枚だけ `div.mdmark-diagram-resize` があり、`role="separator"`・`aria-orientation="horizontal"`・`tabindex="0"`・`aria-label="「{題名}」の表示の高さ"`・`equal` のアイコンを持つ
       - name: test_render_diagram_frame_when_no_legend
         case: 正常
-        summary: 凡例の項目が空なら凡例を隠し、タイトルを留めない図にマーカーを付ける
-        condition: '`legend: []`、`stickyTitles: false`'
+        summary: 凡例の項目が空なら凡例を隠す
+        condition: '`legend: []`'
         mock: なし
-        expected: '`aria-label="凡例"` の `ul` が `hidden` を持ち、`figure` が `data-sticky-titles="off"` を持つ'
+        expected: '`aria-label="凡例"` の `ul` が `hidden` を持つ'
       - name: test_render_diagram_frame_when_mermaid
         case: 正常
         summary: 種類 mermaid は範囲と更新日を出さず、倍率の下限を付ける
@@ -118,16 +72,16 @@ functions:
         mock: なし
         expected: リサイズハンドルが表示する枠の後ろにあり、`equal` のアイコンを持つ
   - name: renderFlow
-    title: フロー図を描く
+    title: map の構成図のノードと線を描く
     container: src/parts/diagram.ts
     kind: 関数
     scope: internal
-    summary: 定義の座標に枠・層・ノードを配置し、`jumpPaths` のパスで線を svg に描く。判定フローチャートのノードは `data-kind` で CSS が構造（開始は円・アクションは角の丸くない四角・結果は両端の丸い形状）を当て、質問のノードにはノードの幅と高さを `viewBox` にした菱形の `polygon` の svg（`aria-hidden`）を配置する。名前は構造に内接する四角に配置し、質問は上下に高さの 1/4・左右に幅の 1/4、開始は幅 × `CIRCLE_INSET` の余白を `style` に適用する。ノードの種類のアイコン・`io` か `hint` を持つノードの右上のマーカー・`hint` を持つ枠と層のタイトルの右のマーカー（`button.mdmark-diagram-info.mdmark-diagram-group-info`。`aria-label` は `「{タイトル}」の説明`）・線のラベルを配置し、`href` を持つノードには class `has-link` と、名前の後ろ・右上のマーカーの前にノードの全体を覆う `<a class="mdmark-diagram-node-link" href="{href}" aria-label="{name}">` を配置する、枠と層のタイトルにはグループの上端と下端の `data-sticky-top`・`data-sticky-bottom` を付け（`hints` がオフならマーカーとツールチップの中身を配置しない）、`{{単語}}` は用語の照合に回す
+    summary: 部品設計『mapの構成図』が自動配置の結果から作ったノードと線を描く。ノードは座標に配置し、`style`（設定の `map.kinds` の値）の種類の行（アイコンと名前）・形・色で描き、`hint` を持つノードの右上にマーカーとツールチップの中身（`hints` がオフなら配置しない）、`href` を持つノードに class `has-link` と、名前の後ろ・右上のマーカーの前にノードの全体を覆う `<a class="mdmark-diagram-node-link" href="{href}" aria-label="{name}">` を配置する。線は `jumpPaths` のパスで svg に描き、`style`（設定の `map.lines` の値）の模様・太さ・矢じり・色を当て、線のラベルを配置する。ノードの中の名前は `renderText` に経由する
     args:
       - name: definition
         type: MdmarkFlowDefinition
         required: true
-        description: 読み込めた定義
+        description: map の構成図のノードと線
       - name: id
         type: string
         required: true
@@ -139,17 +93,17 @@ functions:
       - name: lookup
         type: TermLookup
         required: false
-        description: ノードの中の `{{単語}}` の意味を参照する関数。省くと単語だけを出す
+        description: ノードの名前の中の用語の意味を参照する関数。省くと単語だけを出す
     returns:
       type: '{ html: string; width: number; height: number; tips: string }'
       description: 図の中身
     unit_tests:
       - name: test_render_flow
         case: 正常
-        summary: 枠・層・ノード・線・ツールチップを出す
-        condition: '`inquiry` の定義'
+        summary: ノード・線・ツールチップを出す
+        condition: 部品設計『mapの構成図』の Default の自動配置の結果から作ったノードと線
         mock: なし
-        expected: 層が 3 つ、ノードが 9 つ、線が 10 本、`role="tooltip"` が `tip` の線と `io` のノードの数だけあり、`loop` の線が `stroke-dasharray="8 4"` を持つ
+        expected: ノードと線が定義の数だけあり、`role="tooltip"` が `hint` を持つノードの数だけあり、交わる横の線のパスが飛び越えの弧を持つ
       - name: test_render_flow_when_text_escaped
         case: 異常
         summary: 定義の文字の HTML を文字にする
@@ -158,80 +112,31 @@ functions:
         expected: 出力に `<img` が無く、`&lt;img` がある
       - name: test_render_flow_when_hint
         case: 正常
-        summary: hint だけを持つノードにもマーカーを配置し、hints がオフならマーカーもツールチップも配置しない
-        condition: '`inquiry-hint` の定義を `hints` が `true` と `false` で描く'
+        summary: hint を持つノードにマーカーを配置し、hints がオフならマーカーもツールチップも配置しない
+        condition: '`hint` を持つノード 1 つと持たないノード 1 つを、`hints` が `true` と `false` で描く'
         mock: なし
-        expected: '`true` でノード `mcp` のマーカーが `aria-label="「窓口の MCP」の説明"` を持ち、`false` で `role="tooltip"` とノードのマーカーが無く、線のラベルとノードの名前はある'
-      - name: test_render_flow_when_judgement
-        case: 正常
-        summary: 判定フローチャートのノードを種類ごとの構造と余白で描く
-        condition: モックの `judgement` の定義
-        mock: なし
-        expected: '`data-kind` が `start`・`question`・`action`・`result` のノードが 1・2・1・2 つあり、質問のノードだけが `viewBox="0 0 280 136"` と `points="140,0 280,68 140,136 0,68"` の `aria-hidden="true"` の svg を持ち、質問のノードの `style` が `padding:34px 70px`、開始のノードの `style` が `padding:14.6px`、線のラベルに `YES`・`NO` がある'
+        expected: '`true` で `hint` を持つノードにだけマーカーがあり、`false` で `role="tooltip"` とマーカーが無く、ノードの名前はある'
       - name: test_render_flow_when_node_link
         case: 正常
         summary: href を持つノードをリンクにし、マーカーをリンクの外に配置する
-        condition: モックの `linked` の定義を `hints` が `true` で描く
+        condition: '`href` と `hint` を持つノード、`href` だけを持つノード、どちらも持たないノード'
         mock: なし
-        expected: '`href` を持つ 2 つのノードが `has-link` と `a.mdmark-diagram-node-link`（`aria-label` がノードの名前）を持ち、`io` のマーカーは `a` の後ろにあって `a` の中に無い。`href` を持たないノードは `a` を持たない'
-      - name: test_render_flow_when_group_hint
-        case: 正常
-        summary: 枠と層の `hint` のマーカーと留める範囲を配置する
-        condition: モックの `inquiry-groups` の定義を `hints` が `true` と `false` で描く
-        mock: なし
-        expected: '`true` で枠と LLM の層のタイトルに `aria-label="「{タイトル}」の説明"` のマーカーがあり、`hint` を持たない層には無い。枠のタイトルが `data-sticky-top` と `data-sticky-bottom`（枠の `y` と `y + h`）を持つ。`false` でタイトルのマーカーが無い'
-  - name: renderSequence
-    title: シーケンス図を描く
-    container: src/parts/diagram.ts
-    kind: 関数
-    scope: internal
-    summary: '相手を左から右に等間隔で、メッセージを上から下に等間隔で配置し、`reply` は破線と開いた矢じり、`loop` は右の帯を通る破線と戻り先のラベルにする。相手の行は別の層にし、表示する枠の縦のスクロールの量を倍率で割った分だけ `translateY` で下げて上端に留める（`attachDiagrams` が動かす）'
-    args:
-      - name: definition
-        type: MdmarkSequenceDefinition
-        required: true
-        description: 読み込めた定義
-      - name: id
-        type: string
-        required: true
-        description: '`id` の頭'
-    returns:
-      type: '{ html: string; width: number; height: number; tips: string }'
-      description: 図の中身
-    unit_tests:
-      - name: test_render_sequence
-        case: 正常
-        summary: 相手とメッセージを順に配置する
-        condition: '`inquiry-seq` の定義'
-        mock: なし
-        expected: 相手のノードの x が定義の順に増え、メッセージの y が順に増え、`reply` の線と戻りの線が破線で、戻り先のラベルがある
+        expected: '`href` を持つ 2 つのノードが `has-link` と `a.mdmark-diagram-node-link`（`aria-label` がノードの名前）を持ち、`hint` のマーカーは `a` の後ろにあって `a` の中に無い。`href` を持たないノードは `a` を持たない'
   - name: legendFor
     title: 凡例の項目
     container: src/parts/diagram.ts
     kind: 関数
     scope: internal
-    summary: 'フロー図とシーケンス図は、定義に 2 種類以上あるノード（シーケンス図は相手）の種類（名前は `KIND_STYLES` の `legend`）と線の種類だけを並べ、枠・層・交差・マーカー・下線は記載しない（1 種類だけのものは記載せず、どちらも 1 種類なら空を返却する）。グラフは系列（円とドーナツは項目）を並べる。外部のシステムに `（枠の外）` を添えるのは枠を持つ図だけ。`combo` で `y2` を持つ図は系列の名前に `（左の軸）`・`（右の軸）` を添え、`bubble` は `円の面積: {size.label}` の項目を加え、`donut` は `pie` と同じく項目の名前と値を並べる。ER 図は図にあるテーブルの種類の札（名前は `{札}のテーブル`）・列のマーカー（`ER_COLUMN_KEYS` の `title`）・多重度の記号（`ER_CARDINALITIES` の名前）だけを並べる'
+    summary: 'グラフは系列（円とドーナツは項目）を並べる。`combo` で `y2` を持つ図は系列の名前に `（左の軸）`・`（右の軸）` を添え、`bubble` は `円の面積: {size.label}` の項目を加え、`donut` は `pie` と同じく項目の名前と値を並べる。ER 図は図にあるテーブルの種類の札（名前は `{札}のテーブル`）・列のマーカー（`ER_COLUMN_KEYS` の `title`）・多重度の記号（`ER_CARDINALITIES` の名前）だけを並べる'
     args:
       - name: definition
-        type: MdmarkFlowDefinition | MdmarkSequenceDefinition | MdmarkChartDefinition | MdmarkErDefinition
+        type: MdmarkChartDefinition | MdmarkErDefinition
         required: true
         description: 読み込めた定義
     returns:
       type: '{ sample: string; label: string }[]'
       description: 凡例の項目
     unit_tests:
-      - name: test_legend_for
-        case: 正常
-        summary: 出るものだけを記載する
-        condition: '`flow` と `read` の線だけを持ち、枠も交差も無いフロー図'
-        mock: なし
-        expected: 線の項目が `処理の流れ`・`読み込む` の 2 つで、枠・交差の項目が無く、外部のシステムに `（枠の外）` が付かない
-      - name: test_legend_for_when_judgement
-        case: 正常
-        summary: 判定フローチャートは追加した種類だけを凡例に出す
-        condition: モックの `judgement` の定義
-        mock: なし
-        expected: 種類の項目が `開始`・`質問`・`アクション`・`結果` の 4 つで、`意思決定モデル`・`データ（下の角が丸いノード）` が無い
       - name: test_legend_for_when_chart_types_added
         case: 正常
         summary: 組み合わせ・バブル・ドーナツの凡例を出す
@@ -244,12 +149,6 @@ functions:
         condition: マスターのテーブルだけを持ち、列が `pk`・`nn` だけで、多重度が `1` と `0..n` だけの定義
         mock: なし
         expected: 項目が `マスターのテーブル`・`主キー`・`NOT NULL`・`1 つ`・`0 以上` の 5 つで、説明のボタンと用語の下線の項目が無い
-      - name: test_legend_for_when_single_kinds
-        case: 正常
-        summary: 1 種類だけのノードと線を記載しない
-        condition: モックの `single-kinds`（同じ種類のノード 3 つと同じ種類の線 2 本）と、ノードは 2 種類で線は `flow` だけの定義
-        mock: なし
-        expected: 前者は空の配列。後者はノードの種類の 2 項目だけで、線・枠・層・交差・マーカー・下線の項目が無い
   - name: renderDiagramTip
     title: 図のツールチップを描く
     container: src/parts/diagram.ts
@@ -258,19 +157,19 @@ functions:
     summary: 部品設計『図のツールチップ』の中身。`role="tooltip"` と `hidden` を持つ
     args:
       - name: tip
-        type: '{ id: string; kind: "wire" | "io" | "hint" | "table" | "item"; label: string; value?: string; tip?: string; io?: { in: string; do: string; out: string }; hint?: string; table?: MdmarkErTable }'
+        type: '{ id: string; kind: "wire" | "hint" | "table" | "item" | "merged"; label: string; value?: string; tip?: string; hint?: string; table?: MdmarkErTable }'
         required: true
-        description: 部品設計の引数。`item` は見出しに `label`、本文に `value` を出す。`io` と `hint` を両方持つときは入力・処理・出力の後に `hint` を出す。`table` はタイトルを `{論理名}（{物理名}）`（どちらも `{{`・`}}` を除いた文字）にし、概要と、`desc` を持つ列の名前と説明を並べる
+        description: 部品設計の引数。`item` は見出しに `label`、本文に `value` を出す。`table` はタイトルを `{論理名}（{物理名}）`（どちらも `{{`・`}}` を除いた文字）にし、概要と、`desc` を持つ列の名前と説明を並べる
     returns:
       type: string
       description: ツールチップの HTML
     unit_tests:
       - name: test_render_diagram_tip
         case: 正常
-        summary: 入力・処理・出力を 3 行に出す
-        condition: '`kind` が `io`'
+        summary: 線の説明を見出しと文で出す
+        condition: '`kind` が `wire`、`label` が `補足を渡す`、`tip` が `検査した補足`'
         mock: なし
-        expected: '`入力`・`処理`・`出力` の見出しと値がこの順にあり、`hidden` を持つ'
+        expected: 見出しが `補足を渡す`、本文が `検査した補足` で、`hidden` を持つ
       - name: test_render_diagram_tip_when_hint
         case: 正常
         summary: hint だけを文として出す
@@ -311,7 +210,7 @@ functions:
       - name: lookup
         type: TermLookup | undefined
         required: false
-        description: 用語から意味を参照する関数（`renderFlow`・`renderSequence` と同じ）
+        description: 用語から意味を参照する関数（`renderFlow` と同じ）
     returns:
       type: '{ html: string; width: number; height: number; tips: string; jumps: boolean; terms: boolean }'
       description: 図の中身と、用語の下線を付けた文字があるか（`terms`。`jumps` は常に `false`）

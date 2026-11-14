@@ -5,7 +5,7 @@ scenarios:
   - name: 正常シナリオ
     setup:
       - name: 見本の HTML の文書
-        description: マーカーを付けた `html` のコードブロック 1 つと、`<!-- flow -->` のフロー図 1 つを持つ文書。HTML の中に、データ（JSON）だけを記載した `<mdmark-chart>` 1 つ、`data-hint` を付けたノード 1 つ、索引に記載した用語を含む文、`script` 要素 1 つを配置する。フロー図には `hint` を持つノードを 1 つ配置する。マーカーの無い `html` のコードブロックも 1 つ配置する
+        description: マーカーを付けた `html` のコードブロック 1 つと、map の構成図 1 つを持つ文書。HTML の中に、データ（JSON）だけを記載した `<mdmark-chart>` 1 つ、`data-hint` を付けたノード 1 つ、索引に記載した用語を含む文、`script` 要素 1 つを配置する。構成図には、補足の `notes` で説明を持つノードを 1 つ配置する。マーカーの無い `html` のコードブロックも 1 つ配置する
       - name: 索引
         description: 見本の HTML の文書の文に出る用語 1 つを記載する
       - name: Mock
@@ -64,7 +64,7 @@ scenarios:
       - '`mdmark export` が終了コード 0 で 1 枚の HTML を書き出す'
       - 書き出した HTML を外への要求を止めて開いても、埋め込んだ HTML とチャートが描かれる
       - チャートを右上のボタンで拡大・縮小でき、ドラッグで動かせる
-      - チャートの項目・`data-hint` を付けたノード・図のノードの `hint`・HTML の中の用語に、ツールチップが出る
+      - チャートの項目・`data-hint` を付けたノード・構成図のノードの `notes` の説明・HTML の中の用語に、ツールチップが出る
     test: test_normal_when_exported
     uses:
       - SC-472-56#scenarios[正常シナリオ]

@@ -9,7 +9,7 @@ directory: |-
   ├── map/
   │   ├── spec.ts            # 設定の map と補足の型・既定・検査（dist/index.js と CLI）
   │   ├── structure.ts       # 範囲の mermaid のブロックと補足の数・図の種類・マーカーの引数の確認（dist/index.js・dist/map.js と CLI）
-  │   ├── flowchart.ts       # flowchart の読み取り（dist/map.js と CLI）
+  │   ├── flowchart.ts       # flowchart の読み取りと click のリンク先の確認（dist/map.js と CLI）
   │   ├── sequence.ts        # sequenceDiagram の読み取り（dist/map.js と CLI）
   │   ├── er.ts              # erDiagram の読み取りと構成図の入力への読み替え・経路（dist/map.js と CLI）
   │   ├── state-diagram.ts   # stateDiagram-v2 の読み取りと構成図の入力への読み替え（dist/map.js と CLI）
@@ -25,7 +25,8 @@ directory: |-
   │   ├── state-view.ts      # 状態遷移図を構成図の上に描いて固有の操作を足す（dist/map.js）
   │   ├── drag.ts            # ノード・グループ・線の区間のドラッグ（dist/map.js）
   │   ├── band.ts            # 案内と再生の進め方（dist/map.js）
-  │   └── index.ts           # dist/map.js の入口。attachMap
+  │   ├── index.ts           # dist/map.js の入口。attachMap
+  │   └── convert.ts         # 廃止した flow・sequence の範囲を map の範囲へ書き換える（移行の手順のスクリプトがまとめて読み込む）
   └── parts/map.ts           # 部品『mapの構成図』『mapのシーケンス図』『mapのER図』『mapの状態遷移図』『案内の帯』の HTML（dist/map.js）
   ```
 diagrams:

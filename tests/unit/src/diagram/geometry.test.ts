@@ -4,9 +4,9 @@ import type { MdmarkDiagramWire } from "../../../../src/diagram/definition.ts";
 /** 線の処理を読み込む（実装が無い間は各テストが個別に失敗する） */
 const loadGeometry = () => import("../../../../src/diagram/geometry.ts");
 
-/** 点だけを変えた `flow` の線 */
+/** 点だけを変えた線 */
 function wire(id: string, points: Array<[number, number]>): MdmarkDiagramWire {
-  return { id, from: "a", to: "b", line: "flow", points };
+  return { id, from: "a", to: "b", points, style: {} };
 }
 
 /** svg のパスの数字を全て取り出す */
@@ -139,26 +139,4 @@ test("test_clamp_diagram_height", async () => {
   const heights = [50, 400.6, 3000].map((h) => clampDiagramHeight(h));
   // 検証
   expect(heights).toEqual([120, 401, 3000]);
-});
-
-// 見えているグループのタイトルを留め、層は枠のタイトルの下に留める（正常系）
-test("test_sticky_title_shifts", async () => {
-  // 準備
-  const { stickyTitleShifts } = await loadGeometry();
-  const titles = [
-    { base: 8, bottom: 600, height: 20, frame: true },
-    { base: 40, bottom: 200, height: 18, frame: false },
-    { base: 206, bottom: 400, height: 18, frame: false },
-  ];
-  // 実行
-  const atTop = stickyTitleShifts({ top: 0, gap: 4, titles });
-  const middle = stickyTitleShifts({ top: 100, gap: 4, titles });
-  const lower = stickyTitleShifts({ top: 250, gap: 4, titles });
-  // 検証
-  expect(atTop.every((title) => title.shift === 0 && !title.stuck)).toBe(true);
-  expect(middle[0]?.stuck).toBe(true);
-  expect(middle[1]?.stuck).toBe(true);
-  expect(middle[1]?.shift).toBe(100 + 4 + 20 + 4 - 40);
-  expect(lower[1]?.stuck).toBe(false);
-  expect(lower[2]?.stuck).toBe(true);
 });

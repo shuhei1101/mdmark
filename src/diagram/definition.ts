@@ -1,39 +1,9 @@
 import { COLOR_NAMES, type ColorName, isColorName } from "../parts/colors.ts";
-import { isAllowedUrl } from "../render/sanitize.ts";
-import { layoutFlowchart } from "./layout.ts";
 
-/** ノードの種類（`start`・`question`・`action`・`result` は判定フローチャートの開始・質問・アクション・結果） */
-export type MdmarkDiagramKind =
-  | "llm"
-  | "dm"
-  | "script"
-  | "mcp"
-  | "data"
-  | "external"
-  | "start"
-  | "question"
-  | "action"
-  | "result";
-
-/** 線の種類 */
-export type MdmarkDiagramLine = "flow" | "read" | "write" | "reply" | "loop";
-
-/** ノードの入力・処理・出力 */
-export type MdmarkDiagramIo = {
-  /** 入力 */
-  in: string;
-  /** 処理 */
-  do: string;
-  /** 出力 */
-  out: string;
-};
-
-/** フロー図のノード */
+/** map の構成図のノード */
 export type MdmarkDiagramNode = {
   /** 線が端に指す id */
   id: string;
-  /** ノードの種類 */
-  kind: MdmarkDiagramKind;
   /** 左上の x（px） */
   x: number;
   /** 左上の y（px） */
@@ -44,18 +14,14 @@ export type MdmarkDiagramNode = {
   h: number;
   /** 名前 */
   name: string;
-  /** 種類の行に出す名前。省くと種類の既定の名前 */
-  tag?: string;
   /** 補足 */
   sub?: string;
-  /** 入力・処理・出力。持つノードにマーカーを付ける */
-  io?: MdmarkDiagramIo;
-  /** ノードの右上のマーカーに出す文。`io` と一緒に持つと、入力・処理・出力の後に出す */
+  /** ノードの右上のマーカーに出す説明（補足の `notes`） */
   hint?: string;
-  /** リンク先。`http`・`https`・`mailto` の URL か相対パス */
+  /** 許可したリンク先 */
   href?: string;
-  /** map の構成図が指定する、設定の map.kinds の種類（`kind` の既定の名前・アイコン・構造の代わりに使う） */
-  style?: MdmarkNodeStyle;
+  /** 設定の map.kinds の種類（種類の行の名前・アイコン・構造・色） */
+  style: MdmarkNodeStyle;
 };
 
 /** map の構成図のノードの種類（種類の行の名前・Lucide のアイコンの名前・構造・色の名前） */
@@ -76,7 +42,7 @@ export type MdmarkWireStyle = {
   both?: boolean | undefined;
 };
 
-/** フロー図の線 */
+/** map の構成図の線 */
 export type MdmarkDiagramWire = {
   /** 線の id */
   id: string;
@@ -84,8 +50,6 @@ export type MdmarkDiagramWire = {
   from: string;
   /** 先のノードの id */
   to: string;
-  /** 線の種類 */
-  line: MdmarkDiagramLine;
   /** 縦横だけの折れ線の点 */
   points: Array<[number, number]>;
   /** 線のラベル */
@@ -94,72 +58,20 @@ export type MdmarkDiagramWire = {
   labelAt?: [number, number];
   /** ラベルの詳細。持つラベルにツールチップを付ける */
   tip?: string;
-  /** map の構成図が指定する、設定の map.lines の線の種類（`line` の見た目の代わりに使う） */
-  style?: MdmarkWireStyle;
+  /** 設定の map.lines の線の種類（模様・太さ・矢じり・色） */
+  style: MdmarkWireStyle;
 };
 
-/** フロー図の定義 */
+/** map の構成図のノードと線（自動配置の結果から作り、`renderFlow` に渡す） */
 export type MdmarkFlowDefinition = {
-  /** 題名 */
-  title: string;
-  /** 範囲 */
-  scope: string;
-  /** 更新日（`YYYY-MM-DD`） */
-  updated: string;
   /** 図の幅（px） */
   width: number;
   /** 図の高さ（px） */
   height: number;
-  /** システムの枠。`hint` はタイトルの右のマーカーに出す文 */
-  frame?: {
-    title: string;
-    x: number;
-    y: number;
-    w: number;
-    h: number;
-    hint?: string;
-  };
-  /** 枠の中の層。層のノードの色をうっすら敷く。`hint` はタイトルの右のマーカーに出す文 */
-  lanes?: Array<{
-    label: string;
-    kind: "llm" | "mcp" | "data";
-    y: number;
-    h: number;
-    hint?: string;
-  }>;
-  /** 拡大して動かしたときに、見えている枠と層のタイトルを表示する枠の上端に留めるか（省いたとき `true`） */
-  stickyTitles?: boolean;
   /** ノード */
   nodes: MdmarkDiagramNode[];
   /** 線 */
   wires: MdmarkDiagramWire[];
-};
-
-/** シーケンス図の定義 */
-export type MdmarkSequenceDefinition = {
-  /** 題名 */
-  title: string;
-  /** 範囲 */
-  scope: string;
-  /** 更新日 */
-  updated: string;
-  /** 相手。左から右へ並べる順 */
-  participants: Array<{
-    id: string;
-    kind: MdmarkDiagramNode["kind"];
-    name: string;
-    tag?: string;
-  }>;
-  /** メッセージ。時刻の順 */
-  steps: Array<{
-    from: string;
-    to: string;
-    label: string;
-    reply?: boolean;
-    tip?: string;
-  }>;
-  /** 最後のメッセージから最初へ戻る繰り返し */
-  loop?: { label: string };
 };
 
 /** グラフの種類 */
@@ -332,8 +244,6 @@ export type MdmarkErDefinition = {
 
 /** 読み込めた定義の種類 */
 export type MdmarkDefinition =
-  | MdmarkFlowDefinition
-  | MdmarkSequenceDefinition
   | MdmarkChartDefinition
   | MdmarkParamDefinition
   | MdmarkErDefinition;
@@ -349,44 +259,25 @@ export type DefinitionResult = {
 };
 
 /** 図の部品のマーカーの名前 */
-export type DiagramDirective = "flow" | "sequence" | "chart" | "param" | "er";
+export type DiagramDirective = "chart" | "param" | "er";
+
+/** 廃止した図の部品のマーカーの名前 */
+export type RetiredDiagramDirective = "flow" | "sequence";
+
+/** 廃止した図の部品のマーカー。同じ名前の拡張が無い範囲を、描く処理・点検・参照の取り出し・移行の手順が廃止した図として扱う */
+export const RETIRED_DIAGRAM_DIRECTIVES: readonly RetiredDiagramDirective[] = [
+  "flow",
+  "sequence",
+];
 
 /** 図の部品のマーカーの名前と、記載の警告に出す図の種類の名前・呼び名 */
 export const DIAGRAM_DIRECTIVES: Readonly<
   Record<DiagramDirective, { name: string; call: string }>
 > = {
-  flow: { name: "フロー図", call: "この図" },
-  sequence: { name: "シーケンス図", call: "この図" },
   chart: { name: "グラフ", call: "このグラフ" },
   param: { name: "操作できる部品", call: "この部品" },
   er: { name: "ER 図", call: "この ER 図" },
 };
-
-/** ノードの種類の並び（記載の警告にも出す） */
-const NODE_KINDS: readonly MdmarkDiagramKind[] = [
-  "llm",
-  "dm",
-  "script",
-  "mcp",
-  "data",
-  "external",
-  "start",
-  "question",
-  "action",
-  "result",
-];
-
-/** 層に使用できる種類 */
-const LANE_KINDS = ["llm", "mcp", "data"];
-
-/** 線の種類の並び */
-const LINE_KINDS: readonly MdmarkDiagramLine[] = [
-  "flow",
-  "read",
-  "write",
-  "reply",
-  "loop",
-];
 
 /** 系列の数の下限と上限（円の項目の数も同じ） */
 const SERIES_RANGE = { min: 1, max: 6 };
@@ -566,17 +457,6 @@ function checkOptionalText(
   }
 }
 
-/** ノードの種類を確認する */
-function checkKind(value: unknown, label: string, problems: Problems): void {
-  if (typeof value !== "string") {
-    problems.add(`${label}の種類（kind）がありません。文字で記載してください`);
-  } else if (!(NODE_KINDS as readonly string[]).includes(value)) {
-    problems.add(
-      `${label}の種類 ${value} は使用できません。使用できる種類は ${NODE_KINDS.join("・")} です`,
-    );
-  }
-}
-
 /** 値の並びで重なった `id` を読み込めない箇所にする */
 function checkDuplicates(
   ids: string[],
@@ -594,335 +474,6 @@ function checkDuplicates(
       );
     }
     seen.add(id);
-  }
-}
-
-/** ノード 1 つを確認して、`id` を返却する */
-function checkNode(
-  value: unknown,
-  index: number,
-  problems: Problems,
-  omitted = false,
-): string | undefined {
-  const node = asObject(value, `nodes[${index}]`, problems);
-  if (!node) {
-    return undefined;
-  }
-  const name = typeof node.name === "string" ? node.name : `${index + 1} つ目`;
-  const label = `ノード「${name}」`;
-  problems.expect(node.name, "文字", `nodes[${index}].name`);
-  const id = typeof node.id === "string" ? node.id : undefined;
-  problems.expect(node.id, "文字", `${label}の id`);
-  checkKind(node.kind, label, problems);
-  if (!omitted) {
-    for (const key of ["x", "y", "w", "h"]) {
-      problems.expect(node[key], "数", `${label}の ${key}`);
-    }
-  }
-  checkOptionalText(node.tag, `${label}の tag`, problems);
-  checkOptionalText(node.href, `${label}の href`, problems);
-  checkOptionalText(node.sub, `${label}の sub`, problems);
-  checkOptionalText(node.hint, `${label}の hint`, problems);
-  if (node.io !== undefined) {
-    const io = asObject(node.io, `${label}の io`, problems);
-    if (io) {
-      for (const key of ["in", "do", "out"]) {
-        problems.expect(io[key], "文字", `${label}の io.${key}`);
-      }
-    }
-  }
-  return id;
-}
-
-/** 線の点が縦横だけの折れ線かを確認する */
-function checkPoints(value: unknown, label: string, problems: Problems): void {
-  const points = asArray(value, `${label}の points`, problems);
-  if (!points) {
-    return;
-  }
-  if (points.length < 2) {
-    problems.add(
-      `${label}の points が ${points.length} つです。2 つ以上の点で記載してください`,
-    );
-    return;
-  }
-  const valid: Array<[number, number]> = [];
-  for (const point of points) {
-    if (
-      Array.isArray(point) &&
-      point.length === 2 &&
-      isType(point[0], "数") &&
-      isType(point[1], "数")
-    ) {
-      valid.push([point[0] as number, point[1] as number]);
-    } else {
-      problems.add(
-        `${label}の points に [x, y] でない点があります。[x, y] の数 2 つで記載してください`,
-      );
-      return;
-    }
-  }
-  for (let index = 1; index < valid.length; index++) {
-    const from = valid[index - 1];
-    const to = valid[index];
-    if (from && to && from[0] !== to[0] && from[1] !== to[1]) {
-      problems.add(
-        `${label}の ${index} つ目から ${index + 1} つ目の点が斜めです。縦か横だけの折れ線で記載してください`,
-      );
-      return;
-    }
-  }
-}
-
-/** 線 1 本を確認して、`id` を返却する */
-function checkWire(
-  value: unknown,
-  index: number,
-  nodeIds: Set<string>,
-  problems: Problems,
-  omitted = false,
-): string | undefined {
-  const wire = asObject(value, `wires[${index}]`, problems);
-  if (!wire) {
-    return undefined;
-  }
-  const id = typeof wire.id === "string" ? wire.id : undefined;
-  problems.expect(wire.id, "文字", `wires[${index}].id`);
-  // 英数字の id の後ろは、日本語の助詞との間を空ける
-  const label = `線 ${id ?? `${index + 1} つ目`} `;
-  if (typeof wire.line !== "string") {
-    problems.add(`${label}の種類（line）がありません。文字で記載してください`);
-  } else if (!(LINE_KINDS as readonly string[]).includes(wire.line)) {
-    problems.add(
-      `${label}の種類 ${wire.line} は使用できません。使用できる種類は ${LINE_KINDS.join("・")} です`,
-    );
-  }
-  for (const key of ["from", "to"]) {
-    const end = wire[key];
-    if (typeof end !== "string") {
-      problems.add(
-        `${label}の ${key} がありません。端のノードの id で記載してください`,
-      );
-    } else if (!nodeIds.has(end)) {
-      problems.add(
-        `${label}の端のノード ${end} がありません。ノードの id で記載してください`,
-      );
-    }
-  }
-  if (!omitted) {
-    checkPoints(wire.points, label, problems);
-  }
-  checkOptionalText(wire.label, `${label}の label`, problems);
-  checkOptionalText(wire.tip, `${label}の tip`, problems);
-  if (wire.labelAt !== undefined) {
-    const at = wire.labelAt;
-    if (
-      !Array.isArray(at) ||
-      at.length !== 2 ||
-      !isType(at[0], "数") ||
-      !isType(at[1], "数")
-    ) {
-      problems.add(
-        `${label}の labelAt が [x, y] ではありません。数 2 つで記載してください`,
-      );
-    }
-  }
-  return id;
-}
-
-/** フロー図の枠と層を確認する */
-function checkFrame(source: Record<string, unknown>, problems: Problems): void {
-  if (source.frame !== undefined) {
-    const frame = asObject(source.frame, "frame", problems);
-    if (frame) {
-      problems.expect(frame.title, "文字", "frame.title");
-      for (const key of ["x", "y", "w", "h"]) {
-        problems.expect(frame[key], "数", `frame.${key}`);
-      }
-      if (frame.hint !== undefined) {
-        problems.expect(frame.hint, "文字", "frame.hint");
-      }
-    }
-  }
-  if (source.lanes !== undefined) {
-    const lanes = asArray(source.lanes, "lanes", problems);
-    lanes?.forEach((value, index) => {
-      const lane = asObject(value, `lanes[${index}]`, problems);
-      if (!lane) {
-        return;
-      }
-      problems.expect(lane.label, "文字", `lanes[${index}].label`);
-      problems.expect(lane.y, "数", `lanes[${index}].y`);
-      problems.expect(lane.h, "数", `lanes[${index}].h`);
-      if (lane.hint !== undefined) {
-        problems.expect(lane.hint, "文字", `lanes[${index}].hint`);
-      }
-      if (typeof lane.kind !== "string" || !LANE_KINDS.includes(lane.kind)) {
-        problems.add(
-          `層「${String(lane.label)}」の種類 ${String(lane.kind)} は使用できません。使用できる種類は ${LANE_KINDS.join("・")} です`,
-        );
-      }
-    });
-  }
-}
-
-/** 座標を省けるノードの種類（判定フローチャート） */
-export const JUDGEMENT_KINDS: readonly MdmarkDiagramKind[] = [
-  "start",
-  "question",
-  "action",
-  "result",
-];
-
-/** フロー図の座標（図の `width`・`height`、ノードの `x`・`y`・`w`・`h`、線の `points`）を全て記載したか・全て省いたか・混ざるか */
-function coordinateMode(
-  source: Record<string, unknown>,
-): "written" | "omitted" | "mixed" {
-  const present: boolean[] = [
-    source.width !== undefined,
-    source.height !== undefined,
-  ];
-  for (const node of Array.isArray(source.nodes) ? source.nodes : []) {
-    if (node !== null && typeof node === "object") {
-      for (const key of ["x", "y", "w", "h"]) {
-        present.push((node as Record<string, unknown>)[key] !== undefined);
-      }
-    }
-  }
-  for (const wire of Array.isArray(source.wires) ? source.wires : []) {
-    if (wire !== null && typeof wire === "object") {
-      present.push((wire as Record<string, unknown>).points !== undefined);
-    }
-  }
-  if (present.every(Boolean)) {
-    return "written";
-  }
-  return present.some(Boolean) ? "mixed" : "omitted";
-}
-
-/** 座標を省いたフロー図の、判定フローチャートでない種類のノード（最初の 1 つ） */
-function nodeNotJudgement(
-  source: Record<string, unknown>,
-): { name: string; kind: string } | undefined {
-  for (const node of Array.isArray(source.nodes) ? source.nodes : []) {
-    if (node === null || typeof node !== "object") {
-      continue;
-    }
-    const { kind, name } = node as Record<string, unknown>;
-    if (
-      typeof kind === "string" &&
-      (NODE_KINDS as readonly string[]).includes(kind) &&
-      !(JUDGEMENT_KINDS as readonly string[]).includes(kind)
-    ) {
-      return { name: String(name), kind };
-    }
-  }
-  return undefined;
-}
-
-/** フロー図の定義を確認する */
-function checkFlow(source: Record<string, unknown>, problems: Problems): void {
-  checkHead(source, problems);
-  const mode = coordinateMode(source);
-  const omitted = mode === "omitted";
-  if (mode === "mixed") {
-    problems.add(
-      "座標（x・y・w・h・points・width・height）を記載したものと省いたものが混ざっています。全て記載するか、全て省いてください",
-    );
-  } else if (omitted) {
-    const other = nodeNotJudgement(source);
-    if (other) {
-      problems.add(
-        `ノード「${other.name}」の種類 ${other.kind} では座標を省けません。座標を省けるのは、種類が ${JUDGEMENT_KINDS.join("・")} だけの判定フローチャートです。座標を記載するか、種類を変えてください`,
-      );
-    }
-  } else {
-    problems.expect(source.width, "数", "width");
-    problems.expect(source.height, "数", "height");
-  }
-  checkFrame(source, problems);
-  if (source.stickyTitles !== undefined) {
-    problems.expect(source.stickyTitles, "真偽値", "stickyTitles");
-  }
-  const nodes = asArray(source.nodes, "nodes", problems);
-  const nodeIds = (nodes ?? []).map((value, index) =>
-    checkNode(value, index, problems, mode !== "written"),
-  );
-  checkDuplicates(
-    nodeIds.filter((id): id is string => id !== undefined),
-    "ノード",
-    problems,
-  );
-  const wires = asArray(source.wires, "wires", problems);
-  const known = new Set(nodeIds.filter((id): id is string => id !== undefined));
-  const wireIds = (wires ?? []).map((value, index) =>
-    checkWire(value, index, known, problems, mode !== "written"),
-  );
-  checkDuplicates(
-    wireIds.filter((id): id is string => id !== undefined),
-    "線",
-    problems,
-  );
-}
-
-/** シーケンス図の定義を確認する */
-function checkSequence(
-  source: Record<string, unknown>,
-  problems: Problems,
-): void {
-  checkHead(source, problems);
-  const participants = asArray(source.participants, "participants", problems);
-  const ids: string[] = [];
-  participants?.forEach((value, index) => {
-    const participant = asObject(value, `participants[${index}]`, problems);
-    if (!participant) {
-      return;
-    }
-    const name =
-      typeof participant.name === "string"
-        ? participant.name
-        : `${index + 1} つ目`;
-    problems.expect(participant.name, "文字", `participants[${index}].name`);
-    if (problems.expect(participant.id, "文字", `相手「${name}」の id`)) {
-      ids.push(participant.id as string);
-    }
-    checkKind(participant.kind, `相手「${name}」`, problems);
-    checkOptionalText(participant.tag, `相手「${name}」の tag`, problems);
-  });
-  checkDuplicates(ids, "相手", problems);
-  const steps = asArray(source.steps, "steps", problems);
-  steps?.forEach((value, index) => {
-    const step = asObject(value, `steps[${index}]`, problems);
-    if (!step) {
-      return;
-    }
-    const label = `メッセージ ${index + 1} つ目`;
-    problems.expect(step.label, "文字", `${label}の label`);
-    for (const key of ["from", "to"]) {
-      const end = step[key];
-      if (typeof end !== "string") {
-        problems.add(
-          `${label}の ${key} がありません。相手の id で記載してください`,
-        );
-      } else if (!ids.includes(end)) {
-        problems.add(
-          `${label}の相手 ${end} がありません。相手の id で記載してください`,
-        );
-      }
-    }
-    if (step.reply !== undefined) {
-      problems.expect(step.reply, "真偽値", `${label}の reply`);
-    }
-    checkOptionalText(step.tip, `${label}の tip`, problems);
-  });
-  if (steps?.length === 0) {
-    problems.add("steps が空です。メッセージを 1 つ以上書いてください");
-  }
-  if (source.loop !== undefined) {
-    const loop = asObject(source.loop, "loop", problems);
-    if (loop) {
-      problems.expect(loop.label, "文字", "loop.label");
-    }
   }
 }
 
@@ -1484,8 +1035,6 @@ const CHECKERS: Record<
   DiagramDirective,
   (source: Record<string, unknown>, problems: Problems) => void
 > = {
-  flow: checkFlow,
-  sequence: checkSequence,
   chart: checkChart,
   param: checkParam,
   er: checkEr,
@@ -1526,27 +1075,11 @@ export function readDefinition(
   if (problems.list.length > 0) {
     return { ok: false, problems: problems.list };
   }
-  const definition = parsed.value as MdmarkDefinition;
   return {
     ok: true,
-    definition:
-      directive === "flow" &&
-      coordinateMode(parsed.value as Record<string, unknown>) === "omitted"
-        ? layoutFlowchart(definition as MdmarkFlowDefinition)
-        : definition,
+    definition: parsed.value as MdmarkDefinition,
     problems: [],
   };
-}
-
-/** フロー図の定義の、本文のリンクと同じ許可に該当しないリンク先を持つノードを定義の順に返却する */
-export function nodeLinkProblems(
-  definition: MdmarkFlowDefinition,
-): Array<{ id: string; href: string }> {
-  return definition.nodes.flatMap((node) =>
-    node.href !== undefined && !isAllowedUrl(node.href)
-      ? [{ id: node.id, href: node.href }]
-      : [],
-  );
 }
 
 /** 読み込めない定義の記載の警告の本文と項目。読み込めない箇所が 2 つ以上あるときは、1 つ目を本文に記載し、残りを項目に並べる */
