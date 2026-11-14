@@ -2,7 +2,7 @@ import { expect, test } from "vitest";
 import type { ResolvedConfig } from "../../../../src/config.ts";
 import type { MdmarkAlias } from "../../../../src/knowledge/aliases.ts";
 import {
-  INQUIRY_TEXT,
+  REPLY_TIME_TEXT,
   STRENGTH_TEXT,
   WARNINGS_MARKDOWN,
   wrapDirective,
@@ -166,7 +166,7 @@ test("test_collect_warnings", async () => {
   const warnings = collectWarnings(WARNINGS_MARKDOWN);
   // 検証
   expect(warnings.map(({ line, kind }) => ({ line, kind }))).toEqual([
-    { line: 1, kind: "diagram_invalid" },
+    { line: 1, kind: "retired_diagram" },
     { line: 22, kind: "syntax_warning" },
   ]);
   // 本文と項目をつなぐ空白は画面の文字に無いため、空白を除いて比べる
@@ -181,7 +181,7 @@ test("test_collect_warnings_when_clean", async () => {
   // 準備
   const { collectWarnings } = await loadRender();
   const markdown = [
-    wrapDirective("flow", INQUIRY_TEXT),
+    wrapDirective("chart", REPLY_TIME_TEXT),
     '<!-- table: {"kind": "data"} -->',
     "",
     "| 列 | 値 |",

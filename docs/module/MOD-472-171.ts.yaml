@@ -5,63 +5,22 @@ test_files:
   - tests/unit/src/diagram/definition.test.ts
 data_models:
   - name: MdmarkFlowDefinition
-    title: フロー図の定義
+    title: map の構成図のノードと線
     container: src/diagram/definition.ts
-    summary: '`<!-- flow -->` の範囲に記載する定義。`dist/index.d.ts` へ書き出す'
+    summary: '部品設計『mapの構成図』が自動配置の結果から作り、`renderFlow` に渡すノードと線。文書に記載する定義ではなく、`dist/index.d.ts` へ書き出さない'
     properties:
-      - name: title
-        type: string
-        description: 題名
-      - name: scope
-        type: string
-        description: 範囲
-      - name: updated
-        type: string
-        description: 更新日（`YYYY-MM-DD`）
       - name: width
         type: number
-        description: 図の幅（px）。座標を省いた判定フローチャートでは記載せず、`layoutFlowchart` が入れる
+        description: 図の幅（px）
       - name: height
         type: number
-        description: 図の高さ（px）。座標を省いた判定フローチャートでは記載せず、`layoutFlowchart` が入れる
-      - name: frame
-        type: '{ title: string; x: number; y: number; w: number; h: number; hint?: string } | undefined'
-        description: システムの枠。`hint` はタイトルの右のマーカーに出す文
-      - name: lanes
-        type: '{ label: string; kind: "llm" | "mcp" | "data"; y: number; h: number; hint?: string }[] | undefined'
-        description: 枠の中の層。層のノードの色をうっすら敷く。`hint` はタイトルの右のマーカーに出す文
+        description: 図の高さ（px）
       - name: nodes
         type: MdmarkDiagramNode[]
-        description: ノード（`id`・`kind`・`x`・`y`・`w`・`h`・`name`・`tag?`・`sub?`・`io?`・`hint?`・`href?`）。`href` はノードのリンク先。`hint` はノードの右上のマーカーに出す文。`kind` は `llm`・`dm`・`script`・`mcp`・`data`・`external` と、判定フローチャートの `start`・`question`・`action`・`result`。判定フローチャートは `frame`・`lanes` を持たず、ノードの座標と線の `points` を他のフロー図と同じく記載するか、図の `width`・`height` と合わせて全て省く（`readDefinition` が全て記載するか全て省くかを確認し、省いた定義は `layoutFlowchart` が入れた座標で返却する。型は読み込んだ後の定義で、`x`・`y`・`w`・`h`・`points`・`width`・`height` を必ず持つ）。`tag`・`name`・`sub` の `{{単語}}` は用語の照合に回す
+        description: ノード（`id`・`x`・`y`・`w`・`h`・`name`・`sub?`・`hint?`・`href?`・`style`）。種類の行の名前とアイコン・形・色は `style`（設定の `map.kinds` の値）で決める。`hint` はノードの右上のマーカーに出す補足の `notes` の説明、`href` は許可したリンク先
       - name: wires
         type: MdmarkDiagramWire[]
-        description: 線（`id`・`from`・`to`・`line`・`points`・`label?`・`labelAt?`・`tip?`）。`from`・`to` は端のノードの `id`、`line` は `flow`・`read`・`write`・`reply`・`loop`、`points` は縦横だけの折れ線
-      - name: stickyTitles
-        type: boolean | undefined
-        description: 拡大して動かしたときに、見えている枠と層のタイトルを表示する枠の上端に留めるか。省いたとき `true`
-  - name: MdmarkSequenceDefinition
-    title: シーケンス図の定義
-    container: src/diagram/definition.ts
-    summary: '`<!-- sequence -->` の範囲に記載する定義'
-    properties:
-      - name: title
-        type: string
-        description: 題名
-      - name: scope
-        type: string
-        description: 範囲
-      - name: updated
-        type: string
-        description: 更新日
-      - name: participants
-        type: '{ id: string; kind: MdmarkDiagramNode["kind"]; name: string; tag?: string }[]'
-        description: 相手。左から右へ並べる順
-      - name: steps
-        type: '{ from: string; to: string; label: string; reply?: boolean; tip?: string }[]'
-        description: メッセージ。時刻の順
-      - name: loop
-        type: '{ label: string } | undefined'
-        description: 最後のメッセージから最初へ戻る繰り返し
+        description: 線（`id`・`from`・`to`・`points`・`label?`・`labelAt?`・`tip?`・`style`）。模様・太さ・矢じり・色は `style`（設定の `map.lines` の値）で決める
   - name: MdmarkChartDefinition
     title: グラフの定義
     container: src/diagram/definition.ts
@@ -225,7 +184,7 @@ data_models:
         type: boolean
         description: 読み込めたか
       - name: definition
-        type: MdmarkFlowDefinition | MdmarkSequenceDefinition | MdmarkChartDefinition | MdmarkParamDefinition | MdmarkErDefinition | undefined
+        type: MdmarkChartDefinition | MdmarkParamDefinition | MdmarkErDefinition | undefined
         description: 読み込めた定義
       - name: problems
         type: string[]
@@ -236,21 +195,17 @@ constants:
     container: src/diagram/definition.ts
     summary: 図の部品のマーカーの名前と、記載の警告に出す図の種類の名前・呼び名
     entries:
-      - key: flow
-        value: '{ name: "フロー図", call: "この図" }'
-      - key: sequence
-        value: '{ name: "シーケンス図", call: "この図" }'
       - key: chart
         value: '{ name: "グラフ", call: "このグラフ" }'
       - key: param
         value: '{ name: "操作できる部品", call: "この部品" }'
       - key: er
         value: '{ name: "ER 図", call: "この ER 図" }'
-  - name: NODE_KINDS
-    title: ノードの種類の並び
+  - name: RETIRED_DIAGRAM_DIRECTIVES
+    title: 廃止した図の部品のマーカー
     container: src/diagram/definition.ts
-    summary: '`MdmarkDiagramKind` の値の並び。知らない種類の記載の警告の「使用できる種類」はこの順に `・` でつなぐ'
-    value: '`llm`・`dm`・`script`・`mcp`・`data`・`external`・`start`・`question`・`action`・`result`'
+    summary: 廃止した図の部品のマーカーの名前。描く処理・点検・参照の取り出し・移行の手順が、同じ名前の拡張が無い範囲を廃止した図として扱う
+    value: '`flow`・`sequence`'
 functions:
   - name: parseDefinitionJson
     title: 定義の JSON を読み込む
@@ -284,10 +239,10 @@ functions:
     container: src/diagram/definition.ts
     kind: 関数
     scope: internal
-    summary: マーカーの範囲の `json` のコードブロックの数を確認し、`parseDefinitionJson` で読み込み、種類ごとの構造（必須の項目・型・列挙の値・線の端のノードの `id`・`id` の重なり・系列の点の数・系列と項目の数の上限 6 つ・`table` の値の漏れ・ER 図の関係の端のテーブルと列・テーブルの `id` と同じテーブルの列の名前の重なり・`kind`・`color`（`isColorName`。記載の警告に並べる色の名前は `COLOR_NAMES` から出す）・多重度の値・フロー図の `frame.hint` と `lanes[].hint` が文字で `stickyTitles` が真偽値か）を確認する。フロー図では、座標（ノードの `x`・`y`・`w`・`h`、線の `points`、図の `width`・`height`）を記載したものと省いたものの混在と、座標を省いた定義の `start`・`question`・`action`・`result` 以外の種類のノードも確認し、全て省いた読み込める定義は `layoutFlowchart` で配置した定義を返却する（描く処理と点検が同じ配置を使用する）。読み込めない箇所は、記載の警告の文言の文にして返却する。文の中でノードは `ノード「{name}」`・`ノードの id`・`端のノード` と呼ぶ
+    summary: マーカーの範囲の `json` のコードブロックの数を確認し、`parseDefinitionJson` で読み込み、種類ごとの構造（必須の項目・型・列挙の値・系列の点の数・系列と項目の数の上限 6 つ・`table` の値の漏れ・ER 図の関係の端のテーブルと列・テーブルの `id` と同じテーブルの列の名前の重なり・`kind`・`color`（`isColorName`。記載の警告に並べる色の名前は `COLOR_NAMES` から出す）・多重度の値）を確認する。読み込めない箇所は、記載の警告の文言の文にして返却する
     args:
       - name: directive
-        type: '"flow" | "sequence" | "chart" | "param" | "er"'
+        type: '"chart" | "param" | "er"'
         required: true
         description: マーカーの名前
       - name: blocks
@@ -303,39 +258,21 @@ functions:
       - name: test_read_definition
         case: 正常
         summary: モックの見本の定義を読み込める
-        condition: '`inquiry`・`inquiry-seq`・`reply-time`・`strength` と同じ定義（線に `from`・`to` を追加したもの）'
+        condition: '`reply-time`・`strength` と同じ定義'
         mock: なし
         expected: どれも `ok` が `true`
       - name: test_read_definition_when_kind_unknown
         case: 異常
-        summary: ノードの種類が使用できない
-        condition: 3 つ目のノード（名前 `分類`）の `kind` が `robot`
+        summary: グラフの種類が使用できない
+        condition: '`type` が `robot` のグラフの定義'
         mock: なし
-        expected: '`problems[0]` が `ノード「分類」の種類 robot は使用できません。使用できる種類は llm・dm・script・mcp・data・external・start・question・action・result です`'
-      - name: test_read_definition_when_judgement
-        case: 正常
-        summary: 判定フローチャートの種類のノードを読み込める
-        condition: モックの `judgement` と同じ定義（`frame`・`lanes` が無く、線に `from`・`to` を追加したもの）
-        mock: なし
-        expected: '`ok` が `true` で `problems` が空'
+        expected: '`problems[0]` が `robot` と使用できる種類の並びを含む'
       - name: test_read_definition_when_points_mismatch
         case: 異常
         summary: 系列の点の数が目盛りと合わない
         condition: 系列 `担当者` の点が 4 つ、`x.ticks` が 5 つ
         mock: なし
         expected: '`problems[0]` が `系列「担当者」の点が 4 つで、横の目盛り（x.ticks）の 5 つと合いません`'
-      - name: test_read_definition_when_wire_end_missing
-        case: 異常
-        summary: 線の端が無いノードを指す
-        condition: 線 `w-mail` の `to` が無いノードの `id` `recieve`
-        mock: なし
-        expected: '`problems[0]` が `線 w-mail の端のノード recieve がありません。ノードの id で記載してください`'
-      - name: test_read_definition_when_id_duplicated
-        case: 異常
-        summary: ノードの id が重なる
-        condition: 2 つのノードの `id` が `recv`
-        mock: なし
-        expected: '`problems[0]` が `ノードの id recv が 2 つあります。別の id にしてください`'
       - name: test_read_definition_when_blocks_count
         case: 異常
         summary: json のコードブロックが 0 つ・2 つ
@@ -390,55 +327,6 @@ functions:
         condition: テーブルの `id` が重なる定義、同じテーブルに同じ列の名前がある定義、`kind` が `view`・`color` が `pink`・`toCard` が `many` の定義
         mock: なし
         expected: どれも `ok` が `false` で、`problems[0]` が重なった `id`・列の名前、使用できる種類 `master・transaction`・色の名前・多重度 `1・0..1・1..n・0..n` をそれぞれ含む
-      - name: test_read_definition_when_coordinates_omitted
-        case: 正常
-        summary: 座標を全て省いた判定フローチャートを配置した定義で返却する
-        condition: モックの `judgement-auto` から座標・`points`・`width`・`height` を除き、線に `from`・`to` を追加した定義
-        mock: なし
-        expected: '`ok` が `true` で、定義の `height` が 584 で、全てのノードが `x`・`y`・`w`・`h` を、全ての線が `points` を持つ'
-      - name: test_read_definition_when_coordinates_mixed
-        case: 異常
-        summary: 座標を記載したものと省いたものが混ざる
-        condition: 座標を省いた `judgement-auto` の 1 つのノードだけに `x`・`y`・`w`・`h` を記載した定義
-        mock: なし
-        expected: '`problems[0]` が `座標（x・y・w・h・points・width・height）を記載したものと省いたものが混ざっています。全て記載するか、全て省いてください`'
-      - name: test_read_definition_when_coordinates_omitted_not_judgement
-        case: 異常
-        summary: 判定フローチャート以外の種類で座標を省く
-        condition: 座標を全て省き、名前 `分類` の `llm` のノードを持つ定義
-        mock: なし
-        expected: '`problems[0]` が `ノード「分類」の種類 llm では座標を省けません。` で始まる'
-      - name: test_read_definition_when_group_options_invalid
-        case: 異常
-        summary: グループの `hint` と `stickyTitles` の型を確認する
-        condition: '`frame.hint` が数 `1`、`stickyTitles` が文字 `no` のフロー図の定義と、`lanes[0].hint` が文字で `stickyTitles` が `false` の定義'
-        mock: なし
-        expected: 前者は `ok` が `false` で、`problems` が `frame.hint` を文字で、`stickyTitles` を真偽値で記載することをそれぞれ含む 2 つ。後者は `ok` が `true`
-  - name: nodeLinkProblems
-    title: ノードのリンク先を確認する
-    container: src/diagram/definition.ts
-    kind: 関数
-    scope: internal
-    summary: フロー図の定義の `href` を `isAllowedUrl` で確認し、許さないリンク先を持つノードの `id` とリンク先を定義の順に返却する
-    args:
-      - name: definition
-        type: MdmarkFlowDefinition
-        required: true
-        description: 読み込めたフロー図の定義
-    returns:
-      type: 'Array<{ id: string; href: string }>'
-      description: 許さないリンク先のノード（無ければ空）
-    callees:
-      - MOD-472-214#functions[isAllowedUrl]
-    refs:
-      - IF-472-34#constraints[ノードのリンク先]
-    unit_tests:
-      - name: test_node_link_problems
-        case: 正常
-        summary: 許さないリンク先だけを返却する
-        condition: '`href` が `https://example.com/spec`・`./other.md`・`mailto:a@example.com`・`javascript:alert(1)`・`id:spec#items` のノードと、`href` の無いノード'
-        mock: なし
-        expected: '`javascript:alert(1)` と `id:spec#items` の 2 件を定義の順に返却する'
     status: planned
     introduced:
       pr: 328

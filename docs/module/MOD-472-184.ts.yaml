@@ -34,7 +34,7 @@ functions:
       - name: test_attach_diagram_tips_when_box_hovered
         case: 正常
         summary: ノードのマーカーの外では開かない
-        condition: '`io` を持つノードの名前に `pointerenter` を送信し、次にマーカーに送信する'
+        condition: '`hint` を持つノードの名前に `pointerenter` を送信し、次にマーカーに送信する'
         mock: なし
         expected: 名前ではツールチップが `hidden` を持ち、マーカーでは持たない
       - name: test_attach_diagram_tips_when_embedded_hint
@@ -87,7 +87,7 @@ functions:
         expected: ツールチップが `hidden` を持たない
       - name: test_attach_diagram_tips_when_chart_item
         case: 正常
-        summary: グラフの項目とグループのタイトルのマーカーで開き、`bottom` で下に配置する
-        condition: 折れ線のグラフのクリックを受ける円にフォーカスし、次にフロー図の枠のタイトルのマーカーに `pointerenter`。`placement` は `bottom`
+        summary: グラフの項目とテーブルの説明のボタンで開き、`bottom` で下に配置する
+        condition: 折れ線のグラフのクリックを受ける円にフォーカスし、次に ER 図のテーブルの説明のボタンに `pointerenter`。`placement` は `bottom`
         mock: なし（Chromium）
         expected: それぞれの `aria-describedby` が指すツールチップが `hidden` を持たず、`top` が持ち主の `bottom` 以上。同時に開いているのは 1 つ

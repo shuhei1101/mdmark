@@ -51,19 +51,32 @@ const API_TARGET = {
 /** JSON の `\u` の 4 桁のエスケープ（`ア`）。ソースに記載すると整形で文字に戻るため、組み立てる */
 const UNICODE_ESCAPE = ["\\", "u30a2"].join("");
 
-/** ノードの `name` に `{{単語}}` を記載した、フロー図の定義の JSON */
-function flowDefinition(name: string): string[] {
+/** テーブル 1 つの ER 図の定義の行（テーブルの論理名を `label` にする） */
+function erDefinition(label: string): string[] {
   return [
     "{",
     '  "title": "受け取り",',
     '  "scope": "範囲",',
     '  "updated": "2026-10-23",',
     '  "width": 520,',
-    '  "height": 160,',
-    '  "nodes": [',
-    `    { "id": "recv", "kind": "script", "x": 20, "y": 48, "w": 140, "h": 64, "name": "${name}", "sub": "" }`,
+    '  "tables": [',
+    `    { "id": "recv", "name": "recv", "label": "${label}", "x": 20, "y": 48, "w": 140, "columns": [{ "name": "id", "type": "bigint", "pk": true }] }`,
     "  ],",
-    '  "wires": []',
+    '  "relations": []',
+    "}",
+  ];
+}
+
+/** 系列 1 つのグラフの定義の行（系列の名前を `name` にする） */
+function chartDefinition(name: string): string[] {
+  return [
+    "{",
+    '  "title": "件数",',
+    '  "scope": "範囲",',
+    '  "updated": "2026-10-23",',
+    '  "x": { "label": "曜日", "ticks": ["月", "火"] },',
+    '  "y": { "label": "件" },',
+    `  "series": [{ "name": "${name}", "points": [1, 2] }]`,
     "}",
   ];
 }
@@ -447,13 +460,13 @@ test("test_collect_matches_when_diagram_term_is_alias", async () => {
     terms: [{ id: "fn", term: "公開関数", meaning: "配布物から呼べる関数" }],
   };
   const body = [
-    "<!-- flow -->",
+    "<!-- er -->",
     "",
     "```json",
-    ...flowDefinition("{{公開関数}}"),
+    ...erDefinition("{{公開関数}}"),
     "```",
     "",
-    "<!-- /flow -->",
+    "<!-- /er -->",
     "",
   ].join("\n");
   // 実行
@@ -462,7 +475,7 @@ test("test_collect_matches_when_diagram_term_is_alias", async () => {
     documents: { "使い方/guide.md": body },
   });
   // 検証
-  // ノードの `{{公開関数}}` は用語の 1 件だけで、文書 `api` は返らない
+  // テーブルの `{{公開関数}}` は用語の 1 件だけで、文書 `api` は返らない
   const guide = matches.byDocument.guide ?? [];
   expect(
     guide.map((match) => [match.kind, match.id, cut(body, match)]),
@@ -524,26 +537,34 @@ test("test_diagram_term_matches", async () => {
   // 準備
   const { diagramTermMatches } = await loadMatches();
   const body = [
-    "<!-- flow -->",
+    "<!-- er -->",
     "",
     "```json",
     // JSON のエスケープ（\" と \u の 4 桁）の後ろの単語
-    ...flowDefinition(
+    ...erDefinition(
       `\\"鍵\\" ${UNICODE_ESCAPE} {{ワークスペース}} と {{公開関数}}`,
     ),
     "```",
     "",
-    "<!-- /flow -->",
+    "<!-- /er -->",
     "",
     "<!-- html -->",
     "",
     "```html",
-    "<mdmark-flow>",
-    ...flowDefinition("{{ワークスペース}}"),
-    "</mdmark-flow>",
+    "<mdmark-chart>",
+    ...chartDefinition("{{ワークスペース}}"),
+    "</mdmark-chart>",
     "```",
     "",
     "<!-- /html -->",
+    "",
+    "<!-- flow -->",
+    "",
+    "```json",
+    '{ "title": "廃止した図", "nodes": [{ "id": "a", "kind": "script", "name": "{{ワークスペース}}" }], "wires": [] }',
+    "```",
+    "",
+    "<!-- /flow -->",
     "",
   ].join("\n");
   const { tokens, dictionary } = prepare(body);
@@ -558,7 +579,7 @@ test("test_diagram_term_matches", async () => {
   for (const match of matches) {
     expect(body.slice(match.offset, match.end)).toBe("ワークスペース");
   }
-  // 1 つ目は flow の範囲の定義、2 つ目は埋め込んだ HTML の中の定義
+  // 1 つ目は er の範囲の定義、2 つ目は埋め込んだ HTML の中の定義で、廃止した flow の範囲の単語は返らない
   expect(body.slice(0, matches[1]?.offset ?? 0)).toContain("<!-- html -->");
   expect(body.slice(0, matches[0]?.offset ?? 0)).not.toContain("<!-- html -->");
 });
@@ -573,13 +594,13 @@ test("test_diagram_term_matches_when_notation_differs", async () => {
     terms: [{ id: "mcp", term: "MCP", meaning: "Model Context Protocol" }],
   };
   const body = [
-    "<!-- flow -->",
+    "<!-- er -->",
     "",
     "```json",
-    ...flowDefinition("{{ｍｃｐ}}"),
+    ...erDefinition("{{ｍｃｐ}}"),
     "```",
     "",
-    "<!-- /flow -->",
+    "<!-- /er -->",
     "",
   ].join("\n");
   const { tokens, dictionary } = prepare(body, index);
@@ -588,6 +609,64 @@ test("test_diagram_term_matches_when_notation_differs", async () => {
   // 検証
   expect(found).toHaveLength(1);
   expect(body.slice(found[0]?.offset, found[0]?.end)).toBe("ｍｃｐ");
+});
+
+// ノードの名前の用語の位置を返却し、ID・文書の別名・範囲の外は返却しない（正常系）
+test("test_map_term_matches", async () => {
+  // 準備
+  const { mapTermMatches } = await loadMatches();
+  const body = [
+    "<!-- map -->",
+    "",
+    "```mermaid",
+    "flowchart LR",
+    "  ws[ワークスペース] --> fn[公開関数]",
+    "```",
+    "",
+    "<!-- /map -->",
+    "",
+    "```mermaid",
+    "flowchart LR",
+    "  a[ワークスペース]",
+    "```",
+    "",
+  ].join("\n");
+  const { tokens, dictionary } = prepare(body);
+  // 実行
+  const matches = mapTermMatches({ body, tokens, dictionary });
+  // 検証
+  expect(matches.map((match) => match.word)).toEqual(["ワークスペース"]);
+  const [match] = matches;
+  expect(body.slice(match?.offset, match?.end)).toBe("ワークスペース");
+  expect(lineOf(body, match?.offset ?? 0)).toBe(5);
+});
+
+// シーケンス図の参加者の名前とメッセージ・注記の文を照合する（正常系）
+test("test_map_term_matches_when_sequence", async () => {
+  // 準備
+  const { mapTermMatches } = await loadMatches();
+  const body = [
+    "<!-- map -->",
+    "",
+    "```mermaid",
+    "sequenceDiagram",
+    "  participant W as ワークスペース",
+    "  participant M as 移行",
+    "  W->>M: ワークスペースを読む",
+    "  Note over W: ワークスペース",
+    "```",
+    "",
+    "<!-- /map -->",
+    "",
+  ].join("\n");
+  const { tokens, dictionary } = prepare(body);
+  // 実行
+  const matches = mapTermMatches({ body, tokens, dictionary });
+  // 検証
+  expect(matches).toHaveLength(3);
+  for (const match of matches) {
+    expect(body.slice(match.offset, match.end)).toBe("ワークスペース");
+  }
 });
 
 /** 文書 `guide`（`使い方/guide.md`）だけを持ち、用語を持たない索引 */
@@ -686,13 +765,13 @@ test("test_collect_matches_when_diagram_term_is_alias_word", async () => {
     },
   ];
   const body = [
-    "<!-- flow -->",
+    "<!-- er -->",
     "",
     "```json",
-    ...flowDefinition("{{公開関数}}"),
+    ...erDefinition("{{公開関数}}"),
     "```",
     "",
-    "<!-- /flow -->",
+    "<!-- /er -->",
     "",
     "公開関数を呼ぶ。",
     "",

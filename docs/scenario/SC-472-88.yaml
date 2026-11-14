@@ -5,7 +5,7 @@ scenarios:
   - name: 正常シナリオ
     setup:
       - name: 見本のワークスペース
-        description: 見出し・表・注意書き・フロー図を持ち、画面の高さを超える長さの Markdown を 1 つと、`features`・`libraries`・`theme` を記載した `mdmark.config.yaml` と、`theme` が指す CSS を配置したフォルダ
+        description: 見出し・表・注意書き・map の構成図を持ち、画面の高さを超える長さの Markdown を 1 つと、`features`・`libraries`・`theme` を記載した `mdmark.config.yaml` と、`theme` が指す CSS を配置したフォルダ
       - name: Mock
         description: jsDelivr の代わりに、このブランチでビルドした配布物を版付きの構造の URL で配る手元のサーバー。GitHub のタグ一覧は、そのバージョンを最新の `vX.Y.Z` として返却する代役。既定のブラウザで開く操作は、開いた URL を記録する代役
     flow: |-
@@ -20,11 +20,11 @@ scenarios:
         click D "id:SC-472-6#scenarios[正常シナリオ]"
         click E "id:SC-472-9#scenarios[正常シナリオ]"
     expected:
-      - プレビューが Markdown の横の列に開き、見出し・表・注意書き・フロー図が mdmark で描かれる
+      - プレビューが Markdown の横の列に開き、見出し・表・注意書き・map の構成図が mdmark で描かれる
       - エディタで見出しを書き換えると、保存せずにプレビューの見出しが書き換えた文字になる
       - エディタを文書の終わりのセクションまで動かすと、プレビューにそのセクションの見出しが出る
       - 書き出し先に HTML が 1 つ書き込まれ、ブラウザで開く代役にその HTML の URL が渡る
-      - 書き出した HTML を開くと、プレビューと同じ見出し・表・注意書き・フロー図が描かれ、プレビューと同じ要素に `theme` の CSS の規則が該当する
+      - 書き出した HTML を開くと、プレビューと同じ見出し・表・注意書き・map の構成図が描かれ、プレビューと同じ要素に `theme` の CSS の規則が該当する
       - PDF に印刷すると、もう一度書き出した HTML がブラウザで開き、印刷のダイアログが呼ばれる
     test: test_normal
     uses:
@@ -47,7 +47,7 @@ scenarios:
     expected:
       - プレビューに、配布物を読み込めず描けない理由と、再描画する操作が出る
       - Markdown と `mdmark.config.yaml` は書き換わらない
-      - 配布物を配る状態へ戻して再描画すると、見出し・表・注意書き・フロー図が描かれる
+      - 配布物を配る状態へ戻して再描画すると、見出し・表・注意書き・map の構成図が描かれる
     test: test_error_when_distribution_unreachable
     uses:
       - SC-472-10#scenarios[異常シナリオ（配布物を読み込めない）]

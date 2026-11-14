@@ -37,8 +37,8 @@ guides:
     summary: map のマーカー・Mermaid のブロック・補足の記載方法と、配置と色の上書き・案内・再生の書き方
     page: docs/guide/図を描く-Mermaidと補足で図を描く.md
   - name: diagrams
-    when: グラフ・操作できる部品・ER 図と、座標で記載したフロー図・シーケンス図を描くとき
-    summary: HTML の用途と、文書に部品の定義を記載して図を描く手順（新しい構成図・シーケンス図は map を使用する）
+    when: グラフ・操作できる部品・ER 図を描くとき
+    summary: HTML の用途と、文書に部品の定義を記載して図を描く手順（構成図・シーケンス図は map を使用する）
     page: docs/guide/図を描く-図を描く.md
   - name: interactive-parts
     when: スライダーや今の値をコピーするボタンなど、操作できる部品を付けるとき
@@ -62,7 +62,7 @@ guides:
     page: docs/guide/図を描く-描いた図を確認する.md
   - name: diagram-sample
     when: 図や操作できる部品の記載の見本を確認したいとき
-    summary: フロー図・シーケンス図・グラフ・操作できる部品を組み合わせた見本の文書
+    summary: map の図・グラフ・操作できる部品を組み合わせた見本の文書
     page: docs/guide/図を描く-見本.md
   - name: custom-parts
     when: 利用側に固有の部品や CSS を、その場所の文書にだけ適用するとき
@@ -70,7 +70,7 @@ guides:
     page: docs/guide/図を描く-固有の部品とCSSを適用する.md
   - name: architecture-style
     when: 構成図を描くとき
-    summary: 枠・3 レイヤー・タイトルと凡例・線・交差・ツールチップ・操作の外観の決まりと、map の図をグループにするかの判定フローチャート
+    summary: 入れ子と層・タイトル・ノード・線・交差・ツールチップ・操作の外観の決まりと、map の図をグループにするかの判定フローチャート
     page: docs/guide/構成図の決まり.md
   - name: flowchart-style
     when: 処理の順番を描くフローチャートを描くとき

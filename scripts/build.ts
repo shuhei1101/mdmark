@@ -40,6 +40,15 @@ const UNSIZED_OUTPUTS = ["dist/cli.js", "dist/viewer.js", "dist/viewer.css"];
 // 今の書き方のマーカーを書き換える移行の手順のスクリプトと、そのフォルダにまとめる書き換えの処理のファイル名
 const LEGACY_MIGRATION_SCRIPT = "marker-json.mjs";
 const LEGACY_MARKS_FILE = "legacy-marks.js";
+// 廃止した図の範囲を書き換える移行の手順のスクリプトと、そのフォルダにまとめる書き換えの処理と拡張の読み込みのファイル名
+const RETIRED_MIGRATION_SCRIPT = "retired-diagrams.mjs";
+const RETIRED_DIAGRAMS_FILE = "retired-diagrams.js";
+// 廃止した図の書き換えの処理と拡張の読み込みを re-export する入口
+const RETIRED_DIAGRAMS_ENTRY = [
+  'export { convertRetiredDiagrams } from "./src/map/convert.ts";',
+  'export { loadExtensionDirectives } from "./src/cli/check.ts";',
+  'export { loadConfig } from "./src/cli/config.ts";',
+].join("\n");
 // CLI の実行時の依存: まとめずに `package.json` の `dependencies` から読み込む
 const CLI_EXTERNALS = ["yaml", "esbuild"];
 // バージョンを指定する引数の名前
@@ -256,6 +265,72 @@ export async function buildLegacyMarks(
   return folders.map((folder) => `${folder}/${LEGACY_MARKS_FILE}`);
 }
 
+/** `src/map/convert.ts` の `convertRetiredDiagrams` と、拡張の `directive` と設定を読み込む `loadExtensionDirectives`・`loadConfig` を、Node で動く 1 つのファイルにまとめ、`migrations/` の中の `retired-diagrams.mjs` を持つフォルダごとに `retired-diagrams.js` として書き込み、まとめた依存のライセンスを同じフォルダの `LICENSES_FILE` に書き込み、書き込んだ `retired-diagrams.js` のパスを返却する。ソースが無ければ何も書き込まない（廃止の前の定義を読む処理を消した後も、書き込み済みのファイルで移行の手順が動く） */
+export async function buildRetiredDiagrams(
+  version: string,
+  root: string,
+): Promise<string[]> {
+  const migrations = join(root, "migrations");
+  if (
+    !existsSync(join(root, "src", "map", "convert.ts")) ||
+    !existsSync(migrations)
+  ) {
+    return [];
+  }
+  const folders = readdirSync(migrations, { withFileTypes: true })
+    .filter(
+      (entry) =>
+        entry.isDirectory() &&
+        existsSync(join(migrations, entry.name, RETIRED_MIGRATION_SCRIPT)),
+    )
+    .map((entry) => `migrations/${entry.name}`)
+    .sort();
+  for (const folder of folders) {
+    const result = await build({
+      absWorkingDir: root,
+      stdin: {
+        contents: RETIRED_DIAGRAMS_ENTRY,
+        resolveDir: root,
+        sourcefile: "retired-diagrams-entry.ts",
+        loader: "ts",
+      },
+      outfile: `${folder}/${RETIRED_DIAGRAMS_FILE}`,
+      bundle: true,
+      minify: true,
+      format: "esm",
+      platform: "node",
+      target: NODE_TARGET,
+      plugins: [postcssStubPlugin],
+      define: bundleDefines(version),
+      external: CLI_EXTERNALS,
+      metafile: true,
+      logLevel: "silent",
+    });
+    // 同じフォルダに今の書き方のマーカーの書き換えの処理もあれば、そのライセンスと合わせて記載する
+    const legacy = existsSync(join(root, folder, LEGACY_MIGRATION_SCRIPT))
+      ? await build({
+          absWorkingDir: root,
+          entryPoints: ["src/render/legacy-marks.ts"],
+          bundle: true,
+          write: false,
+          format: "esm",
+          platform: "node",
+          target: NODE_TARGET,
+          plugins: [postcssStubPlugin],
+          define: bundleDefines(version),
+          metafile: true,
+          logLevel: "silent",
+        })
+      : undefined;
+    await writeThirdPartyLicenses({
+      metafiles: [result.metafile, ...(legacy ? [legacy.metafile] : [])],
+      root,
+      outfile: `${folder}/${LICENSES_FILE}`,
+    });
+  }
+  return folders.map((folder) => `${folder}/${RETIRED_DIAGRAMS_FILE}`);
+}
+
 /** esbuild で `src/index.ts` と `src/index.css` を、バージョンを埋めた `dist/` にまとめ、型定義を書き込み、配布物と CLI にまとめた依存のライセンスを書き込む */
 export async function buildDist(
   version: string,
@@ -288,6 +363,7 @@ export async function buildDist(
   const cli = await buildCli(version, root);
   Object.assign(outputs, cli.outputs);
   await buildLegacyMarks(version, root);
+  await buildRetiredDiagrams(version, root);
   await writeThirdPartyLicenses({
     metafiles: [result.metafile, ...(cli.metafile ? [cli.metafile] : [])],
     root,

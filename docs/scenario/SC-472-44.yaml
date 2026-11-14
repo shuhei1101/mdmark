@@ -7,7 +7,7 @@ scenarios:
       - name: 固有の部品を読み込むページ
         description: mdmark の JavaScript と CSS の後に固有の CSS を読み込み、固有の部品を `registerExtension` で登録してから文書を描く HTML
       - name: 固有の部品の定義を持つ Markdown
-        description: 固有の部品の定義 1 つとフロー図の部品の定義 1 つを持つ文書
+        description: 固有の部品の定義 1 つと map の範囲 1 つを持つ文書
       - name: Mock
         description: jsDelivr を、ビルドした `dist/` を同じパスで返却する手元の応答に差し替える。固有の部品は、受けた定義のタイトルを要素に記載する手元のモジュール
     flow: |-
@@ -20,13 +20,13 @@ scenarios:
         P->>M: 設定と Markdown を指定して描かせる
         M->>X: 部品の定義を指定して描かせる
         X-->>M: マーカーの場所に描く
-        M-->>P: 固有の部品・フロー図・本文
+        M-->>P: 固有の部品・map の図・本文
         P->>P: 固有の CSS が該当する
         P-->>U: 文書を表示
     expected:
       - 固有の部品の場所に、定義のタイトルが描かれている
-      - 固有の CSS が変えた色が、固有の部品とフロー図の計算値に出ている
-      - フロー図と本文は共通の部品と同じように描かれている
+      - 固有の CSS が変えた色が、固有の部品とmap の図の計算値に出ている
+      - map の図と本文は共通の部品と同じように描かれている
     test: test_normal
   - name: 正常シナリオ（書き出す）
     setup:
@@ -60,11 +60,11 @@ scenarios:
         participant M as mdmark
         P->>M: 設定と Markdown を指定して描かせる
         M->>M: 登録されていないマーカーを取り除く
-        M-->>P: フロー図と本文
+        M-->>P: map の図と本文
         P-->>U: 文書を表示
     expected:
       - 固有の部品の場所には何も描かれず、定義の JSON も出ない
-      - フロー図の色は mdmark の既定のまま
+      - map の図の色は mdmark の既定のまま
       - 本文が描かれている
     test: test_normal_when_other_place
   - name: 正常シナリオ（VS Code のプレビューで適用する）
@@ -84,7 +84,7 @@ scenarios:
         PV-->>W: 固有の部品と固有の CSS を適用した文書
     expected:
       - プレビューの固有の部品の場所に、定義のタイトルが描かれている
-      - 固有の CSS が変えた色が、固有の部品とフロー図の計算値に出ている
+      - 固有の CSS が変えた色が、固有の部品とmap の図の計算値に出ている
       - パネルの CSP の違反が 0 件
     test: test_normal_when_vscode_preview
 lead: 利用側が、自分の場所だけの部品を `registerExtension` で追加し、自分の場所だけの外観を CSS で適用する。該当するのは、その部品と CSS を読み込んだページと、同じ設定ファイルで書き出した文書と VS Code のプレビューだけ。

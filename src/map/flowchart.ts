@@ -1,3 +1,4 @@
+import { isAllowedUrl } from "../render/sanitize.ts";
 import type { MapProblem } from "./spec.ts";
 
 /** グループとノードを並べる向き */
@@ -50,7 +51,50 @@ export type Flowchart = {
   nodes: FlowNode[];
   groups: FlowGroup[];
   edges: FlowEdge[];
+  /** `click {ID} "{リンク先}"` のノードの ID からリンク先（記載したまま） */
+  links: Record<string, string>;
   problems: MapProblem[];
+};
+
+/** 名前で指す文字の参照 */
+const NAMED_ENTITIES: Record<string, string> = {
+  quot: '"',
+  amp: "&",
+  lt: "<",
+  gt: ">",
+};
+
+/** Mermaid の文字の参照（`#quot;` などの名前と `#{10 進の番号};`）を文字に戻す。ほかの `#` はそのまま残す */
+export const decodeEntities = (text: string): string =>
+  text.replace(/#([a-z]+|\d+);/g, (whole, name: string) => {
+    if (/^\d+$/.test(name)) {
+      const code = Number(name);
+      return code <= 0x10ffff ? String.fromCodePoint(code) : whole;
+    }
+    return NAMED_ENTITIES[name] ?? whole;
+  });
+
+/** 許さないノードのリンク先の書き方の警告の本文 */
+const LINK_NOT_ALLOWED =
+  "ノードのリンク先に使用できないものがあります。使用できるリンク先は http・https・mailto と相対パスです。このノードはリンクにせずに描いています。";
+
+/** ノードのリンク先を確かめ、許すものの対応と、許さないリンク先の項目を返却する */
+export const mapLinkProblems = (
+  links: Record<string, string>,
+): { allowed: Record<string, string>; problems: MapProblem[] } => {
+  const allowed: Record<string, string> = {};
+  const problems: MapProblem[] = [];
+  for (const [id, href] of Object.entries(links)) {
+    if (isAllowedUrl(href)) {
+      allowed[id] = href;
+      continue;
+    }
+    problems.push({
+      kind: "map_invalid_value",
+      message: `${LINK_NOT_ALLOWED} ${id}: ${href}`,
+    });
+  }
+  return { allowed, problems };
 };
 
 /** 形状ごとの開きと閉じ。長い開きから順に試す */
@@ -87,6 +131,8 @@ const ID_RE = /^[A-Za-z0-9_\u0080-￿]+/;
 const EDGE_ID_RE = /^([A-Za-z0-9_]+)@(?=[-=<])/;
 /** 読んで捨てる行 */
 const IGNORED_RE = /^(classDef|style|linkStyle|click|accTitle|accDescr)\b/;
+/** `click {ID} "{リンク先}"`・`click {ID} href "{リンク先}"`（後ろのツールチップと `_blank` などは読まない） */
+const CLICK_RE = /^click\s+([^\s]+)\s+(?:href\s+)?"([^"]*)"/;
 
 type Cursor = { text: string; pos: number };
 
@@ -125,7 +171,10 @@ const readShape = (
       consumed += end;
     }
     cursor.pos += consumed + close.length;
-    return { label: label.replace(/<br\s*\/?>/g, "\n"), shape };
+    return {
+      label: decodeEntities(label.replace(/<br\s*\/?>/g, "\n")),
+      shape,
+    };
   }
   return undefined;
 };
@@ -193,7 +242,15 @@ const readArrow = (cursor: Cursor): Arrow | undefined => {
       label = pipe[1];
       cursor.pos += pipe[0].length;
     }
-    return { id, arrow, both, label: label?.replace(/^"|"$/g, "") };
+    return {
+      id,
+      arrow,
+      both,
+      label:
+        label === undefined
+          ? undefined
+          : decodeEntities(label.replace(/^"|"$/g, "")),
+    };
   }
   return undefined;
 };
@@ -246,6 +303,7 @@ export const parseFlowchart = (source: string): Flowchart => {
   const nodes = new Map<string, FlowNode>();
   const groups: FlowGroup[] = [];
   const edges: FlowEdge[] = [];
+  const links: Record<string, string> = {};
   const problems: MapProblem[] = [];
   const stack: FlowGroup[] = [];
   const groupIds = new Set<string>();
@@ -293,7 +351,7 @@ export const parseFlowchart = (source: string): Flowchart => {
     if (subgraph?.[1]) {
       const group: FlowGroup = {
         id: subgraph[1],
-        title: subgraph[2] ?? subgraph[1],
+        title: decodeEntities(subgraph[2] ?? subgraph[1]),
         parent: stack.at(-1)?.id,
         direction: undefined,
       };
@@ -325,6 +383,11 @@ export const parseFlowchart = (source: string): Flowchart => {
         nodes.get(id)?.classes.push(classLine[2]);
       return;
     }
+    const click = CLICK_RE.exec(text);
+    if (click?.[1] && click[2] !== undefined) {
+      links[click[1]] = click[2];
+      return;
+    }
     if (IGNORED_RE.test(text)) return;
     const statement = readStatement(text);
     if (!statement) {
@@ -353,5 +416,12 @@ export const parseFlowchart = (source: string): Flowchart => {
       message: `\`subgraph ${group.id}\` に閉じの \`end\` がありません。最後の行で閉じたものとして描いています。`,
     });
   }
-  return { direction, nodes: [...nodes.values()], groups, edges, problems };
+  return {
+    direction,
+    nodes: [...nodes.values()],
+    groups,
+    edges,
+    links,
+    problems,
+  };
 };

@@ -35,7 +35,7 @@ states:
   - name: Reordering
     description: 5 人目の参加者を 2 人目の位置へドラッグしている。移す先に縦の線が出る
     screenshot: false
-lead: map の `sequenceDiagram` の全ての記法を、シーケンス図の部品と同じ class と寸法で描き、ブロックの開閉と中だけを描く操作、参加者の選択と並べ替え、強調しない要素を薄くする表示を加える。
+lead: map の `sequenceDiagram` の全ての記法（参加者・ライフライン・メッセージ・複合フラグメント・注記・活性化）を描き、ブロックの開閉と中だけを描く操作、参加者の選択と並べ替え、強調しない要素を薄くする表示を加える。
 args:
   - name: sequence
     type: オブジェクト
@@ -94,8 +94,6 @@ events:
     value: 参加者の ID と移す先の位置
     description: '`mount` が `order` を変えて描き直し、sessionStorage に保つ'
 uses:
-  - component: CMP-472-19#
-    how: 参加者・ライフライン・メッセージ・複合フラグメント・注記・活性化
   - component: CMP-472-8#
     how: ブロックのタブの開閉の山形
 accessibility:

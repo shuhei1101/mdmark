@@ -11,10 +11,7 @@ import {
   definitionWarning,
   type MdmarkChartDefinition,
   type MdmarkErDefinition,
-  type MdmarkFlowDefinition,
   type MdmarkParamDefinition,
-  type MdmarkSequenceDefinition,
-  nodeLinkProblems,
   readDefinition,
 } from "../src/diagram/definition.ts";
 import { computeDiff } from "../src/diff/compute.ts";
@@ -207,100 +204,11 @@ const SAMPLE_IMAGE =
 const SAMPLE_TABLE =
   "<table><thead><tr><th>列A</th><th>列B</th></tr></thead><tbody><tr><td>1</td><td>2</td></tr></tbody></table>";
 
-// 図の見本の定義を記載した文書と、その中の `json` のコードブロックの並び
+// 図の見本の定義を記載した文書と、見本の名前ごとの `json` のコードブロックが持つキー
 const SAMPLE_DOCUMENT = join(REPO_ROOT, "docs", "guide", "図を描く-見本.md");
-const SAMPLE_BLOCKS: Record<string, number> = {
-  inquiry: 0,
-  "inquiry-seq": 1,
-  "reply-time": 2,
-  strength: 3,
-};
-
-// 使用方法『図を描く』（判定フローチャートの定義の例を持つ）
-const GUIDE_DOCUMENT = join(REPO_ROOT, "docs", "guide", "図を描く-図を描く.md");
-
-// 判定フローチャートの長いタイトルと文の見本。質問の文が長いので菱形を大きくする
-const JUDGEMENT_LONG_SAMPLE: MdmarkFlowDefinition = {
-  title:
-    "表の列の幅と並び順を文書ごとに指定するか、設定で全ての文書にそろえるかの判定（表を持つ文書だけ）",
-  scope: "表を持つ文書",
-  updated: "2026-11-02",
-  width: 900,
-  height: 490,
-  nodes: [
-    {
-      id: "start",
-      kind: "start",
-      x: 354,
-      y: 16,
-      w: 112,
-      h: 112,
-      name: "表の外観を統一したい",
-    },
-    {
-      id: "q",
-      kind: "question",
-      x: 230,
-      y: 168,
-      w: 360,
-      h: 176,
-      name: "表の列の幅と並び順を、文書ごとではなく全ての文書で同じにしたいか",
-    },
-    {
-      id: "r",
-      kind: "result",
-      x: 280,
-      y: 400,
-      w: 260,
-      h: 72,
-      name: "設定の features で全ての文書の表に機能を付ける",
-    },
-    {
-      id: "a",
-      kind: "action",
-      x: 640,
-      y: 212,
-      w: 240,
-      h: 88,
-      name: "文書ごとに表のマーカーへ列の幅と並び順の指定を追加する",
-    },
-  ],
-  wires: [
-    {
-      id: "l-start",
-      from: "start",
-      to: "q",
-      line: "flow",
-      points: [
-        [410, 128],
-        [410, 168],
-      ],
-    },
-    {
-      id: "l-yes",
-      from: "q",
-      to: "r",
-      line: "flow",
-      points: [
-        [410, 344],
-        [410, 400],
-      ],
-      label: "YES",
-      labelAt: [410, 372],
-    },
-    {
-      id: "l-no",
-      from: "q",
-      to: "a",
-      line: "flow",
-      points: [
-        [590, 256],
-        [640, 256],
-      ],
-      label: "NO",
-      labelAt: [615, 256],
-    },
-  ],
+const SAMPLE_KEYS: Record<string, string> = {
+  "reply-time": '"series"',
+  strength: '"knob"',
 };
 
 // グラフの種類ごとの見本の定義（棒・円・散布図）。`bar` の 4 系列は、色と塗りの模様の組を全て見せる
@@ -387,11 +295,6 @@ const SAMPLE_TERMS: Record<string, string> = {
   よくある質問: "問い合わせの多い質問と、その回答をまとめた表",
 };
 
-// 長いタイトルとノードの名前を見せるストーリーで追加する文字
-const LONG_TITLE =
-  "問い合わせのメールを受け取ってから、分類・下書き・送信を経て、担当者のチャットへ記録を送信するまでの、とても長い題名の構成";
-const LONG_NAME_SUFFIX = "（ノードの名前が長いときはノードの中で折り返す）";
-
 /** 見本の文書から、見本の定義の JSON の文字を取り出す */
 function sampleText(name: string): string {
   const blocks = [
@@ -399,7 +302,11 @@ function sampleText(name: string): string {
       /```json\n([\s\S]*?)\n```/g,
     ),
   ];
-  const text = blocks[SAMPLE_BLOCKS[name] ?? -1]?.[1];
+  const key = SAMPLE_KEYS[name];
+  const text =
+    key === undefined
+      ? undefined
+      : blocks.map((block) => block[1]).find((block) => block?.includes(key));
   if (text === undefined) {
     throw new Error(`見本の定義が無い: ${name}`);
   }
@@ -460,30 +367,6 @@ function mockEr(name: string): MdmarkErDefinition {
   return JSON.parse(JSON.stringify(definition)) as MdmarkErDefinition;
 }
 
-// #308 の図の見本（refs/42 の見本の後に読み込む、モックと同じ定義）
-const GROUP_SAMPLES_FILES = [
-  join(REPO_ROOT, "docs", "mock", "refs", "42", "assets", "samples.js"),
-  join(REPO_ROOT, "docs", "mock", "refs", "308", "assets", "samples.js"),
-];
-
-/** モックの #308 の見本のスクリプトから、名前 `name` の構成図の定義を取り出す（モックの表の `kind` は定義に含めない） */
-function mockFlow(name: string): MdmarkFlowDefinition {
-  const window: { mdmarkMockDiagrams: Record<string, unknown> } = {
-    mdmarkMockDiagrams: {},
-  };
-  for (const file of GROUP_SAMPLES_FILES) {
-    runInNewContext(readFileSync(file, "utf8"), { window });
-  }
-  const found = window.mdmarkMockDiagrams[name] as
-    | (MdmarkFlowDefinition & { kind?: string })
-    | undefined;
-  if (found === undefined) {
-    throw new Error(`モックの見本の定義が無い: ${name}`);
-  }
-  const { kind: _kind, ...definition } = found;
-  return JSON.parse(JSON.stringify(definition)) as MdmarkFlowDefinition;
-}
-
 /** 図のストーリーの操作の指定: 保った高さ（`height`）と、付けた後にフォーカスする要素（`focus`）をマーカーに持たせる */
 function storyMarker(args: PartArgs, focus?: string): string {
   const height =
@@ -523,36 +406,6 @@ function tooManySeriesDefinition(): string {
 /** 見本の定義を読み込んだ値 */
 function sampleDefinition<T>(name: string): T {
   return JSON.parse(sampleText(name)) as T;
-}
-
-/** 使用方法『図を描く』の判定フローチャートの定義 */
-function judgementDefinition(): MdmarkFlowDefinition {
-  const text = [
-    ...readFileSync(GUIDE_DOCUMENT, "utf8").matchAll(
-      /```json\n([\s\S]*?)\n```/g,
-    ),
-  ]
-    .map((match) => match[1] ?? "")
-    .find((block) => block.includes('"kind": "question"'));
-  if (text === undefined) {
-    throw new Error("使用方法『図を描く』に判定フローチャートの定義が無い");
-  }
-  return JSON.parse(text) as MdmarkFlowDefinition;
-}
-
-/** 知らない種類のノードを持つストーリーの記載の警告: 見本の 3 つ目のノードの種類を `robot` にして読み込ませる */
-function unknownKindDefinition(): string {
-  const definition = sampleDefinition<MdmarkFlowDefinition>("inquiry");
-  const third = definition.nodes[2];
-  if (third === undefined) {
-    throw new Error("見本の 3 つ目のノードが無い");
-  }
-  Object.assign(third, { kind: "robot" });
-  const { message, items } = definitionWarning(
-    "flow",
-    readDefinition("flow", [JSON.stringify(definition)]).problems,
-  );
-  return renderSyntaxWarning({ message, items });
 }
 
 /** 定義を読み込めないストーリーの記載の警告: 見本の閉じの `}` を落として読み込ませる */
@@ -901,102 +754,6 @@ function storyDiffHtml(args: PartArgs): string {
 }
 
 // コメントのボタン・入力欄・吹き出しのストーリーに追加する規則: 本物は `document.body` の直下で `position: fixed` だが、ストーリーではその場に配置する
-/** 座標を省いた判定フローチャート（描く処理が配置してから部品に指定する） */
-const JUDGEMENT_AUTO_TEXT = JSON.stringify({
-  title: "問い合わせの返信の判定",
-  scope: "問い合わせを受け取ったとき",
-  updated: "2026-11-04",
-  nodes: [
-    { id: "start", kind: "start", name: "問い合わせを受け取る" },
-    { id: "q1", kind: "question", name: "よくある質問で回答できるか" },
-    { id: "a1", kind: "action", name: "よくある質問のリンクを添える" },
-    { id: "q2", kind: "question", name: "担当者が回答できるか" },
-    { id: "r1", kind: "result", name: "返信を送信する" },
-    { id: "r2", kind: "result", name: "開発に起票する" },
-  ],
-  wires: [
-    { id: "j-start", line: "flow", from: "start", to: "q1" },
-    { id: "j-q1-yes", line: "flow", from: "q1", to: "a1", label: "YES" },
-    { id: "j-q1-no", line: "flow", from: "q1", to: "q2", label: "NO" },
-    { id: "j-a1", line: "flow", from: "a1", to: "r1" },
-    { id: "j-q2-yes", line: "flow", from: "q2", to: "r1", label: "YES" },
-    { id: "j-q2-no", line: "flow", from: "q2", to: "r2", label: "NO" },
-  ],
-});
-
-/** リンク先を持つノードの見本。`hrefs` はノードの `recv`・`classify` のリンク先 */
-function linkedDefinition(hrefs: {
-  recv: string;
-  classify: string;
-}): MdmarkFlowDefinition {
-  return {
-    title: "問い合わせの処理",
-    scope: "受け取りから記録まで",
-    updated: "2026-11-04",
-    width: 708,
-    height: 152,
-    nodes: [
-      {
-        id: "recv",
-        kind: "script",
-        x: 24,
-        y: 40,
-        w: 180,
-        h: 72,
-        name: "問い合わせを受け取る",
-        href: hrefs.recv,
-      },
-      {
-        id: "classify",
-        kind: "llm",
-        x: 264,
-        y: 40,
-        w: 180,
-        h: 72,
-        name: "分類する",
-        href: hrefs.classify,
-        io: {
-          in: "問い合わせの本文",
-          do: "種類を 1 つ選ぶ",
-          out: "種類と確信度",
-        },
-      },
-      {
-        id: "store",
-        kind: "data",
-        x: 504,
-        y: 40,
-        w: 180,
-        h: 72,
-        name: "記録する",
-        shape: "db",
-      },
-    ],
-    wires: [
-      {
-        id: "w-recv",
-        line: "flow",
-        points: [
-          [204, 76],
-          [264, 76],
-        ],
-      },
-      {
-        id: "w-classify",
-        line: "write",
-        points: [
-          [444, 76],
-          [504, 76],
-        ],
-      },
-    ],
-  } as MdmarkFlowDefinition;
-}
-
-/** リンク先を持つノードのホバーとフォーカスを、ポインターとキーを使用せずに見せる（`recv` はホバー、`classify` はフォーカスの外観） */
-const LINK_HOVER_FOCUS_STYLE =
-  '<style>.mdmark-diagram-node.has-link[data-node="recv"]{background:color-mix(in oklab,var(--node-color) 8%,var(--mdmark-color-bg))}.mdmark-diagram-node.has-link[data-node="classify"] .mdmark-diagram-node-link{outline:2px solid var(--mdmark-color-link);outline-offset:2px}</style>';
-
 const STATIC_POPOVER_STYLE =
   "<style>.mdmark-comment-add,.mdmark-comment-popover{position:static;max-width:100%}</style>";
 
@@ -1100,9 +857,13 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
         layout,
         kinds: MAP_CONFIG.kinds,
         lines: MAP_CONFIG.lines,
-        notes: Object.fromEntries(
-          Object.entries(data.notes).map(([id, note]) => [id, note.text]),
-        ),
+        notes: {
+          ...Object.fromEntries(
+            Object.entries(data.notes).map(([id, note]) => [id, note.text]),
+          ),
+          ...jsonObject<Record<string, string>>(args.notes),
+        },
+        links: jsonObject<Record<string, string>>(args.links),
         collapsed,
         entered,
         selected,
@@ -1582,10 +1343,8 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
       );
     }
     const html = renderDiagram({
-      kind: "flow",
-      definition: Array.isArray(args.legend)
-        ? mockFlow("single-kinds")
-        : sampleDefinition<MdmarkFlowDefinition>("inquiry"),
+      kind: "er",
+      definition: mockEr("shop-er"),
       id: "story-frame",
       lookup: (word) => SAMPLE_TERMS[word],
       ...diagramArgs(args),
@@ -1608,104 +1367,6 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
         : frame;
     return `<div class="story-framed-surface" style="${FRAMED_SURFACE_STYLE}">${body}</div>`;
   },
-  "flow-diagram": (args) => {
-    if (args.invalid === true) {
-      return invalidDefinition("flow", "inquiry");
-    }
-    if (args.judgement === "auto") {
-      const read = readDefinition("flow", [JUDGEMENT_AUTO_TEXT]);
-      return fitted(
-        renderDiagram({
-          kind: "flow",
-          definition: read.definition as MdmarkFlowDefinition,
-          id: "story-flow",
-        }),
-        args,
-      );
-    }
-    if (args.links === "blocked") {
-      // 描く処理と同じく、許さないリンク先を削除して図の前に記載の警告を配置する
-      const definition = linkedDefinition({
-        recv: "javascript:alert(1)",
-        classify: "id:spec#items",
-      });
-      const problems = nodeLinkProblems(definition);
-      const warning = renderSyntaxWarning({
-        message:
-          "フロー図のノードのリンク先に使用できないものがあります。使用できるリンク先は http・https・mailto と相対パスです。このノードはリンクにせずに描いています。",
-        items: problems.map(({ id, href }) => ({
-          label: id,
-          message: `\`${href}\``,
-        })),
-      });
-      for (const node of definition.nodes) {
-        delete node.href;
-      }
-      return (
-        warning +
-        fitted(
-          renderDiagram({ kind: "flow", definition, id: "story-flow" }),
-          args,
-        )
-      );
-    }
-    if (args.links === "allowed" || args.links === "hover-focus") {
-      const html = fitted(
-        renderDiagram({
-          kind: "flow",
-          definition: linkedDefinition({
-            recv: "https://example.com/spec",
-            classify: "./other.md",
-          }),
-          id: "story-flow",
-        }),
-        args,
-      );
-      return args.links === "hover-focus"
-        ? LINK_HOVER_FOCUS_STYLE + html
-        : html;
-    }
-    if (args.unknownKind === true) {
-      return unknownKindDefinition();
-    }
-    if (args.groups === true) {
-      const html = renderDiagram({
-        kind: "flow",
-        definition: mockFlow("inquiry-groups"),
-        id: "story-flow",
-        lookup: (word) => SAMPLE_TERMS[word],
-        ...diagramArgs(args),
-      });
-      // 留めたタイトル: 拡大して処理の層の途中を見せた状態を、留めた札の外観で描く
-      return args.stuck === true
-        ? html.replace(
-            /class="(mdmark-diagram-(?:frame-title|lane-label))"/g,
-            'class="$1 is-stuck"',
-          )
-        : fitted(html, args);
-    }
-    const definition =
-      args.judgement === "long"
-        ? structuredClone(JUDGEMENT_LONG_SAMPLE)
-        : args.judgement === "default"
-          ? judgementDefinition()
-          : sampleDefinition<MdmarkFlowDefinition>("inquiry");
-    if (args.longNames === true) {
-      definition.title = LONG_TITLE;
-      for (const node of definition.nodes) {
-        node.name = `${node.name}${LONG_NAME_SUFFIX}`;
-      }
-    }
-    return fitted(
-      renderDiagram({
-        kind: "flow",
-        definition,
-        id: "story-flow",
-        lookup: (word) => SAMPLE_TERMS[word],
-      }),
-      args,
-    );
-  },
   "er-diagram": (args) => {
     if (args.invalid === true) {
       return invalidErDefinition();
@@ -1721,19 +1382,6 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
       args,
     );
   },
-  "sequence-diagram": (args) =>
-    args.invalid === true
-      ? invalidDefinition("sequence", "inquiry-seq")
-      : fitted(
-          renderDiagram({
-            kind: "sequence",
-            definition:
-              sampleDefinition<MdmarkSequenceDefinition>("inquiry-seq"),
-            id: "story-sequence",
-            lookup: (word) => SAMPLE_TERMS[word],
-          }),
-          args,
-        ),
   chart: (args) => {
     if (args.invalid === true) {
       return invalidDefinition("chart", "reply-time");
@@ -1787,7 +1435,7 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
       return `<div style="padding-block-start:16rem"><div class="mdmark-diagram-box" style="min-height:11rem;padding:1rem"><button class="mdmark-diagram-info" type="button" aria-label="「注文」の説明" aria-describedby="story-tip">i</button>${table}</div></div>`;
     }
     if (args.kind === "item" || args.group === true) {
-      // 折れ線の点・システムの枠のタイトルのマーカーで開いた状態: 持ち主の下に出す
+      // 折れ線の点・map の構成図のグループのタイトルのマーカーで開いた状態: 持ち主の下に出す
       const tip = (
         args.kind === "item"
           ? renderDiagramTip({
@@ -1800,8 +1448,8 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
           : renderDiagramTip({
               id: "story-tip",
               kind: "hint",
-              label: "問い合わせの窓口",
-              hint: "メールの受け取りから返信までを受け持つ範囲。担当者のチャットとメールサーバーは窓口の外にある",
+              label: "記法の読み取り",
+              hint: "記法を読み取る部分",
               open,
             })
       ).replace(
@@ -1811,11 +1459,10 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
       const owner =
         args.kind === "item"
           ? '<svg width="40" height="40" aria-hidden="true"><circle class="mdmark-diagram-item-hit" cx="20" cy="20" r="12" tabindex="0" aria-describedby="story-tip"></circle></svg>'
-          : '<span class="mdmark-diagram-frame-title" style="position:static">問い合わせの窓口<button class="mdmark-diagram-info mdmark-diagram-group-info" type="button" aria-label="「問い合わせの窓口」の説明" aria-describedby="story-tip">i</button></span>';
+          : '<div class="map-group-head"><button class="map-group-title" type="button">記法の読み取り</button><button class="mdmark-diagram-info mdmark-diagram-group-info" type="button" aria-label="「記法の読み取り」の説明" aria-describedby="story-tip">i</button></div>';
       return `<div style="padding-block-end:${open ? "8rem" : "0"}"><div class="mdmark-diagram-box" style="min-height:11rem;padding:1rem">${owner}${tip}</div></div>`;
     }
-    const kind =
-      args.kind === "io" ? "io" : args.kind === "hint" ? "hint" : "wire";
+    const kind = args.kind === "hint" ? "hint" : "wire";
     const tip =
       args.term === true
         ? renderDiagramTip({
@@ -1828,14 +1475,9 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
         : renderDiagramTip({
             id: "story-tip",
             kind,
-            label: kind === "io" ? "分類" : "本文",
+            label: "本文",
             tip: "件名を除いた本文。署名と引用は落とす",
             ...(kind === "hint" ? { hint: NODE_HINT_TEXT } : {}),
-            io: {
-              in: "問い合わせの本文",
-              do: "返信の種類（よくある質問で回答する・担当者へ回す）から 1 つ選ぶ",
-              out: "返信の種類と、その確からしさ",
-            },
             open,
           });
     // 開いた状態は、ノードの上端の上に出す（画面に対する位置は操作が決める）。ノードの上に余白を取る
@@ -1848,11 +1490,9 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
     const owner =
       args.term === true
         ? '<span class="mdmark-term" tabindex="0" aria-describedby="story-tip">意思決定モデル</span>'
-        : kind === "io"
-          ? '<button class="mdmark-diagram-info" type="button" aria-label="「分類」の入力・処理・出力" aria-describedby="story-tip">i</button>'
-          : kind === "hint"
-            ? '<button class="mdmark-diagram-info" type="button" aria-label="「窓口の MCP」の説明" aria-describedby="story-tip">i</button>'
-            : '<span class="mdmark-diagram-label has-tip" tabindex="0" aria-describedby="story-tip">本文</span>';
+        : kind === "hint"
+          ? '<button class="mdmark-diagram-info" type="button" aria-label="「窓口の MCP」の説明" aria-describedby="story-tip">i</button>'
+          : '<span class="mdmark-diagram-label has-tip" tabindex="0" aria-describedby="story-tip">本文</span>';
     return `<div style="padding-block-start:${open ? "11rem" : "0"}"><div class="mdmark-diagram-box" style="min-height:11rem;padding:1rem">${owner}${placedTip}</div></div>`;
   },
   hint: (args) =>

@@ -67,12 +67,6 @@ export const ResizeOff: Story = {
   args: { resizable: false },
 };
 
-export const NoLegendItems: Story = {
-  name: "NoLegendItems",
-  parameters: { server: { id: "diagram-frame" } },
-  args: { legend: "[]" },
-};
-
 export const Mermaid: Story = {
   name: "Mermaid",
   parameters: { server: { id: "diagram-frame" } },

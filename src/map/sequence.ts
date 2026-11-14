@@ -1,3 +1,4 @@
+import { decodeEntities } from "./flowchart.ts";
 import type { MapProblem } from "./spec.ts";
 
 /** メッセージの矢印の記法 */
@@ -198,7 +199,7 @@ export const parseSequence = (source: string): Sequence => {
       if (decl?.[1] && decl[2]) {
         participants.set(decl[2], {
           id: decl[2],
-          label: decl[3] ?? decl[2],
+          label: decodeEntities(decl[3] ?? decl[2]),
           actor: decl[1] === "actor",
         });
         box?.members.push(decl[2]);
@@ -208,7 +209,9 @@ export const parseSequence = (source: string): Sequence => {
       const fragment = FRAGMENT_RE.exec(text);
       if (fragment?.[1]) {
         const label =
-          fragment[1] === "rect" ? (blockName ?? "") : (fragment[2] ?? "");
+          fragment[1] === "rect"
+            ? (blockName ?? "")
+            : decodeEntities(fragment[2] ?? "");
         const item: SequenceFragment = {
           kind: fragment[1] as SequenceFragment["kind"],
           label,
@@ -227,7 +230,7 @@ export const parseSequence = (source: string): Sequence => {
         if (current)
           current.sections.push({
             start: messages.length,
-            label: section[2] ?? "",
+            label: decodeEntities(section[2] ?? ""),
           });
         else problems.push(unreadable(line, raw));
         return;
@@ -262,7 +265,7 @@ export const parseSequence = (source: string): Sequence => {
               ? "right"
               : "over",
           of,
-          text: note[3] ?? "",
+          text: decodeEntities(note[3] ?? ""),
         });
         return;
       }
@@ -275,7 +278,7 @@ export const parseSequence = (source: string): Sequence => {
         messages.push({
           from: message[1],
           to: message[4],
-          text: message[5] ?? "",
+          text: decodeEntities(message[5] ?? ""),
           arrow: message[2] as SequenceArrowName,
           activation,
         });

@@ -200,12 +200,6 @@ files:
     related:
       - to: docs/module/MOD-472-304.ts
         type: implements
-  - path: diagram/check.ts
-    description: モジュール構成『ライブラリ本体 / 図』のうち「フロー図の定義の配置の点検（重なり・はみ出し・線の横切り・ラベルの長さ）」を受け持つ。図の部品の描き方や操作を変えるときに参照する。
-    tags: [topic:図, tool:svg]
-    related:
-      - to: docs/module/MOD-472-175.ts
-        type: implements
   - path: diagram/definition.ts
     description: モジュール構成『ライブラリ本体 / 図』のうち「定義の型・JSON の読み取り・構造の確認」を受け持つ。図の部品の描き方や操作を変えるときに参照する。
     tags: [topic:図, tool:svg]
@@ -223,12 +217,6 @@ files:
     tags: [topic:図, tool:svg]
     related:
       - to: docs/module/MOD-472-173.ts
-        type: implements
-  - path: diagram/layout.ts
-    description: モジュール構成『ライブラリ本体 / 図』のうち「座標を省いた判定フローチャートの自動の配置」を受け持つ。図の部品の描き方や操作を変えるときに参照する。
-    tags: [topic:図, tool:svg]
-    related:
-      - to: docs/module/MOD-472-178.ts
         type: implements
   - path: diff/blocks.ts
     description: モジュール構成『ライブラリ本体 / 差分』のうち「比べる 2 つの本文の取り出し loadDiffPair と、描いた文書のブロックの色分け colorDiffBlocks」を受け持つ。差分の計算や表示を変えるときに参照する。
@@ -563,6 +551,12 @@ files:
     related:
       - to: docs/module/MOD-472-135.ts
         type: implements
+  - path: map/convert.ts
+    description: モジュール構成『ライブラリ本体 / map / convert.ts』のうち「廃止した flow・sequence の範囲を map の範囲へ書き換える convertRetiredDiagrams」を受け持つ。廃止した図の変換を変えるときに参照する。
+    tags: [topic:図, topic:map, topic:移行]
+    related:
+      - to: docs/module/MOD-477-5.ts
+        type: implements
   - path: map/data.ts
     description: モジュール構成『ライブラリ本体 / map / 読み取り』のうち「補足の JSON の parseMapData」を受け持つ。補足のキーと読み取り方を変えるときに参照する。
     tags: [topic:図, topic:map]
@@ -582,7 +576,7 @@ files:
       - to: docs/module/MOD-472-130.ts
         type: implements
   - path: map/flowchart.ts
-    description: モジュール構成『ライブラリ本体 / map / 読み取り』のうち「Mermaid の flowchart の parseFlowchart」を受け持つ。構成図の記法の読み取りを変えるときに参照する。
+    description: モジュール構成『ライブラリ本体 / map / 読み取り』のうち「Mermaid の flowchart の parseFlowchart・文字の参照の decodeEntities・ノードのリンク先の mapLinkProblems」を受け持つ。構成図の記法の読み取りを変えるときに参照する。
     tags: [topic:図, topic:map]
     related:
       - to: docs/module/MOD-472-137.ts
@@ -854,16 +848,12 @@ files:
       - to: docs/component/CMP-472-38.ts
         type: implements
   - path: parts/diagram.ts
-    description: モジュール構成『ライブラリ本体 / 図』のうち「図の枠・フロー図・シーケンス図・グラフ・ER 図・図のツールチップ・凡例」を受け持つ。図の部品の描き方や操作を変えるときに参照する。
+    description: モジュール構成『ライブラリ本体 / 図』のうち「図の枠・map の構成図のノードと線・グラフ・ER 図・図のツールチップ・凡例」を受け持つ。図の部品の描き方や操作を変えるときに参照する。
     tags: [topic:図, tool:svg]
     related:
       - to: docs/module/MOD-472-172.ts
         type: implements
       - to: docs/component/CMP-472-13.ts
-        type: implements
-      - to: docs/component/CMP-472-19.ts
-        type: implements
-      - to: docs/component/CMP-472-28.ts
         type: implements
       - to: docs/component/CMP-472-1.ts
         type: implements
@@ -1030,12 +1020,6 @@ files:
       - to: docs/module/MOD-472-187.ts
         type: implements
       - to: docs/component/CMP-472-1.ts
-        type: implements
-  - path: parts/flow-diagram.stories.ts
-    description: 部品設計『フロー図』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに参照する。
-    tags: [topic:ストーリー, tool:storybook, topic:部品, topic:図]
-    related:
-      - to: docs/component/CMP-472-28.ts
         type: implements
   - path: parts/footnote-ref.stories.ts
     description: 部品設計『脚注の番号』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに参照する。
@@ -1336,12 +1320,6 @@ files:
       - to: docs/module/MOD-472-320.ts
         type: implements
       - to: docs/component/CMP-472-21.ts
-        type: implements
-  - path: parts/sequence-diagram.stories.ts
-    description: 部品設計『シーケンス図』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに参照する。
-    tags: [topic:ストーリー, tool:storybook, topic:部品, topic:図]
-    related:
-      - to: docs/component/CMP-472-19.ts
         type: implements
   - path: parts/side-toc.stories.ts
     description: 部品設計『右側の目次』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに参照する。

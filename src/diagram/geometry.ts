@@ -219,35 +219,3 @@ export function stackSeries(
 export function clampDiagramHeight(height: number): number {
   return Math.round(Math.max(RESIZE.min, height));
 }
-
-/** グループのタイトル 1 つの位置（定義の座標） */
-export type StickyTitle = {
-  /** 元の上端 */
-  base: number;
-  /** グループの下端 */
-  bottom: number;
-  /** タイトルの高さ */
-  height: number;
-  /** システムの枠のタイトルか */
-  frame: boolean;
-};
-
-/** 表示する枠の上端（定義の座標）から、タイトルごとに下へずらす量と留めているかを求める（枠・層の順） */
-export function stickyTitleShifts(options: {
-  top: number;
-  gap: number;
-  titles: StickyTitle[];
-}): Array<{ shift: number; stuck: boolean }> {
-  const { gap, titles } = options;
-  let top = options.top + gap;
-  return titles.map((title) => {
-    const limit = title.bottom - title.height - gap;
-    const shift = Math.max(0, Math.min(top, limit) - title.base);
-    // 留めているのは、グループが表示する枠の上端にかかっている間（下端で止めた後は図と一緒に隠れる）
-    const stuck = shift > 0 && top <= limit;
-    if (stuck && title.frame) {
-      top += title.height + gap;
-    }
-    return { shift, stuck };
-  });
-}
