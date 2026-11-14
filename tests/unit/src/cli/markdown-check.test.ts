@@ -37,7 +37,7 @@ async function createConfigDir(extra: Record<string, string> = {}) {
   return dir;
 }
 
-// 警告・知らないマーカーを行の順に返却し、図の定義の誤りを 1 件にする（正常系）
+// 警告・知らないマーカーを行の順に返却し、廃止した図の範囲を 1 件にする（正常系）
 test("test_check_markdown_source", async () => {
   // 準備
   const { checkMarkdownSource } = await loadMarkdownCheck();
@@ -52,7 +52,7 @@ test("test_check_markdown_source", async () => {
   expect(
     issues.map(({ file, where, kind }) => ({ file, where, kind })),
   ).toEqual([
-    { file: "-", where: "1", kind: "diagram_invalid" },
+    { file: "-", where: "1", kind: "retired_diagram" },
     { file: "-", where: "20", kind: "unknown_mark" },
     { file: "-", where: "22", kind: "syntax_warning" },
   ]);

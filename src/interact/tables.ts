@@ -223,6 +223,8 @@ function attachTable(
     .split(/\s+/)
     .filter(Boolean);
   const filterKinds = readFilterKinds(wrapper.dataset.filter);
+  // 並べ替えを付けない列（長文の列と `columns.{列名}.sort` の `false`）
+  const noSort = new Set(readColumnList(wrapper.dataset.noSort));
   const headCells = columnHeadsOf(table);
   const headColumns = headColumnsOf(table);
   /** 見出しのセルの列の位置（`cellIndex` は多段の見出しで列と合わないため使用しない） */
@@ -344,6 +346,7 @@ function attachTable(
         column,
         label: visibleText(cell),
         features,
+        sortable: !noSort.has(column),
         pinMode,
         filter: kind && {
           kind,

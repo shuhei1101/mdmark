@@ -46,7 +46,7 @@ const STORAGE_PREFIX = "mdmark-map:";
  * lines: Mermaid の矢印（-->・-.->・==>）か名前ごとの { dash, width, head, color }。名前の線は補足の layout の line で指す
  * 種類を書かないノードは種類の行を出さず、設定に無い矢印は既定の実線で描く。凡例は出さない
  */
-const SHAPES = ["rounded", "rect", "pill", "double"];
+const SHAPES = ["rounded", "rect", "pill", "double", "start", "end", "choice"];
 const DASHES = { solid: "", dashed: "6 4", dotted: "2 4", "dash-dot": "8 3 2 3", "long-dash": "12 5" };
 const WIDTHS = { thin: 1, normal: 1.5, thick: 3 };
 const ARROWS = { solid: "-->", dotted: "-.->", thick: "==>" };
@@ -400,7 +400,8 @@ export const createMap = (host, spec, initial = {}) => {
       return {
         id: leaf.id,
         kind,
-        ...(box ? { tag: "グループ" } : {}),
+        // 閉じたグループの種類の行。種類ごとに中の数などへ替えられる（ER 図・状態遷移図）
+        ...(box ? { tag: spec.collapsedTag?.(leaf.id) ?? "グループ" } : {}),
         x: leaf.x,
         y: leaf.y,
         w: leaf.w,
@@ -441,6 +442,9 @@ export const createMap = (host, spec, initial = {}) => {
   /** ノードの選択: 選んだノードだけを残し、1 つならそのノードの線、2 つ以上なら選んだノードどうしの線を残す（線の相手のノードは薄くする。シーケンス図の参加者と同じ） */
   const selection = (layout) => {
     if (state.selected.size === 0) return undefined;
+    // 種類に固有の選び方（ER 図の経路）。無ければ構成図の選び方
+    const custom = spec.selectionOf?.(state.selected, layout);
+    if (custom) return custom;
     const edges = layout.edges.filter((edge) =>
       state.selected.size === 1 ? state.selected.has(edge.from) || state.selected.has(edge.to) : state.selected.has(edge.from) && state.selected.has(edge.to),
     );
@@ -484,6 +488,7 @@ export const createMap = (host, spec, initial = {}) => {
     decorateGroups(stage, layout);
     decorateNodes(stage, layout);
     decorateWires(figure, layout);
+    spec.afterRender?.(figure, layout, { selected: state.selected, enter: state.enter, collapsed: state.collapsed, step: state.step });
     decorateTools(figure);
     renderBand(figure);
     renderPackets(stage, layout);
@@ -949,6 +954,18 @@ export const createMap = (host, spec, initial = {}) => {
       const element = stage.querySelector(`[data-node="${CSS.escape(leaf.id)}"]`);
       if (!element) continue;
       if (!boxById.has(leaf.id)) applyKind(element, kindOf(leaf.id));
+      // 種類に固有のノードの中身（ER 図の列の行）。開閉は state.collapsed に持つ
+      spec.decorateNode?.(element, leaf.id, {
+        faded: leaf.faded,
+        collapsed: state.collapsed,
+        toggle: (id) => {
+          if (state.collapsed.has(id)) state.collapsed.delete(id);
+          else state.collapsed.add(id);
+          delete state.sizes[id];
+          save();
+          render();
+        },
+      });
       const color = spec.data.colors?.[leaf.id];
       if (color) {
         element.style.cssText += colorStyle(color);

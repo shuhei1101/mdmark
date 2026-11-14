@@ -158,10 +158,10 @@ scenarios:
       - 音声と動画の要素の src が、`assets/media/intro.mp3`・`assets/media/intro.mp4` を指す Webview から読み込める URL になっている
       - 再生ボタンを押すと、音声と動画の再生位置が進む
     test: test_normal_when_media_in_asset_root
-  - name: 正常シナリオ（フロー図のノードのリンク）
+  - name: 正常シナリオ（図のノードのリンク）
     setup:
       - name: ノードのリンクを持つ文書のプレビュー
-        description: 同じフォルダの `other.md` を指すリンク先を持つノードと、`https://aka.ms/mdmark` を指すリンク先を持つノードのフロー図を持つ Markdown のプレビューを開いた状態
+        description: 同じフォルダの `other.md` を指すリンク先を持つノードと、`https://aka.ms/mdmark` を指す `click` のリンク先を持つノードの map の構成図を持つ Markdown のプレビューを開いた状態
       - name: Mock
         description: 正常シナリオ（外部の URL）と同じ
     flow: |-
@@ -181,7 +181,7 @@ scenarios:
       - '`other.md` を指すノードで、`other.md` が VS Code のエディタで開く'
       - '`https://aka.ms/mdmark` を指すノードで、ブラウザで開く代役に `https://aka.ms/mdmark` が渡る'
       - ノードを押しても、プレビューの文書は変わらない
-    test: test_normal_when_flow_node_link
+    test: test_normal_when_map_node_link
 lead: 文書の作成者がプレビューのリンクを押すと、外部の URL は既定のブラウザで、Markdown へのリンクは VS Code で開き、`#` で始まるリンクはプレビューの中で移る。Markdown からの相対パスの画像もプレビューに出る。
 issue: 22
 primary_actor: 文書の作成者

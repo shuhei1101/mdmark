@@ -7,7 +7,9 @@ export type SideTocState = {
     /** ピン止めしているか */
     pinned: boolean;
 };
-/** 本文の中の右側の目次に並べる見出しを文書の順に集める */
+/** 本文の中の色分けしたブロックごとに、そのブロックが含む見出しか前にある最後の見出しと、その祖先の見出しを集め、`id` を持つ見出しの ID を返却する */
+export declare function findChangedHeadings(content: HTMLElement): Set<string>;
+/** 本文の中の右側の目次に並べる見出しを文書の順に集め、変わったセクションの見出しに `changed` を付ける */
 export declare function collectSideTocHeadings(content: HTMLElement): SideTocHeading[];
 /** 画面に出ている見出しの位置から今いるセクションの見出しの ID を決める。上端が線以下の見出しのうち最後のものを返却し、無ければ画面の中にある最初の見出しを返却する */
 export declare function pickCurrentHeading(options: {

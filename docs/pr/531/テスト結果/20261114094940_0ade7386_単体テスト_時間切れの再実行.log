@@ -1,0 +1,23 @@
+$ npx vitest run --project 'unit*' tests/unit/src/cli/build.test.ts tests/unit/src/cli/documents.test.ts tests/unit/src/viewer/index.browser.test.ts
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-map-er-state-diagram
+
+
+ Test Files  3 passed (3)
+      Tests  19 passed (19)
+   Start at  09:57:22
+   Duration  16.02s (tests 97%, import 1%, transform 1%, worker 1%)
+
+exit=0
+
+$ npx vitest run --project unit tests/unit/src/cli/export.test.ts  # 2 回目の時間切れ
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-map-er-state-diagram
+
+
+ Test Files  1 passed (1)
+      Tests  25 passed (25)
+   Start at  10:21:50
+   Duration  12.08s (tests 97%, import 1%, transform 1%)
+
+exit=0

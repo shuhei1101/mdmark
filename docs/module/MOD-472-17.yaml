@@ -1,7 +1,7 @@
 id: MOD-472-17
 visibility: internal
 title: "VS Code 拡張機能 / ビルドと配布"
-lead: 拡張機能を esbuild、Webview を Vite で書き出し、タグとバージョンを照合して .vsix を GitHub Release に添える。拡張機能ホストで実行する結合テストの起動も持つ。配布物には入らない。
+lead: 拡張機能を esbuild、Webview を Vite で書き出し、タグとバージョンを照合して .vsix を GitHub Release に添え、Marketplace へ公開する。拡張機能ホストで実行する結合テストの起動も持つ。配布物には入らない。
 directory: |-
   ```tree
   vscode/
@@ -16,7 +16,7 @@ directory: |-
       ├── index.ts               # 拡張機能ホストの中で mocha を動かす run()
       └── {インターフェース定義}.test.ts
   .github/workflows/
-  └── vscode-release.yml         # vscode-v* のタグで .vsix を作り Release に添える
+  └── vscode-release.yml         # vscode-v* のタグで .vsix を作り Release に添え、Marketplace へ公開する
   ```
 
   `dist/`・`media/`（丸ごと）・`out/`・`.vscode-test/` は git の管理の外（`.gitignore`）にする。Webview の Vite の設定（`vite.config.ts`）は設計書『VS Code 拡張機能 / Webview』にある。

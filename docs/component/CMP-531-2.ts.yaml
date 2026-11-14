@@ -1,0 +1,110 @@
+id: CMP-531-2
+visibility: internal
+title: mapの状態遷移図
+implementation: src/parts/map.ts#renderMapStateDiagram
+story: Parts/MapState
+states:
+  - name: Default
+    description: 開始（黒丸）・終了（二重丸）・分岐（ひし形）・状態・入れ子の状態 2 つ（中に `[*]` を持つ「実行中」と、開始・終了を補った「保留」）・同じ状態への遷移・`note right of` の注記
+    notes:
+      定義: モックの `STATE`・`STATE_DATA`（`docs/mock/refs/531/assets/samples.js`）
+  - name: Playing
+    description: 遷移の再生の 6 本目。その遷移と両端の状態のほかが薄く、その線の上をデータの印が流れる
+    args:
+      - name: focus
+        value: '{"nodes": ["判定", "s1"], "wires": ["t6"]}'
+  - name: SelfTransitionPlaying
+    description: 再生の 2 本目（同じ状態への遷移）。状態から出て戻る線が太く強調される
+    args:
+      - name: focus
+        value: '{"nodes": ["下書き"], "wires": ["t2"]}'
+  - name: StateSelected
+    description: 「確認待ち」を選んだ。入る遷移 2 本・出る遷移 2 本と相手の状態のほかが薄い
+    args:
+      - name: selected
+        value: '["確認待ち"]'
+  - name: Entered
+    description: 「実行中」の中へ入った
+    args:
+      - name: entered
+        value: 実行中
+  - name: Collapsed
+    description: 「実行中」を閉じた。「状態 2 件」を持つ 1 つのノードになる
+    args:
+      - name: collapsed
+        value: '["実行中"]'
+  - name: Narrow
+    description: 幅 390px の置き場所
+lead: map の `stateDiagram-v2`・`stateDiagram` を、状態をノード、入れ子の状態をグループにして構成図の部品の上に描く。開始・終了・分岐の形状、同じ状態への遷移の線、注記のノード、入れ子の状態の開始・終了の補いを持つ。
+args:
+  - name: layout
+    type: オブジェクト
+    required: true
+    description: 自動配置の結果（`MapLayout`）。状態はノード、入れ子の状態はグループ。入れ子の状態そのものへの遷移は中の開始、入れ子の状態からの遷移は中の終了を端にした線で描く
+  - name: layout.nodes[].stateKind
+    type: 文字列
+    required: true
+    description: '`state`（角の丸いノード）・`start`（黒丸。32px）・`end`（二重丸。32px）・`choice`（ひし形。40px の幅と高さいっぱいに `clip-path` で切り抜く）・`note`（種類の行「注記」を持つノード）。`start`・`end`・`choice` は名前と種類の行を出さない'
+  - name: layout.loops
+    type: オブジェクトの配列
+    required: false
+    default: '[]'
+    description: 同じ状態への遷移（`{ wire, node, label }`）。状態の右の辺から出て上を回り、上の辺へ戻る線とラベルを描く
+  - name: collapsed
+    type: 配列
+    required: false
+    default: '[]'
+    description: 閉じた入れ子の状態の ID。名前の後ろに「状態 {数} 件」を出す
+  - name: entered
+    type: 文字列
+    required: false
+    default: なし（全体）
+    description: 中へ入った入れ子の状態の ID。構成図の部品と同じ
+  - name: selected
+    type: 配列
+    required: false
+    default: '[]'
+    description: 選んだ状態の ID。入る遷移・出る遷移と相手の状態を残す
+  - name: focus
+    type: オブジェクト
+    required: false
+    default: なし（薄くしない）
+    description: 案内・再生・線のホバーで強調する状態と遷移。同じ状態への遷移が対象のときは、その線を太く描く
+  - name: packets
+    type: オブジェクトの配列
+    required: false
+    default: '[]'
+    description: データの印を流す遷移。構成図の部品と同じ
+  - name: terms
+    type: オブジェクト
+    required: false
+    default: なし（下線を付けない）
+    description: 用語から意味への対応。状態の名前と注記の文の中の用語を `span.mdmark-term` にする
+events:
+  - name: 開閉する・中へ入る
+    when: 入れ子の状態の山形・タイトルのボタンを押す
+    value: 入れ子の状態の ID
+    description: 構成図の部品の「開閉する」「中へ入る」と同じ
+  - name: 選ぶ
+    when: 状態の名前の文字の外を押す。状態にフォーカスして Enter か Space を押す
+    value: 状態の ID
+    description: '`mount` が `selected` を切り替える。開始・終了・分岐・注記は選ばない'
+  - name: 線を指す
+    when: 遷移の線にポインターを乗せるかフォーカスする。離す
+    value: 線の ID
+    description: 構成図の部品と同じ
+uses:
+  - component: CMP-472-5#
+    how: ノード・グループ・線の描き方と、開閉・中へ入る・選択・強調・データの印・移動
+  - component: CMP-472-38#
+    how: 状態と遷移の説明
+accessibility:
+  - 状態のノードは構成図のノードと同じく `tabindex="0"` を持ち、選んだかを `（選択中）` で伝える。開始・終了・分岐は `aria-label` に「開始」「終了」「分岐」を持ち、フォーカスを持たない
+  - 注記と破線の線は `aria-hidden` にせず、注記の文を読み上げの対象にする
+  - 同じ状態への遷移の線は、ほかの遷移と同じく押せる帯と `aria-label="{状態}から{状態}への線"` を持つ
+refs:
+  - IF-472-35#constraints[map の状態遷移図]
+status: planned
+introduced:
+  pr: 531
+test_file: tests/integration/lib/map-state.story.test.ts

@@ -90,6 +90,41 @@ test("test_collect_map_problems_when_unknown_ref", async () => {
   expect(problems[0]?.message).toContain("notes.ghost");
 });
 
+// グループの ID を指す notes をずれにしない（正常系）
+test("test_collect_map_problems_when_group_note", async () => {
+  // 準備
+  const { collectMapProblems } = await loadCheck();
+  // 実行
+  const problems = collectMapProblems(
+    range(
+      FLOW,
+      '{"version": 1, "notes": {"lib": {"text": "記法を読み取る部分"}}}',
+    ),
+    CONFIG,
+    true,
+  );
+  // 検証
+  expect(problems).toEqual([]);
+});
+
+// 許さないノードのリンク先（異常系）
+test("test_collect_map_problems_when_link_not_allowed", async () => {
+  // 準備
+  const { collectMapProblems } = await loadCheck();
+  // 実行
+  const problems = collectMapProblems(
+    range('flowchart LR\n  a --> b\n  click a "javascript:alert(1)"\n'),
+    CONFIG,
+    true,
+  );
+  // 検証
+  expect(problems.map((problem) => problem.kind)).toEqual([
+    "map_invalid_value",
+  ]);
+  expect(problems[0]?.message).toContain("a");
+  expect(problems[0]?.message).toContain("javascript:alert(1)");
+});
+
 // 線の上書きをノードに指定した（異常系）
 test("test_collect_map_problems_when_wire_override_on_node", async () => {
   // 準備
@@ -170,6 +205,8 @@ test("test_collect_map_problems_when_unsupported_kind", async () => {
   expect(problems[0]?.kind).toBe("map_invalid");
   expect(problems[0]?.message).toContain("flowchart");
   expect(problems[0]?.message).toContain("sequenceDiagram");
+  expect(problems[0]?.message).toContain("erDiagram");
+  expect(problems[0]?.message).toContain("stateDiagram-v2");
 });
 
 // 知らない印の引数（異常系）
@@ -206,4 +243,75 @@ test("test_check_map_config_when_unknown_icon", async () => {
   expect(issues).toHaveLength(1);
   expect(issues[0]?.key).toBe("map.kinds.store.icon");
   expect(issues[0]?.message).toContain("no-such-icon");
+});
+
+// ER 図と状態遷移図（正常系）
+test("test_collect_map_structure_when_er_and_state", async () => {
+  // 準備
+  const { collectMapStructure } = await loadCheck();
+  const kindOf = (mermaid: string) =>
+    collectMapStructure({ args: "", mermaid, mermaidCount: 1, dataCount: 0 });
+  // 実行
+  const results = [
+    kindOf("erDiagram\n  A ||--o{ B : x\n"),
+    kindOf("stateDiagram-v2\n  [*] --> A\n"),
+    kindOf("stateDiagram\n  [*] --> A\n"),
+  ];
+  // 検証
+  expect(results.map((result) => result.problems)).toEqual([[], [], []]);
+  expect(results.map((result) => result.kind)).toEqual([
+    "erDiagram",
+    "stateDiagram",
+    "stateDiagram",
+  ]);
+});
+
+// ER 図の補足のずれ（異常系）
+test("test_collect_map_problems_when_er", async () => {
+  // 準備
+  const { collectMapProblems } = await loadCheck();
+  const mermaid =
+    'erDiagram\n  注文 {\n    int id PK\n  }\n  明細 {\n    int id PK\n    int 注文ID FK\n  }\n  注文 ||--|{ 明細 : "含む"\n  明細 }o--|| 注文 : "戻る"\n';
+  const data = JSON.stringify({
+    version: 1,
+    notes: {
+      "注文.幽霊": { text: "a" },
+      r3: { text: "b" },
+      記録: { text: "分類の説明" },
+    },
+    groups: {
+      記録: { title: "記録", tables: ["注文", "支払い"] },
+      明細: { title: "明細の分類", tables: ["明細"] },
+    },
+  });
+  // 実行
+  const problems = collectMapProblems(range(mermaid, data), CONFIG, true);
+  // 検証
+  expect(
+    problems.filter((item) => item.kind === "map_unknown_ref"),
+  ).toHaveLength(3);
+  expect(
+    problems.filter((item) => item.kind === "map_invalid_value"),
+  ).toHaveLength(1);
+  // 分類の ID の説明はずれにしない
+  expect(problems.some((item) => item.message.includes("notes.記録"))).toBe(
+    false,
+  );
+});
+
+// 状態遷移図の補足のずれ（異常系）
+test("test_collect_map_problems_when_state", async () => {
+  // 準備
+  const { collectMapProblems } = await loadCheck();
+  const data = JSON.stringify({ version: 1, notes: { t2: { text: "a" } } });
+  // 実行
+  const problems = collectMapProblems(
+    range("stateDiagram-v2\n  [*] --> 下書き\n", data),
+    CONFIG,
+    true,
+  );
+  // 検証
+  expect(problems).toHaveLength(1);
+  expect(problems[0]?.kind).toBe("map_unknown_ref");
+  expect(problems[0]?.message).toContain("notes.t2");
 });

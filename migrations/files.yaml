@@ -54,3 +54,27 @@ files:
     related:
       - to: docs/module/MOD-472-166.ts
         type: implements
+  - path: v0.13.0/steps.yaml
+    description: モジュール構成『ライブラリ本体 / バージョンを上げる』のうち「出していないバージョンの移行の手順」を受け持つ。mdmark upgrade で適用する手順を追加する・変えるときに参照する。
+    tags: [topic:バージョン, topic:移行, topic:cli, topic:ステップ]
+    related:
+      - to: docs/module/MOD-472-30
+        type: implements
+  - path: v0.13.0/retired-diagrams.mjs
+    description: モジュール構成『ライブラリ本体 / バージョンを上げる / retired-diagrams.mjs』のうち「文書の廃止した flow・sequence の範囲を map の範囲へ書き換え、設定に map.kinds・map.lines を書き足す移行のスクリプト」を受け持つ。廃止した図の移行を変えるときに参照する。
+    tags: [topic:バージョン, topic:移行, topic:図]
+    related:
+      - to: docs/module/MOD-477-6.mjs
+        type: implements
+  - path: v0.13.0/retired-diagrams.js
+    description: モジュール構成『ライブラリ本体 / ビルド / build.ts』のうち「retired-diagrams.mjs が読み込む書き換えの処理と拡張・設定の読み込みをまとめたファイル（buildRetiredDiagrams が書き込む）」を受け持つ。廃止した図の移行の手順が読み込む処理を確かめるときに参照する。
+    tags: [topic:バージョン, topic:移行, topic:図]
+    related:
+      - to: docs/module/MOD-472-166.ts
+        type: implements
+  - path: v0.13.0/THIRD_PARTY_LICENSES.txt
+    description: モジュール構成『ライブラリ本体 / ビルド / build.ts』のうち「retired-diagrams.js にまとめた依存のライセンス（buildRetiredDiagrams が書き込む）」を受け持つ。移行の手順のフォルダにまとめた依存のライセンスを確かめるときに参照する。
+    tags: [topic:バージョン, topic:移行, topic:ライセンス]
+    related:
+      - to: docs/module/MOD-472-166.ts
+        type: implements

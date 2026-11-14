@@ -16,6 +16,21 @@ states:
         value: '["記法","機能名","増分（KB）"]'
       - name: rows
         value: '[["表の操作","table","6.2"],["注意書き","callout","1.4"],["タブ","tabs","2.1"]]'
+  - name: LongColumnNotSortable
+    description: 長文の説明の列の見出しに並べ替えのボタンを付けず、文字のままにした。名前と更新日の列は並べ替えのボタンを持つ
+    args:
+      - name: kind
+        value: data
+      - name: features
+        value: '["sort","pin","filter"]'
+      - name: columns
+        value: '["名前","更新日","説明"]'
+      - name: rows
+        value: '[["目次","2026-11-01","比較元から見出しの下のブロックが変わったセクションの項目に、変更のマーカーを付ける。"],["表","2026-11-05","長文の列には並べ替えのボタンを付けず、短い値の列は今のまま並べ替えられる。"]]'
+      - name: long
+        value: '[2]'
+      - name: noSort
+        value: '[2]'
   - name: SortedAscending
     description: 増分の列で昇順に並べた
     args:
@@ -1317,6 +1332,11 @@ args:
     type: 配列
     default: '[]'
     description: 長文の列の位置（`data-long`）。`render` が、見出しとセルを改行で分けた 1 行の文字数から決めて写す（決め方は注記の「列の幅」）。`mount` はこの列を折り返す列にし、`filters` の `kind` を省いた列の既定にも使用する
+  - name: noSort
+    type: 配列
+    default: '[]'
+    enabled_when: '`features` に `sort` を含むとき'
+    description: 並べ替えを付けない列の位置（`data-no-sort`）。`render` が、長文の列（`columns.{列名}.sort` が `true` の列を除く）と `columns.{列名}.sort` が `false` の列から決めて写す。この列の見出しは並べ替えのボタンにせず、`span.mdmark-th-label` の文字のままにする（ピン止め・絞り込み・列の幅のつまみは付ける）
   - name: widthRanges
     type: オブジェクトの配列
     default: '[]'
@@ -1530,7 +1550,7 @@ css_properties:
     description: 強調した列の見出しの下端の線と、色を付けた行の上下の線の色。ほかの色の名前も `--mdmark-color-accent-{色}-text` で同じ
 accessibility:
   - 列の強調と行の色は、見出しの下端の線と行の上下の線でも示し、色だけに頼らない。セルの文字と面の色のコントラストを 4.5:1 以上にする
-  - 並べ替えのボタンは列名をスクリーンリーダー向けの名前にし、並べた列の `th` は `aria-sort` で向きを示す
+  - 並べ替えのボタンは列名をスクリーンリーダー向けの名前にし、並べた列の `th` は `aria-sort` で向きを示す。`noSort` の列の見出しはボタンにせず、`aria-sort` を持たない
   - 絞り込みのボタンは `「{列名}」で絞り込む` をスクリーンリーダー向けの名前に持ち、`aria-expanded`・`aria-controls` でドロワーの開閉を示す。絞り込み中は地・線・塗ったアイコンで示し、色だけに頼らない
   - ドロワーは開いたら最初の入力欄へフォーカスを移し、Esc で閉じてボタンへフォーカスを戻す
   - ピン止めのボタンは、`pinMode` が `each` なら `「{列名}」の列をピン止め`、`through` なら `「{列名}」の列までピン止め` をスクリーンリーダー向けの名前に持ち、`aria-pressed` で状態を示す（`each` は選んだ列のボタン、`through` は押した最も右の列のボタンを `true`）。表の見えている幅に収まらず留まっていない列のボタンは、名前と `title` に `（表の幅に収まらないため留まっていません）` を付け、破線のピンと枠線の形でも示し、色だけに頼らない

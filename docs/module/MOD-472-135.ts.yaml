@@ -18,11 +18,11 @@ functions:
         required: true
         description: 範囲のマーカーの引数・mermaid のブロック・数
     returns:
-      type: '{ problems: MapProblem[]; kind: "flowchart" | "sequenceDiagram" | undefined; args: ParsedMapArgs }'
+      type: '{ problems: MapProblem[]; kind: "flowchart" | "sequenceDiagram" | "erDiagram" | "stateDiagram" | undefined; args: ParsedMapArgs }'
       description: 項目・描く図の種類（描かないときは無い）・`parseMapArgs` の結果
     process: |-
       1. mermaid のブロックが 0 か 2 つ以上、補足が 2 つ以上なら `map_invalid` を 1 件返し、`kind` を無しにする
-      2. Mermaid の 1 行目の最初の単語が `flowchart`・`graph` なら `flowchart`、`sequenceDiagram` なら `sequenceDiagram`。ほかは `map_invalid`（描ける種類の一覧を含む）にし、`kind` を無しにする
+      2. Mermaid の 1 行目の最初の単語が `flowchart`・`graph` なら `flowchart`、`sequenceDiagram` なら `sequenceDiagram`、`erDiagram` なら `erDiagram`、`stateDiagram-v2`・`stateDiagram` なら `stateDiagram`。ほかは `map_invalid`（描ける種類の一覧を含む）にし、`kind` を無しにする
       3. `parseMapArgs` の `problems` を合わせる
     callees:
       - MOD-472-140#functions[parseMapArgs]
@@ -33,6 +33,12 @@ functions:
         condition: mermaid のブロック 1 つ（`flowchart LR`）・補足 1 つ・空の引数
         mock: なし
         expected: 項目が空で、`kind` が `flowchart`
+      - name: test_collect_map_structure_when_er_and_state
+        case: 正常
+        summary: ER 図と状態遷移図
+        condition: 1 行目が `erDiagram`・`stateDiagram-v2`・`stateDiagram` の範囲
+        mock: なし
+        expected: 項目が空で、`kind` が `erDiagram`・`stateDiagram`・`stateDiagram`
       - name: test_collect_map_structure_when_two_blocks
         case: 異常
         summary: mermaid のブロックが 2 つ
@@ -57,8 +63,11 @@ functions:
       - MOD-472-135#functions[collectMapStructure]
       - MOD-472-137#functions[parseFlowchart]
       - MOD-472-138#functions[parseSequence]
+      - MOD-531-1#functions[parseErDiagram]
+      - MOD-531-2#functions[parseStateDiagram]
       - MOD-472-139#functions[parseMapData]
       - MOD-472-140#functions[parseMapArgs]
+      - MOD-472-137#functions[mapLinkProblems]
     args:
       - name: range
         type: '{ args: string; mermaid: string | undefined; mermaidCount: number; data: string | undefined; dataCount: number }'
@@ -78,9 +87,11 @@ functions:
     process: |-
       1. `collectMapStructure` で範囲の形を確かめ、`kind` が無ければその項目を返して終える
       2. 印の引数の`unknownKeys` は `includeUnknownKeys` が `true` のとき（点検）だけ `map_unknown_key` にする（描くときは警告にしない）
-      3. `parseFlowchart` か `parseSequence` と `parseMapData` の項目を合わせる
-      4. 補足の `notes`・`walkthroughs`・`layout`・`plays_over` が指す ID が Mermaid に無いものを `map_unknown_ref` にする。`ends`・`via` を持つノード・グループの ID は `map_invalid_value` にする
-      5. ノードのクラスが `config.kinds` に無いものを `map_unknown_class`、`layout` の `line` が `config.lines` に無いものを `map_unknown_line` にする（同じ名前は 1 件）
+      3. 種類ごとに `parseFlowchart`・`parseSequence`・`parseErDiagram`・`parseStateDiagram` のどれかと `parseMapData` の項目を合わせる
+      4. 補足の `notes`・`walkthroughs`・`layout`・`plays_over` が指す ID が Mermaid に無いものを `map_unknown_ref` にする。`ends`・`via` を持つノード・グループの ID は `map_invalid_value` にする（`notes` はノード・線・`subgraph` の ID を指せる）
+      5. ER 図は、補足の `notes` のキーのうちテーブル名・`{テーブル}.{列}`・関連の `r{番号}`・分類の ID に無いものと、`groups` の `tables` に無いテーブルと `parent` に無い分類を `map_unknown_ref`、2 つの分類に入るテーブル・テーブル名と同じ分類の ID・`r{番号}` と同じテーブル名を `map_invalid_value` にする。状態遷移図は、`notes` のキーのうち状態の ID・遷移の `t{番号}` に無いものを `map_unknown_ref`、`t{番号}` と同じ状態の ID を `map_invalid_value` にする
+      6. `flowchart` の `links` を `mapLinkProblems` で確かめ、許さないリンク先を `map_invalid_value` にする
+      7. ノードのクラスが `config.kinds` に無いものを `map_unknown_class`、`layout` の `line` が `config.lines` に無いものを `map_unknown_line` にする（同じ名前は 1 件）
     unit_tests:
       - name: test_collect_map_problems
         case: 正常
@@ -94,6 +105,18 @@ functions:
         condition: 補足の `notes.ghost`
         mock: なし
         expected: '`map_unknown_ref` が 1 件で `notes.ghost` を含む'
+      - name: test_collect_map_problems_when_group_note
+        case: 正常
+        summary: グループの ID を指す notes をずれにしない
+        condition: 補足の `notes.lib`（`lib` は `subgraph` の ID）
+        mock: なし
+        expected: 空
+      - name: test_collect_map_problems_when_link_not_allowed
+        case: 異常
+        summary: 許さないノードのリンク先
+        condition: '`click a "javascript:alert(1)"` の行'
+        mock: なし
+        expected: '`map_invalid_value` が 1 件で、`a` と `javascript:alert(1)` を含む'
       - name: test_collect_map_problems_when_wire_override_on_node
         case: 異常
         summary: 線の上書きをノードに指定した
@@ -123,13 +146,25 @@ functions:
         summary: 描けない種類
         condition: '`pie` のブロック'
         mock: なし
-        expected: '`map_invalid` が 1 件で、`flowchart`・`sequenceDiagram` を含む'
+        expected: '`map_invalid` が 1 件で、`flowchart`・`sequenceDiagram`・`erDiagram`・`stateDiagram-v2` を含む'
       - name: test_collect_map_problems_when_unknown_arg
         case: 異常
         summary: 印の知らないキー
         condition: '`{"mdoe": 1}` と `includeUnknownKeys: true`'
         mock: なし
         expected: '`map_unknown_key` が 1 件で、使用できるキーの一覧を含む。`includeUnknownKeys: false` では空'
+      - name: test_collect_map_problems_when_er
+        case: 異常
+        summary: ER 図の補足のずれ
+        condition: テーブル「注文」「明細」・関連 2 本と、補足の `notes` の `注文.幽霊`・`r3`・分類の ID `記録`、`groups` の `記録`（無いテーブル「支払い」）と `明細`
+        mock: なし
+        expected: '`map_unknown_ref` が 3 件と `map_invalid_value` が 1 件で、`notes.記録` の項目は無い'
+      - name: test_collect_map_problems_when_state
+        case: 異常
+        summary: 状態遷移図の補足のずれ
+        condition: 遷移 1 本と、補足の `notes` の `t2`
+        mock: なし
+        expected: '`map_unknown_ref` が 1 件で `notes.t2` を含む'
   - name: checkMapConfig
     title: map の設定を点検する
     kind: 関数

@@ -23,6 +23,9 @@ data_models:
       - name: edges
         type: FlowEdge[]
         description: 線（`id`・`from`・`to`・`arrow`（`-->`・`-.->`・`==>`・`---`）・`both`・`label`）。`id` は `e1@-->` の ID、無ければ `{from}->{to}`（重なれば末尾に `#{番号}`）
+      - name: links
+        type: Record<string, string>
+        description: '`click {ID} "{リンク先}"` の行のノードの ID からリンク先（記載したまま。許すかは `mapLinkProblems` が確かめる）。同じノードの行が 2 つ以上あれば後の行'
       - name: problems
         type: MapProblem[]
         description: 読めない行と閉じの無い `subgraph`
@@ -45,10 +48,11 @@ functions:
       description: 読み取り結果
     process: |-
       1. 1 行目の `flowchart`・`graph` と向きを読む
-      2. 2 行目からを行ごとに、`subgraph`・`end`・`direction`・`classDef`・`class`・`style`・`linkStyle`・`click`・`%%` の行と、ノードと線の文に分けて読む（`classDef`・`style`・`linkStyle`・`click` は読んで捨てる）
+      2. 2 行目からを行ごとに、`subgraph`・`end`・`direction`・`classDef`・`class`・`style`・`linkStyle`・`click`・`%%` の行と、ノードと線の文に分けて読む（`classDef`・`style`・`linkStyle` は読んで捨てる。`click` は `click {ID} "{リンク先}"`（後ろの `"{ツールチップ}"`・`_blank` などは捨てる）を `links` に入れ、`href` を省いた形とコールバックの関数を指す形は読んで捨てる）
       3. ノードと線の文は、ノード・矢印・ノードの並び（`&` と連なりを含む）を左から読み、ノードは最初に出たときのラベルと形状、`:::クラス` は `classes` に足す
          - 読めない行は `map_invalid` の項目（行・行の文字・`->` なら `-->` にする直し方）にして次の行へ進む
-      4. 閉じの無い `subgraph` を `map_invalid` の項目にし、最後の行で閉じたものとして扱う
+      4. ノードのラベル（`<br>` を改行にした後）・線のラベル・`subgraph` のタイトルを、`decodeEntities` で文字の参照から戻す
+      5. 閉じの無い `subgraph` を `map_invalid` の項目にし、最後の行で閉じたものとして扱う
     unit_tests:
       - name: test_parse_flowchart
         case: 正常
@@ -62,6 +66,18 @@ functions:
         condition: '`A([a])`・`B[(b)]`・`C{c}`・`D((d))`・`E{{e}}`・`F[[f]]`'
         mock: なし
         expected: '`shape` が `stadium`・`cylinder`・`rhombus`・`circle`・`hexagon`・`subroutine`'
+      - name: test_parse_flowchart_when_click
+        case: 正常
+        summary: click の行のリンク先を読み、関数を指す形を捨てる
+        condition: '`click a "https://example.com/spec" "説明" _blank`・`click b href "./other.md"`・`click c callback`'
+        mock: なし
+        expected: '`links` が `{ a: "https://example.com/spec", b: "./other.md" }` で、`problems` が空'
+      - name: test_parse_flowchart_when_entity
+        case: 正常
+        summary: ラベルとタイトルの文字の参照を文字に戻す
+        condition: '`subgraph g["#91;枠#93;"]`・`a[#quot;a#quot; #91;b#93;<br>#35;c]`・`a -->|x #124; y| b`'
+        mock: なし
+        expected: '`g` のタイトルが `[枠]`、`a` のラベルが `"a" [b]` と改行と `#c`、線のラベルが `x | y`'
       - name: test_parse_flowchart_when_chained
         case: 正常
         summary: 連なりと & の線
@@ -86,3 +102,53 @@ functions:
         condition: '`subgraph g` の後に `end` が無い'
         mock: なし
         expected: '`problems` に `g` を含む `map_invalid` が 1 件で、`g` のグループがある'
+  - name: decodeEntities
+    title: 文字の参照を文字に戻す
+    kind: 関数
+    container: src/map/flowchart.ts
+    usecase: Mermaidと補足で図を描く
+    role: 処理
+    summary: Mermaid の文字の参照（`#quot;`・`#amp;`・`#lt;`・`#gt;` と、`#{10 進の番号};`）を文字に戻す。ほかの `#` はそのまま残す
+    scope: public
+    args:
+      - name: text
+        type: string
+        required: true
+        description: ラベル・タイトルの文字
+    returns:
+      type: string
+      description: 戻した文字
+    unit_tests:
+      - name: test_decode_entities
+        case: 正常
+        summary: 名前と番号の参照を戻し、参照でない文字を残す
+        condition: '`#quot;a#quot; #91;b#93; #35;1 #amp; #x; #`'
+        mock: なし
+        expected: '`"a" [b] #1 & #x; #`'
+  - name: mapLinkProblems
+    title: ノードのリンク先を確かめる
+    kind: 関数
+    container: src/map/flowchart.ts
+    usecase: Mermaidと補足で図を描く
+    role: 処理
+    summary: '`links` のリンク先を `isAllowedUrl` で確かめ、許すものの対応と、許さないリンク先のノードの ID とリンク先の項目（`map_invalid_value`。書き方の警告に並べる）を返却する'
+    scope: public
+    args:
+      - name: links
+        type: Record<string, string>
+        required: true
+        description: '`parseFlowchart` の `links`'
+    returns:
+      type: '{ allowed: Record<string, string>; problems: MapProblem[] }'
+      description: 許したリンク先と、許さないリンク先の項目（記載の順）
+    callees:
+      - MOD-472-214#functions[isAllowedUrl]
+    refs:
+      - IF-472-35#constraints[map のノードのリンク]
+    unit_tests:
+      - name: test_map_link_problems
+        case: 正常
+        summary: 許さないリンク先だけを項目にする
+        condition: '`https://example.com/spec`・`./other.md`・`mailto:a@example.com`・`javascript:alert(1)`・`id:spec#items` のリンク先を持つ 5 つのノード'
+        mock: なし
+        expected: '`allowed` が前の 3 つで、`problems` が `javascript:alert(1)` と `id:spec#items` の 2 件。本文が画面設計『文書』の map のノードの許さないリンク先の文言と、ノードの ID とリンク先を含む'

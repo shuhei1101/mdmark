@@ -112,6 +112,30 @@ flows:
       - マーカーの前後の段落がある
       - '`el` の `innerHTML` に `<!--` と `unknown` が無い'
     test: test_normal_when_unknown_mark
+  - name: 正常系（廃止した図の範囲）
+    summary: 廃止した `flow`・`sequence` の範囲は図を描かずに、map へ変換できる旨の書き方の警告を範囲ごとに出し、ほかの本文と図を描く
+    setup:
+      - name: 配布物を読み込んだページ
+        description: 正常系と同じ
+      - name: 廃止した図の範囲を持つ Markdown
+        description: '`<!-- flow -->` 〜 `<!-- /flow -->` と `<!-- sequence -->` 〜 `<!-- /sequence -->` の範囲に、廃止の前のバージョンで描けた部品の定義（`json` のコードブロック）を 1 つずつ配置し、その間と後に段落とグラフの定義 1 つを持つ文書'
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        participant P as 利用側のページ
+        participant M as mdmark
+        P->>M: mount(el, { markdown })
+        M->>M: flow・sequence の範囲を、廃止した記載方法として読む
+        M->>P: 範囲ごとに書き方の警告を描き、本文とグラフを描く
+    expected:
+      - '`flow`・`sequence` の範囲の場所に、書き方の警告（`.mdmark-syntax-warning`）が 1 つずつあり、図の枠（`figure.mdmark-diagram`）が無い'
+      - 警告の文言に、廃止した記載方法であることと、`mdmark upgrade` で map の範囲へ変換できることが記載されている
+      - 範囲の中の `json` のコードブロックが、`pre` としても段落としても描かれていない
+      - 段落とグラフの図の枠が描かれている
+    test: test_normal_when_retired_diagram
+    refs:
+      - SC-472-43#scenarios[正常シナリオ（座標で書いた図の範囲）]
   - name: 正常系（スクリプトを落とす）
     summary: 文書に記載したスクリプトを落として描き、実行しない
     setup:
@@ -360,6 +384,32 @@ flows:
       - 「絞り込みを解除」を押した後、チェックボックスが全て解除され、表に 3 行とも出ている
       - ドロワーの外を押した後、ドロワーが `hidden` を持ち、ボタンの `aria-expanded` が `false`
     test: test_normal_when_table_sorted_and_filtered
+  - name: 正常系（長文の列に並べ替えを付けない）
+    summary: '`data-no-sort` の列の見出しには並べ替えのボタンを付けず、ほかの列は並べ替えられる'
+    setup:
+      - name: 配布物を読み込んだページ
+        description: 正常系と同じ
+      - name: 長文の列を持つ表の Markdown
+        description: '`<!-- table: {"kind": "data"} -->` 〜 `<!-- /table -->` で、名前（全角 6 文字以内）・更新日（`YYYY-MM-DD`）・説明（全角 40 文字の文）の 3 列 3 行の表を囲んだ文書'
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        participant P as 利用側のページ
+        participant M as mdmark
+        P->>M: mount(el, { markdown })
+        M->>P: 説明の列の見出しを文字のままにした表を描く
+        P->>M: 更新日の列の見出しを押す
+        M->>P: 更新日の降順に並べ替える
+    expected:
+      - 表が `data-no-sort="2"` を持つ
+      - 説明の列の `th` に `button.mdmark-sort` が無く、`span.mdmark-th-label` に見出しの文字がある
+      - 名前と更新日の列の `th` に `button.mdmark-sort` がある
+      - 説明の列の `th` にピン止めと絞り込みのボタンがある（表がはみ出すとき）
+      - 更新日の列を押した後、更新日の列が新しい順で、`th` の `aria-sort` が `descending`
+    test: test_normal_when_long_column_not_sortable
+    refs:
+      - SC-472-73#scenarios[正常シナリオ（長文の列に並べ替えを付けない）]
   - name: 正常系（表をピン止めする）
     summary: はみ出す表にだけピン止めのボタンを出して先頭の列を既定で留め、押した列だけを留め、留めた列より左を表示している間は右端に留める
     setup:
@@ -640,8 +690,8 @@ flows:
     setup:
       - name: 配布物を読み込んだページ
         description: 正常系と同じ。描く先の `div` の幅は 600px
-      - name: フロー図を持つ Markdown
-        description: 幅 1100・高さ 560 のフロー図の定義を `<!-- flow -->` 〜 `<!-- /flow -->` に配置した文書
+      - name: ER 図を持つ Markdown
+        description: テーブル 6 つを関係でつなぎ、描くと幅が 1100px を超える ER 図の定義を `<!-- er -->` 〜 `<!-- /er -->` に配置した文書
       - name: Mock
         description: 差し替える依存は無い。ホイールは図の表示する枠へ `wheel` のイベントを送信することで代える
     flow: |-
@@ -679,14 +729,14 @@ flows:
         participant M as mdmark
         P->>M: 余白を 100px 左へドラッグする
         M->>P: 図を動かす
-        P->>M: ノードの名前の上でドラッグする
+        P->>M: テーブルの名前の上でドラッグする
         M-->>P: 図を動かさない
         P->>M: → を押す・下の移動のボタンを押す
         M->>P: 図を動かす
     expected:
       - 余白のドラッグの後、表示する枠の `scrollLeft` が 100 増え、`getSelection()` が空
-      - 余白の `cursor` の計算値が `grab`、ノードの名前の `cursor` が `text`
-      - ノードの名前の上のドラッグの後、`scrollLeft` が変わらず、`getSelection()` が名前の文字を含む
+      - 余白の `cursor` の計算値が `grab`、テーブルの名前の `cursor` が `text`
+      - テーブルの名前の上のドラッグの後、`scrollLeft` が変わらず、`getSelection()` が名前の文字を含む
       - '`→` の後に `scrollLeft` が 80 増え、下の移動のボタンの後に `scrollTop` が 80 増える'
       - 収まる倍率に戻した後、移動のボタンが出ていない
     test: test_normal_when_diagram_panned
@@ -694,7 +744,7 @@ flows:
     summary: 全画面のボタンで図をモーダルに開き、Esc でツールチップ→モーダルの順に閉じる
     setup:
       - name: 図を描いたページ
-        description: 正常系（図を拡大・縮小する）と同じ。定義の線 1 本が `tip` を持つ
+        description: 正常系（図を拡大・縮小する）と同じ。定義のテーブル 1 つが概要を持つ
       - name: Mock
         description: 差し替える依存は無い。`document.removeEventListener` を、解除した受け取りを数える関数で包む
     flow: |-
@@ -703,7 +753,7 @@ flows:
         participant M as mdmark
         P->>M: 全画面のボタンを押す
         M->>P: タイトル・図・凡例を dialog のモーダルに出す
-        P->>M: tip を持つ線にフォーカスして Esc を押す
+        P->>M: 概要を持つテーブルの説明のボタンにフォーカスして Esc を押す
         M->>P: ツールチップだけを閉じる
         P->>M: Esc を押す
         M->>P: モーダルを閉じ、全画面のボタンへフォーカスを戻す
@@ -715,14 +765,14 @@ flows:
       - 閉じた後、モーダルのために付けた `document` の `keydown` の受け取りが解除されている
     test: test_normal_when_diagram_fullscreen
   - name: 正常系（図のツールチップ）
-    summary: 線・ノード・ノードの中の用語に、ポインターとフォーカスでツールチップを出し、Esc で削除する
+    summary: map の構成図の線・ノード・グループ・ノードの中の用語に、ポインターとフォーカスでツールチップを出し、Esc で削除する
     setup:
       - name: 配布物を読み込んだページ
         description: 正常系と同じ
       - name: 索引
         description: 用語 `意思決定モデル`（意味 `選択肢から選ぶだけの、速く安い判断用の AI`）を持つ索引
       - name: ツールチップを持つ Markdown
-        description: '`tip` を持つ線 1 本、`io` を持つ LLM のノード 1 つ、`io` を持たないノード 1 つ、`hint` を持つシステムの枠、種類の名前に `{{意思決定モデル}}` を持つノード 1 つのフロー図と、図の外の段落に `意思決定モデル` を持つ文書'
+        description: map の構成図と、図の外の段落に `意思決定モデル` を持つ文書。補足の `notes` で線 1 本・ノード 1 つ・システムの枠のグループに説明を持ち、説明を持たないノード 1 つと、名前に `意思決定モデル` を持つノード 1 つを持つ
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
@@ -730,25 +780,25 @@ flows:
         participant P as 利用側のページ
         participant M as mdmark
         P->>M: mount(el, { markdown, index })
-        P->>M: 線のラベルにポインターを乗せ、ツールチップの上へ動かす
-        M->>P: 入力の詳細を出したままにする
-        P->>M: LLM のノードのマーカーにフォーカスする
-        M->>P: 入力・処理・出力を出す
+        P->>M: 説明を持つ線にポインターを乗せ、ツールチップの上へ動かす
+        M->>P: 線の説明を出したままにする
+        P->>M: 説明を持つノードのマーカーにフォーカスする
+        M->>P: ノードの説明を出す
         P->>M: Esc を押す
         M->>P: ツールチップを削除し、フォーカスをマーカーに残す
         P->>M: ノードの中の用語にポインターを乗せる
         M->>P: 用語の意味を出す
-        P->>M: システムの枠のタイトルのマーカーにポインターを乗せる
-        M->>P: 枠の hint の文を出す
+        P->>M: システムの枠のグループのタイトルのマーカーにポインターを乗せる
+        M->>P: グループの説明を出す
     expected:
-      - 線のラベルの上で、`role="tooltip"` の要素が `hidden` を持たず、文字が定義の `tip`。ツールチップの上へ動かした後も `hidden` を持たない
-      - LLM のノードのマーカーの `aria-describedby` が出たツールチップを指し、入力・処理・出力の 3 項目を持つ
-      - '`io` を持たないノードにマーカーが無い'
+      - 線の上で、`role="tooltip"` の要素が `hidden` を持たず、文字が補足の `notes` の線の説明。ツールチップの上へ動かした後も `hidden` を持たない
+      - 説明を持つノードのマーカーの `aria-describedby` が出たツールチップを指し、文字がノードの説明
+      - 説明を持たないノードにマーカーが無い
       - Esc の後、ツールチップが `hidden` を持ち、フォーカスがマーカーにある
       - ノードの中の `意思決定モデル` と図の外の段落の `意思決定モデル` がどちらも class `mdmark-term` の要素で、ノードの中の単語のツールチップに索引の意味が出る
       - ノードの中の単語の `text-decoration-style` の計算値が、図の外の単語と同じ `dashed`
-      - システムの枠のタイトルの右にマーカーがあり、マーカーの `aria-describedby` が指すツールチップの文字が枠の `hint` で、ツールチップの `top` がマーカーの `bottom` 以上
-      - 線のラベルと LLM のノードのマーカーのツールチップの `top` が、それぞれラベルとノードの `bottom` 以上
+      - システムの枠のグループのタイトルの右にマーカーがあり、マーカーの `aria-describedby` が指すツールチップの文字がグループの説明で、ツールチップの `top` がマーカーの `bottom` 以上
+      - 説明を持つノードのマーカーのツールチップの `top` が、ノードの `bottom` 以上
     test: test_normal_when_diagram_tooltip
   - name: 正常系（図のツールチップをタッチで開閉する）
     summary: '`pointerType` が `touch` のとき、持ち主のタップで開閉を切り替え、ツールチップと持ち主の外の `pointerdown` で閉じる'
@@ -756,7 +806,7 @@ flows:
       - name: 配布物を読み込んだページ
         description: 正常系と同じ
       - name: ツールチップを持つ Markdown
-        description: '`io` を持つ LLM のノード 1 つのフロー図と、`<!-- html -->` の範囲に `data-hint` を持つ `div` を配置した文書'
+        description: '補足の `notes` で説明を持つノード 1 つの map の構成図と、`<!-- html -->` の範囲に `data-hint` を持つ `div` を配置した文書'
       - name: Mock
         description: 差し替える依存は無い。タップは、持ち主に `pointerType` が `touch` の `pointerenter`・`pointerdown`・`pointerup`・`pointerleave` をこの順に発火し、持ち主の `focus()` を呼んで発生させる（既にフォーカスを持つ持ち主へのタップでは `focus` は発火しない）
         notes: iOS の Safari のタップの後に `:hover` が残る状態を、外のタップで `pointerleave`・`blur` を発火させず、`pointerdown` だけを発火して発生させる
@@ -765,8 +815,8 @@ flows:
         participant P as 利用側のページ
         participant M as mdmark
         P->>M: mount(el, { markdown })
-        P->>M: LLM のノードのマーカーをタップする
-        M->>P: 入力・処理・出力を出す
+        P->>M: 説明を持つノードのマーカーをタップする
+        M->>P: ノードの説明を出す
         P->>M: 同じマーカーをタップする
         M->>P: ツールチップを削除する
         P->>M: div のマーカーをタップする
@@ -791,7 +841,7 @@ flows:
       - name: 配布物を読み込んだページ
         description: 正常系と同じ。画面の幅は 390px
       - name: 図を持つ Markdown
-        description: 表示する枠より広いフロー図と、その下に文書が縦にスクロールできるだけの段落を持つ文書
+        description: 表示する枠より広い ER 図と、その下に文書が縦にスクロールできるだけの段落を持つ文書
       - name: Mock
         description: 差し替える依存は無い。タップとドラッグは、`pointerType` が `touch` の `pointerdown`・`pointermove`・`pointerup` を発火して発生させる
     flow: |-
@@ -807,7 +857,7 @@ flows:
       - '`mount` の直後、図の表示する枠の `touch-action` の計算値が `pan-y` で、`.mdmark-diagram-box` が `data-touch-active` を持たない'
       - '余白のタップの後、`.mdmark-diagram-box` が `data-touch-active` を持ち、表示する枠の `touch-action` の計算値が `none` で、`.mdmark-diagram-box` の枠線の色がリンクの色（`--mdmark-color-link`）'
       - タップの後の `pointermove` で、表示する枠の `scrollLeft` と `scrollTop` が動かした分だけ変わる
-      - ノードの上のタップでは `data-touch-active` が付かない
+      - テーブルの上のタップでは `data-touch-active` が付かない
       - 図の外の段落のタップの後、`data-touch-active` が外れる
       - '`pointerType` が `mouse` のクリックでは `data-touch-active` が付かない'
     test: test_normal_when_diagram_touch_drag
@@ -938,7 +988,7 @@ flows:
       - name: 配布物を読み込んだページ
         description: 正常系と同じ
       - name: ヒントを持つ Markdown
-        description: '`<!-- html -->` の範囲に、`data-hint` を持つ `div`（中に文字 `自動返信`）と、段落の中の `data-hint` を持つ `span`（文字 `分類`）を配置し、`hint` だけを持ち `io` を持たないノードのフロー図を配置した文書'
+        description: '`<!-- html -->` の範囲に、`data-hint` を持つ `div`（中に文字 `自動返信`）と、段落の中の `data-hint` を持つ `span`（文字 `分類`）を配置した文書'
       - name: Mock
         description: 差し替える依存は無い。ポインターは Playwright のマウス操作で動かす
     flow: |-
@@ -952,14 +1002,11 @@ flows:
         M->>P: data-hint の文を出す
         P->>M: Tab で「分類」にフォーカスし、Esc を押す
         M->>P: ツールチップを削除し、フォーカスを「分類」に残す
-        P->>M: hint のノードのマーカーにポインターを乗せる
-        M->>P: hint の文を出す
     expected:
       - '`自動返信` の上では `role="tooltip"` の要素が `hidden` を持ったままで、`div` の `cursor` の計算値が `help` でない'
       - マーカーの上で、マーカーの `aria-describedby` が指すツールチップが `hidden` を持たず、文字が `div` の `data-hint` の値
       - '`分類` にフォーカスするとそのツールチップが出て、Esc の後に `hidden` を持ち、フォーカスが `分類` にある'
       - '`分類` の `cursor` の計算値が `help` でない'
-      - '`hint` のノードのマーカーの上で `hint` の文のツールチップが出て、ノードの名前の上では出ない'
       - ページの中のツールチップの `id` が重ならない
     test: test_normal_when_embedded_hint
   - name: 正常系（差分を開く）
@@ -1964,7 +2011,7 @@ flows:
       - Esc でツールチップが消え、フォーカスが `作業場` に残る
     test: test_normal_when_avoided_term
   - name: 正常系（ツールチップを上に出す）
-    summary: 用語のツールチップを単語の上に、線・ヒントのツールチップを持ち主の下に出し、上に収まらない単語だけ下に出す
+    summary: 用語のツールチップを単語の上に、図・ヒントのツールチップを持ち主の下に出し、上に収まらない単語だけ下に出す
     setup:
       - name: 配布物を読み込んだページ
         description: 描く先の要素をページの上端に配置したページ。ほかは正常系と同じ
@@ -1972,7 +2019,7 @@ flows:
       - name: 索引
         description: 用語 `索引`（意味 `文書と用語を並べた YAML のファイル`）を持つ索引
       - name: ツールチップを持つ Markdown
-        description: 1 行目の段落に `索引` を持ち、画面の高さを超えない範囲の段落を挟んだ後、別のセクションの段落の `索引`・`tip` を持つ線 1 本のフロー図・`<!-- html -->` の範囲の `data-hint` を持つ `div` を配置した文書
+        description: 1 行目の段落に `索引` を持ち、画面の高さを超えない範囲の段落を挟んだ後、別のセクションの段落の `索引`・概要を持つテーブル 1 つの ER 図・`<!-- html -->` の範囲の `data-hint` を持つ `div` を配置した文書
         notes: 後ろの 3 つの持ち主は、上と下にツールチップの高さより広い余白を持つ
       - name: Mock
         description: 差し替える依存は無い。ポインターは Playwright のマウス操作で動かす
@@ -1981,13 +2028,13 @@ flows:
         participant P as 利用側のページ
         participant M as mdmark
         P->>M: mount(el, { markdown, index })
-        P->>M: 2 つ目のセクションの用語・線のラベル・div のマーカーに順にポインターを乗せる
-        M->>P: 用語は単語の上、線とヒントは持ち主の下にツールチップを出す
+        P->>M: 2 つ目のセクションの用語・テーブルの説明のボタン・div のマーカーに順にポインターを乗せる
+        M->>P: 用語は単語の上、テーブルとヒントは持ち主の下にツールチップを出す
         P->>M: 1 行目の用語にポインターを乗せる
         M->>P: 単語の下にツールチップを出す
     expected:
       - 2 つ目のセクションの `索引` のツールチップの `getBoundingClientRect().bottom` が、単語の `top` 以下
-      - 線のラベルのツールチップの `top` が、ラベルの `bottom` 以上（`tooltips.diagramPlacement` の既定の `bottom`）
+      - テーブルのツールチップの `top` が、テーブルの `bottom` 以上（`tooltips.diagramPlacement` の既定の `bottom`）
       - '`div` のマーカーのツールチップの `top` が、マーカーの `bottom` 以上'
       - 1 行目の `索引` のツールチップの `top` が、単語の `bottom` 以上で、ツールチップの `top` が 0 以上
     test: test_normal_when_tooltip_above
@@ -2163,7 +2210,7 @@ flows:
       - name: 索引
         description: 用語 `ワークスペース`（別名 `WS`、意味 `作業の配置場所`、`avoid` に `workplace`）と、用語 `MCP`（意味 `Model Context Protocol`）を持つ索引
       - name: 表記の違う単語が出る Markdown
-        description: 1 つ目のセクションの段落に全角の `ＷＳ`、2 つ目のセクションの段落に小文字の `ws` と `WorkPlace` を記載し、ノードの名前に `{{ｍｃｐ}}` を持つフロー図を配置した文書
+        description: 1 つ目のセクションの段落に全角の `ＷＳ`、2 つ目のセクションの段落に小文字の `ws` と `WorkPlace` を記載し、ノードの名前に `ｍｃｐ` を持つ map の構成図を配置した文書
         notes: 索引の単語・別名・やめた言い方と、本文・図の単語の表記が全角と半角・大文字と小文字だけ違う状態を決定的に発生させる
       - name: Mock
         description: 差し替える依存は無い
@@ -3480,8 +3527,8 @@ flows:
       - name: 利用側の CSS
         description: 層の外で `.mdmark` に `--mdmark-color-bg` と `--mdmark-color-bg-opaque` を記載する
         notes: '`--mdmark-color-bg` は `transparent`、`--mdmark-color-bg-opaque` は `rgb(240, 240, 240)`'
-      - name: 表とフロー図を持つ Markdown
-        description: 本文の幅に収まる 3 列 3 行の表と、フロー図の部品の定義を持つ文書
+      - name: 表と ER 図を持つ Markdown
+        description: 本文の幅に収まる 3 列 3 行の表と、概要を持つテーブルの ER 図の部品の定義を持つ文書
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
@@ -3489,8 +3536,8 @@ flows:
         participant P as 利用側のページ
         participant M as mdmark
         P->>M: mount(el, { markdown })
-        M->>P: 表とフロー図を描く
-        P->>M: フロー図のノードにポインターを乗せる
+        M->>P: 表と ER 図を描く
+        P->>M: ER 図のテーブルの説明のボタンにポインターを乗せる
         M->>P: 図のツールチップを出す
         P->>M: 図の全画面のボタンを押す
         M->>P: 全画面の dialog を開く
@@ -3511,7 +3558,7 @@ flows:
       - name: 利用側の CSS
         description: 層の外で `.mdmark` に `--mdmark-color-bg` だけを記載する
         notes: 値は `rgb(34, 34, 34)`
-      - name: 表とフロー図を持つ Markdown
+      - name: 表と ER 図を持つ Markdown
         description: 正常系（地を透明にして不透明な地を指定する）と同じ
       - name: Mock
         description: 差し替える依存は無い
@@ -3520,8 +3567,8 @@ flows:
         participant P as 利用側のページ
         participant M as mdmark
         P->>M: mount(el, { markdown })
-        M->>P: 表とフロー図を描く
-        P->>M: フロー図のノードにポインターを乗せる
+        M->>P: 表と ER 図を描く
+        P->>M: ER 図のテーブルの説明のボタンにポインターを乗せる
         M->>P: 図のツールチップを出す
     expected:
       - el の地の色と、el の `--mdmark-color-bg-opaque` の計算値が `rgb(34, 34, 34)`
@@ -4397,6 +4444,60 @@ flows:
       - '`diffMode` を省いて描いたとき、本文の色は同じで「変更表示」のボタンがあり、押す前は `revisions` が呼ばれない'
       - 「変更表示」を押すと、取り出し元の 2 つのリビジョンの差分の行が出る
     test: test_normal_when_base_with_diff_source
+  - name: 正常系（比較元で右側の目次に変更のマーカーを出す）
+    summary: 色分けしたブロックを持つセクションと、その祖先のセクションの右側の目次の項目と右端の線に変更のマーカーを付け、比較元を解除すると消す
+    setup:
+      - name: 配布物を読み込んだページ
+        description: 正常系と同じ。`opts.config` の `side-toc.mode` は `hover`
+      - name: 比較元の Markdown
+        description: h1 の見出しの下に、h2 の見出し A・B・E・C のセクションをこの順に持ち、B は h3 の見出し B1 の小見出しを持つ。各セクションは段落を 1 つ持つ
+      - name: 描く Markdown
+        description: 比較元のセクション B の段落（B1 の前）の単語を 1 つ書き換え、セクション E を見出しごと削除し、セクション C の段落を削除し、末尾に段落を持つ h2 の見出し D のセクションを追加した文書
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        participant P as 利用側のページ
+        participant M as mdmark
+        P->>M: mount(el, { markdown, baseMarkdown })
+        M->>M: 色分けしたブロックから変わったセクションを集める
+        M->>P: 変わったセクションの項目と線に変更のマーカーを付けた右側の目次
+        P->>M: update(markdown, { baseMarkdown: null })
+        M->>P: 変更のマーカーの無い右側の目次
+    expected:
+      - h1・B・C・D の項目のリンクが `data-changed` を持ち、A・B1 の項目のリンクは持たない（見出しごと削除した E の前にある B1 には付かない）
+      - 削除した E の項目は目次に無い
+      - '`data-changed` の項目のリンクは `aria-label` が `{見出しの文字}（変更）` で、末尾に `aria-hidden="true"` の `span.mdmark-side-toc-changed` を持つ'
+      - h1・B・C・D の見出しに対応する右端の線が `data-changed` を持つ
+      - 目次を出すボタンの今いる見出しの文字に `（変更）` が無い
+      - '`baseMarkdown: null` の `update` の後、`data-changed` を持つ項目のリンクと線が無く、リンクが `aria-label` を持たない'
+    test: test_normal_when_side_toc_marked
+    refs:
+      - SC-472-63#scenarios[正常シナリオ（右側の目次で変わったセクションを示す）]
+      - SC-472-63#scenarios[正常シナリオ（固定した右側の目次で変わったセクションを示す）]
+  - name: 正常系（ブロックの色分けで右側の目次に変更のマーカーを出す）
+    summary: '`opts.diffMode` が `blocks` のとき、取り出し元のリビジョンで色分けしたブロックから同じ変更のマーカーを付ける'
+    setup:
+      - name: 配布物を読み込んだページ
+        description: 正常系（比較元で右側の目次に変更のマーカーを出す）と同じ。`opts.docId` は `guide`
+      - name: 取り出し元
+        description: '`r1`（h2 の見出し A・B を持ち、各セクションが段落を 1 つ持つ）と、`r1` のセクション B の段落の単語を 1 つ書き換えた `r2`（描く Markdown と同じ）を返却する'
+      - name: Mock
+        description: 取り出し元はページの中のメモリーで返却する
+    flow: |-
+      sequenceDiagram
+        participant P as 利用側のページ
+        participant M as mdmark
+        participant D as 取り出し元
+        P->>M: mount(el, { markdown, docId, diffSource, diffMode: "blocks" })
+        M->>D: revisions・content
+        D-->>M: リビジョンと本文
+        M->>P: 色分けした本文と、B の項目に変更のマーカーを付けた右側の目次
+    expected:
+      - B の項目のリンクと線が `data-changed` を持ち、A の項目のリンクと線は持たない
+    test: test_normal_when_blocks_side_toc_marked
+    refs:
+      - SC-472-47#scenarios[正常シナリオ（ブロックの色分けで右側の目次に変わったセクションを示す）]
   - name: 異常系（比較元が文字列でない・TypeError）
     summary: '`opts.baseMarkdown` か `update` の `baseMarkdown` が文字列でも `null` でもないと、描かずに投げる'
     setup:
@@ -5416,29 +5517,57 @@ flows:
     refs:
       - SC-472-36#scenarios[正常シナリオ（蛍光ペンのマーカー）]
   - name: 正常系（リンク先を持つノードを開く）
-    summary: リンク先を持つノードをクリックと Enter で開き、ノードの上から始めたドラッグでは図を動かすだけにする
+    summary: map の構成図の `click` のリンク先を持つノードをクリックと Enter で開き、ノードの上から始めたドラッグではノードを動かすだけにする
     setup:
       - name: 図を描いたページ
-        description: インターフェース定義『文書をHTML文字列にする』の正常系（ノードのリンク先）のノード `a`（`https://example.com/spec`、`io` を持つ）と `e`（`href` なし）を持つフロー図を `mount` で描き、拡大のボタンで 2 回拡大した状態
+        description: 'flowchart の map の範囲 1 つを持つ文書を `mount` で描いた状態。ノード `a` は `click a "https://example.com/spec"` の行と補足の `notes` の説明を、`b` は `click b "./other.md"` の行を持ち、`e` は `click` の行を持たない'
       - name: Mock
         description: '`https://example.com/spec` への遷移を Playwright の route で手元の応答に差し替え、開いた URL を記録する'
     flow: |-
       sequenceDiagram
         participant P as 利用側のページ
         participant M as mdmark
-        P->>M: a の名前の上で押したまま 100px 動かして離す
-        M->>P: 図を動かし、リンク先を開かない
-        P->>M: a の io のマーカーを押す
+        P->>M: a の種類の行の上で押したまま 100px 動かして離す
+        M->>P: ノードを動かし、リンク先を開かない
+        P->>M: a の説明のマーカーを押す
         M->>P: ツールチップを出し、リンク先を開かない
         P->>M: a を動かさずに押して離す
         M-->>P: リンク先へ移る
     expected:
+      - '`a`・`b` のノードが class `has-link` と、記載した `href` を持つ `a.mdmark-diagram-node-link` を持ち、`a.mdmark-diagram-node-link` のスクリーンリーダー向けの名前がノードの名前。`e` は `a` 要素と `has-link` を持たない'
+      - '`a` の説明のマーカーが `a.mdmark-diagram-node-link` の中に無く、その後ろにある'
       - '`a` の名前の上の `cursor` の計算値が `pointer`、`e` の名前の上が `text`'
-      - ドラッグの後、表示する枠の `scrollLeft` が 100 変わり、`getSelection()` が空で、開いた URL が 0 件
-      - マーカーを押した後、入力・処理・出力のツールチップが `hidden` を持たず、開いた URL が 0 件
+      - ドラッグの後、`a` のノードの位置が 100px 動き、開いた URL が 0 件
+      - マーカーを押した後、説明のツールチップが `hidden` を持たず、開いた URL が 0 件
       - Tab で `a.mdmark-diagram-node-link`、マーカーの順にフォーカスが移る
       - 動かさずに押した後、開いた URL が `https://example.com/spec` の 1 件。戻って `a.mdmark-diagram-node-link` にフォーカスして Enter を押しても同じ URL へ移る
     test: test_normal_when_node_link_opened
+    refs:
+      - SC-472-8#scenarios[正常シナリオ（リンク先を持つノード）]
+  - name: 異常系（map のノードのリンク先を許可しない）
+    summary: map の `click` の許さないリンク先のノードをリンクにせず、図の前の書き方の警告に並べる
+    setup:
+      - name: 配布物を読み込んだページ
+        description: 正常系と同じ
+      - name: 許さないリンク先を持つ map の Markdown
+        description: 'flowchart の map の範囲 1 つを持ち、ノード `c` に `click c "javascript:alert(1)"`、`d` に `click d "id:spec#items"` の行を持たせ、図の後に段落を持つ文書'
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        participant P as 利用側のページ
+        participant M as mdmark
+        P->>M: mount(el, { markdown })
+        M->>M: click の行のリンク先を本文のリンクと同じ許可で確認する
+        M->>P: 書き方の警告と、リンクにしないノードの map の図と段落を描く
+    expected:
+      - '`c`・`d` のノードが `a` 要素と `has-link` を持たず、名前が描かれている'
+      - 図の枠の前の書き方の警告に、`c`・`d` と `javascript:alert(1)`・`id:spec#items` と使用できるリンク先が並ぶ
+      - '`el` の中に `href` が `javascript:` で始まる要素が無い'
+      - 段落が描かれている
+    test: test_error_when_map_node_link_not_allowed
+    refs:
+      - SC-472-8#scenarios[異常シナリオ（ノードのリンク先を許可しない）]
   - name: 正常系（折り返す）
     summary: '`wrap` のコードブロックとファイルツリーだけを折り返し、利用側の `pre` への汎用の CSS では既定を変えない'
     setup:
@@ -5545,43 +5674,14 @@ flows:
       - 2px 動かして離した後、表示する枠の `scrollLeft` が変わらず、点のツールチップが `hidden` を持たない
       - 100px 動かした後、`scrollLeft` が増え、ツールチップが `hidden` を持つ
     test: test_normal_when_drag_on_chart_item
-  - name: 正常系（グループのタイトルを留める）
-    summary: '拡大して動かした間、見えているシステムの枠と層のタイトルを表示する枠の上端に留め、`stickyTitles: false` の図では留めない'
-    setup:
-      - name: 配布物を読み込んだページ
-        description: 正常系と同じ。描く先の `div` の幅は 600px
-      - name: グループを持つ Markdown
-        description: 'システムの枠と 3 つの層を持ち、システムの枠と処理の層が `hint` を持つフロー図の定義と、同じ定義に `stickyTitles: false` を追加したフロー図の定義を配置した文書'
-        notes: どちらの図も、描いた後に拡大のボタンで 2 回拡大する
-      - name: Mock
-        description: 差し替える依存は無い。ドラッグは Playwright のマウス操作で行う
-    flow: |-
-      sequenceDiagram
-        participant P as 利用側のページ
-        participant M as mdmark
-        P->>M: mount(el, { markdown })
-        P->>M: 1 つ目の図を上へドラッグして、処理の層の途中を見せる
-        M->>P: システムの枠と処理の層のタイトルを上端に留める
-        P->>M: 留めた枠のタイトルのマーカーにポインターを乗せる
-        M->>P: 枠の hint の文を出す
-        P->>M: 処理の層が表示する枠の上へ出るまで動かす
-        M->>P: 処理の層のタイトルを留めず、データの層のタイトルを留める
-        P->>M: 2 つ目の図を同じだけ上へドラッグする
-        M-->>P: タイトルを留めない
-    expected:
-      - 処理の層の途中を見せたとき、システムの枠と処理の層のタイトルが表示する枠の中の上端にあり、タイトルの真ん中の位置で `document.elementFromPoint` がタイトルの要素か、その子を返却する
-      - 留めたシステムの枠のタイトルのマーカーの `aria-describedby` が指すツールチップが `hidden` を持たず、文字が枠の `hint`
-      - 処理の層が表示する枠の上へ出た後、処理の層のタイトルの `bottom` が表示する枠の `top` 以下で、データの層のタイトルが表示する枠の中の上端にある
-      - '`stickyTitles: false` の図では、システムの枠と処理の層のタイトルの `bottom` が表示する枠の `top` 以下'
-    test: test_normal_when_group_titles_stuck
   - name: 正常系（図の高さを変える）
-    summary: 右下のリサイズハンドルのドラッグと上下キーで表示する枠の高さを変え、全体が収まる倍率をもう一度求め、変えた高さを sessionStorage に保ち、ダブルクリックで戻す
+    summary: 下端のリサイズハンドルのドラッグと上下キーで表示する枠の高さを変え、全体が収まる倍率をもう一度求め、変えた高さを sessionStorage に保ち、ダブルクリックで戻す
     setup:
       - name: 配布物を読み込んだページ
         description: 正常系と同じ。描く先の `div` の幅は 600px
       - name: 縦に長い図を持つ Markdown
-        description: 幅 500・高さ 1600 のフロー図の定義を `<!-- flow -->` 〜 `<!-- /flow -->` に配置した文書
-        notes: 描いたとき、表示する枠の高さは `--mdmark-diagram-max-height` で切られ、倍率は幅だけで決まる（幅 500 の図を 600px に描くため 1）
+        description: テーブル 8 つを縦に並べ、描くと幅が 600px より狭く高さが 1600px を超える ER 図の定義を `<!-- er -->` 〜 `<!-- /er -->` に配置した文書
+        notes: 描いたとき、表示する枠の高さは `--mdmark-diagram-max-height` で切られ、倍率は幅だけで決まる（幅が描く先より狭いため 1）
       - name: Mock
         description: 差し替える依存は無い。sessionStorage は描く前に空にする。ページの再読み込みは、同じ要素へ `destroy` の後に もう一度 `mount` することで代える
     flow: |-
@@ -5589,7 +5689,7 @@ flows:
         participant P as 利用側のページ
         participant M as mdmark
         P->>M: mount(el, { markdown })
-        M->>P: 右下にリサイズハンドルを配置して図を描く
+        M->>P: 下端にリサイズハンドルを配置して図を描く
         P->>M: リサイズハンドルを 200px 下へドラッグする
         M->>P: 表示する枠を高くし、全体が収まる倍率をもう一度求める
         P->>M: 0 を押す
@@ -5617,7 +5717,7 @@ flows:
       - name: 配布物を読み込んだページ
         description: 正常系と同じ
       - name: リサイズハンドルを削除する Markdown
-        description: '先頭に `<!-- features: {"diagram-resize": false} -->` を持ち、フロー図の定義 1 つを持つ文書と、先頭のマーカーを持たない同じ文書'
+        description: '先頭に `<!-- features: {"diagram-resize": false} -->` を持ち、ER 図の定義 1 つを持つ文書と、先頭のマーカーを持たない同じ文書'
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
@@ -6581,6 +6681,171 @@ flows:
       - 右上に戻る・全て開く・全て閉じるが構成図と同じ位置にあり、中だけを描いていないときは戻るが押せない
       - Shift を押しながら山形を押すと、そのブロックと中のブロックが全て開閉する
     test: test_normal_when_map_sequence_blocks_toggled
+  - name: 正常系（map の ER 図を描く）
+    summary: map の場所の `erDiagram` を、テーブルを列の行を持つノード、補足の `groups` を分類のグループにして自動配置し、関連を FK の列の行の高さから引いて両端に多重度を出す
+    setup:
+      - name: 配布物を読み込んだページ
+        description: 正常系（map の構成図を描く）と同じ
+      - name: ER 図の map を持つ Markdown
+        description: 'モック `docs/mock/refs/531/assets/samples.js` の `ER` と `ER_DATA` を、印 `{"title": "記録の構造"}` の map の範囲に記載した文書'
+        notes: テーブル 5 つ（「注文」は列 8 つで PK・FK・`"コメント"` を持つ列を含み、「顧客」は UK の列を持つ）・関連 5 本（`||--o{`・`||--|{`・`}o--||`・`|o--||`・`||..o{`）・補足の `notes` のテーブル「注文」・列 `注文.状態`・関連 `r2`・`groups` の分類「記録」（注文・明細・支払い）
+      - name: Mock
+        description: 差し替える依存は無い。sessionStorage とクエリ文字列は描く前に空にする
+    flow: |-
+      sequenceDiagram
+        actor U as ユーザー
+        participant M as mdmark
+        U->>M: mount(el, { markdown, config })
+        M->>M: テーブル・列・関連と補足を読み込み、分類のグループの内側から配置する
+        M->>M: 関連の端を FK の列の行の高さへ付け替える
+        M-->>U: 図の枠に入れた map の ER 図
+    expected:
+      - map の場所が `figure.mdmark-diagram[data-diagram="map"]` で、タイトルが「記録の構造」になり、mermaid のライブラリへの要求が 0 件
+      - テーブルのノードがテーブル名の行と、列ごとにキー・名前・型の行を持ち、どの 2 つのノード・グループも重ならない
+      - 「注文」「明細」「支払い」が、タイトル「記録」の分類のグループの中にあり、「顧客」「商品」はグループの外にある
+      - 「顧客」→「注文」の関連の線の「注文」の側の端が、「注文」の左右どちらかの辺の、列 `顧客ID` の行の縦の中ほどにある。線は矢じりを持たない
+      - 関連の線の両端に、記号に合った多重度（`1`・`0..1`・`0..n`・`1..n`）の文字があり、`||..o{` の線は破線
+      - 列 `注文.状態` の説明のボタンにフォーカスすると、図の枠のツールチップに補足の説明が出る。`"コメント"` を持つ列はコメントを説明として出す
+      - テーブル「注文」と関連 `r2` の説明は、構成図のノード・線の説明と同じツールチップで出る
+    test: test_normal_when_map_er_drawn
+  - name: 正常系（map の ER 図のテーブルを選んで経路を強調する）
+    summary: テーブルを 1 つ押して関連するテーブルだけを残し、2 つ押してつなぐ最短の経路を全て残し、1 の側から多の側へたどる関連に行が増える旨のマーカーを配置する
+    setup:
+      - name: 配布物を読み込んだページ
+        description: 正常系（map の構成図を描く）と同じ
+      - name: ER 図の map を持つ Markdown
+        description: 正常系（map の ER 図を描く）と同じ
+        notes: 「顧客」と「明細」をつなぐ最短の経路は、「注文」を通る 1 本と「商品」を通る 1 本の 2 本
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        actor U as ユーザー
+        participant M as mdmark
+        U->>M: 「明細」のテーブル名の行の余白を押す
+        M-->>U: 「明細」と関連するテーブル・関連のほかを薄くする
+        U->>M: Esc を押してから「顧客」と「明細」を押す
+        M-->>U: 2 本の最短の経路のテーブルと関連を残し、行が増える関連にマーカーを配置する
+        U->>M: マーカーにフォーカスする
+        M-->>U: 行が増えるテーブルをツールチップに出す
+    expected:
+      - 1 つ選ぶと、そのテーブル・その関連の線・線の相手のテーブルの表示は変わらず、ほかが `opacity` 0.25 になる
+      - 「顧客」と「明細」を選ぶと、「注文」「商品」を含む 4 つのテーブルと 4 本の関連が残り、「支払い」とその関連が薄くなる
+      - 「顧客」→「注文」・「注文」→「明細」・「商品」→「明細」の 3 本の関連に、`button.map-er-fanout` が 1 つずつ配置され、「顧客」→「商品」の関連には配置されない
+      - マーカーは関連の線のラベルと両端の多重度の文字に重ならず、フォーカスすると「{元のテーブル} から {先のテーブル} へたどると、{元のテーブル} の 1 行に {先のテーブル} の行が複数つながる」旨が図の枠のツールチップに出る
+      - 列の行を押しても選択は変わらず、列の名前の文字を選んでコピーできる
+      - 「配置と選択を元に戻す」か Esc で選択が解け、マーカーが消える
+    test: test_normal_when_map_er_path_selected
+  - name: 正常系（map の状態遷移図を描いて遷移を再生する）
+    summary: map の場所の `stateDiagram-v2` を、状態をノード・入れ子の状態をグループにして自動配置し、図の枠の下の帯で遷移を記載順に 1 本ずつ再生する
+    setup:
+      - name: 配布物を読み込んだページ
+        description: 正常系（map の構成図を描く）と同じ
+      - name: 状態遷移図の map を持つ Markdown
+        description: 'モック `docs/mock/refs/531/assets/samples.js` の `STATE` と `STATE_DATA` を、印 `{"title": "作業の状態"}` の map の範囲に記載した文書'
+        notes: 単一ユースケース『Mermaidと補足で図を描く』の正常シナリオ（状態遷移図）の setup と同じ遷移 13 本・入れ子の状態 2 つ（中に `[*]` を持つ「実行中」と持たない「保留」）・同じ状態への遷移・`note right of`・`<<choice>>`。補足の `notes` で遷移 `t6` に説明を持つ
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        actor U as ユーザー
+        participant M as mdmark
+        U->>M: mount(el, { markdown, config })
+        M-->>U: 状態遷移図と、図の枠の下の遷移の帯
+        U->>M: 帯の次へを 6 回押す
+        M-->>U: 6 本目の遷移と、遷移元・遷移先を強調し、説明を出す
+        U->>M: 停止を押す
+        M-->>U: 強調を解く
+    expected:
+      - 開始が黒丸、終了が二重丸、`<<choice>>` がひし形のノードで、`as` で付けた名前が状態のノードに出る
+      - 「判定」→「実行中」の遷移の線の先が「実行中」の中の開始のノードにつながり、「保留」の中に補った開始・終了のノードがある
+      - 「下書き」→「下書き」の遷移が、「下書き」の辺から出て「下書き」へ戻る線とラベル「保存する」で出る
+      - '`note right of 確認待ち` の注記が、種類の行「注記」を持つノードとして「確認待ち」の右側に配置され、破線でつながる。補足の `notes` の説明とは別に描かれる'
+      - 帯が最初から図の枠の下にあり、1 行目が `–/13` で、前へ・停止（押せない）・自動で進める・次への 4 つのボタンを持つ
+      - 6 本目で、帯の 1 行目に「判定 → 差し戻しの理由を確認する：差し戻し」が出て、説明「差し戻しの理由はコメントに残る」が出る。その遷移と両端の状態のほかが薄くなり、その線の上をデータの印が遷移元から遷移先へ流れる
+    test: test_normal_when_map_state_played
+  - name: 正常系（map の状態遷移図の状態を選ぶ）
+    summary: 状態を押して、入る遷移・出る遷移と相手の状態だけを残し、入れ子の状態のタイトルで中へ入る
+    setup:
+      - name: 配布物を読み込んだページ
+        description: 正常系（map の構成図を描く）と同じ
+      - name: 状態遷移図の map を持つ Markdown
+        description: 正常系（map の状態遷移図を描いて遷移を再生する）と同じ
+        notes: 「確認待ち」は「下書き」「保留」から入る遷移 2 本と、「判定」「保留」へ出る遷移 2 本を持つ
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      sequenceDiagram
+        actor U as ユーザー
+        participant M as mdmark
+        U->>M: 「確認待ち」のノードの名前の外を押す
+        M-->>U: 「確認待ち」の入る遷移・出る遷移と相手の状態のほかを薄くする
+        U->>M: 「確認待ち」をもう一度押す
+        M-->>U: 選択を解く
+        U->>M: 「実行中」のタイトルを押す
+        M-->>U: 「実行中」の中だけを配置し直す
+    expected:
+      - 「確認待ち」を選ぶと、入る 2 本と出る 2 本の遷移・そのラベル・「下書き」「保留」「判定」の表示は変わらず、ほかの状態と遷移が `opacity` 0.25 になり、4 本の遷移の上をデータのマーカーが遷移元から遷移先へ流れる
+      - 選んだ状態をもう一度押すか Esc で選択が解ける
+      - 状態の名前の文字の上を押しても選択は変わらず、名前の文字を選んでコピーできる
+      - 入れ子の状態のタイトルを押すと、構成図のグループと同じく中へ入る
+      - 状態のノードはキーボードで選べ、選んでいるかの状態をスクリーンリーダー向けに持つ
+    test: test_normal_when_map_state_selected
+  - name: 正常系（map の ER 図・状態遷移図を案内する）
+    summary: 補足の `walkthroughs` を持つ ER 図・状態遷移図で、構成図と同じ帯で案内の手順を進め、手順の中へ入るグループへ入る
+    setup:
+      - name: 配布物を読み込んだページ
+        description: 正常系（map の構成図を描く）と同じ
+      - name: 案内を持つ ER 図と状態遷移図の map を持つ Markdown
+        description: 正常系（map の ER 図を描く）と正常系（map の状態遷移図を描いて遷移を再生する）の 2 つの範囲の補足に、手順 2 つの `walkthroughs` を足した文書
+        notes: 'ER 図の手順 1 は「顧客」を強調し、手順 2 は `enter: 記録` で「注文」「明細」を強調する。状態遷移図の手順 1 は「下書き」を強調し、手順 2 は `enter: 実行中` で「処理」を強調する'
+      - name: Mock
+        description: 差し替える依存は無い。sessionStorage とクエリ文字列は描く前に空にする
+    flow: |-
+      sequenceDiagram
+        actor U as ユーザー
+        participant M as mdmark
+        U->>M: ER 図の帯の次へを 2 回押す
+        M-->>U: 分類のグループ「記録」の中へ入り、「注文」「明細」を強調する
+        U->>M: 状態遷移図の帯の次へを 2 回押す
+        M-->>U: 「実行中」の中へ入り、「処理」を強調する
+        U->>M: 状態遷移図の帯の停止を押す
+        M-->>U: 強調を解き、全体の図に戻す
+    expected:
+      - ER 図と状態遷移図の帯の 1 行目が `–/2` で、遷移の再生（`–/13`）は出ない
+      - ER 図の手順 2 で、分類のグループ「記録」の中だけが配置し直され、「注文」「明細」のほかが薄くなり、その間の関連の上をデータのマーカーが流れる
+      - 状態遷移図の手順 2 で、「実行中」の中だけが配置し直され、「処理」のほかが薄くなる
+      - 停止を押すと、強調が解け、案内を始めた全体の図に戻る
+    test: test_normal_when_map_er_state_walked
+  - name: 正常系（map の ER 図・状態遷移図を開閉する・中へ入る）
+    summary: ER 図のテーブルの列と分類のグループ、状態遷移図の入れ子の状態を、構成図のグループと同じ操作で開閉し、中へ入る
+    setup:
+      - name: 配布物を読み込んだページ
+        description: 正常系（map の構成図を描く）と同じ
+      - name: ER 図と状態遷移図の map を持つ Markdown
+        description: '正常系（map の ER 図を描く）と正常系（map の状態遷移図を描いて遷移を再生する）の 2 つの範囲を持つ文書。ER 図の補足の `layout` で「注文」に `collapsed: true` を持つ'
+      - name: Mock
+        description: 差し替える依存は無い。sessionStorage とクエリ文字列は描く前に空にする
+    flow: |-
+      sequenceDiagram
+        actor U as ユーザー
+        participant M as mdmark
+        U->>M: mount(el, { markdown, config })
+        M-->>U: 「注文」の列を閉じた ER 図
+        U->>M: 「注文」の列の開閉のボタンを押す
+        M-->>U: 列を開き、関連の端を FK の列の行へつなぎ直す
+        U->>M: ER 図の分類のグループ「記録」の開閉のボタンを押す
+        M-->>U: 分類のグループを 1 つのノードに閉じる
+        U->>M: 状態遷移図の「実行中」のタイトルを押す
+        M-->>U: 「実行中」の中だけを配置し直す
+    expected:
+      - 列を閉じた「注文」が、テーブル名と「列 8」の開閉のボタンの 1 行で描かれ、関連の線はノードの辺の中ほどにつながる。ボタンは `aria-expanded` と、開く・閉じるのスクリーンリーダー向けの名前を持つ
+      - 列を開くと列の行が出て、関連の端が FK の列の行の高さへつなぎ直される
+      - 閉じた分類のグループのノードに「テーブル 3 件」が出て、中への関連が相手ごとに 1 本にまとまる
+      - 「実行中」の中へ入ると、中の状態と中の開始・終了だけが配置し直され、外から入る遷移が薄く描かれた外の状態から引かれる。クエリ文字列に `map-2=実行中` が入る
+      - 閉じた「実行中」のノードに「状態 2 件」が出る
+      - 全て開く・全て閉じるが、ER 図ではテーブルの列と分類のグループの両方に適用される
+    test: test_normal_when_map_er_state_toggled
   - name: 正常系（map の状態をクエリ文字列に保たない）
     summary: 設定 `map.url_state` が `false` のとき、中へ入ったグループとブロックをクエリ文字列に読み書きしない
     setup:
@@ -6825,7 +7090,7 @@ flows:
     test: test_normal_when_tab_position_kept
 lead: 利用側のページが、要素と Markdown と設定を指定し、要素の中に文書を描く。戻り値で本文の差し替えと片付けができる。
 idempotent: false
-side_effects: '`el` の中身と class を書き換え、記法の操作のイベントを `el` の中に付ける。まとめていない名前の `icon:` があるとき、jsDelivr の Lucide のアイコンのモジュールを名前ごとに `import()` し、読み込めなかった名前だけ同じ URL へ `HEAD` の `fetch` を送信する。`side-toc` がオンで見出しがあるとき、`el` の中を本文の列と右側の目次に分け、見出しの位置を `IntersectionObserver` で確認する。出し方が `hover` のときは、右端の線とパネルの位置を決めるため、`window` の `scroll`・`resize` と、`el` に最も近いスクロールする祖先の要素があればその `scroll` を受け取り、`document.body` の子の追加・削除を `MutationObserver` で確認する。`back-to-top` がオンのとき、`el` の子に先頭へ戻るボタンを配置し、スクロールする場所が画面全体なら `window` の `scroll`、`el` に最も近いスクロールする祖先の要素なら `document` の `scroll`（キャプチャーフェーズ）と、`window` の `resize` を受け取り、`document.body` と `el` の子の追加・削除を `MutationObserver` で確認する。`window` の `beforeprint`・`afterprint`・`hashchange` と、絞り込みのドロワーを開いている間だけ `document` の `pointerdown`・`keydown` を受け取る。図の部品か埋め込んだ HTML があるとき、図の表示する枠と埋め込んだ HTML の大きさを `ResizeObserver` で見、ツールチップを開いている間だけ `document` の `keydown`・`pointerdown` と `window` の `scroll`・`resize` を受け取り、全画面の間だけ `el` の中に `dialog` を配置する。リンク先を持つフロー図のノードの上から図を動かしたとき、次の 1 回の `click` まで `window` の `click`（キャプチャーフェーズ）を受け取る。`diagram-resize` がオンのとき、リサイズハンドルで変えた図の高さを sessionStorage に書き込み、描くたびに読み込む（ダブルクリックで今の倍率の図の全体が収まる高さを書き込む）。操作できる部品の写すボタン・表のコピー・行の URL のコピー・コードブロックのコピー・ファイルツリーのコピーでクリップボードに書き込む。表があるとき、表の大きさと描く先の要素の幅を `ResizeObserver` で見、`animation-timeline` を持たないブラウザでは `window` と文書の中の `scroll` と `window` の `resize` を受け取る。`data-group` を持つタブがあるとき、localStorage の `mdmark-tabs:{group}` を描くたびに読み込み、読者がタブを選ぶと書き込む。読者がタブを選ぶと、押したタブのボタンの画面の位置を保つようにスクロールする場所のスクロール位置を書き換える。そのとき、ページの中の `el` の外にある同じ `group` のタブ群の選択も書き換える。文書に外部ライブラリか拡張のマーカーがあるとき、そのモジュールを読み込む。色分けの対象のコードブロックがあるとき、`syntax.url` の先の core と、使用する言語のモジュールを読み込む。`mermaid` がオンの文書に mermaid のコードブロックがあるとき、`mermaid.url` の先のモジュールを読み込み、描く先の配色の明暗の変化を確認して再描画する。`html-scripts` がオンの文書に範囲の `ts`・`js` があるとき、`html-scripts.url` の先の変換のライブラリを読み込み、範囲ごとに `document.head` へ `script` 要素を 1 つ配置してすぐ削除し、範囲の関数を呼ぶ。`opts.diffSource` を指定したとき、読者が差分を開くと（`opts.diffMode` が `open` なら描いた時点、`blocks` なら描くたびに）取り出し元の `revisions`・`content` を呼び、差分の行を出している間だけミニマップの帯を配置し、スクロール先のスクロールの `scroll` と `window` の `resize` を受け取る。文書にビューのマーカーがあるとき、ビューの部品のモジュールを読み込む。`comments` がオンで `opts.commentStore` を指定したとき、コメントの部品のモジュールを読み込み、`load` を描くたびに 1 回呼び、保存で `save`、読み込みと保存の関数が持つときは吹き出しの修正で `update`・削除で `remove`、`reloadComments` で `load` を呼ぶ。その間は `document` の `selectionchange` を受け取り、コメントのボタン・入力欄・吹き出しを `document.body` に配置する。あわせて本文の列の右に余白の列を配置し、描く先の要素の大きさを `ResizeObserver`、描く先の要素の中の開閉・切り替えを `MutationObserver` で確認する。map の範囲があるとき、図ごとの開閉・中へ入ったグループ・動かした位置・参加者の並び順を sessionStorage に記載し、`map.url_state` が `false` でなければ中へ入ったグループと中だけを描くブロックを `history.replaceState` でクエリ文字列の `map-{図の番号}` に記載する。ノードの大きさの変化を `ResizeObserver` で確認する。map の部品のモジュール（`dist/map.js`）を読み込む。印の引数が `{"play": "autoplay"}` の図は、画面に入ったかを `IntersectionObserver` で確認し、自動で進めている間は印の `interval` 秒ごとの時計を持つ'
+side_effects: '`el` の中身と class を書き換え、記法の操作のイベントを `el` の中に付ける。まとめていない名前の `icon:` があるとき、jsDelivr の Lucide のアイコンのモジュールを名前ごとに `import()` し、読み込めなかった名前だけ同じ URL へ `HEAD` の `fetch` を送信する。`side-toc` がオンで見出しがあるとき、`el` の中を本文の列と右側の目次に分け、見出しの位置を `IntersectionObserver` で確認する。出し方が `hover` のときは、右端の線とパネルの位置を決めるため、`window` の `scroll`・`resize` と、`el` に最も近いスクロールする祖先の要素があればその `scroll` を受け取り、`document.body` の子の追加・削除を `MutationObserver` で確認する。`back-to-top` がオンのとき、`el` の子に先頭へ戻るボタンを配置し、スクロールする場所が画面全体なら `window` の `scroll`、`el` に最も近いスクロールする祖先の要素なら `document` の `scroll`（キャプチャーフェーズ）と、`window` の `resize` を受け取り、`document.body` と `el` の子の追加・削除を `MutationObserver` で確認する。`window` の `beforeprint`・`afterprint`・`hashchange` と、絞り込みのドロワーを開いている間だけ `document` の `pointerdown`・`keydown` を受け取る。図の部品か埋め込んだ HTML があるとき、図の表示する枠と埋め込んだ HTML の大きさを `ResizeObserver` で見、ツールチップを開いている間だけ `document` の `keydown`・`pointerdown` と `window` の `scroll`・`resize` を受け取り、全画面の間だけ `el` の中に `dialog` を配置する。map の構成図のリンク先を持つノードを動かしたとき、次の 1 回の `click` まで `window` の `click`（キャプチャーフェーズ）を受け取る。`diagram-resize` がオンのとき、リサイズハンドルで変えた図の高さを sessionStorage に書き込み、描くたびに読み込む（ダブルクリックで今の倍率の図の全体が収まる高さを書き込む）。操作できる部品の写すボタン・表のコピー・行の URL のコピー・コードブロックのコピー・ファイルツリーのコピーでクリップボードに書き込む。表があるとき、表の大きさと描く先の要素の幅を `ResizeObserver` で見、`animation-timeline` を持たないブラウザでは `window` と文書の中の `scroll` と `window` の `resize` を受け取る。`data-group` を持つタブがあるとき、localStorage の `mdmark-tabs:{group}` を描くたびに読み込み、読者がタブを選ぶと書き込む。読者がタブを選ぶと、押したタブのボタンの画面の位置を保つようにスクロールする場所のスクロール位置を書き換える。そのとき、ページの中の `el` の外にある同じ `group` のタブ群の選択も書き換える。文書に外部ライブラリか拡張のマーカーがあるとき、そのモジュールを読み込む。色分けの対象のコードブロックがあるとき、`syntax.url` の先の core と、使用する言語のモジュールを読み込む。`mermaid` がオンの文書に mermaid のコードブロックがあるとき、`mermaid.url` の先のモジュールを読み込み、描く先の配色の明暗の変化を確認して再描画する。`html-scripts` がオンの文書に範囲の `ts`・`js` があるとき、`html-scripts.url` の先の変換のライブラリを読み込み、範囲ごとに `document.head` へ `script` 要素を 1 つ配置してすぐ削除し、範囲の関数を呼ぶ。`opts.diffSource` を指定したとき、読者が差分を開くと（`opts.diffMode` が `open` なら描いた時点、`blocks` なら描くたびに）取り出し元の `revisions`・`content` を呼び、差分の行を出している間だけミニマップの帯を配置し、スクロール先のスクロールの `scroll` と `window` の `resize` を受け取る。文書にビューのマーカーがあるとき、ビューの部品のモジュールを読み込む。`comments` がオンで `opts.commentStore` を指定したとき、コメントの部品のモジュールを読み込み、`load` を描くたびに 1 回呼び、保存で `save`、読み込みと保存の関数が持つときは吹き出しの修正で `update`・削除で `remove`、`reloadComments` で `load` を呼ぶ。その間は `document` の `selectionchange` を受け取り、コメントのボタン・入力欄・吹き出しを `document.body` に配置する。あわせて本文の列の右に余白の列を配置し、描く先の要素の大きさを `ResizeObserver`、描く先の要素の中の開閉・切り替えを `MutationObserver` で確認する。map の範囲があるとき、図ごとの開閉・中へ入ったグループ・動かした位置・参加者の並び順を sessionStorage に記載し、`map.url_state` が `false` でなければ中へ入ったグループと中だけを描くブロックを `history.replaceState` でクエリ文字列の `map-{図の番号}` に記載する。ノードの大きさの変化を `ResizeObserver` で確認する。map の部品のモジュール（`dist/map.js`）を読み込む。印の引数が `{"play": "autoplay"}` の図は、画面に入ったかを `IntersectionObserver` で確認し、自動で進めている間は印の `interval` 秒ごとの時計を持つ'
 callers:
   - SC-472-59#
   - SC-472-25#
@@ -6878,7 +7143,7 @@ request:
     default: '`comments`・`html-scripts`・`frontmatter` を除く全ての機能が `true`'
     location: argument
     description: '機能のオン・オフの既定。文書の `<!-- features: {"機能": false} -->` がその文書だけ上書きする'
-    notes: 知らない機能名は無視する。機能は `print`（印刷の前に折り畳みと記法を開く）と、記法ごとの `table`・`callout`・`tabs`・`steps`・`tree`・`badge`・`code`・`toc`・`side-toc`（右側の目次）・`anchors`・`sections`・`row-details`・`figures`、先頭へ戻るボタンの `back-to-top`、図の部品の `diagrams`、図の表示する枠の高さを変えるリサイズハンドルの `diagram-resize`、埋め込んだ HTML の `html`、図と埋め込んだ HTML のヒント（`data-hint`・`hint`・`io`・線の `tip`・`frame` と `lanes` の `hint`）のツールチップの `hints`、用語のツールチップの `glossary`、被参照の一覧と文書の別名の `backlinks`、ビューのマーカーの `views`、脚注の `footnotes`、選んだ箇所へのコメントの `comments`、埋め込んだ HTML の範囲の `css`・`ts`・`js` の `html-scripts`、文書の先頭のフロントマターの表示の `frontmatter`（`comments`・`html-scripts`・`frontmatter` だけ既定は `false`）、アイコンの `icon`・段組みの `columns`・蛍光ペンの `highlight`・キーの `kbd`・details の範囲の `details`・改ページの `pagebreak`・取り込みの `include`・wide の範囲の `wide`・CSV の表の `csv`・カードの格子の `card-grid`・mermaid のコードブロックを図にする `mermaid`
+    notes: 知らない機能名は無視する。機能は `print`（印刷の前に折り畳みと記法を開く）と、記法ごとの `table`・`callout`・`tabs`・`steps`・`tree`・`badge`・`code`・`toc`・`side-toc`（右側の目次）・`anchors`・`sections`・`row-details`・`figures`、先頭へ戻るボタンの `back-to-top`、図の部品の `diagrams`、図の表示する枠の高さを変えるリサイズハンドルの `diagram-resize`、埋め込んだ HTML の `html`、埋め込んだ HTML と図のヒント（`data-hint`・ER 図のテーブルと列の説明）のツールチップの `hints`、用語のツールチップの `glossary`、被参照の一覧と文書の別名の `backlinks`、ビューのマーカーの `views`、脚注の `footnotes`、選んだ箇所へのコメントの `comments`、埋め込んだ HTML の範囲の `css`・`ts`・`js` の `html-scripts`、文書の先頭のフロントマターの表示の `frontmatter`（`comments`・`html-scripts`・`frontmatter` だけ既定は `false`）、アイコンの `icon`・段組みの `columns`・蛍光ペンの `highlight`・キーの `kbd`・details の範囲の `details`・改ページの `pagebreak`・取り込みの `include`・wide の範囲の `wide`・CSV の表の `csv`・カードの格子の `card-grid`・mermaid のコードブロックを図にする `mermaid`
   - name: opts.config.libraries
     type: Record<string, string>
     required: false
@@ -7228,7 +7493,7 @@ constraints:
     constraint: Chrome 99・Firefox 98・Safari 16.4 以上
     decided_by: NFR-472-1#
   - item: 表の操作
-    constraint: '`data-features` の機能だけを付ける。並べ替えは各列の見出しをボタンにし、押すたびに降順 → 昇順 → 元の並びを繰り返す（数値だけの列は数の大きさ、それ以外は文字の順）。並べた列の `th` に `aria-sort` を付ける。ピン止めは、表が幅からはみ出すときだけ各列の見出しに `aria-pressed` を持つボタンを出す。`opts.config.table.pin` が `each` のときは、押した列だけを留め（ボタンの `aria-label` は `「{列名}」の列をピン止め`）、もう一度押すとその列だけを解除する。留めた列のセルは `position: sticky` にし、それより左で留めた列の幅の合計を `left`、右で留めた列の幅の合計を `right` に入れて、その列より左を表示している間は表の右端に、過ぎた後は左端に留める（幅はセルの `offsetWidth` の整数で足し合わせ、留めた列の間に隙間を出さない）。境の線は、左端に留まった最も右の列の右と、右端に留まった最も左の列の左にだけ引く。選んだ列（`through` は押した列までの列）は左から順に幅を足し、表の見えている幅（スクロールする要素の `clientWidth`）を超える列から右は留めずにスクロールに任せる。留まっていない列のボタンは `aria-pressed` を `true` のままにし、`is-unpinned` を付けて、`aria-label` と `title` に `（表の幅に収まらないため留まっていません）` を付ける（`through` は押した列のボタン）。表の幅・列の幅・選んだ列・列の表示と並びが変わるたびに選び直し、収まるようになった列は再び留める。描いた直後は `data-pin` の全ての列（無ければ `th scope="row"` の行見出しの全ての列、行見出しも無ければ先頭の列）を留め、留めた列のボタンの `aria-pressed` を `true` にする。`through` のときは、押した列までを左端に留め（ボタンの `aria-label` は `「{列名}」の列までピン止め`）、もう一度押すと解除する。描いた直後は `data-pin` の最も右の列（無ければ行見出しの最後の列、行見出しも無ければ先頭の列）までを留め、その列のボタンの `aria-pressed` を `true` にする。結合した見出しのセルは、またぐ列が全て留まっているときだけ留める。留める列は表がはみ出す間だけ当て、はみ出さない間は留めない。`data-check` の列は、並べ替え・絞り込み（候補を含む）・コピー・集計でセルの `data-value`（無いセルは文字）を値にする。絞り込みは `data-filter` の列の見出しにだけ `aria-expanded`・`aria-controls` を持つボタンを出し、`hidden` で開閉するドロワー（`select` は値のチェックボックスと候補の検索欄、`text` はキーワードの欄、`date` は開始日と終了日の欄と、どれも「絞り込みを解除」）を開く。ドロワーは同時に 1 つだけ開き、開いたら最初の入力欄へフォーカスを移し、外を押すか Esc で閉じる（Esc はボタンへフォーカスを戻す）。列ごとの絞り込みは重ねて当て、一致する行が無いときは「一致する行がありません」の行を出す。並べ替え・絞り込みで行の詳細はその行に付いて動く。`count`・`columns`・`reorder`・`total`・`copy` の表は、表の上に `mdmark-table-bar` の帯を配置する。件数は `aria-live="polite"` の要素に `{表示している行の数} / {全ての行の数} 件`（スクリーンリーダーは `{全ての行の数} 件中 {表示している行の数} 件を表示`）を出し、絞り込みのたびに書き換える。列の表示と並び順は、`columns`・`reorder` のどちらかを持つ表の帯に配置するアイコンだけのボタン（`aria-label` とツールチップが `テーブル設定`。`aria-expanded`・`aria-controls` を持つ）で、`role="dialog"` のテーブル設定のパネル（絞り込みのドロワーと同じ開閉の作法）を開く。パネルは、タイトル（`columns` があれば `表示と並び順`、`reorder` だけなら `並び順`）・列名の一覧・操作の案内を持つ。一覧の各行は、`reorder` の表では並べ替えのつまみ（`aria-label` が `「{列名}」の列を並べ替える`）を、`columns` の表では表示・非表示の目のアイコン（`aria-pressed` を持ち、`aria-label` が `「{列名}」を隠す`・隠した後は `「{列名}」を表示`）を持つ。描いた直後は `data-hide` の列の見出しとセルを `hidden` にし、Markdown に記載した先頭の列の目のアイコンは並べ替えた後も `disabled` にして、案内に `先頭の列は隠せません` を出す。隠した列があるときは、ボタンに隠した列の数のバッジを出し、`aria-label` を `テーブル設定（{隠した列の数} 列を非表示）` にする。`total` の表は、`data-total` に記載した計算ごとに 1 行ずつ、`合計`（`sum`）・`平均`（`avg`）・`件数`（`count`）の順に `tfoot` の行（`data-total-kind="{計算}"`）を配置する。各行の先頭のセルに計算の名前を、その計算を持つ列のセルに表示している行で集計した値を出し、ほかのセルは空にする（先頭の列を集計する行は、名前を左、値をセルの末尾に配置する）。絞り込みのたびにもう一度計算する。`sum`・`avg` は空のセルを除いて計算し、桁区切りを付けて小数は 2 桁までに丸める（平均する値が無いときは `—`）。`count` は空でないセルの数。`sum`・`avg` の列の本文の行（絞り込みに関わらず全ての行）に数として読み込めないセル（空のセルは数えない）が 1 つでもあれば、その列のその計算のセルを空にする（警告は `render` が表の上に配置する）。帯に `aria-expanded`・`aria-controls` を持つ `集計` のボタンを配置し、`表示する集計` のメニュー（`data-total` に記載した計算の名前のチェックボックス。開閉の作法はテーブル設定のパネルと同じ）で出す行を選ばせる。描いたときは全ての計算にチェックを入れ、チェックを解除した計算の行を `hidden` にし、出したこと・隠したことをスクリーンリーダーで通知する。選択は覚えず、再描画すると全ての計算に戻す。列を隠すと、その列の `tfoot` のセルも `hidden` にする。並べ替えで `tfoot` は動かない。`copy` の帯の `表をコピー` のボタンは lucide の `copy` のアイコンだけで文字を持たず、ツールチップ（`title`）とスクリーンリーダー向けの名前を `表をコピー` にし、`aria-expanded`・`aria-controls` を持ち、`コピーの形式` のメニュー（`Markdown の表`・`TSV` のボタン。開閉の作法はテーブル設定のパネルと同じ）を開く。形式を押すとメニューを閉じてフォーカスを `表をコピー` に戻し、見出しの行と表示している行の、表示している列のセルの文字を、選んだ形式で `navigator.clipboard.writeText` に書き込む（集計の行・行の詳細は含めない）。Markdown の表は見出しの行・`| --- |` の区切りの行・本文の行を `| セル | セル |` の構造で改行で並べ、セルの中の `|` を `\|` にする。TSV はセルをタブで、行を改行で区切る。書き込めたらボタンのツールチップとスクリーンリーダー向けの名前を `コピーしました` にして 2 秒で戻し、コピーした形式をスクリーンリーダーで通知する。記載できないとき（`navigator.clipboard` が無いか拒まれた）は、帯の直後に `role="group"` のパネル（タイトル・手動でコピーする案内・コピーする中身を入れた読み取り専用の `textarea`・閉じるボタン）を出し、`textarea` へフォーカスを移して中身を全て選択し、書き込めなかったことと手動でコピーできることをスクリーンリーダーで通知する。パネルは閉じるボタンか、パネルの中にフォーカスがある間の Esc で閉じ、フォーカスを `表をコピー` に戻す。もう一度コピーするときは前のパネルを閉じてから記載する。どちらも例外を外へ出さない。`rowlink` の表は、URL の `#` の後ろ（`#` が 2 つあれば最後の `#` の後ろ）を `decodeURIComponent` したもの（読み込めないときはそのまま）が行の `id` を指すとき（描いたときと `hashchange`）、その行を囲む閉じた表・閉じたセクションを開き、行が絞り込みで隠れていればその表の絞り込みを解除してから行へ移り、その行だけに `data-target` を付けて強調する。行へのリンクのマーカーは、行を指したとき・フォーカスしたとき・`data-target` の行で出し、指せない端末では常に薄く出す。マーカーを押すと、移る動き（アドレスバーの URL を行を指す URL にする）はそのままに、マーカーの解決済みの `href`（`rewriteLinks` が書き換えた後の値をページの URL で解決した絶対 URL）を `navigator.clipboard.writeText` に書き込み、描くときにマーカーの横へ配置しておいた空の `role="status"` の要素の文字を、書き込めたら `リンクをコピーしました`、書き込めなければ
+    constraint: '`data-features` の機能だけを付ける。並べ替えは `data-no-sort` の列を除く各列の見出しをボタンにし（`data-no-sort` の列の見出しは `span.mdmark-th-label` の文字のままにする）、押すたびに降順 → 昇順 → 元の並びを繰り返す（数値だけの列は数の大きさ、それ以外は文字の順）。並べた列の `th` に `aria-sort` を付ける。ピン止めは、表が幅からはみ出すときだけ各列の見出しに `aria-pressed` を持つボタンを出す。`opts.config.table.pin` が `each` のときは、押した列だけを留め（ボタンの `aria-label` は `「{列名}」の列をピン止め`）、もう一度押すとその列だけを解除する。留めた列のセルは `position: sticky` にし、それより左で留めた列の幅の合計を `left`、右で留めた列の幅の合計を `right` に入れて、その列より左を表示している間は表の右端に、過ぎた後は左端に留める（幅はセルの `offsetWidth` の整数で足し合わせ、留めた列の間に隙間を出さない）。境の線は、左端に留まった最も右の列の右と、右端に留まった最も左の列の左にだけ引く。選んだ列（`through` は押した列までの列）は左から順に幅を足し、表の見えている幅（スクロールする要素の `clientWidth`）を超える列から右は留めずにスクロールに任せる。留まっていない列のボタンは `aria-pressed` を `true` のままにし、`is-unpinned` を付けて、`aria-label` と `title` に `（表の幅に収まらないため留まっていません）` を付ける（`through` は押した列のボタン）。表の幅・列の幅・選んだ列・列の表示と並びが変わるたびに選び直し、収まるようになった列は再び留める。描いた直後は `data-pin` の全ての列（無ければ `th scope="row"` の行見出しの全ての列、行見出しも無ければ先頭の列）を留め、留めた列のボタンの `aria-pressed` を `true` にする。`through` のときは、押した列までを左端に留め（ボタンの `aria-label` は `「{列名}」の列までピン止め`）、もう一度押すと解除する。描いた直後は `data-pin` の最も右の列（無ければ行見出しの最後の列、行見出しも無ければ先頭の列）までを留め、その列のボタンの `aria-pressed` を `true` にする。結合した見出しのセルは、またぐ列が全て留まっているときだけ留める。留める列は表がはみ出す間だけ当て、はみ出さない間は留めない。`data-check` の列は、並べ替え・絞り込み（候補を含む）・コピー・集計でセルの `data-value`（無いセルは文字）を値にする。絞り込みは `data-filter` の列の見出しにだけ `aria-expanded`・`aria-controls` を持つボタンを出し、`hidden` で開閉するドロワー（`select` は値のチェックボックスと候補の検索欄、`text` はキーワードの欄、`date` は開始日と終了日の欄と、どれも「絞り込みを解除」）を開く。ドロワーは同時に 1 つだけ開き、開いたら最初の入力欄へフォーカスを移し、外を押すか Esc で閉じる（Esc はボタンへフォーカスを戻す）。列ごとの絞り込みは重ねて当て、一致する行が無いときは「一致する行がありません」の行を出す。並べ替え・絞り込みで行の詳細はその行に付いて動く。`count`・`columns`・`reorder`・`total`・`copy` の表は、表の上に `mdmark-table-bar` の帯を配置する。件数は `aria-live="polite"` の要素に `{表示している行の数} / {全ての行の数} 件`（スクリーンリーダーは `{全ての行の数} 件中 {表示している行の数} 件を表示`）を出し、絞り込みのたびに書き換える。列の表示と並び順は、`columns`・`reorder` のどちらかを持つ表の帯に配置するアイコンだけのボタン（`aria-label` とツールチップが `テーブル設定`。`aria-expanded`・`aria-controls` を持つ）で、`role="dialog"` のテーブル設定のパネル（絞り込みのドロワーと同じ開閉の作法）を開く。パネルは、タイトル（`columns` があれば `表示と並び順`、`reorder` だけなら `並び順`）・列名の一覧・操作の案内を持つ。一覧の各行は、`reorder` の表では並べ替えのつまみ（`aria-label` が `「{列名}」の列を並べ替える`）を、`columns` の表では表示・非表示の目のアイコン（`aria-pressed` を持ち、`aria-label` が `「{列名}」を隠す`・隠した後は `「{列名}」を表示`）を持つ。描いた直後は `data-hide` の列の見出しとセルを `hidden` にし、Markdown に記載した先頭の列の目のアイコンは並べ替えた後も `disabled` にして、案内に `先頭の列は隠せません` を出す。隠した列があるときは、ボタンに隠した列の数のバッジを出し、`aria-label` を `テーブル設定（{隠した列の数} 列を非表示）` にする。`total` の表は、`data-total` に記載した計算ごとに 1 行ずつ、`合計`（`sum`）・`平均`（`avg`）・`件数`（`count`）の順に `tfoot` の行（`data-total-kind="{計算}"`）を配置する。各行の先頭のセルに計算の名前を、その計算を持つ列のセルに表示している行で集計した値を出し、ほかのセルは空にする（先頭の列を集計する行は、名前を左、値をセルの末尾に配置する）。絞り込みのたびにもう一度計算する。`sum`・`avg` は空のセルを除いて計算し、桁区切りを付けて小数は 2 桁までに丸める（平均する値が無いときは `—`）。`count` は空でないセルの数。`sum`・`avg` の列の本文の行（絞り込みに関わらず全ての行）に数として読み込めないセル（空のセルは数えない）が 1 つでもあれば、その列のその計算のセルを空にする（警告は `render` が表の上に配置する）。帯に `aria-expanded`・`aria-controls` を持つ `集計` のボタンを配置し、`表示する集計` のメニュー（`data-total` に記載した計算の名前のチェックボックス。開閉の作法はテーブル設定のパネルと同じ）で出す行を選ばせる。描いたときは全ての計算にチェックを入れ、チェックを解除した計算の行を `hidden` にし、出したこと・隠したことをスクリーンリーダーで通知する。選択は覚えず、再描画すると全ての計算に戻す。列を隠すと、その列の `tfoot` のセルも `hidden` にする。並べ替えで `tfoot` は動かない。`copy` の帯の `表をコピー` のボタンは lucide の `copy` のアイコンだけで文字を持たず、ツールチップ（`title`）とスクリーンリーダー向けの名前を `表をコピー` にし、`aria-expanded`・`aria-controls` を持ち、`コピーの形式` のメニュー（`Markdown の表`・`TSV` のボタン。開閉の作法はテーブル設定のパネルと同じ）を開く。形式を押すとメニューを閉じてフォーカスを `表をコピー` に戻し、見出しの行と表示している行の、表示している列のセルの文字を、選んだ形式で `navigator.clipboard.writeText` に書き込む（集計の行・行の詳細は含めない）。Markdown の表は見出しの行・`| --- |` の区切りの行・本文の行を `| セル | セル |` の構造で改行で並べ、セルの中の `|` を `\|` にする。TSV はセルをタブで、行を改行で区切る。書き込めたらボタンのツールチップとスクリーンリーダー向けの名前を `コピーしました` にして 2 秒で戻し、コピーした形式をスクリーンリーダーで通知する。記載できないとき（`navigator.clipboard` が無いか拒まれた）は、帯の直後に `role="group"` のパネル（タイトル・手動でコピーする案内・コピーする中身を入れた読み取り専用の `textarea`・閉じるボタン）を出し、`textarea` へフォーカスを移して中身を全て選択し、書き込めなかったことと手動でコピーできることをスクリーンリーダーで通知する。パネルは閉じるボタンか、パネルの中にフォーカスがある間の Esc で閉じ、フォーカスを `表をコピー` に戻す。もう一度コピーするときは前のパネルを閉じてから記載する。どちらも例外を外へ出さない。`rowlink` の表は、URL の `#` の後ろ（`#` が 2 つあれば最後の `#` の後ろ）を `decodeURIComponent` したもの（読み込めないときはそのまま）が行の `id` を指すとき（描いたときと `hashchange`）、その行を囲む閉じた表・閉じたセクションを開き、行が絞り込みで隠れていればその表の絞り込みを解除してから行へ移り、その行だけに `data-target` を付けて強調する。行へのリンクのマーカーは、行を指したとき・フォーカスしたとき・`data-target` の行で出し、指せない端末では常に薄く出す。マーカーを押すと、移る動き（アドレスバーの URL を行を指す URL にする）はそのままに、マーカーの解決済みの `href`（`rewriteLinks` が書き換えた後の値をページの URL で解決した絶対 URL）を `navigator.clipboard.writeText` に書き込み、描くときにマーカーの横へ配置しておいた空の `role="status"` の要素の文字を、書き込めたら `リンクをコピーしました`、書き込めなければ
       `リンクをコピーできませんでした` に書き換え、2 秒後に空に戻す（例外を外へ出さない）。印刷では表の上のボタンと行へのリンクのマーカーを出さず、件数と出している集計の行を出し、隠した列は隠したままにする。`thead` が複数の行を持つ表は、並べ替え・ピン止め・絞り込みのボタンを、列ごとにその列だけを覆う最下段の見出しのセル（上の行から縦に結合したセルを含む）に配置する。`data-merge-columns` の表は、並べ替え・絞り込みのたびにその列の結合を解き、表示している行の隣り合う同じ値のセルをもう一度結合する（始まりのセルに `rowspan`、続くセルに `hidden`）。並べ替え・絞り込み・コピー・集計は、`data-merge` のセルも値を持つセルとして扱う'
   - item: タブの操作
     constraint: '`mdmark-tabs` の頭に `role="tablist"` の並びを配置し、各 `mdmark-tab-panel` のタブ名を `role="tab"` のボタンにする。中身は `role="tabpanel"` にし、選んだタブの中身だけを出してほかは `hidden` にする。左右の矢印・Home・End でタブを移って選ぶ（WAI-ARIA のタブの作法）。描いた直後は最初のタブを選ぶ。`data-group` を持つ `mdmark-tabs` は、描いたときに localStorage のキー `mdmark-tabs:{group}` に残したタブ名のタブを選び、残していないかそのタブ名が無ければ最初のタブを選ぶ。読者が押すかキーでタブを選ぶと、ページの `data-group` が同じ `mdmark-tabs` のうち同じタブ名を持つものをそのタブ名へ切り替え（フォーカスは動かさない）、選んだタブ名を `mdmark-tabs:{group}` に残す。読者が押すかキーでタブを選ぶと、選ぶ前と後で押したタブのボタンの画面の上端からの位置が同じになるように、スクロールする場所（`el` に最も近いスクロールする祖先の要素、無ければ画面全体）のスクロール位置を差の分だけ戻す。同じ `group` のほかの `mdmark-tabs` の切り替えで高さが変わったときも同じ差で戻す。文書が縮んで戻しきれないときはスクロール位置の上限まで戻す。描いたときの選択と、URL の `#ID` へ移るときの選択では戻さない。描いたときの選択と統一して切り替わった選択は残さない。localStorage を取り出す・読み込みと保存をするときに例外が出たら、`console.warn` に出して残さず・読み込まずに統一する動きと切り替えを続ける。入れ子の `mdmark-tabs` はそれぞれ別の `tablist` にし、矢印・Home・End はフォーカスのある並びの中だけで移る。内側のタブを選んでも外側の選択は変えない。タブ名の `strong` はボタンの中に残す'
@@ -7258,13 +7523,13 @@ constraints:
     constraint: 図の部品の右上に、縮小・倍率・拡大・全画面のボタンをこの順に配置する（アイコンは lucide の `minus`・`plus`・`expand`。倍率のボタンは今の倍率を `125%` の構造の文字で出す）。描いたときは図の全体が表示する枠の幅と高さに収まる倍率（100% を超えない）で出し、この倍率を下限、300% を上限にする。拡大・縮小は 1 回 1.25 倍。倍率のボタンを押すと、描いたときの倍率と位置に戻す（描いたときの倍率と位置のときも押せ、何も変わらない）。倍率のボタンのスクリーンリーダー向けの名前は `倍率 {今の倍率}。全体が収まる倍率に戻す` にし、倍率が変わるたびに書き換える。図の中にフォーカスがある間だけ、キーの `+`・`-`・`0` で拡大・縮小・戻すをする。下限・上限ではその向きのボタンを押せなくする。ホイールは受け取らず、文書のスクロールと Shift との横のスクロールに任せる。表示する枠の幅が変わったとき、描いたときの倍率のままなら収まる倍率をもう一度求める。埋め込んだ HTML の中の図の部品にも同じボタンと操作を付け、部品でない HTML には付けない
     notes: 'D-43 は部品でない普通の HTML に限る（確認ログ）。戻すのボタンを倍率のボタンにまとめ、今のスクリーンリーダー向けの名前 `全体が収まる倍率に戻す` を残すのは #6 の確認ログの決定。ほかのボタンのスクリーンリーダー向けの名前は部品設計'
   - item: 図の移動
-    constraint: 図の文字の上ではカーソルを `text` にして文字を選ばせ、それ以外の上では `grab` にして、ドラッグした分だけ図を動かす（ドラッグの間は `grabbing` で、文字を選ばせない）。リンク先を持つノード（`a.mdmark-diagram-node-link`）の上は、名前の文字の上も含めてカーソルを `pointer` にし、文字を選ばせない。その上で押したまま 4px を超えて動かしたときは図を動かし、離した後の `click` を `window` のキャプチャで止め（`preventDefault` と `stopPropagation`）、利用側が `document` で `click` を受けてもリンク先を開かない。この `window` の受け取りは、動かした後の 1 回の `click` を止めたら解除し、`update`・`destroy` でも解除する。動かさずに押して離したときと Enter は、リンクとして開く。タッチ（`pointerType` が `touch`）では、図の表示する枠の余白（ノード・線・グラフの項目・ボタン・リンクの外）をタップするまでは、横のドラッグだけを図の移動にし、縦のドラッグは文書のスクロールにする（`touch-action` は `pan-y`）。余白をタップした後は、図の外をタップするまで `.mdmark-diagram-box` に `data-touch-active` を付けて枠線をリンクの色の 2px にし、縦と横のドラッグを図の移動にする（`touch-action` は `none`）。図の枠を共有する全ての図（map・フロー図・シーケンス図・グラフ・ER 図・mermaid の図・埋め込んだ HTML の中のチャート）に当てる。図の表示する枠は `tabindex="0"` を持ち、フォーカスの間は矢印キーで押した向きの先が見えるよう 80px ずつ動かす（動かせる向きがあるときだけ文書のスクロールを止める）。図が表示する枠に収まらない間だけ、右上の帯に移動のボタン（上・下・左・右）を出し、矢印キーと同じだけ動かす。ポインターを押してから動いた距離がしきい値より小さい間は図を動かさず、グラフの項目のツールチップを出したままにし、しきい値を越えたら動かし始めて出しているツールチップを閉じる。シーケンス図は相手の行を表示する枠の上端に留める。フロー図は、定義の `stickyTitles` が `false` でない限り、システムの枠（`frame`）と層（`lanes`）のうち一部が表示する枠に見えているもののタイトルを表示する枠の上端（入れ子の層は枠のタイトルの下）に留め、グループが表示する枠の上へ出たら留めない。留めたタイトルは不透明な背景を持ち、ノードと線より手前に描き、`hint` のマーカーも留めた位置で開ける
+    constraint: 図の文字の上ではカーソルを `text` にして文字を選ばせ、それ以外の上では `grab` にして、ドラッグした分だけ図を動かす（ドラッグの間は `grabbing` で、文字を選ばせない）。map の構成図のリンク先を持つノード（`a.mdmark-diagram-node-link`）の上は、名前の文字の上も含めてカーソルを `pointer` にし、文字を選ばせない。その上で押したまま 4px を超えて動かしたときはノードを動かし、離した後の `click` を `window` のキャプチャで止め（`preventDefault` と `stopPropagation`）、利用側が `document` で `click` を受けてもリンク先を開かない。この `window` の受け取りは、動かした後の 1 回の `click` を止めたら解除し、`update`・`destroy` でも解除する。動かさずに押して離したときと Enter は、リンクとして開く。タッチ（`pointerType` が `touch`）では、図の表示する枠の余白（ノード・線・グラフの項目・ボタン・リンクの外）をタップするまでは、横のドラッグだけを図の移動にし、縦のドラッグは文書のスクロールにする（`touch-action` は `pan-y`）。余白をタップした後は、図の外をタップするまで `.mdmark-diagram-box` に `data-touch-active` を付けて枠線をリンクの色の 2px にし、縦と横のドラッグを図の移動にする（`touch-action` は `none`）。図の枠を共有する全ての図（map・グラフ・ER 図・mermaid の図・埋め込んだ HTML の中のチャート）に当てる。図の表示する枠は `tabindex="0"` を持ち、フォーカスの間は矢印キーで押した向きの先が見えるよう 80px ずつ動かす（動かせる向きがあるときだけ文書のスクロールを止める）。図が表示する枠に収まらない間だけ、右上の帯に移動のボタン（上・下・左・右）を出し、矢印キーと同じだけ動かす（map の図は移動のボタンを出さない）。ポインターを押してから動いた距離がしきい値より小さい間は図を動かさず、グラフの項目のツールチップを出したままにし、しきい値を越えたら動かし始めて出しているツールチップを閉じる
     notes: モックの「移動のボタンは全体が見えている間は出さない」（確認ログ）。動かし始めるしきい値の距離はモジュール構成設計。指で動かす操作中の見せ方は確認ログ『図の枠を指で動かすときの操作中の見せ方』、外観はモック `docs/mock/components/diagram-frame-touch/`
   - item: 図の全画面
     constraint: 全画面のボタンで、タイトル・図・凡例を `<dialog>` のモーダル（`showModal()`）に出し、モーダルの中の図をモーダルの幅と高さに収まる倍率で開く。モーダルの右上の帯は文書の中と同じボタンで、全画面のボタンの位置に閉じるボタン（lucide の `x`）を配置する。閉じるボタンか Esc で閉じ、フォーカスを全画面のボタンへ戻す。ツールチップを開いている間の Esc はツールチップだけを閉じる。閉じたときに、モーダルのために付けた受け取りと大きさの監視を解除する
     notes: 全画面のモーダルは確認ログの決定（要件.md の `拡大・縮小`）
   - item: 図のツールチップ
-    constraint: '`tip` を持つ線のラベルと、`io` か `hint` を持つノードの右上のマーカーと、`hint` を持つシステムの枠と層のタイトルの右のマーカーと、グラフの項目（点・棒・扇形など）と、ER 図のテーブルの見出しの説明のボタンを、`aria-describedby` でそのツールチップを指すフォーカスできる要素にする。ポインターを乗せたときとフォーカスしたときに出し、ツールチップの上へポインターを移しても出したままにし、Esc で削除してフォーカスを持ち主に残す（WCAG 1.4.13）。`pointerType` が `touch` のときは `pointerenter` で開かず、持ち主の `pointerdown` で開閉を切り替え、開いている間はツールチップと持ち主の外の `pointerdown` で閉じる。同時に出すのは 1 つだけ。出す場所は `opts.config.tooltips.diagramPlacement` に従い、`bottom`（既定）なら持ち主の下に開いて下に収まらず上に収まれば上に、`top` なら上に開いて上に収まらなければ下に開く。ノードのマーカーのツールチップはノードの下（上）、テーブルの説明のボタンのツールチップはテーブルの下（上）に配置する。グラフの項目のツールチップは系列か項目の名前と値を出し、点は外観の点より広いクリックを受ける範囲で開く（種類ごとの中身は部品設計）。ノードのマーカーの外では開かず、リンク先を持つノードのマーカーはリンクと別にフォーカスでき（Tab の順はリンク、マーカー）、マーカーを押してもリンク先を開かない。線のラベルとマーカーの上でポインターの形状を変えない。図を動かしたときと文書をスクロールしたときは持ち主に付いて動かし、`beforeprint` で閉じる。ノードの中の用語は、本文の用語と同じ下線の要素とツールチップの操作（制約の「用語と文書の別名の下線」「ツールチップの操作」）にする'
+    constraint: 'map の補足の `notes` で説明を持つ線の押せる帯とノードの右上のマーカーとグループのタイトルの右のマーカーと、グラフの項目（点・棒・扇形など）と、ER 図のテーブルの見出しの説明のボタンを、`aria-describedby` でそのツールチップを指すフォーカスできる要素にする。ポインターを乗せたときとフォーカスしたときに出し、ツールチップの上へポインターを移しても出したままにし、Esc で削除してフォーカスを持ち主に残す（WCAG 1.4.13）。`pointerType` が `touch` のときは `pointerenter` で開かず、持ち主の `pointerdown` で開閉を切り替え、開いている間はツールチップと持ち主の外の `pointerdown` で閉じる。同時に出すのは 1 つだけ。出す場所は `opts.config.tooltips.diagramPlacement` に従い（map の図は常に `bottom`）、`bottom`（既定）なら持ち主の下に開いて下に収まらず上に収まれば上に、`top` なら上に開いて上に収まらなければ下に開く。ノードのマーカーのツールチップはノードの下（上）、テーブルの説明のボタンのツールチップはテーブルの下（上）に配置する。グラフの項目のツールチップは系列か項目の名前と値を出し、点は外観の点より広いクリックを受ける範囲で開く（種類ごとの中身は部品設計）。ノードのマーカーの外では開かず、リンク先を持つノードのマーカーはリンクと別にフォーカスでき（Tab の順はリンク、マーカー）、マーカーを押してもリンク先を開かない。線とマーカーの上でポインターの形状を変えない。図を動かしたときと文書をスクロールしたときは持ち主に付いて動かし、`beforeprint` で閉じる。ノードの中の用語は、本文の用語と同じ下線の要素とツールチップの操作（制約の「用語と文書の別名の下線」「ツールチップの操作」）にする'
     notes: WAI-ARIA の役割とフォーカスの出入りは部品設計で決める
   - item: ER 図の列の開閉
     constraint: ER 図のテーブルの列の開閉のボタンを押すと（Enter・Space を含む）、全ての列を出しているテーブルは主キーと外部キーの列だけを出して `非表示 {数} 列` の行を配置し、畳んでいるテーブルは全ての列を出す。ボタンの `aria-expanded` とアイコン（lucide の `chevrons-down-up`・`chevrons-up-down`）を切り替え、関係の線・多重度の記号・ラベルを今の列の行の位置へもう一度結び、図の倍率を保ち、フォーカスをボタンに残す。全画面のモーダルは開いたときの開閉の状態で描く。`update` では制約「描き直しで部品の開閉を保つ」のとおりに描く
@@ -7384,6 +7649,9 @@ constraints:
     notes: 境目と出し方はモック作成で案 A に決定（確認ログ）。幅はコンテナクエリで判定するため、コンテナクエリを持たないブラウザ（Chrome 105・Firefox 110 未満。対応ブラウザの下限は Chrome 99・Firefox 98）では帯を出さず、広い幅の出し方になることを許す
   - item: 今いるセクション
     constraint: 画面の上端から高さの 25% の線より上にある最後の h1〜h3 の見出し（線より上に無いときは画面にある最初の h1〜h3 の見出し）を今いるセクションにし（h4〜h6 は数えず、h4 の下を読み込んでいる間はその上の h3 を今いるセクションにする）、その項目のリンクに `aria-current="location"`、右端の線のその見出しの線に `data-current` を付け、狭い幅の帯にその見出しの文字を出す。閉じたセクションと選ばれていないタブの中の見出しは数えない。見出しが線を越えたとき（`IntersectionObserver`）・セクションの開閉・タブの切り替え・`hashchange` のたびにもう一度決め、スクロールのたびに全ての見出しを測らない
+  - item: 右側の目次の変更のマーカー
+    constraint: 本文を比較元か取り出し元のリビジョンで色分けして描いたとき（制約「比較元の Markdown」「描いた文書のブロックの色分け」）、右側の目次を付けるたびに、本文の中の `.mdmark-diff-block`（追加・削除の両方）ごとに、そのブロックが含む h1〜h3 の見出しか、無ければ文書の順でそのブロックの前にある最後の h1〜h3 の見出しを変わったセクションとし、その見出しより浅いレベルの前にある見出しを順に祖先として全て変わったセクションに加える。数える見出しには、削除のブロックの中の `id` を持たない見出し（目次の項目を持たない）も含め、その見出し自身には付けず祖先にだけ付ける（見出しごと削除したセクションの前にある、変えていないセクションには付けない）。見出しの文字を書き換えたときは、削除の側の古い見出しは祖先にだけ付け、追加の側の新しい見出しの項目に付ける。変わったセクションの項目のリンクに `data-changed` と `aria-label="{見出しの文字}（変更）"` を付け、リンクの末尾に `aria-hidden="true"` の `span.mdmark-side-toc-changed` を配置する。リンクの文字は変えない（目次を出すボタンの今いる見出しの文字は、リンクの文字から写すため）。変わったセクションの見出しに対応する右端の線にも `data-changed` を付ける。色分けをしていないとき（比較元を省いたか `null`・比較元が本文と同じ・取り出し元を読み込めない）は付けない。`update` のたびに集め直す
+    notes: マーカーの位置・色と親の見出しにも付けることは、モック作成で案 A に決定（確認ログ）。見た目は部品設計『右側の目次』
   - item: 右側の目次から移る
     constraint: 項目を押すと、URL の `#ID` で移るとき（制約の「セクションと行の詳細の開閉」「URL の ID でタブの中へ移る」）と同じく、外側の閉じたセクションと見出し自身の閉じたセクションを開き、選ばれていないタブを選んでから見出しへ移り、URL の `#` の後ろを見出しの ID にする。URL がすでにその ID のとき（`hashchange` が起きない）も、同じく開いてから移る
   - item: すべて展開・すべて折りたたむ
@@ -7513,7 +7781,7 @@ constraints:
   - item: フロントマター
     constraint: インターフェース定義『文書をHTML文字列にする』の制約「フロントマター」と同じく、文書の先頭のフロントマターを除外して描き、機能 `frontmatter` がオンのときだけ本文の先頭に閉じた折りたたみを描く。右側の目次・目次・セクションの開閉はフロントマターとその表示を対象にしない。折りたたみの開閉は、印刷の前に開く折り畳みに含める。`update` は差し替えた本文のフロントマターでもう一度決める
   - item: map の図
-    constraint: '`div.mdmark-map`（文書をHTML文字列にする.ts の制約『map の範囲』）を、`flowchart` は入れ子のグループを内側から自動配置したフロー図、`sequenceDiagram` は全ての記法を描いたシーケンス図にして、`figure.mdmark-diagram[data-diagram="map"]` の図の枠に入れる。図の枠は置き場所の幅いっぱい（右側の目次をピン止めしていないときは右端の線の手前、ピン止めしたときはパネルの手前）に広げ、本文の幅との切り替えのボタン、凡例、範囲と更新日を出さない。倍率は 1 より小さくしない。ノードの大きさは描いた中身を測って決め、大きさが変わったら配置し直す'
+    constraint: '`div.mdmark-map`（文書をHTML文字列にする.ts の制約『map の範囲』）を、`flowchart` は入れ子のグループを内側から自動配置したフロー図、`sequenceDiagram` は全ての記法を描いたシーケンス図、`erDiagram` はテーブルを列の行を持つノードにした ER 図（制約『map の ER 図』）、`stateDiagram-v2`・`stateDiagram` は状態をノードにした状態遷移図（制約『map の状態遷移図』）にして、`figure.mdmark-diagram[data-diagram="map"]` の図の枠に入れる。図の枠は置き場所の幅いっぱい（右側の目次をピン止めしていないときは右端の線の手前、ピン止めしたときはパネルの手前）に広げ、本文の幅との切り替えのボタン、凡例、範囲と更新日を出さない。倍率は 1 より小さくしない。ノードの大きさは描いた中身を測って決め、大きさが変わったら配置し直す'
     notes: 外観はモック `docs/mock/pages/document/445/a-map/` と `docs/mock/components/map-kinds/`（確認ログ）。配置の方式はライブラリ本体.md の `## PoC 結果`
   - item: map の強調
     constraint: 線のホバー・案内・再生・ノードと参加者の選択では、強調する要素の表示は変えず、ほかのノード・線・ラベル・ライフラインを `opacity` 0.25 にし、強調する線の上をデータの印が流れ続ける（両向きの線は両方へ）。選択の強調は案内・再生の強調より優先する。読者が始めたデータの印は `prefers-reduced-motion` でも流し、自動で始める再生は動きを減らす設定では止めて始める
@@ -7530,14 +7798,28 @@ constraints:
     constraint: Mermaid の読めない行（行番号・行の文字・直し方）・閉じの無い `subgraph` と複合フラグメント・補足の JSON の読めない箇所（行と原因）・知らないキー・スキーマに合わない値・補足が指す Mermaid に無いノード・線・グループの ID・`--` を含む補足の文字・設定の `map.kinds` に無いクラス・`map.lines` に無い線の名前を、`dist/map.js` が集めて図の枠の前の書き方の警告にする。`render` が範囲の形の警告を配置していれば、その警告に項目を足す
     notes: '`render` が確かめる範囲の形は文書をHTML文字列にする.ts の制約『map の書き方の誤り』'
   - item: map の用語の下線
-    constraint: 文書をHTML文字列にする.ts の制約『map の範囲』の `data-map-terms` の用語を、構成図のノードの名前と、シーケンス図の参加者の名前・メッセージの文・注記の文の中で見つけ、今の図のノードの用語と同じく `span.mdmark-term`（フォーカスでき、図のツールチップに意味を出す）にする。用語の文字は、文字を逃がした名前の中に置き、名前の文字の選択とコピーを妨げない。構成図のツールチップ（ノードと線の補足の `notes` の説明）の文の中の用語は、フォーカスを持たない下線（`tabindex` とツールチップの持ち主を持たない `span.mdmark-term`）にし、そのツールチップの末尾に用語ごとに「{用語}：{意味}」の行を並べる。押せる要素の中の文字（グループのタイトルのボタン・ツールチップを持つ線のラベル）と、案内と再生の帯の文には付けない（今の図と同じく、押せる要素とツールチップの中に、フォーカスできる用語を入れ子にしない）。同じ図の構成図のノードの説明（補足の `notes`）のツールチップも、図の枠のツールチップの層に配置する
+    constraint: 文書をHTML文字列にする.ts の制約『map の範囲』の `data-map-terms` の用語を、構成図のノードの名前と、シーケンス図の参加者の名前・メッセージの文・注記の文の中で見つけ、今の図のノードの用語と同じく `span.mdmark-term`（フォーカスでき、図のツールチップに意味を出す）にする。用語の文字は、文字を逃がした名前の中に置き、名前の文字の選択とコピーを妨げない。構成図のツールチップ（ノード・線・グループの補足の `notes` の説明）の文の中の用語は、フォーカスを持たない下線（`tabindex` とツールチップの持ち主を持たない `span.mdmark-term`）にし、そのツールチップの末尾に用語ごとに「{用語}：{意味}」の行を並べる。押せる要素の中の文字（グループのタイトルのボタン・ツールチップを持つ線のラベル）と、案内と再生の帯の文には付けない（今の図と同じく、押せる要素とツールチップの中に、フォーカスできる用語を入れ子にしない）。同じ図の構成図のノードの説明（補足の `notes`）のツールチップも、図の枠のツールチップの層に配置する
+  - item: map のノードのリンク
+    constraint: '構成図の Mermaid の `click {ID} "{リンク先}"` の行（`href` を省いた形と、`"{リンク先}" "{ツールチップ}"`・`_blank` などの後ろの値は読んで捨てる）を、そのノードのリンク先にする。リンク先を文書をHTML文字列にする.ts の制約「URL のスキーム」と同じ許可（`http`・`https`・`mailto` と相対 URL）で確認し、許すノードはノードの全体を覆う `<a class="mdmark-diagram-node-link" href="{リンク先}">`（スクリーンリーダー向けの名前はノードの名前。開く先は本文のリンクと同じく同じタブ）にし、ノードの要素に class `has-link` を付ける。説明のマーカーはリンクの中に入れず、リンクの後ろに配置する。許さないリンク先のノードはリンクにせず名前を描き、ノードの ID と記載したリンク先と使用できるリンク先を制約「map の書き方の警告」の項目に並べる。リンク先を持つノードの上で押したまま 4px を超えて動かしたときはノードを動かし、制約「図の移動」と同じくその後の `click` を止める。コールバックの関数を指す `click {ID} {関数名}` の形は読んで捨てる'
+    decided_by: SC-472-8#scenarios[正常シナリオ（リンク先を持つノード）]
+    notes: '`id:` などの参照は利用側が URL に変えてから記載する。確認ログ『map のノードのリンクをこの PR の要件に追加するか』'
+  - item: map のグループの説明
+    constraint: 補足の `notes` のキーが構成図の `subgraph` の ID のとき、そのグループのタイトルの右に、ノードの説明と同じマーカー（フォーカスでき、`aria-describedby` で説明のツールチップを指す）を配置し、ポインターを乗せるかフォーカスしたときに説明を図のツールチップで出す。閉じたグループのノードと、中へ入ったグループの押せないタイトルにも同じマーカーを配置する。マーカーはタイトルのボタンの外に置き、押してもグループの中へ入らない・開閉しない
+    decided_by: SC-472-40#scenarios[正常シナリオ]
+    notes: 確認ログ『map のグループの説明をこの PR の要件に追加するか』。マーカーの外観は部品設計『mapの構成図』
   - item: map のシーケンス図の説明のツールチップ
     constraint: シーケンス図の補足の `notes`（キーは記載の順に 1 からのメッセージの番号）に説明があるメッセージは、線の押せる帯（`.map-wire-hit[data-message]`）を持ち主にした図のツールチップを持ち、線にポインターを当てると「{送り手の名前} → {受け手の名前}」の見出しと説明を出す。説明の文の中の用語は、構成図の説明のツールチップと同じく、フォーカスを持たない下線と末尾の「{用語}：{意味}」の行にする。説明を持たないメッセージの線にはツールチップを付けない
   - item: map の閉じたグループのノードの数
-    constraint: 閉じたグループのノードは、グループの名前の後ろに、そのグループの中（入れ子のグループの中を含む）の Mermaid のノードの数を「ノード {数} 件」で出す（シーケンス図の閉じたブロックの「メッセージ {数} 件」と同じ書き方）
+    constraint: 閉じたグループのノードは、グループの名前の後ろに、そのグループの中（入れ子のグループの中を含む）の Mermaid のノードの数を「ノード {数} 件」で出す（シーケンス図の閉じたブロックの「メッセージ {数} 件」と同じ書き方）。ER 図の閉じた分類のグループは中のテーブルの数を「テーブル {数} 件」、状態遷移図の閉じた入れ子の状態は中の状態（開始・終了・分岐・注記を除く）の数を「状態 {数} 件」で出す
   - item: map の構成図に無い再生の相手
     constraint: 補足の `plays_over` で構成図を指すシーケンス図に、その構成図のノードに無い ID の参加者があるとき、シーケンス図の図の枠の前の書き方の警告に、構成図に無い参加者の ID を並べた項目を 1 つ足す。その参加者が送り手か受け手のメッセージを再生するときは、構成図の強調を解き、構成図の図の枠の中をスクロールしない。帯はほかのメッセージと同じく出す
   - item: map の再生で構成図の枠の中をスクロールする
     constraint: シーケンス図の再生を自動で進めている間は、補足の `plays_over` で指した構成図の図の枠の中も、送り手と受け手のノードの中心へスクロールする（倍率と文書のスクロールは変えない）。読者が構成図の図の枠をホイール・ドラッグ・キーで触ったら、自動で進め直すまで構成図の図の枠の中をスクロールしない。前へ・次へで進めたときはスクロールしない
     notes: 確認ログ『map の案内・再生で図の枠の中をスクロールする場合』
+  - item: map の ER 図
+    constraint: '`erDiagram` のテーブルを、テーブル名の行と、列ごとにキー（`PK`・`FK`・`UK`）・名前・型と説明のボタンの行を持つノードにし、補足の `groups`（モデリング『map の補足』）の分類を入れ子のグループにして、構成図と同じ自動配置で配置する。関連は矢じりの無い線（`..` は破線）にし、自動配置の経路の両端を、つなぐ列（コメントが `参照: {相手のテーブル}.{列}` の FK の列、無ければ相手のテーブル名で始まる名前の FK の列、それも無ければ PK の列）の行の縦の中ほどの左右の辺へ付け替える（列を閉じたテーブル・閉じた分類はノードの辺の中ほどのまま）。補足の `layout` の `r{番号}.ends` は付け替える辺を指定する。両端の外側に多重度（`1`・`0..1`・`1..n`・`0..n`）の文字を、両端の区間を除いた最も長い区間の中ほどにラベルを配置する。テーブルの開閉のボタンは列を閉じ、閉じた状態は構成図のグループの開閉と同じく保つ。テーブルを 1 つ選ぶと、そのテーブルの関連と相手のテーブルを残す。2 つ選ぶと、2 つをつなぐ最短の経路に乗る全ての関連とテーブルを残し、経路を 1 の側から多の側（`1..n`・`0..n`）へたどる関連ごとに、行が増える旨のマーカー（ラベルの反対側。フォーカスとポインターでツールチップを出すボタン）を配置する'
+    notes: 外観はモック `docs/mock/components/map-er-state/`（確認ログ『ER 図で行が増える関連の示し方』）
+  - item: map の状態遷移図
+    constraint: '`stateDiagram-v2`・`stateDiagram` の状態を角の丸いノード、`[*]` を入れ子の状態ごとの開始（黒丸）・終了（二重丸）、`<<choice>>` をひし形のノード、入れ子の状態（`state {ID} { … }`）をグループ、`note left of`・`note right of` を破線でつないだ種類の行「注記」のノードにして、構成図と同じ自動配置で配置する。入れ子の状態そのものへの遷移は中の開始へ、入れ子の状態からの遷移は中の終了からつなぎ、中に `[*]` を持たない入れ子の状態は、そうした遷移を持つときだけ中の開始・終了を補う。同じ状態への遷移は、状態の右の辺から出て上を回り、上の辺へ戻る線にする。補足の `walkthroughs` が無いときは、遷移を記載順の手順にした再生を、構成図の案内と同じ帯（帯の 1 行目は「{遷移元} → {遷移先}：{ラベル}」、本文は補足の `t{番号}` の説明）で進める。状態を選ぶと、入る遷移・出る遷移と相手の状態を残す'
+    notes: 外観はモック `docs/mock/components/map-er-state/`（確認ログ『入れ子の状態への遷移のつなぎ先』）
 test_file: tests/integration/lib/mount.browser.test.ts

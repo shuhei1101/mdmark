@@ -2,7 +2,9 @@ import type { ResolvedConfig } from "../config.ts";
 import { attachDiagrams, DIAGRAM_REDRAW_EVENT } from "../interact/diagrams.ts";
 import { renderDiagramFrame } from "../parts/diagram.ts";
 import {
+  type MapFlowArgs,
   type MapPacketMark,
+  type MapPart,
   renderMapFlow,
   renderMapPackets,
   selectableName,
@@ -13,7 +15,7 @@ import {
   type BandStep,
   createFollow,
 } from "./band.ts";
-import { type MapData, parseMapData } from "./data.ts";
+import { type MapData, type MapStep, parseMapData } from "./data.ts";
 import {
   applyWireShifts,
   KEY_MOVE_PX,
@@ -22,7 +24,11 @@ import {
   nearestSegment,
   startDrag,
 } from "./drag.ts";
-import { type Flowchart, parseFlowchart } from "./flowchart.ts";
+import {
+  type Flowchart,
+  mapLinkProblems,
+  parseFlowchart,
+} from "./flowchart.ts";
 import { layoutMap, type MapLayout, type MapOverride } from "./layout.ts";
 import type { MapArgs } from "./spec.ts";
 import {
@@ -50,19 +56,58 @@ export type MapFlowHandle = {
   destroy: () => void;
 };
 
+/** 構成図の描画と操作に、ER 図・状態遷移図が追加する処理（attachMapFlow の extension） */
+export type MapFlowExtension = {
+  /** parseFlowchart の代わりに配置するノード・グループ・線 */
+  chart: Flowchart;
+  /** 補足の layout の前に重ねる配置の上書き（ノードの幅・大きさ・上に空ける高さ） */
+  overrides?: (view: {
+    collapsed: ReadonlySet<string>;
+  }) => Record<string, MapOverride>;
+  /** 補足の walkthroughs の代わりに帯で進める手順 */
+  walkthroughs?: MapStep[] | undefined;
+  /** 帯のモード（既定 walkthrough） */
+  bandMode?: "walkthrough" | "playback";
+  /** 再生で進める単位（既定 message） */
+  bandUnit?: "message" | "transition";
+  /** 全て閉じるで閉じる、グループのほかの ID（ER 図のテーブル） */
+  collapsibles?: string[];
+  /** 自動配置の後に、線の経路を引き直す */
+  rewire?: (
+    layout: MapLayout,
+    view: { collapsed: string[] },
+  ) => MapLayout["wires"];
+  /** renderMapFlow の代わりに図の中身を描く部品 */
+  render?: (args: MapFlowArgs) => MapPart;
+  /** 強調を当てた後に呼ぶ（行が増える関連のマーカー・同じ状態への遷移を描き直す） */
+  afterRender?: (
+    figure: HTMLElement,
+    layout: MapLayout,
+    view: { selected: Set<string>; step: number | undefined },
+  ) => void;
+  /** 選んだノードから残すノードと線（undefined なら構成図の選び方） */
+  selectionOf?: (
+    selected: Set<string>,
+  ) => { nodes: Set<string>; wires: Set<string> } | undefined;
+  /** 閉じたグループの名前の後ろの文字 */
+  collapsedTag?: (groupId: string) => string | undefined;
+};
+
 /** 補足の layout と状態から、ID ごとの配置の上書きを作る */
 const overridesOf = (
   data: MapData,
   state: MapState,
   sizes: Record<string, { w: number; h: number }>,
+  base: Record<string, MapOverride> = {},
 ): Record<string, MapOverride> => {
-  const overrides: Record<string, MapOverride> = {};
+  const overrides: Record<string, MapOverride> = { ...base };
   for (const [id, entry] of Object.entries(data.layout)) {
     overrides[id] = {
+      ...overrides[id],
       align: entry.align,
       order: entry.order,
       pos: entry.pos,
-      width: entry.width,
+      width: entry.width ?? overrides[id]?.width,
       justify: entry.justify,
       ends: entry.ends,
       via: entry.via,
@@ -116,10 +161,11 @@ export const attachMapFlow = (
   config: ResolvedConfig,
   args: MapArgs,
   onWalk?: () => void,
+  extension?: MapFlowExtension,
 ): MapFlowHandle => {
   const index = Number(range.dataset.map ?? "1");
   const source = range.querySelector("code")?.textContent ?? "";
-  const chart = parseFlowchart(source);
+  const chart = extension?.chart ?? parseFlowchart(source);
   const { data } = parseMapData(
     range.querySelector(".mdmark-map-data")?.textContent ?? undefined,
   );
@@ -146,6 +192,7 @@ export const attachMapFlow = (
   const notes = Object.fromEntries(
     Object.entries(data.notes).map(([id, note]) => [id, note.text]),
   );
+  const links = mapLinkProblems(chart.links).allowed;
   const wireLines = Object.fromEntries(
     Object.entries(data.layout).flatMap(([id, entry]) =>
       entry.line === undefined ? [] : [[id, entry.line]],
@@ -160,12 +207,29 @@ export const attachMapFlow = (
   let focus: { nodes: string[]; wires: string[] } | undefined;
   /** 指している線の ID */
   let hovered: string | undefined;
-  let layout: MapLayout = layoutMap(
-    chart,
-    { collapsed: state.collapsed, entered: state.entered },
-    overridesOf(data, state, sizes),
-    config.map.node_fit,
-  );
+  /** 状態から自動配置し、拡張があれば線を引き直す */
+  const place = (): MapLayout => {
+    const placed = layoutMap(
+      chart,
+      { collapsed: state.collapsed, entered: state.entered },
+      overridesOf(
+        data,
+        state,
+        sizes,
+        extension?.overrides?.({ collapsed: new Set(state.collapsed) }),
+      ),
+      config.map.node_fit,
+    );
+    return extension?.rewire
+      ? {
+          ...placed,
+          wires: extension.rewire(placed, { collapsed: state.collapsed }),
+        }
+      : placed;
+  };
+  let layout: MapLayout = place();
+  /** 帯で今出している手順の番号 */
+  let currentStep: number | undefined;
   const frameId = `map-${index}`;
   const tools = () => [
     {
@@ -189,12 +253,13 @@ export const attachMapFlow = (
     const applied = applyWireShifts(layout, state);
     const shown = { ...layout, wires: applied.wires };
     const packets: MapPacketMark[] = [];
-    const part = renderMapFlow({
+    const part = (extension?.render ?? renderMapFlow)({
       layout: shown,
       kinds: config.map.kinds,
       lines: config.map.lines,
       wireLines,
       notes,
+      links,
       colors,
       collapsed: state.collapsed,
       entered: state.entered,
@@ -204,6 +269,7 @@ export const attachMapFlow = (
       dragging: undefined,
       id: frameId,
       terms,
+      collapsedTag: extension?.collapsedTag,
     });
     return {
       html: part.html,
@@ -247,15 +313,8 @@ export const attachMapFlow = (
       history,
       location,
     });
-  /** 状態から配置し直して、図の中身とツールを描き直す */
-  const refresh = (relayout = true) => {
-    if (relayout)
-      layout = layoutMap(
-        chart,
-        { collapsed: state.collapsed, entered: state.entered },
-        overridesOf(data, state, sizes),
-        config.map.node_fit,
-      );
+  /** 図の中身を描き直す */
+  const drawStage = () => {
     const part = body();
     const stage = figure.querySelector<HTMLElement>(".mdmark-diagram-stage");
     const sizer = figure.querySelector<HTMLElement>(".mdmark-diagram-sizer");
@@ -269,6 +328,11 @@ export const attachMapFlow = (
       sizer.style.height = `${part.height}px`;
     }
     replaceTips(figure, part.tips);
+  };
+  /** 状態から配置し直して、図の中身とツールを描き直す */
+  const refresh = (relayout = true) => {
+    if (relayout) layout = place();
+    drawStage();
     for (const item of tools()) {
       const button = figure.querySelector<HTMLButtonElement>(
         `[data-tool="${item.name}"]`,
@@ -323,7 +387,7 @@ export const attachMapFlow = (
           wires: new Set([pointed.id]),
         }
       : selected.size > 0
-        ? {
+        ? (extension?.selectionOf?.(selected) ?? {
             nodes: selected,
             wires: new Set(
               layout.wires
@@ -334,7 +398,7 @@ export const attachMapFlow = (
                 )
                 .map((wire) => wire.id),
             ),
-          }
+          })
         : focus === undefined
           ? undefined
           : { nodes: new Set(focus.nodes), wires: new Set(focus.wires) };
@@ -358,9 +422,12 @@ export const attachMapFlow = (
       );
     }
     for (const element of stage.querySelectorAll<Element>(
-      ".mdmark-diagram-wire[data-wire], .mdmark-diagram-label[data-wire]",
+      ".mdmark-diagram-wire[data-wire], .mdmark-diagram-label[data-wire], [data-wire-mark]",
     )) {
-      const id = element.getAttribute("data-wire") ?? "";
+      const id =
+        element.getAttribute("data-wire") ??
+        element.getAttribute("data-wire-mark") ??
+        "";
       element.classList.toggle(
         "map-dim",
         kept !== undefined && !kept.wires.has(id),
@@ -386,6 +453,10 @@ export const attachMapFlow = (
         state.selected.length === 0 &&
         Object.keys(state.positions).length === 0 &&
         Object.keys(state.wireShifts).length === 0;
+    extension?.afterRender?.(figure, layout, {
+      selected,
+      step: currentStep,
+    });
   };
   /** 選択だけを変える（配置し直さない） */
   const changeSelection = (selected: string[]) => {
@@ -451,6 +522,17 @@ export const attachMapFlow = (
       toggleGroup(toggle.dataset.groupToggle ?? "", event.shiftKey);
       return;
     }
+    // ノードの中身の開閉（ER 図のテーブルの列）。測った大きさを捨てて配置し直す
+    const own = target?.closest<HTMLElement>("[data-node-toggle]");
+    if (own) {
+      const id = own.dataset.nodeToggle ?? "";
+      delete sizes[id];
+      const set = new Set(state.collapsed);
+      if (set.has(id)) set.delete(id);
+      else set.add(id);
+      change({ ...state, collapsed: [...set] });
+      return;
+    }
     const enter = target?.closest<HTMLElement>("[data-group-enter]");
     if (enter) {
       change({ ...state, entered: enter.dataset.groupEnter, selected: [] });
@@ -465,9 +547,10 @@ export const attachMapFlow = (
     else if (tool.dataset.tool === "collapseAll")
       change({
         ...state,
-        collapsed: chart.groups
-          .map((group) => group.id)
-          .filter((id) => id !== state.entered),
+        collapsed: [
+          ...chart.groups.map((group) => group.id),
+          ...(extension?.collapsibles ?? []),
+        ].filter((id) => id !== state.entered),
       });
     else if (tool.dataset.tool === "reset")
       change({
@@ -498,12 +581,18 @@ export const attachMapFlow = (
   const onPointerDown = (event: PointerEvent) => {
     if (event.button !== 0) return;
     const target = event.target instanceof Element ? event.target : undefined;
-    if (!target || target.closest("button, .mdmark-diagram-node-name")) return;
+    if (
+      !target ||
+      target.closest("button, .mdmark-diagram-node-name, .map-er-columns")
+    )
+      return;
     const node = target.closest("[data-node]")?.getAttribute("data-node");
     const wire = target.closest(".map-wire-hit")?.getAttribute("data-wire");
     const head = target.closest(".map-group-head, .map-group-bar");
     if (!node && !wire && !head) return;
     event.preventDefault();
+    // 動かした後の click ではノードのリンクを開かない（動かさずに押したときだけ開く）
+    let moved = true;
     startDrag({
       event,
       layout: { ...layout, wires: applyWireShifts(layout, state).wires },
@@ -515,6 +604,7 @@ export const attachMapFlow = (
         refresh();
       },
       onClick: () => {
+        moved = false;
         if (node) select([node]);
         else if (wire) {
           const item = layout.wires.find((one) => one.id === wire);
@@ -526,16 +616,36 @@ export const attachMapFlow = (
       window.removeEventListener("pointerup", finish);
       window.removeEventListener("pointercancel", finish);
       save();
+      if (!moved || !node) return;
+      const suppress = (click: MouseEvent) => {
+        click.preventDefault();
+        // 動かしたノードの上の click は、利用側が document で受けてもリンク先を開かないよう、伝播も止める
+        const target = click.target instanceof Element ? click.target : null;
+        if (target?.closest(`[data-node="${CSS.escape(node)}"]`))
+          click.stopPropagation();
+        window.removeEventListener("click", suppress, true);
+      };
+      window.addEventListener("click", suppress, true);
+      // click が続かないとき（指を離した場所が別の要素）は、次の操作の click を止めない
+      setTimeout(() => window.removeEventListener("click", suppress, true));
     };
     window.addEventListener("pointerup", finish);
     window.addEventListener("pointercancel", finish);
   };
   /** キーで操作する要素（ノード・グループのタイトルの行の帯・線） */
   const keyTargetOf = (element: Element | undefined) => {
-    const node = element
-      ?.closest(".mdmark-diagram-node[data-node]")
-      ?.getAttribute("data-node");
-    if (node) return { node, selector: `[data-node="${CSS.escape(node)}"]` };
+    const nodeElement = element?.closest(".mdmark-diagram-node[data-node]");
+    const node = nodeElement?.getAttribute("data-node");
+    // リンク先を持つノードは、ノードの代わりにリンクがフォーカスを受ける
+    if (node) {
+      const linked = nodeElement?.querySelector(".mdmark-diagram-node-link");
+      const selector = `[data-node="${CSS.escape(node)}"]`;
+      return {
+        node,
+        linked: linked !== null && linked !== undefined,
+        selector: linked ? `${selector} .mdmark-diagram-node-link` : selector,
+      };
+    }
     const group = element
       ?.closest(".map-group-bar")
       ?.closest("[data-group]")
@@ -582,7 +692,9 @@ export const attachMapFlow = (
     // Enter・Space でノードを、Enter で線の両端を選ぶ
     if (
       keyTarget &&
-      (event.key === "Enter" || (event.key === " " && keyTarget.node))
+      (event.key === "Enter" || (event.key === " " && keyTarget.node)) &&
+      // リンクの Enter はリンクを開く
+      !(event.key === "Enter" && keyTarget.linked)
     ) {
       if (keyTarget.node) {
         event.preventDefault();
@@ -657,8 +769,9 @@ export const attachMapFlow = (
   let band: BandHandle | undefined;
   /** 案内を始めたときに中へ入っていたグループ（停止で戻す） */
   let walkFrom: { entered: string | undefined } | undefined;
-  if (data.walkthroughs.length > 0) {
-    const steps: BandStep[] = data.walkthroughs.map((step) => ({
+  const walkthroughs = extension?.walkthroughs ?? data.walkthroughs;
+  if (walkthroughs.length > 0) {
+    const steps: BandStep[] = walkthroughs.map((step) => ({
       title: step.title ?? "",
       text: step.text,
       nodes: step.nodes,
@@ -667,7 +780,10 @@ export const attachMapFlow = (
     }));
     band = attachBand({
       figure,
-      mode: "walkthrough",
+      mode: extension?.bandMode ?? "walkthrough",
+      ...(extension?.bandUnit === undefined
+        ? {}
+        : { unit: extension.bandUnit }),
       steps,
       interval: args.interval,
       autoplay: args.play === "autoplay",
@@ -675,6 +791,7 @@ export const attachMapFlow = (
         typeof matchMedia !== "undefined" &&
         matchMedia("(prefers-reduced-motion: reduce)").matches,
       apply: (step) => {
+        currentStep = step === undefined ? undefined : steps.indexOf(step);
         if (step !== undefined) {
           onWalk?.();
           walkFrom ??= { entered: state.entered };

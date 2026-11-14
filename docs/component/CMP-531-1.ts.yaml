@@ -1,0 +1,139 @@
+id: CMP-531-1
+visibility: internal
+title: mapのER図
+implementation: src/parts/map.ts#renderMapErDiagram
+story: Parts/MapEr
+states:
+  - name: Default
+    description: テーブル 5 つ・分類のグループ「記録」・関連 5 本。テーブルは列の行（キー・名前・型・説明のボタン）を持ち、関連は FK の列の行の高さの辺から引き、両端に多重度を出す
+    notes:
+      定義: モックの `ER`・`ER_DATA`（`docs/mock/refs/531/assets/samples.js`）
+  - name: ColumnsCollapsed
+    description: 「注文」の列を閉じた。テーブル名と「列 8」のボタンの 1 行になり、関連はノードの辺の中ほどにつながる
+    args:
+      - name: collapsed
+        value: '["注文"]'
+  - name: GroupCollapsed
+    description: 分類のグループ「記録」を閉じた。「テーブル 3 件」を持つ 1 つのノードになり、中への関連が相手ごとに 1 本にまとまる
+    args:
+      - name: collapsed
+        value: '["記録"]'
+  - name: Entered
+    description: 分類のグループ「記録」の中へ入った。外のテーブルが薄い
+    args:
+      - name: entered
+        value: 記録
+  - name: TableSelected
+    description: 「明細」を選んだ。その関連と相手のテーブルのほかが薄い
+    args:
+      - name: selected
+        value: '["明細"]'
+  - name: PathSelected
+    description: 「顧客」と「明細」を選んだ。最短の経路 2 本のテーブルと関連が残り、1 の側から多の側へたどる関連 3 本に行が増える旨のマーカーがある
+    args:
+      - name: selected
+        value: '["顧客", "明細"]'
+      - name: fanouts
+        value: '[{"wire": "r1", "from": "顧客", "to": "注文"}, {"wire": "r2", "from": "注文", "to": "明細"}, {"wire": "r3", "from": "商品", "to": "明細"}]'
+  - name: FanoutTip
+    description: PathSelected の場面で、「顧客」→「注文」の行が増える旨のマーカーにフォーカスした。図のツールチップに「顧客 から 注文 へたどると、顧客 の 1 行に 注文 の行が複数つながる」旨が出る
+    args:
+      - name: selected
+        value: '["顧客", "明細"]'
+      - name: fanouts
+        value: '[{"wire": "r1", "from": "顧客", "to": "注文"}, {"wire": "r2", "from": "注文", "to": "明細"}, {"wire": "r3", "from": "商品", "to": "明細"}]'
+  - name: Narrow
+    description: 幅 390px の置き場所。図は倍率 1 のまま表示する枠の中で横にスクロールする
+lead: map の `erDiagram` を、テーブルを列の行を持つノード、補足の `groups` の分類を入れ子のグループにして、構成図の部品の上に描く。関連の端を列の行の高さへ付け替え、両端の多重度とラベル、列の開閉、2 つのテーブルの経路の強調と行が増える関連のマーカーを持つ。
+args:
+  - name: layout
+    type: オブジェクト
+    required: true
+    description: '自動配置の結果（`MapLayout`）。テーブルはノード、分類はグループ。関連の線は、自動配置の経路の両端を、つなぐ列（コメントが `参照: {相手のテーブル}.{列}` の FK の列、相手のテーブル名で始まる名前の FK の列、PK の列の順）の行の縦の中ほどの左右の辺へ付け替えた経路で描く'
+  - name: layout.nodes[].columns
+    type: オブジェクトの配列
+    required: true
+    description: テーブルの列（`{ name, type, keys, comment, note }`。`keys` は `PK`・`FK`・`UK` の並び）。列ごとにキー・名前・型の行と、`note`（補足の `{テーブル}.{列}` の説明）か `comment` があるときは説明のボタンを描く
+  - name: layout.wires[].cardinality
+    type: オブジェクト
+    required: true
+    description: 関連の両端の多重度（`{ from, to }`。値は `1`・`0..1`・`1..n`・`0..n`）。端の横の区間の上側に文字で出す
+  - name: layout.wires[].dashed
+    type: 真偽値
+    required: false
+    default: 'false'
+    description: '`..` の関連。破線で描く。関連の線はどれも矢じりを持たない'
+  - name: collapsed
+    type: 配列
+    required: false
+    default: '[]'
+    description: 列を閉じたテーブル名と、閉じた分類の ID。閉じたテーブルはテーブル名と「列 {数}」の開閉のボタンの 1 行で描き、閉じた分類は名前の後ろに「テーブル {数} 件」を出す
+  - name: entered
+    type: 文字列
+    required: false
+    default: なし（全体）
+    description: 中へ入った分類の ID。構成図の部品と同じ
+  - name: selected
+    type: 配列
+    required: false
+    default: '[]'
+    description: 選んだテーブル名。1 つならその関連と相手のテーブル、2 つなら 2 つをつなぐ最短の経路に乗る全ての関連とテーブルを残す
+  - name: fanouts
+    type: オブジェクトの配列
+    required: false
+    default: '[]'
+    description: 2 つ選んだときに、経路を 1 の側から多の側へたどる関連（`{ wire, from, to }`）。関連の両端を除いた最も長い区間の中ほどの、ラベルの反対側に `button.map-er-fanout`（「×n」）を配置する
+  - name: focus
+    type: オブジェクト
+    required: false
+    default: なし（薄くしない）
+    description: 案内・線のホバーで強調するテーブルと関連。構成図の部品と同じ
+  - name: packets
+    type: オブジェクトの配列
+    required: false
+    default: '[]'
+    description: データの印を流す関連。構成図の部品と同じ
+  - name: terms
+    type: オブジェクト
+    required: false
+    default: なし（下線を付けない）
+    description: 用語から意味への対応。テーブル名と列の名前の中の用語を `span.mdmark-term` にする
+events:
+  - name: 列を開閉する
+    when: テーブル名の行の開閉のボタンを押す（全て開く・全て閉じるはテーブルと分類の両方）
+    value: テーブル名
+    description: '`mount` が `collapsed` を切り替えて配置し直し、関連の端をつなぎ直す'
+  - name: 開閉する・中へ入る
+    when: 分類のグループの山形・タイトルのボタンを押す
+    value: 分類の ID
+    description: 構成図の部品の「開閉する」「中へ入る」と同じ
+  - name: 選ぶ
+    when: テーブル名の行の、名前の文字とボタンの外を押す。テーブルにフォーカスして Enter か Space を押す
+    value: テーブル名
+    description: '`mount` が `selected` を切り替え、2 つになったら `fanouts` を求める。列の行を押しても選択は変わらない'
+  - name: 線を指す
+    when: 関連の線にポインターを乗せるかフォーカスする。離す
+    value: 線の ID
+    description: 構成図の部品と同じ
+css_properties:
+  - name: --mdmark-map-er-key
+    syntax: <color>
+    default: var(--mdmark-color-accent-orange-text)
+    description: 列の行のキー（`PK`・`FK`・`UK`）の文字の色
+uses:
+  - component: CMP-472-5#
+    how: ノード・グループ・線の描き方と、開閉・中へ入る・選択・強調・データの印・移動
+  - component: CMP-472-38#
+    how: 列の説明・テーブルと関連の説明・行が増える旨のマーカーの説明
+accessibility:
+  - 列の開閉のボタンは `aria-expanded` と `aria-label="{テーブル}の列を開く"`（開いているときは `閉じる`）を持つ
+  - 列の説明のボタンと行が増える旨のマーカーは `button` で、フォーカスとポインターで図のツールチップを出し、`aria-describedby` でつなぐ。Esc とフォーカスを外したときに閉じる
+  - テーブルのノードは構成図のノードと同じく `tabindex="0"` を持ち、選んだかをスクリーンリーダー向けの名前の末尾の `（選択中）` で伝える
+  - 列の名前の文字は選んでコピーできる
+  - 行が増える旨のマーカーは色だけでなく「×n」の文字で示す
+refs:
+  - IF-472-35#constraints[map の ER 図]
+status: planned
+introduced:
+  pr: 531
+test_file: tests/integration/lib/map-er.story.test.ts

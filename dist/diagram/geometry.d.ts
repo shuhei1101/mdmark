@@ -41,24 +41,4 @@ export declare function stackSeries(series: number[][]): Array<Array<{
 }>>;
 /** 高さを `RESIZE.min` 以上に収め、整数に丸める（上限は持たない） */
 export declare function clampDiagramHeight(height: number): number;
-/** グループのタイトル 1 つの位置（定義の座標） */
-export type StickyTitle = {
-    /** 元の上端 */
-    base: number;
-    /** グループの下端 */
-    bottom: number;
-    /** タイトルの高さ */
-    height: number;
-    /** システムの枠のタイトルか */
-    frame: boolean;
-};
-/** 表示する枠の上端（定義の座標）から、タイトルごとに下へずらす量と留めているかを求める（枠・層の順） */
-export declare function stickyTitleShifts(options: {
-    top: number;
-    gap: number;
-    titles: StickyTitle[];
-}): Array<{
-    shift: number;
-    stuck: boolean;
-}>;
 export {};

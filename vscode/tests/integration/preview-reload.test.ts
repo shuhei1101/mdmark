@@ -53,7 +53,11 @@ suite("プレビューをリロードする", () => {
     await waitFor(
       async () => (await inspect(".mdmark-preview-notice")).length === 0,
     );
-    assert.ok((await inspect(".mdmark-diagram-frame")).length > 0);
+    await waitFor(
+      async () =>
+        (await inspect('figure.mdmark-diagram[data-diagram="map"]')).length > 0,
+      { message: "map の構成図が描かれていない" },
+    );
     assert.ok(
       (await inspect("h1")).some((item) => item.text.includes("見出し")),
     );

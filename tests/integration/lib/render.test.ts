@@ -5,13 +5,11 @@ import type {
   MdmarkAlias,
   MdmarkConfig,
   MdmarkExtension,
-  MdmarkFlowDefinition,
   MdmarkIndex,
   MdmarkReferences,
 } from "../../../src/index.ts";
 import {
   INQUIRY_COUNT_TEXT,
-  INQUIRY_HINT_TEXT,
   LENGTH_TIME_TEXT,
   REPLY_KIND_TEXT,
   wrapHtml,
@@ -19,10 +17,8 @@ import {
 import {
   INQUIRY_SEQ_TEXT,
   INQUIRY_TEXT,
-  JUDGEMENT_AUTO_TEXT,
   parsed,
   REPLY_TIME_TEXT,
-  SINGLE_KINDS_TEXT,
   STRENGTH_TEXT,
   wrapDirective,
 } from "../../unit/helpers/diagrams.ts";
@@ -37,8 +33,11 @@ import {
 } from "../../unit/helpers/html.ts";
 import {
   DATA as MAP_DATA,
+  ER as MAP_ER,
+  ER_DATA as MAP_ER_DATA,
   FLOW as MAP_FLOW,
   SEQUENCE as MAP_SEQUENCE,
+  STATE as MAP_STATE,
   mapRange,
 } from "../../unit/helpers/map.ts";
 import { stripSourceLine } from "../../unit/helpers/source-line.ts";
@@ -747,6 +746,55 @@ test("test_normal_when_table_long_columns", async () => {
   expect(html).not.toContain("mdmark-syntax-warning");
 });
 
+// sort の機能を持つ表で、並べ替えを付けない長文の列と columns.{列名}.sort が false の列を data-no-sort に写す（正常系）
+test("test_normal_when_table_sort_columns", async () => {
+  // 準備
+  const render = await loadRender();
+  const wide = (count: number): string => "あ".repeat(count);
+  const table = (mark: string): string =>
+    [
+      `<!-- table: ${mark} -->`,
+      "",
+      "| 名前 | 更新日 | 説明 |",
+      "| --- | --- | --- |",
+      `| ${wide(6)} | 2026-11-01 | ${wide(40)} |`,
+      `| ${wide(4)} | 2026-11-05 | ${wide(40)} |`,
+      "",
+      "<!-- /table -->",
+      "",
+    ].join("\n");
+  const markdown = [
+    table('{"kind": "data"}'),
+    table(
+      '{"kind": "data", "columns": {"説明": {"sort": true}, "名前": {"sort": false}}}',
+    ),
+    table('{"kind": "plain", "features": {"sort": {}}}'),
+    table('{"kind": "plain", "columns": {"名前": {"sort": true}}}'),
+    table(
+      '{"kind": "data", "features": {"sort": {"enabled": false}}, "columns": {"説明": {"sort": true}}}',
+    ),
+  ].join("\n");
+  // 実行
+  const html = render(markdown);
+  // 検証
+  const wrappers = [...html.matchAll(/<div class="mdmark-table"[^>]*>/g)].map(
+    (match) => match[0],
+  );
+  expect(wrappers).toHaveLength(5);
+  const [a = "", b = "", c = "", d = "", e = ""] = wrappers;
+  const hasSort = (tag: string): boolean =>
+    /data-features="[^"]*\bsort\b/.test(tag);
+  expect(a).toContain(' data-no-sort="2"');
+  expect(b).toContain(' data-no-sort="0"');
+  expect(hasSort(c)).toBe(true);
+  expect(c).toContain(' data-no-sort="2"');
+  expect(hasSort(d)).toBe(true);
+  expect(d).toContain(' data-no-sort="2"');
+  expect(hasSort(e)).toBe(false);
+  expect(e).not.toContain("data-no-sort");
+  expect(html).not.toContain("mdmark-syntax-warning");
+});
+
 // 見出しに無い列名の pin=・check= と、pin の機能の無い表の pin= を記載の警告にして適用しない（正常系）
 test("test_normal_when_table_column_errors", async () => {
   // 準備
@@ -970,85 +1018,47 @@ test("test_normal_when_diagram", async () => {
   const markdown = [
     "前の段落",
     "",
-    wrapDirective("flow", INQUIRY_TEXT),
-    wrapDirective("sequence", INQUIRY_SEQ_TEXT),
     wrapDirective("chart", REPLY_TIME_TEXT),
     wrapDirective("param", STRENGTH_TEXT),
     "<script>window.__ran = true</script>",
     "",
   ].join("\n");
-  const flow = parsed<MdmarkFlowDefinition>(INQUIRY_TEXT);
   // 実行
   const html = render(markdown);
   // 検証
   const figures = diagramFigures(html);
-  expect(figures).toHaveLength(4);
-  expect(
-    figures.slice(0, 3).map((tag) => /data-diagram="(\w+)"/.exec(tag)?.[1]),
-  ).toEqual(["flow", "sequence", "chart"]);
+  expect(figures).toHaveLength(2);
+  expect(figures.map((tag) => /data-diagram="(\w+)"/.exec(tag)?.[1])).toEqual([
+    "chart",
+    "chart",
+  ]);
   // 操作できる部品は、グラフの図を持つ
   expect(html).toMatch(
     /<div[^>]*class="mdmark-param"[\s\S]*<figure[^>]*data-diagram="chart"/,
   );
   expect(
     startTags(html, "ul").filter((tag) => tag.includes('aria-label="凡例"')),
-  ).toHaveLength(4);
-  for (const title of [
-    "問い合わせへの自動返信の構成",
-    "問い合わせ 1 通の流れ",
-    "返信までの時間",
-  ]) {
-    expect(html, title).toContain(title);
-  }
-  expect(html).toContain(
-    "範囲: メールを受け取ってから返信するまで・更新日: <time",
-  );
-  // フロー図: 3 つの層が定義の順にあり、枠の外のノードが枠の外の座標にある
-  const lanes = startTags(html, "div").filter((tag) =>
-    tag.includes('class="mdmark-diagram-lane"'),
-  );
-  expect(lanes.map((tag) => /data-kind="(\w+)"/.exec(tag)?.[1])).toEqual(
-    flow.lanes?.map((lane) => lane.kind),
-  );
-  const frameLeft = Number(
-    /left:(-?[\d.]+)px/.exec(
-      startTags(html, "div").find((tag) =>
-        tag.includes('class="mdmark-diagram-frame"'),
-      ) ?? "",
-    )?.[1],
-  );
-  const mailLeft = Number(
-    /left:(-?[\d.]+)px/.exec(
-      startTags(html, "div").find((tag) => tag.includes('data-node="mail"')) ??
-        "",
-    )?.[1],
-  );
-  expect(mailLeft).toBeLessThan(frameLeft);
-  // 交わる横の線は飛び越えの弧を持ち、loop の線は破線で戻り先のラベルを持つ
-  expect(html).toMatch(/<path[^>]*data-line="flow"[^>]*d="[^"]* A6,6 /);
-  expect(html).toMatch(/<path[^>]*data-line="loop"[^>]*stroke-dasharray="8 4"/);
-  expect(html).toContain("次の問い合わせへ（受け取りへ戻る）");
-  // tip を持つ線と io を持つノード: role="tooltip" と hidden を持つ中身があり、マーカーは io を持つノードにだけ
-  const tips = startTags(html, "div").filter((tag) =>
-    tag.includes('role="tooltip"'),
-  );
-  const withTip = flow.wires.filter((wire) => wire.tip).length;
-  const withIo = flow.nodes.filter((node) => node.io).length;
-  expect(tips.length).toBeGreaterThanOrEqual(withTip + withIo);
-  for (const tag of tips) {
-    expect(tag).toContain("hidden");
-  }
-  expect(
-    startTags(html, "button").filter((tag) =>
-      tag.includes("mdmark-diagram-info"),
-    ),
-  ).toHaveLength(withIo);
+  ).toHaveLength(2);
+  expect(html).toContain("返信までの時間");
+  expect(html).toContain("返信の速さの見積もり");
   // 操作できる部品: スライダーの値が既定の値
   const range =
     startTags(html, "input").find((tag) => tag.includes('type="range"')) ?? "";
   expect(range).toContain('value="5"');
+  // グラフの点: フォーカスでき、系列の名前と値の hidden のツールチップを持つ
+  const items = findTags(html, "mdmark-diagram-item-hit");
+  expect(items.length).toBeGreaterThan(0);
+  for (const tag of items) {
+    expect(tag).toContain('tabindex="0"');
+  }
+  const tips = findTags(html, 'role="tooltip"');
+  expect(tips.length).toBeGreaterThan(0);
+  for (const tag of tips) {
+    expect(tag).toContain("hidden");
+  }
+  expect(html).toContain("自動返信");
   // 定義の JSON と文書のスクリプトを出さない
-  expect(html).not.toContain('"nodes"');
+  expect(html).not.toContain('"series"');
   expect(html).not.toContain("<script");
   expect(html).not.toContain("<!--");
   expect(html).toContain("<p>前の段落</p>");
@@ -1058,13 +1068,15 @@ test("test_normal_when_diagram", async () => {
 test("test_normal_when_diagram_invalid", async () => {
   // 準備
   const render = await loadRender();
-  const broken = INQUIRY_TEXT.slice(0, INQUIRY_TEXT.lastIndexOf("}"));
-  const robot = parsed<MdmarkFlowDefinition>(INQUIRY_TEXT);
-  Object.assign(robot.nodes[2] ?? {}, { kind: "robot" });
+  const broken = REPLY_TIME_TEXT.slice(0, REPLY_TIME_TEXT.lastIndexOf("}"));
+  const robot = {
+    ...parsed<Record<string, unknown>>(REPLY_TIME_TEXT),
+    type: "robot",
+  };
   const markdown = [
-    wrapDirective("flow", broken),
-    wrapDirective("flow", JSON.stringify(robot)),
-    wrapDirective("flow", INQUIRY_TEXT),
+    wrapDirective("chart", broken),
+    wrapDirective("chart", JSON.stringify(robot)),
+    wrapDirective("chart", REPLY_TIME_TEXT),
     "段落",
     "",
   ].join("\n");
@@ -1078,18 +1090,50 @@ test("test_normal_when_diagram_invalid", async () => {
   ].map((match) => match[1] ?? "");
   expect(warnings).toHaveLength(2);
   expect(warnings[0]).toContain(
-    "フロー図の部品の定義を JSON として読み込めません",
+    "グラフの部品の定義を JSON として読み込めません",
   );
   expect(warnings[0]).toContain("行目");
   expect(warnings[0]).toContain("}");
-  for (const word of [
-    "分類",
-    "robot",
-    "llm・dm・script・mcp・data・external",
-  ]) {
+  for (const word of ["robot", "line・bar・pie"]) {
     expect(warnings[1], word).toContain(word);
   }
   expect(diagramFigures(html)).toHaveLength(1);
+  expect(html).toContain("<p>段落</p>");
+});
+
+// 廃止した flow・sequence の範囲を mdmark upgrade で変換できる記載の警告、<mdmark-flow> を map の範囲で記載し直す記載の警告にして描かない（正常系）
+test("test_normal_when_retired_diagram", async () => {
+  // 準備
+  const render = await loadRender();
+  const markdown = [
+    wrapDirective("flow", INQUIRY_TEXT),
+    wrapDirective("sequence", INQUIRY_SEQ_TEXT),
+    wrapHtml(`<p>前</p>\n<mdmark-flow>\n${INQUIRY_TEXT}\n</mdmark-flow>`),
+    "段落",
+    "",
+  ].join("\n");
+  // 実行
+  const html = render(markdown);
+  // 検証
+  const warnings = [
+    ...html.matchAll(
+      /<div class="mdmark-syntax-warning"[^>]*>([\s\S]*?)<\/div>/g,
+    ),
+  ].map((match) => plainText(match[1] ?? ""));
+  expect(warnings).toHaveLength(3);
+  for (const [index, name] of ["flow", "sequence"].entries()) {
+    expect(warnings[index]).toContain(
+      `<!-- ${name} --> の図の記載方法は廃止しました。`,
+    );
+    expect(warnings[index]).toContain("mdmark upgrade");
+  }
+  // 埋め込んだ HTML の要素は、map の範囲で記載し直す文
+  expect(warnings[2]).toContain("<mdmark-flow> の要素は廃止しました。");
+  expect(warnings[2]).toContain("<!-- map --> の範囲で記載し直してください");
+  expect(warnings[2]).not.toContain("mdmark upgrade");
+  expect(diagramFigures(html)).toHaveLength(0);
+  expect(html).not.toContain('"nodes"');
+  expect(html).not.toContain("<mdmark-flow");
   expect(html).toContain("<p>段落</p>");
 });
 
@@ -1097,7 +1141,7 @@ test("test_normal_when_diagram_invalid", async () => {
 test("test_normal_when_diagram_feature_disabled", async () => {
   // 準備
   const render = await loadRender();
-  const markdown = `<!-- features: {"diagrams": false} -->\n\n${wrapDirective("flow", INQUIRY_TEXT)}`;
+  const markdown = `<!-- features: {"diagrams": false} -->\n\n${wrapDirective("chart", REPLY_TIME_TEXT)}`;
   // 実行
   const html = render(markdown);
   // 検証
@@ -1111,7 +1155,7 @@ test("test_normal_when_diagram_sanitized", async () => {
   // 準備
   const render = await loadRender();
   const markdown = [
-    wrapDirective("flow", INQUIRY_TEXT),
+    wrapDirective("chart", REPLY_TIME_TEXT),
     '<svg width="10"><text>生の文字</text></svg>',
     "<button>生のボタン</button>",
     "",
@@ -1234,7 +1278,7 @@ test("test_normal_when_html_and_hints_disabled", async () => {
   // 準備
   const render = await loadRender();
   const htmlOff = wrapHtml(EMBEDDED_BODY, '<!-- features: {"html": false} -->');
-  const diagramHints = `<!-- features: {"hints": false} -->\n\n${wrapDirective("flow", INQUIRY_HINT_TEXT)}`;
+  const diagramHints = `<!-- features: {"hints": false} -->\n\n${wrapDirective("er", erText(shopEr()))}`;
   const hintsOff = `${wrapHtml(EMBEDDED_BODY)}\n${diagramHints}`;
   // 実行
   const offHtml = render(htmlOff);
@@ -1252,7 +1296,9 @@ test("test_normal_when_html_and_hints_disabled", async () => {
   for (const tag of tooltips) {
     expect(tag).toMatch(/data-tip-for="item:\d+"/);
   }
-  expect(offHints).toContain("窓口の MCP");
+  // ER 図のテーブルと列の名前は出て、テーブルの説明のボタンとツールチップの中身は無い
+  expect(offHints).toContain("顧客");
+  expect(offHints).toContain("email");
   expect(offHints).not.toContain("mdmark-diagram-info");
 });
 
@@ -3234,222 +3280,6 @@ test("test_normal_when_footnotes_disabled", async () => {
   expect(html).not.toContain("mdmark-footnotes");
 });
 
-/** ノードの `data-node` ごとの位置と大きさ（`style` の `left`・`top`・`width`・`height`） */
-function nodeBoxes(
-  html: string,
-): Map<string, { x: number; y: number; w: number; h: number }> {
-  const boxes = new Map<
-    string,
-    { x: number; y: number; w: number; h: number }
-  >();
-  for (const tag of startTags(html, "div")) {
-    const id = /data-node="([^"]+)"/.exec(tag)?.[1];
-    const style =
-      /left:(-?[\d.]+)px;top:(-?[\d.]+)px;width:([\d.]+)px;height:([\d.]+)px/.exec(
-        tag,
-      );
-    if (id !== undefined && style) {
-      boxes.set(id, {
-        x: Number(style[1]),
-        y: Number(style[2]),
-        w: Number(style[3]),
-        h: Number(style[4]),
-      });
-    }
-  }
-  return boxes;
-}
-
-/** 線の `data-wire` ごとの、パスの `M`・`L` の点 */
-function wirePoints(html: string): Map<string, Array<[number, number]>> {
-  const points = new Map<string, Array<[number, number]>>();
-  for (const tag of startTags(html, "path")) {
-    const id = /data-wire="([^"]+)"/.exec(tag)?.[1];
-    const d = / d="([^"]*)"/.exec(tag)?.[1];
-    if (id === undefined || d === undefined) {
-      continue;
-    }
-    points.set(
-      id,
-      [...d.matchAll(/[ML]\s*(-?[\d.]+)[ ,](-?[\d.]+)/g)].map(
-        ([, x = "0", y = "0"]): [number, number] => [Number(x), Number(y)],
-      ),
-    );
-  }
-  return points;
-}
-
-// 座標を省いた判定フローチャートを配置して描き、座標を省けない定義を記載の警告にする（正常系）
-test("test_normal_when_flowchart_auto_layout", async () => {
-  // 準備
-  const render = await loadRender();
-  const auto = JSON.parse(JUDGEMENT_AUTO_TEXT) as {
-    nodes: Array<Record<string, unknown>>;
-    wires: Array<{ id: string; from: string; to: string }>;
-  };
-  const mixed = structuredClone(auto);
-  Object.assign(mixed.nodes[1] ?? {}, { x: 60, y: 156, w: 280, h: 136 });
-  const notJudgement = structuredClone(auto);
-  Object.assign(notJudgement.nodes[2] ?? {}, { kind: "llm" });
-  const markdown = [
-    wrapDirective("flow", JUDGEMENT_AUTO_TEXT),
-    wrapDirective("flow", JSON.stringify(mixed)),
-    wrapDirective("flow", JSON.stringify(notJudgement)),
-    "後の段落",
-    "",
-  ].join("\n");
-  // 実行
-  const html = render(markdown);
-  // 検証
-  const figures = diagramFigures(html);
-  expect(figures).toHaveLength(1);
-  const boxes = nodeBoxes(html);
-  const lines = wirePoints(html);
-  expect(boxes.size).toBe(6);
-  expect(lines.size).toBe(6);
-  const box = (id: string) => {
-    const found = boxes.get(id);
-    if (found === undefined) {
-      throw new Error(`ノードが無い: ${id}`);
-    }
-    return found;
-  };
-  expect(Math.min(...[...boxes.values()].map((item) => item.y))).toBe(
-    box("start").y,
-  );
-  expect(box("q1").x).toBe(box("q2").x);
-  expect(box("q1").y).toBeLessThan(box("q2").y);
-  expect(box("a1").x).toBeGreaterThan(box("q1").x + box("q1").w);
-  expect(box("r1").x).toBeGreaterThan(box("q2").x + box("q2").w);
-  expect(box("r2").y).toBeGreaterThan(box("q2").y + box("q2").h);
-  // 重ならず、図の中にある
-  const stage =
-    /class="mdmark-diagram-stage" style="width:([\d.]+)px;height:([\d.]+)px/.exec(
-      html,
-    );
-  const width = Number(stage?.[1]);
-  const height = Number(stage?.[2]);
-  const all = [...boxes.entries()];
-  for (const [id, item] of all) {
-    expect(item.x + item.w, id).toBeLessThanOrEqual(width);
-    expect(item.y + item.h, id).toBeLessThanOrEqual(height);
-    for (const [other, next] of all) {
-      if (other === id) {
-        continue;
-      }
-      const overlaps =
-        item.x < next.x + next.w &&
-        next.x < item.x + item.w &&
-        item.y < next.y + next.h &&
-        next.y < item.y + item.h;
-      expect(overlaps, `${id} と ${other}`).toBe(false);
-    }
-  }
-  // 線は縦と横だけで、端でないノードの中を通らない
-  for (const wire of auto.wires) {
-    const path = lines.get(wire.id) ?? [];
-    expect(path.length, wire.id).toBeGreaterThanOrEqual(2);
-    for (const [index, [x, y]] of path.slice(1).entries()) {
-      const [px, py] = path[index] ?? [x, y];
-      expect(px === x || py === y, wire.id).toBe(true);
-      for (const [id, item] of all) {
-        if (id === wire.from || id === wire.to) {
-          continue;
-        }
-        const crosses =
-          Math.max(px, x) > item.x &&
-          Math.min(px, x) < item.x + item.w &&
-          Math.max(py, y) > item.y &&
-          Math.min(py, y) < item.y + item.h;
-        expect(crosses, `${wire.id} と ${id}`).toBe(false);
-      }
-    }
-  }
-  const [mixedWarning = "", kindWarning = ""] = warnings(html).map(plainText);
-  expect(mixedWarning).toContain("全て記載するか、全て省いて");
-  expect(kindWarning).toContain("llm");
-  expect(kindWarning).toContain("判定フローチャート");
-  expect(html).toContain("<p>後の段落</p>");
-  expect(render(markdown)).toBe(html);
-});
-
-// リンク先を持つノードをリンクにし、許さないリンク先のノードをリンクにせず記載の警告にする（正常系）
-test("test_normal_when_node_link", async () => {
-  // 準備
-  const render = await loadRender();
-  const node = (id: string, x: number, extra: Record<string, unknown>) => ({
-    id,
-    kind: "script",
-    x,
-    y: 40,
-    w: 140,
-    h: 72,
-    name: `ノード${id}`,
-    ...extra,
-  });
-  const definition = {
-    title: "リンク",
-    scope: "点検",
-    updated: "2026-11-05",
-    width: 900,
-    height: 152,
-    nodes: [
-      node("a", 20, {
-        href: "https://example.com/spec",
-        io: { in: "本文", do: "分ける", out: "種類" },
-      }),
-      node("b", 200, { href: "./other.md" }),
-      node("c", 380, { href: "javascript:alert(1)" }),
-      node("d", 560, { href: "id:spec#items" }),
-      node("e", 740, {}),
-    ],
-    wires: [],
-  };
-  // 実行
-  const html = render(wrapDirective("flow", JSON.stringify(definition)));
-  // 検証
-  const nodeHtml = (id: string) => outerHtmlOf(html, `data-node="${id}"`);
-  for (const [id, href] of [
-    ["a", "https://example.com/spec"],
-    ["b", "./other.md"],
-  ] as const) {
-    const tag = startTags(html, "div").find((item) =>
-      item.includes(`data-node="${id}"`),
-    );
-    expect(tag).toContain("has-link");
-    expect(nodeHtml(id)).toContain(
-      `<a class="mdmark-diagram-node-link" href="${href}" aria-label="ノード${id}"></a>`,
-    );
-  }
-  expect(nodeHtml("a")).toMatch(
-    /<a class="mdmark-diagram-node-link"[^>]*><\/a><button[^>]*mdmark-diagram-info/,
-  );
-  for (const id of ["c", "d", "e"]) {
-    const tag = startTags(html, "div").find((item) =>
-      item.includes(`data-node="${id}"`),
-    );
-    expect(tag, id).not.toContain("has-link");
-    expect(nodeHtml(id), id).not.toContain("<a ");
-    expect(nodeHtml(id), id).toContain(`ノード${id}`);
-  }
-  const found = warnings(html);
-  expect(found).toHaveLength(1);
-  const text = plainText(found[0] ?? "");
-  for (const word of [
-    "c",
-    "d",
-    "javascript:alert(1)",
-    "id:spec#items",
-    "mailto",
-  ]) {
-    expect(text).toContain(word);
-  }
-  expect(html.indexOf("mdmark-syntax-warning")).toBeLessThan(
-    html.indexOf("mdmark-diagram"),
-  );
-  expect(html.replace("javascript:alert(1)", "")).not.toContain("javascript:");
-});
-
 // wrap を持つコードブロックとファイルツリーに折り返す class を付け、値を持つ wrap= を記載の警告にする（正常系）
 test("test_normal_when_wrap", async () => {
   // 準備
@@ -4358,24 +4188,6 @@ test("test_normal_when_range_scripts_both_languages", async () => {
   expect(html).toContain("<p>後ろの段落</p>");
 });
 
-// ノードも線も 1 種類ずつのフロー図は、凡例の項目を持たずに描く（正常系（種類が 1 つずつの図））
-test("test_normal_when_single_kinds", async () => {
-  // 準備
-  const render = await loadRender();
-  const definition = parsed<MdmarkFlowDefinition>(SINGLE_KINDS_TEXT);
-  // 実行
-  const html = render(wrapDirective("flow", SINGLE_KINDS_TEXT));
-  // 検証
-  expect(diagramFigures(html)).toHaveLength(1);
-  expect(findTags(html, 'data-node="')).toHaveLength(3);
-  expect(
-    matches(html, /<path[^>]* class="mdmark-diagram-wire"[^>]*>/g),
-  ).toHaveLength(2);
-  expect(html).toContain(definition.title);
-  expect(html).not.toContain("mdmark-diagram-legend-item");
-  expect(html).not.toContain("mdmark-diagram-legend-sample");
-});
-
 // page のマーカーを本文に出さず、cards の範囲のリストをカードの格子の HTML にする（正常系（ページの設定のマーカーとカードの格子））
 test("test_normal_when_page_marker_and_card_grid", async () => {
   // 準備
@@ -4582,12 +4394,15 @@ test("test_normal_when_map_range", async () => {
       data: MAP_DATA,
     }),
     mapRange({ mermaid: MAP_SEQUENCE }),
+    mapRange({ mermaid: MAP_ER, data: MAP_ER_DATA }),
+    mapRange({ mermaid: MAP_STATE }),
+    mapRange({ mermaid: MAP_STATE.replace("stateDiagram-v2", "stateDiagram") }),
   ].join("\n");
   // 実行
   const html = render(markdown);
   // 検証
   const ranges = findTags(html, 'class="mdmark-map"');
-  expect(ranges).toHaveLength(2);
+  expect(ranges).toHaveLength(5);
   expect(ranges[0]).toContain('data-map="1"');
   expect(ranges[0]).toContain('data-map-kind="flowchart"');
   expect(ranges[0]).toContain(
@@ -4595,12 +4410,17 @@ test("test_normal_when_map_range", async () => {
   );
   expect(ranges[1]).toContain('data-map="2"');
   expect(ranges[1]).toContain('data-map-kind="sequenceDiagram"');
+  // ER 図と状態遷移図（stateDiagram-v2・stateDiagram）の範囲
+  expect(ranges[2]).toContain('data-map="3"');
+  expect(ranges[2]).toContain('data-map-kind="erDiagram"');
+  expect(ranges[3]).toContain('data-map-kind="stateDiagram"');
+  expect(ranges[4]).toContain('data-map-kind="stateDiagram"');
   const codes = findTags(html, 'class="mdmark-code"');
-  expect(codes).toHaveLength(2);
+  expect(codes).toHaveLength(5);
   for (const code of codes) expect(code).not.toContain("data-mdmark-mermaid");
-  expect(findTags(html, 'class="language-mermaid"')).toHaveLength(2);
+  expect(findTags(html, 'class="language-mermaid"')).toHaveLength(5);
   const data = findTags(html, 'class="mdmark-map-data"');
-  expect(data).toHaveLength(1);
+  expect(data).toHaveLength(2);
   expect(data[0]).toMatch(/^<pre /);
   expect(data[0]).toContain("hidden");
   expect(plainText(html)).toContain('"walkthroughs"');
@@ -4651,6 +4471,8 @@ test("test_normal_when_map_written_wrongly", async () => {
   expect(warning(pieces[2] ?? "")).toBe(1);
   expect(plainText(pieces[2] ?? "")).toContain("flowchart");
   expect(plainText(pieces[2] ?? "")).toContain("sequenceDiagram");
+  expect(plainText(pieces[2] ?? "")).toContain("erDiagram");
+  expect(plainText(pieces[2] ?? "")).toContain("stateDiagram-v2");
   expect(findTags(pieces[2] ?? "", 'class="mdmark-map"')).toHaveLength(0);
   expect(findTags(pieces[2] ?? "", "language-mermaid")).toHaveLength(1);
   // 4・5 つ目: mermaid のブロックが無い範囲・補足が 2 つの範囲

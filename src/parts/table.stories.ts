@@ -17,6 +17,19 @@ export const Data: Story = {
   },
 };
 
+export const LongColumnNotSortable: Story = {
+  name: "LongColumnNotSortable",
+  parameters: { server: { id: "table" } },
+  args: {
+    kind: "data",
+    features: '["sort","pin","filter"]',
+    columns: '["名前","更新日","説明"]',
+    rows: '[["目次","2026-11-01","比較元から見出しの下のブロックが変わったセクションの項目に、変更のマーカーを付ける。"],["表","2026-11-05","長文の列には並べ替えのボタンを付けず、短い値の列は今のまま並べ替えられる。"]]',
+    long: "[2]",
+    noSort: "[2]",
+  },
+};
+
 export const SortedAscending: Story = {
   name: "SortedAscending",
   parameters: { server: { id: "table" } },

@@ -1,0 +1,11 @@
+$ npx vitest run --project "integration*" tests/integration/lib/render.test.ts
+
+ RUN  v5.0.4 /mnt/c/Users/shuhe/repo/mdmark/.claude/worktrees/feat-diagram-retire-flow-sequence
+
+
+ Test Files  1 passed (1)
+      Tests  99 passed (99)
+   Start at  09:08:17
+   Duration  107.24s (tests 97%, import 2%, transform 2%)
+
+exit=0

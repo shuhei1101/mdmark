@@ -17,9 +17,9 @@ directory: |-
   ├── v{バージョン}/        # 出したバージョンの steps.yaml とスクリプト
   ├── next/          # 出していないバージョンの steps.yaml とスクリプト
   │   ├── steps.yaml
-  │   ├── marker-json.mjs  # 文書のマーカーの今の書き方の引数を JSON のオブジェクトへ書き換える
-  │   ├── legacy-marks.js  # marker-json.mjs が読み込む書き換えの処理（ビルドがまとめて commit する）
-  │   └── THIRD_PARTY_LICENSES.txt  # legacy-marks.js にまとめた依存のライセンス（ビルドが書き込んで commit する）
+  │   ├── retired-diagrams.mjs  # 文書の廃止した flow・sequence の範囲を map の範囲へ書き換え、設定に map.kinds・map.lines を書き足す
+  │   ├── retired-diagrams.js   # retired-diagrams.mjs が読み込む書き換えの処理と拡張の読み込み（ビルドがまとめて commit する）
+  │   └── THIRD_PARTY_LICENSES.txt  # まとめた依存のライセンス（ビルドが書き込んで commit する）
   └── no-steps.yaml  # 移行の手順が要らないスキーマの変更の一覧
   ```
 refs:

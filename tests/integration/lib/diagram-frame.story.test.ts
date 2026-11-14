@@ -285,23 +285,6 @@ test("test_resize_off", async () => {
   await expect(tool(page, "拡大").count()).resolves.toBe(1);
 });
 
-// ノードも線も 1 種類ずつのフロー図は、凡例の項目が無く、凡例の場所を取らない（NoLegendItems）
-test("test_no_legend_items", async () => {
-  // 準備・実行
-  const page = await openFrame("no-legend-items", true);
-  // 検証
-  const legend = page.locator('[aria-label="凡例"]');
-  await expect(legend.locator("li").count()).resolves.toBe(0);
-  await expect(legend.isVisible()).resolves.toBe(false);
-  const gap = await page.locator("figure.mdmark-diagram").evaluate((figure) => {
-    const box = figure
-      .querySelector(".mdmark-diagram-box")
-      ?.getBoundingClientRect();
-    return box ? figure.getBoundingClientRect().bottom - box.bottom : -1;
-  });
-  expect(gap).toBeLessThanOrEqual(16);
-});
-
 // 種類 mermaid は題名だけのタイトルで、範囲と更新日を出さず、凡例の場所を取らない（Mermaid）
 test("test_mermaid", async () => {
   // 準備・実行

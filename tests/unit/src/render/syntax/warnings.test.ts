@@ -21,13 +21,13 @@ test("test_collect_warnings_rule", () => {
   const markdown = markdownAt({
     3: ['<!-- code: {"highlight": [9]} -->', "```ts", "const a = 1;", "```"],
     10: [
-      "<!-- flow -->",
+      "<!-- chart -->",
       "",
       "```json",
       '{ "title": ',
       "```",
       "",
-      "<!-- /flow -->",
+      "<!-- /chart -->",
     ],
     20: ["```tree", "src/", "│   │   └── deep.ts", "```"],
   });

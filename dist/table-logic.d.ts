@@ -178,6 +178,16 @@ export type ColumnLines = {
 };
 /** 本文のセルが全て短い値でなく、見出しか本文のセルの行のどれかが `LONG_COLUMN_CHARS` 文字以上の列の位置を、小さい順に返却する */
 export declare const findLongColumns: (columns: ColumnLines[]) => number[];
+/** 長文の列のうち `sorts` で `true` を指定していない列と、`sorts` で `false` を指定した列の位置を、小さい順に返却する */
+export declare const findNoSortColumns: (options: {
+    /** 長文の列の位置 */
+    long: number[];
+    /** `columns.{列名}.sort` を記載した列と値 */
+    sorts: Array<{
+        column: number;
+        sort: boolean;
+    }>;
+}) => number[];
 /** `filter.type` を省いた列の絞り込みの種類。長文の列なら `text`、ほかは `select` */
 export declare const defaultFilterKind: (long: boolean) => FilterKind;
 /** 列の折り返すかと最小の幅・望む幅（px） */

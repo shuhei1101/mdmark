@@ -100,16 +100,12 @@ items:
   summary: ライブラリ本体 / CLI / config-files.ts
 - page: MOD-472-304.ts.yaml
   summary: ライブラリ本体 / 設定と機能 / config.ts
-- page: MOD-472-175.ts.yaml
-  summary: ライブラリ本体 / 図 / check.ts
 - page: MOD-472-171.ts.yaml
   summary: ライブラリ本体 / 図 / definition.ts
 - page: MOD-472-176.ts.yaml
   summary: ライブラリ本体 / 図 / er.ts
 - page: MOD-472-173.ts.yaml
   summary: ライブラリ本体 / 図 / geometry.ts
-- page: MOD-472-178.ts.yaml
-  summary: ライブラリ本体 / 図 / layout.ts
 - page: MOD-472-191.ts.yaml
   summary: ライブラリ本体 / 差分 / blocks.ts
 - page: MOD-472-190.ts.yaml
@@ -242,8 +238,16 @@ items:
   summary: ライブラリ本体 / map / 配置 / sequence-rows.ts
 - page: MOD-472-131.ts.yaml
   summary: ライブラリ本体 / map / 描画と操作 / sequence-view.ts
+- page: MOD-531-3.ts.yaml
+  summary: ライブラリ本体 / map / 描画と操作 / er-view.ts
+- page: MOD-531-4.ts.yaml
+  summary: ライブラリ本体 / map / 描画と操作 / state-view.ts
 - page: MOD-472-138.ts.yaml
   summary: ライブラリ本体 / map / 読み取り / sequence.ts
+- page: MOD-531-1.ts.yaml
+  summary: ライブラリ本体 / map / 読み取り / er.ts
+- page: MOD-531-2.ts.yaml
+  summary: ライブラリ本体 / map / 読み取り / state-diagram.ts
 - page: MOD-472-140.ts.yaml
   summary: ライブラリ本体 / map / 読み取り / spec.ts
 - page: MOD-472-129.ts.yaml
@@ -641,7 +645,7 @@ items:
 - page: MOD-472-16.yaml
   summary: プレビューのパネルの中で動く React の画面と、配布物を読み込む前にも出す部品。jsDelivr の mdmark を読み込んで `mount`・`update` で描き、スクロール・リンク・状態の表示を担う。拡張機能とのメッセージの型も持つ。
 - page: MOD-472-17.yaml
-  summary: 拡張機能を esbuild、Webview を Vite で書き出し、タグとバージョンを照合して .vsix を GitHub Release に添える。拡張機能ホストで実行する結合テストの起動も持つ。配布物には入らない。
+  summary: 拡張機能を esbuild、Webview を Vite で書き出し、タグとバージョンを照合して .vsix を GitHub Release に添え、Marketplace へ公開する。拡張機能ホストで実行する結合テストの起動も持つ。配布物には入らない。
 - page: MOD-472-18.yaml
   summary: Markdown ごとのプレビューのパネルを開き、Webview の HTML・CSP を組み、再描画し・スクロールの同期・リンクの振り分けを担う拡張機能の側の処理。
 - page: MOD-472-19.yaml
@@ -659,7 +663,7 @@ items:
 - page: MOD-472-26.yaml
   summary: map の範囲の読み取りの項目に、補足が指す ID と設定の `map` の種類・線・アイコンの照合を加え、書き方の警告と点検のずれにする項目を集める。
 - page: MOD-472-27.yaml
-  summary: map の範囲の `flowchart`・`sequenceDiagram` の Mermaid と、補足の JSON のオブジェクトを読み取る。描画を止めず、読めない行と箇所を項目にして返す。
+  summary: map の範囲の `flowchart`・`sequenceDiagram`・`erDiagram`・`stateDiagram-v2` の Mermaid と、補足の JSON のオブジェクトを読み取る。描画を止めず、読めない行と箇所を項目にして返す。
 - page: MOD-472-28.yaml
   summary: 構成図を、表示するノードとグループの集合を決めてから入れ子の内側から配置し、線の経路を引く。シーケンス図の表示する行を決める。
 - page: MOD-472-29.yaml
@@ -673,7 +677,7 @@ items:
 - page: MOD-472-33.yaml
   summary: 配布物の入口の JavaScript と CSS。JavaScript は公開関数と公開の型を export し、CSS は描いた文書の外観を `@layer mdmark` に入れて持つ。
 - page: MOD-472-34.yaml
-  summary: 図の部品（フロー図・シーケンス図・グラフ・ER 図・操作できる部品）の定義の型と確認し、線の形状の計算、部品の HTML、記法のコアルール、`mount` が付ける拡大・縮小・移動・全画面・ツールチップ・写す操作。定義から HTML までは DOM を使用せず Node でも動き、操作はブラウザでだけ動く。
+  summary: 図の部品（グラフ・ER 図・操作できる部品）の定義の型と確認し、廃止した `flow`・`sequence` の範囲の扱い、線の形状の計算、部品の HTML、記法のコアルール、`mount` が付ける拡大・縮小・移動・全画面・ツールチップ・写す操作。定義から HTML までは DOM を使用せず Node でも動き、操作はブラウザでだけ動く。
 - page: MOD-472-35.yaml
   summary: '`mount` に指定した取り出し元から 2 つのリビジョンの本文を受け、行と単語を比べて描き、ミニマップでスクロールする処理と、描いた文書のブロックを追加と削除の色で塗り分ける処理と、その部品の HTML。ブラウザでだけ動く（部品の HTML と比較は Node でも動く）。'
 - page: MOD-472-36.yaml
@@ -708,3 +712,7 @@ items:
   summary: ライブラリ本体 / 描画 / legacy-marks.ts
 - page: MOD-477-4.mjs.yaml
   summary: ライブラリ本体 / バージョンを上げる / marker-json.mjs
+- page: MOD-477-5.ts.yaml
+  summary: ライブラリ本体 / map / convert.ts
+- page: MOD-477-6.mjs.yaml
+  summary: ライブラリ本体 / バージョンを上げる / retired-diagrams.mjs

@@ -30,7 +30,6 @@
 | [er-diagram](./er-diagram/index.html) | テーブル・列の PK・FK・NN のマーカー・多重度とラベルを持つ関係の線の ER 図と、列を畳んだテーブル・テーブルのツールチップ・定義を読み込めない記載の警告 |
 | [figure](./figure/index.html) | 図と表に付ける通し番号と、番号にした参照のリンク、画像のキャプション・サイズと配置・ライトボックス・ギャラリー・テーマごとの切り替え |
 | [file-tree](./file-tree/index.html) | 罫線で記載したフォルダ構成を描いた入れ子のツリーと、注釈・拡張子ごとのアイコン・ほかにもある項目・フォルダの開閉と `open=`・ASCII の罫線・元の罫線のテキストのコピー・`wrap` で折り返すツリー |
-| [flow-diagram](./flow-diagram/index.html) | システムの枠と 3 層・外部のシステム・線の種類・線の交差・ループの戻りを持つフロー図と、開始・質問・アクション・結果のノードと YES / NO の線の判定フローチャート、座標を省いて自動で配置した判定フローチャート、リンク先を持つノードと許可しないリンク先の記載の警告、拡大して動かしたときに上端に留めたシステムの枠と層のタイトル・留めない図 |
 | [footnote](./footnote/index.html) | 本文の参照の場所の上付きの番号と番号のツールチップ、文書の末尾の閉じた脚注の一覧と本文へ戻るリンク、同じ脚注の複数回の参照・定義の無い参照・機能のオフ・印刷の見え方 |
 | [frontmatter](./frontmatter/index.html) | 機能 `frontmatter` をオンにしたときに本文の先頭に置くフロントマターの表示（キーと値の表と yaml のコードブロックの案、閉じた・開いた・入れ子・長い値） |
 | [highlighter](./highlighter/index.html) | `==text==` の蛍光ペンの既定の色と色の名前ごとの色、コメントのマーカーとの区別、知らない色の名前の記載の警告 |
@@ -40,6 +39,7 @@
 | [kbd](./kbd/index.html) | `kbd:` のキーと組み合わせ・表の中のキー・文書の HTML のルビ |
 | [link-card](./link-card/index.html) | URL だけの行のリンクのカードと、ファイルへのリンクだけの行の添付のカード |
 | [map-diagram](./map-diagram/index.html) | Mermaid と補足で書いた map の図（全体・グループの中・閉じたグループとまとめた線・案内の最初と最後・再生の一時停止・狭い幅） |
+| [map-er-state](./map-er-state/index.html) | map の ER 図・状態遷移図（テーブルの列と多重度・分類の箱・列と分類の開閉・状態遷移図の開始と終了と分岐・入れ子の状態・遷移の再生・狭い幅） |
 | [map-kinds](./map-kinds/index.html) | map の図で使えるノードの種類・線の種類・グループ・データの点の一覧と、使う場面の例 |
 | [media](./media/index.html) | 動画・音声の再生バーとキャプション・幅と autoplay・loop、GIF の止める・再生するボタン |
 | [mermaid-diagram](./mermaid-diagram/index.html) | 言語 mermaid のコードブロックを図の枠に入れて描いた図（front matter の title のタイトル・タイトルが無いときの図の種類の名前・actor のアイコンの案・種類ごとの見本）と、mermaid を読み込めない通知ブロック・記法を解釈できない記載の警告・機能をオフにしたコードブロック |
@@ -50,7 +50,6 @@
 | [revision-picker](./revision-picker/index.html) | 文書の右上の「変更表示」と、前と後のリビジョンを日時・label・author で選ぶ欄と、本文を取り出せない場面 |
 | [row-detail](./row-detail/index.html) | 表の行の下に開閉して出す行の詳細 |
 | [section](./section/index.html) | 見出しのアンカーと、見出しから開閉するセクション（h1 のセクションを含む）・右側の目次の上部のすべて展開とすべて折りたたむ・Shift を押しながらの入れ子の開閉 |
-| [sequence-diagram](./sequence-diagram/index.html) | 相手を左から右、メッセージを時刻の順に並べ、繰り返しの戻りを持つシーケンス図 |
 | [settings-gear](./settings-gear/index.html) | VS Code 拡張機能のプレビューから設定を開く歯車のボタン（エディタのタイトルバーの歯車と、プレビューの中の歯車とテーマのメニュー）の通常・ホバー・フォーカス・押下・メニューを開いた状態 |
 | [side-toc-head](./side-toc-head/index.html) | 右側の目次の頭（すべて展開・すべて折りたたむ・ピン止めの 3 つのボタン）と、ピン止めのボタンのアイコンの案ごとの押す前・ホバー・フォーカス・押した後 |
 | [steps](./steps/index.html) | 番号と線でつないだ手順と、閉じたステップ・`title=` のタイトル・読み込めない指定の記載の警告 |

@@ -7,6 +7,8 @@ export type SideTocHeading = {
     id: string;
     /** 目次に出す見出しの文字 */
     text: string;
+    /** 比較元から変わったセクションか。`true` なら項目と右端の線に変更のマーカーを付ける */
+    changed?: boolean;
 };
 /** 右側の目次の HTML を返却する。深いレベルの見出しは直前の浅いレベルの入れ子にし、右端の線を見出しの数だけ並べる */
 export declare function renderSideToc(options: {

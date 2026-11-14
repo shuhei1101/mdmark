@@ -67,7 +67,7 @@ items:
 - page: SC-472-27.yaml
   summary: 文書の作成者が `mdmark upgrade` で移行の手順をバージョンの順に当て、点検に合格してから設定のバージョンを書き換える
 - page: SC-472-43.yaml
-  summary: 文書に部品の定義を記載し、共通の部品にフロー図・シーケンス図・グラフを図の決まりのとおりに描かせる
+  summary: 文書に部品の定義を記載し、共通の部品にグラフ・ER 図を図の決まりのとおりに描かせ、廃止した flow・sequence の範囲には変換の案内の警告を出す
 - page: SC-472-11.yaml
   summary: 言語 mermaid のコードブロックを、mdmark の外観のテーマで図の枠に入れて描く
 - page: SC-472-42.yaml
@@ -115,7 +115,7 @@ items:
 - page: SC-472-6.yaml
   summary: 開いている Markdown を HTML に書き出し、既定のブラウザで開く
 - page: SC-472-50.yaml
-  summary: 開発者が `vscode-v{バージョン}` のタグを打つと、GitHub Actions が .vsix を作って GitHub Release に添える
+  summary: 開発者が `vscode-v{バージョン}` のタグを打つと、GitHub Actions が .vsix を作って GitHub Release に添え、Marketplace へ公開する
 - page: SC-472-9.yaml
   summary: 開いている Markdown を書き出した HTML をブラウザで開き、印刷のダイアログで PDF にする
 - page: SC-472-60.yaml
@@ -170,6 +170,8 @@ items:
   summary: 文書の作成者が CLI で雛形を配置し、点検して 1 枚の HTML にまとめ、読者が file:// で開いて文書を行き来する
 - page: SC-477-1.yaml
   summary: 文書の作成者が今の書き方のマーカーを点検の案内で移行の手順へかけ、移行の報告に挙がった記載を手で修正して、JSON の記載のまま書き出す
+- page: SC-477-2.yaml
+  summary: 文書の作成者が座標で書いたフロー図とシーケンス図を点検の案内で移行の手順へかけ、移行の報告に挙がった図を手で記載し直して、map の図で描く
 - page: SC-472-93.yaml
   summary: 利用側が雛形に固有の部品と CSS を追加して型で点検し、図の文書を描いて読者の操作で確認する
 - page: SC-472-89.yaml

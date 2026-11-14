@@ -48,6 +48,12 @@ data_models:
       - name: size
         type: '{ w: number; h: number } | undefined'
         description: 描いて測ったノードの大きさ。見積もりの代わりに使う
+      - name: above
+        type: number | undefined
+        description: ノードの上に空ける高さ（同じ状態への遷移の線とラベルの置き場所）。ほかのノードを重ねず、線も通さない
+      - name: aside
+        type: number | undefined
+        description: ノードの左右それぞれに空ける幅（ER 図の関連の端と多重度の置き場所）。ほかのノードを重ねず、線は通す
   - name: MapLayout
     title: 配置の結果
     container: src/map/layout.ts
@@ -71,6 +77,11 @@ data_models:
         type: PlacedWire[]
         description: 線（`id`・`from`・`to`・`points`・`label`・`merged`）
 constants:
+  - name: LABEL_METRICS
+    title: ノードの文字の大きさと余白
+    container: src/map/layout.ts
+    summary: 描いた文書の CSS の `.mdmark-diagram-node` と同じ文字の大きさと余白。名前を折り返す行の数とノードの大きさの見積もりに使用する。CSS を修正したときは合わせて修正する
+    value: 種類 11px・名前 14px・補足 12px・行の高さ 1.4 倍・余白 上下 6px 左右 10px
   - name: MAP_LAYOUT
     title: 配置の寸法
     container: src/map/layout.ts
@@ -181,6 +192,12 @@ functions:
         condition: 'ノード 1 つに `size: { w: 300, h: 90 }`'
         mock: なし
         expected: そのノードの `w`・`h` が 300・90
+      - name: test_layout_map_when_above
+        case: 正常
+        summary: ノードの上に空ける高さ
+        condition: 'ノード `mount` に `above: 40`'
+        mock: なし
+        expected: '`mount` の高さは空けないときと同じで、`mount` の上 40px を含めた矩形にほかのノードが重ならない'
       - name: test_layout_map_when_justify
         case: 正常
         summary: 寄せる

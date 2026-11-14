@@ -127,6 +127,27 @@ test("test_playback", async () => {
   ]);
 });
 
+// 状態遷移図の遷移の再生は、タイトルが「{遷移元} → {遷移先}：{ラベル}」で、ボタンの名前が前の遷移・再生をやめる・次の遷移（StatePlayback）
+test("test_state_playback", async () => {
+  // 準備・実行
+  const page = await holder.openStory("parts-mapband--state-playback");
+  // 検証
+  await expect(page.locator(".map-band-count").innerText()).resolves.toBe(
+    "6/13",
+  );
+  await expect(page.locator(".map-band-title").innerText()).resolves.toBe(
+    "判定 → 差し戻しの理由を確認する：差し戻し",
+  );
+  const buttons = await bandButtons(page);
+  expect(buttons.map((button) => button.label)).toEqual([
+    "前の遷移",
+    "再生をやめる",
+    "自動で進める",
+    "次の遷移",
+  ]);
+  await expect(pageOverflows(page)).resolves.toBe(false);
+});
+
 // 幅 390px では、タイトルを番号とボタンの下の行に回す（Narrow）
 test("test_narrow", async () => {
   // 準備・実行

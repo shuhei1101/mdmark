@@ -1,6 +1,6 @@
 id: MOD-472-27
 visibility: internal
 title: ライブラリ本体 / map / 読み取り
-lead: map の範囲の `flowchart`・`sequenceDiagram` の Mermaid と、補足の JSON のオブジェクトを読み取る。描画を止めず、読めない行と箇所を項目にして返す。
+lead: map の範囲の `flowchart`・`sequenceDiagram`・`erDiagram`・`stateDiagram-v2` の Mermaid と、補足の JSON のオブジェクトを読み取る。描画を止めず、読めない行と箇所を項目にして返す。
 refs:
   - ER-472-2#

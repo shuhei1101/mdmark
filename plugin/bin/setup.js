@@ -14911,7 +14911,7 @@ var mdmark_config_schema_default = {
         },
         diagrams: {
           title: "\u56F3\u306E\u90E8\u54C1\u306E\u6A5F\u80FD",
-          description: "`<!-- flow -->`\u30FB`<!-- sequence -->`\u30FB`<!-- chart -->`\u30FB`<!-- param -->` \u306E\u7BC4\u56F2\u306E\u90E8\u54C1\u306E\u5B9A\u7FA9\u304B\u3089\u56F3\u3068\u64CD\u4F5C\u3067\u304D\u308B\u90E8\u54C1\u3092\u63CF\u304F\u3002\u30AA\u30D5\u306E\u3068\u304D\u306F\u30DE\u30FC\u30AB\u30FC\u3092\u53D6\u308A\u9664\u304D\u3001\u5B9A\u7FA9\u3092 JSON \u306E\u30B3\u30FC\u30C9\u30D6\u30ED\u30C3\u30AF\u306E\u307E\u307E\u63CF\u304F\u3002",
+          description: "`<!-- chart -->`\u30FB`<!-- param -->`\u30FB`<!-- er -->` \u306E\u7BC4\u56F2\u306E\u90E8\u54C1\u306E\u5B9A\u7FA9\u304B\u3089\u56F3\u3068\u64CD\u4F5C\u3067\u304D\u308B\u90E8\u54C1\u3092\u63CF\u304F\u3002\u30AA\u30D5\u306E\u3068\u304D\u306F\u30DE\u30FC\u30AB\u30FC\u3092\u53D6\u308A\u9664\u304D\u3001\u5B9A\u7FA9\u3092 JSON \u306E\u30B3\u30FC\u30C9\u30D6\u30ED\u30C3\u30AF\u306E\u307E\u307E\u63CF\u304F\u3002",
           type: "boolean",
           default: true
         },
@@ -40976,7 +40976,7 @@ if (import.meta.main) {
     argv: process.argv.slice(2),
     env: process.env,
     pluginRoot: join5(import.meta.dirname, ".."),
-    version: "v0.12.0",
+    version: "v0.13.0",
     run: runExternal,
     stdout: (line) => console.log(line),
     stderr: (line) => console.error(line)

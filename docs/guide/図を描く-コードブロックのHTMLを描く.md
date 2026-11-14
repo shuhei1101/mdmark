@@ -134,7 +134,7 @@ export default function (root: HTMLElement) {
 ````
 
 `<mdmark-chart>` の中に、[図を描く](./図を描く-図を描く.md) の `chart` のマーカーの範囲と同じ定義（JSON）だけを記載する。
-`<mdmark-flow>`・`<mdmark-sequence>`・`<mdmark-param>` も同じで、それぞれ `flow`・`sequence`・`param` の定義を記載する。
+`<mdmark-param>` も同じで、`param` の定義を記載する。
 custom element の属性は読み込まない。
 外部ライブラリは使用せず、mdmark の部品が描く。
 

@@ -1,15 +1,8 @@
-import type { MdmarkChartDefinition, MdmarkDiagramIo, MdmarkDiagramLine, MdmarkErDefinition, MdmarkErTable, MdmarkFlowDefinition, MdmarkSequenceDefinition } from "../diagram/definition.ts";
+import type { MdmarkChartDefinition, MdmarkErDefinition, MdmarkErTable, MdmarkFlowDefinition } from "../diagram/definition.ts";
 import { type IconName } from "./icons.ts";
-/** 線の種類ごとの破線・太さ・矢じり・凡例の名前。色は CSS の変数で適用する */
-export declare const LINE_STYLES: Readonly<Record<MdmarkDiagramLine, {
-    dash: string;
-    width: number;
-    head: "filled" | "open";
-    label: string;
-}>>;
 /** 凡例の項目 */
 export type DiagramLegendItem = {
-    /** 見本の種類: ノードの種類・線の種類・`series-{n}`・`frame`・`lane`・`jump`・`info`・`underline` */
+    /** 見本の種類: `series-{n}`・`fill-{n}`・`point-{n}`・`bubble`・ER 図の `er-*`・`info`・`underline` */
     sample: string;
     /** 意味 */
     label: string;
@@ -17,7 +10,7 @@ export type DiagramLegendItem = {
 /** 図の枠の引数 */
 export type DiagramFrame = {
     /** 中の図の種類 */
-    kind: "flow" | "sequence" | "chart" | "er" | "mermaid" | "map";
+    kind: "chart" | "er" | "mermaid" | "map";
     /** 題名 */
     title: string;
     /** 範囲（種類 `mermaid` では持たず、タイトルに出さない） */
@@ -34,8 +27,6 @@ export type DiagramFrame = {
     modal?: boolean;
     /** 表示する枠の右下にリサイズハンドルを配置するか（既定 `true`。モーダルの中には配置しない） */
     resizable?: boolean;
-    /** 拡大して動かしたときにグループのタイトルを上端に留めるか（既定 `true`） */
-    stickyTitles?: boolean;
     /** 開いたときの倍率の下限（`figure` の `data-fit-min` に入れる） */
     fitMin?: number;
     /** 置き場所の幅いっぱいに広げるか（`figure` に `data-wide="true"`。map の図） */
@@ -64,7 +55,7 @@ export type DiagramBody = {
     /** ツールチップの HTML */
     tips: string;
 };
-/** `renderFlow`・`renderSequence`・`renderChart` の戻り値: 図の中身と、凡例に記載する図の特徴 */
+/** `renderFlow`・`renderEr`・`renderChart` の戻り値: 図の中身と、凡例に記載する図の特徴 */
 export type DiagramPart = DiagramBody & {
     /** 横の線が縦の線を飛び越える点があるか */
     jumps: boolean;
@@ -77,17 +68,15 @@ export type TermLookup = (word: string) => string | undefined;
 export type DiagramTip = {
     /** ツールチップの `id` */
     id: string;
-    /** 線の詳細か、ノードの入力・処理・出力か、文だけか（ノードの `hint`・埋め込んだ HTML の `data-hint`） */
-    kind: "wire" | "io" | "hint" | "table" | "item";
+    /** 線の詳細か、文だけか（ノード・グループの説明・埋め込んだ HTML の `data-hint`）か、ER 図のテーブルか、グラフの項目か */
+    kind: "wire" | "hint" | "table" | "item";
     /** 持ち主の名前。ツールチップのタイトルに出す */
     label: string;
     /** グラフの項目の値の文（`item` のとき） */
     value?: string;
     /** 線の詳細 */
     tip?: string;
-    /** ノードの入力・処理・出力 */
-    io?: MdmarkDiagramIo;
-    /** ノードの `hint` か `data-hint` の文。`io` と一緒に持つときは入力・処理・出力の後に出す */
+    /** ノード・グループの説明か `data-hint` の文 */
     hint?: string;
     /** ER 図のテーブル。タイトルを `{論理名}（{物理名}）` にし、概要と、`desc` を持つ列の名前と説明を並べる */
     table?: MdmarkErTable;
@@ -111,23 +100,28 @@ export declare function createTips(prefix: string): TipList;
 export declare function renderText(text: string, tips: TipList, lookup: TermLookup | undefined, found: {
     terms: boolean;
 }): string;
-/** フロー図を描く */
+/** 説明を持つグループのタイトルの右のマーカー（説明が無ければ空） */
+export declare function groupInfo(options: {
+    hint: string | undefined;
+    label: string;
+    owner: string;
+    tips: TipList;
+}): string;
+/** map の構成図のノードと線を描く */
 export declare function renderFlow(definition: MdmarkFlowDefinition, id: string, hints: boolean, lookup?: TermLookup): DiagramPart;
-/** シーケンス図を描く */
-export declare function renderSequence(definition: MdmarkSequenceDefinition, id: string, lookup?: TermLookup, hints?: boolean): DiagramPart;
 /** ER 図を描く: テーブルを配置し、関係の線と両端の多重度の記号を svg に描き、ラベルを縦の線の中ほどに配置する */
 export declare function renderEr(definition: MdmarkErDefinition, id: string, hints: boolean, lookup?: TermLookup): DiagramPart;
 /** 図の定義 */
-type LegendDefinition = MdmarkFlowDefinition | MdmarkSequenceDefinition | MdmarkChartDefinition | MdmarkErDefinition;
-/** 凡例の項目: フロー図とシーケンス図は、図に 2 種類以上あるノード（相手）の種類と線の種類だけを並べ、枠・層・交差・マーカー・下線は記載しない。グラフは系列（円とドーナツは項目）、ER 図はテーブルの種類・列のマーカー・多重度を並べる */
+type LegendDefinition = MdmarkChartDefinition | MdmarkErDefinition;
+/** 凡例の項目: グラフは系列（円とドーナツは項目）、ER 図はテーブルの種類・列のマーカー・多重度を並べる */
 export declare function legendFor(definition: LegendDefinition): DiagramLegendItem[];
-/** 凡例の項目の並び（`ul` の中身）。`id` は線の見本が指す矢じりの `id` の頭 */
+/** 凡例の項目の並び（`ul` の中身）。`id` はグラフの塗りの模様の見本が指す `id` の頭 */
 export declare function renderLegendItems(id: string, items: DiagramLegendItem[]): string;
 /** 図の枠を描く: タイトル・ボタンの帯・表示する枠・ツールチップの中身・凡例を並べる */
 export declare function renderDiagramFrame(frame: DiagramFrame, body: DiagramBody): string;
 /** 図の種類 */
 export type DiagramKind = Exclude<DiagramFrame["kind"], "mermaid" | "map">;
-/** 図を描く: 種類ごとの中身を描き、凡例を決めて枠に差す。`hints` がオフ（既定はオン）なら、線の詳細・ノードの説明と入力・処理・出力のツールチップとマーカーを配置しない */
+/** 図を描く: 種類ごとの中身を描き、凡例を決めて枠に差す。`hints` がオフ（既定はオン）なら、ER 図のテーブルの説明のツールチップとボタンを配置しない */
 export declare function renderDiagram(options: {
     kind: DiagramKind;
     definition: LegendDefinition;

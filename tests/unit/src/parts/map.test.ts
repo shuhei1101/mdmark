@@ -1,5 +1,5 @@
 import { expect, test } from "vitest";
-import { matches } from "../../helpers/html.ts";
+import { findTag, matches, outerHtml, plainText } from "../../helpers/html.ts";
 import { CONFIG, FLOW, SEQUENCE } from "../../helpers/map.ts";
 
 /** map の部品の HTML を読み込む（実装が無い間は各テストが個別に失敗する） */
@@ -433,4 +433,311 @@ test("test_render_map_flow_when_merged_notes", async () => {
   expect(plain.html).not.toMatch(
     /class="map-wire-hit" data-wire="read-&gt;layout" data-tip-owner/,
   );
+});
+
+// 状態遷移図の再生（正常系）
+test("test_render_map_band_when_transition", async () => {
+  // 準備
+  const { renderMapBand } = await loadParts();
+  // 実行
+  const html = renderMapBand({
+    mode: "playback",
+    unit: "transition",
+    total: 13,
+    index: 5,
+    title: "判定 → 差し戻しの理由を確認する：差し戻し",
+    text: "",
+    auto: false,
+    label: "作業の状態の再生",
+  });
+  // 検証
+  const labels = matches(html, /aria-label="([^"]+)"/g).map((item) =>
+    item.replace(/^aria-label="|"$/g, ""),
+  );
+  expect(labels).toEqual(
+    expect.arrayContaining([
+      "前の遷移",
+      "再生をやめる",
+      "自動で進める",
+      "次の遷移",
+    ]),
+  );
+  expect(labels).not.toContain("前のメッセージ");
+});
+
+/** 部品『mapのER図』の Default の「注文」 */
+async function orderTable(collapsed: boolean) {
+  const { parseErDiagram } = await import("../../../../src/map/er.ts");
+  const { ER } = await import("../../helpers/map.ts");
+  const table = parseErDiagram(ER).tables[1];
+  if (!table) throw new Error("テーブルが読めない");
+  return {
+    name: table.name,
+    columns: table.columns,
+    notes: { 状態: "下書き・確定・発送済み・取り消し" },
+    collapsed,
+  };
+}
+
+// 列の行（正常系）
+test("test_render_map_er", async () => {
+  // 準備
+  const { renderMapEr } = await loadParts();
+  // 実行
+  const result = renderMapEr(await orderTable(false));
+  // 検証
+  expect(matches(result.columns, /class="map-er-column"/g)).toHaveLength(8);
+  expect(result.columns).toMatch(
+    /data-column="状態"[\s\S]*?<button[^>]*map-er-note/,
+  );
+  expect(result.toggle).toContain('aria-expanded="true"');
+});
+
+// 列を閉じた（正常系）
+test("test_render_map_er_when_collapsed", async () => {
+  // 準備
+  const { renderMapEr } = await loadParts();
+  // 実行
+  const result = renderMapEr(await orderTable(true));
+  // 検証
+  expect(result.columns).not.toContain("map-er-column");
+  expect(result.toggle).toContain("列 8");
+  expect(result.toggle).toContain('aria-expanded="false"');
+});
+
+// 同じ状態への遷移（正常系）
+test("test_render_map_state", async () => {
+  // 準備
+  const { renderMapState } = await loadParts();
+  // 実行
+  const html = renderMapState({
+    wire: "t2",
+    x: 100,
+    y: 50,
+    width: 120,
+    label: "保存する",
+    active: false,
+    dim: false,
+  });
+  // 検証
+  const d =
+    /<path[^>]*class="map-state-loop"[^>]*d="([^"]+)"/.exec(html)?.[1] ?? "";
+  expect(d.startsWith("M220 64")).toBe(true);
+  expect(d.endsWith("L160 50")).toBe(true);
+  expect(html).toContain("保存する");
+  expect(html).toMatch(/class="map-wire-hit"[^>]*aria-label="[^"]+"/);
+});
+
+/** ER 図の見本を配置し、関連の線を付け替えた引数 */
+async function erArgs(collapsed: string[]) {
+  const { parseErDiagram, erToFlowchart, erOverrides, erPartRelations } =
+    await import("../../../../src/map/er.ts");
+  const { layoutMap } = await loadLayout();
+  const { rewireMapEr } = await loadParts();
+  const { ER } = await import("../../helpers/map.ts");
+  const er = parseErDiagram(ER);
+  const relations = erPartRelations(er);
+  const tables = er.tables.map((table) => ({
+    name: table.name,
+    columns: table.columns,
+    notes: {},
+  }));
+  const placed = layoutMap(
+    erToFlowchart(er, {}),
+    { collapsed },
+    erOverrides(er, new Set(collapsed)),
+    "height",
+  );
+  const layout = {
+    ...placed,
+    wires: rewireMapEr({ layout: placed, tables, relations, collapsed }),
+  };
+  return { er, relations, tables, layout };
+}
+
+// 関連の端を列の行へ付け替える（正常系）
+test("test_rewire_map_er", async () => {
+  // 準備・実行
+  const { MAP_ER } = await loadParts();
+  const { er, layout } = await erArgs([]);
+  // 検証
+  const order = layout.nodes.find((node) => node.id === "注文");
+  const index =
+    er.tables
+      .find((table) => table.name === "注文")
+      ?.columns.findIndex((column) => column.name === "顧客ID") ?? -1;
+  const wire = layout.wires.find((item) => item.id === "r1");
+  const last = wire?.points.at(-1);
+  expect(index).toBeGreaterThanOrEqual(0);
+  expect(last?.[1]).toBe(
+    (order?.y ?? 0) + MAP_ER.head + index * MAP_ER.row + MAP_ER.row / 2,
+  );
+  expect([order?.x, (order?.x ?? 0) + (order?.w ?? 0)]).toContain(last?.[0]);
+});
+
+// ER 図の部品（正常系）
+test("test_render_map_er_diagram", async () => {
+  // 準備
+  const { renderMapErDiagram } = await loadParts();
+  const { relations, tables, layout } = await erArgs([]);
+  // 実行
+  const part = renderMapErDiagram({
+    layout,
+    kinds: {},
+    lines: {},
+    collapsed: [],
+    entered: undefined,
+    selected: [],
+    focus: undefined,
+    packets: [],
+    dragging: undefined,
+    id: "er",
+    tables: tables.map((table) =>
+      table.name === "注文"
+        ? { ...table, notes: { 状態: "下書き・確定・発送済み・取り消し" } }
+        : table,
+    ),
+    relations,
+    fanouts: [
+      { wire: "r1", from: "顧客", to: "注文" },
+      { wire: "r2", from: "注文", to: "明細" },
+      { wire: "r3", from: "商品", to: "明細" },
+    ],
+  });
+  // 検証
+  expect(part.html).toMatch(
+    /data-node="注文"[\s\S]*?map-er-toggle[\s\S]*?map-er-columns/,
+  );
+  expect(matches(part.html, /class="map-er-cardinality"/g)).toHaveLength(
+    relations.length * 2,
+  );
+  expect(matches(part.html, /class="map-er-label"/g)).toHaveLength(
+    relations.filter((item) => item.label !== undefined).length,
+  );
+  const { MAP_ER } = await loadParts();
+  const half = MAP_ER.fanoutSize / 2;
+  const marks = [
+    ...part.html.matchAll(
+      /class="map-er-fanout"[^>]*style="left:([-\d.]+)px;top:([-\d.]+)px"/g,
+    ),
+  ].map((match) => ({ x: Number(match[1]), y: Number(match[2]) }));
+  expect(marks).toHaveLength(3);
+  // マーカーの矩形は、どのノードの矩形（左右に空ける幅を含む）とも重ならない
+  for (const mark of marks)
+    for (const node of layout.nodes)
+      expect(
+        mark.x + half <= node.x - MAP_ER.aside ||
+          node.x + node.w + MAP_ER.aside <= mark.x - half ||
+          mark.y + half <= node.y ||
+          node.y + node.h <= mark.y - half,
+      ).toBe(true);
+  expect(part.tips).toContain("下書き・確定・発送済み・取り消し");
+  expect(part.tips).toContain("行が増える関連");
+});
+
+// 状態遷移図の部品（正常系）
+test("test_render_map_state_diagram", async () => {
+  // 準備
+  const { parseStateDiagram, stateToFlowchart, statePartInputs } = await import(
+    "../../../../src/map/state-diagram.ts"
+  );
+  const { layoutMap } = await loadLayout();
+  const { renderMapStateDiagram } = await loadParts();
+  const { STATE } = await import("../../helpers/map.ts");
+  const { chart, loops: selfLoops } = stateToFlowchart(
+    parseStateDiagram(STATE),
+  );
+  const { shapes, loops, overrides } = statePartInputs(chart, selfLoops);
+  const layout = layoutMap(chart, { collapsed: [] }, overrides, "height");
+  // 実行
+  const part = renderMapStateDiagram({
+    layout,
+    kinds: {},
+    lines: {},
+    collapsed: [],
+    entered: undefined,
+    selected: [],
+    focus: undefined,
+    packets: [],
+    dragging: undefined,
+    shapes,
+    loops,
+  });
+  // 検証
+  const start = /<div[^>]*data-node="start_root"[^>]*>/.exec(part.html)?.[0];
+  expect(start).toContain('data-shape="start"');
+  expect(start).toContain('aria-label="開始"');
+  expect(start).not.toContain("tabindex");
+  expect(part.html).toMatch(/<div[^>]*data-shape="choice"[^>]*>/);
+  expect(part.html).toMatch(
+    /data-node="n1"[\s\S]*?mdmark-diagram-node-kind[^>]*>[\s\S]*?注記/,
+  );
+  expect(matches(part.html, /<g data-loop=/g)).toHaveLength(loops.length);
+});
+
+// リンク先を持つノードをリンクにし、説明のマーカーをリンクの外に配置する（正常系）
+test("test_render_map_flow_when_links", async () => {
+  // 準備
+  const { renderMapFlow } = await loadParts();
+  // 実行
+  const { html } = renderMapFlow({
+    ...(await flowArgs()),
+    links: { mount: "https://example.com/spec" },
+    notes: { mount: "文書を描く公開関数" },
+  });
+  // 検証
+  const node = outerHtml(html, 'data-node="mount"');
+  expect(findTag(node, 'data-node="mount"')).toContain("has-link");
+  expect(findTag(node, 'data-node="mount"')).not.toContain("tabindex");
+  const link = findTag(node, "mdmark-diagram-node-link");
+  expect(link).toContain('aria-roledescription="ノード"');
+  expect(link).toContain('aria-label="mount"');
+  expect(node).toMatch(
+    /<a class="mdmark-diagram-node-link" href="https:\/\/example\.com\/spec"[^>]*><\/a>[\s\S]*<button class="mdmark-diagram-info/,
+  );
+  expect(matches(html, /class="mdmark-diagram-node-link"/g)).toHaveLength(1);
+});
+
+// 説明を持つグループのタイトルの右にマーカーを配置する（正常系）
+test("test_render_map_flow_when_group_note", async () => {
+  // 準備
+  const { renderMapFlow } = await loadParts();
+  const { parseFlowchart } = await loadFlowchart();
+  const { layoutMap } = await loadLayout();
+  const notes = { read: "記法を読み取る部分" };
+  const opened = { ...(await flowArgs()), notes };
+  const closed = {
+    ...opened,
+    layout: layoutMap(
+      parseFlowchart(FLOW),
+      { collapsed: ["read"], entered: undefined },
+      {},
+      "height",
+    ),
+    collapsed: ["read"],
+  };
+  // 実行
+  const results = [renderMapFlow(opened), renderMapFlow(closed)];
+  // 検証
+  for (const { html, tips } of results) {
+    const markers = matches(
+      html,
+      /<button class="mdmark-diagram-info mdmark-diagram-group-info"[^>]*>/g,
+    );
+    expect(markers).toHaveLength(1);
+    const [marker = ""] = markers;
+    expect(marker).toContain('aria-label="「記法の読み取り」の説明"');
+    const id = /aria-describedby="([^"]+)"/.exec(marker)?.[1] ?? "";
+    expect(plainText(outerHtml(tips, `id="${id}"`))).toContain(
+      "記法を読み取る部分",
+    );
+    const head = outerHtml(
+      outerHtml(html, 'data-group="read"'),
+      'class="map-group-head"',
+    );
+    expect(head).toContain("mdmark-diagram-group-info");
+    expect(head).not.toMatch(
+      /<button class="map-group-title"[^>]*>[^<]*<button/,
+    );
+  }
 });

@@ -1,18 +1,19 @@
 import { afterEach, beforeAll, expect, test, vi } from "vitest";
 import { userEvent } from "vitest/browser";
-import { wrapHtml } from "../../helpers/charts.ts";
+import type { MdmarkFlowDefinition } from "../../../../src/diagram/definition.ts";
 import {
-  INQUIRY_GROUPS_TEXT,
-  INQUIRY_TEXT,
-  REPLY_TIME_TEXT,
-  wrapDirective,
-} from "../../helpers/diagrams.ts";
+  renderDiagramFrame,
+  renderFlow,
+} from "../../../../src/parts/diagram.ts";
+import { wrapHtml } from "../../helpers/charts.ts";
+import { REPLY_TIME_TEXT, wrapDirective } from "../../helpers/diagrams.ts";
 import {
   addStyles,
   createRoot,
   createRootFromHtml,
   removeRoots,
 } from "../../helpers/dom.ts";
+import { erText, shopEr } from "../../helpers/er.ts";
 import { renderDoc } from "../../helpers/render.ts";
 
 /** 図のツールチップの操作を読み込む（実装が無い間は各テストが個別に失敗する） */
@@ -54,9 +55,56 @@ function tipOf(owner: HTMLElement): HTMLElement {
   return tip;
 }
 
-/** フロー図を描いた `figure` */
+/** 説明を持つノード 1 つ・説明を持たないノード 1 つと、説明を持つラベルの線の map の構成図のノードと線 */
+const TIP_FLOW: MdmarkFlowDefinition = {
+  width: 520,
+  height: 160,
+  nodes: [
+    {
+      id: "recv",
+      name: "受け取り",
+      hint: "問い合わせのメールを 1 通ずつ読む",
+      x: 24,
+      y: 40,
+      w: 180,
+      h: 72,
+      style: { label: "処理", icon: "cog" },
+    },
+    {
+      id: "store",
+      name: "記録",
+      x: 316,
+      y: 40,
+      w: 180,
+      h: 72,
+      style: { label: "保存先", icon: "database" },
+    },
+  ],
+  wires: [
+    {
+      id: "recv->store",
+      from: "recv",
+      to: "store",
+      points: [
+        [204, 76],
+        [316, 76],
+      ],
+      label: "保存",
+      labelAt: [260, 76],
+      tip: "本文と送信者のアドレス",
+      style: {},
+    },
+  ],
+};
+
+/** map の構成図のノードと線を図の枠に描いた `figure` */
 function createFigure(): HTMLElement {
-  const { root } = createRoot(wrapDirective("flow", INQUIRY_TEXT));
+  const root = createRootFromHtml(
+    renderDiagramFrame(
+      { kind: "map", title: "問い合わせの処理", legend: [], id: "tips" },
+      renderFlow(TIP_FLOW, "tips", true),
+    ),
+  );
   const figure = root.querySelector<HTMLElement>("figure.mdmark-diagram");
   if (!figure) {
     throw new Error("図が描かれていない");
@@ -112,7 +160,7 @@ test("test_attach_diagram_tips_when_box_hovered", async () => {
   const box = info?.closest<HTMLElement>(".mdmark-diagram-node");
   const name = box?.querySelector<HTMLElement>(".mdmark-diagram-node-name");
   if (!info || !box || !name) {
-    throw new Error("入力・処理・出力を持つノードが無い");
+    throw new Error("説明を持つノードが無い");
   }
   const tip = tipOf(info);
   // 実行
@@ -424,24 +472,22 @@ test("test_attach_diagram_tips_when_chart_item", async () => {
   // 準備
   const { attachDiagramTips } = await loadTips();
   const { root } = createRoot(
-    `${wrapDirective("chart", REPLY_TIME_TEXT)}\n\n${wrapDirective("flow", INQUIRY_GROUPS_TEXT)}`,
+    `${wrapDirective("chart", REPLY_TIME_TEXT)}\n\n${wrapDirective("er", erText(shopEr()))}`,
   );
-  const [chart, flow] = [
+  const [chart, er] = [
     ...root.querySelectorAll<HTMLElement>("figure.mdmark-diagram"),
   ];
-  if (!chart || !flow) {
+  if (!chart || !er) {
     throw new Error("図が描かれていない");
   }
-  for (const figure of [chart, flow]) {
+  for (const figure of [chart, er]) {
     const { detach } = attachDiagramTips({ figure, placement: "bottom" });
     detachers.push(detach);
   }
   const item = chart.querySelector<HTMLElement>(".mdmark-diagram-item-hit");
-  const groupMark = flow.querySelector<HTMLElement>(
-    ".mdmark-diagram-group-info",
-  );
-  if (!item || !groupMark) {
-    throw new Error("グラフの項目かグループのタイトルのマーカーが無い");
+  const tableMark = er.querySelector<HTMLElement>(".mdmark-diagram-info");
+  if (!item || !tableMark) {
+    throw new Error("グラフの項目かテーブルの説明のボタンが無い");
   }
   // 実行: グラフの項目にフォーカスする
   item.focus();
@@ -451,18 +497,18 @@ test("test_attach_diagram_tips_when_chart_item", async () => {
   expect(itemTip.getBoundingClientRect().top).toBeGreaterThanOrEqual(
     item.getBoundingClientRect().bottom,
   );
-  // 実行: グループのタイトルのマーカーにポインターを乗せる
-  groupMark.dispatchEvent(
+  // 実行: テーブルの説明のボタンにポインターを乗せる
+  tableMark.dispatchEvent(
     new PointerEvent("pointerenter", { pointerType: "mouse" }),
   );
   // 検証
-  const groupTip = tipOf(groupMark);
-  expect(groupTip.hidden).toBe(false);
-  expect(groupTip.getBoundingClientRect().top).toBeGreaterThanOrEqual(
-    groupMark.getBoundingClientRect().bottom,
+  const tableTip = tipOf(tableMark);
+  expect(tableTip.hidden).toBe(false);
+  expect(tableTip.getBoundingClientRect().top).toBeGreaterThanOrEqual(
+    tableMark.getBoundingClientRect().bottom,
   );
-  const open = [
-    ...flow.querySelectorAll<HTMLElement>('[role="tooltip"]'),
-  ].filter((tip) => !tip.hidden);
+  const open = [...er.querySelectorAll<HTMLElement>('[role="tooltip"]')].filter(
+    (tip) => !tip.hidden,
+  );
   expect(open).toHaveLength(1);
 });
