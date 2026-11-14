@@ -180,6 +180,45 @@ test("test_build_site", async () => {
   expect(result.warnings).toEqual([]);
 });
 
+// keepTraces のときは名前を置き換えない（正常系）
+test("test_build_site_when_traces_kept", async () => {
+  // 準備
+  const { buildSite } = await loadBuild();
+  const dir = await createTempDir();
+  await writeFiles(dir, {
+    "kept/mdmark.config.yaml": createConfig([
+      '  include: ["**/*.md"]',
+      "  out: dist/docs.html",
+    ]),
+    "kept/a.md": "# A\n",
+    "kept/b.md": "# B\n",
+    "hidden/mdmark.config.yaml": createConfig([
+      '  include: ["**/*.md"]',
+      "  out: dist/docs.html",
+    ]),
+    "hidden/a.md": "# A\n",
+    "hidden/b.md": "# B\n",
+  });
+  const distDir = await writeDist(dir);
+  await writeFiles(dir, {
+    "dist/index.css": ':root{--mdmark-version:"v0.12.0"}\n.mdmark{}',
+  });
+  // 実行
+  const kept = await buildSite({
+    cwd: join(dir, "kept"),
+    distDir,
+    keepTraces: true,
+  });
+  const hidden = await buildSite({ cwd: join(dir, "hidden"), distDir });
+  // 検証
+  const keptHtml = await readFile(kept.out, "utf8");
+  const hiddenHtml = await readFile(hidden.out, "utf8");
+  expect(keptHtml).toContain('id="mdmark-payload"');
+  expect(keptHtml).toContain("--mdmark-version");
+  expect(hiddenHtml).not.toContain('id="mdmark-payload"');
+  expect(hiddenHtml).not.toContain("--mdmark-version");
+});
+
 // まとめる文書に該当しない build.entry を警告で返却する（正常系）
 test("test_build_site_when_entry_outside", async () => {
   // 準備

@@ -69,3 +69,41 @@ test("test_assemble_html_when_bundle", async () => {
     /<dialog[^>]*class="[^"]*(?<![\w-])mdmark-bundle-panel(?![\w-])/,
   );
 });
+
+// 隠すときは名前・バージョン・コメントを残さず、タイトルを残す（正常系）
+test("test_assemble_html_when_traces_hidden", async () => {
+  // 準備
+  const { assembleHtml } = await loadHtml();
+  const payload: PayloadView = {
+    kind: "bundle",
+    config: {},
+    docs: [
+      { path: "mdmark-intro.md", title: "mdmark の紹介", markdown: "# A\n" },
+    ],
+    entry: "mdmark-intro.md",
+    icons: {
+      bird: [["path", { d: "M0 0" }]],
+    } as unknown as PayloadView["icons"],
+  };
+  // 実行
+  const html = assembleHtml({
+    payload,
+    distCss: ':root{--mdmark-version:"v0.12.0"}\n.mdmark{color:red}',
+    script: SCRIPT,
+    hideTraces: true,
+  });
+  // 検証
+  expect(html).toContain("<title>mdmark の紹介</title>");
+  const outside = html
+    .replace(/<title>[\s\S]*?<\/title>/, "")
+    .replace(
+      /(<script type="application\/json"[^>]*>)[\s\S]*?(<\/script>)/,
+      "$1$2",
+    );
+  expect(outside).not.toMatch(/mdmark/i);
+  expect(outside).not.toContain("v0.12.0");
+  expect(outside).not.toContain("<!--");
+  expect(html).toContain('id="zq-payload"');
+  expect(html).toContain('class="zq-bundle"');
+  expect(html).toMatch(/<script type="module">\/\*! lucide /);
+});

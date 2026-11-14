@@ -210,6 +210,42 @@ test("test_export_document", async () => {
   expect(result.warnings).toHaveLength(1);
 });
 
+// keepTraces のときは名前を置き換えない（正常系）
+test("test_export_document_when_traces_kept", async () => {
+  // 準備
+  const { exportDocument } = await loadExport();
+  const dir = await createTempDir();
+  await writeFiles(dir, {
+    "mdmark.config.yaml": "features:\n  print: true\n",
+    "guide.md": "# タイトル\n",
+  });
+  const distDir = await writeDist(dir);
+  await writeFiles(dir, {
+    "dist/index.css": ':root{--mdmark-version:"v0.12.0"}\n.mdmark{}',
+  });
+  // 実行
+  const kept = await exportDocument({
+    cwd: dir,
+    file: "guide.md",
+    out: "kept.html",
+    distDir,
+    keepTraces: true,
+  });
+  const hidden = await exportDocument({
+    cwd: dir,
+    file: "guide.md",
+    out: "hidden.html",
+    distDir,
+  });
+  // 検証
+  const keptHtml = await readFile(kept.out, "utf8");
+  const hiddenHtml = await readFile(hidden.out, "utf8");
+  expect(keptHtml).toContain('id="mdmark-payload"');
+  expect(keptHtml).toContain("--mdmark-version");
+  expect(hiddenHtml).not.toContain('id="mdmark-payload"');
+  expect(hiddenHtml).not.toContain("--mdmark-version");
+});
+
 // 無い文書は何も書き込まずに CliError（異常系）
 test("test_export_document_when_document_missing", async () => {
   // 準備
