@@ -6,30 +6,32 @@ entry:
   value: '`vscode-v*` のタグの push（GitHub Actions のワークフロー `.github/workflows/vscode-release.yml`）'
 flows:
   - name: 正常系
-    summary: バージョンが合うとき、.vsix を作る
+    summary: バージョンが合うとき、.vsix を作り、ワークフローが Release に添えた後に Marketplace へ公開する構成になっている
     setup:
       - name: バージョンを合わせたリポジトリ
-        description: '`vscode/package.json` の `version` が `0.1.0` の作業ツリー'
+        description: '`vscode/package.json` の `version` が `0.1.2` の作業ツリー'
       - name: Mock
-        description: GitHub へは送信しない。`release:check` と `package` を手元で実行する
+        description: GitHub と Marketplace へは送信しない。`release:check` と `package` を手元で実行し、ワークフローの YAML を読む
     flow: |-
       sequenceDiagram
         participant D as 開発者
         participant GA as ワークフロー
-        D->>GA: release:check vscode-v0.1.0
+        D->>GA: release:check vscode-v0.1.2
         GA-->>D: 終了コード 0
         D->>GA: package
-        GA-->>D: mdmark-0.1.0.vsix
+        GA-->>D: mdmark-0.1.2.vsix
     expected:
       - '`release:check` が終了コード 0'
-      - '`mdmark-0.1.0.vsix` が記載され、中の `extension/package.json` の `version` が `0.1.0`、`extension/dist/` にまとめた拡張機能があり `node_modules/` が無い'
-      - ワークフローの YAML の `on.push.tags` が `vscode-v*` だけで、`permissions.contents` が `write`
+      - '`mdmark-0.1.2.vsix` が記載され、中の `extension/package.json` の `version` が `0.1.2`、`extension/dist/` にまとめた拡張機能があり `node_modules/` が無い'
+      - ワークフローの YAML の `on.push.tags` が `vscode-v*` だけで、`permissions.contents` が `write`、`permissions.id-token` が `write`
+      - ワークフローの最後の工程が `npm --prefix vscode exec -- vsce publish --oidc --packagePath vscode/mdmark-{バージョン}.vsix` で、Release に添える工程より後にあり、`--skip-duplicate` を持たない
+      - ワークフローの YAML が `secrets.` を含まない
     test: test_normal
   - name: 異常系（バージョンが合わない・ワークフローの失敗）
     summary: タグと `vscode/package.json` のバージョンが違うとき、バージョンの比較で止める
     setup:
       - name: バージョンがずれたリポジトリ
-        description: '`vscode/package.json` の `version` が `0.1.0` のまま'
+        description: '`vscode/package.json` の `version` が `0.1.2` のまま'
       - name: Mock
         description: 正常系と同じ
     flow: |-
@@ -39,13 +41,13 @@ flows:
         D->>GA: release:check vscode-v0.2.0
         GA-->>D: 終了コード 1 と 2 つのバージョン
     expected:
-      - 終了コードが 1 で、標準エラーに `0.2.0` と `0.1.0` が出る
-      - '`release:check vscode-0.1.0`（構造に合わないタグ）も終了コード 1'
+      - 終了コードが 1 で、標準エラーに `0.2.0` と `0.1.2` が出る
+      - '`release:check vscode-0.1.2`（構造に合わないタグ）も終了コード 1'
     test: test_error_when_version_mismatch
-lead: 拡張機能のタグを受けて、タグと `vscode/package.json` のバージョンを比べ、.vsix を作ってそのタグの GitHub Release に添える。
+lead: 拡張機能のタグを受けて、タグと `vscode/package.json` のバージョンを比べ、.vsix を作ってそのタグの GitHub Release に添え、同じ .vsix を Visual Studio Marketplace へ公開する。
 idempotent: false
-permissions: 'ワークフローの `GITHUB_TOKEN` に `contents: write`'
-side_effects: タグの GitHub Release を作り（あれば使用する）、`mdmark-{バージョン}.vsix` を添える。Marketplace・Open VSX へは登録しない
+permissions: 'ワークフローの `GITHUB_TOKEN` に `contents: write` と `id-token: write`。Marketplace へは、publisher `ShuheiNishikawa` に登録した trusted publishing のポリシー（リポジトリ `shuhei1101/mdmark`・ワークフロー `vscode-release.yml`・Environment なし）で、GitHub Actions の OIDC トークンを交換したトークンで公開する'
+side_effects: タグの GitHub Release を作り（あれば使用する）、`mdmark-{バージョン}.vsix` を添える。同じ .vsix を Marketplace の `ShuheiNishikawa.mdmark-vscode` の新しいバージョンとして公開する（公開したバージョンは上書きできない）。Open VSX へは公開しない
 callers:
   - SC-472-50#
 exclusivity: 同じタグのワークフローは `concurrency` で 1 つずつ実行する
@@ -54,12 +56,20 @@ exceptions:
     condition: Release に `mdmark-{バージョン}.vsix` を添える
   - name: ワークフローの失敗（バージョンが合わない）
     condition: タグの `vscode-v` の後ろと `vscode/package.json` の `version` が違う
-    notes: バージョンの比較の工程で終了コード 1 で止め、ログに 2 つのバージョンを出す。.vsix を作らず Release に何も添えない
+    notes: バージョンの比較の工程で終了コード 1 で止め、ログに 2 つのバージョンを出す。.vsix を作らず Release に何も添えず、Marketplace へ公開しない
+  - name: ワークフローの失敗（公開済みのバージョン）
+    condition: Marketplace の `ShuheiNishikawa.mdmark-vscode` に同じバージョンが公開済み
+    notes: vsce が公開済みのバージョンを問い合わせ、アップロードせずに `ShuheiNishikawa.mdmark-vscode v{バージョン} already exists.` で止める。Release に添えた .vsix は残る
+  - name: ワークフローの失敗（認証）
+    condition: 'OIDC トークンを Marketplace のトークンに交換できない（ポリシーが無い・一致しない・`id-token: write` が無い）'
+    notes: 'vsce が `Marketplace OIDC token exchange failed with {status}: {message}` で止める。PAT へは切り替えない。Release に添えた .vsix は残る'
 constraints:
   - item: 起きるタグ
     constraint: '`on.push.tags` は `vscode-v*` だけ。mdmark の `v*` のタグでは起きない'
   - item: 工程の並び
-    constraint: バージョンの比較（`npm --prefix vscode run release:check -- {タグ}`）→ 依存を入れる（`npm --prefix vscode ci`）→ .vsix を作る（`npm --prefix vscode run package`。`vsce package --no-dependencies --out mdmark-{バージョン}.vsix`）→ Release に添える（`gh release upload`。Release が無ければ `gh release create`）
-    notes: 結合テストはバージョンの比較と .vsix を作る工程を手元で実行して確認する。Release に添える工程は GitHub Actions でだけ流れる
+    constraint: バージョンの比較（`npm --prefix vscode run release:check -- {タグ}`）→ 依存を入れる（`npm --prefix vscode ci`）→ .vsix を作る（`npm --prefix vscode run package`。`vsce package --no-dependencies --out mdmark-{バージョン}.vsix`）→ Release に添える（`gh release upload`。Release が無ければ `gh release create`）→ Marketplace へ公開する（`npm --prefix vscode exec -- vsce publish --oidc --packagePath vscode/mdmark-{バージョン}.vsix`）
+    notes: 結合テストはバージョンの比較と .vsix を作る工程を手元で実行し、公開の工程はワークフローの YAML で確認する。Release に添える工程と公開の工程は GitHub Actions でだけ流れる
+  - item: 公開のツール
+    constraint: '`vscode/package.json` の devDependencies の `@vscode/vsce`（4.1.0 以上。4.0.0 の OIDC の交換は Marketplace の仕様と合わない）を `npm --prefix vscode ci` で入れて使用する'
   - item: タグの構造
     constraint: '`vscode-v{X}.{Y}.{Z}`。構造に合わないタグはバージョンの比較でバージョンが合わないときと同じく止める'

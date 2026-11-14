@@ -76,7 +76,7 @@ scenarios:
       - ワークフローが失敗し、ログに `ShuheiNishikawa.mdmark-vscode v0.1.1 already exists.` が出る
       - '`vscode-v0.1.1` の Release に添えた `mdmark-0.1.1.vsix` は残る'
       - Marketplace の `0.1.1` は書き換わらない
-    test: test_error_when_publish_rejected
+    test: test_error_when_version_already_published
 lead: 開発者が `vscode-v{バージョン}` のタグを打つと、GitHub Actions が拡張機能の .vsix を作り、そのタグの GitHub Release に添えて、Visual Studio Marketplace へ公開する。
 issue: 22
 primary_actor: mdmark の開発者

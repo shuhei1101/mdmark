@@ -34,7 +34,7 @@
 | [HTMLに書き出す](./IF-472-15.ts.yaml) | 開いている Markdown を jsDelivr の配布物で描く HTML に書き出す（mdmark.exportHtml） |
 | [ブラウザで開く](./IF-472-18.ts.yaml) | もう一度書き出した HTML を既定のブラウザで開く（mdmark.openInBrowser） |
 | [PDFに印刷する](./IF-472-16.ts.yaml) | 描き終えた後に印刷のダイアログを出す HTML を書き出して開く（mdmark.printToPdf） |
-| [拡張機能の配布物を作る](./IF-472-23.ts.yaml) | `vscode-v*` のタグで .vsix を作り、GitHub Release に添える |
+| [拡張機能の配布物を作る](./IF-472-23.ts.yaml) | `vscode-v*` のタグで .vsix を作り、GitHub Release に添えて Marketplace へ公開する |
 | [設定を開く](./IF-472-24.ts.yaml) | VS Code の設定画面を mdmark の項目に絞って開く（mdmark.openSettings） |
 | [点検する](./IF-472-10.ts.yaml) | mdmark check と同じ点検をし、ずれの一覧を返却する（check） |
 | [文書をHTMLに書き出す](./IF-472-9.ts.yaml) | mdmark export と同じ処理で 1 文書を 1 枚の HTML に書き出す（export_html） |
