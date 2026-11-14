@@ -5,7 +5,7 @@ constants:
   - name: eslintConfig
     title: ESLint の設定
     container: tools/eslint/eslint.config.js
-    summary: '`export default` する Flat Config の配列。`basePath` をリポジトリの直下にし、`ignores` で `**/node_modules/**`・`**/dist/**` を除外する。複雑さの規則のまとまりの `files` は `src/**/*.ts`・`scripts/**/*.ts`・`vscode/src/**/*.{ts,tsx}`・`plugin/**/*.ts`、他の規則のまとまりの `files` は `vscode/src/webview/**/*.{ts,tsx}`（ストーリーと `testing/` を含む）'
+    summary: '`export default` する Flat Config の配列。`basePath` をリポジトリの直下にし、`ignores` で `**/node_modules/**`・`**/dist/**`・JavaScript（`**/*.{js,mjs,cjs}`。ESLint が既定で検査し、`plugin/bin/` のビルドした JS の `eslint-disable` を報告するため）を除外する。複雑さの規則のまとまりの `files` は `src/**/*.ts`・`scripts/**/*.ts`・`vscode/src/**/*.{ts,tsx}`・`plugin/**/*.ts`、他の規則のまとまりの `files` は `vscode/src/webview/**/*.{ts,tsx}`（ストーリーと `testing/` を含む）'
     entries:
       - key: 型の情報
         value: 'typescript-eslint の `recommendedTypeChecked`、`parserOptions.projectService: true`、`@typescript-eslint/no-deprecated`・`no-non-null-assertion`・`consistent-type-definitions: ["error", "type"]`'
