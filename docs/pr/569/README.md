@@ -1,0 +1,1 @@
+# 既存の TypeScript 全体に複雑さの lint を error で適用し、違反を修正する
