@@ -15,9 +15,9 @@ const KEEP_CLASS_ATTRIBUTE = "data-mdmark-keep-class";
 /** 文書に記載した生の HTML が持ってよい記法の class: 列の配置と、外部ライブラリのマーカーの場所 */
 const RAW_CLASS_PATTERN = /^(?:mdmark-align-|mdmark-embed$)/;
 
-/** 記法の class（`mdmark-` で始まるものと `markdown-alert*`、図のツールチップを持つ要素の `has-tip`、リンク先を持つノードの `has-link`） */
+/** 記法の class（`mdmark-` で始まるものと `markdown-alert*`、図のツールチップを持つ要素の `has-tip`、リンク先を持つノードの `has-link`、脚注の番号の直後に続く注記のマーカーの `is-after-ref`） */
 const SYNTAX_CLASS_PATTERN =
-  /^(?:mdmark-|markdown-alert|has-tip$|has-link$|has-children$|is-virtual$)/;
+  /^(?:mdmark-|markdown-alert|has-tip$|has-link$|has-children$|is-virtual$|is-after-ref$)/;
 
 /** 図の部品が定義から出した要素だけが持てる要素。文書に記載したものは取り除く */
 export const DIAGRAM_ONLY_TAGS = new Set([
@@ -269,6 +269,7 @@ const SANITIZE_OPTIONS: sanitizeHtml.IOptions = {
       "has-link",
       "has-children",
       "is-virtual",
+      "is-after-ref",
     ],
     code: ["language-*"],
     li: ["task-list-item"],

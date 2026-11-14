@@ -13,8 +13,19 @@ const OPEN_CLASS = "is-open";
 const BELOW_CLASS = "is-below";
 const DISMISSED_CLASS = "is-dismissed";
 
-// もう一度振る `id` の頭（長い頭から適用する）
-const ID_PREFIXES = ["mdmark-fn-tip-", "mdmark-fnref-", "mdmark-fn-"];
+// もう一度振る `id` の頭（長い頭から適用する）。注記は脚注の部品と同じ要素で、map の図の持ち主を含む
+const ID_PREFIXES = [
+  "mdmark-fn-tip-",
+  "mdmark-fnref-",
+  "mdmark-fn-",
+  "mdmark-note-owner-",
+  "mdmark-note-tip-",
+  "mdmark-noteref-",
+  "mdmark-note-",
+];
+
+// map の図の持ち主の `id` の頭（図は脚注の操作の後に描かれるため、持ち主が無くても戻るリンクを振り直す）
+const OWNER_PREFIX = "mdmark-note-owner-";
 
 // もう一度振った `id` を指す属性
 const POINTER_ATTRIBUTES = ["aria-describedby", "aria-details"];
@@ -26,7 +37,7 @@ let attachCounter = 0;
 function renumberIds(root: HTMLElement, base: number): void {
   const renamed = new Map<string, string>();
   for (const element of root.querySelectorAll<HTMLElement>(
-    ".mdmark-fn-link[id], .mdmark-fn-tip[id], .mdmark-fn-item[id]",
+    `.mdmark-fn-link[id], .mdmark-fn-tip[id], .mdmark-fn-item[id], [id^="${OWNER_PREFIX}"]`,
   )) {
     const prefix = ID_PREFIXES.find((head) => element.id.startsWith(head));
     if (prefix === undefined) {
@@ -43,6 +54,12 @@ function renumberIds(root: HTMLElement, base: number): void {
     const target = renamed.get(href.slice(1));
     if (href.startsWith("#") && target !== undefined) {
       element.setAttribute("href", `#${target}`);
+    } else if (href.startsWith(`#${OWNER_PREFIX}`)) {
+      // まだ描かれていない持ち主へ戻るリンク: 持ち主の `id` は図を描くときに合わせる
+      element.setAttribute(
+        "href",
+        `#${OWNER_PREFIX}${base}-${href.slice(OWNER_PREFIX.length + 1)}`,
+      );
     }
     for (const name of POINTER_ATTRIBUTES) {
       const pointed = renamed.get(element.getAttribute(name) ?? "");
@@ -106,7 +123,7 @@ function targetOf(root: HTMLElement, link: Element): HTMLElement | null {
     : null;
 }
 
-/** mount が描いた脚注の番号にツールチップを開閉する操作を、番号と末尾の一覧の項目に行き来する操作を付け、削除する関数を返却する */
+/** mount が描いた脚注の番号と注記のマーカーにツールチップを開閉する操作を、番号・マーカーと末尾の一覧の項目（注記は map の図の持ち主も）に行き来する操作を付け、削除する関数を返却する */
 export function attachFootnotes(options: {
   /** 描いた文書の要素 */
   root: HTMLElement;

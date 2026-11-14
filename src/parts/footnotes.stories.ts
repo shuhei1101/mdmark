@@ -46,3 +46,14 @@ export const Long: Story = {
     open: true,
   },
 };
+
+export const Annotations: Story = {
+  name: "Annotations",
+  parameters: { server: { id: "footnotes" } },
+  args: {
+    kind: "annotation",
+    items:
+      '[{"number":1,"html":"<p>条件を満たさないときは次の工程へ進む。</p>","refCount":2,"refs":[{"href":"#mdmark-noteref-1-0"},{"href":"#mdmark-note-owner-1-judge","owner":"mdmark-note-owner-1-judge"}]},{"number":2,"html":"<p>画像は data URL で埋める。</p>","refCount":1,"refs":[{"href":"#mdmark-noteref-2-0"}]}]',
+    open: true,
+  },
+};

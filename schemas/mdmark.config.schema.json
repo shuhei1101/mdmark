@@ -63,6 +63,12 @@
           "type": "boolean",
           "default": true
         },
+        "annotations": {
+          "title": "注記の機能",
+          "description": "行頭の `※[ID]: 本文` で定義した注記を、本文・表のセルの `※[ID]` と map の補足の `notes.{ID}.annotations` から参照し、`※` と番号のマーカー・ツールチップ・末尾の注記の一覧にする。オフのときは記載した文字のまま描く。",
+          "type": "boolean",
+          "default": true
+        },
         "code": {
           "title": "コードブロックを飾る機能",
           "description": "コードブロックに、直前の `<!-- code: -->` のタイトル・行番号・行の強調と、行末のコードの行のマーカー（`[!code ++]`・`[!code --]`・`[!code highlight]`）を適用する。オフのときはタイトル・行番号・行の強調を付けず、コードの行のマーカーは記載した文字のまま描く。",
@@ -250,6 +256,7 @@
         "tree": true,
         "badge": true,
         "footnotes": true,
+        "annotations": true,
         "code": true,
         "syntax": true,
         "toc": true,

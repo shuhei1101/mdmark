@@ -9,13 +9,14 @@ import {
   renderMapPackets,
   selectableName,
 } from "../parts/map.ts";
+import { linkAnnotationOwners, readMapAnnotations } from "./annotations.ts";
 import {
   attachBand,
   type BandHandle,
   type BandStep,
   createFollow,
 } from "./band.ts";
-import { type MapData, type MapStep, parseMapData } from "./data.ts";
+import { type MapData, type MapStep, noteTexts, parseMapData } from "./data.ts";
 import {
   applyWireShifts,
   KEY_MOVE_PX,
@@ -189,9 +190,8 @@ export const attachMapFlow = (
       location,
     }),
   };
-  const notes = Object.fromEntries(
-    Object.entries(data.notes).map(([id, note]) => [id, note.text]),
-  );
+  const notes = noteTexts(data.notes);
+  const annotations = readMapAnnotations({ range, notes: data.notes });
   const links = mapLinkProblems(chart.links).allowed;
   const wireLines = Object.fromEntries(
     Object.entries(data.layout).flatMap(([id, entry]) =>
@@ -259,6 +259,7 @@ export const attachMapFlow = (
       lines: config.map.lines,
       wireLines,
       notes,
+      annotations,
       links,
       colors,
       collapsed: state.collapsed,
@@ -291,6 +292,7 @@ export const attachMapFlow = (
     },
     body(),
   );
+  linkAnnotationOwners(range);
   const figure = range.querySelector<HTMLElement>("figure") as HTMLElement;
   const detachDiagrams = attachDiagrams({
     root: range,
@@ -328,6 +330,7 @@ export const attachMapFlow = (
       sizer.style.height = `${part.height}px`;
     }
     replaceTips(figure, part.tips);
+    linkAnnotationOwners(range);
   };
   /** 状態から配置し直して、図の中身とツールを描き直す */
   const refresh = (relayout = true) => {

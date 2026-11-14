@@ -15,13 +15,17 @@ import type { MapKind, MapLine } from "../map/spec.ts";
 import { isColorName } from "./colors.ts";
 import {
   createTips,
+  type DiagramAnnotation,
   groupInfo,
+  infoLabel,
+  ownerIdAttribute,
   renderFlow,
   renderText,
   type TermLookup,
   type TipList,
 } from "./diagram.ts";
 import { escapeHtml } from "./escape.ts";
+import { NOTE_OWNER_PREFIX, noteOwnerId } from "./footnote.ts";
 import { iconSvg } from "./icons.ts";
 
 /** 線の上を流れるデータの印。color は色の名前か line・source・target（省く・知らない値は線の色） */
@@ -118,6 +122,8 @@ export type MapFlowArgs = {
   wireLines?: Record<string, string> | undefined;
   /** 補足の notes（ノード・グループ・線の ID ごとの説明） */
   notes?: Record<string, string> | undefined;
+  /** 補足の notes の annotations（要素の ID ごとの注記。番号の順） */
+  annotations?: Record<string, DiagramAnnotation[]> | undefined;
   /** `mapLinkProblems` が許したノードのリンク先 */
   links?: Record<string, string> | undefined;
   /** 補足の layout の color（グループの ID ごとの色の名前） */
@@ -132,7 +138,7 @@ export type MapFlowArgs = {
   id?: string | undefined;
   /** 閉じたグループの名前の後ろの文字（無ければ「ノード {数} 件」） */
   collapsedTag?: ((groupId: string) => string | undefined) | undefined;
-  /** ノードの ID ごとの状態遷移図の形状（`start`・`end`・`choice` は名前と種類の行を出さずフォーカスを持たない。`note` は種類の行「注記」） */
+  /** ノードの ID ごとの状態遷移図の形状（`start`・`end`・`choice` は名前と種類の行を出さずフォーカスを持たない。`note` は種類の行「ノート」） */
   shapes?: Record<string, MapStateShape> | undefined;
   /** ノードの ID ごとに、種類の行の末尾とノードの末尾へ入れる HTML と、そのツールチップ */
   nodeParts?: Record<string, MapNodePart> | undefined;
@@ -151,7 +157,7 @@ const STATE_SHAPE_NAMES = {
   start: "開始",
   end: "終了",
   choice: "分岐",
-  note: "注記",
+  note: "ノート",
 } satisfies Record<MapStateShape, string>;
 
 /** html の index から始まる要素の、対応する閉じタグの位置（無ければ -1） */
@@ -389,6 +395,10 @@ const MAP_LINK_KEYS =
 export const selectableName = (name: string, selected: boolean): string =>
   selected ? `${name}（選択中）` : name;
 
+/** 図の番号（`map-{図の通し番号}`）から、注記の持ち主の `id` の頭 */
+export const noteOwnerPrefix = (id: string | undefined): string =>
+  `${NOTE_OWNER_PREFIX}${(id ?? "map").replace(/^map-/, "")}-`;
+
 /** 部品『mapの構成図』の HTML。ノードと線（`notes` の説明を `hint`、`links` のリンク先を `href` にする）を renderFlow で描き、グループの面とタイトルの行・開閉と中へ入るボタン・説明のマーカー・閉じたグループを重ねる */
 export const renderMapFlow = (args: MapFlowArgs): MapPart => {
   const { layout } = args;
@@ -471,20 +481,34 @@ export const renderMapFlow = (args: MapFlowArgs): MapPart => {
     nodes,
     wires,
   };
-  const part = renderFlow(definition, args.id ?? "map", true);
-  // ラベルを持たない線の説明とまとめた元の線は、線の押せる帯を持ち主にしたツールチップにする
+  const ownerPrefix = noteOwnerPrefix(args.id);
+  const annotations =
+    args.annotations === undefined
+      ? undefined
+      : { items: args.annotations, ownerPrefix };
+  const part = renderFlow(
+    definition,
+    args.id ?? "map",
+    true,
+    undefined,
+    annotations,
+  );
+  // ラベルを持たない線の説明とまとめた元の線、注記だけを持つ線は、線の押せる帯を持ち主にしたツールチップにする
   const wireTips = createTips(`${args.id ?? "map"}-wire`);
   const tipped = new Set<string>();
   for (const wire of wires) {
-    if (wire.tip === undefined) continue;
+    const notes = args.annotations?.[wire.id];
+    if (wire.tip === undefined && !notes?.length) continue;
     tipped.add(wire.id);
-    if (wire.label !== undefined) continue;
+    // ラベルと説明を持つ線は、ラベルのツールチップが説明と注記を出す
+    if (wire.label !== undefined && wire.tip !== undefined) continue;
     const shown = layout.wires.find((item) => item.id === wire.id);
     wireTips.add({
       kind: "wire",
       label: shown === undefined ? wire.id : wireName(shown),
       tip: wire.tip,
       owner: wire.id,
+      annotations: notes,
     });
   }
   let html = part.html;
@@ -576,6 +600,8 @@ export const renderMapFlow = (args: MapFlowArgs): MapPart => {
       label: title,
       owner: `group:${id}`,
       tips: groupTips,
+      annotations: args.annotations?.[id],
+      ownerId: noteOwnerId(ownerPrefix, id),
     });
   // グループは外側から順に、線とノードの下に重ねる
   const groups = [...open]
@@ -611,7 +637,7 @@ export const renderMapFlow = (args: MapFlowArgs): MapPart => {
   const hits = layout.wires
     .map(
       (wire) =>
-        `<path class="map-wire-hit" data-wire="${escapeHtml(wire.id)}"${tipped.has(wire.id) ? ` data-tip-owner="${escapeHtml(wire.id)}"` : ""} tabindex="0" role="button" aria-label="${escapeHtml(wireName(wire))}" d="${wire.points.map(([x, y], index) => `${index === 0 ? "M" : "L"}${x} ${y}`).join("")}"></path>`,
+        `<path class="map-wire-hit" data-wire="${escapeHtml(wire.id)}"${ownerIdAttribute(annotations, wire.id)}${tipped.has(wire.id) ? ` data-tip-owner="${escapeHtml(wire.id)}"` : ""} tabindex="0" role="button" aria-label="${escapeHtml(wireName(wire))}" d="${wire.points.map(([x, y], index) => `${index === 0 ? "M" : "L"}${x} ${y}`).join("")}"></path>`,
     )
     .join("");
   const hitLayer = `<svg class="map-wire-hits" width="${layout.width}" height="${layout.height}">${hits}</svg>`;
@@ -689,10 +715,12 @@ export const renderMapBand = (args: MapBandArgs): string => {
 /** 部品『mapのシーケンス図』の引数 */
 export type MapSequenceArgs = {
   sequence: Sequence;
-  /** 用語から意味（`data-map-terms`）。参加者の名前・メッセージの文・注記の文の中の用語に下線を付ける */
+  /** 用語から意味（`data-map-terms`）。参加者の名前・メッセージの文・ノートの文の中の用語に下線を付ける */
   terms?: Record<string, string> | undefined;
   /** 補足の notes（記載の順に 1 からのメッセージの番号から説明）。説明を持つメッセージの線にツールチップを付ける */
   notes?: Record<string, string> | undefined;
+  /** 補足の notes の annotations（メッセージの番号ごとの注記。番号の順）。注記を持つメッセージの線にもツールチップを付ける */
+  annotations?: Record<string, DiagramAnnotation[]> | undefined;
   rows: SequenceRow[];
   participants: string[];
   collapsed: number[];
@@ -721,7 +749,7 @@ export const MAP_SEQ = {
 const fragmentTitle = (fragment: SequenceFragment): string =>
   `${fragment.kind === "rect" ? "" : `<b>${fragment.kind}</b> `}${escapeHtml(fragment.label)}`;
 
-/** 部品『mapのシーケンス図』の HTML。参加者・ライフライン・メッセージに、ブロックのタブの開閉と名前のボタン・区間・注記・活性化の帯・参加者の選択を重ねる */
+/** 部品『mapのシーケンス図』の HTML。参加者・ライフライン・メッセージに、ブロックのタブの開閉と名前のボタン・区間・ノート・活性化の帯・参加者の選択を重ねる */
 export const renderMapSequence = (args: MapSequenceArgs): MapPart => {
   const marker = termMarker(args.terms, `${args.id ?? "map"}-seq`);
   const noteTips = createTips(`${args.id ?? "map"}-seq-note`);
@@ -919,17 +947,21 @@ export const renderMapSequence = (args: MapSequenceArgs): MapPart => {
       ? ` marker-start="url(#${id}-head-${style.head})"`
       : "";
     // 補足の notes に説明があるメッセージは、線の押せる帯を持ち主にしたツールチップを持つ
-    const note = args.notes?.[String(message + 1)];
+    const key = String(message + 1);
+    const note = args.notes?.[key];
+    const notes = args.annotations?.[key];
+    const annotated = (notes?.length ?? 0) > 0;
     const noteOwner =
-      note === undefined || note === ""
+      (note === undefined || note === "") && !annotated
         ? ""
-        : ` data-tip-owner="${escapeHtml(`message:${message}`)}"`;
+        : `${annotated ? ` id="${escapeHtml(noteOwnerId(noteOwnerPrefix(args.id), key))}" tabindex="0"` : ""} data-tip-owner="${escapeHtml(`message:${message}`)}"`;
     if (noteOwner !== "")
       noteTips.add({
         kind: "wire",
         label: `${labelOf(item.from)} → ${labelOf(item.to)}`,
         tip: note,
         owner: `message:${message}`,
+        annotations: notes,
       });
     wires.push(
       `<path class="mdmark-diagram-wire${dim}" data-line="map" data-message="${message}" d="${d}"${style.dotted ? ' stroke-dasharray="6 4"' : ""} stroke-width="1.5" style="stroke:var(--mdmark-color-diagram-line)"${head}${both}></path><path class="map-wire-hit" data-message="${message}"${noteOwner} d="${d}"></path>`,
@@ -1061,6 +1093,10 @@ export type MapErTableArgs = {
   /** 列の名前ごとの説明（補足の `{テーブル}.{列}` か列のコメント） */
   notes: Record<string, string>;
   collapsed: boolean;
+  /** 列の名前ごとの注記（番号の順） */
+  annotations?: Record<string, DiagramAnnotation[]> | undefined;
+  /** 注記を持つ列の説明のボタンの `id` の頭 */
+  ownerPrefix?: string | undefined;
   /** ツールチップの id の頭 */
   id?: string | undefined;
 };
@@ -1076,11 +1112,23 @@ export const renderMapEr = (
   const rows = args.columns
     .map((column) => {
       const note = args.notes[column.name];
+      const notes = args.annotations?.[column.name];
+      const annotated = (notes?.length ?? 0) > 0;
       const owner = `column:${args.name}.${column.name}`;
+      // 説明か注記を持つ列は、説明のボタンとツールチップを持つ
+      const label = infoLabel({
+        name: column.name,
+        described: note !== undefined,
+        annotated,
+      }).replace(/^「(.*)」/, "$1");
+      const ownerId =
+        annotated && args.ownerPrefix !== undefined
+          ? ` id="${escapeHtml(noteOwnerId(args.ownerPrefix, `${args.name}.${column.name}`))}"`
+          : "";
       const mark =
-        note === undefined
+        note === undefined && !annotated
           ? ""
-          : `<button class="map-er-note" type="button" aria-label="${escapeHtml(`${column.name}の説明`)}" aria-describedby="${tips.add({ kind: "hint", label: column.name, hint: note, owner })}" data-tip-owner="${escapeHtml(owner)}">i</button>`;
+          : `<button class="map-er-note" type="button"${ownerId} aria-label="${escapeHtml(label)}" aria-describedby="${tips.add({ kind: "hint", label: column.name, hint: note, owner, annotations: notes })}" data-tip-owner="${escapeHtml(owner)}">i</button>`;
       return `<div class="map-er-column" role="listitem" data-column="${escapeHtml(column.name)}"><span class="map-er-key">${escapeHtml(column.keys.join(","))}</span><span class="map-er-name">${escapeHtml(column.name)}</span><span class="map-er-type">${escapeHtml(column.type)}</span><span class="map-er-note-cell">${mark}</span></div>`;
     })
     .join("");
@@ -1463,10 +1511,20 @@ export const renderMapErDiagram = (args: MapErArgs): MapPart => {
   const nodeParts: Record<string, MapNodePart> = {};
   for (const [index, table] of args.tables.entries()) {
     if (!shown.has(table.name)) continue;
+    // 補足の `{テーブル}.{列}` の注記を、列の名前ごとの注記にする
+    const columnNotes = Object.fromEntries(
+      Object.entries(args.annotations ?? {}).flatMap(([key, notes]) =>
+        key.startsWith(`${table.name}.`)
+          ? [[key.slice(table.name.length + 1), notes]]
+          : [],
+      ),
+    );
     const part = renderMapEr({
       ...table,
       collapsed: args.collapsed.includes(table.name),
       id: `${id}-er-${index}`,
+      annotations: columnNotes,
+      ownerPrefix: noteOwnerPrefix(args.id),
     });
     nodeParts[table.name] = {
       head: part.toggle,
@@ -1619,7 +1677,7 @@ export const mapStateLoopDim = (args: {
       .map((loop) => loop.wire),
   );
 
-/** 部品『mapの状態遷移図』の HTML。構成図の部品に開始・終了・分岐の形状と注記の種類の行を付け、同じ状態への遷移を重ねる */
+/** 部品『mapの状態遷移図』の HTML。構成図の部品に開始・終了・分岐の形状とノートの種類の行を付け、同じ状態への遷移を重ねる */
 export const renderMapStateDiagram = (args: MapStateArgs): MapPart => {
   const flow = renderMapFlow(args);
   const focus =

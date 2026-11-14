@@ -44,6 +44,8 @@
     --mdmark-color-term-underline: var(--mdmark-color-muted);
     /* 本文と一覧の脚注の番号の色 */
     --mdmark-color-footnote-ref: var(--mdmark-color-link);
+    /* 本文と一覧の注記のマーカーの色 */
+    --mdmark-color-annotation-ref: var(--mdmark-color-footnote-ref);
     --mdmark-color-avoided-underline: var(--mdmark-color-notice-border);
     --mdmark-tooltip-max-width: 22rem;
     --mdmark-tooltip-max-height: 18rem;
@@ -4697,6 +4699,42 @@
         outline: 2px solid var(--mdmark-color-link);
         outline-offset: 2px;
       }
+    }
+  }
+
+  /* 注記: 脚注の部品のクラスに注記のクラスを重ね、マーカー・一覧の項目の頭・図のツールチップの注記の区分だけを上書きする */
+  .mdmark {
+    /* マーカー: 角括弧の代わりに「※」の後ろに、最初に参照した順の番号（リンクの文字）を続ける */
+    .mdmark-note-ref .mdmark-fn-link {
+      padding-inline: 0.05em;
+      color: var(--mdmark-color-annotation-ref);
+
+      &::before {
+        content: "※";
+      }
+
+      &::after {
+        content: none;
+      }
+    }
+
+    /* 脚注の番号か注記のマーカーの直後に続くマーカー: 押す範囲が重ならないよう、マーカーの中心の間を 24px 以上空ける */
+    .mdmark-note-ref.is-after-ref {
+      margin-inline-start: 1rem;
+    }
+
+    /* 注記の一覧の項目の頭: 本文と同じ「※」と番号 */
+    .mdmark-notes .mdmark-fn-item::before {
+      color: var(--mdmark-color-annotation-ref);
+      content: "※" counter(mdmark-fn);
+    }
+
+    /* 図のツールチップの説明と注記の区分の間: 線で分ける */
+    .mdmark-diagram-tip .mdmark-term-tip-section + .mdmark-term-tip-section {
+      display: block;
+      margin-block-start: 0.5em;
+      padding-block-start: 0.5em;
+      border-block-start: 1px solid var(--mdmark-color-border);
     }
   }
 

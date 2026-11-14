@@ -7,6 +7,8 @@ import type {
 } from "markdown-it";
 import {
   FOOTNOTE_BODY_OPEN,
+  type FootnoteBackRef,
+  type FootnoteKind,
   renderFootnoteRef,
   renderFootnotes,
 } from "../../parts/footnote.ts";
@@ -17,6 +19,16 @@ import { envOf, featureOn } from "./tokens.ts";
 /** 脚注の定義の囲みの開きと閉じ、本文の参照のトークンの種類 */
 export const DEF_OPEN = "mdmark_footnote_def_open";
 export const DEF_CLOSE = "mdmark_footnote_def_close";
+
+/** 注記の定義の囲みの開きと閉じのトークンの種類（本文の外に置く定義として、脚注の定義と同じく扱う） */
+export const ANNOTATION_DEF_OPEN = "mdmark_annotation_def_open";
+export const ANNOTATION_DEF_CLOSE = "mdmark_annotation_def_close";
+
+/** 定義の囲みの開きの種類から、閉じの種類 */
+const DEFINITION_CLOSES: Record<string, string> = {
+  [DEF_OPEN]: DEF_CLOSE,
+  [ANNOTATION_DEF_OPEN]: ANNOTATION_DEF_CLOSE,
+};
 const REF = "mdmark_footnote_ref";
 
 /** 文書の末尾の脚注の一覧のトークンの種類 */
@@ -257,14 +269,19 @@ export function readInlineFootnote(
   return true;
 }
 
-/** `openIndex` の定義の囲みの開きに対する閉じの位置を返却する */
-function findDefinitionClose(tokens: Token[], openIndex: number): number {
+/** `openIndex` の定義の囲み（脚注か注記）の開きに対する閉じの位置を返却する */
+export function findDefinitionClose(
+  tokens: Token[],
+  openIndex: number,
+): number {
+  const open = tokens[openIndex]?.type ?? "";
+  const close = DEFINITION_CLOSES[open];
   let depth = 0;
   for (let index = openIndex; index < tokens.length; index++) {
     const type = tokens[index]?.type;
-    if (type === DEF_OPEN) {
+    if (type === open) {
       depth += 1;
-    } else if (type === DEF_CLOSE) {
+    } else if (type === close) {
       depth -= 1;
       if (depth === 0) {
         return index;
@@ -274,8 +291,8 @@ function findDefinitionClose(tokens: Token[], openIndex: number): number {
   throw new Error("脚注の定義の閉じが無い");
 }
 
-/** 機能がオフのとき、定義の中身の最初の段落の頭に `[^ラベル]: ` の文字を戻す（段落が無ければ文字だけの段落を作る） */
-function restoreDefinition(
+/** 機能がオフのとき、定義の中身の最初の段落の頭に定義の頭の文字（`[^ラベル]: ` など）を戻す（段落が無ければ文字だけの段落を作る） */
+export function restoreDefinition(
   state: StateCore,
   source: string,
   inner: Token[],
@@ -379,12 +396,12 @@ function inlineDefinition(
   return [open, paragraphOpen, inline, paragraphClose, close];
 }
 
-/** 定義の囲みの外のトークンだけを返却する（用語の下線を脚注の中身に付けないため） */
+/** 脚注と注記の定義の囲みの外のトークンだけを返却する（用語の下線を脚注と注記の中身に付けないため） */
 export function outsideFootnoteDefinitions(tokens: Token[]): Token[] {
   const out: Token[] = [];
   for (let index = 0; index < tokens.length; index++) {
     const token = tokens[index];
-    if (token?.type === DEF_OPEN) {
+    if (token !== undefined && token.type in DEFINITION_CLOSES) {
       index = findDefinitionClose(tokens, index);
     } else if (token !== undefined) {
       out.push(token);
@@ -439,6 +456,16 @@ export function footnoteBodies(options: {
     (note.key === null
       ? null
       : env.mdmarkFootnotes?.definitions.get(note.key)) ?? [];
+  return definitionBodies({ md, env, tokens });
+}
+
+/** 定義の中身のトークンを、ツールチップの段落ごとの行内の HTML と、一覧のブロックの HTML にする */
+export function definitionBodies(options: {
+  md: MarkdownIt;
+  env: RenderEnv;
+  tokens: Token[];
+}): { bodies: string[]; html: string } {
+  const { md, env, tokens } = options;
   const bodies: string[] = [];
   for (let index = 0; index < tokens.length; index++) {
     const token = tokens[index];
@@ -469,7 +496,7 @@ export function footnoteBodies(options: {
 }
 
 /** 部品の HTML のうち、`fills` の中身（文書から描いた HTML）を除いた部分にだけ mdmark が出した要素のマーカーを付ける。`fills` は `FOOTNOTE_BODY_OPEN` の直後に順に並ぶ */
-function markOwnAroundBodies(
+export function markOwnAroundBodies(
   html: string,
   fills: string[],
   nonce: string,
@@ -497,24 +524,54 @@ function renderReference(md: MarkdownIt, token: Token, env: RenderEnv): string {
   return markOwnAroundBodies(html, bodies, env.nonce);
 }
 
-/** 脚注の一覧の HTML にする。戻るリンクを最後の段落の閉じの前に配置させるため、中身を閉じの前後の差し込みインターフェースに分けて部品に指定し、中身の外にだけマーカーを付ける */
+/** 脚注の一覧の HTML にする */
 function renderList(md: MarkdownIt, env: RenderEnv): string {
+  return renderDefinitionList({
+    md,
+    env,
+    kind: "footnote",
+    items: (env.mdmarkFootnotes?.notes ?? []).map((note, index) => ({
+      number: index + 1,
+      tokens:
+        (note.key === null
+          ? null
+          : env.mdmarkFootnotes?.definitions.get(note.key)) ?? [],
+      refCount: note.refCount,
+    })),
+  });
+}
+
+/** 脚注か注記の一覧の HTML にする。戻るリンクを最後の段落の閉じの前に配置させるため、中身を閉じの前後の差し込みインターフェースに分けて部品に指定し、中身の外にだけマーカーを付ける */
+export function renderDefinitionList(options: {
+  md: MarkdownIt;
+  env: RenderEnv;
+  kind: FootnoteKind;
+  items: Array<{
+    number: number;
+    tokens: Token[];
+    refCount: number;
+    refs?: FootnoteBackRef[];
+  }>;
+}): string {
+  const { md, env, kind } = options;
   const fills: string[] = [];
-  const items = (env.mdmarkFootnotes?.notes ?? []).map((note, index) => {
-    const { html } = footnoteBodies({ md, env, note });
+  const items = options.items.map(({ number, tokens, refCount, refs }) => {
+    const { html } = definitionBodies({ md, env, tokens });
     const at = html.lastIndexOf("</p>");
+    const back = refs === undefined ? {} : { refs };
     if (at < 0) {
       fills.push(html);
-      return { number: index + 1, html: SLOT_MARKER, refCount: note.refCount };
+      return { number, html: SLOT_MARKER, refCount, ...back };
     }
     fills.push(html.slice(0, at), html.slice(at + "</p>".length));
     return {
-      number: index + 1,
+      number,
       html: `${SLOT_MARKER}</p>${SLOT_MARKER}`,
-      refCount: note.refCount,
+      refCount,
+      ...back,
     };
   });
-  return splitSlots(markOwn(renderFootnotes({ items }), env.nonce))
+  return splitSlots(markOwn(renderFootnotes({ items, kind }), env.nonce))
     .map((part, index) => `${part}${fills[index] ?? ""}`)
     .join("");
 }

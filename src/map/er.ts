@@ -279,7 +279,7 @@ export const erPartRelations = (er: ErDiagram): MapErRelation[] => {
 /** テーブルの列の名前ごとの説明（補足の `{テーブル}.{列}` の説明、無ければ列のコメント） */
 export const erColumnNotes = (
   table: ErTable,
-  notes: Record<string, { text: string }>,
+  notes: Record<string, { text?: string | undefined }>,
 ): Record<string, string> =>
   Object.fromEntries(
     table.columns.flatMap((column) => {

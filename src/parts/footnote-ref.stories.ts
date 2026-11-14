@@ -67,3 +67,25 @@ export const TwoDigits: Story = {
     open: true,
   },
 };
+
+export const Annotation: Story = {
+  name: "Annotation",
+  parameters: { server: { id: "footnote-ref" } },
+  args: {
+    kind: "annotation",
+    number: 1,
+    bodies: '["条件を満たさないときは次の工程へ進む。"]',
+    open: true,
+  },
+};
+
+export const AnnotationAfterRef: Story = {
+  name: "AnnotationAfterRef",
+  parameters: { server: { id: "footnote-ref" } },
+  args: {
+    kind: "annotation",
+    number: 1,
+    afterRef: true,
+    bodies: '["古い記録は 30 日で消える。"]',
+  },
+};
