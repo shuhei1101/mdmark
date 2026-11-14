@@ -776,6 +776,12 @@ files:
     related:
       - to: src/cli/prompt
         type: tests
+  - path: unit/src/cli/traces.test.ts
+    description: src/cli/traces.ts（「書き出した HTML の mdmark の痕跡を隠す処理」）を確認する単体テスト。traces.ts を変えたときに、合わせて再確認するケースを探すときに参照する。
+    tags: [topic:単体テスト, tool:vitest, topic:cli, tool:html]
+    related:
+      - to: src/cli/traces
+        type: tests
   - path: unit/src/cli/upgrade.test.ts
     description: src/cli/upgrade.ts（「mdmark upgrade」）を確認する単体テスト。upgrade.ts を変えたときに、合わせて再確認するケースを探すときに参照する。
     tags: [topic:単体テスト, tool:vitest, topic:バージョン, topic:移行, topic:cli]
