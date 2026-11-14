@@ -358,10 +358,10 @@ scope_out:
     plan: none
   - item: map の図の説明のツールチップに、設定の `features.hints`（まとめて削除する）と `tooltips.diagramPlacement`（上を先にする）を当てること
     reason: ユーザーの判断で、この PR では適用せず別の Issue にする（確認ログ）。今の map はどちらの設定も参照せず、説明を常に下を先に出す
-    plan: to_file
+    plan: '#557'
   - item: 図の枠のリサイズハンドル（`src/parts/diagram.ts` の `.mdmark-diagram-resize`、`role="separator"`）に `aria-valuenow` が無い（axe の `aria-required-attr`。ストーリー `parts-mapflow--default` で検出）
     reason: axe の `aria-required-attr` から外れているが、この PR は図の枠のリサイズハンドルを変えず、flow・sequence の廃止の要望に含まれない（レビューの対象外の逸脱の報告）
-    plan: to_file
+    plan: '#514'
   - item: map の構成図の説明を持つノード（`src/parts/map.ts` の `renderMapFlow`。`tabindex="0"`・`role="button"` のノードの中に説明のマーカーのボタン）の入れ子（axe の `nested-interactive`。ストーリー `parts-mapflow--default` の `data`・`layout` のノードで検出）
     reason: axe の `nested-interactive` から外れているが、説明のマーカーをノードの中に置く作りはこの PR の前からあり、flow・sequence の廃止の要望に含まれない（レビューの対象外の逸脱の報告。この PR はリンク先を持つノードの入れ子だけを直した）
-    plan: to_file
+    plan: '#558'
