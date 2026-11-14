@@ -80,4 +80,7 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-14T07:03:22.534511+00:00'
   - process: 結合テスト作成
-    status: todo
+    status: done
+    reason: 隠す・隠さない書き出しの結合テストを export・bundle・export_html・build_site に追加（結合 1115 件 pass）
+    updated_by: planner
+    updated_at: '2026-11-14T08:47:08.852854+00:00'
