@@ -11,6 +11,8 @@ directory: |-
   │   ├── structure.ts       # 範囲の mermaid のブロックと補足の数・図の種類・マーカーの引数の確認（dist/index.js・dist/map.js と CLI）
   │   ├── flowchart.ts       # flowchart の読み取りと click のリンク先の確認（dist/map.js と CLI）
   │   ├── sequence.ts        # sequenceDiagram の読み取り（dist/map.js と CLI）
+  │   ├── er.ts              # erDiagram の読み取りと構成図の入力への読み替え・経路（dist/map.js と CLI）
+  │   ├── state-diagram.ts   # stateDiagram-v2 の読み取りと構成図の入力への読み替え（dist/map.js と CLI）
   │   ├── data.ts            # 補足の JSON の読み取り（dist/map.js と CLI）
   │   ├── check.ts           # 書き方の誤りの項目を集める（dist/index.js・dist/map.js と CLI）
   │   ├── lucide-names.ts    # 点検が照らす lucide のアイコンの名前（点検で呼んだときだけ作る）
@@ -19,11 +21,13 @@ directory: |-
   │   ├── state.ts           # sessionStorage とクエリ文字列の状態（dist/map.js）
   │   ├── flow-view.ts       # 構成図を描いて操作を付ける（dist/map.js）
   │   ├── sequence-view.ts   # シーケンス図を描いて操作を付ける（dist/map.js）
+  │   ├── er-view.ts         # ER 図を構成図の上に描いて固有の操作を足す（dist/map.js）
+  │   ├── state-view.ts      # 状態遷移図を構成図の上に描いて固有の操作を足す（dist/map.js）
   │   ├── drag.ts            # ノード・グループ・線の区間のドラッグ（dist/map.js）
   │   ├── band.ts            # 案内と再生の進め方（dist/map.js）
   │   ├── index.ts           # dist/map.js の入口。attachMap
   │   └── convert.ts         # 廃止した flow・sequence の範囲を map の範囲へ書き換える（移行の手順のスクリプトがまとめて読み込む）
-  └── parts/map.ts           # 部品『mapの構成図』『mapのシーケンス図』『案内の帯』の HTML（dist/map.js）
+  └── parts/map.ts           # 部品『mapの構成図』『mapのシーケンス図』『mapのER図』『mapの状態遷移図』『案内の帯』の HTML（dist/map.js）
   ```
 diagrams:
   - name: 全体

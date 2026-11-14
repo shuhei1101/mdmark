@@ -69,9 +69,9 @@ functions:
     scope: public
     args:
       - name: options
-        type: '{ figure: HTMLElement; mode: "walkthrough" | "playback"; steps: BandStep[]; interval: number; autoplay: boolean; apply: (step: BandStep | undefined) => void; reducedMotion: boolean; observe: (target: Element, onEnter: () => void) => () => void; follow?: { start: () => void; step: (step: BandStep) => void } }'
+        type: '{ figure: HTMLElement; mode: "walkthrough" | "playback"; unit?: "message" | "transition"; steps: BandStep[]; interval: number; autoplay: boolean; apply: (step: BandStep | undefined) => void; reducedMotion: boolean; observe: (target: Element, onEnter: () => void) => () => void; follow?: { start: () => void; step: (step: BandStep) => void } }'
         required: true
-        description: 図の枠・モード・手順・間隔（秒。印の `interval`）・印の `play` が `autoplay` か・強調を当てる関数・動きを減らす設定・画面に入ったら 1 回呼ぶ関数を登録して外す関数を返す関数（`IntersectionObserver` の差し替え口）・自動で進め始めたとき（`start`）と自動で次の手順へ進めたとき（`step`）に呼ぶ関数
+        description: 図の枠・モード・再生で進める単位（既定 `message`。`renderMapBand` の `unit` に渡す）・手順・間隔（秒。印の `interval`）・印の `play` が `autoplay` か・強調を当てる関数・動きを減らす設定・画面に入ったら 1 回呼ぶ関数を登録して外す関数を返す関数（`IntersectionObserver` の差し替え口）・自動で進め始めたとき（`start`）と自動で次の手順へ進めたとき（`step`）に呼ぶ関数
     returns:
       type: BandHandle
       description: 止める関数と片付ける関数

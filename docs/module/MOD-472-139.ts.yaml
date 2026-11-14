@@ -26,6 +26,9 @@ data_models:
       - name: plays_over
         type: number
         description: シーケンス図の再生を重ねる構成図の番号
+      - name: groups
+        type: 'Record<string, { title: string; tables: string[]; parent?: string }>'
+        description: ER 図の分類（分類の ID ごとのタイトル・テーブル名・親の分類）
 functions:
   - name: parseMapData
     title: 補足を読む
@@ -45,7 +48,7 @@ functions:
       description: 読み込んだ補足と項目
     process: |-
       1. `JSON.parse` で読み込む。読み込めないか最上位がオブジェクトでなければ `map_invalid_value`（JSON のオブジェクトで記載する直し方。読めないときは原因と、エラーの位置から求めた補足の中の行）にして空の補足を返す
-      2. トップレベル・`walkthroughs` の手順・`layout` の値の知らないキーは `map_unknown_key`（使用できるキーの一覧を含む）、型の違う値は `map_invalid_value` にして捨てる
+      2. トップレベル・`walkthroughs` の手順・`layout` の値・`groups` の値の知らないキーは `map_unknown_key`（使用できるキーの一覧を含む）、型の違う値は `map_invalid_value` にして捨てる
       3. 文字の値に `--` を含むものは `map_invalid_value`（HTML コメントを閉じてしまうため `--` を含めない直し方）にする
     unit_tests:
       - name: test_parse_map_data

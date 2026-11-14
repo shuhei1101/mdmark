@@ -291,3 +291,21 @@ test("test_layout_map_when_collapsed_count", async () => {
   for (const group of layout.groups.filter((item) => !item.collapsed))
     expect(group.count).toBeUndefined();
 });
+
+// ノードの上に空ける高さ（正常系）
+test("test_layout_map_when_above", async () => {
+  // 準備
+  const plain = await laid();
+  // 実行
+  const layout = await laid({}, { mount: { above: 40 } });
+  // 検証
+  const before = plain.nodes.find((node) => node.id === "mount") as Rect;
+  const node = layout.nodes.find((item) => item.id === "mount") as Rect;
+  expect(node.h).toBe(before.h);
+  for (const other of layout.nodes) {
+    if (other.id === "mount") continue;
+    expect(overlaps({ ...node, y: node.y - 40, h: node.h + 40 }, other)).toBe(
+      false,
+    );
+  }
+});

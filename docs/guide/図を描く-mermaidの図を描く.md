@@ -28,6 +28,7 @@ flowchart LR
 言語を `mermaid` にしたコードブロックが、図の枠に入った図になる。
 front matter の `title` が図の枠のタイトルになり、図の中には重ねて描かない。
 `title` が無ければ `accTitle`、どちらも無ければ図の種類の名前（`フローチャート`・`シーケンス図` など）がタイトルになる。
+`flowchart`・`sequenceDiagram`・`erDiagram`・`stateDiagram-v2` を、中へ入る・開閉・案内・再生・選択で読ませるときは、[Mermaidと補足で図を描く](./図を描く-Mermaidと補足で図を描く.md) の map の範囲に入れる。
 シーケンス図の `actor` は、mdmark のほかの図と同じ人のアイコンで描く。
 記載方法の一覧は [mermaid のコードブロック](./記法.md#mermaid-のコードブロック)。
 

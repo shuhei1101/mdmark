@@ -1,0 +1,65 @@
+id: MOD-531-4
+visibility: internal
+title: ライブラリ本体 / map / 描画と操作 / state-view.ts
+test_files:
+  - tests/unit/src/map/state-view.browser.test.ts
+functions:
+  - name: attachMapState
+    title: 状態遷移図を付ける
+    kind: 関数
+    container: src/map/state-view.ts
+    usecase: Mermaidと補足で図を描く
+    role: 処理
+    summary: '`stateDiagram-v2`・`stateDiagram` を読み取って構成図の入力にし、構成図と同じ配置・開閉・中へ入る・強調を付けたうえで、開始・終了・分岐の形状、同じ状態への遷移、注記、遷移の再生を追加する'
+    scope: public
+    callees:
+      - MOD-531-2#functions[parseStateDiagram]
+      - MOD-531-2#functions[stateToFlowchart]
+      - MOD-531-2#functions[statePartInputs]
+      - MOD-472-130#functions[attachMapFlow]
+      - MOD-472-133#functions[renderMapStateDiagram]
+      - MOD-472-133#functions[renderMapStateLoops]
+    args:
+      - name: range
+        type: HTMLElement
+        required: true
+        description: '`div.mdmark-map`（`data-map-kind="stateDiagram"`）'
+      - name: config
+        type: ResolvedConfig
+        required: true
+        description: 既定を当てた設定
+      - name: args
+        type: MapArgs
+        required: true
+        description: '`parseMapArgs` の結果'
+    returns:
+      type: MapFlowHandle
+      description: 構成図と同じ操作の口
+    process: |-
+      1. `parseStateDiagram` と `stateToFlowchart` で `Flowchart` を作り、`statePartInputs` で形状・同じ状態への遷移と、開始・終了を 32px 四方・分岐を 40px 四方・同じ状態への遷移を持つ状態の上に 56px 空ける上書きを作り、`extension.overrides` に指定する
+      2. 補足の `walkthroughs` が無ければ、遷移を記載順の手順（`title` は「{遷移元} → {遷移先}：{ラベル}」、`text` は補足の `t{番号}` の説明、強調は遷移元と遷移先）にし、`bandMode` を `playback`、`bandUnit` を `transition` にして、`attachMapFlow` に `extension` と一緒に指定する。`walkthroughs` があれば `bandMode` を `walkthrough` にする
+      3. `extension.render` に、形状と同じ状態への遷移を指定した `renderMapStateDiagram` を指定する
+      4. `extension.afterRender` で、同じ状態への遷移を `renderMapStateLoops` で描き直し、手順がその遷移のときは太く、ほかの手順と選択では `map-dim` にする
+      5. `extension.selectionOf` で、1 つ選んだ状態の入る遷移・出る遷移と相手を残す。開始・終了・分岐・注記は選ばない
+      6. `extension.collapsedTag` で、閉じた入れ子の状態に「状態 {数} 件」を返却する
+    unit_tests:
+      - name: test_attach_map_state
+        case: 正常
+        summary: 形状と付け替え
+        condition: モックの `STATE`・`STATE_DATA` の範囲
+        mock: なし
+        expected: '`data-shape` が `start`・`end`・`choice` のノードがあり、`t5` の線の先が `start_実行中` のノード、`下書き` の上に同じ状態への遷移の線とラベル `保存する` がある'
+      - name: test_attach_map_state_when_played
+        case: 正常
+        summary: 遷移の再生
+        condition: 帯の次へを 6 回押す
+        mock: なし
+        expected: 帯の文字が `6/13` と `判定 → 差し戻しの理由を確認する：差し戻し` で、説明が `差し戻しの理由はコメントに残る`。帯の `aria-label` が `作業の状態の再生` で、ボタンの名前が `前の遷移`・`再生をやめる`・`自動で進める`・`次の遷移`
+      - name: test_attach_map_state_when_walkthroughs
+        case: 正常
+        summary: 案内を持つ
+        condition: 補足に手順 2 つの `walkthroughs`
+        mock: なし
+        expected: 帯の文字が `–/2`
+refs:
+  - IF-472-35#constraints[map の状態遷移図]
