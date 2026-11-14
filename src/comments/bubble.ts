@@ -112,6 +112,27 @@ export function attachCommentActions(options: {
       }),
     );
   };
+  /** 保存先の処理を呼び、失敗したら（まだ付けたままなら）エラーを出して `false` を返却する */
+  const runStore = async (
+    call: () => Promise<unknown>,
+    failure: { message: string; action: string; id: string },
+  ): Promise<boolean> => {
+    try {
+      await call();
+      return true;
+    } catch (error) {
+      if (isActive()) {
+        console.error(
+          `[mdmark] ${failure.message}`,
+          failure.action,
+          docId,
+          failure.id,
+          error,
+        );
+      }
+      return false;
+    }
+  };
   /** 入力欄の本文で `store.update` を呼び、修正できたら本文の表示に戻す */
   const saveEdit = async (current: OpenItem): Promise<void> => {
     const update = store.update;
@@ -133,29 +154,20 @@ export function attachCommentActions(options: {
     }
     busy = true;
     redraw(current.id, { body: current.body, edit: edit("saving") });
-    try {
-      await update({ docId, id: current.id, body });
-    } catch (error) {
-      if (!isActive()) {
-        return;
-      }
-      busy = false;
-      console.error(
-        "[mdmark] コメントを修正できません",
-        "update",
-        docId,
-        current.id,
-        error,
-      );
+    const saved = await runStore(
+      () => update({ docId, id: current.id, body }),
+      { message: "コメントを修正できません", action: "update", id: current.id },
+    );
+    if (!isActive()) {
+      return;
+    }
+    busy = false;
+    if (!saved) {
       focusField(
         redraw(current.id, { body: current.body, edit: edit("failed") }),
       );
       return;
     }
-    if (!isActive()) {
-      return;
-    }
-    busy = false;
     open = undefined;
     onUpdated(current.id, body);
     redraw(current.id, { body })
@@ -182,34 +194,29 @@ export function attachCommentActions(options: {
     }
     busy = true;
     redraw(current.id, { body: current.body, confirm: { state: "removing" } });
-    try {
-      await remove({ docId, id: current.id });
-    } catch (error) {
-      if (!isActive()) {
-        return;
-      }
-      busy = false;
-      console.error(
-        "[mdmark] コメントを削除できません",
-        "remove",
-        docId,
-        current.id,
-        error,
-      );
+    const removed = await runStore(() => remove({ docId, id: current.id }), {
+      message: "コメントを削除できません",
+      action: "remove",
+      id: current.id,
+    });
+    if (!isActive()) {
+      return;
+    }
+    busy = false;
+    if (!removed) {
       redraw(current.id, { body: current.body, confirm: { state: "failed" } })
         ?.querySelector<HTMLElement>('[data-action="confirm-remove"]')
         ?.focus();
       return;
     }
-    if (!isActive()) {
-      return;
-    }
-    busy = false;
     open = undefined;
-    if (!onRemoved(current.id)) {
-      return;
+    if (onRemoved(current.id)) {
+      removeItem(current.id);
     }
-    const item = itemOf(current.id);
+  };
+  /** そのコメントの `li` を除き、隣のコメントのボタンへフォーカスを移す */
+  const removeItem = (id: string): void => {
+    const item = itemOf(id);
     const next = item?.nextElementSibling ?? item?.previousElementSibling;
     item?.remove();
     next?.querySelector<HTMLElement>("button")?.focus();
@@ -228,7 +235,11 @@ export function attachCommentActions(options: {
     if (!button || !id || busy) {
       return;
     }
-    switch (button.dataset.action) {
+    runAction(button.dataset.action, id);
+  };
+  /** ボタンの `data-action` の操作を、そのコメントに行う */
+  const runAction = (action: string | undefined, id: string): void => {
+    switch (action) {
       case "edit":
         openEdit(id);
         break;

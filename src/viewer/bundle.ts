@@ -3,7 +3,7 @@ import type { MdmarkConfig } from "../config.ts";
 import { MAP_QUERY_PREFIX } from "../map/state.ts";
 import { type MountHandle, mount } from "../mount.ts";
 import { renderDocList } from "../parts/doc-list.ts";
-import { includesOf } from "./includes.ts";
+import { includesOf, knowledgeOptions } from "./includes.ts";
 import { DOC_HASH_PREFIX, resolveRoute, rewriteLinks } from "./route.ts";
 import {
   applyViewState,
@@ -46,6 +46,31 @@ function requireElement<T extends Element>(
     throw new Error(`画面の要素がありません: ${selector}`);
   }
   return element;
+}
+
+/** 横とパネルの両方の一覧で、開いている文書の行だけに `aria-current` を付ける */
+function markCurrentDoc(doc: Document, path: string): void {
+  for (const link of doc.querySelectorAll<HTMLAnchorElement>(
+    ".mdmark-doc-list a",
+  )) {
+    if (link.dataset.docPath === path) {
+      link.setAttribute(CURRENT_ATTRIBUTE, "page");
+    } else {
+      link.removeAttribute(CURRENT_ATTRIBUTE);
+    }
+  }
+}
+
+/** 修飾キーの無い主ボタンの押下で、既定の動きを止めていないか */
+function isPlainClick(event: MouseEvent): boolean {
+  return (
+    event.button === 0 &&
+    !event.metaKey &&
+    !event.ctrlKey &&
+    !event.shiftKey &&
+    !event.altKey &&
+    !event.defaultPrevented
+  );
 }
 
 /** まとめた HTML を起動する: 横の一覧とパネルに文書の一覧を配置し、URL の `#` が指す文書を `mount` で描き、`hashchange` で文書を行き来する */
@@ -108,25 +133,13 @@ export function startBundle(
     handle = mount(view, {
       markdown: restoreAssets(item.markdown, payload.assets),
       config,
-      ...(payload.index ? { index: payload.index } : {}),
-      ...(item.docId ? { docId: item.docId } : {}),
-      ...(payload.references ? { references: payload.references } : {}),
-      ...(payload.aliases ? { aliases: payload.aliases } : {}),
+      ...knowledgeOptions(payload, item.docId),
       includes: includesOf(payload, item),
       ...(payload.icons ? { icons: payload.icons } : {}),
     });
     rewriteLinks(view, path, paths);
     currentPath = path;
-    // 横とパネルの両方の一覧で、開いている文書の行だけに付ける
-    for (const link of doc.querySelectorAll<HTMLAnchorElement>(
-      ".mdmark-doc-list a",
-    )) {
-      if (link.dataset.docPath === path) {
-        link.setAttribute(CURRENT_ATTRIBUTE, "page");
-      } else {
-        link.removeAttribute(CURRENT_ATTRIBUTE);
-      }
-    }
+    markCurrentDoc(doc, path);
     barTitle.textContent = item.title;
     doc.title = item.title;
   };
@@ -192,6 +205,16 @@ export function startBundle(
       }
       return;
     }
+    moveToHeading({ heading, switched, initial });
+  };
+
+  /** 見出しを指していればそこへ、文書だけが替わったときは頭へ移し、文書を移ったらタイトルへフォーカスを移す（開いた直後は移さない） */
+  const moveToHeading = (options: {
+    heading: string | null | undefined;
+    switched: boolean;
+    initial: boolean;
+  }): void => {
+    const { heading, switched, initial } = options;
     const target = heading ? doc.getElementById(heading) : null;
     if (target) {
       target.scrollIntoView();
@@ -249,16 +272,9 @@ export function startBundle(
     const link =
       event.target instanceof Element ? event.target.closest("a") : null;
     const href = link?.getAttribute("href");
-    const plain =
-      event.button === 0 &&
-      !event.metaKey &&
-      !event.ctrlKey &&
-      !event.shiftKey &&
-      !event.altKey;
     if (
       href?.startsWith(`${DOC_HASH_PREFIX}${currentPath}#`) &&
-      plain &&
-      !event.defaultPrevented
+      isPlainClick(event)
     ) {
       event.preventDefault();
       win.history.replaceState(win.history.state, "", href);
