@@ -197,29 +197,32 @@ export const attachBand = (options: {
     stopAuto();
     go(undefined);
   };
+  /** 前の手順の位置（始めていないか先頭なら最後） */
+  const prevIndex = () =>
+    index === undefined || index === 0 ? steps.length - 1 : index - 1;
+  /** 次の手順の位置（始めていなければ先頭、最後なら先頭へ戻る） */
+  const nextIndex = () =>
+    index === undefined ? 0 : (index + 1) % steps.length;
+  const toggleAuto = () => {
+    if (auto) {
+      stopAuto();
+      render();
+    } else startAuto();
+  };
   const onClick = (event: Event) => {
     const action = (
       event.target instanceof Element
         ? event.target.closest("[data-band]")
         : null
     )?.getAttribute("data-band");
-    if (action === "prev")
-      go(index === undefined || index === 0 ? steps.length - 1 : index - 1);
-    else if (action === "next")
-      go(index === undefined ? 0 : (index + 1) % steps.length);
+    if (action === "prev") go(prevIndex());
+    else if (action === "next") go(nextIndex());
     else if (action === "stop") stop();
-    else if (action === "auto") {
-      if (auto) {
-        stopAuto();
-        render();
-      } else startAuto();
-    }
+    else if (action === "auto") toggleAuto();
   };
   const onKey = (event: KeyboardEvent) => {
-    if (event.key === "ArrowRight")
-      go(index === undefined ? 0 : (index + 1) % steps.length);
-    if (event.key === "ArrowLeft")
-      go(index === undefined || index === 0 ? steps.length - 1 : index - 1);
+    if (event.key === "ArrowRight") go(nextIndex());
+    if (event.key === "ArrowLeft") go(prevIndex());
   };
   holder.addEventListener("click", onClick);
   holder.addEventListener("keydown", onKey);

@@ -744,10 +744,9 @@ export function checkMaps(
       features.annotations === false ? undefined : new Set(annotationIds);
     for (const { line, range } of findMapRanges(document.markdown)) {
       for (const problem of collectMapProblems(
-        range,
+        { ...range, annotationIds: annotations },
         config.map,
         true,
-        annotations,
       )) {
         issues.push({
           file: document.path,
