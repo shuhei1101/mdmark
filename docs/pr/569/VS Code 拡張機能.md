@@ -51,7 +51,8 @@
 
 | 変更したファイル | 関係する結合テスト | 回すか | 理由 |
 | --- | --- | --- | --- |
-| `vscode/src/`（`config.ts`・`export/`・`preview/`・`version.ts`・`extensions-bundle.ts`） | [vscode/tests/integration/](https://github.com/shuhei1101/mdmark/blob/develop/vscode/tests/integration)（`xvfb-run -a npm --prefix vscode run test:integration`） | 回さない | 関数を分けた処理は `tests/unit/vscode/src/` の単体テスト（`config`・`export/`・`preview/`・`version`・`extensions-bundle`）が覆う。拡張機能のコマンド・設定・Webview との通信の入口は変えていない。VS Code を 2 つの版で起動し、時間がかかる |
+| `vscode/src/preview/panel.ts`・`vscode/src/preview/manager.ts`・`vscode/src/export/export.ts` | [preview-open.test.ts](https://github.com/shuhei1101/mdmark/blob/develop/vscode/tests/integration/preview-open.test.ts)・[preview-diff.test.ts](https://github.com/shuhei1101/mdmark/blob/develop/vscode/tests/integration/preview-diff.test.ts)・[preview-rerender.test.ts](https://github.com/shuhei1101/mdmark/blob/develop/vscode/tests/integration/preview-rerender.test.ts)・[open-config.test.ts](https://github.com/shuhei1101/mdmark/blob/develop/vscode/tests/integration/open-config.test.ts)・[export.test.ts](https://github.com/shuhei1101/mdmark/blob/develop/vscode/tests/integration/export.test.ts)・[00-undecidable.test.ts](https://github.com/shuhei1101/mdmark/blob/develop/vscode/tests/integration/00-undecidable.test.ts) | 回す | 3 つのファイルには `tests/unit/vscode/src/` の単体テストが無い。分けた処理（`openMarkdown`・`previewHtml`・`resolveAssets`・`reportLoadFailed`・`updateWatched`・`applyLoadedConfig`・`needsHtmlReload`・`openConfig`・`readExportConfig`）を通る |
+| `vscode/src/`（`config.ts`・`export/embed.ts`・`preview/includes.ts`・`version.ts`・`extensions-bundle.ts`） | `vscode/tests/integration/` の `commands`・`open-settings`・`preview-link`・`preview-reload`・`release`・`scroll-sync` | 回さない | 分けた処理は `tests/unit/vscode/src/` の単体テストが覆う。分けた処理だけを通る経路を持たず、通る経路は上の 6 つと重なる |
 
 <!-- /table -->
 
